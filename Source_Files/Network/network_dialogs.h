@@ -77,6 +77,19 @@ enum {
     strFRIENDLY_FIRE_LEGEND
 };
 
+#ifdef USES_NIBS
+
+enum {
+	dlogNET_GAME_STATS= 5000,
+	// iGRAPH_POPUP moved from #2 because that is the "Cancel" value
+	iDAMAGE_STATS = 3,
+	iTOTAL_KILLS,
+	iTOTAL_DEATHS,
+	iGRAPH_POPUP
+};
+
+#else
+
 enum {
 	dlogNET_GAME_STATS= 5000,
 	iGRAPH_POPUP= 2,
@@ -84,6 +97,8 @@ enum {
 	iTOTAL_KILLS,
 	iTOTAL_DEATHS
 };
+
+#endif
 
 enum /* All the different graph types */
 {
@@ -200,6 +215,9 @@ const int iOK_SPECIAL = 101;
 // For player-display Data Browser control:
 const OSType PlayerDisplay_Name = 'name';
 
+// Signature of player-select buttons in player dialog:
+const OSType StatsDisplay_Player = 'plyr';
+
 #endif
 
 
@@ -298,6 +316,20 @@ struct NetgameJoinData
 	int JoinResult;
 };
 
+
+struct NetgameOutcomeData
+{
+	ControlRef SelectCtrl;
+	ControlRef DisplayCtrl;
+	
+	// Invisible, but hittable controls;
+	// their drawing is done by the drawing callback for DisplayCtrl
+	ControlRef PlayerButtonCtrls[MAXIMUM_NUMBER_OF_PLAYERS];
+	
+	ControlRef KillsTextCtrl;
+	ControlRef DeathsTextCtrl;
+};
+
 #endif
 
 /* ---------------------- globals */
@@ -342,24 +374,44 @@ extern void setup_dialog_for_game_type(
 
 
 // (Postgame Carnage Report routines)
+#ifdef USES_NIBS
+extern short find_graph_mode(NetgameOutcomeData &Data, short *index);
+extern void draw_new_graph(NetgameOutcomeData &Data);
+#else
 extern short find_graph_mode(DialogPtr dialog, short *index);
 extern void draw_new_graph(DialogPtr dialog);
+#endif
 
+#ifdef USES_NIBS
+extern void draw_player_graph(NetgameOutcomeData &Data, short index);
+#else
 extern void draw_player_graph(DialogPtr dialog, short index);
+#endif
 extern void get_net_color(short index, RGBColor *color);
 
 extern short calculate_max_kills(size_t num_players);
+#ifdef USES_NIBS
+extern void draw_totals_graph(NetgameOutcomeData &Data);
+#else
 extern void draw_totals_graph(DialogPtr dialog);
+#endif
 extern void calculate_rankings(struct net_rank *ranks, short num_players);
 extern int rank_compare(void const *rank1, void const *rank2);
 extern int team_rank_compare(void const *rank1, void const *ranks2);
 extern int score_rank_compare(void const *rank1, void const *ranks2);
+#ifdef USES_NIBS
+extern void draw_team_totals_graph(NetgameOutcomeData &Data);
+extern void draw_total_scores_graph(NetgameOutcomeData &Data);
+extern void draw_team_total_scores_graph(NetgameOutcomeData &Data);
+extern void update_carnage_summary(NetgameOutcomeData &Data, struct net_rank *ranks, short num_players,
+                                   short suicide_index, bool do_totals, bool friendly_fire);
+#else
 extern void draw_team_totals_graph(DialogPtr dialog);
 extern void draw_total_scores_graph(DialogPtr dialog);
 extern void draw_team_total_scores_graph(DialogPtr dialog);
 extern void update_carnage_summary(DialogPtr dialog, struct net_rank *ranks, short num_players,
                                    short suicide_index, bool do_totals, bool friendly_fire);
-
+#endif
 
 #ifdef mac
 // Mac-only routines called by shared routines.
@@ -385,13 +437,27 @@ extern void set_limit_text(DialogPtr dialog, short radio_item, short radio_strin
                                 short units_item, short units_stringset_id, short units_string_index);
 
 // (Postgame carnage report)
+#ifdef USES_NIBS
+extern void draw_names(NetgameOutcomeData& Data, struct net_rank *ranks, short number_of_bars,
+	short which_player);
+#else
 extern void draw_names(DialogPtr dialog, struct net_rank *ranks, short number_of_bars,
 	short which_player);
+#endif
 
+#ifdef USES_NIBS
+extern void draw_kill_bars(NetgameOutcomeData& Data, struct net_rank *ranks, short num_players, 
+	short suicide_index, bool do_totals, bool friendly_fire);
+#else
 extern void draw_kill_bars(DialogPtr dialog, struct net_rank *ranks, short num_players, 
 	short suicide_index, bool do_totals, bool friendly_fire);
+#endif
 
+#ifdef USES_NIBS
+extern void draw_score_bars(NetgameOutcomeData& Data, struct net_rank *ranks, short bar_count);
+#else
 extern void draw_score_bars(DialogPtr dialog, struct net_rank *ranks, short bar_count);
+#endif
 
 
 #ifdef USES_NIBS

@@ -28,6 +28,7 @@ Feb 14, 2003 (Woody Zenfell):
  *  network_dialogs_mac_sdl.cpp - Network dialogs for Carbon with SDL networking
  */
 //#define NETWORK_TEST_POSTGAME_DIALOG
+//#define ALSO_TEST_PROGRESS_BAR
 //#define NETWORK_TEST_GATHER_DIALOG
 
 #if TARGET_API_MAC_CARBON
@@ -2593,13 +2594,220 @@ static void draw_team_totals_graph(DialogPtr dialog);
 static void draw_total_scores_graph(DialogPtr dialog);
 static void draw_team_total_scores_graph(DialogPtr dialog);
 */
+#ifdef USES_NIBS
+static void calculate_maximum_bar(NetgameOutcomeData &Data, Rect *kill_bar_rect);
+#else
 static void calculate_maximum_bar(DialogPtr dialog, Rect *kill_bar_rect);
+#endif
 /*
 static void draw_score_bars(DialogPtr dialog, struct net_rank *ranks, short bar_count);
 */
 static bool will_new_mode_reorder_dialog(short new_mode, short previous_mode);
 
 /* ---------------- code */
+
+#ifdef USES_NIBS
+
+
+static void SetupStatsSelectionMenu(ControlRef Ctrl)
+{	
+	MenuRef graph_popup;
+	short index;
+	short current_graph_selection;
+	bool has_scores;
+
+	/* Clear the graph popup */
+	graph_popup= GetControlPopupMenuHandle(Ctrl);
+	assert(graph_popup);
+	while(CountMenuItems(graph_popup))
+		DeleteMenuItem(graph_popup, 1);
+
+	/* Setup the player names */
+	for (index= 0; index<dynamic_world->player_count; index++)
+	{
+		struct player_data *player= get_player_data(rankings[index].player_index);
+		
+		CopyCStringToPascal(player->name, ptemporary);
+		AppendMenu(graph_popup, "\p ");
+		SetMenuItemText(graph_popup, index+1, ptemporary); // +1 since it is 1's based
+	}
+	
+	/* Add in the separator line */
+	AppendMenu(graph_popup, "\p-");
+
+	/* Add in the total carnage.. */
+	AppendMenu(graph_popup, getpstr(ptemporary, strNET_STATS_STRINGS, strTOTALS_STRING));
+	current_graph_selection= CountMenuItems(graph_popup);
+	
+	/* Add in the scores */
+	has_scores= get_network_score_text_for_postgame(temporary, false);
+	if(has_scores)
+	{
+		Str255 pscore_temp;
+		CopyCStringToPascal(temporary, pscore_temp);
+		AppendMenu(graph_popup, pscore_temp);
+		current_graph_selection= CountMenuItems(graph_popup);
+	}
+	
+	/* If the game has teams, show the team stats. */
+	if (!(dynamic_world->game_information.game_options & _force_unique_teams)) 
+	{
+		/* Separator line */
+		if(has_scores) AppendMenu(graph_popup, "\p-");
+
+		AppendMenu(graph_popup, getpstr(ptemporary, strNET_STATS_STRINGS, strTEAM_TOTALS_STRING));
+
+		if(has_scores)
+		{
+			get_network_score_text_for_postgame(temporary, true);
+			Str255 ppostgame;
+			CopyCStringToPascal(temporary, ppostgame);
+			AppendMenu(graph_popup, ppostgame);
+		}
+	}
+	
+	SetControl32BitMaximum(Ctrl, CountMenuItems(graph_popup));
+	SetControl32BitValue(Ctrl, current_graph_selection);
+}
+
+
+static void StatsDisplayDrawer(ControlRef Ctrl, void *UserData)
+{
+	NetgameOutcomeData *DPtr = (NetgameOutcomeData *)(UserData);
+	NetgameOutcomeData &Data = *DPtr;
+
+	// Paint the background
+	Rect Bounds;
+	GetControlBounds(Data.DisplayCtrl, &Bounds);
+	ForeColor(whiteColor);
+	PaintRect(&Bounds);
+
+	draw_new_graph(Data);
+	
+	// Paint the boundary
+	ForeColor(blackColor);
+	FrameRect(&Bounds);
+}
+
+
+static void NetgameOutcome_Handler(ParsedControl& Ctrl, void *UserData)
+{
+	NetgameOutcomeData *DPtr = (NetgameOutcomeData *)(UserData);
+	NetgameOutcomeData &Data = *DPtr;
+	
+	short MaxID;
+	
+	switch(Ctrl.ID.signature)
+	{
+	case StatsDisplay_Player:
+		
+		/* Find if they clicked in an area.. */
+		switch(find_graph_mode(Data, NULL))
+		{
+		case _player_graph:
+		case _total_carnage_graph:
+		case _total_scores_graph:
+			MaxID= dynamic_world->player_count;
+			break;
+			
+		case _total_team_carnage_graph:
+		case _total_team_scores_graph:
+		default:
+			MaxID= 0; /* Don't let them click in any of these. (what would you do?) */
+			break;
+		}
+		if (Ctrl.ID.id >= 0 && Ctrl.ID.id < MaxID)	
+		{
+			if (Ctrl.ID.id != (GetControl32BitValue(Data.SelectCtrl)-1))
+			{
+				SetControl32BitValue(Data.SelectCtrl, Ctrl.ID.id+1);
+				Draw1Control(Data.DisplayCtrl);
+			}
+		}	
+		
+		break;
+	
+	case 0:
+		switch(Ctrl.ID.id)
+		{
+		case iGRAPH_POPUP:
+			Draw1Control(Data.DisplayCtrl);
+			break;
+		}
+		break;
+	}	
+}
+
+
+void display_net_game_stats()
+{
+	// eat all stray keypresses
+	FlushEvents(everyEvent, 0);
+	
+	AutoNibWindow Window(GUI_Nib, Window_Network_Outcome);
+	
+	NetgameOutcomeData Data;
+	
+	Data.SelectCtrl = GetCtrlFromWindow(Window(), 0, iGRAPH_POPUP);
+	
+	/* Calculate the rankings (once) for the entire graph */
+	calculate_rankings(rankings, dynamic_world->player_count);
+	qsort(rankings, dynamic_world->player_count, sizeof(struct net_rank), rank_compare);
+	
+	SetupStatsSelectionMenu(Data.SelectCtrl);
+	
+	Data.DisplayCtrl = GetCtrlFromWindow(Window(), 0, iDAMAGE_STATS);
+	
+	AutoDrawability Drawability;
+	Drawability(Data.DisplayCtrl, StatsDisplayDrawer, &Data);
+	
+	// Overall bounds of stats display
+	Rect Bounds;
+	GetControlBounds(Data.DisplayCtrl, &Bounds);
+	
+	// Bounds of each player button in that display
+	Rect CtrlBounds;
+	SetRect(&CtrlBounds, 0, 0, NAME_BOX_WIDTH, NAME_BOX_HEIGHT);
+	OffsetRect(&CtrlBounds, Bounds.left+GRAPH_LEFT_INSET, Bounds.top+GRAPH_TOP_INSET);
+	
+	AutoHittability Hittability;
+	for (int k=0; k<MAXIMUM_NUMBER_OF_PLAYERS; k++)
+	{
+		OSStatus err;
+		
+		// Create a button for each player
+		err = CreateUserPaneControl(
+				Window(), &CtrlBounds,
+				0, &Data.PlayerButtonCtrls[k]
+				);
+		vassert(err == noErr, csprintf(temporary,"CreateUserPaneControl error: %d",err));
+		
+		// Add ID so that the dialog's hit tester can recognize it
+		ControlID ID;
+		ID.signature = StatsDisplay_Player;
+		ID.id = k;
+		
+		err = SetControlID(Data.PlayerButtonCtrls[k], &ID);
+		vassert(err == noErr, csprintf(temporary,"SetControlID error: %d",err));
+		
+		// Make it hittable -- clicking on it will create an item-hit event
+		Hittability(Data.PlayerButtonCtrls[k]);
+		
+		// It lives in the stats-display area, of course!
+		EmbedControl(Data.PlayerButtonCtrls[k], Data.DisplayCtrl);
+		
+		// Advance to the next position
+		OffsetRect(&CtrlBounds, 0, RECTANGLE_HEIGHT(&CtrlBounds)+GRAPH_BAR_SPACING);	
+	}
+	
+	Data.KillsTextCtrl = GetCtrlFromWindow(Window(), 0, iTOTAL_KILLS);
+	Data.DeathsTextCtrl = GetCtrlFromWindow(Window(), 0, iTOTAL_DEATHS);
+	
+	RunModalDialog(Window(), false, NetgameOutcome_Handler, &Data);
+}
+
+#else
+
 void display_net_game_stats(
 	void)
 {
@@ -2689,6 +2897,7 @@ void display_net_game_stats(
 
 	return;
 }
+
 
 /* ------------------------- private code */
 static short create_graph_popup_menu(
@@ -2974,6 +3183,8 @@ static pascal Boolean display_net_stats_proc(
 	return handled ? true : general_filter_proc(dialog, event, item_hit);
 }
 
+
+
 static pascal void update_damage_item_proc(
 	DialogPtr dialog,
 	short item_num)
@@ -3020,10 +3231,17 @@ static void update_damage_item(
 #endif
 }
 
+#endif
+
+
 /* This function takes a rank structure because the rank structure contains the team & is */
 /*  sorted.  */
 void draw_names(
-	DialogPtr dialog, 
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data,
+#else
+	DialogPtr dialog,
+#endif
 	struct net_rank *ranks, 
 	short number_of_bars,
 	short which_player)
@@ -3034,7 +3252,11 @@ void draw_names(
 	RGBColor color;
 
 	SetRect(&name_rect, 0, 0, NAME_BOX_WIDTH, NAME_BOX_HEIGHT);
+#ifdef USES_NIBS
+	GetControlBounds(Data.DisplayCtrl, &item_rect);
+#else
 	GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
+#endif
 	OffsetRect(&name_rect, item_rect.left+GRAPH_LEFT_INSET, item_rect.top+GRAPH_TOP_INSET);
 	for (i = 0; i <number_of_bars; i++)
 	{
@@ -3059,7 +3281,11 @@ void draw_names(
 
 
 void draw_kill_bars(
-	DialogPtr dialog, 
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data,
+#else
+	DialogPtr dialog,
+#endif 
 	struct net_rank *ranks, 
 	short num_players, 
 	short suicide_index, 
@@ -3081,7 +3307,11 @@ void draw_kill_bars(
 	getcstr(death_string_format, strNET_STATS_STRINGS, strDEATHS_STRING);
 	getcstr(suicide_string_format, strNET_STATS_STRINGS, strSUICIDES_STRING);
 
+#ifdef USES_NIBS
+	GetControlBounds(Data.DisplayCtrl, &item_rect);
+#else
 	GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
+#endif
 	kill_bar_rect.left = item_rect.left + GRAPH_LEFT_INSET + NAME_BOX_WIDTH + GRAPH_BAR_SPACING;
 	kill_bar_rect.top = item_rect.top + GRAPH_TOP_INSET;
 	kill_bar_rect.bottom = kill_bar_rect.top + KILL_BAR_HEIGHT;
@@ -3173,8 +3403,12 @@ void draw_kill_bars(
 	}
 
     // ZZZ: ripped this out into a new function for sharing with SDL version
+#ifdef USES_NIBS
+    update_carnage_summary(Data, ranks, num_players, suicide_index, do_totals, friendly_fire);
+#else
     update_carnage_summary(dialog, ranks, num_players, suicide_index, do_totals, friendly_fire);
-	
+#endif
+
 	return;
 }
 
@@ -3266,14 +3500,22 @@ static void draw_beveled_box(
 }
 
 static void calculate_maximum_bar(	
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data,
+#else
 	DialogPtr dialog,
+#endif
 	Rect *kill_bar_rect)
 {
 	short item_type;
 	Handle item_handle;
 	Rect item_rect;
 
+#ifdef USES_NIBS
+	GetControlBounds(Data.DisplayCtrl, &item_rect);
+#else
 	GetDialogItem(dialog, iDAMAGE_STATS, &item_type, &item_handle, &item_rect);
+#endif
 	kill_bar_rect->left = item_rect.left + GRAPH_LEFT_INSET + NAME_BOX_WIDTH + GRAPH_BAR_SPACING;
 	kill_bar_rect->right = item_rect.right - GRAPH_RIGHT_INSET;
 	kill_bar_rect->top = item_rect.top + GRAPH_TOP_INSET;
@@ -3281,7 +3523,11 @@ static void calculate_maximum_bar(
 }
 
 void draw_score_bars(
-	DialogPtr dialog, 
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data,
+#else
+	DialogPtr dialog,
+#endif 
 	struct net_rank *ranks, 
 	short bar_count)
 {
@@ -3299,7 +3545,11 @@ void draw_score_bars(
 		if(ranks[index].game_ranking<lowest_ranking) lowest_ranking= ranks[index].game_ranking;
 	}
 
+#ifdef USES_NIBS
+	calculate_maximum_bar(Data, &maximum_bar);
+#else
 	calculate_maximum_bar(dialog, &maximum_bar);
+#endif
 	bar= maximum_bar;
 	maximum_width= RECTANGLE_WIDTH(&bar);
 
@@ -3332,10 +3582,15 @@ void draw_score_bars(
 	}
 
 	/* And clear the text. */
+#ifdef USES_NIBS
+	SetStaticCText(Data.KillsTextCtrl,"");
+	SetStaticCText(Data.DeathsTextCtrl,"");
+#else
 	GetDialogItem(dialog, iTOTAL_DEATHS, &item_type, &item_handle, &bar);
 	SetDialogItemText(item_handle, "\p");
 	GetDialogItem(dialog, iTOTAL_KILLS, &item_type, &item_handle, &bar);
 	SetDialogItemText(item_handle, "\p");
+#endif
 }
 
 static bool will_new_mode_reorder_dialog(
@@ -3468,21 +3723,28 @@ bool network_gather(bool inResumingGame) {
 	if(network_game_setup(&thePlayerInfo, &theGameInfo, false)) {
 
 	// Test the progress bar while we're at it
+	#ifdef ALSO_TEST_PROGRESS_BAR
 	#include "progress.h"
 	open_progress_dialog(_distribute_physics_single);
 	for(i=0; i < 100; i++)
 	{
 		//nanosleep(&(timespec){0,50000000},NULL);
 		//idle_progress_bar();
+		int TC = TickCount();	// Busy-waiting; dumb
+		while (TickCount() < TC+4);
+		draw_progress_bar(i, 100);
 	}
 	set_progress_dialog_message(_distribute_map_single);
 	reset_progress_bar();
 	for(i=0; i < 100; i++)
 	{
 		//nanosleep(&(timespec){0,90000000},NULL);
+		int TC = TickCount();	// Busy-waiting; dumb
+		while (TickCount() < TC+4);
 		draw_progress_bar(i, 100);
 	}
 	close_progress_dialog();
+	#endif
 	
 	for (i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; i++)
 	{

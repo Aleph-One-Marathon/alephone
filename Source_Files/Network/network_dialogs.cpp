@@ -1293,7 +1293,11 @@ static int	sMenuContents[] =
 // on his selection from the popup/selection control.  (See also draw_new_graph().)
 short
 find_graph_mode(
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data,
+#else
 	DialogPtr dialog,
+#endif
 	short *index)
 {
 	short value;
@@ -1303,7 +1307,11 @@ find_graph_mode(
 	has_scores= current_net_game_has_scores();
 	
 	/* Popups are 1 based */
+#ifdef USES_NIBS
+	value = GetControl32BitValue(Data.SelectCtrl) - 1;
+#else
 	value = get_selection_control_value(dialog, iGRAPH_POPUP)-1;
+#endif
 	if(value<dynamic_world->player_count)
 	{
 		if(index) *index= value;
@@ -1473,7 +1481,11 @@ int score_rank_compare(
 
 // (ZZZ annotation:) Graph of player's killing performance vs each other player
 void draw_player_graph(
-	DialogPtr dialog, 
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data,
+#else
+	DialogPtr dialog,
+#endif
 	short index)
 {
 	short key_player_index= rankings[index].player_index;
@@ -1497,15 +1509,24 @@ void draw_player_graph(
 		ranks[loop].deaths= key_player->damage_taken[test_player_index].kills;
 	}
 
+#ifdef USES_NIBS
+	draw_names(Data, ranks, dynamic_world->player_count, index);
+	draw_kill_bars(Data, ranks, dynamic_world->player_count, index, false, false);
+#else
 	draw_names(dialog, ranks, dynamic_world->player_count, index);
 	draw_kill_bars(dialog, ranks, dynamic_world->player_count, index, false, false);
+#endif
 }
 
 
 // ZZZ: team vs team carnage (analogous to draw_player_graph's player vs player carnage)
 // THIS IS UNFINISHED (and thus unused at the moment :) )
 void draw_team_graph(
-	DialogPtr dialog, 
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data,
+#else
+	DialogPtr dialog,
+#endif
 	short team_index)
 {
     // ZZZZZZ this is where I add my team vs team ranking computation.  Yay.
@@ -1548,17 +1569,30 @@ void draw_team_graph(
 
 // (ZZZ annotation:) Total Carnage graph
 void draw_totals_graph(
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data)
+#else
 	DialogPtr dialog)
+#endif
 {
+#ifdef USES_NIBS
+	draw_names(Data, rankings, dynamic_world->player_count, NONE);
+	draw_kill_bars(Data, rankings, dynamic_world->player_count, NONE, true, false);
+#else
 	draw_names(dialog, rankings, dynamic_world->player_count, NONE);
 	draw_kill_bars(dialog, rankings, dynamic_world->player_count, NONE, true, false);
+#endif
 }
 
 
 
 // (ZZZ annotation:) Total Team Carnage graph
 void draw_team_totals_graph(
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data)
+#else
 	DialogPtr dialog)
+#endif
 {
 	short team_index, player_index, opponent_player_index, num_teams;
 	bool found_team_of_current_color;
@@ -1612,15 +1646,24 @@ void draw_team_totals_graph(
 	}
 	qsort(ranks, num_teams, sizeof(struct net_rank), team_rank_compare);
 	
+#ifdef USES_NIBS
+	draw_names(Data, ranks, num_teams, NONE);
+	draw_kill_bars(Data, ranks, num_teams, NONE, true, true);
+#else
 	draw_names(dialog, ranks, num_teams, NONE);
 	draw_kill_bars(dialog, ranks, num_teams, NONE, true, true);
+#endif
 }
 
 
 
 // (ZZZ annotation:) Time on Hill, etc. graph
 void draw_total_scores_graph(
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data)
+#else
 	DialogPtr dialog)
+#endif
 {
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 	
@@ -1631,17 +1674,29 @@ void draw_total_scores_graph(
 	qsort(ranks, dynamic_world->player_count, sizeof(struct net_rank), score_rank_compare);
 
 	/* Draw the names. */
+#ifdef USES_NIBS
+	draw_names(Data, ranks, dynamic_world->player_count, NONE);
+#else
 	draw_names(dialog, ranks, dynamic_world->player_count, NONE);
+#endif
 	
 	/* And draw the bars... */
+#ifdef USES_NIBS
+	draw_score_bars(Data, ranks, dynamic_world->player_count);
+#else
 	draw_score_bars(dialog, ranks, dynamic_world->player_count);
+#endif
 }
 
 
 
 // (ZZZ annotation:) Team Time on Hill, etc. graph
 void draw_team_total_scores_graph(
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data)
+#else
 	DialogPtr dialog)
+#endif
 {
 	short team_index, team_count;
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
@@ -1675,8 +1730,13 @@ void draw_team_total_scores_graph(
 	qsort(ranks, team_count, sizeof(struct net_rank), score_rank_compare);
 	
 	/* And draw the bars.. */
+#ifdef USES_NIBS
+	draw_names(Data, ranks, team_count, NONE);
+	draw_score_bars(Data, ranks, team_count);
+#else
 	draw_names(dialog, ranks, team_count, NONE);
 	draw_score_bars(dialog, ranks, team_count);
+#endif
 }
 
 
@@ -1685,7 +1745,11 @@ void draw_team_total_scores_graph(
 // (ZZZ annotation:) Update the "N deaths total (D dpm) including S suicides"-type text at the bottom.
 void
 update_carnage_summary(                 	
-    DialogPtr dialog, 
+#ifdef USES_NIBS
+	NetgameOutcomeData &Data,
+#else
+	DialogPtr dialog,
+#endif
 	struct net_rank *ranks, 
 	short num_players, 
 	short suicide_index, 
@@ -1734,7 +1798,11 @@ update_carnage_summary(
 //	GetDialogItem(dialog, iTOTAL_KILLS, &item_type, &item_handle, &item_rect);
 //	SetDialogItemText(item_handle, ptemporary);
     
+#ifdef USES_NIBS
+    SetStaticPascalText(Data.KillsTextCtrl, ptemporary);
+#else
     copy_pstring_to_static_text(dialog, iTOTAL_KILLS, ptemporary);
+#endif
 
 	if (minutes > 0) dpm = total_deaths / minutes;
 	else dpm = 0;
@@ -1754,7 +1822,11 @@ update_carnage_summary(
 //	GetDialogItem(dialog, iTOTAL_DEATHS, &item_type, &item_handle, &item_rect);
 //	SetDialogItemText(item_handle, ptemporary);
 
+#ifdef USES_NIBS
+    SetStaticPascalText(Data.DeathsTextCtrl, ptemporary);
+#else
     copy_pstring_to_static_text(dialog, iTOTAL_DEATHS, ptemporary);
+#endif
 }
 
 
@@ -1762,33 +1834,61 @@ update_carnage_summary(
 // ZZZ: ripped out of update_damage_item
 // (ZZZ annotation:) Demultiplex to draw_X_graph() function based on find_graph_mode().
 void
+#ifdef USES_NIBS
+draw_new_graph(NetgameOutcomeData &Data) {
+#else
 draw_new_graph(DialogPtr dialog) {
+#endif
     short   graph_type;
     short   index;
 
+#ifdef USES_NIBS
+    graph_type= find_graph_mode(Data, &index);
+#else
     graph_type= find_graph_mode(dialog, &index);
+#endif
 	
 	switch(graph_type)
 	{
 		case _player_graph:
+#ifdef USES_NIBS
+			draw_player_graph(Data, index);
+#else
 			draw_player_graph(dialog, index);
+#endif
 			break;
 			
 		case _total_carnage_graph:
+#ifdef USES_NIBS
+			draw_totals_graph(Data);
+#else
 			draw_totals_graph(dialog);
+#endif
 			break;
 			
 		case _total_scores_graph:
+#ifdef USES_NIBS
+			draw_total_scores_graph(Data);
+#else
 			draw_total_scores_graph(dialog);
+#endif
 			break;
 
 		/* These two functions need to have the team colors. */
 		case _total_team_carnage_graph:
+#ifdef USES_NIBS
+			draw_team_totals_graph(Data);
+#else
 			draw_team_totals_graph(dialog);
+#endif
 			break;
 			
 		case _total_team_scores_graph:
+#ifdef USES_NIBS
+			draw_team_total_scores_graph(Data);
+#else
 			draw_team_total_scores_graph(dialog);
+#endif
 			break;
 			
 		default:
