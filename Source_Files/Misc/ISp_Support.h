@@ -1,7 +1,7 @@
 #ifndef __ISp_Support_File
 #define __ISp_Support_File
 /*
-	Originally written by someone else
+	Loren Petrich: This code was originally written by Ben Thopmson;
 	
 July 29, 2000 (Loren Petrich):
 	Rewrote it a tiny bit.
