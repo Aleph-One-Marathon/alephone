@@ -902,7 +902,7 @@ bool Configure_Crosshairs(CrosshairData &Data)
 			BadValue = false;
 			if (GetShort(Thickness_CHdl,ShortTemp))
 			{
-				if (ShortTemp > 1)
+				if (ShortTemp > 0)
 					Data.Thickness = ShortTemp;
 				else
 					BadValue = true;
