@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
-<?codewarrior exportversion="1.0.1" ideversion="4.2" ?>
+<?codewarrior exportversion="1.0.1" ideversion="5.0" ?>
 
 <!DOCTYPE PROJECT [
 <!ELEMENT PROJECT (TARGETLIST, TARGETORDER, GROUPLIST, DESIGNLIST?)>
@@ -129,8 +129,8 @@
                     </SETTING>
                     <SETTING>
                         <SETTING><NAME>SearchPath</NAME>
-                            <SETTING><NAME>Path</NAME><VALUE>:::Developer Apps:OpenGL SDK:</VALUE></SETTING>
-                            <SETTING><NAME>PathFormat</NAME><VALUE>MacOS</VALUE></SETTING>
+                            <SETTING><NAME>Path</NAME><VALUE>../../Developer Apps/OpenGL SDK</VALUE></SETTING>
+                            <SETTING><NAME>PathFormat</NAME><VALUE>Unix</VALUE></SETTING>
                             <SETTING><NAME>PathRoot</NAME><VALUE>CodeWarrior</VALUE></SETTING>
                         </SETTING>
                         <SETTING><NAME>Recursive</NAME><VALUE>true</VALUE></SETTING>
@@ -486,10 +486,10 @@
 
                 <!-- Settings for "Build Extras" panel -->
                 <SETTING><NAME>CacheModDates</NAME><VALUE>true</VALUE></SETTING>
-                <SETTING><NAME>ActivateBrowser</NAME><VALUE>true</VALUE></SETTING>
                 <SETTING><NAME>DumpBrowserInfo</NAME><VALUE>false</VALUE></SETTING>
                 <SETTING><NAME>CacheSubprojects</NAME><VALUE>true</VALUE></SETTING>
                 <SETTING><NAME>UseThirdPartyDebugger</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>BrowserGenerator</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>DebuggerAppPath</NAME>
                     <SETTING><NAME>Path</NAME><VALUE></VALUE></SETTING>
                     <SETTING><NAME>PathFormat</NAME><VALUE>Generic</VALUE></SETTING>
@@ -501,8 +501,11 @@
                     <SETTING><NAME>PathFormat</NAME><VALUE>Generic</VALUE></SETTING>
                     <SETTING><NAME>PathRoot</NAME><VALUE>Absolute</VALUE></SETTING>
                 </SETTING>
+                <SETTING><NAME>CodeCompletionPrefixFileName</NAME><VALUE>MacHeaders.c</VALUE></SETTING>
+                <SETTING><NAME>CodeCompletionMacroFileName</NAME><VALUE>MacOS_Carbon_C++_Macros.h</VALUE></SETTING>
 
                 <!-- Settings for "Debugger Target" panel -->
+                <SETTING><NAME>ConsoleEncoding</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>LogSystemMessages</NAME><VALUE>false</VALUE></SETTING>
                 <SETTING><NAME>AutoTargetDLLs</NAME><VALUE>false</VALUE></SETTING>
                 <SETTING><NAME>StopAtWatchpoints</NAME><VALUE>true</VALUE></SETTING>
@@ -572,13 +575,13 @@
                 <SETTING><NAME>MWFrontEnd_C_unsignedchars</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWFrontEnd_C_autoinline</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWFrontEnd_C_booltruefalse</NAME><VALUE>1</VALUE></SETTING>
-                <SETTING><NAME>MWFrontEnd_C_direct_to_som</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWFrontEnd_C_som_env_check</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWFrontEnd_C_alwaysinline</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWFrontEnd_C_inlinelevel</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWFrontEnd_C_ecplusplus</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWFrontEnd_C_objective_c</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWFrontEnd_C_defer_codegen</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWFrontEnd_C_templateparser</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWFrontEnd_C_c99</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWFrontEnd_C_bottomupinline</NAME><VALUE>1</VALUE></SETTING>
 
                 <!-- Settings for "C/C++ Warnings" panel -->
                 <SETTING><NAME>MWWarning_C_warn_illpragma</NAME><VALUE>0</VALUE></SETTING>
@@ -597,7 +600,7 @@
                 <!-- Settings for "FTP Panel" panel -->
                 <SETTING><NAME>MWFTP_Post_hostName</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_username</NAME><VALUE></VALUE></SETTING>
-                <SETTING><NAME>MWFTP_Post_password</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWFTP_Post_password</NAME><VALUE>0&#255;&#192;`</VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_remoteDir</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_ftp_PathVersion</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWFTP_Post_ftp_PathType</NAME><VALUE>0</VALUE></SETTING>
@@ -617,6 +620,8 @@
                 <SETTING><NAME>MWVJavaDebugging_JDKVersion</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWVJavaDebugging_TimeOut</NAME><VALUE>10</VALUE></SETTING>
                 <SETTING><NAME>MWVJavaDebugging_SupportSlowDevices</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWVJavaDebugging_UseRemoteLaunchAgent</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWVJavaDebugging_LaunchVMasServer</NAME><VALUE>false</VALUE></SETTING>
 
                 <!-- Settings for "Java Language" panel -->
                 <SETTING><NAME>MWJava_Language_optimize</NAME><VALUE>false</VALUE></SETTING>
@@ -630,6 +635,16 @@
                 <SETTING><NAME>MWJava_Language_packageFilter</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWJava_Language_genComments</NAME><VALUE>true</VALUE></SETTING>
                 <SETTING><NAME>MWJava_Language_genHeaders</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWJava_Language_enableAsserts</NAME><VALUE>false</VALUE></SETTING>
+                <SETTING><NAME>MWJava_Language_targetVM</NAME><VALUE>1.1</VALUE></SETTING>
+
+                <!-- Settings for "Java Manifest-JAD Setting Info" panel -->
+                <SETTING><NAME>Manifest-JAD Attributes</NAME>
+                    <SETTING>
+                        <SETTING><NAME>Attribute</NAME><VALUE>Main-Class</VALUE></SETTING>
+                        <SETTING><NAME>Value</NAME><VALUE>Auto-Generated</VALUE></SETTING>
+                    </SETTING>
+                </SETTING>
 
                 <!-- Settings for "Java MRJAppBuilder" panel -->
                 <SETTING><NAME>MWJava_MRJAppBuilder_outFile</NAME><VALUE>MRJApplication</VALUE></SETTING>
@@ -676,6 +691,9 @@
                 <SETTING><NAME>MWJava_Output_trunctype</NAME><VALUE>Front</VALUE></SETTING>
                 <SETTING><NAME>MWJava_Output_deleteClasses</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWJava_Output_consoleApp</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWJava_Output_preverify</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWJava_Output_genJad</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWJava_Output_obfuscate</NAME><VALUE>0</VALUE></SETTING>
 
                 <!-- Settings for "Java Project" panel -->
                 <SETTING><NAME>MWJava_Proj_projtype</NAME><VALUE>Applet</VALUE></SETTING>
@@ -688,14 +706,15 @@
                 <SETTING><NAME>MWJava_Proj_tree</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWJava_Proj_HTMLAppWin32Name</NAME><VALUE>Internet Explorer</VALUE></SETTING>
                 <SETTING><NAME>MWJava_Proj_compress</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWJava_Proj_useVM</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWJava_Proj_simulator</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWJava_Proj_useVM</NAME><VALUE>\000\000macosx</VALUE></SETTING>
                 <SETTING><NAME>MWJava_Proj_vmarguments</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWJava_Proj_vmName</NAME><VALUE></VALUE></SETTING>
                 <SETTING><NAME>MWJava_Proj_simPropFile</NAME><VALUE></VALUE></SETTING>
 
                 <!-- Settings for "JavaDoc Project" panel -->
                 <SETTING><NAME>MWJavaDoc_Proj_Version</NAME><VALUE>1</VALUE></SETTING>
-                <SETTING><NAME>MWJavaDoc_Proj_Depricated</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWJavaDoc_Proj_Deprecated</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWJavaDoc_Proj_Author</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWJavaDoc_Proj_Index</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWJavaDoc_Proj_Tree</NAME><VALUE>1</VALUE></SETTING>
@@ -760,34 +779,44 @@
                 <SETTING><NAME>MWMacOSPackager_PkgFileType</NAME><VALUE>APPL</VALUE></SETTING>
 
                 <!-- Settings for "PPC CodeGen" panel -->
-                <SETTING><NAME>MWCodeGen_PPC_structalignment</NAME><VALUE>PPC</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_structalignment</NAME><VALUE>PPC_mw</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_tracebacktables</NAME><VALUE>Inline</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_processor</NAME><VALUE>Generic</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_PPC_readonlystrings</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_function_align</NAME><VALUE>4</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_tocdata</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_largetoc</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_profiler</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_PPC_fpcontract</NAME><VALUE>1</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_PPC_schedule</NAME><VALUE>1</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_PPC_peephole</NAME><VALUE>1</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_PPC_processorspecific</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_PPC_altivec</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_PPC_vectortocdata</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_PPC_vrsave</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_poolconst</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_peephole</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_readonlystrings</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_linkerpoolsstrings</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_volatileasm</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_schedule</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_altivec</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_altivec_move_block</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_strictIEEEfp</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_fpcontract</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_genfsel</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_PPC_orderedfpcmp</NAME><VALUE>0</VALUE></SETTING>
 
                 <!-- Settings for "PPC CodeGen Mach-O" panel -->
-                <SETTING><NAME>MWCodeGen_MachO_structalignment</NAME><VALUE>PPC</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_tracebacktables</NAME><VALUE>None</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_structalignment</NAME><VALUE>PPC_mw</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_profiler_enum</NAME><VALUE>Off</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_MachO_processor</NAME><VALUE>Generic</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_readonlystrings</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_profiler</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_fpcontract</NAME><VALUE>1</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_schedule</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_peephole</NAME><VALUE>1</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_processorspecific</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_altivec</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_vrsave</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_function_align</NAME><VALUE>4</VALUE></SETTING>
                 <SETTING><NAME>MWCodeGen_MachO_common</NAME><VALUE>0</VALUE></SETTING>
-                <SETTING><NAME>MWCodeGen_MachO_implicit_templates</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_peephole</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_readonlystrings</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_linkerpoolsstrings</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_volatileasm</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_schedule</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_altivec</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_vecmove</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_fp_ieee_strict</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_fpcontract</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_genfsel</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWCodeGen_MachO_fp_cmps_ordered</NAME><VALUE>0</VALUE></SETTING>
 
                 <!-- Settings for "PPC Disassembler" panel -->
                 <SETTING><NAME>MWDisassembler_PPC_showcode</NAME><VALUE>1</VALUE></SETTING>
@@ -815,6 +844,44 @@
                 <SETTING><NAME>MWLinker_PPC_mainname</NAME><VALUE>__start</VALUE></SETTING>
                 <SETTING><NAME>MWLinker_PPC_termname</NAME><VALUE></VALUE></SETTING>
 
+                <!-- Settings for "PPC Mac OS X Linker" panel -->
+                <SETTING><NAME>MWLinker_MacOSX_linksym</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_symfullpath</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_nolinkwarnings</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_linkmap</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_dontdeadstripinitcode</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_permitmultdefs</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_use_objectivec_semantics</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_strip_debug_symbols</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_split_segs</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_report_msl_overloads</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_objects_follow_linkorder</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_linkmode</NAME><VALUE>Fast</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_exports</NAME><VALUE>ReferencedGlobals</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_sortcode</NAME><VALUE>None</VALUE></SETTING>
+                <SETTING><NAME>MWLinker_MacOSX_mainname</NAME><VALUE>start</VALUE></SETTING>
+
+                <!-- Settings for "PPC Mac OS X Project" panel -->
+                <SETTING><NAME>MWProject_MacOSX_type</NAME><VALUE>Executable</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_outfile</NAME><VALUE>Aleph One</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_filecreator</NAME><VALUE>26.A</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_filetype</NAME><VALUE>APPL</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_vmaddress</NAME><VALUE>4096</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_usedefaultvmaddr</NAME><VALUE>1</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_flatrsrc</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_flatrsrcfilename</NAME><VALUE></VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_flatrsrcoutputdir</NAME>
+                    <SETTING><NAME>Path</NAME><VALUE>:</VALUE></SETTING>
+                    <SETTING><NAME>PathFormat</NAME><VALUE>MacOS</VALUE></SETTING>
+                    <SETTING><NAME>PathRoot</NAME><VALUE>Project</VALUE></SETTING>
+                </SETTING>
+                <SETTING><NAME>MWProject_MacOSX_installpath</NAME><VALUE>./</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_dont_prebind</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_flat_namespace</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_frameworkversion</NAME><VALUE>A</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_currentversion</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MacOSX_flat_oldimpversion</NAME><VALUE>0</VALUE></SETTING>
+
                 <!-- Settings for "PPC Mach-O Linker" panel -->
                 <SETTING><NAME>MWLinker_MachO_exports</NAME><VALUE>None</VALUE></SETTING>
                 <SETTING><NAME>MWLinker_MachO_mainname</NAME><VALUE>start</VALUE></SETTING>
@@ -838,8 +905,7 @@
                 <SETTING><NAME>MWProject_MachO_outfile</NAME><VALUE>a.exe</VALUE></SETTING>
                 <SETTING><NAME>MWProject_MachO_filecreator</NAME><VALUE>????</VALUE></SETTING>
                 <SETTING><NAME>MWProject_MachO_filetype</NAME><VALUE>MEXE</VALUE></SETTING>
-                <SETTING><NAME>MWProject_MachO_stacksize</NAME><VALUE>64</VALUE></SETTING>
-                <SETTING><NAME>MWProject_MachO_stackaddress</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MachO_vmaddress</NAME><VALUE>4096</VALUE></SETTING>
                 <SETTING><NAME>MWProject_MachO_flatrsrc</NAME><VALUE>1</VALUE></SETTING>
                 <SETTING><NAME>MWProject_MachO_flatrsrcfilename</NAME><VALUE>a.rsrc</VALUE></SETTING>
                 <SETTING><NAME>MWProject_MachO_flatrsrcoutputdir</NAME>
@@ -848,6 +914,7 @@
                     <SETTING><NAME>PathRoot</NAME><VALUE>Project</VALUE></SETTING>
                 </SETTING>
                 <SETTING><NAME>MWProject_MachO_installpath</NAME><VALUE>./</VALUE></SETTING>
+                <SETTING><NAME>MWProject_MachO_frameworkversion</NAME><VALUE></VALUE></SETTING>
 
                 <!-- Settings for "PPC PEF" panel -->
                 <SETTING><NAME>MWPEF_exports</NAME><VALUE>None</VALUE></SETTING>
@@ -894,6 +961,20 @@
                 <SETTING><NAME>MWAssembler_PPC_typecheck</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWAssembler_PPC_warnings</NAME><VALUE>0</VALUE></SETTING>
                 <SETTING><NAME>MWAssembler_PPC_casesensitive</NAME><VALUE>0</VALUE></SETTING>
+
+                <!-- Settings for "Property List" panel -->
+                <SETTING><NAME>PList_OutputType</NAME><VALUE>File</VALUE></SETTING>
+                <SETTING><NAME>PList_OutputEncoding</NAME><VALUE>UTF-8</VALUE></SETTING>
+                <SETTING><NAME>PList_Prefix</NAME><VALUE></VALUE></SETTING>
+                <SETTING><NAME>PList_FileFilename</NAME><VALUE>Info.plist</VALUE></SETTING>
+                <SETTING><NAME>PList_FileDirectory</NAME>
+                    <SETTING><NAME>Path</NAME><VALUE>:</VALUE></SETTING>
+                    <SETTING><NAME>PathFormat</NAME><VALUE>MacOS</VALUE></SETTING>
+                    <SETTING><NAME>PathRoot</NAME><VALUE>Project</VALUE></SETTING>
+                </SETTING>
+                <SETTING><NAME>PList_ResourceType</NAME><VALUE>plst</VALUE></SETTING>
+                <SETTING><NAME>PList_ResourceID</NAME><VALUE>0</VALUE></SETTING>
+                <SETTING><NAME>PList_ResourceName</NAME><VALUE></VALUE></SETTING>
 
                 <!-- Settings for "Rez Compiler" panel -->
                 <SETTING><NAME>MWRez_Language_maxwidth</NAME><VALUE>80</VALUE></SETTING>
