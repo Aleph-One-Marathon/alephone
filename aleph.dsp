@@ -39,10 +39,11 @@ RSC=rc.exe
 # PROP Use_MFC 0
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
+# PROP Ignore_Export_Lib 0
 # PROP Intermediate_Dir "Release"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
-# ADD CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "C:\Program Files\Microsoft SDK\STLport-4.5\include" /I "Source_Files\Pfhortran" /I "Source_Files\Network" /I "Source_Files\CSeries" /I "Source_Files\Expat" /I "Source_Files\Misc" /I "Source_files\ModelView" /I "SDL-1.2.2\include" /I "QT501SDK\SDK\CIncludes" /D "NDEBUG" /D "WIN32" /D "_WINDOWS" /D "_MBCSSDL" /D "__WIN32__" /D "__MVCPP__" /D "HAVE_OPENGL" /D "SDL" /YX /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
@@ -52,7 +53,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386
+# ADD LINK32 strmiids.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /machine:I386 /out:"C:\Docume~1\Admini~1\Desktop\Alephone\aleph.exe" /libpath:"sdl" /libpath:"C:\Program Files\Microsoft SDK\DirectX\lib"
 
 !ELSEIF  "$(CFG)" == "aleph - Win32 Debug"
 
@@ -68,8 +69,7 @@ LINK32=link.exe
 # PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /YX /FD /GZ /c
-# ADD CPP /nologo /MD /W2 /Gm /Gi /GX /ZI /Od /I "Source_Files\Pfhortran" /I "Source_Files\Network" /I "Source_Files\CSeries" /I "Source_Files\Expat" /I "Source_Files\Misc" /I "C:\SDL\include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "SDL" /D "__WIN32__" /D "__MVCPP__" /D "HAVE_OPENGL" /Fr /YX /FD /GZ /c
-# SUBTRACT CPP /X
+# ADD CPP /nologo /MD /W2 /Gm /Gi /GX /ZI /Od /I "C:\Program Files\Microsoft SDK\STLport-4.5\include" /I "Source_Files\Pfhortran" /I "Source_Files\Network" /I "Source_Files\CSeries" /I "Source_Files\Expat" /I "Source_Files\Misc" /I "Source_files\ModelView" /I "SDL-1.2.2\include" /I "QT501SDK\SDK\CIncludes" /D "_DEBUG" /D "SDL" /D "__WIN32__" /D "__MVCPP__" /D "HAVE_OPENGL" /D "WIN32" /D "_WINDOWS" /D "_MBCSSDL" /Fr /YX /FD /GZ /c# SUBTRACT CPP /X
 # ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "_DEBUG"
@@ -79,7 +79,7 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /pdbtype:sept
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"builds/aleph.exe" /pdbtype:sept
+# ADD LINK32 strmiids.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /subsystem:windows /debug /machine:I386 /out:"C:\Docume~1\Admini~1\Desktop\M1A1_2\aleph.exe" /pdbtype:sept /libpath:"sdl" /libpath:"C:\Program Files\Microsoft SDK\DirectX\lib"
 # SUBTRACT LINK32 /profile /map
 
 !ENDIF 
@@ -260,6 +260,18 @@ SOURCE=.\Source_Files\Misc\game_window_sdl.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Source_Files\Misc\HUDRenderer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\Misc\HUDRenderer_OGL.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\Misc\HUDRenderer_SW.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Source_Files\Misc\ImageLoader_SDL.cpp
 # End Source File
 # Begin Source File
@@ -303,6 +315,15 @@ SOURCE=.\Source_Files\Misc\marathon2.cpp
 SOURCE=.\Source_Files\Misc\media.cpp
 # End Source File
 # Begin Source File
+
+SOURCE=.\Source_Files\ModelView\Model3D.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\ModelView\ModelRenderer.cpp
+# End Source File
+# Begin Source File
+
 
 SOURCE=.\Source_Files\Misc\monsters.cpp
 # End Source File
@@ -460,6 +481,10 @@ SOURCE=.\Source_Files\Misc\shell_sdl.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=.\Source_Files\ModelView\StudioLoader.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\Source_Files\Misc\TextStrings.cpp
 # End Source File
 # Begin Source File
@@ -489,6 +514,10 @@ SOURCE=.\Source_Files\Misc\wad_prefs.cpp
 # Begin Source File
 
 SOURCE=.\Source_Files\Misc\wad_sdl.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\Source_Files\ModelView\WavefrontLoader.cpp
 # End Source File
 # Begin Source File
 
@@ -1214,23 +1243,23 @@ SOURCE=.\Source_Files\Pfhortran\scripting.h
 # End Group
 # Begin Source File
 
-SOURCE=.\SDL\lib\SDL.lib
+SOURCE=".\SDL-1.2.2\lib\SDL.lib"
 # End Source File
 # Begin Source File
 
-SOURCE=.\SDL\lib\SDLmain.lib
+SOURCE=".\SDL-1.2.2\lib\SDLmain.lib"
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\VC98\Lib\GLU32.LIB
+SOURCE="C:\Program Files\Microsoft SDK\lib\GLU32.LIB"
 # End Source File
 # Begin Source File
 
-SOURCE=..\..\VC98\Lib\OPENGL32.LIB
+SOURCE="C:\Program Files\Microsoft SDK\lib\OPENGL32.LIB"
 # End Source File
 # Begin Source File
 
-SOURCE="..\..\VC98\Include\STLport-4.0\lib\stlport_vc6_debug.lib"
+SOURCE="..\..\..\..\..\Program Files\Microsoft SDK\STLport-4.5\lib\stlport_vc6_static.lib"
 # End Source File
 # End Target
 # End Project
