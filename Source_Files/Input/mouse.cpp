@@ -59,6 +59,7 @@ May 16, 2002 (Woody Zenfell):
 #if defined(TARGET_API_MAC_CARBON)
 #include "interface.h"
 #endif
+#include "preferences.h"
 
 /* macintosh includes */
 #if defined(TARGET_API_MAC_CARBON)
