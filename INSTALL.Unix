@@ -10,7 +10,10 @@ If you didn't install SDL from source, you have to install the "SDL-devel"
 package to compile Aleph One.
 
 You also have to install the "SDL_image" and "SDL_net" libraries which can be
-found in the "Libraries" section of the SDL site.
+found here:
+
+  http://www.libsdl.org/projects/SDL_image/
+  http://www.libsdl.org/projects/SDL_net/
 
 Support for Lua scripting, which may be required by some scenarios, requires
 you to have Lua installed. The source is available from the official Lua site:
