@@ -87,6 +87,9 @@ May 24, 2003 (Woody Zenfell):
 	Split out ring-protocol-specific stuff from here to RingGameProtocol.cpp.
 	This is multiple-game-protocol-savvy now.
 	Support for graceful handling of unknown streaming-data packet types.
+        
+July 03, 2003 (jkvw):
+        Added network lua scripts.
 */
 
 /*
@@ -170,6 +173,10 @@ clearly this is all broken until we have packet types
 #undef NETWORK_IP
 #endif
 
+#ifdef HAVE_LUA
+#include "lua_script.h"
+#endif
+
 /* ---------- globals */
 
 static short ddpSocket; /* our ddp socket number */
@@ -183,6 +190,10 @@ static bool sOldSelfSendStatus;
 static RingGameProtocol sRingGameProtocol;
 static StarGameProtocol sStarGameProtocol;
 static NetworkGameProtocol* sCurrentGameProtocol = NULL;
+
+static byte *deferred_script_data = NULL;
+static size_t deferred_script_length = 0;
+static bool do_netscript;
 
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
@@ -1068,6 +1079,21 @@ bool NetChangeMap(
 	return success;
 }
 
+void DeferredScriptSend (byte* data, size_t length)
+{
+        if (deferred_script_data != NULL) {
+            delete [] deferred_script_data;
+            deferred_script_data = NULL;
+        }
+        deferred_script_data = data;
+        deferred_script_length = length;
+}
+
+void SetNetscriptStatus (bool status)
+{
+        do_netscript = status;
+}
+
 // ZZZ this "ought" to distribute to all players simultaneously (by interleaving send calls)
 // in case the server bandwidth is much greater than the others' bandwidths.  But that would
 // take a fair amount of reworking of the streaming system, which only groks talking with one
@@ -1084,7 +1110,7 @@ OSErr NetDistributeGameDataToAllPlayers(
 	short physics_message_id;
 	byte *physics_buffer;
 	long physics_length;
-	
+        
 	message_id= (topology->player_count==2) ? (_distribute_map_single) : (_distribute_map_multiple);
 	physics_message_id= (topology->player_count==2) ? (_distribute_physics_single) : (_distribute_physics_multiple);
 	open_progress_dialog(physics_message_id);
@@ -1093,7 +1119,7 @@ OSErr NetDistributeGameDataToAllPlayers(
 	total_length= (topology->player_count-1)*wad_length;
 	length_written= 0l;
 
-	/* Get the physics crap. */
+	/* Get the physics */
         if(do_physics)
                 physics_buffer= (unsigned char *)get_network_physics_buffer(&physics_length);
 
@@ -1121,10 +1147,18 @@ OSErr NetDistributeGameDataToAllPlayers(
 					reset_progress_bar(); /* Reset the progress bar */
 					error= send_stream_data(wad_buffer, wad_length);
 				}
+
+                                if(!error && do_netscript)
+                                {
+					reset_progress_bar ();
+					error = send_stream_data (deferred_script_data, deferred_script_length);
+				}
+
 			}
 
 			/* Note that we try to close regardless of error. */
 			NetCloseStreamConnection(false);
+                        
 		}
 		
 		if (error)
@@ -1146,6 +1180,15 @@ OSErr NetDistributeGameDataToAllPlayers(
                         process_network_physics_model(physics_buffer);
                 
 		draw_progress_bar(total_length, total_length);
+                
+#ifdef HAVE_LUA
+                if (do_netscript)
+                {
+                        LoadLuaScript ((char*)deferred_script_data, deferred_script_length);
+                        delete [] deferred_script_data;
+                        deferred_script_data = NULL;
+                }
+#endif
 	}
 
 	close_progress_dialog();
@@ -1161,6 +1204,9 @@ byte *NetReceiveGameData(bool do_physics)
 	OSErr error= noErr;
 	bool timed_out= false;
 
+        byte *script_buffer = NULL;
+        size_t script_length;
+        
 	open_progress_dialog(_awaiting_map);
 
 	// wait for our connection to start up. server will contact us.
@@ -1199,6 +1245,15 @@ byte *NetReceiveGameData(bool do_physics)
 			reset_progress_bar(); /* Reset the progress bar */
 			map_buffer= (unsigned char *)receive_stream_data(&map_length, &error);
 		}
+                
+#ifdef HAVE_LUA
+                if (!error && do_netscript)
+                {
+                        reset_progress_bar(); /* Reset the progress bar */
+			script_buffer = (byte*)receive_stream_data(&script_length, &error);
+                        LoadLuaScript ((char*)script_buffer, script_length);
+                }
+#endif
 
 		// close everything up.
 		NetCloseStreamConnection(false);
@@ -1480,6 +1535,7 @@ short NetUpdateJoinState(
 #ifdef TEST_MODEM
 	newState= ModemUpdateJoinState();
 #else
+        
 	switch (netState)
 	{
 		case netJoining:	// waiting to be gathered
@@ -1488,6 +1544,34 @@ short NetUpdateJoinState(
 				error= NetReceiveStreamPacketGraceful(&packet_type, network_adsp_packet, false);
 
                                 logTrace1("NetReceiveStreamPacketGraceful returned %d", error);
+
+				if(!error && packet_type==_script_packet)
+                                {	// Gatherer wants to know if we can handle net scripts before he commits to gathering us
+                                	int16 message_in, message_out;
+                                        message_in = *(int16*)network_adsp_packet;
+#ifdef HAVE_SDL_NET
+                                        message_in = SDL_SwapBE16(message_in);
+#endif
+                                        if (message_in == _netscript_query_message)
+                                        {
+#ifdef HAVE_LUA
+                                        	message_out = _netscript_yes_script_message;
+#else
+                                                message_out = _netscript_no_script_message;
+#endif
+#ifdef HAVE_SDL_NET
+                                                message_out = SDL_SwapBE16(message_out);
+#endif
+                                                error = NetSendStreamPacket(_script_packet, &message_out);
+                                        } else {
+                                                // Must be newer build asking for net script functionality we can't handle
+                                                message_out = _netscript_no_script_message;
+#ifdef HAVE_SDL_NET
+                                                message_out = SDL_SwapBE16(message_out);
+#endif
+                                                error = NetSendStreamPacket(_script_packet, &message_out);
+                                        }
+                                }
 
 				if(!error && packet_type==_join_player_packet)
 				{
@@ -1511,6 +1595,8 @@ short NetUpdateJoinState(
 
                                         assert(!error);
                                 
+                                        SetNetscriptStatus (false); // Unless told otherwise, we don't expect a netscript
+                                        
                                         /* Note that we share the buffers.. */
                                         localPlayerIdentifier= gathering_data->new_local_player_identifier;
                                         topology->players[localPlayerIndex].identifier= localPlayerIdentifier;
@@ -1569,6 +1655,25 @@ short NetUpdateJoinState(
 				if(!error)
 				{	// ZZZ change to accept more kinds of packets here
                                     switch(packet_type) {
+                                    
+                                    case _script_packet:
+                                    {	// Gatherer wants to tell us to expect script goodness
+                                	int16 message_in;
+                                        message_in = *(int16*)network_adsp_packet;
+#ifdef HAVE_SDL_NET
+                                        message_in = SDL_SwapBE16(message_in);
+#endif
+                                        if (message_in == _netscript_script_intent_message)
+                                            SetNetscriptStatus (true);
+                                            
+                                        /* Close and reset the connection */
+                                        error= NetCloseStreamConnection(false);
+                                        if (!error)
+                                        {
+                                                error= NetStreamWaitForConnection();
+                                        }
+                                    }
+                                    break;
                                     
                                     case _topology_packet:
 
@@ -1731,6 +1836,7 @@ int NetGatherPlayer(
 	short packet_type;
 	short stream_transport_type= NetGetTransportType();
 	int theResult = kGatherPlayerSuccessful;
+	bool preGatherRejection = false;
 
 #ifdef TEST_MODEM
 	success= ModemGatherPlayer(player_index, check_player);
@@ -1767,7 +1873,51 @@ int NetGatherPlayer(
 
 	error= NetOpenStreamToPlayer(topology->player_count);
 	
-	if (!error)
+        // reject a player if e can't handle our script demands
+        if (!error && do_netscript)
+        {
+                int16 message_out = _netscript_query_message;
+#ifdef HAVE_SDL_NET
+                message_out = SDL_SwapBE16(message_out);
+#endif
+                error = NetSendStreamPacket(_script_packet, &message_out);
+                if (!error)
+                {
+                        short packet_type;
+                        error = NetReceiveStreamPacketGraceful(&packet_type, network_adsp_packet, true);
+                        if (!error)
+                        {
+                                int16 message_in;
+                        	switch(packet_type)
+                                {
+                                        case _script_packet:
+                                                message_in = *((int16*) network_adsp_packet);
+#ifdef HAVE_SDL_NET
+                                                message_in = SDL_SwapBE16(message_in);
+#endif
+                                                if (message_in == _netscript_yes_script_message)
+                                                        ; // accept
+                                                else
+                                                        preGatherRejection = true; // reject - e probably built without HAVE_LUA
+                                                break;
+                                        case _unknown_packet_type_response_packet:
+                                        default:
+                                                        preGatherRejection = true; // reject - old build
+                                                break;
+                                }
+                                
+                        }
+                }
+        }
+        
+        if (preGatherRejection)
+        {
+                NetCloseStreamConnection(false);
+                alert_user(infoError, strNETWORK_ERRORS, netErrUngatheredPlayerUnacceptable, 0);
+                theResult = kGatherPlayerFailed;
+        }
+        
+	if (!error && !preGatherRejection)
 	{
 		struct gather_player_data gather_data;
                 gather_player_data_NET	gather_data_NET;
@@ -1834,32 +1984,33 @@ int NetGatherPlayer(
 //						fdprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[topology->player_count].ddpAddress),
 //							*((long*)&topology->players[topology->player_count].dspAddress));
 							
-						error= NetCloseStreamConnection(false);
-						if (!error)
-						{
-							/* closed connection successfully, remove this player from the list of players so
-								we canÕt even try to add him again */
-							if(stream_transport_type!=kModemTransportType)
-							{
+                                                error= NetCloseStreamConnection(false);
+                                                    
+                                                if (!error)
+                                                {
+                                                        /* closed connection successfully, remove this player from the list of players so
+                                                                we canÕt even try to add him again */
+                                                        if(stream_transport_type!=kModemTransportType)
+                                                        {
 // ZZZ: in my formulation, entry is removed from list instantly by widget when clicked
 #if !HAVE_SDL_NET
-								NetLookupRemove(player_index);
+                                                                NetLookupRemove(player_index);
 #endif
-							}
+                                                        }
+
+                                                        /* successfully added a player */
+                                                        topology->player_count+= 1;
 						
-							/* successfully added a player */
-							topology->player_count+= 1;
-						
-							check_player(topology->player_count-1, topology->player_count);
+                                                        check_player(topology->player_count-1, topology->player_count);
 	
-							/* recalculate our local information */
-							NetUpdateTopology();
+                                                        /* recalculate our local information */
+                                                        NetUpdateTopology();
 						
-							/* distribute this new topology with the new player tag */
-							/* There is no reason to check the error here, because we can't do */
-							/* anything about it.. */
-							NetDistributeTopology(tagNEW_PLAYER);
-						}
+                                                        /* distribute this new topology with the new player tag */
+                                                        /* There is no reason to check the error here, because we can't do */
+                                                        /* anything about it.. */
+                                                        NetDistributeTopology(tagNEW_PLAYER);
+                                                }
 					}
 					else 
 					{
@@ -1882,6 +2033,19 @@ int NetGatherPlayer(
 		}
 	}
 
+        if (!error && do_netscript && !preGatherRejection)
+        {  // Let joiner know to expect a script
+                error= NetOpenStreamToPlayer(topology->player_count-1);
+                if (!error) {
+                    int16 message_out = _netscript_script_intent_message;
+#ifdef HAVE_SDL_NET
+                    message_out = SDL_SwapBE16(message_out);
+#endif
+                    error = NetSendStreamPacket(_script_packet, &message_out);
+                    NetCloseStreamConnection(false);
+                }
+        } 
+                                                        
 	if(error)
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrCantAddPlayer, error);
@@ -1895,7 +2059,7 @@ int NetGatherPlayer(
 
         if(theResult == kGatheredUnacceptablePlayer)
         {
-                alert_user(infoError, strNETWORK_ERRORS, netErrPlayerUnacceptable, thePlayerAcceptNumber);
+                alert_user(infoError, strNETWORK_ERRORS, netErrGatheredPlayerUnacceptable, thePlayerAcceptNumber);
         }
 	
 	return theResult;
@@ -2006,6 +2170,10 @@ uint16 NetStreamPacketLength(
 			length = 2;
 			break;
 	
+                case _script_packet:
+			length = sizeof(int16);
+			break;
+        
 		default:
 			length= 0;
 			assert(false);

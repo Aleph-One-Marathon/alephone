@@ -782,6 +782,13 @@ static void	change_panel_state(
 			state= get_recharge_status(panel_side_index);
 			SET_CONTROL_PANEL_STATUS(side, state);
 			if (!state) set_control_panel_texture(side);
+#ifdef HAVE_LUA
+                                // Lua script hook
+                                if (player -> control_panel_side_index == panel_side_index)
+                                    L_Call_Start_Refuel (definition->_class, player_index);
+                                else
+                                    L_Call_End_Refuel (definition->_class, player_index);
+#endif /* HAVE_LUA */
 			break;
 		case _panel_is_computer_terminal:
 			if (get_game_state()==_game_in_progress && !PLAYER_HAS_CHEATED(player) && !PLAYER_HAS_MAP_OPEN(player))

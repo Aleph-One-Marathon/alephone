@@ -82,6 +82,7 @@ static char* sStringSetNumber128[] = {
     "The scenario file that this saved game was from cannot be found.  When you switch levels you will revert to the default map.",
     "Aleph One was unable to find the map that this film was recorded on, so the film cannot be replayed.",
     "Sorry, Aleph One needs 6000k free to play in a networked game.  Give Aleph One more memory and try again.",
+    "There appears to be a script conflict.  Perhaps mml and netscript are having differences over who gets to control lua.  Don't be surprised if you get unexpected script behavior or out of sync.",
 };
 
 // STR# Resource: "Filenames"
@@ -140,7 +141,8 @@ static char* sStringSetNumber132[] = {
     "Sorry, a network error ocurred and Aleph One is unable to continue.",
     "That player could not be added to the game because your versions of Aleph One are incompatible.",
     "The player you just added is using an older version of Aleph One that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game.",
-    "Aleph One was unable to locate the Map file this level came from.  Some terminals may not display properly, and saving this game on this computer is not recommended."
+    "The player you just attempted to add is using a version of Aleph One that does not support some advanced features required by the game you're trying to gather.",
+    "Aleph One was unable to locate the Map file this level came from.  Some terminals may not display properly, and saving this game on this computer is not recommended.",
 };
 
 // STR# Resource: "Key Codes To Names"

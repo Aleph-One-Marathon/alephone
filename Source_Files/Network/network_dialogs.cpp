@@ -60,7 +60,7 @@ Feb 12, 2003 (Woody Zenfell):
 
 Apr 10, 2003 (Woody Zenfell):
     Join hinting and autogathering have Preferences entries now
- */
+*/
 
 #include	"cseries.h"
 #include	"map.h"
@@ -288,7 +288,7 @@ extract_setup_dialog_information(
 	short               updates_per_packet, update_latency;
 	struct entry_point  entry;
 	long entry_flags;
-	
+        
 	// get player information
         copy_pstring_from_text_field(dialog, iGATHER_NAME, ptemporary);
 	if (*temporary > MAX_NET_PLAYER_NAME_LENGTH) 
@@ -660,6 +660,14 @@ fill_in_game_setup_dialog(
         // rather than some ridiculously large number
 	insert_number_into_text_item(dialog, iTIME_LIMIT, ((resuming_game && theAdjustedPreferences.game_is_untimed) ? network_preferences->time_limit : theAdjustedPreferences.time_limit)/TICKS_PER_SECOND/60);
 
+#ifdef mac
+#ifdef HAVE_LUA
+        modify_boolean_control(dialog, iSELECT_SCRIPT, CONTROL_ACTIVE, NONE);
+#else
+        modify_boolean_control(dialog, iSELECT_SCRIPT, CONTROL_INACTIVE, false);
+#endif
+#endif
+
 	if (theAdjustedPreferences.game_options & _game_has_kill_limit)
 	{
                 // ZZZ: factored out into new function
@@ -689,6 +697,8 @@ fill_in_game_setup_dialog(
 
 	/* Setup the team popup.. */
         modify_control_enabled(dialog, iGATHER_TEAM, get_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS) ? CONTROL_ACTIVE : CONTROL_INACTIVE);
+
+
 
 #if !HAVE_SDL_NET
 	// set up network options

@@ -2,6 +2,9 @@
 // Supersedes file "Pfhortran Language Definition".
 // Translations of names into internal numbers (can be symbolic constants)
 // Format: {"Name", Number}, [C syntax for array member that's a struct]
+
+// jkvw 07/03/03 - added mnemonics for balls and recharger types
+
 {"Camera_Move", Camera_Move},
 {"Camera_Look", Camera_Look},
 {"Wait_Ticks", Wait_Ticks},
@@ -151,6 +154,14 @@
 {"shotgun_magazine", 0x17},
 {"spht_door_key", 0x18},
 {"uplink_chip", 0x19},
+{"light_blue_ball", 0x1A},
+{"red_ball", 0x1B},
+{"violet_ball", 0x1C},
+{"yellow_ball", 0x1D},
+{"brown_ball", 0x1E},
+{"orange_ball", 0x1F},
+{"blue_ball", 0x20},
+{"green_ball", 0x21},
 {"smg", 0x22},
 {"smg_ammo", 0x23},
 {"default_camera", 0x0},
@@ -305,6 +316,10 @@
 {"_fade_tint_gross", 0x1F},
 {"_fade_tint_jjaro", 0x20},
 #ifdef LUA_ACCESSING
+{"oxygen_refuel", _panel_is_oxygen_refuel},
+{"shield_refuel", _panel_is_shield_refuel},
+{"double_shield_refuel", _panel_is_double_shield_refuel},
+{"triple_shield_refuel", _panel_is_triple_shield_refuel},
 {"_weapon_fist", _weapon_fist},
 {"_weapon_pistol", _weapon_pistol},
 {"_weapon_plasma_pistol", _weapon_plasma_pistol},

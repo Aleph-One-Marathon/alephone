@@ -67,7 +67,8 @@ enum /* error string for user */
 	netErrJoinFailed,
 	netErrCantContinue,
         netErrIncompatibleVersion,
-        netErrPlayerUnacceptable,
+        netErrGatheredPlayerUnacceptable,
+        netErrUngatheredPlayerUnacceptable,
         netErrJoinerCantFindScenario
 };
 
@@ -254,6 +255,13 @@ struct accept_gather_data {
 	NetPlayer player;
 };
 
+enum {
+	_netscript_query_message,
+        _netscript_no_script_message,
+        _netscript_yes_script_message,
+        _netscript_script_intent_message
+};
+
 // Altering these constants requires changes to get_network_version().  - Woody
 enum {
 	_join_player_packet,
@@ -265,6 +273,7 @@ enum {
         _chat_packet,
 	// The following should only be sent when get_network_version() >= kMinimumNetworkVersionForGracefulUnknownStreamPackets
 	_unknown_packet_type_response_packet,
+        _script_packet,
 	NUMBER_OF_BUFFERED_STREAM_PACKET_TYPES,
 	NUMBER_OF_STREAM_PACKET_TYPES= 	NUMBER_OF_BUFFERED_STREAM_PACKET_TYPES
 };

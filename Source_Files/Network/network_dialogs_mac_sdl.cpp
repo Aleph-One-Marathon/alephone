@@ -23,6 +23,9 @@ Feb 26, 2002 (Br'fin (Jeremy Parsons)):
         
 Feb 14, 2003 (Woody Zenfell):
 	Support for resuming saved games as network games.
+        
+July 03, 2003 (jkvw):
+        Lua script selection in gather network game dialog
 */
 /*
  *  network_dialogs_mac_sdl.cpp - Network dialogs for Carbon with SDL networking
@@ -1454,7 +1457,50 @@ bool network_game_setup(
 				case iREAL_TIME_SOUND:
 					modify_control(dialog, iREAL_TIME_SOUND, NONE, !get_dialog_control_value(dialog, iREAL_TIME_SOUND));
 					break;
+                                        
+                                case iSELECT_SCRIPT:
+                                        if (get_dialog_control_value(dialog, item_hit)) {
+                                            Handle item;
+                                            short item_type;
+                                            Rect bounds;
+                                        
+                                            SetNetscriptStatus (false);
+                                            modify_control (dialog, iSELECT_SCRIPT, NONE, false);
+                                            GetDialogItem(dialog, iTEXT_SCRIPT_NAME, &item_type, &item, &bounds);
+                                            c2pstrcpy (ptemporary, "");
+                                            SetDialogItemText(item, ptemporary);
+                                        } else {
+                                            FileSpecifier script_file_FS;
+                                            OpenedFile script_file;
+                                            long script_length;
+                                            byte *script_buffer;
+                                            
+                                            if (script_file_FS.ReadDialog (_typecode_unknown, "Script Select"))
+                                            if (script_file_FS.Open (script_file))
+                                            {
+                                                script_file.GetLength (script_length);
+                                                script_buffer = new byte [script_length];
+                                                if (script_file.Read (script_length, script_buffer))
+                                                {
+                                                    Handle item;
+                                                    short item_type;
+                                                    Rect bounds;
+                                                    char name [256];
+                                                    
+                                                    DeferredScriptSend (script_buffer, script_length);
+                                                    SetNetscriptStatus (true);
+                                                    modify_control(dialog, item_hit, NONE, true);
+                                                    script_file_FS.GetName (name);
+                                                    GetDialogItem(dialog, iTEXT_SCRIPT_NAME, &item_type, &item, &bounds);
+                                                    c2pstrcpy (ptemporary, name);
+                                                    SetDialogItemText(item, ptemporary);
+                                                }
+                                                script_file.Close ();
+                                            }
+                                        }
+                                        break;
 			}
+                        
 		} while (item_hit != iOK && item_hit != iCANCEL);
 		
 		if (item_hit==iCANCEL)

@@ -70,7 +70,7 @@ resource 'DLOG' (3000, "Net Game Setup") {
 };
 
 resource 'DITL' (3000, "Net Game Setup") {
-	{	/* array DITLarray: 35 elements */
+	{	/* array DITLarray: 37 elements */
 		/* [1] */
 		{355, 486, 375, 554},
 		Button {
@@ -233,9 +233,10 @@ resource 'DITL' (3000, "Net Game Setup") {
 			"(requires microphone)"
 		},
 		/* [28] */
-		{155, 11, 346, 566},
-		UserItem {
-			disabled
+		{216, 85, 234, 190},
+		CheckBox {
+			enabled,
+			"Use Script"
 		},
 		/* [29] */
 		{149, 18, 165, 109},
@@ -279,6 +280,23 @@ resource 'DITL' (3000, "Net Game Setup") {
 		StaticText {
 			disabled,
 			"minutes"
+		},
+                /* [36] */
+		{0, 0, 1, 1},
+		StaticText {
+			disabled,
+			""
+		},
+                /* [37] */
+		{216, 191, 234, 565},
+		StaticText {
+			disabled,
+			""
+		},
+                /* [38] */
+		{155, 11, 346, 566},
+		UserItem {
+			disabled
 		}
 	}
 };

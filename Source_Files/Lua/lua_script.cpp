@@ -13,10 +13,16 @@ tiennou, 06/25/03
     Removed the last useless logError around. They prevented some functions to behave properly.
     Added L_Get_Player_Angle, returns player->facing & player->elevation.
     Got rid of all the cast-related warnings in there (Thanks Br'fin !).
+    
+jkvw, 07/03/03
+    Added recharge panel triggers, exposed A1's internal random number generators, and item creation.
 */
 
 // cseries defines HAVE_LUA on A1/SDL
 #include "cseries.h"
+
+#include "mouse.h"
+#include "interface.h"
 
 #ifdef HAVE_LUA
 
@@ -169,6 +175,42 @@ void L_Call_Idle()
     }
     if (lua_pcall(state, 0, 0, 0)==LUA_ERRRUN)
         logError(lua_tostring(state,-1));
+}
+
+void L_Call_Start_Refuel (short refuel_kind, short player_index)
+{
+    if (!lua_running)
+        return;
+        
+    lua_pushstring (state, "start_refuel");
+    lua_gettable (state, LUA_GLOBALSINDEX);
+    if (!lua_isfunction (state, -1))
+    {
+        lua_pop (state, 1);
+        return;
+    }
+    lua_pushnumber (state, refuel_kind);
+    lua_pushnumber (state, player_index);
+    if (lua_pcall (state, 2, 0, 0) == LUA_ERRRUN)
+        logError (lua_tostring (state, -1));
+}
+
+void L_Call_End_Refuel (short refuel_kind, short player_index)
+{
+    if (!lua_running)
+        return;
+    
+    lua_pushstring (state, "end_refuel");
+    lua_gettable (state, LUA_GLOBALSINDEX);
+    if (!lua_isfunction (state, -1))
+    {
+        lua_pop (state, 1);
+        return;
+    }
+    lua_pushnumber (state, refuel_kind);
+    lua_pushnumber (state, player_index);
+    if (lua_pcall (state, 2, 0, 0) == LUA_ERRRUN)
+        logError (lua_tostring (state, -1));
 }
 
 void L_Call_Tag_Switch(short tag, short player_index)
@@ -2813,6 +2855,54 @@ static int L_Set_Polygon_Ceiling_Height(lua_State *L)
 
 }
 
+static int L_New_Item(lua_State *L)
+{
+    int args = lua_gettop(L);
+    if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+    {	
+        lua_pushstring(L, "new_item: incorrect argument type");
+        lua_error(L);
+    }
+    short item_type = static_cast<int>(lua_tonumber(L,1));
+    short polygon = static_cast<int>(lua_tonumber(L,2));
+    
+    object_location theLocation;
+    struct polygon_data *destination;
+    world_point3d theDestination;
+    world_point2d theCenter;
+    short index;
+    
+    theLocation.polygon_index = (int16)polygon;
+    destination = NULL;
+    destination= get_polygon_data(theLocation.polygon_index);
+    if(destination==NULL)
+        return 0;
+    find_center_of_polygon(polygon, &theCenter);
+    theDestination.x = theCenter.x;
+    theDestination.y = theCenter.y;
+    theDestination.z= destination->floor_height;
+    theLocation.p = theDestination;
+    theLocation.yaw = 0;
+    theLocation.pitch = 0;
+    theLocation.flags = 0;
+    
+    new_item(&theLocation, (short)item_type);
+    
+    return 1;
+}
+
+static int L_Global_Random (lua_State *L)
+{
+    lua_pushnumber (L, global_random ());
+    return 1;
+}
+
+static int L_Local_Random (lua_State *L)
+{
+    lua_pushnumber (L, local_random ());
+    return 1;
+}
+
 void RegisterLuaFunctions()
 {
     lua_register(state, "local_player_index", L_Local_Player_Index);
@@ -2911,6 +3001,9 @@ void RegisterLuaFunctions()
     lua_register(state, "get_polygon_ceiling_height", L_Get_Polygon_Ceiling_Height);
     lua_register(state, "set_polygon_floor_height", L_Set_Polygon_Floor_Height);
     lua_register(state, "set_polygon_ceiling_height", L_Set_Polygon_Ceiling_Height);
+    lua_register(state, "new_item", L_New_Item);
+    lua_register(state, "global_random", L_Global_Random);
+    lua_register(state, "local_random", L_Local_Random);
 }
 
 void DeclareLuaConstants()
@@ -2938,6 +3031,14 @@ bool LoadLuaScript(const char *buffer, size_t len)
 {
     int status;
     state = lua_open();
+    
+    if (lua_loaded == true)
+    {
+        // Probably the mml and netscript systems are fighting over control of lua
+        show_cursor ();
+        alert_user(infoError, strERRORS, luascriptconflict, 0);
+        hide_cursor (); // ok this is bad bad bad bads-maru if LoadLuaScript gets called when the pointer isn't supposed to be hidden
+    }
     
     OpenStdLibs(state);
     status = luaL_loadbuffer(state, buffer, len, "level_script");

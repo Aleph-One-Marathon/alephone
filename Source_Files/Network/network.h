@@ -212,6 +212,9 @@ bool NetChangeMap(struct entry_point *entry);
 OSErr NetDistributeGameDataToAllPlayers(byte* wad_buffer, long wad_length, bool do_physics);
 byte* NetReceiveGameData(bool do_physics);
 
+void DeferredScriptSend (byte* data, size_t length);
+void SetNetscriptStatus (bool status);
+
 void display_net_game_stats(void);
 
 // ZZZ change: caller specifies int16 ID for distribution type.  Unknown types (when received) are
