@@ -812,6 +812,7 @@ bool FileSpecifier::WriteDialog(Typecode Type, char *Prompt, char *DefaultName)
 	return true;
 }
 
+#if 0
 // Stuff for the asynchronous save dialog for savegames...
 #define kFolderBit 0x10
 #define strSAVE_LEVEL_NAME 128
@@ -898,6 +899,7 @@ static bool confirm_save_choice(
 	
 	return pass_through;
 }
+#endif
 
 /*
 #if !defined(SUPPRESS_MACOS_CLASSIC)
