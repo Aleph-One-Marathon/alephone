@@ -21,7 +21,7 @@ void startElement(void *userData, const char *name, const char **atts)
   puts(name);
   *depthPtr += 1;
   
-  char **AttPtr = atts;
+  char **AttPtr = (char **)atts;
   while(*AttPtr != 0)
   {
   for (i = 0; i < *depthPtr; i++)
@@ -65,6 +65,7 @@ int main()
 	OpenParameters OParms;
 	OParms.NumTypes = 1;
 	OParms.TypeList[0] = 'TEXT';
+	OParms.Prompt = "What XML file to analyze?";
 	char *FileName = OpenFile(&OParms);
 	if (FileName == NULL)
 	{
