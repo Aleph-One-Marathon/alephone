@@ -31,6 +31,10 @@ Jul 17, 2000:
 		that has yielded a significant performance improvement.
 	Same for the polygons, but with relatively little improvement.
 [End notes]
+
+Aug 6, 2000 (Loren Petrich):
+	Added perimeter drawing to drawing commands for the player object;
+	this guarantees that this object will always be drawn reasonably correctly
 */
 
 #include "OverheadMap_OGL.h"
@@ -277,6 +281,7 @@ void OverheadMap_OGL_Class::draw_player(
 	glScalef(scale,scale,1);
 	glVertexPointer(2,GL_FLOAT,0,PlayerShape[0]);
 	glDrawArrays(GL_POLYGON,0,3);
+	glDrawArrays(GL_LINE_LOOP,0,3);	// LP addition: perimeter drawing makes small version easier to see
 	glPopMatrix();
 }
 
