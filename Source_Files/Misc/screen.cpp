@@ -199,18 +199,13 @@ Dec 29, 2000 (Loren Petrich):
 #define WORLD_V 0
 #endif
 
-#define DESIRED_SCREEN_WIDTH 640
-#define DESIRED_SCREEN_HEIGHT 480
-
-/* standard screen width is twice height */
-// LP change: to what's in the definitions below
-#define MAXIMUM_WORLD_WIDTH 1024
-#define MAXIMUM_WORLD_HEIGHT 768
-// #define MAXIMUM_WORLD_WIDTH 640
-// #define MAXIMUM_WORLD_HEIGHT 480
-
-#define DEFAULT_WORLD_WIDTH 640
-#define DEFAULT_WORLD_HEIGHT 320
+// now in screen_shared.cpp
+//#define DESIRED_SCREEN_WIDTH 640
+//#define DESIRED_SCREEN_HEIGHT 480
+//#define MAXIMUM_WORLD_WIDTH 1024
+//#define MAXIMUM_WORLD_HEIGHT 768
+//#define DEFAULT_WORLD_WIDTH 640
+//#define DEFAULT_WORLD_HEIGHT 320
 
 #define windGAME_WINDOW 128
 #define windBACKDROP_WINDOW 129

@@ -775,10 +775,8 @@ void do_menu_item_command(
 						if(really_wants_to_quit)
 						{
 							// Rhys Hill fix for crash when quitting OpenGL
-#ifdef HAVE_OPENGL
 							if (!OGL_IsActive())
-#endif HAVE_OPENGL
-							render_screen(0); /* Get rid of hole.. */
+								render_screen(0); /* Get rid of hole.. */
 /* If you want to quit on command-q while in the game.. */
 #if 0
 							if(menu_item==iQuitGame)

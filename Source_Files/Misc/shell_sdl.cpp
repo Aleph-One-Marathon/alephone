@@ -902,14 +902,10 @@ static void handle_game_key(const SDL_Event &event)
 			break;
 
 		case SDLK_F3:	// Resolution toggle
-#ifdef HAVE_OPENGL
 			if (!OGL_IsActive()) {
-#endif
 				graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
 				changed_screen_mode = changed_prefs = true;
-#ifdef HAVE_OPENGL
 			}
-#endif
 			break;
 
 		case SDLK_F4:	// Reset OpenGL textures

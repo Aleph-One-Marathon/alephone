@@ -193,9 +193,10 @@ static const char *resolution_labels[3] = {
 	"Low", "High", NULL
 };
 
-static const char *size_labels[9] = {
+static const char *size_labels[13] = {
 	"320x160", "480x240", "640x320", "640x480 (no HUD)",
-	"800x400", "800x600 (no HUD)", "1024x512", "1024x768 (no HUD)", NULL
+	"800x400", "800x600 (no HUD)", "1024x512", "1024x768 (no HUD)",
+	"1280x640", "1280x1024 (no HUD)", "1600x800", "1600x1200 (no HUD)", NULL
 };
 
 static const char *gamma_labels[9] = {

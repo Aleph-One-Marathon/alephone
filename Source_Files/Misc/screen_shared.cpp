@@ -16,8 +16,8 @@ Mar 19, 2001 (Loren Petrich):
 #define DESIRED_SCREEN_HEIGHT 480
 
 // Biggest possible of those defined
-#define MAXIMUM_WORLD_WIDTH 1024
-#define MAXIMUM_WORLD_HEIGHT 768
+#define MAXIMUM_WORLD_WIDTH 1600
+#define MAXIMUM_WORLD_HEIGHT 1200
 
 #define DEFAULT_WORLD_WIDTH 640
 #define DEFAULT_WORLD_HEIGHT 320
