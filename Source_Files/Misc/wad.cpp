@@ -1559,21 +1559,20 @@ static bool read_from_file(
 static void unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
 {
 	uint8* S = Stream;
-	wad_header* OPtr = Objects;
+	wad_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		wad_header& O = *(OPtr++);
-		StreamToValue(S,O.version);
-		StreamToValue(S,O.data_version);
-		StreamToBytes(S,O.file_name,MAXIMUM_WADFILE_NAME_LENGTH);
-		StreamToValue(S,O.checksum);
-		StreamToValue(S,O.directory_offset);
-		StreamToValue(S,O.wad_count);
-		StreamToValue(S,O.application_specific_directory_data_size);
-		StreamToValue(S,O.entry_header_size);
-		StreamToValue(S,O.directory_entry_base_size);
-		StreamToValue(S,O.parent_checksum);
+		StreamToValue(S,ObjPtr->version);
+		StreamToValue(S,ObjPtr->data_version);
+		StreamToBytes(S,ObjPtr->file_name,MAXIMUM_WADFILE_NAME_LENGTH);
+		StreamToValue(S,ObjPtr->checksum);
+		StreamToValue(S,ObjPtr->directory_offset);
+		StreamToValue(S,ObjPtr->wad_count);
+		StreamToValue(S,ObjPtr->application_specific_directory_data_size);
+		StreamToValue(S,ObjPtr->entry_header_size);
+		StreamToValue(S,ObjPtr->directory_entry_base_size);
+		StreamToValue(S,ObjPtr->parent_checksum);
 		S += 2*20;
 	}
 	
@@ -1583,21 +1582,20 @@ static void unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
 static void pack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
 {
 	uint8* S = Stream;
-	wad_header* OPtr = Objects;
+	wad_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		wad_header& O = *(OPtr++);
-		ValueToStream(S,O.version);
-		ValueToStream(S,O.data_version);
-		BytesToStream(S,O.file_name,MAXIMUM_WADFILE_NAME_LENGTH);
-		ValueToStream(S,O.checksum);
-		ValueToStream(S,O.directory_offset);
-		ValueToStream(S,O.wad_count);
-		ValueToStream(S,O.application_specific_directory_data_size);
-		ValueToStream(S,O.entry_header_size);
-		ValueToStream(S,O.directory_entry_base_size);
-		ValueToStream(S,O.parent_checksum);
+		ValueToStream(S,ObjPtr->version);
+		ValueToStream(S,ObjPtr->data_version);
+		BytesToStream(S,ObjPtr->file_name,MAXIMUM_WADFILE_NAME_LENGTH);
+		ValueToStream(S,ObjPtr->checksum);
+		ValueToStream(S,ObjPtr->directory_offset);
+		ValueToStream(S,ObjPtr->wad_count);
+		ValueToStream(S,ObjPtr->application_specific_directory_data_size);
+		ValueToStream(S,ObjPtr->entry_header_size);
+		ValueToStream(S,ObjPtr->directory_entry_base_size);
+		ValueToStream(S,ObjPtr->parent_checksum);
 		S += 2*20;
 	}
 	
@@ -1608,13 +1606,12 @@ static void pack_wad_header(uint8 *Stream, wad_header *Objects, int Count)
 static void unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count)
 {
 	uint8* S = Stream;
-	old_directory_entry* OPtr = Objects;
+	old_directory_entry* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		old_directory_entry& O = *(OPtr++);
-		StreamToValue(S,O.offset_to_start);
-		StreamToValue(S,O.length);
+		StreamToValue(S,ObjPtr->offset_to_start);
+		StreamToValue(S,ObjPtr->length);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_old_directory_entry);
@@ -1623,13 +1620,12 @@ static void unpack_old_directory_entry(uint8 *Stream, old_directory_entry *Objec
 static void pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects, int Count)
 {
 	uint8* S = Stream;
-	old_directory_entry* OPtr = Objects;
+	old_directory_entry* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		old_directory_entry& O = *(OPtr++);
-		ValueToStream(S,O.offset_to_start);
-		ValueToStream(S,O.length);
+		ValueToStream(S,ObjPtr->offset_to_start);
+		ValueToStream(S,ObjPtr->length);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_old_directory_entry);
@@ -1639,14 +1635,13 @@ static void pack_old_directory_entry(uint8 *Stream, old_directory_entry *Objects
 static void unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count)
 {
 	uint8* S = Stream;
-	directory_entry* OPtr = Objects;
+	directory_entry* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		directory_entry& O = *(OPtr++);
-		StreamToValue(S,O.offset_to_start);
-		StreamToValue(S,O.length);
-		StreamToValue(S,O.index);
+		StreamToValue(S,ObjPtr->offset_to_start);
+		StreamToValue(S,ObjPtr->length);
+		StreamToValue(S,ObjPtr->index);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_directory_entry);
@@ -1655,14 +1650,13 @@ static void unpack_directory_entry(uint8 *Stream, directory_entry *Objects, int 
 static void pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Count)
 {
 	uint8* S = Stream;
-	directory_entry* OPtr = Objects;
+	directory_entry* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		directory_entry& O = *(OPtr++);
-		ValueToStream(S,O.offset_to_start);
-		ValueToStream(S,O.length);
-		ValueToStream(S,O.index);
+		ValueToStream(S,ObjPtr->offset_to_start);
+		ValueToStream(S,ObjPtr->length);
+		ValueToStream(S,ObjPtr->index);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_directory_entry);
@@ -1672,14 +1666,13 @@ static void pack_directory_entry(uint8 *Stream, directory_entry *Objects, int Co
 static void unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count)
 {
 	uint8* S = Stream;
-	old_entry_header* OPtr = Objects;
+	old_entry_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		old_entry_header& O = *(OPtr++);
-		StreamToValue(S,O.tag);
-		StreamToValue(S,O.next_offset);
-		StreamToValue(S,O.length);
+		StreamToValue(S,ObjPtr->tag);
+		StreamToValue(S,ObjPtr->next_offset);
+		StreamToValue(S,ObjPtr->length);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_old_entry_header);
@@ -1688,14 +1681,13 @@ static void unpack_old_entry_header(uint8 *Stream, old_entry_header *Objects, in
 static void pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int Count)
 {
 	uint8* S = Stream;
-	old_entry_header* OPtr = Objects;
+	old_entry_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		old_entry_header& O = *(OPtr++);
-		ValueToStream(S,O.tag);
-		ValueToStream(S,O.next_offset);
-		ValueToStream(S,O.length);
+		ValueToStream(S,ObjPtr->tag);
+		ValueToStream(S,ObjPtr->next_offset);
+		ValueToStream(S,ObjPtr->length);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_old_entry_header);
@@ -1705,15 +1697,14 @@ static void pack_old_entry_header(uint8 *Stream, old_entry_header *Objects, int 
 static void unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
 {
 	uint8* S = Stream;
-	entry_header* OPtr = Objects;
+	entry_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		entry_header& O = *(OPtr++);
-		StreamToValue(S,O.tag);
-		StreamToValue(S,O.next_offset);
-		StreamToValue(S,O.length);
-		StreamToValue(S,O.offset);
+		StreamToValue(S,ObjPtr->tag);
+		StreamToValue(S,ObjPtr->next_offset);
+		StreamToValue(S,ObjPtr->length);
+		StreamToValue(S,ObjPtr->offset);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_entry_header);
@@ -1722,15 +1713,14 @@ static void unpack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
 static void pack_entry_header(uint8 *Stream, entry_header *Objects, int Count)
 {
 	uint8* S = Stream;
-	entry_header* OPtr = Objects;
+	entry_header* ObjPtr = Objects;
 	
-	for (int k = 0; k < Count; k++)
+	for (int k = 0; k < Count; k++, ObjPtr++)
 	{
-		entry_header& O = *(OPtr++);
-		ValueToStream(S,O.tag);
-		ValueToStream(S,O.next_offset);
-		ValueToStream(S,O.length);
-		ValueToStream(S,O.offset);
+		ValueToStream(S,ObjPtr->tag);
+		ValueToStream(S,ObjPtr->next_offset);
+		ValueToStream(S,ObjPtr->length);
+		ValueToStream(S,ObjPtr->offset);
 	}
 	
 	assert((S - Stream) == Count*SIZEOF_entry_header);
