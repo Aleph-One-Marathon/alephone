@@ -221,10 +221,10 @@ void initialize_motion_sensor(
 	alien_shapes= aliens;
 	compass_shapes= compasses;
 	
-	entities= (struct entity_data *) malloc(MAXIMUM_MOTION_SENSOR_ENTITIES*sizeof(struct entity_data));
+	entities= new entity_data[MAXIMUM_MOTION_SENSOR_ENTITIES];
 	assert(entities);
 	
-	sensor_region= (struct region_data *) malloc(side_length*sizeof(struct region_data));
+	sensor_region= new region_data[side_length];
 	assert(sensor_region);
 	
 	/* precalculate the sensor region */
