@@ -3039,9 +3039,10 @@ void s_Get_Monster_Poly(script_instruction inst)
 
 void s_Set_Platform_State(script_instruction inst)
 {
-	float platform_index,state;
+	float polygon_index, state;
+	struct polygon_data *polygon;
 	
-	platform_index = inst.op1;
+	polygon_index = inst.op1;
 	state = inst.op2;
 	
 	if (inst.mode != 0)
@@ -3049,52 +3050,62 @@ void s_Set_Platform_State(script_instruction inst)
 		switch(inst.mode)
 		{
 			case 1:
-				platform_index = get_variable(int(inst.op1));
+				polygon_index = get_variable(int(inst.op1));
 				state = int(inst.op2);
 				break;
 				
 			case 2:
-				platform_index = int(inst.op1);
+				polygon_index = int(inst.op1);
 				state = get_variable(int(inst.op2));
 				break;
 				
 			case 3:
-				platform_index = get_variable(int(inst.op1));
+				polygon_index = get_variable(int(inst.op1));
 				state = get_variable(int(inst.op2));
 				break;
 			
 			default:
 				return;
 		}
+		polygon = get_polygon_data(short(polygon_index));
 		
-	try_and_change_platform_state(short(platform_index), state != 0);
-	assume_correct_switch_position(_panel_is_platform_switch, short(platform_index), state != 0);
+		if (polygon->type == _polygon_is_platform)
+		{	
+			try_and_change_platform_state(short(polygon->permutation), state != 0);
+			assume_correct_switch_position(_panel_is_platform_switch, short(polygon->permutation), state != 0);
+		}
 	}	
 }
 
 void s_Get_Platform_State(script_instruction inst)
 {
-	float platform_index;
+	float polygon_index;
+	struct polygon_data *polygon;
 	
-	platform_index = inst.op1;
+	polygon_index = inst.op1;
 
 	if (inst.mode != 0)
 	{
 		switch(inst.mode)
 		{
 			case 2:
-				platform_index = int(inst.op1);
+				polygon_index = int(inst.op1);
 				break;
 				
 			case 3:
-				platform_index = get_variable(int(inst.op1));
+				polygon_index = get_variable(int(inst.op1));
 				break;
 			
 			default:
 				return;
 		}
+		polygon = get_polygon_data(short(polygon_index));
 		
-		set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(get_platform_data(int(platform_index))) ? 1 : 0);	}
+		if (polygon->type == _polygon_is_platform)
+		{
+			set_variable(int(inst.op2), PLATFORM_IS_ACTIVE(get_platform_data(short(polygon->permutation))) ? 1 : 0);		
+		}
+	}
 }
 
 void s_Play_Sound(script_instruction inst)
@@ -3161,7 +3172,7 @@ void s_Set_Light_State(script_instruction inst)
 				return;
 		}
 		
-	set_light_status(int16(light_index), state != 0);
+	set_light_status(short(light_index), state != 0);
 	}	
 }
 
@@ -3184,7 +3195,7 @@ void s_Get_Light_State(script_instruction inst)
 			default:
 				return;
 		}
-		set_variable(int(inst.op2), get_light_status(int(light_index)) ? 1 : 0);
+		set_variable(int(inst.op2), get_light_status(short(light_index)) ? 1 : 0);
 	}
 }
 
@@ -3192,7 +3203,7 @@ void s_Get_Player_Poly(script_instruction inst)
 {
 	if (inst.mode != 1)
 	{
-		set_variable(int(inst.op1), get_polygon_index_supporting_player(local_player_index));
+		set_variable(int(inst.op1), get_polygon_index_supporting_player(local_player->monster_index));
 	}
 }
 
@@ -3372,7 +3383,7 @@ void s_Player_Control(script_instruction inst)
 		break;
 		
 		case 13: // reset pfhortran_action_queue
-			GetPfhortranActionQueues()->reset;
+			GetPfhortranActionQueues()->reset();
 		break;
 		
 		default:
