@@ -32,6 +32,9 @@ Jul 1, 2000 (Loren Petrich):
 	Did some inlining of the item-definition accessor
 	
 	Added Benad's netgame-type changes
+
+Aug 10, 2000 (Loren Petrich):
+	Added Chris Pruett's Pfhortran changes
 */
 
 #include "cseries.h"
@@ -53,6 +56,9 @@ Jul 1, 2000 (Loren Petrich):
 // LP addition: for the XML stuff
 #include <string.h>
 #include "ShapesParser.h"
+
+//CP addition: Scripting Hooks
+#include "scripting.h"
 
 #ifdef env68k
 #pragma segment marathon
@@ -548,7 +554,10 @@ boolean try_and_add_player_item(
 	}
 	// Benad. Burk.
 	DONE:
-		
+	
+	//CP Addition: call any script traps available
+	activate_got_item_trap(type);
+			
 	/* Play the pickup sound */
 	if (success && player_index==current_player_index)
 	{

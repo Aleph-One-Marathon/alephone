@@ -48,6 +48,9 @@ May 20, 2000 (Loren Petrich):
 
 July 5, 2000 (Loren Petrich):
 	Using world_pixels instead of screen_window
+
+Aug 10, 2000 (Loren Petrich):
+	Added Chris Pruett's Pfhortran changes
 */
 
 // add logon/logoff keywords. (& make terminal display them)
@@ -83,6 +86,9 @@ July 5, 2000 (Loren Petrich):
 
 #include "portable_files.h"
 #include "images.h"
+
+//CP Addition: scripting support
+#include "scripting.h"
 
 #define LABEL_INSET 3
 #define LOG_DURATION_BEFORE_TIMEOUT (2*TICKS_PER_SECOND)
@@ -341,6 +347,10 @@ void initialize_player_terminal_info(
 	short player_index)
 {
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
+
+	//CP Addition: trap for logout!
+	if (terminal->state != _no_terminal_state && terminal->current_line != 0)
+		activate_terminal_exit_trap(terminal->terminal_id);
 
 	terminal->flags= 0;
 	terminal->phase = NONE; // not using a control panel.

@@ -30,8 +30,9 @@ May 26, 2000 (Loren Petrich):
 
 June 3, 2000 (Loren Petrich):
 	Idiot-proofed the control-panels accessor; it now returns NULL if an index is out of range.
-	
-	Jul 1, 2000 (Loren Petrich): made control-panel accessor an inline function
+
+Aug 10, 2000 (Loren Petrich):
+	Added Chris Pruett's Pfhortran changes
 */
 
 #include "cseries.h"
@@ -47,6 +48,8 @@ June 3, 2000 (Loren Petrich):
 #include "lightsource.h"
 #include "game_window.h"
 #include "items.h"
+//CP Addition: Scripting Hooks
+#include "scripting.h"
 
 #include <string.h>
 
@@ -695,6 +698,9 @@ static void	change_panel_state(
 		case _panel_is_computer_terminal:
 			if (get_game_state()==_game_in_progress && !PLAYER_HAS_CHEATED(player) && !PLAYER_HAS_MAP_OPEN(player))
 			{
+				//CP Addition: Script Hook
+				activate_terminal_enter_trap(side->control_panel_permutation);
+				
 				/* this will handle changing levels, if necessary (i.e., if weÕre finished) */
 				enter_computer_interface(player_index, side->control_panel_permutation, calculate_level_completion_state());
 			}
@@ -703,6 +709,7 @@ static void	change_panel_state(
 			if (definition->item==NONE || (!state && try_and_subtract_player_item(player_index, definition->item)))
 			{
 				state= !state;
+				
 				make_sound= set_tagged_light_statuses(side->control_panel_permutation, state);
 				if (try_and_change_tagged_platform_states(side->control_panel_permutation, state)) make_sound= TRUE;
 				if (!side->control_panel_permutation) make_sound= TRUE;
@@ -711,21 +718,36 @@ static void	change_panel_state(
 					SET_CONTROL_PANEL_STATUS(side, state);
 					set_control_panel_texture(side);
 				}
+				//CP Addition: Script Hook
+				activate_tag_switch_trap(side->control_panel_permutation);
+			
 			}
 			break;
 		case _panel_is_light_switch:
 			state= !state;
 			make_sound= set_light_status(side->control_panel_permutation, state);
+			
+			//CP Addition: Script Hook
+			activate_light_switch_trap(side->control_panel_permutation);
+
 			break;
 		case _panel_is_platform_switch:
 			state= !state;
 			make_sound= try_and_change_platform_state(get_polygon_data(side->control_panel_permutation)->permutation, state);
+			
+			//CP Addition: Script Hook
+			activate_platform_switch_trap(side->control_panel_permutation);
+			
 			break;
 		case _panel_is_pattern_buffer:
 			if (dynamic_world->tick_count-player->ticks_at_last_successful_save>MINIMUM_RESAVE_TICKS &&
 				player_controlling_game() && !PLAYER_HAS_CHEATED(local_player) && !game_is_networked)
 			{
 				play_control_panel_sound(panel_side_index, _activating_sound);
+				
+				//CP Addition: Script Hook
+				activate_pattern_buffer_trap(side->control_panel_permutation);
+			
 //				fade_out_background_music(30);
 
 				/* Assume a successful save- prevents vidding of the save game key.. */
