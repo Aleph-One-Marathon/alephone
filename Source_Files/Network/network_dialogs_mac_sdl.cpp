@@ -26,6 +26,9 @@ Feb 14, 2003 (Woody Zenfell):
         
 July 03, 2003 (jkvw):
         Lua script selection in gather network game dialog
+
+ August 27, 2003 (Woody Zenfell):
+	Reworked netscript selection stuff to be more cross-platform and more like other dialog code
 */
 /*
  *  network_dialogs_mac_sdl.cpp - Network dialogs for Carbon with SDL networking
@@ -124,6 +127,8 @@ static bool network_game_setup(player_info *player_information, game_info *game_
 /* static */ void extract_setup_dialog_information(DialogPtr dialog, player_info *player_information, 
 	game_info *game_information, short game_limit_type, bool allow_all_levels);
 bool check_setup_information(DialogPtr dialog, short game_limit_type);
+static void update_netscript_file_display(DialogPtr inDialog);
+
 
 // ZZZ: moved to csdialogs
 //static short get_dialog_control_value(DialogPtr dialog, short which_control);
@@ -1361,6 +1366,8 @@ bool network_game_setup(
 
 #else
 
+static FileSpecifier sNetscriptFile;
+
 bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
@@ -1459,46 +1466,16 @@ bool network_game_setup(
 					modify_control(dialog, iREAL_TIME_SOUND, NONE, !get_dialog_control_value(dialog, iREAL_TIME_SOUND));
 					break;
                                         
-                                case iSELECT_SCRIPT:
-                                        if (get_dialog_control_value(dialog, item_hit)) {
-                                            Handle item;
-                                            short item_type;
-                                            Rect bounds;
-                                        
-                                            SetNetscriptStatus (false);
-                                            modify_control (dialog, iSELECT_SCRIPT, NONE, false);
-                                            GetDialogItem(dialog, iTEXT_SCRIPT_NAME, &item_type, &item, &bounds);
-                                            c2pstrcpy (ptemporary, "");
-                                            SetDialogItemText(item, ptemporary);
+                                case iUSE_SCRIPT:
+                                        if (get_boolean_control_value(dialog, item_hit)) {
+						modify_boolean_control(dialog, item_hit, NONE, false);
                                         } else {
-                                            FileSpecifier script_file_FS;
-                                            OpenedFile script_file;
-                                            long script_length;
-                                            byte *script_buffer;
-                                            
-                                            if (script_file_FS.ReadDialog (_typecode_unknown, "Script Select"))
-                                            if (script_file_FS.Open (script_file))
-                                            {
-                                                script_file.GetLength (script_length);
-                                                script_buffer = new byte [script_length];
-                                                if (script_file.Read (script_length, script_buffer))
-                                                {
-                                                    Handle item;
-                                                    short item_type;
-                                                    Rect bounds;
-                                                    char name [256];
-                                                    
-                                                    DeferredScriptSend (script_buffer, script_length);
-                                                    SetNetscriptStatus (true);
-                                                    modify_control(dialog, item_hit, NONE, true);
-                                                    script_file_FS.GetName (name);
-                                                    GetDialogItem(dialog, iTEXT_SCRIPT_NAME, &item_type, &item, &bounds);
-                                                    c2pstrcpy (ptemporary, name);
-                                                    SetDialogItemText(item, ptemporary);
-                                                }
-                                                script_file.Close ();
-                                            }
+                                            if (sNetscriptFile.ReadDialog (_typecode_unknown, "Script Select"))
+					    {
+						    modify_boolean_control(dialog, item_hit, NONE, true);
+					    }
                                         }
+					update_netscript_file_display(dialog);
                                         break;
 			}
                         
@@ -1818,6 +1795,51 @@ bool check_setup_information(
 	}
 
 	return information_is_acceptable;
+}
+
+
+
+void
+update_netscript_file_display(DialogPtr inDialog)
+{
+	bool shouldUseNetscript = get_boolean_control_value(inDialog, iUSE_SCRIPT);
+	const unsigned char* theStringToUse = NULL;
+	
+	if(shouldUseNetscript)
+	{
+		if (sNetscriptFile.Exists())
+		{
+			char name [256];
+
+			sNetscriptFile.GetName (name);
+			c2pstrcpy (ptemporary, name);
+
+			theStringToUse = ptemporary;
+		}
+		else
+		{
+			theStringToUse = "\p(invalid selection)";
+		}
+	}
+	else
+		theStringToUse = "\p";
+
+	assert(theStringToUse != NULL);
+
+	copy_pstring_to_static_text(inDialog, iTEXT_SCRIPT_NAME, theStringToUse);
+}
+
+void
+set_dialog_netscript_file(DialogPtr inDialog, const FileSpecifier& inFile)
+{
+	sNetscriptFile = inFile;
+	update_netscript_file_display(inDialog);
+}
+
+const FileSpecifier&
+get_dialog_netscript_file(DialogPtr inDialog)
+{
+	return sNetscriptFile;
 }
 
 #endif
