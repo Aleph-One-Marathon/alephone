@@ -891,7 +891,7 @@ static OSErr required_appleevent_check(
 static void initialize_system_information(
 	void)
 {
-	long system_version, apple_events_present, processor_type;
+	long system_version, apple_events_present, processor_type, classic_mode;
 	OSErr err;
 	
 	/* Allocate the system information structure.. */	
@@ -973,7 +973,14 @@ static void initialize_system_information(
 			}
 		}
 	}
-	
+	//Are we in Classic?
+	err= Gestalt(gestaltMacOSCompatibilityBoxAttr, &classic_mode);
+	if(!err && (classic_mode & 1<<gestaltMacOSCompatibilityBoxPresent))
+	{
+		system_information->machine_is_bluebox= true;
+	} else {
+		system_information->machine_is_bluebox= false;
+	}
 	return;
 }
 
