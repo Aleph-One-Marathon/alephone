@@ -289,7 +289,7 @@ void process_collection_sounds(short colleciton_code, void (*process_sound)(shor
 
 #define mark_collection_for_loading(c) mark_collection((c), TRUE)
 #define mark_collection_for_unloading(c) mark_collection((c), FALSE)
-void mark_collection(short collection_code, boolean loading);
+void mark_collection(short collection_code, bool loading);
 void strip_collection(short collection_code);
 void load_collections(void);
 void unload_all_collections(void);
