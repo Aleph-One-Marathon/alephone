@@ -365,6 +365,32 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 			if (!(Definition.bitmap_count >= 0)) throw 13666;
 			NewSize += Definition.bitmap_count*
 				((sizeof(bitmap_definition) - SIZEOF_bitmap_definition) + POINTER_SIZE);
+			
+			// The bitmap pointers:
+			if (!(Definition.bitmap_offset_table_offset >= 0)) throw 13666;
+			if (!(Definition.bitmap_offset_table_offset +
+				Definition.bitmap_count*sizeof(int32) <= length)) throw 13666;
+			uint8 *OffsetStream = collection + Definition.bitmap_offset_table_offset;
+			for (int k=0; k<Definition.bitmap_count; k++)
+			{
+				int32 Offset;
+				StreamToValue(OffsetStream,Offset);
+				if (!(Offset >= 0 && Offset < (length - SIZEOF_bitmap_definition))) throw 13666;
+				uint8 *S = collection + Offset;
+				
+				bitmap_definition Bitmap;
+				
+				StreamToValue(S,Bitmap.width);
+				StreamToValue(S,Bitmap.height);
+				StreamToValue(S,Bitmap.bytes_per_row);
+				
+				StreamToValue(S,Bitmap.flags);
+				
+				short NumScanlines = (Bitmap.flags&_COLUMN_ORDER_BIT) ?
+					Bitmap.width : Bitmap.height;
+				
+				NewSize += NumScanlines*(sizeof(pixel8 *) - sizeof(int32));
+			}
 		}
 		
 		// Blank out the new chunk and copy in the new header
@@ -567,14 +593,23 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 				
 				S += 8*2;
 				
-				// Code assumes 32-bit pointers!
-				S += sizeof(pixel8 *);
+				// Code was originally designed for 32-bit pointers!
+				S += sizeof(int32);
 				
 				assert((S - SBase) == SIZEOF_bitmap_definition);
 				
+				// Add in extra space for long pointers; offset the reading of the remaining stuff
+				// by that quantity.
+				
+				short NumScanlines = (Bitmap.flags&_COLUMN_ORDER_BIT) ?
+					Bitmap.width : Bitmap.height;
+				
+				int NumExtraPointerBytes = NumScanlines*(sizeof(pixel8 *) - sizeof(int32));
+				
 				// Do all the other stuff; don't bother to try to process it
 				long RemainingBytes = (SNext - S);
-				StreamToBytes(S,Bitmap.row_addresses+1,RemainingBytes);
+				byte *RemainingDataPlacement = (byte *)(Bitmap.row_addresses+1) + NumExtraPointerBytes;
+				StreamToBytes(S,RemainingDataPlacement,RemainingBytes);
 			
 				// Set the offset pointer appropriately:
 				*(NewOffsetPtr++) = NewCollLocation;
