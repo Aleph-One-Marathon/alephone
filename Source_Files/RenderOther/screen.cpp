@@ -218,6 +218,9 @@ Apr 22, 2003 (Woody Zenfell):
 
 #include "Logging.h"
 
+// For loading the OSX fader, if present
+#include <CFBundle.h>
+
 // ZZZ: egads, this stuff just keeps getting hairier
 extern bool OGL_HUDActive;
 
@@ -423,10 +426,41 @@ static pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
 static float GetFreqFromName(Str255 Name);
 
 // Directly manipulate the video-driver color table.
-// Written so that the faders will work in MacOS X Classic.
-static void direct_animate_screen_clut(
+// Split into two versions, one for OSX and one for Classic,
+// because they use different sets of incompatible
+// color-manipulation functions.
+
+// Local; uses CGSetDisplayTransferByTable()
+// which exists in OSX but not in CarbonLib or Classic
+static void animate_screen_clut_osx(
 	struct color_table *color_table,
 	GDHandle DevHdl);
+
+// Created with FaderClassic.mcp and stored in FaderLibClassic
+extern void animate_screen_clut_classic(
+	struct color_table *color_table,
+	GDHandle DevHdl);
+
+#ifndef __MACH__
+// Cribbed from CGDirectDisplay.h documentation of CGSetDisplayTransferByTable()
+// and Apple's "Quartz Primer
+typedef CGDisplayErr 
+(*CGSetDisplayTransferByTable_Type)(
+  CGDirectDisplayID     display,
+  CGTableCount          tableSize,
+  const CGGammaValue *  redTable,
+  const CGGammaValue *  greenTable,
+  const CGGammaValue *  blueTable);
+
+// Pointer to loaded symbol
+static CGSetDisplayTransferByTable_Type CGSetDisplayTransferByTable_Ptr = NULL;
+
+// Loads the above symbol
+static void LoadCoreGraphicsFader();
+
+// A function for loading a framework bundle
+static OSStatus LoadFrameworkBundle(CFStringRef framework, CFBundleRef *bundlePtr);
+#endif
 
 
 /* ---------- code */
@@ -1428,12 +1462,38 @@ void activate_screen_window(
 	(void) (window,event,active);
 }
 
+
+extern int BeepTwice( void );
+
+
 /* LowLevelSetEntries bypasses the Color Manager and goes directly to the hardware.  this means
 	QuickDraw doesnÕt fuck up during RGBForeColor and RGBBackColor. */
 void animate_screen_clut(
 	struct color_table *color_table,
 	bool full_screen)
 {
+#ifdef __MACH__
+
+	animate_screen_clut_osx(color_table, world_device);
+	
+#else
+
+	LoadCoreGraphicsFader();
+	
+	// Try the OSX version, and then the Classic version
+	if (CGSetDisplayTransferByTable_Ptr != NULL)
+	{
+		animate_screen_clut_osx(color_table, world_device);
+	}
+	else
+	{
+		// Check to see if this function is actually present before trying to call it;
+		// it is in a shared library
+		if (animate_screen_clut_classic != NULL)
+			animate_screen_clut_classic(color_table, world_device);
+	}
+
+#endif
 /*
 #if !defined(TARGET_API_MAC_CARBON)
 	// Use special direct animation if the bit depth > 8;
@@ -1467,10 +1527,11 @@ void animate_screen_clut(
 		SetGDevice(old_device);
 	}
 #else
-*/
+
 	// Uses Carbon enabled version
 	direct_animate_screen_clut(color_table, world_device);	
 //#endif
+*/
 }
 
 void assert_world_color_table(
@@ -3000,88 +3061,117 @@ static float GetFreqFromName(Str255 Name)
 	return Freq;
 }
 
+#ifdef TARGET_API_MAC_CARBON
+#ifndef __MACH__
 
-#if !defined(TARGET_API_MAC_CARBON)
-// Directly manipulate the video-driver color table.
-// Written so that the faders will work in MacOS X Classic.
-void direct_animate_screen_clut(
-	struct color_table *color_table,
-	GDHandle DevHdl)
+// Loads the symbol for calling CGSetDisplayTransferByTable()
+static void LoadCoreGraphicsFader()
 {
-	// Much of this code is taken from Apple's sample app "MacGamma";
-	// the MacOS headers to look in for the MacOS data structures are
-	// Devices.h, Quickdraw.h, and Video.h
+	static bool AlreadyCalled = false;
 	
-	CntrlParam CParam;					// Set up the control parameters
-	CParam.ioCompletion = NULL;
-	CParam.ioNamePtr = NULL;
-	CParam.ioVRefNum = 0;
-	CParam.ioCRefNum = (**DevHdl).gdRefNum;
-	CParam.csCode = cscGetGamma;
+	// No need to repeat it
+	if (AlreadyCalled) return;
 	
-	VDGammaRecord DeviceGammaRec;		// Destination for gamma data; manipulate in place
-	*(Ptr *)CParam.csParam = (Ptr) &DeviceGammaRec;
-	OSErr Err = PBStatus((ParmBlkPtr)&CParam, 0);
-	if (Err != noErr) return;
+	AlreadyCalled = true;
 	
-	GammaTblPtr GTable = GammaTblPtr(DeviceGammaRec.csGTable);
-	if (!GTable) return;
+	// Get the bundle that contains CoreGraphics
+	OSStatus err;
+	CFBundleRef sysBundle = NULL;
+	err = LoadFrameworkBundle(CFSTR("ApplicationServices.framework"), &sysBundle);
 	
-	if (GTable->gChanCnt < 3) return;						// Won't do anything if grayscale
-	short GTBits = GTable->gDataWidth;						// How many bits per table entry?
-	short NumEntries = MIN(GTable->gDataCnt,color_table->color_count);	// How many entries to handle
+	if (err != noErr || sysBundle == NULL) return;
 	
-	// Copy over the color data; from chunky 16-bit to planar GTBits-bit
-	short Shift = 16 - GTBits;
-	if (GTBits > 8)
-	{
-		unsigned short *EntryPtr, *EntryBase =
-			(unsigned short *)(&GTable->gFormulaData + GTable->gFormulaSize); // base of table
-		
-		// Red
-		EntryPtr = EntryBase;
-		for (int k=0; k<NumEntries; k++, EntryPtr++)
-			*EntryPtr = color_table->colors[k].red >> Shift;
-		
-		// Green
-		EntryPtr = EntryBase + GTable->gDataCnt;
-		for (int k=0; k<NumEntries; k++, EntryPtr++)
-			*EntryPtr = color_table->colors[k].green >> Shift;
-		
-		// Blue
-		EntryPtr = EntryBase + 2*GTable->gDataCnt;
-		for (int k=0; k<NumEntries; k++, EntryPtr++)
-			*EntryPtr = color_table->colors[k].blue >> Shift;
-	}
-	else
-	{
-		unsigned char *EntryPtr, *EntryBase =
-			(unsigned char *)(&GTable->gFormulaData + GTable->gFormulaSize); // base of table
-		
-		// Red
-		EntryPtr = EntryBase;
-		for (int k=0; k<NumEntries; k++, EntryPtr++)
-			*EntryPtr = color_table->colors[k].red >> Shift;
-		
-		// Green
-		EntryPtr = EntryBase + GTable->gDataCnt;
-		for (int k=0; k<NumEntries; k++, EntryPtr++)
-			*EntryPtr = color_table->colors[k].green >> Shift;
-		
-		// Blue
-		EntryPtr = EntryBase + 2*GTable->gDataCnt;
-		for (int k=0; k<NumEntries; k++, EntryPtr++)
-			*EntryPtr = color_table->colors[k].blue >> Shift;
-	}
-	
-	short DevRefNum = (**DevHdl).gdRefNum;
-	Ptr DGRPtr = (Ptr) &DeviceGammaRec;
-	Err = Control(DevRefNum, cscSetGamma, &DGRPtr);
+	CGSetDisplayTransferByTable_Ptr = (CGSetDisplayTransferByTable_Type)
+		CFBundleGetFunctionPointerForName(sysBundle,
+			CFSTR("CGSetDisplayTransferByTable"));
 }
-#else
+
+
+// Cribbed from some of Apple's sample code -- CallMachOFramework.c
+// For locating a Mach-O bundle for some CFM code,
+// like this Carbon/Classic code
+static OSStatus LoadFrameworkBundle(CFStringRef framework, CFBundleRef *bundlePtr)
+	// This routine finds a the named framework and creates a CFBundle 
+	// object for it.  It looks for the framework in the frameworks folder, 
+	// as defined by the Folder Manager.  Currently this is 
+	// "/System/Library/Frameworks", but we recommend that you avoid hard coded 
+	// paths to ensure future compatibility.
+	//
+	// You might think that you could use CFBundleGetBundleWithIdentifier but 
+	// that only finds bundles that are already loaded into your context. 
+	// That would work in the case of the System framework but it wouldn't 
+	// work if you're using some other, less-obvious, framework.
+{
+	OSStatus  err;
+	FSRef   frameworksFolderRef;
+	CFURLRef baseURL;
+	CFURLRef bundleURL;
+	
+	//MoreAssertQ(bundlePtr != nil);
+	
+	*bundlePtr = nil;
+	
+	baseURL = nil;
+	bundleURL = nil;
+	
+	// Find the frameworks folder and create a URL for it.
+	
+	err = FSFindFolder(kOnAppropriateDisk, kFrameworksFolderType, true, &frameworksFolderRef);
+	if (err == noErr) {
+		baseURL = CFURLCreateFromFSRef(kCFAllocatorSystemDefault, &frameworksFolderRef);
+		if (baseURL == nil) {
+			err = coreFoundationUnknownErr;
+		}
+	}
+	
+	// Append the name of the framework to the URL.
+	
+	if (err == noErr) {
+		bundleURL = CFURLCreateCopyAppendingPathComponent(kCFAllocatorSystemDefault, baseURL, framework, false);
+		if (bundleURL == nil) {
+			err = coreFoundationUnknownErr;
+		}
+	}
+	
+	// Create a bundle based on that URL and load the bundle into memory.
+	// We never unload the bundle, which is reasonable in this case because 
+	// the sample assumes that you'll be calling functions from this 
+	// framework throughout the life of your application.
+	
+	if (err == noErr) {
+		*bundlePtr = CFBundleCreate(kCFAllocatorSystemDefault, bundleURL);
+		if (*bundlePtr == nil) {
+			err = coreFoundationUnknownErr;
+		}
+	}
+	if (err == noErr) {
+		if ( ! CFBundleLoadExecutable( *bundlePtr ) ) {
+			err = coreFoundationUnknownErr;
+		}
+	}
+
+	// Clean up.
+	
+	if (err != noErr && *bundlePtr != nil) {
+		CFRelease(*bundlePtr);
+		*bundlePtr = nil;
+	}
+	if (bundleURL != nil) {
+		CFRelease(bundleURL);
+	} 
+	if (baseURL != nil) {
+		CFRelease(baseURL);
+	} 
+	
+	return err;
+} 
+
+#endif
+
+
 // Directly manipulate the video-driver color table.
 // Written so that the faders will work in MacOS X Carbon.
-void direct_animate_screen_clut(
+void animate_screen_clut_osx(
 	struct color_table *color_table,
 	GDHandle DevHdl)
 	{
@@ -3100,9 +3190,12 @@ void direct_animate_screen_clut(
 			greenTable[i] = ((float)color_table->colors[i].green ) / (65535);
 			blueTable[i] = ((float)color_table->colors[i].blue ) / (65535);
 		}
-		
-		#if defined(HAVE_CORE_GRAPHICS)
+
+#ifdef __MACH__		
 		CGSetDisplayTransferByTable( 0, color_table->color_count, redTable, greenTable, blueTable);
-		#endif
+#else
+		if (CGSetDisplayTransferByTable_Ptr)
+			CGSetDisplayTransferByTable_Ptr(0, color_table->color_count, redTable, greenTable, blueTable);
+#endif
 	}
 #endif
