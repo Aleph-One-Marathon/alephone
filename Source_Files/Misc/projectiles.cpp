@@ -1135,6 +1135,14 @@ uint16 translate_projectile(
 }
 
 
+// Indicates this feature of some type of projectile
+bool ProjectileIsGuided(short Type)
+{
+	projectile_definition *definition = get_projectile_definition(Type);
+	return (definition->flags&_guided != 0);
+}
+
+
 uint8 *unpack_projectile_data(uint8 *Stream, projectile_data* Objects, int Count)
 {
 	uint8* S = Stream;

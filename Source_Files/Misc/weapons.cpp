@@ -63,6 +63,10 @@ Dec 24, 2000 (Loren Petrich):
 
 Dec 31, 2000 (Loren Petrich):
 	Turned a remaining out-of-range assert into a no-render
+
+Jan 6, 2001 (Loren Petrich):
+	Added modification of guided-projectile patch from AlexJLS@aol.com;
+	one can now shoot guided missiles.
 */
 
 #include "cseries.h"
@@ -1872,12 +1876,18 @@ static void fire_weapon(
 			}
 			
 			/* Fire the projectile */
+			// Added modification of guided-projectile patch from AlexJLS@aol.com;
+			// avoid doing search for targets for an unguided projectile.
 			if(trigger_definition->projectile_type!=_projectile_ball_dropped)
 			{
+				short Target = ProjectileIsGuided(trigger_definition->projectile_type) ?
+					find_closest_appropriate_target(player->monster_index,false) :
+					NONE;
 				new_projectile(&origin, origin_polygon, &vector, 
 					trigger_definition->theta_error+flailing_bonus, 
 					trigger_definition->projectile_type, 
-					player->monster_index, _monster_marine, NONE, damage_modifier);
+					player->monster_index, _monster_marine, Target, damage_modifier);
+					// player->monster_index, _monster_marine, NONE, damage_modifier);
 			}
 		}
 

@@ -16,6 +16,9 @@ Feb 10, 2000 (Loren Petrich):
 
 Aug 30, 2000 (Loren Petrich):
 	Added stuff for unpacking and packing
+
+Jan 6, 2001 (Loren Petrich):
+	Added accessor for "is guided" attribute of a projectile type.
 */
 
 /* ---------- projectile structure */
@@ -138,6 +141,9 @@ void load_projectile_sounds(short type);
 
 void drop_the_ball(world_point3d *origin, short polygon_index, short owner_index,
 	short owner_type, short item_type);
+
+// Indicates this feature of some type of projectile
+bool ProjectileIsGuided(short Type);
 
 // LP change: made this inline
 inline struct projectile_data *get_projectile_data(
