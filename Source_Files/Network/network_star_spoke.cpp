@@ -759,25 +759,30 @@ spoke_tick()
 
 		logDumpNMT1("want to provide %d flags", theNumberOfFlagsToProvide);
 
-                // If we're not connected, write only to our local game's queue.
-                // If we are connected,
-                //	if we're actually in the game, write to both local game and outbound flags queues
-                //	else (if pregame), write only to the outbound flags queue.
-                WritableTickBasedActionQueue& theTargetQueue =
-                        sConnected ? ((sOutgoingFlags.getWriteTick() >= sSmallestRealGameTick) ? static_cast<WritableTickBasedActionQueue&>(sLocallyGeneratedFlags) : static_cast<WritableTickBasedActionQueue&>(sOutgoingFlags))
-                                   : *(sNetworkPlayers[sLocalPlayerIndex].mQueue);
-
                 while(theNumberOfFlagsToProvide > 0)
-                {
-                        if(theTargetQueue.availableCapacity() <= 0)
-                                break;
+		{
+		
+			// If we're not connected, write only to our local game's queue.
+			// If we are connected,
+			//	if we're actually in the game, write to both local game and outbound flags queues
+			//	else (if pregame), write only to the outbound flags queue.
+
+			WritableTickBasedActionQueue& theTargetQueue =
+				sConnected ?
+					((sOutgoingFlags.getWriteTick() >= sSmallestRealGameTick) ?
+						static_cast<WritableTickBasedActionQueue&>(sLocallyGeneratedFlags)
+						: static_cast<WritableTickBasedActionQueue&>(sOutgoingFlags))
+					: *(sNetworkPlayers[sLocalPlayerIndex].mQueue);
+
+			if(theTargetQueue.availableCapacity() <= 0)
+				break;
 
 			logDumpNMT1("enqueueing flags for tick %d", theTargetQueue.getWriteTick());
 
-                        theTargetQueue.enqueue(parse_keymap());
-                        shouldSend = true;
-                        theNumberOfFlagsToProvide--;
-                }
+			theTargetQueue.enqueue(parse_keymap());
+			shouldSend = true;
+			theNumberOfFlagsToProvide--;
+		}
 		
 		// Prevent creeping timing adjustment during "lulls"; OTOH remember to
 		// finish next time if we made progress but couldn't complete our obligation.
