@@ -11,6 +11,7 @@
 #include "shape_descriptors.h"
 #include "screen_drawing.h"
 #include "shell.h"
+#include "screen.h"
 #include "world.h"
 #include "mysound.h"
 
@@ -352,6 +353,9 @@ void dialog::event(SDL_Event &e)
 					break;
 				case SDLK_RETURN:		// Return = Action on widget
 					active_widget->click(0, 0);
+					break;
+				case SDLK_F9:			// F9 = Screen dump
+					dump_screen();
 					break;
 			}
 			break;

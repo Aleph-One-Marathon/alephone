@@ -653,6 +653,7 @@ static void process_game_key(const SDL_Event &event)
 				case SDLK_r: item = iReplaySavedFilm; break;
 				case SDLK_c: item = iCredits; break;
 				case SDLK_q: item = iQuit; break;
+				case SDLK_F9: dump_screen(); break;
 			}
 			if (item > 0) {
 				draw_menu_button_for_command(item);
