@@ -39,7 +39,8 @@
 #include <ctype.h>
 
 // LP addition: whether or not the cheats are active
-static bool CheatsActive = false;
+// Defined in shell_misc.cpp
+extern bool CheatsActive;
 
 // Prototypes
 static void main_event_loop(void);
