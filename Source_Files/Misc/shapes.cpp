@@ -2046,6 +2046,7 @@ static void debug_shapes_memory(
 bool is_collection_present(short collection_index)
 {
 	collection_header *CollHeader = get_collection_header(collection_index);
+	if (!CollHeader) return false;
 	return collection_loaded(CollHeader);
 }
 
@@ -2053,6 +2054,7 @@ bool is_collection_present(short collection_index)
 short get_number_of_collection_frames(short collection_index)
 {
 	struct collection_definition *Collection = get_collection_definition(collection_index);
+	if (!Collection) return 0;
 	return Collection->low_level_shape_count;
 }
 
@@ -2060,6 +2062,7 @@ short get_number_of_collection_frames(short collection_index)
 short get_number_of_collection_bitmaps(short collection_index)
 {
 	struct collection_definition *Collection = get_collection_definition(collection_index);
+	if (!Collection) return 0;
 	return Collection->bitmap_count;
 }
 
@@ -2067,6 +2070,7 @@ short get_number_of_collection_bitmaps(short collection_index)
 short get_bitmap_index(short collection_index, short low_level_shape_index)
 {
 	struct low_level_shape_definition *low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
+	if (!low_level_shape) return NONE;
 	return low_level_shape->bitmap_index;
 }
 

@@ -401,7 +401,7 @@ void initialize_screen(
 	// otherwise, change to the one to restore
 	if (graphics_preferences->screen_mode.fullscreen)
 	{
-		short msize = screen_mode.size;
+		short msize = graphics_preferences->screen_mode.size;
 		assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
 		const ViewSizeData& VS = ViewSizes[msize];
 		DM_ChangeResolution(world_device, graphics_preferences->device_spec.bit_depth,

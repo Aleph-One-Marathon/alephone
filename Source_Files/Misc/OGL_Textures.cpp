@@ -353,6 +353,7 @@ bool TextureManager::Setup()
 	CTable = GET_COLLECTION_CLUT(CollColor);
 	Frame = GET_DESCRIPTOR_SHAPE(ShapeDesc);
 	Bitmap = get_bitmap_index(Collection,Frame);
+	if (Bitmap == NONE) return false;
 	
 	// Tinted mode is only used for invisibility, and infravision will make objects visible
 	if (TransferMode == _static_transfer) CTable = SILHOUETTE_BITMAP_SET;
