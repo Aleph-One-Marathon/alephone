@@ -126,6 +126,7 @@ struct revert_game_info
 };
 static struct revert_game_info revert_game_data;
 
+#if 0
 /* Borrowed from the old lightsource.h, to allow Marathon II to open/use Marathon I maps */
 struct old_light_data {
 	word flags;
@@ -154,6 +155,7 @@ enum /* old light types */
 	_light_is_annoying,
 	_light_is_energy_efficient
 };
+#endif
 
 /* -------- definitions for byte-swapping */
 static _bs_field _bs_directory_data[] = { // 74 bytes
@@ -352,10 +354,10 @@ static void load_points(byte *points, short count);
 static void load_lines(byte *lines, short count);
 static void load_sides(byte *sides, short count, short version);
 static void load_polygons(byte *polys, short count, short version);
-static void load_lights(saved_static_light *_lights, short count, short version);
+static void load_lights(byte *_lights, short count, short version);
 static void load_annotations(byte *annotations, short count);
 static void load_objects(byte *map_objects, short count);
-static void load_media(struct media_data *media, short count);
+static void load_media(byte *_medias, short count);
 static void load_map_info(byte *map_info);
 static void load_ambient_sound_images(byte *data, short count);
 static void load_random_sound_images(byte *data, short count);
@@ -381,7 +383,7 @@ static boolean process_map_wad(struct wad_data *wad, boolean restoring_game, sho
 /* Final three calls, must be in this order! */
 static void recalculate_redundant_map(void);
 static void scan_and_add_platforms(struct static_platform_data *platform_static_data, short count);
-static void complete_loading_level(short *map_indexes, short map_index_count, 
+static void complete_loading_level(short *_map_indexes, short map_index_count, 
 	struct static_platform_data *platform_data, short platform_data_count,
 	struct platform_data *actual_platform_data, short actual_platform_data_count, short version);
 
@@ -574,7 +576,7 @@ boolean load_level_from_map(
 /* Hopefully this is in the correct order of initialization... */
 /* This sucks, beavis. */
 void complete_loading_level(
-	short *map_indexes,
+	short *_map_indexes,
 	short map_index_count,
 #ifdef LP
 	struct static_platform_data *platform_data,
@@ -594,7 +596,7 @@ void complete_loading_level(
 {
 	/* Scan, add the doors, recalculate, and generally tie up all loose ends */
 	/* Recalculate the redundant data.. */
-	load_redundant_map_data(map_indexes, map_index_count);
+	load_redundant_map_data(_map_indexes, map_index_count);
 
 	/* Add the platforms. */
 	if(platform_data || (platform_data==NULL && actual_platform_data==NULL))
@@ -1140,6 +1142,62 @@ void load_polygons(
 	}
 }
 
+
+void load_lights(
+	byte *_lights, 
+	short count,
+	short version)
+{
+	short loop, new_index;
+
+	vassert(count>=0 && count<=MAXIMUM_LIGHTS_PER_MAP, csprintf(temporary, "Light count: %d vers: %d",
+		count, version));
+	
+	old_light_data *OldLights;
+	
+	switch(version)
+	{
+	case MARATHON_ONE_DATA_VERSION:
+		
+		// Unpack the old lights into a temporary array
+		OldLights = new old_light_data[count];
+		unpack_old_light_data(_lights,OldLights,count);
+		
+		old_light_data *OldLtPtr = OldLights;
+		for(loop= 0; loop<count; ++loop, OldLtPtr++)
+		{
+			static_light_data TempLight;
+			convert_old_light_data_to_new(&TempLight, OldLtPtr);
+			
+			new_index = new_light(&TempLight);
+			assert(new_index==loop);
+		}
+		delete []OldLights;
+		break;			
+		
+	case MARATHON_TWO_DATA_VERSION:
+	case MARATHON_INFINITY_DATA_VERSION:
+		// OK to modify the data pointer since it was passed by value
+		for(loop= 0; loop<count; ++loop)
+		{
+			static_light_data TempLight;
+			_lights = unpack_static_light_data(_lights,&TempLight);
+			
+			new_index = new_light(&TempLight);
+			assert(new_index==loop);
+		}
+		break;			
+		
+	default:
+		assert(false);
+		break;
+	}
+
+	return;
+}
+
+// Superseded by what's above
+#if 0
 static void convert_lighting_function_spec(lighting_function_specification &dst, const saved_lighting_function_specification &src)
 {
 	dst.function = src.function;
@@ -1261,6 +1319,7 @@ void load_lights(
 
 	return;
 }
+#endif
 
 void load_annotations(
 	byte *annotations, 
@@ -1309,14 +1368,23 @@ void load_map_info(
 }
 
 void load_media(
-	struct media_data *medias,
+	byte *_medias,
 	short count)
 {
-	struct media_data *media= medias;
+	// struct media_data *media= _medias;
 	short ii;
 	
 	assert(count>=0 && count<=MAXIMUM_MEDIAS_PER_MAP);
-
+	
+	for(ii= 0; ii<count; ++ii)
+	{
+		media_data TempMedia;
+		_medias = unpack_media_data(_medias,&TempMedia);
+		
+		short new_index = new_media(&TempMedia);
+		assert(new_index==ii);
+	}
+#if 0
 	for(ii= 0; ii<count; ++ii)
 	{
 #ifdef SDL
@@ -1331,7 +1399,8 @@ void load_media(
 		assert(new_index==ii);
 		media++;
 	}
-	
+#endif
+
 	return;
 }
 
@@ -1393,14 +1462,7 @@ boolean load_game_from_file(FileSpecifier& File)
 	boolean success= FALSE;
 	
 	// LP: verify sizes: (of on-disk structures only!)
-	assert(sizeof(map_object) == SIZEOF_map_object);
-	assert(sizeof(directory_data) == SIZEOF_directory_data);
-	assert(sizeof(map_annotation) == SIZEOF_map_annotation);
-	assert(sizeof(ambient_sound_image_data) == SIZEOF_ambient_sound_image_data);
-	assert(sizeof(random_sound_image_data) == SIZEOF_random_sound_image_data);
-	assert(sizeof(endpoint_data) == SIZEOF_endpoint_data);
 	assert(sizeof(object_frequency_definition) == SIZEOF_object_frequency_definition);
-	assert(sizeof(static_data) == SIZEOF_static_data);
 #ifdef LP
 	assert(sizeof(saved_static_light) == SIZEOF_static_light_data);
 #endif
@@ -1672,7 +1734,7 @@ boolean process_map_wad(
 	byte *data;
 	short count;
 	boolean is_preprocessed_map= FALSE;
-	
+		
 	assert(version==MARATHON_INFINITY_DATA_VERSION || version==MARATHON_TWO_DATA_VERSION || version==MARATHON_ONE_DATA_VERSION);
 
 	/* zero everything so no slots are used */	
@@ -1725,26 +1787,34 @@ boolean process_map_wad(
 	load_polygons(data, count, version);
 
 	/* Extract the lightsources */
-	if(!restoring_game)
+	if(restoring_game)
+	{
+		// Slurp them in
+		data= (unsigned char *)extract_type_from_wad(wad, LIGHTSOURCE_TAG, &data_length);
+		count = data_length/SIZEOF_light_data;
+		assert(data_length == count*SIZEOF_light_data);
+		unpack_light_data(data,lights,count);
+	}
+	else
 	{
 		/* When you are restoring a game, the actual light structure is set. */
 		data= (unsigned char *)extract_type_from_wad(wad, LIGHTSOURCE_TAG, &data_length);
 		if(version==MARATHON_ONE_DATA_VERSION) 
 		{
 			/* We have an old style light */
-			count= data_length/sizeof(struct old_light_data);
-			assert(count*sizeof(struct old_light_data)==data_length);
+			count= data_length/SIZEOF_old_light_data;
+			assert(count*SIZEOF_old_light_data==data_length);
 #ifdef LP
-			load_lights((saved_static_light *) data, count, version);
+			load_lights(data, count, version);
 #endif
 #ifdef CB
 			load_lights((struct saved_static_light_data *) data, count, version);
 #endif
 		} else {
 #ifdef LP
-			count= data_length/sizeof(saved_static_light);
-			assert(count*sizeof(saved_static_light)==data_length);
-			load_lights((saved_static_light *) data, count, version);
+			count= data_length/SIZEOF_static_light_data;
+			assert(count*SIZEOF_static_light_data==data_length);
+			load_lights(data, count, version);
 #endif
 #ifdef CB
 			count= data_length/sizeof(struct saved_static_light_data);
@@ -1782,20 +1852,28 @@ boolean process_map_wad(
 
 	/* Extract the game difficulty info.. */
 	data= (unsigned char *)extract_type_from_wad(wad, ITEM_PLACEMENT_STRUCTURE_TAG, &data_length);
-	load_placement_data(((struct object_frequency_definition *) data)+MAXIMUM_OBJECT_TYPES,
-		(struct object_frequency_definition *) data);
+	assert(data_length == 2*MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition);
+	load_placement_data(data + MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition, data);
 
 	/* Extract the terminal data. */
 	data= (unsigned char *)extract_type_from_wad(wad, TERMINAL_DATA_TAG, &data_length);
 	load_terminal_data(data, data_length);
 
 	/* Extract the media definitions */
-	if(!restoring_game)
+	if(restoring_game)
+	{
+		// Slurp it in
+		data= (unsigned char *)extract_type_from_wad(wad, MEDIA_TAG, &data_length);
+		count= data_length/SIZEOF_media_data;
+		assert(count*SIZEOF_media_data==data_length);
+		unpack_media_data(data,medias,count);
+	}
+	else
 	{
 		data= (unsigned char *)extract_type_from_wad(wad, MEDIA_TAG, &data_length);
-		count= data_length/sizeof(struct media_data);
-		assert(count*sizeof(struct media_data)==data_length);
-		load_media((struct media_data *) data, count);
+		count= data_length/SIZEOF_media_data;
+		assert(count*SIZEOF_media_data==data_length);
+		load_media(data, count);
 	}
 
 	/* Extract the ambient sound images */
@@ -1816,7 +1894,6 @@ boolean process_map_wad(
 	
 #ifdef mac	//!! most of these structures have non-portable alignment requirements; to be fixed later
 	data= (unsigned char *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
-	// dprintf("Monsters: %d %d: %d",NUMBER_OF_MONSTER_TYPES,get_monster_defintion_size(),data_length);
 	count = data_length/get_monster_defintion_size();
 	assert(count*get_monster_defintion_size() == data_length);
 	assert(count <= NUMBER_OF_MONSTER_TYPES);
@@ -1827,7 +1904,6 @@ boolean process_map_wad(
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, EFFECTS_PHYSICS_TAG, &data_length);
-	// dprintf("Effects: %d %d: %d",NUMBER_OF_EFFECT_TYPES,get_effect_defintion_size(),data_length);
 	count = data_length/get_effect_defintion_size();
 	assert(count*get_effect_defintion_size() == data_length);
 	assert(count <= NUMBER_OF_EFFECT_TYPES);
@@ -1838,7 +1914,6 @@ boolean process_map_wad(
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, PROJECTILE_PHYSICS_TAG, &data_length);
-	// dprintf("Projectiles: %d %d: %d",NUMBER_OF_PROJECTILE_TYPES,get_projectile_definition_size(),data_length);
 	count = data_length/get_projectile_definition_size();
 	assert(count*get_projectile_definition_size() == data_length);
 	assert(count <= NUMBER_OF_PROJECTILE_TYPES);
@@ -1849,7 +1924,6 @@ boolean process_map_wad(
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, PHYSICS_PHYSICS_TAG, &data_length);
-	// dprintf("Physics: %d %d: %d",get_number_of_physics_models(),get_physics_definition_size(),data_length);
 	count = data_length/get_physics_definition_size();
 	assert(count*get_physics_definition_size() == data_length);
 	assert(count <= get_number_of_physics_models());
@@ -1860,7 +1934,6 @@ boolean process_map_wad(
 	}
 	
 	data= (unsigned char *)extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
-	// dprintf("Weapons: %d %d: %d",get_number_of_weapons(),get_weapon_defintion_size(),data_length);
 	count = data_length/get_weapon_defintion_size();
 	assert(count*get_weapon_defintion_size() == data_length);
 	assert(count <= get_number_of_weapons());
@@ -1876,10 +1949,31 @@ boolean process_map_wad(
 	if (PhysicsModelLoadedEarlier && !PhysicsModelLoaded)
 		import_definition_structures();
 	PhysicsModelLoadedEarlier = PhysicsModelLoaded;
-	
+		
 	/* If we are restoring the game, then we need to add the dynamic data */
 	if(restoring_game)
 	{
+		// Slurp it all in...
+		data= (unsigned char *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
+		count= data_length/sizeof(short);
+		assert(count*sizeof(short)==data_length);
+		StreamToList(data,map_indexes,count);
+		
+		data= (unsigned char *)extract_type_from_wad(wad, DYNAMIC_STRUCTURE_TAG, &data_length);
+		assert(data_length == SIZEOF_dynamic_data);
+		unpack_dynamic_data(data,dynamic_world);
+		
+		data= (unsigned char *)extract_type_from_wad(wad, OBJECT_STRUCTURE_TAG, &data_length);
+		count= data_length/SIZEOF_object_data;
+		assert(count*SIZEOF_object_data==data_length);
+		unpack_object_data(data,objects,count);
+		
+		// Unpacking is E-Z here...
+		data= (unsigned char *)extract_type_from_wad(wad, AUTOMAP_LINES, &data_length);
+		memcpy(automap_lines,data,data_length);
+		data= (unsigned char *)extract_type_from_wad(wad, AUTOMAP_POLYGONS, &data_length);
+		memcpy(automap_polygons,data,data_length);
+		
 		complete_restoring_level(wad);
 	} else {
 		byte *map_index_data;
@@ -1972,30 +2066,30 @@ static void allocate_map_structure_for_map(
 
 	/* Extract points */
 	data= (unsigned char *)extract_type_from_wad(wad, POINT_TAG, &data_length);
-	endpoint_count= data_length/sizeof(saved_map_pt);
-	if(endpoint_count*sizeof(saved_map_pt)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'pt');
+	endpoint_count= data_length/SIZEOF_world_point2d;
+	if(endpoint_count*SIZEOF_world_point2d!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'pt');
 	
 	if(!endpoint_count)
 	{
 		data= (unsigned char *)extract_type_from_wad(wad, ENDPOINT_DATA_TAG, &data_length);
-		endpoint_count= data_length/sizeof(struct endpoint_data);
-		if(endpoint_count*sizeof(struct endpoint_data)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'ep');
+		endpoint_count= data_length/SIZEOF_endpoint_data;
+		if(endpoint_count*SIZEOF_endpoint_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'ep');
 	}
 
 	/* Extract lines */
 	data= (unsigned char *)extract_type_from_wad(wad, LINE_TAG, &data_length);
-	line_count= data_length/sizeof(saved_line);
-	if(line_count*sizeof(saved_line)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'li');
+	line_count= data_length/SIZEOF_line_data;
+	if(line_count*SIZEOF_line_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'li');
 
 	/* Sides.. */
 	data= (unsigned char *)extract_type_from_wad(wad, SIDE_TAG, &data_length);
-	side_count= data_length/sizeof(saved_side);
-	if(side_count*sizeof(saved_side)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'si');
+	side_count= data_length/SIZEOF_side_data;
+	if(side_count*SIZEOF_side_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'si');
 
 	/* Extract polygons */
 	data= (unsigned char *)extract_type_from_wad(wad, POLYGON_TAG, &data_length);
-	polygon_count= data_length/sizeof(saved_poly);
-	if(polygon_count*sizeof(saved_poly)!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'si');
+	polygon_count= data_length/SIZEOF_polygon_data;
+	if(polygon_count*SIZEOF_polygon_data!=data_length) alert_user(fatalError, strERRORS, corruptedMap, 'si');
 
 	/* Extract the terminal junk */
 	data= (unsigned char *)extract_type_from_wad(wad, TERMINAL_DATA_TAG, &terminal_data_length);
@@ -2013,8 +2107,12 @@ static void load_redundant_map_data(
 	if (redundant_data)
 	{
 		assert(redundant_data && map_indexes);
+		byte *Stream = (byte *)redundant_data;
+		StreamToList(Stream,map_indexes,count);
+		/*
 		objlist_copy(map_indexes, redundant_data, count);
 		byte_swap_memory(map_indexes, _2byte, count);
+		*/
 		dynamic_world->map_index_count= count;
 	}
 	else
@@ -2091,18 +2189,18 @@ struct save_game_data
 #define NUMBER_OF_SAVE_ARRAYS (sizeof(save_data)/sizeof(struct save_game_data))
 struct save_game_data save_data[]=
 {
-	{ ENDPOINT_DATA_TAG, sizeof(struct endpoint_data), TRUE },
-	{ LINE_TAG, sizeof(saved_line), TRUE },
-	{ SIDE_TAG, sizeof(saved_side), TRUE },
-	{ POLYGON_TAG, sizeof(saved_poly), TRUE },
-	{ LIGHTSOURCE_TAG, sizeof(struct light_data), FALSE },
-	{ ANNOTATION_TAG, sizeof(saved_annotation), TRUE },
-	{ OBJECT_TAG, sizeof(saved_object), TRUE },
-	{ MAP_INFO_TAG, sizeof(struct static_data), TRUE },
-	{ ITEM_PLACEMENT_STRUCTURE_TAG, MAXIMUM_OBJECT_TYPES*sizeof(struct object_frequency_definition)*2, TRUE },
-	{ MEDIA_TAG, sizeof(struct media_data), FALSE },
-	{ AMBIENT_SOUND_TAG, sizeof(struct ambient_sound_image_data), TRUE },
-	{ RANDOM_SOUND_TAG, sizeof(struct random_sound_image_data), TRUE },
+	{ ENDPOINT_DATA_TAG, SIZEOF_endpoint_data, TRUE },
+	{ LINE_TAG, SIZEOF_line_data, TRUE },
+	{ SIDE_TAG, SIZEOF_side_data, TRUE },
+	{ POLYGON_TAG, SIZEOF_polygon_data, TRUE },
+	{ LIGHTSOURCE_TAG, SIZEOF_light_data, TRUE }, // FALSE },
+	{ ANNOTATION_TAG, SIZEOF_map_annotation, TRUE },
+	{ OBJECT_TAG, SIZEOF_map_object, TRUE },
+	{ MAP_INFO_TAG, SIZEOF_static_data, TRUE },
+	{ ITEM_PLACEMENT_STRUCTURE_TAG, 2*MAXIMUM_OBJECT_TYPES*SIZEOF_object_frequency_definition, TRUE },
+	{ MEDIA_TAG, SIZEOF_media_data, TRUE }, // FALSE },
+	{ AMBIENT_SOUND_TAG, SIZEOF_ambient_sound_image_data, TRUE },
+	{ RANDOM_SOUND_TAG, SIZEOF_random_sound_image_data, TRUE },
 	{ TERMINAL_DATA_TAG, sizeof(byte), TRUE },
 	
 	// LP addition: handling of physics models
@@ -2112,12 +2210,12 @@ struct save_game_data save_data[]=
 	{ PHYSICS_PHYSICS_TAG, sizeof(byte), TRUE},
 	{ WEAPONS_PHYSICS_TAG, sizeof(byte), TRUE},
 
-	{ MAP_INDEXES_TAG, sizeof(short), FALSE },
+	{ MAP_INDEXES_TAG, sizeof(short), TRUE }, // FALSE },
 	{ PLAYER_STRUCTURE_TAG, sizeof(struct player_data), FALSE },
-	{ DYNAMIC_STRUCTURE_TAG, sizeof(struct dynamic_data), FALSE },
-	{ OBJECT_STRUCTURE_TAG, sizeof(struct object_data), FALSE },
-	{ AUTOMAP_LINES, sizeof(byte), FALSE },
-	{ AUTOMAP_POLYGONS, sizeof(byte), FALSE },
+	{ DYNAMIC_STRUCTURE_TAG, SIZEOF_dynamic_data, TRUE }, // FALSE },
+	{ OBJECT_STRUCTURE_TAG, SIZEOF_object_data, TRUE }, // FALSE },
+	{ AUTOMAP_LINES, sizeof(byte), TRUE }, // FALSE },
+	{ AUTOMAP_POLYGONS, sizeof(byte), TRUE }, // FALSE },
 	{ MONSTERS_STRUCTURE_TAG, sizeof(struct monster_data), FALSE },
 	{ EFFECTS_STRUCTURE_TAG, sizeof(struct effect_data), FALSE },
 	{ PROJECTILES_STRUCTURE_TAG, sizeof(struct projectile_data), FALSE },
@@ -2149,36 +2247,30 @@ static void *tag_to_global_array_and_size(
 	{
 		case ENDPOINT_DATA_TAG:
 			array= map_endpoints;
-			*size= dynamic_world->endpoint_count*sizeof(struct endpoint_data);
+			*size= dynamic_world->endpoint_count*unit_size;
 			break;
 		case LINE_TAG:
 			array= map_lines;
-			assert(sizeof(saved_line)==sizeof(struct line_data));
 			*size= dynamic_world->line_count*unit_size;
 			break;
 		case SIDE_TAG:
 			array= map_sides;
-			assert(sizeof(saved_side)==sizeof(struct side_data));
 			*size= dynamic_world->side_count*unit_size;
 			break;
 		case POLYGON_TAG:
 			array= map_polygons;
-			assert(sizeof(saved_poly)==sizeof(struct polygon_data));
 			*size= dynamic_world->polygon_count*unit_size;
 			break;
 		case LIGHTSOURCE_TAG:
-			assert(sizeof(saved_static_light)==sizeof(struct static_light_data));
 			array= lights;
 			*size= dynamic_world->light_count*unit_size;
 			break;
 		case ANNOTATION_TAG:
 			array= map_annotations;
-			assert(sizeof(struct map_annotation)==sizeof(saved_annotation));
 			*size= dynamic_world->default_annotation_count*unit_size;
 			break;
 		case OBJECT_TAG:
 			array= saved_objects;
-			assert(sizeof(struct map_object)==sizeof(saved_object));
 			*size= dynamic_world->initial_objects_count*unit_size;
 			break;
 		case MAP_INFO_TAG:
