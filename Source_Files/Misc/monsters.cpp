@@ -1047,22 +1047,16 @@ bool possible_intersecting_monsters(
 						found_solid_object= true;
 						
 						// LP change:
-						if (IntersectedObjectsPtr)
-							if (IntersectedObjectsPtr->GetLength()<maximum_object_count) /* do we have enough space to add it? */
-						// if (object_indexes && *object_count<maximum_object_count) /* do we have enough space to add it? */
+						if (IntersectedObjectsPtr && IntersectedObjectsPtr->GetLength()<maximum_object_count) /* do we have enough space to add it? */
 						{
 							short j;
 							
-							/* only add this object_index if itÕs not already in the list */
-							// LP change:
+							/* only add this object_index if it's not already in the list */
 							GrowableList<short>& IntersectedObjects = *IntersectedObjectsPtr;
-							for (j=0;IntersectedObjects[j]!=object_index&&j<IntersectedObjects.GetLength();++j)
-							// for (j=0;object_indexes[j]!=object_index&&j<*object_count;++j)
+							for (j=0; j<IntersectedObjects.GetLength() && IntersectedObjects[j]!=object_index; ++j)
 								;
 							if (j==IntersectedObjects.GetLength())
-							// if (j==*object_count)
 								IntersectedObjects.Add(object_index);
-								// object_indexes[(*object_count)++]= object_index;
 						}
 					}
 				}

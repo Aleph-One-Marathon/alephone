@@ -237,9 +237,7 @@ static void default_graphics_preferences(
 	
 	preferences->screen_mode.draw_every_other_line= false;
 	
-#ifdef HAVE_OPENGL
 	OGL_SetDefaults(preferences->OGL_Configure);
-#endif
 }
 
 static void default_serial_number_preferences(

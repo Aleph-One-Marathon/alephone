@@ -265,9 +265,16 @@ void RenderVisTreeClass::cast_render_ray(
 							NewNode.PS_Shared = (node_data *)(NewNodePointer + (POINTER_CAST(SavedNode.PS_Shared) - OldNodePointer));
 					}
 					delete []SavedNodes;
+
 					// Edit parent-node pointer also
 					if (parent != NULL)
 						parent = (node_data *)(NewNodePointer + (POINTER_CAST(parent) - OldNodePointer));
+
+					// CB: Find the node reference again, the old one may point to stale memory
+					for (node_reference= &parent->children;
+							*node_reference && (*node_reference)->polygon_index!=polygon_index;
+							node_reference= &(*node_reference)->siblings)
+						;
 				}
 				node = &Nodes[Length];		// The length here is the "old" length
 				/*

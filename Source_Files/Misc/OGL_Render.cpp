@@ -1477,7 +1477,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	}
 	else
 #endif
-	     if (TMgr.IsGlowMapped())
+	if (TMgr.IsGlowMapped())
 	{
 		// Do blending here to get the necessary semitransparency;
 		// push the cutoff down so 0.5*0.5 (half of half-transparency)

@@ -23,6 +23,7 @@ extern FileSpecifier global_data_dir, local_data_dir;
 
 // Prototypes
 static void player_dialog(void *arg);
+static void opengl_dialog(void *arg);
 static void graphics_dialog(void *arg);
 static void sound_dialog(void *arg);
 static void controls_dialog(void *arg);
@@ -58,7 +59,7 @@ static bool ethernet_active(void)
 
 
 /*
- *  Handle preferences dialog
+ *  Main preferences dialog
  */
 
 void handle_preferences(void)
@@ -95,7 +96,7 @@ void handle_preferences(void)
 
 
 /*
- *  Handle player dialog
+ *  Player dialog
  */
 
 static const char *level_labels[6] = {
@@ -197,6 +198,10 @@ static void graphics_dialog(void *arg)
 	d.add(size_w);
 	w_select *gamma_w = new w_select("Brightness", graphics_preferences->screen_mode.gamma_level, gamma_labels);
 	d.add(gamma_w);
+#ifdef HAVE_OPENGL
+	d.add(new w_spacer());
+	d.add(new w_button("OPENGL OPTIONS", opengl_dialog, &d));
+#endif
 	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
@@ -239,7 +244,72 @@ static void graphics_dialog(void *arg)
 
 
 /*
- *  Handle sound dialog
+ *  OpenGL dialog
+ */
+
+static void opengl_dialog(void *arg)
+{
+	dialog *parent = (dialog *)arg;
+	OGL_ConfigureData &prefs = Get_OGL_ConfigureData();
+
+	// Create dialog
+	dialog d;
+	d.add(new w_static_text("OPENGL OPTIONS", TITLE_FONT, TITLE_COLOR));
+	d.add(new w_spacer());
+	w_toggle *zbuffer_w = new w_toggle("Z Buffer", prefs.Flags & OGL_Flag_ZBuffer);
+	d.add(zbuffer_w);
+	w_toggle *landscape_w = new w_toggle("Landscapes", !(prefs.Flags & OGL_Flag_FlatLand));
+	d.add(landscape_w);
+	w_toggle *fog_w = new w_toggle("Fog", prefs.Flags & OGL_Flag_Fog);
+	d.add(fog_w);
+	w_toggle *multi_w = new w_toggle("Multitexturing", prefs.Flags & OGL_Flag_SnglPass);
+	d.add(multi_w);
+	w_toggle *static_w = new w_toggle("Static Effect", !(prefs.Flags & OGL_Flag_FlatStatic));
+	d.add(static_w);
+	w_toggle *fader_w = new w_toggle("Color Effects", prefs.Flags & OGL_Flag_Fader);
+	d.add(fader_w);
+	w_toggle *liq_w = new w_toggle("Transparent Liquids", prefs.Flags & OGL_Flag_LiqSeeThru);
+	d.add(liq_w);
+	w_toggle *map_w = new w_toggle("OpenGL Overhead Map", prefs.Flags & OGL_Flag_Map);
+	d.add(map_w);
+	d.add(new w_spacer());
+	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
+	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+	// Clear screen
+	clear_screen();
+
+	// Run dialog
+	if (d.run() == 0) {	// Accepted
+		bool changed = false;
+
+		uint16 flags = 0;
+		if (zbuffer_w->get_selection()) flags |= OGL_Flag_ZBuffer;
+		if (!(landscape_w->get_selection())) flags |= OGL_Flag_FlatLand;
+		if (fog_w->get_selection()) flags |= OGL_Flag_Fog;
+		if (multi_w->get_selection()) flags |= OGL_Flag_SnglPass;
+		if (!(static_w->get_selection())) flags |= OGL_Flag_FlatStatic;
+		if (fader_w->get_selection()) flags |= OGL_Flag_Fader;
+		if (liq_w->get_selection()) flags |= OGL_Flag_LiqSeeThru;
+		if (map_w->get_selection()) flags |= OGL_Flag_Map;
+
+		if (flags != prefs.Flags) {
+			prefs.Flags = flags;
+			changed = true;
+		}
+
+		if (changed)
+			write_preferences();
+	}
+
+	// Redraw parent dialog
+	clear_screen();
+	parent->draw();
+}
+
+
+/*
+ *  Sound dialog
  */
 
 class w_toggle *stereo_w;
@@ -336,7 +406,7 @@ static void sound_dialog(void *arg)
 
 
 /*
- *  Handle controls dialog
+ *  Controls dialog
  */
 
 static w_toggle *mouse_w;
@@ -491,7 +561,7 @@ static void keyboard_dialog(void *arg)
 
 
 /*
- *  Handle environment dialog
+ *  Environment dialog
  */
 
 class w_env_list : public w_list<FileSpecifier> {

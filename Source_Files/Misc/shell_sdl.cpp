@@ -69,8 +69,6 @@ static void usage(const char *prg_name)
 		"\t[-g | --nogl]          Do not use OpenGL\n"
 #endif
 		"\t[-s | --nosound]       Do not access the sound card\n"
-		"\t                       on 'Begin New Game' will start at the\n"
-		"\t                       specified level\n"
 #if defined(__unix__) || defined(__BEOS__)
 		"\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 		"the data directory.\n"

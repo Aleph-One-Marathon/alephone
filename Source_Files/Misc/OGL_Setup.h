@@ -109,7 +109,7 @@ struct OGL_ConfigureData
 	OGL_Texture_Configure TxtrConfigList[OGL_NUMBER_OF_TEXTURE_TYPES];
 
 	// Overall rendering flags
-	short Flags;
+	uint16 Flags;
 	
 	// Color of the Void
 	RGBColor VoidColor;

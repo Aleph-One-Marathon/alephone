@@ -1,5 +1,11 @@
 Change log of the SDL version of Aleph One
 
+September 9, 2000
+ - implemented OpenGL prefs menu (only flags)
+ - fixed possible reference to freed memory in RenderVisTree::cast_render_ray()
+   which caused Desla 2 to crash
+ - fixed reference to unallocated memory in possible_intersecting_monsters()
+
 September 7, 2000
  - improved PICT compatibility (implemented opcodes 0x0099 and 0x009b,
    ignored many more opcodes)

@@ -424,6 +424,7 @@ And a list of known bugs:
  - Lo-res mode (F3) doesn't work
  - Snapshots (F9) don't work with OpenGL
  - Some preferences items are missing
+ - OpenGL multitexturing crashes NVIDIA GLX 0.9-5, reason unknown
  - Some error messages are those of the Mac version, which are often
    inappropriate or misleading
 

@@ -622,7 +622,7 @@ struct side_data /* size platform-dependant */
 	int16 secondary_lightsource_index;
 	int16 transparent_lightsource_index;
 
-	int16 ambient_delta;
+	int32 ambient_delta;
 
 	int16 unused[1];
 };
