@@ -121,9 +121,31 @@ void NetCancelJoin(void)
 }
 
 void NetSetServerIdentifier(short identifier) {
-  gNetwork.SetServerIdentifier(identifier);
+  gNetwork.ServerIdentifier(identifier);
 }
 
-void NetGetLocalPlayerIndex(void) {
-  return gNetwork.GetLocalPlayerIndex();
+short NetGetLocalPlayerIndex(void) {
+  return gNetwork.LocalPlayerIndex();
 }
+
+bool NetNumberOfPlayerValid(void) {
+  return gNetwork.NumberOfPLayerIsValid();
+}
+
+void *NetGetPlayerData(short player_index) {
+  return (void *) gNetwork.PlayerInfo(player_index);
+}
+
+void *NetGetGameData(void) {
+  return (void *) gNetwork.GameInfo();
+}
+
+void NetSetupTopologyFromStarts(const player_start_data* inStartArray,
+				short inStartCount) {
+  gNetwork.SetupTopologyFromStarts(inStartArray, inStartCount);
+}
+
+bool NetEntityNotInGame(NetEntityName *entity, NetAddrBlock *address) {
+  return true;
+}
+

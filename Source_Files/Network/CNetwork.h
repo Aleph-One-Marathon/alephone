@@ -42,6 +42,7 @@ class Network
 
   short NetState(void) { return netState_; };
 
+  void BecomeGatherer();
   bool BeginGathering(game_info gameInfo, player_info playerInfo, 
 		      bool resuming_game);
   void CancelGathering(void);
@@ -53,12 +54,29 @@ class Network
 	   Uint16 port);
   void Cancel(void);
 
-  void SetServerIdentifier(short identifier) { 
+  void ServerIdentifier(short identifier) { 
     serverPlayerIndex_ = identifier; 
   };
 
-  short GetLocalPlayerIndex(void) { return localPlayerIndex_; };
-  
+  short LocalPlayerIndex(void) { return localPlayerIndex_; };
+  bool NumberOfPlayerIsValid(void) { return true; };
+  short NumPlayers(void) { return topology_->player_count; };
+  player_info *PlayerInfo(short player_index) { 
+    return topology_->players[player_index].player_info; };
+  game_info *GameInfo(void) { return topology_->game_info; };
+  void SetupTopologyFromStarts(const player_start_data* inStartArray,
+			       short inStartCount);
+  bool IsServer(void) { 
+    return localPlayerIndex_ != 0 && localPlayerIndex_ == serverPlayerIndex_;};
+
+
+  // game data
+  // CNetwork makes a copy, and doesn't free the original buffer
+  void SetMap(byte* data, size_t length);
+  void SetPhysics(byte* data, size_t length);
+  void SetNetscript(byte* data, size_t length);
+
+  void DistributeGameData(void);
   
   
  protected:
@@ -74,7 +92,27 @@ class Network
   short localPlayerIdentifier_;
   short serverPlayerIndex_; // into topology
 
-  CommunicationsChannel serverChannel_;
+  byte *mapData_;
+  size_t mapLength_;
+  byte *physicsData_;
+  size_t physicsLength_;
+  byte *netscriptData_;
+  size_t netScriptLength_;
+
+  CommunicationsChannelFactory *communicationsChannelFactory_;
+  // this is your connection to the server, if you're a joiner or wannabe
+  // if you're the server, this is unused for the moment
+  CommunicationsChannel *serverChannel_;
+
+  // these are unused unless you're the server
+  CommunicationsChannel *listeningChannel_;
+  CommunicationsChannel *clientChannels_[MAX_CONNECTIONS];
+  int channelToPlayerMap[MAX_CONNECTIONS];
+  int playerToChannelMap[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+
+  // this is valid for servers (join info) and (potential) joiners (for
+  //      looking up chat name / color)
+  player_info *potentialPlayers[MAX_CONNECTIONS];
 
   bool resuming_saved_game_;
 
@@ -91,6 +129,7 @@ class Network
     stateInitialized,
 
     // gather states
+    stateGListening,
     stateGGathering,
     stateGSendingGameData,
     stateGInGame,
@@ -101,7 +140,8 @@ class Network
     stateJAwaitingChatInfo,
     stateJAwaitingStartJoin,
     stateJAwaitingAcceptJoin,
-    stateJAwaitingNetGameState,
+    stateJAwaitingLevelData,
+    stateJAwaitingNetGameStart,
     stateJInGame,
     
     // gather states (for individual joiners)
@@ -117,9 +157,6 @@ class Network
   enum {
     errorConnectionRefused
   }
-
-  short netState_ = netUninitialized;
-    
 
 }
 

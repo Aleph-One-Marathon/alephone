@@ -48,8 +48,8 @@ bool Network::Enter()
     NetSetServerIdentifier(0);
     udpSocket_ = SDL_SwapBE16(network_preferences->game_port);
     error = NetDDPOpenSocket(&udpSocket_, NetDDPPacketHandler);
-    if (error = noErr) {
-      oldSelfSendStatus_ = NetSetSelfSend(true);
+    if (error == noErr) {
+      //      oldSelfSendStatus_ = NetSetSelfSend(true);
       serverPlayerIndex_ = 0;
       currentGameProtocol_->Enter(&netState_);
       netState_ = netUninitialized;
@@ -153,23 +153,38 @@ void Network::InitializeTopology(game_info gameInfo, player_info playerInfo)
   topology_->gameInfo = gameInfo;
 }
 
+void Network::BecomeGatherer() {
+  assert(state_ == stateInitialized);
+  // start listening for connections
+  communicationsChannelFactory_ = new CommunicationsChannelFactory(15267);
+  if (communicationsChannelFactory_->isFunctional()) {
+    state_ = stateGListening;
+    listeningChannel = communicationsChannelFactory_->newIncomingConnection();
+  } else {
+    // can't gather for some reason, error out
+  }
+}
+    
+
 void Network::BeginGathering(game_info gameInfo, player_info playerInfo,
 			     bool resuming_game)
 {
+  assert(state_ == stateGListening);
   resuming_saved_game_ = resuming_game;
   InitializeTopology(gameInfo, playerInfo);
   state_ = stateGGathering;
   
   // send a begin joining message to everyone in the ready to join state
   NumberMessage message(kBeginJoiningMessage);
-  DistributeMessageToEveryone(message, stateGJReadyToJoin);
+  SendMessageToEveryone(message, stateGJReadyToJoin);
 
   return true;
 }
 
 void Network::CancelGathering()
 {
-  state_ = stateInitialized;
+  assert(state_ == stateGGathering);
+  state_ = stateGListening;
 
   // send a stop joining message to everyone in the awaiting join info or 
   // ready to play state
@@ -199,7 +214,7 @@ int Network::Join(unsigned char *player_name,
 
   // open a connection and send our version number, then return
   serverChannel_.connect(address, port);
-  if (serverChannel.isConnected()) {
+  if (serverChannel_.isConnected()) {
     NumberMessage message(kVersionMessage, GetNetworkVersion());
     serverChannel.enqueueOutgoingMessage(message);
     serverChannel.flushOutgoingMessages(false);
@@ -217,12 +232,62 @@ void Network::Cancel(void)
   // and depending on my state
 }
 
-void NetSetServerIdentifier(short identifier) {
-  gNetwork.SetServerIdentifier(identifier);
+void Network::SetupTopologyFromStarts(const player_start_data *inStartArray, short inStartCount) {
+  // no resuming saved games yet
+  return;
 }
 
-void NetGetLocalPlayerIndex(void) {
-  return gNetwork.GetLocalPlayerIndex();
+static void replace_data(byte* copy, size_t &copy_length,
+			 byte* data, size_t length) {
+  if (copy) {
+    free(copy);
+    copy = NULL;
+  }
+  copy = (byte *) malloc (length);
+  copy_length = length;
 }
+
+void Network::SetMap(byte* data, size_t length) {
+  replace_data(mapData_, mapLength_, data, length);
+}
+
+void Network::SetPhysics(byte* data, size_t length) {
+  replace_data(physicsData_, physicsLength_, data, length);
+}
+
+void Network::SetLua(byte* data, size_t length) {
+  replace_data(luaData_, luaLength_, data, length);
+}
+
+
+void Network::DistributeGameData(void) {
+  
+  assert(mapLength_ > 0);
+  if (physicsLength_ > 0 && physicsData_) {
+    BigChunkOfDataMessage physicsMessage(kPhysicsMessage, physicsData_, physicsLength_);
+    SendMessageToPlayers(physicsMessage);
+    physicsLength_ = 0;
+    free(physicsData_);
+    physicsData_ = NULL;
+  }
+  if (luaLength_ > 0 && luaData_) {
+    BigChunkOfDataMessage luaMessage(kLuaMessage, luaData_, luaLength_);
+    SendMessageToPlayers(luaMessage);
+    luaLength_ = 0;
+    free(luaData_);
+    luaData_ = NULL;
+  }
+  
+  BigChunkOfDataMessage mapMessage(kMapMessage, mapData_, mapLength_);
+  SendMessageToPlayers(mapMessage);
+  mapLength_ = 0;
+  free(mapData_);
+  mapData_ = NULL;
+}
+
+
+    
+
+
 
 
