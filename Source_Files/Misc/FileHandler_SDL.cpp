@@ -231,6 +231,13 @@ void *LoadedResource::GetPointer(bool DoDetach)
 	return ret;
 }
 
+void LoadedResource::SetData(void *data, size_t length)
+{
+	Unload();
+	p = data;
+	size = length;
+}
+
 void LoadedResource::Detach()
 {
 	p = NULL;

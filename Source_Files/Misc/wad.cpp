@@ -666,7 +666,7 @@ bool write_wad(
 		default:
 			vassert(false,csprintf(temporary,"Unrecognized entry-header length: %d",entry_header_length));
 		}
-		if (write_to_file(OFile, offset, buffer, entry_header_length));
+		if (write_to_file(OFile, offset, buffer, entry_header_length))
 		{
 			offset+= entry_header_length;
 		
@@ -1058,7 +1058,6 @@ static bool read_indexed_directory_data(
 {
 	short base_entry_size;
 	long offset;
-	int error = 0;
 
 	/* Get the sizes of the data structures */
 	base_entry_size= get_directory_base_length(header);
@@ -1073,7 +1072,8 @@ static bool read_indexed_directory_data(
 		assert(base_entry_size<=SIZEOF_directory_entry);
 		
 		uint8 buffer[MAX(SIZEOF_old_directory_entry,SIZEOF_directory_entry)];
-		error= read_from_file(OFile, offset, buffer, base_entry_size);
+		if (!read_from_file(OFile, offset, buffer, base_entry_size))
+			return false;
 		switch (base_entry_size)
 		{
 		case SIZEOF_old_directory_entry:
@@ -1085,7 +1085,10 @@ static bool read_indexed_directory_data(
 		default:
 			vassert(false,csprintf(temporary,"Unrecognized base-entry length: %d",base_entry_size));
 		}
+		return true;
+
 	} else {
+
 		short directory_index;
 
 		/* Pin it, so we can try to read future file formats */
@@ -1095,7 +1098,7 @@ static bool read_indexed_directory_data(
 		}
 	
 		/* We have to loop.. */
-		for(directory_index= 0; !error && directory_index<header->wad_count; ++directory_index)
+		for(directory_index= 0; directory_index<header->wad_count; ++directory_index)
 		{
 			/* We use a hint, that the index is the real index, to help make this have */
 			/* a ÒhitÓ on the first try */
@@ -1106,7 +1109,8 @@ static bool read_indexed_directory_data(
 
 			/* Read it.. */
 			uint8 buffer[MAX(SIZEOF_old_directory_entry,SIZEOF_directory_entry)];
-			error= read_from_file(OFile, offset, buffer, base_entry_size);
+			if (!read_from_file(OFile, offset, buffer, base_entry_size))
+				return false;
 			switch (base_entry_size)
 			{
 			case SIZEOF_old_directory_entry:
@@ -1120,13 +1124,13 @@ static bool read_indexed_directory_data(
 			}
 			if(entry->index==index) 
 			{
-				break; /* Got it! */
+				return true; /* Got it */
 			}
 		}
 	}
 
-	/* File error has precedence. */
-	return error;
+	/* Not found */
+	return false;
 }
 
 /* Internal function.. */
@@ -1138,7 +1142,7 @@ static bool read_indexed_wad_from_file_into_buffer(
 	long *length) /* Length of maximum buffer on entry, actual length on return */
 {
 	struct directory_entry entry;
-	int error = 0;
+	bool success = false;
 
 	/* Read the directory entry first */
 	if (read_indexed_directory_data(OFile, header, index, &entry))
@@ -1148,7 +1152,7 @@ static bool read_indexed_wad_from_file_into_buffer(
 		assert(buffer);
 
 		/* Read into it. */
-		error= read_from_file(OFile, entry.offset_to_start, buffer, entry.length);
+		success = read_from_file(OFile, entry.offset_to_start, buffer, entry.length);
 
 		/* Set the length */
 		*length= entry.length;
@@ -1158,7 +1162,7 @@ static bool read_indexed_wad_from_file_into_buffer(
 		assert(entry.length==calculate_raw_wad_length(header, (uint8 *)buffer));
 	}
 	
-	return error;
+	return success;
 }
 
 /* This *MUST* be a base wad.. */
@@ -1510,51 +1514,22 @@ static fileref find_available_union_refnum(
 
 static bool write_to_file(
 	OpenedFile& OFile, 
-	// fileref file_id, 
 	long offset, 
 	void *data, 
 	long length)
 {
 	if (!OFile.SetPosition(offset)) return false;
 	return OFile.Write(length, data);
-
-	/*
-	FileError err;
-
-	assert(file_id != FILEREF_NONE);
-	err= set_fpos(file_id, offset);
-	if (!err)
-	{
-		err= write_file(file_id, length,  data);
-		assert(!err);
-	}
-	
-	return err;
-	*/
 }
 
 static bool read_from_file(
 	OpenedFile& OFile, 
-	// fileref file_id, 
 	long offset, 
 	void *data, 
 	long length)
 {
 	if (!OFile.SetPosition(offset)) return false;
 	return OFile.Read(length, data);
-
-	/*
-	FileError err;
-
-	assert(file_id != FILEREF_NONE);
-	err= set_fpos(file_id, offset);
-	if (!err)
-	{
-		err= read_file(file_id, length, data);
-	}
-	
-	return err;
-	*/
 }
 
 static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, int Count)

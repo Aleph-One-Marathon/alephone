@@ -176,6 +176,8 @@ static int uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int d
 		if (depth <= 8) {
 
 			// Indexed color
+			if (pack_type == 1)
+				goto no_packing;
 			data_size = uncompress_rle8(src, row_bytes, dst, dst_pitch, height);
 
 		} else {
@@ -190,7 +192,7 @@ static int uncompress_picture(const uint8 *src, int row_bytes, uint8 *dst, int d
 			}
 			switch (pack_type) {
 				case 1: {	// No packing
-					const uint8 *p = src;
+no_packing:			const uint8 *p = src;
 					uint8 *q = dst;
 					for (int y=0; y<height; y++) {
 						memcpy(q, p, MIN(row_bytes, dst_pitch));

@@ -140,6 +140,10 @@ public:
 	
 	// Get pointer (always present)
 	void *GetPointer(bool DoDetach = false);
+
+	// Make resource from raw resource data; the caller gives up ownership
+	// of the pointed to memory block
+	void SetData(void *data, size_t length);
 	
 	LoadedResource();
 	~LoadedResource() {Unload();}	// Auto-unload when destroying

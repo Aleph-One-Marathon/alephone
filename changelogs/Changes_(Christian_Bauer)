@@ -1,5 +1,9 @@
 Change log of the SDL version of Aleph One
 
+March 8, 2001
+ - added support for pictures in 'pict' and 'clut' wad tags, like the Win95
+   version of Marathon 2 has (images.cpp)
+
 February 7, 2001
  - more reasonable default OpenGL flags:
      FlatStatic on (because the real 'static' effect causes major slowdown)
