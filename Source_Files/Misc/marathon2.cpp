@@ -84,10 +84,6 @@ void initialize_marathon(
 //	import_definition_structures();
 #endif
 	
-	// LP addition:
-	// Try to get this one first.
-	initialize_typecodes();
-	//
 	build_trig_tables();
 	allocate_map_memory();
 	allocate_render_memory();
