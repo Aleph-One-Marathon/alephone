@@ -282,12 +282,13 @@ if (force_update || !(dynamic_world->tick_count&definition->shape_frequency))
 // Fixed countdown bug in parallel with similar bug in map.cpp
 size_t count_number_of_medias_used()
 {
-	size_t number_used = MAXIMUM_MEDIAS_PER_MAP; // Take care of the case of all slots being used
-	for (size_t media_index=MAXIMUM_MEDIAS_PER_MAP-1; media_index >= 0 && media_index <= MAXIMUM_MEDIAS_PER_MAP; media_index--)
+	size_t number_used = 0; // Take care of the case of no slots being used
+	for (int media_index=MAXIMUM_MEDIAS_PER_MAP-1; media_index>=0; media_index--)
 	{
-		if (!SLOT_IS_USED(medias + media_index))
+		// Look for the last used one rather than the last unused one!
+		if (SLOT_IS_USED(medias + media_index))
 		{
-			number_used = media_index + 1;
+			number_used = (size_t)(media_index + 1);
 			break;
 		}
 	}
