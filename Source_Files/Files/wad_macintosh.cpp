@@ -62,7 +62,7 @@ struct find_files_private_data { /* used for enumerating wadfiles */
 /* ------------ local prototypes */
 
 static bool match_wad_checksum_callback(FileSpecifier& File, void *data);
-static bool checksum_and_not_base_callback(FileSpecifier& File, void *data);
+//static bool checksum_and_not_base_callback(FileSpecifier& File, void *data);
 static bool match_modification_date_callback(FileSpecifier& File, void *data);
 // Now intended to use the _typecode_stuff in tags.h (abstract filetypes)
 static bool find_wad_file_with_checksum_in_directory(
@@ -80,8 +80,6 @@ bool find_wad_file_that_has_checksum(
 	short path_resource_id,
 	uint32 checksum)
 {
-	OSErr err;
-	FSSpec app_spec;
 	bool file_matched= false;
 	
 	/* Look for the files in the same directory that we are in.. */	
@@ -101,8 +99,6 @@ bool find_file_with_modification_date(
 	short path_resource_id,
 	TimeType modification_date)
 {
-	OSErr err;
-	FSSpec app_spec;
 	bool file_matched= false;
 
 	/* Look for the files in the same directory that we are in.. */	
@@ -116,6 +112,7 @@ bool find_file_with_modification_date(
 
 
 /* -------------- local code */
+#if 0
 static bool checksum_and_not_base_callback(
 	FileSpecifier& File,
 	void *data)
@@ -135,6 +132,7 @@ static bool checksum_and_not_base_callback(
 	
 	return add_this_file;
 }
+#endif
 
 static bool match_wad_checksum_callback(
 	FileSpecifier& File,
@@ -161,7 +159,6 @@ static bool find_wad_file_with_checksum_in_directory(
 	bool success= false;
 	FileFinder pb;
 	struct find_checksum_private_data private_data;
-	short error;
 
 	/* Setup the private data for the callback */
 	private_data.checksum_to_match= checksum;
@@ -201,7 +198,6 @@ static bool find_file_with_modification_date_in_directory(
 {
 	bool success= false;
 	FileFinder pb;
-	short error;
 
 	/* Setup the private data for the callback */
 	target_modification_date= modification_date;
