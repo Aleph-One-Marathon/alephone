@@ -41,6 +41,10 @@
 #include    "world.h"   // local_random()
 #include    "mysound.h"
 
+#ifdef SPEEX
+#include "network_speex.h"
+#endif SPEEX
+
 enum {
     kSoundBufferQueueSize = 32,     // should never get anywhere near here, but at 12 bytes/struct these are cheap.
     kNoiseBufferSize = 1280,        // how big a buffer we should use for noise (at 11025 this is about 1/9th of a second)
@@ -98,6 +102,10 @@ open_network_speaker() {
     // Reset a couple others to sane values
     sDryDequeues    = 0;
     sSpeakerIsOn    = false;
+    
+#ifdef SPEEX
+        init_speex_decoder();
+#endif
     
     return 0;
 }
@@ -193,6 +201,10 @@ close_network_speaker() {
     }
     sDryDequeues    = 0;
     sSpeakerIsOn    = false;
+    
+    #ifdef SPEEX
+    destroy_speex_decoder();
+    #endif
 }
 
 

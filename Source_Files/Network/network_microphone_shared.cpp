@@ -42,6 +42,7 @@
 
 #ifdef SPEEX
 #include "speex.h"
+#include "preferences.h"
 #include "network_speex.h"
 #endif
 
@@ -54,7 +55,7 @@ using namespace std;
 
 
 enum {
-    kNetworkAudioDataBytesPerPacket = 1024,
+    kNetworkAudioDataBytesPerPacket = 1024, // this is meaningless in speex
     kNetworkAudioBytesPerSample = 1,
     kNetworkAudioSamplesPerPacket = kNetworkAudioDataBytesPerPacket / kNetworkAudioBytesPerSample
 };
