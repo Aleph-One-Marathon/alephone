@@ -525,8 +525,7 @@ void OGL_TextureOptionsBase::Unload()
 
 void OGL_SkinManager::Load()
 {
-	// Assumed to be done between OpenGL contexts, as it were; clear the texture-use flags
-	objlist_clear(IDsInUse[0],NUMBER_OF_OPENGL_BITMAP_SETS*NUMBER_OF_TEXTURES);
+	Reset();
 	
 	for (vector<OGL_SkinData>::iterator SkinIter = SkinData.begin(); SkinIter < SkinData.end(); SkinIter++)
 		SkinIter->Load();
@@ -535,12 +534,56 @@ void OGL_SkinManager::Load()
 
 void OGL_SkinManager::Unload()
 {
-	// Assumed to be done between OpenGL contexts, as it were; clear the texture-use flags
-	objlist_clear(IDsInUse[0],NUMBER_OF_OPENGL_BITMAP_SETS*NUMBER_OF_TEXTURES);
+	Reset();
 	
 	for (vector<OGL_SkinData>::iterator SkinIter = SkinData.begin(); SkinIter < SkinData.end(); SkinIter++)
 		SkinIter->Unload();
 }
+
+
+void OGL_SkinManager::Reset()
+{
+	if (OGL_IsActive())
+	{
+		for (int k=0; k<NUMBER_OF_OPENGL_BITMAP_SETS; k++)
+			for (int l=0; l<NUMBER_OF_TEXTURES; l++)
+			{
+				if (IDsInUse[k][l])
+					glDeleteTextures(1,&IDs[k][l]);
+			}
+	}
+	
+	// Mass clearing
+	objlist_clear(IDsInUse[0],NUMBER_OF_OPENGL_BITMAP_SETS*NUMBER_OF_TEXTURES);
+}
+
+
+OGL_SkinData *OGL_SkinManager::GetSkin(short CLUT)
+{
+	for (int k=0; k<SkinData.size(); k++)
+	{
+		OGL_SkinData& Skin = SkinData[k];
+		if (Skin.CLUT == CLUT || Skin.CLUT == ALL_CLUTS)
+			return &Skin;
+	}
+
+	return NULL;
+}
+
+
+void OGL_SkinManager::Use(short CLUT, short Which)
+{
+	// References so they can be written into
+	GLuint& TxtrID = IDs[CLUT][Which];
+	bool& InUse = IDsInUse[CLUT][Which];
+	if (!InUse)
+	{
+		glGenTextures(1,&TxtrID);
+		InUse = true;
+	}
+	glBindTexture(GL_TEXTURE_2D,TxtrID);
+}
+
 
 
 void OGL_ModelData::Load()
@@ -601,6 +644,20 @@ void OGL_UnloadModelsImages(int Collection)
 	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
 	{
 		MdlIter->ModelData.Unload();
+	}
+}
+
+
+// Reset model skins; used in OGL_ResetTextures() in OGL_Textures.cpp
+void ResetModelSkins()
+{
+	for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
+	{
+		vector<ModelDataEntry>& ML = MdlList[ic];
+		for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
+		{
+			MdlIter->ModelData.Reset();
+		}
 	}
 }
 
@@ -984,7 +1041,7 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
-	else if (strcmp(Tag,"sequence") == 0)
+	else if (strcmp(Tag,"seq") == 0)
 	{
 		if (ReadBoundedNumericalValue(Value,"%hd",Sequence,short(0),short(MAXIMUM_SHAPES_PER_COLLECTION-1)))
 		{

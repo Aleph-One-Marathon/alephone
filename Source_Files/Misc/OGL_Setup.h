@@ -277,14 +277,18 @@ struct OGL_SkinManager
 	};
 	GLuint IDs[NUMBER_OF_OPENGL_BITMAP_SETS][NUMBER_OF_TEXTURES];		// Texture ID's
 	bool IDsInUse[NUMBER_OF_OPENGL_BITMAP_SETS][NUMBER_OF_TEXTURES];	// Which ID's are being used?
-	void ResetSkins();					// Resets the skins so that they may be reloaded
+	
+	void Reset();	// Resets the skins so that they may be reloaded
+	
+	OGL_SkinData *GetSkin(short CLUT);		// Gets a pointer to a skin-data object; NULL for no skin available
+	void Use(short CLUT, short Which);		// Uses a skin	
 	
 	// For convenience
 	void Load();
 	void Unload();
 	
 	// Initially all unused (of course)
-	OGL_SkinManager() {objlist_clear(IDsInUse[0],NUMBER_OF_OPENGL_BITMAP_SETS*NUMBER_OF_TEXTURES);}
+	OGL_SkinManager() {Reset();}
 };
 
 // Static 3D-Model Data and Options

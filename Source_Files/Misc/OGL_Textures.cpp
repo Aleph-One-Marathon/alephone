@@ -1168,6 +1168,7 @@ TextureManager::~TextureManager()
 	if (GlowBuffer != 0) delete []GlowBuffer;
 }
 
+extern void ResetModelSkins();
 extern void ResetScreenFont();
 extern void OGL_ResetMapFonts(bool IsStarting);
 extern void OGL_ResetHUDFonts(bool IsStarting);
@@ -1193,6 +1194,9 @@ void OGL_ResetTextures()
 					TSSet[ist].Reset();
 			}
 		}
+	
+	// Reset the surface textures for all the models:
+	ResetModelSkins();
 	
 	// Reset the font textures
 	ResetScreenFont();
