@@ -866,7 +866,7 @@ static void default_environment_preferences(environment_preferences_data *prefer
 #endif
 
         preferences->group_by_directory = true;
-        preferences->reduce_singletons = true;
+        preferences->reduce_singletons = false;
         preferences->non_bungie_warning = true;
 }
 
@@ -2079,7 +2079,7 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
         }
         else if (StringsEqual(Tag,"reduce_singletons"))
         {
-                return ReadBooleanValue(Value,environment_preferences->reduce_singletons);
+                return ReadBooleanValue(false,environment_preferences->reduce_singletons);
         }
         else if (StringsEqual(Tag,"non_bungie_warning"))
         {
