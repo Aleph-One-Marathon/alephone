@@ -96,26 +96,26 @@ const int noErr = 0;
 const int kFontIDMonaco = 4;
 const int kFontIDCourier = 22;
 #else
-#if !defined(TARGET_API_MAC_CARBON)
-#define DEBUGASSERTMSG
-#endif
-#ifdef DEBUG
-#define WAS_DEBUG
+# if !defined(TARGET_API_MAC_CARBON)
+#  define DEBUGASSERTMSG
+# endif
+# ifdef DEBUG
+#  define WAS_DEBUG
 //AS: this is ugly...
 
-#undef DEBUG
-#endif
-#if !defined(TARGET_API_MAC_CARBON)
-#define dialog CHEESEOFDEATH
-#define DialogPtr mDialogPtr
-#include <MacTypes.h>
-#include <Quickdraw.h>
-#undef dialog
-#undef DialogPtr
-#endif
-#ifdef WAS_DEBUG
-#define DEBUG
-#endif
+#  undef DEBUG
+# endif
+# if !defined(TARGET_API_MAC_CARBON)
+#  define dialog CHEESEOFDEATH
+#  define DialogPtr mDialogPtr
+#  include <MacTypes.h>
+#  include <Quickdraw.h>
+#  undef dialog
+#  undef DialogPtr
+# endif
+# ifdef WAS_DEBUG
+#  define DEBUG
+# endif
 #endif
 
 /*
