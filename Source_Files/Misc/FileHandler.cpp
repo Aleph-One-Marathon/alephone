@@ -14,6 +14,10 @@ Feb 3, 2000 (Loren Petrich):
 
 Nov 5, 2000 (Loren Petrich):
 	Added initializer of RsrcHandle to LoadedResource constructor.
+
+Feb 15, 2001 (Loren Petrich):
+	Added event flushing for saving, so that using "return" as the action key
+	does not cause unwanted saves.
 */
 
 #include <string.h>
@@ -631,7 +635,10 @@ bool FileSpecifier::WriteDialogAsync(int Type, char *Prompt, char *DefaultName)
 	/* Create the UPP's */
 	dlgHook= NewDlgHookYDProc(custom_put_hook);
 	assert(dlgHook);
-
+	
+	// For those who use return as the action key, queued returns can cause unwanted saves
+	FlushEvents(everyEvent,0);
+	
 	/* The drawback of this method-> I don't get a New Folder button. */
 	/* If this is terribly annoying, I will add the Sys7 only code. */
 	CustomPutFile(PasPrompt, 
