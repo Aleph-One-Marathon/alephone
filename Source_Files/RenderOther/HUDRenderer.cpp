@@ -339,6 +339,40 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
 				
 		if(item_type==_network_statistics)
 		{
+ 
+                        char remaining_time[16];
+                        int seconds = dynamic_world->game_information.game_time_remaining / TICKS_PER_SECOND;
+                        if (seconds / 60 < 1000) // start counting down at 999 minutes
+                        { 
+                                sprintf(remaining_time, "%ld:%02ld", seconds/60, seconds%60);
+                                draw_inventory_time(remaining_time, current_row-1); // compensate for current_row++ above
+                        } else if (GET_GAME_OPTIONS() & _game_has_kill_limit) 
+                        {
+                            switch (GET_GAME_TYPE())
+                            {
+                
+                                case _game_of_kill_monsters:
+                                case _game_of_cooperative_play:
+                                case _game_of_king_of_the_hill:
+                                case _game_of_kill_man_with_ball:
+                                case _game_of_tag:
+                                
+                                short player_index;
+                                int kill_limit = INT_MAX;
+                                for (player_index = 0; player_index < dynamic_world->player_count;++player_index)
+                                {
+                                        struct player_data *player = get_player_data(player_index);
+                                        
+                                        int kills_left = dynamic_world->game_information.kill_limit - (player->total_damage_given.kills - player->damage_taken[player_index].kills);
+                                        if (kills_left < kill_limit) kill_limit = kills_left;
+                                 }
+                                char kills_left[4];
+                                sprintf(kills_left, "%d", kill_limit);
+                                draw_inventory_time(kills_left, current_row-1);
+                                break;
+                            }
+                        }
+                                
 			struct player_ranking_data rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 	
 			calculate_player_rankings(rankings);
@@ -402,6 +436,21 @@ void HUD_Class::draw_inventory_header(char *text, short offset)
 	destination.left+= TEXT_INSET;
 	DrawText(text, &destination, _center_vertical, _interface_font,
 		_inventory_text_color);
+}
+
+/*
+ * Draw the time in the far right of the rectangle; does not erase the background...should always be called after
+ * draw_inventory_header
+ */
+void HUD_Class::draw_inventory_time(char *text, short offset)
+{
+
+    screen_rectangle destination;
+        
+    calculate_inventory_rectangle_from_offset(&destination, offset);
+    
+    destination.left = destination.right - _text_width(text, _interface_font) - TEXT_INSET;
+    DrawText(text, &destination, _center_vertical, _interface_font, _inventory_text_color);
 }
 
 

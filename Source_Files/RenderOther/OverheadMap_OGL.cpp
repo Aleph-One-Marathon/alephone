@@ -92,7 +92,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 
 // rgb_color straight to OpenGL
-inline void SetColor(rgb_color& Color) {glColor3usv((unsigned short *)(&Color));}
+static inline void SetColor(rgb_color& Color) {glColor3usv((unsigned short *)(&Color));}
 
 // Need to test this so as to find out when the color changes
 inline bool ColorsEqual(rgb_color& Color1, rgb_color& Color2)

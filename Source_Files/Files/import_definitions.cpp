@@ -211,7 +211,7 @@ static void import_physics_wad_data(
 		unpack_physics_constants(data,count);
 	}
 	
-	extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
+	data= extract_type_from_wad(wad, WEAPONS_PHYSICS_TAG, &data_length);
 	count = data_length/SIZEOF_weapon_definition;
 	assert(count*SIZEOF_weapon_definition == data_length);
 	assert(count <= get_number_of_weapon_types());

@@ -57,7 +57,7 @@ struct progress_data progress_data;
 
 /* ------ calls */
 void open_progress_dialog(
-	short message_id)
+	size_t message_id)
 {
 	Rect item_box;
 	short item_type;
@@ -111,7 +111,7 @@ void open_progress_dialog(
 }
 
 void set_progress_dialog_message(
-	short message_id)
+	size_t message_id)
 {
 	short item_type;
 	Rect bounds;

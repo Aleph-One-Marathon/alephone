@@ -1353,27 +1353,50 @@ void damage_monsters_in_radius(
 	IntersectedObjects.clear();
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, epicenter_polygon_index, false);
 	object_count= IntersectedObjects.size();
+        struct object_data *aggressor = NULL;
 	for (size_t i=0;i<object_count;++i)
 	{
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
-		world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&object->location);
-		world_distance monster_radius, monster_height;
-		
-		get_monster_dimensions(object->permutation, &monster_radius, &monster_height);
-
-		/* make sure we intersect the monster’s radius in the x,y-plane and that we intersect
-			his cylinder in z */
-		if (distance<radius+monster_radius)
-		{
-			if (epicenter->z+radius-distance>object->location.z && epicenter->z-radius+distance<object->location.z+monster_height)
-			{
-				if (!line_is_obstructed(epicenter_polygon_index, (world_point2d*)epicenter, object->polygon, (world_point2d*)&object->location))
-				{
-					damage_monster(object->permutation, aggressor_index, aggressor_type, epicenter, damage);
-				}
-			}
-		}
+                if (object->permutation == aggressor_index) {
+                        // damage the aggressor last, so tag suicides are handled correctly
+                        aggressor = object;
+                } else {
+                        world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&object->location);
+                        world_distance monster_radius, monster_height;
+                        
+                        get_monster_dimensions(object->permutation, &monster_radius, &monster_height);
+        
+                        /* make sure we intersect the monster’s radius in the x,y-plane and that we intersect
+                                his cylinder in z */
+                        if (distance<radius+monster_radius)
+                        {
+                                if (epicenter->z+radius-distance>object->location.z && epicenter->z-radius+distance<object->location.z+monster_height)
+                                {
+                                        if (!line_is_obstructed(epicenter_polygon_index, (world_point2d*)epicenter, object->polygon, (world_point2d*)&object->location))
+                                        {
+                                                damage_monster(object->permutation, aggressor_index, aggressor_type, epicenter, damage);
+                                        }
+                                }
+                        }
+                }
 	}
+        // damage the aggressor
+        if (aggressor != NULL) {
+                world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&aggressor->location);
+                world_distance monster_radius, monster_height;
+                
+                get_monster_dimensions(aggressor->permutation, &monster_radius, &monster_height);
+                if (distance<radius+monster_radius)
+                {
+                        if (epicenter->z+radius-distance>aggressor->location.z && epicenter->z-radius+distance<aggressor->location.z+monster_height)
+                        {
+                                if (!line_is_obstructed(epicenter_polygon_index, (world_point2d*)epicenter, aggressor->polygon, (world_point2d*)&aggressor->location))
+                                {
+                                        damage_monster(aggressor->permutation, aggressor_index, aggressor_type, epicenter, damage);
+                                        }
+                                }
+                        }
+                }
 }
 
 void damage_monster(

@@ -35,7 +35,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include <string.h>
 #include "OverheadMap_QD.h"
 
-inline void SetColor(rgb_color& Color) {RGBForeColor((RGBColor *)(&Color));}
+static inline void SetColor(rgb_color& Color) {RGBForeColor((RGBColor *)(&Color));}
 
 void OverheadMap_QD_Class::draw_polygon(
 	short vertex_count,

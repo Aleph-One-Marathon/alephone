@@ -195,7 +195,7 @@ void place_initial_objects(
 
 	for (index= 1; index<NUMBER_OF_MONSTER_TYPES; index++)
 	{
-		if (monster_placement_info[index].initial_count)
+		if (monster_placement_info[index].initial_count && GET_GAME_OPTIONS()&_monsters_replenish)
 		{
 			add_objects(_object_is_monster, index, monster_placement_info[index].initial_count, true);
 		}

@@ -153,7 +153,7 @@ static void draw_beveled_text_box(bool inset, Rect *box, short bevel_size, RGBCo
 // ZZZ: moved a few static functions to network_dialogs.h so we can share
 
 static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
-/* static */ void setup_dialog_for_game_type(DialogPtr dialog, short game_type);
+///* static */ void setup_dialog_for_game_type(DialogPtr dialog, short game_type);
 static void draw_player_box_with_team(Rect *rectangle, short player_index);
 
 static void setup_network_speed_for_join(DialogPtr dialog);

@@ -205,6 +205,7 @@ protected:
 	void update_ammo_display(bool force_redraw);
 	void update_inventory_panel(bool force_redraw);
 	void draw_inventory_header(char *text, short offset);
+        void draw_inventory_time(char *text, short offset);
 	short max_displayable_inventory_lines(void);
 	void calculate_inventory_rectangle_from_offset(screen_rectangle *r, short offset);
 	void draw_bar(screen_rectangle *rectangle, short actual_height,
