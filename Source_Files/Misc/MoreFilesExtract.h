@@ -1,4 +1,7 @@
-// Here is my extraction from the MoreFiles routines:
+// Here is my extraction from Apple's MoreFiles routines:
+// Licensing is uncertain, but I believe it to be GNU-compatible,
+// meaning that it can coexist with GNU code without affecting the license
+// of the original code (Loren Petrich)
 
 #include <Types.h>
 #include <Files.h>

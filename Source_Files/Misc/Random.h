@@ -9,6 +9,8 @@
 	and communicated to me by Joe McMahon (mcmahon@metalab.unc.edu).
 	I've rewritten the code communicated to me into a C++ class,
 	so that separate instances can be more easily handled.
+	
+	This is from code that is presumably GNU-compatible.
 */
 
 

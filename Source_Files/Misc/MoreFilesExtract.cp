@@ -1,5 +1,8 @@
-// Here is my extraction of the MoreFiles routines:
-// Note: TextUtils.h contains some C<->Pascal routines
+// Here is my extraction of Apple's MoreFiles routines:
+// Note: TextUtils.h contains some C<->Pascal routines,
+// Licensing is uncertain, but I believe it to be GNU-compatible,
+// meaning that it can coexist with GNU code without affecting the license
+// of the original code (Loren Petrich)
 
 #include <TextUtils.h>
 #include "MoreFilesExtract.h"
