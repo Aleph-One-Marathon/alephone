@@ -169,6 +169,7 @@ public:
 	int GetTextureType() {return TextureType;}	
 	bool IsGlowMapped() {return IsGlowing;}
 	bool IsBlended() {return (TxtrOptsPtr->OpacityType != OGL_OpacType_Crisp);}
+	bool VoidVisible() {return (TxtrOptsPtr->VoidVisible);}
 	
 	// Scaling and offset of the current texture;
 	// important for sprites, which will be padded to make them OpenGL-friendly.

@@ -7,6 +7,9 @@
 
 Jan 30, 2000 (Loren Petrich)
 	Changed "new" to "_new" to make data structures more C++-friendly
+
+June 15, 2000 (Loren Petrich):
+	Added supprt for Chris Pruett's Pfhortran
 */
 
 #include "portable_files.h"
@@ -47,6 +50,9 @@ void get_current_saved_game_name(unsigned char *file_name);
 boolean match_checksum_with_map(short vRefNum, long dirID, unsigned long checksum, 
 	FileDesc *file);
 void set_map_file(FileDesc *file);
+
+//CP Addition: get_map_file returns the FileDesc pointer to the current map
+FileDesc *get_map_file(void);
 
 /* --------- from PREPROCESS_MAP_MAC.C */
 void get_default_map_spec(FileDesc *_new);

@@ -56,6 +56,14 @@ May 22, 2000 (Loren Petrich):
 
 May 27, 2000 (Loren Petrich):
 	Added oxygen depletion and replenishment rates
+
+Jun 11, 2000 (Loren Petrich):
+	Pegging health and oxygen to maximum values when damaged;
+	takes into account negative damage from healing projectiles.
+	Also turned "agressor" into "aggressor".
+
+Jun 15, 2000 (Loren Petrich):
+	Added support for Chris Pruett's Pfhortran
 */
 
 #include "cseries.h"
@@ -418,7 +426,9 @@ void queue_action_flags(
 	struct player_data *player= get_player_data(player_index);
 	struct action_queue *queue= action_queues+player_index;
 
-	assert(!PLAYER_IS_ZOMBIE(player));
+	//assert(!PLAYER_IS_ZOMBIE(player)); // CP: Changed for scripting
+	if (PLAYER_IS_ZOMBIE(player))
+		return;
 	while ((count-= 1)>=0)
 	{
 		queue->buffer[queue->write_index]= *action_flags++;
@@ -439,7 +449,7 @@ long dequeue_action_flags(
 
 	if (PLAYER_IS_ZOMBIE(player))
 	{
-dprintf("Player is zombie!", player_index);
+		//dprintf("Player is zombie!", player_index);	// CP: Disabled for scripting
 		action_flags= 0;
 	}
 	else
@@ -462,9 +472,9 @@ short get_action_queue_size(
 
 	if (PLAYER_IS_ZOMBIE(player))
 	{
-dprintf("PLayer %d is a zombie", player_index);
+		//dprintf("PLayer %d is a zombie", player_index);  // CP: Disabled for scripting
 		size= ACTION_QUEUE_BUFFER_DIAMETER;
-	}
+	} 
 	else
 	{
 		if ((size= queue->write_index-queue->read_index)<0) size+= ACTION_QUEUE_BUFFER_DIAMETER;
@@ -620,7 +630,8 @@ void damage_player(
 				definition->type!=damage_type && i<NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS;
 				++i,++definition)
 			;
-		vassert(i!=NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS, csprintf(temporary, "can't react to damage type #%d", damage_type));
+		vwarn(i!=NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS, csprintf(temporary, "can't react to damage type #%d", damage_type));
+		// vassert(i!=NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS, csprintf(temporary, "can't react to damage type #%d", damage_type));
 	}
 	
 	if (damage_type!=_damage_absorbed)
@@ -634,12 +645,12 @@ void damage_player(
 			{
 				if (MONSTER_IS_PLAYER(aggressor))
 				{
-					struct player_data *agressor_player;
+					struct player_data *aggressor_player;
 					
 					aggressor_player_index= monster_index_to_player_index(aggressor_index);
-					agressor_player= get_player_data(aggressor_player_index);
+					aggressor_player= get_player_data(aggressor_player_index);
 					player->damage_taken[aggressor_player_index].damage+= damage_amount;
-					agressor_player->total_damage_given.damage+= damage_amount;
+					aggressor_player->total_damage_given.damage+= damage_amount;
 				}
 				else
 				{
@@ -651,13 +662,17 @@ void damage_player(
 		switch (damage->type)
 		{
 			case _damage_oxygen_drain:
-				if ((player->suit_oxygen-= damage_amount)<0) player->suit_oxygen= 0;
+				// LP change: pegging to maximum value
+				if ((player->suit_oxygen= MIN(long(player->suit_oxygen)-long(damage_amount),long(SHORT_MAX)))<0) player->suit_oxygen= 0;
+				// if ((player->suit_oxygen-= damage_amount)<0) player->suit_oxygen= 0;
 				if (player_index==current_player_index) mark_oxygen_display_as_dirty();
 				break;
 			
 			default:
 				/* damage the player, recording the kill if the aggressor was another player and we died */
-				if ((player->suit_energy-= damage_amount)<0)
+				// LP change: pegging to maximum value
+				if ((player->suit_energy= MIN(long(player->suit_energy)-long(damage_amount),long(SHORT_MAX)))<0)
+				// if ((player->suit_energy-= damage_amount)<0)
 				{
 					if (damage->type!=_damage_energy_drain)
 					{

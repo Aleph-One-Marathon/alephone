@@ -17,6 +17,11 @@
 	Walls must be a power of 2 horizontally and vertical;
 	landscapes must be a power of 2 horizontally
 	in order for the tiling to work properly.
+	
+	June 11, 2000:
+	
+	Added support for opacity shift factor (OpacityShift alongside OpacityScale);
+	should be good for making dark colors somewhat opaque.
 */
 
 #include <GL/gl.h>
@@ -651,6 +656,7 @@ void TextureManager::FindColorTables()
 				Opacity = MAX(MAX(Red,Green),Blue)/float(0xff);
 			}
 			Opacity *= TxtrOptsPtr->OpacityScale;
+			Opacity += TxtrOptsPtr->OpacityShift;
 			Opacity = PIN(Opacity,0,1);
 			
 			// Replace only the really-glowing colors' opacities

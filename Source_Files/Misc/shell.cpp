@@ -59,6 +59,9 @@ Apr 15, 2000 (Loren Petrich):
 
 May 31, 2000 (Loren Petrich):
 	Added texture resetting as key F14
+
+Jun 15, 2000 (Loren Petrich):
+	Re-enabled screen-resolution changing with OpenGL
 */
 
 #include <stdlib.h>
@@ -416,7 +419,7 @@ void handle_game_key(
 					// LP change: disabled these if OpenGL is active;
 					// may want to either consolidate or eliminate these
 					case kcF1:
-						if (!OGL_IsActive())
+						// if (!OGL_IsActive())
 						{
 							graphics_preferences->screen_mode.size = _full_screen;
 							changed_screen_mode = changed_prefs = TRUE;
@@ -424,7 +427,7 @@ void handle_game_key(
 						break;
 
 					case kcF2:
-						if (!OGL_IsActive())
+						// if (!OGL_IsActive())
 						{
 							if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
 							graphics_preferences->screen_mode.size = _100_percent;
@@ -433,7 +436,7 @@ void handle_game_key(
 						break;
 
 					case kcF3:
-						if (!OGL_IsActive())
+						// if (!OGL_IsActive())
 						{
 							if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
 							graphics_preferences->screen_mode.size = _75_percent;
@@ -442,7 +445,7 @@ void handle_game_key(
 						break;
 
 					case kcF4:
-						if (!OGL_IsActive())
+						// if (!OGL_IsActive())
 						{
 							if(graphics_preferences->screen_mode.size==_full_screen) update_interface= TRUE;
 							graphics_preferences->screen_mode.size = _50_percent;

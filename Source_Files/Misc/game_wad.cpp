@@ -38,6 +38,9 @@ Feb 19, 2000 (Loren Petrich):
 
 Feb 26, 2000 (Loren Petrich):
 	Added chase-cam initialization
+
+June 15, 2000 (Loren Petrich):
+	Added supprt for Chris Pruett's Pfhortran
 */
 
 // This needs to do the right thing on save game, which is storing the precalculated crap.
@@ -74,6 +77,9 @@ Feb 26, 2000 (Loren Petrich):
 
 // LP change: added chase-cam init
 #include "ChaseCam.h"
+
+// CP Addition:  scripting.h necessary for script loading
+#include "scripting.h"
 
 // LP addition: for physics-model stuff, we need these pointers to definitions
 /* sadly extern'ed from their respective files */
@@ -273,6 +279,9 @@ boolean load_level_from_map(
 		
 			/* Close the file.. */
 			close_wad_file(file_handle);
+			//CP Addition: load any scripts available
+			if (load_script(1000+level_index) < 0)
+				;  //this sucks.
 		} else {
 			// error code has been set..
 		}
@@ -1793,4 +1802,12 @@ static void complete_restoring_level(
 
 	/* Loading games needs this done. */
 	reset_player_queues();
+}
+
+
+/* CP Addition: get_map_file returns a pointer to the current map file */
+FileDesc *get_map_file(
+	void)
+{
+	return &current_map_file;
 }

@@ -33,6 +33,12 @@ May 26, 2000 (Loren Petrich):
 	implemented the use of this as a flag.
 	
 	Added "CannotWieldWeapons()" test; it returns true if the fists have a weapon type of NONE
+
+Jun 14, 2000 (Loren Petrich):
+	Suppressed assertion about multiple triggers that follows the Dirt-Devil one
+
+Jun 15, 2000 (Loren Petrich):
+	Added support for Chris Pruett's Pfhortran
 */
 
 #include "cseries.h"
@@ -218,7 +224,8 @@ static void fire_weapon(short player_index, short which_trigger,
 static struct trigger_definition *get_trigger_definition(short player_index, short which_weapon, 
 	short which_trigger);
 static boolean should_switch_to_weapon(short player_index, short new_weapon);
-static boolean ready_weapon(short player_index, short weapon_index);
+/* CP Addition: 'static' removed from decleration of ready_weapon() */
+/*static*/ boolean ready_weapon(short player_index, short weapon_index);
 struct weapon_definition *get_current_weapon_definition(short player_index);
 static boolean reload_weapon(short player_index, short which_trigger);
 static struct trigger_definition *get_player_trigger_definition(short player_index,
@@ -1762,8 +1769,11 @@ static void fire_weapon(
 					if(definition->flags & _weapon_triggers_share_ammo)
 					{
 						player_weapons->weapons[player_weapons->current_weapon].triggers[!which_trigger].rounds_loaded-= rounds_count;
+						// Suppressed this weird error that someone had gotten
+						/*
 						assert(player_weapons->weapons[player_weapons->current_weapon].triggers[0].rounds_loaded==
 							player_weapons->weapons[player_weapons->current_weapon].triggers[1].rounds_loaded);
+							*/
 					}
 				}
 			}
@@ -2431,7 +2441,14 @@ static boolean handle_trigger_up(
 }
 
 /* Need to put a reload weapon in here, if that is what we want to do.. */
+	/* Need to put a reload weapon in here, if that is what we want to do.. */
+	/* CP Addition: removed 'static' to provide extern access
 static boolean ready_weapon(
+	short player_index,
+	short weapon_index)
+	
+*/
+boolean ready_weapon(
 	short player_index,
 	short weapon_index)
 {

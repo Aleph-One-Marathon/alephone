@@ -8,10 +8,15 @@
 	May 27, 2000 (Loren Petrich)
 	
 	Added support for flat static effect
+	
+	Jun 11, 2000 (Loren Petrich):
+	Use a class created for the checkboxes.
+	Also added "see through liquids" option
 */
 
 #include "cseries.h"
 #include "OGL_Setup.h"
+#include "MacCheckbox.h"
 #include <stdio.h>
 
 enum
@@ -41,6 +46,7 @@ enum
 	TwoDimGraphics_Item = 30,
 	FlatStaticEffect_Item = 31,
 	Fader_Item = 32,
+	LiquidSeeThru_Item = 33,
 	
 	ColorPicker_PromptStrings = 200,
 	ColorVoid_String = 0,
@@ -288,23 +294,16 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		TxtrConfigList[k] = Data.TxtrConfigList[k];
 	}
 	
-	ControlHandle ZBuffer_CHdl;
-	GetDialogItem(Dialog, ZBuffer_Item, &ItemType, (Handle *)&ZBuffer_CHdl, &Bounds);
-	SetControlValue(ZBuffer_CHdl,TEST_FLAG(Data.Flags,OGL_Flag_ZBuffer) != 0);
-	
-	ControlHandle ColorVoid_CHdl;
-	GetDialogItem(Dialog, ColorVoid_Item, &ItemType, (Handle *)&ColorVoid_CHdl, &Bounds);
-	SetControlValue(ColorVoid_CHdl,TEST_FLAG(Data.Flags,OGL_Flag_VoidColor) != 0);
-	
+	MacCheckbox ZBuffer_CB(Dialog, ZBuffer_Item, TEST_FLAG(Data.Flags,OGL_Flag_ZBuffer) != 0);
+	MacCheckbox ColorVoid_CB(Dialog, ColorVoid_Item, TEST_FLAG(Data.Flags,OGL_Flag_VoidColor) != 0);
+		
 	ControlHandle ColorVoidSwatch_CHdl;
 	GetDialogItem(Dialog, ColorVoidSwatch_Item, &ItemType, (Handle *)&ColorVoidSwatch_CHdl, &Bounds);
 	UserItemUPP PaintSwatchUPP = NewUserItemProc(PaintSwatch);
 	SetDialogItem(Dialog, ColorVoidSwatch_Item, ItemType, Handle(PaintSwatchUPP), &Bounds);
 	
-	ControlHandle FlatColorLandscapes_CHdl;
-	GetDialogItem(Dialog, FlatColorLandscapes_Item, &ItemType, (Handle *)&FlatColorLandscapes_CHdl, &Bounds);
-	SetControlValue(FlatColorLandscapes_CHdl,TEST_FLAG(Data.Flags,OGL_Flag_FlatLand) != 0);
-	
+	MacCheckbox FlatColorLandscapes_CB(Dialog, FlatColorLandscapes_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatLand) != 0);
+		
 	for (int ile=0; ile<8; ile++)
 	{
 		short LandscapeSwatch_Item = LandscapeSwatch_ItemBase + ile;
@@ -313,10 +312,8 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		SetDialogItem(Dialog, LandscapeSwatch_Item, ItemType, Handle(PaintSwatchUPP), &Bounds);
 	}
 	
-	ControlHandle Fog_CHdl;
-	GetDialogItem(Dialog, Fog_Item, &ItemType, (Handle *)&Fog_CHdl, &Bounds);
-	SetControlValue(Fog_CHdl,TEST_FLAG(Data.Flags,OGL_Flag_Fog) != 0);
-
+	MacCheckbox Fog_CB(Dialog, Fog_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fog) != 0);
+	
 	ControlHandle FogSwatch_CHdl;
 	GetDialogItem(Dialog, FogSwatch_Item, &ItemType, (Handle *)&FogSwatch_CHdl, &Bounds);
 	SetDialogItem(Dialog, FogSwatch_Item, ItemType, Handle(PaintSwatchUPP), &Bounds);
@@ -327,21 +324,11 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	psprintf(ptemporary,"%lf",FogDepth/double(1024));
 	SetDialogItemText((Handle)FogDepth_CHdl,ptemporary);
 	
-	ControlHandle SinglePass_CHdl;
-	GetDialogItem(Dialog, SinglePass_Item, &ItemType, (Handle *)&SinglePass_CHdl, &Bounds);
-	SetControlValue(SinglePass_CHdl,TEST_FLAG(Data.Flags,OGL_Flag_SnglPass) != 0);
-	
-	ControlHandle TwoDimGraphics_CHdl;
-	GetDialogItem(Dialog, TwoDimGraphics_Item, &ItemType, (Handle *)&TwoDimGraphics_CHdl, &Bounds);
-	SetControlValue(TwoDimGraphics_CHdl,TEST_FLAG(Data.Flags,OGL_Flag_2DGraphics) != 0);
-	
-	ControlHandle FlatStaticEffect_CHdl;
-	GetDialogItem(Dialog, FlatStaticEffect_Item, &ItemType, (Handle *)&FlatStaticEffect_CHdl, &Bounds);
-	SetControlValue(FlatStaticEffect_CHdl,TEST_FLAG(Data.Flags,OGL_Flag_FlatStatic) != 0);
-	
-	ControlHandle FaderEffect_CHdl;
-	GetDialogItem(Dialog, Fader_Item, &ItemType, (Handle *)&FaderEffect_CHdl, &Bounds);
-	SetControlValue(FaderEffect_CHdl,TEST_FLAG(Data.Flags,OGL_Flag_Fader) != 0);
+	MacCheckbox SinglePass_CB(Dialog, SinglePass_Item, TEST_FLAG(Data.Flags,OGL_Flag_SnglPass) != 0);
+	MacCheckbox TwoDimGraphics_CB(Dialog, TwoDimGraphics_Item, TEST_FLAG(Data.Flags,OGL_Flag_2DGraphics) != 0);
+	MacCheckbox FlatStaticEffect_CB(Dialog, FlatStaticEffect_Item, TEST_FLAG(Data.Flags,OGL_Flag_FlatStatic) != 0);
+	MacCheckbox FaderEffect_CB(Dialog, Fader_Item, TEST_FLAG(Data.Flags,OGL_Flag_Fader) != 0);
+	MacCheckbox SeeThruLiquids_CB(Dialog, LiquidSeeThru_Item, TEST_FLAG(Data.Flags,OGL_Flag_LiqSeeThru) != 0);
 	
 	// Load the colors into temporaries
 	VoidColor = Data.VoidColor;
@@ -393,15 +380,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		case WeaponsInHand_Item:
 			TextureConfigureDialog(OGL_Txtr_WeaponsInHand);
 			break;
-		
-		case ZBuffer_Item:
-			ToggleControl(ZBuffer_CHdl);
-			break;
-		
-		case ColorVoid_Item:
-			ToggleControl(ColorVoid_CHdl);
-			break;
-		
+				
 		case ColorVoidSwatch_Item:
 			getpstr(ptemporary,ColorPicker_PromptStrings,ColorVoid_String);
 			if (GetColor(Loc,ptemporary,&VoidColor,&TempColor))
@@ -409,14 +388,6 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 				VoidColor = TempColor;
 				DrawDialog(Dialog);
 			}
-			break;
-		
-		case FlatColorLandscapes_Item:
-			ToggleControl(FlatColorLandscapes_CHdl);
-			break;
-			
-		case Fog_Item:
-			ToggleControl(Fog_CHdl);
 			break;
 		
 		case FogSwatch_Item:
@@ -432,23 +403,18 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			GetFogDepth(FogDepth_CHdl);
 			break;
 		
-		case SinglePass_Item:
-			ToggleControl(SinglePass_CHdl);
-			break;
-		
-		case TwoDimGraphics_Item:
-			ToggleControl(TwoDimGraphics_CHdl);
-			break;
-		
-		case FlatStaticEffect_Item:
-			ToggleControl(FlatStaticEffect_CHdl);
-			break;
-		
-		case Fader_Item:
-			ToggleControl(FaderEffect_CHdl);
-			break;
-		
 		default:
+		
+			if (ZBuffer_CB.ToggleIfHit(ItemHit)) break;
+			if (ColorVoid_CB.ToggleIfHit(ItemHit)) break;
+			if (FlatColorLandscapes_CB.ToggleIfHit(ItemHit)) break;
+			if (Fog_CB.ToggleIfHit(ItemHit)) break;
+			if (SinglePass_CB.ToggleIfHit(ItemHit)) break;
+			if (TwoDimGraphics_CB.ToggleIfHit(ItemHit)) break;
+			if (FlatStaticEffect_CB.ToggleIfHit(ItemHit)) break;
+			if (FaderEffect_CB.ToggleIfHit(ItemHit)) break;
+			if (SeeThruLiquids_CB.ToggleIfHit(ItemHit)) break;
+			
 			ile = 0;
 			Escape = false;
 			for (int il=0; il<4; il++)
@@ -481,14 +447,15 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			 Data.TxtrConfigList[k] = TxtrConfigList[k];
 		}
 		
-		SET_FLAG(Data.Flags,OGL_Flag_ZBuffer,GetControlValue(ZBuffer_CHdl));
-		SET_FLAG(Data.Flags,OGL_Flag_VoidColor,GetControlValue(ColorVoid_CHdl));
-		SET_FLAG(Data.Flags,OGL_Flag_FlatLand,GetControlValue(FlatColorLandscapes_CHdl));
-		SET_FLAG(Data.Flags,OGL_Flag_Fog,GetControlValue(Fog_CHdl));
-		SET_FLAG(Data.Flags,OGL_Flag_SnglPass,GetControlValue(SinglePass_CHdl));
-		SET_FLAG(Data.Flags,OGL_Flag_2DGraphics,GetControlValue(TwoDimGraphics_CHdl));
-		SET_FLAG(Data.Flags,OGL_Flag_FlatStatic,GetControlValue(FlatStaticEffect_CHdl));
-		SET_FLAG(Data.Flags,OGL_Flag_Fader,GetControlValue(FaderEffect_CHdl));
+		SET_FLAG(Data.Flags,OGL_Flag_ZBuffer,ZBuffer_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_VoidColor,ColorVoid_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_FlatLand,FlatColorLandscapes_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_Fog,Fog_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_SnglPass,SinglePass_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_2DGraphics,TwoDimGraphics_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_FlatStatic,FlatStaticEffect_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_Fader,FaderEffect_CB.GetState());
+		SET_FLAG(Data.Flags,OGL_Flag_LiqSeeThru,SeeThruLiquids_CB.GetState());
 		Data.VoidColor = VoidColor;
 		for (int il=0; il<4; il++)
 			for (int ie=0; ie<2; ie++)

@@ -10,6 +10,9 @@
 	
 	Feb 26, 2000 (Loren Petrich):
 	Added support for "on when entering" for the chase cam when a game starts.
+	
+	Jun 11, 2000 (Loren Petrich):
+	Used a class created for the checkboxes
 */
 
 #include "cseries.h"
@@ -18,6 +21,7 @@
 #include "ChaseCam.h"
 #include "Crosshairs.h"
 #include "OGL_Setup.h"
+#include "MacCheckbox.h"
 #include <stdio.h>
 
 const float FLOAT_WORLD_ONE = float(WORLD_ONE);
@@ -105,26 +109,16 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	GetDialogItem(Dialog, Rightward_Item, &ItemType, (Handle *)&Rightward_CHdl, &Bounds);
 	SetFloat(Rightward_CHdl,Data.Rightward/FLOAT_WORLD_ONE);
 	
-	ControlHandle PassThruWall_CHdl;
-	GetDialogItem(Dialog, PassThruWall_Item, &ItemType, (Handle *)&PassThruWall_CHdl, &Bounds);
-	SetControlValue(PassThruWall_CHdl, TEST_FLAG(Data.Flags,_ChaseCam_ThroughWalls) != 0);
-	
-	ControlHandle NeverActive_CHdl;
-	GetDialogItem(Dialog, NeverActive_Item, &ItemType, (Handle *)&NeverActive_CHdl, &Bounds);
-	SetControlValue(NeverActive_CHdl, TEST_FLAG(Data.Flags,_ChaseCam_NeverActive) != 0);
-	
-	ControlHandle OnWhenEntering_CHdl;
-	GetDialogItem(Dialog, OnWhenEntering_Item, &ItemType, (Handle *)&OnWhenEntering_CHdl, &Bounds);
-	SetControlValue(OnWhenEntering_CHdl, TEST_FLAG(Data.Flags,_ChaseCam_OnWhenEntering) != 0);
+	MacCheckbox PassThruWall_CB(Dialog, PassThruWall_Item, TEST_FLAG(Data.Flags,_ChaseCam_ThroughWalls) != 0);
+	MacCheckbox NeverActive_CB(Dialog, NeverActive_Item, TEST_FLAG(Data.Flags,_ChaseCam_NeverActive) != 0);
+	MacCheckbox OnWhenEntering_CB(Dialog, OnWhenEntering_Item, TEST_FLAG(Data.Flags,_ChaseCam_OnWhenEntering) != 0);
 	
 	// Where to make the color picker
 	Point Center = {-1,-1};
 	RGBColor NewColor;
 	// Get void color from OpenGL-parameters data
 	OGL_ConfigureData& OGLData = Get_OGL_ConfigureData();
-	ControlHandle VoidColorOnOff_CHdl;
-	GetDialogItem(Dialog, VoidColorOnOff_Item, &ItemType, (Handle *)&VoidColorOnOff_CHdl, &Bounds);
-	SetControlValue(VoidColorOnOff_CHdl, TEST_FLAG(OGLData.Flags,OGL_Flag_VoidColor) != 0);
+	MacCheckbox VoidColorOnOff_CB(Dialog, VoidColorOnOff_Item, TEST_FLAG(OGLData.Flags,OGL_Flag_VoidColor) != 0);
 	
 	// Reveal it
 	SelectWindow(Dialog);
@@ -146,18 +140,20 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 		// Check before quitting
 			BadValue = false;
 			
+			// Now doing roundoff correctly
+			
 			if (GetFloat(Behind_CHdl,FloatTemp))
-				New_Behind = 1024 * FloatTemp;
+				New_Behind = WORLD_ONE * FloatTemp + (FloatTemp >= 0 ? 0.5 : -0.5);
 			else
 				BadValue = true;
 			
 			if (GetFloat(Upward_CHdl,FloatTemp))
-				New_Upward = 1024 * FloatTemp;
+				New_Upward = WORLD_ONE * FloatTemp + (FloatTemp >= 0 ? 0.5 : -0.5);
 			else
 				BadValue = true;
 			
 			if (GetFloat(Rightward_CHdl,FloatTemp))
-				New_Rightward = 1024 * FloatTemp;
+				New_Rightward = WORLD_ONE * FloatTemp + (FloatTemp >= 0 ? 0.5 : -0.5);
 			else
 				BadValue = true;
 			
@@ -176,26 +172,17 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 			WillQuit = true;
 			break;
 			
-		case PassThruWall_Item:
-			ToggleControl(PassThruWall_CHdl);
-			break;
-			
-		case NeverActive_Item:
-			ToggleControl(NeverActive_CHdl);
-			break;
-			
-		case OnWhenEntering_Item:
-			ToggleControl(OnWhenEntering_CHdl);
-			break;
-		
-		case VoidColorOnOff_Item:
-			ToggleControl(VoidColorOnOff_CHdl);
-			break;
-		
 		case VoidColorSelect_Item:
 			// Need to set color here so the preview can work properly
 			if (GetColor(Center,"\pWhat color for the void?",&OGLData.VoidColor,&NewColor))
 				OGLData.VoidColor = NewColor;
+			break;
+		
+		default:
+			if (PassThruWall_CB.ToggleIfHit(ItemHit)) break;
+			if (NeverActive_CB.ToggleIfHit(ItemHit)) break;
+			if (OnWhenEntering_CB.ToggleIfHit(ItemHit)) break;
+			if (VoidColorOnOff_CB.ToggleIfHit(ItemHit)) break;
 			break;
 		}
 	}
@@ -205,10 +192,10 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 		Data.Behind = New_Behind;
 		Data.Upward = New_Upward;
 		Data.Rightward = New_Rightward;
-		SET_FLAG(Data.Flags,_ChaseCam_ThroughWalls,GetControlValue(PassThruWall_CHdl));
-		SET_FLAG(Data.Flags,_ChaseCam_NeverActive,GetControlValue(NeverActive_CHdl));
-		SET_FLAG(Data.Flags,_ChaseCam_OnWhenEntering,GetControlValue(OnWhenEntering_CHdl));
-		SET_FLAG(OGLData.Flags,OGL_Flag_VoidColor,GetControlValue(VoidColorOnOff_CHdl));
+		SET_FLAG(Data.Flags,_ChaseCam_ThroughWalls,PassThruWall_CB.GetState());
+		SET_FLAG(Data.Flags,_ChaseCam_NeverActive,NeverActive_CB.GetState());
+		SET_FLAG(Data.Flags,_ChaseCam_OnWhenEntering,OnWhenEntering_CB.GetState());
+		SET_FLAG(OGLData.Flags,OGL_Flag_VoidColor,VoidColorOnOff_CB.GetState());
 	}
 	
 	// Clean up

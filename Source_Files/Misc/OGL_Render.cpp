@@ -33,6 +33,16 @@
 	Added support for flat static effect
 	
 	Added partial transparency of textures (IsBlended)
+	
+	June 11, 2000:
+	
+	Added support of IsSeeThrough flag for polygons
+	a texture overlaid on other visible textures is see-through,
+	while one overlaid on the void is not
+	
+	Removed TRANSPARENT_BIT test as irrelevant
+	
+	Made semitransparency optional if the void is on one side of the texture
 */
 
 #include <GL/gl.h>
@@ -356,6 +366,9 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
 	glFrontFace(GL_CW);
+	
+	// Note: GL_BLEND and GL_ALPHA_FUNC do not have defaults; these are to be set
+	// if some new pixels cannot be assumed to be always 100% opaque.
 	
 	// [DEFAULT]
 	// Set standard alpha-test function; cut off at halfway point (for sharp edges)
@@ -1180,17 +1193,25 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	
 	// Set up blending mode: either sharp edges or opaque
 	// Added support for partial-opacity blending of wall textures
+	// Added support for suppressing semitransparency when the void is on one side;
+	// this suppression is optional for those who like weird smearing effects
 	bool IsBlended = TMgr.IsBlended();
-	bool IsSeeThrough = (RenderPolygon.texture->flags&_TRANSPARENT_BIT) != 0;
-	if (IsSeeThrough && !IsBlended)
-		glEnable(GL_ALPHA_TEST);
-	else
-		glDisable(GL_ALPHA_TEST);
-	if (IsSeeThrough && IsBlended)
-		glEnable(GL_BLEND);
-	else
+	if (!RenderPolygon.VoidPresent || TMgr.VoidVisible())
+	{
+		if (IsBlended)
+		{
+			glEnable(GL_BLEND);
+			glDisable(GL_ALPHA_TEST);
+		} else {
+			glDisable(GL_BLEND);
+			glEnable(GL_ALPHA_TEST);
+		}
+	} else {
+		// Completely opaque if can't see through void
 		glDisable(GL_BLEND);
-
+		glDisable(GL_ALPHA_TEST);
+	}
+	
 	// Proper projection
 	SetProjectionType(Projection_OpenGL_Eye);
 	
@@ -1360,9 +1381,17 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		// Do blending here to get the necessary semitransparency;
 		// push the cutoff down so 0.5*0.5 (half of half-transparency)
 		// The cutoff is irrelevant if the texture is set to one of the blended modes
-		// instead of the crip mode.
+		// instead of the crisp mode.
+		// Added "IsBlended" test, so that alpha-channel selection would work properly
+		// on a glowmap texture that is atop a texture that is opaque to the void.
 		glColor3f(1,1,1);
 		glEnable(GL_BLEND);
+		if (IsBlended)
+		{
+			glDisable(GL_ALPHA_TEST);
+		} else {
+			glEnable(GL_ALPHA_TEST);
+		}
 		glAlphaFunc(GL_GREATER,0.25);
 		
 		TMgr.RenderGlowing(false);
@@ -1370,7 +1399,6 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		
 		// Reset these values
 		glAlphaFunc(GL_GREATER,0.5);
-		glDisable(GL_BLEND);
 	}
 	
 	return true;
@@ -1773,7 +1801,6 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 				
 				// Reset these values
 				glAlphaFunc(GL_GREATER,0.5);
-				glDisable(GL_BLEND);
 			}
 		}
 	}

@@ -7,6 +7,12 @@
 	This contains implementations of functions intended for finding out OpenGL's presence
 	in the host system, for setting parameters for OpenGL rendering,
 	and for deciding whether to use OpenGL for rendering.
+	
+	June 11, 2000
+	
+	Had added XML parsing before that; most recently, added "opac_shift".
+	
+	Made semitransparency optional if the void is on one side of the texture
 */
 
 
@@ -250,6 +256,14 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	else if (strcmp(Tag,"opac_scale") == 0)
 	{
 		return (ReadNumericalValue(Value,"%f",Data.OpacityScale));
+	}
+	else if (strcmp(Tag,"opac_shift") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.OpacityShift));
+	}
+	else if (strcmp(Tag,"void_visible") == 0)
+	{
+		return (ReadBooleanValue(Value,Data.VoidVisible));
 	}
 	UnrecognizedTag();
 	return false;

@@ -13,6 +13,9 @@ Mar 5, 2000 (Loren Petrich):
 
 Mar 18, 2000 (Loren Petrich):
 	Added OpenGL support, including OpenGL-acceleration mode
+
+Jun 15, 2000 (Loren Petrich):
+	Added support for Chris Pruett's Pfhortran
 */
 
 /* ---------- constants */
@@ -50,6 +53,9 @@ extern GDHandle world_device;
 extern WindowPtr screen_window;
 #endif
 
+//CP Addition: make screen_mode_data usable here too
+extern struct screen_mode_data;
+
 /* ---------- prototypes/SCREEN.C */
 
 void change_screen_clut(struct color_table *color_table);
@@ -79,6 +85,9 @@ void assert_world_color_table(struct color_table *world_color_table, struct colo
 
 // LP change: added function for resetting the screen state when starting a game
 void reset_screen();
+
+// CP addition: added function to return the the game size
+screen_mode_data *get_screen_mode(void);
 
 #ifdef mac
 void initialize_screen(struct screen_mode_data *mode);

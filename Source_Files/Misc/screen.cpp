@@ -76,6 +76,9 @@ May 22, 2000 (Loren Petrich):
 
 May 28, 2000 (Loren Petrich):
 	Added support for rendering the HUD
+
+Jun 15, 2000 (Loren Petrich):
+	Added support for Chris Pruett's Pfhortran
 */
 
 /*
@@ -111,6 +114,9 @@ May 28, 2000 (Loren Petrich):
 
 // LP addition: view control
 #include "ViewControl.h"
+
+//CP addition: scripting support
+#include "scripting.h"
 
 #ifdef env68k
 #pragma segment screen
@@ -771,10 +777,14 @@ void render_screen(
 	world_view->origin= current_player->camera_location;
 	world_view->origin_polygon_index= current_player->camera_polygon_index;
 	// LP addition: chase-cam support
-	world_view->show_weapons_in_hand =
-		!ChaseCam_GetPosition(world_view->origin,
-			world_view->origin_polygon_index,world_view->yaw,world_view->pitch);
-
+	//CP Change: add script-based camera control
+	if (!script_Camera_Active())
+	{
+		// LP addition: chase-cam support
+		world_view->show_weapons_in_hand =
+			!ChaseCam_GetPosition(world_view->origin,world_view->origin_polygon_index,world_view->yaw,world_view->pitch);
+	}
+	
 	// LP change: set OpenGL rendering-window bounds
 	// A Rect is, in order, top, left, bottom, right
 	// This is set correctly for the overhead map and the terminal display,
@@ -1045,6 +1055,12 @@ void start_tunnel_vision_effect(
 	// start_render_effect(world_view, out ? _render_effect_going_tunnel : _render_effect_leaving_tunnel);
 }
 
+//CP addition: returns the screen info
+screen_mode_data *get_screen_mode(
+	void)
+{
+	return &screen_mode;
+}
 
 /* These should be replaced with better preferences control functions */
 boolean game_window_is_full_screen(
