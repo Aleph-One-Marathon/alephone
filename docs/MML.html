@@ -1400,6 +1400,12 @@ while mean has less strength for saturated colors than for grays.
 
 The third one, &lt;fog&gt;, has these attributes:
 <ul>
+<li>type: which type of fog:
+<ol type=1 start=1000>
+<li>Above liquid
+<li>Below liquid
+</ol>
+The default is 0 (above liquid).
 <li>on: (<a href="#boolean">boolean</a>; default: false)
 <li>depth: the fog depth in World Units (default: 8)
 </ul>
@@ -1438,6 +1444,8 @@ This is the default player name in netgames, which takes the form:
 &lt;player_name&gt;Marathon Player&lt;/player_name&gt;
 </pre>
 <p>
+
+<hr>
 
 <h3><a name="keyboard">Keyboard-Defaults Element: &lt;keyboard&gt;</a></h3>
 
@@ -1849,8 +1857,55 @@ Here are the SDL key definitions, which have been cribbed from the SDL include f
 <h3><a name="cheats">Cheating Element: &lt;cheats&gt;</a></h3>
 
 This element controls whether or not the engine will respond to the cheat codes;
-it has one attribute, "on", which is <a href="#boolean">boolean</a>.
-Cheating is off by default.
+it has these attributes:
+<ul>
+<li>on: it is <a href="#boolean">boolean</a> (default: false [cheating off])
+<li>mac_keymod: Value that indicates the key modifiers to use in the MacOS version;
+these keys must be pressed while typing the cheat code.
+</ul>
+and this child element: &lt;keyword&gt;, which is for specifying the cheat keywords.
+It has a mandatory attribute, "index", and some contained text, as with the text-string elements.
+<p>
+The MacOS key-modifier code is the sum of these values:
+<ul>
+<li>Command: 256
+<li>Shift: 512
+<li>Caps Lock: 1024
+<li>Option: 2048
+<li>Control: 4096
+</ul>
+<p>
+and defaults to the control key only (4096).
+Thus, if one wants the key modifiers to be control+shift,
+the "mac_keymod" attribute would get a value of 4096+512 = 4608.
+<p>
+The cheat-code keywords and their defaults are
+<ol type=1 start=1000>
+<li>Energy (1x): NRG
+<li>Oxygen: OTWO
+<li>Map Everything: MAP
+<li>Invisible: BYE
+<li>Invincible: NUKE
+<li>Infravision: SEE
+<li>Extravision: WOW
+<li>Pistol: MAG
+<li>Assault Rifle: RIF
+<li>Rocket Launcher: POW
+<li>Flamethrower: TOAST
+<li>Fusion Gun: MELT
+<li>Shotgun: PUFF
+<li>SMG: ZIP
+<li>Alien weapon: PZBXAY
+<li>All weapons' ammo: AMMO
+<li>Jump: QWE
+<li>Everything (almost): SHIT
+<li>Save at this spot: YOURMOM
+</ol>
+<p>
+For example, making the energy cheat into "JUICE" means setting up
+<pre>
+&lt;keyword index="0"&gt;JUICE&lt;/keyword&gt;
+</pre>
 <p>
 
 <hr>
