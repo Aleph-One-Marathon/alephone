@@ -620,12 +620,15 @@ static void physics_update(
 		}
 	}
 
-	if (action_flags&_absolute_pitch_mode)
+	if (action_flags&_absolute_pitch_mode && !(variables->flags&_RECENTERING_BIT))
 	{
 		variables->vertical_angular_velocity= (GET_ABSOLUTE_PITCH(action_flags)-MAXIMUM_ABSOLUTE_PITCH/2)<<(FIXED_FRACTIONAL_BITS);
 	}
 	else
 	{
+		/* Make sure absolute pitch mode is cleared. In case we got here because of the _RECENTERING_BIT */
+		action_flags&= ~_absolute_pitch_mode;
+
 		/* if the user touched the recenter key, set the recenter flag and override all up/down
 			keypresses with our own */
 		if (action_flags&_looking_center) variables->flags|= _RECENTERING_BIT;
