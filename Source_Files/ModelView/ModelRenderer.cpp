@@ -522,8 +522,9 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 	if (Shader.LightingCallback && !Model.Normals.empty() && TEST_FLAG(Shader.Flags,ExtLight))
 	{
 		int NumVerts = Model.Positions.size()/3;
-		int NumCC = 3*NumVerts;
-		ExtLightColors.resize(NumCC);
+		int NumCPlanes = TEST_FLAG(Shader.Flags,EL_SemiTpt) ? 4 : 3;
+		int NumCValues = NumCPlanes*NumVerts;
+		ExtLightColors.resize(NumCValues);
 		
 		Shader.LightingCallback(Shader.LightingCallbackData,
 			NumVerts, Model.NormBase(),Model.PosBase(),&ExtLightColors[0]);
@@ -532,12 +533,28 @@ void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 		{
 			GLfloat *ExtColorPtr = &ExtLightColors[0];
 			GLfloat *ColorPtr = Model.ColBase();
-			for (int k=0; k<NumCC; k++, ExtColorPtr++, ColorPtr++)
-				(*ExtColorPtr) *= (*ColorPtr);
+			if (NumCPlanes == 3)
+			{
+				for (int k=0; k<NumCValues; k++, ExtColorPtr++, ColorPtr++)
+					(*ExtColorPtr) *= (*ColorPtr);
+			}
+			else if (NumCPlanes == 4)
+			{
+				for (int k=0; k<NumVerts; k++)
+				{
+					for (int chn=0; chn<3; chn++)
+					{
+						(*ExtColorPtr) *= (*ColorPtr);
+						ExtColorPtr++, ColorPtr++;
+					}
+					// Nothing happens to the alpha channel
+					ExtColorPtr++;
+				}
+			}
 		}
 		
 		glEnableClientState(GL_COLOR_ARRAY);
-		glColorPointer(3,GL_FLOAT,0,&ExtLightColors[0]);
+		glColorPointer(NumCPlanes,GL_FLOAT,0,&ExtLightColors[0]);
 	}
 	else
 	{

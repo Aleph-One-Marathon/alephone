@@ -70,7 +70,8 @@ public:
 	enum {
 		Textured	= 0x0001,
 		Colored		= 0x0002,
-		ExtLight	= 0x0004,
+		ExtLight	= 0x0004,	// Whether to to use the external-light colors
+		EL_SemiTpt	= 0x0008	// Whether the external-light colors include semitransparency
 	};
 	
 	// Does the actual rendering; args:
