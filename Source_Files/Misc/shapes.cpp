@@ -938,6 +938,7 @@ static void build_shading_tables16(
 
 #ifdef SDL
 	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+	bool is_opengl = SDL_GetVideoSurface()->flags & SDL_OPENGL;
 #endif
 	
 	start= 0, count= 0;
@@ -950,19 +951,20 @@ static void build_shading_tables16(
 				struct rgb_color_value *color= colors + (remapping_table ? remapping_table[start+i] : (start+i));
 				short multiplier= (color->flags&SELF_LUMINESCENT_COLOR_FLAG) ? ((number_of_shading_tables>>1)+(level>>1)) : level;
 #ifdef SDL
-				// Find optimal pixel value for video display
-				shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
-					SDL_MapRGB(fmt,
-					           ((color->red * multiplier) / (number_of_shading_tables-1)) >> 8,
-					           ((color->green * multiplier) / (number_of_shading_tables-1)) >> 8,
-					           ((color->blue * multiplier) / (number_of_shading_tables-1)) >> 8);
-#else
+				if (!is_opengl)
+					// Find optimal pixel value for video display
+					shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
+						SDL_MapRGB(fmt,
+						           ((color->red * multiplier) / (number_of_shading_tables-1)) >> 8,
+						           ((color->green * multiplier) / (number_of_shading_tables-1)) >> 8,
+						           ((color->blue * multiplier) / (number_of_shading_tables-1)) >> 8);
+				else
+#endif
 				// Mac xRGB 1555 pixel format
 				shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
 					RGBCOLOR_TO_PIXEL16((color->red*multiplier)/(number_of_shading_tables-1),
 						(color->green*multiplier)/(number_of_shading_tables-1),
 						(color->blue*multiplier)/(number_of_shading_tables-1));
-#endif
 			}
 		}
 	}
@@ -983,6 +985,7 @@ static void build_shading_tables32(
 	
 #ifdef SDL
 	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+	bool is_opengl = SDL_GetVideoSurface()->flags & SDL_OPENGL;
 #endif
 
 	start= 0, count= 0;
@@ -996,19 +999,20 @@ static void build_shading_tables32(
 				short multiplier= (color->flags&SELF_LUMINESCENT_COLOR_FLAG) ? ((number_of_shading_tables>>1)+(level>>1)) : level;
 				
 #ifdef SDL
-				// Find optimal pixel value for video display
-				shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
-					SDL_MapRGB(fmt,
-					           ((color->red * multiplier) / (number_of_shading_tables-1)) >> 8,
-					           ((color->green * multiplier) / (number_of_shading_tables-1)) >> 8,
-					           ((color->blue * multiplier) / (number_of_shading_tables-1)) >> 8);
-#else
+				if (!is_opengl)
+					// Find optimal pixel value for video display
+					shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
+						SDL_MapRGB(fmt,
+						           ((color->red * multiplier) / (number_of_shading_tables-1)) >> 8,
+						           ((color->green * multiplier) / (number_of_shading_tables-1)) >> 8,
+						           ((color->blue * multiplier) / (number_of_shading_tables-1)) >> 8);
+				else
+#endif
 				// Mac xRGB 8888 pixel format
 				shading_tables[PIXEL8_MAXIMUM_COLORS*level+start+i]= 
 					RGBCOLOR_TO_PIXEL32((color->red*multiplier)/(number_of_shading_tables-1),
 						(color->green*multiplier)/(number_of_shading_tables-1),
 						(color->blue*multiplier)/(number_of_shading_tables-1));
-#endif
 			}
 		}
 	}
