@@ -1151,7 +1151,7 @@ static void InterpolateByDepth(GLdouble Depth,
 // it returns whether or not the texture is a legitimate wall texture
 static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 {
-
+	
 	// Set up the texture manager with the input manager
 	TextureManager TMgr;
 	TMgr.ShapeDesc = RenderPolygon.ShapeDesc;
@@ -2081,13 +2081,13 @@ bool RenderModelSetup(rectangle_definition& RenderRectangle)
 		if (NumFrames > 0)
 		{
 			short ModelFrame = PIN(RenderRectangle.ModelFrame,0,NumFrames-1);
-			ModelPtr->Model.FindPositions(true,ModelSequence,ModelFrame);
+			ModelPtr->Model.FindPositions_Sequence(true,ModelSequence,ModelFrame);
 		}
 		else
-			ModelPtr->Model.FindPositions(true);	// Fallback: neutral
+			ModelPtr->Model.FindPositions_Neutral(true);	// Fallback: neutral
 	}
 	else
-		ModelPtr->Model.FindPositions(true);	// Fallback: neutral (will do nothing for static models)
+		ModelPtr->Model.FindPositions_Neutral(true);	// Fallback: neutral (will do nothing for static models)
 	
 	// For finding the clip planes: 0, 1, 2, 3, and 4
 	bool ClipLeft = false, ClipRight = false, ClipTop = false, ClipBottom = false, ClipLiquid = false;

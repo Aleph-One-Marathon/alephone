@@ -75,8 +75,10 @@ inline void TransformVector(GLfloat *Dest, GLfloat *Src, Model3D_Transform& T)
 }
 
 // Bone and Frame (positions, angles) -> Transform Matrix
-static void FindFrameTransform(Model3D_Transform& T, Model3D_Frame& Frame);
-static void FindBoneTransform(Model3D_Transform& T, Model3D_Frame& Frame, Model3D_Bone& Bone);
+static void FindFrameTransform(Model3D_Transform& T,
+	Model3D_Frame& Frame, GLfloat MixFrac, Model3D_Frame& AddlFrame);
+static void FindBoneTransform(Model3D_Transform& T, Model3D_Bone& Bone,
+	Model3D_Frame& Frame, GLfloat MixFrac, Model3D_Frame& AddlFrame);
 
 // Res = A * B, in that order
 static void TMatMultiply(Model3D_Transform& Res, Model3D_Transform& A, Model3D_Transform& B);
@@ -611,7 +613,7 @@ void Model3D::BuildInverseVSIndices()
 
 
 // Neutral case: returns whether vertex-source data was used (present in animated models)
-bool Model3D::FindPositions(bool UseModelTransform)
+bool Model3D::FindPositions_Neutral(bool UseModelTransform)
 {
 	// Positions already there
 	if (VtxSrcIndices.empty()) return false;
@@ -687,7 +689,8 @@ bool Model3D::FindPositions(bool UseModelTransform)
 }
 
 // Frame case
-bool Model3D::FindPositions(bool UseModelTransform, GLshort FrameIndex)
+bool Model3D::FindPositions_Frame(bool UseModelTransform,
+	GLshort FrameIndex, GLfloat MixFrac, GLshort AddlFrameIndex)
 {
 	// Bad inputs: do nothing and return false
 	
@@ -707,10 +710,12 @@ bool Model3D::FindPositions(bool UseModelTransform, GLshort FrameIndex)
 	
 	// Find which frame; remember that frame data comes in [NumBones] sets
 	Model3D_Frame *FramePtr = &Frames[NumBones*FrameIndex];
+	Model3D_Frame *AddlFramePtr = &Frames[NumBones*AddlFrameIndex];
 	
 	// Find the individual-bone transformation matrices:
 	for (unsigned ib=0; ib<NumBones; ib++)
-		FindBoneTransform(BoneMatrices[ib],FramePtr[ib],Bones[ib]);
+		FindBoneTransform(BoneMatrices[ib],Bones[ib],
+			FramePtr[ib],MixFrac,AddlFramePtr[ib]);
 	
 	// Find the cumulative-bone transformation matrices:
 	int StackIndx = -1;
@@ -844,7 +849,8 @@ GLshort Model3D::NumSeqFrames(GLshort SeqIndex)
 	return (SeqFrmPointers[SeqIndex+1] - SeqFrmPointers[SeqIndex]);
 }
 
-bool Model3D::FindPositions(bool UseModelTransform, GLshort SeqIndex, GLshort FrameIndex)
+bool Model3D::FindPositions_Sequence(bool UseModelTransform, GLshort SeqIndex,
+	GLshort FrameIndex, GLfloat MixFrac, GLshort AddlFrameIndex)
 {
 	// Bad inputs: do nothing and return false
 	
@@ -853,12 +859,24 @@ bool Model3D::FindPositions(bool UseModelTransform, GLshort SeqIndex, GLshort Fr
 	
 	if (FrameIndex < 0 || FrameIndex >= NumSF) return false;
 	
+	Model3D_Transform TSF;
+	
 	Model3D_SeqFrame& SF = SeqFrames[SeqFrmPointers[SeqIndex] + FrameIndex];
 	
-	if (!FindPositions(false,SF.Frame)) return false;
-	
-	Model3D_Transform TSF;
-	FindFrameTransform(TSF,SF);
+	if (MixFrac != 0 && AddlFrameIndex != FrameIndex)
+	{
+		if (AddlFrameIndex < 0 || AddlFrameIndex >= NumSF) return false;
+		
+		Model3D_SeqFrame& ASF = SeqFrames[SeqFrmPointers[SeqIndex] + AddlFrameIndex];
+		FindFrameTransform(TSF,SF,MixFrac,ASF);
+		
+		if (!FindPositions_Frame(false,SF.Frame,MixFrac,ASF.Frame)) return false;
+	}
+	else
+	{
+		if (!FindPositions_Frame(false,SF.Frame)) return false;
+		FindFrameTransform(TSF,SF,0,SF);
+	}
 	
 	Model3D_Transform TTot;
 	if (UseModelTransform)
@@ -906,8 +924,21 @@ void Model3D_Transform::Identity()
 }
 
 
+static int16 InterpolateAngle(int16 Angle, GLfloat MixFrac, int16 AddlAngle)
+{
+	if (MixFrac != 0 && AddlAngle != Angle)
+	{
+		int16 AngleDiff = NORMALIZE_ANGLE(AddlAngle - Angle);
+		if (AngleDiff >= HALF_CIRCLE) AngleDiff -= FULL_CIRCLE;
+		Angle += int16(MixFrac*AngleDiff);
+	}
+	return NORMALIZE_ANGLE(Angle);
+}
+
+
 // Bone and Frame (positions, angles) -> Transform Matrix
-static void FindFrameTransform(Model3D_Transform& T, Model3D_Frame& Frame)
+static void FindFrameTransform(Model3D_Transform& T,
+	Model3D_Frame& Frame, GLfloat MixFrac, Model3D_Frame& AddlFrame)
 {
 	T.Identity();
 	
@@ -917,7 +948,7 @@ static void FindFrameTransform(Model3D_Transform& T, Model3D_Frame& Frame)
 	// Right-to-left; in the right order for Dim3 (and Tomb Raider)
 	
 	// Z:
-	Angle = NORMALIZE_ANGLE(Frame.Angles[2]);
+	Angle = InterpolateAngle(Frame.Angles[2],MixFrac,AddlFrame.Angles[2]);
 
 	if (Angle != 0)
 	{
@@ -936,7 +967,7 @@ static void FindFrameTransform(Model3D_Transform& T, Model3D_Frame& Frame)
 	}
 	
 	// X:
-	Angle = NORMALIZE_ANGLE(Frame.Angles[0]);
+	Angle = InterpolateAngle(Frame.Angles[0],MixFrac,AddlFrame.Angles[0]);
 	
 	if (Angle != 0)
 	{
@@ -955,7 +986,7 @@ static void FindFrameTransform(Model3D_Transform& T, Model3D_Frame& Frame)
 	}
 	
 	// Y:
-	Angle = NORMALIZE_ANGLE(Frame.Angles[1]);
+	Angle = InterpolateAngle(Frame.Angles[1],MixFrac,AddlFrame.Angles[1]);
 	
 	if (Angle != 0)
 	{
@@ -975,13 +1006,23 @@ static void FindFrameTransform(Model3D_Transform& T, Model3D_Frame& Frame)
 	
 	// Set up overall translate:
 	GLfloat *FrameOfst = Frame.Offset;
+	if (MixFrac != 0)
+	{
+		GLfloat *AddlFrameOfst = AddlFrame.Offset;
+		for (int ic=0; ic<3; ic++)
+			T.M[ic][3] = FrameOfst[ic] + MixFrac*(AddlFrameOfst[ic]-FrameOfst[ic]);
+	}
+	else
+	{
 	for (int ic=0; ic<3; ic++)
 		T.M[ic][3] = FrameOfst[ic];
+	}
 }
 
-static void FindBoneTransform(Model3D_Transform& T, Model3D_Frame& Frame, Model3D_Bone& Bone)
+static void FindBoneTransform(Model3D_Transform& T, Model3D_Bone& Bone,
+	Model3D_Frame& Frame, GLfloat MixFrac, Model3D_Frame& AddlFrame)
 {
-	FindFrameTransform(T,Frame);
+	FindFrameTransform(T,Frame,MixFrac,AddlFrame);
 	
 	// Set up overall translate:
 	GLfloat *BonePos = Bone.Position;

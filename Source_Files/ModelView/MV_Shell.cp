@@ -29,6 +29,10 @@
 # include <OpenGL/gl.h>
 # include <OpenGL/glu.h>
 # include <OpenGL/glut.h>
+#elif defined mac
+# include "gl.h"
+# include "glu.h"
+# include "glut.h"
 #else
 # include <GL/gl.h>
 # include <GL/glu.h>
@@ -228,6 +232,9 @@ enum {
 
 int ThisFrame = 0;
 int ThisSeq = 0;
+
+// Also the mixture between the current and next frames
+float MixFrac = 0;
 
 
 void InvalidateTexture()
@@ -476,18 +483,29 @@ void DrawMainWindow()
 		// glCullFace(GL_BACK);
 		// glFrontFace(GL_CW);
 		
+		int NextFrame = 0;
 		switch(ShowAnim)
 		{
 		case ShowAnim_Neutral:
-			Model.FindPositions(Use_Model_Transform);
+			Model.FindPositions_Neutral(Use_Model_Transform);
 			break;
 		
 		case ShowAnim_Frames:
-			Model.FindPositions(Use_Model_Transform,ThisFrame);
+			if (MixFrac != 0)
+			{
+				if ((NextFrame = ThisFrame + 1) >= Model.TrueNumFrames())
+					NextFrame = 0;
+			}
+			Model.FindPositions_Frame(Use_Model_Transform,ThisFrame,MixFrac,NextFrame);
 			break;
 		
 		case ShowAnim_Sequences:
-			Model.FindPositions(Use_Model_Transform,ThisSeq,ThisFrame);
+			if (MixFrac != 0)
+			{
+				if ((NextFrame = ThisFrame + 1) >= Model.NumSeqFrames(ThisSeq))
+					NextFrame = 0;
+			}
+			Model.FindPositions_Sequence(Use_Model_Transform,ThisSeq,ThisFrame,MixFrac,NextFrame);
 			break;
 		}
 		
@@ -686,6 +704,10 @@ void KeyInMainWindow(unsigned char key, int x, int y)
 			}
 			
 			glutPostRedisplay();
+			break;
+		
+		case 'M':
+			if ((MixFrac += 0.25) > 1) MixFrac = 0;
 			break;
 		
 		case '[':

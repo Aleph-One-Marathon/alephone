@@ -868,7 +868,7 @@ void OGL_ModelData::Load()
 	
 	// Is model animated or static?
 	// Test by trying to find neutral positions (useful for working with the normals later on)
-	if (Model.FindPositions(false))
+	if (Model.FindPositions_Neutral(false))
 	{
 		// Copy over the vector and normal transformation matrices:
 		for (int k=0; k<3; k++)

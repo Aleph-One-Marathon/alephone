@@ -234,17 +234,22 @@ struct Model3D
 	// The position-finding has an argument that determines whether to use the model's
 	// overall transform -- only applied to animated models.
 	
-	// Returns whether vertex-source data was used (present in animated models)
-	bool FindPositions(bool UseModelTransform);
+	// The frame and sequence position finders have a crossfade fraction
+	// and a second frame ID; these are for making smooth animations.
 	
-	// Returns whether or not the index was within range.
-	bool FindPositions(bool UseModelTransform, GLshort FrameIndex);
+	// Returns whether vertex-source data was used (present in animated models)
+	bool FindPositions_Neutral(bool UseModelTransform);
+	
+	// Returns whether or not the indices were within range.
+	bool FindPositions_Frame(bool UseModelTransform,
+		GLshort FrameIndex, GLfloat MixFrac = 0, GLshort AddlFrameIndex = 0);
 	
 	// returns 0 for out-of-range sequence
 	GLshort NumSeqFrames(GLshort SeqIndex);
 	
 	// Returns whether or not the indices were in range.
-	bool FindPositions(bool UseModelTransform, GLshort SeqIndex, GLshort FrameIndex);
+	bool FindPositions_Sequence(bool UseModelTransform, GLshort SeqIndex,
+		GLshort FrameIndex, GLfloat MixFrac = 0, GLshort AddlFrameIndex = 0);
 	
 	// Constructor
 	Model3D() {FindBoundingBox(); TransformPos.Identity(); TransformNorm.Identity();}
