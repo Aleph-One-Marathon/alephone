@@ -40,6 +40,7 @@ typedef float GLfloat;
 #include "monsters.h"
 #include "mysound.h"
 #include "OGL_Render.h"
+#include "ViewControl.h"
 
 //#include "Soundtrack.h"
 
@@ -1983,7 +1984,7 @@ void s_Teleport_Player(script_instruction inst)
 	
 	current_player->teleporting_destination= dest;
 	start_teleporting_effect(true);
-	play_object_sound(current_player->object_index, _snd_teleport_out);
+	play_object_sound(current_player->object_index, Sound_TeleportOut());
 }
 
 void s_Wait_For_Path(script_instruction inst)
