@@ -85,6 +85,9 @@ Feb 8, 2001 (Loren Petrich):
 	limits on the numbers of points, lines, polygons, etc.
 	Fixed a *serious* bug in the calculation of the "dynamic world" quantities in recalculate_map_counts() --
 	there are some count-down loops, but they ought to count down to the last used entity, not the last unused one.
+
+Feb 3, 2003 (Loren Petrich):
+	In attach_parasitic_object(), will transmit the sizing of the host object to the parasite.
 */
 
 /*
@@ -625,6 +628,10 @@ short attach_parasitic_object(
 	parasite_object->location= host_object->location;
 	host_object->parasitic_object= parasite_index;
 	
+	// So that it will have the same size scaling as its host object
+	SET_FLAG(parasite_object->flags, _object_is_enlarged, TEST_FLAG(host_object->flags, _object_is_enlarged));
+	SET_FLAG(parasite_object->flags, _object_is_tiny, TEST_FLAG(host_object->flags, _object_is_tiny));
+		
 	return parasite_index;
 }
 
