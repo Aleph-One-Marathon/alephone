@@ -30,6 +30,7 @@
 #include "OGL_Setup.h"
 #include "shell.h"
 #include "mysound.h"
+#include "vbl.h"
 
 #ifdef SDL
 #include "sdl_dialogs.h"
@@ -71,6 +72,7 @@ void SetupParseTree()
 	MarathonParser.AddChild(OpenGL_GetParser());
 	MarathonParser.AddChild(Cheats_GetParser());
 	MarathonParser.AddChild(TextureLoading_GetParser());
+	MarathonParser.AddChild(Keyboard_GetParser());
 #ifdef SDL
 	MarathonParser.AddChild(Theme_GetParser());
 #endif

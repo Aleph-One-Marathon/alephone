@@ -9,6 +9,8 @@
 Aug 12, 2000 (Loren Petrich):
 	Using object-oriented file handler; revising definitions accordingly
 
+Jul 5, 2000 (Loren Petrich):
+	Added XML support for setting up the keyboard
 */
 
 // LP: CodeWarrior complains unless I give the full definition of these classes
@@ -50,5 +52,9 @@ void write_flags(struct recorded_flag *buffer, long count);
 static void debug_stream_of_flags(uint32 action_flag, short player_index);
 static void close_stream_file(void);
 #endif
+
+
+// LP addition for handling XML stuff:
+XML_ElementParser *Keyboard_GetParser();
 
 #endif

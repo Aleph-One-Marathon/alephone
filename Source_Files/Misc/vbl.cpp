@@ -988,6 +988,130 @@ static void remove_input_controller(
 	replay.valid= false;
 }
 
+// Which key-value set to change key definitions of
+static key_definition *XML_KeySet = all_key_definitions[0];
+
+class XML_KeyParser: public XML_ElementParser
+{
+	bool IsPresent[2];
+	int Index, Key;
+	
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	XML_KeyParser(): XML_ElementParser("key") {}
+};
+
+bool XML_KeyParser::Start()
+{
+	IsPresent[0] = IsPresent[1] = false;
+	return true;
+}
+
+bool XML_KeyParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"index") == 0)
+	{
+		if (ReadBoundedNumericalValue(Value,"%d",Index,int(0),int(NUMBER_OF_STANDARD_KEY_DEFINITIONS-1)))
+		{
+			IsPresent[0] = true;
+			return true;
+		}
+		else return false;
+	}
+	// Select whether to accept a SDL or a Macintosh key definition
+#ifdef SDL
+	else if (strcmp(Tag,"sdl") == 0)
+#else
+	else if (strcmp(Tag,"mac") == 0)
+#endif
+	{
+		if (ReadNumericalValue(Value,"%d",Key))
+		{
+			IsPresent[1] = true;
+			return true;
+		}
+		else return false;
+	}
+	// Do nothing in case of the opposite sort of key
+#ifdef SDL
+	else if (strcmp(Tag,"mac") == 0)
+#else
+	else if (strcmp(Tag,"sdl") == 0)
+#endif
+	{
+		// OK no matter what
+		return true;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_KeyParser::AttributesDone()
+{
+	if (!(IsPresent[0]&&IsPresent[1])) return false;
+	
+	// Set the key value!
+	XML_KeySet[Index].offset = Key;
+	
+	return true;
+}
+
+static XML_KeyParser KeyParser;
+
+
+class XML_KeyboardParser: public XML_ElementParser
+{
+	bool IsPresent;
+	
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	
+	XML_KeyboardParser(): XML_ElementParser("keyboard") {}
+};
+
+bool XML_KeyboardParser::Start()
+{
+	IsPresent = false;
+	return true;
+}
+
+bool XML_KeyboardParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (strcmp(Tag,"set") == 0)
+	{
+		int WhichSet = 0;
+		if (ReadBoundedNumericalValue(Value,"%d",WhichSet,int(0),int(NUMBER_OF_KEY_SETUPS-1)))
+		{
+			XML_KeySet = all_key_definitions[WhichSet];
+			IsPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_KeyboardParser::AttributesDone()
+{
+	return IsPresent;
+}
+
+static XML_KeyboardParser KeyboardParser;
+
+
+// LP change: added keyboard export
+XML_ElementParser *Keyboard_GetParser()
+{
+	KeyboardParser.AddChild(&KeyParser);
+	
+	return &KeyboardParser;
+}
 
 static void StreamToPlayerStart(uint8* &S, player_start_data& Object)
 {
