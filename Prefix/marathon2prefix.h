@@ -27,7 +27,10 @@ Jan 31, 2002 (Loren Petrich):
 #define APPLICATION_IS_BUNDLED
 
 // Using the new GUI.nib file
-#define USES_NIBS
+#define USES_NIBS 1
+
+// Secondary dialogs are sheets
+#define USE_SHEETS 1
 
 // check environs
 /*
