@@ -339,7 +339,13 @@ static void hit_graphics_item(
 	switch(GLOBAL_TO_LOCAL_DITL(item_hit, first_item))
 	{
 		case iCHOOSE_MONITOR:
+#ifndef USE_SHEETS
+			HideWindow(GetDialogWindow(dialog));
+#endif
 			display_device_dialog(&preferences->device_spec);
+#ifndef USE_SHEETS
+			ShowWindow(GetDialogWindow(dialog));
+#endif
 			/* We resetup because the new device might not support millions, etc.. */
 			break;
 		
@@ -388,7 +394,13 @@ static void hit_graphics_item(
 			break;
 		
 		case iOPENGL_OPTIONS:
+#ifndef USE_SHEETS
+			HideWindow(GetDialogWindow(dialog));
+#endif
 			OGL_ConfigureDialog(preferences->OGL_Configure);
+#ifndef USE_SHEETS
+			ShowWindow(GetDialogWindow(dialog));
+#endif
 			break;
 		
 		case iFILL_SCREEN:
@@ -481,11 +493,23 @@ static void hit_player_item(
 		
 		// LP additions:
 		case iCHASE_CAM:
+#ifndef USE_SHEETS
+			HideWindow(GetDialogWindow(dialog));
+#endif
 			Configure_ChaseCam(preferences->ChaseCam);
+#ifndef USE_SHEETS
+			ShowWindow(GetDialogWindow(dialog));
+#endif
 			break;
 			
 		case iCROSSHAIRS:
+#ifndef USE_SHEETS
+			HideWindow(GetDialogWindow(dialog));
+#endif
 			Configure_Crosshairs(preferences->Crosshairs);
+#ifndef USE_SHEETS
+			ShowWindow(GetDialogWindow(dialog));
+#endif
 			break;
 	}
 }
@@ -775,7 +799,8 @@ static void hit_input_item(
 		// LP change: modification of Ben Thompson's change
 		case iSET_INPUT_SPROCKET:
 #if defined(TARGET_API_MAC_CARBON)
-			assert(0);
+			// assert(0);
+			SysBeep(30);
 #else
 			ConfigureMarathonISpControls();
 #endif
