@@ -942,11 +942,12 @@ int dialog::find_widget(int x, int y)
 
 void dialog::event(SDL_Event &e)
 {
-	fprintf(stderr, "  Received event %d\n", e.type);
+	//fprintf(stderr, "  Received event %d\n", e.type);
+
 	// First pass event to active widget (which may modify it)
 	if (active_widget)
 		active_widget->event(e);
-	fprintf(stderr, "  Handling event %d\n", e.type);
+	//fprintf(stderr, "  Handling event %d\n", e.type);
 	
 	// Remaining events handled by dialog
 	switch (e.type) {
@@ -995,8 +996,8 @@ void dialog::event(SDL_Event &e)
 		}
 
 		// Mouse button pressed
-		case SDL_MOUSEBUTTONUP: {
-            fprintf(stderr, "  mousebuttonup received, x:%d, y:%d\n", e.button.x, e.button.y); 
+		case SDL_MOUSEBUTTONDOWN: {
+			//fprintf(stderr, "  mousebuttondown received, x:%d, y:%d\n", e.button.x, e.button.y);
 			int x = e.button.x, y = e.button.y;
 			int num = find_widget(x, y);
 			if (num >= 0) {
@@ -1065,7 +1066,7 @@ int dialog::run(bool intro_exit_sounds)
 	result = 0;
 	done = false;
 	while (!done) {
-		fprintf(stderr, "Dialog <%x> loop iteration\n", this);
+		//fprintf(stderr, "Dialog <%x> loop iteration\n", this);
 
 		// Get next event
 		SDL_Event e;

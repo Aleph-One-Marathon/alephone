@@ -90,7 +90,6 @@ void get_default_sounds_spec(FileSpecifier &file)
 
 bool get_default_music_spec(FileSpecifier &file)
 {
-	fprintf(stderr, "Getting default music spec");
 	return get_default_spec(file, filenameMUSIC);
 }
 
