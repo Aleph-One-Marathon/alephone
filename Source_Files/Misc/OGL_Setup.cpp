@@ -74,6 +74,7 @@ Aug 21, 2001 (Loren Petrich):
 
 #include "StudioLoader.h"
 #include "WavefrontLoader.h"
+#include "QD3D_Loader.h"
 
 #ifdef __WIN32__
 #include "OGL_Win32.h"
@@ -677,15 +678,21 @@ void OGL_ModelData::Load()
 
 	bool Success = false;
 	
-	if (strncmp(&ModelType[0],"wave",4) == 0)
+	char *Type = &ModelType[0];
+	if (strncmp(Type,"wave",4) == 0)
 	{
 		// Alias|Wavefront
 		Success = LoadModel_Wavefront(File, Model);
 	}
-	else if (strncmp(&ModelType[0],"3ds",3) == 0)
+	else if (strncmp(Type,"3ds",3) == 0)
 	{
 		// 3D Studio Max
 		Success = LoadModel_Studio(File, Model);
+	}
+	else if (strcmp(Type,"qd3d") == 0 || strcmp(Type,"3dmf") == 0 || strcmp(Type,"quesa") == 0)
+	{
+		// QuickDraw 3D / Quesa
+		Success = LoadModel_QD3D(File, Model);
 	}
 	
 	if (!Success)
@@ -759,7 +766,7 @@ void OGL_ModelData::Load()
 	// Will need this to find bounding rectangles
 	// and to normalize the normals
 	Model.FindBoundingBox();
-	Model.NormalizeNormals();
+	Model.AdjustNormals(NormalType,NormalSplit);
 	
 	// Don't forget the skins
 	OGL_SkinManager::Load();
@@ -1271,7 +1278,19 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (strcmp(Tag,"side") == 0)
 	{
-		return (ReadNumericalValue(Value,"%d",Data.Sidedness));
+		return (ReadNumericalValue(Value,"%hd",Data.Sidedness));
+	}
+	else if (strcmp(Tag,"norm_type") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",Data.NormalType));
+	}
+	else if (strcmp(Tag,"norm_split") == 0)
+	{
+		return (ReadNumericalValue(Value,"%f",Data.NormalSplit));
+	}
+	else if (strcmp(Tag,"light_type") == 0)
+	{
+		return (ReadNumericalValue(Value,"%hd",Data.LightType));
 	}
 	else if (strcmp(Tag,"file") == 0)
 	{
@@ -1330,8 +1349,6 @@ bool XML_ModelDataParser::End()
 static XML_ModelDataParser ModelDataParser;
 
 #endif // def HAVE_OPENGL
-
-
 
 class XML_FogParser: public XML_ElementParser
 {

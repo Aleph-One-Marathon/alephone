@@ -313,6 +313,9 @@ struct OGL_ModelData: public OGL_SkinManager
 	float XShift, YShift, ZShift;	// In internal units
 	short Sidedness;				// Which side of the polygons is visible?
 									// (+: clockwise, -: counterclockwise, 0: both)
+	short NormalType;				// What type of normals?
+	float NormalSplit;				// Threshold for splitting the vertex normals 
+	short LightType;				// What type of lighting?
 	
 	// Should a rotation rate be included, in order to get that Quake look?
 	
@@ -325,8 +328,8 @@ struct OGL_ModelData: public OGL_SkinManager
 	void Unload();
 	
 	OGL_ModelData():
-		Scale(1), XRot(0), YRot(0), ZRot(0), XShift(0), YShift(0), ZShift(0)
-		{}
+		Scale(1), XRot(0), YRot(0), ZRot(0), XShift(0), YShift(0), ZShift(0), Sidedness(1),
+			NormalType(1), NormalSplit(0.5), LightType(0) {}
 };
 
 
