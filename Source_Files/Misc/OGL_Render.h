@@ -10,7 +10,10 @@
 	with the rest of the Marathon source code. It was separated from the
 	presence-accessing and parameter-accessing code in OGL_Control because
 	this include file contains some stuff used by the rendering code.
-	
+
+July 8, 2000:
+	Modified OGL_SetView() and OGL_Copy2D() to control whether or not to use a back buffer,
+	and whether or not to write to the back buffer, respectively.
 */
 
 
@@ -36,7 +39,8 @@ bool OGL_SetInfravisionTint(short Collection, bool IsTinted, float Red, float Gr
 // these are calculated using the following boundary Rects:
 // The screen (gotten from its portRect)
 // The view (here, the main rendering view)
-bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds);
+// Whether to allocate a back buffer
+bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer);
 
 // Swap buffers (reveal rendered image)
 bool OGL_SwapBuffers();
@@ -59,7 +63,8 @@ bool OGL_RenderText(short BaseX, short BaseY, unsigned char *Text);
 bool OGL_Get2D();
 
 // Copying 2D display: status bar, overhead map, terminal;
-// Needs GWorld to copy from, region to copy, and whether or not this completes a frame.
-bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool FrameEnd);
+// Needs GWorld to copy from, region to copy, whether to copy into a back buffer,
+// and whether or not this completes a frame.
+bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool UseBackBuffer, bool FrameEnd);
 
 #endif
