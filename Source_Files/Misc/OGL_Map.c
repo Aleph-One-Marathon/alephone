@@ -14,12 +14,25 @@ July 9, 2000:
 	Complete this OpenGL renderer. I had to add a font-info cache, so as to avoid
 	re-generating the fonts for every frame. The font glyphs and offsets are stored
 	as display lists, which appears to be very efficient.
+
+July 16, 2000:
+
+	Added begin/end pairs for line and polygon rendering; the purpose of these is to allow
+	more efficient caching.
+
+Jul 17, 2000:
+
+	Paths now cached and drawn as a single line strip per path.
+	Lines now cached and drawn in groups with the same width and color;
+		that has yielded a significant performance improvement.
+	Same for the polygons, but with relatively little improvement.
 */
 
 #include <GL/gl.h>
 #include <GL/glu.h>
 #include <agl.h>
 #include <math.h>
+#include "GrowableList.h"
 #include "map.h"
 #include "OGL_Map.h"
 
@@ -94,6 +107,7 @@ void OGL_StartMap()
 	glDisable(GL_ALPHA_TEST);
 	glDisable(GL_BLEND);
 	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_FOG);
 }
 
 void OGL_EndMap()
@@ -102,23 +116,128 @@ void OGL_EndMap()
 	glLineWidth(1);
 }
 
+
+// Need to test this so as to find out when the color changes
+inline bool ColorsEqual(RGBColor& Color1, RGBColor& Color2)
+{
+	return ((Color1.red == Color2.red) && (Color1.green == Color2.green) && (Color1.blue == Color2.blue));
+}
+
+// Stuff for caching polygons to be drawn;
+// several polygons with the same color will be drawn at the same time
+static RGBColor MapSavedColor = {0, 0, 0};
+static GrowableList<unsigned short> MapPolygonCache(16);
+
+static void DrawCachedPolygons()
+{
+	glDrawElements(GL_TRIANGLES,MapPolygonCache.GetLength(),GL_UNSIGNED_SHORT,MapPolygonCache.Begin());
+	MapPolygonCache.ResetLength();
+}
+
+void OGL_begin_overhead_polygons()
+{
+	// Polygons are rendered before lines, and use the endpoint array,
+	// so both of them will have it set here. Using the compiled-vertex extension,
+	// however, makes everything the same color :-P
+	glVertexPointer(2,GL_SHORT,sizeof(endpoint_data),&get_endpoint_data(0)->transformed);
+
+	// Reset color defaults
+	SetColor(MapSavedColor);
+	
+	// Reset cache to zero length
+	MapPolygonCache.ResetLength();
+}
+
+void OGL_end_overhead_polygons()
+{
+	DrawCachedPolygons();
+}
+
 void OGL_draw_overhead_polygon(short vertex_count, short *vertices,
 	RGBColor &color)
 {
-	SetColor(color);
-	glVertexPointer(2,GL_SHORT,sizeof(endpoint_data),&get_endpoint_data(0)->transformed);
-	glDrawElements(GL_POLYGON,vertex_count,GL_UNSIGNED_SHORT,vertices);
+	// Test whether the polygon parameters have changed
+	bool AreColorsEqual = ColorsEqual(color,MapSavedColor);
+	
+	// If any change, then draw the cached lines with the *old* parameters
+	if (!AreColorsEqual) DrawCachedPolygons();
+	
+	// Set the new parameters
+	if (!AreColorsEqual)
+	{
+		MapSavedColor = color;
+		SetColor(MapSavedColor);
+	}
+	
+	// Implement the polygons as triangle fans
+	for (int k=2; k<vertex_count; k++)
+	{
+		assert(MapPolygonCache.Add(vertices[0]));
+		assert(MapPolygonCache.Add(vertices[k-1]));
+		assert(MapPolygonCache.Add(vertices[k]));
+	}
+	
+	// glDrawElements(GL_POLYGON,vertex_count,GL_UNSIGNED_SHORT,vertices);
+}
+
+
+// Stuff for caching lines to be drawn;
+// several lines with the same thickness and color will be drawn at the same time
+static short MapSavedPenSize = 1;
+static GrowableList<unsigned short> MapLineCache(16);
+
+static void DrawCachedLines()
+{
+	glDrawElements(GL_LINES,MapLineCache.GetLength(),GL_UNSIGNED_SHORT,MapLineCache.Begin());
+	MapLineCache.ResetLength();
+}
+
+void OGL_begin_overhead_lines()
+{
+	// Vertices already set
+	
+	// Reset color and pen size to defaults
+	SetColor(MapSavedColor);
+	glLineWidth(MapSavedPenSize);
+	
+	// Reset cache to zero length
+	MapLineCache.ResetLength();
+}
+
+void OGL_end_overhead_lines()
+{
+	DrawCachedLines();
 }
 
 void OGL_draw_overhead_line(short line_index, RGBColor &color,
 	short pen_size)
 {
-	SetColor(color);
-	glLineWidth(pen_size);
-	glVertexPointer(2,GL_SHORT,sizeof(endpoint_data),&get_endpoint_data(0)->transformed);
-	struct line_data *line= get_line_data(line_index);
-	glDrawElements(GL_LINES,2,GL_UNSIGNED_SHORT,line->endpoint_indexes);
+	// Test whether the line parameters have changed
+	bool AreColorsEqual = ColorsEqual(color,MapSavedColor);
+	bool AreLinesEquallyWide = (pen_size == MapSavedPenSize);
+	
+	// If any change, then draw the cached lines with the *old* parameters
+	if (!AreColorsEqual || !AreLinesEquallyWide) DrawCachedLines();
+	
+	// Set the new parameters
+	if (!AreColorsEqual)
+	{
+		MapSavedColor = color;
+		SetColor(MapSavedColor);
+	}
+	
+	if (!AreLinesEquallyWide)
+	{
+		MapSavedPenSize = pen_size;
+		glLineWidth(MapSavedPenSize);		
+	}
+	
+	// Add the line's points to the cached line		
+	short *Indices = get_line_data(line_index)->endpoint_indexes;
+	assert(MapLineCache.Add(Indices[0]));
+	assert(MapLineCache.Add(Indices[1]));
 }
+
 
 void OGL_draw_overhead_thing(world_point2d &center, RGBColor &color,
 	short shape, short radius)
@@ -282,6 +401,9 @@ void OGL_draw_map_text(world_point2d &location, RGBColor &color,
 	}
 }
 
+// For drawing monster paths
+static GrowableList<world_point2d> MapPathPoints(16);
+
 void OGL_SetPathDrawing(RGBColor &color)
 {
 	SetColor(color);
@@ -290,16 +412,15 @@ void OGL_SetPathDrawing(RGBColor &color)
 
 void OGL_DrawPath(short step, world_point2d &location)
 {
-	// Save previous location
-	static world_point2d prev_location;
+	// At first step, reset the length
+	if (step <= 0) MapPathPoints.ResetLength();
 	
-	// One-at-a-time drawing if step is nonzero
-	if (step)
-	{
-		glBegin(GL_LINES);
-		glVertex2sv((short *)(&prev_location));
-		glVertex2sv((short *)(&location));
-		glEnd();
-	}
-	prev_location = location;
+	// Add the point
+	assert(MapPathPoints.Add(location));
+}
+
+void OGL_FinishPath()
+{
+	glVertexPointer(2,GL_SHORT,sizeof(world_point2d),&(MapPathPoints.Begin()->x));
+	glDrawArrays(GL_LINE_STRIP,0,MapPathPoints.GetLength());
 }
