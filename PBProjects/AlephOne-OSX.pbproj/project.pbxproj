@@ -687,7 +687,6 @@
 				F5A00024023FDA1701A80001,
 				F5A00025023FDA1701A80001,
 				F5A00030023FDB5C01A80001,
-				F5A00032023FDB8001A80001,
 				F5CC92240240D09B01A80001,
 				F5CC92260240D09B01A80001,
 				F5CC92270240D09B01A80001,
@@ -772,6 +771,7 @@
 				3DAC27AC03DC9D1C00000104,
 				3DF2717503EDBBF100000104,
 				3DF2717703EDBBF100000104,
+				3D22699203F6BB2C00000104,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -798,6 +798,19 @@
 //3D2
 //3D3
 //3D4
+		3D22699003F6BB0200000104 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_microphone_sdl_win32.cpp;
+			path = /Users/astrange/aleph/Source_Files/Network/network_microphone_sdl_win32.cpp;
+			refType = 0;
+		};
+		3D22699203F6BB2C00000104 = {
+			fileRef = F52213830136ABAE01000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		3DAC27A503DC9D1C00000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -2595,6 +2608,7 @@
 				F5574EFA01F4ED0A01FEABBD,
 				F5574EFC01F4ED4801FEABBD,
 				F5574EFE01F4ED6501FEABBD,
+				3D22699003F6BB0200000104,
 			);
 			isa = PBXGroup;
 			name = Network;
@@ -4578,12 +4592,6 @@
 			name = network_microphone_sdl_dummy.cpp;
 			path = ../Source_Files/Network/network_microphone_sdl_dummy.cpp;
 			refType = 2;
-		};
-		F5A00032023FDB8001A80001 = {
-			fileRef = F5A00031023FDB8001A80001;
-			isa = PBXBuildFile;
-			settings = {
-			};
 		};
 		F5A00033023FDBBD01A80001 = {
 			fileEncoding = 30;
