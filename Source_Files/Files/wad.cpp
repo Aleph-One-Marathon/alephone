@@ -469,7 +469,6 @@ void set_indexed_directory_offset_and_length(
 	short wad_index)
 {
 	uint8 *data_ptr= (uint8 *)entries;
-	struct directory_entry *entry;
 	long data_offset;
 	
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
@@ -496,22 +495,22 @@ void set_indexed_directory_offset_and_length(
 	// LP: should be correct for packing also
 	if (header->version>=WADFILE_SUPPORTS_OVERLAYS)
 	{
-		directory_entry Entry;
+		directory_entry entry;
 		
-		Entry.length = length;
-		Entry.offset_to_start = offset;
-		Entry.index = wad_index;
+		entry.length = length;
+		entry.offset_to_start = offset;
+		entry.index = wad_index;
 		
-		pack_directory_entry(data_ptr, &Entry, 1);
+		pack_directory_entry(data_ptr, &entry, 1);
 	}
 	else
 	{
-		old_directory_entry Entry;
+		old_directory_entry entry;
 		
-		Entry.length = length;
-		Entry.offset_to_start = offset;
+		entry.length = length;
+		entry.offset_to_start = offset;
 		
-		pack_old_directory_entry(data_ptr, &Entry, 1);
+		pack_old_directory_entry(data_ptr, &entry, 1);
 	}
 }
 

@@ -1351,8 +1351,11 @@ static void NetAddFlagsToPacket(
 {
 	uint32 *action_flags;
 	size_t player_index;
-	short extra_flags, action_flag_index;
+	short action_flag_index;
 	static bool already_here = false;
+#ifdef NETWORK_USE_RECENT_FLAGS
+	short extra_flags;
+#endif
 
 	assert(already_here == false);
 	already_here= true;
