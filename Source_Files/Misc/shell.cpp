@@ -72,9 +72,9 @@ static void PlayInterfaceButtonSound(short SoundID);
 
 // Include platform-specific files
 #if defined(mac)
-#include "shell_macintosh.cpp"
+#include "shell_macintosh.h"
 #elif defined(SDL)
-#include "shell_sdl.cpp"
+#include "shell_sdl.h"
 #endif
 
 // LP: the rest of the code has been moved to Jeremy's shell_misc.file.

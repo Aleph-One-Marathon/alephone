@@ -90,9 +90,9 @@ static void get_name_from_system(unsigned char *name);
 
 // Include platform-specific file
 #if defined(mac)
-#include "preferences_macintosh.cpp"
+#include "preferences_macintosh.h"
 #elif defined(SDL)
-#include "preferences_sdl.cpp"
+#include "preferences_sdl.h"
 #endif
 
 

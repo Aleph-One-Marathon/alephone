@@ -196,9 +196,9 @@ FontSpecifier &get_interface_font(short index)
 
 // Load platform-specific stuff
 #if defined(mac)
-#include "screen_drawing_macintosh.cpp"
+#include "screen_drawing_macintosh.h"
 #elif defined(SDL)
-#include "screen_drawing_sdl.cpp"
+#include "screen_drawing_sdl.h"
 #endif
 
 

@@ -121,9 +121,9 @@ static void draw_picture(LoadedResource &PictRsrc);
 
 // Include platform-specific file
 #if defined(mac)
-#include "images_macintosh.cpp"
+#include "images_macintosh.h"
 #elif defined(SDL)
-#include "images_sdl.cpp"
+#include "images_sdl.h"
 #endif
 
 

@@ -377,9 +377,9 @@ static void decode_text(terminal_text_t *terminal_text);
 /* ------------ machine-specific code */
 
 #if defined(mac)
-#include "computer_interface_mac.cpp"
+#include "computer_interface_mac.h"
 #elif defined(SDL)
-#include "computer_interface_sdl.cpp"
+#include "computer_interface_sdl.h"
 #endif
 
 /* ------------ code begins */

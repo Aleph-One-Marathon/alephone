@@ -224,9 +224,9 @@ static struct bitmap_definition *get_bitmap_definition(short collection_index, s
 /* ---------- machine-specific code */
 
 #ifdef mac
-#include "shapes_macintosh.cpp"
+#include "shapes_macintosh.h"
 #elif defined(SDL)
-#include "shapes_sdl.cpp"
+#include "shapes_sdl.h"
 #endif
 
 /* ---------- code */

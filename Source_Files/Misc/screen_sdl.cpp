@@ -91,7 +91,7 @@ extern bool OGL_HUDActive;
 // From shell_sdl.cpp
 extern bool option_nogamma;
 
-#include "screen_shared.cpp"
+#include "screen_shared.h"
 
 
 // Prototypes

@@ -318,7 +318,7 @@ static bool DM_Present = false;
 static bool DM_Inited = false;
 
 // Moved after the globals because the shared stuff might use those values
-#include "screen_shared.cpp"
+#include "screen_shared.h"
 
 
 /* ---------- private prototypes */

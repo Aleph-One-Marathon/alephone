@@ -476,9 +476,9 @@ struct sound_behavior_definition *get_sound_behavior_definition(
 /* ---------- machine-specific code */
 
 #if defined(mac)
-#include "sound_macintosh.cpp"
+#include "sound_macintosh.h"
 #elif defined(SDL)
-#include "sound_sdl.cpp"
+#include "sound_sdl.h"
 //void	calc_buffer(int16* a, int b, bool c);
 //void	calc_buffer(int8* a, int b, bool c);
 #endif
