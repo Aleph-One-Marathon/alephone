@@ -145,7 +145,7 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
         // Final note: At my suggestion, Sam Lantinga to update the SDL_net documentation to indicate that this is
         // the only place in SDL_net that the port is used in host byte order.  So it will probably stay this way!
 	sSocket = SDLNet_UDP_Open(network_preferences->game_port);
-	if (socket == NULL) {
+	if (sSocket == NULL) {
 		SDLNet_FreePacket(sUDPPacketBuffer);
 		sUDPPacketBuffer = NULL;
 		return -1;
@@ -153,7 +153,7 @@ OSErr NetDDPOpenSocket(short *portNumber, PacketHandlerProcPtr packetHandler)
 
         // Set up socket set
         sSocketSet = SDLNet_AllocSocketSet(1);
-        SDLNet_UDP_AddSocket(sSocketSet, socket);
+        SDLNet_UDP_AddSocket(sSocketSet, sSocket);
         
         // Set up receiver
         sKeepListening		= true;
