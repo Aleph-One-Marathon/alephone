@@ -4,7 +4,9 @@
 10/29/00 - Mark Levin
 	Change error code of evalute_operand to -32767 from -1 to avoid conflicts with -1 
 	appearing in scripts
-		
+
+June 13, 2001 (Loren Petrich): 
+	Added script-length output to script parser
 */
 
 #include <stdio.h>
@@ -71,6 +73,11 @@ struct error_def
 };
 
 
+// *** DEBUG ***
+FILE *db;
+struct Debugger {
+	Debugger() {db = fopen("Debug Dump","w");}
+} Dbg;
 
 
 /* Global Variables */
@@ -122,11 +129,8 @@ bool init_pfhortran(void)
 */
 	bool err = false;
 
-#ifndef __MVCPP__		// Visual C++ will work with the streams...
-	// This is not good. Please make it work with the language_defintiion.h file - CB
-#ifdef SDL
-
-
+	// LP change: made this code always read the language-definition file
+#if 0
 	// Read tokens from array
 	static const struct {
 		const char *str;
@@ -144,16 +148,16 @@ bool init_pfhortran(void)
 			break;
 		}
 	}
+	
 #endif
-#else
-
+		
 	// Read tokens from language definition file
 	FILE *lang_def = fopen(LANGDEFPATH,"r");
 	if (lang_def == NULL) {
 		dispose_pfhortran();
 		return false;
 	}
-
+	fprintf(db,"Loading language-definition file\n");
 	char input_str[256];
 	int input_val;
 	while (fscanf(lang_def, "%s %x\n", input_str, &input_val) != EOF)
@@ -174,8 +178,6 @@ bool init_pfhortran(void)
 	
 	}
 	fclose(lang_def);
-
-#endif
 	
 	if (err)
 	{
@@ -422,6 +424,7 @@ void lowercase_string(char *string)
 
 symbol_def *get_symbol(char *symbol, symbol_def **the_hash)
 {
+	
 	unsigned char key;					/* the key for the symbol */
 	symbol_def *temp;					/* a temp pointer we will use to find and return our data */
 	
@@ -628,6 +631,11 @@ short match_opcode(char *input)			/* the instruction strings are held in the has
 		
 	instruction = get_symbol(input,instruction_hash);
 	
+	if (instruction)
+		fprintf(db,"%s %d\n",input,instruction->val);
+	else
+		fprintf(db,"%s -------\n",input);
+	
 	if (!instruction)
 		return 0;
 	else
@@ -739,7 +747,7 @@ void report_errors(error_def *error_log, int length)
 
 
 
-script_instruction *parse_script(char *input)
+script_instruction *parse_script(char *input, int *length_ptr)
 {
 	bool done = false;
 	char current_line[256];
@@ -748,7 +756,7 @@ script_instruction *parse_script(char *input)
 	char blats[MAXBLATS][64];
 	
 	int line_count = 0;
-	int total_lines;
+	// int total_lines;
 	script_instruction *instruction_list;
 	int mode;
 	short op1mode,op2mode,op3mode;
@@ -807,7 +815,8 @@ script_instruction *parse_script(char *input)
 	done = false;
 	offset = 0;
 	
-	total_lines = line_count;
+	*length_ptr = line_count;
+	// total_lines = line_count;
 	
 	instruction_list = (script_instruction *)malloc(sizeof(script_instruction) * line_count);
 	error_log = (error_def *)malloc(sizeof(error_def) * line_count);
@@ -958,7 +967,8 @@ script_instruction *parse_script(char *input)
 	dispose_hash();
 	
 	if (output_errors)
-		report_errors(error_log, total_lines);
+		report_errors(error_log, *length_ptr);
+		// report_errors(error_log, total_lines);
 	
 	free(error_log);
 	

@@ -3,7 +3,11 @@
 
 Oct 14, 2000 (Loren Petrich)
 	Added function for loading a script from some in-memory data;
-	this is an alternative to separate functions for loading from a resource or a file  
+	this is an alternative to separate functions for loading from a resource or a file
+	
+June 13, 2001 (Loren Petrich): 
+	Added bounds checking to execute_instruction;
+		it will return whether it could execute that instruction
 */
 
 #ifndef _SCRIPT_H
@@ -27,7 +31,7 @@ bool script_in_use(void);
  
 /*bool instruction_finished(void);*/
 
-void do_next_instruction(void);
+bool do_next_instruction(void);
   
 bool script_Camera_Active(void);
  

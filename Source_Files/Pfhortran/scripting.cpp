@@ -8,6 +8,11 @@
 	
 Aug 15, 2000 (Loren Petrich):
 	Changed file handler to use my new object-oriented version
+
+June 13, 2001 (Loren Petrich): 
+	Added script-length output to script parser
+	Added bounds checking to execute_instruction;
+		it will return whether it could execute that instruction
  */
  
 #define MAX_VARS 64	//The max number of script variables allowed in a single script
@@ -33,9 +38,9 @@ Aug 15, 2000 (Loren Petrich):
 #include <stdio.h>
 
 
-
-script_instruction *current_script;
-int current_instruction;
+// LP: Added script length and set to 
+vector<script_instruction> current_script;
+int current_instruction = 0;
 
 
 float variable_lookup[MAX_VARS];
@@ -64,19 +69,15 @@ extern void (*instruction_lookup[NUMBER_OF_INSTRUCTIONS])(script_instruction);
 
 
 int get_next_instruction(void);
-void execute_instruction(int inst);
+bool execute_instruction(int inst);
 bool script_in_use(void);
-void do_next_instruction(void);
 bool instruction_finished(void);
 
 
 
 void clean_up_script(void)
 {
-	if (current_script)
-		free(current_script);
-		
-	current_script = NULL;
+	current_script.clear();
 	
 	if (cameras)
 		free(cameras);
@@ -133,7 +134,6 @@ int load_script(int text_id)
 	if (!TextRsrc.IsLoaded())
 	{
 		clean_up_script();
-		current_script=0;
 		is_startup = false;
 		return script_TRUE;
 	}
@@ -155,7 +155,6 @@ int load_script_data(void *Data, int DataLen)
 	
 	if (!origsrc || origlen == 0)
 	{
-		current_script=0;
 		is_startup = false;
 		
 		return script_TRUE;
@@ -163,12 +162,20 @@ int load_script_data(void *Data, int DataLen)
 	
 	// Create a new copy to avoid buffer overflows,
 	// and tack a C-string terminator on the end
-	char *src = new char[origlen+1];
-	memcpy(src,origsrc,origlen);
+	vector<char> src(origlen+1);
+	memcpy(&src[0],origsrc,origlen);
 	src[origlen] = 0;
 	
-	current_script = parse_script(src);
-	delete []src;
+	int parsed_script_length = 0;
+	script_instruction *parsed_script = parse_script(&src[0],&parsed_script_length);
+	if (parsed_script)
+	{
+		current_script.resize(parsed_script_length);
+		memcpy(&current_script[0],parsed_script,parsed_script_length*sizeof(script_instruction));
+		free(parsed_script);
+	}
+	else
+		current_script.clear();
 	
 	current_instruction = 0;
 	/*instruction_decay = 0;*/
@@ -196,11 +203,12 @@ void script_init(void)
 
 	current_instruction = old_start;
 	
+	bool success = true;
 	if (current_script[init_start].opcode == On_Init)
 	{
 		do
-			do_next_instruction();
-		while (is_startup && script_in_use());
+			success = do_next_instruction();
+		while (is_startup && script_in_use() && success);
 
 	}*/
 	
@@ -211,9 +219,10 @@ void script_init(void)
 		current_trap = init;
 		is_startup = true;
 		
+		bool success = true;
 		do
-			do_next_instruction();
-		while (trap_active(init) && script_in_use());
+			success = do_next_instruction();
+		while (trap_active(init) && script_in_use() && success);
 	
 		is_startup = false;;
 	}
@@ -223,7 +232,8 @@ void script_init(void)
 }
  
 /*do_next_instruction gets the next instruction and executes it*/
-void do_next_instruction(void)
+// LP: changed to return whether there was an instruction to execute
+bool do_next_instruction(void)
 {
 	
 	if (is_startup)	/* on startup we want to execute ONLY the startup script */
@@ -231,7 +241,7 @@ void do_next_instruction(void)
 		if (trap_active(current_trap))
 			{
 				current_instruction = get_trap_offset(current_trap);
-				execute_instruction(get_next_instruction());
+				if (!execute_instruction(get_next_instruction())) return false;
 				
 				if (trap_active(current_trap))
 					set_trap_instruction(current_trap, current_instruction);
@@ -247,8 +257,7 @@ void do_next_instruction(void)
 					
 				current_instruction = get_trap_offset(current_trap);
 				
-				
-				execute_instruction(get_next_instruction());
+				if (!execute_instruction(get_next_instruction())) return false;
 				
 				if (trap_active(current_trap))
 					set_trap_instruction(current_trap, current_instruction);
@@ -259,7 +268,8 @@ void do_next_instruction(void)
 				}
 			}
 	}
-
+	
+	return true;
 }
 
 
@@ -312,10 +322,6 @@ float get_variable(int var)
 /*free_script purges the current script from memory*/
 void free_script(void)
 {
-	/*if (current_script)
-		free(current_script);
-	current_script = 0;
-	current_instruction = 0;*/
 	
 	clean_up_script();
 	
@@ -325,7 +331,7 @@ void free_script(void)
 is currently a script loaded, false if there is not.*/
 bool script_in_use(void)
 {
-	return (current_script != NULL);
+	return !current_script.empty();
 }
 
 
@@ -358,14 +364,18 @@ int get_next_instruction(void)
 /*execute_instruction calls the function pointed to by the
 opcode passed in inst, a script_instuction.
 */
-void execute_instruction(int inst)
+// LP: changed to return whether there was an instruction to execute
+bool execute_instruction(int inst)
 {
+	if (inst < 0 || inst >= current_script.size()) return false;
+	
 	if (current_script[inst].opcode == 0 || current_script[inst].opcode > NUMBER_OF_INSTRUCTIONS)
-		return;
+		return true;
 	
 	
 	(*instruction_lookup[current_script[inst].opcode])(current_script[inst]);	//call the function
-
+	
+	return true;
 }
  
 void stack_push(int val)

@@ -1,5 +1,10 @@
 /* script_parser.h */
 
+/*
+June 13, 2001 (Loren Petrich): 
+	Added script-length output to script parser
+*/
+
 
 #ifndef _SCRIPT_PARSER_DEF
 #define _SCRIPT_PARSER_DEF
@@ -46,7 +51,7 @@ struct script_instruction
 bool init_pfhortran(void);
 void dispose_pfhortran(void);
 bool is_pfhortran_on(void);
-script_instruction *parse_script(char *input);
+script_instruction *parse_script(char *input, int *length_ptr);
 
 void clear_bind_table(void);
 bind_table *get_bind_table(void);

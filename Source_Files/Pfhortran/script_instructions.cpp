@@ -82,7 +82,7 @@ extern 	void set_variable(int, float);
 extern void stack_push(int val);
 extern int stack_pop(void);
 extern bool script_in_use(void);
-extern void do_next_instruction(void);
+extern bool do_next_instruction(void);
 extern int get_next_instruction(void);
 
 extern bool is_startup;
@@ -1320,9 +1320,10 @@ void s_Block_Start(script_instruction inst)
 	
 	is_startup = true;
 	
+	bool success = true;
 	do
-		do_next_instruction();
-	while (is_startup && script_in_use());
+		success = do_next_instruction();
+	while (is_startup && script_in_use() && success);
 }
 
 void s_Block_End(script_instruction inst)
