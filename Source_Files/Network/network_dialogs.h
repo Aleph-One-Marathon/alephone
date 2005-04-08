@@ -367,6 +367,8 @@ bool run_network_gather_dialog (MetaserverClient* metaserverClient);
 // netgame setup dialog - unconverted routine called by network_gather()
 bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
 
+GatherCallbacks *get_gather_callbacks();
+
 // Join Dialog Goodies
 typedef struct join_dialog_data
 {

@@ -193,15 +193,20 @@ static size_t deferred_script_length = 0;
 static bool do_netscript;
 
 static CommunicationsChannelFactory *server = NULL;
-typedef std::map<int, CommunicationsChannel*> connection_map_t;
-static connection_map_t connections_to_clients;
+
+typedef std::map<int, Client *> client_map_t;
+static client_map_t connections_to_clients;
 static CommunicationsChannel *connection_to_server = NULL;
 static int next_stream_id = 0;
 static IPaddress host_address;
 static bool host_address_specified = false;
 static MessageInflater *inflater = NULL;
-static MessageDispatcher *dispatcher = NULL;
+static MessageDispatcher *joinDispatcher = NULL;
+static MessageDispatcher *gatherDispatcher = NULL;
 static uint32 next_join_attempt;
+
+static GatherCallbacks *gatherCallbacks = NULL;
+
 
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
@@ -249,9 +254,110 @@ static bool NetSetSelfSend(bool on);
 
 static void NetDDPPacketHandler(DDPPacketBufferPtr inPacket);
 
+int getStreamIdFromChannel(CommunicationsChannel *channel) {
+  client_map_t::iterator it;
+  for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+    if (it->second->channel == channel) {
+      return it->first;
+    }
+  }
+  return -1;
+}
+
 //-----------------------------------------------------------------------------
 // Message handlers
 //-----------------------------------------------------------------------------
+
+// Gatherer
+Client::~Client() {
+  delete channel;
+}
+
+CheckPlayerProcPtr Client::check_player;
+
+Client::Client(CommunicationsChannel *inChannel) : mDispatcher(new MessageDispatcher()),
+						   channel(inChannel)
+{
+  mJoinerInfoMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleJoinerInfoMessage));
+  mScriptMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleScriptMessage));
+  mAcceptJoinMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleAcceptJoinMessage));
+  mUnexpectedMessageHandler.reset(newMessageHandlerMethod(this, &Client::unexpectedMessageHandler));
+  mDispatcher->setDefaultHandler(mUnexpectedMessageHandler.get());
+  mDispatcher->setHandlerForType(mJoinerInfoMessageHandler.get(), JoinerInfoMessage::kType);
+  mDispatcher->setHandlerForType(mScriptMessageHandler.get(), ScriptMessage::kType);
+  mDispatcher->setHandlerForType(mAcceptJoinMessageHandler.get(), AcceptJoinMessage::kType);
+  channel->setMessageHandler(mDispatcher.get());
+}
+
+void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, CommunicationsChannel *) 
+{
+  if (netState == netGathering) {
+    fprintf(stderr, "received joiner info message\n");
+    pstrcpy(name, joinerInfoMessage->info()->name);
+    network_version = joinerInfoMessage->info()->network_version;
+    state = Client::_connected_but_not_yet_shown;
+  } else {
+    fprintf(stderr, "unexpected joiner info message received\n");
+  }
+}
+
+void Client::handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel *) 
+{
+  if (state == _awaiting_script_message) {
+    fprintf(stderr, "received script message\n");
+    if (do_netscript &&
+	scriptMessage->value() != _netscript_yes_script_message) {
+      alert_user(infoError, strNETWORK_ERRORS, netErrUngatheredPlayerUnacceptable, 0);
+      state = _ungatherable;
+    } else {
+      fprintf(stderr, "sending join player message\n");
+      JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier);
+      channel->enqueueOutgoingMessage(joinPlayerMessage);
+      state = _awaiting_accept_join;
+    }
+  } else {
+    fprintf(stderr, "unexpected script message received!\n");
+  }
+}
+
+void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
+				     CommunicationsChannel *)
+{
+  if (state == _awaiting_accept_join) {
+    fprintf(stderr, "received accept join message\n");
+    if (acceptJoinMessage->accepted()) {
+      fprintf(stderr, "join accepted\n");
+      topology->nextIdentifier++;
+      topology->players[topology->player_count] = *acceptJoinMessage->player();
+      topology->players[topology->player_count].stream_id = getStreamIdFromChannel(channel);
+      prospective_joiner_info player;
+      player.stream_id = topology->players[topology->player_count].stream_id;
+      topology->players[topology->player_count].dspAddress = channel->peerAddress();
+      topology->players[topology->player_count].ddpAddress.host = channel->peerAddress().host;
+      
+      topology->player_count += 1;
+      check_player(topology->player_count - 1, topology->player_count);
+      NetUpdateTopology();
+      
+      NetDistributeTopology(tagNEW_PLAYER);
+      state = _awaiting_map;
+      gatherCallbacks->JoinSucceeded(&player);
+    } else {
+      // joiner didn't accept!?
+      alert_user(infoError, strNETWORK_ERRORS, netErrCantAddPlayer, 0);
+      state = _ungatherable;
+    }
+  } else {
+    fprintf(stderr, "unexpected accept join message received!\n");
+  }
+}
+
+void Client::unexpectedMessageHandler(Message *, CommunicationsChannel *) {
+  fprintf(stderr, "unexpected message received\n");
+}
+    
+
+
 static short handlerState;
 
 static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel*)
@@ -380,7 +486,7 @@ static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChan
     } else {
       replyToScriptMessage.setValue(_netscript_no_script_message);
     }
-
+    fprintf(stderr, "sending script message\n");
     connection_to_server->enqueueOutgoingMessage(replyToScriptMessage);
   } else {
     fprintf(stderr, "unexpected script message received!\n");
@@ -468,8 +574,11 @@ static TypedMessageHandlerFunction<ScriptMessage> scriptMessageHandler(&handleSc
 static TypedMessageHandlerFunction<TopologyMessage> topologyMessageHandler(&handleTopologyMessage);
 static TypedMessageHandlerFunction<Message> unexpectedMessageHandler(&handleUnexpectedMessage);
 
-bool NetEnter(
-	void)
+void NetSetGatherCallbacks(GatherCallbacks *gc) {
+  gatherCallbacks = gc;
+}
+
+bool NetEnter(void)
 {
 	OSErr error;
 	bool success= true; /* optimism */
@@ -542,20 +651,20 @@ bool NetEnter(
 		inflater->learnPrototype(TopologyMessage());
 	}
 	
-	if (!dispatcher) {
-	  dispatcher = new MessageDispatcher();
+	if (!joinDispatcher) {
+	  joinDispatcher = new MessageDispatcher();
 
-	  dispatcher->setDefaultHandler(&unexpectedMessageHandler);
-	  dispatcher->setHandlerForType(&helloMessageHandler, HelloMessage::kType);
-	  dispatcher->setHandlerForType(&joinPlayerMessageHandler, JoinPlayerMessage::kType);
-	  dispatcher->setHandlerForType(&luaMessageHandler, LuaMessage::kType);
-	  dispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
-	  dispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
-	  dispatcher->setHandlerForType(&physicsMessageHandler, PhysicsMessage::kType);
-	  dispatcher->setHandlerForType(&scriptMessageHandler, ScriptMessage::kType);
-	  dispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
+	  joinDispatcher->setDefaultHandler(&unexpectedMessageHandler);
+	  joinDispatcher->setHandlerForType(&helloMessageHandler, HelloMessage::kType);
+	  joinDispatcher->setHandlerForType(&joinPlayerMessageHandler, JoinPlayerMessage::kType);
+	  joinDispatcher->setHandlerForType(&luaMessageHandler, LuaMessage::kType);
+	  joinDispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
+	  joinDispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
+	  joinDispatcher->setHandlerForType(&physicsMessageHandler, PhysicsMessage::kType);
+	  joinDispatcher->setHandlerForType(&scriptMessageHandler, ScriptMessage::kType);
+	  joinDispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
 	}
-	
+
 	next_join_attempt = machine_tick_count();
 
 	/* Handle our own errors.. */
@@ -616,7 +725,7 @@ void NetExit(
 		connection_to_server = NULL;
 	}
 	
-	connection_map_t::iterator it;
+	client_map_t::iterator it;
 	for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++)
 		delete(it->second);
 	connections_to_clients.clear();
@@ -887,7 +996,7 @@ bool NetGameJoin(
 	if (!error) {
 		connection_to_server = new CommunicationsChannel();
 		connection_to_server->setMessageInflater(inflater);
-		connection_to_server->setMessageHandler(dispatcher);
+		connection_to_server->setMessageHandler(joinDispatcher);
 		
 		netState = netConnecting;
 		success = true;
@@ -1305,7 +1414,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
     
     NetPlayer player = topology->players[playerIndex];
     CommunicationsChannel *channel = 
-      connections_to_clients[player.stream_id];
+      connections_to_clients[player.stream_id]->channel;
     
     /* If the player is not net dead. */ 
     // ZZZ: and is not going to be a zombie and is not us
@@ -1318,7 +1427,6 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	fprintf(stderr, "Transfering physics (%i bytes)\n", physics_length);
 	PhysicsMessage physicsMessage(physics_buffer, physics_length);
 	channel->enqueueOutgoingMessage(physicsMessage);
-	channel->flushOutgoingMessages(false, 30000, 30000);
       }
       
       set_progress_dialog_message(message_id);
@@ -1327,28 +1435,31 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	fprintf(stderr, "Transfering map (%i bytes)\n", wad_length);
 	MapMessage mapMessage(wad_buffer, wad_length);
 	channel->enqueueOutgoingMessage(mapMessage);
-	channel->flushOutgoingMessages(false, 30000, 30000);
       }
       
       if (do_netscript) {
 	fprintf(stderr, "Transfering lua\n");
 	LuaMessage luaMessage(deferred_script_data, deferred_script_length);
 	channel->enqueueOutgoingMessage(luaMessage);
-	channel->flushOutgoingMessages(false, 30000, 30000);
       } 
 
       EndGameDataMessage endGameDataMessage;
       channel->enqueueOutgoingMessage(endGameDataMessage);
-      channel->flushOutgoingMessages(false, 30000, 30000);
     }
+  }
+
+  for (playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
+    CommunicationsChannel *channel = connections_to_clients[topology->players[playerIndex].stream_id]->channel;
+
+    channel->flushOutgoingMessages(false, 30000, 30000);
+  }
     
-    if (error) { // ghs: nothing above returns an error at the moment,
-                 // but I'll leave so you know what error could be displayed
-      alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
-    } else if  (machine_tick_count()-initial_ticks>uint32(topology->player_count*MAP_TRANSFER_TIME_OUT)) {
-      alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, error);
-      error= 1;
-    }
+  if (error) { // ghs: nothing above returns an error at the moment,
+    // but I'll leave so you know what error could be displayed
+    alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
+  } else if  (machine_tick_count()-initial_ticks>uint32(topology->player_count*MAP_TRANSFER_TIME_OUT)) {
+    alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, error);
+    error= 1;
   }
   
   if (!error) {
@@ -1491,7 +1602,7 @@ OSErr NetDistributeChatMessage(
        || playerIndex == localPlayerIndex) {
 
       CommunicationsChannel *channel =
-	connections_to_clients[topology->players[playerIndex].stream_id];
+	connections_to_clients[topology->players[playerIndex].stream_id]->channel;
       
       channel->enqueueOutgoingMessage(chatMessage);
       channel->flushOutgoingMessages(false, 30000, 30000);
@@ -1532,29 +1643,38 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info)
   if (new_joiner) {
     
     new_joiner->setMessageInflater(inflater);
+    Client *client = new Client(new_joiner);
+    connections_to_clients[next_stream_id] = client;
+    next_stream_id++;
     
     HelloMessage helloMessage;
     fprintf(stderr, "sending hello message\n");
     new_joiner->enqueueOutgoingMessage(helloMessage);
-    new_joiner->flushOutgoingMessages(false, 30000, 30000);
-    
-    auto_ptr<JoinerInfoMessage> joinerInfoMessage(new_joiner->receiveSpecificMessage<JoinerInfoMessage>((Uint32) 30000, (Uint32) 30000));
-    if (joinerInfoMessage.get()) {
-      fprintf(stderr, "received joinerInfoMessage\n");
-      info.network_version = joinerInfoMessage->info()->network_version;
-      pstrcpy(info.name, joinerInfoMessage->info()->name);
-      
-      info.stream_id = next_stream_id;
-      connections_to_clients[next_stream_id] = new_joiner;
-      next_stream_id++;
-      return true;
-    } else {
-      delete new_joiner;
-      return false;
-    }
-  } else {
-    return false;
   }
+
+  {
+    client_map_t::iterator it;
+    for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+      it->second->channel->pump();
+      it->second->channel->dispatchIncomingMessages();
+
+    }
+  }
+
+  // now check to see if any one has actually connected
+  client_map_t::iterator it;
+  for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+    if (it->second->state == Client::_connected_but_not_yet_shown) {
+      info.network_version = it->second->network_version;
+      info.stream_id = it->first;
+      pstrcpy(info.name, it->second->name);
+      it->second->state = Client::_connected;
+      info.gathering = false;
+      return true;
+    }
+  }
+
+  return false;    
 }    
 /* check for messages from gather nodes; returns new state */
 short NetUpdateJoinState(
@@ -1625,7 +1745,7 @@ short NetUpdateJoinState(
 	}
       }
       //	alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
-#if 0
+      /*
 	  } else if (message->type() == kCHAT_MESSAGE) {
 	    NetworkChatMessage *networkChatMessage = dynamic_cast<NetworkChatMessage*>(message.get());
 	    if (networkChatMessage) {
@@ -1642,7 +1762,7 @@ short NetUpdateJoinState(
 	  error = 1;
 	}
 	}
-#endif
+      */
       break;
       // netWaiting
       
@@ -1663,11 +1783,26 @@ short NetUpdateJoinState(
   return newState;
 }
 
+int NetGatherPlayer(const prospective_joiner_info &player,
+  CheckPlayerProcPtr check_player)
+{
+  assert(netState == netGathering);
+  assert(topology->player_count < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS);
 
+  Client::check_player = check_player;
+
+  // reject a player if he can't handle our script demands
+  ScriptMessage scriptMessage(_netscript_query_message);
+  connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(scriptMessage);
+  connections_to_clients[player.stream_id]->state = Client::_awaiting_script_message;
+
+  // lie to the network code and say we gathered successfully
+  return kGatherPlayerSuccessful;
+}
 
 // ZZZ: hindsight is 20/20 - probably we should just return the joiner's acceptance number and let higher-level
 // code figure out whether that number is acceptable, etc.
-int NetGatherPlayer(
+int OldNetGatherPlayer(
 #if !HAVE_SDL_NET
         /* player_index in our lookup list */
 	short player_index,
@@ -1692,7 +1827,7 @@ int NetGatherPlayer(
 	NetLookupInformation(player_index, &address, NULL);
 	#endif
 #else
-	address = connections_to_clients[player.stream_id]->peerAddress();
+	address = connections_to_clients[player.stream_id]->channel->peerAddress();
 #endif
 
 	/* Force the address to be correct, so we can use our stream system.. */
@@ -1708,7 +1843,7 @@ int NetGatherPlayer(
 
         int thePlayerAcceptNumber = 0;
 
-	CommunicationsChannel *channel = connections_to_clients[player.stream_id];
+	CommunicationsChannel *channel = connections_to_clients[player.stream_id]->channel;
 
 	if (!error) {
 	  // reject a player if he can't handle our script demands
@@ -1739,11 +1874,11 @@ int NetGatherPlayer(
 	{
 	  fprintf(stderr, "sending joinPlayerMessage\n");
 	  JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier);
-	  connections_to_clients[player.stream_id]->enqueueOutgoingMessage(joinPlayerMessage);
-	  connections_to_clients[player.stream_id]->flushOutgoingMessages(30000, 30000);
+	  connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(joinPlayerMessage);
+	  connections_to_clients[player.stream_id]->channel->flushOutgoingMessages(30000, 30000);
 	  if(!error)
 	    {
-	      auto_ptr<AcceptJoinMessage> acceptJoinMessage(connections_to_clients[player.stream_id]->receiveSpecificMessage<AcceptJoinMessage>((Uint32) 30000, (Uint32) 30000));
+	      auto_ptr<AcceptJoinMessage> acceptJoinMessage(connections_to_clients[player.stream_id]->channel->receiveSpecificMessage<AcceptJoinMessage>((Uint32) 30000, (Uint32) 30000));
 	      if (acceptJoinMessage.get()) {
 		fprintf(stderr, "received acceptJoinMessage\n");
 
@@ -1858,12 +1993,11 @@ static OSErr NetDistributeTopology(
         
 	for (playerIndex=0; playerIndex<topology->player_count; ++playerIndex)
 	  {
-	    CommunicationsChannel *channel = connections_to_clients[topology->players[playerIndex].stream_id];
+	    CommunicationsChannel *channel = connections_to_clients[topology->players[playerIndex].stream_id]->channel;
 	    // ZZZ: skip players with identifier NONE - they don't really exist... also skip ourselves.
 	    if(topology->players[playerIndex].identifier != NONE && playerIndex != localPlayerIndex)
 	      {
 		channel->enqueueOutgoingMessage(topologyMessage);
-		channel->flushOutgoingMessages(30000, 30000);
 	      }
 	  }
 	

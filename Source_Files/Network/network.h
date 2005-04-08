@@ -107,11 +107,29 @@ typedef struct player_info
 	byte long_serial_number[LONG_SERIAL_NUMBER_LENGTH];
 } player_info;
 
+
+struct prospective_joiner_info {
+  uint16 network_version;
+  uint16 stream_id;
+  unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
+  bool gathering;
+};
+
+
+
 /* ---------------- functions from network.c */
 enum /* message types passed to the user’s names lookup update procedure */
 {
 	removeEntity,
 	insertEntity
+};
+
+class GatherCallbacks
+{
+ public:
+  virtual ~GatherCallbacks() { };
+  
+  virtual void JoinSucceeded(const prospective_joiner_info *player) = 0;
 };
 
 // ZZZ note: netPlayerAdded, netChatMessageReceived, and netStartingResumeGame are 'pseudo-states';
@@ -140,7 +158,8 @@ typedef void (*NetDistributionProc)(void *buffer, short buffer_size, short playe
 typedef void (*CheckPlayerProcPtr)(short player_index, short num_players);
 
 /* --------- prototypes/NETWORK.C */
-bool NetEnter(void);
+void NetSetGatherCallbacks(GatherCallbacks *gc);
+bool NetEnter();
 void NetDoneGathering (void);
 void NetExit(void);
 
@@ -156,12 +175,6 @@ enum { // NetGatherPlayer results
         kGatherPlayerSuccessful, // generic
         kGatheredUnacceptablePlayer // we had already committed to gathering this jimmy,
         // but we can't start a game with him - upper-level code needs to make sure gathering is cancelled.
-};
-
-struct prospective_joiner_info {
-	uint16 network_version;
-	uint16 stream_id;
-	unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
 };
 
 int NetGatherPlayer(

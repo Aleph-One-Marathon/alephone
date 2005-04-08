@@ -203,6 +203,8 @@ bool network_gather(bool inResumingGame)
 	{
 		myPlayerInfo.desired_color= myPlayerInfo.color;
 		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
+		
+		NetSetGatherCallbacks(get_gather_callbacks());
 	
 		if(NetEnter())
 		{

@@ -84,8 +84,8 @@ struct IncomingGameDataPacketProcessingContext {
         IncomingGameDataPacketProcessingContext() : mMessagesDone(false), mGotTimingAdjustmentMessage(false) {}
 };
 
-typedef void (*MessageHandler)(AIStream& s, IncomingGameDataPacketProcessingContext& c);
-typedef std::map<uint16, MessageHandler> MessageTypeToMessageHandler;
+typedef void (*StarMessageHandler)(AIStream& s, IncomingGameDataPacketProcessingContext& c);
+typedef std::map<uint16, StarMessageHandler> MessageTypeToMessageHandler;
 
 static MessageTypeToMessageHandler sMessageTypeToMessageHandler;
 

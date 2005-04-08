@@ -49,6 +49,8 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 // "network_dialogs_private.h"
 #include	"SSLP_API.h"
 
+#include <memory>
+
 #define	GAME_PORT 4226
 
 // (ZZZ:) Moved here from sdl_network.h and macintosh_network.h
@@ -287,7 +289,15 @@ enum {
 	NUMBER_OF_BUFFERED_STREAM_PACKET_TYPES,
 	NUMBER_OF_STREAM_PACKET_TYPES= 	NUMBER_OF_BUFFERED_STREAM_PACKET_TYPES
 };
+
 /* ===== end of application specific data structures/enums */
+
+class CommunicationsChannel;
+class MessageDispatcher;
+class MessageHandler;
+
+class Message;
+
 
 const NetDistributionInfo* NetGetDistributionInfoForType(int16 inType);
 

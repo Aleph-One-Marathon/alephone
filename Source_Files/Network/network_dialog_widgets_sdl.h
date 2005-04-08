@@ -63,12 +63,12 @@ class w_found_players : public w_list<prospective_joiner_info> {
 public:
     w_found_players(int width, int numRows) :
         w_list<prospective_joiner_info>(listed_players, width, numRows, 0), player_selected_callback(NULL)
-        { num_items = 0; }
+      { num_items = 0; }
         // must update num_items here since listed_players had not been initialized earlier when passed to w_list<>()
     
     void found_player(prospective_joiner_info &player);
-    
-    void hide_player(prospective_joiner_info &player);
+    void update_player(prospective_joiner_info &player);
+    void hide_player(const prospective_joiner_info &player);
     
     void item_selected();
 
@@ -87,7 +87,7 @@ private:
     player_selected_callback_t		player_selected_callback;	// called when a player is clicked on
 
     void list_player(prospective_joiner_info &player);
-    void unlist_player(prospective_joiner_info &player);
+    void unlist_player(const prospective_joiner_info &player);
     
     void draw_item(vector<prospective_joiner_info>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
 };

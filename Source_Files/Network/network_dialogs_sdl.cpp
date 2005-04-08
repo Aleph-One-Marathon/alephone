@@ -910,6 +910,51 @@ setup_metaserver_chat_ui(
  *  Gathering dialog
  */
 
+class SDLGatherCallbacks : public GatherCallbacks
+{
+public:
+  ~SDLGatherCallbacks() { }
+  static SDLGatherCallbacks *instance();
+  void JoinSucceeded(const prospective_joiner_info *player);
+  void set_dialog(dialog *d) { m_dialog = d; }
+private:
+  SDLGatherCallbacks() { m_dialog = NULL; };
+  static SDLGatherCallbacks *m_instance;
+  dialog *m_dialog;
+};
+
+SDLGatherCallbacks *SDLGatherCallbacks::m_instance = NULL;
+
+SDLGatherCallbacks *SDLGatherCallbacks::instance() {
+  if (!m_instance) {
+    m_instance = new SDLGatherCallbacks();
+  }
+  return m_instance;
+}
+
+void SDLGatherCallbacks::JoinSucceeded(const prospective_joiner_info *player) {
+  // remove him from the list
+  assert(m_dialog);
+
+  w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(m_dialog->get_widget_by_id(iNETWORK_LIST_BOX));
+  theFoundPlayers->hide_player(*player);
+  
+  w_players_in_game2* thePlayersDisplay =
+    dynamic_cast<w_players_in_game2*>(m_dialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
+  
+  assert(thePlayersDisplay != NULL);
+  
+  thePlayersDisplay->update_display();
+  
+  modify_control_enabled(m_dialog, iOK, CONTROL_ACTIVE);
+  
+  m_dialog->draw_dirty_widgets();
+}
+
+GatherCallbacks *get_gather_callbacks() {
+  return static_cast<GatherCallbacks *>(SDLGatherCallbacks::instance());
+}
+
 
  // jkvw: The meaty bits here should be moved to shared code
 
@@ -917,10 +962,12 @@ setup_metaserver_chat_ui(
 static void
 gather_player_callback(w_found_players* foundPlayersWidget, prospective_joiner_info player) {
         assert(foundPlayersWidget != NULL);
+	if (player.gathering) return;
     
 	// Either gather will succeed, in which case we don't want to see player, or
 	// an error will occur in gathering, in which case we also don't want to see player.
-        foundPlayersWidget->hide_player(player);
+	player.gathering = true;
+	foundPlayersWidget->update_player(player);
     
         dialog* theDialog = foundPlayersWidget->get_owning_dialog();
 
@@ -1024,6 +1071,8 @@ bool run_network_gather_dialog(MetaserverClient* metaserverClient)
 	auto_ptr<MetaserverClient::NotificationAdapterInstaller> notificationAdapterInstaller;
 	if (metaserverClient != NULL)
 		setup_metaserver_chat_ui(d, *metaserverClient, 5, notificationAdapter, notificationAdapterInstaller);
+
+	SDLGatherCallbacks::instance()->set_dialog(&d);
 
 	// "Play" (OK) button starts off disabled.  It's enabled in the gather callback when a player is gathered (see above).
 	// This prevents trying to start a net game by yourself (which doesn't work at the moment, whether it ought to or not).

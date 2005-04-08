@@ -239,6 +239,38 @@ class TopologyMessage : public SmallMessageHelper
   NetTopology mTopology;
 };
 
+struct Client {
+  Client(CommunicationsChannel *);
+  enum {
+    _connecting,
+    _connected_but_not_yet_shown,
+    _connected,
+    _awaiting_script_message,
+    _ungatherable,
+    _joiner_didnt_accept,
+    _awaiting_accept_join,
+    _awaiting_map
+  };
+  CommunicationsChannel *channel;
+  short state;
+  uint16 network_version;
+  unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
+
+  static CheckPlayerProcPtr check_player;
+
+  ~Client();
+
+  void handleJoinerInfoMessage(JoinerInfoMessage*, CommunicationsChannel*);
+  void unexpectedMessageHandler(Message *, CommunicationsChannel*);
+  void handleScriptMessage(ScriptMessage*, CommunicationsChannel*);
+  void handleAcceptJoinMessage(AcceptJoinMessage*, CommunicationsChannel*);
+
+  std::auto_ptr<MessageDispatcher> mDispatcher;
+  std::auto_ptr<MessageHandler> mJoinerInfoMessageHandler;
+  std::auto_ptr<MessageHandler> mUnexpectedMessageHandler;
+  std::auto_ptr<MessageHandler> mScriptMessageHandler;
+  std::auto_ptr<MessageHandler> mAcceptJoinMessageHandler;
+};
 
 
 

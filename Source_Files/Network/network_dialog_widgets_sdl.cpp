@@ -94,7 +94,7 @@ w_found_players::found_player(prospective_joiner_info &player) {
 
     
 void
-w_found_players::hide_player(prospective_joiner_info &player) {
+w_found_players::hide_player(const prospective_joiner_info &player) {
     found_players.push_back(player);
     
     unlist_player(player);
@@ -108,11 +108,15 @@ w_found_players::list_player(prospective_joiner_info &player) {
     new_items();
 }
 
+void w_found_players::update_player(prospective_joiner_info &player) {
+  unlist_player(player);
+  list_player(player);
+}
+
 
 void
-w_found_players::unlist_player(prospective_joiner_info &player) {
+w_found_players::unlist_player(const prospective_joiner_info &player) {
     size_t theIndex = find_item_index_in_vector(player, listed_players);
-
     if(theIndex == -1)
         return;
 
@@ -146,28 +150,36 @@ w_found_players::item_selected() {
 // Fortunately, that's the case currently.  :)
 void
 w_found_players::callback_on_all_items() {
-    if(player_selected_callback != NULL)
-        while(num_items > 0)
-            player_selected_callback(this, listed_players[0]);
+  if(player_selected_callback != NULL) {
+    for (vector<prospective_joiner_info>::iterator it = listed_players.begin(); it != listed_players.end(); it++) {
+      player_selected_callback(this, *it);
+    }
+  }
 }
 
 void
 w_found_players::draw_item(vector<prospective_joiner_info>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const {
-	char	theNameBuffer[SSLP_MAX_NAME_LENGTH];
+	char	theNameBuffer[SSLP_MAX_NAME_LENGTH + 12];
 
 	pstrncpy((unsigned char*)theNameBuffer, (unsigned char*)(*i).name, SSLP_MAX_NAME_LENGTH - 1);
-	theNameBuffer[SSLP_MAX_NAME_LENGTH - 1] = '\0';
-    
-	int computed_x = x + (width - text_width(&theNameBuffer[1], font, style)) / 2;
-    int computed_y = y + font->get_ascent();
-    
-    //unsigned char text_length = (*i)->sslps_name[0];
-
-    //if(text_length > SSLP_MAX_NAME_LENGTH - 1)
-    //    text_length = SSLP_MAX_NAME_LENGTH - 1;
-    
-    draw_text(s, /*&((*i)->sslps_name[1]), text_length,*/ &theNameBuffer[1], computed_x, computed_y,
-                selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+	a1_p2cstr((unsigned char *) theNameBuffer);
+	if ((*i).gathering) {
+	  strcat(theNameBuffer, " (gathering)");
+	}
+	
+	int computed_x = x + (width - text_width(theNameBuffer, font, style)) / 2;
+	int computed_y = y + font->get_ascent();
+	
+	//unsigned char text_length = (*i)->sslps_name[0];
+	
+	//if(text_length > SSLP_MAX_NAME_LENGTH - 1)
+	//    text_length = SSLP_MAX_NAME_LENGTH - 1;
+	if ((*i).gathering) {
+	  draw_text(s, theNameBuffer, computed_x, computed_y, get_dialog_color(ITEM_DISABLED_COLOR), font, style);
+	} else {
+	  draw_text(s, /*&((*i)->sslps_name[1]), text_length,*/ theNameBuffer, computed_x, computed_y,
+		    selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+	}
 }
 
 
