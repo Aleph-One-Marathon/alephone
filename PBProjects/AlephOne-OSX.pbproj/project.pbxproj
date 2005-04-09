@@ -949,9 +949,9 @@
 			);
 			isa = PBXGroup;
 			name = Metaserver;
-			path = /Users/astrange/Projects/aleph/Source_Files/Network/Metaserver;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../Source_Files/Network/Metaserver;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		3D87957D07D11E120078D26B = {
 			fileEncoding = 30;
@@ -1293,9 +1293,9 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = network_messages.cpp;
-			path = /Users/astrange/Projects/aleph/Source_Files/Network/network_messages.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../Source_Files/Network/network_messages.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		3DF154D7080376E100BC3C09 = {
 			fileRef = 3DF154D6080376E100BC3C09;
@@ -1308,9 +1308,9 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = network_messages.h;
-			path = /Users/astrange/Projects/aleph/Source_Files/Network/network_messages.h;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../Source_Files/Network/network_messages.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		3DF154D9080376FD00BC3C09 = {
 			fileRef = 3DF154D8080376FD00BC3C09;
