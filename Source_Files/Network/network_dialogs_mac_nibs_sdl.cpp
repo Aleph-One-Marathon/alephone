@@ -63,7 +63,6 @@ January 27, 2005 (James Willson):
 #include "screen_drawing.h"
 
 #include "network_games.h"
-#include "network_stream.h"
 #include "network_lookup_sdl.h"
 
 // STL Libraries
@@ -408,7 +407,37 @@ static pascal void NetgameGather_Poller(EventLoopTimerRef Timer, void *UserData)
 	Draw1Control(Data.PlayerDisplayCtrl);
 }
 
+class MacNIBSSDLGatherCallbacks : public GatherCallbacks
+{
+public:
+	~MacNIBSSDLGatherCallbacks() { }
+	static MacNIBSSDLGatherCallbacks *instance();
+	void JoinSucceeded(const prospective_joiner_info *player);
+private:
+	MacNIBSSDLGatherCallbacks() { }
+	static MacNIBSSDLGatherCallbacks *m_instance;
+};
+
+MacNIBSSDLGatherCallbacks *MacNIBSSDLGatherCallbacks::m_instance = NULL;
+
+MacNIBSSDLGatherCallbacks *MacNIBSSDLGatherCallbacks::instance() {
+	if (!m_instance) {
+		m_instance = new MacNIBSSDLGatherCallbacks();
+	}
+	return m_instance;
+}
+
+void MacNIBSSDLGatherCallbacks::JoinSucceeded(const prospective_joiner_info *) {
+	if (GatherDataPtr) {
+		SetControlActivity(GatherDataPtr->OK_Ctrl, (NetGetNumberOfPlayers() > 1) && GatherDataPtr->AllPlayersOK);
+	}
+}
+
 #ifndef NETWORK_TEST_POSTGAME_DIALOG
+
+GatherCallbacks *get_gather_callbacks() { 
+	return static_cast<GatherCallbacks *>(MacNIBSSDLGatherCallbacks::instance());
+}
 
 bool run_network_gather_dialog(MetaserverClient*)
 {
