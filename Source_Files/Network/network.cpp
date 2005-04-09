@@ -330,6 +330,7 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       topology->nextIdentifier++;
       topology->players[topology->player_count] = *acceptJoinMessage->player();
       topology->players[topology->player_count].stream_id = getStreamIdFromChannel(channel);
+	  topology->players[topology->player_count].net_dead = false;
       prospective_joiner_info player;
       player.stream_id = topology->players[topology->player_count].stream_id;
       topology->players[topology->player_count].dspAddress = channel->peerAddress();
