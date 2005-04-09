@@ -341,7 +341,7 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       
       NetDistributeTopology(tagNEW_PLAYER);
       state = _awaiting_map;
-      gatherCallbacks->JoinSucceeded(&player);
+	  if (gatherCallbacks) gatherCallbacks->JoinSucceeded(&player);
     } else {
       // joiner didn't accept!?
       alert_user(infoError, strNETWORK_ERRORS, netErrCantAddPlayer, 0);

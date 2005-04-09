@@ -177,6 +177,39 @@ void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
 	}
 }
 
+class MacSDLGatherCallbacks : public GatherCallbacks
+{
+public:	
+	~MacSDLGatherCallbacks() { }
+	static MacSDLGatherCallbacks *instance();
+	void JoinSucceeded(const prospective_joiner_info *player);
+	void set_dialog(DialogPtr d) { m_dialog = d; }
+private:
+	MacSDLGatherCallbacks() { m_dialog = NULL; };
+	static MacSDLGatherCallbacks *m_instance;
+	DialogPtr m_dialog;
+};
+
+MacSDLGatherCallbacks *MacSDLGatherCallbacks::m_instance = NULL;
+
+MacSDLGatherCallbacks *MacSDLGatherCallbacks::instance() {
+	if (!m_instance) {
+		m_instance = new MacSDLGatherCallbacks();
+	}
+	return m_instance;
+}
+
+void MacSDLGatherCallbacks::JoinSucceeded(const prospective_joiner_info *player) {
+	assert(m_dialog);
+	
+	update_player_list_item(m_dialog, iPLAYER_DISPLAY_AREA);
+	modify_control(m_dialog, iOK, CONTROL_ACTIVE, NONE);
+}
+
+GatherCallbacks *get_gather_callbacks() {
+	return static_cast<GatherCallbacks *>(MacSDLGatherCallbacks::instance());
+}
+
 
 /*************************************************************************************************
  *
@@ -205,6 +238,7 @@ bool run_network_gather_dialog (MetaserverClient*)
 	dialog= myGetNewDialog(dlogGATHER, NULL, (WindowPtr) -1, refNETWORK_GATHER_DIALOG);
 #endif
 	assert(dialog);
+	MacSDLGatherCallbacks::instance()->set_dialog(dialog);
 	gather_dialog_upp= NewModalFilterUPP(gather_dialog_filter_proc);
 	assert(gather_dialog_upp);
 		
@@ -286,6 +320,7 @@ bool run_network_gather_dialog (MetaserverClient*)
 	DisposeDialog(dialog);
 
 	hide_cursor();
+	MacSDLGatherCallbacks::instance()->set_dialog(NULL);
 	return (item_hit==iOK);
 }
 
