@@ -101,7 +101,8 @@ private:
 	ElementVector		m_items;
 	ItemClicked		m_itemClicked;
 
-	void draw_item(const tElement& item, SDL_Surface* s,
+	// This should be factored out into a "drawer" object/Strategy
+	virtual void draw_item(const tElement& item, SDL_Surface* s,
 		int16 x, int16 y, uint16 width, bool selected) const
 	{
 		y += font->get_ascent();
@@ -116,8 +117,42 @@ private:
 
 
 
-typedef w_items_in_room<MetaserverPlayerInfo> w_players_in_room;
 typedef w_items_in_room<GameListMessage::GameListEntry> w_games_in_room;
+
+
+
+class w_players_in_room : public w_items_in_room<MetaserverPlayerInfo>
+{
+public:
+	w_players_in_room(MetaserverClient& client, CollectionAccessor accessor, ItemClicked itemClicked, int width, int numRows)
+		: w_items_in_room<MetaserverPlayerInfo>(client, accessor, itemClicked, width, numRows)
+	{}
+
+private:
+	static const int kTeamColorSwatchWidth = 8;
+	static const int kPlayerColorSwatchWidth = 4;
+	static const int kSwatchGutter = 2;
+
+	void draw_item(const MetaserverPlayerInfo& item, SDL_Surface* s,
+		int16 x, int16 y, uint16 width, bool selected) const
+	{
+		set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
+
+		SDL_Rect r = {x, y + 1, kTeamColorSwatchWidth, font->get_ascent() - 2};
+		uint32 pixel = SDL_MapRGB(s->format, 0xff, 0xff, 0x00);
+		SDL_FillRect(s, &r, pixel);
+
+		r.x += kTeamColorSwatchWidth;
+		r.w = kPlayerColorSwatchWidth;
+		pixel = SDL_MapRGB(s->format, 0xff, 0x00, 0x00);
+		SDL_FillRect(s, &r, pixel);
+
+		y += font->get_ascent();
+		draw_text(s, item.name().c_str(), x + kTeamColorSwatchWidth + kPlayerColorSwatchWidth + kSwatchGutter, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+
+		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+	}	
+};
 
 
 
@@ -140,7 +175,7 @@ public:
 		itemsInRoomChanged<w_games_in_room>(iGAMES_IN_ROOM);
 	}
 	
-	void receivedChatMessage(const std::string& senderName, uint16 senderID, const std::string& message)
+	void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
 	{
 		w_chat_history* ch = dynamic_cast<w_chat_history*>(m_dialog.get_widget_by_id(iCHAT_HISTORY));
 		assert(ch != NULL);
