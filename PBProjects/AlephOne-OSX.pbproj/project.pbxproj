@@ -498,7 +498,6 @@
 				F522143E0136B78C01000001,
 				F522143F0136B78C01000001,
 				F52214400136B78C01000001,
-				F52214410136B78C01000001,
 				F5CADB5C0136D95E01000001,
 				F58BD22F01F7D34501F58C2F,
 				F5FDA0880200C577013D663B,
@@ -643,6 +642,7 @@
 				EF2A6C4B07D03A73008DCEFF,
 				EF2A6C4D07D03A73008DCEFF,
 				EF2A6C4F07D03A73008DCEFF,
+				EFA78B000808E88A00F0B285,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -691,7 +691,6 @@
 				F522135F0136A6FD01000001,
 				F52213600136A6FD01000001,
 				F52213950136ABAE01000001,
-				F52213970136ABAE01000001,
 				F52213980136ABAE01000001,
 				F52213990136ABAE01000001,
 				F52213A20136AC1601000001,
@@ -821,6 +820,7 @@
 				EF2A6C4807D03A73008DCEFF,
 				EF2A6C4A07D03A73008DCEFF,
 				EF2A6C4E07D03A73008DCEFF,
+				EFA78AFF0808E88A00F0B285,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -873,13 +873,6 @@
 //3D2
 //3D3
 //3D4
-		3D22699003F6BB0200000104 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_microphone_sdl_win32.cpp;
-			path = /Users/astrange/aleph/Source_Files/Network/network_microphone_sdl_win32.cpp;
-			refType = 0;
-		};
 		3D22699203F6BB2C00000104 = {
 			fileRef = F52213830136ABAE01000001;
 			isa = PBXBuildFile;
@@ -1866,10 +1859,7 @@
 				EF2A6C7207D04417008DCEFF,
 				EF2A6C7307D04417008DCEFF,
 				EF2A6C7407D04417008DCEFF,
-				EF2A6C7507D04417008DCEFF,
-				EF2A6C7607D04417008DCEFF,
 				EF2A6C7707D04417008DCEFF,
-				EF2A6C7807D04417008DCEFF,
 				EF2A6C7907D04417008DCEFF,
 				EF2A6C7A07D04417008DCEFF,
 				EF2A6C7B07D04417008DCEFF,
@@ -2024,6 +2014,7 @@
 				EF2A6D1007D04417008DCEFF,
 				EF2A6D1107D04417008DCEFF,
 				EF2A6D1207D04417008DCEFF,
+				EFA78AFE0808E88A00F0B285,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2232,26 +2223,8 @@
 			settings = {
 			};
 		};
-		EF2A6C7507D04417008DCEFF = {
-			fileRef = F52213850136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EF2A6C7607D04417008DCEFF = {
-			fileRef = F52213870136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		EF2A6C7707D04417008DCEFF = {
 			fileRef = F52213890136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EF2A6C7807D04417008DCEFF = {
-			fileRef = F522138C0136ABAE01000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -3318,7 +3291,6 @@
 				EF2A6D4607D04417008DCEFF,
 				EF2A6D4707D04417008DCEFF,
 				EF2A6D4807D04417008DCEFF,
-				EF2A6D4907D04417008DCEFF,
 				EF2A6D4A07D04417008DCEFF,
 				EF2A6D4B07D04417008DCEFF,
 				EF2A6D4C07D04417008DCEFF,
@@ -3433,6 +3405,7 @@
 				EF2A6DBA07D04417008DCEFF,
 				EF2A6DBB07D04417008DCEFF,
 				EF2A6DCD07D04AA9008DCEFF,
+				EFA78AFD0808E88A00F0B285,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3673,12 +3646,6 @@
 		};
 		EF2A6D4807D04417008DCEFF = {
 			fileRef = F522138E0136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EF2A6D4907D04417008DCEFF = {
-			fileRef = F522138D0136ABAE01000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -4785,6 +4752,56 @@
 			isa = PBXBuildStyle;
 			name = "Development no precomps";
 		};
+		EFA78AFB0808E88A00F0B285 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_messages.cpp;
+			path = ../Source_Files/Network/network_messages.cpp;
+			refType = 4;
+		};
+		EFA78AFC0808E88A00F0B285 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			name = network_messages.h;
+			path = ../Source_Files/Network/network_messages.h;
+			refType = 4;
+		};
+		EFA78AFD0808E88A00F0B285 = {
+			fileRef = EFA78AFB0808E88A00F0B285;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFA78AFE0808E88A00F0B285 = {
+			fileRef = EFA78AFC0808E88A00F0B285;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFA78AFF0808E88A00F0B285 = {
+			fileRef = EFA78AFB0808E88A00F0B285;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFA78B000808E88A00F0B285 = {
+			fileRef = EFA78AFC0808E88A00F0B285;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFA78B010808E88A00F0B285 = {
+			fileRef = EFA78AFB0808E88A00F0B285;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFA78B020808E88A00F0B285 = {
+			fileRef = EFA78AFC0808E88A00F0B285;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		EFBAF0130485BEA500A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -5851,13 +5868,6 @@
 			settings = {
 			};
 		};
-		F522137A0136ABAE01000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_adsp.cpp;
-			path = ../Source_Files/Network/network_adsp.cpp;
-			refType = 2;
-		};
 		F522137B0136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -5921,34 +5931,6 @@
 			path = ../Source_Files/Network/network_microphone.cpp;
 			refType = 2;
 		};
-		F52213840136ABAE01000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_modem_protocol.cpp;
-			path = ../Source_Files/Network/network_modem_protocol.cpp;
-			refType = 2;
-		};
-		F52213850136ABAE01000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_modem_protocol.h;
-			path = ../Source_Files/Network/network_modem_protocol.h;
-			refType = 2;
-		};
-		F52213860136ABAE01000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_modem.cpp;
-			path = ../Source_Files/Network/network_modem.cpp;
-			refType = 2;
-		};
-		F52213870136ABAE01000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_modem.h;
-			path = ../Source_Files/Network/network_modem.h;
-			refType = 2;
-		};
 		F52213880136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -5968,27 +5950,6 @@
 			isa = PBXFileReference;
 			name = network_speaker.cpp;
 			path = ../Source_Files/Network/network_speaker.cpp;
-			refType = 2;
-		};
-		F522138B0136ABAE01000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_stream.cpp;
-			path = ../Source_Files/Network/network_stream.cpp;
-			refType = 2;
-		};
-		F522138C0136ABAE01000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_stream.h;
-			path = ../Source_Files/Network/network_stream.h;
-			refType = 2;
-		};
-		F522138D0136ABAE01000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			name = network_tcp.cpp;
-			path = ../Source_Files/Network/network_tcp.cpp;
 			refType = 2;
 		};
 		F522138E0136ABAE01000001 = {
@@ -6014,12 +5975,6 @@
 		};
 		F52213950136ABAE01000001 = {
 			fileRef = F52213810136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F52213970136ABAE01000001 = {
-			fileRef = F522138D0136ABAE01000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -6382,12 +6337,6 @@
 			settings = {
 			};
 		};
-		F52214410136B78C01000001 = {
-			fileRef = F522138C0136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F52214450136BB2401000001 = {
 			fileRef = F522137F0136ABAE01000001;
 			isa = PBXBuildFile;
@@ -6570,7 +6519,6 @@
 				F5574EFE01F4ED6501FEABBD,
 				EF2EF5CF04819BD700A8000D,
 				F522138F0136ABAE01000001,
-				F522137A0136ABAE01000001,
 				F5574EF801F4ECD701FEABBD,
 				F522137B0136ABAE01000001,
 				F5574EFA01F4ED0A01FEABBD,
@@ -6583,12 +6531,10 @@
 				F522137F0136ABAE01000001,
 				F52213820136ABAE01000001,
 				F52213810136ABAE01000001,
+				EFA78AFB0808E88A00F0B285,
 				F52213830136ABAE01000001,
 				F5A00031023FDB8001A80001,
-				3D22699003F6BB0200000104,
 				3DF2716F03EDBBF100000104,
-				F52213860136ABAE01000001,
-				F52213840136ABAE01000001,
 				F52213880136ABAE01000001,
 				F522138A0136ABAE01000001,
 				F5A0002F023FDB5C01A80001,
@@ -6596,8 +6542,6 @@
 				EFBAF0150485BEA500A8000D,
 				EF2EF5C804819BD700A8000D,
 				EF2EF5C904819BD700A8000D,
-				F522138B0136ABAE01000001,
-				F522138D0136ABAE01000001,
 				F522138E0136ABAE01000001,
 			);
 			isa = PBXGroup;
@@ -6620,15 +6564,13 @@
 				F5A00033023FDBBD01A80001,
 				F52213800136ABAE01000001,
 				F53DC62002219A3D01A80001,
+				EFA78AFC0808E88A00F0B285,
 				3DF2717003EDBBF100000104,
-				F52213870136ABAE01000001,
-				F52213850136ABAE01000001,
 				F5D37B6D022D1C2C01A80001,
 				F52213890136ABAE01000001,
 				F5A00037023FDC0301A80001,
 				EFBAF0160485BEA500A8000D,
 				EF2EF5CA04819BD700A8000D,
-				F522138C0136ABAE01000001,
 			);
 			isa = PBXGroup;
 			name = Headers;
@@ -6960,10 +6902,7 @@
 				F536743A0201508B01A80001,
 				F536743B0201508B01A80001,
 				F536743C0201508B01A80001,
-				F536743D0201508B01A80001,
-				F536743E0201508B01A80001,
 				F536743F0201508B01A80001,
-				F53674400201508B01A80001,
 				F53674410201508B01A80001,
 				F53674420201508B01A80001,
 				F53674430201508B01A80001,
@@ -7118,6 +7057,7 @@
 				EF2A6C4007D03A73008DCEFF,
 				EF2A6C4207D03A73008DCEFF,
 				EF2A6C4407D03A73008DCEFF,
+				EFA78B020808E88A00F0B285,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7184,7 +7124,6 @@
 				F56A4637021F7D8F01A80001,
 				F56A4639021F7D8F01A80001,
 				F56A463A021F7D8F01A80001,
-				F56A463B021F7D8F01A80001,
 				F56A4640021F7E2301A80001,
 				F5828BE0022089D801A80001,
 				F57081C60220B34901A80001,
@@ -7299,6 +7238,7 @@
 				EF2A6C3D07D03A73008DCEFF,
 				EF2A6C3F07D03A73008DCEFF,
 				EF2A6C4307D03A73008DCEFF,
+				EFA78B010808E88A00F0B285,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7730,26 +7670,8 @@
 			settings = {
 			};
 		};
-		F536743D0201508B01A80001 = {
-			fileRef = F52213850136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F536743E0201508B01A80001 = {
-			fileRef = F52213870136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		F536743F0201508B01A80001 = {
 			fileRef = F52213890136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F53674400201508B01A80001 = {
-			fileRef = F522138C0136ABAE01000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -8251,12 +8173,6 @@
 		};
 		F56A463A021F7D8F01A80001 = {
 			fileRef = F522138E0136ABAE01000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F56A463B021F7D8F01A80001 = {
-			fileRef = F522138D0136ABAE01000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
