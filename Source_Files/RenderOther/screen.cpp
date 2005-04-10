@@ -561,13 +561,13 @@ void initialize_screen(
 		//assert(error == noErr);
 #else
 		backdrop_window= GetNewCWindow(windBACKDROP_WINDOW, NULL, (WindowPtr) -1);
+		assert(backdrop_window);
 #endif
 #else
 		backdrop_window= (WindowPtr) NewPtr(sizeof(CWindowRecord));
 		assert(backdrop_window);
 		backdrop_window= GetNewCWindow(windBACKDROP_WINDOW, backdrop_window, (WindowPtr) -1);
 #endif
-		assert(backdrop_window);
 //#if defined(USE_CARBON_ACCESSORS)
 		Rect rgnBBox;
 		GetRegionBounds(gray_region, &rgnBBox);
