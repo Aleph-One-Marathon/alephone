@@ -33,7 +33,7 @@ static void write_string(AOStream& outputStream, const char *s) {
 
 static void read_string(AIStream& inputStream, char *s, size_t length) {
   char c;
-  int i = 0;
+  size_t i = 0;
   inputStream >> (int8&) c;
   while (c != '\0' && i < length - 1) {
     s[i++] = c;
@@ -168,4 +168,6 @@ bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
   for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++) {
     inflateNetPlayer(inputStream, mTopology.players[i]);
   }
+
+  return true;
 }
