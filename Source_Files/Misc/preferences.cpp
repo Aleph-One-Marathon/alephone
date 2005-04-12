@@ -160,6 +160,11 @@ inline short memory_error() {return 0;}
 #endif
 
 // Prototypes
+static void *get_player_pref_data(void);
+static void *get_input_pref_data(void);
+static void *get_sound_pref_data(void);
+static void *get_graphics_pref_data(void);
+static void *get_environment_pref_data(void);
 static bool ethernet_active(void);
 static void get_name_from_system(unsigned char *name);
 
@@ -559,6 +564,15 @@ void write_preferences(
 #endif
 }
 
+/*
+ *  Get prefs data from prefs file (or defaults)
+ */
+
+static void *get_graphics_pref_data() {return graphics_preferences;}
+static void *get_player_pref_data() {return player_preferences;}
+static void *get_sound_pref_data() {return sound_preferences;}
+static void *get_input_pref_data() {return input_preferences;}
+static void *get_environment_pref_data() {return environment_preferences;}
 
 /*
  *  Setup default preferences
