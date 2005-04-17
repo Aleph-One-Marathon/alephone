@@ -1199,12 +1199,20 @@ static void handle_game_key(const SDL_Event &event)
 				increment_replay_speed();
 			break;
 
-		case SDLK_BACKSLASH: {
-			PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		case SDLK_QUESTION: {
+		  PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			extern bool displaying_fps;
 			displaying_fps = !displaying_fps;
 			break;
 		}
+	case SDLK_SLASH:
+	  if (event.key.keysym.mod & KMOD_SHIFT) {
+	    PlayInterfaceButtonSound(Sound_ButtonSuccess());
+	    extern bool displaying_fps;
+	    displaying_fps = !displaying_fps;
+	  }
+	  break;
+      
 
 		case SDLK_F1:		// Decrease screen size
 			if (graphics_preferences->screen_mode.size > 0) {
