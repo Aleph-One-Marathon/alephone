@@ -831,6 +831,7 @@ public:
 
 			case SDLK_BACKSPACE:
 			case SDLK_BACKSLASH:
+		case SDLK_QUESTION:
 			case SDLK_F1:
 			case SDLK_F2:
 			case SDLK_F3:
