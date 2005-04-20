@@ -1794,8 +1794,8 @@
 				AE2DEB8B0815E0A600817EBC,
 			);
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
-				HEADER_SEARCH_PATHS = "/usr/local/include \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/\" . \"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
+				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\" /Library/Frameworks";
+				HEADER_SEARCH_PATHS = "/usr/local/include \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/\" . \"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\" /Library/Frameworks/SDL_net.framework/Headers /Library/Frameworks/SDL.framework/Headers";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
@@ -7227,8 +7227,8 @@
 				3DF32BD70663E1880086305A,
 			);
 			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\"";
-				HEADER_SEARCH_PATHS = "/usr/local/include \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/\" . \"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\"";
+				FRAMEWORK_SEARCH_PATHS = "\"${HOME}/Library/Frameworks\" /Library/Frameworks";
+				HEADER_SEARCH_PATHS = "/usr/local/include \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/\" . \"${HOME}/Library/Frameworks/SDL_net.framework/Headers\" \"${HOME}/Library/Frameworks/SDL.framework/Headers\" /Library/Frameworks/SDL_net.framework/Headers /Library/Frameworks/SDL.framework/Headers";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
