@@ -4693,9 +4693,9 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = network_dialogs_mac_nibs_sdl.cpp;
-			path = /Users/ghs/aleph/Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp;
-			refType = 0;
-			sourceTree = "<absolute>";
+			path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		AE2DEB910815EE1400817EBC = {
 			fileRef = AE2DEB900815EE1400817EBC;
