@@ -912,7 +912,7 @@ bool network_game_setup(
 	Watcher.Watch(Data.PlayerNameCtrl, &Data);
 	
 	game_information->net_game_type =
-		NetgameSetup_FillIn(Data, player_information, allow_all_levels, ResumingGame);
+		fill_in_game_setup_dialog(Data, player_information, allow_all_levels, ResumingGame);
 
 	bool IsOK = RunModalDialog(Window(), false, NetgameSetup_Handler, &Data);
 	IsOK = Data.IsOK;

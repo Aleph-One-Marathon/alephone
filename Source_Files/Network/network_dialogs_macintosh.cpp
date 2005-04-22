@@ -1803,7 +1803,7 @@ static void update_damage_item(
 /* This function takes a rank structure because the rank structure contains the team & is */
 /*  sorted.  */
 void draw_names(
-	DialogPtr dialog, 
+	DialogPtr &dialog, 
 	struct net_rank *ranks, 
 	short number_of_bars,
 	short which_player)
@@ -1837,7 +1837,7 @@ void draw_names(
 
 
 void draw_kill_bars(
-	DialogPtr dialog, 
+	DialogPtr &dialog,
 	struct net_rank *ranks, 
 	short num_players, 
 	short suicide_index, 
@@ -2056,7 +2056,7 @@ static void calculate_maximum_bar(
 }
 
 void draw_score_bars(
-	DialogPtr dialog, 
+	DialogPtr &dialog, 
 	struct net_rank *ranks, 
 	short bar_count)
 {

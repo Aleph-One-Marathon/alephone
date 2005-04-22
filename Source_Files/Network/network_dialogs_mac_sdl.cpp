@@ -40,6 +40,7 @@ September 17, 2004 (jkvw):
 //#define ALSO_TEST_PROGRESS_BAR
 //#define NETWORK_TEST_GATHER_DIALOG
 
+
 #if TARGET_API_MAC_CARBON
 	#define LIST_BOX_AS_CONTROL 1
 #else
@@ -85,6 +86,7 @@ September 17, 2004 (jkvw):
 #pragma segment network_dialogs
 #endif
 
+#ifndef USE_NIBS
 struct network_speeds
 {
 	short updates_per_packet;
@@ -125,7 +127,6 @@ static found_players_t found_players;
 extern TextSpec *_get_font_spec(short font_index);
 
 /* ---------- private code */
-/* static */ short fill_in_game_setup_dialog(DialogPtr dialog, player_info *player_information, bool allow_all_levels);
 /* static */ void extract_setup_dialog_information(DialogPtr dialog, player_info *player_information, 
 	game_info *game_information, short game_limit_type, bool allow_all_levels);
 bool check_setup_information(DialogPtr dialog, short game_limit_type);
@@ -482,7 +483,7 @@ static FileSpecifier sNetscriptFile;
 bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
-        bool inResumingGame,
+	bool inResumingGame,
 	bool& outAdvertiseGameOnMetaserver)
 {
 	short item_hit;
@@ -2021,7 +2022,7 @@ static void update_damage_item(
 /* This function takes a rank structure because the rank structure contains the team & is */
 /*  sorted.  */
 void draw_names(
-	DialogPtr dialog,
+	DialogPtr &dialog,
 	struct net_rank *ranks, 
 	short number_of_bars,
 	short which_player)
@@ -2057,7 +2058,7 @@ void draw_names(
 
 
 void draw_kill_bars(
-	DialogPtr dialog,
+	DialogPtr &dialog,
 	struct net_rank *ranks, 
 	short num_players, 
 	short suicide_index, 
@@ -2279,7 +2280,7 @@ static void calculate_maximum_bar(
 }
 
 void draw_score_bars(
-	DialogPtr dialog,
+	DialogPtr &dialog,
 	struct net_rank *ranks, 
 	short bar_count)
 {
@@ -2538,4 +2539,5 @@ bool network_gather(bool inResumingGame) {
 	hide_cursor();
 	return false;
 }
+#endif
 #endif

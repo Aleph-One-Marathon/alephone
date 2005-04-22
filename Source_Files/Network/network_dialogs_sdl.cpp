@@ -226,13 +226,13 @@ static short create_graph_popup_menu(w_select* theMenu)
 }
 
 void
-draw_names(DialogPtr dialog, struct net_rank *ranks, short number_of_bars, short which_player) {
+draw_names(DialogPtr &dialog, struct net_rank *ranks, short number_of_bars, short which_player) {
     // This does nothing here - draw_kill_bars or draw_score_bars is assumed to have enough data to work with,
     // and one of those is always called adjacent to a call to draw_names in practice.
 }
 
 void
-draw_kill_bars(DialogPtr dialog, struct net_rank *ranks, short num_players, 
+draw_kill_bars(DialogPtr &dialog, struct net_rank *ranks, short num_players, 
                short suicide_index, bool do_totals, bool friendly_fire)
 {
     // We don't actually draw here - we just pass the data along to the widget, and it will take care of the rest. 
@@ -243,7 +243,7 @@ draw_kill_bars(DialogPtr dialog, struct net_rank *ranks, short num_players,
 }
 
 void
-draw_score_bars(DialogPtr dialog, struct net_rank *ranks, short bar_count) {
+draw_score_bars(DialogPtr &dialog, struct net_rank *ranks, short bar_count) {
     // We don't actually draw here - we just pass the data along to the widget, and it will take care of the rest. 
     w_players_in_game2* wpig2 = dynamic_cast<w_players_in_game2*>(dialog->get_widget_by_id(iDAMAGE_STATS));
     wpig2->set_graph_data(ranks, bar_count, NONE, (ranks[0].player_index == NONE) ? true : false, true);
@@ -270,7 +270,8 @@ respond_to_element_clicked(w_players_in_game2* inWPIG2, bool inTeam, bool inGrap
 // User twiddled the iGRAPH_POPUP; draw a new kind of graph in response.
 static void
 respond_to_graph_type_change(w_select* inGraphMenu) {
-    draw_new_graph(inGraphMenu->get_owning_dialog());
+    DialogPtr p = inGraphMenu->get_owning_dialog();
+    draw_new_graph(p);
 }
 
 #ifdef NETWORK_TWO_WAY_CHAT
@@ -369,11 +370,14 @@ void display_net_game_stats(void)
 	qsort(rankings, dynamic_world->player_count, sizeof(struct net_rank), rank_compare);
 
 	/* Create the graph popup menu */
-    create_graph_popup_menu(graph_type_w);
-    
-    draw_new_graph(&d);
-    
-    d.run();
+	create_graph_popup_menu(graph_type_w);
+
+{
+	DialogPtr p = &d;
+	draw_new_graph(p);
+}
+
+	d.run();
 }
 
 
@@ -750,15 +754,18 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 
 	d.add(new w_spacer());	
 
-        w_left_button*	ok_w = new w_left_button("OK", dialog_ok, &d);
-        ok_w->set_identifier(iOK);
+	w_left_button*	ok_w = new w_left_button("OK", dialog_ok, &d);
+	ok_w->set_identifier(iOK);
 	d.add(ok_w);
         
-        w_right_button*	cancel_w = new w_right_button("CANCEL", dialog_cancel, &d);
-        cancel_w->set_identifier(iCANCEL);
+	w_right_button*	cancel_w = new w_right_button("CANCEL", dialog_cancel, &d);
+	cancel_w->set_identifier(iCANCEL);
 	d.add(cancel_w);
 
-        fill_in_game_setup_dialog(&d, player_information, false, inResumingGame);
+{
+	DialogPtr p = &d;
+	fill_in_game_setup_dialog(p, player_information, false, inResumingGame);
+}
 
 	if(inResumingGame)
         {

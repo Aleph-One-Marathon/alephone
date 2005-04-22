@@ -251,7 +251,10 @@ struct net_rank
 struct player_info;
 struct game_info;
 
-
+#ifndef USES_NIBS
+typedef DialogPtr NetgameSetupData;
+typedef DialogPtr NetgameOutcomeData;
+#endif
 
 #ifdef USES_NIBS
 
@@ -390,29 +393,17 @@ void run_network_join_dialog (join_dialog_data& my_join_dialog_data);
 
 /* ---------------------- prototypes */
 // And now, some shared routines.
-extern short
-fill_in_game_setup_dialog(
-	DialogPtr dialog, 
-	player_info *player_information,
-	bool allow_all_levels,
-        bool resuming_game);
 
-extern void
-extract_setup_dialog_information(
-	DialogPtr dialog,
-	player_info *player_information,
-	game_info *game_information,
-	short game_limit_type,
-	bool allow_all_levels,
-        bool resuming_game);
+extern short fill_in_game_setup_dialog(NetgameSetupData &setup, player_info *player_information,
+	bool allow_all_levels, bool resuming_game);
+
+extern void extract_setup_dialog_information(DialogPtr dialog, player_info *player_information,
+	game_info *game_information, short game_limit_type, bool allow_all_levels, bool resuming_game);
 
 extern void reassign_player_colors(short player_index, short num_players);
 
-extern void setup_for_untimed_game(
-	DialogPtr dialog);
-
-extern void setup_for_timed_game(
-	DialogPtr dialog);
+extern void setup_for_untimed_game(DialogPtr dialog);
+extern void setup_for_timed_game(DialogPtr dialog);
 
 // ZZZ: new function to parallel the previous two.
 extern void setup_for_score_limited_game(
@@ -425,44 +416,23 @@ extern void setup_dialog_for_game_type(
 
 
 // (Postgame Carnage Report routines)
-#ifdef USES_NIBS
-extern short find_graph_mode(NetgameOutcomeData &Data, short *index);
-extern void draw_new_graph(NetgameOutcomeData &Data);
-#else
-extern short find_graph_mode(DialogPtr dialog, short *index);
-extern void draw_new_graph(DialogPtr dialog);
-#endif
+extern short find_graph_mode(NetgameOutcomeData &outcome, short *index);
+extern void draw_new_graph(NetgameOutcomeData &outcome);
 
-#ifdef USES_NIBS
-extern void draw_player_graph(NetgameOutcomeData &Data, short index);
-#else
-extern void draw_player_graph(DialogPtr dialog, short index);
-#endif
+extern void draw_player_graph(NetgameOutcomeData &outcome, short index);
 extern void get_net_color(short index, RGBColor *color);
 
 extern short calculate_max_kills(size_t num_players);
-#ifdef USES_NIBS
-extern void draw_totals_graph(NetgameOutcomeData &Data);
-#else
-extern void draw_totals_graph(DialogPtr dialog);
-#endif
+extern void draw_totals_graph(NetgameOutcomeData &outcome);
 extern void calculate_rankings(struct net_rank *ranks, short num_players);
 extern int rank_compare(void const *rank1, void const *rank2);
 extern int team_rank_compare(void const *rank1, void const *ranks2);
 extern int score_rank_compare(void const *rank1, void const *ranks2);
-#ifdef USES_NIBS
-extern void draw_team_totals_graph(NetgameOutcomeData &Data);
-extern void draw_total_scores_graph(NetgameOutcomeData &Data);
-extern void draw_team_total_scores_graph(NetgameOutcomeData &Data);
-extern void update_carnage_summary(NetgameOutcomeData &Data, struct net_rank *ranks, short num_players,
-                                   short suicide_index, bool do_totals, bool friendly_fire);
-#else
-extern void draw_team_totals_graph(DialogPtr dialog);
-extern void draw_total_scores_graph(DialogPtr dialog);
-extern void draw_team_total_scores_graph(DialogPtr dialog);
-extern void update_carnage_summary(DialogPtr dialog, struct net_rank *ranks, short num_players,
-                                   short suicide_index, bool do_totals, bool friendly_fire);
-#endif
+extern void draw_team_totals_graph(NetgameOutcomeData &outcome);
+extern void draw_total_scores_graph(NetgameOutcomeData &outcome);
+extern void draw_team_total_scores_graph(NetgameOutcomeData &outcome);
+extern void update_carnage_summary(NetgameOutcomeData &outcome, struct net_rank *ranks,
+	short num_players, short suicide_index, bool do_totals, bool friendly_fire);
 
 #ifdef mac
 // Mac-only routines called by shared routines.
@@ -491,27 +461,11 @@ extern void set_dialog_netscript_file(DialogPtr inDialog, const FileSpecifier& i
 extern const FileSpecifier& get_dialog_netscript_file(DialogPtr inDialog);
 
 // (Postgame carnage report)
-#ifdef USES_NIBS
-extern void draw_names(NetgameOutcomeData& Data, struct net_rank *ranks, short number_of_bars,
-	short which_player);
-#else
-extern void draw_names(DialogPtr dialog, struct net_rank *ranks, short number_of_bars,
-	short which_player);
-#endif
-
-#ifdef USES_NIBS
-extern void draw_kill_bars(NetgameOutcomeData& Data, struct net_rank *ranks, short num_players, 
+extern void draw_names(NetgameOutcomeData &outcome, struct net_rank *ranks,
+	short number_of_bars, short which_player);
+extern void draw_kill_bars(NetgameOutcomeData &outcome, struct net_rank *ranks, short num_players, 
 	short suicide_index, bool do_totals, bool friendly_fire);
-#else
-extern void draw_kill_bars(DialogPtr dialog, struct net_rank *ranks, short num_players, 
-	short suicide_index, bool do_totals, bool friendly_fire);
-#endif
-
-#ifdef USES_NIBS
-extern void draw_score_bars(NetgameOutcomeData& Data, struct net_rank *ranks, short bar_count);
-#else
-extern void draw_score_bars(DialogPtr dialog, struct net_rank *ranks, short bar_count);
-#endif
+extern void draw_score_bars(NetgameOutcomeData &outcome, struct net_rank *ranks, short bar_count);
 
 
 #ifdef USES_NIBS
@@ -520,13 +474,6 @@ void EntryPoints_FillIn(
 	ControlRef EntryPointCtrl,
 	long entry_flags,
 	short default_level
-	);
-
-short NetgameSetup_FillIn(
-	NetgameSetupData& Data,
-	player_info *player_information,
-	bool allow_all_levels,
-	bool ResumingGame
 	);
 
 void NetgameSetup_GameType(

@@ -73,7 +73,7 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"network.h"
 #include	"network_dialogs.h"
 #include	"network_games.h"
-#include    "player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
+#include	"player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
 #include	"metaserver_dialogs.h" // GameAvailableMetaserverAnnouncer
 
 #include <map>
@@ -102,16 +102,8 @@ static list<HostName_Type>::iterator RHAddrIter = RecentHostAddresses.end();
 #endif
 
 
-static uint16 get_dialog_game_options(DialogPtr dialog, short game_type);
-static void set_dialog_game_options(DialogPtr dialog, uint16 game_options);
-
-#ifdef USES_NIBS
-
-static uint16 GetDialogGameOptions(NetgameSetupData& Data, short game_type);
-static void SetDialogGameOptions(NetgameSetupData& Data, uint16 game_options);
-
-#endif
-
+static uint16 get_dialog_game_options(NetgameSetupData &setup, short game_type);
+static void set_dialog_game_options(NetgameSetupData &setup, uint16 game_options);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -463,7 +455,7 @@ void NetgameSetup_Extract(
 	game_information->net_game_type= GetControl32BitValue(Data.GameTypeCtrl)-1;
 
 	// get game information
-	game_information->game_options= GetDialogGameOptions(Data, game_information->net_game_type);
+	game_information->game_options= get_dialog_game_options(Data, game_information->net_game_type);
 	
  	// ZZZ: don't screw with the limits if resuming.
  	if(ResumingGame)
@@ -562,7 +554,7 @@ void NetgameSetup_Extract(
 		network_preferences->allow_microphone = game_information->allow_mic;
 		network_preferences->difficulty_level = game_information->difficulty_level;
 #ifdef mac
-		 network_preferences->entry_point= GetControl32BitValue(Data.EntryPointCtrl)-1;
+		network_preferences->entry_point= GetControl32BitValue(Data.EntryPointCtrl)-1;
 #else
 		network_preferences->entry_point = entry.level_number;
 #endif
@@ -807,27 +799,22 @@ extract_setup_dialog_information(
 
 
 /*************************************************************************************************
- *
  * Function: fill_in_game_setup_dialog
  * Purpose:  setup the majority of the game setup dialog.
- *
  *************************************************************************************************/
 
-#ifdef USES_NIBS
-
-short NetgameSetup_FillIn(
-	NetgameSetupData& Data,
+short fill_in_game_setup_dialog(
+	NetgameSetupData &setup, 
 	player_info *player_information,
 	bool allow_all_levels,
-	bool ResumingGame
-	)
+	bool resuming_game)
 {
-	// Derived from Woody Zenfell's modifications to the original code:
-	
+	short name_length;
+	long entry_flags;
+
 	// We use a temporary structure so that we can change things without messing with the real preferences
 	network_preferences_data theAdjustedPreferences = *network_preferences;
-
-	if (ResumingGame)
+	if (resuming_game)
 	{
 		// Adjust the apparent preferences to get values from the loaded game (dynamic_world)
 		// rather than from the actual network_preferences.
@@ -840,367 +827,273 @@ short NetgameSetup_FillIn(
 		// If the time limit is longer than a week, we figure it's untimed (  ;)
 		theAdjustedPreferences.game_is_untimed = (dynamic_world->game_information.game_time_remaining > 7 * 24 * 3600 * TICKS_PER_SECOND);
 		// If they are resuming a single-player game, assume they want cooperative play now.
-		if(dynamic_world->player_count == 1 && GET_GAME_TYPE() == _game_of_kill_monsters)
+		if (dynamic_world->player_count == 1 && GET_GAME_TYPE() == _game_of_kill_monsters)
 		{
 			theAdjustedPreferences.game_type = _game_of_cooperative_play;
 			theAdjustedPreferences.game_options |= _live_network_stats; // single-player game doesn't, and they probably want it
-			}
+		}
 		allow_all_levels = true;
-        }
-        
+	}
+
 	/* Fill in the entry points */
-	long entry_flags;
 	if(allow_all_levels)
 	{
 		entry_flags= NONE;
 	} else {
 		entry_flags= get_entry_point_flags_for_game_type(theAdjustedPreferences.game_type);
 	}
-	
+
     // ZZZ: SDL version takes care of this its own way, simpler not to change.
 #ifdef mac
-	EntryPoints_FillIn(Data.EntryPointCtrl, entry_flags, NONE);
+#ifdef USES_NIBS
+   	EntryPoints_FillIn(setup.EntryPointCtrl, entry_flags, NONE);
+#else
+    fill_in_entry_points(setup, iENTRY_MENU, entry_flags, NONE);
 #endif
-	
-	SetControl32BitValue(Data.GameTypeCtrl, theAdjustedPreferences.game_type+1);
-	NetgameSetup_GameType(Data, theAdjustedPreferences.game_type);
-	
-	/* set up the name of the player. */
-	short name_length= player_preferences->name[0];
-	if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
-        // XXX (ZZZ): it looks to me that this forgets to set player_information->name[0] to name_length?
-        // not sure if this is a problem in practice, but the Bungie guys were usually pretty careful about this sort of thing.
-	memcpy(player_information->name, player_preferences->name, name_length+1);
-	
-	SetEditPascalText(Data.PlayerNameCtrl, player_information->name);
- 
- #ifdef mac
-	// SelectDialogItemText(dialog, iGATHER_NAME, 0, INT16_MAX);
 #endif
 
+	/* set up the name of the player. */
+	name_length= player_preferences->name[0];
+	if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
+	// XXX (ZZZ): it looks to me that this forgets to set player_information->name[0] to name_length?
+	// not sure if this is a problem in practice, but the Bungie guys were usually pretty careful about this sort of thing.
+	memcpy(player_information->name, player_preferences->name, name_length+1);
+
+#ifdef USES_NIBS
+	
+	SetControl32BitValue(setup.GameTypeCtrl, theAdjustedPreferences.game_type+1);
+	NetgameSetup_GameType(setup, theAdjustedPreferences.game_type);
+	
+	SetEditPascalText(setup.PlayerNameCtrl, player_information->name);
+
 	/* Set the menu values */
-	SetControl32BitValue(Data.PlayerColorCtrl, player_preferences->color+1);
-	SetControl32BitValue(Data.PlayerTeamCtrl, player_preferences->team+1);
-	SetControl32BitValue(Data.DifficultyCtrl, theAdjustedPreferences.difficulty_level+1);
-	SetControl32BitValue(Data.EntryPointCtrl, theAdjustedPreferences.entry_point+1);
+	SetControl32BitValue(setup.PlayerColorCtrl, player_preferences->color+1);
+	SetControl32BitValue(setup.PlayerTeamCtrl, player_preferences->team+1);
+	SetControl32BitValue(setup.DifficultyCtrl, theAdjustedPreferences.difficulty_level+1);
+	SetControl32BitValue(setup.EntryPointCtrl, theAdjustedPreferences.entry_point+1);
 
 	// START Benad
 	if (theAdjustedPreferences.game_type == _game_of_defense)
 		NumToString(theAdjustedPreferences.kill_limit/60, ptemporary);
 	else
 		NumToString(theAdjustedPreferences.kill_limit, ptemporary);
-	SetEditPascalText(Data.KillsTextCtrl,ptemporary);
+	SetEditPascalText(setup.KillsTextCtrl,ptemporary);
 	// END Benad
-	
+
 	// If resuming an untimed game, show the "time limit" from the prefs in the grayed-out widget
 	// rather than some ridiculously large number
 	NumToString(
-		((ResumingGame && theAdjustedPreferences.game_is_untimed) ?
+		((resuming_game && theAdjustedPreferences.game_is_untimed) ?
 			network_preferences->time_limit :
 				theAdjustedPreferences.time_limit)/TICKS_PER_SECOND/60,
 					ptemporary);
-	SetEditPascalText(Data.TimeTextCtrl,ptemporary);
+	SetEditPascalText(setup.TimeTextCtrl,ptemporary);
 
 	if (theAdjustedPreferences.game_options & _game_has_kill_limit)
 	{
 		// ZZZ: factored out into new function
-        NetgameSetup_ScoreLimit(Data);
+        NetgameSetup_ScoreLimit(setup);
 	}
 	else if (theAdjustedPreferences.game_is_untimed)
 	{
-        NetgameSetup_Untimed(Data);
+        NetgameSetup_Untimed(setup);
 	}
 	else
 	{
-        NetgameSetup_Timed(Data);
+        NetgameSetup_Timed(setup);
 	}
 
-	if (player_information->name[0]==0) SetControlActivity(Data.OK_Ctrl, false);
+	if (player_information->name[0]==0) SetControlActivity(setup.OK_Ctrl, false);
 	
 	// set up the game options
-	SetControl32BitValue(Data.UseMicrophoneCtrl, network_preferences->allow_microphone);
-	SetControl32BitValue(Data.MicrophoneTypeCtrl, network_preferences->use_speex_encoder ?
+	SetControl32BitValue(setup.UseMicrophoneCtrl, network_preferences->allow_microphone);
+	SetControl32BitValue(setup.MicrophoneTypeCtrl, network_preferences->use_speex_encoder ?
 		mic_type_speex : mic_type_plain);
-	SetDialogGameOptions(Data, theAdjustedPreferences.game_options);
-	
-	// If they're resuming a single-player game, now we overwrite any existing options with the cooperative-play options.
-	// (We presumably twiddled the game_type from _game_of_kill_monsters up at the top there.)
-	if(ResumingGame && dynamic_world->player_count == 1 && theAdjustedPreferences.game_type == _game_of_cooperative_play)
-	{
-		NetgameSetup_GameType(Data, theAdjustedPreferences.game_type);
-	}
-
-	/* Setup the team popup.. */
-	SetControlActivity(Data.PlayerTeamCtrl, GetControl32BitValue(Data.UniqTeamsCtrl));
-
-//#if !HAVE_SDL_NET
-//	// set up network options
-//	modify_selection_control(dialog, iNETWORK_SPEED, CONTROL_ACTIVE, network_preferences->type+1);
-//#endif
-
-	// Disable certain elements when resuming a game
-	if(ResumingGame)
-	{
-		SetControlActivity(Data.GameTypeCtrl, false);
-		SetControlActivity(Data.EntryPointCtrl, false);
-  		SetControlActivity(Data.TimeTextCtrl, false);
-		SetControlActivity(Data.KillsTextCtrl, false);
- 		SetControlActivity(Data.DurationCtrl, false);
-  	}
-
-	return theAdjustedPreferences.game_type;
-}
 
 #else
 
-short
-fill_in_game_setup_dialog(
-	DialogPtr dialog, 
-	player_info *player_information,
-	bool allow_all_levels,
-        bool resuming_game)
-{
-	short name_length;
-	long entry_flags;
+	modify_selection_control(setup, iGAME_TYPE, CONTROL_ACTIVE, theAdjustedPreferences.game_type+1);
+	setup_dialog_for_game_type(setup, theAdjustedPreferences.game_type);
 
-        // We use a temporary structure so that we can change things without messing with the real preferences
-        network_preferences_data theAdjustedPreferences = *network_preferences;
-        if(resuming_game)
-        {
-                // Adjust the apparent preferences to get values from the loaded game (dynamic_world)
-                // rather than from the actual network_preferences.
-                theAdjustedPreferences.game_type = GET_GAME_TYPE();
-                theAdjustedPreferences.difficulty_level = dynamic_world->game_information.difficulty_level;
-                theAdjustedPreferences.entry_point = dynamic_world->current_level_number;
-                theAdjustedPreferences.kill_limit = dynamic_world->game_information.kill_limit;
-                theAdjustedPreferences.time_limit = dynamic_world->game_information.game_time_remaining;
-                theAdjustedPreferences.game_options = GET_GAME_OPTIONS();
-                // If the time limit is longer than a week, we figure it's untimed (  ;)
-                theAdjustedPreferences.game_is_untimed = (dynamic_world->game_information.game_time_remaining > 7 * 24 * 3600 * TICKS_PER_SECOND);
-                // If they are resuming a single-player game, assume they want cooperative play now.
-                if(dynamic_world->player_count == 1 && GET_GAME_TYPE() == _game_of_kill_monsters)
-                {
-                        theAdjustedPreferences.game_type = _game_of_cooperative_play;
-                        theAdjustedPreferences.game_options |= _live_network_stats; // single-player game doesn't, and they probably want it
-                }
-                allow_all_levels = true;
-        }
-        
-	/* Fill in the entry points */
-	if(allow_all_levels)
-	{
-		entry_flags= NONE;
-	} else {
-		entry_flags= get_entry_point_flags_for_game_type(theAdjustedPreferences.game_type);
-	}
-
-    // ZZZ: SDL version takes care of this its own way, simpler not to change.
+	copy_pstring_to_text_field(setup, iGATHER_NAME, player_information->name);
 #ifdef mac
-    fill_in_entry_points(dialog, iENTRY_MENU, entry_flags, NONE);
-#endif
-
-	modify_selection_control(dialog, iGAME_TYPE, CONTROL_ACTIVE, theAdjustedPreferences.game_type+1);
-        setup_dialog_for_game_type(dialog, theAdjustedPreferences.game_type);
-
-	/* set up the name of the player. */
-	name_length= player_preferences->name[0];
-	if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
-        // XXX (ZZZ): it looks to me that this forgets to set player_information->name[0] to name_length?
-        // not sure if this is a problem in practice, but the Bungie guys were usually pretty careful about this sort of thing.
-	memcpy(player_information->name, player_preferences->name, name_length+1);
-	
-        copy_pstring_to_text_field(dialog, iGATHER_NAME, player_information->name);
-#ifdef mac
-	SelectDialogItemText(dialog, iGATHER_NAME, 0, INT16_MAX);
+	SelectDialogItemText(setup, iGATHER_NAME, 0, INT16_MAX);
 #endif
 
 	/* Set the menu values */
-	modify_selection_control(dialog, iGATHER_COLOR, CONTROL_ACTIVE, player_preferences->color+1);
-	modify_selection_control(dialog, iGATHER_TEAM, CONTROL_ACTIVE, player_preferences->team+1);
-        modify_selection_control(dialog, iDIFFICULTY_MENU, CONTROL_ACTIVE, theAdjustedPreferences.difficulty_level+1);
-        select_entry_point(dialog, iENTRY_MENU, theAdjustedPreferences.entry_point);
+	modify_selection_control(setup, iGATHER_COLOR, CONTROL_ACTIVE, player_preferences->color+1);
+	modify_selection_control(setup, iGATHER_TEAM, CONTROL_ACTIVE, player_preferences->team+1);
+	modify_selection_control(setup, iDIFFICULTY_MENU, CONTROL_ACTIVE, theAdjustedPreferences.difficulty_level+1);
+	select_entry_point(setup, iENTRY_MENU, theAdjustedPreferences.entry_point);
 
 	// START Benad
 	if (theAdjustedPreferences.game_type == _game_of_defense)
-		insert_number_into_text_item(dialog, iKILL_LIMIT, theAdjustedPreferences.kill_limit/60);
+		insert_number_into_text_item(setup, iKILL_LIMIT, theAdjustedPreferences.kill_limit/60);
 	else
-		insert_number_into_text_item(dialog, iKILL_LIMIT, theAdjustedPreferences.kill_limit);
+		insert_number_into_text_item(setup, iKILL_LIMIT, theAdjustedPreferences.kill_limit);
 	// END Benad
 
-        // If resuming an untimed game, show the "time limit" from the prefs in the grayed-out widget
-        // rather than some ridiculously large number
-	insert_number_into_text_item(dialog, iTIME_LIMIT, ((resuming_game && theAdjustedPreferences.game_is_untimed) ? network_preferences->time_limit : theAdjustedPreferences.time_limit)/TICKS_PER_SECOND/60);
+	// If resuming an untimed game, show the "time limit" from the prefs in the grayed-out widget
+	// rather than some ridiculously large number
+	insert_number_into_text_item(setup, iTIME_LIMIT, ((resuming_game && theAdjustedPreferences.game_is_untimed) ? network_preferences->time_limit : theAdjustedPreferences.time_limit)/TICKS_PER_SECOND/60);
 
 #ifdef HAVE_LUA
-        modify_boolean_control(dialog, iUSE_SCRIPT, CONTROL_ACTIVE, theAdjustedPreferences.use_netscript);
+	modify_boolean_control(setup, iUSE_SCRIPT, CONTROL_ACTIVE, theAdjustedPreferences.use_netscript);
 #else
-        modify_boolean_control(dialog, iUSE_SCRIPT, CONTROL_INACTIVE, false);
+	modify_boolean_control(setup, iUSE_SCRIPT, CONTROL_INACTIVE, false);
 #endif
 	
 #ifdef SDL
 # ifdef HAVE_LUA
-	modify_control_enabled(dialog, iCHOOSE_SCRIPT, theAdjustedPreferences.use_netscript ? CONTROL_ACTIVE : CONTROL_INACTIVE);
+	modify_control_enabled(setup, iCHOOSE_SCRIPT, theAdjustedPreferences.use_netscript ? CONTROL_ACTIVE : CONTROL_INACTIVE);
 # else
-	modify_control_enabled(dialog, iCHOOSE_SCRIPT, CONTROL_INACTIVE);
+	modify_control_enabled(setup, iCHOOSE_SCRIPT, CONTROL_INACTIVE);
 # endif
 #endif
 
 	if (theAdjustedPreferences.game_options & _game_has_kill_limit)
 	{
-                // ZZZ: factored out into new function
-                setup_for_score_limited_game(dialog);
+		// ZZZ: factored out into new function
+		setup_for_score_limited_game(setup);
 	}
 	else if (theAdjustedPreferences.game_is_untimed)
 	{
-		setup_for_untimed_game(dialog);
+		setup_for_untimed_game(setup);
 	}
 	else
 	{
-		setup_for_timed_game(dialog);
+		setup_for_timed_game(setup);
 	}
 
-	if (player_information->name[0]==0) modify_control_enabled(dialog, iOK, CONTROL_INACTIVE);
+	if (player_information->name[0]==0) modify_control_enabled(setup, iOK, CONTROL_INACTIVE);
 
 	// set up the game options
-	modify_boolean_control(dialog, iREAL_TIME_SOUND, CONTROL_ACTIVE, theAdjustedPreferences.allow_microphone);
-	set_dialog_game_options(dialog, theAdjustedPreferences.game_options);
+	modify_boolean_control(setup, iREAL_TIME_SOUND, CONTROL_ACTIVE, theAdjustedPreferences.allow_microphone);
+#endif
 
-        // If they're resuming a single-player game, now we overwrite any existing options with the cooperative-play options.
-        // (We presumably twiddled the game_type from _game_of_kill_monsters up at the top there.)
-        if(resuming_game && dynamic_world->player_count == 1 && theAdjustedPreferences.game_type == _game_of_cooperative_play)
-        {
-                setup_dialog_for_game_type(dialog, theAdjustedPreferences.game_type);
-        }
+	set_dialog_game_options(setup, theAdjustedPreferences.game_options);
+
+	// If they're resuming a single-player game, now we overwrite any existing options with the cooperative-play options.
+	// (We presumably twiddled the game_type from _game_of_kill_monsters up at the top there.)
+	if (resuming_game && dynamic_world->player_count == 1 && theAdjustedPreferences.game_type == _game_of_cooperative_play)
+	{
+#ifdef USES_NIBS
+		NetgameSetup_GameType(setup, theAdjustedPreferences.game_type);
+#else
+		setup_dialog_for_game_type(setup, theAdjustedPreferences.game_type);
+#endif
+	}
 
 	/* Setup the team popup.. */
-        modify_control_enabled(dialog, iGATHER_TEAM, get_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS) ? CONTROL_ACTIVE : CONTROL_INACTIVE);
+#ifdef USES_NIBS
+	SetControlActivity(setup.PlayerTeamCtrl, GetControl32BitValue(setup.UniqTeamsCtrl));
+#else
+	modify_control_enabled(setup, iGATHER_TEAM, get_boolean_control_value(setup, iFORCE_UNIQUE_TEAMS) ? CONTROL_ACTIVE : CONTROL_INACTIVE);
+#endif
 
-
-
+#ifdef USES_NIBS
+	// Disable certain elements when resuming a game
+	if (resuming_game)
+	{
+		SetControlActivity(setup.GameTypeCtrl, false);
+		SetControlActivity(setup.EntryPointCtrl, false);
+  		SetControlActivity(setup.TimeTextCtrl, false);
+		SetControlActivity(setup.KillsTextCtrl, false);
+ 		SetControlActivity(setup.DurationCtrl, false);
+  	}
+#else
 #if !HAVE_SDL_NET
 	// set up network options
-	modify_selection_control(dialog, iNETWORK_SPEED, CONTROL_ACTIVE, theAdjustedPreferences.type+1);
+	modify_selection_control(setup, iNETWORK_SPEED, CONTROL_ACTIVE, theAdjustedPreferences.type+1);
 #endif
 
-        // Disable certain elements when resuming a game
-        if(resuming_game)
-        {
-                modify_control_enabled(dialog, iGAME_TYPE, CONTROL_INACTIVE);
-                modify_control_enabled(dialog, iENTRY_MENU, CONTROL_INACTIVE);
-                modify_control_enabled(dialog, iKILL_LIMIT, CONTROL_INACTIVE);
-                modify_control_enabled(dialog, iTIME_LIMIT, CONTROL_INACTIVE);
-                modify_limit_type_choice_enabled(dialog, CONTROL_INACTIVE);
-        }
+	// Disable certain elements when resuming a game
+	if (resuming_game)
+	{
+		modify_control_enabled(setup, iGAME_TYPE, CONTROL_INACTIVE);
+		modify_control_enabled(setup, iENTRY_MENU, CONTROL_INACTIVE);
+		modify_control_enabled(setup, iKILL_LIMIT, CONTROL_INACTIVE);
+		modify_control_enabled(setup, iTIME_LIMIT, CONTROL_INACTIVE);
+		modify_limit_type_choice_enabled(setup, CONTROL_INACTIVE);
+	}
 
-	FileSpecifier theFile
 #ifdef SDL
-		(theAdjustedPreferences.netscript_file);
+	FileSpecifier theFile (theAdjustedPreferences.netscript_file);
 #else
-	;
+	FileSpecifier theFile;
 	theFile.SetSpec(theAdjustedPreferences.netscript_file);
 #endif
-	
-	set_dialog_netscript_file(dialog, theFile);
+
+	set_dialog_netscript_file(setup, theFile);
+#endif
 
 	return theAdjustedPreferences.game_type;
 }
 
-#endif
-
 
 /*************************************************************************************************
- *
  * Function: get_dialog_game_options
  * Purpose:  extract the game option flags from the net game setup's controls
- *
  *************************************************************************************************/
 
-#ifdef USES_NIBS
-
-
-static uint16 GetDialogGameOptions(NetgameSetupData& Data, short game_type)
+static uint16 get_dialog_game_options(
+	NetgameSetupData &setup,
+	short game_type)
 {
 	// These used to be options in the dialog. now they are always true, i guess.
 	uint16 game_options = (_ammo_replenishes | _weapons_replenish | _specials_replenish);
-	
+
 	if(game_type==_game_of_cooperative_play) SET_FLAG(game_options,_overhead_map_is_omniscient,true);
 
-	SET_FLAG(game_options, _monsters_replenish, GetControl32BitValue(Data.NoMotionSensorCtrl));
-	SET_FLAG(game_options, _motion_sensor_does_not_work, GetControl32BitValue(Data.NoMotionSensorCtrl));
-	SET_FLAG(game_options, _dying_is_penalized, GetControl32BitValue(Data.BadDyingCtrl));
-	SET_FLAG(game_options, _suicide_is_penalized, GetControl32BitValue(Data.BadSuicideCtrl));
-	SET_FLAG(game_options, _force_unique_teams, !GetControl32BitValue(Data.UniqTeamsCtrl));	// Reversed
-	SET_FLAG(game_options, _burn_items_on_death, !GetControl32BitValue(Data.BurnItemsCtrl));	// Reversed
-	SET_FLAG(game_options, _live_network_stats, GetControl32BitValue(Data.StatsReportingCtrl));
-	 
-	 return game_options;
-}
-
-
+#ifdef USES_NIBS
+	SET_FLAG(game_options, _monsters_replenish, GetControl32BitValue(setup.NoMotionSensorCtrl));
+	SET_FLAG(game_options, _motion_sensor_does_not_work, GetControl32BitValue(setup.NoMotionSensorCtrl));
+	SET_FLAG(game_options, _dying_is_penalized, GetControl32BitValue(setup.BadDyingCtrl));
+	SET_FLAG(game_options, _suicide_is_penalized, GetControl32BitValue(setup.BadSuicideCtrl));
+	SET_FLAG(game_options, _force_unique_teams, !GetControl32BitValue(setup.UniqTeamsCtrl)); // Reversed
+	SET_FLAG(game_options, _burn_items_on_death, !GetControl32BitValue(setup.BurnItemsCtrl)); // Reversed
+	SET_FLAG(game_options, _live_network_stats, GetControl32BitValue(setup.StatsReportingCtrl));
+#else
+	SET_FLAG(game_options, _monsters_replenish, get_boolean_control_value(setup, iUNLIMITED_MONSTERS));
+	SET_FLAG(game_options, _motion_sensor_does_not_work, get_boolean_control_value(setup, iMOTION_SENSOR_DISABLED));
+	SET_FLAG(game_options, _dying_is_penalized, get_boolean_control_value(setup, iDYING_PUNISHED));
+	SET_FLAG(game_options, _suicide_is_penalized, get_boolean_control_value(setup, iSUICIDE_PUNISHED));
+	SET_FLAG(game_options, _force_unique_teams, !get_boolean_control_value(setup, iFORCE_UNIQUE_TEAMS)); // Reversed
+	SET_FLAG(game_options, _burn_items_on_death, !get_boolean_control_value(setup, iBURN_ITEMS_ON_DEATH)); // Reversed
+	SET_FLAG(game_options, _live_network_stats, get_boolean_control_value(setup, iREALTIME_NET_STATS));
 #endif
 
-
-static uint16
-get_dialog_game_options(
-	DialogPtr dialog,
-	short game_type)
-{
-	uint16 game_options = 0;
-	
-	// These used to be options in the dialog. now they are always true, i guess.
-	game_options |= (_ammo_replenishes | _weapons_replenish | _specials_replenish);
-//#ifdef DEBUG
-//	game_options |= _overhead_map_is_omniscient;
-//#endif
-	if(game_type==_game_of_cooperative_play) game_options |= _overhead_map_is_omniscient;
-	if (get_boolean_control_value(dialog, iUNLIMITED_MONSTERS)) game_options |= _monsters_replenish;
-	if (get_boolean_control_value(dialog, iMOTION_SENSOR_DISABLED)) game_options |= _motion_sensor_does_not_work;
-	if (get_boolean_control_value(dialog, iDYING_PUNISHED)) game_options |= _dying_is_penalized;
-	if (get_boolean_control_value(dialog, iSUICIDE_PUNISHED)) game_options |= _suicide_is_penalized;
-	if (!get_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS)) game_options |= _force_unique_teams;
-	if (!get_boolean_control_value(dialog, iBURN_ITEMS_ON_DEATH)) game_options |= _burn_items_on_death;
-	if (get_boolean_control_value(dialog, iREALTIME_NET_STATS)) game_options |= _live_network_stats;
-	
 	return game_options;
 }
 
 
 
 /*************************************************************************************************
- *
  * Function: set_dialog_game_options
  * Purpose:  setup the game dialog's radio buttons given the game option flags.
- *
  *************************************************************************************************/
 
-#ifdef USES_NIBS
-
-static void SetDialogGameOptions(NetgameSetupData& Data, uint16 game_options)
-{
-	SetControl32BitValue(Data.NoMotionSensorCtrl, TEST_FLAG(game_options, _monsters_replenish));
-	SetControl32BitValue(Data.NoMotionSensorCtrl, TEST_FLAG(game_options, _motion_sensor_does_not_work));
-	SetControl32BitValue(Data.BadDyingCtrl, TEST_FLAG(game_options, _dying_is_penalized));
-	SetControl32BitValue(Data.BadSuicideCtrl, TEST_FLAG(game_options, _suicide_is_penalized));
-	SetControl32BitValue(Data.UniqTeamsCtrl, !TEST_FLAG(game_options, _force_unique_teams));	// Reversed
-	SetControl32BitValue(Data.BurnItemsCtrl, !TEST_FLAG(game_options, _burn_items_on_death));	// Reversed
-	SetControl32BitValue(Data.StatsReportingCtrl, TEST_FLAG(game_options, _live_network_stats));
-}
-
-#endif
-
-
-static void
-set_dialog_game_options(
-	DialogPtr dialog, 
+static void set_dialog_game_options(
+	NetgameSetupData &setup, 
 	uint16 game_options)
 {
-	modify_boolean_control(dialog, iUNLIMITED_MONSTERS, NONE, (game_options & _monsters_replenish) ? 1 : 0);
-	modify_boolean_control(dialog, iMOTION_SENSOR_DISABLED, NONE, (game_options & _motion_sensor_does_not_work) ? 1 : 0);
-	modify_boolean_control(dialog, iDYING_PUNISHED, NONE, (game_options & _dying_is_penalized) ? 1 : 0);
-	modify_boolean_control(dialog, iSUICIDE_PUNISHED, NONE, (game_options & _suicide_is_penalized) ? 1 : 0);
-	modify_boolean_control(dialog, iFORCE_UNIQUE_TEAMS, NONE, (game_options & _force_unique_teams) ? false : true);
-	modify_boolean_control(dialog, iBURN_ITEMS_ON_DEATH, NONE, (game_options & _burn_items_on_death) ? false : true);
-	modify_boolean_control(dialog, iREALTIME_NET_STATS, NONE, (game_options & _live_network_stats) ? true : false);
+#ifdef USES_NIBS
+	SetControl32BitValue(setup.NoMotionSensorCtrl, !!TEST_FLAG(game_options, _monsters_replenish));
+	SetControl32BitValue(setup.NoMotionSensorCtrl, !!TEST_FLAG(game_options, _motion_sensor_does_not_work));
+	SetControl32BitValue(setup.BadDyingCtrl, !!TEST_FLAG(game_options, _dying_is_penalized));
+	SetControl32BitValue(setup.BadSuicideCtrl, !!TEST_FLAG(game_options, _suicide_is_penalized));
+	SetControl32BitValue(setup.UniqTeamsCtrl, !TEST_FLAG(game_options, _force_unique_teams)); // Reversed
+	SetControl32BitValue(setup.BurnItemsCtrl, !TEST_FLAG(game_options, _burn_items_on_death)); // Reversed
+	SetControl32BitValue(setup.StatsReportingCtrl, !!TEST_FLAG(game_options, _live_network_stats));
+#else
+	modify_boolean_control(setup, iUNLIMITED_MONSTERS, NONE, !!TEST_FLAG(game_options, _monsters_replenish));
+	modify_boolean_control(setup, iMOTION_SENSOR_DISABLED, NONE, !!TEST_FLAG(game_options, _motion_sensor_does_not_work));
+	modify_boolean_control(setup, iDYING_PUNISHED, NONE, !!TEST_FLAG(game_options, _dying_is_penalized));
+	modify_boolean_control(setup, iSUICIDE_PUNISHED, NONE, !!TEST_FLAG(game_options, _suicide_is_penalized));
+	modify_boolean_control(setup, iFORCE_UNIQUE_TEAMS, NONE, !TEST_FLAG(game_options, _force_unique_teams)); // Reversed
+	modify_boolean_control(setup, iBURN_ITEMS_ON_DEATH, NONE, !TEST_FLAG(game_options, _burn_items_on_death)); // Reversed
+	modify_boolean_control(setup, iREALTIME_NET_STATS, NONE, !!TEST_FLAG(game_options, _live_network_stats));
+#endif
 }
 
 
@@ -1714,11 +1607,7 @@ static int	sMenuContents[] =
 // on his selection from the popup/selection control.  (See also draw_new_graph().)
 short
 find_graph_mode(
-#ifdef USES_NIBS
-	NetgameOutcomeData &Data,
-#else
-	DialogPtr dialog,
-#endif
+	NetgameOutcomeData &outcome,
 	short *index)
 {
 	short value;
@@ -1729,9 +1618,9 @@ find_graph_mode(
 	
 	/* Popups are 1 based */
 #ifdef USES_NIBS
-	value = GetControl32BitValue(Data.SelectCtrl) - 1;
+	value = GetControl32BitValue(outcome.SelectCtrl) - 1;
 #else
-	value = get_selection_control_value(dialog, iGRAPH_POPUP)-1;
+	value = get_selection_control_value(outcome, iGRAPH_POPUP)-1;
 #endif
 	if(value<dynamic_world->player_count)
 	{
@@ -1902,11 +1791,7 @@ int score_rank_compare(
 
 // (ZZZ annotation:) Graph of player's killing performance vs each other player
 void draw_player_graph(
-#ifdef USES_NIBS
-	NetgameOutcomeData &Data,
-#else
-	DialogPtr dialog,
-#endif
+	NetgameOutcomeData &outcome,
 	short index)
 {
 	short key_player_index= rankings[index].player_index;
@@ -1930,24 +1815,15 @@ void draw_player_graph(
 		ranks[loop].deaths= key_player->damage_taken[test_player_index].kills;
 	}
 
-#ifdef USES_NIBS
-	draw_names(Data, ranks, dynamic_world->player_count, index);
-	draw_kill_bars(Data, ranks, dynamic_world->player_count, index, false, false);
-#else
-	draw_names(dialog, ranks, dynamic_world->player_count, index);
-	draw_kill_bars(dialog, ranks, dynamic_world->player_count, index, false, false);
-#endif
+	draw_names(outcome, ranks, dynamic_world->player_count, index);
+	draw_kill_bars(outcome, ranks, dynamic_world->player_count, index, false, false);
 }
 
 
 // ZZZ: team vs team carnage (analogous to draw_player_graph's player vs player carnage)
 // THIS IS UNFINISHED (and thus unused at the moment :) )
 void draw_team_graph(
-#ifdef USES_NIBS
-	NetgameOutcomeData &Data,
-#else
-	DialogPtr dialog,
-#endif
+	NetgameOutcomeData &outcome,
 	short team_index)
 {
     // ZZZZZZ this is where I add my team vs team ranking computation.  Yay.
@@ -1990,31 +1866,16 @@ void draw_team_graph(
 
 // (ZZZ annotation:) Total Carnage graph
 void draw_totals_graph(
-#ifdef USES_NIBS
-	NetgameOutcomeData &Data
-#else
-	DialogPtr dialog
-#endif
-	)
+	NetgameOutcomeData &outcome)
 {
-#ifdef USES_NIBS
-	draw_names(Data, rankings, dynamic_world->player_count, NONE);
-	draw_kill_bars(Data, rankings, dynamic_world->player_count, NONE, true, false);
-#else
-	draw_names(dialog, rankings, dynamic_world->player_count, NONE);
-	draw_kill_bars(dialog, rankings, dynamic_world->player_count, NONE, true, false);
-#endif
+	draw_names(outcome, rankings, dynamic_world->player_count, NONE);
+	draw_kill_bars(outcome, rankings, dynamic_world->player_count, NONE, true, false);
 }
 
 
 // (ZZZ annotation:) Total Team Carnage graph
 void draw_team_totals_graph(
-#ifdef USES_NIBS
-	NetgameOutcomeData &Data
-#else
-	DialogPtr dialog
-#endif
-	)
+	NetgameOutcomeData &outcome)
 {
 	short team_index, player_index, opponent_player_index, num_teams;
 	bool found_team_of_current_color;
@@ -2052,24 +1913,15 @@ void draw_team_totals_graph(
 	  }
 	qsort(ranks, num_teams, sizeof(struct net_rank), team_rank_compare);
 	
-#ifdef USES_NIBS
-	draw_names(Data, ranks, num_teams, NONE);
-	draw_kill_bars(Data, ranks, num_teams, NONE, true, true);
-#else
-	draw_names(dialog, ranks, num_teams, NONE);
-	draw_kill_bars(dialog, ranks, num_teams, NONE, true, true);
-#endif
+	draw_names(outcome, ranks, num_teams, NONE);
+	draw_kill_bars(outcome, ranks, num_teams, NONE, true, true);
 }
 
 
 
 // (ZZZ annotation:) Time on Hill, etc. graph
 void draw_total_scores_graph(
-#ifdef USES_NIBS
-	NetgameOutcomeData &Data)
-#else
-	DialogPtr dialog)
-#endif
+	NetgameOutcomeData &outcome)
 {
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 	
@@ -2079,92 +1931,63 @@ void draw_total_scores_graph(
 	/* First qsort the rankings arrray by game_ranking.. */
 	qsort(ranks, dynamic_world->player_count, sizeof(struct net_rank), score_rank_compare);
 
-	/* Draw the names. */
-#ifdef USES_NIBS
-	draw_names(Data, ranks, dynamic_world->player_count, NONE);
-#else
-	draw_names(dialog, ranks, dynamic_world->player_count, NONE);
-#endif
-	
-	/* And draw the bars... */
-#ifdef USES_NIBS
-	draw_score_bars(Data, ranks, dynamic_world->player_count);
-#else
-	draw_score_bars(dialog, ranks, dynamic_world->player_count);
-#endif
+	draw_names(outcome, ranks, dynamic_world->player_count, NONE);
+	draw_score_bars(outcome, ranks, dynamic_world->player_count);
 }
 
 
 
 // (ZZZ annotation:) Team Time on Hill, etc. graph
 void draw_team_total_scores_graph(
-#ifdef USES_NIBS
-	NetgameOutcomeData &Data
-#else
-	DialogPtr dialog
-#endif
-	)
+	NetgameOutcomeData &outcome)
 {
-  short team_index, team_count;
-  struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
+	short team_index, team_count;
+	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 
+	objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
+	team_count = 0;
 
-  objlist_clear(ranks, MAXIMUM_NUMBER_OF_PLAYERS);
-  team_count = 0;
+	for (team_index = 0; team_index < NUMBER_OF_TEAM_COLORS; ++team_index) {
+		bool team_is_valid = false;
+		short kills, deaths;
+		long ranking = get_team_net_ranking(team_index, &kills, &deaths, true);
 
-  for (team_index = 0; team_index < NUMBER_OF_TEAM_COLORS; ++team_index) {
-    short ranking_index;
-    bool team_is_valid = false;
-    short kills, deaths;
-    long ranking = get_team_net_ranking(team_index, &kills, &deaths, true);
-
-    if (kills || deaths || ranking) {
-      team_is_valid = true;
-    } else {
-      for (short player_index = 0; player_index < dynamic_world->player_count; ++player_index) {
-	struct player_data *player = get_player_data(player_index);
-	if (player->team == team_index) {
-	  team_is_valid = true;
-	  break;
-	}
-      }
-    }
+		if (kills || deaths || ranking) {
+			team_is_valid = true;
+		} else {
+			for (short player_index = 0; player_index < dynamic_world->player_count; ++player_index) {
+				struct player_data *player = get_player_data(player_index);
+				if (player->team == team_index) {
+					team_is_valid = true;
+					break;
+				}
+			}
+		}
     
-    if (team_is_valid) {
-      ranks[team_count].kills = kills;
-      ranks[team_index].deaths = deaths;
-      ranks[team_count].player_index = NONE;
-      ranks[team_count].color = team_index;
-      ranks[team_count].game_ranking = ranking;
-      ranks[team_count].friendly_fire_kills = team_friendly_fire[NUMBER_OF_TEAM_COLORS].kills;
-      team_count++;
-    }
-  }
+		if (team_is_valid) {
+			ranks[team_count].kills = kills;
+			ranks[team_index].deaths = deaths;
+			ranks[team_count].player_index = NONE;
+			ranks[team_count].color = team_index;
+			ranks[team_count].game_ranking = ranking;
+			ranks[team_count].friendly_fire_kills = team_friendly_fire[NUMBER_OF_TEAM_COLORS].kills;
+			team_count++;
+		}
+	}
 
-  /* Now qsort our team stuff. */
-  qsort(ranks, team_count, sizeof(struct net_rank), score_rank_compare);
-  
-  /* And draw the bars.. */
-#ifdef USES_NIBS
-  draw_names(Data, ranks, team_count, NONE);
-  draw_score_bars(Data, ranks, team_count);
-#else
-  draw_names(dialog, ranks, team_count, NONE);
-  draw_score_bars(dialog, ranks, team_count);
-#endif
+	/* Now qsort our team stuff. */
+	qsort(ranks, team_count, sizeof(struct net_rank), score_rank_compare);
+
+	draw_names(outcome, ranks, team_count, NONE);
+	draw_score_bars(outcome, ranks, team_count);
 }
 
 
 
 // (ZZZ) ripped this out of draw_kill_bars since we can share this bit but not the rest of draw_kill_bars().
 // (ZZZ annotation:) Update the "N deaths total (D dpm) including S suicides"-type text at the bottom.
-void
-update_carnage_summary(                 	
-#ifdef USES_NIBS
-	NetgameOutcomeData &Data,
-#else
-	DialogPtr dialog,
-#endif
+void update_carnage_summary(                 	
+	NetgameOutcomeData &outcome,
 	struct net_rank *ranks, 
 	short num_players, 
 	short suicide_index, 
@@ -2214,9 +2037,9 @@ update_carnage_summary(
 //	SetDialogItemText(item_handle, ptemporary);
     
 #ifdef USES_NIBS
-    SetStaticPascalText(Data.KillsTextCtrl, ptemporary);
+    SetStaticPascalText(outcome.KillsTextCtrl, ptemporary);
 #else
-    copy_pstring_to_static_text(dialog, iTOTAL_KILLS, ptemporary);
+    copy_pstring_to_static_text(outcome, iTOTAL_KILLS, ptemporary);
 #endif
 
 	if (minutes > 0) dpm = total_deaths / minutes;
@@ -2238,9 +2061,9 @@ update_carnage_summary(
 //	SetDialogItemText(item_handle, ptemporary);
 
 #ifdef USES_NIBS
-    SetStaticPascalText(Data.DeathsTextCtrl, ptemporary);
+    SetStaticPascalText(outcome.DeathsTextCtrl, ptemporary);
 #else
-    copy_pstring_to_static_text(dialog, iTOTAL_DEATHS, ptemporary);
+    copy_pstring_to_static_text(outcome, iTOTAL_DEATHS, ptemporary);
 #endif
 }
 
@@ -2248,64 +2071,37 @@ update_carnage_summary(
 
 // ZZZ: ripped out of update_damage_item
 // (ZZZ annotation:) Demultiplex to draw_X_graph() function based on find_graph_mode().
-void
-#ifdef USES_NIBS
-draw_new_graph(NetgameOutcomeData &Data) {
-#else
-draw_new_graph(DialogPtr dialog) {
-#endif
+void draw_new_graph(
+	NetgameOutcomeData &outcome)
+{
     short   graph_type;
     short   index;
 
-#ifdef USES_NIBS
-    graph_type= find_graph_mode(Data, &index);
-#else
-    graph_type= find_graph_mode(dialog, &index);
-#endif
-	
+    graph_type= find_graph_mode(outcome, &index);
+
 	switch(graph_type)
 	{
 		case _player_graph:
-#ifdef USES_NIBS
-			draw_player_graph(Data, index);
-#else
-			draw_player_graph(dialog, index);
-#endif
+			draw_player_graph(outcome, index);
 			break;
-			
+
 		case _total_carnage_graph:
-#ifdef USES_NIBS
-			draw_totals_graph(Data);
-#else
-			draw_totals_graph(dialog);
-#endif
+			draw_totals_graph(outcome);
 			break;
-			
+
 		case _total_scores_graph:
-#ifdef USES_NIBS
-			draw_total_scores_graph(Data);
-#else
-			draw_total_scores_graph(dialog);
-#endif
+			draw_total_scores_graph(outcome);
 			break;
 
 		/* These two functions need to have the team colors. */
 		case _total_team_carnage_graph:
-#ifdef USES_NIBS
-			draw_team_totals_graph(Data);
-#else
-			draw_team_totals_graph(dialog);
-#endif
+			draw_team_totals_graph(outcome);
 			break;
-			
+
 		case _total_team_scores_graph:
-#ifdef USES_NIBS
-			draw_team_total_scores_graph(Data);
-#else
-			draw_team_total_scores_graph(dialog);
-#endif
+			draw_team_total_scores_graph(outcome);
 			break;
-			
+
 		default:
 			assert(false);
 			break;
