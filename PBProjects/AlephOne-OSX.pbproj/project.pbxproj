@@ -4642,7 +4642,6 @@
 			files = (
 				AE2DEB880815E0A600817EBC,
 				AE2DEB890815E0A600817EBC,
-				AE2DEB8A0815E0A600817EBC,
 			);
 			isa = PBXRezBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4655,12 +4654,6 @@
 		};
 		AE2DEB890815E0A600817EBC = {
 			fileRef = F536740602014E1C01A80001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		AE2DEB8A0815E0A600817EBC = {
-			fileRef = F536740802014E1C01A80001;
 			isa = PBXBuildFile;
 			settings = {
 			};
