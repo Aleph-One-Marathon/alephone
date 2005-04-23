@@ -369,7 +369,7 @@ void handle_preferences(
 	SetControl32BitValue(GRFX_Brightness,graphics_preferences->screen_mode.gamma_level+1);
 	
 	ControlRef GRFX_Acceleration = GetCtrlFromWindow(Window(),Sig_Graphics,iHARDWARE_ACCELERATION);
-	SetControl32BitValue(GRFX_Acceleration,graphics_preferences->screen_mode.acceleration == _opengl_acceleration ? 1 : 0);
+	SetControl32BitValue(GRFX_Acceleration,graphics_preferences->screen_mode.acceleration == _opengl_acceleration);
 	SetControlActivity(GRFX_Acceleration, OGL_IsPresent());
 	
 	ControlRef GRFX_FillScreen = GetCtrlFromWindow(Window(),Sig_Graphics,iFILL_SCREEN);
@@ -387,25 +387,25 @@ void handle_preferences(
 	SetControl32BitValue(SNDS_Music,sound_preferences->music+1);
 	
 	ControlRef SNDS_Stereo = GetCtrlFromWindow(Window(),Sig_Sound,iSTEREO);
-	SetControl32BitValue(SNDS_Stereo,TEST_FLAG(sound_preferences->flags,_stereo_flag));
+	SetControl32BitValue(SNDS_Stereo, !!TEST_FLAG(sound_preferences->flags,_stereo_flag));
 	
 	if (!TEST_FLAG(sound_preferences->flags,_stereo_flag))
 		SET_FLAG(sound_preferences->flags,_dynamic_tracking_flag,false);
 
 	ControlRef SNDS_Panning = GetCtrlFromWindow(Window(),Sig_Sound,iACTIVE_PANNING);
-	SetControl32BitValue(SNDS_Panning,TEST_FLAG(sound_preferences->flags,_dynamic_tracking_flag));
+	SetControl32BitValue(SNDS_Panning, !!TEST_FLAG(sound_preferences->flags,_dynamic_tracking_flag));
 
 	ControlRef SNDS_16Bit = GetCtrlFromWindow(Window(),Sig_Sound,iHIGH_QUALITY);
-	SetControl32BitValue(SNDS_16Bit,TEST_FLAG(sound_preferences->flags,_16bit_sound_flag));
+	SetControl32BitValue(SNDS_16Bit, !!TEST_FLAG(sound_preferences->flags,_16bit_sound_flag));
 
 	ControlRef SNDS_Ambient = GetCtrlFromWindow(Window(),Sig_Sound,iAMBIENT_SOUND);
-	SetControl32BitValue(SNDS_Ambient,TEST_FLAG(sound_preferences->flags,_ambient_sound_flag));
+	SetControl32BitValue(SNDS_Ambient, !!TEST_FLAG(sound_preferences->flags,_ambient_sound_flag));
 
 	ControlRef SNDS_More = GetCtrlFromWindow(Window(),Sig_Sound,iMORE_SOUNDS);
-	SetControl32BitValue(SNDS_More,TEST_FLAG(sound_preferences->flags,_more_sounds_flag));
+	SetControl32BitValue(SNDS_More, !!TEST_FLAG(sound_preferences->flags,_more_sounds_flag));
 
 	ControlRef SNDS_Relative_Volume = GetCtrlFromWindow(Window(),Sig_Sound,iRELATIVE_VOLUME);
-	SetControl32BitValue(SNDS_Relative_Volume,TEST_FLAG(sound_preferences->flags,_relative_volume_flag));
+	SetControl32BitValue(SNDS_Relative_Volume, !!TEST_FLAG(sound_preferences->flags,_relative_volume_flag));
 	
 	// Player:
 	
@@ -427,22 +427,22 @@ void handle_preferences(
 	input_preferences->input_device = _mouse_yaw_pitch;
 	
 	ControlRef INPT_Run_Walk = GetCtrlFromWindow(Window(),Sig_Input,iINTERCHANGE_RUN_WALK);
-	SetControl32BitValue(INPT_Run_Walk,TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_run_walk));
+	SetControl32BitValue(INPT_Run_Walk, !!TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_run_walk));
 
 	ControlRef INPT_Swim_Sink = GetCtrlFromWindow(Window(),Sig_Input,iINTERCHANGE_SWIM_SINK);
-	SetControl32BitValue(INPT_Swim_Sink,TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
+	SetControl32BitValue(INPT_Swim_Sink, !!TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
 
 	ControlRef INPT_No_Auto_Rctr = GetCtrlFromWindow(Window(),Sig_Input,iDONT_AUTO_RECENTER);
-	SetControl32BitValue(INPT_No_Auto_Rctr,TEST_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter));
+	SetControl32BitValue(INPT_No_Auto_Rctr, !!TEST_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter));
 
 	ControlRef INPT_No_Switch_New = GetCtrlFromWindow(Window(),Sig_Input,iDONT_SWITCH_TO_NEW_WEAPON);
-	SetControl32BitValue(INPT_No_Switch_New,TEST_FLAG(input_preferences->modifiers, _inputmod_dont_switch_to_new_weapon));
+	SetControl32BitValue(INPT_No_Switch_New, !!TEST_FLAG(input_preferences->modifiers, _inputmod_dont_switch_to_new_weapon));
 
 	ControlRef INPT_Button_Snds = GetCtrlFromWindow(Window(),Sig_Input,iUSE_INTERFACE_BUTTON_SOUNDS);
-	SetControl32BitValue(INPT_Button_Snds,TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
+	SetControl32BitValue(INPT_Button_Snds, !!TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
 
 	ControlRef INPT_Button_Invert = GetCtrlFromWindow(Window(),Sig_Input,iINVERT_MOUSE_VERTICAL);
-	SetControl32BitValue(INPT_Button_Invert,TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
+	SetControl32BitValue(INPT_Button_Invert, !!TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
 
 	ControlRef INPT_Button_VertSens = GetCtrlFromWindow(Window(),Sig_Input,iVERTICAL_MOUSE_SENSITIVITY);
 	SetCtrlFloatValue(INPT_Button_VertSens, PrefToSlider(input_preferences->sens_vertical));

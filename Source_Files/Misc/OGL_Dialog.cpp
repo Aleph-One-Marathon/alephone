@@ -290,7 +290,7 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	for (int k=0; k<NumCheckboxes; k++)
 	{
 		Checkboxes[k] = GetCtrlFromWindow(Window(), 0, CheckboxDispatch[k][0]);
-		SetControl32BitValue(Checkboxes[k], TEST_FLAG(Data.Flags, CheckboxDispatch[k][1]));
+		SetControl32BitValue(Checkboxes[k], !!TEST_FLAG(Data.Flags, CheckboxDispatch[k][1]));
 	}
 
 	// For making the swatches drawable and hittable

@@ -276,19 +276,19 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	SetFloat(HandlerData.CC_OpacityCtrl,Data.Opacity);
 	
 	ControlRef PassThruWall_Ctrl = GetCtrlFromWindow(Window(), 0, PassThruWall_Item);
-	SetControl32BitValue(PassThruWall_Ctrl, TEST_FLAG(Data.Flags,_ChaseCam_ThroughWalls));
+	SetControl32BitValue(PassThruWall_Ctrl, !!TEST_FLAG(Data.Flags,_ChaseCam_ThroughWalls));
 	
 	ControlRef NeverActive_Ctrl = GetCtrlFromWindow(Window(), 0, NeverActive_Item);
-	SetControl32BitValue(NeverActive_Ctrl, TEST_FLAG(Data.Flags,_ChaseCam_NeverActive));
+	SetControl32BitValue(NeverActive_Ctrl, !!TEST_FLAG(Data.Flags,_ChaseCam_NeverActive));
 	
 	ControlRef OnWhenEntering_Ctrl = GetCtrlFromWindow(Window(), 0, OnWhenEntering_Item);
-	SetControl32BitValue(OnWhenEntering_Ctrl, TEST_FLAG(Data.Flags,_ChaseCam_OnWhenEntering));
+	SetControl32BitValue(OnWhenEntering_Ctrl, !!TEST_FLAG(Data.Flags,_ChaseCam_OnWhenEntering));
 	
 	// Get void color from OpenGL-parameters data
 	OGL_ConfigureData& OGLData = Get_OGL_ConfigureData();
 	
 	ControlRef VoidColorOnOff_Ctrl = GetCtrlFromWindow(Window(), 0, VoidColorOnOff_Item);
-	SetControl32BitValue(VoidColorOnOff_Ctrl, TEST_FLAG(OGLData.Flags,OGL_Flag_VoidColor));
+	SetControl32BitValue(VoidColorOnOff_Ctrl, !!TEST_FLAG(OGLData.Flags,OGL_Flag_VoidColor));
 		
 	HandlerData.VoidColor = OGLData.VoidColor;
 
