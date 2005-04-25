@@ -1122,35 +1122,36 @@ void render_screen(
 #ifdef HAVE_CORE_GRAPHICS
         if (screen_mode.acceleration == _no_acceleration) UnlockPortBits(port);
 #endif
+
+#ifdef HAVE_CORE_GRAPHICS
+	switch (screen_mode.acceleration) {
+	case _no_acceleration:
+	  LockPortBits(port);
+	  update_fps_display(port, ViewRect.left - ScreenRect.left,world_view->screen_height+ViewRect.top - ScreenRect.top);
+	  if (!world_view->terminal_mode_active)
+	    DisplayPosition(port);
+	  DisplayMessages(port,ViewRect.left - ScreenRect.left,ViewRect.top - ScreenRect.top);
+	  DisplayChatBuffer(port, ViewRect.left - ScreenRect.left, world_view->screen_height + ViewRect.top - ScreenRect.top);
+	  UnlockPortBits(port);
+	  break;
+	case _opengl_acceleration:
+#endif 
+	  update_fps_display((GrafPtr)world_pixels,-1,-1);
+	  if (!world_view->terminal_mode_active)
+	    DisplayPosition((GrafPtr)world_pixels);
+	  DisplayMessages((GrafPtr)world_pixels,0,0);
+	  DisplayChatBuffer((GrafPtr) world_pixels, -1, -1);
+	  
+#ifdef HAVE_CORE_GRAPHICS
+	  break;
+	}
+#endif
+
         switch (screen_mode.acceleration)
         {
 		// LP change: OpenGL acceleration included with no acceleration here
-#ifdef HAVE_CORE_GRAPHICS
-		case _no_acceleration:
-            LockPortBits(port);
-            update_fps_display(port, ViewRect.left - ScreenRect.left,world_view->screen_height+ViewRect.top - ScreenRect.top);
-            if (!world_view->terminal_mode_active)
-				DisplayPosition(port);
-            DisplayMessages(port,ViewRect.left - ScreenRect.left,ViewRect.top - ScreenRect.top);
-	    DisplayChatBuffer(port, ViewRect.left - ScreenRect.left, world_view->screen_height + ViewRect.top - ScreenRect.top);
-            UnlockPortBits(port);
-            goto blah;
-#else
-        case _opengl_acceleration:
-        case _no_acceleration:
-#endif
-			update_fps_display((GrafPtr)world_pixels,-1,-1);
-            if (!world_view->terminal_mode_active)
-				DisplayPosition((GrafPtr)world_pixels);
-            DisplayMessages((GrafPtr)world_pixels,0,0);
-	    DisplayChatBuffer((GrafPtr) world_pixels, -1, -1);
-			// LP additions: display position and messages and show crosshairs
-#ifdef HAVE_CORE_GRAPHICS
-		case _opengl_acceleration:
-
-            blah:
-            ;
-#endif
+	case _no_acceleration:
+	case _opengl_acceleration:
 			
 			// Don't show the crosshairs when either the overhead map or the terminal is active
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
