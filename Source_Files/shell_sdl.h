@@ -116,6 +116,7 @@ void free_and_unlock_memory(void);
 #include "alephversion.h"
 
 #include "Logging.h"
+#include "network.h"
 
 
 // Data directories
@@ -1051,11 +1052,12 @@ static void main_event_loop(void)
 
 		bool yield_time = false;
 		bool poll_event = false;
+		extern bool chat_input_mode;
 
 		switch (get_game_state()) {
 			case _game_in_progress:
 			case _change_level:
-				if (SDL_GetTicks() - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
+				if (chat_input_mode || SDL_GetTicks() - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
 					poll_event = true;
 					last_event_poll = SDL_GetTicks();
 				} else
@@ -1136,13 +1138,37 @@ static void handle_game_key(const SDL_Event &event)
 	SDLKey key = event.key.keysym.sym;
 	bool changed_screen_mode = false;
 	bool changed_prefs = false;
+	extern bool chat_input_mode;
 
 	if (!game_is_networked && (event.key.keysym.mod & KMOD_CTRL) && CheatsActive) {
 		int type_of_cheat = process_keyword_key(key);
 		if (type_of_cheat != NONE)
 			handle_keyword(type_of_cheat);
 	}
-
+	if (chat_input_mode) {
+	  switch(key) {
+	  case SDLK_RETURN:
+	    InGameChatCallbacks::send();
+	    chat_input_mode = false;
+	    break;
+	  case SDLK_ESCAPE:
+	  case SDLK_BACKSLASH:
+	    InGameChatCallbacks::abort();
+	    SDL_EnableKeyRepeat(0, 0);
+	    SDL_EnableUNICODE(0);
+	    chat_input_mode = false;
+	    break;
+	  case SDLK_BACKSPACE:
+	  case SDLK_DELETE:
+	    InGameChatCallbacks::remove();
+	    break;
+	  default:
+	    if (event.key.keysym.unicode > 0 && (event.key.keysym.unicode & 0xFF80) == 0) {
+	      InGameChatCallbacks::add(event.key.keysym.unicode & 0x7F);
+	    }
+	  }
+	} else {
+	  
 	switch (key) {
         case SDLK_ESCAPE:   // (ZZZ) Quit gesture (now safer)
             if(!player_controlling_game())
@@ -1199,12 +1225,11 @@ static void handle_game_key(const SDL_Event &event)
 				increment_replay_speed();
 			break;
 
-		case SDLK_QUESTION: {
+		case SDLK_QUESTION: 
 		  PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			extern bool displaying_fps;
 			displaying_fps = !displaying_fps;
 			break;
-		}
 	case SDLK_SLASH:
 	  if (event.key.keysym.mod & KMOD_SHIFT) {
 	    PlayInterfaceButtonSound(Sound_ButtonSuccess());
@@ -1212,7 +1237,17 @@ static void handle_game_key(const SDL_Event &event)
 	    displaying_fps = !displaying_fps;
 	  }
 	  break;
-      
+	case SDLK_BACKSLASH:
+	  if (game_is_networked) {
+	    PlayInterfaceButtonSound(Sound_ButtonSuccess());
+	    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+	    SDL_EnableUNICODE(1);
+	    chat_input_mode = true;
+	    InGameChatCallbacks::clear();
+	  } else {
+	    PlayInterfaceButtonSound(Sound_ButtonFailure());
+	  }
+	  break;
 
 		case SDLK_F1:		// Decrease screen size
 			if (graphics_preferences->screen_mode.size > 0) {
@@ -1311,6 +1346,7 @@ static void handle_game_key(const SDL_Event &event)
 			if (get_game_controller() == _demo)
 				set_game_state(_close_game);
 			break;
+	}
 	}
 
 	if (changed_screen_mode) {

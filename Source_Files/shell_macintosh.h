@@ -575,85 +575,104 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 }
 
 void handle_game_key(
-	EventRecord *event,
-	short key)
+		     EventRecord *event,
+		     short key)
 {
-	short _virtual;
-	bool changed_screen_mode= false;
-	bool changed_prefs= false;
-	
-	_virtual = (event->message >> 8) & charCodeMask;
-	
-// LP change: implementing Benad's "cheats always on"
-// #ifndef FINAL
-	if (!game_is_networked && (event->modifiers & CheatCodeModMask))
+  short _virtual;
+  bool changed_screen_mode= false;
+  bool changed_prefs= false;
+  
+  _virtual = (event->message >> 8) & charCodeMask;
+  
+  // LP change: implementing Benad's "cheats always on"
+  // #ifndef FINAL
+  if (!game_is_networked && (event->modifiers & CheatCodeModMask))
+    {
+      short type_of_cheat;
+      
+      // LP change: this is now conditional
+      if (CheatsActive)
 	{
-		short type_of_cheat;
-		
-		// LP change: this is now conditional
-		if (CheatsActive)
-		{
-			unsigned char cheat_key = key;
-			if (cheat_key < 0x20) cheat_key += 0x40;	// Map control+key onto proper key
-			type_of_cheat = process_keyword_key(cheat_key);
-			if (type_of_cheat != NONE) handle_keyword(type_of_cheat);
-		}
+	  unsigned char cheat_key = key;
+	  if (cheat_key < 0x20) cheat_key += 0x40;	// Map control+key onto proper key
+	  type_of_cheat = process_keyword_key(cheat_key);
+	  if (type_of_cheat != NONE) handle_keyword(type_of_cheat);
 	}
-// #endif
-
-	if (!is_keypad(_virtual))
-	{
-		switch(key)
-		{
-			case '.': case '>': // sound volume up
-				changed_prefs= adjust_sound_volume_up(sound_preferences, Sound_AdjustVolume());
-				break;
-			case ',': case '<': // sound volume down.
-				changed_prefs= adjust_sound_volume_down(sound_preferences, Sound_AdjustVolume());
-				break;
-			case kDELETE: // switch player view
-				walk_player_list();
-				render_screen(NONE);
-				break;
-			case '+': case '=':
-				if (zoom_overhead_map_in())
-					PlayInterfaceButtonSound(Sound_ButtonSuccess());
-				else
-					PlayInterfaceButtonSound(Sound_ButtonFailure());
-				break;
-			case '-': case '_':
-				if (zoom_overhead_map_out())
-					PlayInterfaceButtonSound(Sound_ButtonSuccess());
-				else
-					PlayInterfaceButtonSound(Sound_ButtonFailure());
-				break;
-			case '[': case '{':
-				if(player_controlling_game())
-				{
-					PlayInterfaceButtonSound(Sound_ButtonSuccess());
-					scroll_inventory(-1);
-				}
-				else
-				{
-					decrement_replay_speed();
-				}
-				break;
-			case ']': case '}':
-				if(player_controlling_game())
-				{
-					PlayInterfaceButtonSound(Sound_ButtonSuccess());
-					scroll_inventory(1);
-				}
-				else
-				{
-					increment_replay_speed();
-				}
-				break;
-
-			case '%':
-				PlayInterfaceButtonSound(Sound_ButtonSuccess());
-				toggle_suppression_of_background_tasks();
-				break;
+    }
+  // #endif
+  
+  if (!is_keypad(_virtual))
+    {
+      extern bool chat_input_mode;
+      if (chat_input_mode) {
+	switch(key) {
+	case 015:
+	  InGameChatCallbacks::send();
+	  chat_input_mode = false;
+	  break;
+	case 0x1b:
+	case '\\':
+	  InGameChatCallbacks::abort();
+	  chat_input_mode = false;
+	  break;
+	case kDELETE:
+	  InGameChatCallbacks::remove();
+	  break;
+	default:
+	  InGameChatCallbacks::add(key);
+	}
+      } else {
+	switch(key)
+	  {
+	  case '.': case '>': // sound volume up
+	    changed_prefs= adjust_sound_volume_up(sound_preferences, Sound_AdjustVolume());
+	    break;
+	  case ',': case '<': // sound volume down.
+	    changed_prefs= adjust_sound_volume_down(sound_preferences, Sound_AdjustVolume());
+	    break;
+	  case kDELETE: // switch player view
+	    walk_player_list();
+	    render_screen(NONE);
+	    break;
+	  case '+': case '=':
+	    if (zoom_overhead_map_in())
+	      PlayInterfaceButtonSound(Sound_ButtonSuccess());
+	    else
+	      PlayInterfaceButtonSound(Sound_ButtonFailure());
+	    break;
+	  case '-': case '_':
+	    if (zoom_overhead_map_out())
+	      PlayInterfaceButtonSound(Sound_ButtonSuccess());
+	    else
+	      PlayInterfaceButtonSound(Sound_ButtonFailure());
+	    break;
+	  case '[': case '{':
+	    if(player_controlling_game())
+	      {
+		PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		scroll_inventory(-1);
+	      }
+	    else
+	      {
+		decrement_replay_speed();
+	      }
+	    break;
+	  case ']': case '}':
+	    if(player_controlling_game())
+	      {
+		PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		scroll_inventory(1);
+	      }
+	    else
+	      {
+		increment_replay_speed();
+	      }
+	    break;
+	    
+	  case '%':
+	    PlayInterfaceButtonSound(Sound_ButtonSuccess());
+	    toggle_suppression_of_background_tasks();
+	    break;
 /*
 #ifndef FINAL
 #ifdef DEBUG
@@ -664,174 +683,184 @@ void handle_game_key(
 #endif
 */
 
-			case '?':
-				{
-					PlayInterfaceButtonSound(Sound_ButtonSuccess());
-					extern bool displaying_fps;
-					displaying_fps= !displaying_fps;
-				}
-				break;
-			
-			case 0x1b:
-				// "Escape" posts a "quit" event
-				// ZZZ: changing to make a little friendlier, like the SDL version
-				if(!player_controlling_game())
-					do_menu_item_command(mGame, iQuitGame, false);
-				else {
-					if(get_ticks_since_local_player_in_terminal() > 1 * TICKS_PER_SECOND) {
-						if(!game_is_networked) {
-							do_menu_item_command(mGame, iQuitGame, false);
-						}
-						else {
-							screen_printf("If you wish to quit, press Command+Q.");
-						}
-					}
-				}
-				break;
-						
-			default: // well, let's check the function keys then, using the keycodes.
-				switch(_virtual)
-				{
-					// LP change: disabled these if OpenGL is active;
-					// may want to either consolidate or eliminate these
-					case kcF1:
-						// LP change: turned this into screen-size decrement
-						if (graphics_preferences->screen_mode.size > 0)
-						{
-							PlayInterfaceButtonSound(Sound_ButtonSuccess());
-							graphics_preferences->screen_mode.size--;
-							changed_screen_mode = changed_prefs = true;
-						}
-						else
-							PlayInterfaceButtonSound(Sound_ButtonFailure());
-						break;
-
-					case kcF2:
-						// LP change: turned this into screen-size increment
-						if (graphics_preferences->screen_mode.size < NUMBER_OF_VIEW_SIZES-1)
-						{
-							PlayInterfaceButtonSound(Sound_ButtonSuccess());
-							graphics_preferences->screen_mode.size++;
-							changed_screen_mode = changed_prefs = true;
-						}
-						else
-							PlayInterfaceButtonSound(Sound_ButtonFailure());
-						break;
-
-					case kcF3:
-						if (!OGL_IsActive())
-						{
-							// Changed this to resolution toggle; no sense doing this in OpenGL mode
-							PlayInterfaceButtonSound(Sound_ButtonSuccess());
-							graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
-							changed_screen_mode = changed_prefs = true;
-						}
-						else
-							PlayInterfaceButtonSound(Sound_ButtonInoperative());
-						break;
-
-					case kcF4:
-					case kcF14:
-						if (OGL_IsActive())
-						{
-							// Reset OpenGL textures;
-							// play the button sound in advance to get the full effect of the sound
-							PlayInterfaceButtonSound(Sound_OGL_Reset());
-							OGL_ResetTextures();
-						}
-						else
-							PlayInterfaceButtonSound(Sound_ButtonInoperative());
-						break;
-
-						// One can check on the shift key with event->modifiers & shiftKey
-						// and likewise for the option and control keys
-						// Deleted old code contains setting of "draw_every_other_line" option,
-						// which is now gone
-						
-					case kcF11:
-						if (graphics_preferences->screen_mode.gamma_level)
-						{
-							PlayInterfaceButtonSound(Sound_ButtonSuccess());
-							graphics_preferences->screen_mode.gamma_level--;
-							change_gamma_level(graphics_preferences->screen_mode.gamma_level);
-							changed_prefs= true;
-						}
-						else
-							PlayInterfaceButtonSound(Sound_ButtonFailure());
-						break;
-						
-					case kcF12:
-						if (graphics_preferences->screen_mode.gamma_level<NUMBER_OF_GAMMA_LEVELS-1)
-						{
-							PlayInterfaceButtonSound(Sound_ButtonSuccess());
-							graphics_preferences->screen_mode.gamma_level++;
-							change_gamma_level(graphics_preferences->screen_mode.gamma_level);
-							changed_prefs= true;
-						}
-						else
-							PlayInterfaceButtonSound(Sound_ButtonFailure());
-						break;
-					
-					// LP addition: screendump facility
-					// Added "escape" key so as to have a key available for PowerBooks and iMacs
-					// Changed "escape" key to F8 key out of protests over misleading significance
-					case kcF13:
-					case kcF9:
-						dump_screen();
-						break;
-			
-					case kcF5:
-						// Make the chase cam switch sides
-						if (ChaseCam_IsActive())
-							PlayInterfaceButtonSound(Sound_ButtonSuccess());
-						else
-							PlayInterfaceButtonSound(Sound_ButtonInoperative());
-						ChaseCam_SwitchSides();
-						break;
-					
-					case kcF6:
-						// Toggle the chase cam
-						PlayInterfaceButtonSound(Sound_ButtonSuccess());
-						ChaseCam_SetActive(!ChaseCam_IsActive());
-						break;
-					
-					case kcF7:
-						// Toggle tunnel vision
-						PlayInterfaceButtonSound(Sound_ButtonSuccess());
-						SetTunnelVision(!GetTunnelVision());
-						break;
-					
-					case kcF8:
-						// Toggle the crosshairs
-						PlayInterfaceButtonSound(Sound_ButtonSuccess());
-						Crosshairs_SetActive(!Crosshairs_IsActive());
-						break;
-					
-					case kcF10:
-						// Toggle the position display
-						PlayInterfaceButtonSound(Sound_ButtonSuccess());
-						{
-							extern bool ShowPosition;
-							ShowPosition = !ShowPosition;
-						}
-						break;
-					
-					default:
-						if(get_game_controller()==_demo)
-						{
-							set_game_state(_close_game);
-						}
-						break;
-				}
-				break;
+	  case '?':
+	    {
+	      PlayInterfaceButtonSound(Sound_ButtonSuccess());
+	      extern bool displaying_fps;
+	      displaying_fps= !displaying_fps;
+	    }
+	    break;
+	    
+	  case '\\':
+	    if (game_is_networked) {
+	      PlayInterfaceButtonSound(Sound_ButtonSuccess());
+	      chat_input_mode = true;
+	      InGameChatCallbacks::clear();
+	    } else {
+	      PlayInterfaceButtonSound(Sound_ButtonFailure());
+	    }
+	    break;
+	  case 0x1b:
+	    // "Escape" posts a "quit" event
+	    // ZZZ: changing to make a little friendlier, like the SDL version
+	    if(!player_controlling_game())
+	      do_menu_item_command(mGame, iQuitGame, false);
+	    else {
+	      if(get_ticks_since_local_player_in_terminal() > 1 * TICKS_PER_SECOND) {
+		if(!game_is_networked) {
+		  do_menu_item_command(mGame, iQuitGame, false);
 		}
-	}
-	if (changed_screen_mode)
-	{
-		change_screen_mode(&graphics_preferences->screen_mode, true);
-		render_screen(0);
-	}
-	if (changed_prefs) write_preferences();
+		else {
+		  screen_printf("If you wish to quit, press Command+Q.");
+		}
+	      }
+	    }
+	    break;
+	    
+	  default: // well, let's check the function keys then, using the keycodes.
+	    switch(_virtual)
+	      {
+		// LP change: disabled these if OpenGL is active;
+		// may want to either consolidate or eliminate these
+	      case kcF1:
+		// LP change: turned this into screen-size decrement
+		if (graphics_preferences->screen_mode.size > 0)
+		  {
+		    PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		    graphics_preferences->screen_mode.size--;
+		    changed_screen_mode = changed_prefs = true;
+		  }
+		else
+		  PlayInterfaceButtonSound(Sound_ButtonFailure());
+		break;
+		
+	      case kcF2:
+		// LP change: turned this into screen-size increment
+		if (graphics_preferences->screen_mode.size < NUMBER_OF_VIEW_SIZES-1)
+		  {
+		    PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		    graphics_preferences->screen_mode.size++;
+		    changed_screen_mode = changed_prefs = true;
+		  }
+		else
+		  PlayInterfaceButtonSound(Sound_ButtonFailure());
+		break;
+		
+	      case kcF3:
+		if (!OGL_IsActive())
+		  {
+		    // Changed this to resolution toggle; no sense doing this in OpenGL mode
+		    PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		    graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
+		    changed_screen_mode = changed_prefs = true;
+		  }
+		else
+		  PlayInterfaceButtonSound(Sound_ButtonInoperative());
+		break;
+		
+	      case kcF4:
+	      case kcF14:
+		if (OGL_IsActive())
+		  {
+		    // Reset OpenGL textures;
+		    // play the button sound in advance to get the full effect of the sound
+		    PlayInterfaceButtonSound(Sound_OGL_Reset());
+		    OGL_ResetTextures();
+		  }
+		else
+		  PlayInterfaceButtonSound(Sound_ButtonInoperative());
+		break;
+		
+		// One can check on the shift key with event->modifiers & shiftKey
+		// and likewise for the option and control keys
+		// Deleted old code contains setting of "draw_every_other_line" option,
+		// which is now gone
+		
+	      case kcF11:
+		if (graphics_preferences->screen_mode.gamma_level)
+		  {
+		    PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		    graphics_preferences->screen_mode.gamma_level--;
+		    change_gamma_level(graphics_preferences->screen_mode.gamma_level);
+		    changed_prefs= true;
+		  }
+		else
+		  PlayInterfaceButtonSound(Sound_ButtonFailure());
+		break;
+		
+	      case kcF12:
+		if (graphics_preferences->screen_mode.gamma_level<NUMBER_OF_GAMMA_LEVELS-1)
+		  {
+		    PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		    graphics_preferences->screen_mode.gamma_level++;
+		    change_gamma_level(graphics_preferences->screen_mode.gamma_level);
+		    changed_prefs= true;
+		  }
+		else
+		  PlayInterfaceButtonSound(Sound_ButtonFailure());
+		break;
+		
+		// LP addition: screendump facility
+		// Added "escape" key so as to have a key available for PowerBooks and iMacs
+		// Changed "escape" key to F8 key out of protests over misleading significance
+	      case kcF13:
+	      case kcF9:
+		dump_screen();
+		break;
+		
+	      case kcF5:
+		// Make the chase cam switch sides
+		if (ChaseCam_IsActive())
+		  PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		else
+		  PlayInterfaceButtonSound(Sound_ButtonInoperative());
+		ChaseCam_SwitchSides();
+		break;
+		
+	      case kcF6:
+		// Toggle the chase cam
+		PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		ChaseCam_SetActive(!ChaseCam_IsActive());
+		break;
+		
+	      case kcF7:
+		// Toggle tunnel vision
+		PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		SetTunnelVision(!GetTunnelVision());
+		break;
+		
+	      case kcF8:
+		// Toggle the crosshairs
+		PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		Crosshairs_SetActive(!Crosshairs_IsActive());
+		break;
+		
+	      case kcF10:
+		// Toggle the position display
+		PlayInterfaceButtonSound(Sound_ButtonSuccess());
+		{
+		  extern bool ShowPosition;
+		  ShowPosition = !ShowPosition;
+		}
+		break;
+		
+	      default:
+		if(get_game_controller()==_demo)
+		  {
+		    set_game_state(_close_game);
+		  }
+		break;
+	      }
+	    break;
+	  }
+      }
+    }
+  if (changed_screen_mode)
+    {
+      change_screen_mode(&graphics_preferences->screen_mode, true);
+      render_screen(0);
+    }
+  if (changed_prefs) write_preferences();
 }
 
 static void verify_environment(
@@ -1333,7 +1362,8 @@ static void main_event_loop(
 		}
 #endif
 
-		if(try_for_event(&use_waitnext))
+		extern bool chat_input_mode;
+		if(try_for_event(&use_waitnext) || chat_input_mode)
 		{
 			EventRecord event;
 			bool got_event= false;
@@ -1364,7 +1394,7 @@ static void main_event_loop(
 			
 			if(get_game_state()==_game_in_progress) 
 			{
-				FlushEvents(keyDownMask|keyUpMask|autoKeyMask, 0);
+			  if (!chat_input_mode)	FlushEvents(keyDownMask|keyUpMask|autoKeyMask, 0);
 			}
 		}
 
@@ -1470,7 +1500,7 @@ static void process_event(
 		
 		case keyDown:
 		case autoKey:
-			process_key(event, toupper(event->message&charCodeMask));
+			process_key(event, event->message&charCodeMask);
 			break;
 			
 		case updateEvt:
@@ -1597,7 +1627,7 @@ bool ComposeOSEventFromLocal(EventRecord& Event)
 				short Modifiers;
 			};
 			
-			const int NumLocalEventTypes = 23;
+			const int NumLocalEventTypes = 24;
 			EventFeatures EventFeatureList[NumLocalEventTypes] =
 			{
 				{'q',cmdKey},
@@ -1613,6 +1643,7 @@ bool ComposeOSEventFromLocal(EventRecord& Event)
 				{kDELETE,0},
 				{'%',0},
 				{'?',0},
+				{'\\',0},
 				// These F keys are all virtual, and therefore 1 byte to the left
 				{kcF3 << 8,0},
 	

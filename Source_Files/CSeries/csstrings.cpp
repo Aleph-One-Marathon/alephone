@@ -169,3 +169,11 @@ void fdprintf(
 	fprintf(FD,"\n");
 	fclose(FD);
 }
+
+char *a1_p2cstr(unsigned char* inoutStringBuffer)
+{
+	unsigned char length = inoutStringBuffer[0];
+	memmove(inoutStringBuffer, &inoutStringBuffer[1], length);
+	inoutStringBuffer[length] = '\0';
+	return (char *)inoutStringBuffer;
+}

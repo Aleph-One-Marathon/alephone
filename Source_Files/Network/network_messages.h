@@ -168,8 +168,9 @@ class NetworkChatMessage : public SmallMessageHelper
  public:
   enum { kType = kCHAT_MESSAGE };
   enum { CHAT_MESSAGE_SIZE = 1024 };
+  enum { kTargetPlayers = 0};
 
-  NetworkChatMessage(const char *chatText = NULL, Uint16 senderID = 0)
+  NetworkChatMessage(const char *chatText = NULL, int16 senderID = 0)
     : mSenderID(senderID)
     {
       strncpy(mChatText, (chatText == NULL) ? "" : chatText, CHAT_MESSAGE_SIZE);
@@ -182,7 +183,7 @@ class NetworkChatMessage : public SmallMessageHelper
 
   MessageTypeID type() const { return kType; }
   const char *chatText() const { return mChatText; }
-  Uint16 senderID() const { return mSenderID; }
+  int16 senderID() const { return mSenderID; }
 
  protected:
   void reallyDeflateTo(AOStream& outputStream) const;
@@ -190,7 +191,7 @@ class NetworkChatMessage : public SmallMessageHelper
 
  private:
   char mChatText[CHAT_MESSAGE_SIZE];
-  Uint16 mSenderID;
+  int16 mSenderID;
 };
 
 class PhysicsMessage : public BigChunkOfDataMessage
@@ -249,7 +250,8 @@ struct Client {
     _ungatherable,
     _joiner_didnt_accept,
     _awaiting_accept_join,
-    _awaiting_map
+    _awaiting_map,
+    _ingame
   };
   CommunicationsChannel *channel;
   short state;
@@ -264,12 +266,14 @@ struct Client {
   void unexpectedMessageHandler(Message *, CommunicationsChannel*);
   void handleScriptMessage(ScriptMessage*, CommunicationsChannel*);
   void handleAcceptJoinMessage(AcceptJoinMessage*, CommunicationsChannel*);
+  void handleChatMessage(NetworkChatMessage*, CommunicationsChannel*);
 
   std::auto_ptr<MessageDispatcher> mDispatcher;
   std::auto_ptr<MessageHandler> mJoinerInfoMessageHandler;
   std::auto_ptr<MessageHandler> mUnexpectedMessageHandler;
   std::auto_ptr<MessageHandler> mScriptMessageHandler;
   std::auto_ptr<MessageHandler> mAcceptJoinMessageHandler;
+  std::auto_ptr<MessageHandler> mChatMessageHandler;
 };
 
 

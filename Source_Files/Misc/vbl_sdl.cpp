@@ -120,71 +120,79 @@ void move_replay(void)
 
 uint32 parse_keymap(void)
 {
-	uint32 flags = 0;
+  uint32 flags = 0;
 
-	if(get_keyboard_controller_status())
-	{
-		Uint8 *key_map = SDL_GetKeyState(NULL);
-	
-		// ZZZ: let mouse code simulate keypresses
-		mouse_buttons_become_keypresses(key_map);
-	
-		// Parse the keymap
-		key_definition *key = current_key_definitions;
-		for (unsigned i=0; i<NUMBER_OF_STANDARD_KEY_DEFINITIONS; i++, key++)
-			if (key_map[key->offset])
-				flags |= key->action_flag;
-	
-		// Post-process the keymap
-		struct special_flag_data *special = special_flags;
-		for (unsigned i=0; i<NUMBER_OF_SPECIAL_FLAGS; i++, special++) {
-			if (flags & special->flag) {
-				switch (special->type) {
-					case _double_flag:
-						// If this flag has a double-click flag and has been hit within
-						// DOUBLE_CLICK_PERSISTENCE (but not at MAXIMUM_FLAG_PERSISTENCE),
-						// mask on the double-click flag */
-						if (special->persistence < MAXIMUM_FLAG_PERSISTENCE
-						&&	special->persistence > MAXIMUM_FLAG_PERSISTENCE - DOUBLE_CLICK_PERSISTENCE)
-							flags |= special->alternate_flag;
-						break;
-					
-					case _latched_flag:
-						// If this flag is latched and still being held down, mask it out
-						if (special->persistence == MAXIMUM_FLAG_PERSISTENCE)
-							flags &= ~special->flag;
-						break;
-					
-					default:
-						assert(false);
-						break;
-				}
-				
-				special->persistence = MAXIMUM_FLAG_PERSISTENCE;
-			} else
-				special->persistence = FLOOR(special->persistence-1, 0);
-		}
-	
-		// Handle the selected input controller
-		if (input_preferences->input_device != _keyboard_or_game_pad) {
-			_fixed delta_yaw, delta_pitch, delta_velocity;
-			test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
-			flags = mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
-		}
-	
-		// Modify flags with run/walk and swim/sink
-		bool do_interchange =
-			(local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?
-				(input_preferences->modifiers & _inputmod_interchange_swim_sink) != 0:
-				(input_preferences->modifiers & _inputmod_interchange_run_walk) != 0;
-		if (do_interchange)
-			flags ^= _run_dont_walk;
-	
-		if (player_in_terminal_mode(local_player_index))
-			flags = build_terminal_action_flags((char *)key_map);
-	} // if(get_keyboard_controller_status())
-
-	return flags;
+  if(get_keyboard_controller_status())
+    {
+      Uint8 *key_map;
+      extern bool chat_input_mode;
+      if (chat_input_mode) {
+	static Uint8 chat_input_mode_keymap[SDLK_LAST];
+	memset(&chat_input_mode_keymap, 0, sizeof(chat_input_mode_keymap));
+	key_map = chat_input_mode_keymap;
+      } else {
+	key_map = SDL_GetKeyState(NULL);
+      }
+      
+      // ZZZ: let mouse code simulate keypresses
+      mouse_buttons_become_keypresses(key_map);
+      
+      // Parse the keymap
+      key_definition *key = current_key_definitions;
+      for (unsigned i=0; i<NUMBER_OF_STANDARD_KEY_DEFINITIONS; i++, key++)
+	if (key_map[key->offset])
+	  flags |= key->action_flag;
+      
+      // Post-process the keymap
+      struct special_flag_data *special = special_flags;
+      for (unsigned i=0; i<NUMBER_OF_SPECIAL_FLAGS; i++, special++) {
+	if (flags & special->flag) {
+	  switch (special->type) {
+	  case _double_flag:
+	    // If this flag has a double-click flag and has been hit within
+	    // DOUBLE_CLICK_PERSISTENCE (but not at MAXIMUM_FLAG_PERSISTENCE),
+	    // mask on the double-click flag */
+	    if (special->persistence < MAXIMUM_FLAG_PERSISTENCE
+		&&	special->persistence > MAXIMUM_FLAG_PERSISTENCE - DOUBLE_CLICK_PERSISTENCE)
+	      flags |= special->alternate_flag;
+	    break;
+	    
+	  case _latched_flag:
+	    // If this flag is latched and still being held down, mask it out
+	    if (special->persistence == MAXIMUM_FLAG_PERSISTENCE)
+	      flags &= ~special->flag;
+	    break;
+	    
+	  default:
+	    assert(false);
+	    break;
+	  }
+	  
+	  special->persistence = MAXIMUM_FLAG_PERSISTENCE;
+	} else
+	  special->persistence = FLOOR(special->persistence-1, 0);
+      }
+      
+      // Handle the selected input controller
+      if (input_preferences->input_device != _keyboard_or_game_pad) {
+	_fixed delta_yaw, delta_pitch, delta_velocity;
+	test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
+	flags = mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
+      }
+      
+      // Modify flags with run/walk and swim/sink
+      bool do_interchange =
+	(local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?
+	(input_preferences->modifiers & _inputmod_interchange_swim_sink) != 0:
+	(input_preferences->modifiers & _inputmod_interchange_run_walk) != 0;
+      if (do_interchange)
+	flags ^= _run_dont_walk;
+      
+      if (player_in_terminal_mode(local_player_index))
+	flags = build_terminal_action_flags((char *)key_map);
+    } // if(get_keyboard_controller_status())
+  
+  return flags;
 }
 
 

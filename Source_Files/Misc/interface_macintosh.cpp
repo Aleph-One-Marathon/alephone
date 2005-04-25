@@ -439,7 +439,7 @@ void process_game_key(
 		case _game_in_progress:
 			if(event->modifiers&cmdKey && event->what==keyDown)
 			{
-				long menu_key= MenuKey(key);
+				long menu_key= MenuKey(toupper(key));
 				short menuID, menuItem;
 
 				menuID= menu_key>>16;

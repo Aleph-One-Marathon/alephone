@@ -28,6 +28,7 @@ Mar 08, 2002 (Woody Zenfell):
 */
 
 bool CheatsActive = false;
+bool chat_input_mode = false;
 
 #include "cseries.h"
 

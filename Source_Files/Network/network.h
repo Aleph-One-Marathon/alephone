@@ -132,6 +132,40 @@ class GatherCallbacks
   virtual void JoinSucceeded(const prospective_joiner_info *player) = 0;
 };
 
+class ChatCallbacks
+{
+ public:
+  virtual ~ChatCallbacks() { };
+  static void SendChatMessage(const char *message);
+  virtual void ReceivedMessageFromPlayer(const char *player_name,
+					 const char *message) = 0;
+};
+
+class InGameChatCallbacks : public ChatCallbacks
+{
+ public:
+  ~InGameChatCallbacks() { }
+  static InGameChatCallbacks *instance();
+  void ReceivedMessageFromPlayer(const char *player_name, const char *message);
+
+  // ghs: these don't belong here...where do they go?
+  static void add(const char c);
+  static void remove();
+  static void send();
+  static void abort();
+  static void clear();
+  enum { bufferSize = 140 };
+  static int bufferPtr;
+  static int displayBufferPtr;
+  static char buffer[bufferSize];
+  static char displayBuffer[bufferSize];
+ private:
+  InGameChatCallbacks() { }
+  static InGameChatCallbacks *m_instance;
+};
+
+
+
 // ZZZ note: netPlayerAdded, netChatMessageReceived, and netStartingResumeGame are 'pseudo-states';
 // they are returned from NetUpdateJoinState() but will never be assigned to the actual "NetState()".
 enum /* states */
@@ -159,6 +193,7 @@ typedef void (*CheckPlayerProcPtr)(short player_index, short num_players);
 
 /* --------- prototypes/NETWORK.C */
 void NetSetGatherCallbacks(GatherCallbacks *gc);
+void NetSetChatCallbacks(ChatCallbacks *cc);
 bool NetEnter();
 void NetDoneGathering (void);
 void NetExit(void);
@@ -195,6 +230,9 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info);
 short NetUpdateJoinState(void);
 void NetCancelJoin(void);
 
+// ghs: these are obsolete, I'll get rid of them when I'm sure I won't want
+//      to refer back to them
+
 // ZZZ addition - pre-game/(eventually) postgame chat
 // Returns true if there was a pending message.
 // Returns pointer to chat text.
@@ -204,6 +242,8 @@ bool NetGetMostRecentChatMessage(player_info** outSendingPlayerData, char** outM
 
 // Gatherer should use this to send out his messages or to broadcast a message received from a joiner
 OSErr NetDistributeChatMessage(short sender_identifier, const char* message);
+
+void NetProcessMessagesInGame();
 
 short NetGetLocalPlayerIndex(void);
 short NetGetPlayerIdentifier(short player_index);

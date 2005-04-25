@@ -201,8 +201,12 @@ uint32 parse_keymap(
 		KeyMap key_map;
 		struct key_definition *key= current_key_definitions;
 		struct special_flag_data *special= special_flags;
-		
-		GetKeys(key_map);
+		extern bool chat_input_mode;
+		if (!chat_input_mode) {
+		  GetKeys(key_map);
+		} else {
+		  memset(key_map, 0, sizeof(key_map));
+		}
 		
 		/******************************************************************************************/
 		/* BT: Added April 16, 2000 ISp: This is where we get the input sprocket events */

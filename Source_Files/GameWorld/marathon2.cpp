@@ -390,6 +390,8 @@ update_world_elements_one_tick()
         if (script_in_use())
                 do_next_instruction();
         L_Call_Idle();
+
+	NetProcessMessagesInGame();
         
         update_lights();
         update_medias();
@@ -554,6 +556,7 @@ void leaving_map(
 	L_Call_Cleanup ();
         //Close and unload the Lua state
         CloseLuaScript();
+	NetSetChatCallbacks(NULL);
 
 	/* all we do is mark them for unloading, we don't explicitly dispose of them; whenever the
 		next level is loaded someone (probably entering_map, below) will call load_collections()
@@ -612,6 +615,8 @@ bool entering_map(bool restoring_saved)
         // Availability of the script is checked within.
         RunLuaScript();
         L_Call_Init();
+
+	NetSetChatCallbacks(InGameChatCallbacks::instance());
 
 	// Zero out fades *AND* any inadvertant fades from script start...
 	stop_fade();

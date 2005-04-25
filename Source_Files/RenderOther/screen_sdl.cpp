@@ -552,10 +552,14 @@ void render_screen(short ticks_elapsed)
 
 	// Display FPS and position
 	if (!world_view->terminal_mode_active) {
+	  extern bool chat_input_mode;
+	  if (!chat_input_mode){
 		update_fps_display(world_pixels);
+	  }
 		DisplayPosition(world_pixels);
 	}
 	DisplayMessages(world_pixels);
+	DisplayChatBuffer(world_pixels);
 	
 #ifdef HAVE_OPENGL
 	// Set OpenGL viewport to whole window (so HUD will be in the right position)

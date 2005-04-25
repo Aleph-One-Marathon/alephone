@@ -51,6 +51,8 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #define DEFAULT_WORLD_WIDTH 640
 #define DEFAULT_WORLD_HEIGHT 320
 
+#include "network.h" // chatcallbacks :(
+
 
 // LP addition: view sizes and display data
 
@@ -149,9 +151,9 @@ struct ScreenMessage
 	ScreenMessage(): TimeRemaining(0) {Text[0] = 0;}
 };
 
+
 static int MostRecentMessage = NumScreenMessages-1;
 static ScreenMessage Messages[NumScreenMessages];
-
 
 /* ---------- private prototypes */
 
@@ -471,6 +473,44 @@ static void DisplayPosition(SDL_Surface *s)
 }
 
 #if defined(mac)
+static void DisplayChatBuffer(GrafPtr port, short offWidth, short offHeight)
+#elif defined(SDL)
+static void DisplayChatBuffer(SDL_Surface *s)
+#endif
+{
+  if (InGameChatCallbacks::displayBufferPtr > 0) {
+  FontSpecifier& Font = GetOnScreenFont();
+  
+#if defined(mac)
+  GrafPtr old_port;
+  GetPort (&old_port);
+  SetPort(port);
+  Font.Use();
+  Rect portRect;
+  GetPortBounds(port, &portRect);
+  short X0 = offWidth==-1?portRect.left:portRect.left+offWidth;
+  short Y0 = offHeight==-1?portRect.bottom:portRect.top + offHeight;
+#elif defined(SDL)
+  DisplayTextDest = s;
+  DisplayTextFont = Font.Info;
+  DisplayTextStyle = Font.Style;
+  short X0 = 0;
+  short Y0 = s->h;
+#endif
+
+  short Offset = Font.LineSpacing / 3;
+  short X = X0 + Offset;
+  short Y = Y0 - Offset;
+  DisplayText(X, Y, InGameChatCallbacks::displayBuffer);
+
+#if defined(mac)
+  RGBForeColor(&rgb_black);
+  SetPort(old_port);
+#endif
+  }
+}
+
+#if defined(mac)
 static void DisplayMessages(GrafPtr port, short offWidth, short offHeight)
 #elif defined(SDL)
 static void DisplayMessages(SDL_Surface *s)
@@ -507,9 +547,10 @@ static void DisplayMessages(SDL_Surface *s)
 	short X = X0 + LineSpacing/3;
 	short Y = Y0 + LineSpacing;
 	if (ShowPosition) Y += 6*LineSpacing;	// Make room for the position data
-	for (int k=0; k<NumScreenMessages; k++)
+	//	for (int k=0; k<NumScreenMessages; k++)
+	for (int k = NumScreenMessages - 1; k >= 0; k--)
 	{
-		int Which = (MostRecentMessage+NumScreenMessages-k) % NumScreenMessages;
+	  int Which = (MostRecentMessage+NumScreenMessages-k) % NumScreenMessages;
 		while (Which < 0)
 			Which += NumScreenMessages;
 		ScreenMessage& Message = Messages[Which];
@@ -519,7 +560,7 @@ static void DisplayMessages(SDL_Surface *s)
 		DisplayText(X,Y,Message.Text);
 		Y += LineSpacing;
 	}
-	
+
 	// Pop
 #ifdef mac
 	RGBForeColor(&rgb_black);
@@ -593,7 +634,7 @@ void screen_printf(const char *format, ...)
 		MostRecentMessage += NumScreenMessages;
 	ScreenMessage& Message = Messages[MostRecentMessage];
 	
-	Message.TimeRemaining = 3*TICKS_PER_SECOND;
+	Message.TimeRemaining = 5*TICKS_PER_SECOND;
 
 	va_list list;
 

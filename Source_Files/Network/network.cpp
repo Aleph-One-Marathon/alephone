@@ -197,7 +197,7 @@ static CommunicationsChannelFactory *server = NULL;
 typedef std::map<int, Client *> client_map_t;
 static client_map_t connections_to_clients;
 static CommunicationsChannel *connection_to_server = NULL;
-static int next_stream_id = 0;
+static int next_stream_id = 1; // 0 is local player
 static IPaddress host_address;
 static bool host_address_specified = false;
 static MessageInflater *inflater = NULL;
@@ -206,6 +206,12 @@ static MessageDispatcher *gatherDispatcher = NULL;
 static uint32 next_join_attempt;
 
 static GatherCallbacks *gatherCallbacks = NULL;
+static ChatCallbacks *chatCallbacks = NULL;
+
+int InGameChatCallbacks::bufferPtr = 0;
+char InGameChatCallbacks::buffer[bufferSize] = "";
+int InGameChatCallbacks::displayBufferPtr = 0;
+char InGameChatCallbacks::displayBuffer[bufferSize] = "";
 
 
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
@@ -281,11 +287,13 @@ Client::Client(CommunicationsChannel *inChannel) : mDispatcher(new MessageDispat
   mJoinerInfoMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleJoinerInfoMessage));
   mScriptMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleScriptMessage));
   mAcceptJoinMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleAcceptJoinMessage));
+  mChatMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChatMessage));
   mUnexpectedMessageHandler.reset(newMessageHandlerMethod(this, &Client::unexpectedMessageHandler));
   mDispatcher->setDefaultHandler(mUnexpectedMessageHandler.get());
   mDispatcher->setHandlerForType(mJoinerInfoMessageHandler.get(), JoinerInfoMessage::kType);
   mDispatcher->setHandlerForType(mScriptMessageHandler.get(), ScriptMessage::kType);
   mDispatcher->setHandlerForType(mAcceptJoinMessageHandler.get(), AcceptJoinMessage::kType);
+  mDispatcher->setHandlerForType(mChatMessageHandler.get(), NetworkChatMessage::kType);
   channel->setMessageHandler(mDispatcher.get());
 }
 
@@ -352,6 +360,39 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
     fprintf(stderr, "unexpected accept join message received!\n");
   }
 }
+
+void Client::handleChatMessage(NetworkChatMessage* netChatMessage, 
+			       CommunicationsChannel *)
+{
+  fprintf(stderr, "chat message received\n");
+  // relay this to all clients
+  if (state == _ingame) {
+    assert(netState == netActive);
+    NetworkChatMessage chatMessage(netChatMessage->chatText(), getStreamIdFromChannel(channel));
+    client_map_t::iterator it;
+    for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+      if (it->second->state == _ingame) {
+	it->second->channel->enqueueOutgoingMessage(chatMessage);
+      }
+    }
+    
+    // display it locally
+    if (chatCallbacks) {
+      for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
+	if (topology->players[playerIndex].stream_id == getStreamIdFromChannel(channel)) {
+	  static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
+	  pstrcpy(name, topology->players[playerIndex].player_data.name);
+	  a1_p2cstr(name);
+	  chatCallbacks->ReceivedMessageFromPlayer((char *)name, netChatMessage->chatText());
+	  return;
+	}
+      }
+    }
+  } else {
+    fprintf(stderr, "non in-game chat messages are not yet implemented");
+  }
+}
+  
 
 void Client::unexpectedMessageHandler(Message *, CommunicationsChannel *) {
   fprintf(stderr, "unexpected message received\n");
@@ -449,8 +490,21 @@ static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
 }
     
 static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, CommunicationsChannel *) {
-  // for the moment, don't handle these
   fprintf(stderr, "chat message received\n");
+  if (netState == netActive && chatCallbacks) {
+    for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
+      if (topology->players[playerIndex].stream_id == chatMessage->senderID()) {
+	static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
+	pstrcpy(name, topology->players[playerIndex].player_data.name);
+	a1_p2cstr(name);
+	chatCallbacks->ReceivedMessageFromPlayer((char *)name, chatMessage->chatText());
+	return;
+      }
+    }
+    fprintf(stderr, "chat message from %i, player not found\n", chatMessage->senderID());
+  } else {
+    fprintf(stderr, "non in-game chat not yet implemented\n");
+  }
 }
 
 static byte *handlerPhysicsBuffer = NULL;
@@ -578,6 +632,101 @@ static TypedMessageHandlerFunction<Message> unexpectedMessageHandler(&handleUnex
 void NetSetGatherCallbacks(GatherCallbacks *gc) {
   gatherCallbacks = gc;
 }
+
+void NetSetChatCallbacks(ChatCallbacks *cc) {
+  chatCallbacks = cc;
+}
+
+void ChatCallbacks::SendChatMessage(const char *message)
+{
+  if (netState == netActive) {
+    if (connection_to_server) {
+      NetworkChatMessage chatMessage(message, 0); // gatherer will replace
+                                                  // with my ID
+      connection_to_server->enqueueOutgoingMessage(chatMessage);
+    } else { 
+      NetworkChatMessage chatMessage(message, 0);
+      client_map_t::iterator it;
+      for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+	if (it->second->state == Client::_ingame) {
+	  it->second->channel->enqueueOutgoingMessage(chatMessage);
+	}
+      }
+      if (chatCallbacks) {
+	for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
+	  if (playerIndex == localPlayerIndex) {
+	    static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
+	    pstrcpy(name, topology->players[playerIndex].player_data.name);
+	    a1_p2cstr(name);
+	    chatCallbacks->ReceivedMessageFromPlayer((char *)name, message);
+	  }
+	}
+      }
+    }
+  } else {
+    fprintf(stderr, "non in-game chat message are not yet implemented\n");
+  }
+}
+
+InGameChatCallbacks *InGameChatCallbacks::m_instance = NULL;
+
+InGameChatCallbacks *InGameChatCallbacks::instance() {
+  if (!m_instance) {
+    m_instance = new InGameChatCallbacks();
+  }
+  return m_instance;
+};
+
+void InGameChatCallbacks::ReceivedMessageFromPlayer(const char *player_name, const char *message) {
+  screen_printf("%s: %s", player_name, message);
+}
+
+void InGameChatCallbacks::add(const char c)
+{
+  buffer[bufferPtr++] = c;
+  buffer[bufferPtr] = '\0';
+  displayBuffer[displayBufferPtr++] = c;
+  displayBuffer[displayBufferPtr] = '_';
+  displayBuffer[displayBufferPtr + 1] = '\0';
+}
+
+void InGameChatCallbacks::remove()
+{
+  if (bufferPtr > 0) {
+    buffer[bufferPtr--] = '\0';
+    displayBuffer[--displayBufferPtr] = '_';
+    displayBuffer[displayBufferPtr + 1] = '\0';
+  }
+}
+
+void InGameChatCallbacks::send()
+{
+  if (bufferPtr > 0) {
+    ChatCallbacks::SendChatMessage(buffer);
+  }
+  displayBuffer[0] = '\0';
+  displayBufferPtr = 0;
+}
+
+void InGameChatCallbacks::abort()
+{
+  displayBuffer[0] = '\0';
+  displayBufferPtr = 0;
+}
+
+void InGameChatCallbacks::clear()
+{
+  bufferPtr = 0;
+  buffer[0] = '\0';
+  pstrcpy((unsigned char *) displayBuffer, player_preferences->name);
+  displayBufferPtr = (int) displayBuffer[0];
+  a1_p2cstr((unsigned char *) displayBuffer);
+  displayBuffer[displayBufferPtr++] = ':';
+  displayBuffer[displayBufferPtr++] = ' ';
+  displayBuffer[displayBufferPtr] = '_';
+  displayBuffer[displayBufferPtr + 1] = '\0';
+}
+
 
 bool NetEnter(void)
 {
@@ -1240,6 +1389,7 @@ static void NetInitializeTopology(
 	local_player= topology->players + localPlayerIndex;
 	local_player->identifier= localPlayerIdentifier;
 	local_player->net_dead= false;
+	local_player->stream_id = 0;
 
 	NetLocalAddrBlock(&local_player->dspAddress, GAME_PORT);
 	NetLocalAddrBlock(&local_player->ddpAddress, ddpSocket);
@@ -1414,14 +1564,16 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
   for (playerIndex= 0; !error && playerIndex<topology->player_count; playerIndex++) {
     
     NetPlayer player = topology->players[playerIndex];
-    CommunicationsChannel *channel = 
-      connections_to_clients[player.stream_id]->channel;
     
     /* If the player is not net dead. */ 
     // ZZZ: and is not going to be a zombie and is not us
     if(!player.net_dead
        && player.identifier != NONE
        && playerIndex != localPlayerIndex) {
+
+      CommunicationsChannel *channel = 
+	connections_to_clients[player.stream_id]->channel;
+    
       
       set_progress_dialog_message(physics_message_id);
       if(do_physics) {
@@ -1450,9 +1602,12 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
   }
 
   for (playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
-    CommunicationsChannel *channel = connections_to_clients[topology->players[playerIndex].stream_id]->channel;
-
-    channel->flushOutgoingMessages(false, 30000, 30000);
+    if (playerIndex != localPlayerIndex) {
+      CommunicationsChannel *channel = connections_to_clients[topology->players[playerIndex].stream_id]->channel;
+      
+      channel->flushOutgoingMessages(false, 30000, 30000);
+      connections_to_clients[topology->players[playerIndex].stream_id]->state = Client::_ingame;
+    }
   }
     
   if (error) { // ghs: nothing above returns an error at the moment,
@@ -1632,6 +1787,19 @@ NetGetMostRecentChatMessage(player_info** outPlayerData, char** outMessage) {
     return false;
 }
 #endif // NETWORK_CHAT
+
+void NetProcessMessagesInGame() {
+  if (connection_to_server) {
+    connection_to_server->pump();
+    connection_to_server->dispatchIncomingMessages();
+  } else {
+    client_map_t::iterator it;
+    for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+      it->second->channel->pump();
+      it->second->channel->dispatchIncomingMessages();
+    }
+  }
+}
 
 // If a potential joiner has connected to us, handle em
 bool NetCheckForNewJoiner (prospective_joiner_info &info)
@@ -1994,10 +2162,10 @@ static OSErr NetDistributeTopology(
         
 	for (playerIndex=0; playerIndex<topology->player_count; ++playerIndex)
 	  {
-	    CommunicationsChannel *channel = connections_to_clients[topology->players[playerIndex].stream_id]->channel;
 	    // ZZZ: skip players with identifier NONE - they don't really exist... also skip ourselves.
 	    if(topology->players[playerIndex].identifier != NONE && playerIndex != localPlayerIndex)
 	      {
+		CommunicationsChannel *channel = connections_to_clients[topology->players[playerIndex].stream_id]->channel;
 		channel->enqueueOutgoingMessage(topologyMessage);
 	      }
 	  }

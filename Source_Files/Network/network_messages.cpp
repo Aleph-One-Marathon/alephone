@@ -112,11 +112,14 @@ bool JoinerInfoMessage::reallyInflateFrom(AIStream& inputStream) {
 
 void NetworkChatMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mSenderID;
+  outputStream << (Uint16) kTargetPlayers;
   write_string(outputStream, mChatText);
 }
 
 bool NetworkChatMessage::reallyInflateFrom(AIStream& inputStream) {
   inputStream >> mSenderID;
+  Uint16 target;
+  inputStream >> target;
   read_string(inputStream, mChatText, CHAT_MESSAGE_SIZE);
   return true;
 }

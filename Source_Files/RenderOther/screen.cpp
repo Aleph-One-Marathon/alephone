@@ -1132,6 +1132,7 @@ void render_screen(
             if (!world_view->terminal_mode_active)
 				DisplayPosition(port);
             DisplayMessages(port,ViewRect.left - ScreenRect.left,ViewRect.top - ScreenRect.top);
+	    DisplayChatBuffer(port, ViewRect.left - ScreenRect.left, world_view->screen_height + ViewRect.top - ScreenRect.top);
             UnlockPortBits(port);
             goto blah;
 #else
@@ -1142,6 +1143,7 @@ void render_screen(
             if (!world_view->terminal_mode_active)
 				DisplayPosition((GrafPtr)world_pixels);
             DisplayMessages((GrafPtr)world_pixels,0,0);
+	    DisplayChatBuffer((GrafPtr) world_pixels, -1, -1);
 			// LP additions: display position and messages and show crosshairs
 #ifdef HAVE_CORE_GRAPHICS
 		case _opengl_acceleration:
