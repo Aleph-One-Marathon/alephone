@@ -799,6 +799,12 @@ This is preferred over random number functionality from lua.
 (jkvw: Using lua's functions you may get out of sync in net games and incorrect film playback.)
 
 
+better_random ()
+
+Like global_random, but with much more useful statistical properties
+than A1's global random number generator.
+
+
 local_random ()
 
 Returns a random number from A1's local random number generator.

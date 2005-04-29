@@ -76,6 +76,7 @@ using namespace std;
 #include "computer_interface.h"
 #include "network.h"
 #include "network_games.h"
+#include "random.h"
 
 #include "script_instructions.h"
 #include "lua_script.h"
@@ -167,6 +168,9 @@ vector<lua_camera> lua_cameras;
 int number_of_cameras = 0;
 
 uint32 *action_flags;
+
+// For better_random
+static GM_Random lua_random_generator;
 
 double FindLinearValue(double startValue, double endValue, double timeRange, double timeTaken)
 {
@@ -324,6 +328,12 @@ L_Call_NNNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg
 
 void L_Call_Init()
 {
+	// jkvw: Seeding our better random number generator from the lousy one
+	// is clearly not ideal, but it should be good enough for our purposes.
+	lua_random_generator.z = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
+	lua_random_generator.w = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
+	lua_random_generator.jsr = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
+	lua_random_generator.jcong = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 	L_Call("init");
 }
 
@@ -3478,6 +3488,12 @@ static int L_Global_Random (lua_State *L)
 	return 1;
 }
 
+static int L_Better_Random (lua_State *L)
+{
+	lua_pushnumber (L, lua_random_generator.KISS ());
+	return 1;
+}
+
 static int L_Local_Random (lua_State *L)
 {
 	lua_pushnumber (L, local_random ());
@@ -3849,7 +3865,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_player_name", L_Get_Player_Name);
 	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);
 	lua_register(state, "set_player_powerup_duration", L_Set_Player_Powerup_Duration);
-		lua_register(state, "get_player_internal_velocity", L_Get_Player_Internal_Velocity);
+	lua_register(state, "get_player_internal_velocity", L_Get_Player_Internal_Velocity);
         lua_register(state, "get_player_external_velocity", L_Get_Player_External_Velocity);
         lua_register(state, "set_player_external_velocity", L_Set_Player_External_Velocity);
         lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
@@ -3902,6 +3918,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_polygon_target", L_Set_Polygon_Permutation);
 	lua_register(state, "new_item", L_New_Item);
 	lua_register(state, "global_random", L_Global_Random);
+	lua_register(state, "better_random", L_Better_Random);
 	lua_register(state, "local_random", L_Local_Random);
 	lua_register(state, "award_points", L_Award_Points);
 	lua_register(state, "award_kills", L_Award_Kills);
