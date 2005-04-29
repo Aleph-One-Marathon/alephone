@@ -32,6 +32,8 @@
 #define PRINTF_STYLE_ARGS(n,m)
 #endif
 
+#include <string>
+
 extern char temporary[256];
 #define ptemporary (*(Str255 *)temporary)
 
@@ -86,5 +88,11 @@ extern void dprintf(
 extern void fdprintf(
 	const char *format,
 	...) PRINTF_STYLE_ARGS(1,2);
+
+// jkvw additions
+extern void copy_string_to_pstring (const std::string &s, unsigned char* dst, int maxlen = 255);
+extern void copy_string_to_cstring (const std::string &s, char* dst, int maxlen = 255);
+
+extern const std::string pstring_to_string (const unsigned char* ps);
 
 #endif

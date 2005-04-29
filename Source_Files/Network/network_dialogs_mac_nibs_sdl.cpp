@@ -501,6 +501,7 @@ bool run_network_gather_dialog(MetaserverClient*)
  *
  *************************************************************************************************/
 
+// unused for now
 static bool RecentHostAddressMenuBuilder(
 	int indx, Str255 ItemName, bool &ThisIsInitial, void *Data)
 {
@@ -526,79 +527,43 @@ static pascal OSStatus Join_PlayerNameWatcher(
 	EventRef Event,
 	void *UserData
 	)
-{
-	NetgameJoinData *DPtr = (NetgameJoinData *)(UserData);
-	NetgameJoinData& Data = *DPtr;
-	
+{	
 	// Hand off to the next event handler
 	OSStatus err = CallNextEventHandler(HandlerCallRef, Event);
 	
 	// Need this order because we want to check the text field
 	// after it's been changed, not before.
 	// Adjust the OK button's activity as needed
-	GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
-	SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (!Data.my_join_dialog_data_ptr->did_join));
+	
+	// ignore for now
+	//GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
+	//SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (!Data.my_join_dialog_data_ptr->did_join));
 	
 	return err;
 }
 
 
 static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
-{
-	NetgameJoinData *DPtr = (NetgameJoinData *)(UserData);
-	NetgameJoinData& Data = *DPtr;
-	
+{	
 	int Value;
 	bool did_join;
 	char *Addr;
+	
+	DialogPTR dialog = (DialogPTR) UserData;
 
 	switch(Ctrl.ID.id)
 	{
-	case iJOIN_BY_HOST_RECENT:
-		// Set the current address string to the selected one
-		Value = GetControl32BitValue(Ctrl.Ctrl);
-		RecentHostAddresses_StartIter();
-		for (int k=0; k<Value; k++)
-			Addr = RecentHostAddresses_NextIter();
-		
-		if (Addr)
-		{
-			strcpy(network_preferences->join_address, Addr);
-			SetEditCText(Data.ByHost_AddressCtrl,Addr);
-			Draw1Control(Data.ByHost_AddressCtrl);
-		}
+	case iJOIN_BY_HOST_RECENT: // ignore for now
 		break;
 	
-	case iOK_SPECIAL:
+	case iJOIN:
 		// Try to join!
 		
-		GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
-		if (ptemporary[0] > MAX_NET_PLAYER_NAME_LENGTH) ptemporary[0] = MAX_NET_PLAYER_NAME_LENGTH;
-		pstrcpy(Data.my_join_dialog_data_ptr->myPlayerInfo.name, ptemporary);
+		// Should do commented out stuff in shared code
 		
-		Data.my_join_dialog_data_ptr->myPlayerInfo.team = GetControl32BitValue(Data.PlayerTeamCtrl) - 1;
-		Data.my_join_dialog_data_ptr->myPlayerInfo.color = GetControl32BitValue(Data.PlayerColorCtrl) - 1;
-		Data.my_join_dialog_data_ptr->myPlayerInfo.desired_color = Data.my_join_dialog_data_ptr->myPlayerInfo.color;
-		
-		if (GetControl32BitValue(Data.ByHost_Ctrl))
+		if (join_dialog_attempt_join (dialog))
 		{
-			Data.my_join_dialog_data_ptr->join_by_ip = true;
-			
-			GetEditPascalText(Data.ByHost_AddressCtrl, ptemporary);
-			
-			if (ptemporary[0] > kJoinHintingAddressLength)
-				ptemporary[0] = kJoinHintingAddressLength;
-			CopyPascalStringToC(ptemporary, Data.my_join_dialog_data_ptr->ip_for_join_by_ip);
-			RecentHostAddresses_Add(Data.my_join_dialog_data_ptr->ip_for_join_by_ip);
-		}
-		else
-			Data.my_join_dialog_data_ptr->join_by_ip = false;
-		
-		join_dialog_attempt_join ();
-		
-		if (Data.my_join_dialog_data_ptr->did_join)
-		{
-			SetControlActivity(Data.PlayerNameCtrl, false);
+			/* SetControlActivity(Data.PlayerNameCtrl, false);
 			SetControlActivity(Data.PlayerTeamCtrl, false);
 			SetControlActivity(Data.PlayerColorCtrl, false);
 			
@@ -611,7 +576,7 @@ static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 			SetControlActivity(Data.JoinCtrl, false);
 			
 			getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
-			SetStaticPascalText(Data.MessageCtrl, ptemporary);	
+			SetStaticPascalText(Data.MessageCtrl, ptemporary);*/	
 		}
 		else
 		{
@@ -621,45 +586,45 @@ static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 		
 		break;
 		
-	case iJOIN_BY_HOST:
+	case iJOIN_BY_HOST: // Ignore for now
+	/*
 		Value = GetControl32BitValue(Ctrl.Ctrl);
 		SetControlActivity(Data.ByHost_LabelCtrl, Value);
 		SetControlActivity(Data.ByHost_AddressCtrl, Value);
 		SetControlActivity(Data.ByHost_RecentLabelCtrl, Value);
 		SetControlActivity(Data.ByHost_RecentCtrl, Value);
-		
+		*/
 		break;
 	}
 }
 
+static int netgame_join_result;
+
 static pascal void NetgameJoin_Poller(EventLoopTimerRef Timer, void *UserData)
-{
-	NetgameJoinData *DPtr = (NetgameJoinData *)(UserData);
-	NetgameJoinData& Data = *DPtr;
-	
+{	
+	DialogPTR dialog = (DialogPTR) UserData;
+
 	// check and see if weÕve gotten any connection requests,
 	// or pursue the connection request we already received.
-	join_dialog_gatherer_search ();
+	netgame_join_result = join_dialog_gatherer_search (dialog);
 	
-	if (Data.my_join_dialog_data_ptr->complete)
+	if (netgame_join_result == kNetworkJoinedNewGame || netgame_join_result == kNetworkJoinedResumeGame)
 		StopModalDialog(ActiveNonFloatingWindow(),false);
 	
-	if (Data.my_join_dialog_data_ptr->topology_is_dirty) {
+	if (false /* Redraw? */) {
 
 		char joinMessage[256];
 				
 		game_info *info= (game_info *)NetGetGameData();
 
 		get_network_joined_message(joinMessage, info->net_game_type);
-		SetStaticCText(Data.MessageCtrl, joinMessage);
-	
-		Data.my_join_dialog_data_ptr->topology_is_dirty = false;
+		QQ_copy_string_to_control (dialog, iJOIN_MESSAGES, std::string (joinMessage));
 		
 		// Update!
-		Draw1Control(Data.PlayerDisplayCtrl);
+		Draw1Control(GetCtrlFromWindow(dialog, 0, iPLAYER_DISPLAY_AREA));
 	}
 	
-	if (Data.my_join_dialog_data_ptr->chat_message_waiting)
+	if (false /* chat? */)
 	{
 		player_info*	sending_player;
 		char*		chat_message;
@@ -671,79 +636,48 @@ static pascal void NetgameJoin_Poller(EventLoopTimerRef Timer, void *UserData)
 		}
 	}
 	
-	// Update the "Join" button
+	// Should Update the "Join" button in shared code . . .
 	// GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
 	// SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (Data.JoinState == NONE));
 }
 
-void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
+int run_network_join_dialog()
 {
 	show_cursor(); // Hidden one way or another
+
+	netgame_join_result = kNetworkJoinFailedUnjoined;
 
 	// Now for the dialog box
 	
 	AutoNibWindow Window(GUI_Nib, Window_Network_Join);
 	
-	NetgameJoinData Data;
-
-	Data.PlayerNameCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_NAME);
+	join_dialog_initialise(Window ());
 	
-	SetEditPascalText(Data.PlayerNameCtrl, my_join_dialog_data.myPlayerInfo.name);
-	
-	Data.PlayerTeamCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_TEAM);
-	SetControl32BitValue(Data.PlayerTeamCtrl, my_join_dialog_data.myPlayerInfo.team+1);
-
 	AutoKeyboardWatcher Watcher(Join_PlayerNameWatcher);
-	
-	Watcher.Watch(Data.PlayerNameCtrl, &Data);
-	
-	Data.PlayerColorCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_COLOR);
-	SetControl32BitValue(Data.PlayerColorCtrl, my_join_dialog_data.myPlayerInfo.color+1);
+	Watcher.Watch(GetCtrlFromWindow(Window(), 0, iJOIN_NAME), NULL);
 
-	Data.MessageCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_MESSAGES);
-	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
-	SetStaticPascalText(Data.MessageCtrl, ptemporary);
-	
-	Data.PlayerDisplayCtrl = GetCtrlFromWindow(Window(), 0, iPLAYER_DISPLAY_AREA);
-	
 	AutoDrawability Drawability;
-	Drawability(Data.PlayerDisplayCtrl, PlayerDisplayDrawer, &Data);	
+	Drawability(GetCtrlFromWindow(Window(), 0, iPLAYER_DISPLAY_AREA), PlayerDisplayDrawer, NULL);	
 	
-	Data.ByHost_Ctrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST);
-	SetControl32BitValue(Data.ByHost_Ctrl, my_join_dialog_data.join_by_ip);
+	AutoTimer Poller(0, PollingInterval, NetgameJoin_Poller, Window ());
 	
-	Data.ByHost_LabelCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_LABEL);
-	SetControlActivity(Data.ByHost_LabelCtrl, my_join_dialog_data.join_by_ip);
+	RunModalDialog(Window(), false, NetgameJoin_Handler, Window ());
 	
-	Data.ByHost_AddressCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_ADDRESS);
-	CopyCStringToPascal(my_join_dialog_data.ip_for_join_by_ip, ptemporary);
-	SetEditPascalText(Data.ByHost_AddressCtrl, ptemporary);
-	SetControlActivity(Data.ByHost_AddressCtrl, my_join_dialog_data.ip_for_join_by_ip);
-	
-	Data.ByHost_RecentLabelCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_RECENT_LABEL);
-	SetControlActivity(Data.ByHost_RecentLabelCtrl, my_join_dialog_data.join_by_ip);
-	
-	Data.ByHost_RecentCtrl = GetCtrlFromWindow(Window(), 0, iJOIN_BY_HOST_RECENT);
-	SetControlActivity(Data.ByHost_RecentCtrl, my_join_dialog_data.join_by_ip);
-	
-	// Add the most recently joined sites, earliest to latest
-	RecentHostAddresses_Add(my_join_dialog_data.ip_for_join_by_ip);
-	
-	// "_Startiter()" must be before the "_NextIter()"'s in the menu builder
-	RecentHostAddresses_StartIter();
-	BuildMenu(Data.ByHost_RecentCtrl, RecentHostAddressMenuBuilder);
-	
-	Data.CancelCtrl = GetCtrlFromWindow(Window(), 0, iCANCEL);
-	Data.JoinCtrl = GetCtrlFromWindow(Window(), 0, iOK_SPECIAL);
-	if (my_join_dialog_data.myPlayerInfo.name[0] == 0) SetControlActivity(Data.JoinCtrl, false);
-	
-	Data.my_join_dialog_data_ptr = &my_join_dialog_data;
-	
-	AutoTimer Poller(0, PollingInterval, NetgameJoin_Poller, &Data);
-	
-	RunModalDialog(Window(), false, NetgameJoin_Handler, &Data);
+	join_dialog_save_prefs(Window ());
 	
 	hide_cursor();
+	
+	return netgame_join_result;
+}
+
+void join_dialog_end (DialogPTR dialog)
+{
+	StopModalDialog(dialog, false);
+}
+
+void join_dialog_redraw (DialogPTR dialog)
+{
+	Draw1Control(GetCtrlFromWindow(dialog, 0, iPLAYER_DISPLAY_AREA));
 }
 
 /* ---------- private code */

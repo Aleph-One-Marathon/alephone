@@ -275,7 +275,6 @@ bool gather_dialog_gathered_player (const prospective_joiner_info& player)
  ****************************************************/
 
 static JoinerSeekingGathererAnnouncer* join_announcer;
-static join_dialog_data my_join_dialog_data;
 
 int network_join(
 	void)
@@ -289,119 +288,144 @@ int network_join(
 	{
 		// Look for local gatherer
 		join_announcer = new JoinerSeekingGathererAnnouncer (true);
-		
-		// Initialise dialog data
-		my_join_dialog_data.complete = false;
-		my_join_dialog_data.did_join = false;
-		my_join_dialog_data.topology_is_dirty = false;
-		my_join_dialog_data.chat_message_waiting = false;
-		my_join_dialog_data.metaserver_provided_address = string();
-		my_join_dialog_data.join_by_ip = network_preferences->join_by_address;
-		strncpy(my_join_dialog_data.ip_for_join_by_ip, network_preferences->join_address, sizeof(my_join_dialog_data.ip_for_join_by_ip));
-		
-		int name_length= player_preferences->name[0];
-		if(name_length>MAX_NET_PLAYER_NAME_LENGTH) name_length= MAX_NET_PLAYER_NAME_LENGTH;
-		memcpy(my_join_dialog_data.myPlayerInfo.name, player_preferences->name, name_length+1);
-		my_join_dialog_data.myPlayerInfo.desired_color = player_preferences->color;
-		my_join_dialog_data.myPlayerInfo.team = player_preferences->team;
-		my_join_dialog_data.myPlayerInfo.color = player_preferences->color;
-		
-		run_network_join_dialog (my_join_dialog_data);
-		join_dialog_result = my_join_dialog_data.result;
+				
+		join_dialog_result = run_network_join_dialog ();
 		delete join_announcer;
 		
-		// update preferences
-		if (my_join_dialog_data.join_by_ip)
-		{
-			network_preferences->join_by_address = true;
-			strncpy(network_preferences->join_address, my_join_dialog_data.ip_for_join_by_ip, sizeof(network_preferences->join_address));
-		}
-		else
-			network_preferences->join_by_address = false;
-	
-		pstrcpy(player_preferences->name, my_join_dialog_data.myPlayerInfo.name);
-		player_preferences->team = my_join_dialog_data.myPlayerInfo.team;
-		player_preferences->color = my_join_dialog_data.myPlayerInfo.color;
-		
-		write_preferences();
-		
-		if (join_dialog_result != kNetworkJoinFailed)
+		if (join_dialog_result == kNetworkJoinedNewGame || join_dialog_result == kNetworkJoinedResumeGame)
 		{
 			game_info* myGameInfo= (game_info *)NetGetGameData();
 			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
 		}
 		else
 		{
-			if (my_join_dialog_data.did_join)
+			if (join_dialog_result == kNetworkJoinFailedJoined)
 				NetCancelJoin();
 			
 			NetExit();
 		}
 	} else { // Failed NetEnter
-		join_dialog_result = kNetworkJoinFailed;
+		join_dialog_result = kNetworkJoinFailedUnjoined;
 	}
 	
 	hide_cursor();
 	return join_dialog_result;
 }
 
-void join_dialog_attempt_join ()
+void join_dialog_initialise (DialogPTR dialog)
 {
-	const char* hintString = NULL;
+	QQ_set_checkbox_control_value (dialog, iJOIN_BY_HOST, network_preferences->join_by_address);
+	QQ_copy_string_to_control (dialog, iJOIN_BY_HOST_ADDRESS, std::string(network_preferences->join_address));
 
-	if(my_join_dialog_data.metaserver_provided_address != string())
-		hintString = my_join_dialog_data.metaserver_provided_address.c_str();
-	else if(my_join_dialog_data.join_by_ip)
-		hintString = my_join_dialog_data.ip_for_join_by_ip;
+	QQ_copy_string_to_control (dialog, iJOIN_NAME, pstring_to_string(player_preferences->name));
+	QQ_set_popup_control_value (dialog, iJOIN_TEAM, player_preferences->team);
+	QQ_set_popup_control_value (dialog, iJOIN_COLOR, player_preferences->color);
 	
-	my_join_dialog_data.did_join = NetGameJoin(
-						(void *) &my_join_dialog_data.myPlayerInfo,
-						sizeof(my_join_dialog_data.myPlayerInfo), 
-						hintString);
+	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
+	QQ_copy_string_to_control (dialog, iJOIN_MESSAGES, string((const char *)ptemporary + 1, ptemporary[0]));
 }
 
-void join_dialog_gatherer_search ()
+void join_dialog_save_prefs (DialogPTR dialog)
+{
+	if (QQ_get_checkbox_control_value (dialog, iJOIN_BY_HOST)) {
+		network_preferences->join_by_address = true;
+		copy_string_to_cstring (QQ_copy_string_from_control (dialog, iJOIN_BY_HOST_ADDRESS), network_preferences->join_address);
+	} else {
+		network_preferences->join_by_address = false;
+	}
+
+	copy_string_to_pstring (QQ_copy_string_from_control (dialog, iJOIN_NAME), player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+	player_preferences->team = QQ_get_popup_control_value (dialog, iJOIN_TEAM);
+	player_preferences->color = QQ_get_popup_control_value (dialog, iJOIN_COLOR);
+	
+	write_preferences();
+}
+
+bool join_dialog_attempt_join (DialogPTR dialog)
+{
+	char* hintString = NULL;
+	
+	/*if (*join_dialog_metaserver_provided_address() != string())
+		hintString = join_dialog_metaserver_provided_address()->cstr();
+	else */ if(QQ_get_checkbox_control_value (dialog, iJOIN_BY_HOST)) {
+		hintString = new char[256];
+		copy_string_to_cstring (QQ_copy_string_from_control (dialog, iJOIN_BY_HOST_ADDRESS), hintString);
+	}
+	
+	player_info myPlayerInfo;
+	copy_string_to_pstring (QQ_copy_string_from_control (dialog, iJOIN_NAME), myPlayerInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
+	myPlayerInfo.team = QQ_get_popup_control_value (dialog, iJOIN_TEAM);
+	myPlayerInfo.desired_color = myPlayerInfo.color = QQ_get_popup_control_value (dialog, iJOIN_COLOR);
+	
+	bool result = NetGameJoin((void *) &myPlayerInfo, sizeof(myPlayerInfo), hintString);
+	
+	if (hintString)
+		delete [] hintString;
+	
+	if (result) {
+			QQ_set_control_activity(dialog, iJOIN_NAME, false);
+			QQ_set_control_activity(dialog, iJOIN_TEAM, false);
+			QQ_set_control_activity(dialog, iJOIN_COLOR, false);
+
+			QQ_set_control_activity(dialog, iJOIN_BY_HOST, false);
+			QQ_set_control_activity(dialog, iJOIN_BY_HOST_ADDRESS, false);
+			QQ_set_control_activity(dialog, iJOIN, false);
+			
+			getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
+			QQ_copy_string_to_control(dialog, iJOIN_MESSAGES, pstring_to_string(ptemporary));
+	}
+	
+	return result;
+}
+
+int join_dialog_gatherer_search (DialogPTR dialog)
 {
 	JoinerSeekingGathererAnnouncer::pump();
 	
 	switch (NetUpdateJoinState())
 	{
 		case NONE: // haven't Joined yet.
+			return kNetworkJoinFailedUnjoined;
 			break;
 
 		case netConnecting:
 		case netJoining:
+			return kNetworkJoinFailedJoined;
 			break;
 
 		case netCancelled: // the server cancelled the game; force bail
-			my_join_dialog_data.complete = true;
-			my_join_dialog_data.result = kNetworkJoinFailed;
+			join_dialog_end (dialog);
+			return kNetworkJoinFailedJoined;
 			break;
 
 		case netWaiting:
+			return kNetworkJoinFailedJoined;
 			break;
 
 		case netStartingUp: // the game is starting up (we have the network topography)
-			my_join_dialog_data.complete = true;
-			my_join_dialog_data.result = kNetworkJoinedNewGame;
+			join_dialog_end (dialog);
+			return kNetworkJoinedNewGame;
 			break;
 
 		case netStartingResumeGame: // the game is starting up a resume game (we have the network topography)
-			my_join_dialog_data.complete = true;
-			my_join_dialog_data.result = kNetworkJoinedResumeGame;
+			join_dialog_end (dialog);
+			return kNetworkJoinedResumeGame;
 			break;
 
 		case netPlayerAdded:
-			my_join_dialog_data.topology_is_dirty = true;
+			// Call dirty topology function
+			join_dialog_redraw (dialog);
+			return kNetworkJoinFailedJoined;
 			break;
 
 		case netJoinErrorOccurred:
-			my_join_dialog_data.complete = true;
-			my_join_dialog_data.result = kNetworkJoinFailed;
+			join_dialog_end (dialog);
+			return kNetworkJoinFailedJoined;
 			break;
                 
 		case netChatMessageReceived:
-			my_join_dialog_data.chat_message_waiting = true;
+			// Show chat message
+			return kNetworkJoinFailedJoined;
 			break;
 
 		default:

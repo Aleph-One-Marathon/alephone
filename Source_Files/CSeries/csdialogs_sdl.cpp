@@ -248,3 +248,119 @@ copy_pstring_to_static_text(DialogPtr dialog, short item, const unsigned char* p
     
     free(source);
 }
+
+
+bool QQ_control_exists (DialogPTR dlg, int item)
+{
+	return (dlg->get_widget_by_id(item) != NULL);
+}
+
+bool QQ_get_checkbox_control_value (DialogPTR dlg, int item)
+{
+	assert(dlg != NULL);
+	w_toggle* theWidget = dynamic_cast<w_toggle*>(dlg->get_widget_by_id(item));
+	if (theWidget == NULL) {
+		return false;
+	} else {
+		return theWidget->get_selection();
+	}
+}
+
+void QQ_set_checkbox_control_value (DialogPTR dlg, int item, bool value)
+{
+	modify_boolean_control(dlg, item, NONE, value ? 1 : 0);
+	
+	assert(dlg != NULL);
+	w_toggle* theWidget = dynamic_cast<w_toggle*>(dlg->get_widget_by_id(item));
+	if (theWidget != NULL) {
+		theWidget->set_selection(value ? 1 : 0);
+	}
+}
+
+int QQ_get_popup_control_value (DialogPTR dlg, int item)
+{
+	assert(dlg != NULL);
+	w_select* theWidget = dynamic_cast<w_select*>(dlg->get_widget_by_id(item));
+	if (theWidget == NULL) {
+		return 0;
+	} else {
+		return theWidget->get_selection();
+	}
+}
+
+void QQ_set_popup_control_value (DialogPTR dlg, int item, int value)
+{
+	assert(dlg != NULL);
+	w_select* theWidget = dynamic_cast<w_select*>(dlg->get_widget_by_id(item));
+	if (theWidget == NULL) {
+		return 0;
+	} else {
+		theWidget->set_selection(value);
+	}
+}
+
+int QQ_get_radio_control_value (DialogPTR dlg, int first_item, int last_item)
+{
+	return QQ_get_popup_control_value (dlg, first_item);
+}
+
+void QQ_set_radio_control_value (DialogPTR dlg, int first_item, int last_item, int value)
+{
+	QQ_set_popup_control_value (dlg, first_item, value);
+}
+
+const std::string QQ_copy_string_from_control (DialogPTR dlg, int item)
+{
+	assert (dlg != NULL);
+	
+	widget*	theWidget = dlg->get_widget_by_id(item);
+	if (theWidget == NULL)
+		return string();
+	
+	w_text_entry* theTextEntryWidget = dynamic_cast<w_text_entry*>(dlg->get_widget_by_id(item));
+	if (theTextEntryWidget != NULL) {
+		return string(theTextEntryWidget->get_text());
+	}
+
+	return string();
+}
+
+void QQ_copy_string_to_control (DialogPTR dlg, int item, const std::string &s)
+{
+	assert (dlg != NULL);
+	
+	widget*	theWidget = dlg->get_widget_by_id(item);
+	if (theWidget == NULL)
+		return;
+	
+	w_text_entry* theTextEntryWidget = dynamic_cast<w_text_entry*>(theWidget);
+	if (theTextEntryWidget != NULL) {
+		theTextEntryWidget->set_text(s.c_str());
+		return;
+	}
+	
+	w_static_text* theStaticTextWidget = dynamic_cast<w_static_text*>(theWidget);
+	if (theStaticTextWidget != NULL) {
+		theStaticTextWidget->set_text(s.c_str());
+		return;
+	}
+
+	return;
+}
+
+void QQ_set_control_activity (DialogPTR dlg, int item, bool active)
+{
+	assert(dlg != NULL);
+
+	widget*	theWidget = dlg->get_widget_by_id(item);
+	if (dlg == NULL)
+		return;
+	
+	theWidget->set_enabled (active);
+}
+
+void QQ_set_radio_control_activity (DialogPTR dlg, int first_item, int last_item, bool active)
+{
+	QQ_set_control_activity (dlg, first_item, active);
+}
+

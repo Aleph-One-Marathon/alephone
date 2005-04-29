@@ -164,7 +164,11 @@ enum {
 
 enum {
 	dlogJOIN= 10001,
+#ifndef USES_NIBS
 	iJOIN= 1,
+#else
+	iJOIN= 101,
+#endif
 	/* iPLAYER_DISPLAY_AREA        3 */
 	iJOIN_NAME= 4,
 	iJOIN_TEAM,
@@ -373,23 +377,15 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 GatherCallbacks *get_gather_callbacks();
 
 // Join Dialog Goodies
-typedef struct join_dialog_data
-{
-	bool complete;
-	int result;
-	bool did_join;
-	bool topology_is_dirty;
-	bool chat_message_waiting;
-	bool join_by_ip;
-	char ip_for_join_by_ip[256];
-	player_info myPlayerInfo;
-	std::string metaserver_provided_address;
-} join_dialog_data;
 // shared routines
-void join_dialog_gatherer_search ();
-void join_dialog_attempt_join ();
+void join_dialog_initialise (DialogPTR dialog);
+void join_dialog_save_prefs (DialogPTR dialog);
+int join_dialog_gatherer_search (DialogPTR dialog);
+bool join_dialog_attempt_join (DialogPTR dialog);
 // non-shared routines
-void run_network_join_dialog (join_dialog_data& my_join_dialog_data);
+int run_network_join_dialog ();
+void join_dialog_end (DialogPTR dialog);
+void join_dialog_redraw (DialogPTR dialog);
 
 /* ---------------------- prototypes */
 // And now, some shared routines.

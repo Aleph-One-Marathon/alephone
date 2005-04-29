@@ -1116,3 +1116,189 @@ void SetCtrlFloatValue(ControlRef Ctrl, float Value)
 }
 
 #endif
+
+#ifdef USES_NIBS
+// Similar to GetCtrlFromWindow, but doesn't mind if control doesn't exist
+static ControlRef get_control_from_window (DialogPTR dlg, int item)
+{
+	OSStatus err;
+	
+	ControlID CtrlID;
+	CtrlID.signature = 0;
+	CtrlID.id = item;
+	
+	ControlRef control = NULL;
+	err = GetControlByID(dlg,&CtrlID,&control);
+
+	return control;	
+}
+
+bool QQ_get_checkbox_control_value (DialogPTR dlg, int item)
+{
+	return GetControl32BitValue (get_control_from_window (dlg, item));
+}
+
+void QQ_set_checkbox_control_value (DialogPTR dlg, int item, bool value)
+{
+	SetControl32BitValue (get_control_from_window (dlg, item), value ? 1 : 0);
+}
+
+int QQ_get_popup_control_value (DialogPTR dlg, int item)
+{
+	return GetControl32BitValue (get_control_from_window (dlg, item));
+}
+
+void QQ_set_popup_control_value (DialogPTR dlg, int item, int value)
+{
+	SetControl32BitValue (get_control_from_window (dlg, item), value);
+}
+
+int QQ_get_radio_control_value (DialogPTR dlg, int first_item, int last_item)
+{
+	return GetControl32BitValue (get_control_from_window (dlg, first_item));
+}
+
+void QQ_set_radio_control_value (DialogPTR dlg, int first_item, int last_item, int value)
+{
+	SetControl32BitValue (get_control_from_window (dlg, first_item), value);
+}
+
+const std::string QQ_copy_string_from_control (DialogPTR dlg, int item)
+{
+	ControlRef control = get_control_from_window (dlg, item);
+
+	if (!control)
+		return string();
+	
+	ControlKind kind;
+	GetControlKind (control, &kind);
+	
+	const int BufferLen = 255;
+	char Buffer[BufferLen];
+	Size ActualLen = 0;
+	
+	if (kind.kind == kControlKindEditText) {
+		GetControlData(control, kControlEditTextPart, kControlEditTextTextTag, BufferLen, Buffer, &ActualLen);
+	}
+	
+	if (kind.kind == kControlKindStaticText) {
+		GetControlData(control, kControlLabelPart, kControlStaticTextTextTag, BufferLen, Buffer, &ActualLen);
+	}
+	
+	return string(Buffer, ActualLen);
+}
+
+void QQ_copy_string_to_control (DialogPTR dlg, int item, const std::string &s)
+{
+	ControlRef control = get_control_from_window (dlg, item);
+	
+	if (!control)
+		return;
+	
+	ControlKind kind;
+	GetControlKind (control, &kind);
+	
+	if (kind.kind == kControlKindEditText) {
+		SetControlData(control, kControlEditTextPart, kControlEditTextTextTag, s.length (), s.c_str ());
+	}
+	
+	if (kind.kind == kControlKindStaticText) {
+		SetControlData(control, kControlLabelPart, kControlStaticTextTextTag, s.length (), s.c_str ());
+	}
+}
+
+extern void QQ_set_control_activity (DialogPTR dlg, int item, bool active)
+{
+	if (active)
+		ActivateControl (get_control_from_window (dlg, item));
+	else
+		DeactivateControl (get_control_from_window (dlg, item));
+}
+
+extern void QQ_set_radio_control_activity (DialogPTR dlg, int first_item, int last_item, bool active)
+{
+	QQ_set_control_activity (dlg, first_item, active);
+}
+#else
+bool QQ_get_checkbox_control_value (DialogPTR dlg, int item)
+{
+	ControlRef control;
+	
+	GetDialogItemAsControl(dlg, item, &control);
+	return GetControlValue(control);
+}
+
+void QQ_set_checkbox_control_value (DialogPTR dlg, int item, bool value)
+{
+	modify_control(dlg, item, NONE, value ? 1 : 0);
+}
+
+int QQ_get_popup_control_value (DialogPTR dlg, int item)
+{
+	ControlRef control;
+	
+	GetDialogItemAsControl(dlg, item, &control);
+	return GetControlValue(control) - 1;
+}
+
+void QQ_set_popup_control_value (DialogPTR dlg, int item, int value)
+{
+	modify_control(dlg, item, NONE, value+1);
+}
+
+int QQ_get_radio_control_value (DialogPTR dlg, int first_item, int last_item)
+{
+	ControlRef control;
+	
+	int result = -1;
+	
+	for (int item = first_item; item <= last_item; ++item) {
+		GetDialogItemAsControl(dlg, item, &control);
+		if (GetControlValue(control))
+			result = item - first_item;
+	}
+	
+	return result;
+}
+
+void QQ_set_radio_control_value (DialogPTR dlg, int first_item, int last_item, int value)
+{
+	for (int item = first_item; item <= last_item; ++item)
+		modify_control(dlg, item, NONE, value == item - first_item ? 1 : 0);
+}
+
+const std::string QQ_copy_string_from_control (DialogPTR dlg, int item)
+{
+	Handle item_handle;
+
+	get_handle_for_dialog_item(dlg, item, &item_handle);
+	GetDialogItemText(item_handle, ptemporary);
+	return pstring_to_string (ptemporary);
+}
+
+void QQ_copy_string_to_control (DialogPTR dlg, int item, const std::string &s)
+{
+	Handle item_handle;
+
+	get_handle_for_dialog_item(dlg, item, &item_handle);
+	copy_string_to_pstring (s, ptemporary);
+	SetDialogItemText(item_handle, ptemporary);
+}
+
+extern void QQ_set_control_activity (DialogPTR dlg, int item, bool active)
+{
+	ControlRef control;
+	
+	GetDialogItemAsControl(dlg, item, &control);
+	if (active)
+		ActivateControl (control);
+	else
+		DeactivateControl (control);
+}
+
+extern void QQ_set_radio_control_activity (DialogPTR dlg, int first_item, int last_item, bool active)
+{
+	for (int item = first_item; item <= last_item; ++item)
+		QQ_set_control_activity (dlg, item, active);
+}
+#endif

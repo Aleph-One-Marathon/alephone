@@ -2083,7 +2083,7 @@ static void handle_network_game(
                 if(successful_gather) successful_gather= NetStart();
 	} else {
                 int theNetworkJoinResult= network_join();
-                if(theNetworkJoinResult != kNetworkJoinFailed) successful_gather= true;
+                if(theNetworkJoinResult == kNetworkJoinedNewGame || theNetworkJoinResult == kNetworkJoinedResumeGame) successful_gather= true;
                 if(theNetworkJoinResult == kNetworkJoinedResumeGame) joined_resume_game= true;
 	}
 	

@@ -177,3 +177,18 @@ char *a1_p2cstr(unsigned char* inoutStringBuffer)
 	inoutStringBuffer[length] = '\0';
 	return (char *)inoutStringBuffer;
 }
+
+void copy_string_to_pstring (const std::string &s, unsigned char* dst, int maxlen)
+{
+	dst[0] = s.copy (reinterpret_cast<char *>(dst+1), maxlen);
+}
+
+void copy_string_to_cstring (const std::string &s, char* dst, int maxlen)
+{
+	dst [s.copy (dst, maxlen)] = '\0';
+}
+
+const std::string pstring_to_string (const unsigned char* ps)
+{
+	return std::string(reinterpret_cast<const char*>(ps) + 1, ps[0]);
+}

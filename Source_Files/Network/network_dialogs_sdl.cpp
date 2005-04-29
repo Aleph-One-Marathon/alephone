@@ -1112,8 +1112,7 @@ bool run_network_gather_dialog(MetaserverClient* metaserverClient)
  *  Joining dialog
  */
 
-// So the processing function can access it
-static join_dialog_data* my_join_dialog_data_ptr;
+static int join_dialog_result;
 
 static void
 join_processing_function(dialog* inDialog)
@@ -1121,38 +1120,9 @@ join_processing_function(dialog* inDialog)
 	MetaserverClient::pumpAll();
 	
 	/* check and see if we've gotten any connection requests */
-	join_dialog_gatherer_search ();
-
-	if (my_join_dialog_data_ptr->complete) {
-			assert(inDialog != NULL);
-			inDialog->quit(-1);
-	}
-
-	if (my_join_dialog_data_ptr->topology_is_dirty) {
-		// Change Dialog Text (or keep it the same, if we already changed it)
-			modify_control_enabled(inDialog, iCANCEL, CONTROL_INACTIVE);
-
-                game_info *info= (game_info *)NetGetGameData();
-				static char	sStringBuffer[240];
-				get_network_joined_message(sStringBuffer, info->net_game_type);
-				assert(inDialog != NULL);
-				w_static_text* join_status_w =
-					dynamic_cast<w_static_text*>(inDialog->get_widget_by_id(iJOIN_MESSAGES));
-				assert(join_status_w != NULL);
-				join_status_w->set_text(sStringBuffer);
-
-				w_players_in_game2*	players_w =
-					dynamic_cast<w_players_in_game2*>(inDialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
-				assert(players_w != NULL);
-				players_w->start_displaying_actual_information();
-				players_w->update_display();
-		
-		my_join_dialog_data_ptr->topology_is_dirty = false;
-
-                        inDialog->draw_dirty_widgets();
-	}
+	join_dialog_result = join_dialog_gatherer_search (inDialog);
                         
-	if (my_join_dialog_data_ptr->chat_message_waiting) {
+	if (false /*chat*/) {
                         player_info*	sending_player;
                         char*		chat_message;
                         
@@ -1162,17 +1132,31 @@ join_processing_function(dialog* inDialog)
                             inDialog->draw_dirty_widgets();
                         }
 		
-		my_join_dialog_data_ptr->chat_message_waiting = false;
 	}
 }
 
 
 static void
 respond_to_hint_toggle(w_select* inToggle) {
-    w_text_entry* theHintAddressEntry = dynamic_cast<w_text_entry*>(inToggle->get_owning_dialog()->get_widget_by_id(iHINT_ADDRESS_ENTRY));
+    w_text_entry* theHintAddressEntry = dynamic_cast<w_text_entry*>(inToggle->get_owning_dialog()->get_widget_by_id(iJOIN_BY_HOST_ADDRESS));
     theHintAddressEntry->set_enabled(inToggle->get_selection() ? true : false);
 }
 
+void join_dialog_end (DialogPTR dlg)
+{
+	dlg->quit(-1);
+}
+
+void join_dialog_redraw (DialogPTR dlg)
+{
+	w_players_in_game2*	players_w =
+		dynamic_cast<w_players_in_game2*>(dlg->get_widget_by_id(iPLAYER_DISPLAY_AREA));
+	assert(players_w != NULL);
+	players_w->start_displaying_actual_information();
+	players_w->update_display();
+
+	dlg->draw_dirty_widgets();
+}
 
 static void
 join_by_metaserver_clicked(void *arg)
@@ -1200,11 +1184,9 @@ setupAndConnectClient(MetaserverClient& client)
 }
 
 
-void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
+int run_network_join_dialog()
 {
 	dialog d;
-                
-	my_join_dialog_data_ptr = &my_join_dialog_data;
                 
                 d.add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR));
                 d.add(new w_spacer());
@@ -1217,30 +1199,30 @@ void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
                 name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
                 d.add(name_w);
         
-	w_player_color *pcolor_w = new w_player_color("Color", my_join_dialog_data.myPlayerInfo.color);
+	w_player_color *pcolor_w = new w_player_color("Color", 0);
                 pcolor_w->set_identifier(iJOIN_COLOR);
                 d.add(pcolor_w);
         
-	w_player_color *tcolor_w = new w_player_color("Team Color", my_join_dialog_data.myPlayerInfo.team);
+	w_player_color *tcolor_w = new w_player_color("Team Color", 0);
                 tcolor_w->set_identifier(iJOIN_TEAM);
                 d.add(tcolor_w);
         
                 d.add(new w_spacer());
 
-	w_toggle*	hint_w = new w_toggle("Join by address", my_join_dialog_data.join_by_ip);
-                hint_w->set_identifier(iHINT_TOGGLE);
+	w_toggle*	hint_w = new w_toggle("Join by address", false);
+                hint_w->set_identifier(iJOIN_BY_HOST);
                 hint_w->set_selection_changed_callback(respond_to_hint_toggle);
                 d.add(hint_w);
 
-	w_text_entry*	hint_address_w = new w_text_entry("Join address", kJoinHintingAddressLength, my_join_dialog_data.ip_for_join_by_ip);
-                hint_address_w->set_identifier(iHINT_ADDRESS_ENTRY);
-                if(!hint_w->get_selection())
-                        hint_address_w->set_enabled(false);
+	w_text_entry*	hint_address_w = new w_text_entry("Join address", kJoinHintingAddressLength, "");
+                hint_address_w->set_identifier(iJOIN_BY_HOST_ADDRESS);
                 d.add(hint_address_w);
 
                 d.add(new w_spacer());
 
-                d.add(new w_static_text(TS_GetCString(strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string)));
+	w_static_text*	join_messages_w = new w_static_text("");
+		join_messages_w->set_identifier(iJOIN_MESSAGES);
+                d.add(join_messages_w);
 
                 d.add(new w_spacer());
                 
@@ -1254,23 +1236,15 @@ void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
                 
                 d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
-                // We do this here since it (indirectly) invokes the respond_to_typing callback, which needs iOK in place.
-		copy_pstring_to_text_field(&d, iJOIN_NAME, my_join_dialog_data.myPlayerInfo.name);
+		join_dialog_initialise (&d);
 
  		int joinResult = d.run();
 	
+		join_dialog_result = kNetworkJoinFailedUnjoined;
+	
                 if(joinResult >= 0)
 		{
-			my_join_dialog_data.join_by_ip = hint_w->get_selection();
-			if (hint_w->get_selection()) {
-				strncpy(my_join_dialog_data.ip_for_join_by_ip, hint_address_w->get_text(), kJoinHintingAddressLength);
-                        }
-                
-			copy_pstring_from_text_field(&d, iJOIN_NAME, my_join_dialog_data.myPlayerInfo.name);
-			my_join_dialog_data.myPlayerInfo.color = static_cast<int16>(pcolor_w->get_selection());
-			my_join_dialog_data.myPlayerInfo.team = static_cast<int16>(tcolor_w->get_selection());
-			my_join_dialog_data.myPlayerInfo.desired_color = my_join_dialog_data.myPlayerInfo.color;
-	
+		                	
 			bool keepGoing = true;
 			if(joinResult == 1)
 			{
@@ -1280,7 +1254,7 @@ void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
 					uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
 					char buffer[16];
 					snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
-					my_join_dialog_data.metaserver_provided_address = string(buffer);
+					// string(buffer) is our metaserver provided address
 				}
 				else
 				{
@@ -1290,9 +1264,9 @@ void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
 	
 			if(keepGoing)
 			{
-				join_dialog_attempt_join ();
-        
-				if (my_join_dialog_data.did_join) {
+				if (join_dialog_attempt_join (&d)) {
+				
+					join_dialog_save_prefs (&d);
 		
 					// Join network game 2 box (players in game, chat, etc.)
 					dialog d2;
@@ -1338,12 +1312,11 @@ void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
 		
 					int theDialogResult = d2.run(false /*play intro/exit sounds?  no because our retvalues always sound like cancels*/);
 					// d2.run() returns -1 if player clicked cancel or error occured; kNetworkJoined{New|Resume}Game if accepted into game.
-					if (my_join_dialog_data.result != kNetworkJoinFailed) {
+					if (join_dialog_result == kNetworkJoinedNewGame || join_dialog_result == kNetworkJoinedResumeGame) {
 							
 						// We make up for muting the dialog proper...
 						play_dialog_sound(DIALOG_OK_SOUND);
-				
-						return;
+						
 					}// my_join_dialog_data.result != kNetworkJoinFailed (accepted into game)
 
 				}// did_join == true (call to NetGameJoin() worked)
@@ -1352,7 +1325,7 @@ void run_network_join_dialog(join_dialog_data& my_join_dialog_data)
 
                 }// d.run() == 0 (player wanted to join, not cancel, in first box)
 
-	my_join_dialog_data.result = kNetworkJoinFailed;
+	return join_dialog_result;
 }
 
 

@@ -390,7 +390,8 @@ void scroll_inventory(short dy);
 /* ---------- prototypes/NETWORK.C */
 
 enum {	// Results for network_join
-        kNetworkJoinFailed,
+	kNetworkJoinFailedUnjoined,
+        kNetworkJoinFailedJoined,
         kNetworkJoinedNewGame,
         kNetworkJoinedResumeGame
 };

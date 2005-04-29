@@ -334,10 +334,10 @@ bool run_network_gather_dialog (MetaserverClient*)
  *
  *************************************************************************************************/
 
-static join_dialog_data* my_join_dialog_data_ptr;
+static bool join_dialog_done;
+static int join_dialog_result;
 
-void run_network_join_dialog (
-	join_dialog_data& my_join_dialog_data)
+int run_network_join_dialog ()
 {
 		short item_hit, item_type;
 		GrafPtr old_port;
@@ -349,37 +349,18 @@ void run_network_join_dialog (
 		Handle item_handle;
 		// short name_length;
 		
-		// So that the filter procedure can read our dialog data
-		my_join_dialog_data_ptr = &my_join_dialog_data;
-		
 		dialog= myGetNewDialog(dlogJOIN, NULL, (WindowPtr) -1, 0);
 		assert(dialog);
 		join_dialog_upp = NewModalFilterUPP(join_dialog_filter_proc);
 		assert(join_dialog_upp);
 
-		copy_pstring_to_text_field(dialog, iJOIN_NAME, my_join_dialog_data.myPlayerInfo.name);
-		SelectDialogItemText(dialog, iJOIN_NAME, 0, INT16_MAX);
-		modify_control(dialog, iJOIN_TEAM, CONTROL_ACTIVE, my_join_dialog_data.myPlayerInfo.team+1);
-		modify_control(dialog, iJOIN_COLOR, CONTROL_ACTIVE, my_join_dialog_data.myPlayerInfo.color+1);
-		if (my_join_dialog_data.myPlayerInfo.name[0] == 0) modify_control(dialog, iOK, CONTROL_INACTIVE, NONE);
+		join_dialog_done = false;
+		join_dialog_result = kNetworkJoinFailedUnjoined;
+		join_dialog_initialise (dialog);
 	
-		copy_pstring_to_static_text(dialog, iJOIN_MESSAGES,
-			getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string));
-
 		GetDialogItem(dialog, iPLAYER_DISPLAY_AREA, &item_type, &item_handle, &item_rect);
 		SetDialogItem(dialog, iPLAYER_DISPLAY_AREA, kUserDialogItem|kItemDisableBit,
 			(Handle)update_player_list_item_upp, &item_rect);
-
-		CopyCStringToPascal(my_join_dialog_data.ip_for_join_by_ip, ptemporary);
-		copy_pstring_to_text_field(dialog, iJOIN_BY_HOST_ADDRESS, ptemporary);
-
-		modify_boolean_control(dialog, iJOIN_BY_HOST, NONE, my_join_dialog_data.join_by_ip);
-
-		// JTP: Requires control embedding
-		// I would have put these in a pane by themselves if I could have figured out
-		// how to without having a visible group box
-		modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL,   my_join_dialog_data.join_by_ip?CONTROL_ACTIVE:CONTROL_INACTIVE);
-		modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, my_join_dialog_data.join_by_ip?CONTROL_ACTIVE:CONTROL_INACTIVE);
 
 		GetPort(&old_port);
 		SetPort(GetWindowPort(GetDialogWindow(dialog)));
@@ -389,76 +370,35 @@ void run_network_join_dialog (
 		{
 			ModalDialog(join_dialog_upp, &item_hit);
 			
-			GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
-			GetDialogItemText(item_handle, ptemporary);
-			if (!my_join_dialog_data.did_join && *temporary)
-				modify_control(dialog, iOK, CONTROL_ACTIVE, NONE);
-			else
-				modify_control(dialog, iOK, CONTROL_INACTIVE, NONE);
-			
 			switch(item_hit)
 			{
 				case iJOIN:
 					SetPort(GetWindowPort(GetDialogWindow(dialog)));
-					GetDialogItem(dialog, iJOIN_NAME, &item_type, &item_handle, &item_rect);
-					GetDialogItemText(item_handle, ptemporary);
-					if (*temporary > MAX_NET_PLAYER_NAME_LENGTH) *temporary = MAX_NET_PLAYER_NAME_LENGTH;
-					pstrcpy(my_join_dialog_data.myPlayerInfo.name, ptemporary);
-					GetDialogItem(dialog, iJOIN_TEAM, &item_type, &item_handle, &item_rect);
-					my_join_dialog_data.myPlayerInfo.team= GetControlValue((ControlHandle) item_handle) - 1;
-					GetDialogItem(dialog, iJOIN_COLOR, &item_type, &item_handle, &item_rect);
-					my_join_dialog_data.myPlayerInfo.color= GetControlValue((ControlHandle) item_handle) - 1;
-					my_join_dialog_data.myPlayerInfo.desired_color= my_join_dialog_data.myPlayerInfo.color;
-					GetDialogItem(dialog, iJOIN_BY_HOST_ADDRESS, &item_type, &item_handle, &item_rect);
-					GetDialogItemText(item_handle, ptemporary);
-					CopyPascalStringToC(ptemporary, my_join_dialog_data.ip_for_join_by_ip);
-					
-					join_dialog_attempt_join ();
 
-					if(my_join_dialog_data.did_join)
+					if(!join_dialog_attempt_join (dialog))
 					{
-						modify_control_enabled(dialog, iJOIN_NAME, CONTROL_INACTIVE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST, CONTROL_INACTIVE);
-						modify_control(dialog, iJOIN_TEAM, CONTROL_INACTIVE, NONE);
-						modify_control(dialog, iJOIN_COLOR, CONTROL_INACTIVE, NONE);
-						modify_control(dialog, iJOIN, CONTROL_INACTIVE, NONE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL, CONTROL_INACTIVE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, CONTROL_INACTIVE);
-	
-						copy_pstring_to_static_text(dialog, iJOIN_MESSAGES,
-							getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string));
+						join_dialog_end (dialog);
 					}
 					break;
 					
 				case iCANCEL:
-					my_join_dialog_data.complete = true;
-					my_join_dialog_data.result = kNetworkJoinFailed;
+					join_dialog_end (dialog);
 					break;
 					
 				case iJOIN_TEAM:
 					break;
 	
 				case iJOIN_BY_HOST:
-					modify_control(dialog, item_hit, NONE, !get_dialog_control_value(dialog, item_hit));
-					if(get_dialog_control_value(dialog, item_hit))
-					{
-						modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL, CONTROL_ACTIVE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, CONTROL_ACTIVE);
-						my_join_dialog_data.join_by_ip = true;
-					}
-					else
-					{
-						modify_control_enabled(dialog, iJOIN_BY_HOST_LABEL, CONTROL_INACTIVE);
-						modify_control_enabled(dialog, iJOIN_BY_HOST_ADDRESS, CONTROL_INACTIVE);
-						my_join_dialog_data.join_by_ip = false;
-					}
+					QQ_set_checkbox_control_value (dialog, iJOIN_BY_HOST, !QQ_get_checkbox_control_value (dialog, iJOIN_BY_HOST));
 					break;
 					
 				default:
 					break;
 			}
 		}
-		while (!my_join_dialog_data.complete);
+		while (!join_dialog_done);
+	
+	join_dialog_save_prefs (dialog);
 	
 	SetPort(old_port);
 	
@@ -466,7 +406,17 @@ void run_network_join_dialog (
 	DisposeModalFilterUPP(join_dialog_upp);
 	DisposeDialog(dialog);
 	
-	return;
+	return join_dialog_result;
+}
+
+void join_dialog_end (DialogPTR dialog)
+{
+	join_dialog_done = true;
+}
+
+void join_dialog_redraw (DialogPTR dialog)
+{
+	update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
 }
 
 /* ---------- private code */
@@ -1134,27 +1084,12 @@ static pascal Boolean join_dialog_filter_proc(
 
 	// check and see if weÕve gotten any connection requests,
 	// or pursue the connection request we already received.
-	join_dialog_gatherer_search ();
+	join_dialog_result = join_dialog_gatherer_search (dialog);
 
-	if (my_join_dialog_data_ptr->complete)
+	if (join_dialog_done)
 		handled = true;
-
-	if (my_join_dialog_data_ptr->topology_is_dirty)
-	{
-		char joinMessage[256];
-		game_info *info= (game_info *)NetGetGameData();
-		get_network_joined_message(joinMessage, info->net_game_type);
-		CopyCStringToPascal(joinMessage, ptemporary);
-		copy_pstring_to_static_text(dialog, iJOIN_MESSAGES, ptemporary);
-
-		update_player_list_item(dialog, iPLAYER_DISPLAY_AREA);
 	
-		my_join_dialog_data_ptr->topology_is_dirty = false;
-		
-		handled = true;
-	}
-	
-	if (my_join_dialog_data_ptr->chat_message_waiting)
+	if (false /*chat*/)
 	{
 		player_info*	sending_player;
 		char*		chat_message;
@@ -1164,8 +1099,6 @@ static pascal Boolean join_dialog_filter_proc(
 			// be sure to copy any info you need as the next call to
 			// NetUpdateJoinState could overwrite the storage we're pointing at.
 		}
-		
-		my_join_dialog_data_ptr->chat_message_waiting = false;
 		
 		handled = true;
 	}
