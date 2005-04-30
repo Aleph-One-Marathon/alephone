@@ -76,7 +76,7 @@ using namespace std;
 #include "computer_interface.h"
 #include "network.h"
 #include "network_games.h"
-#include "random.h"
+#include "Random.h"
 
 #include "script_instructions.h"
 #include "lua_script.h"

@@ -293,7 +293,7 @@ void QQ_set_popup_control_value (DialogPTR dlg, int item, int value)
 	assert(dlg != NULL);
 	w_select* theWidget = dynamic_cast<w_select*>(dlg->get_widget_by_id(item));
 	if (theWidget == NULL) {
-		return 0;
+		return;
 	} else {
 		theWidget->set_selection(value);
 	}
