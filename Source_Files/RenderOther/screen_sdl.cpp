@@ -637,6 +637,9 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 	if (hi_rez) {
 		SDL_BlitSurface(world_pixels, NULL, main_surface, &destination);
 	} else {
+	  if (SDL_MUSTLOCK(world_pixels)) {
+	    if (SDL_LockSurface(world_pixels) < 0) return;
+	  }
 		switch (world_pixels->format->BytesPerPixel) {
 			case 1:
 				quadruple_surface((pixel8 *)world_pixels->pixels, world_pixels->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
@@ -647,6 +650,10 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 			case 4:
 				quadruple_surface((pixel32 *)world_pixels->pixels, world_pixels->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
 				break;
+		}
+		
+		if (SDL_MUSTLOCK(world_pixels)) {
+		  SDL_UnlockSurface(world_pixels);
 		}
 	}
 	SDL_UpdateRects(main_surface, 1, &destination);

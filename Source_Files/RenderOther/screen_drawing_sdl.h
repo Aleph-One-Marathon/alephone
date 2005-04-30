@@ -206,6 +206,7 @@ int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint1
 template <class T>
 inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int clip_left, int clip_top, int clip_right, int clip_bottom, uint32 pixel, const sdl_font_info *font, bool oblique)
 {
+
 	int cpos = c - font->first_character;
 
 	// Calculate source and destination pointers (kerning, ascent etc.)
@@ -328,6 +329,9 @@ int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uin
 		clip_bottom = s->h - 1;
 	}
 
+	if (SDL_MUSTLOCK (s)) {
+	  if (SDL_LockSurface(s) < 0) return 0;
+	}
 	int width = 0;
 	switch (s->format->BytesPerPixel) {
 		case 1:
@@ -339,6 +343,9 @@ int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uin
 		case 4:
 			width = draw_text((const uint8 *)text, length, x, y, (pixel32 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
 			break;
+	}
+	if (SDL_MUSTLOCK (s)) {
+	  SDL_UnlockSurface(s);
 	}
 	if (s == SDL_GetVideoSurface())
 		SDL_UpdateRect(s, x, y - font->ascent, text_width(text, font, style), font->rect_height);
@@ -656,6 +663,9 @@ void draw_line(SDL_Surface *s, const world_point2d *v1, const world_point2d *v2,
 
 clip_line:
 		if ((code1 | code2) == 0) {
+		  if (SDL_MUSTLOCK(s)) {
+		    if (SDL_LockSurface(s) < 0) return;
+		  }
 
 			// Line completely visible, draw it
 			switch (s->format->BytesPerPixel) {
@@ -668,6 +678,9 @@ clip_line:
 				case 4:
 					draw_thin_line_noclip((pixel32 *)s->pixels, s->pitch, v1, v2, pixel);
 					break;
+			}
+			if (SDL_MUSTLOCK(s)) {
+			  SDL_UnlockSurface(s);
 			}
 
 		} else if ((code1 & code2) == 0) {
