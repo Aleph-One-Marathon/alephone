@@ -361,16 +361,17 @@ static void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
 				Data.FoundPlayers.find(ItemsPtr[k]);
 			
 			// Was it really found? if not, then try the next one
-			if (Entry == Data.FoundPlayers.end()) continue;
+			if (Entry != Data.FoundPlayers.end()) {
 	
-			const prospective_joiner_info *player = Entry->second;
+				const prospective_joiner_info *player = Entry->second;
 			
-			// Remove player from lists
-			lost_player(player);
+				// Remove player from lists
+				lost_player(player);
 			
-			// Gather player
-			if (gather_dialog_gathered_player (*player))
-				Draw1Control(Data.PlayerDisplayCtrl);
+				// Gather player
+				if (gather_dialog_gathered_player (*player))
+					Draw1Control(Data.PlayerDisplayCtrl);
+			}
 		}
 		
 		// Note: ADD button is handled in list-box callback
@@ -381,13 +382,13 @@ static void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
 }
 
 
- void Fake_ADD_Button_Press()
- {
- 	ParsedControl FakeAddCtrl;
- 	FakeAddCtrl.ID.id = iADD;
- 	
- 	NetgameGather_Handler(FakeAddCtrl, GatherDataPtr);
- }
+void Fake_ADD_Button_Press()
+{
+	ParsedControl FakeAddCtrl;
+	FakeAddCtrl.ID.id = iADD;
+
+	NetgameGather_Handler(FakeAddCtrl, GatherDataPtr);
+}
 
 
 const double PollingInterval = 1.0/30.0;
@@ -402,6 +403,15 @@ static pascal void NetgameGather_Poller(EventLoopTimerRef Timer, void *UserData)
 		prospective_joiner_info* infoPtr = new prospective_joiner_info;
 		*infoPtr = info;
 		found_player(infoPtr);
+		
+		if (QQ_get_checkbox_control_value (Data.dialog, iAUTO_GATHER)) {
+			
+			// Remove player from lists
+			lost_player(infoPtr);
+			
+			// Gather player
+			gather_dialog_gathered_player (*infoPtr);
+		}
 	}
 	
 	Draw1Control(Data.PlayerDisplayCtrl);
@@ -454,6 +464,8 @@ bool run_network_gather_dialog(MetaserverClient*)
 
 	// Actually a Data Browser control, a sort of super list box introduced in Carbon/OSX
 	Data.NetworkDisplayCtrl = GetCtrlFromWindow(Window(), 0, iNETWORK_LIST_BOX);
+	
+	Data.dialog = Window ();
 		
 	DataBrowserCallbacks Callbacks;
 	obj_clear(Callbacks);	// Makes everything NULL
@@ -478,7 +490,12 @@ bool run_network_gather_dialog(MetaserverClient*)
 
 	AutoTimer Poller(0, PollingInterval, NetgameGather_Poller, &Data);
 	
+	gather_dialog_initialise (Window());
+	
 	successful = RunModalDialog(Window(), false, NetgameGather_Handler, &Data);
+	
+	if (successful)
+		gather_dialog_save_prefs (Window());
 	
 	// Free the joiner infos we collected
 	set<const prospective_joiner_info*>::iterator it;
@@ -610,19 +627,6 @@ static pascal void NetgameJoin_Poller(EventLoopTimerRef Timer, void *UserData)
 	
 	if (netgame_join_result == kNetworkJoinedNewGame || netgame_join_result == kNetworkJoinedResumeGame)
 		StopModalDialog(ActiveNonFloatingWindow(),false);
-	
-	if (false /* Redraw? */) {
-
-		char joinMessage[256];
-				
-		game_info *info= (game_info *)NetGetGameData();
-
-		get_network_joined_message(joinMessage, info->net_game_type);
-		QQ_copy_string_to_control (dialog, iJOIN_MESSAGES, std::string (joinMessage));
-		
-		// Update!
-		Draw1Control(GetCtrlFromWindow(dialog, 0, iPLAYER_DISPLAY_AREA));
-	}
 	
 	if (false /* chat? */)
 	{
@@ -1030,22 +1034,6 @@ bool CheckSetupInformation(
 // ZZZ: moved this function to csdialogs_macintosh.cpp, and made one like it for csdialogs_sdl.cpp
 
 // JTP: Routines initially copied from network_dialogs_sdl.cpp
-
-#warning SDL Autogather unhandled - Non critical
-#if 0
-static void
-autogather_callback(w_select* inAutoGather) {
-	if(inAutoGather->get_selection() > 0) {
-		dialog* theDialog = inAutoGather->get_owning_dialog();
-		assert(theDialog != NULL);
-		
-		w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(theDialog->get_widget_by_id(iNETWORK_LIST_BOX));
-		assert(theFoundPlayers != NULL);
-		
-		theFoundPlayers->callback_on_all_items();
-	}
-}
-#endif
 
 static void
 found_player(const prospective_joiner_info* player)

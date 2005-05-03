@@ -180,7 +180,8 @@ enum {
 	iJOIN_BY_HOST_LABEL,
 	iJOIN_BY_HOST_ADDRESS,
 	iJOIN_BY_HOST_RECENT_LABEL,
-	iJOIN_BY_HOST_RECENT
+	iJOIN_BY_HOST_RECENT,
+	iAUTO_GATHER
 };
 
 enum {
@@ -304,6 +305,8 @@ struct NetgameGatherData
 	ControlRef NetworkDisplayCtrl;
 	ControlRef PlayerDisplayCtrl;
 	
+	DialogPTR dialog;
+	
 	DataBrowserItemID ItemID;	// A unique ID number for every player (must be nonzero);
 				// for identifying a player to the Data-Browser control.
 				// Players who leave and re-join will be counted separately each time.
@@ -368,6 +371,8 @@ extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 // shared routines
 bool gather_dialog_player_search (prospective_joiner_info& player);
 bool gather_dialog_gathered_player (const prospective_joiner_info& player);
+void gather_dialog_initialise (DialogPTR dialog);
+void gather_dialog_save_prefs (DialogPTR dialog);
 // non-shared routines
 class MetaserverClient;
 bool run_network_gather_dialog (MetaserverClient* metaserverClient);

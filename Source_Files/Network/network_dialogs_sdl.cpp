@@ -147,9 +147,6 @@ enum {
         iENDCONDITION_TYPE_MENU		= 4242,	// Score limit?  Time limit?  No limit?
         iCHAT_HISTORY,				// Where chat text appears
         iCHAT_ENTRY,				// Where chat text is entered
-		iHINT_TOGGLE,			// Join by Address on/off
-		iHINT_ADDRESS_ENTRY,		// Join by address address
-                iAUTO_GATHER,			// Auto-gather on/off
         iMAP_FILE_SELECTOR			// Choose Map file (not choose level within map)
                 
 };
@@ -1060,7 +1057,7 @@ bool run_network_gather_dialog(MetaserverClient* metaserverClient)
 	foundplayers_w->set_player_selected_callback(gather_player_callback);
 	d.add(foundplayers_w);
 	
-	w_toggle*	autogather_w = new w_toggle("Auto-Gather", network_preferences->autogather);
+	w_toggle*	autogather_w = new w_toggle("Auto-Gather", false);
 	autogather_w->set_identifier(iAUTO_GATHER);
 	autogather_w->set_selection_changed_callback(autogather_callback);
 	d.add(autogather_w);
@@ -1093,8 +1090,15 @@ bool run_network_gather_dialog(MetaserverClient* metaserverClient)
 	d.set_processing_function(gather_processing_function);
 	
 	sGathererMayStartGame= true;
-
-	return !(d.run());
+	
+	gather_dialog_initialise (&d);
+	
+	int result = !(d.run());
+	
+	if (result)
+		gather_dialog_save_prefs (&d);
+	
+	return result;
 }
 #endif // ndef NETWORK_TEST_MICROPHONE_LOCALLY
 #endif // ndef NETWORK_TEST_POSTGAME_DIALOG
@@ -1244,6 +1248,7 @@ int run_network_join_dialog()
 	
                 if(joinResult >= 0)
 		{
+			join_dialog_save_prefs (&d);
 		                	
 			bool keepGoing = true;
 			if(joinResult == 1)
@@ -1254,7 +1259,8 @@ int run_network_join_dialog()
 					uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
 					char buffer[16];
 					snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
-					// string(buffer) is our metaserver provided address
+					QQ_set_checkbox_control_value (&d, iJOIN_BY_HOST, true);
+					QQ_copy_string_to_control (&d, iJOIN_BY_HOST_ADDRESS, string(buffer));
 				}
 				else
 				{
@@ -1265,8 +1271,6 @@ int run_network_join_dialog()
 			if(keepGoing)
 			{
 				if (join_dialog_attempt_join (&d)) {
-				
-					join_dialog_save_prefs (&d);
 		
 					// Join network game 2 box (players in game, chat, etc.)
 					dialog d2;

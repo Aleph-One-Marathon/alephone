@@ -1133,6 +1133,11 @@ static ControlRef get_control_from_window (DialogPTR dlg, int item)
 	return control;	
 }
 
+bool QQ_control_exists (DialogPTR dlg, int item)
+{
+	return (get_control_from_window (dlg, item) != NULL);
+}
+
 bool QQ_get_checkbox_control_value (DialogPTR dlg, int item)
 {
 	return GetControl32BitValue (get_control_from_window (dlg, item));
@@ -1145,12 +1150,12 @@ void QQ_set_checkbox_control_value (DialogPTR dlg, int item, bool value)
 
 int QQ_get_popup_control_value (DialogPTR dlg, int item)
 {
-	return GetControl32BitValue (get_control_from_window (dlg, item));
+	return GetControl32BitValue (get_control_from_window (dlg, item)) - 1;
 }
 
 void QQ_set_popup_control_value (DialogPTR dlg, int item, int value)
 {
-	SetControl32BitValue (get_control_from_window (dlg, item), value);
+	SetControl32BitValue (get_control_from_window (dlg, item), value + 1);
 }
 
 int QQ_get_radio_control_value (DialogPTR dlg, int first_item, int last_item)
@@ -1205,6 +1210,8 @@ void QQ_copy_string_to_control (DialogPTR dlg, int item, const std::string &s)
 	if (kind.kind == kControlKindStaticText) {
 		SetControlData(control, kControlLabelPart, kControlStaticTextTextTag, s.length (), s.c_str ());
 	}
+	
+	Draw1Control (control);
 }
 
 extern void QQ_set_control_activity (DialogPTR dlg, int item, bool active)
@@ -1220,11 +1227,23 @@ extern void QQ_set_radio_control_activity (DialogPTR dlg, int first_item, int la
 	QQ_set_control_activity (dlg, first_item, active);
 }
 #else
+bool QQ_control_exists  (DialogPTR dlg, int item)
+{
+	ControlRef control;
+	GetDialogItemAsControl(dlg, item, &control);
+
+	return (control != NULL);
+}
+
 bool QQ_get_checkbox_control_value (DialogPTR dlg, int item)
 {
 	ControlRef control;
 	
 	GetDialogItemAsControl(dlg, item, &control);
+	
+	if (control == NULL)
+		return false;
+	
 	return GetControlValue(control);
 }
 
@@ -1238,6 +1257,10 @@ int QQ_get_popup_control_value (DialogPTR dlg, int item)
 	ControlRef control;
 	
 	GetDialogItemAsControl(dlg, item, &control);
+	
+	if (control == NULL)
+		return 0;
+	
 	return GetControlValue(control) - 1;
 }
 
@@ -1250,12 +1273,13 @@ int QQ_get_radio_control_value (DialogPTR dlg, int first_item, int last_item)
 {
 	ControlRef control;
 	
-	int result = -1;
+	int result = 0;
 	
 	for (int item = first_item; item <= last_item; ++item) {
 		GetDialogItemAsControl(dlg, item, &control);
-		if (GetControlValue(control))
-			result = item - first_item;
+		if (control != NULL)
+			if (GetControlValue(control))
+				result = item - first_item;
 	}
 	
 	return result;

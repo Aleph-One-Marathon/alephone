@@ -235,12 +235,23 @@ bool network_gather(bool inResumingGame)
 		}
 	}
 
-	// jkvw: whoops, need to discover/write autogather setting - will fix
-
 	ungathered_players.clear ();
 
 	hide_cursor();
 	return successful;
+}
+
+void gather_dialog_initialise (DialogPTR dialog)
+{
+	QQ_set_checkbox_control_value (dialog, iAUTO_GATHER, network_preferences->autogather);
+}
+
+void gather_dialog_save_prefs (DialogPTR dialog)
+{	
+	if (QQ_control_exists (dialog, iAUTO_GATHER)) {
+		network_preferences->autogather = QQ_get_checkbox_control_value (dialog, iAUTO_GATHER);
+		write_preferences();
+	}
 }
 
 bool gather_dialog_player_search (prospective_joiner_info& player)
@@ -276,8 +287,7 @@ bool gather_dialog_gathered_player (const prospective_joiner_info& player)
 
 static JoinerSeekingGathererAnnouncer* join_announcer;
 
-int network_join(
-	void)
+int network_join(void)
 {
 	int join_dialog_result;
 
@@ -345,9 +355,7 @@ bool join_dialog_attempt_join (DialogPTR dialog)
 {
 	char* hintString = NULL;
 	
-	/*if (*join_dialog_metaserver_provided_address() != string())
-		hintString = join_dialog_metaserver_provided_address()->cstr();
-	else */ if(QQ_get_checkbox_control_value (dialog, iJOIN_BY_HOST)) {
+	if(QQ_get_checkbox_control_value (dialog, iJOIN_BY_HOST)) {
 		hintString = new char[256];
 		copy_string_to_cstring (QQ_copy_string_from_control (dialog, iJOIN_BY_HOST_ADDRESS), hintString);
 	}
@@ -412,10 +420,13 @@ int join_dialog_gatherer_search (DialogPTR dialog)
 			return kNetworkJoinedResumeGame;
 			break;
 
-		case netPlayerAdded:
-			// Call dirty topology function
+		case netPlayerAdded: {
+			char joinMessage[256];
+			game_info *info= (game_info *)NetGetGameData();
+			get_network_joined_message(joinMessage, info->net_game_type);
+			QQ_copy_string_to_control (dialog, iJOIN_MESSAGES, std::string (joinMessage));
 			join_dialog_redraw (dialog);
-			return kNetworkJoinFailedJoined;
+			return kNetworkJoinFailedJoined; }
 			break;
 
 		case netJoinErrorOccurred:
