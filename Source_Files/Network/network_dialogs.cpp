@@ -575,11 +575,47 @@ void NetgameSetup_Extract(
 	
 	game_information->initial_random_seed = ResumingGame ? dynamic_world->random_seed : (uint16) machine_tick_count();
 
-	// allow all cheats
-	game_information->cheat_flags = 
-	  _allow_crosshair | 
-	  _allow_tunnel_vision |
-	  _allow_behindview;
+	bool shouldUseNetscript = GetControl32BitValue(Data.UseScriptCtrl);
+	FileSpecifier theNetscriptFile = get_dialog_netscript_file(Data);
+
+	// This will be set true below if appropriate
+	SetNetscriptStatus(false);
+	
+	if(shouldUseNetscript)
+	{
+		OpenedFile script_file;
+
+		if(theNetscriptFile.Open (script_file))
+		{
+			long script_length;
+			script_file.GetLength (script_length);
+
+			// DeferredScriptSend will delete this storage the *next time* we call it (!)
+			byte* script_buffer = new byte [script_length];
+			
+			if (script_file.Read (script_length, script_buffer))
+			{
+				DeferredScriptSend (script_buffer, script_length);
+				SetNetscriptStatus (true);
+			}
+			
+			script_file.Close ();
+		}
+		else
+			// hmm failing quietly is probably not the best course of action, but ...
+			shouldUseNetscript = false;
+	}
+
+	if (GetControl32BitValue(Data.CheatsCtrl)) {
+		// disallow all cheats
+		game_information->cheat_flags = 0;
+	} else {
+		// allow all cheats
+		game_information->cheat_flags = 
+		  _allow_crosshair | 
+		  _allow_tunnel_vision |
+		  _allow_behindview;
+	}
 
 	// now save some of these to the preferences - only if not resuming a game
 	if(!ResumingGame)
@@ -608,6 +644,13 @@ void NetgameSetup_Extract(
 			network_preferences->game_is_untimed = false;	
 		}
 		network_preferences->kill_limit = game_information->kill_limit;
+		
+		network_preferences->use_netscript = shouldUseNetscript;
+		if(shouldUseNetscript)
+		{
+			network_preferences->netscript_file = theNetscriptFile.GetSpec();
+		}
+
 	}
 
 	// We write the preferences here (instead of inside the if) because they may have changed
@@ -924,6 +967,12 @@ short fill_in_game_setup_dialog(
 					ptemporary);
 	SetEditPascalText(setup.TimeTextCtrl,ptemporary);
 
+#ifdef HAVE_LUA
+	SetControl32BitValue(setup.UseScriptCtrl, theAdjustedPreferences.use_netscript);
+#else
+	SetControlActivity(setup.UseScriptCtrl, false);
+#endif
+
 	if (theAdjustedPreferences.game_options & _game_has_kill_limit)
 	{
 		// ZZZ: factored out into new function
@@ -1036,6 +1085,10 @@ short fill_in_game_setup_dialog(
 		SetControlActivity(setup.KillsTextCtrl, false);
  		SetControlActivity(setup.DurationCtrl, false);
   	}
+	
+	FileSpecifier theFile;
+	theFile.SetSpec(theAdjustedPreferences.netscript_file);
+	set_dialog_netscript_file(setup, theFile);
 #else
 #if !HAVE_SDL_NET
 	// set up network options

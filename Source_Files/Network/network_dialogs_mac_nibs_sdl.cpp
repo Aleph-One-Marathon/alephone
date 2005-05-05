@@ -159,6 +159,9 @@ static bool CheckSetupInformation(
 	NetgameSetupData& Data, 
 	short game_limit_type);
 
+static void
+update_netscript_file_display(NetgameSetupData &data);
+
 /* ---------- code */
 
 extern void NetUpdateTopology(void);
@@ -403,14 +406,14 @@ static pascal void NetgameGather_Poller(EventLoopTimerRef Timer, void *UserData)
 		prospective_joiner_info* infoPtr = new prospective_joiner_info;
 		*infoPtr = info;
 		found_player(infoPtr);
-		
-		if (QQ_get_checkbox_control_value (Data.dialog, iAUTO_GATHER)) {
-			
-			// Remove player from lists
-			lost_player(infoPtr);
-			
-			// Gather player
-			gather_dialog_gathered_player (*infoPtr);
+	}
+	
+	if (QQ_get_checkbox_control_value (Data.dialog, iAUTO_GATHER)) {
+		map<DataBrowserItemID, const prospective_joiner_info*>::iterator it;
+		it = Data.FoundPlayers.begin ();
+		while (it != Data.FoundPlayers.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
+			gather_dialog_gathered_player (*((*it).second));
+			lost_player((*(it++)).second);
 		}
 	}
 	
@@ -693,6 +696,8 @@ void join_dialog_redraw (DialogPTR dialog)
  *
  *************************************************************************************************/
 
+static FileSpecifier sNetscriptFile;
+
 static pascal OSStatus Setup_PlayerNameWatcher(
 	EventHandlerCallRef HandlerCallRef,
 	EventRef Event,
@@ -770,7 +775,16 @@ static void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
 			}
 		}
 		break;
-	
+		
+	case iUSE_SCRIPT:
+		if (GetControl32BitValue(Data.UseScriptCtrl)) {
+			if (!sNetscriptFile.ReadDialog (_typecode_unknown, "Script Select")) {
+				SetControl32BitValue(Data.UseScriptCtrl, 0);
+			}
+		}
+		update_netscript_file_display(Data);
+	break;
+					
 	case iOK_SPECIAL:
 		// Verify whether it's OK to exit
 		{
@@ -837,6 +851,11 @@ bool network_game_setup(
 	
 	Data.UseMicrophoneCtrl = GetCtrlFromWindow(Window(), 0, iREAL_TIME_SOUND);
 	Data.MicrophoneTypeCtrl = GetCtrlFromWindow(Window(), 0, iMICROPHONE_TYPE);
+	
+	Data.UseScriptCtrl = GetCtrlFromWindow(Window(), 0, iUSE_SCRIPT);
+	Data.ScriptNameCtrl = GetCtrlFromWindow(Window(), 0, iTEXT_SCRIPT_NAME);
+	
+	Data.CheatsCtrl = GetCtrlFromWindow(Window(), 0, iCHEATS_DISABLED);
 	
 	Data.OK_Ctrl = GetCtrlFromWindow(Window(), 0, iOK_SPECIAL);
 	
@@ -1024,6 +1043,52 @@ bool CheckSetupInformation(
 
 	return information_is_acceptable;
 }
+
+void
+update_netscript_file_display(NetgameSetupData &data)
+{
+	bool shouldUseNetscript = GetControl32BitValue(data.UseScriptCtrl);
+	const unsigned char* theStringToUse = NULL;
+	
+	if(shouldUseNetscript)
+	{
+		if (sNetscriptFile.Exists())
+		{
+			char name [256];
+
+			sNetscriptFile.GetName (name);
+			c2pstrcpy (ptemporary, name);
+
+			theStringToUse = ptemporary;
+		}
+		else
+		{
+			theStringToUse = "\p(invalid selection)";
+		}
+	}
+	else
+		theStringToUse = "\p";
+
+	assert(theStringToUse != NULL);
+
+	SetStaticPascalText(data.ScriptNameCtrl, theStringToUse);
+	
+	Draw1Control(data.ScriptNameCtrl);
+}
+
+void
+set_dialog_netscript_file(NetgameSetupData &data, const FileSpecifier& inFile)
+{
+	sNetscriptFile = inFile;
+	update_netscript_file_display(data);
+}
+
+const FileSpecifier&
+get_dialog_netscript_file(NetgameSetupData &data)
+{
+	return sNetscriptFile;
+}
+
 
 /*************************************************************************************************
  *

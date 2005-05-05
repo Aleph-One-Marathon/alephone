@@ -207,11 +207,12 @@ enum {
 	iSUICIDE_PUNISHED= 24,
 	iGAME_TYPE,
 	iGATHER_COLOR,
-        iUSE_SCRIPT= 28,
+	iUSE_SCRIPT= 28,
 	iCHOOSE_SCRIPT,
 	iTEXT_TIME_LIMIT= 35,
 	iMICROPHONE_TYPE,
-        iTEXT_SCRIPT_NAME
+	iTEXT_SCRIPT_NAME,
+	iCHEATS_DISABLED
 };
 
 #ifdef USES_NIBS
@@ -291,6 +292,11 @@ struct NetgameSetupData
 	
 	ControlRef UseMicrophoneCtrl;
 	ControlRef MicrophoneTypeCtrl;
+	
+	ControlRef UseScriptCtrl;
+	ControlRef ScriptNameCtrl;
+	
+	ControlRef CheatsCtrl;
 	
 	ControlRef OK_Ctrl;
 	
@@ -458,8 +464,13 @@ extern void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEna
 extern void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id, short radio_string_index,
                                 short units_item, short units_stringset_id, short units_string_index);
 
+#ifdef USES_NIBS
+extern void set_dialog_netscript_file(NetgameSetupData &data, const FileSpecifier& inFile);
+extern const FileSpecifier& get_dialog_netscript_file(NetgameSetupData &data);
+#else
 extern void set_dialog_netscript_file(DialogPtr inDialog, const FileSpecifier& inFile);
 extern const FileSpecifier& get_dialog_netscript_file(DialogPtr inDialog);
+#endif
 
 // (Postgame carnage report)
 extern void draw_names(NetgameOutcomeData &outcome, struct net_rank *ranks,
