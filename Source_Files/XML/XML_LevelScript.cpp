@@ -421,7 +421,7 @@ void FindMovieInScript(int LevelIndex)
 bool IsLevelMusicActive() {return (!Playlist.empty());}
 
 #ifndef SDL
-void StopLevelMusic() {Playlist.clear();}
+void StopLevelMusic() {stop_music(); Playlist.clear();}
 #endif
 
 FileSpecifier *GetLevelMusic()

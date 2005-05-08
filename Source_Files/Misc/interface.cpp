@@ -1649,9 +1649,7 @@ static void transfer_to_new_level(
 	{
 		stop_fade();
 		set_fade_effect(NONE);
-#ifdef SDL
 		StopLevelMusic();
-#endif
 #ifdef mac
 		if(OGL_IsActive())
 		{

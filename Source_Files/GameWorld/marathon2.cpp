@@ -554,8 +554,8 @@ void leaving_map(
 	mark_all_monster_collections(false);
 	mark_player_collections(false);
 	L_Call_Cleanup ();
-        //Close and unload the Lua state
-        CloseLuaScript();
+	//Close and unload the Lua state
+	CloseLuaScript();
 	NetSetChatCallbacks(NULL);
 
 	/* all we do is mark them for unloading, we don't explicitly dispose of them; whenever the
@@ -565,11 +565,9 @@ void leaving_map(
 	/* stop counting world ticks */
 //	set_keyboard_controller_status(false);
 
-#ifdef SDL
-    // Hackish. Should probably be in stop_all_sounds(), but that just
-    // doesn't work out. 
-    StopLevelMusic(); 
-#endif
+	// Hackish. Should probably be in stop_all_sounds(), but that just
+	// doesn't work out. 
+	StopLevelMusic();
 	stop_all_sounds();
 }
 
