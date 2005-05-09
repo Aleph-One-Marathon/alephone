@@ -424,7 +424,9 @@ void handle_preferences(
 	// Input
 	
 	// Always keyboard and regular mouse, because Carbon does not support the InputSprocket
-	input_preferences->input_device = _mouse_yaw_pitch;
+	// jkvw: Commenting this out, so that users can enforce keyboard-only by manually
+	//       manually editing preferences, without A1 clobbering it.
+	// input_preferences->input_device = _mouse_yaw_pitch;
 	
 	ControlRef INPT_Run_Walk = GetCtrlFromWindow(Window(),Sig_Input,iINTERCHANGE_RUN_WALK);
 	SetControl32BitValue(INPT_Run_Walk, !!TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_run_walk));
