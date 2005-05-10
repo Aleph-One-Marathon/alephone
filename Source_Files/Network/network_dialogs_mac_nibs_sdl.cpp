@@ -812,6 +812,24 @@ static void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
 	}
 }
 
+// This will move to csdialogs_macintosh or something, if I can stomach the rebuild
+class AutoNibReference
+{
+public:
+	AutoNibReference(CFStringRef nibName)
+	{
+		OSStatus result = CreateNibReference(nibName, &m_nibReference);
+		// Best error-handling strategy evar . . . but when in Rome?
+		assert(result == noErr);
+	}
+
+	~AutoNibReference() { DisposeNibReference(m_nibReference); }
+
+	const IBNibRef nibReference() const { return m_nibReference; }
+
+private:
+	IBNibRef m_nibReference;
+};
 
 bool network_game_setup(
 	player_info *player_information,
@@ -822,8 +840,9 @@ bool network_game_setup(
 	outAdvertiseGameOnMetaserver = false;
 
 	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
-	
-	AutoNibWindow Window(GUI_Nib, Window_Network_Setup);
+
+	AutoNibReference setupNetworkGameNib(CFSTR("Netgame_Setup"));
+	AutoNibWindow Window(setupNetworkGameNib.nibReference(), Window_Network_Setup);
 	
 	NetgameSetupData Data;
 	
