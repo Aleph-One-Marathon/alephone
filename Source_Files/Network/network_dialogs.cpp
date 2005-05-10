@@ -1134,7 +1134,7 @@ static uint16 get_dialog_game_options(
 	if(game_type==_game_of_cooperative_play) SET_FLAG(game_options,_overhead_map_is_omniscient,true);
 
 #ifdef USES_NIBS
-	SET_FLAG(game_options, _monsters_replenish, GetControl32BitValue(setup.NoMotionSensorCtrl));
+	SET_FLAG(game_options, _monsters_replenish, GetControl32BitValue(setup.MonstersCtrl));
 	SET_FLAG(game_options, _motion_sensor_does_not_work, GetControl32BitValue(setup.NoMotionSensorCtrl));
 	SET_FLAG(game_options, _dying_is_penalized, GetControl32BitValue(setup.BadDyingCtrl));
 	SET_FLAG(game_options, _suicide_is_penalized, GetControl32BitValue(setup.BadSuicideCtrl));
@@ -1166,7 +1166,7 @@ static void set_dialog_game_options(
 	uint16 game_options)
 {
 #ifdef USES_NIBS
-	SetControl32BitValue(setup.NoMotionSensorCtrl, !!TEST_FLAG(game_options, _monsters_replenish));
+	SetControl32BitValue(setup.MonstersCtrl, !!TEST_FLAG(game_options, _monsters_replenish));
 	SetControl32BitValue(setup.NoMotionSensorCtrl, !!TEST_FLAG(game_options, _motion_sensor_does_not_work));
 	SetControl32BitValue(setup.BadDyingCtrl, !!TEST_FLAG(game_options, _dying_is_penalized));
 	SetControl32BitValue(setup.BadSuicideCtrl, !!TEST_FLAG(game_options, _suicide_is_penalized));
