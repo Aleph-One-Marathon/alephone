@@ -170,6 +170,7 @@
 				F5CFAD430200FA6B01D80110,
 				F5D37B6F022D35A901A80001,
 				3D3A410C04DF92C400000107,
+				EFCB2816083055D10044FDF2,
 			);
 			isa = PBXGroup;
 			name = Resources;
@@ -3172,6 +3173,7 @@
 				EF2A6D1E07D04417008DCEFF,
 				EF2A6D1F07D04417008DCEFF,
 				EF2A6DCE07D04AF1008DCEFF,
+				EFCB2817083055D10044FDF2,
 			);
 			isa = PBXResourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4931,6 +4933,18 @@
 		};
 		EFBAF0270485BEA500A8000D = {
 			fileRef = EFBAF0190485BEA500A8000D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFCB2816083055D10044FDF2 = {
+			isa = PBXFileReference;
+			name = Netgame_Setup.nib;
+			path = ../Resources/Netgame_Setup.nib;
+			refType = 4;
+		};
+		EFCB2817083055D10044FDF2 = {
+			fileRef = EFCB2816083055D10044FDF2;
 			isa = PBXBuildFile;
 			settings = {
 			};
