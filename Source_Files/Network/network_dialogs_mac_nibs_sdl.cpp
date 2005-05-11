@@ -64,6 +64,7 @@ January 27, 2005 (James Willson):
 
 #include "network_games.h"
 #include "network_lookup_sdl.h"
+#include "network_metaserver.h"
 
 // STL Libraries
 #include <vector>
@@ -334,6 +335,9 @@ static void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
 {
 	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
 	NetgameGatherData& Data = *DPtr;
+
+	// This is only an experiment
+	MetaserverClient::pumpAll();
 	
 	Handle ItemsHdl;
 	DataBrowserItemID *ItemsPtr;
@@ -400,7 +404,9 @@ static pascal void NetgameGather_Poller(EventLoopTimerRef Timer, void *UserData)
 {	
 	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
 	NetgameGatherData& Data = *DPtr;
-	
+
+	MetaserverClient::pumpAll();
+
 	prospective_joiner_info info;
 	if (gather_dialog_player_search(info)) {
 		prospective_joiner_info* infoPtr = new prospective_joiner_info;
@@ -831,13 +837,14 @@ private:
 	IBNibRef m_nibReference;
 };
 
+// Advertise-on-metaserver stuff should move out to shared code
 bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
         bool ResumingGame,
 	bool& outAdvertiseGameOnMetaserver)
 {
-	outAdvertiseGameOnMetaserver = false;
+	static bool sAdvertiseGameOnMetaserver = false;
 
 	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
 
@@ -873,8 +880,10 @@ bool network_game_setup(
 	
 	Data.UseScriptCtrl = GetCtrlFromWindow(Window(), 0, iUSE_SCRIPT);
 	Data.ScriptNameCtrl = GetCtrlFromWindow(Window(), 0, iTEXT_SCRIPT_NAME);
-	
+
 	Data.CheatsCtrl = GetCtrlFromWindow(Window(), 0, iCHEATS_DISABLED);
+
+	Data.AdvertiseGameOnMetaserverCtrl = GetCtrlFromWindow(Window(), 0, iADVERTISE_GAME_ON_METASERVER);
 	
 	Data.OK_Ctrl = GetCtrlFromWindow(Window(), 0, iOK_SPECIAL);
 	
@@ -890,6 +899,8 @@ bool network_game_setup(
 	game_information->net_game_type =
 		fill_in_game_setup_dialog(Data, player_information, allow_all_levels, ResumingGame);
 
+	SetControl32BitValue(Data.AdvertiseGameOnMetaserverCtrl, sAdvertiseGameOnMetaserver);
+
 	bool IsOK = RunModalDialog(Window(), false, NetgameSetup_Handler, &Data);
 	IsOK = Data.IsOK;
 	
@@ -899,6 +910,9 @@ bool network_game_setup(
 		
 		NetgameSetup_Extract(Data, player_information, game_information,
 			game_limit_type, allow_all_levels, ResumingGame);
+
+		outAdvertiseGameOnMetaserver = static_cast<bool>(GetControl32BitValue(Data.AdvertiseGameOnMetaserverCtrl));
+		sAdvertiseGameOnMetaserver = outAdvertiseGameOnMetaserver;
 	}
 	
 	return IsOK;

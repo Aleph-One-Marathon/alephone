@@ -212,7 +212,8 @@ enum {
 	iTEXT_TIME_LIMIT= 35,
 	iMICROPHONE_TYPE,
 	iTEXT_SCRIPT_NAME,
-	iCHEATS_DISABLED
+	iCHEATS_DISABLED,
+	iADVERTISE_GAME_ON_METASERVER
 };
 
 #ifdef USES_NIBS
@@ -295,8 +296,10 @@ struct NetgameSetupData
 	
 	ControlRef UseScriptCtrl;
 	ControlRef ScriptNameCtrl;
-	
+
 	ControlRef CheatsCtrl;
+
+	ControlRef AdvertiseGameOnMetaserverCtrl;
 	
 	ControlRef OK_Ctrl;
 	

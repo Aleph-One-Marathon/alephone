@@ -242,20 +242,6 @@ send_text(w_text_entry* te) {
 	te->set_text("");
 }
 
-static void
-setupAndConnectClient(MetaserverClient& client)
-{
-	{
-		unsigned char* playerNameCStringStorage = pstrdup(player_preferences->name);
-		char* playerNameCString = a1_p2cstr(playerNameCStringStorage);
-		client.setPlayerName(playerNameCString);
-		free(playerNameCStringStorage);
-	}
-	
-	client.setPlayerTeamName("");
-	client.connect("myth.mariusnet.com", 6321, "guest", "0000000000000000");
-}
-
 const IPaddress
 run_network_metaserver_ui()
 {
@@ -314,10 +300,21 @@ run_network_metaserver_ui()
 	return sJoinAddress;
 }
 
-#else
-static void
-setupAndConnectClient(MetaserverClient& client) {}
 #endif // ifdef SDL
+
+static void
+setupAndConnectClient(MetaserverClient& client)
+{
+	{
+		unsigned char* playerNameCStringStorage = pstrdup(player_preferences->name);
+		char* playerNameCString = a1_p2cstr(playerNameCStringStorage);
+		client.setPlayerName(playerNameCString);
+		free(playerNameCStringStorage);
+	}
+	
+	client.setPlayerTeamName("");
+	client.connect("myth.mariusnet.com", 6321, "guest", "0000000000000000");
+}
 
 GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_info& info)
 {
