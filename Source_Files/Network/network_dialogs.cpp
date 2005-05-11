@@ -243,13 +243,13 @@ bool network_gather(bool inResumingGame)
 
 void gather_dialog_initialise (DialogPTR dialog)
 {
-	QQ_set_checkbox_control_value (dialog, iAUTO_GATHER, network_preferences->autogather);
+	QQ_set_boolean_control_value (dialog, iAUTO_GATHER, network_preferences->autogather);
 }
 
 void gather_dialog_save_prefs (DialogPTR dialog)
 {	
 	if (QQ_control_exists (dialog, iAUTO_GATHER)) {
-		network_preferences->autogather = QQ_get_checkbox_control_value (dialog, iAUTO_GATHER);
+		network_preferences->autogather = QQ_get_boolean_control_value (dialog, iAUTO_GATHER);
 		write_preferences();
 	}
 }
@@ -324,29 +324,29 @@ int network_join(void)
 
 void join_dialog_initialise (DialogPTR dialog)
 {
-	QQ_set_checkbox_control_value (dialog, iJOIN_BY_HOST, network_preferences->join_by_address);
-	QQ_copy_string_to_control (dialog, iJOIN_BY_HOST_ADDRESS, std::string(network_preferences->join_address));
+	QQ_set_boolean_control_value (dialog, iJOIN_BY_HOST, network_preferences->join_by_address);
+	QQ_copy_string_to_text_control (dialog, iJOIN_BY_HOST_ADDRESS, std::string(network_preferences->join_address));
 
-	QQ_copy_string_to_control (dialog, iJOIN_NAME, pstring_to_string(player_preferences->name));
-	QQ_set_popup_control_value (dialog, iJOIN_TEAM, player_preferences->team);
-	QQ_set_popup_control_value (dialog, iJOIN_COLOR, player_preferences->color);
+	QQ_copy_string_to_text_control (dialog, iJOIN_NAME, pstring_to_string(player_preferences->name));
+	QQ_set_selector_control_value (dialog, iJOIN_TEAM, player_preferences->team);
+	QQ_set_selector_control_value (dialog, iJOIN_COLOR, player_preferences->color);
 	
 	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
-	QQ_copy_string_to_control (dialog, iJOIN_MESSAGES, string((const char *)ptemporary + 1, ptemporary[0]));
+	QQ_copy_string_to_text_control (dialog, iJOIN_MESSAGES, string((const char *)ptemporary + 1, ptemporary[0]));
 }
 
 void join_dialog_save_prefs (DialogPTR dialog)
 {
-	if (QQ_get_checkbox_control_value (dialog, iJOIN_BY_HOST)) {
+	if (QQ_get_boolean_control_value (dialog, iJOIN_BY_HOST)) {
 		network_preferences->join_by_address = true;
-		copy_string_to_cstring (QQ_copy_string_from_control (dialog, iJOIN_BY_HOST_ADDRESS), network_preferences->join_address);
+		copy_string_to_cstring (QQ_copy_string_from_text_control (dialog, iJOIN_BY_HOST_ADDRESS), network_preferences->join_address);
 	} else {
 		network_preferences->join_by_address = false;
 	}
 
-	copy_string_to_pstring (QQ_copy_string_from_control (dialog, iJOIN_NAME), player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
-	player_preferences->team = QQ_get_popup_control_value (dialog, iJOIN_TEAM);
-	player_preferences->color = QQ_get_popup_control_value (dialog, iJOIN_COLOR);
+	copy_string_to_pstring (QQ_copy_string_from_text_control (dialog, iJOIN_NAME), player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+	player_preferences->team = QQ_get_selector_control_value (dialog, iJOIN_TEAM);
+	player_preferences->color = QQ_get_selector_control_value (dialog, iJOIN_COLOR);
 	
 	write_preferences();
 }
@@ -355,15 +355,15 @@ bool join_dialog_attempt_join (DialogPTR dialog)
 {
 	char* hintString = NULL;
 	
-	if(QQ_get_checkbox_control_value (dialog, iJOIN_BY_HOST)) {
+	if(QQ_get_boolean_control_value (dialog, iJOIN_BY_HOST)) {
 		hintString = new char[256];
-		copy_string_to_cstring (QQ_copy_string_from_control (dialog, iJOIN_BY_HOST_ADDRESS), hintString);
+		copy_string_to_cstring (QQ_copy_string_from_text_control (dialog, iJOIN_BY_HOST_ADDRESS), hintString);
 	}
 	
 	player_info myPlayerInfo;
-	copy_string_to_pstring (QQ_copy_string_from_control (dialog, iJOIN_NAME), myPlayerInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
-	myPlayerInfo.team = QQ_get_popup_control_value (dialog, iJOIN_TEAM);
-	myPlayerInfo.desired_color = myPlayerInfo.color = QQ_get_popup_control_value (dialog, iJOIN_COLOR);
+	copy_string_to_pstring (QQ_copy_string_from_text_control (dialog, iJOIN_NAME), myPlayerInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
+	myPlayerInfo.team = QQ_get_selector_control_value (dialog, iJOIN_TEAM);
+	myPlayerInfo.desired_color = myPlayerInfo.color = QQ_get_selector_control_value (dialog, iJOIN_COLOR);
 	
 	bool result = NetGameJoin((void *) &myPlayerInfo, sizeof(myPlayerInfo), hintString);
 	
@@ -380,7 +380,7 @@ bool join_dialog_attempt_join (DialogPTR dialog)
 			QQ_set_control_activity(dialog, iJOIN, false);
 			
 			getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
-			QQ_copy_string_to_control(dialog, iJOIN_MESSAGES, pstring_to_string(ptemporary));
+			QQ_copy_string_to_text_control(dialog, iJOIN_MESSAGES, pstring_to_string(ptemporary));
 	}
 	
 	return result;
@@ -424,7 +424,7 @@ int join_dialog_gatherer_search (DialogPTR dialog)
 			char joinMessage[256];
 			game_info *info= (game_info *)NetGetGameData();
 			get_network_joined_message(joinMessage, info->net_game_type);
-			QQ_copy_string_to_control (dialog, iJOIN_MESSAGES, std::string (joinMessage));
+			QQ_copy_string_to_text_control (dialog, iJOIN_MESSAGES, std::string (joinMessage));
 			join_dialog_redraw (dialog);
 			return kNetworkJoinFailedJoined; }
 			break;

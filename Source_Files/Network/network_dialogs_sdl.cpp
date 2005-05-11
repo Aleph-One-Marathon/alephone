@@ -1259,8 +1259,8 @@ int run_network_join_dialog()
 					uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
 					char buffer[16];
 					snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
-					QQ_set_checkbox_control_value (&d, iJOIN_BY_HOST, true);
-					QQ_copy_string_to_control (&d, iJOIN_BY_HOST_ADDRESS, string(buffer));
+					QQ_set_boolean_control_value (&d, iJOIN_BY_HOST, true);
+					QQ_copy_string_to_text_control (&d, iJOIN_BY_HOST_ADDRESS, string(buffer));
 				}
 				else
 				{

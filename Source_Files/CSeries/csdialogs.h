@@ -69,16 +69,19 @@ typedef dialog* DialogPTR;
 // (jkvw) Prototypes for all platforms, to (hopefully?) get ourselves a usable common interface.
 
 extern bool QQ_control_exists (DialogPTR dlg, int item);
-extern bool QQ_get_checkbox_control_value (DialogPTR dlg, int item);
-extern void QQ_set_checkbox_control_value (DialogPTR dlg, int item, bool value);
-extern int QQ_get_popup_control_value (DialogPTR dlg, int item);
-extern void QQ_set_popup_control_value (DialogPTR dlg, int item, int value);
-extern int QQ_get_radio_control_value (DialogPTR dlg, int first_item, int last_item);
-extern void QQ_set_radio_control_value (DialogPTR dlg, int first_item, int last_item, int value);
-extern const std::string QQ_copy_string_from_control (DialogPTR dlg, int item);
-extern void QQ_copy_string_to_control (DialogPTR dlg, int item, const std::string &s);
 extern void QQ_set_control_activity (DialogPTR dlg, int item, bool active);
-extern void QQ_set_radio_control_activity (DialogPTR dlg, int first_item, int last_item, bool active);
+
+extern bool QQ_get_boolean_control_value (DialogPTR dlg, int item);
+extern void QQ_set_boolean_control_value (DialogPTR dlg, int item, bool value);
+
+extern int QQ_get_selector_control_value (DialogPTR dlg, int item);
+extern void QQ_set_selector_control_value (DialogPTR dlg, int item, int value);
+
+extern const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item);
+extern void QQ_copy_string_to_text_control (DialogPTR dlg, int item, const std::string &s);
+extern long QQ_extract_number_from_text_control (DialogPTR dlg, int item);
+extern void QQ_insert_number_into_text_control (DialogPTR dlg, int item, long number);
+
 
 // (ZZZ:) Prototypes for both platforms.  I think I wrote some of these (on both platforms)
 // so we could use a common API for common operations.  Others I think already existed with

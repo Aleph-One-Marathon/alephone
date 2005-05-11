@@ -414,7 +414,7 @@ static pascal void NetgameGather_Poller(EventLoopTimerRef Timer, void *UserData)
 		found_player(infoPtr);
 	}
 	
-	if (QQ_get_checkbox_control_value (Data.dialog, iAUTO_GATHER)) {
+	if (QQ_get_boolean_control_value (Data.dialog, iAUTO_GATHER)) {
 		map<DataBrowserItemID, const prospective_joiner_info*>::iterator it;
 		it = Data.FoundPlayers.begin ();
 		while (it != Data.FoundPlayers.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
@@ -583,33 +583,7 @@ static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 		break;
 	
 	case iJOIN:
-		// Try to join!
-		
-		// Should do commented out stuff in shared code
-		
-		if (join_dialog_attempt_join (dialog))
-		{
-			/* SetControlActivity(Data.PlayerNameCtrl, false);
-			SetControlActivity(Data.PlayerTeamCtrl, false);
-			SetControlActivity(Data.PlayerColorCtrl, false);
-			
-			SetControlActivity(Data.ByHost_Ctrl, false);
-			SetControlActivity(Data.ByHost_LabelCtrl, false);
-			SetControlActivity(Data.ByHost_AddressCtrl, false);
-			SetControlActivity(Data.ByHost_RecentLabelCtrl, false);
-			SetControlActivity(Data.ByHost_RecentCtrl, false);
-			
-			SetControlActivity(Data.JoinCtrl, false);
-			
-			getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
-			SetStaticPascalText(Data.MessageCtrl, ptemporary);*/	
-		}
-		else
-		{
-			// Bug out!
-			StopModalDialog(ActiveNonFloatingWindow(),false);
-		}
-		
+		join_dialog_attempt_join (dialog);
 		break;
 		
 	case iJOIN_BY_HOST: // Ignore for now
@@ -634,8 +608,7 @@ static pascal void NetgameJoin_Poller(EventLoopTimerRef Timer, void *UserData)
 	// or pursue the connection request we already received.
 	netgame_join_result = join_dialog_gatherer_search (dialog);
 	
-	if (netgame_join_result == kNetworkJoinedNewGame || netgame_join_result == kNetworkJoinedResumeGame)
-		StopModalDialog(ActiveNonFloatingWindow(),false);
+	netgame_join_result = join_dialog_gatherer_search (dialog);
 	
 	if (false /* chat? */)
 	{

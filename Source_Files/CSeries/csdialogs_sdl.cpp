@@ -255,7 +255,7 @@ bool QQ_control_exists (DialogPTR dlg, int item)
 	return (dlg->get_widget_by_id(item) != NULL);
 }
 
-bool QQ_get_checkbox_control_value (DialogPTR dlg, int item)
+bool QQ_get_boolean_control_value (DialogPTR dlg, int item)
 {
 	assert(dlg != NULL);
 	w_toggle* theWidget = dynamic_cast<w_toggle*>(dlg->get_widget_by_id(item));
@@ -266,7 +266,7 @@ bool QQ_get_checkbox_control_value (DialogPTR dlg, int item)
 	}
 }
 
-void QQ_set_checkbox_control_value (DialogPTR dlg, int item, bool value)
+void QQ_set_boolean_control_value (DialogPTR dlg, int item, bool value)
 {
 	modify_boolean_control(dlg, item, NONE, value ? 1 : 0);
 	
@@ -277,7 +277,7 @@ void QQ_set_checkbox_control_value (DialogPTR dlg, int item, bool value)
 	}
 }
 
-int QQ_get_popup_control_value (DialogPTR dlg, int item)
+int QQ_get_selector_control_value (DialogPTR dlg, int item)
 {
 	assert(dlg != NULL);
 	w_select* theWidget = dynamic_cast<w_select*>(dlg->get_widget_by_id(item));
@@ -288,7 +288,7 @@ int QQ_get_popup_control_value (DialogPTR dlg, int item)
 	}
 }
 
-void QQ_set_popup_control_value (DialogPTR dlg, int item, int value)
+void QQ_set_selector_control_value (DialogPTR dlg, int item, int value)
 {
 	assert(dlg != NULL);
 	
@@ -298,17 +298,7 @@ void QQ_set_popup_control_value (DialogPTR dlg, int item, int value)
 	}
 }
 
-int QQ_get_radio_control_value (DialogPTR dlg, int first_item, int last_item)
-{
-	return QQ_get_popup_control_value (dlg, first_item);
-}
-
-void QQ_set_radio_control_value (DialogPTR dlg, int first_item, int last_item, int value)
-{
-	QQ_set_popup_control_value (dlg, first_item, value);
-}
-
-const std::string QQ_copy_string_from_control (DialogPTR dlg, int item)
+const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item)
 {
 	assert (dlg != NULL);
 	
@@ -324,7 +314,7 @@ const std::string QQ_copy_string_from_control (DialogPTR dlg, int item)
 	return string();
 }
 
-void QQ_copy_string_to_control (DialogPTR dlg, int item, const std::string &s)
+void QQ_copy_string_to_text_control (DialogPTR dlg, int item, const std::string &s)
 {
 	assert (dlg != NULL);
 	
@@ -352,14 +342,32 @@ void QQ_set_control_activity (DialogPTR dlg, int item, bool active)
 	assert(dlg != NULL);
 
 	widget*	theWidget = dlg->get_widget_by_id(item);
-	if (dlg == NULL)
+	if (theWidget == NULL)
 		return;
 	
 	theWidget->set_enabled (active);
 }
 
-void QQ_set_radio_control_activity (DialogPTR dlg, int first_item, int last_item, bool active)
+extern long QQ_extract_number_from_text_control (DialogPTR dlg, int item)
 {
-	QQ_set_control_activity (dlg, first_item, active);
+	assert(dlg != NULL);
+
+	w_number_entry* theWidget = dynamic_cast<w_number_entry*>(dlg->get_widget_by_id(item));
+
+	if (theWidget == NULL)
+		return 0;
+
+	return theWidget->get_number();
 }
 
+extern void QQ_insert_number_into_text_control (DialogPTR dlg, int item, long number)
+{
+	assert(dlg != NULL);
+	
+	w_number_entry*	theWidget = dynamic_cast<w_number_entry*>(dlg->get_widget_by_id(item));
+	
+	if(theWidget == NULL)
+		return;
+		
+	theWidget->set_number(number);
+}

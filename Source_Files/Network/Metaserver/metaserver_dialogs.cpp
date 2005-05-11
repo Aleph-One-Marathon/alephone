@@ -39,6 +39,10 @@
 
 using namespace std;
 
+// Private prototype
+// Oh, by the way, this function uses the copy/paste abstraction to appear in network_dialogs_sdl.cpp
+// Please fix.  :)
+static void setupAndConnectClient(MetaserverClient& client);
 
 // jkvw: shared code uses GameAvailableMetaserverAnnouncer,
 //       which is implemented in this unsharable file.
