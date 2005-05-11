@@ -187,6 +187,7 @@
 				F5CFAD430200FA6B01D80110,
 				F5D37B6F022D35A901A80001,
 				3D3A410C04DF92C400000107,
+				AE5ED70E083196D90057D8B3,
 			);
 			isa = PBXGroup;
 			name = Resources;
@@ -3398,6 +3399,7 @@
 				AE2DEADE0815E0A600817EBC,
 				AE2DEADF0815E0A600817EBC,
 				AE2DEB940815EE3100817EBC,
+				AE5ED70F083196D90057D8B3,
 			);
 			isa = PBXResourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4702,6 +4704,20 @@
 			settings = {
 			};
 		};
+		AE5ED70E083196D90057D8B3 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.nib;
+			name = Netgame_Setup.nib;
+			path = ../Resources/Netgame_Setup.nib;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AE5ED70F083196D90057D8B3 = {
+			fileRef = AE5ED70E083196D90057D8B3;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		AE61B10D0815F263001F20E1 = {
 			buildPhases = (
 				AE61B10F0815F263001F20E1,
@@ -4791,8 +4807,8 @@
 		};
 		EF2EF5B004819A5C00A8000D = {
 			children = (
-				F5281C0501F8C94101E83A66,
 				F5281C0701F8CA2101E83A66,
+				F5281C0501F8C94101E83A66,
 				F5281C0801F8CA2101E83A66,
 			);
 			isa = PBXGroup;
@@ -7185,10 +7201,11 @@
 		};
 		F5281C0701F8CA2101E83A66 = {
 			isa = PBXFileReference;
-			lastKnownFileType = wrapper.framework;
-			path = SDL_image.framework;
-			refType = 4;
-			sourceTree = "<group>";
+			lastKnownFileType = file;
+			name = SDL_image.framework;
+			path = /Library/Frameworks/SDL_image.framework;
+			refType = 0;
+			sourceTree = "<absolute>";
 		};
 		F5281C0801F8CA2101E83A66 = {
 			isa = PBXFileReference;
