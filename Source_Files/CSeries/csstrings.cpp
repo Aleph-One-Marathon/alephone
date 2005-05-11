@@ -1,8 +1,9 @@
 /*
+	CSSTRINGS.CPP
 
 	Copyright (C) 1991-2001 and beyond by Bo Lindbergh
 	and the "Aleph One" developers.
- 
+
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
 	the Free Software Foundation; either version 2 of the License, or
@@ -17,14 +18,22 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-Jan 25, 2002 (Br'fin (Jeremy Parsons)):
+ // LP addition: use XML as source of strings (Apr 20, 2000)
+
+ // LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
+
+ Sept-Nov 2001 (Woody Zenfell): added a few new pstring-oriented routines
+
+ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Added TARGET_API_MAC_CARBON for Carbon.h
 	Carbon logging utilites directly format the pascal string as
-		c2pstr is obsolete and I didn't want to allocate the memory
-		to use CopyCStringToPascal
-*/
+ c2pstr is obsolete and I didn't want to allocate the memory
+ to use CopyCStringToPascal
 
-// LP (Aug 28, 2001): Added "fdprintf" -- used like dprintf, but writes to file AlephOneDebugLog.txt
+ May 10, 2005 (Woody Zenfell): merged almost-identical-but-annoyingly-not-quite
+	csstrings.cpp (Macintosh) and csstrings_sdl.cpp into this file.
+ */
+
 
 #include <stdio.h>
 #include <stdarg.h>
@@ -32,31 +41,36 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #if defined(EXPLICIT_CARBON_HEADER)
 # include <Carbon/Carbon.h>
-/*
-#else
-# include <Resources.h>
-# include <TextUtils.h>
-*/
 #endif
 
 #include "csstrings.h"
-
-// LP addition: use XML as source of strings (Apr 20, 2000)
 #include "TextStrings.h"
+#include "Logging.h"
+
+
 
 char temporary[256];
 
 
+
+/*
+ *  Count number of strings with given resid
+ */
 size_t countstr(
-	short resid)
+		short resid)
 {
 	return TS_CountStrings(resid);
 }
 
+
+
+/*
+ *  Get pascal string
+ */
 unsigned char *getpstr(
-	unsigned char *string,
-	short resid,
-	size_t item)
+		       unsigned char *string,
+		       short resid,
+		       size_t item)
 {
 	unsigned char *CollString = TS_GetString(resid,item);
 	if (CollString)
@@ -70,10 +84,15 @@ unsigned char *getpstr(
 	return string;
 }
 
+
+
+/*
+ *  Get C string
+ */
 char *getcstr(
-	char *string,
-	short resid,
-	size_t item)
+	      char *string,
+	      short resid,
+	      size_t item)
 {
 	unsigned char *CollString = TS_GetString(resid,item);
 	if (CollString)
@@ -88,18 +107,28 @@ char *getcstr(
 	return string;
 }
 
+
+
+/*
+ *  Copy pascal string
+ */
 unsigned char *pstrcpy(
-	unsigned char *dst,
-	const unsigned char *src)
+		       unsigned char *dst,
+		       const unsigned char *src)
 {
 	memcpy(dst,src,src[0]+1);
 	return dst;
 }
 
+
+
+/*
+ *  String format routines
+ */
 char *csprintf(
-	char *buffer,
-	const char *format,
-	...)
+	       char *buffer,
+	       const char *format,
+	       ...)
 {
 	va_list list;
 
@@ -109,67 +138,77 @@ char *csprintf(
 	return buffer;
 }
 
+
+
 unsigned char *psprintf(
-	unsigned char *buffer,
-	const char *format,
-	...)
+			unsigned char *buffer,
+			const char *format,
+			...)
 {
 	va_list list;
 
-//#if defined(USE_CARBON_ACCESSORS)
 	va_start(list,format);
 	vsprintf((char *)buffer+1,format,list);
 	va_end(list);
 	buffer[0] = strlen((char *)buffer+1);
-/*
-#else
-	va_start(list,format);
-	vsprintf((char *)buffer,format,list);
-	va_end(list);
-	c2pstr((char *)buffer);
-#endif
-*/
 
 	return buffer;
 }
 
-void dprintf(
-	const char *format,
-	...)
-{
-	Str255 buffer;
-	va_list list;
 
-//#if defined(USE_CARBON_ACCESSORS)
-	va_start(list,format);
-	vsprintf((char *)buffer+1,format,list);
+
+// dprintf() is obsolete with the general logging framework.  Migrate to log* (see Logging.h)
+// (if Logging doesn't do what you need, improve it :) )
+void
+dprintf(const char* format, ...) {
+	va_list list;
+	va_start(list, format);
+	GetCurrentLogger()->logMessageV(logDomain, logAnomalyLevel, "unknown", 0, format, list);
 	va_end(list);
-	buffer[0] = strlen((char *)buffer+1);
+}
+
+
+
+// fdprintf() is obsolete with the general logging framework.  Migrate to log* (see Logging.h)
+// (if Logging doesn't do what you need, improve it :) )
+void
+fdprintf(const char* format, ...) {
+	va_list list;
+	va_start(list, format);
+	GetCurrentLogger()->logMessageV(logDomain, logAnomalyLevel, "unknown", 0, format, list);
+	va_end(list);
+}
+
+
+
+void copy_string_to_pstring (const std::string &s, unsigned char* dst, int maxlen)
+{
+	dst[0] = s.copy (reinterpret_cast<char *>(dst+1), maxlen);
+}
+
+
+
+void copy_string_to_cstring (const std::string &s, char* dst, int maxlen)
+{
+	dst [s.copy (dst, maxlen)] = '\0';
+}
+
+
+
+const std::string pstring_to_string (const unsigned char* ps)
+{
+	return std::string(reinterpret_cast<const char*>(ps) + 1, ps[0]);
+}
+
+
+
 /*
-#else
-	va_start(list,format);
-	vsprintf((char *)buffer,format,list);
-	va_end(list);
-	c2pstr((char *)buffer);
-#endif
-*/
-	DebugStr(buffer);
-}
+ *  String conversion routines (ZZZ)
+ */
 
-void fdprintf(
-	const char *format,
-	...)
-{
-	FILE *FD = fopen("AlephOneDebugLog.txt","a");
-	va_list list;
+// a1 prefix is to avoid conflict with any already-existing functions.
 
-	va_start(list,format);
-	vfprintf(FD,format,list);
-	va_end(list);
-	fprintf(FD,"\n");
-	fclose(FD);
-}
-
+// In-place conversion of Pstring to Cstring
 char *a1_p2cstr(unsigned char* inoutStringBuffer)
 {
 	unsigned char length = inoutStringBuffer[0];
@@ -178,17 +217,49 @@ char *a1_p2cstr(unsigned char* inoutStringBuffer)
 	return (char *)inoutStringBuffer;
 }
 
-void copy_string_to_pstring (const std::string &s, unsigned char* dst, int maxlen)
+
+
+// In-place conversion of Cstring to Pstring.  Quietly truncates string to 255 chars.
+unsigned char *a1_c2pstr(char *inoutStringBuffer)
 {
-	dst[0] = s.copy (reinterpret_cast<char *>(dst+1), maxlen);
+	size_t length = strlen(inoutStringBuffer);
+	if (length > 255)
+		length = 255;
+	memmove(&inoutStringBuffer[1], inoutStringBuffer, length);
+	inoutStringBuffer[0] = (char)length;
+	return (unsigned char *)inoutStringBuffer;
 }
 
-void copy_string_to_cstring (const std::string &s, char* dst, int maxlen)
+
+
+// ZZZ: added for safety
+// Overwrites total_byte_count of Pstring 'dest' with nonoverlapping Pstring 'source' and null padding
+unsigned char *pstrncpy(unsigned char *dest, const unsigned char *source, size_t total_byte_count)
 {
-	dst [s.copy (dst, maxlen)] = '\0';
+	size_t source_count = source[0];
+	if (total_byte_count <= source_count) {
+		// copy truncated
+		dest[0] = (unsigned char)total_byte_count - 1;
+		memcpy(&dest[1], &source[1], dest[0]);
+		return dest;
+	} else {
+		// copy full
+		memcpy(dest, source, source_count + 1);
+		if (source_count + 1 < total_byte_count) {
+			// pad
+			memset(&dest[source_count + 1], 0, total_byte_count - (source_count + 1));
+		}
+		return dest;
+	}
 }
 
-const std::string pstring_to_string (const unsigned char* ps)
+
+
+// ZZZ: added for convenience
+// Duplicate a Pstring.  Result should be free()d when no longer needed.
+unsigned char *pstrdup(const unsigned char *inString)
 {
-	return std::string(reinterpret_cast<const char*>(ps) + 1, ps[0]);
+	unsigned char *out = (unsigned char *)malloc(inString[0] + 1);
+	pstrcpy(out, inString);
+	return out;
 }
