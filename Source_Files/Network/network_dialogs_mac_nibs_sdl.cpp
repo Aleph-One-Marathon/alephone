@@ -122,13 +122,6 @@ static ListHandle network_list_box= (ListHandle) NULL;
 /* from screen_drawing.c */
 extern TextSpec *_get_font_spec(short font_index);
 
-/* ---------- private code */
-/* static */ short fill_in_game_setup_dialog(DialogPtr dialog, player_info *player_information, bool allow_all_levels);
-/* static */ void extract_setup_dialog_information(DialogPtr dialog, player_info *player_information, 
-	game_info *game_information, short game_limit_type, bool allow_all_levels);
-bool check_setup_information(DialogPtr dialog, short game_limit_type);
-static void update_netscript_file_display(DialogPtr inDialog);
-
 
 // ZZZ: moved to csdialogs
 //static short get_dialog_control_value(DialogPtr dialog, short which_control);
@@ -159,9 +152,6 @@ static bool key_is_down(short key_code);
 static bool CheckSetupInformation(
 	NetgameSetupData& Data, 
 	short game_limit_type);
-
-static void
-update_netscript_file_display(NetgameSetupData &data);
 
 /* ---------- code */
 
@@ -675,7 +665,7 @@ void join_dialog_redraw (DialogPTR dialog)
  *
  *************************************************************************************************/
 
-static FileSpecifier sNetscriptFile;
+static bool sng_success;
 
 static pascal OSStatus Setup_PlayerNameWatcher(
 	EventHandlerCallRef HandlerCallRef,
@@ -701,93 +691,32 @@ static pascal OSStatus Setup_PlayerNameWatcher(
 
 static void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
 {
-	NetgameSetupData *DPtr = (NetgameSetupData *)(UserData);
-	NetgameSetupData& Data = *DPtr;
+	DialogPTR dialog = reinterpret_cast<DialogPTR>(UserData);
 	
 	switch(Ctrl.ID.id)
 	{
-	case iRADIO_GROUP_DURATION:
-		switch(GetControl32BitValue(Ctrl.Ctrl))
-		{
-		case duration_no_time_limit:
-			NetgameSetup_Untimed(Data);
-			break;
-			
-		case duration_time_limit:
-			NetgameSetup_Timed(Data);
-			break;
-			
-		case duration_kill_limit:
-			NetgameSetup_ScoreLimit(Data);
-			break;
-		}
+	case iRADIO_NO_TIME_LIMIT:
+		SNG_limit_type_hit (dialog);
 		break;
 		
 	case iFORCE_UNIQUE_TEAMS:
-		SetControlActivity(Data.PlayerTeamCtrl, GetControl32BitValue(Ctrl.Ctrl));
+		SNG_teams_hit (dialog);
 		break;
 
 	case iGAME_TYPE:
-		{
-			short new_game_type= GetControl32BitValue(Ctrl.Ctrl)-1;
-			
-			if(new_game_type != Data.game_information->net_game_type)
-			{
-				long entry_flags, old_entry_flags;
-				struct entry_point entry;
-				
-				if(Data.allow_all_levels)
-				{
-					entry_flags= old_entry_flags= NONE;
-				} else {
-					old_entry_flags= get_entry_point_flags_for_game_type(Data.game_information->net_game_type);
-					entry_flags= get_entry_point_flags_for_game_type(new_game_type);
-				}
-
-				menu_index_to_level_entry(GetControl32BitValue(Data.EntryPointCtrl), old_entry_flags, &entry);
-				
-				/* Get the old one and reset.. */
-				EntryPoints_FillIn(Data.EntryPointCtrl, entry_flags, entry.level_number);
-				Data.game_information->net_game_type= new_game_type;
-				
-				NetgameSetup_GameType(Data, new_game_type);
-			}
-		}
+		SNG_game_type_hit (dialog);
 		break;
 		
 	case iUSE_SCRIPT:
-		if (GetControl32BitValue(Data.UseScriptCtrl)) {
-			if (!sNetscriptFile.ReadDialog (_typecode_unknown, "Script Select")) {
-				SetControl32BitValue(Data.UseScriptCtrl, 0);
-			}
-		}
-		update_netscript_file_display(Data);
+		SNG_use_script_hit (dialog);
 	break;
 					
 	case iOK_SPECIAL:
-		// Verify whether it's OK to exit
-		{
-			bool information_is_acceptable = false;
-			// START Benad
-			if (GetControl32BitValue(Data.GameTypeCtrl) - 1 == _game_of_defense)
-			{
-				information_is_acceptable =
-					CheckSetupInformation(Data, duration_time_limit) &&
-					CheckSetupInformation(Data, duration_kill_limit);
-			}
-			else
-			{
-				short game_limit_type= GetControl32BitValue(Data.DurationCtrl);
-			
-				information_is_acceptable= CheckSetupInformation(Data, game_limit_type);
-			}
-			// END Benad
-			if (information_is_acceptable)
-			{
-				Data.IsOK = true;
-				StopModalDialog(ActiveNonFloatingWindow(),false);
-			}
-		}
+		if (SNG_information_is_acceptable (dialog)) {
+			StopModalDialog(ActiveNonFloatingWindow(),false);
+			sng_success = true;
+		} else
+			SysBeep(30);
 	}
 }
 
@@ -810,85 +739,35 @@ private:
 	IBNibRef m_nibReference;
 };
 
-// Advertise-on-metaserver stuff should move out to shared code
-bool network_game_setup(
+
+bool run_netgame_setup_dialog(
 	player_info *player_information,
 	game_info *game_information,
         bool ResumingGame,
 	bool& outAdvertiseGameOnMetaserver)
 {
-	static bool sAdvertiseGameOnMetaserver = false;
-
 	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
 
 	AutoNibReference setupNetworkGameNib(CFSTR("Netgame_Setup"));
 	AutoNibWindow Window(setupNetworkGameNib.nibReference(), Window_Network_Setup);
-	
-	NetgameSetupData Data;
-	
-	Data.PlayerNameCtrl = GetCtrlFromWindow(Window(), 0, iGATHER_NAME);
-	Data.PlayerColorCtrl = GetCtrlFromWindow(Window(), 0, iGATHER_COLOR);
-	Data.PlayerTeamCtrl = GetCtrlFromWindow(Window(), 0, iGATHER_TEAM);
-	
-	Data.EntryPointCtrl = GetCtrlFromWindow(Window(), 0, iENTRY_MENU);
-	Data.GameTypeCtrl = GetCtrlFromWindow(Window(), 0, iGAME_TYPE);
-	Data.DifficultyCtrl = GetCtrlFromWindow(Window(), 0, iDIFFICULTY_MENU);
-	
-	Data.MonstersCtrl = GetCtrlFromWindow(Window(), 0, iUNLIMITED_MONSTERS);
-	Data.NoMotionSensorCtrl = GetCtrlFromWindow(Window(), 0, iMOTION_SENSOR_DISABLED);
-	Data.BadDyingCtrl = GetCtrlFromWindow(Window(), 0, iDYING_PUNISHED);
-	Data.BadSuicideCtrl = GetCtrlFromWindow(Window(), 0, iSUICIDE_PUNISHED);
-	Data.UniqTeamsCtrl = GetCtrlFromWindow(Window(), 0, iFORCE_UNIQUE_TEAMS);
-	Data.BurnItemsCtrl = GetCtrlFromWindow(Window(), 0, iBURN_ITEMS_ON_DEATH);
-	Data.StatsReportingCtrl = GetCtrlFromWindow(Window(), 0, iREALTIME_NET_STATS);
-	
-	Data.DurationCtrl = GetCtrlFromWindow(Window(), 0, iRADIO_GROUP_DURATION);
-	Data.TimeLabelCtrl = GetCtrlFromWindow(Window(), 0, iTEXT_TIME_LIMIT);
-	Data.TimeTextCtrl = GetCtrlFromWindow(Window(), 0, iTIME_LIMIT);
-	Data.KillsLabelCtrl = GetCtrlFromWindow(Window(), 0, iTEXT_KILL_LIMIT);
-	Data.KillsTextCtrl = GetCtrlFromWindow(Window(), 0, iKILL_LIMIT);
-	
-	Data.UseMicrophoneCtrl = GetCtrlFromWindow(Window(), 0, iREAL_TIME_SOUND);
-	Data.MicrophoneTypeCtrl = GetCtrlFromWindow(Window(), 0, iMICROPHONE_TYPE);
-	
-	Data.UseScriptCtrl = GetCtrlFromWindow(Window(), 0, iUSE_SCRIPT);
-	Data.ScriptNameCtrl = GetCtrlFromWindow(Window(), 0, iTEXT_SCRIPT_NAME);
-
-	Data.CheatsCtrl = GetCtrlFromWindow(Window(), 0, iCHEATS_DISABLED);
-
-	Data.AdvertiseGameOnMetaserverCtrl = GetCtrlFromWindow(Window(), 0, iADVERTISE_GAME_ON_METASERVER);
-	
-	Data.OK_Ctrl = GetCtrlFromWindow(Window(), 0, iOK_SPECIAL);
-	
-	Data.game_information = game_information;
-	Data.allow_all_levels = allow_all_levels;
-	
-	Data.IsOK = false;
-	
+		
 	AutoKeyboardWatcher Watcher(Setup_PlayerNameWatcher);
 	
-	Watcher.Watch(Data.PlayerNameCtrl, &Data);
+	Watcher.Watch(GetCtrlFromWindow(Window(), 0, iGATHER_NAME), Window ());
 	
 	game_information->net_game_type =
-		fill_in_game_setup_dialog(Data, player_information, allow_all_levels, ResumingGame);
+		netgame_setup_dialog_initialise(Window (), allow_all_levels, ResumingGame);
 
-	SetControl32BitValue(Data.AdvertiseGameOnMetaserverCtrl, sAdvertiseGameOnMetaserver);
-
-	bool IsOK = RunModalDialog(Window(), false, NetgameSetup_Handler, &Data);
-	IsOK = Data.IsOK;
+	sng_success = false;
+	RunModalDialog(Window(), false, NetgameSetup_Handler, Window ());
 	
-	if (IsOK)
+	if (sng_success)
 	{
-		short game_limit_type= GetControl32BitValue(Data.DurationCtrl); // - 1; jkvw says don't subtract 1
-		
-		NetgameSetup_Extract(Data, player_information, game_information,
-			game_limit_type, allow_all_levels, ResumingGame);
-
-		outAdvertiseGameOnMetaserver = static_cast<bool>(GetControl32BitValue(Data.AdvertiseGameOnMetaserverCtrl));
-		sAdvertiseGameOnMetaserver = outAdvertiseGameOnMetaserver;
+		netgame_setup_dialog_extract_information(Window (), player_information,
+			game_information, allow_all_levels, ResumingGame, outAdvertiseGameOnMetaserver);
 	}
 	
-	return IsOK;
+	return sng_success;
 }
 
 /*************************************************************************************************
@@ -899,11 +778,6 @@ bool network_game_setup(
  *************************************************************************************************/
 // ZZZ: moved this function to shared network_dialogs.cpp
 
-
-// ZZZ: new function (has different implementation on SDL)
-void set_limit_type(DialogPtr dialog, short limit_type) {
-	modify_radio_button_family(dialog, iRADIO_NO_TIME_LIMIT, iRADIO_KILL_LIMIT, limit_type);
-}
 
 
 static short get_game_duration_radio(
@@ -977,11 +851,13 @@ static bool EntryPointMenuBuilder(
 
 
 void EntryPoints_FillIn(
-	ControlRef EntryPointCtrl,
+	DialogPTR dialog,
 	long entry_flags,
 	short default_level
 	)
 {
+	ControlRef EntryPointCtrl = GetCtrlFromWindow(dialog, 0, iENTRY_MENU);
+
 	EntryPointMenuData MenuData;
 	MenuData.entry_flags = entry_flags;
 	MenuData.level_index = 0;
@@ -994,105 +870,6 @@ void EntryPoints_FillIn(
 void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
 {
 	modify_selection_control(inDialog, inItem, CONTROL_ACTIVE, inLevelNumber+1);
-}
-
-
-/*************************************************************************************************
- *
- * Function: check_setup_information
- * Purpose:  check to make sure that the user entered usable information in the dialog.
- *
- *************************************************************************************************/
-
-bool CheckSetupInformation(
-	NetgameSetupData& Data, 
-	short game_limit_type)
-{
-	bool information_is_acceptable = true;
-	long limit;
-	
-	if (information_is_acceptable)
-	{
-		GetEditCText(Data.TimeTextCtrl, temporary);
-		information_is_acceptable = (sscanf(temporary, "%hd", &limit) >= 1);
-	}
-	
-	if (information_is_acceptable)
-	{
-		if (game_limit_type == duration_time_limit && limit <= 0)
-			information_is_acceptable = false;
-	}
-	
-	if (information_is_acceptable)
-	{
-		GetEditCText(Data.KillsTextCtrl, temporary);
-		information_is_acceptable = (sscanf(temporary, "%hd", &limit) >= 1);
-	}
-		
-	if (information_is_acceptable)
-	{
-		if (game_limit_type == duration_kill_limit && limit <= 0)
-			information_is_acceptable = false;
-	}
-	
-	if (information_is_acceptable)
-	{
-		GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
-		if (ptemporary[0] == 0)
-			information_is_acceptable = true;
-	}
-	
-	if (!information_is_acceptable)
-	{
-		SysBeep(30);
-	}
-
-	return information_is_acceptable;
-}
-
-void
-update_netscript_file_display(NetgameSetupData &data)
-{
-	bool shouldUseNetscript = GetControl32BitValue(data.UseScriptCtrl);
-	const unsigned char* theStringToUse = NULL;
-	
-	if(shouldUseNetscript)
-	{
-		if (sNetscriptFile.Exists())
-		{
-			char name [256];
-
-			sNetscriptFile.GetName (name);
-			c2pstrcpy (ptemporary, name);
-
-			theStringToUse = ptemporary;
-		}
-		else
-		{
-			theStringToUse = "\p(invalid selection)";
-		}
-	}
-	else
-		theStringToUse = "\p";
-
-	assert(theStringToUse != NULL);
-
-	SetStaticPascalText(data.ScriptNameCtrl, theStringToUse);
-	
-	Draw1Control(data.ScriptNameCtrl);
-}
-
-void
-set_dialog_netscript_file(NetgameSetupData &data, const FileSpecifier& inFile)
-{
-	sNetscriptFile = inFile;
-	update_netscript_file_display(data);
-}
-
-const FileSpecifier&
-get_dialog_netscript_file(NetgameSetupData &data)
-{
-	return sNetscriptFile;
 }
 
 
@@ -1349,29 +1126,7 @@ static void calculate_box_colors(
  *
  *************************************************************************************************/
 // ZZZ: exposed this function
-void menu_index_to_level_entry(
-	short menu_index, 
-	long entry_flags,
-	struct entry_point *entry)
-{
-	short  i, map_index;
 
-#if !TARGET_API_MAC_CARBON
-	// JTP: Aqua will put up a watch if we take too long
-	SetCursor(*GetCursor(watchCursor));
-#endif
-
-	map_index= 0;
-	for (i= 0; i<menu_index; i++)
-	{
-		get_indexed_entry_point(entry, &map_index, entry_flags);
-	}
-	
-#if !TARGET_API_MAC_CARBON
-	SetCursor(&qd.arrow);
-#endif
-	return;
-}
 
 static MenuHandle get_popup_menu_handle(
 	DialogPtr dialog,
@@ -1416,9 +1171,10 @@ static void fake_initialize_stat_data(void)
 #endif
 
 // ZZZ: new function used by setup_dialog_for_game_type
-void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id, short radio_string_index,
+void set_limit_text(DialogPTR dialog, short radio_item, short radio_stringset_id, short radio_string_index,
 	short units_item, short units_stringset_id, short units_string_index)
 {
+/*			PLEASE FIX
 	Handle item;
 	short item_type;
 	Rect bounds;
@@ -1430,6 +1186,7 @@ void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id
 	GetDialogItem(dialog, units_item, &item_type, &item, &bounds);
 	getpstr(ptemporary, units_stringset_id, units_string_index);
 	SetDialogItemText(item, ptemporary);
+	*/
 }
 
 /* For join & gather dialogs. */

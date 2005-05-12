@@ -496,26 +496,6 @@ void menu_index_to_level_entry(
 }
 #endif
 
-void set_limit_type(DialogPtr dialog, short limit_type) {
-    switch(limit_type) {
-        case iRADIO_NO_TIME_LIMIT:
-            modify_selection_control(dialog, iENDCONDITION_TYPE_MENU, CONTROL_ACTIVE, kNoLimit + 1);
-        break;
-        
-        case iRADIO_TIME_LIMIT:
-            modify_selection_control(dialog, iENDCONDITION_TYPE_MENU, CONTROL_ACTIVE, kTimeLimit + 1);
-        break;
-        
-        case iRADIO_KILL_LIMIT:
-            modify_selection_control(dialog, iENDCONDITION_TYPE_MENU, CONTROL_ACTIVE, kScoreLimit + 1);
-        break;
-        
-        default:
-            assert(false);
-        break;
-    }
-}
-
 void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
 {
         modify_control_enabled(dialog, iENDCONDITION_TYPE_MENU, inChangeEnable);
@@ -566,23 +546,6 @@ select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber) {
 }
 
 
-void
-set_dialog_netscript_file(DialogPtr inDialog, const FileSpecifier& inFile)
-{
-	w_file_chooser* theChooser = dynamic_cast<w_file_chooser*>(inDialog->get_widget_by_id(iCHOOSE_SCRIPT));
-
-	theChooser->set_file(inFile);
-}
-
-const FileSpecifier&
-get_dialog_netscript_file(DialogPtr inDialog)
-{
-	w_file_chooser* theChooser = dynamic_cast<w_file_chooser*>(inDialog->get_widget_by_id(iCHOOSE_SCRIPT));
-
-	return theChooser->get_file();
-}
-
-
 static void
 respond_to_net_game_type_change(w_select* inWidget) {
         // Get the newly-selected game type and calculate stringset ID
@@ -623,8 +586,12 @@ respond_to_map_file_change(w_env_select* inWidget) {
     }
 }
 
+static void
+respond_to_script_twiddle (w_env_select* inWidget) {
+	SNG_use_script_hit (inWidget->get_owning_dialog());
+}
 
-bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver)
+bool run_netgame_setup_dialog(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver)
 {
     // Save the map file path on entering, so we can restore it if user cancels.
     string  theSavedMapFilePath(environment_preferences->map_file);
@@ -660,16 +627,15 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
         type_w->set_selection_changed_callback(respond_to_net_game_type_change);
 	d.add(type_w);
 
-	w_enabling_toggle* use_netscript_w = new w_enabling_toggle("Use Netscript", false);
+	w_toggle* use_netscript_w = new w_toggle("Use Netscript", false);
 	use_netscript_w->set_identifier(iUSE_SCRIPT);
+	use_netscript_w->set_selection_changed_callback(respond_to_script_twiddle);
 	d.add(use_netscript_w);
 	
-	w_file_chooser* netscript_file_w = new w_file_chooser("Netscript", "SELECT NETSCRIPT", _typecode_netscript);
-	netscript_file_w->set_identifier(iCHOOSE_SCRIPT);
-	netscript_file_w->set_full_width();
-	d.add(netscript_file_w);
-
-	use_netscript_w->add_dependent_widget(netscript_file_w);
+	w_static_text* script_name_w = new w_static_text("");
+	script_name_w->set_identifier(iTEXT_SCRIPT_NAME);
+	script_name_w->set_full_width();
+	d.add(script_name_w);
 
     // Could eventually store this path in network_preferences somewhere, so to have separate map file
     // prefs for single- and multi-player.
@@ -747,6 +713,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 	d.add(new w_spacer());
 
 	w_toggle *advertise_on_metaserver_w = new w_toggle("Advertise Game on Metaserver", sAdvertiseGameOnMetaserver);
+	advertise_on_metaserver_w->set_identifier(iADVERTISE_GAME_ON_METASERVER);
 	d.add(advertise_on_metaserver_w);
 
 	d.add(new w_spacer());	
@@ -759,10 +726,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
 	cancel_w->set_identifier(iCANCEL);
 	d.add(cancel_w);
 
-{
-	DialogPtr p = &d;
-	fill_in_game_setup_dialog(p, player_information, false, inResumingGame);
-}
+	netgame_setup_dialog_initialise(&d, false, inResumingGame);
 
 	if(inResumingGame)
         {
@@ -803,10 +767,7 @@ bool network_game_setup(player_info *player_information, game_info *game_informa
         }
 
         // This will write preferences changes (including change of map file if applicable)
-        extract_setup_dialog_information(&d, player_information, game_information, theLimitType, false /*allow all levels*/, inResumingGame);
-
-		sAdvertiseGameOnMetaserver = advertise_on_metaserver_w->get_selection() != 0;
-		outAdvertiseGameOnMetaserver = sAdvertiseGameOnMetaserver;
+        netgame_setup_dialog_extract_information(&d, player_information, game_information, false /*allow all levels*/, inResumingGame, outAdvertiseGameOnMetaserver);
 
 		return true;
 	} // d.run() == 0

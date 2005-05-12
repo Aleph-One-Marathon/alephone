@@ -1137,6 +1137,16 @@ bool QQ_control_exists (DialogPTR dlg, int item)
 	return (get_control_from_window (dlg, item) != NULL);
 }
 
+void QQ_hide_control (DialogPTR dlg, int item)
+{
+	HideControl (get_control_from_window (dlg, item));
+}
+
+void QQ_show_control (DialogPTR dlg, int item)
+{
+	ShowControl (get_control_from_window (dlg, item));
+}
+
 bool QQ_get_boolean_control_value (DialogPTR dlg, int item)
 {
 	return GetControl32BitValue (get_control_from_window (dlg, item));

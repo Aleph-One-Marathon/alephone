@@ -255,6 +255,17 @@ bool QQ_control_exists (DialogPTR dlg, int item)
 	return (dlg->get_widget_by_id(item) != NULL);
 }
 
+// Can't hide SDL widgets, so we'll deactivate them instead.
+extern void QQ_hide_control (DialogPTR dlg, int item)
+{
+	QQ_set_control_activity (dlg, item, false);
+}
+
+extern void QQ_show_control (DialogPTR dlg, int item)
+{
+	QQ_set_control_activity (dlg, item, true);
+}
+
 bool QQ_get_boolean_control_value (DialogPTR dlg, int item)
 {
 	assert(dlg != NULL);
@@ -268,8 +279,6 @@ bool QQ_get_boolean_control_value (DialogPTR dlg, int item)
 
 void QQ_set_boolean_control_value (DialogPTR dlg, int item, bool value)
 {
-	modify_boolean_control(dlg, item, NONE, value ? 1 : 0);
-	
 	assert(dlg != NULL);
 	w_toggle* theWidget = dynamic_cast<w_toggle*>(dlg->get_widget_by_id(item));
 	if (theWidget != NULL) {

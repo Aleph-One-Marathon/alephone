@@ -70,6 +70,8 @@ typedef dialog* DialogPTR;
 
 extern bool QQ_control_exists (DialogPTR dlg, int item);
 extern void QQ_set_control_activity (DialogPTR dlg, int item, bool active);
+extern void QQ_hide_control (DialogPTR dlg, int item);
+extern void QQ_show_control (DialogPTR dlg, int item);
 
 extern bool QQ_get_boolean_control_value (DialogPTR dlg, int item);
 extern void QQ_set_boolean_control_value (DialogPTR dlg, int item, bool value);

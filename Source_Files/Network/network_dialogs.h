@@ -385,8 +385,6 @@ void gather_dialog_save_prefs (DialogPTR dialog);
 // non-shared routines
 class MetaserverClient;
 bool run_network_gather_dialog (MetaserverClient* metaserverClient);
-// netgame setup dialog - unconverted routine called by network_gather()
-bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
 
 GatherCallbacks *get_gather_callbacks();
 
@@ -401,27 +399,39 @@ int run_network_join_dialog ();
 void join_dialog_end (DialogPTR dialog);
 void join_dialog_redraw (DialogPTR dialog);
 
+// Netgame setup goodies
+// shared routines
+bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
+short netgame_setup_dialog_initialise (DialogPTR dialog, bool allow_all_levels, bool resuming_game);
+void netgame_setup_dialog_extract_information(DialogPTR dialog, player_info *player_information,
+	game_info *game_information, bool allow_all_levels, bool resuming_game,
+	bool &outAdvertiseGameOnMetaserver);
+void setup_for_untimed_game(DialogPTR dialog);
+void setup_for_timed_game(DialogPTR dialog);
+void setup_for_score_limited_game(DialogPTR dialog);
+void setup_dialog_for_game_type(DialogPTR dialog, size_t game_type);
+void SNG_limit_type_hit (DialogPTR dialog);
+void SNG_teams_hit (DialogPTR dialog);
+#ifndef SDL // SDL uses its own private mechanism
+void SNG_game_type_hit (DialogPTR dialog);
+#endif
+void SNG_use_script_hit (DialogPTR dialog);
+bool SNG_information_is_acceptable (DialogPTR dialog);
+void update_netscript_file_display(DialogPTR dialog);
+void set_dialog_netscript_file(DialogPTR dialog, const FileSpecifier& inFile);
+const FileSpecifier& get_dialog_netscript_file(DialogPTR dialog);
+// non-shared routines
+bool run_netgame_setup_dialog(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
+void update_netscript_file_display(DialogPTR inDialog);
+#ifndef SDL // SDL uses its own private mechanism
+void EntryPoints_FillIn(DialogPTR dialog, long entry_flags, short default_level);
+#endif
+
 /* ---------------------- prototypes */
 // And now, some shared routines.
 
-extern short fill_in_game_setup_dialog(NetgameSetupData &setup, player_info *player_information,
-	bool allow_all_levels, bool resuming_game);
-
-extern void extract_setup_dialog_information(DialogPtr dialog, player_info *player_information,
-	game_info *game_information, short game_limit_type, bool allow_all_levels, bool resuming_game);
-
 extern void reassign_player_colors(short player_index, short num_players);
 
-extern void setup_for_untimed_game(DialogPtr dialog);
-extern void setup_for_timed_game(DialogPtr dialog);
-
-// ZZZ: new function to parallel the previous two.
-extern void setup_for_score_limited_game(
-	DialogPtr dialog);
-
-extern void setup_dialog_for_game_type(
-	DialogPtr dialog, 
-	size_t game_type);
 
 
 
@@ -460,20 +470,15 @@ extern void menu_index_to_level_entry(short index, long entry_flags, struct entr
 extern void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber);
 
 // ZZZ: new function manipulates radio buttons on Mac; changes w_select widget on SDL.
-extern void set_limit_type(DialogPtr dialog, short limit_type);
-extern void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable);
+extern void set_limit_type(DialogPTR dialog, short limit_type);
+extern int get_limit_type(DialogPTR dialog);
 
 // ZZZ: new function manipulates radio button title and units ("Point Limit", "points")
-extern void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id, short radio_string_index,
+extern void set_limit_text(DialogPTR dialog, short radio_item, short radio_stringset_id, short radio_string_index,
                                 short units_item, short units_stringset_id, short units_string_index);
 
-#ifdef USES_NIBS
-extern void set_dialog_netscript_file(NetgameSetupData &data, const FileSpecifier& inFile);
-extern const FileSpecifier& get_dialog_netscript_file(NetgameSetupData &data);
-#else
-extern void set_dialog_netscript_file(DialogPtr inDialog, const FileSpecifier& inFile);
-extern const FileSpecifier& get_dialog_netscript_file(DialogPtr inDialog);
-#endif
+extern void set_dialog_netscript_file(DialogPTR inDialog, const FileSpecifier& inFile);
+extern const FileSpecifier& get_dialog_netscript_file(DialogPTR inDialog);
 
 // (Postgame carnage report)
 extern void draw_names(NetgameOutcomeData &outcome, struct net_rank *ranks,
@@ -481,35 +486,6 @@ extern void draw_names(NetgameOutcomeData &outcome, struct net_rank *ranks,
 extern void draw_kill_bars(NetgameOutcomeData &outcome, struct net_rank *ranks, short num_players, 
 	short suicide_index, bool do_totals, bool friendly_fire);
 extern void draw_score_bars(NetgameOutcomeData &outcome, struct net_rank *ranks, short bar_count);
-
-
-#ifdef USES_NIBS
-
-void EntryPoints_FillIn(
-	ControlRef EntryPointCtrl,
-	long entry_flags,
-	short default_level
-	);
-
-void NetgameSetup_GameType(
-	NetgameSetupData& Data,
-	int game_type
-	);
-
-void NetgameSetup_Untimed(NetgameSetupData& Data);
-void NetgameSetup_Timed(NetgameSetupData& Data);
-void NetgameSetup_ScoreLimit(NetgameSetupData& Data);
-
-void NetgameSetup_Extract(
-	NetgameSetupData& Data,
-	player_info *player_information,
-	game_info *game_information,
-	short game_limit_type,
-	bool allow_all_levels,
-	bool ResumingGame
-	);
-
-#endif
 
 
 #ifdef HAVE_SDL_NET
