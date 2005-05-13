@@ -688,7 +688,6 @@
 				F52211750136A66601000001,
 				F52211760136A66601000001,
 				F52211770136A66601000001,
-				F52211780136A66601000001,
 				F52212EB0136A6FD01000001,
 				F52212EC0136A6FD01000001,
 				F52212ED0136A6FD01000001,
@@ -836,6 +835,7 @@
 				AE055F0E0815F73900BC6B7F,
 				AE055F100815F73B00BC6B7F,
 				AE055F1A0815F8DC00BC6B7F,
+				AEBEB89B08343CAF004E13D0,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4783,6 +4783,12 @@
 			target = AE2DEA130815E0A600817EBC;
 			targetProxy = AE61B1140815F29B001F20E1;
 		};
+		AEBEB89B08343CAF004E13D0 = {
+			fileRef = F522114C0136A66601000001;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 //AE0
 //AE1
 //AE2
@@ -5752,15 +5758,6 @@
 			refType = 2;
 			sourceTree = SOURCE_ROOT;
 		};
-		F522114D0136A66601000001 = {
-			fileEncoding = 30;
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.cpp.cpp;
-			name = csstrings_sdl.cpp;
-			path = ../Source_Files/CSeries/csstrings_sdl.cpp;
-			refType = 2;
-			sourceTree = SOURCE_ROOT;
-		};
 		F522114E0136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -5898,12 +5895,6 @@
 		};
 		F52211770136A66601000001 = {
 			fileRef = F522114B0136A66601000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		F52211780136A66601000001 = {
-			fileRef = F522114D0136A66601000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -6983,7 +6974,6 @@
 				F522114A0136A66601000001,
 				F522114B0136A66601000001,
 				F522114C0136A66601000001,
-				F522114D0136A66601000001,
 				F522114E0136A66601000001,
 				F522114F0136A66601000001,
 				F536742802014FC301A80001,
