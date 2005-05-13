@@ -2236,6 +2236,7 @@
 				AE2DEAD00815E0A600817EBC,
 				AE2DEAD10815E0A600817EBC,
 				AE2DEAD20815E0A600817EBC,
+				AEBF94A80834FD9500C0B18C,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4789,6 +4790,21 @@
 			settings = {
 			};
 		};
+		AEBF94A70834FD9500C0B18C = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = NibsUiHelpers.h;
+			path = ../Source_Files/CSeries/NibsUiHelpers.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AEBF94A80834FD9500C0B18C = {
+			fileRef = AEBF94A70834FD9500C0B18C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 //AE0
 //AE1
 //AE2
@@ -6990,6 +7006,7 @@
 		};
 		F522144B0136C0C401000001 = {
 			children = (
+				AEBF94A70834FD9500C0B18C,
 				3DAC27AF03DC9D5600000104,
 				F522111D0136A4DD01000001,
 				F522111E0136A4DD01000001,
@@ -7191,7 +7208,7 @@
 		};
 		F5281C0701F8CA2101E83A66 = {
 			isa = PBXFileReference;
-			lastKnownFileType = file;
+			lastKnownFileType = wrapper.framework;
 			name = SDL_image.framework;
 			path = /Library/Frameworks/SDL_image.framework;
 			refType = 0;
