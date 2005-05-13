@@ -3861,7 +3861,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_player_angle", L_Get_Player_Angle);
 	lua_register(state, "set_player_angle", L_Set_Player_Angle);
 	lua_register(state, "get_player_color", L_Get_Player_Color);
-	lua_register(state, "set_player_color", L_Get_Player_Color);
+	lua_register(state, "set_player_color", L_Set_Player_Color);
 	lua_register(state, "get_player_team", L_Get_Player_Team);
 	lua_register(state, "set_player_team", L_Set_Player_Team);
 	lua_register(state, "get_player_name", L_Get_Player_Name);
