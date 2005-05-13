@@ -2016,6 +2016,7 @@
 				EF2A6D1107D04417008DCEFF,
 				EF2A6D1207D04417008DCEFF,
 				EFA78AFE0808E88A00F0B285,
+				EFCB281A0833135B0044FDF2,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4955,6 +4956,19 @@
 			settings = {
 			};
 		};
+		EFCB28190833135B0044FDF2 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			name = NibsUiHelpers.h;
+			path = "/Users/woody/ProjectSources/a1-jan-2003/aleph/Source_Files/CSeries/NibsUiHelpers.h";
+			refType = 0;
+		};
+		EFCB281A0833135B0044FDF2 = {
+			fileRef = EFCB28190833135B0044FDF2;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		EFEF1AC404AF552D00C3A19D = {
 			fileEncoding = 4;
 			isa = PBXFileReference;
@@ -6422,6 +6436,7 @@
 				F522112C0136A4DD01000001,
 				F522112D0136A4DD01000001,
 				F522112E0136A4DD01000001,
+				EFCB28190833135B0044FDF2,
 			);
 			isa = PBXGroup;
 			name = Headers;
