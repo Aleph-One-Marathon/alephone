@@ -101,6 +101,10 @@ April 19, 2003 (Woody Zenfell):
 #include <vector>
 #include <algorithm>
 
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
+
 using std::map;
 using std::vector;
 using std::sort;

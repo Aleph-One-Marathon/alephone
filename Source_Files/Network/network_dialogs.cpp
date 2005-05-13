@@ -82,6 +82,11 @@ Apr 10, 2003 (Woody Zenfell):
 #include	<sstream>
 #include	"network_private.h" // actually just need "network_dialogs_private.h"
 #include	"SSLP_API.h"
+
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
+
 extern void NetRetargetJoinAttempts(const IPaddress* inAddress);
 
 

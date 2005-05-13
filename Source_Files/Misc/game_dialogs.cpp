@@ -45,6 +45,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "preferences.h"
 #include "screen.h"
 
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
+
 #ifdef env68k
 	#pragma segment dialogs
 #endif

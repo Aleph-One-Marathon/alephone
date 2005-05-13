@@ -35,6 +35,10 @@ Feb 6, 2002 (Br'fin (Jeremy Parsons)):
 #include "shell.h"
 #include "screen.h"
 
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
+
 #define strKEYCODES_TO_ASCII        133
 #define alrtDUPLICATE_KEY           136
 #define OPTION_KEYCODE             0x3a

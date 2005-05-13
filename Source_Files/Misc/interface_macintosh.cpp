@@ -93,6 +93,10 @@ Feb 13, 2003 (Woody Zenfell):
 #include "XML_LevelScript.h"
 #include "music.h"
 
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
+
 #ifdef env68k
 	#pragma segment macintosh_
 #endif

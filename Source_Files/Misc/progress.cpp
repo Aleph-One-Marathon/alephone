@@ -33,6 +33,10 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #include "progress.h"
 #include "shell.h"
 
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
+
 enum {
 	dialogPROGRESS= 10002,
 	iPROGRESS_BAR= 1,

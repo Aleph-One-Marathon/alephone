@@ -57,6 +57,10 @@ Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 #include "MacCheckbox.h"
 #include <stdio.h>
 
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
+
 enum
 {
 	OK_Item = 1,

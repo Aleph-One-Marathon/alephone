@@ -76,6 +76,8 @@ January 27, 2005 (James Willson):
 // LP change: outside handler for the default player name
 #include "PlayerName.h"
 
+#include "NibsUiHelpers.h"
+
 //#define TEST_NET_STATS_DIALOG  // for testing the dialog when i don't want to play a net game
 
 #ifdef TEST_NET_STATS_DIALOG
@@ -123,18 +125,9 @@ static ListHandle network_list_box= (ListHandle) NULL;
 extern TextSpec *_get_font_spec(short font_index);
 
 
-// ZZZ: moved to csdialogs
-//static short get_dialog_control_value(DialogPtr dialog, short which_control);
-
-// static void setup_network_list_box(WindowPtr window, Rect *frame, unsigned char *zone); maybe unused?
-// static void dispose_network_list_box(void);
 static pascal void update_player_list_item(DialogPtr dialog, short item_num);
 static void found_player(const prospective_joiner_info* player);
 static void lost_player(const prospective_joiner_info* player);
-// static void player_name_changed_callback(const SSLP_ServiceInstance* player); jkvw: unused
-
-// ZZZ: moved to network.cpp (network.h) so we can share
-//static void reassign_player_colors(short player_index, short num_players);
 
 #define NAME_BEVEL_SIZE    4
 static void draw_beveled_text_box(bool inset, Rect *box, short bevel_size, RGBColor *brightest_color, char *text,short flags, bool name_box);
@@ -720,24 +713,6 @@ static void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
 	}
 }
 
-// This will move to csdialogs_macintosh or something, if I can stomach the rebuild
-class AutoNibReference
-{
-public:
-	AutoNibReference(CFStringRef nibName)
-	{
-		OSStatus result = CreateNibReference(nibName, &m_nibReference);
-		// Best error-handling strategy evar . . . but when in Rome?
-		assert(result == noErr);
-	}
-
-	~AutoNibReference() { DisposeNibReference(m_nibReference); }
-
-	const IBNibRef nibReference() const { return m_nibReference; }
-
-private:
-	IBNibRef m_nibReference;
-};
 
 
 bool run_netgame_setup_dialog(
@@ -770,14 +745,6 @@ bool run_netgame_setup_dialog(
 	return sng_success;
 }
 
-/*************************************************************************************************
- *
- * Function: fill_in_game_setup_dialog
- * Purpose:  setup the majority of the game setup dialog.
- *
- *************************************************************************************************/
-// ZZZ: moved this function to shared network_dialogs.cpp
-
 
 
 static short get_game_duration_radio(
@@ -806,22 +773,6 @@ static short get_game_duration_radio(
 }
 
 
-/*************************************************************************************************
- *
- * Function: extract_setup_dialog_information
- * Purpose:  extract all the information that we can squeeze out of the game setup dialog
- *
- *************************************************************************************************/
-// ZZZ: moved this function to shared network_dialogs.cpp
-
-
-/*************************************************************************************************
- *
- * Function: set_dialog_game_options
- * Purpose:  setup the game dialog's radio buttons given the game option flags.
- *
- *************************************************************************************************/
-// ZZZ: moved this function to shared network_dialogs.cpp
 
 struct EntryPointMenuData
 {
@@ -866,20 +817,12 @@ void EntryPoints_FillIn(
 	BuildMenu(EntryPointCtrl, EntryPointMenuBuilder, &MenuData);
 }
 
-// ZZZ: new function
 void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
 {
 	modify_selection_control(inDialog, inItem, CONTROL_ACTIVE, inLevelNumber+1);
 }
 
 
-/*************************************************************************************************
- *
- * Function: get_dialog_control_value
- * Purpose:  given a dialog and an item number, extract the value of the control
- *
- *************************************************************************************************/
-// ZZZ: moved this function to csdialogs_macintosh.cpp, and made one like it for csdialogs_sdl.cpp
 
 // JTP: Routines initially copied from network_dialogs_sdl.cpp
 
@@ -947,83 +890,7 @@ player_name_changed_callback(const SSLP_ServiceInstance* player)
 }
 */
 
-/*************************************************************************************************
- *
- * Function: setup_network_list_box
- * Purpose:  allocates or clears the list that will list all the players in a zone.
- *
- *************************************************************************************************/
 
-/*static void setup_network_list_box(
-	WindowPtr window,
-	Rect *frame,
-	unsigned char *zone)
-{
-	Cell cell;
-	
-	if (!network_list_box)
-	{
-		Rect bounds;
-
-		// allocate the list
-
-		SetPt(&cell, 0, 0);
-		SetRect(&bounds, 0, 0, 1, 0);
-	
-#if LIST_BOX_AS_CONTROL
-		ControlRef control;
-		OSStatus err;
-		
-		GetDialogItemAsControl( GetDialogFromWindow(window), iNETWORK_LIST_BOX, &control );
-		err = GetListBoxListHandle( control, &network_list_box );
-#else
-		Rect adjusted_frame;
-		adjusted_frame= *frame;
-		adjusted_frame.right-= SCROLLBAR_WIDTH-1;
-		network_list_box= LNew(&adjusted_frame, &bounds, cell, 0, window, false, false, false, true);
-#endif
-		assert(network_list_box);
-		LSetDrawingMode(true, network_list_box);	
-		(*network_list_box)->selFlags= lOnlyOne;
-	}
-	else
-	{
-		// the list is already allocated; delete all rows and close the existing network name lookup
-		
-		LDelRow(0, 0, network_list_box);
-		NetLookupClose();
-	}
-	found_players.clear();
-
-	// spawn an asynchronous network name lookup
-	NetLookupOpen_SSLP(PLAYER_TYPE, get_network_version(), found_player_callback, lost_player_callback, player_name_changed_callback);
-
-	return;
-}*/
-
-/*************************************************************************************************
- *
- * Function: dispose_network_list_box
- * Purpose:  destroys the list that contains the list of players for a zone.
- *
- *************************************************************************************************/
-/*static void dispose_network_list_box(
-	void)
-{
-	assert(network_list_box);
-	
-	found_players.clear();
-	
-	NetLookupClose();
-
-#if !LIST_BOX_AS_CONTROL
-	// JTP: Only dispose of it if we created it
-	LDispose(network_list_box);
-#endif
-	network_list_box= (ListHandle) NULL;
-	
-	return;
-}*/
 
 /*************************************************************************************************
  *
@@ -1105,27 +972,6 @@ static void calculate_box_colors(
 	shadow_color->green = (highlight_color->green * 2) / 10;
 }
 
-/*************************************************************************************************
- *
- * Function: reassign_player_colors
- * Purpose:  This function used to reassign a player's color if it conflicted with another
- *           player's color. Now it reassigns everyone's colors. for the old function, see the
- *           obsoleted version (called check_player_info) at the end of this file.
- *
- *************************************************************************************************/
-/* Note that we now only force unique colors across teams. */
-
-// ZZZ: moved this function to network.cpp so it can be shared between Mac and SDL versions.
-
-
-
-/*************************************************************************************************
- *
- * Function: menu_index_to_level_entry
- * Purpose:
- *
- *************************************************************************************************/
-// ZZZ: exposed this function
 
 
 static MenuHandle get_popup_menu_handle(
@@ -1145,6 +991,8 @@ static MenuHandle get_popup_menu_handle(
 
 	return menu;
 }
+
+
 
 #ifdef TEST_NET_STATS_DIALOG
 static void fake_initialize_stat_data(void)
@@ -1273,12 +1121,6 @@ static void draw_player_box_with_team(
 
 /* -------------------------- Statics for PostGame Carnage Report (redone) (sorta) */
 
-// #include "network_games.h"
-
-/* This function is used elsewhere */
-//static void draw_beveled_text_box(bool inset, Rect *box, short bevel_size, 
-//	RGBColor *brightest_color, char *text, short flags, bool name_box);
-
 /* ------------ constants */
 #define KILL_BAR_HEIGHT   21
 #define DEATH_BAR_HEIGHT  14
@@ -1298,28 +1140,8 @@ static pascal Boolean display_net_stats_proc(DialogPtr dialog, EventRecord *even
 static void update_damage_item(WindowPtr dialog);
 static pascal void update_damage_item_proc(DialogPtr dialog, short item_num);
 static short create_graph_popup_menu(DialogPtr dialog, short item);
-/*
-static void draw_names(DialogPtr dialog, struct net_rank *ranks, short number_of_bars,
-	short which_player);
-static void draw_player_graph(DialogPtr dialog, short index);
-static void get_net_color(short index, RGBColor *color);
-static void draw_kill_bars(DialogPtr dialog, struct net_rank *ranks, short num_players, 
-	short suicide_index, bool do_totals, bool friendly_fire);
-static short calculate_max_kills(short num_players);
-*/
 static void draw_beveled_box(bool inset, Rect *box, short bevel_size, RGBColor *brightest_color);
-/*
-static void draw_totals_graph(DialogPtr dialog);
-static void draw_team_totals_graph(DialogPtr dialog);
-static void draw_total_scores_graph(DialogPtr dialog);
-static void draw_team_total_scores_graph(DialogPtr dialog);
-*/
-
 static void calculate_maximum_bar(NetgameOutcomeData &Data, Rect *kill_bar_rect);
-
-/*
-static void draw_score_bars(DialogPtr dialog, struct net_rank *ranks, short bar_count);
-*/
 static bool will_new_mode_reorder_dialog(short new_mode, short previous_mode);
 
 /* ---------------- code */

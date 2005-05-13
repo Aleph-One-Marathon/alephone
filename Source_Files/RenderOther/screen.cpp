@@ -227,6 +227,10 @@ Apr 22, 2003 (Woody Zenfell):
 #include <CFBundle.h>
 #endif
 
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
+
 // ZZZ: egads, this stuff just keeps getting hairier
 extern bool OGL_HUDActive;
 

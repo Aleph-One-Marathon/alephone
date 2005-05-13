@@ -57,6 +57,10 @@ Jun 26, 2002 (Loren Petrich):
 #include <math.h>
 #include <stdio.h>
 
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
+
 const float FLOAT_WORLD_ONE = float(WORLD_ONE);
 
 #ifdef USES_NIBS

@@ -519,6 +519,7 @@ GetListBoxListHandle( ControlHandle control, ListHandle* list )
 #include "csalerts.h"
 #include <stdio.h>
 #include <string.h>
+#include "NibsUiHelpers.h"
 
 
 AutoNibWindow::AutoNibWindow(IBNibRef Nib, CFStringRef Name)

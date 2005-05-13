@@ -41,12 +41,6 @@ Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 
 #if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
-/*
-#else
-#include <Dialogs.h>
-#include <Palettes.h>
-#include <Devices.h>
-*/
 #endif
 
 #include "csmacros.h"
@@ -56,6 +50,10 @@ Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 #include "csstrings.h"
 #include "gdspec.h"
 #include "shell.h"
+
+#ifdef USES_NIBS
+	#include "NibsUiHelpers.h"
+#endif
 
 GDHandle BestDevice(
 	GDSpecPtr spec)
