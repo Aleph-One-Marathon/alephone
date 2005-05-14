@@ -6,7 +6,7 @@ libcseries_a_SOURCES = byte_swapping.h csalerts.h csdialogs.h cscluts.h \
   cstypes.h mytm.h sdl_cseries.h snprintf.h \
   \
   byte_swapping.cpp csalerts_sdl.cpp cscluts_sdl.cpp csdialogs_sdl.cpp \
-  csmisc_sdl.cpp csstrings_sdl.cpp mytm_sdl.cpp snprintf.cpp
+  csmisc_sdl.cpp csstrings.cpp mytm_sdl.cpp snprintf.cpp
 
 EXTRA_libcseries_a_SOURCES = csfiles_beos.cpp
 
