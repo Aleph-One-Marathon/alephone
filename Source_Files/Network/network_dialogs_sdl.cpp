@@ -587,7 +587,8 @@ respond_to_map_file_change(w_env_select* inWidget) {
 }
 
 static void
-respond_to_script_twiddle (w_env_select* inWidget) {
+//respond_to_script_twiddle (w_env_select* inWidget) {
+respond_to_script_twiddle(w_select* inWidget) {
 	SNG_use_script_hit (inWidget->get_owning_dialog());
 }
 
