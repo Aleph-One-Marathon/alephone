@@ -1076,7 +1076,7 @@ void SNG_game_type_hit (DialogPTR dialog)
 void SNG_use_script_hit (DialogPTR dialog)
 {
 	if (QQ_get_boolean_control_value(dialog, iUSE_SCRIPT)) {
-		if (!sNetscriptFile.ReadDialog (_typecode_unknown, "Script Select")) {
+		if (!sNetscriptFile.ReadDialog (_typecode_netscript, "Script Select")) {
 			QQ_set_boolean_control_value(dialog, iUSE_SCRIPT, false);
 		}
 	}
