@@ -426,11 +426,8 @@ void handle_preferences(
 	SetControl32BitValue(PLYR_Team,player_preferences->team+1);
 	
 	// Input
-	
-	// Always keyboard and regular mouse, because Carbon does not support the InputSprocket
-	// jkvw: Commenting this out, so that users can enforce keyboard-only by manually
-	//       manually editing preferences, without A1 clobbering it.
-	// input_preferences->input_device = _mouse_yaw_pitch;
+	ControlRef INPT_Use_Mouse = GetCtrlFromWindow(Window(),Sig_Input,iMOUSE_CONTROL);
+	SetControl32BitValue(INPT_Use_Mouse, input_preferences->input_device);
 	
 	ControlRef INPT_Run_Walk = GetCtrlFromWindow(Window(),Sig_Input,iINTERCHANGE_RUN_WALK);
 	SetControl32BitValue(INPT_Run_Walk, !!TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_run_walk));
@@ -564,6 +561,8 @@ void handle_preferences(
 		player_preferences->team = GetControl32BitValue(PLYR_Team) - 1;
 		
 		// Input:
+		
+		input_preferences->input_device = GetControl32BitValue(INPT_Use_Mouse);
 	
 		SET_FLAG(input_preferences->modifiers, _inputmod_interchange_run_walk, GetControl32BitValue(INPT_Run_Walk));
 
