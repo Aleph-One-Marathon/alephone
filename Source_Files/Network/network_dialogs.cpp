@@ -1113,7 +1113,8 @@ void
 update_netscript_file_display(DialogPTR dialog)
 {
 	bool shouldUseNetscript = QQ_get_boolean_control_value(dialog, iUSE_SCRIPT);
-	const unsigned char* theStringToUse = NULL;
+	//	const unsigned char* theStringToUse = NULL;
+	std::string theStringToUse;
 	
 	if(shouldUseNetscript)
 	{
@@ -1122,21 +1123,17 @@ update_netscript_file_display(DialogPTR dialog)
 			char name [256];
 
 			sNetscriptFile.GetName (name);
-			copy_string_to_pstring (std::string(name), ptemporary);
-
-			theStringToUse = ptemporary;
+			theStringToUse = name;
 		}
 		else
 		{
-			theStringToUse = "\p(invalid selection)";
+		  theStringToUse = "(invalid selection)";
 		}
 	}
 	else
-		theStringToUse = "\p";
+	  theStringToUse = "";
 
-	assert(theStringToUse != NULL);
-
-	QQ_copy_string_to_text_control (dialog, iTEXT_SCRIPT_NAME, pstring_to_string (theStringToUse));
+	QQ_copy_string_to_text_control (dialog, iTEXT_SCRIPT_NAME, theStringToUse);
 }
 
 void
