@@ -85,7 +85,6 @@ using namespace std;
 #include "item_definitions.h"
 #include "monster_definitions.h"
 
-
 bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
@@ -1874,6 +1873,34 @@ static int L_Get_Player_Position(lua_State *L)
 	lua_pushnumber(L, (double)player->location.y/WORLD_ONE);
 	lua_pushnumber(L, (double)player->location.z/WORLD_ONE);
 	return 3;
+}
+
+static int L_Set_Player_Position(lua_State *L)
+{
+	if (!lua_isnumber(L,1)||!lua_isnumber(L,2)||!lua_isnumber(L,3)||!lua_isnumber(L,4)||!lua_isnumber(L,5))
+	{
+		lua_pushstring(L, "set_player_position: incorrect argument type");
+		lua_error(L);
+	}
+	
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	{
+		lua_pushstring(L, "set_player_position: invalid player index");
+		lua_error(L);
+	}
+	player_data *player = get_player_data(player_index);
+	struct monster_data *monster= get_monster_data(player->monster_index);
+	struct object_data *object= get_object_data(monster->object_index);
+	world_point3d loc;
+	loc.x = static_cast<int>(lua_tonumber(L,2) * WORLD_ONE);
+	loc.y = static_cast<int>(lua_tonumber(L,3) * WORLD_ONE);
+	loc.z = static_cast<int>(lua_tonumber(L,4) * WORLD_ONE);
+	translate_map_object(player->object_index, &loc,static_cast<int>(lua_tonumber(L,5)));
+	player->variables.position.x= WORLD_TO_FIXED(object->location.x);
+	player->variables.position.y= WORLD_TO_FIXED(object->location.y);
+	player->variables.position.z= WORLD_TO_FIXED(object->location.z);
+	return 0;
 }
 
 static int L_Get_Player_Angle(lua_State *L)
@@ -3858,6 +3885,7 @@ void RegisterLuaFunctions()
 	//lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
 	lua_register(state, "get_player_position", L_Get_Player_Position);
 	lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
+	lua_register(state, "set_player_position", L_Set_Player_Position);
 	lua_register(state, "get_player_angle", L_Get_Player_Angle);
 	lua_register(state, "set_player_angle", L_Set_Player_Angle);
 	lua_register(state, "get_player_color", L_Get_Player_Color);

@@ -27,6 +27,8 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 	Added utility routine GetListBoxListHandle for Carbon
 */
 
+#include <string> /* Prefix header doesn't do this? */
+
 #ifndef _CSERIES_DIALOGS_
 #define _CSERIES_DIALOGS_
 

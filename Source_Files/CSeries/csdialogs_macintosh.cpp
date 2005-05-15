@@ -1173,7 +1173,7 @@ const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item)
 	ControlRef control = get_control_from_window (dlg, item);
 
 	if (!control)
-		return string();
+		return std::string();
 	
 	ControlKind kind;
 	GetControlKind (control, &kind);
@@ -1190,7 +1190,7 @@ const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item)
 		GetControlData(control, kControlLabelPart, kControlStaticTextTextTag, BufferLen, Buffer, &ActualLen);
 	}
 	
-	return string(Buffer, ActualLen);
+	return std::string(Buffer, ActualLen);
 }
 
 void QQ_copy_string_to_text_control (DialogPTR dlg, int item, const std::string &s)

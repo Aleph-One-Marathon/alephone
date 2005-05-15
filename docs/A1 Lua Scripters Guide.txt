@@ -266,6 +266,11 @@ get_player_position (player)
 Returns three values - the x, y, and z coordinates of player in W.U.
 
 
+set_player_position(player, x, y, z, polygon)
+
+Sets the player's coordinates to the point x,y,z in polygon. (BE CAREFUL with this function!)
+
+
 get_player_polygon (player)
 
 Returns the polygon player is standing on.
