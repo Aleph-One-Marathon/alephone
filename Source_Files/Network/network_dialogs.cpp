@@ -1157,7 +1157,7 @@ void menu_index_to_level_entry(
 	short  i, map_index;
 
 	map_index= 0;
-	for (i= 0; i<menu_index; i++)
+	for (i= 0; i<=menu_index; i++)
 	{
 		get_indexed_entry_point(entry, &map_index, entry_flags);
 	}
