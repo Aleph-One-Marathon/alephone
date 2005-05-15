@@ -169,6 +169,11 @@
 		};
 		29B97317FDCFA39411CA2CEA = {
 			children = (
+				AEF8C0A3083782C60063B737,
+				AEF8C0A4083782C60063B737,
+				AEF8C0A5083782C60063B737,
+				AEF8C0A6083782C60063B737,
+				AEF8C0A7083782C60063B737,
 				F5F50D6C0215DACD01144D54,
 				F536740402014DC201A80001,
 				F536740602014E1C01A80001,
@@ -187,7 +192,6 @@
 				F5CFAD430200FA6B01D80110,
 				F5D37B6F022D35A901A80001,
 				3D3A410C04DF92C400000107,
-				AE5ED70E083196D90057D8B3,
 			);
 			isa = PBXGroup;
 			name = Resources;
@@ -3400,7 +3404,11 @@
 				AE2DEADE0815E0A600817EBC,
 				AE2DEADF0815E0A600817EBC,
 				AE2DEB940815EE3100817EBC,
-				AE5ED70F083196D90057D8B3,
+				AEF8C0A8083782C60063B737,
+				AEF8C0A9083782C60063B737,
+				AEF8C0AA083782C60063B737,
+				AEF8C0AB083782C60063B737,
+				AEF8C0AC083782C60063B737,
 			);
 			isa = PBXResourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4705,20 +4713,6 @@
 			settings = {
 			};
 		};
-		AE5ED70E083196D90057D8B3 = {
-			isa = PBXFileReference;
-			lastKnownFileType = wrapper.nib;
-			name = Netgame_Setup.nib;
-			path = ../Resources/Netgame_Setup.nib;
-			refType = 2;
-			sourceTree = SOURCE_ROOT;
-		};
-		AE5ED70F083196D90057D8B3 = {
-			fileRef = AE5ED70E083196D90057D8B3;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
 		AE61B10D0815F263001F20E1 = {
 			buildPhases = (
 				AE61B10F0815F263001F20E1,
@@ -4801,6 +4795,76 @@
 		};
 		AEBF94A80834FD9500C0B18C = {
 			fileRef = AEBF94A70834FD9500C0B18C;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AEF8C0A3083782C60063B737 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.nib;
+			name = "Gather Network Game.nib";
+			path = "../Resources/Gather Network Game.nib";
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AEF8C0A4083782C60063B737 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.nib;
+			name = "Join Network Game.nib";
+			path = "../Resources/Join Network Game.nib";
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AEF8C0A5083782C60063B737 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.nib;
+			name = "Metaserver Client.nib";
+			path = "../Resources/Metaserver Client.nib";
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AEF8C0A6083782C60063B737 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.nib;
+			name = "Postgame Carnage Report.nib";
+			path = "../Resources/Postgame Carnage Report.nib";
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AEF8C0A7083782C60063B737 = {
+			isa = PBXFileReference;
+			lastKnownFileType = wrapper.nib;
+			name = "Setup Network Game.nib";
+			path = "../Resources/Setup Network Game.nib";
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AEF8C0A8083782C60063B737 = {
+			fileRef = AEF8C0A3083782C60063B737;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AEF8C0A9083782C60063B737 = {
+			fileRef = AEF8C0A4083782C60063B737;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AEF8C0AA083782C60063B737 = {
+			fileRef = AEF8C0A5083782C60063B737;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AEF8C0AB083782C60063B737 = {
+			fileRef = AEF8C0A6083782C60063B737;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AEF8C0AC083782C60063B737 = {
+			fileRef = AEF8C0A7083782C60063B737;
 			isa = PBXBuildFile;
 			settings = {
 			};
