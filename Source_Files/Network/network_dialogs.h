@@ -48,11 +48,7 @@ Mar 1, 2002 (Woody Zenfell):
 #include <map>
 #include <set>
 
-const CFStringRef Window_Network_Setup = CFSTR("Network_Setup");
-const CFStringRef Window_Network_Gather = CFSTR("Network_Gather");
-const CFStringRef Window_Network_Join = CFSTR("Network_Join");
 const CFStringRef Window_Network_Distribute = CFSTR("Network_Distribute");
-const CFStringRef Window_Network_Outcome = CFSTR("Network_Outcome");
 
 #endif
 

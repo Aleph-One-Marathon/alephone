@@ -446,10 +446,9 @@ bool run_network_gather_dialog(MetaserverClient*)
 	bool successful= false;
 
 	show_cursor(); // JTP: Hidden one way or another
-	
-	// Now for the dialog box
-	
-	AutoNibWindow Window(GUI_Nib, Window_Network_Gather);
+
+	AutoNibReference gatherDialogNib(CFSTR("Gather Network Game"));
+	AutoNibWindow Window(gatherDialogNib.nibReference(), CFSTR("Gather Network Game"));
 	
 	NetgameGatherData Data;
 	GatherDataPtr = &Data;
@@ -616,9 +615,8 @@ int run_network_join_dialog()
 
 	netgame_join_result = kNetworkJoinFailedUnjoined;
 
-	// Now for the dialog box
-	
-	AutoNibWindow Window(GUI_Nib, Window_Network_Join);
+	AutoNibReference joinDialogNib(CFSTR("Join Network Game"));	
+	AutoNibWindow Window(joinDialogNib.nibReference(), CFSTR("Join Network Game"));
 	
 	join_dialog_initialise(Window ());
 	
@@ -723,8 +721,8 @@ bool run_netgame_setup_dialog(
 {
 	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
 
-	AutoNibReference setupNetworkGameNib(CFSTR("Netgame_Setup"));
-	AutoNibWindow Window(setupNetworkGameNib.nibReference(), Window_Network_Setup);
+	AutoNibReference setupNetworkGameNib(CFSTR("Setup Network Game"));
+	AutoNibWindow Window(setupNetworkGameNib.nibReference(), CFSTR("Setup Network Game"));
 		
 	AutoKeyboardWatcher Watcher(Setup_PlayerNameWatcher);
 	
@@ -1280,8 +1278,9 @@ void display_net_game_stats()
 {
 	// eat all stray keypresses
 	FlushEvents(everyEvent, 0);
-	
-	AutoNibWindow Window(GUI_Nib, Window_Network_Outcome);
+
+	AutoNibReference postgameCarnageReportDialogNib(CFSTR("Postgame Carnage Report"));
+	AutoNibWindow Window(postgameCarnageReportDialogNib.nibReference(), CFSTR("Postgame Carnage Report"));
 	
 	NetgameOutcomeData Data;
 	
