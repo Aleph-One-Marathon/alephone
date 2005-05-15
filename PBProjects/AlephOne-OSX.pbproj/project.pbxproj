@@ -8,14 +8,16 @@
 		00F9DA4F00AC72F57F000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			path = SDLMain.h;
-			refType = 2;
+			name = SDLMain.h;
+			path = ../PBProjects/SDLMain.h;
+			refType = 4;
 		};
 		00F9DA5100AC730E7F000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			path = SDLMain.m;
-			refType = 2;
+			name = SDLMain.m;
+			path = ../PBProjects/SDLMain.m;
+			refType = 4;
 		};
 		00F9DA5200AC730E7F000001 = {
 			fileRef = 00F9DA5100AC730E7F000001;
@@ -174,8 +176,8 @@
 			);
 			isa = PBXGroup;
 			name = Resources;
-			path = "";
-			refType = 4;
+			path = ../Resources;
+			refType = 2;
 		};
 		29B97323FDCFA39411CA2CEA = {
 			children = (
@@ -882,9 +884,8 @@
 		};
 		3D3A410C04DF92C400000107 = {
 			isa = PBXFileReference;
-			name = GUI.nib;
-			path = ../Resources/GUI.nib;
-			refType = 2;
+			path = GUI.nib;
+			refType = 4;
 		};
 		3D5482BA04D73ED300000107 = {
 			buildRules = (
@@ -934,23 +935,20 @@
 		3DAC27A503DC9D1C00000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = DefaultStringSets.cpp;
-			path = ../Source_Files/Misc/DefaultStringSets.cpp;
-			refType = 2;
+			path = DefaultStringSets.cpp;
+			refType = 4;
 		};
 		3DAC27A603DC9D1C00000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = Logging.cpp;
-			path = ../Source_Files/Misc/Logging.cpp;
-			refType = 2;
+			path = Logging.cpp;
+			refType = 4;
 		};
 		3DAC27A703DC9D1C00000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = Logging.h;
-			path = ../Source_Files/Misc/Logging.h;
-			refType = 2;
+			path = Logging.h;
+			refType = 4;
 		};
 		3DAC27A803DC9D1C00000104 = {
 			fileRef = 3DAC27A503DC9D1C00000104;
@@ -991,30 +989,26 @@
 		3DAC27AE03DC9D5600000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = snprintf.cpp;
-			path = ../Source_Files/CSeries/snprintf.cpp;
-			refType = 2;
+			path = snprintf.cpp;
+			refType = 4;
 		};
 		3DAC27AF03DC9D5600000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = snprintf.h;
-			path = ../Source_Files/CSeries/snprintf.h;
-			refType = 2;
+			path = snprintf.h;
+			refType = 4;
 		};
 		3DF2716B03EDBAA800000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = CarbonSndPlayDB.c;
-			path = ../Source_Files/Network/CarbonSndPlayDB.c;
-			refType = 2;
+			path = CarbonSndPlayDB.c;
+			refType = 4;
 		};
 		3DF2716C03EDBAA800000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = CarbonSndPlayDB.h;
-			path = ../Source_Files/Network/CarbonSndPlayDB.h;
-			refType = 2;
+			path = CarbonSndPlayDB.h;
+			refType = 4;
 		};
 		3DF2716D03EDBAA800000104 = {
 			fileRef = 3DF2716B03EDBAA800000104;
@@ -1031,23 +1025,20 @@
 		3DF2716F03EDBBF100000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_microphone_shared.cpp;
-			path = ../Source_Files/Network/network_microphone_shared.cpp;
-			refType = 2;
+			path = network_microphone_shared.cpp;
+			refType = 4;
 		};
 		3DF2717003EDBBF100000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_microphone_shared.h;
-			path = ../Source_Files/Network/network_microphone_shared.h;
-			refType = 2;
+			path = network_microphone_shared.h;
+			refType = 4;
 		};
 		3DF2717103EDBBF100000104 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_speaker_shared.cpp;
-			path = ../Source_Files/Network/network_speaker_shared.cpp;
-			refType = 2;
+			path = network_speaker_shared.cpp;
+			refType = 4;
 		};
 		3DF2717203EDBBF100000104 = {
 			fileRef = 3DF2716F03EDBBF100000104;
@@ -1250,8 +1241,7 @@
 				EF2A6C1507D03906008DCEFF,
 			);
 			isa = PBXGroup;
-			name = Metaserver;
-			path = ../Source_Files/Network/Metaserver;
+			path = Metaserver;
 			refType = 4;
 		};
 		EF2A6C1107D03906008DCEFF = {
@@ -1382,8 +1372,7 @@
 				EF2A6C3807D03A73008DCEFF,
 			);
 			isa = PBXGroup;
-			name = TCPMess;
-			path = ../Source_Files/TCPMess;
+			path = TCPMess;
 			refType = 4;
 		};
 		EF2A6C2F07D03A73008DCEFF = {
@@ -4423,8 +4412,7 @@
 		EF2A6DCC07D04AA9008DCEFF = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_dialogs_mac_nibs_sdl.cpp;
-			path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp;
+			path = network_dialogs_mac_nibs_sdl.cpp;
 			refType = 4;
 		};
 		EF2A6DCD07D04AA9008DCEFF = {
@@ -4459,64 +4447,55 @@
 		EF2EF5C804819BD700A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_star_hub.cpp;
-			path = ../Source_Files/Network/network_star_hub.cpp;
+			path = network_star_hub.cpp;
 			refType = 4;
 		};
 		EF2EF5C904819BD700A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_star_spoke.cpp;
-			path = ../Source_Files/Network/network_star_spoke.cpp;
+			path = network_star_spoke.cpp;
 			refType = 4;
 		};
 		EF2EF5CA04819BD700A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_star.h;
-			path = ../Source_Files/Network/network_star.h;
+			path = network_star.h;
 			refType = 4;
 		};
 		EF2EF5CB04819BD700A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = NetworkGameProtocol.cpp;
-			path = ../Source_Files/Network/NetworkGameProtocol.cpp;
+			path = NetworkGameProtocol.cpp;
 			refType = 4;
 		};
 		EF2EF5CC04819BD700A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = NetworkGameProtocol.h;
-			path = ../Source_Files/Network/NetworkGameProtocol.h;
+			path = NetworkGameProtocol.h;
 			refType = 4;
 		};
 		EF2EF5CD04819BD700A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = RingGameProtocol.cpp;
-			path = ../Source_Files/Network/RingGameProtocol.cpp;
+			path = RingGameProtocol.cpp;
 			refType = 4;
 		};
 		EF2EF5CE04819BD700A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = RingGameProtocol.h;
-			path = ../Source_Files/Network/RingGameProtocol.h;
+			path = RingGameProtocol.h;
 			refType = 4;
 		};
 		EF2EF5CF04819BD700A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = StarGameProtocol.cpp;
-			path = ../Source_Files/Network/StarGameProtocol.cpp;
+			path = StarGameProtocol.cpp;
 			refType = 4;
 		};
 		EF2EF5D004819BD700A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = StarGameProtocol.h;
-			path = ../Source_Files/Network/StarGameProtocol.h;
+			path = StarGameProtocol.h;
 			refType = 4;
 		};
 		EF2EF5D104819BD700A8000D = {
@@ -4684,8 +4663,7 @@
 		EF2EF5EC04819F8400A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = WindowedNthElementFinder.h;
-			path = ../Source_Files/Misc/WindowedNthElementFinder.h;
+			path = WindowedNthElementFinder.h;
 			refType = 4;
 		};
 		EF2EF5ED04819F8400A8000D = {
@@ -4703,15 +4681,13 @@
 		EF2EF5EF0481A07000A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = preferences_private.h;
-			path = ../Source_Files/Misc/preferences_private.h;
+			path = preferences_private.h;
 			refType = 4;
 		};
 		EF2EF5F00481A07000A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = thread_priority_sdl.h;
-			path = ../Source_Files/Misc/thread_priority_sdl.h;
+			path = thread_priority_sdl.h;
 			refType = 4;
 		};
 		EF2EF5F10481A07000A8000D = {
@@ -4758,15 +4734,13 @@
 		EFA78AFB0808E88A00F0B285 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_messages.cpp;
-			path = ../Source_Files/Network/network_messages.cpp;
+			path = network_messages.cpp;
 			refType = 4;
 		};
 		EFA78AFC0808E88A00F0B285 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_messages.h;
-			path = ../Source_Files/Network/network_messages.h;
+			path = network_messages.h;
 			refType = 4;
 		};
 		EFA78AFD0808E88A00F0B285 = {
@@ -4808,50 +4782,43 @@
 		EFBAF0130485BEA500A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_audio_shared.h;
-			path = ../Source_Files/Network/network_audio_shared.h;
+			path = network_audio_shared.h;
 			refType = 4;
 		};
 		EFBAF0140485BEA500A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_data_formats.h;
-			path = ../Source_Files/Network/network_data_formats.h;
+			path = network_data_formats.h;
 			refType = 4;
 		};
 		EFBAF0150485BEA500A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_speex.cpp;
-			path = ../Source_Files/Network/network_speex.cpp;
+			path = network_speex.cpp;
 			refType = 4;
 		};
 		EFBAF0160485BEA500A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_speex.h;
-			path = ../Source_Files/Network/network_speex.h;
+			path = network_speex.h;
 			refType = 4;
 		};
 		EFBAF0170485BEA500A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = SDL_netx.h;
-			path = ../Source_Files/Network/SDL_netx.h;
+			path = SDL_netx.h;
 			refType = 4;
 		};
 		EFBAF0180485BEA500A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = SSLP_API.h;
-			path = ../Source_Files/Network/SSLP_API.h;
+			path = SSLP_API.h;
 			refType = 4;
 		};
 		EFBAF0190485BEA500A8000D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = SSLP_Protocol.h;
-			path = ../Source_Files/Network/SSLP_Protocol.h;
+			path = SSLP_Protocol.h;
 			refType = 4;
 		};
 		EFBAF01A0485BEA500A8000D = {
@@ -4940,8 +4907,7 @@
 		};
 		EFCB2816083055D10044FDF2 = {
 			isa = PBXFileReference;
-			name = Netgame_Setup.nib;
-			path = ../Resources/Netgame_Setup.nib;
+			path = Netgame_Setup.nib;
 			refType = 4;
 		};
 		EFCB2817083055D10044FDF2 = {
@@ -4959,9 +4925,8 @@
 		EFCB28190833135B0044FDF2 = {
 			fileEncoding = 4;
 			isa = PBXFileReference;
-			name = NibsUiHelpers.h;
-			path = "/Users/woody/ProjectSources/a1-jan-2003/aleph/Source_Files/CSeries/NibsUiHelpers.h";
-			refType = 0;
+			path = NibsUiHelpers.h;
+			refType = 4;
 		};
 		EFCB281A0833135B0044FDF2 = {
 			fileRef = EFCB28190833135B0044FDF2;
@@ -4972,15 +4937,13 @@
 		EFEF1AC404AF552D00C3A19D = {
 			fileEncoding = 4;
 			isa = PBXFileReference;
-			name = CircularByteBuffer.h;
-			path = ../Source_Files/Misc/CircularByteBuffer.h;
+			path = CircularByteBuffer.h;
 			refType = 4;
 		};
 		EFEF1AC504AF552D00C3A19D = {
 			fileEncoding = 4;
 			isa = PBXFileReference;
-			name = CircularByteBuffer.cpp;
-			path = ../Source_Files/Misc/CircularByteBuffer.cpp;
+			path = CircularByteBuffer.cpp;
 			refType = 4;
 		};
 		EFEF1AC604AF552D00C3A19D = {
@@ -5068,8 +5031,9 @@
 		F50D2BD502F86DDA01000105 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			path = precompiled_headers.h;
-			refType = 2;
+			name = precompiled_headers.h;
+			path = ../../PBProjects/precompiled_headers.h;
+			refType = 4;
 			usesTabs = 1;
 		};
 		F50D2BD602F86DDA01000105 = {
@@ -5093,9 +5057,8 @@
 				F51B058C047AC6DA01C5C930,
 			);
 			isa = PBXGroup;
-			name = Lua;
-			path = ../Source_Files/Lua;
-			refType = 2;
+			path = Lua;
+			refType = 4;
 		};
 		F51B058B047AC6DA01C5C930 = {
 			fileEncoding = 30;
@@ -5144,303 +5107,261 @@
 				F52213A10136AC1601000001,
 			);
 			isa = PBXGroup;
-			name = Pfhortran;
-			path = "";
-			refType = 2;
+			path = Pfhortran;
+			refType = 4;
 		};
 		F522111D0136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = byte_swapping.h;
-			path = ../Source_Files/CSeries/byte_swapping.h;
-			refType = 2;
+			path = byte_swapping.h;
+			refType = 4;
 		};
 		F522111E0136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csalerts.h;
-			path = ../Source_Files/CSeries/csalerts.h;
-			refType = 2;
+			path = csalerts.h;
+			refType = 4;
 		};
 		F522111F0136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = cscluts.h;
-			path = ../Source_Files/CSeries/cscluts.h;
-			refType = 2;
+			path = cscluts.h;
+			refType = 4;
 		};
 		F52211200136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csdialogs.h;
-			path = ../Source_Files/CSeries/csdialogs.h;
-			refType = 2;
+			path = csdialogs.h;
+			refType = 4;
 		};
 		F52211210136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = cseries.h;
-			path = ../Source_Files/CSeries/cseries.h;
-			refType = 2;
+			path = cseries.h;
+			refType = 4;
 		};
 		F52211220136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csfiles.h;
-			path = ../Source_Files/CSeries/csfiles.h;
-			refType = 2;
+			path = csfiles.h;
+			refType = 4;
 		};
 		F52211230136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csfonts.h;
-			path = ../Source_Files/CSeries/csfonts.h;
-			refType = 2;
+			path = csfonts.h;
+			refType = 4;
 		};
 		F52211240136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = cskeys.h;
-			path = ../Source_Files/CSeries/cskeys.h;
-			refType = 2;
+			path = cskeys.h;
+			refType = 4;
 		};
 		F52211250136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csmacros.h;
-			path = ../Source_Files/CSeries/csmacros.h;
-			refType = 2;
+			path = csmacros.h;
+			refType = 4;
 		};
 		F52211260136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csmisc.h;
-			path = ../Source_Files/CSeries/csmisc.h;
-			refType = 2;
+			path = csmisc.h;
+			refType = 4;
 		};
 		F52211270136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = cspixels.h;
-			path = ../Source_Files/CSeries/cspixels.h;
-			refType = 2;
+			path = cspixels.h;
+			refType = 4;
 		};
 		F52211280136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csstrings.h;
-			path = ../Source_Files/CSeries/csstrings.h;
-			refType = 2;
+			path = csstrings.h;
+			refType = 4;
 		};
 		F52211290136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = cstypes.h;
-			path = ../Source_Files/CSeries/cstypes.h;
-			refType = 2;
+			path = cstypes.h;
+			refType = 4;
 		};
 		F522112A0136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = gdspec.h;
-			path = ../Source_Files/CSeries/gdspec.h;
-			refType = 2;
+			path = gdspec.h;
+			refType = 4;
 		};
 		F522112B0136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = macintosh_cseries.h;
-			path = ../Source_Files/CSeries/macintosh_cseries.h;
-			refType = 2;
+			path = macintosh_cseries.h;
+			refType = 4;
 		};
 		F522112C0136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = my32bqd.h;
-			path = ../Source_Files/CSeries/my32bqd.h;
-			refType = 2;
+			path = my32bqd.h;
+			refType = 4;
 		};
 		F522112D0136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = mytm.h;
-			path = ../Source_Files/CSeries/mytm.h;
-			refType = 2;
+			path = mytm.h;
+			refType = 4;
 		};
 		F522112E0136A4DD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = sdl_cseries.h;
-			path = ../Source_Files/CSeries/sdl_cseries.h;
-			refType = 2;
+			path = sdl_cseries.h;
+			refType = 4;
 		};
 		F52211410136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = byte_swapping.cpp;
-			path = ../Source_Files/CSeries/byte_swapping.cpp;
-			refType = 2;
+			path = byte_swapping.cpp;
+			refType = 4;
 		};
 		F52211420136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csalerts.cpp;
-			path = ../Source_Files/CSeries/csalerts.cpp;
-			refType = 2;
+			path = csalerts.cpp;
+			refType = 4;
 		};
 		F52211430136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csalerts_sdl.cpp;
-			path = ../Source_Files/CSeries/csalerts_sdl.cpp;
-			refType = 2;
+			path = csalerts_sdl.cpp;
+			refType = 4;
 		};
 		F52211440136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = cscluts.cpp;
-			path = ../Source_Files/CSeries/cscluts.cpp;
-			refType = 2;
+			path = cscluts.cpp;
+			refType = 4;
 		};
 		F52211450136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = cscluts_sdl.cpp;
-			path = ../Source_Files/CSeries/cscluts_sdl.cpp;
-			refType = 2;
+			path = cscluts_sdl.cpp;
+			refType = 4;
 		};
 		F52211470136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csfiles_beos.cpp;
-			path = ../Source_Files/CSeries/csfiles_beos.cpp;
-			refType = 2;
+			path = csfiles_beos.cpp;
+			refType = 4;
 		};
 		F52211480136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csfiles.cpp;
-			path = ../Source_Files/CSeries/csfiles.cpp;
-			refType = 2;
+			path = csfiles.cpp;
+			refType = 4;
 		};
 		F52211490136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csfonts.cpp;
-			path = ../Source_Files/CSeries/csfonts.cpp;
-			refType = 2;
+			path = csfonts.cpp;
+			refType = 4;
 		};
 		F522114A0136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csmisc.cpp;
-			path = ../Source_Files/CSeries/csmisc.cpp;
-			refType = 2;
+			path = csmisc.cpp;
+			refType = 4;
 		};
 		F522114B0136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csmisc_sdl.cpp;
-			path = ../Source_Files/CSeries/csmisc_sdl.cpp;
-			refType = 2;
+			path = csmisc_sdl.cpp;
+			refType = 4;
 		};
 		F522114C0136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csstrings.cpp;
-			path = ../Source_Files/CSeries/csstrings.cpp;
-			refType = 2;
+			path = csstrings.cpp;
+			refType = 4;
 		};
 		F522114E0136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = gdspec.cpp;
-			path = ../Source_Files/CSeries/gdspec.cpp;
-			refType = 2;
+			path = gdspec.cpp;
+			refType = 4;
 		};
 		F522114F0136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = my32bqd.cpp;
-			path = ../Source_Files/CSeries/my32bqd.cpp;
-			refType = 2;
+			path = my32bqd.cpp;
+			refType = 4;
 		};
 		F52211520136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = asciitab.h;
-			path = ../Source_Files/Expat/asciitab.h;
-			refType = 2;
+			path = asciitab.h;
+			refType = 4;
 		};
 		F52211530136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = hashtable.h;
-			path = ../Source_Files/Expat/hashtable.h;
-			refType = 2;
+			path = hashtable.h;
+			refType = 4;
 		};
 		F52211540136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = iasciitab.h;
-			path = ../Source_Files/Expat/iasciitab.h;
-			refType = 2;
+			path = iasciitab.h;
+			refType = 4;
 		};
 		F52211550136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = latin1tab.h;
-			path = ../Source_Files/Expat/latin1tab.h;
-			refType = 2;
+			path = latin1tab.h;
+			refType = 4;
 		};
 		F52211560136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			name = nametab.h;
-			path = ../Expat/xmltok/nametab.h;
-			refType = 2;
+			path = ../../Expat/xmltok/nametab.h;
+			refType = 4;
 		};
 		F52211570136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = utf8tab.h;
-			path = ../Source_Files/Expat/utf8tab.h;
-			refType = 2;
+			path = utf8tab.h;
+			refType = 4;
 		};
 		F52211580136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmldef.h;
-			path = ../Source_Files/Expat/xmldef.h;
-			refType = 2;
+			path = xmldef.h;
+			refType = 4;
 		};
 		F52211590136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmlparse.h;
-			path = ../Source_Files/Expat/xmlparse.h;
-			refType = 2;
+			path = xmlparse.h;
+			refType = 4;
 		};
 		F522115A0136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmlrole.h;
-			path = ../Source_Files/Expat/xmlrole.h;
-			refType = 2;
+			path = xmlrole.h;
+			refType = 4;
 		};
 		F522115B0136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmltok_impl.h;
-			path = ../Source_Files/Expat/xmltok_impl.h;
-			refType = 2;
+			path = xmltok_impl.h;
+			refType = 4;
 		};
 		F522115C0136A66601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmltok.h;
-			path = ../Source_Files/Expat/xmltok.h;
-			refType = 2;
+			path = xmltok.h;
+			refType = 4;
 		};
 		F52211740136A66601000001 = {
 			fileRef = F52211410136A66601000001;
@@ -5469,335 +5390,288 @@
 		F52211790136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = gennmtab.c;
-			path = ../Source_Files/Expat/gennmtab.c;
-			refType = 2;
+			path = gennmtab.c;
+			refType = 4;
 		};
 		F522117A0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = hashtable.c;
-			path = ../Source_Files/Expat/hashtable.c;
-			refType = 2;
+			path = hashtable.c;
+			refType = 4;
 		};
 		F522117B0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmlparse.c;
-			path = ../Source_Files/Expat/xmlparse.c;
-			refType = 2;
+			path = xmlparse.c;
+			refType = 4;
 		};
 		F522117C0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmlrole.c;
-			path = ../Source_Files/Expat/xmlrole.c;
-			refType = 2;
+			path = xmlrole.c;
+			refType = 4;
 		};
 		F522117D0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmltok.c;
-			path = ../Source_Files/Expat/xmltok.c;
-			refType = 2;
+			path = xmltok.c;
+			refType = 4;
 		};
 		F522117E0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmltok_impl.c;
-			path = ../Source_Files/Expat/xmltok_impl.c;
-			refType = 2;
+			path = xmltok_impl.c;
+			refType = 4;
 		};
 		F522117F0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = xmltok_ns.c;
-			path = ../Source_Files/Expat/xmltok_ns.c;
-			refType = 2;
+			path = xmltok_ns.c;
+			refType = 4;
 		};
 		F522118D0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = export_definitions.cpp;
-			path = ../Source_Files/Misc/export_definitions.cpp;
-			refType = 2;
+			path = export_definitions.cpp;
+			refType = 4;
 		};
 		F52211960136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = game_dialogs.cpp;
-			path = ../Source_Files/Misc/game_dialogs.cpp;
-			refType = 2;
+			path = game_dialogs.cpp;
+			refType = 4;
 		};
 		F52211970136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = game_errors.cpp;
-			path = ../Source_Files/Misc/game_errors.cpp;
-			refType = 2;
+			path = game_errors.cpp;
+			refType = 4;
 		};
 		F52211AE0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = game_errors.h;
-			path = ../Source_Files/Misc/game_errors.h;
-			refType = 2;
+			path = game_errors.h;
+			refType = 4;
 		};
 		F52211C10136A6FD01000001 = {
 			fileEncoding = 30;
 			indentWidth = 8;
 			isa = PBXFileReference;
-			name = interface_macintosh.cpp;
-			path = ../Source_Files/Misc/interface_macintosh.cpp;
-			refType = 2;
+			path = interface_macintosh.cpp;
+			refType = 4;
 			tabWidth = 8;
 			usesTabs = 1;
 		};
 		F52211C20136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = interface_menus.h;
-			path = ../Source_Files/Misc/interface_menus.h;
-			refType = 2;
+			path = interface_menus.h;
+			refType = 4;
 		};
 		F52211C30136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = interface_sdl.cpp;
-			path = ../Source_Files/Misc/interface_sdl.cpp;
-			refType = 2;
+			path = interface_sdl.cpp;
+			refType = 4;
 		};
 		F52211C40136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = interface.cpp;
-			path = ../Source_Files/Misc/interface.cpp;
-			refType = 2;
+			path = interface.cpp;
+			refType = 4;
 		};
 		F52211C50136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = interface.h;
-			path = ../Source_Files/Misc/interface.h;
-			refType = 2;
+			path = interface.h;
+			refType = 4;
 		};
 		F52211CB0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = key_definitions.h;
-			path = ../Source_Files/Misc/key_definitions.h;
-			refType = 2;
+			path = key_definitions.h;
+			refType = 4;
 		};
 		F52211CC0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = keyboard_dialog.cpp;
-			path = ../Source_Files/Misc/keyboard_dialog.cpp;
-			refType = 2;
+			path = keyboard_dialog.cpp;
+			refType = 4;
 		};
 		F52211CF0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = LocalEvents.h;
-			path = ../Source_Files/Misc/LocalEvents.h;
-			refType = 2;
+			path = LocalEvents.h;
+			refType = 4;
 		};
 		F52211D10136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = MacCheckbox.h;
-			path = ../Source_Files/Misc/MacCheckbox.h;
-			refType = 2;
+			path = MacCheckbox.h;
+			refType = 4;
 		};
 		F52211D20136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = macintosh_network.h;
-			path = ../Source_Files/Misc/macintosh_network.h;
-			refType = 2;
+			path = macintosh_network.h;
+			refType = 4;
 		};
 		F52211EB0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = OGL_Dialog.cpp;
-			path = ../Source_Files/Misc/OGL_Dialog.cpp;
-			refType = 2;
+			path = OGL_Dialog.cpp;
+			refType = 4;
 		};
 		F522120A0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = PlayerDialogs.cpp;
-			path = ../Source_Files/Misc/PlayerDialogs.cpp;
-			refType = 2;
+			path = PlayerDialogs.cpp;
+			refType = 4;
 		};
 		F522120B0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = PlayerName.cpp;
-			path = ../Source_Files/Misc/PlayerName.cpp;
-			refType = 2;
+			path = PlayerName.cpp;
+			refType = 4;
 		};
 		F522120C0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = PlayerName.h;
-			path = ../Source_Files/Misc/PlayerName.h;
-			refType = 2;
+			path = PlayerName.h;
+			refType = 4;
 		};
 		F522120D0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = preferences_macintosh.h;
-			path = ../Source_Files/Misc/preferences_macintosh.h;
-			refType = 2;
+			path = preferences_macintosh.h;
+			refType = 4;
 		};
 		F522120E0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = preferences_sdl.h;
-			path = ../Source_Files/Misc/preferences_sdl.h;
-			refType = 2;
+			path = preferences_sdl.h;
+			refType = 4;
 		};
 		F522120F0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = preferences.cpp;
-			path = ../Source_Files/Misc/preferences.cpp;
-			refType = 2;
+			path = preferences.cpp;
+			refType = 4;
 		};
 		F52212100136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = preferences.h;
-			path = ../Source_Files/Misc/preferences.h;
-			refType = 2;
+			path = preferences.h;
+			refType = 4;
 		};
 		F52212130136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = progress.cpp;
-			path = ../Source_Files/Misc/progress.cpp;
-			refType = 2;
+			path = progress.cpp;
+			refType = 4;
 		};
 		F52212140136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = progress.h;
-			path = ../Source_Files/Misc/progress.h;
-			refType = 2;
+			path = progress.h;
+			refType = 4;
 		};
 		F52212190136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = Random.h;
-			path = ../Source_Files/Misc/Random.h;
-			refType = 2;
+			path = Random.h;
+			refType = 4;
 		};
 		F522123A0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = sdl_dialogs.cpp;
-			path = ../Source_Files/Misc/sdl_dialogs.cpp;
-			refType = 2;
+			path = sdl_dialogs.cpp;
+			refType = 4;
 		};
 		F522123B0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = sdl_dialogs.h;
-			path = ../Source_Files/Misc/sdl_dialogs.h;
-			refType = 2;
+			path = sdl_dialogs.h;
+			refType = 4;
 		};
 		F522123E0136A6FD01000001 = {
 			comments = "JTP: No, this isn't a typo or misplacement. Both Carbon and SDL versions use this.";
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = sdl_network.h;
-			path = ../Source_Files/Misc/sdl_network.h;
-			refType = 2;
+			path = sdl_network.h;
+			refType = 4;
 		};
 		F522123F0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = sdl_widgets.cpp;
-			path = ../Source_Files/Misc/sdl_widgets.cpp;
-			refType = 2;
+			path = sdl_widgets.cpp;
+			refType = 4;
 		};
 		F52212400136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = sdl_widgets.h;
-			path = ../Source_Files/Misc/sdl_widgets.h;
-			refType = 2;
+			path = sdl_widgets.h;
+			refType = 4;
 		};
 		F52212480136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = shell_macintosh.h;
-			path = ../Source_Files/shell_macintosh.h;
-			refType = 2;
+			path = shell_macintosh.h;
+			refType = 4;
 		};
 		F52212490136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = shell_misc.cpp;
-			path = ../Source_Files/shell_misc.cpp;
-			refType = 2;
+			path = shell_misc.cpp;
+			refType = 4;
 		};
 		F522124A0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = shell_sdl.h;
-			path = ../Source_Files/shell_sdl.h;
-			refType = 2;
+			path = shell_sdl.h;
+			refType = 4;
 		};
 		F522124B0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = shell.cpp;
-			path = ../Source_Files/shell.cpp;
-			refType = 2;
+			path = shell.cpp;
+			refType = 4;
 		};
 		F522124C0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = shell.h;
-			path = ../Source_Files/shell.h;
-			refType = 2;
+			path = shell.h;
+			refType = 4;
 		};
 		F52212560136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = vbl_definitions.h;
-			path = ../Source_Files/Misc/vbl_definitions.h;
-			refType = 2;
+			path = vbl_definitions.h;
+			refType = 4;
 		};
 		F52212570136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = vbl_macintosh.cpp;
-			path = ../Source_Files/Misc/vbl_macintosh.cpp;
-			refType = 2;
+			path = vbl_macintosh.cpp;
+			refType = 4;
 		};
 		F52212580136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = vbl_sdl.cpp;
-			path = ../Source_Files/Misc/vbl_sdl.cpp;
-			refType = 2;
+			path = vbl_sdl.cpp;
+			refType = 4;
 		};
 		F52212590136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = vbl.cpp;
-			path = ../Source_Files/Misc/vbl.cpp;
-			refType = 2;
+			path = vbl.cpp;
+			refType = 4;
 		};
 		F522125A0136A6FD01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = vbl.h;
-			path = ../Source_Files/Misc/vbl.h;
-			refType = 2;
+			path = vbl.h;
+			refType = 4;
 		};
 		F52212EB0136A6FD01000001 = {
 			fileRef = F522117A0136A6FD01000001;
@@ -5892,107 +5766,92 @@
 		F522137B0136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_ddp.cpp;
-			path = ../Source_Files/Network/network_ddp.cpp;
-			refType = 2;
+			path = network_ddp.cpp;
+			refType = 4;
 		};
 		F522137C0136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_dialogs_sdl.cpp;
-			path = ../Source_Files/Network/network_dialogs_sdl.cpp;
-			refType = 2;
+			path = network_dialogs_sdl.cpp;
+			refType = 4;
 		};
 		F522137D0136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_dialogs.cpp;
-			path = ../Source_Files/Network/network_dialogs.cpp;
-			refType = 2;
+			path = network_dialogs.cpp;
+			refType = 4;
 		};
 		F522137E0136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_dummy.cpp;
-			path = ../Source_Files/Network/network_dummy.cpp;
-			refType = 2;
+			path = network_dummy.cpp;
+			refType = 4;
 		};
 		F522137F0136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_games.cpp;
-			path = ../Source_Files/Network/network_games.cpp;
-			refType = 2;
+			path = network_games.cpp;
+			refType = 4;
 		};
 		F52213800136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_games.h;
-			path = ../Source_Files/Network/network_games.h;
-			refType = 2;
+			path = network_games.h;
+			refType = 4;
 		};
 		F52213810136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_lookup_sdl.cpp;
-			path = ../Source_Files/Network/network_lookup_sdl.cpp;
-			refType = 2;
+			path = network_lookup_sdl.cpp;
+			refType = 4;
 		};
 		F52213820136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_lookup.cpp;
-			path = ../Source_Files/Network/network_lookup.cpp;
-			refType = 2;
+			path = network_lookup.cpp;
+			refType = 4;
 		};
 		F52213830136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_microphone.cpp;
-			path = ../Source_Files/Network/network_microphone.cpp;
-			refType = 2;
+			path = network_microphone.cpp;
+			refType = 4;
 		};
 		F52213880136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_names.cpp;
-			path = ../Source_Files/Network/network_names.cpp;
-			refType = 2;
+			path = network_names.cpp;
+			refType = 4;
 		};
 		F52213890136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_sound.h;
-			path = ../Source_Files/Network/network_sound.h;
-			refType = 2;
+			path = network_sound.h;
+			refType = 4;
 		};
 		F522138A0136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_speaker.cpp;
-			path = ../Source_Files/Network/network_speaker.cpp;
-			refType = 2;
+			path = network_speaker.cpp;
+			refType = 4;
 		};
 		F522138E0136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_udp.cpp;
-			path = ../Source_Files/Network/network_udp.cpp;
-			refType = 2;
+			path = network_udp.cpp;
+			refType = 4;
 		};
 		F522138F0136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network.cpp;
-			path = ../Source_Files/Network/network.cpp;
-			refType = 2;
+			path = network.cpp;
+			refType = 4;
 		};
 		F52213900136ABAE01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network.h;
-			path = ../Source_Files/Network/network.h;
-			refType = 2;
+			path = network.h;
+			refType = 4;
 		};
 		F52213950136ABAE01000001 = {
 			fileRef = F52213810136ABAE01000001;
@@ -6015,51 +5874,44 @@
 		F522139B0136AC1601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = script_instructions.cpp;
-			path = ../Source_Files/Pfhortran/script_instructions.cpp;
-			refType = 2;
+			path = script_instructions.cpp;
+			refType = 4;
 		};
 		F522139C0136AC1601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = script_parser.cpp;
-			path = ../Source_Files/Pfhortran/script_parser.cpp;
-			refType = 2;
+			path = script_parser.cpp;
+			refType = 4;
 		};
 		F522139D0136AC1601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = scripting.cpp;
-			path = ../Source_Files/Pfhortran/scripting.cpp;
-			refType = 2;
+			path = scripting.cpp;
+			refType = 4;
 		};
 		F522139E0136AC1601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = language_definition.h;
-			path = ../Source_Files/Pfhortran/language_definition.h;
-			refType = 2;
+			path = language_definition.h;
+			refType = 4;
 		};
 		F522139F0136AC1601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = script_instructions.h;
-			path = ../Source_Files/Pfhortran/script_instructions.h;
-			refType = 2;
+			path = script_instructions.h;
+			refType = 4;
 		};
 		F52213A00136AC1601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = script_parser.h;
-			path = ../Source_Files/Pfhortran/script_parser.h;
-			refType = 2;
+			path = script_parser.h;
+			refType = 4;
 		};
 		F52213A10136AC1601000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = scripting.h;
-			path = ../Source_Files/Pfhortran/scripting.h;
-			refType = 2;
+			path = scripting.h;
+			refType = 4;
 		};
 		F52213A20136AC1601000001 = {
 			fileRef = F522139B0136AC1601000001;
@@ -6385,8 +6237,9 @@
 				F50028EE038EE8C201000105,
 			);
 			isa = PBXGroup;
-			name = Sources;
-			refType = 4;
+			name = Source_Files;
+			path = ../Source_Files;
+			refType = 2;
 		};
 		F522144A0136C0C401000001 = {
 			children = (
@@ -6412,7 +6265,7 @@
 				3DAC27AE03DC9D5600000104,
 			);
 			isa = PBXGroup;
-			name = CSeries;
+			path = CSeries;
 			refType = 4;
 		};
 		F522144B0136C0C401000001 = {
@@ -6454,7 +6307,7 @@
 				F522117F0136A6FD01000001,
 			);
 			isa = PBXGroup;
-			name = Expat;
+			path = Expat;
 			refType = 4;
 		};
 		F522144D0136C0C401000001 = {
@@ -6498,7 +6351,7 @@
 				F5574EF601F4EC8501FEABBD,
 			);
 			isa = PBXGroup;
-			name = Misc;
+			path = Misc;
 			refType = 4;
 		};
 		F522144F0136C0C401000001 = {
@@ -6566,7 +6419,7 @@
 				F522138E0136ABAE01000001,
 			);
 			isa = PBXGroup;
-			name = Network;
+			path = Network;
 			refType = 4;
 		};
 		F52214520136C0C401000001 = {
@@ -7383,23 +7236,20 @@
 		F536740402014DC201A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = TextStrings.r;
-			path = ../Resources/TextStrings.r;
-			refType = 2;
+			path = TextStrings.r;
+			refType = 4;
 		};
 		F536740602014E1C01A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = SemiTpt.r;
-			path = ../Resources/SemiTpt.r;
-			refType = 2;
+			path = SemiTpt.r;
+			refType = 4;
 		};
 		F536740802014E1C01A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = marathon2.resource;
-			path = ../Resources/marathon2.resource;
-			refType = 2;
+			path = marathon2.resource;
+			refType = 4;
 		};
 		F536740902014E1C01A80001 = {
 			fileRef = F536740802014E1C01A80001;
@@ -7572,9 +7422,8 @@
 		F536742802014FC301A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csdialogs_macintosh.cpp;
-			path = ../Source_Files/CSeries/csdialogs_macintosh.cpp;
-			refType = 2;
+			path = csdialogs_macintosh.cpp;
+			refType = 4;
 		};
 		F536742902014FC301A80001 = {
 			fileRef = F536742802014FC301A80001;
@@ -7585,9 +7434,8 @@
 		F536742A02014FE101A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = mytm_macintosh.cpp;
-			path = ../Source_Files/CSeries/mytm_macintosh.cpp;
-			refType = 2;
+			path = mytm_macintosh.cpp;
+			refType = 4;
 		};
 		F536742C0201508B01A80001 = {
 			fileRef = F522115C0136A66601000001;
@@ -7958,7 +7806,7 @@
 		F53AB44B01F3CB1D01EF2901 = {
 			isa = PBXFileReference;
 			path = AlephOne.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F53AB44F01F3CB1E01EF2901 = {
 			fileRef = F53AB44B01F3CB1D01EF2901;
@@ -7981,9 +7829,8 @@
 		F53DC61D022179A801A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_dialogs.h;
-			path = ../Source_Files/Network/network_dialogs.h;
-			refType = 2;
+			path = network_dialogs.h;
+			refType = 4;
 		};
 		F53DC61E022179A801A80001 = {
 			fileRef = F53DC61D022179A801A80001;
@@ -8000,9 +7847,8 @@
 		F53DC62002219A3D01A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_lookup_sdl.h;
-			path = ../Source_Files/Network/network_lookup_sdl.h;
-			refType = 2;
+			path = network_lookup_sdl.h;
+			refType = 4;
 		};
 		F53DC62102219A3E01A80001 = {
 			fileRef = F53DC62002219A3D01A80001;
@@ -8067,16 +7913,14 @@
 		F5574EEE01F4EB1E01FEABBD = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = csdialogs_sdl.cpp;
-			path = ../Source_Files/CSeries/csdialogs_sdl.cpp;
-			refType = 2;
+			path = csdialogs_sdl.cpp;
+			refType = 4;
 		};
 		F5574EEF01F4EB1E01FEABBD = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = mytm_sdl.cpp;
-			path = ../Source_Files/CSeries/mytm_sdl.cpp;
-			refType = 2;
+			path = mytm_sdl.cpp;
+			refType = 4;
 		};
 		F5574EF001F4EB1F01FEABBD = {
 			fileRef = F5574EEE01F4EB1E01FEABBD;
@@ -8093,9 +7937,8 @@
 		F5574EF201F4EBD401FEABBD = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = PlayerImage_sdl.cpp;
-			path = ../Source_Files/Misc/PlayerImage_sdl.cpp;
-			refType = 2;
+			path = PlayerImage_sdl.cpp;
+			refType = 4;
 		};
 		F5574EF301F4EBD401FEABBD = {
 			fileRef = F5574EF201F4EBD401FEABBD;
@@ -8106,9 +7949,8 @@
 		F5574EF601F4EC8501FEABBD = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = thread_priority_sdl_macosx.cpp;
-			path = ../Source_Files/Misc/thread_priority_sdl_macosx.cpp;
-			refType = 2;
+			path = thread_priority_sdl_macosx.cpp;
+			refType = 4;
 		};
 		F5574EF701F4EC8501FEABBD = {
 			fileRef = F5574EF601F4EC8501FEABBD;
@@ -8119,9 +7961,8 @@
 		F5574EF801F4ECD701FEABBD = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_data_formats.cpp;
-			path = ../Source_Files/Network/network_data_formats.cpp;
-			refType = 2;
+			path = network_data_formats.cpp;
+			refType = 4;
 		};
 		F5574EF901F4ECD801FEABBD = {
 			fileRef = F5574EF801F4ECD701FEABBD;
@@ -8132,9 +7973,8 @@
 		F5574EFA01F4ED0A01FEABBD = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_dialog_widgets_sdl.cpp;
-			path = ../Source_Files/Network/network_dialog_widgets_sdl.cpp;
-			refType = 2;
+			path = network_dialog_widgets_sdl.cpp;
+			refType = 4;
 		};
 		F5574EFB01F4ED0B01FEABBD = {
 			fileRef = F5574EFA01F4ED0A01FEABBD;
@@ -8145,9 +7985,8 @@
 		F5574EFC01F4ED4801FEABBD = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = SDL_netx.cpp;
-			path = ../Source_Files/Network/SDL_netx.cpp;
-			refType = 2;
+			path = SDL_netx.cpp;
+			refType = 4;
 		};
 		F5574EFD01F4ED4901FEABBD = {
 			fileRef = F5574EFC01F4ED4801FEABBD;
@@ -8158,9 +7997,8 @@
 		F5574EFE01F4ED6501FEABBD = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = SSLP_limited.cpp;
-			path = ../Source_Files/Network/SSLP_limited.cpp;
-			refType = 2;
+			path = SSLP_limited.cpp;
+			refType = 4;
 		};
 		F5574EFF01F4ED6501FEABBD = {
 			fileRef = F5574EFE01F4ED6501FEABBD;
@@ -8201,9 +8039,8 @@
 		F56A463D021F7E2301A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_dialogs_macintosh.cpp;
-			path = ../Source_Files/Network/network_dialogs_macintosh.cpp;
-			refType = 2;
+			path = network_dialogs_macintosh.cpp;
+			refType = 4;
 		};
 		F56A463E021F7E2301A80001 = {
 			fileRef = F522137C0136ABAE01000001;
@@ -8226,17 +8063,17 @@
 		F56AEB6B01F8AA1201780311 = {
 			isa = PBXFileReference;
 			path = ImagesIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F56AEB6C01F8AA1201780311 = {
 			isa = PBXFileReference;
 			path = ShapesIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F56AEB6D01F8AA1201780311 = {
 			isa = PBXFileReference;
 			path = SoundsIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F56AEB6E01F8AA1201780311 = {
 			fileRef = F56AEB6B01F8AA1201780311;
@@ -8277,9 +8114,8 @@
 		F573B28F021FAF7801A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_dialogs_mac_sdl.cpp;
-			path = ../Source_Files/Network/network_dialogs_mac_sdl.cpp;
-			refType = 2;
+			path = network_dialogs_mac_sdl.cpp;
+			refType = 4;
 		};
 		F5828BE0022089D801A80001 = {
 			fileRef = F5574EF601F4EC8501FEABBD;
@@ -8316,9 +8152,8 @@
 				F5CFAD3A0200F9D201D80110,
 			);
 			isa = PBXGroup;
-			name = ModelView;
-			path = ../Source_Files/ModelView;
-			refType = 2;
+			path = ModelView;
+			refType = 4;
 		};
 		F5830B4301E77D5701BA387C = {
 			fileEncoding = 30;
@@ -8431,8 +8266,9 @@
 		F58BD22E01F7D34501F58C2F = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			path = config.h;
-			refType = 2;
+			name = config.h;
+			path = ../PBProjects/config.h;
+			refType = 4;
 		};
 		F58BD22F01F7D34501F58C2F = {
 			fileRef = F58BD22E01F7D34501F58C2F;
@@ -8470,16 +8306,14 @@
 		F5A00022023FDA1601A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = ActionQueues.cpp;
-			path = ../Source_Files/Misc/ActionQueues.cpp;
-			refType = 2;
+			path = ActionQueues.cpp;
+			refType = 4;
 		};
 		F5A00023023FDA1601A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = preferences_widgets_sdl.cpp;
-			path = ../Source_Files/Misc/preferences_widgets_sdl.cpp;
-			refType = 2;
+			path = preferences_widgets_sdl.cpp;
+			refType = 4;
 		};
 		F5A00024023FDA1701A80001 = {
 			fileRef = F5A00023023FDA1601A80001;
@@ -8496,9 +8330,8 @@
 		F5A00027023FDA6101A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = ActionQueues.h;
-			path = ../Source_Files/Misc/ActionQueues.h;
-			refType = 2;
+			path = ActionQueues.h;
+			refType = 4;
 		};
 		F5A00028023FDA6201A80001 = {
 			fileRef = F5A00027023FDA6101A80001;
@@ -8509,9 +8342,8 @@
 		F5A00029023FDA7601A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = CircularQueue.h;
-			path = ../Source_Files/Misc/CircularQueue.h;
-			refType = 2;
+			path = CircularQueue.h;
+			refType = 4;
 		};
 		F5A0002A023FDA7601A80001 = {
 			fileRef = F5A00029023FDA7601A80001;
@@ -8522,9 +8354,8 @@
 		F5A0002B023FDAD101A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = preferences_widgets_sdl.h;
-			path = ../Source_Files/Misc/preferences_widgets_sdl.h;
-			refType = 2;
+			path = preferences_widgets_sdl.h;
+			refType = 4;
 		};
 		F5A0002C023FDAD101A80001 = {
 			fileRef = F5A0002B023FDAD101A80001;
@@ -8547,9 +8378,8 @@
 		F5A0002F023FDB5C01A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_speaker_sdl.cpp;
-			path = ../Source_Files/Network/network_speaker_sdl.cpp;
-			refType = 2;
+			path = network_speaker_sdl.cpp;
+			refType = 4;
 		};
 		F5A00030023FDB5C01A80001 = {
 			fileRef = F5A0002F023FDB5C01A80001;
@@ -8560,16 +8390,14 @@
 		F5A00031023FDB8001A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_microphone_sdl_dummy.cpp;
-			path = ../Source_Files/Network/network_microphone_sdl_dummy.cpp;
-			refType = 2;
+			path = network_microphone_sdl_dummy.cpp;
+			refType = 4;
 		};
 		F5A00033023FDBBD01A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_distribution_types.h;
-			path = ../Source_Files/Network/network_distribution_types.h;
-			refType = 2;
+			path = network_distribution_types.h;
+			refType = 4;
 		};
 		F5A00034023FDBBD01A80001 = {
 			fileRef = F5A00033023FDBBD01A80001;
@@ -8580,9 +8408,8 @@
 		F5A00037023FDC0301A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_speaker_sdl.h;
-			path = ../Source_Files/Network/network_speaker_sdl.h;
-			refType = 2;
+			path = network_speaker_sdl.h;
+			refType = 4;
 		};
 		F5A00038023FDC0301A80001 = {
 			fileRef = F5A00037023FDC0301A80001;
@@ -8653,15 +8480,15 @@
 		F5C8AFE50207387301A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = mytm_mac_carbon.cpp;
-			path = ../Source_Files/CSeries/mytm_mac_carbon.cpp;
-			refType = 2;
+			path = mytm_mac_carbon.cpp;
+			refType = 4;
 		};
 		F5CADB5B0136D95E01000001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			path = confpaths.h;
-			refType = 2;
+			name = confpaths.h;
+			path = ../PBProjects/confpaths.h;
+			refType = 4;
 		};
 		F5CADB5C0136D95E01000001 = {
 			fileRef = F5CADB5B0136D95E01000001;
@@ -8689,9 +8516,8 @@
 				F5CC92170240D09B01A80001,
 			);
 			isa = PBXGroup;
-			name = Files;
-			path = ../Source_Files/Files;
-			refType = 2;
+			path = Files;
+			refType = 4;
 		};
 		F5CC92000240D09B01A80001 = {
 			fileEncoding = 30;
@@ -9132,9 +8958,8 @@
 				F5CC92790240D28201A80001,
 			);
 			isa = PBXGroup;
-			name = GameWorld;
-			path = ../Source_Files/GameWorld;
-			refType = 2;
+			path = GameWorld;
+			refType = 4;
 		};
 		F5CC924F0240D28201A80001 = {
 			fileEncoding = 30;
@@ -10010,9 +9835,8 @@
 				F5CC92DC0240D54401A80001,
 			);
 			isa = PBXGroup;
-			name = Input;
-			path = ../Source_Files/Input;
-			refType = 2;
+			path = Input;
+			refType = 4;
 		};
 		F5CC92D80240D54401A80001 = {
 			fileEncoding = 30;
@@ -10102,9 +9926,8 @@
 				F5CC930F0240D56101A80001,
 			);
 			isa = PBXGroup;
-			name = RenderMain;
-			path = ../Source_Files/RenderMain;
-			refType = 2;
+			path = RenderMain;
+			refType = 4;
 		};
 		F5CC92E40240D56101A80001 = {
 			fileEncoding = 30;
@@ -10859,9 +10682,8 @@
 				F5CC93A50240D85D01A80001,
 			);
 			isa = PBXGroup;
-			name = RenderOther;
-			path = ../Source_Files/RenderOther;
-			refType = 2;
+			path = RenderOther;
+			refType = 4;
 		};
 		F5CC936F0240D85D01A80001 = {
 			children = (
@@ -11789,9 +11611,8 @@
 				F5CC94190240DA4401A80001,
 			);
 			isa = PBXGroup;
-			name = Sound;
-			path = ../Source_Files/Sound;
-			refType = 2;
+			path = Sound;
+			refType = 4;
 		};
 		F5CC94120240DA4301A80001 = {
 			fileEncoding = 30;
@@ -11930,7 +11751,7 @@
 			isa = PBXGroup;
 			name = Macintosh;
 			path = "";
-			refType = 2;
+			refType = 4;
 		};
 		F5CC94290240DB8801A80001 = {
 			children = (
@@ -11946,9 +11767,9 @@
 				F5574EF201F4EBD401FEABBD,
 			);
 			isa = PBXGroup;
-			name = SDL;
+			name = Misc;
 			path = "";
-			refType = 2;
+			refType = 4;
 		};
 		F5CC942A0240DE0E01A80001 = {
 			children = (
@@ -11965,9 +11786,8 @@
 				F5CC94410240DE0E01A80001,
 			);
 			isa = PBXGroup;
-			name = XML;
-			path = ../Source_Files/XML;
-			refType = 2;
+			path = XML;
+			refType = 4;
 		};
 		F5CC942B0240DE0E01A80001 = {
 			children = (
@@ -12365,7 +12185,8 @@
 				F52212490136A6FD01000001,
 			);
 			isa = PBXGroup;
-			name = Main;
+			name = Source_Files;
+			path = "";
 			refType = 4;
 		};
 		F5CF5859024599B601A80001 = {
@@ -12421,37 +12242,37 @@
 		F5CFAD3D0200FA6B01D80110 = {
 			isa = PBXFileReference;
 			path = FilmIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F5CFAD3E0200FA6B01D80110 = {
 			isa = PBXFileReference;
 			path = MapIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F5CFAD3F0200FA6B01D80110 = {
 			isa = PBXFileReference;
 			path = MMLIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F5CFAD400200FA6B01D80110 = {
 			isa = PBXFileReference;
 			path = MusakIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F5CFAD410200FA6B01D80110 = {
 			isa = PBXFileReference;
 			path = PFIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F5CFAD420200FA6B01D80110 = {
 			isa = PBXFileReference;
 			path = PhysIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F5CFAD430200FA6B01D80110 = {
 			isa = PBXFileReference;
 			path = SaveIcon.icns;
-			refType = 4;
+			refType = 2;
 		};
 		F5CFAD440200FA6B01D80110 = {
 			fileRef = F5CFAD3D0200FA6B01D80110;
@@ -12498,9 +12319,8 @@
 		F5D11AE40326A93E01000105 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = alephversion.h;
-			path = ../Source_Files/Misc/alephversion.h;
-			refType = 2;
+			path = alephversion.h;
+			refType = 4;
 		};
 		F5D11AE50326A93E01000105 = {
 			fileRef = F5D11AE40326A93E01000105;
@@ -12517,9 +12337,8 @@
 		F5D37B6D022D1C2C01A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = network_private.h;
-			path = ../Source_Files/Network/network_private.h;
-			refType = 2;
+			path = network_private.h;
+			refType = 4;
 		};
 		F5D37B6E022D1C2C01A80001 = {
 			fileRef = F5D37B6D022D1C2C01A80001;
@@ -12530,9 +12349,8 @@
 		F5D37B6F022D35A901A80001 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
-			name = CarbonResourceTweaks.r;
-			path = ../Resources/CarbonResourceTweaks.r;
-			refType = 2;
+			path = CarbonResourceTweaks.r;
+			refType = 4;
 		};
 		F5D37B70022D35AA01A80001 = {
 			fileRef = F5D37B6F022D35A901A80001;
@@ -12552,8 +12370,9 @@
 				F5F50D720215DB2601144D54,
 			);
 			isa = PBXGroup;
-			name = DataFiles;
-			refType = 4;
+			name = data;
+			path = ../data;
+			refType = 2;
 		};
 		F5F50D6D0215DACD01144D54 = {
 			children = (
@@ -12568,33 +12387,28 @@
 		};
 		F5F50D6E0215DB2601144D54 = {
 			isa = PBXFileReference;
-			name = Text_Strings.mml;
-			path = ../data/Text_Strings.mml;
-			refType = 2;
+			path = Text_Strings.mml;
+			refType = 4;
 		};
 		F5F50D6F0215DB2601144D54 = {
 			isa = PBXFileReference;
-			name = Transparent_Liquids.mml;
-			path = ../data/Transparent_Liquids.mml;
-			refType = 2;
+			path = Transparent_Liquids.mml;
+			refType = 4;
 		};
 		F5F50D700215DB2601144D54 = {
 			isa = PBXFileReference;
-			name = Transparent_Sprites.mml;
-			path = ../data/Transparent_Sprites.mml;
-			refType = 2;
+			path = Transparent_Sprites.mml;
+			refType = 4;
 		};
 		F5F50D710215DB2601144D54 = {
 			isa = PBXFileReference;
-			name = Interface_Rects.mml;
-			path = ../data/Interface_Rects.mml;
-			refType = 2;
+			path = Interface_Rects.mml;
+			refType = 4;
 		};
 		F5F50D720215DB2601144D54 = {
 			isa = PBXFileReference;
-			name = Fonts;
-			path = ../data/Fonts;
-			refType = 2;
+			path = Fonts;
+			refType = 4;
 		};
 		F5F50D780215DB5801144D54 = {
 			buildActionMask = 12;
