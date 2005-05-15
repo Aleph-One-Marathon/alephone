@@ -590,8 +590,6 @@ static pascal void NetgameJoin_Poller(EventLoopTimerRef Timer, void *UserData)
 	// or pursue the connection request we already received.
 	netgame_join_result = join_dialog_gatherer_search (dialog);
 	
-	netgame_join_result = join_dialog_gatherer_search (dialog);
-	
 	if (false /* chat? */)
 	{
 		player_info*	sending_player;
