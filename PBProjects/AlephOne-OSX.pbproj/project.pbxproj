@@ -171,7 +171,11 @@
 				F5CFAD420200FA6B01D80110,
 				F5CFAD430200FA6B01D80110,
 				F5D37B6F022D35A901A80001,
+				EFD18A5D08370DA5009FA620,
 				3D3A410C04DF92C400000107,
+				EFD18A5E08370DA5009FA620,
+				EFD18A5A08370AAD009FA620,
+				EFD18A5F08370DA5009FA620,
 				EFCB2816083055D10044FDF2,
 			);
 			isa = PBXGroup;
@@ -3164,6 +3168,10 @@
 				EF2A6D1F07D04417008DCEFF,
 				EF2A6DCE07D04AF1008DCEFF,
 				EFCB2817083055D10044FDF2,
+				EFD18A5B08370AAD009FA620,
+				EFD18A6008370DA5009FA620,
+				EFD18A6108370DA5009FA620,
+				EFD18A6208370DA5009FA620,
 			);
 			isa = PBXResourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4907,7 +4915,7 @@
 		};
 		EFCB2816083055D10044FDF2 = {
 			isa = PBXFileReference;
-			path = Netgame_Setup.nib;
+			path = "Setup Network Game.nib";
 			refType = 4;
 		};
 		EFCB2817083055D10044FDF2 = {
@@ -4930,6 +4938,50 @@
 		};
 		EFCB281A0833135B0044FDF2 = {
 			fileRef = EFCB28190833135B0044FDF2;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFD18A5A08370AAD009FA620 = {
+			isa = PBXFileReference;
+			path = "Metaserver Client.nib";
+			refType = 4;
+		};
+		EFD18A5B08370AAD009FA620 = {
+			fileRef = EFD18A5A08370AAD009FA620;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFD18A5D08370DA5009FA620 = {
+			isa = PBXFileReference;
+			path = "Gather Network Game.nib";
+			refType = 4;
+		};
+		EFD18A5E08370DA5009FA620 = {
+			isa = PBXFileReference;
+			path = "Join Network Game.nib";
+			refType = 4;
+		};
+		EFD18A5F08370DA5009FA620 = {
+			isa = PBXFileReference;
+			path = "Postgame Carnage Report.nib";
+			refType = 4;
+		};
+		EFD18A6008370DA5009FA620 = {
+			fileRef = EFD18A5D08370DA5009FA620;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFD18A6108370DA5009FA620 = {
+			fileRef = EFD18A5E08370DA5009FA620;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EFD18A6208370DA5009FA620 = {
+			fileRef = EFD18A5F08370DA5009FA620;
 			isa = PBXBuildFile;
 			settings = {
 			};
