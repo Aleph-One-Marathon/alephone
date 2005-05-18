@@ -77,6 +77,8 @@ struct projectile_definition
 	int16 flyby_sound, rebound_sound;
 };
 
+#ifndef DONT_REPEAT_DEFINITIONS
+
 /* ---------- projectile definitions */
 
 static struct projectile_definition projectile_definitions[NUMBER_OF_PROJECTILE_TYPES]=
@@ -796,6 +798,8 @@ static struct projectile_definition projectile_definitions[NUMBER_OF_PROJECTILE_
 // Added for the convenience of the 1-2-3 Converter
 uint8 *unpack_projectile_definition(uint8 *Stream, projectile_definition *Objects, size_t Count);
 uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects, size_t Count);
+
+#endif
 
 #endif
 

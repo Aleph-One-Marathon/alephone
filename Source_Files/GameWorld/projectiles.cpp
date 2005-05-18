@@ -170,7 +170,7 @@ static uint16 translate_projectile(short type, world_point3d *old_location, shor
 	world_point3d *new_location, short *new_polygon_index, short owner_index,
 	short *obstruction_index);
 
-static projectile_definition *get_projectile_definition(
+/*static*/ projectile_definition *get_projectile_definition(
 	short type);
 
 /* ---------- code */

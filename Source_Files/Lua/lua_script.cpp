@@ -84,6 +84,7 @@ using namespace std;
 #define DONT_REPEAT_DEFINITIONS
 #include "item_definitions.h"
 #include "monster_definitions.h"
+#include "projectile_definitions.h"
 
 bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
@@ -1029,7 +1030,12 @@ static int L_New_Monster(lua_State *L)
 	}
 	short monster_type = static_cast<int>(lua_tonumber(L,1));
 	short polygon = static_cast<int>(lua_tonumber(L,2));
-
+	/* SB: validate the monster type */
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES) {
+		lua_pushstring(L, "new_monster: invalid monster type");
+		lua_error(L);
+	}
+	
 	short facing = 0;
 	if (args > 2)
 	{
@@ -1246,6 +1252,80 @@ static int L_Move_Monster(lua_State *L)
 	return 0;
 }
 
+static int L_Monster_Index_Valid(lua_State *L) {
+	if(!lua_isnumber(L,1)) {
+		lua_pushstring(L, "monster_index_valid: incorrect argument type");
+		lua_error(L);
+	}
+	short monster_index = static_cast<int>(lua_tonumber(L,1));
+	if(monster_index < 0 || monster_index >= MAXIMUM_MONSTERS_PER_MAP) {
+		lua_pushnil(L);
+	}
+	else {
+		struct monster_data* monster;
+		monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+		lua_pushboolean(L, SLOT_IS_USED(monster));
+	}
+	return 1;
+}
+
+static int L_Get_Monster_Type(lua_State *L) {
+	if(!lua_isnumber(L,1)) {
+		lua_pushstring(L, "get_monster_type: incorrect argument type");
+		lua_error(L);
+	}
+	short monster_index = static_cast<int>(lua_tonumber(L,1));
+	if(monster_index < 0 || monster_index >= MAXIMUM_MONSTERS_PER_MAP) {
+		lua_pushstring(L, "get_monster_type: invalid monster index");
+		lua_error(L);
+	}
+	struct monster_data* monster;
+	monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
+	if(!SLOT_IS_USED(monster)) {
+		lua_pushstring(L, "get_monster_type: invalid monster index");
+		lua_error(L);
+	}
+	lua_pushnumber(L, monster->type);
+	return 1;
+}
+
+static int L_Get_Monster_Type_Class(lua_State *L) {
+	if(!lua_isnumber(L,1)) {
+		lua_pushstring(L, "get_monster_type_class: incorrect argument type");
+		lua_error(L);
+	}
+	short type = static_cast<int>(lua_tonumber(L,1));
+	if(type < 0 || type >= NUMBER_OF_MONSTER_TYPES) {
+		lua_pushstring(L, "get_monster_type_class: invalid monster type");
+		lua_error(L);
+	}
+	struct monster_definition* def;
+	def = get_monster_definition_external(type);
+	lua_pushnumber(L, def->_class);
+	return 1;
+}
+
+static int L_Set_Monster_Type_Class(lua_State *L) {
+	if(!lua_isnumber(L,1)||!lua_isnumber(L,2)) {
+		lua_pushstring(L, "set_monster_type_class: incorrect argument type");
+		lua_error(L);
+	}
+	short type = static_cast<int>(lua_tonumber(L,1));
+	short _class = static_cast<int>(lua_tonumber(L,2));
+	if(type < 0 || type >= NUMBER_OF_MONSTER_TYPES) {
+		lua_pushstring(L, "set_monster_type_class: invalid monster type");
+		lua_error(L);
+	}
+	if(_class < _class_player || _class > _class_yeti) {
+		lua_pushstring(L, "set_monster_type_class: invalid monster class");
+		lua_error(L);
+	}
+	struct monster_definition* def;
+	def = get_monster_definition_external(type);
+	def->_class = _class;
+	return 0;
+}
+
 static int L_Select_Monster(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -1255,7 +1335,12 @@ static int L_Select_Monster(lua_State *L)
 	}
 	int monster_type = static_cast<int>(lua_tonumber(L,1));
 	int polygon = static_cast<int>(lua_tonumber(L,2));
-
+	/* SB: validate here too */
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES) {
+		lua_pushstring(L, "select_monster: invalid monster type");
+		lua_error(L);
+	}
+	
 	//we are using IntersectedObjects
 	int found;
 	size_t i, objectCount;
@@ -1839,7 +1924,7 @@ static int L_Get_Player_Polygon(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
 	{
-		lua_pushstring(L, "get_player_position: incorrect argument type");
+		lua_pushstring(L, "get_player_polygon: incorrect argument type");
 		lua_error(L);
 	}
 
@@ -3821,6 +3906,32 @@ static int L_Get_Projectile_Type (lua_State *L)
 	return 1;
 }
 
+extern projectile_definition *get_projectile_definition(short type);
+
+static int L_Get_Projectile_Damage_Type (lua_State *L)
+{
+	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
+
+	struct projectile_data *projectile= get_projectile_data(projectile_index);
+	struct projectile_definition *definition = get_projectile_definition(projectile->type);
+	lua_pushnumber (L, definition->damage.type);
+
+	return 1;
+}
+
+static int L_Get_Projectile_Owner (lua_State *L)
+	{
+	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
+
+	struct projectile_data *projectile= get_projectile_data(projectile_index);
+	if(projectile->owner_index != NONE)
+		lua_pushnumber (L, projectile->owner_index);
+	else
+		lua_pushnil(L);
+
+	return 1;
+}
+
 void RegisterLuaFunctions()
 {
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
@@ -3864,6 +3975,10 @@ void RegisterLuaFunctions()
 	lua_register(state, "damage_monster", L_Damage_Monster);
 	lua_register(state, "attack_monster", L_Attack_Monster);
 	lua_register(state, "move_monster", L_Move_Monster);
+	lua_register(state, "monster_index_valid", L_Monster_Index_Valid);
+	lua_register(state, "get_monster_type", L_Get_Monster_Type);
+	lua_register(state, "get_monster_type_class", L_Get_Monster_Type_Class);
+	lua_register(state, "set_monster_type_class", L_Set_Monster_Type_Class);
 	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "get_monster_position", L_Get_Monster_Position);
 	lua_register(state, "get_monster_facing", L_Get_Monster_Facing);
@@ -3960,6 +4075,8 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
 	lua_register(state, "get_projectile_type", L_Get_Projectile_Type);
+	lua_register(state, "get_projectile_damage_type", L_Get_Projectile_Damage_Type);
+	lua_register(state, "get_projectile_owner", L_Get_Projectile_Owner);
 }
 
 void DeclareLuaConstants()
@@ -3981,6 +4098,9 @@ for (int i=0; i<constant_list_size; i++)
         lua_pushnumber(state, constant_list[i].value);
         lua_setglobal(state, constant_list[i].name);
 }
+/* SB: Don't think this is a constant? */
+lua_pushnumber(state, MAXIMUM_MONSTERS_PER_MAP);
+lua_setglobal(state, "MAXIMUM_MONSTERS_PER_MAP");
 }
 
 bool LoadLuaScript(const char *buffer, size_t len)
