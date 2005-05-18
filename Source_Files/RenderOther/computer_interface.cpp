@@ -417,7 +417,7 @@ void initialize_player_terminal_info(
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
 
 	//CP Addition: trap for logout!
-	if (terminal->state != _no_terminal_state && terminal->current_line != 0)
+	if (terminal->state != _no_terminal_state)
         {
 		activate_terminal_exit_trap(terminal->terminal_id);
                 // MH: call the Lua trap as well
@@ -722,6 +722,8 @@ void abort_terminal_mode(
 	if(terminal->state != _no_terminal_state)
 	{
 		terminal->state= _no_terminal_state;
+		activate_terminal_exit_trap(terminal->terminal_id);
+		L_Call_Terminal_Exit(terminal->terminal_id, player_index);
 	}
 }
 
