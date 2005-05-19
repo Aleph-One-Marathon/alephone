@@ -403,20 +403,7 @@ static bool TextureConfigureDialog(short WhichTexture)
 	SetControlValue(BasedOn_CHdl, WhichTexture+1);
 	
 	// Edit the title
-//#if defined(USE_CARBON_ACCESSORS)
 	MenuHandle BasedOn_MHdl = GetControlPopupMenuHandle(BasedOn_CHdl);
-/*
-#else
-	HLock(Handle(BasedOn_CHdl));
-	ControlRecord *PopupPtr = *BasedOn_CHdl;
-	
-	Handle CtrlDataHdl = PopupPtr->contrlData;
-	HLock(CtrlDataHdl);
-	PopupPrivateData *PPD = (PopupPrivateData *)(*CtrlDataHdl);
-	
-	MenuHandle BasedOn_MHdl = PPD->mHandle;
-#endif
-*/
 	Str255 WhichTxtrLabel;
 	GetMenuItemText(BasedOn_MHdl,WhichTexture+1,WhichTxtrLabel);
 	
@@ -424,12 +411,6 @@ static bool TextureConfigureDialog(short WhichTexture)
 	GetDialogItem(Dialog, WhichOne_Item, &ItemType, &WhichOne_Hdl, &Bounds);
 	SetDialogItemText(WhichOne_Hdl,WhichTxtrLabel);
 	
-/*
-#if !defined(USE_CARBON_ACCESSORS)
-	HUnlock(CtrlDataHdl);
-	HUnlock(Handle(BasedOn_CHdl));
-#endif
-*/	
 	short WhichAltTxtr;	// Which alternative one selected
 	
 	// Reveal it
@@ -488,7 +469,7 @@ static bool TextureConfigureDialog(short WhichTexture)
 	HideWindow(GetDialogWindow(Dialog));
 	DisposeDialog(Dialog);
 
-#if /*defined(USE_CARBON_ACCESSORS) &&*/ USE_SHEETS
+#if USE_SHEETS
 	SelectWindow(frontWindow);
 #endif
 	return IsOK;
@@ -613,7 +594,6 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			LscpColors[il][ie] = Data.LscpColors[il][ie];
 	
 	// Reveal it
-//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
@@ -621,12 +601,6 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
 #endif
-/*
-#else
-	SelectWindow(Dialog);
-	ShowWindow(Dialog);
-#endif
-*/
 	
 	bool WillQuit = false;
 	bool IsOK = false;
@@ -739,17 +713,12 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	}
 	
 	// Clean up
-//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	HideSheetWindow(GetDialogWindow(Dialog));
 #else
 	HideWindow(GetDialogWindow(Dialog));
 #endif
-/*
-#else
-	HideWindow(Dialog);
-#endif
-*/
+
 	DisposeUserItemUPP(PaintSwatchUPP);
 	DisposeDialog(Dialog);
 	
