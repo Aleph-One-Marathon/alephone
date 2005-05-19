@@ -165,6 +165,27 @@ The interface colors have the meanings listed below.
 <li>&lt;font&gt;, for all interface fonts; it is indexed.
 For more on specifying fonts, go <a href="#font">here</a>.
 The interface fonts have the meanings listed below.
+<li>&lt;vidmaster&gt;, for customizing the vidmaster level-selection dialog; it contains the attribute:
+<ul><li>stringset_index: this is the index of a stringset containing the dialog text. Here's an example:<br>
+<pre>
+&lt;interface&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;...
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;vidmaster stringset_index="1234" /&gt;
+&lt;/interface&gt;
+<br>
+&lt;stringset index="1234"&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;string index="0"&gt;Before proceeding any further, you&lt;/string&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;string index="1"&gt;must take the oath of the vidmaster:&lt;/string&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;string index="2"&gt;&lt;/string&gt; &lt;!-- empty string for line break --&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;!-- [QUOTE] at string's start makes Aleph One use a different text style --&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;string index="3"&gt;[QUOTE]"I pledge to punch all switches,&lt;/string&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;string index="4"&gt;[QUOTE]to never shoot where I could use grenades,&lt;/string&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;string index="5"&gt;[QUOTE]to admit the existence of no level&lt;/string&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;string index="6"&gt;[QUOTE]except Total Carnage,&lt;/string&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;string index="7"&gt;[QUOTE]to never use Caps Lock as my 'run' key,&lt;/string&gt;
+&nbsp;&nbsp;&nbsp;&nbsp;&lt;string index="8"&gt;[QUOTE]and to never, ever, leave a single Bob alive."&lt;/string&gt;
+&lt;/stringset&gt;
+</pre></li></ul>
 <li>&lt;weapon&gt;, for the weapon display;
 it contains the attributes
 <ul>
@@ -743,24 +764,26 @@ The sounds:
 This kind of element specifies various sound features.
 Its attributes are various formerly-hardcoded sounds here and there;
 these are made variable for Marathon 1 compatibility:
-<ul>
-<li>terminal_logon: Logging-on sound at a terminal
-<li>terminal_logoff: Logging-off sound at a terminal
-<li>terminal_page: Next-page sound at a terminal
-<li>teleport_in: Teleporting in
-<li>teleport_out: Teleporting out
-<li>got_powerup: Picked up a powerup
-<li>got_item: Picked up anything else
-<li>crunched: Monster getting crunched
-<li>exploding: Juggernaut exploding
-<li>breathing: Breathing sound (currently unused)
-<li>oxygen_warning: Warning when getting low on oxygen
-<li>adjust_volume: Made when sound volume gets changed
-<li>button_success: Made when an interface-button action succeeds (changes resolution, for example)
-<li>button_failure:  Made when an interface-button action fails (unable to change resolution, for example)
-<li>button_inoperative: Made when an interface button cannot make any action
-<li>ogl_reset: OpenGL textures getting reset
-</ul>
+<br><br>
+<table style="border: solid black 2px">
+<tr><td>Name</td><td>Default</td><td>Description</td></tr>
+<tr><td>terminal_logon</td><td>#141</td><td>Logging-on sound at a terminal</td></tr>
+<tr><td>terminal_logoff</td><td>#142</td><td>Logging-off sound at a terminal</td></tr>
+<tr><td>terminal_page</td><td>#143</td><td>Next-page sound at a terminal</td></tr>
+<tr><td>teleport_in</td><td>#1</td><td>Teleporting in</td></tr>
+<tr><td>teleport_out</td><td>#2</td><td>Teleporting out</td></tr>
+<tr><td>got_powerup</td><td>#19</td><td>Picked up a powerup</td></tr>
+<tr><td>got_item</td><td>#20</td><td>Picked up anything else</td></tr>
+<tr><td>crunched</td><td>#3</td><td>Monster getting crunched</td></tr>
+<tr><td>exploding</td><td>#198</td><td>Juggernaut exploding</td></tr>
+<tr><td>breathing</td><td>#6</td><td>Made when player is underwater (will play more often if oxygen bar is low)</td></tr>
+<tr><td>oxygen_warning</td><td>#7</td><td>Warning when getting low on oxygen</td></tr>
+<tr><td>adjust_volume</td><td>#18</td><td>Made when sound volume gets changed</td></tr>
+<tr><td>button_success</td><td>#143</td><td>Made when an interface-button action succeeds (changes resolution, for example)</td></tr>
+<tr><td>button_failure</td><td>#5</td><td>Made when an interface-button action fails (unable to change resolution, for example)</td></tr>
+<tr><td>button_inoperative</td><td>#11</td><td>Made when an interface button cannot make any action</td></tr>
+<tr><td>ogl_reset</td><td>#198</td><td>OpenGL textures getting reset</td></tr>
+</table>
 <p>
 
 It has child elements that specify which ambient and random sound assignments to use,

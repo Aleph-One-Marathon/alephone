@@ -85,6 +85,8 @@ Feb 13, 2003 (Woody Zenfell):
 #include "game_errors.h"
 #include "screen.h"
 
+#include "TextStrings.h"
+
 // #include "portable_files.h"
 #include "images.h"
 
@@ -168,12 +170,62 @@ static bool LevelNumberMenuBuilder(
 	return UseThis;
 }
 
+extern short vidmasterStringSetID; // shell.cpp
 short get_level_number_from_user(
 	void)
 {	
 	// Get the window
 	AutoNibWindow Window(GUI_Nib,Window_Game_Goto_Level);
-	
+
+	ControlRef c;
+	Rect r, window_bounds;
+	ControlFontStyleRec style;
+	assert(GetWindowBounds(Window(), kWindowContentRgn, &window_bounds) == noErr);
+	r.top = 20; r.left = 20; r.right = RECTANGLE_WIDTH(&window_bounds) - 20; r.bottom = 36;
+	style.flags = kControlUseJustMask;
+	style.just = teCenter;
+	style.style = 2; // italics, only active when we set kControlUseFaceMask on flags
+#define SkipLine() do { r.top += 16; r.bottom += 16; } while (0)
+#define NewStaticTextControl(text) do { \
+	assert(CreateStaticTextControl(Window(), &r, text, &style, &c) == noErr); \
+	SkipLine(); } while (0)
+
+	if (vidmasterStringSetID != -1 && TS_IsPresent(vidmasterStringSetID) && TS_CountStrings(vidmasterStringSetID) > 0) {
+		// if we there's a stringset present for it, load the message from there
+		int num_lines = TS_CountStrings(vidmasterStringSetID);
+
+		for (size_t i = 0; i < num_lines; i++) {
+			char *string = TS_GetCString(vidmasterStringSetID, i);
+			style.flags &= ~kControlUseFaceMask;
+			if (!strncmp(string, "[QUOTE]", 7)) {
+				string = string + 7;
+				style.flags |= kControlUseFaceMask;
+			}
+			if (!strlen(string))
+				SkipLine();
+			else {
+				CFStringRef cfstring = CFStringCreateWithCString(NULL, string, kCFStringEncodingUTF8);
+				assert(cfstring);
+				NewStaticTextControl(cfstring);
+			}
+		}
+	} else {
+		// no stringset or no strings in stringset - use default message
+		NewStaticTextControl(CFSTR("Before proceeding any further, you"));
+		NewStaticTextControl(CFSTR("must take the oath of the vidmaster:"));
+		SkipLine();
+		style.flags |= kControlUseFaceMask;
+		NewStaticTextControl(CFSTR("\"I pledge to punch all switches,"));
+		NewStaticTextControl(CFSTR("to never shoot where I could use grenades,"));
+		NewStaticTextControl(CFSTR("to admit the existence of no level"));
+		NewStaticTextControl(CFSTR("except Total Carnage,"));
+		NewStaticTextControl(CFSTR("to never use Caps Lock as my 'run' key,"));
+		NewStaticTextControl(CFSTR("and to never, ever, leave a single Bob alive.\""));
+		style.flags &= ~kControlUseFaceMask;
+	}
+#undef NewStaticTextControl
+#undef SkipLine
+
 	// Set up the popup menu
 	ControlRef MenuCtrl = GetCtrlFromWindow(Window(), 0, iLEVEL_SELECTOR);
 	
@@ -184,9 +236,9 @@ short get_level_number_from_user(
 		strcpy(dummy.level_name, "Untitled Level");
 		Levels.push_back(dummy);
 	}
-		
+
 	BuildMenu(MenuCtrl, LevelNumberMenuBuilder, &Levels);
-	
+
 	// Should do noncontiguous map files OK
 	short LevelNumber = RunModalDialog(Window(), false) ?
 		Levels[(GetControl32BitValue(MenuCtrl) - 1)].level_number :
@@ -208,11 +260,6 @@ short get_level_number_from_user(
 	short item_type;
 	Rect bounds;
 	ControlHandle SelectorHdl;
-/*
-#if !defined(USE_CARBON_ACCESSORS)
-	struct PopupPrivateData **privateHndl;
-#endif
-*/
 	MenuHandle mHandle;
 	
 	index = 0; maximum_level_number= 0;
@@ -224,14 +271,8 @@ short get_level_number_from_user(
 	GetDialogItem(dialog, iLEVEL_SELECTOR, &item_type, 
 		(Handle *) &SelectorHdl, &bounds);
 	assert(SelectorHdl);
-//#if defined(USE_CARBON_ACCESSORS)
 	mHandle= GetControlPopupMenuHandle(SelectorHdl);
-/*
-#else
-	privateHndl= (PopupPrivateData **) ((*SelectorHdl)->contrlData);
-	mHandle= (*privateHndl)->mHandle;
-#endif
-*/	
+
 	// Get rid of old contents
 	while(CountMenuItems(mHandle)) DeleteMenuItem(mHandle, 1);
 	
@@ -549,17 +590,9 @@ bool try_for_event(
 			{
 				try_for_event= true;
 
-//#if defined(USE_CARBON_ACCESSORS)
 				RgnHandle updateRgn = NewRgn();
 				GetWindowRegion(GetWindowFromPort(GetScreenGrafPort()), kWindowUpdateRgn, updateRgn);
-				if (suppress_background_events() && 
-					EmptyRgn(updateRgn))
-/*
-#else
-				if (suppress_background_events() && 
-					EmptyRgn(((WindowPeek)GetScreenGrafPort())->updateRgn)) 
-#endif
-*/
+				if (suppress_background_events() && EmptyRgn(updateRgn))
 					// && consecutive_getosevent_calls<MAXIMUM_CONSECUTIVE_GETOSEVENT_CALLS)
 				{
 					*use_waitnext= false;
@@ -568,10 +601,8 @@ bool try_for_event(
 					*use_waitnext= true;
 					consecutive_getosevent_calls= 0;
 				}
-//#if defined(USE_CARBON_ACCESSORS)
 				DisposeRgn(updateRgn);
-//#endif
-		
+
 				last_xnextevent_call= TickCount();
 			}
 			break;
@@ -614,7 +645,9 @@ bool try_for_event(
 void exit_networking(
 	void)
 {
+#if !defined(DISABLE_NETWORKING)
 	NetExit();
+#endif // !defined(DISABLE_NETWORKING)
 }
 
 bool has_cheat_modifiers(
@@ -763,15 +796,10 @@ void show_movie(
 							dispBounds.bottom= short(PlaybackSize*RECTANGLE_HEIGHT(&dispBounds) + 0.5);
 							
 							/* ‚enter... */
-//#if defined(USE_CARBON_ACCESSORS)
 							Rect screenBounds;
 							GetPortBounds(GetScreenGrafPort(), &screenBounds);
 							AdjustRect(&screenBounds, &dispBounds, &dispBounds, centerRect);
-/*
-#else
-							AdjustRect(&GetScreenGrafPort()->portRect, &dispBounds, &dispBounds, centerRect);
-#endif
-*/
+
 							OffsetRect(&dispBounds, dispBounds.left<0 ? -dispBounds.left : 0, dispBounds.top<0 ? -dispBounds.top : 0);
 							SetMovieBox(movie, &dispBounds);
 							

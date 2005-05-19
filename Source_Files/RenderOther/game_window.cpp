@@ -387,7 +387,9 @@ void mark_player_network_stats_as_dirty(short player_index)
 
 void set_interface_microphone_recording_state(bool state)
 {
-        set_network_microphone_state(state);
+#if !defined(DISABLE_NETWORKING)
+	set_network_microphone_state(state);
+#endif // !defined(DISABLE_NETWORKING)
 }
 
 void scroll_inventory(short dy)
@@ -461,6 +463,46 @@ static void set_current_inventory_screen(
 	player->interface_flags|= screen;
 	player->interface_decay= 5*TICKS_PER_SECOND;
 }
+
+
+/* MML parser for the 'vidmaster' tag */
+extern short vidmasterStringSetID; // shell.cpp
+class XML_VidmasterParser: public XML_ElementParser
+{
+	short StringSetIndex;
+
+public:
+
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+
+	XML_VidmasterParser(): XML_ElementParser("vidmaster") {}
+};
+
+
+bool XML_VidmasterParser::Start()
+{
+	StringSetIndex = -1;
+	return true;
+}
+
+bool XML_VidmasterParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag, "stringset_index"))
+		return ReadBoundedInt16Value(Value, StringSetIndex, -1, SHRT_MAX);
+	/* Ideas for other attributes: enabled="{boolean}" (if not, no go-to-level for you) keys="shift,control"? */
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_VidmasterParser::AttributesDone()
+{
+	vidmasterStringSetID = StringSetIndex;
+	return true;
+}
+
+static XML_VidmasterParser VidmasterParser;
 
 
 /*
@@ -812,6 +854,8 @@ XML_ElementParser *Interface_GetParser()
 	InterfaceParser.AddChild(InterfaceRectangles_GetParser());
 	InterfaceParser.AddChild(Color_GetParser());
 	InterfaceParser.AddChild(Font_GetParser());
+	// add the vidmaster parser too
+	InterfaceParser.AddChild(&VidmasterParser);
 	
 	return &InterfaceParser;
 }

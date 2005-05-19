@@ -32,6 +32,9 @@ extern OSErr	CPSSetFrontProcess( CPSProcessSerNum *psn);
 
 #endif /* SDL_USE_CPS */
 
+/* The name of our bundle (such as "AlephOneSDL.app") which we determine at run-time. */
+char *bundle_name = NULL;
+
 static int    gArgc;
 static char  **gArgv;
 static BOOL   gFinderLaunch;
@@ -55,10 +58,10 @@ static BOOL   gFinderLaunch;
 /* Invoked from the Quit menu item */
 - (void)terminate:(id)sender
 {
-    /* Post a SDL_QUIT event */
-    SDL_Event event;
-    event.type = SDL_QUIT;
-    SDL_PushEvent(&event);
+	/* Post a SDL_QUIT event */
+	SDL_Event event;
+	event.type = SDL_QUIT;
+	SDL_PushEvent(&event);
 }
 @end
 
@@ -66,29 +69,51 @@ static BOOL   gFinderLaunch;
 /* The main class of the application, the application's delegate */
 @implementation SDLMain
 
+/* Find the name of our bundle, as we'll need this later for finding files. */
+- (void) findBundleName
+{
+	int i;
+	char buf[MAXPATHLEN];
+
+	strlcpy(buf, gArgv[0], sizeof(buf));
+	for (i = strlen(buf) - 14; i >= 0; i--) {
+		/* Assumption: the bundle is named *.app and has a 'Contents' directory inside it. */
+		if (!strncmp(buf + i, ".app/Contents/", 14)) {
+			int old_i = i;
+			buf[i + 4] = '\0'; // truncate end
+			for (; i >= 0; i--) // and beginning
+				if (buf[i] == '/') {
+					bundle_name = malloc(old_i - i + 4);
+					strlcpy(bundle_name, buf + i + 1, old_i - i + 4);
+					break;
+				}
+			break;
+		}
+	}
+}
+
 /* Set the working directory to the .app's parent directory */
 - (void) setupWorkingDirectory:(BOOL)shouldChdir
 {
+	if (shouldChdir)
+	{
+		char parentdir[MAXPATHLEN];
+		char *c;
 
-    if (shouldChdir)
-    {
-        char parentdir[MAXPATHLEN];
-        char *c;
+		strlcpy(parentdir, gArgv[0], sizeof(parentdir));
+		c = (char*) parentdir;
 
-        strncpy ( parentdir, gArgv[0], sizeof(parentdir) );
-        c = (char*) parentdir;
+		while (*c != '\0')     /* go to end */
+			c++;
 
-        while (*c != '\0')     /* go to end */
-               c++;
+		while (*c != '/')      /* back up to parent */
+			c--;
 
-        while (*c != '/')      /* back up to parent */
-               c--;
+		*c++ = '\0';           /* cut off last part (binary name) */
 
-        *c++ = '\0';           /* cut off last part (binary name) */
-
-        assert ( chdir (parentdir) == 0 );   /* chdir to the binary app's parent */
-        assert ( chdir ("../../../") == 0 ); /* chdir to the .app's parent */
-    }
+		assert ( chdir (parentdir) == 0 );   /* chdir to the binary app's parent */
+		assert ( chdir ("../../../") == 0 ); /* chdir to the .app's parent */
+	}
 }
 
 #if SDL_USE_NIB_FILE
@@ -214,6 +239,9 @@ void CustomApplicationMain (int argc, char* argv[])
 {
     int status;
 
+    /* Find the bundle name from where we were lauched and save for later use. */
+    [self findBundleName];
+
     /* Set the working directory to the .app's parent directory */
     [self setupWorkingDirectory:gFinderLaunch];
 
@@ -226,6 +254,7 @@ void CustomApplicationMain (int argc, char* argv[])
     status = SDL_main (gArgc, gArgv);
 
     /* We're done, thank you for playing */
+    free(bundle_name);
     exit(status);
 }
 @end
@@ -287,10 +316,10 @@ int main (int argc, char **argv)
     /* This is passed if we are launched by double-clicking */
     if ( argc >= 2 && strncmp (argv[1], "-psn", 4) == 0 ) {
         gArgc = 1;
-	gFinderLaunch = YES;
+        gFinderLaunch = YES;
     } else {
         gArgc = argc;
-	gFinderLaunch = NO;
+        gFinderLaunch = NO;
     }
     gArgv = (char**) malloc (sizeof(*gArgv) * (gArgc+1));
     assert (gArgv != NULL);

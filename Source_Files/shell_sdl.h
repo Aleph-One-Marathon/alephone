@@ -118,7 +118,6 @@ void free_and_unlock_memory(void);
 #include "Logging.h"
 #include "network.h"
 
-
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
 DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
@@ -272,7 +271,6 @@ int main(int argc, char **argv)
 /*
  *  Initialize everything
  */
-
 static void initialize_application(void)
 {
 	// Initialize SDL
@@ -314,7 +312,11 @@ static void initialize_application(void)
 	local_data_dir += ".alephone";
 
 #elif defined(__APPLE__) && defined(__MACH__)
-	default_data_dir = PKGDATADIR;
+	extern char *bundle_name; // SDLMain.m
+	DirectorySpecifier bundle_data_dir = bundle_name;
+	bundle_data_dir += "Contents/Resources/DataFiles";
+
+	default_data_dir = bundle_data_dir;
 	const char *home = getenv("HOME");
 	if (home)
 	    local_data_dir = home;
@@ -376,7 +378,7 @@ static void initialize_application(void)
 #if defined(__APPLE__) && defined(__MACH__)
 	data_search_path.push_back(".");
 #endif
-     data_search_path.push_back(default_data_dir);
+	data_search_path.push_back(default_data_dir);
 	data_search_path.push_back(local_data_dir);
 
 	// Subdirectories
@@ -389,13 +391,13 @@ static void initialize_application(void)
 	saved_games_dir.CreateDirectory();
 	recordings_dir.CreateDirectory();
 #if defined(__APPLE__) && defined(__MACH__)
-	DirectorySpecifier local_mml_dir = "AlephOneSDL.app/Contents/Resources/DataFiles/MML";
+	DirectorySpecifier local_mml_dir = bundle_data_dir + "MML";
 #else
 	DirectorySpecifier local_mml_dir = local_data_dir + "MML";
 #endif
 	local_mml_dir.CreateDirectory();
 #if defined(__APPLE__) && defined(__MACH__)
-	DirectorySpecifier local_themes_dir = "AlephOneSDL.app/Contents/Resources/DataFiles/Themes";
+	DirectorySpecifier local_themes_dir = bundle_data_dir + "Themes";
 #else
 	DirectorySpecifier local_themes_dir = local_data_dir + "Themes";
 #endif
@@ -520,7 +522,7 @@ void alert_user(short severity, short resid, short item, OSErr error)
 {
 	char str[256];
 	getcstr(str, resid, item);
-        GetCurrentLogger()->logMessage(logDomain, severity == infoError ? logErrorLevel : logFatalLevel, __FILE__, __LINE__, "%s: %s (%d)", severity == infoError ? "alert" : "fatal alert", str, error);
+	GetCurrentLogger()->logMessage(logDomain, severity == infoError ? logErrorLevel : logFatalLevel, __FILE__, __LINE__, "%s: %s (%d)", severity == infoError ? "alert" : "fatal alert", str, error);
 	if (SDL_GetVideoSurface() == NULL) {
 		fprintf (stderr, "%s: %s (error %d)\n", severity == infoError ? "INFO" : "FATAL", str, error);
 	} else {
@@ -596,17 +598,41 @@ short get_level_number_from_user(void)
 
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text("Before proceeding any further, you", MESSAGE_FONT, TITLE_COLOR));
-	d.add(new w_static_text ("must take the oath of the vidmaster:", MESSAGE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
-	d.add(new w_static_text("\xd2I pledge to punch all switches,"));
-	d.add(new w_static_text("to never shoot where I could use grenades,"));
-	d.add(new w_static_text("to admit the existence of no level"));
-	d.add(new w_static_text("except Total Carnage,"));
-	d.add(new w_static_text("to never use Caps Lock as my \xd4run\xd5 key,"));
-	d.add(new w_static_text("and to never, ever, leave a single Bob alive.\xd3"));
+	if (vidmasterStringSetID != -1 && TS_IsPresent(vidmasterStringSetID) && TS_CountStrings(vidmasterStringSetID) > 0) {
+		// if we there's a stringset present for it, load the message from there
+		int num_lines = TS_CountStrings(vidmasterStringSetID);
+
+		for (size_t i = 0; i < num_lines; i++) {
+			bool message_font_title_color = true;
+			char *string = TS_GetCString(vidmasterStringSetID, i);
+			if (!strncmp(string, "[QUOTE]", 7)) {
+				string = string + 7;
+				message_font_title_color = false;
+			}
+			if (!strlen(string))
+				d.add(new w_spacer());
+			else if (message_font_title_color)
+				d.add(new w_static_text(string, MESSAGE_FONT, TITLE_COLOR));
+			else
+				d.add(new w_static_text(string));
+		}
+
+	} else {
+		// no stringset or no strings in stringset - use default message
+		d.add(new w_static_text("Before proceeding any further, you", MESSAGE_FONT, TITLE_COLOR));
+		d.add(new w_static_text ("must take the oath of the vidmaster:", MESSAGE_FONT, TITLE_COLOR));
+		d.add(new w_spacer());
+		d.add(new w_static_text("\xd2I pledge to punch all switches,"));
+		d.add(new w_static_text("to never shoot where I could use grenades,"));
+		d.add(new w_static_text("to admit the existence of no level"));
+		d.add(new w_static_text("except Total Carnage,"));
+		d.add(new w_static_text("to never use Caps Lock as my \xd4run\xd5 key,"));
+		d.add(new w_static_text("and to never, ever, leave a single Bob alive.\xd3"));
+	}
+
 	d.add(new w_spacer());
 	d.add(new w_static_text("Start at level:", MESSAGE_FONT, TITLE_COLOR));
+
 	w_levels *level_w = new w_levels(levels, &d);
 	d.add(level_w);
 	d.add(new w_spacer());
@@ -1145,6 +1171,7 @@ static void handle_game_key(const SDL_Event &event)
 		if (type_of_cheat != NONE)
 			handle_keyword(type_of_cheat);
 	}
+#if !defined(DISABLE_NETWORKING)
 	if (chat_input_mode) {
 	  switch(key) {
 	  case SDLK_RETURN:
@@ -1167,7 +1194,10 @@ static void handle_game_key(const SDL_Event &event)
 	      InGameChatCallbacks::add(event.key.keysym.unicode & 0x7F);
 	    }
 	  }
-	} else {
+	}
+	else
+#endif // !defined(DISABLE_NETWORKING)
+	{
 	  
 	switch (key) {
         case SDLK_ESCAPE:   // (ZZZ) Quit gesture (now safer)
@@ -1238,15 +1268,16 @@ static void handle_game_key(const SDL_Event &event)
 	  }
 	  break;
 	case SDLK_BACKSLASH:
+#if !defined(DISABLE_NETWORKING)
 	  if (game_is_networked) {
 	    PlayInterfaceButtonSound(Sound_ButtonSuccess());
 	    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 	    SDL_EnableUNICODE(1);
 	    chat_input_mode = true;
 	    InGameChatCallbacks::clear();
-	  } else {
+	  } else
+#endif // !defined(DISABLE_NETWORKING)
 	    PlayInterfaceButtonSound(Sound_ButtonFailure());
-	  }
 	  break;
 
 		case SDLK_F1:		// Decrease screen size

@@ -503,6 +503,7 @@ void write_preferences(
 	fprintf(F,"  flags=\"%hu\"\n",sound_preferences->flags);
 	fprintf(F,"/>\n\n");
 	
+#if !defined(DISABLE_NETWORKING)
 	fprintf(F,"<network\n");
 	fprintf(F,"  microphone=\"%s\"\n",BoolString(network_preferences->allow_microphone));
 	fprintf(F,"  untimed=\"%s\"\n",BoolString(network_preferences->game_is_untimed));
@@ -532,22 +533,32 @@ void write_preferences(
 	WriteStarPreferences(F);
 	WriteRingPreferences(F);
 	fprintf(F,"</network>\n\n");
-	
+#endif // !defined(DISABLE_NETWORKING)
+
 	fprintf(F,"<environment\n");
 #ifdef SDL
 	WriteXML_CString(F,"  map_file=\"",environment_preferences->map_file,256,"\"\n");
 	WriteXML_CString(F,"  physics_file=\"",environment_preferences->physics_file,256,"\"\n");
 	WriteXML_CString(F,"  shapes_file=\"",environment_preferences->shapes_file,256,"\"\n");
 	WriteXML_CString(F,"  sounds_file=\"",environment_preferences->sounds_file,256,"\"\n");
+#if defined(__APPLE__) && defined(__MACH__)
+	extern char *bundle_name; // SDLMain.m
+	// replace our leading bundle name with generic "AlephOneSDL.app" (we do reverse when loading)
+	if (!strncmp(environment_preferences->theme_dir, bundle_name, strlen(bundle_name))) {
+		strlcpy(temporary, "AlephOneSDL.app", sizeof(temporary));
+		strlcat(temporary, environment_preferences->theme_dir + strlen(bundle_name), sizeof(temporary));
+		WriteXML_CString(F,"  theme_dir=\"",temporary,256,"\"\n");
+	} else
+#endif
 	WriteXML_CString(F,"  theme_dir=\"",environment_preferences->theme_dir,256,"\"\n");
 #endif
 	fprintf(F,"  map_checksum=\"%lu\"\n",environment_preferences->map_checksum);
 	fprintf(F,"  physics_checksum=\"%lu\"\n",environment_preferences->physics_checksum);
 	fprintf(F,"  shapes_mod_date=\"%lu\"\n",uint32(environment_preferences->shapes_mod_date));
 	fprintf(F,"  sounds_mod_date=\"%lu\"\n",uint32(environment_preferences->sounds_mod_date));
-        fprintf(F,"  group_by_directory=\"%s\"\n",BoolString(environment_preferences->group_by_directory));
-        fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
-        fprintf(F,"  non_bungie_warning=\"%s\"\n",BoolString(environment_preferences->non_bungie_warning));
+	fprintf(F,"  group_by_directory=\"%s\"\n",BoolString(environment_preferences->group_by_directory));
+	fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
+	fprintf(F,"  non_bungie_warning=\"%s\"\n",BoolString(environment_preferences->non_bungie_warning));
 	fprintf(F,">\n");
 #ifdef mac
 	WriteXML_FSSpec(F,"  ",kEnvMapFileSpecIndex,environment_preferences->map_file);
@@ -653,8 +664,10 @@ static void default_network_preferences(network_preferences_data *preferences)
         preferences->game_port= 4226;	// Magic number I guess, but this is the only place it's used
                                         // (everyone else uses preferences->game_port)
 	preferences->game_protocol= _network_game_protocol_default;
+#if !defined(DISABLE_NETWORKING)
 	DefaultStarPreferences();
 	DefaultRingPreferences();
+#endif // !defined(DISABLE_NETWORKING)
 	preferences->use_speex_encoder = true;
 	preferences->speex_encoder_quality = 2;
 	preferences->speex_encoder_complexity = 1;
@@ -1944,6 +1957,15 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	{
 #ifdef SDL
 		DeUTF8_C(Value,strlen(Value),environment_preferences->theme_dir,255);
+#if defined(__APPLE__) && defined(__MACH__)
+		extern char *bundle_name; // SDLMain.m
+		// replace leading "AlephOneSDL.app" with our actual bundle name (we do reverse when saving)
+		if (!strncmp(environment_preferences->theme_dir, "AlephOneSDL.app", 15)) {
+			strlcpy(temporary, bundle_name, sizeof(temporary));
+			strlcat(temporary, environment_preferences->theme_dir + 15, sizeof(temporary));
+			strlcpy(environment_preferences->theme_dir, temporary, 255);			
+		}
+#endif
 #endif
 		return true;
 	}
@@ -2021,8 +2043,10 @@ void SetupPrefsParseTree()
 	
 	MarathonPrefsParser.AddChild(&SoundPrefsParser);
 
+#if !defined(DISABLE_NETWORKING)
 	NetworkPrefsParser.AddChild(StarGameProtocol::GetParser());
 	NetworkPrefsParser.AddChild(RingGameProtocol::GetParser());
+#endif // !defined(DISABLE_NETWORKING)
 	NetworkPrefsParser.AddChild(&MacFSSpecPrefsParser);
 	MarathonPrefsParser.AddChild(&NetworkPrefsParser);
 	

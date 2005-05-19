@@ -72,6 +72,9 @@ extern void handle_keyword(int type_of_cheat);
 
 static void PlayInterfaceButtonSound(short SoundID);
 
+// cross-platform static variables
+short vidmasterStringSetID = -1; // can be set with MML
+
 // Include platform-specific files
 #if defined(mac)
 #include "shell_macintosh.h"
