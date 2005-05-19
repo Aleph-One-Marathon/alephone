@@ -39,16 +39,7 @@ Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 #include <stdlib.h>
 #include <vector.h>
 
-#if defined(EXPLICIT_CARBON_HEADER)
-    #include <Carbon/Carbon.h>
-#endif
-
-#include "csmacros.h"
-#include "cstypes.h"
-#include "csdialogs.h"
-#include "csalerts.h"
-#include "csstrings.h"
-#include "gdspec.h"
+#include "cseries.h"
 #include "shell.h"
 
 #ifdef USES_NIBS
@@ -294,7 +285,6 @@ PositioningInfo::PositioningInfo(Rect &R)
 	Size_H = R.right - R.left;
 	Size_V = R.bottom - R.top;
 }
-
 
 void display_device_dialog(
 	GDSpecPtr spec)
@@ -559,13 +549,8 @@ static pascal Boolean device_filter(
 		case inContent:
 			where=event->where;
 			GetPort(&saveport);
-//#if defined(USE_CARBON_ACCESSORS)
 			SetPort(GetWindowPort(GetDialogWindow(dlg)));
-/*
-#else
-			SetPort(dlg);
-#endif
-*/
+
 			GlobalToLocal(&where);
 			item=FindDialogItem(dlg,where)+1;
 			switch (item) {
@@ -670,18 +655,13 @@ void display_device_dialog(
 	GetDialogItem(dlg,itemColorsRadio,&it,&ih,&ir);
 	colorsradio=(ControlHandle)ih;
 	SetControlValue((spec->flags&1<<gdDevType) ? colorsradio : graysradio,1);
-//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	SetThemeWindowBackground(GetDialogWindow(dlg), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(dlg), ActiveNonFloatingWindow());
 #else
 	ShowWindow(GetDialogWindow(dlg));
 #endif
-/*
-#else
-	ShowWindow(dlg);
-#endif
-*/
+
 	for (done=false; !done; ) {
 		ModalDialog(device_filter_upp,&hit);
 		switch (hit) {
@@ -699,17 +679,12 @@ void display_device_dialog(
 			break;
 		}
 	}
-//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	HideSheetWindow(GetDialogWindow(dlg));
 #else
 	HideWindow(GetDialogWindow(dlg));
 #endif
-/*
-#else
-	HideWindow(dlg);
-#endif
-*/
+
 	if (hit==itemOKButton) {
 		spec->slot=GetSlotFromGDevice(devices[curix].dev);
 		spec->flags=GetControlValue(colorsradio) ? 1<<gdDevType : 0;
