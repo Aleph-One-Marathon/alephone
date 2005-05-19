@@ -25,6 +25,10 @@
   SOFTWARE.
 */
 
+#if !defined(DISABLE_NETWORKING)
 
 #include "MessageHandler.h"
+
+#endif // !defined(DISABLE_NETWORKING)
+
 

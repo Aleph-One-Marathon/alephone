@@ -26,6 +26,8 @@
  *	Support for lossy streaming data distribution.
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "cseries.h"
 
 #ifdef EXPLICIT_CARBON_HEADER
@@ -249,3 +251,5 @@ WriteStarPreferences(FILE* F)
 	WriteSpokePreferences(F);
 	fprintf(F,"  </star_protocol>\n");
 }
+
+#endif // !defined(DISABLE_NETWORKING)

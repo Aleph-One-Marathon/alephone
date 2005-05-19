@@ -26,6 +26,8 @@ Wednesday, October 19, 1994 3:50:46 PM  (Jason')
 	zone changes, rewriting jason-style.
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "macintosh_cseries.h"
 #include "macintosh_network.h"
 #include <string.h>
@@ -500,4 +502,6 @@ static int zone_name_compare(
 {
 	return IUCompString((unsigned char const *)elem1, (unsigned char const *)elem2);
 }
+
+#endif // !defined(DISABLE_NETWORKING)
 

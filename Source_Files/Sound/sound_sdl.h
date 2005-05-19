@@ -1247,6 +1247,7 @@ static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch)
 // but setting c->active is the last thing we do, there's no way we can get mixed up, right?
 void
 ensure_network_audio_playing() {
+#if !defined(DISABLE_NETWORKING)
     if(!sdl_channels[NETWORK_AUDIO_CHANNEL].active) {
         // Get the audio to play
         sNetworkAudioBufferDesc = dequeue_network_speaker_data();
@@ -1275,12 +1276,14 @@ ensure_network_audio_playing() {
 	        SDL_UnlockAudio();
         }
     }
+#endif // !defined(DISABLE_NETWORKING)
 }
 
 // I can see locking here because we're invalidating some storage, and we want to
 // make sure the play routine does not trail on a little bit using that storage.
 void
 stop_network_audio() {
+#if !defined(DISABLE_NETWORKING)
 	SDL_LockAudio();
 	sdl_channels[NETWORK_AUDIO_CHANNEL].active = false;
     if(sNetworkAudioBufferDesc != NULL) {
@@ -1289,6 +1292,7 @@ stop_network_audio() {
         sNetworkAudioBufferDesc = NULL;
     }
 	SDL_UnlockAudio();
+#endif // !defined(DISABLE_NETWORKING)
 }
 
 
@@ -1365,24 +1369,25 @@ static inline void calc_buffer(T *p, int len, bool stereo)
 							// Resource channel, turn it off
 							c->active = false;
 
-                        }
-                        else if (i == NETWORK_AUDIO_CHANNEL) {
+						}
+						else if (i == NETWORK_AUDIO_CHANNEL) {
+#if !defined(DISABLE_NETWORKING)
 
-                            // ZZZ: if we're supposed to dispose of the storage, so be it
-                            if(is_sound_data_disposable(sNetworkAudioBufferDesc))
-                                release_network_speaker_buffer(sNetworkAudioBufferDesc->mData);
+							// ZZZ: if we're supposed to dispose of the storage, so be it
+							if (is_sound_data_disposable(sNetworkAudioBufferDesc))
+								release_network_speaker_buffer(sNetworkAudioBufferDesc->mData);
 
-                            // Get the next buffer of data
-                            sNetworkAudioBufferDesc = dequeue_network_speaker_data();
+							// Get the next buffer of data
+							sNetworkAudioBufferDesc = dequeue_network_speaker_data();
 
-                            // If we have a buffer to play, set it up; else deactivate the channel.
-                            if(sNetworkAudioBufferDesc != NULL) {
-                                c->data     = sNetworkAudioBufferDesc->mData;
-                                c->length   = sNetworkAudioBufferDesc->mLength;
-                            }
-                            else
-                                c->active   = false;
-
+							// If we have a buffer to play, set it up; else deactivate the channel.
+							if (sNetworkAudioBufferDesc != NULL) {
+								c->data     = sNetworkAudioBufferDesc->mData;
+								c->length   = sNetworkAudioBufferDesc->mLength;
+							}
+							else
+								c->active   = false;
+#endif // !defined(DISABLE_NETWORKING)
 						} else {
 
 							// No loop, another sound header queued?

@@ -650,6 +650,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 
 			// if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) handle_player_in_vacuum(player_index, action_flags);
 
+#if !defined(DISABLE_NETWORKING)
 			/* handle arbitration of the communications channel (i.e., dynamic_world->speaking_player_index) */
 			if ((action_flags&_microphone_button) && (!PLAYER_IS_DEAD(player) || get_network_version() >= kMinimumNetworkVersionForTalkingCorpses))
 			{
@@ -659,6 +660,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 					if (player_index==local_player_index) set_interface_microphone_recording_state(true);
 				}
 			}
+#endif // !defined(DISABLE_NETWORKING)
 			else
 			{
 				if (dynamic_world->speaking_player_index==player_index)
@@ -818,6 +820,7 @@ void damage_player(
 							}
 							
 							kill_player(player_index, aggressor_player_index, action);
+#if !defined(DISABLE_NETWORKING)
 							if (aggressor_player_index!=NONE)
 							{
 								struct player_data *aggressor_player= get_player_data(aggressor_player_index);
@@ -837,6 +840,7 @@ void damage_player(
 								}
 							}
 							else
+#endif // !defined(DISABLE_NETWORKING)
 							{
 								player->monster_damage_taken.kills+= 1;
 								team_monster_damage_taken[player->team].kills += 1;

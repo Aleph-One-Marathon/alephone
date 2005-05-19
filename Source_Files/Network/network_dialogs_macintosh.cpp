@@ -48,6 +48,8 @@ Oct 15, 2001 (Woody Zenfell):
         separate implementations (a link-time version of "template method"?).
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 // add a taunt window for postgame.
 // add a message window for gathering
 // Don't allow gather on map with no entry points (marathon bites it)
@@ -699,7 +701,7 @@ void fill_in_entry_points(
 	menu= get_popup_menu_handle(dialog, item);
 
 	/* Nix the maps */
-	while(CountMItems(menu))
+	while(CountMenuItems(menu))
 	{
 		DeleteMenuItem(menu, 1);
 	}
@@ -731,7 +733,7 @@ void fill_in_entry_points(
 		SetControlValue(control, 1);
 	}
 
-	if (!CountMItems(menu)) modify_control(dialog, iOK, CONTROL_INACTIVE, 0);
+	if (!CountMenuItems(menu)) modify_control(dialog, iOK, CONTROL_INACTIVE, 0);
 }
 
 
@@ -1569,7 +1571,7 @@ static short create_graph_popup_menu(
 
 	/* Add in the total carnage.. */
 	AppendMenu(graph_popup, getpstr(ptemporary, strNET_STATS_STRINGS, strTOTALS_STRING));
-	current_graph_selection= CountMItems(graph_popup);
+	current_graph_selection= CountMenuItems(graph_popup);
 	
 	/* Add in the scores */
 	has_scores= get_network_score_text_for_postgame(temporary, false);
@@ -1577,7 +1579,7 @@ static short create_graph_popup_menu(
 	{
 		c2pstr(temporary);
 		AppendMenu(graph_popup, ptemporary);
-		current_graph_selection= CountMItems(graph_popup);
+		current_graph_selection= CountMenuItems(graph_popup);
 	}
 	
 	/* If the game has teams, show the team stats. */
@@ -1597,7 +1599,7 @@ static short create_graph_popup_menu(
 	} 
 
 	GetDialogItem(dialog, iGRAPH_POPUP, &item_type, &item_handle, &item_rect);
-	SetControlMaximum((ControlHandle) item_handle, CountMItems(graph_popup));
+	SetControlMaximum((ControlHandle) item_handle, CountMenuItems(graph_popup));
 	SetControlValue((ControlHandle) item_handle, current_graph_selection); 
 	
 	return current_graph_selection;
@@ -2262,3 +2264,6 @@ static bool key_is_down(
 	GetKeys(key_map);
 	return ((((byte*)key_map)[key_code>>3] >> (key_code & 7)) & 1);
 }
+
+#endif // !defined(DISABLE_NETWORKING)
+

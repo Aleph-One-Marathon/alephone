@@ -290,4 +290,11 @@ short get_network_version();
 bool NetAllowCrosshair();
 bool NetAllowTunnelVision();
 bool NetAllowBehindview();
+
+#if defined(DISABLE_NETWORKING)
+#define NetAllowCrosshair() TRUE
+#define NetAllowTunnelVision() TRUE
+#define NetAllowBehindview() TRUE
+#endif // defined(DISABLE_NETWORKING)
+
 #endif

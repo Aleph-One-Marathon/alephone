@@ -42,6 +42,8 @@
  *	Hub can then associate the ID in the identification packet with the paket's source address.
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "network_star.h"
 
 //#include "sdl_network.h"
@@ -1285,3 +1287,5 @@ DefaultHubPreferences()
 	sHubPreferences.mRecoverySendPeriod = kDefaultRecoverySendPeriod;
 */
 }
+
+#endif // !defined(DISABLE_NETWORKING)

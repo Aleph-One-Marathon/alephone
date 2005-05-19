@@ -19,6 +19,8 @@
 
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 /*
  *  network_dialogs_sdl.cpp - Network game dialogs, SDL implementation
  *
@@ -1491,3 +1493,5 @@ network_gather(bool) {
     return false;
 }
 #endif
+
+#endif // !defined(DISABLE_NETWORKING)

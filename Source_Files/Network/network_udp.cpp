@@ -29,6 +29,8 @@
  *  May 18, 2003 (Woody Zenfell): now uses passed-in port number for local socket.
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #ifdef __MWERKS__
 #include <stdlib.h>
 #include <extras.h>
@@ -245,3 +247,5 @@ OSErr NetDDPSendFrame(DDPFramePtr frame, NetAddrBlock *address, short protocolTy
 	sUDPPacketBuffer->address = *address;
 	return SDLNet_UDP_Send(sSocket, -1, sUDPPacketBuffer) ? 0 : -1;
 }
+
+#endif // !defined(DISABLE_NETWORKING)

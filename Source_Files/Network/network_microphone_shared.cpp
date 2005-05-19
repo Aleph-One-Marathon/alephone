@@ -33,6 +33,8 @@
  *	Speex audio compression
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include    "cseries.h"
 #include    "network_speaker_sdl.h"
 #include    "network_data_formats.h"
@@ -375,3 +377,6 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     
     return theTotalCaptureBytesConsumed;
 }
+
+#endif // !defined(DISABLE_NETWORKING)
+

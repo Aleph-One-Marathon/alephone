@@ -475,6 +475,7 @@ static void construct_single_player_start(player_start_data* outStartArray, shor
         set_player_start_doesnt_auto_switch_weapons_status(&outStartArray[0], dont_switch_to_new_weapon());
 }
 
+#if !defined(DISABLE_NETWORKING)
 static void construct_multiplayer_starts(player_start_data* outStartArray, short* outStartCount)
 {
         int number_of_players = NetGetNumberOfPlayers();
@@ -497,6 +498,7 @@ static void construct_multiplayer_starts(player_start_data* outStartArray, short
                 outStartArray[player_index].name[player_information->name[0]]= 0;
         }
 }
+#endif // !defined(DISABLE_NETWORKING)
 
 // This should be safe to use whether starting or resuming and whether single-player or multiplayer.
 void match_starts_with_existing_players(player_start_data* ioStartArray, short* ioStartCount)
@@ -661,6 +663,7 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
         
         short theLocalPlayerIndex;
         
+#if !defined(DISABLE_NETWORKING)
         // Much of the code in this if()...else is very similar to code in begin_game(), should probably try to share.
         if(inNetgame)
         {
@@ -688,6 +691,7 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
                 theLocalPlayerIndex = NetGetLocalPlayerIndex();
         }
         else
+#endif // !defined(DISABLE_NETWORKING)
         {
                 dynamic_world->game_information.difficulty_level= get_difficulty_level();
                 restore_custom_player_behavior_modifiers();
@@ -709,7 +713,7 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
 
 // ZZZ end generalized game startup support -----
 
-
+#if !defined(DISABLE_NETWORKING)
 // ZZZ: this will get called (eventually) shortly after NetUpdateJoinState() returns netStartingResumeGame
 bool join_networked_resume_game()
 {
@@ -785,6 +789,7 @@ bool join_networked_resume_game()
         
         return success;
 }
+#endif // !defined(DISABLE_NETWORKING)
 
 extern bool load_and_start_game(FileSpecifier& File);
 
@@ -795,105 +800,111 @@ bool load_and_start_game(FileSpecifier& File)
 	bool success;
 
 	hide_cursor();
-	if(can_interface_fade_out()) 
+	if (can_interface_fade_out()) 
 	{
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
 
 	success= load_game_from_file(File);
-        
-        if(!success)
-        {
-                /* Reset the system colors, since the screen clut is all black.. */
-                force_system_colors();
-                show_cursor(); // JTP: Was hidden by force system colors
-                display_loading_map_error();
-        }
-        
-        bool userWantsMultiplayer;	
-        size_t theResult = UNONE;
-        
-        if(success)
-        {
-                theResult = should_restore_game_networked();
-        }
-        
-        if(theResult == UNONE)
-        {
-                // cancelled
-                success = false;
-        }
-        else
-        {
-                userWantsMultiplayer = (theResult != 0);
-        }
+
+	if (!success)
+	{
+		/* Reset the system colors, since the screen clut is all black.. */
+		force_system_colors();
+		show_cursor(); // JTP: Was hidden by force system colors
+		display_loading_map_error();
+	}
+
+	bool userWantsMultiplayer;	
+	size_t theResult = UNONE;
+
+	if (success)
+	{
+		theResult = should_restore_game_networked();
+	}
+
+	if (theResult == UNONE)
+	{
+		// cancelled
+		success = false;
+	}
+	else
+	{
+		userWantsMultiplayer = (theResult != 0);
+	}
         
 	if (success)
 	{
-                if(userWantsMultiplayer)
-                {
-                        set_game_state(_displaying_network_game_dialogs);
-                        success = network_gather(true /*resuming*/);
-                }
+#if !defined(DISABLE_NETWORKING)
+		if (userWantsMultiplayer)
+		{
+			set_game_state(_displaying_network_game_dialogs);
+			success = network_gather(true /*resuming*/);
+		}
+#endif // !defined(DISABLE_NETWORKING)
                 
-                if(success)
-                {
-                        player_start_data	theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
-                        short			theNumberOfStarts;
+		if (success)
+		{
+			player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
+			short theNumberOfStarts;
         
-                        if(userWantsMultiplayer)
-                        {
-                                construct_multiplayer_starts(theStarts, &theNumberOfStarts);
-                        }
-                        else
-                        {
-                                construct_single_player_start(theStarts, &theNumberOfStarts);
-                        }
+#if !defined(DISABLE_NETWORKING)
+			if (userWantsMultiplayer)
+			{
+				construct_multiplayer_starts(theStarts, &theNumberOfStarts);
+			}
+			else
+#endif // !defined(DISABLE_NETWORKING)
+			{
+				construct_single_player_start(theStarts, &theNumberOfStarts);
+			}
                         
-                        match_starts_with_existing_players(theStarts, &theNumberOfStarts);
+			match_starts_with_existing_players(theStarts, &theNumberOfStarts);
                         
-                        if(userWantsMultiplayer)
-                        {
-                                NetSetupTopologyFromStarts(theStarts, theNumberOfStarts);
-                                success = NetStart();
-                                if(success)
-                                {
-                                        byte* theSavedGameFlatData = (byte*)get_flat_data(File, false /* union wad? */, 0 /* level # */);
-                                        if(theSavedGameFlatData == NULL)
-                                        {
-                                                success = false;
-                                        }
-                                        
-                                        if(success)
-                                        {
-                                                long theSavedGameFlatDataLength = get_flat_data_length(theSavedGameFlatData);
-                                                OSErr theError = NetDistributeGameDataToAllPlayers(theSavedGameFlatData, theSavedGameFlatDataLength, false /* do_physics? */);
-                                                if(theError != noErr)
-                                                {
-                                                        success = false;
-                                                }
-                                                free(theSavedGameFlatData);
-                                        }
-                                }
-                        }
+#if !defined(DISABLE_NETWORKING)
+			if (userWantsMultiplayer)
+			{
+				NetSetupTopologyFromStarts(theStarts, theNumberOfStarts);
+				success = NetStart();
+				if (success)
+				{
+					byte* theSavedGameFlatData = (byte*)get_flat_data(File, false /* union wad? */, 0 /* level # */);
+					if (theSavedGameFlatData == NULL)
+					{
+						success = false;
+					}
+
+					if (success)
+					{
+						long theSavedGameFlatDataLength = get_flat_data_length(theSavedGameFlatData);
+						OSErr theError = NetDistributeGameDataToAllPlayers(theSavedGameFlatData, theSavedGameFlatDataLength, false /* do_physics? */);
+						if (theError != noErr)
+						{
+							success = false;
+						}
+						free(theSavedGameFlatData);
+					}
+				}
+			}
+#endif // !defined(DISABLE_NETWORKING)
                         
-                        if(success)
-                        {
-                                success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
-                                if(success)
-                                {
-                                        start_game(userWantsMultiplayer ? _network_player : _single_player, false);
-                                }
-                        }
-                }
-        }
+			if (success)
+			{
+				success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
+				if (success)
+				{
+					start_game(userWantsMultiplayer ? _network_player : _single_player, false);
+				}
+			}
+		}
+	}
         
-        if(!success) {
+	if (!success) {
 		/* We failed.  Balance the cursor */
 		/* Should this also force the system colors or something? */
 		show_cursor();
 	}
-	
+
 	return success;
 }
 
@@ -1140,26 +1151,15 @@ void display_main_menu(
         extern WindowPtr screen_window;
         WindowPtr window= screen_window;
         GrafPtr old_port, port;
-#if defined(TARGET_API_MAC_CARBON)
         port = GetWindowPort(window);
-#else
-        port = (GrafPtr)window;
-#endif
         GetPort(&old_port);
         SetPort(port);
 
         Font.Use();
-//#if defined(USE_CARBON_ACCESSORS)
         Rect portRect;
         GetPortBounds(port, &portRect);
         short X0 = portRect.right;
         short Y0 = portRect.bottom;
-/*
-#else
-        short X0 = port->portRect.right;
-        short Y0 = port->portRect.bottom;
-#endif
-*/
 #elif defined(SDL)
         // JTP: This works, but I don't know correctness
         SDL_Surface *world_pixels = SDL_GetVideoSurface();
@@ -1348,10 +1348,11 @@ void do_menu_item_command(
 					ForceRepaintMenuDisplay();
 					break;
 				case iPlaySingletonLevel:
-				    begin_game(_single_player,2);
-				    break;
-		
+					begin_game(_single_player,2);
+					break;
+
 				case iJoinGame:
+#if !defined(DISABLE_NETWORKING)
 #ifdef mac
 					if (system_information->machine_has_network_memory)
 					{
@@ -1364,9 +1365,11 @@ void do_menu_item_command(
 #else
 					handle_network_game(false);
 #endif
+#endif // !defined(DISABLE_NETWORKING)
 					break;
 		
 				case iGatherGame:
+#if !defined(DISABLE_NETWORKING)
 #ifdef mac
 					if (system_information->machine_has_network_memory)
 					{
@@ -1379,6 +1382,7 @@ void do_menu_item_command(
 #else
 					handle_network_game(true);
 #endif
+#endif // !defined(DISABLE_NETWORKING)
 					break;
 					
 				case iLoadGame:
@@ -1445,7 +1449,7 @@ void portable_process_screen_click(
 			/* Get out of user mode. */
 			display_main_menu();
 			break;
-			
+
 		case _display_quit_screens:
 		case _display_intro_screens:
 		case _display_chapter_heading:
@@ -1455,7 +1459,7 @@ void portable_process_screen_click(
 			/* Force the state change next time through.. */
 			force_game_state_change();
 			break;
-	
+
 		case _display_main_menu:
 			handle_interface_menu_screen_click(x, y, cheatkeys_down);
 			break;
@@ -1633,6 +1637,7 @@ static void transfer_to_new_level(
 	
 	entry.level_number= level_number;
 
+#if !defined(DISABLE_NETWORKING)
 	/* Only can transfer if NetUnSync returns true */
 	if(game_is_networked) 
 	{
@@ -1644,6 +1649,7 @@ static void transfer_to_new_level(
 			success= false;
 		}
 	}
+#endif // !defined(DISABLE_NETWORKING)
 
 	if(success)
 	{
@@ -1719,10 +1725,11 @@ static bool begin_game(
 	switch(user)
 	{
 		case _network_player:
+#if !defined(DISABLE_NETWORKING)
 			{
 				game_info *network_game_info= (game_info *)NetGetGameData();
-                                
-                                construct_multiplayer_starts(starts, &number_of_players);
+
+				construct_multiplayer_starts(starts, &number_of_players);
 
 				game_information.game_time_remaining= network_game_info->time_limit;
 				game_information.kill_limit= network_game_info->kill_limit;
@@ -1744,10 +1751,11 @@ static bool begin_game(
 
 				is_networked= true;
 				record_game= true;
-                // ZZZ: until players specify their behavior modifiers over the network,
-                // to avoid out-of-sync we must force them all the same.
-                standardize_player_behavior_modifiers();
+				// ZZZ: until players specify their behavior modifiers over the network,
+				// to avoid out-of-sync we must force them all the same.
+				standardize_player_behavior_modifiers();
 			}
+#endif // !defined(DISABLE_NETWORKING)
 			break;
 
 		case _replay_from_file:
@@ -2012,6 +2020,7 @@ static void finish_game(
 	unload_all_collections();
 	unload_all_sounds();
 	
+#if !defined(DISABLE_NETWORKING)
 	if (game_state.user==_network_player)
 	{
 		if(game_state.current_netgame_allows_microphone)
@@ -2027,6 +2036,7 @@ static void finish_game(
 		display_net_game_stats();
 		exit_networking();
 	}
+#endif // !defined(DISABLE_NETWORKING)
 	
 	if(return_to_main_menu) display_main_menu();
 }
@@ -2047,11 +2057,13 @@ static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool in
         {
                 if (inNetgame)
                 {
+#if !defined(DISABLE_NETWORKING)
                         if(game_state.current_netgame_allows_microphone)
                         {
                                 remove_network_microphone();
                         }
                         exit_networking();
+#endif // !defined(DISABLE_NETWORKING)
                 } else {
 /* NOTE: The network code is now responsible for displaying its own errors!!!! */
                         /* Give them the error... */
@@ -2064,13 +2076,14 @@ static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool in
         set_game_error(systemError, errNone);
 }
 
+#if !defined(DISABLE_NETWORKING)
 static void handle_network_game(
 	bool gatherer)
 {
 #if 1
 	bool successful_gather = false;
-        bool joined_resume_game = false;
-	
+	bool joined_resume_game = false;
+
 	force_system_colors();
 
 	/* Don't update the screen, etc.. */
@@ -2078,23 +2091,23 @@ static void handle_network_game(
 	if(gatherer)
 	{
 		successful_gather= network_gather(false);
-                if(successful_gather) successful_gather= NetStart();
+		if (successful_gather) successful_gather= NetStart();
 	} else {
-                int theNetworkJoinResult= network_join();
-                if(theNetworkJoinResult == kNetworkJoinedNewGame || theNetworkJoinResult == kNetworkJoinedResumeGame) successful_gather= true;
-                if(theNetworkJoinResult == kNetworkJoinedResumeGame) joined_resume_game= true;
+		int theNetworkJoinResult= network_join();
+		if (theNetworkJoinResult == kNetworkJoinedNewGame || theNetworkJoinResult == kNetworkJoinedResumeGame) successful_gather= true;
+		if (theNetworkJoinResult == kNetworkJoinedResumeGame) joined_resume_game= true;
 	}
 	
 	if (successful_gather)
 	{
-                if(joined_resume_game)
-                {
-                        if(join_networked_resume_game() == false) clean_up_after_failed_game(true /*netgame*/, false /*recording*/, true /*full cleanup*/);
-                }
-                else
-                {
-                        begin_game(_network_player, false);
-                }
+		if (joined_resume_game)
+		{
+			if (join_networked_resume_game() == false) clean_up_after_failed_game(true /*netgame*/, false /*recording*/, true /*full cleanup*/);
+		}
+		else
+		{
+			begin_game(_network_player, false);
+		}
 	} else {
 		/* We must restore the colors on cancel. */
 		display_main_menu();
@@ -2103,6 +2116,7 @@ static void handle_network_game(
 	alert_user(infoError, strERRORS, networkNotSupportedForDemo, 0);
 #endif
 }
+#endif // !defined(DISABLE_NETWORKING)
 
 static void handle_save_film(
 	void)
@@ -2287,8 +2301,8 @@ static void handle_interface_menu_screen_click(
 	short index;
 	screen_rectangle *screen_rect;
 
+	short xoffset = 0, yoffset = 0;
 #if defined(SDL_FORCERES_HACK)
-	short xoffset, yoffset;
 	xoffset = (SDL_GetVideoSurface()->w - 640) / 2;
 	yoffset = (SDL_GetVideoSurface()->h - 480) / 2;
 #endif
@@ -2297,14 +2311,8 @@ static void handle_interface_menu_screen_click(
 	for(index= _new_game_button_rect; index<NUMBER_OF_INTERFACE_RECTANGLES; ++index)
 	{
 		screen_rect= get_interface_rectangle(index);
-#if defined(SDL_FORCERES_HACK)
 		if (point_in_rectangle(x - xoffset, y - yoffset, screen_rect))
-#else
-		if(point_in_rectangle(x, y, screen_rect))
-#endif
-		{
 			break;
-		}
 	}
 	
 	/* we found one.. */
@@ -2434,7 +2442,7 @@ static void try_and_display_chapter_screen(
 }
 
 
-
+#if !defined(DISABLE_NETWORKING)
 /*
  *  Network microphone handling
  */
@@ -2454,6 +2462,7 @@ void remove_network_microphone(
 	NetRemoveDistributionFunction(kNewNetworkAudioDistributionTypeID);
 	close_network_speaker();
 }
+#endif // !defined(DISABLE_NETWORKING)
 
 
 /* ------------ interface fade code */

@@ -25,6 +25,8 @@
  *  Mar 1, 2002 (Woody Zenfell): Added new w_entry_point_selector widget.
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include	"network_dialog_widgets_sdl.h"
 
 #include	"screen_drawing.h"
@@ -1335,3 +1337,5 @@ w_entry_point_selector::event(SDL_Event &e) {
 		}
 	}
 }
+
+#endif // !defined(DISABLE_NETWORKING)

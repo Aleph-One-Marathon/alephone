@@ -386,13 +386,15 @@ static int
 update_world_elements_one_tick()
 {
         //CP Addition: Scripting handling stuff
-	//AS: removed "success"; it's pointless
+        //AS: removed "success"; it's pointless
         if (script_in_use())
                 do_next_instruction();
         L_Call_Idle();
 
-	NetProcessMessagesInGame();
-        
+#if !defined(DISABLE_NETWORKING)
+        NetProcessMessagesInGame();
+#endif // !defined(DISABLE_NETWORKING)
+
         update_lights();
         update_medias();
         update_platforms();
@@ -411,18 +413,22 @@ update_world_elements_one_tick()
         AnimTxtr_Update();
         ChaseCam_Update();
 
+#if !defined(DISABLE_NETWORKING)
         update_net_game();
+#endif // !defined(DISABLE_NETWORKING)
 
         if(check_level_change()) 
         {
                 return kUpdateChangeLevel;
         }
 
+#if !defined(DISABLE_NETWORKING)
         if(game_is_over())
         {
                 return kUpdateGameOver;
         }
-        
+#endif // !defined(DISABLE_NETWORKING)
+
         dynamic_world->tick_count+= 1;
         dynamic_world->game_information.game_time_remaining-= 1;
         
@@ -451,8 +457,12 @@ update_world()
 		if(!sPredictionWanted)
 		{
 			// See if the speed-limiter (net time or heartbeat count) will let us advance a tick
+#if !defined(DISABLE_NETWORKING)
 			int theMostRecentAllowedTick = game_is_networked ? NetGetNetTime() : get_heartbeat_count();
-			
+#else
+			int theMostRecentAllowedTick = get_heartbeat_count();
+#endif
+
 			if(dynamic_world->tick_count >= theMostRecentAllowedTick)
 			{
 				canUpdate = false;
@@ -556,7 +566,9 @@ void leaving_map(
 	L_Call_Cleanup ();
 	//Close and unload the Lua state
 	CloseLuaScript();
+#if !defined(DISABLE_NETWORKING)
 	NetSetChatCallbacks(NULL);
+#endif // !defined(DISABLE_NETWORKING)
 
 	/* all we do is mark them for unloading, we don't explicitly dispose of them; whenever the
 		next level is loaded someone (probably entering_map, below) will call load_collections()
@@ -594,13 +606,17 @@ bool entering_map(bool restoring_saved)
 	load_all_monster_sounds();
 	load_all_game_sounds(static_world->environment_code);
 
+#if !defined(DISABLE_NETWORKING)
 	/* tell the keyboard controller to start recording keyboard flags */
 	if (game_is_networked) success= NetSync(); /* make sure everybody is ready */
-	
+#endif // !defined(DISABLE_NETWORKING)
+
 	/* make sure nobodyÕs holding a weapon illegal in the new environment */
 	check_player_weapons_for_environment_change();
 
+#if !defined(DISABLE_NETWORKING)
 	if (dynamic_world->player_count>1 && !restoring_saved) initialize_net_game();
+#endif // !defined(DISABLE_NETWORKING)
 	randomize_scenery_shapes();
 
 	reset_action_queues(); //¦¦
@@ -609,12 +625,14 @@ bool entering_map(bool restoring_saved)
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
 
-        // MH: Load the Lua script and run its init function.
-        // Availability of the script is checked within.
-        RunLuaScript();
-        L_Call_Init();
+	// MH: Load the Lua script and run its init function.
+	// Availability of the script is checked within.
+	RunLuaScript();
+	L_Call_Init();
 
+#if !defined(DISABLE_NETWORKING)
 	NetSetChatCallbacks(InGameChatCallbacks::instance());
+#endif // !defined(DISABLE_NETWORKING)
 
 	// Zero out fades *AND* any inadvertant fades from script start...
 	stop_fade();

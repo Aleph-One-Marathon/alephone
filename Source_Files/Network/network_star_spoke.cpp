@@ -33,6 +33,8 @@
  *	Hub can then associate the ID in the identification packet with the paket's source address.
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "network_star.h"
 #include "AStream.h"
 #include "mytm.h"
@@ -1141,3 +1143,5 @@ DefaultSpokePreferences()
 	sSpokePreferences.mTimingNthElement = kDefaultTimingNthElement;
 	sSpokePreferences.mAdjustTiming = true;
 }
+
+#endif // !defined(DISABLE_NETWORKING)

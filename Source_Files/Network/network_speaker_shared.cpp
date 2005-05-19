@@ -33,6 +33,8 @@
  *	Speex audio decompression 
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "cseries.h"
 #include "network_sound.h"
 #include "network_data_formats.h"
@@ -101,3 +103,5 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
 #endif
     }
 }
+
+#endif // !defined(DISABLE_NETWORKING)

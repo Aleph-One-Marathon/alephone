@@ -24,6 +24,7 @@ Feb. 4, 2000 (Loren Petrich):
 	Changed halt() to assert(false) for better debugging
 */
 
+#if !defined(DISABLE_NETWORKING)
 
 #include "macintosh_cseries.h"
 #include "macintosh_network.h"
@@ -309,3 +310,5 @@ OSErr NetDDPSendFrame(
 	
 	return error;
 }
+
+#endif // !defined(DISABLE_NETWORKING)

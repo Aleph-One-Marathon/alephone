@@ -3633,7 +3633,9 @@ static int L_Award_Points (lua_State *L)
 	player_data *player = get_player_data (player_index);
 
 	player -> netgame_parameters[0] += points;
+#if !defined(DISABLE_NETWORKING)
 	team_netgame_parameters[player->team][0] += points;
+#endif // !defined(DISABLE_NETWORKING)
 
 	if(points != 0)
 		mark_player_network_stats_as_dirty(current_player_index);
@@ -3708,7 +3710,9 @@ static int L_Set_Points (lua_State *L)
 
 	if(player->netgame_parameters[0] != points)
 	{
+#if !defined(DISABLE_NETWORKING)
 		team_netgame_parameters[player->team][0] += points - player->netgame_parameters[0];
+#endif // !defined(DISABLE_NETWORKING)
 		player -> netgame_parameters[0] = points;
 		mark_player_network_stats_as_dirty(current_player_index);
 	}

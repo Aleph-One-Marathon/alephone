@@ -25,6 +25,9 @@
   SOFTWARE.
 */
 
+#if !defined(DISABLE_NETWORKING)
 
 #include "MessageDispatcher.h"
+
+#endif // !defined(DISABLE_NETWORKING)
 

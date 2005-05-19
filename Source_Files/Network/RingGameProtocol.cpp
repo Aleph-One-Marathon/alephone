@@ -23,6 +23,8 @@
  *  Implementation of the old ring-topology network game protocol, as a module in the new scheme.
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "cseries.h"
 
 #ifdef EXPLICIT_CARBON_HEADER
@@ -647,7 +649,7 @@ RingGameProtocol::Exit2()
 bool
 RingGameProtocol::Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t inLocalPlayerIndex, size_t inServerPlayerIndex)
 {
-        uint32 ticks;
+	uint32 ticks;
 	bool success= true;
 #ifdef TEST_MODEM
 	return ModemSync();
@@ -2694,3 +2696,5 @@ DefaultRingPreferences()
 	sRingPreferences.mAdaptToLatency = true;
 	sRingPreferences.mLatencyHoldTicks = 2 * TICKS_PER_SECOND;
 }
+
+#endif // !defined(DISABLE_NETWORKING)

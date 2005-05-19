@@ -33,6 +33,9 @@ August 27, 2003 (Woody Zenfell):
 September 17, 2004 (jkvw):
 	Changes to accomodate NAT-friendly networking
 */
+
+#if !defined(DISABLE_NETWORKING)
+
 /*
  *  network_dialogs_mac_sdl.cpp - Network dialogs for Carbon with SDL networking
  */
@@ -530,18 +533,14 @@ bool network_game_setup(
 				case iREAL_TIME_SOUND:
 					modify_control(dialog, iREAL_TIME_SOUND, NONE, !get_dialog_control_value(dialog, iREAL_TIME_SOUND));
 					break;
-                                        
-                                case iUSE_SCRIPT:
-                                        if (get_boolean_control_value(dialog, item_hit)) {
+
+				case iUSE_SCRIPT:
+					if (get_boolean_control_value(dialog, item_hit))
 						modify_boolean_control(dialog, item_hit, NONE, false);
-                                        } else {
-                                            if (sNetscriptFile.ReadDialog (_typecode_unknown, "Script Select"))
-					    {
-						    modify_boolean_control(dialog, item_hit, NONE, true);
-					    }
-                                        }
+					else if (sNetscriptFile.ReadDialog (_typecode_unknown, "Script Select"))
+						modify_boolean_control(dialog, item_hit, NONE, true);
 					update_netscript_file_display(dialog);
-                                        break;
+					break;
 			}
                         
 		} while (item_hit != iOK && item_hit != iCANCEL);
@@ -2474,3 +2473,6 @@ bool network_gather(bool inResumingGame) {
 }
 #endif
 #endif
+
+#endif // !defined(DISABLE_NETWORKING)
+

@@ -25,6 +25,7 @@
   SOFTWARE.
 */
 
+#if !defined(DISABLE_NETWORKING)
 
 #include "MessageInflater.h"
 
@@ -107,3 +108,5 @@ MessageInflater::~MessageInflater()
 		delete i->second;
 	}
 }
+
+#endif // !defined(DISABLE_NETWORKING)

@@ -33,6 +33,8 @@
  *      from the main thread: buffers are released by the audio system and returned to us for reuse.
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include    "network_sound.h"
 #include    "network_speaker_sdl.h"
 
@@ -213,3 +215,6 @@ void
 release_network_speaker_buffer(byte* inBuffer) {
     sSoundDataBuffers.enqueue(inBuffer);
 }
+
+#endif // !defined(DISABLE_NETWORKING)
+

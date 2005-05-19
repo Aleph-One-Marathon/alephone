@@ -25,12 +25,15 @@
   SOFTWARE.
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "CommunicationsChannel.h"
 
 #include "AStream.h"
 #include "MessageInflater.h"
 #include "MessageHandler.h"
 
+#include <stdlib.h>
 #include <iostream> // debugging
 #include <cerrno>
 #include "cseries.h"
@@ -667,6 +670,16 @@ void MakeTCPsocketNonBlocking(TCPsocket *socket) {
   u_long val = 1;
   ioctlsocket(fd, FIONBIO, &val);
 #else
+#ifdef __MWERKS__
+/* out of /usr/include/sys/fcntl.h - mwerks doesn't have these defined */
+#define F_SETFL 4
+#define O_NONBLOCK 0x0004
+#endif
+
   fcntl(fd, F_SETFL, O_NONBLOCK);
+
 #endif
 }
+
+#endif // !defined(DISABLE_NETWORKING)
+

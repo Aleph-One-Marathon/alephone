@@ -27,6 +27,8 @@
     9 Mar 2002 (Woody Zenfell):  Made some packing/unpacking functions pack/unpack more data
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "network_data_formats.h"
 #include "Packing.h"
 
@@ -141,3 +143,6 @@ netcpy(network_audio_header* dest, const network_audio_header_NET* src) {
     StreamToValue(S, dest->mFlags);
     assert(S == src->data + SIZEOF_network_audio_header);
 }
+
+#endif // !defined(DISABLE_NETWORKING)
+

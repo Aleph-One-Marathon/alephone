@@ -96,6 +96,8 @@ September 17, 2004 (jkvw):
 	Also moved to TCPMess for TCP communications.
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 /*
 I would really like to be able to let the Unysnc packet go around the loop, but it is difficult
 	because all the code is currently setup to handle only one packet at a time.
@@ -2196,4 +2198,6 @@ bool NetAllowBehindview() {
   return (dynamic_world->player_count == 1 ||
 	  dynamic_world->game_information.cheat_flags & _allow_behindview);
 }
+
+#endif // !defined(DISABLE_NETWORKING)
 

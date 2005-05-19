@@ -24,6 +24,8 @@ Friday, July 15, 1994 11:03:22 AM
 	unregistered before the application exits. (ajr, suggested by jgj.)
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "macintosh_cseries.h"
 #include "macintosh_network.h"
 
@@ -150,3 +152,6 @@ OSErr NetUnRegisterName(
 
 	return error;
 }
+
+#endif // !defined(DISABLE_NETWORKING)
+

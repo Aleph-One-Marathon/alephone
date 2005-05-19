@@ -25,6 +25,7 @@
   SOFTWARE.
 */
 
+#if !defined(DISABLE_NETWORKING)
 
 #include "Message.h"
 
@@ -119,3 +120,5 @@ BigChunkOfDataMessage::~BigChunkOfDataMessage()
 {
 	delete [] mBuffer;
 }
+
+#endif // !defined(DISABLE_NETWORKING)

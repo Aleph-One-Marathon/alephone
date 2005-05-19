@@ -66,6 +66,8 @@ Apr 10, 2003 (Woody Zenfell):
 	and more consistent with other dialog code
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include	"cseries.h"
 #include	"map.h"
 #include	"shell.h"
@@ -605,7 +607,7 @@ netgame_setup_dialog_extract_information(
 	player_info *player_information,
 	game_info *game_information,
 	bool allow_all_levels,
-        bool resuming_game,
+	bool resuming_game,
 	bool &outAdvertiseGameOnMetaserver)
 {
 	short updates_per_packet, update_latency;
@@ -630,57 +632,57 @@ netgame_setup_dialog_extract_information(
 
 	game_limit_type = get_limit_type (dialog);
 
-        // ZZZ: don't screw with the limits if resuming.
-        if(resuming_game)
-        {
-                game_information->time_limit = dynamic_world->game_information.game_time_remaining;
-                game_information->kill_limit = dynamic_world->game_information.kill_limit;
-        }
-        else
-        {
-                if (game_limit_type == iRADIO_NO_TIME_LIMIT)
-                {
-                        game_information->time_limit = LONG_MAX;
-                }
-                else if (game_limit_type == iRADIO_KILL_LIMIT)
-                {
-                        // START Benad
-                        if (QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
-                        {
-                                game_information->game_options |= _game_has_kill_limit;
-                                game_information->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
-                                game_information->time_limit *= TICKS_PER_SECOND * 60;
-                        }
-                        else
-                        {
-                                game_information->game_options |= _game_has_kill_limit;
-                                game_information->time_limit = LONG_MAX;
-                        }
-                        // END Benad
-                }
-                else
-                {
-                        // START Benad
-                        if (QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
-                        {
-                                game_information->game_options |= _game_has_kill_limit;
-                                game_information->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
-                                game_information->time_limit *= TICKS_PER_SECOND * 60;
-                        }
-                        else
-                        {
-                                game_information->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
-                                game_information->time_limit *= TICKS_PER_SECOND * 60;
-                        }
-                        // END Benad
-                }
-                game_information->kill_limit = QQ_extract_number_from_text_control(dialog, iKILL_LIMIT);
-                // START Benad
-                if (QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
-                        game_information->kill_limit *= 60; // It's "Time On Hill" limit, in seconds.
-                // END Benad
-        }
-        
+	// ZZZ: don't screw with the limits if resuming.
+	if (resuming_game)
+	{
+		game_information->time_limit = dynamic_world->game_information.game_time_remaining;
+		game_information->kill_limit = dynamic_world->game_information.kill_limit;
+	}
+	else
+	{
+		if (game_limit_type == iRADIO_NO_TIME_LIMIT)
+		{
+			game_information->time_limit = LONG_MAX;
+		}
+		else if (game_limit_type == iRADIO_KILL_LIMIT)
+		{
+			// START Benad
+			if (QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
+			{
+				game_information->game_options |= _game_has_kill_limit;
+				game_information->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
+				game_information->time_limit *= TICKS_PER_SECOND * 60;
+			}
+			else
+			{
+				game_information->game_options |= _game_has_kill_limit;
+				game_information->time_limit = LONG_MAX;
+			}
+			// END Benad
+		}
+		else
+		{
+			// START Benad
+			if (QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
+			{
+				game_information->game_options |= _game_has_kill_limit;
+				game_information->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
+				game_information->time_limit *= TICKS_PER_SECOND * 60;
+			}
+			else
+			{
+				game_information->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
+				game_information->time_limit *= TICKS_PER_SECOND * 60;
+			}
+			// END Benad
+		}
+		game_information->kill_limit = QQ_extract_number_from_text_control(dialog, iKILL_LIMIT);
+		// START Benad
+		if (QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
+			game_information->kill_limit *= 60; // It's "Time On Hill" limit, in seconds.
+		// END Benad
+	}
+
 	/* Determine the entry point flags by the game type. */
 	if(allow_all_levels) {
 		entry_flags= NONE;
@@ -1951,4 +1953,6 @@ char *RecentHostAddresses_NextIter()
 }
 
 #endif
+
+#endif // !defined(DISABLE_NETWORKING)
 

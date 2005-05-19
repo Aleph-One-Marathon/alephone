@@ -32,6 +32,8 @@ Feb 1, 2003 (Woody Zenfell):
 	Speex audio compression
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include <string.h>
 #include <stdlib.h>
 
@@ -515,3 +517,6 @@ static pascal void sound_recording_completed(
 	set_a5(old_a5); /* restore our a5 world */
 #endif
 }
+
+#endif // !defined(DISABLE_NETWORKING)
+

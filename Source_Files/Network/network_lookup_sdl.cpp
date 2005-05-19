@@ -28,6 +28,8 @@
  *
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #ifdef __MWERKS__
 #include 	<stdlib.h>
 #include 	<extras.h>
@@ -219,3 +221,5 @@ OSErr NetUnRegisterName(void)
 
     return 0;
 }
+
+#endif // !defined(DISABLE_NETWORKING)

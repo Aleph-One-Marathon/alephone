@@ -33,6 +33,8 @@ Feb 1, 2003 (Woody Zenfell):
 	Quieter static bursts in netmic audio playback
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 /*
 //we should only fill one buffer with static to lower the delay before actually playing incoming data
 //we should use our doubleback procedure to fill the buffers
@@ -117,8 +119,8 @@ static void reset_network_speaker();
 
 OSErr open_network_speaker()
 {
-        short block_size = kBlockSize;
-        short connection_threshold = kConnectionThreshhold;
+	short block_size = kBlockSize;
+	short connection_threshold = kConnectionThreshhold;
 	OSErr error;
 	
 	assert(!speaker);
@@ -189,9 +191,9 @@ OSErr open_network_speaker()
 		}
 	}
         
-        #ifdef SPEEX
-        init_speex_decoder();
-        #endif
+#ifdef SPEEX
+	init_speex_decoder();
+#endif
 
 	/* if something went wrong, zero the speaker definition (without freeing any of our memory
 		like we should) */
@@ -220,9 +222,9 @@ void close_network_speaker(
 		speaker= (struct speaker_definition *) NULL;
 	}
         
-        #ifdef SPEEX
-        destroy_speex_decoder();
-        #endif
+#ifdef SPEEX
+	destroy_speex_decoder();
+#endif
 }
 
 /* can be called at interrupt time */
@@ -245,7 +247,7 @@ void queue_network_speaker_data(
 //				the speaker (which ought to be safe I think) now, but delay issuing the
 //				quiet commands until just before we start playing again.
 #if defined(TARGET_API_MAC_CARBON)
-                                reset_network_speaker();
+				reset_network_speaker();
 #else
 				quiet_network_speaker(); /* we could be playing trailing static */
 #endif
@@ -278,10 +280,10 @@ void queue_network_speaker_data(
 		}
 		else
 		{
-                        // This really shouldn't log in the non-main thread yet...
-                        logAnomaly3("queue_net_speaker_data() is ignoring data: #%d+#%d>#%d", speaker->queue_size, count, MAXIMUM_QUEUE_SIZE);
+			// This really shouldn't log in the non-main thread yet...
+			logAnomaly3("queue_net_speaker_data() is ignoring data: #%d+#%d>#%d", speaker->queue_size, count, MAXIMUM_QUEUE_SIZE);
 		}
-	
+
 #ifdef SNDPLAYDOUBLEBUFFER_DOESNT_SUCK
 		switch (speaker->state)
 		{
@@ -290,7 +292,7 @@ void queue_network_speaker_data(
 				if (speaker->queue_size>=speaker->block_size)
 				{
 					OSErr error;
-					
+
 					error= SndPlayDoubleBuffer(speaker->channel, speaker->header);
 					vwarn(error==noErr, csprintf(temporary, "SndPlayDoubleBuffer(%p,%p)==#%d", speaker->channel, speaker->header, error));
 					
@@ -323,7 +325,7 @@ silence_network_speaker() {
 
 		speaker->header->dbhBufferPtr[0]->dbFlags= 0;
 		speaker->header->dbhBufferPtr[1]->dbFlags= 0;
-        }
+	}
 }
 
 static void
@@ -340,8 +342,8 @@ reset_network_speaker() {
 void quiet_network_speaker(
 	void)
 {
-        silence_network_speaker();
-        reset_network_speaker();
+	silence_network_speaker();
+	reset_network_speaker();
 }
 
 /* because SndPlayDoubleBuffer() is not safe at interrupt time */
@@ -360,13 +362,13 @@ void network_speaker_idle_proc(
 					OSErr error;
 					
 #if defined(TARGET_API_MAC_CARBON)
-                                        silence_network_speaker();
+					silence_network_speaker();
 #endif
 
 					fill_network_speaker_buffer(speaker->header->dbhBufferPtr[1]);
 					error= SndPlayDoubleBuffer(speaker->channel, speaker->header);
-                                        if(error != noErr)
-                                                logAnomaly3("SndPlayDoubleBuffer(%p,%p)==#%d", speaker->channel, speaker->header, error);
+					if(error != noErr)
+						logAnomaly3("SndPlayDoubleBuffer(%p,%p)==#%d", speaker->channel, speaker->header, error);
 					
 					speaker->state= _speaker_is_on;
 				}
@@ -468,3 +470,5 @@ void fill_network_speaker_buffer(
 			vhalt(csprintf(temporary, "what the hell is #%d!?", speaker->state));
 	}
 }
+
+#endif // !defined(DISABLE_NETWORKING)

@@ -21,6 +21,8 @@ NETWORK_MESSAGES.CPP
 
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "cseries.h"
 #include "AStream.h"
 #include "network_messages.h"
@@ -174,3 +176,6 @@ bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
 
   return true;
 }
+
+#endif // !defined(DISABLE_NETWORKING)
+

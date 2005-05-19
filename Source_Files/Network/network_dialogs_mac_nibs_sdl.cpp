@@ -34,6 +34,9 @@ January 27, 2005 (James Willson):
 	Forked off from network_dialogs_mac_sdl.cpp; NIBs code updated for firewall-friendly
 	netgame dialogs.
 */
+
+#if !defined(DISABLE_NETWORKING)
+
 /*
  *  network_dialogs_mac_nibs_sdl.cpp - NIBS based network dialogs for Carbon with SDL networking
  */
@@ -714,7 +717,7 @@ static void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
 bool run_netgame_setup_dialog(
 	player_info *player_information,
 	game_info *game_information,
-        bool ResumingGame,
+  bool ResumingGame,
 	bool& outAdvertiseGameOnMetaserver)
 {
 	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
@@ -1858,3 +1861,6 @@ bool network_gather(bool inResumingGame) {
 	return false;
 }
 #endif
+
+#endif // !defined(DISABLE_NETWORKING)
+

@@ -23,6 +23,8 @@
     
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "cseries.h"
 #ifdef SPEEX
 #include "network_speex.h"
@@ -76,3 +78,6 @@ void destroy_speex_decoder() {
 }
 
 #endif //def SPEEX
+
+#endif // !defined(DISABLE_NETWORKING)
+

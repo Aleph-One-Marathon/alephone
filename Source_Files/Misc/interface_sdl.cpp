@@ -126,7 +126,9 @@ void update_game_window(void)
 
 void exit_networking(void)
 {
+#if !defined(DISABLE_NETWORKING)
 	NetExit();
+#endif // !defined(DISABLE_NETWORKING)
 }
 
 

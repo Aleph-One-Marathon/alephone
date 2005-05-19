@@ -24,6 +24,8 @@ Jul 1, 2000 (Loren Petrich):
 	Added Benad's changes
 */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "cseries.h"
 #include "map.h"
 #include "items.h"
@@ -1077,3 +1079,6 @@ static void destroy_players_ball(
 }
 */
 // END Benad
+
+#endif // !defined(DISABLE_NETWORKING)
+
