@@ -100,15 +100,9 @@ bool quit_without_saving(
 	SetPort((GrafPtr)GetScreenGrafPort());
 	LocalToGlobal(&origin);
 	SetPort(old_port);
-//#if defined(USE_CARBON_ACCESSORS)
 	MoveWindow(GetDialogWindow(dialog), origin.h, origin.v, false);
 	ShowWindow(GetDialogWindow(dialog));
-/*
-#else
-	MoveWindow(dialog, origin.h, origin.v, false);
-	ShowWindow(dialog);
-#endif
-*/	
+
 	ModalDialog(get_general_filter_upp(), &item_hit);
 	DisposeDialog(dialog);
 	

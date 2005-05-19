@@ -438,13 +438,7 @@ bool configure_key_setup(
 	SelectDialogItemText(dialog, iFORWARD, 0, SHRT_MAX);
 
 	set_dialog_cursor_tracking(false);
-//#if defined(USE_CARBON_ACCESSORS)
 	ShowWindow(GetDialogWindow(dialog));
-/*
-#else
-	ShowWindow(dialog);
-#endif
-*/
 
 	/* Setup the globals.. */
 	GetKeys(keyboard_setup_globals.old_key_map);
@@ -471,17 +465,9 @@ bool configure_key_setup(
 						set_default_keys(keycodes, menu_selection);
 						
 						// looks slightly nicer to deselect text before changing and reselecting it.
-//#if defined(USE_CARBON_ACCESSORS)
 						SelectDialogItemText(dialog, GetDialogKeyboardFocusItem(dialog) + 1, 0, 0);
 						keyboard_setup_globals.current_key_setup= setup_key_dialog(dialog, keycodes);
 						SelectDialogItemText(dialog, GetDialogKeyboardFocusItem(dialog) + 1, 0, SHRT_MAX);
-/*
-#else
-						SelectDialogItemText(dialog, ((DialogRecord *) dialog)->editField + 1, 0, 0);
-						keyboard_setup_globals.current_key_setup= setup_key_dialog(dialog, keycodes);
-						SelectDialogItemText(dialog, ((DialogRecord *) dialog)->editField + 1, 0, SHRT_MAX);
-#endif
-*/
 					}
 					break;
 					
@@ -532,13 +518,8 @@ static pascal Boolean key_setup_filter_proc(
 	bool handled= false;
 	
 	GetPort(&old_port);
-//#if defined(USE_CARBON_ACCESSORS)
-        SetPort(GetWindowPort(GetDialogWindow(dialog)));
-/*
-#else
-	SetPort(dialog);
-#endif
-*/	
+	SetPort(GetWindowPort(GetDialogWindow(dialog)));
+
 	/* preprocess events */	
 	switch(event->what)
 	{
@@ -548,13 +529,7 @@ static pascal Boolean key_setup_filter_proc(
 			GetKeys(key_map);
 			if (memcmp(key_map, keyboard_setup_globals.old_key_map, sizeof(KeyMap))) // the user has hit a new key
 			{
-//#if defined(USE_CARBON_ACCESSORS)
 				current_edit_field= GetDialogKeyboardFocusItem(dialog);
-/*
-#else
-				current_edit_field= ((DialogRecord *) dialog)->editField + 1;
-#endif
-*/
 				keycode= find_key_hit((byte *)key_map, (byte *)keyboard_setup_globals.old_key_map);
 
 				// update the text field

@@ -431,7 +431,6 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	MacCheckbox VoidColorOnOff_CB(Dialog, VoidColorOnOff_Item, TEST_FLAG(OGLData.Flags,OGL_Flag_VoidColor));
 	
 	// Reveal it
-// #if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
@@ -439,12 +438,6 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
 #endif
-/*
-#else
-	SelectWindow(Dialog);
-	ShowWindow(Dialog);
-#endif
-*/
 	
 	bool WillQuit = false;
 	bool IsOK = false;
@@ -586,17 +579,11 @@ bool Configure_ChaseCam(ChaseCamData &Data)
 	}
 	
 	// Clean up
-//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	HideSheetWindow(GetDialogWindow(Dialog));
 #else
 	HideWindow(GetDialogWindow(Dialog));
 #endif
-/*
-#else
-	HideWindow(Dialog);
-#endif
-*/
 	DisposeDialog(Dialog);
 	
 	return IsOK;
@@ -804,15 +791,9 @@ static pascal void DoPreview(DialogPtr Dialog, short ItemNo)
 	Crosshairs_Render(Bounds);
 	
 	// No more clipping
-// #if defined(USE_CARBON_ACCESSORS)
 	Rect portRect;
 	GetPortBounds(GetWindowPort(GetDialogWindow(Dialog)), &portRect);
 	ClipRect(&portRect);
-/*
-#else
-	ClipRect(&Dialog->portRect);
-#endif
-*/
 	
 	// Pop old crosshair state
 	Crosshairs_SetActive(OldCrosshairState);
@@ -870,7 +851,6 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	CrosshairData SavedData = Data;
 	
 	// Reveal it
-//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	SetThemeWindowBackground(GetDialogWindow(Dialog), kThemeBrushSheetBackgroundTransparent, false);
 	ShowSheetWindow(GetDialogWindow(Dialog), ActiveNonFloatingWindow());
@@ -878,12 +858,6 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	SelectWindow(GetDialogWindow(Dialog));
 	ShowWindow(GetDialogWindow(Dialog));
 #endif
-/*
-#else
-	SelectWindow(Dialog);
-	ShowWindow(Dialog);
-#endif
-*/
 	
 	bool WillQuit = false;
 	bool IsOK = false;
@@ -1016,17 +990,12 @@ bool Configure_Crosshairs(CrosshairData &Data)
 	}
 	
 	// Clean up
-//#if defined(USE_CARBON_ACCESSORS)
 #if USE_SHEETS
 	HideSheetWindow(GetDialogWindow(Dialog));
 #else
 	HideWindow(GetDialogWindow(Dialog));
 #endif
-/*
-#else
-	HideWindow(Dialog);
-#endif
-*/
+
 	DisposeUserItemUPP(DoPreviewUPP);
 	DisposeDialog(Dialog);
 	

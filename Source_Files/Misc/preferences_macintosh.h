@@ -1352,15 +1352,10 @@ static void setup_environment_dialog(
 		fill_in_popup_with_filetype(dialog, LOCAL_TO_GLOBAL_DITL(iSOUNDS, first_item),
 			_typecode_sounds, preferences->sounds_mod_date, preferences->sounds_file);
 
-//#if defined(USE_CARBON_ACCESSORS)
 		Cursor arrow;
 		GetQDGlobalsArrow(&arrow);
 		SetCursor(&arrow);
-/*
-#else
-		SetCursor(&qd.arrow);
-#endif
-*/
+
 	} else {
 		assert(false);
 	}
@@ -1467,37 +1462,15 @@ static void set_popup_enabled_state(
 	GetDialogItem(dialog, item_number, &item_type, (Handle *) &control, &bounds);
 	assert(item_type&ctrlItem);
 
-//#if defined(USE_CARBON_ACCESSORS)
 	menu= GetControlPopupMenuHandle(control);
-/*
-#else
-	*/
-	/* I don't know how to assert that it is a popup control... <sigh> */
-	/*
-	struct PopupPrivateData **privateHndl;
-	privateHndl= (PopupPrivateData **) ((*control)->contrlData);
-	assert(privateHndl);
-	
-	menu= (*privateHndl)->mHandle;
-#endif
-*/
 	assert(menu);
 	
-#if defined(TARGET_API_MAC_CARBON)
 	if(enabled)
 	{
 		EnableMenuItem(menu, item_to_affect);
 	} else {
 		DisableMenuItem(menu, item_to_affect);
 	}
-#else	
-	if(enabled)
-	{
-		EnableItem(menu, item_to_affect);
-	} else {
-		DisableItem(menu, item_to_affect);
-	}
-#endif
 }
 
 static void
@@ -1764,27 +1737,10 @@ static void fill_in_popup_with_filetype(
 	/* Get the menu */
 	// menu= get_popup_menu_handle(dialog, item);
 	
-	//#if defined(USE_CARBON_ACCESSORS)
 	menu= GetControlPopupMenuHandle(control);
-/*
-#else
-	*/
-	/* I don't know how to assert that it is a popup control... <sigh> */
-	/*
-	PopupPrivateData **privateHndl= (PopupPrivateData **) ((*control)->contrlData);
-	assert(privateHndl);
 
-	menu= (*privateHndl)->mHandle;
-#endif
-*/
-
-	
 	/* Remove whatever it had */
-#if defined(TARGET_API_MAC_CARBON)
 	while(CountMenuItems(menu)) DeleteMenuItem(menu, 1);
-#else
-	while(CountMItems(menu)) DeleteMenuItem(menu, 1);
-#endif
 
         count = 0;
         
@@ -1830,11 +1786,7 @@ static void fill_in_popup_with_filetype(
                         count++;
                         
                         SetMenuItemText(menu, count, directories[index].GetSpec().name);
-#if TARGET_API_MAC_CARBON
                         DisableMenuItem(menu, count);
-#else
-                        DisableItem(menu, count);
-#endif
 
                         // record this menu item as unusable
                         menu_items[type].push_back(NONE);
@@ -1991,11 +1943,6 @@ static MenuHandle get_popup_menu_handle(
 	DialogPtr dialog,
 	short item)
 {
-/*
-#if !defined(USE_CARBON_ACCESSORS)
-	struct PopupPrivateData **privateHndl;
-#endif
-*/
 	MenuHandle menu;
 	short item_type;
 	ControlHandle control;
@@ -2004,19 +1951,7 @@ static MenuHandle get_popup_menu_handle(
 	/* Add the maps.. */
 	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
 
-//#if defined(USE_CARBON_ACCESSORS)
 	menu= GetControlPopupMenuHandle(control);
-/*
-#else
-	*/
-	/* I don't know how to assert that it is a popup control... <sigh> */
-	/*
-	privateHndl= (PopupPrivateData **) ((*control)->contrlData);
-	assert(privateHndl);
-
-	menu= (*privateHndl)->mHandle;
-#endif
-*/
 	assert(menu);
 
 	return menu;

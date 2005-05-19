@@ -655,15 +655,9 @@ void _render_computer_interface(
 #if defined(mac)
 		// LP change: restore overall clipping
 		// Changed to actually-used buffer
-//#if defined(USE_CARBON_ACCESSORS)
 		Rect portRect;
 		GetPortBounds(GetWindowPort(screen_window), &portRect);
 		ClipRect(&portRect);
-/*
-#else
-		ClipRect(&world_pixels->portRect);
-#endif
-*/
 #else
 		// Disable clipping
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
@@ -1722,15 +1716,9 @@ static void present_checkpoint_text(
 		_render_overhead_map(&overhead_data);
 #ifdef mac
 		// Reset it to the overall bounds
-//#if defined(USE_CARBON_ACCESSORS)
 		Rect portRect;
 		GetPortBounds(GetWindowPort(screen_window), &portRect);
 		ClipRect(&portRect);
-/*
-#else
-		ClipRect(&world_pixels->portRect);
-#endif
-*/
 #endif
 	} else {
 		char format_string[128];
