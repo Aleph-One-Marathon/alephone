@@ -110,7 +110,7 @@ make_nonconflicting_filename_variant(/*const*/ FileSpecifier& inBaseName, FileSp
                 else
                         theBaseNameLengthToUse = theBaseNameLength;
                 
-                sprintf(theNameToTryString, "%.*s%s", theBaseNameLengthToUse, theBaseNameString, theVariantSuffix);
+                sprintf(theNameToTryString, "%.*s%s", (int) theBaseNameLengthToUse, theBaseNameString, theVariantSuffix);
         
                 theNameToTry.FromDirectory(theDirectory);
 #if defined(mac) || defined(SDL_RFORK_HACK)
