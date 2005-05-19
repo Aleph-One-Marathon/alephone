@@ -348,27 +348,22 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 	assert(polygon->vertex_count>=MINIMUM_VERTICES_PER_SCREEN_POLYGON&&polygon->vertex_count<MAXIMUM_VERTICES_PER_SCREEN_POLYGON);
 
 	/* if we get static, tinted or landscaped transfer modes punt to the vertical polygon mapper */
-
-    if (polygon->transfer_mode == _static_transfer) {
-        texture_vertical_polygon(textured_polygon);
-        return;
-    }
-	
-	/* locate the vertically highest (closest to zero) and lowest (farthest from zero) vertices */
-	highest_vertex= lowest_vertex= 0;
-	for (vertex= 1; vertex<polygon->vertex_count; ++vertex)
-	{
-		if (vertices[vertex].y<vertices[highest_vertex].y) highest_vertex= vertex;
-		if (vertices[vertex].y>vertices[lowest_vertex].y) lowest_vertex= vertex;
+	if (polygon->transfer_mode == _static_transfer) {
+		texture_vertical_polygon(textured_polygon);
+		return;
 	}
 
-	for (vertex=0;vertex<polygon->vertex_count;++vertex)
+	/* locate the vertically highest (closest to zero) and lowest (farthest from zero) vertices */
+	highest_vertex= lowest_vertex= 0;
+	for (vertex= 0; vertex<polygon->vertex_count; ++vertex)
 	{
 		if (!(vertices[vertex].x>=0&&vertices[vertex].x<=screen->width&&vertices[vertex].y>=0&&vertices[vertex].y<=screen->height))
 		{
-//			dprintf("vertex #%d/#%d out of bounds:;dm %x %x;g;", vertex, polygon->vertex_count, polygon->vertices, polygon->vertex_count*sizeof(point2d));
+		//	dprintf("vertex #%d/#%d out of bounds:;dm %x %x;g;", vertex, polygon->vertex_count, polygon->vertices, polygon->vertex_count*sizeof(point2d));
 			return;
 		}
+		if (vertices[vertex].y<vertices[highest_vertex].y) highest_vertex= vertex;
+		else if (vertices[vertex].y>vertices[lowest_vertex].y) lowest_vertex= vertex;
 	}
 
 	/* if this polygon is not a horizontal line, draw it */
