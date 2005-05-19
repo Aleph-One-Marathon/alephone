@@ -101,14 +101,7 @@ void XML_ResourceFork::ReportInterpretError(const char *ErrorString)
 	if (GetNumInterpretErrors() < MaxErrorsToShow)
 		SimpleAlert(kAlertNoteAlert,ErrorString);
 #else
-//#if defined(USE_CARBON_ACCESSORS)
 	CopyCStringToPascal(ErrorString, ptemporary);
-/*
-#else
-	strncpy(temporary,ErrorString,255);
-	c2pstr(temporary);
-#endif
-*/
 	ParamText(ptemporary,0,0,0);
 	if (GetNumInterpretErrors() < MaxErrorsToShow)
 		Alert(NonFatalErrorAlert,NULL);
