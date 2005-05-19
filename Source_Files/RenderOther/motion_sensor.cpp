@@ -360,6 +360,7 @@ void adjust_motion_sensor_range(void)
 
 void HUD_Class::draw_network_compass(void)
 {
+#if !defined(DISABLE_NETWORKING)
 	short new_state= get_network_compass_state(motion_sensor_player_index);
 	short difference= (new_state^network_compass_state)|new_state;
 	
@@ -369,6 +370,7 @@ void HUD_Class::draw_network_compass(void)
 	if (difference&_network_compass_sw) draw_or_erase_unclipped_shape(36, 61, compass_shapes+2, (new_state&_network_compass_sw) != 0);
 	
 	network_compass_state= new_state;
+#endif // !defined(DISABLE_NETWORKING)
 }
 
 void HUD_Class::erase_all_entity_blips(void)

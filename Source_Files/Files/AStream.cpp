@@ -19,6 +19,9 @@
  *  Created by Br'fin on Wed Nov 27 2002.
  *
  */
+
+#if !defined(DISABLE_NETWORKING)
+ 
 #include "AStream.h"
 
 using namespace std;
@@ -303,3 +306,6 @@ const char*	AStream::failure::what() const throw()
 {
 	return _M_name;
 }
+
+#endif // !defined(DISABLE_NETWORKING)
+

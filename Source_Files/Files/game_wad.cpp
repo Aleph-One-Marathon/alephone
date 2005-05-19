@@ -534,6 +534,7 @@ bool new_game(
 			strcpy(players[i].name, player_start_information[i].name);
 		}
 	
+#if !defined(DISABLE_NETWORKING)
 		if(game_is_networked)
 		{
 			/* Make sure we can count. */
@@ -543,6 +544,7 @@ bool new_game(
 			set_current_player_index(NetGetLocalPlayerIndex());
 		}
 		else
+#endif // !defined(DISABLE_NETWORKING)
 		{
 			set_local_player_index(0);
 			set_current_player_index(0);
@@ -748,6 +750,7 @@ bool goto_level(
 		leaving_map();
 	}
 
+#if !defined(DISABLE_NETWORKING)
 	/* If the game is networked, then I must call the network code to do the right */
 	/* thing with the map.. */
 	if(game_is_networked)
@@ -758,6 +761,7 @@ bool goto_level(
 		success= NetChangeMap(entry);
 	} 
 	else 
+#endif // !defined(DISABLE_NETWORKING)
 	{
 		/* Load it and then rock.. */
 		load_level_from_map(entry->level_number);
