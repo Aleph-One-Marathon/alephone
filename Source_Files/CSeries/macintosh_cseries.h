@@ -73,4 +73,47 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "gdspec.h"
 
+// This removes all the ugly #if defined(USE_CARBON_ACCESSORS),
+// but still remains here if we ever want to do something with it.
+// It isn't a perfect emulation of the old way to do stuff,
+// but it should make it easier if someone wishes to undertake
+// porting Aleph One back to pre-Carbon Mac OS.
+// -Alexei Svitkine
+#ifdef CARBON_UNAVAILABLE
+#define GetDialogWindow(dialog) ((WindowPtr) dialog)
+#define GetWindowPort(window) ((CGrafPtr)window)
+#define GetWindowFromPort(port) ((WindowPtr)port)
+#define ValidWindowRect(window, rect) ValidRect(rect)
+#define InvalWindowRect(window, rect) InvalRect(rect)
+#define GetControlHilite(control) ((*(control))->contrlHilite)
+#define GetControlPopupMenuHandle(control) ((*((*(control))->contrlData))->mHandle)
+#define GetPortBitMapForCopyBits(port) (&(port)->portBits)
+#define GetDialogKeyboardFocusItem(dialog) (((DialogRecord *) (dialog))->editField)
+
+#define GetWindowRegion(window, type, region) do { region = ((WindowPeek)window)->updateRgn);} while (0)
+#define GetRegionBounds(region, rect) do { (*(rect)) = (*(region))->rgnBBox;} while (0)
+#define GetPortBounds(port, rect) do { (*(rect)) = (port)->portRect;} while (0)
+#define GetPortClipRegion(port, clip) do { (*(clip)) = (port)->clipRgn;} while (0)
+#define SetPortClipRegion(port, region) do { (port)->clipRgn = (region);} while (0)
+
+#define GetQDGlobalsGray(p) do { (*(p)) = qd.gray;} while (0)
+#define GetQDGlobalsBlack(p) do { (*(p)) = qd.black;} while (0)
+#define GetQDGlobalsArrow(arrow) do { (*(arrow)) = qd.arrow;} while (0)
+#define GetQDGlobalsScreenBits(bits) do { (*(bits)) = qd.screenBits;} while (0)
+#define SetQDGlobalsRandomSeed(seed) do { qd.randSeed = (seed);} while (0)
+
+#define GetPortTextFont(port) ((port)->txFont)
+#define GetPortTextFace(port) ((port)->txFace)
+#define GetPortTextSize(port) ((port)->txSize)
+
+#define NewModalFilterUPP(proc) NewModalFilterProc(proc)
+#define CountMenuItems(menu) CountMItems(menu)
+#define EnableeMenuItem(menu, item) EnableItem(menu, item)
+#define DisableMenuItem(menu, item) DisableItem(menu, item)
+#define GetNextEvent(mask, event) GetOSEvent(mask, event)
+
+#define CopyCStringToPascal(c, p) do { strncpy((char *)(p), (c), 255); c2pstr((char *)(p));} while (0)
+#define CopyPascalStringToC(p, c) do { strncpy((c), (char *)(p), 255); p2cstr((char *)(c));} while (0)
+#endif
+
 #endif
