@@ -367,17 +367,10 @@ static void update_fps_display(SDL_Surface *s)
 		GetPort(&old_port);
 		SetPort(port);
 		Font.Use();
-//#if defined(USE_CARBON_ACCESSORS)
 		Rect portRect;
 		GetPortBounds(port, &portRect);
 		short X0 = xoffset==-1?portRect.left:portRect.left+xoffset;
 		short Y0 = yoffset==-1?portRect.bottom:portRect.top + yoffset;
-/*
-#else
-		short X0 = port->portRect.left;
-		short Y0 = port->portRect.bottom;
-#endif
-*/
 #elif defined(SDL)
 		DisplayTextDest = s;
 		DisplayTextFont = Font.Info;
@@ -419,17 +412,10 @@ static void DisplayPosition(SDL_Surface *s)
 	GetPort(&old_port);
 	SetPort(port);
 	Font.Use();
-//#if defined(USE_CARBON_ACCESSORS)
 	Rect portRect;
 	GetPortBounds(port, &portRect);
 	short X0 = portRect.left;
 	short Y0 = portRect.top;
-/*
-#else
-	short X0 = port->portRect.left;
-	short Y0 = port->portRect.top;
-#endif
-*/
 #elif defined(SDL)
 	DisplayTextDest = s;
 	DisplayTextFont = Font.Info;
@@ -478,6 +464,7 @@ static void DisplayChatBuffer(GrafPtr port, short offWidth, short offHeight)
 static void DisplayChatBuffer(SDL_Surface *s)
 #endif
 {
+#if !defined(DISABLE_NETWORKING)
   if (InGameChatCallbacks::displayBufferPtr > 0) {
   FontSpecifier& Font = GetOnScreenFont();
   
@@ -508,6 +495,7 @@ static void DisplayChatBuffer(SDL_Surface *s)
   SetPort(old_port);
 #endif
   }
+#endif // !defined(DISABLE_NETWORKING)
 }
 
 #if defined(mac)
@@ -524,17 +512,10 @@ static void DisplayMessages(SDL_Surface *s)
 	GetPort(&old_port);
 	SetPort(port);
 	Font.Use();
-//#if defined(USE_CARBON_ACCESSORS)
 	Rect portRect;
 	GetPortBounds(port, &portRect);
 	short X0 = portRect.left+offWidth;
 	short Y0 = portRect.top+offHeight;
-/*
-#else
-	short X0 = port->portRect.left;
-	short Y0 = port->portRect.top;
-#endif
-*/
 #elif defined(SDL)
 	DisplayTextDest = s;
 	DisplayTextFont = Font.Info;

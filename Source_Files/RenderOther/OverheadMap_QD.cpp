@@ -53,15 +53,10 @@ void OverheadMap_QD_Class::draw_polygon(
 	ClosePoly();
 	PenSize(1, 1);
 	SetColor(color);
-//#if defined(USE_CARBON_ACCESSORS)
 	Pattern black;
 	GetQDGlobalsBlack(&black);
 	FillPoly(polygon, &black);
-/*
-#else
-	FillPoly(polygon, &qd.black);
-#endif
-*/
+
 	KillPoly(polygon);
 }
 
@@ -136,15 +131,10 @@ void OverheadMap_QD_Class::draw_player(
 	for (i=0;i<3;++i) LineTo(triangle[i].x, triangle[i].y);
 	ClosePoly();
 	PenSize(1, 1);		// LP: need only 1-pixel thickness of line
-//#if defined(USE_CARBON_ACCESSORS)
 	Pattern black;
 	GetQDGlobalsBlack(&black);
 	FillPoly(polygon, &black);
-/*
-#else
-	FillPoly(polygon, &qd.black);
-#endif
-*/
+
 	FramePoly(polygon);	// LP addition: perimeter drawing makes small version easier to see
 	KillPoly(polygon);
 }
@@ -159,16 +149,9 @@ void OverheadMap_QD_Class::draw_text(
 {
 	// Pascalify the name; watch out for buffer overflows
 	Str255 pascal_text;
-//#if defined(USE_CARBON_ACCESSORS)
 	char cstr[256];
 	strncpy(cstr, text, 255);
 	CopyCStringToPascal(cstr, pascal_text);
-/*
-#else
-	strncpy((char *)pascal_text, text, 255);
-	c2pstr((char *)pascal_text);
-#endif
-*/
 
 	// Needed up here for finding the width of the text string
 	FontData.Use();

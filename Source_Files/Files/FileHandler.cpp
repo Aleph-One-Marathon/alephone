@@ -858,24 +858,11 @@ static bool confirm_save_choice(
 				assert(dialog);
 				
 				/* Move the window to the proper location.. */
-//#if defined(USE_CARBON_ACCESSORS)                                
 				MoveWindow(GetDialogWindow(dialog), frame.left+REPLACE_H_OFFSET, 
 					frame.top+REPLACE_V_OFFSET, false);
-/*
-#else
-				MoveWindow((WindowPtr) dialog, frame.left+REPLACE_H_OFFSET, 
-					frame.top+REPLACE_V_OFFSET, false);
-#endif
-*/
 
 				/* Show the window. */
-//#if defined(USE_CARBON_ACCESSORS)
 				ShowWindow(GetDialogWindow(dialog));			
-/*
-#else
-				ShowWindow((WindowPtr) dialog);			
-#endif
-*/
 				do {
 					ModalDialog(get_general_filter_upp(), &item_hit);
 				} while(item_hit > iCANCEL);
