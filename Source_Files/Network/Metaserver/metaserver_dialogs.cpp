@@ -22,6 +22,8 @@
 	Created.
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "cseries.h"
 
 #include "metaserver_dialogs.h"
@@ -334,3 +336,5 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 
 	m_client.announceGame(GAME_PORT, description);
 }
+
+#endif // !defined(DISABLE_NETWORKING)

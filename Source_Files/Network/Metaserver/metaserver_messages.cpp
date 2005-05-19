@@ -22,6 +22,8 @@
 	Created.
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include "cseries.h"
 
 #include "metaserver_messages.h"
@@ -769,3 +771,5 @@ StartGameMessage::reallyDeflateTo(AOStream& thePacket) const
 		<< unused32
 		<< unused32;
 }
+
+#endif // !defined(DISABLE_NETWORKING)
