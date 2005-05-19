@@ -75,13 +75,7 @@ DialogPtr myGetNewDialog(
 
 	dlg=GetNewDialog(id,storage,before);
 	if (dlg) {
-//#if defined(USE_CARBON_ACCESSORS)
 		SetWRefCon(GetDialogWindow(dlg),refcon);
-/*
-#else
-		SetWRefCon(dlg,refcon);
-#endif
-*/
 		GetDialogItem(dlg,iOK,&it,&ih,&ir);
 		if (it==kButtonDialogItem) {
 			SetDialogDefaultItem(dlg,iOK);
@@ -175,24 +169,11 @@ pascal Boolean general_filter_proc(
 	switch (event->what) {
 	case updateEvt:
 		win=(WindowPtr)event->message;
-//#if defined(USE_CARBON_ACCESSORS)
 		SetPort(GetWindowPort(win));
-/*
-#else
-		SetPort(win);
-#endif
-*/
 		if (GetWindowKind(win)==kDialogWindowKind) {
 			if (header_proc) {
-//#if defined(USE_CARBON_ACCESSORS)
 				GetPortBounds(GetWindowPort(GetDialogWindow(dlg)), &frame);
 				(*header_proc)(GetDialogFromWindow(win),&frame);
-/*
-#else
-				frame=dlg->portRect;
-				(*header_proc)(win,&frame);
-#endif
-*/
 			}
 			frame_useritems(dlg);
 		} else {
@@ -273,15 +254,8 @@ bool hit_dialog_button(
 	if (it!=kButtonDialogItem)
 		return false;
 	button=(ControlHandle)ih;
-//#if defined(USE_CARBON_ACCESSORS)
 	if (GetControlHilite(button)!=kControlNoPart)
 		return false;
-/*
-#else
-	if ((*button)->contrlHilite!=kControlNoPart)
-		return false;
-#endif
-*/
 	HiliteControl(button,kControlButtonPart);
 	Delay(8,&ignore);
 	HiliteControl(button,kControlNoPart);
@@ -393,15 +367,8 @@ void get_window_frame(
 	Rect pr;
 
 	GetPort(&saveport);
-//#if defined(USE_CARBON_ACCESSORS)
 	SetPort(GetWindowPort(win));
 	GetPortBounds(GetWindowPort(win), &pr);
-/*
-#else
-	SetPort(win);
-	pr=win->portRect;
-#endif
-*/
 	LocalToGlobal((Point *)&pr.top);
 	LocalToGlobal((Point *)&pr.bottom);
 	SetPort(saveport);

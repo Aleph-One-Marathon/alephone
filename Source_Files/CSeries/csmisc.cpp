@@ -48,13 +48,8 @@ bool wait_for_click_or_keypress(
 
 	end=TickCount()+ticks;
 	for (;;) {
-#if defined(TARGET_API_MAC_CARBON)
 		if (GetNextEvent(mDownMask|keyDownMask,&event))
 			return true;
-#else
-		if (GetOSEvent(mDownMask|keyDownMask,&event))
-			return true;
-#endif
 		if (event.when>=end)
 			return false;
 	}

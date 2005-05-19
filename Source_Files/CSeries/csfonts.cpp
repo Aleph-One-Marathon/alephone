@@ -67,17 +67,9 @@ void GetFont(
 	GrafPtr port;
 
 	GetPort(&port);
-//#if defined(USE_CARBON_ACCESSORS)
 	spec->font=GetPortTextFont(port);
 	spec->style=GetPortTextFace(port);
 	spec->size=GetPortTextSize(port);
-/*
-#else
-	spec->font=port->txFont;
-	spec->style=port->txFace;
-	spec->size=port->txSize;
-#endif
-*/
 }
 
 void SetFont(

@@ -440,13 +440,7 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 
 	SetCursor(*GetCursor(watchCursor));
 
-//#if defined(USE_CARBON_ACCESSORS)
 	SetQDGlobalsRandomSeed(TickCount());
-/*
-#else
-	qd.randSeed = TickCount();
-#endif
-*/
 
 #ifdef PERFORMANCE
 	{
@@ -489,7 +483,13 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	
 	// Need to set the root directory before doing reading any other files
 	ReadRootDirectory();
-	
+
+#ifdef USES_NIBS
+	// Don't ignore Scripts, dammit!
+	DirectorySpecifier DirSpec;
+	if (DirSpec.SetToSubdirectory("Scripts"))
+		FindAndParseFiles(DirSpec);
+#else
 	// Look for such files in subdirectories specified in a STR# resource:
 	const int PathID = 128;
 	Handle PathStrings = Get1Resource('STR#',PathID);
@@ -507,20 +507,11 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 			// Get next path specification; quit when one has found an empty one
 
 			unsigned char PathSpec[256];
-//#if defined(USE_CARBON_ACCESSORS)
 			Str255 pascalPathSpec;
 			GetIndString(pascalPathSpec,PathID,i+1);	// Zero-based to one-based indexing
 			
 			// Make a C string from this Pascal string
 			CopyPascalStringToC(pascalPathSpec, (char *)PathSpec);
-/*
-#else
-			GetIndString(PathSpec,PathID,i+1);	// Zero-based to one-based indexing
-			
-			// Make a C string from this Pascal string
-			p2cstr(PathSpec);
-#endif
-*/
 			//fdprintf("Dir Path = %s",PathSpec);
 			
 			DirectorySpecifier DirSpec;
@@ -528,7 +519,8 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 			FindAndParseFiles(DirSpec);
 		}
 	}
-	
+#endif
+
 	// JTP: OpenGL Needs to be initialized *before* we handle preferences
 	// otherwise OGL_IsPresent() hasn't been decided yet
 	// This is ok to call if HAVE_OPENGL is false.
@@ -563,15 +555,9 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	load_environment_from_preferences();
 	
 	initialize_game_state();
-//#if defined(USE_CARBON_ACCESSORS)
 	Cursor arrow;
 	GetQDGlobalsArrow(&arrow);
 	SetCursor(&arrow);
-/*
-#else
-	SetCursor(&qd.arrow);
-#endif
-*/
 }
 
 void handle_game_key(
@@ -601,27 +587,31 @@ void handle_game_key(
     }
   // #endif
   
-  if (!is_keypad(_virtual))
-    {
-      extern bool chat_input_mode;
-      if (chat_input_mode) {
-	switch(key) {
-	case 015:
-	  InGameChatCallbacks::send();
-	  chat_input_mode = false;
-	  break;
-	case 0x1b:
-	case '\\':
-	  InGameChatCallbacks::abort();
-	  chat_input_mode = false;
-	  break;
-	case kDELETE:
-	  InGameChatCallbacks::remove();
-	  break;
-	default:
-	  InGameChatCallbacks::add(key);
+	if (!is_keypad(_virtual))
+	{
+		extern bool chat_input_mode;
+#if !defined(DISABLE_NETWORKING)
+		if (chat_input_mode) {
+			switch(key) {
+			case 015:
+				InGameChatCallbacks::send();
+				chat_input_mode = false;
+				break;
+			case 0x1b:
+			case '\\':
+				InGameChatCallbacks::abort();
+				chat_input_mode = false;
+				break;
+			case kDELETE:
+				InGameChatCallbacks::remove();
+				break;
+			default:
+				InGameChatCallbacks::add(key);
+		}
 	}
-      } else {
+	else
+#endif // !defined(DISABLE_NETWORKING)
+	{
 	switch(key)
 	  {
 	  case '.': case '>': // sound volume up
@@ -692,13 +682,14 @@ void handle_game_key(
 	    break;
 	    
 	  case '\\':
+#if !defined(DISABLE_NETWORKING)
 	    if (game_is_networked) {
 	      PlayInterfaceButtonSound(Sound_ButtonSuccess());
 	      chat_input_mode = true;
 	      InGameChatCallbacks::clear();
-	    } else {
+	    } else
+#endif // !defined(DISABLE_NETWORKING)
 	      PlayInterfaceButtonSound(Sound_ButtonFailure());
-	    }
 	    break;
 	  case 0x1b:
 	    // "Escape" posts a "quit" event
@@ -1280,13 +1271,7 @@ static void marathon_dialog_header_proc(
 	DialogPtr dialog,
 	Rect *frame)
 {
-//#if defined(USE_CARBON_ACCESSORS)
 	long refCon= GetWRefCon(GetDialogWindow(dialog));
-/*
-#else
-	long refCon= GetWRefCon(dialog);
-#endif
-*/
 	
 	if (refCon>=FIRST_DIALOG_REFCON && refCon<=LAST_DIALOG_REFCON)
 	{
@@ -1336,7 +1321,7 @@ static void main_event_loop(
 		{kEventClassMouse, kEventMouseDown},
 		{kEventClassMouse, kEventMouseUp},
 		{kEventClassMouse, kEventMouseWheelMoved},
-  		{kEventClassMouse, kEventMouseMoved},
+		{kEventClassMouse, kEventMouseMoved},
 		{kEventClassMouse, kEventMouseDragged}
 	};
 	EventRef theEvent;
@@ -1383,11 +1368,7 @@ static void main_event_loop(
 			}
 			else
 			{
-#if TARGET_API_MAC_CARBON
 				got_event= GetNextEvent(EventMask, &event);
-#else
-				got_event= GetOSEvent(EventMask, &event);
-#endif
 			}
 			
 			if(got_event) process_event(&event);
@@ -1433,22 +1414,10 @@ void update_any_window(
 	GrafPtr old_port;
 
 	GetPort(&old_port);
-//#if defined(USE_CARBON_ACCESSORS)
 	SetPort(GetWindowPort(window));
-/*
-#else
-	SetPort(window);
-#endif
-*/
 	BeginUpdate(window);
 
-//#if defined(USE_CARBON_ACCESSORS)
 	if(window==GetWindowFromPort(GetScreenGrafPort()))
-/*
-#else
-	if(window==(WindowPtr)GetScreenGrafPort())
-#endif
-*/
 	{
 		update_game_window(window, event);
 	}
@@ -1462,13 +1431,7 @@ void activate_any_window(
 	EventRecord *event,
 	bool active)
 {
-//#if defined(USE_CARBON_ACCESSORS)
 	if(window==GetWindowFromPort(GetScreenGrafPort()))
-/*
-#else
-	if(window==(WindowPtr)GetScreenGrafPort())
-#endif
-*/
 	{
 		activate_screen_window(window, event, active);
 	}
@@ -1490,10 +1453,10 @@ static void process_event(
 					process_screen_click(event);
 					break;
 
-                                case inSysWindow: /* DAs and the menu bar can blow me */
-                                case inMenuBar:
+				case inSysWindow: /* DAs and the menu bar can blow me */
+				case inMenuBar:
 				default:
-                                        logAnomaly1("mouseDown in unexpected part_code %d", part_code);
+					logAnomaly1("mouseDown in unexpected part_code %d", part_code);
 					break;
 			}
 			break;
@@ -1536,15 +1499,9 @@ static void process_event(
 						else
 						{
 							// whatever is necessary to update it
-//#if defined(USE_CARBON_ACCESSORS)
 							Rect portRect;
 							GetPortBounds(GetScreenGrafPort(), &portRect);
 							InvalWindowRect(GetWindowFromPort(GetScreenGrafPort()), &portRect);
-/*
-#else
-							InvalRect(&GetScreenGrafPort()->portRect);
-#endif
-*/
 						}
 					}
 					else
