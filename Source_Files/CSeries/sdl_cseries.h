@@ -80,12 +80,13 @@ using namespace std;	// Visual C++ doesn't like that other way of using the name
  *  Emulation of MacOS data types and definitions
  */
 #if !defined(SDL_RFORK_HACK) && !defined(TARGET_API_MAC_CARBON)
+
+#if defined(__APPLE__) && defined(__MACH__)
+// if we're on the right platform, we can use the real thing (and get headers for functions we might want to use)
+#include <CoreFoundation/CoreFoundation.h>
+#else
 typedef int OSErr;
 typedef unsigned char Str255[256];
-
-struct RGBColor {
-	uint16 red, green, blue;
-};
 
 struct Rect {
 	int16 top, left;
@@ -93,8 +94,15 @@ struct Rect {
 };
 
 const int noErr = 0;
+#endif
+
+struct RGBColor {
+	uint16 red, green, blue;
+};
+
 const int kFontIDMonaco = 4;
 const int kFontIDCourier = 22;
+
 #else
 # if !defined(TARGET_API_MAC_CARBON)
 #  define DEBUGASSERTMSG
