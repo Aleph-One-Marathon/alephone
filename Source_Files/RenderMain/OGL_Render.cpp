@@ -409,9 +409,10 @@ inline bool FogActive()
 // Current fog color; may be different from the fog color above because of infravision being on
 static GLfloat CurrFogColor[4] = {0,0,0,0};
 
-
+#ifndef USE_STIPPLE_STATIC_EFFECT
 // For doing static effects with stenciling
 static float StencilTxtrOpacity;
+#endif
 
 // Stipple patterns for that static look
 // (3 color channels + 1 alpha channel) * 32*32 array of bits
@@ -566,31 +567,31 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 bool OGL_StartRun()
 #endif
 {
-        logContext("starting up OpenGL rendering");
-        
+	logContext("starting up OpenGL rendering");
+
 	if (!OGL_IsPresent()) return false;
-	
+
 	// Will stop previous run if it had been active
 	if (OGL_IsActive()) OGL_StopRun();
-	
+
 #ifdef mac
 	// If bit depth is too small, then don't start
 	if (bit_depth <= 8) return false;
 #endif
-	
+
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
-	
+
 #ifdef mac
 	// Plain and simple
 	vector<GLint> PixelFormatSetupList;
 	PixelFormatSetupList.push_back(GLint(AGL_RGBA));
 	PixelFormatSetupList.push_back(GLint(AGL_DOUBLEBUFFER));
-        if(graphics_preferences->experimental_rendering && graphics_preferences->screen_mode.fullscreen)
-        {
-                PixelFormatSetupList.push_back(GLint(AGL_FULLSCREEN));
-                PixelFormatSetupList.push_back(GLint(AGL_NO_RECOVERY));
-        }
+	if (graphics_preferences->experimental_rendering && graphics_preferences->screen_mode.fullscreen)
+	{
+		PixelFormatSetupList.push_back(GLint(AGL_FULLSCREEN));
+		PixelFormatSetupList.push_back(GLint(AGL_NO_RECOVERY));
+	}
 	if (Z_Buffering)
 	{
 		PixelFormatSetupList.push_back(GLint(AGL_DEPTH_SIZE));
@@ -615,44 +616,38 @@ bool OGL_StartRun()
 	// Was it successful?
 	if (!RenderContext) return false;
 
-        // Fixes console spamming in Br'fin's Carbon version
-        Rect portBounds;
-#if defined(TARGET_API_MAC_CARBON)
-        GetPortBounds(WindowPtr, &portBounds);
-#else
-        portBounds = WindowPtr->portRect;
-#endif
+	// Fixes console spamming in Br'fin's Carbon version
+	Rect portBounds;
+	GetPortBounds(WindowPtr, &portBounds);
 
-        GLint RectBounds[4];
-        RectBounds[0] = 0;
-        RectBounds[1] = 0;
-        RectBounds[2] = portBounds.right - portBounds.left;
-        RectBounds[3] = portBounds.bottom - portBounds.top;
+	GLint RectBounds[4];
+	RectBounds[0] = 0;
+	RectBounds[1] = 0;
+	RectBounds[2] = portBounds.right - portBounds.left;
+	RectBounds[3] = portBounds.bottom - portBounds.top;
 
-        bool set_fullscreen= false;
-        if(graphics_preferences->screen_mode.fullscreen && graphics_preferences->experimental_rendering)
-        {
-                // ZZZ: try direct fullscreen first
-                logTrace2("aglSetFullScreen(%d, %d)", RectBounds[2], RectBounds[3]);
-                if(aglSetFullScreen(RenderContext, RectBounds[2], RectBounds[3], 60, 0) == GL_FALSE)
-                {
-                        logNote("aglSetFullScreen() failed, falling back to windowed case");
-                }
-                else
-                        set_fullscreen= true;
-        }
+	bool set_fullscreen= false;
+	if (graphics_preferences->screen_mode.fullscreen && graphics_preferences->experimental_rendering)
+	{
+		// ZZZ: try direct fullscreen first
+		logTrace2("aglSetFullScreen(%d, %d)", RectBounds[2], RectBounds[3]);
+		if (aglSetFullScreen(RenderContext, RectBounds[2], RectBounds[3], 60, 0) == GL_FALSE)
+			logNote("aglSetFullScreen() failed, falling back to windowed case");
+		else
+			set_fullscreen= true;
+	}
 
-        if(!set_fullscreen)
-        {
-                // Attach the window; if possible and desired
-                bool AttachWindow = aglSetDrawable(RenderContext, WindowPtr);
-                if (!AttachWindow)
-                {
-                        aglDestroyContext(RenderContext);
-                        return false;
-                }
-        }
-                
+	if (!set_fullscreen)
+	{
+		// Attach the window; if possible and desired
+		bool AttachWindow = aglSetDrawable(RenderContext, WindowPtr);
+		if (!AttachWindow)
+		{
+			aglDestroyContext(RenderContext);
+			return false;
+		}
+	}
+
 	if (!aglSetCurrentContext(RenderContext))
 	{
 		aglDestroyContext(RenderContext);
@@ -755,9 +750,9 @@ bool OGL_StopRun()
 // ZZZ: changes to try to do less redundant work (using a set of pairs etc.)
 void PreloadTextures()
 {
-        typedef set<TextureWithTransferMode> TextureWithTransferModeSet;
+	typedef set<TextureWithTransferMode> TextureWithTransferModeSet;
 
-        TextureWithTransferModeSet theSetOfTexturesUsed;
+	TextureWithTransferModeSet theSetOfTexturesUsed;
 
 	// Loop through the map polygons
 	for (int n=0; n<dynamic_world->polygon_count; n++)
@@ -791,18 +786,18 @@ void PreloadTextures()
 			theSetOfTexturesUsed.insert(TextureWithTransferMode(side->transparent_texture.texture,side->transparent_transfer_mode));
 		}
 	}
-	
+
 	// May want to preload the liquid texture also
 	// Sprites will have the problem of guessing which ones to preload
-        
-        // ZZZ: now we have a fairly (we hope) minimal set of texture stuffs, let's load them in.
-        for_each(theSetOfTexturesUsed.begin(), theSetOfTexturesUsed.end(), PreloadWallTexture);
+
+	// ZZZ: now we have a fairly (we hope) minimal set of texture stuffs, let's load them in.
+	for_each(theSetOfTexturesUsed.begin(), theSetOfTexturesUsed.end(), PreloadWallTexture);
 }
 
 void PreloadWallTexture(const TextureWithTransferMode& inTexture)
 {
-        shape_descriptor	texture		= inTexture.first;
-        int16			transfer_mode	= inTexture.second;
+	shape_descriptor texture = inTexture.first;
+	int16 transfer_mode = inTexture.second;
 
 	// In case of an empty side
 	if (texture == UNONE) return;
@@ -3304,14 +3299,8 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	if (!UseBackBuffer) glDrawBuffer(GL_FRONT);
 	
 	// Where the image comes from
-//#if defined(USE_CARBON_ACCESSORS)
 	Rect ImgBounds;
 	GetPortBounds(BufferPtr, &ImgBounds);
-/*
-#else
-	Rect& ImgBounds = ((CGrafPtr)BufferPtr)->portRect;
-#endif
-*/
 	
 	// Set up conversion table
 	// MakeConversion_16to32(bit_depth);
