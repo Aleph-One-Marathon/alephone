@@ -83,9 +83,39 @@ enum
 	NUMBER_OF_ITEMS= 64
 };
 
-// LP change: turning this into a variable
-extern _fixed PlayerSelfLuminosity;
-#define NATURAL_LIGHT_INTENSITY PlayerSelfLuminosity
+// All the player values settable by MML put into one struct for easier management.
+struct player_settings_definition {
+	// LP additions: variables for initial energy, initial oxygen, and stripped energy:
+	short InitialEnergy;
+	short InitialOxygen;
+	short StrippedEnergy;
+	// For picked-up powerups
+	short SingleEnergy;
+	short DoubleEnergy;
+	short TripleEnergy;
+	// LP addition: self-luminosity
+	_fixed PlayerSelfLuminosity;
+	// LP: can one swim?
+	bool CanSwim;
+	// Used in weapons.cpp: player can have guided missiles
+	bool PlayerShotsGuided;
+	short PlayerHalfVisualArc;
+	short PlayerHalfVertVisualArc;
+	float PlayerVisualRange;
+	float PlayerDarkVisualRange;
+	// LP additions: oxygen depletion and replenishment rates
+	// (number of units per tick);
+	// oxygen change is set equal to depletion or replenishment,
+	// whichever one is appropriate for the environment (vacuum/liquid vs. normal air)
+	short OxygenDepletion;
+	short OxygenReplenishment;
+	short OxygenChange;
+	// LP addition: invincibility-powerup vulnerability
+	short Vulnerability;
+};
+
+extern struct player_settings_definition player_settings;
+#define NATURAL_LIGHT_INTENSITY player_settings.PlayerSelfLuminosity
 
 enum /* physics models */
 {

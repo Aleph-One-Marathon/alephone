@@ -197,15 +197,6 @@ static short kINFRAVISION_DURATION = (3*TICKS_PER_MINUTE);
 
 #define LAST_LEVEL 100
 
-// LP addition: self-luminosity
-_fixed PlayerSelfLuminosity = FIXED_ONE_HALF;
-
-// LP additions: oxygen depletion and replenishment rates
-// (number of units per tick);
-// oxygen change is set equal to depletion or replenishment,
-// whichever one is appropriate for the environment (vacuum/liquid vs. normal air)
-static short OxygenDepletion = 1, OxygenReplenishment = 0, OxygenChange = 0;
-
 // LP addition: invincibility-powerup vulnerability
 static short Vulnerability = _damage_fusion_bolt;
 
@@ -218,9 +209,6 @@ static short Powerup_TripleEnergy = _i_triple_energy_powerup;
 static short Powerup_DoubleEnergy = _i_double_energy_powerup;
 static short Powerup_Energy = _i_energy_powerup;
 static short Powerup_Oxygen = _i_oxygen_powerup;
-
-// LP: can one swim?
-static bool CanSwim = true;
 				
 /* ---------- structures */
 
@@ -325,22 +313,26 @@ static struct damage_response_definition damage_response_definitions[]=
 // LP change: made this much bigger than the number of M2/Moo polygons
 #define NO_TELEPORTATION_DESTINATION INT16_MAX
 
-// LP additions: variables for initial energy, initial oxygen, and stripped energy:
-static short InitialEnergy = PLAYER_MAXIMUM_SUIT_ENERGY;
-static short InitialOxygen = PLAYER_MAXIMUM_SUIT_OXYGEN;
-static short StrippedEnergy = PLAYER_MAXIMUM_SUIT_ENERGY/4;
-
-// For picked-up powerups
-static short SingleEnergy = PLAYER_MAXIMUM_SUIT_ENERGY;
-static short DoubleEnergy = 2*PLAYER_MAXIMUM_SUIT_ENERGY;
-static short TripleEnergy = 3*PLAYER_MAXIMUM_SUIT_ENERGY;
-
-// Used in weapons.cpp: player can have guided missiles
-bool PlayerShotsGuided = false;
-short PlayerHalfVisualArc = QUARTER_CIRCLE/3;
-short PlayerHalfVertVisualArc = QUARTER_CIRCLE/3;
-float PlayerVisualRange = 31;
-float PlayerDarkVisualRange = 31;
+// These are all configureable with MML.
+struct player_settings_definition player_settings = {
+	PLAYER_MAXIMUM_SUIT_ENERGY,    // InitialEnergy
+	PLAYER_MAXIMUM_SUIT_OXYGEN,    // InitialOxygen
+	PLAYER_MAXIMUM_SUIT_ENERGY/4,  // StrippedEnergy
+	PLAYER_MAXIMUM_SUIT_ENERGY,    // SingleEnergy
+	2*PLAYER_MAXIMUM_SUIT_ENERGY,  // DoubleEnergy
+	3*PLAYER_MAXIMUM_SUIT_ENERGY,  // TripleEnergy
+	FIXED_ONE_HALF,                // PlayerSelfLuminosity
+	false,                         // PlayerShotsGuided
+	true,                          // CanSwim
+	QUARTER_CIRCLE/3,              // PlayerHalfVisualArc
+	QUARTER_CIRCLE/3,              // PlayerHalfVertVisualArc
+	31,                            // PlayerVisualRange
+	31,                            // PlayerDarkVisualRange
+	1,                             // OxygenDepletion
+	0,                             // OxygenReplenishment
+	0,                             // OxygenChange
+	_damage_fusion_bolt            // Vulnerability
+};
 
 /* ---------- private prototypes */
 
@@ -390,7 +382,7 @@ void allocate_player_memory(
 	dprintf("#%d players at %p (%x bytes each) ---------------------------------------;g;", MAXIMUM_NUMBER_OF_PLAYERS, players, sizeof(struct player_data));
 #endif
 
-        sRealActionQueues = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, false);
+	sRealActionQueues = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, false);
 }
 
 /* returns player index */
@@ -413,8 +405,8 @@ short new_player(
 	player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 	player->interface_flags= 0; // Doesn't matter-> give_player_initial_items will take care of it.
 	// LP change: using variables for these
-	player->suit_energy= InitialEnergy;
-	player->suit_oxygen= InitialOxygen;
+	player->suit_energy= player_settings.InitialEnergy;
+	player->suit_oxygen= player_settings.InitialOxygen;
 	player->color= color;
 	player->team= team;
 	player->flags= 0;
@@ -591,7 +583,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 			action_flags= 0;
 		}
 		
-		bool IsSwimming = TEST_FLAG(player->variables.flags,_HEAD_BELOW_MEDIA_BIT) && CanSwim;
+		bool IsSwimming = TEST_FLAG(player->variables.flags,_HEAD_BELOW_MEDIA_BIT) && player_settings.CanSwim;
 
 		// if weÕve got the ball we canÕt run (that sucks)
 		// Benad: also works with _game_of_rugby and _game_of_capture_the_flag
@@ -639,13 +631,13 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 			// find the oxygen-change rate appropriate to each environment,
 			// then handle the rate appropriately.
 			if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT))
-				OxygenChange = - OxygenDepletion;
+				player_settings.OxygenChange = - player_settings.OxygenDepletion;
 			else
-				OxygenChange = OxygenReplenishment;
+				player_settings.OxygenChange = player_settings.OxygenReplenishment;
 
-			if (OxygenChange < 0)
+			if (player_settings.OxygenChange < 0)
 				handle_player_in_vacuum(player_index, action_flags);
-			else if (OxygenChange > 0)
+			else if (player_settings.OxygenChange > 0)
 				ReplenishPlayerOxygen(player_index, action_flags);
 
 			// if ((static_world->environment_flags&_environment_vacuum) || (player->variables.flags&_HEAD_BELOW_MEDIA_BIT)) handle_player_in_vacuum(player_index, action_flags);
@@ -660,7 +652,6 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 					if (player_index==local_player_index) set_interface_microphone_recording_state(true);
 				}
 			}
-#endif // !defined(DISABLE_NETWORKING)
 			else
 			{
 				if (dynamic_world->speaking_player_index==player_index)
@@ -669,6 +660,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 					if (player_index==local_player_index) set_interface_microphone_recording_state(false);
 				}
 			}
+#endif // !defined(DISABLE_NETWORKING)
 
 			if (PLAYER_IS_DEAD(player))
 			{
@@ -740,7 +732,7 @@ void damage_player(
 	(void) (aggressor_type);
 	
 	// LP change: made this more general
-	if (player->invincibility_duration && damage->type!=Vulnerability)
+	if (player->invincibility_duration && damage->type!=player_settings.Vulnerability)
 	{
 		damage_type= _damage_absorbed;
 	}
@@ -1009,15 +1001,15 @@ bool legal_player_powerup(
 	}
 	else if (item_index == Powerup_TripleEnergy)
 	{
-		if (player->suit_energy>=TripleEnergy) legal= false;
+		if (player->suit_energy>=player_settings.TripleEnergy) legal= false;
 	}
 	else if (item_index == Powerup_DoubleEnergy)
 	{
-		if (player->suit_energy>=DoubleEnergy) legal= false;
+		if (player->suit_energy>=player_settings.DoubleEnergy) legal= false;
 	}
 	else if (item_index == Powerup_Energy)
 	{
-		if (player->suit_energy>=SingleEnergy) legal= false;
+		if (player->suit_energy>=player_settings.SingleEnergy) legal= false;
 	}
 	else if (item_index == Powerup_Oxygen)
 	{
@@ -1052,25 +1044,25 @@ void process_player_powerup(
 	}
 	else if (item_index == Powerup_TripleEnergy)
 	{
-		if (player->suit_energy<TripleEnergy)
+		if (player->suit_energy<player_settings.TripleEnergy)
 		{
-			player->suit_energy= TripleEnergy;
+			player->suit_energy= player_settings.TripleEnergy;
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
 	else if (item_index == Powerup_DoubleEnergy)
 	{
-		if (player->suit_energy<DoubleEnergy)
+		if (player->suit_energy<player_settings.DoubleEnergy)
 		{
-			player->suit_energy= DoubleEnergy;
+			player->suit_energy= player_settings.DoubleEnergy;
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
 	else if (item_index == Powerup_Energy)
 	{
-		if (player->suit_energy<SingleEnergy)
+		if (player->suit_energy<player_settings.SingleEnergy)
 		{
-			player->suit_energy= SingleEnergy;
+			player->suit_energy= player_settings.SingleEnergy;
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
@@ -1144,14 +1136,14 @@ static void handle_player_in_vacuum(
 		if ((player->suit_oxygen+OXYGEN_WARNING_OFFSET)<OXYGEN_WARNING_LEVEL && !((player->suit_oxygen+OXYGEN_WARNING_OFFSET)%OXYGEN_WARNING_FREQUENCY)) play_local_sound(Sound_OxygenWarning());
 		
 		// LP change: modified to use global variable for change rate
-		assert(OxygenChange <= 0);
-		player->suit_oxygen+= OxygenChange;
+		assert(player_settings.OxygenChange <= 0);
+		player->suit_oxygen+= player_settings.OxygenChange;
 		switch (dynamic_world->game_information.difficulty_level)
 		{
 			case _total_carnage_level:
-				if (action_flags&_run_dont_walk) player->suit_oxygen+= OxygenChange;
+				if (action_flags&_run_dont_walk) player->suit_oxygen+= player_settings.OxygenChange;
 			case _major_damage_level:
-				if (action_flags&(_left_trigger_state|_right_trigger_state)) player->suit_oxygen+= OxygenChange;
+				if (action_flags&(_left_trigger_state|_right_trigger_state)) player->suit_oxygen+= player_settings.OxygenChange;
 				break;
 		}
 		/*
@@ -1189,11 +1181,11 @@ static void ReplenishPlayerOxygen(short player_index, uint32 action_flags)
 	struct player_data *player= get_player_data(player_index);
 	
 	// Be careful to avoid short-integer wraparound
-	assert(OxygenChange >= 0);
+	assert(player_settings.OxygenChange >= 0);
 	if (player->suit_oxygen < PLAYER_MAXIMUM_SUIT_OXYGEN)
 	{
-		if (player->suit_oxygen < PLAYER_MAXIMUM_SUIT_OXYGEN - OxygenChange)
-			player->suit_oxygen += OxygenChange;
+		if (player->suit_oxygen < PLAYER_MAXIMUM_SUIT_OXYGEN - player_settings.OxygenChange)
+			player->suit_oxygen += player_settings.OxygenChange;
 		else
 			player->suit_oxygen = PLAYER_MAXIMUM_SUIT_OXYGEN;
 	}
@@ -1942,7 +1934,8 @@ static void try_and_strip_player_items(
 		initialize_player_weapons(player_index);
 		
 		// LP change: using variable for this
-		if (player->suit_energy>StrippedEnergy) player->suit_energy= StrippedEnergy;
+		if (player->suit_energy > player_settings.StrippedEnergy)
+			player->suit_energy = player_settings.StrippedEnergy;
 	}
 }
 
@@ -1950,9 +1943,9 @@ static void try_and_strip_player_items(
 static void adjust_player_physics(monster_data *me)
 {	
 	// LP: Fix the player physics so that guided missiles will work correctly
-	if (PlayerShotsGuided)
+	if (player_settings.PlayerShotsGuided)
 	{
-	    struct monster_definition *vacbob = get_monster_definition_external(_civilian_fusion_security);
+		struct monster_definition *vacbob = get_monster_definition_external(_civilian_fusion_security);
 		// AlexJLS patch: make this player active, so guided weapons can work
 		SET_MONSTER_ACTIVE_STATUS(me,true);
 		
@@ -2626,22 +2619,22 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"energy"))
 	{
-		return ReadBoundedInt16Value(Value,InitialEnergy,0,SHRT_MAX);
+		return ReadBoundedInt16Value(Value,player_settings.InitialEnergy,0,SHRT_MAX);
 	}
 	else if (StringsEqual(Tag,"oxygen"))
 	{
-		return ReadBoundedInt16Value(Value,InitialOxygen,0,SHRT_MAX);
+		return ReadBoundedInt16Value(Value,player_settings.InitialOxygen,0,SHRT_MAX);
 	}
 	else if (StringsEqual(Tag,"stripped"))
 	{
-		return ReadBoundedInt16Value(Value,StrippedEnergy,0,SHRT_MAX);
+		return ReadBoundedInt16Value(Value,player_settings.StrippedEnergy,0,SHRT_MAX);
 	}
 	else if (StringsEqual(Tag,"light"))
 	{
 		float Luminosity;
 		if (ReadBoundedNumericalValue(Value,"%f",Luminosity,float(0),float(SHRT_MAX)))
 		{
-			PlayerSelfLuminosity = long(FIXED_ONE*Luminosity + 0.5);
+			player_settings.PlayerSelfLuminosity = long(FIXED_ONE*Luminosity + 0.5);
 			return true;
 		}
 		else
@@ -2649,51 +2642,51 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"oxygen_deplete"))
 	{
-		return ReadInt16Value(Value,OxygenDepletion);
+		return ReadInt16Value(Value,player_settings.OxygenDepletion);
 	}
 	else if (StringsEqual(Tag,"oxygen_replenish"))
 	{
-		return ReadInt16Value(Value,OxygenReplenishment);
+		return ReadInt16Value(Value,player_settings.OxygenReplenishment);
 	}
 	else if (StringsEqual(Tag,"vulnerability"))
 	{
-		return ReadBoundedInt16Value(Value,Vulnerability,NONE,NUMBER_OF_DAMAGE_TYPES-1);
+		return ReadBoundedInt16Value(Value,player_settings.Vulnerability,NONE,NUMBER_OF_DAMAGE_TYPES-1);
 	}
 	else if (StringsEqual(Tag,"guided"))
 	{
-		return ReadBooleanValueAsBool(Value,PlayerShotsGuided);
+		return ReadBooleanValueAsBool(Value,player_settings.PlayerShotsGuided);
 	}
 	else if (StringsEqual(Tag,"half_visual_arc"))
 	{
-		return ReadInt16Value(Value,PlayerHalfVisualArc);
+		return ReadInt16Value(Value,player_settings.PlayerHalfVisualArc);
 	}
 	else if (StringsEqual(Tag,"half_vertical_visual_arc"))
 	{
-		return ReadInt16Value(Value,PlayerHalfVertVisualArc);
+		return ReadInt16Value(Value,player_settings.PlayerHalfVertVisualArc);
 	}
 	else if (StringsEqual(Tag,"visual_range"))
 	{
-		return ReadFloatValue(Value,PlayerVisualRange);
+		return ReadFloatValue(Value,player_settings.PlayerVisualRange);
 	}
 	else if (StringsEqual(Tag,"dark_visual_range"))
 	{
-		return ReadFloatValue(Value,PlayerDarkVisualRange);
+		return ReadFloatValue(Value,player_settings.PlayerDarkVisualRange);
 	}
 	else if (StringsEqual(Tag,"single_energy"))
 	{
-		return ReadInt16Value(Value,SingleEnergy);
+		return ReadInt16Value(Value,player_settings.SingleEnergy);
 	}
 	else if (StringsEqual(Tag,"double_energy"))
 	{
-		return ReadInt16Value(Value,DoubleEnergy);
+		return ReadInt16Value(Value,player_settings.DoubleEnergy);
 	}
 	else if (StringsEqual(Tag,"triple_energy"))
 	{
-		return ReadInt16Value(Value,TripleEnergy);
+		return ReadInt16Value(Value,player_settings.TripleEnergy);
 	}
 	else if (StringsEqual(Tag,"can_swim"))
 	{
-		return ReadBooleanValue(Value,CanSwim);
+		return ReadBooleanValue(Value,player_settings.CanSwim);
 	}
 	UnrecognizedTag();
 	return false;
