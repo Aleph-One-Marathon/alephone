@@ -272,7 +272,7 @@ void teleport_object_out(
 			// make the object invisible
 			SET_OBJECT_INVISIBILITY(object, true);
 
-			play_object_sound(effect->object_index, _snd_teleport_out); /* teleport in sound, at destination */
+			play_object_sound(effect->object_index, Sound_TeleportOut()); /* teleport in sound, at destination */
 		}
 	}
 }
