@@ -92,7 +92,6 @@ Apr 10, 2003 (Woody Zenfell):
 extern void NetRetargetJoinAttempts(const IPaddress* inAddress);
 
 
-#ifdef HAVE_SDL_NET
 
 // For the recent host addresses
 #include <list>
@@ -105,8 +104,6 @@ struct HostName_Type
 
 static list<HostName_Type> RecentHostAddresses;
 static list<HostName_Type>::iterator RHAddrIter = RecentHostAddresses.end();
-
-#endif
 
 
 static uint16 get_dialog_game_options(DialogPTR dialog, short game_type);
@@ -1872,7 +1869,6 @@ void get_net_color(
 }
 
 
-#ifdef HAVE_SDL_NET
 
 // For manipulating the list of recent host addresses:
 
@@ -1951,8 +1947,6 @@ char *RecentHostAddresses_NextIter()
 	
 	return Addr;
 }
-
-#endif
 
 #endif // !defined(DISABLE_NETWORKING)
 

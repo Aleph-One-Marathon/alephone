@@ -116,7 +116,6 @@ enum {
 	NUMBER_OF_NET_COLORS
 };
 
-#if HAVE_SDL_NET
 /* SDL/TCP hinting info. JTP: moved here from network_dialogs_sdl.cpp */
 enum {
     kJoinHintingAddressLength = 64,
@@ -125,7 +124,6 @@ enum {
 
 extern bool sUserWantsJoinHinting;
 extern char sJoinHintingAddress[];
-#endif
 
 #define strJOIN_DIALOG_MESSAGES 136
 enum /* join dialog string numbers */
@@ -484,7 +482,6 @@ extern void draw_kill_bars(NetgameOutcomeData &outcome, struct net_rank *ranks, 
 extern void draw_score_bars(NetgameOutcomeData &outcome, struct net_rank *ranks, short bar_count);
 
 
-#ifdef HAVE_SDL_NET
 
 // For manipulating the list of recent host addresses:
 
@@ -501,7 +498,5 @@ void RecentHostAddresses_StartIter();
 // Returns the next member in sequence;
 // if it ran off the end, then it returns NULL
 char *RecentHostAddresses_NextIter();
-
-#endif
 
 #endif//NETWORK_DIALOGS_H

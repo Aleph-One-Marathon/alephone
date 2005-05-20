@@ -45,13 +45,11 @@
 #include "Logging.h"
 
 // Optional features, disabled by default on Mac to preserve existing behavior (I hope ;) )
-#if HAVE_SDL_NET
 #undef	NETWORK_ADAPTIVE_LATENCY_2	// use this one instead; it should be good.  no wait...
 #define NETWORK_ADAPTIVE_LATENCY_3	// there, this one ought to get it right, finally.
 #define	NETWORK_IP			// needed if using IPaddress { host, port }; (as in SDL_net) rather than NetAddrBlock for addressing.
 #undef	NETWORK_USE_RECENT_FLAGS	// if the game stalls, use flags at the end of the stall, not the more stale ones at the beginning
 #define	NETWORK_SMARTER_FLAG_DITCHING	// this mechanism won't be quite as hasty to toss flags as Bungie's
-#endif
 
 // ZZZ: This structure is never placed on the wire, so you can do whatever you want with it
 // without having to worry about updating additional structures.
@@ -1697,9 +1695,7 @@ static void NetSendRingPacket(
 	status->canForwardRing= false; /* will not be set unless this task fires without a packet to forward */
 	status->clearToForwardRing= false; /* will not be set until we receive the next valid ring packet but will be irrelevant if serverCanForwardRing is true */
 	// LP: NetAddrBlock is the trouble here
-#if HAVE_SDL_NET
 	NetDDPSendFrame(frame, &status->upringAddress, kPROTOCOL_TYPE, ddpSocket);
-#endif
 }
 
 /*

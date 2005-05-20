@@ -60,12 +60,8 @@ Oct 15, 2001 (Woody Zenfell):
 #include <stdio.h>
 
 #include "macintosh_cseries.h"
-#if HAVE_SDL_NET
 #include "sdl_network.h"
 #include "network_lookup_sdl.h"
-#else
-#include "macintosh_network.h" // solely for ADSP.h, AppleTalk.h, and network_lookup functions.
-#endif
 
 #include "shell.h"  // for preferences
 #include "map.h"    // so i can include player.h

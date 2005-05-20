@@ -40,9 +40,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 #include	"cstypes.h"
 
-#if defined(SDL) || HAVE_SDL_NET
 #include	"sdl_network.h"
-#endif
 
 #include	"network.h"
 
@@ -139,16 +137,6 @@ enum
 };
 
 /* ---------- structures */
-
-
-// LP: This is a dummy definition until Classic MacOS support can be completed
-#if defined(mac) && !HAVE_SDL_NET && !HAVE_SDL_NET_H
-#define NetAddrBlock IPaddress
-struct IPaddress {
-    uint32 host;
-    uint16 port;
-};
-#endif
 
 
 // (ZZZ:) Note ye well!!: if you alter these network-related structures, you are probably going to need to modify

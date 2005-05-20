@@ -49,10 +49,6 @@ Tuesday, June 21, 1994 3:26:46 PM
 // not to pretend it's real.
 //#define MAX_NET_DISTRIBUTION_BUFFER_SIZE 512
 
-#if HAVE_SDL_NET
-#define NETWORK_CHAT
-#endif
-
 enum // base network speeds
 {
 	_appletalk_remote, // ARA
@@ -201,9 +197,7 @@ void NetExit(void);
 bool NetGather(void *game_data, short game_data_size, void *player_data, 
 	short player_data_size, bool resuming_game);
 
-#if HAVE_SDL_NET // ZZZ: quick decl for prototype below
 struct SSLP_ServiceInstance;
-#endif
 
 enum { // NetGatherPlayer results
         kGatherPlayerFailed, // generic
@@ -213,12 +207,8 @@ enum { // NetGatherPlayer results
 };
 
 int NetGatherPlayer(
-#if !HAVE_SDL_NET
-short player_index,
-#else
 // ZZZ: in my formulation, player info is all passed along in one structure from the dialog here.
 const prospective_joiner_info &player,
-#endif
 CheckPlayerProcPtr check_player);
 
 void NetHandleUngatheredPlayer(prospective_joiner_info ungathered_player);

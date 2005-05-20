@@ -119,13 +119,9 @@ clearly this is all broken until we have packet types
 #include "mytm.h"	// ZZZ: both versions use mytm now
 #include "preferences.h" // for network_preferences and environment_preferences
 
-#if defined(SDL) || HAVE_SDL_NET
 #include "sdl_network.h"
-#include	"network_lookup_sdl.h"
-#include	"SDL_thread.h"
-#elif defined(mac)
-#include "macintosh_network.h"
-#endif
+#include "network_lookup_sdl.h"
+#include "SDL_thread.h"
 
 #include "game_errors.h"
 #include "CommunicationsChannel.h"
@@ -141,16 +137,6 @@ clearly this is all broken until we have packet types
 #include <map>
 #include "Logging.h"
 
-#ifdef env68k
-#pragma segment network
-#endif
-
-#ifdef DEBUG
-//	#define DEBUG_NET
-//#define DEBUG_NET_RECORD_PROFILE
-#endif
-// #define DEBUG_NET
-
 // ZZZ: moved many struct definitions, constant #defines, etc. to header for (limited) sharing
 #include "network_private.h"
 
@@ -160,20 +146,10 @@ clearly this is all broken until we have packet types
 
 #include "network_messages.h"
 
-#if HAVE_SDL_NET
-#define	NETWORK_IP			// needed if using IPaddress { host, port }; (as in SDL_net) rather than NetAddrBlock for addressing.
-#endif
-
 #include "NetworkGameProtocol.h"
 
 #include "RingGameProtocol.h"
 #include "StarGameProtocol.h"
-
-// LP: kludge so I can get the code to compile
-#if defined(mac) && !HAVE_SDL_NET
-//#define NETWORK_IP // JTP: No no no, this defeats the whole purpose of NETWORK_IP
-#undef NETWORK_IP
-#endif
 
 #include "lua_script.h"
 
@@ -572,20 +548,10 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
       
       assert(theServerIndex != topology->player_count);
       
-      /* for ARA, make stuff in an address we know is correct (donÕt believe the server) */
       topology->players[theServerIndex].dspAddress= address;
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-      topology->players[theServerIndex].ddpAddress.aNet= address.aNet;
-      topology->players[theServerIndex].ddpAddress.aNode= address.aNode;
-#endif
-#else
       topology->players[theServerIndex].ddpAddress.host = address.host;
-#endif
-      //						fdprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[0].ddpAddress),
-      //							*((long*)&topology->players[0].dspAddress));
-
-    NetUpdateTopology();
+      
+      NetUpdateTopology();
     
     switch (topology->tag)
       {
@@ -963,16 +929,6 @@ short NetState(
 
 
 /*
- // ZZZ addition: 
-void NetSetNetState(
-	       short inNewState)
-{
-	assert(inNewState >= 0 && inNewState < NUMBER_OF_NET_STATES);
-	netState= inNewState;
-}
-*/
-
-/*
 ---------
 NetGather
 ---------
@@ -1086,13 +1042,9 @@ static int net_compare(
 	void const *p1, 
 	void const *p2)
 {
-#ifndef NETWORK_IP
-	return 0;
-#else
 	uint32 p1_host = SDL_SwapBE32(((const NetPlayer *)p1)->ddpAddress.host);
 	uint32 p2_host = SDL_SwapBE32(((const NetPlayer *)p2)->ddpAddress.host);
 	return p2_host - p1_host;
-#endif
 }
 
 /*
@@ -1341,14 +1293,7 @@ bool NetEntityNotInGame(
 	{
 		NetAddrBlock *player_address= &topology->players[player_index].dspAddress;
 		
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-		if (address->aNode==player_address->aNode && address->aSocket==player_address->aSocket &&
-			address->aNet==player_address->aNet)
-#endif
-#else
 		if (address->host == player_address->host && address->port == player_address->port)
-#endif
 		{
 			valid= false;
 			break;
@@ -1408,20 +1353,9 @@ static void NetLocalAddrBlock(
 	short socketNumber)
 {
 	
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-	short node, network;
-
-	GetNodeAddress(&node, &network);
-	
-	address->aSocket= socketNumber;
-	address->aNode= node;
-	address->aNet= network;
-#endif
-#else
 	address->host = 0x7f000001;	//!! XXX (ZZZ) yeah, that's really bad.
 	address->port = socketNumber;	// OTOH, I guess others are set up to "stuff" the address they actually saw for us instead of
-#endif					// this, anyway... right??  So maybe it's not that big a deal.......
+					// this, anyway... right??  So maybe it's not that big a deal.......
 }
 
 
@@ -1444,17 +1378,7 @@ static void NetUpdateTopology(
 static bool NetSetSelfSend(
                            bool on)
 {
-#ifndef NETWORK_IP
-        OSErr          err;
-        MPPParamBlock  pb;
-
-        pb.SETSELF.newSelfFlag = on;
-        err = PSetSelfSend(&pb, false);
-        assert(err == noErr);
-        return pb.SETSELF.oldSelfFlag;
-#else
         return false;
-#endif
 }
 
 
@@ -1734,61 +1658,9 @@ get_network_version()
 	// but IPring introduces new _NET formats and so needs an increment.
 	// (OK OK this is a bit pedantic - I mean, I don't think IPring is going to accidentally start
 	// sending or receiving AppleTalk traffic ;) - but, you know, it's the principle of the thing.)
-#if HAVE_SDL_NET
 	// Ring is 12; star is 13.
 	return (network_preferences->game_protocol == _network_game_protocol_ring) ? _ip_ring_network_version : _ip_star_network_version;
-#else
-	return _appletalk_ring_network_version;
-#endif
 }
-
-#ifdef NETWORK_CHAT
-// Core logic brazenly ripped off NetDistributeTopology :)
-OSErr NetDistributeChatMessage(
-	short sender_identifier, const char* message)
-{
-  OSErr error = 0;
-  short playerIndex;
-  
-  assert(netState==netGathering);
-  
-  NetworkChatMessage chatMessage(message, sender_identifier);
-  
-  for (playerIndex=0; playerIndex<topology->player_count; ++playerIndex) {
-    // ZZZ: skip players with identifier NONE - they don't really exist... also skip ourselves
-    if(topology->players[playerIndex].identifier != NONE
-       || playerIndex == localPlayerIndex) {
-
-      CommunicationsChannel *channel =
-	connections_to_clients[topology->players[playerIndex].stream_id]->channel;
-      
-      channel->enqueueOutgoingMessage(chatMessage);
-      channel->flushOutgoingMessages(false, 30000, 30000);
-    }
-  }
-  return error;
-}
-
-bool
-NetGetMostRecentChatMessage(player_info** outPlayerData, char** outMessage) {
-    if(new_incoming_chat_message) {
-        player_info* thePlayer = NULL;
-        new_incoming_chat_message = false;
-        
-        for(int i = 0; i < NetGetNumberOfPlayers(); i++)
-            if(NetGetPlayerIdentifier(i) == incoming_chat_message_buffer.sender_identifier)
-                thePlayer = (player_info*) NetGetPlayerData(i);
-
-        if(thePlayer != NULL) {
-            *outPlayerData = thePlayer;
-            *outMessage = incoming_chat_message_buffer.text;
-            return true;
-        }
-    }
-
-    return false;
-}
-#endif // NETWORK_CHAT
 
 void NetProcessMessagesInGame() {
   if (connection_to_server) {
@@ -1916,24 +1788,6 @@ short NetUpdateJoinState(
 	}
       }
       //	alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
-      /*
-	  } else if (message->type() == kCHAT_MESSAGE) {
-	    NetworkChatMessage *networkChatMessage = dynamic_cast<NetworkChatMessage*>(message.get());
-	    if (networkChatMessage) {
-	      fprintf(stderr, "Cast succeded\n");
-	      strcpy(incoming_chat_message_buffer.text, networkChatMessage->chatText());
-	      incoming_chat_message_buffer.sender_identifier = networkChatMessage->senderID();
-	      newState = netChatMessageReceived;
-	      new_incoming_chat_message = true;
-	    }
-	  } else {
-	    error = 1;
-	  }
-	} else {
-	  error = 1;
-	}
-	}
-      */
       break;
       // netWaiting
       
@@ -1969,168 +1823,6 @@ int NetGatherPlayer(const prospective_joiner_info &player,
 
   // lie to the network code and say we gathered successfully
   return kGatherPlayerSuccessful;
-}
-
-// ZZZ: hindsight is 20/20 - probably we should just return the joiner's acceptance number and let higher-level
-// code figure out whether that number is acceptable, etc.
-int OldNetGatherPlayer(
-#if !HAVE_SDL_NET
-        /* player_index in our lookup list */
-	short player_index,
-#else
-        const prospective_joiner_info &player,
-#endif
-	CheckPlayerProcPtr check_player)
-{
-	OSErr error = noErr;
-	NetAddrBlock address;
-	short packet_type;
-	int theResult = kGatherPlayerSuccessful;
-	bool preGatherRejection = false;
-
-	assert(netState==netGathering);
-	assert(topology->player_count<MAXIMUM_NUMBER_OF_NETWORK_PLAYERS);
-	
-	/* Get the address from the dialog */
-#if !HAVE_SDL_NET
-	// LP: NetAddrBlock is the trouble here
-	#ifndef mac
-	NetLookupInformation(player_index, &address, NULL);
-	#endif
-#else
-	address = connections_to_clients[player.stream_id]->channel->peerAddress();
-#endif
-
-	/* Force the address to be correct, so we can use our stream system.. */
-	topology->players[topology->player_count].dspAddress= address;
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-	topology->players[topology->player_count].ddpAddress.aNet= address.aNet;
-	topology->players[topology->player_count].ddpAddress.aNode= address.aNode;
-#endif
-#else
-	topology->players[topology->player_count].ddpAddress.host = address.host;
-#endif
-
-        int thePlayerAcceptNumber = 0;
-
-	CommunicationsChannel *channel = connections_to_clients[player.stream_id]->channel;
-
-	if (!error) {
-	  // reject a player if he can't handle our script demands
-	  ScriptMessage scriptMessage(_netscript_query_message);
-	  channel->enqueueOutgoingMessage(scriptMessage);
-	  channel->flushOutgoingMessages(30000, 30000);
-	  
-	  auto_ptr<ScriptMessage> replyToScriptMessage(channel->receiveSpecificMessage<ScriptMessage>(kSCRIPT_MESSAGE, (Uint32) 30000, (Uint32) 30000));
-	  if (replyToScriptMessage.get()) {
-	    if (do_netscript
-		&& replyToScriptMessage->value() != _netscript_yes_script_message) {
-	      preGatherRejection = true;
-	    } else {
-	      preGatherRejection = false;
-	    }
-	  } else {
-	    error = 1;
-	  }
-	}
-        
-        if (preGatherRejection)
-        {
-                alert_user(infoError, strNETWORK_ERRORS, netErrUngatheredPlayerUnacceptable, 0);
-                theResult = kGatherPlayerFailed;
-        }
-        
-	if (!error && !preGatherRejection)
-	{
-	  fprintf(stderr, "sending joinPlayerMessage\n");
-	  JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier);
-	  connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(joinPlayerMessage);
-	  connections_to_clients[player.stream_id]->channel->flushOutgoingMessages(30000, 30000);
-	  if(!error)
-	    {
-	      auto_ptr<AcceptJoinMessage> acceptJoinMessage(connections_to_clients[player.stream_id]->channel->receiveSpecificMessage<AcceptJoinMessage>((Uint32) 30000, (Uint32) 30000));
-	      if (acceptJoinMessage.get()) {
-		fprintf(stderr, "received acceptJoinMessage\n");
-
-		if (acceptJoinMessage->accepted()) {
-
-		  topology->nextIdentifier+= 1;
-		  
-		  /* Copy in the player data */
-		  obj_copy(topology->players[topology->player_count], *acceptJoinMessage->player());
-		  
-		  /* this is how gatherer remembers how to contact joiners */
-		  topology->players[topology->player_count].stream_id = player.stream_id;
-		  
-		  /* force in some addresses we know are correct */
-		  topology->players[topology->player_count].dspAddress= address;
-#ifndef NETWORK_IP
-#ifdef CLASSIC_MAC_NETWORKING
-		  topology->players[topology->player_count].ddpAddress.aNet= address.aNet;
-		  topology->players[topology->player_count].ddpAddress.aNode= address.aNode;
-#endif
-#else
-		  topology->players[topology->player_count].ddpAddress.host = address.host;
-#endif
-		  //						fdprintf("ddp %8x, dsp %8x;g;", *((long*)&topology->players[topology->player_count].ddpAddress),
-		  //							*((long*)&topology->players[topology->player_count].dspAddress));
-		  
-		  if (!error)
-		    {
-		      /* remove this player from the list of players so we canÕt even try to add him again */
-			  // ZZZ: in my formulation, entry is removed from list instantly by widget when clicked
-#if !HAVE_SDL_NET
-			  NetLookupRemove(player_index);
-#endif
-		      
-		      /* successfully added a player */
-		      topology->player_count+= 1;
-		      
-		      check_player(topology->player_count-1, topology->player_count);
-		      
-		      /* recalculate our local information */
-		      NetUpdateTopology();
-		      
-		      /* distribute this new topology with the new player tag */
-		      /* There is no reason to check the error here, because we can't do */
-		      /* anything about it.. */
-		      NetDistributeTopology(tagNEW_PLAYER);
-		    }
-		} else {
-		  // joiner did not accept
-		  error = 1;
-		}
-	      } else {
-		// got wrong packet type
-		error = 1;
-	      }
-	    }
-	  else 
-	    {
-	      // shouldn't get here
-	    }
-	}
-	
-	if(error)
-	  {
-	    alert_user(infoError, strNETWORK_ERRORS, netErrCantAddPlayer, error);
-	    // ZZZ: in my formulation, entry is removed as soon as it's clicked, by the clicked widget.
-#if !HAVE_SDL_NET
-	    NetLookupRemove(player_index); /* get this guy out of here, he didnÕt respond */
-#endif
-	    theResult = kGatherPlayerFailed;
-	  }
-	
-        if (theResult == kGatheredUnacceptablePlayer) {
-	  alert_user(infoError, strNETWORK_ERRORS, netErrGatheredPlayerUnacceptable, thePlayerAcceptNumber);
-        } else if (theResult != kGatherPlayerSuccessful) {
-	  // Drop connection of failed joiner
-	  delete connections_to_clients[player.stream_id];
-	  connections_to_clients.erase(player.stream_id);
-	}
-	
-	return theResult;
 }
 
 void NetHandleUngatheredPlayer (prospective_joiner_info ungathered_player)
@@ -2175,14 +1867,11 @@ static OSErr NetDistributeTopology(
 	return error; // must be noErr (not like we check return value anyway :))
 }
 
-// LP: NetAddrBlock is the trouble here
-#ifdef NETWORK_IP
 NetAddrBlock *NetGetPlayerADSPAddress(
 	short player_index)
 {
 	return &topology->players[player_index].dspAddress;
 }
-#endif
 
 bool NetAllowCrosshair() {
   return (dynamic_world->player_count == 1 ||
