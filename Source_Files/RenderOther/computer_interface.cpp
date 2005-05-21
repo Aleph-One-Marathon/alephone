@@ -1450,6 +1450,7 @@ static bool previous_terminal_group(
 				done= true;
 				use_new_group= false;
 			}
+			if (!use_new_group) done = true; // this fixes perma-loop freeze
 		} while(!done);
 		
 		if(use_new_group)
