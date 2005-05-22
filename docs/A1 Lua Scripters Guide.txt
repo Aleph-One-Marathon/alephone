@@ -168,7 +168,7 @@ pattern_buffer(buffer_id, player)
 Whenever a player uses a pattern buffer.
 
 
-got_item(type, player)
+got_item(player, type)
 
 Whenever a player picks up an item.
 Also whenever a player gets an item when a script calls add_item().
@@ -339,12 +339,12 @@ disable_player(player)
 Enable/Disable a player. The player cannot move...
 
 
-player_to_monster (player)
+player_to_monster_index (player)
 
 Returns the monster index of player.
 
 
-local_player ()
+local_player_index ()
 
 Returns the index of the local player.
 In the normal case, you shouldn't needed this.
@@ -671,7 +671,13 @@ Starts the camera 'camera_index' for player. Works only on local player.
 
 
 deactivate_camera(player, camera_index)
+
 Stops the camera 'camera_index' for player. Only useful on local player.
+
+
+clear_camera(camera_index)
+
+Deletes all points and angles for the camera 'camera_index'.
 
 
 2.9 Display
@@ -820,6 +826,38 @@ Returns the projectile's damage type.
 get_projectile_owner (projectile)
 
 Returns the index of the monster that fired projectile, or nil if that monster is no longer associated with the projectile. (won't work right with virulent projectiles)
+
+
+set_projectile_owner (projectile, monster)
+
+Set the index of the monster that fired the projectile. (The owner of a projectile won't be damaged by it directly.)
+
+
+get_projectile_target (projectile)
+
+Returns the index of the monster that this projectile is tracking, if it's guided.
+
+
+set_projectile_target (projectile, monster)
+
+Set the index of the monster that this projectile is tracking. Probably ignored if not guided.
+
+
+projectile_index_valid(projectile)
+
+Returns nil of projectile lies outside the acceptable range for projectile indices, false if it is an unused slot, or true if it is a valid, in use slot (which can be used with other projectile-related functions).
+
+
+get_projectile_angle(projectile)
+set_projectile_angle(projectile, yaw, pitch)
+
+Returns/Sets both the facing (yaw) and the elevation (pitch) of projectile.
+
+
+get_projectile_position(projectile)
+set_projectile_position(projectile, polygon, x, y, z)
+
+Returns/Sets the polygon and x, y, z position of projectile.
 
 
 2.13 Other
@@ -1416,3 +1454,10 @@ Symbols referring to the game's dynamic limits on various things.
 (SB: More to be added as I add other hooks. Seems kinda lame to give this its own section right now.)
 
 MAXIMUM_MONSTERS_PER_MAP
+
+The first invalid monster index.
+
+
+MAXIMUM_PROJECTILES_PER_MAP
+
+The first invalid projectile index.
