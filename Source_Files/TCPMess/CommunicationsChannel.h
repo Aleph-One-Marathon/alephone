@@ -87,6 +87,10 @@ public:
 	// Moves data around but does not callback handlers
 	void		pump();
 
+	// Calls back message handler (if appropriate)
+	// returns false if there are no messages to dispatch
+	bool            dispatchOneIncomingMessage();
+
 	// Calls back message handlers (if appropriate)
 	void		dispatchIncomingMessages();
 

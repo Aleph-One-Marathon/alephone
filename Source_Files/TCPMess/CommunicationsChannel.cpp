@@ -407,21 +407,22 @@ CommunicationsChannel::pump()
 	pumpReceivingSide();
 }
 
-
+bool CommunicationsChannel::dispatchOneIncomingMessage() 
+{
+  if (mIncomingMessages.empty()) return false;
+  Message* theMessage = mIncomingMessages.front();
+  if (messageHandler() != NULL) {
+    messageHandler()->handle(theMessage, this);
+  }
+  delete theMessage;
+  mIncomingMessages.pop_front();
+  return true;
+}
 
 void
 CommunicationsChannel::dispatchIncomingMessages()
 {
-	while(!mIncomingMessages.empty())
-	{
-		Message* theMessage = mIncomingMessages.front();
-		if(messageHandler() != NULL)
-		{
-			messageHandler()->handle(theMessage, this);
-		}
-		delete theMessage;
-		mIncomingMessages.pop_front();
-	}
+  while (dispatchOneIncomingMessage());
 }
 
 
