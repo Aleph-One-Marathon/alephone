@@ -431,7 +431,7 @@ static byte *handlerLuaBuffer = NULL;
 static size_t handlerLuaLength = 0;
 
 static void handleLuaMessage(LuaMessage *luaMessage, CommunicationsChannel *) {
-  if (netState == netStartingUp) {
+  if (netState == netStartingUp || handlerState == netStartingUp) {
     fprintf(stderr, "received lua\n");
     if (handlerLuaBuffer) {
       delete[] handlerLuaBuffer;
@@ -451,7 +451,7 @@ static byte *handlerMapBuffer = NULL;
 static size_t handlerMapLength = 0;
 
 static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
-  if (netState == netStartingUp) {
+  if (netState == netStartingUp || handlerState == netStartingUp) {
     fprintf(stderr, "received map\n");
     if (handlerMapBuffer) { // assume the last map the server sent is right
       delete[] handlerMapBuffer;
@@ -489,7 +489,7 @@ static byte *handlerPhysicsBuffer = NULL;
 static size_t handlerPhysicsLength = 0;
 
 static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsChannel *) {
-  if (netState == netStartingUp) {
+  if (netState == netStartingUp || handlerState == netStartingUp) {
     fprintf(stderr, "received physics\n");
     if (handlerPhysicsBuffer) {
       delete[] handlerPhysicsBuffer;
@@ -501,7 +501,7 @@ static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsC
       memcpy(handlerPhysicsBuffer, physicsMessage->buffer(), handlerPhysicsLength);
     }
   } else {
-    fprintf(stderr, "unexpected physics message received!\n");
+    fprintf(stderr, "unexpected physics message received! (state is %i)\n", netState);
   }
 }
 
