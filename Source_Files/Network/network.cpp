@@ -533,10 +533,7 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
     
     NetAddrBlock address;
       
-      // LP: NetAddrBlock is the trouble here
-#ifdef NETWORK_IP
       address = connection_to_server->peerAddress();
-#endif
       
       // ZZZ: the code below used to assume the server was _index_ 0; now, we merely
       // assume the server has _identifier_ 0.
