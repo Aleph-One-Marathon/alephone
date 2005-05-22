@@ -358,7 +358,8 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 					case 0:
 						// LP change: making it long-distance friendly
 						{
-						int32 screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
+						int32 world_x = world->x ? world->x : 1; // fix for division by zero error
+						int32 screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world_x;
 						screen->x= PIN(screen_x, 0, view->screen_width);
 						}
 						break;
@@ -374,7 +375,8 @@ void RenderRasterizerClass::render_node_floor_or_ceiling(
 					case 0:
 						// LP change: making it long-distance friendly
 						{
-						int32 screen_y= view->half_screen_height - transformed_height/world->x + view->dtanpitch;
+						int32 world_x = world->x ? world->x : 1; // fix for division by zero error
+						int32 screen_y= view->half_screen_height - transformed_height/world_x + view->dtanpitch;
 						screen->y= PIN(screen_y, 0, view->screen_height);
 						}
 						break;
