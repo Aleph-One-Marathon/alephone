@@ -143,7 +143,6 @@ bool NetworkChatMessage::reallyInflateFrom(AIStream& inputStream) {
 
 void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
 
-  fprintf(stderr, "reallyDeflateTo, player_count %i\n", mTopology.player_count);
   outputStream << mTopology.tag;
   outputStream << mTopology.player_count;
   outputStream << mTopology.nextIdentifier;
@@ -163,7 +162,6 @@ void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mTopology.game_data.initial_update_latency;
 
   for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++) {
-    fprintf(stderr, "deflating player %i, name %s\n", i, mTopology.players[i].player_data.name);
     deflateNetPlayer(outputStream, mTopology.players[i]);
   }
 }
