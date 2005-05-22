@@ -33,6 +33,13 @@ static void write_string(AOStream& outputStream, const char *s) {
   outputStream.write(const_cast<char *>(s), strlen(s) + 1);
 }
 
+static void write_pstring(AOStream& outputStream, const unsigned char *s) {
+  char cs[256];
+  pstrcpy((unsigned char *) cs, s);
+  a1_p2cstr((unsigned char *) cs);
+  write_string(outputStream, cs);
+}
+
 static void read_string(AIStream& inputStream, char *s, size_t length) {
   char c;
   size_t i = 0;
@@ -42,6 +49,13 @@ static void read_string(AIStream& inputStream, char *s, size_t length) {
     inputStream >> (int8&) c;
   }
   s[i] = '\0';
+}
+
+static void read_pstring(AIStream& inputStream, unsigned char *s, size_t length) {
+  unsigned char ps[256];
+  read_string(inputStream, (char *) ps, length > 256 ? 256 : length);
+  a1_c2pstr((char *) ps);
+  pstrcpy(s, ps);
 }
 
 // ghs: if you're trying to preserve network compatibility, and you want
@@ -59,7 +73,8 @@ static void deflateNetPlayer(AOStream& outputStream, const NetPlayer &player) {
   outputStream << player.stream_id;
   outputStream << (byte) player.net_dead;
 
-  write_string(outputStream, (char *) player.player_data.name);
+
+  write_pstring(outputStream, player.player_data.name);
   outputStream << player.player_data.desired_color;
   outputStream << player.player_data.team;
   outputStream << player.player_data.color;
@@ -77,7 +92,7 @@ static void inflateNetPlayer(AIStream& inputStream, NetPlayer &player) {
   inputStream >> player.stream_id;
   inputStream >> (byte&) player.net_dead;
 
-  read_string(inputStream, (char *) player.player_data.name, sizeof(player.player_data.name));  
+  read_pstring(inputStream, player.player_data.name, sizeof(player.player_data.name));  
   inputStream >> player.player_data.desired_color;
   inputStream >> player.player_data.team;
   inputStream >> player.player_data.color;
@@ -128,6 +143,7 @@ bool NetworkChatMessage::reallyInflateFrom(AIStream& inputStream) {
 
 void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
 
+  fprintf(stderr, "reallyDeflateTo, player_count %i\n", mTopology.player_count);
   outputStream << mTopology.tag;
   outputStream << mTopology.player_count;
   outputStream << mTopology.nextIdentifier;
@@ -147,6 +163,7 @@ void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mTopology.game_data.initial_update_latency;
 
   for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++) {
+    fprintf(stderr, "deflating player %i, name %s\n", i, mTopology.players[i].player_data.name);
     deflateNetPlayer(outputStream, mTopology.players[i]);
   }
 }
