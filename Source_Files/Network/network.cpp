@@ -278,31 +278,28 @@ Client::Client(CommunicationsChannel *inChannel) : mDispatcher(new MessageDispat
 void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, CommunicationsChannel *) 
 {
   if (netState == netGathering) {
-    fprintf(stderr, "received joiner info message\n");
     pstrcpy(name, joinerInfoMessage->info()->name);
     network_version = joinerInfoMessage->info()->network_version;
     state = Client::_connected_but_not_yet_shown;
   } else {
-    fprintf(stderr, "unexpected joiner info message received\n");
+    logAnomaly("unexpected joiner info message received");
   }
 }
 
 void Client::handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel *) 
 {
   if (state == _awaiting_script_message) {
-    fprintf(stderr, "received script message\n");
     if (do_netscript &&
 	scriptMessage->value() != _netscript_yes_script_message) {
       alert_user(infoError, strNETWORK_ERRORS, netErrUngatheredPlayerUnacceptable, 0);
       state = _ungatherable;
     } else {
-      fprintf(stderr, "sending join player message\n");
       JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier);
       channel->enqueueOutgoingMessage(joinPlayerMessage);
       state = _awaiting_accept_join;
     }
   } else {
-    fprintf(stderr, "unexpected script message received!\n");
+    logAnomaly("unexpected script message received");
   }
 }
 
@@ -310,9 +307,7 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
 				     CommunicationsChannel *)
 {
   if (state == _awaiting_accept_join) {
-    fprintf(stderr, "received accept join message\n");
     if (acceptJoinMessage->accepted()) {
-      fprintf(stderr, "join accepted\n");
       topology->nextIdentifier++;
       topology->players[topology->player_count] = *acceptJoinMessage->player();
       topology->players[topology->player_count].stream_id = getStreamIdFromChannel(channel);
@@ -335,14 +330,13 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       state = _ungatherable;
     }
   } else {
-    fprintf(stderr, "unexpected accept join message received!\n");
+    logAnomaly("unexpected accept join message received");
   }
 }
 
 void Client::handleChatMessage(NetworkChatMessage* netChatMessage, 
 			       CommunicationsChannel *)
 {
-  fprintf(stderr, "chat message received\n");
   // relay this to all clients
   if (state == _ingame) {
     assert(netState == netActive);
@@ -367,13 +361,13 @@ void Client::handleChatMessage(NetworkChatMessage* netChatMessage,
       }
     }
   } else {
-    fprintf(stderr, "non in-game chat messages are not yet implemented");
+    logNote("non in-game chat message received; ignoring");
   }
 }
   
 
-void Client::unexpectedMessageHandler(Message *, CommunicationsChannel *) {
-  fprintf(stderr, "unexpected message received\n");
+void Client::unexpectedMessageHandler(Message *message, CommunicationsChannel *) {
+  logAnomaly1("unexpected message type %i received\n", message->type()); 
 }
     
 
@@ -383,25 +377,20 @@ static short handlerState;
 static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel*)
 {
   if (netState == netJoining) {
-    fprintf(stderr, "received hello message\n");
     // reply with my join info
     prospective_joiner_info my_info;
     
     pstrcpy(my_info.name, player_preferences->name);
     my_info.network_version = get_network_version();
     JoinerInfoMessage joinerInfoMessage(&my_info);
-    fprintf(stderr, "sending joinerInfoMessage\n");
     connection_to_server->enqueueOutgoingMessage(joinerInfoMessage);
   } else {
-    // log an error
-    fprintf(stderr, "unexpected hello message received!\n");
+    logAnomaly("unexpected hello message received");
   }
 }
 
 static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, CommunicationsChannel*) {
   if (netState == netJoining) {
-    fprintf(stderr, "received join player message\n");
-
     /* Note that we could set accepted to false if we wanted to for some */
     /*  reason- such as bad serial numbers.... */
     
@@ -413,7 +402,6 @@ static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, Commun
     topology->players[localPlayerIndex].net_dead= false;
     
     /* Confirm. */
-    fprintf(stderr, "sending an acceptJoinMessage\n");
     AcceptJoinMessage acceptJoinMessage(true, &topology->players[localPlayerIndex]);
     connection_to_server->enqueueOutgoingMessage(acceptJoinMessage);
 
@@ -423,7 +411,7 @@ static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, Commun
       handlerState = netJoinErrorOccurred;
     }
   } else {
-    fprintf(stderr, "unexpected join player message received!\n");
+    logAnomaly("unexpected join player message received");
   }
 }
 
@@ -432,7 +420,6 @@ static size_t handlerLuaLength = 0;
 
 static void handleLuaMessage(LuaMessage *luaMessage, CommunicationsChannel *) {
   if (netState == netStartingUp) {
-    fprintf(stderr, "received lua\n");
     if (handlerLuaBuffer) {
       delete[] handlerLuaBuffer;
       handlerLuaBuffer = NULL;
@@ -443,7 +430,7 @@ static void handleLuaMessage(LuaMessage *luaMessage, CommunicationsChannel *) {
       memcpy(handlerLuaBuffer, luaMessage->buffer(), handlerLuaLength);
     }
   } else {
-    fprintf(stderr, "unexpected lua message received!\n");
+    logAnomaly("unexpected lua message received");
   }
 }
 
@@ -452,7 +439,6 @@ static size_t handlerMapLength = 0;
 
 static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
   if (netState == netStartingUp) {
-    fprintf(stderr, "received map\n");
     if (handlerMapBuffer) { // assume the last map the server sent is right
       delete[] handlerMapBuffer;
       handlerMapBuffer = NULL;
@@ -463,12 +449,11 @@ static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
       memcpy(handlerMapBuffer, mapMessage->buffer(), handlerMapLength);
     }
   } else {
-    fprintf(stderr, "unexpected map message received!\n");
+    logAnomaly("unexpected map message received");
   }
 }
     
 static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, CommunicationsChannel *) {
-  fprintf(stderr, "chat message received\n");
   if (netState == netActive && chatCallbacks) {
     for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
       if (topology->players[playerIndex].stream_id == chatMessage->senderID()) {
@@ -479,9 +464,10 @@ static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, Communicat
 	return;
       }
     }
-    fprintf(stderr, "chat message from %i, player not found\n", chatMessage->senderID());
+    logAnomaly1("chat message from %i, player not found", chatMessage->senderID());
   } else {
-    fprintf(stderr, "non in-game chat not yet implemented\n");
+    // not enough smarts to correctly redistrbute these, so just ignore them
+    logNote("non in-game chat message received; ignoring");
   }
 }
 
@@ -490,7 +476,6 @@ static size_t handlerPhysicsLength = 0;
 
 static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsChannel *) {
   if (netState == netStartingUp) {
-    fprintf(stderr, "received physics\n");
     if (handlerPhysicsBuffer) {
       delete[] handlerPhysicsBuffer;
       handlerPhysicsBuffer = NULL;
@@ -501,14 +486,13 @@ static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsC
       memcpy(handlerPhysicsBuffer, physicsMessage->buffer(), handlerPhysicsLength);
     }
   } else {
-    fprintf(stderr, "unexpected physics message received! (state is %i)\n", netState);
+    logAnomaly("unexpected physics message received");
   }
 }
 
 
 static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel*) {
   if (netState == netJoining) {
-    fprintf(stderr, "received script message\n");
     ScriptMessage replyToScriptMessage;
     if (scriptMessage->value() == _netscript_query_message) {
 #ifdef HAVE_LUA
@@ -519,16 +503,14 @@ static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChan
     } else {
       replyToScriptMessage.setValue(_netscript_no_script_message);
     }
-    fprintf(stderr, "sending script message\n");
     connection_to_server->enqueueOutgoingMessage(replyToScriptMessage);
   } else {
-    fprintf(stderr, "unexpected script message received!\n");
+    logAnomaly("unexpected script message received");
   }
 }
 
 static void handleTopologyMessage(TopologyMessage* topologyMessage, CommunicationsChannel *) {
   if (netState == netWaiting) {
-    fprintf(stderr, "received topology message\n");
     *topology = *(topologyMessage->topology());
     
     NetAddrBlock address;
@@ -573,15 +555,16 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
 	break;
 	
       default:
+	logAnomaly1("topology message received with unknown tag %i; ignoring", topology->tag);
 	break;
       }
   } else {
-    fprintf(stderr, "unexpected topology message received!\n");
+    logAnomaly("unexpected topology message received");
   }
 }
 
 static void handleUnexpectedMessage(Message *inMessage, CommunicationsChannel *) {
-  fprintf(stderr, "unexpected message ID %i received!\n", inMessage->type());
+  logAnomaly1("unexpected message ID %i received", inMessage->type());
 }
     
 static TypedMessageHandlerFunction<HelloMessage> helloMessageHandler(&handleHelloMessage);
@@ -629,7 +612,7 @@ void ChatCallbacks::SendChatMessage(const char *message)
       }
     }
   } else {
-    fprintf(stderr, "non in-game chat message are not yet implemented\n");
+    logNote("SendChatMessage called but non in-game chat messages are not yet implemented");
   }
 }
 
@@ -1500,7 +1483,6 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
       
       set_progress_dialog_message(physics_message_id);
       if(do_physics) {
-	fprintf(stderr, "Transfering physics (%i bytes)\n", physics_length);
 	PhysicsMessage physicsMessage(physics_buffer, physics_length);
 	channel->enqueueOutgoingMessage(physicsMessage);
       }
@@ -1508,13 +1490,11 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
       set_progress_dialog_message(message_id);
       reset_progress_bar();
       {
-	fprintf(stderr, "Transfering map (%i bytes)\n", wad_length);
 	MapMessage mapMessage(wad_buffer, wad_length);
 	channel->enqueueOutgoingMessage(mapMessage);
       }
       
       if (do_netscript) {
-	fprintf(stderr, "Transfering lua\n");
 	LuaMessage luaMessage(deferred_script_data, deferred_script_length);
 	channel->enqueueOutgoingMessage(luaMessage);
       } 
@@ -1688,7 +1668,6 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info)
     next_stream_id++;
     
     HelloMessage helloMessage;
-    fprintf(stderr, "sending hello message\n");
     new_joiner->enqueueOutgoingMessage(helloMessage);
   }
 
