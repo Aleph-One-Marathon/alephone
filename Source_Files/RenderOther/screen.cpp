@@ -1253,8 +1253,8 @@ void render_screen(
       else if (world_view->overhead_map_active) {
 				QDSetDirtyRegion(port, r);
 				update_screen(BufferRect, ViewRect, HighResolution);
+				DisposeRgn(r);
 			}
-			DisposeRgn(r);
 #endif
 
 			// #endif
