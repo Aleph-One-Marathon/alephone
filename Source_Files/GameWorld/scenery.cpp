@@ -213,7 +213,7 @@ class XML_SceneryShapesParser: public XML_ElementParser
 
 static XML_SceneryShapesParser SceneryNormalParser("normal"), SceneryDestroyedParser("destroyed");
 
-
+struct scenery_definition *original_scenery_definitions = NULL;
 class XML_SceneryObjectParser: public XML_ElementParser
 {
 	short Index;
@@ -228,12 +228,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_SceneryObjectParser(): XML_ElementParser("object") {}
 };
 
 bool XML_SceneryObjectParser::Start()
 {
+	// back up old values first
+	if (!original_scenery_definitions) {
+		original_scenery_definitions = (struct scenery_definition *) malloc(sizeof(struct scenery_definition) * NUMBER_OF_SCENERY_DEFINITIONS);
+		assert(original_scenery_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_SCENERY_DEFINITIONS; i++)
+			original_scenery_definitions[i] = scenery_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -310,6 +319,17 @@ bool XML_SceneryObjectParser::AttributesDone()
 	SceneryNormalParser.DescPtr = &OrigData.shape;
 	SceneryDestroyedParser.DescPtr = &OrigData.destroyed_shape;
 			
+	return true;
+}
+
+bool XML_SceneryObjectParser::ResetValues()
+{
+	if (original_scenery_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_SCENERY_DEFINITIONS; i++)
+			scenery_definitions[i] = original_scenery_definitions[i];
+		free(original_scenery_definitions);
+		original_scenery_definitions = NULL;
+	}
 	return true;
 }
 
