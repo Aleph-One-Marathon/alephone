@@ -727,7 +727,7 @@ void animate_items(void) {
 	}
 }
 
-
+struct item_definition *original_item_definitions = NULL;
 class XML_ItemParser: public XML_ElementParser
 {
 	short Index;
@@ -742,12 +742,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
+	bool ResetValues();
 	
 	XML_ItemParser(): XML_ElementParser("item") {}
 };
 
 bool XML_ItemParser::Start()
 {
+	// back up old values first
+	if (!original_item_definitions) {
+		original_item_definitions = (struct item_definition *) malloc(sizeof(struct item_definition) * NUMBER_OF_DEFINED_ITEMS);
+		assert(original_item_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_DEFINED_ITEMS; i++)
+			original_item_definitions[i] = item_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -833,6 +842,17 @@ bool XML_ItemParser::AttributesDone()
 	
 	Shape_SetPointer(&OrigData.base_shape);
 	
+	return true;
+}
+
+bool XML_ItemParser::ResetValues()
+{
+	if (original_item_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_DEFINED_ITEMS; i++)
+			item_definitions[i] = original_item_definitions[i];
+		free(original_item_definitions);
+		original_item_definitions = NULL;
+	}
 	return true;
 }
 
