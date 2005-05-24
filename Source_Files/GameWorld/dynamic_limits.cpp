@@ -51,6 +51,7 @@ static uint16 dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 	 256	// [64] Global collision buffer (projectiles with other objects)
 };
 
+uint16 *original_dynamic_limits = NULL;
 
 // Boolean-attribute parser: for switching stuff on and off
 class XML_DynLimValueParser: public XML_ElementParser
@@ -71,6 +72,14 @@ public:
 
 bool XML_DynLimValueParser::Start()
 {
+	// back up old values first
+	if (!original_dynamic_limits) {
+		original_dynamic_limits = (uint16 *) malloc(sizeof(uint16) * NUMBER_OF_DYNAMIC_LIMITS);
+		assert(original_dynamic_limits);
+		for (int i = 0; i < NUMBER_OF_DYNAMIC_LIMITS; i++)
+			original_dynamic_limits[i] = dynamic_limits[i];
+	}
+
 	IsPresent = false;
 	return true;
 }
@@ -115,6 +124,7 @@ class XML_DynLimParser: public XML_ElementParser
 {
 public:
 	bool End();
+	bool ResetValues();
 	XML_DynLimParser(): XML_ElementParser("dynamic_limits") {}
 };
 
@@ -135,6 +145,19 @@ bool XML_DynLimParser::End()
 	// Resize the array of paths also
 	allocate_pathfinding_memory();
 	
+	return true;
+}
+
+bool XML_DynLimParser::ResetValues()
+{
+  if (original_dynamic_limits) {
+    for (int i = 0; i < NUMBER_OF_DYNAMIC_LIMITS; i++)
+      dynamic_limits[i] = original_dynamic_limits[i];
+		free(original_dynamic_limits);
+		original_dynamic_limits = NULL;
+		// End() will resize everything properly (that code can be moved into a separate helper function).
+		End();
+  }
 	return true;
 }
 
