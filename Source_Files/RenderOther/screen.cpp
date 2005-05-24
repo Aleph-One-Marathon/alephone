@@ -2818,13 +2818,7 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	// and its keyboard-event catcher
 	DialogPtr Dialog = GetNewDialog(MonitorFreq_Dialog, nil, WindowPtr(-1));
 	assert(Dialog);
-//#if defined(TARGET_API_MAC_CARBON)
 	ModalFilterUPP DialogEventHandler = NewModalFilterUPP(DM_ModeFreqDialogHandler);
-/*
-#else
-	ModalFilterUPP DialogEventHandler = NewModalFilterProc(DM_ModeFreqDialogHandler);
-#endif
-*/
 	assert(DialogEventHandler);
 	
 	// Get its popup-menu handle
