@@ -364,6 +364,7 @@ uint8 *pack_media_data(uint8 *Stream, media_data* Objects, size_t Count)
 
 
 // Parses effect indices
+// NOTE: this does not need a ResetValues() method because XML_LiquidParser (parent) does it already.
 class XML_LqEffectParser: public XML_ElementParser
 {
 	short Type;
@@ -436,6 +437,7 @@ static XML_LqEffectParser LqEffectParser;
 
 
 // Parses sound indices
+// NOTE: this does not need a ResetValues() method because XML_LiquidParser (parent) does it already.
 class XML_LqSoundParser: public XML_ElementParser
 {
 	short Type;
@@ -507,6 +509,7 @@ bool XML_LqSoundParser::AttributesDone()
 static XML_LqSoundParser LqSoundParser;
 
 
+struct media_definition *original_media_definitions = NULL;
 class XML_LiquidParser: public XML_ElementParser
 {
 	short Index;
@@ -521,12 +524,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues;
+
 	XML_LiquidParser(): XML_ElementParser("liquid") {}
 };
 
 bool XML_LiquidParser::Start()
 {
+	// back up old values first
+	if (!original_media_definitions) {
+		original_media_definitions = (struct media_definition *) malloc(sizeof(struct media_definition) * NUMBER_OF_MEDIA_TYPES);
+		assert(original_media_definitions);
+		for (int i = 0; i < NUMBER_OF_MEDIA_TYPES; i++)
+			original_media_definitions[i] = media_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -614,6 +626,17 @@ bool XML_LiquidParser::AttributesDone()
 	LqSoundParser.SoundList = OrigData.sounds;
 	Damage_SetPointer(&OrigData.damage);
 	
+	return true;
+}
+
+bool XML_LiquidParser::ResetValues()
+{
+	if (original_media_definitions) {
+		for (int i = 0; i < NUMBER_OF_MEDIA_TYPES; i++)
+			media_definitions[i] = original_media_definitions[i];
+		free(original_media_definitions);
+		original_media_definitions = NULL;
+	}
 	return true;
 }
 
