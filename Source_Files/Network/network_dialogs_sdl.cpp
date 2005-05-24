@@ -418,6 +418,9 @@ is_game_limit_valid(dialog* d) {
 
 static void
 update_setup_ok_button_enabled(dialog* d) {
+	modify_control_enabled(d, iOK, CONTROL_ACTIVE);
+// jkvw: bad bad bad - this is for shared code to deal with
+/*
     short	button_state;
     
     // If limit is invalid, don't enable OK.
@@ -443,6 +446,7 @@ update_setup_ok_button_enabled(dialog* d) {
     }
     
     modify_control_enabled(d, iOK, button_state);
+    */
 }
 
 // This can be plugged in directly for the three entry widgets' callbacks.
@@ -550,46 +554,32 @@ select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber) {
 
 static void
 respond_to_net_game_type_change(w_select* inWidget) {
-        // Get the newly-selected game type and calculate stringset ID
-        size_t	theSelectedGameType = inWidget->get_selection();
-
-        // Get the level-selection menu
-        dialog*	theDialog = inWidget->get_owning_dialog();
-        w_entry_point_selector* theSelector = 
-            dynamic_cast<w_entry_point_selector*>(theDialog->get_widget_by_id(iENTRY_MENU));
-        assert(theSelector != NULL);
-
-        // Update the game type in the level selector
-        theSelector->setGameType(theSelectedGameType);
-    
-        // Adjust default/available options, end condition, etc. (cross-platform)
-        setup_dialog_for_game_type(theDialog, theSelectedGameType);
-        
-        // make sure ok button state is current.
-        update_setup_ok_button_enabled(theDialog);
-} // respond_to_net_game_type_change
+	SNG_game_type_hit (inWidget->get_owning_dialog());
+}
 
 
 static void
 respond_to_map_file_change(w_env_select* inWidget) {
+	// jkvw: should do this in shared code
     if(strcmp(environment_preferences->map_file, inWidget->get_path())) {
         strcpy(environment_preferences->map_file, inWidget->get_path());
 		environment_preferences->map_checksum = read_wad_file_checksum(inWidget->get_file_specifier());
 
         load_environment_from_preferences();
 
+	SNG_map_hit (inWidget->get_owning_dialog());
+
         // We don't write_preferences in case user cancels (in which case environment_preferences->map_file
         // and map_checksum are restored).
 
-        dynamic_cast<w_entry_point_selector*>(inWidget->get_owning_dialog()->get_widget_by_id(iENTRY_MENU))->reset();
+        // dynamic_cast<w_entry_point_selector*>(inWidget->get_owning_dialog()->get_widget_by_id(iENTRY_MENU))->reset();
 
         // There might not be any levels for the currently selected game-type; need to double-check the OK button.
-        update_setup_ok_button_enabled(inWidget->get_owning_dialog());
+        // update_setup_ok_button_enabled(inWidget->get_owning_dialog());
     }
 }
 
 static void
-//respond_to_script_twiddle (w_env_select* inWidget) {
 respond_to_script_twiddle(w_select* inWidget) {
 	SNG_use_script_hit (inWidget->get_owning_dialog());
 }
@@ -648,7 +638,7 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
         map_w->set_identifier(iMAP_FILE_SELECTOR);
 	    d.add(map_w);
 
-        w_entry_point_selector* entry_point_w = new w_entry_point_selector("Level", network_preferences->game_type, 0);
+        w_select_popup* entry_point_w = new w_select_popup("Level");
         entry_point_w->set_full_width();
         entry_point_w->set_identifier(iENTRY_MENU);
         d.add(entry_point_w);

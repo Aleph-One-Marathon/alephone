@@ -289,12 +289,16 @@ void QQ_set_boolean_control_value (DialogPTR dlg, int item, bool value)
 int QQ_get_selector_control_value (DialogPTR dlg, int item)
 {
 	assert(dlg != NULL);
+	
 	w_select* theWidget = dynamic_cast<w_select*>(dlg->get_widget_by_id(item));
-	if (theWidget == NULL) {
-		return 0;
-	} else {
+	if (theWidget != NULL)
 		return theWidget->get_selection();
-	}
+	
+	w_select_popup* theWidget2 = dynamic_cast<w_select_popup*>(dlg->get_widget_by_id(item));
+	if (theWidget2 != NULL)
+		return theWidget2->get_selection();
+	
+	return 0;
 }
 
 void QQ_set_selector_control_value (DialogPTR dlg, int item, int value)
@@ -304,6 +308,21 @@ void QQ_set_selector_control_value (DialogPTR dlg, int item, int value)
 	w_select* theWidget = dynamic_cast<w_select*>(dlg->get_widget_by_id(item));
 	if (theWidget != NULL) {
 		theWidget->set_selection(value);
+	}
+	
+	w_select_popup* theWidget2 = dynamic_cast<w_select_popup*>(dlg->get_widget_by_id(item));
+	if (theWidget2 != NULL) {
+		theWidget2->set_selection(value);
+	}
+}
+
+void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<std::string> labels)
+{
+	assert(dlg != NULL);
+	
+	w_select_popup* theWidget = dynamic_cast<w_select_popup*>(dlg->get_widget_by_id(item));
+	if (theWidget != NULL) {
+		theWidget->set_labels(labels);
 	}
 }
 

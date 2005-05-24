@@ -1422,6 +1422,68 @@ w_levels::draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int16
 }
 
 
+/*
+ *  String List
+ */
+
+w_string_list::w_string_list(const vector<string> &items, dialog *d, int sel)
+	: w_list<string>(items, 400, 8, sel), parent(d) {}
+
+void w_string_list::item_selected(void)
+{
+	parent->quit(0);
+}
+
+void w_string_list::draw_item(vector<string>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const
+{
+	y = y + font->get_ascent();
+	char str[256];
+
+	sprintf(str, "%s", i->c_str ());
+
+	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
+	draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+}
+
+
+/*
+ *  Selection Popup
+ */
+
+w_select_popup::w_select_popup (const char *name) : w_select_button (name, "", gotSelectedCallback, NULL)
+{
+	set_arg(this);
+	selection = -1;
+}
+
+void w_select_popup::set_selection (int value)
+{
+	if (value < labels.size () && value >= 0)
+		selection = value;
+	else
+		selection = -1;
+	
+	if (selection == -1)
+		w_select_button::set_selection ("");
+	else
+		w_select_button::set_selection (labels[selection].c_str ());
+}
+
+void w_select_popup::gotSelected ()
+{
+	if (labels.size () > 1) {
+		dialog theDialog;
+		
+		w_string_list* string_list_w = new w_string_list (labels, &theDialog, selection >= 0 ? selection : 0);
+		theDialog.add (string_list_w);
+		
+		theDialog.run ();
+		
+		set_selection (string_list_w->get_selection ());
+	}
+}
+
 
 static const char* const sFileChooserInvalidFileString = "(no valid selection)";
 

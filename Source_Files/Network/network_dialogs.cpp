@@ -468,6 +468,19 @@ bool network_game_setup(
 	return run_netgame_setup_dialog(player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver);
 }
 
+static const vector<string> make_entry_vector (int32 entry_flags)
+{	
+	vector<string> result;
+	
+	entry_point ep;
+	short index = 0;
+	
+	while (get_indexed_entry_point (&ep, &index, entry_flags))
+		result.push_back (string (ep.level_name));
+	
+	return result;
+}
+
 short netgame_setup_dialog_initialise (
 	DialogPTR dialog, 
 	bool allow_all_levels,
@@ -509,10 +522,7 @@ short netgame_setup_dialog_initialise (
 		entry_flags= get_entry_point_flags_for_game_type(theAdjustedPreferences.game_type);
 	}
 
-	// ZZZ: SDL version takes care of this its own way, simpler not to change.
-#ifdef mac
-	EntryPoints_FillIn(dialog, entry_flags, NONE);
-#endif
+	QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (entry_flags));
 
 	QQ_set_selector_control_value (dialog, iGAME_TYPE, theAdjustedPreferences.game_type);
 	setup_dialog_for_game_type(dialog, theAdjustedPreferences.game_type);
@@ -523,8 +533,8 @@ short netgame_setup_dialog_initialise (
 	QQ_set_selector_control_value(dialog, iGATHER_COLOR, player_preferences->color);
 	QQ_set_selector_control_value(dialog, iGATHER_TEAM, player_preferences->team);
 	QQ_set_selector_control_value(dialog, iDIFFICULTY_MENU, theAdjustedPreferences.difficulty_level);
-	QQ_set_selector_control_value(dialog, iENTRY_MENU, theAdjustedPreferences.entry_point);
-
+	QQ_set_selector_control_value(dialog, iENTRY_MENU, level_index_to_menu_index(theAdjustedPreferences.entry_point, entry_flags));
+	
 	// START Benad 
 	if (theAdjustedPreferences.game_type == _game_of_defense)
 		QQ_insert_number_into_text_control(dialog, iKILL_LIMIT, theAdjustedPreferences.kill_limit/60);
@@ -1044,8 +1054,6 @@ void SNG_teams_hit (DialogPTR dialog)
 	QQ_set_control_activity(dialog, iGATHER_TEAM, QQ_get_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS));
 }
 
-#ifndef SDL
-// This code not shared with SDL, because SDL prefers to handle EntryPoints_FillIn its own way
 void SNG_game_type_hit (DialogPTR dialog)
 {
 	short new_game_type= QQ_get_selector_control_value (dialog, iGAME_TYPE);
@@ -1063,14 +1071,20 @@ void SNG_game_type_hit (DialogPTR dialog)
 		}
 		menu_index_to_level_entry(QQ_get_selector_control_value(dialog, iENTRY_MENU), old_entry_flags, &entry);
 			
-		/* Get the old one and reset.. */
-		EntryPoints_FillIn(dialog, new_entry_flags, entry.level_number);
+		/* Now reset entry points */
+		QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (new_entry_flags));
+		QQ_set_selector_control_value (dialog, iENTRY_MENU, level_index_to_menu_index(entry.level_number, new_entry_flags));
 		old_game_type= new_game_type;
 				
 		setup_dialog_for_game_type(dialog, new_game_type);
 	}
 }
-#endif
+
+void SNG_map_hit (DialogPTR dialog)
+{
+	QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (get_entry_point_flags_for_game_type(old_game_type)));
+	QQ_set_selector_control_value (dialog, iENTRY_MENU, 0);
+}
 
 void SNG_use_script_hit (DialogPTR dialog)
 {
@@ -1162,6 +1176,21 @@ void menu_index_to_level_entry(
 	}
 
 	return;
+}
+
+int level_index_to_menu_index (int level_index, int32 entry_flags)
+{	
+	entry_point entry;
+	short map_index = 0;
+
+	int result = 0;
+	while (get_indexed_entry_point(&entry, &map_index, entry_flags)) {
+		++result;
+		if (map_index == level_index)
+			return result;
+	}
+	
+	return 0;
 }
 
 /*************************************************************************************************

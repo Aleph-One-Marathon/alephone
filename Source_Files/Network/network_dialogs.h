@@ -406,9 +406,8 @@ void setup_for_score_limited_game(DialogPTR dialog);
 void setup_dialog_for_game_type(DialogPTR dialog, size_t game_type);
 void SNG_limit_type_hit (DialogPTR dialog);
 void SNG_teams_hit (DialogPTR dialog);
-#ifndef SDL // SDL uses its own private mechanism
 void SNG_game_type_hit (DialogPTR dialog);
-#endif
+void SNG_map_hit (DialogPTR dialog);
 void SNG_use_script_hit (DialogPTR dialog);
 bool SNG_information_is_acceptable (DialogPTR dialog);
 void update_netscript_file_display(DialogPTR dialog);
@@ -458,9 +457,9 @@ extern void get_selected_entry_point(dialog* inDialog, short inItem, entry_point
 
 #endif//!mac
 
-// Routines with different implementations on different platforms, which are called by
-// shared routines.
+// Routines
 extern void menu_index_to_level_entry(short index, long entry_flags, struct entry_point *entry);
+extern int level_index_to_menu_index(int level_index, int32 entry_flags);
 extern void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber);
 
 // ZZZ: new function manipulates radio buttons on Mac; changes w_select widget on SDL.

@@ -1135,6 +1135,31 @@ void QQ_set_selector_control_value (DialogPTR dlg, int item, int value)
 	SetControl32BitValue (get_control_from_window (dlg, item), value + 1);
 }
 
+void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<std::string> labels)
+{
+	// Possibly should extend to operate on radio groups too?
+
+	// Get the menu
+	ControlRef MenuCtrl = get_control_from_window (dlg, item);
+	MenuRef Menu = GetControlPopupMenuHandle(MenuCtrl);
+	if (!Menu)
+		return;
+	
+	// Get rid of old contents
+	while(CountMenuItems(Menu)) DeleteMenuItem(Menu, 1);
+	
+	// Add in new contents
+	int i = 0;
+	for (std::vector<std::string>::iterator it = labels.begin (); it != labels.end (); ++it) {
+		++i;
+		copy_string_to_pstring(*it, ptemporary, 250);
+		AppendMenu(Menu, ptemporary);
+	}
+
+	SetControl32BitMaximum(MenuCtrl,CountMenuItems(Menu));
+}
+
+
 const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item)
 {
 	ControlRef control = get_control_from_window (dlg, item);

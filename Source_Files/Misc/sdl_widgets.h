@@ -659,6 +659,43 @@ private:
 };
 
 
+/*
+ *  String List
+ */
+ 
+class w_string_list : public w_list<string> {
+public:
+	w_string_list(const vector<string> &items, dialog *d, int sel);
+
+	void item_selected(void);
+
+	void draw_item(vector<string>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const;
+
+private:
+	dialog *parent;
+};
+
+
+/*
+ *  Selection Popup
+ */
+
+class w_select_popup : public w_select_button {
+public:
+	w_select_popup (const char *name);
+	
+	void set_labels (const vector<string>& inLabels) {labels = inLabels;}
+	void set_selection (int value);
+	int get_selection () {return selection;}
+
+private:
+	int selection;
+	vector<string> labels;
+
+	static void gotSelectedCallback (void* arg) {reinterpret_cast<w_select_popup*>(arg)->gotSelected();}
+	void gotSelected ();
+};
+
 
 /*
  *	General file-chooser (ZZZ)
