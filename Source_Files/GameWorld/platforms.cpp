@@ -1228,6 +1228,7 @@ uint8 *pack_platform_data(uint8 *Stream, platform_data* Objects, size_t Count)
 	return S;
 }
 
+struct platform_definition *original_platform_definitions = NULL;
 class XML_PlatformParser: public XML_ElementParser
 {
 	short Index;
@@ -1242,12 +1243,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_PlatformParser(): XML_ElementParser("platform") {}
 };
 
 bool XML_PlatformParser::Start()
 {
+	// back up old values first
+	if (!original_platform_definitions) {
+		original_platform_definitions = (struct platform_definition *) malloc(sizeof(struct platform_definition) * NUMBER_OF_PLATFORM_TYPES);
+		assert(original_platform_definitions);
+		for (int i = 0; i < NUMBER_OF_PLATFORM_TYPES; i++)
+			original_platform_definitions[i] = platform_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -1363,6 +1373,17 @@ bool XML_PlatformParser::AttributesDone()
 	
 	Damage_SetPointer(&OrigData.damage);
 	
+	return true;
+}
+
+bool XML_PlatformParser::ResetValues()
+{
+	if (original_platform_definitions) {
+		for (int i = 0; i < NUMBER_OF_PLATFORM_TYPES; i++)
+			platform_definitions[i] = original_platform_definitions[i];
+		free(original_platform_definitions);
+		original_platform_definitions = NULL;
+	}
 	return true;
 }
 
