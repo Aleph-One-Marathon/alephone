@@ -524,7 +524,7 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	bool ResetValues;
+	bool ResetValues();
 
 	XML_LiquidParser(): XML_ElementParser("liquid") {}
 };
