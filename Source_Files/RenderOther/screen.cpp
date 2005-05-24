@@ -1250,9 +1250,11 @@ void render_screen(
 			if (OGL_IsActive())
 				OGL_SwapBuffers();
 #ifdef HAVE_CORE_GRAPHICS
-      else if (world_view->overhead_map_active) {
-				QDSetDirtyRegion(port, r);
-				update_screen(BufferRect, ViewRect, HighResolution);
+			else {
+				if (world_view->overhead_map_active) {
+					QDSetDirtyRegion(port, r);
+					update_screen(BufferRect, ViewRect, HighResolution);
+				}
 				DisposeRgn(r);
 			}
 #endif
