@@ -2532,6 +2532,8 @@ void handle_random_sound_image(
 // Uses an attribute for loading the landscapes
 // and a subelement for specifying which texture in an environment
 
+short **OriginalEnvironments = NULL;
+
 // Parser for the texture environment
 class XML_TextureEnvironmentParser: public XML_ElementParser
 {
@@ -2542,12 +2544,25 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-		
+	bool ResetValues();
+
 	XML_TextureEnvironmentParser(): XML_ElementParser("texture_env") {}
 };
 
 bool XML_TextureEnvironmentParser::Start()
 {
+	// back up old values first
+	if (!OriginalEnvironments) {
+		OriginalEnvironments = (short **) malloc(sizeof(short *) * NUMBER_OF_ENVIRONMENTS);
+		assert(OriginalEnvironments);
+		for (int i = 0; i < NUMBER_OF_ENVIRONMENTS; i++) {
+			OriginalEnvironments[i] = (short *) malloc(sizeof(short) * NUMBER_OF_ENV_COLLECTIONS);
+			assert(OriginalEnvironments[i]);
+			for (int j = 0; j < NUMBER_OF_ENV_COLLECTIONS; j++)
+				OriginalEnvironments[i][j] = Environments[i][j];
+		}
+	}
+
 	for (int k=0; k<3; k++)
 		IsPresent[k] = false;
 	return true;
@@ -2603,6 +2618,20 @@ bool XML_TextureEnvironmentParser::AttributesDone()
 	return true;
 }
 
+bool XML_TextureEnvironmentParser::ResetValues()
+{
+	if (OriginalEnvironments) {
+		for (int i = 0; i < NUMBER_OF_ENVIRONMENTS; i++) {
+			for (int j = 0; j < NUMBER_OF_ENV_COLLECTIONS; j++)
+				Environments[i][j] = OriginalEnvironments[i][j];
+			free(OriginalEnvironments[i]);
+		}
+		free(OriginalEnvironments);
+		OriginalEnvironments = NULL;
+	}
+	return true;
+}
+
 static XML_TextureEnvironmentParser TextureEnvironmentParser;
 
 
@@ -2624,7 +2653,6 @@ bool XML_TextureLoadingParser::HandleAttribute(const char *Tag, const char *Valu
 	UnrecognizedTag();
 	return false;
 }
-
 
 static XML_TextureLoadingParser TextureLoadingParser;
 
