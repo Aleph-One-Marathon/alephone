@@ -3666,7 +3666,7 @@ uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, size_
 	return S;
 }
 
-
+struct damage_kick_definition *original_damage_kick_definitions = NULL;
 class XML_DamageKickParser: public XML_ElementParser
 {
 	short Index;
@@ -3681,12 +3681,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_DamageKickParser(): XML_ElementParser("kick") {}
 };
 
 bool XML_DamageKickParser::Start()
 {
+	// back up old values first
+	if (!original_damage_kick_definitions) {
+		original_damage_kick_definitions = (struct damage_kick_definition *) malloc(sizeof(struct damage_kick_definition) * NUMBER_OF_DAMAGE_TYPES);
+		assert(original_damage_kick_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_DAMAGE_TYPES; i++)
+			original_damage_kick_definitions[i] = damage_kick_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -3750,6 +3759,17 @@ bool XML_DamageKickParser::AttributesDone()
 	if (IsPresent[1]) OrigData.delta_vitality_multiplier = Data.delta_vitality_multiplier;
 	if (IsPresent[2]) OrigData.is_also_vertical = Data.is_also_vertical;
 	
+	return true;
+}
+
+bool XML_DamageKickParser::ResetValues()
+{
+	if (original_damage_kick_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_DAMAGE_TYPES; i++)
+			damage_kick_definitions[i] = original_damage_kick_definitions[i];
+		free(original_damage_kick_definitions);
+		original_damage_kick_definitions = NULL;
+	}
 	return true;
 }
 
