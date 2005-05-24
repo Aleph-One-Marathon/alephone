@@ -191,6 +191,16 @@ void XML_ElementParser::AddChild(XML_ElementParser *Child)
 }
 
 
+// Restore all values as they were before any changes were made for all the children. Recursive.
+void XML_ElementParser::ResetChildrenValues()
+{
+	for (unsigned k = 0; k < Children.size(); k++) {
+		Children[k]->ResetValues();
+		Children[k]->ResetChildrenValues();
+	}
+}
+
+
 XML_ElementParser *XML_ElementParser::FindChild(const char *_Name)
 {
 	XML_ElementParser *FoundChild = NULL;

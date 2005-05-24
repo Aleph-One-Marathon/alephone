@@ -159,7 +159,10 @@ public:
 	
 	// Handle embedded string data
 	virtual bool HandleString(const char * /*String*/, int /*Length*/) {return true;}
-	
+
+	// Restore all values as they were before any changes were made by this parser.
+	virtual bool ResetValues() {return true;}
+
 	// Error-message string
 	const char *ErrorString;
 	
@@ -180,7 +183,10 @@ public:
 	
 	// Add a child element
 	void AddChild(XML_ElementParser *Child);
-	
+
+	// Call ResetValues() and ResetChildrenValues() for all children. 
+	void ResetChildrenValues();
+
 	// Find a child element with a matching name;
 	// if one is not found, then this method returns NULL
 	XML_ElementParser *FindChild(const char *_Name);

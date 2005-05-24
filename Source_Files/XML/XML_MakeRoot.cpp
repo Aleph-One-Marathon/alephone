@@ -68,7 +68,7 @@ void SetupParseTree()
 {
 	// Add the only recognized XML-document-root object here
 	RootParser.AddChild(&MarathonParser);
-	
+
 	// Add all its subobjects
 	MarathonParser.AddChild(TS_GetParser());		// Text strings
 	MarathonParser.AddChild(Interface_GetParser());
@@ -94,8 +94,15 @@ void SetupParseTree()
 	MarathonParser.AddChild(TextureLoading_GetParser());
 	MarathonParser.AddChild(Keyboard_GetParser());
 	MarathonParser.AddChild(DamageKicks_GetParser());
-        MarathonParser.AddChild(Logging_GetParser());
+	MarathonParser.AddChild(Logging_GetParser());
 #ifdef SDL
 	MarathonParser.AddChild(Theme_GetParser());
 #endif
+}
+
+// This will reset all values changed by MML scripts which implement ResetValues() method
+// and are part of the master MarathonParser tree.
+void reset_all_mml_values()
+{
+  MarathonParser.ResetChildrenValues();
 }
