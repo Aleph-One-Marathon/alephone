@@ -1689,6 +1689,8 @@ static SoundOptions *GetSoundOptions(short Index, short Slot)
 // XML elements for parsing sound specifications;
 // this is currently what ambient and random sounds are to be used
 
+struct ambient_sound_definition *original_ambient_sound_definitions = NULL;
+struct random_sound_definition *original_random_sound_definitions = NULL;
 
 class XML_AmbientRandomAssignParser: public XML_ElementParser
 {
@@ -1700,7 +1702,8 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	enum {
 		Ambient,
 		Random
@@ -1711,6 +1714,23 @@ public:
 
 bool XML_AmbientRandomAssignParser::Start()
 {
+	// back up old values first
+	if (Type == Ambient) {
+		if (!original_ambient_sound_definitions) {
+			original_ambient_sound_definitions = (struct ambient_sound_definition *) malloc(sizeof(struct ambient_sound_definition) * NUMBER_OF_AMBIENT_SOUND_DEFINITIONS);
+			assert(original_ambient_sound_definitions);
+			for (int i = 0; i < NUMBER_OF_AMBIENT_SOUND_DEFINITIONS; i++)
+				original_ambient_sound_definitions[i] = ambient_sound_definitions[i];
+		}
+	} else if (Type == Random) {
+		if (!original_random_sound_definitions) {
+			original_random_sound_definitions = (struct random_sound_definition *) malloc(sizeof(struct random_sound_definition) * NUMBER_OF_RANDOM_SOUND_DEFINITIONS);
+			assert(original_random_sound_definitions);
+			for (int i = 0; i < NUMBER_OF_RANDOM_SOUND_DEFINITIONS; i++)
+				original_random_sound_definitions[i] = random_sound_definitions[i];
+		}
+	}
+
 	for (int k=0; k<2; k++)
 		IsPresent[k] = false;
 	return true;
@@ -1779,6 +1799,27 @@ bool XML_AmbientRandomAssignParser::AttributesDone()
 	}
 	return true;
 }
+
+bool XML_AmbientRandomAssignParser::ResetValues()
+{
+	if (Type == Ambient) {
+		if (original_ambient_sound_definitions) {
+			for (int i = 0; i < NUMBER_OF_AMBIENT_SOUND_DEFINITIONS; i++)
+				ambient_sound_definitions[i] = original_ambient_sound_definitions[i];
+			free(original_ambient_sound_definitions);
+			original_ambient_sound_definitions = NULL;
+		}
+	} else if (Type == Random) {
+		if (original_random_sound_definitions) {
+			for (int i = 0; i < NUMBER_OF_RANDOM_SOUND_DEFINITIONS; i++)
+				random_sound_definitions[i] = original_random_sound_definitions[i];
+			free(original_random_sound_definitions);
+			original_random_sound_definitions = NULL;
+		}
+	}
+	return true;
+}
+
 
 static XML_AmbientRandomAssignParser
 	AmbientSoundAssignParser("ambient",XML_AmbientRandomAssignParser::Ambient),
