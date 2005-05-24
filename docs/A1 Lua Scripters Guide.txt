@@ -670,9 +670,9 @@ activate_camera(player, camera_index)
 Starts the camera 'camera_index' for player. Works only on local player.
 
 
-deactivate_camera(player, camera_index)
+deactivate_camera(camera_index)
 
-Stops the camera 'camera_index' for player. Only useful on local player.
+Stops the camera 'camera_index' for the local player.
 
 
 clear_camera(camera_index)
@@ -1451,7 +1451,7 @@ _powerup_extravision
 ----------------
 
 Symbols referring to the game's dynamic limits on various things.
-(SB: More to be added as I add other hooks. Seems kinda lame to give this its own section right now.)
+
 
 MAXIMUM_MONSTERS_PER_MAP
 
