@@ -4230,6 +4230,7 @@ uint8 *pack_weapon_definition(uint8 *Stream, weapon_definition *Objects, size_t 
 size_t get_number_of_weapon_types() {return NUMBER_OF_WEAPONS;}
 
 
+struct shell_casing_definition *original_shell_casing_definitions = NULL;
 class XML_ShellCasingParser: public XML_ElementParser
 {
 	short Index;
@@ -4239,17 +4240,26 @@ class XML_ShellCasingParser: public XML_ElementParser
 	bool IndexPresent;
 	enum {NumberOfValues = 8};
 	bool IsPresent[NumberOfValues];
-	
+
 public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_ShellCasingParser(): XML_ElementParser("shell_casings") {}
 };
 
 bool XML_ShellCasingParser::Start()
 {
+	// back up old values first
+	if (!original_shell_casing_definitions) {
+		original_shell_casing_definitions = (struct shell_casing_definition *) malloc(sizeof(struct shell_casing_definition) * NUMBER_OF_SHELL_CASING_TYPES);
+		assert(original_shell_casing_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_SHELL_CASING_TYPES; i++)
+			original_shell_casing_definitions[i] = shell_casing_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -4379,9 +4389,20 @@ bool XML_ShellCasingParser::AttributesDone()
 	return true;
 }
 
+bool XML_ShellCasingParser::ResetValues()
+{
+	if (original_shell_casing_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_SHELL_CASING_TYPES; i++)
+			shell_casing_definitions[i] = original_shell_casing_definitions[i];
+		free(original_shell_casing_definitions);
+		original_shell_casing_definitions = NULL;
+	}
+	return true;
+}
+
 static XML_ShellCasingParser ShellCasingParser;
 
-
+int16 *original_weapon_ordering_array = NULL;
 class XML_WeaponOrderParser: public XML_ElementParser
 {
 	short Index;
@@ -4395,12 +4416,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_WeaponOrderParser(): XML_ElementParser("order") {}
 };
 
 bool XML_WeaponOrderParser::Start()
 {
+	// back up old values first
+	if (!original_weapon_ordering_array) {
+		original_weapon_ordering_array = (int16 *) malloc(sizeof(int16) * NUMBER_OF_WEAPONS);
+		assert(original_weapon_ordering_array);
+		for (unsigned i = 0; i < NUMBER_OF_WEAPONS; i++)
+			original_weapon_ordering_array[i] = weapon_ordering_array[i];
+	}
+
 	IndexPresent = WeaponPresent = false;
 	
 	return true;
@@ -4443,6 +4473,18 @@ bool XML_WeaponOrderParser::AttributesDone()
 	
 	return true;
 }
+
+bool XML_WeaponOrderParser::ResetValues()
+{
+	if (original_weapon_ordering_array) {
+		for (unsigned i = 0; i < NUMBER_OF_WEAPONS; i++)
+			weapon_ordering_array[i] = original_weapon_ordering_array[i];
+		free(original_weapon_ordering_array);
+		original_weapon_ordering_array = NULL;
+	}
+	return true;
+}
+
 
 static XML_WeaponOrderParser WeaponOrderParser;
 
