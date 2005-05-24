@@ -124,6 +124,11 @@ May 22, 2003 (Woody Zenfell):
  June 14, 2003 (Woody Zenfell):
 	update_players() now has a predictive mode of execution which takes many fewer actions
 	(i.e. tries to alter only state like the player's location and facing etc.)
+
+ May 21, 2004 (Alexei Svitkine):
+	Made all the MML-settable stuff in this file have a ResetValues method that resets to
+	old values (which we now save). Had to move some free-standing variables into structs
+	for this.
 */
 
 #define DONT_REPEAT_DEFINITIONS
@@ -179,11 +184,25 @@ enum {
 	kMinimumNetworkVersionForTalkingCorpses = _ip_star_network_version
 };
 
+struct player_powerup_durations_definition {
+	short InvisibilityDuration;
+	short InvincibilityDuration;
+	short ExtravisionDuration;
+	short InfravisionDuration;
+};
+
 // These are variables, because they can be set with an XML parser
-static short kINVISIBILITY_DURATION = (70*TICKS_PER_SECOND);
-static short kINVINCIBILITY_DURATION = (50*TICKS_PER_SECOND);
-static short kEXTRAVISION_DURATION = (3*TICKS_PER_MINUTE);
-static short kINFRAVISION_DURATION = (3*TICKS_PER_MINUTE);
+struct player_powerup_durations_definition player_powerup_durations = {
+	70*TICKS_PER_SECOND,
+	50*TICKS_PER_SECOND,
+	3*TICKS_PER_MINUTE,
+	3*TICKS_PER_MINUTE
+};
+
+#define kINVISIBILITY_DURATION  player_powerup_durations.InvisibilityDuration
+#define kINVINCIBILITY_DURATION player_powerup_durations.InvincibilityDuration
+#define kEXTRAVISION_DURATION   player_powerup_durations.ExtravisionDuration
+#define kINFRAVISION_DURATION   player_powerup_durations.InfravisionDuration
 
 #define MINIMUM_REINCARNATION_DELAY (TICKS_PER_SECOND)
 #define NORMAL_REINCARNATION_DELAY (10*TICKS_PER_SECOND)
@@ -197,19 +216,6 @@ static short kINFRAVISION_DURATION = (3*TICKS_PER_MINUTE);
 
 #define LAST_LEVEL 100
 
-// LP addition: invincibility-powerup vulnerability
-static short Vulnerability = _damage_fusion_bolt;
-
-// LP: the various powerup item ID's are changeable, but set to appropriate defaults here
-static short Powerup_Invincibility = _i_invincibility_powerup;
-static short Powerup_Invisibility = _i_invisibility_powerup;
-static short Powerup_Infravision = _i_infravision_powerup;
-static short Powerup_Extravision = _i_extravision_powerup;
-static short Powerup_TripleEnergy = _i_triple_energy_powerup;
-static short Powerup_DoubleEnergy = _i_double_energy_powerup;
-static short Powerup_Energy = _i_energy_powerup;
-static short Powerup_Oxygen = _i_oxygen_powerup;
-				
 /* ---------- structures */
 
 // ZZZ: moved struct action_queue inside ActionQueues (see ActionQueues.cpp).
@@ -222,6 +228,18 @@ struct damage_response_definition
 	
 	short fade;
 	short sound, death_sound, death_action;
+};
+
+struct player_powerup_definition
+{
+	short Powerup_Invincibility;
+	short Powerup_Invisibility;
+	short Powerup_Infravision;
+	short Powerup_Extravision;
+	short Powerup_TripleEnergy;
+	short Powerup_DoubleEnergy;
+	short Powerup_Energy;
+	short Powerup_Oxygen;
 };
 
 /* ---------- globals */
@@ -332,6 +350,18 @@ struct player_settings_definition player_settings = {
 	0,                             // OxygenReplenishment
 	0,                             // OxygenChange
 	_damage_fusion_bolt            // Vulnerability
+};
+
+// LP: the various powerup item ID's are changeable, but set to appropriate defaults here
+struct player_powerup_definition player_powerups = {
+	_i_invincibility_powerup,
+	_i_invisibility_powerup,
+	_i_infravision_powerup,
+	_i_extravision_powerup,
+	_i_triple_energy_powerup,
+	_i_double_energy_powerup,
+	_i_energy_powerup,
+	_i_oxygen_powerup
 };
 
 /* ---------- private prototypes */
@@ -837,7 +867,7 @@ void damage_player(
 								player->monster_damage_taken.kills+= 1;
 								team_monster_damage_taken[player->team].kills += 1;
 							}
-                                                        L_Call_Player_Killed (player_index, aggressor_player_index, action, projectile_index);
+							L_Call_Player_Killed (player_index, aggressor_player_index, action, projectile_index);
 						}
 						
 						player->suit_oxygen= 0;
@@ -983,35 +1013,35 @@ bool legal_player_powerup(
 	struct player_data *player= get_player_data(player_index);
 	bool legal= true;
 
-	if (item_index == Powerup_Invincibility)
+	if (item_index == player_powerups.Powerup_Invincibility)
 	{
 		if (player->invincibility_duration) legal= false;
 	}
-	else if (item_index == Powerup_Invisibility)
+	else if (item_index == player_powerups.Powerup_Invisibility)
 	{
 		if (player->invisibility_duration>kINVISIBILITY_DURATION) legal= false;
 	}
-	else if (item_index == Powerup_Infravision)
+	else if (item_index == player_powerups.Powerup_Infravision)
 	{
 		if (player->infravision_duration) legal= false;
 	}
-	else if (item_index == Powerup_Extravision)
+	else if (item_index == player_powerups.Powerup_Extravision)
 	{
 		if (player->extravision_duration) legal= false;
 	}
-	else if (item_index == Powerup_TripleEnergy)
+	else if (item_index == player_powerups.Powerup_TripleEnergy)
 	{
 		if (player->suit_energy>=player_settings.TripleEnergy) legal= false;
 	}
-	else if (item_index == Powerup_DoubleEnergy)
+	else if (item_index == player_powerups.Powerup_DoubleEnergy)
 	{
 		if (player->suit_energy>=player_settings.DoubleEnergy) legal= false;
 	}
-	else if (item_index == Powerup_Energy)
+	else if (item_index == player_powerups.Powerup_Energy)
 	{
 		if (player->suit_energy>=player_settings.SingleEnergy) legal= false;
 	}
-	else if (item_index == Powerup_Oxygen)
+	else if (item_index == player_powerups.Powerup_Oxygen)
 	{
 		if (player->suit_oxygen>=5*PLAYER_MAXIMUM_SUIT_OXYGEN/6) legal= false;
 	}
@@ -1025,24 +1055,24 @@ void process_player_powerup(
 {
 	struct player_data *player= get_player_data(player_index);
 	
-	if (item_index == Powerup_Invincibility)
+	if (item_index == player_powerups.Powerup_Invincibility)
 	{
 		player->invincibility_duration+= kINVINCIBILITY_DURATION;
 	}
-	else if (item_index == Powerup_Invisibility)
+	else if (item_index == player_powerups.Powerup_Invisibility)
 	{
 		player->invisibility_duration+= kINVISIBILITY_DURATION;
 	}
-	else if (item_index == Powerup_Infravision)
+	else if (item_index == player_powerups.Powerup_Infravision)
 	{
 		player->infravision_duration+= kINFRAVISION_DURATION;
 	}
-	else if (item_index == Powerup_Extravision)
+	else if (item_index == player_powerups.Powerup_Extravision)
 	{
 		if (player_index==current_player_index) start_extravision_effect(true);
 		player->extravision_duration+= kEXTRAVISION_DURATION;
 	}
-	else if (item_index == Powerup_TripleEnergy)
+	else if (item_index == player_powerups.Powerup_TripleEnergy)
 	{
 		if (player->suit_energy<player_settings.TripleEnergy)
 		{
@@ -1050,7 +1080,7 @@ void process_player_powerup(
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
-	else if (item_index == Powerup_DoubleEnergy)
+	else if (item_index == player_powerups.Powerup_DoubleEnergy)
 	{
 		if (player->suit_energy<player_settings.DoubleEnergy)
 		{
@@ -1058,7 +1088,7 @@ void process_player_powerup(
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
-	else if (item_index == Powerup_Energy)
+	else if (item_index == player_powerups.Powerup_Energy)
 	{
 		if (player->suit_energy<player_settings.SingleEnergy)
 		{
@@ -1066,7 +1096,7 @@ void process_player_powerup(
 			if (player_index==current_player_index) mark_shield_display_as_dirty();
 		}
 	}
-	else if (item_index == Powerup_Oxygen)
+	else if (item_index == player_powerups.Powerup_Oxygen)
 	{
 		player->suit_oxygen= CEILING(player->suit_oxygen+PLAYER_MAXIMUM_SUIT_OXYGEN/2, PLAYER_MAXIMUM_SUIT_OXYGEN);
 		if (player_index==current_player_index) mark_oxygen_display_as_dirty();
@@ -1560,7 +1590,7 @@ static void revive_player(
 	// LP addition: set field-of-view approrpriately
 	if (player_index == current_player_index) ResetFieldOfView();
         
-        L_Call_Player_Revived (player_index);
+	L_Call_Player_Revived (player_index);
 }
 
 /* The player just changed map levels, recreate him, and all of the objects */
@@ -2193,6 +2223,7 @@ uint8 *pack_player_data(uint8 *Stream, player_data *Objects, size_t Count)
 	return S;
 }
 
+short *original_player_initial_items = NULL;
 
 class XML_StartItemParser: public XML_ElementParser
 {
@@ -2208,12 +2239,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_StartItemParser(): XML_ElementParser("item") {}
 };
 
 bool XML_StartItemParser::Start()
 {
+	// back up old values first
+	if (!original_player_initial_items) {
+		original_player_initial_items = (short *) malloc(sizeof(short) * NUMBER_OF_PLAYER_INITIAL_ITEMS);
+		assert(original_player_initial_items);
+		for (unsigned i = 0; i < NUMBER_OF_PLAYER_INITIAL_ITEMS; i++)
+			original_player_initial_items[i] = player_initial_items[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -2258,8 +2298,21 @@ bool XML_StartItemParser::AttributesDone()
 	return true;
 }
 
+bool XML_StartItemParser::ResetValues()
+{
+	if (original_player_initial_items) {
+		for (unsigned i = 0; i < NUMBER_OF_PLAYER_INITIAL_ITEMS; i++)
+			player_initial_items[i] = original_player_initial_items[i];
+		free(original_player_initial_items);
+		original_player_initial_items = NULL;
+	}
+	return true;
+}
+
 static XML_StartItemParser StartItemParser;
 
+
+struct damage_response_definition *original_damage_response_definitions = NULL;
 
 class XML_PlayerDamageParser: public XML_ElementParser
 {
@@ -2275,12 +2328,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_PlayerDamageParser(): XML_ElementParser("damage") {}
 };
 
 bool XML_PlayerDamageParser::Start()
 {
+	// back up old values first
+	if (!original_damage_response_definitions) {
+		original_damage_response_definitions = (struct damage_response_definition *) malloc(sizeof(struct damage_response_definition) * NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS);
+		assert(original_damage_response_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS; i++)
+			original_damage_response_definitions[i] = damage_response_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -2367,17 +2429,44 @@ bool XML_PlayerDamageParser::AttributesDone()
 	return true;
 }
 
+bool XML_PlayerDamageParser::ResetValues()
+{
+	if (original_damage_response_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_DAMAGE_RESPONSE_DEFINITIONS; i++)
+			damage_response_definitions[i] = original_damage_response_definitions[i];
+		free(original_damage_response_definitions);
+		original_damage_response_definitions = NULL;
+	}
+	return true;
+}
+
 static XML_PlayerDamageParser PlayerDamageParser;
 
+
+struct player_powerup_durations_definition *original_player_powerup_durations = NULL;
 
 class XML_PowerupParser: public XML_ElementParser
 {
 	
 public:
+	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
-	
+	bool ResetValues();
+
 	XML_PowerupParser(): XML_ElementParser("powerup") {}
 };
+
+bool XML_PowerupParser::Start()
+{
+	// back up old values first
+	if (!original_player_powerup_durations) {
+		original_player_powerup_durations = (struct player_powerup_durations_definition *) malloc(sizeof(struct player_powerup_durations_definition));
+		assert(original_player_powerup_durations);
+		*original_player_powerup_durations = player_powerup_durations;
+	}
+
+	return true;
+}
 
 bool XML_PowerupParser::HandleAttribute(const char *Tag, const char *Value)
 {
@@ -2401,58 +2490,94 @@ bool XML_PowerupParser::HandleAttribute(const char *Tag, const char *Value)
 	return false;
 }
 
+bool XML_PowerupParser::ResetValues()
+{
+	if (original_player_powerup_durations) {
+		player_powerup_durations = *original_player_powerup_durations;
+		free(original_player_powerup_durations);
+		original_player_powerup_durations = NULL;
+	}
+	return true;
+}
+
 static XML_PowerupParser PowerupParser;
 
+
+struct player_powerup_definition *original_player_powerups = NULL;
 
 class XML_PowerupAssignParser: public XML_ElementParser
 {
 	
 public:
+	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
-	
+	bool ResetValues();
+
 	XML_PowerupAssignParser(): XML_ElementParser("powerup_assign") {}
 };
+
+bool XML_PowerupAssignParser::Start()
+{
+	if (!original_player_powerups) {
+		original_player_powerups = (struct player_powerup_definition *) malloc(sizeof(struct player_powerup_definition));
+		assert(original_player_powerups);
+		*original_player_powerups = player_powerups;
+	}
+	return true;
+}
 
 bool XML_PowerupAssignParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"invincibility"))
 	{
-		return ReadBoundedInt16Value(Value,Powerup_Invincibility,NONE,NUMBER_OF_DEFINED_ITEMS-1);
+		return ReadBoundedInt16Value(Value,player_powerups.Powerup_Invincibility,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
 	else if (StringsEqual(Tag,"invisibility"))
 	{
-		return ReadBoundedInt16Value(Value,Powerup_Invisibility,NONE,NUMBER_OF_DEFINED_ITEMS-1);
+		return ReadBoundedInt16Value(Value,player_powerups.Powerup_Invisibility,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
 	else if (StringsEqual(Tag,"infravision"))
 	{
-		return ReadBoundedInt16Value(Value,Powerup_Infravision,NONE,NUMBER_OF_DEFINED_ITEMS-1);
+		return ReadBoundedInt16Value(Value,player_powerups.Powerup_Infravision,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
 	else if (StringsEqual(Tag,"extravision"))
 	{
-		return ReadBoundedInt16Value(Value,Powerup_Extravision,NONE,NUMBER_OF_DEFINED_ITEMS-1);
+		return ReadBoundedInt16Value(Value,player_powerups.Powerup_Extravision,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
 	else if (StringsEqual(Tag,"triple_energy"))
 	{
-		return ReadBoundedInt16Value(Value,Powerup_TripleEnergy,NONE,NUMBER_OF_DEFINED_ITEMS-1);
+		return ReadBoundedInt16Value(Value,player_powerups.Powerup_TripleEnergy,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
 	else if (StringsEqual(Tag,"double_energy"))
 	{
-		return ReadBoundedInt16Value(Value,Powerup_DoubleEnergy,NONE,NUMBER_OF_DEFINED_ITEMS-1);
+		return ReadBoundedInt16Value(Value,player_powerups.Powerup_DoubleEnergy,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
 	else if (StringsEqual(Tag,"energy"))
 	{
-		return ReadBoundedInt16Value(Value,Powerup_Energy,NONE,NUMBER_OF_DEFINED_ITEMS-1);
+		return ReadBoundedInt16Value(Value,player_powerups.Powerup_Energy,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
 	else if (StringsEqual(Tag,"oxygen"))
 	{
-		return ReadBoundedInt16Value(Value,Powerup_Oxygen,NONE,NUMBER_OF_DEFINED_ITEMS-1);
+		return ReadBoundedInt16Value(Value,player_powerups.Powerup_Oxygen,NONE,NUMBER_OF_DEFINED_ITEMS-1);
 	}
 	UnrecognizedTag();
 	return false;
 }
 
+bool XML_PowerupAssignParser::ResetValues()
+{
+	if (original_player_powerups) {
+		player_powerups = *original_player_powerups;
+		free(original_player_powerups);
+		original_player_powerups = NULL;
+	}
+	return true;
+}
+
 static XML_PowerupAssignParser PowerupAssignParser;
 
+
+struct player_shape_definitions *original_player_shapes = NULL;
 
 class XML_PlayerShapeParser: public XML_ElementParser
 {
@@ -2463,12 +2588,18 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-		
+	bool ResetValues();
+
 	XML_PlayerShapeParser(): XML_ElementParser("shape") {}
 };
 
 bool XML_PlayerShapeParser::Start()
 {
+	if (!original_player_shapes) {
+		original_player_shapes = (struct player_shape_definitions *) malloc(sizeof(struct player_shape_definitions));
+		*original_player_shapes = player_shapes;
+	}
+
 	for (int k=0; k<3; k++)
 		IsPresent[k] = false;
 	return true;
@@ -2603,17 +2734,40 @@ bool XML_PlayerShapeParser::AttributesDone()
 	return true;
 }
 
+bool XML_PlayerShapeParser::ResetValues()
+{
+	if (original_player_shapes) {
+		player_shapes = *original_player_shapes;
+		free(original_player_shapes);
+		original_player_shapes = NULL;
+	}
+	return true;
+}
+
 static XML_PlayerShapeParser PlayerShapeParser;
 
+
+struct player_settings_definition *original_player_settings = NULL;
 
 class XML_PlayerParser: public XML_ElementParser
 {
 	
 public:
+	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
-	
+	bool ResetValues();
+
 	XML_PlayerParser(): XML_ElementParser("player") {}
 };
+
+bool XML_PlayerParser::Start()
+{
+	if (!original_player_settings) {
+		original_player_settings = (struct player_settings_definition *) malloc(sizeof(struct player_settings_definition));
+		*original_player_settings = player_settings;
+	}
+	return true;
+}
 
 bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 {
@@ -2690,6 +2844,16 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	UnrecognizedTag();
 	return false;
+}
+
+bool XML_PlayerParser::ResetValues()
+{
+	if (original_player_settings) {
+		player_settings = *original_player_settings;
+		free(original_player_settings);
+		original_player_settings = NULL;
+	}
+	return true;
 }
 
 static XML_PlayerParser PlayerParser;
