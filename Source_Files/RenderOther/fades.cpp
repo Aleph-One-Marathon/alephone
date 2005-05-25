@@ -272,8 +272,8 @@ bool update_fades(
 	void)
 {
   if (FADE_IS_ACTIVE(fade))
-    {
-      struct fade_definition *definition= get_fade_definition(fade->type);
+	{
+		struct fade_definition *definition= get_fade_definition(fade->type);
 		// LP change: idiot-proofing
 		if (!definition) return false;
 		
@@ -735,6 +735,7 @@ static void TranslateToOGLFader(rgb_color &Color, _fixed Opacity)
 }
 
 
+struct fade_definition *original_fade_definitions = NULL;
 class XML_FaderParser: public XML_ElementParser
 {
 	short Index;
@@ -750,12 +751,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_FaderParser(): XML_ElementParser("fader") {}
 };
 
 bool XML_FaderParser::Start()
 {
+	// back up old values first
+	if (!original_fade_definitions) {
+		original_fade_definitions = (struct fade_definition *) malloc(sizeof(struct fade_definition) * NUMBER_OF_FADE_TYPES);
+		assert(original_fade_definitions);
+		for (int i = 0; i < NUMBER_OF_FADE_TYPES; i++)
+			original_fade_definitions[i] = fade_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -893,9 +903,22 @@ bool XML_FaderParser::AttributesDone()
 	return true;
 }
 
+bool XML_FaderParser::ResetValues()
+{
+	if (original_fade_definitions) {
+		for (int i = 0; i < NUMBER_OF_FADE_TYPES; i++)
+			fade_definitions[i] = original_fade_definitions[i];
+		free(original_fade_definitions);
+		original_fade_definitions = NULL;
+	}
+
+	return true;
+}
+
 static XML_FaderParser FaderParser;
 
 
+struct fade_effect_definition *original_fade_effect_definitions = NULL;
 class XML_LiquidFaderParser: public XML_ElementParser
 {
 	short Index;
@@ -910,12 +933,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_LiquidFaderParser(): XML_ElementParser("liquid") {}
 };
 
 bool XML_LiquidFaderParser::Start()
 {
+	// back up old values first
+	if (!original_fade_effect_definitions) {
+		original_fade_effect_definitions = (struct fade_effect_definition *) malloc(sizeof(struct fade_effect_definition) * NUMBER_OF_FADE_EFFECT_TYPES);
+		assert(original_fade_effect_definitions);
+		for (int i = 0; i < NUMBER_OF_FADE_EFFECT_TYPES; i++)
+			original_fade_effect_definitions[i] = fade_effect_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -971,6 +1003,18 @@ bool XML_LiquidFaderParser::AttributesDone()
 	if (IsPresent[0]) OrigData.fade_type = Data.fade_type;
 	if (IsPresent[1]) OrigData.transparency = Data.transparency;
 		
+	return true;
+}
+
+bool XML_LiquidFaderParser::ResetValues()
+{
+	if (original_fade_effect_definitions) {
+		for (int i = 0; i < NUMBER_OF_FADE_EFFECT_TYPES; i++)
+			fade_effect_definitions[i] = original_fade_effect_definitions[i];
+		free(original_fade_effect_definitions);
+		original_fade_effect_definitions = NULL;
+	}
+
 	return true;
 }
 
