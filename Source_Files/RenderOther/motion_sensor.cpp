@@ -148,14 +148,26 @@ static short MonsterDisplays[NUMBER_OF_MONSTER_TYPES] =
 
 #define NUMBER_OF_PREVIOUS_LOCATIONS 6
 
-static uint16 MOTION_SENSOR_UPDATE_FREQUENCY = 5;
-static uint16 MOTION_SENSOR_RESCAN_FREQUENCY = 15;
+struct motion_sensor_definition {
+	uint16 update_frequency;
+	uint16 rescan_frequency;
+	uint16 range;
+	int16 scale;
+};
 
-static uint16 MOTION_SENSOR_RANGE = (8 * WORLD_ONE);
+struct motion_sensor_definition motion_sensor_settings = {
+	5,  // update_frequency
+	15, // rescan_frequency
+	(8 * WORLD_ONE), // range
+	64 // scale
+};
+
+#define MOTION_SENSOR_UPDATE_FREQUENCY motion_sensor_settings.update_frequency
+#define MOTION_SENSOR_RESCAN_FREQUENCY motion_sensor_settings.rescan_frequency
+#define MOTION_SENSOR_RANGE motion_sensor_settings.range
+#define MOTION_SENSOR_SCALE motion_sensor_settings.scale
 
 #define OBJECT_IS_VISIBLE_TO_MOTION_SENSOR(o) true
-
-static int16 MOTION_SENSOR_SCALE = 64;
 
 #define FLICKER_FREQUENCY 0xf
 
@@ -799,6 +811,8 @@ static shape_descriptor get_motion_sensor_entity_shape(
 // this is a specification of what monster type gets what
 // motion-sensor blip
 
+short *OriginalMonsterDisplays = NULL;
+
 // This assigns an motion-sensir blip to a monster type
 class XML_MotSensAssignParser: public XML_ElementParser
 {
@@ -809,12 +823,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-		
+	bool ResetValues();
+
 	XML_MotSensAssignParser(): XML_ElementParser("assign") {}
 };
 
 bool XML_MotSensAssignParser::Start()
 {
+	// back up old values first
+	if (!OriginalMonsterDisplays) {
+		OriginalMonsterDisplays = (short *) malloc(sizeof(short) * NUMBER_OF_MONSTER_TYPES);
+		assert(OriginalMonsterDisplays);
+		for (int i = 0; i < NUMBER_OF_MONSTER_TYPES; i++)
+			OriginalMonsterDisplays[i] = MonsterDisplays[i];
+	}
+
 	for (int k=0; k<2; k++)
 		IsPresent[k] = false;
 	return true;
@@ -862,13 +885,35 @@ bool XML_MotSensAssignParser::AttributesDone()
 	return true;
 }
 
+bool XML_MotSensAssignParser::ResetValues()
+{
+	if (OriginalMonsterDisplays) {
+		for (int i = 0; i < NUMBER_OF_MONSTER_TYPES; i++)
+			MonsterDisplays[i] = OriginalMonsterDisplays[i];
+		free(OriginalMonsterDisplays);
+		OriginalMonsterDisplays = NULL;
+	}
+	return true;
+}
+
 static XML_MotSensAssignParser MotSensAssignParser;
 
 
+struct motion_sensor_definition *original_motion_sensor_settings = NULL;
 // Subclassed to set the color objects appropriately
 class XML_MotSensParser: public XML_ElementParser
 {
 public:
+	bool Start()
+	{
+		// back up old values first
+		if (!original_motion_sensor_settings) {
+			original_motion_sensor_settings = (struct motion_sensor_definition *) malloc(sizeof(struct motion_sensor_definition));
+			assert(original_motion_sensor_settings);
+			*original_motion_sensor_settings = motion_sensor_settings;
+		}
+		return true;
+	}
 	bool HandleAttribute(const char *Tag, const char *Value)
 	{
 		if (StringsEqual(Tag, "scale"))
@@ -896,7 +941,16 @@ public:
 		UnrecognizedTag();
 		return false;
 	}
-	
+	bool ResetValues()
+	{
+		if (original_motion_sensor_settings) {
+			motion_sensor_settings = *original_motion_sensor_settings;
+			free(original_motion_sensor_settings);
+			original_motion_sensor_settings = NULL;
+		}
+		return true;
+	}
+
 	XML_MotSensParser(): XML_ElementParser("motion_sensor") {}
 };
 
