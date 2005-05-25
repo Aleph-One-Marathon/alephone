@@ -179,16 +179,6 @@ find_item_index_in_vector(const T& inItem, const vector<T>& inVector)
 }
 
 
-void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
-{
-	if(inChangeEnable != NONE)
-	{
-		modify_control_enabled(dialog, iRADIO_NO_TIME_LIMIT, inChangeEnable);
-		modify_control_enabled(dialog, iRADIO_TIME_LIMIT, inChangeEnable);
-		modify_control_enabled(dialog, iRADIO_KILL_LIMIT, inChangeEnable);
-	}
-}
-
 
 /*************************************************************************************************
  *

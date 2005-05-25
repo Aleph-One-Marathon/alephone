@@ -138,15 +138,15 @@ enum {
 // limit types, 0-based, for w_select-compatible use.  (see also set_limit_type())
 enum {    
     kNoLimit			= 0,
-    kScoreLimit			= 0x01,
-    kTimeLimit			= 0x02,
+    kTimeLimit			= 0x01,
+    kScoreLimit			= 0x02,
     kScoreAndTimeLimits		= kScoreLimit | kTimeLimit // currently cannot be selected directly
 };
 
 // Some identifiers used only locally.  Hope the numeric equivalents don't conflict!
 // (they shouldn't.)
 enum {
-        iENDCONDITION_TYPE_MENU		= 4242,	// Score limit?  Time limit?  No limit?
+        iDONT_DO_THIS_USE_SHARED_SYMBOLS= 4242,	// Score limit?  Time limit?  No limit?
         iCHAT_HISTORY,				// Where chat text appears
         iCHAT_ENTRY,				// Where chat text is entered
         iMAP_FILE_SELECTOR			// Choose Map file (not choose level within map)
@@ -397,7 +397,8 @@ static bool sGathererMayStartGame= false;
 // ZZZ: this is kinda like check_setup_information on the Mac.
 static bool
 is_game_limit_valid(dialog* d) {
-    bool limit_is_valid = true;
+// jkvw: don't do this - shared code's responsability
+/*    bool limit_is_valid = true;
     
     long limit_type = get_selection_control_value(d, iENDCONDITION_TYPE_MENU) - 1;
 
@@ -413,7 +414,8 @@ is_game_limit_valid(dialog* d) {
         if(extract_number_from_text_item(d, iKILL_LIMIT) <= 0)
             limit_is_valid = false;
     
-    return limit_is_valid;
+    return limit_is_valid;*/
+    return true;
 }
 
 static void
@@ -457,29 +459,8 @@ update_setup_ok_button_enabled_callback_adaptor(w_text_entry* inWidget) {
 
 static void
 respond_to_end_condition_type_change(w_select* inWidget) {
-    dialog*	theDialog = inWidget->get_owning_dialog();
-
-    switch(inWidget->get_selection()) {
-        case kNoLimit:
-            setup_for_untimed_game(theDialog);
-        break;
-        
-        case kTimeLimit:
-            setup_for_timed_game(theDialog);
-        break;
-        
-        case kScoreLimit:
-            setup_for_score_limited_game(theDialog);
-        break;
-        
-        default:
-            assert(false);
-        break;
-    }
-    
-    // make sure "ok" button state is current.
-    update_setup_ok_button_enabled(theDialog);
-} // respond_to_end_condition_type_change
+	SNG_limit_type_hit (inWidget->get_owning_dialog());
+}
 
 
 
@@ -502,11 +483,6 @@ void menu_index_to_level_entry(
 }
 #endif
 
-void modify_limit_type_choice_enabled(DialogPtr dialog, short inChangeEnable)
-{
-        modify_control_enabled(dialog, iENDCONDITION_TYPE_MENU, inChangeEnable);
-}
-
 
 void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id, short radio_string_index,
                                 short units_item, short units_stringset_id, short units_string_index)
@@ -519,7 +495,7 @@ void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id
         TS_PutCString(kEndConditionTypeStringSetID, kScoreLimit, limit_text);
 
         // Refresh the endcondition selection widget
-        w_select*	theEndconditionWidget = dynamic_cast<w_select*>(dialog->get_widget_by_id(iENDCONDITION_TYPE_MENU));
+        w_select*	theEndconditionWidget = dynamic_cast<w_select*>(dialog->get_widget_by_id(iRADIO_NO_TIME_LIMIT));
         
         theEndconditionWidget->set_labels_stringset(kEndConditionTypeStringSetID);
         
@@ -653,19 +629,17 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
     w_select* endcondition_w    = new w_select("Game Ends At", kTimeLimit, NULL);
     endcondition_w->set_labels_stringset(kEndConditionTypeStringSetID);
     endcondition_w->set_full_width();
-    endcondition_w->set_identifier(iENDCONDITION_TYPE_MENU);
+    endcondition_w->set_identifier(iRADIO_NO_TIME_LIMIT);
     endcondition_w->set_selection_changed_callback(respond_to_end_condition_type_change);
     d.add(endcondition_w);
 
     w_number_entry*	timelimit_w	= new w_number_entry("Time Limit (minutes)", network_preferences->time_limit);
     timelimit_w->set_identifier(iTIME_LIMIT);
-        timelimit_w->set_value_changed_callback(update_setup_ok_button_enabled_callback_adaptor);
     d.add(timelimit_w);
 
     // The name of this widget (score limit) will be replaced by Kill Limit, Flag Capture Limit, etc.
     w_number_entry*	scorelimit_w	= new w_number_entry("(score limit)", network_preferences->kill_limit);
     scorelimit_w->set_identifier(iKILL_LIMIT);
-        scorelimit_w->set_value_changed_callback(update_setup_ok_button_enabled_callback_adaptor);
     d.add(scorelimit_w);
 
 	d.add(new w_spacer());
