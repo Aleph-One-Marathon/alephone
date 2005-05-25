@@ -360,8 +360,8 @@
 <!-- ZZZ: Names of basic end-conditions, used by SDL version when choosing limit type -->
 <stringset index="147">
 <string index="0">No Limit (Alt+Q to quit)</string>
-<string index="1">Score Limit</string>
-<string index="2">Time Limit</string>
+<string index="1">Time Limit</string>
+<string index="2">Score Limit</string>
 </stringset>
 
 <!-- ZZZ: Names of alternate end-conditions (replace "Score Limit" above), used by SDL version -->
