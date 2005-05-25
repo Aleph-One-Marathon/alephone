@@ -1150,7 +1150,7 @@ void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<
 	
 	// Add in new contents
 	int i = 0;
-	for (std::vector<std::string>::iterator it = labels.begin (); it != labels.end (); ++it) {
+	for (std::vector<std::string>::const_iterator it = labels.begin (); it != labels.end (); ++it) {
 		++i;
 		copy_string_to_pstring(*it, ptemporary, 250);
 		AppendMenu(Menu, ptemporary);
