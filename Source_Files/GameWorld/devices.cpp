@@ -203,17 +203,29 @@ static struct control_panel_definition control_panel_definitions[]=
 	{_panel_is_tag_switch, 0, _collection_walls4, 1, 0, {_snd_destroy_control_panel, NONE, NONE}, FIXED_ONE, NONE},
 };
 
-// How far can one reach to activate the controls?
-static short ReachDistance = MAXIMUM_CONTROL_ACTIVATION_RANGE;
-static short ReachHorizontal = 2;
+struct control_panel_settings_definition {
+	// How far can one reach to activate the controls?
+	short ReachDistance;
+	short ReachHorizontal;
+	// For recharging
+	short SingleEnergy;
+	short SingleEnergyRate;
+	short DoubleEnergy;
+	short DoubleEnergyRate;
+	short TripleEnergy;
+	short TripleEnergyRate;
+};
 
-// For recharging
-static short SingleEnergy = PLAYER_MAXIMUM_SUIT_ENERGY;
-static short SingleEnergyRate = 1;
-static short DoubleEnergy = 2*PLAYER_MAXIMUM_SUIT_ENERGY;
-static short DoubleEnergyRate = 2;
-static short TripleEnergy = 3*PLAYER_MAXIMUM_SUIT_ENERGY;
-static short TripleEnergyRate = 3;
+struct control_panel_settings_definition control_panel_settings = {
+	MAXIMUM_CONTROL_ACTIVATION_RANGE, // ReachDistance
+	2, // ReachHorizontal
+	PLAYER_MAXIMUM_SUIT_ENERGY, // SingleEnergy
+	1, // SingleEnergyRate
+	2*PLAYER_MAXIMUM_SUIT_ENERGY, // DoubleEnergy
+	2, // DoubleEnergyRate
+	3*PLAYER_MAXIMUM_SUIT_ENERGY, // TripleEnergy
+	3 // TripleEnergyRate
+};
 
 /* ------------ private prototypes */
 
@@ -283,91 +295,98 @@ void update_control_panels(
 {
 	short player_index;
 	struct player_data *player;
-	
+
 	for (player_index= 0, player= players; player_index<dynamic_world->player_count; ++player_index, ++player)
 	{
 		short side_index;
-		
+
 		if ((side_index= player->control_panel_side_index)!=NONE)
 		{
 			struct side_data *side= get_side_data(player->control_panel_side_index);
 			// LP change: idiot-proofing
 			struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
 			if (!definition) continue;
+
+			if(definition->_class == _panel_is_pattern_buffer)
+			{	// Player was working on a full-auto save
+				if(dynamic_world->tick_count - player->ticks_at_last_successful_save > kDoubleClickTicks)
+				{	// no double-click - need to safe save
+					somebody_save_full_auto(player, false);
+				}
+			}
+			else
+			{
+				bool still_in_use= false;
+
+				if (player->variables.direction == player->variables.last_direction &&
+					player->variables.last_position.x == player->variables.position.x &&
+					player->variables.last_position.y == player->variables.position.y &&
+					player->variables.last_position.z == player->variables.position.z)
+				{
+					switch (definition->_class)
+					{
+						case _panel_is_oxygen_refuel:
+							if (!(dynamic_world->tick_count&OXYGEN_RECHARGE_FREQUENCY))
+							{
+								if (player->suit_oxygen<PLAYER_MAXIMUM_SUIT_OXYGEN)
+								{
+									player->suit_oxygen+= TICKS_PER_SECOND;
+									mark_oxygen_display_as_dirty();
+									still_in_use= true;
+								}
+							}
+							break;
                                                 
-                        if(definition->_class == _panel_is_pattern_buffer)
-                        {	// Player was working on a full-auto save
-                                if(dynamic_world->tick_count - player->ticks_at_last_successful_save > kDoubleClickTicks)
-                                {	// no double-click - need to safe save
-                                        somebody_save_full_auto(player, false);
-                                }
-                        }
-                        else
-                        {
-                        
-                                bool still_in_use= false;
-                                
-                                if (player->variables.direction == player->variables.last_direction &&
-                                        player->variables.last_position.x == player->variables.position.x &&
-                                        player->variables.last_position.y == player->variables.position.y &&
-                                        player->variables.last_position.z == player->variables.position.z)
-                                {
-                                        switch (definition->_class)
-                                        {
-                                                case _panel_is_oxygen_refuel:
-                                                        if (!(dynamic_world->tick_count&OXYGEN_RECHARGE_FREQUENCY))
-                                                        {
-                                                                if (player->suit_oxygen<PLAYER_MAXIMUM_SUIT_OXYGEN)
-                                                                {
-                                                                        player->suit_oxygen+= TICKS_PER_SECOND;
-                                                                        mark_oxygen_display_as_dirty();
-                                                                        still_in_use= true;
-                                                                }
-                                                        }
-                                                        break;
-                                                
-                                                case _panel_is_shield_refuel:
-                                                case _panel_is_double_shield_refuel:
-                                                case _panel_is_triple_shield_refuel:
-                                                        if (!(dynamic_world->tick_count&ENERGY_RECHARGE_FREQUENCY))
-                                                        {
-                                                                short maximum, rate;
-                                                                
-                                                                switch (definition->_class)
-                                                                {
-                                                                        case _panel_is_shield_refuel: maximum= SingleEnergy, rate= SingleEnergyRate; break;
-                                                                        case _panel_is_double_shield_refuel: maximum= DoubleEnergy, rate= DoubleEnergyRate; break;
-                                                                        case _panel_is_triple_shield_refuel: maximum= TripleEnergy, rate= TripleEnergyRate; break;
-                                                                        default:
-                                                                                assert(false);
-                                                                }
-                                                                if (player->suit_energy<maximum)
-                                                                {
-                                                                        player->suit_energy= CEILING(player->suit_energy+rate, maximum);
-                                                                        mark_shield_display_as_dirty();
-                                                                        still_in_use= true;
-                                                                }
-                                                        }
-                                                        break;
-                                                
-                                                default:
-                                                        assert(false);
-                                                        break;
-                                        }
-                                }
+						case _panel_is_shield_refuel:
+						case _panel_is_double_shield_refuel:
+						case _panel_is_triple_shield_refuel:
+							if (!(dynamic_world->tick_count&ENERGY_RECHARGE_FREQUENCY))
+							{
+								short maximum, rate;
+
+								switch (definition->_class)
+								{
+									case _panel_is_shield_refuel:
+										maximum= control_panel_settings.SingleEnergy;
+										rate= control_panel_settings.SingleEnergyRate;
+										break;
+									case _panel_is_double_shield_refuel:
+										maximum= control_panel_settings.DoubleEnergy;
+										rate= control_panel_settings.DoubleEnergyRate;
+										break;
+									case _panel_is_triple_shield_refuel:
+										maximum= control_panel_settings.TripleEnergy;
+										rate= control_panel_settings.TripleEnergyRate;
+										break;
+									default:
+										assert(false);
+								}
+								if (player->suit_energy<maximum)
+								{
+									player->suit_energy= CEILING(player->suit_energy+rate, maximum);
+									mark_shield_display_as_dirty();
+									still_in_use= true;
+								}
+							}
+							break;
+
+						default:
+							assert(false);
+					}
+				}
 			
-                                if (still_in_use)
-                                {
-                                        set_control_panel_texture(side);
-                                        play_control_panel_sound(side_index, _activating_sound);
-                                }
-                                else
-                                {
-                                        change_panel_state(player_index, side_index);
-                                        stop_sound(NONE, definition->sounds[_activating_sound]);
-                                }
-                        }
-                }
+				if (still_in_use)
+				{
+					set_control_panel_texture(side);
+					play_control_panel_sound(side_index, _activating_sound);
+				}
+				else
+				{
+					change_panel_state(player_index, side_index);
+					stop_sound(NONE, definition->sounds[_activating_sound]);
+				}
+			}
+		}
 	}
 }
 
@@ -649,7 +668,7 @@ static short find_action_key_target(
 			}
 
 			/* Slammed a wall */
-			if (line_is_within_range(player->monster_index, line_index, ReachDistance))
+			if (line_is_within_range(player->monster_index, line_index, control_panel_settings.ReachDistance))
 			{
 				if (line_side_has_control_panel(line_index, original_polygon, &itemhit))
 				{
@@ -686,7 +705,7 @@ static bool line_is_within_range(
 	
 	dx= monster_origin.x-line_origin.x;
 	dy= monster_origin.y-line_origin.y;
-	dz= ReachHorizontal*(monster_origin.z-line_origin.z); /* dz is weighted */
+	dz= control_panel_settings.ReachHorizontal*(monster_origin.z-line_origin.z); /* dz is weighted */
 	
 	return isqrt(dx*dx + dy*dy + dz*dz)<range ? true : false;
 }
@@ -958,6 +977,8 @@ static bool get_recharge_status(
 
 
 // Parses sound indices
+// Note: This does not need a ResetValues() method because the SoundList is
+// already part of a struct control_panel_definition that gets reset anyways.
 class XML_CPSoundParser: public XML_ElementParser
 {
 	short Type;
@@ -1029,6 +1050,8 @@ bool XML_CPSoundParser::AttributesDone()
 static XML_CPSoundParser CPSoundParser;
 
 
+struct control_panel_definition *original_control_panel_definitions = NULL;
+
 class XML_ControlPanelParser: public XML_ElementParser
 {
 	short Index;
@@ -1043,12 +1066,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_ControlPanelParser(): XML_ElementParser("panel") {}
 };
 
 bool XML_ControlPanelParser::Start()
 {
+	// back up old values first
+	if (!original_control_panel_definitions) {
+		original_control_panel_definitions = (struct control_panel_definition *) malloc(sizeof(struct control_panel_definition) * NUMBER_OF_CONTROL_PANEL_DEFINITIONS);
+		assert(original_control_panel_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_CONTROL_PANEL_DEFINITIONS; i++)
+			original_control_panel_definitions[i] = control_panel_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -1149,16 +1181,40 @@ bool XML_ControlPanelParser::AttributesDone()
 	return true;
 }
 
+bool XML_ControlPanelParser::ResetValues()
+{
+	if (original_control_panel_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_CONTROL_PANEL_DEFINITIONS; i++)
+			control_panel_definitions[i] = original_control_panel_definitions[i];
+		free(original_control_panel_definitions);
+		original_control_panel_definitions = NULL;
+	}
+	return true;
+}
+
 static XML_ControlPanelParser ControlPanelParser;
 
+
+struct control_panel_settings_definition *original_control_panel_settings = NULL;
 
 class XML_ControlPanelsParser: public XML_ElementParser
 {	
 public:
+	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
-	
+	bool ResetValues();
+
 	XML_ControlPanelsParser(): XML_ElementParser("control_panels") {}
 };
+
+bool XML_ControlPanelsParser::Start()
+{
+	if (!original_control_panel_settings) {
+		original_control_panel_settings = (struct control_panel_settings_definition *) malloc(sizeof(struct control_panel_settings_definition));
+		*original_control_panel_settings = control_panel_settings;
+	}
+	return true;
+}
 
 bool XML_ControlPanelsParser::HandleAttribute(const char *Tag, const char *Value)
 {
@@ -1167,41 +1223,51 @@ bool XML_ControlPanelsParser::HandleAttribute(const char *Tag, const char *Value
 		float FVal;
 		if (ReadFloatValue(Value,FVal))
 		{
-			ReachDistance = int(WORLD_ONE*FVal + 0.5);
+			control_panel_settings.ReachDistance = int(WORLD_ONE*FVal + 0.5);
 			return true;
 		}
 		else return false;
 	}
 	else if (StringsEqual(Tag,"horiz"))
 	{
-		return ReadInt16Value(Value,ReachHorizontal);
+		return ReadInt16Value(Value,control_panel_settings.ReachHorizontal);
 	}
 	else if (StringsEqual(Tag,"single_energy"))
 	{
-		return ReadInt16Value(Value,SingleEnergy);
+		return ReadInt16Value(Value,control_panel_settings.SingleEnergy);
 	}
 	else if (StringsEqual(Tag,"single_energy_rate"))
 	{
-		return ReadInt16Value(Value,SingleEnergyRate);
+		return ReadInt16Value(Value,control_panel_settings.SingleEnergyRate);
 	}
 	else if (StringsEqual(Tag,"double_energy"))
 	{
-		return ReadInt16Value(Value,DoubleEnergy);
+		return ReadInt16Value(Value,control_panel_settings.DoubleEnergy);
 	}
 	else if (StringsEqual(Tag,"double_energy_rate"))
 	{
-		return ReadInt16Value(Value,DoubleEnergyRate);
+		return ReadInt16Value(Value,control_panel_settings.DoubleEnergyRate);
 	}
 	else if (StringsEqual(Tag,"triple_energy"))
 	{
-		return ReadInt16Value(Value,TripleEnergy);
+		return ReadInt16Value(Value,control_panel_settings.TripleEnergy);
 	}
 	else if (StringsEqual(Tag,"triple_energy_rate"))
 	{
-		return ReadInt16Value(Value,TripleEnergyRate);
+		return ReadInt16Value(Value,control_panel_settings.TripleEnergyRate);
 	}
 	UnrecognizedTag();
 	return false;
+}
+
+bool XML_ControlPanelsParser::ResetValues()
+{
+	if (original_control_panel_settings) {
+		control_panel_settings = *original_control_panel_settings;
+		free(original_control_panel_settings);
+		original_control_panel_settings = NULL;
+	}
+	return true;
 }
 
 static XML_ControlPanelsParser ControlPanelsParser;
