@@ -5,7 +5,7 @@ SUBDIRS = default_theme
 pkgdata_DATA = Fonts
 
 mmldir = $(pkgdatadir)/MML
-mml_DATA = Text_Strings.mml Interface_Rects.mml Transparent_Liquids.mml \
+mml_DATA = Interface_Rects.mml Transparent_Liquids.mml \
   Transparent_Sprites.mml
 
 EXTRA_DIST = $(pkgdata_DATA) $(mml_DATA)
