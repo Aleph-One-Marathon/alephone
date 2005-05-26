@@ -691,7 +691,11 @@ static void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
 		
 	case iUSE_SCRIPT:
 		SNG_use_script_hit (dialog);
-	break;
+		break;
+		
+	case iCHOOSE_MAP:
+		SNG_choose_map_hit (dialog);
+		break;
 					
 	case iOK_SPECIAL:
 		if (SNG_information_is_acceptable (dialog)) {

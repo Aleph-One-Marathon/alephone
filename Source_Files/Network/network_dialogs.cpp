@@ -77,6 +77,7 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"network_games.h"
 #include	"player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
 #include	"metaserver_dialogs.h" // GameAvailableMetaserverAnnouncer
+#include	"wad.h" // jkvw: for read_wad_file_checksum 
 
 #include <map>
 
@@ -457,7 +458,7 @@ int join_dialog_gatherer_search (DialogPTR dialog)
 
 static bool static_allow_all_levels;
 static short old_game_type;
-static FileSpecifier sNetscriptFile;
+static FileSpecifier sNetscriptFile, sOldMapFile;
 
 bool network_game_setup(
 	player_info *player_information,
@@ -465,7 +466,21 @@ bool network_game_setup(
 	bool ResumingGame,
 	bool& outAdvertiseGameOnMetaserver)
 {
-	return run_netgame_setup_dialog(player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver);
+	if (run_netgame_setup_dialog(player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver))
+		return true;
+	else {
+		// Restore enviroprefs in case user changed map
+		if (sOldMapFile.Exists()) {
+			struct environment_preferences_data *prefs= environment_preferences;
+#ifdef SDL
+			strcpy(prefs->map_file, sOldMapFile.GetPath());
+#else
+			prefs->map_file = sOldMapFile.GetSpec ();
+#endif
+			load_environment_from_preferences();
+		}
+		return false;
+	}
 }
 
 static const vector<string> make_entry_vector (int32 entry_flags)
@@ -486,7 +501,6 @@ short netgame_setup_dialog_initialise (
 	bool allow_all_levels,
 	bool resuming_game)
 {
-	short name_length;
 	long entry_flags;
 
 	static_allow_all_levels = allow_all_levels;
@@ -520,6 +534,20 @@ short netgame_setup_dialog_initialise (
 		entry_flags= NONE;
 	} else {
 		entry_flags= get_entry_point_flags_for_game_type(theAdjustedPreferences.game_type);
+	}
+
+	struct environment_preferences_data *prefs= environment_preferences;
+#ifdef SDL
+	sOldMapFile = prefs->map_file;
+#else
+	sOldMapFile.SetSpec(prefs->map_file);
+#endif
+	if (sOldMapFile.Exists()) {
+		char buffer [256];
+		sOldMapFile.GetName (buffer);
+		QQ_copy_string_to_text_control (dialog, iTEXT_MAP_NAME, string(buffer));
+	} else {
+		QQ_copy_string_to_text_control (dialog, iTEXT_MAP_NAME, "Couldn't get map name");
 	}
 
 	QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (entry_flags));
@@ -590,6 +618,7 @@ short netgame_setup_dialog_initialise (
 		QQ_set_control_activity(dialog, iKILL_LIMIT, false);
 		QQ_set_control_activity(dialog, iTIME_LIMIT, false);
 		QQ_set_control_activity(dialog, iRADIO_NO_TIME_LIMIT, false);
+		QQ_set_control_activity(dialog, iCHOOSE_MAP, false);
 	}
 	
 	QQ_set_boolean_control_value(dialog, iCHEATS_DISABLED, false);
@@ -1080,10 +1109,25 @@ void SNG_game_type_hit (DialogPTR dialog)
 	}
 }
 
-void SNG_map_hit (DialogPTR dialog)
+void SNG_choose_map_hit (DialogPTR dialog)
 {
-	QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (get_entry_point_flags_for_game_type(old_game_type)));
-	QQ_set_selector_control_value (dialog, iENTRY_MENU, 0);
+	FileSpecifier mapFile;
+	if (mapFile.ReadDialog (_typecode_scenario, "Map Select")) {
+		environment_preferences->map_checksum = read_wad_file_checksum (mapFile);
+#ifdef SDL
+		strcpy(environment_preferences->map_file, mapFile.GetPath());
+#else
+		environment_preferences->map_file = mapFile.GetSpec();
+#endif
+		load_environment_from_preferences();
+		
+		QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (get_entry_point_flags_for_game_type(old_game_type)));
+		QQ_set_selector_control_value (dialog, iENTRY_MENU, 0);
+		
+		char nameBuffer [256];
+		mapFile.GetName (nameBuffer);
+		QQ_copy_string_to_text_control (dialog, iTEXT_MAP_NAME, string(nameBuffer));
+	}
 }
 
 void SNG_use_script_hit (DialogPTR dialog)

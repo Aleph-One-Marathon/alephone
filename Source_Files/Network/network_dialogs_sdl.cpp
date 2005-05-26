@@ -149,7 +149,6 @@ enum {
         iDONT_DO_THIS_USE_SHARED_SYMBOLS= 4242,	// Score limit?  Time limit?  No limit?
         iCHAT_HISTORY,				// Where chat text appears
         iCHAT_ENTRY,				// Where chat text is entered
-        iMAP_FILE_SELECTOR			// Choose Map file (not choose level within map)
                 
 };
 
@@ -535,24 +534,8 @@ respond_to_net_game_type_change(w_select* inWidget) {
 
 
 static void
-respond_to_map_file_change(w_env_select* inWidget) {
-	// jkvw: should do this in shared code
-    if(strcmp(environment_preferences->map_file, inWidget->get_path())) {
-        strcpy(environment_preferences->map_file, inWidget->get_path());
-		environment_preferences->map_checksum = read_wad_file_checksum(inWidget->get_file_specifier());
-
-        load_environment_from_preferences();
-
-	SNG_map_hit (inWidget->get_owning_dialog());
-
-        // We don't write_preferences in case user cancels (in which case environment_preferences->map_file
-        // and map_checksum are restored).
-
-        // dynamic_cast<w_entry_point_selector*>(inWidget->get_owning_dialog()->get_widget_by_id(iENTRY_MENU))->reset();
-
-        // There might not be any levels for the currently selected game-type; need to double-check the OK button.
-        // update_setup_ok_button_enabled(inWidget->get_owning_dialog());
-    }
+respond_to_map_file_change(void* dialog) {
+	SNG_choose_map_hit (reinterpret_cast<DialogPTR>(dialog));
 }
 
 static void
@@ -608,11 +591,14 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 
     // Could eventually store this path in network_preferences somewhere, so to have separate map file
     // prefs for single- and multi-player.
-	    w_env_select *map_w = new w_env_select("Map file", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
-        map_w->set_selection_made_callback(respond_to_map_file_change);
-        map_w->set_full_width();
-        map_w->set_identifier(iMAP_FILE_SELECTOR);
-	    d.add(map_w);
+	w_button* map_w = new w_button("Choose Map", respond_to_map_file_change, &d);
+	map_w->set_identifier(iCHOOSE_MAP);
+	d.add(map_w);
+	
+	w_static_text* map_name_w = new w_static_text("NAME OF MAP");
+	map_name_w->set_identifier(iTEXT_MAP_NAME);
+	map_name_w->set_full_width();
+	d.add(map_name_w);
 
         w_select_popup* entry_point_w = new w_select_popup("Level");
         entry_point_w->set_full_width();
@@ -694,13 +680,6 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 	d.add(cancel_w);
 
 	netgame_setup_dialog_initialise(&d, false, inResumingGame);
-
-	if(inResumingGame)
-        {
-                // If resuming, they shouldn't be allowed to change the Map file
-                // (this should go in fill_in_game_setup_dialog() if the Mac version gets a Map file selector)
-                modify_control_enabled(&d, iMAP_FILE_SELECTOR, CONTROL_INACTIVE);
-        }
     
         // or is it called automatically by fill_in_game_setup_dialog somehow?  the interactions are getting complex... :/
         // in any event, the data SHOULD be ok, or else we wouldn't have let the user save the info in prefs, but....
@@ -740,17 +719,6 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 	} // d.run() == 0
         
     else {
-       // Restore the map file path if it was changed - no need to resave prefs.
-        if(strcmp(theSavedMapFilePath.c_str(), map_w->get_path())) {
-            strcpy(environment_preferences->map_file, theSavedMapFilePath.c_str());
-
-            FileSpecifier   theFS(theSavedMapFilePath.c_str());
-
-		    environment_preferences->map_checksum = read_wad_file_checksum(theFS);
-
-            load_environment_from_preferences();
-       }
-
 		return false;
     }
 } // network_game_setup

@@ -207,7 +207,9 @@ enum {
 	iMICROPHONE_TYPE,
 	iTEXT_SCRIPT_NAME,
 	iCHEATS_DISABLED,
-	iADVERTISE_GAME_ON_METASERVER
+	iADVERTISE_GAME_ON_METASERVER,
+	iCHOOSE_MAP,
+	iTEXT_MAP_NAME
 };
 
 #ifdef USES_NIBS
@@ -407,7 +409,7 @@ void setup_dialog_for_game_type(DialogPTR dialog, size_t game_type);
 void SNG_limit_type_hit (DialogPTR dialog);
 void SNG_teams_hit (DialogPTR dialog);
 void SNG_game_type_hit (DialogPTR dialog);
-void SNG_map_hit (DialogPTR dialog);
+void SNG_choose_map_hit (DialogPTR dialog);
 void SNG_use_script_hit (DialogPTR dialog);
 bool SNG_information_is_acceptable (DialogPTR dialog);
 void update_netscript_file_display(DialogPTR dialog);
