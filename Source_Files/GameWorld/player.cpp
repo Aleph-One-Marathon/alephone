@@ -340,8 +340,8 @@ struct player_settings_definition player_settings = {
 	2*PLAYER_MAXIMUM_SUIT_ENERGY,  // DoubleEnergy
 	3*PLAYER_MAXIMUM_SUIT_ENERGY,  // TripleEnergy
 	FIXED_ONE_HALF,                // PlayerSelfLuminosity
-	false,                         // PlayerShotsGuided
 	true,                          // CanSwim
+	false,                         // PlayerShotsGuided
 	QUARTER_CIRCLE/3,              // PlayerHalfVisualArc
 	QUARTER_CIRCLE/3,              // PlayerHalfVertVisualArc
 	31,                            // PlayerVisualRange
