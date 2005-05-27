@@ -1152,16 +1152,16 @@ bool SNG_information_is_acceptable (DialogPTR dialog)
 	long limit;
 	
 	if (information_is_acceptable)
-		if (game_limit_type = 1)
+		if (game_limit_type == 1)
 		{
-			limit = QQ_extract_number_from_text_control(dialog, iTEXT_TIME_LIMIT);
+			limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
 			information_is_acceptable = limit >= 1;
 		}
 		
 	if (information_is_acceptable)
-		if (game_limit_type = 2)
+		if (game_limit_type == 2)
 		{
-			limit = QQ_extract_number_from_text_control(dialog, iTEXT_KILL_LIMIT);
+			limit = QQ_extract_number_from_text_control(dialog, iKILL_LIMIT);
 			information_is_acceptable = limit >= 1;
 		}
 	

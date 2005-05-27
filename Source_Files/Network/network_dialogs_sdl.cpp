@@ -543,6 +543,15 @@ respond_to_script_twiddle(w_select* inWidget) {
 	SNG_use_script_hit (inWidget->get_owning_dialog());
 }
 
+static void netgame_setup_dialog_ok(void *arg)
+{
+	DialogPTR d = reinterpret_cast<DialogPTR>(arg);
+	if (SNG_information_is_acceptable (d))
+		d->quit(0);
+	else
+		play_dialog_sound(DIALOG_ERROR_SOUND);
+}
+
 bool run_netgame_setup_dialog(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver)
 {
     // Save the map file path on entering, so we can restore it if user cancels.
@@ -671,7 +680,7 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 
 	d.add(new w_spacer());	
 
-	w_left_button*	ok_w = new w_left_button("OK", dialog_ok, &d);
+	w_left_button*	ok_w = new w_left_button("OK", netgame_setup_dialog_ok, &d);
 	ok_w->set_identifier(iOK);
 	d.add(ok_w);
         
