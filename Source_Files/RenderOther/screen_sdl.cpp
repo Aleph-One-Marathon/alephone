@@ -395,7 +395,7 @@ void render_screen(short ticks_elapsed)
 
 	// Rectangle where the view is to go (must not overlap the HUD)
 	int OverallWidth = VS.OverallWidth;
-	int OverallHeight = VS.OverallHeight - (VS.ShowHUD ? 160 : 0);
+	int OverallHeight = VS.OverallHeight - (TEST_FLAG(VS.flags, _view_show_HUD) ? 160 : 0);
 	int BufferWidth, BufferHeight;
 
 	// Offsets for placement in the screen
@@ -478,7 +478,7 @@ void render_screen(short ticks_elapsed)
 
 	if (ChangedSize) {
 		clear_screen();
-		if (VS.ShowHUD)
+		if (TEST_FLAG(VS.flags, _view_show_HUD))
 			draw_interface();
 
 		// Reallocate the drawing buffer
@@ -576,7 +576,7 @@ void render_screen(short ticks_elapsed)
 			update_screen(BufferRect, ViewRect, HighResolution);
 		}
 
-		if (VS.ShowHUD) {
+		if (TEST_FLAG(VS.flags, _view_show_HUD)) {
 			if (OGL_HUDActive) {
 				Rect dr = {HUD_DestRect.y, HUD_DestRect.x, HUD_DestRect.y + HUD_DestRect.h, HUD_DestRect.x + HUD_DestRect.w};
 				OGL_DrawHUD(dr, ticks_elapsed);
@@ -850,7 +850,7 @@ void darken_world_window(void)
 {
 	// Get world window bounds
 	int size = screen_mode.size;
-	SDL_Rect r = {0, 0, ViewSizes[size].OverallWidth, ViewSizes[size].OverallHeight - (ViewSizes[size].ShowHUD ? 160 : 0)};
+	SDL_Rect r = {0, 0, ViewSizes[size].OverallWidth, ViewSizes[size].OverallHeight - (TEST_FLAG(ViewSizes[size].flags, _view_show_HUD) ? 160 : 0)};
 
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {

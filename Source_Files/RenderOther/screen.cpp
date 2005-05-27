@@ -824,7 +824,7 @@ void render_screen(
 	
 	// Rectangle where the view is to go (must not overlap the HUD)
 	short OverallWidth = VS.OverallWidth;
-	short OverallHeight = VS.OverallHeight - (VS.ShowHUD ? kHUDHeight : 0);
+	short OverallHeight = VS.OverallHeight - (TEST_FLAG(VS.flags, _view_show_HUD) ? kHUDHeight : 0);
 	short BufferWidth, BufferHeight;
 	
 	// Offsets for placement in the screen
@@ -918,7 +918,7 @@ void render_screen(
 	if (ChangedSize)
 	{
 		ClearScreen();
-		if (VS.ShowHUD) draw_interface();
+		if (TEST_FLAG(VS.flags, _view_show_HUD)) draw_interface();
 		
 		// Reallocate the drawing buffer
 		short error = world_pixels ?
@@ -1151,7 +1151,7 @@ void render_screen(
 
 			if(OGL_HUDActive)
 			{
-				if(VS.ShowHUD)
+				if(TEST_FLAG(VS.flags, _view_show_HUD))
 				{
 					OGL_SetWindow(ScreenRect,ScreenRect,true);
 					Rect theRealHUDDestRect;
