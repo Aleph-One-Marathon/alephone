@@ -165,6 +165,9 @@ void *GetSystemFunctionPointer(const CFStringRef FunctionName);
 // LP addition for handling XML stuff:
 XML_ElementParser *Cheats_GetParser();
 
+// Load the base MML scripts:
+void LoadBaseMMLScripts();
+
 /* ---------- prototypes/SHAPES.C */
 
 void initialize_shape_handler(void);

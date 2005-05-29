@@ -102,7 +102,7 @@ void SetupParseTree()
 
 // This will reset all values changed by MML scripts which implement ResetValues() method
 // and are part of the master MarathonParser tree.
-void reset_all_mml_values()
+void ResetAllMMLValues()
 {
   MarathonParser.ResetChildrenValues();
 }

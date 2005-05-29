@@ -40,6 +40,7 @@ Jul 31, 2002 (Loren Petrich):
 using namespace std;
 
 #include "cseries.h"
+#include "shell.h"
 #include "game_wad.h"
 #include "music.h"
 #include "XML_DataBlock.h"
@@ -61,7 +62,7 @@ struct LevelScriptCommand
 		Music,
 		Movie,
 #ifdef HAVE_LUA
-                Lua
+		Lua
 #endif /* HAVE_LUA */
 	};
 	int Type;
@@ -233,10 +234,11 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 // runs level-specific MML...
 void RunLevelScript(int LevelIndex)
 {
+	static bool FirstTime = true;
 	// None found just yet...
 	PfhortranFound = false;
 #ifdef HAVE_LUA
-        LuaFound = false;
+	LuaFound = false;
 #endif /* HAVE_LUA */
 	
 	// For whatever previous music had been playing...
@@ -245,7 +247,17 @@ void RunLevelScript(int LevelIndex)
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
 	Playlist.clear();
-	
+
+	if (FirstTime)
+		FirstTime = false; // first time, we already have base MML loaded
+	else
+	{
+		// reset values to engine defaults first
+		ResetAllMMLValues();
+		// then load the base stuff (from Scripts folder and whatnot)
+		LoadBaseMMLScripts();
+	}
+
 	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelIndex);
 	
@@ -316,7 +328,7 @@ void GeneralRunScript(int LevelIndex)
 		case LevelScriptCommand::MML:
 		case LevelScriptCommand::Pfhortran:
 #ifdef HAVE_LUA
-                case LevelScriptCommand::Lua:
+		case LevelScriptCommand::Lua:
 #endif /* HAVE_LUA */
 			// if (Cmd.RsrcPresent() && OFile.Get('T','E','X','T',Cmd.RsrcID,ScriptRsrc))
 			if (Cmd.RsrcPresent() && get_text_resource_from_scenario(Cmd.RsrcID,ScriptRsrc))
@@ -354,9 +366,9 @@ void GeneralRunScript(int LevelIndex)
 			break;
 #ifdef HAVE_LUA
                         
-                case LevelScriptCommand::Lua:
-                        {
-                                // Skip if not loaded
+			case LevelScriptCommand::Lua:
+			{
+				// Skip if not loaded
 				if (Data == NULL || DataLen <= 0) break;
 				
 				// Load and indicate whether loading was successful

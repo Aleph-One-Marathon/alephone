@@ -407,18 +407,7 @@ static void initialize_application(void)
 
 	// Parse MML files
 	SetupParseTree();
-	XML_Loader_SDL loader;
-	loader.CurrentElement = &RootParser;
-	{
-		vector <DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-		while (i != end) {
-			DirectorySpecifier path = *i + "MML";
-			loader.ParseDirectory(path);
-			path = *i + "Scripts";
-			loader.ParseDirectory(path);
-			i++;
-		}
-	}
+	LoadBaseMMLScripts();
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {
@@ -1592,3 +1581,21 @@ void dump_screen(void)
 	SDL_FreeSurface(t);
 #endif
 }
+
+
+void LoadBaseMMLScripts()
+{
+	XML_Loader_SDL loader;
+	loader.CurrentElement = &RootParser;
+	{
+		vector <DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
+		while (i != end) {
+			DirectorySpecifier path = *i + "MML";
+			loader.ParseDirectory(path);
+			path = *i + "Scripts";
+			loader.ParseDirectory(path);
+			i++;
+		}
+	}
+}
+

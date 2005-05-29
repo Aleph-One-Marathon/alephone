@@ -484,42 +484,8 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	// Need to set the root directory before doing reading any other files
 	ReadRootDirectory();
 
-#ifdef USES_NIBS
-	// Don't ignore Scripts, dammit!
-	DirectorySpecifier DirSpec;
-	if (DirSpec.SetToSubdirectory("Scripts"))
-		FindAndParseFiles(DirSpec);
-#else
-	// Look for such files in subdirectories specified in a STR# resource:
-	const int PathID = 128;
-	Handle PathStrings = Get1Resource('STR#',PathID);
-	if (PathStrings)
-	{
-		//fdprintf("Parsing external files");
-		// Count how many there are
-		HLock(PathStrings);
-		short *NumPtr = (short *)(*PathStrings);
-		short NumStrings = NumPtr[0];
-		HUnlock(PathStrings);
-		ReleaseResource(PathStrings);
-		for (int i=0; i<NumStrings; i++)
-		{
-			// Get next path specification; quit when one has found an empty one
-
-			unsigned char PathSpec[256];
-			Str255 pascalPathSpec;
-			GetIndString(pascalPathSpec,PathID,i+1);	// Zero-based to one-based indexing
-			
-			// Make a C string from this Pascal string
-			CopyPascalStringToC(pascalPathSpec, (char *)PathSpec);
-			//fdprintf("Dir Path = %s",PathSpec);
-			
-			DirectorySpecifier DirSpec;
-			if (!DirSpec.SetToSubdirectory((char *)PathSpec)) continue;
-			FindAndParseFiles(DirSpec);
-		}
-	}
-#endif
+	// read MML scripts and stuff
+	LoadBaseMMLScripts();
 
 	// JTP: OpenGL Needs to be initialized *before* we handle preferences
 	// otherwise OGL_IsPresent() hasn't been decided yet
@@ -2130,4 +2096,12 @@ static OSStatus LoadFrameworkBundle(CFStringRef framework, CFBundleRef *bundlePt
 	} 
 	
 	return err;
+}
+
+
+void LoadBaseMMLScripts()
+{
+	DirectorySpecifier DirSpec;
+	if (DirSpec.SetToSubdirectory("Scripts"))
+		FindAndParseFiles(DirSpec);
 }
