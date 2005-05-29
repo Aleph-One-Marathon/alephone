@@ -1352,7 +1352,6 @@ void do_menu_item_command(
 					break;
 
 				case iJoinGame:
-#if !defined(DISABLE_NETWORKING)
 #ifdef mac
 					if (system_information->machine_has_network_memory)
 					{
@@ -1365,11 +1364,9 @@ void do_menu_item_command(
 #else
 					handle_network_game(false);
 #endif
-#endif // !defined(DISABLE_NETWORKING)
 					break;
 		
 				case iGatherGame:
-#if !defined(DISABLE_NETWORKING)
 #ifdef mac
 					if (system_information->machine_has_network_memory)
 					{
@@ -1382,7 +1379,6 @@ void do_menu_item_command(
 #else
 					handle_network_game(true);
 #endif
-#endif // !defined(DISABLE_NETWORKING)
 					break;
 					
 				case iLoadGame:
@@ -2076,11 +2072,10 @@ static void clean_up_after_failed_game(bool inNetgame, bool inRecording, bool in
         set_game_error(systemError, errNone);
 }
 
-#if !defined(DISABLE_NETWORKING)
 static void handle_network_game(
 	bool gatherer)
 {
-#if 1
+#if !defined(DISABLE_NETWORKING)
 	bool successful_gather = false;
 	bool joined_resume_game = false;
 
@@ -2112,11 +2107,10 @@ static void handle_network_game(
 		/* We must restore the colors on cancel. */
 		display_main_menu();
 	}
-#else
+#else // !defined(DISABLE_NETWORKING)
 	alert_user(infoError, strERRORS, networkNotSupportedForDemo, 0);
-#endif
-}
 #endif // !defined(DISABLE_NETWORKING)
+}
 
 static void handle_save_film(
 	void)
