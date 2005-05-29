@@ -38,6 +38,8 @@
  *     factored out parts useful on other platforms into network_microphone_shared.cpp
  */
 
+#if !defined(DISABLE_NETWORKING)
+
 #include    "cseries.h"
 #include    "network_speaker_sdl.h"
 #include    "network_microphone_shared.h"
@@ -298,3 +300,5 @@ network_microphone_idle_proc() {
     if(sCaptureSystemReady && sTransmittingAudio)
         transmit_captured_data(false);
 }
+
+#endif // !defined(DISABLE_NETWORKING)
