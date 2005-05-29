@@ -226,7 +226,8 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_TextureOptionsParser(): XML_ElementParser("texture") {}
 };
 
@@ -359,6 +360,12 @@ bool XML_TextureOptionsParser::AttributesDone()
 	DataEntry.OptionsData = Data;
 	TOL.push_back(DataEntry);
 	
+	return true;
+}
+
+bool XML_TextureOptionsParser::ResetValues()
+{
+	TODelete_All();
 	return true;
 }
 
