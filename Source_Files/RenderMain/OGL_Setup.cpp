@@ -384,7 +384,7 @@ OGL_FogData *OGL_GetFogData(int Type)
 
 
 // XML-parsing stuff
-
+OGL_FogData *OriginalFogData = NULL;
 class XML_FogParser: public XML_ElementParser
 {
 	bool IsPresent[3];
@@ -396,12 +396,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_FogParser(): XML_ElementParser("fog") {}
 };
 
 bool XML_FogParser::Start()
 {
+	// back up old values first
+	if (!OriginalFogData) {
+		OriginalFogData = (OGL_FogData *) malloc(sizeof(OGL_FogData) * OGL_NUMBER_OF_FOG_TYPES);
+		assert(OriginalFogData);
+		for (unsigned i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++)
+			OriginalFogData[i] = FogData[i];
+	}
+
 	IsPresent[0] = IsPresent[1] = IsPresent[2] = false;
 	Type = 0;
 	return true;
@@ -451,6 +460,17 @@ bool XML_FogParser::AttributesDone()
 	if (IsPresent[1]) Data.Depth = Depth;
 	if (IsPresent[2]) Data.AffectsLandscapes = AffectsLandscapes;
 	Color_SetArray(&Data.Color);	
+	return true;
+}
+
+bool XML_FogParser::ResetValues()
+{
+	if (OriginalFogData) {
+		for (unsigned i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++)
+			FogData[i] = OriginalFogData[i];
+		free(OriginalFogData);
+		OriginalFogData = NULL;
+	}
 	return true;
 }
 
