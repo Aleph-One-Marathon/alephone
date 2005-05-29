@@ -419,7 +419,7 @@ static byte *handlerLuaBuffer = NULL;
 static size_t handlerLuaLength = 0;
 
 static void handleLuaMessage(LuaMessage *luaMessage, CommunicationsChannel *) {
-  if (netState == netStartingUp || netState == netActive) {
+  if (netState == netStartingUp || netState == netDown) {
     if (handlerLuaBuffer) {
       delete[] handlerLuaBuffer;
       handlerLuaBuffer = NULL;
@@ -438,7 +438,7 @@ static byte *handlerMapBuffer = NULL;
 static size_t handlerMapLength = 0;
 
 static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
-  if (netState == netStartingUp || netState == netActive) {
+  if (netState == netStartingUp || netState == netDown) {
     if (handlerMapBuffer) { // assume the last map the server sent is right
       delete[] handlerMapBuffer;
       handlerMapBuffer = NULL;
@@ -475,7 +475,7 @@ static byte *handlerPhysicsBuffer = NULL;
 static size_t handlerPhysicsLength = 0;
 
 static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsChannel *) {
-  if (netState == netStartingUp || netState == netActive) {
+  if (netState == netStartingUp || netState == netDown) {
     if (handlerPhysicsBuffer) {
       delete[] handlerPhysicsBuffer;
       handlerPhysicsBuffer = NULL;
