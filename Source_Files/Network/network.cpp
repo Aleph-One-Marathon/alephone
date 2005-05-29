@@ -232,7 +232,7 @@ static void NetLocalAddrBlock(NetAddrBlock *address, short socketNumber);
 static int net_compare(void const *p1, void const *p2);
 
 static void NetUpdateTopology(void);
-static OSErr NetDistributeTopology(short tag);
+static void NetDistributeTopology(short tag);
 
 static bool NetSetSelfSend(bool on);
 
@@ -678,102 +678,89 @@ void InGameChatCallbacks::clear()
 
 bool NetEnter(void)
 {
-	OSErr error;
-	bool success= true; /* optimism */
-
-	assert(netState==netUninitialized);
-
-	/* if this is the first time weÕve been called, add NetExit to the list of cleanup procedures */
-	{
-		static bool added_exit_procedure= false;
-		
-		if (!added_exit_procedure) atexit(NetExit);
-		added_exit_procedure= true;
-	}
-
-	// ZZZ: choose a game protocol
-	sCurrentGameProtocol = (network_preferences->game_protocol == _network_game_protocol_star) ?
-		static_cast<NetworkGameProtocol*>(&sStarGameProtocol) :
-		static_cast<NetworkGameProtocol*>(&sRingGameProtocol);
-
-	error= NetDDPOpen();
-	if (!error)
-	{
-		if (!error)
-		{
-			topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
-			memset(topology, 0, sizeof(NetTopology));
-			if (topology)
-			{
-				/* Set the server player identifier */
-				NetSetServerIdentifier(0);
-
-				if (error==noErr)
-				{
-					// ZZZ: Sorry, if this swapping is not supported on all current A1
-					// platforms, feel free to rewrite it in a way that is.
-					ddpSocket= SDL_SwapBE16(GAME_PORT);
-					error= NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
-					if (error==noErr)
-					{
-						sOldSelfSendStatus= NetSetSelfSend(true);
-						sServerPlayerIndex= 0;
-
-						sCurrentGameProtocol->Enter(&netState);
-
-						netState= netDown;
-					}
-				}
-			}
-		}
-	}
-
-	if (!inflater) {
-		inflater = new MessageInflater ();
-		for (int i = 0; i < NUMBER_OF_STREAM_PACKET_TYPES; i++) {
-			BigChunkOfDataMessage *prototype = new BigChunkOfDataMessage (i);
-			inflater->learnPrototypeForType (i, *prototype);
-			delete prototype;
-		}
-
-		inflater->learnPrototype(AcceptJoinMessage());
-		inflater->learnPrototype(EndGameDataMessage());
-		inflater->learnPrototype(HelloMessage());
-		inflater->learnPrototype(JoinerInfoMessage());
-		inflater->learnPrototype(JoinPlayerMessage());
-		inflater->learnPrototype(LuaMessage());
-		inflater->learnPrototype(MapMessage());
-		inflater->learnPrototype(NetworkChatMessage());
-		inflater->learnPrototype(PhysicsMessage());
-		inflater->learnPrototype(ScriptMessage());
-		inflater->learnPrototype(TopologyMessage());
-	}
-	
-	if (!joinDispatcher) {
-	  joinDispatcher = new MessageDispatcher();
-
-	  joinDispatcher->setDefaultHandler(&unexpectedMessageHandler);
-	  joinDispatcher->setHandlerForType(&helloMessageHandler, HelloMessage::kType);
-	  joinDispatcher->setHandlerForType(&joinPlayerMessageHandler, JoinPlayerMessage::kType);
-	  joinDispatcher->setHandlerForType(&luaMessageHandler, LuaMessage::kType);
-	  joinDispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
-	  joinDispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
-	  joinDispatcher->setHandlerForType(&physicsMessageHandler, PhysicsMessage::kType);
-	  joinDispatcher->setHandlerForType(&scriptMessageHandler, ScriptMessage::kType);
-	  joinDispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
-	}
-
-	next_join_attempt = machine_tick_count();
-
-	/* Handle our own errors.. */
-	if(error)
-	{
-		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
-		NetExit();
-		success= false;
-	}
-	
-	return success;
+  OSErr error;
+  
+  assert(netState==netUninitialized);
+  
+  {
+    static bool added_exit_procedure= false;
+    
+    if (!added_exit_procedure) atexit(NetExit);
+    added_exit_procedure= true;
+  }
+  
+  sCurrentGameProtocol = (network_preferences->game_protocol == _network_game_protocol_star) ?
+    static_cast<NetworkGameProtocol*>(&sStarGameProtocol) :
+    static_cast<NetworkGameProtocol*>(&sRingGameProtocol);
+  
+  error= NetDDPOpen();
+  if (!error) {
+    topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
+    assert(topology);
+    memset(topology, 0, sizeof(NetTopology));
+    
+    NetSetServerIdentifier(0);
+    
+    // ZZZ: Sorry, if this swapping is not supported on all current A1
+    // platforms, feel free to rewrite it in a way that is.
+    ddpSocket= SDL_SwapBE16(GAME_PORT);
+    error= NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
+    if (!error) {
+      sOldSelfSendStatus= NetSetSelfSend(true);
+      sServerPlayerIndex= 0;
+      
+      sCurrentGameProtocol->Enter(&netState);
+      
+      netState= netDown;
+    } else {
+      logError("unable to open socket");
+    }
+  }
+  
+  if (!inflater) {
+    inflater = new MessageInflater ();
+    for (int i = 0; i < NUMBER_OF_STREAM_PACKET_TYPES; i++) {
+      BigChunkOfDataMessage *prototype = new BigChunkOfDataMessage (i);
+      inflater->learnPrototypeForType (i, *prototype);
+      delete prototype;
+    }
+    
+    inflater->learnPrototype(AcceptJoinMessage());
+    inflater->learnPrototype(EndGameDataMessage());
+    inflater->learnPrototype(HelloMessage());
+    inflater->learnPrototype(JoinerInfoMessage());
+    inflater->learnPrototype(JoinPlayerMessage());
+    inflater->learnPrototype(LuaMessage());
+    inflater->learnPrototype(MapMessage());
+    inflater->learnPrototype(NetworkChatMessage());
+    inflater->learnPrototype(PhysicsMessage());
+    inflater->learnPrototype(ScriptMessage());
+    inflater->learnPrototype(TopologyMessage());
+  }
+  
+  if (!joinDispatcher) {
+    joinDispatcher = new MessageDispatcher();
+    
+    joinDispatcher->setDefaultHandler(&unexpectedMessageHandler);
+    joinDispatcher->setHandlerForType(&helloMessageHandler, HelloMessage::kType);
+    joinDispatcher->setHandlerForType(&joinPlayerMessageHandler, JoinPlayerMessage::kType);
+    joinDispatcher->setHandlerForType(&luaMessageHandler, LuaMessage::kType);
+    joinDispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
+    joinDispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
+    joinDispatcher->setHandlerForType(&physicsMessageHandler, PhysicsMessage::kType);
+    joinDispatcher->setHandlerForType(&scriptMessageHandler, ScriptMessage::kType);
+    joinDispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
+  }
+  
+  next_join_attempt = machine_tick_count();
+  
+  if (error) {
+    alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
+    NetExit();
+    return false;
+  } else {
+    return true;
+  }
 }
 
 void NetDoneGathering(void)
@@ -787,53 +774,47 @@ void NetDoneGathering(void)
 void NetExit(
 	void)
 {
-	OSErr error = noErr;
-
-	sCurrentGameProtocol->Exit1();
-
-        // ZZZ: clean up SDL Time Manager emulation.  true says wait for any late finishers to finish
-        // (but does NOT say to kill anyone not already removed.)
-        myTMCleanup(true);
-
-	if (netState!=netUninitialized)
-	{
-		
-		if (!error)
-		{
-			error= NetDDPCloseSocket(ddpSocket);
-			vwarn(!error, csprintf(temporary, "NetDDPCloseSocket returned %d", error));
-			if (!error)
-			{
-				NetSetSelfSend(sOldSelfSendStatus);
-
-				free(topology);
-				topology= NULL;
-
-				sCurrentGameProtocol->Exit2();
-				
-				netState= netUninitialized;
-			}
-		}
-	}
-
-	
-
-	if (connection_to_server) {
-		delete connection_to_server;
-		connection_to_server = NULL;
-	}
-	
-	client_map_t::iterator it;
-	for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++)
-		delete(it->second);
-	connections_to_clients.clear();
-	
-	if (server) {
-		delete server;
-		server = NULL;
-	}
-	
-	NetDDPClose();
+  OSErr error = noErr;
+  
+  sCurrentGameProtocol->Exit1();
+  
+  // ZZZ: clean up SDL Time Manager emulation.  
+  // true says wait for any late finishers to finish
+  // (but does NOT say to kill anyone not already removed.)
+  myTMCleanup(true);
+  
+  if (netState!=netUninitialized) {
+    error= NetDDPCloseSocket(ddpSocket);
+    if (!error) {
+      NetSetSelfSend(sOldSelfSendStatus);
+      
+      free(topology);
+      topology= NULL;
+      
+      sCurrentGameProtocol->Exit2();
+      
+      netState= netUninitialized;
+    } else {
+      logAnomaly1("NetDDPCloseSocket returned %i", error);
+    }
+  }
+  
+  if (connection_to_server) {
+    delete connection_to_server;
+    connection_to_server = NULL;
+  }
+  
+  client_map_t::iterator it;
+  for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++)
+    delete(it->second);
+  connections_to_clients.clear();
+  
+  if (server) {
+    delete server;
+    server = NULL;
+  }
+  
+  NetDDPClose();
 }
 
 bool
@@ -1005,17 +986,9 @@ bool NetStart(
                 NetUpdateTopology();
         }
 
-	error= NetDistributeTopology(resuming_saved_game ? tagRESUME_GAME : tagSTART_GAME);
+	NetDistributeTopology(resuming_saved_game ? tagRESUME_GAME : tagSTART_GAME);
 
-	if(error)
-	{
-		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
-		success= false;
-	} else {
-		success= true;
-	}
-
-	return success;
+	return true;
 }
 
 static int net_compare(
@@ -1062,39 +1035,33 @@ bool NetGameJoin(
 	const char* host_addr_string
 	)
 {
-	OSErr error = noErr;
-	bool success= false;
-	
-	/* Attempt a connection to host */
-
-	host_address_specified = (host_addr_string != NULL);
-	if (host_address_specified)
-	{
-		// SDL_net declares ResolveAddress without "const" on the char; we can't guarantee
-		// our caller that it will remain const unless we protect it like this.
-		char*		theStringCopy = strdup(host_addr_string);
-		error = SDLNet_ResolveHost(&host_address, theStringCopy, GAME_PORT);
-		free(theStringCopy);
-	}
-	
-	if (!error) {
-		connection_to_server = new CommunicationsChannel();
-		connection_to_server->setMessageInflater(inflater);
-		connection_to_server->setMessageHandler(joinDispatcher);
-		
-		netState = netConnecting;
-		success = true;
-	}
-	
-	if(error)
-	{
-		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntJoin, error);
-	} else {
-		/* initialize default topology (no game data) */
-		NetInitializeTopology((void *) NULL, 0, player_data, player_data_size);
-	}
-	
-	return success;
+  OSErr error = noErr;
+  
+  /* Attempt a connection to host */
+  
+  host_address_specified = (host_addr_string != NULL);
+  if (host_address_specified)
+    {
+      // SDL_net declares ResolveAddress without "const" on the char; we can't guarantee
+      // our caller that it will remain const unless we protect it like this.
+      char*		theStringCopy = strdup(host_addr_string);
+      error = SDLNet_ResolveHost(&host_address, theStringCopy, GAME_PORT);
+      free(theStringCopy);
+    }
+  
+  if (!error) {
+    connection_to_server = new CommunicationsChannel();
+    connection_to_server->setMessageInflater(inflater);
+    connection_to_server->setMessageHandler(joinDispatcher);
+    
+    netState = netConnecting;
+    
+    NetInitializeTopology((void *) NULL, 0, player_data, player_data_size);
+    return true;
+  } else {
+    alert_user(infoError, strNETWORK_ERRORS, netErrCouldntResolve, error);
+    return false;
+  }
 }
 
 void NetRetargetJoinAttempts(const IPaddress* inAddress)
@@ -1379,45 +1346,32 @@ bool NetChangeMap(
 	/* If the guy that was the server died, and we are trying to change levels, we lose */
         // ZZZ: if we used the parent_wad_checksum stuff to locate the containing Map file,
         // this would be the case somewhat less frequently, probably...
-	if(localPlayerIndex==sServerPlayerIndex && localPlayerIndex != 0)
-	{
-#ifdef DEBUG_NET
-		fdprintf("Server died, and trying to get another level. You lose;g");
-#endif
+	if(localPlayerIndex==sServerPlayerIndex && localPlayerIndex != 0) {
+	  logError("server died while trying to get another level");
+	  success= false;
+	} else {
+	  // being the server, we must send out the map to everyone.	
+	  if(localPlayerIndex==sServerPlayerIndex) {
+	    wad = (unsigned char *)get_map_for_net_transfer(entry);
+	    assert(wad);	      
+	    
+	    length= get_net_map_data_length(wad);
+	    NetDistributeGameDataToAllPlayers(wad, length, true);
+	  } else { // wait for de damn map.
+	      wad = NetReceiveGameData(true);
+	      if(!wad) {
+		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntReceiveMap, 0);
 		success= false;
-		set_game_error(gameError, errServerDied);
-	}
-	else
-	{
-		// being the server, we must send out the map to everyone.	
-		if(localPlayerIndex==sServerPlayerIndex) 
-		{
-			wad= (unsigned char *)get_map_for_net_transfer(entry);
-			if(wad)
-			{
-				length= get_net_map_data_length(wad);
-				error= NetDistributeGameDataToAllPlayers(wad, length, true);
-				if(error) success= false;
-				set_game_error(systemError, error);
-			} else {
-//				if (!wad) alert_user(fatalError, strERRORS, badReadMap, -1);
-				assert(error_pending());
-			}
-		} 
-		else // wait for de damn map.
-		{
-			wad= NetReceiveGameData(true);
-			if(!wad) success= false;
-			// Note that NetReceiveMap handles display of its own errors, therefore we don't
-			//  assert that an error is pending.....
-		}
-	
-		/* Now load the level.. */
-		if (!error && wad)
-		{
-			/* Note that this frees the wad as well!! */
-			process_net_map_data(wad);
-		}
+		
+	      }
+	  }
+	  
+	  /* Now load the level.. */
+	  if (wad)
+	    {
+	      /* Note that this frees the wad as well!! */
+	      process_net_map_data(wad);
+	    }
 	}
 	
 	return success;
@@ -1579,31 +1533,23 @@ byte *NetReceiveGameData(bool do_physics)
     draw_progress_bar(10, 10);
     close_progress_dialog();
     
-    bool distributionFailed = false;
     if (handlerPhysicsLength > 0) {
       delete[] handlerPhysicsBuffer;
       handlerPhysicsBuffer = NULL;
       handlerPhysicsLength = 0;
-      distributionFailed = true;
     }
     if (handlerMapLength > 0) {
       delete[] handlerMapBuffer;
       handlerMapBuffer = NULL;
       handlerMapLength = 0;
-      distributionFailed = true;
     }
     if (handlerLuaLength > 0) {
       delete[] handlerLuaBuffer;
       handlerLuaBuffer = NULL;
       handlerLuaLength = 0;
-      distributionFailed = true;
     }
     
-    if (distributionFailed) {
-      alert_user(infoError, strNETWORK_ERRORS, netErrMapDistribFailed, 1);
-    } else {
-      alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, 1);
-    }
+    alert_user(infoError, strNETWORK_ERRORS, netErrMapDistribFailed, 1);
   }
   
   return map_buffer;
@@ -1763,7 +1709,6 @@ short NetUpdateJoinState(
 	  newState = handlerState;
 	}
       }
-      //	alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
       break;
       // netWaiting
       
@@ -1818,7 +1763,7 @@ NetDistributeTopology
 connect to everyoneÕs dspAddress and give them the latest copy of the network topology.  this
 used to be NetStart() and it used to connect all upring and downring ADSP connections.
 */
-static OSErr NetDistributeTopology(
+static void NetDistributeTopology(
 	short tag)
 {
 	OSErr error = 0; //JTP: initialize to no error
@@ -1839,8 +1784,6 @@ static OSErr NetDistributeTopology(
 		channel->enqueueOutgoingMessage(topologyMessage);
 	      }
 	  }
-	
-	return error; // must be noErr (not like we check return value anyway :))
 }
 
 NetAddrBlock *NetGetPlayerADSPAddress(

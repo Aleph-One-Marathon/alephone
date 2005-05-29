@@ -132,10 +132,17 @@ static char* sStringSetNumber131[] = {
 // STR# Resource: "Network Errors"
 static char* sStringSetNumber132[] = {
     "Sorry, that player could not be found on the network.  He may have cancelled his Join Game dialog.",
-    "One or more of the players in the game could not be found to receive the map.  The game has been cancelled.",
-    "Could not connect to server.",
+
+    "One or more of the players in the game could not be found to receive the "
+    "map.  The game has been canceled.",
+
+    "The gatherering computer is not responding."
+    " It may be behind a firewall, or you may have mistyped the address.",
+
     "Sorry, the gathering computer has cancelled the game (you should all gang up on him next game).",
-    "One or more of the players in the game could not be found on the network and the game has been cancelled.",
+
+    "The map was not received in its entirety, so the game has been canceled.",
+
     "The gathering computer never sent the map, so the game has been cancelled.  Maybe one of the other machines in the game went down.",
     "Aleph One was unable to start the game.  Maybe one of the other machines in the game went down.",
     "An error ocurred while trying to join a game (an incompatible version of Aleph One may have tried to gather you).  Try again.",
@@ -144,7 +151,11 @@ static char* sStringSetNumber132[] = {
     "The player you just added is using an older version of Aleph One that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game.",
     "The player you just attempted to add is using a version of Aleph One that does not support some advanced features required by the game you're trying to gather.",
     "Aleph One was unable to locate the Map file this level came from.  Some terminals may not display properly, and saving this game on this computer is not recommended.",
-    "The connection to gatherer was lost.",
+    "The connection to the gatherer was lost.",
+
+    "Unable to look up the gatherer. Maybe you typed the address in wrong."
+
+    "An error occurred receiving the map from the server. Game over."
 };
 
 // STR# Resource: "Key Codes To Names"
