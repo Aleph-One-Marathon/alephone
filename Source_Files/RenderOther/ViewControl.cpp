@@ -40,27 +40,51 @@ Dec 17, 2000 (Loren Petrich:
 #include "ViewControl.h"
 
 
-// Is the overhead map active?
-static bool MapActive = true;
+struct view_settings_definition {
+	bool MapActive;
+	bool DoFoldEffect;
+	bool DoStaticEffect;
+};
 
-// Accessor:
-bool View_MapActive() {return MapActive;}
+// Defaults:
+struct view_settings_definition view_settings = {
+	true, // overhead map is active
+	true, // do the view folding effect (stretch horizontally, squeeze vertically) when teleporting,
+	true  // also do the static effect / folding effect on viewed teleported objects
+};
+
+// Accessors:
+bool View_MapActive() {return view_settings.MapActive;}
+bool View_DoFoldEffect() {return view_settings.DoFoldEffect;}
+bool View_DoStaticEffect() {return view_settings.DoStaticEffect;}
+
 
 // This frame value means that a landscape option will be applied to any frame in a collection:
 const int AnyFrame = -1;
 
 // Field-of-view stuff with defaults:
-static float FOV_Normal = 80;
-static float FOV_ExtraVision = 130;
-static float FOV_TunnelVision = 30;
-static float FOV_ChangeRate = 1.66666667F;	// this is 50 degrees/s
-static bool FOV_FixHorizontalNotVertical = false;
+struct FOV_settings_definition {
+	float Normal;
+	float ExtraVision;
+	float TunnelVision;
+	float ChangeRate;	// this is 50 degrees/s
+	bool FixHorizontalNotVertical;
+};
 
-// Defaults:
-// do the view folding effect (stretch horizontally, squeeze vertically) when teleporting,
-// also do the static effect / folding effect on viewed teleported objects
-static bool DoFoldEffect = true;
-static bool DoStaticEffect = true;
+struct FOV_settings_definition FOV_settings = {
+	80,
+	130,
+	30,
+	1.66666667F,	// this is 50 degrees/s
+	false
+};
+
+#define FOV_Normal FOV_settings.Normal
+#define FOV_ExtraVision FOV_settings.ExtraVision
+#define FOV_TunnelVision FOV_settings.TunnelVision
+#define FOV_ChangeRate FOV_settings.ChangeRate
+#define FOV_FixHorizontalNotVertical FOV_settings.FixHorizontalNotVertical
+
 
 static FontSpecifier OnScreenFont = {"Monaco", 12, styleNormal, "#4"};
 static bool ScreenFontInited = false;
@@ -106,14 +130,6 @@ bool View_AdjustFOV(float& FOV, float FOV_Target)
 // Indicates whether to fix the horizontal or the vertical field-of-view angle
 // (default: fix vertical FOV angle)
 bool View_FOV_FixHorizontalNotVertical() {return FOV_FixHorizontalNotVertical;}
-
-// Indicates whether to do fold-in/fold-out effect when one is teleporting
-bool View_DoFoldEffect() {return DoFoldEffect;}
-
-
-// Indicates whether to do the "static" effect when one is teleporting
-extern bool View_DoStaticEffect() {return DoStaticEffect;}
-
 
 // Landscape stuff: this is for being able to return a pointer to the default one
 static LandscapeOptions DefaultLandscape;
@@ -171,13 +187,27 @@ LandscapeOptions *View_GetLandscapeOptions(shape_descriptor Desc)
 
 
 // Field-of-view parser
+struct FOV_settings_definition *original_FOV_settings = NULL;
 class XML_FOVParser: public XML_ElementParser
 {
 public:
+	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
+	bool ResetValues();
 
 	XML_FOVParser(): XML_ElementParser("fov") {}
 };
+
+bool XML_FOVParser::Start()
+{
+	// backup old values first
+	if (!original_FOV_settings) {
+		original_FOV_settings = (struct FOV_settings_definition *) malloc(sizeof(struct FOV_settings_definition));
+		assert(original_FOV_settings);
+		*original_FOV_settings = FOV_settings;
+	}
+	return true;
+}
 
 bool XML_FOVParser::HandleAttribute(const char *Tag, const char *Value)
 {
@@ -205,21 +235,39 @@ bool XML_FOVParser::HandleAttribute(const char *Tag, const char *Value)
 	return false;
 }
 
+bool XML_FOVParser::ResetValues()
+{
+	if (original_FOV_settings) {
+		FOV_settings = *original_FOV_settings;
+		free(original_FOV_settings);
+		original_FOV_settings = NULL;
+	}
+	return true;
+}
+
 static XML_FOVParser FOVParser;
 
 
-// Main view parser: has one attribute: whether or not to show the overhead map
+// Main view parser
+struct view_settings_definition *original_view_settings = NULL;
 class XML_ViewParser: public XML_ElementParser
 {
 public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
+	bool ResetValues();
 
 	XML_ViewParser(): XML_ElementParser("view") {}
 };
 
 bool XML_ViewParser::Start()
 {
+	// backup stuff first
+	if (!original_view_settings) {
+		original_view_settings = (struct view_settings_definition *) malloc(sizeof(struct view_settings_definition));
+		assert(original_view_settings);
+		*original_view_settings = view_settings;
+	}
 	Font_SetArray(&OnScreenFont);
 	return true;
 }
@@ -228,18 +276,28 @@ bool XML_ViewParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"map"))
 	{
-		return ReadBooleanValueAsBool(Value,MapActive);
+		return ReadBooleanValueAsBool(Value,view_settings.MapActive);
 	}
 	else if (StringsEqual(Tag,"fold_effect"))
 	{
-		return ReadBooleanValueAsBool(Value,DoFoldEffect);
+		return ReadBooleanValueAsBool(Value,view_settings.DoFoldEffect);
 	}
 	else if (StringsEqual(Tag,"static_effect"))
 	{
-		return ReadBooleanValueAsBool(Value,DoStaticEffect);
+		return ReadBooleanValueAsBool(Value,view_settings.DoStaticEffect);
 	}
 	UnrecognizedTag();
 	return false;
+}
+
+bool XML_ViewParser::ResetValues()
+{
+	if (original_view_settings) {
+		view_settings = *original_view_settings;
+		free(original_view_settings);
+		original_view_settings = NULL;
+	}
+	return true;
 }
 
 static XML_ViewParser ViewParser;
@@ -313,7 +371,8 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_LandscapeParser(): XML_ElementParser("landscape") {}
 };
 
@@ -399,6 +458,12 @@ bool XML_LandscapeParser::AttributesDone()
 	DataEntry.OptionsData = Data;
 	LOL.push_back(DataEntry);
 	
+	return true;
+}
+
+bool XML_LandscapeParser::ResetValues()
+{
+	LODeleteAll();
 	return true;
 }
 
