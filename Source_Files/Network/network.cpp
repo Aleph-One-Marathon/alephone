@@ -282,7 +282,7 @@ void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, Commu
     network_version = joinerInfoMessage->info()->network_version;
     state = Client::_connected_but_not_yet_shown;
   } else {
-    logAnomaly("unexpected joiner info message received");
+    logAnomaly1("unexpected joiner info message received (netState is %i)", netState);
   }
 }
 
@@ -299,7 +299,7 @@ void Client::handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsCha
       state = _awaiting_accept_join;
     }
   } else {
-    logAnomaly("unexpected script message received");
+    logAnomaly1("unexpected script message received (state is %i)", state);
   }
 }
 
@@ -330,7 +330,7 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       state = _ungatherable;
     }
   } else {
-    logAnomaly("unexpected accept join message received");
+    logAnomaly1("unexpected accept join message received (state is %i)", state);
   }
 }
 
@@ -385,7 +385,7 @@ static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel
     JoinerInfoMessage joinerInfoMessage(&my_info);
     connection_to_server->enqueueOutgoingMessage(joinerInfoMessage);
   } else {
-    logAnomaly("unexpected hello message received");
+    logAnomaly1("unexpected hello message received (netState is %i)", netState);
   }
 }
 
@@ -411,7 +411,7 @@ static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, Commun
       handlerState = netJoinErrorOccurred;
     }
   } else {
-    logAnomaly("unexpected join player message received");
+    logAnomaly1("unexpected join player message received (netState is %i)", netState);
   }
 }
 
@@ -419,7 +419,7 @@ static byte *handlerLuaBuffer = NULL;
 static size_t handlerLuaLength = 0;
 
 static void handleLuaMessage(LuaMessage *luaMessage, CommunicationsChannel *) {
-  if (netState == netStartingUp) {
+  if (netState == netStartingUp || netState == netActive) {
     if (handlerLuaBuffer) {
       delete[] handlerLuaBuffer;
       handlerLuaBuffer = NULL;
@@ -430,7 +430,7 @@ static void handleLuaMessage(LuaMessage *luaMessage, CommunicationsChannel *) {
       memcpy(handlerLuaBuffer, luaMessage->buffer(), handlerLuaLength);
     }
   } else {
-    logAnomaly("unexpected lua message received");
+    logAnomaly1("unexpected lua message received (netState is %i)", netState);
   }
 }
 
@@ -438,7 +438,7 @@ static byte *handlerMapBuffer = NULL;
 static size_t handlerMapLength = 0;
 
 static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
-  if (netState == netStartingUp) {
+  if (netState == netStartingUp || netState == netActive) {
     if (handlerMapBuffer) { // assume the last map the server sent is right
       delete[] handlerMapBuffer;
       handlerMapBuffer = NULL;
@@ -449,7 +449,7 @@ static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
       memcpy(handlerMapBuffer, mapMessage->buffer(), handlerMapLength);
     }
   } else {
-    logAnomaly("unexpected map message received");
+    logAnomaly1("unexpected map message received (netState is %i)", netState);
   }
 }
     
@@ -475,7 +475,7 @@ static byte *handlerPhysicsBuffer = NULL;
 static size_t handlerPhysicsLength = 0;
 
 static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsChannel *) {
-  if (netState == netStartingUp) {
+  if (netState == netStartingUp || netState == netActive) {
     if (handlerPhysicsBuffer) {
       delete[] handlerPhysicsBuffer;
       handlerPhysicsBuffer = NULL;
@@ -486,7 +486,7 @@ static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsC
       memcpy(handlerPhysicsBuffer, physicsMessage->buffer(), handlerPhysicsLength);
     }
   } else {
-    logAnomaly("unexpected physics message received");
+    logAnomaly1("unexpected physics message received (netState is %i)", netState);
   }
 }
 
@@ -505,7 +505,7 @@ static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChan
     }
     connection_to_server->enqueueOutgoingMessage(replyToScriptMessage);
   } else {
-    logAnomaly("unexpected script message received");
+    logAnomaly1("unexpected script message received (netState is %i)", netState);
   }
 }
 
@@ -559,7 +559,7 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
 	break;
       }
   } else {
-    logAnomaly("unexpected topology message received");
+    logAnomaly1("unexpected topology message received (netState is %i)", netState);
   }
 }
 
