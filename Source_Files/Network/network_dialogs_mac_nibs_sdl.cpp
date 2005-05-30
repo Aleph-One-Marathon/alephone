@@ -429,7 +429,7 @@ void MacNIBSSDLGatherCallbacks::JoinSucceeded(const prospective_joiner_info *) {
 	}
 }
 
-void MacNIBSSDLGatherCallbacks::JoiningPlayerDropped(const prospective_joiner_info *) {
+void MacNIBSSDLGatherCallbacks::JoiningPlayerDropped(const prospective_joiner_info *player) {
   lost_player(player);
 }
 
