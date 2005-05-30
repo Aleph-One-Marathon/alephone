@@ -409,6 +409,7 @@ public:
 	static MacNIBSSDLGatherCallbacks *instance();
 	void JoinSucceeded(const prospective_joiner_info *player);
   void JoiningPlayerDropped(const prospective_joiner_info *player);
+  void JoinedPlayerDropped(const prospective_joiner_info *player);
 private:
 	MacNIBSSDLGatherCallbacks() { }
 	static MacNIBSSDLGatherCallbacks *m_instance;
@@ -431,6 +432,12 @@ void MacNIBSSDLGatherCallbacks::JoinSucceeded(const prospective_joiner_info *) {
 
 void MacNIBSSDLGatherCallbacks::JoiningPlayerDropped(const prospective_joiner_info *player) {
   lost_player(player);
+}
+
+void MacNIBSSDLGatherCallbacks::JoinedPlayerDropped(const prospective_joiner_info *) {
+  	if (GatherDataPtr) {
+		SetControlActivity(GatherDataPtr->OK_Ctrl, (NetGetNumberOfPlayers() > 1) && GatherDataPtr->AllPlayersOK);
+	}
 }
 
 #ifndef NETWORK_TEST_POSTGAME_DIALOG

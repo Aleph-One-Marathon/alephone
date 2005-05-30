@@ -425,8 +425,9 @@ int join_dialog_gatherer_search (DialogPTR dialog)
 			return kNetworkJoinedResumeGame;
 			break;
 
-		case netPlayerAdded: {
-			char joinMessage[256];
+		case netPlayerAdded:
+	        case netPlayerDropped: {
+	                char joinMessage[256];
 			game_info *info= (game_info *)NetGetGameData();
 			get_network_joined_message(joinMessage, info->net_game_type);
 			QQ_copy_string_to_text_control (dialog, iJOIN_MESSAGES, std::string (joinMessage));

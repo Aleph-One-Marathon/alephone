@@ -284,6 +284,30 @@ void Client::drop()
       gatherCallbacks->JoiningPlayerDropped(&player);
     }
   } else if (state == _awaiting_map) { // need to remove from topo
+    uint16 stream_id = getStreamIdFromChannel(channel);
+    int i;
+    for (i = 1; i < topology->player_count; i++) {
+      if (topology->players[i].stream_id == stream_id) {
+	break;
+      }
+    }
+    if (i != topology->player_count) {
+      for (; i < topology->player_count - 1; i++) {
+	topology->players[i] = topology->players[i + 1];
+      }
+      topology->player_count--;
+      NetUpdateTopology();
+
+      if (gatherCallbacks) {
+	prospective_joiner_info player;
+	player.stream_id = getStreamIdFromChannel(channel);
+	gatherCallbacks->JoinedPlayerDropped(&player);
+      }
+
+      NetDistributeTopology(tagDROPPED_PLAYER);
+    } else {
+      logAnomaly("a client in state _awaiting_map dropped, but was not found in the topology");
+    }
   } 
 }
 
@@ -548,6 +572,9 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
       {
       case tagNEW_PLAYER:
 	handlerState = netPlayerAdded;
+	break;
+      case tagDROPPED_PLAYER:
+	handlerState = netPlayerDropped;
 	break;
 	
       case tagCANCEL_GAME:

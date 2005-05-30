@@ -65,8 +65,8 @@ enum // base network speeds
 enum
 {
 	_appletalk_ring_network_version = 10,
-	_ip_ring_network_version = 19,
-	_ip_star_network_version = 20,
+	_ip_ring_network_version = 21,
+	_ip_star_network_version = 22,
 };
 
 typedef struct game_info
@@ -127,6 +127,7 @@ class GatherCallbacks
   
   virtual void JoinSucceeded(const prospective_joiner_info *player) = 0;
   virtual void JoiningPlayerDropped(const prospective_joiner_info *player) = 0;
+  virtual void JoinedPlayerDropped(const prospective_joiner_info *player) = 0;
 };
 
 class ChatCallbacks
@@ -178,6 +179,8 @@ enum /* states */
 	netDown, /* game over, waiting for new gather or join call */
 	netCancelled, /* the game was just cancelled */
 	netPlayerAdded, /* a new player was just added to the topology (will return to netWaiting) */
+	netPlayerDropped, /* like netPlayerAdded */
+	netPlayerChanged, /* like netPlayerAdded */
 	netJoinErrorOccurred,
         netChatMessageReceived, // ZZZ addition
         netStartingResumeGame // ZZZ addition: like netStartingUp, but starting a resume-game instead of a new game
