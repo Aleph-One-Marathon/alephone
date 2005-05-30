@@ -1125,9 +1125,9 @@ int dialog::run(bool intro_exit_sounds)
 			break;
         
 		// Run custom processing function
-		if (processing_function != NULL)
+		if (processing_function)
 			processing_function(this);
-            
+
 		// Give time to system
 		global_idle_proc();
 		SDL_Delay(10);

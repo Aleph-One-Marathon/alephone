@@ -66,24 +66,23 @@
           </object>
           <object class="IBCarbonButton" id="186">
             <string name="bounds">157 542 177 612 </string>
-            <int name="controlID">201</int>
+            <int name="controlID">1</int>
             <string name="title">Join</string>
-            <ostype name="command">join</ostype>
+            <ostype name="command">ok  </ostype>
           </object>
           <object class="IBCarbonEditText" id="188">
             <string name="bounds">200 23 403 609 </string>
             <int name="controlID">300</int>
-            <boolean name="isUnicode">TRUE</boolean>
+            <boolean name="enabled">FALSE</boolean>
           </object>
           <object class="IBCarbonEditText" id="189">
             <string name="bounds">417 23 433 609 </string>
             <int name="controlID">400</int>
             <boolean name="useInlineInput">TRUE</boolean>
-            <boolean name="isUnicode">TRUE</boolean>
           </object>
           <object class="IBCarbonButton" id="190">
             <string name="bounds">157 460 177 530 </string>
-            <int name="controlID">202</int>
+            <int name="controlID">2</int>
             <string name="title">Cancel</string>
             <ostype name="command">not!</ostype>
             <int name="buttonType">2</int>

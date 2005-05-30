@@ -27,7 +27,14 @@
 
 #include "network_metaserver.h"
 
+
+
 const IPaddress run_network_metaserver_ui();
+
+// This doesn't go here
+void setupAndConnectClient(MetaserverClient& client);
+
+
 
 struct game_info;
 
@@ -40,6 +47,23 @@ public:
 
 private:
 	MetaserverClient	m_client;
+};
+
+
+
+// Eventually this may disappear behind the facade of run_network_metaserver_ui()
+// Or maybe it will disappear instead, leaving this.  Unsure.
+class MetaserverClientUi
+{
+public:
+	// Abstract factory; concrete type determined at link-time
+	static std::auto_ptr<MetaserverClientUi> Create();
+
+	MetaserverClientUi() {}
+
+	virtual const IPaddress GetJoinAddressByRunning() = 0;
+
+	virtual ~MetaserverClientUi() {}
 };
 
 #endif // METASERVER_DIALOGS_H

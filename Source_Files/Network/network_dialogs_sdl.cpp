@@ -1098,25 +1098,6 @@ join_by_metaserver_clicked(void *arg)
 	d->quit(1);
 }
 
-
-// Ugh - there's way too much duplicated code between here and metaserver_dialogs.
-// This function was copied-and-pasted from there, in fact.  Will clean up later.
-// Or maybe _you_ will.  :)
-static void
-setupAndConnectClient(MetaserverClient& client)
-{
-	{
-		unsigned char* playerNameCStringStorage = pstrdup(player_preferences->name);
-		char* playerNameCString = a1_p2cstr(playerNameCStringStorage);
-		client.setPlayerName(playerNameCString);
-		free(playerNameCStringStorage);
-	}
-	
-	client.setPlayerTeamName("");
-	client.connect("myth.mariusnet.com", 6321, "guest", "0000000000000000");
-}
-
-
 int run_network_join_dialog()
 {
 	dialog d;

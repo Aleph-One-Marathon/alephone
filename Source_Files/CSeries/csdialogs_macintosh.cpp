@@ -1173,19 +1173,33 @@ const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item)
 	ControlKind kind;
 	GetControlKind (control, &kind);
 	
-	const int BufferLen = 255;
-	char Buffer[BufferLen];
-	Size ActualLen = 0;
+	ControlPartCode part;
+	ResType tagName;
 	
-	if (kind.kind == kControlKindEditText) {
-		GetControlData(control, kControlEditTextPart, kControlEditTextTextTag, BufferLen, Buffer, &ActualLen);
+	if (kind.kind == kControlKindEditText)
+	{
+		part = kControlEditTextPart;
+		tagName = kControlEditTextTextTag;
 	}
-	
-	if (kind.kind == kControlKindStaticText) {
-		GetControlData(control, kControlLabelPart, kControlStaticTextTextTag, BufferLen, Buffer, &ActualLen);
+	else if (kind.kind == kControlKindStaticText)
+	{
+		part = kControlLabelPart;
+		tagName = kControlStaticTextTextTag;
 	}
-	
-	return std::string(Buffer, ActualLen);
+	else
+	{
+		return std::string();
+	}
+
+	Size size = 0;
+	GetControlDataSize(control, part, tagName, &size);
+
+	if (size == 0)
+		return std::string();
+
+	std::vector<char> buffer(size);
+	GetControlData(control, part, tagName, buffer.size(), &buffer[0], NULL);
+	return std::string(&buffer[0], buffer.size());
 }
 
 void QQ_copy_string_to_text_control (DialogPTR dlg, int item, const std::string &s)

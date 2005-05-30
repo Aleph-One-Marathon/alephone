@@ -742,7 +742,7 @@ void w_text_entry::event(SDL_Event &e)
                                 
                         case SDLK_RETURN:
                         case SDLK_KP_ENTER:
-                                if(enter_pressed_callback != NULL)
+                                if(enter_pressed_callback)
                                     enter_pressed_callback(this);
                         
                                 e.type = SDL_NOEVENT;	// Swallow event (shouldn't typing do this also??)
@@ -791,7 +791,7 @@ void w_text_entry::modified_text(void)
 	dirty = true;
                                         
         // ZZZ: callback if desired
-        if(value_changed_callback != NULL)
+        if(value_changed_callback)
             value_changed_callback(this);
 }
 
@@ -1165,7 +1165,7 @@ void w_slider::set_selection(int s)
  *  List selection
  */
 
-w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : num_items(0), widget(ITEM_FONT), shown_items(lines), thumb_dragging(false)
+w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(ITEM_FONT), num_items(0), shown_items(lines), thumb_dragging(false)
 {
 	font_height = font->get_line_height();
 	rect.w = width;

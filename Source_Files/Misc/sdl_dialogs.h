@@ -29,6 +29,8 @@
 #define SDL_DIALOGS_H
 
 #include <vector>
+#include <memory>
+#include <boost/function.hpp>
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;
@@ -51,15 +53,12 @@ class FileSpecifier;
  *  Definitions
  */
 
-// ZZZ: hook for other code to get processor while dialog.run() is executing
-class dialog;
-typedef void (*processing_function_t)(dialog*);
-
-
 // Dialog structure
 class dialog {
 public:
-        dialog();
+	typedef boost::function<void (dialog* d)> Callback;
+
+	dialog();
 	~dialog();
 
 	// Add widget to dialog
@@ -93,7 +92,7 @@ public:
 	widget *get_widget_by_id(short inID) const;
 
 	// Set custom processing function, called while dialog is idle
-	void set_processing_function(processing_function_t func) { processing_function = func; }
+	void set_processing_function(Callback func) { processing_function = func; }
 
 	// Activate next selectable widget
 	void activate_next_widget(void);
@@ -123,7 +122,7 @@ private:
 
 	dialog *parent_dialog;		// Pointer to parent dialog
 
-	processing_function_t processing_function; // Custom idle procedure
+	Callback processing_function; // Custom idle procedure
 
 	// Frame images (frame_t, frame_l, frame_r and frame_b must be freed)
 	SDL_Surface *frame_tl, *frame_t, *frame_tr, *frame_l, *frame_r, *frame_bl, *frame_b, *frame_br;

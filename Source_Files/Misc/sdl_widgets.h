@@ -53,6 +53,7 @@
 
 #include	<vector>
 #include	<set>
+#include	<boost/function.hpp>
 
 struct SDL_Surface;
 class sdl_font_info;
@@ -395,11 +396,10 @@ public:
  *  Text entry widget
  */
 
-class w_text_entry;
-typedef	void (*text_entry_event_callback_t)(w_text_entry* theWidget);
-
 class w_text_entry : public widget {
 public:
+	typedef boost::function<void (w_text_entry*)> Callback;
+
 	w_text_entry(const char *name, size_t max_chars, const char *initial_text = NULL);
 	~w_text_entry();
 
@@ -414,11 +414,11 @@ public:
         void set_name(const char *inName);
         
         // ZZZ: set callback for "enter" or "return" keypress
-        void	set_enter_pressed_callback(text_entry_event_callback_t func) { enter_pressed_callback = func; }
+        void	set_enter_pressed_callback(Callback func) { enter_pressed_callback = func; }
         
         // ZZZ: set callback for value changed (will be called if value changed programmatically also)
         // (thought: this probably ought to be unified with w_select selection changed callback)
-        void	set_value_changed_callback(text_entry_event_callback_t func) { value_changed_callback = func; }
+        void	set_value_changed_callback(Callback func) { value_changed_callback = func; }
 
         // ZZZ: capture more detailed layout information
         void	capture_layout_information(int16 leftmost_x, int16 usable_width);
@@ -426,8 +426,8 @@ public:
 protected:
 	char *buf;		// Text entry buffer
 
-        text_entry_event_callback_t	enter_pressed_callback;
-        text_entry_event_callback_t	value_changed_callback;
+        Callback	enter_pressed_callback;
+        Callback	value_changed_callback;
         
 private:
 	void modified_text(void);

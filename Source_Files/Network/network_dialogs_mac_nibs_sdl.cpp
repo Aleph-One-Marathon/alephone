@@ -68,6 +68,7 @@ January 27, 2005 (James Willson):
 #include "network_games.h"
 #include "network_lookup_sdl.h"
 #include "network_metaserver.h"
+#include "metaserver_dialogs.h"
 
 // STL Libraries
 #include <vector>
@@ -556,6 +557,19 @@ static pascal OSStatus Join_PlayerNameWatcher(
 }
 
 
+static void set_join_address_from_metaserver(DialogPTR dialog)
+{
+	IPaddress result = run_network_metaserver_ui();
+	if(result.host != 0)
+	{
+		uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
+		char buffer[16];
+		snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
+		QQ_set_boolean_control_value(dialog, iJOIN_BY_HOST, true);
+		QQ_copy_string_to_text_control(dialog, iJOIN_BY_HOST_ADDRESS, string(buffer));
+	}
+}
+
 static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 {	
 	int Value;
@@ -581,6 +595,10 @@ static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 		SetControlActivity(Data.ByHost_RecentLabelCtrl, Value);
 		SetControlActivity(Data.ByHost_RecentCtrl, Value);
 		*/
+		break;
+
+	case iJOIN_BY_METASERVER:
+		set_join_address_from_metaserver(dialog);
 		break;
 	}
 }

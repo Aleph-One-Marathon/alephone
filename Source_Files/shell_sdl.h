@@ -736,8 +736,8 @@ public:
 	
 private:
 	vector<dir_entry>	entries;
-	FileSpecifier 		current_directory;
 	dialog*			parent_dialog;
+	FileSpecifier 		current_directory;
 	action_proc		directory_changed_proc;
 	void*			directory_changed_proc_arg;
 	
