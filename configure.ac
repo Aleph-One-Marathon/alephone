@@ -60,6 +60,15 @@ if [[ "x$ac_cv_lib_SDL_net_SDLNet_Init" != xyes ]]; then
 fi
 AM_CONDITIONAL(HAVE_SDL_NET, test x$ac_cv_lib_SDL_net_SDLNet_Init = xyes)
 
+dnl Check for boost/bind
+AC_LANG_PUSH(C++)
+AC_CHECK_HEADER([boost/bind.hpp], , [AC_MSG_ERROR([You need boost/bind.hpp from the boost library to run Aleph One])])
+AC_LANG_POP(C++)
+
+dnl Check for boost/function
+AC_LANG_PUSH(C++)
+AC_CHECK_HEADER([boost/function.hpp], , [AC_MSG_ERROR([You need boost/function.hpp from the boost library to run Aleph One])])
+
 dnl Check for SDL_sound
 AC_CHECK_HEADERS(SDL_sound.h, [
   AC_CHECK_LIB(SDL_sound, Sound_Init, [
