@@ -828,6 +828,7 @@
 				EF2A6C4E07D03A73008DCEFF,
 				EFA78AFF0808E88A00F0B285,
 				EFCB28180831B8000044FDF2,
+				EF565E47084113DB00032A34,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1243,6 +1244,8 @@
 				EF2A6C1107D03906008DCEFF,
 				EF2A6C1307D03906008DCEFF,
 				EF2A6C1507D03906008DCEFF,
+				EF565E44084113B400032A34,
+				EF565E46084113DB00032A34,
 			);
 			isa = PBXGroup;
 			path = Metaserver;
@@ -3406,6 +3409,7 @@
 				EF2A6DBB07D04417008DCEFF,
 				EF2A6DCD07D04AA9008DCEFF,
 				EFA78AFD0808E88A00F0B285,
+				EF565E45084113B400032A34,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4738,6 +4742,30 @@
 			};
 			isa = PBXBuildStyle;
 			name = "Development no precomps";
+		};
+		EF565E44084113B400032A34 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = NibsMetaserverClientUi.cpp;
+			refType = 4;
+		};
+		EF565E45084113B400032A34 = {
+			fileRef = EF565E44084113B400032A34;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		EF565E46084113DB00032A34 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = SdlMetaserverClientUi.cpp;
+			refType = 4;
+		};
+		EF565E47084113DB00032A34 = {
+			fileRef = EF565E46084113DB00032A34;
+			isa = PBXBuildFile;
+			settings = {
+			};
 		};
 		EFA78AFB0808E88A00F0B285 = {
 			fileEncoding = 30;
