@@ -408,6 +408,7 @@ public:
 	~MacNIBSSDLGatherCallbacks() { }
 	static MacNIBSSDLGatherCallbacks *instance();
 	void JoinSucceeded(const prospective_joiner_info *player);
+  void JoiningPlayerDropped(const prospective_joiner_info *player);
 private:
 	MacNIBSSDLGatherCallbacks() { }
 	static MacNIBSSDLGatherCallbacks *m_instance;
@@ -426,6 +427,10 @@ void MacNIBSSDLGatherCallbacks::JoinSucceeded(const prospective_joiner_info *) {
 	if (GatherDataPtr) {
 		SetControlActivity(GatherDataPtr->OK_Ctrl, (NetGetNumberOfPlayers() > 1) && GatherDataPtr->AllPlayersOK);
 	}
+}
+
+void MacNIBSSDLGatherCallbacks::JoiningPlayerDropped(const prospective_joiner_info *) {
+  lost_player(player);
 }
 
 #ifndef NETWORK_TEST_POSTGAME_DIALOG
@@ -729,7 +734,7 @@ bool run_netgame_setup_dialog(
 	sng_success = false;
 	RunModalDialog(Window(), false, NetgameSetup_Handler, Window ());
 	
-	if (sng_success)
+if (sng_success)
 	{
 		netgame_setup_dialog_extract_information(Window (), player_information,
 			game_information, allow_all_levels, ResumingGame, outAdvertiseGameOnMetaserver);

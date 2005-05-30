@@ -825,6 +825,7 @@ public:
   ~SDLGatherCallbacks() { }
   static SDLGatherCallbacks *instance();
   void JoinSucceeded(const prospective_joiner_info *player);
+  void JoiningPlayerDropped(const prospective_joiner_info *player);
   void set_dialog(dialog *d) { m_dialog = d; }
 private:
   SDLGatherCallbacks() { m_dialog = NULL; };
@@ -857,6 +858,15 @@ void SDLGatherCallbacks::JoinSucceeded(const prospective_joiner_info *player) {
   
   modify_control_enabled(m_dialog, iOK, CONTROL_ACTIVE);
   
+  m_dialog->draw_dirty_widgets();
+}
+
+void SDLGatherCallbacks::JoiningPlayerDropped(const prospective_joiner_info *player) {
+  assert(m_dialog);
+
+  w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(m_dialog->get_widget_by_id(iNETWORK_LIST_BOX));
+  theFoundPlayers->hide_player(*player);
+
   m_dialog->draw_dirty_widgets();
 }
 

@@ -275,6 +275,18 @@ Client::Client(CommunicationsChannel *inChannel) : mDispatcher(new MessageDispat
   channel->setMessageHandler(mDispatcher.get());
 }
 
+void Client::drop()
+{
+  if (state == _connected) { // (remove from the list of joinable players)
+    if (gatherCallbacks) {
+      prospective_joiner_info player;
+      player.stream_id = getStreamIdFromChannel(channel);
+      gatherCallbacks->JoiningPlayerDropped(&player);
+    }
+  } else if (state == _awaiting_map) { // need to remove from topo
+  } 
+}
+
 void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, CommunicationsChannel *) 
 {
   if (netState == netGathering) {
@@ -1620,9 +1632,12 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info)
   {
     client_map_t::iterator it;
     for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
-      it->second->channel->pump();
-      it->second->channel->dispatchIncomingMessages();
-
+      if (it->second->channel->isConnected()) {
+	it->second->channel->pump();
+	it->second->channel->dispatchIncomingMessages();
+      } else {
+	it->second->drop();
+      }
     }
   }
 

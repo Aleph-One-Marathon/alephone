@@ -262,6 +262,8 @@ struct Client {
 
   ~Client();
 
+  void drop();
+
   void handleJoinerInfoMessage(JoinerInfoMessage*, CommunicationsChannel*);
   void unexpectedMessageHandler(Message *, CommunicationsChannel*);
   void handleScriptMessage(ScriptMessage*, CommunicationsChannel*);

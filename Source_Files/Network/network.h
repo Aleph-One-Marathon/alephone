@@ -126,6 +126,7 @@ class GatherCallbacks
   virtual ~GatherCallbacks() { };
   
   virtual void JoinSucceeded(const prospective_joiner_info *player) = 0;
+  virtual void JoiningPlayerDropped(const prospective_joiner_info *player) = 0;
 };
 
 class ChatCallbacks
