@@ -496,10 +496,9 @@ Queries the current AI mode of monster.
 
 
 new_item (type, poly [, height])
-Creates a new monster of the chosen type in poly.
+Creates a new item of the chosen type in poly.
 Height is distance above the poly floor.  (default 0)
 Returns the new item's item index.
-(Currently no function makes use of item indicies)
 
 
 add_item (player, type)
@@ -510,6 +509,11 @@ Uses marathon's rules for item aquisition.
 or more ammo than e is allowed to carry.)
 Can be used to give players items that don't normally appear in inventory.
 (such as invisibility)
+
+
+get_item_type (item_index)
+
+Returns the item type of the item specified by item_index.
 
 
 remove_item (player, type)

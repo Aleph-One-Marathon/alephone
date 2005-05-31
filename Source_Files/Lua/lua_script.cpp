@@ -1782,11 +1782,11 @@ static int L_Get_Monster_Action(lua_State *L)
 	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if(!SLOT_IS_USED(monster)) return 0;
 	if (monster)
-        {
+	{
 		lua_pushnumber(L, monster->action);
-                return 1;
-        }
-        else return 0;
+		return 1;
+	}
+	else return 0;
 }
 
 static int L_Get_Monster_Mode(lua_State *L)
@@ -1805,11 +1805,11 @@ static int L_Get_Monster_Mode(lua_State *L)
 	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if(!SLOT_IS_USED(monster)) return 0;
 	if (monster)
-        {
+	{
 		lua_pushnumber(L, monster->mode);
-                return 1;
-        }
-        else return 0;
+		return 1;
+	}
+	else return 0;
 }
 
 static int L_Get_Monster_Vitality(lua_State *L)
@@ -1828,11 +1828,11 @@ static int L_Get_Monster_Vitality(lua_State *L)
 	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
 	if(!SLOT_IS_USED(monster)) return 0;
 	if (monster)
-        {
+	{
 		lua_pushnumber(L, monster->vitality);
-                return 1;
-        }
-        else return 0;
+		return 1;
+	}
+	else return 0;
 }
 
 static int L_Set_Monster_Vitality(lua_State *L)
@@ -3563,6 +3563,25 @@ static int L_Set_Polygon_Permutation(lua_State *L)
 	return 0;
 }
 
+static int L_Get_Item_Type(lua_State *L) {
+	if(!lua_isnumber(L,1)) {
+		lua_pushstring(L, "get_item_type: incorrect argument type");
+		lua_error(L);
+	}
+	short item_index = static_cast<int>(lua_tonumber(L,1));
+	if(item_index < 0 || item_index >= MAXIMUM_OBJECTS_PER_MAP) {
+		lua_pushstring(L, "get_item_type: invalid item index");
+		lua_error(L);
+	}
+	struct object_data *object = get_object_data(item_index);
+	if(!SLOT_IS_USED(object)) {
+		lua_pushstring(L, "get_item_type: invalid item index");
+		lua_error(L);
+	}
+	lua_pushnumber(L, object->permutation);
+	return 1;
+}
+
 static int L_New_Item(lua_State *L)
 {
 	int args = lua_gettop(L);
@@ -4292,9 +4311,9 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);
 	lua_register(state, "set_player_powerup_duration", L_Set_Player_Powerup_Duration);
 	lua_register(state, "get_player_internal_velocity", L_Get_Player_Internal_Velocity);
-        lua_register(state, "get_player_external_velocity", L_Get_Player_External_Velocity);
-        lua_register(state, "set_player_external_velocity", L_Set_Player_External_Velocity);
-        lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
+	lua_register(state, "get_player_external_velocity", L_Get_Player_External_Velocity);
+	lua_register(state, "set_player_external_velocity", L_Set_Player_External_Velocity);
+	lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
 	lua_register(state, "accelerate_player", L_Accelerate_Player);
 	lua_register(state, "player_is_dead", L_Player_Is_Dead);
 	lua_register(state, "player_control", L_Player_Control);
@@ -4314,6 +4333,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_platform_movement", L_Set_Platform_Movement);
 	lua_register(state, "get_platform_movement", L_Get_Platform_Movement);
 	lua_register(state, "get_platform_index", L_Get_Polygon_Permutation);
+	lua_register(state, "get_item_type", L_Get_Item_Type);
 	lua_register(state, "set_motion_sensor_state", L_Set_Motion_Sensor_State);
 	lua_register(state, "get_motion_sensor_state", L_Get_Motion_Sensor_State);
 	lua_register(state, "create_camera", L_Create_Camera);
