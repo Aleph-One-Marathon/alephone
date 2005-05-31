@@ -54,6 +54,48 @@
 //082
 //083
 //084
+		088809F0084C1A4000DC9E4D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = NibsMetaserverClientUi.cpp;
+			path = ../Source_Files/Network/Metaserver/NibsMetaserverClientUi.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		088809F1084C1A4000DC9E4D = {
+			fileRef = 088809F0084C1A4000DC9E4D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		088809F2084C1A4000DC9E4D = {
+			fileRef = 088809F0084C1A4000DC9E4D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		088809F3084C1A5500DC9E4D = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = SdlMetaserverClientUi.cpp;
+			path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		088809F4084C1A5500DC9E4D = {
+			fileRef = 088809F3084C1A5500DC9E4D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		088809F5084C1A5500DC9E4D = {
+			fileRef = 088809F3084C1A5500DC9E4D;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		089C165CFE840E0CC02AAC07 = {
 			children = (
 				089C165DFE840E0CC02AAC07,
@@ -840,6 +882,7 @@
 				AE055F100815F73B00BC6B7F,
 				AE055F1A0815F8DC00BC6B7F,
 				AEBEB89B08343CAF004E13D0,
+				088809F4084C1A5500DC9E4D,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -969,6 +1012,8 @@
 		};
 		3D87957B07D11E120078D26B = {
 			children = (
+				088809F0084C1A4000DC9E4D,
+				088809F3084C1A5500DC9E4D,
 				3D87958C07D11E1D0078D26B,
 				3D87957D07D11E120078D26B,
 				3D87957F07D11E120078D26B,
@@ -1525,6 +1570,7 @@
 			path = OGL_Subst_Texture_Def.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		3DF290F1046F5C5B00000104 = {
 			fileRef = 3DF290EF046F5C5B00000104;
@@ -1747,6 +1793,7 @@
 				AE055F210815F97500BC6B7F,
 				AE055F220815F97500BC6B7F,
 				AE055F270815F9C800BC6B7F,
+				088809F5084C1A5500DC9E4D,
 			);
 			isa = PBXCopyFilesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1807,7 +1854,7 @@
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = "/usr/local/lib \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\"";
-				OTHER_CFLAGS = "-Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -DHAVE_UNISTD_H -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA -DSPEEX -fcommon -DDEBUG -DUSES_NIBS";
+				OTHER_CFLAGS = "-g -Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -DHAVE_UNISTD_H -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA -DSPEEX -fcommon -DDEBUG -DUSES_NIBS";
 				OTHER_LDFLAGS = "-flat_namespace -llua -llualib -lspeex";
 				OTHER_REZFLAGS = "";
 				PRECOMPILE_PREFIX_HEADER = YES;
@@ -3644,6 +3691,7 @@
 				AE2DEB7B0815E0A600817EBC,
 				AE2DEB7C0815E0A600817EBC,
 				AE2DEB910815EE1400817EBC,
+				088809F1084C1A4000DC9E4D,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4742,6 +4790,7 @@
 			files = (
 				AE61B1100815F263001F20E1,
 				AE61B1110815F263001F20E1,
+				088809F2084C1A4000DC9E4D,
 			);
 			isa = PBXCopyFilesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -5528,6 +5577,7 @@
 			path = lua_script.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F51B058C047AC6DA01C5C930 = {
 			fileEncoding = 30;
@@ -6080,14 +6130,12 @@
 		};
 		F52211C10136A6FD01000001 = {
 			fileEncoding = 30;
-			indentWidth = 8;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = interface_macintosh.cpp;
 			path = ../Source_Files/Misc/interface_macintosh.cpp;
 			refType = 2;
 			sourceTree = SOURCE_ROOT;
-			tabWidth = 8;
 			usesTabs = 1;
 		};
 		F52211C20136A6FD01000001 = {
@@ -6116,6 +6164,7 @@
 			path = ../Source_Files/Misc/interface.cpp;
 			refType = 2;
 			sourceTree = SOURCE_ROOT;
+			usesTabs = 1;
 		};
 		F52211C50136A6FD01000001 = {
 			fileEncoding = 30;
@@ -9976,6 +10025,7 @@
 			path = devices.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC92500240D28201A80001 = {
 			fileEncoding = 30;
@@ -9984,6 +10034,7 @@
 			path = dynamic_limits.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC92510240D28201A80001 = {
 			fileEncoding = 30;
@@ -10088,6 +10139,7 @@
 			path = map.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC925E0240D28201A80001 = {
 			fileEncoding = 30;
@@ -10120,6 +10172,7 @@
 			path = media.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC92620240D28201A80001 = {
 			fileEncoding = 30;
@@ -10208,6 +10261,7 @@
 			path = platforms.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC926D0240D28201A80001 = {
 			fileEncoding = 30;
@@ -10224,6 +10278,7 @@
 			path = player.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC926F0240D28201A80001 = {
 			fileEncoding = 30;
@@ -10264,6 +10319,7 @@
 			path = scenery.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC92740240D28201A80001 = {
 			fileEncoding = 30;
@@ -10296,6 +10352,7 @@
 			path = weapons.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC92780240D28201A80001 = {
 			fileEncoding = 30;
@@ -11162,6 +11219,7 @@
 			path = OGL_Setup.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC92F30240D56101A80001 = {
 			fileEncoding = 30;
@@ -11250,6 +11308,7 @@
 			path = RenderRasterize.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC93010240D56101A80001 = {
 			fileEncoding = 30;
@@ -11330,6 +11389,7 @@
 			path = shapes.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC930D0240D56101A80001 = {
 			fileEncoding = 30;
@@ -12175,6 +12235,7 @@
 			path = fades.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC938F0240D85D01A80001 = {
 			fileEncoding = 30;
@@ -12231,6 +12292,7 @@
 			path = motion_sensor.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC93960240D85D01A80001 = {
 			fileEncoding = 30;
@@ -12295,6 +12357,7 @@
 			path = screen_sdl.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC939E0240D85D01A80001 = {
 			fileEncoding = 30;
@@ -12303,6 +12366,7 @@
 			path = screen_shared.h;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC939F0240D85D01A80001 = {
 			fileEncoding = 30;
@@ -12359,6 +12423,7 @@
 			path = ViewControl.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC93A60240D85D01A80001 = {
 			fileEncoding = 30;
@@ -12987,6 +13052,7 @@
 			path = mysound.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC941A0240DA4401A80001 = {
 			fileRef = F5CC94120240DA4301A80001;
@@ -13182,6 +13248,7 @@
 			path = XML_ElementParser.h;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC94320240DE0E01A80001 = {
 			fileEncoding = 30;
@@ -13298,6 +13365,7 @@
 			path = XML_ElementParser.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC94400240DE0E01A80001 = {
 			fileEncoding = 30;
@@ -13306,6 +13374,7 @@
 			path = XML_LevelScript.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC94410240DE0E01A80001 = {
 			fileEncoding = 30;
