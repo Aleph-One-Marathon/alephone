@@ -1,13 +1,5 @@
 
 Aleph One Lua Scripters' Guide
-                 
-Document created: July 10, 2003, by James Willson
-Revised: August 17, 2004
-
-Known Contributors:
-James Willson
-tiennou
-Woody Zenfell
 
 0. General
 0.1 What is This?
