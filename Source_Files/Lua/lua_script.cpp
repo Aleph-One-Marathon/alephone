@@ -110,6 +110,7 @@ void L_Call_Player_Revived(short player_index) {}
 void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action, short projectile_index) {}
 void L_Call_Monster_Killed(short monster_index, short aggressor_player_index, short projectile_index) {}
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
+void L_Call_Item_Created(short item_index) {}
 
 bool LoadLuaScript(const char *buffer, size_t len) { /* Should never get here! */ return false; }
 bool RunLuaScript() {
@@ -425,6 +426,11 @@ void L_Call_Monster_Killed (short monster_index, short aggressor_player_index, s
 void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
 	L_Call_NNNNNN("player_damaged", player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
+}
+
+void L_Call_Item_Created (short item_index)
+{
+	L_Call_N("item_created", item_index);
 }
 
 static int L_Number_of_Polygons (lua_State *L)
@@ -3574,11 +3580,49 @@ static int L_Get_Item_Type(lua_State *L) {
 		lua_error(L);
 	}
 	struct object_data *object = get_object_data(item_index);
-	if(!SLOT_IS_USED(object)) {
+	if(!SLOT_IS_USED(object) || GET_OBJECT_OWNER(object) != _object_is_item) {
 		lua_pushstring(L, "get_item_type: invalid item index");
 		lua_error(L);
 	}
 	lua_pushnumber(L, object->permutation);
+	return 1;
+}
+
+static int L_Get_Item_Polygon(lua_State *L) {
+	if(!lua_isnumber(L,1)) {
+		lua_pushstring(L, "get_item_polygon: incorrect argument type");
+		lua_error(L);
+	}
+	short item_index = static_cast<int>(lua_tonumber(L,1));
+	if(item_index < 0 || item_index >= MAXIMUM_OBJECTS_PER_MAP) {
+		lua_pushstring(L, "get_item_polygon: invalid item index");
+		lua_error(L);
+	}
+	struct object_data *object = get_object_data(item_index);
+	if(!SLOT_IS_USED(object) || GET_OBJECT_OWNER(object) != _object_is_item) {
+		lua_pushstring(L, "get_item_polygon: invalid item index");
+		lua_error(L);
+	}
+	lua_pushnumber(L, object->polygon);
+	return 1;
+}
+
+static int L_Delete_Item(lua_State *L) {
+	if(!lua_isnumber(L,1)) {
+		lua_pushstring(L, "delete_item: incorrect argument type");
+		lua_error(L);
+	}
+	short item_index = static_cast<int>(lua_tonumber(L,1));
+	if(item_index < 0 || item_index >= MAXIMUM_OBJECTS_PER_MAP) {
+		lua_pushstring(L, "delete_item: invalid item index");
+		lua_error(L);
+	}
+	struct object_data *object = get_object_data(item_index);
+	if(!SLOT_IS_USED(object) || GET_OBJECT_OWNER(object) != _object_is_item) {
+		lua_pushstring(L, "delete_item: invalid item index");
+		lua_error(L);
+	}
+  remove_map_object(item_index);
 	return 1;
 }
 
@@ -4333,7 +4377,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_platform_movement", L_Set_Platform_Movement);
 	lua_register(state, "get_platform_movement", L_Get_Platform_Movement);
 	lua_register(state, "get_platform_index", L_Get_Polygon_Permutation);
-	lua_register(state, "get_item_type", L_Get_Item_Type);
 	lua_register(state, "set_motion_sensor_state", L_Set_Motion_Sensor_State);
 	lua_register(state, "get_motion_sensor_state", L_Get_Motion_Sensor_State);
 	lua_register(state, "create_camera", L_Create_Camera);
@@ -4363,6 +4406,9 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_polygon_permutation", L_Set_Polygon_Permutation);
 	lua_register(state, "get_polygon_target", L_Get_Polygon_Permutation);
 	lua_register(state, "set_polygon_target", L_Set_Polygon_Permutation);
+	lua_register(state, "get_item_type", L_Get_Item_Type);
+	lua_register(state, "get_item_polygon", L_Get_Item_Polygon);
+	lua_register(state, "delete_item", L_Delete_Item);
 	lua_register(state, "new_item", L_New_Item);
 	lua_register(state, "global_random", L_Global_Random);
 	lua_register(state, "better_random", L_Better_Random);
@@ -4458,6 +4504,7 @@ bool RunLuaScript()
 		return false;
 	int result = lua_pcall(state, 0, LUA_MULTRET, 0);
 	lua_running = (result==0);
+
 	return lua_running;
 }
 

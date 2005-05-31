@@ -215,6 +215,14 @@ aggressor_player is the player index of who killed it, or -1 if killed by non-pl
 projectile is the projectile that delivered the final blow, or -1 if there is no such projectile.
 
 
+item_created(item_index)
+
+Whenever an item is created and placed on the ground (or floating) somewhere.
+You can then use the item_index with some of the item accessor functions
+to find out its type, polygon, etc. and base some decisions off that.
+NOTE: Currently, this does not trigger on initial item placement because
+the initial item placement is done before Lua becomes initialised.
+
 2 A1 Functions
 --------------
 
@@ -491,6 +499,24 @@ new_item (type, poly [, height])
 Creates a new item of the chosen type in poly.
 Height is distance above the poly floor.  (default 0)
 Returns the new item's item index.
+NOTE: Items can be identified by item indices only when
+the items are on the ground (or floating, etc.) - but
+not when they are in a player's inventory.
+
+get_item_type (item_index)
+
+Returns the item type of the item specified by item_index.
+
+
+get_item_polygon (item_index)
+
+Returns the polygon that the item is located on.
+
+
+delete_item (item_index)
+
+Deletes an item that is on the ground (or floating) somewhere. If you want
+to remove an item that a player is carrying, use remove_item instead.
 
 
 add_item (player, type)
@@ -501,11 +527,6 @@ Uses marathon's rules for item aquisition.
 or more ammo than e is allowed to carry.)
 Can be used to give players items that don't normally appear in inventory.
 (such as invisibility)
-
-
-get_item_type (item_index)
-
-Returns the item type of the item specified by item_index.
 
 
 remove_item (player, type)
