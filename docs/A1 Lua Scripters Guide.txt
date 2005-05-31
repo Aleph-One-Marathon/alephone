@@ -503,6 +503,14 @@ NOTE: Items can be identified by item indices only when
 the items are on the ground (or floating, etc.) - but
 not when they are in a player's inventory.
 
+
+item_index_valid (item_index)
+
+Returns nil if item_index lies outside the acceptable range for item indices,
+false if the item_index does not correspond to a current item in the game, or
+true if it corresponds to a valid item (which can then be manipulated).
+
+
 get_item_type (item_index)
 
 Returns the item type of the item specified by item_index.
@@ -1478,3 +1486,13 @@ The first invalid monster index.
 MAXIMUM_PROJECTILES_PER_MAP
 
 The first invalid projectile index.
+
+
+MAXIMUM_OBJECTS_PER_MAP
+
+The first invalid object index.
+NOTE: Object indices can correspond to valid item indices, but not always (an
+object is not necessarily an item). So, to determine if a given index from 0
+to MAXIMUM_OBJECTS_PER_MAP-1 corresponds to an actual item, you would have to
+use the item_index_valid function on it.
+
