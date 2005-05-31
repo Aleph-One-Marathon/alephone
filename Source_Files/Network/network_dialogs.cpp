@@ -90,6 +90,9 @@ Apr 10, 2003 (Woody Zenfell):
 	#include "NibsUiHelpers.h"
 #endif
 
+// jkvw: this is crazy, but I don't want to rethink placing stringset ID's today
+#include    "network_dialog_widgets_sdl.h"  // for stringset ID's
+
 extern void NetRetargetJoinAttempts(const IPaddress* inAddress);
 
 
@@ -553,6 +556,7 @@ short netgame_setup_dialog_initialise (
 
 	QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (entry_flags));
 
+	QQ_set_selector_control_labels (dialog, iGAME_TYPE, build_stringvector_from_stringset (kNetworkGameTypesStringSetID));
 	QQ_set_selector_control_value (dialog, iGAME_TYPE, theAdjustedPreferences.game_type);
 	setup_dialog_for_game_type(dialog, theAdjustedPreferences.game_type);
 

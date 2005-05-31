@@ -1451,10 +1451,13 @@ void w_string_list::draw_item(vector<string>::const_iterator i, SDL_Surface *s, 
  *  Selection Popup
  */
 
-w_select_popup::w_select_popup (const char *name) : w_select_button (name, "", gotSelectedCallback, NULL)
+w_select_popup::w_select_popup (const char *name, action_proc p, void *a) : w_select_button (name, "", gotSelectedCallback, NULL)
 {
 	set_arg(this);
 	selection = -1;
+	
+	action = p;
+	arg = a;
 }
 
 void w_select_popup::set_selection (int value)
@@ -1482,6 +1485,9 @@ void w_select_popup::gotSelected ()
 		
 		set_selection (string_list_w->get_selection ());
 	}
+	
+	if (action)
+		action (arg);
 }
 
 

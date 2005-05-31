@@ -682,7 +682,7 @@ private:
 
 class w_select_popup : public w_select_button {
 public:
-	w_select_popup (const char *name);
+	w_select_popup (const char *name, action_proc p = NULL, void *a = NULL);
 	
 	void set_labels (const vector<string>& inLabels) {labels = inLabels;}
 	void set_selection (int value);
@@ -691,6 +691,9 @@ public:
 private:
 	int selection;
 	vector<string> labels;
+
+	action_proc action;
+	void* arg;
 
 	static void gotSelectedCallback (void* arg) {reinterpret_cast<w_select_popup*>(arg)->gotSelected();}
 	void gotSelected ();

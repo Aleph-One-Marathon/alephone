@@ -33,6 +33,7 @@
 #endif
 
 #include <string>
+#include <vector>
 
 extern char temporary[256];
 #define ptemporary (*(Str255 *)temporary)
@@ -49,6 +50,9 @@ extern char *getcstr(
 	char *string,
 	short resid,
 	size_t item);
+
+// jkvw addition
+extern const std::vector<std::string> build_stringvector_from_stringset (int resid);
 
 // ZZZ: changed to 'const' on src parameter
 extern unsigned char *pstrcpy(

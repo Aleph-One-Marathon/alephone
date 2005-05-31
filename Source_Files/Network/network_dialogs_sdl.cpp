@@ -528,8 +528,8 @@ select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber) {
 
 
 static void
-respond_to_net_game_type_change(w_select* inWidget) {
-	SNG_game_type_hit (inWidget->get_owning_dialog());
+respond_to_net_game_type_change(void* dialog) {
+	SNG_game_type_hit (reinterpret_cast<DialogPTR>(dialog));
 }
 
 
@@ -581,12 +581,11 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 
 	d.add(new w_spacer());
         d.add(new w_static_text("Game Options"));
-        
-	w_select *type_w = new w_select("Game Type", network_preferences->game_type, NULL);
-        type_w->set_labels_stringset(kNetworkGameTypesStringSetID);
-        type_w->set_identifier(iGAME_TYPE);
-        type_w->set_selection_changed_callback(respond_to_net_game_type_change);
-	d.add(type_w);
+	
+	w_select_popup* game_type_w = new w_select_popup("Game Type", respond_to_net_game_type_change, &d);
+        game_type_w->set_full_width();
+        game_type_w->set_identifier(iGAME_TYPE);
+        d.add(game_type_w);
 
 	w_toggle* use_netscript_w = new w_toggle("Use Netscript", false);
 	use_netscript_w->set_identifier(iUSE_SCRIPT);

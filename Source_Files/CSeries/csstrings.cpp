@@ -128,6 +128,23 @@ unsigned char *pstrcpy(
 
 
 /*
+ *  Create String Vector
+ */
+
+const vector<string> build_stringvector_from_stringset (int resid)
+{
+	vector<string> result;
+	int index = 0;
+	
+	while (TS_GetCString(resid, index) != NULL) {
+		result.push_back (string (TS_GetCString(resid, index)));
+		index++;
+	}
+	
+	return result;
+}
+
+/*
  *  String format routines
  */
 char *csprintf(
