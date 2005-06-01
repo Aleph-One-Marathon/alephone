@@ -698,11 +698,14 @@ bool FileSpecifier::ReadDialog(Typecode Type, char *Prompt)
 	NavTypeListHandle list= NULL;
 	if (InRange(Type))
 	{
-		list= (NavTypeListHandle)NewHandleClear(sizeof(NavTypeList));
+		const vector<OSType> file_types = get_all_file_types_for_typecode (Type);
+	
+		list= (NavTypeListHandle)NewHandleClear(sizeof(NavTypeList) + (sizeof(OSType) * (file_types.size () - 1)));
 		HLock((Handle)list);
 		(**list).componentSignature = get_typecode(_typecode_creator);
-		(**list).osTypeCount = 1;
-		(**list).osType[0] = get_typecode(Type);
+		(**list).osTypeCount = file_types.size ();
+		for (int i = 0; i < file_types.size (); ++i)
+			(**list).osType [i] = file_types [i];
 	}
 	
 	NavDialogOptions opts;

@@ -162,4 +162,22 @@ get_typecode_for_file_type(OSType inType)
         else
                 return entry->second;
 }
+
+const vector<OSType>
+get_all_file_types_for_typecode (Typecode which)
+{
+	vector<OSType> result;
+
+	if (which < NUMBER_OF_TYPECODES && which > 0)
+		result.push_back (typecodes [which]);
+	
+	for (int i = 0; i < NUMBER_OF_ADDITIONAL_TYPECODES; ++i)
+		if (additional_typecodes [i].typecode == which)
+			result.push_back (additional_typecodes [i].file_type);
+	
+	if (result.empty ())
+		result.push_back ('????');
+	
+	return result;
+}
 #endif
