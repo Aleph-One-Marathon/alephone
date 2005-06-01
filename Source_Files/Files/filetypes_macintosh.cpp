@@ -69,7 +69,9 @@ static OSType typecodes[NUMBER_OF_TYPECODES] = {
 	 'pat°',	// Patch typecode: originally 'pat2'; changed for M° compatibility
 	 'img2',	// Images typecode
 	 'pref',	// Preferences typecode
-	 'mus2'		// Music typecode
+	 'mus2',	// Music typecode
+	 '????',	// Theme pseudo-typecode
+	 '????'		// NetScript pseudo-typecode
 };
 
 struct file_type_to_a1_typecode_rec
@@ -169,14 +171,12 @@ get_all_file_types_for_typecode (Typecode which)
 	vector<OSType> result;
 
 	if (which < NUMBER_OF_TYPECODES && which > 0)
-		result.push_back (typecodes [which]);
+		if (typecodes [which] != '????')
+			result.push_back (typecodes [which]);
 	
 	for (int i = 0; i < NUMBER_OF_ADDITIONAL_TYPECODES; ++i)
 		if (additional_typecodes [i].typecode == which)
 			result.push_back (additional_typecodes [i].file_type);
-	
-	if (result.empty ())
-		result.push_back ('????');
 	
 	return result;
 }

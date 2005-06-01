@@ -1138,12 +1138,7 @@ void SNG_choose_map_hit (DialogPTR dialog)
 void SNG_use_script_hit (DialogPTR dialog)
 {
 	if (QQ_get_boolean_control_value(dialog, iUSE_SCRIPT)) {
-// jkvw: No good reason this shouldn't be shared, but read file dialog code is being uncooperative
-#ifdef SDL
 		if (!sNetscriptFile.ReadDialog (_typecode_netscript, "Script Select")) {
-#else
-		if (!sNetscriptFile.ReadDialog (_typecode_unknown, "Script Select")) {
-#endif
 			QQ_set_boolean_control_value(dialog, iUSE_SCRIPT, false);
 		}
 	}
