@@ -826,6 +826,7 @@ public:
   void JoinSucceeded(const prospective_joiner_info *player);
   void JoiningPlayerDropped(const prospective_joiner_info *player);
   void JoinedPlayerDropped(const prospective_joiner_info *player);
+  void JoinedPlayerChanged(const prospective_joiner_info *player);
   void set_dialog(dialog *d) { m_dialog = d; }
 private:
   SDLGatherCallbacks() { m_dialog = NULL; };
@@ -880,6 +881,16 @@ void SDLGatherCallbacks::JoinedPlayerDropped(const prospective_joiner_info *) {
   
   modify_control_enabled(m_dialog, iOK, (NetGetNumberOfPlayers() > 1) ? CONTROL_ACTIVE : CONTROL_INACTIVE);
 
+  m_dialog->draw_dirty_widgets();
+}
+
+void SDLGatherCallbacks::JoinedPlayerChanged(const prospective_joiner_info *) {
+  w_players_in_game2* thePlayersDisplay =
+    dynamic_cast<w_players_in_game2*>(m_dialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
+  assert (thePlayersDisplay != NULL);
+  
+  thePlayersDisplay->update_display();
+  
   m_dialog->draw_dirty_widgets();
 }
 
@@ -1196,7 +1207,7 @@ int run_network_join_dialog()
 					tcolor_w->set_identifier(iJOIN_TEAM);
 					d2.add(tcolor_w);
 					
-					w_button *change_colors_w = new w_button("Request Color Change", (void(*)(void*)) join_dialog_change_colors_hit, &d);
+					w_button *change_colors_w = new w_button("Request Color Change", (void(*)(void*)) join_dialog_change_colors_hit, &d2);
 					change_colors_w->set_identifier(iJOIN_CHANGE_COLORS);
 					d2.add(change_colors_w);
 					

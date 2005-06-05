@@ -266,12 +266,14 @@ Client::Client(CommunicationsChannel *inChannel) : mDispatcher(new MessageDispat
   mScriptMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleScriptMessage));
   mAcceptJoinMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleAcceptJoinMessage));
   mChatMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChatMessage));
+  mChangeColorsMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChangeColorsMessage));
   mUnexpectedMessageHandler.reset(newMessageHandlerMethod(this, &Client::unexpectedMessageHandler));
   mDispatcher->setDefaultHandler(mUnexpectedMessageHandler.get());
   mDispatcher->setHandlerForType(mJoinerInfoMessageHandler.get(), JoinerInfoMessage::kType);
   mDispatcher->setHandlerForType(mScriptMessageHandler.get(), ScriptMessage::kType);
   mDispatcher->setHandlerForType(mAcceptJoinMessageHandler.get(), AcceptJoinMessage::kType);
   mDispatcher->setHandlerForType(mChatMessageHandler.get(), NetworkChatMessage::kType);
+  mDispatcher->setHandlerForType(mChangeColorsMessageHandler.get(), ChangeColorsMessage::kType);
   channel->setMessageHandler(mDispatcher.get());
 }
 
@@ -359,7 +361,7 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       
       NetDistributeTopology(tagNEW_PLAYER);
       state = _awaiting_map;
-	  if (gatherCallbacks) gatherCallbacks->JoinSucceeded(&player);
+      if (gatherCallbacks) gatherCallbacks->JoinSucceeded(&player);
     } else {
       // joiner didn't accept!?
       alert_user(infoError, strNETWORK_ERRORS, netErrCantAddPlayer, 0);
@@ -367,6 +369,48 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
     }
   } else {
     logAnomaly1("unexpected accept join message received (state is %i)", state);
+  }
+}
+
+void Client::handleChangeColorsMessage(ChangeColorsMessage *changeColorsMessage,
+				      CommunicationsChannel *channel)
+{
+  if (state == _awaiting_map) {
+    fprintf(stderr, "received change colors message\n");
+    uint16 stream_id = getStreamIdFromChannel(channel);
+    int i;
+    for (i = 1; i < topology->player_count; i++) {
+      if (topology->players[i].stream_id == stream_id) {
+	break;
+      }
+    }
+
+    if (i != topology->player_count) {
+      fprintf(stderr, "found player\n");
+      fprintf(stderr, "message colors are %i and %i\n", changeColorsMessage->color(), changeColorsMessage->team());
+      player_info *player = &topology->players[i].player_data;
+      if (player->desired_color != changeColorsMessage->color() ||
+	  player->team != changeColorsMessage->team()) {
+
+	player->desired_color = changeColorsMessage->color();
+	player->team = changeColorsMessage->team();
+
+	check_player(i, topology->player_count);
+	NetUpdateTopology();
+	
+	fprintf(stderr, "distributing changed topology\n");
+	NetDistributeTopology(tagCHANGED_PLAYER);
+	if (gatherCallbacks) {
+	  prospective_joiner_info player_to_change;
+	  player_to_change.stream_id = stream_id;
+	  gatherCallbacks->JoinedPlayerChanged(&player_to_change);
+	}
+      }
+    } else {
+      logAnomaly("a client in state _awaiting_map requested a color change, but was not found in the topology");
+    }
+  } else {
+    logAnomaly1("unexpected change colors message received (state is %i)", state);
   }
 }
 
@@ -576,6 +620,9 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
       case tagDROPPED_PLAYER:
 	handlerState = netPlayerDropped;
 	break;
+      case tagCHANGED_PLAYER:
+	handlerState = netPlayerChanged;
+	break;
 	
       case tagCANCEL_GAME:
 	handlerState= netCancelled;
@@ -775,6 +822,7 @@ bool NetEnter(void)
     inflater->learnPrototype(PhysicsMessage());
     inflater->learnPrototype(ScriptMessage());
     inflater->learnPrototype(TopologyMessage());
+    inflater->learnPrototype(ChangeColorsMessage());
   }
   
   if (!joinDispatcher) {
@@ -1117,6 +1165,28 @@ void NetCancelJoin(
 	void)
 {
 	assert(netState==netConnecting||netState==netJoining||netState==netWaiting||netState==netCancelled||netState==netJoinErrorOccurred);
+}
+
+void NetChangeColors(int16 color, int16 team) {
+  assert(netState == netWaiting || netState == netGathering);
+  
+  if (netState == netWaiting) {
+    ChangeColorsMessage changeColorsMessage(color, team);
+    fprintf(stderr, "sending change colors message %i %i\n", color, team);
+    connection_to_server->enqueueOutgoingMessage(changeColorsMessage);
+  } else if (netState == netGathering) {
+    player_info *player = &topology->players[localPlayerIndex].player_data;
+    if (player->desired_color != color ||
+	player->team != team) {
+      player->desired_color = color;
+      player->team = team;
+
+      Client::check_player(localPlayerIndex, topology->player_count);
+      NetUpdateTopology();
+      
+      NetDistributeTopology(tagCHANGED_PLAYER);
+    }
+  }
 }
 
 /* 
@@ -1761,7 +1831,7 @@ short NetUpdateJoinState(
   
   /* return netPlayerAdded to tell the caller to refresh his topology, but don’t change netState to that */
   // ZZZ: similar behavior for netChatMessageReceived and netStartingResumeGame
-  if (newState!=netPlayerAdded && newState != netChatMessageReceived && newState != netStartingResumeGame && newState != NONE)
+  if (newState!=netPlayerAdded && newState!=netPlayerDropped && newState!=netPlayerChanged && newState != netChatMessageReceived && newState != netStartingResumeGame && newState != NONE)
     netState= newState;
   
   // ZZZ: netStartingResumeGame is used as a return value only; the corresponding netState is netStartingUp.

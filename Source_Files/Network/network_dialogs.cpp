@@ -430,7 +430,7 @@ int join_dialog_gatherer_search (DialogPTR dialog)
 			return kNetworkJoinedResumeGame;
 			break;
 
-		// case netPlayerColorChangeHappened:
+		case netPlayerChanged:
 		case netPlayerAdded:
 	        case netPlayerDropped: {
 	                char joinMessage[256];
@@ -463,7 +463,7 @@ void join_dialog_change_colors_hit (DialogPTR dialog)
 {
 	int requested_colour = QQ_get_selector_control_value (dialog, iJOIN_COLOR);
 	int requested_team = QQ_get_selector_control_value (dialog, iJOIN_TEAM);
-	// NetRequestNewColours (requested_colour, requested_team);
+	NetChangeColors(requested_colour, requested_team);
 }
 
 

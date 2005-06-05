@@ -111,6 +111,18 @@ bool AcceptJoinMessage::reallyInflateFrom(AIStream& inputStream) {
   return true;
 }
 
+void ChangeColorsMessage::reallyDeflateTo(AOStream& outputStream) const {
+  outputStream << mColor;
+  outputStream << mTeam;
+}
+
+bool ChangeColorsMessage::reallyInflateFrom(AIStream& inputStream) {
+  inputStream >> mColor;
+  inputStream >> mTeam;
+
+  return true;
+}
+
 void JoinerInfoMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mInfo.network_version;
   outputStream << mInfo.stream_id;

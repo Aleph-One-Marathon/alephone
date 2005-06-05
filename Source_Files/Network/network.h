@@ -65,8 +65,8 @@ enum // base network speeds
 enum
 {
 	_appletalk_ring_network_version = 10,
-	_ip_ring_network_version = 21,
-	_ip_star_network_version = 22,
+	_ip_ring_network_version = 23,
+	_ip_star_network_version = 24,
 };
 
 typedef struct game_info
@@ -128,6 +128,7 @@ class GatherCallbacks
   virtual void JoinSucceeded(const prospective_joiner_info *player) = 0;
   virtual void JoiningPlayerDropped(const prospective_joiner_info *player) = 0;
   virtual void JoinedPlayerDropped(const prospective_joiner_info *player) = 0;
+  virtual void JoinedPlayerChanged(const prospective_joiner_info *player) { };
 };
 
 class ChatCallbacks
@@ -223,6 +224,10 @@ bool NetGameJoin(void *player_data, short player_data_size, const char* host_add
 bool NetCheckForNewJoiner (prospective_joiner_info &info);
 short NetUpdateJoinState(void);
 void NetCancelJoin(void);
+
+// ask to change color and team; it's up to the gatherer to update the topo
+// usually he'll change your team, if the color's free you'll get that too
+void NetChangeColors(int16 color, int16 team);
 
 // ghs: these are obsolete, I'll get rid of them when I'm sure I won't want
 //      to refer back to them

@@ -120,6 +120,7 @@ enum /* tag */
 	tagCANCEL_GAME,
 	tagSTART_GAME,
 	tagDROPPED_PLAYER,
+	tagCHANGED_PLAYER,
 	
         // ZZZ annotation: these (in NetPacketHeader) indicate the rest of the datagram is a NetDistributionPacket.
 	tagLOSSY_DISTRIBUTION,     // for transfer data other than action flags

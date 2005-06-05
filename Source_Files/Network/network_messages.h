@@ -43,7 +43,8 @@ enum {
   kCHAT_MESSAGE,
   kUNKNOWN_MESSAGE_MESSAGE,
   kSCRIPT_MESSAGE,
-  kEND_GAME_DATA_MESSAGE
+  kEND_GAME_DATA_MESSAGE,
+  kCHANGE_COLORS_MESSAGE
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -95,6 +96,38 @@ class AcceptJoinMessage : public SmallMessageHelper
   bool mAccepted;
   NetPlayer mPlayer;
 };
+
+class ChangeColorsMessage : public SmallMessageHelper
+{
+ public:
+  enum { kType = kCHANGE_COLORS_MESSAGE };
+  
+  ChangeColorsMessage() : SmallMessageHelper() { }
+
+  ChangeColorsMessage(int16 color, int16 team) : SmallMessageHelper() {
+    mColor = color;
+    mTeam = team;
+  }
+
+  ChangeColorsMessage *clone() const {
+    return new ChangeColorsMessage(*this);
+  }
+
+  int16 color() { return mColor; }
+  int16 team() { return mTeam; }
+
+  MessageTypeID type() const { return kType; }
+
+ protected:
+  void reallyDeflateTo(AOStream& outputStream) const;
+  bool reallyInflateFrom(AIStream& inputStream);
+
+ private:
+  
+  int16 mColor;
+  int16 mTeam;
+};
+  
 
 typedef DatalessMessage<kEND_GAME_DATA_MESSAGE> EndGameDataMessage;
 
@@ -269,6 +302,7 @@ struct Client {
   void handleScriptMessage(ScriptMessage*, CommunicationsChannel*);
   void handleAcceptJoinMessage(AcceptJoinMessage*, CommunicationsChannel*);
   void handleChatMessage(NetworkChatMessage*, CommunicationsChannel*);
+  void handleChangeColorsMessage(ChangeColorsMessage*, CommunicationsChannel*);
 
   std::auto_ptr<MessageDispatcher> mDispatcher;
   std::auto_ptr<MessageHandler> mJoinerInfoMessageHandler;
@@ -276,6 +310,7 @@ struct Client {
   std::auto_ptr<MessageHandler> mScriptMessageHandler;
   std::auto_ptr<MessageHandler> mAcceptJoinMessageHandler;
   std::auto_ptr<MessageHandler> mChatMessageHandler;
+  std::auto_ptr<MessageHandler> mChangeColorsMessageHandler;
 };
 
 
