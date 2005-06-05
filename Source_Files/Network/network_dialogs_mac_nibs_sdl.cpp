@@ -580,21 +580,12 @@ static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
 
 	switch(Ctrl.ID.id)
 	{
-	case iJOIN_BY_HOST_RECENT: // ignore for now
-		break;
-	
 	case iJOIN:
 		join_dialog_attempt_join (dialog);
 		break;
 		
-	case iJOIN_BY_HOST: // Ignore for now
-	/*
-		Value = GetControl32BitValue(Ctrl.Ctrl);
-		SetControlActivity(Data.ByHost_LabelCtrl, Value);
-		SetControlActivity(Data.ByHost_AddressCtrl, Value);
-		SetControlActivity(Data.ByHost_RecentLabelCtrl, Value);
-		SetControlActivity(Data.ByHost_RecentCtrl, Value);
-		*/
+	case iJOIN_CHANGE_COLORS:
+		join_dialog_change_colors_hit (dialog);
 		break;
 
 	case iJOIN_BY_METASERVER:

@@ -341,6 +341,8 @@ void join_dialog_initialise (DialogPTR dialog)
 	
 	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
 	QQ_copy_string_to_text_control (dialog, iJOIN_MESSAGES, string((const char *)ptemporary + 1, ptemporary[0]));
+
+	QQ_set_control_activity (dialog, iJOIN_CHANGE_COLORS, false);
 }
 
 void join_dialog_save_prefs (DialogPTR dialog)
@@ -428,12 +430,16 @@ int join_dialog_gatherer_search (DialogPTR dialog)
 			return kNetworkJoinedResumeGame;
 			break;
 
+		// case netPlayerColorChangeHappened:
 		case netPlayerAdded:
 	        case netPlayerDropped: {
 	                char joinMessage[256];
 			game_info *info= (game_info *)NetGetGameData();
 			get_network_joined_message(joinMessage, info->net_game_type);
 			QQ_copy_string_to_text_control (dialog, iJOIN_MESSAGES, std::string (joinMessage));
+			QQ_set_control_activity (dialog, iJOIN_COLOR, true);
+			QQ_set_control_activity (dialog, iJOIN_TEAM, true);
+			QQ_set_control_activity (dialog, iJOIN_CHANGE_COLORS, true);
 			join_dialog_redraw (dialog);
 			return kNetworkJoinFailedJoined; }
 			break;
@@ -451,6 +457,13 @@ int join_dialog_gatherer_search (DialogPTR dialog)
 		default:
 			assert(false);
 	}
+}
+
+void join_dialog_change_colors_hit (DialogPTR dialog)
+{
+	int requested_colour = QQ_get_selector_control_value (dialog, iJOIN_COLOR);
+	int requested_team = QQ_get_selector_control_value (dialog, iJOIN_TEAM);
+	// NetRequestNewColours (requested_colour, requested_team);
 }
 
 

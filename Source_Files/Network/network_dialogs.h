@@ -175,7 +175,8 @@ enum {
 	iJOIN_BY_HOST_ADDRESS,
 	iJOIN_BY_HOST_RECENT_LABEL,
 	iJOIN_BY_HOST_RECENT,
-	iJOIN_BY_METASERVER = 20
+	iJOIN_CHANGE_COLORS,
+	iJOIN_BY_METASERVER
 };
 
 enum {
@@ -390,6 +391,7 @@ void join_dialog_initialise (DialogPTR dialog);
 void join_dialog_save_prefs (DialogPTR dialog);
 int join_dialog_gatherer_search (DialogPTR dialog);
 bool join_dialog_attempt_join (DialogPTR dialog);
+void join_dialog_change_colors_hit (DialogPTR dialog);
 // non-shared routines
 int run_network_join_dialog ();
 void join_dialog_end (DialogPTR dialog);

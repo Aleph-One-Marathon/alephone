@@ -1188,6 +1188,24 @@ int run_network_join_dialog()
 		
 					d2.add(new w_spacer());
 		
+					w_player_color *pcolor_w = new w_player_color("Color", QQ_get_selector_control_value (&d, iJOIN_COLOR));
+					pcolor_w->set_identifier(iJOIN_COLOR);
+					d2.add(pcolor_w);
+        
+					w_player_color *tcolor_w = new w_player_color("Team Color", QQ_get_selector_control_value (&d, iJOIN_TEAM));
+					tcolor_w->set_identifier(iJOIN_TEAM);
+					d2.add(tcolor_w);
+					
+					w_button *change_colors_w = new w_button("Request Color Change", join_dialog_change_colors_hit, &d);
+					change_colors_w->set_identifier(iJOIN_CHANGE_COLORS);
+					d2.add(change_colors_w);
+					
+					QQ_set_control_activity (&d2, iJOIN_COLOR, false);
+					QQ_set_control_activity (&d2, iJOIN_TEAM, false);
+					QQ_set_control_activity (&d2, iJOIN_CHANGE_COLORS, false);
+					
+					d2.add(new w_spacer());
+		
 					d2.add(new w_static_text("Players in Game"));
 		
 					d2.add(new w_spacer());
