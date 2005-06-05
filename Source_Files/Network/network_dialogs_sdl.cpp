@@ -1196,7 +1196,7 @@ int run_network_join_dialog()
 					tcolor_w->set_identifier(iJOIN_TEAM);
 					d2.add(tcolor_w);
 					
-					w_button *change_colors_w = new w_button("Request Color Change", join_dialog_change_colors_hit, &d);
+					w_button *change_colors_w = new w_button("Request Color Change", (void(*)(void*)) join_dialog_change_colors_hit, &d);
 					change_colors_w->set_identifier(iJOIN_CHANGE_COLORS);
 					d2.add(change_colors_w);
 					
