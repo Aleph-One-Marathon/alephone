@@ -376,7 +376,6 @@ void Client::handleChangeColorsMessage(ChangeColorsMessage *changeColorsMessage,
 				      CommunicationsChannel *channel)
 {
   if (state == _awaiting_map) {
-    fprintf(stderr, "received change colors message\n");
     uint16 stream_id = getStreamIdFromChannel(channel);
     int i;
     for (i = 1; i < topology->player_count; i++) {
@@ -386,8 +385,6 @@ void Client::handleChangeColorsMessage(ChangeColorsMessage *changeColorsMessage,
     }
 
     if (i != topology->player_count) {
-      fprintf(stderr, "found player\n");
-      fprintf(stderr, "message colors are %i and %i\n", changeColorsMessage->color(), changeColorsMessage->team());
       player_info *player = &topology->players[i].player_data;
       if (player->desired_color != changeColorsMessage->color() ||
 	  player->team != changeColorsMessage->team()) {
@@ -398,7 +395,6 @@ void Client::handleChangeColorsMessage(ChangeColorsMessage *changeColorsMessage,
 	check_player(i, topology->player_count);
 	NetUpdateTopology();
 	
-	fprintf(stderr, "distributing changed topology\n");
 	NetDistributeTopology(tagCHANGED_PLAYER);
 	if (gatherCallbacks) {
 	  prospective_joiner_info player_to_change;
@@ -1172,7 +1168,6 @@ void NetChangeColors(int16 color, int16 team) {
   
   if (netState == netWaiting) {
     ChangeColorsMessage changeColorsMessage(color, team);
-    fprintf(stderr, "sending change colors message %i %i\n", color, team);
     connection_to_server->enqueueOutgoingMessage(changeColorsMessage);
   } else if (netState == netGathering) {
     player_info *player = &topology->players[localPlayerIndex].player_data;
