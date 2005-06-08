@@ -48,6 +48,8 @@
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
 
+#include <map>
+
 #ifdef __MVCPP__
 #include <string>
 #endif
@@ -733,7 +735,7 @@ void play_dialog_sound(int which)
 
 dialog::dialog() : active_widget(NULL), active_widget_num(UNONE), done(false),
             cursor_was_visible(false), parent_dialog(NULL),
-            processing_function(NULL)
+            processing_function(NULL), active_tab(0)
 {
 }
 
@@ -760,6 +762,14 @@ dialog::~dialog()
 void dialog::add(widget *w)
 {
 	widgets.push_back(w);
+	tabs.push_back(NONE);
+        w->set_owning_dialog(this);
+}
+
+void dialog::add_to_tab(widget *w, int tab)
+{
+	widgets.push_back(w);
+	tabs.push_back(tab);
         w->set_owning_dialog(this);
 }
 
@@ -774,16 +784,38 @@ void dialog::layout()
 	int y = get_dialog_space(FRAME_T_SPACE);
 	int left = 0;
 	int right = 0;
+	
+	// Initialise tab-specific y's
+	map<int, int> y_per_tab;
+	for (vector<int>::const_iterator tab = tabs.begin(); tab != tabs.end(); ++tab)
+		if (*tab != NONE)
+			y_per_tab[*tab] = y;
+	
 	vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
+	vector<int>::const_iterator j = tabs.begin();
 	while (i != end) {
+		// Are we interested in the global y or a tab-specific?
+		int& the_y = (*j == NONE) ? y : y_per_tab[*j];
+		
 		widget *w = *i;
-		w->rect.y = y;
-		y += w->layout();
+		w->rect.y = the_y;
+		the_y += w->layout();
 		if (w->rect.x < left)
 			left = w->rect.x;
 		if (w->rect.x + w->rect.w > right)
 			right = w->rect.x + w->rect.w;
+		
+		if (*j == NONE)
+			// Later tabbed widgets must appear below this widget
+			for (map<int, int>::iterator tab = y_per_tab.begin(); tab != y_per_tab.end(); ++tab)
+				(*tab).second = y;
+		else
+			// The next untabbed widget must appear below this widget
+			if (y < y_per_tab[*j])
+				y = y_per_tab[*j];
+		
 		i++;
+		j++;
 	}
 	left = abs(left);
 	rect.w = (left > right ? left : right) * 2 + get_dialog_space(FRAME_L_SPACE) + get_dialog_space(FRAME_R_SPACE);
@@ -860,6 +892,9 @@ static void draw_frame_image(SDL_Surface *s, int x, int y)
 
 void dialog::draw(void) const
 {
+	// Clear dialog surface
+	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
+
 	// Draw frame
 	draw_frame_image(frame_tl, 0, 0);
 	draw_frame_image(frame_t, frame_tl->w, 0);
@@ -870,11 +905,14 @@ void dialog::draw(void) const
 	draw_frame_image(frame_b, frame_bl->w, rect.h - frame_b->h);
 	draw_frame_image(frame_br, frame_bl->w + frame_b->w, frame_tr->h + frame_r->h);
 
-	// Draw all widgets
+	// Draw all widgets, except those with inactive tabs
 	vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
+	vector<int>::const_iterator j = tabs.begin();
 	while (i != end) {
-		draw_widget(*i, false);
+		if (*j == NONE || *j == active_tab)
+			draw_widget(*i, false);
 		i++;
+		j++;
 	}
 
 	// Blit to screen
@@ -887,7 +925,8 @@ dialog::draw_dirty_widgets() const
 {
         for (unsigned i=0; i<widgets.size(); i++)
 		if (widgets[i]->dirty)
-			draw_widget(widgets[i]);
+			if (tabs[i] == NONE || tabs[i] == active_tab)
+				draw_widget(widgets[i]);
 }       
 
 /*
@@ -999,13 +1038,15 @@ int dialog::find_widget(int x, int y)
 	y -= rect.y;
 
 	// Find widget
+	vector<int>::const_iterator j = tabs.begin();
 	vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
 	int num = 0;
 	while (i != end) {
 		widget *w = *i;
-		if (x >= w->rect.x && y >= w->rect.y && x < w->rect.x + w->rect.w && y < w->rect.y + w->rect.h)
-			return num;
-		i++; num++;
+		if (*j == NONE || *j == active_tab) // Don't find widgets in inactive tabs
+			if (x >= w->rect.x && y >= w->rect.y && x < w->rect.x + w->rect.w && y < w->rect.y + w->rect.h)
+				return num;
+		i++; j++; num++;
 	}
 	return -1;
 }

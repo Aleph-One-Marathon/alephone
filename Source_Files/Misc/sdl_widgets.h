@@ -701,6 +701,19 @@ private:
 
 
 /*
+ *  Tab-Changing Popup
+ */
+
+class w_tab_popup : public w_select_popup {
+public:
+	w_tab_popup (const char *name);
+	
+private:
+	static void gotSelectedCallback (void* me);
+};
+
+
+/*
  *	General file-chooser (ZZZ)
  */
 

@@ -63,6 +63,7 @@ public:
 
 	// Add widget to dialog
 	void add(widget *w);
+	void add_to_tab(widget *w, int tab);
 
 	// Run dialog modally
 	int run(bool intro_exit_sounds = true);
@@ -88,6 +89,9 @@ public:
         // on its own (e.g. on a timer, or according to network activity, etc.)
         void draw_dirty_widgets() const;
         
+	// Switch between tabs, making on-tab widgets appear and off-tab widgets disappear
+	void set_active_tab(int tab) { active_tab = tab; }
+	
 	// Find the first widget with matching numerical ID
 	widget *get_widget_by_id(short inID) const;
 
@@ -112,6 +116,9 @@ private:
 	SDL_Rect rect;				// Position relative to video surface, and dimensions
 
 	vector<widget *> widgets;	// List of widgets
+	vector<int> tabs;		// The tab (or lack thereof) associated with each widget
+
+	int active_tab;			// The current tab
 
 	widget *active_widget;		// Pointer to active widget
 	size_t active_widget_num;		// Number of active widget
