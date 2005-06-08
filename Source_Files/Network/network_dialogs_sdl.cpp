@@ -450,24 +450,6 @@ update_setup_ok_button_enabled(dialog* d) {
     */
 }
 
-// This can be plugged in directly for the three entry widgets' callbacks.
-static void
-update_setup_ok_button_enabled_callback_adaptor(w_text_entry* inWidget) {
-    update_setup_ok_button_enabled(inWidget->get_owning_dialog());
-}
-
-static void
-respond_to_end_condition_type_change(w_select* inWidget) {
-	SNG_limit_type_hit (inWidget->get_owning_dialog());
-}
-
-
-
-
-static void respond_to_teams_toggle(w_select* inToggle) {
-    modify_control_enabled(inToggle->get_owning_dialog(), iGATHER_TEAM,
-        inToggle->get_selection() ? CONTROL_ACTIVE : CONTROL_INACTIVE);
-}
 
 // ZZZ might rework this to use menu indices again someday for the sake of
 // cross-platformness - wouldn't be hard at all, just too tired tonight.
@@ -526,12 +508,20 @@ select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber) {
     theSelector->setLevelNumber(inLevelNumber);
 }
 
+static void
+respond_to_end_condition_type_change(w_select* inWidget) {
+	SNG_limit_type_hit (inWidget->get_owning_dialog());
+}
+
+static void
+respond_to_teams_toggle(w_select* inToggle) {
+	SNG_teams_hit (inToggle->get_owning_dialog());
+}
 
 static void
 respond_to_net_game_type_change(void* dialog) {
 	SNG_game_type_hit (reinterpret_cast<DialogPTR>(dialog));
 }
-
 
 static void
 respond_to_map_file_change(void* dialog) {
@@ -584,7 +574,6 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
         name_w->set_identifier(iGATHER_NAME);
         name_w->set_enter_pressed_callback(dialog_try_ok);
-        name_w->set_value_changed_callback(update_setup_ok_button_enabled_callback_adaptor);
 	d.add_to_tab(name_w, kSNG_GENERAL_TAB);
 
 	w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
