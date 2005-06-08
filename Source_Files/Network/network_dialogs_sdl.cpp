@@ -671,7 +671,9 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
         pen_sui_w->set_identifier(iSUICIDE_PUNISHED);
 	d.add(pen_sui_w);
 
-	d.add(new w_spacer());
+	w_toggle *cheats_w = new w_toggle("Disallow Zoom/Crosshairs", false);
+        cheats_w->set_identifier(iCHEATS_DISABLED);
+	d.add(cheats_w);
 
 	w_toggle *advertise_on_metaserver_w = new w_toggle("Advertise Game on Metaserver", sAdvertiseGameOnMetaserver);
 	advertise_on_metaserver_w->set_identifier(iADVERTISE_GAME_ON_METASERVER);
