@@ -227,6 +227,28 @@ public:
 };
 
 
+// Watch for clicks on a tab control, and make the associated pane visible
+class AutoTabHandler
+{
+public:
+
+	AutoTabHandler (ControlRef in_tab, vector<ControlRef> in_panes);
+	~AutoTabHandler ();
+
+private:
+
+	static pascal OSStatus TabHit (EventHandlerCallRef inCallRef,
+					EventRef inEvent, void* inUserData);
+	OSStatus TabHit ();
+	void SetActiveTab (int new_value);
+	
+	ControlRef tab;
+	vector<ControlRef> panes;
+	int old_value;
+	
+	EventHandlerUPP TabHandlerUPP;
+};
+
 // Convert between control values and floats from 0 to 1.
 // Should be especially useful for sliders.
 float GetCtrlFloatValue(ControlRef Ctrl);

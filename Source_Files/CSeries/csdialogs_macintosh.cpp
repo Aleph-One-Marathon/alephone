@@ -1056,6 +1056,61 @@ void AutoKeyboardWatcher::Watch(
 	vassert(err == noErr, csprintf(temporary, "Error in InstallControlEventHandler: %d",err));
 }
 
+
+AutoTabHandler::AutoTabHandler (ControlRef in_tab, vector<ControlRef> in_panes)
+{
+	// Remember our control and our pane ids
+	tab = in_tab;
+	panes = in_panes;
+	
+	// Register the handler
+	OSStatus err;
+	const EventTypeSpec tabControlEvents[1] = {
+		{kEventClassControl, kEventControlHit}
+	};	
+	TabHandlerUPP = NewEventHandlerUPP (TabHit);
+	err = InstallControlEventHandler(tab, TabHandlerUPP,
+			1, tabControlEvents,
+			this, NULL);
+	vassert(err == noErr, csprintf(temporary, "Error in InstallControlEventHandler: %d",err));
+	
+	// Show top pane
+	SetActiveTab (0);
+}
+
+pascal OSStatus AutoTabHandler::TabHit (EventHandlerCallRef inCallRef, EventRef inEvent, void* inUserData)
+{
+	return (reinterpret_cast<AutoTabHandler*>(inUserData)->TabHit());
+}
+
+OSStatus AutoTabHandler::TabHit ()
+{
+	int new_value = GetControlValue(tab) - 1;
+	if (new_value != old_value) {
+		SetActiveTab (new_value);
+		return (noErr);
+	} else
+		return (eventNotHandledErr);
+}
+
+void AutoTabHandler::SetActiveTab (int new_value)
+{
+	old_value = new_value;
+	
+	for (int i = 0; i < panes.size (); ++i)
+		if (i != new_value)
+			SetControlVisibility (panes[i], false, true);
+	
+	SetControlVisibility (panes[new_value], true, true);
+	
+	Draw1Control (tab);
+}
+
+AutoTabHandler::~AutoTabHandler ()
+{
+	DisposeEventHandlerUPP (TabHandlerUPP);
+}
+
 // Convert between control values and floats from 0 to 1.
 // Should be especially useful for sliders.
 
