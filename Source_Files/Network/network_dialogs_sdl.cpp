@@ -542,11 +542,6 @@ static void netgame_setup_dialog_ok(void *arg)
 		play_dialog_sound(DIALOG_ERROR_SOUND);
 }
 
-enum {
-	kSNG_GENERAL_TAB = 0,
-	kSNG_ENVIRONMENT_TAB
-};
-
 bool run_netgame_setup_dialog(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver)
 {
     // Save the map file path on entering, so we can restore it if user cancels.
@@ -561,7 +556,7 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 	w_tab_popup *tab_w = new w_tab_popup("Section");
 	vector<string> tab_strings;
 	tab_strings.push_back ("General");
-	tab_strings.push_back ("Environment");
+	tab_strings.push_back ("More Stuff");
 	tab_w->set_identifier(iSNG_TABS);
 	d.add(tab_w);
 	QQ_set_selector_control_labels (&d, iSNG_TABS, tab_strings);
@@ -569,122 +564,134 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 	
 	d.add(new w_spacer());
 	
-	d.add_to_tab(new w_static_text("Appearance"), kSNG_GENERAL_TAB);
+	d.add_to_tab(new w_static_text("Appearance"), iSNG_GENERAL_TAB);
 
 	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
         name_w->set_identifier(iGATHER_NAME);
         name_w->set_enter_pressed_callback(dialog_try_ok);
-	d.add_to_tab(name_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(name_w, iSNG_GENERAL_TAB);
 
 	w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
         pcolor_w->set_identifier(iGATHER_COLOR);
-	d.add_to_tab(pcolor_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(pcolor_w, iSNG_GENERAL_TAB);
 
 	w_player_color *tcolor_w = new w_player_color("Team Color", player_preferences->team);
         tcolor_w->set_identifier(iGATHER_TEAM);
-	d.add_to_tab(tcolor_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(tcolor_w, iSNG_GENERAL_TAB);
 
-	d.add_to_tab(new w_spacer(), kSNG_GENERAL_TAB);
-        d.add_to_tab(new w_static_text("Game Options"), kSNG_GENERAL_TAB);
+	d.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
+        d.add_to_tab(new w_static_text("Game Options"), iSNG_GENERAL_TAB);
+
+    // Could eventually store this path in network_preferences somewhere, so to have separate map file
+    // prefs for single- and multi-player.
+	w_button* map_w = new w_button("Choose Map", respond_to_map_file_change, &d);
+	map_w->set_identifier(iCHOOSE_MAP);
+	d.add_to_tab(map_w, iSNG_GENERAL_TAB);
 	
-	w_select_popup* game_type_w = new w_select_popup("Game Type", respond_to_net_game_type_change, &d);
-        game_type_w->set_full_width();
-        game_type_w->set_identifier(iGAME_TYPE);
-        d.add_to_tab(game_type_w, kSNG_GENERAL_TAB);
+	w_static_text* map_name_w = new w_static_text("NAME OF MAP");
+	map_name_w->set_identifier(iTEXT_MAP_NAME);
+	map_name_w->set_full_width();
+	d.add_to_tab(map_name_w, iSNG_GENERAL_TAB);
 
         w_select_popup* entry_point_w = new w_select_popup("Level");
         entry_point_w->set_full_width();
         entry_point_w->set_identifier(iENTRY_MENU);
-        d.add_to_tab(entry_point_w, kSNG_GENERAL_TAB);
+        d.add_to_tab(entry_point_w, iSNG_GENERAL_TAB);
+
+	w_select_popup* game_type_w = new w_select_popup("Game Type", respond_to_net_game_type_change, &d);
+        game_type_w->set_full_width();
+        game_type_w->set_identifier(iGAME_TYPE);
+        d.add_to_tab(game_type_w, iSNG_GENERAL_TAB);
 
 	w_select *diff_w = new w_select("Difficulty", network_preferences->difficulty_level, NULL);
         diff_w->set_labels_stringset(kDifficultyLevelsStringSetID);
         diff_w->set_identifier(iDIFFICULTY_MENU);
-	d.add_to_tab(diff_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(diff_w, iSNG_GENERAL_TAB);
 
-	d.add_to_tab(new w_spacer(), kSNG_GENERAL_TAB);
+	d.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
         
     w_select* endcondition_w    = new w_select("Game Ends At", kTimeLimit, NULL);
     endcondition_w->set_labels_stringset(kEndConditionTypeStringSetID);
     endcondition_w->set_full_width();
     endcondition_w->set_identifier(iRADIO_NO_TIME_LIMIT);
     endcondition_w->set_selection_changed_callback(respond_to_end_condition_type_change);
-    d.add_to_tab(endcondition_w, kSNG_GENERAL_TAB);
+    d.add_to_tab(endcondition_w, iSNG_GENERAL_TAB);
 
     w_number_entry*	timelimit_w	= new w_number_entry("Time Limit (minutes)", network_preferences->time_limit);
     timelimit_w->set_identifier(iTIME_LIMIT);
-    d.add_to_tab(timelimit_w, kSNG_GENERAL_TAB);
+    d.add_to_tab(timelimit_w, iSNG_GENERAL_TAB);
 
     // The name of this widget (score limit) will be replaced by Kill Limit, Flag Capture Limit, etc.
     w_number_entry*	scorelimit_w	= new w_number_entry("(score limit)", network_preferences->kill_limit);
     scorelimit_w->set_identifier(iKILL_LIMIT);
-    d.add_to_tab(scorelimit_w, kSNG_GENERAL_TAB);
+    d.add_to_tab(scorelimit_w, iSNG_GENERAL_TAB);
 
-	d.add_to_tab(new w_spacer(), kSNG_GENERAL_TAB);
+	d.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
 
 	w_toggle *aliens_w = new w_toggle("Aliens", (network_preferences->game_options & _monsters_replenish) != 0);
         aliens_w->set_identifier(iUNLIMITED_MONSTERS);
-	d.add_to_tab(aliens_w, kSNG_GENERAL_TAB);
-
-    w_toggle*   realtime_audio_w = new w_toggle("Realtime audio (broadband only)", network_preferences->allow_microphone);
-    realtime_audio_w->set_identifier(iREAL_TIME_SOUND);
-    d.add_to_tab(realtime_audio_w, kSNG_GENERAL_TAB);
-
-	w_toggle *live_w = new w_toggle("Live Carnage Reporting", (network_preferences->game_options & _live_network_stats) != 0);
-        live_w->set_identifier(iREALTIME_NET_STATS);
-	d.add_to_tab(live_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(aliens_w, iSNG_GENERAL_TAB);
 
 	w_toggle *teams_w = new w_toggle("Teams", !(network_preferences->game_options & _force_unique_teams));
         teams_w->set_identifier(iFORCE_UNIQUE_TEAMS);
         teams_w->set_selection_changed_callback(respond_to_teams_toggle);
-	d.add_to_tab(teams_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(teams_w, iSNG_GENERAL_TAB);
 
 	w_toggle *drop_w = new w_toggle("Dead Players Drop Items", !(network_preferences->game_options & _burn_items_on_death));
         drop_w->set_identifier(iBURN_ITEMS_ON_DEATH);
-	d.add_to_tab(drop_w, kSNG_GENERAL_TAB);
-
-	w_toggle *sensor_w = new w_toggle("Disable Motion Sensor", (network_preferences->game_options & _motion_sensor_does_not_work) != 0);
-        sensor_w->set_identifier(iMOTION_SENSOR_DISABLED);
-	d.add_to_tab(sensor_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(drop_w, iSNG_GENERAL_TAB);
 
 	w_toggle *pen_die_w = new w_toggle("Penalize Dying (10 seconds)", (network_preferences->game_options & _dying_is_penalized) != 0);
         pen_die_w->set_identifier(iDYING_PUNISHED);
-	d.add_to_tab(pen_die_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(pen_die_w, iSNG_GENERAL_TAB);
 
 	w_toggle *pen_sui_w = new w_toggle("Penalize Suicide (15 seconds)", (network_preferences->game_options & _suicide_is_penalized) != 0);
         pen_sui_w->set_identifier(iSUICIDE_PUNISHED);
-	d.add_to_tab(pen_sui_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(pen_sui_w, iSNG_GENERAL_TAB);
 
-	w_toggle *cheats_w = new w_toggle("Disallow Zoom/Crosshairs", false);
-        cheats_w->set_identifier(iCHEATS_DISABLED);
-	d.add_to_tab(cheats_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
 
 	w_toggle *advertise_on_metaserver_w = new w_toggle("Advertise Game on Metaserver", sAdvertiseGameOnMetaserver);
 	advertise_on_metaserver_w->set_identifier(iADVERTISE_GAME_ON_METASERVER);
-	d.add_to_tab(advertise_on_metaserver_w, kSNG_GENERAL_TAB);
+	d.add_to_tab(advertise_on_metaserver_w, iSNG_GENERAL_TAB);
 
 	w_toggle* use_netscript_w = new w_toggle("Use Netscript", false);
 	use_netscript_w->set_identifier(iUSE_SCRIPT);
 	use_netscript_w->set_selection_changed_callback(respond_to_script_twiddle);
-	d.add_to_tab(use_netscript_w, kSNG_ENVIRONMENT_TAB);
+	d.add_to_tab(use_netscript_w, iSNG_STUFF_TAB);
 	
 	w_static_text* script_name_w = new w_static_text("");
 	script_name_w->set_identifier(iTEXT_SCRIPT_NAME);
 	script_name_w->set_full_width();
-	d.add_to_tab(script_name_w, kSNG_ENVIRONMENT_TAB);
+	d.add_to_tab(script_name_w, iSNG_STUFF_TAB);
 
-	d.add_to_tab(new w_spacer(), kSNG_ENVIRONMENT_TAB);
+	d.add_to_tab(new w_spacer(), iSNG_STUFF_TAB);
 
-    // Could eventually store this path in network_preferences somewhere, so to have separate map file
-    // prefs for single- and multi-player.
-	w_button* map_w = new w_button("Choose Map", respond_to_map_file_change, &d);
-	map_w->set_identifier(iCHOOSE_MAP);
-	d.add_to_tab(map_w, kSNG_ENVIRONMENT_TAB);
+	w_toggle*   realtime_audio_w = new w_toggle("Realtime audio (broadband only)", network_preferences->allow_microphone);
+	realtime_audio_w->set_identifier(iREAL_TIME_SOUND);
+	d.add_to_tab(realtime_audio_w, iSNG_STUFF_TAB);
+
+	w_toggle *live_w = new w_toggle("Live Carnage Reporting", (network_preferences->game_options & _live_network_stats) != 0);
+	live_w->set_identifier(iREALTIME_NET_STATS);
+	d.add_to_tab(live_w, iSNG_STUFF_TAB);
+
+	w_toggle *sensor_w = new w_toggle("Disable Motion Sensor", (network_preferences->game_options & _motion_sensor_does_not_work) != 0);
+        sensor_w->set_identifier(iMOTION_SENSOR_DISABLED);
+	d.add_to_tab(sensor_w, iSNG_STUFF_TAB);
+
+	d.add_to_tab(new w_spacer(), iSNG_STUFF_TAB);
+
+	w_toggle *zoom_w = new w_toggle("Allow Zoom", true);
+        zoom_w->set_identifier(iALLOW_ZOOM);
+	d.add_to_tab(zoom_w, iSNG_STUFF_TAB);
 	
-	w_static_text* map_name_w = new w_static_text("NAME OF MAP");
-	map_name_w->set_identifier(iTEXT_MAP_NAME);
-	map_name_w->set_full_width();
-	d.add_to_tab(map_name_w, kSNG_ENVIRONMENT_TAB);
+	w_toggle *crosshairs_w = new w_toggle("Allow Crosshairs", true);
+        crosshairs_w->set_identifier(iALLOW_CROSSHAIRS);
+	d.add_to_tab(crosshairs_w, iSNG_STUFF_TAB);
+	
+	w_toggle *lara_croft_w = new w_toggle("Allow Lara Croft", true);
+        lara_croft_w->set_identifier(iALLOW_LARA_CROFT);
+	d.add_to_tab(lara_croft_w, iSNG_STUFF_TAB);
 
 	d.add(new w_spacer());	
 

@@ -744,13 +744,18 @@ bool run_netgame_setup_dialog(
 	
 	Watcher.Watch(GetCtrlFromWindow(Window(), 0, iGATHER_NAME), Window ());
 	
+	vector<ControlRef> SNG_panes;
+	SNG_panes.push_back(GetCtrlFromWindow(Window(), 0, iSNG_GENERAL_TAB));
+	SNG_panes.push_back(GetCtrlFromWindow(Window(), 0, iSNG_STUFF_TAB));
+	AutoTabHandler tab_handler(GetCtrlFromWindow(Window(), 0, iSNG_TABS), SNG_panes);
+	
 	game_information->net_game_type =
 		netgame_setup_dialog_initialise(Window (), allow_all_levels, ResumingGame);
 
 	sng_success = false;
 	RunModalDialog(Window(), false, NetgameSetup_Handler, Window ());
 	
-if (sng_success)
+	if (sng_success)
 	{
 		netgame_setup_dialog_extract_information(Window (), player_information,
 			game_information, allow_all_levels, ResumingGame, outAdvertiseGameOnMetaserver);

@@ -639,7 +639,10 @@ short netgame_setup_dialog_initialise (
 		QQ_set_control_activity(dialog, iCHOOSE_MAP, false);
 	}
 	
-	QQ_set_boolean_control_value(dialog, iCHEATS_DISABLED, false);
+	QQ_set_boolean_control_value(dialog, iALLOW_ZOOM, true);
+	QQ_set_boolean_control_value(dialog, iALLOW_CROSSHAIRS, true);
+	QQ_set_boolean_control_value(dialog, iALLOW_LARA_CROFT, true);
+	
 	QQ_set_boolean_control_value(dialog, iADVERTISE_GAME_ON_METASERVER, false);
 
 #ifdef SDL
@@ -794,16 +797,18 @@ netgame_setup_dialog_extract_information(
 			shouldUseNetscript = false;
 	}
 	
-	if (QQ_get_boolean_control_value(dialog, iCHEATS_DISABLED)) {
-		// disallow all cheats
-		game_information->cheat_flags = 0;
-	} else {
-		// allow all cheats
-		game_information->cheat_flags = 
-		  _allow_crosshair | 
-		  _allow_tunnel_vision |
-		  _allow_behindview;
-	}
+	// initialise to disallow all cheats
+	game_information->cheat_flags = 0;
+	
+	// add in allowed cheats
+	if (QQ_get_boolean_control_value(dialog, iALLOW_ZOOM))
+		game_information->cheat_flags |= _allow_tunnel_vision;
+	
+	if (QQ_get_boolean_control_value(dialog, iALLOW_CROSSHAIRS))
+		game_information->cheat_flags |= _allow_crosshair;
+	
+	if (QQ_get_boolean_control_value(dialog, iALLOW_LARA_CROFT))
+		game_information->cheat_flags |= _allow_behindview;
 
 	// now save some of these to the preferences - only if not resuming a game
 	if(!resuming_game)
