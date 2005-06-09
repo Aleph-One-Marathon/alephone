@@ -105,6 +105,8 @@ April 19, 2003 (Woody Zenfell):
 	#include "NibsUiHelpers.h"
 #endif
 
+#include "map.h" // for difficulty levels
+
 using std::map;
 using std::vector;
 using std::sort;
@@ -160,7 +162,6 @@ struct preferences_dialog_data prefs_data[]={
 static bool physics_valid= true;
 
 #ifdef USES_NIBS
-
 
 enum {
 	_hundreds_colors_menu_item= 1,
@@ -415,7 +416,8 @@ void handle_preferences(
 	
 	ControlRef PLYR_Difficulty = GetCtrlFromWindow(Window(),Sig_Player,iDIFFICULTY_LEVEL);
 	SetControl32BitValue(PLYR_Difficulty,player_preferences->difficulty_level+1);
-	
+	SetPopupLabelsFromStringset(PLYR_Difficulty, kDifficultyLevelsStringSetID);
+
 	ControlRef PLYR_Name = GetCtrlFromWindow(Window(),Sig_Player,iNAME);
 	SetEditPascalText(PLYR_Name, player_preferences->name);
 
