@@ -773,6 +773,12 @@ enum /* game difficulty levels */
 	NUMBER_OF_GAME_DIFFICULTY_LEVELS
 };
 
+
+enum /* for difficulty level names (moved here so it is in a common header file) */
+{
+	kDifficultyLevelsStringSetID	= 145
+};
+
 /* ---------- new object frequency structures. */
 
 #define MAXIMUM_OBJECT_TYPES 64

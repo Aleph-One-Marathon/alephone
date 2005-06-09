@@ -54,6 +54,7 @@
 #include "screen_drawing.h"
 #include "mouse.h"
 #include "preferences_widgets_sdl.h"
+#include "map.h" // for difficulty levels
 
 #include <string.h>
 #include <vector>
@@ -183,11 +184,6 @@ void handle_preferences(void)
  *  Player dialog
  */
 
-enum {
-    kDifficultyLevelsStringSetID	= 145
-};
-// XXX (ZZZ): that constant is duplicated in network_dialogs_sdl.cpp; should be shared in a header somewhere.
-
 static void player_dialog(void *arg)
 {
 	// Create dialog
@@ -206,9 +202,9 @@ static void player_dialog(void *arg)
 	name_w->set_identifier(iNAME);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
-    d.add(name_w);
+	d.add(name_w);
 
-    w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
+	w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
 	d.add(pcolor_w);
 	w_player_color *tcolor_w = new w_player_color("Team Color", player_preferences->team);
 	d.add(tcolor_w);

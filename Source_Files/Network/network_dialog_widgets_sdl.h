@@ -40,7 +40,6 @@
 // (by semi-coincidence).
 // ZZZ: get strings from outside (MML) for easier localization.
 enum {
-    kDifficultyLevelsStringSetID	= 145,
     kNetworkGameTypesStringSetID	= 146,
     kEndConditionTypeStringSetID	= 147,
     kScoreLimitTypeStringSetID		= 148,
