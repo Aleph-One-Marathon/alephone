@@ -44,6 +44,7 @@
 
 using namespace std;
 using boost::bind;
+using boost::ref;
 
 
 
@@ -51,23 +52,23 @@ template <typename tElement>
 class w_items_in_room : public w_list_base
 {
 public:
-	typedef typename boost::function<void (const tElement& item, w_items_in_room<tElement>* sender)> Callback;
+	typedef typename boost::function<void (const tElement& item, w_items_in_room<tElement>* sender)> ItemClickedCallback;
 	typedef typename std::vector<tElement> ElementVector;
-	typedef const ElementVector (MetaserverClient::*CollectionAccessor)() const;
+	typedef typename boost::function<const ElementVector ()> GetItemsCallback;
 
-	w_items_in_room(MetaserverClient& client, CollectionAccessor accessor, Callback itemClicked, int width, int numRows) :
+	w_items_in_room(GetItemsCallback getItems, ItemClickedCallback itemClicked, int width, int numRows) :
 		w_list_base(width, numRows, 0),
-		m_client(client),
-		m_accessor(accessor),
+		m_getItems(getItems),
 		m_itemClicked(itemClicked)
 	{
+		assert(m_getItems);
 		num_items = 0;
 		new_items();
 	}
 
 	void collection_changed()
 	{
-		m_items = (m_client.*(m_accessor))();
+		m_items = m_getItems();
 		num_items = m_items.size();
 		new_items();
 		// do other crap - manage selection, force redraw, etc.
@@ -95,10 +96,9 @@ protected:
 	}
 
 private:
-	MetaserverClient&		m_client;
-	CollectionAccessor		m_accessor;
+	GetItemsCallback		m_getItems;
 	ElementVector			m_items;
-	Callback			m_itemClicked;
+	ItemClickedCallback		m_itemClicked;
 
 	// This should be factored out into a "drawer" object/Strategy
 	virtual void draw_item(const tElement& item, SDL_Surface* s,
@@ -123,8 +123,8 @@ typedef w_items_in_room<GameListMessage::GameListEntry> w_games_in_room;
 class w_players_in_room : public w_items_in_room<MetaserverPlayerInfo>
 {
 public:
-	w_players_in_room(MetaserverClient& client, CollectionAccessor accessor, w_items_in_room<MetaserverPlayerInfo>::Callback itemClicked, int width, int numRows)
-	: w_items_in_room<MetaserverPlayerInfo>(client, accessor, itemClicked, width, numRows)
+	w_players_in_room(w_items_in_room<MetaserverPlayerInfo>::GetItemsCallback getItems, w_items_in_room<MetaserverPlayerInfo>::ItemClickedCallback itemClicked, int width, int numRows)
+	: w_items_in_room<MetaserverPlayerInfo>(getItems, itemClicked, width, numRows)
 	{}
 
 private:
@@ -177,12 +177,17 @@ public:
 
 		d.add(new w_spacer());
 
-		w_players_in_room* players_in_room_w = new w_players_in_room(mMetaserverClient, &MetaserverClient::playersInRoom, NULL, 260, 8);
+		w_players_in_room* players_in_room_w = new w_players_in_room(bind(&MetaserverClient::playersInRoom, ref(mMetaserverClient)), NULL, 260, 8);
 		players_in_room_w->set_identifier(iPLAYERS_IN_ROOM);
 		players_in_room_w->set_alignment(widget::kAlignLeft);
 		d.add(players_in_room_w);
 
-		w_games_in_room* games_in_room_w = new w_games_in_room(mMetaserverClient, &MetaserverClient::gamesInRoom, bind(&SdlMetaserverClientUi::gameClicked, this, _1, _2), 320, 8);
+		w_games_in_room* games_in_room_w = new w_games_in_room(
+			bind(&MetaserverClient::gamesInRoom, ref(mMetaserverClient)),
+			bind(&SdlMetaserverClientUi::gameClicked, this, _1, _2),
+			320,
+			8
+		);
 		games_in_room_w->set_identifier(iGAMES_IN_ROOM);
 		games_in_room_w->set_alignment(widget::kAlignRight);
 		games_in_room_w->align_bottom_with_bottom_of(players_in_room_w);
