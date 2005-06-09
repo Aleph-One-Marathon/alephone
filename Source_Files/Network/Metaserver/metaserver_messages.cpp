@@ -39,6 +39,8 @@
 #include <string>
 #include <vector>
 #include <iterator>
+#include "TextStrings.h"
+#include "map.h" // difficulties
 
 using namespace std;
 
@@ -641,16 +643,6 @@ operator <<(AOStream& stream, const GameDescription& desc)
 }
 
 
-
-static const char* difficultyString[] =
-{
-	"Kindergarten",
-	"Easy",
-	"Normal",
-	"Major Damage",
-	"Total Carnage"
-};
-
 static const char* gameTypeString[] =
 {
 	"Every Man for Himself",
@@ -666,11 +658,12 @@ static const char* gameTypeString[] =
 ostream&
 operator <<(ostream& stream, const GameDescription& desc)
 {
+	char *difficulty = TS_GetCString(kDifficultyLevelsStringSetID, desc.m_difficulty);
 	stream
 		<< desc.m_name << " : "
 		<< desc.m_mapName << " (" << desc.m_mapChecksum << ") : "
 		<< gameTypeString[desc.m_type] << " : "
-		<< difficultyString[desc.m_difficulty] << " : "
+		<< difficulty << " : "
 		<< desc.m_timeLimit << " : "
 		<< static_cast<uint16>(desc.m_numPlayers) << "/" << desc.m_maxPlayers << " : "
 		<< (desc.m_closed ? "Closed" : "Open") << " : "
