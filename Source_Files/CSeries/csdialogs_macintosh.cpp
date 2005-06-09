@@ -49,6 +49,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 #include "csdialogs.h"
 #include "csmacros.h"
 #include "csstrings.h"
+#include "TextStrings.h"
 
 extern void update_any_window(
 	WindowPtr window,
@@ -660,6 +661,38 @@ void SetEditCText(ControlRef Ctrl, const char *Text)
 		);
 }
 
+// This should maybe be made a QQ_something function eventually,
+// but then someone would have to do the SDL version.
+void SetPopupLabelsFromStringset(ControlRef Ctrl, short StringSetID)
+{
+	MenuHandle menu;
+	Size size;
+	OSErr result = GetControlData(Ctrl, kControlNoPart, kControlPopupButtonMenuRefTag, sizeof(menu), &menu, &size);
+	int num_items;
+
+	if (result != noErr || size != sizeof(MenuHandle))
+		return;
+
+	// Delete existing items in the menu
+	while (CountMenuItems(menu))
+		DeleteMenuItem(menu, 1);
+
+	if (TS_IsPresent(StringSetID) && (num_items = TS_CountStrings(StringSetID)) != 0)
+	{
+		for (int i = 0; result == noErr && i < num_items; i++)
+		{
+			char *string = TS_GetCString(StringSetID, i);
+			CFStringRef cfstring = CFStringCreateWithCString(NULL, string, kCFStringEncodingUTF8);
+			if (cfstring)
+			{
+				result = AppendMenuItemTextWithCFString(menu, cfstring, 0, 0, NULL);
+				CFRelease(cfstring);
+			}
+		}
+  }
+
+}
+
 
 // Will not support any fancy hit testing;
 // a user-defined control will effectively be one object
@@ -1216,7 +1249,6 @@ void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<
 
 	SetControl32BitMaximum(MenuCtrl,CountMenuItems(Menu));
 }
-
 
 const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item)
 {

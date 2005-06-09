@@ -83,6 +83,7 @@ void SetEditPascalText(ControlRef Ctrl, ConstStr255Param Text);
 void GetEditCText(ControlRef Ctrl, char *Text, int MaxLen = 255);
 void SetEditCText(ControlRef Ctrl, const char *Text);
 
+void SetPopupLabelsFromStringset(ControlRef Ctrl, short StringSetID);
 
 // For adding drawability to a
 // It cleans up when it goes out of scope
