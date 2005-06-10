@@ -30,6 +30,10 @@
 #include "metaserver_dialogs.h"
 #include "NibsUiHelpers.h"
 
+#include <boost/static_assert.hpp>
+#include <boost/function.hpp>
+#include <boost/bind.hpp>
+
 enum {
 	iPLAYERS_IN_ROOM = 100,
 	iGAMES_IN_ROOM = 200,
@@ -45,44 +49,12 @@ static pascal void MetaserverClientUi_Poller(EventLoopTimerRef, void*)
 	MetaserverClient::pumpAll();
 }
 
-class SelfReleasingCFStringRef
-{
-public:
-	SelfReleasingCFStringRef(CFStringRef newlyCreatedStringRef)
-		: m_stringRef(newlyCreatedStringRef)
-	{}
-
-	CFStringRef StringRef() const {
-		return m_stringRef;
-	}
-
-	~SelfReleasingCFStringRef()
-	{
-		CFRelease(m_stringRef);
-	}
-
-private:
-	CFStringRef m_stringRef;
-	
-	// No reason these couldn't be implemented, but they're not yet.
-	SelfReleasingCFStringRef(const SelfReleasingCFStringRef&);
-	SelfReleasingCFStringRef& operator =(const SelfReleasingCFStringRef&);
-};
-
-auto_ptr<SelfReleasingCFStringRef>
-StringToCFString(const string& s)
-{
-	return auto_ptr<SelfReleasingCFStringRef>(
-		new SelfReleasingCFStringRef(
-			CFStringCreateWithCString(NULL, s.c_str(), NULL)
-		)
-	);
-}
-
 template <typename tElement>
 class ListWidget
 {
 public:
+	typedef typename boost::function<void (tElement item, ListWidget<tElement>& sender)> ItemSelectedCallback;
+
 	ListWidget(ControlRef control)
 		: m_control(control)
 	{
@@ -95,19 +67,27 @@ public:
 		ItemsChanged();
 	}
 
+	void SetItemSelectedCallback(const ItemSelectedCallback& itemSelected)
+	{
+		m_itemSelected = itemSelected;
+	}
+
 private:
 	vector<tElement>	m_items;
 	ControlRef		m_control;
+	ItemSelectedCallback	m_itemSelected;
 
 	void SetupCallbacks()
 	{
-		SetControlReference(m_control, this);
+		// To be 64-bit clean, will need to come up with a different way of associating 'this' with the control
+		BOOST_STATIC_ASSERT((sizeof(ListWidget<tElement>*) == sizeof(SInt32)));
+		SetControlReference(m_control, reinterpret_cast<SInt32>(this));
 
 		DataBrowserCallbacks callbacks;
 		obj_clear(callbacks);
 		callbacks.version = kDataBrowserLatestCallbacks;
-		callbacks.u.v1.itemDataCallback = NewDataBrowserItemDataUPP(BounceValueForItemId);
-		//Callbacks.u.v1.itemNotificationCallback = NewDataBrowserItemNotificationUPP(PlayerListMemberHit);
+		callbacks.u.v1.itemDataCallback = NewDataBrowserItemDataUPP(BounceSetDataForItemId);
+		callbacks.u.v1.itemNotificationCallback = NewDataBrowserItemNotificationUPP(BounceHandleItemNotification);
 		SetDataBrowserCallbacks(m_control, &callbacks);
 	}
 	
@@ -138,14 +118,31 @@ private:
 		InstallItemsInControl();
 	}
 
-	const string ValueForItemId(DataBrowserItemID id)
+	tElement* ItemForItemId(DataBrowserItemID id)
 	{
 		UInt32 itemIndex = id - 1;
-
-		return (itemIndex < m_items.size()) ? m_items[itemIndex].name() : string();
+		return (itemIndex < m_items.size()) ? &(m_items[itemIndex]) : NULL;
 	}
 
-	static pascal OSStatus BounceValueForItemId(
+	const string ValueForItem(const tElement* element)
+	{
+		return element == NULL ? string() : element->name();
+	}
+
+	OSStatus SetDataForItemId(
+		DataBrowserItemID itemId,
+		DataBrowserPropertyID propertyId,
+		DataBrowserItemDataRef itemData,
+		Boolean setValue
+	)
+	{
+		string value = ValueForItem(ItemForItemId(itemId));
+		auto_ptr<SelfReleasingCFStringRef> valueCfString = StringToCFString(value);
+		SetDataBrowserItemDataText(itemData, valueCfString->StringRef());
+		return noErr;
+	}
+
+	static pascal OSStatus BounceSetDataForItemId(
 		ControlRef browser,
 		DataBrowserItemID itemId,
 		DataBrowserPropertyID propertyId,
@@ -154,14 +151,23 @@ private:
 	)
 	{
 		ListWidget<tElement>* listWidget = reinterpret_cast<ListWidget<tElement>*>(GetControlReference(browser));
-		
-		string value = listWidget->ValueForItemId(itemId);
+		return listWidget->SetDataForItemId(itemId, propertyId, itemData, setValue);
+	}
 
-		auto_ptr<SelfReleasingCFStringRef> valueCfString = StringToCFString(value);
+	void HandleItemNotification(DataBrowserItemID itemId, DataBrowserItemNotification message)
+	{
+		if (message == kDataBrowserItemDoubleClicked && m_itemSelected)
+		{
+			tElement* item = ItemForItemId(itemId);
+			if (item != NULL)
+				m_itemSelected(*item, *this);
+		}
+	}
 
-		SetDataBrowserItemDataText(itemData, valueCfString->StringRef());
-
-		return noErr;
+	static pascal void BounceHandleItemNotification(ControlRef browser, DataBrowserItemID item, DataBrowserItemNotification message)
+	{
+		ListWidget<tElement>* listWidget = reinterpret_cast<ListWidget<tElement>*>(GetControlReference(browser));
+		listWidget->HandleItemNotification(item, message);
 	}
 };
 
@@ -173,24 +179,36 @@ public:
 	, m_dialog(m_metaserverClientNib.nibReference(), CFSTR("Metaserver Client"))
 	, m_playersInRoomWidget(GetCtrlFromWindow(m_dialog(), 0, iPLAYERS_IN_ROOM))
 	, m_gamesInRoomWidget(GetCtrlFromWindow(m_dialog(), 0, iGAMES_IN_ROOM))
-	{}
+	, m_used(false)
+	{
+		m_gamesInRoomWidget.SetItemSelectedCallback(bind(&NibsMetaserverClientUi::GameSelected, this, _1, _2));
+	}
 	
 	~NibsMetaserverClientUi() {}
 
 	const IPaddress GetJoinAddressByRunning()
 	{
-		IPaddress address;
-		obj_clear(address);
+		// This was designed with one-shot-ness in mind
+		assert(!m_used);
+		m_used = true;
+
+		obj_clear(m_joinAddress);
 
 		setupAndConnectClient(m_metaserverClient);
 		m_metaserverClient.associateNotificationAdapter(this);
 
 		AutoTimer Poller(0, PollingInterval, MetaserverClientUi_Poller, m_dialog());
 
-		if (RunModalDialog(m_dialog(), false, MetaserverClientUi_Handler, this))
-			address.host = (1 << 24) + (2 << 16) + (3 << 8) + (4 << 0);
+		RunModalDialog(m_dialog(), false, MetaserverClientUi_Handler, this);
 
-		return address;
+		return m_joinAddress;
+	}
+
+	void GameSelected(GameListMessage::GameListEntry game, ListWidget<GameListMessage::GameListEntry> sender)
+	{
+		memcpy(&m_joinAddress.host, &game.m_ipAddress, sizeof(m_joinAddress.host));
+		m_joinAddress.port = game.m_port;
+		StopModalDialog(m_dialog(), false);
 	}
 
 	void playersInRoomChanged()
@@ -228,6 +246,8 @@ private:
 	MetaserverClient				m_metaserverClient;
 	ListWidget<MetaserverPlayerInfo>		m_playersInRoomWidget;
 	ListWidget<GameListMessage::GameListEntry>	m_gamesInRoomWidget;
+	IPaddress					m_joinAddress;
+	bool						m_used;
 };
 
 auto_ptr<MetaserverClientUi>

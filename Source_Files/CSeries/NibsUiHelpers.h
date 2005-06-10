@@ -22,6 +22,39 @@
 #ifndef NIBSUIHELPERS_H
 #define NIBSUIHELPERS_H
 
+#include <memory>
+#include <string>
+
+class SelfReleasingCFStringRef
+{
+public:
+	SelfReleasingCFStringRef(CFStringRef newlyCreatedStringRef)
+		: m_stringRef(newlyCreatedStringRef)
+	{}
+
+	CFStringRef StringRef() const {
+		return m_stringRef;
+	}
+
+	~SelfReleasingCFStringRef()
+	{
+		CFRelease(m_stringRef);
+	}
+
+private:
+	CFStringRef m_stringRef;
+	
+	// No reason these couldn't be implemented, but they're not yet.
+	SelfReleasingCFStringRef(const SelfReleasingCFStringRef&);
+	SelfReleasingCFStringRef& operator =(const SelfReleasingCFStringRef&);
+};
+
+
+
+std::auto_ptr<SelfReleasingCFStringRef> StringToCFString(const std::string& s);
+
+
+
 // Automatically-Disposed NIB reference.  Not using operator() to get the reference
 // (as the other Auto* do) because I find that practice somewhat nauseating.
 class AutoNibReference

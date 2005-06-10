@@ -4,13 +4,13 @@
   <object name="rootObject" class="NSCustomObject" id="1">
     <string name="customClass">NSApplication</string>
   </object>
-  <array count="10" name="allObjects">
+  <array count="11" name="allObjects">
     <object class="IBCarbonWindow" id="166">
       <string name="windowRect">67 37 523 669 </string>
       <string name="title">Metaserver Client</string>
       <object name="rootControl" class="IBCarbonRootControl" id="167">
         <string name="bounds">0 0 456 632 </string>
-        <array count="8" name="subviews">
+        <array count="9" name="subviews">
           <object class="IBCarbonDBListView" id="180">
             <string name="bounds">44 32 177 257 </string>
             <int name="controlID">100</int>
@@ -21,6 +21,8 @@
               <object class="IBCarbonDBListViewColumn">
                 <ostype name="propertyID">name</ostype>
                 <int name="sortOrder">1</int>
+                <int name="minWidth">225</int>
+                <int name="maxWidth">225</int>
                 <int name="textAlignment">-2</int>
                 <string name="titleString">Name</string>
               </object>
@@ -43,7 +45,8 @@
               <object class="IBCarbonDBListViewColumn">
                 <ostype name="propertyID">name</ostype>
                 <int name="sortOrder">1</int>
-                <int name="maxWidth">200</int>
+                <int name="minWidth">335</int>
+                <int name="maxWidth">335</int>
                 <int name="textAlignment">-2</int>
                 <string name="titleString">Name</string>
               </object>
@@ -67,6 +70,7 @@
           <object class="IBCarbonButton" id="186">
             <string name="bounds">157 542 177 612 </string>
             <int name="controlID">1</int>
+            <boolean name="enabled">FALSE</boolean>
             <string name="title">Join</string>
             <ostype name="command">ok  </ostype>
           </object>
@@ -87,6 +91,10 @@
             <ostype name="command">not!</ostype>
             <int name="buttonType">2</int>
           </object>
+          <object class="IBCarbonStaticText" id="191">
+            <string name="bounds">145 277 177 452 </string>
+            <string name="title">Double-click a game to collect its address.</string>
+          </object>
         </array>
       </object>
       <boolean name="liveResize">TRUE</boolean>
@@ -102,10 +110,12 @@
     <reference idRef="188"/>
     <reference idRef="189"/>
     <reference idRef="190"/>
+    <reference idRef="191"/>
   </array>
-  <array count="10" name="allParents">
+  <array count="11" name="allParents">
     <reference idRef="1"/>
     <reference idRef="166"/>
+    <reference idRef="167"/>
     <reference idRef="167"/>
     <reference idRef="167"/>
     <reference idRef="167"/>
@@ -125,5 +135,5 @@
     <string>Metaserver Client</string>
     <reference idRef="166"/>
   </dictionary>
-  <unsigned_int name="nextObjectID">191</unsigned_int>
+  <unsigned_int name="nextObjectID">192</unsigned_int>
 </object>

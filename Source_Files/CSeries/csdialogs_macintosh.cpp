@@ -490,6 +490,18 @@ GetListBoxListHandle( ControlHandle control, ListHandle* list )
 #include "NibsUiHelpers.h"
 
 
+std::auto_ptr<SelfReleasingCFStringRef>
+StringToCFString(const std::string& s)
+{
+	return std::auto_ptr<SelfReleasingCFStringRef>(
+		new SelfReleasingCFStringRef(
+			CFStringCreateWithCString(NULL, s.c_str(), kCFStringEncodingMacRoman)
+		)
+	);
+}
+
+
+
 AutoNibWindow::AutoNibWindow(IBNibRef Nib, CFStringRef Name)
 {
 	OSStatus err;
