@@ -200,7 +200,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	{
 		Model.NormSources.resize(3*Model.VtxSrcIndices.size());
 		Model.Normals.resize(Model.NormSources.size());
-		for (int k=0; k<Model.VtxSources.size(); k++)
+		for (unsigned k=0; k<Model.VtxSources.size(); k++)
 		{
 			GLfloat *Norm = &Normals[3*k];
 			GLushort P0 = Model.InvVSIPointers[k];
