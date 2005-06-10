@@ -576,7 +576,9 @@ short netgame_setup_dialog_initialise (
 	QQ_copy_string_to_text_control (dialog, iGATHER_NAME, pstring_to_string (player_preferences->name));
 
 	/* Set the menu values */
+	QQ_set_selector_control_labels_from_stringset(dialog, iGATHER_COLOR, kTeamColorsStringSetID);
 	QQ_set_selector_control_value(dialog, iGATHER_COLOR, player_preferences->color);
+	QQ_set_selector_control_labels_from_stringset(dialog, iGATHER_TEAM, kTeamColorsStringSetID);
 	QQ_set_selector_control_value(dialog, iGATHER_TEAM, player_preferences->team);
 	
 	QQ_set_selector_control_labels_from_stringset(dialog, iDIFFICULTY_MENU, kDifficultyLevelsStringSetID);

@@ -413,21 +413,23 @@ void handle_preferences(
 	SetControl32BitValue(SNDS_Relative_Volume, !!TEST_FLAG(sound_preferences->flags,_relative_volume_flag));
 	
 	// Player:
+	SetGlobalControlSignature(Sig_Player);
+
+	QQ_set_selector_control_labels_from_stringset(Window(), iDIFFICULTY_LEVEL, kDifficultyLevelsStringSetID);
+	QQ_set_selector_control_value(Window(), iDIFFICULTY_LEVEL, player_preferences->difficulty_level);
+
+	QQ_copy_string_to_text_control(Window(), iNAME, pstring_to_string(player_preferences->name));
+
+	QQ_set_selector_control_labels_from_stringset(Window(), iCOLOR, kTeamColorsStringSetID);
+	QQ_set_selector_control_value(Window(), iCOLOR, player_preferences->color);
+
+	QQ_set_selector_control_labels_from_stringset(Window(), iTEAM, kTeamColorsStringSetID);
+	QQ_set_selector_control_value(Window(), iTEAM, player_preferences->team);
 	
-	ControlRef PLYR_Difficulty = GetCtrlFromWindow(Window(),Sig_Player,iDIFFICULTY_LEVEL);
-	SetControl32BitValue(PLYR_Difficulty,player_preferences->difficulty_level+1);
-	SetPopupLabelsFromStringset(PLYR_Difficulty, kDifficultyLevelsStringSetID);
+	SetGlobalControlSignature(0); // restore
 
-	ControlRef PLYR_Name = GetCtrlFromWindow(Window(),Sig_Player,iNAME);
-	SetEditPascalText(PLYR_Name, player_preferences->name);
-
-	ControlRef PLYR_Color = GetCtrlFromWindow(Window(),Sig_Player,iCOLOR);
-	SetControl32BitValue(PLYR_Color,player_preferences->color+1);
-
-	ControlRef PLYR_Team = GetCtrlFromWindow(Window(),Sig_Player,iTEAM);
-	SetControl32BitValue(PLYR_Team,player_preferences->team+1);
-	
 	// Input
+
 	ControlRef INPT_Use_Mouse = GetCtrlFromWindow(Window(),Sig_Input,iMOUSE_CONTROL);
 	SetControl32BitValue(INPT_Use_Mouse, input_preferences->input_device);
 	
@@ -475,7 +477,7 @@ void handle_preferences(
 	ControlRef ENVR_Sounds = GetCtrlFromWindow(Window(),Sig_Environment,iSOUNDS);
 	fill_in_popup_with_filetype(ENVR_Sounds, _typecode_sounds,
 		environment_preferences->sounds_mod_date, environment_preferences->sounds_file);
-	
+
 	// Set to the current prefs pane
 	// Go from 0-based to 1-based
 	SetControl32BitValue(HandlerData.TabCtrl,CurrentPrefsPane+1);
@@ -545,37 +547,29 @@ void handle_preferences(
 			SET_FLAG(sound_preferences->flags,_dynamic_tracking_flag,false);
 		
 		SET_FLAG(sound_preferences->flags,_16bit_sound_flag,GetControl32BitValue(SNDS_16Bit));
-		
 		SET_FLAG(sound_preferences->flags,_ambient_sound_flag,GetControl32BitValue(SNDS_Ambient));
-		
 		SET_FLAG(sound_preferences->flags,_more_sounds_flag,GetControl32BitValue(SNDS_More));
-		
 		SET_FLAG(sound_preferences->flags,_relative_volume_flag,GetControl32BitValue(SNDS_Relative_Volume));
 		
 		// Player:
-		
-		player_preferences->difficulty_level = GetControl32BitValue(PLYR_Difficulty) - 1;
-		
-		GetEditPascalText(PLYR_Name, player_preferences->name, PREFERENCES_NAME_LENGTH);
+		SetGlobalControlSignature(Sig_Player);
 
-		player_preferences->color = GetControl32BitValue(PLYR_Color) - 1;
+		player_preferences->difficulty_level = QQ_get_selector_control_value(Window(), iDIFFICULTY_LEVEL);
+		copy_string_to_pstring(QQ_copy_string_from_text_control(Window(), iNAME), player_preferences->name, PREFERENCES_NAME_LENGTH);
+		player_preferences->color = QQ_get_selector_control_value(Window(), iCOLOR);
+		player_preferences->team = QQ_get_selector_control_value(Window(), iTEAM);
 
-		player_preferences->team = GetControl32BitValue(PLYR_Team) - 1;
-		
+		SetGlobalControlSignature(0); // restore
+
 		// Input:
 		
 		input_preferences->input_device = GetControl32BitValue(INPT_Use_Mouse);
 	
 		SET_FLAG(input_preferences->modifiers, _inputmod_interchange_run_walk, GetControl32BitValue(INPT_Run_Walk));
-
 		SET_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink, GetControl32BitValue(INPT_Swim_Sink));
-
 		SET_FLAG(input_preferences->modifiers, _inputmod_dont_auto_recenter, GetControl32BitValue(INPT_No_Auto_Rctr));
-
 		SET_FLAG(input_preferences->modifiers, _inputmod_dont_switch_to_new_weapon, GetControl32BitValue(INPT_No_Switch_New));
-
 		SET_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds, GetControl32BitValue(INPT_Button_Snds));
-
 		SET_FLAG(input_preferences->modifiers, _inputmod_invert_mouse, GetControl32BitValue(INPT_Button_Invert));
 	
 		input_preferences->sens_vertical = SliderToPref(GetCtrlFloatValue(INPT_Button_VertSens));
@@ -626,7 +620,7 @@ void handle_preferences(
 		
 		set_sound_manager_parameters(&OriginalSoundParameters);
 	}
-		
+
 	/* Proceses the entire physics file.. */
 	free_extensions_memory();
 }
@@ -952,17 +946,17 @@ static void hit_player_item(
 	{
 		case iDIFFICULTY_LEVEL:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			preferences->difficulty_level= GetControlValue(control)-1;
+			preferences->difficulty_level= GetControlValue(control);
 			break;
 
 		case iCOLOR:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			preferences->color= GetControlValue(control)-1;
+			preferences->color= GetControlValue(control);
 			break;
 
 		case iTEAM:
 			GetDialogItem(dialog, item_hit, &item_type, (Handle *) &control, &bounds);
-			preferences->team= GetControlValue(control)-1;
+			preferences->team= GetControlValue(control);
 			break;
 		
 		// LP additions:
@@ -1560,9 +1554,9 @@ static bool file_is_extension_and_add_callback(
 	
 	if(file_descriptions.size()<MAXIMUM_FIND_FILES)
 	{
-                bool should_insert = false;
-                file_description element_to_insert;
-                
+		bool should_insert = false;
+		file_description element_to_insert;
+
 		// LP change, since the filetypes are no longer constants
 		Typecode Filetype = File.GetType();
 		if (Filetype == _typecode_scenario || Filetype == _typecode_physics)
@@ -1571,12 +1565,12 @@ static bool file_is_extension_and_add_callback(
 			// checksum= read_wad_file_checksum((FileDesc *) file);
 			if(checksum != 0) /* error. */
 			{
-                                element_to_insert.file= File;
-                                element_to_insert.file_type= Filetype;
-                                element_to_insert.checksum= checksum;
-                                element_to_insert.directory_index= current_directory_stack.back();
-                                should_insert = true;
-                        }
+				element_to_insert.file= File;
+				element_to_insert.file_type= Filetype;
+				element_to_insert.checksum= checksum;
+				element_to_insert.directory_index= current_directory_stack.back();
+				should_insert = true;
+			}
 		}
 		else if (Filetype == _typecode_patch)
 		{
@@ -1584,34 +1578,34 @@ static bool file_is_extension_and_add_callback(
 			if(checksum != 0) /* error. */
 			{
 				unsigned long parent_checksum= read_wad_file_parent_checksum(File);
-                                element_to_insert.file= File;
-                                element_to_insert.file_type= Filetype;
-                                element_to_insert.checksum= checksum;
-                                element_to_insert.parent_checksum= parent_checksum;
-                                element_to_insert.directory_index= current_directory_stack.back();
-                                should_insert = true;
-                                // ZZZ note: the code I'm replacing inserted two file_descriptions[] entries here;
-                                // that behavior seemed erroneous to me so I'm doing otherwise.
-                                // (besides, I don't think we use "patch" files anyway, so...)
+				element_to_insert.file= File;
+				element_to_insert.file_type= Filetype;
+				element_to_insert.checksum= checksum;
+				element_to_insert.parent_checksum= parent_checksum;
+				element_to_insert.directory_index= current_directory_stack.back();
+				should_insert = true;
+				// ZZZ note: the code I'm replacing inserted two file_descriptions[] entries here;
+				// that behavior seemed erroneous to me so I'm doing otherwise.
+				// (besides, I don't think we use "patch" files anyway, so...)
 			}
 		}
 		else if (Filetype == _typecode_shapes || Filetype == _typecode_sounds)
 		{
-                        element_to_insert.file= File;
-                        element_to_insert.file_type= Filetype;
-                        element_to_insert.checksum=  pb->hFileInfo.ioFlMdDat;
-                        element_to_insert.directory_index= current_directory_stack.back();
-                        should_insert = true;
+				element_to_insert.file= File;
+				element_to_insert.file_type= Filetype;
+				element_to_insert.checksum=  pb->hFileInfo.ioFlMdDat;
+				element_to_insert.directory_index= current_directory_stack.back();
+				should_insert = true;
 		}
 
-                if(should_insert)
-                {
-                        files_by_directory_by_typecode[element_to_insert.file_type][current_directory_stack.back()].push_back(file_descriptions.size());
-                        file_descriptions.push_back(element_to_insert);
-                }
+		if(should_insert)
+		{
+			files_by_directory_by_typecode[element_to_insert.file_type][current_directory_stack.back()].push_back(file_descriptions.size());
+			file_descriptions.push_back(element_to_insert);
+		}
 	}
 
-        // Keep looking...
+	// Keep looking...
 	return true;
 }
 
@@ -1645,7 +1639,7 @@ static void search_from_directory(DirectorySpecifier& BaseDir)
 	pb.buffer= NULL;
 	pb.max= MAXIMUM_FIND_FILES;
 	pb.callback= file_is_extension_and_add_callback;
-        pb.directory_change_callback= environment_preferences->group_by_directory ? directory_change_callback : NULL;
+	pb.directory_change_callback= environment_preferences->group_by_directory ? directory_change_callback : NULL;
 	pb.user_data= NULL;
 	pb.count= 0;
 

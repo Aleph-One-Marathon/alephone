@@ -489,6 +489,7 @@ GetListBoxListHandle( ControlHandle control, ListHandle* list )
 #include <string.h>
 #include "NibsUiHelpers.h"
 
+static OSType global_signature = 0;
 
 std::auto_ptr<SelfReleasingCFStringRef>
 StringToCFString(const std::string& s)
@@ -673,36 +674,9 @@ void SetEditCText(ControlRef Ctrl, const char *Text)
 		);
 }
 
-// This should maybe be made a QQ_something function eventually,
-// but then someone would have to do the SDL version.
-void SetPopupLabelsFromStringset(ControlRef Ctrl, short StringSetID)
+void SetGlobalControlSignature(OSType sig)
 {
-	MenuHandle menu;
-	Size size;
-	OSErr result = GetControlData(Ctrl, kControlNoPart, kControlPopupButtonMenuRefTag, sizeof(menu), &menu, &size);
-	int num_items;
-
-	if (result != noErr || size != sizeof(MenuHandle))
-		return;
-
-	// Delete existing items in the menu
-	while (CountMenuItems(menu))
-		DeleteMenuItem(menu, 1);
-
-	if (TS_IsPresent(StringSetID) && (num_items = TS_CountStrings(StringSetID)) != 0)
-	{
-		for (int i = 0; result == noErr && i < num_items; i++)
-		{
-			char *string = TS_GetCString(StringSetID, i);
-			CFStringRef cfstring = CFStringCreateWithCString(NULL, string, kCFStringEncodingUTF8);
-			if (cfstring)
-			{
-				result = AppendMenuItemTextWithCFString(menu, cfstring, 0, 0, NULL);
-				CFRelease(cfstring);
-			}
-		}
-  }
-
+	global_signature = sig;
 }
 
 
@@ -1191,7 +1165,7 @@ static ControlRef get_control_from_window (DialogPTR dlg, int item)
 	OSStatus err;
 	
 	ControlID CtrlID;
-	CtrlID.signature = 0;
+	CtrlID.signature = global_signature;
 	CtrlID.id = item;
 	
 	ControlRef control = NULL;
