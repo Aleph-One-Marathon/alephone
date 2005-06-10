@@ -1254,6 +1254,8 @@ void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<
 		AppendMenuItemTextWithCFString(Menu, cfstring, 0, 0, NULL);
 		CFRelease(cfstring);
 	}
+	
+	SetControl32BitMaximum(MenuCtrl,CountMenuItems(Menu));
 }
 
 void QQ_set_selector_control_labels_from_stringset (DialogPTR dlg, int item, int stringset_id)
