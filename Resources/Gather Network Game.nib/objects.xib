@@ -36,6 +36,8 @@
               <array count="1" name="listViewColumns">
                 <object class="IBCarbonDBListViewColumn">
                   <int name="sortOrder">1</int>
+                  <int name="minWidth">335</int>
+                  <int name="textAlignment">-2</int>
                 </object>
               </array>
             </object>
@@ -64,7 +66,7 @@
       </array>
     </object>
     <object class="IBCarbonWindow" id="183">
-      <string name="windowRect">68 44 326 631 </string>
+      <string name="windowRect">394 120 652 707 </string>
       <string name="title">Gather Network Game</string>
       <reference name="rootControl" idRef="182"/>
       <boolean name="hasCloseBox">FALSE</boolean>
