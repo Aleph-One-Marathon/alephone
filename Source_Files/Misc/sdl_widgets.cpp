@@ -52,6 +52,7 @@
 #include "world.h"
 #include "mysound.h"
 #include "interface.h"
+#include "player.h"
 
 #include "screen.h"
 
@@ -634,29 +635,30 @@ w_enabling_toggle::selection_changed()
  *  Player color selection
  */
 
-const char *w_player_color::color_labels[9] = {
-	"Slate", "Red", "Violet", "Yellow", "White", "Orange", "Blue", "Green", NULL
-};
+w_player_color::w_player_color(const char *name, int selection) : w_select(name, selection, NULL)
+{
+	set_labels_stringset(kTeamColorsStringSetID);
+}
 
 void w_player_color::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
 
 	// Name (ZZZ: different color for disabled)
-    int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
+	int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
 
 	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
 
 	// Selection
 	if (selection >= 0) {
-                uint32 pixel = get_dialog_player_color(selection);
+		uint32 pixel = get_dialog_player_color(selection);
 		SDL_Rect r = {rect.x + label_x, rect.y + 1, 48, rect.h - 2};
 		SDL_FillRect(s, &r, pixel);
-    } else {
-        theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+	} else {
+		theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
 
 		draw_text(s, "<unknown>", rect.x + label_x, y, get_dialog_color(theColorToUse), font, style);
-    }
+	}
 
 	// Cursor
 	if (active)	{

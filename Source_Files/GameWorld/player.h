@@ -147,6 +147,11 @@ enum /* team colors */
 	NUMBER_OF_TEAM_COLORS
 };
 
+enum /* stringset that holds the names of the above colors */
+{
+	kTeamColorsStringSetID	= 152 // matches STR# for colors in original Marathon (m2 and inf moved it to a menu)
+};
+
 // Is here for script_instructions.cpp
 // ZZZ: increasing this queue size so machines (esp. in netgames) are even more tolerant
 // of abnormalities (can probably reduce it back once the current biggest source of stalled

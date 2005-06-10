@@ -558,3 +558,20 @@ BUILD_STRINGSET(150, sStringSetNumber150);
 BUILD_STRINGSET(151, sStringSetNumber151);
 BUILD_STRINGSET(153, sStringSetNumber153);
 BUILD_STRINGSET(200, sStringSetNumber200);
+
+
+#include "player.h" // for kTeamColorsStringSetID
+
+static char* sTeamColorNamesStrings[] = {
+    "Slate",
+    "Red",
+    "Violet",
+    "Yellow",
+    "White",
+    "Orange",
+    "Blue",
+    "Green",
+};
+
+BUILD_STRINGSET(kTeamColorsStringSetID, sTeamColorNamesStrings);
+

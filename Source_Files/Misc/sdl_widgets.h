@@ -384,11 +384,9 @@ private:
 
 class w_player_color : public w_select {
 public:
-	w_player_color(const char *name, int selection) : w_select(name, selection, color_labels) {}
+	w_player_color(const char *name, int selection);
 
 	void draw(SDL_Surface *s) const;
-
-	static const char *color_labels[9];
 };
 
 
