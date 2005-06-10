@@ -1250,6 +1250,11 @@ void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<
 	SetControl32BitMaximum(MenuCtrl,CountMenuItems(Menu));
 }
 
+void QQ_set_selector_control_labels_from_stringset (DialogPTR dlg, int item, int stringset_id)
+{
+	QQ_set_selector_control_labels (dlg, item, build_stringvector_from_stringset (stringset_id));
+}
+
 const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item)
 {
 	ControlRef control = get_control_from_window (dlg, item);

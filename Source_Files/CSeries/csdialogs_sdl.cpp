@@ -326,6 +326,21 @@ void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<
 	}
 }
 
+void QQ_set_selector_control_labels_from_stringset (DialogPTR dlg, int item, int stringset_id)
+{
+	assert(dlg != NULL);
+	
+	w_select_popup* theWidget = dynamic_cast<w_select_popup*>(dlg->get_widget_by_id(item));
+	if (theWidget != NULL) {
+		theWidget->set_labels(build_stringvector_from_stringset (stringset_id));
+	}
+	
+	w_select* theWidget2 = dynamic_cast<w_select*>(dlg->get_widget_by_id(item));
+	if (theWidget2 != NULL) {
+		theWidget2->set_labels_stringset(stringset_id);
+	}
+}
+
 const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item)
 {
 	assert (dlg != NULL);

@@ -561,6 +561,7 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 	d.add(tab_w);
 	QQ_set_selector_control_labels (&d, iSNG_TABS, tab_strings);
 	QQ_set_selector_control_value (&d, iSNG_TABS, 0);
+	d.set_active_tab(iSNG_GENERAL_TAB);
 	
 	d.add(new w_spacer());
 	
@@ -604,7 +605,6 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
         d.add_to_tab(game_type_w, iSNG_GENERAL_TAB);
 
 	w_select *diff_w = new w_select("Difficulty", network_preferences->difficulty_level, NULL);
-        diff_w->set_labels_stringset(kDifficultyLevelsStringSetID);
         diff_w->set_identifier(iDIFFICULTY_MENU);
 	d.add_to_tab(diff_w, iSNG_GENERAL_TAB);
 

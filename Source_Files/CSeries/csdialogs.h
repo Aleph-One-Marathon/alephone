@@ -82,6 +82,7 @@ extern void QQ_set_boolean_control_value (DialogPTR dlg, int item, bool value);
 extern int QQ_get_selector_control_value (DialogPTR dlg, int item);
 extern void QQ_set_selector_control_value (DialogPTR dlg, int item, int value);
 extern void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<std::string> labels);
+extern void QQ_set_selector_control_labels_from_stringset (DialogPTR dlg, int item, int stringset_id);
 
 extern const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item);
 extern void QQ_copy_string_to_text_control (DialogPTR dlg, int item, const std::string &s);

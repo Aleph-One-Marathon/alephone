@@ -1498,7 +1498,7 @@ w_tab_popup::w_tab_popup (const char *name) : w_select_popup (name, gotSelectedC
 void w_tab_popup::gotSelectedCallback (void* me)
 {
 	w_tab_popup* w = reinterpret_cast<w_tab_popup*>(me);
-	w->get_owning_dialog ()->set_active_tab (w->get_selection ());
+	w->get_owning_dialog ()->set_active_tab (w->get_selection ()  + w->get_identifier () + 1);
 	w->get_owning_dialog ()->draw ();
 }
 

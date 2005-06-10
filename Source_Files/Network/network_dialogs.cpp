@@ -569,7 +569,7 @@ short netgame_setup_dialog_initialise (
 
 	QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (entry_flags));
 
-	QQ_set_selector_control_labels (dialog, iGAME_TYPE, build_stringvector_from_stringset (kNetworkGameTypesStringSetID));
+	QQ_set_selector_control_labels_from_stringset (dialog, iGAME_TYPE, kNetworkGameTypesStringSetID);
 	QQ_set_selector_control_value (dialog, iGAME_TYPE, theAdjustedPreferences.game_type);
 	setup_dialog_for_game_type(dialog, theAdjustedPreferences.game_type);
 
@@ -578,7 +578,10 @@ short netgame_setup_dialog_initialise (
 	/* Set the menu values */
 	QQ_set_selector_control_value(dialog, iGATHER_COLOR, player_preferences->color);
 	QQ_set_selector_control_value(dialog, iGATHER_TEAM, player_preferences->team);
+	
+	QQ_set_selector_control_labels_from_stringset(dialog, iDIFFICULTY_MENU, kDifficultyLevelsStringSetID);
 	QQ_set_selector_control_value(dialog, iDIFFICULTY_MENU, theAdjustedPreferences.difficulty_level);
+	
 	QQ_set_selector_control_value(dialog, iENTRY_MENU, level_index_to_menu_index(theAdjustedPreferences.entry_point, entry_flags));
 	
 	// START Benad 
