@@ -1237,17 +1237,11 @@ void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<
 	while(CountMenuItems(Menu)) DeleteMenuItem(Menu, 1);
 	
 	// Add in new contents
-	int i = 0;
 	for (std::vector<std::string>::const_iterator it = labels.begin (); it != labels.end (); ++it) {
-		++i;
-		copy_string_to_pstring(*it, ptemporary, 250);
-		// jkvw: can't AppendMenu the string directly, because AppendMenu
-		// will interpret certain characters as metacharacters.
-		AppendMenu(Menu, "\pReplace Me");
-		SetMenuItemText(Menu, i, ptemporary);
+		CFStringRef cfstring = CFStringCreateWithCString(NULL, (*it).c_str (), NULL);
+		AppendMenuItemTextWithCFString(Menu, cfstring, 0, 0, NULL);
+		CFRelease(cfstring);
 	}
-
-	SetControl32BitMaximum(MenuCtrl,CountMenuItems(Menu));
 }
 
 void QQ_set_selector_control_labels_from_stringset (DialogPTR dlg, int item, int stringset_id)
