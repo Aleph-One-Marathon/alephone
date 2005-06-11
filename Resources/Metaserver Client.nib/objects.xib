@@ -4,13 +4,13 @@
   <object name="rootObject" class="NSCustomObject" id="1">
     <string name="customClass">NSApplication</string>
   </object>
-  <array count="11" name="allObjects">
+  <array count="10" name="allObjects">
     <object class="IBCarbonWindow" id="166">
       <string name="windowRect">67 37 523 669 </string>
       <string name="title">Metaserver Client</string>
       <object name="rootControl" class="IBCarbonRootControl" id="167">
         <string name="bounds">0 0 456 632 </string>
-        <array count="9" name="subviews">
+        <array count="8" name="subviews">
           <object class="IBCarbonDBListView" id="180">
             <string name="bounds">44 32 177 257 </string>
             <int name="controlID">100</int>
@@ -74,11 +74,6 @@
             <string name="title">Join</string>
             <ostype name="command">ok  </ostype>
           </object>
-          <object class="IBCarbonEditText" id="188">
-            <string name="bounds">200 23 403 609 </string>
-            <int name="controlID">300</int>
-            <boolean name="enabled">FALSE</boolean>
-          </object>
           <object class="IBCarbonEditText" id="189">
             <string name="bounds">417 23 433 609 </string>
             <int name="controlID">400</int>
@@ -107,15 +102,13 @@
     <reference idRef="182"/>
     <reference idRef="183"/>
     <reference idRef="186"/>
-    <reference idRef="188"/>
     <reference idRef="189"/>
     <reference idRef="190"/>
     <reference idRef="191"/>
   </array>
-  <array count="11" name="allParents">
+  <array count="10" name="allParents">
     <reference idRef="1"/>
     <reference idRef="166"/>
-    <reference idRef="167"/>
     <reference idRef="167"/>
     <reference idRef="167"/>
     <reference idRef="167"/>

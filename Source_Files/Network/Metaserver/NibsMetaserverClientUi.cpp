@@ -171,6 +171,36 @@ private:
 	}
 };
 
+class TextboxWidget
+{
+public:
+	TextboxWidget (WindowRef window, int left, int top, int right, int bottom)
+	{
+		Rect frame = {top, left, bottom, right};
+		TXNNewObject (NULL, window, &frame,
+			kTXNWantVScrollBarMask | kTXNReadOnlyMask,
+			kTXNTextEditStyleFrameType,
+			kTXNTextensionFile,
+			kTXNSystemDefaultEncoding,
+			&textObject,
+			&frameID,
+			0);
+
+		TXNActivate (textObject, frameID, kScrollBarsAlwaysActive);
+	}
+
+	void AppendString (const string& s)
+	{
+		TXNSetData (textObject, kTXNTextData, s.c_str(), s.size(),
+				kTXNEndOffset, kTXNEndOffset);
+	}
+	
+private:
+	TXNObject textObject;
+	TXNFrameID frameID;
+
+};
+
 class NibsMetaserverClientUi : public MetaserverClientUi, public MetaserverClient::NotificationAdapter
 {
 public:
@@ -180,6 +210,7 @@ public:
 	, m_playersInRoomWidget(GetCtrlFromWindow(m_dialog(), 0, iPLAYERS_IN_ROOM))
 	, m_gamesInRoomWidget(GetCtrlFromWindow(m_dialog(), 0, iGAMES_IN_ROOM))
 	, m_chatEntryWidget(GetCtrlFromWindow(m_dialog(), 0, iCHAT_ENTRY))
+	, m_textboxWidget(m_dialog(), 23, 200, 609, 403)
 	, m_used(false)
 	{
 		m_gamesInRoomWidget.SetItemSelectedCallback(bind(&NibsMetaserverClientUi::GameSelected, this, _1, _2));
@@ -227,9 +258,7 @@ public:
 
 	void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
 	{
-		string chatTranscript = QQ_copy_string_from_text_control(m_dialog(), iCHAT_HISTORY);
-		chatTranscript += (senderName + ": " + message + "\r");
-		QQ_copy_string_to_text_control(m_dialog(), iCHAT_HISTORY, chatTranscript);
+		m_textboxWidget.AppendString (senderName + ": " + message + "\r");
 	}
 
 	void receivedBroadcastMessage(const std::string& message)
@@ -271,6 +300,7 @@ private:
 	ListWidget<MetaserverPlayerInfo>		m_playersInRoomWidget;
 	ListWidget<GameListMessage::GameListEntry>	m_gamesInRoomWidget;
 	ControlRef					m_chatEntryWidget;
+	TextboxWidget					m_textboxWidget;
 	IPaddress					m_joinAddress;
 	bool						m_used;
 };

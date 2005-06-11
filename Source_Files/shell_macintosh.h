@@ -152,6 +152,7 @@ Apr 29, 2002 (Loren Petrich):
 #endif
 
 #include "macintosh_cseries.h"
+#include "NibsUiHelpers.h"
 #include "my32bqd.h"
 
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprockets Support */
@@ -516,6 +517,8 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 	
 	set_dialog_header_proc(marathon_dialog_header_proc);
 	initialize_images_manager();
+	
+	initialize_MLTE();
 	
 	/* Load the environment.. */
 	load_environment_from_preferences();

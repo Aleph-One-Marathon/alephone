@@ -25,6 +25,8 @@
 #include <memory>
 #include <string>
 
+void initialize_MLTE();
+
 class SelfReleasingCFStringRef
 {
 public:

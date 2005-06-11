@@ -481,9 +481,6 @@ GetListBoxListHandle( ControlHandle control, ListHandle* list )
 #endif
 
 
-// For Carbon-events dialogs
-#ifdef USES_NIBS
-
 #include "csalerts.h"
 #include <stdio.h>
 #include <string.h>
@@ -1157,7 +1154,12 @@ void SetCtrlFloatValue(ControlRef Ctrl, float Value)
 	SetControl32BitValue(Ctrl, IVal);
 }
 
-#endif
+void initialize_MLTE()
+{
+	TXNInitTextension (NULL, 0, 0); 
+}
+
+
 
 // Similar to GetCtrlFromWindow, but doesn't mind if control doesn't exist
 static ControlRef get_control_from_window (DialogPTR dlg, int item)
