@@ -179,6 +179,7 @@ public:
 	, m_dialog(m_metaserverClientNib.nibReference(), CFSTR("Metaserver Client"))
 	, m_playersInRoomWidget(GetCtrlFromWindow(m_dialog(), 0, iPLAYERS_IN_ROOM))
 	, m_gamesInRoomWidget(GetCtrlFromWindow(m_dialog(), 0, iGAMES_IN_ROOM))
+	, m_chatEntryWidget(GetCtrlFromWindow(m_dialog(), 0, iCHAT_ENTRY))
 	, m_used(false)
 	{
 		m_gamesInRoomWidget.SetItemSelectedCallback(bind(&NibsMetaserverClientUi::GameSelected, this, _1, _2));
@@ -198,6 +199,9 @@ public:
 		m_metaserverClient.associateNotificationAdapter(this);
 
 		AutoTimer Poller(0, PollingInterval, MetaserverClientUi_Poller, m_dialog());
+
+		AutoKeyboardWatcher ChatEntry_Watcher(respondToChatEvent);
+		ChatEntry_Watcher.Watch(m_chatEntryWidget, this);
 
 		RunModalDialog(m_dialog(), false, MetaserverClientUi_Handler, this);
 
@@ -239,6 +243,26 @@ public:
 		m_metaserverClient.sendChatMessage(message);
 		QQ_copy_string_to_text_control(m_dialog(), iCHAT_ENTRY, string());
 	}
+	
+	static pascal OSStatus respondToChatEvent (
+			EventHandlerCallRef HandlerCallRef,
+			EventRef Event,
+			void *UserData)
+	{
+		// If user pressed return, we send
+		if (GetEventKind(Event) == kEventRawKeyDown) {
+			char character;
+			GetEventParameter(Event, kEventParamKeyMacCharCodes, typeChar,
+						NULL, sizeof(char), NULL, &character);
+			if (character == '\r') {
+				reinterpret_cast<NibsMetaserverClientUi*>(UserData)->sendChat();
+				return noErr; 	// Don't allow next handler to be called
+			}
+		}
+		
+		// Hand off to the next event handler
+		return CallNextEventHandler(HandlerCallRef, Event);
+	}
 
 private:
 	AutoNibReference				m_metaserverClientNib;
@@ -246,6 +270,7 @@ private:
 	MetaserverClient				m_metaserverClient;
 	ListWidget<MetaserverPlayerInfo>		m_playersInRoomWidget;
 	ListWidget<GameListMessage::GameListEntry>	m_gamesInRoomWidget;
+	ControlRef					m_chatEntryWidget;
 	IPaddress					m_joinAddress;
 	bool						m_used;
 };
@@ -256,15 +281,12 @@ MetaserverClientUi::Create()
 	return auto_ptr<MetaserverClientUi>(new NibsMetaserverClientUi);
 }
 
+// Does nothing, since we have another system for chat sending now
 static void MetaserverClientUi_Handler(ParsedControl& control, void* data)
 {
 	NibsMetaserverClientUi* ui = static_cast<NibsMetaserverClientUi*>(data);
 	switch(control.ID.id)
 	{
-		case iCHAT_ENTRY:
-			ui->sendChat();
-			break;
-
 		default:
 			break;
 	}
