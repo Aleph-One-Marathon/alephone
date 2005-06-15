@@ -54,6 +54,72 @@
 //082
 //083
 //084
+		081A323B085FE5AB0015BC47 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = carbon_widgets.h;
+			path = ../Source_Files/Misc/carbon_widgets.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		081A323C085FE5AB0015BC47 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = carbon_widgets.cpp;
+			path = ../Source_Files/Misc/carbon_widgets.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		081A323D085FE5AB0015BC47 = {
+			fileRef = 081A323B085FE5AB0015BC47;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		081A323E085FE5AB0015BC47 = {
+			fileRef = 081A323C085FE5AB0015BC47;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		081A323F085FE5AB0015BC47 = {
+			fileRef = 081A323B085FE5AB0015BC47;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		081A3240085FE5AB0015BC47 = {
+			fileRef = 081A323C085FE5AB0015BC47;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		081A3241085FE5AB0015BC47 = {
+			fileRef = 081A323B085FE5AB0015BC47;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		081A3242085FE5AB0015BC47 = {
+			fileRef = 081A323C085FE5AB0015BC47;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		081A3243085FE5AB0015BC47 = {
+			fileRef = 081A323B085FE5AB0015BC47;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		081A3244085FE5AB0015BC47 = {
+			fileRef = 081A323C085FE5AB0015BC47;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		088809F0084C1A4000DC9E4D = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -276,11 +342,12 @@
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = "\"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\"";
+				OPTIMIZATION_CFLAGS = "-O0";
 				OTHER_CFLAGS = "-DSDL -DHAVE_OPENGL -DHAVE_CONFIG_H -DHAVE_UNISTD_H -DSPEEX -DHAVE_LUA -x objective-c++";
 				OTHER_LDFLAGS = "-flat_namespace -multiply_defined suppress -framework SDL -framework SDL_image -framework SDL_net -framework AppKit -lspeex -llua -llualib";
 				PRODUCT_NAME = AlephOneSDL;
 				SECTORDER_FLAGS = "";
-				USE_GCC3_PFE_SUPPORT = YES;
+				USE_GCC3_PFE_SUPPORT = NO;
 				WARNING_CFLAGS = "-Wmost -Wpointer-arith -Wformat";
 				WRAPPER_EXTENSION = app;
 			};
@@ -1128,6 +1195,7 @@
 			path = ../Source_Files/Misc/DefaultStringSets.cpp;
 			refType = 2;
 			sourceTree = SOURCE_ROOT;
+			usesTabs = 1;
 		};
 		3DAC27A603DC9D1C00000104 = {
 			fileEncoding = 30;
@@ -1854,14 +1922,14 @@
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = "/usr/local/lib \"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib\" \"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs\"";
+				OPTIMIZATION_CFLAGS = "-O0";
 				OTHER_CFLAGS = "-g -Dmac -DTARGET_API_MAC_CARBON  -DUSE_CARBON_ACCESSORS -DSUPPRESS_MACOS_CLASSIC -DUSE_SHEETS=1 -DHAVE_SDL_NET=1 -DHAVE_UNISTD_H -DHAVE_CORE_GRAPHICS -DAPPLICATION_IS_BUNDLED -DEXPLICIT_CARBON_HEADER -DHAVE_LUA -DSPEEX -fcommon -DDEBUG -DUSES_NIBS";
 				OTHER_LDFLAGS = "-flat_namespace -llua -llualib -lspeex";
 				OTHER_REZFLAGS = "";
-				PRECOMPILE_PREFIX_HEADER = YES;
 				PREFIX_HEADER = precompiled_headers.h;
 				PRODUCT_NAME = "AlephOne (NIBs)";
 				SECTORDER_FLAGS = "";
-				USE_GCC3_PFE_SUPPORT = YES;
+				USE_GCC3_PFE_SUPPORT = NO;
 				WARNING_CFLAGS = "-Wmost -Wno-import -Wno-four-char-constants -Wno-unknown-pragmas -Wno-precomp -Wstrict-aliasing";
 				WRAPPER_EXTENSION = app;
 			};
@@ -2288,6 +2356,7 @@
 				AE2DEAD10815E0A600817EBC,
 				AE2DEAD20815E0A600817EBC,
 				AEBF94A80834FD9500C0B18C,
+				081A323D085FE5AB0015BC47,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3692,6 +3761,7 @@
 				AE2DEB7C0815E0A600817EBC,
 				AE2DEB910815EE1400817EBC,
 				088809F1084C1A4000DC9E4D,
+				081A323E085FE5AB0015BC47,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4748,6 +4818,7 @@
 			path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp;
 			refType = 2;
 			sourceTree = SOURCE_ROOT;
+			usesTabs = 1;
 		};
 		AE2DEB910815EE1400817EBC = {
 			fileRef = AE2DEB900815EE1400817EBC;
@@ -4791,6 +4862,8 @@
 				AE61B1100815F263001F20E1,
 				AE61B1110815F263001F20E1,
 				088809F2084C1A4000DC9E4D,
+				081A323F085FE5AB0015BC47,
+				081A3240085FE5AB0015BC47,
 			);
 			isa = PBXCopyFilesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6264,6 +6337,7 @@
 			path = ../Source_Files/Misc/preferences_macintosh.h;
 			refType = 2;
 			sourceTree = SOURCE_ROOT;
+			usesTabs = 1;
 		};
 		F522120E0136A6FD01000001 = {
 			fileEncoding = 30;
@@ -6355,6 +6429,7 @@
 			path = ../Source_Files/Misc/sdl_widgets.cpp;
 			refType = 2;
 			sourceTree = SOURCE_ROOT;
+			usesTabs = 1;
 		};
 		F52212400136A6FD01000001 = {
 			fileEncoding = 30;
@@ -6364,6 +6439,7 @@
 			path = ../Source_Files/Misc/sdl_widgets.h;
 			refType = 2;
 			sourceTree = SOURCE_ROOT;
+			usesTabs = 1;
 		};
 		F52212480136A6FD01000001 = {
 			fileEncoding = 30;
@@ -7798,6 +7874,7 @@
 				3D87958707D11E120078D26B,
 				3D87958907D11E120078D26B,
 				3DF154D9080376FD00BC3C09,
+				081A3243085FE5AB0015BC47,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7980,6 +8057,7 @@
 				3D87958607D11E120078D26B,
 				3D87958807D11E120078D26B,
 				3DF154D7080376E100BC3C09,
+				081A3244085FE5AB0015BC47,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -8313,6 +8391,7 @@
 			path = ../Source_Files/CSeries/csdialogs_macintosh.cpp;
 			refType = 2;
 			sourceTree = SOURCE_ROOT;
+			usesTabs = 1;
 		};
 		F536742902014FC301A80001 = {
 			fileRef = F536742802014FC301A80001;
@@ -9458,6 +9537,8 @@
 			files = (
 				F5A2534A023B71CF01A80001,
 				F5A2534B023B71CF01A80001,
+				081A3241085FE5AB0015BC47,
+				081A3242085FE5AB0015BC47,
 			);
 			isa = PBXCopyFilesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -10287,6 +10368,7 @@
 			path = player.h;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC92700240D28201A80001 = {
 			fileEncoding = 30;
@@ -11987,6 +12069,7 @@
 			path = computer_interface.h;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC93720240D85D01A80001 = {
 			fileEncoding = 30;
@@ -12227,6 +12310,7 @@
 			path = computer_interface.cpp;
 			refType = 4;
 			sourceTree = "<group>";
+			usesTabs = 1;
 		};
 		F5CC938E0240D85D01A80001 = {
 			fileEncoding = 30;
@@ -13134,6 +13218,8 @@
 		};
 		F5CC94280240DB8801A80001 = {
 			children = (
+				081A323B085FE5AB0015BC47,
+				081A323C085FE5AB0015BC47,
 				F52211D10136A6FD01000001,
 				F52211D20136A6FD01000001,
 				F522120D0136A6FD01000001,
