@@ -54,10 +54,12 @@
 #include	<vector>
 #include	<set>
 #include	<boost/function.hpp>
+#include 	<boost/bind.hpp>
+
+#include "metaserver_messages.h" // for GameListMessage, for w_games_in_room and MetaserverPlayerInfo, for w_players_in_room
 
 struct SDL_Surface;
 class sdl_font_info;
-
 
 /*
  *  Widget base class
@@ -217,6 +219,8 @@ class w_button : public widget {
 public:
 	w_button(const char *text, action_proc proc, void *arg);
 	~w_button();
+
+	void set_callback (action_proc proc, void *arg);
 
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
@@ -732,6 +736,239 @@ private:
 	char		filename[256];
 	char		dialog_prompt[256];
 	Typecode	typecode;
+};
+
+
+/*
+ *	Lists for metaserver dialog; moved from SdlMetaserverClientUi.cpp
+ */
+
+template <typename tElement>
+class w_items_in_room : public w_list_base
+{
+public:
+	typedef typename boost::function<void (const tElement& item)> ItemClickedCallback;
+	typedef typename std::vector<tElement> ElementVector;
+
+	w_items_in_room(ItemClickedCallback itemClicked, int width, int numRows) :
+		w_list_base(width, numRows, 0),
+		m_itemClicked(itemClicked)
+	{
+		num_items = 0;
+		new_items();
+	}
+
+	void set_collection(const std::vector<tElement>& elements) {
+		m_items = elements;
+		num_items = m_items.size();
+		new_items();
+		// do other crap - manage selection, force redraw, etc.
+	}
+	
+	void set_item_clicked_callback (ItemClickedCallback itemClicked) { m_itemClicked = itemClicked; }
+
+	void item_selected() {
+		if(m_itemClicked)
+			m_itemClicked(m_items[selection]);
+	}
+
+protected:
+	void draw_items(SDL_Surface* s) const {
+		typename ElementVector::const_iterator i = m_items.begin();
+		int16 x = rect.x + get_dialog_space(LIST_L_SPACE);
+		int16 y = rect.y + get_dialog_space(LIST_T_SPACE);
+		uint16 width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+
+		for(size_t n = 0; n < top_item; n++)
+			++i;
+
+		for (size_t n=top_item; n<top_item + MIN(shown_items, num_items); n++, ++i, y=y+font_height)
+			draw_item(*i, s, x, y, width, n == selection && active);
+	}
+
+private:
+	ElementVector			m_items;
+	ItemClickedCallback		m_itemClicked;
+
+	// This should be factored out into a "drawer" object/Strategy
+	virtual void draw_item(const tElement& item, SDL_Surface* s,
+			int16 x, int16 y, uint16 width, bool selected) const {
+		y += font->get_ascent();
+		set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
+		draw_text(s, item.name().c_str(), x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+	}
+
+	w_items_in_room(const w_items_in_room<tElement>&);
+	w_items_in_room<tElement>& operator =(const w_items_in_room<tElement>&);
+};
+
+
+typedef w_items_in_room<GameListMessage::GameListEntry> w_games_in_room;
+
+
+class w_players_in_room : public w_items_in_room<MetaserverPlayerInfo>
+{
+public:
+	w_players_in_room(w_items_in_room<MetaserverPlayerInfo>::ItemClickedCallback itemClicked, int width, int numRows)
+	: w_items_in_room<MetaserverPlayerInfo>(itemClicked, width, numRows)
+	{}
+
+private:
+	static const int kTeamColorSwatchWidth = 8;
+	static const int kPlayerColorSwatchWidth = 4;
+	static const int kSwatchGutter = 2;
+
+	void draw_item(const MetaserverPlayerInfo& item, SDL_Surface* s,
+		int16 x, int16 y, uint16 width, bool selected) const;
+};
+
+
+
+//////// w_text_box ////////
+// Based on w_chat_history, but more general
+class w_text_box : public w_list<string> {
+private:    
+	vector<string> text_lines;
+
+public:
+	w_text_box(int width, int numRows) :
+		w_list<string>(text_lines, width, numRows, 0)
+		{ num_items = 0; }
+		// must update num_items since text_lines was not initialized when w_list<> acted on it.
+
+	// Widget selectable?
+	virtual bool is_selectable(void) const {return false;}
+
+	void item_selected() {}
+
+	void append_text(const string&);
+	
+	~w_text_box() {};
+	
+private:
+	void draw_item(vector<string>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
+};
+
+
+
+
+/*
+ *	Wrappers to common widget interface follow
+ */
+
+typedef boost::function<void (void)> ControlHitCallback;
+typedef boost::function<void (char)> GotCharacterCallback;
+
+class SDLWidgetWidget
+{
+public:
+	void hide ();
+	void show ();
+	
+	void activate ();
+	void deactivate ();
+
+protected:
+	SDLWidgetWidget (widget* in_widget)
+		: m_widget (in_widget)
+		, hidden (false)
+		, inactive (false)
+		{}
+
+	widget* m_widget;
+
+private:
+	bool hidden, inactive;
+};
+
+class ButtonWidget : public SDLWidgetWidget
+{
+public:
+	ButtonWidget (w_button* button)
+		: SDLWidgetWidget (button)
+		, m_button (button)
+		{ m_button->set_callback (bounce_callback, this); }
+
+	void set_callback (ControlHitCallback callback) { m_callback = callback; }
+
+	void push () { if (m_callback) m_callback (); }
+
+private:
+	static void bounce_callback(void* arg)
+		{ reinterpret_cast<ButtonWidget*>(arg)->m_callback (); }
+
+	w_button* m_button;
+	ControlHitCallback m_callback;
+};
+
+class EditTextWidget : public SDLWidgetWidget
+{
+public:
+	EditTextWidget (w_text_entry* text_entry)
+		: SDLWidgetWidget (text_entry)
+		, m_text_entry (text_entry)
+		{ m_text_entry->set_enter_pressed_callback (boost::bind(&EditTextWidget::got_submit, this, _1)); }
+
+	void set_callback (GotCharacterCallback callback) { m_callback = callback; }
+
+	void set_text (string s) { m_text_entry->set_text(s.c_str ()); }
+	const string get_text () { return string(m_text_entry->get_text()); }
+
+private:
+	w_text_entry* m_text_entry;
+	GotCharacterCallback m_callback;
+	
+	// Yeah, I know.  Interface can be refined later.
+	void got_submit(w_text_entry* ignored) { if (m_callback) m_callback ('\r'); }
+};
+
+class TextboxWidget : public SDLWidgetWidget
+{
+public:
+	TextboxWidget (w_text_box* text_box)
+	: SDLWidgetWidget (text_box)
+	, m_text_box (text_box)
+	{}
+
+	void AppendString (const string& s) { m_text_box->append_text (s); }
+
+private:
+	w_text_box* m_text_box;
+};
+
+class GameListWidget
+{
+public:
+	GameListWidget (w_games_in_room* games_in_room)
+		: m_games_in_room (games_in_room)
+		{
+			m_games_in_room->set_item_clicked_callback(boost::bind(&GameListWidget::bounce_callback, this, _1));
+		}
+
+	void SetItems(const vector<GameListMessage::GameListEntry>& items) { m_games_in_room->set_collection (items); }
+
+	void SetItemSelectedCallback(const boost::function<void (GameListMessage::GameListEntry)> itemSelected)
+		{ m_callback = itemSelected; }
+
+private:
+	w_games_in_room* m_games_in_room;
+	boost::function<void (GameListMessage::GameListEntry)> m_callback;
+	
+	void bounce_callback (GameListMessage::GameListEntry thingy)
+		{ m_callback (thingy); }
+};
+
+class PlayerListWidget
+{
+public:
+	PlayerListWidget (w_players_in_room* players_in_room)
+		: m_players_in_room (players_in_room) {}
+
+	void SetItems(const vector<MetaserverPlayerInfo>& items) { m_players_in_room->set_collection (items); }
+
+private:
+	w_players_in_room* m_players_in_room;
 };
 
 #endif

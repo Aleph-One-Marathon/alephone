@@ -61,6 +61,7 @@
 
 #include    "mouse.h"   // (ZZZ) NUM_SDL_MOUSE_BUTTONS, SDLK_BASE_MOUSE_BUTTON
 
+
 /*
  *  Widget base class
  */
@@ -265,6 +266,12 @@ w_button::~w_button()
 	if (button_c) SDL_FreeSurface(button_c);
 }
 
+void w_button::set_callback(action_proc p, void *a)
+{
+	proc = p;
+	arg = a;
+}
+
 void w_button::draw(SDL_Surface *s) const
 {
 	// Button image
@@ -291,7 +298,7 @@ void w_button::draw(SDL_Surface *s) const
 
 void w_button::click(int /*x*/, int /*y*/)
 {
-    if(enabled)
+    if(enabled && proc)
 	    proc(arg);
 }
 
@@ -1550,3 +1557,89 @@ w_file_chooser::update_filename()
 	else
 		set_selection(sFileChooserInvalidFileString);
 }
+
+void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface* s,
+					int16 x, int16 y, uint16 width, bool selected) const
+{
+	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
+
+	SDL_Rect r = {x, y + 1, kTeamColorSwatchWidth, font->get_ascent() - 2};
+	uint32 pixel = SDL_MapRGB(s->format, 0xff, 0xff, 0x00);
+	SDL_FillRect(s, &r, pixel);
+
+	r.x += kTeamColorSwatchWidth;
+	r.w = kPlayerColorSwatchWidth;
+	pixel = SDL_MapRGB(s->format, 0xff, 0x00, 0x00);
+	SDL_FillRect(s, &r, pixel);
+
+	y += font->get_ascent();
+	draw_text(s, item.name().c_str(), x + kTeamColorSwatchWidth + kPlayerColorSwatchWidth + kSwatchGutter, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+
+	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+}
+
+
+void w_text_box::append_text(const string& s)
+{
+	if (s.empty ())
+		return;
+		
+	int available_width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+	size_t usable_characters = trunc_text(s.c_str (), available_width, font, style);
+	
+	string::const_iterator middle;
+	if (usable_characters != s.size ()) {
+		size_t last_space = s.find_last_of(' ', usable_characters);
+		if (last_space != 0 && last_space < usable_characters)
+			middle = s.begin() + last_space;
+		else
+			middle = s.begin() + usable_characters;
+	} else
+		middle = s.begin() + usable_characters;
+
+	text_lines.push_back (string (s.begin(), middle));
+
+	num_items = text_lines.size();
+	new_items();
+	if(num_items > shown_items) {
+		set_top_item(num_items - shown_items);
+	}
+	
+	append_text (string (middle, s.end ()));
+}
+
+void w_text_box::draw_item(vector<string>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const
+{
+    int computed_y = y + font->get_ascent();
+
+    draw_text(s, (*i).c_str (), x, computed_y, 0, font, style);
+}
+
+
+void SDLWidgetWidget::hide ()
+{
+	hidden = true;
+	m_widget->set_enabled (false);
+}
+
+void SDLWidgetWidget::show ()
+{
+	hidden = false;
+	m_widget->set_enabled (!inactive);
+}
+
+void SDLWidgetWidget::deactivate ()
+{
+	inactive = true;
+	m_widget->set_enabled (false);
+}
+
+void SDLWidgetWidget::activate ()
+{
+	inactive = false;
+	m_widget->set_enabled (!hidden);
+}
+
+
+
+

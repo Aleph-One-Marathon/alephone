@@ -26,7 +26,8 @@
 #define METASERVER_DIALOGS_H
 
 #include "network_metaserver.h"
-
+#include "metaserver_messages.h"
+#include "shared_widgets.h"
 
 
 const IPaddress run_network_metaserver_ui();
@@ -53,17 +54,37 @@ private:
 
 // Eventually this may disappear behind the facade of run_network_metaserver_ui()
 // Or maybe it will disappear instead, leaving this.  Unsure.
-class MetaserverClientUi
+class MetaserverClientUi : public MetaserverClient::NotificationAdapter
 {
 public:
 	// Abstract factory; concrete type determined at link-time
 	static std::auto_ptr<MetaserverClientUi> Create();
 
-	MetaserverClientUi() {}
+	const IPaddress GetJoinAddressByRunning();
 
-	virtual const IPaddress GetJoinAddressByRunning() = 0;
+	virtual ~MetaserverClientUi () {}
 
-	virtual ~MetaserverClientUi() {}
+protected:
+	MetaserverClientUi() : m_used (false) {}
+
+	virtual void Run() = 0;
+	virtual void Stop() = 0;
+
+	void GameSelected(GameListMessage::GameListEntry game);
+	void playersInRoomChanged();
+	void gamesInRoomChanged();
+	void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
+	void receivedBroadcastMessage(const std::string& message);
+	void sendChat();
+	void ChatTextEntered (char character);
+	
+	MetaserverClient				m_metaserverClient;
+	PlayerListWidget*				m_playersInRoomWidget;
+	GameListWidget*					m_gamesInRoomWidget;
+	EditTextWidget*					m_chatEntryWidget;
+	TextboxWidget*					m_textboxWidget;
+	IPaddress					m_joinAddress;
+	bool						m_used;
 };
 
 #endif // METASERVER_DIALOGS_H

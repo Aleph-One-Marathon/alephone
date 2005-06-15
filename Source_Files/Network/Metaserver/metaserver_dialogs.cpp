@@ -72,4 +72,67 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	m_client.announceGame(GAME_PORT, description);
 }
 
+const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
+{
+	// This was designed with one-shot-ness in mind
+	assert(!m_used);
+	m_used = true;
+	
+	obj_clear(m_joinAddress);
+
+	setupAndConnectClient(m_metaserverClient);
+	m_metaserverClient.associateNotificationAdapter(this);
+
+	m_gamesInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::GameSelected, this, _1));
+	m_chatEntryWidget->set_callback(bind(&MetaserverClientUi::ChatTextEntered, this, _1));
+
+	Run();
+	
+	return m_joinAddress;
+}
+
+void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
+{
+	memcpy(&m_joinAddress.host, &game.m_ipAddress, sizeof(m_joinAddress.host));
+	m_joinAddress.port = game.m_port;
+	Stop();
+}
+
+void MetaserverClientUi::playersInRoomChanged()
+{
+	m_playersInRoomWidget->SetItems(m_metaserverClient.playersInRoom());
+}
+
+void MetaserverClientUi::gamesInRoomChanged()
+{
+	m_gamesInRoomWidget->SetItems(m_metaserverClient.gamesInRoom());
+}
+
+void MetaserverClientUi::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
+{
+	m_textboxWidget->AppendString (senderName + ": " + message + "\r");
+}
+
+void MetaserverClientUi::receivedBroadcastMessage(const std::string& message)
+{
+	receivedChatMessage("Metaserver", 0, message);
+}
+
+void MetaserverClientUi::sendChat()
+{
+	string message = m_chatEntryWidget->get_text();
+#ifndef SDL
+	// It's just a little semantic difference, really.  :)
+	message = string(message.data (), message.length () - 1); // lose the last character, i.e. '\r'.
+#endif
+	m_metaserverClient.sendChatMessage(message);
+	m_chatEntryWidget->set_text(string());
+}
+	
+void MetaserverClientUi::ChatTextEntered (char character)
+{
+	if (character == '\r')
+		sendChat();
+}
+
 #endif // !defined(DISABLE_NETWORKING)

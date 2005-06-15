@@ -1038,6 +1038,43 @@ AutoTimer::~AutoTimer()
 }
 
 
+AutoWatcher::AutoWatcher (ControlRef ctrl, int num_event_types, const EventTypeSpec* event_types)
+{
+	
+	m_EventHandlerUPP = NewEventHandlerUPP(callback);
+	InstallControlEventHandler(ctrl, m_EventHandlerUPP,
+				num_event_types, event_types,
+				this, NULL);
+}
+
+const EventTypeSpec AutoControlWatcher::ControlWatcherEvents[1];
+
+pascal OSStatus AutoWatcher::callback (EventHandlerCallRef inCallRef,
+					EventRef inEvent, void* inUserData)
+{
+	// Hand off to the next event handler
+	OSStatus err = CallNextEventHandler(inCallRef, inEvent);
+	if (err != noErr)
+		return err;
+
+	// Do our thing
+	return reinterpret_cast<AutoWatcher*>(inUserData)->act (inCallRef, inEvent);
+}
+
+const EventTypeSpec AutoKeystrokeWatcher::KeystrokeWatcherEvents[2];
+
+OSStatus AutoKeystrokeWatcher::act (EventHandlerCallRef inCallRef, EventRef inEvent)
+{
+	if (m_callback) {
+		char character;
+		GetEventParameter(inEvent, kEventParamKeyMacCharCodes, typeChar,
+					NULL, sizeof(char), NULL, &character);
+		m_callback (character);
+	}
+	
+	return noErr;
+}
+
 AutoKeyboardWatcher::AutoKeyboardWatcher(
 	EventHandlerProcPtr Handler		// Called for every keystroke
 	)
@@ -1072,34 +1109,9 @@ void AutoKeyboardWatcher::Watch(
 	vassert(err == noErr, csprintf(temporary, "Error in InstallControlEventHandler: %d",err));
 }
 
+const EventTypeSpec AutoTabHandler::TabControlEvents[1];
 
-AutoTabHandler::AutoTabHandler (ControlRef in_tab, vector<ControlRef> in_panes)
-{
-	// Remember our control and our pane ids
-	tab = in_tab;
-	panes = in_panes;
-	
-	// Register the handler
-	OSStatus err;
-	const EventTypeSpec tabControlEvents[1] = {
-		{kEventClassControl, kEventControlHit}
-	};	
-	TabHandlerUPP = NewEventHandlerUPP (TabHit);
-	err = InstallControlEventHandler(tab, TabHandlerUPP,
-			1, tabControlEvents,
-			this, NULL);
-	vassert(err == noErr, csprintf(temporary, "Error in InstallControlEventHandler: %d",err));
-	
-	// Show top pane
-	SetActiveTab (0);
-}
-
-pascal OSStatus AutoTabHandler::TabHit (EventHandlerCallRef inCallRef, EventRef inEvent, void* inUserData)
-{
-	return (reinterpret_cast<AutoTabHandler*>(inUserData)->TabHit());
-}
-
-OSStatus AutoTabHandler::TabHit ()
+OSStatus AutoTabHandler::act (EventHandlerCallRef inCallRef, EventRef inEvent)
 {
 	int new_value = GetControlValue(tab) - 1;
 	if (new_value != old_value) {
@@ -1122,10 +1134,6 @@ void AutoTabHandler::SetActiveTab (int new_value)
 	Draw1Control (tab);
 }
 
-AutoTabHandler::~AutoTabHandler ()
-{
-	DisposeEventHandlerUPP (TabHandlerUPP);
-}
 
 // Convert between control values and floats from 0 to 1.
 // Should be especially useful for sliders.

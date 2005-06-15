@@ -25,6 +25,8 @@
 #include <memory>
 #include <string>
 
+#include <boost/function.hpp>
+
 void initialize_MLTE();
 
 class SelfReleasingCFStringRef
@@ -119,6 +121,7 @@ void GetEditCText(ControlRef Ctrl, char *Text, int MaxLen = 255);
 void SetEditCText(ControlRef Ctrl, const char *Text);
 
 void SetGlobalControlSignature(OSType sig);
+
 
 // For adding drawability to a
 // It cleans up when it goes out of scope
@@ -243,6 +246,66 @@ public:
 };
 
 
+class AutoWatcher
+{
+protected:
+	AutoWatcher (ControlRef ctrl, int num_event_types, const EventTypeSpec* event_types);
+	virtual ~AutoWatcher () { DisposeEventHandlerUPP (m_EventHandlerUPP); }
+	
+	virtual OSStatus act (EventHandlerCallRef inCallRef, EventRef inEvent) = 0;
+
+private:
+	static pascal OSStatus callback (EventHandlerCallRef inCallRef,
+					EventRef inEvent, void* inUserData);
+
+	EventHandlerUPP m_EventHandlerUPP;
+};
+
+typedef boost::function<void (void)> ControlHitCallback;
+class AutoControlWatcher : public AutoWatcher
+{
+public:
+	AutoControlWatcher (ControlRef ctrl)
+		: AutoWatcher (ctrl, 1, ControlWatcherEvents)
+		, m_callback (NULL)
+		{}
+
+	void set_callback (ControlHitCallback callback)
+		{ m_callback = callback; }
+
+protected:
+	static const EventTypeSpec ControlWatcherEvents[1] = {{kEventClassControl, kEventControlHit}};
+
+	virtual OSStatus act (EventHandlerCallRef inCallRef, EventRef inEvent)
+		{ if (m_callback) m_callback (); return noErr; }
+
+private:
+	ControlHitCallback m_callback;
+};
+
+// Doesn't identify or respond to modifier keys (currently)
+typedef boost::function<void (char)> GotCharacterCallback;
+class AutoKeystrokeWatcher : public AutoWatcher
+{
+public:
+	AutoKeystrokeWatcher (ControlRef ctrl)
+		: AutoWatcher (ctrl, 2, KeystrokeWatcherEvents)
+		, m_callback (NULL)
+		{}
+
+	void set_callback (GotCharacterCallback callback)
+		{ m_callback = callback; }
+
+protected:
+	static const EventTypeSpec KeystrokeWatcherEvents[2] =
+	{{kEventClassKeyboard, kEventRawKeyDown},{kEventClassKeyboard, kEventRawKeyRepeat}};
+
+	virtual OSStatus act (EventHandlerCallRef inCallRef, EventRef inEvent);
+
+private:
+	GotCharacterCallback m_callback;
+};
+
 // Adds a keyboard watcher to a control; useful for catching keystrokes
 // It cleans up when it goes out of scope
 class AutoKeyboardWatcher
@@ -264,26 +327,28 @@ public:
 
 
 // Watch for clicks on a tab control, and make the associated pane visible
-class AutoTabHandler
+class AutoTabHandler : public AutoWatcher
 {
 public:
 
-	AutoTabHandler (ControlRef in_tab, vector<ControlRef> in_panes);
-	~AutoTabHandler ();
+	AutoTabHandler (ControlRef in_tab, vector<ControlRef> in_panes)
+		: AutoWatcher (in_tab, 1, TabControlEvents)
+		, tab (in_tab)
+		, panes (in_panes)
+		{ SetActiveTab (0); }
 
 private:
 
-	static pascal OSStatus TabHit (EventHandlerCallRef inCallRef,
-					EventRef inEvent, void* inUserData);
-	OSStatus TabHit ();
+	static const EventTypeSpec TabControlEvents[1] = {{kEventClassControl, kEventControlHit}};
+
+	virtual OSStatus act (EventHandlerCallRef inCallRef, EventRef inEvent);
 	void SetActiveTab (int new_value);
 	
 	ControlRef tab;
 	vector<ControlRef> panes;
 	int old_value;
-	
-	EventHandlerUPP TabHandlerUPP;
 };
+
 
 // Convert between control values and floats from 0 to 1.
 // Should be especially useful for sliders.
