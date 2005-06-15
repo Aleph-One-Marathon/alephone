@@ -84,6 +84,48 @@
 //172
 //173
 //174
+		170EC12D085AB184001D8638 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = carbon_widgets.h;
+			refType = 4;
+		};
+		170EC12E085AB184001D8638 = {
+			fileRef = 170EC12D085AB184001D8638;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		170EC12F085AB7F3001D8638 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = carbon_widgets.cpp;
+			refType = 4;
+		};
+		170EC133085B5AF0001D8638 = {
+			fileRef = 170EC12F085AB7F3001D8638;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		170EC135085B5C90001D8638 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = shared_widgets.h;
+			refType = 4;
+		};
+		170EC137085B5C90001D8638 = {
+			fileRef = 170EC135085B5C90001D8638;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		170EC139085B5C90001D8638 = {
+			fileRef = 170EC135085B5C90001D8638;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		17587328FF379C6511CA2CBB = {
 			isa = PBXApplicationReference;
 			path = AlephOneSDL.app;
@@ -737,6 +779,7 @@
 				EF2A6C4F07D03A73008DCEFF,
 				EFA78B000808E88A00F0B285,
 				17F4B7D4084C259200E00D4F,
+				170EC139085B5C90001D8638,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1903,6 +1946,8 @@
 				EF2A6D1207D04417008DCEFF,
 				EFA78AFE0808E88A00F0B285,
 				EFCB281A0833135B0044FDF2,
+				170EC12E085AB184001D8638,
+				170EC137085B5C90001D8638,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3300,6 +3345,7 @@
 				EF2A6DCD07D04AA9008DCEFF,
 				EFA78AFD0808E88A00F0B285,
 				17F4B7E1084C330000E00D4F,
+				170EC133085B5AF0001D8638,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -9095,10 +9141,13 @@
 		};
 		F5CC94290240DB8801A80001 = {
 			children = (
+				170EC12D085AB184001D8638,
 				F522120E0136A6FD01000001,
 				F5A0002B023FDAD101A80001,
 				F522123B0136A6FD01000001,
 				F52212400136A6FD01000001,
+				170EC135085B5C90001D8638,
+				170EC12F085AB7F3001D8638,
 				F5A00023023FDA1601A80001,
 				F52211C30136A6FD01000001,
 				F522123A0136A6FD01000001,
