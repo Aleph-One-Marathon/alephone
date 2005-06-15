@@ -1047,7 +1047,8 @@ AutoWatcher::AutoWatcher (ControlRef ctrl, int num_event_types, const EventTypeS
 				this, NULL);
 }
 
-const EventTypeSpec AutoControlWatcher::ControlWatcherEvents[1];
+const EventTypeSpec AutoControlWatcher::ControlWatcherEvents[1]
+	= {{kEventClassControl, kEventControlHit}};
 
 pascal OSStatus AutoWatcher::callback (EventHandlerCallRef inCallRef,
 					EventRef inEvent, void* inUserData)
@@ -1061,7 +1062,8 @@ pascal OSStatus AutoWatcher::callback (EventHandlerCallRef inCallRef,
 	return reinterpret_cast<AutoWatcher*>(inUserData)->act (inCallRef, inEvent);
 }
 
-const EventTypeSpec AutoKeystrokeWatcher::KeystrokeWatcherEvents[2];
+const EventTypeSpec AutoKeystrokeWatcher::KeystrokeWatcherEvents[2]
+	= {{kEventClassKeyboard, kEventRawKeyDown},{kEventClassKeyboard, kEventRawKeyRepeat}};
 
 OSStatus AutoKeystrokeWatcher::act (EventHandlerCallRef inCallRef, EventRef inEvent)
 {
@@ -1109,7 +1111,8 @@ void AutoKeyboardWatcher::Watch(
 	vassert(err == noErr, csprintf(temporary, "Error in InstallControlEventHandler: %d",err));
 }
 
-const EventTypeSpec AutoTabHandler::TabControlEvents[1];
+const EventTypeSpec AutoTabHandler::TabControlEvents[1]
+	 = {{kEventClassControl, kEventControlHit}};
 
 OSStatus AutoTabHandler::act (EventHandlerCallRef inCallRef, EventRef inEvent)
 {

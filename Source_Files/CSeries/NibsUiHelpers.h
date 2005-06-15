@@ -274,7 +274,8 @@ public:
 		{ m_callback = callback; }
 
 protected:
-	static const EventTypeSpec ControlWatcherEvents[1] = {{kEventClassControl, kEventControlHit}};
+	static const EventTypeSpec ControlWatcherEvents[1];
+	// = {{kEventClassControl, kEventControlHit}};
 
 	virtual OSStatus act (EventHandlerCallRef inCallRef, EventRef inEvent)
 		{ if (m_callback) m_callback (); return noErr; }
@@ -297,8 +298,8 @@ public:
 		{ m_callback = callback; }
 
 protected:
-	static const EventTypeSpec KeystrokeWatcherEvents[2] =
-	{{kEventClassKeyboard, kEventRawKeyDown},{kEventClassKeyboard, kEventRawKeyRepeat}};
+	static const EventTypeSpec KeystrokeWatcherEvents[2];
+	// = {{kEventClassKeyboard, kEventRawKeyDown},{kEventClassKeyboard, kEventRawKeyRepeat}};
 
 	virtual OSStatus act (EventHandlerCallRef inCallRef, EventRef inEvent);
 
@@ -339,7 +340,8 @@ public:
 
 private:
 
-	static const EventTypeSpec TabControlEvents[1] = {{kEventClassControl, kEventControlHit}};
+	static const EventTypeSpec TabControlEvents[1];
+	// = {{kEventClassControl, kEventControlHit}};
 
 	virtual OSStatus act (EventHandlerCallRef inCallRef, EventRef inEvent);
 	void SetActiveTab (int new_value);
