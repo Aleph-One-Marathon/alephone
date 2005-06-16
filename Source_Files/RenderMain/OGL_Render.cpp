@@ -183,6 +183,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Faders.h"
 #include "ModelRenderer.h"
 #include "Logging.h"
+#include "progress.h"
 
 #ifdef __WIN32__
 #include "OGL_Win32.h"
@@ -567,7 +568,14 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 bool OGL_StartRun()
 #endif
 {
+#ifdef mac
+	int progress = 0, max_progress = 150;
+#else
+	int progress = 0, max_progress = 100;
+#endif
 	logContext("starting up OpenGL rendering");
+	open_progress_dialog(_starting_opengl);
+	draw_progress_bar(0, max_progress);
 
 	if (!OGL_IsPresent()) return false;
 
@@ -576,11 +584,16 @@ bool OGL_StartRun()
 
 #ifdef mac
 	// If bit depth is too small, then don't start
-	if (bit_depth <= 8) return false;
+	if (bit_depth <= 8)
+	{
+		close_progress_dialog();
+		return false;
+	}
 #endif
 
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
+	draw_progress_bar((progress += 10), max_progress);
 
 #ifdef mac
 	// Plain and simple
@@ -600,7 +613,8 @@ bool OGL_StartRun()
 	PixelFormatSetupList.push_back(GLint(AGL_STENCIL_SIZE));
 	PixelFormatSetupList.push_back(GLint(1));
 	PixelFormatSetupList.push_back(GLint(AGL_NONE));
-	
+	draw_progress_bar((progress += 10), max_progress);
+
 	// Request that pixel format
 	AGLPixelFormat PixelFormat = aglChoosePixelFormat(NULL, 0, &PixelFormatSetupList.front());
 	
@@ -625,6 +639,7 @@ bool OGL_StartRun()
 	RectBounds[1] = 0;
 	RectBounds[2] = portBounds.right - portBounds.left;
 	RectBounds[3] = portBounds.bottom - portBounds.top;
+	draw_progress_bar((progress += 10), max_progress);
 
 	bool set_fullscreen= false;
 	if (graphics_preferences->screen_mode.fullscreen && graphics_preferences->experimental_rendering)
@@ -656,7 +671,8 @@ bool OGL_StartRun()
 	
 	aglEnable(RenderContext, AGL_BUFFER_RECT);
 	aglSetInteger(RenderContext, AGL_BUFFER_RECT, RectBounds);
-	
+	draw_progress_bar((progress += 10), max_progress);
+
 #endif
 	
 	// Set up some OpenGL stuff: these will be the defaults for this rendering context
@@ -695,27 +711,35 @@ bool OGL_StartRun()
 	// Switch on use of vertex and texture-coordinate arrays
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
+	draw_progress_bar((progress += 10), max_progress);
+
 	// Initialize the texture accounting
 	OGL_StartTextures();
-	
+	draw_progress_bar((progress += 20), max_progress);
+
 	// Initialize the on-screen font for OpenGL rendering
 	GetOnScreenFont().OGL_Reset(true);
-	
+	draw_progress_bar((progress += 10), max_progress);
+
 	// Reset the font info for overhead-map and HUD fonts done in OpenGL fashion
 	OGL_ResetMapFonts(true);
 	OGL_ResetHUDFonts(true);
+	draw_progress_bar((progress += 10), max_progress);
 	
 	// Since an OpenGL context has just been created, don't try to clear any OpenGL textures
 	OGL_ResetModelSkins(false);
-	
+	draw_progress_bar((progress += 10), max_progress);
+
 	// Setup for 3D-model rendering
 	ModelRenderObject.Clear();
 	SetupShaders();
-	
+	draw_progress_bar((progress += 10), max_progress);
+
 	// Avoid lazy initial texture loading
 	PreloadTextures();
-	
+	draw_progress_bar((progress += 20), max_progress);
+	close_progress_dialog();
+
 	// Success!
 	JustInited = true;
 	return (_OGL_IsActive = true);

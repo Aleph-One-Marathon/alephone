@@ -68,7 +68,9 @@ void open_progress_dialog(size_t message_id)
 		csprintf(temporary,"CreateWindowFromNib error: %d for the progress window",err));
 	
 	reset_progress_bar();
-	
+
+	if (message_id == _starting_opengl || message_id == _loading_collections)
+		SetWindowTitleWithCFString(ProgressWindow, CFSTR("Status")); // not "Network Status"
 	set_progress_dialog_message(message_id);
 	
 	ShowWindow(ProgressWindow);

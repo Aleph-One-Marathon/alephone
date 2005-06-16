@@ -394,6 +394,8 @@ static char* sStringSetNumber143[] = {
     "Sending environment information to the other player.",
     "Sending environment information to the other players.",
     "Receiving environment information from server.",
+    "Loading collections.",
+    "Starting OpenGL.",
 };
 
 BUILD_STRINGSET(128, sStringSetNumber128);

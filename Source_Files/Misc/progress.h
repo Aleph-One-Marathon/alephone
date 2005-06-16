@@ -33,7 +33,10 @@ enum {
 	_awaiting_map,
 	_distribute_physics_single,
 	_distribute_physics_multiple,
-	_receiving_physics
+	_receiving_physics,
+	// non-network ones
+	_loading_collections,
+	_starting_opengl
 };
 
 void open_progress_dialog(size_t message_id);
