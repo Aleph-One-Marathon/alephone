@@ -36,18 +36,6 @@
 #include "network_dialogs.h" // for net_rank
 
 
-// I don't like putting this here, but it exposes them to exactly the right folks
-// (by semi-coincidence).
-// ZZZ: get strings from outside (MML) for easier localization.
-enum {
-    kNetworkGameTypesStringSetID	= 146,
-    kEndConditionTypeStringSetID	= 147,
-    kScoreLimitTypeStringSetID		= 148,
-    kSingleOrNetworkStringSetID		= 149
-};
-
-
-
 //////// w_found_players ////////
 // This lists the "players on network" in the Gather box.  It manages the SSLP callback information
 // to produce/update its list.  (Well, I guess it depends on someone setting up simple callbacks

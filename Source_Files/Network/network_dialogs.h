@@ -76,6 +76,14 @@ enum {
     strFRIENDLY_FIRE_LEGEND
 };
 
+enum {
+    kNetworkGameTypesStringSetID	= 146,
+    kEndConditionTypeStringSetID	= 147,
+    kScoreLimitTypeStringSetID		= 148,
+    kSingleOrNetworkStringSetID		= 149
+};
+
+
 #ifdef USES_NIBS
 
 enum {

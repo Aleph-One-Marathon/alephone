@@ -419,7 +419,7 @@ BUILD_STRINGSET(143, sStringSetNumber143);
 
 // Stringsets for SDL w_select widgets.
 // -----------------------------------------------------------------------------------------
-#include    "network_dialog_widgets_sdl.h"  // for stringset ID's
+#include    "network_dialogs.h"  // for stringset ID's
 
 static char*    sDifficultyLevelsStrings[] = {
     "Kindergarten",

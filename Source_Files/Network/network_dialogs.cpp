@@ -90,9 +90,6 @@ Apr 10, 2003 (Woody Zenfell):
 	#include "NibsUiHelpers.h"
 #endif
 
-// jkvw: this is naughty, but I don't want to rethink placing stringset ID's today
-enum { kNetworkGameTypesStringSetID	= 146 };
-
 
 extern void NetRetargetJoinAttempts(const IPaddress* inAddress);
 
