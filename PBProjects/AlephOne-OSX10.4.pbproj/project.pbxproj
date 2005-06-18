@@ -1966,6 +1966,7 @@
 				AE2DEAD10815E0A600817EBC,
 				AE2DEAD20815E0A600817EBC,
 				AEBF94A80834FD9500C0B18C,
+				AE34EEEE0864EAB7002AF754,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3370,6 +3371,7 @@
 				AE2DEB7C0815E0A600817EBC,
 				AE2DEB910815EE1400817EBC,
 				088809F1084C1A4000DC9E4D,
+				AE34EEEC0864EA95002AF754,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4435,6 +4437,36 @@
 		};
 		AE2DEB940815EE3100817EBC = {
 			fileRef = 3D3A410C04DF92C400000107;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AE34EEEB0864EA95002AF754 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = carbon_widgets.cpp;
+			path = ../Source_Files/Misc/carbon_widgets.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AE34EEEC0864EA95002AF754 = {
+			fileRef = AE34EEEB0864EA95002AF754;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AE34EEED0864EAB7002AF754 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = carbon_widgets.h;
+			path = ../Source_Files/Misc/carbon_widgets.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AE34EEEE0864EAB7002AF754 = {
+			fileRef = AE34EEED0864EAB7002AF754;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -6697,6 +6729,7 @@
 		};
 		F522144F0136C0C401000001 = {
 			children = (
+				AE34EEED0864EAB7002AF754,
 				F5A00027023FDA6101A80001,
 				EFEF1AC404AF552D00C3A19D,
 				F5A00029023FDA7601A80001,
@@ -10191,6 +10224,7 @@
 		};
 		F5CC94280240DB8801A80001 = {
 			children = (
+				AE34EEEB0864EA95002AF754,
 				F52211D10136A6FD01000001,
 				F52211D20136A6FD01000001,
 				F522120D0136A6FD01000001,
