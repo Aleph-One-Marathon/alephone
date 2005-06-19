@@ -971,13 +971,16 @@ void *get_global_shading_table(
 }
 
 void load_collections(
-	void)
+	bool with_progress_bar)
 {
 	struct collection_header *header;
 	short collection_index;
 
-	open_progress_dialog(_loading_collections);
-	draw_progress_bar(0, 2*MAXIMUM_COLLECTIONS);
+	if (with_progress_bar)
+	{
+		open_progress_dialog(_loading_collections);
+		draw_progress_bar(0, 2*MAXIMUM_COLLECTIONS);
+	}
 	precalculate_bit_depth_constants();
 	
 	free_and_unlock_memory(); /* do our best to get a big, unfragmented heap */
@@ -987,7 +990,8 @@ void load_collections(
 		will be staying (so the heap can move around) */
 	for (collection_index= 0, header= collection_headers; collection_index<MAXIMUM_COLLECTIONS; ++collection_index, ++header)
 	{
-		draw_progress_bar(collection_index, 2*MAXIMUM_COLLECTIONS);
+		if (with_progress_bar)
+			draw_progress_bar(collection_index, 2*MAXIMUM_COLLECTIONS);
 		if ((header->status&markUNLOAD) && !(header->status&markLOAD))
 		{
 			if (collection_loaded(header))
@@ -1009,7 +1013,8 @@ void load_collections(
 	/* ... then go back through the list of collections and load any that we were asked to */
 	for (collection_index= 0, header= collection_headers; collection_index<MAXIMUM_COLLECTIONS; ++collection_index, ++header)
 	{
-		draw_progress_bar(MAXIMUM_COLLECTIONS+collection_index, 2*MAXIMUM_COLLECTIONS);
+		if (with_progress_bar)
+			draw_progress_bar(MAXIMUM_COLLECTIONS+collection_index, 2*MAXIMUM_COLLECTIONS);
 		/* donÕt reload collections which are already in memory, but do lock them */
 		if (collection_loaded(header))
 		{
@@ -1038,7 +1043,8 @@ void load_collections(
 	/* remap the shapes, recalculate row base addresses, build our new world color table and
 		(finally) update the screen to reflect our changes */
 	update_color_environment();
-	close_progress_dialog();
+	if (with_progress_bar)
+		close_progress_dialog();
 }
 
 /* ---------- private code */

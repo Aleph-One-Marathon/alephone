@@ -601,7 +601,7 @@ bool entering_map(bool restoring_saved)
 	mark_environment_collections(static_world->environment_code, true);
 	mark_all_monster_collections(true);
 	mark_player_collections(true);
-	load_collections();
+	load_collections(true);
 
 	load_all_monster_sounds();
 	load_all_game_sounds(static_world->environment_code);

@@ -1881,7 +1881,7 @@ static bool begin_game(
 		{
 			start_game(user, false);
 		} else {
-                        clean_up_after_failed_game(user == _network_player, record_game, clean_up_on_failure);
+			clean_up_after_failed_game(user == _network_player, record_game, clean_up_on_failure);
 		}
 	} else {
 		/* This means that some weird replay problem happened: */

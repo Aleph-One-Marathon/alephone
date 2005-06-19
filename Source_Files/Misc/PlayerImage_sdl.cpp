@@ -355,7 +355,7 @@ void
 PlayerImage::objectCreated() {
     if(sNumOutstandingObjects == 0) {
         mark_collection(get_player_shape_definitions()->collection, true);
-        load_collections();
+        load_collections(false);
         // XXX (ZZZ) ugly hack, making sure we don't load multiple times.
 //        sNumOutstandingObjects++;
     }
