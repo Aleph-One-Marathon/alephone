@@ -1581,8 +1581,10 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 
 void w_text_box::append_text(const string& s)
 {
-	if (s.empty ())
+	if (s.empty ()) {
+		get_owning_dialog()->draw_dirty_widgets();
 		return;
+	}
 		
 	int available_width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
 	size_t usable_characters = trunc_text(s.c_str (), available_width, font, style);
@@ -1612,7 +1614,7 @@ void w_text_box::draw_item(vector<string>::const_iterator i, SDL_Surface* s, int
 {
     int computed_y = y + font->get_ascent();
 
-    draw_text(s, (*i).c_str (), x, computed_y, 0, font, style);
+    draw_text(s, (*i).c_str (), x, computed_y, get_dialog_color(MESSAGE_COLOR), font, style);
 }
 
 

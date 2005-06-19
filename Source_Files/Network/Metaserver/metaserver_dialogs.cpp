@@ -110,7 +110,7 @@ void MetaserverClientUi::gamesInRoomChanged()
 
 void MetaserverClientUi::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
 {
-	m_textboxWidget->AppendString (senderName + ": " + message + "\r");
+	m_textboxWidget->AppendString (senderName + ": " + message);
 }
 
 void MetaserverClientUi::receivedBroadcastMessage(const std::string& message)

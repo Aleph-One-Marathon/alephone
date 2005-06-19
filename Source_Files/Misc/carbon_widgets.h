@@ -289,7 +289,7 @@ public:
 
 	void AppendString (const string& s)
 	{
-		TXNSetData (textObject, kTXNTextData, s.c_str(), s.size(),
+		TXNSetData (textObject, kTXNTextData, (s + '\r').c_str(), s.size() + 1,
 				kTXNEndOffset, kTXNEndOffset);
 	}
 	
