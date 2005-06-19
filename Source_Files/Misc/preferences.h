@@ -118,6 +118,8 @@ struct network_preferences_data
 #else
 	char netscript_file[256];
 #endif	
+	uint16 cheat_flags;
+	bool advertise_on_metaserver;
 };
 
 struct player_preferences_data

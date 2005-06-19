@@ -526,6 +526,8 @@ void write_preferences(
 #ifdef SDL
 	WriteXML_CString(F,"  netscript_file=\"", network_preferences->netscript_file, sizeof(network_preferences->netscript_file), "\"\n");
 #endif
+	fprintf(F,"  cheat_flags=\"%hu\"\n",network_preferences->cheat_flags);
+	fprintf(F,"  advertise_on_metaserver=\"%s\"\n",BoolString(network_preferences->advertise_on_metaserver));
 	fprintf(F,">\n");
 #ifndef SDL
 	WriteXML_FSSpec(F,"  ", kNetworkScriptFileSpecIndex, network_preferences->netscript_file);
@@ -677,6 +679,8 @@ static void default_network_preferences(network_preferences_data *preferences)
 #else
 	preferences->netscript_file[0] = '\0';
 #endif
+	preferences->cheat_flags = _allow_tunnel_vision | _allow_crosshair | _allow_behindview;
+	preferences->advertise_on_metaserver = false;
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -1809,7 +1813,14 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 #endif
 		return true;
 	}
-        
+	else if (StringsEqual(Tag,"cheat_flags"))
+        {
+		return ReadUInt16Value(Value,network_preferences->cheat_flags);
+	}
+	else if (StringsEqual(Tag,"advertise_on_metaserver"))
+	{
+		return ReadBooleanValue(Value,network_preferences->advertise_on_metaserver);
+	}
 	return true;
 }
 

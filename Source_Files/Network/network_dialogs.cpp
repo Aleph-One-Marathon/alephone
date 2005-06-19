@@ -642,11 +642,11 @@ short netgame_setup_dialog_initialise (
 		QQ_set_control_activity(dialog, iCHOOSE_MAP, false);
 	}
 	
-	QQ_set_boolean_control_value(dialog, iALLOW_ZOOM, true);
-	QQ_set_boolean_control_value(dialog, iALLOW_CROSSHAIRS, true);
-	QQ_set_boolean_control_value(dialog, iALLOW_LARA_CROFT, true);
+	QQ_set_boolean_control_value(dialog, iALLOW_ZOOM, network_preferences->cheat_flags & _allow_tunnel_vision);
+	QQ_set_boolean_control_value(dialog, iALLOW_CROSSHAIRS, network_preferences->cheat_flags & _allow_crosshair);
+	QQ_set_boolean_control_value(dialog, iALLOW_LARA_CROFT, network_preferences->cheat_flags & _allow_behindview);
 	
-	QQ_set_boolean_control_value(dialog, iADVERTISE_GAME_ON_METASERVER, false);
+	QQ_set_boolean_control_value(dialog, iADVERTISE_GAME_ON_METASERVER, network_preferences->advertise_on_metaserver);
 
 #ifdef SDL
 	FileSpecifier theFile (theAdjustedPreferences.netscript_file);
@@ -813,6 +813,8 @@ netgame_setup_dialog_extract_information(
 	if (QQ_get_boolean_control_value(dialog, iALLOW_LARA_CROFT))
 		game_information->cheat_flags |= _allow_behindview;
 
+	outAdvertiseGameOnMetaserver = QQ_get_boolean_control_value (dialog, iADVERTISE_GAME_ON_METASERVER);
+
 	// now save some of these to the preferences - only if not resuming a game
 	if(!resuming_game)
 	{
@@ -852,9 +854,11 @@ netgame_setup_dialog_extract_information(
 			network_preferences->netscript_file = theNetscriptFile.GetSpec();
 #endif
 		}
+		
+		network_preferences->cheat_flags = game_information->cheat_flags;
+		
+		network_preferences->advertise_on_metaserver = outAdvertiseGameOnMetaserver;
         }
-
-	outAdvertiseGameOnMetaserver = QQ_get_boolean_control_value (dialog, iADVERTISE_GAME_ON_METASERVER);
 
         // We write the preferences here (instead of inside the if) because they may have changed
         // their player name/color/etc. and we do want to save that change.
