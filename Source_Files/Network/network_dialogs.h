@@ -39,6 +39,7 @@ Mar 1, 2002 (Woody Zenfell):
 
 #include    "player.h"  // for MAXIMUM_NUMBER_OF_PLAYERS
 #include    "network.h"
+#include    "FileHandler.h"
 
 #include    <string>
 
