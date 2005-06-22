@@ -83,6 +83,7 @@ protected:
 	GameListWidget*					m_gamesInRoomWidget;
 	EditTextWidget*					m_chatEntryWidget;
 	TextboxWidget*					m_textboxWidget;
+	ButtonWidget*					m_cancelWidget;
 	IPaddress					m_joinAddress;
 	bool						m_used;
 };

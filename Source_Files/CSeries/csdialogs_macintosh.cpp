@@ -1010,6 +1010,41 @@ void StopModalDialog(
 }
 
 
+Modal_Dialog::Modal_Dialog(WindowRef dialogWindow, bool isSheet)
+	: m_dialogWindow (dialogWindow)
+	, m_isSheet (isSheet)
+	, m_result (false)
+{}
+
+bool Modal_Dialog::Run()
+{
+#if USE_SHEETS
+	if (m_isSheet)
+	{
+		SetThemeWindowBackground(m_dialogWindow, kThemeBrushSheetBackgroundTransparent, false);
+		ShowSheetWindow(m_dialogWindow, ActiveNonFloatingWindow());
+	} else
+#endif
+		ShowWindow(m_dialogWindow);
+
+	RunAppModalLoopForWindow(m_dialogWindow);
+	return m_result;
+}
+
+void Modal_Dialog::Stop(bool result)
+{
+	QuitAppModalLoopForWindow(m_dialogWindow);
+	m_result = result;
+
+#if USE_SHEETS
+	if (m_isSheet)
+		HideSheetWindow(m_dialogWindow);
+	else
+#endif
+		HideWindow(m_dialogWindow);
+}
+
+
 AutoTimer::AutoTimer(
 	EventTimerInterval Delay,
 	EventTimerInterval Interval,
@@ -1047,20 +1082,18 @@ AutoWatcher::AutoWatcher (ControlRef ctrl, int num_event_types, const EventTypeS
 				this, NULL);
 }
 
-const EventTypeSpec AutoControlWatcher::ControlWatcherEvents[1]
-	= {{kEventClassControl, kEventControlHit}};
-
 pascal OSStatus AutoWatcher::callback (EventHandlerCallRef inCallRef,
 					EventRef inEvent, void* inUserData)
 {
 	// Hand off to the next event handler
-	OSStatus err = CallNextEventHandler(inCallRef, inEvent);
-	if (err != noErr)
-		return err;
+	CallNextEventHandler(inCallRef, inEvent);
 
 	// Do our thing
 	return reinterpret_cast<AutoWatcher*>(inUserData)->act (inCallRef, inEvent);
 }
+
+const EventTypeSpec AutoControlWatcher::ControlWatcherEvents[1]
+	= {{kEventClassControl, kEventControlHit}};
 
 const EventTypeSpec AutoKeystrokeWatcher::KeystrokeWatcherEvents[2]
 	= {{kEventClassKeyboard, kEventRawKeyDown},{kEventClassKeyboard, kEventRawKeyRepeat}};

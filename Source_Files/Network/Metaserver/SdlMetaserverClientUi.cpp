@@ -81,13 +81,14 @@ public:
 
 		d.add(new w_spacer());
 
-		d.add(new w_button("CANCEL", dialog_cancel, &d));
-		
+		w_button* cancel_w = new w_button("CANCEL", NULL, &d);
+		d.add(cancel_w);
 		
 		m_playersInRoomWidget = new PlayerListWidget (players_in_room_w);
 		m_gamesInRoomWidget = new GameListWidget (games_in_room_w);
 		m_chatEntryWidget = new EditTextWidget (chatentry_w);
 		m_textboxWidget = new TextboxWidget (chat_history_w);
+		m_cancelWidget = new ButtonWidget (cancel_w);
 	}
 	
 	~SdlMetaserverClientUi()

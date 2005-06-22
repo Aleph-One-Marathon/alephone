@@ -42,7 +42,6 @@ enum {
 	iCHAT_ENTRY = 400
 };
 
-static void MetaserverClientUi_Handler(ParsedControl& control, void* data);
 const double PollingInterval = 1.0/30.0;
 
 static pascal void MetaserverClientUi_Poller(EventLoopTimerRef, void*)
@@ -55,23 +54,25 @@ class NibsMetaserverClientUi : public MetaserverClientUi
 public:
 	NibsMetaserverClientUi ()
 	: m_metaserverClientNib(CFSTR("Metaserver Client"))
-	, m_dialog(m_metaserverClientNib.nibReference(), CFSTR("Metaserver Client"))
+	, m_dialog_window(m_metaserverClientNib.nibReference(), CFSTR("Metaserver Client"))
+	, m_dialog(m_dialog_window(), false)
 	{
-		m_playersInRoomWidget = new ListWidget<MetaserverPlayerInfo>(GetCtrlFromWindow(m_dialog(), 0, iPLAYERS_IN_ROOM));
-		m_gamesInRoomWidget = new ListWidget<GameListMessage::GameListEntry>(GetCtrlFromWindow(m_dialog(), 0, iGAMES_IN_ROOM));
-		m_chatEntryWidget = new EditTextWidget(GetCtrlFromWindow(m_dialog(), 0, iCHAT_ENTRY));
-		m_textboxWidget = new TextboxWidget(m_dialog(), 23, 200, 609, 403);
+		m_playersInRoomWidget = new ListWidget<MetaserverPlayerInfo>(GetCtrlFromWindow(m_dialog_window(), 0, iPLAYERS_IN_ROOM));
+		m_gamesInRoomWidget = new ListWidget<GameListMessage::GameListEntry>(GetCtrlFromWindow(m_dialog_window(), 0, iGAMES_IN_ROOM));
+		m_chatEntryWidget = new EditTextWidget(GetCtrlFromWindow(m_dialog_window(), 0, iCHAT_ENTRY));
+		m_textboxWidget = new TextboxWidget(m_dialog_window(), 23, 200, 609, 403);
+		m_cancelWidget = new ButtonWidget(GetCtrlFromWindow(m_dialog_window(), 0, iCANCEL));
 	}
 	
 	virtual void Run()
 	{
-		AutoTimer Poller(0, PollingInterval, MetaserverClientUi_Poller, m_dialog());
-		RunModalDialog(m_dialog(), false, MetaserverClientUi_Handler, this);
+		AutoTimer Poller(0, PollingInterval, MetaserverClientUi_Poller, m_dialog_window());
+		m_dialog.Run();
 	}
 	
-	virtual void Stop ()
+	virtual void Stop()
 	{
-		StopModalDialog(m_dialog(), false);
+		m_dialog.Stop(false);
 	}
 	
 	virtual ~NibsMetaserverClientUi()
@@ -80,28 +81,19 @@ public:
 		delete m_gamesInRoomWidget;
 		delete m_chatEntryWidget;
 		delete m_textboxWidget;
+		delete m_cancelWidget;
 	}
 
 private:
 	AutoNibReference m_metaserverClientNib;
-	AutoNibWindow m_dialog;
+	AutoNibWindow m_dialog_window;
+	Modal_Dialog m_dialog;
 };
 
 auto_ptr<MetaserverClientUi>
 MetaserverClientUi::Create()
 {
 	return auto_ptr<MetaserverClientUi>(new NibsMetaserverClientUi);
-}
-
-// Does nothing, since we have another system for chat sending now
-static void MetaserverClientUi_Handler(ParsedControl& control, void* data)
-{
-	NibsMetaserverClientUi* ui = static_cast<NibsMetaserverClientUi*>(data);
-	switch(control.ID.id)
-	{
-		default:
-			break;
-	}
 }
 
 #endif // !defined(DISABLE_NETWORKING)

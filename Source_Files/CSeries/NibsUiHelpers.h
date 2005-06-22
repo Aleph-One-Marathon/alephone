@@ -225,6 +225,23 @@ void StopModalDialog(
 		     );
 
 
+// A replacement for RunModalDialog/StopModalDialog.
+// No handler installed here - controls which require them should already have them installed.
+// No special casing for the "OK" and "Cancel" buttons.
+class Modal_Dialog
+{
+public:
+	Modal_Dialog (WindowRef dialogWindow, bool isSheet);
+	
+	bool Run ();
+	void Stop (bool result); // Whatever we pass in here is returned by Run
+
+private:
+	WindowRef m_dialogWindow;
+	bool m_isSheet;
+	bool m_result;
+};
+
 // Adds a timer to the current event loop;
 // it cleans up when it goes out of scope
 

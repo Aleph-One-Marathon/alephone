@@ -85,6 +85,7 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 
 	m_gamesInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::GameSelected, this, _1));
 	m_chatEntryWidget->set_callback(bind(&MetaserverClientUi::ChatTextEntered, this, _1));
+	m_cancelWidget->set_callback(boost::bind(&MetaserverClientUi::Stop, this));
 
 	Run();
 	
