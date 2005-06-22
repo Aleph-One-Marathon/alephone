@@ -561,6 +561,11 @@ void FileSpecifier::SetToRecordingsDir()
 	name = recordings_dir.name;
 }
 
+void FileSpecifier::SetToFirstDataDir()
+{
+  name = data_search_path[0].name;
+}
+
 // Traverse search path, look for file given relative path name
 bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
 {

@@ -852,6 +852,9 @@ bool FileSpecifier::ReadDialog(Typecode type, char *prompt)
 		case _typecode_film:
 			dir.SetToRecordingsDir();
 			break;
+	case _typecode_scenario:
+	  dir.SetToFirstDataDir();
+	  break;
 		case _typecode_netscript:
 		{
 			// Go to most recently-used directory

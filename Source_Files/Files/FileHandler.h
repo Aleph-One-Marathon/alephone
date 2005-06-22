@@ -491,6 +491,7 @@ private:
 	void SetToPreferencesDir();		// Directory for preferences (per-user)
 	void SetToSavedGamesDir();		// Directory for saved games (per-user)
 	void SetToRecordingsDir();		// Directory for recordings (per-user)
+	void SetToFirstDataDir();             // best guess at where maps might be
 
 	const char *GetPath(void) const {return name.c_str();}
 
