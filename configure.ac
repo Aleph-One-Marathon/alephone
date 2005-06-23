@@ -68,6 +68,7 @@ AC_LANG_POP(C++)
 dnl Check for boost/function
 AC_LANG_PUSH(C++)
 AC_CHECK_HEADER([boost/function.hpp], , [AC_MSG_ERROR([You need boost/function.hpp from the boost library to run Aleph One])])
+AC_LANG_POP(C++)
 
 dnl Check for SDL_sound
 AC_CHECK_HEADERS(SDL_sound.h, [
