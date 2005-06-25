@@ -46,6 +46,8 @@
 
 #include	"cseries.h"
 #include	"sdl_dialogs.h"
+#include        "sdl_fonts.h"
+#include        "screen_drawing.h"
 
 #include    "map.h" // for entry_point, for w_levels
 #include	"tags.h"	// for Typecode, for w_file_chooser
@@ -59,7 +61,7 @@
 #include "metaserver_messages.h" // for GameListMessage, for w_games_in_room and MetaserverPlayerInfo, for w_players_in_room
 
 struct SDL_Surface;
-class sdl_font_info;
+//class sdl_font_info;
 
 /*
  *  Widget base class
@@ -743,6 +745,8 @@ private:
  *	Lists for metaserver dialog; moved from SdlMetaserverClientUi.cpp
  */
 
+extern void set_drawing_clip_rectangle(short top, short left, short bottom, short right);
+
 template <typename tElement>
 class w_items_in_room : public w_list_base
 {
@@ -793,7 +797,7 @@ private:
 	// This should be factored out into a "drawer" object/Strategy
 	virtual void draw_item(const tElement& item, SDL_Surface* s,
 			int16 x, int16 y, uint16 width, bool selected) const {
-		y += font->get_ascent();
+	  y += font->get_ascent();
 		set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
 		draw_text(s, item.name().c_str(), x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
