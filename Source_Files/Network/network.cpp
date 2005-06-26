@@ -182,6 +182,7 @@ static MessageInflater *inflater = NULL;
 static MessageDispatcher *joinDispatcher = NULL;
 static MessageDispatcher *gatherDispatcher = NULL;
 static uint32 next_join_attempt;
+static Capabilities my_capabilities;
 
 static GatherCallbacks *gatherCallbacks = NULL;
 static ChatCallbacks *chatCallbacks = NULL;
@@ -190,7 +191,6 @@ int InGameChatCallbacks::bufferPtr = 0;
 char InGameChatCallbacks::buffer[bufferSize] = "";
 int InGameChatCallbacks::displayBufferPtr = 0;
 char InGameChatCallbacks::displayBuffer[bufferSize] = "";
-
 
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
@@ -263,14 +263,14 @@ Client::Client(CommunicationsChannel *inChannel) : mDispatcher(new MessageDispat
 						   channel(inChannel)
 {
   mJoinerInfoMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleJoinerInfoMessage));
-  mScriptMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleScriptMessage));
+  mCapabilitiesMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleCapabilitiesMessage));
   mAcceptJoinMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleAcceptJoinMessage));
   mChatMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChatMessage));
   mChangeColorsMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChangeColorsMessage));
   mUnexpectedMessageHandler.reset(newMessageHandlerMethod(this, &Client::unexpectedMessageHandler));
   mDispatcher->setDefaultHandler(mUnexpectedMessageHandler.get());
   mDispatcher->setHandlerForType(mJoinerInfoMessageHandler.get(), JoinerInfoMessage::kType);
-  mDispatcher->setHandlerForType(mScriptMessageHandler.get(), ScriptMessage::kType);
+  mDispatcher->setHandlerForType(mCapabilitiesMessageHandler.get(), CapabilitiesMessage::kType);
   mDispatcher->setHandlerForType(mAcceptJoinMessageHandler.get(), AcceptJoinMessage::kType);
   mDispatcher->setHandlerForType(mChatMessageHandler.get(), NetworkChatMessage::kType);
   mDispatcher->setHandlerForType(mChangeColorsMessageHandler.get(), ChangeColorsMessage::kType);
@@ -313,17 +313,99 @@ void Client::drop()
   } 
 }
 
+bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
+{
+  // ghs: perhaps someday there will be an elegant, extensible way to do this
+  //      but for now, this is what you get
+
+  char s[256];
+  
+  // As this is the first version, I do not check version numbers for
+  // compatibility! Because I don't know if higher numbers necessarily mean
+  // incompatibility. In the future, gatherer and joiner should advertise what
+  // they have, and the higher one must contain the backward compatibility
+  // logic if any exists
+
+  // joiners can disable themselves from being gathered by replying with
+  // capabilities where the "Gatherable" capability is set to 0...this will
+  // not trigger a warning message from the gatherer
+
+  // gatherer disables gathering by returning false from this function, and
+  // sending a descriptive error message to the joiner saying he won't show up
+
+  if (capabilities[Capabilities::kGatherable] == 0) {
+    // no warning, the joiner already knows he is incompatible
+    return false;
+  }
+
+  if (network_preferences->game_protocol == _network_game_protocol_star) {
+    if (capabilities[Capabilities::kStar] == 0) {
+      if (warn_joiner) {
+	ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerHasNoStar), ServerWarningMessage::kJoinerUngatherable);
+	channel->enqueueOutgoingMessage(serverWarningMessage);
+      }
+      return false;
+    }
+  } else {
+    if (capabilities[Capabilities::kRing] == 0) {
+      if (warn_joiner) {
+	ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerHasNoRing), ServerWarningMessage::kJoinerUngatherable);
+	channel->enqueueOutgoingMessage(serverWarningMessage);
+      }
+      return false;
+    }
+  }
+  
+  if (do_netscript &&
+      capabilities[Capabilities::kLua] == 0) {
+    if (warn_joiner) {
+      char s[256];
+      ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerNoLua), ServerWarningMessage::kJoinerUngatherable);
+      channel->enqueueOutgoingMessage(serverWarningMessage);
+    }
+    return false;
+  }
+
+  return true;
+}
+  
+
 void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, CommunicationsChannel *) 
 {
   if (netState == netGathering) {
-    pstrcpy(name, joinerInfoMessage->info()->name);
-    network_version = joinerInfoMessage->info()->network_version;
-    state = Client::_connected_but_not_yet_shown;
+    if (joinerInfoMessage->version() == kNetworkSetupProtocolID) {
+      pstrcpy(name, joinerInfoMessage->info()->name);
+      
+      // send gatherer capabilities
+      CapabilitiesMessage capabilitiesMessage(my_capabilities);
+      channel->enqueueOutgoingMessage(capabilitiesMessage);
+      state = Client::_awaiting_capabilities;
+    } else {
+      // strange, joiner should have realized he couldn't join
+      // ok, disconnect him
+      state = Client::_disconnect;
+    }
   } else {
     logAnomaly1("unexpected joiner info message received (netState is %i)", netState);
   }
 }
 
+void Client::handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage, CommunicationsChannel *)
+{
+  if (state == _awaiting_capabilities) {
+    capabilities = *capabilitiesMessage->capabilities();
+
+    if (capabilities_indicate_player_is_gatherable(_warn_joiner)) {
+      state = Client::_connected_but_not_yet_shown;
+    } else {
+      state = Client::_ungatherable;
+    }
+  } else {
+    logAnomaly1("unexpected capabilities message received (state is %i)", state);
+  }
+}
+
+/*
 void Client::handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel *) 
 {
   if (state == _awaiting_script_message) {
@@ -340,6 +422,7 @@ void Client::handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsCha
     logAnomaly1("unexpected script message received (state is %i)", state);
   }
 }
+*/
 
 void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
 				     CommunicationsChannel *)
@@ -452,21 +535,42 @@ static short handlerState;
 
 static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel*)
 {
-  if (netState == netJoining) {
-    // reply with my join info
-    prospective_joiner_info my_info;
-    
-    pstrcpy(my_info.name, player_preferences->name);
-    my_info.network_version = get_network_version();
-    JoinerInfoMessage joinerInfoMessage(&my_info);
-    connection_to_server->enqueueOutgoingMessage(joinerInfoMessage);
+  if (handlerState == netAwaitingHello) {
+    // if the network versions match, reply with my join info
+    if (helloMessage->version() == kNetworkSetupProtocolID) {
+      prospective_joiner_info my_info;
+      
+      pstrcpy(my_info.name, player_preferences->name);
+      JoinerInfoMessage joinerInfoMessage(&my_info, kNetworkSetupProtocolID);
+      connection_to_server->enqueueOutgoingMessage(joinerInfoMessage);
+      handlerState = netJoining;
+    } else {
+      alert_user(infoError, strNETWORK_ERRORS, netErrIncompatibleVersion, 0);
+      handlerState = netJoinErrorOccurred;
+    }
   } else {
     logAnomaly1("unexpected hello message received (netState is %i)", netState);
   }
 }
 
+static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage, 
+				      CommunicationsChannel *)
+{
+  if (handlerState == netJoining) {
+
+    // this is version 1, so I am gatherable unless a possibly newer gatherer
+    // tells me I am not (I will receive a ServerWarningMessage if that's the
+    // case)
+    CapabilitiesMessage capabilitiesMessageReply(my_capabilities);
+    connection_to_server->enqueueOutgoingMessage(capabilitiesMessageReply);
+    
+  } else {
+    logAnomaly1("unexpected capabilities message received (netState is %i)", netState);
+  }
+}   
+
 static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, CommunicationsChannel*) {
-  if (netState == netJoining) {
+  if (handlerState == netJoining) {
     /* Note that we could set accepted to false if we wanted to for some */
     /*  reason- such as bad serial numbers.... */
     
@@ -566,7 +670,7 @@ static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsC
   }
 }
 
-
+/*
 static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChannel*) {
   if (netState == netJoining) {
     ScriptMessage replyToScriptMessage;
@@ -584,6 +688,14 @@ static void handleScriptMessage(ScriptMessage* scriptMessage, CommunicationsChan
     logAnomaly1("unexpected script message received (netState is %i)", netState);
   }
 }
+*/
+
+static void handleServerWarningMessage(ServerWarningMessage *serverWarningMessage, CommunicationsChannel *) {
+  char *s = strdup(serverWarningMessage->string()->c_str());
+  alert_user(s);
+  free(s);
+}
+
 
 static void handleTopologyMessage(TopologyMessage* topologyMessage, CommunicationsChannel *) {
   if (netState == netWaiting) {
@@ -646,6 +758,12 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
 }
 
 static void handleUnexpectedMessage(Message *inMessage, CommunicationsChannel *) {
+  if (handlerState == netAwaitingHello) {
+    // an unexpected message before hello usually means we couldn't parse
+    // hello; which means it's likely we're not compatible
+    alert_user(infoError, strNETWORK_ERRORS, netErrIncompatibleVersion, 0);
+    handlerState = netJoinErrorOccurred;
+  }
   logAnomaly1("unexpected message ID %i received", inMessage->type());
 }
     
@@ -655,8 +773,9 @@ static TypedMessageHandlerFunction<LuaMessage> luaMessageHandler(&handleLuaMessa
 static TypedMessageHandlerFunction<MapMessage> mapMessageHandler(&handleMapMessage);
 static TypedMessageHandlerFunction<NetworkChatMessage> networkChatMessageHandler(&handleNetworkChatMessage);
 static TypedMessageHandlerFunction<PhysicsMessage> physicsMessageHandler(&handlePhysicsMessage);
-static TypedMessageHandlerFunction<ScriptMessage> scriptMessageHandler(&handleScriptMessage);
+ static TypedMessageHandlerFunction<CapabilitiesMessage> capabilitiesMessageHandler(&handleCapabilitiesMessage);
 static TypedMessageHandlerFunction<TopologyMessage> topologyMessageHandler(&handleTopologyMessage);
+static TypedMessageHandlerFunction<ServerWarningMessage> serverWarningMessageHandler(&handleServerWarningMessage);
 static TypedMessageHandlerFunction<Message> unexpectedMessageHandler(&handleUnexpectedMessage);
 
 void NetSetGatherCallbacks(GatherCallbacks *gc) {
@@ -794,6 +913,7 @@ bool NetEnter(void)
       sCurrentGameProtocol->Enter(&netState);
       
       netState= netDown;
+      handlerState = netDown;
     } else {
       logError("unable to open socket");
     }
@@ -816,9 +936,10 @@ bool NetEnter(void)
     inflater->learnPrototype(MapMessage());
     inflater->learnPrototype(NetworkChatMessage());
     inflater->learnPrototype(PhysicsMessage());
-    inflater->learnPrototype(ScriptMessage());
+    inflater->learnPrototype(CapabilitiesMessage());
     inflater->learnPrototype(TopologyMessage());
     inflater->learnPrototype(ChangeColorsMessage());
+    inflater->learnPrototype(ServerWarningMessage());
   }
   
   if (!joinDispatcher) {
@@ -831,9 +952,23 @@ bool NetEnter(void)
     joinDispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
     joinDispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
     joinDispatcher->setHandlerForType(&physicsMessageHandler, PhysicsMessage::kType);
-    joinDispatcher->setHandlerForType(&scriptMessageHandler, ScriptMessage::kType);
+    joinDispatcher->setHandlerForType(&capabilitiesMessageHandler, CapabilitiesMessage::kType);
+    joinDispatcher->setHandlerForType(&serverWarningMessageHandler, ServerWarningMessage::kType);
     joinDispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
   }
+
+  my_capabilities.clear();
+  my_capabilities[Capabilities::kGameworld] = Capabilities::kGameworldVersion;
+  my_capabilities[Capabilities::kSpeex] = Capabilities::kSpeexVersion;
+  if (network_preferences->game_protocol == _network_game_protocol_star) {
+    my_capabilities[Capabilities::kStar] = Capabilities::kStarVersion;
+  } else {
+    my_capabilities[Capabilities::kRing] = Capabilities::kRingVersion;
+  }
+#ifdef HAVE_LUA
+  my_capabilities[Capabilities::kLua] = Capabilities::kLuaVersion;
+#endif
+  my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
   
   next_join_attempt = machine_tick_count();
   
@@ -1024,7 +1159,7 @@ bool NetGather(
         resuming_saved_game = resuming_game;
         
 	NetInitializeTopology(game_data, game_data_size, player_data, player_data_size);
-	
+
 	// Start listening for joiners
 	server = new CommunicationsChannelFactory(GAME_PORT);
 	
@@ -1673,22 +1808,6 @@ NetGetNetTime(void)
         return sCurrentGameProtocol->GetNetTime();
 }
 
-
-
-short
-get_network_version()
-{
-	// This number needs to be changed whenever a change occurs in the networking code
-	// that would make 2 versions incompatible, or a change in the game occurs that
-	// would make 2 versions out of sync.
-	// ZZZ: I have made efforts to preserve existing "classic" Mac OS protocol and data formats,
-	// but IPring introduces new _NET formats and so needs an increment.
-	// (OK OK this is a bit pedantic - I mean, I don't think IPring is going to accidentally start
-	// sending or receiving AppleTalk traffic ;) - but, you know, it's the principle of the thing.)
-	// Ring is 12; star is 13.
-	return (network_preferences->game_protocol == _network_game_protocol_ring) ? _ip_ring_network_version : _ip_star_network_version;
-}
-
 void NetProcessMessagesInGame() {
   if (connection_to_server) {
     connection_to_server->pump();
@@ -1717,7 +1836,7 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info)
     connections_to_clients[next_stream_id] = client;
     next_stream_id++;
     
-    HelloMessage helloMessage;
+    HelloMessage helloMessage(kNetworkSetupProtocolID);
     new_joiner->enqueueOutgoingMessage(helloMessage);
   }
 
@@ -1737,12 +1856,15 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info)
   client_map_t::iterator it;
   for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
     if (it->second->state == Client::_connected_but_not_yet_shown) {
-      info.network_version = it->second->network_version;
       info.stream_id = it->first;
       pstrcpy(info.name, it->second->name);
       it->second->state = Client::_connected;
       info.gathering = false;
       return true;
+    } else if (it->second->state == Client::_disconnect) {
+      connections_to_clients[it->first]->drop();
+      delete connections_to_clients[it->first];
+      connections_to_clients.erase(it->first);
     }
   }
 
@@ -1772,9 +1894,10 @@ short NetUpdateJoinState(
 	uint32 ticks_before_connection_attempt = machine_tick_count();
 	if(host_address_specified)
 	  connection_to_server->connect(host_address);
-	if (connection_to_server->isConnected())
+	if (connection_to_server->isConnected()) {
 	  newState = netJoining;
-	else if (ticks_before_connection_attempt + 3*MACHINE_TICKS_PER_SECOND < machine_tick_count ()) {
+	  handlerState = netAwaitingHello;
+	} else if (ticks_before_connection_attempt + 3*MACHINE_TICKS_PER_SECOND < machine_tick_count ()) {
 	  newState= netJoinErrorOccurred;
 	  alert_user(infoError, strNETWORK_ERRORS, netErrCouldntJoin, 3);
 	}
@@ -1787,18 +1910,12 @@ short NetUpdateJoinState(
 	newState = netJoinErrorOccurred;
 	alert_user(infoError, strNETWORK_ERRORS, netErrLostConnection, 0);
       } else {
-	handlerState = netJoining;
 	connection_to_server->pump();
 	connection_to_server->dispatchIncomingMessages();
 	if (handlerState == netWaiting) {	  
-		newState= netWaiting;
+	  newState= netWaiting;
 	} else if (handlerState == netJoinErrorOccurred) {
-	  error = 1;
-	  logAnomaly1("error != noErr; error == %d", error);
-	  
 	  newState= netJoinErrorOccurred;
-	  // no way to get here
-	  alert_user(infoError, strNETWORK_ERRORS, netErrJoinFailed, error);
 	}
       }
       break;
@@ -1844,10 +1961,16 @@ int NetGatherPlayer(const prospective_joiner_info &player,
 
   Client::check_player = check_player;
 
+  JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier);
+  connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(joinPlayerMessage);
+  connections_to_clients[player.stream_id]->state = Client::_awaiting_accept_join;
+
+  /*
   // reject a player if he can't handle our script demands
   ScriptMessage scriptMessage(_netscript_query_message);
   connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(scriptMessage);
   connections_to_clients[player.stream_id]->state = Client::_awaiting_script_message;
+  */
 
   // lie to the network code and say we gathered successfully
   return kGatherPlayerSuccessful;

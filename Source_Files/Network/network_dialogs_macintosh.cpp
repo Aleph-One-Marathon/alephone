@@ -1109,7 +1109,7 @@ static void setup_network_list_box(
 	/* spawn an asynchronous network name lookup */
 	// LP: kludge to get the code to compile
 	#ifndef mac
-	error= NetLookupOpen("\p=", PLAYER_TYPE, zone, get_network_version(),
+	error= NetLookupOpen("\p=", PLAYER_TYPE, zone, /* get_network_version() */ 0,
 		network_list_box_update_proc, NetEntityNotInGame);
 	if (error!=noErr) dprintf("NetLookupOpen() returned %d", error);
 	#endif

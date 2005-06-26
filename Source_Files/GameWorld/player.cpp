@@ -180,10 +180,6 @@ May 22, 2003 (Woody Zenfell):
 
 /* ---------- constants */
 
-enum {
-	kMinimumNetworkVersionForTalkingCorpses = _ip_star_network_version
-};
-
 struct player_powerup_durations_definition {
 	short InvisibilityDuration;
 	short InvincibilityDuration;
@@ -674,7 +670,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 
 #if !defined(DISABLE_NETWORKING)
 			/* handle arbitration of the communications channel (i.e., dynamic_world->speaking_player_index) */
-			if ((action_flags&_microphone_button) && (!PLAYER_IS_DEAD(player) || get_network_version() >= kMinimumNetworkVersionForTalkingCorpses))
+			if (action_flags&_microphone_button)
 			{
 				if (dynamic_world->speaking_player_index==NONE)
 				{

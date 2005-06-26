@@ -147,15 +147,24 @@ static char* sStringSetNumber132[] = {
     "Aleph One was unable to start the game.  Maybe one of the other machines in the game went down.",
     "An error ocurred while trying to join a game (an incompatible version of Aleph One may have tried to gather you).  Try again.",
     "Sorry, a network error ocurred and Aleph One is unable to continue.",
-    "That player could not be added to the game because your versions of Aleph One are incompatible.",
+
+    "An error occurred while trying to join a game (the gatherer is using an incompatible version).",
+
     "The player you just added is using an older version of Aleph One that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game.",
     "The player you just attempted to add is using a version of Aleph One that does not support some advanced features required by the game you're trying to gather.",
     "Aleph One was unable to locate the Map file this level came from.  Some terminals may not display properly, and saving this game on this computer is not recommended.",
     "The connection to the gatherer was lost.",
 
-    "Unable to look up the gatherer. Maybe you typed the address in wrong."
+    "Unable to look up the gatherer. Maybe you typed the address in wrong.",
 
-    "An error occurred receiving the map from the server. Game over."
+    "An error occurred receiving the map from the server. Game over.",
+
+    "The gatherer is using the star protocol, but your configuration is set to ring. You will not appear in the list of available players.",
+
+    "The gatherer is using the ring protocol, but your configuration is set to star. You will not appear in the list of available players.",
+
+    "The gatherer is using a Lua netscript, but this version was built without Lua support. You will not appear in the list of available players."
+
 };
 
 // STR# Resource: "Key Codes To Names"

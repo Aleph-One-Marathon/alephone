@@ -61,13 +61,8 @@ enum // base network speeds
 	NUMBER_OF_NETWORK_TYPES
 };
 
-// as returned by get_network_version()
-enum
-{
-	_appletalk_ring_network_version = 10,
-	_ip_ring_network_version = 23,
-	_ip_star_network_version = 24,
-};
+// change this if you make a major change to the way the setup messages work
+static const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT P1";
 
 typedef struct game_info
 {
@@ -105,7 +100,6 @@ typedef struct player_info
 
 
 struct prospective_joiner_info {
-  uint16 network_version;
   uint16 stream_id;
   unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
   bool gathering;
@@ -167,6 +161,7 @@ class InGameChatCallbacks : public ChatCallbacks
 
 // ZZZ note: netPlayerAdded, netChatMessageReceived, and netStartingResumeGame are 'pseudo-states';
 // they are returned from NetUpdateJoinState() but will never be assigned to the actual "NetState()".
+// ghs: netAwaitingHello isn't ever returned or assigned to netState
 enum /* states */
 {
 	netUninitialized, /* NetEnter() has not been called */
@@ -184,7 +179,8 @@ enum /* states */
 	netPlayerChanged, /* like netPlayerAdded */
 	netJoinErrorOccurred,
         netChatMessageReceived, // ZZZ addition
-        netStartingResumeGame // ZZZ addition: like netStartingUp, but starting a resume-game instead of a new game
+        netStartingResumeGame, // ZZZ addition: like netStartingUp, but starting a resume-game instead of a new game
+	netAwaitingHello // only used for handler state
 };
 
 /* -------- typedefs */
@@ -282,8 +278,6 @@ void display_net_game_stats(void);
 void NetAddDistributionFunction(int16 type, NetDistributionProc proc, bool lossy);
 void NetDistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self);
 void NetRemoveDistributionFunction(short type);
-
-short get_network_version();
 
 // disable "cheats"
 bool NetAllowCrosshair();

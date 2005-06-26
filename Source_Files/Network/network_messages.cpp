@@ -111,6 +111,23 @@ bool AcceptJoinMessage::reallyInflateFrom(AIStream& inputStream) {
   return true;
 }
 
+void CapabilitiesMessage::reallyDeflateTo(AOStream& outputStream) const {
+  for (capabilities_t::const_iterator it = mCapabilities.begin(); it != mCapabilities.end(); it++) {
+    write_string(outputStream, it->first.c_str());
+    outputStream << it->second;
+  }
+}
+
+bool CapabilitiesMessage::reallyInflateFrom(AIStream& inputStream) {
+  mCapabilities.clear();
+  char key[1024];
+  while (inputStream.maxg() > inputStream.tellg()) {
+    read_string(inputStream, key, 1024);
+    inputStream >> mCapabilities[key];
+  }
+  return true;
+}
+
 void ChangeColorsMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mColor;
   outputStream << mTeam;
@@ -123,19 +140,29 @@ bool ChangeColorsMessage::reallyInflateFrom(AIStream& inputStream) {
   return true;
 }
 
+void HelloMessage::reallyDeflateTo(AOStream& outputStream) const {
+  write_string(outputStream, mVersion.c_str());
+}
+
+bool HelloMessage::reallyInflateFrom(AIStream& inputStream) {
+  char version[1024];
+  read_string(inputStream, version, 1024);
+  mVersion = version;
+  return true;
+}
+
 void JoinerInfoMessage::reallyDeflateTo(AOStream& outputStream) const {
-  outputStream << mInfo.network_version;
   outputStream << mInfo.stream_id;
-  outputStream.write(mInfo.name, mInfo.name[0] + 1);
+  write_pstring(outputStream, mInfo.name);
+  write_string(outputStream, mVersion.c_str());
 }
 
 bool JoinerInfoMessage::reallyInflateFrom(AIStream& inputStream) {
-  inputStream >> mInfo.network_version;
   inputStream >> mInfo.stream_id;
-  inputStream.read(mInfo.name, 1);
-  if (mInfo.name[0] > 0) {
-    inputStream.read(mInfo.name + 1, mInfo.name[0]);
-  }
+  read_pstring(inputStream, mInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
+  char version[1024];
+  read_string(inputStream, version, 1024);
+  mVersion = version;
   return true;
 }
 
@@ -150,6 +177,20 @@ bool NetworkChatMessage::reallyInflateFrom(AIStream& inputStream) {
   Uint16 target;
   inputStream >> target;
   read_string(inputStream, mChatText, CHAT_MESSAGE_SIZE);
+  return true;
+}
+
+void ServerWarningMessage::reallyDeflateTo(AOStream& outputStream) const {
+  outputStream << (uint16) mReason;
+  write_string(outputStream, mString.c_str());
+}
+
+bool ServerWarningMessage::reallyInflateFrom(AIStream& inputStream) {
+  inputStream >> (uint16&) mReason;
+  char s[kMaxStringSize];
+  read_string(inputStream, s, kMaxStringSize);
+  mString = s;
+
   return true;
 }
 

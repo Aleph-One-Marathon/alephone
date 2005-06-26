@@ -75,9 +75,11 @@ enum /* error string for user */
         netErrJoinerCantFindScenario,
 	netErrLostConnection,
 	netErrCouldntResolve,
-	netErrCouldntReceiveMap
+	netErrCouldntReceiveMap,
+	netWarnJoinerHasNoStar,
+	netWarnJoinerHasNoRing,
+	netWarnJoinerNoLua
 };
-
 
 // (ZZZ:) Moved here from network.cpp
 

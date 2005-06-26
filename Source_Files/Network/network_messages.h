@@ -29,12 +29,14 @@
 
 #include "SDL_net.h"
 
+#include "network_capabilities.h"
 #include "network_private.h"
 
 enum {
   kHELLO_MESSAGE = 700,
   kJOINER_INFO_MESSAGE,
   kJOIN_PLAYER_MESSAGE,
+  kCAPABILITIES_MESSAGE,
   kACCEPT_JOIN_MESSAGE,
   kTOPOLOGY_MESSAGE,
   kMAP_MESSAGE,
@@ -42,9 +44,9 @@ enum {
   kLUA_MESSAGE,
   kCHAT_MESSAGE,
   kUNKNOWN_MESSAGE_MESSAGE,
-  kSCRIPT_MESSAGE,
   kEND_GAME_DATA_MESSAGE,
-  kCHANGE_COLORS_MESSAGE
+  kCHANGE_COLORS_MESSAGE,
+  kSERVER_WARNING_MESSAGE
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -97,6 +99,33 @@ class AcceptJoinMessage : public SmallMessageHelper
   NetPlayer mPlayer;
 };
 
+class CapabilitiesMessage : public SmallMessageHelper
+{
+ public:
+  enum { kType = kCAPABILITIES_MESSAGE };
+
+  CapabilitiesMessage() : SmallMessageHelper() { }
+  
+  CapabilitiesMessage(const Capabilities &capabilities) : SmallMessageHelper() {
+    mCapabilities = capabilities;
+  }
+  
+  CapabilitiesMessage *clone() const {
+    return new CapabilitiesMessage(*this);
+  }
+
+  const Capabilities *capabilities() { return &mCapabilities; }
+
+  MessageTypeID type() const { return kType; }
+
+protected:
+  void reallyDeflateTo(AOStream& outputStream) const;
+  bool reallyInflateFrom(AIStream& inputStream);
+
+private:
+  Capabilities mCapabilities;
+};
+	  
 class ChangeColorsMessage : public SmallMessageHelper
 {
  public:
@@ -131,7 +160,33 @@ class ChangeColorsMessage : public SmallMessageHelper
 
 typedef DatalessMessage<kEND_GAME_DATA_MESSAGE> EndGameDataMessage;
 
-typedef DatalessMessage<kHELLO_MESSAGE> HelloMessage;
+class HelloMessage : public SmallMessageHelper
+{
+public:
+  enum { kType = kHELLO_MESSAGE };
+  
+  HelloMessage() : SmallMessageHelper() { }
+
+  HelloMessage(const std::string &version) : 
+    SmallMessageHelper(), mVersion(version) { }
+  
+  HelloMessage *clone() const {
+    return new HelloMessage(*this);
+  }
+
+  std::string version() { return mVersion; }
+  void version(const std::string &version) { mVersion = version; }
+
+  MessageTypeID type() const { return kType; }
+  
+protected:
+  void reallyDeflateTo(AOStream& outputStream) const;
+  bool reallyInflateFrom(AIStream& inputStream);
+
+private:
+  
+  std::string mVersion;
+};
 
 typedef TemplatizedSimpleMessage<kJOIN_PLAYER_MESSAGE, int16> JoinPlayerMessage;
 class JoinerInfoMessage : public SmallMessageHelper
@@ -140,10 +195,12 @@ class JoinerInfoMessage : public SmallMessageHelper
   enum { kType = kJOINER_INFO_MESSAGE };
 
   JoinerInfoMessage() : SmallMessageHelper() { }
-
-  JoinerInfoMessage(prospective_joiner_info *info) : SmallMessageHelper() {
+    
+  JoinerInfoMessage(prospective_joiner_info *info, const std::string &version) : SmallMessageHelper() {
+    
     mInfo = *info;
-  }
+    mVersion = version;
+    }
 
   JoinerInfoMessage *clone() const {
     return new JoinerInfoMessage(*this);
@@ -154,6 +211,9 @@ class JoinerInfoMessage : public SmallMessageHelper
     mInfo = *theInfo;
   }
 
+  std::string version() { return mVersion; }
+  void version(const std::string version) { mVersion = version; }
+
   MessageTypeID type() const { return kType; }
 
  protected:
@@ -162,7 +222,7 @@ class JoinerInfoMessage : public SmallMessageHelper
 
  private:
   prospective_joiner_info mInfo;
-  
+  std::string mVersion;
 };
       
 class LuaMessage : public BigChunkOfDataMessage
@@ -243,7 +303,44 @@ class PhysicsMessage : public BigChunkOfDataMessage
   
 };
 
-typedef TemplatizedSimpleMessage<kSCRIPT_MESSAGE, int16> ScriptMessage;
+class ServerWarningMessage : public SmallMessageHelper
+{
+public:
+  enum { kType = kSERVER_WARNING_MESSAGE };
+  enum { kMaxStringSize = 1024 };
+
+  enum Reason { 
+    kNoReason,
+    kJoinerUngatherable 
+  } ;
+
+  ServerWarningMessage() { }
+    
+  ServerWarningMessage(std::string s, Reason reason) : 
+    mString(s), mReason(reason) { 
+    assert(s.length() <  kMaxStringSize); 
+  }
+
+  ServerWarningMessage *clone() const {
+    return new ServerWarningMessage(*this);
+  }
+
+  MessageTypeID type() const { return kType; }
+  void string (const std::string s) { 
+    assert(s.length() < kMaxStringSize);
+    mString = s; 
+  }
+  const std::string *string() { return &mString; }
+
+protected:
+  void reallyDeflateTo(AOStream& outputStream) const;
+  bool reallyInflateFrom(AIStream& inputStream);
+
+private:
+  std::string mString;
+  Reason mReason;
+};
+
 
 class TopologyMessage : public SmallMessageHelper
 {
@@ -279,16 +376,19 @@ struct Client {
     _connecting,
     _connected_but_not_yet_shown,
     _connected,
-    _awaiting_script_message,
+    _awaiting_capabilities,
     _ungatherable,
     _joiner_didnt_accept,
     _awaiting_accept_join,
     _awaiting_map,
-    _ingame
+    _ingame,
+    _disconnect
   };
+
   CommunicationsChannel *channel;
   short state;
   uint16 network_version;
+  Capabilities capabilities;
   unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
 
   static CheckPlayerProcPtr check_player;
@@ -297,9 +397,15 @@ struct Client {
 
   void drop();
 
+  enum {
+    _dont_warn_joiner = false,
+    _warn_joiner = true
+  };
+  bool capabilities_indicate_player_is_gatherable(bool warn_joiner);
+
   void handleJoinerInfoMessage(JoinerInfoMessage*, CommunicationsChannel*);
   void unexpectedMessageHandler(Message *, CommunicationsChannel*);
-  void handleScriptMessage(ScriptMessage*, CommunicationsChannel*);
+  void handleCapabilitiesMessage(CapabilitiesMessage*,CommunicationsChannel*);
   void handleAcceptJoinMessage(AcceptJoinMessage*, CommunicationsChannel*);
   void handleChatMessage(NetworkChatMessage*, CommunicationsChannel*);
   void handleChangeColorsMessage(ChangeColorsMessage*, CommunicationsChannel*);
@@ -307,7 +413,7 @@ struct Client {
   std::auto_ptr<MessageDispatcher> mDispatcher;
   std::auto_ptr<MessageHandler> mJoinerInfoMessageHandler;
   std::auto_ptr<MessageHandler> mUnexpectedMessageHandler;
-  std::auto_ptr<MessageHandler> mScriptMessageHandler;
+  std::auto_ptr<MessageHandler> mCapabilitiesMessageHandler;
   std::auto_ptr<MessageHandler> mAcceptJoinMessageHandler;
   std::auto_ptr<MessageHandler> mChatMessageHandler;
   std::auto_ptr<MessageHandler> mChangeColorsMessageHandler;
