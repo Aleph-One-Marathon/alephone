@@ -55,6 +55,17 @@ static char assert_text[256];
 
 /* ---------- code */
 
+void alert_user(char *message, short severity)
+{
+  InitCursor();
+  switch (severity) {
+  case infoError:
+    SimpleAlert(kAlertNoteAlert, message, NULL);
+  case fatalError:
+    SimpleAlert(kAlertStopAlert, message, NULL);
+  }
+}
+
 void alert_user(
 	short severity,
 	short resid,

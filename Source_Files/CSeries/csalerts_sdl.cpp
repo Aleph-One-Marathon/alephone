@@ -33,8 +33,72 @@ April 22, 2003 (Woody Zenfell):
 
 #include "Logging.h"
 
-extern "C" void debugger(const char *message);
+#include "sdl_dialogs.h"
+#include "sdl_widgets.h"
 
+/*
+ *  Display alert message
+ */
+
+const int MAX_ALERT_WIDTH = 320;
+
+extern void update_game_window(void);
+
+void alert_user(char *message, short severity) 
+{
+  if (SDL_GetVideoSurface() == NULL) {
+    fprintf(stderr, "%s: %s\n", severity == infoError ? "INFO" : "FATAL", message);
+  } else {
+    dialog d;
+    d.add(new w_static_text(severity == infoError ? "WARNING" : "ERROR", TITLE_FONT, TITLE_COLOR));
+    d.add(new w_spacer());
+    
+    // Wrap lines
+    uint16 style;
+    const sdl_font_info *font = get_dialog_font(MESSAGE_FONT, style);
+    char *t = message;
+    while (strlen(t)) {
+      unsigned i = 0, last = 0;
+      int width = 0;
+      while (i < strlen(t) && width < MAX_ALERT_WIDTH) {
+	width += char_width(t[i], font, style);
+	if (t[i] == ' ')
+	  last = i;
+	i++;
+      }
+      if (i != strlen(t))
+	t[last] = 0;
+      d.add(new w_static_text(t));
+      if (i != strlen(t))
+	t += last + 1;
+      else
+	t += i;
+    }
+    
+    d.add (new w_spacer());
+    d.add (new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d));
+    d.run();
+    if (severity == infoError && top_dialog == NULL)
+      update_game_window();
+  }
+  if (severity != infoError) exit(1);
+}
+
+void alert_user(short severity, short resid, short item, OSErr error)
+{
+  char str[256];
+  getcstr(str, resid, item);
+  char msg[300];
+  sprintf(msg, "%s (error %d)", str, error);
+  if (severity == infoError) {
+    logError2("alert (ID=%hd): %s", error, str);
+  } else if (severity == fatalError) {
+    logFatal2("fatal alert (ID=%hd): %s", error, str);
+  }
+  alert_user(msg, severity);
+}
+
+extern "C" void debugger(const char *message);
 
 /*
  *  Jump into debugger (and return)

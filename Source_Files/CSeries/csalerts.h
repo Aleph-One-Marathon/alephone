@@ -34,6 +34,8 @@ enum {
 	fatalError
 };
 
+extern void alert_user(char *message, short severity = infoError);
+
 extern void alert_user(
 	short severity,
 	short resid,
