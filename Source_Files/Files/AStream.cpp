@@ -46,6 +46,16 @@ AIStream& AIStream::operator>>(int8 &value)
 	return *this;
 }
 
+AIStream& AIStream::operator>>(bool &value)
+  throw(AStream::failure)
+{
+  uint8 UValue;
+  operator>>(UValue);
+  value = (UValue != 0);
+
+  return *this;
+}
+
 AIStream& AIStream::read(char *ptr, uint32 count)
 	throw(AStream::failure)
 {
@@ -81,6 +91,12 @@ AOStream& AOStream::operator<<(int8 value)
 	throw(AStream::failure)
 {
 	return operator<<(uint8(value));
+}
+
+AOStream& AOStream::operator<<(bool value)
+  throw(AStream::failure)
+{
+  return operator<<(uint8(value ? 1 : 0));
 }
 
 AOStream& AOStream::write(char *ptr, uint32 count)

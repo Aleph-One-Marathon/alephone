@@ -136,6 +136,9 @@ public:
 	operator>>(int8 &__value) throw(AStream::failure);
 	
 	virtual AIStream&
+	  operator>>(bool &__value) throw(AStream::failure);
+  
+	virtual AIStream&
 	operator>>(uint16 &__value) throw(AStream::failure) = 0;
 	
 	virtual AIStream&
@@ -146,7 +149,7 @@ public:
 	
 	virtual AIStream&
 	operator>>(int32 &__value) throw(AStream::failure) = 0;
-  
+
 	AIStream&
 	read(char *__ptr, uint32 __count) throw(AStream::failure);
 	
@@ -236,6 +239,9 @@ public:
 	operator<<(int8 __value) throw(AStream::failure);
 
 	virtual AOStream&
+        operator<<(bool __value) throw (AStream::failure);  
+
+	virtual AOStream&
 	operator<<(uint16 __value) throw(AStream::failure) = 0;
 	
 	virtual AOStream&
@@ -246,7 +252,8 @@ public:
 	
 	virtual AOStream&
 	operator<<(int32 __value) throw(AStream::failure) = 0;
-  
+
+
 	AOStream&
 	write(char *__ptr, uint32 __count) throw(AStream::failure);
 	
