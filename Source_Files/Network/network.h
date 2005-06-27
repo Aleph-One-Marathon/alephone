@@ -284,10 +284,4 @@ bool NetAllowCrosshair();
 bool NetAllowTunnelVision();
 bool NetAllowBehindview();
 
-#if defined(DISABLE_NETWORKING)
-#define NetAllowCrosshair() 1
-#define NetAllowTunnelVision() 1
-#define NetAllowBehindview() 1
-#endif // defined(DISABLE_NETWORKING)
-
 #endif

@@ -146,7 +146,6 @@ short new_item(
 
 	assert(sizeof(item_definitions)/sizeof(struct item_definition)==NUMBER_OF_DEFINED_ITEMS);
 
-#if !defined(DISABLE_NETWORKING)
 	/* Do NOT add items that are network-only in a single player game, and vice-versa */
 	if (dynamic_world->player_count>1)
 	{
@@ -154,7 +153,6 @@ short new_item(
 		if (get_item_kind(type)==_ball && !current_game_has_balls()) add_item= false;
 	} 
 	else
-#endif // !defined(DISABLE_NETWORKING)
 	{
 		if (definition->invalid_environments & _environment_single_player) add_item= false;
 	}

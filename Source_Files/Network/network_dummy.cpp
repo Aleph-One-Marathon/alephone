@@ -86,7 +86,35 @@ bool network_gather(void)
 	return false;
 }
 
-bool network_join(void)
+int network_join(void)
+{
+	return false;
+}
+
+void network_speaker_idle_proc(void)
+{
+}
+
+void network_microphone_idle_proc(void)
+{
+}
+
+bool current_game_has_balls(void)
+{
+	return false;
+}
+
+bool NetAllowBehindview(void)
+{
+	return false;
+}
+
+bool NetAllowCrosshair(void)
+{
+	return false;
+}
+
+bool NetAllowTunnelVision(void)
 {
 	return false;
 }

@@ -330,10 +330,8 @@ void handle_keyword(int tag)
 void global_idle_proc(void)
 {
 	music_idle_proc();
-#if !defined(DISABLE_NETWORKING)
   network_speaker_idle_proc();
   network_microphone_idle_proc();
-#endif // !defined(DISABLE_NETWORKING)
 	sound_manager_idle_proc();
 }
 

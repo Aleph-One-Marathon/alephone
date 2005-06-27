@@ -96,7 +96,11 @@ September 17, 2004 (jkvw):
 	Also moved to TCPMess for TCP communications.
 */
 
-#if !defined(DISABLE_NETWORKING)
+#if defined(DISABLE_NETWORKING)
+
+#include "network_dummy.cpp"
+
+#else
 
 /*
 I would really like to be able to let the Unysnc packet go around the loop, but it is difficult
@@ -1179,9 +1183,6 @@ void NetCancelGather(
 bool NetStart(
 	void)
 {
-	OSErr error;
-	bool success;
-
 	assert(netState==netGathering);
 
 	// how about we sort the players before we pass them out to everyone?
@@ -1562,9 +1563,9 @@ static void NetUpdateTopology(
 
 
 static bool NetSetSelfSend(
-                           bool on)
+	bool on)
 {
-        return false;
+	return false;
 }
 
 
@@ -1578,9 +1579,7 @@ bool NetChangeMap(
 {
 	byte   *wad= NULL;
 	long   length;
-	OSErr  error= noErr;
 	bool success= true;
-
 
 	/* If the guy that was the server died, and we are trying to change levels, we lose */
         // ZZZ: if we used the parent_wad_checksum stuff to locate the containing Map file,
@@ -1823,10 +1822,7 @@ void NetProcessMessagesInGame() {
 
 // If a potential joiner has connected to us, handle em
 bool NetCheckForNewJoiner (prospective_joiner_info &info)
-{
-  OSErr error = noErr;
-  short packet_type;
-  
+{  
   CommunicationsChannel *new_joiner = server->newIncomingConnection();
   
   if (new_joiner) {
@@ -1876,9 +1872,7 @@ short NetUpdateJoinState(
 {
   logContext("updating network join status");
   
-  OSErr error = noErr;
   short newState= netState;
-  short packet_type;
   
   switch (netState)
     {
@@ -1996,7 +1990,6 @@ used to be NetStart() and it used to connect all upring and downring ADSP connec
 static void NetDistributeTopology(
 	short tag)
 {
-	OSErr error = 0; //JTP: initialize to no error
 	short playerIndex;
 	
 	assert(netState==netGathering);
