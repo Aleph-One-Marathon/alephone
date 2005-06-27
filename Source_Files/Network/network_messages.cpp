@@ -71,7 +71,7 @@ static void deflateNetPlayer(AOStream& outputStream, const NetPlayer &player) {
   outputStream.write((byte *) &player.ddpAddress.port, 2);
   outputStream << player.identifier;
   outputStream << player.stream_id;
-  outputStream << (byte) player.net_dead;
+  outputStream << player.net_dead;
 
 
   write_pstring(outputStream, player.player_data.name);
@@ -90,7 +90,7 @@ static void inflateNetPlayer(AIStream& inputStream, NetPlayer &player) {
   inputStream.read((byte *) &player.ddpAddress.port, 2);
   inputStream >> player.identifier;
   inputStream >> player.stream_id;
-  inputStream >> (byte&) player.net_dead;
+  inputStream >> player.net_dead;
 
   read_pstring(inputStream, player.player_data.name, sizeof(player.player_data.name));  
   inputStream >> player.player_data.desired_color;
@@ -206,8 +206,8 @@ void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mTopology.game_data.kill_limit;
   outputStream << mTopology.game_data.game_options;
   outputStream << mTopology.game_data.difficulty_level;
-  outputStream << (byte) mTopology.game_data.server_is_playing;
-  outputStream << (byte) mTopology.game_data.allow_mic;
+  outputStream << mTopology.game_data.server_is_playing;
+  outputStream << mTopology.game_data.allow_mic;
   outputStream << mTopology.game_data.cheat_flags;
   outputStream << mTopology.game_data.level_number;
   write_string(outputStream, mTopology.game_data.level_name);
@@ -230,8 +230,8 @@ bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
   inputStream >> mTopology.game_data.kill_limit;
   inputStream >> mTopology.game_data.game_options;
   inputStream >> mTopology.game_data.difficulty_level;
-  inputStream >> (byte&) mTopology.game_data.server_is_playing;
-  inputStream >> (byte&) mTopology.game_data.allow_mic;
+  inputStream >> mTopology.game_data.server_is_playing;
+  inputStream >> mTopology.game_data.allow_mic;
   inputStream >> mTopology.game_data.cheat_flags;
   inputStream >> mTopology.game_data.level_number;
   read_string(inputStream, mTopology.game_data.level_name, MAX_LEVEL_NAME_LENGTH - 1);
