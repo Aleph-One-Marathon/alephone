@@ -131,6 +131,42 @@
 			path = AlephOneSDL.app;
 			refType = 3;
 		};
+		17BEE4F6086F79AB0037599E = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = network_capabilities.cpp;
+			refType = 4;
+		};
+		17BEE4F7086F79AB0037599E = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = network_capabilities.h;
+			refType = 4;
+		};
+		17BEE4F8086F79AB0037599E = {
+			fileRef = 17BEE4F6086F79AB0037599E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17BEE4F9086F79AB0037599E = {
+			fileRef = 17BEE4F7086F79AB0037599E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17BEE4FA086F79AB0037599E = {
+			fileRef = 17BEE4F6086F79AB0037599E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17BEE4FB086F79AB0037599E = {
+			fileRef = 17BEE4F7086F79AB0037599E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		17F4B7C5084C24DC00E00D4F = {
 			buildActionMask = 2147483647;
 			dstPath = "";
@@ -780,6 +816,7 @@
 				EFA78B000808E88A00F0B285,
 				17F4B7D4084C259200E00D4F,
 				170EC139085B5C90001D8638,
+				17BEE4FB086F79AB0037599E,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -959,6 +996,7 @@
 				EFA78AFF0808E88A00F0B285,
 				EFCB28180831B8000044FDF2,
 				17F4B7E4084C330000E00D4F,
+				17BEE4FA086F79AB0037599E,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1948,6 +1986,7 @@
 				EFCB281A0833135B0044FDF2,
 				170EC12E085AB184001D8638,
 				170EC137085B5C90001D8638,
+				17BEE4F9086F79AB0037599E,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3346,6 +3385,7 @@
 				EFA78AFD0808E88A00F0B285,
 				17F4B7E1084C330000E00D4F,
 				170EC133085B5AF0001D8638,
+				17BEE4F8086F79AB0037599E,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6202,6 +6242,8 @@
 				F5574EFE01F4ED6501FEABBD,
 				EF2EF5CF04819BD700A8000D,
 				F522138F0136ABAE01000001,
+				17BEE4F6086F79AB0037599E,
+				17BEE4F7086F79AB0037599E,
 				F5574EF801F4ECD701FEABBD,
 				F522137B0136ABAE01000001,
 				F5574EFA01F4ED0A01FEABBD,
