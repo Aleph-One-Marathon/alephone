@@ -62,7 +62,7 @@ enum // base network speeds
 };
 
 // change this if you make a major change to the way the setup messages work
-static const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT P1";
+extern const std::string kNetworkSetupProtocolID;
 
 typedef struct game_info
 {

@@ -157,6 +157,9 @@ clearly this is all broken until we have packet types
 
 #include "lua_script.h"
 
+// change this if you make a major change to the way the setup messages work
+const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT P1";
+
 /* ---------- globals */
 
 static short ddpSocket; /* our ddp socket number */
