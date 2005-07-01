@@ -126,6 +126,7 @@ private:
 	int result;					// Dialog result code
 	bool done;					// Flag: dialog done
 	bool cursor_was_visible;	// Previous cursor state
+	int saved_unicode_state;        // unicode state entering this dialog
 
 	dialog *parent_dialog;		// Pointer to parent dialog
 

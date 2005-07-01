@@ -1229,7 +1229,7 @@ void dialog::start(bool play_sound)
 	// I guess really we need to "push" the current UNICODE state and set it true on entering run_a_little,
 	// then "pop" the previous state on leaving run_a_little.  In the meantime, we hope nobody tries their own
 	// event processing between dialog::start and dialog::finish (or at least is prepared to live with UNICODE) :) )
-	SDL_EnableUNICODE(true);
+	saved_unicode_state = SDL_EnableUNICODE(true);
 
 	// Prepare for dialog event loop
 	result = 0;
@@ -1268,7 +1268,7 @@ bool dialog::process_events()
 int dialog::finish(bool play_sound)
 {
 	// Disable unicode key translation
-	SDL_EnableUNICODE(false);
+	SDL_EnableUNICODE(saved_unicode_state);
 
 	// Farewell sound
 	if (play_sound)
