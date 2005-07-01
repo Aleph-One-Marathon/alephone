@@ -160,7 +160,7 @@ pattern_buffer(buffer_id, player)
 Whenever a player uses a pattern buffer.
 
 
-got_item(player, type)
+got_item(type, player)
 
 Whenever a player picks up an item.
 Also whenever a player gets an item when a script calls add_item().
