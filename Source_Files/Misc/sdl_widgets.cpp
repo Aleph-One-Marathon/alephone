@@ -41,6 +41,7 @@
 
 #include "cseries.h"
 #include "sdl_dialogs.h"
+#include "network_dialog_widgets_sdl.h"
 #include "sdl_fonts.h"
 #include "sdl_widgets.h"
 #include "resource_manager.h"
@@ -1642,6 +1643,18 @@ void SDLWidgetWidget::activate ()
 	m_widget->set_enabled (!hidden);
 }
 
+
+PlayersInGameWidget::PlayersInGameWidget (w_players_in_game2* pig)
+	: SDLWidgetWidget (pig)
+	, m_pig (pig)
+	{}
+	
+void PlayersInGameWidget::redraw ()
+{
+	m_pig->start_displaying_actual_information ();
+	m_pig->update_display ();
+	m_pig->get_owning_dialog ()->draw_dirty_widgets ();
+}
 
 
 

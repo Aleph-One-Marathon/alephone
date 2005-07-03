@@ -1061,235 +1061,114 @@ bool run_network_gather_dialog(MetaserverClient* metaserverClient)
 
 
 
-
-
-
-
-
-
 /*
  *  Joining dialog
  */
 
-static int join_dialog_result;
-
-static void
-join_processing_function(dialog* inDialog)
+class SdlJoinDialog : public JoinDialog
 {
-	MetaserverClient::pumpAll();
+public:
+	SdlJoinDialog::SdlJoinDialog()
+	{
+		m_dialog.add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR));
+		m_dialog.add(new w_spacer());
+
+		m_dialog.add(new w_static_text("Appearance"));
+
+		w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
+		m_dialog.add(name_w);
 	
-	/* check and see if we've gotten any connection requests */
-	join_dialog_result = join_dialog_gatherer_search (inDialog);
-                        
-	if (false /*chat*/) {
-                        player_info*	sending_player;
-                        char*		chat_message;
-                        
-                        if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
-                            w_chat_history*	ch = dynamic_cast<w_chat_history*>(inDialog->get_widget_by_id(iCHAT_HISTORY));
-                            ch->append_chat_entry(sending_player, chat_message);
-                            inDialog->draw_dirty_widgets();
-                        }
-		
+		w_player_color *pcolor_w = new w_player_color("Color", 0);
+		m_dialog.add(pcolor_w);
+
+		w_player_color *tcolor_w = new w_player_color("Team Color", 0);
+		m_dialog.add(tcolor_w);
+	
+		w_button *change_colors_w = new w_button("Request Color Change");
+		m_dialog.add(change_colors_w);
+	
+		m_dialog.add(new w_spacer());
+
+		w_toggle* hint_w = new w_toggle("Join by address", false);
+                m_dialog.add(hint_w);
+
+		w_text_entry* hint_address_w = new w_text_entry("Join address", kJoinHintingAddressLength, "");
+		m_dialog.add(hint_address_w);
+
+		m_dialog.add(new w_spacer());
+
+		w_static_text* join_messages_w = new w_static_text("");
+		join_messages_w->set_full_width ();
+		m_dialog.add(join_messages_w);
+
+		m_dialog.add(new w_spacer());
+
+		w_button* join_by_metaserver_w = new w_button("JOIN BY METASERVER");
+		m_dialog.add(join_by_metaserver_w);
+
+		m_dialog.add(new w_spacer());
+	
+		w_left_button* join_w = new w_left_button("JOIN");
+		m_dialog.add(join_w);
+	
+		w_right_button* cancel_w = new w_right_button("CANCEL");
+		m_dialog.add(cancel_w);
+
+		w_players_in_game2* players_w = new w_players_in_game2(false);
+		m_dialog.add(players_w);
+
+		m_cancelWidget = new ButtonWidget (cancel_w);
+		m_joinWidget = new ButtonWidget (join_w);
+	
+		m_joinMetaserverWidget = new ButtonWidget (join_by_metaserver_w);
+		m_joinAddressWidget = new JoinAddressWidget (new EditTextWidget (hint_address_w));
+		m_joinByAddressWidget = new JoinByAddressWidget (new ToggleWidget (hint_w));
+	
+		m_nameWidget = new NameWidget (new EditTextWidget (name_w));
+		m_colourWidget = new ColourWidget (new ColourSelectorWidget (pcolor_w));
+		m_teamWidget = new TeamWidget (new ColourSelectorWidget (tcolor_w));
+		m_colourChangeWidget = new ButtonWidget (change_colors_w);
+	
+		m_messagesWidget = new StaticTextWidget (join_messages_w);
+	
+		m_pigWidget = new PlayersInGameWidget (players_w);
 	}
-}
 
+	virtual void Run ()
+	{
+		m_dialog.set_processing_function (boost::bind(&JoinDialog::gathererSearch, this));
+		m_dialog.run();
+	}
+	
+	virtual void Stop()
+	{
+		m_dialog.quit(-1);
+	}
+	
+	virtual ~SdlJoinDialog()
+	{
+		delete m_cancelWidget;
+		delete m_joinWidget;
+		delete m_joinMetaserverWidget;
+		delete m_joinAddressWidget;
+		delete m_joinByAddressWidget;
+		delete m_nameWidget;
+		delete m_colourWidget;
+		delete m_teamWidget;
+		delete m_colourChangeWidget;
+		delete m_messagesWidget;
+		delete m_pigWidget;
+	}
 
-static void
-respond_to_hint_toggle(w_select* inToggle) {
-    w_text_entry* theHintAddressEntry = dynamic_cast<w_text_entry*>(inToggle->get_owning_dialog()->get_widget_by_id(iJOIN_BY_HOST_ADDRESS));
-    theHintAddressEntry->set_enabled(inToggle->get_selection() ? true : false);
-}
+private:
+	dialog m_dialog;
+};
 
-void join_dialog_end (DialogPTR dlg)
+auto_ptr<JoinDialog>
+JoinDialog::Create()
 {
-	dlg->quit(-1);
+	return auto_ptr<JoinDialog>(new SdlJoinDialog);
 }
-
-void join_dialog_redraw (DialogPTR dlg)
-{
-	w_players_in_game2*	players_w =
-		dynamic_cast<w_players_in_game2*>(dlg->get_widget_by_id(iPLAYER_DISPLAY_AREA));
-	assert(players_w != NULL);
-	players_w->start_displaying_actual_information();
-	players_w->update_display();
-
-	dlg->draw_dirty_widgets();
-}
-
-static void
-join_by_metaserver_clicked(void *arg)
-{
-	dialog *d = (dialog *)arg;
-	d->quit(1);
-}
-
-int run_network_join_dialog()
-{
-	dialog d;
-                
-                d.add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR));
-                d.add(new w_spacer());
-                
-                d.add(new w_static_text("Appearance"));
-        
-                w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
-                name_w->set_identifier(iJOIN_NAME);
-                name_w->set_enter_pressed_callback(dialog_try_ok);
-                name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
-                d.add(name_w);
-        
-	w_player_color *pcolor_w = new w_player_color("Color", 0);
-                pcolor_w->set_identifier(iJOIN_COLOR);
-                d.add(pcolor_w);
-        
-	w_player_color *tcolor_w = new w_player_color("Team Color", 0);
-                tcolor_w->set_identifier(iJOIN_TEAM);
-                d.add(tcolor_w);
-        
-                d.add(new w_spacer());
-
-	w_toggle*	hint_w = new w_toggle("Join by address", false);
-                hint_w->set_identifier(iJOIN_BY_HOST);
-                hint_w->set_selection_changed_callback(respond_to_hint_toggle);
-                d.add(hint_w);
-
-	w_text_entry*	hint_address_w = new w_text_entry("Join address", kJoinHintingAddressLength, "");
-                hint_address_w->set_identifier(iJOIN_BY_HOST_ADDRESS);
-                d.add(hint_address_w);
-
-                d.add(new w_spacer());
-
-	w_static_text*	join_messages_w = new w_static_text("");
-		join_messages_w->set_identifier(iJOIN_MESSAGES);
-                d.add(join_messages_w);
-
-                d.add(new w_spacer());
-                
-		d.add(new w_button("JOIN BY METASERVER", join_by_metaserver_clicked, &d));
-
-		d.add(new w_spacer());
-	
-                w_left_button* join_w = new w_left_button("JOIN", dialog_ok, &d);
-                join_w->set_identifier(iOK);
-                d.add(join_w);
-                
-                d.add(new w_right_button("CANCEL", dialog_cancel, &d));
-
-		join_dialog_initialise (&d);
-
- 		int joinResult = d.run();
-	
-		join_dialog_result = kNetworkJoinFailedUnjoined;
-	
-                if(joinResult >= 0)
-		{
-			join_dialog_save_prefs (&d);
-		                	
-			bool keepGoing = true;
-			if(joinResult == 1)
-			{
-				IPaddress result = run_network_metaserver_ui();
-				if(result.host != 0)
-				{
-					uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
-					char buffer[16];
-					snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
-					QQ_set_boolean_control_value (&d, iJOIN_BY_HOST, true);
-					QQ_copy_string_to_text_control (&d, iJOIN_BY_HOST_ADDRESS, string(buffer));
-				}
-				else
-				{
-					keepGoing = false;
-				}
-			}
-	
-			if(keepGoing)
-			{
-				if (join_dialog_attempt_join (&d)) {
-		
-					// Join network game 2 box (players in game, chat, etc.)
-					dialog d2;
-		
-					d2.add(new w_static_text("WAITING FOR GAME", TITLE_FONT, TITLE_COLOR));
-		
-					d2.add(new w_spacer());
-		
-					w_player_color *pcolor_w = new w_player_color("Color", QQ_get_selector_control_value (&d, iJOIN_COLOR));
-					pcolor_w->set_identifier(iJOIN_COLOR);
-					d2.add(pcolor_w);
-        
-					w_player_color *tcolor_w = new w_player_color("Team Color", QQ_get_selector_control_value (&d, iJOIN_TEAM));
-					tcolor_w->set_identifier(iJOIN_TEAM);
-					d2.add(tcolor_w);
-					
-					w_button *change_colors_w = new w_button("Request Color Change", (void(*)(void*)) join_dialog_change_colors_hit, &d2);
-					change_colors_w->set_identifier(iJOIN_CHANGE_COLORS);
-					d2.add(change_colors_w);
-					
-					QQ_set_control_activity (&d2, iJOIN_COLOR, false);
-					QQ_set_control_activity (&d2, iJOIN_TEAM, false);
-					QQ_set_control_activity (&d2, iJOIN_CHANGE_COLORS, false);
-					
-					d2.add(new w_spacer());
-		
-					d2.add(new w_static_text("Players in Game"));
-		
-					d2.add(new w_spacer());
-	
-					w_players_in_game2* players_w = new w_players_in_game2(false);
-					players_w->set_identifier(iPLAYER_DISPLAY_AREA);
-					d2.add(players_w);
-	
-					d2.add(new w_spacer());
-
-					auto_ptr<MetaserverClient> metaserverClient;
-					auto_ptr<PregameDialogNotificationAdapter> notificationAdapter;
-					auto_ptr<MetaserverClient::NotificationAdapterInstaller> notificationAdapterInstaller;
-					if (joinResult == 1)
-					{
-						metaserverClient.reset(new MetaserverClient());
-						setupAndConnectClient(*metaserverClient);
-						setup_metaserver_chat_ui(d2, *metaserverClient, 8, notificationAdapter, notificationAdapterInstaller);
-					}
-
-					w_static_text*	status_w = new w_static_text(
-						TS_GetCString(strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string));
-					status_w->set_identifier(iJOIN_MESSAGES);
-					d2.add(status_w);
-	
-					d2.add(new w_spacer());
-	
-					w_button*	cancel_w = new w_button("CANCEL", dialog_cancel, &d2);
-					cancel_w->set_identifier(iCANCEL);
-					d2.add(cancel_w);
-
-					
-	
-					d2.set_processing_function(join_processing_function);
-		
-					int theDialogResult = d2.run(false /*play intro/exit sounds?  no because our retvalues always sound like cancels*/);
-					// d2.run() returns -1 if player clicked cancel or error occured; kNetworkJoined{New|Resume}Game if accepted into game.
-					if (join_dialog_result == kNetworkJoinedNewGame || join_dialog_result == kNetworkJoinedResumeGame) {
-							
-						// We make up for muting the dialog proper...
-						play_dialog_sound(DIALOG_OK_SOUND);
-						
-					}// my_join_dialog_data.result != kNetworkJoinFailed (accepted into game)
-
-				}// did_join == true (call to NetGameJoin() worked)
-
-			}// keepGoing (user didn't pick Cancel in metaserver dialog)
-
-                }// d.run() == 0 (player wanted to join, not cancel, in first box)
-
-	return join_dialog_result;
-}
-
-
-
-
-
 
 
 

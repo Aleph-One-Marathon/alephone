@@ -262,8 +262,13 @@ void initialize_preferences(
 		XML_DataBlockLoader.SourceName = "[Preferences]";
 				
 		PrefsInited = true;
-	}
 		
+		read_preferences ();
+	}
+}
+
+void read_preferences ()
+{
 	// Set to defaults; will be overridden by reading in the XML stuff
 	default_graphics_preferences(graphics_preferences);
 	default_serial_number_preferences(serial_preferences);

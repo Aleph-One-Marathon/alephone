@@ -39,7 +39,10 @@ Mar 1, 2002 (Woody Zenfell):
 
 #include    "player.h"  // for MAXIMUM_NUMBER_OF_PLAYERS
 #include    "network.h"
+#include    "network_private.h" // for JoinerSeekingGathererAnnouncer
 #include    "FileHandler.h"
+
+#include    "shared_widgets.h"
 
 #include    <string>
 
@@ -172,13 +175,13 @@ enum {
 #else
 	iJOIN= 101,
 #endif
-	/* iPLAYER_DISPLAY_AREA        3 */
+	// iPLAYER_DISPLAY_AREA = 3,
 	iJOIN_NAME= 4,
 	iJOIN_TEAM,
 	iJOIN_COLOR, 
 	iJOIN_MESSAGES,
 	// Group line = 12
-	iJOIN_NETWORK_TYPE= 13,
+	// iJOIN_NETWORK_TYPE= 13,
 	iJOIN_BY_HOST = 14,
 	iJOIN_BY_HOST_LABEL,
 	iJOIN_BY_HOST_ADDRESS,
@@ -385,6 +388,47 @@ struct NetgameOutcomeData
 /* ---------------------- globals */
 extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 
+class JoinDialog
+{
+public:
+	// Abstract factory; concrete type determined at link-time
+	static std::auto_ptr<JoinDialog> Create();
+
+	const int JoinNetworkGameByRunning();
+
+	virtual ~JoinDialog () {}
+
+protected:
+	JoinDialog() : join_announcer(true) {}
+
+	virtual void Run() = 0;
+	virtual void Stop() = 0;
+
+	void gathererSearch ();
+	void attemptJoin ();
+	void changeColours ();
+	void getJoinAddressFromMetaserver ();
+	
+	ButtonWidget*		m_cancelWidget;
+	ButtonWidget*		m_joinWidget;
+	
+	ButtonWidget*		m_joinMetaserverWidget;
+	JoinAddressWidget*	m_joinAddressWidget;
+	JoinByAddressWidget*	m_joinByAddressWidget;
+	
+	NameWidget*		m_nameWidget;
+	ColourWidget*		m_colourWidget;
+	TeamWidget*		m_teamWidget;
+	ButtonWidget*		m_colourChangeWidget;
+	
+	StaticTextWidget*	m_messagesWidget;
+	
+	PlayersInGameWidget*	m_pigWidget;
+	
+	JoinerSeekingGathererAnnouncer join_announcer;
+	int join_result;
+};
+
 /* ---------------------- new stuff :) */
 
 // Gather Dialog Goodies
@@ -398,18 +442,6 @@ class MetaserverClient;
 bool run_network_gather_dialog (MetaserverClient* metaserverClient);
 
 GatherCallbacks *get_gather_callbacks();
-
-// Join Dialog Goodies
-// shared routines
-void join_dialog_initialise (DialogPTR dialog);
-void join_dialog_save_prefs (DialogPTR dialog);
-int join_dialog_gatherer_search (DialogPTR dialog);
-bool join_dialog_attempt_join (DialogPTR dialog);
-void join_dialog_change_colors_hit (DialogPTR dialog);
-// non-shared routines
-int run_network_join_dialog ();
-void join_dialog_end (DialogPTR dialog);
-void join_dialog_redraw (DialogPTR dialog);
 
 // Netgame setup goodies
 // shared routines

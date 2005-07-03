@@ -76,8 +76,11 @@ public:
 	
 	void set_callback (ControlHitCallback callback) { m_control_watcher.set_callback (callback); }
 	
-	int get_value () { return GetControl32BitValue (m_ctrl); }
-	void set_value (int value) { SetControl32BitValue (m_ctrl, value); }
+	void set_labels (int stringset) { set_labels (build_stringvector_from_stringset (stringset)); }
+	void set_labels (const std::vector<std::string>& labels);
+	
+	int get_value () { return GetControl32BitValue (m_ctrl) - 1; }
+	void set_value (int value) { SetControl32BitValue (m_ctrl, value + 1); }
 
 private:
 	AutoControlWatcher m_control_watcher;
@@ -108,7 +111,7 @@ public:
 	StaticTextWidget (ControlRef ctrl)
 		: NIBsControlWidget (ctrl) {}
 	
-	void set_text (std::string s);
+	void set_text (const std::string& s);
 };
 
 class EditTextWidget : public NIBsControlWidget
@@ -120,7 +123,7 @@ public:
 	
 	void set_callback (GotCharacterCallback callback) { m_keystroke_watcher.set_callback (callback); }
 	
-	void set_text (std::string s);
+	void set_text (const std::string& s);
 	const string get_text ();
 
 private:
@@ -297,6 +300,21 @@ private:
 	TXNObject textObject;
 	TXNFrameID frameID;
 
+};
+
+class PlayersInGameWidget : NIBsControlWidget
+{
+public:
+	PlayersInGameWidget (ControlRef ctrl)
+		: NIBsControlWidget (ctrl)
+		{ m_pigDrawer(ctrl, pigDrawer, NULL); }
+
+	void redraw () { Draw1Control (m_ctrl); }
+
+private:
+	AutoDrawability m_pigDrawer;
+	
+	static void pigDrawer (ControlRef Ctrl, void* ignored);
 };
 
 #endif

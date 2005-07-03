@@ -215,11 +215,12 @@ private:
  *  Button
  */
 
-typedef void (*action_proc)(void *);
+// typedef void (*action_proc)(void *);
+typedef boost::function<void (void*)> action_proc;
 
 class w_button : public widget {
 public:
-	w_button(const char *text, action_proc proc, void *arg);
+	w_button(const char *text, action_proc proc = NULL, void *arg = NULL);
 	~w_button();
 
 	void set_callback (action_proc proc, void *arg);
@@ -243,7 +244,7 @@ protected:
 class w_left_button : public w_button {
 public:
 
-	w_left_button(const char *text, action_proc proc, void *arg) : w_button(text, proc, arg) {}
+	w_left_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button(text, proc, arg) {}
 
 	int layout(void);
 };
@@ -251,7 +252,7 @@ public:
 class w_right_button : public w_button {
 public:
 
-	w_right_button(const char *text, action_proc proc, void *arg) : w_button(text, proc, arg) {}
+	w_right_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button(text, proc, arg) {}
 
 	int layout(void);
 };
@@ -263,14 +264,15 @@ public:
 
 class w_select_button : public widget {
 public:
-	w_select_button(const char *name, const char *selection, action_proc proc, void *arg);
+	w_select_button(const char *name, const char *selection, action_proc proc = NULL, void *arg = NULL);
 
 	int layout(void);
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
 
 	void set_selection(const char *selection);
-
+	void set_callback(action_proc p, void* a) { proc = p; arg = a; }
+	
 protected:
 	void set_arg(void *arg) { this->arg = arg; }
 
@@ -289,7 +291,8 @@ private:
 
 // ZZZ: type for callback function
 class w_select;
-typedef	void (*selection_changed_callback_t)(w_select* theWidget);
+// typedef void (*selection_changed_callback_t)(w_select* theWidget);
+typedef boost::function<void (w_select*)> selection_changed_callback_t;
 
 class w_select : public widget {
 public:
@@ -886,12 +889,109 @@ private:
 	bool hidden, inactive;
 };
 
+class ToggleWidget : public SDLWidgetWidget
+{
+public:
+	ToggleWidget (w_toggle* toggle)
+		: SDLWidgetWidget (toggle)
+		, m_toggle (toggle)
+		, m_callback (NULL)
+		{ m_toggle->set_selection_changed_callback (boost::bind(&ToggleWidget::massage_callback, this, _1)); }
+
+	void set_callback (ControlHitCallback callback) { m_callback = callback; }
+	
+	bool get_value () { return m_toggle->get_selection (); }
+	void set_value (bool value) { m_toggle->set_selection (value); }
+
+private:
+	void massage_callback (w_select* ignored)
+		{ if (m_callback) m_callback (); }
+	
+	w_toggle* m_toggle;
+	ControlHitCallback m_callback;
+};
+
+class SelectorWidget : public SDLWidgetWidget
+{
+public:
+	virtual void set_callback (ControlHitCallback callback) { m_callback = callback; }
+	
+	virtual void set_labels (int stringset) { set_labels (build_stringvector_from_stringset (stringset)); }
+	virtual void set_labels (const std::vector<std::string>& labels) = 0;
+	
+	virtual int get_value () = 0;
+	virtual void set_value (int value) = 0;
+
+	virtual ~SelectorWidget () {}
+
+protected:
+	SelectorWidget::SelectorWidget (widget* in_widget)
+		: SDLWidgetWidget (in_widget)
+		, m_callback (NULL)
+		{}
+
+	ControlHitCallback m_callback;
+};
+
+class PopupSelectorWidget : public SelectorWidget
+{
+public:
+	PopupSelectorWidget::PopupSelectorWidget (w_select_popup* select_popup_w)
+		: SelectorWidget (select_popup_w)
+		, m_select_popup (select_popup_w)
+		{ select_popup_w->set_callback (boost::bind(&PopupSelectorWidget::massage_callback, this, _1), NULL); }
+
+	virtual void set_labels (const std::vector<std::string>& labels) { m_select_popup->set_labels (labels); }
+	
+	virtual int get_value () { return m_select_popup->get_selection (); }
+	virtual void set_value (int value) { m_select_popup->set_selection (value); }
+	
+private:
+	w_select_popup* m_select_popup;
+	
+	void massage_callback (void* ignored) { if (m_callback) m_callback (); }
+};
+
+class SelectSelectorWidget : public SelectorWidget
+{
+public:
+	SelectSelectorWidget::SelectSelectorWidget (w_select* select_w)
+		: SelectorWidget (select_w)
+		, m_select (select_w)
+		{ m_select->set_selection_changed_callback (boost::bind(&SelectSelectorWidget::massage_callback, this, _1)); }
+
+	// w_select only knows how to set labels from stringsets
+	virtual void set_labels (int stringset) { m_select->set_labels_stringset (stringset); }
+	virtual void set_labels (const std::vector<std::string>& labels) {}
+	
+	virtual int get_value () { return m_select->get_selection (); }
+	virtual void set_value (int value) { m_select->set_selection (value); }
+	
+private:
+	w_select* m_select;
+	
+	void massage_callback (w_select* ignored)
+		{ if (m_callback) m_callback (); }
+};
+
+class ColourSelectorWidget : public SelectSelectorWidget
+{
+public:
+	ColourSelectorWidget::ColourSelectorWidget (w_player_color* player_color_w)
+		: SelectSelectorWidget (player_color_w) {}
+
+	// We ignore the labels and use swatches of colour instead
+	virtual void set_labels (int stringset) {}
+	virtual void set_labels (const std::vector<std::string>& labels) {}
+};
+
 class ButtonWidget : public SDLWidgetWidget
 {
 public:
 	ButtonWidget (w_button* button)
 		: SDLWidgetWidget (button)
 		, m_button (button)
+		, m_callback (NULL)
 		{ m_button->set_callback (bounce_callback, this); }
 
 	void set_callback (ControlHitCallback callback) { m_callback = callback; }
@@ -900,10 +1000,24 @@ public:
 
 private:
 	static void bounce_callback(void* arg)
-		{ reinterpret_cast<ButtonWidget*>(arg)->m_callback (); }
+		{ reinterpret_cast<ButtonWidget*>(arg)->push (); }
 
 	w_button* m_button;
 	ControlHitCallback m_callback;
+};
+
+class StaticTextWidget : public SDLWidgetWidget
+{
+public:
+	StaticTextWidget::StaticTextWidget (w_static_text* static_text_w)
+		: SDLWidgetWidget (static_text_w)
+		, m_static_text (static_text_w)
+		{}
+	
+	void set_text (std::string s) { m_static_text->set_text (s.c_str ()); }
+	
+private:
+	w_static_text* m_static_text;
 };
 
 class EditTextWidget : public SDLWidgetWidget
@@ -973,6 +1087,18 @@ public:
 
 private:
 	w_players_in_room* m_players_in_room;
+};
+
+class w_players_in_game2;
+class PlayersInGameWidget : SDLWidgetWidget
+{
+public:
+	PlayersInGameWidget (w_players_in_game2*);
+	
+	void redraw ();
+
+private:
+	w_players_in_game2* m_pig;
 };
 
 #endif

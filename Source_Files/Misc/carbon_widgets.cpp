@@ -24,15 +24,39 @@
  *
  */
 
+#include "cseries.h"
+#include "screen_drawing.h"
 #include "carbon_widgets.h"
 
-void StaticTextWidget::set_text (std::string s)
+void SelectorWidget::set_labels (const std::vector<std::string>& labels)
+{
+	// Possibly should extend to operate on radio groups too?
+
+	// Get the menu
+	MenuRef Menu = GetControlPopupMenuHandle(m_ctrl);
+	if (!Menu)
+		return;
+	
+	// Get rid of old contents
+	while(CountMenuItems(Menu)) DeleteMenuItem(Menu, 1);
+	
+	// Add in new contents
+	for (std::vector<std::string>::const_iterator it = labels.begin (); it != labels.end (); ++it) {
+		CFStringRef cfstring = CFStringCreateWithCString(NULL, (*it).c_str (), NULL);
+		AppendMenuItemTextWithCFString(Menu, cfstring, 0, 0, NULL);
+		CFRelease(cfstring);
+	}
+	
+	SetControl32BitMaximum(m_ctrl, CountMenuItems(Menu));
+}
+
+void StaticTextWidget::set_text (const std::string& s)
 {
 	SetControlData(m_ctrl, kControlLabelPart, kControlStaticTextTextTag, s.length (), s.c_str ());
 	Draw1Control (m_ctrl);
 }
 
-void EditTextWidget::set_text (std::string s)
+void EditTextWidget::set_text (const std::string& s)
 {
 	SetControlData(m_ctrl, kControlEditTextPart, kControlEditTextTextTag, s.length (), s.c_str ());
 	Draw1Control (m_ctrl);
@@ -46,4 +70,146 @@ const string EditTextWidget::get_text ()
 	std::vector<char> buffer(size);
 	GetControlData(m_ctrl, kControlEditTextPart, kControlEditTextTextTag, buffer.size(), &buffer[0], NULL);
 	return std::string(&buffer[0], buffer.size());
+}
+
+// helper for PlayersInGameWidget::pigDrawer
+static void calculate_box_colors(
+	short color_index,
+	RGBColor *highlight_color,
+	RGBColor *bar_color,
+	RGBColor *shadow_color)
+{
+	_get_player_color(color_index, highlight_color);
+
+	bar_color->red = (highlight_color->red * 7) / 10;
+	bar_color->blue = (highlight_color->blue * 7) / 10;
+	bar_color->green = (highlight_color->green * 7) / 10;
+	
+	shadow_color->red = (highlight_color->red * 2) / 10;
+	shadow_color->blue = (highlight_color->blue * 2) / 10;
+	shadow_color->green = (highlight_color->green * 2) / 10;
+}
+
+// helper for PlayersInGameWidget::pigDrawer
+static void draw_player_box_with_team(
+	Rect *rectangle, 
+	short player_index)
+{
+	const int TEAM_BADGE_WIDTH =  16;
+	const int NAME_BEVEL_SIZE = 4;
+
+	player_info *player= (player_info *) NetGetPlayerData(player_index);
+	RGBColor highlight_color, bar_color, shadow_color;
+	Rect team_badge, color_badge, text_box;
+	RGBColor old_color;
+	short index;
+
+	/* Save the color */
+	GetForeColor(&old_color);
+			
+	/* Setup the rectangles.. */
+	team_badge= color_badge= *rectangle;
+	team_badge.right= team_badge.left+TEAM_BADGE_WIDTH;
+	color_badge.left= team_badge.right;
+
+	/* Determine the colors */
+	calculate_box_colors(player->team, &highlight_color,
+		&bar_color, &shadow_color);
+
+	/* Erase the team badge area. */
+	RGBForeColor(&bar_color);
+	PaintRect(&team_badge);
+	
+	/* Draw the highlight for this one. */
+	RGBForeColor(&highlight_color);
+	for (index = 0; index < NAME_BEVEL_SIZE; index++)
+	{
+		MoveTo(team_badge.left+index, team_badge.bottom-index);
+		LineTo(team_badge.left+index, team_badge.top+index);
+		LineTo(team_badge.right, team_badge.top+index);
+	}
+	
+	/* Draw the drop shadow.. */
+	RGBForeColor(&shadow_color);
+	for (index = 0; index < NAME_BEVEL_SIZE; index++)
+	{
+		MoveTo(team_badge.left+index, team_badge.bottom-index);
+		LineTo(team_badge.right, team_badge.bottom-index);
+	}
+
+	/* Now draw the player color. */
+	calculate_box_colors(player->color, &highlight_color,
+		&bar_color, &shadow_color);
+
+	/* Erase the team badge area. */
+	RGBForeColor(&bar_color);
+	PaintRect(&color_badge);
+	
+	/* Draw the highlight for this one. */
+	RGBForeColor(&highlight_color);
+	for (index = 0; index < NAME_BEVEL_SIZE; index++)
+	{
+		MoveTo(color_badge.left, color_badge.top+index);
+		LineTo(color_badge.right-index, color_badge.top+index);
+	}
+	
+	/* Draw the drop shadow.. */
+	RGBForeColor(&shadow_color);
+	for (index = 0; index < NAME_BEVEL_SIZE; index++)
+	{
+		MoveTo(color_badge.left, color_badge.bottom-index);
+		LineTo(color_badge.right-index, color_badge.bottom-index);
+		LineTo(color_badge.right-index, color_badge.top+index);
+	}
+
+	/* Finally, draw the name. */
+	text_box= *rectangle;
+	InsetRect(&text_box, NAME_BEVEL_SIZE, NAME_BEVEL_SIZE);
+	CopyPascalStringToC(player->name, temporary);
+	_draw_screen_text(temporary, (screen_rectangle *) &text_box, 
+		_center_horizontal|_center_vertical, _net_stats_font, _white_color);		
+
+	/* Restore the color */
+	RGBForeColor(&old_color);
+}
+
+void PlayersInGameWidget::pigDrawer (ControlRef Ctrl, void* ignored)
+{
+	const int NAME_BOX_HEIGHT = 28;
+	const int NAME_BOX_WIDTH = 114;
+
+	const int BOX_SPACING = 8;
+
+	// No need for the window context -- it's assumed
+	Rect Bounds = {0,0,0,0};
+	
+	GetControlBounds(Ctrl, &Bounds);
+	
+	// Draw background and boundary
+	ForeColor(whiteColor);
+	PaintRect(&Bounds);
+	ForeColor(blackColor);
+	FrameRect(&Bounds);
+
+	// Cribbed from update_player_list_item()
+	FontInfo finfo;
+	GetFontInfo(&finfo);
+	short height = finfo.ascent + finfo.descent + finfo.leading;
+	MoveTo(Bounds.left + 3, Bounds.top+height);
+	short num_players = NetNumberOfPlayerIsValid() ? NetGetNumberOfPlayers() : 0;
+	
+	Rect name_rect;
+	SetRect(&name_rect, Bounds.left, Bounds.top, Bounds.left+NAME_BOX_WIDTH, Bounds.top+NAME_BOX_HEIGHT);
+	for (short i = 0; i < num_players; i++)
+	{
+		draw_player_box_with_team(&name_rect, i);
+		if (!(i % 2))
+		{
+			OffsetRect(&name_rect, NAME_BOX_WIDTH+BOX_SPACING, 0);
+		}
+		else
+		{
+			OffsetRect(&name_rect, -(NAME_BOX_WIDTH+BOX_SPACING), NAME_BOX_HEIGHT + BOX_SPACING);
+		}
+	}
 }

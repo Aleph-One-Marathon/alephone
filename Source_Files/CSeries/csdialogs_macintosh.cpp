@@ -1066,6 +1066,28 @@ AutoTimer::AutoTimer(
 	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",err));
 }
 
+AutoTimer::AutoTimer(
+	EventTimerInterval Delay,
+	EventTimerInterval Interval,
+	TimerCallback Handler
+	)
+{
+	OSStatus err;
+	
+	EventLoopRef EventLoop = GetCurrentEventLoop();
+	HandlerUPP = NewEventLoopTimerUPP(bounce_boosted_callback);
+	err = InstallEventLoopTimer(
+		EventLoop,
+		Delay, Interval,
+		HandlerUPP, this,
+		&Timer
+	);
+	
+	m_callback = Handler;
+	
+	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",err));
+}
+
 AutoTimer::~AutoTimer()
 {
 	RemoveEventLoopTimer(Timer);	

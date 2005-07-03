@@ -245,21 +245,37 @@ private:
 // Adds a timer to the current event loop;
 // it cleans up when it goes out of scope
 
+typedef boost::function<void (void)> TimerCallback;
 class AutoTimer
 {
 	EventLoopTimerUPP HandlerUPP;
 	EventLoopTimerRef Timer;
 
 public:
-		AutoTimer(
-	    EventTimerInterval Delay,		// Before the timer starts
-	    EventTimerInterval Interval,	// How often it fires (0 is once-off)
-	    EventLoopTimerProcPtr Handler,
-	    void *HandlerData = NULL
-	    );
+	AutoTimer(
+		EventTimerInterval Delay,		// Before the timer starts
+		EventTimerInterval Interval,		// How often it fires (0 is once-off)
+		EventLoopTimerProcPtr Handler,
+		void *HandlerData = NULL
+	);
+	
+	AutoTimer(
+		EventTimerInterval Delay,		// Before the timer starts
+		EventTimerInterval Interval,		// How often it fires (0 is once-off)
+		TimerCallback Handler
+	);
+	
 	~AutoTimer();
 
 	EventLoopTimerRef operator() () {return Timer;}
+
+private:
+	static void bounce_boosted_callback (EventLoopTimerRef ignored, void* me)
+		{ reinterpret_cast<AutoTimer*>(me)->boosted_callback (); }
+	
+	void boosted_callback () { m_callback (); }
+	
+	TimerCallback m_callback;
 };
 
 

@@ -200,6 +200,7 @@ extern struct environment_preferences_data *environment_preferences;
 
 /* --------- functions */
 void initialize_preferences(void);
+void read_preferences();
 void handle_preferences(void);
 void write_preferences(void);
 

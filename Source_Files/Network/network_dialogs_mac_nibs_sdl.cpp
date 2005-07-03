@@ -269,8 +269,8 @@ static pascal void PlayerListMemberHit(
 
 static void PlayerDisplayDrawer(ControlRef Ctrl, void *UserData)
 {
-	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
-	NetgameGatherData& Data = *DPtr;
+	//NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
+	//NetgameGatherData& Data = *DPtr;
 
 	// No need for the window context -- it's assumed
 	Rect Bounds = {0,0,0,0};
@@ -510,153 +510,75 @@ bool run_network_gather_dialog(MetaserverClient*)
 
 /*************************************************************************************************
  *
- * Function: network_join
- * Purpose:  do the dialog to join a network game.
+ * NIBs-specific network join dialog
  *
  *************************************************************************************************/
 
-// unused for now
-static bool RecentHostAddressMenuBuilder(
-	int indx, Str255 ItemName, bool &ThisIsInitial, void *Data)
+class NibsJoinDialog : public JoinDialog
 {
-	// First one is one selected
-	ThisIsInitial = (indx == 1);
-	
-	// Get the next address string;
-	// Be sure to call "_StartIter()" before calling this
-	char *Addr = RecentHostAddresses_NextIter();
-	
-	if (Addr)
+public:
+	NibsJoinDialog::NibsJoinDialog()
+	: m_joinDialogNib(CFSTR("Join Network Game"))
+	, m_dialog_window(m_joinDialogNib.nibReference(), CFSTR("Join Network Game"))
+	, m_dialog(m_dialog_window(), false)
 	{
-		CopyCStringToPascal(Addr,ItemName);
-		return true;
+		m_cancelWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iCANCEL));
+		m_joinWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN));
+	
+		m_joinMetaserverWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_BY_METASERVER));
+		m_joinAddressWidget = new JoinAddressWidget (new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_BY_HOST_ADDRESS)));
+		m_joinByAddressWidget = new JoinByAddressWidget (new ToggleWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_BY_HOST)));
+	
+		m_nameWidget = new NameWidget (new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_NAME)));
+		m_colourWidget = new ColourWidget (new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_COLOR)));
+		m_teamWidget = new TeamWidget (new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_TEAM)));
+		m_colourChangeWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_CHANGE_COLORS));
+	
+		m_messagesWidget = new StaticTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_MESSAGES));
+	
+		m_pigWidget = new PlayersInGameWidget (GetCtrlFromWindow(m_dialog_window(), 0, iPLAYER_DISPLAY_AREA));
 	}
-	else
-		return false;
-}
 
-
-static pascal OSStatus Join_PlayerNameWatcher(
-	EventHandlerCallRef HandlerCallRef,
-	EventRef Event,
-	void *UserData
-	)
-{	
-	// Hand off to the next event handler
-	OSStatus err = CallNextEventHandler(HandlerCallRef, Event);
-	
-	// Need this order because we want to check the text field
-	// after it's been changed, not before.
-	// Adjust the OK button's activity as needed
-	
-	// ignore for now
-	//GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
-	//SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (!Data.my_join_dialog_data_ptr->did_join));
-	
-	return err;
-}
-
-
-static void set_join_address_from_metaserver(DialogPTR dialog)
-{
-	IPaddress result = run_network_metaserver_ui();
-	if(result.host != 0)
+	virtual void Run ()
 	{
-		uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
-		char buffer[16];
-		snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
-		QQ_set_boolean_control_value(dialog, iJOIN_BY_HOST, true);
-		QQ_copy_string_to_text_control(dialog, iJOIN_BY_HOST_ADDRESS, string(buffer));
-	}
-}
-
-static void NetgameJoin_Handler(ParsedControl& Ctrl, void *UserData)
-{	
-	int Value;
-	bool did_join;
-	char *Addr;
+		show_cursor(); // Hidden one way or another
 	
-	DialogPTR dialog = (DialogPTR) UserData;
-
-	switch(Ctrl.ID.id)
-	{
-	case iJOIN:
-		join_dialog_attempt_join (dialog);
-		break;
+		AutoTimer Poller(0, PollingInterval, boost::bind(&JoinDialog::gathererSearch, this));
+		m_dialog.Run();
 		
-	case iJOIN_CHANGE_COLORS:
-		join_dialog_change_colors_hit (dialog);
-		break;
-
-	case iJOIN_BY_METASERVER:
-		set_join_address_from_metaserver(dialog);
-		break;
+		hide_cursor();
 	}
-}
-
-static int netgame_join_result;
-
-static pascal void NetgameJoin_Poller(EventLoopTimerRef Timer, void *UserData)
-{	
-	DialogPTR dialog = (DialogPTR) UserData;
-
-	// check and see if we’ve gotten any connection requests,
-	// or pursue the connection request we already received.
-	netgame_join_result = join_dialog_gatherer_search (dialog);
 	
-	if (false /* chat? */)
+	virtual void Stop()
 	{
-		player_info*	sending_player;
-		char*		chat_message;
-				
-		if(NetGetMostRecentChatMessage(&sending_player, &chat_message)) {
-			// should actually do something with the message here
-			// be sure to copy any info you need as the next call to
-			// NetUpdateJoinState could overwrite the storage we're pointing at.
-		}
+		m_dialog.Stop(false);
 	}
 	
-	// Should Update the "Join" button in shared code . . .
-	// GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
-	// SetControlActivity(Data.JoinCtrl, (ptemporary[0] != 0) && (Data.JoinState == NONE));
-}
+	virtual ~NibsJoinDialog()
+	{
+		delete m_cancelWidget;
+		delete m_joinWidget;
+		delete m_joinMetaserverWidget;
+		delete m_joinAddressWidget;
+		delete m_joinByAddressWidget;
+		delete m_nameWidget;
+		delete m_colourWidget;
+		delete m_teamWidget;
+		delete m_colourChangeWidget;
+		delete m_messagesWidget;
+		delete m_pigWidget;
+	}
 
-int run_network_join_dialog()
+private:
+	AutoNibReference m_joinDialogNib;
+	AutoNibWindow m_dialog_window;
+	Modal_Dialog m_dialog;
+};
+
+auto_ptr<JoinDialog>
+JoinDialog::Create()
 {
-	show_cursor(); // Hidden one way or another
-
-	netgame_join_result = kNetworkJoinFailedUnjoined;
-
-	AutoNibReference joinDialogNib(CFSTR("Join Network Game"));	
-	AutoNibWindow Window(joinDialogNib.nibReference(), CFSTR("Join Network Game"));
-	
-	join_dialog_initialise(Window ());
-	
-	AutoKeyboardWatcher Watcher(Join_PlayerNameWatcher);
-	Watcher.Watch(GetCtrlFromWindow(Window(), 0, iJOIN_NAME), NULL);
-
-	AutoDrawability Drawability;
-	Drawability(GetCtrlFromWindow(Window(), 0, iPLAYER_DISPLAY_AREA), PlayerDisplayDrawer, NULL);	
-	
-	AutoTimer Poller(0, PollingInterval, NetgameJoin_Poller, Window ());
-	
-	RunModalDialog(Window(), false, NetgameJoin_Handler, Window ());
-	
-	join_dialog_save_prefs(Window ());
-	
-	hide_cursor();
-	
-	return netgame_join_result;
-}
-
-void join_dialog_end (DialogPTR dialog)
-{
-	StopModalDialog(dialog, false);
-}
-
-void join_dialog_redraw (DialogPTR dialog)
-{
-	Draw1Control(GetCtrlFromWindow(dialog, 0, iPLAYER_DISPLAY_AREA));
+	return auto_ptr<JoinDialog>(new NibsJoinDialog);
 }
 
 /* ---------- private code */
