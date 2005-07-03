@@ -1136,7 +1136,7 @@ public:
 
 	virtual void Run ()
 	{
-		m_dialog.set_processing_function (boost::bind(&JoinDialog::gathererSearch, this));
+		m_dialog.set_processing_function (boost::bind(&SdlJoinDialog::gathererSearch, this));
 		m_dialog.run();
 	}
 	
