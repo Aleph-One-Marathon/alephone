@@ -1,0 +1,25 @@
+1 VERSIONINFO
+FILEVERSION 0, 2005, 1, 18
+PRODUCTVERSION 0, 2005, 1, 18
+FILEFLAGSMASK 0
+FILEOS 0x40000
+FILETYPE 1
+{
+ BLOCK "StringFileInfo"
+ {
+  BLOCK "040904E4"
+  {
+   VALUE "AppName", "Aleph One"
+   VALUE "AppVersion", "0.14"
+   VALUE "BuildDate", "BUILDDATE"
+   VALUE "FileVersion", "0.14"
+   VALUE "FileDescription", "Aleph One/SDL for Win32"
+   VALUE "LegalCopyright", "GNU General Public License"
+   VALUE "License", "GNU General Public License (For details, see the file COPYING)"
+   VALUE "OriginalFilename", "alephone.exe"
+   VALUE "URL", "http://source.bungie.org"
+  }
+ }
+}
+
+AppIcon ICON "../Resources/Windows/alephone.ico"
