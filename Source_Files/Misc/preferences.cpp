@@ -361,6 +361,16 @@ void read_preferences ()
 	validate_player_preferences(player_preferences);
 	validate_input_preferences(input_preferences);
 	validate_environment_preferences(environment_preferences);
+	
+	// jkvw: If we try to load a default file, but can't, we'll have set the game error.
+	//       But that's not useful, because we're just going to try loading the file
+	//       from user preferences.  It used to be this code was only called in initialisation,
+	//       and any game error generated here was simply clobbered by an init time
+	//       clear_game_error().  Since I'm using this more generally now, I'm clearing the
+	//       error right here, because it's not like we're bothered when we can't load a
+	//       default file.
+	//       (Problem is SDL specific - socre one for Carbon? :) )
+	clear_game_error ();
 }
 
 
