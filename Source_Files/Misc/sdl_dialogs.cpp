@@ -979,7 +979,7 @@ void dialog::activate_widget(size_t num, bool draw)
 void dialog::activate_first_widget(void)
 {
 	for (size_t i=0; i<widgets.size(); i++) {
-		if (widgets[i]->is_selectable()) {
+		if (widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab)) {
 			activate_widget(i, false);
 			break;
 		}
@@ -999,7 +999,7 @@ void dialog::activate_next_widget(void)
 		i++;
 		if (i >= int(widgets.size()))
 			i = 0;
-	} while (!widgets[i]->is_selectable() && i != active_widget_num);
+	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab)) && i != active_widget_num);
 
     // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
 	if (widgets[i]->is_selectable())
@@ -1017,7 +1017,7 @@ void dialog::activate_prev_widget(void)
 			i = widgets.size() - 1;
 		else
 			i--;
-	} while (!widgets[i]->is_selectable() && i != active_widget_num);
+	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab)) && i != active_widget_num);
 
     // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
 	if (widgets[i]->is_selectable())
