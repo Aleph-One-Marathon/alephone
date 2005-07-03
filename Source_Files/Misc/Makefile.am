@@ -21,7 +21,7 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h CircularByteBuffer.h \
   interface.cpp interface_sdl.cpp \
   Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp \
   preferences_widgets_sdl.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
-  sdl_widgets.cpp vbl.cpp vbl_sdl.cpp
+  sdl_widgets.cpp shared_widgets.cpp vbl.cpp vbl_sdl.cpp
 
 EXTRA_libmisc_a_SOURCES = thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp
 
