@@ -1364,6 +1364,7 @@ bool NetNumberOfPlayerIsValid(
 	switch(netState)
 	{
 		case netUninitialized:
+		case netConnecting:
 		case netJoining:
 			valid= false;
 			break;
