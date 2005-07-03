@@ -1,5 +1,6 @@
 ## Process this file with automake to produce Makefile.in 
 
+# these are currently broken
 # noinst_PROGRAMS = single2forks forks2single dumprsrcmap dumpwad
 dumprsrcmap_SOURCES = dumprsrcmap.cpp
 dumpwad_SOURCES = dumpwad.cpp
