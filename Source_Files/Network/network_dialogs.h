@@ -381,6 +381,8 @@ protected:
 	virtual void Run() = 0;
 	virtual void Stop() = 0;
 
+	virtual void respondToJoinHit () {}
+
 	void gathererSearch ();
 	void attemptJoin ();
 	void changeColours ();

@@ -378,6 +378,8 @@ void JoinDialog::attemptJoin ()
 		
 		getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
 		m_messagesWidget->set_text(pstring_to_string(ptemporary));
+		
+		respondToJoinHit ();
 	}
 }
 
@@ -397,8 +399,8 @@ void JoinDialog::gathererSearch ()
 			break;
 
 		case netCancelled: // the server cancelled the game; force bail
-			Stop ();
 			join_result = kNetworkJoinFailedJoined;
+			Stop ();
 			break;
 
 		case netWaiting:
@@ -406,13 +408,13 @@ void JoinDialog::gathererSearch ()
 			break;
 
 		case netStartingUp: // the game is starting up (we have the network topography)
-			Stop ();
 			join_result = kNetworkJoinedNewGame;
+			Stop ();
 			break;
 
 		case netStartingResumeGame: // the game is starting up a resume game (we have the network topography)
-			Stop ();
 			join_result = kNetworkJoinedResumeGame;
+			Stop ();
 			break;
 
 		case netPlayerChanged:
@@ -430,8 +432,8 @@ void JoinDialog::gathererSearch ()
 			break;
 
 		case netJoinErrorOccurred:
-			Stop ();
 			join_result = kNetworkJoinFailedJoined;
+			Stop ();
 			break;
                 
 		case netChatMessageReceived:

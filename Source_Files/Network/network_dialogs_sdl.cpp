@@ -1142,7 +1142,15 @@ public:
 	
 	virtual void Stop()
 	{
-		m_dialog.quit(-1);
+		if (join_result == kNetworkJoinFailedUnjoined || join_result == kNetworkJoinFailedJoined)
+			m_dialog.quit(-1);
+		else
+			m_dialog.quit(0);
+	}
+	
+	virtual void respondToJoinHit()
+	{
+		play_dialog_sound(DIALOG_OK_SOUND);
 	}
 	
 	virtual ~SdlJoinDialog()
