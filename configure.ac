@@ -24,6 +24,14 @@ AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+case $target in
+*-*-mingw32*)
+	AC_CHECK_TOOL(WINDRES, windres, :)
+	;;
+*)
+	;;
+esac
+
 dnl Checks for headers.
 AC_CHECK_HEADERS(unistd.h)
 
@@ -77,7 +85,6 @@ AC_CHECK_HEADERS(SDL_sound.h, [
     AC_DEFINE(HAVE_SDL_SOUND, 1, [SDL_sound support is enabled])
   ])
 ])
-
 
 dnl Check for Lua.
 AC_CHECK_HEADERS(lua.h, [

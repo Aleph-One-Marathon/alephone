@@ -3,7 +3,11 @@
 SUBDIRS = CSeries Expat Files GameWorld Input Lua Misc ModelView Network \
   Pfhortran RenderMain RenderOther Sound TCPMess XML
 
+if MAKE_WINDOWS
+bin_PROGRAMS = AlephOne
+else
 bin_PROGRAMS = alephone
+endif
 
 alephone_SOURCES = shell.h shell_sdl.h \
   \
@@ -32,10 +36,18 @@ INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Fil
   -I$(top_srcdir)/Source_Files/XML -I$(top_srcdir)/Source_Files/Expat \
   -I$(top_srcdir)/Source_Files/TCPMess
 
+AlephOne_LDADD = $(alephone_LDADD) alephone-resources.o
+AlephOne_SOURCES = $(alephone_SOURCES)
+
 # Data directories
 confpaths.h: Makefile
 	echo "#define PKGDATADIR \"$(pkgdatadir)\"" > $@
 
 DISTCLEANFILES = confpaths.h
+
+alephone-resources.o: FORCE
+	sed -e s/BUILDDATE/`date +%Y-%m-%d`/g ../Resources/Windows/alephone.rc | @WINDRES@ -o alephone-resources.o
+
+FORCE:
 
 shell.o: confpaths.h
