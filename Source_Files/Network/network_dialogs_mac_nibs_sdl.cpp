@@ -543,7 +543,7 @@ public:
 	{
 		show_cursor(); // Hidden one way or another
 	
-		AutoTimer Poller(0, PollingInterval, boost::bind(&JoinDialog::gathererSearch, this));
+		AutoTimer Poller(0, PollingInterval, boost::bind(&NibsJoinDialog::gathererSearch, this));
 		m_dialog.Run();
 		
 		hide_cursor();
