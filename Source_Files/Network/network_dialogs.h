@@ -346,29 +346,6 @@ struct NetgameGatherData
 	bool AllPlayersOK;
 };
 
-struct join_dialog_data;
-struct NetgameJoinData
-{
-	ControlRef PlayerNameCtrl;
-	ControlRef PlayerTeamCtrl;
-	ControlRef PlayerColorCtrl;
-	
-	ControlRef MessageCtrl;
-	
-	ControlRef PlayerDisplayCtrl;
-	
-	ControlRef ByHost_Ctrl;
-	ControlRef ByHost_LabelCtrl;
-	ControlRef ByHost_AddressCtrl;
-	ControlRef ByHost_RecentLabelCtrl;
-	ControlRef ByHost_RecentCtrl;
-	
-	ControlRef CancelCtrl;
-	ControlRef JoinCtrl;
-
-	join_dialog_data* my_join_dialog_data_ptr;
-};
-
 
 struct NetgameOutcomeData
 {
