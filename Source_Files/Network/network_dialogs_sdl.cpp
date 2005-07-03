@@ -1099,7 +1099,12 @@ public:
 
 		w_static_text* join_messages_w = new w_static_text("");
 		join_messages_w->set_full_width ();
-		m_dialog.add(join_messages_w);
+		// jkvw: add it to dialog, but never show it.
+		//       Two things which we need don't work:
+		//       1) w_static_text can't handle text longer than the dialog width
+		//       2) widgets in dialog don't update layout position once dialog starts to run
+		//       If we get solutions to these issues, then we can show the join messages.
+		m_dialog.add_to_tab(join_messages_w, 7);
 
 		m_dialog.add(new w_spacer());
 
