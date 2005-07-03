@@ -686,6 +686,7 @@
 				AE055F0F0815F73A00BC6B7F,
 				AE055F110815F73B00BC6B7F,
 				AE5604E2086F6E0D00D9797C,
+				AE437C8D08779BC900038E30,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -867,6 +868,7 @@
 				AEBEB89B08343CAF004E13D0,
 				088809F4084C1A5500DC9E4D,
 				AE5604DF086F6DF200D9797C,
+				AE437C9008779BE500038E30,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1970,6 +1972,7 @@
 				AEBF94A80834FD9500C0B18C,
 				AE34EEEE0864EAB7002AF754,
 				AE5604E1086F6E0D00D9797C,
+				AE437C8C08779BC900038E30,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3376,6 +3379,7 @@
 				088809F1084C1A4000DC9E4D,
 				AE34EEEC0864EA95002AF754,
 				AE5604DE086F6DF200D9797C,
+				AE437C8F08779BE500038E30,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4475,14 +4479,56 @@
 			settings = {
 			};
 		};
+		AE437C8B08779BC900038E30 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = shared_widgets.h;
+			path = ../Source_Files/Misc/shared_widgets.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AE437C8C08779BC900038E30 = {
+			fileRef = AE437C8B08779BC900038E30;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AE437C8D08779BC900038E30 = {
+			fileRef = AE437C8B08779BC900038E30;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AE437C8E08779BE500038E30 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = shared_widgets.cpp;
+			path = ../Source_Files/Misc/shared_widgets.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AE437C8F08779BE500038E30 = {
+			fileRef = AE437C8E08779BE500038E30;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AE437C9008779BE500038E30 = {
+			fileRef = AE437C8E08779BE500038E30;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		AE5604DD086F6DF100D9797C = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.cpp.cpp;
 			name = network_capabilities.cpp;
-			path = "../../../../Volumes/ghs/aleph-cvs/Source_Files/Network/network_capabilities.cpp";
-			refType = 4;
-			sourceTree = "<group>";
+			path = ../Source_Files/Network/network_capabilities.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		AE5604DE086F6DF200D9797C = {
 			fileRef = AE5604DD086F6DF100D9797C;
@@ -4501,9 +4547,9 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.h;
 			name = network_capabilities.h;
-			path = "../../../../Volumes/ghs/aleph-cvs/Source_Files/Network/network_capabilities.h";
-			refType = 4;
-			sourceTree = "<group>";
+			path = ../Source_Files/Network/network_capabilities.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
 		};
 		AE5604E1086F6E0D00D9797C = {
 			fileRef = AE5604E0086F6E0D00D9797C;
@@ -6765,6 +6811,7 @@
 				F52211C40136A6FD01000001,
 				F522120F0136A6FD01000001,
 				F52212130136A6FD01000001,
+				AE437C8E08779BE500038E30,
 				F52212590136A6FD01000001,
 				F5574EF601F4EC8501FEABBD,
 			);
@@ -6775,6 +6822,7 @@
 		};
 		F522144F0136C0C401000001 = {
 			children = (
+				AE437C8B08779BC900038E30,
 				AE34EEED0864EAB7002AF754,
 				F5A00027023FDA6101A80001,
 				EFEF1AC404AF552D00C3A19D,
