@@ -830,8 +830,9 @@ InGameChatCallbacks *InGameChatCallbacks::instance() {
 
 std::string InGameChatCallbacks::prompt() {
   unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
+  pstrcpy(name, player_preferences->name);
   a1_p2cstr((unsigned char *) name);
-  return std::string((char *)name);
+  return (std::string((char *)name) + ":");
 }
 
 void InGameChatCallbacks::ReceivedMessageFromPlayer(const char *player_name, const char *message) {
