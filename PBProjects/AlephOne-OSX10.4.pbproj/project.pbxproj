@@ -687,6 +687,7 @@
 				AE055F110815F73B00BC6B7F,
 				AE5604E2086F6E0D00D9797C,
 				AE437C8D08779BC900038E30,
+				AEC6C8A00879A6020055EC57,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -869,6 +870,7 @@
 				088809F4084C1A5500DC9E4D,
 				AE5604DF086F6DF200D9797C,
 				AE437C9008779BE500038E30,
+				AEC6C89D0879A5DE0055EC57,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1973,6 +1975,7 @@
 				AE34EEEE0864EAB7002AF754,
 				AE5604E1086F6E0D00D9797C,
 				AE437C8C08779BC900038E30,
+				AEC6C89F0879A6020055EC57,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3380,6 +3383,7 @@
 				AE34EEEC0864EA95002AF754,
 				AE5604DE086F6DF200D9797C,
 				AE437C8F08779BE500038E30,
+				AEC6C89C0879A5DE0055EC57,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4633,6 +4637,48 @@
 		};
 		AEC552B3084D4A6400164A49 = {
 			fileRef = F5281C0701F8CA2101E83A66;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AEC6C89B0879A5DE0055EC57 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.cpp.cpp;
+			name = Console.cpp;
+			path = ../Source_Files/Misc/Console.cpp;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AEC6C89C0879A5DE0055EC57 = {
+			fileRef = AEC6C89B0879A5DE0055EC57;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AEC6C89D0879A5DE0055EC57 = {
+			fileRef = AEC6C89B0879A5DE0055EC57;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AEC6C89E0879A6020055EC57 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			name = Console.h;
+			path = ../Source_Files/Misc/Console.h;
+			refType = 2;
+			sourceTree = SOURCE_ROOT;
+		};
+		AEC6C89F0879A6020055EC57 = {
+			fileRef = AEC6C89E0879A6020055EC57;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		AEC6C8A00879A6020055EC57 = {
+			fileRef = AEC6C89E0879A6020055EC57;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -6799,6 +6845,7 @@
 				F5CC94290240DB8801A80001,
 				F5A00022023FDA1601A80001,
 				EFEF1AC504AF552D00C3A19D,
+				AEC6C89B0879A5DE0055EC57,
 				3DAC27A503DC9D1C00000104,
 				3DAC27A603DC9D1C00000104,
 				F52211EB0136A6FD01000001,
@@ -6827,6 +6874,7 @@
 				F5A00027023FDA6101A80001,
 				EFEF1AC404AF552D00C3A19D,
 				F5A00029023FDA7601A80001,
+				AEC6C89E0879A6020055EC57,
 				F52211CF0136A6FD01000001,
 				3DAC27A703DC9D1C00000104,
 				F522120C0136A6FD01000001,
