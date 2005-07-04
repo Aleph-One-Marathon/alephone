@@ -559,7 +559,7 @@ void render_screen(short ticks_elapsed)
 		DisplayPosition(world_pixels);
 	}
 	DisplayMessages(world_pixels);
-	DisplayChatBuffer(world_pixels);
+	DisplayInputLine(world_pixels);
 	
 #ifdef HAVE_OPENGL
 	// Set OpenGL viewport to whole window (so HUD will be in the right position)

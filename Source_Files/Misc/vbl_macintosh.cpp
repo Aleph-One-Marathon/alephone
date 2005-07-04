@@ -58,6 +58,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "tags.h" // for filetypes.
 #include "computer_interface.h"
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
+#include "Console.h"
 
 // #include "portable_files.h"
 #include "vbl.h"
@@ -201,8 +202,7 @@ uint32 parse_keymap(
 		KeyMap key_map;
 		struct key_definition *key= current_key_definitions;
 		struct special_flag_data *special= special_flags;
-		extern bool chat_input_mode;
-		if (!chat_input_mode) {
+		if (!Console::instance()->input_active()) {
 		  GetKeys(key_map);
 		} else {
 		  memset(key_map, 0, sizeof(key_map));

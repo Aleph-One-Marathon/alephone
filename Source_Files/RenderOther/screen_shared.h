@@ -51,7 +51,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #define DEFAULT_WORLD_WIDTH 640
 #define DEFAULT_WORLD_HEIGHT 320
 
-#include "network.h" // chatcallbacks :(
+#include "Console.h"
 
 
 // LP addition: view sizes and display data
@@ -464,15 +464,15 @@ static void DisplayPosition(SDL_Surface *s)
 }
 
 #if defined(mac)
-static void DisplayChatBuffer(GrafPtr port, short offWidth, short offHeight)
+static void DisplayInputLine(GrafPtr port, short offWidth, short offHeight)
 #elif defined(SDL)
-static void DisplayChatBuffer(SDL_Surface *s)
+static void DisplayInputLine(SDL_Surface *s)
 #endif
 {
-#if !defined(DISABLE_NETWORKING)
-  if (InGameChatCallbacks::displayBufferPtr > 0) {
-  FontSpecifier& Font = GetOnScreenFont();
-  
+  if (Console::instance()->input_active() && 
+      !Console::instance()->displayBuffer().empty()) {
+    FontSpecifier& Font = GetOnScreenFont();
+    
 #if defined(mac)
   GrafPtr old_port;
   GetPort (&old_port);
@@ -493,14 +493,13 @@ static void DisplayChatBuffer(SDL_Surface *s)
   short Offset = Font.LineSpacing / 3;
   short X = X0 + Offset;
   short Y = Y0 - Offset;
-  DisplayText(X, Y, InGameChatCallbacks::displayBuffer);
+  DisplayText(X, Y, Console::instance()->displayBuffer().c_str());
 
 #if defined(mac)
   RGBForeColor(&rgb_black);
   SetPort(old_port);
 #endif
   }
-#endif // !defined(DISABLE_NETWORKING)
 }
 
 #if defined(mac)

@@ -129,7 +129,7 @@ class ChatCallbacks
 {
  public:
   virtual ~ChatCallbacks() { };
-  static void SendChatMessage(const char *message);
+  static void SendChatMessage(const std::string& message);
   virtual void ReceivedMessageFromPlayer(const char *player_name,
 					 const char *message) = 0;
 };
@@ -141,17 +141,8 @@ class InGameChatCallbacks : public ChatCallbacks
   static InGameChatCallbacks *instance();
   void ReceivedMessageFromPlayer(const char *player_name, const char *message);
 
-  // ghs: these don't belong here...where do they go?
-  static void add(const char c);
-  static void remove();
-  static void send();
-  static void abort();
-  static void clear();
-  enum { bufferSize = 140 };
-  static int bufferPtr;
-  static int displayBufferPtr;
-  static char buffer[bufferSize];
-  static char displayBuffer[bufferSize];
+  static std::string prompt();
+
  private:
   InGameChatCallbacks() { }
   static InGameChatCallbacks *m_instance;

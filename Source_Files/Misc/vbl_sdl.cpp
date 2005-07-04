@@ -42,6 +42,7 @@
 #include "key_definitions.h"
 #include "tags.h" // for filetypes.
 #include "computer_interface.h"
+#include "Console.h"
 
 #include "vbl.h"
 
@@ -125,8 +126,7 @@ uint32 parse_keymap(void)
   if(get_keyboard_controller_status())
     {
       Uint8 *key_map;
-      extern bool chat_input_mode;
-      if (chat_input_mode) {
+      if (Console::instance()->input_active()) {
 	static Uint8 chat_input_mode_keymap[SDLK_LAST];
 	memset(&chat_input_mode_keymap, 0, sizeof(chat_input_mode_keymap));
 	key_map = chat_input_mode_keymap;

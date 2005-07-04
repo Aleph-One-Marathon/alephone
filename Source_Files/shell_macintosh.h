@@ -187,6 +187,7 @@ Apr 29, 2002 (Loren Petrich):
 #include <Perf.h>
 #endif
 
+#include "Console.h"
 #include "Logging.h"
 
 #ifdef env68k
@@ -556,30 +557,24 @@ void handle_game_key(
     }
   // #endif
   
-	if (!is_keypad(_virtual))
-	{
-		extern bool chat_input_mode;
-#if !defined(DISABLE_NETWORKING)
-		if (chat_input_mode) {
-			switch(key) {
-			case 015:
-				InGameChatCallbacks::send();
-				chat_input_mode = false;
-				break;
-			case 0x1b:
-			case '\\':
-				InGameChatCallbacks::abort();
-				chat_input_mode = false;
-				break;
-			case kDELETE:
-				InGameChatCallbacks::remove();
-				break;
-			default:
-				InGameChatCallbacks::add(key);
-		}
+  if (!is_keypad(_virtual))
+    {
+      if (Console::instance()->input_active()) {
+	switch(key) {
+	case 015:
+	  Console::instance()->enter();
+	  break;
+	case 0x1b:
+	  Console::instance()->abort();
+	  break;
+	case kDELETE:
+	  Console::instance()->backspace();
+	  break;
+	default:
+	  Console::instance()->key(key);
 	}
-	else
-#endif // !defined(DISABLE_NETWORKING)
+      }
+      else
 	{
 	switch(key)
 	  {
@@ -651,13 +646,13 @@ void handle_game_key(
 	    break;
 	    
 	  case '\\':
-#if !defined(DISABLE_NETWORKING)
 	    if (game_is_networked) {
 	      PlayInterfaceButtonSound(Sound_ButtonSuccess());
-	      chat_input_mode = true;
-	      InGameChatCallbacks::clear();
+#if !defined(DISABLE_NETWORKING)
+	      Console::instance()->activate_input(ChatCallbacks::SendChatMessage,
+					    InGameChatCallbacks::prompt());
+#endif
 	    } else
-#endif // !defined(DISABLE_NETWORKING)
 	      PlayInterfaceButtonSound(Sound_ButtonFailure());
 	    break;
 	  case 0x1b:
@@ -1316,8 +1311,7 @@ static void main_event_loop(
 		}
 #endif
 
-		extern bool chat_input_mode;
-		if(try_for_event(&use_waitnext) || chat_input_mode)
+		if(try_for_event(&use_waitnext) || Console::instance()->input_active())
 		{
 			EventRecord event;
 			bool got_event= false;
@@ -1344,7 +1338,7 @@ static void main_event_loop(
 			
 			if(get_game_state()==_game_in_progress) 
 			{
-			  if (!chat_input_mode)	FlushEvents(keyDownMask|keyUpMask|autoKeyMask, 0);
+			  if (!Console::instance()->input_active())	FlushEvents(keyDownMask|keyUpMask|autoKeyMask, 0);
 			}
 		}
 

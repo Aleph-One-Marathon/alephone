@@ -194,11 +194,6 @@ static Capabilities my_capabilities;
 static GatherCallbacks *gatherCallbacks = NULL;
 static ChatCallbacks *chatCallbacks = NULL;
 
-int InGameChatCallbacks::bufferPtr = 0;
-char InGameChatCallbacks::buffer[bufferSize] = "";
-int InGameChatCallbacks::displayBufferPtr = 0;
-char InGameChatCallbacks::displayBuffer[bufferSize] = "";
-
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
 // don't matter as much.  Do observe, though, that users of the "distribution" mechanism will have
@@ -793,15 +788,15 @@ void NetSetChatCallbacks(ChatCallbacks *cc) {
   chatCallbacks = cc;
 }
 
-void ChatCallbacks::SendChatMessage(const char *message)
+void ChatCallbacks::SendChatMessage(const std::string& message)
 {
   if (netState == netActive) {
     if (connection_to_server) {
-      NetworkChatMessage chatMessage(message, 0); // gatherer will replace
+      NetworkChatMessage chatMessage(message.c_str(), 0); // gatherer will replace
                                                   // with my ID
       connection_to_server->enqueueOutgoingMessage(chatMessage);
     } else { 
-      NetworkChatMessage chatMessage(message, 0);
+      NetworkChatMessage chatMessage(message.c_str(), 0);
       client_map_t::iterator it;
       for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
 	if (it->second->state == Client::_ingame) {
@@ -814,7 +809,7 @@ void ChatCallbacks::SendChatMessage(const char *message)
 	    static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
 	    pstrcpy(name, topology->players[playerIndex].player_data.name);
 	    a1_p2cstr(name);
-	    chatCallbacks->ReceivedMessageFromPlayer((char *)name, message);
+	    chatCallbacks->ReceivedMessageFromPlayer((char *)name, message.c_str());
 	  }
 	}
       }
@@ -833,56 +828,15 @@ InGameChatCallbacks *InGameChatCallbacks::instance() {
   return m_instance;
 };
 
+std::string InGameChatCallbacks::prompt() {
+  unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
+  a1_p2cstr((unsigned char *) name);
+  return std::string((char *)name);
+}
+
 void InGameChatCallbacks::ReceivedMessageFromPlayer(const char *player_name, const char *message) {
   screen_printf("%s: %s", player_name, message);
 }
-
-void InGameChatCallbacks::add(const char c)
-{
-  buffer[bufferPtr++] = c;
-  buffer[bufferPtr] = '\0';
-  displayBuffer[displayBufferPtr++] = c;
-  displayBuffer[displayBufferPtr] = '_';
-  displayBuffer[displayBufferPtr + 1] = '\0';
-}
-
-void InGameChatCallbacks::remove()
-{
-  if (bufferPtr > 0) {
-    buffer[bufferPtr--] = '\0';
-    displayBuffer[--displayBufferPtr] = '_';
-    displayBuffer[displayBufferPtr + 1] = '\0';
-  }
-}
-
-void InGameChatCallbacks::send()
-{
-  if (bufferPtr > 0) {
-    ChatCallbacks::SendChatMessage(buffer);
-  }
-  displayBuffer[0] = '\0';
-  displayBufferPtr = 0;
-}
-
-void InGameChatCallbacks::abort()
-{
-  displayBuffer[0] = '\0';
-  displayBufferPtr = 0;
-}
-
-void InGameChatCallbacks::clear()
-{
-  bufferPtr = 0;
-  buffer[0] = '\0';
-  pstrcpy((unsigned char *) displayBuffer, player_preferences->name);
-  displayBufferPtr = (int) displayBuffer[0];
-  a1_p2cstr((unsigned char *) displayBuffer);
-  displayBuffer[displayBufferPtr++] = ':';
-  displayBuffer[displayBufferPtr++] = ' ';
-  displayBuffer[displayBufferPtr] = '_';
-  displayBuffer[displayBufferPtr + 1] = '\0';
-}
-
 
 bool NetEnter(void)
 {

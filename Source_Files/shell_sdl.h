@@ -117,6 +117,7 @@ void free_and_unlock_memory(void);
 
 #include "Logging.h"
 #include "network.h"
+#include "Console.h"
 
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
@@ -1017,12 +1018,11 @@ static void main_event_loop(void)
 
 		bool yield_time = false;
 		bool poll_event = false;
-		extern bool chat_input_mode;
 
 		switch (get_game_state()) {
 			case _game_in_progress:
 			case _change_level:
-				if (chat_input_mode || SDL_GetTicks() - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
+			  if (Console::instance()->input_active() || SDL_GetTicks() - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
 					poll_event = true;
 					last_event_poll = SDL_GetTicks();
 				} else
@@ -1103,39 +1103,31 @@ static void handle_game_key(const SDL_Event &event)
 	SDLKey key = event.key.keysym.sym;
 	bool changed_screen_mode = false;
 	bool changed_prefs = false;
-	extern bool chat_input_mode;
 
 	if (!game_is_networked && (event.key.keysym.mod & KMOD_CTRL) && CheatsActive) {
 		int type_of_cheat = process_keyword_key(key);
 		if (type_of_cheat != NONE)
 			handle_keyword(type_of_cheat);
 	}
-#if !defined(DISABLE_NETWORKING)
-	if (chat_input_mode) {
+	if (Console::instance()->input_active()) {
 	  switch(key) {
 	  case SDLK_RETURN:
-	    InGameChatCallbacks::send();
-	    chat_input_mode = false;
+	    Console::instance()->enter();
 	    break;
 	  case SDLK_ESCAPE:
-	  case SDLK_BACKSLASH:
-	    InGameChatCallbacks::abort();
-	    SDL_EnableKeyRepeat(0, 0);
-	    SDL_EnableUNICODE(0);
-	    chat_input_mode = false;
+	    Console::instance()->abort();
 	    break;
 	  case SDLK_BACKSPACE:
 	  case SDLK_DELETE:
-	    InGameChatCallbacks::remove();
+	    Console::instance()->backspace();
 	    break;
 	  default:
 	    if (event.key.keysym.unicode > 0 && (event.key.keysym.unicode & 0xFF80) == 0) {
-	      InGameChatCallbacks::add(event.key.keysym.unicode & 0x7F);
+	      Console::instance()->key(event.key.keysym.unicode & 0x7F);
 	    }
 	  }
 	}
 	else
-#endif // !defined(DISABLE_NETWORKING)
 	{
 	  
 	switch (key) {
@@ -1207,15 +1199,12 @@ static void handle_game_key(const SDL_Event &event)
 	  }
 	  break;
 	case SDLK_BACKSLASH:
-#if !defined(DISABLE_NETWORKING)
 	  if (game_is_networked) {
+#if !defined(DISABLE_NETWORKING)
+	    Console::instance()->activate_input(InGameChatCallbacks::SendChatMessage, InGameChatCallbacks::prompt());
+#endif
 	    PlayInterfaceButtonSound(Sound_ButtonSuccess());
-	    SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-	    SDL_EnableUNICODE(1);
-	    chat_input_mode = true;
-	    InGameChatCallbacks::clear();
 	  } else
-#endif // !defined(DISABLE_NETWORKING)
 	    PlayInterfaceButtonSound(Sound_ButtonFailure());
 	  break;
 
