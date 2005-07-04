@@ -97,6 +97,7 @@ void Console::activate_input(boost::function<void (const std::string&)> callback
   m_callback = callback;
   m_buffer.clear();
   m_displayBuffer = m_prompt = prompt;
+  m_displayBuffer += " _";
   m_active = true;
 
 #if defined(SDL)
