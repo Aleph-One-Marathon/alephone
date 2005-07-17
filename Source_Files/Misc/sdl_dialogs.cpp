@@ -1077,17 +1077,32 @@ widget *dialog::get_widget_by_id(short inID) const
 void dialog::event(SDL_Event &e)
 {
 
-  // handle events we do not want widgets to modify
-  // currently that's only one
-  if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_RETURN
-      && ((e.key.keysym.mod & KMOD_ALT) || (e.key.keysym.mod & KMOD_META))) {
-    toggle_fullscreen();
-    draw();
-  } else {
+  bool handled = false;
+  // handle events we do not want widgets to see or modify
+  switch (e.type) {
+  case SDL_KEYDOWN:
+    
+    if (e.key.keysym.sym == SDLK_RETURN
+	&& ((e.key.keysym.mod & KMOD_ALT) || (e.key.keysym.mod & KMOD_META))) {
+      toggle_fullscreen();
+      draw();
+      handled = true;
+    }
+    break;
+  case SDL_ACTIVEEVENT:
+    if (e.active.state & SDL_APPACTIVE) {
+      if (e.active.gain) {
+	draw();
+	handled = true;
+      }
+    }
+    break;
+  }
   
-	// First pass event to active widget (which may modify it)
-	if (active_widget)
-		active_widget->event(e);
+  if (!handled) {
+  // First pass event to active widget (which may modify it)
+  if (active_widget)
+    active_widget->event(e);
 	
 	// Remaining events handled by dialog
 	switch (e.type) {

@@ -1476,6 +1476,13 @@ static void process_event(const SDL_Event &event)
 		case SDL_QUIT:
 			set_game_state(_quit_game);
 			break;
+
+	case SDL_ACTIVEEVENT:
+	  if (event.active.state & SDL_APPACTIVE) {
+	    if (event.active.gain) {
+	      update_game_window();
+	    }
+	  }
 	}
 }
 
