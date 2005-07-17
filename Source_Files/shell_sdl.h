@@ -130,7 +130,7 @@ DirectorySpecifier recordings_dir;    // Directory for recordings (except film b
 bool option_nogl = false;             // Disable OpenGL
 bool option_nosound = false;          // Disable sound output
 bool option_nogamma = false;	      // Disable gamma table effects (menu fades)
-bool option_noparachute = false;
+bool option_debug = false;
 static bool force_fullscreen = false; // Force fullscreen mode
 static bool force_windowed = false;   // Force windowed mode
 
@@ -240,7 +240,7 @@ int main(int argc, char **argv)
 		} else if (strcmp(*argv, "-m") == 0 || strcmp(*argv, "--nogamma") == 0) {
 			option_nogamma = true;
 		} else if (strcmp(*argv, "-d") == 0 || strcmp(*argv, "--debug") == 0) {
-		  option_noparachute = true;
+		  option_debug = true;
 		} else {
 			printf("Unrecognized argument '%s'.\n", *argv);
 			usage(prg_name);
@@ -274,10 +274,13 @@ int main(int argc, char **argv)
  */
 static void initialize_application(void)
 {
+#if defined(__WIN32__) && defined(__MINGW__)
+  if (option_debug) LoadLibrary("exchndl.dll");
+#endif
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO | 
 		     (option_nosound ? 0 : SDL_INIT_AUDIO) |
-		     (option_noparachute ? SDL_INIT_NOPARACHUTE : 0)
+		     (option_debug ? SDL_INIT_NOPARACHUTE : 0)
 		     ) < 0) {
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
