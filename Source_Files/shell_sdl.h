@@ -1309,8 +1309,10 @@ static void handle_game_key(const SDL_Event &event)
 	}
 
 	if (changed_screen_mode) {
-		change_screen_mode(&graphics_preferences->screen_mode, true);
-		render_screen(0);
+	  screen_mode_data temp_screen_mode = graphics_preferences->screen_mode;
+	  temp_screen_mode.fullscreen = get_screen_mode()->fullscreen;
+	  change_screen_mode(&temp_screen_mode, true);
+	  render_screen(0);
 	}
 
 	if (changed_prefs)
