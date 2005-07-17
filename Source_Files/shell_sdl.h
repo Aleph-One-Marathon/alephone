@@ -1343,12 +1343,16 @@ static void process_game_key(const SDL_Event &event)
 					case SDLK_q:
 						item = iQuitGame;
 						break;
-					default:
-						break;
+				case SDLK_RETURN:
+				  item = 0;
+				  toggle_fullscreen();
+				  break;
+				default:
+				  break;
 				}
 				if (item > 0)
 					do_menu_item_command(mGame, item, has_cheat_modifiers());
-				else
+				else if (item != 0)
 					handle_game_key(event);
 			} else
 				handle_game_key(event);
@@ -1416,6 +1420,11 @@ static void process_game_key(const SDL_Event &event)
 				case SDLK_F9:
 					dump_screen();
 					break;
+			case SDLK_RETURN:
+			  if ((event.key.keysym.mod & KMOD_META) || (event.key.keysym.mod & KMOD_ALT)) {
+			    toggle_fullscreen();
+			  }
+			  break;
 				default:
 					break;
 			}

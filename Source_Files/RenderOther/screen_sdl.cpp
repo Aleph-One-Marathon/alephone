@@ -347,9 +347,17 @@ void toggle_fullscreen(bool fs)
 #else
 		  change_screen_mode(640, 480, bit_depth, true);
 #endif
-			clear_screen();
+		  clear_screen();
 		}
 	}
+}
+
+void toggle_fullscreen()
+{
+  toggle_fullscreen(! screen_mode.fullscreen);
+  if (!in_game) {
+    update_game_window();
+  } 
 }
 
 

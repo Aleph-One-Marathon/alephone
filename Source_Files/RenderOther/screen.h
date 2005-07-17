@@ -193,6 +193,7 @@ void FlushGrafPortRect(const CGrafPtr port, const Rect &destination);
 
 #elif defined(SDL)
 void toggle_fullscreen(bool fs);
+void toggle_fullscreen();
 void update_screen_window(void);
 void clear_screen(void);
 #endif
