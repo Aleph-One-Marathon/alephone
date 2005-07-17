@@ -645,8 +645,8 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 	if (hi_rez) {
 		SDL_BlitSurface(world_pixels, NULL, main_surface, &destination);
 	} else {
-	  if (SDL_MUSTLOCK(world_pixels)) {
-	    if (SDL_LockSurface(world_pixels) < 0) return;
+	  if (SDL_MUSTLOCK(main_surface)) {
+	    if (SDL_LockSurface(main_surface) < 0) return;
 	  }
 		switch (world_pixels->format->BytesPerPixel) {
 			case 1:
@@ -660,8 +660,8 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 				break;
 		}
 		
-		if (SDL_MUSTLOCK(world_pixels)) {
-		  SDL_UnlockSurface(world_pixels);
+		if (SDL_MUSTLOCK(main_surface)) {
+		  SDL_UnlockSurface(main_surface);
 		}
 	}
 	SDL_UpdateRects(main_surface, 1, &destination);
