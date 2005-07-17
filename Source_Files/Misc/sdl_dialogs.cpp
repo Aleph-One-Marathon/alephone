@@ -1076,6 +1076,15 @@ widget *dialog::get_widget_by_id(short inID) const
 
 void dialog::event(SDL_Event &e)
 {
+
+  // handle events we do not want widgets to modify
+  // currently that's only one
+  if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_RETURN
+      && ((e.key.keysym.mod & KMOD_ALT) || (e.key.keysym.mod & KMOD_META))) {
+    toggle_fullscreen();
+    draw();
+  } else {
+  
 	// First pass event to active widget (which may modify it)
 	if (active_widget)
 		active_widget->event(e);
@@ -1103,9 +1112,9 @@ void dialog::event(SDL_Event &e)
 					else
 						activate_next_widget();
 					break;
-				case SDLK_RETURN:		// Return = Action on widget
-					active_widget->click(0, 0);
-					break;
+			case SDLK_RETURN: 		// Return = Action on widget
+			    active_widget->click(0, 0);
+			    break;
 				case SDLK_F9:			// F9 = Screen dump
 					dump_screen();
 					break;
@@ -1143,7 +1152,7 @@ void dialog::event(SDL_Event &e)
 			exit(0);
 			break;
 	}
-
+  }
 	// Redraw dirty widgets
         draw_dirty_widgets();
 }
