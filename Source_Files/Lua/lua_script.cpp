@@ -63,6 +63,7 @@ using namespace std;
 #include "game_window.h"
 #include "items.h"
 #include "platforms.h"
+#include "media.h"
 #include "weapons.h"
 #include "monsters.h"
 #include "flood_map.h"
@@ -77,6 +78,7 @@ using namespace std;
 #include "network.h"
 #include "network_games.h"
 #include "Random.h"
+#include "Console.h"
 
 #include "script_instructions.h"
 #include "lua_script.h"
@@ -110,6 +112,7 @@ void L_Call_Player_Revived(short player_index) {}
 void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action, short projectile_index) {}
 void L_Call_Monster_Killed(short monster_index, short aggressor_player_index, short projectile_index) {}
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
+void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) {}
 void L_Call_Item_Created(short item_index) {}
 
 bool LoadLuaScript(const char *buffer, size_t len) { /* Should never get here! */ return false; }
@@ -426,6 +429,20 @@ void L_Call_Monster_Killed (short monster_index, short aggressor_player_index, s
 void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
 	L_Call_NNNNNN("player_damaged", player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
+}
+
+/* can't use a L_Call function for this */
+void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) {
+  if(L_Should_Call("projectile_detonated"))
+   {
+	lua_pushnumber(state, type);
+	lua_pushnumber(state, owner_index);
+	lua_pushnumber(state, polygon);
+	lua_pushnumber(state, location.x / (double)WORLD_ONE);
+	lua_pushnumber(state, location.y / (double)WORLD_ONE);
+	lua_pushnumber(state, location.z / (double)WORLD_ONE);
+	L_Do_Call("projectile_detonated", 6);
+   }
 }
 
 void L_Call_Item_Created (short item_index)
@@ -4004,8 +4021,20 @@ static int L_Get_Projectile_Type (lua_State *L)
 		lua_error (L);
 	}
 	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
+	
+	if(projectile_index < 0 || projectile_index >= MAXIMUM_PROJECTILES_PER_MAP)
+	{
+		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
+		lua_error(L);
+	}
 
 	struct projectile_data *projectile= get_projectile_data(projectile_index);
+	
+	if(!SLOT_IS_USED(projectile))
+	{
+		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
+		lua_error(L);
+	}
 	
 	lua_pushnumber (L, projectile->type);
 	
@@ -4016,9 +4045,28 @@ extern projectile_definition *get_projectile_definition(short type);
 
 static int L_Get_Projectile_Damage_Type (lua_State *L)
 {
+	if (!lua_isnumber (L, 1))
+	{
+		lua_pushstring (L, "get_projectile_type: incorrect argument type");
+		lua_error (L);
+	}
+	
 	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
+	
+	if(projectile_index < 0 || projectile_index >= MAXIMUM_PROJECTILES_PER_MAP)
+	{
+		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
+		lua_error(L);
+	}
 
 	struct projectile_data *projectile= get_projectile_data(projectile_index);
+	
+	if(!SLOT_IS_USED(projectile))
+	{
+		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
+		lua_error(L);
+	}
+	
 	struct projectile_definition *definition = get_projectile_definition(projectile->type);
 	lua_pushnumber (L, definition->damage.type);
 
@@ -4289,6 +4337,66 @@ detonate_new_projectile
 new_projectile
 */
 
+static void L_Prompt_Callback(const std::string& str) {
+  if(L_Should_Call("prompt_callback"))
+   {
+		lua_pushnumber(state, local_player_index);
+		lua_pushstring(state, str.c_str());
+		L_Do_Call("prompt_callback", 2);
+   }
+}
+
+static int L_Prompt(lua_State *L)
+{
+	if(dynamic_world->player_count > 1) {
+		lua_pushstring(L, "prompt: Not implemented for network play");
+		lua_error(L);
+		}
+	if(!lua_isnumber(L,1) || !lua_isstring(L,2))
+	 {
+		lua_pushstring(L, "prompt: incorrect argument type");
+		lua_error(L);
+	 }
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	 {
+		lua_pushstring(L, "prompt: invalid player index");
+		lua_error(L);
+	 }
+	if((Console::instance())->input_active()) {
+		lua_pushstring(L, "prompt: prompt already active");
+		lua_error(L);
+		}
+	(Console::instance())->activate_input(L_Prompt_Callback, lua_tostring(L, 2));
+	return 0;
+}
+
+static int L_Player_Media(lua_State *L)
+{
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	 {
+		lua_pushstring(L, "set_player_position: invalid player index");
+		lua_error(L);
+	 }
+	player_data *player = get_player_data(player_index);
+	struct polygon_data* polygon = get_polygon_data(player->supporting_polygon_index);
+	if (polygon->media_index!=NONE)
+			{
+				media_data *media = get_media_data(polygon->media_index);
+				if (media)
+				 {
+					if (player->camera_location.z<media->height)
+					 {
+						lua_pushnumber(L, media->type);
+						return 1;
+					 }
+				 }
+			}
+	lua_pushnil(L);
+	return 1;
+}
+
 void RegisterLuaFunctions()
 {
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
@@ -4329,6 +4437,10 @@ void RegisterLuaFunctions()
 	lua_register(state, "new_monster", L_New_Monster);
 	lua_register(state, "activate_monster", L_Activate_Monster);
 	lua_register(state, "deactivate_monster", L_Deactivate_Monster);
+	lua_register(state, "monster_index_valid", L_Monster_Index_Valid);
+	lua_register(state, "get_monster_type", L_Get_Monster_Type);
+	lua_register(state, "get_monster_type_class", L_Get_Monster_Type_Class);
+	lua_register(state, "set_monster_type_class", L_Set_Monster_Type_Class);
 	lua_register(state, "damage_monster", L_Damage_Monster);
 	lua_register(state, "attack_monster", L_Attack_Monster);
 	lua_register(state, "move_monster", L_Move_Monster);
@@ -4450,6 +4562,8 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_projectile_angle", L_Set_Projectile_Angle);
 	lua_register(state, "get_projectile_position", L_Get_Projectile_Position);
 	lua_register(state, "set_projectile_position", L_Set_Projectile_Position);
+	lua_register(state, "prompt", L_Prompt);
+	lua_register(state, "player_media", L_Player_Media);
 }
 
 void DeclareLuaConstants()

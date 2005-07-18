@@ -223,6 +223,12 @@ to find out its type, polygon, etc. and base some decisions off that.
 NOTE: Currently, this does not trigger on initial item placement because
 the initial item placement is done before Lua becomes initialised.
 
+
+projectile_detonated(type, owner, polygon, x, y, z)
+
+Whenever a projectile detonates, after it has done any area of effect damage.
+
+
 2 A1 Functions
 --------------
 
@@ -372,6 +378,17 @@ Adds the vector defined by x, y, and z to the player's external velocity.
 accelerate_player (player, vertical_velocity, angle, velocity)
 
 Gives the player a burst of acceleration.
+
+
+player_media (player)
+
+Returns the media the player is under if the player is under a media, nil otherwise.
+
+
+prompt (player, prompt)
+
+Prompts player using prompt as a prompt, calling the Lua function prompt_callback(player, text) with the text the player typed.
+Does not work in multiplayer.
 
 
 2.2 Monsters
