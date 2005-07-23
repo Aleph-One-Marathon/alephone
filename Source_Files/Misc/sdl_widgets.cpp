@@ -1367,6 +1367,11 @@ void w_list_base::new_items(void)
 	int dyn_height = rem_height / 2;
 	thumb_tc = get_dialog_image(THUMB_TC_IMAGE, 0, dyn_height);
 	thumb_bc = get_dialog_image(THUMB_BC_IMAGE, 0, (rem_height & 1) ? dyn_height + 1 : dyn_height);
+
+	thumb_y = 0;
+	if (thumb_y > trough_rect.h - thumb_height)
+		thumb_y = trough_rect.h - thumb_height;
+	thumb_y = thumb_y + trough_rect.y;
 }
 
 void w_list_base::center_item(size_t i)
