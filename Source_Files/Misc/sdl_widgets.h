@@ -429,6 +429,13 @@ public:
 
         // ZZZ: capture more detailed layout information
         void	capture_layout_information(int16 leftmost_x, int16 usable_width);
+
+	// ghs: a temporary hack to set the text_font to match text_box's font
+	// call this immediately after creating the widget!
+	void set_with_textbox() { 
+	  text_font = get_dialog_font(TEXT_BOX_FONT, style);
+	}
+
        
 protected:
 	char *buf;		// Text entry buffer
@@ -840,8 +847,8 @@ private:
 
 public:
 	w_text_box(int width, int numRows) :
-		w_list<string>(text_lines, width, numRows, 0)
-		{ num_items = 0; }
+	  w_list<string>(text_lines, width, numRows, 0)
+	  { num_items = 0; font = get_dialog_font(TEXT_BOX_FONT, style); }
 		// must update num_items since text_lines was not initialized when w_list<> acted on it.
 
 	// Widget selectable?

@@ -69,6 +69,10 @@
   <color index="2" red="0.875" green="1" blue="0.875"/>
 </text_entry>
 
+<text_box>
+  <font id="1402" size="10" style="0"/>
+</text_box>
+
 <!-- List selection widget -->
 <list top="10" bottom="12" left="10" right="32">
   <image index="0" file="list_tl.bmp" scale="false"/>

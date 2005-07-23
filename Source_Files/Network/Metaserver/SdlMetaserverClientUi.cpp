@@ -75,6 +75,7 @@ public:
 		d.add(chat_history_w);
 
 		w_text_entry* chatentry_w = new w_text_entry("Say:", 240, "");
+		chatentry_w->set_with_textbox();
 		chatentry_w->set_alignment(widget::kAlignLeft);
 		chatentry_w->set_full_width();
 		d.add(chatentry_w);

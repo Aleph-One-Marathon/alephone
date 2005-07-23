@@ -306,6 +306,7 @@ static XML_DFontParser LabelFontParser(LABEL_FONT);
 static XML_DFontParser ItemFontParser(ITEM_FONT);
 static XML_DFontParser MessageFontParser(MESSAGE_FONT);
 static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_FONT);
+static XML_DFontParser TextBoxFontParser(TEXT_BOX_FONT);
 
 class XML_DFrameParser : public XML_ElementParser {
 public:
@@ -405,6 +406,9 @@ static XML_MessageParser MessageParser;
 
 struct XML_TextEntryParser : public XML_ElementParser {XML_TextEntryParser() : XML_ElementParser("text_entry") {}};
 static XML_TextEntryParser TextEntryParser;
+
+struct XML_TextBoxParser : public XML_ElementParser { XML_TextBoxParser() : XML_ElementParser("text_box") {}};
+static XML_TextBoxParser TextBoxParser;
 
 class XML_TroughParser : public XML_ElementParser {
 public:
@@ -520,6 +524,9 @@ XML_ElementParser *Theme_GetParser()
 	TextEntryParser.AddChild(&TextEntryFontParser);
 	TextEntryParser.AddChild(&TextEntryColorParser);
 	ThemeParser.AddChild(&TextEntryParser);
+
+	TextBoxParser.AddChild(&TextBoxFontParser);
+	ThemeParser.AddChild(&TextBoxParser);
 
 	ListParser.AddChild(&ListImageParser);
 	ListParser.AddChild(&TroughParser);
