@@ -697,7 +697,10 @@ w_text_entry::~w_text_entry()
 
 int w_text_entry::layout(void)
 {
-  rect.h = max(font->get_line_height(), text_font->get_line_height());
+  rect.h = max(font->get_ascent(), text_font->get_ascent()) +
+    max (font->get_descent(), text_font->get_descent()) +
+    max (font->get_leading(), text_font->get_leading());
+
     int theResult = widget::layout();
     uint16 name_width = text_width(name, font, style);
 	max_text_width = MAX_TEXT_WIDTH;
@@ -713,40 +716,34 @@ int w_text_entry::layout(void)
 
 void w_text_entry::draw(SDL_Surface *s) const
 {
-  int y = rect.y + font->get_ascent();
-  if (text_font->get_ascent() > font->get_ascent()) {
-    y += text_font->get_ascent() - font->get_ascent();
+  int y = rect.y + max(font->get_ascent(), text_font->get_ascent());
+  
+  int16 theRectX = new_rect_valid ? new_rect_x : rect.x;
+  uint16 theRectW = new_rect_valid ? new_rect_w : rect.w;
+  int16 theTextX = new_rect_valid ? new_text_x : text_x;
+  
+  // Name (ZZZ: different color for disabled)
+  int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
+  
+  draw_text(s, name, theRectX, y, get_dialog_color(theColorToUse), font, style);
+  
+  // Text
+  int16 x = theRectX + theTextX;
+  uint16 width = text_width(buf, text_font, text_style);
+  if (width > max_text_width)
+    x -= width - max_text_width;
+  set_drawing_clip_rectangle(0, theRectX + theTextX, static_cast<uint16>(s->h), theRectX + theRectW);
+  
+  theColorToUse = enabled ? (active ? TEXT_ENTRY_ACTIVE_COLOR : TEXT_ENTRY_COLOR) : TEXT_ENTRY_DISABLED_COLOR;
+  
+  draw_text(s, buf, x, y, get_dialog_color(theColorToUse), text_font, text_style);
+  set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+  
+  // Cursor
+  if (active) {
+    SDL_Rect r = {x + width - 1, rect.y, 1, rect.h};
+    SDL_FillRect(s, &r, get_dialog_color(TEXT_ENTRY_CURSOR_COLOR));
   }
-    int16 theRectX = new_rect_valid ? new_rect_x : rect.x;
-    uint16 theRectW = new_rect_valid ? new_rect_w : rect.w;
-    int16 theTextX = new_rect_valid ? new_text_x : text_x;
-
-	// Name (ZZZ: different color for disabled)
-    int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-
-	draw_text(s, name, theRectX, y, get_dialog_color(theColorToUse), font, style);
-
-	y = rect.y + text_font->get_ascent();
-	if (font->get_ascent() > text_font->get_ascent()) {
-	  y += font->get_ascent() - text_font->get_ascent();
-	}
-	// Text
-    int16 x = theRectX + theTextX;
-	uint16 width = text_width(buf, text_font, text_style);
-	if (width > max_text_width)
-		x -= width - max_text_width;
-	set_drawing_clip_rectangle(0, theRectX + theTextX, static_cast<uint16>(s->h), theRectX + theRectW);
-
-    theColorToUse = enabled ? (active ? TEXT_ENTRY_ACTIVE_COLOR : TEXT_ENTRY_COLOR) : TEXT_ENTRY_DISABLED_COLOR;
-
-	draw_text(s, buf, x, y, get_dialog_color(theColorToUse), text_font, text_style);
-	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
-
-	// Cursor
-	if (active) {
-		SDL_Rect r = {x + width - 1, rect.y, 1, rect.h};
-		SDL_FillRect(s, &r, get_dialog_color(TEXT_ENTRY_CURSOR_COLOR));
-	}
 }
 
 void w_text_entry::event(SDL_Event &e)
