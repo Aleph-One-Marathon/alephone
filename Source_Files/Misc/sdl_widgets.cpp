@@ -1376,7 +1376,7 @@ void w_list_base::new_items(void)
 
 void w_list_base::center_item(size_t i)
 {
-	set_top_item(selection - shown_items / 2);
+  set_top_item((i > shown_items / 2) ? i - shown_items / 2 : 0);
 }
 
 void w_list_base::set_top_item(size_t i)
