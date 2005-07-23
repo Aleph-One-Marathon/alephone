@@ -452,6 +452,9 @@ public:
 	uint32 playerID() const { return m_playerID; }
 	const std::string& name() const { return m_name; }
 
+	const uint16 *color() const { return m_primaryColor; }
+	const uint16 *team_color() const { return m_secondaryColor; }
+
 	friend std::ostream& operator <<(std::ostream& out, const MetaserverPlayerInfo& info);
 
 	// Conformance to metaserver-maintained-list interface

@@ -42,6 +42,9 @@
 #include "TextStrings.h"
 #include "map.h" // difficulties
 
+#include "preferences.h"
+#include "shell.h" // get_player_color :(
+
 using namespace std;
 
 static const char* sRoomNames[] = {
@@ -150,16 +153,26 @@ read_string(AIStream& in)
 	return result;
 }
 
-
+void get_metaserver_player_color(size_t colorIndex, uint16* color) {
+  RGBColor c;
+  _get_player_color(colorIndex, &c);
+  color[0] = c.red;
+  color[1] = c.green;
+  color[2] = c.blue;
+}
 
 void
 write_player_aux_data(AOStream& out, const string& name, const string& team)
 {
 	uint8	unused8 = 0;
-	uint16	primaryColor[3] = { 0x7777, 0x7777, 0x7777 };
+	uint16 primaryColor[3];
+	get_metaserver_player_color(player_preferences->color, primaryColor);
 	uint16	unused16 = 0;
-	uint16	secondaryColor[3] = { 0x7777, 0x7777, 0x7777 };
+	uint16	secondaryColor[3];
+	get_metaserver_player_color(player_preferences->team, secondaryColor);
 	uint16	orderIndex = 0;
+
+	
 
 	out
 		<< kPlayerIcon

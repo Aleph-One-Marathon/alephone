@@ -822,8 +822,8 @@ public:
 	{}
 
 private:
-	static const int kTeamColorSwatchWidth = 8;
-	static const int kPlayerColorSwatchWidth = 4;
+	static const int kPlayerColorSwatchWidth = 8;
+	static const int kTeamColorSwatchWidth = 4;
 	static const int kSwatchGutter = 2;
 
 	void draw_item(const MetaserverPlayerInfo& item, SDL_Surface* s,

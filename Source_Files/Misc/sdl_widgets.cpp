@@ -1564,13 +1564,19 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 {
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
 
-	SDL_Rect r = {x, y + 1, kTeamColorSwatchWidth, font->get_ascent() - 2};
-	uint32 pixel = SDL_MapRGB(s->format, 0xff, 0xff, 0x00);
+	SDL_Rect r = {x, y + 1, kPlayerColorSwatchWidth, font->get_ascent() - 2};
+	uint32 pixel = SDL_MapRGB(s->format,
+				  item.color()[0] >> 8, 
+				  item.color()[1] >> 8, 
+				  item.color()[2] >> 8);
 	SDL_FillRect(s, &r, pixel);
 
-	r.x += kTeamColorSwatchWidth;
-	r.w = kPlayerColorSwatchWidth;
-	pixel = SDL_MapRGB(s->format, 0xff, 0x00, 0x00);
+	r.x += kPlayerColorSwatchWidth;
+	r.w = kTeamColorSwatchWidth;
+	pixel = SDL_MapRGB(s->format,
+				  item.team_color()[0] >> 8, 
+				  item.team_color()[1] >> 8, 
+				  item.team_color()[2] >> 8);
 	SDL_FillRect(s, &r, pixel);
 
 	y += font->get_ascent();
