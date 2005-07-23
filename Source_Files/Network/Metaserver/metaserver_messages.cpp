@@ -365,9 +365,7 @@ BroadcastMessage::reallyInflateFrom(AIStream& inStream)
 ChatMessage::ChatMessage(uint32 inSenderID, const string& inSenderName, const string& inMessage)
 	: m_senderID(inSenderID), m_senderName(inSenderName), m_message(inMessage)
 {
-	m_color[0] = 0x7777;
-	m_color[1] = 0x7777;
-	m_color[2] = 0x7777;
+  get_metaserver_player_color(player_preferences->color, m_color);
 }
 
 void
