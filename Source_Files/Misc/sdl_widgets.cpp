@@ -697,7 +697,7 @@ w_text_entry::~w_text_entry()
 
 int w_text_entry::layout(void)
 {
-	rect.h = font->get_line_height();
+  rect.h = max(font->get_line_height(), text_font->get_line_height());
     int theResult = widget::layout();
     uint16 name_width = text_width(name, font, style);
 	max_text_width = MAX_TEXT_WIDTH;
@@ -713,8 +713,10 @@ int w_text_entry::layout(void)
 
 void w_text_entry::draw(SDL_Surface *s) const
 {
-	int y = rect.y + font->get_ascent();
-
+  int y = rect.y + font->get_ascent();
+  if (text_font->get_ascent() > font->get_ascent()) {
+    y += text_font->get_ascent() - font->get_ascent();
+  }
     int16 theRectX = new_rect_valid ? new_rect_x : rect.x;
     uint16 theRectW = new_rect_valid ? new_rect_w : rect.w;
     int16 theTextX = new_rect_valid ? new_text_x : text_x;
@@ -724,6 +726,10 @@ void w_text_entry::draw(SDL_Surface *s) const
 
 	draw_text(s, name, theRectX, y, get_dialog_color(theColorToUse), font, style);
 
+	y = rect.y + text_font->get_ascent();
+	if (font->get_ascent() > text_font->get_ascent()) {
+	  y += font->get_ascent() - text_font->get_ascent();
+	}
 	// Text
     int16 x = theRectX + theTextX;
 	uint16 width = text_width(buf, text_font, text_style);
