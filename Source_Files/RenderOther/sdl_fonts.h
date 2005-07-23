@@ -48,11 +48,14 @@ public:
 	uint16 get_ascent(void) const {return ascent;}
 	uint16 get_height(void) const {return ascent + descent;}
 	uint16 get_line_height(void) const {return ascent + descent + leading;}
+	uint16 get_descent(void) const {return descent; }
+	int16 get_leading(void) const { return leading;}
 
 	uint8 first_character, last_character;
 	int16 maximum_kerning;
 	int16 rect_width, rect_height;
-	uint16 ascent, descent, leading;
+	uint16 ascent, descent;
+	int16 leading;
 
 	uint8 *pixmap;			// Font image (1 byte/pixel)
 	int bytes_per_row;		// Bytes per row in pixmap
