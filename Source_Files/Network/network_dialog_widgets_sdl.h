@@ -102,7 +102,7 @@ public:
         // must update num_items since chat_lines was not initialized when w_list<> acted on it.
         
 	// Widget selectable?
-	virtual bool is_selectable(void) const {return false;}
+	virtual bool is_selectable(void) const {return true;}
 
     void item_selected() {}
     

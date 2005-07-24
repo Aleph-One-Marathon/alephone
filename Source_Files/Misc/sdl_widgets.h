@@ -853,9 +853,7 @@ public:
 
 	// Widget selectable?
 
-	  // ghs: if this is not selectable, it doesn't currently receive
-	  // mouse up events
-	  virtual bool is_selectable(void) const {return /*false*/true;}
+	  virtual bool is_selectable(void) const {return true;}
 
 	void item_selected() {}
 
