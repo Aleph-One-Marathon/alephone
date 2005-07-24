@@ -817,6 +817,7 @@ setup_metaserver_chat_ui(
 	inDialog.add(chatHistory);
 
 	w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
+	chatentry_w->set_with_textbox();
 	chatentry_w->set_identifier(iCHAT_ENTRY);
 	chatentry_w->set_enter_pressed_callback(send_text);
 	chatentry_w->set_alignment(widget::kAlignLeft);
