@@ -852,7 +852,10 @@ public:
 		// must update num_items since text_lines was not initialized when w_list<> acted on it.
 
 	// Widget selectable?
-	virtual bool is_selectable(void) const {return false;}
+
+	  // ghs: if this is not selectable, it doesn't currently receive
+	  // mouse up events
+	  virtual bool is_selectable(void) const {return /*false*/true;}
 
 	void item_selected() {}
 
