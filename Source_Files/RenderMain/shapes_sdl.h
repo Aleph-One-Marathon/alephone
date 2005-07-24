@@ -96,10 +96,28 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
                     shading_tables += 256 * (int)(inIllumination * (number_of_shading_tables - 1));
                     
                     // Extract color table - ZZZ change to use shading table rather than CLUT.  Hope it works.
-                    for(int i = 0; i < 256; i++) {
-                        colors[i].r = RED16(shading_tables[i]) << 3;
-                        colors[i].g = GREEN16(shading_tables[i]) << 3;
-                        colors[i].b = BLUE16(shading_tables[i]) << 3;
+
+		    // ghs: I believe the second case in this if statement
+		    // is the way it should always be done; but somehow SDL
+		    // screws up when OPENGLBLIT is enabled (big surprise) and
+		    // this old behavior seems luckily to work around it
+
+		    // well, ok, ideally the code that builds these tables
+		    // should either not use the current video format
+		    // (since in the future it may change) or should store
+		    // the pixel format it used somewhere so we're sure we've
+		    // got the right one
+		    if (SDL_GetVideoSurface()->flags & SDL_OPENGLBLIT) {
+		      for(int i = 0; i < 256; i++) {
+			colors[i].r = RED16(shading_tables[i]) << 3;
+			colors[i].g = GREEN16(shading_tables[i]) << 3;
+			colors[i].b = BLUE16(shading_tables[i]) << 3;
+		      }
+		    } else {
+		      SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+		      for (int i = 0; i < 256; i++) {
+			SDL_GetRGB(shading_tables[i], fmt, &colors[i].r, &colors[i].g, &colors[i].b);
+		      }
                     }
                 }
                 break;
