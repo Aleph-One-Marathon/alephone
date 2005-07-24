@@ -1259,7 +1259,11 @@ void w_list_base::mouse_move(int x, int y)
 {
 	if (thumb_dragging) {
 		int delta_y = y - thumb_drag_y;
-		set_top_item(delta_y * num_items / trough_rect.h);
+		if (delta_y > 0) {
+		  set_top_item(delta_y * num_items / trough_rect.h);
+		} else {
+		  set_top_item(0);
+		}
 	} else {
 		if (x < get_dialog_space(LIST_L_SPACE) || x >= rect.w - get_dialog_space(LIST_R_SPACE)
 		 || y < get_dialog_space(LIST_T_SPACE) || y >= rect.h - get_dialog_space(LIST_B_SPACE))
