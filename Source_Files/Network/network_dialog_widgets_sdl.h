@@ -98,7 +98,7 @@ private:
 public:
     w_chat_history(int width, int numRows) :
         w_list<chat_entry>(chat_lines, width, numRows, 0)
-        { num_items = 0; }
+      { num_items = 0; font = get_dialog_font(TEXT_BOX_FONT, style);}
         // must update num_items since chat_lines was not initialized when w_list<> acted on it.
         
 	// Widget selectable?
