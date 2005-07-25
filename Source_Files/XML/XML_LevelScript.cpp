@@ -121,7 +121,7 @@ static vector<LevelScriptHeader> LevelScripts;
 static LevelScriptHeader *CurrScriptPtr = NULL;
 
 // Current playlist:
-static vector<FileSpecifier> Playlist;
+/*static*/ vector<FileSpecifier> Playlist;
 
 // Which song is now playing?
 static size_t SongNumber = 0;

@@ -963,6 +963,26 @@ Symbols for referring to A1 item types, monster types, and such.
 
 _item_knife
 _item_fist
+play_music(track, [track, [...]])
+
+Appends all of the specified tracks to the end of the level's playlist.
+
+
+fade_music([duration])
+
+Fades out the currently playing song over duration seconds (or 1 if not specified) and clears the level's playlist.
+
+
+clear_music()
+
+Clears the level's playlist.
+
+
+stop_music()
+
+Stops the currently playing song and clears the level's playlist.
+
+
 _item_magnum
 _item_magnum_magazine
 _item_plasma_pistol

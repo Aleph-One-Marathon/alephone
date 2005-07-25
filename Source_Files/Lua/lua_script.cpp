@@ -79,6 +79,7 @@ using namespace std;
 #include "network_games.h"
 #include "Random.h"
 #include "Console.h"
+#include "music.h"
 
 #include "script_instructions.h"
 #include "lua_script.h"
@@ -144,6 +145,9 @@ extern void ShootForTargetPoint(bool ThroughWalls, world_point3d& StartPosition,
 extern void select_next_best_weapon(short player_index);
 extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
 extern void draw_panels();
+
+extern vector<FileSpecifier> Playlist;
+extern bool IsLevelMusicActive();
 
 extern bool MotionSensorActive;
 
@@ -4337,6 +4341,50 @@ detonate_new_projectile
 new_projectile
 */
 
+static int L_Fade_Music(lua_State* L)
+{
+	short duration;
+	if(!lua_isnumber(L, 1))
+		duration = 60;
+	else
+		duration = (short)(lua_tonumber(L, 1) * 60);
+	fade_out_music(duration);
+	Playlist.clear();
+	return 0;
+}
+
+static int L_Clear_Music(lua_State* L)
+{
+	Playlist.clear();
+	return 0;
+}
+
+static int L_Play_Music(lua_State* L)
+{
+	bool restart_music;
+	int n;
+	restart_music = !IsLevelMusicActive() && !music_playing();
+	for(n = 1; n <= lua_gettop(L); n++) {
+		if(!lua_isstring(L, n)) {
+			lua_pushstring(L, "play_music: invalid file specifier");
+			lua_error(L);
+		}
+		FileSpecifier file;
+		if(file.SetNameWithPath(lua_tostring(L, n)))
+			Playlist.push_back(file);
+	}
+	if(restart_music)
+		PreloadLevelMusic();
+	return 0;
+}
+
+static int L_Stop_Music(lua_State* L)
+{
+	Playlist.clear();
+	stop_music();
+	return 0;
+}
+
 static void L_Prompt_Callback(const std::string& str) {
   if(L_Should_Call("prompt_callback"))
    {
@@ -4564,6 +4612,10 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_projectile_position", L_Set_Projectile_Position);
 	lua_register(state, "prompt", L_Prompt);
 	lua_register(state, "player_media", L_Player_Media);
+	lua_register(state, "fade_music", L_Fade_Music);
+	lua_register(state, "clear_music", L_Clear_Music);
+	lua_register(state, "play_music", L_Play_Music);
+	lua_register(state, "stop_music", L_Play_Music);
 }
 
 void DeclareLuaConstants()

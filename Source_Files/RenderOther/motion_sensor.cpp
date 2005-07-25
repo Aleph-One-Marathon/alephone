@@ -329,7 +329,7 @@ void HUD_SW_Class::render_motion_sensor(short ticks_elapsed)
 	// If we need to update the motion sensor, draw all active entities
 	if ((ticks_since_last_update -= ticks_elapsed) < 0 || ticks_elapsed == NONE) {
 		erase_all_entity_blips();
-		if (dynamic_world->player_count > 1)
+		/*if (dynamic_world->player_count > 1)*/
 			draw_network_compass();
 		draw_all_entity_blips();
 		
@@ -350,7 +350,7 @@ void HUD_OGL_Class::render_motion_sensor(short ticks_elapsed)
 		erase_all_entity_blips();
 		ticks_since_last_update = MOTION_SENSOR_UPDATE_FREQUENCY;
 	}
-	if (dynamic_world->player_count > 1)
+	/*if (dynamic_world->player_count > 1)*/
 		draw_network_compass();
 	draw_all_entity_blips();
 }
