@@ -4649,7 +4649,6 @@ lua_setglobal(state, "MAXIMUM_OBJECTS_PER_MAP");
 bool LoadLuaScript(const char *buffer, size_t len)
 {
 	int status;
-	state = lua_open();
 
 	if (lua_loaded == true)
 	{
@@ -4657,9 +4656,15 @@ bool LoadLuaScript(const char *buffer, size_t len)
 		show_cursor ();
 		alert_user(infoError, strERRORS, luascriptconflict, 0);
 		hide_cursor (); // this is bad bad badtz-maru if LoadLuaScript gets called when the pointer isn't supposed to be hidden
+	} else {
+		state = lua_open();
+
+		OpenStdLibs(state);
+
+		RegisterLuaFunctions();
+		DeclareLuaConstants();
 	}
 
-	OpenStdLibs(state);
 	status = luaL_loadbuffer(state, buffer, len, "level_script");
 	if (status == LUA_ERRRUN)
 		logWarning("Lua loading failed: error running script.");
@@ -4668,16 +4673,14 @@ bool LoadLuaScript(const char *buffer, size_t len)
 	if (status == LUA_ERRSYNTAX) {
 		logWarning("Lua loading failed: syntax error.");
 		logWarning(lua_tostring(state, -1));
-		}
+	}
 	if (status == LUA_ERRMEM)
 		logWarning("Lua loading failed: error allocating memory.");
 	if (status == LUA_ERRERR)
 		logWarning("Lua loading failed: unknown error.");
 
-	RegisterLuaFunctions();
-	DeclareLuaConstants();
-
 	lua_loaded = (status==0);
+
 	return lua_loaded;
 }
 
