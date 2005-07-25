@@ -148,6 +148,11 @@ private:
 	Typecode m_type;
 };
 
+
+const string ListWidgetValueForItem(const MetaserverPlayerInfo* element);
+const string ListWidgetValueForItem(const prospective_joiner_info* element);
+const string ListWidgetValueForItem(const GameListMessage::GameListEntry* element);
+
 template <typename tElement>
 class ListWidget
 {
@@ -230,8 +235,6 @@ private:
 		return (itemIndex < m_items.size()) ? &(m_items[itemIndex]) : NULL;
 	}
 
-	const string ValueForItem(const tElement* element);
-
 	OSStatus SetDataForItemId(
 		DataBrowserItemID itemId,
 		DataBrowserPropertyID propertyId,
@@ -239,7 +242,7 @@ private:
 		Boolean setValue
 	)
 	{
-		string value = ValueForItem(ItemForItemId(itemId));
+		string value = ListWidgetValueForItem(ItemForItemId(itemId));
 		auto_ptr<SelfReleasingCFStringRef> valueCfString = StringToCFString(value);
 		SetDataBrowserItemDataText(itemData, valueCfString->StringRef());
 		return noErr;

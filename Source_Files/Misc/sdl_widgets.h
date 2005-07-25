@@ -758,6 +758,10 @@ private:
 
 extern void set_drawing_clip_rectangle(short top, short left, short bottom, short right);
 
+const string w_items_in_room_get_name_of_item (GameListMessage::GameListEntry item);
+const string w_items_in_room_get_name_of_item (prospective_joiner_info item);
+const string w_items_in_room_get_name_of_item (MetaserverPlayerInfo item);
+
 template <typename tElement>
 class w_items_in_room : public w_list_base
 {
@@ -812,11 +816,9 @@ private:
 			int16 x, int16 y, uint16 width, bool selected) const {
 		y += font->get_ascent();
 		set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
-		draw_text(s, get_name_of_item(item).c_str(), x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+		draw_text(s, w_items_in_room_get_name_of_item(item).c_str(), x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
-
-	const string get_name_of_item (tElement item) const;
 
 	w_items_in_room(const w_items_in_room<tElement>&);
 	w_items_in_room<tElement>& operator =(const w_items_in_room<tElement>&);

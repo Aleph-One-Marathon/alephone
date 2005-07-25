@@ -1572,17 +1572,17 @@ w_file_chooser::update_filename()
 }
 
 
-const string w_games_in_room::get_name_of_item (GameListMessage::GameListEntry item) const
+const string w_items_in_room_get_name_of_item (GameListMessage::GameListEntry item)
 {
 	return item.name ();
 }
 
-const string w_joining_players_in_room::get_name_of_item (prospective_joiner_info item) const
+const string w_items_in_room_get_name_of_item (prospective_joiner_info item)
 {
 	return pstring_to_string (item.name);
 }
 
-const string w_items_in_room<MetaserverPlayerInfo>::get_name_of_item (MetaserverPlayerInfo item) const
+const string w_items_in_room_get_name_of_item (MetaserverPlayerInfo item)
 {
 	return item.name ();
 }
