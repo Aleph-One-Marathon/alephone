@@ -4381,7 +4381,10 @@ static int L_Play_Music(lua_State* L)
 static int L_Stop_Music(lua_State* L)
 {
 	Playlist.clear();
+// jkvw: This is ugly and wrong. Please fix.
+#ifndef SDL
 	stop_music();
+#endif
 	return 0;
 }
 
