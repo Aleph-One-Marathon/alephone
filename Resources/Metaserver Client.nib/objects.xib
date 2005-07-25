@@ -16,6 +16,7 @@
             <int name="controlID">100</int>
             <boolean name="variableWidthColumns">FALSE</boolean>
             <boolean name="horzScrollBar">FALSE</boolean>
+            <int name="selectionFlags">0</int>
             <int name="listViewHeaderBtnHeight">0</int>
             <array count="1" name="listViewColumns">
               <object class="IBCarbonDBListViewColumn">
@@ -40,6 +41,7 @@
             <string name="bounds">44 277 137 612 </string>
             <int name="controlID">200</int>
             <ostype name="command">join</ostype>
+            <int name="hiliteStyle">1</int>
             <int name="selectionFlags">10</int>
             <array count="3" name="listViewColumns">
               <object class="IBCarbonDBListViewColumn">
@@ -69,8 +71,7 @@
           </object>
           <object class="IBCarbonButton" id="186">
             <string name="bounds">157 542 177 612 </string>
-            <int name="controlID">1</int>
-            <boolean name="enabled">FALSE</boolean>
+            <int name="controlID">500</int>
             <string name="title">Join</string>
             <ostype name="command">ok  </ostype>
           </object>

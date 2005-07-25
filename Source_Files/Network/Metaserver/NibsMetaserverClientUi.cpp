@@ -39,7 +39,8 @@ enum {
 	iPLAYERS_IN_ROOM = 100,
 	iGAMES_IN_ROOM = 200,
 	iCHAT_HISTORY = 300,
-	iCHAT_ENTRY = 400
+	iCHAT_ENTRY = 400,
+	iJOIN_METASERVER_GAME = 500
 };
 
 const double PollingInterval = 1.0/30.0;
@@ -58,7 +59,8 @@ public:
 	, m_dialog(m_dialog_window(), false)
 	{
 		m_playersInRoomWidget = new ListWidget<MetaserverPlayerInfo>(GetCtrlFromWindow(m_dialog_window(), 0, iPLAYERS_IN_ROOM));
-		m_gamesInRoomWidget = new ListWidget<GameListMessage::GameListEntry>(GetCtrlFromWindow(m_dialog_window(), 0, iGAMES_IN_ROOM));
+		m_gamesInRoomWidget = new ListWidget<GameListMessage::GameListEntry>(GetCtrlFromWindow(m_dialog_window(), 0, iGAMES_IN_ROOM),
+							new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_METASERVER_GAME)));
 		m_chatEntryWidget = new EditTextWidget(GetCtrlFromWindow(m_dialog_window(), 0, iCHAT_ENTRY));
 		m_textboxWidget = new TextboxWidget(m_dialog_window(), 23, 200, 609, 403);
 		m_cancelWidget = new ButtonWidget(GetCtrlFromWindow(m_dialog_window(), 0, iCANCEL));
