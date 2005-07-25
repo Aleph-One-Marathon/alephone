@@ -40,8 +40,8 @@
 class JoinAddressWidget
 {
 public:
-	JoinAddressWidget (EditTextWidget* joinAddressComponentWidget);		
-	~JoinAddressWidget ();
+	JoinAddressWidget (EditTextWidget* joinAddressComponentWidget);
+	virtual ~JoinAddressWidget ();
 	
 	std::string get_address () { return m_joinAddressComponentWidget->get_text (); }
 	void set_address (std::string s) { m_joinAddressComponentWidget->set_text (s); }
@@ -56,8 +56,8 @@ private:
 class JoinByAddressWidget
 {
 public:
-	JoinByAddressWidget (ToggleWidget* joinByAddressComponentWidget);		
-	~JoinByAddressWidget ();
+	JoinByAddressWidget (ToggleWidget* joinByAddressComponentWidget);
+	virtual ~JoinByAddressWidget ();
 	
 	bool get_state () { return m_joinByAddressComponentWidget->get_value (); }
 	void set_state (bool state) { m_joinByAddressComponentWidget->set_value (state); }
@@ -73,7 +73,7 @@ class NameWidget
 {
 public:
 	NameWidget (EditTextWidget* nameComponentWidget);		
-	~NameWidget ();
+	virtual ~NameWidget ();
 	
 	std::string get_name () { return m_nameComponentWidget->get_text (); }
 	void set_name (std::string s) { m_nameComponentWidget->set_text (s); }
@@ -89,7 +89,7 @@ class ColourWidget
 {
 public:
 	ColourWidget (SelectorWidget* colourComponentWidget);		
-	~ColourWidget ();
+	virtual ~ColourWidget ();
 	
 	int get_colour () { return m_colourComponentWidget->get_value (); }
 	void set_colour (int colour) { m_colourComponentWidget->set_value (colour); }
@@ -105,7 +105,7 @@ class TeamWidget
 {
 public:
 	TeamWidget (SelectorWidget* colourComponentWidget);		
-	~TeamWidget ();
+	virtual ~TeamWidget ();
 	
 	int get_team () { return m_teamComponentWidget->get_value (); }
 	void set_team (int colour) { m_teamComponentWidget->set_value (colour); }
@@ -115,6 +115,19 @@ public:
 
 private:
 	SelectorWidget* m_teamComponentWidget;
+};
+
+class AutogatherWidget
+{
+public:
+	AutogatherWidget (ToggleWidget* autogatherComponentWidget);		
+	virtual ~AutogatherWidget ();
+	
+	bool get_state () { return m_autogatherComponentWidget->get_value (); }
+	void set_state (bool state) { m_autogatherComponentWidget->set_value (state); }
+
+private:
+	ToggleWidget* m_autogatherComponentWidget;
 };
 
 #endif

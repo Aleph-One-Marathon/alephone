@@ -46,14 +46,11 @@ Mar 1, 2002 (Woody Zenfell):
 
 #include    <string>
 
-#ifdef USES_NIBS
-
-// For the found players
 #include <map>
 #include <set>
 
+#ifdef USES_NIBS
 const CFStringRef Window_Network_Distribute = CFSTR("Network_Distribute");
-
 #endif
 
 // ZZZ: Moved here so constants can be shared by Mac and SDL dialog code.
@@ -364,6 +361,52 @@ struct NetgameOutcomeData
 
 /* ---------------------- globals */
 extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
+
+class MetaserverClient;
+class GatherDialog : public GatherCallbacks
+{
+public:
+	// Abstract factory; concrete type determined at link-time
+	static std::auto_ptr<GatherDialog> Create();
+	
+	bool GatherNetworkGameByRunning ();
+	
+	virtual ~GatherDialog () {}
+
+	// Callbacks for network code; final methods
+	virtual void JoinSucceeded(const prospective_joiner_info* player);
+	virtual void JoiningPlayerDropped(const prospective_joiner_info* player);
+	virtual void JoinedPlayerDropped(const prospective_joiner_info* player);
+	virtual void JoinedPlayerChanged(const prospective_joiner_info* player);
+
+protected:
+	GatherDialog() {}
+	
+	virtual bool Run() = 0;
+	virtual void Stop(bool result) = 0;
+	
+	void idle ();
+	
+	void StartGameHit ();
+	
+	void update_ungathered_widget ();
+	
+	bool player_search (prospective_joiner_info& player);
+	bool gathered_player (const prospective_joiner_info& player);
+	
+	MetaserverClient* m_metaserverClient;
+	
+	map<int, prospective_joiner_info> m_ungathered_players;
+
+	ButtonWidget*			m_cancelWidget;
+	ButtonWidget*			m_startWidget;
+	
+	AutogatherWidget*		m_autogatherWidget;
+	
+	JoiningPlayerListWidget*	m_ungatheredWidget;
+	PlayersInGameWidget*		m_pigWidget;
+};
+
 
 class JoinDialog
 {

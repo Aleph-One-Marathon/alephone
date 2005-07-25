@@ -59,6 +59,7 @@
 #include 	<boost/bind.hpp>
 
 #include "metaserver_messages.h" // for GameListMessage, for w_games_in_room and MetaserverPlayerInfo, for w_players_in_room
+#include "network.h" // for prospective_joiner_info
 
 struct SDL_Surface;
 //class sdl_font_info;
@@ -776,7 +777,9 @@ public:
 		m_items = elements;
 		num_items = m_items.size();
 		new_items();
+		
 		// do other crap - manage selection, force redraw, etc.
+		get_owning_dialog ()->draw_dirty_widgets ();
 	}
 	
 	void set_item_clicked_callback (ItemClickedCallback itemClicked) { m_itemClicked = itemClicked; }
@@ -807,11 +810,13 @@ private:
 	// This should be factored out into a "drawer" object/Strategy
 	virtual void draw_item(const tElement& item, SDL_Surface* s,
 			int16 x, int16 y, uint16 width, bool selected) const {
-	  y += font->get_ascent();
+		y += font->get_ascent();
 		set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
-		draw_text(s, item.name().c_str(), x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+		draw_text(s, get_name_of_item(item).c_str(), x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
+
+	const string get_name_of_item (tElement item) const;
 
 	w_items_in_room(const w_items_in_room<tElement>&);
 	w_items_in_room<tElement>& operator =(const w_items_in_room<tElement>&);
@@ -819,7 +824,7 @@ private:
 
 
 typedef w_items_in_room<GameListMessage::GameListEntry> w_games_in_room;
-
+typedef w_items_in_room<prospective_joiner_info> w_joining_players_in_room;
 
 class w_players_in_room : public w_items_in_room<MetaserverPlayerInfo>
 {
@@ -1095,6 +1100,28 @@ public:
 
 private:
 	w_players_in_room* m_players_in_room;
+};
+
+class JoiningPlayerListWidget
+{
+public:
+	JoiningPlayerListWidget (w_joining_players_in_room* joining_players_in_room)
+		: m_joining_players_in_room (joining_players_in_room)
+		{
+			m_joining_players_in_room->set_item_clicked_callback(boost::bind(&JoiningPlayerListWidget::bounce_callback, this, _1));
+		}
+
+	void SetItems(const vector<prospective_joiner_info>& items) { m_joining_players_in_room->set_collection (items); }
+
+	void SetItemSelectedCallback(const boost::function<void (prospective_joiner_info)> itemSelected)
+		{ m_callback = itemSelected; }
+
+private:
+	w_joining_players_in_room* m_joining_players_in_room;
+	boost::function<void (prospective_joiner_info)> m_callback;
+	
+	void bounce_callback (prospective_joiner_info thingy)
+		{ m_callback (thingy); }
 };
 
 class w_players_in_game2;

@@ -187,9 +187,6 @@ JoinerSeekingGathererAnnouncer::lost_gatherer_callback(const SSLP_ServiceInstanc
  *
  ****************************************************/
 
-static bool gathered_unacceptable_player;
-static map<int, const prospective_joiner_info> ungathered_players;
-
 bool network_gather(bool inResumingGame)
 {
 	bool successful= false;
@@ -202,13 +199,10 @@ bool network_gather(bool inResumingGame)
 	{
 		myPlayerInfo.desired_color= myPlayerInfo.color;
 		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
-		
-		NetSetGatherCallbacks(get_gather_callbacks());
 	
 		if(NetEnter())
 		{
 			bool gather_dialog_result;
-			gathered_unacceptable_player = false;
 		
 			if(NetGather(&myGameInfo, sizeof(game_info), (void*) &myPlayerInfo, 
 				sizeof(myPlayerInfo), inResumingGame))
@@ -219,16 +213,15 @@ bool network_gather(bool inResumingGame)
 				if(advertiseOnMetaserver)
 					metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
 
-				gather_dialog_result = run_network_gather_dialog(metaserverAnnouncer.get() != NULL ? &metaserverAnnouncer->client() : NULL);
-				if (gathered_unacceptable_player)
-					gather_dialog_result = false;
+				gather_dialog_result = GatherDialog::Create()->GatherNetworkGameByRunning();
+				
+				// Save autogather pref, even if cancel
+				write_preferences ();
 			} else {
 				gather_dialog_result = false;
 			}
 			
 			if (gather_dialog_result) {
-				for (map<int, const prospective_joiner_info>::iterator it = ungathered_players.begin (); it != ungathered_players.end (); ++it)
-					NetHandleUngatheredPlayer ((*it).second);
 				NetDoneGathering();
 				successful= true;
 			}
@@ -242,48 +235,113 @@ bool network_gather(bool inResumingGame)
 		}
 	}
 
-	ungathered_players.clear ();
-
 	hide_cursor();
 	return successful;
 }
 
-void gather_dialog_initialise (DialogPTR dialog)
+bool GatherDialog::GatherNetworkGameByRunning ()
 {
-	QQ_set_boolean_control_value (dialog, iAUTO_GATHER, network_preferences->autogather);
+	m_cancelWidget->set_callback(boost::bind(&GatherDialog::Stop, this, false));
+	m_startWidget->set_callback(boost::bind(&GatherDialog::StartGameHit, this));
+	m_ungatheredWidget->SetItemSelectedCallback(boost::bind(&GatherDialog::gathered_player, this, _1));
+	
+	m_startWidget -> deactivate ();
+	
+	NetSetGatherCallbacks(this);
+	
+	return Run ();
 }
 
-void gather_dialog_save_prefs (DialogPTR dialog)
-{	
-	if (QQ_control_exists (dialog, iAUTO_GATHER)) {
-		network_preferences->autogather = QQ_get_boolean_control_value (dialog, iAUTO_GATHER);
-		write_preferences();
+void GatherDialog::idle ()
+{
+	MetaserverClient::pumpAll();
+	
+	prospective_joiner_info info;
+	if (player_search(info)) {
+		m_ungathered_players[info.stream_id] = info;
+		update_ungathered_widget ();
+	}
+	
+	if (m_autogatherWidget->get_state ()) {
+		map<int, prospective_joiner_info>::iterator it;
+		it = m_ungathered_players.begin ();
+		while (it != m_ungathered_players.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
+			gathered_player ((*it).second);
+			++it;
+		}
 	}
 }
 
-bool gather_dialog_player_search (prospective_joiner_info& player)
+void GatherDialog::update_ungathered_widget ()
+{
+	vector<prospective_joiner_info> temp;
+
+	for (map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
+		temp.push_back ((*it).second);
+	
+	m_ungatheredWidget->SetItems (temp);
+}
+
+bool GatherDialog::player_search (prospective_joiner_info& player)
 {
 	GathererAvailableAnnouncer::pump();
 
 	if (NetCheckForNewJoiner(player)) {
-		ungathered_players.insert (map<int, const prospective_joiner_info>::value_type (player.stream_id, player));
+		m_ungathered_players[player.stream_id] = player;
+		update_ungathered_widget ();
 		return true;
 	} else
 		return false;
 }
 
-bool gather_dialog_gathered_player (const prospective_joiner_info& player)
+bool GatherDialog::gathered_player (const prospective_joiner_info& player)
 {
 	int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
 	
-	if (theGatherPlayerResult == kGatheredUnacceptablePlayer)
-		gathered_unacceptable_player= true;
-	
 	if (theGatherPlayerResult != kGatherPlayerFailed) {
-		ungathered_players.erase (ungathered_players.find (player.stream_id));
+		m_ungathered_players.erase (m_ungathered_players.find (player.stream_id));
+		update_ungathered_widget ();
 		return true;
 	} else
 		return false;
+}
+
+void GatherDialog::StartGameHit ()
+{
+	for (map<int, prospective_joiner_info>::iterator it = m_ungathered_players.begin (); it != m_ungathered_players.end (); ++it)
+		NetHandleUngatheredPlayer ((*it).second);
+	
+	Stop (true);
+}
+
+void GatherDialog::JoinSucceeded(const prospective_joiner_info* player)
+{
+	if (NetGetNumberOfPlayers () > 1)
+		m_startWidget->activate ();
+	
+	m_pigWidget->redraw ();
+}
+
+void GatherDialog::JoiningPlayerDropped(const prospective_joiner_info* player)
+{
+	map<int, prospective_joiner_info>::iterator it = m_ungathered_players.find (player->stream_id);
+	if (it != m_ungathered_players.end ())
+		m_ungathered_players.erase (it);
+	
+	update_ungathered_widget ();
+}
+
+void GatherDialog::JoinedPlayerDropped(const prospective_joiner_info* player)
+{
+	if (NetGetNumberOfPlayers () < 2)
+		m_startWidget->deactivate ();
+
+	m_pigWidget->redraw ();
+}
+
+void GatherDialog::JoinedPlayerChanged(const prospective_joiner_info* player)
+{	
+	m_pigWidget->redraw ();
 }
 
 /****************************************************

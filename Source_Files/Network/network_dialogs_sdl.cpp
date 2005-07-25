@@ -835,231 +835,76 @@ setup_metaserver_chat_ui(
  *  Gathering dialog
  */
 
-class SDLGatherCallbacks : public GatherCallbacks
+class SdlGatherDialog : public GatherDialog
 {
 public:
-  ~SDLGatherCallbacks() { }
-  static SDLGatherCallbacks *instance();
-  void JoinSucceeded(const prospective_joiner_info *player);
-  void JoiningPlayerDropped(const prospective_joiner_info *player);
-  void JoinedPlayerDropped(const prospective_joiner_info *player);
-  void JoinedPlayerChanged(const prospective_joiner_info *player);
-  void set_dialog(dialog *d) { m_dialog = d; }
+	SdlGatherDialog::SdlGatherDialog()
+	{
+		m_dialog.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
+	
+		m_dialog.add(new w_spacer());
+	
+		m_dialog.add(new w_static_text("Players on Network"));
+	
+		w_joining_players_in_room* foundplayers_w = new w_joining_players_in_room(NULL, 320, 3);
+		m_dialog.add(foundplayers_w);
+	
+		w_toggle* autogather_w = new w_toggle("Auto-Gather", false);
+		m_dialog.add(autogather_w);
+	
+		m_dialog.add(new w_spacer());
+	
+		w_players_in_game2* players_w = new w_players_in_game2(false);
+		m_dialog.add(players_w);
+		
+		w_left_button* play_button_w = new w_left_button("PLAY");
+		m_dialog.add(play_button_w);
+	
+		w_right_button* cancel_w = new w_right_button("CANCEL");
+		m_dialog.add(cancel_w);
+
+		
+		m_cancelWidget = new ButtonWidget (cancel_w);
+		m_startWidget = new ButtonWidget (play_button_w);
+		
+		m_autogatherWidget = new AutogatherWidget (new ToggleWidget (autogather_w));
+	
+		m_ungatheredWidget = new JoiningPlayerListWidget (foundplayers_w);
+		m_pigWidget = new PlayersInGameWidget (players_w);
+	}
+	
+	virtual bool Run ()
+	{
+		m_dialog.set_processing_function (boost::bind(&SdlGatherDialog::idle, this));
+		return (m_dialog.run() == 0);
+	}
+	
+	virtual void Stop (bool result)
+	{
+		if (result)
+			m_dialog.quit (0);
+		else
+			m_dialog.quit (-1);
+	}
+	
+	virtual ~SdlGatherDialog ()
+	{
+		delete m_cancelWidget;
+		delete m_startWidget;
+		delete m_autogatherWidget;
+		delete m_ungatheredWidget;
+		delete m_pigWidget;
+	}
+	
 private:
-  SDLGatherCallbacks() { m_dialog = NULL; };
-  static SDLGatherCallbacks *m_instance;
-  dialog *m_dialog;
+	dialog m_dialog;
 };
 
-SDLGatherCallbacks *SDLGatherCallbacks::m_instance = NULL;
-
-SDLGatherCallbacks *SDLGatherCallbacks::instance() {
-  if (!m_instance) {
-    m_instance = new SDLGatherCallbacks();
-  }
-  return m_instance;
-}
-
-void SDLGatherCallbacks::JoinSucceeded(const prospective_joiner_info *player) {
-  // remove him from the list
-  assert(m_dialog);
-
-  w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(m_dialog->get_widget_by_id(iNETWORK_LIST_BOX));
-  theFoundPlayers->hide_player(*player);
-  
-  w_players_in_game2* thePlayersDisplay =
-    dynamic_cast<w_players_in_game2*>(m_dialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
-  
-  assert(thePlayersDisplay != NULL);
-  
-  thePlayersDisplay->update_display();
-  
-  modify_control_enabled(m_dialog, iOK, CONTROL_ACTIVE);
-  
-  m_dialog->draw_dirty_widgets();
-}
-
-void SDLGatherCallbacks::JoiningPlayerDropped(const prospective_joiner_info *player) {
-  assert(m_dialog);
-
-  w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(m_dialog->get_widget_by_id(iNETWORK_LIST_BOX));
-  theFoundPlayers->hide_player(*player);
-
-  m_dialog->draw_dirty_widgets();
-}
-
-void SDLGatherCallbacks::JoinedPlayerDropped(const prospective_joiner_info *) {
-
-  w_players_in_game2* thePlayersDisplay =
-    dynamic_cast<w_players_in_game2*>(m_dialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
-  assert (thePlayersDisplay != NULL);
-
-  thePlayersDisplay->update_display();
-  
-  modify_control_enabled(m_dialog, iOK, (NetGetNumberOfPlayers() > 1) ? CONTROL_ACTIVE : CONTROL_INACTIVE);
-
-  m_dialog->draw_dirty_widgets();
-}
-
-void SDLGatherCallbacks::JoinedPlayerChanged(const prospective_joiner_info *) {
-  w_players_in_game2* thePlayersDisplay =
-    dynamic_cast<w_players_in_game2*>(m_dialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
-  assert (thePlayersDisplay != NULL);
-  
-  thePlayersDisplay->update_display();
-  
-  m_dialog->draw_dirty_widgets();
-}
-
-GatherCallbacks *get_gather_callbacks() {
-  return static_cast<GatherCallbacks *>(SDLGatherCallbacks::instance());
-}
-
-
- // jkvw: The meaty bits here should be moved to shared code
-
-// This is called when the user clicks on a found player to attempt to gather him in.
-static void
-gather_player_callback(w_found_players* foundPlayersWidget, prospective_joiner_info player) {
-        assert(foundPlayersWidget != NULL);
-	if (player.gathering) return;
-    
-	// Either gather will succeed, in which case we don't want to see player, or
-	// an error will occur in gathering, in which case we also don't want to see player.
-	player.gathering = true;
-	foundPlayersWidget->update_player(player);
-    
-        dialog* theDialog = foundPlayersWidget->get_owning_dialog();
-
-        assert(theDialog != NULL);
-        
-	if (gather_dialog_gathered_player (player)) {
-
-                w_players_in_game2* thePlayersDisplay =
-			dynamic_cast<w_players_in_game2*>(theDialog->get_widget_by_id(iPLAYER_DISPLAY_AREA));
-
-		assert(thePlayersDisplay != NULL);
-
-		thePlayersDisplay->update_display();
-                
-                modify_control_enabled(theDialog, iOK, CONTROL_ACTIVE);
-	}
-        
-        theDialog->draw_dirty_widgets();
-}
-
-
-// This is called when the autogather toggle is twiddled.
-static void
-autogather_callback(w_select* inAutoGather) {
-    if(inAutoGather->get_selection() > 0) {
-        dialog* theDialog = inAutoGather->get_owning_dialog();
-        assert(theDialog != NULL);
-        
-        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(theDialog->get_widget_by_id(iNETWORK_LIST_BOX));
-        assert(theFoundPlayers != NULL);
-        
-        theFoundPlayers->callback_on_all_items();
-    }
-}
-
-
-static void
-found_player(dialog* inDialog, prospective_joiner_info &player) {
-        assert(inDialog != NULL);
-        
-        w_found_players* theFoundPlayers = dynamic_cast<w_found_players*>(inDialog->get_widget_by_id(iNETWORK_LIST_BOX));
-        assert(theFoundPlayers != NULL);
-        
-        theFoundPlayers->found_player(player);
-        
-        w_toggle*	theAutoGather = dynamic_cast<w_toggle*>(inDialog->get_widget_by_id(iAUTO_GATHER));
-        assert(theAutoGather != NULL);
-        
-        if(theAutoGather->get_selection() > 0)
-                gather_player_callback(theFoundPlayers, player);
-                
-        inDialog->draw_dirty_widgets();
-}
-
-
-// This is a callback of sorts; the dialog will invoke it during its idle time.
-static void
-gather_processing_function(dialog* inDialog)
+auto_ptr<GatherDialog>
+GatherDialog::Create()
 {
-	MetaserverClient::pumpAll();
-
-	prospective_joiner_info player;
-
-	if (gather_dialog_player_search(player))
-		found_player(inDialog, player);
+	return auto_ptr<GatherDialog>(new SdlGatherDialog);
 }
-
-
-#ifndef NETWORK_TEST_POSTGAME_DIALOG // because that test code replaces the real gather box
-#ifndef NETWORK_TEST_MICROPHONE_LOCALLY // same deal
-bool run_network_gather_dialog(MetaserverClient* metaserverClient)
-{
-	dialog d;
-	
-	d.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
-	
-	d.add(new w_spacer());
-	
-	d.add(new w_static_text("Players on Network"));
-	
-	w_found_players* foundplayers_w = new w_found_players(320, 3);
-	foundplayers_w->set_identifier(iNETWORK_LIST_BOX);
-	foundplayers_w->set_player_selected_callback(gather_player_callback);
-	d.add(foundplayers_w);
-	
-	w_toggle*	autogather_w = new w_toggle("Auto-Gather", false);
-	autogather_w->set_identifier(iAUTO_GATHER);
-	autogather_w->set_selection_changed_callback(autogather_callback);
-	d.add(autogather_w);
-	
-	d.add(new w_spacer());
-	
-	w_players_in_game2* players_w = new w_players_in_game2(false);
-				players_w->set_identifier(iPLAYER_DISPLAY_AREA);
-				d.add(players_w);
-
-	players_w->start_displaying_actual_information();
-	players_w->update_display();
-
-	auto_ptr<PregameDialogNotificationAdapter> notificationAdapter;
-	auto_ptr<MetaserverClient::NotificationAdapterInstaller> notificationAdapterInstaller;
-	if (metaserverClient != NULL)
-		setup_metaserver_chat_ui(d, *metaserverClient, 5, notificationAdapter, notificationAdapterInstaller);
-
-	SDLGatherCallbacks::instance()->set_dialog(&d);
-
-	// "Play" (OK) button starts off disabled.  It's enabled in the gather callback when a player is gathered (see above).
-	// This prevents trying to start a net game by yourself (which doesn't work at the moment, whether it ought to or not).
-	w_left_button* play_button_w = new w_left_button("PLAY", dialog_ok, &d);
-	play_button_w->set_identifier(iOK);
-	play_button_w->set_enabled(false);
-	d.add(play_button_w);
-	
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
-
-	d.set_processing_function(gather_processing_function);
-	
-	sGathererMayStartGame= true;
-	
-	gather_dialog_initialise (&d);
-	
-	int result = !(d.run());
-	
-	if (result)
-		gather_dialog_save_prefs (&d);
-	
-	return result;
-}
-#endif // ndef NETWORK_TEST_MICROPHONE_LOCALLY
-#endif // ndef NETWORK_TEST_POSTGAME_DIALOG
-
-
 
 
 /*

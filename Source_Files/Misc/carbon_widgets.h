@@ -29,7 +29,8 @@
 
 #include	"cseries.h"
 #include	"NibsUiHelpers.h"
-#include	"metaserver_messages.h"
+#include	"metaserver_messages.h" // for GameListMessage
+#include	"network.h" // for prospective_joiner_info
 
 #include <boost/static_assert.hpp>
 #include <boost/bind.hpp>
@@ -153,8 +154,9 @@ class ListWidget
 public:
 	typedef typename boost::function<void (tElement item, ListWidget<tElement>& sender)> ItemSelectedCallback;
 
-	ListWidget(ControlRef control)
+	ListWidget(ControlRef control, ButtonWidget* button = NULL)
 		: m_control(control)
+		, m_button(button)
 	{
 		SetupCallbacks();
 	}
@@ -170,10 +172,13 @@ public:
 		m_itemSelected = itemSelected;
 	}
 
+	virtual ~ListWidget() { if (m_button) delete m_button; }
+
 private:
 	vector<tElement>	m_items;
 	ControlRef		m_control;
 	ItemSelectedCallback	m_itemSelected;
+	ButtonWidget*		m_button;
 
 	void SetupCallbacks()
 	{
@@ -187,6 +192,9 @@ private:
 		callbacks.u.v1.itemDataCallback = NewDataBrowserItemDataUPP(BounceSetDataForItemId);
 		callbacks.u.v1.itemNotificationCallback = NewDataBrowserItemNotificationUPP(BounceHandleItemNotification);
 		SetDataBrowserCallbacks(m_control, &callbacks);
+		
+		if (m_button)
+			m_button->set_callback (boost::bind(&ListWidget<tElement>::ButtonHit, this));
 	}
 	
 	void ClearItemsFromControl()
@@ -222,10 +230,7 @@ private:
 		return (itemIndex < m_items.size()) ? &(m_items[itemIndex]) : NULL;
 	}
 
-	const string ValueForItem(const tElement* element)
-	{
-		return element == NULL ? string() : element->name();
-	}
+	const string ValueForItem(const tElement* element);
 
 	OSStatus SetDataForItemId(
 		DataBrowserItemID itemId,
@@ -267,9 +272,32 @@ private:
 		ListWidget<tElement>* listWidget = reinterpret_cast<ListWidget<tElement>*>(GetControlReference(browser));
 		listWidget->HandleItemNotification(item, message);
 	}
+	
+	void ButtonHit ()
+	{
+		// Find which items are selected
+		Handle ItemsHdl = NewHandle(0);
+		GetDataBrowserItems(m_control,
+			NULL, false, kDataBrowserItemIsSelected,
+			ItemsHdl);
+
+		int NumItems = GetHandleSize(ItemsHdl)/sizeof(DataBrowserItemID);
+	
+		HLock(ItemsHdl);
+		DataBrowserItemID* ItemsPtr = (DataBrowserItemID *)(*ItemsHdl);
+	
+		// Call our item selected callback for each selected item
+		for (int k=0; k<NumItems; k++)
+		{
+			tElement* item = ItemForItemId(ItemsPtr[k]);
+			if (item != NULL)
+				m_itemSelected(*item, *this);
+                }
+	}
 };
 
 typedef ListWidget<MetaserverPlayerInfo> PlayerListWidget;
+typedef ListWidget<prospective_joiner_info> JoiningPlayerListWidget;
 typedef ListWidget<GameListMessage::GameListEntry> GameListWidget;
 
 class TextboxWidget

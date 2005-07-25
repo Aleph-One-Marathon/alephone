@@ -72,6 +72,15 @@ const string EditTextWidget::get_text ()
 	return std::string(&buffer[0], buffer.size());
 }
 
+const string PlayerListWidget::ValueForItem(const MetaserverPlayerInfo* element)
+	{ return element == NULL ? string() : element->name(); }
+
+const string JoiningPlayerListWidget::ValueForItem(const prospective_joiner_info* element)
+	{ return pstring_to_string (element->name); }
+
+const string GameListWidget::ValueForItem(const GameListMessage::GameListEntry* element)
+	{ return element == NULL ? string() : element->name(); }
+
 // helper for PlayersInGameWidget::pigDrawer
 static void calculate_box_colors(
 	short color_index,

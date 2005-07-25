@@ -95,3 +95,15 @@ TeamWidget::~TeamWidget ()
 	player_preferences->team = get_team ();
 	delete m_teamComponentWidget;
 }
+
+AutogatherWidget::AutogatherWidget (ToggleWidget* autogatherComponentWidget)
+	: m_autogatherComponentWidget (autogatherComponentWidget)
+{
+	set_state (network_preferences->autogather);
+}
+		
+AutogatherWidget::~AutogatherWidget ()
+{
+	network_preferences->autogather = get_state ();
+	delete m_autogatherComponentWidget;
+}

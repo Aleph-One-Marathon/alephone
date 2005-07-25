@@ -1571,6 +1571,22 @@ w_file_chooser::update_filename()
 		set_selection(sFileChooserInvalidFileString);
 }
 
+
+const string w_games_in_room::get_name_of_item (GameListMessage::GameListEntry item) const
+{
+	return item.name ();
+}
+
+const string w_joining_players_in_room::get_name_of_item (prospective_joiner_info item) const
+{
+	return pstring_to_string (item.name);
+}
+
+const string w_items_in_room<MetaserverPlayerInfo>::get_name_of_item (MetaserverPlayerInfo item) const
+{
+	return item.name ();
+}
+
 void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface* s,
 					int16 x, int16 y, uint16 width, bool selected) const
 {

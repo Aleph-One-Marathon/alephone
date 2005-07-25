@@ -154,124 +154,9 @@ static bool CheckSetupInformation(
 
 extern void NetUpdateTopology(void);
 
-// JTP: Cribbed from network_dialogs_widgets_sdl, if I can't do it right do it compatibly.
-// Actually, as it turns out, there should be a generic STL algorithm that does this, I think.
-// Well, w_found_players ought to be using a set<> or similar anyway, much more natural.
-// Shrug, this was what I came up with before I knew anything about STL, and I'm too lazy to change it.
-template<class T>
-static const int
-find_item_index_in_vector(const T& inItem, const vector<T>& inVector)
-{
-	typedef typename std::vector<T>::const_iterator const_iterator;
-	const_iterator i(inVector.begin());
-	const_iterator end(inVector.end());
-	int index	= 0;
-
-	while(i != end) {
-		if(*i == inItem)
-			return index;
-		
-		index++;
-		i++;
-	}
-	
-	// Didn't find it
-	return -1;
-}
-
-
-
-/*************************************************************************************************
- *
- * Function: network_gather
- * Purpose:  do the game setup and gather dialogs
- *
- *************************************************************************************************/
-
-// Ought to be a property of the player-list control...
-NetgameGatherData *GatherDataPtr;
-
-static pascal OSStatus SetPlayerListMember(
-		ControlRef Browser,
-		DataBrowserItemID ItemID,
-		DataBrowserPropertyID PropertyID,
-        DataBrowserItemDataRef ItemData,
-        Boolean SetValue
-		)
-{
-	NetgameGatherData& Data = *GatherDataPtr;
-	
-	// Find the player entry
-	map<DataBrowserItemID, const prospective_joiner_info*>::iterator Entry = 
-		Data.FoundPlayers.find(ItemID);
-	
-	// Was it really found? if not, quit
-	if (Entry == Data.FoundPlayers.end()) return noErr;
-	
-	const byte *NameBytes = (const byte *)Entry->second->name;
-	
-	CFStringRef NameStr = CFStringCreateWithBytes(
-					NULL, NameBytes+1, NameBytes[0],
-					NULL, false);
-	
-	SetDataBrowserItemDataText(ItemData, NameStr);
-	
-	CFRelease(NameStr);
-	
-	return noErr;
-}
-
-static UInt32 HowManySelected(ControlRef Browser)
-{
-	// Count how many selected;
-	// from Apple's sample code in TechNote #2009
-	// (a valuable source on the Data Browser control in general)
-	UInt32 Count = 0;
-	GetDataBrowserItemCount(Browser,
-		kDataBrowserNoItem ,		/* start searching at the root item */
-		true,						/* recursively search all subitems */
-		kDataBrowserItemIsSelected,	/* only return selected items */
-		&Count);
-	
-	return Count;
-}
-
-
-static void Fake_ADD_Button_Press();
-
-
-static pascal void PlayerListMemberHit(
-		ControlRef Browser,
-		DataBrowserItemID Item,
-		DataBrowserItemNotification Message
-		)
-{
-	NetgameGatherData& Data = *GatherDataPtr;
-
-	switch(Message)
-	{
-	case kDataBrowserItemSelected:
-		SetControlActivity(Data.AddCtrl, NetGetNumberOfPlayers() <= MAXIMUM_NUMBER_OF_PLAYERS);
-		break;
-		
-	case kDataBrowserItemDoubleClicked:
-		SetControlActivity(Data.AddCtrl, NetGetNumberOfPlayers() <= MAXIMUM_NUMBER_OF_PLAYERS);
-		Fake_ADD_Button_Press();
-		break;
-		
-	case kDataBrowserItemDeselected:
-	case kDataBrowserItemRemoved:
-		SetControlActivity(Data.AddCtrl, HowManySelected(Data.NetworkDisplayCtrl) > 0);
-		break;
-	}
-}
-
 
 static void PlayerDisplayDrawer(ControlRef Ctrl, void *UserData)
 {
-	//NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
-	//NetgameGatherData& Data = *DPtr;
-
 	// No need for the window context -- it's assumed
 	Rect Bounds = {0,0,0,0};
 	
@@ -307,206 +192,73 @@ static void PlayerDisplayDrawer(ControlRef Ctrl, void *UserData)
 	
 }
 
-
-static void NetgameGather_Handler(ParsedControl& Ctrl, void *UserData)
-{
-	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
-	NetgameGatherData& Data = *DPtr;
-
-	// This is only an experiment
-	MetaserverClient::pumpAll();
-	
-	Handle ItemsHdl;
-	DataBrowserItemID *ItemsPtr;
-	
-	switch(Ctrl.ID.id)
-	{
-	case iADD:
-		// Find which players were selected
-		
-		ItemsHdl = NewHandle(0);
-		GetDataBrowserItems(Data.NetworkDisplayCtrl,
-			NULL, false, kDataBrowserItemIsSelected,
-			ItemsHdl);
-		
-		int NumItems = GetHandleSize(ItemsHdl)/sizeof(DataBrowserItemID);
-		
-		HLock(ItemsHdl);
-		ItemsPtr = (DataBrowserItemID *)(*ItemsHdl);
-		
-		for (int k=0; k<NumItems; k++)
-		{
-			// No need to try if we've gathered enough players
-			if (NetGetNumberOfPlayers() >= MAXIMUM_NUMBER_OF_PLAYERS)
-				continue;
-			
-			// Examine each entry in the list
-			map<DataBrowserItemID, const prospective_joiner_info*>::iterator Entry = 
-				Data.FoundPlayers.find(ItemsPtr[k]);
-			
-			// Was it really found? if not, then try the next one
-			if (Entry != Data.FoundPlayers.end()) {
-	
-				const prospective_joiner_info *player = Entry->second;
-			
-				// Remove player from lists
-				lost_player(player);
-			
-				// Gather player
-				if (gather_dialog_gathered_player (*player))
-					Draw1Control(Data.PlayerDisplayCtrl);
-			}
-		}
-		
-		// Note: ADD button is handled in list-box callback
-		SetControlActivity(Data.OK_Ctrl, (NetGetNumberOfPlayers() > 1) && Data.AllPlayersOK);
-		
-		break;	
-	}
-}
-
-
-void Fake_ADD_Button_Press()
-{
-	ParsedControl FakeAddCtrl;
-	FakeAddCtrl.ID.id = iADD;
-
-	NetgameGather_Handler(FakeAddCtrl, GatherDataPtr);
-}
-
-
 const double PollingInterval = 1.0/30.0;
 
-static pascal void NetgameGather_Poller(EventLoopTimerRef Timer, void *UserData)
-{	
-	NetgameGatherData *DPtr = (NetgameGatherData *)(UserData);
-	NetgameGatherData& Data = *DPtr;
+/*************************************************************************************************
+ *
+ * NIBs-specific network gather dialog
+ *
+ *************************************************************************************************/
 
-	MetaserverClient::pumpAll();
-
-	prospective_joiner_info info;
-	if (gather_dialog_player_search(info)) {
-		prospective_joiner_info* infoPtr = new prospective_joiner_info;
-		*infoPtr = info;
-		found_player(infoPtr);
-	}
-	
-	if (QQ_get_boolean_control_value (Data.dialog, iAUTO_GATHER)) {
-		map<DataBrowserItemID, const prospective_joiner_info*>::iterator it;
-		it = Data.FoundPlayers.begin ();
-		while (it != Data.FoundPlayers.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
-			gather_dialog_gathered_player (*((*it).second));
-			lost_player((*(it++)).second);
-		}
-	}
-	
-	Draw1Control(Data.PlayerDisplayCtrl);
-}
-
-class MacNIBSSDLGatherCallbacks : public GatherCallbacks
+class NibsGatherDialog : public GatherDialog
 {
 public:
-	~MacNIBSSDLGatherCallbacks() { }
-	static MacNIBSSDLGatherCallbacks *instance();
-	void JoinSucceeded(const prospective_joiner_info *player);
-  void JoiningPlayerDropped(const prospective_joiner_info *player);
-  void JoinedPlayerDropped(const prospective_joiner_info *player);
+	NibsGatherDialog::NibsGatherDialog()
+	: m_gatherDialogNib(CFSTR("Gather Network Game"))
+	, m_dialog_window(m_gatherDialogNib.nibReference(), CFSTR("Gather Network Game"))
+	, m_dialog(m_dialog_window(), false)
+	
+	{
+		m_cancelWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iCANCEL));
+		m_startWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iOK));
+		
+		m_autogatherWidget = new AutogatherWidget (new ToggleWidget (GetCtrlFromWindow(m_dialog_window(), 0, iAUTO_GATHER)));
+	
+		m_ungatheredWidget = new JoiningPlayerListWidget (GetCtrlFromWindow(m_dialog_window(), 0, iNETWORK_LIST_BOX), 
+								new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iADD)));
+		m_pigWidget = new PlayersInGameWidget (GetCtrlFromWindow(m_dialog_window(), 0, iPLAYER_DISPLAY_AREA));
+	}
+
+	virtual bool Run ()
+	{
+		show_cursor(); // Hidden one way or another
+	
+		AutoTimer Poller(0, PollingInterval, boost::bind(&NibsGatherDialog::idle, this));
+		bool result = m_dialog.Run();
+		
+		AutoDrawability Drawability;
+		Drawability(GetCtrlFromWindow(m_dialog_window(), 0, iPLAYER_DISPLAY_AREA), PlayerDisplayDrawer, NULL);
+		
+		hide_cursor();
+		
+		return result;
+	}
+	
+	virtual void Stop(bool result)
+	{
+		m_dialog.Stop(result);
+	}
+	
+	virtual ~NibsGatherDialog()
+	{
+		delete m_cancelWidget;
+		delete m_startWidget;
+		delete m_autogatherWidget;
+		delete m_ungatheredWidget;
+		delete m_pigWidget;
+	}
+
 private:
-	MacNIBSSDLGatherCallbacks() { }
-	static MacNIBSSDLGatherCallbacks *m_instance;
+	AutoNibReference m_gatherDialogNib;
+	AutoNibWindow m_dialog_window;
+	Modal_Dialog m_dialog;
 };
 
-MacNIBSSDLGatherCallbacks *MacNIBSSDLGatherCallbacks::m_instance = NULL;
-
-MacNIBSSDLGatherCallbacks *MacNIBSSDLGatherCallbacks::instance() {
-	if (!m_instance) {
-		m_instance = new MacNIBSSDLGatherCallbacks();
-	}
-	return m_instance;
-}
-
-void MacNIBSSDLGatherCallbacks::JoinSucceeded(const prospective_joiner_info *) {
-	if (GatherDataPtr) {
-		SetControlActivity(GatherDataPtr->OK_Ctrl, (NetGetNumberOfPlayers() > 1) && GatherDataPtr->AllPlayersOK);
-	}
-}
-
-void MacNIBSSDLGatherCallbacks::JoiningPlayerDropped(const prospective_joiner_info *player) {
-  lost_player(player);
-}
-
-void MacNIBSSDLGatherCallbacks::JoinedPlayerDropped(const prospective_joiner_info *) {
-  	if (GatherDataPtr) {
-		SetControlActivity(GatherDataPtr->OK_Ctrl, (NetGetNumberOfPlayers() > 1) && GatherDataPtr->AllPlayersOK);
-	}
-}
-
-#ifndef NETWORK_TEST_POSTGAME_DIALOG
-
-GatherCallbacks *get_gather_callbacks() { 
-	return static_cast<GatherCallbacks *>(MacNIBSSDLGatherCallbacks::instance());
-}
-
-bool run_network_gather_dialog(MetaserverClient*)
+auto_ptr<GatherDialog>
+GatherDialog::Create()
 {
-	bool successful= false;
-
-	show_cursor(); // JTP: Hidden one way or another
-
-	AutoNibReference gatherDialogNib(CFSTR("Gather Network Game"));
-	AutoNibWindow Window(gatherDialogNib.nibReference(), CFSTR("Gather Network Game"));
-	
-	NetgameGatherData Data;
-	GatherDataPtr = &Data;
-
-	// Actually a Data Browser control, a sort of super list box introduced in Carbon/OSX
-	Data.NetworkDisplayCtrl = GetCtrlFromWindow(Window(), 0, iNETWORK_LIST_BOX);
-	
-	Data.dialog = Window ();
-		
-	DataBrowserCallbacks Callbacks;
-	obj_clear(Callbacks);	// Makes everything NULL
-	Callbacks.version = kDataBrowserLatestCallbacks;
-	Callbacks.u.v1.itemDataCallback = NewDataBrowserItemDataUPP(SetPlayerListMember);
-	Callbacks.u.v1.itemNotificationCallback = NewDataBrowserItemNotificationUPP(PlayerListMemberHit);
-	SetDataBrowserCallbacks(Data.NetworkDisplayCtrl, &Callbacks);
-	
-	Data.ItemID = 1; 	// Initial values
-	Data.AllPlayersOK = true;
-	
-	Data.PlayerDisplayCtrl = GetCtrlFromWindow(Window(), 0, iPLAYER_DISPLAY_AREA);
-	
-	AutoDrawability Drawability;
-	Drawability(Data.PlayerDisplayCtrl, PlayerDisplayDrawer, &Data);
-	
-	Data.AddCtrl = GetCtrlFromWindow(Window(), 0, iADD);
-	Data.OK_Ctrl = GetCtrlFromWindow(Window(), 0, iOK);
-	
-	SetControlActivity(Data.AddCtrl,false);
-	SetControlActivity(Data.OK_Ctrl,false);
-
-	AutoTimer Poller(0, PollingInterval, NetgameGather_Poller, &Data);
-	
-	gather_dialog_initialise (Window());
-	
-	successful = RunModalDialog(Window(), false, NetgameGather_Handler, &Data);
-	
-	if (successful)
-		gather_dialog_save_prefs (Window());
-	
-	// Free the joiner infos we collected
-	set<const prospective_joiner_info*>::iterator it;
-	for (it = Data.SeenPlayers.begin(); it != Data.SeenPlayers.end(); ++it)
-		delete *it;
-	Data.SeenPlayers.clear ();
-	
-	DisposeDataBrowserItemDataUPP(Callbacks.u.v1.itemDataCallback);
-	DisposeDataBrowserItemNotificationUPP(Callbacks.u.v1.itemNotificationCallback);
-	
-	return successful;
+	return auto_ptr<GatherDialog>(new NibsGatherDialog);
 }
-
-#endif //ndef NETWORK_TEST_POSTGAME_DIALOG
 
 /*************************************************************************************************
  *
@@ -763,73 +515,6 @@ void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
 	modify_selection_control(inDialog, inItem, CONTROL_ACTIVE, inLevelNumber+1);
 }
 
-
-
-// JTP: Routines initially copied from network_dialogs_sdl.cpp
-
-static void
-found_player(const prospective_joiner_info* player)
-{
-	NetgameGatherData& Data = *GatherDataPtr;
-
-	DataBrowserItemID ItemID = Data.ItemID++;	// Get current value, then move to next one
-	Data.FoundPlayers[ItemID] = player;
-	Data.ReverseFoundPlayers[player] = ItemID;
-	
-	Data.SeenPlayers.insert(player);
-	
-	AddDataBrowserItems(Data.NetworkDisplayCtrl,
-		kDataBrowserNoItem,
-		1, &ItemID,
-		NULL
-		);
-}
-
-
-static void
-lost_player(const prospective_joiner_info* player)
-{
-	NetgameGatherData& Data = *GatherDataPtr;
-
-	map<const prospective_joiner_info*, DataBrowserItemID>::iterator Entry =
-		Data.ReverseFoundPlayers.find(player);
-	
-	// Could the player entry be found?
-	if (Entry == Data.ReverseFoundPlayers.end()) return;
-
-	DataBrowserItemID ItemID = Entry->second;
-	Data.FoundPlayers.erase(ItemID);
-	Data.ReverseFoundPlayers.erase(Entry);
-	
-	RemoveDataBrowserItems(Data.NetworkDisplayCtrl,
-		kDataBrowserNoItem,
-		1, &ItemID,
-		NULL
-		);
-}
-
-/* jkvw: unused function
-
-static void
-player_name_changed_callback(const SSLP_ServiceInstance* player)
-{
-	NetgameGatherData& Data = *GatherDataPtr;
-	
-	map<const SSLP_ServiceInstance*, DataBrowserItemID>::iterator Entry =
-		Data.ReverseFoundPlayers.find(player);
-
-	// Could the player entry be found?
-	if (Entry == Data.ReverseFoundPlayers.end()) return;
-	
-	DataBrowserItemID ItemID = Entry->second;
-		
-	UpdateDataBrowserItems(Data.NetworkDisplayCtrl,
-		kDataBrowserNoItem,
-		1, &ItemID,
-		NULL, NULL
-		);
-}
-*/
 
 
 
@@ -1709,100 +1394,6 @@ static bool key_is_down(
 	return ((((byte*)key_map)[key_code>>3] >> (key_code & 7)) & 1);
 }
 
-#ifdef NETWORK_TEST_POSTGAME_DIALOG
-static const char*    sTestingNames[] = {
-	"Doctor Burrito",
-	"Carnage Asada",
-	"Bongo Bob",
-	"The Napalm Man",
-	"Kissy Monster",
-	"lala",
-	"Prof. Windsurf",
-	"<<<-ZED-<<<"
-};
-
-// THIS ONE IS FAKE - used to test postgame report dialog without going through a game.
-bool network_gather(bool inResumingGame) {
-	short i, j;
-	player_info thePlayerInfo;
-	game_info   theGameInfo;
-
-	show_cursor(); // JTP: Hidden one way or another
-	if(network_game_setup(&thePlayerInfo, &theGameInfo, false)) {
-
-	// Test the progress bar while we're at it
-	#ifdef ALSO_TEST_PROGRESS_BAR
-	#include "progress.h"
-	open_progress_dialog(_distribute_physics_single);
-	for(i=0; i < 100; i++)
-	{
-		//nanosleep(&(timespec){0,50000000},NULL);
-		//idle_progress_bar();
-		int TC = TickCount();	// Busy-waiting; dumb
-		while (TickCount() < TC+4);
-		draw_progress_bar(i, 100);
-	}
-	set_progress_dialog_message(_distribute_map_single);
-	reset_progress_bar();
-	for(i=0; i < 100; i++)
-	{
-		//nanosleep(&(timespec){0,90000000},NULL);
-		int TC = TickCount();	// Busy-waiting; dumb
-		while (TickCount() < TC+4);
-		draw_progress_bar(i, 100);
-	}
-	close_progress_dialog();
-	#endif
-	
-	for (i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; i++)
-	{
-		// make up a name
-		/*int theNameLength = (local_random() % MAXIMUM_PLAYER_NAME_LENGTH) + 1;
-		for(int n = 0; n < theNameLength; n++)
-				players[i].name[n] = 'a' + (local_random() % ('z' - 'a'));
-
-		players[i].name[theNameLength] = '\0';
-*/
-		strcpy(players[i].name, sTestingNames[i]);
-
-		// make up a team and color
-		players[i].color = local_random() % 8;
-		int theNumberOfTeams = 2 + (local_random() % 3);
-		players[i].team  = local_random() % theNumberOfTeams;
-
-		(players+i)->monster_damage_taken.damage = abs(local_random()%200);
-		(players+i)->monster_damage_taken.kills = abs(local_random()%30);
-		(players+i)->monster_damage_given.damage = abs(local_random()%200);
-		(players+i)->monster_damage_given.kills = abs(local_random()%30);
-		
-		players[i].netgame_parameters[0] = local_random() % 200;
-		players[i].netgame_parameters[1] = local_random() % 200;
-		
-		for (j = 0; j < MAXIMUM_NUMBER_OF_PLAYERS; j++)
-		{
-			(players+i)->damage_taken[j].damage = abs(local_random()%200);
-			(players+i)->damage_taken[j].kills = abs(local_random()%6);
-		}
-	}
-
-	dynamic_world->player_count = MAXIMUM_NUMBER_OF_PLAYERS;
-
-	game_data& game_information = dynamic_world->game_information;
-	game_info* network_game_info = &theGameInfo;
-
-	game_information.game_time_remaining= network_game_info->time_limit;
-	game_information.kill_limit= network_game_info->kill_limit;
-	game_information.game_type= network_game_info->net_game_type;
-	game_information.game_options= network_game_info->game_options;
-	game_information.initial_random_seed= network_game_info->initial_random_seed;
-	game_information.difficulty_level= network_game_info->difficulty_level;
-
-	display_net_game_stats();
-	} // if setup box was OK'd
-	hide_cursor();
-	return false;
-}
-#endif
 
 #endif // !defined(DISABLE_NETWORKING)
 
