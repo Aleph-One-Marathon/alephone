@@ -56,19 +56,22 @@ JoinByAddressWidget::~JoinByAddressWidget ()
 	delete m_joinByAddressComponentWidget;
 }
 
-
 NameWidget::NameWidget (EditTextWidget* nameComponentWidget)
 	: m_nameComponentWidget (nameComponentWidget)
 {
 	set_name (pstring_to_string (player_preferences->name));
 }
+
+void NameWidget::update_prefs ()
+{
+	copy_string_to_pstring (get_name (), player_preferences->name);
+}
 		
 NameWidget::~NameWidget ()
 {
-	copy_string_to_pstring (get_name (), player_preferences->name);
+	update_prefs ();
 	delete m_nameComponentWidget;
 }
-
 
 ColourWidget::ColourWidget (SelectorWidget* colourComponentWidget)
 	: m_colourComponentWidget (colourComponentWidget)
@@ -76,10 +79,15 @@ ColourWidget::ColourWidget (SelectorWidget* colourComponentWidget)
 	m_colourComponentWidget->set_labels (kTeamColorsStringSetID);
 	set_colour (player_preferences->color);
 }
-		
-ColourWidget::~ColourWidget ()
+	
+void ColourWidget::update_prefs ()
 {
 	player_preferences->color = get_colour ();
+}
+			
+ColourWidget::~ColourWidget ()
+{
+	update_prefs ();
 	delete m_colourComponentWidget;
 }
 
@@ -89,10 +97,15 @@ TeamWidget::TeamWidget (SelectorWidget* teamComponentWidget)
 	m_teamComponentWidget->set_labels (kTeamColorsStringSetID);
 	set_team (player_preferences->team);
 }
-		
-TeamWidget::~TeamWidget ()
+
+void TeamWidget::update_prefs ()
 {
 	player_preferences->team = get_team ();
+}
+
+TeamWidget::~TeamWidget ()
+{
+	update_prefs ();
 	delete m_teamComponentWidget;
 }
 

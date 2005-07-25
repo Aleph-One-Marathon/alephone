@@ -78,6 +78,8 @@ public:
 	std::string get_name () { return m_nameComponentWidget->get_text (); }
 	void set_name (std::string s) { m_nameComponentWidget->set_text (s); }
 	
+	void update_prefs ();
+	
 	void activate () { m_nameComponentWidget->activate (); }
 	void deactivate () { m_nameComponentWidget->deactivate (); }
 
@@ -94,6 +96,8 @@ public:
 	int get_colour () { return m_colourComponentWidget->get_value (); }
 	void set_colour (int colour) { m_colourComponentWidget->set_value (colour); }
 	
+	void update_prefs ();
+	
 	void activate () { m_colourComponentWidget->activate (); }
 	void deactivate () { m_colourComponentWidget->deactivate (); }
 
@@ -109,6 +113,8 @@ public:
 	
 	int get_team () { return m_teamComponentWidget->get_value (); }
 	void set_team (int colour) { m_teamComponentWidget->set_value (colour); }
+	
+	void update_prefs ();
 	
 	void activate () { m_teamComponentWidget->activate (); }
 	void deactivate () { m_teamComponentWidget->deactivate (); }

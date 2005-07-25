@@ -419,6 +419,10 @@ void JoinDialog::attemptJoin ()
 	myPlayerInfo.team = m_teamWidget->get_team ();
 	myPlayerInfo.desired_color = m_colourWidget->get_colour ();
 	
+	// jkvw: It may look like we're passing our player name into NetGameJoin,
+	//       but network code will later draw the name directly from prefs.
+	m_nameWidget->update_prefs ();
+	
 	bool result = NetGameJoin((void *) &myPlayerInfo, sizeof(myPlayerInfo), hintString);
 	
 	if (hintString)
@@ -513,6 +517,11 @@ void JoinDialog::changeColours ()
 
 void JoinDialog::getJoinAddressFromMetaserver ()
 {
+	// jkvw: The network metaserver code will draw our name and colour info directly from prefs.
+	m_nameWidget->update_prefs ();
+	m_colourWidget->update_prefs ();
+	m_teamWidget->update_prefs ();
+
 	IPaddress result = run_network_metaserver_ui();
 	if(result.host != 0)
 	{
