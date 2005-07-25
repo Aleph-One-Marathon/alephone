@@ -4615,7 +4615,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "fade_music", L_Fade_Music);
 	lua_register(state, "clear_music", L_Clear_Music);
 	lua_register(state, "play_music", L_Play_Music);
-	lua_register(state, "stop_music", L_Play_Music);
+	lua_register(state, "stop_music", L_Stop_Music);
 }
 
 void DeclareLuaConstants()
