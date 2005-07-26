@@ -157,6 +157,9 @@ clearly this is all broken until we have packet types
 
 #include "lua_script.h"
 
+// For temporary multiple MML specified lua scripts hack
+extern bool gLoadingLuaNetscript;
+
 // change this if you make a major change to the way the setup messages work
 const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT P1";
 
@@ -1680,8 +1683,11 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
     draw_progress_bar(total_length, total_length);
     
 #ifdef HAVE_LUA
-    if (do_netscript)
+    if (do_netscript) {
+      gLoadingLuaNetscript = true;
       LoadLuaScript ((char*)deferred_script_data, deferred_script_length);
+      gLoadingLuaNetscript = false;
+    }
 #endif
   }
   
@@ -1716,7 +1722,9 @@ byte *NetReceiveGameData(bool do_physics)
     if (handlerLuaLength > 0) {
       do_netscript = true;
 #ifdef HAVE_LUA
+      gLoadingLuaNetscript = true;
       LoadLuaScript((char *) handlerLuaBuffer, handlerLuaLength);
+      gLoadingLuaNetscript = false;
 #endif
       handlerLuaBuffer = NULL;
       handlerLuaLength = 0;

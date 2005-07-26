@@ -4649,11 +4649,22 @@ lua_pushnumber(state, MAXIMUM_OBJECTS_PER_MAP);
 lua_setglobal(state, "MAXIMUM_OBJECTS_PER_MAP");
 }
 
+// We want to allow MML to load multiple scripts, but we want to show an error if
+// we try to load a netscript and another script.
+// Netscirpt system will set gLoadingLuaNetscript true when it calls LoadLuaScript.
+// Intended as a temporary hack, this should change once we get a system for
+// simultaneous independant scripts.
+bool gLoadingLuaNetscript = false;
+static bool sLuaNetscriptLoaded = false;
+
 bool LoadLuaScript(const char *buffer, size_t len)
 {
 	int status;
 
-	if (lua_loaded == true)
+	if (gLoadingLuaNetscript)
+		sLuaNetscriptLoaded = true;
+
+	if (lua_loaded == true && sLuaNetscriptLoaded)
 	{
 		// Probably the mml and netscript systems are fighting over control of lua
 		show_cursor ();
@@ -4707,6 +4718,8 @@ void CloseLuaScript()
 	lua_running = false;
 	lua_cameras.resize(0);
 	number_of_cameras = 0;
+	
+	sLuaNetscriptLoaded = false;
 }
 
 bool UseLuaCameras()
