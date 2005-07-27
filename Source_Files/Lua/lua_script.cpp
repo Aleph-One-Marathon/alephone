@@ -4657,6 +4657,8 @@ lua_setglobal(state, "MAXIMUM_OBJECTS_PER_MAP");
 bool gLoadingLuaNetscript = false;
 static bool sLuaNetscriptLoaded = false;
 
+static int numScriptsLoaded;
+
 bool LoadLuaScript(const char *buffer, size_t len)
 {
 	int status;
@@ -4670,7 +4672,8 @@ bool LoadLuaScript(const char *buffer, size_t len)
 		show_cursor ();
 		alert_user(infoError, strERRORS, luascriptconflict, 0);
 		hide_cursor (); // this is bad bad badtz-maru if LoadLuaScript gets called when the pointer isn't supposed to be hidden
-	} else {
+	} else if(!lua_loaded) {
+		numScriptsLoaded = 0;
 		state = lua_open();
 
 		OpenStdLibs(state);
@@ -4694,7 +4697,8 @@ bool LoadLuaScript(const char *buffer, size_t len)
 		logWarning("Lua loading failed: unknown error.");
 
 	lua_loaded = (status==0);
-
+	numScriptsLoaded += lua_loaded;
+	
 	return lua_loaded;
 }
 
@@ -4704,7 +4708,13 @@ bool RunLuaScript()
 		use_lua_compass [i] = false;
 	if (!lua_loaded)
 		return false;
-	int result = lua_pcall(state, 0, LUA_MULTRET, 0);
+	int result = 0;
+	// Reverse the functions we're calling
+	for(int i = 0; i < numScriptsLoaded - 1; ++i)
+		lua_insert(state, -(numScriptsLoaded - i));
+	// Call 'em
+	for(int i = 0; i < numScriptsLoaded; ++i)
+		result = result || lua_pcall(state, 0, LUA_MULTRET, 0);
 	lua_running = (result==0);
 
 	return lua_running;
