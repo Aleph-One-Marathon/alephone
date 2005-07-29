@@ -43,12 +43,11 @@ class PrefWidget
 public:
 	PrefWidget (tWidget* componentWidget)
 		: m_componentWidget (componentWidget)
-		{ init_widget (); }
+		{}
 	
-	virtual ~PrefWidget () { update_prefs (); delete m_componentWidget; }
+	virtual ~PrefWidget () { delete m_componentWidget; }
 	
-	virtual void init_widget () {} //= 0;
-	virtual void update_prefs () {} //= 0;
+	virtual void update_prefs () = 0;
 	
 	void activate () { m_componentWidget->activate (); }
 	void deactivate () { m_componentWidget->deactivate (); }
@@ -63,10 +62,13 @@ public:
 	TogglePrefWidget (ToggleWidget* componentWidget, bool& pref)
 		: PrefWidget<ToggleWidget> (componentWidget)
 		, m_pref (pref)
-		{}
+		{ m_componentWidget->set_value (m_pref); }
 	
-	virtual void init_widget () { m_componentWidget->set_value (m_pref); }
+	virtual ~TogglePrefWidget () { update_prefs (); }
+	
 	virtual void update_prefs () { m_pref = m_componentWidget->get_value (); }
+
+	void set_callback (ControlHitCallback callback) { m_componentWidget->set_callback (callback); }
 
 	bool get_value () { return m_componentWidget->get_value (); }
 	void set_value (bool value) { m_componentWidget->set_value (value); }
@@ -81,10 +83,13 @@ public:
 	SelectorPrefWidget (SelectorWidget* componentWidget, int16& pref)
 		: PrefWidget<SelectorWidget> (componentWidget)
 		, m_pref (pref)
-		{}
+		{ m_componentWidget->set_value (m_pref); }
 	
-	virtual void init_widget () { m_componentWidget->set_value (m_pref); }
+	virtual ~SelectorPrefWidget () { update_prefs (); }
+	
 	virtual void update_prefs () { m_pref = m_componentWidget->get_value (); }
+
+	void set_callback (ControlHitCallback callback) { m_componentWidget->set_callback (callback); }
 
 	int get_value () { return m_componentWidget->get_value (); }
 	void set_value (int value) { m_componentWidget->set_value (value); }
@@ -99,9 +104,10 @@ public:
 	EditPStringPrefWidget (EditTextWidget* componentWidget, unsigned char* pref)
 		: PrefWidget<EditTextWidget> (componentWidget)
 		, m_pref (pref)
-		{}
+		{ m_componentWidget->set_text (pstring_to_string (m_pref)); }
 	
-	virtual void init_widget () { m_componentWidget->set_text (pstring_to_string (m_pref)); }
+	virtual ~EditPStringPrefWidget () { update_prefs (); }
+	
 	virtual void update_prefs () { copy_string_to_pstring (get_text (), m_pref); }
 
 	const string get_text () { return m_componentWidget->get_text (); }
@@ -117,9 +123,10 @@ public:
 	EditCStringPrefWidget (EditTextWidget* componentWidget, char* pref)
 		: PrefWidget<EditTextWidget> (componentWidget)
 		, m_pref (pref)
-		{}
+		{ m_componentWidget->set_text (string (m_pref)); }
 	
-	virtual void init_widget () { m_componentWidget->set_text (string (m_pref)); }
+	virtual ~EditCStringPrefWidget () { update_prefs (); }
+	
 	virtual void update_prefs () { copy_string_to_cstring (get_text (), m_pref); }
 
 	const string get_text () { return m_componentWidget->get_text (); }
