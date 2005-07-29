@@ -262,7 +262,7 @@ void GatherDialog::idle ()
 		update_ungathered_widget ();
 	}
 	
-	if (m_autogatherWidget->get_state ()) {
+	if (m_autogatherWidget->get_value ()) {
 		map<int, prospective_joiner_info>::iterator it;
 		it = m_ungathered_players.begin ();
 		while (it != m_ungathered_players.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
@@ -409,15 +409,15 @@ void JoinDialog::attemptJoin ()
 {
 	char* hintString = NULL;
 	
-	if(m_joinByAddressWidget->get_state()) {
+	if(m_joinByAddressWidget->get_value()) {
 		hintString = new char[256];
-		copy_string_to_cstring (m_joinAddressWidget->get_address (), hintString);
+		copy_string_to_cstring (m_joinAddressWidget->get_text (), hintString);
 	}
 	
 	player_info myPlayerInfo;
-	copy_string_to_pstring (m_nameWidget->get_name (), myPlayerInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
-	myPlayerInfo.team = m_teamWidget->get_team ();
-	myPlayerInfo.desired_color = m_colourWidget->get_colour ();
+	copy_string_to_pstring (m_nameWidget->get_text (), myPlayerInfo.name, MAX_NET_PLAYER_NAME_LENGTH);
+	myPlayerInfo.team = m_teamWidget->get_value ();
+	myPlayerInfo.desired_color = m_colourWidget->get_value ();
 	
 	// jkvw: It may look like we're passing our player name into NetGameJoin,
 	//       but network code will later draw the name directly from prefs.
@@ -510,8 +510,8 @@ void JoinDialog::gathererSearch ()
 
 void JoinDialog::changeColours ()
 {
-	int requested_colour = m_colourWidget->get_colour ();
-	int requested_team = m_teamWidget->get_team ();
+	int requested_colour = m_colourWidget->get_value ();
+	int requested_team = m_teamWidget->get_value ();
 	NetChangeColors(requested_colour, requested_team);
 }
 
@@ -528,8 +528,8 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 		uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
 		char buffer[16];
 		snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
-		m_joinByAddressWidget->set_state (true);
-		m_joinAddressWidget->set_address (string (buffer));
+		m_joinByAddressWidget->set_value (true);
+		m_joinAddressWidget->set_text (string (buffer));
 		m_joinWidget->push ();
 	}
 }

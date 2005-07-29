@@ -37,103 +37,132 @@
 #include "carbon_widgets.h"
 #endif
 
-class JoinAddressWidget
+template<typename tWidget>
+class PrefWidget
+{
+public:
+	PrefWidget (tWidget* componentWidget)
+		: m_componentWidget (componentWidget)
+		{ init_widget (); }
+	
+	virtual ~PrefWidget () { update_prefs (); delete m_componentWidget; }
+	
+	virtual void init_widget () {} //= 0;
+	virtual void update_prefs () {} //= 0;
+	
+	void activate () { m_componentWidget->activate (); }
+	void deactivate () { m_componentWidget->deactivate (); }
+
+protected:
+	tWidget* m_componentWidget;
+};
+
+class TogglePrefWidget : public PrefWidget<ToggleWidget>
+{
+public:
+	TogglePrefWidget (ToggleWidget* componentWidget, bool& pref)
+		: PrefWidget<ToggleWidget> (componentWidget)
+		, m_pref (pref)
+		{}
+	
+	virtual void init_widget () { m_componentWidget->set_value (m_pref); }
+	virtual void update_prefs () { m_pref = m_componentWidget->get_value (); }
+
+	bool get_value () { return m_componentWidget->get_value (); }
+	void set_value (bool value) { m_componentWidget->set_value (value); }
+
+protected:
+	bool& m_pref;
+};
+
+class SelectorPrefWidget : public PrefWidget<SelectorWidget>
+{
+public:
+	SelectorPrefWidget (SelectorWidget* componentWidget, int16& pref)
+		: PrefWidget<SelectorWidget> (componentWidget)
+		, m_pref (pref)
+		{}
+	
+	virtual void init_widget () { m_componentWidget->set_value (m_pref); }
+	virtual void update_prefs () { m_pref = m_componentWidget->get_value (); }
+
+	int get_value () { return m_componentWidget->get_value (); }
+	void set_value (int value) { m_componentWidget->set_value (value); }
+
+protected:
+	int16& m_pref;
+};
+
+class EditPStringPrefWidget : public PrefWidget<EditTextWidget>
+{
+public:
+	EditPStringPrefWidget (EditTextWidget* componentWidget, unsigned char* pref)
+		: PrefWidget<EditTextWidget> (componentWidget)
+		, m_pref (pref)
+		{}
+	
+	virtual void init_widget () { m_componentWidget->set_text (pstring_to_string (m_pref)); }
+	virtual void update_prefs () { copy_string_to_pstring (get_text (), m_pref); }
+
+	const string get_text () { return m_componentWidget->get_text (); }
+	void set_text (const string& s) { m_componentWidget->set_text (s); }
+
+protected:
+	unsigned char* m_pref;
+};
+
+class EditCStringPrefWidget : public PrefWidget<EditTextWidget>
+{
+public:
+	EditCStringPrefWidget (EditTextWidget* componentWidget, char* pref)
+		: PrefWidget<EditTextWidget> (componentWidget)
+		, m_pref (pref)
+		{}
+	
+	virtual void init_widget () { m_componentWidget->set_text (string (m_pref)); }
+	virtual void update_prefs () { copy_string_to_cstring (get_text (), m_pref); }
+
+	const string get_text () { return m_componentWidget->get_text (); }
+	void set_text (const string& s) { m_componentWidget->set_text (s); }
+
+protected:
+	char* m_pref;
+};
+
+class JoinAddressWidget : public EditCStringPrefWidget
 {
 public:
 	JoinAddressWidget (EditTextWidget* joinAddressComponentWidget);
-	virtual ~JoinAddressWidget ();
-	
-	std::string get_address () { return m_joinAddressComponentWidget->get_text (); }
-	void set_address (std::string s) { m_joinAddressComponentWidget->set_text (s); }
-	
-	void activate () { m_joinAddressComponentWidget->activate (); }
-	void deactivate () { m_joinAddressComponentWidget->deactivate (); }
-
-private:
-	EditTextWidget* m_joinAddressComponentWidget;
 };
 
-class JoinByAddressWidget
+class JoinByAddressWidget : public TogglePrefWidget
 {
 public:
-	JoinByAddressWidget (ToggleWidget* joinByAddressComponentWidget);
-	virtual ~JoinByAddressWidget ();
-	
-	bool get_state () { return m_joinByAddressComponentWidget->get_value (); }
-	void set_state (bool state) { m_joinByAddressComponentWidget->set_value (state); }
-	
-	void activate () { m_joinByAddressComponentWidget->activate (); }
-	void deactivate () { m_joinByAddressComponentWidget->deactivate (); }
-
-private:
-	ToggleWidget* m_joinByAddressComponentWidget;
+	JoinByAddressWidget (ToggleWidget* componentWidget);
 };
 
-class NameWidget
+class NameWidget : public EditPStringPrefWidget
 {
 public:
-	NameWidget (EditTextWidget* nameComponentWidget);		
-	virtual ~NameWidget ();
-	
-	std::string get_name () { return m_nameComponentWidget->get_text (); }
-	void set_name (std::string s) { m_nameComponentWidget->set_text (s); }
-	
-	void update_prefs ();
-	
-	void activate () { m_nameComponentWidget->activate (); }
-	void deactivate () { m_nameComponentWidget->deactivate (); }
-
-private:
-	EditTextWidget* m_nameComponentWidget;
+	NameWidget (EditTextWidget* componentWidget);
 };
 
-class ColourWidget
+class ColourWidget : public SelectorPrefWidget
 {
 public:
-	ColourWidget (SelectorWidget* colourComponentWidget);		
-	virtual ~ColourWidget ();
-	
-	int get_colour () { return m_colourComponentWidget->get_value (); }
-	void set_colour (int colour) { m_colourComponentWidget->set_value (colour); }
-	
-	void update_prefs ();
-	
-	void activate () { m_colourComponentWidget->activate (); }
-	void deactivate () { m_colourComponentWidget->deactivate (); }
-
-private:
-	SelectorWidget* m_colourComponentWidget;
+	ColourWidget (SelectorWidget* componentWidget);
 };
 
-class TeamWidget
+class TeamWidget : public SelectorPrefWidget
 {
 public:
-	TeamWidget (SelectorWidget* colourComponentWidget);		
-	virtual ~TeamWidget ();
-	
-	int get_team () { return m_teamComponentWidget->get_value (); }
-	void set_team (int colour) { m_teamComponentWidget->set_value (colour); }
-	
-	void update_prefs ();
-	
-	void activate () { m_teamComponentWidget->activate (); }
-	void deactivate () { m_teamComponentWidget->deactivate (); }
-
-private:
-	SelectorWidget* m_teamComponentWidget;
+	TeamWidget (SelectorWidget* componentWidget);
 };
 
-class AutogatherWidget
+class AutogatherWidget : public TogglePrefWidget
 {
 public:
-	AutogatherWidget (ToggleWidget* autogatherComponentWidget);		
-	virtual ~AutogatherWidget ();
-	
-	bool get_state () { return m_autogatherComponentWidget->get_value (); }
-	void set_state (bool state) { m_autogatherComponentWidget->set_value (state); }
-
-private:
-	ToggleWidget* m_autogatherComponentWidget;
+	AutogatherWidget (ToggleWidget* componentWidget);
 };
 
 #endif

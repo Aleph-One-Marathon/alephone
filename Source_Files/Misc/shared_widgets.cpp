@@ -31,92 +31,20 @@
 #include "shared_widgets.h"
 
 
-JoinAddressWidget::JoinAddressWidget (EditTextWidget* joinAddressComponentWidget)
-	: m_joinAddressComponentWidget (joinAddressComponentWidget)
-{
-	set_address (std::string (network_preferences->join_address));
-}
-		
-JoinAddressWidget::~JoinAddressWidget ()
-{
-	copy_string_to_cstring (get_address (), network_preferences->join_address);
-	delete m_joinAddressComponentWidget;
-}
+JoinAddressWidget::JoinAddressWidget (EditTextWidget* componentWidget)
+	: EditCStringPrefWidget (componentWidget, network_preferences->join_address) {}
 
+JoinByAddressWidget::JoinByAddressWidget (ToggleWidget* componentWidget)
+	: TogglePrefWidget (componentWidget, network_preferences->join_by_address) {}
 
-JoinByAddressWidget::JoinByAddressWidget (ToggleWidget* joinByAddressComponentWidget)
-	: m_joinByAddressComponentWidget (joinByAddressComponentWidget)
-{
-	set_state (network_preferences->join_by_address);
-}
-		
-JoinByAddressWidget::~JoinByAddressWidget ()
-{
-	network_preferences->join_by_address = get_state ();
-	delete m_joinByAddressComponentWidget;
-}
+NameWidget::NameWidget (EditTextWidget* componentWidget)
+	: EditPStringPrefWidget (componentWidget, player_preferences->name) {}
 
-NameWidget::NameWidget (EditTextWidget* nameComponentWidget)
-	: m_nameComponentWidget (nameComponentWidget)
-{
-	set_name (pstring_to_string (player_preferences->name));
-}
+ColourWidget::ColourWidget (SelectorWidget* componentWidget)
+	: SelectorPrefWidget (componentWidget, player_preferences->color) {}
 
-void NameWidget::update_prefs ()
-{
-	copy_string_to_pstring (get_name (), player_preferences->name);
-}
-		
-NameWidget::~NameWidget ()
-{
-	update_prefs ();
-	delete m_nameComponentWidget;
-}
+TeamWidget::TeamWidget (SelectorWidget* componentWidget)
+	: SelectorPrefWidget (componentWidget, player_preferences->team) {}
 
-ColourWidget::ColourWidget (SelectorWidget* colourComponentWidget)
-	: m_colourComponentWidget (colourComponentWidget)
-{
-	m_colourComponentWidget->set_labels (kTeamColorsStringSetID);
-	set_colour (player_preferences->color);
-}
-	
-void ColourWidget::update_prefs ()
-{
-	player_preferences->color = get_colour ();
-}
-			
-ColourWidget::~ColourWidget ()
-{
-	update_prefs ();
-	delete m_colourComponentWidget;
-}
-
-TeamWidget::TeamWidget (SelectorWidget* teamComponentWidget)
-	: m_teamComponentWidget (teamComponentWidget)
-{
-	m_teamComponentWidget->set_labels (kTeamColorsStringSetID);
-	set_team (player_preferences->team);
-}
-
-void TeamWidget::update_prefs ()
-{
-	player_preferences->team = get_team ();
-}
-
-TeamWidget::~TeamWidget ()
-{
-	update_prefs ();
-	delete m_teamComponentWidget;
-}
-
-AutogatherWidget::AutogatherWidget (ToggleWidget* autogatherComponentWidget)
-	: m_autogatherComponentWidget (autogatherComponentWidget)
-{
-	set_state (network_preferences->autogather);
-}
-		
-AutogatherWidget::~AutogatherWidget ()
-{
-	network_preferences->autogather = get_state ();
-	delete m_autogatherComponentWidget;
-}
+AutogatherWidget::AutogatherWidget (ToggleWidget* componentWidget)
+	: TogglePrefWidget (componentWidget, network_preferences->autogather) {}
