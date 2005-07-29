@@ -930,9 +930,6 @@ public:
 		w_player_color *tcolor_w = new w_player_color("Team Color", 0);
 		m_dialog.add(tcolor_w);
 	
-		w_button *change_colors_w = new w_button("Request Color Change");
-		m_dialog.add(change_colors_w);
-	
 		m_dialog.add(new w_spacer());
 
 		w_toggle* hint_w = new w_toggle("Join by address", false);
@@ -978,7 +975,6 @@ public:
 		m_nameWidget = new NameWidget (new EditTextWidget (name_w));
 		m_colourWidget = new ColourWidget (new ColourSelectorWidget (pcolor_w));
 		m_teamWidget = new TeamWidget (new ColourSelectorWidget (tcolor_w));
-		m_colourChangeWidget = new ButtonWidget (change_colors_w);
 	
 		m_messagesWidget = new StaticTextWidget (join_messages_w);
 	
@@ -1014,7 +1010,6 @@ public:
 		delete m_nameWidget;
 		delete m_colourWidget;
 		delete m_teamWidget;
-		delete m_colourChangeWidget;
 		delete m_messagesWidget;
 		delete m_pigWidget;
 	}

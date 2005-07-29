@@ -392,10 +392,7 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 	
 	m_cancelWidget->set_callback(boost::bind(&JoinDialog::Stop, this));
 	m_joinWidget->set_callback(boost::bind(&JoinDialog::attemptJoin, this));
-	m_colourChangeWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
 	m_joinMetaserverWidget->set_callback(boost::bind(&JoinDialog::getJoinAddressFromMetaserver, this));
-	
-	m_colourChangeWidget->deactivate();
 	
 	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
 	m_messagesWidget->set_text(pstring_to_string(ptemporary));
@@ -488,7 +485,8 @@ void JoinDialog::gathererSearch ()
 			m_messagesWidget->set_text(std::string(joinMessage));
 			m_teamWidget->activate ();
 			m_colourWidget->activate ();
-			m_colourChangeWidget->activate ();
+			m_colourWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
+			m_teamWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
 			m_pigWidget->redraw ();
 			join_result = kNetworkJoinFailedJoined; }
 			break;

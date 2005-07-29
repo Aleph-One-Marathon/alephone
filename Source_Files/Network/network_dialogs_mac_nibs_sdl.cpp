@@ -284,7 +284,6 @@ public:
 		m_nameWidget = new NameWidget (new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_NAME)));
 		m_colourWidget = new ColourWidget (new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_COLOR)));
 		m_teamWidget = new TeamWidget (new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_TEAM)));
-		m_colourChangeWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_CHANGE_COLORS));
 	
 		m_messagesWidget = new StaticTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_MESSAGES));
 	
@@ -316,7 +315,6 @@ public:
 		delete m_nameWidget;
 		delete m_colourWidget;
 		delete m_teamWidget;
-		delete m_colourChangeWidget;
 		delete m_messagesWidget;
 		delete m_pigWidget;
 	}

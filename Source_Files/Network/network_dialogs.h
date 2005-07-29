@@ -182,10 +182,7 @@ enum {
 	iJOIN_BY_HOST = 14,
 	iJOIN_BY_HOST_LABEL,
 	iJOIN_BY_HOST_ADDRESS,
-	iJOIN_BY_HOST_RECENT_LABEL,
-	iJOIN_BY_HOST_RECENT,
-	iJOIN_CHANGE_COLORS,
-	iJOIN_BY_METASERVER
+	iJOIN_BY_METASERVER = 20
 };
 
 enum {
@@ -441,7 +438,6 @@ protected:
 	NameWidget*		m_nameWidget;
 	ColourWidget*		m_colourWidget;
 	TeamWidget*		m_teamWidget;
-	ButtonWidget*		m_colourChangeWidget;
 	
 	StaticTextWidget*	m_messagesWidget;
 	
