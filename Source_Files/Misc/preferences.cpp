@@ -235,9 +235,9 @@ void WriteXML_FSSpec(FILE *F, const char *Indent, int Index, FSSpec& Spec);
 void initialize_preferences(
 	void)
 {
-        logContext("initializing preferences");
+	logContext("initializing preferences");
 
-        // In case this function gets called more than once...
+	// In case this function gets called more than once...
 	if (!PrefsInited)
 	{
 		SetupPrefsParseTree();
@@ -280,80 +280,44 @@ void read_preferences ()
 
 	// Slurp in the file and parse it
 
-        {
-            FileSpecifier FileSpec;
+	FileSpecifier FileSpec;
 
 #if defined(mac)
-            FileSpec.SetParentToPreferences();
-            FileSpec.SetName(getcstr(temporary, strFILENAMES, filenamePREFERENCES),'TEXT');
+	FileSpec.SetParentToPreferences();
+	FileSpec.SetName(getcstr(temporary, strFILENAMES, filenamePREFERENCES),'TEXT');
 #elif defined(SDL)
-            FileSpec.SetToPreferencesDir();
-            FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+	FileSpec.SetToPreferencesDir();
+	FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
 #endif
 
-            OpenedFile OFile;
-            if (FileSpec.Open(OFile)) {
+	OpenedFile OFile;
+	bool defaults = false;
+	bool opened = FileSpec.Open(OFile);
 
-                long Len = 0;
-                OFile.GetLength(Len);
-                if (Len > 0) {
+	if (!opened) {
+		defaults = true;
+		FileSpec.SetNameWithPath(getcstr(temporary, strFILENAMES, filenamePREFERENCES));
+		opened = FileSpec.Open(OFile);
+	}
 
-                    vector<char> FileContents(Len);
-
-                    if (OFile.Read(Len,&FileContents[0])) {
-
-                        OFile.Close();
-
-                        if (!XML_DataBlockLoader.ParseData(&FileContents[0],Len))
-                        {
-#if defined(mac)
-#ifdef TARGET_API_MAC_CARBON
-							SimpleAlert(kAlertNoteAlert,"There were preferences-file parsing errors (see Aleph One Log.txt for details)");
-#else
-                            ParamText("\pThere were preferences-file parsing errors (see Aleph One Log.txt for details)",0,0,0);
-                            Alert(NonFatalErrorAlert,NULL);
-#endif
-#elif defined(SDL)
-                            fprintf(stderr, "There were preferences-file parsing errors (see Aleph One Log.txt for details)\n");
-#endif
-                        }
-                    }
-                }
-
-            } else {
-	      FileSpec.SetNameWithPath(getcstr(temporary, strFILENAMES, filenamePREFERENCES));
-	      
-	      if (FileSpec.Open(OFile)){ 
-		
+	if (opened) {
 		long Len = 0;
 		OFile.GetLength(Len);
 		if (Len > 0) {
-		  vector<char> FileContents(Len);
-		  
-		  if (OFile.Read(Len, &FileContents[0])) {
-		    
-		    OFile.Close();
+			vector<char> FileContents(Len);
 
-		    if (!XML_DataBlockLoader.ParseData(&FileContents[0], Len)) {
-#if defined(mac)
-#ifdef TARGET_API_MAC_CARBON
-		      SimpleAlert(kAlertNoteAlert, "There were default preferences-file parsing errors (see Aleph One Log.txt for details)");
-#else
-		      ParamText("\pThere were default preferences-file parsing errors (see Aleph One Log.txt for details)", 0, 0, 0);
-		      Alert(NonFatalErrorAlert, NULL);
-#endif
-#elif defined(SDL)
-		      fprintf(stderr, "There were default preferences-file parsing errors (see Aleph One Log.txt for details)\n");
-#endif
-		    }
-		  }
+			if (OFile.Read(Len, &FileContents[0])) {
+				OFile.Close();
+				if (!XML_DataBlockLoader.ParseData(&FileContents[0], Len)) {
+					if (defaults)
+						alert_user("There were default preferences-file parsing errors (see Aleph One Log.txt for details)", infoError);
+					else
+						alert_user("There were preferences-file parsing errors (see Aleph One Log.txt for details)", infoError);
+				}
+			}
 		}
-	      }
-	    }
-	      
+	}
 
-        }
-        
 	// Check on the read-in prefs
 	validate_graphics_preferences(graphics_preferences);
 	validate_serial_number_preferences(serial_preferences);
@@ -388,11 +352,11 @@ void write_preferences(
 	short OldVRefNum;
 	long OldParID;
 #if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
-        //AS: evil hack since HSetVol doesn't affect fopen() on OS X, so we fopen an absolute path
-        char str[257] = "";
-        const char *home = getenv("HOME");
-        if (home) strcat(str, home);
-        strcat(str,"/Library/Preferences/");
+	//AS: evil hack since HSetVol doesn't affect fopen() on OS X, so we fopen an absolute path
+	char str[257] = "";
+	const char *home = getenv("HOME");
+	if (home) strcat(str, home);
+	strcat(str,"/Library/Preferences/");
 	strcat(str,getcstr(temporary, strFILENAMES, filenamePREFERENCES));
 #endif
 	HGetVol(nil,&OldVRefNum,&OldParID);
@@ -406,7 +370,7 @@ void write_preferences(
 #if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
 	FILE *F = fopen(str,"w");
 #else
-        FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
+	FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
 #endif
 
 #elif defined(SDL)
@@ -675,11 +639,11 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->kill_limit = 10;
 	preferences->entry_point= 0;
 	preferences->game_type= _game_of_kill_monsters;
-        preferences->autogather= false;
-        preferences->join_by_address= false;
-        obj_clear(preferences->join_address);
-        preferences->game_port= 4226;	// Magic number I guess, but this is the only place it's used
-                                        // (everyone else uses preferences->game_port)
+	preferences->autogather= false;
+	preferences->join_by_address= false;
+	obj_clear(preferences->join_address);
+	preferences->game_port= 4226;	// Magic number I guess, but this is the only place it's used
+                                // (everyone else uses preferences->game_port)
 	preferences->game_protocol= _network_game_protocol_default;
 #if !defined(DISABLE_NETWORKING)
 	DefaultStarPreferences();
@@ -733,7 +697,7 @@ static void default_input_preferences(input_preferences_data *preferences)
 	// JTP: No ISP, go with default option
 	preferences->input_device= _mouse_yaw_pitch;
 #else
-  	preferences->input_device= _keyboard_or_game_pad;
+	preferences->input_device= _keyboard_or_game_pad;
 #endif
 	set_default_keys(preferences->keycodes, _standard_keyboard_setup);
 	
@@ -742,31 +706,31 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->modifiers = _inputmod_interchange_run_walk;
 
 	// LP: split into horizontal and vertical sensitivities
-    // ZZZ addition: sensitivity factor starts at 1 (no adjustment)
-    preferences->sens_horizontal = FIXED_ONE;
-    preferences->sens_vertical = FIXED_ONE;
+	// ZZZ addition: sensitivity factor starts at 1 (no adjustment)
+	preferences->sens_horizontal = FIXED_ONE;
+	preferences->sens_vertical = FIXED_ONE;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)
 {
 	obj_set(*preferences, NONE);
 
-        FileSpecifier DefaultMapFile;
-        FileSpecifier DefaultShapesFile;
-        FileSpecifier DefaultSoundsFile;
-        FileSpecifier DefaultPhysicsFile;
+	FileSpecifier DefaultMapFile;
+	FileSpecifier DefaultShapesFile;
+	FileSpecifier DefaultSoundsFile;
+	FileSpecifier DefaultPhysicsFile;
     
 #ifdef mac
-        // Can use "all in one" routine
-        get_default_file_specs(&DefaultMapFile, &DefaultShapesFile, &DefaultSoundsFile, &DefaultPhysicsFile);
+	// Can use "all in one" routine
+	get_default_file_specs(&DefaultMapFile, &DefaultShapesFile, &DefaultSoundsFile, &DefaultPhysicsFile);
 #else
 	get_default_map_spec(DefaultMapFile);
-        get_default_physics_spec(DefaultPhysicsFile);
-        get_default_shapes_spec(DefaultShapesFile);
-        get_default_sounds_spec(DefaultSoundsFile);
+	get_default_physics_spec(DefaultPhysicsFile);
+	get_default_shapes_spec(DefaultShapesFile);
+	get_default_sounds_spec(DefaultSoundsFile);
 #endif
                 
-        preferences->map_checksum= read_wad_file_checksum(DefaultMapFile);
+	preferences->map_checksum= read_wad_file_checksum(DefaultMapFile);
 #ifdef mac
 	obj_copy(preferences->map_file, DefaultMapFile.GetSpec());
 #else
@@ -799,15 +763,15 @@ static void default_environment_preferences(environment_preferences_data *prefer
 #endif
 
 #ifdef SDL
-        FileSpecifier DefaultThemeFile;
+	FileSpecifier DefaultThemeFile;
 	get_default_theme_spec(DefaultThemeFile);
 	strncpy(preferences->theme_dir, DefaultThemeFile.GetPath(), 256);
 	preferences->theme_dir[255] = 0;
 #endif
 
-        preferences->group_by_directory = true;
-        preferences->reduce_singletons = false;
-        preferences->non_bungie_warning = true;
+	preferences->group_by_directory = true;
+	preferences->reduce_singletons = false;
+	preferences->non_bungie_warning = true;
 }
 
 
@@ -2025,18 +1989,18 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 		else
 			return false;
 	}
-        else if (StringsEqual(Tag,"group_by_directory"))
-        {
-                return ReadBooleanValue(Value,environment_preferences->group_by_directory);
-        }
-        else if (StringsEqual(Tag,"reduce_singletons"))
-        {
-                return ReadBooleanValue(Value,environment_preferences->reduce_singletons);
-        }
-        else if (StringsEqual(Tag,"non_bungie_warning"))
-        {
-                return ReadBooleanValue(Value,environment_preferences->non_bungie_warning);
-        }
+	else if (StringsEqual(Tag,"group_by_directory"))
+	{
+		return ReadBooleanValue(Value,environment_preferences->group_by_directory);
+	}
+	else if (StringsEqual(Tag,"reduce_singletons"))
+	{
+		return ReadBooleanValue(Value,environment_preferences->reduce_singletons);
+	}
+	else if (StringsEqual(Tag,"non_bungie_warning"))
+	{
+		return ReadBooleanValue(Value,environment_preferences->non_bungie_warning);
+	}
 	return true;
 }
 
