@@ -2294,6 +2294,9 @@ static bool point_in_rectangle(
 	return in_rectangle;
 }
 
+#ifndef SDL
+extern bool MoviePlaying; // interface_macintosh.cpp
+#endif
 static void handle_interface_menu_screen_click(
 	short x,
 	short y,
@@ -2301,8 +2304,13 @@ static void handle_interface_menu_screen_click(
 {
 	short index;
 	screen_rectangle *screen_rect;
-
 	short xoffset = 0, yoffset = 0;
+
+#ifndef SDL
+	if (MoviePlaying)
+		return; // fixes click-through movie bug
+#endif
+
 #if defined(SDL_FORCERES_HACK)
 	xoffset = (SDL_GetVideoSurface()->w - 640) / 2;
 	yoffset = (SDL_GetVideoSurface()->h - 480) / 2;

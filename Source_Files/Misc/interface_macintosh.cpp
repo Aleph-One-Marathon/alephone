@@ -120,6 +120,8 @@ enum { /* Cheat level dialog */
 #define TICKS_BETWEEN_XNEXTEVENT_CALLS 10
 #define MAXIMUM_CONSECUTIVE_GETOSEVENT_CALLS 12 // 2 seconds
 
+bool MoviePlaying = false;
+
 /* -------- local prototypes */
 // static bool machine_has_quicktime(void);
 
@@ -194,7 +196,7 @@ short get_level_number_from_user(
 		// if we there's a stringset present for it, load the message from there
 		int num_lines = TS_CountStrings(vidmasterStringSetID);
 
-		for (size_t i = 0; i < num_lines; i++) {
+		for (int i = 0; i < num_lines; i++) {
 			char *string = TS_GetCString(vidmasterStringSetID, i);
 			style.flags &= ~kControlUseFaceMask;
 			if (!strncmp(string, "[QUOTE]", 7)) {
@@ -363,7 +365,7 @@ void toggle_menus(
 				Buffer[BufferSize-1] = 0; // Null terminator byte
 			}
 			vassert(err == noErr,
-				csprintf(temporary,"CreateMenuFromNib error: %d for menu %s",err,Buffer));
+				csprintf(temporary,"CreateMenuFromNib error: %d for menu %s",(int)err,Buffer));
 			
 			// Now that we have it, insert it
 			InsertMenu(menu, 0);
@@ -738,6 +740,8 @@ void show_movie(
 	// Note: its default value is the original scaling of movie files
 	float PlaybackSize = 2;
 
+	MoviePlaying = true;
+
 	// LP: can do this with any index
 	// if(index==0) /* Only one valid.. */
 	{
@@ -856,6 +860,8 @@ void show_movie(
 			}
 		}
 	}
+
+	MoviePlaying = false;
 }
 
 // "Has Quicktime" test moved to shell_macintosh.cpp
