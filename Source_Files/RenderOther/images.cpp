@@ -62,6 +62,7 @@ Jul 31, 2002 (Loren Petrich)
 #include "screen.h"
 #include "wad.h"
 #include "screen_drawing.h"
+#include "Logging.h"
 
 
 // Constants
@@ -144,6 +145,9 @@ static void draw_picture(LoadedResource &PictRsrc);
 void initialize_images_manager(void)
 {
 	FileSpecifier file;
+
+  logContext("loading Images...");
+
 	file.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameIMAGES)); // _typecode_images
 	
 	if (!file.Exists())
