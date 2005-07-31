@@ -957,17 +957,6 @@ get_player_weapon(player)
 Returns the weapon currently being wielded by player, or nil if none (such as in a rebellion level).
 
 
-3 Mnemonics
------------
-
-Symbols for referring to A1 item types, monster types, and such.
-
-
-3.1 Items
----------
-
-_item_knife
-_item_fist
 play_music(track, [track, [...]])
 
 Appends all of the specified tracks to the end of the level's playlist.
@@ -988,6 +977,17 @@ stop_music()
 Stops the currently playing song and clears the level's playlist.
 
 
+3 Mnemonics
+-----------
+
+Symbols for referring to A1 item types, monster types, and such.
+
+
+3.1 Items
+---------
+
+_item_knife
+_item_fist
 _item_magnum
 _item_magnum_magazine
 _item_plasma_pistol
