@@ -149,6 +149,9 @@ extern void draw_panels();
 extern vector<FileSpecifier> Playlist;
 extern bool IsLevelMusicActive();
 
+extern bool player_has_valid_weapon(short player_index);
+extern player_weapon_data *get_player_weapon_data(const short player_index);
+
 extern bool MotionSensorActive;
 
 extern void destroy_players_ball(short player_index);
@@ -355,6 +358,15 @@ void L_Call_Cleanup ()
 void L_Call_Idle()
 {
 	L_Call("idle");
+}
+
+void L_Call_Sent_Message(const char* player, const char* message) {
+  if(L_Should_Call("sent_message"))
+   {
+	lua_pushstring(state, player);
+	lua_pushstring(state, message);
+	L_Do_Call("sent_message", 2);
+   }
 }
 
 void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
@@ -4448,6 +4460,25 @@ static int L_Player_Media(lua_State *L)
 	return 1;
 }
 
+static int L_Get_Player_Weapon(lua_State *L)
+{
+	int player_index = static_cast<int>(lua_tonumber(L,1));
+	if (player_index < 0 || player_index >= dynamic_world->player_count)
+	 {
+		lua_pushstring(L, "get_player_weapon: invalid player index");
+		lua_error(L);
+	 }
+	if(player_has_valid_weapon(player_index))
+	 {
+		struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
+		lua_pushnumber(L, player_weapons->current_weapon);
+	 }
+	else {
+		lua_pushnil(L);
+		}
+	return 1;
+}
+
 void RegisterLuaFunctions()
 {
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
@@ -4615,6 +4646,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_projectile_position", L_Set_Projectile_Position);
 	lua_register(state, "prompt", L_Prompt);
 	lua_register(state, "player_media", L_Player_Media);
+	lua_register(state, "get_player_weapon", L_Get_Player_Weapon);
 	lua_register(state, "fade_music", L_Fade_Music);
 	lua_register(state, "clear_music", L_Clear_Music);
 	lua_register(state, "play_music", L_Play_Music);

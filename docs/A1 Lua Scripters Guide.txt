@@ -952,6 +952,11 @@ Stops the execution of the script.
 (No more triggers will activate, but whichever one called kill_script() will continue normally.)
 
 
+get_player_weapon(player)
+
+Returns the weapon currently being wielded by player, or nil if none (such as in a rebellion level).
+
+
 3 Mnemonics
 -----------
 

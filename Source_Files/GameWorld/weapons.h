@@ -98,6 +98,47 @@ struct weapon_display_information
 	short Phase, Ticks;
 };
 
+// SB: This needs to be accessed in lua_script.cpp
+
+enum
+{
+	MAXIMUM_SHELL_CASINGS= 4
+};
+
+struct trigger_data {
+short state, phase;
+short rounds_loaded;
+short shots_fired, shots_hit;
+short ticks_since_last_shot; /* used to play shell casing sound, and to calculate arc for shell casing drawing... */
+short ticks_firing; /* How long have we been firing? (only valid for automatics) */
+uint16 sequence; /* what step of the animation are we in? (NOT guaranteed to be in sync!) */
+};
+
+struct weapon_data {
+	short weapon_type; /* stored here to make life easier.. */
+	uint16 flags;
+	uint16 unused; /* non zero-> weapon is powered up */
+	struct trigger_data triggers[NUMBER_OF_TRIGGERS];
+};
+
+struct shell_casing_data
+{
+	short type;
+	short frame;
+  
+	uint16 flags;
+  
+	_fixed x, y;
+	_fixed vx, vy;
+};
+
+struct player_weapon_data {
+	short current_weapon;
+	short desired_weapon;
+	struct weapon_data weapons[MAXIMUM_NUMBER_OF_WEAPONS - 1];
+	struct shell_casing_data shell_casings[MAXIMUM_SHELL_CASINGS];
+};
+
 // For external access:
 const int SIZEOF_weapon_definition = 134;
 

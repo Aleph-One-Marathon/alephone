@@ -181,11 +181,6 @@ enum { /* For the flags */ /* [11.unused 1.horizontal 1.vertical 3.unused] */
 #define COST_PER_CHARGED_WEAPON_SHOT 4					
 #define ANGULAR_VARIANCE (32)
 
-enum
-{
-	MAXIMUM_SHELL_CASINGS= 4
-};
-
 enum // shell casing flags
 {
 	_shell_casing_is_reversed= 0x0001
@@ -193,39 +188,7 @@ enum // shell casing flags
 #define SHELL_CASING_IS_REVERSED(s) ((s)->flags&_shell_casing_is_reversed)
 
 /* ----------- structures */
-struct trigger_data {
-	short state, phase;
-	short rounds_loaded;
-	short shots_fired, shots_hit;
-	short ticks_since_last_shot; /* used to play shell casing sound, and to calculate arc for shell casing drawing... */
-	short ticks_firing; /* How long have we been firing? (only valid for automatics) */
-	uint16 sequence; /* what step of the animation are we in? (NOT guaranteed to be in sync!) */
-};
-
-struct weapon_data {
-	short weapon_type; /* stored here to make life easier.. */
-	uint16 flags;
-	uint16 unused; /* non zero-> weapon is powered up */
-	struct trigger_data triggers[NUMBER_OF_TRIGGERS];
-};
-
-struct shell_casing_data
-{
-	short type;
-	short frame;
-
-	uint16 flags;
-
-	_fixed x, y;
-	_fixed vx, vy;
-};
-
-struct player_weapon_data {
-	short current_weapon;
-	short desired_weapon;
-	struct weapon_data weapons[NUMBER_OF_WEAPONS];
-	struct shell_casing_data shell_casings[MAXIMUM_SHELL_CASINGS];
-};
+/* ...were all moved to weapons.h */
 
 /* ------------- globals */
 /* The array of player weapon states */
@@ -237,7 +200,7 @@ static struct player_weapon_data *player_weapons_array;
 #define GET_WEAPON_FROM_IDENTIFIER(identifier) (identifier>>1)
 #define GET_TRIGGER_FROM_IDENTIFIER(identifier) (identifier&1)
 
-static player_weapon_data *get_player_weapon_data(
+/*static*/ player_weapon_data *get_player_weapon_data(
 	const short player_index);
 
 static weapon_definition *get_weapon_definition(
@@ -319,7 +282,7 @@ static void update_automatic_sequence(short player_index, short which_trigger);
 static bool get_weapon_data_type_for_count(short player_index, short count, short *type, 
 	short *index, short *flags);
 static void update_player_ammo_count(short player_index);
-static bool player_has_valid_weapon(short player_index);
+/*static*/ bool player_has_valid_weapon(short player_index);
 static void idle_weapon(short player_index);
 static void test_raise_double_weapon(short player_index, uint32 *action_flags);
 static void modify_position_for_two_weapons(short player_index, short count, _fixed *width, _fixed *height);
@@ -3460,7 +3423,7 @@ static void update_player_ammo_count(
 	}
 }
 
-static bool player_has_valid_weapon(
+/*static*/ bool player_has_valid_weapon(
 	short player_index)
 {
 	// LP change:
