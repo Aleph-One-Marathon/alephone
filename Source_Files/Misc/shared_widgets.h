@@ -91,6 +91,9 @@ public:
 
 	void set_callback (ControlHitCallback callback) { m_componentWidget->set_callback (callback); }
 
+	void set_labels (int stringset) { m_componentWidget->set_labels (stringset); }
+	void set_labels (const std::vector<std::string>& labels) { m_componentWidget->set_labels (labels); }
+
 	int get_value () { return m_componentWidget->get_value (); }
 	void set_value (int value) { m_componentWidget->set_value (value); }
 
@@ -170,6 +173,50 @@ class AutogatherWidget : public TogglePrefWidget
 {
 public:
 	AutogatherWidget (ToggleWidget* componentWidget);
+};
+
+
+class ChatHistory
+{
+public:
+	class NotificationAdapter {
+	public:
+		virtual void contentAdded (const string& s) = 0;
+		virtual void contentCleared () = 0;
+	};
+
+	ChatHistory () : m_notificationAdapter (NULL) {}
+	
+	void appendString (const string& s);
+	void clear ();
+	const vector<string> getHistory () { return m_history; }
+	
+	void setObserver (NotificationAdapter* notificationAdapter)
+		{ m_notificationAdapter = notificationAdapter; }
+
+private:
+	vector<string> m_history;
+	NotificationAdapter* m_notificationAdapter;
+};
+
+class HistoricTextboxWidget : ChatHistory::NotificationAdapter
+{
+public:
+	HistoricTextboxWidget (TextboxWidget* componentWidget)
+		: m_componentWidget (componentWidget)
+		, m_history (NULL)
+		{}
+	
+	virtual ~HistoricTextboxWidget ();
+	
+	void attachHistory (ChatHistory* history);
+	
+	virtual void contentAdded (const string& s) { m_componentWidget->AppendString (s); }
+	virtual void contentCleared () { m_componentWidget->Clear (); }
+	
+private:
+	TextboxWidget* m_componentWidget;
+	ChatHistory* m_history;
 };
 
 #endif

@@ -67,9 +67,9 @@ const string EditTextWidget::get_text ()
 	Size size = 0;
 	GetControlDataSize(m_ctrl, kControlEditTextPart, kControlEditTextTextTag, &size);
 
-	std::vector<char> buffer(size);
-	GetControlData(m_ctrl, kControlEditTextPart, kControlEditTextTextTag, buffer.size(), &buffer[0], NULL);
-	return std::string(&buffer[0], buffer.size());
+	char* buffer = new char[size];
+	GetControlData(m_ctrl, kControlEditTextPart, kControlEditTextTextTag, size, buffer, NULL);
+	return std::string(buffer, size);
 }
 
 const string ListWidgetValueForItem(const MetaserverPlayerInfo* element)

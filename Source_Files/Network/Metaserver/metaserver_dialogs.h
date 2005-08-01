@@ -77,12 +77,12 @@ protected:
 	void receivedBroadcastMessage(const std::string& message);
 	void sendChat();
 	void ChatTextEntered (char character);
+	void handleCancel();
 	
-	MetaserverClient				m_metaserverClient;
 	PlayerListWidget*				m_playersInRoomWidget;
 	GameListWidget*					m_gamesInRoomWidget;
 	EditTextWidget*					m_chatEntryWidget;
-	TextboxWidget*					m_textboxWidget;
+	HistoricTextboxWidget*				m_textboxWidget;
 	ButtonWidget*					m_cancelWidget;
 	IPaddress					m_joinAddress;
 	bool						m_used;

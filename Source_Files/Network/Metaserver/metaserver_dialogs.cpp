@@ -32,7 +32,8 @@
 #include "network_metaserver.h"
 #include "map.h" // for _force_unique_teams!?!
 
-
+extern ChatHistory gMetaserverChatHistory;
+extern MetaserverClient* gMetaserverClient;
 
 const IPaddress
 run_network_metaserver_ui()
@@ -80,12 +81,15 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 	
 	obj_clear(m_joinAddress);
 
-	setupAndConnectClient(m_metaserverClient);
-	m_metaserverClient.associateNotificationAdapter(this);
+	setupAndConnectClient(*gMetaserverClient);
+	gMetaserverClient->associateNotificationAdapter(this);
 
 	m_gamesInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::GameSelected, this, _1));
 	m_chatEntryWidget->set_callback(bind(&MetaserverClientUi::ChatTextEntered, this, _1));
-	m_cancelWidget->set_callback(boost::bind(&MetaserverClientUi::Stop, this));
+	m_cancelWidget->set_callback(boost::bind(&MetaserverClientUi::handleCancel, this));
+
+	gMetaserverChatHistory.clear ();
+	m_textboxWidget->attachHistory (&gMetaserverChatHistory);
 
 	Run();
 	
@@ -101,17 +105,17 @@ void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 
 void MetaserverClientUi::playersInRoomChanged()
 {
-	m_playersInRoomWidget->SetItems(m_metaserverClient.playersInRoom());
+	m_playersInRoomWidget->SetItems(gMetaserverClient->playersInRoom());
 }
 
 void MetaserverClientUi::gamesInRoomChanged()
 {
-	m_gamesInRoomWidget->SetItems(m_metaserverClient.gamesInRoom());
+	m_gamesInRoomWidget->SetItems(gMetaserverClient->gamesInRoom());
 }
 
 void MetaserverClientUi::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
 {
-	m_textboxWidget->AppendString (senderName + ": " + message);
+	gMetaserverChatHistory.appendString (senderName + ": " + message);
 }
 
 void MetaserverClientUi::receivedBroadcastMessage(const std::string& message)
@@ -126,7 +130,7 @@ void MetaserverClientUi::sendChat()
 	// It's just a little semantic difference, really.  :)
 	message = string(message.data (), message.length () - 1); // lose the last character, i.e. '\r'.
 #endif
-	m_metaserverClient.sendChatMessage(message);
+	gMetaserverClient->sendChatMessage(message);
 	m_chatEntryWidget->set_text(string());
 }
 	
@@ -134,6 +138,14 @@ void MetaserverClientUi::ChatTextEntered (char character)
 {
 	if (character == '\r')
 		sendChat();
+}
+
+void MetaserverClientUi::handleCancel ()
+{
+	// gMetaserverClient->disconnect ();
+	delete gMetaserverClient;
+	gMetaserverClient = new MetaserverClient ();
+	Stop ();
 }
 
 #endif // !defined(DISABLE_NETWORKING)

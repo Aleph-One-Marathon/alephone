@@ -288,6 +288,10 @@ public:
 		m_messagesWidget = new StaticTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_MESSAGES));
 	
 		m_pigWidget = new PlayersInGameWidget (GetCtrlFromWindow(m_dialog_window(), 0, iPLAYER_DISPLAY_AREA));
+		
+		m_chatEntryWidget = new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_CHAT_ENTRY));
+		m_chatChoiceWidget = new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_CHAT_CHOICE));
+		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget(m_dialog_window(), 23, 272, 626, 404));
 	}
 
 	virtual void Run ()
@@ -317,6 +321,9 @@ public:
 		delete m_teamWidget;
 		delete m_messagesWidget;
 		delete m_pigWidget;
+		delete m_chatEntryWidget;
+		delete m_chatChoiceWidget;
+		delete m_chatWidget;
 	}
 
 private:

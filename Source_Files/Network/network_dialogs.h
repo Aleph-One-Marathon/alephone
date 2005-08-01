@@ -41,6 +41,7 @@ Mar 1, 2002 (Woody Zenfell):
 #include    "network.h"
 #include    "network_private.h" // for JoinerSeekingGathererAnnouncer
 #include    "FileHandler.h"
+#include    "network_metaserver.h"
 
 #include    "shared_widgets.h"
 
@@ -182,6 +183,8 @@ enum {
 	iJOIN_BY_HOST = 14,
 	iJOIN_BY_HOST_LABEL,
 	iJOIN_BY_HOST_ADDRESS,
+	iJOIN_CHAT_ENTRY,
+	iJOIN_CHAT_CHOICE,
 	iJOIN_BY_METASERVER = 20
 };
 
@@ -359,6 +362,7 @@ struct NetgameOutcomeData
 /* ---------------------- globals */
 extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 
+
 class MetaserverClient;
 class GatherDialog : public GatherCallbacks
 {
@@ -377,7 +381,7 @@ public:
 	virtual void JoinedPlayerChanged(const prospective_joiner_info* player);
 
 protected:
-	GatherDialog() {}
+	GatherDialog();
 	
 	virtual bool Run() = 0;
 	virtual void Stop(bool result) = 0;
@@ -391,7 +395,8 @@ protected:
 	bool player_search (prospective_joiner_info& player);
 	bool gathered_player (const prospective_joiner_info& player);
 	
-	MetaserverClient* m_metaserverClient;
+	void chatChoiceHit ();
+	void sendChat ();
 	
 	map<int, prospective_joiner_info> m_ungathered_players;
 
@@ -405,7 +410,7 @@ protected:
 };
 
 
-class JoinDialog
+class JoinDialog : public MetaserverClient::NotificationAdapter
 {
 public:
 	// Abstract factory; concrete type determined at link-time
@@ -413,20 +418,29 @@ public:
 
 	const int JoinNetworkGameByRunning();
 
-	virtual ~JoinDialog () {}
+	virtual ~JoinDialog ();
 
 protected:
-	JoinDialog() : join_announcer(true) {}
-
+	JoinDialog();
+	
 	virtual void Run() = 0;
 	virtual void Stop() = 0;
 
-	virtual void respondToJoinHit () {}
+	virtual void respondToJoinHit ();
 
 	void gathererSearch ();
 	void attemptJoin ();
 	void changeColours ();
 	void getJoinAddressFromMetaserver ();
+	
+	virtual void playersInRoomChanged() {}
+	virtual void gamesInRoomChanged() {}
+	virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
+	virtual void receivedBroadcastMessage(const std::string& message);	
+
+	void sendChat ();
+	void chatTextEntered (char character);
+	void chatChoiceHit ();
 	
 	ButtonWidget*		m_cancelWidget;
 	ButtonWidget*		m_joinWidget;
@@ -443,8 +457,15 @@ protected:
 	
 	PlayersInGameWidget*	m_pigWidget;
 	
+	EditTextWidget*		m_chatEntryWidget;
+	SelectorWidget*		m_chatChoiceWidget;
+	HistoricTextboxWidget*	m_chatWidget;
+	
+	enum { kPregameChat = 0, kMetaserverChat };
+	
 	JoinerSeekingGathererAnnouncer join_announcer;
 	int join_result;
+	bool got_gathered;
 };
 
 /* ---------------------- new stuff :) */

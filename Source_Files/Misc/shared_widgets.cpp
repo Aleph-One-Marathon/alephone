@@ -29,6 +29,8 @@
 #include "preferences.h"
 #include "player.h"
 #include "shared_widgets.h"
+#include <vector>
+#include <algorithm>
 
 
 JoinAddressWidget::JoinAddressWidget (EditTextWidget* componentWidget)
@@ -48,3 +50,41 @@ TeamWidget::TeamWidget (SelectorWidget* componentWidget)
 
 AutogatherWidget::AutogatherWidget (ToggleWidget* componentWidget)
 	: TogglePrefWidget (componentWidget, network_preferences->autogather) {}
+	
+	
+void ChatHistory::appendString (const string& s)
+{
+	m_history.push_back (s);
+	if (m_notificationAdapter)
+		m_notificationAdapter->contentAdded (s);
+}
+
+void ChatHistory::clear ()
+{
+	m_history.clear ();
+	if (m_notificationAdapter)
+		m_notificationAdapter->contentCleared ();
+}
+
+HistoricTextboxWidget::~HistoricTextboxWidget ()
+{
+	if (m_history) m_history->setObserver (NULL);
+	delete m_componentWidget;
+}
+
+void HistoricTextboxWidget::attachHistory (ChatHistory* history)
+{
+	if (m_history)
+		m_history->setObserver (NULL);
+
+	m_history = history;
+
+	m_componentWidget->Clear ();
+	if (m_history) {
+		const vector<string> &history_vector = m_history->getHistory ();
+		for_each (history_vector.begin (), history_vector.end (),
+				boost::bind(&TextboxWidget::AppendString, m_componentWidget, _1));
+		m_history->setObserver (this);
+	}
+}
+

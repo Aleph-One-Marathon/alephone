@@ -88,7 +88,7 @@ public:
 		m_playersInRoomWidget = new PlayerListWidget (players_in_room_w);
 		m_gamesInRoomWidget = new GameListWidget (games_in_room_w);
 		m_chatEntryWidget = new EditTextWidget (chatentry_w);
-		m_textboxWidget = new TextboxWidget (chat_history_w);
+		m_textboxWidget = new HistoricTextboxWidget (new TextboxWidget(chat_history_w));
 		m_cancelWidget = new ButtonWidget (cancel_w);
 	}
 	
@@ -120,7 +120,7 @@ private:
 	void
 	pump(dialog* d)
 	{
-		m_metaserverClient.pump();
+		MetaserverClient::pumpAll();
 	}
 
 

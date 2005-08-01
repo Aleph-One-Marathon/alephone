@@ -94,6 +94,14 @@ Apr 10, 2003 (Woody Zenfell):
 extern void NetRetargetJoinAttempts(const IPaddress* inAddress);
 
 
+// Metaserver Globals
+// We can't construct a MetaserverClient until MetaserverClient::s_instances is initialised.
+MetaserverClient* gMetaserverClient = NULL;
+
+// Chat History Globals
+ChatHistory gMetaserverChatHistory;
+ChatHistory gPregameChatHistory;
+
 
 // For the recent host addresses
 #include <list>
@@ -238,6 +246,8 @@ bool network_gather(bool inResumingGame)
 	hide_cursor();
 	return successful;
 }
+
+GatherDialog::GatherDialog() { if (!gMetaserverClient) gMetaserverClient = new MetaserverClient (); }
 
 bool GatherDialog::GatherNetworkGameByRunning ()
 {
@@ -386,13 +396,37 @@ int network_join(void)
 	return join_dialog_result;
 }
 
+JoinDialog::JoinDialog() : join_announcer(true), got_gathered(false)
+	{ if (!gMetaserverClient) gMetaserverClient = new MetaserverClient (); }
+
+JoinDialog::~JoinDialog ()
+{
+	// gMetaserverClient->disconnect ();
+	delete gMetaserverClient;
+	gMetaserverClient = new MetaserverClient ();
+}
+
 const int JoinDialog::JoinNetworkGameByRunning ()
 {
 	join_result = kNetworkJoinFailedUnjoined;
 	
+	vector<string> chat_choice_labels;
+	chat_choice_labels.push_back ("Pregame Chat");
+	chat_choice_labels.push_back ("Metaserver Chat");
+	m_chatChoiceWidget->set_labels (chat_choice_labels);
+
+	m_colourWidget->set_labels (kTeamColorsStringSetID);
+	m_teamWidget->set_labels (kTeamColorsStringSetID);
+	
 	m_cancelWidget->set_callback(boost::bind(&JoinDialog::Stop, this));
 	m_joinWidget->set_callback(boost::bind(&JoinDialog::attemptJoin, this));
 	m_joinMetaserverWidget->set_callback(boost::bind(&JoinDialog::getJoinAddressFromMetaserver, this));
+	
+	m_chatChoiceWidget->set_value (kPregameChat);
+	m_chatChoiceWidget->deactivate ();
+	m_chatEntryWidget->deactivate ();
+	m_chatChoiceWidget->set_callback(boost::bind(&JoinDialog::chatChoiceHit, this));
+	m_chatEntryWidget->set_callback(boost::bind(&JoinDialog::chatTextEntered, this, _1));
 	
 	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
 	m_messagesWidget->set_text(pstring_to_string(ptemporary));
@@ -400,6 +434,21 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 	Run ();
 	
 	return join_result;
+}
+
+void JoinDialog::respondToJoinHit()
+{
+	gPregameChatHistory.clear ();
+	gPregameChatHistory.appendString ("Pregame chat does not work currently");
+	if (gMetaserverClient->isConnected ()) {
+		m_chatChoiceWidget->activate ();
+		m_chatChoiceWidget->set_value (kMetaserverChat);
+		gMetaserverClient->associateNotificationAdapter(this);
+		m_chatWidget->attachHistory (&gMetaserverChatHistory);
+	} else {
+		m_chatWidget->attachHistory (&gPregameChatHistory);
+	}
+	m_chatEntryWidget->activate ();	
 }
 
 void JoinDialog::attemptJoin ()
@@ -445,6 +494,7 @@ void JoinDialog::attemptJoin ()
 void JoinDialog::gathererSearch ()
 {
 	JoinerSeekingGathererAnnouncer::pump();
+	MetaserverClient::pumpAll();
 	
 	switch (NetUpdateJoinState())
 	{
@@ -478,17 +528,21 @@ void JoinDialog::gathererSearch ()
 
 		case netPlayerChanged:
 		case netPlayerAdded:
-	        case netPlayerDropped: {
-	                char joinMessage[256];
-			game_info *info= (game_info *)NetGetGameData();
-			get_network_joined_message(joinMessage, info->net_game_type);
-			m_messagesWidget->set_text(std::string(joinMessage));
-			m_teamWidget->activate ();
-			m_colourWidget->activate ();
-			m_colourWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
-			m_teamWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
+	        case netPlayerDropped:
+			if (!got_gathered) {
+				// Do this stuff only once - when we become gathered
+				got_gathered = true;
+				char joinMessage[256];
+				game_info *info= (game_info *)NetGetGameData();
+				get_network_joined_message(joinMessage, info->net_game_type);
+				m_messagesWidget->set_text(std::string(joinMessage));
+				m_teamWidget->activate ();
+				m_colourWidget->activate ();
+				m_colourWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
+				m_teamWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
+			}
 			m_pigWidget->redraw ();
-			join_result = kNetworkJoinFailedJoined; }
+			join_result = kNetworkJoinFailedJoined;
 			break;
 
 		case netJoinErrorOccurred:
@@ -530,6 +584,43 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 		m_joinAddressWidget->set_text (string (buffer));
 		m_joinWidget->push ();
 	}
+}
+
+void JoinDialog::sendChat ()
+{
+	string message = m_chatEntryWidget->get_text();
+	
+	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
+		gMetaserverClient->sendChatMessage(message);		
+	else
+		// Send Pregame Chat, which does not work currently
+		gPregameChatHistory.appendString(message);
+	
+	m_chatEntryWidget->set_text(string());
+}
+
+void JoinDialog::chatTextEntered (char character)
+{
+	if (character == '\r')
+		sendChat();
+}
+
+void JoinDialog::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
+{
+	gMetaserverChatHistory.appendString (senderName + ": " + message);
+}
+
+void JoinDialog::receivedBroadcastMessage (const std::string& message)
+{
+	gMetaserverChatHistory.appendString (message);
+}
+
+void JoinDialog::chatChoiceHit ()
+{
+	if (m_chatChoiceWidget->get_value () == kPregameChat)
+		m_chatWidget->attachHistory (&gPregameChatHistory);
+	else
+		m_chatWidget->attachHistory (&gMetaserverChatHistory);
 }
 
 /****************************************************

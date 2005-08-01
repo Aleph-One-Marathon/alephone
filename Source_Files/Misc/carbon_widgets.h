@@ -321,10 +321,23 @@ public:
 		TXNActivate (textObject, frameID, kScrollBarsAlwaysActive);
 	}
 
+	virtual TextboxWidget::~TextboxWidget ()
+	{
+		TXNDeleteObject (textObject);
+	}
+
 	void AppendString (const string& s)
 	{
 		TXNSetData (textObject, kTXNTextData, (s + '\r').c_str(), s.size() + 1,
 				kTXNEndOffset, kTXNEndOffset);
+		
+		TXNDraw (textObject, NULL);
+	}
+	
+	void Clear ()
+	{
+		TXNSetData (textObject, kTXNTextData, "", 0,
+				kTXNStartOffset, kTXNEndOffset);
 	}
 	
 private:

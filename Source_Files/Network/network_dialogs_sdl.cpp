@@ -919,8 +919,6 @@ public:
 		m_dialog.add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR));
 		m_dialog.add(new w_spacer());
 
-		m_dialog.add(new w_static_text("Appearance"));
-
 		w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
 		m_dialog.add(name_w);
 	
@@ -933,12 +931,12 @@ public:
 		m_dialog.add(new w_spacer());
 
 		w_toggle* hint_w = new w_toggle("Join by address", false);
-                m_dialog.add(hint_w);
+                m_dialog.add_to_tab(hint_w, iJOIN_PREJOIN_TAB);
 
 		w_text_entry* hint_address_w = new w_text_entry("Join address", kJoinHintingAddressLength, "");
-		m_dialog.add(hint_address_w);
+		m_dialog.add_to_tab(hint_address_w, iJOIN_PREJOIN_TAB);
 
-		m_dialog.add(new w_spacer());
+		m_dialog.add_to_tab(new w_spacer(), iJOIN_PREJOIN_TAB);
 
 		w_static_text* join_messages_w = new w_static_text("");
 		join_messages_w->set_full_width ();
@@ -947,23 +945,35 @@ public:
 		//       1) w_static_text can't handle text longer than the dialog width
 		//       2) widgets in dialog don't update layout position once dialog starts to run
 		//       If we get solutions to these issues, then we can show the join messages.
-		m_dialog.add_to_tab(join_messages_w, 7);
+		m_dialog.add_to_tab(join_messages_w, iJOIN_NEVERSHOW_TAB);
 
-		m_dialog.add(new w_spacer());
+		m_dialog.add_to_tab(new w_spacer(), iJOIN_PREJOIN_TAB);
 
 		w_button* join_by_metaserver_w = new w_button("JOIN BY METASERVER");
-		m_dialog.add(join_by_metaserver_w);
+		m_dialog.add_to_tab(join_by_metaserver_w, iJOIN_PREJOIN_TAB);
 
-		m_dialog.add(new w_spacer());
-	
+		m_dialog.add_to_tab(new w_spacer(), iJOIN_PREJOIN_TAB);
+
+		w_players_in_game2* players_w = new w_players_in_game2(false);
+		m_dialog.add_to_tab(players_w, iJOIN_POSTJOIN_TAB);
+
+		w_select_popup* chat_choice_w = new w_select_popup("chat:");
+		m_dialog.add_to_tab(chat_choice_w, iJOIN_POSTJOIN_TAB);
+
+		w_text_box* chat_history_w = new w_text_box(600, 7);
+		m_dialog.add_to_tab(chat_history_w, iJOIN_POSTJOIN_TAB);
+
+		w_text_entry* chatentry_w = new w_text_entry("Say:", 240, "");
+		chatentry_w->set_with_textbox();
+		chatentry_w->set_alignment(widget::kAlignLeft);
+		chatentry_w->set_full_width();
+		m_dialog.add_to_tab(chatentry_w, iJOIN_POSTJOIN_TAB);
+
 		w_left_button* join_w = new w_left_button("JOIN");
 		m_dialog.add(join_w);
 	
 		w_right_button* cancel_w = new w_right_button("CANCEL");
 		m_dialog.add(cancel_w);
-
-		w_players_in_game2* players_w = new w_players_in_game2(false);
-		m_dialog.add(players_w);
 
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_joinWidget = new ButtonWidget (join_w);
@@ -979,6 +989,10 @@ public:
 		m_messagesWidget = new StaticTextWidget (join_messages_w);
 	
 		m_pigWidget = new PlayersInGameWidget (players_w);
+		
+		m_chatEntryWidget = new EditTextWidget (chatentry_w);
+		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget (chat_history_w));
+		m_chatChoiceWidget = new PopupSelectorWidget (chat_choice_w);
 	}
 
 	virtual void Run ()
@@ -998,6 +1012,8 @@ public:
 	virtual void respondToJoinHit()
 	{
 		play_dialog_sound(DIALOG_OK_SOUND);
+		m_dialog.set_active_tab (iJOIN_POSTJOIN_TAB);
+		JoinDialog::respondToJoinHit();
 	}
 	
 	virtual ~SdlJoinDialog()
@@ -1012,9 +1028,18 @@ public:
 		delete m_teamWidget;
 		delete m_messagesWidget;
 		delete m_pigWidget;
+		delete m_chatChoiceWidget;
+		delete m_chatEntryWidget;
+		delete m_chatWidget;
 	}
 
 private:
+	enum {
+		iJOIN_PREJOIN_TAB,
+		iJOIN_POSTJOIN_TAB,
+		iJOIN_NEVERSHOW_TAB
+	};
+
 	dialog m_dialog;
 };
 

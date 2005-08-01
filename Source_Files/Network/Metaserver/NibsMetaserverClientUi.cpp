@@ -62,7 +62,7 @@ public:
 		m_gamesInRoomWidget = new ListWidget<GameListMessage::GameListEntry>(GetCtrlFromWindow(m_dialog_window(), 0, iGAMES_IN_ROOM),
 							new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_METASERVER_GAME)));
 		m_chatEntryWidget = new EditTextWidget(GetCtrlFromWindow(m_dialog_window(), 0, iCHAT_ENTRY));
-		m_textboxWidget = new TextboxWidget(m_dialog_window(), 23, 200, 609, 403);
+		m_textboxWidget = new HistoricTextboxWidget (new TextboxWidget(m_dialog_window(), 23, 200, 609, 403));
 		m_cancelWidget = new ButtonWidget(GetCtrlFromWindow(m_dialog_window(), 0, iCANCEL));
 	}
 	

@@ -703,6 +703,9 @@ public:
 	void set_selection (int value);
 	int get_selection () {return selection;}
 
+	// Not to be confused with set_callback as inherited from w_select_button
+	void set_popup_callback (action_proc p, void* a) {action = p; arg = a;}
+
 private:
 	int selection;
 	vector<string> labels;
@@ -859,14 +862,15 @@ public:
 		// must update num_items since text_lines was not initialized when w_list<> acted on it.
 
 	// Widget selectable?
-
-	  virtual bool is_selectable(void) const {return true;}
+	virtual bool is_selectable(void) const {return true;}
 
 	void item_selected() {}
 
 	void append_text(const string&);
 	
-	~w_text_box() {};
+	void clear() { text_lines.clear (); }
+	
+	~w_text_box() {}
 	
 private:
 	void draw_item(vector<string>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
@@ -954,7 +958,7 @@ public:
 	PopupSelectorWidget::PopupSelectorWidget (w_select_popup* select_popup_w)
 		: SelectorWidget (select_popup_w)
 		, m_select_popup (select_popup_w)
-		{ select_popup_w->set_callback (boost::bind(&PopupSelectorWidget::massage_callback, this, _1), NULL); }
+		{ select_popup_w->set_popup_callback (boost::bind(&PopupSelectorWidget::massage_callback, this, _1), NULL); }
 
 	virtual void set_labels (const std::vector<std::string>& labels) { m_select_popup->set_labels (labels); }
 	
@@ -1065,6 +1069,7 @@ public:
 	{}
 
 	void AppendString (const string& s) { m_text_box->append_text (s); }
+	void Clear () { m_text_box->clear (); }
 
 private:
 	w_text_box* m_text_box;
