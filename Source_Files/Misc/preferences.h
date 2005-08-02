@@ -153,8 +153,10 @@ struct input_preferences_data
 	// LP addition: input modifiers
 	uint16 modifiers;
 	// Mouse-sensitivity parameters (LP: originally ZZZ)
-    _fixed sens_horizontal;
-    _fixed sens_vertical;
+	_fixed sens_horizontal;
+	_fixed sens_vertical;
+	// SB: Option to get rid of the horrible, horrible, horrible mouse acceleration.
+	bool mouse_acceleration;
 };
 
 #define MAXIMUM_PATCHES_PER_ENVIRONMENT (32)

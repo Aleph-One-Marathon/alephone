@@ -125,9 +125,16 @@ void mouse_idle(short type)
 		if (input_preferences->sens_vertical != FIXED_ONE)
 			vy = _fixed((float(input_preferences->sens_vertical)*vy)/float(FIXED_ONE));
 		
-		// Pin and do nonlinearity
-		vx = PIN(vx, -FIXED_ONE/2, FIXED_ONE/2); vx >>= 1; vx *= (vx<0) ? -vx : vx; vx >>= 14;
-		vy = PIN(vy, -FIXED_ONE/2, FIXED_ONE/2); vy >>= 1; vy *= (vy<0) ? -vy : vy; vy >>= 13;
+		if(input_preferences->mouse_acceleration) {
+			/* pin and do nonlinearity */
+			vx= PIN(vx, -FIXED_ONE/2, FIXED_ONE/2), vx>>= 1, vx*= (vx<0) ? -vx : vx, vx>>= 14;
+			vy= PIN(vy, -FIXED_ONE/2, FIXED_ONE/2), vy>>= 1, vy*= (vy<0) ? -vy : vy, vy>>= 14;
+		}
+		else {
+			/* pin and do NOT do nonlinearity */
+			vx= PIN(vx, -FIXED_ONE/2, FIXED_ONE/2), vx>>= 1;
+			vy= PIN(vy, -FIXED_ONE/2, FIXED_ONE/2), vy>>= 1;
+		}
 
 		// X axis = yaw
 		snapshot_delta_yaw = vx;

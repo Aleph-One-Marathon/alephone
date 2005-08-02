@@ -463,6 +463,8 @@ void write_preferences(
 	fprintf(F,"  modifiers=\"%hu\"\n",input_preferences->modifiers);
 	fprintf(F,"  sens_horizontal=\"%ld\"\n",input_preferences->sens_horizontal); // ZZZ, LP
 	fprintf(F,"  sens_vertical=\"%ld\"\n",input_preferences->sens_vertical); // ZZZ, LP
+	fprintf(F,"  mouse_acceleration=\"%s\"\n",BoolString(input_preferences->mouse_acceleration)); // SB
+
 	fprintf(F,">\n");
 #if defined(mac)
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
@@ -709,6 +711,9 @@ static void default_input_preferences(input_preferences_data *preferences)
 	// ZZZ addition: sensitivity factor starts at 1 (no adjustment)
 	preferences->sens_horizontal = FIXED_ONE;
 	preferences->sens_vertical = FIXED_ONE;
+	
+	// SB
+	preferences->mouse_acceleration = true;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)
@@ -1630,28 +1635,31 @@ bool XML_InputPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return ReadUInt16Value(Value,input_preferences->modifiers);
 	}
-    // ZZZ: sensitivity scaling factor
-    // LP addition: split into separate horizontal and vertical sensitivities
-    else if (StringsEqual(Tag, "sensitivity"))
-    {
-    	_fixed sensitivity;
-        if (ReadInt32Value(Value, sensitivity))
-        {
-        	input_preferences->sens_horizontal = sensitivity;
-        	input_preferences->sens_vertical = sensitivity;
-        	return true;
-        }
+	// ZZZ: sensitivity scaling factor
+	// LP addition: split into separate horizontal and vertical sensitivities
+	else if (StringsEqual(Tag, "sensitivity"))
+	{
+		_fixed sensitivity;
+		if (ReadInt32Value(Value, sensitivity))
+		{
+			input_preferences->sens_horizontal = sensitivity;
+			input_preferences->sens_vertical = sensitivity;
+			return true;
+		}
         else
         	return false;
-    }
-    else if (StringsEqual(Tag, "sens_horizontal"))
-    {
-        return ReadInt32Value(Value, input_preferences->sens_horizontal);
-    }
-    else if (StringsEqual(Tag, "sens_vertical"))
-    {
-        return ReadInt32Value(Value, input_preferences->sens_vertical);
-    }
+	}
+	else if (StringsEqual(Tag, "sens_horizontal"))
+	{
+		return ReadInt32Value(Value, input_preferences->sens_horizontal);
+	}
+	else if (StringsEqual(Tag, "sens_vertical"))
+	{
+		return ReadInt32Value(Value, input_preferences->sens_vertical);
+	}
+	else if(StringsEqual(Tag, "mouse_acceleration")) {
+		return ReadBooleanValue(Value, input_preferences->mouse_acceleration);
+	}
 	return true;
 }
 
@@ -1688,7 +1696,6 @@ bool XML_SoundPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 }
 
 static XML_SoundPrefsParser SoundPrefsParser;
-
 
 class XML_NetworkPrefsParser: public XML_ElementParser
 {
