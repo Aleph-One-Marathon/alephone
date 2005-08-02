@@ -135,7 +135,7 @@ struct shell_casing_data
 struct player_weapon_data {
 	short current_weapon;
 	short desired_weapon;
-	struct weapon_data weapons[MAXIMUM_NUMBER_OF_WEAPONS - 1];
+	struct weapon_data weapons[MAXIMUM_NUMBER_OF_WEAPONS];
 	struct shell_casing_data shell_casings[MAXIMUM_SHELL_CASINGS];
 };
 
