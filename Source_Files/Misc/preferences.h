@@ -39,13 +39,13 @@ Apr 27, 2000 (Loren Petrich):
 	Added Josh Elsasser's "don't switch weapons" patch
 
 Oct 22, 2001 (Woody Zenfell):
-    Changed the player name in player_preferences_data back to a Pstring (was Cstring in SDL version)
+	Changed the player name in player_preferences_data back to a Pstring (was Cstring in SDL version)
 
 May 16, 2002 (Woody Zenfell):
-    New control option "don't auto-recenter view"
+	New control option "don't auto-recenter view"
 
 Apr 10, 2003 (Woody Zenfell):
-    Join hinting and autogathering have Preferences entries now
+	Join hinting and autogathering have Preferences entries now
 
 May 22, 2003 (Woody Zenfell):
 	Support for preferences for multiple network game protocols; configurable local game port.
@@ -71,10 +71,10 @@ struct graphics_preferences_data
 	// LP change: added OpenGL support
 	OGL_ConfigureData OGL_Configure;
 
-        // ZZZ addition: intended to be enabled by user hand-editing file (no UI),
-        // for testing things not ready for prime time
-        bool experimental_rendering;
-  bool double_corpse_limit;
+	// ZZZ addition: intended to be enabled by user hand-editing file (no UI),
+	// for testing things not ready for prime time
+	bool experimental_rendering;
+	bool double_corpse_limit;
 };
 
 struct serial_number_data
@@ -96,7 +96,7 @@ enum {
 struct network_preferences_data
 {
 	bool allow_microphone;
-	bool  game_is_untimed;
+	bool game_is_untimed;
 	int16 type; // look in network_dialogs.c for _ethernet, etc...
 	int16 game_type;
 	int16 difficulty_level;
@@ -104,10 +104,10 @@ struct network_preferences_data
 	int32 time_limit;
 	int16 kill_limit;
 	int16 entry_point;
-        bool autogather;
-        bool join_by_address;
-        char join_address[256];
-        uint16 game_port;	// TCP and UDP port number used for game traffic (not player-location traffic)
+	bool autogather;
+	bool join_by_address;
+	char join_address[256];
+	uint16 game_port;	// TCP and UDP port number used for game traffic (not player-location traffic)
 	uint16 game_protocol; // _network_game_protocol_star, etc.
 	bool use_speex_encoder;
 	uint16 speex_encoder_quality; // 1-10
@@ -143,7 +143,7 @@ enum {
 	_inputmod_dont_switch_to_new_weapon = 0x0004,
 	_inputmod_invert_mouse = 0x0008,
 	_inputmod_use_button_sounds = 0x0010,
-    _inputmod_dont_auto_recenter = 0x0020   // ZZZ addition
+	_inputmod_dont_auto_recenter = 0x0020   // ZZZ addition
 };
 
 struct input_preferences_data
@@ -182,13 +182,13 @@ struct environment_preferences_data
 #ifdef SDL
 	char theme_dir[256];
 #endif
-        // ZZZ: these aren't really environment preferences, but
-        // preferences that affect the environment preferences dialog
-        bool group_by_directory;	// if not, display popup as one giant flat list
-        bool reduce_singletons;		// make groups of a single element part of a larger parent group
+	// ZZZ: these aren't really environment preferences, but
+	// preferences that affect the environment preferences dialog
+	bool group_by_directory;	// if not, display popup as one giant flat list
+	bool reduce_singletons;		// make groups of a single element part of a larger parent group
 
-        // ZZZ: Hmm and these aren't even that
-        bool non_bungie_warning;	// if not, then don't pop up warning about non-Bungie content
+	// ZZZ: Hmm and these aren't even that
+	bool non_bungie_warning;	// if not, then don't pop up warning about non-Bungie content
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */
