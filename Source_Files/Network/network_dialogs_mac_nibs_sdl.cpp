@@ -138,7 +138,6 @@ static void draw_beveled_text_box(bool inset, Rect *box, short bevel_size, RGBCo
 
 // ZZZ: moved a few static functions to network_dialogs.h so we can share
 
-static MenuHandle get_popup_menu_handle(DialogPtr dialog, short item);
 static void draw_player_box_with_team(Rect *rectangle, short player_index);
 
 static short get_game_duration_radio(DialogPtr dialog);
@@ -598,51 +597,6 @@ static void calculate_box_colors(
 	shadow_color->green = (highlight_color->green * 2) / 10;
 }
 
-
-
-static MenuHandle get_popup_menu_handle(
-	DialogPtr dialog,
-	short item)
-{
-	MenuHandle menu;
-	short item_type;
-	ControlHandle control;
-	Rect bounds;
-
-	/* Add the maps.. */
-	GetDialogItem(dialog, item, &item_type, (Handle *) &control, &bounds);
-
-	menu= GetControlPopupMenuHandle(control);
-	assert(menu);
-
-	return menu;
-}
-
-
-
-#ifdef TEST_NET_STATS_DIALOG
-static void fake_initialize_stat_data(void)
-{
-	short i, j;
-	
-	for (i = 0; i < MAXIMUM_NUMBER_OF_PLAYERS; i++)
-	{
-		(players+i)->monster_damage_taken.damage = abs(Random()%200);
-		(players+i)->monster_damage_taken.kills = abs(Random()%30);
-		(players+i)->monster_damage_given.damage = abs(Random()%200);
-		(players+i)->monster_damage_given.kills = abs(Random()%30);
-		
-		(players+i)->netgame_parameters[0] = abs(Random()%5000000);
-		(players+i)->netgame_parameters[1] = abs(Random()%6);
-		
-		for (j = 0; j < MAXIMUM_NUMBER_OF_PLAYERS; j++)
-		{
-			(players+i)->damage_taken[j].damage = abs(Random()%200);
-			(players+i)->damage_taken[j].kills = abs(Random()%6);
-		}
-	}
-}
-#endif
 
 // ZZZ: new function used by setup_dialog_for_game_type
 void set_limit_text(DialogPTR dialog, short radio_item, short radio_stringset_id, short radio_string_index,

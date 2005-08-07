@@ -322,30 +322,6 @@ struct NetgameSetupData
 	bool IsOK;	// When quitting
 };
 
-struct NetgameGatherData
-{
-	ControlRef NetworkDisplayCtrl;
-	ControlRef PlayerDisplayCtrl;
-	
-	DialogPTR dialog;
-	
-	DataBrowserItemID ItemID;	// A unique ID number for every player (must be nonzero);
-				// for identifying a player to the Data-Browser control.
-				// Players who leave and re-join will be counted separately each time.
-	
-	// For searchability on both fields; be sure to change both arrays in sync
-	map<DataBrowserItemID, const prospective_joiner_info*> FoundPlayers;
-	map<const prospective_joiner_info*, DataBrowserItemID> ReverseFoundPlayers;
-	
-	set<const prospective_joiner_info*> SeenPlayers;
-	
-	ControlRef AddCtrl;
-	ControlRef OK_Ctrl;
-	
-	bool AllPlayersOK;
-};
-
-
 struct NetgameOutcomeData
 {
 	ControlRef SelectCtrl;
