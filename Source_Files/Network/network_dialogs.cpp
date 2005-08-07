@@ -216,6 +216,8 @@ bool network_gather(bool inResumingGame)
 				sizeof(myPlayerInfo), inResumingGame))
 			{
 				GathererAvailableAnnouncer announcer;
+				
+				if (!gMetaserverClient) gMetaserverClient = new MetaserverClient ();
 
 				auto_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
 				if(advertiseOnMetaserver)
@@ -247,10 +249,31 @@ bool network_gather(bool inResumingGame)
 	return successful;
 }
 
-GatherDialog::GatherDialog() { if (!gMetaserverClient) gMetaserverClient = new MetaserverClient (); }
+GatherDialog::GatherDialog() {  }
+
+GatherDialog::~GatherDialog()
+{
+	delete m_cancelWidget;
+	delete m_startWidget;
+	delete m_autogatherWidget;
+	delete m_ungatheredWidget;
+	delete m_pigWidget;
+	delete m_chatEntryWidget;
+	delete m_chatWidget;
+	delete m_chatChoiceWidget;
+
+	// gMetaserverClient->disconnect ();
+	delete gMetaserverClient;
+	gMetaserverClient = new MetaserverClient ();
+}
 
 bool GatherDialog::GatherNetworkGameByRunning ()
 {
+	vector<string> chat_choice_labels;
+	chat_choice_labels.push_back ("Pregame Chat");
+	chat_choice_labels.push_back ("Metaserver Chat");
+	m_chatChoiceWidget->set_labels (chat_choice_labels);
+
 	m_cancelWidget->set_callback(boost::bind(&GatherDialog::Stop, this, false));
 	m_startWidget->set_callback(boost::bind(&GatherDialog::StartGameHit, this));
 	m_ungatheredWidget->SetItemSelectedCallback(boost::bind(&GatherDialog::gathered_player, this, _1));
@@ -258,6 +281,24 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	m_startWidget -> deactivate ();
 	
 	NetSetGatherCallbacks(this);
+	
+	m_chatChoiceWidget->set_callback(boost::bind(&GatherDialog::chatChoiceHit, this));
+	m_chatEntryWidget->set_callback(boost::bind(&GatherDialog::chatTextEntered, this, _1));
+	
+	gPregameChatHistory.clear ();
+	gPregameChatHistory.appendString ("Pregame chat does not work currently");
+	
+	if (gMetaserverClient->isConnected ()) {
+		gMetaserverClient->associateNotificationAdapter(this);
+		m_chatChoiceWidget->set_value (kMetaserverChat);
+		gMetaserverChatHistory.clear ();
+		m_chatWidget->attachHistory (&gMetaserverChatHistory);
+	} else {
+		m_chatChoiceWidget->deactivate ();
+		m_chatChoiceWidget->set_value (kPregameChat);
+		gMetaserverChatHistory.clear ();
+		m_chatWidget->attachHistory (&gPregameChatHistory);
+	}
 	
 	return Run ();
 }
@@ -352,6 +393,43 @@ void GatherDialog::JoinedPlayerDropped(const prospective_joiner_info* player)
 void GatherDialog::JoinedPlayerChanged(const prospective_joiner_info* player)
 {	
 	m_pigWidget->redraw ();
+}
+
+void GatherDialog::sendChat ()
+{
+	string message = m_chatEntryWidget->get_text();
+	
+	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
+		gMetaserverClient->sendChatMessage(message);		
+	else
+		// Send Pregame Chat, which does not work currently
+		gPregameChatHistory.appendString(message);
+	
+	m_chatEntryWidget->set_text(string());
+}
+
+void GatherDialog::chatTextEntered (char character)
+{
+	if (character == '\r')
+		sendChat();
+}
+
+void GatherDialog::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
+{
+	gMetaserverChatHistory.appendString (senderName + ": " + message);
+}
+
+void GatherDialog::receivedBroadcastMessage (const std::string& message)
+{
+	gMetaserverChatHistory.appendString (message);
+}
+
+void GatherDialog::chatChoiceHit ()
+{
+	if (m_chatChoiceWidget->get_value () == kPregameChat)
+		m_chatWidget->attachHistory (&gPregameChatHistory);
+	else
+		m_chatWidget->attachHistory (&gMetaserverChatHistory);
 }
 
 /****************************************************

@@ -844,7 +844,7 @@ public:
 	
 		m_dialog.add(new w_spacer());
 	
-		m_dialog.add(new w_static_text("Players on Network"));
+		// m_dialog.add(new w_static_text("Players on Network"));
 	
 		w_joining_players_in_room* foundplayers_w = new w_joining_players_in_room(NULL, 320, 3);
 		m_dialog.add(foundplayers_w);
@@ -863,6 +863,18 @@ public:
 		w_right_button* cancel_w = new w_right_button("CANCEL");
 		m_dialog.add(cancel_w);
 
+		w_select_popup* chat_choice_w = new w_select_popup("chat:");
+		m_dialog.add(chat_choice_w);
+
+		w_text_box* chat_history_w = new w_text_box(600, 6);
+		m_dialog.add(chat_history_w);
+
+		w_text_entry* chatentry_w = new w_text_entry("Say:", 240, "");
+		chatentry_w->set_with_textbox();
+		chatentry_w->set_alignment(widget::kAlignLeft);
+		chatentry_w->set_full_width();
+		m_dialog.add(chatentry_w);
+		
 		
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_startWidget = new ButtonWidget (play_button_w);
@@ -871,6 +883,10 @@ public:
 	
 		m_ungatheredWidget = new JoiningPlayerListWidget (foundplayers_w);
 		m_pigWidget = new PlayersInGameWidget (players_w);
+		
+		m_chatEntryWidget = new EditTextWidget (chatentry_w);
+		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget (chat_history_w));
+		m_chatChoiceWidget = new PopupSelectorWidget (chat_choice_w);
 	}
 	
 	virtual bool Run ()
@@ -885,15 +901,6 @@ public:
 			m_dialog.quit (0);
 		else
 			m_dialog.quit (-1);
-	}
-	
-	virtual ~SdlGatherDialog ()
-	{
-		delete m_cancelWidget;
-		delete m_startWidget;
-		delete m_autogatherWidget;
-		delete m_ungatheredWidget;
-		delete m_pigWidget;
 	}
 	
 private:

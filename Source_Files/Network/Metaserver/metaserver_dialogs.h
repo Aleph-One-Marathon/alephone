@@ -44,10 +44,9 @@ class GameAvailableMetaserverAnnouncer
 public:
 	GameAvailableMetaserverAnnouncer(const game_info& info);
 
-	MetaserverClient& client() { return m_client; }
-
 private:
-	MetaserverClient	m_client;
+	// using gMetaserverClient instead
+	// MetaserverClient	m_client;
 };
 
 

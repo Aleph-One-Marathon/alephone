@@ -60,17 +60,17 @@ setupAndConnectClient(MetaserverClient& client)
 
 GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_info& info)
 {
-	setupAndConnectClient(m_client);
+	setupAndConnectClient(*gMetaserverClient);
 
 	GameDescription description;
 	description.m_type = info.net_game_type;
 	description.m_timeLimit = info.time_limit;
 	description.m_difficulty = info.difficulty_level;
 	description.m_mapName = string(info.level_name);
-	description.m_name = m_client.playerName() + "'s Game";
+	description.m_name = gMetaserverClient->playerName() + "'s Game";
 	description.m_teamsAllowed = !(info.game_options & _force_unique_teams);
 
-	m_client.announceGame(GAME_PORT, description);
+	gMetaserverClient->announceGame(GAME_PORT, description);
 }
 
 const IPaddress MetaserverClientUi::GetJoinAddressByRunning()

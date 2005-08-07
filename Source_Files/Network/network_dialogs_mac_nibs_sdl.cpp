@@ -217,6 +217,10 @@ public:
 		m_ungatheredWidget = new JoiningPlayerListWidget (GetCtrlFromWindow(m_dialog_window(), 0, iNETWORK_LIST_BOX), 
 								new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iADD)));
 		m_pigWidget = new PlayersInGameWidget (GetCtrlFromWindow(m_dialog_window(), 0, iPLAYER_DISPLAY_AREA));
+		
+		m_chatEntryWidget = new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iGATHER_CHAT_ENTRY));
+		m_chatChoiceWidget = new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iGATHER_CHAT_CHOICE));
+		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget(m_dialog_window(), 20, 277, 567, 407));
 	}
 
 	virtual bool Run ()
@@ -237,15 +241,6 @@ public:
 	virtual void Stop(bool result)
 	{
 		m_dialog.Stop(result);
-	}
-	
-	virtual ~NibsGatherDialog()
-	{
-		delete m_cancelWidget;
-		delete m_startWidget;
-		delete m_autogatherWidget;
-		delete m_ungatheredWidget;
-		delete m_pigWidget;
 	}
 
 private:

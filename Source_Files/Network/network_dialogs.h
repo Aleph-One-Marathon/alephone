@@ -222,6 +222,8 @@ enum {
 	iALLOW_ZOOM,
 	iALLOW_CROSSHAIRS,
 	iALLOW_LARA_CROFT,
+	iGATHER_CHAT_ENTRY,
+	iGATHER_CHAT_CHOICE,
 	iSNG_TABS = 400,
 	iSNG_GENERAL_TAB,
 	iSNG_STUFF_TAB
@@ -364,7 +366,7 @@ extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 
 
 class MetaserverClient;
-class GatherDialog : public GatherCallbacks
+class GatherDialog : public GatherCallbacks, public MetaserverClient::NotificationAdapter
 {
 public:
 	// Abstract factory; concrete type determined at link-time
@@ -372,7 +374,7 @@ public:
 	
 	bool GatherNetworkGameByRunning ();
 	
-	virtual ~GatherDialog () {}
+	virtual ~GatherDialog ();
 
 	// Callbacks for network code; final methods
 	virtual void JoinSucceeded(const prospective_joiner_info* player);
@@ -395,8 +397,14 @@ protected:
 	bool player_search (prospective_joiner_info& player);
 	bool gathered_player (const prospective_joiner_info& player);
 	
-	void chatChoiceHit ();
+	virtual void playersInRoomChanged() {}
+	virtual void gamesInRoomChanged() {}
+	virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
+	virtual void receivedBroadcastMessage(const std::string& message);	
+	
 	void sendChat ();
+	void chatTextEntered (char character);
+	void chatChoiceHit ();
 	
 	map<int, prospective_joiner_info> m_ungathered_players;
 
@@ -407,6 +415,12 @@ protected:
 	
 	JoiningPlayerListWidget*	m_ungatheredWidget;
 	PlayersInGameWidget*		m_pigWidget;
+	
+	EditTextWidget*			m_chatEntryWidget;
+	SelectorWidget*			m_chatChoiceWidget;
+	HistoricTextboxWidget*		m_chatWidget;
+	
+	enum { kPregameChat = 0, kMetaserverChat };
 };
 
 
