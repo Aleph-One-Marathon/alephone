@@ -161,7 +161,7 @@ clearly this is all broken until we have packet types
 extern bool gLoadingLuaNetscript;
 
 // change this if you make a major change to the way the setup messages work
-const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT P1";
+const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT P2";
 
 /* ---------- globals */
 
@@ -184,6 +184,8 @@ static CommunicationsChannelFactory *server = NULL;
 
 typedef std::map<int, Client *> client_map_t;
 static client_map_t connections_to_clients;
+typedef std::map<int, ClientChatInfo *> client_chat_info_map_t;
+static client_chat_info_map_t client_chat_info;
 static CommunicationsChannel *connection_to_server = NULL;
 static int next_stream_id = 1; // 0 is local player
 static IPaddress host_address;
@@ -264,58 +266,71 @@ Client::~Client() {
 
 CheckPlayerProcPtr Client::check_player;
 
-Client::Client(CommunicationsChannel *inChannel) : mDispatcher(new MessageDispatcher()),
-						   channel(inChannel)
+Client::Client(CommunicationsChannel *inChannel) : mDispatcher(new MessageDispatcher()), channel(inChannel)
 {
-  mJoinerInfoMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleJoinerInfoMessage));
-  mCapabilitiesMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleCapabilitiesMessage));
-  mAcceptJoinMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleAcceptJoinMessage));
-  mChatMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChatMessage));
-  mChangeColorsMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChangeColorsMessage));
-  mUnexpectedMessageHandler.reset(newMessageHandlerMethod(this, &Client::unexpectedMessageHandler));
-  mDispatcher->setDefaultHandler(mUnexpectedMessageHandler.get());
-  mDispatcher->setHandlerForType(mJoinerInfoMessageHandler.get(), JoinerInfoMessage::kType);
-  mDispatcher->setHandlerForType(mCapabilitiesMessageHandler.get(), CapabilitiesMessage::kType);
-  mDispatcher->setHandlerForType(mAcceptJoinMessageHandler.get(), AcceptJoinMessage::kType);
-  mDispatcher->setHandlerForType(mChatMessageHandler.get(), NetworkChatMessage::kType);
-  mDispatcher->setHandlerForType(mChangeColorsMessageHandler.get(), ChangeColorsMessage::kType);
-  channel->setMessageHandler(mDispatcher.get());
+	mJoinerInfoMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleJoinerInfoMessage));
+	mCapabilitiesMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleCapabilitiesMessage));
+	mAcceptJoinMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleAcceptJoinMessage));
+	mChatMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChatMessage));
+	mChangeColorsMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleChangeColorsMessage));
+	mUnexpectedMessageHandler.reset(newMessageHandlerMethod(this, &Client::unexpectedMessageHandler));
+	mDispatcher->setDefaultHandler(mUnexpectedMessageHandler.get());
+	mDispatcher->setHandlerForType(mJoinerInfoMessageHandler.get(), JoinerInfoMessage::kType);
+	mDispatcher->setHandlerForType(mCapabilitiesMessageHandler.get(), CapabilitiesMessage::kType);
+	mDispatcher->setHandlerForType(mAcceptJoinMessageHandler.get(), AcceptJoinMessage::kType);
+	mDispatcher->setHandlerForType(mChatMessageHandler.get(), NetworkChatMessage::kType);
+	mDispatcher->setHandlerForType(mChangeColorsMessageHandler.get(), ChangeColorsMessage::kType);
+	channel->setMessageHandler(mDispatcher.get());
 }
 
 void Client::drop()
 {
-  if (state == _connected) { // (remove from the list of joinable players)
-    if (gatherCallbacks) {
-      prospective_joiner_info player;
-      player.stream_id = getStreamIdFromChannel(channel);
-      gatherCallbacks->JoiningPlayerDropped(&player);
-    }
-  } else if (state == _awaiting_map) { // need to remove from topo
-    uint16 stream_id = getStreamIdFromChannel(channel);
-    int i;
-    for (i = 1; i < topology->player_count; i++) {
-      if (topology->players[i].stream_id == stream_id) {
-	break;
-      }
-    }
-    if (i != topology->player_count) {
-      for (; i < topology->player_count - 1; i++) {
-	topology->players[i] = topology->players[i + 1];
-      }
-      topology->player_count--;
-      NetUpdateTopology();
+	int stream_id = getStreamIdFromChannel(channel);
+	if (client_chat_info[stream_id]) {
+		ClientInfoMessage clientInfoMessage(stream_id, client_chat_info[stream_id], (int16) ClientInfoMessage::kRemove);
+		client_map_t::iterator it;
+		for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+			if (it->second->can_pregame_chat()) {
+				it->second->channel->enqueueOutgoingMessage(clientInfoMessage);
+			}
+		}
 
-      if (gatherCallbacks) {
-	prospective_joiner_info player;
-	player.stream_id = getStreamIdFromChannel(channel);
-	gatherCallbacks->JoinedPlayerDropped(&player);
-      }
+		delete client_chat_info[stream_id];
+		client_chat_info.erase(stream_id);
+	}
 
-      NetDistributeTopology(tagDROPPED_PLAYER);
-    } else {
-      logAnomaly("a client in state _awaiting_map dropped, but was not found in the topology");
-    }
-  } 
+	if (state == _connected) { // (remove from the list of joinable players)
+		if (gatherCallbacks) {
+			prospective_joiner_info player;
+			player.stream_id = getStreamIdFromChannel(channel);
+			gatherCallbacks->JoiningPlayerDropped(&player);
+		}
+	} else if (state == _awaiting_map) { // need to remove from topo
+		uint16 stream_id = getStreamIdFromChannel(channel);
+		int i;
+		for (i = 1; i < topology->player_count; i++) {
+			if (topology->players[i].stream_id == stream_id) {
+				break;
+			}
+		}
+		if (i != topology->player_count) {
+			for (; i < topology->player_count - 1; i++) {
+				topology->players[i] = topology->players[i + 1];
+			}
+			topology->player_count--;
+			NetUpdateTopology();
+
+			if (gatherCallbacks) {
+				prospective_joiner_info player;
+				player.stream_id = getStreamIdFromChannel(channel);
+				gatherCallbacks->JoinedPlayerDropped(&player);
+			}
+
+			NetDistributeTopology(tagDROPPED_PLAYER);
+		} else {
+			logAnomaly("a client in state _awaiting_map dropped, but was not found in the topology");
+		}
+	} 
 }
 
 bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
@@ -380,6 +395,23 @@ void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, Commu
   if (netState == netGathering) {
     if (joinerInfoMessage->version() == kNetworkSetupProtocolID) {
       pstrcpy(name, joinerInfoMessage->info()->name);
+
+      unsigned char pname[1024];
+      pstrcpy(pname, joinerInfoMessage->info()->name);
+      a1_p2cstr(pname);
+      int16 stream_id = getStreamIdFromChannel(channel);
+      client_chat_info[stream_id] = new ClientChatInfo;
+      client_chat_info[stream_id]->name = (char *) pname;
+      client_chat_info[stream_id]->color = joinerInfoMessage->info()->color;
+      client_chat_info[stream_id]->team = joinerInfoMessage->info()->team;
+
+      ClientInfoMessage clientInfoMessage(stream_id, client_chat_info[stream_id], (int16) ClientInfoMessage::kAdd);
+      client_map_t::iterator it;
+      for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+	      if (it->second->can_pregame_chat()) {
+		      it->second->channel->enqueueOutgoingMessage(clientInfoMessage);
+	      }
+      }
       
       // send gatherer capabilities
       CapabilitiesMessage capabilitiesMessage(my_capabilities);
@@ -397,17 +429,23 @@ void Client::handleJoinerInfoMessage(JoinerInfoMessage* joinerInfoMessage, Commu
 
 void Client::handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage, CommunicationsChannel *)
 {
-  if (state == _awaiting_capabilities) {
-    capabilities = *capabilitiesMessage->capabilities();
-
-    if (capabilities_indicate_player_is_gatherable(_warn_joiner)) {
-      state = Client::_connected_but_not_yet_shown;
-    } else {
-      state = Client::_ungatherable;
-    }
-  } else {
-    logAnomaly1("unexpected capabilities message received (state is %i)", state);
-  }
+	if (state == _awaiting_capabilities) {
+		capabilities = *capabilitiesMessage->capabilities();
+		
+		if (capabilities_indicate_player_is_gatherable(_warn_joiner)) {
+			state = Client::_connected_but_not_yet_shown;
+		} else {
+			state = Client::_ungatherable;
+		}
+		
+		client_chat_info_map_t::iterator it;
+		for (it = client_chat_info.begin(); it != client_chat_info.end(); it++) {
+			ClientInfoMessage clientInfoMessage(it->first, it->second, (int16) ClientInfoMessage::kAdd);
+			channel->enqueueOutgoingMessage(clientInfoMessage);
+		}
+	} else {
+		logAnomaly1("unexpected capabilities message received (state is %i)", state);
+	}
 }
 
 /*
@@ -461,74 +499,114 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
 }
 
 void Client::handleChangeColorsMessage(ChangeColorsMessage *changeColorsMessage,
-				      CommunicationsChannel *channel)
+				       CommunicationsChannel *channel)
 {
-  if (state == _awaiting_map) {
-    uint16 stream_id = getStreamIdFromChannel(channel);
-    int i;
-    for (i = 1; i < topology->player_count; i++) {
-      if (topology->players[i].stream_id == stream_id) {
-	break;
-      }
-    }
-
-    if (i != topology->player_count) {
-      player_info *player = &topology->players[i].player_data;
-      if (player->desired_color != changeColorsMessage->color() ||
-	  player->team != changeColorsMessage->team()) {
-
-	player->desired_color = changeColorsMessage->color();
-	player->team = changeColorsMessage->team();
-
-	check_player(i, topology->player_count);
-	NetUpdateTopology();
-	
-	NetDistributeTopology(tagCHANGED_PLAYER);
-	if (gatherCallbacks) {
-	  prospective_joiner_info player_to_change;
-	  player_to_change.stream_id = stream_id;
-	  gatherCallbacks->JoinedPlayerChanged(&player_to_change);
+	if (can_pregame_chat()) {
+		int stream_id = getStreamIdFromChannel(channel);
+		if (client_chat_info[stream_id]) {
+			client_chat_info[stream_id]->color = changeColorsMessage->color();
+			client_chat_info[stream_id]->team = changeColorsMessage->team();
+			
+			ClientInfoMessage clientInfoMessage(stream_id, client_chat_info[stream_id], (int16) ClientInfoMessage::kUpdate);
+			client_map_t::iterator it;
+			for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+				if (it->second->can_pregame_chat()) {
+					it->second->channel->enqueueOutgoingMessage(clientInfoMessage);
+				}
+			}
+		} else {
+			logAnomaly1("change colors message received, but client chat info does not exist for %i", stream_id);
+		}
 	}
-      }
-    } else {
-      logAnomaly("a client in state _awaiting_map requested a color change, but was not found in the topology");
-    }
-  } else {
-    logAnomaly1("unexpected change colors message received (state is %i)", state);
-  }
+	if (state == _awaiting_map) {
+		uint16 stream_id = getStreamIdFromChannel(channel);
+		int i;
+		for (i = 1; i < topology->player_count; i++) {
+			if (topology->players[i].stream_id == stream_id) {
+				break;
+			}
+		}
+
+		if (i != topology->player_count) {
+			player_info *player = &topology->players[i].player_data;
+			if (player->desired_color != changeColorsMessage->color() ||
+			    player->team != changeColorsMessage->team()) {
+
+				player->desired_color = changeColorsMessage->color();
+				player->team = changeColorsMessage->team();
+
+				check_player(i, topology->player_count);
+				NetUpdateTopology();
+	
+				NetDistributeTopology(tagCHANGED_PLAYER);
+				if (gatherCallbacks) {
+					prospective_joiner_info player_to_change;
+					player_to_change.stream_id = stream_id;
+					gatherCallbacks->JoinedPlayerChanged(&player_to_change);
+				}
+			}
+		} else {
+			logAnomaly("a client in state _awaiting_map requested a color change, but was not found in the topology");
+		}
+	} else if (!can_pregame_chat()) {
+		logAnomaly1("unexpected change colors message received (state is %i)", state);
+	}
 }
 
 void Client::handleChatMessage(NetworkChatMessage* netChatMessage, 
 			       CommunicationsChannel *)
 {
-  // relay this to all clients
-  if (state == _ingame) {
-    assert(netState == netActive);
-    NetworkChatMessage chatMessage(netChatMessage->chatText(), getStreamIdFromChannel(channel));
-    client_map_t::iterator it;
-    for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
-      if (it->second->state == _ingame) {
-	it->second->channel->enqueueOutgoingMessage(chatMessage);
-      }
-    }
-    
-    // display it locally
-    if (chatCallbacks) {
-      for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
-	if (topology->players[playerIndex].stream_id == getStreamIdFromChannel(channel)) {
-	  static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
-	  pstrcpy(name, topology->players[playerIndex].player_data.name);
-	  a1_p2cstr(name);
-	  chatCallbacks->ReceivedMessageFromPlayer((char *)name, netChatMessage->chatText());
-	  return;
+	// relay this to all clients
+	if (state == _ingame) {
+		assert(netState == netActive);
+		if (netChatMessage->target() == NetworkChatMessage::kTargetPlayers) {
+			NetworkChatMessage chatMessage(netChatMessage->chatText(), getStreamIdFromChannel(channel), NetworkChatMessage::kTargetPlayers);
+			client_map_t::iterator it;
+			for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+				if (it->second->state == _ingame) {
+					it->second->channel->enqueueOutgoingMessage(chatMessage);
+				}
+			}
+      
+			// display it locally
+			if (chatCallbacks) {
+				for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
+					if (topology->players[playerIndex].stream_id == getStreamIdFromChannel(channel)) {
+						static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
+						pstrcpy(name, topology->players[playerIndex].player_data.name);
+						a1_p2cstr(name);
+						chatCallbacks->ReceivedMessageFromPlayer((char *)name, netChatMessage->chatText());
+						return;
+					}
+				}
+			}
+		} else {
+			logNote("in-game chat message currently only supports sending messages to all players; not relaying");
+		}
+	} else if (can_pregame_chat()) {
+		if (netChatMessage->target() == NetworkChatMessage::kTargetClients) {
+			NetworkChatMessage chatMessage(netChatMessage->chatText(), getStreamIdFromChannel(channel), NetworkChatMessage::kTargetClients);
+			client_map_t::iterator it;
+			for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+				if (it->second->can_pregame_chat()) {
+					it->second->channel->enqueueOutgoingMessage(chatMessage);
+				}
+			}
+			if (chatCallbacks) {
+				int stream_id = getStreamIdFromChannel(channel);
+				if (client_chat_info[stream_id]) {
+					chatCallbacks->ReceivedMessageFromPlayer(client_chat_info[stream_id]->name.c_str(), netChatMessage->chatText());
+				} else {
+					logAnomaly1("chat message from %i, player not found", stream_id);
+				}
+			}
+		} else {
+			logNote("pre-game chat currently only supports sending messages to all players; not relaying");
+		}
+	} else {
+		logNote("non in-game/pre-game chat message received; ignoring");
 	}
-      }
-    }
-  } else {
-    logNote("non in-game chat message received; ignoring");
-  }
 }
-  
 
 void Client::unexpectedMessageHandler(Message *message, CommunicationsChannel *) {
   logAnomaly1("unexpected message type %i received\n", message->type()); 
@@ -540,22 +618,25 @@ static short handlerState;
 
 static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel*)
 {
-  if (handlerState == netAwaitingHello) {
-    // if the network versions match, reply with my join info
-    if (helloMessage->version() == kNetworkSetupProtocolID) {
-      prospective_joiner_info my_info;
+	if (handlerState == netAwaitingHello) {
+		// if the network versions match, reply with my join info
+		if (helloMessage->version() == kNetworkSetupProtocolID) {
+			prospective_joiner_info my_info;
       
-      pstrcpy(my_info.name, player_preferences->name);
-      JoinerInfoMessage joinerInfoMessage(&my_info, kNetworkSetupProtocolID);
-      connection_to_server->enqueueOutgoingMessage(joinerInfoMessage);
-      handlerState = netJoining;
-    } else {
-      alert_user(infoError, strNETWORK_ERRORS, netErrIncompatibleVersion, 0);
-      handlerState = netJoinErrorOccurred;
-    }
-  } else {
-    logAnomaly1("unexpected hello message received (netState is %i)", netState);
-  }
+			pstrcpy(my_info.name, player_preferences->name);
+			my_info.color = player_preferences->color;
+			my_info.team = player_preferences->team;
+
+			JoinerInfoMessage joinerInfoMessage(&my_info, kNetworkSetupProtocolID);
+			connection_to_server->enqueueOutgoingMessage(joinerInfoMessage);
+			handlerState = netJoining;
+		} else {
+			alert_user(infoError, strNETWORK_ERRORS, netErrIncompatibleVersion, 0);
+			handlerState = netJoinErrorOccurred;
+		}
+	} else {
+		logAnomaly1("unexpected hello message received (netState is %i)", netState);
+	}
 }
 
 static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage, 
@@ -573,6 +654,30 @@ static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
     logAnomaly1("unexpected capabilities message received (netState is %i)", netState);
   }
 }   
+
+static void handleClientInfoMessage(ClientInfoMessage* clientInfoMessage, CommunicationsChannel *) {
+	if (netState == netJoining || netState == netWaiting || netState == netStartingUp || netState == netActive) {
+		int16 id = clientInfoMessage->stream_id();
+		if (clientInfoMessage->action() == ClientInfoMessage::kAdd) {
+			if (client_chat_info[id]) {
+				logAnomaly1("add message for client that already exists (%i)", id);
+				delete client_chat_info[id];
+				client_chat_info.erase(id);
+			}
+			client_chat_info[id] = new ClientChatInfo;
+			*client_chat_info[id] = *clientInfoMessage->info();
+		} else if (clientInfoMessage->action() == ClientInfoMessage::kRemove) {
+			delete client_chat_info[id];
+			client_chat_info.erase(id);
+		} else if (clientInfoMessage->action() == ClientInfoMessage::kUpdate) {
+			*client_chat_info[id] = *clientInfoMessage->info();
+		} else {
+			logAnomaly1("unknown client info message action %i", clientInfoMessage->action());
+		}
+	} else {
+		logAnomaly1("unexpected client info message received (netState is %i)", netState);
+	}
+}
 
 static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, CommunicationsChannel*) {
   if (handlerState == netJoining) {
@@ -639,21 +744,30 @@ static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
 }
     
 static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, CommunicationsChannel *) {
-  if (netState == netActive && chatCallbacks) {
-    for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
-      if (topology->players[playerIndex].stream_id == chatMessage->senderID()) {
-	static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
-	pstrcpy(name, topology->players[playerIndex].player_data.name);
-	a1_p2cstr(name);
-	chatCallbacks->ReceivedMessageFromPlayer((char *)name, chatMessage->chatText());
-	return;
-      }
-    }
-    logAnomaly1("chat message from %i, player not found", chatMessage->senderID());
-  } else {
-    // not enough smarts to correctly redistrbute these, so just ignore them
-    logNote("non in-game chat message received; ignoring");
-  }
+	if (chatCallbacks) {
+		if (netState == netActive) {
+			for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
+				if (topology->players[playerIndex].stream_id == chatMessage->senderID()) {
+					static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
+					pstrcpy(name, topology->players[playerIndex].player_data.name);
+					a1_p2cstr(name);
+					chatCallbacks->ReceivedMessageFromPlayer((char *)name, chatMessage->chatText());
+					return;
+				}
+			}
+			logAnomaly1("chat message from %i, player not found", chatMessage->senderID());
+		} else if (netState == netJoining || netState == netWaiting) {
+			if (client_chat_info[chatMessage->senderID()]) {
+				chatCallbacks->ReceivedMessageFromPlayer(client_chat_info[chatMessage->senderID()]->name.c_str(), chatMessage->chatText());
+			} else {
+				logAnomaly1("chat message from %i, player not found", chatMessage->senderID());
+			}
+			return;
+		} else {
+			// not enough smarts to correctly redistrbute these, so just ignore them
+			logNote("non in-game chat message received; ignoring");
+		}
+	}
 }
 
 static byte *handlerPhysicsBuffer = NULL;
@@ -781,6 +895,7 @@ static TypedMessageHandlerFunction<PhysicsMessage> physicsMessageHandler(&handle
  static TypedMessageHandlerFunction<CapabilitiesMessage> capabilitiesMessageHandler(&handleCapabilitiesMessage);
 static TypedMessageHandlerFunction<TopologyMessage> topologyMessageHandler(&handleTopologyMessage);
 static TypedMessageHandlerFunction<ServerWarningMessage> serverWarningMessageHandler(&handleServerWarningMessage);
+static TypedMessageHandlerFunction<ClientInfoMessage> clientInfoMessageHandler(&handleClientInfoMessage);
 static TypedMessageHandlerFunction<Message> unexpectedMessageHandler(&handleUnexpectedMessage);
 
 void NetSetGatherCallbacks(GatherCallbacks *gc) {
@@ -793,33 +908,47 @@ void NetSetChatCallbacks(ChatCallbacks *cc) {
 
 void ChatCallbacks::SendChatMessage(const std::string& message)
 {
-  if (netState == netActive) {
-    if (connection_to_server) {
-      NetworkChatMessage chatMessage(message.c_str(), 0); // gatherer will replace
-                                                  // with my ID
-      connection_to_server->enqueueOutgoingMessage(chatMessage);
-    } else { 
-      NetworkChatMessage chatMessage(message.c_str(), 0);
-      client_map_t::iterator it;
-      for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
-	if (it->second->state == Client::_ingame) {
-	  it->second->channel->enqueueOutgoingMessage(chatMessage);
+	if (netState == netActive) {
+		if (connection_to_server) {
+			NetworkChatMessage chatMessage(message.c_str(), 0, NetworkChatMessage::kTargetPlayers); // gatherer will replace senderID with my ID
+			connection_to_server->enqueueOutgoingMessage(chatMessage);
+		} else { 
+			NetworkChatMessage chatMessage(message.c_str(), 0, NetworkChatMessage::kTargetPlayers); // gatherer stream ID is always 0
+			client_map_t::iterator it;
+			for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+				if (it->second->state == Client::_ingame) {
+					it->second->channel->enqueueOutgoingMessage(chatMessage);
+				}
+			}
+			if (chatCallbacks) {
+				for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
+					if (playerIndex == localPlayerIndex) {
+						static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
+						pstrcpy(name, topology->players[playerIndex].player_data.name);
+						a1_p2cstr(name);
+						chatCallbacks->ReceivedMessageFromPlayer((char *)name, message.c_str());
+					}
+				}
+			}
+		}
+	} else if (netState == netGathering) {
+		NetworkChatMessage chatMessage(message.c_str(), 0, NetworkChatMessage::kTargetClients); // gatherer stream ID is always 0
+		client_map_t::iterator it;
+		for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+			if (it->second->can_pregame_chat()) {
+				it->second->channel->enqueueOutgoingMessage(chatMessage);
+			}
+		}
+		if (chatCallbacks) {
+			chatCallbacks->ReceivedMessageFromPlayer(client_chat_info[0]->name.c_str(), message.c_str());
+		}
+	} else if (netState == netJoining || netState == netWaiting) {
+		assert(connection_to_server);
+		NetworkChatMessage chatMessage(message.c_str(), 0, NetworkChatMessage::kTargetClients); // gatherer will replace senderID with my ID
+		connection_to_server->enqueueOutgoingMessage(chatMessage);
+	} else {
+		logNote("SendChatMessage called but non in-game/pre-game chat messages are not yet implemented");
 	}
-      }
-      if (chatCallbacks) {
-	for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
-	  if (playerIndex == localPlayerIndex) {
-	    static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
-	    pstrcpy(name, topology->players[playerIndex].player_data.name);
-	    a1_p2cstr(name);
-	    chatCallbacks->ReceivedMessageFromPlayer((char *)name, message.c_str());
-	  }
-	}
-      }
-    }
-  } else {
-    logNote("SendChatMessage called but non in-game chat messages are not yet implemented");
-  }
 }
 
 InGameChatCallbacks *InGameChatCallbacks::m_instance = NULL;
@@ -844,106 +973,108 @@ void InGameChatCallbacks::ReceivedMessageFromPlayer(const char *player_name, con
 
 bool NetEnter(void)
 {
-  OSErr error;
+	OSErr error;
   
-  assert(netState==netUninitialized);
+	assert(netState==netUninitialized);
   
-  {
-    static bool added_exit_procedure= false;
+	{
+		static bool added_exit_procedure= false;
     
-    if (!added_exit_procedure) atexit(NetExit);
-    added_exit_procedure= true;
-  }
+		if (!added_exit_procedure) atexit(NetExit);
+		added_exit_procedure= true;
+	}
   
-  sCurrentGameProtocol = (network_preferences->game_protocol == _network_game_protocol_star) ?
-    static_cast<NetworkGameProtocol*>(&sStarGameProtocol) :
-    static_cast<NetworkGameProtocol*>(&sRingGameProtocol);
+	sCurrentGameProtocol = (network_preferences->game_protocol == _network_game_protocol_star) ?
+		static_cast<NetworkGameProtocol*>(&sStarGameProtocol) :
+		static_cast<NetworkGameProtocol*>(&sRingGameProtocol);
   
-  error= NetDDPOpen();
-  if (!error) {
-    topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
-    assert(topology);
-    memset(topology, 0, sizeof(NetTopology));
+	error= NetDDPOpen();
+	if (!error) {
+		topology = (NetTopologyPtr)malloc(sizeof(NetTopology));
+		assert(topology);
+		memset(topology, 0, sizeof(NetTopology));
     
-    NetSetServerIdentifier(0);
+		NetSetServerIdentifier(0);
     
-    // ZZZ: Sorry, if this swapping is not supported on all current A1
-    // platforms, feel free to rewrite it in a way that is.
-    ddpSocket= SDL_SwapBE16(GAME_PORT);
-    error= NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
-    if (!error) {
-      sOldSelfSendStatus= NetSetSelfSend(true);
-      sServerPlayerIndex= 0;
+		// ZZZ: Sorry, if this swapping is not supported on all current A1
+		// platforms, feel free to rewrite it in a way that is.
+		ddpSocket= SDL_SwapBE16(GAME_PORT);
+		error= NetDDPOpenSocket(&ddpSocket, NetDDPPacketHandler);
+		if (!error) {
+			sOldSelfSendStatus= NetSetSelfSend(true);
+			sServerPlayerIndex= 0;
       
-      sCurrentGameProtocol->Enter(&netState);
+			sCurrentGameProtocol->Enter(&netState);
       
-      netState= netDown;
-      handlerState = netDown;
-    } else {
-      logError("unable to open socket");
-    }
-  }
+			netState= netDown;
+			handlerState = netDown;
+		} else {
+			logError("unable to open socket");
+		}
+	}
   
-  if (!inflater) {
-    inflater = new MessageInflater ();
-    for (int i = 0; i < NUMBER_OF_STREAM_PACKET_TYPES; i++) {
-      BigChunkOfDataMessage *prototype = new BigChunkOfDataMessage (i);
-      inflater->learnPrototypeForType (i, *prototype);
-      delete prototype;
-    }
+	if (!inflater) {
+		inflater = new MessageInflater ();
+		for (int i = 0; i < NUMBER_OF_STREAM_PACKET_TYPES; i++) {
+			BigChunkOfDataMessage *prototype = new BigChunkOfDataMessage (i);
+			inflater->learnPrototypeForType (i, *prototype);
+			delete prototype;
+		}
     
-    inflater->learnPrototype(AcceptJoinMessage());
-    inflater->learnPrototype(EndGameDataMessage());
-    inflater->learnPrototype(HelloMessage());
-    inflater->learnPrototype(JoinerInfoMessage());
-    inflater->learnPrototype(JoinPlayerMessage());
-    inflater->learnPrototype(LuaMessage());
-    inflater->learnPrototype(MapMessage());
-    inflater->learnPrototype(NetworkChatMessage());
-    inflater->learnPrototype(PhysicsMessage());
-    inflater->learnPrototype(CapabilitiesMessage());
-    inflater->learnPrototype(TopologyMessage());
-    inflater->learnPrototype(ChangeColorsMessage());
-    inflater->learnPrototype(ServerWarningMessage());
-  }
+		inflater->learnPrototype(AcceptJoinMessage());
+		inflater->learnPrototype(EndGameDataMessage());
+		inflater->learnPrototype(HelloMessage());
+		inflater->learnPrototype(JoinerInfoMessage());
+		inflater->learnPrototype(JoinPlayerMessage());
+		inflater->learnPrototype(LuaMessage());
+		inflater->learnPrototype(MapMessage());
+		inflater->learnPrototype(NetworkChatMessage());
+		inflater->learnPrototype(PhysicsMessage());
+		inflater->learnPrototype(CapabilitiesMessage());
+		inflater->learnPrototype(TopologyMessage());
+		inflater->learnPrototype(ChangeColorsMessage());
+		inflater->learnPrototype(ServerWarningMessage());
+		inflater->learnPrototype(ClientInfoMessage());
+	}
   
-  if (!joinDispatcher) {
-    joinDispatcher = new MessageDispatcher();
+	if (!joinDispatcher) {
+		joinDispatcher = new MessageDispatcher();
     
-    joinDispatcher->setDefaultHandler(&unexpectedMessageHandler);
-    joinDispatcher->setHandlerForType(&helloMessageHandler, HelloMessage::kType);
-    joinDispatcher->setHandlerForType(&joinPlayerMessageHandler, JoinPlayerMessage::kType);
-    joinDispatcher->setHandlerForType(&luaMessageHandler, LuaMessage::kType);
-    joinDispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
-    joinDispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
-    joinDispatcher->setHandlerForType(&physicsMessageHandler, PhysicsMessage::kType);
-    joinDispatcher->setHandlerForType(&capabilitiesMessageHandler, CapabilitiesMessage::kType);
-    joinDispatcher->setHandlerForType(&serverWarningMessageHandler, ServerWarningMessage::kType);
-    joinDispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
-  }
+		joinDispatcher->setDefaultHandler(&unexpectedMessageHandler);
+		joinDispatcher->setHandlerForType(&helloMessageHandler, HelloMessage::kType);
+		joinDispatcher->setHandlerForType(&joinPlayerMessageHandler, JoinPlayerMessage::kType);
+		joinDispatcher->setHandlerForType(&luaMessageHandler, LuaMessage::kType);
+		joinDispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
+		joinDispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
+		joinDispatcher->setHandlerForType(&physicsMessageHandler, PhysicsMessage::kType);
+		joinDispatcher->setHandlerForType(&capabilitiesMessageHandler, CapabilitiesMessage::kType);
+		joinDispatcher->setHandlerForType(&serverWarningMessageHandler, ServerWarningMessage::kType);
+		joinDispatcher->setHandlerForType(&clientInfoMessageHandler, ClientInfoMessage::kType);
+		joinDispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
+	}
 
-  my_capabilities.clear();
-  my_capabilities[Capabilities::kGameworld] = Capabilities::kGameworldVersion;
-  my_capabilities[Capabilities::kSpeex] = Capabilities::kSpeexVersion;
-  if (network_preferences->game_protocol == _network_game_protocol_star) {
-    my_capabilities[Capabilities::kStar] = Capabilities::kStarVersion;
-  } else {
-    my_capabilities[Capabilities::kRing] = Capabilities::kRingVersion;
-  }
+	my_capabilities.clear();
+	my_capabilities[Capabilities::kGameworld] = Capabilities::kGameworldVersion;
+	my_capabilities[Capabilities::kSpeex] = Capabilities::kSpeexVersion;
+	if (network_preferences->game_protocol == _network_game_protocol_star) {
+		my_capabilities[Capabilities::kStar] = Capabilities::kStarVersion;
+	} else {
+		my_capabilities[Capabilities::kRing] = Capabilities::kRingVersion;
+	}
 #ifdef HAVE_LUA
-  my_capabilities[Capabilities::kLua] = Capabilities::kLuaVersion;
+	my_capabilities[Capabilities::kLua] = Capabilities::kLuaVersion;
 #endif
-  my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
+	my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
   
-  next_join_attempt = machine_tick_count();
+	next_join_attempt = machine_tick_count();
   
-  if (error) {
-    alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
-    NetExit();
-    return false;
-  } else {
-    return true;
-  }
+	if (error) {
+		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
+		NetExit();
+		return false;
+	} else {
+		return true;
+	}
 }
 
 void NetDoneGathering(void)
@@ -957,47 +1088,57 @@ void NetDoneGathering(void)
 void NetExit(
 	void)
 {
-  OSErr error = noErr;
+	OSErr error = noErr;
   
-  sCurrentGameProtocol->Exit1();
+	sCurrentGameProtocol->Exit1();
   
-  // ZZZ: clean up SDL Time Manager emulation.  
-  // true says wait for any late finishers to finish
-  // (but does NOT say to kill anyone not already removed.)
-  myTMCleanup(true);
+	// ZZZ: clean up SDL Time Manager emulation.  
+	// true says wait for any late finishers to finish
+	// (but does NOT say to kill anyone not already removed.)
+	myTMCleanup(true);
   
-  if (netState!=netUninitialized) {
-    error= NetDDPCloseSocket(ddpSocket);
-    if (!error) {
-      NetSetSelfSend(sOldSelfSendStatus);
+	if (netState!=netUninitialized) {
+		error= NetDDPCloseSocket(ddpSocket);
+		if (!error) {
+			NetSetSelfSend(sOldSelfSendStatus);
       
-      free(topology);
-      topology= NULL;
+			free(topology);
+			topology= NULL;
       
-      sCurrentGameProtocol->Exit2();
+			sCurrentGameProtocol->Exit2();
       
-      netState= netUninitialized;
-    } else {
-      logAnomaly1("NetDDPCloseSocket returned %i", error);
-    }
-  }
+			netState= netUninitialized;
+		} else {
+			logAnomaly1("NetDDPCloseSocket returned %i", error);
+		}
+	}
   
-  if (connection_to_server) {
-    delete connection_to_server;
-    connection_to_server = NULL;
-  }
+	if (connection_to_server) {
+		delete connection_to_server;
+		connection_to_server = NULL;
+	}
   
-  client_map_t::iterator it;
-  for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++)
-    delete(it->second);
-  connections_to_clients.clear();
+	{  
+		client_map_t::iterator it;
+		for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++)
+			delete(it->second);
+		connections_to_clients.clear();
+	}
+	
+	{  
+		client_chat_info_map_t::iterator it;
+		for (it = client_chat_info.begin(); it != client_chat_info.end(); it++)
+			delete(it->second);
+		client_chat_info.clear();
+	}
+
   
-  if (server) {
-    delete server;
-    server = NULL;
-  }
+	if (server) {
+		delete server;
+		server = NULL;
+	}
   
-  NetDDPClose();
+	NetDDPClose();
 }
 
 bool
@@ -1129,6 +1270,14 @@ bool NetGather(
 	server = new CommunicationsChannelFactory(GAME_PORT);
 	
 	netState= netGathering;
+
+	unsigned char pname[1024];
+	pstrcpy(pname, player_preferences->name);
+	a1_p2cstr(pname);
+	client_chat_info[0] = new ClientChatInfo;
+	client_chat_info[0]->name = (char *) pname;
+	client_chat_info[0]->color = player_preferences->color;
+	client_chat_info[0]->team = player_preferences->team;
 	
 	return true;
 }

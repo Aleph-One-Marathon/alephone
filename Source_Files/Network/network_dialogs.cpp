@@ -286,7 +286,8 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	m_chatEntryWidget->set_callback(boost::bind(&GatherDialog::chatTextEntered, this, _1));
 	
 	gPregameChatHistory.clear ();
-	gPregameChatHistory.appendString ("Pregame chat does not work currently");
+	//	gPregameChatHistory.appendString ("Pregame chat does not work currently");
+	NetSetChatCallbacks(this);
 	
 	if (gMetaserverClient->isConnected ()) {
 		gMetaserverClient->associateNotificationAdapter(this);
@@ -402,8 +403,7 @@ void GatherDialog::sendChat ()
 	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
 		gMetaserverClient->sendChatMessage(message);		
 	else
-		// Send Pregame Chat, which does not work currently
-		gPregameChatHistory.appendString(message);
+	  SendChatMessage(message);
 	
 	m_chatEntryWidget->set_text(string());
 }
@@ -430,6 +430,13 @@ void GatherDialog::chatChoiceHit ()
 		m_chatWidget->attachHistory (&gPregameChatHistory);
 	else
 		m_chatWidget->attachHistory (&gMetaserverChatHistory);
+}
+
+void GatherDialog::ReceivedMessageFromPlayer(
+	const char *player_name, 
+	const char *message)
+{
+	gPregameChatHistory.appendString(std::string(player_name) + ": " + std::string(message));
 }
 
 /****************************************************
@@ -517,7 +524,6 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 void JoinDialog::respondToJoinHit()
 {
 	gPregameChatHistory.clear ();
-	gPregameChatHistory.appendString ("Pregame chat does not work currently");
 	if (gMetaserverClient->isConnected ()) {
 		m_chatChoiceWidget->activate ();
 		m_chatChoiceWidget->set_value (kMetaserverChat);
@@ -527,6 +533,7 @@ void JoinDialog::respondToJoinHit()
 		m_chatWidget->attachHistory (&gPregameChatHistory);
 	}
 	m_chatEntryWidget->activate ();	
+	NetSetChatCallbacks(this);
 }
 
 void JoinDialog::attemptJoin ()
@@ -671,8 +678,7 @@ void JoinDialog::sendChat ()
 	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
 		gMetaserverClient->sendChatMessage(message);		
 	else
-		// Send Pregame Chat, which does not work currently
-		gPregameChatHistory.appendString(message);
+		SendChatMessage(message);
 	
 	m_chatEntryWidget->set_text(string());
 }
@@ -699,6 +705,11 @@ void JoinDialog::chatChoiceHit ()
 		m_chatWidget->attachHistory (&gPregameChatHistory);
 	else
 		m_chatWidget->attachHistory (&gMetaserverChatHistory);
+}
+
+void JoinDialog::ReceivedMessageFromPlayer(const char *player_name, const char *message)
+{
+	gPregameChatHistory.appendString(std::string(player_name) + ": " + std::string(message));
 }
 
 /****************************************************

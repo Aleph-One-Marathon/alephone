@@ -46,7 +46,8 @@ enum {
   kUNKNOWN_MESSAGE_MESSAGE,
   kEND_GAME_DATA_MESSAGE,
   kCHANGE_COLORS_MESSAGE,
-  kSERVER_WARNING_MESSAGE
+  kSERVER_WARNING_MESSAGE,
+  kCLIENT_INFO_MESSAGE
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -156,6 +157,36 @@ class ChangeColorsMessage : public SmallMessageHelper
   int16 mColor;
   int16 mTeam;
 };
+
+class ClientInfoMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kCLIENT_INFO_MESSAGE };
+	enum { kAdd, kUpdate, kRemove };
+
+	ClientInfoMessage() : SmallMessageHelper() { }
+
+	ClientInfoMessage(int16 stream_id, const ClientChatInfo *clientChatInfo, int16 action ) : mStreamID(stream_id), mAction(action), mClientChatInfo(*clientChatInfo) { }
+
+	ClientInfoMessage *clone() const {
+		return new ClientInfoMessage(*this);
+	}
+
+	const ClientChatInfo *info() { return &mClientChatInfo; }
+	const int16 action() { return mAction; }
+	const int16 stream_id() { return mStreamID; }
+
+	MessageTypeID type() const { return kType; }
+
+protected:
+	void reallyDeflateTo(AOStream& outputStream) const;
+	bool reallyInflateFrom(AIStream& inputStream);
+
+private:
+	ClientChatInfo mClientChatInfo;
+	int16 mAction;
+	int16 mStreamID;
+};
   
 
 typedef DatalessMessage<kEND_GAME_DATA_MESSAGE> EndGameDataMessage;
@@ -191,40 +222,40 @@ private:
 typedef TemplatizedSimpleMessage<kJOIN_PLAYER_MESSAGE, int16> JoinPlayerMessage;
 class JoinerInfoMessage : public SmallMessageHelper
 {
- public: 
-  enum { kType = kJOINER_INFO_MESSAGE };
-
-  JoinerInfoMessage() : SmallMessageHelper() { }
-    
-  JoinerInfoMessage(prospective_joiner_info *info, const std::string &version) : SmallMessageHelper() {
-    
-    mInfo = *info;
-    mVersion = version;
-    }
-
-  JoinerInfoMessage *clone() const {
-    return new JoinerInfoMessage(*this);
-  }
-
-  prospective_joiner_info *info() { return &mInfo; }
-  void info(const prospective_joiner_info *theInfo) { 
-    mInfo = *theInfo;
-  }
-
-  std::string version() { return mVersion; }
-  void version(const std::string version) { mVersion = version; }
-
-  MessageTypeID type() const { return kType; }
-
- protected:
-  void reallyDeflateTo(AOStream& outputStream) const;
-  bool reallyInflateFrom(AIStream& inputStream);
-
- private:
-  prospective_joiner_info mInfo;
-  std::string mVersion;
+public: 
+	enum { kType = kJOINER_INFO_MESSAGE };
+	
+	JoinerInfoMessage() : SmallMessageHelper() { }
+	
+	JoinerInfoMessage(prospective_joiner_info *info, const std::string &version) : SmallMessageHelper() {
+		
+		mInfo = *info;
+		mVersion = version;
+	}
+	
+	JoinerInfoMessage *clone() const {
+		return new JoinerInfoMessage(*this);
+	}
+	
+	prospective_joiner_info *info() { return &mInfo; }
+	void info(const prospective_joiner_info *theInfo) { 
+		mInfo = *theInfo;
+	}
+	
+	std::string version() { return mVersion; }
+	void version(const std::string version) { mVersion = version; }
+	
+	MessageTypeID type() const { return kType; }
+	
+protected:
+	void reallyDeflateTo(AOStream& outputStream) const;
+	bool reallyInflateFrom(AIStream& inputStream);
+	
+private:
+	prospective_joiner_info mInfo;
+	std::string mVersion;
 };
-      
+
 class LuaMessage : public BigChunkOfDataMessage
 {
  public:
@@ -261,10 +292,16 @@ class NetworkChatMessage : public SmallMessageHelper
  public:
   enum { kType = kCHAT_MESSAGE };
   enum { CHAT_MESSAGE_SIZE = 1024 };
-  enum { kTargetPlayers = 0};
 
-  NetworkChatMessage(const char *chatText = NULL, int16 senderID = 0)
-    : mSenderID(senderID)
+  enum { kTargetPlayers = 0,
+	 kTargetTeam = 1,
+	 kTargetPlayer = 2,
+	 kTargetClients = 3,
+	 kTargetClient = 4 };
+
+  NetworkChatMessage(const char *chatText = NULL, int16 senderID = 0,
+		     int16 target = 0, int16 targetID = -1)
+    : mSenderID(senderID), mTarget(target), mTargetID(targetID)
     {
       strncpy(mChatText, (chatText == NULL) ? "" : chatText, CHAT_MESSAGE_SIZE);
       mChatText[CHAT_MESSAGE_SIZE - 1] = '\0';
@@ -277,6 +314,8 @@ class NetworkChatMessage : public SmallMessageHelper
   MessageTypeID type() const { return kType; }
   const char *chatText() const { return mChatText; }
   int16 senderID() const { return mSenderID; }
+  int16 target() const { return mTarget; }
+  int16 targetID() const { return mTargetID; }
 
  protected:
   void reallyDeflateTo(AOStream& outputStream) const;
@@ -285,6 +324,8 @@ class NetworkChatMessage : public SmallMessageHelper
  private:
   char mChatText[CHAT_MESSAGE_SIZE];
   int16 mSenderID;
+  int16 mTarget;
+  int16 mTargetID;
 };
 
 class PhysicsMessage : public BigChunkOfDataMessage
@@ -371,52 +412,53 @@ class TopologyMessage : public SmallMessageHelper
 };
 
 struct Client {
-  Client(CommunicationsChannel *);
-  enum {
-    _connecting,
-    _connected_but_not_yet_shown,
-    _connected,
-    _awaiting_capabilities,
-    _ungatherable,
-    _joiner_didnt_accept,
-    _awaiting_accept_join,
-    _awaiting_map,
-    _ingame,
-    _disconnect
-  };
+	Client(CommunicationsChannel *);
+	enum {
+		_connecting,
+		_connected_but_not_yet_shown,
+		_connected,
+		_awaiting_capabilities,
+		_ungatherable,
+		_joiner_didnt_accept,
+		_awaiting_accept_join,
+		_awaiting_map,
+		_ingame,
+		_disconnect
+	};
 
-  CommunicationsChannel *channel;
-  short state;
-  uint16 network_version;
-  Capabilities capabilities;
-  unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
+	CommunicationsChannel *channel;
+	short state;
+	uint16 network_version;
+	Capabilities capabilities;
+	unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
 
-  static CheckPlayerProcPtr check_player;
+	static CheckPlayerProcPtr check_player;
 
-  ~Client();
+	~Client();
 
-  void drop();
+	void drop();
 
-  enum {
-    _dont_warn_joiner = false,
-    _warn_joiner = true
-  };
-  bool capabilities_indicate_player_is_gatherable(bool warn_joiner);
+	enum {
+		_dont_warn_joiner = false,
+		_warn_joiner = true
+	};
+	bool capabilities_indicate_player_is_gatherable(bool warn_joiner);
+	bool can_pregame_chat() { return ((state == _connected) || (state == _connected_but_not_yet_shown) || (state == _ungatherable) || (state == _joiner_didnt_accept) || (state == _awaiting_accept_join) || (state == _awaiting_map)); }
 
-  void handleJoinerInfoMessage(JoinerInfoMessage*, CommunicationsChannel*);
-  void unexpectedMessageHandler(Message *, CommunicationsChannel*);
-  void handleCapabilitiesMessage(CapabilitiesMessage*,CommunicationsChannel*);
-  void handleAcceptJoinMessage(AcceptJoinMessage*, CommunicationsChannel*);
-  void handleChatMessage(NetworkChatMessage*, CommunicationsChannel*);
-  void handleChangeColorsMessage(ChangeColorsMessage*, CommunicationsChannel*);
+	void handleJoinerInfoMessage(JoinerInfoMessage*, CommunicationsChannel*);
+	void unexpectedMessageHandler(Message *, CommunicationsChannel*);
+	void handleCapabilitiesMessage(CapabilitiesMessage*,CommunicationsChannel*);
+	void handleAcceptJoinMessage(AcceptJoinMessage*, CommunicationsChannel*);
+	void handleChatMessage(NetworkChatMessage*, CommunicationsChannel*);
+	void handleChangeColorsMessage(ChangeColorsMessage*, CommunicationsChannel*);
 
-  std::auto_ptr<MessageDispatcher> mDispatcher;
-  std::auto_ptr<MessageHandler> mJoinerInfoMessageHandler;
-  std::auto_ptr<MessageHandler> mUnexpectedMessageHandler;
-  std::auto_ptr<MessageHandler> mCapabilitiesMessageHandler;
-  std::auto_ptr<MessageHandler> mAcceptJoinMessageHandler;
-  std::auto_ptr<MessageHandler> mChatMessageHandler;
-  std::auto_ptr<MessageHandler> mChangeColorsMessageHandler;
+	std::auto_ptr<MessageDispatcher> mDispatcher;
+	std::auto_ptr<MessageHandler> mJoinerInfoMessageHandler;
+	std::auto_ptr<MessageHandler> mUnexpectedMessageHandler;
+	std::auto_ptr<MessageHandler> mCapabilitiesMessageHandler;
+	std::auto_ptr<MessageHandler> mAcceptJoinMessageHandler;
+	std::auto_ptr<MessageHandler> mChatMessageHandler;
+	std::auto_ptr<MessageHandler> mChangeColorsMessageHandler;
 };
 
 

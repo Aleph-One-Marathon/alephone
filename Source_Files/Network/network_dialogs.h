@@ -342,21 +342,25 @@ extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 
 
 class MetaserverClient;
-class GatherDialog : public GatherCallbacks, public MetaserverClient::NotificationAdapter
+class GatherDialog : public GatherCallbacks, public ChatCallbacks, public MetaserverClient::NotificationAdapter
 {
 public:
-	// Abstract factory; concrete type determined at link-time
+// Abstract factory; concrete type determined at link-time
 	static std::auto_ptr<GatherDialog> Create();
 	
 	bool GatherNetworkGameByRunning ();
 	
 	virtual ~GatherDialog ();
-
+	
 	// Callbacks for network code; final methods
 	virtual void JoinSucceeded(const prospective_joiner_info* player);
 	virtual void JoiningPlayerDropped(const prospective_joiner_info* player);
 	virtual void JoinedPlayerDropped(const prospective_joiner_info* player);
 	virtual void JoinedPlayerChanged(const prospective_joiner_info* player);
+
+	virtual void ReceivedMessageFromPlayer(
+		const char *player_name,
+		const char *message);
 
 protected:
 	GatherDialog();
@@ -400,7 +404,7 @@ protected:
 };
 
 
-class JoinDialog : public MetaserverClient::NotificationAdapter
+class JoinDialog : public MetaserverClient::NotificationAdapter, public ChatCallbacks
 {
 public:
 	// Abstract factory; concrete type determined at link-time
@@ -426,7 +430,10 @@ protected:
 	virtual void playersInRoomChanged() {}
 	virtual void gamesInRoomChanged() {}
 	virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
-	virtual void receivedBroadcastMessage(const std::string& message);	
+	virtual void receivedBroadcastMessage(const std::string& message);
+
+	// ChatCallbacks
+	virtual void ReceivedMessageFromPlayer(const char *player_name, const char *message);
 
 	void sendChat ();
 	void chatTextEntered (char character);

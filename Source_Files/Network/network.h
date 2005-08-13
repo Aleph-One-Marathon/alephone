@@ -100,9 +100,11 @@ typedef struct player_info
 
 
 struct prospective_joiner_info {
-  uint16 stream_id;
-  unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
-  bool gathering;
+	uint16 stream_id;
+	unsigned char name[MAX_NET_PLAYER_NAME_LENGTH];
+	int16 color;
+	int16 team;
+	bool gathering;
 };
 
 

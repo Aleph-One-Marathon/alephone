@@ -295,7 +295,12 @@ class Message;
 
 const NetDistributionInfo* NetGetDistributionInfoForType(int16 inType);
 
-
+struct ClientChatInfo
+{
+	std::string name;
+	int16 color;
+	int16 team;
+};
 
 // "network_dialogs_private.h" follows
 

@@ -140,6 +140,25 @@ bool ChangeColorsMessage::reallyInflateFrom(AIStream& inputStream) {
   return true;
 }
 
+void ClientInfoMessage::reallyDeflateTo(AOStream& outputStream) const {
+	outputStream << mStreamID;
+	outputStream << mAction;
+	outputStream << mClientChatInfo.color;
+	outputStream << mClientChatInfo.team;
+	write_string(outputStream, mClientChatInfo.name.c_str());
+}
+
+bool ClientInfoMessage::reallyInflateFrom(AIStream& inputStream) {
+	inputStream >> mStreamID;
+	inputStream >> mAction;
+	inputStream >> mClientChatInfo.color;
+	inputStream >> mClientChatInfo.team;
+	char name[1024];
+	read_string(inputStream, name, 1024);
+	mClientChatInfo.name = name;
+	return true;
+}
+
 void HelloMessage::reallyDeflateTo(AOStream& outputStream) const {
   write_string(outputStream, mVersion.c_str());
 }
@@ -155,6 +174,8 @@ void JoinerInfoMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mInfo.stream_id;
   write_pstring(outputStream, mInfo.name);
   write_string(outputStream, mVersion.c_str());
+  outputStream << mInfo.color;
+  outputStream << mInfo.team;
 }
 
 bool JoinerInfoMessage::reallyInflateFrom(AIStream& inputStream) {
@@ -163,19 +184,22 @@ bool JoinerInfoMessage::reallyInflateFrom(AIStream& inputStream) {
   char version[1024];
   read_string(inputStream, version, 1024);
   mVersion = version;
+  inputStream >> mInfo.color;
+  inputStream >> mInfo.team;
   return true;
 }
 
 void NetworkChatMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mSenderID;
-  outputStream << (Uint16) kTargetPlayers;
+  outputStream << mTarget;
+  outputStream << mTargetID;
   write_string(outputStream, mChatText);
 }
 
 bool NetworkChatMessage::reallyInflateFrom(AIStream& inputStream) {
   inputStream >> mSenderID;
-  Uint16 target;
-  inputStream >> target;
+  inputStream >> mTarget;
+  inputStream >> mTargetID;
   read_string(inputStream, mChatText, CHAT_MESSAGE_SIZE);
   return true;
 }
