@@ -4263,6 +4263,7 @@
 					"-lspeex",
 					"-llua",
 					"-llualib",
+					"-lSystemStubs\n",
 				);
 				PRODUCT_NAME = AlephOneSDL;
 				SECTORDER_FLAGS = "";
