@@ -3389,7 +3389,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/MML\"\ncp \"$SRCROOT\"/../data/*.mml \"$SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/MML/\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/Themes\"\ncp -R \"$SRCROOT/../data/default_theme\" \"$SYMROOT/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default\"\nrm -rf \"$SYMROOT\"/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/MML\"\ncp \"$SRCROOT\"/../data/*.mml \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/MML/\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes\"\ncp -R \"$SRCROOT/../data/default_theme\" \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default\"\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -4263,7 +4263,7 @@
 					"-lspeex",
 					"-llua",
 					"-llualib",
-					"-lSystemStubs\n",
+					"-lSystemStubs",
 				);
 				PRODUCT_NAME = AlephOneSDL;
 				SECTORDER_FLAGS = "";
