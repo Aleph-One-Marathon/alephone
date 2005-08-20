@@ -868,7 +868,7 @@ public:
 
 	void append_text(const string&);
 	
-	void clear() { text_lines.clear (); }
+	void clear() { text_lines.clear (); num_items = 0; new_items (); }
 	
 	~w_text_box() {}
 	
