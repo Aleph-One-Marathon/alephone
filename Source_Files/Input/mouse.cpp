@@ -91,7 +91,6 @@ static pascal OSStatus CEvtHandleApplicationMouseEvents (EventHandlerCallRef nex
 /* ---------- globals */
 
 static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
-#define MAX_BUTTONS 5
 static bool snapshot_button_state[MAX_BUTTONS];
 static int snapshot_delta_scrollwheel;
 static MPCriticalRegionID CE_MouseLock = NULL;
@@ -168,8 +167,21 @@ void test_mouse(
 {
 	(void) (type);
 
-	if (snapshot_button_state[0]) *action_flags|= _left_trigger_state;
-	if (snapshot_button_state[1]) *action_flags|= _right_trigger_state;
+	for (int i = 0; i < MAX_BUTTONS; i++)
+		if (snapshot_button_state[i])
+			switch (input_preferences->mouse_button_actions[i])
+			{
+				case _mouse_button_fires_left_trigger:
+					*action_flags|= _left_trigger_state;
+					break;
+				case _mouse_button_fires_right_trigger:
+					*action_flags|= _right_trigger_state;
+					break;
+				case _mouse_button_does_nothing:
+				default:
+					break; // nothing
+			}
+
 	if (snapshot_delta_scrollwheel > 0) *action_flags|= _cycle_weapons_forward;
 	else if (snapshot_delta_scrollwheel < 0) *action_flags|= _cycle_weapons_backward;
 	snapshot_delta_scrollwheel = 0;

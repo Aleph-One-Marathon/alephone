@@ -466,6 +466,10 @@ void write_preferences(
 	fprintf(F,"  mouse_acceleration=\"%s\"\n",BoolString(input_preferences->mouse_acceleration)); // SB
 
 	fprintf(F,">\n");
+	for (int i = 0; i < MAX_BUTTONS; i++)
+		fprintf(F,"  <mouse_button index=\"%hd\" action=\"%s\"/>\n", i,
+			input_preferences->mouse_button_actions[i] == _mouse_button_fires_left_trigger ? "left_trigger" : 
+			input_preferences->mouse_button_actions[i] == _mouse_button_fires_right_trigger ? "right_trigger" : "none");
 #if defined(mac)
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
 		fprintf(F,"  <mac_key index=\"%hd\" value=\"%hd\"/>\n",
@@ -714,6 +718,12 @@ static void default_input_preferences(input_preferences_data *preferences)
 	
 	// SB
 	preferences->mouse_acceleration = true;
+
+	// default mouse settings
+	preferences->mouse_button_actions[0] = _mouse_button_fires_left_trigger;
+	preferences->mouse_button_actions[1] = _mouse_button_fires_right_trigger;
+	for (int i = 2; i < MAX_BUTTONS; i++)
+		preferences->mouse_button_actions[i] = _mouse_button_does_nothing;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)
@@ -1548,6 +1558,79 @@ bool XML_PlayerPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 static XML_PlayerPrefsParser PlayerPrefsParser;
 
 
+class XML_MouseButtonPrefsParser: public XML_ElementParser
+{
+	bool IndexPresent, ActionPresent;
+	int16 Index, Action;
+	
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+
+	XML_MouseButtonPrefsParser(const char *_Name): XML_ElementParser(_Name) {}
+};
+
+bool XML_MouseButtonPrefsParser::Start()
+{
+	IndexPresent = ActionPresent = false;
+	
+	return true;
+}
+
+bool XML_MouseButtonPrefsParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag,"index"))
+	{
+		if (ReadBoundedInt16Value(Value,Index,0,MAX_BUTTONS-1))
+		{
+			IndexPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag,"action"))
+	{
+		if (StringsEqual(Value, "none"))
+		{
+			Action = _mouse_button_does_nothing;
+			ActionPresent = true;
+			return true;
+		}
+		else if (StringsEqual(Value, "left_trigger"))
+		{
+			Action = _mouse_button_fires_left_trigger;
+			ActionPresent = true;
+			return true;
+		}
+		else if (StringsEqual(Value, "right_trigger"))
+		{
+			Action = _mouse_button_fires_right_trigger;
+			ActionPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	return true;
+}
+
+bool XML_MouseButtonPrefsParser::AttributesDone()
+{
+	// Verify...
+	if (!(IndexPresent && ActionPresent))
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	input_preferences->mouse_button_actions[Index] = Action;
+			
+	return true;
+}
+
+static XML_MouseButtonPrefsParser MouseButtonPrefsParser("mouse_button");
+
+
 class XML_KeyPrefsParser: public XML_ElementParser
 {
 	bool IndexPresent, KeyValPresent;
@@ -1604,6 +1687,7 @@ bool XML_KeyPrefsParser::AttributesDone()
 			
 	return true;
 }
+
 
 // This compilation trick guarantees that both Mac and SDL versions will ignore the other's
 // key values; for each platform, the parser of the other platform's key values
@@ -2033,7 +2117,8 @@ void SetupPrefsParseTree()
 	CrosshairsPrefsParser.AddChild(Color_GetParser());
 	PlayerPrefsParser.AddChild(&CrosshairsPrefsParser);
 	MarathonPrefsParser.AddChild(&PlayerPrefsParser);
-	
+
+	InputPrefsParser.AddChild(&MouseButtonPrefsParser);
 	InputPrefsParser.AddChild(&MacKeyPrefsParser);
 	InputPrefsParser.AddChild(&SDLKeyPrefsParser);
 	MarathonPrefsParser.AddChild(&InputPrefsParser);

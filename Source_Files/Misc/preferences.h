@@ -146,6 +146,7 @@ enum {
 	_inputmod_dont_auto_recenter = 0x0020   // ZZZ addition
 };
 
+#define MAX_BUTTONS 5
 struct input_preferences_data
 {
 	int16 input_device;
@@ -157,6 +158,15 @@ struct input_preferences_data
 	_fixed sens_vertical;
 	// SB: Option to get rid of the horrible, horrible, horrible mouse acceleration.
 	bool mouse_acceleration;
+	// mouse button actions
+	int16 mouse_button_actions[MAX_BUTTONS];
+};
+
+// mouse button action types
+enum {
+	_mouse_button_does_nothing,
+	_mouse_button_fires_left_trigger,
+	_mouse_button_fires_right_trigger
 };
 
 #define MAXIMUM_PATCHES_PER_ENVIRONMENT (32)
