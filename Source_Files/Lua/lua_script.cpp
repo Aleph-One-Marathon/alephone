@@ -98,6 +98,7 @@ short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 void L_Call_Init() {}
 void L_Call_Cleanup() {}
 void L_Call_Idle() {}
+void L_Call_Sent_Message(const char* username, const char* message) {}
 void L_Call_Start_Refuel(short type, short player_index, short panel_side_index) {}
 void L_Call_End_Refuel(short type, short player_index, short panel_side_index) {}
 void L_Call_Tag_Switch(short tag, short player_index) {}
@@ -946,7 +947,7 @@ static int L_Set_Fog_Depth(lua_State *L)
 		lua_pushstring(L, "set_fog_depth: incorrect argument type");
 		lua_error(L);
 	}
-	float depth = static_cast<int>(lua_tonumber(L,1));
+	float depth = static_cast<float>(lua_tonumber(L,1));
 	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = depth;
 	return 0;
 }
@@ -969,6 +970,28 @@ static int L_Set_Fog_Color(lua_State *L)
 	return 0;
 }
 
+static int L_Set_Fog_Present(lua_State *L)
+{
+	if (!lua_isboolean(L,1))
+	 {
+		lua_pushstring(L, "set_fog_present: incorrect argument type");
+		lua_error(L);
+	 }
+	OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent = static_cast<bool>(lua_toboolean(L,1));
+	return 0;
+}
+
+static int L_Set_Fog_Affects_Landscapes(lua_State *L)
+{
+	if (!lua_isboolean(L,1))
+	 {
+		lua_pushstring(L, "set_fog_affects_landscapes: incorrect argument type");
+		lua_error(L);
+	 }
+	OGL_GetFogData(OGL_Fog_AboveLiquid)->AffectsLandscapes = static_cast<bool>(lua_toboolean(L,1));
+	return 0;
+}
+
 static int L_Get_Fog_Depth(lua_State *L)
 {
 	lua_pushnumber(L, OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth);
@@ -984,6 +1007,40 @@ static int L_Get_Fog_Color(lua_State *L)
 	return 3;
 }
 
+static int L_Get_Fog_Present(lua_State *L)
+{
+	lua_pushboolean(L,OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent);
+	return 1;
+}
+
+static int L_Get_Fog_Affects_Landscapes(lua_State *L)
+{
+	lua_pushboolean(L,OGL_GetFogData(OGL_Fog_AboveLiquid)->AffectsLandscapes);
+	return 1;
+}
+
+static int L_Set_Underwater_Fog_Present(lua_State *L)
+{
+	if (!lua_isboolean(L,1))
+	 {
+		lua_pushstring(L, "set_underwater_fog_present: incorrect argument type");
+		lua_error(L);
+	 }
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent = static_cast<bool>(lua_toboolean(L,1));
+	return 0;
+}
+
+static int L_Set_Underwater_Fog_Affects_Landscapes(lua_State *L)
+{
+	if (!lua_isboolean(L,1))
+	 {
+		lua_pushstring(L, "set_underwater_fog_affects_landscapes: incorrect argument type");
+		lua_error(L);
+	 }
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->AffectsLandscapes = static_cast<bool>(lua_toboolean(L,1));
+	return 0;
+}
+
 static int L_Set_Underwater_Fog_Depth(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -991,8 +1048,8 @@ static int L_Set_Underwater_Fog_Depth(lua_State *L)
 		lua_pushstring(L, "set_underwater_fog_depth: incorrect argument type");
 		lua_error(L);
 	}
-	float depth = static_cast<int>(lua_tonumber(L,1));
-	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = depth;
+	float depth = static_cast<float>(lua_tonumber(L,1));
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->Depth = depth;
 	return 0;
 }
 
@@ -1003,11 +1060,11 @@ static int L_Set_Underwater_Fog_Color(lua_State *L)
 		lua_pushstring(L, "set_underwater_fog_color: incorrect argument type");
 		lua_error(L);
 	}
-	float r = static_cast<int>(lua_tonumber(L,1));
-	float g = static_cast<int>(lua_tonumber(L,2));
-	float b = static_cast<int>(lua_tonumber(L,3));
+	float r = static_cast<float>(lua_tonumber(L,1));
+	float g = static_cast<float>(lua_tonumber(L,2));
+	float b = static_cast<float>(lua_tonumber(L,3));
 
-	rgb_color& Color = OGL_GetFogData(OGL_Fog_AboveLiquid)->Color;
+	rgb_color& Color = OGL_GetFogData(OGL_Fog_BelowLiquid)->Color;
 	Color.red = PIN(int(65535*r+0.5),0,65535);
 	Color.green = PIN(int(65535*g+0.5),0,65535);
 	Color.blue = PIN(int(65535*b+0.5),0,65535);
@@ -1016,17 +1073,161 @@ static int L_Set_Underwater_Fog_Color(lua_State *L)
 
 static int L_Get_Underwater_Fog_Depth(lua_State *L)
 {
-	lua_pushnumber(L, OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth);
+	lua_pushnumber(L, OGL_GetFogData(OGL_Fog_BelowLiquid)->Depth);
 	return 1;
 }
 
 static int L_Get_Underwater_Fog_Color(lua_State *L)
 {
-	rgb_color& Color = OGL_GetFogData(OGL_Fog_AboveLiquid)->Color;
+	rgb_color& Color = OGL_GetFogData(OGL_Fog_BelowLiquid)->Color;
 	lua_pushnumber(L, Color.red/65535.0F);
 	lua_pushnumber(L, Color.green/65535.0F);
 	lua_pushnumber(L, Color.blue/65535.0F);
 	return 3;
+}
+
+static int L_Get_Underwater_Fog_Present(lua_State *L)
+{
+	lua_pushboolean(L,OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent);
+	return 1;
+}
+
+static int L_Get_Underwater_Fog_Affects_Landscapes(lua_State *L)
+{
+	lua_pushboolean(L,OGL_GetFogData(OGL_Fog_BelowLiquid)->AffectsLandscapes);
+	return 1;
+}
+
+/* This code would be better if we were using pointers instead of references. */
+static int L_Get_All_Fog_Attributes(lua_State *L)
+{
+	lua_newtable(L);
+	lua_pushstring(L,"OGL_Fog_AboveLiquid");
+	lua_newtable(L);
+	lua_pushstring(L, "Depth");
+	lua_pushnumber(L, OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth);
+	lua_settable(L, -3);
+	lua_pushstring(L, "Color");
+	lua_newtable(L);
+	{
+		rgb_color& Color = OGL_GetFogData(OGL_Fog_AboveLiquid)->Color;
+		lua_pushstring(L, "red");
+		lua_pushnumber(L, Color.red/65535.0F);
+		lua_settable(L, -3);
+		lua_pushstring(L, "green");
+		lua_pushnumber(L, Color.green/65535.0F);
+		lua_settable(L, -3);
+		lua_pushstring(L, "blue");
+		lua_pushnumber(L, Color.blue/65535.0F);
+		lua_settable(L, -3);
+	}
+	lua_settable(L, -3);
+	lua_pushstring(L, "IsPresent");
+	lua_pushboolean(L,OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent);
+	lua_settable(L, -3);
+	lua_pushstring(L, "AffectsLandscapes");
+	lua_pushboolean(L,OGL_GetFogData(OGL_Fog_AboveLiquid)->AffectsLandscapes);
+	lua_settable(L, -3);
+	lua_settable(L, -3);
+	lua_pushstring(L,"OGL_Fog_BelowLiquid");
+	lua_newtable(L);
+	lua_pushstring(L, "Depth");
+	lua_pushnumber(L, OGL_GetFogData(OGL_Fog_BelowLiquid)->Depth);
+	lua_settable(L, -3);
+	lua_pushstring(L, "Color");
+	lua_newtable(L);
+	{
+		rgb_color& Color = OGL_GetFogData(OGL_Fog_BelowLiquid)->Color;
+		lua_pushstring(L, "red");
+		lua_pushnumber(L, Color.red/65535.0F);
+		lua_settable(L, -3);
+		lua_pushstring(L, "green");
+		lua_pushnumber(L, Color.green/65535.0F);
+		lua_settable(L, -3);
+		lua_pushstring(L, "blue");
+		lua_pushnumber(L, Color.blue/65535.0F);
+		lua_settable(L, -3);
+	}
+	lua_settable(L, -3);
+	lua_pushstring(L, "IsPresent");
+	lua_pushboolean(L,OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent);
+	lua_settable(L, -3);
+	lua_pushstring(L, "AffectsLandscapes");
+	lua_pushboolean(L,OGL_GetFogData(OGL_Fog_BelowLiquid)->AffectsLandscapes);
+	lua_settable(L, -3);
+	lua_settable(L, -3);
+	return 1;
+}
+
+static int L_Set_All_Fog_Attributes(lua_State *L)
+{
+	if(!lua_istable(L,1)) {
+		lua_pushstring(L, "set_all_fog_attributes: incorrect argument type");
+		lua_error(L);
+	}
+	lua_pushstring(L,"OGL_Fog_AboveLiquid");
+	lua_gettable(L, -2);
+	lua_pushstring(L, "Depth");
+	lua_gettable(L, -2);
+	OGL_GetFogData(OGL_Fog_AboveLiquid)->Depth = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_pushstring(L, "Color");
+	lua_gettable(L, -2);
+	{
+		rgb_color& Color = OGL_GetFogData(OGL_Fog_AboveLiquid)->Color;
+		lua_pushstring(L, "red");
+		lua_gettable(L, -2);
+		Color.red = PIN(int(65535*lua_tonumber(L, -1)+0.5),0,65535);
+		lua_pop(L, 1);
+		lua_pushstring(L, "green");
+		lua_gettable(L, -2);
+		Color.green = PIN(int(65535*lua_tonumber(L, -1)+0.5),0,65535);
+		lua_pop(L, 1);
+		lua_pushstring(L, "blue");
+		lua_gettable(L, -2);
+		Color.blue = PIN(int(65535*lua_tonumber(L, -1)+0.5),0,65535);
+		lua_pop(L, 2);
+	}
+	lua_pushstring(L, "IsPresent");
+	lua_gettable(L, -2);
+	OGL_GetFogData(OGL_Fog_AboveLiquid)->IsPresent = lua_toboolean(L, -1);
+	lua_pop(L, 1);
+	lua_pushstring(L, "AffectsLandscapes");
+	lua_gettable(L, -2);
+	OGL_GetFogData(OGL_Fog_AboveLiquid)->AffectsLandscapes = lua_toboolean(L, -1);
+	lua_pop(L, 2);
+	lua_pushstring(L,"OGL_Fog_BelowLiquid");
+	lua_gettable(L, -2);
+	lua_pushstring(L, "Depth");
+	lua_gettable(L, -2);
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->Depth = lua_tonumber(L, -1);
+	lua_pop(L, 1);
+	lua_pushstring(L, "Color");
+	lua_gettable(L, -2);
+	{
+		rgb_color& Color = OGL_GetFogData(OGL_Fog_BelowLiquid)->Color;
+		lua_pushstring(L, "red");
+		lua_gettable(L, -2);
+		Color.red = PIN(int(65535*lua_tonumber(L, -1)+0.5),0,65535);
+		lua_pop(L, 1);
+		lua_pushstring(L, "green");
+		lua_gettable(L, -2);
+		Color.green = PIN(int(65535*lua_tonumber(L, -1)+0.5),0,65535);
+		lua_pop(L, 1);
+		lua_pushstring(L, "blue");
+		lua_gettable(L, -2);
+		Color.blue = PIN(int(65535*lua_tonumber(L, -1)+0.5),0,65535);
+		lua_pop(L, 2);
+	}
+	lua_pushstring(L, "IsPresent");
+	lua_gettable(L, -2);
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->IsPresent = lua_toboolean(L, -1);
+	lua_pop(L, 1);
+	lua_pushstring(L, "AffectsLandscapes");
+	lua_gettable(L, -2);
+	OGL_GetFogData(OGL_Fog_BelowLiquid)->AffectsLandscapes = lua_toboolean(L, -1);
+	lua_pop(L, 3);
+	return 0;
 }
 
 static int L_Teleport_Player(lua_State *L)
@@ -4510,12 +4711,22 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_light_state", L_Get_Light_State);
 	lua_register(state, "set_fog_depth", L_Set_Fog_Depth);
 	lua_register(state, "set_fog_color", L_Set_Fog_Color);
+	lua_register(state, "set_fog_present", L_Set_Fog_Present);
+	lua_register(state, "set_fog_affects_landscapes", L_Set_Fog_Affects_Landscapes);
 	lua_register(state, "get_fog_depth", L_Get_Fog_Depth);
 	lua_register(state, "get_fog_color", L_Get_Fog_Color);
+	lua_register(state, "get_fog_present", L_Get_Fog_Present);
+	lua_register(state, "get_fog_affects_landscapes", L_Get_Fog_Affects_Landscapes);
 	lua_register(state, "set_underwater_fog_depth", L_Set_Underwater_Fog_Depth);
 	lua_register(state, "set_underwater_fog_color", L_Set_Underwater_Fog_Color);
+	lua_register(state, "set_underwater_fog_present", L_Set_Underwater_Fog_Present);
+	lua_register(state, "set_underwater_fog_affects_landscapes", L_Set_Underwater_Fog_Affects_Landscapes);
 	lua_register(state, "get_underwater_fog_depth", L_Get_Underwater_Fog_Depth);
 	lua_register(state, "get_underwater_fog_color", L_Get_Underwater_Fog_Color);
+	lua_register(state, "get_underwater_fog_present", L_Get_Underwater_Fog_Present);
+	lua_register(state, "get_underwater_fog_affects_landscapes", L_Get_Underwater_Fog_Affects_Landscapes);
+	lua_register(state, "get_all_fog_attributes", L_Get_All_Fog_Attributes);
+	lua_register(state, "set_all_fog_attributes", L_Set_All_Fog_Attributes);
 	lua_register(state, "new_monster", L_New_Monster);
 	lua_register(state, "activate_monster", L_Activate_Monster);
 	lua_register(state, "deactivate_monster", L_Deactivate_Monster);
