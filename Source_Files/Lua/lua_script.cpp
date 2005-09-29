@@ -1309,11 +1309,23 @@ static int L_New_Monster(lua_State *L)
 	destination= get_polygon_data(theLocation.polygon_index);
 	if(destination==NULL)
 		return 0;
-	find_center_of_polygon(polygon, &theCenter);
 	// *((world_point2d *)&theDestination)= destination->center;
  //stolen, assuming it works
-	theDestination.x = theCenter.x;
-	theDestination.y = theCenter.y;
+	if (args > 5)
+	{
+		if (!lua_isnumber(L,5) || !lua_isnumber(L,6))
+		{
+			lua_pushstring(L, "new_monster: incorrect argument type");
+			lua_error(L);
+		}
+		theDestination.x = static_cast<int>(lua_tonumber(L,5)*WORLD_ONE);
+		theDestination.y = static_cast<int>(lua_tonumber(L,6)*WORLD_ONE);
+	}
+	else {
+	  find_center_of_polygon(polygon, &theCenter);
+	  theDestination.x = theCenter.x;
+	  theDestination.y = theCenter.y;
+	}
 	theDestination.z= height;
 	theLocation.p = theDestination;
 	theLocation.yaw = 0;
