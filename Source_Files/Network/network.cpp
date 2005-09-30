@@ -1939,49 +1939,52 @@ void NetProcessMessagesInGame() {
 // If a potential joiner has connected to us, handle em
 bool NetCheckForNewJoiner (prospective_joiner_info &info)
 {  
-  CommunicationsChannel *new_joiner = server->newIncomingConnection();
-  
-  if (new_joiner) {
-    
-    new_joiner->setMessageInflater(inflater);
-    Client *client = new Client(new_joiner);
-    connections_to_clients[next_stream_id] = client;
-    next_stream_id++;
-    
-    HelloMessage helloMessage(kNetworkSetupProtocolID);
-    new_joiner->enqueueOutgoingMessage(helloMessage);
-  }
-
-  {
-    client_map_t::iterator it;
-    for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
-      if (it->second->channel->isConnected()) {
-	it->second->channel->pump();
-	it->second->channel->dispatchIncomingMessages();
-      } else {
-	it->second->drop();
-      }
-    }
-  }
-
-  // now check to see if any one has actually connected
-  client_map_t::iterator it;
-  for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
-    if (it->second->state == Client::_connected_but_not_yet_shown) {
-      info.stream_id = it->first;
-      pstrcpy(info.name, it->second->name);
-      it->second->state = Client::_connected;
-      info.gathering = false;
-      return true;
-    } else if (it->second->state == Client::_disconnect) {
-      connections_to_clients[it->first]->drop();
-      delete connections_to_clients[it->first];
-      connections_to_clients.erase(it->first);
-    }
-  }
-
-  return false;    
-}    
+	CommunicationsChannel *new_joiner = server->newIncomingConnection();
+	
+	if (new_joiner) {
+		
+		new_joiner->setMessageInflater(inflater);
+		Client *client = new Client(new_joiner);
+		connections_to_clients[next_stream_id] = client;
+		next_stream_id++;
+		
+		HelloMessage helloMessage(kNetworkSetupProtocolID);
+		new_joiner->enqueueOutgoingMessage(helloMessage);
+	}
+	
+	{
+		client_map_t::iterator it;
+		for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+			if (it->second->channel->isConnected()) {
+				it->second->channel->pump();
+				it->second->channel->dispatchIncomingMessages();
+			} else {
+				it->second->drop();
+				delete connections_to_clients[it->first];
+				connections_to_clients.erase(it->first);
+			}
+		}
+	}
+	
+	// now check to see if any one has actually connected
+	client_map_t::iterator it;
+	for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+		if (it->second->state == Client::_connected_but_not_yet_shown) {
+			info.stream_id = it->first;
+			pstrcpy(info.name, it->second->name);
+			it->second->state = Client::_connected;
+			info.gathering = false;
+			return true;
+		} else if (it->second->state == Client::_disconnect) {
+			connections_to_clients[it->first]->drop();
+			delete connections_to_clients[it->first];
+			connections_to_clients.erase(it->first);
+		}
+	}
+	
+	return false;    
+}   
+ 
 /* check for messages from gather nodes; returns new state */
 short NetUpdateJoinState(
 			 void)
