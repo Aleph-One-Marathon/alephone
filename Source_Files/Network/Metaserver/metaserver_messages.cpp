@@ -168,6 +168,7 @@ static void remove_formatting(std::string &s)
 
 	temp[pos] = '\0';
 	s = temp;
+	delete[] temp;
 }
 	
 	
