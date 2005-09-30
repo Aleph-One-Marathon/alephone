@@ -120,7 +120,7 @@ void MetaserverClientUi::receivedChatMessage(const std::string& senderName, uint
 
 void MetaserverClientUi::receivedBroadcastMessage(const std::string& message)
 {
-	receivedChatMessage("Metaserver", 0, message);
+	gMetaserverChatHistory.appendString (message);
 }
 
 void MetaserverClientUi::sendChat()
