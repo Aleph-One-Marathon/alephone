@@ -53,12 +53,12 @@ static const int kKeyLength = 16;
 void
 MetaserverClient::handleUnexpectedMessage(Message* inMessage, CommunicationsChannel* inChannel)
 {
-	cout << "Received message ID " << inMessage->type() << endl;
+	logAnomaly1("Metaserver received message ID %i", inMessage->type());
 	if(inMessage->type() == UninflatedMessage::kTypeID)
 	{
 		UninflatedMessage* theMessage = dynamic_cast<UninflatedMessage*>(inMessage);
 		if(theMessage != NULL)
-			cout << "  internal ID " << theMessage->inflatedType() << "; length " << theMessage->length() << endl;
+			logAnomaly2("-- internal ID %i, length %i", theMessage->inflatedType(), theMessage->length());
 	}
 }
 
