@@ -37,7 +37,7 @@ Feb 14, 2002 (Br'fin (Jeremy Parsons)):
 */
 
 #include <stdlib.h>
-#include <vector.h>
+#include <vector>
 
 #include "cseries.h"
 #include "shell.h"
