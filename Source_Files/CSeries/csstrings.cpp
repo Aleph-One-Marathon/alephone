@@ -52,7 +52,7 @@ typedef unsigned char Str255[256];
 #include "TextStrings.h"
 #include "Logging.h"
 
-
+using namespace std;
 
 char temporary[256];
 
