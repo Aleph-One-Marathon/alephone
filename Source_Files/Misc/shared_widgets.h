@@ -183,6 +183,7 @@ public:
 	public:
 		virtual void contentAdded (const string& s) = 0;
 		virtual void contentCleared () = 0;
+		virtual ~NotificationAdapter() {}
 	};
 
 	ChatHistory () : m_notificationAdapter (NULL) {}

@@ -124,9 +124,10 @@ public:
         {
         public:
                 virtual void playersInRoomChanged() = 0;
-		virtual void gamesInRoomChanged() = 0;
+                virtual void gamesInRoomChanged() = 0;
                 virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message) = 0;
                 virtual void receivedBroadcastMessage(const std::string& message) = 0;
+                virtual ~NotificationAdapter() {}
         };
 
 		class NotificationAdapterInstaller
