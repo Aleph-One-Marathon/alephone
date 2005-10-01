@@ -34,10 +34,6 @@
 	and an index inside that string set, which starts from 0.
 */
 
-
-#include "XML_ElementParser.h"
-
-
 // Set up a string in the repository; a repeated call will replace an old string
 void TS_PutString(short ID, short Index, unsigned char *String);
 // ZZZ: as you might expect... just like TS_PutString but takes a C-style (NULL-terminated) string instead.
@@ -70,6 +66,7 @@ void TS_DeleteAllStrings();
 // Set up a text-string XML parser and return a pointer to it.
 // Its name is "stringset".
 // Don't try to delete it when one is finished with it
+class XML_ElementParser;
 XML_ElementParser *TS_GetParser();
 
 #endif

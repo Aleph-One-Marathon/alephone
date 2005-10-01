@@ -29,6 +29,8 @@
 #include "cseries.h"
 #include "TextStrings.h"
 
+#include "XML_ElementParser.h"
+
 
 // Private objects: the string collections, which form a linked list.
 class StringSet
