@@ -39,8 +39,6 @@
 #include <string>
 #include <vector>
 #include <iterator>
-#include "TextStrings.h"
-#include "map.h" // difficulties
 
 #include "preferences.h"
 #include "shell.h" // get_player_color :(
@@ -688,15 +686,23 @@ static const char* gameTypeString[] =
 	"Tag"
 };
 
+static const char* difficultyLevelString[] =
+{
+	"Kindergarten",
+	"Easy",
+	"Normal",
+	"Major Damage",
+	"Total Carnage"
+};
+
 ostream&
 operator <<(ostream& stream, const GameDescription& desc)
 {
-	char *difficulty = TS_GetCString(kDifficultyLevelsStringSetID, desc.m_difficulty);
 	stream
 		<< desc.m_name << " : "
 		<< desc.m_mapName << " (" << desc.m_mapChecksum << ") : "
 		<< gameTypeString[desc.m_type] << " : "
-		<< difficulty << " : "
+		<< difficultyLevelString[desc.m_difficulty] << " : "
 		<< desc.m_timeLimit << " : "
 		<< static_cast<uint16>(desc.m_numPlayers) << "/" << desc.m_maxPlayers << " : "
 		<< (desc.m_closed ? "Closed" : "Open") << " : "
