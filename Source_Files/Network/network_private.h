@@ -78,7 +78,9 @@ enum /* error string for user */
 	netErrCouldntReceiveMap,
 	netWarnJoinerHasNoStar,
 	netWarnJoinerHasNoRing,
-	netWarnJoinerNoLua
+	netWarnJoinerNoLua,
+	netErrMetaserverConnectionFailure,
+	netWarnCouldNotAdvertiseOnMetaserver,
 };
 
 // (ZZZ:) Moved here from network.cpp

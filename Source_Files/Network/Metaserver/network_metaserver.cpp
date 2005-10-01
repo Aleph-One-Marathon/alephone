@@ -39,6 +39,7 @@
 #include <string>
 #include <iostream>
 #include <iterator> // ostream_iterator
+#include <algorithm>
 #include "Logging.h"
 
 using namespace std;
@@ -154,7 +155,6 @@ MetaserverClient::MetaserverClient()
 }
 
 
-
 void
 MetaserverClient::connect(const std::string& serverName, uint16 port, const std::string& userName, const std::string& userPassword)
 {
@@ -165,7 +165,7 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 	LoginAndPlayerInfoMessage theLoginMessage(userName, m_playerName, m_teamName);
 	m_channel->enqueueOutgoingMessage(theLoginMessage);
 
-	auto_ptr<SaltMessage> theSaltMessage(m_channel->receiveSpecificMessage<SaltMessage>());
+	auto_ptr<SaltMessage> theSaltMessage(m_channel->receiveSpecificMessageOrThrow<SaltMessage>());
 
 	uint8 theKey[kKeyLength];
 	uint8 thePasswordCopy[kKeyLength];
@@ -177,15 +177,15 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 	BigChunkOfDataMessage theKeyMessage(kCLIENT_KEY, theKey, sizeof(theKey));
 	m_channel->enqueueOutgoingMessage(theKeyMessage);
 
-	auto_ptr<AcceptMessage> theAcceptMessage(m_channel->receiveSpecificMessage<AcceptMessage>());
+	auto_ptr<AcceptMessage> theAcceptMessage(m_channel->receiveSpecificMessageOrThrow<AcceptMessage>());
 
 	m_channel->enqueueOutgoingMessage(LocalizationMessage());
 
-	auto_ptr<LoginSuccessfulMessage> theLoginSuccessfulMessage(m_channel->receiveSpecificMessage<LoginSuccessfulMessage>());
+	auto_ptr<LoginSuccessfulMessage> theLoginSuccessfulMessage(m_channel->receiveSpecificMessageOrThrow<LoginSuccessfulMessage>());
 
-	auto_ptr<SetPlayerDataMessage> theSetPlayerDataMessage(m_channel->receiveSpecificMessage<SetPlayerDataMessage>());
+	auto_ptr<SetPlayerDataMessage> theSetPlayerDataMessage(m_channel->receiveSpecificMessageOrThrow<SetPlayerDataMessage>());
 
-	auto_ptr<RoomListMessage> theRoomListMessage(m_channel->receiveSpecificMessage<RoomListMessage>());
+	auto_ptr<RoomListMessage> theRoomListMessage(m_channel->receiveSpecificMessageOrThrow<RoomListMessage>());
 	m_dispatcher.get()->handle(theRoomListMessage.get(), m_channel.get());
 
 	m_channel->disconnect();
@@ -197,10 +197,10 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 
 	m_channel->enqueueOutgoingMessage(NameAndTeamMessage(m_playerName, m_teamName));
 
-	auto_ptr<IDAndLimitMessage> theIDAndLimitMessage(m_channel->receiveSpecificMessage<IDAndLimitMessage>());
+	auto_ptr<IDAndLimitMessage> theIDAndLimitMessage(m_channel->receiveSpecificMessageOrThrow<IDAndLimitMessage>());
 	m_playerID = theIDAndLimitMessage->playerID();
 
-	auto_ptr<DenialMessage> theRoomAcceptMessage(m_channel->receiveSpecificMessage<DenialMessage>());
+	auto_ptr<DenialMessage> theRoomAcceptMessage(m_channel->receiveSpecificMessageOrThrow<DenialMessage>());
 
 	m_channel->setMessageHandler(m_dispatcher.get());
 }

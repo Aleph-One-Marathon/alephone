@@ -163,8 +163,12 @@ static char* sStringSetNumber132[] = {
 
     "The gatherer is using the ring protocol, but your configuration is set to star. You will not appear in the list of available players.",
 
-    "The gatherer is using a Lua netscript, but this version was built without Lua support. You will not appear in the list of available players."
-
+    "The gatherer is using a Lua netscript, but this version was built without Lua support. You will not appear in the list of available players.",
+	
+	"There was a problem connecting to the server that tracks Internet games.  Please try again later.",
+	
+	"Your game could not be advertised on the Internet.  Please distribute your public IP address by other means or try again later.",
+	
 };
 
 // STR# Resource: "Key Codes To Names"

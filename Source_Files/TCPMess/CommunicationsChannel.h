@@ -36,6 +36,7 @@
 #include <list>
 #include <string>
 #include <memory>
+#include <stdexcept>
 #include "SDL_net.h"
 
 #include "Message.h"
@@ -129,6 +130,24 @@ public:
 				  Uint32 inInactivityTimeout = kSSRAnyDataTimeout)
 	{
 		return receiveSpecificMessage<tMessage>(tMessage::kType, inOverallTimeout, inInactivityTimeout);
+	}
+
+	class FailedToReceiveSpecificMessageException : public std::runtime_error
+	{
+	public:
+		FailedToReceiveSpecificMessageException()
+			: std::runtime_error("Did not receive message of expected specific type")
+		{}
+	};
+	
+	template <typename tMessage>
+	tMessage*	receiveSpecificMessageOrThrow(Uint32 inOverallTimeout = kSSRSpecificMessageTimeout,
+				Uint32 inInactivityTimeout = kSSRAnyDataTimeout)
+	{
+		tMessage* result = receiveSpecificMessage<tMessage>(inOverallTimeout, inInactivityTimeout);
+		if (result == NULL)
+			throw FailedToReceiveSpecificMessageException();
+		return result;
 	}
 
 	// This doesn't return until timeout, disconnection, or all queued outgoing messages have

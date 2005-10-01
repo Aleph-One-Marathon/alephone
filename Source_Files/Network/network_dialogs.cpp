@@ -221,7 +221,16 @@ bool network_gather(bool inResumingGame)
 
 				auto_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
 				if(advertiseOnMetaserver)
-					metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
+				{
+					try
+					{
+						metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
+					}
+					catch (...)
+					{
+						alert_user(infoError, strNETWORK_ERRORS, netWarnCouldNotAdvertiseOnMetaserver, 0);
+					}
+				}
 
 				gather_dialog_result = GatherDialog::Create()->GatherNetworkGameByRunning();
 				
@@ -659,15 +668,22 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 	m_colourWidget->update_prefs ();
 	m_teamWidget->update_prefs ();
 
-	IPaddress result = run_network_metaserver_ui();
-	if(result.host != 0)
+	try
 	{
-		uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
-		char buffer[16];
-		snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
-		m_joinByAddressWidget->set_value (true);
-		m_joinAddressWidget->set_text (string (buffer));
-		m_joinWidget->push ();
+		IPaddress result = run_network_metaserver_ui();
+		if(result.host != 0)
+		{
+			uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
+			char buffer[16];
+			snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
+			m_joinByAddressWidget->set_value (true);
+			m_joinAddressWidget->set_text (string (buffer));
+			m_joinWidget->push ();
+		}
+	}
+	catch (...)
+	{
+		alert_user(infoError, strNETWORK_ERRORS, netErrMetaserverConnectionFailure, 0);
 	}
 }
 
