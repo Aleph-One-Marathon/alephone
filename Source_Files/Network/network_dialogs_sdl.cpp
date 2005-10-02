@@ -585,7 +585,7 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 
     // Could eventually store this path in network_preferences somewhere, so to have separate map file
     // prefs for single- and multi-player.
-	w_button* map_w = new w_button("Choose Map", respond_to_map_file_change, &d);
+	w_button* map_w = new w_button("CHOOSE MAP", respond_to_map_file_change, &d);
 	map_w->set_identifier(iCHOOSE_MAP);
 	d.add_to_tab(map_w, iSNG_GENERAL_TAB);
 	
@@ -651,7 +651,7 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 
 	d.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
 
-	w_toggle *advertise_on_metaserver_w = new w_toggle("Advertise Game on Metaserver", sAdvertiseGameOnMetaserver);
+	w_toggle *advertise_on_metaserver_w = new w_toggle("Advertise Game on Internet", sAdvertiseGameOnMetaserver);
 	advertise_on_metaserver_w->set_identifier(iADVERTISE_GAME_ON_METASERVER);
 	d.add_to_tab(advertise_on_metaserver_w, iSNG_GENERAL_TAB);
 
@@ -667,7 +667,7 @@ bool run_netgame_setup_dialog(player_info *player_information, game_info *game_i
 
 	d.add_to_tab(new w_spacer(), iSNG_STUFF_TAB);
 
-	w_toggle*   realtime_audio_w = new w_toggle("Realtime audio (broadband only)", network_preferences->allow_microphone);
+	w_toggle*   realtime_audio_w = new w_toggle("Allow Microphone", network_preferences->allow_microphone);
 	realtime_audio_w->set_identifier(iREAL_TIME_SOUND);
 	d.add_to_tab(realtime_audio_w, iSNG_STUFF_TAB);
 
@@ -956,7 +956,7 @@ public:
 
 		m_dialog.add_to_tab(new w_spacer(), iJOIN_PREJOIN_TAB);
 
-		w_button* join_by_metaserver_w = new w_button("JOIN BY METASERVER");
+		w_button* join_by_metaserver_w = new w_button("FIND INTERNET GAME");
 		m_dialog.add_to_tab(join_by_metaserver_w, iJOIN_PREJOIN_TAB);
 
 		m_dialog.add_to_tab(new w_spacer(), iJOIN_PREJOIN_TAB);
