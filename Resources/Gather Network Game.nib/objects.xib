@@ -4,7 +4,7 @@
   <object name="rootObject" class="NSCustomObject" id="1">
     <string name="customClass">NSApplication</string>
   </object>
-  <array count="16" name="allObjects">
+  <array count="17" name="allObjects">
     <object class="IBCarbonButton" id="180">
       <string name="bounds">209 170 229 277 </string>
       <int name="controlID">4</int>
@@ -22,7 +22,7 @@
     </object>
     <object class="IBCarbonRootControl" id="182">
       <string name="bounds">0 0 457 587 </string>
-      <array count="9" name="subviews">
+      <array count="10" name="subviews">
         <object class="IBCarbonGroupBox" id="188">
           <string name="bounds">8 20 189 277 </string>
           <array count="1" name="subviews">
@@ -63,7 +63,7 @@
           <string name="title">Autogather</string>
         </object>
         <object class="IBCarbonPopupButton" id="190">
-          <string name="bounds">237 20 257 186 </string>
+          <string name="bounds">237 60 257 277 </string>
           <int name="controlID">46</int>
           <object name="menu" class="IBCarbonMenu" id="191">
             <string name="title">Popup:</string>
@@ -85,10 +85,14 @@
         <object class="IBCarbonUserPane" id="195">
           <string name="bounds">277 20 407 567 </string>
         </object>
+        <object class="IBCarbonStaticText" id="196">
+          <string name="bounds">238 20 255 57 </string>
+          <string name="title">Chat:</string>
+        </object>
       </array>
     </object>
     <object class="IBCarbonWindow" id="183">
-      <string name="windowRect">44 33 501 620 </string>
+      <string name="windowRect">44 29 501 616 </string>
       <string name="title">Gather Network Game</string>
       <reference name="rootControl" idRef="182"/>
       <boolean name="hasCloseBox">FALSE</boolean>
@@ -112,8 +116,9 @@
     <reference idRef="193"/>
     <reference idRef="194"/>
     <reference idRef="195"/>
+    <reference idRef="196"/>
   </array>
-  <array count="16" name="allParents">
+  <array count="17" name="allParents">
     <reference idRef="182"/>
     <reference idRef="182"/>
     <reference idRef="183"/>
@@ -130,6 +135,7 @@
     <reference idRef="191"/>
     <reference idRef="182"/>
     <reference idRef="182"/>
+    <reference idRef="182"/>
   </array>
   <dictionary count="3" name="nameTable">
     <string>File&apos;s Owner</string>
@@ -139,5 +145,5 @@
     <string>ListView</string>
     <reference idRef="185"/>
   </dictionary>
-  <unsigned_int name="nextObjectID">196</unsigned_int>
+  <unsigned_int name="nextObjectID">197</unsigned_int>
 </object>
