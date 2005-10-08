@@ -279,8 +279,8 @@ GatherDialog::~GatherDialog()
 bool GatherDialog::GatherNetworkGameByRunning ()
 {
 	vector<string> chat_choice_labels;
-	chat_choice_labels.push_back ("Pregame Chat");
-	chat_choice_labels.push_back ("Metaserver Chat");
+	chat_choice_labels.push_back ("with joiners");
+	chat_choice_labels.push_back ("with Internet players");
 	m_chatChoiceWidget->set_labels (chat_choice_labels);
 
 	m_cancelWidget->set_callback(boost::bind(&GatherDialog::Stop, this, false));
@@ -505,8 +505,8 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 	join_result = kNetworkJoinFailedUnjoined;
 	
 	vector<string> chat_choice_labels;
-	chat_choice_labels.push_back ("Pregame Chat");
-	chat_choice_labels.push_back ("Metaserver Chat");
+	chat_choice_labels.push_back ("with joiners/gatherer");
+	chat_choice_labels.push_back ("with Internet players");
 	m_chatChoiceWidget->set_labels (chat_choice_labels);
 
 	m_colourWidget->set_labels (kTeamColorsStringSetID);
