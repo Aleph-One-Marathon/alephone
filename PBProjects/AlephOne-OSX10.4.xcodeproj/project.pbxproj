@@ -392,7 +392,7 @@
 			name = "AlephOne-Carbon (NIBs)";
 			productInstallPath = "$(USER_APPS_DIR)";
 			productName = "AlephOne-Carbon";
-			productReference = AE2DEB8C0815E0A600817EBC /* AlephOne (NIBs).app */;
+			productReference = AE2DEB8C0815E0A600817EBC /* AlephOne.app */;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
 <plist version=\"1.0\">
@@ -592,7 +592,7 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>AlephOne (NIBs)</string>
+	<string>AlephOne</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Aleph One Carbon for OS X</string>
 	<key>CFBundleIconFile</key>
@@ -1465,7 +1465,7 @@
 		AEC5528C084D499D00164A49 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = "AlephOne (NIBs).app/Contents/Frameworks";
+			dstPath = AlephOne.app/Contents/Frameworks;
 			dstSubfolderSpec = 16;
 			files = (
 				AEC552AD084D4A0100164A49 /* SDL_net.framework in CopyFiles */,
@@ -1530,7 +1530,7 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
-		AE2DEB8C0815E0A600817EBC /* AlephOne (NIBs).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AlephOne (NIBs).app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE2DEB8C0815E0A600817EBC /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialogs_mac_nibs_sdl.cpp; path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = carbon_widgets.cpp; path = ../Source_Files/Misc/carbon_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEED0864EAB7002AF754 /* carbon_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = carbon_widgets.h; path = ../Source_Files/Misc/carbon_widgets.h; sourceTree = SOURCE_ROOT; };
@@ -1994,7 +1994,7 @@
 			isa = PBXGroup;
 			children = (
 				17587328FF379C6511CA2CBB /* AlephOneSDL.app */,
-				AE2DEB8C0815E0A600817EBC /* AlephOne (NIBs).app */,
+				AE2DEB8C0815E0A600817EBC /* AlephOne.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -3961,7 +3961,7 @@
 				OTHER_REZFLAGS = "";
 				PRECOMPILE_PREFIX_HEADER = YES;
 				PREFIX_HEADER = precompiled_headers.h;
-				PRODUCT_NAME = "AlephOne (NIBs)";
+				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
 				USE_GCC3_PFE_SUPPORT = YES;
 				WARNING_CFLAGS = "";
