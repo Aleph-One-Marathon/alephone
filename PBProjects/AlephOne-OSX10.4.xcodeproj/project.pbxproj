@@ -3950,6 +3950,7 @@
 					"-fcommon",
 					"-DDEBUG",
 					"-DUSES_NIBS",
+					"-DHAVE_OPENGL",
 				);
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
