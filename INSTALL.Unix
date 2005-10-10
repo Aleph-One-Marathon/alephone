@@ -22,12 +22,12 @@ you to have Lua installed. The source is available from the official Lua site:
 
 Precompiled RPM packages of Lua can be downloaded from:
 
-  http://www.mupsych.org/~rrt/Lua
+  http://gwpr03.microlink.com.br/~acosta/lua/
 
 The mutiplayer audio chat feature of Aleph One requires the Speex library
 which can be downloaded from
 
-  http://www.speex.org/
+  http://www.speex.org
 
 
 Installing the program
