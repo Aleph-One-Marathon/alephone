@@ -923,7 +923,7 @@ static int L_Destroy_Ball(lua_State *L)
 
 static int L_Select_Weapon(lua_State *L)
 {
-	if (!lua_isnumber(L,1) || !static_cast<int>(lua_tonumber(L,2)))
+	if (!lua_isnumber(L,1))
 	{
 		lua_pushstring(L, "select_weapon: incorrect argument type");
 		lua_error(L);
