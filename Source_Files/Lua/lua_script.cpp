@@ -1713,7 +1713,7 @@ static int L_Get_Monster_Facing(lua_State *L)
 
 static int L_Set_Monster_Immunity(lua_State *L)
 {
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isboolean(L,3))
 	{
 		lua_pushstring(L, "set_monster_immunity: incorrect argument type");
 		lua_error(L);
@@ -1780,7 +1780,7 @@ static int L_Get_Monster_Weakness(lua_State *L)
 
 static int L_Set_Monster_Weakness(lua_State *L)
 {
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isboolean(L,3))
 	{
 		lua_pushstring(L, "set_monster_weakness: incorrect argument type");
 		lua_error(L);
@@ -1847,7 +1847,7 @@ static int L_Get_Monster_Friend(lua_State *L)
 
 static int L_Set_Monster_Friend(lua_State *L)
 {
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isboolean(L,3))
 	{
 		lua_pushstring(L, "set_monster_friend: incorrect argument type");
 		lua_error(L);
@@ -1915,7 +1915,7 @@ static int L_Get_Monster_Enemy(lua_State *L)
 
 static int L_Set_Monster_Enemy(lua_State *L)
 {
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isboolean(L,3))
 	{
 		lua_pushstring(L, "set_monster_enemy: incorrect argument type");
 		lua_error(L);
