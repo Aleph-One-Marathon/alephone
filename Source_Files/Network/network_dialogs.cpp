@@ -409,10 +409,15 @@ void GatherDialog::sendChat ()
 {
 	string message = m_chatEntryWidget->get_text();
 	
+#ifndef SDL
+	// It's just a little semantic difference, really.  :)
+	message = string(message.data (), message.length () - 1); // lose the last character, i.e. '\r'.
+#endif
+	
 	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
 		gMetaserverClient->sendChatMessage(message);		
 	else
-	  SendChatMessage(message);
+		SendChatMessage(message);
 	
 	m_chatEntryWidget->set_text(string());
 }
@@ -690,6 +695,10 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 void JoinDialog::sendChat ()
 {
 	string message = m_chatEntryWidget->get_text();
+	
+	// jkvw: Why don't we need NIBs to strip a trailing \r here, like in
+	// GatherDialog::sendChat and MetaserverClientUi::sendChat?
+	// Good question, burrito.
 	
 	if (m_chatChoiceWidget->get_value () == kMetaserverChat)
 		gMetaserverClient->sendChatMessage(message);		
