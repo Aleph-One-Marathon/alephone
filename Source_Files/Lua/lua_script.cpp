@@ -1982,7 +1982,7 @@ static int L_Get_Monster_Item(lua_State *L)
 
 static int L_Set_Monster_Item(lua_State *L)
 {
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
 	{
 		lua_pushstring(L, "set_monster_item: incorrect argument type");
 		lua_error(L);
