@@ -1645,24 +1645,17 @@ static int L_Get_Monster_Immunity(lua_State *L)
 		lua_pushstring(L, "get_monster_immunity: incorrect argument type");
 		lua_error(L);
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
 
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
 	int damage_type = static_cast<int>(lua_tonumber(L,2));
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
-	if(monster_index == -1)
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "get_monster_immunity: invalid monster index");
+		lua_pushstring(L, "get_monster_immunity: invalid monster type");
 		lua_error(L);
 	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if (!SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_immunity: invalid monster index");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(theMonster->type);
+	theDef = get_monster_definition_external(monster_type);
 	lua_pushboolean(L, theDef->immunities & 1<<damage_type);
 	return 1;
 }
@@ -1718,33 +1711,26 @@ static int L_Set_Monster_Immunity(lua_State *L)
 		lua_pushstring(L, "set_monster_immunity: incorrect argument type");
 		lua_error(L);
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
 	int damage_type = static_cast<int>(lua_tonumber(L,2));
 	bool immune = lua_toboolean(L,3);
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
 
-	if(monster_index == NONE)
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "set_monster_immunity: invalid monster index");
-		lua_error(L);
-	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "set_monster_immunity: invalid monster index");
+		lua_pushstring(L, "set_monster_immunity: invalid monster type");
 		lua_error(L);
 	}
 	if(immune)
 	{
-		theDef = get_monster_definition_external(theMonster->type);
+		theDef = get_monster_definition_external(monster_type);
 		theDef->immunities = theDef->immunities | 1<<damage_type;
 		return 0;
 	}
 	else
 	{
-		theDef = get_monster_definition_external(theMonster->type);
+		theDef = get_monster_definition_external(monster_type);
 		theDef->immunities = theDef->immunities & ~(1<<damage_type);
 		return 0;
 	}
@@ -1757,23 +1743,18 @@ static int L_Get_Monster_Weakness(lua_State *L)
 		lua_pushstring(L, "get_monster_weakness: incorrect argument type");
 		lua_error(L);
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
 	int damage_type = static_cast<int>(lua_tonumber(L,2));
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
-	if(monster_index == NONE)
+
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "get_monster_weakness: invalid monster index");
+		lua_pushstring(L, "get_monster_weakness: invalid monster type");
 		lua_error(L);
 	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_weakness: invalid monster index");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(theMonster->type);
+
+	theDef = get_monster_definition_external(monster_type);
 	lua_pushboolean(L, theDef->weaknesses & 1<<damage_type);
 	return 1;
 }
@@ -1785,33 +1766,26 @@ static int L_Set_Monster_Weakness(lua_State *L)
 		lua_pushstring(L, "set_monster_weakness: incorrect argument type");
 		lua_error(L);
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
 	int damage_type = static_cast<int>(lua_tonumber(L,2));
 	bool weak = lua_toboolean(L,3);
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
 
-	if(monster_index == NONE)
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "set_monster_weakness: invalid monster index");
-		lua_error(L);
-	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "set_monster_weakness: invalid monster index");
+		lua_pushstring(L, "set_monster_weakness: invalid monster type");
 		lua_error(L);
 	}
 	if(weak)
 	{
-		theDef = get_monster_definition_external(theMonster->type);
+		theDef = get_monster_definition_external(monster_type);
 		theDef->weaknesses = theDef->weaknesses | 1<<damage_type;
 		return 0;
 	}
 	else
 	{
-		theDef = get_monster_definition_external(theMonster->type);
+		theDef = get_monster_definition_external(monster_type);
 		theDef->weaknesses = theDef->weaknesses & ~(1<<damage_type);
 		return 0;
 	}
@@ -1824,24 +1798,17 @@ static int L_Get_Monster_Friend(lua_State *L)
 		lua_pushstring(L, "get_monster_friend: incorrect argument type");
 		lua_error(L);
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	int friend_type = static_cast<int>(lua_tonumber(L,2));
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
+	int friend_class = static_cast<int>(lua_tonumber(L,2));
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
-	if(monster_index == NONE)
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "get_monster_friend: invalid monster index");
+		lua_pushstring(L, "get_monster_friend: invalid monster type");
 		lua_error(L);
 	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_friend: invalid monster index");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(theMonster->type);
-	lua_pushboolean(L, theDef->friends & 1<<friend_type);
+	theDef = get_monster_definition_external(monster_type);
+	lua_pushboolean(L, theDef->friends & 1<<friend_class);
 	return 1;
 }
 
@@ -1853,34 +1820,27 @@ static int L_Set_Monster_Friend(lua_State *L)
 		lua_error(L);
 		return 0;
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	int friend_type = static_cast<int>(lua_tonumber(L,2));
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
+	int friend_class = static_cast<int>(lua_tonumber(L,2));
 	bool friendly = lua_toboolean(L,3);
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
 
-	if(monster_index == NONE)
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "set_monster_friend: invalid monster index");
-		lua_error(L);
-	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "set_monster_friend: invalid monster index");
+		lua_pushstring(L, "set_monster_friend: invalid monster type");
 		lua_error(L);
 	}
 	if(friendly)
 	{
-		theDef = get_monster_definition_external(theMonster->type);
-		theDef->friends = theDef->friends | 1<<friend_type;
+		theDef = get_monster_definition_external(monster_type);
+		theDef->friends = theDef->friends | 1<<friend_class;
 		return 0;
 	}
 	else
 	{
-		theDef = get_monster_definition_external(theMonster->type);
-		theDef->friends = theDef->friends & ~(1<<friend_type);
+		theDef = get_monster_definition_external(monster_type);
+		theDef->friends = theDef->friends & ~(1<<friend_class);
 		return 0;
 	}
 }
@@ -1892,24 +1852,18 @@ static int L_Get_Monster_Enemy(lua_State *L)
 		lua_pushstring(L, "get_monster_enemy: incorrect argument type");
 		lua_error(L);
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	int enemy_type = static_cast<int>(lua_tonumber(L,2));
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
+	int enemy_class = static_cast<int>(lua_tonumber(L,2));
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
-	if(monster_index == NONE)
+	
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "get_monster_enemy: invalid monster index");
+		lua_pushstring(L, "get_monster_enemy: invalid monster type");
 		lua_error(L);
 	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_enemy: invalid monster index");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(theMonster->type);
-	lua_pushboolean(L, theDef->enemies & 1<<enemy_type);
+	theDef = get_monster_definition_external(monster_type);
+	lua_pushboolean(L, theDef->enemies & 1<<enemy_class);
 	return 1;
 }
 
@@ -1920,35 +1874,27 @@ static int L_Set_Monster_Enemy(lua_State *L)
 		lua_pushstring(L, "set_monster_enemy: incorrect argument type");
 		lua_error(L);
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	int enemy_type = static_cast<int>(lua_tonumber(L,2));
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
+	int enemy_class = static_cast<int>(lua_tonumber(L,2));
 	bool hostile = lua_toboolean(L,3);
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
-	return 0;
 
-	if(monster_index == NONE)
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "set_monster_enemy: invalid monster index");
-		lua_error(L);
-	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "set_monster_enemy: invalid monster index");
+		lua_pushstring(L, "set_monster_enemy: invalid monster type");
 		lua_error(L);
 	}
 	if(hostile)
 	{
-		theDef = get_monster_definition_external(theMonster->type);
-		theDef->enemies = theDef->enemies | 1<<enemy_type;
+		theDef = get_monster_definition_external(monster_type);
+		theDef->enemies = theDef->enemies | 1<<enemy_class;
 		return 0;
 	}
 	else
 	{
-		theDef = get_monster_definition_external(theMonster->type);
-		theDef->enemies = theDef->enemies & ~(1<<enemy_type);
+		theDef = get_monster_definition_external(monster_type);
+		theDef->enemies = theDef->enemies & ~(1<<enemy_class);
 		return 0;
 	}
 }
@@ -1960,22 +1906,16 @@ static int L_Get_Monster_Item(lua_State *L)
 		lua_pushstring(L, "get_monster_item: incorrect argument type");
 		lua_error(L);
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
-	if(monster_index == NONE)
+
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "get_monster_item: invalid monster index");
+		lua_pushstring(L, "get_monster_item: invalid monster type");
 		lua_error(L);
 	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_item: invalid monster index");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(theMonster->type);
+	theDef = get_monster_definition_external(monster_type);
 	lua_pushnumber(L, theDef->carrying_item_type);
 	return 1;
 }
@@ -1987,24 +1927,17 @@ static int L_Set_Monster_Item(lua_State *L)
 		lua_pushstring(L, "set_monster_item: incorrect argument type");
 		lua_error(L);
 	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
+	int monster_type = static_cast<int>(lua_tonumber(L,1));
 	int item_type = static_cast<int>(lua_tonumber(L,2));
 
-	struct monster_data *theMonster;
 	struct monster_definition *theDef;
 
-	if(monster_index == NONE)
+	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
 	{
-		lua_pushstring(L, "set_monster_item: invalid monster index");
+		lua_pushstring(L, "set_monster_item: invalid monster type");
 		lua_error(L);
 	}
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if (!SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "set_monster_item: invalid monster index");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(theMonster->type);
+	theDef = get_monster_definition_external(monster_type);
 	theDef->carrying_item_type = item_type;
 	return 0;
 }
