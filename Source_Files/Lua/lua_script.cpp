@@ -4682,13 +4682,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "damage_monster", L_Damage_Monster);
 	lua_register(state, "attack_monster", L_Attack_Monster);
 	lua_register(state, "move_monster", L_Move_Monster);
-	lua_register(state, "monster_index_valid", L_Monster_Index_Valid);
-	lua_register(state, "get_monster_type", L_Get_Monster_Type);
-	lua_register(state, "get_monster_type_class", L_Get_Monster_Type_Class);
-	lua_register(state, "set_monster_type_class", L_Set_Monster_Type_Class);
-	lua_register(state, "get_monster_type", L_Get_Monster_Type);
-	lua_register(state, "get_monster_type_class", L_Get_Monster_Type_Class);
-	lua_register(state, "set_monster_type_class", L_Set_Monster_Type_Class);
 	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "get_monster_position", L_Get_Monster_Position);
 	lua_register(state, "get_monster_facing", L_Get_Monster_Facing);
