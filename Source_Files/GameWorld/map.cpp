@@ -344,6 +344,8 @@ void allocate_map_memory(
 	static_world= new static_data;
 	dynamic_world= new dynamic_data;
 	assert(static_world&&dynamic_world);
+	obj_clear(*static_world);
+	obj_clear(*dynamic_world);
 
 	// monsters= new monster_data[MAXIMUM_MONSTERS_PER_MAP];
 	// projectiles= new projectile_data[MAXIMUM_PROJECTILES_PER_MAP];
