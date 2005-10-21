@@ -622,6 +622,198 @@
 		088809F1084C1A4000DC9E4D /* NibsMetaserverClientUi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 088809F0084C1A4000DC9E4D /* NibsMetaserverClientUi.cpp */; };
 		088809F4084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */; };
 		089C165EFE840E0CC02AAC07 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
+		2B4EC1610908984D009631F8 /* AlephOne.icns in Resources */ = {isa = PBXBuildFile; fileRef = F53AB44B01F3CB1D01EF2901 /* AlephOne.icns */; };
+		2B4EC1620908984D009631F8 /* SoundsIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F56AEB6D01F8AA1201780311 /* SoundsIcon.icns */; };
+		2B4EC1630908984D009631F8 /* ShapesIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F56AEB6C01F8AA1201780311 /* ShapesIcon.icns */; };
+		2B4EC1640908984D009631F8 /* ImagesIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F56AEB6B01F8AA1201780311 /* ImagesIcon.icns */; };
+		2B4EC1650908984D009631F8 /* FilmIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3D0200FA6B01D80110 /* FilmIcon.icns */; };
+		2B4EC1660908984D009631F8 /* MapIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3E0200FA6B01D80110 /* MapIcon.icns */; };
+		2B4EC1670908984D009631F8 /* MMLIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3F0200FA6B01D80110 /* MMLIcon.icns */; };
+		2B4EC1680908984D009631F8 /* MusakIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD400200FA6B01D80110 /* MusakIcon.icns */; };
+		2B4EC1690908984D009631F8 /* PFIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD410200FA6B01D80110 /* PFIcon.icns */; };
+		2B4EC16A0908984D009631F8 /* PhysIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD420200FA6B01D80110 /* PhysIcon.icns */; };
+		2B4EC16B0908984D009631F8 /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
+		2B4EC16C0908984D009631F8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
+		2B4EC16D0908984D009631F8 /* GUI.nib in Resources */ = {isa = PBXBuildFile; fileRef = 3D3A410C04DF92C400000107 /* GUI.nib */; };
+		2B4EC16E0908984D009631F8 /* Gather Network Game.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A3083782C60063B737 /* Gather Network Game.nib */; };
+		2B4EC16F0908984D009631F8 /* Join Network Game.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A4083782C60063B737 /* Join Network Game.nib */; };
+		2B4EC1700908984D009631F8 /* Metaserver Client.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A5083782C60063B737 /* Metaserver Client.nib */; };
+		2B4EC1710908984D009631F8 /* Postgame Carnage Report.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A6083782C60063B737 /* Postgame Carnage Report.nib */; };
+		2B4EC1720908984D009631F8 /* Setup Network Game.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A7083782C60063B737 /* Setup Network Game.nib */; };
+		2B4EC1740908984D009631F8 /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
+		2B4EC1750908984D009631F8 /* csalerts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211420136A66601000001 /* csalerts.cpp */; };
+		2B4EC1760908984D009631F8 /* cscluts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211440136A66601000001 /* cscluts.cpp */; };
+		2B4EC1770908984D009631F8 /* csfiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211480136A66601000001 /* csfiles.cpp */; };
+		2B4EC1780908984D009631F8 /* csfonts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211490136A66601000001 /* csfonts.cpp */; };
+		2B4EC1790908984D009631F8 /* csmisc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114A0136A66601000001 /* csmisc.cpp */; };
+		2B4EC17A0908984D009631F8 /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
+		2B4EC17B0908984D009631F8 /* gdspec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114E0136A66601000001 /* gdspec.cpp */; };
+		2B4EC17C0908984D009631F8 /* my32bqd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114F0136A66601000001 /* my32bqd.cpp */; };
+		2B4EC17D0908984D009631F8 /* csdialogs_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F536742802014FC301A80001 /* csdialogs_macintosh.cpp */; };
+		2B4EC17E0908984D009631F8 /* hashtable.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117A0136A6FD01000001 /* hashtable.c */; };
+		2B4EC17F0908984D009631F8 /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117B0136A6FD01000001 /* xmlparse.c */; };
+		2B4EC1800908984D009631F8 /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117C0136A6FD01000001 /* xmlrole.c */; };
+		2B4EC1810908984D009631F8 /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117D0136A6FD01000001 /* xmltok.c */; };
+		2B4EC1820908984D009631F8 /* Model3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4301E77D5701BA387C /* Model3D.cpp */; };
+		2B4EC1830908984D009631F8 /* ModelRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4501E77D5701BA387C /* ModelRenderer.cpp */; };
+		2B4EC1840908984D009631F8 /* StudioLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4A01E77D5701BA387C /* StudioLoader.cpp */; };
+		2B4EC1850908984D009631F8 /* WavefrontLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4C01E77D5701BA387C /* WavefrontLoader.cpp */; };
+		2B4EC1860908984D009631F8 /* network_games.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137F0136ABAE01000001 /* network_games.cpp */; };
+		2B4EC1870908984D009631F8 /* script_instructions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139B0136AC1601000001 /* script_instructions.cpp */; };
+		2B4EC1880908984D009631F8 /* script_parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139C0136AC1601000001 /* script_parser.cpp */; };
+		2B4EC1890908984D009631F8 /* scripting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139D0136AC1601000001 /* scripting.cpp */; };
+		2B4EC18A0908984D009631F8 /* OGL_Dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211EB0136A6FD01000001 /* OGL_Dialog.cpp */; };
+		2B4EC18B0908984D009631F8 /* PlayerDialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120A0136A6FD01000001 /* PlayerDialogs.cpp */; };
+		2B4EC18C0908984D009631F8 /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
+		2B4EC18D0908984D009631F8 /* game_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211960136A6FD01000001 /* game_dialogs.cpp */; };
+		2B4EC18E0908984D009631F8 /* game_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211970136A6FD01000001 /* game_errors.cpp */; };
+		2B4EC18F0908984D009631F8 /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C40136A6FD01000001 /* interface.cpp */; };
+		2B4EC1900908984D009631F8 /* keyboard_dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211CC0136A6FD01000001 /* keyboard_dialog.cpp */; };
+		2B4EC1910908984D009631F8 /* preferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120F0136A6FD01000001 /* preferences.cpp */; };
+		2B4EC1920908984D009631F8 /* progress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212130136A6FD01000001 /* progress.cpp */; };
+		2B4EC1930908984D009631F8 /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
+		2B4EC1940908984D009631F8 /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
+		2B4EC1950908984D009631F8 /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
+		2B4EC1960908984D009631F8 /* interface_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C10136A6FD01000001 /* interface_macintosh.cpp */; };
+		2B4EC1970908984D009631F8 /* vbl_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212570136A6FD01000001 /* vbl_macintosh.cpp */; };
+		2B4EC1980908984D009631F8 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
+		2B4EC1990908984D009631F8 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
+		2B4EC19A0908984D009631F8 /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
+		2B4EC19B0908984D009631F8 /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
+		2B4EC19C0908984D009631F8 /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
+		2B4EC19D0908984D009631F8 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
+		2B4EC19E0908984D009631F8 /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
+		2B4EC19F0908984D009631F8 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
+		2B4EC1A00908984D009631F8 /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
+		2B4EC1A10908984D009631F8 /* ActionQueues.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A00022023FDA1601A80001 /* ActionQueues.cpp */; };
+		2B4EC1A20908984D009631F8 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
+		2B4EC1A30908984D009631F8 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920B0240D09B01A80001 /* FileHandler.cpp */; };
+		2B4EC1A40908984D009631F8 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
+		2B4EC1A50908984D009631F8 /* find_files.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920E0240D09B01A80001 /* find_files.cpp */; };
+		2B4EC1A60908984D009631F8 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
+		2B4EC1A70908984D009631F8 /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
+		2B4EC1A80908984D009631F8 /* preprocess_map_mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92120240D09B01A80001 /* preprocess_map_mac.cpp */; };
+		2B4EC1A90908984D009631F8 /* wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92150240D09B01A80001 /* wad.cpp */; };
+		2B4EC1AA0908984D009631F8 /* wad_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92160240D09B01A80001 /* wad_macintosh.cpp */; };
+		2B4EC1AB0908984D009631F8 /* wad_prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92170240D09B01A80001 /* wad_prefs.cpp */; };
+		2B4EC1AC0908984D009631F8 /* wad_prefs_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92180240D09B01A80001 /* wad_prefs_macintosh.cpp */; };
+		2B4EC1AD0908984D009631F8 /* devices.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC924F0240D28201A80001 /* devices.cpp */; };
+		2B4EC1AE0908984D009631F8 /* dynamic_limits.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92500240D28201A80001 /* dynamic_limits.cpp */; };
+		2B4EC1AF0908984D009631F8 /* effects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92540240D28201A80001 /* effects.cpp */; };
+		2B4EC1B00908984D009631F8 /* flood_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92560240D28201A80001 /* flood_map.cpp */; };
+		2B4EC1B10908984D009631F8 /* items.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92590240D28201A80001 /* items.cpp */; };
+		2B4EC1B20908984D009631F8 /* lightsource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC925B0240D28201A80001 /* lightsource.cpp */; };
+		2B4EC1B30908984D009631F8 /* map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC925D0240D28201A80001 /* map.cpp */; };
+		2B4EC1B40908984D009631F8 /* map_constructors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC925F0240D28201A80001 /* map_constructors.cpp */; };
+		2B4EC1B50908984D009631F8 /* marathon2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92600240D28201A80001 /* marathon2.cpp */; };
+		2B4EC1B60908984D009631F8 /* media.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92610240D28201A80001 /* media.cpp */; };
+		2B4EC1B70908984D009631F8 /* monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92650240D28201A80001 /* monsters.cpp */; };
+		2B4EC1B80908984D009631F8 /* pathfinding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92670240D28201A80001 /* pathfinding.cpp */; };
+		2B4EC1B90908984D009631F8 /* physics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92680240D28201A80001 /* physics.cpp */; };
+		2B4EC1BA0908984D009631F8 /* placement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC926A0240D28201A80001 /* placement.cpp */; };
+		2B4EC1BB0908984D009631F8 /* platforms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC926C0240D28201A80001 /* platforms.cpp */; };
+		2B4EC1BC0908984D009631F8 /* player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC926E0240D28201A80001 /* player.cpp */; };
+		2B4EC1BD0908984D009631F8 /* projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92710240D28201A80001 /* projectiles.cpp */; };
+		2B4EC1BE0908984D009631F8 /* scenery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92730240D28201A80001 /* scenery.cpp */; };
+		2B4EC1BF0908984D009631F8 /* weapons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92770240D28201A80001 /* weapons.cpp */; };
+		2B4EC1C00908984D009631F8 /* world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92790240D28201A80001 /* world.cpp */; };
+		2B4EC1C10908984D009631F8 /* ISp_Support.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92DA0240D54401A80001 /* ISp_Support.cpp */; };
+		2B4EC1C20908984D009631F8 /* mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92DB0240D54401A80001 /* mouse.cpp */; };
+		2B4EC1C30908984D009631F8 /* AnimatedTextures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92E40240D56101A80001 /* AnimatedTextures.cpp */; };
+		2B4EC1C40908984D009631F8 /* Crosshairs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92E70240D56101A80001 /* Crosshairs.cpp */; };
+		2B4EC1C50908984D009631F8 /* ImageLoader_Macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92EB0240D56101A80001 /* ImageLoader_Macintosh.cpp */; };
+		2B4EC1C60908984D009631F8 /* OGL_Faders.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92EE0240D56101A80001 /* OGL_Faders.cpp */; };
+		2B4EC1C70908984D009631F8 /* OGL_Render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92F00240D56101A80001 /* OGL_Render.cpp */; };
+		2B4EC1C80908984D009631F8 /* OGL_Setup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92F20240D56101A80001 /* OGL_Setup.cpp */; };
+		2B4EC1C90908984D009631F8 /* OGL_Textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92F40240D56101A80001 /* OGL_Textures.cpp */; };
+		2B4EC1CA0908984D009631F8 /* render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92FC0240D56101A80001 /* render.cpp */; };
+		2B4EC1CB0908984D009631F8 /* RenderPlaceObjs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92FE0240D56101A80001 /* RenderPlaceObjs.cpp */; };
+		2B4EC1CC0908984D009631F8 /* RenderRasterize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93000240D56101A80001 /* RenderRasterize.cpp */; };
+		2B4EC1CD0908984D009631F8 /* RenderSortPoly.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93020240D56101A80001 /* RenderSortPoly.cpp */; };
+		2B4EC1CE0908984D009631F8 /* RenderVisTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93040240D56101A80001 /* RenderVisTree.cpp */; };
+		2B4EC1CF0908984D009631F8 /* scottish_textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93070240D56101A80001 /* scottish_textures.cpp */; };
+		2B4EC1D00908984D009631F8 /* shapes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC930C0240D56101A80001 /* shapes.cpp */; };
+		2B4EC1D10908984D009631F8 /* textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC930F0240D56101A80001 /* textures.cpp */; };
+		2B4EC1D20908984D009631F8 /* ChaseCam.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938C0240D85D01A80001 /* ChaseCam.cpp */; };
+		2B4EC1D30908984D009631F8 /* computer_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938D0240D85D01A80001 /* computer_interface.cpp */; };
+		2B4EC1D40908984D009631F8 /* fades.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938E0240D85D01A80001 /* fades.cpp */; };
+		2B4EC1D50908984D009631F8 /* FontHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938F0240D85D01A80001 /* FontHandler.cpp */; };
+		2B4EC1D60908984D009631F8 /* game_window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93900240D85D01A80001 /* game_window.cpp */; };
+		2B4EC1D70908984D009631F8 /* game_window_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93820240D85D01A80001 /* game_window_macintosh.cpp */; };
+		2B4EC1D80908984D009631F8 /* HUDRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93910240D85D01A80001 /* HUDRenderer.cpp */; };
+		2B4EC1D90908984D009631F8 /* HUDRenderer_OGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93920240D85D01A80001 /* HUDRenderer_OGL.cpp */; };
+		2B4EC1DA0908984D009631F8 /* HUDRenderer_SW.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93930240D85D01A80001 /* HUDRenderer_SW.cpp */; };
+		2B4EC1DB0908984D009631F8 /* images.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93940240D85D01A80001 /* images.cpp */; };
+		2B4EC1DC0908984D009631F8 /* motion_sensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93950240D85D01A80001 /* motion_sensor.cpp */; };
+		2B4EC1DD0908984D009631F8 /* overhead_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93960240D85D01A80001 /* overhead_map.cpp */; };
+		2B4EC1DE0908984D009631F8 /* OverheadMap_OGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93970240D85D01A80001 /* OverheadMap_OGL.cpp */; };
+		2B4EC1DF0908984D009631F8 /* OverheadMap_QD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93840240D85D01A80001 /* OverheadMap_QD.cpp */; };
+		2B4EC1E00908984D009631F8 /* OverheadMapRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93980240D85D01A80001 /* OverheadMapRenderer.cpp */; };
+		2B4EC1E10908984D009631F8 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93990240D85D01A80001 /* screen.cpp */; };
+		2B4EC1E20908984D009631F8 /* screen_drawing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC939A0240D85D01A80001 /* screen_drawing.cpp */; };
+		2B4EC1E30908984D009631F8 /* TextLayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */; };
+		2B4EC1E40908984D009631F8 /* TextStrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A30240D85D01A80001 /* TextStrings.cpp */; };
+		2B4EC1E50908984D009631F8 /* ViewControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A50240D85D01A80001 /* ViewControl.cpp */; };
+		2B4EC1E60908984D009631F8 /* music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94180240DA4401A80001 /* music.cpp */; };
+		2B4EC1E70908984D009631F8 /* mysound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94190240DA4401A80001 /* mysound.cpp */; };
+		2B4EC1E80908984D009631F8 /* ColorParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943A0240DE0E01A80001 /* ColorParser.cpp */; };
+		2B4EC1E90908984D009631F8 /* DamageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943B0240DE0E01A80001 /* DamageParser.cpp */; };
+		2B4EC1EA0908984D009631F8 /* ShapesParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */; };
+		2B4EC1EB0908984D009631F8 /* XML_Configure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */; };
+		2B4EC1EC0908984D009631F8 /* XML_DataBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943E0240DE0E01A80001 /* XML_DataBlock.cpp */; };
+		2B4EC1ED0908984D009631F8 /* XML_ElementParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943F0240DE0E01A80001 /* XML_ElementParser.cpp */; };
+		2B4EC1EE0908984D009631F8 /* XML_LevelScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94400240DE0E01A80001 /* XML_LevelScript.cpp */; };
+		2B4EC1EF0908984D009631F8 /* XML_MakeRoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */; };
+		2B4EC1F00908984D009631F8 /* XML_ResourceFork.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94360240DE0E01A80001 /* XML_ResourceFork.cpp */; };
+		2B4EC1F10908984D009631F8 /* Packing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5837191031EEE0201000105 /* Packing.cpp */; };
+		2B4EC1F20908984D009631F8 /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
+		2B4EC1F30908984D009631F8 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A603DC9D1C00000104 /* Logging.cpp */; };
+		2B4EC1F40908984D009631F8 /* CarbonSndPlayDB.c in Sources */ = {isa = PBXBuildFile; fileRef = 3DF2716B03EDBAA800000104 /* CarbonSndPlayDB.c */; };
+		2B4EC1F50908984D009631F8 /* network_microphone_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF2716F03EDBBF100000104 /* network_microphone_shared.cpp */; };
+		2B4EC1F60908984D009631F8 /* network_speaker_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF2717103EDBBF100000104 /* network_speaker_shared.cpp */; };
+		2B4EC1F70908984D009631F8 /* network_speaker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138A0136ABAE01000001 /* network_speaker.cpp */; };
+		2B4EC1F80908984D009631F8 /* network_microphone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213830136ABAE01000001 /* network_microphone.cpp */; };
+		2B4EC1F90908984D009631F8 /* preprocess_map_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D5F21430403230F00000104 /* preprocess_map_shared.cpp */; };
+		2B4EC1FA0908984D009631F8 /* OGL_Model_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */; };
+		2B4EC1FB0908984D009631F8 /* OGL_Subst_Texture_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */; };
+		2B4EC1FC0908984D009631F8 /* lua_script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F51B058B047AC6DA01C5C930 /* lua_script.cpp */; };
+		2B4EC1FD0908984D009631F8 /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
+		2B4EC1FE0908984D009631F8 /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
+		2B4EC1FF0908984D009631F8 /* NetworkGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CB04819BD700A8000D /* NetworkGameProtocol.cpp */; };
+		2B4EC2000908984D009631F8 /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
+		2B4EC2010908984D009631F8 /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
+		2B4EC2020908984D009631F8 /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
+		2B4EC2030908984D009631F8 /* network_speex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EFBAF0150485BEA500A8000D /* network_speex.cpp */; };
+		2B4EC2040908984D009631F8 /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
+		2B4EC2050908984D009631F8 /* CircularByteBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */; };
+		2B4EC2060908984D009631F8 /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
+		2B4EC2070908984D009631F8 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
+		2B4EC2080908984D009631F8 /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
+		2B4EC2090908984D009631F8 /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
+		2B4EC20A0908984D009631F8 /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
+		2B4EC20B0908984D009631F8 /* metaserver_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87957D07D11E120078D26B /* metaserver_dialogs.cpp */; };
+		2B4EC20C0908984D009631F8 /* metaserver_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87957F07D11E120078D26B /* metaserver_messages.cpp */; };
+		2B4EC20D0908984D009631F8 /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
+		2B4EC20E0908984D009631F8 /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
+		2B4EC20F0908984D009631F8 /* network_dialogs_mac_nibs_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */; };
+		2B4EC2100908984D009631F8 /* NibsMetaserverClientUi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 088809F0084C1A4000DC9E4D /* NibsMetaserverClientUi.cpp */; };
+		2B4EC2110908984D009631F8 /* carbon_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */; };
+		2B4EC2120908984D009631F8 /* network_capabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE5604DD086F6DF100D9797C /* network_capabilities.cpp */; };
+		2B4EC2130908984D009631F8 /* shared_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE437C8E08779BE500038E30 /* shared_widgets.cpp */; };
+		2B4EC2140908984D009631F8 /* Console.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC6C89B0879A5DE0055EC57 /* Console.cpp */; };
+		2B4EC2160908984D009631F8 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F502014D2D01A80001 /* Carbon.framework */; };
+		2B4EC2170908984D009631F8 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5830B4001E776DE01BA387C /* OpenGL.framework */; };
+		2B4EC2180908984D009631F8 /* QuickTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F602014D2D01A80001 /* QuickTime.framework */; };
+		2B4EC2190908984D009631F8 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F702014D2D01A80001 /* ApplicationServices.framework */; };
+		2B4EC21A0908984D009631F8 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F802014D2D01A80001 /* AGL.framework */; };
+		2B4EC21B0908984D009631F8 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F902014D2D01A80001 /* CoreServices.framework */; };
+		2B4EC21C0908984D009631F8 /* SDL_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
+		2B4EC21D0908984D009631F8 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
+		2B4EC21E0908984D009631F8 /* libobjc.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5F21460403247500000104 /* libobjc.A.dylib */; };
+		2B4EC2200908984D009631F8 /* CarbonResourceTweaks.r in Rez */ = {isa = PBXBuildFile; fileRef = F5D37B6F022D35A901A80001 /* CarbonResourceTweaks.r */; };
+		2B4EC2210908984D009631F8 /* SemiTpt.r in Rez */ = {isa = PBXBuildFile; fileRef = F536740602014E1C01A80001 /* SemiTpt.r */; };
+		2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
+		2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		3D22699203F6BB2C00000104 /* network_microphone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213830136ABAE01000001 /* network_microphone.cpp */; };
 		3D5F21440403230F00000104 /* preprocess_map_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D5F21430403230F00000104 /* preprocess_map_shared.cpp */; };
 		3DAC27AB03DC9D1C00000104 /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
@@ -1462,6 +1654,17 @@
 /* End PBXBuildStyle section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		2B4EC2230908984D009631F8 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = AlephOne.app/Contents/Frameworks;
+			dstSubfolderSpec = 16;
+			files = (
+				2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */,
+				2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AEC5528C084D499D00164A49 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1494,6 +1697,8 @@
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		17587328FF379C6511CA2CBB /* AlephOneSDL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B4EC22D0908984E009631F8 /* Info-AlephOne_Carbon__NIBs___Upgraded_.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist"; sourceTree = "<group>"; };
+		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D3A410C04DF92C400000107 /* GUI.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = GUI.nib; path = ../Resources/GUI.nib; sourceTree = SOURCE_ROOT; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
 		3D5F21460403247500000104 /* libobjc.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.A.dylib; path = /usr/lib/libobjc.A.dylib; sourceTree = "<absolute>"; };
@@ -1530,7 +1735,7 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
-		AE2DEB8C0815E0A600817EBC /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE2DEB8C0815E0A600817EBC /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialogs_mac_nibs_sdl.cpp; path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = carbon_widgets.cpp; path = ../Source_Files/Misc/carbon_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEED0864EAB7002AF754 /* carbon_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = carbon_widgets.h; path = ../Source_Files/Misc/carbon_widgets.h; sourceTree = SOURCE_ROOT; };
@@ -1971,6 +2176,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2B4EC2150908984D009631F8 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B4EC2160908984D009631F8 /* Carbon.framework in Frameworks */,
+				2B4EC2170908984D009631F8 /* OpenGL.framework in Frameworks */,
+				2B4EC2180908984D009631F8 /* QuickTime.framework in Frameworks */,
+				2B4EC2190908984D009631F8 /* ApplicationServices.framework in Frameworks */,
+				2B4EC21A0908984D009631F8 /* AGL.framework in Frameworks */,
+				2B4EC21B0908984D009631F8 /* CoreServices.framework in Frameworks */,
+				2B4EC21C0908984D009631F8 /* SDL_net.framework in Frameworks */,
+				2B4EC21D0908984D009631F8 /* SDL.framework in Frameworks */,
+				2B4EC21E0908984D009631F8 /* libobjc.A.dylib in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AE2DEB7D0815E0A600817EBC /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1995,6 +2216,7 @@
 			children = (
 				17587328FF379C6511CA2CBB /* AlephOneSDL.app */,
 				AE2DEB8C0815E0A600817EBC /* AlephOne.app */,
+				2B4EC22E09089851009631F8 /* AlephOne.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2007,6 +2229,7 @@
 				EF2EF5B004819A5C00A8000D /* Frameworks */,
 				29B97323FDCFA39411CA2CEA /* Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
+				2B4EC22D0908984E009631F8 /* Info-AlephOne_Carbon__NIBs___Upgraded_.plist */,
 			);
 			name = "SDL Application";
 			sourceTree = "<group>";
@@ -3277,6 +3500,96 @@
 		};
 /* End PBXHeadersBuildPhase section */
 
+/* Begin PBXNativeTarget section */
+		2B4EC09B0908984D009631F8 /* AlephOne-Carbon (NIBs) (Upgraded) */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2B4EC2260908984D009631F8 /* Build configuration list for PBXNativeTarget "AlephOne-Carbon (NIBs) (Upgraded)" */;
+			buildPhases = (
+				2B4EC1600908984D009631F8 /* Resources */,
+				2B4EC1730908984D009631F8 /* Sources */,
+				2B4EC2150908984D009631F8 /* Frameworks */,
+				2B4EC21F0908984D009631F8 /* Rez */,
+				2B4EC2220908984D009631F8 /* ShellScript */,
+				2B4EC2230908984D009631F8 /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"${HOME}/Library/Frameworks",
+					/Library/Frameworks,
+				);
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					.,
+					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
+					"${HOME}/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL.framework/Headers,
+				);
+				JAVA_ARCHIVE_COMPRESSION = YES;
+				JAVA_COMPILER = /usr/bin/jikes;
+				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
+				JAVA_COMPILER_FLAGS = "-O";
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+				);
+				OTHER_CFLAGS = (
+					"-g",
+					"-Dmac",
+					"-DTARGET_API_MAC_CARBON",
+					"-DUSE_CARBON_ACCESSORS",
+					"-DSUPPRESS_MACOS_CLASSIC",
+					"-DUSE_SHEETS=1",
+					"-DHAVE_SDL_NET=1",
+					"-DHAVE_UNISTD_H",
+					"-DHAVE_CORE_GRAPHICS",
+					"-DAPPLICATION_IS_BUNDLED",
+					"-DEXPLICIT_CARBON_HEADER",
+					"-DHAVE_LUA",
+					"-DSPEEX",
+					"-fcommon",
+					"-DDEBUG",
+					"-DUSES_NIBS",
+				);
+				OTHER_LDFLAGS = (
+					"-flat_namespace",
+					"-llua",
+					"-llualib",
+					"-lspeex",
+				);
+				OTHER_REZFLAGS = "";
+				PRECOMPILE_PREFIX_HEADER = YES;
+				PREFIX_HEADER = precompiled_headers.h;
+				PRODUCT_NAME = "AlephOne (NIBs)";
+				SECTORDER_FLAGS = "";
+				USE_GCC3_PFE_SUPPORT = YES;
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-import",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"-Wstrict-aliasing",
+				);
+				WRAPPER_EXTENSION = app;
+			};
+			dependencies = (
+			);
+			name = "AlephOne-Carbon (NIBs) (Upgraded)";
+			productInstallPath = "$(USER_APPS_DIR)";
+			productName = "AlephOne-Carbon";
+			productReference = 2B4EC22E09089851009631F8 /* AlephOne.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
@@ -3295,6 +3608,7 @@
 			projectDirPath = "";
 			targets = (
 				AE2DEA130815E0A600817EBC /* AlephOne-Carbon (NIBs) */,
+				2B4EC09B0908984D009631F8 /* AlephOne-Carbon (NIBs) (Upgraded) */,
 				29B97326FDCFA39411CA2CEA /* AlephOne-SDL */,
 			);
 		};
@@ -3317,6 +3631,31 @@
 				F5CFAD480200FA6B01D80110 /* PFIcon.icns in Resources */,
 				F5CFAD490200FA6B01D80110 /* PhysIcon.icns in Resources */,
 				F5CFAD4A0200FA6B01D80110 /* SaveIcon.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2B4EC1600908984D009631F8 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B4EC1610908984D009631F8 /* AlephOne.icns in Resources */,
+				2B4EC1620908984D009631F8 /* SoundsIcon.icns in Resources */,
+				2B4EC1630908984D009631F8 /* ShapesIcon.icns in Resources */,
+				2B4EC1640908984D009631F8 /* ImagesIcon.icns in Resources */,
+				2B4EC1650908984D009631F8 /* FilmIcon.icns in Resources */,
+				2B4EC1660908984D009631F8 /* MapIcon.icns in Resources */,
+				2B4EC1670908984D009631F8 /* MMLIcon.icns in Resources */,
+				2B4EC1680908984D009631F8 /* MusakIcon.icns in Resources */,
+				2B4EC1690908984D009631F8 /* PFIcon.icns in Resources */,
+				2B4EC16A0908984D009631F8 /* PhysIcon.icns in Resources */,
+				2B4EC16B0908984D009631F8 /* SaveIcon.icns in Resources */,
+				2B4EC16C0908984D009631F8 /* InfoPlist.strings in Resources */,
+				2B4EC16D0908984D009631F8 /* GUI.nib in Resources */,
+				2B4EC16E0908984D009631F8 /* Gather Network Game.nib in Resources */,
+				2B4EC16F0908984D009631F8 /* Join Network Game.nib in Resources */,
+				2B4EC1700908984D009631F8 /* Metaserver Client.nib in Resources */,
+				2B4EC1710908984D009631F8 /* Postgame Carnage Report.nib in Resources */,
+				2B4EC1720908984D009631F8 /* Setup Network Game.nib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3355,6 +3694,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2B4EC21F0908984D009631F8 /* Rez */ = {
+			isa = PBXRezBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B4EC2200908984D009631F8 /* CarbonResourceTweaks.r in Rez */,
+				2B4EC2210908984D009631F8 /* SemiTpt.r in Rez */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AE2DEB870815E0A600817EBC /* Rez */ = {
 			isa = PBXRezBuildPhase;
 			buildActionMask = 2147483647;
@@ -3367,6 +3715,19 @@
 /* End PBXRezBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		2B4EC2220908984D009631F8 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "DTE=`date \"+20%y%m%d\"`\nperl -pi -e \"s/XVERSIONX/$DTE/g\" build/AlephOne.app/Contents/Info.plist";
+		};
 		AE2DEB8B0815E0A600817EBC /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -3558,6 +3919,174 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		2B4EC1730908984D009631F8 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B4EC1740908984D009631F8 /* byte_swapping.cpp in Sources */,
+				2B4EC1750908984D009631F8 /* csalerts.cpp in Sources */,
+				2B4EC1760908984D009631F8 /* cscluts.cpp in Sources */,
+				2B4EC1770908984D009631F8 /* csfiles.cpp in Sources */,
+				2B4EC1780908984D009631F8 /* csfonts.cpp in Sources */,
+				2B4EC1790908984D009631F8 /* csmisc.cpp in Sources */,
+				2B4EC17A0908984D009631F8 /* csstrings.cpp in Sources */,
+				2B4EC17B0908984D009631F8 /* gdspec.cpp in Sources */,
+				2B4EC17C0908984D009631F8 /* my32bqd.cpp in Sources */,
+				2B4EC17D0908984D009631F8 /* csdialogs_macintosh.cpp in Sources */,
+				2B4EC17E0908984D009631F8 /* hashtable.c in Sources */,
+				2B4EC17F0908984D009631F8 /* xmlparse.c in Sources */,
+				2B4EC1800908984D009631F8 /* xmlrole.c in Sources */,
+				2B4EC1810908984D009631F8 /* xmltok.c in Sources */,
+				2B4EC1820908984D009631F8 /* Model3D.cpp in Sources */,
+				2B4EC1830908984D009631F8 /* ModelRenderer.cpp in Sources */,
+				2B4EC1840908984D009631F8 /* StudioLoader.cpp in Sources */,
+				2B4EC1850908984D009631F8 /* WavefrontLoader.cpp in Sources */,
+				2B4EC1860908984D009631F8 /* network_games.cpp in Sources */,
+				2B4EC1870908984D009631F8 /* script_instructions.cpp in Sources */,
+				2B4EC1880908984D009631F8 /* script_parser.cpp in Sources */,
+				2B4EC1890908984D009631F8 /* scripting.cpp in Sources */,
+				2B4EC18A0908984D009631F8 /* OGL_Dialog.cpp in Sources */,
+				2B4EC18B0908984D009631F8 /* PlayerDialogs.cpp in Sources */,
+				2B4EC18C0908984D009631F8 /* PlayerName.cpp in Sources */,
+				2B4EC18D0908984D009631F8 /* game_dialogs.cpp in Sources */,
+				2B4EC18E0908984D009631F8 /* game_errors.cpp in Sources */,
+				2B4EC18F0908984D009631F8 /* interface.cpp in Sources */,
+				2B4EC1900908984D009631F8 /* keyboard_dialog.cpp in Sources */,
+				2B4EC1910908984D009631F8 /* preferences.cpp in Sources */,
+				2B4EC1920908984D009631F8 /* progress.cpp in Sources */,
+				2B4EC1930908984D009631F8 /* shell.cpp in Sources */,
+				2B4EC1940908984D009631F8 /* shell_misc.cpp in Sources */,
+				2B4EC1950908984D009631F8 /* vbl.cpp in Sources */,
+				2B4EC1960908984D009631F8 /* interface_macintosh.cpp in Sources */,
+				2B4EC1970908984D009631F8 /* vbl_macintosh.cpp in Sources */,
+				2B4EC1980908984D009631F8 /* SSLP_limited.cpp in Sources */,
+				2B4EC1990908984D009631F8 /* SDL_netx.cpp in Sources */,
+				2B4EC19A0908984D009631F8 /* network_data_formats.cpp in Sources */,
+				2B4EC19B0908984D009631F8 /* network_udp.cpp in Sources */,
+				2B4EC19C0908984D009631F8 /* network_lookup_sdl.cpp in Sources */,
+				2B4EC19D0908984D009631F8 /* thread_priority_sdl_macosx.cpp in Sources */,
+				2B4EC19E0908984D009631F8 /* Dim3_Loader.cpp in Sources */,
+				2B4EC19F0908984D009631F8 /* network.cpp in Sources */,
+				2B4EC1A00908984D009631F8 /* network_dialogs.cpp in Sources */,
+				2B4EC1A10908984D009631F8 /* ActionQueues.cpp in Sources */,
+				2B4EC1A20908984D009631F8 /* crc.cpp in Sources */,
+				2B4EC1A30908984D009631F8 /* FileHandler.cpp in Sources */,
+				2B4EC1A40908984D009631F8 /* filetypes_macintosh.cpp in Sources */,
+				2B4EC1A50908984D009631F8 /* find_files.cpp in Sources */,
+				2B4EC1A60908984D009631F8 /* game_wad.cpp in Sources */,
+				2B4EC1A70908984D009631F8 /* import_definitions.cpp in Sources */,
+				2B4EC1A80908984D009631F8 /* preprocess_map_mac.cpp in Sources */,
+				2B4EC1A90908984D009631F8 /* wad.cpp in Sources */,
+				2B4EC1AA0908984D009631F8 /* wad_macintosh.cpp in Sources */,
+				2B4EC1AB0908984D009631F8 /* wad_prefs.cpp in Sources */,
+				2B4EC1AC0908984D009631F8 /* wad_prefs_macintosh.cpp in Sources */,
+				2B4EC1AD0908984D009631F8 /* devices.cpp in Sources */,
+				2B4EC1AE0908984D009631F8 /* dynamic_limits.cpp in Sources */,
+				2B4EC1AF0908984D009631F8 /* effects.cpp in Sources */,
+				2B4EC1B00908984D009631F8 /* flood_map.cpp in Sources */,
+				2B4EC1B10908984D009631F8 /* items.cpp in Sources */,
+				2B4EC1B20908984D009631F8 /* lightsource.cpp in Sources */,
+				2B4EC1B30908984D009631F8 /* map.cpp in Sources */,
+				2B4EC1B40908984D009631F8 /* map_constructors.cpp in Sources */,
+				2B4EC1B50908984D009631F8 /* marathon2.cpp in Sources */,
+				2B4EC1B60908984D009631F8 /* media.cpp in Sources */,
+				2B4EC1B70908984D009631F8 /* monsters.cpp in Sources */,
+				2B4EC1B80908984D009631F8 /* pathfinding.cpp in Sources */,
+				2B4EC1B90908984D009631F8 /* physics.cpp in Sources */,
+				2B4EC1BA0908984D009631F8 /* placement.cpp in Sources */,
+				2B4EC1BB0908984D009631F8 /* platforms.cpp in Sources */,
+				2B4EC1BC0908984D009631F8 /* player.cpp in Sources */,
+				2B4EC1BD0908984D009631F8 /* projectiles.cpp in Sources */,
+				2B4EC1BE0908984D009631F8 /* scenery.cpp in Sources */,
+				2B4EC1BF0908984D009631F8 /* weapons.cpp in Sources */,
+				2B4EC1C00908984D009631F8 /* world.cpp in Sources */,
+				2B4EC1C10908984D009631F8 /* ISp_Support.cpp in Sources */,
+				2B4EC1C20908984D009631F8 /* mouse.cpp in Sources */,
+				2B4EC1C30908984D009631F8 /* AnimatedTextures.cpp in Sources */,
+				2B4EC1C40908984D009631F8 /* Crosshairs.cpp in Sources */,
+				2B4EC1C50908984D009631F8 /* ImageLoader_Macintosh.cpp in Sources */,
+				2B4EC1C60908984D009631F8 /* OGL_Faders.cpp in Sources */,
+				2B4EC1C70908984D009631F8 /* OGL_Render.cpp in Sources */,
+				2B4EC1C80908984D009631F8 /* OGL_Setup.cpp in Sources */,
+				2B4EC1C90908984D009631F8 /* OGL_Textures.cpp in Sources */,
+				2B4EC1CA0908984D009631F8 /* render.cpp in Sources */,
+				2B4EC1CB0908984D009631F8 /* RenderPlaceObjs.cpp in Sources */,
+				2B4EC1CC0908984D009631F8 /* RenderRasterize.cpp in Sources */,
+				2B4EC1CD0908984D009631F8 /* RenderSortPoly.cpp in Sources */,
+				2B4EC1CE0908984D009631F8 /* RenderVisTree.cpp in Sources */,
+				2B4EC1CF0908984D009631F8 /* scottish_textures.cpp in Sources */,
+				2B4EC1D00908984D009631F8 /* shapes.cpp in Sources */,
+				2B4EC1D10908984D009631F8 /* textures.cpp in Sources */,
+				2B4EC1D20908984D009631F8 /* ChaseCam.cpp in Sources */,
+				2B4EC1D30908984D009631F8 /* computer_interface.cpp in Sources */,
+				2B4EC1D40908984D009631F8 /* fades.cpp in Sources */,
+				2B4EC1D50908984D009631F8 /* FontHandler.cpp in Sources */,
+				2B4EC1D60908984D009631F8 /* game_window.cpp in Sources */,
+				2B4EC1D70908984D009631F8 /* game_window_macintosh.cpp in Sources */,
+				2B4EC1D80908984D009631F8 /* HUDRenderer.cpp in Sources */,
+				2B4EC1D90908984D009631F8 /* HUDRenderer_OGL.cpp in Sources */,
+				2B4EC1DA0908984D009631F8 /* HUDRenderer_SW.cpp in Sources */,
+				2B4EC1DB0908984D009631F8 /* images.cpp in Sources */,
+				2B4EC1DC0908984D009631F8 /* motion_sensor.cpp in Sources */,
+				2B4EC1DD0908984D009631F8 /* overhead_map.cpp in Sources */,
+				2B4EC1DE0908984D009631F8 /* OverheadMap_OGL.cpp in Sources */,
+				2B4EC1DF0908984D009631F8 /* OverheadMap_QD.cpp in Sources */,
+				2B4EC1E00908984D009631F8 /* OverheadMapRenderer.cpp in Sources */,
+				2B4EC1E10908984D009631F8 /* screen.cpp in Sources */,
+				2B4EC1E20908984D009631F8 /* screen_drawing.cpp in Sources */,
+				2B4EC1E30908984D009631F8 /* TextLayoutHelper.cpp in Sources */,
+				2B4EC1E40908984D009631F8 /* TextStrings.cpp in Sources */,
+				2B4EC1E50908984D009631F8 /* ViewControl.cpp in Sources */,
+				2B4EC1E60908984D009631F8 /* music.cpp in Sources */,
+				2B4EC1E70908984D009631F8 /* mysound.cpp in Sources */,
+				2B4EC1E80908984D009631F8 /* ColorParser.cpp in Sources */,
+				2B4EC1E90908984D009631F8 /* DamageParser.cpp in Sources */,
+				2B4EC1EA0908984D009631F8 /* ShapesParser.cpp in Sources */,
+				2B4EC1EB0908984D009631F8 /* XML_Configure.cpp in Sources */,
+				2B4EC1EC0908984D009631F8 /* XML_DataBlock.cpp in Sources */,
+				2B4EC1ED0908984D009631F8 /* XML_ElementParser.cpp in Sources */,
+				2B4EC1EE0908984D009631F8 /* XML_LevelScript.cpp in Sources */,
+				2B4EC1EF0908984D009631F8 /* XML_MakeRoot.cpp in Sources */,
+				2B4EC1F00908984D009631F8 /* XML_ResourceFork.cpp in Sources */,
+				2B4EC1F10908984D009631F8 /* Packing.cpp in Sources */,
+				2B4EC1F20908984D009631F8 /* DefaultStringSets.cpp in Sources */,
+				2B4EC1F30908984D009631F8 /* Logging.cpp in Sources */,
+				2B4EC1F40908984D009631F8 /* CarbonSndPlayDB.c in Sources */,
+				2B4EC1F50908984D009631F8 /* network_microphone_shared.cpp in Sources */,
+				2B4EC1F60908984D009631F8 /* network_speaker_shared.cpp in Sources */,
+				2B4EC1F70908984D009631F8 /* network_speaker.cpp in Sources */,
+				2B4EC1F80908984D009631F8 /* network_microphone.cpp in Sources */,
+				2B4EC1F90908984D009631F8 /* preprocess_map_shared.cpp in Sources */,
+				2B4EC1FA0908984D009631F8 /* OGL_Model_Def.cpp in Sources */,
+				2B4EC1FB0908984D009631F8 /* OGL_Subst_Texture_Def.cpp in Sources */,
+				2B4EC1FC0908984D009631F8 /* lua_script.cpp in Sources */,
+				2B4EC1FD0908984D009631F8 /* network_star_hub.cpp in Sources */,
+				2B4EC1FE0908984D009631F8 /* network_star_spoke.cpp in Sources */,
+				2B4EC1FF0908984D009631F8 /* NetworkGameProtocol.cpp in Sources */,
+				2B4EC2000908984D009631F8 /* RingGameProtocol.cpp in Sources */,
+				2B4EC2010908984D009631F8 /* StarGameProtocol.cpp in Sources */,
+				2B4EC2020908984D009631F8 /* AStream.cpp in Sources */,
+				2B4EC2030908984D009631F8 /* network_speex.cpp in Sources */,
+				2B4EC2040908984D009631F8 /* mytm_sdl.cpp in Sources */,
+				2B4EC2050908984D009631F8 /* CircularByteBuffer.cpp in Sources */,
+				2B4EC2060908984D009631F8 /* CommunicationsChannel.cpp in Sources */,
+				2B4EC2070908984D009631F8 /* Message.cpp in Sources */,
+				2B4EC2080908984D009631F8 /* MessageDispatcher.cpp in Sources */,
+				2B4EC2090908984D009631F8 /* MessageHandler.cpp in Sources */,
+				2B4EC20A0908984D009631F8 /* MessageInflater.cpp in Sources */,
+				2B4EC20B0908984D009631F8 /* metaserver_dialogs.cpp in Sources */,
+				2B4EC20C0908984D009631F8 /* metaserver_messages.cpp in Sources */,
+				2B4EC20D0908984D009631F8 /* network_metaserver.cpp in Sources */,
+				2B4EC20E0908984D009631F8 /* network_messages.cpp in Sources */,
+				2B4EC20F0908984D009631F8 /* network_dialogs_mac_nibs_sdl.cpp in Sources */,
+				2B4EC2100908984D009631F8 /* NibsMetaserverClientUi.cpp in Sources */,
+				2B4EC2110908984D009631F8 /* carbon_widgets.cpp in Sources */,
+				2B4EC2120908984D009631F8 /* network_capabilities.cpp in Sources */,
+				2B4EC2130908984D009631F8 /* shared_widgets.cpp in Sources */,
+				2B4EC2140908984D009631F8 /* Console.cpp in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		AE2DEAE00815E0A600817EBC /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -3740,6 +4269,467 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		2B4EC2270908984D009631F8 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"${HOME}/Library/Frameworks",
+					/Library/Frameworks,
+				);
+				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = precompiled_headers.h;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					mac,
+					TARGET_API_MAC_CARBON,
+					USE_CARBON_ACCESSORS,
+					SUPPRESS_MACOS_CLASSIC,
+					"USE_SHEETS=1",
+					"HAVE_SDL_NET=1",
+					HAVE_UNISTD_H,
+					HAVE_CORE_GRAPHICS,
+					APPLICATION_IS_BUNDLED,
+					EXPLICIT_CARBON_HEADER,
+					HAVE_LUA,
+					SPEEX,
+					DEBUG,
+					USES_NIBS,
+					DEBUG,
+					HAVE_OPENGL,
+				);
+				GCC_USE_GCC3_PFE_SUPPORT = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					.,
+					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
+					"${HOME}/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL.framework/Headers,
+				);
+				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
+				JAVA_ARCHIVE_COMPRESSION = YES;
+				JAVA_COMPILER = /usr/bin/jikes;
+				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
+				JAVA_COMPILER_FLAGS = "-O";
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+				);
+				OTHER_CFLAGS = "-fcommon";
+				OTHER_LDFLAGS = (
+					"-flat_namespace",
+					"-llua",
+					"-llualib",
+					"-lspeex",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = AlephOne;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-import",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"-Wstrict-aliasing",
+				);
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = NO;
+			};
+			name = Development;
+		};
+		2B4EC2280908984D009631F8 /* Development no precomps */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CC = /usr/bin/gcc3;
+				COPY_PHASE_STRIP = NO;
+				CPLUSPLUS = "/usr/bin/g++3";
+				FRAMEWORK_SEARCH_PATHS = (
+					"${HOME}/Library/Frameworks",
+					/Library/Frameworks,
+				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					mac,
+					TARGET_API_MAC_CARBON,
+					USE_CARBON_ACCESSORS,
+					SUPPRESS_MACOS_CLASSIC,
+					"USE_SHEETS=1",
+					"HAVE_SDL_NET=1",
+					HAVE_UNISTD_H,
+					HAVE_CORE_GRAPHICS,
+					APPLICATION_IS_BUNDLED,
+					EXPLICIT_CARBON_HEADER,
+					HAVE_LUA,
+					SPEEX,
+					DEBUG,
+					USES_NIBS,
+					DEBUG,
+				);
+				GCC_USE_GCC3_PFE_SUPPORT = YES;
+				GCC_VERSION = 3.x;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					.,
+					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
+					"${HOME}/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL.framework/Headers,
+				);
+				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
+				JAVA_ARCHIVE_COMPRESSION = YES;
+				JAVA_COMPILER = /usr/bin/jikes;
+				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
+				JAVA_COMPILER_FLAGS = "-O";
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+				);
+				OTHER_CFLAGS = "-fcommon";
+				OTHER_LDFLAGS = (
+					"-flat_namespace",
+					"-llua",
+					"-llualib",
+					"-lspeex",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "AlephOne (NIBs)";
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-import",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"-Wstrict-aliasing",
+				);
+				WRAPPER_EXTENSION = app;
+			};
+			name = "Development no precomps";
+		};
+		2B4EC2290908984D009631F8 /* Deployment */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				FRAMEWORK_SEARCH_PATHS = (
+					"${HOME}/Library/Frameworks",
+					/Library/Frameworks,
+				);
+				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_MODEL_TUNING = G3;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = precompiled_headers.h;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					mac,
+					TARGET_API_MAC_CARBON,
+					USE_CARBON_ACCESSORS,
+					SUPPRESS_MACOS_CLASSIC,
+					"USE_SHEETS=1",
+					"HAVE_SDL_NET=1",
+					HAVE_UNISTD_H,
+					HAVE_CORE_GRAPHICS,
+					APPLICATION_IS_BUNDLED,
+					EXPLICIT_CARBON_HEADER,
+					HAVE_LUA,
+					SPEEX,
+					DEBUG,
+					USES_NIBS,
+					HAVE_OPENGL,
+				);
+				GCC_USE_GCC3_PFE_SUPPORT = YES;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					.,
+					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
+					"${HOME}/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL.framework/Headers,
+				);
+				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
+				JAVA_ARCHIVE_COMPRESSION = YES;
+				JAVA_COMPILER = /usr/bin/jikes;
+				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
+				JAVA_COMPILER_FLAGS = "-O";
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+				);
+				OTHER_CFLAGS = "-fcommon";
+				OTHER_LDFLAGS = (
+					"-flat_namespace",
+					"-llua",
+					"-llualib",
+					"-lspeex",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = AlephOne;
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = "";
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = NO;
+			};
+			name = Deployment;
+		};
+		2B4EC22A0908984D009631F8 /* Development (gcc 3.3 transitional) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CC = "/usr/bin/gcc-3.3";
+				COPY_PHASE_STRIP = NO;
+				CPLUSPLUS = "/usr/bin/g++-3.3";
+				FRAMEWORK_SEARCH_PATHS = (
+					"${HOME}/Library/Frameworks",
+					/Library/Frameworks,
+				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = precompiled_headers.h;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					mac,
+					TARGET_API_MAC_CARBON,
+					USE_CARBON_ACCESSORS,
+					SUPPRESS_MACOS_CLASSIC,
+					"USE_SHEETS=1",
+					"HAVE_SDL_NET=1",
+					HAVE_UNISTD_H,
+					HAVE_CORE_GRAPHICS,
+					APPLICATION_IS_BUNDLED,
+					EXPLICIT_CARBON_HEADER,
+					HAVE_LUA,
+					SPEEX,
+					DEBUG,
+					USES_NIBS,
+					DEBUG,
+				);
+				GCC_USE_GCC3_PFE_SUPPORT = YES;
+				GCC_VERSION = 3.x;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					.,
+					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
+					"${HOME}/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL.framework/Headers,
+				);
+				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
+				JAVA_ARCHIVE_COMPRESSION = YES;
+				JAVA_COMPILER = /usr/bin/jikes;
+				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
+				JAVA_COMPILER_FLAGS = "-O";
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+				);
+				OTHER_CFLAGS = "-fcommon";
+				OTHER_LDFLAGS = (
+					"-flat_namespace",
+					"-llua",
+					"-llualib",
+					"-lspeex",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "AlephOne (NIBs)";
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-import",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"-Wstrict-aliasing",
+				);
+				WRAPPER_EXTENSION = app;
+			};
+			name = "Development (gcc 3.3 transitional)";
+		};
+		2B4EC22B0908984D009631F8 /* Deployment (gcc 3.3) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CC = "/usr/bin/gcc-3.3";
+				COPY_PHASE_STRIP = YES;
+				CPLUSPLUS = "/usr/bin/g++-3.3";
+				FRAMEWORK_SEARCH_PATHS = (
+					"${HOME}/Library/Frameworks",
+					/Library/Frameworks,
+				);
+				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_MODEL_TUNING = G3;
+				GCC_PRECOMPILE_PREFIX_HEADER = NO;
+				GCC_PREFIX_HEADER = "";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					mac,
+					TARGET_API_MAC_CARBON,
+					USE_CARBON_ACCESSORS,
+					SUPPRESS_MACOS_CLASSIC,
+					"USE_SHEETS=1",
+					"HAVE_SDL_NET=1",
+					HAVE_UNISTD_H,
+					HAVE_CORE_GRAPHICS,
+					APPLICATION_IS_BUNDLED,
+					EXPLICIT_CARBON_HEADER,
+					HAVE_LUA,
+					SPEEX,
+					DEBUG,
+					USES_NIBS,
+				);
+				GCC_USE_GCC3_PFE_SUPPORT = YES;
+				GCC_VERSION = 3.x;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = NO;
+				GCC_WARN_UNKNOWN_PRAGMAS = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					.,
+					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
+					"${HOME}/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL.framework/Headers,
+				);
+				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
+				JAVA_ARCHIVE_COMPRESSION = YES;
+				JAVA_COMPILER = /usr/bin/jikes;
+				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
+				JAVA_COMPILER_FLAGS = "-O";
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+				);
+				OTHER_CFLAGS = "-fcommon";
+				OTHER_LDFLAGS = (
+					"-flat_namespace",
+					"-llua",
+					"-llualib",
+					"-lspeex",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "AlephOne (NIBs)";
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-import",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"-Wstrict-aliasing",
+				);
+				WRAPPER_EXTENSION = app;
+			};
+			name = "Deployment (gcc 3.3)";
+		};
+		2B4EC22C0908984D009631F8 /* Default */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				FRAMEWORK_SEARCH_PATHS = (
+					"${HOME}/Library/Frameworks",
+					/Library/Frameworks,
+				);
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = precompiled_headers.h;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					mac,
+					TARGET_API_MAC_CARBON,
+					USE_CARBON_ACCESSORS,
+					SUPPRESS_MACOS_CLASSIC,
+					"USE_SHEETS=1",
+					"HAVE_SDL_NET=1",
+					HAVE_UNISTD_H,
+					HAVE_CORE_GRAPHICS,
+					APPLICATION_IS_BUNDLED,
+					EXPLICIT_CARBON_HEADER,
+					HAVE_LUA,
+					SPEEX,
+					DEBUG,
+					USES_NIBS,
+				);
+				GCC_USE_GCC3_PFE_SUPPORT = YES;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					.,
+					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
+					"${HOME}/Library/Frameworks/SDL.framework/Headers",
+					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL.framework/Headers,
+				);
+				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
+				JAVA_ARCHIVE_COMPRESSION = YES;
+				JAVA_COMPILER = /usr/bin/jikes;
+				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
+				JAVA_COMPILER_FLAGS = "-O";
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
+				LIBRARY_SEARCH_PATHS = (
+					/usr/local/lib,
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+				);
+				OTHER_CFLAGS = "-fcommon";
+				OTHER_LDFLAGS = (
+					"-flat_namespace",
+					"-llua",
+					"-llualib",
+					"-lspeex",
+				);
+				OTHER_REZFLAGS = "";
+				PRODUCT_NAME = "AlephOne (NIBs)";
+				SECTORDER_FLAGS = "";
+				WARNING_CFLAGS = (
+					"-Wmost",
+					"-Wno-import",
+					"-Wno-four-char-constants",
+					"-Wno-unknown-pragmas",
+					"-Wstrict-aliasing",
+				);
+				WRAPPER_EXTENSION = app;
+			};
+			name = Default;
+		};
 		AE097FD008800A9F00C690F9 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -3805,7 +4795,7 @@
 				OTHER_REZFLAGS = "";
 				PRECOMPILE_PREFIX_HEADER = YES;
 				PREFIX_HEADER = precompiled_headers.h;
-				PRODUCT_NAME = "AlephOne (NIBs)";
+				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
 				USE_GCC3_PFE_SUPPORT = YES;
 				WARNING_CFLAGS = (
@@ -4694,6 +5684,19 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		2B4EC2260908984D009631F8 /* Build configuration list for PBXNativeTarget "AlephOne-Carbon (NIBs) (Upgraded)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2B4EC2270908984D009631F8 /* Development */,
+				2B4EC2280908984D009631F8 /* Development no precomps */,
+				2B4EC2290908984D009631F8 /* Deployment */,
+				2B4EC22A0908984D009631F8 /* Development (gcc 3.3 transitional) */,
+				2B4EC22B0908984D009631F8 /* Deployment (gcc 3.3) */,
+				2B4EC22C0908984D009631F8 /* Default */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Default;
+		};
 		AE097FCF08800A9F00C690F9 /* Build configuration list for PBXApplicationTarget "AlephOne-Carbon (NIBs)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
