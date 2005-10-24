@@ -79,7 +79,6 @@ bool XML_DynLimValueParser::Start()
 		for (int i = 0; i < NUMBER_OF_DYNAMIC_LIMITS; i++)
 			original_dynamic_limits[i] = dynamic_limits[i];
 	}
-
 	IsPresent = false;
 	return true;
 }
@@ -136,12 +135,12 @@ bool XML_DynLimParser::End()
 	ObjectList.resize(MAXIMUM_OBJECTS_PER_MAP);
 	MonsterList.resize(MAXIMUM_MONSTERS_PER_MAP);
 	ProjectileList.resize(MAXIMUM_PROJECTILES_PER_MAP);
-
+#if 0
 	objlist_clear(effects, EffectList.size());
 	objlist_clear(projectiles,  ProjectileList.size());
 	objlist_clear(monsters,  MonsterList.size());
 	objlist_clear(objects,  ObjectList.size());
-	
+#endif	
 	// Resize the array of paths also
 	allocate_pathfinding_memory();
 	
