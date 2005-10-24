@@ -110,7 +110,8 @@ bool MotionSensorActive = true;
 
 struct interface_state_data interface_state;
 
-struct weapon_interface_data weapon_interface_definitions[10] =
+#define NUMBER_OF_WEAPON_INTERFACE_DEFINITIONS	10
+struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTERFACE_DEFINITIONS] =
 {
 	/* Mac, the knife.. */
 	{
@@ -674,6 +675,8 @@ bool XML_AmmoDisplayParser::AttributesDone()
 static XML_AmmoDisplayParser AmmoDisplayParser;
 
 
+struct weapon_interface_data *original_weapon_interface_definitions = NULL;
+
 class XML_WeaponDisplayParser: public XML_ElementParser
 {
 	// Intended one to replace
@@ -690,12 +693,21 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_WeaponDisplayParser(): XML_ElementParser("weapon") {}
 };
 
 bool XML_WeaponDisplayParser::Start()
 {
+	// back up old values first
+	if (!original_weapon_interface_definitions) {
+		original_weapon_interface_definitions = (struct weapon_interface_data *) malloc(sizeof(struct weapon_interface_data) * NUMBER_OF_WEAPON_INTERFACE_DEFINITIONS);
+		assert(original_weapon_interface_definitions);
+		for (unsigned i = 0; i < NUMBER_OF_WEAPON_INTERFACE_DEFINITIONS; i++)
+			original_weapon_interface_definitions[i] = weapon_interface_definitions[i];
+	}
+
 	IndexPresent = false;
 	for (int k=0; k<NumberOfValues; k++)
 		IsPresent[k] = false;
@@ -816,8 +828,18 @@ bool XML_WeaponDisplayParser::AttributesDone()
 	return true;
 }
 
-static XML_WeaponDisplayParser WeaponDisplayParser;
+bool XML_WeaponDisplayParser::ResetValues()
+{
+	if (original_weapon_interface_definitions) {
+		for (unsigned i = 0; i < NUMBER_OF_WEAPON_INTERFACE_DEFINITIONS; i++)
+			weapon_interface_definitions[i] = original_weapon_interface_definitions[i];
+		free(original_weapon_interface_definitions);
+		original_weapon_interface_definitions = NULL;
+	}
+	return true;
+}
 
+static XML_WeaponDisplayParser WeaponDisplayParser;
 
 class XML_InterfaceParser: public XML_ElementParser
 {
@@ -836,7 +858,7 @@ public:
 		UnrecognizedTag();
 		return false;
 	}
-	
+
 	XML_InterfaceParser(): XML_ElementParser("interface") {}
 };
 
