@@ -613,7 +613,7 @@ bool open_sound_file(FileSpecifier& File)
 	// Load MML resources in file
 	// Be sure to ignore not-found errors
 #if defined(mac)
-	short SavedType, SavedError = SavedError = get_game_error(&SavedType);
+	short SavedType, SavedError = get_game_error(&SavedType);
 	XML_LoadFromResourceFork(File);
 	set_game_error(SavedType,SavedError);
 #endif
@@ -1857,7 +1857,8 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
-	
+	bool ResetValues();
+
 	XML_SoundOptionsParser(): XML_ElementParser("sound") {}
 };
 
@@ -1924,6 +1925,12 @@ bool XML_SoundOptionsParser::AttributesDone()
 	DataEntry.OptionsData = Data;
 	SOList.push_back(DataEntry);
 	
+	return true;
+}
+
+bool XML_SoundOptionsParser::ResetValues()
+{
+	SOList.clear();
 	return true;
 }
 
