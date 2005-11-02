@@ -327,8 +327,7 @@ void GatherDialog::idle ()
 		map<int, prospective_joiner_info>::iterator it;
 		it = m_ungathered_players.begin ();
 		while (it != m_ungathered_players.end () && NetGetNumberOfPlayers() < MAXIMUM_NUMBER_OF_PLAYERS) {
-			gathered_player ((*it).second);
-			++it;
+			gathered_player ((it++)->second);
 		}
 	}
 }
