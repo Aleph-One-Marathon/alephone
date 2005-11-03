@@ -229,7 +229,7 @@ struct control_panel_settings_definition control_panel_settings = {
 
 /* ------------ private prototypes */
 
-static control_panel_definition *get_control_panel_definition(
+control_panel_definition *get_control_panel_definition(
 	const short control_panel_type);
 
 static short find_action_key_target(short player_index, world_distance range, short *target_type);

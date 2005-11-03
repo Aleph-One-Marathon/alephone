@@ -157,6 +157,31 @@ extern bool MotionSensorActive;
 
 extern void destroy_players_ball(short player_index);
 
+enum // control panel sounds
+{
+	_activating_sound,
+	_deactivating_sound,
+	_unusuable_sound,
+	
+	NUMBER_OF_CONTROL_PANEL_SOUNDS
+};
+
+struct control_panel_definition
+{
+	int16 _class;
+	uint16 flags;
+	
+	int16 collection;
+	int16 active_shape, inactive_shape;
+
+	int16 sounds[NUMBER_OF_CONTROL_PANEL_SOUNDS];
+	_fixed sound_frequency;
+	
+	int16 item;
+};
+
+extern control_panel_definition *get_control_panel_definition(const short control_panel_type);
+
 struct monster_pathfinding_data
 {
 	struct monster_definition *definition;
@@ -3548,9 +3573,13 @@ static int L_Set_Terminal_Text_Number(lua_State *L)
 	if (line_side_has_control_panel(line_index, polygon_index, &side_index))
 	{
 		struct side_data *side_data = get_side_data(side_index);
-		if (side_data && SIDE_IS_CONTROL_PANEL(side_data) && side_data->control_panel_type == _panel_is_computer_terminal)
+		if (side_data && SIDE_IS_CONTROL_PANEL(side_data))
 		{
-			side_data->control_panel_permutation = terminal_text_id;
+			struct control_panel_definition *definition= get_control_panel_definition(side_data->control_panel_type);
+			if (definition->_class == _panel_is_computer_terminal)
+			{
+				side_data->control_panel_permutation = terminal_text_id;
+			}
 		}
 	}
 	return 0;
