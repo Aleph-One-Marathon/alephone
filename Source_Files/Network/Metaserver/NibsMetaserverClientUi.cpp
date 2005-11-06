@@ -92,10 +92,10 @@ private:
 	Modal_Dialog m_dialog;
 };
 
-auto_ptr<MetaserverClientUi>
+std::auto_ptr<MetaserverClientUi>
 MetaserverClientUi::Create()
 {
-	return auto_ptr<MetaserverClientUi>(new NibsMetaserverClientUi);
+	return std::auto_ptr<MetaserverClientUi>(new NibsMetaserverClientUi);
 }
 
 #endif // !defined(DISABLE_NETWORKING)

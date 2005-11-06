@@ -81,6 +81,8 @@ const string ListWidgetValueForItem(const prospective_joiner_info* element)
 const string ListWidgetValueForItem(const GameListMessage::GameListEntry* element)
 	{ return element == NULL ? string() : element->name(); }
 
+extern void _get_player_color(size_t color_index, RGBColor *color);
+
 // helper for PlayersInGameWidget::pigDrawer
 static void calculate_box_colors(
 	short color_index,

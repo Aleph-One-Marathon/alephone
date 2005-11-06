@@ -31,9 +31,15 @@
 #include	"NibsUiHelpers.h"
 #include	"metaserver_messages.h" // for GameListMessage
 #include	"network.h" // for prospective_joiner_info
+#include	"tags.h" // for Typecode
 
 #include <boost/static_assert.hpp>
 #include <boost/bind.hpp>
+
+#include <string>
+#include <vector>
+using std::string;
+using std::vector;
 
 class NIBsControlWidget
 {
@@ -78,7 +84,7 @@ public:
 	void set_callback (ControlHitCallback callback) { m_control_watcher.set_callback (callback); }
 	
 	void set_labels (int stringset) { set_labels (build_stringvector_from_stringset (stringset)); }
-	void set_labels (const std::vector<std::string>& labels);
+	void set_labels (const vector<std::string>& labels);
 	
 	int get_value () { return GetControl32BitValue (m_ctrl) - 1; }
 	void set_value (int value) { SetControl32BitValue (m_ctrl, value + 1); }
@@ -243,7 +249,7 @@ private:
 	)
 	{
 		string value = ListWidgetValueForItem(ItemForItemId(itemId));
-		auto_ptr<SelfReleasingCFStringRef> valueCfString = StringToCFString(value);
+		std::auto_ptr<SelfReleasingCFStringRef> valueCfString = StringToCFString(value);
 		SetDataBrowserItemDataText(itemData, valueCfString->StringRef());
 		return noErr;
 	}
