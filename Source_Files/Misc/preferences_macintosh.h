@@ -106,6 +106,7 @@ April 19, 2003 (Woody Zenfell):
 #endif
 
 #include "map.h" // for difficulty levels
+#include "player.h" // kTeamColorsStringSetID
 
 using std::map;
 using std::vector;
