@@ -24,6 +24,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include <boost/function.hpp>
 
@@ -365,7 +366,7 @@ class AutoTabHandler : public AutoWatcher
 {
 public:
 
-	AutoTabHandler (ControlRef in_tab, vector<ControlRef> in_panes)
+	AutoTabHandler (ControlRef in_tab, std::vector<ControlRef> in_panes)
 		: AutoWatcher (in_tab, 1, TabControlEvents)
 		, tab (in_tab)
 		, panes (in_panes)
@@ -380,7 +381,7 @@ private:
 	void SetActiveTab (int new_value);
 	
 	ControlRef tab;
-	vector<ControlRef> panes;
+	std::vector<ControlRef> panes;
 	int old_value;
 };
 
