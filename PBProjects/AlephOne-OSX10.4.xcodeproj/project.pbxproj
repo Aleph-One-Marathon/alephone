@@ -392,7 +392,7 @@
 			name = "AlephOne-Carbon (NIBs)";
 			productInstallPath = "$(USER_APPS_DIR)";
 			productName = "AlephOne-Carbon";
-			productReference = AE2DEB8C0815E0A600817EBC /* AlephOne.app */;
+			productReference = AE2DEB8C0815E0A600817EBC /* AlephOne (NIBs).app */;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
 <plist version=\"1.0\">
@@ -1735,7 +1735,7 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
-		AE2DEB8C0815E0A600817EBC /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE2DEB8C0815E0A600817EBC /* AlephOne (NIBs).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AlephOne (NIBs).app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialogs_mac_nibs_sdl.cpp; path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = carbon_widgets.cpp; path = ../Source_Files/Misc/carbon_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEED0864EAB7002AF754 /* carbon_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = carbon_widgets.h; path = ../Source_Files/Misc/carbon_widgets.h; sourceTree = SOURCE_ROOT; };
@@ -2215,7 +2215,7 @@
 			isa = PBXGroup;
 			children = (
 				17587328FF379C6511CA2CBB /* AlephOneSDL.app */,
-				AE2DEB8C0815E0A600817EBC /* AlephOne.app */,
+				AE2DEB8C0815E0A600817EBC /* AlephOne (NIBs).app */,
 				2B4EC22E09089851009631F8 /* AlephOne.app */,
 			);
 			name = Products;
@@ -4607,7 +4607,7 @@
 					USES_NIBS,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				GCC_VERSION = 3.x;
+				GCC_VERSION = 3.3;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
 				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
@@ -4646,7 +4646,7 @@
 					"-lspeex",
 				);
 				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "AlephOne (NIBs)";
+				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
 				WARNING_CFLAGS = (
 					"-Wmost",
