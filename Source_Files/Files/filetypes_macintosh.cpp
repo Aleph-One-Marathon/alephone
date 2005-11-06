@@ -54,7 +54,7 @@ April 16, 2003 (Woody Zenfell):
 #include <map>
 
 using std::map;
-
+using std::vector;
 
 // Global: typecode list
 
