@@ -524,10 +524,10 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 	
         AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
 
-        try {
+	try {
 		uint32	thePacketMagic;
 		ps >> thePacketMagic;
-	
+		
                 switch(thePacketMagic)
                 {
                         case kSpokeToHubGameDataPacketV1Magic:
@@ -541,23 +541,23 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 					
 				// Unconnected players should not have entries in sAddressToPlayerIndex
 				assert(getNetworkPlayer(theSenderIndex).mConnected);
-				
 				hub_received_game_data_packet_v1(ps, theSenderIndex);
 			}
 			break;
 
 			case kSpokeToHubIdentificationMagic:
+				fprintf(stderr, "handling identification packet\n");
 				hub_received_identification_packet(ps, inPacket->sourceAddress);
 			break;
 
                         default:
 			break;
                 }
-        }
+	}
         catch (...)
-        {
-                // ignore errors - we just discard the packet, effectively.
-        }
+	{
+		// ignore errors - we just discard the packet, effectively.
+	}
 
         check_send_packet_to_spoke();
 }
@@ -628,7 +628,9 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
         // Skip redundant flags without processing/checking them
         int	theRedundantActionFlagsCount = theQueue.getWriteTick() - theStartTick;
         int	theRedundantDataLength = theRedundantActionFlagsCount * kActionFlagsSerializedLength;
-        ps.ignore(theRedundantDataLength);
+	ps.ignore(theRedundantDataLength);
+
+
 
         // Enqueue flags that are new to us
         int	theUsefulActionFlagsCount = theActionFlagsCount - theRedundantActionFlagsCount;
