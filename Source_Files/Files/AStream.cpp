@@ -23,6 +23,7 @@
 #if !defined(DISABLE_NETWORKING)
  
 #include "AStream.h"
+#include <string.h>
 
 using namespace std;
 
@@ -314,14 +315,26 @@ bool AStream::basic_astream<T>::bound_check(uint32 delta)
 
 AStream::failure::failure(const std::string& str) throw()
 {
-	strncpy(_M_name, str.c_str(), _M_bufsize);
-	_M_name[_M_bufsize] = 0;
+	_M_name = strdup(str.c_str());
 }
 
-const char*	AStream::failure::what() const throw()
-{
-	return _M_name;
+AStream::failure::failure(const failure &f) {
+	if (f._M_name) {
+		_M_name = strdup(f._M_name);
+	}
 }
+
+AStream::failure::~failure() throw() {
+	if (_M_name) {
+		free(_M_name);
+		_M_name = NULL;
+	}
+}
+
+ const char*	AStream::failure::what() const throw()
+ {
+	 return _M_name;
+ }
 
 #endif // !defined(DISABLE_NETWORKING)
 

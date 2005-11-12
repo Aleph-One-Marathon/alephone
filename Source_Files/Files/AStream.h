@@ -42,15 +42,15 @@ namespace AStream
 	{
 		public:
 			failure(const std::string& __str) throw();
-      
+			failure(const failure &f);
+			~failure() throw();
 			const char*
 			what() const throw();
 
 		private:
-      enum { _M_bufsize = 256 };
-      char _M_name[_M_bufsize];
+			char * _M_name;
 	};
-	
+
 	template <typename T>
 	class basic_astream
 	{
