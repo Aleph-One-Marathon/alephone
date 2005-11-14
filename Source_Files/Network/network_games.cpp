@@ -270,8 +270,8 @@ void initialize_net_game(
 		case _game_of_defense:
 			// calculate the center of the hill
 			{
-				long x = 0, y = 0;
-				short count = 0;
+				int32 x = 0, y = 0;
+				int16 count = 0;
 				struct polygon_data *polygon;
 				short polygon_index;
 				
@@ -284,8 +284,6 @@ void initialize_net_game(
 					}
 				}
 				
-				assert(sizeof(x) - sizeof(count) <= sizeof(dynamic_world->game_beacon.x));
-				assert(sizeof(y) - sizeof(count) <= sizeof(dynamic_world->game_beacon.y));
 				if (count > 0) {
 				  dynamic_world->game_beacon.x= static_cast<world_distance>(x/count);
 				  dynamic_world->game_beacon.y= static_cast<world_distance>(y/count);
