@@ -10,9 +10,9 @@ FILETYPE 1
   BLOCK "040904E4"
   {
    VALUE "AppName", "Aleph One"
-   VALUE "AppVersion", "0.15"
+   VALUE "AppVersion", "0.16pre"
    VALUE "BuildDate", "BUILDDATE"
-   VALUE "FileVersion", "0.15"
+   VALUE "FileVersion", "0.16pre"
    VALUE "FileDescription", "Aleph One/SDL for Win32"
    VALUE "LegalCopyright", "GNU General Public License"
    VALUE "License", "GNU General Public License (For details, see the file COPYING)"
