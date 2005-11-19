@@ -161,7 +161,7 @@ clearly this is all broken until we have packet types
 extern bool gLoadingLuaNetscript;
 
 // change this if you make a major change to the way the setup messages work
-const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT P2";
+const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT V1";
 
 /* ---------- globals */
 
