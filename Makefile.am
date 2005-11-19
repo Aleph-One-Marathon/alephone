@@ -10,6 +10,10 @@ EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows Makefile.BeOS
 
 dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
+	mkdir -p ${srcdir}/Libraries
+	cp -r ${srcdir}/Libraries ${distdir}/Libraries
+	rmdir --ignore-fail-on-non-empty ${srcdir}/Libraries
+	rmdir --ignore-fail-on-non-empty ${distdir}/Libraries
 
 # Rule to build tar-gzipped distribution package
 $(PACKAGE)-$(VERSION).tar.gz: dist
