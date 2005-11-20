@@ -25,17 +25,15 @@ Installing the data files
 -------------------------
 
 To play Aleph One, you will also need Marathon graphics, sound and map
-files. Unfortunately, Bungie has not released these files to the public, so
-you must own a copy of Marathon 2 or Marathon Infinity (Marathon 1 data
-files don't work with Aleph One). For your convenience, I've created an
-archive containing the data files from the freely available Marathon
-Infinity Demo, converted to the formats needed by the SDL version of Aleph
-One, which can be downloaded from my Aleph One/SDL page:
+files. For your convenience, I've created archives containing the data files
+from the freely available Marathon 1 (M1A1), Marathon 2, and Marathon
+Infinity, converted to the formats needed by the SDL version of Aleph One,
+which can be downloaded from my Aleph One/SDL page:
 
-  http://www.uni-mainz.de/~bauec002/A1Main.html
+  http://alephone.cebix.net
 
-The archive contains the files "Images", "Map", "Shapes", "Sounds" and
-"README" and has to be unpacked to the same directory as the "AlephOne"
+The archives contain the files "Images", "Map", "Shapes", "Sounds" and
+"README" and have to be unpacked to the same directory as the "AlephOne"
 application.
 
 Alternatively, if you have a Marathon 2, Marathon Infinity or Marathon

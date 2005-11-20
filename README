@@ -3,7 +3,7 @@
   An Open Source 3D action game
 
   Copyright (C) 1995 Bungie Software Corporation
-  Portions Copyright (C) 2000-2002 Christian Bauer, Loren Petrich,
+  Portions Copyright (C) 2000-2005 Christian Bauer, Loren Petrich,
     Chris Pruett, Rhys Hill, Ben Thompson, Woody Zenfell, Mihai Pararita,
     Bo Lindbergh et al.
   Expat XML Library Copyright (C) 1998, 1999 James Clark
@@ -20,7 +20,7 @@ provided to you under the terms of the GNU Library General Public License.
 See the file "COPYING.SDL" that is included in the distribution for details.
 The source code for the version of SDL used is available on
 
-  http://www.uni-mainz.de/~bauec002/A1Main.html
+  http://alephone.cebix.net
 
 
 What is Aleph One?
@@ -41,6 +41,7 @@ Windows 9x/NT/2000. It does not currently run on MacOS.
 Successfully tested systems include:
  - Linux/i386
  - Linux/alpha
+ - Linux/x86_64
  - FreeBSD/i386
  - Solaris/sparc
  - BeOS/x86 R5
@@ -481,7 +482,7 @@ The official Aleph One home page is at
 
 My home page for the SDL port is at
 
-  http://www.uni-mainz.de/~bauec002/A1Main.html
+  http://alephone.cebix.net
 
 The Aleph One pages on SourceForge
 
@@ -495,4 +496,4 @@ the established marathon forums, such as alt.games.marathon.
 
 
 Happy carnage!
-Christian Bauer <Christian.Bauer@uni-mainz.de>
+Christian Bauer <www.cebix.net>
