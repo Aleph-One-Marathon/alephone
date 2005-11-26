@@ -257,8 +257,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #ifdef HAVE_OPENGL
 	// The original idea was to only enable OpenGL for the in-game display, but
 	// SDL crashes if OpenGL is turned on later
-	if (/*!nogl &&*/ screen_mode.acceleration == _opengl_acceleration) {
-		flags |= SDL_OPENGLBLIT;
+	if (!nogl && screen_mode.acceleration == _opengl_acceleration) {
+		flags |= SDL_OPENGL;
+		//flags |= SDL_OPENGLBLIT;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -530,7 +531,9 @@ void render_screen(short ticks_elapsed)
 		if (OGL_MapActive) {
 			// switching off map
 			// clear the remnants of the map out of the back buffer
-			SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+			//SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+			glClearColor(0,0,0,0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 		OGL_MapActive = false;
 	}
@@ -965,8 +968,16 @@ void DrawHUD(SDL_Rect &dest_rect)
 
 void clear_screen(void)
 {
-	SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
-	SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+#ifdef HAVE_OPENGL
+	if (SDL_GetVideoSurface()->flags & SDL_OPENGL) {
+		OGL_ClearScreen();
+		SDL_GL_SwapBuffers();
+	} else 
+#endif
+	{
+		SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
+		SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+	}
 #ifdef HAVE_OPENGL
 	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
 		SDL_GL_SwapBuffers();
