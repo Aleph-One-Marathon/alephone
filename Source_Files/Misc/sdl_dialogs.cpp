@@ -1186,6 +1186,12 @@ void dialog::event(SDL_Event &e)
 
 int dialog::run(bool intro_exit_sounds)
 {
+	bool fReturnToGL = false;
+	if (SDL_GetVideoSurface()->flags & SDL_OPENGL) {
+		// drop out of GL mode for now
+		fReturnToGL = true;
+		exit_screen();
+	}
 	// Put dialog on screen
 	start(intro_exit_sounds);
 
@@ -1206,7 +1212,11 @@ int dialog::run(bool intro_exit_sounds)
 	}
 
 	// Remove dialog from screen
-	return finish(intro_exit_sounds);
+	int result = finish(intro_exit_sounds);
+	if (fReturnToGL) {
+		enter_screen();
+	}
+	return result;
 }
 
 
