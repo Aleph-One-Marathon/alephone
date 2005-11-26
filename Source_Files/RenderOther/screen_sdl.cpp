@@ -584,7 +584,7 @@ void render_screen(short ticks_elapsed)
 		if (world_view->terminal_mode_active || (world_view->overhead_map_active && !OGL_MapActive)) {
 
 			// Copy 2D rendering to screen
-			update_screen(BufferRect, ViewRect, HighResolution);
+//			update_screen(BufferRect, ViewRect, HighResolution);
 		}
 
 		if (TEST_FLAG(VS.flags, _view_show_HUD)) {
@@ -763,6 +763,7 @@ void assert_world_color_table(struct color_table *interface_color_table, struct 
 
 void render_computer_interface(struct view_data *view)
 {
+	if (screen_mode.acceleration == _opengl_acceleration) return;
 	struct view_terminal_data data;
 
 	data.left = data.top = 0;
@@ -783,7 +784,6 @@ void render_computer_interface(struct view_data *view)
 void render_overhead_map(struct view_data *view)
 {
 	struct overhead_map_data overhead_data;
-
 	SDL_FillRect(world_pixels, NULL, SDL_MapRGB(world_pixels->format, 0, 0, 0));
 
 	overhead_data.half_width = view->half_screen_width;
