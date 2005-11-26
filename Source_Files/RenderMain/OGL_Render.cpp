@@ -574,8 +574,8 @@ bool OGL_StartRun()
 	int progress = 0, max_progress = 100;
 #endif
 	logContext("starting up OpenGL rendering");
-	open_progress_dialog(_starting_opengl);
-	draw_progress_bar(0, max_progress);
+	//open_progress_dialog(_starting_opengl);
+	//draw_progress_bar(0, max_progress);
 
 	if (!OGL_IsPresent()) return false;
 
@@ -593,7 +593,7 @@ bool OGL_StartRun()
 
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
 	Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
-	draw_progress_bar((progress += 10), max_progress);
+	//draw_progress_bar((progress += 10), max_progress);
 
 #ifdef mac
 	// Plain and simple
@@ -671,7 +671,7 @@ bool OGL_StartRun()
 	
 	aglEnable(RenderContext, AGL_BUFFER_RECT);
 	aglSetInteger(RenderContext, AGL_BUFFER_RECT, RectBounds);
-	draw_progress_bar((progress += 10), max_progress);
+	//draw_progress_bar((progress += 10), max_progress);
 
 #endif
 	
@@ -711,34 +711,34 @@ bool OGL_StartRun()
 	// Switch on use of vertex and texture-coordinate arrays
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	draw_progress_bar((progress += 10), max_progress);
+	//draw_progress_bar((progress += 10), max_progress);
 
 	// Initialize the texture accounting
 	OGL_StartTextures();
-	draw_progress_bar((progress += 20), max_progress);
+	//draw_progress_bar((progress += 20), max_progress);
 
 	// Initialize the on-screen font for OpenGL rendering
 	GetOnScreenFont().OGL_Reset(true);
-	draw_progress_bar((progress += 10), max_progress);
+	//draw_progress_bar((progress += 10), max_progress);
 
 	// Reset the font info for overhead-map and HUD fonts done in OpenGL fashion
 	OGL_ResetMapFonts(true);
 	OGL_ResetHUDFonts(true);
-	draw_progress_bar((progress += 10), max_progress);
+	//draw_progress_bar((progress += 10), max_progress);
 	
 	// Since an OpenGL context has just been created, don't try to clear any OpenGL textures
 	OGL_ResetModelSkins(false);
-	draw_progress_bar((progress += 10), max_progress);
+	//draw_progress_bar((progress += 10), max_progress);
 
 	// Setup for 3D-model rendering
 	ModelRenderObject.Clear();
 	SetupShaders();
-	draw_progress_bar((progress += 10), max_progress);
+	//draw_progress_bar((progress += 10), max_progress);
 
 	// Avoid lazy initial texture loading
 	PreloadTextures();
-	draw_progress_bar((progress += 20), max_progress);
-	close_progress_dialog();
+	//draw_progress_bar((progress += 20), max_progress);
+	//close_progress_dialog();
 
 	// Success!
 	JustInited = true;
