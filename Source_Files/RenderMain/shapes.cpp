@@ -168,13 +168,13 @@ static OpenedFile ShapesFile;
 
 /* ---------- private prototypes */
 
-static void update_color_environment(void);
+static void update_color_environment(bool is_opengl);
 static short find_or_add_color(struct rgb_color_value *color, struct rgb_color_value *colors, short *color_count);
 static void _change_clut(void (*change_clut_proc)(struct color_table *color_table), struct rgb_color_value *colors, short color_count);
 
 static void build_shading_tables8(struct rgb_color_value *colors, short color_count, pixel8 *shading_tables);
-static void build_shading_tables16(struct rgb_color_value *colors, short color_count, pixel16 *shading_tables, byte *remapping_table);
-static void build_shading_tables32(struct rgb_color_value *colors, short color_count, pixel32 *shading_tables, byte *remapping_table);
+static void build_shading_tables16(struct rgb_color_value *colors, short color_count, pixel16 *shading_tables, byte *remapping_table, bool is_opengl);
+static void build_shading_tables32(struct rgb_color_value *colors, short color_count, pixel32 *shading_tables, byte *remapping_table, bool is_opengl);
 static void build_global_shading_table16(void);
 static void build_global_shading_table32(void);
 
@@ -971,7 +971,8 @@ void *get_global_shading_table(
 }
 
 void load_collections(
-	bool with_progress_bar)
+	bool with_progress_bar,
+	bool is_opengl)
 {
 	struct collection_header *header;
 	short collection_index;
@@ -1042,7 +1043,7 @@ void load_collections(
 	
 	/* remap the shapes, recalculate row base addresses, build our new world color table and
 		(finally) update the screen to reflect our changes */
-	update_color_environment();
+	update_color_environment(is_opengl);
 	if (with_progress_bar)
 		close_progress_dialog();
 }
@@ -1134,7 +1135,7 @@ static short find_or_add_color(
 }
 
 static void update_color_environment(
-	void)
+	bool is_opengl)
 {
 	short color_count;
 	short collection_index;
@@ -1226,11 +1227,11 @@ static void update_color_environment(
 							break;
 						
 						case 16:
-							build_shading_tables16(colors, color_count, (pixel16 *)alternate_shading_table, shading_remapping_table); break;
+							build_shading_tables16(colors, color_count, (pixel16 *)alternate_shading_table, shading_remapping_table, is_opengl); break;
 							break;
 						
 						case 32:
-							build_shading_tables32(colors, color_count, (pixel32 *)alternate_shading_table, shading_remapping_table); break;
+							build_shading_tables32(colors, color_count, (pixel32 *)alternate_shading_table, shading_remapping_table, is_opengl); break;
 							break;
 						
 						default:
@@ -1243,9 +1244,9 @@ static void update_color_environment(
 					/* build the primary shading table */
 					switch (collection_bit_depth)
 					{
-						case 8: build_shading_tables8(colors, color_count, (unsigned char *)primary_shading_table); break;
-						case 16: build_shading_tables16(colors, color_count, (pixel16 *)primary_shading_table, (byte *) NULL); break;
-						case 32: build_shading_tables32(colors, color_count,  (pixel32 *)primary_shading_table, (byte *) NULL); break;
+					case 8: build_shading_tables8(colors, color_count, (unsigned char *)primary_shading_table); break;
+					case 16: build_shading_tables16(colors, color_count, (pixel16 *)primary_shading_table, (byte *) NULL, is_opengl); break;
+					case 32: build_shading_tables32(colors, color_count,  (pixel32 *)primary_shading_table, (byte *) NULL, is_opengl); break;
 						default:
 							assert(false);
 							break;
@@ -1381,7 +1382,8 @@ static void build_shading_tables16(
 	struct rgb_color_value *colors,
 	short color_count,
 	pixel16 *shading_tables,
-	byte *remapping_table)
+	byte *remapping_table,
+	bool is_opengl)
 {
 	short i;
 	short start, count, level;
@@ -1390,7 +1392,6 @@ static void build_shading_tables16(
 
 #ifdef SDL
 	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
-	bool is_opengl = ((SDL_GetVideoSurface()->flags & SDL_OPENGL) != 0);
 #endif
 	
 	start= 0, count= 0;
@@ -1426,7 +1427,8 @@ static void build_shading_tables32(
 	struct rgb_color_value *colors,
 	short color_count,
 	pixel32 *shading_tables,
-	byte *remapping_table)
+	byte *remapping_table, 
+	bool is_opengl)
 {
 	short i;
 	short start, count, level;
@@ -1435,7 +1437,6 @@ static void build_shading_tables32(
 	
 #ifdef SDL
 	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
-	bool is_opengl = ((SDL_GetVideoSurface()->flags & SDL_OPENGL) != 0);
 #endif
 
 	start= 0, count= 0;
