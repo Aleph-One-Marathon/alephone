@@ -119,6 +119,9 @@ void initialize_screen_drawing(void);
 void _set_port_to_screen_window(void);
 void _set_port_to_gworld(void);
 void _restore_port(void);
+#if defined SDL
+void _set_port_to_term(void);
+#endif
 
 /* If source==NULL, source= the shapes bounding rectangle */
 void _draw_screen_shape(shape_descriptor shape_id, screen_rectangle *destination, 

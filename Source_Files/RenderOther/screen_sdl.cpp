@@ -71,6 +71,7 @@ static SDL_Surface *main_surface;	// Main (display) surface
 // It is initialized to NULL so as to allow its initing to be lazy.
 SDL_Surface *world_pixels = NULL;
 SDL_Surface *HUD_Buffer = NULL;
+SDL_Surface *Term_Buffer = NULL;
 
 static bool PrevFullscreen = false;
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
@@ -306,6 +307,11 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_FreeSurface(HUD_Buffer);
 		HUD_Buffer = NULL;
 	}
+	if (Term_Buffer) {
+		SDL_FreeSurface(Term_Buffer);
+		Term_Buffer = NULL;
+	}
+	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0x00000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
 		printf("GL_VENDOR: %s\n", glGetString(GL_VENDOR));
@@ -492,6 +498,8 @@ void render_screen(short ticks_elapsed)
 
 		// Reallocate the drawing buffer
 		reallocate_world_pixels(BufferRect.w, BufferRect.h);
+
+		dirty_terminal_view(current_player_index);
 	}
 
 	switch (screen_mode.acceleration) {
@@ -585,6 +593,39 @@ void render_screen(short ticks_elapsed)
 
 			// Copy 2D rendering to screen
 //			update_screen(BufferRect, ViewRect, HighResolution);
+
+ 		glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+ 		// Disable everything but alpha blending
+ 		glDisable(GL_CULL_FACE);
+ 		glDisable(GL_DEPTH_TEST);
+ 		glDisable(GL_ALPHA_TEST);
+ 		glEnable(GL_BLEND);
+ 		glDisable(GL_FOG);
+ 		glDisable(GL_SCISSOR_TEST);
+ 		glDisable(GL_STENCIL_TEST);
+
+ 		// Direct projection
+ 		glMatrixMode(GL_PROJECTION);
+ 		glPushMatrix();
+ 		glLoadIdentity();
+
+		gluOrtho2D(0.0, ScreenRect.w, 0.0, ScreenRect.h);
+ 		glMatrixMode(GL_MODELVIEW);
+ 		glPushMatrix();
+ 		glLoadIdentity();
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glRasterPos2f(0 + OffsetWidth, ScreenRect.h - OffsetHeight);
+		glPixelZoom(1.0, -1.0);
+		glDrawPixels(Term_Buffer->w, Term_Buffer->h, GL_RGBA, GL_UNSIGNED_BYTE, Term_Buffer->pixels);
+
+ 		// Restore projection and state
+ 		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+ 		glPopMatrix();
+		glPopAttrib();
+
 		}
 
 		if (TEST_FLAG(VS.flags, _view_show_HUD)) {
@@ -763,7 +804,7 @@ void assert_world_color_table(struct color_table *interface_color_table, struct 
 
 void render_computer_interface(struct view_data *view)
 {
-	if (screen_mode.acceleration == _opengl_acceleration) return;
+	
 	struct view_terminal_data data;
 
 	data.left = data.top = 0;
@@ -771,7 +812,11 @@ void render_computer_interface(struct view_data *view)
 	data.bottom = view->screen_height;
 	data.vertical_offset = 0;
 
-	_set_port_to_gworld();
+	if (screen_mode.acceleration == _opengl_acceleration) {
+		_set_port_to_term();
+	} else {
+		_set_port_to_gworld();
+	}
 	_render_computer_interface(&data);
 	_restore_port();
 }

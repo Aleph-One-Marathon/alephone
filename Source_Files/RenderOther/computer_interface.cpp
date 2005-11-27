@@ -376,6 +376,7 @@ static void decode_text(terminal_text_t *terminal_text);
 #include "computer_interface_mac.h"
 #elif defined(SDL)
 #include "computer_interface_sdl.h"
+extern SDL_Surface *draw_surface;
 #endif
 
 /* ------------ code begins */
@@ -1004,7 +1005,7 @@ static void draw_line(
 #ifdef mac
 		DrawText(base_text, current_start, current_end-current_start);
 #else
-		xpos += draw_text(world_pixels, base_text + current_start, current_end - current_start,
+		xpos += draw_text(/*world_pixels*/ draw_surface, base_text + current_start, current_end - current_start,
 		                  xpos, bounds->top + line_height * (line_number + FUDGE_FACTOR),
 		                  current_pixel, terminal_font, current_style);
 #endif
@@ -1170,12 +1171,12 @@ static void display_picture(
 #elif defined(SDL)
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
 		if (s->w == r.w && s->h == r.h)
-			SDL_BlitSurface(s, NULL, world_pixels, &r);
+			SDL_BlitSurface(s, NULL, /*world_pixels*/draw_surface, &r);
 		else {
 			// Rescale picture
 			SDL_Surface *s2 = rescale_surface(s, r.w, r.h);
 			if (s2) {
-				SDL_BlitSurface(s2, NULL, world_pixels, &r);
+				SDL_BlitSurface(s2, NULL, /*world_pixels*/draw_surface, &r);
 				SDL_FreeSurface(s2);
 			}
 		}
@@ -1193,7 +1194,7 @@ static void display_picture(
 		EraseRect(&bounds);
 #elif defined(SDL)
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
-		SDL_FillRect(world_pixels, &r, SDL_MapRGB(world_pixels->format, 0, 0, 0));
+		SDL_FillRect(/*world_pixels*/draw_surface, &r, SDL_MapRGB(/*world_pixels*/draw_surface->format, 0, 0, 0));
 #endif
 
 		getcstr(format_string, strERRORS, pictureNotFound);
@@ -1211,10 +1212,10 @@ static void display_picture(
 #elif defined(SDL)
 		const sdl_font_info *font = GetInterfaceFont(_computer_interface_title_font);
 		int width = text_width(temporary, font, styleNormal);
-		draw_text(world_pixels, temporary,
+		draw_text(/*world_pixels*/draw_surface, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
 		          bounds.top + RECTANGLE_HEIGHT(&bounds) / 2,
-		          SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff),
+		          SDL_MapRGB(/*world_pixels*/draw_surface->format, 0xff, 0xff, 0xff),
 		          font, styleNormal);
 #endif
 	}
@@ -1728,7 +1729,7 @@ static void present_checkpoint_text(
 		EraseRect(&bounds);
 #elif defined(SDL)
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
-		SDL_FillRect(world_pixels, &r, SDL_MapRGB(world_pixels->format, 0, 0, 0));
+		SDL_FillRect(/*world_pixels*/draw_surface, &r, SDL_MapRGB(/*world_pixels*/draw_surface->format, 0, 0, 0));
 #endif
 
 		getcstr(format_string, strERRORS, checkpointNotFound);
@@ -1745,10 +1746,10 @@ static void present_checkpoint_text(
 		const sdl_font_info *font = GetInterfaceFont(_computer_interface_title_font);
 		// const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
 		int width = text_width(temporary, font, styleNormal);
-		draw_text(world_pixels, temporary,
+		draw_text(/*world_pixels*/draw_surface, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
 		          bounds.top + RECTANGLE_HEIGHT(&bounds) / 2,
-		          SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff),
+		          SDL_MapRGB(/*world_pixels*/draw_surface->format, 0xff, 0xff, 0xff),
 		          font, styleNormal);
 #endif
 	}

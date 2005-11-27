@@ -76,6 +76,7 @@ static void OffsetRect(Rect *r, int dx, int dy)
 	r->right += dx;
 }
 
+extern SDL_Surface *draw_surface;
 
 static void	set_text_face(struct text_face_data *text_face)
 {
@@ -92,7 +93,7 @@ static void	set_text_face(struct text_face_data *text_face)
 	// Set color
 	SDL_Color color;
 	_get_interface_color(text_face->color + _computer_interface_text_color, &color);
-	current_pixel = SDL_MapRGB(world_pixels->format, color.r, color.g, color.b);
+	current_pixel = SDL_MapRGB(/*world_pixels*/draw_surface->format, color.r, color.g, color.b);
 }
 
 

@@ -31,7 +31,7 @@
 
 
 // Global variables
-static SDL_Surface *draw_surface = NULL;	// Target surface for drawing commands
+SDL_Surface *draw_surface = NULL;	// Target surface for drawing commands
 static SDL_Surface *old_draw_surface = NULL;
 
 
@@ -44,7 +44,7 @@ bool draw_clip_rect_active = false;			// Flag: clipping rect active
 screen_rectangle draw_clip_rect;			// Current clipping rectangle
 
 // From screen_sdl.cpp
-extern SDL_Surface *world_pixels, *HUD_Buffer;
+extern SDL_Surface *world_pixels, *HUD_Buffer, *Term_Buffer;
 
 // Prototypes
 extern TextSpec *_get_font_spec(short font_index);
@@ -79,6 +79,13 @@ void _restore_port(void)
 {
 	draw_surface = old_draw_surface;
 	old_draw_surface = NULL;
+}
+
+void _set_port_to_term(void)
+{
+	assert(old_draw_surface == NULL);
+	old_draw_surface = draw_surface;
+	draw_surface = Term_Buffer;
 }
 
 
