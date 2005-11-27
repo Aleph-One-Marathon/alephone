@@ -137,6 +137,7 @@ struct TxtrTypeInfoData
 
 static TxtrTypeInfoData TxtrTypeInfoList[OGL_NUMBER_OF_TEXTURE_TYPES];
 
+static bool useSGISMipmaps = false;
 
 // Infravision: use algorithm (red + green + blue)/3 to compose intensity,
 // then shade with these colors, one color for each collection.
@@ -334,6 +335,10 @@ void OGL_StartTextures()
 		else
 			TxtrTypeInfo.ColorFormat = GL_RGBA8;
 	}
+
+#if defined GL_SGIS_generate_mipmap
+	useSGISMipmaps = OGL_CheckExtension("GL_SGIS_generate_mipmap");
+#endif
 }
 
 
@@ -1192,8 +1197,16 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 	case GL_LINEAR_MIPMAP_NEAREST:
 	case GL_NEAREST_MIPMAP_LINEAR:
 	case GL_LINEAR_MIPMAP_LINEAR:
+#if defined GL_SGIS_generate_mipmap
+		if (useSGISMipmaps) {
+			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+			glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+		} else
+#endif
+		{
 		gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
 			GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+		}
 		break;
 	
 	default:

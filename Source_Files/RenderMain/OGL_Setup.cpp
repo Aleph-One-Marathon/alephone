@@ -135,6 +135,24 @@ bool OGL_Initialize()
 // Test for presence
 bool OGL_IsPresent() {return _OGL_IsPresent;}
 
+bool OGL_CheckExtension(const std::string extension) {
+	char *extensions = (char *) glGetString(GL_EXTENSIONS);
+	if (!extensions) return false;
+
+	while (*extensions)
+	{
+		unsigned int length = strcspn(extensions, " ");
+		
+		if (strncmp(extension.c_str(), extensions, length) == 0) {
+			return true;
+		}
+
+		extensions += length + 1;
+	}
+
+	return false;
+}
+
 
 // Sensible defaults for the fog:
 static OGL_FogData FogData[OGL_NUMBER_OF_FOG_TYPES] = 

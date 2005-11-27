@@ -67,6 +67,8 @@ Aug 21, 2001 (Loren Petrich):
 #include "OGL_Subst_Texture_Def.h"
 #include "OGL_Model_Def.h"
 
+#include <string>
+
 
 // Initializer; returns whether or not OpenGL is present
 bool OGL_Initialize();
@@ -76,6 +78,9 @@ bool OGL_IsPresent();
 
 // Test for whether OpenGL is currently active
 bool OGL_IsActive();
+
+// Test whether an extension exists
+bool OGL_CheckExtension(const std::string);
 
 // Here are some OpenGL configuration options and how to access them
 // (they are in the preferences data)
