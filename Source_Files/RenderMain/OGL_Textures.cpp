@@ -507,14 +507,22 @@ bool TextureManager::Setup()
 		
 		// Try to load a substitute texture, and if that fails,
 		// get the geometry from the shapes bitmap.
-		if (!LoadSubstituteTexture())
+		bool substitute = LoadSubstituteTexture();
+		if (!substitute) 
 			if (!SetupTextureGeometry()) return false;
-				
+
 		// Store sprite scale/offset
 		CBTS.U_Scale = U_Scale;
 		CBTS.V_Scale = V_Scale;
 		CBTS.U_Offset = U_Offset;
 		CBTS.V_Offset = V_Offset;
+
+		if (FastPath) {
+			IsGlowing = TxtrOptsPtr->GlowImg.IsPresent();
+			LoadedWidth = TxtrWidth;
+			LoadedHeight = TxtrHeight;
+			return true;
+		}
 		
 		// This finding of color tables sets the glow state
 		FindColorTables();
@@ -674,10 +682,25 @@ bool TextureManager::LoadSubstituteTexture()
 		TxtrWidth = Width;
 		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
 		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
+		TxtrOptsPtr->Substitution = true;
+		{
+			GLint MaxTextureSize;
+			glGetIntegerv(GL_MAX_TEXTURE_SIZE,&MaxTextureSize);
+			if (Width <= MaxTextureSize && 
+			    Height <= MaxTextureSize && 
+			    TxtrTypeInfoList[TextureType].Resolution == 0 &&
+			    CTable != INFRAVISION_BITMAP_SET &&
+			    CTable != SILHOUETTE_BITMAP_SET &&
+			    TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp &&
+			    TxtrOptsPtr->OpacityScale == 1.0 &&
+			    TxtrOptsPtr->OpacityShift == 0.0) {
+				// mmm
+				return FastPath = true;
+			}
+		}
 		
 		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
 		memcpy(NormalBuffer, NormalImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
-		TxtrOptsPtr->Substitution = true;
 		
 		// Walls can glow...
 		if (GlowImg.IsPresent())
@@ -1275,8 +1298,12 @@ void TextureManager::RenderNormal()
 	
 	if (TxtrStatePtr->UseNormal())
 	{
-		assert(NormalBuffer);
-		PlaceTexture(NormalBuffer);
+		if (FastPath) {
+			PlaceTexture(TxtrOptsPtr->NormalImg.GetPixelBasePtr());
+		} else {
+			assert(NormalBuffer);
+			PlaceTexture(NormalBuffer);
+		}
 	}
 
 		gGLTxStats.binds++;
@@ -1294,8 +1321,12 @@ void TextureManager::RenderGlowing()
 
 	if (TxtrStatePtr->UseGlowing())
 	{
-		assert(GlowBuffer);
-		PlaceTexture(GlowBuffer);
+		if (FastPath) {
+			PlaceTexture(TxtrOptsPtr->GlowImg.GetPixelBasePtr());
+		} else {
+			assert(GlowBuffer);
+			PlaceTexture(GlowBuffer);
+		}
 	}
 
 		gGLTxStats.binds++;
@@ -1357,6 +1388,8 @@ TextureManager::TextureManager()
 	
 	TxtrStatePtr = 0;
 	TxtrOptsPtr = 0;
+
+	FastPath = 0;
 	
 	LowLevelShape = 0;
 	
