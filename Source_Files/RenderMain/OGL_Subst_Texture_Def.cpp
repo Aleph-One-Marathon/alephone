@@ -240,6 +240,13 @@ bool XML_TextureOptionsParser::Start()
 	return true;
 }
 
+static void ReadString(const char *Value, vector<char> &s)
+{
+	size_t nchars = strlen(Value) + 1;
+	s.resize(nchars);
+	memcpy(&s[0], Value, nchars);
+}
+
 bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"coll"))
@@ -282,30 +289,42 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	}
 	else if (StringsEqual(Tag,"normal_image"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.NormalColors.resize(nchars);
-		memcpy(&Data.NormalColors[0],Value,nchars);
+		ReadString(Value, Data.NormalColors);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_mask"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.NormalMask.resize(nchars);
-		memcpy(&Data.NormalMask[0],Value,nchars);
+		ReadString(Value, Data.NormalMask);
+		return true;
+	}
+	else if (StringsEqual(Tag,"alt_normal_image"))
+	{
+		ReadString(Value, Data.AltNormalColors);
+		return true;
+	}
+	else if (StringsEqual(Tag, "alt_normal_mask"))
+	{
+		ReadString(Value, Data.AltNormalMask);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_image"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.GlowColors.resize(nchars);
-		memcpy(&Data.GlowColors[0],Value,nchars);
+		ReadString(Value, Data.GlowColors);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_mask"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.GlowMask.resize(nchars);
-		memcpy(&Data.GlowMask[0],Value,nchars);
+		ReadString(Value, Data.GlowMask);
+		return true;
+	}
+	else if (StringsEqual(Tag, "alt_glow_image"))
+	{
+		ReadString(Value, Data.AltGlowColors);
+		return true;
+	}
+	else if (StringsEqual(Tag, "alt_glow_mask"))
+	{
+		ReadString(Value, Data.AltGlowMask);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_blend"))

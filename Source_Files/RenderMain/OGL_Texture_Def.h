@@ -85,6 +85,7 @@ struct OGL_TextureOptionsBase
 	// Names of files to load; these will be extended ones with directory specifications
 	// <dirname>/<dirname>/<filename>
 	vector<char> NormalColors, NormalMask, GlowColors, GlowMask;
+	vector<char> AltNormalColors, AltNormalMask, AltGlowColors, AltGlowMask;
 	
 	// Normal and glow-mapped images
 	ImageDescriptor NormalImg, GlowImg;
