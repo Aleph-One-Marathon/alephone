@@ -81,6 +81,7 @@ struct OGL_TextureOptionsBase
 	short OpacityType;		// Which type of opacity to use?
 	float OpacityScale;		// How much to scale the opacity
 	float OpacityShift;		// How much to shift the opacity
+	bool Transpose;                 // Does the texture need transposing?
 	
 	// Names of files to load; these will be extended ones with directory specifications
 	// <dirname>/<dirname>/<filename>
@@ -99,7 +100,7 @@ struct OGL_TextureOptionsBase
 	
 	OGL_TextureOptionsBase():
 		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
-		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade)
+		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade), Transpose(false)
 		{}
 };
 

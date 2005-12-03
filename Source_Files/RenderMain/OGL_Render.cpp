@@ -1750,7 +1750,8 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	
 	// Painting a texture...
 	glEnable(GL_TEXTURE_2D);
-	
+
+	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();	
 	SetBlend(TMgr.NormalBlend());
 	
@@ -1903,7 +1904,8 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	
 	// Revert to default blend
 	SetBlend(OGL_BlendType_Crossfade);
-	
+	TMgr.RestoreTextureMatrix();
+
 	return true;
 }
 

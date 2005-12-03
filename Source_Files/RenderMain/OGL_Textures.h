@@ -224,6 +224,9 @@ public:
 	void RenderNormal();
 	// Call this one after RenderNormal()
 	void RenderGlowing();
+
+	void SetupTextureMatrix();
+	void RestoreTextureMatrix();
 	
 	TextureManager();
 	~TextureManager();

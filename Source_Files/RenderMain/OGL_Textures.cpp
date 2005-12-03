@@ -670,23 +670,28 @@ bool TextureManager::LoadSubstituteTexture()
 	case OGL_Txtr_Wall:
 		// For tiling to be possible, the width and height must be powers of 2;
 		// also, be sure to transpose the texture
-		TxtrWidth = Height;
-		TxtrHeight = Width;
+		TxtrHeight = Height;
+		TxtrWidth = Width;
 		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
 		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
 		
 		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
-		for (int v=0; v<Height; v++)
-			for (int h=0; h<Width; h++)
-				NormalBuffer[h*Height+v] = NormalImg.GetPixel(h,v);
+		memcpy(NormalBuffer, NormalImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
+		TxtrOptsPtr->Transpose = true;
+// 		for (int v=0; v<Height; v++)
+// 			for (int h=0; h<Width; h++)
+// 				NormalBuffer[h*Height+v] = NormalImg.GetPixel(h,
+//									      v);
 		
 		// Walls can glow...
 		if (GlowImg.IsPresent())
 		{
 			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
-			for (int v=0; v<Height; v++)
-				for (int h=0; h<Width; h++)
-					GlowBuffer[h*Height+v] = GlowImg.GetPixel(h,v);
+			memcpy(GlowBuffer, GlowImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
+// 			for (int v=0; v<Height; v++)
+// 				for (int h=0; h<Width; h++)
+// 					GlowBuffer[h*Height+v] = GlowImg.GetPixe
+//						l(h,v);
 		}
 		
 		break;
@@ -1298,6 +1303,30 @@ void TextureManager::RenderGlowing()
 		if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
 		if (time>2) gGLTxStats.longGlowSetups++;
 }
+
+void TextureManager::SetupTextureMatrix()
+{
+	// set up the texture matrix
+	switch(TextureType)
+	{
+	case OGL_Txtr_Wall:
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		if (TxtrOptsPtr->Transpose) {
+			glRotatef(90.0, 0.0, 0.0, 1.0);
+			glScalef(1.0, -1.0, 1.0);
+		}
+		glMatrixMode(GL_MODELVIEW);
+	}
+}
+
+void TextureManager::RestoreTextureMatrix()
+{
+	glMatrixMode(GL_TEXTURE);
+	glLoadIdentity();
+	glMatrixMode(GL_MODELVIEW);
+}
+
 
 
 // Init
