@@ -312,7 +312,8 @@ void OGL_TextureOptionsBase::Unload()
 // the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
 void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels)
 {
-	if (Options.OpacityType == OGL_OpacType_Crisp 
+	if (Options.OpacityType != OGL_OpacType_Avg 
+	    && Options.OpacityType == OGL_OpacType_Max
 	    && Options.OpacityScale == 1.0
 	    && Options.OpacityShift == 0.0) 
 		return;
