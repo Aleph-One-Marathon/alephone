@@ -32,12 +32,19 @@
 #include <SDL_image.h>
 #endif
 
+inline int NextPowerOfTwo(int n)
+{
+	int p = 1;
+	while(p < n) {p <<= 1;}
+	return p;
+}
+
 
 /*
  *  Load specified image file
  */
 
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
+bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, bool resizeToPowersOfTwo)
 {
 	// Don't load opacity if there is no color component:
 	switch(ImgMode) {
@@ -68,14 +75,21 @@ SDL_Surface *s = NULL;
 
 	// Get image dimensions and set its size
 	int Width = s->w, Height = s->h;
+	int OriginalWidth = Width;
+	int OriginalHeight = Height;
+	if (resizeToPowersOfTwo) {
+		Width = NextPowerOfTwo(Width);
+		Height = NextPowerOfTwo(Height);
+	}
 	switch (ImgMode) {
 		case ImageLoader_Colors:
 			Img.Resize(Width, Height);
+			Img.Original(OriginalWidth, OriginalHeight);
 			break;
 
 		case ImageLoader_Opacity:
 			// If the wrong size, then bug out
-			if (Width != Img.GetWidth() || Height != Img.GetHeight()) {
+			if (OriginalWidth != Img.GetOriginalWidth() || OriginalHeight != Img.GetOriginalHeight()) {
 				SDL_FreeSurface(s);
 				return false;
 			}

@@ -37,8 +37,10 @@ using namespace std;
 // Need an object to hold the read-in image.
 class ImageDescriptor
 {
-	int Width;	// along scanlines
-	int Height;	// scanline to scanline
+	int Width;	    // along scanlines
+	int Height;	    // scanline to scanline
+	int OriginalWidth;  // before powers of two resize
+	int OriginalHeight;
 	vector<uint32> Pixels;	// in 32-bit format
 public:
 	
@@ -49,6 +51,11 @@ public:
 	int GetWidth() {return Width;}
 	int GetHeight() {return Height;}
 	int GetNumPixels() {return Width*Height;}
+
+	int GetOriginalWidth() { return OriginalWidth; }
+	int GetOriginalHeight() { return OriginalHeight; }
+
+	// 
 	
 	// Pixel accessors
 	uint32& GetPixel(int Horiz, int Vert) {return Pixels[Width*Vert + Horiz];}
@@ -57,12 +64,14 @@ public:
 	// Reallocation
 	void Resize(int _Width, int _Height)
 		{Width = _Width, Height = _Height, Pixels.resize(GetNumPixels());}
+	void Original(int _Width, int _Height)
+	{OriginalWidth = _Width, OriginalHeight = _Height; }
 	
 	// Clearing
 	void Clear()
 		{Width = Height = 0; Pixels.clear();}
 	
-	ImageDescriptor(): Width(0), Height(0) {}
+	ImageDescriptor(): Width(0), Height(0), OriginalWidth(0), OriginalHeight(0) {}
 };
 
 // What to load: image colors (must be loaded first)
@@ -75,7 +84,7 @@ enum {
 };
 
 // Returns whether or not the loading was successful
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode);
+bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, bool resizeToPowersOfTwo);
 
 
 #endif

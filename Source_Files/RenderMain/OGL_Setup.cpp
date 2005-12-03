@@ -244,7 +244,7 @@ void OGL_TextureOptionsBase::Load()
 		// Load the normal image if it has a filename specified for it
 		if (!StringPresent(NormalColors)) throw 0;
 		if (!File.SetNameWithPath(&NormalColors[0])) throw 0;
-		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Colors)) throw 0;
+		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Colors, true)) throw 0;
 	}
 	catch(...)
 	{
@@ -257,7 +257,7 @@ void OGL_TextureOptionsBase::Load()
 		// Load the normal mask if it has a filename specified for it
 		if (!StringPresent(NormalMask)) throw 0;
 		if (!File.SetNameWithPath(&NormalMask[0])) throw 0;
-		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Opacity)) throw 0;
+		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Opacity, true)) throw 0;
 	}
 	catch(...)
 	{}
@@ -273,13 +273,13 @@ void OGL_TextureOptionsBase::Load()
 		// Load the glow image if it has a filename specified for it
 		if (!StringPresent(GlowColors)) throw 0;
 		if (!File.SetNameWithPath(&GlowColors[0])) throw 0;
-		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Colors)) throw 0;
+		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Colors, true)) throw 0;
 		
 		// Load the glow mask if it has a filename specified for it;
 		// only loaded if an image has been loaded for it
 		if (!StringPresent(GlowMask)) throw 0;
 		if (!File.SetNameWithPath(&GlowMask[0])) throw 0;
-		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Opacity)) throw 0;
+		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Opacity, true)) throw 0;
 	}
 	catch(...)
 	{}
@@ -289,10 +289,10 @@ void OGL_TextureOptionsBase::Load()
 	// and that the normal and glow textures have the same dimensions
 	if (NormalImg.IsPresent())
 	{
-		int W0 = NormalImg.GetWidth();
-		int W1 = GlowImg.GetWidth();
-		int H0 = NormalImg.GetHeight();
-		int H1 = GlowImg.GetHeight();
+		int W0 = NormalImg.GetOriginalWidth();
+		int W1 = GlowImg.GetOriginalWidth();
+		int H0 = NormalImg.GetOriginalHeight();
+		int H1 = GlowImg.GetOriginalHeight();
 		if ((W1 != W0) || (H1 != H0)) GlowImg.Clear();
 	}
 	else
