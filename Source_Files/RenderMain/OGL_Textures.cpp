@@ -677,21 +677,13 @@ bool TextureManager::LoadSubstituteTexture()
 		
 		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
 		memcpy(NormalBuffer, NormalImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
-		TxtrOptsPtr->Transpose = true;
-// 		for (int v=0; v<Height; v++)
-// 			for (int h=0; h<Width; h++)
-// 				NormalBuffer[h*Height+v] = NormalImg.GetPixel(h,
-//									      v);
+		TxtrOptsPtr->Substitution = true;
 		
 		// Walls can glow...
 		if (GlowImg.IsPresent())
 		{
 			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
 			memcpy(GlowBuffer, GlowImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
-// 			for (int v=0; v<Height; v++)
-// 				for (int h=0; h<Width; h++)
-// 					GlowBuffer[h*Height+v] = GlowImg.GetPixe
-//						l(h,v);
 		}
 		
 		break;
@@ -743,13 +735,19 @@ bool TextureManager::LoadSubstituteTexture()
 	case OGL_Txtr_WeaponsInHand:
 		// Much of the code here has been copied from elsewhere.
 		// Set these for convenience; sprites are transposed, as walls are.
-		BaseTxtrWidth = Height;
-		BaseTxtrHeight = Width;
+//		BaseTxtrWidth = Height;
+//		BaseTxtrHeight = Width;
+		BaseTxtrHeight = Height;
+		BaseTxtrWidth = Width;
 		
 		// The 2 here is so that there will be an empty border around a sprite,
 		// so that the texture can be conveniently mipmapped.
-		TxtrWidth = NextPowerOfTwo(BaseTxtrWidth+2);
-		TxtrHeight = NextPowerOfTwo(BaseTxtrHeight+2);
+		//TxtrWidth = NextPowerOfTwo(BaseTxtrWidth+2);
+		//TxtrHeight = NextPowerOfTwo(BaseTxtrHeight+2);
+
+		// ghs: huh?
+		TxtrWidth = NextPowerOfTwo(BaseTxtrWidth);
+		TxtrHeight = NextPowerOfTwo(BaseTxtrHeight);
 		
 		// This kludge no longer necessary
 		// Restored due to some people still having AppleGL 1.1.2
@@ -760,31 +758,35 @@ bool TextureManager::LoadSubstituteTexture()
 		}
 					
 		// Offsets
-		WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
-		HeightOffset = (TxtrHeight - BaseTxtrHeight) >> 1;
+//		WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
+//		HeightOffset = (TxtrHeight - BaseTxtrHeight) >> 1;
+		WidthOffset = 0;
+		HeightOffset = 0;
 		
 		// We can calculate the scales and offsets here
 		double TWidRecip = 1/double(TxtrWidth);
 		double THtRecip = 1/double(TxtrHeight);
-		U_Scale = TWidRecip*double(BaseTxtrWidth);
-		U_Offset = TWidRecip*WidthOffset;
-		V_Scale = THtRecip*double(BaseTxtrHeight);
-		V_Offset = THtRecip*HeightOffset;
+ 		V_Scale = TWidRecip*double(BaseTxtrWidth);
+ 		V_Offset = TWidRecip*WidthOffset;
+ 		U_Scale = THtRecip*double(BaseTxtrHeight);
+ 		U_Offset = THtRecip*HeightOffset;
+
 		
 		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
 		objlist_clear(NormalBuffer,TxtrWidth*TxtrHeight);
-		for (int v=0; v<Height; v++)
-			for (int h=0; h<Width; h++)
-				NormalBuffer[(HeightOffset+h)*TxtrWidth+(WidthOffset+v)] = NormalImg.GetPixel(h,v);
+		TxtrOptsPtr->Substitution = true;
+		for (int h = 0; h < Height; h++) {
+			memcpy(&NormalBuffer[h * TxtrWidth], &NormalImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
+		}
 		
 		// Objects can glow...
 		if (GlowImg.IsPresent())
 		{
 			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
 			objlist_clear(GlowBuffer,TxtrWidth*TxtrHeight);
-			for (int v=0; v<Height; v++)
-				for (int h=0; h<Width; h++)
-					GlowBuffer[(HeightOffset+h)*TxtrWidth+(WidthOffset+v)] = GlowImg.GetPixel(h,v);
+			for (int h = 0; h < Height; h++) {
+				memcpy(&GlowBuffer[h * TxtrWidth], &GlowImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
+			}
 		}
 		break;
 	}
@@ -1310,21 +1312,32 @@ void TextureManager::SetupTextureMatrix()
 	switch(TextureType)
 	{
 	case OGL_Txtr_Wall:
+	case OGL_Txtr_WeaponsInHand:
+	case OGL_Txtr_Inhabitant:
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
-		if (TxtrOptsPtr->Transpose) {
+		if (TxtrOptsPtr->Substitution) {
+			// these come in right side up, but the renderer
+			// expects them to be upside down and sideways
 			glRotatef(90.0, 0.0, 0.0, 1.0);
 			glScalef(1.0, -1.0, 1.0);
 		}
 		glMatrixMode(GL_MODELVIEW);
+		break;
 	}
 }
 
 void TextureManager::RestoreTextureMatrix()
 {
-	glMatrixMode(GL_TEXTURE);
-	glLoadIdentity();
-	glMatrixMode(GL_MODELVIEW);
+	switch(TextureType)
+	{
+	case OGL_Txtr_Wall:
+	case OGL_Txtr_WeaponsInHand:
+	case OGL_Txtr_Inhabitant:
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+	}
 }
 
 

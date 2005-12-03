@@ -2272,6 +2272,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	glEnable(GL_TEXTURE_2D);
 		
 	// Go!
+	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();	// Always do this, of course
 	if (RenderRectangle.transfer_mode == _static_transfer)
 	{
@@ -2313,6 +2314,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	
 	// Revert to default blend
 	SetBlend(OGL_BlendType_Crossfade);
+	TMgr.RestoreTextureMatrix();
 		
 	return true;
 }

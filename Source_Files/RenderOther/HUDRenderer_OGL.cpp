@@ -331,6 +331,7 @@ void HUD_OGL_Class::DrawShape(shape_descriptor shape, screen_rectangle *dest, sc
 	glColor3f(1.0, 1.0, 1.0);
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_BLEND);
+	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();
 	glBegin(GL_TRIANGLE_FAN);
 		glTexCoord2d(U_Offset, V_Offset);
@@ -342,6 +343,7 @@ void HUD_OGL_Class::DrawShape(shape_descriptor shape, screen_rectangle *dest, sc
 		glTexCoord2d(U_Offset, V_Offset + V_Scale);
 		glVertex2i(x, y + height);
 	glEnd();
+	TMgr.RestoreTextureMatrix();
 }
 
 void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool transparency)
@@ -371,6 +373,7 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	} else
 		glDisable(GL_BLEND);
+	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();
 	glBegin(GL_TRIANGLE_FAN);
 		glTexCoord2d(U_Offset, V_Offset);
@@ -382,6 +385,7 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 		glTexCoord2d(U_Offset, V_Offset + V_Scale);
 		glVertex2i(x, y + height);
 	glEnd();
+	TMgr.RestoreTextureMatrix();
 }
 
 
