@@ -691,7 +691,8 @@ bool TextureManager::LoadSubstituteTexture()
 			    TxtrTypeInfoList[TextureType].Resolution == 0 &&
 			    CTable != INFRAVISION_BITMAP_SET &&
 			    CTable != SILHOUETTE_BITMAP_SET &&
-			    TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp &&
+			    (TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp ||
+			     TxtrOptsPtr->OpacityType == OGL_OpacType_Flat) &&
 			    TxtrOptsPtr->OpacityScale == 1.0 &&
 			    TxtrOptsPtr->OpacityShift == 0.0) {
 				// mmm
@@ -760,25 +761,25 @@ bool TextureManager::LoadSubstituteTexture()
 		// Set these for convenience; sprites are transposed, as walls are.
 //		BaseTxtrWidth = Height;
 //		BaseTxtrHeight = Width;
-		BaseTxtrHeight = Height;
-		BaseTxtrWidth = Width;
+		TxtrHeight = Height;
+		TxtrWidth = Width;
 		
 		// The 2 here is so that there will be an empty border around a sprite,
 		// so that the texture can be conveniently mipmapped.
 		//TxtrWidth = NextPowerOfTwo(BaseTxtrWidth+2);
 		//TxtrHeight = NextPowerOfTwo(BaseTxtrHeight+2);
 
-		// ghs: huh?
-		TxtrWidth = NextPowerOfTwo(BaseTxtrWidth);
-		TxtrHeight = NextPowerOfTwo(BaseTxtrHeight);
+                // ImageLoader now stores these as powers of two sized
+		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
 		
 		// This kludge no longer necessary
 		// Restored due to some people still having AppleGL 1.1.2
-		if (WhetherTextureFix())
-		{
-			TxtrWidth = MAX(TxtrWidth,128);
-			TxtrHeight = MAX(TxtrHeight,128);
-		}
+//		if (WhetherTextureFix())
+//		{
+//			TxtrWidth = MAX(TxtrWidth,128);
+//			TxtrHeight = MAX(TxtrHeight,128);
+//		}
 					
 		// Offsets
 //		WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
@@ -789,27 +790,45 @@ bool TextureManager::LoadSubstituteTexture()
 		// We can calculate the scales and offsets here
 		double TWidRecip = 1/double(TxtrWidth);
 		double THtRecip = 1/double(TxtrHeight);
- 		V_Scale = TWidRecip*double(BaseTxtrWidth);
+ 		V_Scale = TWidRecip*double(NormalImg.GetOriginalWidth());
  		V_Offset = TWidRecip*WidthOffset;
- 		U_Scale = THtRecip*double(BaseTxtrHeight);
+ 		U_Scale = THtRecip*double(NormalImg.GetOriginalHeight());
  		U_Offset = THtRecip*HeightOffset;
 
-		
-		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
-		objlist_clear(NormalBuffer,TxtrWidth*TxtrHeight);
 		TxtrOptsPtr->Substitution = true;
-		for (int h = 0; h < Height; h++) {
-			memcpy(&NormalBuffer[h * TxtrWidth], &NormalImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
+		{
+			GLint MaxTextureSize;
+			glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTextureSize);
+			if (Width <= MaxTextureSize &&
+			    Height <= MaxTextureSize &&
+			    TxtrTypeInfoList[TextureType].Resolution == 0 &&
+			    CTable != INFRAVISION_BITMAP_SET &&
+			    CTable != SILHOUETTE_BITMAP_SET &&
+			    (TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp ||
+			     TxtrOptsPtr->OpacityType == OGL_OpacType_Flat) &&
+			    TxtrOptsPtr->OpacityScale == 1.0 &&
+			    TxtrOptsPtr->OpacityShift == 0.0) {
+				// mmm
+				return FastPath = true;
+			}
 		}
+
+		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
+//		objlist_clear(NormalBuffer,TxtrWidth*TxtrHeight);
+//		for (int h = 0; h < Height; h++) {
+//			memcpy(&NormalBuffer[h * TxtrWidth], &NormalImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
+//		}
+		memcpy(NormalBuffer, NormalImg.GetPixelBasePtr(), Height * Width * sizeof(uint32));
 		
 		// Objects can glow...
 		if (GlowImg.IsPresent())
 		{
 			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
-			objlist_clear(GlowBuffer,TxtrWidth*TxtrHeight);
-			for (int h = 0; h < Height; h++) {
-				memcpy(&GlowBuffer[h * TxtrWidth], &GlowImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
-			}
+//			objlist_clear(GlowBuffer,TxtrWidth*TxtrHeight);
+//			for (int h = 0; h < Height; h++) {
+//				memcpy(&GlowBuffer[h * TxtrWidth], &GlowImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
+//			}
+			memcpy(GlowBuffer, GlowImg.GetPixelBasePtr(), Height * Width * sizeof(uint32));
 		}
 		break;
 	}
