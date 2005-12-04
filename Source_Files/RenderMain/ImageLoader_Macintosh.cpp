@@ -42,8 +42,14 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "ImageLoader.h"
 #include "shell.h"
 
+inline int NextPowerOfTwo(int n)
+{
+	int p = 1;
+	while(p < n) {p <<= 1;}
+	return p;
+}
 
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
+bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, bool resizeToPowersOfTwo)
 {
 	// Needs QT, of course:
 	if (!machine_has_quicktime()) return false;	
@@ -99,15 +105,22 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 	// Get image dimensions and set its size
 	int Width = ImgRect.right - ImgRect.left;
 	int Height = ImgRect.bottom - ImgRect.top;
+	int OriginalWidth = Width;
+	int OriginalHeight = Height;
+	if (resizeToPowersOfTwo) {
+		Width = NextPowerOfTwo(Width);
+		Height = NextPowerOfTwo(Height);
+	}
 	switch(ImgMode)
 	{
 	case ImageLoader_Colors:
 		Img.Resize(Width,Height);
+		Img.Original(OriginalWidth, OriginalHeight);
 		break;
 		
 	case ImageLoader_Opacity:
 		// If the wrong size, then bug out
-		if (Width != Img.GetWidth() || Height != Img.GetHeight())
+		if (OriginalWidth != Img.GetOriginalWidth() || OriginalHeight != Img.GetOriginalHeight())
 		{
 			UnlockPixels(PxlMapHdl);
 			DisposeGWorld(ImgGW);
@@ -125,9 +138,9 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 	switch(ImgMode)
 	{
 	case ImageLoader_Colors:
-		for (int h=0; h<Height; h++) {
+		for (int h=0; h<OriginalHeight; h++) {
 			byte *PixPtr = RowBegin;
-			for (int w=0; w<Width; w++) {
+			for (int w=0; w<OriginalWidth; w++) {
 				uint32 DestPxl;
 				byte *DPCP = (byte *)(&DestPxl);
 				// ARGB to RGBA
@@ -139,13 +152,14 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 				*(DestPxlPtr++) = DestPxl;
 			}
 			RowBegin += NumRowBytes;
+			DestPxlPtr += (Width - OriginalWidth);
 		}
 		break;
 	
 	case ImageLoader_Opacity:
-		for (int h=0; h<Height; h++) {
+		for (int h=0; h<OriginalHeight; h++) {
 			byte *PixPtr = RowBegin;
-			for (int w=0; w<Width; w++) {
+			for (int w=0; w<OriginalWidth; w++) {
 				uint32 DestPxl = *DestPxlPtr;
 				byte *DPCP = (byte *)(&DestPxl);
 				// ARGB to grayscale value, and then to the opacity
@@ -158,6 +172,7 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 				*(DestPxlPtr++) = DestPxl;
 			}
 			RowBegin += NumRowBytes;
+			DestPxlPtr += (Width - OriginalWidth);
 		}
 		break;
 	}
