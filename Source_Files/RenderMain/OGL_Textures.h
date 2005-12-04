@@ -316,6 +316,8 @@ void FindInfravisionVersion(short Collection, GLfloat *Color);
 // Mass-production version of above; suitable for textures
 void FindInfravisionVersion(short Collection, int NumPixels, uint32 *Pixels);
 
+uint32 *CopyAndTransform(OGL_TextureOptions& Options, short Collection, int NumPixels, uint32 *Pixels, bool infravision, bool silhouette);
+
 struct OGL_TexturesStats {
 	int inUse;
 	int binds, totalBind, minBind, maxBind;

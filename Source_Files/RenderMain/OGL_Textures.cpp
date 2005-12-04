@@ -644,7 +644,13 @@ void MakeFloatColor(uint32 IntColor, GLfloat *FloatColor)
 		FloatColor[k] = float(ColorPtr[k])/float(255);
 }
 
-
+static bool OpacityComputationNeeded(OGL_TextureOptions& Options)
+{
+	return (Options.OpacityType == OGL_OpacType_Avg
+		|| Options.OpacityType == OGL_OpacType_Max
+		|| Options.OpacityScale != 1.0
+		|| Options.OpacityShift == 0.0);
+}
 
 bool TextureManager::LoadSubstituteTexture()
 {
@@ -691,25 +697,36 @@ bool TextureManager::LoadSubstituteTexture()
 			    TxtrTypeInfoList[TextureType].Resolution == 0 &&
 			    CTable != INFRAVISION_BITMAP_SET &&
 			    CTable != SILHOUETTE_BITMAP_SET &&
-			    (TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp ||
-			     TxtrOptsPtr->OpacityType == OGL_OpacType_Flat) &&
-			    TxtrOptsPtr->OpacityScale == 1.0 &&
-			    TxtrOptsPtr->OpacityShift == 0.0) {
+			    !OpacityComputationNeeded(*TxtrOptsPtr)) {
 				// mmm
 				return FastPath = true;
 			}
 		}
 		
-		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
-		memcpy(NormalBuffer, NormalImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
-		
-		// Walls can glow...
-		if (GlowImg.IsPresent())
+		if (CTable == INFRAVISION_BITMAP_SET) 
 		{
-			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
-			memcpy(GlowBuffer, GlowImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
+			NormalBuffer = CopyAndTransform(*TxtrOptsPtr, Collection, (TxtrWidth * TxtrHeight), NormalImg.GetPixelBasePtr(), true, false);
+			return true;
+		} 
+		else if (CTable == SILHOUETTE_BITMAP_SET)
+		{
+			NormalBuffer = CopyAndTransform(*TxtrOptsPtr, Collection, (TxtrWidth * TxtrHeight), NormalImg.GetPixelBasePtr(), false, true);
+			return true;
+		} else {
+			if (OpacityComputationNeeded(*TxtrOptsPtr)) {
+				NormalBuffer = CopyAndTransform(*TxtrOptsPtr, Collection, (TxtrWidth * TxtrHeight), NormalImg.GetPixelBasePtr(), false, false);
+			} else {
+				NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
+				memcpy(NormalBuffer, NormalImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
+			}
+
+			if (GlowImg.IsPresent())
+			{
+				GlowBuffer = new uint32[TxtrWidth * TxtrHeight];
+				memcpy(GlowBuffer, GlowImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
+			}
+			return true;
 		}
-		
 		break;
 	
 	case OGL_Txtr_Landscape:
@@ -804,31 +821,32 @@ bool TextureManager::LoadSubstituteTexture()
 			    TxtrTypeInfoList[TextureType].Resolution == 0 &&
 			    CTable != INFRAVISION_BITMAP_SET &&
 			    CTable != SILHOUETTE_BITMAP_SET &&
-			    (TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp ||
-			     TxtrOptsPtr->OpacityType == OGL_OpacType_Flat) &&
-			    TxtrOptsPtr->OpacityScale == 1.0 &&
-			    TxtrOptsPtr->OpacityShift == 0.0) {
+			    !OpacityComputationNeeded(*TxtrOptsPtr)) {
 				// mmm
 				return FastPath = true;
 			}
 		}
 
-		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
-//		objlist_clear(NormalBuffer,TxtrWidth*TxtrHeight);
-//		for (int h = 0; h < Height; h++) {
-//			memcpy(&NormalBuffer[h * TxtrWidth], &NormalImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
-//		}
-		memcpy(NormalBuffer, NormalImg.GetPixelBasePtr(), Height * Width * sizeof(uint32));
-		
-		// Objects can glow...
-		if (GlowImg.IsPresent())
-		{
-			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
-//			objlist_clear(GlowBuffer,TxtrWidth*TxtrHeight);
-//			for (int h = 0; h < Height; h++) {
-//				memcpy(&GlowBuffer[h * TxtrWidth], &GlowImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
-//			}
-			memcpy(GlowBuffer, GlowImg.GetPixelBasePtr(), Height * Width * sizeof(uint32));
+		if (CTable == INFRAVISION_BITMAP_SET) {
+			NormalBuffer = CopyAndTransform(*TxtrOptsPtr, Collection, (TxtrWidth * TxtrHeight), NormalImg.GetPixelBasePtr(), true, false);
+			return true;
+		} else if (CTable == SILHOUETTE_BITMAP_SET) {
+			NormalBuffer = CopyAndTransform(*TxtrOptsPtr, Collection, (TxtrWidth * TxtrHeight), NormalImg.GetPixelBasePtr(), false, true);
+			return true;
+		} else {
+			if (OpacityComputationNeeded(*TxtrOptsPtr)) {
+				NormalBuffer = CopyAndTransform(*TxtrOptsPtr, Collection, (TxtrWidth * TxtrHeight), NormalImg.GetPixelBasePtr(), false, false);
+			} else {
+				NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
+				memcpy(NormalBuffer, NormalImg.GetPixelBasePtr(), TxtrWidth*TxtrHeight*sizeof(uint32));
+			}
+			
+			if (GlowImg.IsPresent())
+			{
+				GlowBuffer = new uint32[TxtrWidth * TxtrHeight];
+				memcpy(GlowBuffer, GlowImg.GetPixelBasePtr(), TxtrWidth * TxtrHeight * sizeof(uint32));
+			}
+			return true;
 		}
 		break;
 	}
@@ -1240,7 +1258,7 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 	case GL_NEAREST:
 	case GL_LINEAR:
 		glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-			0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+			     0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
 		break;
 	case GL_NEAREST_MIPMAP_NEAREST:
 	case GL_LINEAR_MIPMAP_NEAREST:
@@ -1614,6 +1632,67 @@ void FindInfravisionVersion(short Collection, int NumPixels, uint32 *Pixels)
 	}
 }
 
+// combination of memcpy, SetPixelOpacities, FindInfravisionVersion, silhouette
+uint32 *CopyAndTransform(OGL_TextureOptions& Options, short Collection, int NumPixels, uint32 *Pixels, bool infravision, bool silhouette)
+{
+	// this isn't pretty...but it should at least be cache-friendly
+
+	assert(!(infravision && silhouette));
+	uint32* buffer = new uint32[NumPixels];
+	uint32* DstPixels = buffer;
+
+	InfravisionData& IVData = IVDataList[Collection];
+	infravision = infravision && InfravisionActive && IVData.IsTinted;
+
+	bool useAverage = infravision || (Options.OpacityType == OGL_OpacType_Avg);
+	bool computeOpacity = (Options.OpacityScale != 1.0 || Options.OpacityShift != 0.0);
+
+	for (int k = 0; k < NumPixels; k++, Pixels++, DstPixels++) {
+		GLfloat Avg;
+		uint8 *PxlPtr = (uint8 *) Pixels;
+		uint8 *DstPtr = (uint8 *) DstPixels;
+		
+		if (useAverage) Avg = GLfloat(uint32(PxlPtr[0]) + uint32(PxlPtr[1]) + uint32(PxlPtr[2]))/3;
+		
+		if (infravision) {
+			DstPtr[0] = PIN(int(IVData.Red * Avg + 0.5),0,255);
+			DstPtr[1] = PIN(int(IVData.Green*Avg + 0.5),0,255);
+			DstPtr[2] = PIN(int(IVData.Blue*Avg + 0.5),0,255);
+		} else if (silhouette) {
+			DstPtr[0] = 0xff;
+			DstPtr[1] = 0xff;
+			DstPtr[2] = 0xff;
+		} else {
+			DstPtr[0] = PxlPtr[0];
+			DstPtr[1] = PxlPtr[1];
+			DstPtr[2] = PxlPtr[2];
+		}
+
+ 		switch (Options.OpacityType)
+ 		{
+ 		case OGL_OpacType_Avg:
+ 			DstPtr[3] = PIN(int32(Options.OpacityScale*Avg + 255*Options.OpacityShift + 0.5),0,255);
+ 			break;
+ 		case OGL_OpacType_Max:
+ 			float Opacity = (float)MAX(MAX(uint32(PxlPtr[0]), uint32(PxlPtr[1])), uint32(PxlPtr[2]));
+ 			DstPtr[3] = PIN(int32(Options.OpacityScale*Opacity + 255*Options.OpacityShift + 0.5),0,255);
+ 			break;
+ 		default:
+			if (computeOpacity) 
+			{
+				float Opacity = PxlPtr[3];
+				DstPtr[3] = PIN(int32(Options.OpacityScale*Opacity + 255*Options.OpacityShift + 0.5), 0, 255);
+			} else {
+				DstPtr[3] = PxlPtr[3];
+			}
+		}
+
+	}
+
+	return buffer;
+}
+
+		
 
 /*
 // Stuff for doing 16->32 pixel-format conversion, 1555 ARGB to 8888 RGBA
