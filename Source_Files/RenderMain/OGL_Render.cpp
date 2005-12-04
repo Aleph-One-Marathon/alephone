@@ -613,7 +613,7 @@ bool OGL_StartRun()
 	PixelFormatSetupList.push_back(GLint(AGL_STENCIL_SIZE));
 	PixelFormatSetupList.push_back(GLint(1));
 	PixelFormatSetupList.push_back(GLint(AGL_NONE));
-	draw_progress_bar((progress += 10), max_progress);
+	//draw_progress_bar((progress += 10), max_progress);
 
 	// Request that pixel format
 	AGLPixelFormat PixelFormat = aglChoosePixelFormat(NULL, 0, &PixelFormatSetupList.front());
@@ -639,7 +639,7 @@ bool OGL_StartRun()
 	RectBounds[1] = 0;
 	RectBounds[2] = portBounds.right - portBounds.left;
 	RectBounds[3] = portBounds.bottom - portBounds.top;
-	draw_progress_bar((progress += 10), max_progress);
+	//draw_progress_bar((progress += 10), max_progress);
 
 	bool set_fullscreen= false;
 	if (graphics_preferences->screen_mode.fullscreen && graphics_preferences->experimental_rendering)
