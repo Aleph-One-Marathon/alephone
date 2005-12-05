@@ -381,7 +381,7 @@ void display_device_dialog(
 				Window(), &Bounds,
 				0, &(DI_Iter->Ctrl)
 				);
-		vassert(err == noErr, csprintf(temporary,"CreateUserPaneControl error: %d",err));
+		vassert(err == noErr, csprintf(temporary,"CreateUserPaneControl error: %d",(int)err));
 		
 		// Add ID so that the dialog's hit tester can recognize it
 		ControlID ID;
@@ -389,7 +389,7 @@ void display_device_dialog(
 		ID.id = k;
 		
 		err = SetControlID(DI_Iter->Ctrl, &ID);
-		vassert(err == noErr, csprintf(temporary,"SetControlID error: %d",err));
+		vassert(err == noErr, csprintf(temporary,"SetControlID error: %d",(int)err));
 		
 		// OK since the list of device-info data is now set up
 		// and will not get reallocated
