@@ -777,7 +777,7 @@ bool goto_level(
 		// LP: doing this here because level-specific MML may specify which level-specific
 		// textures to load.
 		// Being careful to carry over errors so that Pfhortran errors can be ignored
-		short SavedType, SavedError = SavedError = get_game_error(&SavedType);
+		short SavedType, SavedError = get_game_error(&SavedType);
 		RunLevelScript(entry->level_number);
 		set_game_error(SavedType,SavedError);
 		
@@ -1136,7 +1136,7 @@ bool load_game_from_file(FileSpecifier& File)
 		{
 			// LP: getting the level scripting off of the map file
 			// Being careful to carry over errors so that Pfhortran errors can be ignored
-			short SavedType, SavedError = SavedError = get_game_error(&SavedType);
+			short SavedType, SavedError = get_game_error(&SavedType);
 			RunLevelScript(dynamic_world->current_level_number);
 			set_game_error(SavedType,SavedError);
 		}
