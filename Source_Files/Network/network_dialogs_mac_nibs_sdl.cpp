@@ -119,19 +119,8 @@ struct network_speeds
 
 /* ---------- globals */
 
-// ZZZ: this is used to communicate between the join game dialog filter proc
-// and the join game entry point.  kNetworkJoinFailed is used in this variable
-// not to indicate failure, but to indicate that no game has started yet.
-static int sStartJoinedGameResult;
-static ListHandle network_list_box= (ListHandle) NULL;
-
 /* from screen_drawing.c */
 extern TextSpec *_get_font_spec(short font_index);
-
-
-static pascal void update_player_list_item(DialogPtr dialog, short item_num);
-static void found_player(const prospective_joiner_info* player);
-static void lost_player(const prospective_joiner_info* player);
 
 #define NAME_BEVEL_SIZE    4
 static void draw_beveled_text_box(bool inset, Rect *box, short bevel_size, RGBColor *brightest_color, char *text,short flags, bool name_box);
@@ -140,14 +129,8 @@ static void draw_beveled_text_box(bool inset, Rect *box, short bevel_size, RGBCo
 
 static void draw_player_box_with_team(Rect *rectangle, short player_index);
 
-static short get_game_duration_radio(DialogPtr dialog);
-
 static bool key_is_down(short key_code);
 #pragma mark -
-
-static bool CheckSetupInformation(
-	NetgameSetupData& Data, 
-	short game_limit_type);
 
 /* ---------- code */
 
@@ -438,34 +421,6 @@ bool run_netgame_setup_dialog(
 }
 
 
-
-static short get_game_duration_radio(
-	DialogPtr dialog)
-{
-	short items[]= {iRADIO_NO_TIME_LIMIT, iRADIO_TIME_LIMIT, iRADIO_KILL_LIMIT};
-	unsigned short index, item_hit;
-	
-	for(index= 0; index<sizeof(items)/sizeof(items[0]); ++index)
-	{
-		short item_type;
-		ControlHandle control;
-		Rect bounds;
-	
-		GetDialogItem(dialog, items[index], &item_type, (Handle *) &control, &bounds);
-		if(GetControlValue(control)) 
-		{
-			item_hit= items[index];
-			break;
-		}
-	}
-	
-	assert(index!=sizeof(items)/sizeof(items[0]));
-	
-	return item_hit;
-}
-
-
-
 struct EntryPointMenuData
 {
 	long entry_flags;
@@ -512,72 +467,6 @@ void EntryPoints_FillIn(
 void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
 {
 	modify_selection_control(inDialog, inItem, CONTROL_ACTIVE, inLevelNumber+1);
-}
-
-
-
-
-/*************************************************************************************************
- *
- * Function: update_player_list_item
- * Purpose:
- *
- *************************************************************************************************/
-static pascal void update_player_list_item(
-	DialogPtr dialog, 
-	short item_num)
-{
-	Rect         item_rect, name_rect;
-	short        i, num_players;
-	short        item_type;
-	short        height;
-	Handle       item_handle;
-	GrafPtr      old_port;
-	FontInfo     finfo;
-
-// LP: the Classic version I've kept theme-less for simplicity
-#if TARGET_API_MAC_CARBON
-	ThemeDrawingState savedState;
-	ThemeDrawState curState =
-		IsWindowActive(GetDialogWindow(dialog))?kThemeStateActive:kThemeStateInactive;
-#endif
-
-	GetPort(&old_port);
-	SetPort(GetWindowPort(GetDialogWindow(dialog)));
-	
-#if TARGET_API_MAC_CARBON
-	GetThemeDrawingState(&savedState);
-#endif
-	
-	GetDialogItem(dialog, item_num, &item_type, &item_handle, &item_rect);
-	
-#if TARGET_API_MAC_CARBON
-	DrawThemePrimaryGroup (&item_rect, curState);
-#endif
-	
-	GetFontInfo(&finfo);
-	height = finfo.ascent + finfo.descent + finfo.leading;
-	MoveTo(item_rect.left + 3, item_rect.top+height);
-	num_players = NetNumberOfPlayerIsValid() ? NetGetNumberOfPlayers() : 0;
-	SetRect(&name_rect, item_rect.left, item_rect.top, item_rect.left+NAME_BOX_WIDTH, item_rect.top+NAME_BOX_HEIGHT);
-	for (i = 0; i < num_players; i++)
-	{
-		draw_player_box_with_team(&name_rect, i);
-		if (!(i % 2))
-		{
-			OffsetRect(&name_rect, NAME_BOX_WIDTH+BOX_SPACING, 0);
-		}
-		else
-		{
-			OffsetRect(&name_rect, -(NAME_BOX_WIDTH+BOX_SPACING), NAME_BOX_HEIGHT + BOX_SPACING);
-		}
-	}
-	
-#if TARGET_API_MAC_CARBON
-	SetThemeDrawingState(savedState, true);
-#endif
-	
-	SetPort(old_port);
 }
 
 static void calculate_box_colors(
@@ -716,13 +605,8 @@ static void draw_player_box_with_team(
 
 
 /* ---------------------- prototypes */
-static pascal Boolean display_net_stats_proc(DialogPtr dialog, EventRecord *event, short *item_hit);
-static void update_damage_item(WindowPtr dialog);
-static pascal void update_damage_item_proc(DialogPtr dialog, short item_num);
-static short create_graph_popup_menu(DialogPtr dialog, short item);
 static void draw_beveled_box(bool inset, Rect *box, short bevel_size, RGBColor *brightest_color);
 static void calculate_maximum_bar(NetgameOutcomeData &Data, Rect *kill_bar_rect);
-static bool will_new_mode_reorder_dialog(short new_mode, short previous_mode);
 
 /* ---------------- code */
 
@@ -898,7 +782,7 @@ void display_net_game_stats()
 				Window(), &CtrlBounds,
 				0, &Data.PlayerButtonCtrls[k]
 				);
-		vassert(err == noErr, csprintf(temporary,"CreateUserPaneControl error: %d",err));
+		vassert(err == noErr, csprintf(temporary,"CreateUserPaneControl error: %d",(int)err));
 		
 		// Add ID so that the dialog's hit tester can recognize it
 		ControlID ID;
@@ -906,7 +790,7 @@ void display_net_game_stats()
 		ID.id = k;
 		
 		err = SetControlID(Data.PlayerButtonCtrls[k], &ID);
-		vassert(err == noErr, csprintf(temporary,"SetControlID error: %d",err));
+		vassert(err == noErr, csprintf(temporary,"SetControlID error: %d",(int)err));
 		
 		// Make it hittable -- clicking on it will create an item-hit event
 		Hittability(Data.PlayerButtonCtrls[k]);
@@ -933,8 +817,7 @@ void draw_names(
 	short which_player)
 {
 	Rect item_rect, name_rect;
-	short item_type, i;
-	Handle item_handle;
+	short i;
 	RGBColor color;
 
 	SetRect(&name_rect, 0, 0, NAME_BOX_WIDTH, NAME_BOX_HEIGHT);
@@ -973,8 +856,7 @@ void draw_kill_bars(
 	char kill_string_format[65], death_string_format[65], suicide_string_format[65];
 	Rect item_rect, kill_bar_rect, death_bar_rect, suicide_bar_rect;
 	short i;
-	short item_type, max_kills, max_width;
-	Handle item_handle;
+	short max_kills, max_width;
 	RGBColor kill_color, suicide_color, death_color;
 
 	get_net_color(_kill_color, &kill_color);
@@ -1173,8 +1055,6 @@ static void calculate_maximum_bar(
 	NetgameOutcomeData &Data,
 	Rect *kill_bar_rect)
 {
-	short item_type;
-	Handle item_handle;
 	Rect item_rect;
 
 	GetControlBounds(Data.DisplayCtrl, &item_rect);
@@ -1194,8 +1074,6 @@ void draw_score_bars(
 	long lowest_ranking= LONG_MAX;
 	Rect maximum_bar, bar;
 	RGBColor color;
-	short item_type;
-	Handle item_handle;
 	
 	for(index= 0; index<bar_count; ++index)
 	{
@@ -1238,104 +1116,6 @@ void draw_score_bars(
 	/* And clear the text. */
 	SetStaticCText(Data.KillsTextCtrl,"");
 	SetStaticCText(Data.DeathsTextCtrl,"");
-}
-
-static bool will_new_mode_reorder_dialog(
-	short new_mode,
-	short previous_mode)
-{
-	bool may_reorder= false;
-		
-	switch(new_mode)
-	{
-		case _player_graph:
-			switch(previous_mode)
-			{
-				case _player_graph:
-				case _total_carnage_graph:
-					may_reorder= false; 
-					break;
-					
-				case _total_scores_graph:
-				case _total_team_carnage_graph:
-				case _total_team_scores_graph:
-					may_reorder= true;
-					break;
-			}
-			break;
-		
-		case _total_carnage_graph:
-			switch(previous_mode)
-			{
-				case _player_graph:
-				case _total_carnage_graph:
-					may_reorder= false; 
-					break;
-					
-				case _total_scores_graph:
-				case _total_team_carnage_graph:
-				case _total_team_scores_graph:
-					may_reorder= true;
-					break;
-			}
-			break;
-			
-		case _total_scores_graph:
-			switch(previous_mode)
-			{
-				case _total_scores_graph:
-					may_reorder= false; 
-					break;
-					
-				case _total_carnage_graph:
-				case _player_graph:
-				case _total_team_carnage_graph:
-				case _total_team_scores_graph:
-					may_reorder= true;
-					break;
-			}
-			break;
-	
-		case _total_team_carnage_graph:
-			switch(previous_mode)
-			{
-				case _total_team_carnage_graph:
-					may_reorder= false;
-					break;
-	
-				case _player_graph:
-				case _total_carnage_graph:
-				case _total_scores_graph:
-				case _total_team_scores_graph:
-					may_reorder= true; 
-					break;
-			}
-			break;
-			
-		case _total_team_scores_graph:
-			switch(previous_mode)
-			{
-				case _total_team_scores_graph:
-					may_reorder= false;
-					break;
-	
-				case _player_graph:
-				case _total_carnage_graph:
-				case _total_scores_graph:
-				case _total_team_carnage_graph:
-					may_reorder= true; 
-					break;
-			}
-			break;
-			
-		default:
-			// LP change:
-			assert(false);
-			// halt();
-			break;
-	}
-	
-	return may_reorder;
 }
 
 /* Stupid function, here as a hack.. */
