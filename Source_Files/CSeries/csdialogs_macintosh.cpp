@@ -514,7 +514,7 @@ AutoNibWindow::AutoNibWindow(IBNibRef Nib, CFStringRef Name)
 		Buffer[BufferSize-1] = 0; // Null terminator byte
 	}	
 	vassert(err == noErr,
-		csprintf(temporary,"CreateWindowFromNib error: %d for window %s",err,Buffer));
+		csprintf(temporary,"CreateWindowFromNib error: %d for window %s",(int)err,Buffer));
 }
 
 
@@ -532,7 +532,7 @@ ControlRef GetCtrlFromWindow(WindowRef DlgWindow, uint32 Signature, uint32 ID)
 	
 	ControlRef Ctrl;
 	err = GetControlByID(DlgWindow,&CtrlID,&Ctrl);
-	vassert(err == noErr, csprintf(temporary,"GetControlByID error for sig and id: %d - %d %d",err,Signature,ID));
+	vassert(err == noErr, csprintf(temporary,"GetControlByID error for sig and id: %d - %d %d",(int)err,(int)Signature,(int)ID));
 	assert(Ctrl);
 	
 	return Ctrl;	
@@ -701,7 +701,7 @@ static pascal void ControlDrawer(ControlRef Ctrl, short Part)
 	err = GetControlProperty(Ctrl,
 			AppTag, DrawTag,
 			sizeof(CtrlDD), &ActualSize, &CtrlDD);
-	vassert(err == noErr, csprintf(temporary,"GetControlProperty error: %d",err));
+	vassert(err == noErr, csprintf(temporary,"GetControlProperty error: %d",(int)err));
 	
 	assert(CtrlDD.DrawFunction);
 	CtrlDD.DrawFunction(Ctrl,CtrlDD.DrawData);
@@ -734,14 +734,14 @@ void AutoDrawability::operator()(ControlRef Ctrl,
 			kControlUserPaneDrawProcTag,
 			sizeof(DrawingUPP), &DrawingUPP
 			);
-	vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
+	vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",(int)err));
 	
 	err = SetControlProperty(
 			Ctrl,
 			AppTag, DrawTag,
 			sizeof(CtrlDD), &CtrlDD
 			);
-	vassert(err == noErr, csprintf(temporary,"SetControlProperty error: %d",err));
+	vassert(err == noErr, csprintf(temporary,"SetControlProperty error: %d",(int)err));
 }
 
 
@@ -864,7 +864,7 @@ void AutoHittability::operator()(ControlRef Ctrl)
 			kControlUserPaneHitTestProcTag,
 			sizeof(HitTesterUPP), &HitTesterUPP
 			);
-	vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",err));
+	vassert(err == noErr, csprintf(temporary,"SetControlData error: %d",(int)err));
 }
 
 
@@ -924,10 +924,10 @@ static pascal OSStatus ModalDialogHandler(
 	err = GetEventParameter(Event,
 		kEventParamDirectObject,typeControlRef,
 		NULL, sizeof(ControlRef), NULL, &Ctrl.Ctrl);
-	vassert(err == noErr, csprintf(temporary,"GetEventParameter error: %d",err));
+	vassert(err == noErr, csprintf(temporary,"GetEventParameter error: %d",(int)err));
 	
 	err = GetControlID(Ctrl.Ctrl,&Ctrl.ID);
-	vassert(err == noErr, csprintf(temporary,"GetControlID error: %d",err));
+	vassert(err == noErr, csprintf(temporary,"GetControlID error: %d",(int)err));
 
 	ModalDialogHandlerData *HDPtr = (ModalDialogHandlerData *)(Data);
 	if (HDPtr->DlgHandler)
@@ -972,7 +972,7 @@ bool RunModalDialog(
 	err = InstallWindowEventHandler(DlgWindow, HandlerUPP,
 		NumEventTypes, EventTypes,
 		&HandlerData, NULL);
-	vassert(err == noErr, csprintf(temporary,"InstallWindowEventHandler error: %d",err));
+	vassert(err == noErr, csprintf(temporary,"InstallWindowEventHandler error: %d",(int)err));
 	
 	if (IsSheet)
 #if USE_SHEETS
@@ -1063,7 +1063,7 @@ AutoTimer::AutoTimer(
 		&Timer
 	);
 	
-	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",err));
+	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",(int)err));
 }
 
 AutoTimer::AutoTimer(
@@ -1085,7 +1085,7 @@ AutoTimer::AutoTimer(
 	
 	m_callback = Handler;
 	
-	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",err));
+	vassert(err == noErr, csprintf(temporary, "Error in InstallEventLoopTimer: %d",(int)err));
 }
 
 AutoTimer::~AutoTimer()
@@ -1163,7 +1163,7 @@ void AutoKeyboardWatcher::Watch(
 			NumKeyboardEvents, KeyboardEvents,
 			HandlerData, NULL);
 	
-	vassert(err == noErr, csprintf(temporary, "Error in InstallControlEventHandler: %d",err));
+	vassert(err == noErr, csprintf(temporary, "Error in InstallControlEventHandler: %d",(int)err));
 }
 
 const EventTypeSpec AutoTabHandler::TabControlEvents[1]
@@ -1292,7 +1292,7 @@ void QQ_set_selector_control_labels (DialogPTR dlg, int item, const std::vector<
 	
 	// Add in new contents
 	for (std::vector<std::string>::const_iterator it = labels.begin (); it != labels.end (); ++it) {
-		CFStringRef cfstring = CFStringCreateWithCString(NULL, (*it).c_str (), NULL);
+		CFStringRef cfstring = CFStringCreateWithCString(NULL, (*it).c_str (), kCFStringEncodingMacRoman);
 		AppendMenuItemTextWithCFString(Menu, cfstring, 0, 0, NULL);
 		CFRelease(cfstring);
 	}
