@@ -33,23 +33,6 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
-#else
-/*
-#include <Events.h>
-#include <AppleEvents.h>
-#include <Aliases.h>
-#include <Fonts.h>
-#include <Dialogs.h>
-#include <Sound.h>
-#include <Gestalt.h>
-#include <Devices.h>
-#include <Resources.h>
-#include <Script.h>
-#include <Timer.h>
-#include <TextUtils.h>
-#include <PictUtils.h>
-#include <Lists.h>
-*/
 #endif
 
 #define HAVE_OPENGL
