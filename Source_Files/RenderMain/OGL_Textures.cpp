@@ -644,8 +644,6 @@ void MakeFloatColor(uint32 IntColor, GLfloat *FloatColor)
 		FloatColor[k] = float(ColorPtr[k])/float(255);
 }
 
-
-
 bool TextureManager::LoadSubstituteTexture()
 {
 	// Is there a texture to be substituted?
@@ -683,21 +681,10 @@ bool TextureManager::LoadSubstituteTexture()
 		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
 		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
 		TxtrOptsPtr->Substitution = true;
+		if (CanUseWithoutCopying()) 
 		{
-			GLint MaxTextureSize;
-			glGetIntegerv(GL_MAX_TEXTURE_SIZE,&MaxTextureSize);
-			if (Width <= MaxTextureSize && 
-			    Height <= MaxTextureSize && 
-			    TxtrTypeInfoList[TextureType].Resolution == 0 &&
-			    CTable != INFRAVISION_BITMAP_SET &&
-			    CTable != SILHOUETTE_BITMAP_SET &&
-			    (TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp ||
-			     TxtrOptsPtr->OpacityType == OGL_OpacType_Flat) &&
-			    TxtrOptsPtr->OpacityScale == 1.0 &&
-			    TxtrOptsPtr->OpacityShift == 0.0) {
-				// mmm
-				return FastPath = true;
-			}
+                        // mmm
+			return FastPath = true;
 		}
 		
 		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
@@ -796,38 +783,19 @@ bool TextureManager::LoadSubstituteTexture()
  		U_Offset = THtRecip*HeightOffset;
 
 		TxtrOptsPtr->Substitution = true;
+		if (CanUseWithoutCopying())
 		{
-			GLint MaxTextureSize;
-			glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTextureSize);
-			if (Width <= MaxTextureSize &&
-			    Height <= MaxTextureSize &&
-			    TxtrTypeInfoList[TextureType].Resolution == 0 &&
-			    CTable != INFRAVISION_BITMAP_SET &&
-			    CTable != SILHOUETTE_BITMAP_SET &&
-			    (TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp ||
-			     TxtrOptsPtr->OpacityType == OGL_OpacType_Flat) &&
-			    TxtrOptsPtr->OpacityScale == 1.0 &&
-			    TxtrOptsPtr->OpacityShift == 0.0) {
-				// mmm
-				return FastPath = true;
-			}
+			// mmm
+			return FastPath = true;
 		}
 
 		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
-//		objlist_clear(NormalBuffer,TxtrWidth*TxtrHeight);
-//		for (int h = 0; h < Height; h++) {
-//			memcpy(&NormalBuffer[h * TxtrWidth], &NormalImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
-//		}
 		memcpy(NormalBuffer, NormalImg.GetPixelBasePtr(), Height * Width * sizeof(uint32));
 		
 		// Objects can glow...
 		if (GlowImg.IsPresent())
 		{
 			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
-//			objlist_clear(GlowBuffer,TxtrWidth*TxtrHeight);
-//			for (int h = 0; h < Height; h++) {
-//				memcpy(&GlowBuffer[h * TxtrWidth], &GlowImg.GetPixelBasePtr()[h * Width], Width * sizeof(uint32));
-//			}
 			memcpy(GlowBuffer, GlowImg.GetPixelBasePtr(), Height * Width * sizeof(uint32));
 		}
 		break;
@@ -851,15 +819,18 @@ bool TextureManager::LoadSubstituteTexture()
 	}
 	else if (CTable == SILHOUETTE_BITMAP_SET)
 	{
-		if (NormalBuffer)
-		{
-			for (int k=0; k<TxtrWidth*TxtrHeight; k++)
-			{
-				// Make the color white, but keep the opacity
-				uint8 *PxlPtr = (uint8 *)(NormalBuffer + k);
-				PxlPtr[0] = PxlPtr[1] = PxlPtr[2] = 0xff;
-			}
-		}
+		// ghs: we don't need to do this, until someone starts using
+		// silhouette bitmap set for something other than invisibility,
+		// due to the way OpenGL does blending
+// 		if (NormalBuffer)
+// 		{
+// 			for (int k=0; k<TxtrWidth*TxtrHeight; k++)
+// 			{
+// 				// Make the color white, but keep the opacity
+// 				uint8 *PxlPtr = (uint8 *)(NormalBuffer + k);
+// 				PxlPtr[0] = PxlPtr[1] = PxlPtr[2] = 0xff;
+// 			}
+// 		}
 		// Silhouette textures don't glow
 		if (GlowBuffer)
 		{
@@ -1303,6 +1274,21 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 		break;
 	}
+}
+
+bool TextureManager::CanUseWithoutCopying()
+{
+	GLint MaxTextureSize;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTextureSize);
+	return (TxtrWidth <= MaxTextureSize &&
+		TxtrHeight <= MaxTextureSize &&
+		TxtrTypeInfoList[TextureType].Resolution == 0 &&
+		CTable != INFRAVISION_BITMAP_SET &&
+		(CTable != SILHOUETTE_BITMAP_SET || TransferMode == _tinted_transfer) &&
+		(TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp ||
+		 TxtrOptsPtr->OpacityType == OGL_OpacType_Flat) &&
+		TxtrOptsPtr->OpacityScale == 1.0 &&
+		TxtrOptsPtr->OpacityShift == 0.0);
 }
 
 

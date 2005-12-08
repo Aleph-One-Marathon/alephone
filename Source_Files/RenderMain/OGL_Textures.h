@@ -176,6 +176,8 @@ class TextureManager
 	
 	// This si for placing a texture in OpenGL
 	void PlaceTexture(uint32 *Buffer);
+
+	bool CanUseWithoutCopying();
 	
 public:
 
