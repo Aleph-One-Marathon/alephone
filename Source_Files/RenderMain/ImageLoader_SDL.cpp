@@ -32,6 +32,7 @@
 #include <SDL_image.h>
 #endif
 
+
 inline int NextPowerOfTwo(int n)
 {
 	int p = 1;
@@ -39,12 +40,11 @@ inline int NextPowerOfTwo(int n)
 	return p;
 }
 
-
 /*
  *  Load specified image file
  */
 
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, bool resizeToPowersOfTwo)
+bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int maxSize)
 {
 	// Don't load opacity if there is no color component:
 	switch(ImgMode) {
@@ -52,7 +52,7 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, b
 			break;
 		
 		case ImageLoader_Opacity:
-			if (!Img.IsPresent())
+			if (!IsPresent())
 				return false;
 			break;
 		
@@ -77,19 +77,20 @@ SDL_Surface *s = NULL;
 	int Width = s->w, Height = s->h;
 	int OriginalWidth = Width;
 	int OriginalHeight = Height;
-	if (resizeToPowersOfTwo) {
+	if (flags & ImageLoader_ResizeToPowersOfTwo) {
 		Width = NextPowerOfTwo(Width);
 		Height = NextPowerOfTwo(Height);
 	}
 	switch (ImgMode) {
 		case ImageLoader_Colors:
-			Img.Resize(Width, Height);
-			Img.Original(OriginalWidth, OriginalHeight);
+			Resize(Width, Height);
+			Original(OriginalWidth, OriginalHeight);
+			NumMipMaps = 0;
 			break;
 
 		case ImageLoader_Opacity:
 			// If the wrong size, then bug out
-			if (OriginalWidth != Img.GetOriginalWidth() || OriginalHeight != Img.GetOriginalHeight()) {
+			if (OriginalWidth != GetOriginalWidth() || OriginalHeight != GetOriginalHeight()) {
 				SDL_FreeSurface(s);
 				return false;
 			}
@@ -112,12 +113,12 @@ SDL_Surface *s = NULL;
 	// Convert surface to RGBA texture
 	switch (ImgMode) {
 		case ImageLoader_Colors:
-			memcpy(Img.GetPixelBasePtr(), rgba->pixels, Width * Height * 4);
+			memcpy(GetPixelBasePtr(), rgba->pixels, Width * Height * 4);
 			break;
 
 		case ImageLoader_Opacity: {
 			uint8 *p = (uint8 *)rgba->pixels;
-			uint8 *q = (uint8 *)Img.GetPixelBasePtr();
+			uint8 *q = (uint8 *)GetPixelBasePtr();
 			for (int h=0; h<Height; h++) {
 				for (int w=0; w<Width; w++) {
 					// RGB to greyscale value, and then to the opacity

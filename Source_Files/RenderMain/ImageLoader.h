@@ -42,31 +42,46 @@ class ImageDescriptor
 	int OriginalWidth;  // before powers of two resize
 	int OriginalHeight;
 	vector<uint32> Pixels;	// in 32-bit format
+
+	int NumMipMaps;
+	int Format;
 public:
 	
-	// Is an image present?
 	bool IsPresent() {return !Pixels.empty();}
-	
-	// Size
+
+	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int maxSize = 0);
+
+	// Size of level 0 image
 	int GetWidth() {return Width;}
 	int GetHeight() {return Height;}
 	int GetNumPixels() {return Width*Height;}
 
+	int GetNumMipMaps() { return NumMipMaps; }
+	int GetTotalBytes() { return Pixels.size() * 4; }
+	int GetFormat() { return Format; }
+
+	void SetFormat(int _Format) { Format = _Format; }
+	void SetNumMipMaps(int _NumMipMaps) { NumMipMaps = _NumMipMaps; }
+
 	int GetOriginalWidth() { return OriginalWidth; }
 	int GetOriginalHeight() { return OriginalHeight; }
 
-	// 
-	
 	// Pixel accessors
 	uint32& GetPixel(int Horiz, int Vert) {return Pixels[Width*Vert + Horiz];}
 	uint32 *GetPixelBasePtr() {return &Pixels[0];}
+
+	uint32 *GetMipMapPtr(int Level);
 	
 	// Reallocation
 	void Resize(int _Width, int _Height)
 		{Width = _Width, Height = _Height, Pixels.resize(GetNumPixels());}
 	void Original(int _Width, int _Height)
 	{OriginalWidth = _Width, OriginalHeight = _Height; }
-	
+
+	// mipmappy operations
+	void Resize(int _Width, int _Height, int _TotalBytes)
+	{ Width = _Width, Height = _Height, Pixels.resize(_TotalBytes * 4); }
+
 	// Clearing
 	void Clear()
 		{Width = Height = 0; Pixels.clear();}
@@ -83,8 +98,21 @@ enum {
 	ImageLoader_Opacity
 };
 
-// Returns whether or not the loading was successful
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, bool resizeToPowersOfTwo);
+enum {
+	ImageFormat_RGBA,
+	ImageFormat_DXTC1,
+	ImageFormat_DXTC3,
+	ImageFormat_DXTC5
+};
 
+enum {
+	ImageLoader_ResizeToPowersOfTwo = 0x1,
+	ImageLoader_CanUseDXTC = 0x2,
+	ImageLoader_LoadMipMaps = 0x4
+};
+// Returns whether or not the loading was successful
+//bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, int flags, int maxSize = 0);
+
+uint32 *GetMipMapPtr(uint32 *pixels, int size, int level, int width, int height, int format);
 
 #endif

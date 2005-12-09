@@ -49,7 +49,7 @@ inline int NextPowerOfTwo(int n)
 	return p;
 }
 
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, bool resizeToPowersOfTwo)
+bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, int flags)
 {
 	// Needs QT, of course:
 	if (!machine_has_quicktime()) return false;	
@@ -107,7 +107,7 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, b
 	int Height = ImgRect.bottom - ImgRect.top;
 	int OriginalWidth = Width;
 	int OriginalHeight = Height;
-	if (resizeToPowersOfTwo) {
+	if (flags & ImageLoader_ResizeToPowersOfTwo) {
 		Width = NextPowerOfTwo(Width);
 		Height = NextPowerOfTwo(Height);
 	}
