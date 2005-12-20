@@ -373,6 +373,7 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
+	bool ResetValues();
 	bool End();
 
 	XML_AT_SequenceParser(): XML_ElementParser("sequence") {}
@@ -458,6 +459,12 @@ bool XML_AT_SequenceParser::End()
 	NewAnim.Select = Select;
 	AnimTxtrList[Collection].push_back(NewAnim);
 	
+	return true;
+}
+
+bool XML_AT_SequenceParser::ResetValues()
+{
+	ATDeleteAll();
 	return true;
 }
 
