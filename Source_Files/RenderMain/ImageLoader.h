@@ -87,6 +87,9 @@ public:
 		{Width = Height = 0; Pixels.clear();}
 	
 	ImageDescriptor(): Width(0), Height(0), OriginalWidth(0), OriginalHeight(0) {}
+
+private:
+	bool LoadDDSFromFile(FileSpecifier& File, int flags, int maxSize = 0);
 };
 
 // What to load: image colors (must be loaded first)

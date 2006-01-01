@@ -49,6 +49,9 @@ bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, 
 	// Don't load opacity if there is no color component:
 	switch(ImgMode) {
 		case ImageLoader_Colors:
+			char name[256];
+			File.GetName(name);
+			if (LoadDDSFromFile(File, flags, maxSize)) return true;
 			break;
 		
 		case ImageLoader_Opacity:

@@ -99,6 +99,9 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #   include <glu.h>
 #   include <glext.h>
 # else
+#   ifndef GL_GLEXT_PROTOTYPES
+#   define GL_GLEXT_PROTOTYPES 1
+#   endif
 #   include <GL/gl.h>
 #   include <GL/glu.h>
 #   ifdef HAVE_GL_GLEXT_H
@@ -1200,7 +1203,7 @@ uint32 *TextureManager::Shrink(uint32 *Buffer)
 
 // This places a texture into the OpenGL software and gives it the right
 // mapping attributes
-void TextureManager::PlaceTexture(uint32 *Buffer)
+void TextureManager::PlaceTexture(uint32 *Buffer, bool useDXTC1 = false)
 {
 
 	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[TextureType];
@@ -1211,7 +1214,7 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 	case GL_NEAREST:
 	case GL_LINEAR:
 		glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-			0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+			     0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
 		break;
 	case GL_NEAREST_MIPMAP_NEAREST:
 	case GL_LINEAR_MIPMAP_NEAREST:
@@ -1220,12 +1223,18 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 #if defined GL_SGIS_generate_mipmap
 		if (useSGISMipmaps) {
 			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-			glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+			if (useDXTC1) {
+#ifdef GL_ARB_texture_compression
+				glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, LoadedWidth, LoadedHeight, 0, LoadedWidth * LoadedHeight / 2, Buffer);
+#endif
+			} else {
+				glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+			}
 		} else
 #endif
 		{
 		gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-			GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
+				  GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
 		}
 		break;
 	
@@ -1304,7 +1313,7 @@ void TextureManager::RenderNormal()
 	if (TxtrStatePtr->UseNormal())
 	{
 		if (FastPath) {
-			PlaceTexture(TxtrOptsPtr->NormalImg.GetPixelBasePtr());
+			PlaceTexture(TxtrOptsPtr->NormalImg.GetPixelBasePtr(), TxtrOptsPtr->NormalImg.GetFormat() == ImageFormat_DXTC1);
 		} else {
 			assert(NormalBuffer);
 			PlaceTexture(NormalBuffer);
