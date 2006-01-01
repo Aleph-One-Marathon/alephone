@@ -737,7 +737,7 @@ bool TextureManager::LoadSubstituteTexture()
 		{
 			// This optimization is reasonable because both the read-in-image
 			// and the OpenGL-texture arrays have the same width/height arrangement
-			uint32 *Src = &NormalImg.GetPixel(0,OrigHeightOffset+v);
+			uint32 *Src = &NormalImg.GetPixelBasePtr()[NormalImg.GetWidth() * (OrigHeightOffset * v)];
 			uint32 *Dest = NormalBuffer + (OGLHeightOffset + ((CopyingHeight-1)-v))*Width;
 			memcpy(Dest,Src,Width*sizeof(uint32));
 		}
@@ -1313,7 +1313,7 @@ void TextureManager::RenderNormal()
 	if (TxtrStatePtr->UseNormal())
 	{
 		if (FastPath) {
-			PlaceTexture(TxtrOptsPtr->NormalImg.GetPixelBasePtr(), TxtrOptsPtr->NormalImg.GetFormat() == ImageFormat_DXTC1);
+			PlaceTexture(TxtrOptsPtr->NormalImg.GetPixelBasePtr(), TxtrOptsPtr->NormalImg.GetFormat() == ImageDescriptor::DXTC1);
 		} else {
 			assert(NormalBuffer);
 			PlaceTexture(NormalBuffer);
@@ -1392,6 +1392,11 @@ TextureManager::TextureManager()
 {
 	NormalBuffer = 0;
 	GlowBuffer = 0;
+
+	NormalImage = 0;
+	GlowImage = 0;
+
+	destroyImageDescriptors = false;
 	
 	ShadingTables = NULL;
 	TransferMode = 0;
@@ -1416,6 +1421,11 @@ TextureManager::~TextureManager()
 {
 	if (NormalBuffer != 0) delete []NormalBuffer;
 	if (GlowBuffer != 0) delete []GlowBuffer;
+
+	if (destroyImageDescriptors) {
+		if (NormalImage) delete NormalImage;
+		if (GlowBuffer) delete GlowBuffer;
+	}
 }
 
 extern void ResetScreenFont();

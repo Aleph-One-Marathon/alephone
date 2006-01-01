@@ -88,7 +88,7 @@ SDL_Surface *s = NULL;
 		case ImageLoader_Colors:
 			Resize(Width, Height);
 			Original(OriginalWidth, OriginalHeight);
-			NumMipMaps = 0;
+			MipMapCount = 0;
 			break;
 
 		case ImageLoader_Opacity:

@@ -31,9 +31,9 @@
 #include "ImageLoader.h"
 #include "SDL_endian.h"
 
-uint32 *GetMipMapPtr(uint32 *pixels, int size, int level, int width, int height, int format)
+uint32 *GetMipMapPtr(uint32 *pixels, int size, int level, int width, int height, ImageDescriptor::ImageFormat format)
 {
-	if (format == ImageFormat_RGBA) 
+	if (format == ImageDescriptor::RGBA8) 
 	{
 		uint32 *result = pixels;
 		while (level--)
@@ -55,7 +55,25 @@ uint32 *GetMipMapPtr(uint32 *pixels, int size, int level, int width, int height,
 
 uint32 *ImageDescriptor::GetMipMapPtr(int Level)
 {
-	return ::GetMipMapPtr(&Pixels[0], Pixels.size(), Level, Width, Height, Format);
+	return ::GetMipMapPtr(&Pixels[0], Size, Level, Width, Height, Format);
+}
+
+void ImageDescriptor::Resize(int _Width, int _Height)
+{
+	Width = _Width;
+	Height = _Height;
+	Size = _Width * _Height * 4;
+	delete []Pixels;
+	Pixels = new uint32[_Width * Height];
+}
+
+void ImageDescriptor::Resize(int _Width, int _Height, int _TotalBytes)
+{
+	Width = _Width;
+	Height = _Height;
+	Size = _TotalBytes;
+	delete []Pixels;
+	Pixels = new uint32[_TotalBytes];
 }
 
 bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSize)
@@ -163,7 +181,7 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSiz
 		memcpy(GetPixelBasePtr(), rgba->pixels, Width * Height * 4);
 		SDL_FreeSurface(rgba);
 
-		Format = ImageFormat_RGBA;
+		Format = RGBA8;
 
 		return true;
 	} else if (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) {
@@ -177,7 +195,7 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSiz
 				return false;
 			}
 			
-			Format = ImageFormat_DXTC1;
+			Format = DXTC1;
 			return true;
 		} else {
 			return false;

@@ -145,6 +145,11 @@ class TextureManager
 	
 	// Texture buffers for OpenGL
 	uint32 *NormalBuffer, *GlowBuffer;
+
+	// New texture buffers
+	ImageDescriptor *NormalImage, *GlowImage;
+	// if this is set, destroy image descriptors when destructor is called
+	bool destroyImageDescriptors;
 	
 	// Pointer to the appropriate texture-state object
 	TextureState *TxtrStatePtr;

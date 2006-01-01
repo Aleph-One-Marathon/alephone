@@ -39,15 +39,18 @@ class ImageDescriptor
 {
 	int Width;	    // along scanlines
 	int Height;	    // scanline to scanline
+
 	int OriginalWidth;  // before powers of two resize
 	int OriginalHeight;
-	vector<uint32> Pixels;	// in 32-bit format
 
-	int NumMipMaps;
-	int Format;
+	uint32 *Pixels;
+	int Size;
+
+	int MipMapCount;
+	
 public:
 	
-	bool IsPresent() {return !Pixels.empty();}
+	bool IsPresent() {return Pixels;}
 
 	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int maxSize = 0);
 
@@ -56,40 +59,54 @@ public:
 	int GetHeight() {return Height;}
 	int GetNumPixels() {return Width*Height;}
 
-	int GetNumMipMaps() { return NumMipMaps; }
-	int GetTotalBytes() { return Pixels.size() * 4; }
+	int GetMipMapCount() { return MipMapCount; }
+	int GetTotalBytes() { return Size; }
 	int GetFormat() { return Format; }
-
-	void SetFormat(int _Format) { Format = _Format; }
-	void SetNumMipMaps(int _NumMipMaps) { NumMipMaps = _NumMipMaps; }
 
 	int GetOriginalWidth() { return OriginalWidth; }
 	int GetOriginalHeight() { return OriginalHeight; }
 
 	// Pixel accessors
-	uint32& GetPixel(int Horiz, int Vert) {return Pixels[Width*Vert + Horiz];}
-	uint32 *GetPixelBasePtr() {return &Pixels[0];}
+//	uint32& GetPixel(int Horiz, int Vert) {return Pixels[Width*Vert + Horiz];}
+	uint32 *GetPixelBasePtr() {return Pixels;}
 
 	uint32 *GetMipMapPtr(int Level);
 	
 	// Reallocation
-	void Resize(int _Width, int _Height)
-		{Width = _Width, Height = _Height, Pixels.resize(GetNumPixels());}
+	void Resize(int _Width, int _Height);
 	void Original(int _Width, int _Height)
 	{OriginalWidth = _Width, OriginalHeight = _Height; }
 
 	// mipmappy operations
-	void Resize(int _Width, int _Height, int _TotalBytes)
-	{ Width = _Width, Height = _Height, Pixels.resize(_TotalBytes * 4); }
+	void Resize(int _Width, int _Height, int _TotalBytes);
 
 	// Clearing
 	void Clear()
-		{Width = Height = 0; Pixels.clear();}
+		{Width = Height = 0; delete []Pixels; Pixels = NULL;}
 	
-	ImageDescriptor(): Width(0), Height(0), OriginalWidth(0), OriginalHeight(0) {}
+	ImageDescriptor(): Width(0), Height(0), OriginalWidth(0), OriginalHeight(0), Pixels(NULL), Size(0) {}
+
+	// asumes RGBA8
+	ImageDescriptor(int width, int height, unsigned char *pixels);
+
+	enum ImageFormat {
+		RGBA8,
+		DXTC1,
+		DXTC3,
+		DXTC5
+	};
+
+	~ImageDescriptor()
+		{
+			delete Pixels;
+		}
+			
+			
 
 private:
 	bool LoadDDSFromFile(FileSpecifier& File, int flags, int maxSize = 0);
+
+	ImageFormat Format;
 };
 
 // What to load: image colors (must be loaded first)
@@ -99,13 +116,6 @@ private:
 enum {
 	ImageLoader_Colors,
 	ImageLoader_Opacity
-};
-
-enum {
-	ImageFormat_RGBA,
-	ImageFormat_DXTC1,
-	ImageFormat_DXTC3,
-	ImageFormat_DXTC5
 };
 
 enum {
