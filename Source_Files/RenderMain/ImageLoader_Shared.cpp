@@ -29,6 +29,7 @@
 #include "cstypes.h"
 #include "DDS.h"
 #include "ImageLoader.h"
+#include "SDL.h"
 #include "SDL_endian.h"
 
 uint32 *GetMipMapPtr(uint32 *pixels, int size, int level, int width, int height, ImageDescriptor::ImageFormat format)

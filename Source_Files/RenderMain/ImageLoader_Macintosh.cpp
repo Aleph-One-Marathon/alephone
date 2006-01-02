@@ -49,7 +49,7 @@ inline int NextPowerOfTwo(int n)
 	return p;
 }
 
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, int flags)
+bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int)
 {
 	// Needs QT, of course:
 	if (!machine_has_quicktime()) return false;	
@@ -58,10 +58,11 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, i
 	switch(ImgMode)
 	{
 	case ImageLoader_Colors:
+		if (LoadDDSFromFile(File, flags, maxSize)) return true;
 		break;
 		
 	case ImageLoader_Opacity:
-		if (!Img.IsPresent()) return false;
+		if (!IsPresent()) return false;
 		break;
 		
 	default:
@@ -114,13 +115,13 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, i
 	switch(ImgMode)
 	{
 	case ImageLoader_Colors:
-		Img.Resize(Width,Height);
-		Img.Original(OriginalWidth, OriginalHeight);
+		Resize(Width,Height);
+		Original(OriginalWidth, OriginalHeight);
 		break;
 		
 	case ImageLoader_Opacity:
 		// If the wrong size, then bug out
-		if (OriginalWidth != Img.GetOriginalWidth() || OriginalHeight != Img.GetOriginalHeight())
+		if (OriginalWidth != GetOriginalWidth() || OriginalHeight != GetOriginalHeight())
 		{
 			UnlockPixels(PxlMapHdl);
 			DisposeGWorld(ImgGW);
@@ -133,7 +134,7 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, i
 	byte *PixMap = (byte *)GetPixBaseAddr(PxlMapHdl);
 	int NumRowBytes = int((**PxlMapHdl).rowBytes & 0x7fff);
 	byte *RowBegin = PixMap;
-	uint32 *DestPxlPtr = Img.GetPixelBasePtr();
+	uint32 *DestPxlPtr = GetPixelBasePtr();
 	
 	switch(ImgMode)
 	{
