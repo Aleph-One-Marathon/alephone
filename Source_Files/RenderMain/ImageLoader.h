@@ -40,8 +40,8 @@ class ImageDescriptor
 	int Width;	    // along scanlines
 	int Height;	    // scanline to scanline
 
-	int OriginalWidth;  // before powers of two resize
-	int OriginalHeight;
+	double VScale;
+	double UScale;
 
 	uint32 *Pixels;
 	int Size;
@@ -64,8 +64,8 @@ public:
 	int GetBufferSize() const { return Size; }
 	int GetFormat() const { return Format; }
 
-	int GetOriginalWidth() const { return OriginalWidth; }
-	int GetOriginalHeight() const { return OriginalHeight; }
+	double GetVScale() const { return VScale; }
+	double GetUScale() const { return UScale; }
 
 	// Pixel accessors
 //	uint32& GetPixel(int Horiz, int Vert) {return Pixels[Width*Vert + Horiz];}
@@ -77,8 +77,6 @@ public:
 	
 	// Reallocation
 	void Resize(int _Width, int _Height);
-	void Original(int _Width, int _Height)
-	{OriginalWidth = _Width, OriginalHeight = _Height; }
 
 	// mipmappy operations
 	void Resize(int _Width, int _Height, int _TotalBytes);
@@ -89,7 +87,7 @@ public:
 
 	ImageDescriptor(const ImageDescriptor &CopyFrom);
 	
-	ImageDescriptor(): Width(0), Height(0), OriginalWidth(0), OriginalHeight(0), Pixels(NULL), Size(0) {}
+	ImageDescriptor(): Width(0), Height(0), VScale(1.0), UScale(1.0), Pixels(NULL), Size(0) {}
 
 	// asumes RGBA8
 	ImageDescriptor(int width, int height, uint32 *pixels);

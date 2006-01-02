@@ -289,10 +289,10 @@ void OGL_TextureOptionsBase::Load()
 	// and that the normal and glow textures have the same dimensions
 	if (NormalImg.IsPresent())
 	{
-		int W0 = NormalImg.GetOriginalWidth();
-		int W1 = GlowImg.GetOriginalWidth();
-		int H0 = NormalImg.GetOriginalHeight();
-		int H1 = GlowImg.GetOriginalHeight();
+		int W0 = NormalImg.GetWidth();
+		int W1 = GlowImg.GetWidth();
+		int H0 = NormalImg.GetHeight();
+		int H1 = GlowImg.GetHeight();
 		if ((W1 != W0) || (H1 != H0)) GlowImg.Clear();
 	}
 	else

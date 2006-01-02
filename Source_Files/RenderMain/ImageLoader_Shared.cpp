@@ -80,8 +80,8 @@ void ImageDescriptor::Resize(int _Width, int _Height, int _TotalBytes)
 ImageDescriptor::ImageDescriptor(const ImageDescriptor &copyFrom) :
 	Width(copyFrom.Width),
 	Height(copyFrom.Height),
-	OriginalWidth(copyFrom.OriginalWidth),
-	OriginalHeight(copyFrom.OriginalHeight),
+	VScale(copyFrom.VScale),
+	UScale(copyFrom.UScale),
 	Size(copyFrom.Size),
 	MipMapCount(copyFrom.MipMapCount),
 	Format(copyFrom.Format)
@@ -98,8 +98,8 @@ ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels)
 {
 	Width = _Width;
 	Height = _Height;
-	OriginalWidth = _Width;
-	OriginalHeight = _Height;
+	VScale = 1.0;
+	UScale = 1.0;
 	Size = _Width * _Height * 4;
 	Pixels = new uint32[_Width * _Height];
 	memcpy(Pixels, _Pixels, Size);
@@ -199,8 +199,10 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		SDL_Surface *s = SDL_CreateRGBSurfaceFrom(img, ddsd.dwWidth, ddsd.dwHeight, ddsd.ddpfPixelFormat.dwRGBBitCount, pitch, ddsd.ddpfPixelFormat.dwRBitMask, ddsd.ddpfPixelFormat.dwGBitMask, ddsd.ddpfPixelFormat.dwBBitMask, (ddsd.ddpfPixelFormat.dwFlags & DDPF_ALPHAPIXELS) ? ddsd.ddpfPixelFormat.dwRGBAlphaBitMask : 0);
 
 		Resize(ddsd.dwWidth, ddsd.dwHeight);
-		OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
-		OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
+		int OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
+		int OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
+		VScale = (double) OriginalWidth / (double) ddsd.dwWidth;
+		UScale = (double) OriginalHeight / (double) ddsd.dwHeight;
 
 #ifdef ALEPHONE_LITTLE_ENDIAN
 		SDL_Surface *rgba = SDL_CreateRGBSurface(SDL_SWSURFACE, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
@@ -221,8 +223,10 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		if (ddsd.ddpfPixelFormat.dwFourCC == FOUR_CHARS_TO_INT('1', 'T', 'X', 'D')) {
 			fprintf(stderr, "DXT1 texture\n");
 			Resize(ddsd.dwWidth, ddsd.dwHeight, ddsd.dwPitchOrLinearSize);
-			OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
-			OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
+			int OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
+			int OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
+			VScale = (double) OriginalWidth / (double) ddsd.dwWidth;
+			UScale = (double) OriginalHeight / (double) ddsd.dwHeight;
 
 			if (!dds_file.Read(ddsd.dwPitchOrLinearSize, &Pixels[0])) {
 				return false;
@@ -233,8 +237,10 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		} else if (ddsd.ddpfPixelFormat.dwFourCC == FOUR_CHARS_TO_INT('5', 'T', 'X', 'D')) {
 			fprintf(stderr, "DXT5 texture\n");
 			Resize(ddsd.dwWidth, ddsd.dwHeight, ddsd.dwPitchOrLinearSize);
-			OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
-			OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
+			int OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
+			int OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
+			VScale = (double) OriginalWidth / (double) ddsd.dwWidth;
+			UScale = (double) OriginalHeight / (double) ddsd.dwHeight;
 			if (!dds_file.Read(ddsd.dwPitchOrLinearSize, &Pixels[0])) {
 				return false;
 			}

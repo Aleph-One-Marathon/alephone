@@ -85,13 +85,14 @@ SDL_Surface *s = NULL;
 	switch (ImgMode) {
 		case ImageLoader_Colors:
 			Resize(Width, Height);
-			Original(OriginalWidth, OriginalHeight);
+			VScale = ((double) OriginalWidth / (double) Width);
+			UScale = ((double) OriginalHeight / (double) Height);
 			MipMapCount = 0;
 			break;
 
 		case ImageLoader_Opacity:
 			// If the wrong size, then bug out
-			if (OriginalWidth != GetOriginalWidth() || OriginalHeight != GetOriginalHeight()) {
+			if (Width != this->Width || Height != this->Height || ((double) OriginalWidth / Width != VScale || ((double) OriginalHeight / Height != UScale))) {
 				SDL_FreeSurface(s);
 				return false;
 			}

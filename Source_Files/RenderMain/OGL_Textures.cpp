@@ -742,16 +742,11 @@ bool TextureManager::LoadSubstituteTexture()
 		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
 		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
 		
-		WidthOffset = 0;
-		HeightOffset = 0;
-		
 		// We can calculate the scales and offsets here
-		double TWidRecip = 1/double(TxtrWidth);
-		double THtRecip = 1/double(TxtrHeight);
- 		V_Scale = TWidRecip*double(NormalImg.GetOriginalWidth());
- 		V_Offset = TWidRecip*WidthOffset;
- 		U_Scale = THtRecip*double(NormalImg.GetOriginalHeight());
- 		U_Offset = THtRecip*HeightOffset;
+		V_Scale = NormalImg.GetVScale();
+ 		V_Offset = 0;
+		U_Scale = NormalImg.GetUScale();
+ 		U_Offset = 0;
 
 		TxtrOptsPtr->Substitution = true;
 		break;
