@@ -52,7 +52,7 @@ public:
 	
 	bool IsPresent() const {return (Pixels != NULL); }
 
-	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int maxSize = 0);
+	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
 
 	// Size of level 0 image
 	int GetWidth() const {return Width;}
@@ -110,7 +110,7 @@ public:
 			
 
 private:
-	bool LoadDDSFromFile(FileSpecifier& File, int flags, int maxSize = 0);
+	bool LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
 
 	ImageFormat Format;
 };

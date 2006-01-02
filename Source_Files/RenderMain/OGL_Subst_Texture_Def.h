@@ -57,13 +57,9 @@ struct OGL_TextureOptions: public OGL_TextureOptionsBase
 	// use this to set the original width and height before calculating ImagePosition
 	void Original();
 
-	// since some texture formats only support POT sizes, it is necessary
-	// to store the actual height and width of the image inside them
-	short Inner_Height, Inner_Width;
-	
 	OGL_TextureOptions():
 		VoidVisible(false), ImageScale(0),
-		Left(0), Top(0), Right(0), Bottom(0), Inner_Height(0), Inner_Width(0) {}
+		Left(0), Top(0), Right(0), Bottom(0) {}
 };
 
 

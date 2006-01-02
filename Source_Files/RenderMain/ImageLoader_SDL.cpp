@@ -44,12 +44,12 @@ inline int NextPowerOfTwo(int n)
  *  Load specified image file
  */
 
-bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int maxSize)
+bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_width, int actual_height, int maxSize)
 {
 	// Don't load opacity if there is no color component:
 	switch(ImgMode) {
 		case ImageLoader_Colors:
-			if (LoadDDSFromFile(File, flags, maxSize)) return true;
+			if (LoadDDSFromFile(File, flags, actual_width, actual_height, maxSize)) return true;
 			break;
 		
 		case ImageLoader_Opacity:
@@ -76,8 +76,8 @@ SDL_Surface *s = NULL;
 
 	// Get image dimensions and set its size
 	int Width = s->w, Height = s->h;
-	int OriginalWidth = Width;
-	int OriginalHeight = Height;
+	int OriginalWidth = (actual_width) ? actual_width : Width;
+	int OriginalHeight = (actual_height) ? actual_height : Height;
 	if (flags & ImageLoader_ResizeToPowersOfTwo) {
 		Width = NextPowerOfTwo(Width);
 		Height = NextPowerOfTwo(Height);

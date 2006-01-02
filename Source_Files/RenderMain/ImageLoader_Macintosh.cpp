@@ -49,7 +49,7 @@ inline int NextPowerOfTwo(int n)
 	return p;
 }
 
-bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int)
+bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_height, int actual_width, int maxSize)
 {
 	// Needs QT, of course:
 	if (!machine_has_quicktime()) return false;	
@@ -58,7 +58,7 @@ bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, 
 	switch(ImgMode)
 	{
 	case ImageLoader_Colors:
-		if (LoadDDSFromFile(File, flags, maxSize)) return true;
+		if (LoadDDSFromFile(File, flags, actual_width, actual_height, maxSize)) return true;
 		break;
 		
 	case ImageLoader_Opacity:

@@ -107,7 +107,7 @@ ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels)
 	MipMapCount = 0;
 }
 
-bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSize)
+bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width, int actual_height, int maxSize)
 {
 	OpenedFile dds_file;
 	if (!File.Open(dds_file)) {
@@ -199,7 +199,8 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSiz
 		SDL_Surface *s = SDL_CreateRGBSurfaceFrom(img, ddsd.dwWidth, ddsd.dwHeight, ddsd.ddpfPixelFormat.dwRGBBitCount, pitch, ddsd.ddpfPixelFormat.dwRBitMask, ddsd.ddpfPixelFormat.dwGBitMask, ddsd.ddpfPixelFormat.dwBBitMask, (ddsd.ddpfPixelFormat.dwFlags & DDPF_ALPHAPIXELS) ? ddsd.ddpfPixelFormat.dwRGBAlphaBitMask : 0);
 
 		Resize(ddsd.dwWidth, ddsd.dwHeight);
-		Original(ddsd.dwWidth, ddsd.dwHeight);
+		OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
+		OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
 
 #ifdef ALEPHONE_LITTLE_ENDIAN
 		SDL_Surface *rgba = SDL_CreateRGBSurface(SDL_SWSURFACE, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
@@ -220,7 +221,8 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSiz
 		if (ddsd.ddpfPixelFormat.dwFourCC == FOUR_CHARS_TO_INT('1', 'T', 'X', 'D')) {
 			fprintf(stderr, "DXT1 texture\n");
 			Resize(ddsd.dwWidth, ddsd.dwHeight, ddsd.dwPitchOrLinearSize);
-			Original(ddsd.dwWidth, ddsd.dwHeight);
+			OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
+			OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
 
 			if (!dds_file.Read(ddsd.dwPitchOrLinearSize, &Pixels[0])) {
 				return false;
@@ -231,7 +233,8 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSiz
 		} else if (ddsd.ddpfPixelFormat.dwFourCC == FOUR_CHARS_TO_INT('5', 'T', 'X', 'D')) {
 			fprintf(stderr, "DXT5 texture\n");
 			Resize(ddsd.dwWidth, ddsd.dwHeight, ddsd.dwPitchOrLinearSize);
-			Original(ddsd.dwWidth, ddsd.dwHeight);
+			OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
+			OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
 			if (!dds_file.Read(ddsd.dwPitchOrLinearSize, &Pixels[0])) {
 				return false;
 			}
