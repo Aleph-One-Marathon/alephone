@@ -35,7 +35,18 @@ void OGL_TextureOptions::FindImagePosition()
 	Bottom = Top + short(ImageScale*NormalImg.GetHeight() + 0.5);
 }
 
+void OGL_TextureOptions::Original()
+{
+	if (Inner_Width) {
+		NormalImg.Original(Inner_Width, NormalImg.GetOriginalHeight());
+		GlowImg.Original(Inner_Width, GlowImg.GetOriginalHeight());
+	}
 
+	if (Inner_Height) {
+		NormalImg.Original(NormalImg.GetOriginalWidth(), Inner_Height);
+		GlowImg.Original(GlowImg.GetOriginalWidth(), Inner_Height);
+	}
+}
 
 // Texture-options stuff;
 // defaults for whatever might need them
@@ -98,6 +109,8 @@ void OGL_LoadTextures(short Collection)
 	{
 		// Load the images
 		TOIter->OptionsData.Load();
+
+		TOIter->OptionsData.Original();
 		
 		// Find adjusted-frame image-data positioning;
 		// this is for doing sprites with textures with sizes different from the originals
@@ -342,6 +355,14 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	else if (StringsEqual(Tag,"y_offset"))
 	{
 		return ReadInt16Value(Value,Data.Top);
+	}
+	else if (StringsEqual(Tag,"inner_height"))
+	{
+		return ReadInt16Value(Value, Data.Inner_Height);
+	} 
+	else if (StringsEqual(Tag, "inner_width"))
+	{
+		return ReadInt16Value(Value, Data.Inner_Width);
 	}
 	UnrecognizedTag();
 	return false;

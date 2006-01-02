@@ -227,8 +227,16 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSiz
 			
 			Format = DXTC1;
 			return true;
-		} else {
-			return false;
+		} else if (ddsd.ddpfPixelFormat.dwFourCC == FOUR_CHARS_TO_INT('5', 'T', 'X', 'D')) {
+			fprintf(stderr, "DXT5 texture\n");
+			Resize(ddsd.dwWidth, ddsd.dwHeight, ddsd.dwPitchOrLinearSize);
+			Original(ddsd.dwWidth, ddsd.dwHeight);
+			if (!dds_file.Read(ddsd.dwPitchOrLinearSize, &Pixels[0])) {
+				return false;
+			}
+			
+			Format = DXTC5;
+			return true;
 		}
 	}
 
