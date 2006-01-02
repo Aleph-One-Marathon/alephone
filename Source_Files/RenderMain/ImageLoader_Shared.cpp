@@ -103,6 +103,7 @@ ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels)
 	Pixels = new uint32[_Width * _Height];
 	memcpy(Pixels, _Pixels, Size);
 	Format = RGBA8;
+	MipMapCount = 0;
 }
 
 bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSize)

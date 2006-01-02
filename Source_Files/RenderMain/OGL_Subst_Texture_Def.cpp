@@ -29,10 +29,6 @@
 #include "OGL_Subst_Texture_Def.h"
 
 
-// Defined in OGL_Setup.cpp
-extern void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels);
-
-
 void OGL_TextureOptions::FindImagePosition()
 {
 	Right = Left + short(ImageScale*NormalImg.GetWidth() + 0.5);

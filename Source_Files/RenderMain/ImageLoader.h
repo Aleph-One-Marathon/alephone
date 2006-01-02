@@ -50,7 +50,7 @@ class ImageDescriptor
 	
 public:
 	
-	bool IsPresent() {return (Pixels != NULL); }
+	bool IsPresent() const {return (Pixels != NULL); }
 
 	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int maxSize = 0);
 
@@ -129,6 +129,14 @@ public:
 		_original = original;
 	}
 
+	void set(T* original) {
+		if (_copy) {
+			delete _copy;
+			_copy= NULL;
+		}
+		_original = original;
+	}
+
 
 	const T* get() {
 		if (_copy)
@@ -141,7 +149,7 @@ public:
 		if (!_original) {
 			return NULL;
 		} else {
-			if (_copy) {
+			if (!_copy) {
 				_copy = new T(*_original);
 			}
 			return _copy;
@@ -169,7 +177,7 @@ private:
 	T* _copy;
 };
 
-typedef copy_on_edit<ImageDescriptor> ImageDescriptorCache;
+typedef copy_on_edit<ImageDescriptor> ImageDescriptorManager;
 		
 
 // What to load: image colors (must be loaded first)

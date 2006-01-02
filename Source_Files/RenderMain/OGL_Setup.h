@@ -186,13 +186,6 @@ void OGL_SetDefaults(OGL_ConfigureData& Data);
 void OGL_LoadModelsImages(short Collection);
 void OGL_UnloadModelsImages(short Collection);
 
-
-// Does this for a set of several pixel values or color-table values;
-// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
-void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels);
-
-
-
 // Reset the textures (walls, sprites, and model skins) (good if they start to crap out)
 // Implemented in OGL_Textures.cpp
 void OGL_ResetTextures();

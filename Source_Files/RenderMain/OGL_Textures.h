@@ -147,7 +147,7 @@ class TextureManager
 	uint32 *NormalBuffer, *GlowBuffer;
 
 	// New texture buffers
-	ImageDescriptorCache NormalImage, GlowImage;
+	ImageDescriptorManager NormalImage, GlowImage;
 	
 	// Pointer to the appropriate texture-state object
 	TextureState *TxtrStatePtr;
@@ -307,6 +307,12 @@ extern void MakeConversion_16to32(int BitDepth);
 
 void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT);
 
+void SetPixelOpacities(OGL_TextureOptions& Options, ImageDescriptorManager &imageManager);
+
+// Does this for a set of several pixel values or color-table values;
+// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
+void SetPixelOpacitiesRGBA(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels);
+
 // Infravision (I'm blue, are you?)
 bool& IsInfravisionActive();
 
@@ -314,12 +320,14 @@ bool& IsInfravisionActive();
 // the color values are from 0 to 1.
 bool SetInfravisionTint(short Collection, bool IsTinted, float Red, float Green, float Blue);
 
+void FindInfravisionVersion(short Collection, ImageDescriptorManager &imageManager);
+
 // Finds the infravision version of a color;
 // it makes no change if infravision is inactive.
-void FindInfravisionVersion(short Collection, GLfloat *Color);
+void FindInfravisionVersionRGBA(short Collection, GLfloat *Color);
 
 // Mass-production version of above; suitable for textures
-void FindInfravisionVersion(short Collection, int NumPixels, uint32 *Pixels);
+void FindInfravisionVersionRGBA(short Collection, int NumPixels, uint32 *Pixels);
 
 struct OGL_TexturesStats {
 	int inUse;

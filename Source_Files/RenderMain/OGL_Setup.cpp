@@ -308,57 +308,6 @@ void OGL_TextureOptionsBase::Unload()
 }
 
 
-// Does this for a set of several pixel values or color-table values;
-// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
-void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels)
-{
-	if (Options.OpacityType != OGL_OpacType_Avg 
-	    && Options.OpacityType != OGL_OpacType_Max
-	    && Options.OpacityScale == 1.0
-	    && Options.OpacityShift == 0.0) 
-		return;
-
-	for (int k=0; k<NumPixels; k++)
-	{
-		uint8 *PxlPtr = (uint8 *)(Pixels + k);
-		
-		// This won't be scaled to (0,1), but will be left at (0,255) here
-		float Opacity;
-		switch(Options.OpacityType)
-		{
-		// Two versions of the Tomb Raider texture-opacity hack
-		case OGL_OpacType_Avg:
-			{
-				uint32 Red = uint32(PxlPtr[0]);
-				uint32 Green = uint32(PxlPtr[1]);
-				uint32 Blue = uint32(PxlPtr[2]);
-				Opacity = (Red + Green + Blue)/3.0F;
-			}
-			break;
-			
-		case OGL_OpacType_Max:
-			{
-				uint32 Red = uint32(PxlPtr[0]);
-				uint32 Green = uint32(PxlPtr[1]);
-				uint32 Blue = uint32(PxlPtr[2]);
-				Opacity = (float)MAX(MAX(Red,Green),Blue);
-			}
-			break;
-		
-		// Use pre-existing alpha value; useful if the opacity was loaded from a mask image
-		default:
-			Opacity = PxlPtr[3];
-			break;
-		}
-		
-		// Scale, shift, and put back the edited opacity;
-		// round off and pin to the appropriate range.
-		// The shift has to be scaled to the color-channel range (1 -> 255).
-		PxlPtr[3] = PIN(int32(Options.OpacityScale*Opacity + 255*Options.OpacityShift + 0.5),0,255);
-	}
-}
-
-
 #ifdef HAVE_OPENGL
 
 // for managing the model and image loading and unloading

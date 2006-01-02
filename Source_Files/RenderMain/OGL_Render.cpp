@@ -997,9 +997,9 @@ bool OGL_StartMain()
 		if (IsInfravisionActive())
 		{
 			if (LandscapesLoaded)
-				FindInfravisionVersion(_collection_landscape1+static_world->song_index,CurrFogColor);
+				FindInfravisionVersionRGBA(_collection_landscape1+static_world->song_index,CurrFogColor);
 			else
-				FindInfravisionVersion(LoadedWallTexture,CurrFogColor);
+				FindInfravisionVersionRGBA(LoadedWallTexture,CurrFogColor);
 		}
 		glFogfv(GL_FOG_COLOR,CurrFogColor);
 		glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
