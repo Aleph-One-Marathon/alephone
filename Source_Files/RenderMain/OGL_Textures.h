@@ -147,9 +147,7 @@ class TextureManager
 	uint32 *NormalBuffer, *GlowBuffer;
 
 	// New texture buffers
-	ImageDescriptor *NormalImage, *GlowImage;
-	// if this is set, destroy image descriptors when destructor is called
-	bool destroyImageDescriptors;
+	ImageDescriptorCache NormalImage, GlowImage;
 	
 	// Pointer to the appropriate texture-state object
 	TextureState *TxtrStatePtr;
@@ -180,7 +178,7 @@ class TextureManager
 	uint32 *Shrink(uint32 *Buffer);
 	
 	// This si for placing a texture in OpenGL
-	void PlaceTexture(uint32 *Buffer, bool);
+	void PlaceTexture(const ImageDescriptor *);
 
 	bool CanUseWithoutCopying();
 	

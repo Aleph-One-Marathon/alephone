@@ -76,6 +76,35 @@ void ImageDescriptor::Resize(int _Width, int _Height, int _TotalBytes)
 	Pixels = new uint32[_TotalBytes];
 }
 
+ImageDescriptor::ImageDescriptor(const ImageDescriptor &copyFrom) :
+	Width(copyFrom.Width),
+	Height(copyFrom.Height),
+	OriginalWidth(copyFrom.OriginalWidth),
+	OriginalHeight(copyFrom.OriginalHeight),
+	Size(copyFrom.Size),
+	MipMapCount(copyFrom.MipMapCount),
+	Format(copyFrom.Format)
+{
+	if (copyFrom.Pixels) {
+		Pixels = new uint32[copyFrom.Size];
+		memcpy(Pixels, copyFrom.Pixels, copyFrom.Size);
+	} else {
+		Pixels = NULL;
+	}
+}
+
+ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels)
+{
+	Width = _Width;
+	Height = _Height;
+	OriginalWidth = _Width;
+	OriginalHeight = _Height;
+	Size = _Width * _Height * 4;
+	Pixels = new uint32[_Width * _Height];
+	memcpy(Pixels, _Pixels, Size);
+	Format = RGBA8;
+}
+
 bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int maxSize)
 {
 	OpenedFile dds_file;

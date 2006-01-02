@@ -667,7 +667,7 @@ bool TextureManager::LoadSubstituteTexture()
 		delete []GlowBuffer;
 		GlowBuffer = NULL;
 	}
-	
+
 	int Width = NormalImg.GetWidth();
 	int Height = NormalImg.GetHeight();
 	
@@ -1203,51 +1203,90 @@ uint32 *TextureManager::Shrink(uint32 *Buffer)
 
 // This places a texture into the OpenGL software and gives it the right
 // mapping attributes
-void TextureManager::PlaceTexture(uint32 *Buffer, bool useDXTC1 = false)
+void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 {
+
+	bool mipmapsLoaded = false;
 
 	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[TextureType];
 
-	// Load the texture
-	switch(TxtrTypeInfo.FarFilter)
+	if (Image->GetFormat() == ImageDescriptor::RGBA8) {
+		switch (TxtrTypeInfo.FarFilter)
+		{
+		case GL_NEAREST:
+		case GL_LINEAR:
+			glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+			break;
+		case GL_NEAREST_MIPMAP_NEAREST:
+		case GL_LINEAR_MIPMAP_NEAREST:
+		case GL_NEAREST_MIPMAP_LINEAR:
+		case GL_LINEAR_MIPMAP_LINEAR:
+#ifdef GL_SGIS_generate_mipmap
+			if (useSGISMipmaps) {
+				glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+				glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+			} else 
+#endif
+			{
+				gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+			}
+			mipmapsLoaded = true;
+			break;
+		default:
+			assert(false);
+		}
+	} else if (Image->GetFormat() == ImageDescriptor::DXTC1 ||
+		   Image->GetFormat() == ImageDescriptor::DXTC3 ||
+		   Image->GetFormat() == ImageDescriptor::DXTC5)
 	{
-	case GL_NEAREST:
-	case GL_LINEAR:
-		glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-			     0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
-		break;
-	case GL_NEAREST_MIPMAP_NEAREST:
-	case GL_LINEAR_MIPMAP_NEAREST:
-	case GL_NEAREST_MIPMAP_LINEAR:
-	case GL_LINEAR_MIPMAP_LINEAR:
+#if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
+		GLint internalFormat;
+		if (Image->GetFormat() == ImageDescriptor::DXTC1)
+			internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		else if (Image->GetFormat() == ImageDescriptor::DXTC3)
+			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		else if (Image->GetFormat() == ImageDescriptor::DXTC5)
+			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		
+		switch(TxtrTypeInfo.FarFilter)
+		{
+		case GL_NEAREST:
+		case GL_LINEAR:
+			glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetBufferSize(), Image->GetBuffer());
+			break;
+		case GL_NEAREST_MIPMAP_NEAREST:
+		case GL_LINEAR_MIPMAP_NEAREST:
+		case GL_NEAREST_MIPMAP_LINEAR:
+		case GL_LINEAR_MIPMAP_LINEAR:
 #if defined GL_SGIS_generate_mipmap
 		if (useSGISMipmaps) {
 			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-			if (useDXTC1) {
-#ifdef GL_ARB_texture_compression
-				glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, GL_COMPRESSED_RGBA_S3TC_DXT1_EXT, LoadedWidth, LoadedHeight, 0, LoadedWidth * LoadedHeight / 2, Buffer);
+			mipmapsLoaded = true;
+		}  
 #endif
-			} else {
-				glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
-			}
-		} else
-#endif
-		{
-		gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-				  GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
-		}
+		glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetBufferSize(), Image->GetBuffer());
+		
 		break;
 	
-	default:
-		// Shouldn't happen
+		default:
+			// Shouldn't happen
+			assert(false);
+		}
+#else
 		assert(false);
+#endif
 	}
 	
 	// Set texture-mapping features
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, TxtrTypeInfo.NearFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, TxtrTypeInfo.FarFilter);
-	
+	if ((TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_LINEAR || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_LINEAR) && !mipmapsLoaded)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	} else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, TxtrTypeInfo.FarFilter);
+	}
+
 	switch(TextureType)
 	{
 	case OGL_Txtr_Wall:
@@ -1313,10 +1352,13 @@ void TextureManager::RenderNormal()
 	if (TxtrStatePtr->UseNormal())
 	{
 		if (FastPath) {
-			PlaceTexture(TxtrOptsPtr->NormalImg.GetPixelBasePtr(), TxtrOptsPtr->NormalImg.GetFormat() == ImageDescriptor::DXTC1);
+			PlaceTexture(&TxtrOptsPtr->NormalImg);
 		} else {
-			assert(NormalBuffer);
-			PlaceTexture(NormalBuffer);
+			assert(NormalBuffer || NormalImage.get());
+			if (!NormalImage.get()) {
+				NormalImage.edit(new ImageDescriptor(LoadedWidth, LoadedHeight, NormalBuffer));
+			}
+			PlaceTexture(NormalImage.get());
 		}
 	}
 
@@ -1336,10 +1378,13 @@ void TextureManager::RenderGlowing()
 	if (TxtrStatePtr->UseGlowing())
 	{
 		if (FastPath) {
-			PlaceTexture(TxtrOptsPtr->GlowImg.GetPixelBasePtr());
+			PlaceTexture(&TxtrOptsPtr->GlowImg);
 		} else {
-			assert(GlowBuffer);
-			PlaceTexture(GlowBuffer);
+			assert(GlowBuffer || GlowImage.get());
+			if (!GlowImage.get()) {
+				GlowImage.edit(new ImageDescriptor(LoadedWidth, LoadedHeight, GlowBuffer));
+			}
+			PlaceTexture(GlowImage.get());
 		}
 	}
 
@@ -1393,11 +1438,6 @@ TextureManager::TextureManager()
 	NormalBuffer = 0;
 	GlowBuffer = 0;
 
-	NormalImage = 0;
-	GlowImage = 0;
-
-	destroyImageDescriptors = false;
-	
 	ShadingTables = NULL;
 	TransferMode = 0;
 	TransferData = 0;
@@ -1421,11 +1461,6 @@ TextureManager::~TextureManager()
 {
 	if (NormalBuffer != 0) delete []NormalBuffer;
 	if (GlowBuffer != 0) delete []GlowBuffer;
-
-	if (destroyImageDescriptors) {
-		if (NormalImage) delete NormalImage;
-		if (GlowBuffer) delete GlowBuffer;
-	}
 }
 
 extern void ResetScreenFont();

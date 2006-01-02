@@ -50,25 +50,28 @@ class ImageDescriptor
 	
 public:
 	
-	bool IsPresent() {return Pixels;}
+	bool IsPresent() {return (Pixels != NULL); }
 
 	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int maxSize = 0);
 
 	// Size of level 0 image
-	int GetWidth() {return Width;}
-	int GetHeight() {return Height;}
-	int GetNumPixels() {return Width*Height;}
+	int GetWidth() const {return Width;}
+	int GetHeight() const {return Height;}
+	int GetNumPixels() const {return Width*Height;}
 
-	int GetMipMapCount() { return MipMapCount; }
-	int GetTotalBytes() { return Size; }
-	int GetFormat() { return Format; }
+	int GetMipMapCount() const { return MipMapCount; }
+	int GetTotalBytes() const { return Size; }
+	int GetBufferSize() const { return Size; }
+	int GetFormat() const { return Format; }
 
-	int GetOriginalWidth() { return OriginalWidth; }
-	int GetOriginalHeight() { return OriginalHeight; }
+	int GetOriginalWidth() const { return OriginalWidth; }
+	int GetOriginalHeight() const { return OriginalHeight; }
 
 	// Pixel accessors
 //	uint32& GetPixel(int Horiz, int Vert) {return Pixels[Width*Vert + Horiz];}
 	uint32 *GetPixelBasePtr() {return Pixels;}
+	const uint32 *GetBuffer() const { return Pixels; }
+	uint32 *GetBuffer() { return Pixels; }
 
 	uint32 *GetMipMapPtr(int Level);
 	
@@ -82,12 +85,14 @@ public:
 
 	// Clearing
 	void Clear()
-		{Width = Height = 0; delete []Pixels; Pixels = NULL;}
+		{Width = Height = Size = 0; delete []Pixels; Pixels = NULL;}
+
+	ImageDescriptor(const ImageDescriptor &CopyFrom);
 	
 	ImageDescriptor(): Width(0), Height(0), OriginalWidth(0), OriginalHeight(0), Pixels(NULL), Size(0) {}
 
 	// asumes RGBA8
-	ImageDescriptor(int width, int height, unsigned char *pixels);
+	ImageDescriptor(int width, int height, uint32 *pixels);
 
 	enum ImageFormat {
 		RGBA8,
@@ -98,7 +103,8 @@ public:
 
 	~ImageDescriptor()
 		{
-			delete Pixels;
+			delete []Pixels;
+			Pixels = NULL;
 		}
 			
 			
@@ -108,6 +114,63 @@ private:
 
 	ImageFormat Format;
 };
+
+template <typename T>
+class copy_on_edit
+{
+public:
+	copy_on_edit() : _original(NULL), _copy(NULL) { };
+
+	void set(const T* original) {
+		if (_copy) {
+			delete _copy;
+			_copy = NULL;
+		}
+		_original = original;
+	}
+
+
+	const T* get() {
+		if (_copy)
+			return (const T*) _copy;
+		else
+			return (const T*) _original;
+	}
+
+	T* edit() {
+		if (!_original) {
+			return NULL;
+		} else {
+			if (_copy) {
+				_copy = new T(*_original);
+			}
+			return _copy;
+		}
+	}
+
+	// takes possession of copy
+	T* edit(T* copy) {
+		if (_copy) {
+			delete _copy;
+		}
+		_original = NULL;
+		_copy = copy;
+	}
+
+	~copy_on_edit() {
+		if (_copy) {
+			delete _copy;
+			_copy = NULL;
+		}
+	}
+
+private:
+	T* _original;
+	T* _copy;
+};
+
+typedef copy_on_edit<ImageDescriptor> ImageDescriptorCache;
+		
 
 // What to load: image colors (must be loaded first)
 // or image opacity (replaces the default, which is 100% opaque everywhere).
