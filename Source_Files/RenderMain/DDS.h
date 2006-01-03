@@ -26,6 +26,8 @@
  *  From the Directx9 reference
  * http://msdn.microsoft.com/archive/default.asp?url=/archive/en-us/directx9_c/directx/graphics/reference/ddsfilereference/ddsfileformat.asp
  */
+ 
+#include "cstypes.h"
 
 #define DDSD_CAPS          0x00000001
 #define DDSD_HEIGHT        0x00000002
@@ -49,33 +51,33 @@
 
 struct DDSURFACEDESC2
 {
-	Uint32 dwSize;
-	Uint32 dwFlags;
-	Uint32 dwHeight;
-	Uint32 dwWidth;
-	Uint32 dwPitchOrLinearSize;
-	Uint32 dwDepth;
-	Uint32 dwMipMapCount;
-	Uint32 dwReserved1[11];
+	uint32 dwSize;
+	uint32 dwFlags;
+	uint32 dwHeight;
+	uint32 dwWidth;
+	uint32 dwPitchOrLinearSize;
+	uint32 dwDepth;
+	uint32 dwMipMapCount;
+	uint32 dwReserved1[11];
 
 	struct {
-		Uint32 dwSize;
-		Uint32 dwFlags;
-		Uint32 dwFourCC;
-		Uint32 dwRGBBitCount;
-		Uint32 dwRBitMask;
-		Uint32 dwGBitMask;
-		Uint32 dwBBitMask;
-		Uint32 dwRGBAlphaBitMask;
+		uint32 dwSize;
+		uint32 dwFlags;
+		uint32 dwFourCC;
+		uint32 dwRGBBitCount;
+		uint32 dwRBitMask;
+		uint32 dwGBitMask;
+		uint32 dwBBitMask;
+		uint32 dwRGBAlphaBitMask;
 	} ddpfPixelFormat;
 
 	struct {
-		Uint32 dwCaps1;
-		Uint32 dwCaps2;
-		Uint32 Reserved[2];
+		uint32 dwCaps1;
+		uint32 dwCaps2;
+		uint32 Reserved[2];
 	} ddsCaps;
 
-	Uint32 dwReserved2;
+	uint32 dwReserved2;
 };
 	
 #endif
