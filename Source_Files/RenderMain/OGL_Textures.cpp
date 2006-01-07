@@ -118,6 +118,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 # endif
 #endif
 
+#include "SDL.h"
 #include "interface.h"
 #include "render.h"
 #include "map.h"
