@@ -119,6 +119,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #endif
 
 #include "SDL.h"
+#include "SDL_endian.h"
 #include "interface.h"
 #include "render.h"
 #include "map.h"
@@ -1606,6 +1607,7 @@ static inline uint16 FindInfravisionVersionDXTCColor(SDL_Color tint, uint16 colo
 	uint16 r = (grayscale * tint.r) / 256;
 	uint16 g = (grayscale * tint.g) / 256;
 	uint16 b = (grayscale * tint.b) / 256;
+
 	return (r << 11) | (g << 6) | (g > 15 ? 0x20 : 0) | b;
 }
 
@@ -1623,10 +1625,10 @@ void FindInfravisionVersionDXTC1(InfravisionData& IVData, int NumBytes, unsigned
 	// the first two uint16s in each block are our colors
 	for (int i = 0; i < NumBytes / 4; i++) {
 		
-		uint16 *c1 = &pixels[i * 4];
-		uint16 *c2 = &pixels[i * 4 + 1];
-		uint16 new_c1 = FindInfravisionVersionDXTCColor(tint, *c1);
-		uint16 new_c2 = FindInfravisionVersionDXTCColor(tint, *c2);
+		uint16 c1 = SDL_SwapLE16(pixels[i * 4]);
+		uint16 c2 = SDL_SwapLE16(pixels[i * 4 + 1]);
+		uint16 new_c1 = FindInfravisionVersionDXTCColor(tint, c1);
+		uint16 new_c2 = FindInfravisionVersionDXTCColor(tint, c2);
 		
 		// DXTC1 uses c1 > c2 to determine whether to make certain
 		// pixels transparent 
@@ -1634,7 +1636,7 @@ void FindInfravisionVersionDXTC1(InfravisionData& IVData, int NumBytes, unsigned
 		// the same, we have to chamge one so that pixels don't become
 		// transparent that were opaque, or vice versa
 		if (new_c1 == new_c2) {
-			if (*c1 > *c2) 
+			if (c1 > c2) 
 				if (new_c2) new_c2 -= 1;
 				else new_c1 += 1;
 			else 
@@ -1643,11 +1645,11 @@ void FindInfravisionVersionDXTC1(InfravisionData& IVData, int NumBytes, unsigned
 		} 
 		// likewise, in the unlikely state that infravision ends up
 		// making one bigger than the other, swap them back
-		else if ((new_c1 > new_c2) != (*c1 > *c2)) {
+		else if ((new_c1 > new_c2) != (c1 > c2)) {
 			SWAP(new_c1, new_c2);
 		}
-		*c1 = new_c1;
-		*c2 = new_c2;
+		pixels[i * 4] = SDL_SwapLE16(new_c1);
+		pixels[i * 4 + 1] = SDL_SwapLE16(new_c2);
 	}
 }
 
@@ -1668,11 +1670,11 @@ void FindInfavisionVersionDXTC35(InfravisionData &IVData, int NumBytes, unsigned
 		uint16 *c1 = &pixels[i * 8 + 4];
 		uint16 *c2 = &pixels[i * 8 + 5];
 		
-		uint16 new_c1 = FindInfravisionVersionDXTCColor(tint, *c1);
-		uint16 new_c2 = FindInfravisionVersionDXTCColor(tint, *c2);
+		uint16 new_c1 = FindInfravisionVersionDXTCColor(tint, SDL_SwapLE16(*c1));
+		uint16 new_c2 = FindInfravisionVersionDXTCColor(tint, SDL_SwapLE16(*c2));
 		
-		*c1 = new_c1;
-		*c2 = new_c2;
+		*c1 = SDL_SwapLE16(new_c1);
+		*c2 = SDL_SwapLE16(new_c2);
 	}
 }
 
