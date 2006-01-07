@@ -42,13 +42,6 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "ImageLoader.h"
 #include "shell.h"
 
-inline int NextPowerOfTwo(int n)
-{
-	int p = 1;
-	while(p < n) {p <<= 1;}
-	return p;
-}
-
 bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_height, int actual_width, int maxSize)
 {
 	// Needs QT, of course:
@@ -116,12 +109,14 @@ bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, 
 	{
 	case ImageLoader_Colors:
 		Resize(Width,Height);
-		Original(OriginalWidth, OriginalHeight);
+		VScale = ((double) OriginalWidth / (double) Width);
+		UScale = ((double) OriginalHeight / (double) Height);
+		MipMapCount = 1;
 		break;
 		
 	case ImageLoader_Opacity:
 		// If the wrong size, then bug out
-		if (OriginalWidth != GetOriginalWidth() || OriginalHeight != GetOriginalHeight())
+		if (Width != this->Width || Height != this->Height || ((double) OriginalWidth / Width != VScale || ((double) OriginalHeight / Height != UScale)))
 		{
 			UnlockPixels(PxlMapHdl);
 			DisposeGWorld(ImgGW);
