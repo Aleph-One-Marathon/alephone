@@ -28,11 +28,20 @@
 	
 */
 
+#include "DDS.h"
 #include <vector>
 #include "cseries.h"
 #include "FileHandler.h"
+
+#include <math.h>
 using namespace std;
 
+inline int NextPowerOfTwo(int n)
+{
+	int p = 1;
+	while(p < n) {p <<= 1;}
+	return p;
+}
 
 // Need an object to hold the read-in image.
 class ImageDescriptor
@@ -74,6 +83,8 @@ public:
 	uint32 *GetBuffer() { return Pixels; }
 
 	uint32 *GetMipMapPtr(int Level);
+	const uint32 *GetMipMapPtr(int Level) const;
+	int GetMipMapSize(int level) const;
 	
 	// Reallocation
 	void Resize(int _Width, int _Height);
@@ -96,7 +107,8 @@ public:
 		RGBA8,
 		DXTC1,
 		DXTC3,
-		DXTC5
+		DXTC5,
+		Unknown
 	};
 
 	~ImageDescriptor()
@@ -109,6 +121,7 @@ public:
 
 private:
 	bool LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
+	bool LoadMipMapFromFile(OpenedFile &File, int flags, int level, DDSURFACEDESC2 &ddsd);
 
 	ImageFormat Format;
 };

@@ -32,31 +32,59 @@
 #include "SDL.h"
 #include "SDL_endian.h"
 
-uint32 *GetMipMapPtr(uint32 *pixels, int size, int level, int width, int height, ImageDescriptor::ImageFormat format)
+#include <stdlib.h>
+
+int ImageDescriptor::GetMipMapSize(int level) const
 {
-	if (format == ImageDescriptor::RGBA8) 
-	{
-		uint32 *result = pixels;
-		while (level--)
-		{
-			result += (width * height);
-			width /= 2;
-			height /= 2;
-		}
-		if (result - pixels < size)
-		{
-			return result;
-		} 
-		else
-		{
-			return NULL;
-		}
+
+	// make sure the level is valid
+	if (Width >> level == 0 && Height >> level == 0) {
+		fprintf(stderr, "invalid mip map level size requested\n");
+		return 0;
+	}
+	switch (Format) {
+	case ImageDescriptor::RGBA8:
+		return (max(1, Width >> level) * max(1, Height >> level) * 4);
+		break;
+	case ImageDescriptor::DXTC1:
+		return (max(1, ((Width >> level) / 4)) * max(1, ((Height >> level) / 4)) * 8);
+		break;
+	case ImageDescriptor::DXTC3:
+	case ImageDescriptor::DXTC5:
+		return (max(1, ((Width >> level) / 4)) * max(1, ((Height >> level) / 4)) * 16);
+		break;
+	default:
+		fprintf(stderr, "invalid format!\n");
+		assert(false);
+	}
+}
+
+const uint32 *ImageDescriptor::GetMipMapPtr(int Level) const
+{
+	int totalSize = 0;
+	for (int i = 0; i < Level; i++) {
+		totalSize += GetMipMapSize(i);
+	}
+
+	if (totalSize < GetBufferSize()) {
+		return GetBuffer() + (totalSize / 4);
+	} else {
+		return NULL;
 	}
 }
 
 uint32 *ImageDescriptor::GetMipMapPtr(int Level)
 {
-	return ::GetMipMapPtr(&Pixels[0], Size, Level, Width, Height, Format);
+	int totalSize = 0;
+	for (int i = 0; i < Level; i++) {
+		totalSize += GetMipMapSize(i);
+	}
+
+	if (totalSize < GetBufferSize()) {
+		return GetBuffer() + (totalSize / 4);
+	} else {
+		return NULL;
+	}
 }
 
 void ImageDescriptor::Resize(int _Width, int _Height)
@@ -107,6 +135,96 @@ ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels)
 	MipMapCount = 0;
 }
 
+bool ImageDescriptor::LoadMipMapFromFile(OpenedFile& file, int flags, int level, DDSURFACEDESC2 &ddsd)
+{
+	// total the size so far
+	int totalSize = 0;
+	for (int i = 0; i < level; i++) {
+		totalSize += GetMipMapSize(i);
+	}
+	
+	if (totalSize + GetMipMapSize(level) > GetBufferSize()) {
+		fprintf(stderr, "buffer not large enough\n");
+		return false;
+	}
+
+	int srcWidth = max(1, (int) ddsd.dwWidth >> level);
+	int srcHeight = max(1, (int) ddsd.dwHeight >> level);
+	int dstWidth = max(1, Width >> level);
+	int dstHeight = max(1, Height >> level);
+
+	unsigned char *buffer = (unsigned char *) GetBuffer() + totalSize;
+
+	if (Format == RGBA8) 
+	{
+		int pitch;
+		if (ddsd.dwFlags & DDSD_PITCH) {
+			pitch = ddsd.dwPitchOrLinearSize;
+		} else {
+			pitch = ddsd.dwPitchOrLinearSize / ddsd.dwHeight;
+		}
+		int depth = pitch / ddsd.dwWidth;
+		pitch = srcWidth * depth;
+		
+		unsigned char img[pitch * srcHeight];
+		if (!file.Read(pitch * srcHeight, img)) {
+			fprintf(stderr, "failed to read %i bytes\n", pitch * srcHeight);
+			return false;
+		}
+
+		SDL_Surface *src = SDL_CreateRGBSurfaceFrom(img, srcWidth, srcHeight, ddsd.ddpfPixelFormat.dwRGBBitCount, pitch, ddsd.ddpfPixelFormat.dwRBitMask, ddsd.ddpfPixelFormat.dwGBitMask, ddsd.ddpfPixelFormat.dwBBitMask, (ddsd.ddpfPixelFormat.dwFlags & DDPF_ALPHAPIXELS) ? ddsd.ddpfPixelFormat.dwRGBAlphaBitMask : 0);
+		SDL_SetAlpha(src, 0, 0xff); // disable SDL_SRCALPHA
+		
+#ifdef ALEPHONE_LITTLE_ENDIAN
+		SDL_Surface *dst = SDL_CreateRGBSurfaceFrom(buffer, dstWidth, dstHeight, 32, dstWidth * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#else
+		SDL_Surface *dst = SDL_CreateRGBSurfaceFrom(buffer, dstWidth, dstHeight, 32, dstWidth * 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#endif
+		SDL_BlitSurface(src, NULL, dst, NULL);
+		SDL_FreeSurface(src);
+		SDL_FreeSurface(dst);
+	} 
+	else if (Format == DXTC1)
+	{
+
+		dstWidth += dstWidth % 4;
+		dstHeight += dstHeight % 4;
+		srcWidth += srcWidth % 4;
+		srcHeight += srcHeight % 4;
+
+		memset(buffer, '\0', (dstWidth / 4) * (dstHeight / 4) * 8);
+		for (int row = 0; row < srcHeight / 4; row++)
+		{
+			if (!file.Read(srcWidth / 4 * 8, &buffer[row * dstWidth / 4 * 8])) {
+				fprintf(stderr, "failed to read %i bytes\n", srcWidth / 4 * 8);
+				return false;
+			}
+		}
+	}
+	else if (Format == DXTC3 || Format == DXTC5)
+	{
+
+		dstWidth += dstWidth % 4;
+		dstHeight += dstHeight % 4;
+		srcWidth += srcWidth % 4;
+		srcHeight += srcHeight % 4;
+
+		memset(buffer, '\0', (dstWidth / 4) * (dstHeight / 4) * 16);
+		for (int row = 0; row < srcHeight / 4; row++)
+		{
+			if (!file.Read(srcWidth / 4 * 16, &buffer[row * dstWidth / 4 * 16])) {
+				fprintf(stderr, "failed to read %i bytes\n", srcWidth / 4 * 16);
+				return false;
+			}
+		}
+	}
+
+	return true;
+}
+	
+	
+	
+
 bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width, int actual_height, int maxSize)
 {
 	OpenedFile dds_file;
@@ -128,7 +246,6 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 
 	DDSURFACEDESC2 ddsd;
 
-	fprintf(stderr, "DDS file detected\n");
 	AIStreamLE inputStream(header, 124);
 	try {
 		inputStream >> ddsd.dwSize;
@@ -174,82 +291,90 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		fprintf(stderr, "cubemap or volume\n");
 		return false;
 	}
-	if ((!ddsd.ddsCaps.dwCaps1 & DDSCAPS_TEXTURE) ||
-	    (ddsd.ddsCaps.dwCaps1 & DDSCAPS_MIPMAP) ||
-	    (ddsd.ddsCaps.dwCaps1 & DDSCAPS_COMPLEX)) {
-		fprintf(stderr, "complex or mipmap\n");
-		return false;
+
+	// figure out the original and final widths
+	int OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
+	int OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
+	
+	int Width = ddsd.dwWidth;
+	int Height = ddsd.dwHeight;
+	if (flags & ImageLoader_ResizeToPowersOfTwo) {
+		Width = NextPowerOfTwo(Width);
+		Height = NextPowerOfTwo(Height);
 	}
 
+	VScale = (double) OriginalWidth / (double) Width;
+	UScale = (double) OriginalHeight / (double) Height;
+
+	Format = Unknown;
 	if (ddsd.ddpfPixelFormat.dwFlags & DDPF_RGB) {
-		fprintf(stderr, "uncompressed RGB\n");
-		int pitch;
-		if (ddsd.dwFlags & DDSD_PITCH) {
-			pitch = ddsd.dwPitchOrLinearSize;
-		} else if (ddsd.dwFlags & DDSD_LINEARSIZE) {
-			// nvidia DDS file plugin writes this for some reason
-			pitch = ddsd.dwPitchOrLinearSize / ddsd.dwHeight;
-		} else {
-			pitch = ddsd.dwWidth * ddsd.ddpfPixelFormat.dwRGBBitCount / 8;
-		}
-
-		unsigned char img[pitch * ddsd.dwHeight];
-		if (!dds_file.Read(pitch * ddsd.dwHeight, img)) return false;
-
-		SDL_Surface *s = SDL_CreateRGBSurfaceFrom(img, ddsd.dwWidth, ddsd.dwHeight, ddsd.ddpfPixelFormat.dwRGBBitCount, pitch, ddsd.ddpfPixelFormat.dwRBitMask, ddsd.ddpfPixelFormat.dwGBitMask, ddsd.ddpfPixelFormat.dwBBitMask, (ddsd.ddpfPixelFormat.dwFlags & DDPF_ALPHAPIXELS) ? ddsd.ddpfPixelFormat.dwRGBAlphaBitMask : 0);
-
-		Resize(ddsd.dwWidth, ddsd.dwHeight);
-		int OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
-		int OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
-		VScale = (double) OriginalWidth / (double) ddsd.dwWidth;
-		UScale = (double) OriginalHeight / (double) ddsd.dwHeight;
-
-#ifdef ALEPHONE_LITTLE_ENDIAN
-		SDL_Surface *rgba = SDL_CreateRGBSurface(SDL_SWSURFACE, Width, Height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-		SDL_Surface *rgba = SDL_CreateRGBSurface(SDL_SWSURFACE, Width, Height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#endif	
-		SDL_BlitSurface(s, NULL, rgba, NULL);
-		SDL_FreeSurface(s);
-
-		memcpy(GetPixelBasePtr(), rgba->pixels, Width * Height * 4);
-		SDL_FreeSurface(rgba);
-
 		Format = RGBA8;
-
-		return true;
 	} else if (ddsd.ddpfPixelFormat.dwFlags & DDPF_FOURCC) {
-		fprintf(stderr, "fourcc\n");
 		if (ddsd.ddpfPixelFormat.dwFourCC == FOUR_CHARS_TO_INT('1', 'T', 'X', 'D')) {
-			fprintf(stderr, "DXT1 texture\n");
-			Resize(ddsd.dwWidth, ddsd.dwHeight, ddsd.dwPitchOrLinearSize);
-			int OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
-			int OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
-			VScale = (double) OriginalWidth / (double) ddsd.dwWidth;
-			UScale = (double) OriginalHeight / (double) ddsd.dwHeight;
-
-			if (!dds_file.Read(ddsd.dwPitchOrLinearSize, &Pixels[0])) {
-				return false;
-			}
-			
 			Format = DXTC1;
-			return true;
+		} else if (ddsd.ddpfPixelFormat.dwFourCC == FOUR_CHARS_TO_INT('3', 'T', 'X', 'D')) {
+			Format = DXTC3;
 		} else if (ddsd.ddpfPixelFormat.dwFourCC == FOUR_CHARS_TO_INT('5', 'T', 'X', 'D')) {
-			fprintf(stderr, "DXT5 texture\n");
-			Resize(ddsd.dwWidth, ddsd.dwHeight, ddsd.dwPitchOrLinearSize);
-			int OriginalWidth = (actual_width) ? actual_width : ddsd.dwWidth;
-			int OriginalHeight = (actual_height) ? actual_height : ddsd.dwHeight;
-			VScale = (double) OriginalWidth / (double) ddsd.dwWidth;
-			UScale = (double) OriginalHeight / (double) ddsd.dwHeight;
-			if (!dds_file.Read(ddsd.dwPitchOrLinearSize, &Pixels[0])) {
-				return false;
-			}
-			
 			Format = DXTC5;
-			return true;
 		}
 	}
 
-	return false;
+	if (Format == Unknown) return false;
+
+	// allocate a buffer
+
+	int bpp = 0;
+	if (Format == RGBA8) bpp = 32;
+	else if (Format == DXTC1) bpp = 4;
+	else if (Format == DXTC3 || Format == DXTC5) bpp = 8;
+
+	this->Width = Width;
+	this->Height = Height;
+
+	if (ddsd.ddsCaps.dwCaps1 & DDSCAPS_MIPMAP) {
+		
+		int OriginalMipMapCount = ddsd.dwMipMapCount;
+		
+		// we don't handle incomplete mip map chains
+		if (OriginalMipMapCount != 1 + floor(log2(max(OriginalWidth, OriginalHeight)))) {
+			fprintf(stderr, "incomplete mipmap chain (%ix%i, %ix%i, %i mipmaps\n", Width, Height, ddsd.dwWidth, ddsd.dwHeight, OriginalMipMapCount);
+			return false;
+		}
+
+		// hehe, resizing to the next power of two could have
+		// introduced another mipmap
+		MipMapCount = 1 + floor(log2(max(Width, Height)));
+
+		int totalSize = 0;
+		for (int i = 0; i < OriginalMipMapCount; i++) {
+			totalSize += GetMipMapSize(i);
+		}
+
+		for (int i = OriginalMipMapCount; i < MipMapCount; i++) {
+			totalSize += GetMipMapSize(i);
+		}
+		
+		Resize(Width, Height, totalSize);
+
+		for (int i = 0; i < OriginalMipMapCount; i++) {
+			// read in the base image
+			if (!LoadMipMapFromFile(dds_file, flags, i, ddsd)) return false;
+		}
+
+		for (int i = OriginalMipMapCount; i < MipMapCount; i++) {
+			// what's one pixel among friends?
+			memcpy(GetMipMapPtr(i), GetMipMapPtr(OriginalMipMapCount - 1), GetMipMapSize(i));
+		}
+		
+		
+	} else {
+		MipMapCount = 1;
+		
+		Resize(Width, Height, GetMipMapSize(0));
+
+		if (!LoadMipMapFromFile(dds_file, flags, 0, ddsd)) return false;
+	}
+
+	return true;
 }
 	

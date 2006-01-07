@@ -606,16 +606,6 @@ bool TextureManager::Setup()
 }
 
 
-// Next power of 2; since OpenGL prefers powers of 2, it is necessary to work out
-// the next one up for each texture dimension.
-inline int NextPowerOfTwo(int n)
-{
-	int p = 1;
-	while(p < n) {p <<= 1;}
-	return p;
-}
-
-
 inline bool WhetherTextureFix()
 {
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
@@ -1160,6 +1150,18 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 		case GL_LINEAR_MIPMAP_NEAREST:
 		case GL_NEAREST_MIPMAP_LINEAR:
 		case GL_LINEAR_MIPMAP_LINEAR:
+			if (Image->GetMipMapCount() > 1) {
+#ifdef GL_SGIS_generate_mipmap
+	if (useSGISMipmaps) {
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_FALSE);
+	}
+#endif
+				int i = 0;
+				for (i = 0; i < Image->GetMipMapCount(); i++) {
+					glTexImage2D(GL_TEXTURE_2D, i, TxtrTypeInfo.ColorFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetMipMapPtr(i));
+				}
+				mipmapsLoaded = true;
+			} else {
 #ifdef GL_SGIS_generate_mipmap
 			if (useSGISMipmaps) {
 				glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
@@ -1170,6 +1172,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 				gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
 			}
 			mipmapsLoaded = true;
+			}
 			break;
 		default:
 			assert(false);
@@ -1191,22 +1194,34 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 		{
 		case GL_NEAREST:
 		case GL_LINEAR:
-			glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetBufferSize(), Image->GetBuffer());
+			glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
 			break;
 		case GL_NEAREST_MIPMAP_NEAREST:
 		case GL_LINEAR_MIPMAP_NEAREST:
 		case GL_NEAREST_MIPMAP_LINEAR:
 		case GL_LINEAR_MIPMAP_LINEAR:
-#if defined GL_SGIS_generate_mipmap
-		if (useSGISMipmaps) {
-			glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-			mipmapsLoaded = true;
-		}  
+			if (Image->GetMipMapCount() > 1) {
+#ifdef GL_SGIS_generate_mipmap
+				if (useSGISMipmaps) {
+					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_FALSE);
+				}
 #endif
-		glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetBufferSize(), Image->GetBuffer());
-		
-		break;
-	
+				int i = 0;
+				for (i = 0; i < Image->GetMipMapCount(); i++) {
+					glCompressedTexImage2DARB(GL_TEXTURE_2D, i, internalFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, Image->GetMipMapSize(i), Image->GetMipMapPtr(i));
+				}
+				mipmapsLoaded = true;
+			} else {
+#if defined GL_SGIS_generate_mipmap
+				if (useSGISMipmaps) {
+					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+					mipmapsLoaded = true;
+				}  
+#endif
+				glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
+			}
+			break;
+			
 		default:
 			// Shouldn't happen
 			assert(false);

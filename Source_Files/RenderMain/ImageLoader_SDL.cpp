@@ -33,13 +33,6 @@
 #endif
 
 
-inline int NextPowerOfTwo(int n)
-{
-	int p = 1;
-	while(p < n) {p <<= 1;}
-	return p;
-}
-
 /*
  *  Load specified image file
  */
