@@ -1598,6 +1598,83 @@ void FindInfravisionVersionRGBA(short Collection, int NumPixels, uint32 *Pixels)
 	}
 }
 
+static inline uint16 FindInfravisionVersionDXTCColor(SDL_Color tint, uint16 color)
+{
+	uint16 grayscale = (((color & 0xf800) >> 11) + ((color & 0x7e0) >> 6) + (color & 0x1f)) / 3;
+
+	uint16 r = (grayscale * tint.r) / 256;
+	uint16 g = (grayscale * tint.g) / 256;
+	uint16 b = (grayscale * tint.b) / 256;
+	return (r << 11) | (g << 6) | (g > 15 ? 0x20 : 0) | b;
+}
+
+void FindInfravisionVersionDXTC1(InfravisionData& IVData, int NumBytes, unsigned char *buffer)
+{
+	assert(NumBytes % 8 == 0);
+
+	uint16 *pixels = (uint16 *) buffer;
+
+	SDL_Color tint;
+	tint.r = PIN(int(IVData.Red * 256), 0, 255);
+	tint.g = PIN(int(IVData.Green * 256), 0, 255);
+	tint.b = PIN(int(IVData.Blue* 256), 0, 255);
+	
+	// the first two uint16s in each block are our colors
+	for (int i = 0; i < NumBytes / 4; i++) {
+		
+		uint16 *c1 = &pixels[i * 4];
+		uint16 *c2 = &pixels[i * 4 + 1];
+		uint16 new_c1 = FindInfravisionVersionDXTCColor(tint, *c1);
+		uint16 new_c2 = FindInfravisionVersionDXTCColor(tint, *c2);
+		
+		// DXTC1 uses c1 > c2 to determine whether to make certain
+		// pixels transparent 
+		// if c1 and c2 happen to come out of the infravision algorithm
+		// the same, we have to chamge one so that pixels don't become
+		// transparent that were opaque, or vice versa
+		if (new_c1 == new_c2) {
+			if (*c1 > *c2) 
+				if (new_c2) new_c2 -= 1;
+				else new_c1 += 1;
+			else 
+				if (new_c1) new_c1 -= 1;
+				else new_c2 += 1;
+		} 
+		// likewise, in the unlikely state that infravision ends up
+		// making one bigger than the other, swap them back
+		else if ((new_c1 > new_c2) != (*c1 > *c2)) {
+			SWAP(new_c1, new_c2);
+		}
+		*c1 = new_c1;
+		*c2 = new_c2;
+	}
+}
+
+void FindInfavisionVersionDXTC35(InfravisionData &IVData, int NumBytes, unsigned char *buffer)
+{
+	assert(NumBytes % 16 == 0);
+	fprintf(stderr, "finding DXTC3/5 infravision\n");
+	fprintf(stderr, "tint is %f, %f, %f\n", IVData.Red, IVData.Green, IVData.Blue);
+
+	uint16 *pixels = (uint16 *) buffer;
+
+	SDL_Color tint;
+	tint.r = PIN(int(IVData.Red * 256), 0, 255);
+	tint.g = PIN(int(IVData.Green * 256), 0, 255);
+	tint.b = PIN(int(IVData.Blue* 256), 0, 255);
+
+	for (int i = 0; i < NumBytes / 8; i++) {
+		uint16 *c1 = &pixels[i * 8 + 4];
+		uint16 *c2 = &pixels[i * 8 + 5];
+		
+		uint16 new_c1 = FindInfravisionVersionDXTCColor(tint, *c1);
+		uint16 new_c2 = FindInfravisionVersionDXTCColor(tint, *c2);
+		
+		*c1 = new_c1;
+		*c2 = new_c2;
+	}
+}
+
 void FindInfravisionVersion(short Collection, ImageDescriptorManager &imageManager)
 {
 	if (!InfravisionActive) return;
@@ -1609,8 +1686,10 @@ void FindInfravisionVersion(short Collection, ImageDescriptorManager &imageManag
 
 	if (imageManager.get()->GetFormat() == ImageDescriptor::RGBA8) {
 		FindInfravisionVersionRGBA(Collection, imageManager.edit()->GetBufferSize() / 4, imageManager.edit()->GetBuffer());
-	} else {
-
+	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC1) {
+		FindInfravisionVersionDXTC1(IVData, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC3 || imageManager.get()->GetFormat() == ImageDescriptor::DXTC5) {
+		FindInfavisionVersionDXTC35(IVData, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
 	}
 }
 
