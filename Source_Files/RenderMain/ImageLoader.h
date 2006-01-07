@@ -36,13 +36,6 @@
 #include <math.h>
 using namespace std;
 
-inline int NextPowerOfTwo(int n)
-{
-	int p = 1;
-	while(p < n) {p <<= 1;}
-	return p;
-}
-
 // Need an object to hold the read-in image.
 class ImageDescriptor
 {
@@ -112,13 +105,11 @@ public:
 	};
 
 	~ImageDescriptor()
-		{
-			delete []Pixels;
-			Pixels = NULL;
-		}
+	{
+		delete []Pixels;
+		Pixels = NULL;
+	}
 			
-			
-
 private:
 	bool LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
 	bool LoadMipMapFromFile(OpenedFile &File, int flags, int level, DDSURFACEDESC2 &ddsd);
