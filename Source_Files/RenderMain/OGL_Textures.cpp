@@ -1618,9 +1618,9 @@ void FindInfravisionVersionDXTC1(InfravisionData& IVData, int NumBytes, unsigned
 	uint16 *pixels = (uint16 *) buffer;
 
 	SDL_Color tint;
-	tint.r = PIN(int(IVData.Red * 256), 0, 255);
-	tint.g = PIN(int(IVData.Green * 256), 0, 255);
-	tint.b = PIN(int(IVData.Blue* 256), 0, 255);
+	tint.r = PIN(int(IVData.Red * 256), 0, 256);
+	tint.g = PIN(int(IVData.Green * 256), 0, 256);
+	tint.b = PIN(int(IVData.Blue* 256), 0, 256);
 	
 	// the first two uint16s in each block are our colors
 	for (int i = 0; i < NumBytes / 4; i++) {
@@ -1656,15 +1656,13 @@ void FindInfravisionVersionDXTC1(InfravisionData& IVData, int NumBytes, unsigned
 void FindInfavisionVersionDXTC35(InfravisionData &IVData, int NumBytes, unsigned char *buffer)
 {
 	assert(NumBytes % 16 == 0);
-	fprintf(stderr, "finding DXTC3/5 infravision\n");
-	fprintf(stderr, "tint is %f, %f, %f\n", IVData.Red, IVData.Green, IVData.Blue);
 
 	uint16 *pixels = (uint16 *) buffer;
 
 	SDL_Color tint;
-	tint.r = PIN(int(IVData.Red * 256), 0, 255);
-	tint.g = PIN(int(IVData.Green * 256), 0, 255);
-	tint.b = PIN(int(IVData.Blue* 256), 0, 255);
+	tint.r = PIN(int(IVData.Red * 256), 0, 256);
+	tint.g = PIN(int(IVData.Green * 256), 0, 256);
+	tint.b = PIN(int(IVData.Blue* 256), 0, 256);
 
 	for (int i = 0; i < NumBytes / 8; i++) {
 		uint16 *c1 = &pixels[i * 8 + 4];
@@ -1696,6 +1694,79 @@ void FindInfravisionVersion(short Collection, ImageDescriptorManager &imageManag
 	}
 }
 
+static inline uint16 SetPixelOpacitiesDXTC3Row(int scale, int shift, uint16 alpha)
+{
+	uint16 a1 = (alpha >> 12) & 0xf;
+	uint16 a2 = (alpha >> 8) & 0xf;
+	uint16 a3 = (alpha >> 4) & 0xf;
+	uint16 a4 = alpha & 0xf;
+
+	a1 = PIN((a1 * scale) / 16 + shift, 0, 15);
+	a2 = PIN((a2 * scale) / 16 + shift, 0, 15);
+	a3 = PIN((a3 * scale) / 16 + shift, 0, 15);
+	a4 = PIN((a4 * scale) / 16 + shift, 0, 15);
+
+	return ((a1 << 12) | (a2 << 8) | (a3 << 4) | a4);
+}
+
+void SetPixelOpacitiesDXTC3(OGL_TextureOptions& Options, int NumBytes, unsigned char *buffer)
+{
+	assert(NumBytes % 16 == 0);
+
+	uint16 *rows = (uint16 *) buffer;
+
+	int scale = PIN(int(Options.OpacityScale * 16), 0, 16);
+	int shift = PIN(int(Options.OpacityShift * 16), -16, 16);
+	
+	for (int i = 0; i < NumBytes / 8; i++) {
+		uint16 *a1 = &rows[i * 8];
+		uint16 *a2 = &rows[i * 8 + 1];
+		uint16 *a3 = &rows[i * 8 + 2];
+		uint16 *a4 = &rows[i * 8 + 3];
+		*a1 = SetPixelOpacitiesDXTC3Row(scale, shift, *a1);
+		*a2 = SetPixelOpacitiesDXTC3Row(scale, shift, *a2);
+		*a3 = SetPixelOpacitiesDXTC3Row(scale, shift, *a3);
+		*a4 = SetPixelOpacitiesDXTC3Row(scale, shift, *a4);
+	}
+		
+}
+
+static inline uint16 SetPixelOpacitiesDXTC5Pair(int scale, int shift, uint16 alpha)
+{
+	uint16 a1 = alpha >> 8;
+	uint16 a2 = alpha & 0xff;
+
+	uint16 new_a1 = PIN((a1 * scale) / 256 + shift, 0, 255);
+	uint16 new_a2 = PIN((a2 * scale) / 256 + shift, 0, 255);
+
+	if (new_a1 == new_a2 && a1 != a2)
+		if (a1 > a2)
+			if (new_a2) new_a2--;
+			else new_a1++;
+		else 
+			if (new_a1) new_a1--;
+			else new_a2++;
+	else if ((new_a1 > new_a2) != (a1 > a2))
+		SWAP(new_a1, new_a2);
+	
+	return (new_a1 << 8 | new_a2);
+}
+
+void SetPixelOpacitiesDXTC5(OGL_TextureOptions& Options, int NumBytes, unsigned char *buffer)
+{
+	assert (NumBytes % 16 == 0);
+
+	uint16 *pixels = (uint16 *) buffer;
+	
+	int scale = PIN(int(Options.OpacityScale * 256), 0, 256);
+	int shift = PIN(int(Options.OpacityShift * 256), -256, 256);
+
+	for (int i = 0; i < NumBytes / 8; i++) {
+		pixels[i * 8] = SDL_SwapLE16(SetPixelOpacitiesDXTC5Pair(scale, shift, SDL_SwapLE16(pixels[i * 8])));
+	}
+}
+
+
 void SetPixelOpacities(OGL_TextureOptions& Options, ImageDescriptorManager &imageManager)
 {
 	if (Options.OpacityType != OGL_OpacType_Avg && Options.OpacityType != OGL_OpacType_Max && Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0)
@@ -1705,7 +1776,11 @@ void SetPixelOpacities(OGL_TextureOptions& Options, ImageDescriptorManager &imag
 		SetPixelOpacitiesRGBA(Options, imageManager.edit()->GetBufferSize() / 4, imageManager.edit()->GetBuffer());
 	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC3) {
 		// it's only possible to do scale and shift here
+		if (Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0) return;
+		SetPixelOpacitiesDXTC3(Options, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
 	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC5) {
+		if (Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0) return;
+		SetPixelOpacitiesDXTC5(Options, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
 		// again, possible to scale and shift only
 	} else {
 		// can't do anything here
