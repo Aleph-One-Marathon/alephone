@@ -1280,22 +1280,6 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 	}
 }
 
-bool TextureManager::CanUseWithoutCopying()
-{
-	GLint MaxTextureSize;
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &MaxTextureSize);
-	return (TxtrWidth <= MaxTextureSize &&
-		TxtrHeight <= MaxTextureSize &&
-		TxtrTypeInfoList[TextureType].Resolution == 0 &&
-		CTable != INFRAVISION_BITMAP_SET &&
-		(CTable != SILHOUETTE_BITMAP_SET || TransferMode == _tinted_transfer) &&
-		(TxtrOptsPtr->OpacityType == OGL_OpacType_Crisp ||
-		 TxtrOptsPtr->OpacityType == OGL_OpacType_Flat) &&
-		TxtrOptsPtr->OpacityScale == 1.0 &&
-		TxtrOptsPtr->OpacityShift == 0.0);
-}
-
-
 // What to render:
 
 // Always call this one and call it first; safe to allocate texture ID's in it

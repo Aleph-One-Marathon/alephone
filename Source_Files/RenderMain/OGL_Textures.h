@@ -180,8 +180,6 @@ class TextureManager
 	// This si for placing a texture in OpenGL
 	void PlaceTexture(const ImageDescriptor *);
 
-	bool CanUseWithoutCopying();
-	
 public:
 
 	// Inputs: get off of texture object passed to scottish_textures.
