@@ -266,8 +266,8 @@ static void player_dialog(void *arg)
  *  Handle graphics dialog
  */
 
-static const char *depth_labels[3] = {
-	"8 Bit", "16 Bit", NULL
+static const char *depth_labels[4] = {
+	"8 Bit", "16 Bit", "32 Bit", NULL
 };
 
 static const char *resolution_labels[3] = {
@@ -299,7 +299,7 @@ static void software_rendering_options_dialog(void* arg)
 	d.add(new w_static_text("SOFTWARE RENDERING OPTIONS", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
 
-    w_toggle *depth_w = new w_toggle("Color Depth", graphics_preferences->screen_mode.bit_depth == 16, depth_labels);
+	w_select *depth_w = new w_select("Color Depth", graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
 	d.add(depth_w);
 	w_toggle *resolution_w = new w_toggle("Resolution", graphics_preferences->screen_mode.high_resolution, resolution_labels);
 	d.add(resolution_w);
@@ -315,7 +315,7 @@ static void software_rendering_options_dialog(void* arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
-		int depth = (depth_w->get_selection() ? 16 : 8);
+		int depth = (depth_w->get_selection() == 0 ? 8 : depth_w->get_selection() == 1 ? 16 : 32);
 		if (depth != graphics_preferences->screen_mode.bit_depth) {
 			graphics_preferences->screen_mode.bit_depth = depth;
 			changed = true;
