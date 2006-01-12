@@ -288,6 +288,10 @@ static const char* renderer_labels[] = {
 	"Software", "OpenGL", NULL
 };
 
+static const char* fsaa_labels[] = {
+	"Off", "2x", "4x", NULL
+};
+
 enum {
     iRENDERING_SYSTEM = 1000
 };
@@ -474,6 +478,9 @@ static void opengl_dialog(void *arg)
 	w_toggle *models_w = new w_toggle("3D Models", TEST_FLAG(prefs.Flags, OGL_Flag_3D_Models));
 	d.add(models_w);
 	d.add(new w_spacer());
+	w_select *fsaa_w = new w_select("Full Scene Antialiasing", prefs.Multisamples == 4 ? 2 : prefs.Multisamples == 2 ? 1 : 0, fsaa_labels);
+	d.add(fsaa_w);
+	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
@@ -497,6 +504,12 @@ static void opengl_dialog(void *arg)
 
 		if (flags != prefs.Flags) {
 			prefs.Flags = flags;
+			changed = true;
+		}
+
+		int new_fsaa = (fsaa_w->get_selection() == 2 ? 4 : fsaa_w->get_selection() == 1 ? 2 : 0);
+		if (new_fsaa != prefs.Multisamples) {
+			prefs.Multisamples = new_fsaa;
 			changed = true;
 		}
 
