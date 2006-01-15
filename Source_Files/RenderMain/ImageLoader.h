@@ -112,7 +112,8 @@ public:
 			
 private:
 	bool LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
-	bool LoadMipMapFromFile(OpenedFile &File, int flags, int level, DDSURFACEDESC2 &ddsd);
+	bool LoadMipMapFromFile(OpenedFile &File, int flags, int level, DDSURFACEDESC2 &ddsd, int skip);
+	bool SkipMipMapFromFile(OpenedFile &File, int flags, int level, DDSURFACEDESC2 &ddsd);
 
 	ImageFormat Format;
 };

@@ -232,6 +232,9 @@ inline bool StringPresent(vector<char>& String)
 void OGL_TextureOptionsBase::Load()
 {
 	FileSpecifier File;
+
+	GLint maxTextureSize;
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 	
 	// Load the normal image with alpha channel
 	try
@@ -244,7 +247,7 @@ void OGL_TextureOptionsBase::Load()
 		// Load the normal image if it has a filename specified for it
 		if (!StringPresent(NormalColors)) throw 0;
 		if (!File.SetNameWithPath(&NormalColors[0])) throw 0;
-		if (!NormalImg.LoadFromFile(File,ImageLoader_Colors, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height)) throw 0;
+		if (!NormalImg.LoadFromFile(File,ImageLoader_Colors, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height, maxTextureSize)) throw 0;
 	}
 	catch(...)
 	{
@@ -257,7 +260,7 @@ void OGL_TextureOptionsBase::Load()
 		// Load the normal mask if it has a filename specified for it
 		if (!StringPresent(NormalMask)) throw 0;
 		if (!File.SetNameWithPath(&NormalMask[0])) throw 0;
-		if (!NormalImg.LoadFromFile(File,ImageLoader_Opacity, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height)) throw 0;
+		if (!NormalImg.LoadFromFile(File,ImageLoader_Opacity, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height, maxTextureSize)) throw 0;
 	}
 	catch(...)
 	{}
@@ -273,13 +276,13 @@ void OGL_TextureOptionsBase::Load()
 		// Load the glow image if it has a filename specified for it
 		if (!StringPresent(GlowColors)) throw 0;
 		if (!File.SetNameWithPath(&GlowColors[0])) throw 0;
-		if (!GlowImg.LoadFromFile(File,ImageLoader_Colors, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height)) throw 0;
+		if (!GlowImg.LoadFromFile(File,ImageLoader_Colors, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height, maxTextureSize)) throw 0;
 		
 		// Load the glow mask if it has a filename specified for it;
 		// only loaded if an image has been loaded for it
 		if (!StringPresent(GlowMask)) throw 0;
 		if (!File.SetNameWithPath(&GlowMask[0])) throw 0;
-		if (!GlowImg.LoadFromFile(File,ImageLoader_Opacity, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height)) throw 0;
+		if (!GlowImg.LoadFromFile(File,ImageLoader_Opacity, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height, maxTextureSize)) throw 0;
 	}
 	catch(...)
 	{}

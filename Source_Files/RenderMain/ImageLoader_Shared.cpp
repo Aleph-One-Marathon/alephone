@@ -135,11 +135,16 @@ ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels)
 	MipMapCount = 0;
 }
 
-bool ImageDescriptor::LoadMipMapFromFile(OpenedFile& file, int flags, int level, DDSURFACEDESC2 &ddsd)
+static inline int padfour(int x)
+{
+	return (x % 4) ? x + (4 - x % 4) : x;
+}
+
+bool ImageDescriptor::LoadMipMapFromFile(OpenedFile& file, int flags, int level, DDSURFACEDESC2 &ddsd, int skip)
 {
 	// total the size so far
 	int totalSize = 0;
-	for (int i = 0; i < level; i++) {
+	for (int i = skip; i < level; i++) {
 		totalSize += GetMipMapSize(i);
 	}
 	
@@ -187,10 +192,10 @@ bool ImageDescriptor::LoadMipMapFromFile(OpenedFile& file, int flags, int level,
 	else if (Format == DXTC1)
 	{
 
-		dstWidth += dstWidth % 4;
-		dstHeight += dstHeight % 4;
-		srcWidth += srcWidth % 4;
-		srcHeight += srcHeight % 4;
+		dstWidth =  padfour(dstWidth);
+		dstHeight = padfour(dstHeight);
+		srcWidth = padfour(srcWidth);
+		srcHeight = padfour(srcHeight);
 
 		memset(buffer, '\0', (dstWidth / 4) * (dstHeight / 4) * 8);
 		for (int row = 0; row < srcHeight / 4; row++)
@@ -204,10 +209,10 @@ bool ImageDescriptor::LoadMipMapFromFile(OpenedFile& file, int flags, int level,
 	else if (Format == DXTC3 || Format == DXTC5)
 	{
 
-		dstWidth += dstWidth % 4;
-		dstHeight += dstHeight % 4;
-		srcWidth += srcWidth % 4;
-		srcHeight += srcHeight % 4;
+		dstWidth = padfour(dstWidth);
+		dstHeight = padfour(dstHeight);
+		srcWidth = padfour(srcWidth);
+		srcHeight = padfour(srcHeight);
 
 		memset(buffer, '\0', (dstWidth / 4) * (dstHeight / 4) * 16);
 		for (int row = 0; row < srcHeight / 4; row++)
@@ -222,8 +227,45 @@ bool ImageDescriptor::LoadMipMapFromFile(OpenedFile& file, int flags, int level,
 	return true;
 }
 	
-	
-	
+bool ImageDescriptor::SkipMipMapFromFile(OpenedFile& File, int flags, int level, DDSURFACEDESC2 &ddsd)
+{
+	int srcWidth = max(1, (int) ddsd.dwWidth >> level);
+	int srcHeight = max(1, (int) ddsd.dwHeight >> level);
+
+	if (Format == RGBA8)
+	{
+		int pitch;
+		if (ddsd.dwFlags & DDSD_PITCH) {
+			pitch = ddsd.dwPitchOrLinearSize;
+		} else {
+			pitch = ddsd.dwPitchOrLinearSize / ddsd.dwHeight;
+		}
+		int depth = pitch / ddsd.dwWidth;
+		pitch = srcWidth * depth;
+
+		long position;
+		if (!File.GetPosition(position)) return false;
+		return File.SetPosition(position + (pitch * srcHeight));
+	} 
+	else if (Format == DXTC1)
+	{
+		srcWidth = padfour(srcWidth);
+		srcHeight = padfour(srcHeight);
+
+		long position;
+		if (!File.GetPosition(position)) return false;
+		return File.SetPosition(position + (srcWidth / 4 * srcHeight / 4 * 8));
+	} 
+	else if (Format == DXTC3 || Format == DXTC5)
+	{
+		srcWidth = padfour(srcWidth);
+		srcHeight = padfour(srcHeight);
+		
+		long position;
+		if (!File.GetPosition(position)) return false;
+		return File.SetPosition(position + (srcWidth / 4 * srcHeight / 4 * 16));
+	}
+}
 
 bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width, int actual_height, int maxSize)
 {
@@ -344,9 +386,17 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		// hehe, resizing to the next power of two could have
 		// introduced another mipmap
 		MipMapCount = 1 + floor(log2(max(Width, Height)));
+		
+		int skip  = 0;
+		if (maxSize) {
+			while ((Width >> skip) > maxSize || (Height >> skip) > maxSize) {
+				skip++;
+			}
+		}
+			    
 
 		int totalSize = 0;
-		for (int i = 0; i < OriginalMipMapCount; i++) {
+		for (int i = skip; i < OriginalMipMapCount; i++) {
 			totalSize += GetMipMapSize(i);
 		}
 
@@ -356,23 +406,36 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		
 		Resize(Width, Height, totalSize);
 
-		for (int i = 0; i < OriginalMipMapCount; i++) {
-			// read in the base image
-			if (!LoadMipMapFromFile(dds_file, flags, i, ddsd)) return false;
+		for (int i = 0; i < skip; i++) {
+			if (!SkipMipMapFromFile(dds_file, flags, i, ddsd)) return false;
 		}
 
-		for (int i = OriginalMipMapCount; i < MipMapCount; i++) {
+		for (int i = skip; i < OriginalMipMapCount; i++) {
+			// read in the base image
+			if (!LoadMipMapFromFile(dds_file, flags, i, ddsd, skip)) return false;
+		}
+
+		this->Height = max(1, this->Height >> skip);
+		this->Width = max(1, this->Width >> skip);
+		if (skip && (Format == DXTC1 || Format == DXTC3 || Format == DXTC5)) {
+			this->Height += this->Height % 4;
+			this->Width += this->Width % 4;
+		}
+		MipMapCount -= skip;
+
+		for (int i = OriginalMipMapCount - skip; i < MipMapCount; i++) {
 			// what's one pixel among friends?
-			memcpy(GetMipMapPtr(i), GetMipMapPtr(OriginalMipMapCount - 1), GetMipMapSize(i));
+			memcpy(GetMipMapPtr(i), GetMipMapPtr(OriginalMipMapCount - skip - 1), GetMipMapSize(i));
 		}
 		
-		
 	} else {
+		if ((Width > maxSize || Height > maxSize) && (Format == DXTC1 || Format == DXTC3 || Format == DXTC5)) return false;
+
 		MipMapCount = 1;
 		
 		Resize(Width, Height, GetMipMapSize(0));
 
-		if (!LoadMipMapFromFile(dds_file, flags, 0, ddsd)) return false;
+		if (!LoadMipMapFromFile(dds_file, flags, 0, ddsd, 0)) return false;
 	}
 
 	return true;
