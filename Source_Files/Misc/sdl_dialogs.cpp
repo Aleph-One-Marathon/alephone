@@ -45,6 +45,11 @@
 #include "mysound.h"
 #include "game_errors.h"
 
+#ifdef HAVE_OPENGL
+#include "SDL_opengl.h"
+#include "OGL_Setup.h"
+#endif
+
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
 
@@ -863,15 +868,49 @@ void dialog::update(SDL_Rect r) const
 	SDL_UpdateRects(video, 1, &dst_rect);
 */
         // this is needed because 'rect' is const here and SDL_* don't seem to use const.
-        SDL_Rect dst_rect = rect;
-        SDL_Rect src_rect = { 0, 0, rect.w, rect.h };
-        SDL_BlitSurface(dialog_surface, &src_rect, video, &dst_rect);
-        SDL_UpdateRects(video, 1, &dst_rect);
-
 #ifdef HAVE_OPENGL
-	if (video->flags & SDL_OPENGL)
+	if (OGL_IsActive()) {
+		SDL_Rect ScreenRect = {0, 0, video->w, video->h};
+		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		
+ 		// Disable everything but alpha blending
+ 		glDisable(GL_CULL_FACE);
+ 		glDisable(GL_DEPTH_TEST);
+ 		glDisable(GL_ALPHA_TEST);
+ 		glEnable(GL_BLEND);
+ 		glDisable(GL_FOG);
+ 		glDisable(GL_SCISSOR_TEST);
+ 		glDisable(GL_STENCIL_TEST);
+		
+ 		// Direct projection
+ 		glMatrixMode(GL_PROJECTION);
+ 		glPushMatrix();
+ 		glLoadIdentity();
+		
+		gluOrtho2D(0.0, ScreenRect.w, 0.0, ScreenRect.h);
+ 		glMatrixMode(GL_MODELVIEW);
+ 		glPushMatrix();
+ 		glLoadIdentity();
+		
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glRasterPos2f(rect.x, ScreenRect.h - rect.y);
+		glPixelZoom(1.0, -1.0);
+
+		SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, rect.w, rect.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+		SDL_BlitSurface(dialog_surface, NULL, s, NULL);
+		glDrawPixels(s->w, s->h, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
+		SDL_FreeSurface(s);
+		
 		SDL_GL_SwapBuffers();
+	} else 
 #endif
+	{
+		SDL_Rect dst_rect = rect;
+		SDL_Rect src_rect = { 0, 0, rect.w, rect.h };
+		SDL_BlitSurface(dialog_surface, &src_rect, video, &dst_rect);
+		SDL_UpdateRects(video, 1, &dst_rect);
+
+	}
 }
 
 
@@ -1187,7 +1226,7 @@ void dialog::event(SDL_Event &e)
 int dialog::run(bool intro_exit_sounds)
 {
 	bool fReturnToGL = false;
-	if (SDL_GetVideoSurface()->flags & SDL_OPENGL) {
+	if (/* SDL_GetVideoSurface()->flags & SDL_OPENGL */ 0) {
 		// drop out of GL mode for now
 		fReturnToGL = true;
 		exit_screen();
@@ -1322,14 +1361,18 @@ int dialog::finish(bool play_sound)
 	// Clear dialog surface
 	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
 
-	// Erase dialog from screen
-	SDL_Surface *video = SDL_GetVideoSurface();
-	SDL_FillRect(video, &rect, SDL_MapRGB(video->format, 0, 0, 0));
-	SDL_UpdateRects(video, 1, &rect);
 #ifdef HAVE_OPENGL
-	if (video->flags & SDL_OPENGL)
+	if (OGL_IsActive()) {
 		SDL_GL_SwapBuffers();
-#endif
+	} else
+#endif 
+	{
+
+		// Erase dialog from screen
+		SDL_Surface *video = SDL_GetVideoSurface();
+		SDL_FillRect(video, &rect, SDL_MapRGB(video->format, 0, 0, 0));
+		SDL_UpdateRects(video, 1, &rect);
+	}
 
 	// Free frame images
 	if (frame_t) SDL_FreeSurface(frame_t);
