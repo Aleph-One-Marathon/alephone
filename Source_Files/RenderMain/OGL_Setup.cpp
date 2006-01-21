@@ -233,8 +233,10 @@ void OGL_TextureOptionsBase::Load()
 {
 	FileSpecifier File;
 
-	GLint maxTextureSize;
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+	GLint maxTextureSize = 0;
+	if (OGL_IsActive()) {
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+	}
 	
 	// Load the normal image with alpha channel
 	try
