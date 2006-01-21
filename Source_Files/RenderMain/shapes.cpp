@@ -1020,7 +1020,7 @@ void load_collections(
 		if (collection_loaded(header))
 		{
 			// In case the substitute images had been changed by some level-specific MML...
-			OGL_LoadModelsImages(collection_index);
+//			OGL_LoadModelsImages(collection_index);
 			lock_collection(header);
 		}
 		else
@@ -1032,7 +1032,7 @@ void load_collections(
 				{
 					alert_user(fatalError, strERRORS, outOfMemory, -1);
 				}
-				OGL_LoadModelsImages(collection_index);
+//				OGL_LoadModelsImages(collection_index);
 			}
 		}
 		
@@ -1048,6 +1048,31 @@ void load_collections(
 		close_progress_dialog();
 }
 
+void load_replacement_collections(
+	bool with_progress_bar,
+	int progress_start, 
+	int progress_finish)
+{
+	struct collection_header *header;
+	short collection_index;
+	
+	if (with_progress_bar)
+	{
+		draw_progress_bar(progress_start, progress_finish);
+	}
+
+	for (collection_index= 0, header= collection_headers; collection_index < MAXIMUM_COLLECTIONS; ++collection_index, ++header)
+	{
+		if (with_progress_bar)
+			draw_progress_bar(progress_start + (progress_finish - progress_start) * collection_index / MAXIMUM_COLLECTIONS, progress_finish);
+
+		if (collection_loaded(header))
+		{
+			OGL_LoadModelsImages(collection_index);
+		}
+	}
+}
+		
 /* ---------- private code */
 
 static void precalculate_bit_depth_constants(
