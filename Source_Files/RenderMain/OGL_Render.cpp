@@ -667,6 +667,10 @@ bool OGL_StartRun()
 
 	_OGL_IsActive = true;
 	open_progress_dialog(_starting_opengl);
+
+#ifdef __WIN32__
+	setup_gl_extensions();
+#endif
 	
 	load_replacement_collections(true, 0, max_progress * 70 / 100);
 	

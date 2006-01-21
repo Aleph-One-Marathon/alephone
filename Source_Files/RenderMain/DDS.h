@@ -29,6 +29,8 @@
  
 #include "cstypes.h"
 
+#ifndef __DDRAW_INCLUDED__
+
 #define DDSD_CAPS          0x00000001
 #define DDSD_HEIGHT        0x00000002
 #define DDSD_WIDTH         0x00000004
@@ -80,4 +82,5 @@ struct DDSURFACEDESC2
 	uint32 dwReserved2;
 };
 	
+#endif
 #endif

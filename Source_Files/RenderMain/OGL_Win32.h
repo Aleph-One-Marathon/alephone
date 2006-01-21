@@ -22,21 +22,31 @@
 
 */
 
+#ifdef __WIN32__
+
+#include <GL/gl.h>
+#include <GL/glext.h>
+
 typedef void (*GL_ACTIVETEXTUREARB_FUNC)(unsigned int);
 typedef void (*GL_CLIENTACTIVETEXTUREARB_FUNC)(int);
 
 #ifdef __OGL_Win32_cpp__
 GL_ACTIVETEXTUREARB_FUNC glActiveTextureARB_ptr =  0;
 GL_CLIENTACTIVETEXTUREARB_FUNC glClientActiveTextureARB_ptr = 0;
+PFNGLCOMPRESSEDTEXIMAGE2DARBPROC glCompressedTexImage2DARB_ptr = 0;
 int has_multitex = 0;
 
 #else
 extern GL_ACTIVETEXTUREARB_FUNC glActiveTextureARB_ptr;
 extern GL_CLIENTACTIVETEXTUREARB_FUNC glClientActiveTextureARB_ptr;
+extern PFNGLCOMPRESSEDTEXIMAGE2DARBPROC glCompressedTexImage2DARB_ptr;
 extern void setup_gl_extensions();
 extern int has_multitex;
 #define glClientActiveTextureARB glClientActiveTextureARB_ptr        
 #define glActiveTextureARB glActiveTextureARB_ptr        
+#define glCompressedTexImage2DARB glCompressedTexImage2DARB_ptr 
+#endif
+
 #endif
 
 #endif

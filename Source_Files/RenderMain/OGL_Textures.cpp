@@ -99,8 +99,10 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #   include <glu.h>
 #   include <glext.h>
 # else
+#ifndef __WIN32__
 #   ifndef GL_GLEXT_PROTOTYPES
 #   define GL_GLEXT_PROTOTYPES 1
+#endif
 #   endif
 #   include <GL/gl.h>
 #   include <GL/glu.h>
@@ -108,6 +110,10 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #     include <GL/glext.h>
 #   endif
 # endif
+#endif
+
+#ifdef __WIN32__
+#include "OGL_Win32.h"
 #endif
 
 #ifdef mac
@@ -1196,7 +1202,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 		{
 		case GL_NEAREST:
 		case GL_LINEAR:
-			glCompressedTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
+			glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
 			break;
 		case GL_NEAREST_MIPMAP_NEAREST:
 		case GL_LINEAR_MIPMAP_NEAREST:

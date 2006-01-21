@@ -40,6 +40,9 @@ void setup_gl_extensions() {
 		has_multitex = 1;
 	}
 
+	glCompressedTexImage2DARB_ptr = (PFNGLCOMPRESSEDTEXIMAGE2DARBPROC) 
+		SDL_GL_GetProcAddress("glCompressedTexImage2DARB");
+	if (!glCompressedTexImage2DARB_ptr) fprintf(stderr, "uh oh!\n");
 }
 
 #undef __OGL_Win32_cpp__

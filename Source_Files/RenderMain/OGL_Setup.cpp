@@ -108,7 +108,6 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 // Whether or not OpenGL is present and usable
 static bool _OGL_IsPresent = false;
 
-
 // Initializer
 bool OGL_Initialize()
 {
@@ -121,8 +120,9 @@ bool OGL_Initialize()
 #elif defined(SDL)
 	// nothing to do
 #if defined(__WIN32__)
-	setup_gl_extensions();
+//	setup_gl_extensions();
 #endif	
+
 	return _OGL_IsPresent = true;
 #else
 #error OGL_Initialize() not implemented for this platform
@@ -237,6 +237,9 @@ void OGL_TextureOptionsBase::Load()
 	if (OGL_IsActive()) {
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 	}
+
+	int flags = ImageLoader_ResizeToPowersOfTwo;
+	if (OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc")) flags |= ImageLoader_CanUseDXTC;
 	
 	// Load the normal image with alpha channel
 	try
@@ -249,7 +252,7 @@ void OGL_TextureOptionsBase::Load()
 		// Load the normal image if it has a filename specified for it
 		if (!StringPresent(NormalColors)) throw 0;
 		if (!File.SetNameWithPath(&NormalColors[0])) throw 0;
-		if (!NormalImg.LoadFromFile(File,ImageLoader_Colors, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height, maxTextureSize)) throw 0;
+		if (!NormalImg.LoadFromFile(File,ImageLoader_Colors, flags, actual_width, actual_height, maxTextureSize)) throw 0;
 	}
 	catch(...)
 	{
@@ -262,7 +265,7 @@ void OGL_TextureOptionsBase::Load()
 		// Load the normal mask if it has a filename specified for it
 		if (!StringPresent(NormalMask)) throw 0;
 		if (!File.SetNameWithPath(&NormalMask[0])) throw 0;
-		if (!NormalImg.LoadFromFile(File,ImageLoader_Opacity, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height, maxTextureSize)) throw 0;
+		if (!NormalImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize)) throw 0;
 	}
 	catch(...)
 	{}
@@ -278,13 +281,13 @@ void OGL_TextureOptionsBase::Load()
 		// Load the glow image if it has a filename specified for it
 		if (!StringPresent(GlowColors)) throw 0;
 		if (!File.SetNameWithPath(&GlowColors[0])) throw 0;
-		if (!GlowImg.LoadFromFile(File,ImageLoader_Colors, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height, maxTextureSize)) throw 0;
+		if (!GlowImg.LoadFromFile(File,ImageLoader_Colors, flags, actual_width, actual_height, maxTextureSize)) throw 0;
 		
 		// Load the glow mask if it has a filename specified for it;
 		// only loaded if an image has been loaded for it
 		if (!StringPresent(GlowMask)) throw 0;
 		if (!File.SetNameWithPath(&GlowMask[0])) throw 0;
-		if (!GlowImg.LoadFromFile(File,ImageLoader_Opacity, ImageLoader_ResizeToPowersOfTwo, actual_width, actual_height, maxTextureSize)) throw 0;
+		if (!GlowImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize)) throw 0;
 	}
 	catch(...)
 	{}
