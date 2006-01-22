@@ -119,6 +119,8 @@ void free_and_unlock_memory(void);
 #include "network.h"
 #include "Console.h"
 
+#include <stdlib.h>
+
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
 DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
@@ -274,9 +276,14 @@ int main(int argc, char **argv)
  */
 static void initialize_application(void)
 {
-#if defined(__WIN32__) && defined(__MINGW__)
+#if defined(__WIN32__) && defined(__MINGW32__)
   if (option_debug) LoadLibrary("exchndl.dll");
 #endif
+
+#if defined(HAVE_OPENGL) && defined(__WIN32__)
+  putenv("SDL_VIDEODRIVER=windib");
+#endif
+
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO | 
 		     (option_nosound ? 0 : SDL_INIT_AUDIO) |

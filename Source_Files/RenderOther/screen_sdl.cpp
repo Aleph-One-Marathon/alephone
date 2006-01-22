@@ -62,6 +62,9 @@
 
 #include "lua_script.h"
 
+#if defined(__WIN32__)
+#define MUST_RELOAD_VIEW_CONTEXT
+#endif
 
 // Global variables
 static SDL_Surface *main_surface;	// Main (display) surface
@@ -259,8 +262,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	// The original idea was to only enable OpenGL for the in-game display, but
 	// SDL crashes if OpenGL is turned on later
 	if (!nogl && screen_mode.acceleration == _opengl_acceleration) {
-		//flags |= SDL_OPENGL;
-		flags |= SDL_OPENGLBLIT;
+		flags |= SDL_OPENGL;
+		//flags |= SDL_OPENGLBLIT;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -271,6 +274,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
 				      Get_OGL_ConfigureData().Multisamples);
+		  screen_mode.bit_depth = 32;
+		  depth = 32;
 		}
 #endif
 	} else
@@ -279,6 +284,10 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	flags |= SDL_HWSURFACE | SDL_HWPALETTE;
 #endif
 	main_surface = SDL_SetVideoMode(width, height, depth, flags);
+#ifdef MUST_RELOAD_VIEW_CONTEXT
+	if (!nogl && screen_mode.acceleration == _opengl_acceleration) 
+		ReloadViewContext();
+#endif
 	if (main_surface == NULL) {
 		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
 #ifdef HAVE_OPENGL
