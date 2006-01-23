@@ -62,7 +62,7 @@
 
 #include "lua_script.h"
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || (defined(__MACH__) && defined(__APPLE__))
 #define MUST_RELOAD_VIEW_CONTEXT
 #endif
 

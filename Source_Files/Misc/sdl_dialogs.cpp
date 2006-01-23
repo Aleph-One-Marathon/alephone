@@ -896,7 +896,11 @@ void dialog::update(SDL_Rect r) const
 		glRasterPos2f(rect.x, ScreenRect.h - rect.y);
 		glPixelZoom(1.0, -1.0);
 
+#ifdef ALEPHONE_LITTLE_ENDIAN
 		SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, rect.w, rect.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#else
+		SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, rect.w, rect.h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#endif
 		SDL_BlitSurface(dialog_surface, NULL, s, NULL);
 		glDrawPixels(s->w, s->h, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
 		SDL_FreeSurface(s);
