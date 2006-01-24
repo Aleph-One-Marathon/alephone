@@ -320,7 +320,11 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_FreeSurface(Term_Buffer);
 		Term_Buffer = NULL;
 	}
-	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0x00000ff,0x0000ff00, 0x00ff0000, 0xff000000);
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
+#else
+	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0xff000000,0x00ff0000, 0x0000ff00, 0x000000ff);
+#endif
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
 		printf("GL_VENDOR: %s\n", glGetString(GL_VENDOR));
