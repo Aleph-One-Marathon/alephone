@@ -63,7 +63,6 @@ FileSpecifier *GetLevelMusic();
 // The first is for some level,
 // while the second is for the end of a game
 void FindLevelMovie(short index);
-void FindEndMovie();
 
 // Gets the pointer of a movie to play at a level, as a pointer to the file specifier.
 // A NULL pointer means no movie to play.

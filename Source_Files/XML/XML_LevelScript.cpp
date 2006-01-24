@@ -469,14 +469,6 @@ void FindLevelMovie(short index)
 	FindMovieInScript(index);
 }
 
-void FindEndMovie()
-{
-	MovieFileExists = false;
-	MovieSize = NONE;
-	FindMovieInScript(LevelScriptHeader::Default);
-	FindMovieInScript(LevelScriptHeader::End);
-}
-
 
 FileSpecifier *GetLevelMovie(float& Size)
 {

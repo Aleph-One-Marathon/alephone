@@ -210,6 +210,8 @@ const short max_handled_recording= aleph_recording_version;
 // #endif
 #define FINAL_SCREEN_DURATION (INDEFINATE_TIME_DELAY)
 
+/* For teleportation, end movie, etc. */
+#define EPILOGUE_LEVEL_NUMBER 256
 
 /* ------------- structures */
 struct game_state {
@@ -757,7 +759,7 @@ bool join_networked_resume_game()
                         {
                                 // LP: getting the level scripting off of the map file
                                 // Being careful to carry over errors so that Pfhortran errors can be ignored
-                                short SavedType, SavedError = SavedError = get_game_error(&SavedType);
+                                short SavedType, SavedError = get_game_error(&SavedType);
                                 RunLevelScript(dynamic_world->current_level_number);
                                 set_game_error(SavedType,SavedError);
                         }
@@ -1584,9 +1586,7 @@ static void display_epilogue(
 	game_state.last_ticks_on_idle= machine_tick_count();
 	
 	hide_cursor();
-	FindEndMovie();
 	// Setting of the end-screen parameters has been moved to XML_LevelScript.cpp
-	show_movie(EndScreenIndex);	
 	for (int i=0; i<NumEndScreens; i++)
 		try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+EndScreenIndex+i, true, true);
 	show_cursor();
@@ -1669,6 +1669,17 @@ static void transfer_to_new_level(
 		set_keyboard_controller_status(false);
 		FindLevelMovie(entry.level_number);
 		show_movie(entry.level_number);
+
+		// if this is the EPILOGUE_LEVEL_NUMBER, then it is time to get
+		// out of here already (as we've just played the epilogue movie,
+		// we can move on to the _display_epilogue game state)
+		if (level_number == EPILOGUE_LEVEL_NUMBER) {
+			finish_game(true);
+			show_cursor(); // for some reason, cursor stays hidden otherwise
+			set_game_state(_display_epilogue);
+			return;
+		}
+
 		if (!game_is_networked) try_and_display_chapter_screen(CHAPTER_SCREEN_BASE + level_number, true, false);
 		success= goto_level(&entry, false);
 		set_keyboard_controller_status(true);

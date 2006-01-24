@@ -322,8 +322,6 @@ static struct damage_response_definition damage_response_definitions[]=
 	{_damage_hummer_bolt, NONE, _fade_flicker_negative, NONE, _snd_human_scream, NONE},
 };
 
-/* For teleportation */
-#define EPILOGUE_LEVEL_NUMBER 256
 // LP change: made this much bigger than the number of M2/Moo polygons
 #define NO_TELEPORTATION_DESTINATION INT16_MAX
 
@@ -1287,16 +1285,10 @@ static void update_player_teleport(
 				} else { /* -level number is the interlevel */
 					// LP change: moved down by 1 so that level 0 will be valid
  					short level_number= -player->teleporting_destination - 1;
-					
-					if(level_number==EPILOGUE_LEVEL_NUMBER)
-					{
-						/* Should this do something sly in cooperative play? */
-						set_game_state(_display_epilogue);
-						return;
-					} else {
-						set_game_state(_change_level);
-						set_change_level_destination(level_number);
-					}
+				
+					// change to the next level (if this is the last level, it will be handled further on)
+					set_game_state(_change_level);
+					set_change_level_destination(level_number);
 				}
 				break;
 
