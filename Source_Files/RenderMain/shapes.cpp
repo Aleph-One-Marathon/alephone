@@ -292,7 +292,7 @@ void open_shapes_file(FileSpecifier& File)
 		// Load MML resources in file
 		// Be sure to ignore not-found errors
 #if defined(mac)
-		short SavedType, SavedError = SavedError = get_game_error(&SavedType);
+		short SavedType, SavedError = get_game_error(&SavedType);
 		XML_LoadFromResourceFork(File);
 		set_game_error(SavedType,SavedError);
 #endif
