@@ -553,6 +553,8 @@ void render_screen(short ticks_elapsed)
 			// switching off map
 			// clear the remnants of the map out of the back buffer
 			//SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+			//Rect sr = {ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
+			//OGL_SetWindow(sr, sr, true);
 			glClearColor(0,0,0,0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
@@ -1036,16 +1038,4 @@ void clear_screen(void)
 		SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
 		SDL_UpdateRect(main_surface, 0, 0, 0, 0);
 	}
-#ifdef HAVE_OPENGL
-	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
-		SDL_GL_SwapBuffers();
-#endif
-#if defined(MAC_SDL_KLUDGE)
-	SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
-	SDL_UpdateRect(main_surface, 0, 0, 0, 0);
-#ifdef HAVE_OPENGL
-	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
-		SDL_GL_SwapBuffers();
-#endif
-#endif
 }
