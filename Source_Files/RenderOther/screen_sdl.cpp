@@ -547,14 +547,11 @@ void render_screen(short ticks_elapsed)
 #ifdef HAVE_OPENGL
 	// Is map to be drawn with OpenGL?
 	if (OGL_IsActive() && world_view->overhead_map_active)
-		OGL_MapActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Map);
+		OGL_MapActive = true;
 	else {
 		if (OGL_MapActive) {
 			// switching off map
 			// clear the remnants of the map out of the back buffer
-			//SDL_UpdateRect(main_surface, 0, 0, 0, 0);
-			//Rect sr = {ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
-			//OGL_SetWindow(sr, sr, true);
 			glClearColor(0,0,0,0);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
@@ -562,7 +559,7 @@ void render_screen(short ticks_elapsed)
 	}
 	// Is HUD to be drawn with OpenGL?
 	if (OGL_IsActive())
-		OGL_HUDActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_HUD);
+		OGL_HUDActive = true;
 	else
 		OGL_HUDActive = false;
 

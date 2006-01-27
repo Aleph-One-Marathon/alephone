@@ -384,10 +384,7 @@ static void graphics_dialog(void *arg)
     d.add(new w_spacer());
     d.add(new w_button("RENDERING OPTIONS", rendering_options_dialog_demux, &d));
     d.add(new w_spacer());
-#ifdef HAVE_OPENGL
-    d.add(new w_static_text("Warning: switching renderers is currently a bit buggy."));
-    d.add(new w_static_text("If you switch, consider quitting and restarting Aleph One."));
-#else
+#ifndef HAVE_OPENGL
     d.add(new w_static_text("This copy of Aleph One was built without OpenGL support."));
 #endif
     d.add(new w_spacer());
@@ -471,10 +468,6 @@ static void opengl_dialog(void *arg)
 	d.add(fader_w);
 	w_toggle *liq_w = new w_toggle("Transparent Liquids", TEST_FLAG(prefs.Flags, OGL_Flag_LiqSeeThru));
 	d.add(liq_w);
-	w_toggle *map_w = new w_toggle("OpenGL Overhead Map", TEST_FLAG(prefs.Flags, OGL_Flag_Map));
-	d.add(map_w);
-	w_toggle *hud_w = new w_toggle("OpenGL HUD", TEST_FLAG(prefs.Flags, OGL_Flag_HUD));
-	d.add(hud_w);
 	w_toggle *models_w = new w_toggle("3D Models", TEST_FLAG(prefs.Flags, OGL_Flag_3D_Models));
 	d.add(models_w);
 	d.add(new w_spacer());
@@ -498,8 +491,6 @@ static void opengl_dialog(void *arg)
 		if (!(static_w->get_selection())) flags |= OGL_Flag_FlatStatic;
 		if (fader_w->get_selection()) flags |= OGL_Flag_Fader;
 		if (liq_w->get_selection()) flags |= OGL_Flag_LiqSeeThru;
-		if (map_w->get_selection()) flags |= OGL_Flag_Map;
-		if (hud_w->get_selection()) flags |= OGL_Flag_HUD;
 		if (models_w->get_selection()) flags |= OGL_Flag_3D_Models;
 
 		if (flags != prefs.Flags) {
