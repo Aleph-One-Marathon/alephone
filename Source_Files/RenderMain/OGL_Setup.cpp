@@ -269,6 +269,14 @@ void OGL_TextureOptionsBase::Load()
 	}
 	catch(...)
 	{}
+
+	if (maxTextureSize)
+	{
+		while (NormalImg.GetWidth() > maxTextureSize || NormalImg.GetHeight() > maxTextureSize)
+		{
+			if (!NormalImg.Minify()) break;
+		}
+	}
 	
 	// Load the glow image with alpha channel
 	try
@@ -292,6 +300,14 @@ void OGL_TextureOptionsBase::Load()
 	catch(...)
 	{}
 	
+	if (GlowImg.IsPresent() && maxTextureSize)
+	{
+		while (GlowImg.GetWidth() > maxTextureSize || GlowImg.GetHeight() > maxTextureSize) 
+		{
+			if (!GlowImg.Minify()) break;
+		}
+	}
+
 	// The rest of the code is made simpler by these constraints:
 	// that the glow texture only be present if the normal texture is also present,
 	// and that the normal and glow textures have the same dimensions
@@ -307,6 +323,7 @@ void OGL_TextureOptionsBase::Load()
 	{
 		GlowImg.Clear();
 	}
+
 }
 
 void OGL_TextureOptionsBase::Unload()

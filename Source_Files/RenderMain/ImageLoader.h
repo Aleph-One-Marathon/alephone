@@ -85,6 +85,8 @@ public:
 	// mipmappy operations
 	void Resize(int _Width, int _Height, int _TotalBytes);
 
+	bool Minify();
+
 	// Clearing
 	void Clear()
 		{Width = Height = Size = 0; delete []Pixels; Pixels = NULL;}

@@ -32,6 +32,22 @@
 #include "SDL.h"
 #include "SDL_endian.h"
 
+
+#ifdef HAVE_OPENGL
+# if defined (__APPLE__) && defined (__MACH__)
+#   include <OpenGL/gl.h>
+#   include <OpenGL/glu.h>
+# elif defined mac
+#   include <gl.h>
+#   include <glu.h>
+# else
+#   include <GL/gl.h>
+#   include <GL/glu.h>
+# endif
+#include "OGL_Setup.h" // OGL_IsActive
+#endif
+
+
 #include <stdlib.h>
 
 int ImageDescriptor::GetMipMapSize(int level) const
@@ -104,6 +120,39 @@ void ImageDescriptor::Resize(int _Width, int _Height, int _TotalBytes)
 	delete []Pixels;
 	Pixels = new uint32[_TotalBytes];
 }
+
+bool ImageDescriptor::Minify()
+{
+	if (Format == RGBA8)
+	{
+		if (!(Width > 1 || Height > 1)) return false;
+		int newWidth = Width >> 1;
+		int newHeight = Height >> 1;
+		if (OGL_IsActive())
+		{
+			
+			uint32 *newPixels = new uint32[newWidth * newHeight];
+			gluScaleImage(GL_RGBA, Width, Height, GL_UNSIGNED_BYTE, Pixels, newWidth, newHeight, GL_UNSIGNED_BYTE, newPixels);
+			delete []Pixels;
+			Pixels = newPixels;
+			Width = newWidth;
+			Height = newHeight;
+			Size = newWidth * newHeight;
+			return true;
+			
+		} 
+		else 
+		{
+			fprintf(stderr, "GL not active\n");
+			return false;
+		}
+	} 
+	else 
+	{
+		return false;
+	}
+}
+	
 
 ImageDescriptor::ImageDescriptor(const ImageDescriptor &copyFrom) :
 	Width(copyFrom.Width),
@@ -436,6 +485,11 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		Resize(Width, Height, GetMipMapSize(0));
 
 		if (!LoadMipMapFromFile(dds_file, flags, 0, ddsd, 0)) return false;
+
+		while (Width > maxSize || Height > maxSize)
+		{
+			if (!Minify()) return false;
+		}
 	}
 
 	return true;
