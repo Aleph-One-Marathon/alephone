@@ -1229,12 +1229,6 @@ void dialog::event(SDL_Event &e)
 
 int dialog::run(bool intro_exit_sounds)
 {
-	bool fReturnToGL = false;
-	if (/* SDL_GetVideoSurface()->flags & SDL_OPENGL */ 0) {
-		// drop out of GL mode for now
-		fReturnToGL = true;
-		exit_screen();
-	}
 	// Put dialog on screen
 	start(intro_exit_sounds);
 
@@ -1255,11 +1249,7 @@ int dialog::run(bool intro_exit_sounds)
 	}
 
 	// Remove dialog from screen
-	int result = finish(intro_exit_sounds);
-	if (fReturnToGL) {
-		enter_screen();
-	}
-	return result;
+	return finish(intro_exit_sounds);
 }
 
 
@@ -1296,9 +1286,6 @@ void dialog::start(bool play_sound)
 	frame_b = get_dialog_image(FRAME_B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
 
 	// Draw dialog
-#if defined(MAC_SDL_KLUDGE)
-	clear_screen();
-#endif
 	draw();
 
 	// Show cursor
@@ -1367,7 +1354,7 @@ int dialog::finish(bool play_sound)
 
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
-		SDL_GL_SwapBuffers();
+		clear_screen();
 	} else
 #endif 
 	{

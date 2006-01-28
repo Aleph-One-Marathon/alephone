@@ -698,6 +698,7 @@ bool TextureManager::LoadSubstituteTexture()
 			(TxtrWidth >> Landscape_AspRatExp) :
 				(TxtrWidth << (-Landscape_AspRatExp));
 		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+		if (TxtrHeight != Height) return false;
 		
 		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
 		memset(NormalBuffer,0,TxtrWidth*TxtrHeight*sizeof(uint32));
