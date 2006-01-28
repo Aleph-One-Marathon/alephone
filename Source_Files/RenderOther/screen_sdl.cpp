@@ -334,6 +334,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 //		printf("GL_EXTENSIONS: %s\n", gl_extensions);
 		glScissor(0, 0, width, height);
 		glViewport(0, 0, width, height);
+#ifdef __WIN32__
+		clear_screen();
+#endif
 	}
 #endif
 }
