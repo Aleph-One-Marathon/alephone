@@ -85,6 +85,8 @@ static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable 
 extern bool OGL_MapActive;
 // This is the same for the HUD
 extern bool OGL_HUDActive;
+// and lastly, for the terminal buffer
+bool OGL_TermActive;
 #endif
 
 // From shell_sdl.cpp
@@ -559,6 +561,16 @@ void render_screen(short ticks_elapsed)
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 		OGL_MapActive = false;
+	}
+	if (OGL_IsActive() && world_view->terminal_mode_active) {
+		if (!OGL_TermActive)
+		{
+			glClearColor(0,0,0,0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
+		OGL_TermActive = true;
+	} else {
+		OGL_TermActive = false;
 	}
 	// Is HUD to be drawn with OpenGL?
 	if (OGL_IsActive())
