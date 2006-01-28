@@ -69,6 +69,9 @@ Aug 21, 2001 (Loren Petrich):
 
 #include <string>
 
+#ifdef __WIN32__
+#define OPENGL_DOESNT_COPY_ON_SWAP
+#endif
 
 // Initializer; returns whether or not OpenGL is present
 bool OGL_Initialize();
