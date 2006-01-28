@@ -220,6 +220,9 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	for (int il=0; il<4; il++)
 		for (int ie=0; ie<2; ie++)
 			Data.LscpColors[il][ie] = DefaultLscpColors[il][ie];
+
+	Data.MaxWallSize = 0; // unlimited
+	Data.MaxSpriteSize = 0; // unlimited
 }
 
 

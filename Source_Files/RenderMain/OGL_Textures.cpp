@@ -557,34 +557,35 @@ bool TextureManager::Setup()
 			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable)));
 		if (IsGlowing && (!GlowImage.get() || GlowImage.get()->IsPresent()))
 			GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(GlowColorTable)));
-		
-		return true;
 
 		// Display size: may be shrunk
-		LoadedWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
-		LoadedHeight = MAX(TxtrHeight >> TxtrTypeInfo.Resolution, 1);
+		int MaxWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
+		int MaxHeight = MAX(TxtrHeight >> TxtrTypeInfo.Resolution, 1);
 		
 		// Fit the image into the maximum size allowed by the OpenGL implementation in use
 		GLint MaxTextureSize;
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE,&MaxTextureSize);
-		while (LoadedWidth > MaxTextureSize || LoadedHeight > MaxTextureSize)
+		while (MaxWidth > MaxTextureSize || MaxHeight > MaxTextureSize)
 		{
 			LoadedWidth >>= 1;
 			LoadedHeight >>= 1;
 		}
-		
-		if (LoadedWidth != TxtrWidth || LoadedHeight != TxtrHeight)
+
+		if (TextureType == OGL_Txtr_Wall)
 		{
-			// Shrink it
-			uint32 *NewNormalBuffer = Shrink(NormalBuffer);
-			delete []NormalBuffer;
-			NormalBuffer = NewNormalBuffer;
-			
-			if (IsGlowing)
+			if (Get_OGL_ConfigureData().MaxWallSize)
 			{
-				uint32 *NewGlowBuffer = Shrink(GlowBuffer);
-				delete []GlowBuffer;
-				GlowBuffer = NewGlowBuffer;
+				MaxWidth = MIN(MaxWidth, Get_OGL_ConfigureData().MaxWallSize);
+				MaxHeight = MIN(MaxHeight, Get_OGL_ConfigureData().MaxWallSize);
+			}
+		}
+
+
+		while (NormalImage.get()->GetWidth() > MaxWidth || NormalImage.get()->GetHeight() > MaxHeight)
+		{
+			if (!NormalImage.edit()->Minify()) break;
+			if (GlowImage.get()->IsPresent()) {
+				if (!GlowImage.edit()->Minify()) break;
 			}
 		}
 		

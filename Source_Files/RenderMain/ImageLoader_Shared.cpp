@@ -123,7 +123,21 @@ void ImageDescriptor::Resize(int _Width, int _Height, int _TotalBytes)
 
 bool ImageDescriptor::Minify()
 {
-	if (Format == RGBA8)
+	if (MipMapCount > 1)
+	{
+		int newSize = Size - GetMipMapSize(0);
+		
+		uint32 *newPixels = new uint32[newSize / 4];
+		memcpy(newPixels, GetMipMapPtr(1), newSize);
+		MipMapCount--;
+		Width = MAX(1, Width >> 1);
+		Height = MAX(1, Height >> 1);
+		Size = newSize;
+		delete []Pixels;
+		Pixels = newPixels;
+		return true;
+	}  
+	else if (Format == RGBA8)
 	{
 		if (!(Width > 1 || Height > 1)) return false;
 		int newWidth = Width >> 1;

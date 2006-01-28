@@ -292,6 +292,40 @@ static const char* fsaa_labels[] = {
 	"Off", "2x", "4x", NULL
 };
 
+static const char* texture_quality_labels[] = {
+	"Unlimited", "Normal", "High", "Higher", "Highest", NULL
+};
+
+static int get_texture_quality_label(int16 quality, bool wall)
+{
+	if (quality == 0) return 0;
+
+	if (!wall) quality >>= 1;
+
+	if (quality <= 128) return 1;
+	else if (quality <= 256) return 2;
+	else if (quality <= 512) return 3;
+	else if (quality <= 1024) return 4;
+	else return 0;
+}
+
+static int16 get_texture_quality_from_label(int label, bool wall)
+{
+	if (label == 0) return 0;
+	
+	if (label <= 4)
+	{
+		int quality = 1 << (label + 6);
+		if (!wall) quality <<= 1;
+		return quality;
+	} 
+	else 
+	{
+		return 0;
+	}
+}
+	
+
 enum {
     iRENDERING_SYSTEM = 1000
 };
@@ -471,6 +505,11 @@ static void opengl_dialog(void *arg)
 	w_toggle *models_w = new w_toggle("3D Models", TEST_FLAG(prefs.Flags, OGL_Flag_3D_Models));
 	d.add(models_w);
 	d.add(new w_spacer());
+	w_select *wall_texture_quality_w = new w_select("Wall Texture Quality", get_texture_quality_label(prefs.MaxWallSize, true), texture_quality_labels);
+	d.add(wall_texture_quality_w);
+//	w_select *sprite_texture_quality_w = new w_select("Sprite Texture Quality", get_texture_quality_label(prefs.MaxSpriteSize, false), texture_quality_labels);
+//	d.add(sprite_texture_quality_w);
+	d.add(new w_spacer());
 	w_select *fsaa_w = new w_select("Full Scene Antialiasing", prefs.Multisamples == 4 ? 2 : prefs.Multisamples == 2 ? 1 : 0, fsaa_labels);
 	d.add(fsaa_w);
 	d.add(new w_spacer());
@@ -503,6 +542,18 @@ static void opengl_dialog(void *arg)
 			prefs.Multisamples = new_fsaa;
 			changed = true;
 		}
+
+		if (wall_texture_quality_w->get_selection() != get_texture_quality_label(prefs.MaxWallSize, true))
+		{
+			prefs.MaxWallSize = get_texture_quality_from_label(wall_texture_quality_w->get_selection(), true);
+			changed = true;
+		}
+
+//		if (sprite_texture_quality_w->get_selection() != get_texture_quality_label(prefs.MaxSpriteSize, false))
+//		{
+//			prefs.MaxSpriteSize = get_texture_quality_from_label(sprite_texture_quality_w->get_selection(), false);
+//			changed = true;
+//		}
 
 		if (changed)
 			write_preferences();
