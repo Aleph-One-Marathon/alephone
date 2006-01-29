@@ -108,7 +108,6 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 // Whether or not OpenGL is present and usable
 static bool _OGL_IsPresent = false;
 
-
 // Initializer
 bool OGL_Initialize()
 {
@@ -121,8 +120,9 @@ bool OGL_Initialize()
 #elif defined(SDL)
 	// nothing to do
 #if defined(__WIN32__)
-	setup_gl_extensions();
+//	setup_gl_extensions();
 #endif	
+
 	return _OGL_IsPresent = true;
 #else
 #error OGL_Initialize() not implemented for this platform
@@ -134,6 +134,24 @@ bool OGL_Initialize()
 
 // Test for presence
 bool OGL_IsPresent() {return _OGL_IsPresent;}
+
+bool OGL_CheckExtension(const std::string extension) {
+	char *extensions = (char *) glGetString(GL_EXTENSIONS);
+	if (!extensions) return false;
+
+	while (*extensions)
+	{
+		unsigned int length = strcspn(extensions, " ");
+		
+		if (strncmp(extension.c_str(), extensions, length) == 0) {
+			return true;
+		}
+
+		extensions += length + 1;
+	}
+
+	return false;
+}
 
 
 // Sensible defaults for the fog:
@@ -202,6 +220,9 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	for (int il=0; il<4; il++)
 		for (int ie=0; ie<2; ie++)
 			Data.LscpColors[il][ie] = DefaultLscpColors[il][ie];
+
+	Data.MaxWallSize = 0; // unlimited
+	Data.MaxSpriteSize = 0; // unlimited
 }
 
 
@@ -214,6 +235,14 @@ inline bool StringPresent(vector<char>& String)
 void OGL_TextureOptionsBase::Load()
 {
 	FileSpecifier File;
+
+	GLint maxTextureSize = 0;
+	if (OGL_IsActive()) {
+		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+	}
+
+	int flags = ImageLoader_ResizeToPowersOfTwo;
+	if (OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc")) flags |= ImageLoader_CanUseDXTC;
 	
 	// Load the normal image with alpha channel
 	try
@@ -226,7 +255,7 @@ void OGL_TextureOptionsBase::Load()
 		// Load the normal image if it has a filename specified for it
 		if (!StringPresent(NormalColors)) throw 0;
 		if (!File.SetNameWithPath(&NormalColors[0])) throw 0;
-		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Colors)) throw 0;
+		if (!NormalImg.LoadFromFile(File,ImageLoader_Colors, flags, actual_width, actual_height, maxTextureSize)) throw 0;
 	}
 	catch(...)
 	{
@@ -239,10 +268,18 @@ void OGL_TextureOptionsBase::Load()
 		// Load the normal mask if it has a filename specified for it
 		if (!StringPresent(NormalMask)) throw 0;
 		if (!File.SetNameWithPath(&NormalMask[0])) throw 0;
-		if (!LoadImageFromFile(NormalImg,File,ImageLoader_Opacity)) throw 0;
+		if (!NormalImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize)) throw 0;
 	}
 	catch(...)
 	{}
+
+	if (maxTextureSize)
+	{
+		while (NormalImg.GetWidth() > maxTextureSize || NormalImg.GetHeight() > maxTextureSize)
+		{
+			if (!NormalImg.Minify()) break;
+		}
+	}
 	
 	// Load the glow image with alpha channel
 	try
@@ -255,17 +292,25 @@ void OGL_TextureOptionsBase::Load()
 		// Load the glow image if it has a filename specified for it
 		if (!StringPresent(GlowColors)) throw 0;
 		if (!File.SetNameWithPath(&GlowColors[0])) throw 0;
-		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Colors)) throw 0;
+		if (!GlowImg.LoadFromFile(File,ImageLoader_Colors, flags, actual_width, actual_height, maxTextureSize)) throw 0;
 		
 		// Load the glow mask if it has a filename specified for it;
 		// only loaded if an image has been loaded for it
 		if (!StringPresent(GlowMask)) throw 0;
 		if (!File.SetNameWithPath(&GlowMask[0])) throw 0;
-		if (!LoadImageFromFile(GlowImg,File,ImageLoader_Opacity)) throw 0;
+		if (!GlowImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize)) throw 0;
 	}
 	catch(...)
 	{}
 	
+	if (GlowImg.IsPresent() && maxTextureSize)
+	{
+		while (GlowImg.GetWidth() > maxTextureSize || GlowImg.GetHeight() > maxTextureSize) 
+		{
+			if (!GlowImg.Minify()) break;
+		}
+	}
+
 	// The rest of the code is made simpler by these constraints:
 	// that the glow texture only be present if the normal texture is also present,
 	// and that the normal and glow textures have the same dimensions
@@ -281,57 +326,13 @@ void OGL_TextureOptionsBase::Load()
 	{
 		GlowImg.Clear();
 	}
+
 }
 
 void OGL_TextureOptionsBase::Unload()
 {
 	NormalImg.Clear();
 	GlowImg.Clear();
-}
-
-
-// Does this for a set of several pixel values or color-table values;
-// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
-void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels)
-{
-	for (int k=0; k<NumPixels; k++)
-	{
-		uint8 *PxlPtr = (uint8 *)(Pixels + k);
-		
-		// This won't be scaled to (0,1), but will be left at (0,255) here
-		float Opacity;
-		switch(Options.OpacityType)
-		{
-		// Two versions of the Tomb Raider texture-opacity hack
-		case OGL_OpacType_Avg:
-			{
-				uint32 Red = uint32(PxlPtr[0]);
-				uint32 Green = uint32(PxlPtr[1]);
-				uint32 Blue = uint32(PxlPtr[2]);
-				Opacity = (Red + Green + Blue)/3.0F;
-			}
-			break;
-			
-		case OGL_OpacType_Max:
-			{
-				uint32 Red = uint32(PxlPtr[0]);
-				uint32 Green = uint32(PxlPtr[1]);
-				uint32 Blue = uint32(PxlPtr[2]);
-				Opacity = (float)MAX(MAX(Red,Green),Blue);
-			}
-			break;
-		
-		// Use pre-existing alpha value; useful if the opacity was loaded from a mask image
-		default:
-			Opacity = PxlPtr[3];
-			break;
-		}
-		
-		// Scale, shift, and put back the edited opacity;
-		// round off and pin to the appropriate range.
-		// The shift has to be scaled to the color-channel range (1 -> 255).
-		PxlPtr[3] = PIN(int32(Options.OpacityScale*Opacity + 255*Options.OpacityShift + 0.5),0,255);
-	}
 }
 
 

@@ -229,16 +229,6 @@ int FontSpecifier::TextWidth(const char *text)
 
 #endif
 
-// Next power of 2; since OpenGL prefers powers of 2, it is necessary to work out
-// the next one up for each texture dimension.
-inline int NextPowerOfTwo(int n)
-{
-	int p = 1;
-	while(p < n) {p <<= 1;}
-	return p;
-}
-
-
 #ifdef HAVE_OPENGL
 // Reset the OpenGL fonts; its arg indicates whether this is for starting an OpenGL session
 // (this is to avoid texture and display-list memory leaks and other such things)

@@ -114,6 +114,10 @@ Feb 8, 2003 (Woody Zenfell):
 #include "ActionQueues.h"
 #include "Logging.h"
 
+// for screen_mode :(
+#include "screen.h"
+#include "shell.h"
+
 #include <limits.h>
 
 #ifdef env68k
@@ -601,7 +605,11 @@ bool entering_map(bool restoring_saved)
 	mark_environment_collections(static_world->environment_code, true);
 	mark_all_monster_collections(true);
 	mark_player_collections(true);
-	load_collections(true);
+#ifdef SDL
+	load_collections(true, get_screen_mode()->acceleration == _opengl_acceleration);
+#else
+	load_collections(true, true);
+#endif
 
 	load_all_monster_sounds();
 	load_all_game_sounds(static_world->environment_code);

@@ -81,10 +81,15 @@ struct OGL_TextureOptionsBase
 	short OpacityType;		// Which type of opacity to use?
 	float OpacityScale;		// How much to scale the opacity
 	float OpacityShift;		// How much to shift the opacity
+	bool Substitution;              // Is this a substitute texture?
 	
 	// Names of files to load; these will be extended ones with directory specifications
 	// <dirname>/<dirname>/<filename>
 	vector<char> NormalColors, NormalMask, GlowColors, GlowMask;
+	vector<char> AltNormalColors, AltNormalMask, AltGlowColors, AltGlowMask;
+
+	// hints passed into loadfromfile, in case file dimensions are POT
+	short actual_height, actual_width;
 	
 	// Normal and glow-mapped images
 	ImageDescriptor NormalImg, GlowImg;
@@ -98,7 +103,7 @@ struct OGL_TextureOptionsBase
 	
 	OGL_TextureOptionsBase():
 		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
-		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade)
+		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade), Substitution(false), actual_height(0), actual_width(0)
 		{}
 };
 

@@ -53,7 +53,10 @@ struct OGL_TextureOptions: public OGL_TextureOptionsBase
 	
 	// Find Right and Bottom from Left and Top and the image size and scaling
 	void FindImagePosition();
-	
+
+	// use this to set the original width and height before calculating ImagePosition
+	void Original();
+
 	OGL_TextureOptions():
 		VoidVisible(false), ImageScale(0),
 		Left(0), Top(0), Right(0), Bottom(0) {}

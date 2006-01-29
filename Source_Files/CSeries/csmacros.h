@@ -67,6 +67,13 @@ SWAP(T& a, T& b)
 #define RECTANGLE_WIDTH(rectptr) ((rectptr)->right-(rectptr)->left)
 #define RECTANGLE_HEIGHT(rectptr) ((rectptr)->bottom-(rectptr)->top)
 
+static inline int NextPowerOfTwo(int n)
+{
+	int p = 1;
+	while(p < n) {p <<= 1;}
+	return p;
+}
+
 #ifdef __cplusplus
 /*
 	LP addition: template class for doing bounds checking when accessing an array;

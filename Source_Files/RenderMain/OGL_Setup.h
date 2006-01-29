@@ -67,6 +67,11 @@ Aug 21, 2001 (Loren Petrich):
 #include "OGL_Subst_Texture_Def.h"
 #include "OGL_Model_Def.h"
 
+#include <string>
+
+#ifdef __WIN32__
+#define OPENGL_DOESNT_COPY_ON_SWAP
+#endif
 
 // Initializer; returns whether or not OpenGL is present
 bool OGL_Initialize();
@@ -76,6 +81,9 @@ bool OGL_IsPresent();
 
 // Test for whether OpenGL is currently active
 bool OGL_IsActive();
+
+// Test whether an extension exists
+bool OGL_CheckExtension(const std::string);
 
 // Here are some OpenGL configuration options and how to access them
 // (they are in the preferences data)
@@ -165,7 +173,10 @@ struct OGL_ConfigureData
 	
 	// Anisotropy setting
 	float AnisotropyLevel;
-  int16 Multisamples;
+	int16 Multisamples;
+
+	int16 MaxWallSize;
+	int16 MaxSpriteSize;
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();
@@ -180,13 +191,6 @@ void OGL_SetDefaults(OGL_ConfigureData& Data);
 // for managing the model and image loading and unloading;
 void OGL_LoadModelsImages(short Collection);
 void OGL_UnloadModelsImages(short Collection);
-
-
-// Does this for a set of several pixel values or color-table values;
-// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
-void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels);
-
-
 
 // Reset the textures (walls, sprites, and model skins) (good if they start to crap out)
 // Implemented in OGL_Textures.cpp

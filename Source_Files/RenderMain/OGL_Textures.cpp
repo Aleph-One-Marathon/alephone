@@ -99,12 +99,21 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #   include <glu.h>
 #   include <glext.h>
 # else
+#ifndef __WIN32__
+#   ifndef GL_GLEXT_PROTOTYPES
+#   define GL_GLEXT_PROTOTYPES 1
+#endif
+#   endif
 #   include <GL/gl.h>
 #   include <GL/glu.h>
 #   ifdef HAVE_GL_GLEXT_H
 #     include <GL/glext.h>
 #   endif
 # endif
+#endif
+
+#ifdef __WIN32__
+#include "OGL_Win32.h"
 #endif
 
 #ifdef mac
@@ -115,6 +124,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 # endif
 #endif
 
+#include "SDL.h"
+#include "SDL_endian.h"
 #include "interface.h"
 #include "render.h"
 #include "map.h"
@@ -137,6 +148,7 @@ struct TxtrTypeInfoData
 
 static TxtrTypeInfoData TxtrTypeInfoList[OGL_NUMBER_OF_TEXTURE_TYPES];
 
+static bool useSGISMipmaps = false;
 
 // Infravision: use algorithm (red + green + blue)/3 to compose intensity,
 // then shade with these colors, one color for each collection.
@@ -334,6 +346,10 @@ void OGL_StartTextures()
 		else
 			TxtrTypeInfo.ColorFormat = GL_RGBA8;
 	}
+
+#if defined GL_SGIS_generate_mipmap
+	useSGISMipmaps = OGL_CheckExtension("GL_SGIS_generate_mipmap");
+#endif
 }
 
 
@@ -385,10 +401,17 @@ static void FindOGLColorTable(int NumSrcBytes, byte *OrigColorTable, uint32 *Col
 			
 			// Convert from ARGB 8888 to RGBA 8888; make opaque
 			uint8 *ColorPtr = (uint8 *)(&Color);
+#ifdef ALEPHONE_LITTLE_ENDIAN
+			ColorPtr[0] = OrigPtr[2];
+			ColorPtr[1] = OrigPtr[1];
+			ColorPtr[2] = OrigPtr[0];
+			ColorPtr[3] = 0xff;
+#else
 			ColorPtr[0] = OrigPtr[1];
 			ColorPtr[1] = OrigPtr[2];
 			ColorPtr[2] = OrigPtr[3];
 			ColorPtr[3] = 0xff;
+#endif
 		}
 		break;
 	}
@@ -495,22 +518,28 @@ bool TextureManager::Setup()
 		
 		// Try to load a substitute texture, and if that fails,
 		// get the geometry from the shapes bitmap.
-		if (!LoadSubstituteTexture())
+		bool substitute = LoadSubstituteTexture();
+		if (!substitute) 
 			if (!SetupTextureGeometry()) return false;
-				
+
 		// Store sprite scale/offset
 		CBTS.U_Scale = U_Scale;
 		CBTS.V_Scale = V_Scale;
 		CBTS.U_Offset = U_Offset;
 		CBTS.V_Offset = V_Offset;
-		
+
 		// This finding of color tables sets the glow state
-		FindColorTables();
-		// Override if textures had been substituted;
-		// if the normal texture had been substituted, it will be assumed to be
-		// non-glowing unless the glow texture has also been substituted.
-		if (GlowBuffer) IsGlowing = true;
-		else if (NormalBuffer) IsGlowing = false;
+		if (!substitute) 
+			FindColorTables();
+		else if (GlowImage.get() && GlowImage.get()->IsPresent()) {
+			// Override if textures had been substituted;
+			// if the normal texture had been substituted, it will be assumed to be
+			// non-glowing unless the glow texture has also been substituted.
+			
+			IsGlowing = true;
+		} else {
+			IsGlowing = false;
+		}
 		
 		CTState.IsGlowing = IsGlowing;
 		
@@ -519,42 +548,44 @@ bool TextureManager::Setup()
 		{
 			if (IsLandscapeFlatColored())
 			{
-				if (NormalBuffer) delete []NormalBuffer;
-				NormalBuffer = GetFakeLandscape();
+				NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetFakeLandscape()));
 			}
 		}
 		
 		// If not, then load the expected textures
-		if (!NormalBuffer)
-			NormalBuffer = GetOGLTexture(NormalColorTable);
-		if (IsGlowing && !GlowBuffer)
-			GlowBuffer = GetOGLTexture(GlowColorTable);
-		
+		if (!NormalImage.get() || !NormalImage.get()->IsPresent())
+			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable)));
+		if (IsGlowing && (!GlowImage.get() || GlowImage.get()->IsPresent()))
+			GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(GlowColorTable)));
+
 		// Display size: may be shrunk
-		LoadedWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
-		LoadedHeight = MAX(TxtrHeight >> TxtrTypeInfo.Resolution, 1);
+		int MaxWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
+		int MaxHeight = MAX(TxtrHeight >> TxtrTypeInfo.Resolution, 1);
 		
 		// Fit the image into the maximum size allowed by the OpenGL implementation in use
 		GLint MaxTextureSize;
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE,&MaxTextureSize);
-		while (LoadedWidth > MaxTextureSize || LoadedHeight > MaxTextureSize)
+		while (MaxWidth > MaxTextureSize || MaxHeight > MaxTextureSize)
 		{
 			LoadedWidth >>= 1;
 			LoadedHeight >>= 1;
 		}
-		
-		if (LoadedWidth != TxtrWidth || LoadedHeight != TxtrHeight)
+
+		if (TextureType == OGL_Txtr_Wall)
 		{
-			// Shrink it
-			uint32 *NewNormalBuffer = Shrink(NormalBuffer);
-			delete []NormalBuffer;
-			NormalBuffer = NewNormalBuffer;
-			
-			if (IsGlowing)
+			if (Get_OGL_ConfigureData().MaxWallSize)
 			{
-				uint32 *NewGlowBuffer = Shrink(GlowBuffer);
-				delete []GlowBuffer;
-				GlowBuffer = NewGlowBuffer;
+				MaxWidth = MIN(MaxWidth, Get_OGL_ConfigureData().MaxWallSize);
+				MaxHeight = MIN(MaxHeight, Get_OGL_ConfigureData().MaxWallSize);
+			}
+		}
+
+
+		while (NormalImage.get()->GetWidth() > MaxWidth || NormalImage.get()->GetHeight() > MaxHeight)
+		{
+			if (!NormalImage.edit()->Minify()) break;
+			if (GlowImage.get()->IsPresent()) {
+				if (!GlowImage.edit()->Minify()) break;
 			}
 		}
 		
@@ -581,16 +612,6 @@ bool TextureManager::Setup()
 		
 	// Done!!!
 	return true;
-}
-
-
-// Next power of 2; since OpenGL prefers powers of 2, it is necessary to work out
-// the next one up for each texture dimension.
-inline int NextPowerOfTwo(int n)
-{
-	int p = 1;
-	while(p < n) {p <<= 1;}
-	return p;
 }
 
 
@@ -624,8 +645,6 @@ void MakeFloatColor(uint32 IntColor, GLfloat *FloatColor)
 		FloatColor[k] = float(ColorPtr[k])/float(255);
 }
 
-
-
 bool TextureManager::LoadSubstituteTexture()
 {
 	// Is there a texture to be substituted?
@@ -646,7 +665,10 @@ bool TextureManager::LoadSubstituteTexture()
 		delete []GlowBuffer;
 		GlowBuffer = NULL;
 	}
-	
+
+	NormalImage.set(&TxtrOptsPtr->NormalImg);
+	GlowImage.set(&TxtrOptsPtr->GlowImg);
+
 	int Width = NormalImg.GetWidth();
 	int Height = NormalImg.GetHeight();
 	
@@ -658,153 +680,79 @@ bool TextureManager::LoadSubstituteTexture()
 	case OGL_Txtr_Wall:
 		// For tiling to be possible, the width and height must be powers of 2;
 		// also, be sure to transpose the texture
-		TxtrWidth = Height;
-		TxtrHeight = Width;
+		TxtrHeight = Height;
+		TxtrWidth = Width;
 		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
 		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
-		
-		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
-		for (int v=0; v<Height; v++)
-			for (int h=0; h<Width; h++)
-				NormalBuffer[h*Height+v] = NormalImg.GetPixel(h,v);
-		
-		// Walls can glow...
-		if (GlowImg.IsPresent())
-		{
-			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
-			for (int v=0; v<Height; v++)
-				for (int h=0; h<Width; h++)
-					GlowBuffer[h*Height+v] = GlowImg.GetPixel(h,v);
-		}
-		
+		TxtrOptsPtr->Substitution = true;
 		break;
 	
 	case OGL_Txtr_Landscape:
 		// For tiling to be possible, the width must be a power of 2;
 		// the height need not be such a power.
-		// Also, flip the vertical dimension to get the orientation correct.
-		// Some of this code is cribbed from some other code here in order to get
-		// consistent landscape loading
 		TxtrWidth = Width;
 		TxtrHeight = (Landscape_AspRatExp >= 0) ?
 			(TxtrWidth >> Landscape_AspRatExp) :
 				(TxtrWidth << (-Landscape_AspRatExp));
 		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+
+		// the renderer doesn't use these,
+		// so I'll use them to get the texture matrix set up right
+		U_Scale = (float) TxtrHeight / NormalImg.GetHeight();
+		U_Offset = -1.0 + ((TxtrHeight - NormalImg.GetHeight()) / 2.0 / TxtrHeight) + (1.0 - NormalImg.GetUScale()) / 2.0;
+		TxtrOptsPtr->Substitution = true;
 		
-		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
-		memset(NormalBuffer,0,TxtrWidth*TxtrHeight*sizeof(uint32));
-		
-		// only valid source and destination pixels
-		// will get worked with (no off-edge ones, that is).
-		HeightOffset = (TxtrHeight - Height) >> 1;
-		if (HeightOffset >= 0)
-		{
-			CopyingHeight = Height;
-			OrigHeightOffset = 0;
-			OGLHeightOffset = HeightOffset;
-		}
-		else
-		{
-			CopyingHeight = TxtrHeight;
-			OrigHeightOffset = - HeightOffset;
-			OGLHeightOffset = 0;
-		}
-		
-		for (int v=0; v<CopyingHeight; v++)
-		{
-			// This optimization is reasonable because both the read-in-image
-			// and the OpenGL-texture arrays have the same width/height arrangement
-			uint32 *Src = &NormalImg.GetPixel(0,OrigHeightOffset+v);
-			uint32 *Dest = NormalBuffer + (OGLHeightOffset + ((CopyingHeight-1)-v))*Width;
-			memcpy(Dest,Src,Width*sizeof(uint32));
-		}
-		
-		// No glow map here
+		GlowImage.set((ImageDescriptor *) NULL);
 		break;
 		
 	case OGL_Txtr_Inhabitant:
 	case OGL_Txtr_WeaponsInHand:
 		// Much of the code here has been copied from elsewhere.
 		// Set these for convenience; sprites are transposed, as walls are.
-		BaseTxtrWidth = Height;
-		BaseTxtrHeight = Width;
+		TxtrHeight = Height;
+		TxtrWidth = Width;
 		
-		// The 2 here is so that there will be an empty border around a sprite,
-		// so that the texture can be conveniently mipmapped.
-		TxtrWidth = NextPowerOfTwo(BaseTxtrWidth+2);
-		TxtrHeight = NextPowerOfTwo(BaseTxtrHeight+2);
-		
-		// This kludge no longer necessary
-		// Restored due to some people still having AppleGL 1.1.2
-		if (WhetherTextureFix())
-		{
-			TxtrWidth = MAX(TxtrWidth,128);
-			TxtrHeight = MAX(TxtrHeight,128);
-		}
-					
-		// Offsets
-		WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
-		HeightOffset = (TxtrHeight - BaseTxtrHeight) >> 1;
+                // ImageLoader now stores these as powers of two sized
+		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
 		
 		// We can calculate the scales and offsets here
-		double TWidRecip = 1/double(TxtrWidth);
-		double THtRecip = 1/double(TxtrHeight);
-		U_Scale = TWidRecip*double(BaseTxtrWidth);
-		U_Offset = TWidRecip*WidthOffset;
-		V_Scale = THtRecip*double(BaseTxtrHeight);
-		V_Offset = THtRecip*HeightOffset;
-		
-		NormalBuffer = new uint32[TxtrWidth*TxtrHeight];
-		objlist_clear(NormalBuffer,TxtrWidth*TxtrHeight);
-		for (int v=0; v<Height; v++)
-			for (int h=0; h<Width; h++)
-				NormalBuffer[(HeightOffset+h)*TxtrWidth+(WidthOffset+v)] = NormalImg.GetPixel(h,v);
-		
-		// Objects can glow...
-		if (GlowImg.IsPresent())
-		{
-			GlowBuffer = new uint32[TxtrWidth*TxtrHeight];
-			objlist_clear(GlowBuffer,TxtrWidth*TxtrHeight);
-			for (int v=0; v<Height; v++)
-				for (int h=0; h<Width; h++)
-					GlowBuffer[(HeightOffset+h)*TxtrWidth+(WidthOffset+v)] = GlowImg.GetPixel(h,v);
-		}
+		V_Scale = NormalImg.GetVScale();
+ 		V_Offset = 0;
+		U_Scale = NormalImg.GetUScale();
+ 		U_Offset = 0;
+
+		TxtrOptsPtr->Substitution = true;
 		break;
 	}
 	
 	// Use the Tomb Raider opacity hack if selected
-	SetPixelOpacities(*TxtrOptsPtr,TxtrWidth*TxtrHeight,NormalBuffer);
+	SetPixelOpacities(*TxtrOptsPtr, NormalImage);
 	
 	// Modify if infravision is active
 	if (CTable == INFRAVISION_BITMAP_SET)
 	{
-		if (NormalBuffer)
-			FindInfravisionVersion(Collection,TxtrWidth*TxtrHeight,NormalBuffer);
-		
+		FindInfravisionVersion(Collection, NormalImage);
+
 		// Infravision textures don't glow
-		if (GlowBuffer)
-		{
-			delete []GlowBuffer;
-			GlowBuffer = NULL;
-		}
+		GlowImage.set((ImageDescriptor *) NULL);		
 	}
 	else if (CTable == SILHOUETTE_BITMAP_SET)
 	{
-		if (NormalBuffer)
-		{
-			for (int k=0; k<TxtrWidth*TxtrHeight; k++)
-			{
-				// Make the color white, but keep the opacity
-				uint8 *PxlPtr = (uint8 *)(NormalBuffer + k);
-				PxlPtr[0] = PxlPtr[1] = PxlPtr[2] = 0xff;
-			}
-		}
+		// ghs: we don't need to do this, until someone starts using
+		// silhouette bitmap set for something other than invisibility,
+		// due to the way OpenGL does blending
+// 		if (NormalBuffer)
+// 		{
+// 			for (int k=0; k<TxtrWidth*TxtrHeight; k++)
+// 			{
+// 				// Make the color white, but keep the opacity
+// 				uint8 *PxlPtr = (uint8 *)(NormalBuffer + k);
+// 				PxlPtr[0] = PxlPtr[1] = PxlPtr[2] = 0xff;
+// 			}
+// 		}
 		// Silhouette textures don't glow
-		if (GlowBuffer)
-		{
-			delete []GlowBuffer;
-			GlowBuffer = NULL;
-		}
+		GlowImage.set((ImageDescriptor *) NULL);
 	}
 	return true;
 }
@@ -925,7 +873,7 @@ void TextureManager::FindColorTables()
 			p[idx * 4 + 2] = q[k].blue >> 8;
 			p[idx * 4 + 3] = 0xff;
 		}
-		SetPixelOpacities(*TxtrOptsPtr, MAXIMUM_SHADING_TABLE_INDEXES, NormalColorTable);
+		SetPixelOpacitiesRGBA(*TxtrOptsPtr, MAXIMUM_SHADING_TABLE_INDEXES, NormalColorTable);
 		NormalColorTable[0] = 0;
 		return;
 	}
@@ -943,7 +891,7 @@ void TextureManager::FindColorTables()
 	// Find the normal color table,
 	// and set its opacities as if there was no glow table.
 	FindOGLColorTable(NumSrcBytes,OrigColorTable,NormalColorTable);
-	SetPixelOpacities(*TxtrOptsPtr,MAXIMUM_SHADING_TABLE_INDEXES,NormalColorTable);
+	SetPixelOpacitiesRGBA(*TxtrOptsPtr,MAXIMUM_SHADING_TABLE_INDEXES,NormalColorTable);
 	
 	// Find the glow-map color table;
 	// only inhabitants are glowmapped.
@@ -1134,8 +1082,8 @@ uint32 *TextureManager::GetFakeLandscape()
 	// Modify if infravision is active
 	if (CTable == INFRAVISION_BITMAP_SET)
 	{
-		FindInfravisionVersion(Collection,LandColor);
-		FindInfravisionVersion(Collection,SkyColor);
+		FindInfravisionVersionRGBA(Collection,LandColor);
+		FindInfravisionVersionRGBA(Collection,SkyColor);
 	}
 	
 	uint32 TxtrLandColor = MakeIntColor(LandColor);
@@ -1168,37 +1116,115 @@ uint32 *TextureManager::Shrink(uint32 *Buffer)
 
 // This places a texture into the OpenGL software and gives it the right
 // mapping attributes
-void TextureManager::PlaceTexture(uint32 *Buffer)
+void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 {
+
+	bool mipmapsLoaded = false;
 
 	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[TextureType];
 
-	// Load the texture
-	switch(TxtrTypeInfo.FarFilter)
+	if (Image->GetFormat() == ImageDescriptor::RGBA8) {
+		switch (TxtrTypeInfo.FarFilter)
+		{
+		case GL_NEAREST:
+		case GL_LINEAR:
+			glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+			break;
+		case GL_NEAREST_MIPMAP_NEAREST:
+		case GL_LINEAR_MIPMAP_NEAREST:
+		case GL_NEAREST_MIPMAP_LINEAR:
+		case GL_LINEAR_MIPMAP_LINEAR:
+			if (Image->GetMipMapCount() > 1) {
+#ifdef GL_SGIS_generate_mipmap
+	if (useSGISMipmaps) {
+		glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_FALSE);
+	}
+#endif
+				int i = 0;
+				for (i = 0; i < Image->GetMipMapCount(); i++) {
+					glTexImage2D(GL_TEXTURE_2D, i, TxtrTypeInfo.ColorFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetMipMapPtr(i));
+				}
+				mipmapsLoaded = true;
+			} else {
+#ifdef GL_SGIS_generate_mipmap
+			if (useSGISMipmaps) {
+				glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+				glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+			} else 
+#endif
+			{
+				gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+			}
+			mipmapsLoaded = true;
+			}
+			break;
+		default:
+			assert(false);
+		}
+	} else if (Image->GetFormat() == ImageDescriptor::DXTC1 ||
+		   Image->GetFormat() == ImageDescriptor::DXTC3 ||
+		   Image->GetFormat() == ImageDescriptor::DXTC5)
 	{
-	case GL_NEAREST:
-	case GL_LINEAR:
-		glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-			0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
-		break;
-	case GL_NEAREST_MIPMAP_NEAREST:
-	case GL_LINEAR_MIPMAP_NEAREST:
-	case GL_NEAREST_MIPMAP_LINEAR:
-	case GL_LINEAR_MIPMAP_LINEAR:
-		gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-			GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
-		break;
-	
-	default:
-		// Shouldn't happen
+#if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
+		GLint internalFormat;
+		if (Image->GetFormat() == ImageDescriptor::DXTC1)
+			internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		else if (Image->GetFormat() == ImageDescriptor::DXTC3)
+			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		else if (Image->GetFormat() == ImageDescriptor::DXTC5)
+			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		
+		switch(TxtrTypeInfo.FarFilter)
+		{
+		case GL_NEAREST:
+		case GL_LINEAR:
+			glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
+			break;
+		case GL_NEAREST_MIPMAP_NEAREST:
+		case GL_LINEAR_MIPMAP_NEAREST:
+		case GL_NEAREST_MIPMAP_LINEAR:
+		case GL_LINEAR_MIPMAP_LINEAR:
+			if (Image->GetMipMapCount() > 1) {
+#ifdef GL_SGIS_generate_mipmap
+				if (useSGISMipmaps) {
+					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_FALSE);
+				}
+#endif
+				int i = 0;
+				for (i = 0; i < Image->GetMipMapCount(); i++) {
+					glCompressedTexImage2DARB(GL_TEXTURE_2D, i, internalFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, Image->GetMipMapSize(i), Image->GetMipMapPtr(i));
+				}
+				mipmapsLoaded = true;
+			} else {
+#if defined GL_SGIS_generate_mipmap
+				if (useSGISMipmaps) {
+					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+					mipmapsLoaded = true;
+				}  
+#endif
+				glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, Image->GetMipMapSize(0), Image->GetBuffer());
+			}
+			break;
+			
+		default:
+			// Shouldn't happen
+			assert(false);
+		}
+#else
 		assert(false);
+#endif
 	}
 	
 	// Set texture-mapping features
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, TxtrTypeInfo.NearFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, TxtrTypeInfo.FarFilter);
-	
+	if ((TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_LINEAR || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_LINEAR) && !mipmapsLoaded)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	} else {
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, TxtrTypeInfo.FarFilter);
+	}
+
 	switch(TextureType)
 	{
 	case OGL_Txtr_Wall:
@@ -1236,7 +1262,6 @@ void TextureManager::PlaceTexture(uint32 *Buffer)
 	}
 }
 
-
 // What to render:
 
 // Always call this one and call it first; safe to allocate texture ID's in it
@@ -1248,10 +1273,12 @@ void TextureManager::RenderNormal()
 	
 	if (TxtrStatePtr->UseNormal())
 	{
-		assert(NormalBuffer);
-		PlaceTexture(NormalBuffer);
+		assert(NormalBuffer || (NormalImage.get() && NormalImage.get()->IsPresent()));
+		if (NormalImage.get() && NormalImage.get()->IsPresent()) {
+			PlaceTexture(NormalImage.get());
+		}
 	}
-
+	
 		gGLTxStats.binds++;
 		int time = 0;
 		gGLTxStats.totalBind += time;
@@ -1267,10 +1294,12 @@ void TextureManager::RenderGlowing()
 
 	if (TxtrStatePtr->UseGlowing())
 	{
-		assert(GlowBuffer);
-		PlaceTexture(GlowBuffer);
+		assert(GlowBuffer || (GlowImage.get() && GlowImage.get()->IsPresent()));
+		if (GlowImage.get() && GlowImage.get()->IsPresent()) {
+			PlaceTexture(GlowImage.get());
+		}
 	}
-
+	
 		gGLTxStats.binds++;
 		int time = 0;
 		gGLTxStats.totalBind += time;
@@ -1279,13 +1308,60 @@ void TextureManager::RenderGlowing()
 		if (time>2) gGLTxStats.longGlowSetups++;
 }
 
+void TextureManager::SetupTextureMatrix()
+{
+	// set up the texture matrix
+	switch(TextureType)
+	{
+	case OGL_Txtr_Wall:
+	case OGL_Txtr_WeaponsInHand:
+	case OGL_Txtr_Inhabitant:
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		if (TxtrOptsPtr->Substitution) {
+			// these come in right side up, but the renderer
+			// expects them to be upside down and sideways
+			glRotatef(90.0, 0.0, 0.0, 1.0);
+			glScalef(1.0, -1.0, 1.0);
+		}
+		glMatrixMode(GL_MODELVIEW);
+		break;
+	case OGL_Txtr_Landscape:
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		if (TxtrOptsPtr->Substitution) {
+			// these come in right side up, and un-centered
+			// the renderer expects them upside down, and centered
+			glScalef(1.0, -U_Scale, 1.0);
+			glTranslatef(0.0, U_Offset, 0.0);
+		}
+		glMatrixMode(GL_MODELVIEW);
+		break;
+	}
+}
+
+void TextureManager::RestoreTextureMatrix()
+{
+	switch(TextureType)
+	{
+	case OGL_Txtr_Wall:
+	case OGL_Txtr_WeaponsInHand:
+	case OGL_Txtr_Inhabitant:
+	case OGL_Txtr_Landscape:
+		glMatrixMode(GL_TEXTURE);
+		glLoadIdentity();
+		glMatrixMode(GL_MODELVIEW);
+	}
+}
+
+
 
 // Init
 TextureManager::TextureManager()
 {
 	NormalBuffer = 0;
 	GlowBuffer = 0;
-	
+
 	ShadingTables = NULL;
 	TransferMode = 0;
 	TransferData = 0;
@@ -1295,6 +1371,8 @@ TextureManager::TextureManager()
 	
 	TxtrStatePtr = 0;
 	TxtrOptsPtr = 0;
+
+	FastPath = 0;
 	
 	LowLevelShape = 0;
 	
@@ -1371,7 +1449,7 @@ void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT)
 	}
 	
 	if (IsInfravision)
-		FindInfravisionVersion(Collection,ImageSize,(uint32*)Buffer);//AS added cast for Darwin compileability
+		FindInfravisionVersionRGBA(Collection,ImageSize,(uint32*)Buffer);//AS added cast for Darwin compileability
 	
 	if (IsSilhouette)
 	{
@@ -1464,7 +1542,7 @@ bool SetInfravisionTint(short Collection, bool IsTinted, float Red, float Green,
 
 // Finds the infravision version of a color for some collection set;
 // it makes no change if infravision is inactive.
-void FindInfravisionVersion(short Collection, GLfloat *Color)
+void FindInfravisionVersionRGBA(short Collection, GLfloat *Color)
 {
 	if (!InfravisionActive) return;
 	
@@ -1479,7 +1557,7 @@ void FindInfravisionVersion(short Collection, GLfloat *Color)
 
 
 // Mass-production version of above; suitable for textures
-void FindInfravisionVersion(short Collection, int NumPixels, uint32 *Pixels)
+void FindInfravisionVersionRGBA(short Collection, int NumPixels, uint32 *Pixels)
 {
 	if (!InfravisionActive) return;
 	
@@ -1500,6 +1578,238 @@ void FindInfravisionVersion(short Collection, int NumPixels, uint32 *Pixels)
 	}
 }
 
+static inline uint16 FindInfravisionVersionDXTCColor(SDL_Color tint, uint16 color)
+{
+	uint16 grayscale = (((color & 0xf800) >> 11) + ((color & 0x7e0) >> 6) + (color & 0x1f)) / 3;
+
+	uint16 r = (grayscale * tint.r) / 256;
+	uint16 g = (grayscale * tint.g) / 256;
+	uint16 b = (grayscale * tint.b) / 256;
+
+	return (r << 11) | (g << 6) | (g > 15 ? 0x20 : 0) | b;
+}
+
+void FindInfravisionVersionDXTC1(InfravisionData& IVData, int NumBytes, unsigned char *buffer)
+{
+	assert(NumBytes % 8 == 0);
+
+	uint16 *pixels = (uint16 *) buffer;
+
+	SDL_Color tint;
+	tint.r = PIN(int(IVData.Red * 256), 0, 255);
+	tint.g = PIN(int(IVData.Green * 256), 0, 255);
+	tint.b = PIN(int(IVData.Blue* 256), 0, 255);
+	
+	// the first two uint16s in each block are our colors
+	for (int i = 0; i < NumBytes / 4; i++) {
+		
+		uint16 c1 = SDL_SwapLE16(pixels[i * 4]);
+		uint16 c2 = SDL_SwapLE16(pixels[i * 4 + 1]);
+		uint16 new_c1 = FindInfravisionVersionDXTCColor(tint, c1);
+		uint16 new_c2 = FindInfravisionVersionDXTCColor(tint, c2);
+		
+		// DXTC1 uses c1 > c2 to determine whether to make certain
+		// pixels transparent 
+		// if c1 and c2 happen to come out of the infravision algorithm
+		// the same, we have to chamge one so that pixels don't become
+		// transparent that were opaque, or vice versa
+		if (new_c1 == new_c2) {
+			if (c1 > c2) 
+				if (new_c2) new_c2 -= 1;
+				else new_c1 += 1;
+			else 
+				if (new_c1) new_c1 -= 1;
+				else new_c2 += 1;
+		} 
+		// likewise, in the unlikely state that infravision ends up
+		// making one bigger than the other, swap them back
+		else if ((new_c1 > new_c2) != (c1 > c2)) {
+			SWAP(new_c1, new_c2);
+		}
+		pixels[i * 4] = SDL_SwapLE16(new_c1);
+		pixels[i * 4 + 1] = SDL_SwapLE16(new_c2);
+	}
+}
+
+void FindInfavisionVersionDXTC35(InfravisionData &IVData, int NumBytes, unsigned char *buffer)
+{
+	assert(NumBytes % 16 == 0);
+
+	uint16 *pixels = (uint16 *) buffer;
+
+	SDL_Color tint;
+	tint.r = PIN(int(IVData.Red * 256), 0, 255);
+	tint.g = PIN(int(IVData.Green * 256), 0, 255);
+	tint.b = PIN(int(IVData.Blue* 256), 0, 255);
+
+	for (int i = 0; i < NumBytes / 8; i++) {
+		uint16 *c1 = &pixels[i * 8 + 4];
+		uint16 *c2 = &pixels[i * 8 + 5];
+		
+		uint16 new_c1 = FindInfravisionVersionDXTCColor(tint, SDL_SwapLE16(*c1));
+		uint16 new_c2 = FindInfravisionVersionDXTCColor(tint, SDL_SwapLE16(*c2));
+		
+		*c1 = SDL_SwapLE16(new_c1);
+		*c2 = SDL_SwapLE16(new_c2);
+	}
+}
+
+void FindInfravisionVersion(short Collection, ImageDescriptorManager &imageManager)
+{
+	if (!InfravisionActive) return;
+	InfravisionData& IVData = IVDataList[Collection];
+	if (!IVData.IsTinted) return;
+
+	if (!imageManager.get() || !imageManager.get()->IsPresent())
+		return;
+
+	if (imageManager.get()->GetFormat() == ImageDescriptor::RGBA8) {
+		FindInfravisionVersionRGBA(Collection, imageManager.edit()->GetBufferSize() / 4, imageManager.edit()->GetBuffer());
+	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC1) {
+		FindInfravisionVersionDXTC1(IVData, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC3 || imageManager.get()->GetFormat() == ImageDescriptor::DXTC5) {
+		FindInfavisionVersionDXTC35(IVData, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+	}
+}
+
+static inline uint16 SetPixelOpacitiesDXTC3Row(int scale, int shift, uint16 alpha)
+{
+	uint16 a1 = (alpha >> 12) & 0xf;
+	uint16 a2 = (alpha >> 8) & 0xf;
+	uint16 a3 = (alpha >> 4) & 0xf;
+	uint16 a4 = alpha & 0xf;
+
+	a1 = PIN((a1 * scale) / 16 + shift, 0, 15);
+	a2 = PIN((a2 * scale) / 16 + shift, 0, 15);
+	a3 = PIN((a3 * scale) / 16 + shift, 0, 15);
+	a4 = PIN((a4 * scale) / 16 + shift, 0, 15);
+
+	return ((a1 << 12) | (a2 << 8) | (a3 << 4) | a4);
+}
+
+void SetPixelOpacitiesDXTC3(OGL_TextureOptions& Options, int NumBytes, unsigned char *buffer)
+{
+	assert(NumBytes % 16 == 0);
+
+	uint16 *rows = (uint16 *) buffer;
+
+	int scale = PIN(int(Options.OpacityScale * 16), 0, 16);
+	int shift = PIN(int(Options.OpacityShift * 16), -16, 16);
+	
+	for (int i = 0; i < NumBytes / 8; i++) {
+		uint16 *a1 = &rows[i * 8];
+		uint16 *a2 = &rows[i * 8 + 1];
+		uint16 *a3 = &rows[i * 8 + 2];
+		uint16 *a4 = &rows[i * 8 + 3];
+		*a1 = SetPixelOpacitiesDXTC3Row(scale, shift, *a1);
+		*a2 = SetPixelOpacitiesDXTC3Row(scale, shift, *a2);
+		*a3 = SetPixelOpacitiesDXTC3Row(scale, shift, *a3);
+		*a4 = SetPixelOpacitiesDXTC3Row(scale, shift, *a4);
+	}
+		
+}
+
+static inline uint16 SetPixelOpacitiesDXTC5Pair(int scale, int shift, uint16 alpha)
+{
+	uint16 a1 = alpha >> 8;
+	uint16 a2 = alpha & 0xff;
+
+	uint16 new_a1 = PIN((a1 * scale) / 256 + shift, 0, 255);
+	uint16 new_a2 = PIN((a2 * scale) / 256 + shift, 0, 255);
+
+	if (new_a1 == new_a2 && a1 != a2)
+		if (a1 > a2)
+			if (new_a2) new_a2--;
+			else new_a1++;
+		else 
+			if (new_a1) new_a1--;
+			else new_a2++;
+	else if ((new_a1 > new_a2) != (a1 > a2))
+		SWAP(new_a1, new_a2);
+	
+	return (new_a1 << 8 | new_a2);
+}
+
+void SetPixelOpacitiesDXTC5(OGL_TextureOptions& Options, int NumBytes, unsigned char *buffer)
+{
+	assert (NumBytes % 16 == 0);
+
+	uint16 *pixels = (uint16 *) buffer;
+	
+	int scale = PIN(int(Options.OpacityScale * 256), 0, 256);
+	int shift = PIN(int(Options.OpacityShift * 256), -256, 256);
+
+	for (int i = 0; i < NumBytes / 8; i++) {
+		pixels[i * 8] = SDL_SwapLE16(SetPixelOpacitiesDXTC5Pair(scale, shift, SDL_SwapLE16(pixels[i * 8])));
+	}
+}
+
+
+void SetPixelOpacities(OGL_TextureOptions& Options, ImageDescriptorManager &imageManager)
+{
+	if (Options.OpacityType != OGL_OpacType_Avg && Options.OpacityType != OGL_OpacType_Max && Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0)
+		return;
+
+	if (imageManager.get()->GetFormat() == ImageDescriptor::RGBA8) {
+		SetPixelOpacitiesRGBA(Options, imageManager.edit()->GetBufferSize() / 4, imageManager.edit()->GetBuffer());
+	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC3) {
+		// it's only possible to do scale and shift here
+		if (Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0) return;
+		SetPixelOpacitiesDXTC3(Options, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC5) {
+		if (Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0) return;
+		SetPixelOpacitiesDXTC5(Options, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+		// again, possible to scale and shift only
+	} else {
+		// can't do anything here
+	}
+
+}
+
+
+// Does this for a set of several pixel values or color-table values;
+// the pixels are assumed to be in OpenGL-friendly byte-by-byte RGBA format.
+void SetPixelOpacitiesRGBA(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels)
+{
+	for (int k=0; k<NumPixels; k++)
+	{
+		uint8 *PxlPtr = (uint8 *)(Pixels + k);
+		
+		// This won't be scaled to (0,1), but will be left at (0,255) here
+		float Opacity;
+		switch(Options.OpacityType)
+		{
+		// Two versions of the Tomb Raider texture-opacity hack
+		case OGL_OpacType_Avg:
+			{
+				uint32 Red = uint32(PxlPtr[0]);
+				uint32 Green = uint32(PxlPtr[1]);
+				uint32 Blue = uint32(PxlPtr[2]);
+				Opacity = (Red + Green + Blue)/3.0F;
+			}
+			break;
+			
+		case OGL_OpacType_Max:
+			{
+				uint32 Red = uint32(PxlPtr[0]);
+				uint32 Green = uint32(PxlPtr[1]);
+				uint32 Blue = uint32(PxlPtr[2]);
+				Opacity = (float)MAX(MAX(Red,Green),Blue);
+			}
+			break;
+		
+		// Use pre-existing alpha value; useful if the opacity was loaded from a mask image
+		default:
+			Opacity = PxlPtr[3];
+			break;
+		}
+		
+		// Scale, shift, and put back the edited opacity;
+		// round off and pin to the appropriate range.
+		// The shift has to be scaled to the color-channel range (1 -> 255).
+		PxlPtr[3] = PIN(int32(Options.OpacityScale*Opacity + 255*Options.OpacityShift + 0.5),0,255);
+	}
+}
 
 /*
 // Stuff for doing 16->32 pixel-format conversion, 1555 ARGB to 8888 RGBA

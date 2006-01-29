@@ -29,22 +29,15 @@
 #include "OGL_Subst_Texture_Def.h"
 
 
-// Defined in OGL_Setup.cpp
-extern void SetPixelOpacities(OGL_TextureOptions& Options, int NumPixels, uint32 *Pixels);
-
-
 void OGL_TextureOptions::FindImagePosition()
 {
 	Right = Left + short(ImageScale*NormalImg.GetWidth() + 0.5);
 	Bottom = Top + short(ImageScale*NormalImg.GetHeight() + 0.5);
 }
 
-
-
 // Texture-options stuff;
 // defaults for whatever might need them
 static OGL_TextureOptions DefaultTextureOptions;
-
 
 // Store texture-options stuff in a set of STL vectors
 struct TextureOptionsEntry
@@ -102,7 +95,7 @@ void OGL_LoadTextures(short Collection)
 	{
 		// Load the images
 		TOIter->OptionsData.Load();
-		
+
 		// Find adjusted-frame image-data positioning;
 		// this is for doing sprites with textures with sizes different from the originals
 		TOIter->OptionsData.FindImagePosition();
@@ -240,6 +233,13 @@ bool XML_TextureOptionsParser::Start()
 	return true;
 }
 
+static void ReadString(const char *Value, vector<char> &s)
+{
+	size_t nchars = strlen(Value) + 1;
+	s.resize(nchars);
+	memcpy(&s[0], Value, nchars);
+}
+
 bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"coll"))
@@ -282,30 +282,42 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	}
 	else if (StringsEqual(Tag,"normal_image"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.NormalColors.resize(nchars);
-		memcpy(&Data.NormalColors[0],Value,nchars);
+		ReadString(Value, Data.NormalColors);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_mask"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.NormalMask.resize(nchars);
-		memcpy(&Data.NormalMask[0],Value,nchars);
+		ReadString(Value, Data.NormalMask);
+		return true;
+	}
+	else if (StringsEqual(Tag,"alt_normal_image"))
+	{
+		ReadString(Value, Data.AltNormalColors);
+		return true;
+	}
+	else if (StringsEqual(Tag, "alt_normal_mask"))
+	{
+		ReadString(Value, Data.AltNormalMask);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_image"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.GlowColors.resize(nchars);
-		memcpy(&Data.GlowColors[0],Value,nchars);
+		ReadString(Value, Data.GlowColors);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_mask"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.GlowMask.resize(nchars);
-		memcpy(&Data.GlowMask[0],Value,nchars);
+		ReadString(Value, Data.GlowMask);
+		return true;
+	}
+	else if (StringsEqual(Tag, "alt_glow_image"))
+	{
+		ReadString(Value, Data.AltGlowColors);
+		return true;
+	}
+	else if (StringsEqual(Tag, "alt_glow_mask"))
+	{
+		ReadString(Value, Data.AltGlowMask);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_blend"))
@@ -327,6 +339,14 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	else if (StringsEqual(Tag,"y_offset"))
 	{
 		return ReadInt16Value(Value,Data.Top);
+	}
+	else if (StringsEqual(Tag,"actual_height"))
+	{
+		return ReadInt16Value(Value, Data.actual_height);
+	} 
+	else if (StringsEqual(Tag, "actual_width"))
+	{
+		return ReadInt16Value(Value, Data.actual_width);
 	}
 	UnrecognizedTag();
 	return false;

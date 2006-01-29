@@ -62,6 +62,9 @@
 
 #include "lua_script.h"
 
+#if defined(__WIN32__) || (defined(__MACH__) && defined(__APPLE__))
+#define MUST_RELOAD_VIEW_CONTEXT
+#endif
 
 // Global variables
 static SDL_Surface *main_surface;	// Main (display) surface
@@ -71,6 +74,7 @@ static SDL_Surface *main_surface;	// Main (display) surface
 // It is initialized to NULL so as to allow its initing to be lazy.
 SDL_Surface *world_pixels = NULL;
 SDL_Surface *HUD_Buffer = NULL;
+SDL_Surface *Term_Buffer = NULL;
 
 static bool PrevFullscreen = false;
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
@@ -81,6 +85,8 @@ static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable 
 extern bool OGL_MapActive;
 // This is the same for the HUD
 extern bool OGL_HUDActive;
+// and lastly, for the terminal buffer
+bool OGL_TermActive;
 #endif
 
 // From shell_sdl.cpp
@@ -257,8 +263,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #ifdef HAVE_OPENGL
 	// The original idea was to only enable OpenGL for the in-game display, but
 	// SDL crashes if OpenGL is turned on later
-	if (/*!nogl &&*/ screen_mode.acceleration == _opengl_acceleration) {
-		flags |= SDL_OPENGLBLIT;
+	if (!nogl && screen_mode.acceleration == _opengl_acceleration) {
+		flags |= SDL_OPENGL;
+		//flags |= SDL_OPENGLBLIT;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -269,6 +276,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 		  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
 				      Get_OGL_ConfigureData().Multisamples);
+		  screen_mode.bit_depth = 32;
+		  depth = 32;
 		}
 #endif
 	} else
@@ -277,6 +286,10 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	flags |= SDL_HWSURFACE | SDL_HWPALETTE;
 #endif
 	main_surface = SDL_SetVideoMode(width, height, depth, flags);
+#ifdef MUST_RELOAD_VIEW_CONTEXT
+	if (!nogl && screen_mode.acceleration == _opengl_acceleration) 
+		ReloadViewContext();
+#endif
 	if (main_surface == NULL) {
 		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
 #ifdef HAVE_OPENGL
@@ -305,6 +318,15 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_FreeSurface(HUD_Buffer);
 		HUD_Buffer = NULL;
 	}
+	if (Term_Buffer) {
+		SDL_FreeSurface(Term_Buffer);
+		Term_Buffer = NULL;
+	}
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
+#else
+	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0xff000000,0x00ff0000, 0x0000ff00, 0x000000ff);
+#endif
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
 		printf("GL_VENDOR: %s\n", glGetString(GL_VENDOR));
@@ -314,6 +336,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 //		printf("GL_EXTENSIONS: %s\n", gl_extensions);
 		glScissor(0, 0, width, height);
 		glViewport(0, 0, width, height);
+#ifdef __WIN32__
+		clear_screen();
+#endif
 	}
 #endif
 }
@@ -491,6 +516,8 @@ void render_screen(short ticks_elapsed)
 
 		// Reallocate the drawing buffer
 		reallocate_world_pixels(BufferRect.w, BufferRect.h);
+
+		dirty_terminal_view(current_player_index);
 	}
 
 	switch (screen_mode.acceleration) {
@@ -525,18 +552,29 @@ void render_screen(short ticks_elapsed)
 #ifdef HAVE_OPENGL
 	// Is map to be drawn with OpenGL?
 	if (OGL_IsActive() && world_view->overhead_map_active)
-		OGL_MapActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Map);
+		OGL_MapActive = true;
 	else {
 		if (OGL_MapActive) {
 			// switching off map
 			// clear the remnants of the map out of the back buffer
-			SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+			glClearColor(0,0,0,0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		}
 		OGL_MapActive = false;
 	}
+	if (OGL_IsActive() && world_view->terminal_mode_active) {
+		if (!OGL_TermActive)
+		{
+			glClearColor(0,0,0,0);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		}
+		OGL_TermActive = true;
+	} else {
+		OGL_TermActive = false;
+	}
 	// Is HUD to be drawn with OpenGL?
 	if (OGL_IsActive())
-		OGL_HUDActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_HUD);
+		OGL_HUDActive = true;
 	else
 		OGL_HUDActive = false;
 
@@ -581,7 +619,40 @@ void render_screen(short ticks_elapsed)
 		if (world_view->terminal_mode_active || (world_view->overhead_map_active && !OGL_MapActive)) {
 
 			// Copy 2D rendering to screen
-			update_screen(BufferRect, ViewRect, HighResolution);
+//			update_screen(BufferRect, ViewRect, HighResolution);
+
+ 		glPushAttrib(GL_ALL_ATTRIB_BITS);
+
+ 		// Disable everything but alpha blending
+ 		glDisable(GL_CULL_FACE);
+ 		glDisable(GL_DEPTH_TEST);
+ 		glDisable(GL_ALPHA_TEST);
+ 		glEnable(GL_BLEND);
+ 		glDisable(GL_FOG);
+ 		glDisable(GL_SCISSOR_TEST);
+ 		glDisable(GL_STENCIL_TEST);
+
+ 		// Direct projection
+ 		glMatrixMode(GL_PROJECTION);
+ 		glPushMatrix();
+ 		glLoadIdentity();
+
+		gluOrtho2D(0.0, ScreenRect.w, 0.0, ScreenRect.h);
+ 		glMatrixMode(GL_MODELVIEW);
+ 		glPushMatrix();
+ 		glLoadIdentity();
+
+		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+		glRasterPos2f(0 + OffsetWidth, ScreenRect.h - OffsetHeight);
+		glPixelZoom(1.0, -1.0);
+		glDrawPixels(Term_Buffer->w, Term_Buffer->h, GL_RGBA, GL_UNSIGNED_BYTE, Term_Buffer->pixels);
+
+ 		// Restore projection and state
+ 		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+ 		glPopMatrix();
+		glPopAttrib();
+
 		}
 
 		if (TEST_FLAG(VS.flags, _view_show_HUD)) {
@@ -760,6 +831,7 @@ void assert_world_color_table(struct color_table *interface_color_table, struct 
 
 void render_computer_interface(struct view_data *view)
 {
+	
 	struct view_terminal_data data;
 
 	data.left = data.top = 0;
@@ -767,7 +839,11 @@ void render_computer_interface(struct view_data *view)
 	data.bottom = view->screen_height;
 	data.vertical_offset = 0;
 
-	_set_port_to_gworld();
+	if (screen_mode.acceleration == _opengl_acceleration) {
+		_set_port_to_term();
+	} else {
+		_set_port_to_gworld();
+	}
 	_render_computer_interface(&data);
 	_restore_port();
 }
@@ -780,7 +856,6 @@ void render_computer_interface(struct view_data *view)
 void render_overhead_map(struct view_data *view)
 {
 	struct overhead_map_data overhead_data;
-
 	SDL_FillRect(world_pixels, NULL, SDL_MapRGB(world_pixels->format, 0, 0, 0));
 
 	overhead_data.half_width = view->half_screen_width;
@@ -965,18 +1040,14 @@ void DrawHUD(SDL_Rect &dest_rect)
 
 void clear_screen(void)
 {
-	SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
-	SDL_UpdateRect(main_surface, 0, 0, 0, 0);
 #ifdef HAVE_OPENGL
-	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+	if (SDL_GetVideoSurface()->flags & SDL_OPENGL) {
+		OGL_ClearScreen();
 		SDL_GL_SwapBuffers();
+	} else 
 #endif
-#if defined(MAC_SDL_KLUDGE)
-	SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
-	SDL_UpdateRect(main_surface, 0, 0, 0, 0);
-#ifdef HAVE_OPENGL
-	if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
-		SDL_GL_SwapBuffers();
-#endif
-#endif
+	{
+		SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
+		SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+	}
 }

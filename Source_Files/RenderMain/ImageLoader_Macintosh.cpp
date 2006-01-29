@@ -42,8 +42,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "ImageLoader.h"
 #include "shell.h"
 
-
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
+bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_height, int actual_width, int maxSize)
 {
 	// Needs QT, of course:
 	if (!machine_has_quicktime()) return false;	
@@ -52,10 +51,11 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 	switch(ImgMode)
 	{
 	case ImageLoader_Colors:
+		if (LoadDDSFromFile(File, flags, actual_width, actual_height, maxSize)) return true;
 		break;
 		
 	case ImageLoader_Opacity:
-		if (!Img.IsPresent()) return false;
+		if (!IsPresent()) return false;
 		break;
 		
 	default:
@@ -99,15 +99,24 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 	// Get image dimensions and set its size
 	int Width = ImgRect.right - ImgRect.left;
 	int Height = ImgRect.bottom - ImgRect.top;
+	int OriginalWidth = Width;
+	int OriginalHeight = Height;
+	if (flags & ImageLoader_ResizeToPowersOfTwo) {
+		Width = NextPowerOfTwo(Width);
+		Height = NextPowerOfTwo(Height);
+	}
 	switch(ImgMode)
 	{
 	case ImageLoader_Colors:
-		Img.Resize(Width,Height);
+		Resize(Width,Height);
+		VScale = ((double) OriginalWidth / (double) Width);
+		UScale = ((double) OriginalHeight / (double) Height);
+		MipMapCount = 1;
 		break;
 		
 	case ImageLoader_Opacity:
 		// If the wrong size, then bug out
-		if (Width != Img.GetWidth() || Height != Img.GetHeight())
+		if (Width != this->Width || Height != this->Height || ((double) OriginalWidth / Width != VScale || ((double) OriginalHeight / Height != UScale)))
 		{
 			UnlockPixels(PxlMapHdl);
 			DisposeGWorld(ImgGW);
@@ -120,14 +129,14 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 	byte *PixMap = (byte *)GetPixBaseAddr(PxlMapHdl);
 	int NumRowBytes = int((**PxlMapHdl).rowBytes & 0x7fff);
 	byte *RowBegin = PixMap;
-	uint32 *DestPxlPtr = Img.GetPixelBasePtr();
+	uint32 *DestPxlPtr = GetPixelBasePtr();
 	
 	switch(ImgMode)
 	{
 	case ImageLoader_Colors:
-		for (int h=0; h<Height; h++) {
+		for (int h=0; h<OriginalHeight; h++) {
 			byte *PixPtr = RowBegin;
-			for (int w=0; w<Width; w++) {
+			for (int w=0; w<OriginalWidth; w++) {
 				uint32 DestPxl;
 				byte *DPCP = (byte *)(&DestPxl);
 				// ARGB to RGBA
@@ -139,13 +148,14 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 				*(DestPxlPtr++) = DestPxl;
 			}
 			RowBegin += NumRowBytes;
+			DestPxlPtr += (Width - OriginalWidth);
 		}
 		break;
 	
 	case ImageLoader_Opacity:
-		for (int h=0; h<Height; h++) {
+		for (int h=0; h<OriginalHeight; h++) {
 			byte *PixPtr = RowBegin;
-			for (int w=0; w<Width; w++) {
+			for (int w=0; w<OriginalWidth; w++) {
 				uint32 DestPxl = *DestPxlPtr;
 				byte *DPCP = (byte *)(&DestPxl);
 				// ARGB to grayscale value, and then to the opacity
@@ -158,6 +168,7 @@ bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
 				*(DestPxlPtr++) = DestPxl;
 			}
 			RowBegin += NumRowBytes;
+			DestPxlPtr += (Width - OriginalWidth);
 		}
 		break;
 	}

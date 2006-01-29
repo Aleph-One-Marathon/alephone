@@ -266,8 +266,8 @@ static void player_dialog(void *arg)
  *  Handle graphics dialog
  */
 
-static const char *depth_labels[3] = {
-	"8 Bit", "16 Bit", NULL
+static const char *depth_labels[4] = {
+	"8 Bit", "16 Bit", "32 Bit", NULL
 };
 
 static const char *resolution_labels[3] = {
@@ -288,6 +288,44 @@ static const char* renderer_labels[] = {
 	"Software", "OpenGL", NULL
 };
 
+static const char* fsaa_labels[] = {
+	"Off", "2x", "4x", NULL
+};
+
+static const char* texture_quality_labels[] = {
+	"Unlimited", "Normal", "High", "Higher", "Highest", NULL
+};
+
+static int get_texture_quality_label(int16 quality, bool wall)
+{
+	if (quality == 0) return 0;
+
+	if (!wall) quality >>= 1;
+
+	if (quality <= 128) return 1;
+	else if (quality <= 256) return 2;
+	else if (quality <= 512) return 3;
+	else if (quality <= 1024) return 4;
+	else return 0;
+}
+
+static int16 get_texture_quality_from_label(int label, bool wall)
+{
+	if (label == 0) return 0;
+	
+	if (label <= 4)
+	{
+		int quality = 1 << (label + 6);
+		if (!wall) quality <<= 1;
+		return quality;
+	} 
+	else 
+	{
+		return 0;
+	}
+}
+	
+
 enum {
     iRENDERING_SYSTEM = 1000
 };
@@ -299,7 +337,7 @@ static void software_rendering_options_dialog(void* arg)
 	d.add(new w_static_text("SOFTWARE RENDERING OPTIONS", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
 
-    w_toggle *depth_w = new w_toggle("Color Depth", graphics_preferences->screen_mode.bit_depth == 16, depth_labels);
+	w_select *depth_w = new w_select("Color Depth", graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
 	d.add(depth_w);
 	w_toggle *resolution_w = new w_toggle("Resolution", graphics_preferences->screen_mode.high_resolution, resolution_labels);
 	d.add(resolution_w);
@@ -315,7 +353,7 @@ static void software_rendering_options_dialog(void* arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
-		int depth = (depth_w->get_selection() ? 16 : 8);
+		int depth = (depth_w->get_selection() == 0 ? 8 : depth_w->get_selection() == 1 ? 16 : 32);
 		if (depth != graphics_preferences->screen_mode.bit_depth) {
 			graphics_preferences->screen_mode.bit_depth = depth;
 			changed = true;
@@ -380,10 +418,7 @@ static void graphics_dialog(void *arg)
     d.add(new w_spacer());
     d.add(new w_button("RENDERING OPTIONS", rendering_options_dialog_demux, &d));
     d.add(new w_spacer());
-#ifdef HAVE_OPENGL
-    d.add(new w_static_text("Warning: switching renderers is currently a bit buggy."));
-    d.add(new w_static_text("If you switch, consider quitting and restarting Aleph One."));
-#else
+#ifndef HAVE_OPENGL
     d.add(new w_static_text("This copy of Aleph One was built without OpenGL support."));
 #endif
     d.add(new w_spacer());
@@ -467,12 +502,16 @@ static void opengl_dialog(void *arg)
 	d.add(fader_w);
 	w_toggle *liq_w = new w_toggle("Transparent Liquids", TEST_FLAG(prefs.Flags, OGL_Flag_LiqSeeThru));
 	d.add(liq_w);
-	w_toggle *map_w = new w_toggle("OpenGL Overhead Map", TEST_FLAG(prefs.Flags, OGL_Flag_Map));
-	d.add(map_w);
-	w_toggle *hud_w = new w_toggle("OpenGL HUD", TEST_FLAG(prefs.Flags, OGL_Flag_HUD));
-	d.add(hud_w);
 	w_toggle *models_w = new w_toggle("3D Models", TEST_FLAG(prefs.Flags, OGL_Flag_3D_Models));
 	d.add(models_w);
+	d.add(new w_spacer());
+	w_select *wall_texture_quality_w = new w_select("Wall Texture Quality", get_texture_quality_label(prefs.MaxWallSize, true), texture_quality_labels);
+	d.add(wall_texture_quality_w);
+//	w_select *sprite_texture_quality_w = new w_select("Sprite Texture Quality", get_texture_quality_label(prefs.MaxSpriteSize, false), texture_quality_labels);
+//	d.add(sprite_texture_quality_w);
+	d.add(new w_spacer());
+	w_select *fsaa_w = new w_select("Full Scene Antialiasing", prefs.Multisamples == 4 ? 2 : prefs.Multisamples == 2 ? 1 : 0, fsaa_labels);
+	d.add(fsaa_w);
 	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
@@ -491,14 +530,30 @@ static void opengl_dialog(void *arg)
 		if (!(static_w->get_selection())) flags |= OGL_Flag_FlatStatic;
 		if (fader_w->get_selection()) flags |= OGL_Flag_Fader;
 		if (liq_w->get_selection()) flags |= OGL_Flag_LiqSeeThru;
-		if (map_w->get_selection()) flags |= OGL_Flag_Map;
-		if (hud_w->get_selection()) flags |= OGL_Flag_HUD;
 		if (models_w->get_selection()) flags |= OGL_Flag_3D_Models;
 
 		if (flags != prefs.Flags) {
 			prefs.Flags = flags;
 			changed = true;
 		}
+
+		int new_fsaa = (fsaa_w->get_selection() == 2 ? 4 : fsaa_w->get_selection() == 1 ? 2 : 0);
+		if (new_fsaa != prefs.Multisamples) {
+			prefs.Multisamples = new_fsaa;
+			changed = true;
+		}
+
+		if (wall_texture_quality_w->get_selection() != get_texture_quality_label(prefs.MaxWallSize, true))
+		{
+			prefs.MaxWallSize = get_texture_quality_from_label(wall_texture_quality_w->get_selection(), true);
+			changed = true;
+		}
+
+//		if (sprite_texture_quality_w->get_selection() != get_texture_quality_label(prefs.MaxSpriteSize, false))
+//		{
+//			prefs.MaxSpriteSize = get_texture_quality_from_label(sprite_texture_quality_w->get_selection(), false);
+//			changed = true;
+//		}
 
 		if (changed)
 			write_preferences();

@@ -18,7 +18,7 @@ librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h \
   scottish_textures.h shape_definitions.h shape_descriptors.h shapes_sdl.h \
   textures.h \
   \
-  AnimatedTextures.cpp Crosshairs_SDL.cpp ImageLoader_SDL.cpp OGL_Faders.cpp \
+  AnimatedTextures.cpp Crosshairs_SDL.cpp ImageLoader_Shared.cpp ImageLoader_SDL.cpp OGL_Faders.cpp \
   OGL_Model_Def.cpp OGL_Render.cpp OGL_Setup.cpp OGL_Subst_Texture_Def.cpp \
   OGL_Textures.cpp $(EXTRA_GL) render.cpp RenderPlaceObjs.cpp RenderRasterize.cpp \
   RenderSortPoly.cpp RenderVisTree.cpp scottish_textures.cpp shapes.cpp \

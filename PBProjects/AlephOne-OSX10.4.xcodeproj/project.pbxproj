@@ -392,7 +392,7 @@
 			name = "AlephOne-Carbon (NIBs)";
 			productInstallPath = "$(USER_APPS_DIR)";
 			productName = "AlephOne-Carbon";
-			productReference = AE2DEB8C0815E0A600817EBC /* AlephOne (NIBs).app */;
+			productReference = AE2DEB8C0815E0A600817EBC /* AlephOne.app */;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <!DOCTYPE plist PUBLIC \"-//Apple Computer//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">
 <plist version=\"1.0\">
@@ -1224,6 +1224,13 @@
 		AE5604DF086F6DF200D9797C /* network_capabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE5604DD086F6DF100D9797C /* network_capabilities.cpp */; };
 		AE5604E1086F6E0D00D9797C /* network_capabilities.h in Headers */ = {isa = PBXBuildFile; fileRef = AE5604E0086F6E0D00D9797C /* network_capabilities.h */; };
 		AE5604E2086F6E0D00D9797C /* network_capabilities.h in Headers */ = {isa = PBXBuildFile; fileRef = AE5604E0086F6E0D00D9797C /* network_capabilities.h */; };
+		AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
+		AE791CD80968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
+		AE791CD90968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
+		AE791CDE0968E2C500350190 /* ImageLoader.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
+		AE791CF70968E49100350190 /* DDS.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
+		AE791CF80968E49100350190 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
+		AE791CF90968E49100350190 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
 		AEBEB89B08343CAF004E13D0 /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
 		AEBF94A80834FD9500C0B18C /* NibsUiHelpers.h in Headers */ = {isa = PBXBuildFile; fileRef = AEBF94A70834FD9500C0B18C /* NibsUiHelpers.h */; };
 		AEC552AC084D49F900164A49 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
@@ -1662,6 +1669,8 @@
 			files = (
 				2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */,
 				2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */,
+				AE791CDE0968E2C500350190 /* ImageLoader.h in CopyFiles */,
+				AE791CF70968E49100350190 /* DDS.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1735,7 +1744,7 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
-		AE2DEB8C0815E0A600817EBC /* AlephOne (NIBs).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AlephOne (NIBs).app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE2DEB8C0815E0A600817EBC /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialogs_mac_nibs_sdl.cpp; path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = carbon_widgets.cpp; path = ../Source_Files/Misc/carbon_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEED0864EAB7002AF754 /* carbon_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = carbon_widgets.h; path = ../Source_Files/Misc/carbon_widgets.h; sourceTree = SOURCE_ROOT; };
@@ -1743,6 +1752,8 @@
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604DD086F6DF100D9797C /* network_capabilities.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_capabilities.cpp; path = ../Source_Files/Network/network_capabilities.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604E0086F6E0D00D9797C /* network_capabilities.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_capabilities.h; path = ../Source_Files/Network/network_capabilities.h; sourceTree = SOURCE_ROOT; };
+		AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader_Shared.cpp; path = ../Source_Files/RenderMain/ImageLoader_Shared.cpp; sourceTree = SOURCE_ROOT; };
+		AE791CF60968E49100350190 /* DDS.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DDS.h; path = ../Source_Files/RenderMain/DDS.h; sourceTree = SOURCE_ROOT; };
 		AEBF94A70834FD9500C0B18C /* NibsUiHelpers.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NibsUiHelpers.h; path = ../Source_Files/CSeries/NibsUiHelpers.h; sourceTree = SOURCE_ROOT; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
@@ -2215,7 +2226,7 @@
 			isa = PBXGroup;
 			children = (
 				17587328FF379C6511CA2CBB /* AlephOneSDL.app */,
-				AE2DEB8C0815E0A600817EBC /* AlephOne (NIBs).app */,
+				AE2DEB8C0815E0A600817EBC /* AlephOne.app */,
 				2B4EC22E09089851009631F8 /* AlephOne.app */,
 			);
 			name = Products;
@@ -2768,6 +2779,7 @@
 		F5CC92E30240D56101A80001 /* RenderMain */ = {
 			isa = PBXGroup;
 			children = (
+				AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */,
 				F5CC936B0240D5E001A80001 /* Headers */,
 				F5CC936C0240D75B01A80001 /* Macintosh */,
 				F5CC936D0240D75B01A80001 /* SDL */,
@@ -2794,6 +2806,7 @@
 		F5CC936B0240D5E001A80001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				AE791CF60968E49100350190 /* DDS.h */,
 				F5CC92E50240D56101A80001 /* AnimatedTextures.h */,
 				F5CC92E60240D56101A80001 /* collection_definition.h */,
 				F5CC92E80240D56101A80001 /* Crosshairs.h */,
@@ -3293,6 +3306,7 @@
 				AE5604E2086F6E0D00D9797C /* network_capabilities.h in Headers */,
 				AE437C8D08779BC900038E30 /* shared_widgets.h in Headers */,
 				AEC6C8A00879A6020055EC57 /* Console.h in Headers */,
+				AE791CF80968E49100350190 /* DDS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3495,6 +3509,7 @@
 				AE5604E1086F6E0D00D9797C /* network_capabilities.h in Headers */,
 				AE437C8C08779BC900038E30 /* shared_widgets.h in Headers */,
 				AEC6C89F0879A6020055EC57 /* Console.h in Headers */,
+				AE791CF90968E49100350190 /* DDS.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3916,6 +3931,7 @@
 				AE5604DF086F6DF200D9797C /* network_capabilities.cpp in Sources */,
 				AE437C9008779BE500038E30 /* shared_widgets.cpp in Sources */,
 				AEC6C89D0879A5DE0055EC57 /* Console.cpp in Sources */,
+				AE791CD80968E16600350190 /* ImageLoader_Shared.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4084,6 +4100,7 @@
 				2B4EC2120908984D009631F8 /* network_capabilities.cpp in Sources */,
 				2B4EC2130908984D009631F8 /* shared_widgets.cpp in Sources */,
 				2B4EC2140908984D009631F8 /* Console.cpp in Sources */,
+				AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4252,6 +4269,7 @@
 				AE5604DE086F6DF200D9797C /* network_capabilities.cpp in Sources */,
 				AE437C8F08779BE500038E30 /* shared_widgets.cpp in Sources */,
 				AEC6C89C0879A5DE0055EC57 /* Console.cpp in Sources */,
+				AE791CD90968E16600350190 /* ImageLoader_Shared.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

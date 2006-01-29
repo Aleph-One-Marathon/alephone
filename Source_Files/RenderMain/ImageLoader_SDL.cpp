@@ -37,15 +37,16 @@
  *  Load specified image file
  */
 
-bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode)
+bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_width, int actual_height, int maxSize)
 {
 	// Don't load opacity if there is no color component:
 	switch(ImgMode) {
 		case ImageLoader_Colors:
+			if((flags & ImageLoader_CanUseDXTC) && LoadDDSFromFile(File, flags, actual_width, actual_height, maxSize)) return true;
 			break;
 		
 		case ImageLoader_Opacity:
-			if (!Img.IsPresent())
+			if (!IsPresent())
 				return false;
 			break;
 		
@@ -68,14 +69,23 @@ SDL_Surface *s = NULL;
 
 	// Get image dimensions and set its size
 	int Width = s->w, Height = s->h;
+	int OriginalWidth = (actual_width) ? actual_width : Width;
+	int OriginalHeight = (actual_height) ? actual_height : Height;
+	if (flags & ImageLoader_ResizeToPowersOfTwo) {
+		Width = NextPowerOfTwo(Width);
+		Height = NextPowerOfTwo(Height);
+	}
 	switch (ImgMode) {
 		case ImageLoader_Colors:
-			Img.Resize(Width, Height);
+			Resize(Width, Height);
+			VScale = ((double) OriginalWidth / (double) Width);
+			UScale = ((double) OriginalHeight / (double) Height);
+			MipMapCount = 0;
 			break;
 
 		case ImageLoader_Opacity:
 			// If the wrong size, then bug out
-			if (Width != Img.GetWidth() || Height != Img.GetHeight()) {
+			if (Width != this->Width || Height != this->Height || ((double) OriginalWidth / Width != VScale || ((double) OriginalHeight / Height != UScale))) {
 				SDL_FreeSurface(s);
 				return false;
 			}
@@ -98,12 +108,12 @@ SDL_Surface *s = NULL;
 	// Convert surface to RGBA texture
 	switch (ImgMode) {
 		case ImageLoader_Colors:
-			memcpy(Img.GetPixelBasePtr(), rgba->pixels, Width * Height * 4);
+			memcpy(GetPixelBasePtr(), rgba->pixels, Width * Height * 4);
 			break;
 
 		case ImageLoader_Opacity: {
 			uint8 *p = (uint8 *)rgba->pixels;
-			uint8 *q = (uint8 *)Img.GetPixelBasePtr();
+			uint8 *q = (uint8 *)GetPixelBasePtr();
 			for (int h=0; h<Height; h++) {
 				for (int w=0; w<Width; w++) {
 					// RGB to greyscale value, and then to the opacity
