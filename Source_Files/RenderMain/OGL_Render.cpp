@@ -2068,7 +2068,8 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	
 	// Painting a texture...
 	glEnable(GL_TEXTURE_2D);
-	TMgr.RenderNormal();		
+	TMgr.SetupTextureMatrix();
+	TMgr.RenderNormal();
 	
 	// Go!
 	glDrawArrays(GL_POLYGON,0,NumVertices);
@@ -2094,6 +2095,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 	
 	// Revert to default blend
 	SetBlend(OGL_BlendType_Crossfade);
+	TMgr.RestoreTextureMatrix();
 	
 	if (IsActive) glEnable(GL_FOG);
 	return true;
