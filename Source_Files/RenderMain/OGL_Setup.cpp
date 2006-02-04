@@ -241,6 +241,13 @@ void OGL_TextureOptionsBase::Load()
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 	}
 
+	if (Type == OGL_Txtr_Wall) {
+		if (Get_OGL_ConfigureData().MaxWallSize)
+		{
+			maxTextureSize = MIN(maxTextureSize, Get_OGL_ConfigureData().MaxWallSize);
+		}
+	}
+
 	int flags = ImageLoader_ResizeToPowersOfTwo;
 	if (OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc")) flags |= ImageLoader_CanUseDXTC;
 	

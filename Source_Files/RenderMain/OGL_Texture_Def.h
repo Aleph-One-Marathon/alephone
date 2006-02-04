@@ -86,10 +86,12 @@ struct OGL_TextureOptionsBase
 	// Names of files to load; these will be extended ones with directory specifications
 	// <dirname>/<dirname>/<filename>
 	vector<char> NormalColors, NormalMask, GlowColors, GlowMask;
-	vector<char> AltNormalColors, AltNormalMask, AltGlowColors, AltGlowMask;
 
 	// hints passed into loadfromfile, in case file dimensions are POT
 	short actual_height, actual_width;
+
+	// what kind of texture this is, for texture quality purposes
+	short Type;
 	
 	// Normal and glow-mapped images
 	ImageDescriptor NormalImg, GlowImg;
@@ -103,7 +105,7 @@ struct OGL_TextureOptionsBase
 	
 	OGL_TextureOptionsBase():
 		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
-		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade), Substitution(false), actual_height(0), actual_width(0)
+		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade), Substitution(false), actual_height(0), actual_width(0), Type(-1)
 		{}
 };
 

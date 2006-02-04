@@ -290,16 +290,6 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 		ReadString(Value, Data.NormalMask);
 		return true;
 	}
-	else if (StringsEqual(Tag,"alt_normal_image"))
-	{
-		ReadString(Value, Data.AltNormalColors);
-		return true;
-	}
-	else if (StringsEqual(Tag, "alt_normal_mask"))
-	{
-		ReadString(Value, Data.AltNormalMask);
-		return true;
-	}
 	else if (StringsEqual(Tag,"glow_image"))
 	{
 		ReadString(Value, Data.GlowColors);
@@ -308,16 +298,6 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	else if (StringsEqual(Tag,"glow_mask"))
 	{
 		ReadString(Value, Data.GlowMask);
-		return true;
-	}
-	else if (StringsEqual(Tag, "alt_glow_image"))
-	{
-		ReadString(Value, Data.AltGlowColors);
-		return true;
-	}
-	else if (StringsEqual(Tag, "alt_glow_mask"))
-	{
-		ReadString(Value, Data.AltGlowMask);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_blend"))
@@ -347,6 +327,10 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	else if (StringsEqual(Tag, "actual_width"))
 	{
 		return ReadInt16Value(Value, Data.actual_width);
+	}
+	else if (StringsEqual(Tag, "type"))
+	{
+		return ReadInt16Value(Value, Data.Type);
 	}
 	UnrecognizedTag();
 	return false;

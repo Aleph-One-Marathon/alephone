@@ -571,16 +571,6 @@ bool TextureManager::Setup()
 			LoadedHeight >>= 1;
 		}
 
-		if (TextureType == OGL_Txtr_Wall)
-		{
-			if (Get_OGL_ConfigureData().MaxWallSize)
-			{
-				MaxWidth = MIN(MaxWidth, Get_OGL_ConfigureData().MaxWallSize);
-				MaxHeight = MIN(MaxHeight, Get_OGL_ConfigureData().MaxWallSize);
-			}
-		}
-
-
 		while (NormalImage.get()->GetWidth() > MaxWidth || NormalImage.get()->GetHeight() > MaxHeight)
 		{
 			if (!NormalImage.edit()->Minify()) break;
