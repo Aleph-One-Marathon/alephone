@@ -1477,6 +1477,7 @@ It must be used with a glow_image file.
 If it is zero or less, then it and the offsets are ignored.
 <li>x_offset: The amount to shift the top left corner rightward, in internal units.
 <li>y_offset: The amount to shift the top left corner downward, in internal units. 
+<li>type: the texture type to use for image quality adjustments. If not set, the image quality settings in graphics preferences will be ignore for this image, and the largest version in the file used.
 </ul>
 <p>
 Note: all resulting values will be pegged to the range 0 to 1.
@@ -1507,6 +1508,14 @@ in these cases.
 I've put both of them in because they behave somewhat differently;
 max has the same strength for saturated colors as for grays,
 while mean has less strength for saturated colors than for grays.
+<p>
+Here are the texture types:
+<ol type=1 start=1000>
+<li>Wall Textures
+<li>Landscape Textures
+<li>Inhabitants
+<li>Weapons in hand
+</ol>
 <p>
 
 The next one, &lt;model_clear&gt;, clears all the model definitions;
