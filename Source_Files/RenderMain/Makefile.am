@@ -11,7 +11,7 @@ EXTRA_GL =
 endif
 
 librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h \
-  Crosshairs.h ImageLoader.h low_level_textures.h OGL_Faders.h OGL_Model_Def.h \
+  Crosshairs.h DDS.h ImageLoader.h low_level_textures.h OGL_Faders.h OGL_Model_Def.h \
   OGL_Render.h OGL_Setup.h OGL_Subst_Texture_Def.h OGL_Texture_Def.h \
   OGL_Textures.h $(EXTRA_GL_H) Rasterizer.h Rasterizer_OGL.h Rasterizer_SW.h render.h \
   RenderPlaceObjs.h RenderRasterize.h RenderSortPoly.h RenderVisTree.h \
@@ -23,6 +23,8 @@ librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h \
   OGL_Textures.cpp $(EXTRA_GL) render.cpp RenderPlaceObjs.cpp RenderRasterize.cpp \
   RenderSortPoly.cpp RenderVisTree.cpp scottish_textures.cpp shapes.cpp \
   textures.cpp
+
+EXTRA_librendermain_a_SOURCES = OGL_Win32.h OGL_Win32.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
