@@ -1187,6 +1187,8 @@ void AutoTabHandler::SetActiveTab (int new_value)
 		if (i != new_value)
 			SetControlVisibility (panes[i], false, true);
 	
+	ClearKeyboardFocus (window);
+	
 	SetControlVisibility (panes[new_value], true, true);
 	
 	Draw1Control (tab);
