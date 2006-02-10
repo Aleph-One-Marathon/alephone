@@ -871,7 +871,10 @@ void PreloadWallTexture(const TextureWithTransferMode& inTexture)
 	}
 	
 	// After all this setting up, now use it!
-	if (TMgr.Setup()) TMgr.RenderNormal();
+	if (TMgr.Setup()) {
+		TMgr.RenderNormal();
+		if (TMgr.IsGlowMapped()) TMgr.RenderGlowing();
+	}
 }
 
 
