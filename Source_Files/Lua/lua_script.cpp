@@ -504,6 +504,12 @@ static int L_Number_of_Players(lua_State *L)
 	return 1;
 }
 
+static int L_Get_Level_Name(lua_State *L)
+{
+	lua_pushstring(L, static_world->level_name);
+	return 1;
+}
+
 static int L_Local_Player_Index(lua_State *L)
 {
 	lua_pushnumber(L, local_player_index);
@@ -4658,6 +4664,7 @@ void RegisterLuaFunctions()
 {
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
 	lua_register(state, "local_player_index", L_Local_Player_Index);
+	lua_register(state, "get_level_name", L_Get_Level_Name);
 	lua_register(state, "player_to_monster_index", L_Player_To_Monster_Index);
 	lua_register(state, "number_of_players", L_Number_of_Players);
 	lua_register(state, "screen_print", L_Screen_Print);
