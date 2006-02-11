@@ -908,6 +908,7 @@ void NetSetChatCallbacks(ChatCallbacks *cc) {
 
 void ChatCallbacks::SendChatMessage(const std::string& message)
 {
+	if (message == "") return;
 	if (netState == netActive) {
 		if (connection_to_server) {
 			NetworkChatMessage chatMessage(message.c_str(), 0, NetworkChatMessage::kTargetPlayers); // gatherer will replace senderID with my ID
