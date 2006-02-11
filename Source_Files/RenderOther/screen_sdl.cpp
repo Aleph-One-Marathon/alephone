@@ -261,11 +261,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 {
 	uint32 flags = (screen_mode.fullscreen ? SDL_FULLSCREEN : 0);
 #ifdef HAVE_OPENGL
-	// The original idea was to only enable OpenGL for the in-game display, but
-	// SDL crashes if OpenGL is turned on later
 	if (!nogl && screen_mode.acceleration == _opengl_acceleration) {
 		flags |= SDL_OPENGL;
-		//flags |= SDL_OPENGLBLIT;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
@@ -273,13 +270,15 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 #if SDL_VERSION_ATLEAST(1,2,6)
 		if (Get_OGL_ConfigureData().Multisamples > 0) {
-		  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-		  SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES,
-				      Get_OGL_ConfigureData().Multisamples);
-		  screen_mode.bit_depth = 32;
-		  depth = 32;
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, Get_OGL_ConfigureData().Multisamples);
+		} else {
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		}
 #endif
+		screen_mode.bit_depth = 32;
+		depth = 32;
 	} else
 		flags |= SDL_HWSURFACE | SDL_HWPALETTE;
 #else
