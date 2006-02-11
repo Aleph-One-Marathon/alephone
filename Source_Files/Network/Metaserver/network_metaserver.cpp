@@ -164,26 +164,35 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 
 	LoginAndPlayerInfoMessage theLoginMessage(userName, m_playerName, m_teamName);
 	m_channel->enqueueOutgoingMessage(theLoginMessage);
+	
+	auto_ptr<Message> theSaltOrAcceptMessage(m_channel->receiveMessage());
+	if (theSaltOrAcceptMessage.get() == 0)
+		throw 0;
+	
+	if (dynamic_cast<SaltMessage*>(theSaltOrAcceptMessage.get()) != 0)
+	{
+		SaltMessage* theSaltMessage = dynamic_cast<SaltMessage*>(theSaltOrAcceptMessage.get());
 
-	auto_ptr<SaltMessage> theSaltMessage(m_channel->receiveSpecificMessageOrThrow<SaltMessage>());
+		uint8 theKey[kKeyLength];
+		uint8 thePasswordCopy[kKeyLength];
+		strncpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str(), kKeyLength);
+		memcpy(theKey, theSaltMessage->salt(), sizeof(theKey));
+		for(size_t i = 0; i < sizeof(theKey); i++)
+			theKey[i] ^= thePasswordCopy[i];
 
-	uint8 theKey[kKeyLength];
-	uint8 thePasswordCopy[kKeyLength];
-	strncpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str(), kKeyLength);
-	memcpy(theKey, theSaltMessage->salt(), sizeof(theKey));
-	for(size_t i = 0; i < sizeof(theKey); i++)
-		theKey[i] ^= thePasswordCopy[i];
+		BigChunkOfDataMessage theKeyMessage(kCLIENT_KEY, theKey, sizeof(theKey));
+		m_channel->enqueueOutgoingMessage(theKeyMessage);
 
-	BigChunkOfDataMessage theKeyMessage(kCLIENT_KEY, theKey, sizeof(theKey));
-	m_channel->enqueueOutgoingMessage(theKeyMessage);
-
-	auto_ptr<AcceptMessage> theAcceptMessage(m_channel->receiveSpecificMessageOrThrow<AcceptMessage>());
+		auto_ptr<AcceptMessage> theAcceptMessage(m_channel->receiveSpecificMessageOrThrow<AcceptMessage>());
+	}
+	else if (dynamic_cast<AcceptMessage*>(theSaltOrAcceptMessage.get()) == 0)
+		throw 0;
 
 	m_channel->enqueueOutgoingMessage(LocalizationMessage());
 
 	auto_ptr<LoginSuccessfulMessage> theLoginSuccessfulMessage(m_channel->receiveSpecificMessageOrThrow<LoginSuccessfulMessage>());
 
-	auto_ptr<SetPlayerDataMessage> theSetPlayerDataMessage(m_channel->receiveSpecificMessageOrThrow<SetPlayerDataMessage>());
+//	auto_ptr<SetPlayerDataMessage> theSetPlayerDataMessage(m_channel->receiveSpecificMessageOrThrow<SetPlayerDataMessage>());
 
 	auto_ptr<RoomListMessage> theRoomListMessage(m_channel->receiveSpecificMessageOrThrow<RoomListMessage>());
 	m_dispatcher.get()->handle(theRoomListMessage.get(), m_channel.get());
