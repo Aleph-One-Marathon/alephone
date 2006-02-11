@@ -490,6 +490,8 @@ update_world()
 
                 theElapsedTime++;
 
+                
+                L_Call_PostIdle();
                 if(theUpdateResult != kUpdateNormalCompletion)
                 {
                         canUpdate = false;

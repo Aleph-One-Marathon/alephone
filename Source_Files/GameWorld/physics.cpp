@@ -107,8 +107,9 @@ running backwards shouldn’t mean doom in a fistfight
 
 /* ---------- private prototypes */
 
-static struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
-static void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
+/* needed for set_player_position -SB */
+/*static*/ struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
+/*static*/ void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 static void physics_update(struct physics_constants *constants, struct physics_variables *variables, struct player_data *player, uint32 action_flags);
 
 /* ---------- globals */
@@ -382,7 +383,7 @@ _fixed get_player_forward_velocity_scale(
 
 /* ---------- private code */
 
-static struct physics_constants *get_physics_constants_for_model(
+/*static*/ struct physics_constants *get_physics_constants_for_model(
 	short physics_model,
 	uint32 action_flags)
 {
@@ -403,7 +404,7 @@ static struct physics_constants *get_physics_constants_for_model(
 	return constants;
 }
 
-static void instantiate_physics_variables(
+/*static*/ void instantiate_physics_variables(
 	struct physics_constants *constants,
 	struct physics_variables *variables,
 	short player_index,

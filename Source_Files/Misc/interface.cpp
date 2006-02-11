@@ -135,6 +135,7 @@ extern TP2PerfGlobals perf_globals;
 #include "shell.h"
 #include "preferences.h"
 #include "FileHandler.h"
+#include "lua_script.h" // PostIdle
 
 /* Change this when marathon changes & replays are no longer valid */
 enum recording_version {

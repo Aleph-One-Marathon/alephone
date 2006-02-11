@@ -7,6 +7,7 @@
 void L_Call_Init();
 void L_Call_Cleanup();
 void L_Call_Idle();
+void L_Call_PostIdle();
 void L_Call_Start_Refuel(short type, short player_index, short panel_side_index);
 void L_Call_End_Refuel(short type, short player_index, short panel_side_index);
 void L_Call_Tag_Switch(short tag, short player_index);

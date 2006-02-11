@@ -98,6 +98,7 @@ short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 void L_Call_Init() {}
 void L_Call_Cleanup() {}
 void L_Call_Idle() {}
+void L_Call_PostIdle() {}
 void L_Call_Sent_Message(const char* username, const char* message) {}
 void L_Call_Start_Refuel(short type, short player_index, short panel_side_index) {}
 void L_Call_End_Refuel(short type, short player_index, short panel_side_index) {}
@@ -156,6 +157,9 @@ extern player_weapon_data *get_player_weapon_data(const short player_index);
 extern bool MotionSensorActive;
 
 extern void destroy_players_ball(short player_index);
+
+extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
+extern void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 
 enum // control panel sounds
 {
@@ -384,6 +388,11 @@ void L_Call_Cleanup ()
 void L_Call_Idle()
 {
 	L_Call("idle");
+}
+
+void L_Call_PostIdle()
+{
+	L_Call("postidle");
 }
 
 void L_Call_Sent_Message(const char* player, const char* message) {
@@ -2191,8 +2200,7 @@ static int L_Set_Player_Position(lua_State *L)
 		lua_error(L);
 	}
 	player_data *player = get_player_data(player_index);
-	struct monster_data *monster= get_monster_data(player->monster_index);
-	struct object_data *object= get_object_data(monster->object_index);
+	struct object_data *object= get_object_data(player-> object_index);
 	world_point3d loc;
 	loc.x = static_cast<int>(lua_tonumber(L,2) * WORLD_ONE);
 	loc.y = static_cast<int>(lua_tonumber(L,3) * WORLD_ONE);
@@ -2201,6 +2209,8 @@ static int L_Set_Player_Position(lua_State *L)
 	player->variables.position.x= WORLD_TO_FIXED(object->location.x);
 	player->variables.position.y= WORLD_TO_FIXED(object->location.y);
 	player->variables.position.z= WORLD_TO_FIXED(object->location.z);
+	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0),
+																&player->variables, player_index, false, false);
 	return 0;
 }
 
@@ -2244,6 +2254,8 @@ static int L_Set_Player_Angle(lua_State *L)
 	player_data *player = get_player_data(player_index);
 	player->variables.direction = INTEGER_TO_FIXED((int)(facing/AngleConvert));
 	player->variables.elevation = INTEGER_TO_FIXED((int)(elevation/AngleConvert));
+	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0),
+																&player->variables, player_index, false, false);
 	return 0;
 }
 
