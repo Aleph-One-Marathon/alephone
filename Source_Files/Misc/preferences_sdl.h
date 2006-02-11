@@ -512,6 +512,9 @@ static void opengl_dialog(void *arg)
 	d.add(new w_spacer());
 	w_select *fsaa_w = new w_select("Full Scene Antialiasing", prefs.Multisamples == 4 ? 2 : prefs.Multisamples == 2 ? 1 : 0, fsaa_labels);
 	d.add(fsaa_w);
+	int theAnistoropyLevel = (prefs.AnisotropyLevel == 0.0f) ? 0 : (int) log2(prefs.AnisotropyLevel) + 1;
+	w_slider* aniso_w = new w_slider("Anisotropic Filtering", 6, theAnistoropyLevel);
+	d.add(aniso_w);
 	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
@@ -540,6 +543,12 @@ static void opengl_dialog(void *arg)
 		int new_fsaa = (fsaa_w->get_selection() == 2 ? 4 : fsaa_w->get_selection() == 1 ? 2 : 0);
 		if (new_fsaa != prefs.Multisamples) {
 			prefs.Multisamples = new_fsaa;
+			changed = true;
+		}
+		
+		float new_aniso = aniso_w->get_selection() ? (float) exp2(aniso_w->get_selection() - 1) : 0.0f;
+		if (new_aniso != prefs.AnisotropyLevel) {
+			prefs.AnisotropyLevel = new_aniso;
 			changed = true;
 		}
 
