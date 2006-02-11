@@ -104,11 +104,11 @@ bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length)
 
 bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length)
 {
-	// This only recognizes MacBinary II files
+	// This recognizes up to macbinary III (0x81)
 	SDL_RWseek(f, 0, SEEK_SET);
 	uint8 header[128];
 	SDL_RWread(f, header, 1, 128);
-	if (header[0] || header[1] > 63 || header[74] || header[122] < 0x81 || header[123] < 0x81)
+	if (header[0] || header[1] > 63 || header[74]  || header[123] > 0x81)
 		return false;
 
 	// Check CRC
@@ -381,7 +381,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 	if (Writable)
 		return true;
 
-	// Transparently handle AppleSingle and MacBinary II files on reading
+	// Transparently handle AppleSingle and MacBinary files on reading
 	long offset, data_length, rsrc_length;
 	if (is_applesingle(f, false, offset, data_length)) {
 		OFile.is_forked = true;
