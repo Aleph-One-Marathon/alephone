@@ -370,15 +370,10 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		inputStream >> ddsd.ddpfPixelFormat.dwFlags;
 		inputStream >> ddsd.ddpfPixelFormat.dwFourCC;
 		inputStream >> ddsd.ddpfPixelFormat.dwRGBBitCount;
-		inputStream >> ddsd.ddpfPixelFormat.dwRBitMask;
-		inputStream >> ddsd.ddpfPixelFormat.dwGBitMask;
-		inputStream >> ddsd.ddpfPixelFormat.dwBBitMask;
-		inputStream >> ddsd.ddpfPixelFormat.dwRGBAlphaBitMask;
-// 		inputStream.read(&ddsd.ddpfPixelFormat.dwRBitMask, 4);		
-// 		inputStream.read(&ddsd.ddpfPixelFormat.dwGBitMask, 4);		
-// 		inputStream.read(&ddsd.ddpfPixelFormat.dwBBitMask, 4);		
-// 		inputStream.read(&ddsd.ddpfPixelFormat.dwRGBAlphaBitMask, 4);
-
+ 		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwRBitMask, 4);		
+ 		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwGBitMask, 4);		
+ 		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwBBitMask, 4);		
+ 		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwRGBAlphaBitMask, 4);
 
 		inputStream >> ddsd.ddsCaps.dwCaps1;
 		inputStream >> ddsd.ddsCaps.dwCaps2;
