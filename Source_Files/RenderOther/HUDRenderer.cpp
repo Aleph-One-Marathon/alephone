@@ -735,7 +735,7 @@ void HUD_Class::draw_player_name(void)
 
 void HUD_Class::draw_message_area(short time_elapsed)
 {
-	if(time_elapsed==NONE)
+	if(time_elapsed <= 1)
 	{
 		DrawShapeAtXY(
 			BUILD_DESCRIPTOR(_collection_interface, _network_panel), 
