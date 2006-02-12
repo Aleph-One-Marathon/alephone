@@ -167,6 +167,24 @@
 			path = AlephOneSDL.app;
 			refType = 3;
 		};
+		175897BD099ECF0200BED7E5 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = ImageLoader_Shared.cpp;
+			refType = 4;
+		};
+		175897BE099ECF0200BED7E5 = {
+			fileRef = 175897BD099ECF0200BED7E5;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		175897BF099ECF0200BED7E5 = {
+			fileRef = 175897BD099ECF0200BED7E5;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		17A9FD1B087607150011A6EC = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -1054,6 +1072,7 @@
 				17BEE4FA086F79AB0037599E,
 				17A9FD1D087607150011A6EC,
 				172114C70879EBA000D6D709,
+				175897BE099ECF0200BED7E5,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3446,6 +3465,7 @@
 				17BEE4F8086F79AB0037599E,
 				17A9FD1C087607150011A6EC,
 				172114C50879EBA000D6D709,
+				175897BF099ECF0200BED7E5,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -7922,6 +7942,7 @@
 				F5CC936C0240D75B01A80001,
 				F5CC936D0240D75B01A80001,
 				F5CC92E40240D56101A80001,
+				175897BD099ECF0200BED7E5,
 				F5CC92EE0240D56101A80001,
 				3DF290EF046F5C5B00000104,
 				F5CC92F00240D56101A80001,
