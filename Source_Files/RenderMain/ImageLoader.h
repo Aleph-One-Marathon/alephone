@@ -87,6 +87,8 @@ public:
 
 	bool Minify();
 
+	bool MakeRGBA();
+
 	// Clearing
 	void Clear()
 		{Width = Height = Size = 0; delete []Pixels; Pixels = NULL;}

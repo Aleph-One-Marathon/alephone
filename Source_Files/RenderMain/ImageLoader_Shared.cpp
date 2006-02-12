@@ -500,7 +500,375 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 			if (!Minify()) return false;
 		}
 	}
+	
+	if (!(flags & ImageLoader_CanUseDXTC)) MakeRGBA();
 
 	return true;
 }
+
+static bool DecompressDXTC1(uint32 *out, int width, int height, uint32 *in);
+static bool DecompressDXTC3(uint32 *out, int width, int height, uint32 *in);
+static bool DecompressDXTC5(uint32 *out, int width, int height, uint32 *in);
 	
+bool ImageDescriptor::MakeRGBA()
+{
+	ImageDescriptor RGBADesc;
+	RGBADesc.Width = Width;
+	RGBADesc.Height = Height;
+	RGBADesc.Format = RGBA8;
+	RGBADesc.MipMapCount = MipMapCount;
+	
+	RGBADesc.Size = 0;
+	for (int i = 0; i < MipMapCount; i++) {
+		RGBADesc.Size += RGBADesc.GetMipMapSize(i);
+	}
+
+	RGBADesc.Pixels = new uint32[RGBADesc.Size / 4];
+	
+	for (int i = 0; i < MipMapCount; i++) {
+		if (Format == DXTC1) {
+			if (!DecompressDXTC1(RGBADesc.GetMipMapPtr(i), MAX(1, Width >> i), MAX(1, Height >> i), GetMipMapPtr(i))) return false;
+		} else if (Format == DXTC3) {
+			if (!DecompressDXTC3(RGBADesc.GetMipMapPtr(i), MAX(1, Width >> i), MAX(1, Height >> i), GetMipMapPtr(i))) return false;
+		} else if (Format == DXTC5) {
+			if (!DecompressDXTC5(RGBADesc.GetMipMapPtr(i), MAX(1, Width >> i), MAX(1, Height >> i), GetMipMapPtr(i))) return false;
+		} else {
+			return false;
+		}
+	}
+	
+	delete []Pixels;
+	Pixels = RGBADesc.Pixels;
+	Size = RGBADesc.Size;
+	Format = RGBADesc.Format;
+	RGBADesc.Pixels = NULL;
+
+	return true;
+}
+
+// DXTC decompression code adapted from DevIL (openil.sourceforge.net)
+
+typedef struct Color8888
+{
+	unsigned char r; // change the order of names to change the 
+	unsigned char g; //  order of the output ARGB or BGRA, etc...
+	unsigned char b; //  Last one is MSB, 1st is LSB.
+	unsigned char a;
+} Color8888;
+
+
+typedef struct Color565
+{
+	unsigned nBlue  : 5; // order of names changes
+	unsigned nGreen : 6; //	byte order of output to 32 bit
+	unsigned nRed	: 5;
+} Color565;
+
+
+static bool DecompressDXTC1(uint32 *out, int width, int height, uint32 *in)
+{
+	int			x, y, z, i, j, k, Select;
+	unsigned char		*Temp;
+	Color565	*color_0, *color_1;
+	Color8888	colours[4], *col;
+	unsigned int		bitmask, Offset;
+	unsigned char *data = (unsigned char *) out;
+	
+	
+	Temp = (unsigned char *) in;
+	for (y = 0; y < height; y += 4) {
+		for (x = 0; x < width; x += 4) {
+			
+			color_0 = ((Color565*)Temp);
+			color_1 = ((Color565*)(Temp+2));
+			bitmask = ((unsigned int*)Temp)[1];
+			Temp += 8;
+			
+			colours[0].r = color_0->nRed << 3;
+			colours[0].g = color_0->nGreen << 2;
+			colours[0].b = color_0->nBlue << 3;
+			colours[0].a = 0xFF;
+			
+			colours[1].r = color_1->nRed << 3;
+			colours[1].g = color_1->nGreen << 2;
+			colours[1].b = color_1->nBlue << 3;
+			colours[1].a = 0xFF;
+			
+			
+			if (*((uint16*)color_0) > *((uint16*)color_1)) {
+				// Four-color block: derive the other two colors.    
+				// 00 = color_0, 01 = color_1, 10 = color_2, 11 = color_3
+				// These 2-bit codes correspond to the 2-bit fields 
+				// stored in the 64-bit block.
+				colours[2].b = (2 * colours[0].b + colours[1].b + 1) / 3;
+				colours[2].g = (2 * colours[0].g + colours[1].g + 1) / 3;
+				colours[2].r = (2 * colours[0].r + colours[1].r + 1) / 3;
+				colours[2].a = 0xFF;
+				
+				colours[3].b = (colours[0].b + 2 * colours[1].b + 1) / 3;
+				colours[3].g = (colours[0].g + 2 * colours[1].g + 1) / 3;
+				colours[3].r = (colours[0].r + 2 * colours[1].r + 1) / 3;
+				colours[3].a = 0xFF;
+			}    
+			else { 
+				// Three-color block: derive the other color.
+				// 00 = color_0,  01 = color_1,  10 = color_2,
+				// 11 = transparent.
+				// These 2-bit codes correspond to the 2-bit fields 
+				// stored in the 64-bit block. 
+				colours[2].b = (colours[0].b + colours[1].b) / 2;
+				colours[2].g = (colours[0].g + colours[1].g) / 2;
+				colours[2].r = (colours[0].r + colours[1].r) / 2;
+				colours[2].a = 0xFF;
+				
+				colours[3].b = (colours[0].b + 2 * colours[1].b + 1) / 3;
+				colours[3].g = (colours[0].g + 2 * colours[1].g + 1) / 3;
+				colours[3].r = (colours[0].r + 2 * colours[1].r + 1) / 3;
+				colours[3].a = 0x00;
+			}
+			
+			for (j = 0, k = 0; j < 4; j++) {
+				for (i = 0; i < 4; i++, k++) {
+					
+					Select = (bitmask & (0x03 << k*2)) >> k*2;
+					col = &colours[Select];
+					
+					if (((x + i) < width) && ((y + j) < height)) {
+						Offset = (y + j) * (width * 4) + (x + i) * 4;
+						data[Offset + 0] = col->r;
+						data[Offset + 1] = col->g;
+						data[Offset + 2] = col->b;
+						data[Offset + 3] = col->a;
+					}
+				}
+			}
+		}
+	}
+
+	return true;
+}
+
+typedef struct DXTColBlock
+{
+	uint16 col0;
+	uint16 col1;
+
+	// no bit fields - use bytes
+	unsigned char row[4];
+} DXTColBlock;
+
+typedef struct DXTAlphaBlockExplicit
+{
+	uint16 row[4];
+} DXTAlphaBlockExplicit;
+
+typedef struct DXTAlphaBlock3BitLinear
+{
+	unsigned char alpha0;
+	unsigned char alpha1;
+
+	unsigned char stuff[6];
+} DXTAlphaBlock3BitLinear;
+
+static bool DecompressDXTC3(uint32 *out, int width, int height, uint32 *in)
+{
+	int			x, y, z, i, j, k, Select;
+	unsigned char		*Temp;
+	Color565	*color_0, *color_1;
+	Color8888	colours[4], *col;
+	uint32		bitmask, Offset;
+	uint16	word;
+	DXTAlphaBlockExplicit *alpha;
+	unsigned char *data = (unsigned char *) out;
+
+	Temp = (unsigned char *) in;
+	for (y = 0; y < height; y += 4) {
+		for (x = 0; x < width; x += 4) {
+			alpha = (DXTAlphaBlockExplicit*)Temp;
+			Temp += 8;
+			color_0 = ((Color565*)Temp);
+			color_1 = ((Color565*)(Temp+2));
+			bitmask = ((uint32*)Temp)[1];
+			Temp += 8;
+			
+			colours[0].r = color_0->nRed << 3;
+			colours[0].g = color_0->nGreen << 2;
+			colours[0].b = color_0->nBlue << 3;
+			colours[0].a = 0xFF;
+			
+			colours[1].r = color_1->nRed << 3;
+			colours[1].g = color_1->nGreen << 2;
+			colours[1].b = color_1->nBlue << 3;
+			colours[1].a = 0xFF;
+			
+			// Four-color block: derive the other two colors.    
+			// 00 = color_0, 01 = color_1, 10 = color_2, 11 = color_3
+			// These 2-bit codes correspond to the 2-bit fields 
+			// stored in the 64-bit block.
+			colours[2].b = (2 * colours[0].b + colours[1].b + 1) / 3;
+			colours[2].g = (2 * colours[0].g + colours[1].g + 1) / 3;
+			colours[2].r = (2 * colours[0].r + colours[1].r + 1) / 3;
+			colours[2].a = 0xFF;
+			
+			colours[3].b = (colours[0].b + 2 * colours[1].b + 1) / 3;
+			colours[3].g = (colours[0].g + 2 * colours[1].g + 1) / 3;
+			colours[3].r = (colours[0].r + 2 * colours[1].r + 1) / 3;
+			colours[3].a = 0xFF;
+			
+			k = 0;
+			for (j = 0; j < 4; j++) {
+				for (i = 0; i < 4; i++, k++) {
+					
+					Select = (bitmask & (0x03 << k*2)) >> k*2;
+					col = &colours[Select];
+					
+					if (((x + i) < width) && ((y + j) < height)) {
+						Offset = (y + j) * (width * 4) + (x + i) * 4;
+						data[Offset + 0] = col->r;
+						data[Offset + 1] = col->g;
+						data[Offset + 2] = col->b;
+					}
+				}
+			}
+			
+			for (j = 0; j < 4; j++) {
+				word = alpha->row[j];
+				for (i = 0; i < 4; i++) {
+					if (((x + i) < width) && ((y + j) < height)) {
+						Offset = (y + j) * (width * 4) + (x + i) * 4 + 3;
+						data[Offset] = word & 0x0F;
+						data[Offset] = data[Offset] | data[Offset] << 4;
+					}
+					word >>= 4;
+				}
+			}
+			
+		}
+		
+	}
+	
+	return true;
+}
+
+static bool DecompressDXTC5(uint32 *out, int width, int height, uint32 *in)
+{
+	int			x, y, z, i, j, k, Select;
+	unsigned char		*Temp;
+	Color565	*color_0, *color_1;
+	Color8888	colours[4], *col;
+	uint32		bitmask, Offset;
+	unsigned char		alphas[8], *alphamask;
+	uint32		bits;
+
+	Temp = (unsigned char *) in;
+	unsigned char *data = (unsigned char *) out;
+
+	for (y = 0; y < height; y += 4) {
+		for (x = 0; x < width; x += 4) {
+			if (y >= height || x >= width)
+				break;
+			alphas[0] = Temp[0];
+			alphas[1] = Temp[1];
+			alphamask = Temp + 2;
+			Temp += 8;
+			color_0 = ((Color565*)Temp);
+			color_1 = ((Color565*)(Temp+2));
+			bitmask = ((uint32*)Temp)[1];
+			Temp += 8;
+
+			colours[0].r = color_0->nRed << 3;
+			colours[0].g = color_0->nGreen << 2;
+			colours[0].b = color_0->nBlue << 3;
+			colours[0].a = 0xFF;
+
+			colours[1].r = color_1->nRed << 3;
+			colours[1].g = color_1->nGreen << 2;
+			colours[1].b = color_1->nBlue << 3;
+			colours[1].a = 0xFF;
+
+			// Four-color block: derive the other two colors.    
+			// 00 = color_0, 01 = color_1, 10 = color_2, 11 = color_3
+			// These 2-bit codes correspond to the 2-bit fields 
+			// stored in the 64-bit block.
+			colours[2].b = (2 * colours[0].b + colours[1].b + 1) / 3;
+			colours[2].g = (2 * colours[0].g + colours[1].g + 1) / 3;
+			colours[2].r = (2 * colours[0].r + colours[1].r + 1) / 3;
+			colours[2].a = 0xFF;
+
+			colours[3].b = (colours[0].b + 2 * colours[1].b + 1) / 3;
+			colours[3].g = (colours[0].g + 2 * colours[1].g + 1) / 3;
+			colours[3].r = (colours[0].r + 2 * colours[1].r + 1) / 3;
+			colours[3].a = 0xFF;
+
+			k = 0;
+			for (j = 0; j < 4; j++) {
+				for (i = 0; i < 4; i++, k++) {
+
+					Select = (bitmask & (0x03 << k*2)) >> k*2;
+					col = &colours[Select];
+
+					// only put pixels out < width or height
+					if (((x + i) < width) && ((y + j) < height)) {
+						Offset = (y + j) * (width * 4) + (x + i) * 4;
+						data[Offset + 0] = col->r;
+						data[Offset + 1] = col->g;
+						data[Offset + 2] = col->b;
+					}
+				}
+			}
+
+			// 8-alpha or 6-alpha block?    
+			if (alphas[0] > alphas[1]) {    
+				// 8-alpha block:  derive the other six alphas.    
+				// Bit code 000 = alpha_0, 001 = alpha_1, others are interpolated.
+				alphas[2] = (6 * alphas[0] + 1 * alphas[1] + 3) / 7;	// bit code 010
+				alphas[3] = (5 * alphas[0] + 2 * alphas[1] + 3) / 7;	// bit code 011
+				alphas[4] = (4 * alphas[0] + 3 * alphas[1] + 3) / 7;	// bit code 100
+				alphas[5] = (3 * alphas[0] + 4 * alphas[1] + 3) / 7;	// bit code 101
+				alphas[6] = (2 * alphas[0] + 5 * alphas[1] + 3) / 7;	// bit code 110
+				alphas[7] = (1 * alphas[0] + 6 * alphas[1] + 3) / 7;	// bit code 111  
+			}    
+			else {  
+				// 6-alpha block.    
+				// Bit code 000 = alpha_0, 001 = alpha_1, others are interpolated.
+				alphas[2] = (4 * alphas[0] + 1 * alphas[1] + 2) / 5;	// Bit code 010
+				alphas[3] = (3 * alphas[0] + 2 * alphas[1] + 2) / 5;	// Bit code 011
+				alphas[4] = (2 * alphas[0] + 3 * alphas[1] + 2) / 5;	// Bit code 100
+				alphas[5] = (1 * alphas[0] + 4 * alphas[1] + 2) / 5;	// Bit code 101
+				alphas[6] = 0x00;										// Bit code 110
+				alphas[7] = 0xFF;										// Bit code 111
+			}
+
+			// Note: Have to separate the next two loops,
+			//	it operates on a 6-byte system.
+
+			// First three bytes
+			bits = *((int32*)alphamask);
+			for (j = 0; j < 2; j++) {
+				for (i = 0; i < 4; i++) {
+					// only put pixels out < width or height
+					if (((x + i) < width) && ((y + j) < height)) {
+						Offset = (y + j) * (width * 4) + (x + i) * 4 + 3;
+						data[Offset] = alphas[bits & 0x07];
+					}
+					bits >>= 3;
+				}
+			}
+
+			// Last three bytes
+			bits = *((int32*)&alphamask[3]);
+			for (j = 2; j < 4; j++) {
+				for (i = 0; i < 4; i++) {
+					// only put pixels out < width or height
+					if (((x + i) < width) && ((y + j) < height)) {
+						Offset = (y + j) * (width * 4) + (x + i) * 4 + 3;
+						data[Offset] = alphas[bits & 0x07];
+					}
+					bits >>= 3;
+				}
+			}
+		}
+	}
+
+	return true;
+}
