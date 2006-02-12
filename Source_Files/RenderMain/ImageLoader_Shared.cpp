@@ -23,6 +23,9 @@
  *  ImageLoader_Shared.cpp - Image file loading extras
  *
  *  Written in 2005 by Gregory Smith
+ * 
+ *  DXTC decompression functions (C) 2000-2002 by Denton Woods
+ *          adapted from DevIL (openil.sourceforge.net)
  */
 
 #include "AStream.h"
@@ -571,18 +574,22 @@ static bool DecompressDXTC1(uint32 *out, int width, int height, uint32 *in)
 	unsigned char		*Temp;
 	Color565	*color_0, *color_1;
 	Color8888	colours[4], *col;
-	unsigned int		bitmask, Offset;
+	uint32		bitmask, Offset;
 	unsigned char *data = (unsigned char *) out;
 	
 	
 	Temp = (unsigned char *) in;
 	for (y = 0; y < height; y += 4) {
 		for (x = 0; x < width; x += 4) {
-			
+
+			*((Uint16 *)Temp) = SDL_SwapLE16(*((Uint16 *)Temp));
 			color_0 = ((Color565*)Temp);
-			color_1 = ((Color565*)(Temp+2));
-			bitmask = ((unsigned int*)Temp)[1];
-			Temp += 8;
+			Temp += 2;
+			*((Uint16 *)Temp) = SDL_SwapLE16(*((Uint16 *)Temp));
+			color_1 = ((Color565*)(Temp));
+			Temp += 2;
+			bitmask = SDL_SwapLE32(((uint32*)Temp)[0]);
+			Temp += 4;
 			
 			colours[0].r = color_0->nRed << 3;
 			colours[0].g = color_0->nGreen << 2;
@@ -635,10 +642,18 @@ static bool DecompressDXTC1(uint32 *out, int width, int height, uint32 *in)
 					
 					if (((x + i) < width) && ((y + j) < height)) {
 						Offset = (y + j) * (width * 4) + (x + i) * 4;
+// this make absolutely no sense to me, but it works on my G4...
+#ifdef ALEPHONE_LITTLE_ENDIAN
 						data[Offset + 0] = col->r;
 						data[Offset + 1] = col->g;
 						data[Offset + 2] = col->b;
 						data[Offset + 3] = col->a;
+#else
+						data[Offset + 0] = col->b;
+						data[Offset + 1] = col->g;
+						data[Offset + 2] = col->r;
+						data[Offset + 3] = col->a;
+#endif
 					}
 				}
 			}
@@ -686,10 +701,14 @@ static bool DecompressDXTC3(uint32 *out, int width, int height, uint32 *in)
 		for (x = 0; x < width; x += 4) {
 			alpha = (DXTAlphaBlockExplicit*)Temp;
 			Temp += 8;
+			*((Uint16 *)Temp) = SDL_SwapLE16(*((Uint16 *)Temp));
 			color_0 = ((Color565*)Temp);
-			color_1 = ((Color565*)(Temp+2));
-			bitmask = ((uint32*)Temp)[1];
-			Temp += 8;
+			Temp+= 2;
+			*((Uint16 *)Temp) = SDL_SwapLE16(*((Uint16 *)Temp));
+			color_1 = ((Color565*)(Temp));
+			Temp += 2;
+			bitmask = SDL_SwapLE32(((uint32*)Temp)[0]);
+			Temp += 4;
 			
 			colours[0].r = color_0->nRed << 3;
 			colours[0].g = color_0->nGreen << 2;
@@ -724,15 +743,21 @@ static bool DecompressDXTC3(uint32 *out, int width, int height, uint32 *in)
 					
 					if (((x + i) < width) && ((y + j) < height)) {
 						Offset = (y + j) * (width * 4) + (x + i) * 4;
+#ifdef ALEPHONE_LITTLE_ENDIAN
 						data[Offset + 0] = col->r;
 						data[Offset + 1] = col->g;
 						data[Offset + 2] = col->b;
+#else
+						data[Offset + 0] = col->b;
+						data[Offset + 1] = col->g;
+						data[Offset + 2] = col->r;
+#endif
 					}
 				}
 			}
 			
 			for (j = 0; j < 4; j++) {
-				word = alpha->row[j];
+				word = SDL_SwapLE16(alpha->row[j]);
 				for (i = 0; i < 4; i++) {
 					if (((x + i) < width) && ((y + j) < height)) {
 						Offset = (y + j) * (width * 4) + (x + i) * 4 + 3;
@@ -771,10 +796,14 @@ static bool DecompressDXTC5(uint32 *out, int width, int height, uint32 *in)
 			alphas[1] = Temp[1];
 			alphamask = Temp + 2;
 			Temp += 8;
+			*((Uint16 *)Temp) = SDL_SwapLE16(*((Uint16 *)Temp));
 			color_0 = ((Color565*)Temp);
-			color_1 = ((Color565*)(Temp+2));
-			bitmask = ((uint32*)Temp)[1];
-			Temp += 8;
+			Temp += 2;
+			*((Uint16 *)Temp) = SDL_SwapLE16(*((Uint16 *)Temp));
+			color_1 = ((Color565*)(Temp));
+			Temp += 2;
+			bitmask = SDL_SwapLE32(((uint32*)Temp)[0]);
+			Temp += 4;
 
 			colours[0].r = color_0->nRed << 3;
 			colours[0].g = color_0->nGreen << 2;
@@ -810,9 +839,15 @@ static bool DecompressDXTC5(uint32 *out, int width, int height, uint32 *in)
 					// only put pixels out < width or height
 					if (((x + i) < width) && ((y + j) < height)) {
 						Offset = (y + j) * (width * 4) + (x + i) * 4;
+#ifdef ALEPHONE_LITTLE_ENDIAN
 						data[Offset + 0] = col->r;
 						data[Offset + 1] = col->g;
 						data[Offset + 2] = col->b;
+#else
+						data[Offset + 0] = col->b;
+						data[Offset + 1] = col->g;
+						data[Offset + 2] = col->r;
+#endif
 					}
 				}
 			}
@@ -843,7 +878,7 @@ static bool DecompressDXTC5(uint32 *out, int width, int height, uint32 *in)
 			//	it operates on a 6-byte system.
 
 			// First three bytes
-			bits = *((int32*)alphamask);
+			bits = SDL_SwapLE32(*((int32*)alphamask));
 			for (j = 0; j < 2; j++) {
 				for (i = 0; i < 4; i++) {
 					// only put pixels out < width or height
@@ -856,7 +891,7 @@ static bool DecompressDXTC5(uint32 *out, int width, int height, uint32 *in)
 			}
 
 			// Last three bytes
-			bits = *((int32*)&alphamask[3]);
+			bits = SDL_SwapLE32(*((int32*)&alphamask[3]));
 			for (j = 2; j < 4; j++) {
 				for (i = 0; i < 4; i++) {
 					// only put pixels out < width or height
