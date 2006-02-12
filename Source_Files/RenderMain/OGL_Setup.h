@@ -135,6 +135,7 @@ struct OGL_Texture_Configure
 	short FarFilter;
 	short Resolution;
 	short ColorFormat;
+	short MaxSize;
 };
 
 // Here are some control flags
@@ -174,9 +175,6 @@ struct OGL_ConfigureData
 	// Anisotropy setting
 	float AnisotropyLevel;
 	int16 Multisamples;
-
-	int16 MaxWallSize;
-	int16 MaxSpriteSize;
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();

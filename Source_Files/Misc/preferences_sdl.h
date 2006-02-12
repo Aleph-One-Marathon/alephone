@@ -505,7 +505,7 @@ static void opengl_dialog(void *arg)
 	w_toggle *models_w = new w_toggle("3D Models", TEST_FLAG(prefs.Flags, OGL_Flag_3D_Models));
 	d.add(models_w);
 	d.add(new w_spacer());
-	w_select *wall_texture_quality_w = new w_select("Wall Texture Quality", get_texture_quality_label(prefs.MaxWallSize, true), texture_quality_labels);
+	w_select *wall_texture_quality_w = new w_select("Wall Texture Quality", get_texture_quality_label(prefs.TxtrConfigList[OGL_Txtr_Wall].MaxSize, true), texture_quality_labels);
 	d.add(wall_texture_quality_w);
 //	w_select *sprite_texture_quality_w = new w_select("Sprite Texture Quality", get_texture_quality_label(prefs.MaxSpriteSize, false), texture_quality_labels);
 //	d.add(sprite_texture_quality_w);
@@ -552,9 +552,9 @@ static void opengl_dialog(void *arg)
 			changed = true;
 		}
 
-		if (wall_texture_quality_w->get_selection() != get_texture_quality_label(prefs.MaxWallSize, true))
+		if (wall_texture_quality_w->get_selection() != get_texture_quality_label(prefs.TxtrConfigList[OGL_Txtr_Wall].MaxSize, true))
 		{
-			prefs.MaxWallSize = get_texture_quality_from_label(wall_texture_quality_w->get_selection(), true);
+			prefs.TxtrConfigList[OGL_Txtr_Wall].MaxSize = get_texture_quality_from_label(wall_texture_quality_w->get_selection(), true);
 			changed = true;
 		}
 

@@ -197,6 +197,7 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 			TxtrData.FarFilter = 1;		// GL_LINEAR
 		TxtrData.Resolution = 0;		// 1x
 		TxtrData.ColorFormat = 0;		// 32-bit color
+		TxtrData.MaxSize = 0;                   // Unlimited
 	}
 	
 #ifdef SDL
@@ -220,9 +221,6 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	for (int il=0; il<4; il++)
 		for (int ie=0; ie<2; ie++)
 			Data.LscpColors[il][ie] = DefaultLscpColors[il][ie];
-
-	Data.MaxWallSize = 0; // unlimited
-	Data.MaxSpriteSize = 0; // unlimited
 }
 
 
@@ -241,15 +239,22 @@ void OGL_TextureOptionsBase::Load()
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 	}
 
-	if (Type == OGL_Txtr_Wall) {
-		if (Get_OGL_ConfigureData().MaxWallSize)
-		{
-			maxTextureSize = MIN(maxTextureSize, Get_OGL_ConfigureData().MaxWallSize);
-		}
+	if (Type >= 0 && Type < OGL_NUMBER_OF_TEXTURE_TYPES && Get_OGL_ConfigureData().TxtrConfigList[Type].MaxSize)
+	{
+		maxTextureSize = MIN(maxTextureSize, Get_OGL_ConfigureData().TxtrConfigList[Type].MaxSize);
+	}
+	
+	int flags = ImageLoader_ResizeToPowersOfTwo;
+		
+	if (Type >= 0 && Type < OGL_NUMBER_OF_TEXTURE_TYPES && Get_OGL_ConfigureData().TxtrConfigList[Type].FarFilter > 1 /* GL_LINEAR */)
+	{
+			flags |= ImageLoader_LoadMipMaps;
 	}
 
-	int flags = ImageLoader_ResizeToPowersOfTwo;
-	if (OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc")) flags |= ImageLoader_CanUseDXTC;
+	if (OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc")) 
+	{
+		flags |= ImageLoader_CanUseDXTC;
+	}
 	
 	// Load the normal image with alpha channel
 	try

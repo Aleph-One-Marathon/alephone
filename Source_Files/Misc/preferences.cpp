@@ -415,8 +415,6 @@ void write_preferences(
         fprintf(F,"  experimental_rendering=\"%s\"\n",BoolString(graphics_preferences->experimental_rendering));
         fprintf(F,"  anisotropy_level=\"%f\"\n", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	fprintf(F,"  multisamples=\"%i\"\n", graphics_preferences->OGL_Configure.Multisamples);
-	fprintf(F,"  max_wall_size=\"%i\"\n", graphics_preferences->OGL_Configure.MaxWallSize);
-	fprintf(F,"  max_sprite_size=\"%i\"\n", graphics_preferences->OGL_Configure.MaxSpriteSize);
 	fprintf(F,"  double_corpse_limit=\"%s\"\n", BoolString(graphics_preferences->double_corpse_limit));
 	fprintf(F,">\n");
 	fprintf(F,"  <void>\n");
@@ -431,8 +429,8 @@ void write_preferences(
 	for (int k=0; k<OGL_NUMBER_OF_TEXTURE_TYPES; k++)
 	{
 		OGL_Texture_Configure& TxtrConfig = graphics_preferences->OGL_Configure.TxtrConfigList[k];
-		fprintf(F,"  <texture index=\"%hd\" near_filter=\"%hd\" far_filter=\"%hd\" resolution=\"%hd\" color_format=\"%d\"/>\n",
-			k, TxtrConfig.NearFilter, TxtrConfig.FarFilter, TxtrConfig.Resolution, TxtrConfig.ColorFormat);
+		fprintf(F,"  <texture index=\"%hd\" near_filter=\"%hd\" far_filter=\"%hd\" resolution=\"%hd\" color_format=\"%d\" max_size=\"%d\"/>\n",
+			k, TxtrConfig.NearFilter, TxtrConfig.FarFilter, TxtrConfig.Resolution, TxtrConfig.ColorFormat, TxtrConfig.MaxSize);
 	}
 	fprintf(F,"</graphics>\n\n");
 	
@@ -1279,6 +1277,16 @@ bool XML_TexturePrefsParser::HandleAttribute(const char *Tag, const char *Value)
 		else
 			return false;
 	}
+	else if (StringsEqual(Tag, "max_size"))
+	{
+		if (ReadInt16Value(Value, Values[4]))
+		{
+			ValuesPresent[4] = true;
+			return true;
+		}
+		else
+			return false;
+	}
 	return true;
 }
 
@@ -1303,6 +1311,9 @@ bool XML_TexturePrefsParser::AttributesDone()
 	
 	if (ValuesPresent[3])
 		graphics_preferences->OGL_Configure.TxtrConfigList[Index].ColorFormat = Values[3];
+
+	if (ValuesPresent[4])
+		graphics_preferences->OGL_Configure.TxtrConfigList[Index].MaxSize = Values[4];
 	
 	return true;
 }
@@ -1408,14 +1419,6 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	  {
 	    return ReadInt16Value(Value, graphics_preferences->OGL_Configure.Multisamples);
 	  }
-	else if (StringsEqual(Tag,"max_wall_size"))
-	{
-		return ReadInt16Value(Value, graphics_preferences->OGL_Configure.MaxWallSize);
-	}
-	else if (StringsEqual(Tag, "max_sprite_size"))
-	{
-		return ReadInt16Value(Value, graphics_preferences->OGL_Configure.MaxSpriteSize);
-	}
 	else if (StringsEqual(Tag,"double_corpse_limit"))
 	  {
 	    return ReadBooleanValue(Value,graphics_preferences->double_corpse_limit);
