@@ -114,7 +114,11 @@ Primarily this is intended as a last chance for changing netgame scores before t
 
 idle()
 
-At each tick.
+At each tick, before physics and such
+
+postidle()
+
+At each tick, after physics and such, but before rendering
 
 
 start_refuel(type, player, side_index)
