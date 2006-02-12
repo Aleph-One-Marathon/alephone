@@ -1002,6 +1002,18 @@ stop_music()
 Stops the currently playing song and clears the level's playlist.
 
 
+annotations()
+
+Returns an iterator function which returns information about every annotation on the map. An example of proper usage is:
+
+for text,polygon,x,y in annotations() do
+  -- ...
+end
+
+You need not ask any information beyond the annotation text.
+
+
+
 3 Mnemonics
 -----------
 
