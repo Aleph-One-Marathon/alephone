@@ -154,7 +154,7 @@ public:
 
 	T* edit() {
 		if (!_original) {
-			return NULL;
+			return _copy;
 		} else {
 			if (!_copy) {
 				_copy = new T(*_original);
