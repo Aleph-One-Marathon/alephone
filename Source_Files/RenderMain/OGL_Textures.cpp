@@ -1741,17 +1741,42 @@ void SetPixelOpacities(OGL_TextureOptions& Options, ImageDescriptorManager &imag
 		return;
 
 	if (imageManager.get()->GetFormat() == ImageDescriptor::RGBA8) {
+
 		SetPixelOpacitiesRGBA(Options, imageManager.edit()->GetBufferSize() / 4, imageManager.edit()->GetBuffer());
+
 	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC3) {
-		// it's only possible to do scale and shift here
-		if (Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0) return;
-		SetPixelOpacitiesDXTC3(Options, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+
+		// to do opac_type we have to decompress the texture
+		if (Options.OpacityType == OGL_OpacType_Avg || Options.OpacityType == OGL_OpacType_Max) {
+			if (imageManager.edit()->MakeRGBA()) {
+				SetPixelOpacitiesRGBA(Options, imageManager.edit()->GetBufferSize() / 4, imageManager.edit()->GetBuffer());
+			} else if (Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0) {
+				return;
+			} else {
+				SetPixelOpacitiesDXTC3(Options, imageManager.edit()->GetBufferSize() / 4, (unsigned char *) imageManager.edit()->GetBuffer());
+			}
+		} else {
+			// if it's just scale/shift, we can do without decompressing
+			SetPixelOpacitiesDXTC3(Options, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+		}
+
 	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC5) {
-		if (Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0) return;
-		SetPixelOpacitiesDXTC5(Options, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
-		// again, possible to scale and shift only
+		if (Options.OpacityType == OGL_OpacType_Avg || Options.OpacityType == OGL_OpacType_Max) {
+			if (imageManager.edit()->MakeRGBA()) {
+				SetPixelOpacitiesRGBA(Options, imageManager.edit()->GetBufferSize() / 4, imageManager.edit()->GetBuffer());
+			} else if (Options.OpacityScale == 1.0 && Options.OpacityShift == 0.0) {
+				return;
+			} else {
+				SetPixelOpacitiesDXTC5(Options, imageManager.edit()->GetBufferSize() / 4, (unsigned char *) imageManager.edit()->GetBuffer());
+			}
+		} else {
+			SetPixelOpacitiesDXTC5(Options, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+		}
 	} else {
-		// can't do anything here
+		// we have to decompress DXTC1 to do anything
+		if (imageManager.edit()->MakeRGBA()) {
+			SetPixelOpacitiesRGBA(Options, imageManager.edit()->GetBufferSize() / 4, imageManager.edit()->GetBuffer());
+		}
 	}
 
 }
