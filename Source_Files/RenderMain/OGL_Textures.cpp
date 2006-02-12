@@ -574,7 +574,7 @@ bool TextureManager::Setup()
 		while (NormalImage.get()->GetWidth() > MaxWidth || NormalImage.get()->GetHeight() > MaxHeight)
 		{
 			if (!NormalImage.edit()->Minify()) break;
-			if (GlowImage.get()->IsPresent()) {
+			if (GlowImage.get() && GlowImage.get()->IsPresent()) {
 				if (!GlowImage.edit()->Minify()) break;
 			}
 		}
