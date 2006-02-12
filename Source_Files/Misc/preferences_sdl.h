@@ -94,7 +94,7 @@ static void sound_dialog(void *arg);
 static void controls_dialog(void *arg);
 static void environment_dialog(void *arg);
 static void keyboard_dialog(void *arg);
-
+static void texture_options_dialog(void *arg);
 
 /*
  *  Get user name
@@ -296,6 +296,10 @@ static const char* texture_quality_labels[] = {
 	"Unlimited", "Normal", "High", "Higher", "Highest", NULL
 };
 
+static const char* texture_resolution_labels[] = {
+	"Full", "Half", "Quarter", NULL
+};
+
 static int get_texture_quality_label(int16 quality, bool wall)
 {
 	if (quality == 0) return 0;
@@ -477,6 +481,83 @@ static void graphics_dialog(void *arg)
 	}
 }
 
+static void texture_options_dialog(void *arg)
+{
+	OGL_ConfigureData &prefs = Get_OGL_ConfigureData();
+
+	dialog d;
+	d.add(new w_static_text("ADVANCED OPENGL OPTIONS", TITLE_FONT, TITLE_COLOR));
+	d.add(new w_spacer());
+
+
+	d.add(new w_static_text("Distant Texture Smoothing"));
+	w_toggle *wall_mipmap_w = new w_toggle("Mipmap Walls", prefs.TxtrConfigList[OGL_Txtr_Wall].FarFilter > 1);
+	d.add(wall_mipmap_w);
+
+	d.add(new w_spacer());
+
+	w_toggle *sprite_mipmap_w = new w_toggle("Mipmap Sprites", prefs.TxtrConfigList[OGL_Txtr_Inhabitant].FarFilter > 1);
+	d.add(sprite_mipmap_w);
+
+	d.add(new w_static_text("Warning: Shapes file sprites exhibit color"));
+	d.add(new w_static_text("fringes when Mipmap Sprites is enabled"));
+		
+	d.add(new w_spacer());
+
+	w_select *texture_resolution_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
+	for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) texture_resolution_wa[i] = NULL;
+
+	texture_resolution_wa[OGL_Txtr_Wall] = new w_select("Walls", prefs.TxtrConfigList[OGL_Txtr_Wall].Resolution, texture_resolution_labels);
+
+	texture_resolution_wa[OGL_Txtr_Landscape] = new w_select("Landscapes", prefs.TxtrConfigList[OGL_Txtr_Landscape].Resolution, texture_resolution_labels);
+
+	texture_resolution_wa[OGL_Txtr_Inhabitant] = new w_select("Sprites", prefs.TxtrConfigList[OGL_Txtr_Inhabitant].Resolution, texture_resolution_labels);
+
+	texture_resolution_wa[OGL_Txtr_WeaponsInHand] = new w_select("Weapons in Hand / HUD", prefs.TxtrConfigList[OGL_Txtr_WeaponsInHand].Resolution, texture_resolution_labels);
+
+	d.add(new w_spacer);
+
+	d.add(new w_static_text("Texture Resolution (reduce for machines with low VRAM)"));
+
+	for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
+		if (texture_resolution_wa[i]) {
+			d.add(texture_resolution_wa[i]);
+		}
+	}
+
+	d.add(new w_spacer);
+
+	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
+	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+	clear_screen();
+
+	if (d.run() == 0) {
+		bool changed = false;
+
+		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
+			if (texture_resolution_wa[i] && texture_resolution_wa[i]->get_selection() != prefs.TxtrConfigList[i].Resolution) {
+				prefs.TxtrConfigList[i].Resolution = texture_resolution_wa[i]->get_selection();
+				changed = true;
+			}
+		}
+
+		if (wall_mipmap_w->get_selection() != (prefs.TxtrConfigList[OGL_Txtr_Wall].FarFilter > 1)) {
+			prefs.TxtrConfigList[OGL_Txtr_Wall].FarFilter = wall_mipmap_w->get_selection() ? 5 : 1;
+			changed = true;
+		}
+		
+		if (sprite_mipmap_w->get_selection() != (prefs.TxtrConfigList[OGL_Txtr_Inhabitant].FarFilter > 1)) {
+			prefs.TxtrConfigList[OGL_Txtr_Inhabitant].FarFilter = sprite_mipmap_w->get_selection() ? 5 : 1;
+			changed = true;
+		}	
+		
+		if (changed)
+			write_preferences();
+		
+	}
+}
+
 
 /*
  *  OpenGL dialog
@@ -505,17 +586,39 @@ static void opengl_dialog(void *arg)
 	w_toggle *models_w = new w_toggle("3D Models", TEST_FLAG(prefs.Flags, OGL_Flag_3D_Models));
 	d.add(models_w);
 	d.add(new w_spacer());
-	w_select *wall_texture_quality_w = new w_select("Wall Texture Quality", get_texture_quality_label(prefs.TxtrConfigList[OGL_Txtr_Wall].MaxSize, true), texture_quality_labels);
-	d.add(wall_texture_quality_w);
-//	w_select *sprite_texture_quality_w = new w_select("Sprite Texture Quality", get_texture_quality_label(prefs.MaxSpriteSize, false), texture_quality_labels);
-//	d.add(sprite_texture_quality_w);
-	d.add(new w_spacer());
+
 	w_select *fsaa_w = new w_select("Full Scene Antialiasing", prefs.Multisamples == 4 ? 2 : prefs.Multisamples == 2 ? 1 : 0, fsaa_labels);
 	d.add(fsaa_w);
 	int theAnistoropyLevel = (prefs.AnisotropyLevel == 0.0f) ? 0 : (int) log2(prefs.AnisotropyLevel) + 1;
 	w_slider* aniso_w = new w_slider("Anisotropic Filtering", 6, theAnistoropyLevel);
 	d.add(aniso_w);
 	d.add(new w_spacer());
+
+	d.add(new w_static_text("Replacement Texture Quality"));
+	
+	w_select *texture_quality_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
+	for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) texture_quality_wa[i] = NULL;
+	
+	texture_quality_wa[OGL_Txtr_Wall] =  new w_select("Walls", get_texture_quality_label(prefs.TxtrConfigList[OGL_Txtr_Wall].MaxSize, true), texture_quality_labels);
+	
+	texture_quality_wa[OGL_Txtr_Landscape] = new w_select("Landscapes", get_texture_quality_label(prefs.TxtrConfigList[OGL_Txtr_Landscape].MaxSize, false), texture_quality_labels);
+	
+	texture_quality_wa[OGL_Txtr_Inhabitant] = new w_select("Sprites", get_texture_quality_label(prefs.TxtrConfigList[OGL_Txtr_Inhabitant].MaxSize, false), texture_quality_labels);
+	
+	texture_quality_wa[OGL_Txtr_WeaponsInHand] = new w_select("Weapons in Hand", get_texture_quality_label(prefs.TxtrConfigList[OGL_Txtr_WeaponsInHand].MaxSize, false), texture_quality_labels);
+	
+	for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
+		if (texture_quality_wa[i]) {
+			d.add(texture_quality_wa[i]);
+		}
+	}
+
+	d.add(new w_spacer());
+	
+	d.add(new w_button("ADVANCED", texture_options_dialog, &d));
+	
+	d.add(new w_spacer());
+
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
@@ -540,6 +643,14 @@ static void opengl_dialog(void *arg)
 			changed = true;
 		}
 
+		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
+			if (texture_quality_wa[i] && texture_quality_wa[i]->get_selection() != get_texture_quality_label(prefs.TxtrConfigList[i].MaxSize, (i == OGL_Txtr_Wall)))
+			{
+				prefs.TxtrConfigList[i].MaxSize = get_texture_quality_from_label(texture_quality_wa[i]->get_selection(), (i == OGL_Txtr_Wall));
+				changed = true;
+			}
+		}
+
 		int new_fsaa = (fsaa_w->get_selection() == 2 ? 4 : fsaa_w->get_selection() == 1 ? 2 : 0);
 		if (new_fsaa != prefs.Multisamples) {
 			prefs.Multisamples = new_fsaa;
@@ -551,18 +662,6 @@ static void opengl_dialog(void *arg)
 			prefs.AnisotropyLevel = new_aniso;
 			changed = true;
 		}
-
-		if (wall_texture_quality_w->get_selection() != get_texture_quality_label(prefs.TxtrConfigList[OGL_Txtr_Wall].MaxSize, true))
-		{
-			prefs.TxtrConfigList[OGL_Txtr_Wall].MaxSize = get_texture_quality_from_label(wall_texture_quality_w->get_selection(), true);
-			changed = true;
-		}
-
-//		if (sprite_texture_quality_w->get_selection() != get_texture_quality_label(prefs.MaxSpriteSize, false))
-//		{
-//			prefs.MaxSpriteSize = get_texture_quality_from_label(sprite_texture_quality_w->get_selection(), false);
-//			changed = true;
-//		}
 
 		if (changed)
 			write_preferences();
