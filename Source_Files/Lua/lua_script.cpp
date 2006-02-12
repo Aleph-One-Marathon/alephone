@@ -4672,6 +4672,31 @@ static int L_Get_Player_Weapon(lua_State *L)
 	return 1;
 }
 
+static int L_Annotations_Iterator(lua_State* L) {
+	struct map_annotation *annotation;
+	void* ud = lua_touserdata(L, 1);
+	annotation = get_next_map_annotation((short*)ud);
+	if(annotation == NULL) {
+		lua_pushnil(L);
+		return 1;
+	}
+	else {
+		lua_pushstring(L, annotation->text);
+		lua_pushnumber(L, annotation->polygon_index);
+		lua_pushnumber(L, annotation->location.x / (double)WORLD_ONE);
+		lua_pushnumber(L, annotation->location.y / (double)WORLD_ONE);
+		return 4;
+	}
+}
+
+static int L_Annotations(lua_State* L) {
+	lua_pushcfunction(L, L_Annotations_Iterator);
+	void* ud = lua_newuserdata(L, sizeof(short));
+	*((short*)ud) = 0;
+	lua_pushnil(L);
+	return 3;
+}
+
 void RegisterLuaFunctions()
 {
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
@@ -4848,6 +4873,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "clear_music", L_Clear_Music);
 	lua_register(state, "play_music", L_Play_Music);
 	lua_register(state, "stop_music", L_Stop_Music);
+	lua_register(state, "annotations", L_Annotations);
 }
 
 void DeclareLuaConstants()
