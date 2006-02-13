@@ -285,10 +285,15 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	flags |= SDL_HWSURFACE | SDL_HWPALETTE;
 #endif
 	main_surface = SDL_SetVideoMode(width, height, depth, flags);
-#ifdef MUST_RELOAD_VIEW_CONTEXT
-	if (!nogl && screen_mode.acceleration == _opengl_acceleration) 
-		ReloadViewContext();
+#ifdef HAVE_OPENGL
+	if (main_surface == NULL && !nogl && screen_mode.acceleration == _opengl_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
+		// retry with multisampling off
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
+		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
+		main_surface = SDL_SetVideoMode(width, height, depth, flags);
+	}
 #endif
+
 	if (main_surface == NULL) {
 		fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
 #ifdef HAVE_OPENGL
@@ -308,6 +313,10 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	exit(1);
 #endif
 	}
+#ifdef MUST_RELOAD_VIEW_CONTEXT
+	if (!nogl && screen_mode.acceleration == _opengl_acceleration) 
+		ReloadViewContext();
+#endif
 	if (depth == 8) {
 	        SDL_Color colors[256];
 		build_sdl_color_table(interface_color_table, colors);
