@@ -4697,6 +4697,14 @@ static int L_Annotations(lua_State* L) {
 	return 3;
 }
 
+static int L_Environment(lua_State* L) {
+	lua_pushboolean(L, static_world->environment_flags&_environment_vacuum);
+	lua_pushboolean(L, static_world->environment_flags&_environment_magnetic);
+	lua_pushboolean(L, static_world->environment_flags&_environment_rebellion);
+	lua_pushboolean(L, static_world->environment_flags&_environment_low_gravity);
+	return 4;
+}
+
 void RegisterLuaFunctions()
 {
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
@@ -4874,6 +4882,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "play_music", L_Play_Music);
 	lua_register(state, "stop_music", L_Stop_Music);
 	lua_register(state, "annotations", L_Annotations);
+	lua_register(state, "get_map_environment", L_Environment);
 }
 
 void DeclareLuaConstants()

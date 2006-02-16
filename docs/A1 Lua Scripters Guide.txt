@@ -1013,6 +1013,12 @@ end
 You need not ask any information beyond the annotation text.
 
 
+get_map_environment()
+
+Returns a the map's environment attributes. For example:
+
+vacuum,magnetic,rebellion,low_gravity = get_map_environment()
+
 
 3 Mnemonics
 -----------
