@@ -286,12 +286,14 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #endif
 	main_surface = SDL_SetVideoMode(width, height, depth, flags);
 #ifdef HAVE_OPENGL
+#if SDL_VERSION_ATLEAST(1,2,6)
 	if (main_surface == NULL && !nogl && screen_mode.acceleration == _opengl_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		main_surface = SDL_SetVideoMode(width, height, depth, flags);
 	}
+#endif
 #endif
 
 	if (main_surface == NULL) {
