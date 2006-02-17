@@ -1112,6 +1112,7 @@ void remove_map_object(short index);
 // ZZZ additions in support of prediction:
 // removes the object at object_index from the polygon with index in object's 'polygon' field
 extern void remove_object_from_polygon_object_list(short object_index);
+extern void remove_object_from_polygon_object_list(short object_index, short polygon_index);
 
 // schedules object at object_index for later insertion into a polygon object list.  it'll be inserted
 // before the object with index index_to_precede (which had better be in the list or be scheduled for insertion

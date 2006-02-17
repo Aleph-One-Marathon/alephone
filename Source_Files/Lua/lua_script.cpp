@@ -4705,6 +4705,28 @@ static int L_Environment(lua_State* L) {
 	return 4;
 }
 
+static int L_Set_Monster_Position(lua_State* L) {
+  if(lua_gettop(L) != 5) {
+    lua_pushstring(L, "usage: set_monster_position(monster, polygon, x, y, z)");
+    lua_error(L);
+  }
+  short monster_index = static_cast<int>(lua_tonumber(L,1));
+  if(monster_index < 0 || monster_index >= MAXIMUM_MONSTERS_PER_MAP) return 0;
+  struct monster_data* monster = get_monster_data(monster_index);
+  if(!SLOT_IS_USED(monster)) return 0;
+  struct object_data* object = get_object_data(monster->object_index);
+  struct polygon_data* polygon;
+  remove_object_from_polygon_object_list(monster->object_index, object->polygon);
+  object->location.x = static_cast<int>(lua_tonumber(L,3)*WORLD_ONE);
+  object->location.y = static_cast<int>(lua_tonumber(L,4)*WORLD_ONE);
+  object->location.z = static_cast<int>(lua_tonumber(L,5)*WORLD_ONE);
+  object->polygon = static_cast<int>(lua_tonumber(L,2));
+  polygon = get_polygon_data(object->polygon);
+  object->next_object = polygon->first_object;
+  polygon->first_object = monster->object_index;
+  return 0;
+}
+
 void RegisterLuaFunctions()
 {
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
@@ -4883,6 +4905,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "stop_music", L_Stop_Music);
 	lua_register(state, "annotations", L_Annotations);
 	lua_register(state, "get_map_environment", L_Environment);
+	lua_register(state, "set_monster_position", L_Set_Monster_Position);
 }
 
 void DeclareLuaConstants()

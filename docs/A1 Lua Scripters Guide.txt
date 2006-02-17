@@ -449,6 +449,11 @@ get_monster_polygon (monster)
 Returns the position/angle/polygon of monster.
 
 
+set_monster_position(monster, polygon, x, y, z)
+
+Set the position of the monster. Be careful...
+
+
 get_monster_immunity (monster, type)
 set_monster_immunity (monster, type, state)
 
