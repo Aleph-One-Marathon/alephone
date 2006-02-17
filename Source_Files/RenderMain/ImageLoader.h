@@ -88,6 +88,7 @@ public:
 	bool Minify();
 
 	bool MakeRGBA();
+	bool MakeDXTC3();
 
 	// Clearing
 	void Clear()
@@ -199,7 +200,8 @@ enum {
 enum {
 	ImageLoader_ResizeToPowersOfTwo = 0x1,
 	ImageLoader_CanUseDXTC = 0x2,
-	ImageLoader_LoadMipMaps = 0x4
+	ImageLoader_LoadMipMaps = 0x4,
+	ImageLoader_LoadDXTC1AsDXTC3 = 0x8
 };
 // Returns whether or not the loading was successful
 //bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, int flags, int maxSize = 0);

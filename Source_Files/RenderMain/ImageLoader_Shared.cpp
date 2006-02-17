@@ -527,6 +527,32 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 	
 	if (!(flags & ImageLoader_CanUseDXTC)) MakeRGBA();
 
+	if (Format == DXTC1 && (flags & ImageLoader_LoadDXTC1AsDXTC3)) MakeDXTC3();
+
+	return true;
+}
+
+bool ImageDescriptor::MakeDXTC3()
+{
+	if (Format != DXTC1) return false;
+
+	uint32 *NewPixels = new uint32[Size * 2];
+
+	uint32 *oldpixels = Pixels;
+	uint32 *newpixels = NewPixels;
+	
+	for (int i = 0; i < (Size / 8); i++) {
+		memset(newpixels, 0xff, 8);
+		newpixels += 2;
+		memcpy(newpixels, oldpixels, 8);
+		oldpixels += 2;
+		newpixels += 2;
+	}
+
+	Size = Size * 2;
+	delete []Pixels;
+	Pixels = NewPixels;
+	Format = DXTC3;
 	return true;
 }
 
