@@ -1025,6 +1025,16 @@ Returns a the map's environment attributes. For example:
 vacuum,magnetic,rebellion,low_gravity = get_map_environment()
 
 
+set_overlay_color(overlay, color)
+
+Sets the color of overlay to color. (color is a number, denoting a terminal text color.) There are four overlays, numbered 0 through 3.
+
+
+set_overlay_text(overlay, text)
+
+Sets the text of overlay to... text. There are four overlays, numbered 0 through 3.
+
+
 3 Mnemonics
 -----------
 

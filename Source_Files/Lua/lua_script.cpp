@@ -135,7 +135,7 @@ const float AngleConvert = 360/float(FULL_CIRCLE);
 
 // Steal all this stuff
 extern bool ready_weapon(short player_index, short weapon_index);
-extern void DisplayText(short BaseX, short BaseY, char *Text);
+extern void DisplayText(short BaseX, short BaseY, char *Text, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff);
 
 extern void advance_monster_path(short monster_index);
 extern long monster_pathfinding_cost_function(short source_polygon_index, short line_index,
@@ -254,7 +254,7 @@ static void OpenStdLibs(lua_State* l)
 static void
 L_Error(const char* inMessage)
 {
-	screen_printf(inMessage);
+	screen_printf("%s", inMessage);
 	logError(inMessage);
 }
 
@@ -4710,21 +4710,54 @@ static int L_Set_Monster_Position(lua_State* L) {
     lua_pushstring(L, "usage: set_monster_position(monster, polygon, x, y, z)");
     lua_error(L);
   }
-  short monster_index = static_cast<int>(lua_tonumber(L,1));
-  if(monster_index < 0 || monster_index >= MAXIMUM_MONSTERS_PER_MAP) return 0;
-  struct monster_data* monster = get_monster_data(monster_index);
-  if(!SLOT_IS_USED(monster)) return 0;
+  struct monster_data* monster = get_monster_data((int)lua_tonumber(L, 1));
   struct object_data* object = get_object_data(monster->object_index);
-  struct polygon_data* polygon;
-  remove_object_from_polygon_object_list(monster->object_index, object->polygon);
+  struct polygon_data* polygon = get_polygon_data(object->polygon);
+  polygon->first_object = object->next_object;
   object->location.x = static_cast<int>(lua_tonumber(L,3)*WORLD_ONE);
   object->location.y = static_cast<int>(lua_tonumber(L,4)*WORLD_ONE);
   object->location.z = static_cast<int>(lua_tonumber(L,5)*WORLD_ONE);
-  object->polygon = static_cast<int>(lua_tonumber(L,2));
+  object->polygon = static_cast<int>(lua_tonumber(L,2)*WORLD_ONE);
   polygon = get_polygon_data(object->polygon);
   object->next_object = polygon->first_object;
   polygon->first_object = monster->object_index;
   return 0;
+}
+
+static int L_Set_Overlay_Color(lua_State* L) {
+	if(lua_gettop(L) != 2) {
+		lua_pushstring(L, "usage: set_overlay_color(overlay, color)");
+		lua_error(L);
+	}
+	int idx = (int)lua_tonumber(L, 1);
+	if(idx < 0 || idx >= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS) {
+		lua_pushstring(L, "invalid overlay index");
+		lua_error(L);
+	}
+	int color = (int)lua_tonumber(L, 2);
+	if(idx < 0 || idx >= 8) {
+		lua_pushstring(L, "invalid terminal color");
+		lua_error(L);
+	}
+	SetScriptHUDColor(idx, color);
+	return 0;
+}
+
+static int L_Set_Overlay_Text(lua_State* L) {
+	if(lua_gettop(L) != 2) {
+		lua_pushstring(L, "usage: set_overlay_text(overlay, text)");
+		lua_error(L);
+	}
+	int idx = (int)lua_tonumber(L, 1);
+	if(idx < 0 || idx >= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS) {
+		lua_pushstring(L, "invalid overlay index");
+		lua_error(L);
+	}
+	const char* text;
+	if(!lua_isstring(L, 2)) text = NULL;
+	else text = lua_tostring(L, 2);
+	SetScriptHUDText(idx, text);
+	return 0;
 }
 
 void RegisterLuaFunctions()
@@ -4906,6 +4939,8 @@ void RegisterLuaFunctions()
 	lua_register(state, "annotations", L_Annotations);
 	lua_register(state, "get_map_environment", L_Environment);
 	lua_register(state, "set_monster_position", L_Set_Monster_Position);
+	lua_register(state, "set_overlay_color", L_Set_Overlay_Color);
+	lua_register(state, "set_overlay_text", L_Set_Overlay_Text);
 }
 
 void DeclareLuaConstants()

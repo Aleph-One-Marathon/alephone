@@ -52,6 +52,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #define DEFAULT_WORLD_HEIGHT 320
 
 #include "Console.h"
+#include "screen_drawing.h"
 
 
 // LP addition: view sizes and display data
@@ -156,9 +157,19 @@ struct ScreenMessage
 	ScreenMessage(): TimeRemaining(0) {Text[0] = 0;}
 };
 
-
 static int MostRecentMessage = NumScreenMessages-1;
 static ScreenMessage Messages[NumScreenMessages];
+
+/* SB */
+static struct ScriptHUDElement {
+	/* I don't like this convention, but I'll follow it. */
+	enum {
+		Len = 256
+	};
+	int color;
+	char text[Len];
+} ScriptHUDElements[MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS];
+/* /SB */
 
 /* ---------- private prototypes */
 
@@ -166,6 +177,20 @@ static void set_overhead_map_status(bool status);
 static void set_terminal_status(bool status);
 
 /* ---------- code */
+
+/* SB */
+void SetScriptHUDColor(int idx, int color) {
+	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; /* o_o */
+	ScriptHUDElements[idx].color = color % 8; /* O_O */
+}
+
+void SetScriptHUDText(int idx, const char* text) {
+	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
+	if(!text) text = "";
+	strncpy(ScriptHUDElements[idx].text, text, 255);
+	ScriptHUDElements[idx].text[255] = 0;
+}
+/* /SB */
 
 // LP addition: this resets the screen; useful when starting a game
 void reset_screen()
@@ -182,6 +207,11 @@ void reset_screen()
 	// ZZZ: reset screen_printf's
 	for(int i = 0; i < NumScreenMessages; i++)
 		Messages[i].TimeRemaining = 0;
+	/* SB: reset HUD elements */
+	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; i++) {
+		ScriptHUDElements[i].color = 1;
+		ScriptHUDElements[i].text[0] = 0;
+	}
 }
 
 // LP change: resets field of view to whatever the player had had when reviving
@@ -299,18 +329,23 @@ static sdl_font_info *DisplayTextFont = NULL;
 static short DisplayTextStyle = 0;
 #endif
 
-/*static*/ void DisplayText(short BaseX, short BaseY, const char *Text)
+/*static*/ void DisplayText(short BaseX, short BaseY, const char *Text, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff)
 {
 #ifdef HAVE_OPENGL
 	// OpenGL version:
 	// activate only in the main view, and also if OpenGL is being used for the overhead map
 	if((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
-		if (OGL_RenderText(BaseX, BaseY, Text)) return;
+		if (OGL_RenderText(BaseX, BaseY, Text, r, g, b)) return;
 #endif
 
 #if defined(mac)
 	// C to Pascal
+	RGBColor color;
 	Str255 PasText;
+	
+	color.red = (r << 8) | r;
+	color.green = (g << 8) | g;
+	color.blue = (b << 8) | b;
 	
 	int Len = MIN(strlen(Text),255);
 	PasText[0] = Len;
@@ -321,14 +356,14 @@ static short DisplayTextStyle = 0;
 	MoveTo(BaseX+1,BaseY+1);
 	DrawString(PasText);
 	
-	RGBForeColor(&rgb_white);
+	RGBForeColor(&color);
 	MoveTo(BaseX,BaseY);
 	DrawString(PasText);
 	
 #elif defined(SDL)
 
 	draw_text(DisplayTextDest, Text, BaseX+1, BaseY+1, SDL_MapRGB(world_pixels->format, 0x00, 0x00, 0x00), DisplayTextFont, DisplayTextStyle);
-	draw_text(DisplayTextDest, Text, BaseX, BaseY, SDL_MapRGB(world_pixels->format, 0xff, 0xff, 0xff), DisplayTextFont, DisplayTextStyle);
+	draw_text(DisplayTextDest, Text, BaseX, BaseY, SDL_MapRGB(world_pixels->format, r, g, b), DisplayTextFont, DisplayTextStyle);
 	
 #endif
 }
@@ -532,6 +567,29 @@ static void DisplayMessages(SDL_Surface *s)
 	short X = X0 + LineSpacing/3;
 	short Y = Y0 + LineSpacing;
 	if (ShowPosition) Y += 6*LineSpacing;	// Make room for the position data
+	/* SB */
+	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
+		if(ScriptHUDElements[i].text[0]) {
+			short x2 = X;
+			/* Yes, I KNOW this is the same i as above. I know what I'm doing. */
+			for(i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
+				if(!ScriptHUDElements[i].text[0]) continue;
+#if defined(mac)
+				RGBColor color;
+				_get_interface_color(ScriptHUDElements[i].color+_computer_interface_text_color, &color);
+				DisplayText(x2,Y,ScriptHUDElements[i].text, color.red >> 8, color.green >> 8, color.blue >> 8);
+#elif defined(SDL)
+				SDL_Color color;
+				_get_interface_color(ScriptHUDElements[i].color+_computer_interface_text_color, &color);
+				DisplayText(x2,Y,ScriptHUDElements[i].text, color.r, color.g, color.b);
+#endif
+				x2 += SCRIPT_HUD_ELEMENT_SPACING;
+			}
+			Y += LineSpacing;
+			break;
+		}
+	}
+	/* /SB */
 	//	for (int k=0; k<NumScreenMessages; k++)
 	for (int k = NumScreenMessages - 1; k >= 0; k--)
 	{

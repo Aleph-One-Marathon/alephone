@@ -220,4 +220,15 @@ short SizeWithoutHUD(short _size);
 // Displays a message on the screen for a second or so; may be good for debugging
 void ShowMessage(char *Text);
 
+/* SB: Custom Blizzard-style overlays */
+#define MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS 4
+/* This is rather high for people who play at 320x240. Yes, I DO exist!
+However, since text in general doesn't work too well for us... :'( */
+#define SCRIPT_HUD_ELEMENT_SPACING 160
+/* color is a terminal color */
+void SetScriptHUDColor(int idx, int color);
+/* text == NULL or "" removes that HUD element
+   to turn HUD elements off, set all elements NULL or "" */
+void SetScriptHUDText(int idx, const char* text);
+
 #endif

@@ -3148,7 +3148,7 @@ bool OGL_RenderCrosshairs()
 }
 
 // Rendering text; this takes it as a Pascal string (byte 0 = number of text bytes)
-bool OGL_RenderText(short BaseX, short BaseY, const char *Text)
+bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r, unsigned char g, unsigned char b)
 {
 	if (!OGL_IsActive()) return false;
 	
@@ -3207,7 +3207,7 @@ bool OGL_RenderText(short BaseX, short BaseY, const char *Text)
 	glCallList(TextDisplayList);
 	
 	// Foreground
-	glColor3f(1,1,1);
+	glColor3f(r/255.0f,g/255.0f,b/255.0f);
 
 	glLoadIdentity();
 	glTranslatef(BaseX,BaseY,Depth);
