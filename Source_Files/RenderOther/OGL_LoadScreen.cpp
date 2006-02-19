@@ -57,6 +57,8 @@ bool OGL_LoadScreen::Start()
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.GetWidth(), image.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.GetBuffer());
 	
 	Progress(0);
+
+	return use = true;
 }
 
 extern bool OGL_ClearScreen();
@@ -65,6 +67,7 @@ void OGL_LoadScreen::Stop()
 {
 	glDeleteTextures(1, &texture_ref);
 	OGL_ClearScreen();
+	Clear();
 }
 
 #if defined(mac)
