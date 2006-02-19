@@ -231,7 +231,7 @@ static const luaL_reg lualibs[] =
 {
 	{"base", luaopen_base},
 	{"table", luaopen_table},
-	// {"io", luaopen_io}, jkvw: This is just begging to be a security problem, isn't it?
+//	{"io", luaopen_io}, //jkvw: This is just begging to be a security problem, isn't it?
 	{"string", luaopen_string},
 	{"math", luaopen_math},
 	{"debug", luaopen_debug},
@@ -4760,6 +4760,40 @@ static int L_Set_Overlay_Text(lua_State* L) {
 	return 0;
 }
 
+static int L_Set_Overlay_Icon_By_Color(lua_State* L) {
+	if(lua_gettop(L) != 2) {
+		lua_pushstring(L, "usage: set_overlay_icon_by_color(overlay, color)");
+		lua_error(L);
+	}
+	int idx = (int)lua_tonumber(L, 1);
+	if(idx < 0 || idx >= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS) {
+		lua_pushstring(L, "invalid overlay index");
+		lua_error(L);
+	}
+	int color = (int)lua_tonumber(L, 2);
+	if(idx < 0 || idx >= 8) {
+		lua_pushstring(L, "invalid terminal color");
+		lua_error(L);
+	}
+	SetScriptHUDSquare(idx, color);
+	return 0;
+}
+
+static int L_Set_Overlay_Icon(lua_State* L) {
+	if(lua_gettop(L) != 2) {
+		lua_pushstring(L, "usage: set_overlay_icon_by_color(overlay, color)");
+		lua_error(L);
+	}
+	int idx = (int)lua_tonumber(L, 1);
+	if(idx < 0 || idx >= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS) {
+		lua_pushstring(L, "invalid overlay index");
+		lua_error(L);
+	}
+	if(!lua_isstring(L, 2)) lua_pushboolean(L, SetScriptHUDIcon(idx, NULL, 0));
+	else lua_pushboolean(L, SetScriptHUDIcon(idx, lua_tostring(L, 2), lua_strlen(L, 2)));
+	return 1;
+}
+
 void RegisterLuaFunctions()
 {
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
@@ -4941,6 +4975,8 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_monster_position", L_Set_Monster_Position);
 	lua_register(state, "set_overlay_color", L_Set_Overlay_Color);
 	lua_register(state, "set_overlay_text", L_Set_Overlay_Text);
+	lua_register(state, "set_overlay_icon", L_Set_Overlay_Icon);
+	lua_register(state, "set_overlay_icon_by_color", L_Set_Overlay_Icon_By_Color);
 }
 
 void DeclareLuaConstants()

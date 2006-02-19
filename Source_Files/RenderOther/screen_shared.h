@@ -166,6 +166,10 @@ static struct ScriptHUDElement {
 	enum {
 		Len = 256
 	};
+	/* this needs optimized (sorry, making fun of my grandmother...) */
+	/* it's char[4] instead of int32 to make the OpenGL support simpler to implement */
+	unsigned char icon[1024];
+	bool isicon;
 	int color;
 	char text[Len];
 } ScriptHUDElements[MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS];
@@ -179,6 +183,89 @@ static void set_terminal_status(bool status);
 /* ---------- code */
 
 /* SB */
+namespace icon {
+	
+	static inline char nextc(const char*& p, size_t& rem) {
+		if(rem == 0) throw "end of string";
+		--rem;
+		return *(p++);
+	}
+	
+	static inline unsigned char digit(char p) {
+		if(p >= '0' && p <= '9') return p - '0';
+		else if(p >= 'A' && p <= 'F') return p - 'A' + 0xA;
+		else if(p >= 'a' && p <= 'f') return p - 'a' + 0xA;
+		else throw "invalid digit";
+	}
+	
+	static inline unsigned char readuc(const char*& p, size_t& rem) {
+		char a = nextc(p, rem), b;
+		b = nextc(p, rem);
+		return (digit(a) << 4) | digit(b);
+	}
+	
+	static bool parseicon(const char* p, size_t rem,
+												unsigned char palette[768], int& numcolors,
+												unsigned char graphic[256]) {
+		char chars[256];
+		try {
+			char oc, c;
+			size_t n, m;
+			numcolors = 0;
+			while(1) {
+				c = nextc(p, rem);
+				if(c >= '0' && c <= '9')
+					numcolors = numcolors * 10 + (c - '0');
+				else break;
+			}
+			if(numcolors == 0) return 1;
+			oc = c;
+			do {
+				c = nextc(p, rem);
+			} while(c == oc);
+			n = 0;
+			while(n < numcolors) {
+				chars[n] = c;
+				palette[n * 3] = readuc(p, rem);
+				palette[n * 3 + 1] = readuc(p, rem);
+				palette[n * 3 + 2] = readuc(p, rem);
+				++n;
+				nextc(p, rem); /* ignore a char */
+				c = nextc(p, rem);
+			}
+			n = 0;
+			while(n < 256) {
+				for(m = 0; m < numcolors; ++m) {
+					if(chars[m] == c) {
+						graphic[n++] = m;
+						break;
+					}
+				}
+				c = nextc(p, rem);
+			}
+		} catch(...) {
+			return false;
+		}
+		return true;
+	}
+	
+	void seticon(int idx, unsigned char palette[768], unsigned char graphic[256]) {
+		unsigned char* p1, *p2, px;
+		int n;
+		p1 = ScriptHUDElements[idx].icon;
+		p2 = graphic;
+		for(n = 0; n < 256; ++n) {
+			px = *(p2++);
+			*(p1++) = 0xFF;
+			*(p1++) = palette[px * 3];
+			*(p1++) = palette[px * 3 + 1];
+			*(p1++) = palette[px * 3 + 2];
+		}
+		ScriptHUDElements[idx].isicon = true;
+	}
+	
+}
+
 void SetScriptHUDColor(int idx, int color) {
 	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; /* o_o */
 	ScriptHUDElements[idx].color = color % 8; /* O_O */
@@ -189,6 +276,39 @@ void SetScriptHUDText(int idx, const char* text) {
 	if(!text) text = "";
 	strncpy(ScriptHUDElements[idx].text, text, 255);
 	ScriptHUDElements[idx].text[255] = 0;
+}
+
+bool SetScriptHUDIcon(int idx, const char* text, size_t rem) {
+	unsigned char palette[768], graphic[256];
+	int numcolors;
+	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
+	if(text) {
+		if(!icon::parseicon(text, rem, palette, numcolors, graphic)) return false;
+		icon::seticon(idx, palette, graphic);
+	} else ScriptHUDElements[idx].isicon = false;
+	return true;
+}
+
+void SetScriptHUDSquare(int idx, int _color) {
+	unsigned char palette[3]; /* short, I KNOW. */
+	unsigned char graphic[256];
+	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
+	ScriptHUDElements[idx].color = _color % 8;
+	bzero(graphic, 256);
+#if defined(mac)
+	RGBColor color;
+	_get_interface_color(_color+_computer_interface_text_color, &color);
+	palette[0] = color.red >> 8;
+	palette[1] = color.green >> 8;
+	palette[2] = color.blue >> 8;
+#elif defined(SDL)
+	SDL_Color color;
+	_get_interface_color(_color+_computer_interface_text_color, &color);
+	palette[0] = color.r;
+	palette[1] = color.g;
+	palette[2] = color.b;
+#endif
+	icon::seticon(idx, palette, graphic);
 }
 /* /SB */
 
@@ -211,6 +331,7 @@ void reset_screen()
 	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; i++) {
 		ScriptHUDElements[i].color = 1;
 		ScriptHUDElements[i].text[0] = 0;
+		ScriptHUDElements[i].isicon = false;
 	}
 }
 
@@ -570,22 +691,104 @@ static void DisplayMessages(SDL_Surface *s)
 	/* SB */
 	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
 		if(ScriptHUDElements[i].text[0]) {
-			short x2 = X;
+			short x2 = X, sk, ysk = 0;
 			/* Yes, I KNOW this is the same i as above. I know what I'm doing. */
 			for(i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; ++i) {
 				if(!ScriptHUDElements[i].text[0]) continue;
+				sk = SCRIPT_HUD_ELEMENT_SPACING;
+				if(ScriptHUDElements[i].isicon) {
+					ysk = 2;
+					if(OGL_IsActive() && ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)) {
+						GLuint tex;
+						glPushAttrib(GL_ALL_ATTRIB_BITS);
+						glEnable(GL_TEXTURE_2D);
+						glDisable(GL_CULL_FACE);
+						glEnable(GL_BLEND);
+						glDisable(GL_ALPHA_TEST);
+						glMatrixMode(GL_MODELVIEW);
+						glPushMatrix();
+						glLoadIdentity();
+						glGenTextures(1, &tex);
+						glTranslatef(x2-0.5f,Y+4.5f,0);
+						glRasterPos2d(0, 0);
+						glBindTexture(GL_TEXTURE_2D, tex);
+						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ScriptHUDElements[i].icon);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+						glColor3f(1,1,1);
+						glBegin(GL_TRIANGLE_FAN);
+						glTexCoord2f(0.0f, 0.0f);
+						glVertex2f(0.0f, -16.0f);
+						glTexCoord2f(1.0f, 0.0f);
+						glVertex2f(16.0f, -16.0f);
+						glTexCoord2f(1.0f, 1.0f);
+						glVertex2f(16.0f, 0.0f);
+						glTexCoord2f(0.0f, 1.0f);
+						glVertex2f(0.0f, 0.0f);
+						glEnd();
+						/*glDrawPixels(16, 16, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ScriptHUDElements[i].icon);*/
+						glDeleteTextures(1, &tex);
+						glPopMatrix();
+						glPopAttrib();				
+					}
+					else {
+#if defined(mac)
+						struct PixMap** map = NewPixMap();
+						Rect target;
+						(*map)->baseAddr = ScriptHUDElements[i].icon;
+						(*map)->rowBytes = 64 | (1 << 15);
+						(*map)->bounds.top = 0;
+						(*map)->bounds.left = 0;
+						(*map)->bounds.bottom = 16;
+						(*map)->bounds.right = 16;
+						(*map)->packType = 1;
+						(*map)->packSize = 1024;
+						(*map)->pixelType = RGBDirect;
+						(*map)->pixelSize = 32;
+						(*map)->cmpCount = 3;
+						(*map)->cmpSize = 8;
+						(*map)->pmTable = NULL;
+						target.top = Y - 11;
+						target.left = x2;
+						target.bottom = Y + 5;
+						target.right = x2 + 16;
+						RGBForeColor(&rgb_black);
+						RGBBackColor(&rgb_white);
+						CopyBits((BitMap*)*map, GetPortBitMapForCopyBits(port),
+										 &(*map)->bounds, &target, srcCopy, NULL);
+						DisposePixMap(map);
+#elif defined(SDL)
+						SDL_Surface* srf;
+						SDL_Rect rect;
+						rect.x = x2;
+						rect.y = Y - 11;
+						rect.w = rect.h = 16;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<24, 0xFF<<16, 0xFF<<8, 0);
+#else
+						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<16, 0xFF<<8, 0xFF, 0);
+#endif
+						SDL_BlitSurface(srf, NULL, s, &rect);
+						SDL_FreeSurface(srf);
+#endif
+					}
+					x2 += 20;
+					sk -= 20;
+				}
 #if defined(mac)
 				RGBColor color;
 				_get_interface_color(ScriptHUDElements[i].color+_computer_interface_text_color, &color);
-				DisplayText(x2,Y,ScriptHUDElements[i].text, color.red >> 8, color.green >> 8, color.blue >> 8);
+				DisplayText(x2,Y + (ScriptHUDElements[i].isicon ? 2 : 0),ScriptHUDElements[i].text, color.red >> 8, color.green >> 8, color.blue >> 8);
 #elif defined(SDL)
 				SDL_Color color;
 				_get_interface_color(ScriptHUDElements[i].color+_computer_interface_text_color, &color);
-				DisplayText(x2,Y,ScriptHUDElements[i].text, color.r, color.g, color.b);
+				DisplayText(x2,Y + (ScriptHUDElements[i].isicon ? 2 : 0),ScriptHUDElements[i].text, color.r, color.g, color.b);
 #endif
-				x2 += SCRIPT_HUD_ELEMENT_SPACING;
+				x2 += sk;
 			}
-			Y += LineSpacing;
+			Y += LineSpacing + ysk;
 			break;
 		}
 	}

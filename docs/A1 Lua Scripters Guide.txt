@@ -1027,12 +1027,22 @@ vacuum,magnetic,rebellion,low_gravity = get_map_environment()
 
 set_overlay_color(overlay, color)
 
-Sets the color of overlay to color. (color is a number, denoting a terminal text color.) There are four overlays, numbered 0 through 3.
+Sets the color of overlay to color. (color is a number, denoting a terminal text color.) There are six overlays, numbered 0 through 5.
 
 
 set_overlay_text(overlay, text)
 
-Sets the text of overlay to... text. There are four overlays, numbered 0 through 3.
+Sets the text of overlay to... text. There are six overlays, numbered 0 through 5.
+
+
+set_overlay_icon(overlay, icon)
+
+Sets the icon of overlay to icon. There are six overlays, numbered 0 through 5.
+
+
+set_overlay_icon_by_color(overlay, color)
+
+Sets the icon of overlay to a solid square of the given color. There are six overlays, numbered 0 through 5. Color is a terminal color.
 
 
 3 Mnemonics
