@@ -70,7 +70,7 @@ enum { // view flags, has room for expansion
   _view_show_HUD = (1 << 0)
 };
 
-const ViewSizeData ViewSizes[NUMBER_OF_VIEW_SIZES] =
+/*const*/ ViewSizeData ViewSizes[NUMBER_OF_VIEW_SIZES] =
 {
 	{ 640,  480,  320,  160,    _320_160_HUD,   _640_480, _view_show_HUD},    //   _320_160_HUD
 	{ 640,  480,  480,  240,    _480_240_HUD,   _640_480, _view_show_HUD},    //   _480_240_HUD

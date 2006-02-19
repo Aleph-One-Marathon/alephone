@@ -43,6 +43,7 @@ using namespace std;
 #include "shell.h"
 #include "game_wad.h"
 #include "music.h"
+#include "ColorParser.h"
 #include "XML_DataBlock.h"
 #include "XML_LevelScript.h"
 #include "XML_ParseTreeRoot.h"
@@ -50,6 +51,8 @@ using namespace std;
 #include "Random.h"
 #include "images.h"
 #include "lua_script.h"
+
+#include "OGL_LoadScreen.h"
 
 
 // The "command" is an instruction to process a file/resource in a certain sort of way
@@ -62,8 +65,9 @@ struct LevelScriptCommand
 		Music,
 		Movie,
 #ifdef HAVE_LUA
-		Lua
+		Lua,
 #endif /* HAVE_LUA */
+		LoadScreen
 	};
 	int Type;
 	
@@ -87,8 +91,16 @@ struct LevelScriptCommand
 	
 	// Relative size for a movie (negative means don't use)
 	float Size;
+
+	// Additional load screen information:
+	short T, L, B, R;
+	rgb_color Colors[2];
+	bool Stretch;
 	
-	LevelScriptCommand(): RsrcID(UnsetResource), Size(NONE) {}
+	LevelScriptCommand(): RsrcID(UnsetResource), Size(NONE), L(0), T(0), R(0), B(0), Stretch(true) {
+		memset(&Colors[0], 0, sizeof(rgb_color));
+		memset(&Colors[1], 0xff, sizeof(rgb_color));
+	}
 };
 
 struct LevelScriptHeader
@@ -247,6 +259,8 @@ void RunLevelScript(int LevelIndex)
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
 	Playlist.clear();
+	
+	OGL_LoadScreen::instance()->Clear();
 
 	if (FirstTime)
 		FirstTime = false; // first time, we already have base MML loaded
@@ -385,8 +399,23 @@ void GeneralRunScript(int LevelIndex)
 					Playlist.push_back(MusicFile);
 			}
 			break;
+		case LevelScriptCommand::LoadScreen:
+		{
+			if (Cmd.FileSpec.size() > 0)
+			{
+				if (Cmd.L || Cmd.T || Cmd.R || Cmd.B)
+				{
+					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch, Cmd.L, Cmd.T, Cmd.R, Cmd.B);
+					OGL_LoadScreen::instance()->Colors()[0] = Cmd.Colors[0];
+					OGL_LoadScreen::instance()->Colors()[1] = Cmd.Colors[1];
+				}
+				else 
+					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch);
+			}
+		}
 		
-		// The movie info is handled separately 
+		// The movie info is handled separately
+			
 		}
 	}
 }
@@ -494,14 +523,20 @@ class XML_LSCommandParser: public XML_ElementParser
 	LevelScriptCommand Cmd;
 	
 public:
-	bool Start() {ObjectWasFound = false; return true;}
-	bool AttributesDone();
+	bool Start();
+	bool End();
 
 	// For grabbing the level ID
 	bool HandleAttribute(const char *Tag, const char *Value);
 
 	XML_LSCommandParser(char *_Name, int _CmdType): XML_ElementParser(_Name) {Cmd.Type = _CmdType;}
 };
+
+bool XML_LSCommandParser::Start()
+{
+	ObjectWasFound = false;
+	Color_SetArray(Cmd.Colors, 2);
+}
 
 
 bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
@@ -526,15 +561,35 @@ bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 		ObjectWasFound = true;
 		return true;
 	}
+	else if (StringsEqual(Tag, "stretch"))
+	{
+		return ReadBooleanValueAsBool(Value, Cmd.Stretch);
+	}
 	else if (StringsEqual(Tag,"size"))
 	{
 		return ReadFloatValue(Value,Cmd.Size);
+	}
+	else if (StringsEqual(Tag, "progress_top"))
+	{
+		return ReadInt16Value(Value, Cmd.T);
+	}
+	else if (StringsEqual(Tag, "progress_bottom"))
+	{
+		return ReadInt16Value(Value, Cmd.B);
+	}
+	else if (StringsEqual(Tag, "progress_left"))
+	{
+		return ReadInt16Value(Value, Cmd.L);
+	}
+	else if (StringsEqual(Tag, "progress_right"))
+	{
+		return ReadInt16Value(Value, Cmd.R);
 	}
 	UnrecognizedTag();
 	return false;
 }
 
-bool XML_LSCommandParser::AttributesDone()
+bool XML_LSCommandParser::End()
 {
 	if (!ObjectWasFound) return false;
 	
@@ -551,6 +606,7 @@ static XML_LSCommandParser MovieParser("movie",LevelScriptCommand::Movie);
 #ifdef HAVE_LUA
 static XML_LSCommandParser LuaParser("lua",LevelScriptCommand::Lua);
 #endif /* HAVE_LUA */
+static XML_LSCommandParser LoadScreenParser("load_screen", LevelScriptCommand::LoadScreen);
 
 class XML_RandomOrderParser: public XML_ElementParser
 {
@@ -578,7 +634,7 @@ public:
 
 static XML_RandomOrderParser RandomOrderParser;
 
-
+	
 static void AddScriptCommands(XML_ElementParser& ElementParser)
 {
 	ElementParser.AddChild(&MMLParser);
@@ -589,6 +645,8 @@ static void AddScriptCommands(XML_ElementParser& ElementParser)
 #ifdef HAVE_LUA
         ElementParser.AddChild(&LuaParser);
 #endif /* HAVE_LUA */
+	ElementParser.AddChild(&LoadScreenParser);
+	LoadScreenParser.AddChild(Color_GetParser());
 }
 
 

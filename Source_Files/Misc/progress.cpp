@@ -69,7 +69,7 @@ void open_progress_dialog(size_t message_id)
 	
 	reset_progress_bar();
 
-	if (message_id == _starting_opengl || message_id == _loading_collections)
+	if (message_id == _loading)
 		SetWindowTitleWithCFString(ProgressWindow, CFSTR("Status")); // not "Network Status"
 	set_progress_dialog_message(message_id);
 	

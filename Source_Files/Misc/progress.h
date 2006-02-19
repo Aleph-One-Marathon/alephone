@@ -35,8 +35,7 @@ enum {
 	_distribute_physics_multiple,
 	_receiving_physics,
 	// non-network ones
-	_loading_collections,
-	_starting_opengl
+	_loading,
 };
 
 void open_progress_dialog(size_t message_id);

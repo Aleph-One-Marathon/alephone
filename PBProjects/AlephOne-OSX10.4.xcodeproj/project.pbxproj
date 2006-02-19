@@ -1242,6 +1242,9 @@
 		AEC6C89D0879A5DE0055EC57 /* Console.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC6C89B0879A5DE0055EC57 /* Console.cpp */; };
 		AEC6C89F0879A6020055EC57 /* Console.h in Headers */ = {isa = PBXBuildFile; fileRef = AEC6C89E0879A6020055EC57 /* Console.h */; };
 		AEC6C8A00879A6020055EC57 /* Console.h in Headers */ = {isa = PBXBuildFile; fileRef = AEC6C89E0879A6020055EC57 /* Console.h */; };
+		AEF5025F09A825E2004B0179 /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
+		AEF5026009A825E2004B0179 /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
+		AEF5028C09A83087004B0179 /* OGL_LoadScreen.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */; };
 		AEF8C0A8083782C60063B737 /* Gather Network Game.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A3083782C60063B737 /* Gather Network Game.nib */; };
 		AEF8C0A9083782C60063B737 /* Join Network Game.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A4083782C60063B737 /* Join Network Game.nib */; };
 		AEF8C0AA083782C60063B737 /* Metaserver Client.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A5083782C60063B737 /* Metaserver Client.nib */; };
@@ -1671,6 +1674,7 @@
 				2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */,
 				AE791CDE0968E2C500350190 /* ImageLoader.h in CopyFiles */,
 				AE791CF70968E49100350190 /* DDS.h in CopyFiles */,
+				AEF5028C09A83087004B0179 /* OGL_LoadScreen.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1757,6 +1761,8 @@
 		AEBF94A70834FD9500C0B18C /* NibsUiHelpers.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NibsUiHelpers.h; path = ../Source_Files/CSeries/NibsUiHelpers.h; sourceTree = SOURCE_ROOT; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
+		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
+		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
 		AEF8C0A3083782C60063B737 /* Gather Network Game.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = "Gather Network Game.nib"; path = "../Resources/Gather Network Game.nib"; sourceTree = SOURCE_ROOT; };
 		AEF8C0A4083782C60063B737 /* Join Network Game.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = "Join Network Game.nib"; path = "../Resources/Join Network Game.nib"; sourceTree = SOURCE_ROOT; };
 		AEF8C0A5083782C60063B737 /* Metaserver Client.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = "Metaserver Client.nib"; path = "../Resources/Metaserver Client.nib"; sourceTree = SOURCE_ROOT; };
@@ -2871,6 +2877,7 @@
 				F5CC93930240D85D01A80001 /* HUDRenderer_SW.cpp */,
 				F5CC93940240D85D01A80001 /* images.cpp */,
 				F5CC93950240D85D01A80001 /* motion_sensor.cpp */,
+				AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */,
 				F5CC93960240D85D01A80001 /* overhead_map.cpp */,
 				F5CC93970240D85D01A80001 /* OverheadMap_OGL.cpp */,
 				F5CC93980240D85D01A80001 /* OverheadMapRenderer.cpp */,
@@ -2886,6 +2893,7 @@
 		F5CC936F0240D85D01A80001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */,
 				F5CC93700240D85D01A80001 /* ChaseCam.h */,
 				F5CC93710240D85D01A80001 /* computer_interface.h */,
 				F5CC93720240D85D01A80001 /* fades.h */,
@@ -3932,6 +3940,7 @@
 				AE437C9008779BE500038E30 /* shared_widgets.cpp in Sources */,
 				AEC6C89D0879A5DE0055EC57 /* Console.cpp in Sources */,
 				AE791CD80968E16600350190 /* ImageLoader_Shared.cpp in Sources */,
+				AEF5026009A825E2004B0179 /* OGL_LoadScreen.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4101,6 +4110,7 @@
 				2B4EC2130908984D009631F8 /* shared_widgets.cpp in Sources */,
 				2B4EC2140908984D009631F8 /* Console.cpp in Sources */,
 				AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */,
+				AEF5025F09A825E2004B0179 /* OGL_LoadScreen.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5426,6 +5436,7 @@
 					"-lspeex",
 					"-llua",
 					"-llualib",
+					"-lSystemStubs",
 				);
 				PRODUCT_NAME = AlephOneSDL;
 				SECTORDER_FLAGS = "";

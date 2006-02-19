@@ -101,6 +101,7 @@ Jan 17, 2001 (Loren Petrich):
 
 // LP addition: OpenGL support
 #include "OGL_Render.h"
+#include "OGL_LoadScreen.h"
 
 // LP addition: infravision XML setup needs colors
 #include "ColorParser.h"
@@ -979,8 +980,8 @@ void load_collections(
 
 	if (with_progress_bar)
 	{
-		open_progress_dialog(_loading_collections);
-		draw_progress_bar(0, 2*MAXIMUM_COLLECTIONS);
+//		open_progress_dialog(_loading_collections);
+//		draw_progress_bar(0, 2*MAXIMUM_COLLECTIONS);
 	}
 	precalculate_bit_depth_constants();
 	
@@ -991,8 +992,8 @@ void load_collections(
 		will be staying (so the heap can move around) */
 	for (collection_index= 0, header= collection_headers; collection_index<MAXIMUM_COLLECTIONS; ++collection_index, ++header)
 	{
-		if (with_progress_bar)
-			draw_progress_bar(collection_index, 2*MAXIMUM_COLLECTIONS);
+//		if (with_progress_bar)
+//			draw_progress_bar(collection_index, 2*MAXIMUM_COLLECTIONS);
 		if ((header->status&markUNLOAD) && !(header->status&markLOAD))
 		{
 			if (collection_loaded(header))
@@ -1014,8 +1015,8 @@ void load_collections(
 	/* ... then go back through the list of collections and load any that we were asked to */
 	for (collection_index= 0, header= collection_headers; collection_index<MAXIMUM_COLLECTIONS; ++collection_index, ++header)
 	{
-		if (with_progress_bar)
-			draw_progress_bar(MAXIMUM_COLLECTIONS+collection_index, 2*MAXIMUM_COLLECTIONS);
+//		if (with_progress_bar)
+//			draw_progress_bar(MAXIMUM_COLLECTIONS+collection_index, 2*MAXIMUM_COLLECTIONS);
 		/* donÕt reload collections which are already in memory, but do lock them */
 		if (collection_loaded(header))
 		{
@@ -1044,8 +1045,8 @@ void load_collections(
 	/* remap the shapes, recalculate row base addresses, build our new world color table and
 		(finally) update the screen to reflect our changes */
 	update_color_environment(is_opengl);
-	if (with_progress_bar)
-		close_progress_dialog();
+//	if (with_progress_bar)
+//		close_progress_dialog();
 }
 
 void load_replacement_collections(
@@ -1058,13 +1059,21 @@ void load_replacement_collections(
 	
 	if (with_progress_bar)
 	{
-		draw_progress_bar(progress_start, progress_finish);
+		if (OGL_LoadScreen::instance()->Use())
+			OGL_LoadScreen::instance()->Progress(progress_start);
+		else
+			draw_progress_bar(progress_start, 100);
 	}
 
 	for (collection_index= 0, header= collection_headers; collection_index < MAXIMUM_COLLECTIONS; ++collection_index, ++header)
 	{
-		if (with_progress_bar)
-			draw_progress_bar(progress_start + (progress_finish - progress_start) * collection_index / MAXIMUM_COLLECTIONS, progress_finish);
+		if (with_progress_bar) 
+		{
+			if (OGL_LoadScreen::instance()->Use())
+				OGL_LoadScreen::instance()->Progress(progress_start + (progress_finish - progress_start) * collection_index / MAXIMUM_COLLECTIONS);
+			else
+				draw_progress_bar(progress_start + (progress_finish - progress_start) * collection_index / MAXIMUM_COLLECTIONS, 100);
+		}
 
 		if (collection_loaded(header))
 		{

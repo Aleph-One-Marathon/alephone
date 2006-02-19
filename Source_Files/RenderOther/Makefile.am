@@ -5,13 +5,13 @@ noinst_LIBRARIES = librenderother.a
 librenderother_a_SOURCES = ChaseCam.h computer_interface.h \
   computer_interface_sdl.h fades.h FontHandler.h game_window.h HUDRenderer.h \
   HUDRenderer_OGL.h HUDRenderer_SW.h images.h images_sdl.h motion_sensor.h \
-  overhead_map.h OverheadMap_OGL.h OverheadMapRenderer.h OverheadMap_SDL.h \
+  OGL_LoadScreen.h overhead_map.h OverheadMap_OGL.h OverheadMapRenderer.h OverheadMap_SDL.h \
   screen_definitions.h screen_drawing.h screen_drawing_sdl.h screen.h \
   screen_shared.h sdl_fonts.h TextLayoutHelper.h TextStrings.h ViewControl.h \
   \
   ChaseCam.cpp computer_interface.cpp fades.cpp FontHandler.cpp game_window.cpp \
   game_window_sdl.cpp HUDRenderer.cpp HUDRenderer_OGL.cpp HUDRenderer_SW.cpp \
-  images.cpp motion_sensor.cpp overhead_map.cpp OverheadMap_OGL.cpp \
+  images.cpp motion_sensor.cpp OGL_LoadScreen.cpp overhead_map.cpp OverheadMap_OGL.cpp \
   OverheadMapRenderer.cpp OverheadMap_SDL.cpp screen_drawing.cpp screen_sdl.cpp \
   sdl_fonts.cpp TextLayoutHelper.cpp TextStrings.cpp ViewControl.cpp
 

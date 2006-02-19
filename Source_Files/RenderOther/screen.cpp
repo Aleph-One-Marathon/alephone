@@ -1270,6 +1270,33 @@ void render_screen(
 	myUnlockPixels(world_pixels);
 }
 
+#if defined(mac)
+// ghs: hack to get load screens in the right place :(
+void bound_screen()
+{
+	screen_mode_data *mode = get_screen_mode();
+	short msize = mode->size;
+	const ViewSizeData& VS = ViewSizes[msize];
+	Rect ScreenRect, ViewRect, BufferRect;
+	GetPortBounds(GetWindowPort(screen_window), &ScreenRect);
+	short BufferWidth, BufferHeight;
+
+	// Offsets for placement in the screen
+	short ScreenOffsetWidth = ((RECTANGLE_WIDTH(&ScreenRect) - VS.OverallWidth) >> 1) + ScreenRect.left;
+	short ScreenOffsetHeight = ((RECTANGLE_HEIGHT(&ScreenRect) - VS.OverallHeight) >> 1) + ScreenRect.top;
+
+	BufferWidth = VS.OverallWidth;
+	BufferHeight = VS.OverallHeight;
+	
+	SetRect(&ViewRect, 0, 0, BufferWidth, BufferHeight);
+	OffsetRect(&ViewRect, ScreenOffsetWidth, ScreenOffsetHeight);
+
+	fprintf(stderr, "%ix%i\n", VS.OverallWidth, VS.OverallHeight);
+	fprintf(stderr, "%ix%i, %ix%i\n", ScreenRect.right, ScreenRect.bottom, ViewRect.right, ViewRect.bottom);
+	OGL_SetWindow(ScreenRect, ViewRect, true);
+}
+#endif
+
 void change_interface_clut(
 	struct color_table *color_table)
 {
