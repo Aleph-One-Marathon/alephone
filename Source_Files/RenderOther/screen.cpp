@@ -402,13 +402,8 @@ extern "C" {
 void quadruple_screen(struct copy_screen_data *data);
 }
 
-static void update_fps_display(GrafPtr port);
-
 // LP addition: display the current position
 static void DisplayPosition(GrafPtr port);
-
-// Also display the current messages
-static void DisplayMessages(GrafPtr port);
 
 static void calculate_screen_options(void);
 
@@ -433,11 +428,6 @@ static bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, sh
 // Callback for getting display-mode info
 static pascal void DM_ModeInfoCallback(void *UserData,
 	DMListIndexType Index, DMDisplayModeListEntryPtr ModeInfoPtr);
-
-// Callback for monitor-frequency-selection dialog-box event handling;
-// it is for catching keyboard events
-static pascal Boolean DM_ModeFreqDialogHandler(DialogPtr Dialog,
-	EventRecord *Event, short *ItemHit);
 
 // Parsing of mode name to get frequency:
 static float GetFreqFromName(Str255 Name);
@@ -542,7 +532,7 @@ void initialize_screen(
 	else if (screen_initialized)
 	{
 		unsigned long TempBitDepth = restore_spec.bit_depth;
-		DMSetDisplayMode(world_device,RestoreScreenMode,&TempBitDepth,NULL,NULL);
+		DMSetDisplayMode(world_device,RestoreScreenMode,&TempBitDepth,0,NULL);
 	}
 	
 	if (!screen_initialized)
@@ -1277,7 +1267,7 @@ void bound_screen()
 	screen_mode_data *mode = get_screen_mode();
 	short msize = mode->size;
 	const ViewSizeData& VS = ViewSizes[msize];
-	Rect ScreenRect, ViewRect, BufferRect;
+	Rect ScreenRect, ViewRect;
 	GetPortBounds(GetWindowPort(screen_window), &ScreenRect);
 	short BufferWidth, BufferHeight;
 
@@ -1894,7 +1884,7 @@ void restore_world_device(
 	unsigned long TempBitDepth = restore_spec.bit_depth;
 	if (RestoreScreenMode != -1)
 	{
-		DMSetDisplayMode(world_device,RestoreScreenMode,&TempBitDepth,NULL,NULL);
+		DMSetDisplayMode(world_device,RestoreScreenMode,&TempBitDepth,0,NULL);
 		RestoreScreenMode = -1;
 	}
 	
@@ -2192,9 +2182,9 @@ void quadruple_screen(
 			}
 		}
 		
-		(byte*)read+= data->source_slop;
-		(byte*)write1+= data->destination_slop;
-		(byte*)write2+= data->destination_slop;
+		read+= data->source_slop;
+		write1+= data->destination_slop;
+		write2+= data->destination_slop;
 	}
 }
 #endif
@@ -2552,7 +2542,7 @@ struct DM_ModeList
 	void GetMode(DMListIndexType Index)
 	{
 		// This object will get the mode-info pointer
-		Err = DMGetIndexedDisplayModeFromList(List, Index, NULL, ModeInfoCallbackUPP, this);
+		Err = DMGetIndexedDisplayModeFromList(List, Index, 0, ModeInfoCallbackUPP, this);
 		if (Err != noErr) ModeInfoPtr = NULL;
 	}
 	
@@ -2563,7 +2553,7 @@ struct DM_ModeList
 		ModeInfoPtr = NULL;
 		List = NULL;
 		ModeInfoCallbackUPP = NewDMDisplayModeListIteratorUPP(DM_ModeInfoCallback);
-		Err = DMNewDisplayModeList(DisplayID, NULL, NULL, &Count, &List);
+		Err = DMNewDisplayModeList(DisplayID, 0, 0, &Count, &List);
 	}
 	
 	~DM_ModeList()
@@ -2656,7 +2646,7 @@ static pascal void FreqDialogTimer(EventLoopTimerRef Timer, void *Data)
 		unsigned long TempBitDepth = HDPtr->BitDepth;
 		int Selection = HDPtr->PreviousSelection;
 		SetControl32BitValue(HDPtr->FreqPopup, Selection+1);
-		DMSetDisplayMode(HDPtr->Device,HDPtr->MDPtr->WhichMD(Selection).csData,&TempBitDepth,NULL,HDPtr->SessPtr->State);
+		DMSetDisplayMode(HDPtr->Device,HDPtr->MDPtr->WhichMD(Selection).csData,&TempBitDepth,0,HDPtr->SessPtr->State);
 		HDPtr->FreqChanged = false;
 	}
 }
@@ -2680,7 +2670,7 @@ static void FreqDialogHandler(ParsedControl &Ctrl, void *Data)
 	case MonitorFreq_Popup:
 		unsigned long TempBitDepth = HDPtr->BitDepth;
 		Selection = GetControl32BitValue(HDPtr->FreqPopup) - 1;
-		DMSetDisplayMode(HDPtr->Device,HDPtr->MDPtr->WhichMD(Selection).csData,&TempBitDepth,NULL,HDPtr->SessPtr->State);
+		DMSetDisplayMode(HDPtr->Device,HDPtr->MDPtr->WhichMD(Selection).csData,&TempBitDepth,0,HDPtr->SessPtr->State);
 		HDPtr->FreqChanged = true;
 		SetEventLoopTimerNextFireTime(HDPtr->Timer, TimeoutTime);
 	}
@@ -2786,7 +2776,7 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	if (!ShowFreqDialog)
 	{
 		unsigned long TempBitDepth = BitDepth;
-		Err = DMSetDisplayMode(Device,MDPtr->WhichMD(BestFitIndex).csData,&TempBitDepth,NULL,Session.State);
+		Err = DMSetDisplayMode(Device,MDPtr->WhichMD(BestFitIndex).csData,&TempBitDepth,0,Session.State);
 		bool ChangeSuccess = (Err == noErr);
 		if (ChangeSuccess)
 			graphics_preferences->refresh_frequency = 
@@ -2794,9 +2784,7 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 		return ChangeSuccess;
 	}
 	
-#ifdef USES_NIBS
-	OSStatus err;
-	
+#ifdef USES_NIBS	
 	// Get the window
 	AutoNibWindow Window(GUI_Nib,Window_Prefs_MonitorFreq);
 
@@ -2838,7 +2826,7 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 		// Revert!
 		unsigned long TempBitDepth = BitDepth;
 		Selection = OriginalSelection;
-		DMSetDisplayMode(Device,MDPtr->WhichMD(Selection).csData,&TempBitDepth,NULL,Session.State);
+		DMSetDisplayMode(Device,MDPtr->WhichMD(Selection).csData,&TempBitDepth,0,Session.State);
 	}
 	
 #else
