@@ -221,6 +221,8 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	for (int il=0; il<4; il++)
 		for (int ie=0; ie<2; ie++)
 			Data.LscpColors[il][ie] = DefaultLscpColors[il][ie];
+
+	Data.GeForceFix = false;
 }
 
 
@@ -254,6 +256,11 @@ void OGL_TextureOptionsBase::Load()
 	if (OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc")) 
 	{
 		flags |= ImageLoader_CanUseDXTC;
+	}
+
+	if (Get_OGL_ConfigureData().GeForceFix)
+	{
+		flags |= ImageLoader_LoadDXTC1AsDXTC3;
 	}
 	
 	// Load the normal image with alpha channel

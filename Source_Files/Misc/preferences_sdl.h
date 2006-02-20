@@ -488,6 +488,9 @@ static void texture_options_dialog(void *arg)
 	dialog d;
 	d.add(new w_static_text("ADVANCED OPENGL OPTIONS", TITLE_FONT, TITLE_COLOR));
 	d.add(new w_spacer());
+	w_toggle *geforce_fix_w = new w_toggle("GeForce 1-4 Texture Fix", prefs.GeForceFix);
+	d.add(geforce_fix_w);
+	d.add(new w_spacer());
 
 
 	d.add(new w_static_text("Distant Texture Smoothing"));
@@ -535,6 +538,11 @@ static void texture_options_dialog(void *arg)
 	if (d.run() == 0) {
 		bool changed = false;
 
+		if (geforce_fix_w->get_selection() != prefs.GeForceFix) {
+			prefs.GeForceFix = geforce_fix_w->get_selection();
+			changed = true;
+		}
+
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
 			if (texture_resolution_wa[i] && texture_resolution_wa[i]->get_selection() != prefs.TxtrConfigList[i].Resolution) {
 				prefs.TxtrConfigList[i].Resolution = texture_resolution_wa[i]->get_selection();
@@ -551,7 +559,7 @@ static void texture_options_dialog(void *arg)
 			prefs.TxtrConfigList[OGL_Txtr_Inhabitant].FarFilter = sprite_mipmap_w->get_selection() ? 5 : 1;
 			changed = true;
 		}	
-		
+
 		if (changed)
 			write_preferences();
 		

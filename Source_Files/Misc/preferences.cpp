@@ -415,6 +415,7 @@ void write_preferences(
         fprintf(F,"  experimental_rendering=\"%s\"\n",BoolString(graphics_preferences->experimental_rendering));
         fprintf(F,"  anisotropy_level=\"%f\"\n", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	fprintf(F,"  multisamples=\"%i\"\n", graphics_preferences->OGL_Configure.Multisamples);
+	fprintf(F,"  geforce_fix=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.GeForceFix));
 	fprintf(F,"  double_corpse_limit=\"%s\"\n", BoolString(graphics_preferences->double_corpse_limit));
 	fprintf(F,">\n");
 	fprintf(F,"  <void>\n");
@@ -1419,6 +1420,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	  {
 	    return ReadInt16Value(Value, graphics_preferences->OGL_Configure.Multisamples);
 	  }
+	else if (StringsEqual(Tag,"geforce_fix"))
+	{
+		return ReadBooleanValue(Value, graphics_preferences->OGL_Configure.GeForceFix);
+	}
 	else if (StringsEqual(Tag,"double_corpse_limit"))
 	  {
 	    return ReadBooleanValue(Value,graphics_preferences->double_corpse_limit);
