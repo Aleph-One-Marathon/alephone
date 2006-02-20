@@ -737,7 +737,7 @@ static void DisplayMessages(SDL_Surface *s)
 #if defined(mac)
 						struct PixMap** map = NewPixMap();
 						Rect target;
-						(*map)->baseAddr = ScriptHUDElements[i].icon;
+						(*map)->baseAddr = (char *) ScriptHUDElements[i].icon;
 						(*map)->rowBytes = 64 | (1 << 15);
 						(*map)->bounds.top = 0;
 						(*map)->bounds.left = 0;
