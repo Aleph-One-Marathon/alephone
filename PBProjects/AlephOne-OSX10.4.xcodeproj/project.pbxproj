@@ -619,6 +619,7 @@
 
 /* Begin PBXBuildFile section */
 		00F9DA5200AC730E7F000001 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F9DA5100AC730E7F000001 /* SDLMain.m */; };
+		083AA96309A94E2E001380A8 /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
 		088809F1084C1A4000DC9E4D /* NibsMetaserverClientUi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 088809F0084C1A4000DC9E4D /* NibsMetaserverClientUi.cpp */; };
 		088809F4084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */; };
 		089C165EFE840E0CC02AAC07 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
@@ -1709,7 +1710,7 @@
 		088809F0084C1A4000DC9E4D /* NibsMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = NibsMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/NibsMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		17587328FF379C6511CA2CBB /* AlephOneSDL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		17587328FF379C6511CA2CBB /* AlephOneSDL.app */ = {isa = PBXFileReference; lastKnownFileType = wrapper.application; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		2B4EC22D0908984E009631F8 /* Info-AlephOne_Carbon__NIBs___Upgraded_.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist"; sourceTree = "<group>"; };
 		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D3A410C04DF92C400000107 /* GUI.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = GUI.nib; path = ../Resources/GUI.nib; sourceTree = SOURCE_ROOT; };
@@ -4280,6 +4281,7 @@
 				AE437C8F08779BE500038E30 /* shared_widgets.cpp in Sources */,
 				AEC6C89C0879A5DE0055EC57 /* Console.cpp in Sources */,
 				AE791CD90968E16600350190 /* ImageLoader_Shared.cpp in Sources */,
+				083AA96309A94E2E001380A8 /* OGL_LoadScreen.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
