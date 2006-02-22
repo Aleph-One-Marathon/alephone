@@ -36,9 +36,14 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #endif
 
 #define HAVE_OPENGL
+#ifdef __BIG_ENDIAN__
 #undef BIG_ENDIAN
 #define BIG_ENDIAN
 #undef ALEPHONE_LITTLE_ENDIAN
+#else
+#undef BIG_ENDIAN
+#define ALEPHONE_LITTLE_ENDIAN
+#endif
 #define COMPLAIN_BAD_ALLOCS
 
 #include "cstypes.h"
