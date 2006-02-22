@@ -37,6 +37,66 @@
 #include "carbon_widgets.h"
 #endif
 
+
+template<typename tPref>
+class Pref
+{
+public:
+	virtual ~Pref () {}
+	
+	virtual tPref read_pref () = 0;
+	virtual void write_pref (tPref value) = 0;
+};
+
+class PStringPref : public Pref<std::string>
+{
+public:
+	PStringPref (unsigned char* pref) : m_pref (pref) {};
+
+	virtual std::string read_pref () { return pstring_to_string (m_pref); }
+	virtual void write_pref (std::string value) { copy_string_to_pstring (value, m_pref); }
+	
+protected:
+	unsigned char* m_pref;
+};
+
+class CStringPref : public Pref<std::string>
+{
+public:
+	CStringPref (char* pref) : m_pref (pref) {};
+
+	virtual std::string read_pref () { return string (m_pref); }
+	virtual void write_pref (std::string value) { copy_string_to_cstring (value, m_pref); }
+
+protected:
+	char* m_pref;
+};
+
+class BoolPref : public Pref<bool>
+{
+public:
+	BoolPref (bool& pref) : m_pref(pref) {}
+
+	virtual bool read_pref () { return m_pref; }
+	virtual void write_pref (bool value) { m_pref = value; }
+
+protected:
+	bool& m_pref;
+};
+
+class Int16Pref : public Pref<int>
+{
+public:
+	Int16Pref (int16& pref) : m_pref (pref) {}
+	
+	virtual int read_pref () { return m_pref; }
+	virtual void write_pref (int value) { m_pref = value; }
+	
+protected:
+	int16& m_pref;
+};
+
+
 template<typename tWidget>
 class PrefWidget
 {
@@ -59,35 +119,37 @@ protected:
 class TogglePrefWidget : public PrefWidget<ToggleWidget>
 {
 public:
-	TogglePrefWidget (ToggleWidget* componentWidget, bool& pref)
+	TogglePrefWidget (ToggleWidget* componentWidget)
 		: PrefWidget<ToggleWidget> (componentWidget)
-		, m_pref (pref)
-		{ m_componentWidget->set_value (m_pref); }
+		, m_pref (0)
+		{}
 	
-	virtual ~TogglePrefWidget () { update_prefs (); }
+	virtual ~TogglePrefWidget () { update_prefs (); delete m_pref; }
 	
-	virtual void update_prefs () { m_pref = m_componentWidget->get_value (); }
-
+	virtual void update_prefs () { m_pref->write_pref (m_componentWidget->get_value ()); }
+	virtual void attach_pref (Pref<bool>* pref) { m_pref = pref; m_componentWidget->set_value (m_pref->read_pref()); }
+	
 	void set_callback (ControlHitCallback callback) { m_componentWidget->set_callback (callback); }
 
 	bool get_value () { return m_componentWidget->get_value (); }
 	void set_value (bool value) { m_componentWidget->set_value (value); }
 
 protected:
-	bool& m_pref;
+	Pref<bool>* m_pref;
 };
 
 class SelectorPrefWidget : public PrefWidget<SelectorWidget>
 {
 public:
-	SelectorPrefWidget (SelectorWidget* componentWidget, int16& pref)
+	SelectorPrefWidget (SelectorWidget* componentWidget)
 		: PrefWidget<SelectorWidget> (componentWidget)
-		, m_pref (pref)
-		{ m_componentWidget->set_value (m_pref); }
+		, m_pref (0)
+		{}
 	
-	virtual ~SelectorPrefWidget () { update_prefs (); }
+	virtual ~SelectorPrefWidget () { update_prefs (); delete m_pref; }
 	
-	virtual void update_prefs () { m_pref = m_componentWidget->get_value (); }
+	virtual void update_prefs () { m_pref->write_pref (m_componentWidget->get_value ()); }
+	virtual void attach_pref (Pref<int>* pref) { m_pref = pref; m_componentWidget->set_value (m_pref->read_pref()); }
 
 	void set_callback (ControlHitCallback callback) { m_componentWidget->set_callback (callback); }
 
@@ -98,81 +160,27 @@ public:
 	void set_value (int value) { m_componentWidget->set_value (value); }
 
 protected:
-	int16& m_pref;
+	Pref<int>* m_pref;
 };
 
-class EditPStringPrefWidget : public PrefWidget<EditTextWidget>
+class EditTextPrefWidget : public PrefWidget<EditTextWidget>
 {
 public:
-	EditPStringPrefWidget (EditTextWidget* componentWidget, unsigned char* pref)
+	EditTextPrefWidget (EditTextWidget* componentWidget)
 		: PrefWidget<EditTextWidget> (componentWidget)
-		, m_pref (pref)
-		{ m_componentWidget->set_text (pstring_to_string (m_pref)); }
+		, m_pref (0)
+		{}
 	
-	virtual ~EditPStringPrefWidget () { update_prefs (); }
+	virtual ~EditTextPrefWidget () { update_prefs (); delete m_pref; }
 	
-	virtual void update_prefs () { copy_string_to_pstring (get_text (), m_pref); }
+	virtual void update_prefs () { m_pref->write_pref (m_componentWidget->get_text ()); }
+	virtual void attach_pref (Pref<std::string>* pref) { m_pref = pref; m_componentWidget->set_text (m_pref->read_pref()); }
 
 	const string get_text () { return m_componentWidget->get_text (); }
 	void set_text (const string& s) { m_componentWidget->set_text (s); }
 
 protected:
-	unsigned char* m_pref;
-};
-
-class EditCStringPrefWidget : public PrefWidget<EditTextWidget>
-{
-public:
-	EditCStringPrefWidget (EditTextWidget* componentWidget, char* pref)
-		: PrefWidget<EditTextWidget> (componentWidget)
-		, m_pref (pref)
-		{ m_componentWidget->set_text (string (m_pref)); }
-	
-	virtual ~EditCStringPrefWidget () { update_prefs (); }
-	
-	virtual void update_prefs () { copy_string_to_cstring (get_text (), m_pref); }
-
-	const string get_text () { return m_componentWidget->get_text (); }
-	void set_text (const string& s) { m_componentWidget->set_text (s); }
-
-protected:
-	char* m_pref;
-};
-
-class JoinAddressWidget : public EditCStringPrefWidget
-{
-public:
-	JoinAddressWidget (EditTextWidget* joinAddressComponentWidget);
-};
-
-class JoinByAddressWidget : public TogglePrefWidget
-{
-public:
-	JoinByAddressWidget (ToggleWidget* componentWidget);
-};
-
-class NameWidget : public EditPStringPrefWidget
-{
-public:
-	NameWidget (EditTextWidget* componentWidget);
-};
-
-class ColourWidget : public SelectorPrefWidget
-{
-public:
-	ColourWidget (SelectorWidget* componentWidget);
-};
-
-class TeamWidget : public SelectorPrefWidget
-{
-public:
-	TeamWidget (SelectorWidget* componentWidget);
-};
-
-class AutogatherWidget : public TogglePrefWidget
-{
-public:
-	AutogatherWidget (ToggleWidget* componentWidget);
+	Pref<std::string>* m_pref;
 };
 
 

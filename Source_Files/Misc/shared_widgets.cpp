@@ -31,25 +31,6 @@
 #include "shared_widgets.h"
 #include <vector>
 #include <algorithm>
-
-
-JoinAddressWidget::JoinAddressWidget (EditTextWidget* componentWidget)
-	: EditCStringPrefWidget (componentWidget, network_preferences->join_address) {}
-
-JoinByAddressWidget::JoinByAddressWidget (ToggleWidget* componentWidget)
-	: TogglePrefWidget (componentWidget, network_preferences->join_by_address) {}
-
-NameWidget::NameWidget (EditTextWidget* componentWidget)
-	: EditPStringPrefWidget (componentWidget, player_preferences->name) {}
-
-ColourWidget::ColourWidget (SelectorWidget* componentWidget)
-	: SelectorPrefWidget (componentWidget, player_preferences->color) {}
-
-TeamWidget::TeamWidget (SelectorWidget* componentWidget)
-	: SelectorPrefWidget (componentWidget, player_preferences->team) {}
-
-AutogatherWidget::AutogatherWidget (ToggleWidget* componentWidget)
-	: TogglePrefWidget (componentWidget, network_preferences->autogather) {}
 	
 	
 void ChatHistory::appendString (const string& s)

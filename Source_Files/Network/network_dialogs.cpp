@@ -276,6 +276,11 @@ GatherDialog::~GatherDialog()
 	gMetaserverClient = new MetaserverClient ();
 }
 
+void GatherDialog::attachPrefs ()
+{
+	m_autogatherWidget->attach_pref (new BoolPref (network_preferences->autogather));
+}
+
 bool GatherDialog::GatherNetworkGameByRunning ()
 {
 	vector<string> chat_choice_labels;
@@ -295,7 +300,6 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	m_chatEntryWidget->set_callback(boost::bind(&GatherDialog::chatTextEntered, this, _1));
 	
 	gPregameChatHistory.clear ();
-	//	gPregameChatHistory.appendString ("Pregame chat does not work currently");
 	NetSetChatCallbacks(this);
 	
 	if (gMetaserverClient->isConnected ()) {
@@ -502,6 +506,16 @@ JoinDialog::~JoinDialog ()
 	// gMetaserverClient->disconnect ();
 	delete gMetaserverClient;
 	gMetaserverClient = new MetaserverClient ();
+}
+
+void JoinDialog::attachPrefs ()
+{
+	m_joinAddressWidget->attach_pref (new CStringPref (network_preferences->join_address));
+	m_joinByAddressWidget->attach_pref (new BoolPref (network_preferences->join_by_address));
+	
+	m_nameWidget->attach_pref (new PStringPref (player_preferences->name));
+	m_colourWidget->attach_pref (new Int16Pref (player_preferences->color));
+	m_teamWidget->attach_pref (new Int16Pref (player_preferences->team));
 }
 
 const int JoinDialog::JoinNetworkGameByRunning ()

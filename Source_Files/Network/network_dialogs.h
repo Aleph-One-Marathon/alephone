@@ -365,6 +365,8 @@ public:
 protected:
 	GatherDialog();
 	
+	void attachPrefs ();
+	
 	virtual bool Run() = 0;
 	virtual void Stop(bool result) = 0;
 	
@@ -391,7 +393,7 @@ protected:
 	ButtonWidget*			m_cancelWidget;
 	ButtonWidget*			m_startWidget;
 	
-	AutogatherWidget*		m_autogatherWidget;
+	TogglePrefWidget*		m_autogatherWidget;
 	
 	JoiningPlayerListWidget*	m_ungatheredWidget;
 	PlayersInGameWidget*		m_pigWidget;
@@ -416,6 +418,8 @@ public:
 
 protected:
 	JoinDialog();
+	
+	void attachPrefs ();
 	
 	virtual void Run() = 0;
 	virtual void Stop() = 0;
@@ -443,12 +447,12 @@ protected:
 	ButtonWidget*		m_joinWidget;
 	
 	ButtonWidget*		m_joinMetaserverWidget;
-	JoinAddressWidget*	m_joinAddressWidget;
-	JoinByAddressWidget*	m_joinByAddressWidget;
+	EditTextPrefWidget*	m_joinAddressWidget;
+	TogglePrefWidget*	m_joinByAddressWidget;
 	
-	NameWidget*		m_nameWidget;
-	ColourWidget*		m_colourWidget;
-	TeamWidget*		m_teamWidget;
+	EditTextPrefWidget*	m_nameWidget;
+	SelectorPrefWidget*	m_colourWidget;
+	SelectorPrefWidget*	m_teamWidget;
 	
 	StaticTextWidget*	m_messagesWidget;
 	

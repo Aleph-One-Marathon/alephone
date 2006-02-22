@@ -879,7 +879,7 @@ public:
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_startWidget = new ButtonWidget (play_button_w);
 		
-		m_autogatherWidget = new AutogatherWidget (new ToggleWidget (autogather_w));
+		m_autogatherWidget = new TogglePrefWidget (new ToggleWidget (autogather_w));
 	
 		m_ungatheredWidget = new JoiningPlayerListWidget (foundplayers_w);
 		m_pigWidget = new PlayersInGameWidget (players_w);
@@ -887,6 +887,8 @@ public:
 		m_chatEntryWidget = new EditTextWidget (chatentry_w);
 		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget (chat_history_w));
 		m_chatChoiceWidget = new PopupSelectorWidget (chat_choice_w);
+		
+		attachPrefs ();
 	}
 	
 	virtual bool Run ()
@@ -986,12 +988,12 @@ public:
 		m_joinWidget = new ButtonWidget (join_w);
 	
 		m_joinMetaserverWidget = new ButtonWidget (join_by_metaserver_w);
-		m_joinAddressWidget = new JoinAddressWidget (new EditTextWidget (hint_address_w));
-		m_joinByAddressWidget = new JoinByAddressWidget (new ToggleWidget (hint_w));
+		m_joinAddressWidget = new EditTextPrefWidget (new EditTextWidget (hint_address_w));
+		m_joinByAddressWidget = new TogglePrefWidget (new ToggleWidget (hint_w));
 	
-		m_nameWidget = new NameWidget (new EditTextWidget (name_w));
-		m_colourWidget = new ColourWidget (new ColourSelectorWidget (pcolor_w));
-		m_teamWidget = new TeamWidget (new ColourSelectorWidget (tcolor_w));
+		m_nameWidget = new EditTextPrefWidget (new EditTextWidget (name_w));
+		m_colourWidget = new SelectorPrefWidget (new ColourSelectorWidget (pcolor_w));
+		m_teamWidget = new SelectorPrefWidget (new ColourSelectorWidget (tcolor_w));
 	
 		m_messagesWidget = new StaticTextWidget (join_messages_w);
 	
@@ -1000,6 +1002,8 @@ public:
 		m_chatEntryWidget = new EditTextWidget (chatentry_w);
 		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget (chat_history_w));
 		m_chatChoiceWidget = new PopupSelectorWidget (chat_choice_w);
+		
+		attachPrefs ();
 	}
 
 	virtual void Run ()
