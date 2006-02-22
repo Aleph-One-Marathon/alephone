@@ -1206,8 +1206,8 @@ static XML_LandscapePrefsParser LandscapePrefsParser;
 
 class XML_TexturePrefsParser: public XML_ElementParser
 {
-	bool IndexPresent, ValuesPresent[4];
-	int16 Index, Values[4];
+	bool IndexPresent, ValuesPresent[5];
+	int16 Index, Values[5];
 	
 public:
 	bool Start();
