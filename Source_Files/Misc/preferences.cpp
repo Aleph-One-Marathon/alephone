@@ -309,10 +309,12 @@ void read_preferences ()
 			if (OFile.Read(Len, &FileContents[0])) {
 				OFile.Close();
 				if (!XML_DataBlockLoader.ParseData(&FileContents[0], Len)) {
+#if !defined(TARGET_API_MAC_CARBON)
 					if (defaults)
 						alert_user("There were default preferences-file parsing errors (see Aleph One Log.txt for details)", infoError);
 					else
 						alert_user("There were preferences-file parsing errors (see Aleph One Log.txt for details)", infoError);
+#endif
 				}
 			}
 		}
