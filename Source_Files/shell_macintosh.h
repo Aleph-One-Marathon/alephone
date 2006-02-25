@@ -1788,8 +1788,9 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 		// Skip if the first character is a period
 		// (the Unix-land convention for an invisible file)
 		// or if the filename is empty;
+		// or if the last character is ~
 		// be sure to advance to the next file if so
-		if ((DummySpec.Spec.name[0] < 1) || (DummySpec.Spec.name[1] == '.'))
+		if ((DummySpec.Spec.name[0] < 1) || (DummySpec.Spec.name[1] == '.') || (DummySpec.Spec.name[DummySpec.Spec.name[0]] == '~'))
 		{
 			FileIndex++;
 			continue;
