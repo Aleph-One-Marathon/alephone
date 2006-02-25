@@ -1204,11 +1204,17 @@ void dialog::event(SDL_Event &e)
 
 		// Mouse button pressed
 		case SDL_MOUSEBUTTONDOWN: {
-			int x = e.button.x, y = e.button.y;
-			int num = find_widget(x, y);
-			if (num >= 0) {
-				widget *w = widgets[num];
-				w->click(x - rect.x - w->rect.x, y - rect.y - w->rect.y);
+			switch (e.button.button) {
+			case SDL_BUTTON_LEFT:
+			case SDL_BUTTON_RIGHT: {
+				int x = e.button.x, y = e.button.y;
+				int num = find_widget(x, y);
+				if (num >= 0) {
+					widget *w = widgets[num];
+					w->click(x - rect.x - w->rect.x, y - rect.y - w->rect.y);
+				}
+				break;
+			}
 			}
 			break;
 		}

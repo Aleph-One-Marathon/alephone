@@ -1326,6 +1326,19 @@ void w_list_base::event(SDL_Event &e)
 			thumb_dragging = false;
 			dirty = true;
 		}
+	} else if (e.type == SDL_MOUSEBUTTONDOWN) {
+		switch (e.button.button) {
+		case SDL_BUTTON_WHEELUP:
+			if (top_item != 0)
+			{	set_top_item(top_item - 1); }
+			break;	
+		case SDL_BUTTON_WHEELDOWN:
+			if (top_item < num_items - shown_items)
+			{	set_top_item(top_item + 1); }	
+			break;
+		default:
+			break;
+		}
 	}
 }
 
