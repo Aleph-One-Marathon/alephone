@@ -34,7 +34,8 @@ Aleph One Lua Scripters' Guide
 3.11 Projectile Types
 3.12 Polygon Types
 3.13 Powerup Types
-
+4 Dynamic Limits
+5 Example Icon
 
 0. General
 ----------
@@ -1606,3 +1607,52 @@ object is not necessarily an item). So, to determine if a given index from 0
 to MAXIMUM_OBJECTS_PER_MAP-1 corresponds to an actual item, you would have to
 use the item_index_valid function on it.
 
+5 Example Icon
+--------------
+
+--[[
+This is  an example  of an  icon  in  the format  used by  Aleph One's  overlay
+functions.
+The first characters  are a digit string  describing the number of  colors. (in
+this example, it's 7.
+The first character that  is not a digit is ignored,  as are all the characters
+following it  that are the same  character. (i.e. I  could use a q instead of a
+newline here.
+Then,  for  every color,  it reads  a character,  followed by  a six-digit  hex
+string,  which is the  HTML-style color corresponding  to that character in the
+image.  After reading this string,  it ignores the next character,  whatever it
+is.
+Once it has  read every color,  it reads all the following characters,  and for
+every character it reads for which a color has defined, it puts that color into
+the icon as the next pixel. Other characters are ignored. (see below.)
+Icons are always 16x16.
+]]
+
+[[
+7
+ 0000FF
+#000000
+.FFFFFF
+$7FAE20
+%EBD52A
+,45983C
+&5B4714
+&&&&&&&&&&&&&# The fact
+&&&&&&&&&&&&&# that it
+&$$$#&&&&&&&&&# ignores
+$$$$$#&&&&&&&&# characters
+$$$$$#$$&&&&&&# that
+$$##$##$$&&&&&# are
+$$$$##.#$$#&&# not colors
+$%%$$#.,#$#&&# can be
+%%%%%%##,#$$# exploited to interesting
+%%%%%%%##$$# effect by a sufficiently
+#%%%%%%%$$$$# resourceful and obnoxious
+&##%%%%%%$$$$###
+#&&#%%#%%%###&&#
+&#&##%%#%%$$$$# person
+&&#  #%%##%$$# such as
+&&#   #%%%#%$# myself :)
+Additionally, once it has read 256 valid characters, it ignores the rest of the
+string.
+]]
