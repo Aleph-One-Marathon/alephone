@@ -1926,8 +1926,8 @@ void FindAndParseFiles(DirectorySpecifier& DirSpec)
 #else
 						ParamText("\pThere were configuration-file parsing errors",0,0,0);
 						Alert(FatalErrorAlert,NULL);
-						ExitToShell();
 #endif
+						ExitToShell();
 					}
 				}
 			}
