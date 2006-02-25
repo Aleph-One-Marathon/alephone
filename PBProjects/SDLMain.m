@@ -83,7 +83,7 @@ static BOOL   gFinderLaunch;
 			buf[i + 4] = '\0'; // truncate end
 			for (; i >= 0; i--) // and beginning
 				if (buf[i] == '/') {
-					bundle_name = malloc(old_i - i + 4);
+					bundle_name = (char *) malloc(old_i - i + 4);
 					strlcpy(bundle_name, buf + i + 1, old_i - i + 4);
 					break;
 				}
@@ -272,7 +272,7 @@ void CustomApplicationMain (int argc, char* argv[])
     NSString *result;
 
     bufferSize = selfLen + aStringLen - aRange.length;
-    buffer = NSAllocateMemoryPages(bufferSize*sizeof(unichar));
+    buffer = (unichar *) NSAllocateMemoryPages(bufferSize*sizeof(unichar));
     
     /* Get first part into buffer */
     localRange.location = 0;
