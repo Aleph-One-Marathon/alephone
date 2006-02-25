@@ -149,6 +149,8 @@ bool XML_Loader_SDL::ParseDirectory(FileSpecifier &dir)
 	for (i=de.begin(); i!=end; i++) {
 		if (i->is_directory)
 			continue;
+		if (i->name[i->name.length() - 1] == '~') 
+			continue;
 
 		// Construct full path name
 		FileSpecifier file_name = dir + i->name;
