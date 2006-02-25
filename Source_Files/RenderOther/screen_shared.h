@@ -720,13 +720,13 @@ static void DisplayMessages(SDL_Surface *s)
 						glColor3f(1,1,1);
 						glBegin(GL_TRIANGLE_FAN);
 						glTexCoord2f(0.0f, 0.0f);
-						glVertex2f(0.0f, -16.0f);
+						glVertex2f(0.5f, -15.5f);
 						glTexCoord2f(1.0f, 0.0f);
-						glVertex2f(16.0f, -16.0f);
+						glVertex2f(16.5f, -15.5f);
 						glTexCoord2f(1.0f, 1.0f);
-						glVertex2f(16.0f, 0.0f);
+						glVertex2f(16.5f, 0.5f);
 						glTexCoord2f(0.0f, 1.0f);
-						glVertex2f(0.0f, 0.0f);
+						glVertex2f(0.5f, 0.5f);
 						glEnd();
 						/*glDrawPixels(16, 16, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ScriptHUDElements[i].icon);*/
 						glDeleteTextures(1, &tex);
