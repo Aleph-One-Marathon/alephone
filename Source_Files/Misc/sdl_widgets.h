@@ -61,6 +61,8 @@
 #include "metaserver_messages.h" // for GameListMessage, for w_games_in_room and MetaserverPlayerInfo, for w_players_in_room
 #include "network.h" // for prospective_joiner_info
 
+#include	"binders.h"
+
 struct SDL_Surface;
 //class sdl_font_info;
 
@@ -908,7 +910,7 @@ private:
 	bool hidden, inactive;
 };
 
-class ToggleWidget : public SDLWidgetWidget
+class ToggleWidget : public SDLWidgetWidget, public Bindable<bool>
 {
 public:
 	ToggleWidget (w_toggle* toggle)
@@ -921,6 +923,9 @@ public:
 	
 	bool get_value () { return m_toggle->get_selection (); }
 	void set_value (bool value) { m_toggle->set_selection (value); }
+	
+	bool bind_export () { return get_value (); }
+	void bind_import (bool value) { set_value (value); }
 
 private:
 	void massage_callback (w_select* ignored)
@@ -930,7 +935,7 @@ private:
 	ControlHitCallback m_callback;
 };
 
-class SelectorWidget : public SDLWidgetWidget
+class SelectorWidget : public SDLWidgetWidget, public Bindable<int>
 {
 public:
 	virtual void set_callback (ControlHitCallback callback) { m_callback = callback; }
@@ -940,6 +945,9 @@ public:
 	
 	virtual int get_value () = 0;
 	virtual void set_value (int value) = 0;
+
+	int bind_export () { return get_value (); }
+	void bind_import (int value) { set_value (value); }
 
 	virtual ~SelectorWidget () {}
 
@@ -1039,7 +1047,7 @@ private:
 	w_static_text* m_static_text;
 };
 
-class EditTextWidget : public SDLWidgetWidget
+class EditTextWidget : public SDLWidgetWidget, public Bindable<std::string>
 {
 public:
 	EditTextWidget (w_text_entry* text_entry)
@@ -1051,6 +1059,9 @@ public:
 
 	void set_text (string s) { m_text_entry->set_text(s.c_str ()); }
 	const string get_text () { return string(m_text_entry->get_text()); }
+	
+	std::string bind_export () { return get_text (); }
+	void bind_import (std::string s) { set_text (s); }
 
 private:
 	w_text_entry* m_text_entry;

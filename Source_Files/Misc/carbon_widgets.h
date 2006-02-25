@@ -32,6 +32,7 @@
 #include	"metaserver_messages.h" // for GameListMessage
 #include	"network.h" // for prospective_joiner_info
 #include	"tags.h" // for Typecode
+#include	"binders.h"
 
 #include <boost/static_assert.hpp>
 #include <boost/bind.hpp>
@@ -56,7 +57,7 @@ protected:
 	ControlRef m_ctrl;
 };
 
-class ToggleWidget : public NIBsControlWidget
+class ToggleWidget : public NIBsControlWidget, public Bindable<bool>
 {
 public:
 	ToggleWidget (ControlRef ctrl)
@@ -69,11 +70,14 @@ public:
 	bool get_value () { return GetControl32BitValue (m_ctrl) == 0 ? false : true; }
 	void set_value (bool value) { SetControl32BitValue (m_ctrl, value ? 1 : 0); }
 
+	bool bind_export () { return get_value (); }
+	void bind_import (bool value) { set_value (value); }
+
 private:
 	AutoControlWatcher m_control_watcher;
 };
 
-class SelectorWidget : public NIBsControlWidget
+class SelectorWidget : public NIBsControlWidget, public Bindable<int>
 {
 public:
 	SelectorWidget (ControlRef ctrl)
@@ -88,6 +92,9 @@ public:
 	
 	int get_value () { return GetControl32BitValue (m_ctrl) - 1; }
 	void set_value (int value) { SetControl32BitValue (m_ctrl, value + 1); }
+
+	int bind_export () { return get_value (); }
+	void bind_import (int value) { set_value (value); }
 
 private:
 	AutoControlWatcher m_control_watcher;
@@ -121,7 +128,7 @@ public:
 	void set_text (const std::string& s);
 };
 
-class EditTextWidget : public NIBsControlWidget
+class EditTextWidget : public NIBsControlWidget, public Bindable<std::string>
 {
 public:
 	EditTextWidget (ControlRef ctrl)
@@ -132,6 +139,10 @@ public:
 	
 	void set_text (const std::string& s);
 	const string get_text ();
+
+	std::string bind_export () { return get_text (); }
+	void bind_import (std::string s) { set_text (s); }
+
 
 private:
 	AutoKeystrokeWatcher m_keystroke_watcher;

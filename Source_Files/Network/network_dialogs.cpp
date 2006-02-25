@@ -234,8 +234,6 @@ bool network_gather(bool inResumingGame)
 
 				gather_dialog_result = GatherDialog::Create()->GatherNetworkGameByRunning();
 				
-				// Save autogather pref, even if cancel
-				write_preferences ();
 			} else {
 				gather_dialog_result = false;
 			}
@@ -276,11 +274,6 @@ GatherDialog::~GatherDialog()
 	gMetaserverClient = new MetaserverClient ();
 }
 
-void GatherDialog::attachPrefs ()
-{
-	m_autogatherWidget->attach_pref (new BoolPref (network_preferences->autogather));
-}
-
 bool GatherDialog::GatherNetworkGameByRunning ()
 {
 	vector<string> chat_choice_labels;
@@ -301,6 +294,10 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	
 	gPregameChatHistory.clear ();
 	NetSetChatCallbacks(this);
+
+	BoolPref autoGatherPref (network_preferences->autogather);
+	Binder<bool> binder (m_autogatherWidget, &autoGatherPref);
+	binder.migrate_second_to_first ();
 	
 	if (gMetaserverClient->isConnected ()) {
 		gMetaserverClient->associateNotificationAdapter(this);
@@ -314,7 +311,14 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 		m_chatWidget->attachHistory (&gPregameChatHistory);
 	}
 	
-	return Run ();
+	bool result = Run ();
+	
+	binder.migrate_first_to_second ();
+	
+	// Save autogather setting, even if we cancel the dialog
+	write_preferences ();
+	
+	return result;
 }
 
 void GatherDialog::idle ()
@@ -508,16 +512,6 @@ JoinDialog::~JoinDialog ()
 	gMetaserverClient = new MetaserverClient ();
 }
 
-void JoinDialog::attachPrefs ()
-{
-	m_joinAddressWidget->attach_pref (new CStringPref (network_preferences->join_address));
-	m_joinByAddressWidget->attach_pref (new BoolPref (network_preferences->join_by_address));
-	
-	m_nameWidget->attach_pref (new PStringPref (player_preferences->name));
-	m_colourWidget->attach_pref (new Int16Pref (player_preferences->color));
-	m_teamWidget->attach_pref (new Int16Pref (player_preferences->team));
-}
-
 const int JoinDialog::JoinNetworkGameByRunning ()
 {
 	join_result = kNetworkJoinFailedUnjoined;
@@ -543,9 +537,27 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
 	m_messagesWidget->set_text(pstring_to_string(ptemporary));
 	
+	CStringPref joinAddressPref (network_preferences->join_address, 255);
+	binders.insert<std::string> (m_joinAddressWidget, &joinAddressPref);
+	BoolPref joinByAddressPref (network_preferences->join_by_address);
+	binders.insert<bool> (m_joinByAddressWidget, &joinByAddressPref);
+	
+	PStringPref namePref (player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+	binders.insert<std::string> (m_nameWidget, &namePref);
+	Int16Pref colourPref (player_preferences->color);
+	binders.insert<int> (m_colourWidget, &colourPref);
+	Int16Pref teamPref (player_preferences->team);
+	binders.insert<int> (m_teamWidget, &teamPref);
+	
+	binders.migrate_all_second_to_first ();
+	
 	Run ();
 	
+	binders.migrate_all_first_to_second ();
+	
 	return join_result;
+	
+	// We'll choose to use old prefs or new changes when we return into network_join
 }
 
 void JoinDialog::respondToJoinHit()
@@ -579,8 +591,7 @@ void JoinDialog::attemptJoin ()
 	
 	// jkvw: It may look like we're passing our player name into NetGameJoin,
 	//       but network code will later draw the name directly from prefs.
-	m_nameWidget->update_prefs ();
-	
+	binders.migrate_all_first_to_second ();	
 	bool result = NetGameJoin((void *) &myPlayerInfo, sizeof(myPlayerInfo), hintString);
 	
 	if (hintString)
@@ -682,9 +693,7 @@ void JoinDialog::changeColours ()
 void JoinDialog::getJoinAddressFromMetaserver ()
 {
 	// jkvw: The network metaserver code will draw our name and colour info directly from prefs.
-	m_nameWidget->update_prefs ();
-	m_colourWidget->update_prefs ();
-	m_teamWidget->update_prefs ();
+	binders.migrate_all_first_to_second ();
 
 	try
 	{

@@ -365,8 +365,6 @@ public:
 protected:
 	GatherDialog();
 	
-	void attachPrefs ();
-	
 	virtual bool Run() = 0;
 	virtual void Stop(bool result) = 0;
 	
@@ -393,7 +391,7 @@ protected:
 	ButtonWidget*			m_cancelWidget;
 	ButtonWidget*			m_startWidget;
 	
-	TogglePrefWidget*		m_autogatherWidget;
+	ToggleWidget*			m_autogatherWidget;
 	
 	JoiningPlayerListWidget*	m_ungatheredWidget;
 	PlayersInGameWidget*		m_pigWidget;
@@ -418,8 +416,6 @@ public:
 
 protected:
 	JoinDialog();
-	
-	void attachPrefs ();
 	
 	virtual void Run() = 0;
 	virtual void Stop() = 0;
@@ -447,12 +443,12 @@ protected:
 	ButtonWidget*		m_joinWidget;
 	
 	ButtonWidget*		m_joinMetaserverWidget;
-	EditTextPrefWidget*	m_joinAddressWidget;
-	TogglePrefWidget*	m_joinByAddressWidget;
+	EditTextWidget*		m_joinAddressWidget;
+	ToggleWidget*		m_joinByAddressWidget;
 	
-	EditTextPrefWidget*	m_nameWidget;
-	SelectorPrefWidget*	m_colourWidget;
-	SelectorPrefWidget*	m_teamWidget;
+	EditTextWidget*		m_nameWidget;
+	SelectorWidget*		m_colourWidget;
+	SelectorWidget*		m_teamWidget;
 	
 	StaticTextWidget*	m_messagesWidget;
 	
@@ -461,6 +457,8 @@ protected:
 	EditTextWidget*		m_chatEntryWidget;
 	SelectorWidget*		m_chatChoiceWidget;
 	HistoricTextboxWidget*	m_chatWidget;
+	
+	BinderSet binders;
 	
 	enum { kPregameChat = 0, kMetaserverChat };
 	

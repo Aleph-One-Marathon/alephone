@@ -194,7 +194,7 @@ public:
 		m_cancelWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iCANCEL));
 		m_startWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iOK));
 		
-		m_autogatherWidget = new TogglePrefWidget (new ToggleWidget (GetCtrlFromWindow(m_dialog_window(), 0, iAUTO_GATHER)));
+		m_autogatherWidget = new ToggleWidget (GetCtrlFromWindow(m_dialog_window(), 0, iAUTO_GATHER));
 	
 		m_ungatheredWidget = new JoiningPlayerListWidget (GetCtrlFromWindow(m_dialog_window(), 0, iNETWORK_LIST_BOX), 
 								new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iADD)));
@@ -203,8 +203,6 @@ public:
 		m_chatEntryWidget = new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iGATHER_CHAT_ENTRY));
 		m_chatChoiceWidget = new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iGATHER_CHAT_CHOICE));
 		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget(m_dialog_window(), 20, 277, 567, 407));
-		
-		attachPrefs ();
 	}
 
 	virtual bool Run ()
@@ -257,12 +255,12 @@ public:
 		m_joinWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN));
 	
 		m_joinMetaserverWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_BY_METASERVER));
-		m_joinAddressWidget = new EditTextPrefWidget (new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_BY_HOST_ADDRESS)));
-		m_joinByAddressWidget = new TogglePrefWidget (new ToggleWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_BY_HOST)));
+		m_joinAddressWidget = new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_BY_HOST_ADDRESS));
+		m_joinByAddressWidget = new ToggleWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_BY_HOST));
 	
-		m_nameWidget = new EditTextPrefWidget (new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_NAME)));
-		m_colourWidget = new SelectorPrefWidget (new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_COLOR)));
-		m_teamWidget = new SelectorPrefWidget (new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_TEAM)));
+		m_nameWidget = new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_NAME));
+		m_colourWidget = new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_COLOR));
+		m_teamWidget = new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_TEAM));
 	
 		m_messagesWidget = new StaticTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_MESSAGES));
 	
@@ -271,8 +269,6 @@ public:
 		m_chatEntryWidget = new EditTextWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_CHAT_ENTRY));
 		m_chatChoiceWidget = new SelectorWidget (GetCtrlFromWindow(m_dialog_window(), 0, iJOIN_CHAT_CHOICE));
 		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget(m_dialog_window(), 23, 272, 626, 404));
-		
-		attachPrefs ();
 	}
 
 	virtual void Run ()
