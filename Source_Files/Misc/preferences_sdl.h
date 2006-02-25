@@ -1018,10 +1018,17 @@ public:
 			default:
 				break;
 		}
+		if (new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 3) || new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 4))
+		{
+			error = keyScrollWheelDoesntWork;
+		}
 		if (error != NONE) {
 			alert_user(infoError, strERRORS, error, 0);
 			return;
 		}
+		if (new_key > SDLKey(SDLK_BASE_MOUSE_BUTTON + 2))
+			return;
+		
 
 		w_key::set_key(new_key);
 		if (new_key == SDLK_UNKNOWN)

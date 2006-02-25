@@ -115,7 +115,8 @@ enum /* errors in strERRORS */
 	cantFindReplayMap, // called when you can't find the map that the replay references..
 	notEnoughNetworkMemory,
 	luascriptconflict,
-	replayVersionTooNew
+	replayVersionTooNew,
+	keyScrollWheelDoesntWork
 };
 
 enum /* animation types */
