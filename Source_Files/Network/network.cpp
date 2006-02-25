@@ -1474,6 +1474,7 @@ bool NetNumberOfPlayerIsValid(
 		case netUninitialized:
 		case netConnecting:
 		case netJoining:
+		case netJoinErrorOccurred:
 			valid= false;
 			break;
 		default:
