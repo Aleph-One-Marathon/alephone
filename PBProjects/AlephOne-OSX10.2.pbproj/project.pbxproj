@@ -275,6 +275,24 @@
 			settings = {
 			};
 		};
+		17D8F8D109B061A200700AEC = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = binders.h;
+			refType = 4;
+		};
+		17D8F8D209B061A200700AEC = {
+			fileRef = 17D8F8D109B061A200700AEC;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17D8F8D309B061A200700AEC = {
+			fileRef = 17D8F8D109B061A200700AEC;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		17F4B7C5084C24DC00E00D4F = {
 			buildActionMask = 2147483647;
 			dstPath = "";
@@ -927,6 +945,7 @@
 				17BEE4FB086F79AB0037599E,
 				172114C80879EBA000D6D709,
 				1786CA0D09A9BCC200349824,
+				17D8F8D209B061A200700AEC,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2103,6 +2122,7 @@
 				17BEE4F9086F79AB0037599E,
 				172114C60879EBA000D6D709,
 				1786CA0E09A9BCC200349824,
+				17D8F8D309B061A200700AEC,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -6327,6 +6347,7 @@
 		F522144F0136C0C401000001 = {
 			children = (
 				F5A00027023FDA6101A80001,
+				17D8F8D109B061A200700AEC,
 				EFEF1AC404AF552D00C3A19D,
 				F5A00029023FDA7601A80001,
 				172114C40879EBA000D6D709,
