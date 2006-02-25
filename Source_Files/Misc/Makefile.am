@@ -8,7 +8,7 @@ else
 THREAD_PRIORITY = thread_priority_sdl_posix.cpp
 endif
 
-libmisc_a_SOURCES = ActionQueues.h alephversion.h CircularByteBuffer.h \
+libmisc_a_SOURCES = ActionQueues.h alephversion.h Binders.h CircularByteBuffer.h \
   CircularQueue.h Console.h game_errors.h \
   interface.h interface_menus.h key_definitions.h Logging.h Logging_gruntwork.h \
   PlayerImage_sdl.h \
