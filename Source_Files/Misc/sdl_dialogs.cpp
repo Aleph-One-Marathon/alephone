@@ -1179,13 +1179,13 @@ void dialog::event(SDL_Event &e)
 						activate_next_widget();
 					break;
 			case SDLK_RETURN: 		// Return = Action on widget
-			    active_widget->click(0, 0);
-			    break;
-				case SDLK_F9:			// F9 = Screen dump
-					dump_screen();
-					break;
-				default:
-					break;
+				if (active_widget) active_widget->click(0, 0);
+				break;
+			case SDLK_F9:			// F9 = Screen dump
+				dump_screen();
+				break;
+			default:
+				break;
 			}
 			break;
 
