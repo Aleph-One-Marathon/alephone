@@ -410,8 +410,8 @@ public:
 	
 	// These calls are for creating dialog boxes to set the filespec
 	// A null pointer means an empty string
-	bool ReadDialog(Typecode Type, char *Prompt=NULL);
-	bool WriteDialog(Typecode Type, char *Prompt=NULL, char *DefaultName=NULL);
+	bool ReadDialog(Typecode Type, const char *Prompt=NULL);
+	bool WriteDialog(Typecode Type, const char *Prompt=NULL, const char *DefaultName=NULL);
 	
 	// Write dialog box for savegames (must be asynchronous, allowing the sound
 	// to continue in the background)

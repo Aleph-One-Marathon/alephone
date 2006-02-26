@@ -77,6 +77,21 @@ protected:
 	bool& m_pref;
 };
 
+class BitPref : public Bindable<bool>
+{
+public:
+	BitPref (uint16& pref, uint16 mask, bool invert = false)
+		: m_pref (pref), m_mask (mask), m_invert (invert) {}
+
+	virtual bool bind_export () { return (m_invert ? !(m_pref & m_mask) : (m_pref & m_mask)); }
+	virtual void bind_import (bool value) { (m_invert ? !value : value) ? m_pref |= m_mask : m_pref &= (m_mask ^ 0xFFFF); }
+
+protected:
+	uint16& m_pref;
+	uint16 m_mask;
+	bool m_invert;
+};
+
 class Int16Pref : public Bindable<int>
 {
 public:
@@ -89,6 +104,32 @@ protected:
 	int16& m_pref;
 };
 
+#ifdef mac
+class FilePref : public Bindable<FileSpecifier>
+{
+public:
+	FilePref (FSSpec& pref) : m_pref (pref) {}
+
+	virtual FileSpecifier bind_export () { FileSpecifier f; f.SetSpec (m_pref); return f; }
+	virtual void bind_import (FileSpecifier value) { m_pref = value.GetSpec (); }
+	
+protected:
+	FSSpec& m_pref;
+};
+#else
+class FilePref : public Bindable<FileSpecifier>
+{
+public:
+	// The buffer should be at least 256
+	FilePref (char* pref) : m_pref (pref) {}
+
+	virtual FileSpecifier bind_export () { FileSpecifier f (m_pref); return f; }
+	virtual void bind_import (FileSpecifier value) { strncpy (m_pref, value.GetPath (), 255); }
+	
+protected:
+	char* m_pref;
+};
+#endif
 
 class ChatHistory
 {

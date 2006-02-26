@@ -315,110 +315,97 @@ JoinDialog::Create()
 	return auto_ptr<JoinDialog>(new NibsJoinDialog);
 }
 
-/* ---------- private code */
-
 /*************************************************************************************************
  *
- * Function: network_game_setup
- * Purpose:  handle the dialog to setup a network game.
+ * NIBs-specific setup network game dialog
  *
  *************************************************************************************************/
 
-static bool sng_success;
-
-static pascal OSStatus Setup_PlayerNameWatcher(
-	EventHandlerCallRef HandlerCallRef,
-	EventRef Event,
-	void *UserData
-	)
+class NibsSetupNetgameDialog : public SetupNetgameDialog
 {
-	NetgameSetupData *DPtr = (NetgameSetupData *)(UserData);
-	NetgameSetupData& Data = *DPtr;
-	
-	// Hand off to the next event handler
-	OSStatus err = CallNextEventHandler(HandlerCallRef, Event);
-	
-	// Need this order because we want to check the text field
-	// after it's been changed, not before.
-	// Adjust the OK button's activity as needed
-	GetEditPascalText(Data.PlayerNameCtrl, ptemporary);
-	SetControlActivity(Data.OK_Ctrl, ptemporary[0] != 0);
-	
-	return err;
-}
-
-
-static void NetgameSetup_Handler(ParsedControl& Ctrl, void *UserData)
-{
-	DialogPTR dialog = reinterpret_cast<DialogPTR>(UserData);
-	
-	switch(Ctrl.ID.id)
+public:
+	NibsSetupNetgameDialog ()
+	: m_setupNetgameDialogNib (CFSTR ("Setup Network Game"))
+	, m_dialog_window (m_setupNetgameDialogNib.nibReference (), CFSTR ("Setup Network Game"))
+	, m_dialog (m_dialog_window (), false)
 	{
-	case iRADIO_NO_TIME_LIMIT:
-		SNG_limit_type_hit (dialog);
-		break;
-		
-	case iFORCE_UNIQUE_TEAMS:
-		SNG_teams_hit (dialog);
-		break;
-
-	case iGAME_TYPE:
-		SNG_game_type_hit (dialog);
-		break;
-		
-	case iUSE_SCRIPT:
-		SNG_use_script_hit (dialog);
-		break;
-		
-	case iCHOOSE_MAP:
-		SNG_choose_map_hit (dialog);
-		break;
-					
-	case iOK_SPECIAL:
-		if (SNG_information_is_acceptable (dialog)) {
-			StopModalDialog(ActiveNonFloatingWindow(),false);
-			sng_success = true;
-		} else
-			SysBeep(30);
-	}
-}
-
-
-
-bool run_netgame_setup_dialog(
-	player_info *player_information,
-	game_info *game_information,
-  bool ResumingGame,
-	bool& outAdvertiseGameOnMetaserver)
-{
-	bool allow_all_levels= key_is_down(OPTION_KEYCODE);
-
-	AutoNibReference setupNetworkGameNib(CFSTR("Setup Network Game"));
-	AutoNibWindow Window(setupNetworkGameNib.nibReference(), CFSTR("Setup Network Game"));
-		
-	AutoKeyboardWatcher Watcher(Setup_PlayerNameWatcher);
+		m_cancelWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iCANCEL));
+		m_okWidget = new ButtonWidget (GetCtrlFromWindow(m_dialog_window(), 0, iOK_SPECIAL));
 	
-	Watcher.Watch(GetCtrlFromWindow(Window(), 0, iGATHER_NAME), Window ());
+		m_nameWidget = new EditTextWidget (GetCtrlFromWindow (m_dialog_window(), 0, iGATHER_NAME));
+		m_colourWidget = new SelectorWidget (GetCtrlFromWindow (m_dialog_window(), 0, iGATHER_COLOR));
+		m_teamWidget = new SelectorWidget (GetCtrlFromWindow (m_dialog_window(), 0, iGATHER_TEAM));
 	
-	vector<ControlRef> SNG_panes;
-	SNG_panes.push_back(GetCtrlFromWindow(Window(), 0, iSNG_GENERAL_TAB));
-	SNG_panes.push_back(GetCtrlFromWindow(Window(), 0, iSNG_STUFF_TAB));
-	AutoTabHandler tab_handler(GetCtrlFromWindow(Window(), 0, iSNG_TABS), SNG_panes, Window ());
+		m_mapWidget = new FileChooserWidget (GetCtrlFromWindow (m_dialog_window(), 0, iCHOOSE_MAP),
+				GetCtrlFromWindow (m_dialog_window(), 0, iTEXT_MAP_NAME), _typecode_scenario, "Choose Map");
+		
+		m_levelWidget = new SelectorWidget (GetCtrlFromWindow (m_dialog_window(), 0, iENTRY_MENU));
+		m_gameTypeWidget = new SelectorWidget (GetCtrlFromWindow (m_dialog_window(), 0, iGAME_TYPE));
+		m_difficultyWidget = new SelectorWidget (GetCtrlFromWindow (m_dialog_window(), 0, iDIFFICULTY_MENU));
 	
-	game_information->net_game_type =
-		netgame_setup_dialog_initialise(Window (), allow_all_levels, ResumingGame);
+		m_limitTypeWidget = new SelectorWidget (GetCtrlFromWindow (m_dialog_window(), 0, iRADIO_NO_TIME_LIMIT));
+		m_timeLimitWidget = new EditNumberWidget (GetCtrlFromWindow (m_dialog_window(), 0, iTIME_LIMIT));
+		m_scoreLimitWidget = new EditNumberWidget (GetCtrlFromWindow (m_dialog_window(), 0, iKILL_LIMIT));
+	
+		m_aliensWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iUNLIMITED_MONSTERS));
+		m_allowTeamsWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iFORCE_UNIQUE_TEAMS));
+		m_deadPlayersDropItemsWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iBURN_ITEMS_ON_DEATH));
+		m_penalizeDeathWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iDYING_PUNISHED));
+		m_penalizeSuicideWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iSUICIDE_PUNISHED));
+	
+		m_useMetaserverWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iADVERTISE_GAME_ON_METASERVER));
+	
+		m_useScriptWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iUSE_SCRIPT));
+		m_scriptWidget = new FileChooserWidget (GetCtrlFromWindow (m_dialog_window(), 0, iCHOOSE_SCRIPT),
+				GetCtrlFromWindow (m_dialog_window(), 0, iTEXT_SCRIPT_NAME), _typecode_netscript, "Choose Script");
+	
+		m_allowMicWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iREAL_TIME_SOUND));
 
-	sng_success = false;
-	RunModalDialog(Window(), false, NetgameSetup_Handler, Window ());
+		m_liveCarnageWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iREALTIME_NET_STATS));
+		m_motionSensorWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iMOTION_SENSOR_DISABLED));
 	
-	if (sng_success)
-	{
-		netgame_setup_dialog_extract_information(Window (), player_information,
-			game_information, allow_all_levels, ResumingGame, outAdvertiseGameOnMetaserver);
+		m_zoomWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iALLOW_ZOOM));
+		m_crosshairWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iALLOW_CROSSHAIRS));
+		m_laraCroftWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iALLOW_LARA_CROFT));
 	}
 	
-	return sng_success;
+	virtual bool Run ()
+	{	
+		vector<ControlRef> SNG_panes;
+		SNG_panes.push_back (GetCtrlFromWindow (m_dialog_window (), 0, iSNG_GENERAL_TAB));
+		SNG_panes.push_back (GetCtrlFromWindow (m_dialog_window (), 0, iSNG_STUFF_TAB));
+		AutoTabHandler tab_handler (GetCtrlFromWindow (m_dialog_window (), 0, iSNG_TABS), SNG_panes, m_dialog_window ());
+	
+		return m_dialog.Run ();
+	}
+
+	virtual void Stop (bool result)
+	{
+		m_dialog.Stop (result);
+	}
+
+	virtual bool allLevelsAllowed ()
+	{
+		return key_is_down (OPTION_KEYCODE);
+	}
+
+	virtual void unacceptableInfo ()
+	{
+		SysBeep (30);
+	}
+
+private:
+	AutoNibReference m_setupNetgameDialogNib;
+	AutoNibWindow m_dialog_window;
+	Modal_Dialog m_dialog;
+};
+
+auto_ptr<SetupNetgameDialog>
+SetupNetgameDialog::Create()
+{
+	return auto_ptr<SetupNetgameDialog>(new NibsSetupNetgameDialog ());
 }
+
 
 
 struct EntryPointMenuData

@@ -56,13 +56,13 @@ void StaticTextWidget::set_text (const std::string& s)
 	Draw1Control (m_ctrl);
 }
 
-void EditTextWidget::set_text (const std::string& s)
+void EditTextOrNumberWidget::set_text (const std::string& s)
 {
 	SetControlData(m_ctrl, kControlEditTextPart, kControlEditTextTextTag, s.length (), s.c_str ());
 	Draw1Control (m_ctrl);
 }
 
-const string EditTextWidget::get_text ()
+const string EditTextOrNumberWidget::get_text ()
 {
 	Size size = 0;
 	GetControlDataSize(m_ctrl, kControlEditTextPart, kControlEditTextTextTag, &size);
@@ -70,6 +70,41 @@ const string EditTextWidget::get_text ()
 	char* buffer = new char[size];
 	GetControlData(m_ctrl, kControlEditTextPart, kControlEditTextTextTag, size, buffer, NULL);
 	return std::string(buffer, size);
+}
+
+void EditNumberWidget::set_value (int value)
+{
+	NumToString (value, ptemporary);
+	set_text (pstring_to_string (ptemporary));
+}
+
+int EditNumberWidget::get_value ()
+{
+	long result;
+
+	copy_string_to_pstring(get_text (), ptemporary);
+	StringToNum(ptemporary, &result);
+	return result;
+}
+
+void FileChooserWidget::set_file (const FileSpecifier& file)
+{
+	m_file = file;
+	
+	char buffer[256];
+	m_file.GetName (buffer);
+	m_text->set_text (string (buffer));
+}
+
+void FileChooserWidget::choose_file ()
+{
+	if (m_file.ReadDialog (m_type, m_prompt.c_str ())) {
+		char dummy[256];
+		m_file.GetName (dummy);
+		m_text->set_text (string (dummy));
+		if (m_callback)
+			m_callback ();
+	}
 }
 
 const string ListWidgetValueForItem(const MetaserverPlayerInfo* element)

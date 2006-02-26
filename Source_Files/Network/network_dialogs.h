@@ -229,15 +229,16 @@ enum {
 	iSNG_STUFF_TAB
 };
 
-#ifdef USES_NIBS
-
-// For the nib version -- it has radio-button groups that work like popup menus
-const int iRADIO_GROUP_DURATION = iRADIO_NO_TIME_LIMIT;
 enum {
-	duration_no_time_limit = 1,
+	duration_no_time_limit = 0,
 	duration_time_limit,
 	duration_kill_limit
 };
+
+#ifdef USES_NIBS
+
+// For the nib version -- it has radio-button groups that work like popup menus
+
 
 enum {
 	mic_type_plain = 1,
@@ -467,6 +468,82 @@ protected:
 	bool got_gathered;
 };
 
+
+class SetupNetgameDialog
+{
+public:
+	// Abstract factory; concrete type determined at link-time
+	static std::auto_ptr<SetupNetgameDialog> Create();
+
+	bool SetupNetworkGameByRunning (
+		player_info *player_information,
+		game_info *game_information,
+		bool ResumingGame,
+		bool& outAdvertiseGameOnMetaserver);
+
+	virtual ~SetupNetgameDialog ();
+
+protected:
+	SetupNetgameDialog();
+	
+	virtual bool Run () = 0;
+	virtual void Stop (bool result) = 0;
+
+	virtual bool allLevelsAllowed () = 0;
+	bool m_allow_all_levels;
+	int m_old_game_type;
+	
+	void setupForUntimedGame ();
+	void setupForTimedGame ();
+	void setupForScoreGame ();
+	void limitTypeHit ();
+	void teamsHit ();
+	void setupForGameType ();
+	void gameTypeHit ();
+	void chooseMapHit ();
+	bool informationIsAcceptable ();
+	void okHit ();
+	
+	virtual void unacceptableInfo () = 0;
+	
+	ButtonWidget*		m_cancelWidget;
+	ButtonWidget*		m_okWidget;
+	
+	EditTextWidget*		m_nameWidget;
+	SelectorWidget*		m_colourWidget;
+	SelectorWidget*		m_teamWidget;
+	
+	FileChooserWidget*	m_mapWidget;
+	SelectorWidget*		m_levelWidget;
+	SelectorWidget*		m_gameTypeWidget;
+	SelectorWidget*		m_difficultyWidget;
+	
+	SelectorWidget*		m_limitTypeWidget;
+	EditNumberWidget*	m_timeLimitWidget;
+	EditNumberWidget*	m_scoreLimitWidget;
+	
+	ToggleWidget*		m_aliensWidget;
+	ToggleWidget*		m_allowTeamsWidget;
+	ToggleWidget*		m_deadPlayersDropItemsWidget;
+	ToggleWidget*		m_penalizeDeathWidget;
+	ToggleWidget*		m_penalizeSuicideWidget;
+	
+	ToggleWidget*		m_useMetaserverWidget;
+	
+	ToggleWidget*		m_useScriptWidget;
+	FileChooserWidget*	m_scriptWidget;
+	
+	ToggleWidget*		m_allowMicWidget;
+	
+	ToggleWidget*		m_liveCarnageWidget;
+	ToggleWidget*		m_motionSensorWidget;
+	
+	ToggleWidget*		m_zoomWidget;
+	ToggleWidget*		m_crosshairWidget;
+	ToggleWidget*		m_laraCroftWidget;
+};
+
+
 /* ---------------------- new stuff :) */
 
 // Gather Dialog Goodies
@@ -547,6 +624,7 @@ extern void get_selected_entry_point(dialog* inDialog, short inItem, entry_point
 
 // Routines
 extern void menu_index_to_level_entry(short index, long entry_flags, struct entry_point *entry);
+extern int menu_index_to_level_index (int menu_index, int32 entry_flags);
 extern int level_index_to_menu_index(int level_index, int32 entry_flags);
 extern void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber);
 

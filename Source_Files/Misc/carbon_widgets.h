@@ -70,8 +70,8 @@ public:
 	bool get_value () { return GetControl32BitValue (m_ctrl) == 0 ? false : true; }
 	void set_value (bool value) { SetControl32BitValue (m_ctrl, value ? 1 : 0); }
 
-	bool bind_export () { return get_value (); }
-	void bind_import (bool value) { set_value (value); }
+	virtual bool bind_export () { return get_value (); }
+	virtual void bind_import (bool value) { set_value (value); }
 
 private:
 	AutoControlWatcher m_control_watcher;
@@ -128,10 +128,10 @@ public:
 	void set_text (const std::string& s);
 };
 
-class EditTextWidget : public NIBsControlWidget, public Bindable<std::string>
+class EditTextOrNumberWidget : public NIBsControlWidget
 {
 public:
-	EditTextWidget (ControlRef ctrl)
+	EditTextOrNumberWidget (ControlRef ctrl)
 		: NIBsControlWidget (ctrl)
 		, m_keystroke_watcher (m_ctrl) {}
 	
@@ -140,29 +140,71 @@ public:
 	void set_text (const std::string& s);
 	const string get_text ();
 
-	std::string bind_export () { return get_text (); }
-	void bind_import (std::string s) { set_text (s); }
-
-
 private:
 	AutoKeystrokeWatcher m_keystroke_watcher;
 };
 
-class FileChooserWidget
+class EditTextWidget : public EditTextOrNumberWidget, public Bindable<std::string>
 {
 public:
-	FileChooserWidget (ButtonWidget* button, StaticTextWidget* text, Typecode type)
-		: m_button (button)
-		, m_text (text)
+	EditTextWidget (ControlRef ctrl)
+		: EditTextOrNumberWidget (ctrl)
+		{}
+
+	virtual std::string bind_export () { return get_text (); }
+	virtual void bind_import (std::string s) { set_text (s); }
+};
+
+class EditNumberWidget : public EditTextOrNumberWidget, public Bindable<int>
+{
+public:
+	EditNumberWidget (ControlRef ctrl)
+		: EditTextOrNumberWidget (ctrl)
+		{}
+	
+	void set_value (int value);
+	int get_value ();
+	
+	virtual int bind_export () { return get_value (); }
+	virtual void bind_import (int value) { set_value (value); }
+};
+
+class FileChooserWidget : public Bindable<FileSpecifier>
+{
+public:
+	FileChooserWidget (ControlRef button_ctrl, ControlRef text_ctrl, Typecode type, const std::string& prompt)
+		: m_button (new ButtonWidget (button_ctrl))
+		, m_text (new StaticTextWidget (text_ctrl))
 		, m_type (type)
+		, m_prompt (prompt)
+		, m_callback (0)
 		{ m_button->set_callback (boost::bind(&FileChooserWidget::choose_file, this)); }
+	
+	~FileChooserWidget () { delete m_button; delete m_text; }
+	
+	void set_callback (ControlHitCallback callback) { m_callback = callback; }
+
+	void set_file (const FileSpecifier& file);
+	FileSpecifier get_file () { return m_file; }
+
+	virtual FileSpecifier bind_export () { return get_file (); }
+	virtual void bind_import (FileSpecifier f) { set_file (f); }
+
+	void hide () { m_button->hide (); m_text->hide (); }
+	void show () { m_button->show (); m_text->show (); }
+
+	void activate () { m_button->activate (); m_text->activate (); }
+	void deactivate () { m_button->deactivate (); m_text->deactivate (); }
 
 private:
 	void choose_file ();
 
+	FileSpecifier m_file;
 	ButtonWidget* m_button;
 	StaticTextWidget* m_text;
 	Typecode m_type;
+	std::string m_prompt;
+	ControlHitCallback m_callback;
 };
 
 

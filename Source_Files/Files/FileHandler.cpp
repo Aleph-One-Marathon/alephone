@@ -686,7 +686,7 @@ static OSStatus ExtractSingleItem(const NavReplyRecord *reply, FSSpec *item)
 // These calls are for creating dialog boxes to set the filespec
 // A null pointer means an empty string
 
-bool FileSpecifier::ReadDialog(Typecode Type, char *Prompt)
+bool FileSpecifier::ReadDialog(Typecode Type, const char *Prompt)
 {
 	// For those who use return as the action key, queued returns can cause unwanted saves
 	FlushEvents(everyEvent,0);
@@ -759,7 +759,7 @@ bool FileSpecifier::ReadDialog(Typecode Type, char *Prompt)
 	return true;
 }
 
-bool FileSpecifier::WriteDialog(Typecode Type, char *Prompt, char *DefaultName)
+bool FileSpecifier::WriteDialog(Typecode Type, const char *Prompt, const char *DefaultName)
 {
 	// For those who use return as the action key, queued returns can cause unwanted saves
 	FlushEvents(everyEvent,0);

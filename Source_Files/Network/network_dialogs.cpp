@@ -116,9 +116,6 @@ static list<HostName_Type> RecentHostAddresses;
 static list<HostName_Type>::iterator RHAddrIter = RecentHostAddresses.end();
 
 
-static uint16 get_dialog_game_options(DialogPTR dialog, short game_type);
-static void set_dialog_game_options(DialogPTR dialog, uint16 game_options);
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // LAN game-location services support
@@ -765,32 +762,101 @@ void JoinDialog::ReceivedMessageFromPlayer(const char *player_name, const char *
  *
  ****************************************************/
 
-static bool static_allow_all_levels;
-static short old_game_type;
-static FileSpecifier sNetscriptFile, sOldMapFile;
-
 bool network_game_setup(
 	player_info *player_information,
 	game_info *game_information,
 	bool ResumingGame,
 	bool& outAdvertiseGameOnMetaserver)
 {
-	if (run_netgame_setup_dialog(player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver))
+	if (SetupNetgameDialog::Create ()->SetupNetworkGameByRunning (player_information, game_information, ResumingGame, outAdvertiseGameOnMetaserver)) {
+		write_preferences ();
 		return true;
-	else {
-		// Restore enviroprefs in case user changed map
-		if (sOldMapFile.Exists()) {
-			struct environment_preferences_data *prefs= environment_preferences;
-#ifdef SDL
-			strcpy(prefs->map_file, sOldMapFile.GetPath());
-#else
-			prefs->map_file = sOldMapFile.GetSpec ();
-#endif
-			load_environment_from_preferences();
-		}
+	} else {
+		read_preferences ();
+		load_environment_from_preferences(); // In case user changed map
 		return false;
 	}
 }
+
+// converts menu index <---> level index
+class LevelInt16Pref : public Bindable<int>
+{
+public:
+	LevelInt16Pref (int16& pref, int& gametype) : m_pref (pref), m_gametype (gametype) {}
+	
+	virtual int bind_export ()
+	{
+		int32 entry_flags = get_entry_point_flags_for_game_type (m_gametype);
+		return level_index_to_menu_index (m_pref, entry_flags);
+	}
+	
+	virtual void bind_import (int value)
+	{
+		int32 entry_flags = get_entry_point_flags_for_game_type (m_gametype);
+		m_pref = menu_index_to_level_index (value, entry_flags);
+	}
+	
+protected:
+	int16& m_pref;
+	int& m_gametype;
+};
+
+class TimerInt32Pref : public Bindable<int>
+{
+public:
+	TimerInt32Pref (int32& pref) : m_pref (pref) {}
+	
+	virtual int bind_export ()
+	{
+		return m_pref / (60 * TICKS_PER_SECOND);
+	}
+	
+	virtual void bind_import (int value)
+	{
+		m_pref = static_cast<int32>(value) * (60 * TICKS_PER_SECOND);
+	}
+	
+protected:
+	int32& m_pref;
+};
+
+// limit type is represented by a bool and a bit in game options
+class LimitTypePref : public Bindable<int>
+{
+public:
+	LimitTypePref (bool& untimed_pref, uint16& options_pref, uint16 kill_limit_mask)
+		: m_untimed (untimed_pref)
+		, m_kill_limited (options_pref, kill_limit_mask)
+		{}
+	
+	virtual int bind_export ()
+	{
+		if (!m_untimed.bind_export ())
+			return duration_time_limit;
+		else if (m_kill_limited.bind_export ())
+			return duration_kill_limit;
+		else
+			return duration_no_time_limit;
+	}
+	
+	virtual void bind_import (int value)
+	{
+		if (value == duration_no_time_limit) {
+			m_untimed.bind_import (true);
+			m_kill_limited.bind_import (false);
+		} else if (value == duration_time_limit) {
+			m_untimed.bind_import (false);
+			m_kill_limited.bind_import (false);
+		} else {
+			m_untimed.bind_import (true);
+			m_kill_limited.bind_import (true);
+		}
+	}
+	
+protected:
+	BoolPref m_untimed;
+	BitPref m_kill_limited;
+};
 
 static const vector<string> make_entry_vector (int32 entry_flags)
 {	
@@ -805,15 +871,57 @@ static const vector<string> make_entry_vector (int32 entry_flags)
 	return result;
 }
 
-short netgame_setup_dialog_initialise (
-	DialogPTR dialog, 
-	bool allow_all_levels,
-	bool resuming_game)
+SetupNetgameDialog::SetupNetgameDialog()
+{  }
+
+SetupNetgameDialog::~SetupNetgameDialog ()
 {
-	long entry_flags;
+	delete m_cancelWidget;
+	delete m_okWidget;
+	
+	delete m_nameWidget;
+	delete m_colourWidget;
+	delete m_teamWidget;
+	
+	delete m_mapWidget;
+	delete m_levelWidget;
+	delete m_gameTypeWidget;
+	delete m_difficultyWidget;
+	
+	delete m_timeLimitWidget;
+	delete m_scoreLimitWidget;
+	
+	delete m_aliensWidget;
+	delete m_allowTeamsWidget;
+	delete m_deadPlayersDropItemsWidget;
+	delete m_penalizeDeathWidget;
+	delete m_penalizeSuicideWidget;
+	
+	delete m_useMetaserverWidget;
+	
+	delete m_useScriptWidget;
+	delete m_scriptWidget;
+	
+	delete m_allowMicWidget;
+	
+	delete m_liveCarnageWidget;
+	delete m_motionSensorWidget;
+	
+	delete m_zoomWidget;
+	delete m_crosshairWidget;
+	delete m_laraCroftWidget;
+}
 
-	static_allow_all_levels = allow_all_levels;
+bool SetupNetgameDialog::SetupNetworkGameByRunning (
+	player_info *player_information,
+	game_info *game_information,
+	bool resuming_game,
+	bool& outAdvertiseGameOnMetaserver)
+{
+	int32 entry_flags;
 
+	m_allow_all_levels = allLevelsAllowed ();
+	
 	// We use a temporary structure so that we can change things without messing with the real preferences
 	network_preferences_data theAdjustedPreferences = *network_preferences;
 	if (resuming_game)
@@ -834,474 +942,335 @@ short netgame_setup_dialog_initialise (
 			theAdjustedPreferences.game_type = _game_of_cooperative_play;
 			theAdjustedPreferences.game_options |= _live_network_stats; // single-player game doesn't, and they probably want it
 		}
-		allow_all_levels = true;
+		m_allow_all_levels = true;
+		
+		// If resuming an untimed game, show the "time limit" from the prefs in the grayed-out widget
+		// rather than some ridiculously large number
+		if (theAdjustedPreferences.game_is_untimed)
+			theAdjustedPreferences.time_limit = theAdjustedPreferences.time_limit/TICKS_PER_SECOND/60;
+		
+		// Disable certain elements when resuming a game
+		m_gameTypeWidget->deactivate ();
+		m_levelWidget->deactivate ();
+		m_scoreLimitWidget->deactivate ();
+		m_timeLimitWidget->deactivate ();
+		m_limitTypeWidget->deactivate ();
+		m_mapWidget->deactivate ();
 	}
+
+	// if we're resuming, use the temporary prefs structure, otherwise use the prefs as usual
+	network_preferences_data* active_network_preferences = resuming_game ? &theAdjustedPreferences : network_preferences;
+
+	m_old_game_type = active_network_preferences->game_type;
 
 	/* Fill in the entry points */
-	if(allow_all_levels)
+	if(m_allow_all_levels)
 	{
 		entry_flags= NONE;
 	} else {
-		entry_flags= get_entry_point_flags_for_game_type(theAdjustedPreferences.game_type);
+		entry_flags= get_entry_point_flags_for_game_type(active_network_preferences->game_type);
 	}
-
-	struct environment_preferences_data *prefs= environment_preferences;
-#ifdef SDL
-	sOldMapFile = prefs->map_file;
-#else
-	sOldMapFile.SetSpec(prefs->map_file);
-#endif
-	if (sOldMapFile.Exists()) {
-		char buffer [256];
-		sOldMapFile.GetName (buffer);
-		QQ_copy_string_to_text_control (dialog, iTEXT_MAP_NAME, string(buffer));
-	} else {
-		QQ_copy_string_to_text_control (dialog, iTEXT_MAP_NAME, "Couldn't get map name");
-	}
-
-	QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (entry_flags));
-
-	QQ_set_selector_control_labels_from_stringset (dialog, iGAME_TYPE, kNetworkGameTypesStringSetID);
-	QQ_set_selector_control_value (dialog, iGAME_TYPE, theAdjustedPreferences.game_type);
-	setup_dialog_for_game_type(dialog, theAdjustedPreferences.game_type);
-
-	QQ_copy_string_to_text_control (dialog, iGATHER_NAME, pstring_to_string (player_preferences->name));
-
-	/* Set the menu values */
-	QQ_set_selector_control_labels_from_stringset(dialog, iGATHER_COLOR, kTeamColorsStringSetID);
-	QQ_set_selector_control_value(dialog, iGATHER_COLOR, player_preferences->color);
-	QQ_set_selector_control_labels_from_stringset(dialog, iGATHER_TEAM, kTeamColorsStringSetID);
-	QQ_set_selector_control_value(dialog, iGATHER_TEAM, player_preferences->team);
+	m_levelWidget->set_labels (make_entry_vector (entry_flags));
+	m_gameTypeWidget->set_labels (kNetworkGameTypesStringSetID);
+	m_colourWidget->set_labels (kTeamColorsStringSetID);
+	m_teamWidget->set_labels (kTeamColorsStringSetID);
+	m_difficultyWidget->set_labels (kDifficultyLevelsStringSetID);
+	m_limitTypeWidget->set_labels (kEndConditionTypeStringSetID);
 	
-	QQ_set_selector_control_labels_from_stringset(dialog, iDIFFICULTY_MENU, kDifficultyLevelsStringSetID);
-	QQ_set_selector_control_value(dialog, iDIFFICULTY_MENU, theAdjustedPreferences.difficulty_level);
+	BinderSet binders;
 	
-	QQ_set_selector_control_value(dialog, iENTRY_MENU, level_index_to_menu_index(theAdjustedPreferences.entry_point, entry_flags));
+	PStringPref namePref (player_preferences->name, MAX_NET_PLAYER_NAME_LENGTH);
+	binders.insert<std::string> (m_nameWidget, &namePref);
+	Int16Pref colourPref (player_preferences->color);
+	binders.insert<int> (m_colourWidget, &colourPref);
+	Int16Pref teamPref (player_preferences->team);
+	binders.insert<int> (m_teamWidget, &teamPref);
+
+	FilePref mapPref (environment_preferences->map_file);
+	binders.insert<FileSpecifier> (m_mapWidget, &mapPref);
+
+	LevelInt16Pref levelPref (active_network_preferences->entry_point, m_old_game_type);
+	binders.insert<int> (m_levelWidget, &levelPref);
+	Int16Pref gameTypePref (active_network_preferences->game_type);
+	binders.insert<int> (m_gameTypeWidget, &gameTypePref);
+	Int16Pref difficultyPref (active_network_preferences->difficulty_level);
+	binders.insert<int> (m_difficultyWidget, &difficultyPref);
+
+	LimitTypePref limitTypePref (active_network_preferences->game_is_untimed, active_network_preferences->game_options, _game_has_kill_limit);
+	binders.insert<int> (m_limitTypeWidget, &limitTypePref);
+	TimerInt32Pref timeLimitPref (active_network_preferences->time_limit);
+	binders.insert<int> (m_timeLimitWidget, &timeLimitPref);
+	Int16Pref scoreLimitPref (active_network_preferences->kill_limit);
+	binders.insert<int> (m_scoreLimitWidget, &scoreLimitPref);
 	
-	// START Benad 
-	if (theAdjustedPreferences.game_type == _game_of_defense)
-		QQ_insert_number_into_text_control(dialog, iKILL_LIMIT, theAdjustedPreferences.kill_limit/60);
+	BitPref aliensPref (active_network_preferences->game_options, _monsters_replenish);
+	binders.insert<bool> (m_aliensWidget, &aliensPref);
+	BitPref allowTeamsPref (active_network_preferences->game_options, _force_unique_teams, true);
+	binders.insert<bool> (m_allowTeamsWidget, &allowTeamsPref);
+	BitPref deadPlayersDropItemsPref (active_network_preferences->game_options, _burn_items_on_death, true);
+	binders.insert<bool> (m_deadPlayersDropItemsWidget, &deadPlayersDropItemsPref);
+	BitPref penalizeDeathPref (active_network_preferences->game_options, _dying_is_penalized);
+	binders.insert<bool> (m_penalizeDeathWidget, &penalizeDeathPref);
+	BitPref penalizeSuicidePref (active_network_preferences->game_options, _suicide_is_penalized);
+	binders.insert<bool> (m_penalizeSuicideWidget, &penalizeSuicidePref);
+				
+	BoolPref useMetaserverPref (active_network_preferences->advertise_on_metaserver);
+	binders.insert<bool> (m_useMetaserverWidget, &useMetaserverPref);
+	
+	BoolPref allowMicPref (active_network_preferences->allow_microphone);
+	binders.insert<bool> (m_allowMicWidget, &allowMicPref);
+	
+	BitPref liveCarnagePref (active_network_preferences->game_options, _live_network_stats);
+	binders.insert<bool> (m_liveCarnageWidget, &liveCarnagePref);
+	BitPref motionSensorPref (active_network_preferences->game_options, _motion_sensor_does_not_work);
+	binders.insert<bool> (m_motionSensorWidget, &motionSensorPref);
+
+	BitPref zoomPref (active_network_preferences->cheat_flags, _allow_crosshair);
+	binders.insert<bool> (m_zoomWidget, &zoomPref);
+	BitPref crosshairPref (active_network_preferences->cheat_flags, _allow_tunnel_vision);
+	binders.insert<bool> (m_crosshairWidget, &crosshairPref);
+	BitPref laraCroftPref (active_network_preferences->cheat_flags, _allow_behindview);
+	binders.insert<bool> (m_laraCroftWidget, &laraCroftPref);
+
+	BoolPref useScriptPref (active_network_preferences->use_netscript);
+	binders.insert<bool> (m_useScriptWidget, &useScriptPref);
+	FilePref scriptPref (active_network_preferences->netscript_file);
+	binders.insert<FileSpecifier> (m_scriptWidget, &scriptPref);
+
+	binders.migrate_all_second_to_first ();
+
+	m_cancelWidget->set_callback (boost::bind (&SetupNetgameDialog::Stop, this, false));
+	m_okWidget->set_callback (boost::bind (&SetupNetgameDialog::okHit, this));
+	m_limitTypeWidget->set_callback (boost::bind (&SetupNetgameDialog::limitTypeHit, this));
+	m_allowTeamsWidget->set_callback (boost::bind (&SetupNetgameDialog::teamsHit, this));
+	m_gameTypeWidget->set_callback (boost::bind (&SetupNetgameDialog::gameTypeHit, this));
+	m_mapWidget->set_callback (boost::bind (&SetupNetgameDialog::chooseMapHit, this));
+
+	setupForGameType ();
+
+	if (m_limitTypeWidget->get_value () == duration_kill_limit)
+		setupForScoreGame ();
+	else if (m_limitTypeWidget->get_value () == duration_no_time_limit)
+		setupForUntimedGame ();
 	else
-		QQ_insert_number_into_text_control(dialog, iKILL_LIMIT, theAdjustedPreferences.kill_limit); 
-	// END Benad
-
-	// If resuming an untimed game, show the "time limit" from the prefs in the grayed-out widget
-	// rather than some ridiculously large number
-	QQ_insert_number_into_text_control(dialog, iTIME_LIMIT, ((resuming_game && theAdjustedPreferences.game_is_untimed) ? network_preferences->time_limit : theAdjustedPreferences.time_limit)/TICKS_PER_SECOND/60);
-
-#ifdef HAVE_LUA
-	QQ_set_boolean_control_value(dialog, iUSE_SCRIPT, theAdjustedPreferences.use_netscript);
-#else
-	QQ_set_boolean_control_value(dialog, iUSE_SCRIPT, false);
-	QQ_set_control_activity(dialog, iUSE_SCRIPT, false);
-#endif
-
-	if (theAdjustedPreferences.game_options & _game_has_kill_limit)
-	{
-		// ZZZ: factored out into new function
-		setup_for_score_limited_game(dialog);
-	}
-	else if (theAdjustedPreferences.game_is_untimed)
-	{
-		setup_for_untimed_game(dialog);
-	}
-	else
-	{
-		setup_for_timed_game(dialog);
-	}
-
-	// set up the game options
-	QQ_set_boolean_control_value(dialog, iREAL_TIME_SOUND, theAdjustedPreferences.allow_microphone);
-
-	set_dialog_game_options(dialog, theAdjustedPreferences.game_options);
-
-	// If they're resuming a single-player game, now we overwrite any existing options with the cooperative-play options.
-	// (We presumably twiddled the game_type from _game_of_kill_monsters up at the top there.)
-	if (resuming_game && dynamic_world->player_count == 1 && theAdjustedPreferences.game_type == _game_of_cooperative_play)
-	{
-		setup_dialog_for_game_type(dialog, theAdjustedPreferences.game_type);
-	}
+		setupForTimedGame ();
 
 	/* Setup the team popup.. */
-	QQ_set_control_activity(dialog, iGATHER_TEAM, QQ_get_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS) ? CONTROL_ACTIVE : CONTROL_INACTIVE);
-
-	// Disable certain elements when resuming a game
-	if (resuming_game)
-	{
-		QQ_set_control_activity(dialog, iGAME_TYPE, false);
-		QQ_set_control_activity(dialog, iENTRY_MENU, false);
-		QQ_set_control_activity(dialog, iKILL_LIMIT, false);
-		QQ_set_control_activity(dialog, iTIME_LIMIT, false);
-		QQ_set_control_activity(dialog, iRADIO_NO_TIME_LIMIT, false);
-		QQ_set_control_activity(dialog, iCHOOSE_MAP, false);
-	}
+	if (!m_allowTeamsWidget->get_value ())
+		m_teamWidget->deactivate ();
 	
-	QQ_set_boolean_control_value(dialog, iALLOW_ZOOM, network_preferences->cheat_flags & _allow_tunnel_vision);
-	QQ_set_boolean_control_value(dialog, iALLOW_CROSSHAIRS, network_preferences->cheat_flags & _allow_crosshair);
-	QQ_set_boolean_control_value(dialog, iALLOW_LARA_CROFT, network_preferences->cheat_flags & _allow_behindview);
+	if (Run ()) {
 	
-	QQ_set_boolean_control_value(dialog, iADVERTISE_GAME_ON_METASERVER, network_preferences->advertise_on_metaserver);
+		// migrate widget settings to preferences structure
+		binders.migrate_all_first_to_second ();
+	
+		pstrcpy (player_information->name, player_preferences->name);
+		player_information->color = player_preferences->color;
+		player_information->team = player_preferences->team;
 
-#ifdef SDL
-	FileSpecifier theFile (theAdjustedPreferences.netscript_file);
+		game_information->server_is_playing = true;
+		game_information->net_game_type = active_network_preferences->game_type;
+		
+		game_information->game_options = active_network_preferences->game_options;
+		game_information->game_options |= (_ammo_replenishes | _weapons_replenish | _specials_replenish);
+		if (active_network_preferences->game_type == _game_of_cooperative_play)
+			game_information->game_options |= _overhead_map_is_omniscient;
+
+		// ZZZ: don't screw with the limits if resuming.
+		if (resuming_game)
+		{
+			game_information->time_limit = dynamic_world->game_information.game_time_remaining;
+			game_information->kill_limit = dynamic_world->game_information.kill_limit;
+		} else {
+			if (!active_network_preferences->game_is_untimed)
+				game_information->time_limit = m_timeLimitWidget->get_value () * TICKS_PER_SECOND * 60;
+			else
+				game_information->time_limit = LONG_MAX;
+			
+			game_information->kill_limit = active_network_preferences->kill_limit;
+		}
+		
+		entry_point entry;
+		menu_index_to_level_entry (active_network_preferences->entry_point, NONE, &entry);
+		game_information->level_number = entry.level_number;
+		strcpy (game_information->level_name, entry.level_name);
+		
+		game_information->difficulty_level = active_network_preferences->difficulty_level;
+		game_information->allow_mic = active_network_preferences->allow_microphone;
+
+		int updates_per_packet = 1;
+		int update_latency = 0;
+		vassert(updates_per_packet > 0 && update_latency >= 0 && updates_per_packet < 16,
+			csprintf(temporary, "You idiot! updates_per_packet = %d, update_latency = %d", updates_per_packet, update_latency));
+		game_information->initial_updates_per_packet = updates_per_packet;
+		game_information->initial_update_latency = update_latency;
+		NetSetInitialParameters(updates_per_packet, update_latency);
+	
+		game_information->initial_random_seed = resuming_game ? dynamic_world->random_seed : (uint16) machine_tick_count();
+
+#if mac
+		FileSpecifier theNetscriptFile;
+		theNetscriptFile.SetSpec (active_network_preferences->netscript_file);
 #else
-	FileSpecifier theFile;
-	theFile.SetSpec(theAdjustedPreferences.netscript_file);
+		FileSpecifier theNetscriptFile (active_network_preferences->netscript_file);
 #endif
 
-	set_dialog_netscript_file(dialog, theFile);
-
-	return theAdjustedPreferences.game_type;
-}
-
-
-void
-netgame_setup_dialog_extract_information(
-	DialogPTR dialog,
-	player_info *player_information,
-	game_info *game_information,
-	bool allow_all_levels,
-	bool resuming_game,
-	bool &outAdvertiseGameOnMetaserver)
-{
-	short updates_per_packet, update_latency;
-	struct entry_point entry;
-	long entry_flags;
-	short game_limit_type;
+		// This will be set true below if appropriate
+		SetNetscriptStatus(false);
 	
-	// get player information
-	copy_string_to_pstring (QQ_copy_string_from_text_control(dialog, iGATHER_NAME), player_information->name, MAX_NET_PLAYER_NAME_LENGTH);
-	player_information->color= QQ_get_selector_control_value(dialog, iGATHER_COLOR);
-	player_information->team= QQ_get_selector_control_value(dialog, iGATHER_TEAM);
-
-	pstrcpy(player_preferences->name, player_information->name);
-	player_preferences->color= player_information->color;
-	player_preferences->team= player_information->team;
-
-	game_information->server_is_playing = true;
-	game_information->net_game_type= QQ_get_selector_control_value(dialog, iGAME_TYPE);
-
-	// get game information
-	game_information->game_options= get_dialog_game_options(dialog, game_information->net_game_type);
-
-	game_limit_type = get_limit_type (dialog);
-
-	// ZZZ: don't screw with the limits if resuming.
-	if (resuming_game)
-	{
-		game_information->time_limit = dynamic_world->game_information.game_time_remaining;
-		game_information->kill_limit = dynamic_world->game_information.kill_limit;
-	}
-	else
-	{
-		if (game_limit_type == iRADIO_NO_TIME_LIMIT)
+		if (active_network_preferences->use_netscript)
 		{
-			game_information->time_limit = LONG_MAX;
-		}
-		else if (game_limit_type == iRADIO_KILL_LIMIT)
-		{
-			// START Benad
-			if (QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
+			OpenedFile script_file;
+
+			if (theNetscriptFile.Open (script_file))
 			{
-				game_information->game_options |= _game_has_kill_limit;
-				game_information->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
-				game_information->time_limit *= TICKS_PER_SECOND * 60;
+				long script_length;
+				script_file.GetLength (script_length);
+
+				// DeferredScriptSend will delete this storage the *next time* we call it (!)
+				byte* script_buffer = new byte [script_length];
+			
+				if (script_file.Read (script_length, script_buffer))
+				{
+					DeferredScriptSend (script_buffer, script_length);
+					SetNetscriptStatus (true);
+				}
+			
+				script_file.Close ();
 			}
 			else
-			{
-				game_information->game_options |= _game_has_kill_limit;
-				game_information->time_limit = LONG_MAX;
-			}
-			// END Benad
+				// hmm failing quietly is probably not the best course of action, but ...
+				;
 		}
-		else
-		{
-			// START Benad
-			if (QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
-			{
-				game_information->game_options |= _game_has_kill_limit;
-				game_information->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
-				game_information->time_limit *= TICKS_PER_SECOND * 60;
-			}
-			else
-			{
-				game_information->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
-				game_information->time_limit *= TICKS_PER_SECOND * 60;
-			}
-			// END Benad
-		}
-		game_information->kill_limit = QQ_extract_number_from_text_control(dialog, iKILL_LIMIT);
-		// START Benad
-		if (QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
-			game_information->kill_limit *= 60; // It's "Time On Hill" limit, in seconds.
-		// END Benad
-	}
-
-	/* Determine the entry point flags by the game type. */
-	if(allow_all_levels) {
-		entry_flags= NONE;
-	} else {
-		entry_flags= get_entry_point_flags_for_game_type(game_information->net_game_type);
-	}
-
-	menu_index_to_level_entry(QQ_get_selector_control_value(dialog, iENTRY_MENU), entry_flags, &entry);
-
-	game_information->level_number = entry.level_number;
-	strcpy(game_information->level_name, entry.level_name);
-	game_information->difficulty_level = QQ_get_selector_control_value(dialog, iDIFFICULTY_MENU);
-
-	game_information->allow_mic = QQ_get_boolean_control_value(dialog, iREAL_TIME_SOUND);
-
-	updates_per_packet = 1;
-	update_latency = 0;
-
-	vassert(updates_per_packet > 0 && update_latency >= 0 && updates_per_packet < 16,
-		csprintf(temporary, "You idiot! updates_per_packet = %d, update_latency = %d", updates_per_packet, update_latency));
-	game_information->initial_updates_per_packet = updates_per_packet;
-	game_information->initial_update_latency = update_latency;
-	NetSetInitialParameters(updates_per_packet, update_latency);
 	
-	game_information->initial_random_seed = resuming_game ? dynamic_world->random_seed : (uint16) machine_tick_count();
+		game_information->cheat_flags = active_network_preferences->cheat_flags;
 
-	bool shouldUseNetscript = QQ_get_boolean_control_value(dialog, iUSE_SCRIPT);
-	FileSpecifier theNetscriptFile = get_dialog_netscript_file(dialog);
+		outAdvertiseGameOnMetaserver = active_network_preferences->advertise_on_metaserver;
 
-	// This will be set true below if appropriate
-	SetNetscriptStatus(false);
-	
-	if(shouldUseNetscript)
-	{
-		OpenedFile script_file;
-
-		if(theNetscriptFile.Open (script_file))
-		{
-			long script_length;
-			script_file.GetLength (script_length);
-
-			// DeferredScriptSend will delete this storage the *next time* we call it (!)
-			byte* script_buffer = new byte [script_length];
-			
-			if (script_file.Read (script_length, script_buffer))
-			{
-				DeferredScriptSend (script_buffer, script_length);
-				SetNetscriptStatus (true);
-			}
-			
-			script_file.Close ();
-		}
-		else
-			// hmm failing quietly is probably not the best course of action, but ...
-			shouldUseNetscript = false;
-	}
-	
-	// initialise to disallow all cheats
-	game_information->cheat_flags = 0;
-	
-	// add in allowed cheats
-	if (QQ_get_boolean_control_value(dialog, iALLOW_ZOOM))
-		game_information->cheat_flags |= _allow_tunnel_vision;
-	
-	if (QQ_get_boolean_control_value(dialog, iALLOW_CROSSHAIRS))
-		game_information->cheat_flags |= _allow_crosshair;
-	
-	if (QQ_get_boolean_control_value(dialog, iALLOW_LARA_CROFT))
-		game_information->cheat_flags |= _allow_behindview;
-
-	outAdvertiseGameOnMetaserver = QQ_get_boolean_control_value (dialog, iADVERTISE_GAME_ON_METASERVER);
-
-	// now save some of these to the preferences - only if not resuming a game
-	if(!resuming_game)
-	{
-		network_preferences->game_type= game_information->net_game_type;
-
-		// jkvw: The previous version had network_preferences->type = network_speed,
-		// but network_speed was uninitialised.
-		// network_preferences->type = GARBAGE;
-		
-		network_preferences->allow_microphone = game_information->allow_mic;
-		network_preferences->difficulty_level = game_information->difficulty_level;
-		network_preferences->entry_point = entry.level_number;
-		network_preferences->game_options = game_information->game_options;
-		network_preferences->time_limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT)*60*TICKS_PER_SECOND;
-		if (network_preferences->time_limit <= 0) // if it wasn't chosen, this could be so
-		{
-			network_preferences->time_limit = 10*60*TICKS_PER_SECOND;
-		}
-		if (game_information->time_limit == LONG_MAX)
-		{
-			network_preferences->game_is_untimed = true;
-		}
-		else
-		{
-			network_preferences->game_is_untimed = false;	
-		}
-		network_preferences->kill_limit = game_information->kill_limit;
-
-		network_preferences->use_netscript = shouldUseNetscript;
-		if(shouldUseNetscript)
-		{
+		//if(shouldUseNetscript)
+		//{
 			// Sorry, probably should use a FileSpecifier in the prefs,
 			// but that means prefs reading/writing have to be reworked instead
 #ifdef SDL
-			strncpy(network_preferences->netscript_file, theNetscriptFile.GetPath(), sizeof(network_preferences->netscript_file));
+		//	strncpy(network_preferences->netscript_file, theNetscriptFile.GetPath(), sizeof(network_preferences->netscript_file));
 #else
-			network_preferences->netscript_file = theNetscriptFile.GetSpec();
+		//	network_preferences->netscript_file = theNetscriptFile.GetSpec();
 #endif
-		}
+		//}
 		
-		network_preferences->cheat_flags = game_information->cheat_flags;
-		
-		network_preferences->advertise_on_metaserver = outAdvertiseGameOnMetaserver;
-        }
+		return true;
 
-        // We write the preferences here (instead of inside the if) because they may have changed
-        // their player name/color/etc. and we do want to save that change.
-        write_preferences();
+	} else // dialog was cancelled
+		return false;
+}
 
-        /* Don't save the preferences of their team... */
-	if(game_information->game_options & _force_unique_teams)
+void SetupNetgameDialog::setupForUntimedGame ()
+{
+	m_timeLimitWidget->hide ();
+	m_scoreLimitWidget->hide ();
+}
+
+void SetupNetgameDialog::setupForTimedGame ()
+{
+	if (m_gameTypeWidget->get_value () != _game_of_defense)
 	{
-		player_information->team= player_information->color;
+		m_timeLimitWidget->show ();
+		m_scoreLimitWidget->hide ();
+	}
+	else
+	{
+		m_timeLimitWidget->show ();
+		m_scoreLimitWidget->show ();
 	}
 }
 
-/*************************************************************************************************
- * Function: get_dialog_game_options
- * Purpose:  extract the game option flags from the net game setup's controls
- *************************************************************************************************/
-
-static uint16 get_dialog_game_options(
-	DialogPTR dialog,
-	short game_type)
+void SetupNetgameDialog::setupForScoreGame ()
 {
-	// These used to be options in the dialog. now they are always true, i guess.
-	uint16 game_options = (_ammo_replenishes | _weapons_replenish | _specials_replenish);
-
-	if(game_type==_game_of_cooperative_play) SET_FLAG(game_options,_overhead_map_is_omniscient,true);
-
-	SET_FLAG(game_options, _monsters_replenish, QQ_get_boolean_control_value(dialog, iUNLIMITED_MONSTERS));
-	SET_FLAG(game_options, _motion_sensor_does_not_work, QQ_get_boolean_control_value(dialog, iMOTION_SENSOR_DISABLED));
-	SET_FLAG(game_options, _dying_is_penalized, QQ_get_boolean_control_value(dialog, iDYING_PUNISHED));
-	SET_FLAG(game_options, _suicide_is_penalized, QQ_get_boolean_control_value(dialog, iSUICIDE_PUNISHED));
-	SET_FLAG(game_options, _force_unique_teams, !QQ_get_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS)); // Reversed
-	SET_FLAG(game_options, _burn_items_on_death, !QQ_get_boolean_control_value(dialog, iBURN_ITEMS_ON_DEATH)); // Reversed
-	SET_FLAG(game_options, _live_network_stats, QQ_get_boolean_control_value(dialog, iREALTIME_NET_STATS));
-
-	return game_options;
+	if (m_gameTypeWidget->get_value () != _game_of_defense)
+	{
+		m_timeLimitWidget->hide ();
+		m_scoreLimitWidget->show ();
+	}
+	else
+	{
+		m_timeLimitWidget->show ();
+		m_scoreLimitWidget->show ();
+	}
 }
 
-/*************************************************************************************************
- * Function: set_dialog_game_options
- * Purpose:  setup the game dialog's radio buttons given the game option flags.
- *************************************************************************************************/
-
-static void set_dialog_game_options(
-	DialogPTR dialog, 
-	uint16 game_options)
+void SetupNetgameDialog::limitTypeHit ()
 {
-	QQ_set_boolean_control_value(dialog, iUNLIMITED_MONSTERS, !!TEST_FLAG(game_options, _monsters_replenish));
-	QQ_set_boolean_control_value(dialog, iMOTION_SENSOR_DISABLED, !!TEST_FLAG(game_options, _motion_sensor_does_not_work));
-	QQ_set_boolean_control_value(dialog, iDYING_PUNISHED, !!TEST_FLAG(game_options, _dying_is_penalized));
-	QQ_set_boolean_control_value(dialog, iSUICIDE_PUNISHED, !!TEST_FLAG(game_options, _suicide_is_penalized));
-	QQ_set_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS, !TEST_FLAG(game_options, _force_unique_teams)); // Reversed
-	QQ_set_boolean_control_value(dialog, iBURN_ITEMS_ON_DEATH, !TEST_FLAG(game_options, _burn_items_on_death)); // Reversed
-	QQ_set_boolean_control_value(dialog, iREALTIME_NET_STATS, !!TEST_FLAG(game_options, _live_network_stats));
+	switch(m_limitTypeWidget->get_value ())
+	{
+		case 0:
+			setupForUntimedGame ();
+			break;
+			
+		case 1:
+			setupForTimedGame ();
+			break;
+			
+		case 2:
+			setupForScoreGame ();
+			break;
+	}
 }
 
-
-#ifdef USES_NIBS_IGNORE_FOR_NOW
-static void SetDurationText(NetgameSetupData& Data,
-	short radio_item, short radio_stringset_id, short radio_string_index,
-	ControlRef UnitsCtrl, short units_stringset_id, short units_string_index)
+void SetupNetgameDialog::teamsHit ()
 {
-	OSStatus err;
-	
-	// Extract the individual radio button
-	ControlRef RBCtrl;
-	err = GetIndexedSubControl(Data.DurationCtrl,radio_item, &RBCtrl);
-	
-	vassert(err == noErr, csprintf(temporary, "Error in GetIndexedSubControl: %d for item %hd", err, radio_item));
-	
-	getpstr(ptemporary, radio_stringset_id, radio_string_index);	
-	SetControlTitle(RBCtrl, ptemporary);
-	
- 	getpstr(ptemporary, units_stringset_id, units_string_index);
- 	SetStaticPascalText(UnitsCtrl, ptemporary);
- }
-#endif
+	if (m_allowTeamsWidget->get_value ())
+		m_teamWidget->activate ();
+	else
+		m_teamWidget->deactivate ();
+}
 
-// ZZZ: moved here from network_dialogs_macintosh.cpp
-void setup_dialog_for_game_type(
-	DialogPTR dialog, 
-	size_t game_type)
+void SetupNetgameDialog::setupForGameType ()
 {
-	switch(game_type)
+	switch(m_gameTypeWidget->get_value ())
 	{
 		case _game_of_cooperative_play:
-			QQ_set_control_activity (dialog, iFORCE_UNIQUE_TEAMS, true);
-			QQ_set_control_activity (dialog, iBURN_ITEMS_ON_DEATH, false);
-			QQ_set_control_activity (dialog, iUNLIMITED_MONSTERS, false);
+			m_allowTeamsWidget->activate ();
+			m_deadPlayersDropItemsWidget->deactivate ();
+			m_aliensWidget->deactivate ();
 			
-			QQ_set_boolean_control_value (dialog, iBURN_ITEMS_ON_DEATH, true);
-			QQ_set_boolean_control_value (dialog, iUNLIMITED_MONSTERS, true);
-		
-			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, killLimitString,
-                                        iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, killsString);
-                        
-			setup_for_untimed_game(dialog);
+			m_deadPlayersDropItemsWidget->set_value (true);
+			m_aliensWidget->set_value (true);
 			break;
 			
 		case _game_of_kill_monsters:
 		case _game_of_king_of_the_hill:
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
-			QQ_set_control_activity (dialog, iFORCE_UNIQUE_TEAMS, true);
-			QQ_set_control_activity (dialog, iBURN_ITEMS_ON_DEATH, true);
-			QQ_set_control_activity (dialog, iUNLIMITED_MONSTERS, true);
-
-			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, killLimitString,
-                                        iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, killsString);
-
-			setup_for_timed_game(dialog);
+			m_allowTeamsWidget->activate ();
+			m_deadPlayersDropItemsWidget->activate ();
+			m_aliensWidget->activate ();
 			break;
 
 		case _game_of_capture_the_flag:
-			QQ_set_control_activity (dialog, iFORCE_UNIQUE_TEAMS, false);
-			QQ_set_control_activity (dialog, iBURN_ITEMS_ON_DEATH, true);
-			QQ_set_control_activity (dialog, iUNLIMITED_MONSTERS, true);
+			m_allowTeamsWidget->deactivate ();
+			m_deadPlayersDropItemsWidget->activate ();
+			m_aliensWidget->activate ();
 			
-			QQ_set_boolean_control_value (dialog, iFORCE_UNIQUE_TEAMS, true);
-
-			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, flagPullsString,
-                                        iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, flagsString);
-                        
-			setup_for_timed_game(dialog);
+			m_allowTeamsWidget->set_value (true);
+			m_teamWidget->activate ();
 			break;
 			
 		case _game_of_rugby:
-			QQ_set_control_activity (dialog, iFORCE_UNIQUE_TEAMS, false);
-			QQ_set_control_activity (dialog, iBURN_ITEMS_ON_DEATH, true);
-			QQ_set_control_activity (dialog, iUNLIMITED_MONSTERS, true);
+			m_allowTeamsWidget->deactivate ();
+			m_deadPlayersDropItemsWidget->activate ();
+			m_aliensWidget->activate ();
 			
-			QQ_set_boolean_control_value (dialog, iFORCE_UNIQUE_TEAMS, true);
-
-			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, pointLimitString,
-                                        iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, pointsString);
-
-			setup_for_timed_game(dialog);
+			m_allowTeamsWidget->set_value (true);
+			m_teamWidget->activate ();
 			break;
 
 		case _game_of_defense:
-			QQ_set_control_activity (dialog, iFORCE_UNIQUE_TEAMS, false);
-			QQ_set_control_activity (dialog, iBURN_ITEMS_ON_DEATH, true);
-			QQ_set_control_activity (dialog, iUNLIMITED_MONSTERS, true);
+			m_allowTeamsWidget->deactivate ();
+			m_deadPlayersDropItemsWidget->activate ();
+			m_aliensWidget->activate ();
 			
-			QQ_set_boolean_control_value (dialog, iFORCE_UNIQUE_TEAMS, true);
-			
-			set_limit_text(dialog, iRADIO_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, timeOnBaseString,
-                                        iTEXT_KILL_LIMIT, strSETUP_NET_GAME_MESSAGES, minutesString);
-			
-			setup_for_timed_game(dialog);
+			m_allowTeamsWidget->set_value (true);
+			m_teamWidget->activate ();
 			break;
 			
 		default:
@@ -1310,224 +1279,77 @@ void setup_dialog_for_game_type(
 	}
 }
 
-void set_limit_type(DialogPTR dialog, short limit_type) {
-	if (limit_type == iRADIO_NO_TIME_LIMIT)
-		QQ_set_selector_control_value (dialog, iRADIO_NO_TIME_LIMIT, 0);
-	else if (limit_type == iRADIO_TIME_LIMIT)
-		QQ_set_selector_control_value (dialog, iRADIO_NO_TIME_LIMIT, 1);
-	else if (limit_type == iRADIO_KILL_LIMIT)
-		QQ_set_selector_control_value (dialog, iRADIO_NO_TIME_LIMIT, 2);
-	else
-		assert (false);
-}
-
-int get_limit_type(DialogPTR dialog) {
-	switch (QQ_get_selector_control_value (dialog, iRADIO_NO_TIME_LIMIT)) {
-		case 0:
-			return iRADIO_NO_TIME_LIMIT;
-		case 1:
-			return iRADIO_TIME_LIMIT;
-		case 2:
-			return iRADIO_KILL_LIMIT;
-		default:
-			assert (false);
-	}
-}
-
-// ZZZ: new function for easier sharing etc.
-void setup_for_score_limited_game(
-	DialogPTR dialog)
+void SetupNetgameDialog::gameTypeHit ()
 {
-        set_limit_type(dialog, iRADIO_KILL_LIMIT);
-        
-        if(QQ_get_selector_control_value(dialog, iGAME_TYPE) == _game_of_defense)
-        {
-                QQ_show_control(dialog, iTIME_LIMIT); 
-                QQ_show_control(dialog, iTEXT_TIME_LIMIT);
-                
-                QQ_show_control(dialog, iKILL_LIMIT);
-                QQ_show_control(dialog, iTEXT_KILL_LIMIT);
-        }
-        else
-        {
-                QQ_hide_control(dialog, iTIME_LIMIT); 
-                QQ_hide_control(dialog, iTEXT_TIME_LIMIT);
-                
-                QQ_show_control(dialog, iKILL_LIMIT);
-                QQ_show_control(dialog, iTEXT_KILL_LIMIT);
-        }
-}
-
-// ZZZ: moved here from network_dialogs_macintosh.cpp
-void setup_for_untimed_game(
-	DialogPTR dialog)
-{
-        set_limit_type(dialog, iRADIO_NO_TIME_LIMIT);
-	QQ_hide_control(dialog, iKILL_LIMIT); QQ_hide_control(dialog, iTEXT_KILL_LIMIT);
-	QQ_hide_control(dialog, iTIME_LIMIT); QQ_hide_control(dialog, iTEXT_TIME_LIMIT);
-}
-
-// ZZZ: moved here from network_dialogs_macintosh.cpp
-void setup_for_timed_game(
-	DialogPTR dialog)
-{
-	if (QQ_get_selector_control_value(dialog, iGAME_TYPE) != _game_of_defense)
-	{
-		QQ_hide_control(dialog, iTEXT_KILL_LIMIT); QQ_hide_control(dialog, iKILL_LIMIT);
-		QQ_show_control(dialog, iTIME_LIMIT); QQ_show_control(dialog, iTEXT_TIME_LIMIT);
-	}
-	else
-	{
-		QQ_show_control(dialog, iTEXT_KILL_LIMIT); QQ_show_control(dialog, iKILL_LIMIT);
-		QQ_show_control(dialog, iTIME_LIMIT); QQ_show_control(dialog, iTEXT_TIME_LIMIT);
-	}
-        set_limit_type(dialog, iRADIO_TIME_LIMIT);
-}
-
-void SNG_limit_type_hit (DialogPTR dialog)
-{
-	switch(QQ_get_selector_control_value (dialog, iRADIO_NO_TIME_LIMIT))
-	{
-		case 0:
-			setup_for_untimed_game(dialog);
-			break;
-			
-		case 1:
-			setup_for_timed_game(dialog);
-			break;
-			
-		case 2:
-			setup_for_score_limited_game(dialog);
-			break;
-	}
-}
-
-void SNG_teams_hit (DialogPTR dialog)
-{
-	QQ_set_control_activity(dialog, iGATHER_TEAM, QQ_get_boolean_control_value(dialog, iFORCE_UNIQUE_TEAMS));
-}
-
-void SNG_game_type_hit (DialogPTR dialog)
-{
-	short new_game_type= QQ_get_selector_control_value (dialog, iGAME_TYPE);
+	int new_game_type= m_gameTypeWidget->get_value ();
 	
-	if (new_game_type != old_game_type) {
-		long new_entry_flags, old_entry_flags;
+	if (new_game_type != m_old_game_type) {
+		int32 new_entry_flags, old_entry_flags;
 		struct entry_point entry;
 			
-		if(static_allow_all_levels)
-		{
+		if(m_allow_all_levels) {
 			new_entry_flags= old_entry_flags= NONE;
 		} else {
 			new_entry_flags= get_entry_point_flags_for_game_type(new_game_type);
-			old_entry_flags= get_entry_point_flags_for_game_type(old_game_type);
+			old_entry_flags= get_entry_point_flags_for_game_type(m_old_game_type);
 		}
-		menu_index_to_level_entry(QQ_get_selector_control_value(dialog, iENTRY_MENU), old_entry_flags, &entry);
+		menu_index_to_level_entry (m_levelWidget->get_value (), old_entry_flags, &entry);
 			
 		/* Now reset entry points */
-		QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (new_entry_flags));
-		QQ_set_selector_control_value (dialog, iENTRY_MENU, level_index_to_menu_index(entry.level_number, new_entry_flags));
-		old_game_type= new_game_type;
+		m_levelWidget->set_labels (make_entry_vector (new_entry_flags));
+		m_levelWidget->set_value (level_index_to_menu_index (entry.level_number, new_entry_flags));
+		m_old_game_type= new_game_type;
 				
-		setup_dialog_for_game_type(dialog, new_game_type);
+		setupForGameType ();
 	}
 }
 
-void SNG_choose_map_hit (DialogPTR dialog)
+void SetupNetgameDialog::chooseMapHit ()
 {
-	FileSpecifier mapFile;
-	if (mapFile.ReadDialog (_typecode_scenario, "Map Select")) {
-		environment_preferences->map_checksum = read_wad_file_checksum (mapFile);
+	FileSpecifier mapFile = m_mapWidget->get_file ();
+
+	environment_preferences->map_checksum = read_wad_file_checksum (mapFile);
 #ifdef SDL
-		strcpy(environment_preferences->map_file, mapFile.GetPath());
+	strcpy(environment_preferences->map_file, mapFile.GetPath());
 #else
-		environment_preferences->map_file = mapFile.GetSpec();
+	environment_preferences->map_file = mapFile.GetSpec();
 #endif
-		load_environment_from_preferences();
+	load_environment_from_preferences();
 		
-		QQ_set_selector_control_labels (dialog, iENTRY_MENU, make_entry_vector (get_entry_point_flags_for_game_type(old_game_type)));
-		QQ_set_selector_control_value (dialog, iENTRY_MENU, 0);
-		
-		char nameBuffer [256];
-		mapFile.GetName (nameBuffer);
-		QQ_copy_string_to_text_control (dialog, iTEXT_MAP_NAME, string(nameBuffer));
-	}
+	m_levelWidget->set_labels (make_entry_vector (get_entry_point_flags_for_game_type (m_old_game_type)));
+	m_levelWidget->set_value (0);
 }
 
-void SNG_use_script_hit (DialogPTR dialog)
-{
-	if (QQ_get_boolean_control_value(dialog, iUSE_SCRIPT)) {
-		if (!sNetscriptFile.ReadDialog (_typecode_netscript, "Script Select")) {
-			QQ_set_boolean_control_value(dialog, iUSE_SCRIPT, false);
-		}
-	}
-	update_netscript_file_display(dialog);
-}
-
-bool SNG_information_is_acceptable (DialogPTR dialog)
+bool SetupNetgameDialog::informationIsAcceptable ()
 {
 	bool information_is_acceptable = true;
-	short game_limit_type = QQ_get_selector_control_value(dialog, iRADIO_NO_TIME_LIMIT);
-	long limit;
+	short game_limit_type = m_limitTypeWidget->get_value ();
 	
 	if (information_is_acceptable)
-		if (game_limit_type == 1)
+		if (game_limit_type == duration_time_limit)
 		{
-			limit = QQ_extract_number_from_text_control(dialog, iTIME_LIMIT);
-			information_is_acceptable = limit >= 1;
+			information_is_acceptable = m_timeLimitWidget->get_value () >= 1;
 		}
 		
 	if (information_is_acceptable)
-		if (game_limit_type == 2)
+		if (game_limit_type == duration_kill_limit)
 		{
-			limit = QQ_extract_number_from_text_control(dialog, iKILL_LIMIT);
-			information_is_acceptable = limit >= 1;
+			information_is_acceptable = m_scoreLimitWidget->get_value () >= 1;
 		}
 	
 	if (information_is_acceptable)
-		information_is_acceptable = !(QQ_copy_string_from_text_control(dialog, iGATHER_NAME).empty ());
+		information_is_acceptable = !(m_nameWidget->get_text ().empty ());
 		
 	return (information_is_acceptable);
 }
 
-void
-update_netscript_file_display(DialogPTR dialog)
+void SetupNetgameDialog::okHit ()
 {
-	bool shouldUseNetscript = QQ_get_boolean_control_value(dialog, iUSE_SCRIPT);
-	//	const unsigned char* theStringToUse = NULL;
-	std::string theStringToUse;
-	
-	if(shouldUseNetscript)
-	{
-		if (sNetscriptFile.Exists())
-		{
-			char name [256];
-
-			sNetscriptFile.GetName (name);
-			theStringToUse = name;
-		}
-		else
-		{
-		  theStringToUse = "(invalid selection)";
-		}
-	}
+	if (informationIsAcceptable ())
+		Stop (true);
 	else
-	  theStringToUse = "";
-
-	QQ_copy_string_to_text_control (dialog, iTEXT_SCRIPT_NAME, theStringToUse);
-}
-
-void
-set_dialog_netscript_file(DialogPTR dialog, const FileSpecifier& inFile)
-{
-	sNetscriptFile = inFile;
-	update_netscript_file_display(dialog);
-}
-
-const FileSpecifier&
-get_dialog_netscript_file(DialogPTR dialog)
-{
-	return sNetscriptFile;
+		unacceptableInfo ();
+		
 }
 
 void menu_index_to_level_entry(
@@ -1546,6 +1368,15 @@ void menu_index_to_level_entry(
 	return;
 }
 
+int menu_index_to_level_index (int menu_index, int32 entry_flags)
+{	
+	entry_point entry;
+
+	menu_index_to_level_entry (menu_index, entry_flags, &entry);
+	
+	return entry.level_number;
+}
+
 int level_index_to_menu_index (int level_index, int32 entry_flags)
 {	
 	entry_point entry;
@@ -1553,9 +1384,9 @@ int level_index_to_menu_index (int level_index, int32 entry_flags)
 
 	int result = 0;
 	while (get_indexed_entry_point(&entry, &map_index, entry_flags)) {
-		++result;
-		if (map_index == level_index)
+		if (map_index == level_index + 1)
 			return result;
+		++result;
 	}
 	
 	return 0;

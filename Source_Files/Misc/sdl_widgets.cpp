@@ -1566,6 +1566,8 @@ w_file_chooser::click(int, int)
 		if(file.ReadDialog(typecode, dialog_prompt))
 		{
 			update_filename();
+			if (m_callback)
+				m_callback ();
 		}
 	}	
 }

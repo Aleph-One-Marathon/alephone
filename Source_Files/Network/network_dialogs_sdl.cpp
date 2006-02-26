@@ -381,378 +381,6 @@ void display_net_game_stats(void)
 
 
 
-
-
-
-
-
-
-/*
- *  Game setup dialog
- */
-
-static bool sGathererMayStartGame= false;
-
-// ZZZ: this is kinda like check_setup_information on the Mac.
-static bool
-is_game_limit_valid(dialog* d) {
-// jkvw: don't do this - shared code's responsability
-/*    bool limit_is_valid = true;
-    
-    long limit_type = get_selection_control_value(d, iENDCONDITION_TYPE_MENU) - 1;
-
-    // Benad's _game_of_defense always has two limits.
-    if((get_selection_control_value(d, iGAME_TYPE) - 1) == _game_of_defense)
-        limit_type = kScoreAndTimeLimits;
-    
-    if(limit_type & kTimeLimit)
-        if(extract_number_from_text_item(d, iTIME_LIMIT) <= 0)
-            limit_is_valid = false;
-    
-    if(limit_type & kScoreLimit)
-        if(extract_number_from_text_item(d, iKILL_LIMIT) <= 0)
-            limit_is_valid = false;
-    
-    return limit_is_valid;*/
-    return true;
-}
-
-static void
-update_setup_ok_button_enabled(dialog* d) {
-	modify_control_enabled(d, iOK, CONTROL_ACTIVE);
-// jkvw: bad bad bad - this is for shared code to deal with
-/*
-    short	button_state;
-    
-    // If limit is invalid, don't enable OK.
-    if(!is_game_limit_valid(d)) {
-        button_state = CONTROL_INACTIVE;
-    }
-    else {
-        // If there's no player name, don't enable OK.
-        copy_pstring_from_text_field(d, iGATHER_NAME, ptemporary);
-        if(ptemporary[0] == 0) {
-            button_state = CONTROL_INACTIVE;
-        }
-        else {
-            // If there's no valid entry point, don't enable OK.
-//           if(get_selection_control_value(d, iENTRY_MENU) == 0)
-            entry_point theEntryPoint;
-            get_selected_entry_point(d, iENTRY_MENU, &theEntryPoint);
-            if(theEntryPoint.level_number < 0)
-                button_state = CONTROL_INACTIVE;
-            else
-                button_state = CONTROL_ACTIVE;
-        }
-    }
-    
-    modify_control_enabled(d, iOK, button_state);
-    */
-}
-
-
-// ZZZ might rework this to use menu indices again someday for the sake of
-// cross-platformness - wouldn't be hard at all, just too tired tonight.
-#if 0
-void menu_index_to_level_entry(
-	short menu_index, 
-	long /*entry_flags*/,
-	struct entry_point *entry)
-{
-    // We'd better hope the set of entry points in the static vector is right!
-    *entry = sEntryPointsForCurrentGameType[menu_index - 1];
-}
-#endif
-
-
-void set_limit_text(DialogPtr dialog, short radio_item, short radio_stringset_id, short radio_string_index,
-                                short units_item, short units_stringset_id, short units_string_index)
-{
-        // Get the basic strings from stringsets
-        const char*	limit_text = TS_GetCString(radio_stringset_id, radio_string_index);
-        const char*	units_text = TS_GetCString(units_stringset_id, units_string_index);
-        
-        // Update the endcondition types stringset
-        TS_PutCString(kEndConditionTypeStringSetID, kScoreLimit, limit_text);
-
-        // Refresh the endcondition selection widget
-        w_select*	theEndconditionWidget = dynamic_cast<w_select*>(dialog->get_widget_by_id(iRADIO_NO_TIME_LIMIT));
-        
-        theEndconditionWidget->set_labels_stringset(kEndConditionTypeStringSetID);
-        
-        
-        // Update the score-limit entry label
-        // We need storage that will stick around as long as the widget; let's use a static here.
-        static char	score_limit_label[256];
-        sprintf(score_limit_label, "%s (%s)", limit_text, units_text);
-        
-        w_number_entry*	theScoreLimitEntry = dynamic_cast<w_number_entry*>(dialog->get_widget_by_id(iKILL_LIMIT));
-        
-        theScoreLimitEntry->set_name(score_limit_label);
-}
-
-
-void
-get_selected_entry_point(dialog* inDialog, short inItem, entry_point* outEntryPoint) {
-    w_entry_point_selector* theSelector =
-        dynamic_cast<w_entry_point_selector*>(inDialog->get_widget_by_id(inItem));
-
-    *outEntryPoint = theSelector->getEntryPoint();
-}
-
-void
-select_entry_point(dialog* inDialog, short inItem, int16 inLevelNumber) {
-    w_entry_point_selector* theSelector =
-        dynamic_cast<w_entry_point_selector*>(inDialog->get_widget_by_id(inItem));
-
-    theSelector->setLevelNumber(inLevelNumber);
-}
-
-static void
-respond_to_end_condition_type_change(w_select* inWidget) {
-	SNG_limit_type_hit (inWidget->get_owning_dialog());
-}
-
-static void
-respond_to_teams_toggle(w_select* inToggle) {
-	SNG_teams_hit (inToggle->get_owning_dialog());
-}
-
-static void
-respond_to_net_game_type_change(void* dialog) {
-	SNG_game_type_hit (reinterpret_cast<DialogPTR>(dialog));
-}
-
-static void
-respond_to_map_file_change(void* dialog) {
-	SNG_choose_map_hit (reinterpret_cast<DialogPTR>(dialog));
-}
-
-static void
-respond_to_script_twiddle(w_select* inWidget) {
-	SNG_use_script_hit (inWidget->get_owning_dialog());
-}
-
-static void netgame_setup_dialog_ok(void *arg)
-{
-	DialogPTR d = reinterpret_cast<DialogPTR>(arg);
-	if (SNG_information_is_acceptable (d))
-		d->quit(0);
-	else
-		play_dialog_sound(DIALOG_ERROR_SOUND);
-}
-
-bool run_netgame_setup_dialog(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver)
-{
-    // Save the map file path on entering, so we can restore it if user cancels.
-    string  theSavedMapFilePath(environment_preferences->map_file);
-
-	// Create dialog
-    // ZZZ note: the initial values here are nice, but now are not too important.
-    // the now cross-platform fill_in_game_setup_dialog() will re-set most of them anyway.
-	dialog d;
-	d.add(new w_static_text("SETUP NETWORK GAME", TITLE_FONT, TITLE_COLOR));
-        
-	w_tab_popup *tab_w = new w_tab_popup("Section");
-	vector<string> tab_strings;
-	tab_strings.push_back ("General");
-	tab_strings.push_back ("More Stuff");
-	tab_w->set_identifier(iSNG_TABS);
-	d.add(tab_w);
-	QQ_set_selector_control_labels (&d, iSNG_TABS, tab_strings);
-	QQ_set_selector_control_value (&d, iSNG_TABS, 0);
-	d.set_active_tab(iSNG_GENERAL_TAB);
-	
-	d.add(new w_spacer());
-	
-	d.add_to_tab(new w_static_text("Appearance"), iSNG_GENERAL_TAB);
-
-	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
-        name_w->set_identifier(iGATHER_NAME);
-        name_w->set_enter_pressed_callback(dialog_try_ok);
-	d.add_to_tab(name_w, iSNG_GENERAL_TAB);
-
-	w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
-        pcolor_w->set_identifier(iGATHER_COLOR);
-	d.add_to_tab(pcolor_w, iSNG_GENERAL_TAB);
-
-	w_player_color *tcolor_w = new w_player_color("Team Color", player_preferences->team);
-        tcolor_w->set_identifier(iGATHER_TEAM);
-	d.add_to_tab(tcolor_w, iSNG_GENERAL_TAB);
-
-	d.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
-        d.add_to_tab(new w_static_text("Game Options"), iSNG_GENERAL_TAB);
-
-    // Could eventually store this path in network_preferences somewhere, so to have separate map file
-    // prefs for single- and multi-player.
-	w_button* map_w = new w_button("CHOOSE MAP", respond_to_map_file_change, &d);
-	map_w->set_identifier(iCHOOSE_MAP);
-	d.add_to_tab(map_w, iSNG_GENERAL_TAB);
-	
-	w_static_text* map_name_w = new w_static_text("NAME OF MAP");
-	map_name_w->set_identifier(iTEXT_MAP_NAME);
-	map_name_w->set_full_width();
-	d.add_to_tab(map_name_w, iSNG_GENERAL_TAB);
-
-        w_select_popup* entry_point_w = new w_select_popup("Level");
-        entry_point_w->set_full_width();
-        entry_point_w->set_identifier(iENTRY_MENU);
-        d.add_to_tab(entry_point_w, iSNG_GENERAL_TAB);
-
-	w_select_popup* game_type_w = new w_select_popup("Game Type", respond_to_net_game_type_change, &d);
-        game_type_w->set_full_width();
-        game_type_w->set_identifier(iGAME_TYPE);
-        d.add_to_tab(game_type_w, iSNG_GENERAL_TAB);
-
-	w_select *diff_w = new w_select("Difficulty", network_preferences->difficulty_level, NULL);
-        diff_w->set_identifier(iDIFFICULTY_MENU);
-	d.add_to_tab(diff_w, iSNG_GENERAL_TAB);
-
-	d.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
-        
-    w_select* endcondition_w    = new w_select("Game Ends At", kTimeLimit, NULL);
-    endcondition_w->set_labels_stringset(kEndConditionTypeStringSetID);
-    endcondition_w->set_full_width();
-    endcondition_w->set_identifier(iRADIO_NO_TIME_LIMIT);
-    endcondition_w->set_selection_changed_callback(respond_to_end_condition_type_change);
-    d.add_to_tab(endcondition_w, iSNG_GENERAL_TAB);
-
-    w_number_entry*	timelimit_w	= new w_number_entry("Time Limit (minutes)", network_preferences->time_limit);
-    timelimit_w->set_identifier(iTIME_LIMIT);
-    d.add_to_tab(timelimit_w, iSNG_GENERAL_TAB);
-
-    // The name of this widget (score limit) will be replaced by Kill Limit, Flag Capture Limit, etc.
-    w_number_entry*	scorelimit_w	= new w_number_entry("(score limit)", network_preferences->kill_limit);
-    scorelimit_w->set_identifier(iKILL_LIMIT);
-    d.add_to_tab(scorelimit_w, iSNG_GENERAL_TAB);
-
-	d.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
-
-	w_toggle *aliens_w = new w_toggle("Aliens", (network_preferences->game_options & _monsters_replenish) != 0);
-        aliens_w->set_identifier(iUNLIMITED_MONSTERS);
-	d.add_to_tab(aliens_w, iSNG_GENERAL_TAB);
-
-	w_toggle *teams_w = new w_toggle("Teams", !(network_preferences->game_options & _force_unique_teams));
-        teams_w->set_identifier(iFORCE_UNIQUE_TEAMS);
-        teams_w->set_selection_changed_callback(respond_to_teams_toggle);
-	d.add_to_tab(teams_w, iSNG_GENERAL_TAB);
-
-	w_toggle *drop_w = new w_toggle("Dead Players Drop Items", !(network_preferences->game_options & _burn_items_on_death));
-        drop_w->set_identifier(iBURN_ITEMS_ON_DEATH);
-	d.add_to_tab(drop_w, iSNG_GENERAL_TAB);
-
-	w_toggle *pen_die_w = new w_toggle("Penalize Dying (10 seconds)", (network_preferences->game_options & _dying_is_penalized) != 0);
-        pen_die_w->set_identifier(iDYING_PUNISHED);
-	d.add_to_tab(pen_die_w, iSNG_GENERAL_TAB);
-
-	w_toggle *pen_sui_w = new w_toggle("Penalize Suicide (15 seconds)", (network_preferences->game_options & _suicide_is_penalized) != 0);
-        pen_sui_w->set_identifier(iSUICIDE_PUNISHED);
-	d.add_to_tab(pen_sui_w, iSNG_GENERAL_TAB);
-
-	d.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
-
-	w_toggle *advertise_on_metaserver_w = new w_toggle("Advertise Game on Internet", sAdvertiseGameOnMetaserver);
-	advertise_on_metaserver_w->set_identifier(iADVERTISE_GAME_ON_METASERVER);
-	d.add_to_tab(advertise_on_metaserver_w, iSNG_GENERAL_TAB);
-
-	w_toggle* use_netscript_w = new w_toggle("Use Netscript", false);
-	use_netscript_w->set_identifier(iUSE_SCRIPT);
-	use_netscript_w->set_selection_changed_callback(respond_to_script_twiddle);
-	d.add_to_tab(use_netscript_w, iSNG_STUFF_TAB);
-	
-	w_static_text* script_name_w = new w_static_text("");
-	script_name_w->set_identifier(iTEXT_SCRIPT_NAME);
-	script_name_w->set_full_width();
-	d.add_to_tab(script_name_w, iSNG_STUFF_TAB);
-
-	d.add_to_tab(new w_spacer(), iSNG_STUFF_TAB);
-
-	w_toggle*   realtime_audio_w = new w_toggle("Allow Microphone", network_preferences->allow_microphone);
-	realtime_audio_w->set_identifier(iREAL_TIME_SOUND);
-	d.add_to_tab(realtime_audio_w, iSNG_STUFF_TAB);
-
-	w_toggle *live_w = new w_toggle("Live Carnage Reporting", (network_preferences->game_options & _live_network_stats) != 0);
-	live_w->set_identifier(iREALTIME_NET_STATS);
-	d.add_to_tab(live_w, iSNG_STUFF_TAB);
-
-	w_toggle *sensor_w = new w_toggle("Disable Motion Sensor", (network_preferences->game_options & _motion_sensor_does_not_work) != 0);
-        sensor_w->set_identifier(iMOTION_SENSOR_DISABLED);
-	d.add_to_tab(sensor_w, iSNG_STUFF_TAB);
-
-	d.add_to_tab(new w_spacer(), iSNG_STUFF_TAB);
-
-	w_toggle *zoom_w = new w_toggle("Allow Zoom", true);
-        zoom_w->set_identifier(iALLOW_ZOOM);
-	d.add_to_tab(zoom_w, iSNG_STUFF_TAB);
-	
-	w_toggle *crosshairs_w = new w_toggle("Allow Crosshairs", true);
-        crosshairs_w->set_identifier(iALLOW_CROSSHAIRS);
-	d.add_to_tab(crosshairs_w, iSNG_STUFF_TAB);
-	
-	w_toggle *lara_croft_w = new w_toggle("Allow Lara Croft", true);
-        lara_croft_w->set_identifier(iALLOW_LARA_CROFT);
-	d.add_to_tab(lara_croft_w, iSNG_STUFF_TAB);
-
-	d.add(new w_spacer());	
-
-	w_left_button*	ok_w = new w_left_button("OK", netgame_setup_dialog_ok, &d);
-	ok_w->set_identifier(iOK);
-	d.add(ok_w);
-        
-	w_right_button*	cancel_w = new w_right_button("CANCEL", dialog_cancel, &d);
-	cancel_w->set_identifier(iCANCEL);
-	d.add(cancel_w);
-
-	netgame_setup_dialog_initialise(&d, false, inResumingGame);
-    
-        // or is it called automatically by fill_in_game_setup_dialog somehow?  the interactions are getting complex... :/
-        // in any event, the data SHOULD be ok, or else we wouldn't have let the user save the info in prefs, but....
-        // (Hmm, true user should not have been able to save bad data, but if we have a different map file now, we could
-        // have an illegal configuration showing.)
-        update_setup_ok_button_enabled(&d);
-
-	// Run dialog
-	if (d.run() == 0) { // Accepted
-
-        short   theLimitType;
-
-        switch(endcondition_w->get_selection()) {
-        case kScoreLimit:
-            theLimitType = iRADIO_KILL_LIMIT;
-        break;
-
-        case kTimeLimit:
-            theLimitType = iRADIO_TIME_LIMIT;
-        break;
-
-        case kNoLimit:
-            theLimitType = iRADIO_NO_TIME_LIMIT;
-        break;
-
-        default:
-            // This avoids a compiler warning
-            theLimitType = NONE;
-            assert(false);
-        break;
-        }
-
-        // This will write preferences changes (including change of map file if applicable)
-        netgame_setup_dialog_extract_information(&d, player_information, game_information, false /*allow all levels*/, inResumingGame, outAdvertiseGameOnMetaserver);
-
-		return true;
-	} // d.run() == 0
-        
-    else {
-		return false;
-    }
-} // network_game_setup
-
-
-
-
-
-
-
 /////// Shared metaserver chat hookup stuff
 
 class PregameDialogNotificationAdapter : public MetaserverClient::NotificationAdapter
@@ -1056,7 +684,196 @@ JoinDialog::Create()
 	return auto_ptr<JoinDialog>(new SdlJoinDialog);
 }
 
+class SdlSetupNetgameDialog : public SetupNetgameDialog
+{
+public:
+	SdlSetupNetgameDialog ()
+	{
+		m_dialog.add (new w_static_text ("SETUP NETWORK GAME", TITLE_FONT, TITLE_COLOR));
 
+		w_tab_popup *tab_w = new w_tab_popup("Section");
+		vector<string> tab_strings;
+		tab_strings.push_back ("General");
+		tab_strings.push_back ("More Stuff");
+		tab_w->set_identifier (iSNG_TABS);
+		m_dialog.add (tab_w);
+		tab_w->set_labels (tab_strings);
+		tab_w->set_selection (0);
+		m_dialog.set_active_tab (iSNG_GENERAL_TAB);
+	
+		m_dialog.add (new w_spacer ());
+	
+		m_dialog.add_to_tab (new w_static_text ("Appearance"), iSNG_GENERAL_TAB);
+
+		w_text_entry *name_w = new w_text_entry ("Name", PREFERENCES_NAME_LENGTH, "");
+		m_dialog.add_to_tab (name_w, iSNG_GENERAL_TAB);
+
+		w_player_color *pcolor_w = new w_player_color ("Color", player_preferences->color);
+		m_dialog.add_to_tab (pcolor_w, iSNG_GENERAL_TAB);
+
+		w_player_color *tcolor_w = new w_player_color ("Team Color", player_preferences->team);
+		m_dialog.add_to_tab (tcolor_w, iSNG_GENERAL_TAB);
+
+		m_dialog.add_to_tab (new w_spacer (), iSNG_GENERAL_TAB);
+		m_dialog.add_to_tab (new w_static_text ("Game Options"), iSNG_GENERAL_TAB);
+
+		// Could eventually store this path in network_preferences somewhere, so to have separate map file
+		// prefs for single- and multi-player.
+		w_file_chooser* map_w = new w_file_chooser ("Map", "Choose Map", _typecode_scenario);
+		m_dialog.add_to_tab (map_w, iSNG_GENERAL_TAB);
+
+		w_select_popup* entry_point_w = new w_select_popup ("Level");
+		entry_point_w->set_full_width ();
+		m_dialog.add_to_tab (entry_point_w, iSNG_GENERAL_TAB);
+
+		w_select_popup* game_type_w = new w_select_popup ("Game Type");
+		game_type_w->set_full_width ();
+		m_dialog.add_to_tab (game_type_w, iSNG_GENERAL_TAB);
+
+		w_select *diff_w = new w_select ("Difficulty", network_preferences->difficulty_level, NULL);
+		m_dialog.add_to_tab(diff_w, iSNG_GENERAL_TAB);
+
+		m_dialog.add_to_tab(new w_spacer (), iSNG_GENERAL_TAB);
+        
+		w_select* endcondition_w = new w_select ("Game Ends At", kTimeLimit, NULL);
+		endcondition_w->set_full_width ();
+		m_dialog.add_to_tab (endcondition_w, iSNG_GENERAL_TAB);
+
+		w_number_entry*	timelimit_w = new w_number_entry ("Time Limit (minutes)", network_preferences->time_limit);
+		m_dialog.add_to_tab(timelimit_w, iSNG_GENERAL_TAB);
+
+		// The name of this widget (score limit) will be replaced by Kill Limit, Flag Capture Limit, etc.
+		w_number_entry*	scorelimit_w = new w_number_entry ("(score limit)", network_preferences->kill_limit);
+		m_dialog.add_to_tab (scorelimit_w, iSNG_GENERAL_TAB);
+
+		m_dialog.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
+
+		w_toggle *aliens_w = new w_toggle ("Aliens", (network_preferences->game_options & _monsters_replenish) != 0);
+		m_dialog.add_to_tab (aliens_w, iSNG_GENERAL_TAB);
+
+		w_toggle *teams_w = new w_toggle ("Teams", !(network_preferences->game_options & _force_unique_teams));
+		m_dialog.add_to_tab (teams_w, iSNG_GENERAL_TAB);
+
+		w_toggle *drop_w = new w_toggle ("Dead Players Drop Items", !(network_preferences->game_options & _burn_items_on_death));
+		m_dialog.add_to_tab (drop_w, iSNG_GENERAL_TAB);
+
+		w_toggle *pen_die_w = new w_toggle ("Penalize Dying (10 seconds)", (network_preferences->game_options & _dying_is_penalized) != 0);
+		m_dialog.add_to_tab (pen_die_w, iSNG_GENERAL_TAB);
+
+		w_toggle *pen_sui_w = new w_toggle ("Penalize Suicide (15 seconds)", (network_preferences->game_options & _suicide_is_penalized) != 0);
+		m_dialog.add_to_tab (pen_sui_w, iSNG_GENERAL_TAB);
+
+		m_dialog.add_to_tab (new w_spacer (), iSNG_GENERAL_TAB);
+
+		w_toggle *advertise_on_metaserver_w = new w_toggle ("Advertise Game on Internet", sAdvertiseGameOnMetaserver);
+		m_dialog.add_to_tab (advertise_on_metaserver_w, iSNG_GENERAL_TAB);
+
+		w_toggle* use_netscript_w = new w_enabling_toggle ("Use Netscript", false);
+		m_dialog.add_to_tab (use_netscript_w, iSNG_STUFF_TAB);
+	
+		w_file_chooser* choose_script_w = new w_file_chooser ("Script", "Choose Script", _typecode_netscript);
+		m_dialog.add_to_tab (choose_script_w, iSNG_STUFF_TAB);
+
+		m_dialog.add_to_tab(new w_spacer (), iSNG_STUFF_TAB);
+
+		w_toggle* realtime_audio_w = new w_toggle ("Allow Microphone", network_preferences->allow_microphone);
+		m_dialog.add_to_tab (realtime_audio_w, iSNG_STUFF_TAB);
+
+		w_toggle *live_w = new w_toggle ("Live Carnage Reporting", (network_preferences->game_options & _live_network_stats) != 0);
+		m_dialog.add_to_tab (live_w, iSNG_STUFF_TAB);
+
+		w_toggle *sensor_w = new w_toggle ("Disable Motion Sensor", (network_preferences->game_options & _motion_sensor_does_not_work) != 0);
+		m_dialog.add_to_tab (sensor_w, iSNG_STUFF_TAB);
+
+		m_dialog.add_to_tab (new w_spacer(), iSNG_STUFF_TAB);
+
+		w_toggle *zoom_w = new w_toggle ("Allow Zoom", true);
+		m_dialog.add_to_tab (zoom_w, iSNG_STUFF_TAB);
+	
+		w_toggle *crosshairs_w = new w_toggle ("Allow Crosshairs", true);
+		m_dialog.add_to_tab (crosshairs_w, iSNG_STUFF_TAB);
+	
+		w_toggle *lara_croft_w = new w_toggle ("Allow Lara Croft", true);
+		m_dialog.add_to_tab (lara_croft_w, iSNG_STUFF_TAB);
+
+		m_dialog.add (new w_spacer());	
+
+		w_left_button* ok_w = new w_left_button ("OK");
+		m_dialog.add (ok_w);
+        
+		w_right_button*	cancel_w = new w_right_button ("CANCEL");
+		m_dialog.add (cancel_w);
+
+		m_cancelWidget = new ButtonWidget (cancel_w);
+		m_okWidget = new ButtonWidget (ok_w);
+	
+		m_nameWidget = new EditTextWidget (name_w);
+		m_colourWidget = new ColourSelectorWidget (pcolor_w);
+		m_teamWidget = new ColourSelectorWidget (tcolor_w);
+	
+		m_mapWidget = new FileChooserWidget (map_w);
+		
+		m_levelWidget = new PopupSelectorWidget (entry_point_w);
+		m_gameTypeWidget = new PopupSelectorWidget (game_type_w);
+		m_difficultyWidget = new SelectSelectorWidget (diff_w);
+	
+		m_limitTypeWidget = new SelectSelectorWidget (endcondition_w);
+		m_timeLimitWidget = new EditNumberWidget (timelimit_w);
+		m_scoreLimitWidget = new EditNumberWidget (scorelimit_w);
+	
+		m_aliensWidget = new ToggleWidget (aliens_w);
+		m_allowTeamsWidget = new ToggleWidget (teams_w);
+		m_deadPlayersDropItemsWidget = new ToggleWidget (drop_w);
+		m_penalizeDeathWidget = new ToggleWidget (pen_die_w);
+		m_penalizeSuicideWidget = new ToggleWidget (pen_sui_w);
+	
+		m_useMetaserverWidget = new ToggleWidget (advertise_on_metaserver_w);
+	
+		m_useScriptWidget = new ToggleWidget (use_netscript_w);
+		m_scriptWidget = new FileChooserWidget (choose_script_w);
+	
+		m_allowMicWidget = new ToggleWidget (realtime_audio_w);
+
+		m_liveCarnageWidget = new ToggleWidget (live_w);
+		m_motionSensorWidget = new ToggleWidget (sensor_w);
+	
+		m_zoomWidget = new ToggleWidget (zoom_w);
+		m_crosshairWidget = new ToggleWidget (crosshairs_w);
+		m_laraCroftWidget = new ToggleWidget (lara_croft_w);
+	}
+	
+	virtual bool Run ()
+	{		
+		return (m_dialog.run () == 0);
+	}
+
+	virtual void Stop (bool result)
+	{
+		if (result)
+			m_dialog.quit (0);
+		else
+			m_dialog.quit (-1);
+	}
+
+	virtual bool allLevelsAllowed ()
+	{
+		return false;
+	}
+
+	virtual void unacceptableInfo ()
+	{
+		play_dialog_sound (DIALOG_ERROR_SOUND);
+	}
+
+private:
+	dialog m_dialog;
+};
+
+auto_ptr<SetupNetgameDialog>
+SetupNetgameDialog::Create ()
+{
+	return auto_ptr<SetupNetgameDialog>(new SdlSetupNetgameDialog);
+}
 
 
 /*

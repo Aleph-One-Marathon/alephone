@@ -783,7 +783,7 @@ respond_to_directory_changed(void* inArg)
 	theUpButton->set_enabled(theBrowser->can_move_up_a_level());
 }
 
-bool FileSpecifier::ReadDialog(Typecode type, char *prompt)
+bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 {
 	// Set default prompt
 	if (prompt == NULL) {
@@ -915,7 +915,7 @@ private:
 
 static bool confirm_save_choice(FileSpecifier & file);
 
-bool FileSpecifier::WriteDialog(Typecode type, char *prompt, char *default_name)
+bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *default_name)
 {
 	// Set default prompt
 	if (prompt == NULL) {

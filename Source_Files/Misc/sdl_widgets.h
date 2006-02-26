@@ -66,6 +66,9 @@
 struct SDL_Surface;
 //class sdl_font_info;
 
+typedef boost::function<void (void)> ControlHitCallback;
+typedef boost::function<void (char)> GotCharacterCallback;
+
 /*
  *  Widget base class
  */
@@ -747,6 +750,10 @@ public:
 	void set_file(const FileSpecifier& inFile);
 	const FileSpecifier& get_file() { return file; }
 
+	// we also have void set_callback(action_proc, void*)
+	// as inherited from w_select_button
+	void set_callback (ControlHitCallback callback) { m_callback = callback; }
+
 private:
 	void update_filename();
 	
@@ -754,6 +761,7 @@ private:
 	char		filename[256];
 	char		dialog_prompt[256];
 	Typecode	typecode;
+	ControlHitCallback m_callback;
 };
 
 
@@ -884,9 +892,6 @@ private:
 /*
  *	Wrappers to common widget interface follow
  */
-
-typedef boost::function<void (void)> ControlHitCallback;
-typedef boost::function<void (char)> GotCharacterCallback;
 
 class SDLWidgetWidget
 {
@@ -1070,6 +1075,45 @@ private:
 	// Yeah, I know.  Interface can be refined later.
 	void got_submit(w_text_entry* ignored) { if (m_callback) m_callback ('\r'); }
 };
+
+class EditNumberWidget : public SDLWidgetWidget, public Bindable<int>
+{
+public:
+	EditNumberWidget (w_number_entry* number_entry)
+		: SDLWidgetWidget (number_entry)
+		, m_number_entry (number_entry)
+		{}
+
+	void set_value (int value) { m_number_entry->set_number (value); }
+	int get_value () { return m_number_entry->get_number (); }
+	
+	int bind_export () { return get_value (); }
+	void bind_import (int value) { set_value (value); }
+
+private:
+	w_number_entry* m_number_entry;
+};
+
+class FileChooserWidget : public SDLWidgetWidget, public Bindable<FileSpecifier>
+{
+public:
+	FileChooserWidget (w_file_chooser* file_chooser)
+		: SDLWidgetWidget (file_chooser)
+		, m_file_chooser (file_chooser)
+		{}
+		
+	void set_callback (ControlHitCallback callback) { m_file_chooser->set_callback (callback); }
+	
+	void set_file (const FileSpecifier& file) { m_file_chooser->set_file (file); }
+	FileSpecifier get_file () { return m_file_chooser->get_file (); }
+	
+	virtual FileSpecifier bind_export () { return get_file (); }
+	virtual void bind_import (FileSpecifier f) { set_file (f); }
+	
+private:
+	w_file_chooser* m_file_chooser;
+};
+
 
 class TextboxWidget : public SDLWidgetWidget
 {
