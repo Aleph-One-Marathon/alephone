@@ -32,6 +32,7 @@
 #include "shell.h"
 #include "interface.h"
 #include "game_errors.h"
+#include "tags.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -468,10 +469,20 @@ Typecode FileSpecifier::GetType()
 				goto not_map;
 			f.SetPosition(128);
 			uint32 tag = SDL_ReadBE32(p);
-			if (tag == FOUR_CHARS_TO_INT('L', 'I', 'N', 'S') || tag == FOUR_CHARS_TO_INT('P', 'N', 'T', 'S') || tag == FOUR_CHARS_TO_INT('S', 'I', 'D', 'S'))
+			// ghs: I do not believe this list is comprehensive
+			//      I think it's just what we've seen so far?
+			switch (tag) {
+			case LINE_TAG:
+			case POINT_TAG:
+			case SIDE_TAG:
+			case ITEM_PLACEMENT_STRUCTURE_TAG: // apparently, chisel puts these first
 				return _typecode_scenario;
-			if (tag == FOUR_CHARS_TO_INT('M', 'N', 'p', 'x'))
+				break;
+			case MONSTER_PHYSICS_TAG:
 				return _typecode_physics;
+				break;
+			}
+				
 		}
 not_map: ;
 	}
