@@ -85,11 +85,13 @@ enum
 	Fader_Item = 27,
 	LiquidSeeThru_Item = 28,
 	Map_Item = 29,
-	TextureFix_Item = 30,
+	//TextureFix_Item = 30,
 	AllowFog_Item = 31,
 	Model_Item = 37,
 	HUD_Item = 38,
 	AnisoSlider_Item = 39,
+	Wall_Quality_Item = 40,
+	Landscape_Quality_Item = 41,
 	
 	ColorPicker_PromptStrings = 200,
 	ColorVoid_String = 0,
@@ -115,7 +117,7 @@ const CFStringRef Window_Prefs_OpenGL_Textures = CFSTR("Prefs_OpenGL_Textures");
 
 // For doing checkboxes en masse
 // Which checkbox, flag value
-const int NumCheckboxes = 12;
+const int NumCheckboxes = 11;
 const int CheckboxDispatch[NumCheckboxes][2] = {
 	{ZBuffer_Item, OGL_Flag_ZBuffer},
 	{ColorVoid_Item, OGL_Flag_VoidColor},
@@ -129,7 +131,7 @@ const int CheckboxDispatch[NumCheckboxes][2] = {
 	{LiquidSeeThru_Item, OGL_Flag_LiqSeeThru},
 	{Map_Item, OGL_Flag_Map},
 	
-	{TextureFix_Item, OGL_Flag_TextureFix},
+//	{TextureFix_Item, OGL_Flag_TextureFix},
 	{HUD_Item, OGL_Flag_HUD}
 };
 
@@ -334,6 +336,16 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 			Data.AnisotropyLevel;
 	SetCtrlFloatValue(AnisoSlider, AnisoValue/5.0);
 	
+	ControlRef WallPopup = GetCtrlFromWindow(Window(), 0, Wall_Quality_Item);
+	// for walls: 0, 128, 256, 512, 1024
+	int WallQualityValue = PIN(Data.TxtrConfigList[OGL_Txtr_Wall].MaxSize == 0 ? 1 : floor(log2(Data.TxtrConfigList[OGL_Txtr_Wall].MaxSize)) - 6 + 1, 1, 5);
+	SetControlValue(WallPopup, WallQualityValue);
+	
+	ControlRef LandscapePopup = GetCtrlFromWindow(Window(), 0, Landscape_Quality_Item);
+	// for landscapes: 0, 256, 512, 1024, 2048
+	int LandscapeQualityValue = PIN(Data.TxtrConfigList[OGL_Txtr_Landscape].MaxSize == 0 ? 1 : floor(log2(Data.TxtrConfigList[OGL_Txtr_Landscape].MaxSize)) - 7 + 1, 1, 5);
+	SetControlValue(LandscapePopup, LandscapeQualityValue);
+	
 	bool IsOK = RunModalDialog(Window(), true, OGL_Dialog_Handler, &HandlerData);
 	
 	if (IsOK)
@@ -352,8 +364,15 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 		// Undo that log-linear
 		AnisoValue = 5.0*GetCtrlFloatValue(AnisoSlider);
 		Data.AnisotropyLevel = AnisoValue > 1 ? pow(2.0, (AnisoValue-1)) : AnisoValue;
+		
+		WallQualityValue = GetControlValue(WallPopup);
+		Data.TxtrConfigList[OGL_Txtr_Wall].MaxSize = (WallQualityValue == 1) ? 0 : exp2(WallQualityValue + 6 - 1);
+		
+		LandscapeQualityValue = GetControlValue(LandscapePopup);
+		Data.TxtrConfigList[OGL_Txtr_Landscape].MaxSize = (LandscapeQualityValue == 1) ? 0 : exp2(LandscapeQualityValue + 7 - 1);
+
 	}
-	
+
 	return IsOK;
 }
 
