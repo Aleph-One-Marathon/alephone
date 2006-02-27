@@ -37,6 +37,8 @@
 #include <boost/static_assert.hpp>
 #include <boost/bind.hpp>
 
+#include "FileHandler.h"
+
 #include <string>
 #include <vector>
 using std::string;
