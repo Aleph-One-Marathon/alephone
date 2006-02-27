@@ -54,7 +54,6 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "Console.h"
 #include "screen_drawing.h"
 
-
 // LP addition: view sizes and display data
 
 
@@ -294,7 +293,7 @@ void SetScriptHUDSquare(int idx, int _color) {
 	unsigned char graphic[256];
 	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
 	ScriptHUDElements[idx].color = _color % 8;
-	bzero(graphic, 256);
+	memset(graphic, 0, 256);
 #if defined(mac)
 	RGBColor color;
 	_get_interface_color(_color+_computer_interface_text_color, &color);
