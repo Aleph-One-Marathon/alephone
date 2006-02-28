@@ -480,7 +480,6 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	
 	IndexedVertListCompare Compare;
 	Compare.VertIndxSets = &VertIndxSets[0];
-	fprintf(stderr, "sorting %i vertex indices\n", VertIndxSets.size());
 	sort(VertIndxRefs.begin(),VertIndxRefs.end(),Compare);
 	
 	// Find the unique entries:
