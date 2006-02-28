@@ -554,10 +554,10 @@ bool TextureManager::Setup()
 		
 		// If not, then load the expected textures
 		if (!NormalImage.get() || !NormalImage.get()->IsPresent())
-			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable)));
-		if (IsGlowing && (!GlowImage.get() || GlowImage.get()->IsPresent()))
+			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable)));	
+		if (IsGlowing && (!GlowImage.get() || !GlowImage.get()->IsPresent())) 
 			GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(GlowColorTable)));
-
+		
 		// Display size: may be shrunk
 		int MaxWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
 		int MaxHeight = MAX(TxtrHeight >> TxtrTypeInfo.Resolution, 1);
