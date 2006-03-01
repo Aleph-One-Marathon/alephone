@@ -440,6 +440,13 @@ TimeType FileSpecifier::GetDate()
 // Determine file type
 Typecode FileSpecifier::GetType()
 {
+
+	// if there's an extension, assume it's correct
+	const char *extension = strrchr(GetPath(), '.');
+	if (extension) {
+		if (strcmp(extension, ".sce2") == 0) return _typecode_scenario;
+	}
+
 	// Open file
 	OpenedFile f;
 	if (!Open(f))
@@ -475,7 +482,6 @@ Typecode FileSpecifier::GetType()
 			case LINE_TAG:
 			case POINT_TAG:
 			case SIDE_TAG:
-			case ITEM_PLACEMENT_STRUCTURE_TAG: // apparently, chisel puts these first
 				return _typecode_scenario;
 				break;
 			case MONSTER_PHYSICS_TAG:
