@@ -162,6 +162,94 @@
 			settings = {
 			};
 		};
+		17464D5B09B6958E001E69BE = {
+			isa = PBXFileReference;
+			path = Preferences.nib;
+			refType = 4;
+		};
+		17464D5C09B6958E001E69BE = {
+			isa = PBXFileReference;
+			path = Prefs_ChaseCam.nib;
+			refType = 4;
+		};
+		17464D5D09B6958E001E69BE = {
+			isa = PBXFileReference;
+			path = Prefs_Crosshairs.nib;
+			refType = 4;
+		};
+		17464D5E09B6958E001E69BE = {
+			isa = PBXFileReference;
+			path = Prefs_Keyboard.nib;
+			refType = 4;
+		};
+		17464D5F09B6958E001E69BE = {
+			isa = PBXFileReference;
+			path = Prefs_Monitor.nib;
+			refType = 4;
+		};
+		17464D6009B6958E001E69BE = {
+			isa = PBXFileReference;
+			path = Prefs_MonitorFreq.nib;
+			refType = 4;
+		};
+		17464D6109B6958E001E69BE = {
+			isa = PBXFileReference;
+			path = Prefs_OpenGL_Textures.nib;
+			refType = 4;
+		};
+		17464D6209B6958E001E69BE = {
+			isa = PBXFileReference;
+			path = Prefs_OpenGL.nib;
+			refType = 4;
+		};
+		17464D6309B6958E001E69BE = {
+			fileRef = 17464D5B09B6958E001E69BE;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17464D6409B6958E001E69BE = {
+			fileRef = 17464D5C09B6958E001E69BE;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17464D6509B6958E001E69BE = {
+			fileRef = 17464D5D09B6958E001E69BE;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17464D6609B6958E001E69BE = {
+			fileRef = 17464D5E09B6958E001E69BE;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17464D6709B6958E001E69BE = {
+			fileRef = 17464D5F09B6958E001E69BE;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17464D6809B6958E001E69BE = {
+			fileRef = 17464D6009B6958E001E69BE;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17464D6909B6958E001E69BE = {
+			fileRef = 17464D6109B6958E001E69BE;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		17464D6A09B6958E001E69BE = {
+			fileRef = 17464D6209B6958E001E69BE;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		17587328FF379C6511CA2CBB = {
 			isa = PBXApplicationReference;
 			path = AlephOneSDL.app;
@@ -465,6 +553,14 @@
 				EFD18A5E08370DA5009FA620,
 				EFD18A5A08370AAD009FA620,
 				EFD18A5F08370DA5009FA620,
+				17464D5B09B6958E001E69BE,
+				17464D5C09B6958E001E69BE,
+				17464D5D09B6958E001E69BE,
+				17464D5E09B6958E001E69BE,
+				17464D5F09B6958E001E69BE,
+				17464D6009B6958E001E69BE,
+				17464D6109B6958E001E69BE,
+				17464D6209B6958E001E69BE,
 				EFCB2816083055D10044FDF2,
 			);
 			isa = PBXGroup;
@@ -3285,6 +3381,14 @@
 				EFD18A6008370DA5009FA620,
 				EFD18A6108370DA5009FA620,
 				EFD18A6208370DA5009FA620,
+				17464D6309B6958E001E69BE,
+				17464D6409B6958E001E69BE,
+				17464D6509B6958E001E69BE,
+				17464D6609B6958E001E69BE,
+				17464D6709B6958E001E69BE,
+				17464D6809B6958E001E69BE,
+				17464D6909B6958E001E69BE,
+				17464D6A09B6958E001E69BE,
 			);
 			isa = PBXResourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;

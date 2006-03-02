@@ -2786,7 +2786,8 @@ bool DM_ChangeResolution(GDHandle Device, short BitDepth, short Width, short Hei
 	
 #ifdef USES_NIBS	
 	// Get the window
-	AutoNibWindow Window(GUI_Nib,Window_Prefs_MonitorFreq);
+	AutoNibReference Nib (Window_Prefs_MonitorFreq);
+	AutoNibWindow Window (Nib.nibReference (), Window_Prefs_MonitorFreq);
 
 	ControlRef FreqPopup = GetCtrlFromWindow(Window(), 0, MonitorFreq_Popup);
 

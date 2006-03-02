@@ -292,7 +292,8 @@ void display_device_dialog(
 	OSStatus err;
 	
 	// Get the window
-	AutoNibWindow Window(GUI_Nib,Window_Prefs_Monitor);
+	AutoNibReference Nib (Window_Prefs_Monitor);
+	AutoNibWindow Window (Nib.nibReference (), Window_Prefs_Monitor);
 	
 	// Get its controls
 	

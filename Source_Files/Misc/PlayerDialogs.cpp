@@ -256,7 +256,8 @@ static void Configure_ChaseCam_Handler(ParsedControl &Ctrl, void *Data)
 bool Configure_ChaseCam(ChaseCamData &Data)
 {
 	// Get the window
-	AutoNibWindow Window(GUI_Nib,Window_Prefs_ChaseCam);
+	AutoNibReference Nib (Window_Prefs_ChaseCam);
+	AutoNibWindow Window (Nib.nibReference (), Window_Prefs_ChaseCam);
 
 	// Get the controls
 	Configure_ChaseCam_HandlerData HandlerData;
@@ -687,7 +688,8 @@ bool Configure_Crosshairs(CrosshairData &Data)
 {
 
 	// Get the window
-	AutoNibWindow Window(GUI_Nib,Window_Prefs_Crosshairs);
+	AutoNibReference Nib (Window_Prefs_Crosshairs);
+	AutoNibWindow Window (Nib.nibReference (), Window_Prefs_Crosshairs);
 
 	// Push old crosshair state;
 	// will always want to draw it

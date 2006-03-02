@@ -354,7 +354,8 @@ bool configure_key_setup(
 	bool IsTinyScreen =
 		(RECTANGLE_WIDTH(&(*GetWorldDevice())->gdRect)<640 || RECTANGLE_HEIGHT(&(*GetWorldDevice())->gdRect)<480);
 	
-	AutoNibWindow Window(GUI_Nib, Window_Prefs_Keyboard);
+	AutoNibReference Nib (Window_Prefs_Keyboard);
+	AutoNibWindow Window (Nib.nibReference (), Window_Prefs_Keyboard);
 	
 	// So that the handlers will work with the transmitted data
 	KeyboardHandlerData HandlerData;

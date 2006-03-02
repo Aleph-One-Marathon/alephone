@@ -175,7 +175,8 @@ static bool TextureConfigureDialog(OGL_Texture_Configure *TxtrConfigList, short 
 	OSStatus err;
 	
 	// Get the window
-	AutoNibWindow Window(GUI_Nib,Window_Prefs_OpenGL_Textures);
+	AutoNibReference Nib (Window_Prefs_OpenGL_Textures);
+	AutoNibWindow Window (Nib.nibReference (), Window_Prefs_OpenGL_Textures);
 	
 	// Set up the dialog box
 	OGL_Texture_Configure &TxtrConfig = TxtrConfigList[WhichTexture];
@@ -290,7 +291,8 @@ bool OGL_ConfigureDialog(OGL_ConfigureData& Data)
 	OSStatus err;
 	
 	// Get the window
-	AutoNibWindow Window(GUI_Nib,Window_Prefs_OpenGL);
+	AutoNibReference Nib (Window_Prefs_OpenGL);
+	AutoNibWindow Window (Nib.nibReference (), Window_Prefs_OpenGL);
 
 	ControlRef Checkboxes[NumCheckboxes];
 	for (int k=0; k<NumCheckboxes; k++)

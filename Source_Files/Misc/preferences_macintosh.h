@@ -322,7 +322,8 @@ void handle_preferences(
 	write_preferences();
 	
 	// Get the window
-	AutoNibWindow Window(GUI_Nib,Window_Preferences);
+	AutoNibReference Nib (Window_Preferences);
+	AutoNibWindow Window (Nib.nibReference (), Window_Preferences);
 	
 	// Get the desired controls
 	PreferencesHandlerData HandlerData;
