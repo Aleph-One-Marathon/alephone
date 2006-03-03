@@ -285,7 +285,7 @@ SDL_RWops *open_res_file(FileSpecifier &file)
     string darwin_rsrc_file_name = rsrc_file_name;
     rsrc_file_name += ".rsrc";
     resources_file_name += ".resources";
-    darwin_rsrc_file_name += "/rsrc";
+    darwin_rsrc_file_name += "/..namedfork/rsrc";
 
     SDL_RWops* f = NULL;
 
