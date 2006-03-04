@@ -489,7 +489,7 @@ void RenderRasterizerClass::render_node_side(
 						case 0:
 							// LP change: making it long-distance friendly
 							{
-							int32 screen_x= view->half_screen_width + (world->y*view->world_to_screen_x)/world->x;
+								int32 screen_x= view->half_screen_width + (world->x ? (world->y*view->world_to_screen_x)/world->x : 0);
 							screen->x= PIN(screen_x, 0, view->screen_width);
 							}
 							break;
@@ -505,7 +505,7 @@ void RenderRasterizerClass::render_node_side(
 						case 0:
 							// LP change: making it long-distance friendly
 							{
-							int32 screen_y= view->half_screen_height - (world->z*view->world_to_screen_y)/world->x + view->dtanpitch;
+								int32 screen_y= view->half_screen_height - (world->x ? (world->z*view->world_to_screen_y)/world->x : 0) + view->dtanpitch;
 							screen->y= PIN(screen_y, 0, view->screen_height);
 							}
 							break;
