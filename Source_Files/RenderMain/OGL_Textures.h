@@ -327,6 +327,8 @@ void FindInfravisionVersionRGBA(short Collection, GLfloat *Color);
 // Mass-production version of above; suitable for textures
 void FindInfravisionVersionRGBA(short Collection, int NumPixels, uint32 *Pixels);
 
+void FindSilhouetteVersion(ImageDescriptorManager &imageManager);
+
 struct OGL_TexturesStats {
 	int inUse;
 	int binds, totalBind, minBind, maxBind;

@@ -729,19 +729,7 @@ bool TextureManager::LoadSubstituteTexture()
 	}
 	else if (CTable == SILHOUETTE_BITMAP_SET)
 	{
-		// ghs: we don't need to do this, until someone starts using
-		// silhouette bitmap set for something other than invisibility,
-		// due to the way OpenGL does blending
-// 		if (NormalBuffer)
-// 		{
-// 			for (int k=0; k<TxtrWidth*TxtrHeight; k++)
-// 			{
-// 				// Make the color white, but keep the opacity
-// 				uint8 *PxlPtr = (uint8 *)(NormalBuffer + k);
-// 				PxlPtr[0] = PxlPtr[1] = PxlPtr[2] = 0xff;
-// 			}
-// 		}
-		// Silhouette textures don't glow
+		FindSilhouetteVersion(NormalImage);
 		GlowImage.set((ImageDescriptor *) NULL);
 	}
 	return true;
@@ -1659,6 +1647,71 @@ void FindInfravisionVersion(short Collection, ImageDescriptorManager &imageManag
 		FindInfravisionVersionDXTC1(IVData, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
 	} else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC3 || imageManager.get()->GetFormat() == ImageDescriptor::DXTC5) {
 		FindInfavisionVersionDXTC35(IVData, imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+	}
+}
+
+void FindSilhouetteVersionDXTC1(int NumBytes, unsigned char *buffer)
+{
+	uint16 *pixels = (uint16 *) buffer;
+
+	for (int i = 0; i < NumBytes / 4; i++)
+	{
+		if (SDL_SwapLE16(pixels[i * 4]) > SDL_SwapLE16(pixels[i * 4 + 1]))
+		{
+#ifdef ALEPHONE_LITTLE_ENDIAN
+			pixels[i * 4 + 1] = 0xffdf;
+#else
+			pixels[i * 4 + 1] = 0xdfff;
+#endif
+		} 
+		else
+		{
+			pixels[i * 4 + 1] = 0xffff;
+		}
+		pixels[i * 4] = 0xffff;
+	}
+}
+
+void FindSilhouetteVersionDXTC35(int NumBytes, unsigned char *buffer)
+{
+	uint16 *pixels = (uint16 *) buffer;
+	
+	for (int i = 0; i < NumBytes / 8; i++)
+	{
+		pixels[i * 8 + 4] = 0xffff;
+#ifdef ALEPHONE_LITTLE_ENDIAN
+		pixels[i * 8 + 5] = 0xffdf;
+#else
+		pixels[i * 8 + 5] = 0xdfff;
+#endif
+	}
+}
+
+void FindSilhouetteVersionRGBA(int NumPixels, uint32 *Pixels)
+{
+	for (int i = 0; i < NumPixels; i++) 
+	{
+#ifdef ALEPHONE_LITTLE_ENDIAN
+		Pixels[i] |= 0x00ffffff;
+#else
+		Pixels[i] |= 0xffffff00;
+#endif
+	}
+}
+
+void FindSilhouetteVersion(ImageDescriptorManager &imageManager)
+{
+	if (imageManager.get()->GetFormat() == ImageDescriptor::RGBA8)
+	{
+		FindSilhouetteVersionRGBA(imageManager.edit()->GetBufferSize() / 4, imageManager.edit()->GetBuffer());
+	}
+	else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC1)
+	{
+		FindSilhouetteVersionDXTC1(imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
+	}
+	else if (imageManager.get()->GetFormat() == ImageDescriptor::DXTC3 || imageManager.get()->GetFormat() == ImageDescriptor::DXTC5) 
+	{
+		FindSilhouetteVersionDXTC35(imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
 	}
 }
 
