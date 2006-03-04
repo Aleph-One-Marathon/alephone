@@ -274,10 +274,14 @@ static const char *resolution_labels[3] = {
 	"Low", "High", NULL
 };
 
-static const char *size_labels[13] = {
-	"320x160", "480x240", "640x320", "640x480 (no HUD)",
-	"800x400", "800x600 (no HUD)", "1024x512", "1024x768 (no HUD)",
-	"1280x640", "1280x1024 (no HUD)", "1600x800", "1600x1200 (no HUD)", NULL
+static const char *size_labels[25] = {
+	"320x160", "480x240", "640x480", "640x480 (no HUD)",
+	"800x600", "800x600 (no HUD)", "1024x768", "1024x768 (no HUD)",
+	"1280x1024", "1280x1024 (no HUD)", "1600x1200", "1600x1200 (no HUD)", 
+	"1024x640", "1024x640 (no HUD)", "1280x800", "1280x800 (no HUD)", 
+	"1280x854", "1280x854 (no HUD)", "1440x900", "1440x900 (no HUD)",
+	"1680x1050", "1680x1050 (no HUD)", "1900x1200", "1900x1200 (no HUD)",
+	NULL
 };
 
 static const char *gamma_labels[9] = {
@@ -426,59 +430,60 @@ static void graphics_dialog(void *arg)
     d.add(new w_static_text("This copy of Aleph One was built without OpenGL support."));
 #endif
     d.add(new w_spacer());
-
-	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
-
-	// Clear screen
-	clear_screen();
-
-	// Run dialog
-	if (d.run() == 0) {	// Accepted
-		bool changed = false;
-
-		bool fullscreen = fullscreen_w->get_selection() != 0;
-		if (fullscreen != graphics_preferences->screen_mode.fullscreen) {
-			graphics_preferences->screen_mode.fullscreen = fullscreen;
-			// This is the only setting that has an immediate effect
-			toggle_fullscreen(fullscreen);
-			parent->draw();
-			changed = true;
-		}
-
-        short renderer = static_cast<short>(renderer_w->get_selection());
-		assert(renderer >= 0);
-        if(renderer != graphics_preferences->screen_mode.acceleration) {
-            graphics_preferences->screen_mode.acceleration = renderer;
-
-            // Disable fading under Mac OS X software rendering
+    
+    d.add(new w_left_button("ACCEPT", dialog_ok, &d));
+    d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+    
+    // Clear screen
+    clear_screen();
+    
+    // Run dialog
+    if (d.run() == 0) {	// Accepted
+	    bool changed = false;
+	    
+	    bool fullscreen = fullscreen_w->get_selection() != 0;
+	    if (fullscreen != graphics_preferences->screen_mode.fullscreen) {
+		    graphics_preferences->screen_mode.fullscreen = fullscreen;
+		    // This is the only setting that has an immediate effect
+		    toggle_fullscreen(fullscreen);
+		    parent->draw();
+		    changed = true;
+	    }
+	    
+	    short renderer = static_cast<short>(renderer_w->get_selection());
+	    assert(renderer >= 0);
+	    if(renderer != graphics_preferences->screen_mode.acceleration) {
+		    graphics_preferences->screen_mode.acceleration = renderer;
+		    if (renderer) graphics_preferences->screen_mode.bit_depth = 32;
+		    
+		    // Disable fading under Mac OS X software rendering
 #if defined(__APPLE__) && defined(__MACH__) && defined(HAVE_OPENGL)
-            extern bool option_nogamma;
-            option_nogamma = true;
+		    extern bool option_nogamma;
+		    option_nogamma = true;
 #endif
-
-            changed = true;
-        }
-
-		short size = static_cast<short>(size_w->get_selection());
-		assert(size >= 0);
-		if (size != graphics_preferences->screen_mode.size) {
-			graphics_preferences->screen_mode.size = size;
-			changed = true;
-			// don't change mode now; it will be changed when the game starts
-		}
-
-		short gamma = static_cast<short>(gamma_w->get_selection());
-		if (gamma != graphics_preferences->screen_mode.gamma_level) {
-			graphics_preferences->screen_mode.gamma_level = gamma;
-			changed = true;
-		}
-
-		if (changed) {
-			write_preferences();
-			parent->draw();		// DirectX seems to need this
-		}
-	}
+		    
+		    changed = true;
+	    }
+	    
+	    short size = static_cast<short>(size_w->get_selection());
+	    assert(size >= 0);
+	    if (size != graphics_preferences->screen_mode.size) {
+		    graphics_preferences->screen_mode.size = size;
+		    changed = true;
+		    // don't change mode now; it will be changed when the game starts
+	    }
+	    
+	    short gamma = static_cast<short>(gamma_w->get_selection());
+	    if (gamma != graphics_preferences->screen_mode.gamma_level) {
+		    graphics_preferences->screen_mode.gamma_level = gamma;
+		    changed = true;
+	    }
+	    
+	    if (changed) {
+		    write_preferences();
+		    parent->draw();		// DirectX seems to need this
+	    }
+    }
 }
 
 static void texture_options_dialog(void *arg)

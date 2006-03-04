@@ -277,8 +277,6 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		}
 #endif
-		screen_mode.bit_depth = 32;
-		depth = 32;
 	} else
 		flags |= SDL_HWSURFACE | SDL_HWPALETTE;
 #else
