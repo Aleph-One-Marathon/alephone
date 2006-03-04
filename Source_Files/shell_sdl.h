@@ -1468,29 +1468,42 @@ static void process_system_event(const SDL_Event &event)
 static void process_event(const SDL_Event &event)
 {
 	switch (event.type) {
-		case SDL_MOUSEBUTTONDOWN:
-			process_screen_click(event);
-			break;
-
-		case SDL_KEYDOWN:
-			process_game_key(event);
-			break;
-
-		case SDL_SYSWMEVENT:
-			process_system_event(event);
-			break;
-
-		case SDL_QUIT:
-			set_game_state(_quit_game);
-			break;
-
+	case SDL_MOUSEBUTTONDOWN:
+		process_screen_click(event);
+		break;
+		
+	case SDL_KEYDOWN:
+		process_game_key(event);
+		break;
+		
+	case SDL_SYSWMEVENT:
+		process_system_event(event);
+		break;
+		
+	case SDL_QUIT:
+		set_game_state(_quit_game);
+		break;
+		
 	case SDL_ACTIVEEVENT:
-	  if (event.active.state & SDL_APPACTIVE) {
-	    if (event.active.gain) {
-	      update_game_window();
-	    }
-	  }
+		if (event.active.state & SDL_APPACTIVE) {
+			if (event.active.gain) {
+				if (get_game_state() == _game_in_progress)
+					set_keyboard_controller_status(true);
+				update_game_window();
+			}
+		} else if (event.active.state & SDL_APPINPUTFOCUS) {
+			if (!event.active.gain) {
+				if (get_game_state() == _game_in_progress && get_keyboard_controller_status()) {
+					set_keyboard_controller_status(false);
+					SDL_WM_IconifyWindow();
+				}
+			}
+		}
+		break;
+	case SDL_VIDEOEXPOSE:
+		update_game_window();
 	}
+	
 }
 
 
