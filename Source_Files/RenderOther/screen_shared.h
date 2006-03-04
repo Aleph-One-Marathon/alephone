@@ -711,7 +711,11 @@ static void DisplayMessages(SDL_Surface *s)
 						glTranslatef(x2-0.5f,Y+4.5f,0);
 						glRasterPos2d(0, 0);
 						glBindTexture(GL_TEXTURE_2D, tex);
+#ifdef ALEPHONE_LITTLE_ENDIAN
+						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, ScriptHUDElements[i].icon);
+#else
 						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ScriptHUDElements[i].icon);
+#endif
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
