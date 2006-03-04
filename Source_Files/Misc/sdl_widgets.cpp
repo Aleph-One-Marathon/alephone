@@ -1329,12 +1329,16 @@ void w_list_base::event(SDL_Event &e)
 	} else if (e.type == SDL_MOUSEBUTTONDOWN) {
 		switch (e.button.button) {
 		case SDL_BUTTON_WHEELUP:
-			if (top_item != 0)
-			{	set_top_item(top_item - 1); }
+			if (top_item > 3)
+				set_top_item(top_item - 3); 
+			else 
+				set_top_item(0); 
 			break;	
 		case SDL_BUTTON_WHEELDOWN:
-			if (top_item < num_items - shown_items)
-			{	set_top_item(top_item + 1); }	
+			if (top_item < num_items - shown_items - 3)
+				set_top_item(top_item + 3);
+			else 
+				set_top_item(num_items - shown_items);
 			break;
 		default:
 			break;
