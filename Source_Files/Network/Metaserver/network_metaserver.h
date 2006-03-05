@@ -59,15 +59,15 @@ public:
 		return result;
 	}
 
-private:
-	typedef std::map<IDType, Element>	Map;
-
 	enum
 	{
 		kAdd		= 0,
 		kDelete		= 1,
 		kRefresh	= 2
 	};
+	
+private:
+	typedef std::map<IDType, Element>	Map;
 
 	Map	m_entries;
 
@@ -123,13 +123,14 @@ public:
         class NotificationAdapter
         {
         public:
-                virtual void playersInRoomChanged() = 0;
-                virtual void gamesInRoomChanged() = 0;
+                virtual void playersInRoomChanged(const std::vector<MetaserverPlayerInfo>&) = 0;
+                virtual void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry>&) = 0;
                 virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message) = 0;
+		virtual void receivedLocalMessage(const std::string& message) = 0;
                 virtual void receivedBroadcastMessage(const std::string& message) = 0;
                 virtual ~NotificationAdapter() {}
         };
-
+	
 		class NotificationAdapterInstaller
 		{
 		public:
@@ -156,9 +157,10 @@ public:
 		};
 
         typedef std::vector<RoomDescription>					Rooms;
-        typedef MetaserverMaintainedList<MetaserverPlayerInfo>			PlayersInRoom;
-        typedef MetaserverMaintainedList<GameListMessage::GameListEntry>	GamesInRoom;
-        
+	typedef MetaserverMaintainedList<MetaserverPlayerInfo>			PlayersInRoom;
+	typedef MetaserverMaintainedList<GameListMessage::GameListEntry>	GamesInRoom;
+	
+
 	MetaserverClient();
 
         void associateNotificationAdapter(NotificationAdapter* adapter)

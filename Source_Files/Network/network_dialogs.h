@@ -321,9 +321,10 @@ protected:
 	bool player_search (prospective_joiner_info& player);
 	bool gathered_player (const prospective_joiner_info& player);
 	
-	virtual void playersInRoomChanged() {}
-	virtual void gamesInRoomChanged() {}
+	virtual void playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &);
+	virtual void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &);
 	virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
+	virtual void receivedLocalMessage(const std::string& message);
 	virtual void receivedBroadcastMessage(const std::string& message);	
 	
 	void sendChat ();
@@ -371,9 +372,10 @@ protected:
 	void changeColours ();
 	void getJoinAddressFromMetaserver ();
 	
-	virtual void playersInRoomChanged() {}
-	virtual void gamesInRoomChanged() {}
+	virtual void playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &) {}
+	virtual void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &) {}
 	virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
+	virtual void receivedLocalMessage(const std::string& message);
 	virtual void receivedBroadcastMessage(const std::string& message);
 
 	// ChatCallbacks

@@ -42,6 +42,8 @@
 #include <algorithm>
 #include "Logging.h"
 
+
+
 using namespace std;
 
 
@@ -92,8 +94,9 @@ MetaserverClient::handlePlayerListMessage(PlayerListMessage* inMessage, Communic
 {
 	m_playersInRoom.processUpdates(inMessage->players());
 
-	if(m_notificationAdapter)
-		m_notificationAdapter->playersInRoomChanged();
+	if(m_notificationAdapter) {
+		m_notificationAdapter->playersInRoomChanged(inMessage->players());
+	}
 }
 
 
@@ -103,14 +106,14 @@ MetaserverClient::handleRoomListMessage(RoomListMessage* inMessage, Communicatio
 	m_rooms = inMessage->rooms();
 }
 
-
 void
 MetaserverClient::handleGameListMessage(GameListMessage* inMessage, CommunicationsChannel* inChannel)
 {
 	m_gamesInRoom.processUpdates(inMessage->entries());
 
-	if(m_notificationAdapter)
-		m_notificationAdapter->gamesInRoomChanged();
+	if(m_notificationAdapter) {
+		m_notificationAdapter->gamesInRoomChanged(inMessage->entries());
+	}
 };
 
 
@@ -254,10 +257,23 @@ MetaserverClient::pumpAll()
 void
 MetaserverClient::sendChatMessage(const std::string& message)
 {
-	m_channel->enqueueOutgoingMessage(ChatMessage(m_playerID, m_playerName, message));
+	if (message == ".who") {
+		if(m_notificationAdapter) {
+			string players = "Players: ";
+			if (playersInRoom().size()) {
+				players += "\"" + playersInRoom()[0].name() + "\"";
+				for (size_t i = 1; i < playersInRoom().size(); i++) {
+					players += ", \"" + playersInRoom()[i].name() + "\"";
+				}
+			} else {
+				players += "none";
+			}
+			m_notificationAdapter->receivedLocalMessage(players); 
+		}
+	} else {
+		m_channel->enqueueOutgoingMessage(ChatMessage(m_playerID, m_playerName, message));
+	}
 }
-
-
 
 void
 MetaserverClient::announceGame(uint16 gamePort, const GameDescription& description)

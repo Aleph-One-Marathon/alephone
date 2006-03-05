@@ -70,9 +70,10 @@ protected:
 	virtual void Stop() = 0;
 
 	void GameSelected(GameListMessage::GameListEntry game);
-	void playersInRoomChanged();
-	void gamesInRoomChanged();
+	void playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges);
+	void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &gamesChanges);
 	void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
+	void receivedLocalMessage(const std::string& message);
 	void receivedBroadcastMessage(const std::string& message);
 	void sendChat();
 	void ChatTextEntered (char character);

@@ -392,18 +392,20 @@ public:
 	}
 
 	void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
-	{
+        {
 		m_chatHistory.append_chat_entry(senderName.c_str(), 0xaaaaaaaa, 0xaaaaaaaa, message.c_str());
 		m_chatHistory.get_owning_dialog()->draw_dirty_widgets();
 	}
 
+	void receivedLocalMessage(const std::string& message) {	}
+	
 	void receivedBroadcastMessage(const std::string& message)
 	{
 		receivedChatMessage("Metaserver", 0, message);
 	}
 
-	void playersInRoomChanged() {}
-	void gamesInRoomChanged() {}
+	void playersInRoomChanged(const vector<MetaserverPlayerInfo> &) {}
+	void gamesInRoomChanged(const vector<GameListMessage::GameListEntry> &) {}
 
 private:
 	w_chat_history&	m_chatHistory;
