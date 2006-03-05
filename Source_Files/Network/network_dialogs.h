@@ -71,18 +71,18 @@ enum {
 	strTOTAL_SCORES,
 	strTOTAL_TEAM_SCORES,
 // ZZZ: added the following to support my postgame report
-    strTEAM_CARNAGE_STRING,
-    strKILLS_LEGEND,
-    strDEATHS_LEGEND,
-    strSUICIDES_LEGEND,
-    strFRIENDLY_FIRE_LEGEND
+	strTEAM_CARNAGE_STRING,
+	strKILLS_LEGEND,
+	strDEATHS_LEGEND,
+	strSUICIDES_LEGEND,
+	strFRIENDLY_FIRE_LEGEND
 };
 
 enum {
-    kNetworkGameTypesStringSetID	= 146,
-    kEndConditionTypeStringSetID	= 147,
-    kScoreLimitTypeStringSetID		= 148,
-    kSingleOrNetworkStringSetID		= 149
+	kNetworkGameTypesStringSetID	= 146,
+	kEndConditionTypeStringSetID	= 147,
+	kScoreLimitTypeStringSetID	= 148,
+	kSingleOrNetworkStringSetID	= 149
 };
 
 
@@ -128,12 +128,8 @@ enum {
 
 /* SDL/TCP hinting info. JTP: moved here from network_dialogs_sdl.cpp */
 enum {
-    kJoinHintingAddressLength = 64,
-    kMaximumRecentAddresses = 16
+	kJoinHintingAddressLength = 64,
 };
-
-extern bool sUserWantsJoinHinting;
-extern char sJoinHintingAddress[];
 
 #define strJOIN_DIALOG_MESSAGES 136
 enum /* join dialog string numbers */
@@ -237,14 +233,6 @@ enum {
 
 #ifdef USES_NIBS
 
-// For the nib version -- it has radio-button groups that work like popup menus
-
-
-enum {
-	mic_type_plain = 1,
-	mic_type_speex
-};
-
 // Because otherwise it would be interpreted as a regular "OK"
 const int iOK_SPECIAL = 101;
 
@@ -273,55 +261,10 @@ struct player_info;
 struct game_info;
 
 #ifndef USES_NIBS
-typedef DialogPtr NetgameSetupData;
 typedef DialogPtr NetgameOutcomeData;
 #endif
 
 #ifdef USES_NIBS
-
-struct NetgameSetupData
-{
-	// All the controls will be here, for convenience
-	
-	ControlRef PlayerNameCtrl;
-	ControlRef PlayerColorCtrl;
-	ControlRef PlayerTeamCtrl;
-	
-	ControlRef GameTypeCtrl;
-	ControlRef EntryPointCtrl;
-	ControlRef DifficultyCtrl;
-	
-	ControlRef MonstersCtrl;
-	ControlRef NoMotionSensorCtrl;
-	ControlRef BadDyingCtrl;
-	ControlRef BadSuicideCtrl;
-	ControlRef UniqTeamsCtrl;
-	ControlRef BurnItemsCtrl;
-	ControlRef StatsReportingCtrl;
-	
-	ControlRef DurationCtrl;
-	ControlRef TimeLabelCtrl;
-	ControlRef TimeTextCtrl;
-	ControlRef KillsLabelCtrl;
-	ControlRef KillsTextCtrl;
-	
-	ControlRef UseMicrophoneCtrl;
-	ControlRef MicrophoneTypeCtrl;
-	
-	ControlRef UseScriptCtrl;
-	ControlRef ScriptNameCtrl;
-
-	ControlRef CheatsCtrl;
-
-	ControlRef AdvertiseGameOnMetaserverCtrl;
-	
-	ControlRef OK_Ctrl;
-	
-	game_info *game_information;
-	bool allow_all_levels;
-	
-	bool IsOK;	// When quitting
-};
 
 struct NetgameOutcomeData
 {
@@ -469,6 +412,8 @@ protected:
 };
 
 
+bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
+
 class SetupNetgameDialog
 {
 public:
@@ -544,52 +489,8 @@ protected:
 };
 
 
-/* ---------------------- new stuff :) */
-
-// Gather Dialog Goodies
-// shared routines
-bool gather_dialog_player_search (prospective_joiner_info& player);
-bool gather_dialog_gathered_player (const prospective_joiner_info& player);
-void gather_dialog_initialise (DialogPTR dialog);
-void gather_dialog_save_prefs (DialogPTR dialog);
-// non-shared routines
-class MetaserverClient;
-bool run_network_gather_dialog (MetaserverClient* metaserverClient);
-
-GatherCallbacks *get_gather_callbacks();
-
-// Netgame setup goodies
-// shared routines
-bool network_game_setup(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
-short netgame_setup_dialog_initialise (DialogPTR dialog, bool allow_all_levels, bool resuming_game);
-void netgame_setup_dialog_extract_information(DialogPTR dialog, player_info *player_information,
-	game_info *game_information, bool allow_all_levels, bool resuming_game,
-	bool &outAdvertiseGameOnMetaserver);
-void setup_for_untimed_game(DialogPTR dialog);
-void setup_for_timed_game(DialogPTR dialog);
-void setup_for_score_limited_game(DialogPTR dialog);
-void setup_dialog_for_game_type(DialogPTR dialog, size_t game_type);
-void SNG_limit_type_hit (DialogPTR dialog);
-void SNG_teams_hit (DialogPTR dialog);
-void SNG_game_type_hit (DialogPTR dialog);
-void SNG_choose_map_hit (DialogPTR dialog);
-void SNG_use_script_hit (DialogPTR dialog);
-bool SNG_information_is_acceptable (DialogPTR dialog);
-void update_netscript_file_display(DialogPTR dialog);
-void set_dialog_netscript_file(DialogPTR dialog, const FileSpecifier& inFile);
-const FileSpecifier& get_dialog_netscript_file(DialogPTR dialog);
-// non-shared routines
-bool run_netgame_setup_dialog(player_info *player_information, game_info *game_information, bool inResumingGame, bool& outAdvertiseGameOnMetaserver);
-void update_netscript_file_display(DialogPTR inDialog);
-#ifndef SDL // SDL uses its own private mechanism
-void EntryPoints_FillIn(DialogPTR dialog, long entry_flags, short default_level);
-#endif
-
-/* ---------------------- prototypes */
-// And now, some shared routines.
 
 extern void reassign_player_colors(short player_index, short num_players);
-
 
 
 
@@ -612,32 +513,11 @@ extern void draw_team_total_scores_graph(NetgameOutcomeData &outcome);
 extern void update_carnage_summary(NetgameOutcomeData &outcome, struct net_rank *ranks,
 	short num_players, short suicide_index, bool do_totals, bool friendly_fire);
 
-#ifdef mac
-// Mac-only routines called by shared routines.
-extern void fill_in_entry_points(DialogPtr dialog, short item, long entry_flags, short default_level);
-
-#else//!mac
-// SDL-only routines called by shared routines.
-extern void get_selected_entry_point(dialog* inDialog, short inItem, entry_point* outEntryPoint);
-
-#endif//!mac
-
 // Routines
 extern void menu_index_to_level_entry(short index, long entry_flags, struct entry_point *entry);
 extern int menu_index_to_level_index (int menu_index, int32 entry_flags);
 extern int level_index_to_menu_index(int level_index, int32 entry_flags);
 extern void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber);
-
-// ZZZ: new function manipulates radio buttons on Mac; changes w_select widget on SDL.
-extern void set_limit_type(DialogPTR dialog, short limit_type);
-extern int get_limit_type(DialogPTR dialog);
-
-// ZZZ: new function manipulates radio button title and units ("Point Limit", "points")
-extern void set_limit_text(DialogPTR dialog, short radio_item, short radio_stringset_id, short radio_string_index,
-                                short units_item, short units_stringset_id, short units_string_index);
-
-extern void set_dialog_netscript_file(DialogPTR inDialog, const FileSpecifier& inFile);
-extern const FileSpecifier& get_dialog_netscript_file(DialogPTR inDialog);
 
 // (Postgame carnage report)
 extern void draw_names(NetgameOutcomeData &outcome, struct net_rank *ranks,
@@ -646,22 +526,5 @@ extern void draw_kill_bars(NetgameOutcomeData &outcome, struct net_rank *ranks, 
 	short suicide_index, bool do_totals, bool friendly_fire);
 extern void draw_score_bars(NetgameOutcomeData &outcome, struct net_rank *ranks, short bar_count);
 
-
-
-// For manipulating the list of recent host addresses:
-
-// Sets it to empty, of course
-void ResetHostAddresses_Reset();
-
-// Returns whether adding an address could be done
-// without knocking an existing address off the list
-bool RecentHostAddresses_Add(const char *Address);
-
-// Start iterating over it
-void RecentHostAddresses_StartIter();
-
-// Returns the next member in sequence;
-// if it ran off the end, then it returns NULL
-char *RecentHostAddresses_NextIter();
 
 #endif//NETWORK_DIALOGS_H
