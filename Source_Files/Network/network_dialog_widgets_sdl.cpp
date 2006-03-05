@@ -809,10 +809,10 @@ w_players_in_game2::draw_player_names_clumped(SDL_Surface* s, TextLayoutHelper& 
 
 int
 w_players_in_game2::find_maximum_bar_value() const {
-    int	theMaxValue = LONG_MIN;
+    int	theMaxValue = INT_MIN;
 
     // We track min also to handle games with negative scores.
-    int theMinValue = LONG_MAX;
+    int theMinValue = INT_MAX;
 
     if(selected_player != NONE)
         // This way, all player vs player graphs use the same scale.

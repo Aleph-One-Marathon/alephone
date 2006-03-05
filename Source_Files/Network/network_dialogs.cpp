@@ -1140,7 +1140,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 			if (!active_network_preferences->game_is_untimed)
 				game_information->time_limit = m_timeLimitWidget->get_value () * TICKS_PER_SECOND * 60;
 			else
-				game_information->time_limit = LONG_MAX;
+				game_information->time_limit = INT32_MAX;
 			
 			game_information->kill_limit = active_network_preferences->kill_limit;
 		}
