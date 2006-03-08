@@ -456,7 +456,7 @@ bool untoggled_repair_switches_on_level(
 
 void assume_correct_switch_position(
 	short switch_type, /* platform or light */
-	short permutation, /* platform or light index */
+	short permutation, /* platform or light index */ /* ghs: appears to be polygon, not platform */
 	bool new_state)
 {
 	short side_index;

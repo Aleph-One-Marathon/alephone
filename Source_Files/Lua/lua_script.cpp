@@ -3173,14 +3173,13 @@ static int L_Set_Platform_State(lua_State *L)
 
 	short polygon_index = static_cast<short>(lua_tonumber(L,1));
 	bool state = lua_toboolean(L,2);
-
+	
 	struct polygon_data *polygon = get_polygon_data(polygon_index);
 	if (polygon)
 	{
 		if (polygon->type == _polygon_is_platform)
 		{
-			try_and_change_platform_state(short(polygon->permutation), state);
-			assume_correct_switch_position(_panel_is_platform_switch, short(polygon->permutation), state);
+			try_and_change_platform_state(short(polygon->permutation), state);			
 		}
 	}
 	return 0;
