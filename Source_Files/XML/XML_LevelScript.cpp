@@ -405,7 +405,7 @@ void GeneralRunScript(int LevelIndex)
 			{
 				if (Cmd.L || Cmd.T || Cmd.R || Cmd.B)
 				{
-					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch, Cmd.L, Cmd.T, Cmd.R, Cmd.B);
+					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch, Cmd.L, Cmd.T, Cmd.R - Cmd.L, Cmd.B - Cmd.T);
 					OGL_LoadScreen::instance()->Colors()[0] = Cmd.Colors[0];
 					OGL_LoadScreen::instance()->Colors()[1] = Cmd.Colors[1];
 				}
