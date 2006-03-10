@@ -106,7 +106,7 @@ static void get_name_from_system(unsigned char *outName)
     // Hope caller's buffer is big enough.
     char* name = (char*) outName;
 
-#if defined(unix) || defined(__BEOS__) || (defined (__APPLE__) && defined (__MACH__))
+#if defined(unix) || defined(__BEOS__) || (defined (__APPLE__) && defined (__MACH__)) || defined(__NetBSD__)
 
 	char *login = getlogin();
 	strcpy(name, login ? login : "Bob User");
