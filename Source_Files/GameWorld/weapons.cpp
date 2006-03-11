@@ -2202,8 +2202,11 @@ static void put_rounds_into_weapon(
 	struct player_data *player= get_player_data(player_index);
 
 	assert(trigger_definition->ammunition_type>=0 && trigger_definition->ammunition_type<NUMBER_OF_ITEMS);
-	assert(player->items[trigger_definition->ammunition_type]>0);
-
+	if (player->items[trigger_definition->ammunition_type] == 0) {
+		trigger->state = _weapon_lowering;
+		return;
+	}
+	
 	/* Load the gun */
 	trigger->rounds_loaded= trigger_definition->rounds_per_magazine;
 
