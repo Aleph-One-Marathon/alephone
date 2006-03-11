@@ -195,14 +195,10 @@
 		2B4EC21C0908984D009631F8 /* SDL_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		2B4EC21D0908984D009631F8 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		2B4EC21E0908984D009631F8 /* libobjc.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5F21460403247500000104 /* libobjc.A.dylib */; };
-		2B4EC2200908984D009631F8 /* CarbonResourceTweaks.r in Rez */ = {isa = PBXBuildFile; fileRef = F5D37B6F022D35A901A80001 /* CarbonResourceTweaks.r */; };
-		2B4EC2210908984D009631F8 /* SemiTpt.r in Rez */ = {isa = PBXBuildFile; fileRef = F536740602014E1C01A80001 /* SemiTpt.r */; };
 		2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
-		AEA74E6F09B01BDD00DC3B74 /* ImageLoader.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
-		AEA74E7009B01BE000DC3B74 /* DDS.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
 		AEC3C70009AD68AC003258E4 /* LocalEvents.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211CF0136A6FD01000001 /* LocalEvents.h */; };
 		AEC3C70109AD68AC003258E4 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
@@ -576,7 +572,6 @@
 		AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		AEF5025F09A825E2004B0179 /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
-		AEF5028C09A83087004B0179 /* OGL_LoadScreen.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -723,9 +718,6 @@
 			files = (
 				2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */,
 				2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */,
-				AEF5028C09A83087004B0179 /* OGL_LoadScreen.h in CopyFiles */,
-				AEA74E6F09B01BDD00DC3B74 /* ImageLoader.h in CopyFiles */,
-				AEA74E7009B01BE000DC3B74 /* DDS.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -958,9 +950,6 @@
 		F53673F702014D2D01A80001 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		F53673F802014D2D01A80001 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
 		F53673F902014D2D01A80001 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
-		F536740402014DC201A80001 /* TextStrings.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = TextStrings.r; path = ../Resources/TextStrings.r; sourceTree = SOURCE_ROOT; };
-		F536740602014E1C01A80001 /* SemiTpt.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = SemiTpt.r; path = ../Resources/SemiTpt.r; sourceTree = SOURCE_ROOT; };
-		F536740802014E1C01A80001 /* marathon2.resource */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = marathon2.resource; path = ../Resources/marathon2.resource; sourceTree = SOURCE_ROOT; };
 		F536742802014FC301A80001 /* csdialogs_macintosh.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csdialogs_macintosh.cpp; path = ../Source_Files/CSeries/csdialogs_macintosh.cpp; sourceTree = SOURCE_ROOT; };
 		F536742A02014FE101A80001 /* mytm_macintosh.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = mytm_macintosh.cpp; path = ../Source_Files/CSeries/mytm_macintosh.cpp; sourceTree = SOURCE_ROOT; };
 		F53AB44B01F3CB1D01EF2901 /* AlephOne.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AlephOne.icns; sourceTree = "<group>"; };
@@ -1212,11 +1201,6 @@
 		F5CFAD430200FA6B01D80110 /* SaveIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = SaveIcon.icns; sourceTree = "<group>"; };
 		F5D11AE40326A93E01000105 /* alephversion.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = alephversion.h; path = ../Source_Files/Misc/alephversion.h; sourceTree = SOURCE_ROOT; };
 		F5D37B6D022D1C2C01A80001 /* network_private.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_private.h; path = ../Source_Files/Network/network_private.h; sourceTree = SOURCE_ROOT; };
-		F5D37B6F022D35A901A80001 /* CarbonResourceTweaks.r */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.rez; name = CarbonResourceTweaks.r; path = ../Resources/CarbonResourceTweaks.r; sourceTree = SOURCE_ROOT; };
-		F5F50D6E0215DB2601144D54 /* Text_Strings.mml */ = {isa = PBXFileReference; lastKnownFileType = text; name = Text_Strings.mml; path = ../data/Text_Strings.mml; sourceTree = SOURCE_ROOT; };
-		F5F50D6F0215DB2601144D54 /* Transparent_Liquids.mml */ = {isa = PBXFileReference; lastKnownFileType = text; name = Transparent_Liquids.mml; path = ../data/Transparent_Liquids.mml; sourceTree = SOURCE_ROOT; };
-		F5F50D700215DB2601144D54 /* Transparent_Sprites.mml */ = {isa = PBXFileReference; lastKnownFileType = text; name = Transparent_Sprites.mml; path = ../data/Transparent_Sprites.mml; sourceTree = SOURCE_ROOT; };
-		F5F50D710215DB2601144D54 /* Interface_Rects.mml */ = {isa = PBXFileReference; lastKnownFileType = text; name = Interface_Rects.mml; path = ../data/Interface_Rects.mml; sourceTree = SOURCE_ROOT; };
 		F5F50D720215DB2601144D54 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = file; name = Fonts; path = ../data/Fonts; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
@@ -1284,9 +1268,6 @@
 				AEF8C0A6083782C60063B737 /* Postgame Carnage Report.nib */,
 				AEF8C0A7083782C60063B737 /* Setup Network Game.nib */,
 				F5F50D6C0215DACD01144D54 /* DataFiles */,
-				F536740402014DC201A80001 /* TextStrings.r */,
-				F536740602014E1C01A80001 /* SemiTpt.r */,
-				F536740802014E1C01A80001 /* marathon2.resource */,
 				F56AEB6B01F8AA1201780311 /* ImagesIcon.icns */,
 				F56AEB6C01F8AA1201780311 /* ShapesIcon.icns */,
 				F56AEB6D01F8AA1201780311 /* SoundsIcon.icns */,
@@ -1299,7 +1280,6 @@
 				F5CFAD410200FA6B01D80110 /* PFIcon.icns */,
 				F5CFAD420200FA6B01D80110 /* PhysIcon.icns */,
 				F5CFAD430200FA6B01D80110 /* SaveIcon.icns */,
-				F5D37B6F022D35A901A80001 /* CarbonResourceTweaks.r */,
 				3D3A410C04DF92C400000107 /* GUI.nib */,
 			);
 			name = Resources;
@@ -2121,21 +2101,9 @@
 		F5F50D6C0215DACD01144D54 /* DataFiles */ = {
 			isa = PBXGroup;
 			children = (
-				F5F50D6D0215DACD01144D54 /* MML */,
 				F5F50D720215DB2601144D54 /* Fonts */,
 			);
 			name = DataFiles;
-			sourceTree = "<group>";
-		};
-		F5F50D6D0215DACD01144D54 /* MML */ = {
-			isa = PBXGroup;
-			children = (
-				F5F50D6E0215DB2601144D54 /* Text_Strings.mml */,
-				F5F50D6F0215DB2601144D54 /* Transparent_Liquids.mml */,
-				F5F50D700215DB2601144D54 /* Transparent_Sprites.mml */,
-				F5F50D710215DB2601144D54 /* Interface_Rects.mml */,
-			);
-			name = MML;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -2601,8 +2569,6 @@
 			isa = PBXRezBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				2B4EC2200908984D009631F8 /* CarbonResourceTweaks.r in Rez */,
-				2B4EC2210908984D009631F8 /* SemiTpt.r in Rez */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2636,7 +2602,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/MML\"\ncp \"$SRCROOT\"/../data/*.mml \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/MML/\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes\"\ncp -R \"$SRCROOT/../data/default_theme\" \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default\"\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes\"\ncp -R \"$SRCROOT/../data/default_theme\" \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default\"\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}";
 		};
 /* End PBXShellScriptBuildPhase section */
 
