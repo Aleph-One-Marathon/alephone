@@ -28,6 +28,7 @@
 #include "cseries.h"
 #include "OGL_Subst_Texture_Def.h"
 
+#ifdef HAVE_OPENGL
 
 void OGL_TextureOptions::FindImagePosition()
 {
@@ -379,3 +380,5 @@ static XML_TextureOptionsParser TextureOptionsParser;
 // XML-parser support:
 XML_ElementParser *TextureOptions_GetParser() {return &TextureOptionsParser;}
 XML_ElementParser *TO_Clear_GetParser() {return &TO_ClearParser;}
+
+#endif

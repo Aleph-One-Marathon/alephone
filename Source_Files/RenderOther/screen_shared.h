@@ -697,6 +697,7 @@ static void DisplayMessages(SDL_Surface *s)
 				sk = SCRIPT_HUD_ELEMENT_SPACING;
 				if(ScriptHUDElements[i].isicon) {
 					ysk = 2;
+#ifdef HAVE_OPENGL
 					if(OGL_IsActive() && ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)) {
 						GLuint tex;
 						glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -736,7 +737,9 @@ static void DisplayMessages(SDL_Surface *s)
 						glPopMatrix();
 						glPopAttrib();				
 					}
-					else {
+					else 
+#endif 
+					{
 #if defined(mac)
 						struct PixMap** map = NewPixMap();
 						Rect target;

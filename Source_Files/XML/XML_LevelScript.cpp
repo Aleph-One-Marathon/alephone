@@ -67,7 +67,9 @@ struct LevelScriptCommand
 #ifdef HAVE_LUA
 		Lua,
 #endif /* HAVE_LUA */
+#ifdef HAVE_OPENGL
 		LoadScreen
+#endif
 	};
 	int Type;
 	
@@ -259,8 +261,10 @@ void RunLevelScript(int LevelIndex)
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
 	Playlist.clear();
-	
+
+#ifdef HAVE_OPENGL	
 	OGL_LoadScreen::instance()->Clear();
+#endif
 
 	if (FirstTime)
 		FirstTime = false; // first time, we already have base MML loaded
@@ -399,6 +403,7 @@ void GeneralRunScript(int LevelIndex)
 					Playlist.push_back(MusicFile);
 			}
 			break;
+#ifdef HAVE_OPENGL
 		case LevelScriptCommand::LoadScreen:
 		{
 			if (Cmd.FileSpec.size() > 0)
@@ -413,7 +418,7 @@ void GeneralRunScript(int LevelIndex)
 					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch);
 			}
 		}
-		
+#endif
 		// The movie info is handled separately
 			
 		}
@@ -606,7 +611,9 @@ static XML_LSCommandParser MovieParser("movie",LevelScriptCommand::Movie);
 #ifdef HAVE_LUA
 static XML_LSCommandParser LuaParser("lua",LevelScriptCommand::Lua);
 #endif /* HAVE_LUA */
+#ifdef HAVE_OPENGL
 static XML_LSCommandParser LoadScreenParser("load_screen", LevelScriptCommand::LoadScreen);
+#endif
 
 class XML_RandomOrderParser: public XML_ElementParser
 {
@@ -645,8 +652,10 @@ static void AddScriptCommands(XML_ElementParser& ElementParser)
 #ifdef HAVE_LUA
         ElementParser.AddChild(&LuaParser);
 #endif /* HAVE_LUA */
+#ifdef HAVE_OPENGL
 	ElementParser.AddChild(&LoadScreenParser);
 	LoadScreenParser.AddChild(Color_GetParser());
+#endif
 }
 
 

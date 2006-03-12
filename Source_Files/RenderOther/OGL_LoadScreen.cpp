@@ -24,6 +24,8 @@
 #include "OGL_LoadScreen.h"
 #include "screen.h"
 
+#ifdef HAVE_OPENGL
+
 extern bool OGL_SwapBuffers();
 
 OGL_LoadScreen *OGL_LoadScreen::instance_;
@@ -206,5 +208,4 @@ void OGL_LoadScreen::Clear()
 	image.Clear();
 }
 
-
-	
+#endif

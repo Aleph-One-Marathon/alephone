@@ -1049,6 +1049,8 @@ void load_collections(
 //		close_progress_dialog();
 }
 
+#ifdef HAVE_OPENGL
+
 void load_replacement_collections(
 	bool with_progress_bar,
 	int progress_start, 
@@ -1081,6 +1083,8 @@ void load_replacement_collections(
 		}
 	}
 }
+
+#endif
 		
 /* ---------- private code */
 

@@ -27,6 +27,8 @@
 #include "cseries.h"
 #include "OGL_Model_Def.h"
 
+#ifdef HAVE_OPENGL
+
 #include <cmath>
 
 #include "Dim3_Loader.h"
@@ -548,13 +550,11 @@ void OGL_ResetModelSkins(bool Clear_OGL_Txtrs)
 }
 
 
-
 class XML_SkinDataParser: public XML_ElementParser
 {
 	short CLUT;
 	
 	OGL_SkinData Data;
-
 public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
@@ -959,3 +959,5 @@ XML_ElementParser *ModelData_GetParser()
 	return &ModelDataParser;
 }
 XML_ElementParser *Mdl_Clear_GetParser() {return &Mdl_ClearParser;}
+
+#endif

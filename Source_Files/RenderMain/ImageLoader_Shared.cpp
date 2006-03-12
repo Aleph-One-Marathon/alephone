@@ -145,6 +145,7 @@ bool ImageDescriptor::Minify()
 		if (!(Width > 1 || Height > 1)) return false;
 		int newWidth = Width >> 1;
 		int newHeight = Height >> 1;
+#ifdef HAVE_OPENGL
 		if (OGL_IsActive())
 		{
 			
@@ -159,6 +160,7 @@ bool ImageDescriptor::Minify()
 			
 		} 
 		else 
+#endif
 		{
 			fprintf(stderr, "GL not active\n");
 			return false;

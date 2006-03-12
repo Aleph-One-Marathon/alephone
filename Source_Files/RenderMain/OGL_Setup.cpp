@@ -136,6 +136,7 @@ bool OGL_Initialize()
 bool OGL_IsPresent() {return _OGL_IsPresent;}
 
 bool OGL_CheckExtension(const std::string extension) {
+#ifdef HAVE_OPENGL
 	char *extensions = (char *) glGetString(GL_EXTENSIONS);
 	if (!extensions) return false;
 
@@ -149,10 +150,9 @@ bool OGL_CheckExtension(const std::string extension) {
 
 		extensions += length + 1;
 	}
-
+#endif
 	return false;
 }
-
 
 // Sensible defaults for the fog:
 static OGL_FogData FogData[OGL_NUMBER_OF_FOG_TYPES] = 
@@ -231,7 +231,7 @@ inline bool StringPresent(vector<char>& String)
 	return (String.size() > 1);
 }
 
-
+#ifdef HAVE_OPENGL
 void OGL_TextureOptionsBase::Load()
 {
 	FileSpecifier File;
@@ -353,7 +353,7 @@ void OGL_TextureOptionsBase::Unload()
 	NormalImg.Clear();
 	GlowImg.Clear();
 }
-
+#endif
 
 #ifdef HAVE_OPENGL
 
@@ -386,11 +386,11 @@ void OGL_UnloadModelsImages(short Collection)
 
 #else
 
-void OGL_LoadModelsImages(int Collection)
+void OGL_LoadModelsImages(short)
 {
 }
 
-void OGL_UnloadModelsImages(int Collection)
+void OGL_UnloadModelsImages(short)
 {
 }
 

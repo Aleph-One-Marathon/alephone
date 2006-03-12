@@ -40,6 +40,7 @@
 
 #include "ImageLoader.h"
 
+#ifdef HAVE_OPENGL
 class OGL_LoadScreen
 {
 public:
@@ -78,5 +79,6 @@ private:
 
 	GLuint texture_ref;
 };
+#endif
 
 #endif
