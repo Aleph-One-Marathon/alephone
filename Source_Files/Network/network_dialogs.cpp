@@ -965,6 +965,8 @@ SetupNetgameDialog::~SetupNetgameDialog ()
 	delete m_zoomWidget;
 	delete m_crosshairWidget;
 	delete m_laraCroftWidget;
+	
+	delete m_useUpnpWidget;
 }
 
 bool SetupNetgameDialog::SetupNetworkGameByRunning (
@@ -1091,6 +1093,9 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	binders.insert<bool> (m_useScriptWidget, &useScriptPref);
 	FilePref scriptPref (active_network_preferences->netscript_file);
 	binders.insert<FileSpecifier> (m_scriptWidget, &scriptPref);
+	
+	BoolPref useUpnpPref (active_network_preferences->attempt_upnp);
+	binders.insert<bool> (m_useUpnpWidget, &useUpnpPref);
 
 	binders.migrate_all_second_to_first ();
 

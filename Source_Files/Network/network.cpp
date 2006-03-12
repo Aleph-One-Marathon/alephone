@@ -157,6 +157,8 @@ clearly this is all broken until we have packet types
 
 #include "lua_script.h"
 
+#include "libnat.h"
+
 // For temporary multiple MML specified lua scripts hack
 extern bool gLoadingLuaNetscript;
 
@@ -198,6 +200,8 @@ static Capabilities my_capabilities;
 
 static GatherCallbacks *gatherCallbacks = NULL;
 static ChatCallbacks *chatCallbacks = NULL;
+
+static UpnpController *controller = NULL;
 
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
@@ -1138,6 +1142,16 @@ void NetExit(
 		delete server;
 		server = NULL;
 	}
+	
+	if (controller)
+	{
+		open_progress_dialog(_closing_router_ports);
+		LNat_Upnp_Remove_Port_Mapping(controller, 4226, "TCP");
+		LNat_Upnp_Remove_Port_Mapping(controller, 4226, "UDP");
+		LNat_Upnp_Controller_Free(&controller);
+		controller = NULL;
+		close_progress_dialog();
+	}
   
 	NetDDPClose();
 }
@@ -1266,7 +1280,27 @@ bool NetGather(
         resuming_saved_game = resuming_game;
         
 	NetInitializeTopology(game_data, game_data_size, player_data, player_data_size);
-
+	
+	if (network_preferences->attempt_upnp)
+	{
+		// open the port!
+		open_progress_dialog(_opening_router_ports);
+		char public_ip[32];
+		int ret = 0;
+		if ((ret = LNat_Upnp_Discover(&controller)) != 0)
+			logWarning("LibNAT: Failed to discover UPnP controller");
+		if (ret == 0) 
+			if ((ret = LNat_Upnp_Get_Public_Ip(controller, public_ip, 32)) != 0)
+				logWarning("LibNAT: Failed to acquire public IP");
+		if (ret == 0)
+			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, 4226, "TCP")) != 0)
+				logWarning("LibNAT: Failed to map port 4226 (TCP)");
+		if (ret == 0)
+			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, 4226, "UDP")) != 0)
+				logWarning("LibNAT: Failed to map port 4226 (UDP)");
+		close_progress_dialog();
+	}
+	
 	// Start listening for joiners
 	server = new CommunicationsChannelFactory(GAME_PORT);
 	

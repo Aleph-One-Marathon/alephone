@@ -367,6 +367,8 @@ public:
 		m_zoomWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iALLOW_ZOOM));
 		m_crosshairWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iALLOW_CROSSHAIRS));
 		m_laraCroftWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iALLOW_LARA_CROFT));
+		
+		m_useUpnpWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iUSE_UPNP));
 	}
 	
 	virtual bool Run ()

@@ -669,6 +669,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 #endif
 	preferences->cheat_flags = _allow_tunnel_vision | _allow_crosshair | _allow_behindview;
 	preferences->advertise_on_metaserver = false;
+	preferences->attempt_upnp = false;
 }
 
 static void default_player_preferences(player_preferences_data *preferences)

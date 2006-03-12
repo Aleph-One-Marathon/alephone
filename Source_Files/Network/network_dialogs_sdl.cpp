@@ -797,6 +797,12 @@ public:
 	
 		w_toggle *lara_croft_w = new w_toggle ("Allow Lara Croft", true);
 		m_dialog.add_to_tab (lara_croft_w, iSNG_STUFF_TAB);
+		
+		m_dialog.add_to_tab (new w_spacer(), iSNG_STUFF_TAB);
+		
+		m_dialog.add_to_tab (new w_static_text("Attempt to configure routers"), iSNG_STUFF_TAB);
+		w_toggle *use_upnp_w = new w_toggle ("UPnP (non-Apple)", true);
+		m_dialog.add_to_tab (use_upnp_w, iSNG_STUFF_TAB);
 
 		m_dialog.add (new w_spacer());	
 
@@ -842,6 +848,8 @@ public:
 		m_zoomWidget = new ToggleWidget (zoom_w);
 		m_crosshairWidget = new ToggleWidget (crosshairs_w);
 		m_laraCroftWidget = new ToggleWidget (lara_croft_w);
+		
+		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
 	}
 	
 	virtual bool Run ()

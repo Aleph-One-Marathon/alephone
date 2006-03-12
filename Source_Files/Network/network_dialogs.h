@@ -220,6 +220,7 @@ enum {
 	iALLOW_LARA_CROFT,
 	iGATHER_CHAT_ENTRY,
 	iGATHER_CHAT_CHOICE,
+	iUSE_UPNP,
 	iSNG_TABS = 400,
 	iSNG_GENERAL_TAB,
 	iSNG_STUFF_TAB
@@ -488,6 +489,8 @@ protected:
 	ToggleWidget*		m_zoomWidget;
 	ToggleWidget*		m_crosshairWidget;
 	ToggleWidget*		m_laraCroftWidget;
+	
+	ToggleWidget*       m_useUpnpWidget;
 };
 
 

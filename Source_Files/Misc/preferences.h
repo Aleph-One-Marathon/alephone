@@ -120,6 +120,7 @@ struct network_preferences_data
 #endif	
 	uint16 cheat_flags;
 	bool advertise_on_metaserver;
+	bool attempt_upnp;
 };
 
 struct player_preferences_data

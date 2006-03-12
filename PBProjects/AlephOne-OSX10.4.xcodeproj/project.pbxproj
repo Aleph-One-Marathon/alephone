@@ -197,6 +197,36 @@
 		2B4EC21E0908984D009631F8 /* libobjc.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5F21460403247500000104 /* libobjc.A.dylib */; };
 		2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
+		AE179EF809C3D77800512061 /* error.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF109C3D77800512061 /* error.h */; };
+		AE179EF909C3D77800512061 /* http.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF209C3D77800512061 /* http.h */; };
+		AE179EFA09C3D77800512061 /* libnat.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF309C3D77800512061 /* libnat.h */; };
+		AE179EFB09C3D77800512061 /* os_common.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF409C3D77800512061 /* os_common.h */; };
+		AE179EFC09C3D77800512061 /* os.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF509C3D77800512061 /* os.h */; };
+		AE179EFD09C3D77800512061 /* ssdp.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF609C3D77800512061 /* ssdp.h */; };
+		AE179EFE09C3D77800512061 /* utility.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF709C3D77800512061 /* utility.h */; };
+		AE179EFF09C3D77800512061 /* error.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF109C3D77800512061 /* error.h */; };
+		AE179F0009C3D77800512061 /* http.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF209C3D77800512061 /* http.h */; };
+		AE179F0109C3D77800512061 /* libnat.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF309C3D77800512061 /* libnat.h */; };
+		AE179F0209C3D77800512061 /* os_common.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF409C3D77800512061 /* os_common.h */; };
+		AE179F0309C3D77800512061 /* os.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF509C3D77800512061 /* os.h */; };
+		AE179F0409C3D77800512061 /* ssdp.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF609C3D77800512061 /* ssdp.h */; };
+		AE179F0509C3D77800512061 /* utility.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF709C3D77800512061 /* utility.h */; };
+		AE179F0E09C3D79500512061 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0609C3D79500512061 /* error.c */; };
+		AE179F0F09C3D79500512061 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0709C3D79500512061 /* http.c */; };
+		AE179F1009C3D79500512061 /* libnat.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0809C3D79500512061 /* libnat.c */; };
+		AE179F1109C3D79500512061 /* os_common.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0909C3D79500512061 /* os_common.c */; };
+		AE179F1209C3D79500512061 /* os_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0A09C3D79500512061 /* os_unix.c */; };
+		AE179F1309C3D79500512061 /* ssdp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0B09C3D79500512061 /* ssdp.c */; };
+		AE179F1409C3D79500512061 /* upnp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0C09C3D79500512061 /* upnp.c */; };
+		AE179F1509C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
+		AE179F1609C3D79500512061 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0609C3D79500512061 /* error.c */; };
+		AE179F1709C3D79500512061 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0709C3D79500512061 /* http.c */; };
+		AE179F1809C3D79500512061 /* libnat.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0809C3D79500512061 /* libnat.c */; };
+		AE179F1909C3D79500512061 /* os_common.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0909C3D79500512061 /* os_common.c */; };
+		AE179F1A09C3D79500512061 /* os_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0A09C3D79500512061 /* os_unix.c */; };
+		AE179F1B09C3D79500512061 /* ssdp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0B09C3D79500512061 /* ssdp.c */; };
+		AE179F1C09C3D79500512061 /* upnp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0C09C3D79500512061 /* upnp.c */; };
+		AE179F1D09C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
 		AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
@@ -718,6 +748,13 @@
 			files = (
 				2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */,
 				2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */,
+				AE179EF809C3D77800512061 /* error.h in CopyFiles */,
+				AE179EF909C3D77800512061 /* http.h in CopyFiles */,
+				AE179EFA09C3D77800512061 /* libnat.h in CopyFiles */,
+				AE179EFB09C3D77800512061 /* os_common.h in CopyFiles */,
+				AE179EFC09C3D77800512061 /* os.h in CopyFiles */,
+				AE179EFD09C3D77800512061 /* ssdp.h in CopyFiles */,
+				AE179EFE09C3D77800512061 /* utility.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -779,6 +816,21 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		AE179EF109C3D77800512061 /* error.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = error.h; path = ../Source_Files/LibNAT/error.h; sourceTree = "<group>"; };
+		AE179EF209C3D77800512061 /* http.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = http.h; path = ../Source_Files/LibNAT/http.h; sourceTree = "<group>"; };
+		AE179EF309C3D77800512061 /* libnat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = libnat.h; path = ../Source_Files/LibNAT/libnat.h; sourceTree = "<group>"; };
+		AE179EF409C3D77800512061 /* os_common.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = os_common.h; path = ../Source_Files/LibNAT/os_common.h; sourceTree = "<group>"; };
+		AE179EF509C3D77800512061 /* os.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = os.h; path = ../Source_Files/LibNAT/os.h; sourceTree = "<group>"; };
+		AE179EF609C3D77800512061 /* ssdp.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ssdp.h; path = ../Source_Files/LibNAT/ssdp.h; sourceTree = "<group>"; };
+		AE179EF709C3D77800512061 /* utility.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = utility.h; path = ../Source_Files/LibNAT/utility.h; sourceTree = "<group>"; };
+		AE179F0609C3D79500512061 /* error.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = error.c; path = ../Source_Files/LibNAT/error.c; sourceTree = "<group>"; };
+		AE179F0709C3D79500512061 /* http.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = http.c; path = ../Source_Files/LibNAT/http.c; sourceTree = "<group>"; };
+		AE179F0809C3D79500512061 /* libnat.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = libnat.c; path = ../Source_Files/LibNAT/libnat.c; sourceTree = "<group>"; };
+		AE179F0909C3D79500512061 /* os_common.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = os_common.c; path = ../Source_Files/LibNAT/os_common.c; sourceTree = "<group>"; };
+		AE179F0A09C3D79500512061 /* os_unix.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = os_unix.c; path = ../Source_Files/LibNAT/os_unix.c; sourceTree = "<group>"; };
+		AE179F0B09C3D79500512061 /* ssdp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ssdp.c; path = ../Source_Files/LibNAT/ssdp.c; sourceTree = "<group>"; };
+		AE179F0C09C3D79500512061 /* upnp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = upnp.c; path = ../Source_Files/LibNAT/upnp.c; sourceTree = "<group>"; };
+		AE179F0D09C3D79500512061 /* utility.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utility.c; path = ../Source_Files/LibNAT/utility.c; sourceTree = "<group>"; };
 		AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialogs_mac_nibs_sdl.cpp; path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = carbon_widgets.cpp; path = ../Source_Files/Misc/carbon_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEED0864EAB7002AF754 /* carbon_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = carbon_widgets.h; path = ../Source_Files/Misc/carbon_widgets.h; sourceTree = SOURCE_ROOT; };
@@ -1342,6 +1394,36 @@
 			path = ../Source_Files/TCPMess;
 			sourceTree = SOURCE_ROOT;
 		};
+		AE179EED09C3D72800512061 /* LibNAT */ = {
+			isa = PBXGroup;
+			children = (
+				AE179EEE09C3D73D00512061 /* Headers */,
+				AE179F0609C3D79500512061 /* error.c */,
+				AE179F0709C3D79500512061 /* http.c */,
+				AE179F0809C3D79500512061 /* libnat.c */,
+				AE179F0909C3D79500512061 /* os_common.c */,
+				AE179F0A09C3D79500512061 /* os_unix.c */,
+				AE179F0B09C3D79500512061 /* ssdp.c */,
+				AE179F0C09C3D79500512061 /* upnp.c */,
+				AE179F0D09C3D79500512061 /* utility.c */,
+			);
+			name = LibNAT;
+			sourceTree = "<group>";
+		};
+		AE179EEE09C3D73D00512061 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				AE179EF109C3D77800512061 /* error.h */,
+				AE179EF209C3D77800512061 /* http.h */,
+				AE179EF309C3D77800512061 /* libnat.h */,
+				AE179EF409C3D77800512061 /* os_common.h */,
+				AE179EF509C3D77800512061 /* os.h */,
+				AE179EF609C3D77800512061 /* ssdp.h */,
+				AE179EF709C3D77800512061 /* utility.h */,
+			);
+			name = Headers;
+			sourceTree = "<group>";
+		};
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -1392,6 +1474,7 @@
 		F52214490136C0C401000001 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				AE179EED09C3D72800512061 /* LibNAT */,
 				3DC1523F0711123100836977 /* TCPMess */,
 				F5CF58580245987901A80001 /* Main */,
 				F5830B4201E77D5701BA387C /* ModelView */,
@@ -2307,6 +2390,13 @@
 				AEC3C7C009AD68AC003258E4 /* Console.h in Headers */,
 				AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */,
 				AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */,
+				AE179EFF09C3D77800512061 /* error.h in Headers */,
+				AE179F0009C3D77800512061 /* http.h in Headers */,
+				AE179F0109C3D77800512061 /* libnat.h in Headers */,
+				AE179F0209C3D77800512061 /* os_common.h in Headers */,
+				AE179F0309C3D77800512061 /* os.h in Headers */,
+				AE179F0409C3D77800512061 /* ssdp.h in Headers */,
+				AE179F0509C3D77800512061 /* utility.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2774,6 +2864,14 @@
 				2B4EC2140908984D009631F8 /* Console.cpp in Sources */,
 				AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */,
 				AEF5025F09A825E2004B0179 /* OGL_LoadScreen.cpp in Sources */,
+				AE179F0E09C3D79500512061 /* error.c in Sources */,
+				AE179F0F09C3D79500512061 /* http.c in Sources */,
+				AE179F1009C3D79500512061 /* libnat.c in Sources */,
+				AE179F1109C3D79500512061 /* os_common.c in Sources */,
+				AE179F1209C3D79500512061 /* os_unix.c in Sources */,
+				AE179F1309C3D79500512061 /* ssdp.c in Sources */,
+				AE179F1409C3D79500512061 /* upnp.c in Sources */,
+				AE179F1509C3D79500512061 /* utility.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2940,6 +3038,14 @@
 				AEC3C86C09AD68AC003258E4 /* Console.cpp in Sources */,
 				AEC3C86D09AD68AC003258E4 /* ImageLoader_Shared.cpp in Sources */,
 				AEC3C86E09AD68AC003258E4 /* OGL_LoadScreen.cpp in Sources */,
+				AE179F1609C3D79500512061 /* error.c in Sources */,
+				AE179F1709C3D79500512061 /* http.c in Sources */,
+				AE179F1809C3D79500512061 /* libnat.c in Sources */,
+				AE179F1909C3D79500512061 /* os_common.c in Sources */,
+				AE179F1A09C3D79500512061 /* os_unix.c in Sources */,
+				AE179F1B09C3D79500512061 /* ssdp.c in Sources */,
+				AE179F1C09C3D79500512061 /* upnp.c in Sources */,
+				AE179F1D09C3D79500512061 /* utility.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
