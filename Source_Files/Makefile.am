@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in 
 
-SUBDIRS = CSeries Expat Files GameWorld Input Lua Misc ModelView Network \
+SUBDIRS = CSeries Expat Files GameWorld Input LibNAT Lua Misc ModelView Network \
   Pfhortran RenderMain RenderOther Sound TCPMess XML
 
 if MAKE_WINDOWS
@@ -21,7 +21,7 @@ alephone_LDADD = \
   XML/libxml.a \
   \
   CSeries/libcseries.a Expat/libexpat.a Files/libfiles.a \
-  GameWorld/libgameworld.a Input/libinput.a Lua/liba1lua.a Misc/libmisc.a \
+  GameWorld/libgameworld.a LibNAT/libnat.a Input/libinput.a Lua/liba1lua.a Misc/libmisc.a \
   ModelView/libmodelview.a Network/libnetwork.a Network/Metaserver/libmetaserver.a Pfhortran/libpfhortran.a \
   RenderMain/librendermain.a RenderOther/librenderother.a Sound/libsound.a \
   TCPMess/libtcpmess.a XML/libxml.a

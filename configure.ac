@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Written in 2000 by Christian Bauer <Christian.Bauer@uni-mainz.de>
 
-AC_INIT([Aleph One/SDL], 20051119, [http://sourceforge.net/bugs/?group_id=1997], [AlephOne])
+AC_INIT([Aleph One/SDL], 20060307pre3, [http://sourceforge.net/bugs/?group_id=1997], [AlephOne])
 AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
 AC_PREREQ(2.52)
 
@@ -180,6 +180,7 @@ Source_Files/Expat/Makefile
 Source_Files/Files/Makefile
 Source_Files/GameWorld/Makefile
 Source_Files/Input/Makefile
+Source_Files/LibNAT/Makefile
 Source_Files/Lua/Makefile
 Source_Files/Misc/Makefile
 Source_Files/ModelView/Makefile
