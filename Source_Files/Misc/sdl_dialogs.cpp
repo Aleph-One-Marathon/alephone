@@ -81,6 +81,8 @@ static struct dialog_image_spec_type {
 
 static SDL_Surface *dialog_image[NUM_DIALOG_IMAGES];
 
+bool dialog::sKeyRepeatActive = false;
+
 // Prototypes
 static void shutdown_dialogs(void);
 static void unload_theme(void);
@@ -1317,11 +1319,10 @@ void dialog::start(bool play_sound)
 		play_dialog_sound(DIALOG_INTRO_SOUND);
 
 	// Enable unicode key translation
-	// (ZZZ: hmm maybe this should be done on entering/leaving run_a_little?
-	// I guess really we need to "push" the current UNICODE state and set it true on entering run_a_little,
-	// then "pop" the previous state on leaving run_a_little.  In the meantime, we hope nobody tries their own
-	// event processing between dialog::start and dialog::finish (or at least is prepared to live with UNICODE) :) )
 	saved_unicode_state = SDL_EnableUNICODE(true);
+	saved_keyrepeat_state = sKeyRepeatActive;
+	sKeyRepeatActive = true;
+	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
 	// Prepare for dialog event loop
 	result = 0;
@@ -1361,6 +1362,11 @@ int dialog::finish(bool play_sound)
 {
 	// Disable unicode key translation
 	SDL_EnableUNICODE(saved_unicode_state);
+	sKeyRepeatActive = saved_keyrepeat_state;
+	if (!saved_keyrepeat_state)
+	{
+		SDL_EnableKeyRepeat(0, 0);
+	}
 
 	// Farewell sound
 	if (play_sound)

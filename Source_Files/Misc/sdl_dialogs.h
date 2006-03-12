@@ -127,6 +127,8 @@ private:
 	bool done;					// Flag: dialog done
 	bool cursor_was_visible;	// Previous cursor state
 	int saved_unicode_state;        // unicode state entering this dialog
+	bool saved_keyrepeat_state;     // key repeat state entering this dialog
+	static bool sKeyRepeatActive;    // SDL doesn't store this, so we must
 
 	dialog *parent_dialog;		// Pointer to parent dialog
 
