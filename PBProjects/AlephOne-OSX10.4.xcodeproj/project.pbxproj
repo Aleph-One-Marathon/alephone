@@ -230,6 +230,14 @@
 		AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
+		AEC09D6909C4A4AF00031524 /* Preferences.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6109C4A4AF00031524 /* Preferences.nib */; };
+		AEC09D6A09C4A4AF00031524 /* Prefs_ChaseCam.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6209C4A4AF00031524 /* Prefs_ChaseCam.nib */; };
+		AEC09D6B09C4A4AF00031524 /* Prefs_Crosshairs.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6309C4A4AF00031524 /* Prefs_Crosshairs.nib */; };
+		AEC09D6C09C4A4AF00031524 /* Prefs_Keyboard.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6409C4A4AF00031524 /* Prefs_Keyboard.nib */; };
+		AEC09D6D09C4A4AF00031524 /* Prefs_Monitor.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6509C4A4AF00031524 /* Prefs_Monitor.nib */; };
+		AEC09D6E09C4A4AF00031524 /* Prefs_MonitorFreq.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6609C4A4AF00031524 /* Prefs_MonitorFreq.nib */; };
+		AEC09D6F09C4A4AF00031524 /* Prefs_OpenGL_Textures.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6709C4A4AF00031524 /* Prefs_OpenGL_Textures.nib */; };
+		AEC09D7009C4A4AF00031524 /* Prefs_OpenGL.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6809C4A4AF00031524 /* Prefs_OpenGL.nib */; };
 		AEC3C70009AD68AC003258E4 /* LocalEvents.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211CF0136A6FD01000001 /* LocalEvents.h */; };
 		AEC3C70109AD68AC003258E4 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		AEC3C70209AD68AC003258E4 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
@@ -841,8 +849,16 @@
 		AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader_Shared.cpp; path = ../Source_Files/RenderMain/ImageLoader_Shared.cpp; sourceTree = SOURCE_ROOT; };
 		AE791CF60968E49100350190 /* DDS.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DDS.h; path = ../Source_Files/RenderMain/DDS.h; sourceTree = SOURCE_ROOT; };
 		AEBF94A70834FD9500C0B18C /* NibsUiHelpers.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NibsUiHelpers.h; path = ../Source_Files/CSeries/NibsUiHelpers.h; sourceTree = SOURCE_ROOT; };
+		AEC09D6109C4A4AF00031524 /* Preferences.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Preferences.nib; path = ../Resources/Preferences.nib; sourceTree = SOURCE_ROOT; };
+		AEC09D6209C4A4AF00031524 /* Prefs_ChaseCam.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_ChaseCam.nib; path = ../Resources/Prefs_ChaseCam.nib; sourceTree = SOURCE_ROOT; };
+		AEC09D6309C4A4AF00031524 /* Prefs_Crosshairs.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_Crosshairs.nib; path = ../Resources/Prefs_Crosshairs.nib; sourceTree = SOURCE_ROOT; };
+		AEC09D6409C4A4AF00031524 /* Prefs_Keyboard.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_Keyboard.nib; path = ../Resources/Prefs_Keyboard.nib; sourceTree = SOURCE_ROOT; };
+		AEC09D6509C4A4AF00031524 /* Prefs_Monitor.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_Monitor.nib; path = ../Resources/Prefs_Monitor.nib; sourceTree = SOURCE_ROOT; };
+		AEC09D6609C4A4AF00031524 /* Prefs_MonitorFreq.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_MonitorFreq.nib; path = ../Resources/Prefs_MonitorFreq.nib; sourceTree = SOURCE_ROOT; };
+		AEC09D6709C4A4AF00031524 /* Prefs_OpenGL_Textures.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_OpenGL_Textures.nib; path = ../Resources/Prefs_OpenGL_Textures.nib; sourceTree = SOURCE_ROOT; };
+		AEC09D6809C4A4AF00031524 /* Prefs_OpenGL.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_OpenGL.nib; path = ../Resources/Prefs_OpenGL.nib; sourceTree = SOURCE_ROOT; };
 		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
-		AEC3C89609AD68AE003258E4 /* AlephOneSDL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEC3C89609AD68AE003258E4 /* AlephOneSDL.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
@@ -1314,6 +1330,14 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				AEC09D6109C4A4AF00031524 /* Preferences.nib */,
+				AEC09D6209C4A4AF00031524 /* Prefs_ChaseCam.nib */,
+				AEC09D6309C4A4AF00031524 /* Prefs_Crosshairs.nib */,
+				AEC09D6409C4A4AF00031524 /* Prefs_Keyboard.nib */,
+				AEC09D6509C4A4AF00031524 /* Prefs_Monitor.nib */,
+				AEC09D6609C4A4AF00031524 /* Prefs_MonitorFreq.nib */,
+				AEC09D6709C4A4AF00031524 /* Prefs_OpenGL_Textures.nib */,
+				AEC09D6809C4A4AF00031524 /* Prefs_OpenGL.nib */,
 				AEF8C0A3083782C60063B737 /* Gather Network Game.nib */,
 				AEF8C0A4083782C60063B737 /* Join Network Game.nib */,
 				AEF8C0A5083782C60063B737 /* Metaserver Client.nib */,
@@ -2630,6 +2654,14 @@
 				2B4EC1700908984D009631F8 /* Metaserver Client.nib in Resources */,
 				2B4EC1710908984D009631F8 /* Postgame Carnage Report.nib in Resources */,
 				2B4EC1720908984D009631F8 /* Setup Network Game.nib in Resources */,
+				AEC09D6909C4A4AF00031524 /* Preferences.nib in Resources */,
+				AEC09D6A09C4A4AF00031524 /* Prefs_ChaseCam.nib in Resources */,
+				AEC09D6B09C4A4AF00031524 /* Prefs_Crosshairs.nib in Resources */,
+				AEC09D6C09C4A4AF00031524 /* Prefs_Keyboard.nib in Resources */,
+				AEC09D6D09C4A4AF00031524 /* Prefs_Monitor.nib in Resources */,
+				AEC09D6E09C4A4AF00031524 /* Prefs_MonitorFreq.nib in Resources */,
+				AEC09D6F09C4A4AF00031524 /* Prefs_OpenGL_Textures.nib in Resources */,
+				AEC09D7009C4A4AF00031524 /* Prefs_OpenGL.nib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
