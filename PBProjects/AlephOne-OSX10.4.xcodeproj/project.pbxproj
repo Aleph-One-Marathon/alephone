@@ -197,20 +197,6 @@
 		2B4EC21E0908984D009631F8 /* libobjc.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5F21460403247500000104 /* libobjc.A.dylib */; };
 		2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
-		AE179EF809C3D77800512061 /* error.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF109C3D77800512061 /* error.h */; };
-		AE179EF909C3D77800512061 /* http.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF209C3D77800512061 /* http.h */; };
-		AE179EFA09C3D77800512061 /* libnat.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF309C3D77800512061 /* libnat.h */; };
-		AE179EFB09C3D77800512061 /* os_common.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF409C3D77800512061 /* os_common.h */; };
-		AE179EFC09C3D77800512061 /* os.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF509C3D77800512061 /* os.h */; };
-		AE179EFD09C3D77800512061 /* ssdp.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF609C3D77800512061 /* ssdp.h */; };
-		AE179EFE09C3D77800512061 /* utility.h in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE179EF709C3D77800512061 /* utility.h */; };
-		AE179EFF09C3D77800512061 /* error.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF109C3D77800512061 /* error.h */; };
-		AE179F0009C3D77800512061 /* http.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF209C3D77800512061 /* http.h */; };
-		AE179F0109C3D77800512061 /* libnat.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF309C3D77800512061 /* libnat.h */; };
-		AE179F0209C3D77800512061 /* os_common.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF409C3D77800512061 /* os_common.h */; };
-		AE179F0309C3D77800512061 /* os.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF509C3D77800512061 /* os.h */; };
-		AE179F0409C3D77800512061 /* ssdp.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF609C3D77800512061 /* ssdp.h */; };
-		AE179F0509C3D77800512061 /* utility.h in Headers */ = {isa = PBXBuildFile; fileRef = AE179EF709C3D77800512061 /* utility.h */; };
 		AE179F0E09C3D79500512061 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0609C3D79500512061 /* error.c */; };
 		AE179F0F09C3D79500512061 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0709C3D79500512061 /* http.c */; };
 		AE179F1009C3D79500512061 /* libnat.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0809C3D79500512061 /* libnat.c */; };
@@ -227,6 +213,8 @@
 		AE179F1B09C3D79500512061 /* ssdp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0B09C3D79500512061 /* ssdp.c */; };
 		AE179F1C09C3D79500512061 /* upnp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0C09C3D79500512061 /* upnp.c */; };
 		AE179F1D09C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
+		AE2A50CD09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
+		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
@@ -756,13 +744,6 @@
 			files = (
 				2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */,
 				2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */,
-				AE179EF809C3D77800512061 /* error.h in CopyFiles */,
-				AE179EF909C3D77800512061 /* http.h in CopyFiles */,
-				AE179EFA09C3D77800512061 /* libnat.h in CopyFiles */,
-				AE179EFB09C3D77800512061 /* os_common.h in CopyFiles */,
-				AE179EFC09C3D77800512061 /* os.h in CopyFiles */,
-				AE179EFD09C3D77800512061 /* ssdp.h in CopyFiles */,
-				AE179EFE09C3D77800512061 /* utility.h in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -787,7 +768,7 @@
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		2B4EC22D0908984E009631F8 /* Info-AlephOne_Carbon__NIBs___Upgraded_.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist"; sourceTree = "<group>"; };
-		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D3A410C04DF92C400000107 /* GUI.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = GUI.nib; path = ../Resources/GUI.nib; sourceTree = SOURCE_ROOT; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
 		3D5F21460403247500000104 /* libobjc.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.A.dylib; path = /usr/lib/libobjc.A.dylib; sourceTree = "<absolute>"; };
@@ -839,6 +820,8 @@
 		AE179F0B09C3D79500512061 /* ssdp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ssdp.c; path = ../Source_Files/LibNAT/ssdp.c; sourceTree = "<group>"; };
 		AE179F0C09C3D79500512061 /* upnp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = upnp.c; path = ../Source_Files/LibNAT/upnp.c; sourceTree = "<group>"; };
 		AE179F0D09C3D79500512061 /* utility.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utility.c; path = ../Source_Files/LibNAT/utility.c; sourceTree = "<group>"; };
+		AE2A50CC09C67253007681A4 /* Scenario.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Scenario.cpp; path = ../Source_Files/Misc/Scenario.cpp; sourceTree = SOURCE_ROOT; };
+		AE2A50CF09C6727C007681A4 /* Scenario.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Scenario.h; path = ../Source_Files/Misc/Scenario.h; sourceTree = SOURCE_ROOT; };
 		AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialogs_mac_nibs_sdl.cpp; path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = carbon_widgets.cpp; path = ../Source_Files/Misc/carbon_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEED0864EAB7002AF754 /* carbon_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = carbon_widgets.h; path = ../Source_Files/Misc/carbon_widgets.h; sourceTree = SOURCE_ROOT; };
@@ -1628,6 +1611,7 @@
 				F52211C40136A6FD01000001 /* interface.cpp */,
 				F522120F0136A6FD01000001 /* preferences.cpp */,
 				F52212130136A6FD01000001 /* progress.cpp */,
+				AE2A50CC09C67253007681A4 /* Scenario.cpp */,
 				AE437C8E08779BE500038E30 /* shared_widgets.cpp */,
 				F52212590136A6FD01000001 /* vbl.cpp */,
 				F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */,
@@ -1638,6 +1622,7 @@
 		F522144F0136C0C401000001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				AE2A50CF09C6727C007681A4 /* Scenario.h */,
 				AE437C8B08779BC900038E30 /* shared_widgets.h */,
 				AE34EEED0864EAB7002AF754 /* carbon_widgets.h */,
 				F5A00027023FDA6101A80001 /* ActionQueues.h */,
@@ -2414,13 +2399,6 @@
 				AEC3C7C009AD68AC003258E4 /* Console.h in Headers */,
 				AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */,
 				AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */,
-				AE179EFF09C3D77800512061 /* error.h in Headers */,
-				AE179F0009C3D77800512061 /* http.h in Headers */,
-				AE179F0109C3D77800512061 /* libnat.h in Headers */,
-				AE179F0209C3D77800512061 /* os_common.h in Headers */,
-				AE179F0309C3D77800512061 /* os.h in Headers */,
-				AE179F0409C3D77800512061 /* ssdp.h in Headers */,
-				AE179F0509C3D77800512061 /* utility.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2904,6 +2882,7 @@
 				AE179F1309C3D79500512061 /* ssdp.c in Sources */,
 				AE179F1409C3D79500512061 /* upnp.c in Sources */,
 				AE179F1509C3D79500512061 /* utility.c in Sources */,
+				AE2A50CD09C67253007681A4 /* Scenario.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3078,6 +3057,7 @@
 				AE179F1B09C3D79500512061 /* ssdp.c in Sources */,
 				AE179F1C09C3D79500512061 /* upnp.c in Sources */,
 				AE179F1D09C3D79500512061 /* utility.c in Sources */,
+				AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -51,6 +51,7 @@
 #include "vbl.h"
 #include "monsters.h"
 #include "Logging.h"
+#include "Scenario.h"
 
 #ifdef SDL
 #include "sdl_dialogs.h"
@@ -95,6 +96,7 @@ void SetupParseTree()
 	MarathonParser.AddChild(Keyboard_GetParser());
 	MarathonParser.AddChild(DamageKicks_GetParser());
 	MarathonParser.AddChild(Logging_GetParser());
+	MarathonParser.AddChild(Scenario_GetParser());
 #ifdef SDL
 	MarathonParser.AddChild(Theme_GetParser());
 #endif
