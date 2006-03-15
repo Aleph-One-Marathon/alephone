@@ -38,6 +38,8 @@ OGL_LoadScreen *OGL_LoadScreen::instance()
 	return instance_;
 }
 
+extern bool OGL_ClearScreen();
+
 bool OGL_LoadScreen::Start()
 {
 	// load the image
@@ -46,6 +48,8 @@ bool OGL_LoadScreen::Start()
 	if (!File.SetNameWithPath(&path[0])) return use = false;
 	if (!image.LoadFromFile(File, ImageLoader_Colors, ImageLoader_ResizeToPowersOfTwo)) return use = false;
 
+	OGL_ClearScreen();
+	
 	glGenTextures(1, &texture_ref);
 
 	glEnable(GL_TEXTURE_2D);
@@ -62,8 +66,6 @@ bool OGL_LoadScreen::Start()
 
 	return use = true;
 }
-
-extern bool OGL_ClearScreen();
 
 void OGL_LoadScreen::Stop()
 {
