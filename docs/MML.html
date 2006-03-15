@@ -76,6 +76,7 @@ This element has no attributes and contains these child elements:
 <li><a href="#opengl">OpenGL-Rendering Element: &lt;opengl&gt;</a>
 <li><a href="#dynlims">Dynamic-Limits Element: &lt;dynamic_limits&gt;</a>
 <li><a href="#playername">Player-Name Element: &lt;player_name&gt;</a>
+<li><a href="#scenario">Scenario Element: &lt;scenario&gt;</a>
 <li><a href="#keyboard">Keyboard-Defaults Element: &lt;keyboard&gt;</a>
 <li><a href="#cheats">Cheating Element: &lt;cheats&gt;</a>
 <li><a href="#logging">Logging Configuration Element: &lt;logging&gt;</a>
@@ -1690,6 +1691,28 @@ This is the default player name in netgames, which takes the form:
 </pre>
 <p>
 
+<hr>
+<h3><a name="scenario">Scenario Element: &lt;scenario&gt;</a></h3>
+This element is for identifying the scenario. It has an attribute "name" which is the scenario name displayed in the Find Internet Game client, and an attribute "version" which is used to determine which games to gray out. The defaults for name and version are blank.
+<p>There are also child elements &lt;can_join&gt; which specify other scenario versions this one can join.
+<p>
+Name, version, and can_join elements are limited to 32 characters in length.
+<p>
+Games show up as joinable when any of these is true:
+<ul>
+<li>The joiner's scenario version is blank</li>
+<li>The gatherer's scenario version is blank</li>
+<li>The joiner's scenario version matches the gatherer's scenario version</li>
+<li>The gatherer's scenario version matches one of the joiner's can_join elements</li>
+</ul>
+<p>
+For example:
+<p>
+<pre>
+&lt;scenario name="Marathon Infinity" version="Marathon Infinity"&gt;
+&lt;can_join&gt;Marathon 2&lt;/can_join&gt;
+&lt;/scenario&gt;
+</pre>
 <hr>
 
 <h3><a name="keyboard">Keyboard-Defaults Element: &lt;keyboard&gt;</a></h3>
