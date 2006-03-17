@@ -51,7 +51,7 @@ LIBS="$LIBS $SDL_LIBS"
 dnl Check for SDL_image.
 AC_CHECK_HEADERS(SDL_image.h, [
   AC_CHECK_LIB(SDL_image, IMG_Load, [
-    LIBS="$LIBS -lSDL_image"
+    LIBS="-lSDL_image $LIBS"
     AC_DEFINE(HAVE_SDL_IMAGE, 1, [SDL_image support is enabled])
   ])
 ])
@@ -59,7 +59,7 @@ AC_CHECK_HEADERS(SDL_image.h, [
 dnl Check for SDL_net.
 AC_CHECK_HEADERS(SDL_net.h, [
   AC_CHECK_LIB(SDL_net, SDLNet_Init, [
-    LIBS="$LIBS -lSDL_net"
+    LIBS="-lSDL_net $LIBS"
     AC_DEFINE(HAVE_SDL_NET, 1, [SDL_net support is enabled])
   ])
 ])
@@ -81,7 +81,7 @@ AC_LANG_POP(C++)
 dnl Check for SDL_sound
 AC_CHECK_HEADERS(SDL_sound.h, [
   AC_CHECK_LIB(SDL_sound, Sound_Init, [
-    LIBS="$LIBS -lSDL_sound"
+    LIBS="-lSDL_sound $LIBS"
     AC_DEFINE(HAVE_SDL_SOUND, 1, [SDL_sound support is enabled])
   ])
 ])
@@ -91,7 +91,7 @@ AC_CHECK_HEADERS(lua.h, [
   AC_CHECK_HEADERS(lualib.h, [
     AC_CHECK_LIB(lua, lua_open, [
       AC_CHECK_LIB(lualib, luaL_loadbuffer, [
-        LIBS="$LIBS -llua -llualib"
+        LIBS="-llua -llualib $LIBS"
         AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
       ], [], [-llua])
     ])
@@ -101,7 +101,7 @@ AC_CHECK_HEADERS(lua.h, [
 dnl Check for Speex
 AC_CHECK_HEADERS(speex.h, [
   AC_CHECK_LIB(speex, speex_decoder_init, [
-    LIBS="$LIBS -lspeex"
+    LIBS="-lspeex $LIBS"
     AC_DEFINE(SPEEX, 1, [Speex support is enabled])
   ])
 ])
