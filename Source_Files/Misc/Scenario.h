@@ -38,19 +38,23 @@ public:
 	static Scenario *instance();
 	
 	const string GetName() { return m_name; }
-	void SetName(const string name) { m_name = name; }
+	void SetName(const string name) { m_name = string(name, 0, 31); }
 	
 	const string GetVersion() { return m_version; }
-	void SetVersion(const string version) { m_version = version; }
+	void SetVersion(const string version) { m_version = string(version, 0, 7); }
+
+	const string GetID() { return m_id; }
+	void SetID(const string id) { m_id = string(id, 0, 23); }
 	
 	bool IsCompatible(const string);
 	void AddCompatible(const string);
 	
 private:
-		Scenario() { }
+	Scenario() { }
 	
 	string m_name;
 	string m_version;
+	string m_id;
 	
 	vector<string> m_compatibleVersions;
 	

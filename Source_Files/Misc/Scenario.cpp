@@ -37,7 +37,7 @@ Scenario *Scenario::instance()
 
 void Scenario::AddCompatible(const string Compatible)
 {
-	m_compatibleVersions.push_back(string(Compatible, 0, 32));
+	m_compatibleVersions.push_back(string(Compatible, 0, 23));
 }
 
 class XML_ScenarioParser : public XML_ElementParser
@@ -52,13 +52,17 @@ bool XML_ScenarioParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag, "name"))
 	{
-		Scenario::instance()->SetName(string(Value, 0, 32));
+		Scenario::instance()->SetName(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag, "version"))
 	{
-		Scenario::instance()->SetVersion(string(Value, 0, 32));
+		Scenario::instance()->SetVersion(Value);
 		return true;
+	}
+	else if (StringsEqual(Tag, "id"))
+	{
+		Scenario::instance()->SetID(Value);
 	}
 	
 	UnrecognizedTag();
@@ -75,7 +79,7 @@ public:
 
 bool XML_CanJoinParser::HandleString(const char *String, int Length)
 {
-	Scenario::instance()->AddCompatible(string(String, 0, 32));
+	Scenario::instance()->AddCompatible(String);
 	return true;
 }
 

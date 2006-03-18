@@ -1693,23 +1693,24 @@ This is the default player name in netgames, which takes the form:
 
 <hr>
 <h3><a name="scenario">Scenario Element: &lt;scenario&gt;</a></h3>
-This element is for identifying the scenario. It has an attribute "name" which is the scenario name displayed in the Find Internet Game client, and an attribute "version" which is used to determine which games to gray out. The defaults for name and version are blank.
-<p>There are also child elements &lt;can_join&gt; which specify other scenario versions this one can join.
+This element is for identifying the scenario. It has an attribute "name" which is the scenario name displayed in the Find Internet Game client, an attribute "version" which is the scenario version displayed in the Find Internet Game client, and an attribute "id" which is used to determine which games to gray out. The defaults for name, version, and id are blank.
+<p>There are also child elements &lt;can_join&gt; which specify other scenario ids this one can join.
 <p>
-Name, version, and can_join elements are limited to 32 characters in length.
+Scenario names are limited to 32 characters in length. Scenario version strings are limited to 8 characters in length. Scenario IDs are limited to 24 characters in length.
 <p>
 Games show up as joinable when any of these is true:
 <ul>
-<li>The joiner's scenario version is blank</li>
-<li>The gatherer's scenario version is blank</li>
-<li>The joiner's scenario version matches the gatherer's scenario version</li>
-<li>The gatherer's scenario version matches one of the joiner's can_join elements</li>
+<li>The joiner's scenario id is blank</li>
+<li>The gatherer's scenario id is blank</li>
+<li>The joiner's scenario id matches the gatherer's scenario id</li>
+<li>The gatherer's scenario id matches one of the joiner's can_join elements</li>
 </ul>
+All matches are case sensitive.
 <p>
 For example:
 <p>
 <pre>
-&lt;scenario name="Marathon Infinity" version="Marathon Infinity"&gt;
+&lt;scenario name="Marathon Infinity" id="Marathon Infinity"&gt;
 &lt;can_join&gt;Marathon 2&lt;/can_join&gt;
 &lt;/scenario&gt;
 </pre>
