@@ -278,6 +278,9 @@ void TextureState::FrameTick() {
 // this is because different rendering modes deserve different treatment.
 static CollBitmapTextureState* TextureStateSets[OGL_NUMBER_OF_TEXTURE_TYPES][MAXIMUM_COLLECTIONS];
 
+#ifdef SDL
+extern GLuint OGL_Term_Texture;
+#endif
 
 // Initialize the texture accounting
 void OGL_StartTextures()
@@ -350,6 +353,9 @@ void OGL_StartTextures()
 #if defined GL_SGIS_generate_mipmap
 	useSGISMipmaps = OGL_CheckExtension("GL_SGIS_generate_mipmap");
 #endif
+#ifdef SDL
+	glGenTextures(1, &OGL_Term_Texture);
+#endif
 }
 
 
@@ -360,6 +366,9 @@ void OGL_StopTextures()
 	for (int it=0; it<OGL_NUMBER_OF_TEXTURE_TYPES; it++)
 		for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
 			if (TextureStateSets[it][ic]) delete []TextureStateSets[it][ic];
+#ifdef SDL
+	glDeleteTextures(1, &OGL_Term_Texture);
+#endif
 }
 
 void OGL_FrameTickTextures()
