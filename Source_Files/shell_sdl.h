@@ -280,37 +280,6 @@ static void initialize_application(void)
   if (option_debug) LoadLibrary("exchndl.dll");
 #endif
 
-#if defined(HAVE_OPENGL) && defined(__WIN32__)
-  putenv("SDL_VIDEODRIVER=windib");
-#endif
-
-	// Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO | 
-		     (option_nosound ? 0 : SDL_INIT_AUDIO) |
-		     (option_debug ? SDL_INIT_NOPARACHUTE : 0)
-		     ) < 0) {
-		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
-		exit(1);
-	}
-	SDL_WM_SetCaption("Aleph One", "Aleph One");
-	atexit(shutdown_application);
-
-#ifdef HAVE_SDL_NET
-	// Initialize SDL_net
-	if (SDLNet_Init () < 0) {
-		fprintf (stderr, "Couldn't initialize SDL_net (%s)\n", SDLNet_GetError());
-		exit(1);
-	}
-#endif
-
-#ifdef HAVE_SDL_SOUND
-	// Initialize SDL_sound
-	if (Sound_Init () == 0) {
-		fprintf (stderr, "Couldn't initialize SDL_sound (%s)\n", Sound_GetError());
-		exit(1);
-	}
-#endif
-
 	// Find data directories, construct search path
 	DirectorySpecifier default_data_dir;
 
@@ -442,6 +411,51 @@ static void initialize_application(void)
         if(graphics_preferences->screen_mode.acceleration == _no_acceleration)
             option_nogamma = true;
 #endif
+
+
+// grr, Windows
+#if defined(__WIN32__) 
+#if defined(HAVE_OPENGL)
+	if (!option_nogl && 
+	    graphics_preferences->screen_mode.acceleration != _no_acceleration)
+	{
+		putenv("SDL_VIDEODRIVER=windib");
+	} else 
+#endif
+	{
+		putenv("SDL_VIDEODRIVER=directx");
+	}
+#endif
+
+
+	// Initialize SDL
+	if (SDL_Init(SDL_INIT_VIDEO | 
+		     (option_nosound ? 0 : SDL_INIT_AUDIO) |
+		     (option_debug ? SDL_INIT_NOPARACHUTE : 0)
+		     ) < 0) {
+		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
+		exit(1);
+	}
+	SDL_WM_SetCaption("Aleph One", "Aleph One");
+	atexit(shutdown_application);
+
+#ifdef HAVE_SDL_NET
+	// Initialize SDL_net
+	if (SDLNet_Init () < 0) {
+		fprintf (stderr, "Couldn't initialize SDL_net (%s)\n", SDLNet_GetError());
+		exit(1);
+	}
+#endif
+
+#ifdef HAVE_SDL_SOUND
+	// Initialize SDL_sound
+	if (Sound_Init () == 0) {
+		fprintf (stderr, "Couldn't initialize SDL_sound (%s)\n", Sound_GetError());
+		exit(1);
+	}
+#endif
+
+
 
 	// Initialize everything
 	mytm_initialize();

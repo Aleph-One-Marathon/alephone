@@ -428,6 +428,11 @@ static void graphics_dialog(void *arg)
     d.add(new w_spacer());
 #ifndef HAVE_OPENGL
     d.add(new w_static_text("This copy of Aleph One was built without OpenGL support."));
+#else
+#if defined(__WIN32__)
+    d.add(new w_static_text("Warning: you should quit and restart Aleph One"));
+    d.add(new w_static_text("if you switch rendering systems."));
+#endif
 #endif
     d.add(new w_spacer());
     

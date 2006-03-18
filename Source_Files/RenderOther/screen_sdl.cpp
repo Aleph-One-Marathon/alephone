@@ -277,11 +277,14 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		}
 #endif
-	} else
+	} else 
+#endif 
+	if (nogl) {
+		flags |= SDL_SWSURFACE;
+	} else {
 		flags |= SDL_HWSURFACE | SDL_HWPALETTE;
-#else
-	flags |= SDL_HWSURFACE | SDL_HWPALETTE;
-#endif
+	}
+	
 	main_surface = SDL_SetVideoMode(width, height, depth, flags);
 #ifdef HAVE_OPENGL
 #if SDL_VERSION_ATLEAST(1,2,6)
