@@ -501,7 +501,7 @@ void render_screen(short ticks_elapsed)
 	}
 
 	// Now the buffer rectangle; be sure to shrink it as appropriate
-	if (!HighResolution) {
+	if (!HighResolution && screen_mode.acceleration == _no_acceleration) {
 		BufferWidth >>= 1;
 		BufferHeight >>= 1;
 	}
