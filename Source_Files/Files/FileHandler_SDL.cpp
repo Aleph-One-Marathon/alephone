@@ -444,7 +444,18 @@ Typecode FileSpecifier::GetType()
 	// if there's an extension, assume it's correct
 	const char *extension = strrchr(GetPath(), '.');
 	if (extension) {
-		if (strcmp(extension, ".sce2") == 0) return _typecode_scenario;
+		if (strcasecmp(extension, ".sce2") == 0) return _typecode_scenario;
+		
+		// don't bother checking files with these extensions
+		// this helps a lot because there can be many of these files
+		if (
+			strcasecmp(extension, ".dds") == 0 ||
+			strcasecmp(extension, ".jpg") == 0 ||
+			strcasecmp(extension, ".png") == 0
+			) 
+		{
+			return _typecode_unknown;
+		}
 	}
 
 	// Open file
