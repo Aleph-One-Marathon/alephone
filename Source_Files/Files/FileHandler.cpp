@@ -84,13 +84,44 @@ static bool ParsePath_MacOS(const char *NameWithPath, FSSpec &Spec, bool WantDir
 static bool RootDirectorySet = false;
 static DirectorySpecifier RootDirectory;
 
+bool is_macbinary(short RefNum, long &data_length, long &rsrc_length)
+{
+	// This recognizes up to macbinary III (0x81)
+	if (SetFPos(RefNum, fsFromStart, 0) != noErr) return false;
+	uint8 header[128];
+	long _Count = 128;
+	if (FSRead(RefNum, &_Count, header) != noErr) return false;
+	if (header[0] || header[1] > 63 || header[74] || header[123] > 0x8)
+		return false;
+	
+	uint16 crc = 0;
+	for (int i = 0; i < 124; i++) {
+		uint16 data = header[i] << 8;
+		for (int j = 0; j < 8; j++) {
+			if ((data ^ crc) & 0x8000)
+				crc = (crc << 1) ^ 0x1021;
+			else
+				crc <<= 1;
+			data <<= 1;
+		}
+	}
+	
+	if (crc != ((header[124] << 8) | header[125]))
+		return false;
+	
+	// CRC valid, extract fork size
+	data_length = (header[83] << 24) | (header[84] << 16) | (header[85] << 8) | header[86];
+	rsrc_length = (header[87] << 24) | (header[88] << 16) | (header[89] << 8) | header[90];
+	return true;
+}
 
 /*
 	Abstraction for opened files; it does reading, writing, and closing of such files,
 	without doing anything to the files' specifications
 */
 
-OpenedFile::OpenedFile() : RefNum(RefNum_Closed), Err(noErr) {}	// Set the file to initially closed
+OpenedFile::OpenedFile() : RefNum(RefNum_Closed), Err(noErr), is_forked(false), fork_offset(0), fork_length(0) {}	
+// Set the file to initially closed
 
 bool OpenedFile::IsOpen()
 {
@@ -104,26 +135,34 @@ bool OpenedFile::Close()
 	Err = FSClose(RefNum);
 	RefNum = RefNum_Closed;
 	
+	is_forked = false;
+	fork_offset = 0;
+	fork_length = 0;
+	
 	return (Err == noErr);
 }
 
 bool OpenedFile::GetPosition(long& Position)
 {
 	Err = GetFPos(RefNum, &Position);	
+	Position -= fork_offset;
 	
 	return (Err == noErr);
 }
 
 bool OpenedFile::SetPosition(long Position)
 {
-	Err = SetFPos(RefNum, fsFromStart, Position);	
+	Err = SetFPos(RefNum, fsFromStart, Position + fork_offset);	
 	
 	return (Err == noErr);
 }
 
 bool OpenedFile::GetLength(long& Length)
 {
-	Err = GetEOF(RefNum, &Length);
+	if (is_forked)
+		Length = fork_length;
+	else
+		Err = GetEOF(RefNum, &Length);
 
 	return (Err == noErr);
 }
@@ -612,7 +651,21 @@ bool FileSpecifier::Open(OpenedFile& OFile, bool Writable)
 		
 	OFile.RefNum = RefNum;
 	OFile.Err = noErr;
+	
+	if (Writable) return true;
+	
+	// handle MacBinary files
+	long offset, data_length, rsrc_length;
+	if (is_macbinary(RefNum, data_length, rsrc_length)) {
+		char name[256];
+		GetName(name);
+		fprintf(stderr, "%s is macbinary!\n", name);
+		OFile.is_forked = true;
+		OFile.fork_offset = 128;
+		OFile.fork_length = data_length;
+	}
 
+	OFile.SetPosition(0);
 	return true;
 }
 
@@ -718,7 +771,7 @@ bool FileSpecifier::ReadDialog(Typecode Type, const char *Prompt)
 	
 	NavReplyRecord reply;
 	NavEventUPP evUPP= NewNavEventUPP(NavIdler);
-	NavGetFile(NULL,&reply,&opts,evUPP,NULL,NULL,list,NULL);
+	NavGetFile(NULL,&reply,&opts,evUPP,NULL,NULL,NULL,NULL);
 	DisposeNavEventUPP(evUPP);
 	if (list) DisposeHandle((Handle)list);
 		
@@ -1031,8 +1084,56 @@ Typecode FileSpecifier::GetType()
 	if (Err != noErr) return _typecode_unknown;
 	
 	OSType MacType = FileInfo.fdType;
-
-        return get_typecode_for_file_type(MacType);
+	
+	Typecode retType = get_typecode_for_file_type(MacType);
+	if (retType != _typecode_unknown)
+		return retType;
+	
+	// if the file has an extension, use that
+	char name[256];
+	MacFilename_To_CString(Spec.name, name);
+	char *extension = strrchr(name, '.');
+	if (extension) {
+		if (strcasecmp(extension, ".sce2") == 0) return _typecode_scenario;
+		
+		if (strcasecmp(extension, ".dds") == 0 ||
+			strcasecmp(extension, ".jpg") == 0 ||
+			strcasecmp(extension, ".png") == 0 ||
+			strcasecmp(extension, ".DS_Store") == 0)
+			return _typecode_unknown;
+	}
+	
+	// if the file is a macbinary, it could be a map file
+	OpenedFile f;
+	if (!Open(f))
+		return _typecode_unknown;
+	long file_length = 0;
+	f.GetLength(file_length);
+	
+	f.SetPosition(0);
+	int16 version, data_version;
+	if (!f.Read(2, &version)) return _typecode_unknown;
+	if (!f.Read(2, &data_version)) return _typecode_unknown;
+	if ((version == 0 || version == 1 || version == 2 || version == 4) && (data_version == 0 || data_version == 1 || data_version == 2)) {
+		f.SetPosition(72);
+		int32 directory_offset;
+		if (!f.Read(4, &directory_offset)) return _typecode_unknown;
+		if (directory_offset >= file_length) return _typecode_unknown;
+		f.SetPosition(128);
+		uint32 tag;
+		if (!f.Read(4, &tag)) return _typecode_unknown;
+		switch (tag) {
+			case LINE_TAG:
+			case POINT_TAG:
+			case SIDE_TAG:
+				return _typecode_scenario;
+				break;
+			default:
+				return _typecode_unknown;
+		}
+	}
+	
+	return _typecode_unknown;
 }
 	
 // How many bytes are free in the disk that the file lives in?

@@ -140,9 +140,9 @@ private:
 private:
 	SDL_RWops *f;	// File handle
 	int err;		// Error code
+#endif
 	bool is_forked;
 	long fork_offset, fork_length;
-#endif
 };
 
 
