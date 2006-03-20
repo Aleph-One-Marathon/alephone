@@ -218,6 +218,7 @@
 		AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
+		AEB5F39A09CDC92E00CDF7C0 /* resource_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92140240D09B01A80001 /* resource_manager.cpp */; };
 		AEC09D6909C4A4AF00031524 /* Preferences.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6109C4A4AF00031524 /* Preferences.nib */; };
 		AEC09D6A09C4A4AF00031524 /* Prefs_ChaseCam.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6209C4A4AF00031524 /* Prefs_ChaseCam.nib */; };
 		AEC09D6B09C4A4AF00031524 /* Prefs_Crosshairs.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6309C4A4AF00031524 /* Prefs_Crosshairs.nib */; };
@@ -768,7 +769,7 @@
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		2B4EC22D0908984E009631F8 /* Info-AlephOne_Carbon__NIBs___Upgraded_.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist"; sourceTree = "<group>"; };
-		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D3A410C04DF92C400000107 /* GUI.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = GUI.nib; path = ../Resources/GUI.nib; sourceTree = SOURCE_ROOT; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
 		3D5F21460403247500000104 /* libobjc.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.A.dylib; path = /usr/lib/libobjc.A.dylib; sourceTree = "<absolute>"; };
@@ -841,7 +842,7 @@
 		AEC09D6709C4A4AF00031524 /* Prefs_OpenGL_Textures.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_OpenGL_Textures.nib; path = ../Resources/Prefs_OpenGL_Textures.nib; sourceTree = SOURCE_ROOT; };
 		AEC09D6809C4A4AF00031524 /* Prefs_OpenGL.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_OpenGL.nib; path = ../Resources/Prefs_OpenGL.nib; sourceTree = SOURCE_ROOT; };
 		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
-		AEC3C89609AD68AE003258E4 /* AlephOneSDL.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEC3C89609AD68AE003258E4 /* AlephOneSDL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
@@ -2883,6 +2884,7 @@
 				AE179F1409C3D79500512061 /* upnp.c in Sources */,
 				AE179F1509C3D79500512061 /* utility.c in Sources */,
 				AE2A50CD09C67253007681A4 /* Scenario.cpp in Sources */,
+				AEB5F39A09CDC92E00CDF7C0 /* resource_manager.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
