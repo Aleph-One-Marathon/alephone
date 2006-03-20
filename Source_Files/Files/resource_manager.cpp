@@ -47,10 +47,68 @@ using std::list;
 using std::map;
 #endif
 
+/*
+ *  Utility functions
+ */
 
-// From FileHandler_SDL.cpp
-extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length);
-extern bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length);
+bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length)
+{
+	// Check header
+	SDL_RWseek(f, 0, SEEK_SET);
+	uint32 id = SDL_ReadBE32(f);
+	uint32 version = SDL_ReadBE32(f);
+	if (id != 0x00051600 || version != 0x00020000)
+		return false;
+	
+	// Find fork
+	uint32 req_id = rsrc_fork ? 2 : 1;
+	SDL_RWseek(f, 0x18, SEEK_SET);
+	int num_entries = SDL_ReadBE16(f);
+	while (num_entries--) {
+		uint32 id = SDL_ReadBE32(f);
+		int32 ofs = SDL_ReadBE32(f);
+		int32 len = SDL_ReadBE32(f);
+		//printf(" entry id %d, offset %d, length %d\n", id, ofs, len);
+		if (id == req_id) {
+			offset = ofs;
+			length = len;
+			return true;
+		}
+	}
+	return false;
+}
+
+bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length)
+{
+	// This recognizes up to macbinary III (0x81)
+	SDL_RWseek(f, 0, SEEK_SET);
+	uint8 header[128];
+	SDL_RWread(f, header, 1, 128);
+	if (header[0] || header[1] > 63 || header[74]  || header[123] > 0x81)
+		return false;
+	
+	// Check CRC
+	uint16 crc = 0;
+	for (int i=0; i<124; i++) {
+		uint16 data = header[i] << 8;
+		for (int j=0; j<8; j++) {
+			if ((data ^ crc) & 0x8000)
+				crc = (crc << 1) ^ 0x1021;
+			else
+				crc <<= 1;
+			data <<= 1;
+		}
+	}
+	//printf("crc %02x\n", crc);
+	if (crc != ((header[124] << 8) | header[125]))
+		return false;
+	
+	// CRC valid, extract fork sizes
+	data_length = (header[83] << 24) | (header[84] << 16) | (header[85] << 8) | header[86];
+	rsrc_length = (header[87] << 24) | (header[88] << 16) | (header[89] << 8) | header[90];
+	return true;
+}
+
 
 // From csfiles_beos.cpp
 bool has_rfork_attribute(const char *file);
@@ -222,16 +280,14 @@ bool res_file_t::read_map(void)
 		}
 		SDL_RWseek(f, cur, SEEK_SET);
 	}
-
 	return true;
 }
-
 
 /*
  *  Open resource file, set current file to the newly opened one
  */
  
-static SDL_RWops*
+SDL_RWops*
 open_res_file_from_rwops(SDL_RWops* f) {
     if (f) {
 
@@ -245,7 +301,7 @@ open_res_file_from_rwops(SDL_RWops* f) {
                     
                     // ZZZ: this exists mostly to help the user understand (via logContexts) which of
                     // potentially several copies of a resource fork is actually being used.
-                    logNote("success, using this resource data");
+                    logNote1("success, using this resource data (file is %p)", f);
 
             } else {
 
@@ -448,10 +504,14 @@ bool res_file_t::get_resource(uint32 type, int id, LoadedResource &rsrc) const
 			if (p == NULL)
 				return false;
 			SDL_RWread(f, p, 1, size);
+#ifdef mac
+			rsrc.SetData(p, size);
+#else
 			rsrc.p = p;
 			rsrc.size = size;
+#endif
 
-			//printf("get_resource type %c%c%c%c, id %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, id, p, size);
+//			fprintf(stderr, "get_resource type %c%c%c%c, id %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, id, p, size);
 			return true;
 		}
 	}
@@ -504,10 +564,14 @@ bool res_file_t::get_ind_resource(uint32 type, int index, LoadedResource &rsrc) 
 		if (p == NULL)
 			return false;
 		SDL_RWread(f, p, 1, size);
+#ifdef mac
+		rsrc.SetData(p, size);
+#else
 		rsrc.p = p;
 		rsrc.size = size;
+#endif
 
-		//printf("get_ind_resource type %c%c%c%c, index %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, index, p, size);
+//		fprintf(stderr, "get_ind_resource type %c%c%c%c, index %d -> data %p, size %d\n", type >> 24, type >> 16, type >> 8, type, index, p, size);
 		return true;
 	}
 	return false;

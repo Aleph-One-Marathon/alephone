@@ -65,6 +65,9 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 #include "game_errors.h"
 #include "shell.h"
 #include "FileHandler.h"
+#include "resource_manager.h"
+
+bool OpenedResourceFile::isCurrentRefRWOps = false;
 
 // Parses a filespec or a directory spec with a path.
 // Args:
@@ -84,6 +87,7 @@ static bool ParsePath_MacOS(const char *NameWithPath, FSSpec &Spec, bool WantDir
 static bool RootDirectorySet = false;
 static DirectorySpecifier RootDirectory;
 
+// copied from resource_manager, and altered to use RefNum
 bool is_macbinary(short RefNum, long &data_length, long &rsrc_length)
 {
 	// This recognizes up to macbinary III (0x81)
@@ -254,28 +258,82 @@ void LoadedResource::Detach()
 	also getting "LoadedResource" objects that return pointers
 */
 
-OpenedResourceFile::OpenedResourceFile() : RefNum(RefNum_Closed), Err(noErr), SavedRefNum(RefNum_Closed) {}
+OpenedResourceFile::OpenedResourceFile() : RefNum(RefNum_Closed), f(0), Err(noErr), SavedRefNum(RefNum_Closed), saved_f(0), isSavedRefRWOps(false) {}
 
 // MacOS resource files are globally open; push and pop the current top one
 bool OpenedResourceFile::Push()
 {
-	SavedRefNum = CurResFile();
-	if (RefNum != SavedRefNum)
+	if (isCurrentRefRWOps) {
+		saved_f = cur_res_file();
+		isSavedRefRWOps = true;
+	} else {
+		SavedRefNum = CurResFile();
+		isSavedRefRWOps = false;
+	}
+
+	if (f)
 	{
-		UseResFile(RefNum);
-		Err = ResError();
-		return (Err == noErr);
+		if (saved_f != f)
+		{
+			use_res_file(f);
+			isCurrentRefRWOps = true;
+		}
+		Err = noErr;
+		return true;
+	} 
+	else
+	{
+		if (RefNum != SavedRefNum)
+		{
+			UseResFile(RefNum);
+			isCurrentRefRWOps = false;
+			Err = ResError();
+			return (Err == noErr);
+		}
 	}
 	return true;
 }
 
 bool OpenedResourceFile::Pop()
 {
-	if (RefNum != SavedRefNum)
+	if (f)
 	{
-		UseResFile(SavedRefNum);
-		Err = ResError();
-		return (Err == noErr);
+		if (isSavedRefRWOps)
+		{
+			if (f != saved_f) {
+				use_res_file(saved_f);
+				isCurrentRefRWOps = true;
+			}
+			Err = noErr;
+			return true;
+		}
+		else
+		{
+			UseResFile(SavedRefNum);
+			isCurrentRefRWOps = false;
+			Err = ResError();
+			return (Err == noErr);
+		}
+	}
+	else
+	{
+		if (isSavedRefRWOps)
+		{
+			use_res_file(saved_f);
+			isCurrentRefRWOps = true;
+			Err = noErr;
+			return true;
+		}
+		else
+		{
+			if (RefNum != SavedRefNum)
+			{
+				UseResFile(SavedRefNum);
+				isCurrentRefRWOps = false;
+				Err = ResError();
+				return (Err == noErr);
+			}
+		}
 	}
 	return true;
 }
@@ -284,22 +342,29 @@ bool OpenedResourceFile::Check(uint32 Type, int16 ID)
 {
 	Push();
 	
-	SetResLoad(false);
-	Handle RsrcHandle = Get1Resource(Type,ID);
-	Err = ResError();
-	
-	bool RsrcPresent = (RsrcHandle != NULL);
-	if (RsrcPresent)
-	{
-		ReleaseResource(RsrcHandle);
-		RsrcHandle = NULL;
-		RsrcPresent = (Err == noErr);
+	if (isCurrentRefRWOps) {
+		bool result = has_1_resource(Type, ID);
+		//err = result ? 0 : errno;
+		Pop();
+		return result;
+	} else {
+		SetResLoad(false);
+		Handle RsrcHandle = Get1Resource(Type,ID);
+		Err = ResError();
+		
+		bool RsrcPresent = (RsrcHandle != NULL);
+		if (RsrcPresent)
+		{
+			ReleaseResource(RsrcHandle);
+			RsrcHandle = NULL;
+			RsrcPresent = (Err == noErr);
+		}
+		
+		SetResLoad(true);
+		
+		Pop();
+		return RsrcPresent;
 	}
-	
-	SetResLoad(true);
-	
-	Pop();
-	return RsrcPresent;
 }
 
 bool OpenedResourceFile::Get(uint32 Type, int16 ID, LoadedResource& Rsrc)
@@ -308,26 +373,34 @@ bool OpenedResourceFile::Get(uint32 Type, int16 ID, LoadedResource& Rsrc)
 	
 	Push();
 	
-	SetResLoad(true);
-	Handle RsrcHandle = Get1Resource(Type,ID);
-	Err = ResError();
-	
-	bool RsrcLoaded = (RsrcHandle != NULL);
-	if (RsrcLoaded)
-	{
-		if (Err == noErr)
-			Rsrc.RsrcHandle = RsrcHandle;
-		else
+	if (isCurrentRefRWOps) {
+		bool success = get_1_resource(Type, ID, Rsrc);
+//		err = success ? 0 : errno;
+		Pop();
+		return success;
+	} else {
+		
+		SetResLoad(true);
+		Handle RsrcHandle = Get1Resource(Type,ID);
+		Err = ResError();
+		
+		bool RsrcLoaded = (RsrcHandle != NULL);
+		if (RsrcLoaded)
 		{
-			ReleaseResource(RsrcHandle);
-			RsrcLoaded = false;
+			if (Err == noErr)
+				Rsrc.RsrcHandle = RsrcHandle;
+			else
+			{
+				ReleaseResource(RsrcHandle);
+				RsrcLoaded = false;
+			}
 		}
+		
+		Pop();
+		return RsrcLoaded;
 	}
-	
-	Pop();
-	return RsrcLoaded;
 }
-
+#if 0
 bool OpenedResourceFile::GetTypeList(vector<uint32>& TypeList)
 {
 	TypeList.clear();
@@ -392,9 +465,10 @@ bool OpenedResourceFile::GetIDList(uint32 Type, vector<int16>& IDList)
 	Pop();
 	return true;
 }
-
+#endif
 bool OpenedResourceFile::IsOpen()
 {
+	if (f) return true; 
 	return (RefNum != RefNum_Closed);
 }
 
@@ -402,6 +476,10 @@ bool OpenedResourceFile::Close()
 {
 	if (!IsOpen()) return true;
 	
+	if (f) {
+		SDL_RWclose(f);
+		f = 0;
+	}
 	CloseResFile(RefNum);
 	Err = ResError();
 	RefNum = RefNum_Closed;
@@ -655,11 +733,8 @@ bool FileSpecifier::Open(OpenedFile& OFile, bool Writable)
 	if (Writable) return true;
 	
 	// handle MacBinary files
-	long offset, data_length, rsrc_length;
+	long offset, data_length, rsrc_length;	
 	if (is_macbinary(RefNum, data_length, rsrc_length)) {
-		char name[256];
-		GetName(name);
-		fprintf(stderr, "%s is macbinary!\n", name);
 		OFile.is_forked = true;
 		OFile.fork_offset = 128;
 		OFile.fork_length = data_length;
@@ -675,7 +750,27 @@ bool FileSpecifier::Open(OpenedResourceFile& OFile, bool Writable)
 	Spec.name[Spec.name[0]+1] = 0;
 	
 	if (!ResolveFile(Spec)) return false;
-        short RefNum;
+	short RefNum;
+	if (!Writable)
+	{
+		// check if it's macbinary
+		Err = FSpOpenDF(&Spec, WhatPermission(Writable), &RefNum);
+		long offset, data_length, rsrc_length;
+		char path[256];
+		if (is_macbinary(RefNum, data_length, rsrc_length)) {
+			SDL_RWops *f = SDL_RWFromFile(GetPath(),"rb");
+			if (f) {
+				OFile.f = open_res_file_from_rwops(f);
+				OFile.RefNum = RefNum_Closed;
+				OFile.Err = noErr;
+				FSClose(RefNum);
+				return f;
+			} 
+		}
+		FSClose(RefNum);
+		
+	}
+			
 	RefNum = FSpOpenResFile(&Spec, WhatPermission(Writable));
 	Err = ResError();
 	if (Err != noErr) 
@@ -690,6 +785,14 @@ bool FileSpecifier::Open(OpenedResourceFile& OFile, bool Writable)
 	
 	return true;
 }
+
+const char *FileSpecifier::GetPath()
+{
+	FSRef Ref;
+	FSpMakeFSRef(&Spec, &Ref);
+	FSRefMakePath(&Ref, (Uint8 *) GetPathStorage, 1024);
+	return GetPathStorage;
+}	
 
 // Navigation Services extra routines
 

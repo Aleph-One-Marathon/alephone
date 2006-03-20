@@ -69,6 +69,7 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 #include <stddef.h>	// For size_t
 #include <time.h>	// For time_t
 #include <vector>
+#include <SDL.h>
 using namespace std;
 
 #ifdef SDL
@@ -236,9 +237,11 @@ public:
 	// Pushing and popping are unnecessary for the MacOS versions of these functions.
 	// All these functions return a list of what they found as an STL vector
 	// of the appropriate type; if they fail, they set the vector to zero length and return "false".
+#if 0
 	bool GetTypeList(vector<uint32>& TypeList);
 	bool GetIDList(uint32 Type, vector<int16>& IDList);
 	bool GetIDList(uint8 t1, uint8 t2, uint8 t3, uint8 t4, vector<int16>& IDList) {return GetIDList(FOUR_CHARS_TO_INT(t1, t2, t3, t4), IDList);}
+#endif
 
 	bool IsOpen();
 	bool Close();
@@ -257,15 +260,17 @@ private:
 	OSErr Err;		// Error code
 	
 	short SavedRefNum;
+	bool isSavedRefRWOps;
+	static bool isCurrentRefRWOps;
 
 #elif defined(SDL)
 
 	int GetError() {return err;}
 
 private:
-	SDL_RWops *f, *saved_f;
 	int err;		// Error code
 #endif
+	SDL_RWops *f, *saved_f;
 };
 
 
@@ -443,6 +448,12 @@ public:
 	// Copy file specification
 	const FileSpecifier &operator=(const FileSpecifier &other);
 	
+#ifdef SDL
+	const char *GetPath(void) const {return name.c_str();}
+#else
+	const char *GetPath(void);
+#endif
+
 	// Platform-specific members
 #ifdef mac
 
@@ -476,6 +487,7 @@ public:
 private:
 	FSSpec Spec;
 	OSErr Err;
+	char GetPathStorage[1024];
 
 #elif defined(SDL)
 
@@ -492,8 +504,6 @@ private:
 	void SetToSavedGamesDir();		// Directory for saved games (per-user)
 	void SetToRecordingsDir();		// Directory for recordings (per-user)
 	void SetToFirstDataDir();             // best guess at where maps might be
-
-	const char *GetPath(void) const {return name.c_str();}
 
 	void AddPart(const string &part);
 	FileSpecifier &operator+=(const FileSpecifier &other) {AddPart(other.name); return *this;}

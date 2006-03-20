@@ -71,69 +71,8 @@
 extern vector<DirectorySpecifier> data_search_path;
 extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, recordings_dir;
 
-
-/*
- *  Utility functions
- */
-
-bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length)
-{
-	// Check header
-	SDL_RWseek(f, 0, SEEK_SET);
-	uint32 id = SDL_ReadBE32(f);
-	uint32 version = SDL_ReadBE32(f);
-	if (id != 0x00051600 || version != 0x00020000)
-		return false;
-
-	// Find fork
-	uint32 req_id = rsrc_fork ? 2 : 1;
-	SDL_RWseek(f, 0x18, SEEK_SET);
-	int num_entries = SDL_ReadBE16(f);
-	while (num_entries--) {
-		uint32 id = SDL_ReadBE32(f);
-		int32 ofs = SDL_ReadBE32(f);
-		int32 len = SDL_ReadBE32(f);
-		//printf(" entry id %d, offset %d, length %d\n", id, ofs, len);
-		if (id == req_id) {
-			offset = ofs;
-			length = len;
-			return true;
-		}
-	}
-	return false;
-}
-
-bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length)
-{
-	// This recognizes up to macbinary III (0x81)
-	SDL_RWseek(f, 0, SEEK_SET);
-	uint8 header[128];
-	SDL_RWread(f, header, 1, 128);
-	if (header[0] || header[1] > 63 || header[74]  || header[123] > 0x81)
-		return false;
-
-	// Check CRC
-	uint16 crc = 0;
-	for (int i=0; i<124; i++) {
-		uint16 data = header[i] << 8;
-		for (int j=0; j<8; j++) {
-			if ((data ^ crc) & 0x8000)
-				crc = (crc << 1) ^ 0x1021;
-			else
-				crc <<= 1;
-			data <<= 1;
-		}
-	}
-	//printf("crc %02x\n", crc);
-	if (crc != ((header[124] << 8) | header[125]))
-		return false;
-
-	// CRC valid, extract fork sizes
-	data_length = (header[83] << 24) | (header[84] << 16) | (header[85] << 8) | header[86];
-	rsrc_length = (header[87] << 24) | (header[88] << 16) | (header[89] << 8) | header[90];
-	return true;
-}
-
+extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length);
+extern bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length);
 
 /*
  *  Opened file

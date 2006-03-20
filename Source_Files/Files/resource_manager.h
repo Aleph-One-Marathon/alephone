@@ -30,6 +30,7 @@
 
 #include <stdio.h>
 #include <vector>
+#include <SDL.h>
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;
@@ -42,6 +43,7 @@ extern void initialize_resources(void);
 
 extern SDL_RWops *open_res_file(FileSpecifier &file);
 extern void close_res_file(SDL_RWops *file);
+extern SDL_RWops *open_res_file_from_rwops(SDL_RWops *file);
 extern SDL_RWops *cur_res_file(void);
 extern void use_res_file(SDL_RWops *file);
 
