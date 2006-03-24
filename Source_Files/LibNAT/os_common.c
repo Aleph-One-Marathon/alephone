@@ -201,7 +201,6 @@ int Select_Till_Readyread(OsSocket * s,
                           int timeout_sec)
 {
   int rv;
-  extern int errno;
   fd_set read_fds;
   fd_set error_fds;
   struct timeval tv;
@@ -232,7 +231,6 @@ int Select_Till_Readywrite(OsSocket * s,
                            int timeout_sec)
 {
   int rv;
-  extern int errno;
   fd_set write_fds;
   fd_set error_fds;
   struct timeval tv;

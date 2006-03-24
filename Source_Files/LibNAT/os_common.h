@@ -50,6 +50,9 @@
   #include <stdlib.h>
   #include <unistd.h>
   
+  #include <sys/time.h>
+  #include <string.h>
+  
   /* this is the unix version of the OsSocket struct */
   struct OsSocket {
     int sock;

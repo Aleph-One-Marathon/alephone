@@ -118,7 +118,7 @@
 ** Internal Structures 
 
 /* data to pass to xml description parse events */
-static struct XmlDescData
+struct XmlDescData
 {
   char * control_url;           /* control url of the service */
   char * url_base;              /* base of the control url */
@@ -132,7 +132,7 @@ static struct XmlDescData
 typedef struct XmlDescData XmlDescData;
 
 /* data to pass to xml get public ip parse events */
-static struct XmlGetPublicIpData
+struct XmlGetPublicIpData
 {
   char * ext_ip;      /* the external ip address found in the xml */
   int found_ext_ip;   /* will equal 1 when the external ip element is found */
