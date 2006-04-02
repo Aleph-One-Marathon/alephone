@@ -396,7 +396,9 @@ void toggle_fullscreen()
   } 
 }
 
+#ifdef HAVE_OPENGL
 GLuint OGL_Term_Texture;
+#endif
 /*
  *  Render game screen
  */
