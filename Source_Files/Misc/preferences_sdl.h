@@ -67,6 +67,14 @@
 #define expf(x) ((float)exp(x))
 #endif
 
+// ghs: some math.h's lack these functions
+#ifndef log2
+#define log2(x) (log(x) / log(2))
+#endif
+#ifndef exp2
+#define exp2(x) (exp(x * log(2)))
+#endif
+
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>	// for getlogin()
 #endif
