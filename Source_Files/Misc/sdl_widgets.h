@@ -957,7 +957,7 @@ public:
 	virtual ~SelectorWidget () {}
 
 protected:
-	SelectorWidget::SelectorWidget (widget* in_widget)
+	SelectorWidget (widget* in_widget)
 		: SDLWidgetWidget (in_widget)
 		, m_callback (NULL)
 		{}
@@ -968,7 +968,7 @@ protected:
 class PopupSelectorWidget : public SelectorWidget
 {
 public:
-	PopupSelectorWidget::PopupSelectorWidget (w_select_popup* select_popup_w)
+	PopupSelectorWidget (w_select_popup* select_popup_w)
 		: SelectorWidget (select_popup_w)
 		, m_select_popup (select_popup_w)
 		{ select_popup_w->set_popup_callback (boost::bind(&PopupSelectorWidget::massage_callback, this, _1), NULL); }
@@ -987,7 +987,7 @@ private:
 class SelectSelectorWidget : public SelectorWidget
 {
 public:
-	SelectSelectorWidget::SelectSelectorWidget (w_select* select_w)
+	SelectSelectorWidget (w_select* select_w)
 		: SelectorWidget (select_w)
 		, m_select (select_w)
 		{ m_select->set_selection_changed_callback (boost::bind(&SelectSelectorWidget::massage_callback, this, _1)); }
@@ -1009,7 +1009,7 @@ private:
 class ColourSelectorWidget : public SelectSelectorWidget
 {
 public:
-	ColourSelectorWidget::ColourSelectorWidget (w_player_color* player_color_w)
+	ColourSelectorWidget (w_player_color* player_color_w)
 		: SelectSelectorWidget (player_color_w) {}
 
 	// We ignore the labels and use swatches of colour instead
@@ -1041,7 +1041,7 @@ private:
 class StaticTextWidget : public SDLWidgetWidget
 {
 public:
-	StaticTextWidget::StaticTextWidget (w_static_text* static_text_w)
+	StaticTextWidget (w_static_text* static_text_w)
 		: SDLWidgetWidget (static_text_w)
 		, m_static_text (static_text_w)
 		{}

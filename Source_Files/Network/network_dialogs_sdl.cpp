@@ -468,7 +468,7 @@ setup_metaserver_chat_ui(
 class SdlGatherDialog : public GatherDialog
 {
 public:
-	SdlGatherDialog::SdlGatherDialog()
+	SdlGatherDialog()
 	{
 		m_dialog.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
 	
@@ -551,7 +551,7 @@ GatherDialog::Create()
 class SdlJoinDialog : public JoinDialog
 {
 public:
-	SdlJoinDialog::SdlJoinDialog()
+	SdlJoinDialog()
 	{
 		m_dialog.add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR));
 		m_dialog.add(new w_spacer());

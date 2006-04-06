@@ -95,7 +95,7 @@ public:
 	// Calls back message handlers (if appropriate)
 	void		dispatchIncomingMessages();
 
-	bool		CommunicationsChannel::isMessageAvailable();
+	bool		isMessageAvailable();
 
 	// Call does not return unless (1) times out (NULL); (2) disconnected (NULL); or
 	// (3) some message received (pointer to inflated message object).
