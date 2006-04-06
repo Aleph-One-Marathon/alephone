@@ -122,6 +122,10 @@ case "$target" in
   *-*-linux*)
     SYS_GL_LIBS="-lGL -lpthread"
     CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include -L/usr/X11R6/lib"
+    ;;	
+  *-*-netbsd*)
+    SYS_GL_LIBS="-lGL"
+    CPPFLAGS="$CPPFLAGS -I/usr/pkg/include -I/usr/X11R6/include"
     ;;
   *)
     SYS_GL_LIBS="-lGL"
