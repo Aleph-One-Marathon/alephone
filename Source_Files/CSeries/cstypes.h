@@ -23,6 +23,9 @@
 #define _CSERIES_TYPES_
 
 #include <limits.h>
+#ifdef HAVE_CONFIG_H // pick up HAVE_OPENGL
+#include "config.h"
+#endif
 
 // IR note: consts in headers are slow and eat TOC space.
 //const int NONE = -1;
