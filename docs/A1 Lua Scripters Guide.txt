@@ -102,9 +102,11 @@ Units for speed are . . . well let's say they're messy.  :)
 These are functions scripts can define which A1 will call at specific times or events.
 
 
-init()
+init(restoring_game)
 
 At beginning of level.
+
+Restoring game is true if loading from a saved game
 
 
 cleanup()

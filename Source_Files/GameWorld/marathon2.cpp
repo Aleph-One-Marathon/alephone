@@ -638,7 +638,7 @@ bool entering_map(bool restoring_saved)
 	// MH: Load the Lua script and run its init function.
 	// Availability of the script is checked within.
 	RunLuaScript();
-	L_Call_Init();
+	L_Call_Init(restoring_saved);
 
 #if !defined(DISABLE_NETWORKING)
 	NetSetChatCallbacks(InGameChatCallbacks::instance());

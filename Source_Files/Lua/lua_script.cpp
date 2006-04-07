@@ -95,7 +95,7 @@ short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
 #ifndef HAVE_LUA
 
-void L_Call_Init() {}
+void L_Call_Init(bool) {}
 void L_Call_Cleanup() {}
 void L_Call_Idle() {}
 void L_Call_PostIdle() {}
@@ -367,7 +367,7 @@ L_Call_NNNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg
 	}
 }
 
-void L_Call_Init()
+void L_Call_Init(bool fRestoringSaved)
 {
 	// jkvw: Seeding our better random number generator from the lousy one
 	// is clearly not ideal, but it should be good enough for our purposes.
@@ -377,7 +377,10 @@ void L_Call_Init()
 		lua_random_generator.jsr = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 		lua_random_generator.jcong = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 	}
-	L_Call("init");
+	if (L_Should_Call("init")) {
+		lua_pushboolean(state, fRestoringSaved);
+		L_Do_Call("init", 1);
+	}
 }
 
 void L_Call_Cleanup ()
