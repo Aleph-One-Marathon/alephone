@@ -126,6 +126,42 @@
 			settings = {
 			};
 		};
+		171F8A9E09D70E5E00484992 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = preference_dialogs.cpp;
+			refType = 4;
+		};
+		171F8A9F09D70E5E00484992 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = preference_dialogs.h;
+			refType = 4;
+		};
+		171F8AA009D70E5E00484992 = {
+			fileRef = 171F8A9E09D70E5E00484992;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		171F8AA109D70E5E00484992 = {
+			fileRef = 171F8A9F09D70E5E00484992;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		171F8AA209D70E5E00484992 = {
+			fileRef = 171F8A9E09D70E5E00484992;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		171F8AA309D70E5E00484992 = {
+			fileRef = 171F8A9F09D70E5E00484992;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		172114C30879EBA000D6D709 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -273,6 +309,18 @@
 			settings = {
 			};
 		};
+		1773EFDD09E496E90048F59E = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = preference_dialogs_nibs.cpp;
+			refType = 4;
+		};
+		1773EFDF09E496FE0048F59E = {
+			fileRef = 1773EFDD09E496E90048F59E;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
 		1786CA0909A9BC9400349824 = {
 			fileEncoding = 30;
 			isa = PBXFileReference;
@@ -305,6 +353,18 @@
 		};
 		1786CA0E09A9BCC200349824 = {
 			fileRef = 1786CA0C09A9BCC200349824;
+			isa = PBXBuildFile;
+			settings = {
+			};
+		};
+		1796872509E74A73003BEEE2 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = preference_dialogs_sdl.cpp;
+			refType = 4;
+		};
+		1796872609E74A73003BEEE2 = {
+			fileRef = 1796872509E74A73003BEEE2;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -1391,6 +1451,7 @@
 				17AF8AC809D49F5A006942DA,
 				17AF8ACA09D49F5A006942DA,
 				17AF8ACD09D49F5A006942DA,
+				171F8AA109D70E5E00484992,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1584,6 +1645,8 @@
 				17AF8AC909D49F5A006942DA,
 				17AF8ACB09D49F5A006942DA,
 				17AF8ACC09D49F5A006942DA,
+				171F8AA009D70E5E00484992,
+				1796872609E74A73003BEEE2,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2585,6 +2648,7 @@
 				17AF8AD809D49F5A006942DA,
 				17AF8ADA09D49F5A006942DA,
 				17AF8ADD09D49F5A006942DA,
+				171F8AA309D70E5E00484992,
 			);
 			isa = PBXHeadersBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -3856,7 +3920,6 @@
 				EF2A6D3407D04417008DCEFF,
 				EF2A6D3507D04417008DCEFF,
 				EF2A6D3607D04417008DCEFF,
-				EF2A6D3707D04417008DCEFF,
 				EF2A6D3807D04417008DCEFF,
 				EF2A6D3907D04417008DCEFF,
 				EF2A6D3A07D04417008DCEFF,
@@ -4006,6 +4069,8 @@
 				17AF8ADB09D49F5A006942DA,
 				17AF8ADC09D49F5A006942DA,
 				17AF8ADF09D4A3BA006942DA,
+				171F8AA209D70E5E00484992,
+				1773EFDF09E496FE0048F59E,
 			);
 			isa = PBXSourcesBuildPhase;
 			runOnlyForDeploymentPostprocessing = 0;
@@ -4138,12 +4203,6 @@
 		};
 		EF2A6D3607D04417008DCEFF = {
 			fileRef = F522139D0136AC1601000001;
-			isa = PBXBuildFile;
-			settings = {
-			};
-		};
-		EF2A6D3707D04417008DCEFF = {
-			fileRef = F52211EB0136A6FD01000001;
 			isa = PBXBuildFile;
 			settings = {
 			};
@@ -6817,6 +6876,9 @@
 				F52211970136A6FD01000001,
 				F52211CC0136A6FD01000001,
 				F52211C40136A6FD01000001,
+				171F8A9E09D70E5E00484992,
+				1773EFDD09E496E90048F59E,
+				1796872509E74A73003BEEE2,
 				F522120F0136A6FD01000001,
 				F52212130136A6FD01000001,
 				F52212590136A6FD01000001,
@@ -6842,6 +6904,7 @@
 				F52211C20136A6FD01000001,
 				F52211C50136A6FD01000001,
 				F52211CB0136A6FD01000001,
+				171F8A9F09D70E5E00484992,
 				F52212100136A6FD01000001,
 				EF2EF5EF0481A07000A8000D,
 				F52212140136A6FD01000001,
