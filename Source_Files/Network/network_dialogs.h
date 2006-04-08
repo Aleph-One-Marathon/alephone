@@ -522,7 +522,6 @@ extern void update_carnage_summary(NetgameOutcomeData &outcome, struct net_rank 
 extern void menu_index_to_level_entry(short index, long entry_flags, struct entry_point *entry);
 extern int menu_index_to_level_index (int menu_index, int32 entry_flags);
 extern int level_index_to_menu_index(int level_index, int32 entry_flags);
-extern void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber);
 
 // (Postgame carnage report)
 extern void draw_names(NetgameOutcomeData &outcome, struct net_rank *ranks,

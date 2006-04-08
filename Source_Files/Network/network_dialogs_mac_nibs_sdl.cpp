@@ -436,28 +436,6 @@ static bool EntryPointMenuBuilder(
 	return UseThis;
 }
 
-
-void EntryPoints_FillIn(
-	DialogPTR dialog,
-	long entry_flags,
-	short default_level
-	)
-{
-	ControlRef EntryPointCtrl = GetCtrlFromWindow(dialog, 0, iENTRY_MENU);
-
-	EntryPointMenuData MenuData;
-	MenuData.entry_flags = entry_flags;
-	MenuData.level_index = 0;
-	MenuData.default_level = default_level;
-	
-	BuildMenu(EntryPointCtrl, EntryPointMenuBuilder, &MenuData);
-}
-
-void select_entry_point(DialogPtr inDialog, short inItem, int16 inLevelNumber)
-{
-	modify_selection_control(inDialog, inItem, CONTROL_ACTIVE, inLevelNumber+1);
-}
-
 static void calculate_box_colors(
 	short color_index,
 	RGBColor *highlight_color,
