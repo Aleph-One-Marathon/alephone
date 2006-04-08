@@ -652,23 +652,6 @@ public:
 		m_dialog.set_active_tab (iJOIN_POSTJOIN_TAB);
 		JoinDialog::respondToJoinHit();
 	}
-	
-	virtual ~SdlJoinDialog()
-	{
-		delete m_cancelWidget;
-		delete m_joinWidget;
-		delete m_joinMetaserverWidget;
-		delete m_joinAddressWidget;
-		delete m_joinByAddressWidget;
-		delete m_nameWidget;
-		delete m_colourWidget;
-		delete m_teamWidget;
-		delete m_messagesWidget;
-		delete m_pigWidget;
-		delete m_chatChoiceWidget;
-		delete m_chatEntryWidget;
-		delete m_chatWidget;
-	}
 
 private:
 	enum {

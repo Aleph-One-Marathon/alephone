@@ -557,6 +557,20 @@ JoinDialog::~JoinDialog ()
 	// gMetaserverClient->disconnect ();
 	delete gMetaserverClient;
 	gMetaserverClient = new MetaserverClient ();
+	
+	delete m_cancelWidget;
+	delete m_joinWidget;
+	delete m_joinMetaserverWidget;
+	delete m_joinAddressWidget;
+	delete m_joinByAddressWidget;
+	delete m_nameWidget;
+	delete m_colourWidget;
+	delete m_teamWidget;
+	delete m_messagesWidget;
+	delete m_pigWidget;
+	delete m_chatEntryWidget;
+	delete m_chatChoiceWidget;
+	delete m_chatWidget;
 }
 
 const int JoinDialog::JoinNetworkGameByRunning ()
