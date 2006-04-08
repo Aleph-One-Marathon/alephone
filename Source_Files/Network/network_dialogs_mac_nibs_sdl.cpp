@@ -400,25 +400,6 @@ struct EntryPointMenuData
 	short default_level;
 };
 
-
-// Cribbed from interface_macintosh.h : LevelNumberMenuBuilder()
-static bool EntryPointMenuBuilder(
-	int indx, Str255 ItemName, bool &ThisIsInitial, void *Data)
-{
-	EntryPointMenuData *MDPtr = (EntryPointMenuData *)(Data);
-	entry_point entry;
-		
-	bool UseThis = get_indexed_entry_point(
-		&entry, &MDPtr->level_index, MDPtr->entry_flags);
-	
-	ThisIsInitial = (MDPtr->level_index == MDPtr->default_level);
-	
-	if (UseThis)
-		psprintf(ItemName, "%s",entry.level_name);
-	
-	return UseThis;
-}
-
 static void calculate_box_colors(
 	short color_index,
 	RGBColor *highlight_color,
