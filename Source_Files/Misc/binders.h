@@ -70,7 +70,7 @@ public:
 
 	template<typename T>
 	void insert (Bindable<T>* first, Bindable<T>* second)
-	{ m_list.push_back (new Binder<T> (first, second)); }
+	{ if (first && second) m_list.push_back (new Binder<T> (first, second)); }
 	
 	void migrate_all_first_to_second () { for_each (m_list.begin (), m_list.end (), call_first_second); }
 	void migrate_all_second_to_first () { for_each (m_list.begin (), m_list.end (), call_second_first); }

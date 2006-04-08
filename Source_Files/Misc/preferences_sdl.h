@@ -55,6 +55,7 @@
 #include "mouse.h"
 #include "preferences_widgets_sdl.h"
 #include "map.h" // for difficulty levels
+#include "preference_dialogs.h"
 
 #include <string.h>
 #include <vector>
@@ -398,7 +399,7 @@ static void rendering_options_dialog_demux(void* arg)
 			break;
 
 		case _opengl_acceleration:
-			opengl_dialog(arg);
+			OpenGLDialog::Create ()->OpenGLPrefsByRunning ();
 			break;
 
 		default:

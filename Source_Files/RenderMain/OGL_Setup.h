@@ -131,11 +131,11 @@ enum
 
 struct OGL_Texture_Configure
 {
-	short NearFilter;
-	short FarFilter;
-	short Resolution;
-	short ColorFormat;
-	short MaxSize;
+	int16 NearFilter;
+	int16 FarFilter;
+	int16 Resolution;
+	int16 ColorFormat;
+	int16 MaxSize;
 };
 
 // Here are some control flags
@@ -182,7 +182,7 @@ struct OGL_ConfigureData
 OGL_ConfigureData& Get_OGL_ConfigureData();
 
 // The OpenGL-configuration dialog box; returns whether its changes had been selected
-bool OGL_ConfigureDialog(OGL_ConfigureData& Data);
+// bool OGL_ConfigureDialog(OGL_ConfigureData& Data);
 
 // Set defaults
 void OGL_SetDefaults(OGL_ConfigureData& Data);

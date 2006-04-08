@@ -412,7 +412,7 @@ class PlayersInGameWidget : NIBsControlWidget
 public:
 	PlayersInGameWidget (ControlRef ctrl)
 		: NIBsControlWidget (ctrl)
-		{ m_pigDrawer(ctrl, pigDrawer, NULL); }
+		{ m_pigDrawer (ctrl, pigDrawer, NULL); }
 
 	void redraw () { Draw1Control (m_ctrl); }
 
@@ -420,6 +420,27 @@ private:
 	AutoDrawability m_pigDrawer;
 	
 	static void pigDrawer (ControlRef Ctrl, void* ignored);
+};
+
+class ColourPickerWidget : public NIBsControlWidget, public Bindable<RGBColor>
+{
+public:
+	ColourPickerWidget (ControlRef ctrl);
+
+	RGBColor get_value () { return m_colour; }
+	void set_value (RGBColor value) { m_colour = value; }
+
+	virtual RGBColor bind_export () { return get_value (); }
+	virtual void bind_import (RGBColor value) { set_value (value); }
+
+private:
+	AutoDrawability m_colourDrawer;
+	AutoHittability m_colourHitter;
+	AutoControlWatcher m_control_watcher;
+	
+	void chooseColour ();
+	
+	RGBColor m_colour;
 };
 
 #endif

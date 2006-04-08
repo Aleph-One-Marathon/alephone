@@ -1017,6 +1017,26 @@ public:
 	virtual void set_labels (const std::vector<std::string>& labels) {}
 };
 
+class SliderSelectorWidget : public SelectorWidget
+{
+public:
+	SliderSelectorWidget (w_slider* slider_w)
+		: SelectorWidget (slider_w)
+		, m_slider (slider_w)
+		{}
+	
+	// Sliders don't get labels
+	virtual void set_labels (const std::vector<std::string>& labels) {};
+
+	virtual int get_value () { return m_slider->get_selection (); }
+	virtual void set_value (int value) { m_slider->set_selection (value); }
+	
+	// Sliders don't get callbacks either
+
+private:
+	w_slider* m_slider;
+};
+
 class ButtonWidget : public SDLWidgetWidget
 {
 public:
@@ -1197,5 +1217,8 @@ public:
 private:
 	w_players_in_game2* m_pig;
 };
+
+// There are no colour pickers in sdl; we never try to actually construct one of these guys
+class ColourPickerWidget : public Bindable<RGBColor> {};
 
 #endif

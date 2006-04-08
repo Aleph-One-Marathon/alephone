@@ -259,3 +259,18 @@ void PlayersInGameWidget::pigDrawer (ControlRef Ctrl, void* ignored)
 		}
 	}
 }
+
+ColourPickerWidget::ColourPickerWidget (ControlRef ctrl)
+	: NIBsControlWidget (ctrl)
+	, m_control_watcher (ctrl)
+{
+	m_colourDrawer (ctrl, SwatchDrawer, &m_colour);
+	m_colourHitter (ctrl);
+	m_control_watcher.set_callback (boost::bind (&ColourPickerWidget::chooseColour, this));
+}
+
+void ColourPickerWidget::chooseColour ()
+{
+	copy_string_to_pstring ("You Must Choose:", ptemporary);
+	PickControlColor (m_ctrl, &m_colour, ptemporary);
+}

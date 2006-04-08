@@ -108,6 +108,8 @@ April 19, 2003 (Woody Zenfell):
 #include "map.h" // for difficulty levels
 #include "player.h" // kTeamColorsStringSetID
 
+#include "preference_dialogs.h"
+
 using std::map;
 using std::vector;
 using std::sort;
@@ -252,7 +254,7 @@ static void PreferencesHandler(ParsedControl &Ctrl, void *UserData)
 			break;
 			
 		case iOPENGL_OPTIONS:
-			OGL_ConfigureDialog(graphics_preferences->OGL_Configure);
+			OpenGLDialog::Create ()->OpenGLPrefsByRunning ();
 			break; 
 		}
 		break;
@@ -868,7 +870,7 @@ static void hit_graphics_item(
 			break;
 		
 		case iOPENGL_OPTIONS:
-			OGL_ConfigureDialog(preferences->OGL_Configure);
+			OpenGLDialog::Create ()->OpenGLPrefsByRunning ();
 			break;
 		
 		case iFILL_SCREEN:
