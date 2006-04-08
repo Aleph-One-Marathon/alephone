@@ -12,7 +12,7 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h
   CircularQueue.h Console.h game_errors.h \
   interface.h interface_menus.h key_definitions.h Logging.h Logging_gruntwork.h \
   PlayerImage_sdl.h \
-  PlayerName.h preferences.h preferences_private.h preferences_sdl.h \
+  PlayerName.h preference_dialogs.h preferences.h preferences_private.h preferences_sdl.h \
   preferences_widgets_sdl.h progress.h Random.h Scenario.h sdl_dialogs.h sdl_network.h \
   sdl_widgets.h shared_widgets.h thread_priority_sdl.h vbl_definitions.h vbl.h VecOps.h \
   WindowedNthElementFinder.h \
@@ -20,10 +20,10 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h
   ActionQueues.cpp CircularByteBuffer.cpp Console.cpp game_errors.cpp \
   interface.cpp interface_sdl.cpp \
   Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp \
-  preferences_widgets_sdl.cpp Scenario.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
+  preference_dialogs.cpp preference_dialogs_sdl.cpp preferences_widgets_sdl.cpp Scenario.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
   sdl_widgets.cpp shared_widgets.cpp vbl.cpp vbl_sdl.cpp
 
-EXTRA_libmisc_a_SOURCES = thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp
+EXTRA_libmisc_a_SOURCES = preference_dialogs_nibs.cpp thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
