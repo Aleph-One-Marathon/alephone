@@ -77,7 +77,7 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	gMetaserverClient->announceGame(GAME_PORT, description);
 }
 
-MetaserverClientUi::~MetaserverClientUi ()
+void MetaserverClientUi::delete_widgets ()
 {
 	delete m_playersInRoomWidget;
 	delete m_gamesInRoomWidget;

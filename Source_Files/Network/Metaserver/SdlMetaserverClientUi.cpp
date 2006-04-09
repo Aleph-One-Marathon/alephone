@@ -92,6 +92,8 @@ public:
 		m_cancelWidget = new ButtonWidget (cancel_w);
 	}
 
+	~SdlMetaserverClientUi () { delete_widgets (); }
+
 	void Run()
 	{
 		d.set_processing_function(bind(&SdlMetaserverClientUi::pump, this, _1));

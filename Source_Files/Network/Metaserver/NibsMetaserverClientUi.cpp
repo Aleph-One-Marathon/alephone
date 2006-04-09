@@ -66,6 +66,8 @@ public:
 		m_cancelWidget = new ButtonWidget(GetCtrlFromWindow(m_dialog_window(), 0, iCANCEL));
 	}
 	
+	~NibsMetaserverClientUi () { delete_widgets (); }
+	
 	virtual void Run()
 	{
 		AutoTimer Poller(0, PollingInterval, MetaserverClientUi_Poller, m_dialog_window());
