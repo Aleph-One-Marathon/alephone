@@ -63,6 +63,7 @@ bool XML_ScenarioParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag, "id"))
 	{
 		Scenario::instance()->SetID(Value);
+		return true;
 	}
 	
 	UnrecognizedTag();
