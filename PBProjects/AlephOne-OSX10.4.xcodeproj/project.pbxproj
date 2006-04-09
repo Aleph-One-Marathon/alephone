@@ -47,7 +47,6 @@
 		2B4EC1870908984D009631F8 /* script_instructions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139B0136AC1601000001 /* script_instructions.cpp */; };
 		2B4EC1880908984D009631F8 /* script_parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139C0136AC1601000001 /* script_parser.cpp */; };
 		2B4EC1890908984D009631F8 /* scripting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139D0136AC1601000001 /* scripting.cpp */; };
-		2B4EC18A0908984D009631F8 /* OGL_Dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211EB0136A6FD01000001 /* OGL_Dialog.cpp */; };
 		2B4EC18B0908984D009631F8 /* PlayerDialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120A0136A6FD01000001 /* PlayerDialogs.cpp */; };
 		2B4EC18C0908984D009631F8 /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
 		2B4EC18D0908984D009631F8 /* game_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211960136A6FD01000001 /* game_dialogs.cpp */; };
@@ -215,6 +214,10 @@
 		AE179F1D09C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
 		AE2A50CD09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
+		AE2FDECB09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
+		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
+		AE2FDECE09E934F500A18ABC /* preference_dialogs_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECD09E934F500A18ABC /* preference_dialogs_sdl.cpp */; };
+		AE2FDED009E9350E00A18ABC /* preference_dialogs_nibs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECF09E9350E00A18ABC /* preference_dialogs_nibs.cpp */; };
 		AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
@@ -769,7 +772,7 @@
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		2B4EC22D0908984E009631F8 /* Info-AlephOne_Carbon__NIBs___Upgraded_.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist"; sourceTree = "<group>"; };
-		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D3A410C04DF92C400000107 /* GUI.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = GUI.nib; path = ../Resources/GUI.nib; sourceTree = SOURCE_ROOT; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
 		3D5F21460403247500000104 /* libobjc.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.A.dylib; path = /usr/lib/libobjc.A.dylib; sourceTree = "<absolute>"; };
@@ -824,6 +827,10 @@
 		AE2A50CC09C67253007681A4 /* Scenario.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Scenario.cpp; path = ../Source_Files/Misc/Scenario.cpp; sourceTree = SOURCE_ROOT; };
 		AE2A50CF09C6727C007681A4 /* Scenario.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Scenario.h; path = ../Source_Files/Misc/Scenario.h; sourceTree = SOURCE_ROOT; };
 		AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialogs_mac_nibs_sdl.cpp; path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp; sourceTree = SOURCE_ROOT; };
+		AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = preference_dialogs.cpp; path = ../Source_Files/Misc/preference_dialogs.cpp; sourceTree = "<group>"; };
+		AE2FDECD09E934F500A18ABC /* preference_dialogs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = preference_dialogs_sdl.cpp; path = ../Source_Files/Misc/preference_dialogs_sdl.cpp; sourceTree = "<group>"; };
+		AE2FDECF09E9350E00A18ABC /* preference_dialogs_nibs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = preference_dialogs_nibs.cpp; path = ../Source_Files/Misc/preference_dialogs_nibs.cpp; sourceTree = "<group>"; };
+		AE2FDED109E9352B00A18ABC /* preference_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = preference_dialogs.h; path = ../Source_Files/Misc/preference_dialogs.h; sourceTree = "<group>"; };
 		AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = carbon_widgets.cpp; path = ../Source_Files/Misc/carbon_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEED0864EAB7002AF754 /* carbon_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = carbon_widgets.h; path = ../Source_Files/Misc/carbon_widgets.h; sourceTree = SOURCE_ROOT; };
 		AE437C8B08779BC900038E30 /* shared_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = shared_widgets.h; path = ../Source_Files/Misc/shared_widgets.h; sourceTree = SOURCE_ROOT; };
@@ -946,7 +953,6 @@
 		F52211CF0136A6FD01000001 /* LocalEvents.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = LocalEvents.h; path = ../Source_Files/Misc/LocalEvents.h; sourceTree = SOURCE_ROOT; };
 		F52211D10136A6FD01000001 /* MacCheckbox.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = MacCheckbox.h; path = ../Source_Files/Misc/MacCheckbox.h; sourceTree = SOURCE_ROOT; };
 		F52211D20136A6FD01000001 /* macintosh_network.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = macintosh_network.h; path = ../Source_Files/Misc/macintosh_network.h; sourceTree = SOURCE_ROOT; };
-		F52211EB0136A6FD01000001 /* OGL_Dialog.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = OGL_Dialog.cpp; path = ../Source_Files/Misc/OGL_Dialog.cpp; sourceTree = SOURCE_ROOT; };
 		F522120A0136A6FD01000001 /* PlayerDialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PlayerDialogs.cpp; path = ../Source_Files/Misc/PlayerDialogs.cpp; sourceTree = SOURCE_ROOT; };
 		F522120B0136A6FD01000001 /* PlayerName.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PlayerName.cpp; path = ../Source_Files/Misc/PlayerName.cpp; sourceTree = SOURCE_ROOT; };
 		F522120C0136A6FD01000001 /* PlayerName.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = PlayerName.h; path = ../Source_Files/Misc/PlayerName.h; sourceTree = SOURCE_ROOT; };
@@ -1602,8 +1608,8 @@
 				AEC6C89B0879A5DE0055EC57 /* Console.cpp */,
 				3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */,
 				3DAC27A603DC9D1C00000104 /* Logging.cpp */,
-				F52211EB0136A6FD01000001 /* OGL_Dialog.cpp */,
 				F522120A0136A6FD01000001 /* PlayerDialogs.cpp */,
+				AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */,
 				F522120B0136A6FD01000001 /* PlayerName.cpp */,
 				F522118D0136A6FD01000001 /* export_definitions.cpp */,
 				F52211960136A6FD01000001 /* game_dialogs.cpp */,
@@ -1623,6 +1629,7 @@
 		F522144F0136C0C401000001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				AE2FDED109E9352B00A18ABC /* preference_dialogs.h */,
 				AE2A50CF09C6727C007681A4 /* Scenario.h */,
 				AE437C8B08779BC900038E30 /* shared_widgets.h */,
 				AE34EEED0864EAB7002AF754 /* carbon_widgets.h */,
@@ -2063,6 +2070,7 @@
 		F5CC94280240DB8801A80001 /* Macintosh */ = {
 			isa = PBXGroup;
 			children = (
+				AE2FDECF09E9350E00A18ABC /* preference_dialogs_nibs.cpp */,
 				AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */,
 				F52211D10136A6FD01000001 /* MacCheckbox.h */,
 				F52211D20136A6FD01000001 /* macintosh_network.h */,
@@ -2076,6 +2084,7 @@
 		F5CC94290240DB8801A80001 /* SDL */ = {
 			isa = PBXGroup;
 			children = (
+				AE2FDECD09E934F500A18ABC /* preference_dialogs_sdl.cpp */,
 				F522120E0136A6FD01000001 /* preferences_sdl.h */,
 				F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */,
 				F522123B0136A6FD01000001 /* sdl_dialogs.h */,
@@ -2734,7 +2743,6 @@
 				2B4EC1870908984D009631F8 /* script_instructions.cpp in Sources */,
 				2B4EC1880908984D009631F8 /* script_parser.cpp in Sources */,
 				2B4EC1890908984D009631F8 /* scripting.cpp in Sources */,
-				2B4EC18A0908984D009631F8 /* OGL_Dialog.cpp in Sources */,
 				2B4EC18B0908984D009631F8 /* PlayerDialogs.cpp in Sources */,
 				2B4EC18C0908984D009631F8 /* PlayerName.cpp in Sources */,
 				2B4EC18D0908984D009631F8 /* game_dialogs.cpp in Sources */,
@@ -2885,6 +2893,8 @@
 				AE179F1509C3D79500512061 /* utility.c in Sources */,
 				AE2A50CD09C67253007681A4 /* Scenario.cpp in Sources */,
 				AEB5F39A09CDC92E00CDF7C0 /* resource_manager.cpp in Sources */,
+				AE2FDECB09E934E000A18ABC /* preference_dialogs.cpp in Sources */,
+				AE2FDED009E9350E00A18ABC /* preference_dialogs_nibs.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3060,6 +3070,8 @@
 				AE179F1C09C3D79500512061 /* upnp.c in Sources */,
 				AE179F1D09C3D79500512061 /* utility.c in Sources */,
 				AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */,
+				AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */,
+				AE2FDECE09E934F500A18ABC /* preference_dialogs_sdl.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
