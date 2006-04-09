@@ -77,6 +77,15 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	gMetaserverClient->announceGame(GAME_PORT, description);
 }
 
+MetaserverClientUi::~MetaserverClientUi ()
+{
+	delete m_playersInRoomWidget;
+	delete m_gamesInRoomWidget;
+	delete m_chatEntryWidget;
+	delete m_textboxWidget;
+	delete m_cancelWidget;
+}
+
 const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 {
 	// This was designed with one-shot-ness in mind

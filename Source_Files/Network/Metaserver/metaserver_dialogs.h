@@ -61,7 +61,7 @@ public:
 
 	const IPaddress GetJoinAddressByRunning();
 
-	virtual ~MetaserverClientUi () {}
+	virtual ~MetaserverClientUi ();
 
 protected:
 	MetaserverClientUi() : m_used (false) {}

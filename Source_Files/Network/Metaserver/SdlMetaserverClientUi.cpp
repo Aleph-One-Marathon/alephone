@@ -91,14 +91,6 @@ public:
 		m_textboxWidget = new HistoricTextboxWidget (new TextboxWidget(chat_history_w));
 		m_cancelWidget = new ButtonWidget (cancel_w);
 	}
-	
-	~SdlMetaserverClientUi()
-	{
-		delete m_playersInRoomWidget;
-		delete m_gamesInRoomWidget;
-		delete m_chatEntryWidget;
-		delete m_textboxWidget;
-	}
 
 	void Run()
 	{
