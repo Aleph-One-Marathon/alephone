@@ -56,6 +56,17 @@ void StaticTextWidget::set_text (const std::string& s)
 	Draw1Control (m_ctrl);
 }
 
+void EditTextOrNumberWidget::hide ()
+{
+	ControlRef focusCtrl;
+	GetKeyboardFocus (GetControlOwner (m_ctrl), &focusCtrl);
+
+	if (m_ctrl == focusCtrl)
+		ClearKeyboardFocus (GetControlOwner (m_ctrl));
+		
+	NIBsControlWidget::hide ();
+}
+
 void EditTextOrNumberWidget::set_text (const std::string& s)
 {
 	SetControlData(m_ctrl, kControlEditTextPart, kControlEditTextTextTag, s.length (), s.c_str ());

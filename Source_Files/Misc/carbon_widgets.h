@@ -47,11 +47,13 @@ using std::vector;
 class NIBsControlWidget
 {
 public:
-	void hide () { HideControl (m_ctrl); }
-	void show () { ShowControl (m_ctrl); }
+	virtual ~NIBsControlWidget () {}
 
-	void activate () { ActivateControl (m_ctrl); }
-	void deactivate () { DeactivateControl (m_ctrl); }
+	virtual void hide () { HideControl (m_ctrl); }
+	virtual void show () { ShowControl (m_ctrl); }
+
+	virtual void activate () { ActivateControl (m_ctrl); }
+	virtual void deactivate () { DeactivateControl (m_ctrl); }
 
 protected:
 	NIBsControlWidget (ControlRef ctrl) : m_ctrl (ctrl) {}
@@ -136,6 +138,8 @@ public:
 	EditTextOrNumberWidget (ControlRef ctrl)
 		: NIBsControlWidget (ctrl)
 		, m_keystroke_watcher (m_ctrl) {}
+	
+	virtual void hide ();
 	
 	void set_callback (GotCharacterCallback callback) { m_keystroke_watcher.set_callback (callback); }
 	
