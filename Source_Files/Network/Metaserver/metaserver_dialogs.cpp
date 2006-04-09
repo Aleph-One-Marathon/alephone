@@ -73,7 +73,39 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	description.m_mapName = string(info.level_name);
 	description.m_name = gMetaserverClient->playerName() + "'s Game";
 	description.m_teamsAllowed = !(info.game_options & _force_unique_teams);
-
+	
+	// description's constructor gets scenario info, aleph one's protocol ID for us
+	
+	// ghs: blech, need a better way to find this
+	description.m_alephoneBuildString = "0.16rc1";
+	
+	// ghs: this doesn't belong here!
+#if defined(__WIN32__)
+	description.m_alephoneBuildString += " (Windows)";
+#elif defined(__APPLE__) && defined(__MACH__)
+	description.m_alephoneBuildString += " (Mac OS X)";
+#elif defined(__BEOS__)
+	description.m_alephoneBuildString += " (BeOS)";
+#elif defined(linux)
+	description.m_alephoneBuildString += " (Linux)";
+#elif defined(__NETBSD__)
+	description.m_alephoneBuildString += " (NetBSD)";
+#endif
+	
+	if (network_preferences->use_netscript)
+	{
+#ifdef mac
+		FileSpecifier netScript;
+		netScript.SetSpec(network_preferences->netscript_file);
+#else
+		FileSpecifier netScript(network_preferences->netscript_file);
+#endif
+		char netScriptName[256];
+		netScript.GetName(netScriptName);
+		netScriptName[32] = '\0';
+		description.m_netScript = netScriptName;
+	} // else constructor's blank string is desirable
+	
 	gMetaserverClient->announceGame(GAME_PORT, description);
 }
 

@@ -45,6 +45,10 @@ Tuesday, June 21, 1994 3:26:46 PM
 #endif
 
 #define MAX_LEVEL_NAME_LENGTH 64
+
+// change this if you make a major change to the way the setup messages work
+const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT V1";
+
 // ZZZ: there probably should be a published max size somewhere, but this isn't used anywhere; better
 // not to pretend it's real.
 //#define MAX_NET_DISTRIBUTION_BUFFER_SIZE 512

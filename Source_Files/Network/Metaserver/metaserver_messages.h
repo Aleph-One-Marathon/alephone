@@ -29,6 +29,8 @@
 
 #include "AStream.h"
 #include "SDL_net.h"
+#include "Scenario.h" // for scenario name and ID
+#include "network.h" // for network protocol ID
 
 #include <string>
 #include <vector>
@@ -94,7 +96,17 @@ struct GameDescription
 	uint8		m_numPlayers;
 	std::string	m_name;
 	std::string	m_mapName;
-
+	
+	// future versions will take action on these:
+	std::string m_scenarioID;
+	std::string m_networkSetupProtocolID;
+	
+	// while these are purely for display purposes
+	std::string m_scenarioName;
+	std::string m_scenarioVersion;
+	std::string m_alephoneBuildString;
+	std::string m_netScript;
+	
 	GameDescription()
 		: m_type(0)
 		, m_timeLimit(0)
@@ -107,6 +119,10 @@ struct GameDescription
 		, m_numPlayers(1)
 		, m_name("Untitled Game")
 		, m_mapName("Unspecified Map")
+		, m_scenarioID(Scenario::instance()->GetID())
+		, m_networkSetupProtocolID(kNetworkSetupProtocolID)
+		, m_scenarioName(Scenario::instance()->GetName())
+		, m_scenarioVersion(Scenario::instance()->GetVersion())
 	{}
 };
 

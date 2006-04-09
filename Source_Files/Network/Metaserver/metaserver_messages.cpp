@@ -151,6 +151,19 @@ read_string(AIStream& in)
 	return result;
 }
 
+static const string
+read_padded_string(AIStream& in, size_t length)
+{
+	vector<char> temp;
+	temp.resize(length + 1);
+	in.read(&temp[0],length);
+	temp[length] = '\0';
+	string result = (&temp[0]);
+	return result;
+}
+	
+	
+
 static void remove_formatting(std::string &s)
 {
 	char* temp = new char[s.size() + 1];
@@ -573,8 +586,7 @@ operator >>(AIStream& stream, GameDescription& desc)
 	uint32 planningTime;
 	uint32 unused32;
 	uint16 pluginFlag;
-	uint16 pluginCount;
-	const int kPluginListSize = 510;
+	const int kPluginListSize = 512;
 	uint32 clientVersion;
 	uint32 unknown32;
 	uint16 status;
@@ -595,10 +607,22 @@ operator >>(AIStream& stream, GameDescription& desc)
 		>> unused32
 		>> unused32
 		>> unknown16
-		>> pluginFlag
-		>> pluginCount;
-
-	stream.ignore(kPluginListSize);
+		>> pluginFlag;
+	
+	if (pluginFlag & 0x1) {
+		char temp[33];
+		
+		desc.m_alephoneBuildString = read_padded_string(stream, 32);
+		desc.m_networkSetupProtocolID = read_padded_string(stream, 32);
+		desc.m_scenarioName = read_padded_string(stream, 32);
+		desc.m_scenarioID = read_padded_string(stream, 24);
+		desc.m_scenarioVersion = read_padded_string(stream, 8);
+		desc.m_netScript = read_padded_string(stream, 32);
+		
+		stream.ignore(kPluginListSize - (32 + 32 + 32 + 24 + 8 + 32));
+	} else {
+		stream.ignore(kPluginListSize);
+	}
 
 	stream
 		>> clientVersion
@@ -629,9 +653,8 @@ operator <<(AOStream& stream, const GameDescription& desc)
 	uint32 randomSeed = 0;
 	uint32 planningTime = 0;
 	uint32 unused32 = 0;
-	uint16 pluginFlag = 0;
-	uint16 pluginCount = 0;
-	const int kPluginListSize = 510;
+	uint16 pluginFlag = 0x1;
+	const int kPluginListSize = 512;
 	uint32 clientVersion = 0xc136e436;
 	uint32 unknown32 = 0;
 	uint16 status = 0
@@ -655,10 +678,18 @@ operator <<(AOStream& stream, const GameDescription& desc)
 		<< unused32
 		<< unused32
 		<< unknown16
-		<< pluginFlag
-		<< pluginCount;
-
-	write_padded_bytes(stream, NULL, 0, kPluginListSize);
+		<< pluginFlag;
+	
+	{
+		write_padded_string(stream, desc.m_alephoneBuildString.c_str(), 32);
+		write_padded_string(stream, desc.m_networkSetupProtocolID.c_str(), 32);
+		write_padded_string(stream, desc.m_scenarioName.c_str(), 32);
+		write_padded_string(stream, desc.m_scenarioID.c_str(), 24);
+		write_padded_string(stream, desc.m_scenarioVersion.c_str(), 8);
+		write_padded_string(stream, desc.m_netScript.c_str(), 32);
+	}
+	
+	write_padded_bytes(stream, NULL, 0, kPluginListSize - (32 + 32 + 32 + 24 + 8 + 32));
 
 	stream
 		<< clientVersion

@@ -162,9 +162,6 @@ clearly this is all broken until we have packet types
 // For temporary multiple MML specified lua scripts hack
 extern bool gLoadingLuaNetscript;
 
-// change this if you make a major change to the way the setup messages work
-const std::string kNetworkSetupProtocolID = "Aleph One WonderNAT V1";
-
 /* ---------- globals */
 
 static short ddpSocket; /* our ddp socket number */
