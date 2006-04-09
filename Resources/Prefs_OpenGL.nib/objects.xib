@@ -4,89 +4,90 @@
   <object name="rootObject" class="NSCustomObject" id="1">
     <string name="customClass">NSApplication</string>
   </object>
-  <array count="85" name="allObjects">
+  <array count="88" name="allObjects">
     <object class="IBCarbonStaticText" id="180">
-      <string name="bounds">336 353 352 434 </string>
+      <string name="bounds">205 344 221 425 </string>
       <string name="title">Walls:</string>
       <int name="justification">-1</int>
     </object>
     <object class="IBCarbonStaticText" id="181">
-      <string name="bounds">366 353 382 434 </string>
+      <string name="bounds">235 344 251 425 </string>
       <string name="title">Landscapes:</string>
       <int name="justification">-1</int>
     </object>
     <object class="IBCarbonWindow" id="184">
-      <string name="windowRect">135 13 667 714 </string>
+      <string name="windowRect">44 227 453 864 </string>
       <string name="title">OpenGL Rendering</string>
       <object name="rootControl" class="IBCarbonRootControl" id="192">
-        <string name="bounds">0 0 532 701 </string>
+        <string name="bounds">0 0 409 637 </string>
         <array count="3" name="subviews">
           <object class="IBCarbonButton" id="203">
-            <string name="bounds">492 611 512 681 </string>
+            <string name="bounds">369 547 389 617 </string>
             <int name="controlID">1</int>
             <string name="title">OK</string>
             <int name="buttonType">1</int>
           </object>
           <object class="IBCarbonButton" id="215">
-            <string name="bounds">492 529 512 599 </string>
+            <string name="bounds">369 465 389 535 </string>
             <int name="controlID">2</int>
             <string name="title">Cancel</string>
             <int name="buttonType">2</int>
           </object>
           <object class="IBCarbonTab" id="296">
-            <string name="bounds">12 20 480 681 </string>
+            <string name="bounds">18 20 359 617 </string>
             <array count="2" name="subviews">
               <object class="IBCarbonUserPane" id="297">
-                <string name="bounds">42 20 480 681 </string>
+                <string name="bounds">55 20 359 617 </string>
                 <array count="3" name="subviews">
                   <object class="IBCarbonGroupBox" id="229">
-                    <string name="bounds">197 337 289 661 </string>
+                    <string name="bounds">61 328 153 597 </string>
                     <array count="7" name="subviews">
                       <object class="IBCarbonSlider" id="187">
-                        <string name="bounds">225 353 249 645 </string>
+                        <string name="bounds">89 344 115 581 </string>
                         <int name="controlID">39</int>
                         <boolean name="isLive">TRUE</boolean>
                         <int name="numTickMarks">6</int>
                         <int name="maximumValue">5</int>
                       </object>
                       <object class="IBCarbonStaticText" id="208">
-                        <string name="bounds">257 353 273 369 </string>
+                        <string name="bounds">123 344 139 360 </string>
                         <string name="title">0</string>
                         <int name="justification">1</int>
                       </object>
                       <object class="IBCarbonStaticText" id="197">
-                        <string name="bounds">257 408 273 424 </string>
+                        <string name="bounds">123 388 139 404 </string>
                         <string name="title">1</string>
                         <int name="justification">1</int>
                       </object>
                       <object class="IBCarbonStaticText" id="233">
-                        <string name="bounds">257 463 273 479 </string>
+                        <string name="bounds">123 432 139 448 </string>
                         <string name="title">2</string>
                         <int name="justification">1</int>
                       </object>
                       <object class="IBCarbonStaticText" id="209">
-                        <string name="bounds">257 520 273 536 </string>
+                        <string name="bounds">123 475 139 491 </string>
                         <string name="title">4</string>
                         <int name="justification">1</int>
                       </object>
                       <object class="IBCarbonStaticText" id="232">
-                        <string name="bounds">257 574 273 590 </string>
+                        <string name="bounds">123 518 139 534 </string>
                         <string name="title">8</string>
                         <int name="justification">1</int>
                       </object>
                       <object class="IBCarbonStaticText" id="196">
-                        <string name="bounds">257 629 273 645 </string>
+                        <string name="bounds">123 565 139 581 </string>
                         <string name="title">16</string>
                         <int name="justification">1</int>
                       </object>
                     </array>
                     <string name="title">Anisotropic Filtering</string>
+                    <string name="helpTagText">Anisotropic filtering sharpens textures viewed at an angle</string>
                   </object>
                   <object class="IBCarbonGroupBox" id="205">
-                    <string name="bounds">305 337 463 661 </string>
+                    <string name="bounds">174 328 332 597 </string>
                     <array count="8" name="subviews">
                       <object class="IBCarbonPopupButton" id="230">
-                        <string name="bounds">335 442 355 645 </string>
+                        <string name="bounds">204 433 224 581 </string>
                         <int name="controlID">40</int>
                         <object name="menu" class="IBCarbonMenu" id="195">
                           <string name="title">Popup</string>
@@ -112,7 +113,7 @@
                       </object>
                       <reference idRef="180"/>
                       <object class="IBCarbonPopupButton" id="206">
-                        <string name="bounds">365 442 385 645 </string>
+                        <string name="bounds">234 433 254 581 </string>
                         <int name="controlID">41</int>
                         <object name="menu" class="IBCarbonMenu" id="201">
                           <string name="title">Popup</string>
@@ -138,7 +139,7 @@
                       </object>
                       <reference idRef="181"/>
                       <object class="IBCarbonPopupButton" id="303">
-                        <string name="bounds">395 442 415 645 </string>
+                        <string name="bounds">264 433 284 581 </string>
                         <int name="controlID">42</int>
                         <object name="menu" class="IBCarbonMenu" id="304">
                           <string name="title">Popup</string>
@@ -163,17 +164,18 @@
                         </object>
                       </object>
                       <object class="IBCarbonStaticText" id="306">
-                        <string name="bounds">426 353 442 434 </string>
+                        <string name="bounds">295 344 311 425 </string>
                         <string name="title">Weapons:</string>
+                        <string name="helpTagText">Weapons in hand</string>
                         <int name="justification">-1</int>
                       </object>
                       <object class="IBCarbonStaticText" id="311">
-                        <string name="bounds">396 353 412 434 </string>
+                        <string name="bounds">265 344 281 425 </string>
                         <string name="title">Sprites:</string>
                         <int name="justification">-1</int>
                       </object>
                       <object class="IBCarbonPopupButton" id="314">
-                        <string name="bounds">425 442 445 645 </string>
+                        <string name="bounds">294 433 314 581 </string>
                         <int name="controlID">43</int>
                         <object name="menu" class="IBCarbonMenu" id="312">
                           <string name="title">Popup</string>
@@ -201,45 +203,48 @@
                     <string name="title">Replacement Texture Quality</string>
                   </object>
                   <object class="IBCarbonGroupBox" id="202">
-                    <string name="bounds">50 40 394 322 </string>
+                    <string name="bounds">61 40 339 308 </string>
                     <array count="8" name="subviews">
                       <object class="IBCarbonCheckBox" id="185">
-                        <string name="bounds">302 56 322 306 </string>
+                        <string name="bounds">225 56 245 306 </string>
                         <int name="controlID">9</int>
                         <string name="title">Use Z-Buffer</string>
+                        <string name="helpTagText">Hardware Z-Buffer may improve speed, but may render explosions and other sprites incorrectly when they are close to walls</string>
                       </object>
                       <object class="IBCarbonCheckBox" id="223">
-                        <string name="bounds">358 56 378 248 </string>
+                        <string name="bounds">303 56 323 248 </string>
                         <int name="controlID">10</int>
-                        <string name="title">Colorize Untextured Areas</string>
+                        <string name="title">Color Untextured Areas</string>
                       </object>
                       <object class="IBCarbonUserPane" id="189">
-                        <string name="bounds">358 256 378 306 </string>
+                        <string name="bounds">303 242 323 292 </string>
                         <int name="controlID">11</int>
                         <int name="featureBits">2</int>
                       </object>
                       <object class="IBCarbonCheckBox" id="214">
-                        <string name="bounds">274 56 294 306 </string>
+                        <string name="bounds">251 56 271 306 </string>
                         <int name="controlID">26</int>
                         <string name="title">&quot;Static&quot; Effect Looks Flat</string>
                       </object>
                       <object class="IBCarbonCheckBox" id="231">
-                        <string name="bounds">162 56 182 306 </string>
+                        <string name="bounds">173 56 193 306 </string>
                         <int name="controlID">27</int>
                         <string name="title">OpenGL Flashes and Tinting</string>
                       </object>
                       <object class="IBCarbonCheckBox" id="216">
-                        <string name="bounds">78 56 98 306 </string>
+                        <string name="bounds">89 56 109 306 </string>
                         <int name="controlID">28</int>
                         <string name="title">Transparent Liquids</string>
+                        <string name="helpTagText">Enable see-through liquids (transparent liquids MML is also necessary to see through liquids)</string>
                       </object>
                       <object class="IBCarbonCheckBox" id="235">
-                        <string name="bounds">106 56 126 306 </string>
+                        <string name="bounds">117 56 137 306 </string>
                         <int name="controlID">31</int>
                         <string name="title">Fog</string>
+                        <string name="helpTagText">Enables fog (MML or Lua fog must also be enabled to see fog)</string>
                       </object>
                       <object class="IBCarbonCheckBox" id="212">
-                        <string name="bounds">134 56 154 306 </string>
+                        <string name="bounds">145 56 165 306 </string>
                         <int name="controlID">37</int>
                         <string name="title">3D Models</string>
                       </object>
@@ -252,121 +257,152 @@
                 <int name="featureBits">2</int>
               </object>
               <object class="IBCarbonUserPane" id="298">
-                <string name="bounds">42 20 480 681 </string>
-                <array count="12" name="subviews">
-                  <object class="IBCarbonStaticText" id="318">
-                    <string name="bounds">94 55 110 131 </string>
-                    <string name="title">Wall</string>
+                <string name="bounds">55 20 359 617 </string>
+                <array count="3" name="subviews">
+                  <object class="IBCarbonCheckBox" id="345">
+                    <string name="bounds">224 320 242 495 </string>
+                    <int name="controlID">50</int>
+                    <string name="title">GeForce 1-4 Texture Fix</string>
+                    <string name="helpTagText">Fixes banding in certain replacement textures on older GeForce cards</string>
                   </object>
-                  <object class="IBCarbonStaticText" id="319">
-                    <string name="bounds">130 55 146 131 </string>
-                    <string name="title">Landscape</string>
-                  </object>
-                  <object class="IBCarbonStaticText" id="320">
-                    <string name="bounds">165 55 181 131 </string>
-                    <string name="title">Sprite</string>
-                  </object>
-                  <object class="IBCarbonStaticText" id="321">
-                    <string name="bounds">202 56 218 132 </string>
-                    <string name="title">Weapon</string>
-                  </object>
-                  <object class="IBCarbonStaticText" id="322">
-                    <string name="bounds">62 46 78 180 </string>
+                  <object class="IBCarbonGroupBox" id="349">
+                    <string name="bounds">61 40 242 300 </string>
+                    <array count="9" name="subviews">
+                      <object class="IBCarbonStaticText" id="319">
+                        <string name="bounds">147 56 163 143 </string>
+                        <string name="title">Landscapes:</string>
+                        <int name="justification">-1</int>
+                      </object>
+                      <object class="IBCarbonStaticText" id="320">
+                        <string name="bounds">177 56 193 143 </string>
+                        <string name="title">Sprites:</string>
+                        <int name="justification">-1</int>
+                      </object>
+                      <object class="IBCarbonStaticText" id="321">
+                        <string name="bounds">207 56 223 143 </string>
+                        <string name="title">Weapons:</string>
+                        <string name="helpTagText">Weapons in hand</string>
+                        <int name="justification">-1</int>
+                      </object>
+                      <object class="IBCarbonPopupButton" id="323">
+                        <string name="bounds">116 151 136 284 </string>
+                        <int name="controlID">44</int>
+                        <object name="menu" class="IBCarbonMenu" id="325">
+                          <string name="title">Popup:</string>
+                          <array count="3" name="items">
+                            <object class="IBCarbonMenuItem" id="326">
+                              <boolean name="checked">TRUE</boolean>
+                              <string name="title">Full</string>
+                            </object>
+                            <object class="IBCarbonMenuItem" id="324">
+                              <string name="title">Half</string>
+                            </object>
+                            <object class="IBCarbonMenuItem" id="327">
+                              <string name="title">Quarter</string>
+                            </object>
+                          </array>
+                        </object>
+                      </object>
+                      <object class="IBCarbonPopupButton" id="329">
+                        <string name="bounds">146 151 166 284 </string>
+                        <int name="controlID">45</int>
+                        <object name="menu" class="IBCarbonMenu" id="331">
+                          <string name="title">Popup:</string>
+                          <array count="3" name="items">
+                            <object class="IBCarbonMenuItem" id="332">
+                              <boolean name="checked">TRUE</boolean>
+                              <string name="title">Full</string>
+                            </object>
+                            <object class="IBCarbonMenuItem" id="330">
+                              <string name="title">Half</string>
+                            </object>
+                            <object class="IBCarbonMenuItem" id="328">
+                              <string name="title">Quarter</string>
+                            </object>
+                          </array>
+                        </object>
+                      </object>
+                      <object class="IBCarbonPopupButton" id="334">
+                        <string name="bounds">176 151 196 284 </string>
+                        <int name="controlID">46</int>
+                        <object name="menu" class="IBCarbonMenu" id="336">
+                          <string name="title">Popup:</string>
+                          <array count="3" name="items">
+                            <object class="IBCarbonMenuItem" id="337">
+                              <boolean name="checked">TRUE</boolean>
+                              <string name="title">Full</string>
+                            </object>
+                            <object class="IBCarbonMenuItem" id="335">
+                              <string name="title">Half</string>
+                            </object>
+                            <object class="IBCarbonMenuItem" id="333">
+                              <string name="title">Quarter</string>
+                            </object>
+                          </array>
+                        </object>
+                      </object>
+                      <object class="IBCarbonPopupButton" id="338">
+                        <string name="bounds">206 151 226 284 </string>
+                        <int name="controlID">47</int>
+                        <object name="menu" class="IBCarbonMenu" id="339">
+                          <string name="title">Popup:</string>
+                          <array count="3" name="items">
+                            <object class="IBCarbonMenuItem" id="341">
+                              <boolean name="checked">TRUE</boolean>
+                              <string name="title">Full</string>
+                            </object>
+                            <object class="IBCarbonMenuItem" id="340">
+                              <string name="title">Half</string>
+                            </object>
+                            <object class="IBCarbonMenuItem" id="342">
+                              <string name="title">Quarter</string>
+                            </object>
+                          </array>
+                        </object>
+                      </object>
+                      <object class="IBCarbonStaticText" id="347">
+                        <string name="bounds">117 56 133 143 </string>
+                        <string name="title">Walls:</string>
+                        <int name="justification">-1</int>
+                      </object>
+                      <object class="IBCarbonStaticText" id="355">
+                        <string name="bounds">91 56 108 284 </string>
+                        <boolean name="small">TRUE</boolean>
+                        <int name="controlSize">1</int>
+                        <string name="title">Reduce for machines with low VRAM</string>
+                        <int name="justification">1</int>
+                      </object>
+                    </array>
                     <string name="title">Texture Resolution</string>
                   </object>
-                  <object class="IBCarbonPopupButton" id="323">
-                    <string name="bounds">90 158 110 283 </string>
-                    <int name="controlID">44</int>
-                    <object name="menu" class="IBCarbonMenu" id="325">
-                      <string name="title">Popup:</string>
-                      <array count="3" name="items">
-                        <object class="IBCarbonMenuItem" id="326">
-                          <boolean name="checked">TRUE</boolean>
-                          <string name="title">1</string>
-                        </object>
-                        <object class="IBCarbonMenuItem" id="324">
-                          <string name="title">1/2</string>
-                        </object>
-                        <object class="IBCarbonMenuItem" id="327">
-                          <string name="title">1/4</string>
-                        </object>
-                      </array>
-                    </object>
-                  </object>
-                  <object class="IBCarbonPopupButton" id="329">
-                    <string name="bounds">129 158 149 283 </string>
-                    <int name="controlID">45</int>
-                    <object name="menu" class="IBCarbonMenu" id="331">
-                      <string name="title">Popup:</string>
-                      <array count="3" name="items">
-                        <object class="IBCarbonMenuItem" id="332">
-                          <boolean name="checked">TRUE</boolean>
-                          <string name="title">1</string>
-                        </object>
-                        <object class="IBCarbonMenuItem" id="330">
-                          <string name="title">1/2</string>
-                        </object>
-                        <object class="IBCarbonMenuItem" id="328">
-                          <string name="title">1/4</string>
-                        </object>
-                      </array>
-                    </object>
-                  </object>
-                  <object class="IBCarbonPopupButton" id="334">
-                    <string name="bounds">161 158 181 283 </string>
-                    <int name="controlID">46</int>
-                    <object name="menu" class="IBCarbonMenu" id="336">
-                      <string name="title">Popup:</string>
-                      <array count="3" name="items">
-                        <object class="IBCarbonMenuItem" id="337">
-                          <boolean name="checked">TRUE</boolean>
-                          <string name="title">1</string>
-                        </object>
-                        <object class="IBCarbonMenuItem" id="335">
-                          <string name="title">1/2</string>
-                        </object>
-                        <object class="IBCarbonMenuItem" id="333">
-                          <string name="title">1/4</string>
-                        </object>
-                      </array>
-                    </object>
-                  </object>
-                  <object class="IBCarbonPopupButton" id="338">
-                    <string name="bounds">201 158 221 283 </string>
-                    <int name="controlID">47</int>
-                    <object name="menu" class="IBCarbonMenu" id="339">
-                      <string name="title">Popup:</string>
-                      <array count="3" name="items">
-                        <object class="IBCarbonMenuItem" id="341">
-                          <boolean name="checked">TRUE</boolean>
-                          <string name="title">1</string>
-                        </object>
-                        <object class="IBCarbonMenuItem" id="340">
-                          <string name="title">1/2</string>
-                        </object>
-                        <object class="IBCarbonMenuItem" id="342">
-                          <string name="title">1/4</string>
-                        </object>
-                      </array>
-                    </object>
-                  </object>
-                  <object class="IBCarbonCheckBox" id="343">
-                    <string name="bounds">264 392 278 524 </string>
-                    <int name="controlID">48</int>
-                    <string name="title">MipMap Walls</string>
-                  </object>
-                  <object class="IBCarbonCheckBox" id="344">
-                    <string name="bounds">286 401 300 532 </string>
-                    <int name="controlID">49</int>
-                    <string name="title">MipMap Sprites</string>
-                  </object>
-                  <object class="IBCarbonCheckBox" id="345">
-                    <string name="bounds">111 477 125 581 </string>
-                    <int name="controlID">50</int>
-                    <string name="title">GeForce Fix</string>
+                  <object class="IBCarbonGroupBox" id="352">
+                    <string name="bounds">61 320 202 597 </string>
+                    <array count="3" name="subviews">
+                      <object class="IBCarbonCheckBox" id="343">
+                        <string name="bounds">89 336 107 468 </string>
+                        <int name="controlID">48</int>
+                        <string name="title">Mipmap Walls</string>
+                        <string name="helpTagText">Smooths distant walls</string>
+                      </object>
+                      <object class="IBCarbonCheckBox" id="344">
+                        <string name="bounds">129 336 147 467 </string>
+                        <int name="controlID">49</int>
+                        <string name="title">Mipmap Sprites</string>
+                        <string name="helpTagText">Smooths distant sprites</string>
+                      </object>
+                      <object class="IBCarbonStaticText" id="353">
+                        <string name="bounds">153 336 186 581 </string>
+                        <boolean name="small">TRUE</boolean>
+                        <int name="controlSize">1</int>
+                        <string name="title">Warning: shapes file sprites exhibit white fringes when Mipmap Sprites is enabled</string>
+                        <int name="justification">1</int>
+                      </object>
+                    </array>
+                    <string name="title">Distant Texture Smoothing</string>
                   </object>
                 </array>
                 <int name="controlID">402</int>
+                <string name="title">Advanced</string>
                 <int name="featureBits">2</int>
               </object>
             </array>
@@ -378,7 +414,7 @@
                 <string>tabEnabled</string>
                 <string>1</string>
                 <string>tabName</string>
-                <string>Lara</string>
+                <string>General</string>
                 <string>userPane</string>
                 <reference idRef="297"/>
               </dictionary>
@@ -388,7 +424,7 @@
                 <string>tabEnabled</string>
                 <string>1</string>
                 <string>tabName</string>
-                <string>Croft</string>
+                <string>Advanced</string>
                 <string>userPane</string>
                 <reference idRef="298"/>
               </dictionary>
@@ -459,11 +495,9 @@
     <reference idRef="312"/>
     <reference idRef="313"/>
     <reference idRef="314"/>
-    <reference idRef="318"/>
     <reference idRef="319"/>
     <reference idRef="320"/>
     <reference idRef="321"/>
-    <reference idRef="322"/>
     <reference idRef="323"/>
     <reference idRef="324"/>
     <reference idRef="325"/>
@@ -487,8 +521,13 @@
     <reference idRef="343"/>
     <reference idRef="344"/>
     <reference idRef="345"/>
+    <reference idRef="347"/>
+    <reference idRef="349"/>
+    <reference idRef="352"/>
+    <reference idRef="353"/>
+    <reference idRef="355"/>
   </array>
-  <array count="85" name="allParents">
+  <array count="88" name="allParents">
     <reference idRef="205"/>
     <reference idRef="205"/>
     <reference idRef="1"/>
@@ -546,34 +585,37 @@
     <reference idRef="314"/>
     <reference idRef="304"/>
     <reference idRef="205"/>
-    <reference idRef="298"/>
-    <reference idRef="298"/>
-    <reference idRef="298"/>
-    <reference idRef="298"/>
-    <reference idRef="298"/>
-    <reference idRef="298"/>
+    <reference idRef="349"/>
+    <reference idRef="349"/>
+    <reference idRef="349"/>
+    <reference idRef="349"/>
     <reference idRef="325"/>
     <reference idRef="323"/>
     <reference idRef="325"/>
     <reference idRef="325"/>
     <reference idRef="331"/>
-    <reference idRef="298"/>
+    <reference idRef="349"/>
     <reference idRef="331"/>
     <reference idRef="329"/>
     <reference idRef="331"/>
     <reference idRef="336"/>
-    <reference idRef="298"/>
+    <reference idRef="349"/>
     <reference idRef="336"/>
     <reference idRef="334"/>
     <reference idRef="336"/>
-    <reference idRef="298"/>
+    <reference idRef="349"/>
     <reference idRef="338"/>
     <reference idRef="339"/>
     <reference idRef="339"/>
     <reference idRef="339"/>
+    <reference idRef="352"/>
+    <reference idRef="352"/>
+    <reference idRef="298"/>
+    <reference idRef="349"/>
     <reference idRef="298"/>
     <reference idRef="298"/>
-    <reference idRef="298"/>
+    <reference idRef="352"/>
+    <reference idRef="349"/>
   </array>
   <dictionary count="2" name="nameTable">
     <string>File&apos;s Owner</string>
@@ -581,5 +623,5 @@
     <string>Prefs_OpenGL</string>
     <reference idRef="184"/>
   </dictionary>
-  <unsigned_int name="nextObjectID">346</unsigned_int>
+  <unsigned_int name="nextObjectID">357</unsigned_int>
 </object>
