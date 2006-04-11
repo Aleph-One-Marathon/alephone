@@ -62,7 +62,7 @@ static vector<TextureOptionsEntry> TOList[NUMBER_OF_COLLECTIONS];
 // This is OK because the maximum reasonable number of texture-option entries per collection
 // is around 10*256 or 2560, much less than 32K.
 const uint16 Specific_CLUT_Flag = 0x8000;
-static vector<int16> TOHash[NUMBER_OF_COLLECTIONS];
+static vector<uint16> TOHash[NUMBER_OF_COLLECTIONS];
 
 // Hash-table size and function
 const int TOHashSize = 1 << 8;
@@ -119,18 +119,17 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 	// Initialize the hash table if necessary
 	if (TOHash[Collection].empty())
 	{
-		TOHash[Collection].resize(TOHashSize);
-		objlist_set(&TOHash[Collection][0],NONE,TOHashSize);
+		TOHash[Collection].resize(TOHashSize, UNONE);
 	}
 	
 	// Set up a *reference* to the appropriate hashtable entry;
 	// this makes setting this entry a bit more convenient
-	int16& HashVal = TOHash[Collection][TOHashFunc(CLUT,Bitmap)];
+	uint16& HashVal = TOHash[Collection][TOHashFunc(CLUT,Bitmap)];
 	
 	// Check to see if the texture-option entry is correct;
 	// if it is, then we're done.
 	// Be sure to blank out the specific-CLUT flag when indexing the texture-options list with the hash value.
-	if (HashVal != NONE)
+	if (HashVal != UNONE)
 	{
 		vector<TextureOptionsEntry>::iterator TOIter = TOList[Collection].begin() + (HashVal & ~Specific_CLUT_Flag);
 		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
@@ -141,11 +140,11 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 				return &TOIter->OptionsData;
 			}
 	}
-	
+
 	// Fallback for the case of a hashtable miss;
 	// do a linear search and then update the hash entry appropriately.
 	vector<TextureOptionsEntry>& TOL = TOList[Collection];
-	int16 Indx = 0;
+	uint16 Indx = 0;
 	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++, Indx++)
 	{
 		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
