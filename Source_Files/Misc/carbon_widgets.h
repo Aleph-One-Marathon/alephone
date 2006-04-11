@@ -135,11 +135,18 @@ public:
 class EditTextOrNumberWidget : public NIBsControlWidget
 {
 public:
-	EditTextOrNumberWidget (ControlRef ctrl)
+	EditTextOrNumberWidget (ControlRef ctrl, ControlRef label_ctrl = 0)
 		: NIBsControlWidget (ctrl)
-		, m_keystroke_watcher (m_ctrl) {}
+		, m_keystroke_watcher (m_ctrl)
+		, m_label_widget ((label_ctrl) ? new StaticTextWidget (label_ctrl) : 0)
+		{}
+
+	~EditTextOrNumberWidget () { delete m_label_widget; }
 	
 	virtual void hide ();
+	virtual void show ();
+	
+	void set_label (const std::string& s);
 	
 	void set_callback (GotCharacterCallback callback) { m_keystroke_watcher.set_callback (callback); }
 	
@@ -148,13 +155,14 @@ public:
 
 private:
 	AutoKeystrokeWatcher m_keystroke_watcher;
+	StaticTextWidget* m_label_widget;
 };
 
 class EditTextWidget : public EditTextOrNumberWidget, public Bindable<std::string>
 {
 public:
-	EditTextWidget (ControlRef ctrl)
-		: EditTextOrNumberWidget (ctrl)
+	EditTextWidget (ControlRef ctrl, ControlRef label_ctrl = 0)
+		: EditTextOrNumberWidget (ctrl, label_ctrl)
 		{}
 
 	virtual std::string bind_export () { return get_text (); }
@@ -164,8 +172,8 @@ public:
 class EditNumberWidget : public EditTextOrNumberWidget, public Bindable<int>
 {
 public:
-	EditNumberWidget (ControlRef ctrl)
-		: EditTextOrNumberWidget (ctrl)
+	EditNumberWidget (ControlRef ctrl, ControlRef label_ctrl = 0)
+		: EditTextOrNumberWidget (ctrl, label_ctrl)
 		{}
 	
 	void set_value (int value);

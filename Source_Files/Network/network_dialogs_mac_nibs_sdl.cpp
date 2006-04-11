@@ -327,9 +327,11 @@ public:
 		m_difficultyWidget = new SelectorWidget (GetCtrlFromWindow (m_dialog_window(), 0, iDIFFICULTY_MENU));
 	
 		m_limitTypeWidget = new SelectorWidget (GetCtrlFromWindow (m_dialog_window(), 0, iRADIO_NO_TIME_LIMIT));
-		m_timeLimitWidget = new EditNumberWidget (GetCtrlFromWindow (m_dialog_window(), 0, iTIME_LIMIT));
-		m_scoreLimitWidget = new EditNumberWidget (GetCtrlFromWindow (m_dialog_window(), 0, iKILL_LIMIT));
-	
+		m_timeLimitWidget = new EditNumberWidget (GetCtrlFromWindow (m_dialog_window(), 0, iTIME_LIMIT),
+				GetCtrlFromWindow (m_dialog_window(), 0, iTEXT_TIME_LIMIT));
+		m_scoreLimitWidget = new EditNumberWidget (GetCtrlFromWindow (m_dialog_window(), 0, iKILL_LIMIT),
+				GetCtrlFromWindow (m_dialog_window(), 0, iTEXT_KILL_LIMIT));
+				
 		m_aliensWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iUNLIMITED_MONSTERS));
 		m_allowTeamsWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iFORCE_UNIQUE_TEAMS));
 		m_deadPlayersDropItemsWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iBURN_ITEMS_ON_DEATH));

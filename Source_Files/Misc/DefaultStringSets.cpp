@@ -450,7 +450,6 @@ static char*    sNetworkGameTypesStrings[] = {
     "Capture the Flag",
     "King of the Hill",
     "Kill the Man With the Ball",
-    "Defense",
     "Rugby",
     "Tag"
 };

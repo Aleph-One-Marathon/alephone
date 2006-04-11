@@ -1104,6 +1104,8 @@ public:
 		, m_number_entry (number_entry)
 		{}
 
+	void set_label (const std::string& s) { m_number_entry->set_text (s.c_str ()); }
+
 	void set_value (int value) { m_number_entry->set_number (value); }
 	int get_value () { return m_number_entry->get_number (); }
 	

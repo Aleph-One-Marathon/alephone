@@ -927,6 +927,25 @@ protected:
 	BitPref m_kill_limited;
 };
 
+class GametypePref : public Bindable<int>
+{
+public:
+	GametypePref (int16& pref) : m_pref (pref) {}
+	
+	virtual int bind_export ()
+	{
+		return ((m_pref < 5) ? m_pref : m_pref - 1);
+	}
+	
+	virtual void bind_import (int value)
+	{
+		m_pref = ((value < 5) ? value : value + 1);
+	}
+	
+protected:
+	int16& m_pref;
+};
+
 static const vector<string> make_entry_vector (int32 entry_flags)
 {	
 	vector<string> result;
@@ -1062,7 +1081,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 
 	LevelInt16Pref levelPref (active_network_preferences->entry_point, m_old_game_type);
 	binders.insert<int> (m_levelWidget, &levelPref);
-	Int16Pref gameTypePref (active_network_preferences->game_type);
+	GametypePref gameTypePref (active_network_preferences->game_type);
 	binders.insert<int> (m_gameTypeWidget, &gameTypePref);
 	Int16Pref difficultyPref (active_network_preferences->difficulty_level);
 	binders.insert<int> (m_difficultyWidget, &difficultyPref);
@@ -1246,30 +1265,14 @@ void SetupNetgameDialog::setupForUntimedGame ()
 
 void SetupNetgameDialog::setupForTimedGame ()
 {
-	if (m_gameTypeWidget->get_value () != _game_of_defense)
-	{
-		m_timeLimitWidget->show ();
-		m_scoreLimitWidget->hide ();
-	}
-	else
-	{
-		m_timeLimitWidget->show ();
-		m_scoreLimitWidget->show ();
-	}
+	m_timeLimitWidget->show ();
+	m_scoreLimitWidget->hide ();
 }
 
 void SetupNetgameDialog::setupForScoreGame ()
 {
-	if (m_gameTypeWidget->get_value () != _game_of_defense)
-	{
-		m_timeLimitWidget->hide ();
-		m_scoreLimitWidget->show ();
-	}
-	else
-	{
-		m_timeLimitWidget->show ();
-		m_scoreLimitWidget->show ();
-	}
+	m_timeLimitWidget->hide ();
+	m_scoreLimitWidget->show ();
 }
 
 void SetupNetgameDialog::limitTypeHit ()
@@ -1300,7 +1303,8 @@ void SetupNetgameDialog::teamsHit ()
 
 void SetupNetgameDialog::setupForGameType ()
 {
-	switch(m_gameTypeWidget->get_value ())
+	int raw_value = m_gameTypeWidget->get_value ();
+	switch (raw_value < 5 ? raw_value : raw_value + 1)
 	{
 		case _game_of_cooperative_play:
 			m_allowTeamsWidget->activate ();
@@ -1309,6 +1313,9 @@ void SetupNetgameDialog::setupForGameType ()
 			
 			m_deadPlayersDropItemsWidget->set_value (true);
 			m_aliensWidget->set_value (true);
+			
+			getpstr (ptemporary, strSETUP_NET_GAME_MESSAGES, killsString);
+			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
 			break;
 			
 		case _game_of_kill_monsters:
@@ -1318,6 +1325,9 @@ void SetupNetgameDialog::setupForGameType ()
 			m_allowTeamsWidget->activate ();
 			m_deadPlayersDropItemsWidget->activate ();
 			m_aliensWidget->activate ();
+			
+			getpstr (ptemporary, strSETUP_NET_GAME_MESSAGES, killsString);
+			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
 			break;
 
 		case _game_of_capture_the_flag:
@@ -1327,6 +1337,9 @@ void SetupNetgameDialog::setupForGameType ()
 			
 			m_allowTeamsWidget->set_value (true);
 			m_teamWidget->activate ();
+			
+			getpstr (ptemporary, strSETUP_NET_GAME_MESSAGES, flagsString);
+			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
 			break;
 			
 		case _game_of_rugby:
@@ -1336,15 +1349,9 @@ void SetupNetgameDialog::setupForGameType ()
 			
 			m_allowTeamsWidget->set_value (true);
 			m_teamWidget->activate ();
-			break;
-
-		case _game_of_defense:
-			m_allowTeamsWidget->deactivate ();
-			m_deadPlayersDropItemsWidget->activate ();
-			m_aliensWidget->activate ();
 			
-			m_allowTeamsWidget->set_value (true);
-			m_teamWidget->activate ();
+			getpstr (ptemporary, strSETUP_NET_GAME_MESSAGES, pointsString);
+			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
 			break;
 			
 		default:
@@ -1356,6 +1363,8 @@ void SetupNetgameDialog::setupForGameType ()
 void SetupNetgameDialog::gameTypeHit ()
 {
 	int new_game_type= m_gameTypeWidget->get_value ();
+	if (new_game_type >= 5)
+		++new_game_type;
 	
 	if (new_game_type != m_old_game_type) {
 		int32 new_entry_flags, old_entry_flags;

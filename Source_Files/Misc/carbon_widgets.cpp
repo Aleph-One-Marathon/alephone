@@ -63,8 +63,25 @@ void EditTextOrNumberWidget::hide ()
 
 	if (m_ctrl == focusCtrl)
 		ClearKeyboardFocus (GetControlOwner (m_ctrl));
+	
+	if (m_label_widget)
+		m_label_widget->hide ();
 		
 	NIBsControlWidget::hide ();
+}
+
+void EditTextOrNumberWidget::show ()
+{	
+	if (m_label_widget)
+		m_label_widget->show ();
+		
+	NIBsControlWidget::show ();
+}
+
+void EditTextOrNumberWidget::set_label (const std::string& s)
+{
+	if (m_label_widget)
+		m_label_widget->set_text (s);
 }
 
 void EditTextOrNumberWidget::set_text (const std::string& s)
