@@ -778,7 +778,7 @@ public:
 		w_toggle *crosshairs_w = new w_toggle ("Allow Crosshairs", true);
 		m_dialog.add_to_tab (crosshairs_w, iSNG_STUFF_TAB);
 	
-		w_toggle *lara_croft_w = new w_toggle ("Allow Lara Croft", true);
+		w_toggle *lara_croft_w = new w_toggle ("Allow Chase Cam", true);
 		m_dialog.add_to_tab (lara_croft_w, iSNG_STUFF_TAB);
 		
 		m_dialog.add_to_tab (new w_spacer(), iSNG_STUFF_TAB);
