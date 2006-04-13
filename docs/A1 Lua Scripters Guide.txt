@@ -1028,6 +1028,11 @@ Returns a the map's environment attributes. For example:
 vacuum,magnetic,rebellion,low_gravity = get_map_environment()
 
 
+get_game_difficulty()
+
+Returns the current difficulty setting, 0 (wuss) through 4 (total carnage)
+
+
 set_overlay_color(overlay, color)
 
 Sets the color of overlay to color. (color is a number, denoting a terminal text color.) There are six overlays, numbered 0 through 5.
