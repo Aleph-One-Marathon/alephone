@@ -1933,8 +1933,8 @@ static void handle_reading_terminal_keys(
 
 	/* If we are dirty.. */
 	terminal->current_line+= line_delta;
-	if(!aborted && initial_group != terminal->current_group ||  
-		initial_line != terminal->current_line)
+	if(!aborted && (initial_group != terminal->current_group ||  
+			initial_line != terminal->current_line))
 	{
 		if(terminal->current_line<0)
 		{
