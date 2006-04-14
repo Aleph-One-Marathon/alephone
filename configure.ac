@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Written in 2000 by Christian Bauer <Christian.Bauer@uni-mainz.de>
 
-AC_INIT([Aleph One/SDL], 20060307pre3, [http://sourceforge.net/bugs/?group_id=1997], [AlephOne])
+AC_INIT([Aleph One/SDL], 20060412rc1, [http://sourceforge.net/bugs/?group_id=1997], [AlephOne])
 AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
 AC_PREREQ(2.52)
 
@@ -24,9 +24,13 @@ AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_RANLIB
 
+dnl some platform specific stuff
 case $target in
 *-*-mingw32*)
 	AC_CHECK_TOOL(WINDRES, windres, :)
+	;;
+*-*-netbsd*)
+	CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"	
 	;;
 *)
 	;;
@@ -125,7 +129,7 @@ case "$target" in
     ;;	
   *-*-netbsd*)
     SYS_GL_LIBS="-lGL"
-    CPPFLAGS="$CPPFLAGS -I/usr/pkg/include -I/usr/X11R6/include"
+    CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include"
     ;;
   *)
     SYS_GL_LIBS="-lGL"
