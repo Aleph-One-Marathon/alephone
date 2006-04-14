@@ -5069,12 +5069,24 @@ bool LoadLuaScript(const char *buffer, size_t len)
 	return lua_loaded;
 }
 
+#ifdef HAVE_OPENGL
+static OGL_FogData PreLuaFogState[OGL_NUMBER_OF_FOG_TYPES];
+#endif
+
 bool RunLuaScript()
 {
 	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
 		use_lua_compass [i] = false;
 	if (!lua_loaded)
 		return false;
+
+#ifdef HAVE_OPENGL
+	for (int i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++) 
+	{
+		PreLuaFogState[i] = *OGL_GetFogData(i);
+	}
+#endif
+
 	int result = 0;
 	// Reverse the functions we're calling
 	for(int i = 0; i < numScriptsLoaded - 1; ++i)
@@ -5090,7 +5102,17 @@ bool RunLuaScript()
 void CloseLuaScript()
 {
 	if (lua_loaded)
+	{
 		lua_close(state);
+		
+#ifdef HAVE_OPENGL
+		for (int i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++)
+		{
+			*OGL_GetFogData(i) = PreLuaFogState[i];
+		}
+#endif
+	}
+
 	lua_loaded = false;
 	lua_running = false;
 	lua_cameras.resize(0);
