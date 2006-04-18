@@ -1115,9 +1115,9 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	BitPref motionSensorPref (active_network_preferences->game_options, _motion_sensor_does_not_work);
 	binders.insert<bool> (m_motionSensorWidget, &motionSensorPref);
 
-	BitPref zoomPref (active_network_preferences->cheat_flags, _allow_crosshair);
+	BitPref zoomPref (active_network_preferences->cheat_flags, _allow_tunnel_vision);
 	binders.insert<bool> (m_zoomWidget, &zoomPref);
-	BitPref crosshairPref (active_network_preferences->cheat_flags, _allow_tunnel_vision);
+	BitPref crosshairPref (active_network_preferences->cheat_flags, _allow_crosshair);
 	binders.insert<bool> (m_crosshairWidget, &crosshairPref);
 	BitPref laraCroftPref (active_network_preferences->cheat_flags, _allow_behindview);
 	binders.insert<bool> (m_laraCroftWidget, &laraCroftPref);
