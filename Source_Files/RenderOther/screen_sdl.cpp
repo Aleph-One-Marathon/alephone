@@ -223,7 +223,9 @@ void enter_screen(void)
 	change_screen_mode(&screen_mode, true);
 	PrevFullscreen = screen_mode.fullscreen;
 
-#ifdef HAVE_OPENGL
+#if defined(HAVE_OPENGL) && !defined(MUST_RELOAD_VIEW_CONTEXT)
+	// if MUST_RELOAD_VIEW_CONTEXT, we know this just happened in
+	// change_screen_mode
 	if (screen_mode.acceleration == _opengl_acceleration)
 		OGL_StartRun();
 #endif
