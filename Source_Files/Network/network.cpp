@@ -873,7 +873,7 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
 	break;
       }
   } else {
-    logAnomaly1("unexpected topology message received (netState is %i)", netState);
+    logWarning1("unexpected topology message received -- gatherer and joiner could disagree on topology! (netState is %i)", netState);
   }
 }
 
