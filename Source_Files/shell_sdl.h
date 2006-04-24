@@ -277,7 +277,7 @@ int main(int argc, char **argv)
 static void initialize_application(void)
 {
 #if defined(__WIN32__) && defined(__MINGW32__)
-  if (option_debug) LoadLibrary("exchndl.dll");
+	if (LoadLibrary("exchndl.dll")) option_debug = true;
 #endif
 
 	// Find data directories, construct search path
