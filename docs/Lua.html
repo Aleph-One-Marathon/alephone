@@ -639,18 +639,18 @@ set_monster_weakness (monster, type, state)
 Sets/Queries monster's weakness to type damage.
 
 <p class=func>
-get_monster_friend (monster, type)
+get_monster_friend (type, class)
 <br>
-set_monster_friend (monster, type, state)
+set_monster_friend (type, class, state)
 <p class=desc>
-Sets/Queries monster's friendliness to monsters of class type.
+Sets/Queries monster's friends.  Type is the monster type of the monster you are checking.  Class is the monster class of the possible friends.
 
 <p class=func>
-get_monster_enemy (monster, type)
+get_monster_enemy (type, class)
 <br>
-set_monster_enemy (monster, type, state)
+set_monster_enemy (type, class, state)
 <p class=desc>
-Sets/Queries monster's "enemyness?" to monsters of class type.
+Sets/Queries monster's enemies.  Type is the monster type of the monster you are checking.  Class is the monster class of the possible enemies.
 
 <p class=func>
 get_monster_item (monster)
@@ -1252,7 +1252,17 @@ set_overlay_color(overlay, color)
 <p class=desc>
 Sets the color of overlay to color. 
 <p class=note>
-(color is a number, denoting a terminal text color.) There are six overlays, numbered 0 through 5.
+There are six overlays, numbered 0 through 5.  Color represents a terminal color, and has the following values:
+<ul>
+<li>0 = green
+<li>1 = white
+<li>2 = red
+<li>3 = dark green
+<li>4 = cyan
+<li>5 = yellow
+<li>6 = dark red
+<li>7 = blue
+</ul>
 
 <p class=func>
 set_overlay_text(overlay, text)
