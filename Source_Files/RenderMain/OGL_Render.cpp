@@ -3275,10 +3275,7 @@ static void SetBlend(short _BlendType)
 bool OGL_Get2D()
 {
 	// Can be called when OpenGL is inactive
-	if (!OGL_IsActive()) return false;
-	
-	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	return TEST_FLAG(ConfigureData.Flags,OGL_Flag_2DGraphics);
+	return (OGL_IsActive());
 }
 
 // ZZZ: splitting these out for more informational "Sampler"ing

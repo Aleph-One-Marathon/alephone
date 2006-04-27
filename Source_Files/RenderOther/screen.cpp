@@ -1041,16 +1041,10 @@ void render_screen(
 	}
 
 	// Is map to be drawn with OpenGL?
-	if (OGL_IsActive() && world_view->overhead_map_active)
-		OGL_MapActive = TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Map);
-	else
-		OGL_MapActive = false;
+	OGL_MapActive = (OGL_IsActive() && world_view->overhead_map_active);
 
 	// Is HUD to be drawn with OpenGL?
-	if (OGL_IsActive())
-		OGL_HUDActive = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_HUD);
-	else
-		OGL_HUDActive = false;
+	OGL_HUDActive = OGL_IsActive();
 
 #ifdef HAVE_CORE_GRAPHICS
 	if (screen_mode.acceleration == _no_acceleration) LockPortBits(port);
