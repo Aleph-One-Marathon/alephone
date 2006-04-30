@@ -473,7 +473,6 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
 {
   if (state == _awaiting_accept_join) {
     if (acceptJoinMessage->accepted()) {
-      topology->nextIdentifier++;
       topology->players[topology->player_count] = *acceptJoinMessage->player();
       topology->players[topology->player_count].stream_id = getStreamIdFromChannel(channel);
 	  topology->players[topology->player_count].net_dead = false;
@@ -1575,7 +1574,6 @@ void NetSetupTopologyFromStarts(const player_start_data* inStartArray, short inS
                         thePlayerInfo->team = inStartArray[s].team;
                         thePlayerInfo->color = inStartArray[s].color;
                         memset(thePlayerInfo->long_serial_number, 0, LONG_SERIAL_NUMBER_LENGTH);
-                        //topology->nextIdentifier++;
                 }
                 else
                 {
@@ -2107,7 +2105,7 @@ int NetGatherPlayer(const prospective_joiner_info &player,
 
   Client::check_player = check_player;
 
-  JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier);
+  JoinPlayerMessage joinPlayerMessage(topology->nextIdentifier++);
   connections_to_clients[player.stream_id]->channel->enqueueOutgoingMessage(joinPlayerMessage);
   connections_to_clients[player.stream_id]->state = Client::_awaiting_accept_join;
 
