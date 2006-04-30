@@ -1295,6 +1295,11 @@ bool NetGather(
 			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, 4226, "UDP")) != 0)
 				logWarning("LibNAT: Failed to map port 4226 (UDP)");
 		close_progress_dialog();
+		
+		if (ret != 0)
+		{
+			alert_user(infoError, strNETWORK_ERRORS, netWarnUPnPConfigureFailed, ret);
+		}
 	}
 	
 	// Start listening for joiners

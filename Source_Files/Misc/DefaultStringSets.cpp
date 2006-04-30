@@ -170,6 +170,8 @@ static char* sStringSetNumber132[] = {
 	
 	"Your game could not be advertised on the Internet.  Please distribute your public IP address by other means or try again later.",
 	
+	"Aleph One failed to configure the firewall/router. You may be unable to gather."
+	
 };
 
 // STR# Resource: "Key Codes To Names"

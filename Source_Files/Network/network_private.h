@@ -81,6 +81,7 @@ enum /* error string for user */
 	netWarnJoinerNoLua,
 	netErrMetaserverConnectionFailure,
 	netWarnCouldNotAdvertiseOnMetaserver,
+	netWarnUPnPConfigureFailed
 };
 
 // (ZZZ:) Moved here from network.cpp
