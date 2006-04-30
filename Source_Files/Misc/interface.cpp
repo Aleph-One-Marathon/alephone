@@ -1921,7 +1921,7 @@ static void start_game(
 	toggle_menus(true);
 	
 	// LP change: reset screen so that extravision will not be persistent
-	if (!changing_level) reset_screen();
+	reset_screen();
 	
 	enter_screen();
 	
