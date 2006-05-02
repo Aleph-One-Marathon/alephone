@@ -115,10 +115,7 @@ ChatHistory gPregameChatHistory;
 static const string
 get_sslp_service_type()
 {
-	stringstream ss;
-	//	ss << "A1 Gatherer V" << get_network_version();
-	ss << kNetworkSetupProtocolID;
-	return ss.str();
+	return kNetworkSetupProtocolID;
 }
 
 
