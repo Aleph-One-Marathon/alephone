@@ -1611,10 +1611,6 @@ static int L_Set_Monster_Type_Class(lua_State *L) {
 		lua_pushstring(L, "set_monster_type_class: invalid monster type");
 		lua_error(L);
 	}
-	if(_class < _class_player || _class > _class_yeti_bit) {
-		lua_pushstring(L, "set_monster_type_class: invalid monster class");
-		lua_error(L);
-	}
 	struct monster_definition* def;
 	def = get_monster_definition_external(type);
 	def->_class = _class;
@@ -1851,7 +1847,7 @@ static int L_Get_Monster_Friend(lua_State *L)
 		lua_error(L);
 	}
 	theDef = get_monster_definition_external(monster_type);
-	lua_pushboolean(L, theDef->friends & 1<<friend_class);
+	lua_pushboolean(L, theDef->friends & friend_class);
 	return 1;
 }
 
@@ -1877,13 +1873,13 @@ static int L_Set_Monster_Friend(lua_State *L)
 	if(friendly)
 	{
 		theDef = get_monster_definition_external(monster_type);
-		theDef->friends = theDef->friends | 1<<friend_class;
+		theDef->friends = theDef->friends | friend_class;
 		return 0;
 	}
 	else
 	{
 		theDef = get_monster_definition_external(monster_type);
-		theDef->friends = theDef->friends & ~(1<<friend_class);
+		theDef->friends = theDef->friends & ~(friend_class);
 		return 0;
 	}
 }
@@ -1906,7 +1902,7 @@ static int L_Get_Monster_Enemy(lua_State *L)
 		lua_error(L);
 	}
 	theDef = get_monster_definition_external(monster_type);
-	lua_pushboolean(L, theDef->enemies & 1<<enemy_class);
+	lua_pushboolean(L, theDef->enemies & enemy_class);
 	return 1;
 }
 
@@ -1931,13 +1927,13 @@ static int L_Set_Monster_Enemy(lua_State *L)
 	if(hostile)
 	{
 		theDef = get_monster_definition_external(monster_type);
-		theDef->enemies = theDef->enemies | 1<<enemy_class;
+		theDef->enemies = theDef->enemies | enemy_class;
 		return 0;
 	}
 	else
 	{
 		theDef = get_monster_definition_external(monster_type);
-		theDef->enemies = theDef->enemies & ~(1<<enemy_class);
+		theDef->enemies = theDef->enemies & ~(enemy_class);
 		return 0;
 	}
 }
