@@ -1660,13 +1660,13 @@ static void transfer_to_new_level(
 		stop_fade();
 		set_fade_effect(NONE);
 		StopLevelMusic();
-#ifdef mac
-		if(OGL_IsActive())
+//#ifdef mac
+//		if(OGL_IsActive())
 		{
 			exit_screen();
 			// Enter_screen will be called again in start_game
 		}
-#endif
+//#endif
 		set_keyboard_controller_status(false);
 		FindLevelMovie(entry.level_number);
 		show_movie(entry.level_number);
