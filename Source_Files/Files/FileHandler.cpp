@@ -1197,12 +1197,12 @@ Typecode FileSpecifier::GetType()
 	MacFilename_To_CString(Spec.name, name);
 	char *extension = strrchr(name, '.');
 	if (extension) {
-		if (strcasecmp(extension, ".sce2") == 0) return _typecode_scenario;
+		if (strcasecmp(extension, ".sce2") == 0 || strcasecmp(extension, ".sceA") == 0) return _typecode_scenario;
 		
 		if (strcasecmp(extension, ".dds") == 0 ||
-			strcasecmp(extension, ".jpg") == 0 ||
-			strcasecmp(extension, ".png") == 0 ||
-			strcasecmp(extension, ".DS_Store") == 0)
+		    strcasecmp(extension, ".jpg") == 0 ||
+		    strcasecmp(extension, ".png") == 0 ||
+		    strcasecmp(extension, ".DS_Store") == 0)
 			return _typecode_unknown;
 	}
 	
