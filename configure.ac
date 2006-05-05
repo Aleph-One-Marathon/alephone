@@ -170,7 +170,7 @@ case $target in
 	make_windows=true
 	AC_DEFINE(WIN32_DISABLE_MUSIC, 1, [Win32 music is disabled])
 	LIBS="$LIBS -ldsound -lwsock32"
-	LDFLAGS="$LDFLAGS -s"
+	LDFLAGS="$LDFLAGS -Wl,-S"
 	;;
 *)
 	make_windows=false ;;
