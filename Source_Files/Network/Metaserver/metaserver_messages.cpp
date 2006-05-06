@@ -72,7 +72,7 @@ static const char* sRoomNames[] = {
 	"Balor",
 	"Sons of Myrgard",
 	"Heart of the Stone",
-	"The Last Battle",
+	"Arrival",
 	"Legends",
 	"Vimy Ridge",
 	"Stilwell Road"
