@@ -15,6 +15,17 @@ found here:
   http://www.libsdl.org/projects/SDL_image/
   http://www.libsdl.org/projects/SDL_net/
 
+To hear mp3 background music, you will need SDL_Sound:
+
+http://www.icculus.org/SDL_sound/
+
+Make sure you use SMPEG's mp3 library when configuring SDL_Sound! If you use
+the built-in mp3 library, M1A1 will hang when you start Aleph One.
+
+Aleph One now requires the boost library:
+
+http://www.boost.org/
+
 Support for Lua scripting, which may be required by some scenarios, requires
 you to have Lua installed. The source is available from the official Lua site:
 
