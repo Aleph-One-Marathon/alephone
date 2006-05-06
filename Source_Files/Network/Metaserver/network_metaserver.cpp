@@ -203,7 +203,19 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 	m_channel->disconnect();
 
 	///// ROOM CONNECTION
-	m_channel->connect(m_rooms[0].roomServerAddress());
+	
+	IPaddress roomServerAddress = m_rooms[0].roomServerAddress();
+	
+	for (int i = 0; i < m_rooms.size(); i++) 
+	{
+		if (m_rooms[i].roomName() == "Arrival")
+		{
+			roomServerAddress = m_rooms[i].roomServerAddress();
+			break;
+		}
+	}
+	
+	m_channel->connect(roomServerAddress);
 
 	m_channel->enqueueOutgoingMessage(RoomLoginMessage(userName, theLoginSuccessfulMessage->token()));
 
