@@ -7,6 +7,10 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>shpA</string>
+			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>ShapesIcon.icns</string>
 			<key>CFBundleTypeName</key>
@@ -22,6 +26,10 @@
 			<string>org.bungie.source.shapes</string>
 		</dict>
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>sndA</string>
+			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>SoundsIcon.icns</string>
 			<key>CFBundleTypeName</key>
@@ -37,6 +45,10 @@
 			<string>org.bungie.source.sounds</string>
 		</dict>
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>imgA</string>
+			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>ImagesIcon.icns</string>
 			<key>CFBundleTypeName</key>
@@ -52,6 +64,10 @@
 			<string>org.bungie.source.images</string>
 		</dict>
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>filA</string>
+			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>FilmIcon.icns</string>
 			<key>CFBundleTypeName</key>
@@ -71,6 +87,7 @@
 			<array>
 				<string>sce</string>
 				<string>*</string>
+				<string>sceA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>MapIcon.icns</string>
@@ -127,6 +144,7 @@
 			<array>
 				<string>phys</string>
 				<string>*</string>
+				<string>phyA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>PhysIcon.icns</string>
@@ -143,6 +161,10 @@
 			<string>org.bungie.source.physics</string>
 		</dict>
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>sgaA</string>
+			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>SaveIcon.icns</string>
 			<key>CFBundleTypeName</key>
@@ -158,6 +180,10 @@
 			<string>org.bungie.source.save</string>
 		</dict>
 		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>musA</string>
+			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>MusakIcon.icns</string>
 			<key>CFBundleTypeName</key>
