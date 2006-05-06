@@ -772,7 +772,7 @@
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		2B4EC22D0908984E009631F8 /* Info-AlephOne_Carbon__NIBs___Upgraded_.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist"; sourceTree = "<group>"; };
-		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3D3A410C04DF92C400000107 /* GUI.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = GUI.nib; path = ../Resources/GUI.nib; sourceTree = SOURCE_ROOT; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
 		3D5F21460403247500000104 /* libobjc.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.A.dylib; path = /usr/lib/libobjc.A.dylib; sourceTree = "<absolute>"; };
@@ -3247,7 +3247,7 @@
 		2B4EC2290908984D009631F8 /* Deployment 10.4+ */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
+				ARCHS = ppc;
 				COPY_PHASE_STRIP = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"${HOME}/Library/Frameworks",
@@ -3323,15 +3323,17 @@
 		2B4EC22B0908984D009631F8 /* Deployment 10.2+ */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = ppc;
 				CC = "/usr/bin/gcc-3.3";
 				COPY_PHASE_STRIP = YES;
 				CPLUSPLUS = "/usr/bin/g++-3.3";
+				DEPLOYMENT_POSTPROCESSING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"${HOME}/Library/Frameworks",
 					/Library/Frameworks,
 				);
 				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_MODEL_TUNING = G3;
 				GCC_PRECOMPILE_PREFIX_HEADER = NO;
 				GCC_PREFIX_HEADER = "";
@@ -3355,7 +3357,7 @@
 				GCC_VERSION = 3.3;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = NO;
@@ -3393,6 +3395,10 @@
 				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
+				SEPARATE_STRIP = NO;
+				SKIP_INSTALL = YES;
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = debugging;
 				WARNING_CFLAGS = (
 					"-Wmost",
 					"-Wno-import",
@@ -3458,7 +3464,6 @@
 					APPLICATION_IS_BUNDLED,
 					EXPLICIT_CARBON_HEADER,
 					HAVE_LUA,
-					SPEEX,
 					DEBUG,
 					USES_NIBS,
 					HAVE_OPENGL,
@@ -3514,6 +3519,7 @@
 					ppc,
 				);
 				COPY_PHASE_STRIP = NO;
+				DEPLOYMENT_POSTPROCESSING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
@@ -3530,6 +3536,7 @@
 					HAVE_CONFIG_H,
 					HAVE_UNISTD_H,
 					HAVE_LUA,
+					HAVE_SPEEX,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				GCC_VERSION_i386 = 4.0;
@@ -3578,12 +3585,14 @@
 					AppKit,
 					"-llua",
 					"-llualib",
+					"-lspeex",
 				);
 				PRODUCT_NAME = AlephOneSDL;
 				SDKROOT_i386 = /Developer/SDKs/MacOSX10.4u.sdk;
 				SDKROOT_ppc = /Developer/SDKs/MacOSX10.2.8.sdk;
 				SECTORDER_FLAGS = "";
 				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = debugging;
 				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
