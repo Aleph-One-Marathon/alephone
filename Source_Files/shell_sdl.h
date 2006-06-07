@@ -195,7 +195,7 @@ int main(int argc, char **argv)
 {
 	// Print banner (don't bother if this doesn't appear when started from a GUI)
 	printf ("Aleph One " A1_VERSION_STRING "\n"
-	  "http://source.bungie.org/\n\n"
+	  "http://marathon.sourceforge.net/\n\n"
 	  "Original code by Bungie Software <http://www.bungie.com/>\n"
 	  "Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
 	  "TCP/IP networking by Woody Zenfell\n"
@@ -207,8 +207,8 @@ int main(int argc, char **argv)
 	  "\nThis is free software with ABSOLUTELY NO WARRANTY.\n"
 	  "You are welcome to redistribute it under certain conditions.\n"
 	  "For details, see the file COPYING.\n"
-#ifdef __BEOS__
-	  // BeOS version is statically linked against SDL, so we have to include this:
+#if defined(__BEOS__) || defined(__WIN32__) 
+	  // BeOS and Windows are statically linked against SDL, so we have to include this:
 	  "\nSimple DirectMedia Layer (SDL) Library included under the terms of the\n"
 	  "GNU Library General Public License.\n"
 	  "For details, see the file COPYING.SDL.\n"
