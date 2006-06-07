@@ -224,7 +224,7 @@
                       <object class="IBCarbonCheckBox" id="214">
                         <string name="bounds">251 56 271 306 </string>
                         <int name="controlID">26</int>
-                        <string name="title">&quot;Static&quot; Effect Looks Flat</string>
+                        <string name="title">Use &quot;Static&quot; effect</string>
                       </object>
                       <object class="IBCarbonCheckBox" id="231">
                         <string name="bounds">173 56 193 306 </string>

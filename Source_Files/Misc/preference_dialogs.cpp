@@ -162,7 +162,7 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<bool> (m_zBufferWidget, &zBufferPref);
 	BitPref fogPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_Fog);
 	binders.insert<bool> (m_fogWidget, &fogPref);
-	BitPref staticEffectsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_FlatStatic);
+	BitPref staticEffectsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_FlatStatic, true);
 	binders.insert<bool> (m_staticEffectWidget, &staticEffectsPref);
 	BitPref colourEffectsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_Fader);
 	binders.insert<bool> (m_colourEffectsWidget, &colourEffectsPref);
