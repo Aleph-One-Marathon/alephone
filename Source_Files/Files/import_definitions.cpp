@@ -84,7 +84,8 @@ void import_definition_structures(
 	wad= get_physics_wad_data(&bungie_physics);
 	if(wad)
 	{
-		if(!bungie_physics && !warned_about_physics && environment_preferences->non_bungie_warning)
+		//if(!bungie_physics && !warned_about_physics && environment_preferences->non_bungie_warning)
+		if (0)
 		{
 			/* warn the user that external physics models are Bad Thingª */
 			alert_user(infoError, strERRORS, warningExternalPhysicsModel, 0);
