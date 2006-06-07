@@ -378,10 +378,22 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		inputStream >> ddsd.ddpfPixelFormat.dwFlags;
 		inputStream >> ddsd.ddpfPixelFormat.dwFourCC;
 		inputStream >> ddsd.ddpfPixelFormat.dwRGBBitCount;
+		if (ddsd.ddpfPixelFormat.dwRGBBitCount != 32 && ddsd.ddpfPixelFormat.dwRGBBitCount != 24) return false;
+		
  		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwRBitMask, 4);		
  		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwGBitMask, 4);		
  		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwBBitMask, 4);		
  		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwRGBAlphaBitMask, 4);
+		
+#ifndef ALEPHONE_LITTLE_ENDIAN
+		if (ddsd.ddpfPixelFormat.dwRGBBitCount == 24) 
+		{
+			// the masks are in the correct order, but will be in the wrong place...move them down
+			ddsd.ddpfPixelFormat.dwRBitMask >>= 8;
+			ddsd.ddpfPixelFormat.dwGBitMask >>= 8;
+			ddsd.ddpfPixelFormat.dwBBitMask >>= 8;
+		}
+#endif
 
 		inputStream >> ddsd.ddsCaps.dwCaps1;
 		inputStream >> ddsd.ddsCaps.dwCaps2;
