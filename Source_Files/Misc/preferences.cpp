@@ -516,6 +516,7 @@ void write_preferences(
 #endif
 	fprintf(F,"  cheat_flags=\"%hu\"\n",network_preferences->cheat_flags);
 	fprintf(F,"  advertise_on_metaserver=\"%s\"\n",BoolString(network_preferences->advertise_on_metaserver));
+	fprintf(F,"  attempt_upnp=\"%s\"\n", BoolString(network_preferences->attempt_upnp));
 	fprintf(F,">\n");
 #ifndef SDL
 	WriteXML_FSSpec(F,"  ", kNetworkScriptFileSpecIndex, network_preferences->netscript_file);
@@ -1911,6 +1912,10 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"advertise_on_metaserver"))
 	{
 		return ReadBooleanValue(Value,network_preferences->advertise_on_metaserver);
+	} 
+	else if (StringsEqual(Tag,"attempt_upnp"))
+	{
+		return ReadBooleanValue(Value, network_preferences->attempt_upnp);
 	}
 	return true;
 }
