@@ -655,11 +655,7 @@ static void set_sound_manager_status(bool active)
 				desired.freq = (_sm_parameters->pitch >> 16) * 22050;
 				desired.format = _sm_parameters->flags & _16bit_sound_flag ? AUDIO_S16SYS : AUDIO_S8;
 				desired.channels = _sm_parameters->flags & _stereo_flag ? 2 : 1;
-#ifdef WIN32
 				desired.samples = 2048;
-#else
-				desired.samples = 1024;
-#endif
 				desired.callback = sound_callback;
 				desired.userdata = NULL;
 				if (option_nosound || SDL_OpenAudio(&desired, &obtained) < 0) {
