@@ -95,7 +95,7 @@ bool is_macbinary(short RefNum, long &data_length, long &rsrc_length)
 	uint8 header[128];
 	long _Count = 128;
 	if (FSRead(RefNum, &_Count, header) != noErr) return false;
-	if (header[0] || header[1] > 63 || header[74] || header[123] > 0x8)
+	if (header[0] || header[1] > 63 || header[74] || header[123] > 0x81)
 		return false;
 	
 	uint16 crc = 0;
