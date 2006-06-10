@@ -647,8 +647,9 @@ static long sound_level_to_sound_volume(
 		volume = (2*level*OldSoundVolume)/NUMBER_OF_SOUND_VOLUME_LEVELS;
 	}
 	else
-		volume= (level*SOUND_VOLUME_DELTA);
-	
+		//		volume= (level*SOUND_VOLUME_DELTA);
+		volume = (level) ? 1 << (level + 1) : 0;
+		
 	return BUILD_STEREO_VOLUME(volume, volume);
 }
 
