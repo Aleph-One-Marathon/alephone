@@ -144,7 +144,11 @@ void process_music_event_win32(const SDL_Event& event);
 #define MUSIC_SDL
 
 static SDL_RWops *music_rw;	// music file object
+#ifdef __APPLE__
+const uint32 MUSIC_BUFFER_SIZE = 1024; // necessary to help avoid skipping, for now :(
+#else
 const uint32 MUSIC_BUFFER_SIZE = 0x40000;
+#endif
 
 bool load_music_sdl(FileSpecifier &song_file);
 
