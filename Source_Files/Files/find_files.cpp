@@ -141,7 +141,7 @@ bool FileFinder::Enumerate(DirectorySpecifier& Dir)
 			} else {
 				/* Add.. */
 				if(Type==WILDCARD_TYPE || 
-					pb.hFileInfo.ioFlFndrInfo.fdType==type_to_find)
+				   Type == TempFile.GetType())
 				{
 					/* Only add if there isn't a callback or it returns true */
 					switch(search_type)
