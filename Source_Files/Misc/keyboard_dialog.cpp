@@ -90,10 +90,6 @@ enum {
 #ifdef USES_NIBS
 
 
-// Prototypes
-static short keycode_to_charcode(short keycode);
-
-
 struct KeyboardHandlerData
 {
 	short *KeyCodes;
@@ -147,8 +143,10 @@ bool KeyboardHandlerData::SetKeyCode(int Which, short KeyCode)
 	{
 		if (k != Which)
 		{
-			if (KeyCode == KeyCodes[k])
-				return false;
+			if (KeyCode == KeyCodes[k]) {
+				KeyCodes[k] = KeyCodes[Which];
+				break;
+			}
 		}
 	}
 	
@@ -189,7 +187,7 @@ struct KeyboardControlHandlerData
 };
 
 
-static short ValidateKey(UInt32 Key)
+static short ValidateKey(UInt32 Key, short charcode)
 {
 	// Cribbed from original find_key_hit()
 	
@@ -198,9 +196,7 @@ static short ValidateKey(UInt32 Key)
 	
 	short keycode = Key;
 	short error_message= NONE;
-	short charcode;
 
-	charcode = keycode_to_charcode(keycode);
 	switch(charcode)
 	{
 	case ',':
@@ -275,7 +271,10 @@ static pascal OSStatus KeyboardHandler(
 			GetEventParameter(Event,
 				kEventParamKeyCode, typeUInt32,
 				NULL, sizeof(typeUInt32), NULL, &RawKeycode);
-			KeyCode = ValidateKey(RawKeycode);
+			char CharCode;
+			GetEventParameter(Event,
+							  kEventParamKeyMacCharCodes, typeChar, NULL, sizeof(typeChar),  NULL, &CharCode);
+			KeyCode = ValidateKey(RawKeycode, CharCode);
 		}
 		break;
 		
@@ -331,6 +330,8 @@ static pascal OSStatus KeyboardHandler(
 		// Update the keyboard display -- and beep if it could not be done
 		if (!CDPtr->HDPtr->SetKeyCode(CDPtr->Which,KeyCode))
 			SysBeep(30);
+		
+		CDPtr->HDPtr->UpdateKeyCodes();
 	}
 	
 	return noErr;
@@ -731,8 +732,6 @@ static short find_duplicate_keycode(
 	return NONE;
 }
 
-#endif
-
 /* DANGER! DANGER! DANGER!! This is Alain's code, untouched.... */
 static short keycode_to_charcode(
 	short keycode)
@@ -765,6 +764,8 @@ static short keycode_to_charcode(
 	
 	return charcode;
 }
+
+#endif
 
 static bool is_pressed(
 	short key_code)
