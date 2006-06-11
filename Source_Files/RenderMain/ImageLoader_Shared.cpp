@@ -241,14 +241,14 @@ bool ImageDescriptor::LoadMipMapFromFile(OpenedFile& file, int flags, int level,
 		}
 		int depth = pitch / ddsd.dwWidth;
 		pitch = srcWidth * depth;
-		
-		unsigned char img[pitch * srcHeight];
-		if (!file.Read(pitch * srcHeight, img)) {
-			fprintf(stderr, "failed to read %i bytes\n", pitch * srcHeight);
+
+		std::vector<unsigned char> img;
+		img.resize(pitch * srcHeight);
+		if (!file.Read(pitch * srcHeight, &img.front())) {
 			return false;
 		}
 
-		SDL_Surface *src = SDL_CreateRGBSurfaceFrom(img, srcWidth, srcHeight, ddsd.ddpfPixelFormat.dwRGBBitCount, pitch, ddsd.ddpfPixelFormat.dwRBitMask, ddsd.ddpfPixelFormat.dwGBitMask, ddsd.ddpfPixelFormat.dwBBitMask, (ddsd.ddpfPixelFormat.dwFlags & DDPF_ALPHAPIXELS) ? ddsd.ddpfPixelFormat.dwRGBAlphaBitMask : 0);
+		SDL_Surface *src = SDL_CreateRGBSurfaceFrom(&img.front(), srcWidth, srcHeight, ddsd.ddpfPixelFormat.dwRGBBitCount, pitch, ddsd.ddpfPixelFormat.dwRBitMask, ddsd.ddpfPixelFormat.dwGBitMask, ddsd.ddpfPixelFormat.dwBBitMask, (ddsd.ddpfPixelFormat.dwFlags & DDPF_ALPHAPIXELS) ? ddsd.ddpfPixelFormat.dwRGBAlphaBitMask : 0);
 		SDL_SetAlpha(src, 0, 0xff); // disable SDL_SRCALPHA
 		
 #ifdef ALEPHONE_LITTLE_ENDIAN
