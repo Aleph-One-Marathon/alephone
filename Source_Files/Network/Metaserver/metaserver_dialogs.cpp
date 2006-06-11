@@ -77,7 +77,7 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	// description's constructor gets scenario info, aleph one's protocol ID for us
 	
 	// ghs: blech, need a better way to find this
-	description.m_alephoneBuildString = "0.16";
+	description.m_alephoneBuildString = "0.16.1";
 	
 	// ghs: this doesn't belong here!
 #if defined(__WIN32__)
