@@ -378,7 +378,7 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		inputStream >> ddsd.ddpfPixelFormat.dwFlags;
 		inputStream >> ddsd.ddpfPixelFormat.dwFourCC;
 		inputStream >> ddsd.ddpfPixelFormat.dwRGBBitCount;
-		if (ddsd.ddpfPixelFormat.dwRGBBitCount != 32 && ddsd.ddpfPixelFormat.dwRGBBitCount != 24) return false;
+		if ((ddsd.ddpfPixelFormat.dwFlags & DDPF_RGB) && ddsd.ddpfPixelFormat.dwRGBBitCount != 32 && ddsd.ddpfPixelFormat.dwRGBBitCount != 24) return false;
 		
  		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwRBitMask, 4);		
  		inputStream.read((char *) &ddsd.ddpfPixelFormat.dwGBitMask, 4);		
