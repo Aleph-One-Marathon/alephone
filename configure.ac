@@ -91,16 +91,31 @@ AC_CHECK_HEADERS(SDL_sound.h, [
 ])
 
 dnl Check for Lua.
-AC_CHECK_HEADERS(lua.h, [
-  AC_CHECK_HEADERS(lualib.h, [
-    AC_CHECK_LIB(lua, lua_open, [
-      AC_CHECK_LIB(lualib, luaL_loadbuffer, [
-        LIBS="-llua -llualib $LIBS"
-        AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
-      ], [], [-llua])
+AC_ARG_VAR(LUA_CFLAGS,    [C compiler flags for Lua])
+AC_ARG_VAR(LUA_LIBS,      [linker flags for Lua])
+AC_ARG_VAR(LUALIB_CFLAGS, [C compiler flags for Lualib])
+AC_ARG_VAR(LUALIB_LIBS,   [linker flags for Lualib])
+if test "x$LUA_CFLAGS" = x && test "x$LUA_LIBS" = x \
+  && test "x$LUALIB_CFLAGS" = x && test "x$LUALIB_LIBS" = x
+then
+  AC_CHECK_HEADERS(lua.h, [
+    AC_CHECK_HEADERS(lualib.h, [
+      AC_CHECK_LIB(lua, lua_open, [
+        AC_CHECK_LIB(lualib, luaL_loadbuffer, [
+          LIBS="-llua -llualib $LIBS"
+          AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
+        ], [], [-llua])
+      ])
     ])
   ])
-])
+else
+  AC_MSG_NOTICE(Using user-specified CFLAGS and LIBS for Lua)
+  CXXFLAGS="$CXXFLAGS $LUA_CFLAGS $LUALIB_CFLAGS"
+  LIBS="$LIBS $LUA_LIBS $LUALIB_LIBS"
+  AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
+  AC_DEFINE(HAVE_LUA_H, 1, [Assuming <lua.h> is present])
+  AC_DEFINE(HAVE_LUALIB_H, 1, [Assuing <lualib.h> is present])
+fi
 
 dnl Check for Speex
 AC_CHECK_HEADERS(speex.h, [
