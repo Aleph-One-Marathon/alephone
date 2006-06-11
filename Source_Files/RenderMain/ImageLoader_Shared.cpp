@@ -533,7 +533,7 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 
 		if (!LoadMipMapFromFile(dds_file, flags, 0, ddsd, 0)) return false;
 
-		while (Width > maxSize || Height > maxSize)
+		while (this->Width > maxSize || this->Height > maxSize)
 		{
 			if (!Minify()) return false;
 		}
