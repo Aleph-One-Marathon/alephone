@@ -105,3 +105,17 @@ void Console::activate_input(boost::function<void (const std::string&)> callback
   SDL_EnableUNICODE(1);
 #endif
 }
+
+void Console::deactivate_input() {
+	m_buffer.clear();
+	m_displayBuffer.clear();
+	
+	m_callback.clear();
+	m_active = false;
+#if defined(SDL)
+	SDL_EnableKeyRepeat(0, 0);
+	SDL_EnableUNICODE(0);
+#endif
+}
+
+

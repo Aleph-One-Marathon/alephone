@@ -118,6 +118,8 @@ Feb 8, 2003 (Woody Zenfell):
 #include "screen.h"
 #include "shell.h"
 
+#include "Console.h"
+
 #include <limits.h>
 
 #ifdef env68k
@@ -575,6 +577,7 @@ void leaving_map(
 #if !defined(DISABLE_NETWORKING)
 	NetSetChatCallbacks(NULL);
 #endif // !defined(DISABLE_NETWORKING)
+	Console::instance()->deactivate_input();
 
 	/* all we do is mark them for unloading, we don't explicitly dispose of them; whenever the
 		next level is loaded someone (probably entering_map, below) will call load_collections()
