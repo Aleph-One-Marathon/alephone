@@ -1675,9 +1675,10 @@ static void transfer_to_new_level(
 		// out of here already (as we've just played the epilogue movie,
 		// we can move on to the _display_epilogue game state)
 		if (level_number == EPILOGUE_LEVEL_NUMBER) {
-			finish_game(true);
+			finish_game(false);
 			show_cursor(); // for some reason, cursor stays hidden otherwise
-			set_game_state(_display_epilogue);
+			set_game_state(_begin_display_of_epilogue);
+			force_game_state_change();
 			return;
 		}
 
