@@ -464,8 +464,11 @@ void GatherDialog::gamesInRoomChanged(const std::vector<GameListMessage::GameLis
 						message += " minutes of ";
 					}
 					message += gameChanges[i].m_description.m_mapName;
-					message += ", ";
-					message += TS_GetCString(kNetworkGameTypesStringSetID, gameChanges[i].m_description.m_type);
+					int type = gameChanges[i].m_description.m_type - (gameChanges[i].m_description.m_type > 5 ? 1 : 0);
+					if (TS_GetCString(kNetworkGameTypesStringSetID, type)) {
+						message += ", ";
+						message += TS_GetCString(kNetworkGameTypesStringSetID, type);
+					}
 					
 					receivedLocalMessage(message);
 				}
