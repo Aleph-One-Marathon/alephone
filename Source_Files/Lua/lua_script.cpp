@@ -161,6 +161,8 @@ extern void destroy_players_ball(short player_index);
 extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
 extern void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 
+extern void add_object_to_polygon_object_list(short object_index, short polygon_index);
+
 enum // control panel sounds
 {
 	_activating_sound,
@@ -4534,10 +4536,15 @@ static int L_Set_Projectile_Position(lua_State *L)
 	}
 	struct object_data *object= get_object_data(projectile->object_index);
 
-	object->polygon = static_cast<int>(lua_tonumber(L, 2));
+	int new_polygon = static_cast<int>(lua_tonumber(L, 2));
 	object->location.x = static_cast<int>(lua_tonumber(L, 3)*WORLD_ONE);
 	object->location.y = static_cast<int>(lua_tonumber(L, 4)*WORLD_ONE);
 	object->location.z = static_cast<int>(lua_tonumber(L, 5)*WORLD_ONE);
+	
+	if (new_polygon != object->polygon) {
+		remove_object_from_polygon_object_list(projectile->object_index);
+		add_object_to_polygon_object_list(projectile->object_index, new_polygon);
+	}
 	
 	return 0;
 }
@@ -4710,22 +4717,24 @@ static int L_Environment(lua_State* L) {
 }
 
 static int L_Set_Monster_Position(lua_State* L) {
-  if(lua_gettop(L) != 5) {
-    lua_pushstring(L, "usage: set_monster_position(monster, polygon, x, y, z)");
-    lua_error(L);
-  }
-  struct monster_data* monster = get_monster_data((int)lua_tonumber(L, 1));
-  struct object_data* object = get_object_data(monster->object_index);
-  struct polygon_data* polygon = get_polygon_data(object->polygon);
-  polygon->first_object = object->next_object;
-  object->location.x = static_cast<int>(lua_tonumber(L,3)*WORLD_ONE);
-  object->location.y = static_cast<int>(lua_tonumber(L,4)*WORLD_ONE);
-  object->location.z = static_cast<int>(lua_tonumber(L,5)*WORLD_ONE);
-  object->polygon = static_cast<int>(lua_tonumber(L,2)*WORLD_ONE);
-  polygon = get_polygon_data(object->polygon);
-  object->next_object = polygon->first_object;
-  polygon->first_object = monster->object_index;
-  return 0;
+	if(lua_gettop(L) != 5) {
+		lua_pushstring(L, "usage: set_monster_position(monster, polygon, x, y, z)");
+		lua_error(L);
+	}
+	struct monster_data* monster = get_monster_data((int)lua_tonumber(L, 1));
+	struct object_data* object = get_object_data(monster->object_index);
+	
+	object->location.x = static_cast<int>(lua_tonumber(L,3)*WORLD_ONE);
+	object->location.y = static_cast<int>(lua_tonumber(L,4)*WORLD_ONE);
+	object->location.z = static_cast<int>(lua_tonumber(L,5)*WORLD_ONE);
+	int new_polygon = static_cast<int>(lua_tonumber(L,2));
+
+	if (new_polygon != object->polygon) {
+		remove_object_from_polygon_object_list(monster->object_index);
+		add_object_to_polygon_object_list(monster->object_index, new_polygon);
+	}
+
+	return 0;
 }
 
 static int L_Set_Overlay_Color(lua_State* L) {
