@@ -127,7 +127,14 @@ void _draw_screen_shape(shape_descriptor shape_id, screen_rectangle *destination
 	SDL_Surface *s = get_shape_surface(shape_id);
 	if (s == NULL)
 		return;
-
+	
+	if (draw_surface->format->BitsPerPixel == 8) {
+		// SDL doesn't seem to be able to handle direct blits between 8-bit surfaces with different cluts
+		SDL_Surface *s2 = SDL_DisplayFormat(s);
+		SDL_FreeSurface(s);
+		s = s2;
+	}
+	
 	// Blit the surface
 	SDL_BlitSurface(s, source ? &src_rect : NULL, draw_surface, &dst_rect);
 	if (draw_surface == SDL_GetVideoSurface())
@@ -143,7 +150,14 @@ void _draw_screen_shape_at_x_y(shape_descriptor shape_id, short x, short y)
 	SDL_Surface *s = get_shape_surface(shape_id);
 	if (s == NULL)
 		return;
-
+	
+	if (draw_surface->format->BitsPerPixel == 8) {
+		// SDL doesn't seem to be able to handle direct blits between 8-bit surfaces with different cluts
+		SDL_Surface *s2 = SDL_DisplayFormat(s);
+		SDL_FreeSurface(s);
+		s = s2;
+	}
+	
 	// Setup destination rectangle
 	SDL_Rect dst_rect = {x, y, s->w, s->h};
 
