@@ -9,7 +9,7 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>.shpA</string>
+				<string>shpA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>ShapesIcon.icns</string>
@@ -28,7 +28,7 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>.sndA</string>
+				<string>sndA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>SoundsIcon.icns</string>
@@ -47,7 +47,7 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>.imgA</string>
+				<string>imgA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>ImagesIcon.icns</string>
@@ -66,7 +66,7 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>.filA</string>
+				<string>filA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>FilmIcon.icns</string>
@@ -87,7 +87,7 @@
 			<array>
 				<string>sce</string>
 				<string>*</string>
-				<string>.sceA</string>
+				<string>sceA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>MapIcon.icns</string>
@@ -144,7 +144,7 @@
 			<array>
 				<string>phys</string>
 				<string>*</string>
-				<string>.phyA</string>
+				<string>phyA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>PhysIcon.icns</string>
@@ -163,7 +163,7 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>.sgaA</string>
+				<string>sgaA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>SaveIcon.icns</string>
@@ -182,7 +182,7 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>.musA</string>
+				<string>musA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>MusakIcon.icns</string>
