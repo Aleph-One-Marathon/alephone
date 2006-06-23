@@ -792,7 +792,7 @@ void damage_player(
 					team_damage_taken[player->team].damage += damage_amount;
 					team_damage_given[aggressor_player->team].damage += damage_amount;
 					if (player->team == aggressor_player->team) {
-					  team_friendly_fire[aggressor_index].damage += damage_amount;
+					  team_friendly_fire[player->team].damage += damage_amount;
 					}
 				}
 				else
