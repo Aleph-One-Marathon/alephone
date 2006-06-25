@@ -415,15 +415,17 @@ static void initialize_application(void)
 
 // grr, Windows
 #if defined(__WIN32__) 
+	if (!SDL_getenv("SDL_VIDEODRIVER")) {
 #if defined(HAVE_OPENGL)
-	if (!option_nogl && 
-	    graphics_preferences->screen_mode.acceleration != _no_acceleration)
-	{
-		putenv("SDL_VIDEODRIVER=windib");
-	} else 
+		if (!option_nogl && 
+		    graphics_preferences->screen_mode.acceleration != _no_acceleration)
+		{
+			SDL_putenv("SDL_VIDEODRIVER=windib");
+		} else 
 #endif
-	{
-		putenv("SDL_VIDEODRIVER=directx");
+		{
+			SDL_putenv("SDL_VIDEODRIVER=directx");
+		}
 	}
 #endif
 
