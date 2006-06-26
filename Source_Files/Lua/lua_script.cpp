@@ -719,7 +719,7 @@ static int L_Show_Interface(lua_State *L)
 	screen_mode_data *the_mode;
 	the_mode = get_screen_mode();
 	short the_size = the_mode->size;
-	if(the_size == GetSizeWithoutHUD(the_size))
+	if(the_size == GetSizeWithHUD(the_size))
 	{
 		the_mode->size = old_size;
 		change_screen_mode(the_mode,true);
