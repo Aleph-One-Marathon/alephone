@@ -543,6 +543,7 @@ GatherDialog::Create()
 	return auto_ptr<GatherDialog>(new SdlGatherDialog);
 }
 
+extern struct color_table *build_8bit_system_color_table(void);
 
 /*
  *  Joining dialog
@@ -634,6 +635,13 @@ public:
 
 	virtual void Run ()
 	{
+		// Load sensible palette
+		if (SDL_GetVideoSurface()->format->BitsPerPixel == 8) {
+			struct color_table *system_colors = build_8bit_system_color_table();
+			assert_world_color_table(system_colors, system_colors);
+			delete system_colors;
+		}
+
 		m_dialog.set_processing_function (boost::bind(&SdlJoinDialog::gathererSearch, this));
 		m_dialog.run();
 	}
@@ -837,6 +845,13 @@ public:
 	
 	virtual bool Run ()
 	{		
+		// Load sensible palette
+		if (SDL_GetVideoSurface()->format->BitsPerPixel == 8) {
+			struct color_table *system_colors = build_8bit_system_color_table();
+			assert_world_color_table(system_colors, system_colors);
+			delete system_colors;
+		}
+		
 		return (m_dialog.run () == 0);
 	}
 
