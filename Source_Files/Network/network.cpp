@@ -1298,6 +1298,7 @@ bool NetGather(
 		
 		if (ret != 0)
 		{
+			controller = 0;
 			alert_user(infoError, strNETWORK_ERRORS, netWarnUPnPConfigureFailed, ret);
 		}
 	}
