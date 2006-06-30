@@ -1432,9 +1432,8 @@ static bool previous_terminal_group(
 					case _checkpoint_group:
 					case _pict_group:
 					case _information_group:
-						break;
-						
 					case _camera_group:
+						done = true;
 						break;
 						
 					case _unfinished_group:
