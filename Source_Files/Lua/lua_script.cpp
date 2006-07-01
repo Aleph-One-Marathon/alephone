@@ -4130,6 +4130,12 @@ static int L_Get_Points (lua_State *L)
 	return 1;
 }
 
+static int L_Get_Kill_Limit (lua_State *L)
+{
+	lua_pushnumber (L, dynamic_world->game_information.kill_limit);
+	return 1;
+}
+
 static int L_Get_Kills (lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -4963,6 +4969,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_kills", L_Set_Kills);
 	lua_register(state, "get_points", L_Get_Points);
 	lua_register(state, "get_kills", L_Get_Kills);
+	lua_register(state, "get_kill_limit", L_Get_Kill_Limit);
 	lua_register(state, "use_lua_compass", L_Use_Lua_Compass);
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
