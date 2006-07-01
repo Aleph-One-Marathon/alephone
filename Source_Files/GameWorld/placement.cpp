@@ -374,6 +374,13 @@ short get_random_player_starting_location_and_facing(
 	struct object_location current_location;
 	
 	maximum_starting_locations= get_player_starting_location_and_facing(team, 0, NULL);
+	
+	// if it's a team game, and there are no starts, just pick one at random
+	if (maximum_starting_locations == 0) {
+		team = NONE;
+		maximum_starting_locations = get_player_starting_location_and_facing(team, 0, NULL);
+	}
+
 	offset= global_random() % maximum_starting_locations;
 	best_distance= 0;
 	
