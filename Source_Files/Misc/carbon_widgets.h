@@ -390,6 +390,13 @@ public:
 			&textObject,
 			&frameID,
 			0);
+		
+		TXNBackground bgInfo;
+		bgInfo.bgType = 1;
+		bgInfo.bg.color.red = 0xffff;
+		bgInfo.bg.color.blue = 0xffff;
+		bgInfo.bg.color.green = 0xffff;
+		TXNSetBackground(textObject, &bgInfo);
 
 		TXNActivate (textObject, frameID, kScrollBarsAlwaysActive);
 	}
