@@ -452,7 +452,7 @@ protected:
 private:
 	void modified_text(void);
 
-	const char *name;
+	std::string name;
 
 	const sdl_font_info *text_font;	// Font for text
 	uint16 text_style;

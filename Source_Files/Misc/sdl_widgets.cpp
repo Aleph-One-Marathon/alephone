@@ -702,7 +702,7 @@ int w_text_entry::layout(void)
     max (font->get_leading(), text_font->get_leading());
 
     int theResult = widget::layout();
-    uint16 name_width = text_width(name, font, style);
+    uint16 name_width = text_width(name.c_str(), font, style);
 	max_text_width = MAX_TEXT_WIDTH;
 	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
 
@@ -725,7 +725,7 @@ void w_text_entry::draw(SDL_Surface *s) const
   // Name (ZZZ: different color for disabled)
   int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
   
-  draw_text(s, name, theRectX, y, get_dialog_color(theColorToUse), font, style);
+  draw_text(s, name.c_str(), theRectX, y, get_dialog_color(theColorToUse), font, style);
   
   // Text
   int16 x = theRectX + theTextX;
