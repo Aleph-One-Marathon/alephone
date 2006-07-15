@@ -278,4 +278,7 @@ bool NetAllowCrosshair();
 bool NetAllowTunnelVision();
 bool NetAllowBehindview();
 
+// returns -1 if not available (frex if you are star hub, or using ring)
+int32 NetGetLatency(); 
+
 #endif

@@ -502,7 +502,8 @@ static void update_fps_display(SDL_Surface *s)
 #elif defined(SDL)
 		uint32 ticks = SDL_GetTicks();
 #endif
-		char fps[sizeof("120.00fps")];
+		char fps[sizeof("120.00fps (10000 ms)")];
+		char ms[sizeof("(10000 ms)")];
 		
 		frame_ticks[frame_index]= ticks;
 		frame_index= (frame_index+1)%FRAME_SAMPLE_SIZE;
@@ -513,11 +514,17 @@ static void update_fps_display(SDL_Surface *s)
 		}
 		else
 		{
-		    float count = (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks-frame_ticks[frame_index]);
-		    if (count >= TICKS_PER_SECOND)
-			sprintf(fps, "%lu%s",(unsigned long)TICKS_PER_SECOND,".00fps");
-		    else
-			sprintf(fps, "%3.2ffps", count);
+			float count = (FRAME_SAMPLE_SIZE * MACHINE_TICKS_PER_SECOND) / float(ticks-frame_ticks[frame_index]);
+			int latency = NetGetLatency();
+			if (latency > -1)
+				sprintf(ms, "(%i ms)", latency);
+			else
+				ms[0] = '\0';
+							
+			if (count >= TICKS_PER_SECOND)
+				sprintf(fps, "%lu%s %s",(unsigned long)TICKS_PER_SECOND,".00fps", ms);
+			else
+				sprintf(fps, "%3.2ffps %s", count, ms);
 		}
 		
 		FontSpecifier& Font = GetOnScreenFont();

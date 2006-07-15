@@ -120,6 +120,9 @@ static bool sTimingMeasurementValid;
 static int32 sTimingMeasurement;
 static bool sHeardFromHub = false;
 
+static int32 sDisplayLatencyBuffer[TICKS_PER_SECOND]; // stores the last 30 latency calculations, in ticks
+static uint32 sDisplayLatencyCount = 0;
+static uint32 sDisplayLatencyTicks = 0; // sum of the latency ticks from the last 30 seconds, using above two
 
 struct SpokeLossyByteStreamChunkDescriptor
 {
@@ -258,6 +261,14 @@ spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inN
 
         sSpokeActive = true;
         sSpokeTickTask = myXTMSetup(1000/TICKS_PER_SECOND, spoke_tick);
+
+	for (int i = 0; i < TICKS_PER_SECOND; i++) 
+	{
+		sDisplayLatencyBuffer[i] = 0;
+	}
+
+	sDisplayLatencyCount = 0;
+	sDisplayLatencyTicks = 0;
 	
 	sHeardFromHub = false;
 }
@@ -614,6 +625,10 @@ spoke_received_game_data_packet_v1(AIStream& ps)
 				sTimingMeasurement = sNthElementFinder.nth_largest_element(sSpokePreferences.mTimingNthElement);
 #endif
 
+			// update the latency display
+			sDisplayLatencyTicks -= sDisplayLatencyBuffer[sDisplayLatencyCount % 30];
+			sDisplayLatencyBuffer[sDisplayLatencyCount++ % 30] = theLatencyMeasurement;
+			sDisplayLatencyTicks += theLatencyMeasurement;
 		}
 
 	} // loop while there's packet data left
@@ -939,7 +954,11 @@ send_identification_packet()
         }
 }
 
-
+int32 spoke_latency()
+{
+	return (sDisplayLatencyCount >= TICKS_PER_SECOND) ? sDisplayLatencyTicks * 1000 / TICKS_PER_SECOND / TICKS_PER_SECOND : -1;
+}
+		
 
 static inline const char *BoolString(bool B) {return (B ? "true" : "false");}
 

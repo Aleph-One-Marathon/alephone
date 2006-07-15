@@ -2186,5 +2186,15 @@ bool NetAllowBehindview() {
 	  dynamic_world->game_information.cheat_flags & _allow_behindview);
 }
 
+extern int32 spoke_latency();
+
+int32 NetGetLatency() {
+	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && connection_to_server) {
+		return spoke_latency();
+	} else {
+		return -1;
+	}
+}
+
 #endif // !defined(DISABLE_NETWORKING)
 
