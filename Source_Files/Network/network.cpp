@@ -139,6 +139,7 @@ clearly this is all broken until we have packet types
 #include <string.h>
 
 #include <map>
+#include <vector>
 #include "Logging.h"
 
 // ZZZ: moved many struct definitions, constant #defines, etc. to header for (limited) sharing
@@ -158,6 +159,8 @@ clearly this is all broken until we have packet types
 #include "lua_script.h"
 
 #include "libnat.h"
+
+#include <boost/bind.hpp>
 
 // For temporary multiple MML specified lua scripts hack
 extern bool gLoadingLuaNetscript;
@@ -1786,100 +1789,101 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 					long wad_length,
 					bool do_physics)
 {
-  short playerIndex, message_id;
-  OSErr error= noErr;
-  long total_length, length_written;
-  uint32 initial_ticks= machine_tick_count();
-  short physics_message_id;
-  byte *physics_buffer;
-  long physics_length;
-  
-  message_id= (topology->player_count==2) ? (_distribute_map_single) : (_distribute_map_multiple);
-  physics_message_id= (topology->player_count==2) ? (_distribute_physics_single) : (_distribute_physics_multiple);
-  open_progress_dialog(physics_message_id);
-  
-  /* For updating our progress bar.. */
-  total_length= (topology->player_count-1)*wad_length;
-  length_written= 0l;
-  
-  /* Get the physics */
-  if(do_physics)
-    physics_buffer= (unsigned char *)get_network_physics_buffer(&physics_length);
-  
-  // go ahead and transfer the map to each player
-  for (playerIndex= 0; !error && playerIndex<topology->player_count; playerIndex++) {
-    
-    NetPlayer player = topology->players[playerIndex];
-    
-    /* If the player is not net dead. */ 
-    // ZZZ: and is not going to be a zombie and is not us
-    if(!player.net_dead
-       && player.identifier != NONE
-       && playerIndex != localPlayerIndex) {
+	short playerIndex, message_id;
+	OSErr error= noErr;
+	long total_length, length_written;
+	uint32 initial_ticks= machine_tick_count();
+	short physics_message_id;
+	byte *physics_buffer;
+	long physics_length;
+	
+	message_id= (topology->player_count==2) ? (_distribute_map_single) : (_distribute_map_multiple);
+	physics_message_id= (topology->player_count==2) ? (_distribute_physics_single) : (_distribute_physics_multiple);
+	open_progress_dialog(physics_message_id);
+	
+	/* For updating our progress bar.. */
+	total_length= (topology->player_count-1)*wad_length;
+	length_written= 0l;
+	
+	/* Get the physics */
+	if(do_physics)
+		physics_buffer= (unsigned char *)get_network_physics_buffer(&physics_length);
+	
+	// build a list of players to send to
+	std::vector<CommunicationsChannel *> channels;
+	for (playerIndex = 0; playerIndex < topology->player_count; playerIndex++)
+	{
+		NetPlayer player = topology->players[playerIndex];
 
-      CommunicationsChannel *channel = 
-	connections_to_clients[player.stream_id]->channel;
-    
-      
-      set_progress_dialog_message(physics_message_id);
-      if(do_physics) {
-	PhysicsMessage physicsMessage(physics_buffer, physics_length);
-	channel->enqueueOutgoingMessage(physicsMessage);
-      }
-      
-      set_progress_dialog_message(message_id);
-      reset_progress_bar();
-      {
-	MapMessage mapMessage(wad_buffer, wad_length);
-	channel->enqueueOutgoingMessage(mapMessage);
-      }
-      
-      if (do_netscript) {
-	LuaMessage luaMessage(deferred_script_data, deferred_script_length);
-	channel->enqueueOutgoingMessage(luaMessage);
-      } 
+		/* If the player is not net dead. */ 
+		// ZZZ: and is not going to be a zombie and is not us
 
-      EndGameDataMessage endGameDataMessage;
-      channel->enqueueOutgoingMessage(endGameDataMessage);
-    }
-  }
+		if (!player.net_dead && player.identifier != NONE && playerIndex != localPlayerIndex) 
+			channels.push_back(connections_to_clients[player.stream_id]->channel);
+	}
 
-  for (playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
-    if (playerIndex != localPlayerIndex) {
-      CommunicationsChannel *channel = connections_to_clients[topology->players[playerIndex].stream_id]->channel;
-      
-      channel->flushOutgoingMessages(false, 30000, 30000);
-      connections_to_clients[topology->players[playerIndex].stream_id]->state = Client::_ingame;
-    }
-  }
+	set_progress_dialog_message(message_id);
+	reset_progress_bar();
+	
+	if (do_physics) 
+	{
+		PhysicsMessage physicsMessage(physics_buffer, physics_length);
+		std::for_each(channels.begin(), channels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, physicsMessage));
+	}
+
+	{
+		MapMessage mapMessage(wad_buffer, wad_length);
+		std::for_each(channels.begin(), channels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, mapMessage));
+	}
+
+	if (do_netscript)
+	{
+		LuaMessage luaMessage(deferred_script_data, deferred_script_length);
+		std::for_each(channels.begin(), channels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, luaMessage));
+	}
+
+	{
+		EndGameDataMessage endGameDataMessage;
+		std::for_each(channels.begin(), channels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, endGameDataMessage));
+	}
+
+	CommunicationsChannel::multipleFlushOutgoingMessages(channels, false, 30000, 30000);
+	
+	for (playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
+		if (playerIndex != localPlayerIndex) {
+			connections_to_clients[topology->players[playerIndex].stream_id]->state = Client::_ingame;
+		}
+	}
+
+	
     
-  if (error) { // ghs: nothing above returns an error at the moment,
-    // but I'll leave so you know what error could be displayed
-    alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
-  } else if  (machine_tick_count()-initial_ticks>uint32(topology->player_count*MAP_TRANSFER_TIME_OUT)) {
-    alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, error);
-    error= 1;
-  }
+	if (error) { // ghs: nothing above returns an error at the moment,
+		// but I'll leave so you know what error could be displayed
+		alert_user(infoError, strNETWORK_ERRORS, netErrCouldntDistribute, error);
+	} else if  (machine_tick_count()-initial_ticks>uint32(topology->player_count*MAP_TRANSFER_TIME_OUT)) {
+		alert_user(infoError, strNETWORK_ERRORS, netErrWaitedTooLongForMap, error);
+		error= 1;
+	}
   
-  if (!error) {
-    /* Process the physics file & frees it!.. */
-    if(do_physics)
-      process_network_physics_model(physics_buffer);
-    
-    draw_progress_bar(total_length, total_length);
-    
+	if (!error) {
+		/* Process the physics file & frees it!.. */
+		if(do_physics)
+			process_network_physics_model(physics_buffer);
+		
+		draw_progress_bar(total_length, total_length);
+		
 #ifdef HAVE_LUA
-    if (do_netscript) {
-      gLoadingLuaNetscript = true;
-      LoadLuaScript ((char*)deferred_script_data, deferred_script_length);
-      gLoadingLuaNetscript = false;
-    }
+		if (do_netscript) {
+			gLoadingLuaNetscript = true;
+			LoadLuaScript ((char*)deferred_script_data, deferred_script_length);
+			gLoadingLuaNetscript = false;
+		}
 #endif
-  }
-  
-  close_progress_dialog();
-  
-  return error;
+	}
+	
+	close_progress_dialog();
+	
+	return error;
 }
 
 byte *NetReceiveGameData(bool do_physics)
