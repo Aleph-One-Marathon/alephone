@@ -618,7 +618,38 @@ CommunicationsChannel::flushOutgoingMessages(bool shouldDispatchIncomingMessages
 }
 
 
+void CommunicationsChannel::multipleFlushOutgoingMessages(
+	std::vector<CommunicationsChannel *>& channels,
+	bool shouldDispatchIncomingMessages,
+	Uint32 inOverallTimeout,
+	Uint32 inInactivityTimeout)
+{
+	Uint32 theDeadline = SDL_GetTicks() + inOverallTimeout;
+	Uint32 theTicksAtStart = SDL_GetTicks();
 
+	bool someoneIsStillActive = true;
+
+	while (SDL_GetTicks() < theDeadline && someoneIsStillActive)
+	{
+		someoneIsStillActive = false;
+
+		SDL_Delay(kFlushPumpInterval);
+
+		for (std::vector<CommunicationsChannel*>::iterator it = channels.begin(); it != channels.end(); it++)
+		{
+			if (!(*it)->mOutgoingMessages.empty() && SDL_GetTicks() - std::max((*it)->mTicksAtLastSend, theTicksAtStart) < inInactivityTimeout)
+			{
+				someoneIsStillActive = true;
+			}
+
+			(*it)->pump();
+			if (shouldDispatchIncomingMessages)
+				(*it)->dispatchIncomingMessages();
+		}
+
+	}
+
+}
 
 
 CommunicationsChannelFactory::CommunicationsChannelFactory(uint16 inPort)

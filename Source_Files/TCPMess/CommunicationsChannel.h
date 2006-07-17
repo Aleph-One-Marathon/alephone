@@ -37,6 +37,7 @@
 #include <string>
 #include <memory>
 #include <stdexcept>
+#include <vector>
 #include "SDL_net.h"
 
 #include "Message.h"
@@ -156,6 +157,14 @@ public:
 			     Uint32 inOverallTimeout = kOutgoingOverallTimeout,
 			     Uint32 inInactivityTimeout = kOutgoingInactivityTimeout);
 
+	// similar to above, but more efficient when there are multiple
+	// channels with outgoing messages (usually the case)
+	static void     multipleFlushOutgoingMessages(
+		std::vector<CommunicationsChannel*>&, 
+		bool dispatchIncomingMessages,
+		Uint32 inOverallTimeout = kOutgoingInactivityTimeout,
+		Uint32 inInactivityTimeout = kOutgoingInactivityTimeout);
+	
 	// Copies the given message (or at least its bytes) to make use less error-prone
 	void		enqueueOutgoingMessage(const Message& inMessage);
 
