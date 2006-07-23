@@ -183,7 +183,15 @@ class AIStreamBE : public AIStream
 public:
 	AIStreamBE(const uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AIStream(__stream, __length, __offset) {};
-  
+
+	AIStream& 
+	operator>>(uint8 &__value) throw(AStream::failure)
+		{ return AIStream::operator>>(__value); }
+
+	AIStream&
+	operator>>(int8 &__value) throw(AStream::failure)
+		{ return AIStream::operator>>(__value); }
+	
 	AIStream&
 	operator>>(uint16 &__value) throw(AStream::failure);
 	
@@ -202,7 +210,15 @@ class AIStreamLE : public AIStream
 public:
 	AIStreamLE(const uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AIStream(__stream, __length, __offset) {};
-  
+
+  	AIStream& 
+	operator>>(uint8 &__value) throw(AStream::failure)
+		{ return AIStream::operator>>(__value); }
+
+	AIStream&
+	operator>>(int8 &__value) throw(AStream::failure)
+		{ return AIStream::operator>>(__value); }
+
 	AIStream&
 	operator>>(uint16 &__value) throw(AStream::failure);
 	
@@ -285,6 +301,14 @@ class AOStreamBE: public AOStream
 public:
 	AOStreamBE(uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AOStream(__stream, __length, __offset) {};
+
+	AOStream&
+	operator<<(uint8 __value) throw (AStream::failure)
+		{ return AOStream::operator<<(__value); }
+
+	AOStream&
+	operator<<(int8 __value) throw (AStream::failure)
+		{ return AOStream::operator<<(__value); }
   
 	AOStream&
 	operator<<(uint16 __value) throw(AStream::failure);
@@ -304,7 +328,15 @@ class AOStreamLE: public AOStream
 public:
 	AOStreamLE(uint8* __stream, uint32 __length, uint32 __offset = 0) :
 		AOStream(__stream, __length, __offset) {}
-  
+
+  	AOStream&
+	operator<<(uint8 __value) throw (AStream::failure)
+		{ return AOStream::operator<<(__value); }
+
+	AOStream&
+	operator<<(int8 __value) throw (AStream::failure)
+		{ return AOStream::operator<<(__value); }
+ 
 	AOStream&
 	operator<<(uint16 __value) throw(AStream::failure);
 	
