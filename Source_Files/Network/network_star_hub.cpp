@@ -61,6 +61,8 @@
 #include <map>
 #include <algorithm> // std::min()
 
+#include "crc.h"
+
 // Synchronization:
 // hub_received_network_packet() is not reentrant
 // hub_tick() is not reentrant
@@ -525,28 +527,35 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
         AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
 
 	try {
-		uint32	thePacketMagic;
-		ps >> thePacketMagic;
+		uint8	thePacketType;
+		ps >> thePacketType;
+
+		uint16 thePacketCRC;
+		ps >> thePacketCRC;
+
+		if (thePacketCRC != calculate_data_crc_ccitt(&inPacket->datagramData[kStarPacketHeaderSize], inPacket->datagramSize - kStarPacketHeaderSize))
+		{
+			logWarningNMT1("CRC failure; discarding packet type %i", thePacketType);
+		}
 		
-                switch(thePacketMagic)
+                switch(thePacketType)
                 {
-                        case kSpokeToHubGameDataPacketV1Magic:
+                        case kSpokeToHubGameDataPacketV1:
 			{
 				// Find sender
 				AddressToPlayerIndexType::iterator theEntry = sAddressToPlayerIndex.find(inPacket->sourceAddress);
 				if(theEntry == sAddressToPlayerIndex.end())
 					return;
-	
+				
 				int theSenderIndex = theEntry->second;
-					
+				
 				// Unconnected players should not have entries in sAddressToPlayerIndex
 				assert(getNetworkPlayer(theSenderIndex).mConnected);
 				hub_received_game_data_packet_v1(ps, theSenderIndex);
 			}
 			break;
 
-			case kSpokeToHubIdentificationMagic:
-				fprintf(stderr, "handling identification packet\n");
+			case kSpokeToHubIdentification:
 				hub_received_identification_packet(ps, inPacket->sourceAddress);
 			break;
 
@@ -954,12 +963,14 @@ send_packets()
                 NetworkPlayer_hub& thePlayer = sNetworkPlayers[i];
                 if(thePlayer.mConnected && thePlayer.mAddressKnown)
                 {
-                        AOStreamBE ps(sOutgoingFrame->data, ddpMaxData);
+			AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
+                        AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
 
                         try {
-                                // Packet magic, acknowledgement
-                                ps << (uint32)kHubToSpokeGameDataPacketV1Magic
-                                        << getFlagsQueue(i).getWriteTick();
+				hdr << (uint8) kHubToSpokeGameDataPacketV1;
+
+                                // acknowledgement
+                                ps << getFlagsQueue(i).getWriteTick();
         
                                 // Messages
                                 // Timing adjustment?
@@ -1041,6 +1052,8 @@ send_packets()
                                                 }
                                         }
                                 }
+
+				hdr << calculate_data_crc_ccitt(&sOutgoingFrame->data[kStarPacketHeaderSize], ps.tellp() - kStarPacketHeaderSize);
         
                                 // Send the packet
                                 sOutgoingFrame->data_size = ps.tellp();

@@ -43,6 +43,7 @@
 #include "vbl.h" // parse_keymap
 #include "CircularByteBuffer.h"
 #include "Logging.h"
+#include "crc.h"
 
 #include <map>
 
@@ -398,19 +399,28 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
         try {
                 AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
 
-                uint32 thePacketMagic;
-                ps >> thePacketMagic;
+		uint8 thePacketType;
+		ps >> thePacketType;
 
-                switch(thePacketMagic)
+		uint16 thePacketCRC;
+		ps >> thePacketCRC;
+
+		if (thePacketCRC != calculate_data_crc_ccitt(&inPacket->datagramData[kStarPacketHeaderSize], inPacket->datagramSize - kStarPacketHeaderSize))
+		{
+			logWarningNMT1("CRC failure; discarding packet type %i", thePacketType);
+			return;
+		}
+		
+                switch(thePacketType)
                 {
-                        case kHubToSpokeGameDataPacketV1Magic:
-                                spoke_received_game_data_packet_v1(ps);
-                                break;
-
-                        default:
-                                // Ignore unknown packet types
-				logTraceNMT1("unknown packet magic %x", thePacketMagic);
-                                break;
+		case kHubToSpokeGameDataPacketV1:
+			spoke_received_game_data_packet_v1(ps);
+			break;
+			
+		default:
+			// Ignore unknown packet types
+			logTraceNMT1("unknown packet type %i", thePacketType);
+			break;
                 }
         }
         catch(...)
@@ -866,11 +876,12 @@ static void
 send_packet()
 {
         try {
-                AOStreamBE ps(sOutgoingFrame->data, ddpMaxData);
+		AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
+                AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
         
-                // Packet magic
-                ps << (uint32)kSpokeToHubGameDataPacketV1Magic;
-        
+                // Packet type
+                hdr << (uint8)kSpokeToHubGameDataPacketV1;
+
                 // Acknowledgement
                 ps << sSmallestUnreceivedTick;
         
@@ -916,8 +927,11 @@ send_packet()
 
 		logDumpNMT3("preparing to send packet: ACK %d, flags [%d,%d)", sSmallestUnreceivedTick, sOutgoingFlags.getReadTick(), sOutgoingFlags.getWriteTick());
 
+		hdr << calculate_data_crc_ccitt(&sOutgoingFrame->data[kStarPacketHeaderSize], ps.tellp() - kStarPacketHeaderSize);
+
                 // Send the packet
                 sOutgoingFrame->data_size = ps.tellp();
+
                 if(sHubIsLocal)
                         send_frame_to_local_hub(sOutgoingFrame, &sHubAddress, kPROTOCOL_TYPE, 0 /* ignored */);
                 else
@@ -935,13 +949,16 @@ static void
 send_identification_packet()
 {
         try {
-                AOStreamBE ps(sOutgoingFrame->data, ddpMaxData);
+		AOStreamBE hdr(sOutgoingFrame->data, kStarPacketHeaderSize);
+                AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
         
-                // Packet magic
-                ps << (uint32)kSpokeToHubIdentificationMagic;
+		// Message type
+		hdr << (uint8) kSpokeToHubIdentification;
         
                 // ID
                 ps << (uint16)sLocalPlayerIndex;
+
+		hdr << calculate_data_crc_ccitt(&sOutgoingFrame->data[kStarPacketHeaderSize], ps.tellp() - kStarPacketHeaderSize);
 
                 // Send the packet
                 sOutgoingFrame->data_size = ps.tellp();

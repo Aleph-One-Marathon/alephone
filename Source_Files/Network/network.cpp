@@ -339,58 +339,64 @@ void Client::drop()
 
 bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 {
-  // ghs: perhaps someday there will be an elegant, extensible way to do this
-  //      but for now, this is what you get
+	// ghs: perhaps someday there will be an elegant, extensible way to do this
+	//      but for now, this is what you get
 
-  char s[256];
+	char s[256];
   
-  // As this is the first version, I do not check version numbers for
-  // compatibility! Because I don't know if higher numbers necessarily mean
-  // incompatibility. In the future, gatherer and joiner should advertise what
-  // they have, and the higher one must contain the backward compatibility
-  // logic if any exists
+	// As this is the first version, I do not check version numbers for
+	// compatibility! Because I don't know if higher numbers necessarily mean
+	// incompatibility. In the future, gatherer and joiner should advertise what
+	// they have, and the higher one must contain the backward compatibility
+	// logic if any exists
 
-  // joiners can disable themselves from being gathered by replying with
-  // capabilities where the "Gatherable" capability is set to 0...this will
-  // not trigger a warning message from the gatherer
+	// joiners can disable themselves from being gathered by replying with
+	// capabilities where the "Gatherable" capability is set to 0...this will
+	// not trigger a warning message from the gatherer
 
-  // gatherer disables gathering by returning false from this function, and
-  // sending a descriptive error message to the joiner saying he won't show up
+	// gatherer disables gathering by returning false from this function, and
+	// sending a descriptive error message to the joiner saying he won't show up
 
-  if (capabilities[Capabilities::kGatherable] == 0) {
-    // no warning, the joiner already knows he is incompatible
-    return false;
-  }
+	if (capabilities[Capabilities::kGatherable] == 0) {
+		// no warning, the joiner already knows he is incompatible
+		return false;
+	}
 
-  if (network_preferences->game_protocol == _network_game_protocol_star) {
-    if (capabilities[Capabilities::kStar] == 0) {
-      if (warn_joiner) {
-	ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerHasNoStar), ServerWarningMessage::kJoinerUngatherable);
-	channel->enqueueOutgoingMessage(serverWarningMessage);
-      }
-      return false;
-    }
-  } else {
-    if (capabilities[Capabilities::kRing] == 0) {
-      if (warn_joiner) {
-	ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerHasNoRing), ServerWarningMessage::kJoinerUngatherable);
-	channel->enqueueOutgoingMessage(serverWarningMessage);
-      }
-      return false;
-    }
-  }
-  
-  if (do_netscript &&
-      capabilities[Capabilities::kLua] == 0) {
-    if (warn_joiner) {
-      char s[256];
-      ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerNoLua), ServerWarningMessage::kJoinerUngatherable);
-      channel->enqueueOutgoingMessage(serverWarningMessage);
-    }
-    return false;
-  }
-
-  return true;
+	if (network_preferences->game_protocol == _network_game_protocol_star) {
+		if (capabilities[Capabilities::kStar] == 0) {
+			if (warn_joiner) {
+				ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerHasNoStar), ServerWarningMessage::kJoinerUngatherable);
+				channel->enqueueOutgoingMessage(serverWarningMessage);
+			}
+			return false;
+		} else if (capabilities[Capabilities::kStar] < Capabilities::kStarVersion) {
+			if (warn_joiner) {
+				ServerWarningMessage serverWarningMessage("The gatherer is using a preview build that is incompatible with your version of Aleph One. You will not appear in the list of available players.", ServerWarningMessage::kJoinerUngatherable);
+				channel->enqueueOutgoingMessage(serverWarningMessage);
+			}
+			return false;
+		}
+	} else {
+		if (capabilities[Capabilities::kRing] == 0) {
+			if (warn_joiner) {
+				ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerHasNoRing), ServerWarningMessage::kJoinerUngatherable);
+				channel->enqueueOutgoingMessage(serverWarningMessage);
+			}
+			return false;
+		}
+	}
+	
+	if (do_netscript &&
+	    capabilities[Capabilities::kLua] == 0) {
+		if (warn_joiner) {
+			char s[256];
+			ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerNoLua), ServerWarningMessage::kJoinerUngatherable);
+			channel->enqueueOutgoingMessage(serverWarningMessage);
+		}
+		return false;
+	}
+	
+	return true;
 }
   
 
@@ -645,17 +651,28 @@ static void handleHelloMessage(HelloMessage* helloMessage, CommunicationsChannel
 static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage, 
 				      CommunicationsChannel *)
 {
-  if (handlerState == netJoining) {
-
-    // this is version 1, so I am gatherable unless a possibly newer gatherer
-    // tells me I am not (I will receive a ServerWarningMessage if that's the
-    // case)
-    CapabilitiesMessage capabilitiesMessageReply(my_capabilities);
-    connection_to_server->enqueueOutgoingMessage(capabilitiesMessageReply);
-    
-  } else {
-    logAnomaly1("unexpected capabilities message received (netState is %i)", netState);
-  }
+	if (handlerState == netJoining) {
+		Capabilities capabilities = *capabilitiesMessage->capabilities();
+		if (network_preferences->game_protocol == _network_game_protocol_star && capabilities[Capabilities::kStar] < Capabilities::kStarVersion)
+		{
+			// I'm not gatherable
+			my_capabilities[Capabilities::kGatherable] = 0;
+			CapabilitiesMessage capabilitiesMessageReply(my_capabilities);
+			connection_to_server->enqueueOutgoingMessage(capabilitiesMessageReply);
+			my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
+			
+			char *s = strdup("This preview build can not join older games. You will not appear in the list of available players.");
+			alert_user(s);
+			free(s);
+		} else {
+			// everything else is version 1
+			CapabilitiesMessage capabilitiesMessageReply(my_capabilities);
+			connection_to_server->enqueueOutgoingMessage(capabilitiesMessageReply);
+		}
+		
+	} else {
+		logAnomaly1("unexpected capabilities message received (netState is %i)", netState);
+	}
 }   
 
 static void handleClientInfoMessage(ClientInfoMessage* clientInfoMessage, CommunicationsChannel *) {
