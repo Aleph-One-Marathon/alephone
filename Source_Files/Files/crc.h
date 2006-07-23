@@ -36,4 +36,6 @@ uint32 calculate_crc_for_file(FileSpecifier& File);
 uint32 calculate_crc_for_opened_file(OpenedFile& OFile);
 uint32 calculate_data_crc(unsigned char *buffer, long length);
 
+uint16 calculate_data_crc_ccitt(unsigned char *buffer, long length);
+
 #endif
