@@ -45,6 +45,10 @@ public:
 	void	PacketHandler(DDPPacketBuffer* inPacket);
 
 	static XML_ElementParser* GetParser();
+
+	int32   GetUnconfirmedActionFlagsCount();
+	uint32  PeekUnconfirmedActionFlag(int32 offset);
+	void    UpdateUnconfirmedActionFlags();
 };
 
 extern void DefaultStarPreferences();

@@ -44,6 +44,10 @@ public:
 	int32	GetNetTime();
 	void	PacketHandler(DDPPacketBuffer* inPacket);
 
+	int32   GetUnconfirmedActionFlagsCount();
+	uint32  PeekUnconfirmedActionFlag(int32 offset);
+	void    UpdateUnconfirmedActionFlags();
+
 	static XML_ElementParser* GetParser();
 };
 

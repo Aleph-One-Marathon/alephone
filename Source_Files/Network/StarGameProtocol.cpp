@@ -185,7 +185,29 @@ StarGameProtocol::GetNetTime(void)
         return spoke_get_net_time();
 }
 
+int32
+StarGameProtocol::GetUnconfirmedActionFlagsCount()
+{
+	TickBasedActionQueue *q = spoke_get_unconfirmed_flags_queue();
+	return q->getWriteTick() - q->getReadTick();
+}
 
+uint32 
+StarGameProtocol::PeekUnconfirmedActionFlag(int32 offset)
+{
+	TickBasedActionQueue *q = spoke_get_unconfirmed_flags_queue();
+	return q->peek(q->getReadTick() + offset);
+}
+
+void 
+StarGameProtocol::UpdateUnconfirmedActionFlags()
+{
+	TickBasedActionQueue *q = spoke_get_unconfirmed_flags_queue();
+	while (q->getReadTick() < spoke_get_smallest_unconfirmed_tick())
+	{
+		q->dequeue();
+	}
+}
 
 /* ZZZ addition:
 ---------------------------

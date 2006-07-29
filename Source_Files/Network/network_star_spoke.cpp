@@ -77,6 +77,7 @@ struct SpokePreferences
 static SpokePreferences sSpokePreferences;
 
 static TickBasedActionQueue sOutgoingFlags(kDefaultOutgoingFlagsQueueSize);
+static TickBasedActionQueue sUnconfirmedFlags(kDefaultOutgoingFlagsQueueSize);
 static DuplicatingTickBasedCircularQueue<action_flags_t> sLocallyGeneratedFlags;
 static int32 sSmallestRealGameTick;
 
@@ -125,6 +126,8 @@ static int32 sDisplayLatencyBuffer[TICKS_PER_SECOND]; // stores the last 30 late
 static uint32 sDisplayLatencyCount = 0;
 static uint32 sDisplayLatencyTicks = 0; // sum of the latency ticks from the last 30 seconds, using above two
 
+static int32 sSmallestUnconfirmedTick;
+
 struct SpokeLossyByteStreamChunkDescriptor
 {
 	uint16	mLength;
@@ -143,7 +146,7 @@ static byte sScratchBuffer[kLossyByteStreamDataBufferSize];
 
 
 static void spoke_became_disconnected();
-static void spoke_received_game_data_packet_v1(AIStream& ps);
+static void spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags);
 static void process_messages(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
 static void handle_end_of_messages_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
 static void handle_player_net_dead_message(AIStream& ps, IncomingGameDataPacketProcessingContext& context);
@@ -218,6 +221,8 @@ spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inN
         sSmallestRealGameTick = inFirstTick;
         int32 theFirstPregameTick = inFirstTick - kPregameTicks;
         sOutgoingFlags.reset(theFirstPregameTick);
+	sUnconfirmedFlags.reset(sSmallestRealGameTick);
+	sSmallestUnconfirmedTick = sSmallestRealGameTick;
         sSmallestUnreceivedTick = theFirstPregameTick;
         
         sNetworkPlayers.clear();
@@ -225,7 +230,7 @@ spoke_initialize(const NetAddrBlock& inHubAddress, int32 inFirstTick, size_t inN
 
         sLocallyGeneratedFlags.children().clear();
         sLocallyGeneratedFlags.children().insert(&sOutgoingFlags);
-        sLocallyGeneratedFlags.children().insert(inPlayerQueues[inLocalPlayerIndex]);
+	sLocallyGeneratedFlags.children().insert(&sUnconfirmedFlags);
 
         for(size_t i = 0; i < inNumberOfPlayers; i++)
         {
@@ -414,7 +419,11 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
                 switch(thePacketType)
                 {
 		case kHubToSpokeGameDataPacketV1:
-			spoke_received_game_data_packet_v1(ps);
+			spoke_received_game_data_packet_v1(ps, false);
+			break;
+
+		case kHubToSpokeGameDataPacketWithSpokeFlagsV1:
+			spoke_received_game_data_packet_v1(ps, true);
 			break;
 			
 		default:
@@ -432,7 +441,7 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 
 
 static void
-spoke_received_game_data_packet_v1(AIStream& ps)
+spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 {
 	sHeardFromHub = true;
 
@@ -534,7 +543,9 @@ spoke_received_game_data_packet_v1(AIStream& ps)
         int theSmallestQueueSpace = INT_MAX;
         for(size_t i = 0; i < sNetworkPlayers.size(); i++)
         {
-                if(sNetworkPlayers[i].mZombie || i == sLocalPlayerIndex)
+		// we'll never get flags for zombies, and we're not expected 
+		// to enqueue flags for zombies
+                if(sNetworkPlayers[i].mZombie)
                         continue;
 
                 int theQueueSpace = sNetworkPlayers[i].mQueue->availableCapacity();
@@ -569,10 +580,34 @@ spoke_received_game_data_packet_v1(AIStream& ps)
                 
                 for(size_t i = 0; i < sNetworkPlayers.size(); i++)
                 {
-                        // Our own flags are not sent back to us; we'll never get flags for zombies.
-                        // We are not expected to enqueue flags in either case.
-                        if(sNetworkPlayers[i].mZombie || i == sLocalPlayerIndex)
-                                continue;
+
+			// We'll never get flags for zombies
+			if (sNetworkPlayers[i].mZombie)
+				continue;
+
+			// Our own flags may or may not be sent back to us
+			if (i == sLocalPlayerIndex)
+			{
+				// we may need to copy sent flags
+				if (theSmallestUnreadTick == sSmallestUnreceivedTick)
+				{
+					if (theSmallestUnreadTick >= sSmallestRealGameTick)
+					{
+						if (!reflected_flags)
+						{
+							sNetworkPlayers[i].mQueue->enqueue(sUnconfirmedFlags.peek(sSmallestUnconfirmedTick++));
+							continue;
+						} else {
+							// ghs: hmm, unless we bail before we get there...
+							sSmallestUnconfirmedTick++;
+						}
+					} else {
+						continue;
+					}
+				} else {
+					continue;
+				}
+			}
 
                         bool shouldEnqueueNetDeadFlags = false;
 
@@ -849,7 +884,14 @@ spoke_tick()
 		for(size_t i = 0; i < sNetworkPlayers.size(); i++)
 		{
 			if(i == sLocalPlayerIndex)
+			{
+				// move our flags from sent queue to player queue
+				while (sSmallestUnconfirmedTick < sUnconfirmedFlags.getWriteTick())
+				{
+					sNetworkPlayers[i].mQueue->enqueue(sUnconfirmedFlags.peek(sSmallestUnconfirmedTick++));
+				}
 				continue;
+			}
 			
 			NetworkPlayer_spoke& thePlayer = sNetworkPlayers[i];
 			
@@ -974,6 +1016,16 @@ send_identification_packet()
 int32 spoke_latency()
 {
 	return (sDisplayLatencyCount >= TICKS_PER_SECOND) ? sDisplayLatencyTicks * 1000 / TICKS_PER_SECOND / TICKS_PER_SECOND : -1;
+}
+
+TickBasedActionQueue* spoke_get_unconfirmed_flags_queue()
+{
+	return &sUnconfirmedFlags;
+}
+
+int32 spoke_get_smallest_unconfirmed_tick()
+{
+	return sSmallestUnconfirmedTick;
 }
 		
 

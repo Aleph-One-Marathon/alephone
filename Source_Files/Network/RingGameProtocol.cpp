@@ -33,6 +33,8 @@
 
 #include "RingGameProtocol.h"
 
+#include "ActionQueues.h"
+#include "player.h" // GetRealActionQueues
 #include "network.h"
 #include "network_private.h"
 #include "network_data_formats.h"
@@ -2188,6 +2190,17 @@ RingGameProtocol::GetNetTime(void)
 #endif
 }
 
+int32 RingGameProtocol::GetUnconfirmedActionFlagsCount()
+{
+	return GetRealActionQueues()->countActionFlags(NetGetLocalPlayerIndex());
+}
+
+uint32 RingGameProtocol::PeekUnconfirmedActionFlag(int32 offset)
+{
+	return GetRealActionQueues()->peekActionFlags(NetGetLocalPlayerIndex(), offset);
+}
+
+void RingGameProtocol::UpdateUnconfirmedActionFlags() { }
 
 
 // brazenly copied and modified from player.c (though i clearly format it much better)

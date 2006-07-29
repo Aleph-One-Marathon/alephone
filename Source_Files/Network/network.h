@@ -278,7 +278,13 @@ bool NetAllowCrosshair();
 bool NetAllowTunnelVision();
 bool NetAllowBehindview();
 
+// spoke stuf
+
+int32 NetGetUnconfirmedActionFlagsCount(); // how many flags can we use for prediction?
+uint32 NetGetUnconfirmedActionFlag(int32 offset); // offset < GetUnconfirmedActionFlagsCount
+void NetUpdateUnconfirmedActionFlags();
+
 // returns -1 if not available (frex if you are star hub, or using ring)
-int32 NetGetLatency(); 
+int32 NetGetLatency();
 
 #endif

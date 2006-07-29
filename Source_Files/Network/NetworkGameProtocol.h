@@ -41,6 +41,12 @@ public:
 	virtual int32	GetNetTime() = 0;
 	virtual void	PacketHandler(DDPPacketBuffer* inPacket) = 0;
 	virtual		~NetworkGameProtocol() {}
+
+	// action flags we can use for prediction, but aren't authoritative yet
+	virtual int32   GetUnconfirmedActionFlagsCount() = 0;
+	virtual uint32  PeekUnconfirmedActionFlag(int32 offset) = 0;
+	virtual void    UpdateUnconfirmedActionFlags() = 0;
+	
 };
 
 #endif // NETWORKGAMEPROTOCOL_H

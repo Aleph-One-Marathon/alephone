@@ -2217,5 +2217,23 @@ int32 NetGetLatency() {
 	}
 }
 
+int32 NetGetUnconfirmedActionFlagsCount()
+{
+	assert (sCurrentGameProtocol);
+	return sCurrentGameProtocol->GetUnconfirmedActionFlagsCount();
+}
+
+uint32 NetGetUnconfirmedActionFlag(int32 offset)
+{
+	assert (sCurrentGameProtocol);
+	return sCurrentGameProtocol->PeekUnconfirmedActionFlag(offset);
+}
+
+void NetUpdateUnconfirmedActionFlags()
+{
+	assert (sCurrentGameProtocol);
+	return sCurrentGameProtocol->UpdateUnconfirmedActionFlags();
+}
+
 #endif // !defined(DISABLE_NETWORKING)
 

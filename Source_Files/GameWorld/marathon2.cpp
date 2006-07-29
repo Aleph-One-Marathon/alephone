@@ -444,6 +444,7 @@ update_world_elements_one_tick()
 // ZZZ: new formulation of update_world(), should be simpler and clearer I hope.
 // Now returns (whether something changed, number of real ticks elapsed) since, with
 // prediction, something can change even if no real ticks have elapsed.
+
 std::pair<bool, int16>
 update_world()
 {
@@ -525,6 +526,8 @@ update_world()
 	
 	if(theUpdateResult == kUpdateNormalCompletion && sPredictionWanted)
 	{
+		NetUpdateUnconfirmedActionFlags();
+
 		// We use "2" to make sure there's always room for our one set of elements.
 		// (thePredictiveQueues should always hold only 0 or 1 element for each player.)
 		ActionQueues	thePredictiveQueues(dynamic_world->player_count, 2, true);
@@ -532,7 +535,7 @@ update_world()
 		// Observe, since we don't use a speed-limiter in predictive mode, that there cannot be flags
 		// stranded in the GameQueue.  Unfortunately this approach will mispredict if a script is
 		// controlling the local player.  We could be smarter about it if that eventually becomes an issue.
-		for( ; sPredictedTicks < GetRealActionQueues()->countActionFlags(local_player_index); sPredictedTicks++)
+		for ( ; sPredictedTicks < NetGetUnconfirmedActionFlagsCount(); sPredictedTicks++)
 		{
 			// Real -> predictive transition, if necessary
 			enter_predictive_mode();
@@ -540,10 +543,10 @@ update_world()
 			// Enqueue stuff into thePredictiveQueues
 			for(short thePlayerIndex = 0; thePlayerIndex < dynamic_world->player_count; thePlayerIndex++)
 			{
-				uint32 theFlags = (thePlayerIndex == local_player_index) ? GetRealActionQueues()->peekActionFlags(local_player_index, sPredictedTicks) : sMostRecentFlagsForPlayer[thePlayerIndex];
+				uint32 theFlags = (thePlayerIndex == local_player_index) ? NetGetUnconfirmedActionFlag(sPredictedTicks) : sMostRecentFlagsForPlayer[thePlayerIndex];
 				thePredictiveQueues.enqueueActionFlags(thePlayerIndex, &theFlags, 1);
 			}
-
+			
 			// update_players() will dequeue the elements we just put in there
 			update_players(&thePredictiveQueues, true);
 
