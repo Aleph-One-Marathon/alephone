@@ -47,19 +47,15 @@ enum {
 	kSpokeToHubLossyByteStreamMessageType = 0x534c,	// 'SL'
 	kHubToSpokeLossyByteStreamMessageType = 0x484c, // 'HL'
 
-        kSpokeToHubGameDataPacketV1Magic = 0x53484731,	// 'SHG1'
-        kHubToSpokeGameDataPacketV1Magic = 0x48534731,	// 'HSG1'
-	kSpokeToHubIdentificationMagic = 0x53484944, // 'SHID'
-
-	kSpokeToHubIdentification = 77,
-	kSpokeToHubGameDataPacketV1 = 78,
-	kHubToSpokeGameDataPacketV1 = 79,
-	kHubToSpokeGameDataPacketWithSpokeFlagsV1 = 80,
+	kSpokeToHubIdentification = 0x4944,   // 'ID'
+	kSpokeToHubGameDataPacketV1Magic = 0x5331, // 'S1'
+	kHubToSpokeGameDataPacketV1Magic = 0x4831, // 'H1'
+	kHubToSpokeGameDataPacketWithSpokeFlagsV1Magic = 0x4631, // 'F1'
 
         kPregameTicks = TICKS_PER_SECOND * 3,	// Synchronization/timing adjustment before real data
         kActionFlagsSerializedLength = 4,	// bytes for each serialized action_flags_t (should be elsewhere)
 	
-	kStarPacketHeaderSize = 3, // 1 byte for packet type, 2 for CRC
+	kStarPacketHeaderSize = 4, // 2 bytes for packet magic, 2 for CRC
 };
 
 typedef uint32 action_flags_t;	// (should be elsewhere)

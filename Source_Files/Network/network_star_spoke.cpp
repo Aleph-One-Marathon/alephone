@@ -124,7 +124,7 @@ static bool sHeardFromHub = false;
 
 static int32 sDisplayLatencyBuffer[TICKS_PER_SECOND]; // stores the last 30 latency calculations, in ticks
 static uint32 sDisplayLatencyCount = 0;
-static uint32 sDisplayLatencyTicks = 0; // sum of the latency ticks from the last 30 seconds, using above two
+static int32 sDisplayLatencyTicks = 0; // sum of the latency ticks from the last 30 seconds, using above two
 
 static int32 sSmallestUnconfirmedTick;
 
@@ -404,31 +404,31 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
         try {
                 AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
 
-		uint8 thePacketType;
-		ps >> thePacketType;
+		uint16 thePacketMagic;
+		ps >> thePacketMagic;
 
 		uint16 thePacketCRC;
 		ps >> thePacketCRC;
 
 		if (thePacketCRC != calculate_data_crc_ccitt(&inPacket->datagramData[kStarPacketHeaderSize], inPacket->datagramSize - kStarPacketHeaderSize))
 		{
-			logWarningNMT1("CRC failure; discarding packet type %i", thePacketType);
+			logWarningNMT1("CRC failure; discarding packet type %i", thePacketMagic);
 			return;
 		}
 		
-                switch(thePacketType)
+                switch(thePacketMagic)
                 {
-		case kHubToSpokeGameDataPacketV1:
+		case kHubToSpokeGameDataPacketV1Magic:
 			spoke_received_game_data_packet_v1(ps, false);
 			break;
 
-		case kHubToSpokeGameDataPacketWithSpokeFlagsV1:
+		case kHubToSpokeGameDataPacketWithSpokeFlagsV1Magic:
 			spoke_received_game_data_packet_v1(ps, true);
 			break;
 			
 		default:
 			// Ignore unknown packet types
-			logTraceNMT1("unknown packet type %i", thePacketType);
+			logTraceNMT1("unknown packet type %i", thePacketMagic);
 			break;
                 }
         }
@@ -925,7 +925,7 @@ send_packet()
                 AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
         
                 // Packet type
-                hdr << (uint8)kSpokeToHubGameDataPacketV1;
+                hdr << (uint16)kSpokeToHubGameDataPacketV1Magic;
 
                 // Acknowledgement
                 ps << sSmallestUnreceivedTick;
@@ -998,7 +998,7 @@ send_identification_packet()
                 AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
         
 		// Message type
-		hdr << (uint8) kSpokeToHubIdentification;
+		hdr << (uint16) kSpokeToHubIdentification;
         
                 // ID
                 ps << (uint16)sLocalPlayerIndex;

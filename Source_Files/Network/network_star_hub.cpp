@@ -539,20 +539,20 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
         AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
 
 	try {
-		uint8	thePacketType;
-		ps >> thePacketType;
+		uint16	thePacketMagic;
+		ps >> thePacketMagic;
 
 		uint16 thePacketCRC;
 		ps >> thePacketCRC;
 
 		if (thePacketCRC != calculate_data_crc_ccitt(&inPacket->datagramData[kStarPacketHeaderSize], inPacket->datagramSize - kStarPacketHeaderSize))
 		{
-			logWarningNMT1("CRC failure; discarding packet type %i", thePacketType);
+			logWarningNMT1("CRC failure; discarding packet type %i", thePacketMagic);
 		}
 		
-                switch(thePacketType)
+                switch(thePacketMagic)
                 {
-                        case kSpokeToHubGameDataPacketV1:
+                        case kSpokeToHubGameDataPacketV1Magic:
 			{
 				// Find sender
 				AddressToPlayerIndexType::iterator theEntry = sAddressToPlayerIndex.find(inPacket->sourceAddress);
@@ -979,7 +979,7 @@ send_packets()
                         AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
 
                         try {
-				hdr << (uint8) kHubToSpokeGameDataPacketV1;
+				hdr << (uint16) kHubToSpokeGameDataPacketV1Magic;
 
                                 // acknowledgement
                                 ps << getFlagsQueue(i).getWriteTick();
