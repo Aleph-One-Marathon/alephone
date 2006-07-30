@@ -549,6 +549,10 @@ static void update_fps_display(SDL_Surface *s)
 		short Offset = Font.LineSpacing / 3;
 		short X = X0 + Offset;
 		short Y = Y0 - Offset;
+		if (Console::instance()->input_active())
+		{
+			Y -= Font.LineSpacing;
+		}
 		DisplayText(X,Y,fps);
 		
 #if defined(mac)
