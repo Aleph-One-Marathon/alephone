@@ -511,7 +511,14 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 			for(size_t i = 0; i < sNetworkPlayers.size(); i++)
 			{
 				NetworkPlayer_spoke& thePlayer = sNetworkPlayers[i];
-				if(i != sLocalPlayerIndex && !thePlayer.mZombie)
+				if (i == sLocalPlayerIndex)
+				{
+					while (sSmallestUnconfirmedTick < sUnconfirmedFlags.getWriteTick())
+					{
+						sNetworkPlayers[i].mQueue->enqueue(sUnconfirmedFlags.peek(sSmallestUnconfirmedTick++));
+					}
+				} 
+				else if (!thePlayer.mZombie)
 				{
 					while(thePlayer.mQueue->getWriteTick() < theSmallestUnacknowledgedTick)
 					{
