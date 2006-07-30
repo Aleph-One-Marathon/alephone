@@ -230,7 +230,19 @@ static uint32 sConnectedPlayersBitmask;
 // sSmallestIncompleteTick - sSmallestUnsentTick >= sHubPreferences.mSendPeriod
 static int32 sSmallestUnsentTick;
 
-typedef std::map<NetAddrBlock, int>	AddressToPlayerIndexType;
+struct NetAddrBlockCompare
+{
+
+  bool operator()(const NetAddrBlock& a, const NetAddrBlock& b) const
+  {
+    if (a.host == b.host)
+      return a.port < b.port;
+    else
+      return a.host < b.host;
+  }
+};
+
+  typedef std::map<NetAddrBlock, int, NetAddrBlockCompare>	AddressToPlayerIndexType;
 static AddressToPlayerIndexType	sAddressToPlayerIndex;
 
 typedef std::vector<NetworkPlayer_hub>	NetworkPlayerCollection;
