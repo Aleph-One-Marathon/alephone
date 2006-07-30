@@ -608,11 +608,7 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 							// ghs: hmm, unless we bail before we get there...
 							sSmallestUnconfirmedTick++;
 						}
-					} else {
-						continue;
 					}
-				} else {
-					continue;
 				}
 			}
 
