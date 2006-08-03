@@ -1361,9 +1361,6 @@ static void process_game_key(const SDL_Event &event)
 					case SDLK_r:
 						item = iRevert;
 						break;
-					case SDLK_c:
-						item = iCloseGame;
-						break;
 // ZZZ: Alt+F4 is also a quit gesture in Windows
 #ifdef __WIN32__
                     case SDLK_F4:
