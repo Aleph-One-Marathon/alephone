@@ -24,6 +24,7 @@
 #define CONSOLE_H
 
 #include <string>
+#include <map>
 #include <boost/function.hpp>
 
 class Console 
@@ -44,12 +45,17 @@ class Console
   void deactivate_input(); // like abort, but no callback
 
   bool input_active() { return m_active; }
+
+  void register_command(std::string command, boost::function<void(const std::string&)> f);
+  void unregister_command(std::string command);
   
  private:
   Console() : m_active(false) { } ;
   static Console* m_instance;
 
+  typedef std::map<std::string, boost::function<void(const std::string&)> > command_map;
   boost::function<void (std::string)> m_callback;
+  command_map m_commands;
   std::string m_buffer;
   std::string m_displayBuffer;
   std::string m_prompt;

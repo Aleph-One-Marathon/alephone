@@ -27,6 +27,8 @@
 #include <string>
 #include <boost/function.hpp>
 
+using namespace std;
+
 Console *Console::m_instance = NULL;
 
 Console *Console::instance() {
@@ -37,19 +39,44 @@ Console *Console::instance() {
 }
 
 void Console::enter() {
-  if (!m_callback) {
-    logAnomaly("console enter activated, but no callback set");
-  } else {
-    m_callback(m_buffer);
-  }
-
-  m_callback.clear();
-  m_buffer.clear();
-  m_displayBuffer.clear();
-  m_active = false;
+	// commands are processed before callbacks
+	if (m_buffer[0] == '.')
+	{
+		// see if there's a command
+		
+		string command;
+		string remainder;
+		
+		string::size_type pos = m_buffer.find(' ');
+		if (pos != string::npos && pos < m_buffer.size())
+		{
+			remainder = m_buffer.substr(pos + 1);
+			command = m_buffer.substr(1, pos);
+		}
+		else 
+		{
+			command = m_buffer.substr(1);
+		}
+		
+		transform(command.begin(), command.end(), command.begin(), tolower);
+		command_map::iterator it = m_commands.find(command);
+		if (it != m_commands.end())
+		{
+			it->second(remainder);
+		}
+	} else if (!m_callback) {
+		logAnomaly("console enter activated, but no callback set");
+	} else {
+		m_callback(m_buffer);
+	}
+	
+	m_callback.clear();
+	m_buffer.clear();
+	m_displayBuffer.clear();
+	m_active = false;
 #if defined(SDL)
-  SDL_EnableKeyRepeat(0, 0);
-  SDL_EnableUNICODE(0);
+	SDL_EnableKeyRepeat(0, 0);
+	SDL_EnableUNICODE(0);
 #endif
 }
 
@@ -118,4 +145,14 @@ void Console::deactivate_input() {
 #endif
 }
 
+void Console::register_command(string command, boost::function<void(const string&)> f)
+{
+	transform(command.begin(), command.end(), command.begin(), tolower);
+	m_commands[command] = f;
+}
 
+void Console::unregister_command(string command)
+{
+	transform(command.begin(), command.end(), command.begin(), tolower);
+	m_commands.erase(command);
+}
