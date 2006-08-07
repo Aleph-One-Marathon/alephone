@@ -129,6 +129,7 @@ clearly this is all broken until we have packet types
 
 #include "game_errors.h"
 #include "CommunicationsChannel.h"
+#include "Console.h"
 #include "MessageDispatcher.h"
 #include "MessageInflater.h"
 #include "MessageHandler.h"
@@ -202,6 +203,13 @@ static GatherCallbacks *gatherCallbacks = NULL;
 static ChatCallbacks *chatCallbacks = NULL;
 
 static UpnpController *controller = NULL;
+
+static bool sDisplayPings;
+struct toggle_ping_display {
+	void operator()(const std::string&) const { 
+		sDisplayPings = !sDisplayPings; 
+	};
+};
 
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
@@ -1086,6 +1094,10 @@ bool NetEnter(void)
 	my_capabilities[Capabilities::kLua] = Capabilities::kLuaVersion;
 #endif
 	my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
+
+	// net commands!
+	sDisplayPings = false;
+	Console::instance()->register_command("ping", toggle_ping_display());
   
 	next_join_attempt = machine_tick_count();
   
@@ -1168,6 +1180,8 @@ void NetExit(
 		controller = NULL;
 		close_progress_dialog();
 	}
+
+	Console::instance()->unregister_command("ping");
   
 	NetDDPClose();
 }
@@ -2208,12 +2222,23 @@ bool NetAllowBehindview() {
 }
 
 extern int32 spoke_latency();
+extern int32 hub_latency(int);
 
 int32 NetGetLatency() {
 	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && connection_to_server) {
 		return spoke_latency();
 	} else {
-		return -1;
+		return kNetLatencyInvalid;
+	}
+}
+
+int32 NetGetLatency(int player_index)
+{
+	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && !connection_to_server)
+	{
+		return hub_latency(player_index);
+	} else {
+		return kNetLatencyInvalid;
 	}
 }
 
@@ -2235,5 +2260,9 @@ void NetUpdateUnconfirmedActionFlags()
 	return sCurrentGameProtocol->UpdateUnconfirmedActionFlags();
 }
 
+bool NetDisplayPings()
+{
+	return sDisplayPings;
+}
 #endif // !defined(DISABLE_NETWORKING)
 

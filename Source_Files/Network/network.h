@@ -284,7 +284,17 @@ int32 NetGetUnconfirmedActionFlagsCount(); // how many flags can we use for pred
 uint32 NetGetUnconfirmedActionFlag(int32 offset); // offset < GetUnconfirmedActionFlagsCount
 void NetUpdateUnconfirmedActionFlags();
 
-// returns -1 if not available (frex if you are star hub, or using ring)
+enum {
+	kNetLatencyInvalid = -1,
+	kNetLatencyDisconnected = -2
+};
+
+// returns latency in ms, or kNetLatencyInvalid or kNetLatencyDisconnected
 int32 NetGetLatency();
+// only works when you're the hub, right now
+int32 NetGetLatency(int player_index);
+
+// if true, show the player indices and pings in the HUD instead of scores
+bool NetDisplayPings();
 
 #endif

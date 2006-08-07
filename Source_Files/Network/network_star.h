@@ -81,7 +81,8 @@ extern void spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistribut
 // distribute_lossy_streaming_bytes offers a more direct interface (not yet used) to star's lossy
 //	distribution mechanism.  (e.g., can select certain recipients, send unregistered dist types, etc.)
 extern void spoke_distribute_lossy_streaming_bytes(int16 inDistributionType, uint32 inDestinationsBitmask, byte* inBytes, uint16 inLength);
-extern int32 spoke_latency(); // in ms, -1 if not yet valid
+extern int32 spoke_latency(); // in ms, kNetLatencyInvalid if not yet valid
+extern int32 hub_latency(int player_index); // in ms, kNetLatencyInvalid if not valid, kNetLatencyDisconnected if d/c
 extern TickBasedActionQueue* spoke_get_unconfirmed_flags_queue();
 extern int32 spoke_get_smallest_unconfirmed_tick();
 extern XML_ElementParser* Spoke_GetParser();

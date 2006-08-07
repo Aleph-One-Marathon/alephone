@@ -175,7 +175,9 @@ static int32 sSmallestPostGameTick;
 // min(sFlagsQueues[all].getWriteIndex()) == sSmallestIncompleteTick;
 typedef std::vector<TickBasedActionQueue> TickBasedActionQueueCollection;
 static TickBasedActionQueueCollection	sFlagsQueues;
-typedef ConcreteTickBasedCircularQueue<int> WindowedAverageQueue;
+
+// tracks the net ticks each flags tick was *first* sent out at
+static ConcreteTickBasedCircularQueue<int32> sFlagSendTimeQueue(kFlagsQueueSize);
 
 struct NetworkPlayer_hub {
         NetAddrBlock	mAddress;		// network address of player
@@ -207,6 +209,11 @@ struct NetworkPlayer_hub {
         // the message.  mNetDeadTick, then, works pretty much just like mTimingAdjustmentTick.
         // mNetDeadTick is the first tick for which the netdead player isn't providing data.
         int32		mNetDeadTick;
+
+	// latency stuff
+	vector<int32> mDisplayLatencyBuffer; // last 30 latency calculations in ticks
+	uint32 mDisplayLatencyCount;
+	int32 mDisplayLatencyTicks; // sum of the latency ticks from the last second, using above two
 };
 
 // Housekeeping queues:
@@ -429,10 +436,15 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
                 thePlayer.mTimingAdjustmentTick = 0;
                 thePlayer.mNetDeadTick = theFirstTick - 1;
 
+		thePlayer.mDisplayLatencyBuffer.resize(TICKS_PER_SECOND);
+		thePlayer.mDisplayLatencyCount = 0;
+		thePlayer.mDisplayLatencyTicks = 0;
+
                 sFlagsQueues[i].reset(theFirstTick);
         }
         
         sPlayerDataDisposition.reset(theFirstTick);
+	sFlagSendTimeQueue.reset(theFirstTick);
         sSmallestIncompleteTick = theFirstTick;
 	sSmallestUnsentTick = theFirstTick;
         sNetworkTicker = 0;
@@ -496,6 +508,7 @@ hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
 		
 		sNetworkPlayers.clear();
 		sFlagsQueues.clear();
+
 		sAddressToPlayerIndex.clear();
 		NetDDPDisposeFrame(sOutgoingFrame);
 		sOutgoingFrame = NULL;
@@ -723,11 +736,23 @@ player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowled
 		
                 assert(sPlayerDataDisposition[theTick] & (((uint32)1) << inPlayerIndex));
                 sPlayerDataDisposition[theTick] &= ~(((uint32)1) << inPlayerIndex);
+		if (inPlayerIndex != sLocalPlayerIndex) 
+		{
+			assert(theTick < sFlagSendTimeQueue.getWriteTick());
+			// update the latency display
+			thePlayer.mDisplayLatencyTicks -= thePlayer.mDisplayLatencyBuffer[thePlayer.mDisplayLatencyCount % thePlayer.mDisplayLatencyBuffer.size()];
+			thePlayer.mDisplayLatencyBuffer[thePlayer.mDisplayLatencyCount++ % thePlayer.mDisplayLatencyBuffer.size()] = sNetworkTicker - sFlagSendTimeQueue.peek(theTick);
+			thePlayer.mDisplayLatencyTicks += (sNetworkTicker - sFlagSendTimeQueue.peek(theTick));
+			
+		}
+			
                 if(sPlayerDataDisposition[theTick] == 0)
                 {
                         assert(theTick == sPlayerDataDisposition.getReadTick());
+			assert(theTick == sFlagSendTimeQueue.getReadTick());
                         
                         sPlayerDataDisposition.dequeue();
+			sFlagSendTimeQueue.dequeue();
                         for(size_t i = 0; i < sFlagsQueues.size(); i++)
                         {
                                 if(sFlagsQueues[i].size() > 0)
@@ -969,6 +994,12 @@ send_packets()
 		assert(theDescriptor.mLength <= sizeof(sScratchBuffer));
 		sOutgoingLossyByteStreamData.peekBytes(sScratchBuffer, theDescriptor.mLength);
 	}
+
+	// remember when we sent flags for the first time
+	for (int32 i = sFlagSendTimeQueue.getWriteTick(); i < sSmallestIncompleteTick; i++) 
+	{
+		sFlagSendTimeQueue.enqueue(sNetworkTicker);
+	}
 		
         for(size_t i = 0; i < sNetworkPlayers.size(); i++)
         {
@@ -1095,6 +1126,21 @@ send_packets()
 } // send_packets()
 
 
+int32 hub_latency(int player_index)
+{
+	if (player_index != sLocalPlayerIndex)
+	{
+		NetworkPlayer_hub& thePlayer = sNetworkPlayers[player_index];
+		if (!thePlayer.mConnected) return kNetLatencyDisconnected;
+		if (thePlayer.mDisplayLatencyCount >= thePlayer.mDisplayLatencyBuffer.size())
+		{
+			int32 latency_ticks = std::max(thePlayer.mDisplayLatencyTicks, (sNetworkTicker - thePlayer.mLastNetworkTickHeard) * (int32) thePlayer.mDisplayLatencyBuffer.size());
+			return (latency_ticks * 1000 / TICKS_PER_SECOND / thePlayer.mDisplayLatencyBuffer.size());
+		} 
+	}
+
+	return kNetLatencyInvalid;
+}
 
 static inline const char *BoolString(bool B) {return (B ? "true" : "false");}
 
