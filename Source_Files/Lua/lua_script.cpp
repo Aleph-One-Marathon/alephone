@@ -3734,7 +3734,7 @@ static int L_Set_Polygon_Type(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
 	{
-		lua_pushstring(L, "get_polygon_type: incorrect argument type");
+		lua_pushstring(L, "set_polygon_type: incorrect argument type");
 		lua_error(L);
 	}
 
@@ -3797,6 +3797,41 @@ static int L_Set_Polygon_Permutation(lua_State *L)
 	if (polygon)
 	{
 		polygon->permutation = static_cast<int>(lua_tonumber(L,2));
+	}
+	return 0;
+}
+
+static int L_Get_Polygon_Media(lua_State *L)
+{
+	if (!lua_isnumber(L,1))
+	{
+		lua_pushstring(L, "get_polygon_media: incorrect argument type");
+		lua_error(L);
+	}
+
+	int polygon_index = static_cast<int>(lua_tonumber(L,1));
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		lua_pushnumber(L, polygon->media_index);
+		return 1;
+	}
+	return 0;
+}
+
+static int L_Set_Polygon_Media(lua_State *L)
+{
+	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
+	{
+		lua_pushstring(L, "set_polygon_media: incorrect argument type");
+		lua_error(L);
+	}
+
+	int polygon_index = static_cast<int>(lua_tonumber(L,1));
+	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
+	if (polygon)
+	{
+		polygon->media_index = static_cast<int>(lua_tonumber(L,2));
 	}
 	return 0;
 }
@@ -4955,6 +4990,8 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_polygon_permutation", L_Set_Polygon_Permutation);
 	lua_register(state, "get_polygon_target", L_Get_Polygon_Permutation);
 	lua_register(state, "set_polygon_target", L_Set_Polygon_Permutation);
+	lua_register(state, "get_polygon_media", L_Get_Polygon_Media);
+	lua_register(state, "set_polygon_media", L_Set_Polygon_Media);
 	lua_register(state, "item_index_valid", L_Item_Index_Valid);
 	lua_register(state, "get_item_type", L_Get_Item_Type);
 	lua_register(state, "get_item_polygon", L_Get_Item_Polygon);
