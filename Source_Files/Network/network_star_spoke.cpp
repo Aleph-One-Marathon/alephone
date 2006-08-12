@@ -599,12 +599,10 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 					{
 						if (!reflected_flags)
 						{
+							assert(sNetworkPlayers[i].mQueue->getWriteTick() == sSmallestUnconfirmedTick);
 							sNetworkPlayers[i].mQueue->enqueue(sUnconfirmedFlags.peek(sSmallestUnconfirmedTick++));
 							continue;
-						} else {
-							// ghs: hmm, unless we bail before we get there...
-							sSmallestUnconfirmedTick++;
-						}
+						} 
 					}
 				}
 			}
@@ -646,6 +644,7 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 					assert(theQueue.availableCapacity() > 0);
 					logTraceNMT3("enqueueing flags %x for player %d tick %d", theFlags, i, theQueue.getWriteTick());
 					theQueue.enqueue(theFlags);
+					if (i == sLocalPlayerIndex) sSmallestUnconfirmedTick++;
 				}
                         }
 
