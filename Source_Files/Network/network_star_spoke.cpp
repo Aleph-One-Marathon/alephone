@@ -589,22 +589,19 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 			if (sNetworkPlayers[i].mZombie)
 				continue;
 
-			// Our own flags may or may not be sent back to us
-			if (i == sLocalPlayerIndex)
+			// if our own flags are not sent back to us,
+			// confirm the ones we have in our unconfirmed queue,
+			// and do not read any from the packet
+			if (i == sLocalPlayerIndex && !reflected_flags)
 			{
-				// we may need to copy sent flags
-				if (theSmallestUnreadTick == sSmallestUnreceivedTick)
+				if (theSmallestUnreadTick == sSmallestUnreceivedTick && theSmallestUnreadTick >= sSmallestUnreceivedTick)
 				{
-					if (theSmallestUnreadTick >= sSmallestRealGameTick)
-					{
-						if (!reflected_flags)
-						{
-							assert(sNetworkPlayers[i].mQueue->getWriteTick() == sSmallestUnconfirmedTick);
-							sNetworkPlayers[i].mQueue->enqueue(sUnconfirmedFlags.peek(sSmallestUnconfirmedTick++));
-							continue;
-						} 
-					}
+					assert(sNetworkPlayers[i].mQueue->getWriteTick() == sSmallestUnconfirmedTick);
+					// confirm this flag
+					sNetworkPlayers[i].mQueue->enqueue(sUnconfirmedFlags.peek(sSmallestUnconfirmedTick++));
 				}
+				
+				continue;
 			}
 
                         bool shouldEnqueueNetDeadFlags = false;
