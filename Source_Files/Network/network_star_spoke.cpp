@@ -594,7 +594,7 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 			// and do not read any from the packet
 			if (i == sLocalPlayerIndex && !reflected_flags)
 			{
-				if (theSmallestUnreadTick == sSmallestUnreceivedTick && theSmallestUnreadTick >= sSmallestUnreceivedTick)
+				if (theSmallestUnreadTick == sSmallestUnreceivedTick && theSmallestUnreadTick >= sSmallestRealGameTick)
 				{
 					assert(sNetworkPlayers[i].mQueue->getWriteTick() == sSmallestUnconfirmedTick);
 					// confirm this flag
