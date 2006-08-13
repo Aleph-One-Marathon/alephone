@@ -279,6 +279,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		}
 #endif
+#if SDL_VERSION_ATLEAST(1,2,10)
+		SDL_GL_SetAttribute(SDL_GL_SWAP_CONTROL, 1);
+#endif
 	} else 
 #endif 
 	if (nogl) {
