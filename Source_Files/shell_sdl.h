@@ -546,7 +546,7 @@ bool quit_without_saving(void)
 
 // ZZZ: moved level-numbers widget into sdl_widgets for a wider audience.
 
-const int32 AllPlayableLevels = _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point;
+const int32 AllPlayableLevels = _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point | _capture_the_flag_entry_point | _king_of_hill_entry_point | _rugby_entry_point;
 
 short get_level_number_from_user(void)
 {

@@ -152,7 +152,7 @@ void do_preferences(
 }
 
 
-const int32 AllPlayableLevels = _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point;
+const int32 AllPlayableLevels = _single_player_entry_point | _multiplayer_carnage_entry_point | _multiplayer_cooperative_entry_point | _capture_the_flag_entry_point | _king_of_hill_entry_point | _rugby_entry_point;
 
 #ifdef USES_NIBS
 
