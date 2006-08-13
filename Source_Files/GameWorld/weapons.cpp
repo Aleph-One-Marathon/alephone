@@ -662,7 +662,8 @@ void update_player_weapons(
 			} else {
 				player->weapon_intensity_decay= 0;
 			}
-		}
+		} else
+			player->weapon_intensity = NATURAL_LIGHT_INTENSITY;
 	
 		// wheee!!!
 		for(which_trigger= first_trigger; which_trigger<trigger_count; ++which_trigger)
