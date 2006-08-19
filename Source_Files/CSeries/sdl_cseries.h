@@ -83,7 +83,7 @@ using namespace std;	// Visual C++ doesn't like that other way of using the name
 #if defined(__APPLE__) && defined(__MACH__)
 // if we're on the right platform, we can use the real thing (and get headers for functions we might want to use)
 #include <CoreFoundation/CoreFoundation.h>
-#elseif !defined(TARGET_API_MAC_CARBON)
+#elif !defined(TARGET_API_MAC_CARBON)
 typedef int OSErr;
 typedef unsigned char Str255[256];
 
