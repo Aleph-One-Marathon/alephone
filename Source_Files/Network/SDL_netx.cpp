@@ -77,7 +77,7 @@ static	int	SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket);
 // EXTERNALLY-VISIBLE FUNCTIONS
 int
 SDLNetx_EnableBroadcast(UDPsocket inSocket) {
-#if !defined(WIN32) && !defined(__BEOS__) && !(defined(mac) /*&& !defined(TARGET_API_MAC_CARBON)*/)
+#if !defined(WIN32) && !defined(__BEOS__) && !defined(mac) && !defined(__MWERKS__)/*&& !defined(TARGET_API_MAC_CARBON))*/
     if(!sCollectedBroadcastAddresses)
         SDLNetxint_CollectBroadcastAddresses(inSocket);
 #endif
@@ -178,7 +178,7 @@ SDLNetx_UDP_Broadcast(UDPsocket inSocket, UDPpacket* inPacket) {
 
 
 // INTERNAL (static) FUNCTIONS
-#if !defined(WIN32) && !defined(__BEOS__) && !(defined(mac) /*&& !defined(TARGET_API_MAC_CARBON)*/)
+#if !defined(WIN32) && !defined(__BEOS__) && !defined(mac) && !defined(__MWERKS__)/*&& !defined(TARGET_API_MAC_CARBON))*/
 int
 SDLNetxint_CollectBroadcastAddresses(UDPsocket inSocket) {
     // Win or lose, we played the game.

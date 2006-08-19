@@ -132,7 +132,7 @@ static void get_name_from_system(unsigned char *outName)
 		strcpy(name, "Bob User");
 
 #else
-#error get_name_from_system() not implemented for this platform
+//#error get_name_from_system() not implemented for this platform
 #endif
 
     // In-place conversion to pstring

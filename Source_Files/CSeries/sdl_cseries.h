@@ -75,16 +75,15 @@ using namespace std;	// Visual C++ doesn't like that other way of using the name
 
 #include "cstypes.h"
 
-
 /*
  *  Emulation of MacOS data types and definitions
  */
-#if !defined(SDL_RFORK_HACK) && !defined(TARGET_API_MAC_CARBON)
+#if !defined(SDL_RFORK_HACK)// && !defined(TARGET_API_MAC_CARBON)
 
 #if defined(__APPLE__) && defined(__MACH__)
 // if we're on the right platform, we can use the real thing (and get headers for functions we might want to use)
 #include <CoreFoundation/CoreFoundation.h>
-#else
+#elseif !defined(TARGET_API_MAC_CARBON)
 typedef int OSErr;
 typedef unsigned char Str255[256];
 

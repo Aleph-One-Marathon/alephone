@@ -53,8 +53,10 @@
 
 #if defined(__WIN32__)
 #define PATH_SEP '\\'
-#else
+#elif !defined(__MWERKS__)
 #define PATH_SEP '/'
+#else
+#define PATH_SEP ':'
 #endif
 
 #ifdef __MVCPP__

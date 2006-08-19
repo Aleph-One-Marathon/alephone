@@ -331,7 +331,9 @@ static void initialize_application(void)
 	local_data_dir += login;
 
 #else
-#error Data file paths must be set for this platform.
+default_data_dir = "";
+local_data_dir = "";
+//#error Data file paths must be set for this platform.
 #endif
 
 #if defined(__WIN32__)

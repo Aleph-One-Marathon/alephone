@@ -36,10 +36,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 
 #if defined(EXPLICIT_CARBON_HEADER)
     #include <Carbon/Carbon.h>
-/*
+
 #else
 #include <Timer.h>
-*/
+
 #endif
 
 #include "cstypes.h"

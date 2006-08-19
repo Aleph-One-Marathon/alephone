@@ -133,6 +133,7 @@ CommunicationsChannel::receive_some(TCPsocket inSocket, byte* inBuffer, size_t& 
 			ioBufferPosition += theResult;
 			return (ioBufferPosition == inBufferLength) ? kComplete : kIncomplete;
 		}
+	}
 #else
 		if(theResult == 0)
 		{
