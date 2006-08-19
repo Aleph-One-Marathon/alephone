@@ -140,7 +140,8 @@ void process_music_event_win32(const SDL_Event& event);
 
 // SDL music support
 #ifndef MUSIC_WIN32			// If native music support unavailable try using SDL
-#ifndef SDL_RFORK_HACK		// If SDL audio is disabled we can't do music either
+#if !(defined(SDL_RFORK_HACK)) && !(defined(__MWERKS__))		// If SDL audio is disabled we can't do music either
+// also, if mwerks the file i/o at interrupt time kills us right now
 #define MUSIC_SDL
 
 static SDL_RWops *music_rw;	// music file object
