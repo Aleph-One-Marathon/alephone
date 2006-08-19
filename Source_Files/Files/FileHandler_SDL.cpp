@@ -547,6 +547,10 @@ bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
 	for (size_t k=0; k<rel_path.size(); k++)
 		if (rel_path[k] == '/')
 			rel_path[k] = '\\';
+#elif defined(__MWERKS__)
+	for (size_t k=0; k < rel_path.size(); k++)
+		if (rel_path[k] == '/')
+			rel_path[k] = ':';
 #endif
 
 	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
