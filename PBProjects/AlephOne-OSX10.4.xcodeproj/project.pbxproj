@@ -665,90 +665,6 @@
 		};
 /* End PBXBuildRule section */
 
-/* Begin PBXBuildStyle section */
-		2B14B80104AB783A00A80001 /* Development (gcc 3.3 transitional) */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				CC = "/usr/bin/gcc-3.3";
-				COPY_PHASE_STRIP = NO;
-				CPLUSPLUS = "/usr/bin/g++-3.3";
-				DEBUGGING_SYMBOLS = YES;
-				GCC_VERSION = 3.x;
-				OPTIMIZATION_CFLAGS = "-O0";
-				OTHER_CFLAGS = "\U0001-DDEBUG";
-				PRECOMPILE_PREFIX_HEADER = NO;
-			};
-			name = "Development (gcc 3.3 transitional)";
-		};
-		3D5482BA04D73ED300000107 /* Deployment (gcc 3.3) */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				CC = "/usr/bin/gcc-3.3";
-				COPY_PHASE_STRIP = YES;
-				CPLUSPLUS = "/usr/bin/g++-3.3";
-				DEBUGGING_SYMBOLS = NO;
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_MODEL_TUNING = G3;
-				GCC_VERSION = 3.x;
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
-				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = NO;
-				GCC_WARN_UNKNOWN_PRAGMAS = YES;
-				PRECOMPILE_PREFIX_HEADER = NO;
-				PREFIX_HEADER = "";
-			};
-			name = "Deployment (gcc 3.3)";
-		};
-		4A9504CCFFE6A4B311CA0CBA /* Development */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				DEBUGGING_SYMBOLS = YES;
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				OPTIMIZATION_CFLAGS = "-O0";
-				OTHER_CFLAGS = "\U0001-DDEBUG";
-				ZERO_LINK = YES;
-			};
-			name = Development;
-		};
-		4A9504CDFFE6A4B311CA0CBA /* Deployment */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_MODEL_TUNING = G3;
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
-				WARNING_CFLAGS = "";
-				ZERO_LINK = NO;
-			};
-			name = Deployment;
-		};
-		EF2EF5F50483C7D900A8000D /* Development no precomps */ = {
-			isa = PBXBuildStyle;
-			buildSettings = {
-				CC = /usr/bin/gcc3;
-				COPY_PHASE_STRIP = NO;
-				CPLUSPLUS = "/usr/bin/g++3";
-				DEBUGGING_SYMBOLS = YES;
-				GCC_VERSION = 3.x;
-				OPTIMIZATION_CFLAGS = "-O0";
-				OTHER_CFLAGS = "\U0001-DDEBUG";
-				PRECOMPILE_PREFIX_HEADER = NO;
-				PREFIX_HEADER = "";
-			};
-			name = "Development no precomps";
-		};
-/* End PBXBuildStyle section */
-
 /* Begin PBXCopyFilesBuildPhase section */
 		2B4EC2230908984D009631F8 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
@@ -2458,72 +2374,6 @@
 			);
 			buildRules = (
 			);
-			buildSettings = {
-				FRAMEWORK_SEARCH_PATHS = (
-					"${HOME}/Library/Frameworks",
-					/Library/Frameworks,
-				);
-				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
-					.,
-					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
-					"${HOME}/Library/Frameworks/SDL.framework/Headers",
-					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-				);
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
-				);
-				OTHER_CFLAGS = (
-					"-g",
-					"-Dmac",
-					"-DTARGET_API_MAC_CARBON",
-					"-DUSE_CARBON_ACCESSORS",
-					"-DSUPPRESS_MACOS_CLASSIC",
-					"-DUSE_SHEETS=1",
-					"-DHAVE_SDL_NET=1",
-					"-DHAVE_UNISTD_H",
-					"-DHAVE_CORE_GRAPHICS",
-					"-DAPPLICATION_IS_BUNDLED",
-					"-DEXPLICIT_CARBON_HEADER",
-					"-DHAVE_LUA",
-					"-DSPEEX",
-					"-fcommon",
-					"-DDEBUG",
-					"-DUSES_NIBS",
-				);
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-llua",
-					"-llualib",
-					"-lspeex",
-				);
-				OTHER_REZFLAGS = "";
-				PRECOMPILE_PREFIX_HEADER = YES;
-				PREFIX_HEADER = precompiled_headers.h;
-				PRODUCT_NAME = "AlephOne (NIBs)";
-				SECTORDER_FLAGS = "";
-				USE_GCC3_PFE_SUPPORT = YES;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-import",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"-Wstrict-aliasing",
-				);
-				WRAPPER_EXTENSION = app;
-			};
 			dependencies = (
 			);
 			name = "AlephOne-Carbon (NIBs)";
@@ -2552,71 +2402,6 @@
 				AEC3C89409AD68AE003258E4 /* PBXBuildRule */,
 				AEC3C89509AD68AE003258E4 /* PBXBuildRule */,
 			);
-			buildSettings = {
-				DEBUGGING_SYMBOLS = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(HOME)/Library/Frameworks",
-					/System/Library/Frameworks,
-					/Library/Frameworks,
-				);
-				GCC_VERSION = 3.3;
-				HEADER_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex",
-					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
-					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
-					/Library/Frameworks/SDL_image.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-					/Library/Frameworks/SDL_net.framework/Headers,
-				);
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
-				);
-				OTHER_CFLAGS = (
-					"-DSDL",
-					"-DHAVE_OPENGL",
-					"-DHAVE_CONFIG_H",
-					"-DHAVE_UNISTD_H",
-					"-DSPEEX",
-					"-DHAVE_LUA",
-					"-x",
-					"objective-c++",
-				);
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-multiply_defined",
-					suppress,
-					"-framework",
-					SDL,
-					"-framework",
-					SDL_image,
-					"-framework",
-					SDL_net,
-					"-framework",
-					AppKit,
-					"-lspeex",
-					"-llua",
-					"-llualib",
-				);
-				PRODUCT_NAME = AlephOneSDL;
-				SECTORDER_FLAGS = "";
-				USE_GCC3_PFE_SUPPORT = YES;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wpointer-arith",
-					"-Wformat",
-				);
-				WRAPPER_EXTENSION = app;
-			};
 			dependencies = (
 			);
 			name = "AlephOne-SDL";
@@ -2630,15 +2415,6 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-OSX10.4" */;
-			buildSettings = {
-			};
-			buildStyles = (
-				4A9504CCFFE6A4B311CA0CBA /* Development */,
-				EF2EF5F50483C7D900A8000D /* Development no precomps */,
-				4A9504CDFFE6A4B311CA0CBA /* Deployment */,
-				2B14B80104AB783A00A80001 /* Development (gcc 3.3 transitional) */,
-				3D5482BA04D73ED300000107 /* Deployment (gcc 3.3) */,
-			);
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* SDL Application */;
 			projectDirPath = "";
@@ -3154,16 +2930,20 @@
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
 					.,
 					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
 					"${HOME}/Library/Frameworks/SDL.framework/Headers",
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
 				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
@@ -3172,9 +2952,11 @@
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
 				OTHER_CFLAGS = "-fcommon";
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
@@ -3232,16 +3014,20 @@
 				GCC_VERSION = 3.x;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
 					.,
 					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
 					"${HOME}/Library/Frameworks/SDL.framework/Headers",
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
 				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
@@ -3250,9 +3036,11 @@
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
 				OTHER_CFLAGS = "-fcommon";
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
@@ -3313,16 +3101,20 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
 					.,
 					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
 					"${HOME}/Library/Frameworks/SDL.framework/Headers",
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
 				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
@@ -3331,9 +3123,11 @@
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
 				OTHER_CFLAGS = "-fcommon";
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
@@ -3394,16 +3188,20 @@
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
 					.,
 					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
 					"${HOME}/Library/Frameworks/SDL.framework/Headers",
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
 				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
@@ -3412,9 +3210,11 @@
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
 				OTHER_CFLAGS = "-fcommon";
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
@@ -3504,16 +3304,20 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
 					.,
 					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
 					"${HOME}/Library/Frameworks/SDL.framework/Headers",
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
 				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
@@ -3522,9 +3326,11 @@
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
 				LIBRARY_SEARCH_PATHS = (
 					/usr/local/lib,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
 				OTHER_CFLAGS = "-fcommon";
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
@@ -3578,9 +3384,9 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
@@ -3592,15 +3398,20 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_Sound.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
 				MACOSX_DEPLOYMENT_TARGET_i386 = 10.4;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.2;
 				OTHER_CFLAGS = "";
@@ -3668,9 +3479,9 @@
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
@@ -3680,15 +3491,20 @@
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
@@ -3746,9 +3562,9 @@
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
@@ -3758,15 +3574,20 @@
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
@@ -3824,9 +3645,9 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
@@ -3836,15 +3657,20 @@
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
 				OTHER_CFLAGS = "";
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = (
@@ -3907,9 +3733,9 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = NO;
 				GCC_WARN_UNKNOWN_PRAGMAS = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/include",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex",
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
@@ -3919,15 +3745,20 @@
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
 				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = (
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Speex/speex-1.0/libspeex/.libs",
-					"$(LOCAL_LIBRARY_DIR)/Application Support/Lua/lua-5.0/lib",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
