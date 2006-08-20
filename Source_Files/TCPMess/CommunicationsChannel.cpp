@@ -110,6 +110,8 @@ CommunicationsChannel::receive_some(TCPsocket inSocket, byte* inBuffer, size_t& 
 {
 //  	std::cout << "Want to receive " << inBufferLength << " bytes; buffer position " << ioBufferPosition << std::endl;
 
+	if (inBufferLength == 0) return kComplete;
+
 	size_t theBytesLeft = inBufferLength - ioBufferPosition;
 
 	if(theBytesLeft > 0)
