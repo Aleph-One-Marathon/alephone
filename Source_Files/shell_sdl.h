@@ -356,12 +356,16 @@ local_data_dir = "";
 		}
 		if (!path.empty())
 			data_search_path.push_back(path);
-	} else
+	} else {
 #if defined(__APPLE__) && defined(__MACH__)
-	data_search_path.push_back(".");
+		char* buf = getcwd (0, 0);
+		data_search_path.push_back(buf);
+		free (buf);
 #endif
-	data_search_path.push_back(default_data_dir);
-	data_search_path.push_back(local_data_dir);
+		data_search_path.push_back(default_data_dir);
+		data_search_path.push_back(local_data_dir);
+	}
+
 
 	// Subdirectories
 	preferences_dir = local_data_dir;
