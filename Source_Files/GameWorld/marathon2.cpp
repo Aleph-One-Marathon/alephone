@@ -397,10 +397,6 @@ update_world_elements_one_tick()
                 do_next_instruction();
         L_Call_Idle();
 
-#if !defined(DISABLE_NETWORKING)
-        NetProcessMessagesInGame();
-#endif // !defined(DISABLE_NETWORKING)
-
         update_lights();
         update_medias();
         update_platforms();
@@ -451,6 +447,10 @@ update_world()
         short theElapsedTime = 0;
         bool canUpdate = true;
         int theUpdateResult = kUpdateNormalCompletion;
+
+#ifndef DISABLE_NETWORKING
+	NetProcessMessagesInGame();
+#endif
         
         while(canUpdate)
         {

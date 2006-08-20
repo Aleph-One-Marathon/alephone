@@ -1999,7 +1999,14 @@ NetGetNetTime(void)
         return sCurrentGameProtocol->GetNetTime();
 }
 
+#ifdef __MACOS__
+extern OSErr NetDDPSendUnsentFrames();
+#endif
+
 void NetProcessMessagesInGame() {
+#ifdef __MACOS__
+	NetDDPSendUnsentFrames();
+#endif
   if (connection_to_server) {
     connection_to_server->pump();
     connection_to_server->dispatchIncomingMessages();

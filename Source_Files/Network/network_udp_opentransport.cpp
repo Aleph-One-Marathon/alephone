@@ -36,6 +36,7 @@
 // doesn't like these #includes
 #ifndef __MACH__
 // LP: had to do these includes to satisfy CodeWarrior's Classic support
+#include <Files.h> // ghs: for FSSpec in OpenTransportProviders.h??
 #include <OpenTransport.h>
 #include <OpenTransportProviders.h>
 #endif // __MACH__
@@ -62,14 +63,8 @@ static OTNotifyUPP		sNotifierUPP;
 OSErr
 NetDDPOpen() {
     OSStatus theResult;
-/*
-#ifndef __MACH__
-    // This seems to not exist in Mac OS X but is probably needed for Mac OS 9 etc.
-    // Not sure what preprocessor symbol to test against.
+
     theResult = InitOpenTransport();
-#else
-*/
-    theResult = InitOpenTransportInContext(kInitOTForApplicationMask, NULL);
     if(theResult == kEINVALErr)	// seems to return this if I init twice - not sure about in Mac OS 9
         theResult = noErr;
 //#endif
@@ -155,6 +150,24 @@ udpNotifier(void* inContext, OTEventCode inEventCode, OTResult inResult, void* c
     }
 }
 
+// we can't send at interrupt time, so make a small array of frames to send
+// in the main event loop
+
+enum {
+	kDataSize = 1500,
+	kFramesToSendSize = 16
+};
+
+struct DeferredSentFrame
+{
+	unsigned char data[kDataSize];
+	uint16 data_size;
+	InetAddress address;
+	bool send;
+};
+
+static DeferredSentFrame framesToSend[kFramesToSendSize];
+
 
 
 // Open the socket ("endpoint provider" in OTspeak)
@@ -163,14 +176,11 @@ NetDDPOpenSocket(short* ioPortNumber, PacketHandlerProcPtr inPacketHandler) {
     TEndpointInfo	theEndpointInfo;
     OSStatus		theResult;
 
+    for (int i = 0; i < kFramesToSendSize; i++)
+	    framesToSend[i].send = false;
+
     // Synchronously create the endpoint
-/*
-#ifndef __MACH__
     sEndpoint = OTOpenEndpoint(OTCreateConfiguration(kUDPName), kReserved, &theEndpointInfo, &theResult);
-#else
-*/
-    sEndpoint = OTOpenEndpointInContext(OTCreateConfiguration(kUDPName), kReserved, &theEndpointInfo, &theResult, NULL);
-//#endif
     
     if(theResult != noErr) {
         logError1("NetDDPOpenSocket: OTOpenEndpoint error (%d)", theResult);
@@ -289,8 +299,6 @@ close_and_return:
     return theResult;
 }
     
-
-
 OSErr
 NetDDPCloseSocket(short socketNumber) {
     if(sEndpoint != kOTInvalidEndpointRef) {
@@ -313,6 +321,9 @@ NetDDPCloseSocket(short socketNumber) {
         OTCloseProvider(sEndpoint);
         sEndpoint = kOTInvalidEndpointRef;
     }
+
+    for (int i = 0; i < kFramesToSendSize; i++) 
+	    framesToSend[i].send = false;
     
     return noErr;
 }
@@ -337,6 +348,27 @@ NetDDPDisposeFrame(DDPFramePtr inFrame) {
     delete inFrame;
 }
 
+OSErr
+NetDDPSendUnsentFrames()
+{
+	for (int i = 0; i < kFramesToSendSize; i++)
+	{
+		if (framesToSend[i].send)
+		{
+			TUnitData theOutgoingData;
+			theOutgoingData.addr.buf = (Uint8*)&framesToSend[i].address;
+			theOutgoingData.addr.len = sizeof(framesToSend[i].address);
+			theOutgoingData.opt.len = 0;
+			theOutgoingData.udata.buf = framesToSend[i].data;
+			theOutgoingData.udata.len = framesToSend[i].data_size;
+
+			OSErr theResult = OTSndUData(sEndpoint, &theOutgoingData);
+			if (theResult != noErr)
+				logNote1("NetDDPSendUnsentFrames: error sending %d", theResult);
+			framesToSend[i].send = false;
+		}
+	}
+}
 
 
 OSErr
@@ -345,23 +377,22 @@ NetDDPSendFrame(DDPFramePtr inFrame, NetAddrBlock* inAddress, short inProtocolTy
 //    assert(inFrame->socket == kSocketNum);
     assert(inProtocolType == kPROTOCOL_TYPE);
     assert(inFrame->data_size <= ddpMaxData);
-    
-    InetAddress theAddress;
-    theAddress.fAddressType = AF_INET;
-    theAddress.fPort = inAddress->port;
-    theAddress.fHost = inAddress->host;
-    
-    TUnitData theOutgoingData;
-    theOutgoingData.addr.buf = (UInt8*)&theAddress;
-    theOutgoingData.addr.len = sizeof(theAddress);
-    theOutgoingData.opt.len = 0;
-    theOutgoingData.udata.buf = inFrame->data;
-    theOutgoingData.udata.len = inFrame->data_size;
 
-    OSErr theResult = OTSndUData(sEndpoint, &theOutgoingData);
-#ifdef UNSAFE_OTUDP_LOGGING
-    if(theResult != noErr)
-        logAnomaly1("NetDDPSendFrame: OTSndUData returned %d", theResult);
-#endif
-    return theResult;
+    // find a free frame
+    int i;
+    for (i = 0; i < kFramesToSendSize && framesToSend[i].send; i++);
+    if (!framesToSend[i].send)
+    {
+	    framesToSend[i].address.fAddressType = AF_INET;
+	    framesToSend[i].address.fPort = inAddress->port;
+	    framesToSend[i].address.fHost = inAddress->host;
+
+	    memcpy(framesToSend[i].data, inFrame->data, inFrame->data_size);
+	    framesToSend[i].data_size = inFrame->data_size;
+
+	    framesToSend[i].send = true;
+    }
+    // otherwise, there are no frames free? drop the packet
+    
+    return noErr; // the calling code doesn't look at this anyway *sigh*
 }
