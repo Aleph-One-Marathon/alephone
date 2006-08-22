@@ -255,7 +255,7 @@ w_button::w_button(const char *t, action_proc p, void *a) : widget(BUTTON_FONT),
                     proc(p),
                     arg(a)
 {
-	rect.w = text_width(text, font, style) + get_dialog_space(BUTTON_L_SPACE) + get_dialog_space(BUTTON_R_SPACE);
+	rect.w = text_width(text.c_str(), font, style) + get_dialog_space(BUTTON_L_SPACE) + get_dialog_space(BUTTON_R_SPACE);
 	button_l = get_dialog_image(BUTTON_L_IMAGE);
 	button_r = get_dialog_image(BUTTON_R_IMAGE);
 	button_c = get_dialog_image(BUTTON_C_IMAGE, rect.w - button_l->w - button_r->w);
@@ -292,7 +292,7 @@ void w_button::draw(SDL_Surface *s) const
 	// Label (ZZZ: different color for disabled)
     int theColorToUse = enabled ? (active ? BUTTON_ACTIVE_COLOR : BUTTON_COLOR) : BUTTON_DISABLED_COLOR;
 
-	draw_text(s, text, rect.x + get_dialog_space(BUTTON_L_SPACE),
+	draw_text(s, text.c_str(), rect.x + get_dialog_space(BUTTON_L_SPACE),
         rect.y + get_dialog_space(BUTTON_T_SPACE) + font->get_ascent(),
         get_dialog_color(theColorToUse), font, style);
 }
@@ -302,7 +302,6 @@ void w_button::click(int /*x*/, int /*y*/)
     if(enabled && proc)
 	    proc(arg);
 }
-
 
 
 /*
@@ -322,6 +321,60 @@ int w_right_button::layout(void)
 {
 	rect.x = (LR_BUTTON_OFFSET - rect.w) / 2;
 	return rect.h;
+}
+
+
+/*
+ *  Tab-changing buttons
+ */
+
+w_tab_button::w_tab_button (const char *name)
+	: w_button (name, &w_tab_button::click_callback, this)
+	{}
+
+void w_tab_button::click_callback (void* me)
+{
+	w_tab_button* w = reinterpret_cast<w_tab_button*>(me);
+	w->get_owning_dialog ()->set_active_tab (w->get_identifier ());
+	w->get_owning_dialog ()->draw ();
+}
+
+int w_tab_button::layout(void)
+{
+	rect.x = xPos;
+	if (last)
+		return rect.h;
+	else
+		return 0;
+}
+
+void make_tab_buttons_for_dialog (dialog &theDialog, vector<string> &names, int tabBase)
+{
+	vector<w_tab_button*> tab_buttons;
+	int fullWidth = 0;
+	int tabNum = 1;
+	
+	for (vector<string>::iterator it = names.begin (); it != names.end (); ++it) {
+		w_tab_button* tab_button_w = new w_tab_button (it->c_str ());
+		tab_buttons.push_back (tab_button_w);
+		fullWidth += tab_button_w->rect.w;
+		tab_button_w->set_identifier (tabBase+tabNum);
+		++tabNum;
+		theDialog.add (tab_button_w);
+	}
+	
+	int pos = 0;
+	
+	for (vector<w_tab_button*>::iterator it = tab_buttons.begin (); it != tab_buttons.end (); ++it) {
+		if (it == tab_buttons.begin ()) {
+			pos = (*it)->rect.x - fullWidth/2;
+		}
+		(*it)->xPos = pos;
+		pos += (*it)->rect.w;
+		(*it)->last = false;
+	}
+	
+	tab_buttons[tab_buttons.size() - 1]->last = true;
 }
 
 

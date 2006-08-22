@@ -235,7 +235,7 @@ public:
 	void click(int x, int y);
 
 protected:
-	const char *text;
+	const std::string text;
 	action_proc proc;
 	void *arg;
         
@@ -262,6 +262,28 @@ public:
 
 	int layout(void);
 };
+
+
+/*
+ *  Tab-changing buttons
+ */
+
+class w_tab_button : public w_button {
+public:
+	w_tab_button (const char *name);
+	
+	int layout (void);
+	
+	friend void make_tab_buttons_for_dialog (dialog &theDialog, vector<string> &names, int tabBase);
+	
+private:
+	static void click_callback (void* me);
+	
+	int xPos;
+	bool last;
+};
+
+void make_tab_buttons_for_dialog (dialog &theDialog, vector<string> &names, int tabBase);
 
 
 /*

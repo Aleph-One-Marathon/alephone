@@ -683,15 +683,11 @@ public:
 	SdlSetupNetgameDialog ()
 	{
 		m_dialog.add (new w_static_text ("SETUP NETWORK GAME", TITLE_FONT, TITLE_COLOR));
-
-		w_tab_popup *tab_w = new w_tab_popup("Section");
+		
 		vector<string> tab_strings;
 		tab_strings.push_back ("General");
 		tab_strings.push_back ("More Stuff");
-		tab_w->set_identifier (iSNG_TABS);
-		m_dialog.add (tab_w);
-		tab_w->set_labels (tab_strings);
-		tab_w->set_selection (0);
+		make_tab_buttons_for_dialog (m_dialog, tab_strings, iSNG_TABS);
 		m_dialog.set_active_tab (iSNG_GENERAL_TAB);
 	
 		m_dialog.add (new w_spacer ());
