@@ -111,6 +111,11 @@ static FileSpecifier music_file;		// Current music file
 static FileSpecifier music_intro_file;	// Introductory music
 static bool music_intro = false;		// Flag: introductory music available
 
+#ifdef __MACOS__
+bool macos_read_more = false;
+bool macos_file_done = false;
+#endif
+
 void set_music_file(FileSpecifier *file);
 bool load_music(FileSpecifier &file);
 
@@ -119,6 +124,9 @@ void LoadLevelMusic();
 void play_music();
 void rewind_music();
 bool fill_music_buffer();
+#ifdef __MACOS__
+bool fill_music_buffer_at_interrupt();
+#endif
 
 // Win32 music support.
 // ZZZ: could not build with this in, so added preprocessor symbol to disable it.
@@ -140,8 +148,7 @@ void process_music_event_win32(const SDL_Event& event);
 
 // SDL music support
 #ifndef MUSIC_WIN32			// If native music support unavailable try using SDL
-#if !(defined(SDL_RFORK_HACK)) && !(defined(__MWERKS__))		// If SDL audio is disabled we can't do music either
-// also, if mwerks the file i/o at interrupt time kills us right now
+#if !(defined(SDL_RFORK_HACK))		// If SDL audio is disabled we can't do music either
 #define MUSIC_SDL
 
 static SDL_RWops *music_rw;	// music file object
@@ -272,6 +279,10 @@ void set_music_file (FileSpecifier *file)
 	}
 
 	if (file != NULL) {
+#ifdef __MACOS__
+		macos_read_more = true;
+		macos_file_done = false;
+#endif
 		// Open the new music file
 		music_initialized = load_music (*file);
 		music_file = *file;
@@ -995,6 +1006,10 @@ void rewind_music ()
 	SDL_RWseek(music_rw, music_data_offset, SEEK_SET);
 	music_data_remaining = music_data_length;
 #endif
+#ifdef __MACOS__
+	macos_file_done = false;
+	fill_music_buffer_at_interrupt();
+#endif
 #ifdef MUSIC_WIN32
 	// Re-seek the graph to the beginning
 	LONGLONG llPos = 0;
@@ -1008,9 +1023,11 @@ void play_music ()
 	if (!_sm_initialized || !_sm_active || !music_initialized) {
 		return;
 	}
-
 #ifdef MUSIC_SDL
 	if (fill_music_buffer()) {
+#ifdef __MACOS__
+		fill_music_buffer_at_interrupt();
+#endif
 		sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
 		c->counter = 0;
 		c->left_volume = c->right_volume = 0x100;
@@ -1094,6 +1111,10 @@ void music_idle_proc()
 			sdl_channels[MUSIC_CHANNEL].left_volume = sdl_channels[MUSIC_CHANNEL].right_volume = vol;
 		}
 	}
+
+#ifdef __MACOS__
+	fill_music_buffer();
+#endif
 }
 
 /*
@@ -1365,7 +1386,11 @@ static inline void calc_buffer(T *p, int len, bool stereo)
 						} else if (i == MUSIC_CHANNEL) {
 
 							// More music data?
+#ifdef __MACOS__
+							if (!fill_music_buffer_at_interrupt()) {
+#else
 							if (!fill_music_buffer ()) {
+#endif
 								// Music finished, turn it off
 								c->active = false;
 							}
@@ -1465,8 +1490,31 @@ static void sound_callback(void *usr, uint8 *stream, int len)
  * Fill music buffer from file
  */
 
+#ifdef __MACOS__
+
+uint32 macos_buffer_length = 0;
+
+bool fill_music_buffer_at_interrupt()
+{
+	static uint8 macos_music_buffer[MUSIC_BUFFER_SIZE];
+	if (macos_file_done) return false;
+
+	// otherwise, copy out of the buffer (I know), and set the flag to read more when we're not at interrupt time
+	memcpy(macos_music_buffer, music_buffer, macos_buffer_length);
+	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
+	c->data = macos_music_buffer;
+	c->length = macos_buffer_length;
+	macos_read_more = true;
+	return true;
+}
+
+#endif
+
 bool fill_music_buffer ()
 {
+#ifdef __MACOS__
+	if (!macos_read_more) return false;
+#endif
 	sdl_channel *c = sdl_channels + MUSIC_CHANNEL;
 
 #ifdef MUSIC_SDL_SOUND
@@ -1476,8 +1524,13 @@ bool fill_music_buffer ()
 	do {
 		decoded = Sound_Decode (music_sample);
 		if (decoded > 0) {
+#ifdef __MACOS__
+			macos_buffer_length = decoded;
+			macos_read_more = false;
+#else
 			c->data = (uint8 *) music_sample->buffer;
 			c->length = decoded;
+#endif
 			return true;
 		}
 
@@ -1494,13 +1547,20 @@ bool fill_music_buffer ()
 		// Read next buffer of music data
 		SDL_RWread(music_rw, music_buffer, 1, to_read);
 		music_data_remaining -= to_read;
+#ifdef __MACOS__
+		macos_buffer_length = to_read;
+		macos_read_more = false;
+#else
 		c->data = music_buffer;
 		c->length = to_read;
-
+#endif
 		return true;
 	}
 #endif
 	// Failed
+#ifdef __MACOS__
+	macos_file_done = true;
+#endif
 	return false;
 }
 
