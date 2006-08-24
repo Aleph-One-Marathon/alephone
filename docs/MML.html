@@ -201,7 +201,11 @@ it contains the attributes
 <li>top: weapon sprite's position in screen
 <li>left
 <li>multiple: whether the display will show two of them instead of only one,
-which is a <a href="#boolean">boolean</a> value.
+which is a <a href="#boolean">boolean</a> value. If multiple is set, the following attributes are read:
+<li>multiple_shape: second weapon shape; either replaces shape (if multiple_unusable_shape is not specified) or is drawn in addition to shape (if multiple_unusable_shape is specified) when the player has a second weapon and enough ammo to use it
+<li>multiple_unusable_shape: drawn in addition to shape, when the second weapon has not been picked up or is out of ammo
+<li>multiple_delta_x: offsets from shape of multiple_shape and multiple_unusable_shape
+<li>multiple_delta_y
 </ul>
 and an optional child element, &lt;ammo&gt;, which contains the attributes
 <ul>

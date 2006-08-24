@@ -168,6 +168,10 @@ struct weapon_interface_data
 	short standard_weapon_panel_left;
 	bool multi_weapon;
 	struct weapon_interface_ammo_data ammo_data[NUMBER_OF_WEAPON_INTERFACE_ITEMS];
+	shape_descriptor multiple_shape;
+	shape_descriptor multiple_unusable_shape;
+	short multiple_delta_x;
+	short multiple_delta_y;
 };
 
 struct interface_state_data

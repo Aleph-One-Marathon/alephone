@@ -183,45 +183,48 @@ void HUD_Class::update_weapon_panel(bool force_redraw)
 
 			definition= weapon_interface_definitions+desired_weapon;
 	
-			/* Check if it is a multi weapon - actually special cased for the magnum... */
+			/* Check if it is a multi weapon */
 			if(definition->multi_weapon)
 			{
-#define MAGNUM_DELTA_X 97
-				if(definition->item_id==_i_magnum)
+				if (definition->multiple_unusable_shape != UNONE)
 				{
-					/* Either way, draw the single */
-					DrawShapeAtXY(definition->weapon_panel_shape, 
-						definition->standard_weapon_panel_left, 
-						definition->standard_weapon_panel_top);
-
+					/* always draw the single */
+					if (definition->weapon_panel_shape != UNONE)
+						DrawShapeAtXY(definition->weapon_panel_shape, 
+							      definition->standard_weapon_panel_left, 
+							      definition->standard_weapon_panel_top);
+					
 					if(current_player->items[definition->item_id]>1)
 					{
-						DrawShapeAtXY(
-							BUILD_DESCRIPTOR(_collection_interface, _left_magnum), 
-							definition->standard_weapon_panel_left-MAGNUM_DELTA_X, 
-							definition->standard_weapon_panel_top);
+						if (definition->multiple_shape != UNONE)
+							DrawShapeAtXY(
+								definition->multiple_shape, 
+								definition->standard_weapon_panel_left + definition->multiple_delta_x, 
+								definition->standard_weapon_panel_top + definition->multiple_delta_y);
 					} 
 					else 
 					{
 						/* Draw the empty one.. */
 						DrawShapeAtXY(
-							BUILD_DESCRIPTOR(_collection_interface, _left_magnum_unusable), 
-							definition->standard_weapon_panel_left-MAGNUM_DELTA_X, 
-							definition->standard_weapon_panel_top);
+							definition->multiple_unusable_shape,
+							definition->standard_weapon_panel_left + definition->multiple_delta_x, 
+							definition->standard_weapon_panel_top + definition->multiple_delta_y);
 					}
 				} 
-				else if(definition->item_id==_i_shotgun)
+				else 
 				{
 					if(current_player->items[definition->item_id]>1)
 					{
-						DrawShapeAtXY(
-							BUILD_DESCRIPTOR(_collection_interface, _double_shotgun), 
-							definition->standard_weapon_panel_left, 
-							definition->standard_weapon_panel_top-12);
+						if (definition->multiple_shape != UNONE)
+							DrawShapeAtXY(
+								definition->multiple_shape,
+								definition->standard_weapon_panel_left + definition->multiple_delta_x, 
+								definition->standard_weapon_panel_top + definition->multiple_delta_y);
 					} else {
-						DrawShapeAtXY(definition->weapon_panel_shape, 
-							definition->standard_weapon_panel_left, 
-							definition->standard_weapon_panel_top);
+						if (definition->weapon_panel_shape != UNONE)
+							DrawShapeAtXY(definition->weapon_panel_shape, 
+								      definition->standard_weapon_panel_left, 
+								      definition->standard_weapon_panel_top);
 					}
 				}
 			} else {

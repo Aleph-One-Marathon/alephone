@@ -124,7 +124,9 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		{
 			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, UNONE, UNONE, true},
 			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, UNONE, UNONE, true}
-		}
+		},
+		UNONE, UNONE,
+		0, 0
 	},
 	
 	/* Harry, the .44 */
@@ -138,7 +140,10 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		{
 			{ _uses_bullets, 517, 412, 8, 1, 5, 14, BUILD_DESCRIPTOR(_collection_interface, _magnum_bullet), BUILD_DESCRIPTOR(_collection_interface, _magnum_casing), false},
 			{ _uses_bullets, 452, 412, 8, 1, 5, 14, BUILD_DESCRIPTOR(_collection_interface, _magnum_bullet), BUILD_DESCRIPTOR(_collection_interface, _magnum_casing), true}
-		}
+		},
+		BUILD_DESCRIPTOR(_collection_interface, _left_magnum),
+		BUILD_DESCRIPTOR(_collection_interface, _left_magnum_unusable),
+		-97, 0
 	},
 
 	/* Ripley, the plasma pistol. */
@@ -152,7 +157,9 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		{
 			{ _uses_energy, 414, 366, 20, 0, 38, 57, _energy_weapon_full_color, _energy_weapon_empty_color, true},
 			{ _unused_interface_data, 450, 410, 50, 0, 62, 7, _energy_weapon_full_color, _energy_weapon_empty_color, true}
-		}
+		},
+		UNONE, UNONE,
+		0, 0
 	},
 	
 	/* Arnold, the assault rifle */	
@@ -166,7 +173,9 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		{
 			{ _uses_bullets, 391, 368, 13, 4, 4, 10, BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_bullet), BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_casing), true},
 			{ _uses_bullets, 390, 413, 7, 1, 8, 12, BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade), BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade_casing), true},
-		}
+		},
+		UNONE, UNONE,
+		0, 0
 	},
 		
 	/* John R., the missile launcher */	
@@ -180,7 +189,9 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		{
 			{ _uses_bullets, 385, 376, 2, 1, 16, 49, BUILD_DESCRIPTOR(_collection_interface, _missile), BUILD_DESCRIPTOR(_collection_interface, _missile_casing), true},
 			{ _unused_interface_data, 0, 0, 0, 0, 0, 0, UNONE, UNONE, true }
-		}
+		},
+		UNONE, UNONE,
+		0, 0
 	},
 
 	/* ???, the flame thrower */	
@@ -195,7 +206,9 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 			/* This weapon has 7 seconds of flamethrower carnage.. */
 			{ _uses_energy, 427, 369, 7*TICKS_PER_SECOND, 0, 38, 57, _energy_weapon_full_color, _energy_weapon_empty_color, true},
 			{ _unused_interface_data, 450, 410, 50, 0, 62, 7, _energy_weapon_full_color, _energy_weapon_empty_color, true}
-		}
+		},
+		UNONE, UNONE,
+		0, 0
 	},
 
 	/* Predator, the alien shotgun */	
@@ -209,7 +222,9 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		{
 			{ _unused_interface_data, 425, 411, 50, 0, 96, 7, _energy_weapon_full_color, _energy_weapon_empty_color, true},
 			{ _unused_interface_data, 450, 410, 50, 0, 62, 7, _energy_weapon_full_color, _energy_weapon_empty_color, true}
-		}
+		},
+		UNONE, UNONE,
+		0, 0
 	},
 
 	/* Shotgun */
@@ -223,7 +238,10 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		{
 			{ _uses_bullets, 483, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), true},
 			{ _uses_bullets, 451, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), true}
-		}
+		},
+		BUILD_DESCRIPTOR(_collection_interface, _double_shotgun),
+		UNONE,
+		0, -12
 	},
 
 	/* Ball */
@@ -237,7 +255,9 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		{
 			{ _unused_interface_data, 451, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), true},
 			{ _unused_interface_data, 483, 411, 2, 1, 12, 16, BUILD_DESCRIPTOR(_collection_interface, _shotgun_bullet), BUILD_DESCRIPTOR(_collection_interface, _shotgun_casing), true}
-		}
+		},
+		UNONE, UNONE,
+		0, 0
 	},
 	
 	/* LP addition: SMG (clone of assault rifle) */	
@@ -251,7 +271,9 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 		{
 			{ _uses_bullets, 405, 382, 8, 4, 5, 10, BUILD_DESCRIPTOR(_collection_interface, _smg_bullet), BUILD_DESCRIPTOR(_collection_interface, _smg_casing), true},
 			{ _unused_interface_data, 390, 413, 7, 1, 8, 12, BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade), BUILD_DESCRIPTOR(_collection_interface, _assault_rifle_grenade_casing), true},
-		}
+		},
+		UNONE, UNONE,
+		0, 0
 	},
 };
 
@@ -668,7 +690,7 @@ bool XML_AmmoDisplayParser::AttributesDone()
 	if (IsPresent[7]) OrigData.bullet = Data.bullet;
 	if (IsPresent[8]) OrigData.empty_bullet = Data.empty_bullet;
 	if (IsPresent[9]) OrigData.right_to_left = Data.right_to_left;
-		
+
 	return true;
 }
 
@@ -686,7 +708,7 @@ class XML_WeaponDisplayParser: public XML_ElementParser
 	
 	// What is present?
 	bool IndexPresent;
-	enum {NumberOfValues = 8};
+	enum {NumberOfValues = 12};
 	bool IsPresent[NumberOfValues];
 	
 public:
@@ -799,6 +821,42 @@ bool XML_WeaponDisplayParser::HandleAttribute(const char *Tag, const char *Value
 		}
 		else return false;
 	}
+	else if (StringsEqual(Tag,"multiple_shape"))
+	{
+		if (ReadUInt16Value(Value, Data.multiple_shape))
+		{
+			IsPresent[8] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag, "multiple_unusable_shape"))
+	{
+		if (ReadUInt16Value(Value, Data.multiple_unusable_shape))
+		{
+			IsPresent[9] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag, "multiple_delta_x"))
+	{
+		if (ReadInt16Value(Value, Data.multiple_delta_x))
+		{
+			IsPresent[10] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag, "multiple_delta_y"))
+	{
+		if (ReadInt16Value(Value, Data.multiple_delta_y))
+		{
+			IsPresent[11] = true;
+			return true;
+		}
+		else return false;
+	}
 	
 	UnrecognizedTag();
 	return false;
@@ -822,6 +880,10 @@ bool XML_WeaponDisplayParser::AttributesDone()
 	if (IsPresent[5]) OrigData.standard_weapon_panel_top = Data.standard_weapon_panel_top;
 	if (IsPresent[6]) OrigData.standard_weapon_panel_left = Data.standard_weapon_panel_left;
 	if (IsPresent[7]) OrigData.multi_weapon = Data.multi_weapon;
+	if (IsPresent[8]) OrigData.multiple_shape = Data.multiple_shape;
+	if (IsPresent[9]) OrigData.multiple_unusable_shape = Data.multiple_unusable_shape;
+	if (IsPresent[10]) OrigData.multiple_delta_x = Data.multiple_delta_x;
+	if (IsPresent[11]) OrigData.multiple_delta_y = Data.multiple_delta_y;
 	
 	AmmoDisplayParser.OrigAmmo = OrigData.ammo_data;
 	
