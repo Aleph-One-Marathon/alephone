@@ -29,14 +29,10 @@ public:
 		m_dialog.add(new w_static_text("OPENGL OPTIONS", TITLE_FONT, TITLE_COLOR));
 		m_dialog.add(new w_spacer());
 		
-		w_tab_popup *tab_w = new w_tab_popup("Section");
 		vector<string> tab_strings;
 		tab_strings.push_back ("General");
 		tab_strings.push_back ("Advanced");
-		tab_w->set_identifier (TAB_WIDGET);
-		m_dialog.add (tab_w);
-		tab_w->set_labels (tab_strings);
-		tab_w->set_selection (0);
+		make_tab_buttons_for_dialog (m_dialog, tab_strings, TAB_WIDGET);
 		m_dialog.set_active_tab (BASIC_TAB);
 		
 		m_dialog.add(new w_spacer());
