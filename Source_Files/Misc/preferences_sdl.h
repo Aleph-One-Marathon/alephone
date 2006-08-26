@@ -347,6 +347,16 @@ enum {
     iRENDERING_SYSTEM = 1000
 };
 
+static const vector<string> build_stringvector_from_cstring_array (char** label_array)
+{
+	std::vector<std::string> label_vector;
+	for (int i = 0; label_array[i] != NULL; ++i)
+		label_vector.push_back(std::string(label_array[i]));
+		
+	return label_vector;
+}
+
+
 static void software_rendering_options_dialog(void* arg)
 {
 	// Create dialog
@@ -425,11 +435,15 @@ static void graphics_dialog(void *arg)
 #endif
     d.add(renderer_w);
 
-	w_select *size_w = new w_select("Screen Size", graphics_preferences->screen_mode.size, size_labels);
+	w_select_popup *size_w = new w_select_popup("Screen Size");
+	size_w->set_labels(build_stringvector_from_cstring_array(size_labels));
+	size_w->set_selection(graphics_preferences->screen_mode.size);
 	d.add(size_w);
 	w_toggle *fullscreen_w = new w_toggle("Fullscreen", graphics_preferences->screen_mode.fullscreen);
 	d.add(fullscreen_w);
-	w_select *gamma_w = new w_select("Brightness", graphics_preferences->screen_mode.gamma_level, gamma_labels);
+	w_select_popup *gamma_w = new w_select_popup("Brightness");
+	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
+	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
 	d.add(gamma_w);
 
     d.add(new w_spacer());
