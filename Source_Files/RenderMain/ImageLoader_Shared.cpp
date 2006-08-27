@@ -197,8 +197,7 @@ ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels)
 	VScale = 1.0;
 	UScale = 1.0;
 	Size = _Width * _Height * 4;
-	Pixels = new uint32[_Width * _Height];
-	memcpy(Pixels, _Pixels, Size);
+	Pixels = _Pixels;
 	Format = RGBA8;
 	MipMapCount = 0;
 }
