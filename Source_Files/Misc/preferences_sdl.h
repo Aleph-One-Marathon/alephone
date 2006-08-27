@@ -347,7 +347,7 @@ enum {
     iRENDERING_SYSTEM = 1000
 };
 
-static const vector<string> build_stringvector_from_cstring_array (char** label_array)
+static const vector<string> build_stringvector_from_cstring_array (const char** label_array)
 {
 	std::vector<std::string> label_vector;
 	for (int i = 0; label_array[i] != NULL; ++i)
