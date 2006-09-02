@@ -2272,6 +2272,12 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		SetProjectionType(Projection_OpenGL_Eye);
 	else if (IsWeaponsInHand)
 		SetProjectionType(Projection_Screen);
+
+	// rely on Aleph One rendering sprites in the right order, since OpenGL
+	// doesn't get them right
+	if (Z_Buffering)
+		glDepthFunc(GL_ALWAYS);
+	
 	
 	bool IsBlended = TMgr.IsBlended();
 	bool ExternallyLit = false;
@@ -2329,6 +2335,9 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	// Revert to default blend
 	SetBlend(OGL_BlendType_Crossfade);
 	TMgr.RestoreTextureMatrix();
+
+	if (Z_Buffering)
+		glDepthFunc(GL_LEQUAL);
 		
 	return true;
 }
