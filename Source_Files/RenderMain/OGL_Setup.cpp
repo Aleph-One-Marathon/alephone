@@ -203,15 +203,15 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 #ifdef SDL
 	// Reasonable default flags ("static" effect causes massive slowdown, so we turn it off)
 	Data.Flags = OGL_Flag_FlatStatic | OGL_Flag_Fader | OGL_Flag_Map |
-		OGL_Flag_HUD | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models | OGL_Flag_ZBuffer;
+		OGL_Flag_HUD | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models | OGL_Flag_ZBuffer | OGL_Flag_Fog;
 #elif TARGET_API_MAC_CARBON
 	// Reasonable default OS X flags
 	Data.Flags = OGL_Flag_Map | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models |
-		OGL_Flag_2DGraphics | OGL_Flag_Fader | OGL_Flag_HUD | OGL_Flag_ZBuffer;
+		OGL_Flag_2DGraphics | OGL_Flag_Fader | OGL_Flag_HUD | OGL_Flag_ZBuffer | OGL_Flag_Fog;
 #else
 	// Reasonable default flags
 	Data.Flags = OGL_Flag_Map | OGL_Flag_LiqSeeThru | OGL_Flag_3D_Models |
-		OGL_Flag_2DGraphics | OGL_Flag_ZBuffer;
+		OGL_Flag_2DGraphics | OGL_Flag_ZBuffer | OGL_Flag_Fog;
 #endif
 
         Data.AnisotropyLevel = 0.0; // off
