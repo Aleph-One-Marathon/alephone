@@ -3025,14 +3025,14 @@ static void execute_monster_attack(
 		world_point3d _vector;
 		
 		projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, (world_point3d *) NULL, &_vector, object->facing);
-		new_projectile(&origin, projectile_polygon_index, &_vector, attack->error, attack->type,
-			monster_index, monster->type, monster->target_index, FIXED_ONE);
+		if (projectile_polygon_index != NONE)
+			new_projectile(&origin, projectile_polygon_index, &_vector, attack->error, attack->type, monster_index, monster->type, monster->target_index, FIXED_ONE);
 		if (definition->flags&_monster_fires_symmetrically)
 		{
 			attack->dy= -attack->dy;
 			projectile_polygon_index= position_monster_projectile(monster_index, monster->target_index, attack, &origin, (world_point3d *) NULL, &_vector, object->facing);
-			new_projectile(&origin, projectile_polygon_index, &_vector, attack->error, attack->type,
-				monster_index, monster->type, monster->target_index, FIXED_ONE);
+			if (projectile_polygon_index != NONE) 
+				new_projectile(&origin, projectile_polygon_index, &_vector, attack->error, attack->type, monster_index, monster->type, monster->target_index, FIXED_ONE);
 			attack->dy= -attack->dy;
 		}
 	}
