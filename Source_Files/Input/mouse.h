@@ -36,6 +36,7 @@ void recenter_mouse(void);
 // ZZZ: stuff of various hackiness levels to pretend mouse buttons are keys
 #ifdef SDL
 void mouse_buttons_become_keypresses(Uint8* ioKeyMap);
+void mouse_scroll(bool up);
 
 #define NUM_SDL_MOUSE_BUTTONS 8   // since SDL_GetMouseState() returns 8 bits
 #define SDLK_BASE_MOUSE_BUTTON 65 // this is button 1's pseudo-keysym

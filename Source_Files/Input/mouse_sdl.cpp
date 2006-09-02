@@ -40,6 +40,7 @@ static bool mouse_active = false;
 static uint8 button_mask = 0;		// Mask of enabled buttons
 static int center_x, center_y;		// X/Y center of screen
 static _fixed snapshot_delta_yaw, snapshot_delta_pitch, snapshot_delta_velocity;
+static _fixed snapshot_delta_scrollwheel;
 
 
 /*
@@ -55,6 +56,7 @@ void enter_mouse(short type)
 		SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
 		mouse_active = true;
 		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
+		snapshot_delta_scrollwheel = 0;
 		button_mask = 0;	// Disable all buttons (so a shot won't be fired if we enter the game with a mouse button down from clicking a GUI widget)
 		recenter_mouse();
 	}
@@ -165,6 +167,10 @@ void test_mouse(short type, uint32 *flags, _fixed *delta_yaw, _fixed *delta_pitc
 		*delta_velocity = snapshot_delta_velocity;
 
 		snapshot_delta_yaw = snapshot_delta_pitch = snapshot_delta_velocity = 0;
+
+		if (snapshot_delta_scrollwheel > 0) *flags |= _cycle_weapons_forward;
+		else if (snapshot_delta_scrollwheel < 0) *flags |= _cycle_weapons_backward;
+		snapshot_delta_scrollwheel = 0;
 	} else {
 	  delta_yaw = 0;
 	  delta_pitch = 0;
@@ -225,4 +231,12 @@ bool mouse_still_down(void)
 	SDL_PumpEvents();
 	Uint8 buttons = SDL_GetMouseState(NULL, NULL);
 	return buttons & SDL_BUTTON_LMASK;
+}
+
+void mouse_scroll(bool up)
+{
+	if (up)
+		snapshot_delta_scrollwheel += 1;
+	else
+		snapshot_delta_scrollwheel -= 1;
 }

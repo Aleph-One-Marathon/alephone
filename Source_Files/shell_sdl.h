@@ -1488,7 +1488,13 @@ static void process_event(const SDL_Event &event)
 {
 	switch (event.type) {
 	case SDL_MOUSEBUTTONDOWN:
-		process_screen_click(event);
+		if (get_game_state() == _game_in_progress &&
+		    (event.button.button == 4 || event.button.button == 5))
+		{
+			mouse_scroll(event.button.button == 4);
+		}
+		else
+			process_screen_click(event);
 		break;
 		
 	case SDL_KEYDOWN:
