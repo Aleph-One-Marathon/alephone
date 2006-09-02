@@ -138,8 +138,11 @@ void halt(void)
  *  Display message and halt
  */
 
+extern void stop_recording();
+
 void vhalt(char *message)
 {
+	stop_recording();
         logFatal1("vhalt: %s", message);
 	fprintf(stderr, "vhalt %s\n", message);
 	abort();

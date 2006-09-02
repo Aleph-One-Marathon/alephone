@@ -698,6 +698,8 @@ void stop_recording(
 {
 	if (replay.game_is_being_recorded)
 	{
+		replay.game_is_being_recorded = false;
+		
 		short player_index;
 		long total_length;
 
@@ -707,8 +709,6 @@ void stop_recording(
 			save_recording_queue_chunk(player_index);
 		}
 
-		replay.game_is_being_recorded = false;
-		
 		/* Rewrite the header, since it has the new length */
 		FilmFile.SetPosition(0);
 		byte Header[SIZEOF_recording_header];

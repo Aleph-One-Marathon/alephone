@@ -136,9 +136,12 @@ void halt(void)
 	ExitToShell();
 }
 
+extern void stop_recording();
+
 void vhalt(
 	char *message)
 {
+	stop_recording();
 #ifdef TARGET_API_MAC_CARBON
 	InitCursor();
 	logFatal1("vhalt: %s", message);
