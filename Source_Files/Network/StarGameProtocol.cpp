@@ -203,7 +203,7 @@ void
 StarGameProtocol::UpdateUnconfirmedActionFlags()
 {
 	TickBasedActionQueue *q = spoke_get_unconfirmed_flags_queue();
-	while (q->getReadTick() < spoke_get_smallest_unconfirmed_tick())
+	while (q->getReadTick() < spoke_get_smallest_unconfirmed_tick() && q->getReadTick() < q->getWriteTick())
 	{
 		q->dequeue();
 	}
