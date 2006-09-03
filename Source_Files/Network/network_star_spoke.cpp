@@ -451,21 +451,7 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 	// we can get an early ACK if the server made up flags for us...
 	if (theSmallestUnacknowledgedTick > sOutgoingFlags.getWriteTick())
 	{
-		logTraceNMT2("early ack (%d > %d); filling outgoing queue", theSmallestUnacknowledgedTick, sOutgoingFlags.getWriteTick());
-
-		// guess what it made up for us
-		// we'll probably be wrong
-		action_flags_t flags = sOutgoingFlags.peek(sOutgoingFlags.getReadTick());
-		
-		while (sOutgoingFlags.getWriteTick() < theSmallestUnacknowledgedTick)
-		{
-			if (sOutgoingFlags.getWriteTick() >= sSmallestRealGameTick)
-				sLocallyGeneratedFlags.enqueue(flags);
-			else
-				
-				sOutgoingFlags.enqueue(flags);
-		}
-		
+		theSmallestUnacknowledgedTick = sOutgoingFlags.getWriteTick();
 	}
 
         // Heard from hub
