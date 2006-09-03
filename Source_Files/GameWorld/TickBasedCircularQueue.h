@@ -112,6 +112,7 @@ public:
         ConcreteTickBasedCircularQueue(int inBufferCapacity)
                 : mBufferSize(inBufferCapacity + 1)
         {
+		assert(inBufferCapacity % 2); // otherwise negative ticks break
                 mFlagsBuffer = new tValueType[mBufferSize];
                 reset(0);
         }
