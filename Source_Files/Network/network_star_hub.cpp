@@ -62,6 +62,7 @@
 #include <algorithm> // std::min()
 
 #include "crc.h"
+#include "player.h" // for masking out action flags triggers :(
 
 // Synchronization:
 // hub_received_network_packet() is not reentrant
@@ -122,7 +123,7 @@ static NetworkState sNetworkState;
 
 
 enum {
-        kFlagsQueueSize = TICKS_PER_SECOND / 2,
+	kFlagsQueueSize = TICKS_PER_SECOND * 5 + 1,
         kDefaultPregameWindowSize = TICKS_PER_SECOND / 2,
         kDefaultInGameWindowSize = TICKS_PER_SECOND * 5,
 	kDefaultPregameNthElement = 2,
@@ -131,6 +132,7 @@ enum {
         kDefaultInGameTicksBeforeNetDeath = 3 * TICKS_PER_SECOND,
 	kDefaultSendPeriod = 1,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
+	kDefaultMinimumSendPeriod = 3,
 	kLossyByteStreamDataBufferSize = 1280,
 	kTypicalLossyByteStreamChunkSize = 56,
 	kLossyByteStreamDescriptorCount = kLossyByteStreamDataBufferSize / kTypicalLossyByteStreamChunkSize	
@@ -147,6 +149,7 @@ struct HubPreferences {
 	int32	mInGameTicksBeforeNetDeath;
 	int32	mSendPeriod;
 	int32	mRecoverySendPeriod;
+	int32   mMinimumSendPeriod;
 };
 
 static HubPreferences sHubPreferences;
@@ -178,6 +181,7 @@ static TickBasedActionQueueCollection	sFlagsQueues;
 
 // tracks the net ticks each flags tick was *first* sent out at
 static ConcreteTickBasedCircularQueue<int32> sFlagSendTimeQueue(kFlagsQueueSize);
+static int32 sLastRealUpdate;
 
 struct NetworkPlayer_hub {
         NetAddrBlock	mAddress;		// network address of player
@@ -232,6 +236,17 @@ struct NetworkPlayer_hub {
 static MutableElementsTickBasedCircularQueue<uint32>	sPlayerDataDisposition(kFlagsQueueSize);
 static int32 sSmallestIncompleteTick;
 static uint32 sConnectedPlayersBitmask;
+
+
+// sPlayerReflectedFlags holds an element for every tick for which data has been
+// sent but at least one player has not yet acknowledged
+//
+// the value of a queue element is a bit-set (indexed by player index) with a 1
+// bit for each player we've altered flags and need to reflect flags for
+static MutableElementsTickBasedCircularQueue<uint32> sPlayerReflectedFlags(kFlagsQueueSize);
+
+// holds the last real flags we received from this player
+static vector<action_flags_t> sLastFlagsReceived;
 
 // sSmallestUnsentTick is used for reducing the number of packets sent: we won't send a packet unless
 // sSmallestIncompleteTick - sSmallestUnsentTick >= sHubPreferences.mSendPeriod
@@ -444,11 +459,14 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
         }
         
         sPlayerDataDisposition.reset(theFirstTick);
+	sPlayerReflectedFlags.reset(theFirstTick);
+	sLastFlagsReceived.resize(inNumPlayers);
 	sFlagSendTimeQueue.reset(theFirstTick);
         sSmallestIncompleteTick = theFirstTick;
 	sSmallestUnsentTick = theFirstTick;
         sNetworkTicker = 0;
         sLastNetworkTickSent = 0;
+	sLastRealUpdate = 0;
 
         sHubActive = true;
 
@@ -676,6 +694,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
                 action_flags_t theActionFlags;
                 ps >> theActionFlags;
                 theQueue.enqueue(theActionFlags);
+		sLastFlagsReceived[inSenderIndex] = theActionFlags;
         }
 
 	// Update timing data
@@ -750,9 +769,11 @@ player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowled
                 {
                         assert(theTick == sPlayerDataDisposition.getReadTick());
 			assert(theTick == sFlagSendTimeQueue.getReadTick());
+			assert(theTick == sPlayerReflectedFlags.getReadTick());
                         
                         sPlayerDataDisposition.dequeue();
 			sFlagSendTimeQueue.dequeue();
+			sPlayerReflectedFlags.dequeue();
                         for(size_t i = 0; i < sFlagsQueues.size(); i++)
                         {
                                 if(sFlagsQueues[i].size() > 0)
@@ -778,7 +799,34 @@ player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowled
 	
 } // player_acknowledged_up_to_tick()
 
+static bool make_up_flags_for_first_incomplete_tick()
+{
+	// find the smallest incomplete tick, and make up flags for anybody in that tick!
+	
+	if (sPlayerDataDisposition.getWriteTick() == sSmallestIncompleteTick) 
+		// we don't have flags for anybody!
+		return false;
 
+	// never make up flags for ourself
+	if (getFlagsQueue(sLocalPlayerIndex).getWriteTick() == sSmallestIncompleteTick)
+		return false;
+
+	logTrace1("making up flags for tick %i", sSmallestIncompleteTick);
+
+	for (int i = 0; i < sNetworkPlayers.size(); i++)
+	{
+		if (getFlagsQueue(i).getWriteTick() == sSmallestIncompleteTick)
+		{
+			// network code shouldn't figure this out, someone else should
+			action_flags_t motionFlags = sLastFlagsReceived[i] & (_moving | _sidestepping);
+			getFlagsQueue(i).enqueue(motionFlags);
+			sPlayerReflectedFlags[sSmallestIncompleteTick] |= (1 << i);
+		}
+	}
+	sPlayerDataDisposition[sSmallestIncompleteTick] = sConnectedPlayersBitmask;
+	sSmallestIncompleteTick++;
+	return true;
+}
 
 // Returns true if we now have enough data to send at least one new tick
 static bool
@@ -788,10 +836,13 @@ player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTi
 	
         bool shouldSend = false;
 
+	assert(sPlayerDataDisposition.getWriteTick() == sPlayerReflectedFlags.getWriteTick());
+
         for(int i = sPlayerDataDisposition.getWriteTick(); i < inSmallestUnreceivedTick; i++)
         {
 		logDump2("tick %d: enqueueing sPlayerDataDisposition %d", i, sConnectedPlayersBitmask);
                 sPlayerDataDisposition.enqueue(sConnectedPlayersBitmask);
+		sPlayerReflectedFlags.enqueue(0);
         }
 
         for(int i = inFirstNewTick; i < inSmallestUnreceivedTick; i++)
@@ -939,8 +990,6 @@ make_player_netdead(int inPlayerIndex)
         player_acknowledged_up_to_tick(inPlayerIndex, theSavedIncompleteTick);
 }
 
-
-
 static bool
 hub_tick()
 {
@@ -959,10 +1008,22 @@ hub_tick()
                         shouldSend = true;
                 }
         }
+	
+	// figure out whether to make up flags here; the code below worked for my 2 player tests but is almost certainly wrong
+	/*
+	if (sPlayerDataDisposition.getReadTick() > sSmallestRealGameTick && sNetworkTicker - sLastRealUpdate >= sHubPreferences.mMinimumSendPeriod)
+	{
+		for (int i = 0; i < sHubPreferences.mMinimumSendPeriod; i++)
+		{
+			if (make_up_flags_for_first_incomplete_tick()) 
+				shouldSend = true;
+		}
+	}
+	*/
 
         if(shouldSend)
                 send_packets();
-        else
+	else
         {
                 // Make sure we send at least every once in a while to keep things going
                 if(sNetworkTicker > sLastNetworkTickSent && (sNetworkTicker - sLastNetworkTickSent) >= sHubPreferences.mRecoverySendPeriod)
@@ -999,6 +1060,7 @@ send_packets()
 	for (int32 i = sFlagSendTimeQueue.getWriteTick(); i < sSmallestIncompleteTick; i++) 
 	{
 		sFlagSendTimeQueue.enqueue(sNetworkTicker);
+		sLastRealUpdate = sNetworkTicker;
 	}
 		
         for(size_t i = 0; i < sNetworkPlayers.size(); i++)
@@ -1010,8 +1072,6 @@ send_packets()
                         AOStreamBE ps(sOutgoingFrame->data, ddpMaxData, kStarPacketHeaderSize);
 
                         try {
-				hdr << (uint16) kHubToSpokeGameDataPacketV1Magic;
-
                                 // acknowledgement
                                 ps << getFlagsQueue(i).getWriteTick();
         
@@ -1055,6 +1115,13 @@ send_packets()
                                 // We use this flag to make sure we encode the start tick at most once, and
                                 // only if we're actually sending action_flags.
                                 bool haveSentStartTick = false;
+
+				bool reflectFlags = false;
+				// find out if we need to reflect flags
+				for (int32 tick = thePlayer.mSmallestUnacknowledgedTick; tick < sSmallestIncompleteTick && !reflectFlags; tick++)
+				{
+					if (sPlayerReflectedFlags.peek(tick) & (1 << i)) reflectFlags = true;
+				}
         
                                 // Action_flags!!
                                 // First, preprocess the players to figure out at what tick they'll each stop
@@ -1064,7 +1131,7 @@ send_packets()
                                 for(size_t j = 0; j < sNetworkPlayers.size(); j++)
                                 {
                                         // Don't encode our own flags
-                                        if(j == i)
+                                        if(j == i && !reflectFlags)
                                         {
                                                 theSmallestTickWeWontSend[j] = thePlayer.mSmallestUnacknowledgedTick - 1;
                                                 continue;
@@ -1095,7 +1162,8 @@ send_packets()
                                                 }
                                         }
                                 }
-
+				
+				hdr << (uint16) (reflectFlags ? kHubToSpokeGameDataPacketWithSpokeFlagsV1Magic : kHubToSpokeGameDataPacketV1Magic);
 				hdr << calculate_data_crc_ccitt(&sOutgoingFrame->data[kStarPacketHeaderSize], ps.tellp() - kStarPacketHeaderSize);
         
                                 // Send the packet
@@ -1154,6 +1222,7 @@ enum {
 	kInGameNthElementAttribute,
 	kSendPeriodAttribute,
 	kRecoverySendPeriodAttribute,
+	kMinimumSendPeriodAttribute,
 	kNumAttributes
 };
 
@@ -1168,6 +1237,7 @@ static const char* sAttributeStrings[kNumAttributes] =
 	"ingame_nth_element",
 	"send_period",
 	"recovery_send_period",
+	"minimum_send_period",
 };
 
 static int32* sAttributeDestinations[kNumAttributes] =
@@ -1181,6 +1251,7 @@ static int32* sAttributeDestinations[kNumAttributes] =
 	&sHubPreferences.mInGameNthElement,
 	&sHubPreferences.mSendPeriod,
 	&sHubPreferences.mRecoverySendPeriod,
+	&sHubPreferences.mMinimumSendPeriod,
 };
 
 static const int32 sDefaultHubPreferences[kNumAttributes] = {
@@ -1191,7 +1262,8 @@ static const int32 sDefaultHubPreferences[kNumAttributes] = {
 	kDefaultPregameNthElement,
 	kDefaultInGameNthElement,
 	kDefaultSendPeriod,
-	kDefaultRecoverySendPeriod
+	kDefaultRecoverySendPeriod,
+	kDefaultMinimumSendPeriod,
 };
 
 class XML_HubConfigurationParser: public XML_ElementParser
