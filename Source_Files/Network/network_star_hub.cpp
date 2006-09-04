@@ -1009,17 +1009,29 @@ hub_tick()
                 }
         }
 	
-	// figure out whether to make up flags here; the code below worked for my 2 player tests but is almost certainly wrong
-	/*
-	if (sPlayerDataDisposition.getReadTick() > sSmallestRealGameTick && sNetworkTicker - sLastRealUpdate >= sHubPreferences.mMinimumSendPeriod)
+	// if we're getting behind, and a majority of players have flags ready
+	// for us, make flags up for the rest of the players
+
+	if (sHubPreferences.mMinimumSendPeriod >= sHubPreferences.mSendPeriod && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick && sNetworkTicker - sLastRealUpdate >= sHubPreferences.mMinimumSendPeriod)
 	{
 		for (int i = 0; i < sHubPreferences.mMinimumSendPeriod; i++)
 		{
-			if (make_up_flags_for_first_incomplete_tick()) 
-				shouldSend = true;
+			int readyPlayers = 0;
+			int nonReadyPlayers = 0;
+			for (int j = 0; j < sNetworkPlayers.size(); j++)
+			{
+				if (sNetworkPlayers[j].mConnected && sPlayerDataDisposition.getReadTick() <= sNetworkPlayers[j].mNetDeadTick)
+					if (sPlayerDataDisposition[i] & (1 << j))
+						readyPlayers++;
+					else
+						nonReadyPlayers++;
+			}
+			
+			if (readyPlayers > nonReadyPlayers)
+				if (make_up_flags_for_first_incomplete_tick()) 
+					shouldSend = true;
 		}
 	}
-	*/
 
         if(shouldSend)
                 send_packets();
