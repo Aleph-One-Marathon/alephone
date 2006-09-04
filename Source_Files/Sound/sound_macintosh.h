@@ -529,7 +529,7 @@ static void buffer_sound(
 {
 	struct sound_definition *definition= get_sound_definition(sound_index);
 	// LP change: idiot-proofing
-	if (!definition) return;
+	if (!definition || !definition->permutations) return;
 	
 	short permutation= get_random_sound_permutation(sound_index);
 	

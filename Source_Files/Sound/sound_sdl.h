@@ -881,7 +881,7 @@ static void instantiate_sound_variables(struct sound_variables *variables, struc
 static void buffer_sound(struct channel_data *channel, short sound_index, _fixed pitch, bool ext_play_immed)
 {
 	struct sound_definition *definition = get_sound_definition(sound_index);
-	if (!definition)
+	if (!definition || !definition->permutations)
 		return;
 	assert(definition->ptr);
 
