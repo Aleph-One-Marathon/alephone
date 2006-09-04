@@ -565,7 +565,7 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
         if(!sHubActive)
                 return;
 
-	logContext("hub processing a received packet");
+	logContextNMT("hub processing a received packet");
 	
         AIStreamBE ps(inPacket->datagramData, inPacket->datagramSize);
 
@@ -643,7 +643,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
         // If ack is too soon we throw out the entire packet to be safer
         if(theSmallestUnacknowledgedTick > sSmallestIncompleteTick)
         {
-                logAnomaly3("received ack from player %d for tick %d; have only sent up to %d", inSenderIndex, theSmallestUnacknowledgedTick, sSmallestIncompleteTick);
+                logAnomalyNMT3("received ack from player %d for tick %d; have only sent up to %d", inSenderIndex, theSmallestUnacknowledgedTick, sSmallestIncompleteTick);
                 return;
         }                
 
@@ -704,7 +704,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 	{
 		int32 theReferenceTick = theReferencePlayer.mSmallestUnheardTick;
 		int32 theArrivalOffset = thePlayer.mSmallestUnheardTick - theReferenceTick;
-		logDump2("player %d's arrivalOffset is %d", inSenderIndex, theArrivalOffset);
+		logDumpNMT2("player %d's arrivalOffset is %d", inSenderIndex, theArrivalOffset);
 		thePlayer.mNthElementFinder.insert(theArrivalOffset);
 		thePlayer.mSmallestUnheardTick++;
 	}
@@ -719,7 +719,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 		if(thePlayer.mOutstandingTimingAdjustment != 0)
 		{
 			thePlayer.mTimingAdjustmentTick = sSmallestIncompleteTick;
-			logTrace3("tick %d: asking player %d to adjust timing by %d", sSmallestIncompleteTick, inSenderIndex, thePlayer.mOutstandingTimingAdjustment);
+			logTraceNMT3("tick %d: asking player %d to adjust timing by %d", sSmallestIncompleteTick, inSenderIndex, thePlayer.mOutstandingTimingAdjustment);
 		}
 	}
 
@@ -737,7 +737,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 static void
 player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowledgedTick)
 {
-	logTrace2("player_acknowledged_up_to_tick(%d, %d)", inPlayerIndex, inSmallestUnacknowledgedTick);
+	logTraceNMT2("player_acknowledged_up_to_tick(%d, %d)", inPlayerIndex, inSmallestUnacknowledgedTick);
 	
         NetworkPlayer_hub& thePlayer = getNetworkPlayer(inPlayerIndex);
 
@@ -751,7 +751,7 @@ player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowled
         // Mark us ACKed for each intermediate tick
         for(int theTick = thePlayer.mSmallestUnacknowledgedTick; theTick < inSmallestUnacknowledgedTick; theTick++)
         {
-		logDump2("tick %d: sPlayerDataDisposition=%d", theTick, sPlayerDataDisposition[theTick]);
+		logDumpNMT2("tick %d: sPlayerDataDisposition=%d", theTick, sPlayerDataDisposition[theTick]);
 		
                 assert(sPlayerDataDisposition[theTick] & (((uint32)1) << inPlayerIndex));
                 sPlayerDataDisposition[theTick] &= ~(((uint32)1) << inPlayerIndex);
@@ -811,7 +811,7 @@ static bool make_up_flags_for_first_incomplete_tick()
 	if (getFlagsQueue(sLocalPlayerIndex).getWriteTick() == sSmallestIncompleteTick)
 		return false;
 
-	logTrace1("making up flags for tick %i", sSmallestIncompleteTick);
+	logTraceNMT1("making up flags for tick %i", sSmallestIncompleteTick);
 
 	for (int i = 0; i < sNetworkPlayers.size(); i++)
 	{
@@ -832,7 +832,7 @@ static bool make_up_flags_for_first_incomplete_tick()
 static bool
 player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTick, int32 inSmallestUnreceivedTick)
 {
-	logTrace3("player_provided_flags_from_tick_to_tick(%d, %d, %d)", inPlayerIndex, inFirstNewTick, inSmallestUnreceivedTick);
+	logTraceNMT3("player_provided_flags_from_tick_to_tick(%d, %d, %d)", inPlayerIndex, inFirstNewTick, inSmallestUnreceivedTick);
 	
         bool shouldSend = false;
 
@@ -840,14 +840,14 @@ player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTi
 
         for(int i = sPlayerDataDisposition.getWriteTick(); i < inSmallestUnreceivedTick; i++)
         {
-		logDump2("tick %d: enqueueing sPlayerDataDisposition %d", i, sConnectedPlayersBitmask);
+		logDumpNMT2("tick %d: enqueueing sPlayerDataDisposition %d", i, sConnectedPlayersBitmask);
                 sPlayerDataDisposition.enqueue(sConnectedPlayersBitmask);
 		sPlayerReflectedFlags.enqueue(0);
         }
 
         for(int i = inFirstNewTick; i < inSmallestUnreceivedTick; i++)
         {
-		logDump2("tick %d: sPlayerDataDisposition=%d", i, sPlayerDataDisposition[i]);
+		logDumpNMT2("tick %d: sPlayerDataDisposition=%d", i, sPlayerDataDisposition[i]);
 		
                 assert(sPlayerDataDisposition[i] & (((uint32)1) << inPlayerIndex));
                 sPlayerDataDisposition[i] &= ~(((uint32)1) << inPlayerIndex);
@@ -906,20 +906,20 @@ process_lossy_byte_stream_message(AIStream& ps, int inSenderIndex, uint16 inLeng
 	theDescriptor.mLength = inLength - (ps.tellg() - theHeaderStreamPosition);
 	theDescriptor.mSender = inSenderIndex;
 
-	logDump4("got %d bytes of lossy stream type %d from player %d for destinations 0x%x", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
+	logDumpNMT4("got %d bytes of lossy stream type %d from player %d for destinations 0x%x", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
 
 	bool canEnqueue = true;
 	
 	if(sOutgoingLossyByteStreamDescriptors.getRemainingSpace() < 1)
 	{
-		logNote4("no descriptor space remains; discarding (%uh) bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
+		logNoteNMT4("no descriptor space remains; discarding (%uh) bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
 		canEnqueue = false;
 	}
 
 	// We avoid enqueueing a partial chunk to make things easier on code that uses us
 	if(theDescriptor.mLength > sOutgoingLossyByteStreamData.getRemainingSpace())
 	{
-		logNote4("insufficient buffer space for %uh bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx; discarded", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
+		logNoteNMT4("insufficient buffer space for %uh bytes of lossy streaming data of distribution type %hd from player %hu destined for 0x%lx; discarded", theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender, theDescriptor.mDestinations);
 		canEnqueue = false;
 	}
 
@@ -969,7 +969,7 @@ process_optional_message(AIStream& ps, int inSenderIndex, uint16 inMessageType)
 static void
 make_player_netdead(int inPlayerIndex)
 {
-	logContext1("making player %d netdead", inPlayerIndex);
+	logContextNMT1("making player %d netdead", inPlayerIndex);
 	
         NetworkPlayer_hub& thePlayer = getNetworkPlayer(inPlayerIndex);
 
@@ -995,7 +995,7 @@ hub_tick()
 {
         sNetworkTicker++;
 
-	logContext1("performing hub_tick %d", sNetworkTicker);
+	logContextNMT1("performing hub_tick %d", sNetworkTicker);
 
         // Check for newly netdead players
         bool shouldSend = false;
@@ -1109,7 +1109,7 @@ send_packets()
 				// Lossy streaming data?
 				if(haveLossyData && ((theDescriptor.mDestinations & (((uint32)1) << i)) != 0))
 				{
-					logDump4("packet to player %d will contain %d bytes of lossy byte stream type %d from player %d", i, theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender);
+					logDumpNMT4("packet to player %d will contain %d bytes of lossy byte stream type %d from player %d", i, theDescriptor.mLength, theDescriptor.mType, theDescriptor.mSender);
 					// In AStreams, sizeof(packed scalar) == sizeof(unpacked scalar)
 					uint16 theMessageLength = sizeof(theDescriptor.mType) + sizeof(theDescriptor.mSender) + theDescriptor.mLength;
 					
@@ -1187,7 +1187,7 @@ send_packets()
                         } // try
                         catch (...)
                         {
-				logWarning("Caught exception while constructing/sending outgoing packet");
+				logWarningNMT("Caught exception while constructing/sending outgoing packet");
                         }
                         
                 } // if(connected)
