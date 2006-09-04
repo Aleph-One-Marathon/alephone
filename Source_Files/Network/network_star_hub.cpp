@@ -825,6 +825,7 @@ static bool make_up_flags_for_first_incomplete_tick()
 	}
 	sPlayerDataDisposition[sSmallestIncompleteTick] = sConnectedPlayersBitmask;
 	sSmallestIncompleteTick++;
+	sLastRealUpdate = sNetworkTicker;
 	return true;
 }
 
@@ -855,6 +856,7 @@ player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTi
                 {
                         assert(sSmallestIncompleteTick == i);
                         sSmallestIncompleteTick++;
+			sLastRealUpdate = sNetworkTicker;
                         shouldSend = true;
 
                         // Now people need to ACK
@@ -1014,17 +1016,19 @@ hub_tick()
 
 	if (sHubPreferences.mMinimumSendPeriod >= sHubPreferences.mSendPeriod && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick && sNetworkTicker - sLastRealUpdate >= sHubPreferences.mMinimumSendPeriod)
 	{
-		for (int i = 0; i < sHubPreferences.mMinimumSendPeriod; i++)
+		for (int i = 0; i < sHubPreferences.mMinimumSendPeriod && sSmallestIncompleteTick < sPlayerDataDisposition.getWriteTick(); i++)
 		{
 			int readyPlayers = 0;
 			int nonReadyPlayers = 0;
 			for (int j = 0; j < sNetworkPlayers.size(); j++)
 			{
-				if (sNetworkPlayers[j].mConnected && sPlayerDataDisposition.getReadTick() <= sNetworkPlayers[j].mNetDeadTick)
-					if (sPlayerDataDisposition[i] & (1 << j))
-						readyPlayers++;
-					else
-						nonReadyPlayers++;
+				if (sNetworkPlayers[j].mConnected && sSmallestRealGameTick > sNetworkPlayers[j].mNetDeadTick)
+				{
+					if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << j))
+					nonReadyPlayers++;
+				else
+					readyPlayers++;
+				}
 			}
 			
 			if (readyPlayers > nonReadyPlayers)
@@ -1072,7 +1076,6 @@ send_packets()
 	for (int32 i = sFlagSendTimeQueue.getWriteTick(); i < sSmallestIncompleteTick; i++) 
 	{
 		sFlagSendTimeQueue.enqueue(sNetworkTicker);
-		sLastRealUpdate = sNetworkTicker;
 	}
 		
         for(size_t i = 0; i < sNetworkPlayers.size(); i++)
@@ -1336,50 +1339,64 @@ bool XML_HubConfigurationParser::AttributesDone() {
 		{
 			switch(i)
 			{
-				case kPregameTicksBeforeNetDeathAttribute:
-				case kInGameTicksBeforeNetDeathAttribute:
-				case kRecoverySendPeriodAttribute:
-				case kSendPeriodAttribute:
-				case kPregameWindowSizeAttribute:
-				case kInGameWindowSizeAttribute:
-					if(mAttribute[i] < 1)
-					{
-						// I don't know whether this actually does anything if I don't return false,
-						// but I'd like to honor the user's wishes as far as I can without just throwing
-						// up my hands.
-						BadNumericalValue();
-						logWarning3("improper value %d for attribute %s of <hub>; must be at least 1.  using default of %d", mAttribute[i], sAttributeStrings[i], *(sAttributeDestinations[i]));
-						mAttributePresent[i] = false;
-					}
-					else
-					{
-						*(sAttributeDestinations[i]) = mAttribute[i];
-					}
-					break;
-
-				case kPregameNthElementAttribute:
-				case kInGameNthElementAttribute:
-					if(mAttribute[i] < 0)
-					{
-						BadNumericalValue();
-						logWarning3("improper value %d for attribute %s of <hub>; must be at least 1.  using default of %d", mAttribute[i], sAttributeStrings[i], *(sAttributeDestinations[i]));
-						mAttributePresent[i] = false;
-					}
-					else
-					{
-						*(sAttributeDestinations[i]) = mAttribute[i];
-					}
-					break;
-
-				default:
-					assert(false);
-					break;
+			case kPregameTicksBeforeNetDeathAttribute:
+			case kInGameTicksBeforeNetDeathAttribute:
+			case kRecoverySendPeriodAttribute:
+			case kSendPeriodAttribute:
+			case kPregameWindowSizeAttribute:
+			case kInGameWindowSizeAttribute:
+				if(mAttribute[i] < 1)
+				{
+					// I don't know whether this actually does anything if I don't return false,
+					// but I'd like to honor the user's wishes as far as I can without just throwing
+					// up my hands.
+					BadNumericalValue();
+					logWarning3("improper value %d for attribute %s of <hub>; must be at least 1.  using default of %d", mAttribute[i], sAttributeStrings[i], *(sAttributeDestinations[i]));
+					mAttributePresent[i] = false;
+				}
+				else
+				{
+					*(sAttributeDestinations[i]) = mAttribute[i];
+				}
+				break;
+				
+			case kPregameNthElementAttribute:
+			case kInGameNthElementAttribute:
+				if(mAttribute[i] < 0)
+				{
+					BadNumericalValue();
+					logWarning3("improper value %d for attribute %s of <hub>; must be at least 1.  using default of %d", mAttribute[i], sAttributeStrings[i], *(sAttributeDestinations[i]));
+					mAttributePresent[i] = false;
+				}
+				else
+				{
+					*(sAttributeDestinations[i]) = mAttribute[i];
+				}
+				break;
+				
+			case kMinimumSendPeriodAttribute:
+				if (mAttribute[i] < 0)
+				{
+					BadNumericalValue();
+					logWarning3("improper value %d for attribute %s of <hub>; must be at least 0. using default of %d", mAttribute[i], sAttributeStrings[i], *(sAttributeDestinations[i]));
+					mAttributePresent[i] = false;
+				} 
+				else
+				{
+					*(sAttributeDestinations[i]) = mAttribute[i];
+				}
+				break;
+				
+				
+			default:
+				assert(false);
+				break;
 			} // switch(attribute)
-
+			
 		} // if attribute present
-
+		
 	} // loop over attributes
-
+	
 	// The checks above are not sufficient to catch all bad cases; if user specified a window size
 	// smaller than default, this is our only chance to deal with it.
 	if(sHubPreferences.mPregameNthElement >= sHubPreferences.mPregameWindowSize) {
@@ -1387,13 +1404,13 @@ bool XML_HubConfigurationParser::AttributesDone() {
 		
 		sHubPreferences.mPregameNthElement = sHubPreferences.mPregameWindowSize - 1;
 	}
-
+	
 	if(sHubPreferences.mInGameNthElement >= sHubPreferences.mInGameWindowSize) {
 		logWarning5("value for <hub> attribute %s (%d) must be less than value for %s (%d).  using %d", sAttributeStrings[kInGameNthElementAttribute], sHubPreferences.mInGameNthElement, sAttributeStrings[kInGameWindowSizeAttribute], sHubPreferences.mInGameWindowSize, sHubPreferences.mInGameWindowSize - 1);
 		
 		sHubPreferences.mInGameNthElement = sHubPreferences.mInGameWindowSize - 1;
 	}
-
+	
 	return true;
 }
 
