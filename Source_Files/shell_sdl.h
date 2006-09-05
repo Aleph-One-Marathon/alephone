@@ -412,13 +412,6 @@ local_data_dir = "";
 		graphics_preferences->screen_mode.fullscreen = false;
 	write_preferences();
 
-// ZZZ: disable gamma fading in Mac OS X software rendering
-#if defined(__APPLE__) && defined(__MACH__)
-        if(graphics_preferences->screen_mode.acceleration == _no_acceleration)
-            option_nogamma = true;
-#endif
-
-
 // grr, Windows
 #if defined(__WIN32__) 
 	if (!SDL_getenv("SDL_VIDEODRIVER")) {
