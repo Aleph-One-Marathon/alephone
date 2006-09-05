@@ -147,12 +147,16 @@ void show_movie(short index)
 {
 #ifdef HAVE_SMPEG
 	float PlaybackSize = 2;
-
+	
 	FileSpecifier *File = GetLevelMovie(PlaybackSize);
 
 	if (!File) return;
 
 	SDL_Surface *s = SDL_GetVideoSurface();
+	
+#if defined(__APPLE__) && defined(__MACH__)
+	if (!(s->flags & SDL_FULLSCREEN)) return;
+#endif
 	{
 		TakeSDLAudioControl sdlAudioControl;
 		
