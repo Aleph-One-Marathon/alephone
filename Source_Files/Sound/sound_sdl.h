@@ -197,6 +197,15 @@ static void set_sound_manager_status(bool active);
 static void load_sound_header(sdl_channel *c, uint8 *data, _fixed pitch);
 static void sound_callback(void *userdata, uint8 *stream, int len);
 
+TakeSDLAudioControl::TakeSDLAudioControl()
+{
+	set_sound_manager_status(false);
+}
+
+TakeSDLAudioControl::~TakeSDLAudioControl()
+{
+	set_sound_manager_status(true);
+}
 
 /*
  *  Initialize sound manager

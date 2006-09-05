@@ -90,6 +90,14 @@ AC_CHECK_HEADERS(SDL_sound.h, [
   ])
 ])
 
+dnl Check for SMPEG
+AC_CHECK_HEADERS([smpeg/smpeg.h], [
+  AC_CHECK_LIB(smpeg, SMPEG_new, [
+    LIBS="-lsmpeg $LIBS"
+    AC_DEFINE(HAVE_SMPEG, 1, [SMPEG movie playback is enabled])
+  ])
+])	    
+
 dnl Check for Lua.
 AC_ARG_VAR(LUA_CFLAGS,    [C compiler flags for Lua])
 AC_ARG_VAR(LUA_LIBS,      [linker flags for Lua])

@@ -54,6 +54,11 @@
 #include "images.h"
 
 #include "interface_menus.h"
+#include "XML_LevelScript.h"
+
+#ifdef HAVE_SMPEG
+#include <smpeg/smpeg.h>
+#endif
 
 // ZZZ: for should_restore_game_networked()
 #include "sdl_dialogs.h"
@@ -136,9 +141,62 @@ void exit_networking(void)
  *  Show movie
  */
 
+extern bool option_nosound;
+
 void show_movie(short index)
 {
-	// unused by official scenarios
+#ifdef HAVE_SMPEG
+	float PlaybackSize = 2;
+
+	FileSpecifier *File = GetLevelMovie(PlaybackSize);
+
+	if (!File) return;
+
+	SDL_Surface *s = SDL_GetVideoSurface();
+	{
+		TakeSDLAudioControl sdlAudioControl;
+		
+		SMPEG_Info info;
+		SMPEG *movie;
+
+		movie = SMPEG_new(File->GetPath(), &info, option_nosound ? 0 : 1);
+		if (!movie) return;
+		if (!info.has_video) {
+			SMPEG_delete(movie);
+			return;
+		}
+		int width = (int) (info.width * PlaybackSize);
+		int height = (int) (info.height * PlaybackSize);
+		
+		SMPEG_setdisplay(movie, SDL_GetVideoSurface(), NULL, NULL);
+		if (width <= s->w && height <= s->h)
+		{
+			SMPEG_scaleXY(movie, width, height);
+			SMPEG_move(movie, (s->w - width) / 2, (s->h - height) / 2);
+		}
+		
+		bool done = false;
+		SMPEG_play(movie);
+		while (!done && SMPEG_status(movie) == SMPEG_PLAYING)
+		{
+			SDL_Event event;
+			while (SDL_PollEvent(&event) )
+			{
+				switch (event.type) {
+				case SDL_KEYDOWN:
+				case SDL_MOUSEBUTTONDOWN:
+					done = true;
+					break;
+				default:
+					break;
+				}
+			}
+			
+			SDL_Delay(100);
+		}
+		SMPEG_delete(movie);
+	}
+#endif // HAVE_SMPEG
 }
 
 

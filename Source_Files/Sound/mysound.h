@@ -546,6 +546,14 @@ extern void stop_sound_resource(void);
 // ZZZ: operate on network audio
 extern void ensure_network_audio_playing();
 extern void stop_network_audio();
+
+class TakeSDLAudioControl
+{
+public:
+	TakeSDLAudioControl();
+	~TakeSDLAudioControl();
+};
+
 #endif
 
 #endif
