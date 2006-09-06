@@ -148,7 +148,14 @@ void show_movie(short index)
 #ifdef HAVE_SMPEG
 	float PlaybackSize = 2;
 	
+	FileSpecifier IntroMovie;
 	FileSpecifier *File = GetLevelMovie(PlaybackSize);
+
+	if (!File && index == 0)
+	{
+		if (IntroMovie.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameMOVIE)))
+			File = &IntroMovie;
+	}
 
 	if (!File) return;
 
