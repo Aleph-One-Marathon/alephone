@@ -219,7 +219,7 @@ protected:
 	void draw_inventory_item(char *text, short count, short offset, 
 		bool erase_first, bool valid_in_this_environment);
 	void draw_player_name(void);
-	void draw_message_area(short time_elapsed);
+	virtual void draw_message_area(short time_elapsed);
 
 	void motion_sensor_scan(short ticks_elapsed);
 	void draw_network_compass(void);

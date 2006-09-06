@@ -43,6 +43,8 @@ protected:
 	void erase_entity_blip(point2d *location, shape_descriptor shape) {}
 	void draw_entity_blip(point2d *location, shape_descriptor shape);
 
+	virtual void draw_message_area(short);
+
 	void DrawShape(shape_descriptor shape, screen_rectangle *dest, screen_rectangle *src);
 	void DrawShapeAtXY(shape_descriptor shape, short x, short y, bool transparency = false);
 	void DrawText(const char *text, screen_rectangle *dest, short flags, short font_id, short text_color);

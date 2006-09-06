@@ -485,4 +485,18 @@ void HUD_OGL_Class::DisableClipPlane(void)
 	glDisable(GL_CLIP_PLANE0);
 }
 
+#define MESSAGE_AREA_X_OFFSET 291
+#define MESSAGE_AREA_Y_OFFSET 321
+
+void HUD_OGL_Class::draw_message_area(short)
+{
+	{
+		DrawShapeAtXY(
+			BUILD_DESCRIPTOR(_collection_interface, _network_panel), 
+			MESSAGE_AREA_X_OFFSET, MESSAGE_AREA_Y_OFFSET);
+		draw_player_name();
+	}
+}
+
+
 #endif // def HAVE_OPENGL
