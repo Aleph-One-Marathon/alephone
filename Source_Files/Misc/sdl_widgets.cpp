@@ -1706,11 +1706,15 @@ void w_text_box::append_text(const string& s)
 	} else
 		middle = s.begin() + usable_characters;
 
+	bool save_top_item = top_item < num_items - shown_items;
+	size_t saved_top_item = top_item;
 	text_lines.push_back (string (s.begin(), middle));
 
 	num_items = text_lines.size();
 	new_items();
-	if(num_items > shown_items) {
+	if (save_top_item) {
+		set_top_item(saved_top_item);
+	} else if(num_items > shown_items) {
 		set_top_item(num_items - shown_items);
 	}
 	
