@@ -269,8 +269,7 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-
-
+	
 /*
  *  Initialize everything
  */
@@ -1481,10 +1480,17 @@ static void process_event(const SDL_Event &event)
 {
 	switch (event.type) {
 	case SDL_MOUSEBUTTONDOWN:
-		if (get_game_state() == _game_in_progress &&
-		    (event.button.button == 4 || event.button.button == 5))
+		if (get_game_state() == _game_in_progress) 
 		{
-			mouse_scroll(event.button.button == 4);
+			if (event.button.button == 4 || event.button.button == 5)
+			{
+				mouse_scroll(event.button.button == 4);
+			}
+			else 
+			{
+				hide_cursor();
+				set_keyboard_controller_status(true);
+			}
 		}
 		else
 			process_screen_click(event);
@@ -1503,23 +1509,26 @@ static void process_event(const SDL_Event &event)
 		break;
 		
 	case SDL_ACTIVEEVENT:
-		if (event.active.state & SDL_APPACTIVE) {
-			if (event.active.gain) {
-				if (get_game_state() == _game_in_progress)
-					set_keyboard_controller_status(true);
-				update_game_window();
-			}
-		} else if (event.active.state & SDL_APPINPUTFOCUS) {
-			if (!event.active.gain) {
+		if (event.active.state & SDL_APPINPUTFOCUS) {
+			if (!event.active.gain && !(SDL_GetAppState() & SDL_APPINPUTFOCUS)) {
 				if (get_game_state() == _game_in_progress && get_keyboard_controller_status()) {
+					darken_world_window();
 					set_keyboard_controller_status(false);
-					SDL_WM_IconifyWindow();
+					show_cursor();
 				}
 			}
 		}
 		break;
 	case SDL_VIDEOEXPOSE:
+#if !defined(__APPLE__) && !defined(__MACH__) // double buffering :)
+#ifdef HAVE_OPENGL
+		if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+			SDL_GL_SwapBuffers();
+		else
+#endif
 		update_game_window();
+#endif
+		break;
 	}
 	
 }
