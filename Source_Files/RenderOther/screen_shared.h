@@ -311,6 +311,19 @@ void SetScriptHUDSquare(int idx, int _color) {
 }
 /* /SB */
 
+void reset_messages()
+{
+	// ZZZ: reset screen_printf's
+	for(int i = 0; i < NumScreenMessages; i++)
+		Messages[i].TimeRemaining = 0;
+	/* SB: reset HUD elements */
+	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; i++) {
+		ScriptHUDElements[i].color = 1;
+		ScriptHUDElements[i].text[0] = 0;
+		ScriptHUDElements[i].isicon = false;
+	}
+}
+
 // LP addition: this resets the screen; useful when starting a game
 void reset_screen()
 {
@@ -323,15 +336,7 @@ void reset_screen()
 	// LP change:
 	ResetFieldOfView();
 
-	// ZZZ: reset screen_printf's
-	for(int i = 0; i < NumScreenMessages; i++)
-		Messages[i].TimeRemaining = 0;
-	/* SB: reset HUD elements */
-	for(int i = 0; i < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; i++) {
-		ScriptHUDElements[i].color = 1;
-		ScriptHUDElements[i].text[0] = 0;
-		ScriptHUDElements[i].isicon = false;
-	}
+	reset_messages();
 }
 
 // LP change: resets field of view to whatever the player had had when reviving
