@@ -155,7 +155,11 @@ void show_movie(short index)
 	SDL_Surface *s = SDL_GetVideoSurface();
 	
 #if defined(__APPLE__) && defined(__MACH__)
-	if (!(s->flags & SDL_FULLSCREEN)) return;
+	if (!(s->flags & SDL_FULLSCREEN))
+		SDL_putenv("SDL_VIDEO_YUV_HWACCEL=0");
+	else
+		SDL_putenv("SDL_VIDEO_YUV_HWACCEL=");
+
 #endif
 	{
 		TakeSDLAudioControl sdlAudioControl;
