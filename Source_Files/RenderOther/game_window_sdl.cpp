@@ -81,7 +81,9 @@ void draw_panels(void)
 			static_hud_pict = picture_to_surface(rsrc);
 		else
 			hud_pict_not_found = true;
-	} else {
+	} 
+
+	if (!hud_pict_not_found) {
 		SDL_Rect dst_rect = {0, 320, 640, 160};
 		SDL_BlitSurface(static_hud_pict, NULL, HUD_Buffer, &dst_rect);
 	}

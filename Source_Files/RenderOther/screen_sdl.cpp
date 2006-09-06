@@ -230,6 +230,11 @@ void enter_screen(void)
 		OGL_StartRun();
 #endif
 
+	if (OGL_IsActive())
+		OGL_HUDActive = true;
+	else
+		OGL_HUDActive = false;
+
 	// Reset modifier key status
 	SDL_SetModState(KMOD_NONE);
 }
@@ -591,11 +596,6 @@ void render_screen(short ticks_elapsed)
 	} else {
 		OGL_TermActive = false;
 	}
-	// Is HUD to be drawn with OpenGL?
-	if (OGL_IsActive())
-		OGL_HUDActive = true;
-	else
-		OGL_HUDActive = false;
 
 	// Set OpenGL viewport to world view
 	Rect sr = {ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
