@@ -1486,7 +1486,7 @@ static void process_event(const SDL_Event &event)
 			{
 				mouse_scroll(event.button.button == 4);
 			}
-			else 
+			else if (!get_keyboard_controller_status())
 			{
 				hide_cursor();
 				set_keyboard_controller_status(true);
