@@ -31,6 +31,7 @@
 #include "preferences.h"
 #include "network_metaserver.h"
 #include "map.h" // for _force_unique_teams!?!
+#include "mysound.h"
 
 // for game types...
 #include "network_dialogs.h"
@@ -109,6 +110,8 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	gMetaserverClient->announceGame(GAME_PORT, description);
 }
 
+extern void PlayInterfaceButtonSound(short);
+
 void GlobalMetaserverChatNotificationAdapter::playersInRoomChanged(const std::vector<MetaserverPlayerInfo>& playerChanges)
 {
 	// print some notifications to the chat window
@@ -168,6 +171,7 @@ void GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(const std::vect
 void GlobalMetaserverChatNotificationAdapter::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
 {
 	gMetaserverChatHistory.appendString(senderName + ": " + message);
+	PlayInterfaceButtonSound(_snd_computer_interface_logon);
 }
 
 void GlobalMetaserverChatNotificationAdapter::receivedBroadcastMessage(const std::string& message)
@@ -223,12 +227,21 @@ void MetaserverClientUi::playersInRoomChanged(const std::vector<MetaserverPlayer
 {
 	m_playersInRoomWidget->SetItems(gMetaserverClient->playersInRoom());
 	GlobalMetaserverChatNotificationAdapter::playersInRoomChanged(playerChanges);
+
 }
 
 void MetaserverClientUi::gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &gameChanges)
 {
 	m_gamesInRoomWidget->SetItems(gMetaserverClient->gamesInRoom());	
 	GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(gameChanges);
+	for (size_t i = 0; i < gameChanges.size(); i++) 
+	{
+		if (gameChanges[i].verb() == MetaserverClient::GamesInRoom::kAdd)
+		{
+			PlayInterfaceButtonSound(_snd_got_ball);
+			break;
+		}
+	}
 }
 
 void MetaserverClientUi::sendChat()
