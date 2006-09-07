@@ -172,7 +172,7 @@ void GlobalMetaserverChatNotificationAdapter::receivedChatMessage(const std::str
 
 void GlobalMetaserverChatNotificationAdapter::receivedBroadcastMessage(const std::string& message)
 {
-	gMetaserverChatHistory.appendString("@" + message + "@");
+	gMetaserverChatHistory.appendString("@ " + message + " @");
 }
 
 void GlobalMetaserverChatNotificationAdapter::receivedLocalMessage(const std::string& message)
