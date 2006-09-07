@@ -42,6 +42,7 @@ Mar 1, 2002 (Woody Zenfell):
 #include    "network_private.h" // for JoinerSeekingGathererAnnouncer
 #include    "FileHandler.h"
 #include    "network_metaserver.h"
+#include    "metaserver_dialogs.h"
 
 #include    "shared_widgets.h"
 
@@ -286,8 +287,9 @@ struct NetgameOutcomeData
 extern struct net_rank rankings[MAXIMUM_NUMBER_OF_PLAYERS];
 
 
-class MetaserverClient;
-class GatherDialog : public GatherCallbacks, public ChatCallbacks, public MetaserverClient::NotificationAdapter
+//class MetaserverClient;
+//class GlobalMetaserverChatNotificationAdapter;
+class GatherDialog : public GatherCallbacks, public ChatCallbacks, public GlobalMetaserverChatNotificationAdapter
 {
 public:
 // Abstract factory; concrete type determined at link-time
@@ -322,12 +324,6 @@ protected:
 	bool player_search (prospective_joiner_info& player);
 	bool gathered_player (const prospective_joiner_info& player);
 	
-	virtual void playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &);
-	virtual void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &);
-	virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
-	virtual void receivedLocalMessage(const std::string& message);
-	virtual void receivedBroadcastMessage(const std::string& message);	
-	
 	void sendChat ();
 	void chatTextEntered (char character);
 	void chatChoiceHit ();
@@ -350,7 +346,7 @@ protected:
 };
 
 
-class JoinDialog : public MetaserverClient::NotificationAdapter, public ChatCallbacks
+class JoinDialog : public GlobalMetaserverChatNotificationAdapter, public ChatCallbacks
 {
 public:
 	// Abstract factory; concrete type determined at link-time
@@ -373,12 +369,6 @@ protected:
 	void changeColours ();
 	void getJoinAddressFromMetaserver ();
 	
-	virtual void playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &) {}
-	virtual void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &) {}
-	virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
-	virtual void receivedLocalMessage(const std::string& message);
-	virtual void receivedBroadcastMessage(const std::string& message);
-
 	// ChatCallbacks
 	virtual void ReceivedMessageFromPlayer(const char *player_name, const char *message);
 

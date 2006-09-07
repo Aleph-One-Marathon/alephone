@@ -49,11 +49,19 @@ private:
 	// MetaserverClient	m_client;
 };
 
-
+class GlobalMetaserverChatNotificationAdapter : public MetaserverClient::NotificationAdapter
+{
+public:
+	virtual void playersInRoomChanged(const std::vector<MetaserverPlayerInfo>&);
+	virtual void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry>&);
+	virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
+	virtual void receivedLocalMessage(const std::string& message);
+	virtual void receivedBroadcastMessage(const std::string& message);
+};
 
 // Eventually this may disappear behind the facade of run_network_metaserver_ui()
 // Or maybe it will disappear instead, leaving this.  Unsure.
-class MetaserverClientUi : public MetaserverClient::NotificationAdapter
+class MetaserverClientUi : public GlobalMetaserverChatNotificationAdapter
 {
 public:
 	// Abstract factory; concrete type determined at link-time
@@ -74,9 +82,6 @@ protected:
 	void GameSelected(GameListMessage::GameListEntry game);
 	void playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges);
 	void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &gamesChanges);
-	void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message);
-	void receivedLocalMessage(const std::string& message);
-	void receivedBroadcastMessage(const std::string& message);
 	void sendChat();
 	void ChatTextEntered (char character);
 	void handleCancel();

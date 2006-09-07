@@ -109,6 +109,77 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	gMetaserverClient->announceGame(GAME_PORT, description);
 }
 
+void GlobalMetaserverChatNotificationAdapter::playersInRoomChanged(const std::vector<MetaserverPlayerInfo>& playerChanges)
+{
+	// print some notifications to the chat window
+	for (size_t i = 0; i < playerChanges.size(); i++) 
+	{
+		if (playerChanges[i].verb() == MetaserverClient::PlayersInRoom::kAdd)
+		{
+			receivedLocalMessage(playerChanges[i].name() + " has joined the room");
+		}
+		else if (playerChanges[i].verb() == MetaserverClient::PlayersInRoom::kDelete)
+		{
+			receivedLocalMessage(playerChanges[i].name() + " has left the room");
+		}
+	}
+}
+
+void GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry>& gameChanges)
+{
+	for (size_t i = 0; i < gameChanges.size(); i++) {
+		if (gameChanges[i].verb() == MetaserverClient::GamesInRoom::kAdd) {
+			if (!gameChanges[i].m_description.m_closed) {
+				string name;
+				// find the player's name
+				for (size_t playerIndex = 0; playerIndex < gMetaserverClient->playersInRoom().size(); playerIndex++)
+				{
+					if (gMetaserverClient->playersInRoom()[playerIndex].id() == gameChanges[i].m_hostPlayerID) {
+						name = gMetaserverClient->playersInRoom()[playerIndex].name();
+						break;
+					}
+				}
+				
+				if (name.size() > 0) {
+					string message = name;
+					message += " is hosting ";
+					if (gameChanges[i].m_description.m_timeLimit && gameChanges[i].m_description.m_timeLimit != INT32_MAX)
+					{
+						char minutes[5];
+						snprintf(minutes, 4, "%i", gameChanges[i].m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
+						minutes[4] = '\0';
+						message += minutes;
+						message += " minutes of ";
+					}
+					message += gameChanges[i].m_description.m_mapName;
+					int type = gameChanges[i].m_description.m_type - (gameChanges[i].m_description.m_type > 5 ? 1 : 0);
+					if (TS_GetCString(kNetworkGameTypesStringSetID, type)) {
+						message += ", ";
+						message += TS_GetCString(kNetworkGameTypesStringSetID, type);
+					}
+					
+					receivedLocalMessage(message);
+				}
+			}
+		}
+	}
+}
+
+void GlobalMetaserverChatNotificationAdapter::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
+{
+	gMetaserverChatHistory.appendString(senderName + ": " + message);
+}
+
+void GlobalMetaserverChatNotificationAdapter::receivedBroadcastMessage(const std::string& message)
+{
+	gMetaserverChatHistory.appendString("@" + message + "@");
+}
+
+void GlobalMetaserverChatNotificationAdapter::receivedLocalMessage(const std::string& message)
+{
+	gMetaserverChatHistory.appendString("( " + message + " )");
+}
+
 void MetaserverClientUi::delete_widgets ()
 {
 	delete m_playersInRoomWidget;
@@ -151,76 +222,13 @@ void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 void MetaserverClientUi::playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges)
 {
 	m_playersInRoomWidget->SetItems(gMetaserverClient->playersInRoom());
-
-	// print some notifications to the chat window
-	for (size_t i = 0; i < playerChanges.size(); i++) 
-	{
-		if (playerChanges[i].verb() == MetaserverClient::PlayersInRoom::kAdd)
-		{
-			receivedLocalMessage(playerChanges[i].name() + " has joined the room");
-		}
-		else if (playerChanges[i].verb() == MetaserverClient::PlayersInRoom::kDelete)
-		{
-			receivedLocalMessage(playerChanges[i].name() + " has left the room");
-		}
-	}
+	GlobalMetaserverChatNotificationAdapter::playersInRoomChanged(playerChanges);
 }
 
 void MetaserverClientUi::gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &gameChanges)
 {
 	m_gamesInRoomWidget->SetItems(gMetaserverClient->gamesInRoom());	
-
-	for (size_t i = 0; i < gameChanges.size(); i++) {
-		if (gameChanges[i].verb() == MetaserverClient::GamesInRoom::kAdd) {
-			if (!gameChanges[i].m_description.m_closed) {
-				string name;
-				// find the player's name
-				for (size_t playerIndex = 0; playerIndex < gMetaserverClient->playersInRoom().size(); playerIndex++)
-				{
-					if (gMetaserverClient->playersInRoom()[playerIndex].id() == gameChanges[i].m_hostPlayerID) {
-						name = gMetaserverClient->playersInRoom()[playerIndex].name();
-						break;
-					}
-				}
-					
-				if (name.size() > 0) {
-					string message = name;
-					message += " is hosting ";
-					if (gameChanges[i].m_description.m_timeLimit && gameChanges[i].m_description.m_timeLimit != INT32_MAX)
-					{
-						char minutes[5];
-						snprintf(minutes, 4, "%i", gameChanges[i].m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
-						minutes[4] = '\0';
-						message += minutes;
-						message += " minutes of ";
-					}
-					message += gameChanges[i].m_description.m_mapName;
-					int type = gameChanges[i].m_description.m_type - (gameChanges[i].m_description.m_type > 5 ? 1 : 0);
-					if (TS_GetCString(kNetworkGameTypesStringSetID, type)) {
-						message += ", ";
-						message += TS_GetCString(kNetworkGameTypesStringSetID, type);
-					}
-						
-					receivedLocalMessage(message);
-				}
-			}
-		}
-	}
-}
-
-void MetaserverClientUi::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
-{
-	gMetaserverChatHistory.appendString (senderName + ": " + message);
-}
-
-void MetaserverClientUi::receivedBroadcastMessage(const std::string& message)
-{
-	gMetaserverChatHistory.appendString ("@ " + message + " @");
-}
-
-void MetaserverClientUi::receivedLocalMessage(const std::string& message)
-{
-	gMetaserverChatHistory.appendString ("( " + message + " )");
+	GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(gameChanges);
 }
 
 void MetaserverClientUi::sendChat()

@@ -421,77 +421,6 @@ void GatherDialog::chatTextEntered (char character)
 		sendChat();
 }
 
-void GatherDialog::playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges)
-{
-	// print some notifications to the chat window
-	for (size_t i = 0; i < playerChanges.size(); i++) 
-	{
-		if (playerChanges[i].verb() == MetaserverClient::PlayersInRoom::kAdd)
-		{
-			receivedLocalMessage(playerChanges[i].name() + " has joined the room");
-		}
-		else if (playerChanges[i].verb() == MetaserverClient::PlayersInRoom::kDelete)
-		{
-			receivedLocalMessage(playerChanges[i].name() + " has left the room");
-		}
-	}
-}
-
-void GatherDialog::gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &gameChanges)
-{
-	for (size_t i = 0; i < gameChanges.size(); i++) {
-		if (gameChanges[i].verb() == MetaserverClient::GamesInRoom::kAdd) {
-			if (!gameChanges[i].m_description.m_closed) {
-				string name;
-				// find the player's name
-				for (size_t playerIndex = 0; playerIndex < gMetaserverClient->playersInRoom().size(); playerIndex++)
-				{
-					if (gMetaserverClient->playersInRoom()[playerIndex].id() == gameChanges[i].m_hostPlayerID) {
-						name = gMetaserverClient->playersInRoom()[playerIndex].name();
-						break;
-					}
-				}
-				
-				if (name.size() > 0) {
-					string message = name;
-					message += " is hosting ";
-					if (gameChanges[i].m_description.m_timeLimit && gameChanges[i].m_description.m_timeLimit != INT32_MAX)
-					{
-						char minutes[5];
-						snprintf(minutes, 4, "%i", gameChanges[i].m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
-						minutes[4] = '\0';
-						message += minutes;
-						message += " minutes of ";
-					}
-					message += gameChanges[i].m_description.m_mapName;
-					int type = gameChanges[i].m_description.m_type - (gameChanges[i].m_description.m_type > 5 ? 1 : 0);
-					if (TS_GetCString(kNetworkGameTypesStringSetID, type)) {
-						message += ", ";
-						message += TS_GetCString(kNetworkGameTypesStringSetID, type);
-					}
-					
-					receivedLocalMessage(message);
-				}
-			}
-		}
-	}
-}
-
-void GatherDialog::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
-{
-	gMetaserverChatHistory.appendString (senderName + ": " + message);
-}
-
-void GatherDialog::receivedLocalMessage(const std::string& message)
-{
-	gMetaserverChatHistory.appendString ("( " + message + " )");
-}
-
-void GatherDialog::receivedBroadcastMessage (const std::string& message)
-{
-	gMetaserverChatHistory.appendString ("@ " + message + " @");
-}
-
 void GatherDialog::chatChoiceHit ()
 {
 	if (m_chatChoiceWidget->get_value () == kPregameChat)
@@ -795,21 +724,6 @@ void JoinDialog::chatTextEntered (char character)
 {
 	if (character == '\r')
 		sendChat();
-}
-
-void JoinDialog::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
-{
-	gMetaserverChatHistory.appendString (senderName + ": " + message);
-}
-
-void JoinDialog::receivedLocalMessage(const std::string& message)
-{
-	gMetaserverChatHistory.appendString("( " + message + " )");
-}
-
-void JoinDialog::receivedBroadcastMessage (const std::string& message)
-{
-	gMetaserverChatHistory.appendString ("@ " + message + " @");
 }
 
 void JoinDialog::chatChoiceHit ()
