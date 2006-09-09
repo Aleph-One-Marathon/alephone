@@ -47,6 +47,18 @@ using std::list;
 using std::map;
 #endif
 
+#ifdef __MACOS__
+#undef fnfErr
+#include <Files.h>
+#include <Resources.h>
+#endif
+
+#ifdef __MACOS__
+#undef fnfErr
+#include <Files.h>
+#include <Resources.h>
+#endif
+
 /*
  *  Utility functions
  */
@@ -321,11 +333,185 @@ open_res_file_from_path(const char* inPath) {
 /*
     string theContextString("trying path ");
     theContextString += inPath;
+#ifdef __MACOS__
+
+static int SDLCALL rw_res_seek(SDL_RWops *context, int offset, int whence)
+{
+	short macWhence;
+	long file_pos;
+
+	if (!context) return -1;
+
+	switch (whence) {
+	case RW_SEEK_SET:
+		macWhence = fsFromStart; break;
+	case RW_SEEK_CUR:
+		macWhence = fsFromMark; break;
+	case RW_SEEK_END:
+		macWhence = fsFromLEOF; break;
+	default:
+		return -1;
+	}
+
+	if (SetFPos((short) context->hidden.unknown.data1, macWhence, offset) != noErr)
+		return -1;
+	
+	if (GetFPos((short) context->hidden.unknown.data1, &file_pos) != noErr)
+		return -1;
+
+	return file_pos;
+}
+
+static int SDLCALL rw_res_read(SDL_RWops *context, void *ptr, int size, int maxnum)
+{
+	long total_bytes = size * maxnum;
+	
+	if (!context) return 0;
+
+	if (FSRead((short) context->hidden.unknown.data1, &total_bytes, ptr) != noErr)
+		return 0;
+	return (total_bytes / size);
+	
+}
+
+static int SDLCALL rw_res_write(SDL_RWops *context, const void *ptr, int size, int num)
+{
+	return 0;
+}
+
+static int SDLCALL rw_res_close(SDL_RWops *context)
+{
+	if (context) {
+		FSClose((short) context->hidden.unknown.data1);
+
+		SDL_FreeRW(context);
+	}
+
+	return 0;
+}
+
+static SDL_RWops*
+open_res_fork_from_path(const char* inPath) {
+	logContext1("trying fork %s", inPath);
+
+	// create a file spec for the path
+	FSSpec fss;
+	char buf[256];
+	strcpy(&buf[1], inPath);
+	buf[0] = strlen(&buf[1]);
+	
+	if (FSMakeFSSpec(0, 0, (unsigned char *) buf, &fss) != noErr)
+		return NULL;
+
+	short RefNum = FSpOpenResFile(&fss, fsRdPerm);
+	if (ResError() != noErr)
+		return NULL;
+
+	// make an SDL_RWops from it!
+	SDL_RWops* rwops = SDL_AllocRW();
+	rwops->hidden.unknown.data1 = (void *) RefNum;
+	rwops->seek = rw_res_seek;
+	rwops->read = rw_res_read;
+	rwops->write = rw_res_write;
+	rwops->close = rw_res_close;
+
+	return open_res_file_from_rwops(rwops);
+}
+
+#endif
+
     logContext(theContextString.c_str());
 */
     
     return open_res_file_from_rwops(SDL_RWFromFile(inPath, "rb"));
 }
+
+#ifdef __MACOS__
+
+static int SDLCALL rw_res_seek(SDL_RWops *context, int offset, int whence)
+{
+	short macWhence;
+	long file_pos;
+
+	if (!context) return -1;
+
+	switch (whence) {
+	case RW_SEEK_SET:
+		macWhence = fsFromStart; break;
+	case RW_SEEK_CUR:
+		macWhence = fsFromMark; break;
+	case RW_SEEK_END:
+		macWhence = fsFromLEOF; break;
+	default:
+		return -1;
+	}
+
+	if (SetFPos((short) context->hidden.unknown.data1, macWhence, offset) != noErr)
+		return -1;
+	
+	if (GetFPos((short) context->hidden.unknown.data1, &file_pos) != noErr)
+		return -1;
+
+	return file_pos;
+}
+
+static int SDLCALL rw_res_read(SDL_RWops *context, void *ptr, int size, int maxnum)
+{
+	long total_bytes = size * maxnum;
+	
+	if (!context) return 0;
+
+	if (FSRead((short) context->hidden.unknown.data1, &total_bytes, ptr) != noErr)
+		return 0;
+	return (total_bytes / size);
+	
+}
+
+static int SDLCALL rw_res_write(SDL_RWops *context, const void *ptr, int size, int num)
+{
+	return 0;
+}
+
+static int SDLCALL rw_res_close(SDL_RWops *context)
+{
+	if (context) {
+		FSClose((short) context->hidden.unknown.data1);
+
+		SDL_FreeRW(context);
+	}
+
+	return 0;
+}
+
+static SDL_RWops*
+open_res_fork_from_path(const char* inPath) {
+	logContext1("trying fork %s", inPath);
+
+	// create a file spec for the path
+	FSSpec fss;
+	char buf[256];
+	strcpy(&buf[1], inPath);
+	buf[0] = strlen(&buf[1]);
+	
+	if (FSMakeFSSpec(0, 0, (unsigned char *) buf, &fss) != noErr)
+		return NULL;
+
+	short RefNum = FSpOpenResFile(&fss, fsRdPerm);
+	if (ResError() != noErr)
+		return NULL;
+
+	// make an SDL_RWops from it!
+	SDL_RWops* rwops = SDL_AllocRW();
+	rwops->hidden.unknown.data1 = (void *) RefNum;
+	rwops->seek = rw_res_seek;
+	rwops->read = rw_res_read;
+	rwops->write = rw_res_write;
+	rwops->close = rw_res_close;
+
+	return open_res_file_from_rwops(rwops);
+}
+
+#endif
 
 SDL_RWops *open_res_file(FileSpecifier &file)
 {
@@ -361,7 +547,10 @@ SDL_RWops *open_res_file(FileSpecifier &file)
 	   f = open_res_file_from_path(file.GetPath());
     if (f == NULL)
 	   f = open_res_file_from_path(darwin_rsrc_file_name.c_str());
-
+#ifdef __MACOS__
+    if (f == NULL)
+	    f = open_res_fork_from_path(file.GetPath());
+#endif
 
     return f;
 }
