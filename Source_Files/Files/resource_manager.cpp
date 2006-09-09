@@ -358,9 +358,9 @@ SDL_RWops *open_res_file(FileSpecifier &file)
     if (f == NULL)
             f = open_res_file_from_path(resources_file_name.c_str());
     if (f == NULL)
-	   f = open_res_file_from_path(darwin_rsrc_file_name.c_str());
-    if (f == NULL)
 	   f = open_res_file_from_path(file.GetPath());
+    if (f == NULL)
+	   f = open_res_file_from_path(darwin_rsrc_file_name.c_str());
 
 
     return f;
