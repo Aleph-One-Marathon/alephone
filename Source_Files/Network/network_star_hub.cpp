@@ -236,6 +236,7 @@ struct NetworkPlayer_hub {
 static MutableElementsTickBasedCircularQueue<uint32>	sPlayerDataDisposition(kFlagsQueueSize);
 static int32 sSmallestIncompleteTick;
 static uint32 sConnectedPlayersBitmask;
+static uint32 sLaggingPlayersBitmask;
 
 
 // sPlayerReflectedFlags holds an element for every tick for which data has been
@@ -467,6 +468,7 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
         sNetworkTicker = 0;
         sLastNetworkTickSent = 0;
 	sLastRealUpdate = 0;
+	sLaggingPlayersBitmask = 0;
 
         sHubActive = true;
 
@@ -852,6 +854,7 @@ player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTi
 		
                 assert(sPlayerDataDisposition[i] & (((uint32)1) << inPlayerIndex));
                 sPlayerDataDisposition[i] &= ~(((uint32)1) << inPlayerIndex);
+		sLaggingPlayersBitmask &= ~(((uint32)1) << inPlayerIndex);
                 if(sPlayerDataDisposition[i] == 0)
                 {
                         assert(sSmallestIncompleteTick == i);
@@ -1011,30 +1014,41 @@ hub_tick()
                 }
         }
 	
-	// if we're getting behind, and a majority of players have flags ready
-	// for us, make flags up for the rest of the players
+	// if we're getting behind, make up flags
 
-	if (sHubPreferences.mMinimumSendPeriod >= sHubPreferences.mSendPeriod && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick && sNetworkTicker - sLastRealUpdate >= sHubPreferences.mMinimumSendPeriod)
+	if (sHubPreferences.mMinimumSendPeriod >= sHubPreferences.mSendPeriod && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick && sSmallestIncompleteTick < sPlayerDataDisposition.getWriteTick())
 	{
-		for (int i = 0; i < sHubPreferences.mMinimumSendPeriod && sSmallestIncompleteTick < sPlayerDataDisposition.getWriteTick(); i++)
+		
+		if (sNetworkTicker - sLastRealUpdate >= sHubPreferences.mMinimumSendPeriod)
 		{
-			int readyPlayers = 0;
-			int nonReadyPlayers = 0;
-			for (int j = 0; j < sNetworkPlayers.size(); j++)
+			// add anybody holding us back to the lagging player bitmask
+			for (int i = 0; i < sNetworkPlayers.size(); i++)
 			{
-				if (sNetworkPlayers[j].mConnected && sSmallestRealGameTick > sNetworkPlayers[j].mNetDeadTick)
+				if (i != sLocalPlayerIndex && sNetworkPlayers[i].mConnected && sSmallestRealGameTick > sNetworkPlayers[i].mNetDeadTick)
 				{
-					if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << j))
+					if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << i))
+						sLaggingPlayersBitmask |= (1 << i);
+				}
+			}
+		}
+		
+		// make up flags if a majority of players are ready to go
+		int readyPlayers = 0;
+		int nonReadyPlayers = 0;
+		for (int i = 0; i < sNetworkPlayers.size(); i++)
+		{
+			if (sNetworkPlayers[i].mConnected && sSmallestRealGameTick > sNetworkPlayers[i].mNetDeadTick)
+			{
+				if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << i))
 					nonReadyPlayers++;
 				else
 					readyPlayers++;
-				}
 			}
-			
-			if (readyPlayers > nonReadyPlayers)
-				if (make_up_flags_for_first_incomplete_tick()) 
-					shouldSend = true;
 		}
+		
+		if (readyPlayers >= nonReadyPlayers)
+			if (make_up_flags_for_first_incomplete_tick())
+				shouldSend = true;
 	}
 
         if(shouldSend)
