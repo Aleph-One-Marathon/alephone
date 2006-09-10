@@ -112,7 +112,6 @@ public:
         ConcreteTickBasedCircularQueue(int inBufferCapacity)
                 : mBufferSize(inBufferCapacity + 1)
         {
-		assert(inBufferCapacity % 2); // otherwise negative ticks break
                 mFlagsBuffer = new tValueType[mBufferSize];
                 reset(0);
         }
@@ -143,13 +142,23 @@ public:
         const tValueType& peek(int32 inTick) const { return elementForTick(inTick); }
         void dequeue() { assert(size() > 0);  mReadTick++; }
 
-	// Note: the cast to unsigned is absolutely necessary here to avoid getting negative indices.
-	// For whatever reason, (-1 % 16) != 15 in C.
         // Methods for use only by writer
-        void enqueue(const tValueType& inFlags) { assert(availableCapacity() > 0);  mFlagsBuffer[static_cast<uint32>(mWriteTick) % mBufferSize] = inFlags;  mWriteTick++; }
+        void enqueue(const tValueType& inFlags) { 
+		assert(availableCapacity() > 0);
+		int32 positiveWriteTick = mWriteTick;
+		while (positiveWriteTick < mBufferSize) positiveWriteTick += mBufferSize;
+		mFlagsBuffer[positiveWriteTick % mBufferSize] = inFlags;  
+		mWriteTick++; 
+	}
 
 protected:
-        tValueType& elementForTick(int32 inTick) const { assert(inTick >= mReadTick); assert(inTick < mWriteTick); return mFlagsBuffer[static_cast<uint32>(inTick) % mBufferSize]; }
+        tValueType& elementForTick(int32 inTick) const { 
+		assert(inTick >= mReadTick); 
+		assert(inTick < mWriteTick); 
+		int32 positiveInTick = inTick;
+		while (positiveInTick < 0) positiveInTick += mBufferSize;
+		return mFlagsBuffer[positiveInTick % mBufferSize]; 
+	}
 //        const uint32& elementForTick(int32 inTick) const { assert(inTick >= mReadTick); assert(inTick < mWriteTick); return mFlagsBuffer[inTick % mBufferSize]; }
 
 private:
