@@ -671,7 +671,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
         if(theRemainingDataLength % kActionFlagsSerializedLength != 0)
                 return;
 
-        int	theActionFlagsCount = theRemainingDataLength / kActionFlagsSerializedLength;
+        int32	theActionFlagsCount = theRemainingDataLength / kActionFlagsSerializedLength;
 
         TickBasedActionQueue& theQueue = getFlagsQueue(inSenderIndex);
 
