@@ -222,6 +222,7 @@ enum {
 	iGATHER_CHAT_ENTRY,
 	iGATHER_CHAT_CHOICE,
 	iUSE_UPNP,
+	iLATENCY_TOLERANCE,
 	iSNG_TABS = 400,
 	iSNG_GENERAL_TAB,
 	iSNG_STUFF_TAB
@@ -481,6 +482,7 @@ protected:
 	ToggleWidget*		m_laraCroftWidget;
 	
 	ToggleWidget*       m_useUpnpWidget;
+	SelectorWidget*         m_latencyToleranceWidget;
 };
 
 

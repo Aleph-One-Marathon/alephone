@@ -790,6 +790,11 @@ public:
 		m_dialog.add_to_tab (new w_static_text("Attempt to configure routers"), iSNG_STUFF_TAB);
 		w_toggle *use_upnp_w = new w_toggle ("UPnP (non-Apple)", true);
 		m_dialog.add_to_tab (use_upnp_w, iSNG_STUFF_TAB);
+		
+		m_dialog.add_to_tab (new w_spacer(), iSNG_STUFF_TAB);
+		m_dialog.add_to_tab (new w_static_text("Anti-lag smooths games at laggy joiners' expense"), iSNG_STUFF_TAB);
+		w_select_popup *latency_tolerance_w = new w_select_popup("Anti-lag");
+		m_dialog.add_to_tab (latency_tolerance_w, iSNG_STUFF_TAB);
 
 		m_dialog.add (new w_spacer());	
 
@@ -837,6 +842,7 @@ public:
 		m_laraCroftWidget = new ToggleWidget (lara_croft_w);
 		
 		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
+		m_latencyToleranceWidget = new PopupSelectorWidget(latency_tolerance_w);
 	}
 	
 	virtual bool Run ()

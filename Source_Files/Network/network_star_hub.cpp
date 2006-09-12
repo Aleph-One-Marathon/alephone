@@ -132,7 +132,7 @@ enum {
         kDefaultInGameTicksBeforeNetDeath = 3 * TICKS_PER_SECOND,
 	kDefaultSendPeriod = 1,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
-	kDefaultMinimumSendPeriod = 3,
+	kDefaultMinimumSendPeriod = 5,
 	kLossyByteStreamDataBufferSize = 1280,
 	kTypicalLossyByteStreamChunkSize = 56,
 	kLossyByteStreamDescriptorCount = kLossyByteStreamDataBufferSize / kTypicalLossyByteStreamChunkSize	
@@ -154,6 +154,7 @@ struct HubPreferences {
 
 static HubPreferences sHubPreferences;
 
+int32& hub_get_minimum_send_period() { return sHubPreferences.mMinimumSendPeriod; }
 
 // sNetworkTicker advances even if the game clock doesn't.
 // sLastNetworkTickSent is used to force us to resend packets (at a lower rate) even if we're no longer

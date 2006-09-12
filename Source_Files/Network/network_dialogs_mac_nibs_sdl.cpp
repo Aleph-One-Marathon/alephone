@@ -354,6 +354,7 @@ public:
 		m_laraCroftWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iALLOW_LARA_CROFT));
 		
 		m_useUpnpWidget = new ToggleWidget (GetCtrlFromWindow (m_dialog_window(), 0, iUSE_UPNP));
+		m_latencyToleranceWidget = new SelectorWidget(GetCtrlFromWindow (m_dialog_window(), 0, iLATENCY_TOLERANCE));
 	}
 	
 	virtual bool Run ()

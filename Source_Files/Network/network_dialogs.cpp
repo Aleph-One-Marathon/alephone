@@ -860,6 +860,22 @@ protected:
 	int16& m_pref;
 };
 
+class LatencyTolerancePref : public Bindable<int>
+{
+public:
+	LatencyTolerancePref (int32& pref) : m_pref(pref) { }
+	
+	virtual int bind_export () {
+		return (m_pref == 5) ? 1 : (m_pref == 3) ? 2 : 0;
+	}
+
+	virtual void bind_import(int value) {
+		m_pref = (value == 2) ? 3 : (value == 1) ? 5 : 0;
+	}
+protected:
+	int32& m_pref;
+};
+
 static const vector<string> make_entry_vector (int32 entry_flags)
 {	
 	vector<string> result;
@@ -915,6 +931,8 @@ SetupNetgameDialog::~SetupNetgameDialog ()
 	
 	delete m_useUpnpWidget;
 }
+
+extern int32& hub_get_minimum_send_period();
 
 bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	player_info *player_information,
@@ -980,6 +998,12 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	m_teamWidget->set_labels (kTeamColorsStringSetID);
 	m_difficultyWidget->set_labels (kDifficultyLevelsStringSetID);
 	m_limitTypeWidget->set_labels (kEndConditionTypeStringSetID);
+
+	vector<string> toleranceLabels;
+	toleranceLabels.push_back("Off");
+	toleranceLabels.push_back("Lenient");
+	toleranceLabels.push_back("Strict");
+	m_latencyToleranceWidget->set_labels (toleranceLabels);
 	
 	BinderSet binders;
 	
@@ -1043,6 +1067,9 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	
 	BoolPref useUpnpPref (active_network_preferences->attempt_upnp);
 	binders.insert<bool> (m_useUpnpWidget, &useUpnpPref);
+
+	LatencyTolerancePref latencyTolerancePref (hub_get_minimum_send_period());
+	binders.insert<int> (m_latencyToleranceWidget, &latencyTolerancePref);
 
 	binders.migrate_all_second_to_first ();
 
