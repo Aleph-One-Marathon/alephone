@@ -680,7 +680,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
                 return;
 
         // Skip redundant flags without processing/checking them
-        int	theRedundantActionFlagsCount = theQueue.getWriteTick() - theStartTick;
+        int	theRedundantActionFlagsCount = std::min(theQueue.getWriteTick() - theStartTick, theActionFlagsCount);
         int	theRedundantDataLength = theRedundantActionFlagsCount * kActionFlagsSerializedLength;
 	ps.ignore(theRedundantDataLength);
 
@@ -812,6 +812,13 @@ static bool make_up_flags_for_first_incomplete_tick()
 	// never make up flags for ourself
 	if (getFlagsQueue(sLocalPlayerIndex).getWriteTick() == sSmallestIncompleteTick)
 		return false;
+
+	// check to make sure everyone we want to make up flags for is in the lagging players bitmask
+	for (int i = 0; i < sNetworkPlayers.size(); i++)
+	{
+		if (getFlagsQueue(i).getWriteTick() == sSmallestIncompleteTick && !(sLaggingPlayersBitmask & (1 << i)))
+			return false;
+	}
 
 	logTraceNMT1("making up flags for tick %i", sSmallestIncompleteTick);
 
@@ -1032,23 +1039,25 @@ hub_tick()
 			}
 		}
 		
-		// make up flags if a majority of players are ready to go
-		int readyPlayers = 0;
-		int nonReadyPlayers = 0;
-		for (int i = 0; i < sNetworkPlayers.size(); i++)
-		{
-			if (sNetworkPlayers[i].mConnected && sSmallestRealGameTick > sNetworkPlayers[i].mNetDeadTick)
+		if (sLaggingPlayersBitmask) {
+			// make up flags if a majority of players are ready to go
+			int readyPlayers = 0;
+			int nonReadyPlayers = 0;
+			for (int i = 0; i < sNetworkPlayers.size(); i++)
 			{
-				if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << i))
-					nonReadyPlayers++;
-				else
-					readyPlayers++;
+				if (sNetworkPlayers[i].mConnected && sSmallestRealGameTick > sNetworkPlayers[i].mNetDeadTick)
+				{
+					if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << i))
+						nonReadyPlayers++;
+					else
+						readyPlayers++;
+				}
 			}
+			
+			if (readyPlayers > nonReadyPlayers)
+				if (make_up_flags_for_first_incomplete_tick())
+					shouldSend = true;
 		}
-		
-		if (readyPlayers >= nonReadyPlayers)
-			if (make_up_flags_for_first_incomplete_tick())
-				shouldSend = true;
 	}
 
         if(shouldSend)
