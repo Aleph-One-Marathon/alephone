@@ -672,7 +672,10 @@ bool OGL_StartRun()
 	
 	_OGL_IsActive = true;
 	if (!OGL_LoadScreen::instance()->Start()) 
+	{
+		OGL_ClearScreen();
 		open_progress_dialog(_loading);
+	}
 
 	// Set up some OpenGL stuff: these will be the defaults for this rendering context
 	
