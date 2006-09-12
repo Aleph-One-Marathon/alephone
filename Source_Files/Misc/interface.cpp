@@ -823,7 +823,11 @@ bool load_and_start_game(FileSpecifier& File)
 
 	if (success)
 	{
+#ifdef __MACOS__
+		theResult = 0;
+#else
 		theResult = should_restore_game_networked();
+#endif
 	}
 
 	if (theResult == UNONE)
@@ -1371,6 +1375,8 @@ void do_menu_item_command(
 					{
 						alert_user(infoError, strERRORS, notEnoughNetworkMemory, 0);
 					}
+#elif defined(__MACOS__)
+					break;
 #else
 					handle_network_game(false);
 #endif
@@ -1386,6 +1392,8 @@ void do_menu_item_command(
 					{
 						alert_user(infoError, strERRORS, notEnoughNetworkMemory, 0);
 					}
+#elif defined(__MACOS__)
+					break;
 #else
 					handle_network_game(true);
 #endif
