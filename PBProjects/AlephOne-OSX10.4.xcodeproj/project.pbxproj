@@ -780,7 +780,7 @@
 		AEC09D6709C4A4AF00031524 /* Prefs_OpenGL_Textures.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_OpenGL_Textures.nib; path = ../Resources/Prefs_OpenGL_Textures.nib; sourceTree = SOURCE_ROOT; };
 		AEC09D6809C4A4AF00031524 /* Prefs_OpenGL.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_OpenGL.nib; path = ../Resources/Prefs_OpenGL.nib; sourceTree = SOURCE_ROOT; };
 		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
-		AEC3C89609AD68AE003258E4 /* AlephOneSDL.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEC3C89609AD68AE003258E4 /* AlephOneSDL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };

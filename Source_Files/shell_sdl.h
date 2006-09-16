@@ -227,6 +227,7 @@ int main(int argc, char **argv)
 	argc--;
 	argv++;
 	while (argc > 0) {
+		fprintf(stderr, "parsing arg %s\n", *argv);
 		if (strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0) {
 			usage(prg_name);
 		} else if (strcmp(*argv, "-v") == 0 || strcmp(*argv, "--version") == 0) {
@@ -248,7 +249,11 @@ int main(int argc, char **argv)
 			// if it's a directory, make it the default data dir
 			FileSpecifier f(*argv);
 			if (f.IsDir())
+			{
 				arg_directory = *argv;
+				fprintf(stderr, "using %s as default data\n", *argv);
+			}
+			
 			else
 				printf("%s is not a directory\n", *argv);
 		} else {
@@ -349,8 +354,10 @@ static void initialize_application(void)
 #define LIST_SEP ':'
 #endif
 	
+#ifndef __APPLE__ && __MACH__
 	if (arg_directory != "") 
 		default_data_dir = arg_directory;
+#endif
 
 	const char *data_env = getenv("ALEPHONE_DATA");
 	if (data_env) {
@@ -368,9 +375,14 @@ static void initialize_application(void)
 			data_search_path.push_back(path);
 	} else {
 #if defined(__APPLE__) && defined(__MACH__)
-		char* buf = getcwd (0, 0);
-		data_search_path.push_back(buf);
-		free (buf);
+		if (arg_directory != "") 
+			data_search_path.push_back(arg_directory);
+		else 
+		{
+			char* buf = getcwd (0, 0);
+			data_search_path.push_back(buf);
+			free (buf);
+		}
 #endif
 		data_search_path.push_back(default_data_dir);
 		data_search_path.push_back(local_data_dir);
