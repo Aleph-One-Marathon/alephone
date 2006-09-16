@@ -424,6 +424,9 @@ public:
 	
 	// Check on whether a file exists, and its type
 	bool Exists();
+#ifdef SDL
+	bool IsDir();
+#endif
 	
 	// Gets the modification date
 	TimeType GetDate();

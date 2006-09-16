@@ -127,6 +127,7 @@ DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
 DirectorySpecifier preferences_dir;   // Directory for preferences
 DirectorySpecifier saved_games_dir;   // Directory for saved games
 DirectorySpecifier recordings_dir;    // Directory for recordings (except film buffer, which is stored in local_data_dir)
+std::string arg_directory;
 
 // Command-line options
 bool option_nogl = false;             // Disable OpenGL
@@ -243,6 +244,13 @@ int main(int argc, char **argv)
 			option_nogamma = true;
 		} else if (strcmp(*argv, "-d") == 0 || strcmp(*argv, "--debug") == 0) {
 		  option_debug = true;
+		} else if (arg_directory == "") {
+			// if it's a directory, make it the default data dir
+			FileSpecifier f(*argv);
+			if (f.IsDir())
+				arg_directory = *argv;
+			else
+				printf("%s is not a directory\n", *argv);
 		} else {
 			printf("Unrecognized argument '%s'.\n", *argv);
 			usage(prg_name);
@@ -330,16 +338,19 @@ static void initialize_application(void)
 	local_data_dir += login;
 
 #else
-default_data_dir = "";
-local_data_dir = "";
+	default_data_dir = "";
+	local_data_dir = "";
 //#error Data file paths must be set for this platform.
 #endif
-
+	
 #if defined(__WIN32__)
 #define LIST_SEP ';'
 #else
 #define LIST_SEP ':'
 #endif
+	
+	if (arg_directory != "") 
+		default_data_dir = arg_directory;
 
 	const char *data_env = getenv("ALEPHONE_DATA");
 	if (data_env) {

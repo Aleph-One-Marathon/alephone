@@ -376,6 +376,15 @@ bool FileSpecifier::Exists()
 	return err == 0;
 }
 
+bool FileSpecifier::IsDir()
+{
+	struct stat st;
+	err = 0;
+	if (stat(GetPath(), &st) < 0)
+		return false;
+	return (S_ISDIR(st.st_mode));
+}
+
 // Get modification date
 TimeType FileSpecifier::GetDate()
 {
