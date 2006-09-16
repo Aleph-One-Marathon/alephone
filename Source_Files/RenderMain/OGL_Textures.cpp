@@ -1110,12 +1110,26 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 
 	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[TextureType];
 
+	GLenum internalFormat = TxtrTypeInfo.ColorFormat;
+	// some optimizations here:
+	if (TextureType == 1) // landscape
+	{
+		if (internalFormat == GL_RGBA8)
+			internalFormat = GL_RGB8;
+		else if (internalFormat == GL_RGBA4)
+			internalFormat = GL_RGB5;
+	} 
+	else if (!IsBlended() && internalFormat == GL_RGBA4)
+	{
+		internalFormat = GL_RGB5_A1;
+	}
+
 	if (Image->GetFormat() == ImageDescriptor::RGBA8) {
 		switch (TxtrTypeInfo.FarFilter)
 		{
 		case GL_NEAREST:
 		case GL_LINEAR:
-			glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
 			break;
 		case GL_NEAREST_MIPMAP_NEAREST:
 		case GL_LINEAR_MIPMAP_NEAREST:
@@ -1129,18 +1143,18 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 #endif
 				int i = 0;
 				for (i = 0; i < Image->GetMipMapCount(); i++) {
-					glTexImage2D(GL_TEXTURE_2D, i, TxtrTypeInfo.ColorFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetMipMapPtr(i));
+					glTexImage2D(GL_TEXTURE_2D, i, internalFormat, max(1, Image->GetWidth() >> i), max(1, Image->GetHeight() >> i), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetMipMapPtr(i));
 				}
 				mipmapsLoaded = true;
 			} else {
 #ifdef GL_SGIS_generate_mipmap
 			if (useSGISMipmaps) {
 				glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
-				glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+				glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image->GetWidth(), Image->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
 			} else 
 #endif
 			{
-				gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
+				gluBuild2DMipmaps(GL_TEXTURE_2D, internalFormat, Image->GetWidth(), Image->GetHeight(), GL_RGBA, GL_UNSIGNED_BYTE, Image->GetBuffer());
 			}
 			mipmapsLoaded = true;
 			}
@@ -1153,7 +1167,6 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 		   Image->GetFormat() == ImageDescriptor::DXTC5)
 	{
 #if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
-		GLint internalFormat;
 		if (Image->GetFormat() == ImageDescriptor::DXTC1)
 			internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC3)
