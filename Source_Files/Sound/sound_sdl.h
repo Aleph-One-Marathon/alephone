@@ -692,6 +692,7 @@ static void set_sound_manager_status(bool active)
 				}
 				SDL_PauseAudio(false);
 
+
 			} else {
 
 				// Stop sound manager
@@ -1337,7 +1338,7 @@ stop_network_audio() {
  */
 
 template <class T>
-static inline void calc_buffer(T *p, int len, bool stereo)
+static inline void calc_buffer(T *p, int len, bool stereo, bool is_signed)
 {
 #ifndef SDL_RFORK_HACK
 	while (len--) {
@@ -1459,8 +1460,11 @@ static inline void calc_buffer(T *p, int len, bool stereo)
 			left = 32767;
 		else if (left < -32768)
 			left = -32768;
-		if (sizeof(T) == 1)						// Downscale for 8-bit output
-			left >>= 8;
+		if (sizeof(T) == 1)
+			if (is_signed)
+				left >>= 8;
+			else
+				left = (left >> 8) ^ 0x80;
 		*p++ = left;							// Write to output buffer
 
 		// Finalize right channel
@@ -1470,8 +1474,12 @@ static inline void calc_buffer(T *p, int len, bool stereo)
 				right = 32767;
 			else if (right < -32768)
 				right = -32768;
-			if (sizeof(T) == 1)					// Downscale for 8-bit output
-				right >>= 8;
+			if (sizeof(T) == 1)
+				if (is_signed)
+// Downscale for 8-bit output
+					right >>= 8;
+				else
+					right = (right >> 8) ^ 0x80;
 			*p++ = right;						// Write to output buffer
 		}
 	}
@@ -1483,14 +1491,19 @@ static void sound_callback(void *usr, uint8 *stream, int len)
 	bool stereo = (obtained.channels == 2);
 	if ((obtained.format & 0xff) == 16) {
 		if (stereo)	// try to inline as much as possible
-			calc_buffer((int16 *)stream, len / 4, true);
+			calc_buffer((int16 *)stream, len / 4, true, true);
 		else
-			calc_buffer((int16 *)stream, len / 2, false);
+			calc_buffer((int16 *)stream, len / 2, false, true);
+	} else if (obtained.format & 0x1000) {
+		if (stereo)
+			calc_buffer((int16 *)stream, len / 2, true, true);
+		else
+			calc_buffer((int16 *)stream, len, false, true);
 	} else {
 		if (stereo)
-			calc_buffer((int8 *)stream, len / 2, true);
+			calc_buffer((int8 *)stream, len / 2, true, false);
 		else
-			calc_buffer((int8 *)stream, len, false);
+			calc_buffer((int8 *)stream, len, false, false);
 	}
 }
 
