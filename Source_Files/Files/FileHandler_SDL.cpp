@@ -50,10 +50,13 @@
 #include <unistd.h>
 #endif
 
+#ifdef __MACOS__
+#include "mac_rwops.h"
+#endif
 
 #if defined(__WIN32__)
 #define PATH_SEP '\\'
-#elif !defined(__MWERKS__)
+#elif !defined(__MACOS__)
 #define PATH_SEP '/'
 #else
 #define PATH_SEP ':'
@@ -314,7 +317,14 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 {
 	OFile.Close();
 
-	SDL_RWops *f = OFile.f = SDL_RWFromFile(GetPath(), Writable ? "wb" : "rb");
+	SDL_RWops *f;
+#ifdef __MACOS__
+	if (!Writable)
+		f = OFile.f = open_fork_from_existing_path(GetPath(), false);
+	else
+#endif
+		f = OFile.f = SDL_RWFromFile(GetPath(), Writable ? "wb" : "rb");
+
 	err = f ? 0 : errno;
 	if (f == NULL) {
 		set_game_error(systemError, err);
