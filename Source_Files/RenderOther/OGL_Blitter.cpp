@@ -23,43 +23,56 @@
 
 #include "OGL_Blitter.h"
 
+const int OGL_Blitter::tile_size;
+
 OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Rect& ortho) : m_ortho(ortho)
 {
-	m_rects.resize(1);
-	m_rects[0] = dst;
+	x_scale = (s.w / dst.w);
+	y_scale = (s.h / dst.h);
+	x_offset = dst.x;
+	y_offset = dst.y;
+
+	// calculate how many rects we need
+	int v_rects = ((s.h + tile_size -1) / tile_size);
+	int h_rects = ((s.w + tile_size - 1) / tile_size);
+	m_rects.resize(v_rects * h_rects);
+	m_refs.resize(v_rects * h_rects);
+
+	glGenTextures(v_rects * h_rects, &m_refs.front());
 
 	SDL_Surface *t;
-
-	t = SDL_CreateRGBSurface(SDL_SWSURFACE, NextPowerOfTwo(s.w), NextPowerOfTwo(s.h), 32,
 #ifdef ALEPHONE_LITTLE_ENDIAN
-				 0x000000ff,
-				 0x0000ff00,
-				 0x00ff0000,
-				 0xff000000
+	t = SDL_CreateRGBSurface(SDL_SWSURFACE, tile_size, tile_size, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 #else
-				 0xff000000,
-				 0x00ff0000,
-				 0x0000ff00,
-				 0x000000ff
+	t = SDL_CreateRGBSurface(SDL_SWSURFACE, tile_size, tile_size, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0xff000000);
 #endif
-		);
-	
-	SDL_BlitSurface(const_cast<SDL_Surface *>(&s), NULL, t, NULL);
-	UScale = (double) s.h / (double) t->h;
-	VScale = (double) s.w / (double) t->w;
-	
-	m_refs.resize(1);
-	glGenTextures(1, &m_refs.front());
-	
+
 	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, m_refs[0]);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	int i = 0;
+	for (int y = 0; y < v_rects; y++)
+	{
+		for (int x = 0; x < h_rects; x++)
+		{
+			m_rects[i].x = x * tile_size;
+			m_rects[i].y = y * tile_size;
+			m_rects[i].w = std::min(tile_size, s.w - x * tile_size);
+			m_rects[i].h = std::min(tile_size, s.h - y * tile_size);
 
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, t->w, t->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
+			SDL_BlitSurface(const_cast<SDL_Surface *>(&s), &m_rects[i], t, NULL);
+
+			glBindTexture(GL_TEXTURE_2D, m_refs[i]);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tile_size, tile_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
+
+			i++;
+		}
+	}
 
 	SDL_FreeSurface(t);
 		      
@@ -68,6 +81,8 @@ OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Re
 OGL_Blitter::~OGL_Blitter()
 {
 	glDeleteTextures(1, &m_refs.front());
+	m_refs.clear();
+	m_rects.clear();
 }
 
 void OGL_Blitter::SetupMatrix()
@@ -98,16 +113,21 @@ void OGL_Blitter::SetupMatrix()
 
 void OGL_Blitter::Draw()
 {
-	glBindTexture(GL_TEXTURE_2D, m_refs[0]);
-//	glBindTexture(GL_TEXTURE_2D, 0);
-	glColor3ub(255, 255, 255);
-	glBegin(GL_QUADS);
+	for (int i = 0; i < m_rects.size(); i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, m_refs[i]);
+		glColor3ub(255, 255, 255);
+		glBegin(GL_QUADS);
 
-	glTexCoord2f(0.0, 0.0); glVertex3f(m_rects[0].x, m_rects[0].y, 0);
-	glTexCoord2f(VScale, 0.0); glVertex3f(m_rects[0].x + m_rects[0].w, m_rects[0].y, 0);
-	glTexCoord2f(VScale, UScale); glVertex3f(m_rects[0].x + m_rects[0].w, m_rects[0].y + m_rects[0].h, 0);
-	glTexCoord2f(0.0, UScale); glVertex3f(m_rects[0].x, m_rects[0].y + m_rects[0].h, 0);
-	glEnd();
+		GLdouble VScale = (double) m_rects[i].w / (double) tile_size;
+		GLdouble UScale = (double) m_rects[i].h / (double) tile_size;
+
+		glTexCoord2f(0.0, 0.0); glVertex3f(m_rects[i].x + x_offset, m_rects[i].y + y_offset, 0);
+		glTexCoord2f(VScale, 0.0); glVertex3f(m_rects[i].x + x_offset + m_rects[i].w * x_scale, m_rects[i].y + y_offset, 0);
+		glTexCoord2f(VScale, UScale); glVertex3f(m_rects[i].x + x_offset + m_rects[i].w * x_scale, m_rects[i].y + y_offset + m_rects[i].h * y_scale, 0);
+		glTexCoord2f(0.0, UScale); glVertex3f(m_rects[i].x + x_offset, m_rects[i].y + y_offset + m_rects[i].h * y_scale, 0);
+		glEnd();
+	}
 }
 
 void OGL_Blitter::RestoreMatrix()

@@ -53,10 +53,12 @@ public:
 private:
 	SDL_Rect m_ortho;
 
-	GLdouble UScale, VScale;
+	GLdouble x_scale, y_scale;
+	int x_offset, y_offset;
 
 	vector<SDL_Rect> m_rects;
 	vector<GLuint> m_refs;
+	static const int tile_size = 256;
 };
 
 #endif

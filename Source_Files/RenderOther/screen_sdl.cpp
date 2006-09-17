@@ -36,7 +36,7 @@
 
 #ifdef HAVE_OPENGL
 #include "SDL_opengl.h"
-#include "OGL_Blitter.cpp"
+#include "OGL_Blitter.h"
 #endif
 
 #include "world.h"
