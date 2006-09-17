@@ -196,6 +196,8 @@
 		2B4EC21E0908984D009631F8 /* libobjc.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5F21460403247500000104 /* libobjc.A.dylib */; };
 		2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
+		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
+		AE0053EF0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE179F0E09C3D79500512061 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0609C3D79500512061 /* error.c */; };
 		AE179F0F09C3D79500512061 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0709C3D79500512061 /* http.c */; };
 		AE179F1009C3D79500512061 /* libnat.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0809C3D79500512061 /* libnat.c */; };
@@ -740,6 +742,7 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
 		AE179EF109C3D77800512061 /* error.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = error.h; path = ../Source_Files/LibNAT/error.h; sourceTree = "<group>"; };
 		AE179EF209C3D77800512061 /* http.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = http.h; path = ../Source_Files/LibNAT/http.h; sourceTree = "<group>"; };
 		AE179EF309C3D77800512061 /* libnat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = libnat.h; path = ../Source_Files/LibNAT/libnat.h; sourceTree = "<group>"; };
@@ -1927,6 +1930,7 @@
 				F5CC93930240D85D01A80001 /* HUDRenderer_SW.cpp */,
 				F5CC93940240D85D01A80001 /* images.cpp */,
 				F5CC93950240D85D01A80001 /* motion_sensor.cpp */,
+				AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */,
 				AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */,
 				F5CC93960240D85D01A80001 /* overhead_map.cpp */,
 				F5CC93970240D85D01A80001 /* OverheadMap_OGL.cpp */,
@@ -2701,6 +2705,7 @@
 				AEB5F39A09CDC92E00CDF7C0 /* resource_manager.cpp in Sources */,
 				AE2FDECB09E934E000A18ABC /* preference_dialogs.cpp in Sources */,
 				AE2FDED009E9350E00A18ABC /* preference_dialogs_nibs.cpp in Sources */,
+				AE0053EF0ABE16300038507F /* OGL_Blitter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2878,6 +2883,7 @@
 				AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */,
 				AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */,
 				AE2FDECE09E934F500A18ABC /* preference_dialogs_sdl.cpp in Sources */,
+				AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
