@@ -906,7 +906,11 @@ void dialog::update(SDL_Rect r) const
 		SDL_BlitSurface(dialog_surface, NULL, s, NULL);
 		glDrawPixels(s->w, s->h, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
 		SDL_FreeSurface(s);
-		
+
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glPopAttrib();
 
 		SDL_GL_SwapBuffers();
 	} else 
