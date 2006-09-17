@@ -898,7 +898,7 @@ SetupNetgameDialog::Create ()
 // the text widget.  Maybe alter its justification also.)
 dialog*		sProgressDialog 	= NULL;
 w_static_text*	sProgressMessage	= NULL;
-//widget* 	sProgressBar		= NULL;
+w_progress_bar* sProgressBar		= NULL;
 
 void open_progress_dialog(size_t message_id)
 {
@@ -908,10 +908,10 @@ void open_progress_dialog(size_t message_id)
     
     sProgressDialog 	= new dialog;
     sProgressMessage	= new w_static_text(TS_GetCString(strPROGRESS_MESSAGES, message_id));
-//    sProgressBar	= new w_progress_bar;
+    sProgressBar	= new w_progress_bar(200);
     
     sProgressDialog->add(sProgressMessage);
-//    sProgressDialog->add(sProgressBar);
+    sProgressDialog->add(sProgressBar);
     
     sProgressDialog->start(false);
 
@@ -928,6 +928,7 @@ void set_progress_dialog_message(size_t message_id)
     sProgressMessage->set_text(TS_GetCString(strPROGRESS_MESSAGES, message_id));
     
     bool done = sProgressDialog->process_events();
+
     assert(!done);
 }
 
@@ -951,17 +952,19 @@ void close_progress_dialog(void)
     
     sProgressDialog	= NULL;
     sProgressMessage	= NULL;
-//    sProgressBar	= NULL;
+    sProgressBar	= NULL;
 }
 
 void draw_progress_bar(size_t sent, size_t total)
 {
-//printf("draw_progress_bar %ld, %ld", sent, total);
+	sProgressBar->set_progress(sent, total);
+	sProgressDialog->draw();
 }
 
 void reset_progress_bar(void)
 {
-//printf("reset_progress_bar\n");
+	sProgressBar->set_progress(0, 1);
+	sProgressDialog->draw();
 }
 
 

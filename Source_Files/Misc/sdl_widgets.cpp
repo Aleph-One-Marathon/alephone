@@ -1111,6 +1111,31 @@ void w_key::set_key(SDLKey k)
 	key = k;
 }
 
+/*
+ * Progress
+ */
+void w_progress_bar::draw(SDL_Surface* s) const
+{
+	int filled_width = (rect.w - 2) * value / max_value;
+	SDL_Rect dst_rect = rect;
+	dst_rect.h -= 2;
+	dst_rect.y += 2;
+	SDL_FillRect(s, &dst_rect, get_dialog_color(MESSAGE_COLOR));
+	dst_rect.x += filled_width + 1;
+	dst_rect.y++;
+	dst_rect.h -= 2;
+	dst_rect.w = dst_rect.w - filled_width - 2;
+	SDL_FillRect(s, &dst_rect, get_dialog_color(BACKGROUND_COLOR));
+}
+
+void w_progress_bar::set_progress(int inValue, int inMaxValue)
+{
+	value = inValue;
+	max_value = inMaxValue;
+	dirty = true;
+}
+ 
+
 
 /*
  *  Slider

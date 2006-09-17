@@ -537,12 +537,12 @@ private:
 /*
  *  Progress Bar (ZZZ)
  */
-/*	ZZZ abandoned for now - who would ever see the progress bar being drawn anyway? (in sending/receiving map etc.)
+
 class w_progress_bar : public widget {
 public:
-        w_progress_bar(int inWidth) : widget(), max_value(10), value(0) {
-            rect.w = inWidth;
-            rect.h = 10;
+w_progress_bar(int inWidth) : widget(), max_value(10), value(0) {
+		rect.w = inWidth;
+		rect.h = 14;
         }
         
         ~w_progress_bar() {}
@@ -550,14 +550,14 @@ public:
         void draw(SDL_Surface* s) const;
         
         bool is_selectable() { return false; }
-
+	
         void set_progress(int inValue, int inMaxValue);
-
+	
 protected:
         int max_value;
         int value;
 };
-*/
+
 
 
 /*
