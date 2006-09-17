@@ -46,50 +46,17 @@ bool OGL_LoadScreen::Start()
 	FileSpecifier File;
 	if (path.size() == 0) return use = false;
 	if (!File.SetNameWithPath(&path[0])) return use = false;
-	if (!image.LoadFromFile(File, ImageLoader_Colors, ImageLoader_ResizeToPowersOfTwo)) return use = false;
+	if (!image.LoadFromFile(File, ImageLoader_Colors, 0)) return use = false;
 
-	OGL_ClearScreen();
-	
-	glGenTextures(1, &texture_ref);
-
-	glEnable(GL_TEXTURE_2D);
-	glBindTexture(GL_TEXTURE_2D, texture_ref);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image.GetWidth(), image.GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, image.GetBuffer());
-	
-	Progress(0);
-
-	return use = true;
-}
-
-void OGL_LoadScreen::Stop()
-{
-	glDeleteTextures(1, &texture_ref);
-	OGL_ClearScreen();
-	Clear();
-}
-
-#if defined(mac)
-extern WindowPtr screen_window;
-extern void bound_screen();
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(image.GetBuffer(), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#else
+	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(image.GetBuffer(), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 #endif
 
-void OGL_LoadScreen::Progress(const int progress)
-{
- 	glMatrixMode(GL_PROJECTION);
- 	glLoadIdentity();
-	
- 	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
- 	glLoadIdentity();
+	if (blitter)
+		delete blitter;
 
-	glBindTexture(GL_TEXTURE_2D, texture_ref);
-	
 	int screenWidth, screenHeight;
 #if defined(SDL)
 	screenWidth = SDL_GetVideoSurface()->w;
@@ -124,17 +91,39 @@ void OGL_LoadScreen::Progress(const int progress)
 		scaledScreenHeight = imageHeight;
 	}
 
-	glOrtho(0 - (scaledScreenWidth - imageWidth) / 2, imageWidth + (scaledScreenWidth - imageWidth) / 2, imageHeight + (scaledScreenHeight - imageHeight) / 2, 0 - (scaledScreenHeight - imageHeight) / 2, -1, 1);
+	SDL_Rect dst = { 0, 0, imageWidth, imageHeight };
+	SDL_Rect ortho = { 0 - (scaledScreenWidth - imageWidth) / 2,
+			   0 - (scaledScreenHeight - imageHeight) / 2,
+			   scaledScreenWidth,
+			   scaledScreenHeight};
 	
-	glBegin(GL_QUADS);
-	glColor3ub(255, 255, 255);
+		
+	blitter = new OGL_Blitter(*s, dst, ortho);
+						  
+	OGL_ClearScreen();
+	
+	Progress(0);
 
-	glTexCoord2f (0.0, 0.0); glVertex3f(0, 0, 0);
-	glTexCoord2f (image.GetVScale(), 0.0); glVertex3f(imageWidth, 0, 0);
-	glTexCoord2f( image.GetVScale(), image.GetUScale()); glVertex3f(imageWidth, imageHeight, 0);
-	glTexCoord2f( 0.0, image.GetUScale()); glVertex3f(0, imageHeight, 0);
+	return use = true;
+}
 
-	glEnd();
+void OGL_LoadScreen::Stop()
+{
+//	glDeleteTextures(1, &texture_ref);
+	OGL_ClearScreen();
+	Clear();
+}
+
+#if defined(mac)
+extern WindowPtr screen_window;
+extern void bound_screen();
+#endif
+
+void OGL_LoadScreen::Progress(const int progress)
+{
+
+	blitter->SetupMatrix();
+	blitter->Draw();
 
 	if (useProgress) 
 	{
@@ -173,11 +162,9 @@ void OGL_LoadScreen::Progress(const int progress)
 		glEnd();
 	}
 
-	glPopMatrix();
+	blitter->RestoreMatrix();
 
 	OGL_SwapBuffers();
-
-	glPopMatrix();
 
 }
 
@@ -208,6 +195,11 @@ void OGL_LoadScreen::Clear()
 	useProgress = false;
 	path.clear();
 	image.Clear();
+	if (blitter)
+	{
+		delete blitter;
+		blitter = NULL;
+	}
 }
 
 #endif

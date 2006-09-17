@@ -36,6 +36,7 @@
 
 #ifdef HAVE_OPENGL
 #include "SDL_opengl.h"
+#include "OGL_Blitter.cpp"
 #endif
 
 #include "world.h"
@@ -344,9 +345,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		Term_Buffer = NULL;
 	}
 #ifdef ALEPHONE_LITTLE_ENDIAN
-	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 1024, 512, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
+	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 #else
-	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 1024, 512, 32, 0xff000000,0x00ff0000, 0x0000ff00, 0x000000ff);
+	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0xff000000,0x00ff0000, 0x0000ff00, 0x000000ff);
 #endif
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
@@ -638,53 +639,14 @@ void render_screen(short ticks_elapsed)
 		if (world_view->terminal_mode_active || (world_view->overhead_map_active && !OGL_MapActive)) {
 
 			// Copy 2D rendering to screen
-//			update_screen(BufferRect, ViewRect, HighResolution);
 
-			glPushAttrib(GL_ALL_ATTRIB_BITS);
-			
-			// Disable everything but alpha blending
-			glDisable(GL_CULL_FACE);
-			glDisable(GL_DEPTH_TEST);
-			glDisable(GL_ALPHA_TEST);
-			glEnable(GL_BLEND);
-			glDisable(GL_FOG);
-			glDisable(GL_SCISSOR_TEST);
-			glDisable(GL_STENCIL_TEST);
-			
-			glEnable(GL_TEXTURE_2D);
-			glBindTexture(GL_TEXTURE_2D, OGL_Term_Texture);
-			
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-			
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, Term_Buffer->w, Term_Buffer->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, Term_Buffer->pixels);
-			
-			glMatrixMode(GL_PROJECTION);
-			glPushMatrix();
-			glLoadIdentity();
-			
-			glMatrixMode(GL_MODELVIEW);
-			glPushMatrix();
-			glLoadIdentity();
-			
-			gluOrtho2D(0.0, ScreenRect.w, 0.0, ScreenRect.h);
-			
-			glBegin(GL_QUADS);
-			glColor3ub(255, 255, 255);
-			
-			glTexCoord2f (0.0, 0.0); glVertex3f(OffsetWidth, ScreenRect.h - OffsetHeight, 0);
-			glTexCoord2f (640 / (float) Term_Buffer->w, 0.0); glVertex3f(640 + OffsetWidth, ScreenRect.h - OffsetHeight, 0);
-			glTexCoord2f (640 / (float) Term_Buffer->w, 320 / (float) Term_Buffer->h); glVertex3f(640 + OffsetWidth, ScreenRect.h - OffsetHeight - 320, 0);
-			glTexCoord2f ( 0.0, 320 / (float) Term_Buffer->h); glVertex3f(OffsetWidth, ScreenRect.h - OffsetHeight - 320, 0);
-			
-			glEnd();
-			glPopMatrix();
-			glMatrixMode(GL_PROJECTION);
-			glPopMatrix();
-			glPopAttrib();
-			
+			SDL_Rect term_dst = { OffsetWidth, OffsetHeight, 640, 320};
+			SDL_Rect term_ortho = { 0, 0, ScreenRect.w, ScreenRect.h };
+			SDL_SetAlpha(Term_Buffer, 0, 0xff);
+			OGL_Blitter blitter(*Term_Buffer, term_dst, term_ortho);
+			blitter.SetupMatrix();
+			blitter.Draw();
+			blitter.RestoreMatrix();
 		}
 		
 		if (TEST_FLAG(VS.flags, _view_show_HUD)) {

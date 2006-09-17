@@ -1,5 +1,5 @@
-#ifndef _OGL_LOADSCREEN_
-#define _OGL_LOADSCREEN_
+#ifndef _OGL_BLITTER_
+#define _OGL_BLITTER_
 /*
 
 	Copyright (C) 2006 and beyond by Bungie Studios, Inc.
@@ -19,7 +19,7 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 	
-	OpenGL load screens
+	OpenGL image blitter
 	written by Gregory Smith, 2006
 */
 
@@ -38,50 +38,27 @@
 # endif
 #endif
 
-#include "OGL_Blitter.h"
-#include "ImageLoader.h"
+#include <vector>
+using namespace std;
 
 #ifdef HAVE_OPENGL
-class OGL_LoadScreen
+class OGL_Blitter
 {
 public:
-	static OGL_LoadScreen *instance();
-	
-	bool Start();
-	void Stop();
-	void Progress(const int percent);
-
-	void Set(const vector<char> Path, bool Stretch);
-	void Set(const vector<char> Path, bool Stretch, short X, short Y, short W, short H);
-	void Clear();
-
-	bool Use() { return use; }
-
-	rgb_color *Colors() { return colors; }
-
+	OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Rect& ortho);
+	void SetupMatrix();
+	void Draw();
+	void RestoreMatrix();
+	~OGL_Blitter();
 private:
-OGL_LoadScreen() : x(0), y(0), w(0), h(0), use(false), useProgress(false), percent(0), blitter(NULL) { }
-	~OGL_LoadScreen();
+	SDL_Rect m_ortho;
 
-	vector<char> path;
-	ImageDescriptor image;
-	short x, y, w, h;
+	GLdouble UScale, VScale;
 
-	OGL_Blitter *blitter;
-
-	bool stretch;
-
-	bool use;
-	bool useProgress;
-
-	rgb_color colors[2];
-
-	short percent;
-
-	static OGL_LoadScreen *instance_;
-
-	GLuint texture_ref;
+	vector<SDL_Rect> m_rects;
+	vector<GLuint> m_refs;
 };
+
 #endif
 
 #endif
