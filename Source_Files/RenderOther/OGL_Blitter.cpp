@@ -80,7 +80,7 @@ OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Re
 
 OGL_Blitter::~OGL_Blitter()
 {
-	glDeleteTextures(1, &m_refs.front());
+	glDeleteTextures(m_refs.size(), &m_refs.front());
 	m_refs.clear();
 	m_rects.clear();
 }
