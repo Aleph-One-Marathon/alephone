@@ -515,6 +515,12 @@ void OGL_ModelData::Unload()
 	OGL_SkinManager::Unload();
 }
 
+int OGL_CountModels(short Collection)
+{
+	return MdlList[Collection].size();
+}
+
+extern void OGL_ProgressCallback(int);
 
 // for managing the model and image loading and unloading
 void OGL_LoadModels(short Collection)
@@ -523,6 +529,7 @@ void OGL_LoadModels(short Collection)
 	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
 	{
 		MdlIter->ModelData.Load();
+		OGL_ProgressCallback(1);
 	}
 }
 

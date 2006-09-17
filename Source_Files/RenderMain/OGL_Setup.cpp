@@ -100,6 +100,9 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #include "shape_descriptors.h"
 #include "OGL_Setup.h"
 #include "ColorParser.h"
+#include "OGL_LoadScreen.h"
+#include "progress.h"
+
 
 #ifdef __WIN32__
 #include "OGL_Win32.h"
@@ -153,6 +156,45 @@ bool OGL_CheckExtension(const std::string extension) {
 #endif
 	return false;
 }
+
+static int ogl_progress;
+static int total_ogl_progress;
+static bool show_ogl_progress = false;
+
+extern bool OGL_ClearScreen();
+
+void OGL_StartProgress(int total_progress)
+{
+	ogl_progress = 0;
+	total_ogl_progress = total_progress;
+	if (!OGL_LoadScreen::instance()->Start())
+	{
+		OGL_ClearScreen();
+		open_progress_dialog(_loading);
+	}
+	show_ogl_progress = true;
+}
+
+void OGL_ProgressCallback(int delta_progress)
+{
+	if (!show_ogl_progress) return;
+	ogl_progress += delta_progress;
+	if (OGL_LoadScreen::instance()->Use())
+
+		OGL_LoadScreen::instance()->Progress(100 * ogl_progress / total_ogl_progress);
+	else
+		draw_progress_bar(ogl_progress, total_ogl_progress);
+}
+
+void OGL_StopProgress()
+{
+	show_ogl_progress = false;
+	if (OGL_LoadScreen::instance()->Use())
+		OGL_LoadScreen::instance()->Stop();
+	else
+		close_progress_dialog();
+}
+
 
 // Sensible defaults for the fog:
 static OGL_FogData FogData[OGL_NUMBER_OF_FOG_TYPES] = 
@@ -356,6 +398,11 @@ void OGL_TextureOptionsBase::Unload()
 #endif
 
 #ifdef HAVE_OPENGL
+
+int OGL_CountModelsImages(short Collection)
+{
+	return OGL_CountTextures(Collection) + OGL_CountModels(Collection);
+}
 
 // for managing the model and image loading and unloading
 void OGL_LoadModelsImages(short Collection)

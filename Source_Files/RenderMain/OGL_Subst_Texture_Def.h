@@ -67,6 +67,7 @@ struct OGL_TextureOptions: public OGL_TextureOptionsBase
 OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bitmap);
 
 // for managing the texture loading and unloading;
+int OGL_CountTextures(short Collection);
 void OGL_LoadTextures(short Collection);
 void OGL_UnloadTextures(short Collection);
 

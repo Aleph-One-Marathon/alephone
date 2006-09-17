@@ -85,6 +85,10 @@ bool OGL_IsActive();
 // Test whether an extension exists
 bool OGL_CheckExtension(const std::string);
 
+void OGL_StartProgress(int total_progress);
+void OGL_ProgressCallback(int delta_progress);
+void OGL_StopProgress();
+
 // Here are some OpenGL configuration options and how to access them
 // (they are in the preferences data)
 
@@ -189,6 +193,7 @@ void OGL_SetDefaults(OGL_ConfigureData& Data);
 
 
 // for managing the model and image loading and unloading;
+int OGL_CountModelsImages(short Collection);
 void OGL_LoadModelsImages(short Collection);
 void OGL_UnloadModelsImages(short Collection);
 

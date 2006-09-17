@@ -323,7 +323,8 @@ void process_collection_sounds(short colleciton_code, void (*process_sound)(shor
 void mark_collection(short collection_code, bool loading);
 void strip_collection(short collection_code);
 void load_collections(bool with_progress_bar, bool is_opengl);
-void load_replacement_collections(bool with_progress_bar, int progress_start, int progress_finish);
+int count_replacement_collections();
+void load_replacement_collections();
 void unload_all_collections(void);
 
 // LP additions:

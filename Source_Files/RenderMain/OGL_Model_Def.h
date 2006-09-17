@@ -149,6 +149,7 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence, short& ModelSe
 void OGL_ResetModelSkins(bool Clear_OGL_Txtrs);
 
 // for managing the model loading and unloading;
+int OGL_CountModels(short Collection);
 void OGL_LoadModels(short Collection);
 void OGL_UnloadModels(short Collection);
 

@@ -1051,32 +1051,26 @@ void load_collections(
 
 #ifdef HAVE_OPENGL
 
-void load_replacement_collections(
-	bool with_progress_bar,
-	int progress_start, 
-	int progress_finish)
+int count_replacement_collections()
+{
+	int total_replacements;
+	short collection_index;
+	struct collection_header *header;
+	for (collection_index = 0, header = collection_headers; collection_index < MAXIMUM_COLLECTIONS; ++collection_index, ++header)
+	{
+		total_replacements += OGL_CountModelsImages(collection_index);
+	}
+
+	return total_replacements;
+}
+
+void load_replacement_collections()
 {
 	struct collection_header *header;
 	short collection_index;
-	
-	if (with_progress_bar)
-	{
-		if (OGL_LoadScreen::instance()->Use())
-			OGL_LoadScreen::instance()->Progress(progress_start);
-		else
-			draw_progress_bar(progress_start, 100);
-	}
 
 	for (collection_index= 0, header= collection_headers; collection_index < MAXIMUM_COLLECTIONS; ++collection_index, ++header)
 	{
-		if (with_progress_bar) 
-		{
-			if (OGL_LoadScreen::instance()->Use())
-				OGL_LoadScreen::instance()->Progress(progress_start + (progress_finish - progress_start) * collection_index / MAXIMUM_COLLECTIONS);
-			else
-				draw_progress_bar(progress_start + (progress_finish - progress_start) * collection_index / MAXIMUM_COLLECTIONS, 100);
-		}
-
 		if (collection_loaded(header))
 		{
 			OGL_LoadModelsImages(collection_index);

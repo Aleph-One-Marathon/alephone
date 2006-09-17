@@ -181,10 +181,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "Random.h"
 #include "ViewControl.h"
 #include "OGL_Faders.h"
-#include "OGL_LoadScreen.h"
 #include "ModelRenderer.h"
 #include "Logging.h"
-#include "progress.h"
 
 #ifdef __WIN32__
 #include "OGL_Win32.h"
@@ -569,8 +567,6 @@ bool OGL_StartRun(CGrafPtr WindowPtr)
 bool OGL_StartRun()
 #endif
 {
-	int max_progress = 100;
-
 	logContext("starting up OpenGL rendering");
 
 	if (!OGL_IsPresent()) return false;
@@ -671,11 +667,7 @@ bool OGL_StartRun()
 #endif
 	
 	_OGL_IsActive = true;
-	if (!OGL_LoadScreen::instance()->Start()) 
-	{
-		OGL_ClearScreen();
-		open_progress_dialog(_loading);
-	}
+	OGL_StartProgress(count_replacement_collections() + 5);
 
 	// Set up some OpenGL stuff: these will be the defaults for this rendering context
 	
@@ -714,14 +706,10 @@ bool OGL_StartRun()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
-	load_replacement_collections(true, 0, max_progress * 70 / 100);	
+	load_replacement_collections();	
 
 	// Initialize the texture accounting
 	OGL_StartTextures();
-	if (OGL_LoadScreen::instance()->Use()) 
-		OGL_LoadScreen::instance()->Progress(80);
-	else 
-		draw_progress_bar(80, max_progress);
 
 	// Initialize the on-screen font for OpenGL rendering
 	GetOnScreenFont().OGL_Reset(true);
@@ -736,21 +724,12 @@ bool OGL_StartRun()
 	// Setup for 3D-model rendering
 	ModelRenderObject.Clear();
 	SetupShaders();
-	if (OGL_LoadScreen::instance()->Use())
-		OGL_LoadScreen::instance()->Progress(85);
-	else
-		draw_progress_bar(85, max_progress);
+	OGL_ProgressCallback(1);
 
 	// Avoid lazy initial texture loading
 	PreloadTextures();
-	if (OGL_LoadScreen::instance()->Use())
-		OGL_LoadScreen::instance()->Progress(100);
-	else
-		draw_progress_bar(100, max_progress);
-	if (OGL_LoadScreen::instance()->Use())
-		OGL_LoadScreen::instance()->Stop();
-	else
-		close_progress_dialog();
+	OGL_ProgressCallback(4);
+	OGL_StopProgress();
 
 	// Success!
 	JustInited = true;

@@ -88,6 +88,12 @@ static void TODelete_All()
 	for (int c=0; c<NUMBER_OF_COLLECTIONS; c++) TODelete(c);
 }
 
+int OGL_CountTextures(short Collection)
+{
+	return TOList[Collection].size();
+}
+
+extern void OGL_ProgressCallback(int);
 
 void OGL_LoadTextures(short Collection)
 {
@@ -100,6 +106,8 @@ void OGL_LoadTextures(short Collection)
 		// Find adjusted-frame image-data positioning;
 		// this is for doing sprites with textures with sizes different from the originals
 		TOIter->OptionsData.FindImagePosition();
+
+		OGL_ProgressCallback(1);
 	}
 }
 
