@@ -1053,7 +1053,7 @@ void load_collections(
 
 int count_replacement_collections()
 {
-	int total_replacements;
+	int total_replacements = 0;
 	short collection_index;
 	struct collection_header *header;
 	for (collection_index = 0, header = collection_headers; collection_index < MAXIMUM_COLLECTIONS; ++collection_index, ++header)
