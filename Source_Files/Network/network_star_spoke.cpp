@@ -55,7 +55,7 @@ extern void call_distribution_response_function_if_available(byte* inBuffer, uin
 enum {
         kDefaultPregameTicksBeforeNetDeath = 90 * TICKS_PER_SECOND,
         kDefaultInGameTicksBeforeNetDeath = 5 * TICKS_PER_SECOND,
-        kDefaultOutgoingFlagsQueueSize = 5 * TICKS_PER_SECOND,
+        kDefaultOutgoingFlagsQueueSize = TICKS_PER_SECOND / 2,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
 	kDefaultTimingWindowSize = 3 * TICKS_PER_SECOND,
 	kDefaultTimingNthElement = kDefaultTimingWindowSize / 2,
@@ -452,18 +452,7 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 	// we can get an early ACK if the server made up flags for us...
 	if (theSmallestUnacknowledgedTick > sOutgoingFlags.getWriteTick())
 	{
-		logTraceNMT2("early ack (%d > %d); filling outgoing queue", theSmallestUnacknowledgedTick, sOutgoingFlags.getWriteTick());
-		
-		// guess what it made up for us
-		// we'll probably be wrong
-		action_flags_t flags = (sOutgoingFlags.getReadTick() < sOutgoingFlags.getWriteTick()) ? sOutgoingFlags.peek(sOutgoingFlags.getReadTick()) & (_moving | _sidestepping) : 0;
-		while (sOutgoingFlags.getWriteTick() < theSmallestUnacknowledgedTick)
-		{
-			if (sOutgoingFlags.getWriteTick() >= sSmallestRealGameTick)
-				sLocallyGeneratedFlags.enqueue(flags);
-			else
-				sOutgoingFlags.enqueue(flags);
-		}
+		theSmallestUnacknowledgedTick = sOutgoingFlags.getWriteTick();
 	}
 
 
