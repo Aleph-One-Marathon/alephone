@@ -1137,7 +1137,11 @@ static void main_event_loop(void)
 static bool has_cheat_modifiers(void)
 {
 	SDLMod m = SDL_GetModState();
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__MACOS__)
+	return ((m & KMOD_SHIFT) && (m & KMOD_CTRL)) || ((m & KMOD_ALT) && (m & KMOD_META));
+#else
 	return (m & KMOD_SHIFT) && (m & KMOD_CTRL) && !(m & KMOD_ALT) && !(m & KMOD_META);
+#endif
 }
 
 static void process_screen_click(const SDL_Event &event)
