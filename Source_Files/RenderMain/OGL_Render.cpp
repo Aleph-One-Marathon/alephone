@@ -667,7 +667,7 @@ bool OGL_StartRun()
 #endif
 	
 	_OGL_IsActive = true;
-	OGL_StartProgress(count_replacement_collections() + 5);
+	OGL_StartProgress(count_replacement_collections() + 2);
 
 	// Set up some OpenGL stuff: these will be the defaults for this rendering context
 	
@@ -728,7 +728,7 @@ bool OGL_StartRun()
 
 	// Avoid lazy initial texture loading
 	PreloadTextures();
-	OGL_ProgressCallback(4);
+	OGL_ProgressCallback(1);
 	OGL_StopProgress();
 
 	// Success!

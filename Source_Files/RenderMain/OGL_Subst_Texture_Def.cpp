@@ -90,7 +90,14 @@ static void TODelete_All()
 
 int OGL_CountTextures(short Collection)
 {
-	return TOList[Collection].size();
+	int count = 0;
+	vector<TextureOptionsEntry>& TOL = TOList[Collection];
+	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
+	{
+		if (TOIter->OptionsData.NormalColors.size())
+			count++;
+	}
+	return count;
 }
 
 extern void OGL_ProgressCallback(int);
