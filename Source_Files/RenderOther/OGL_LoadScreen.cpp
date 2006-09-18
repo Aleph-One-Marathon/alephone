@@ -40,6 +40,11 @@ OGL_LoadScreen *OGL_LoadScreen::instance()
 
 extern bool OGL_ClearScreen();
 
+#if defined(mac)
+extern WindowPtr screen_window;
+extern void bound_screen();
+#endif
+
 bool OGL_LoadScreen::Start()
 {
 	// load the image
@@ -113,11 +118,6 @@ void OGL_LoadScreen::Stop()
 	OGL_ClearScreen();
 	Clear();
 }
-
-#if defined(mac)
-extern WindowPtr screen_window;
-extern void bound_screen();
-#endif
 
 void OGL_LoadScreen::Progress(const int progress)
 {

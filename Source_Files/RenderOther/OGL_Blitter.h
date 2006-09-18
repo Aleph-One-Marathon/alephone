@@ -38,6 +38,10 @@
 # endif
 #endif
 
+#ifndef SDL
+#include <SDL/SDL.h>
+#endif
+
 #include <vector>
 using namespace std;
 
