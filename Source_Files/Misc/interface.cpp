@@ -177,7 +177,7 @@ const short max_handled_recording= aleph_recording_version;
 #define CLOSE_WITHOUT_WARNING_DELAY (5*TICKS_PER_SECOND)
 
 #define NUMBER_OF_INTRO_SCREENS (3)
-#define INTRO_SCREEN_DURATION (215) // fudge to align with sound
+#define INTRO_SCREEN_DURATION (215 * MACHINE_TICKS_PER_SECOND / TICKS_PER_SECOND) // fudge to align with sound
 
 #ifdef DEMO
 #define INTRO_SCREEN_TO_START_SONG_ON (1)
@@ -187,18 +187,18 @@ const short max_handled_recording= aleph_recording_version;
 
 #define INTRO_SCREEN_BETWEEN_DEMO_BASE (INTRO_SCREEN_BASE+1) /* +1 to get past the powercomputing */
 #define NUMBER_OF_INTRO_SCREENS_BETWEEN_DEMOS (1)
-#define DEMO_INTRO_SCREEN_DURATION (10*TICKS_PER_SECOND)
+#define DEMO_INTRO_SCREEN_DURATION (10 * MACHINE_TICKS_PER_SECOND)
 
-#define TICKS_UNTIL_DEMO_STARTS (30*TICKS_PER_SECOND)
+#define TICKS_UNTIL_DEMO_STARTS (30 * MACHINE_TICKS_PER_SECOND)
 
 #define NUMBER_OF_PROLOGUE_SCREENS 0
-#define PROLOGUE_DURATION (10*TICKS_PER_SECOND)
+#define PROLOGUE_DURATION (10 * MACHINE_TICKS_PER_SECOND)
 
 #define NUMBER_OF_EPILOGUE_SCREENS 1
 #define EPILOGUE_DURATION (INDEFINATE_TIME_DELAY)
 
 #define NUMBER_OF_CREDIT_SCREENS 7
-#define CREDIT_SCREEN_DURATION (15*60*TICKS_PER_SECOND)
+#define CREDIT_SCREEN_DURATION (15 * 60 * MACHINE_TICKS_PER_SECOND)
 
 #define NUMBER_OF_CHAPTER_HEADINGS 0
 #define CHAPTER_HEADING_DURATION (7*MACHINE_TICKS_PER_SECOND)
@@ -1006,14 +1006,13 @@ void update_interface_display(
 void idle_game_state(
 	void)
 {
-	short ticks_elapsed;
-	
-	ticks_elapsed= (machine_tick_count() - game_state.last_ticks_on_idle) * TICKS_PER_SECOND / MACHINE_TICKS_PER_SECOND;
-	if(ticks_elapsed || game_state.phase==0)
+	short machine_ticks_elapsed;
+	machine_ticks_elapsed = (machine_tick_count() - game_state.last_ticks_on_idle);
+	if(machine_ticks_elapsed || game_state.phase==0)
 	{
 		if(game_state.phase != INDEFINATE_TIME_DELAY)
 		{
-			game_state.phase-= ticks_elapsed;
+			game_state.phase-= machine_ticks_elapsed;
 		}
 		
 		/* Note that we still go through this if we have an indefinate phase.. */
@@ -1076,7 +1075,7 @@ void idle_game_state(
 					if(revert_game())
 					{
 						game_state.state= _game_in_progress;
-						game_state.phase= 15*TICKS_PER_SECOND;
+						game_state.phase = 15 * MACHINE_TICKS_PER_SECOND;
 						game_state.last_ticks_on_idle= machine_tick_count();
 						update_interface(NONE);
 					} else {
@@ -1094,7 +1093,7 @@ void idle_game_state(
 					break;
 
 				case _game_in_progress:
-					game_state.phase= 15*TICKS_PER_SECOND;
+					game_state.phase = 15 * MACHINE_TICKS_PER_SECOND;
 					game_state.last_ticks_on_idle= machine_tick_count();
 					break;
 
@@ -1117,7 +1116,7 @@ void idle_game_state(
 		// ZZZ change: update_world() whether or not get_keyboard_controller_status() is true
 		// This way we won't fill up queues and stall netgames if one player switches out for a bit.
 		std::pair<bool, int16> theUpdateResult= update_world();
-		ticks_elapsed= theUpdateResult.second;
+		short ticks_elapsed= theUpdateResult.second;
 
 		if (get_keyboard_controller_status())
 		{
@@ -1955,7 +1954,7 @@ static void start_game(
 
 	game_state.state= _game_in_progress;
 	game_state.current_screen= 0;
-	game_state.phase= TICKS_PER_SECOND;
+	game_state.phase = MACHINE_TICKS_PER_SECOND;
 	game_state.last_ticks_on_idle= machine_tick_count();
 	game_state.user= user;
 	game_state.flags= 0;
