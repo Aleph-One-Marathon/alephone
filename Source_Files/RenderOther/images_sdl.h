@@ -738,10 +738,10 @@ static void draw_picture(LoadedResource &rsrc)
 	SDL_Surface *video = SDL_GetVideoSurface();
 
 	// Default source rectangle
-	SDL_Rect src_rect = {0, 0, s->w, s->h};
+	SDL_Rect src_rect = {0, 0, MIN(s->w, 640), MIN(s->h, 480)};
 
 	// Center picture on screen
-	SDL_Rect dst_rect = {(video->w - s->w) / 2, (video->h - s->h) / 2, s->w, s->h};
+	SDL_Rect dst_rect = {(video->w - src_rect.w) / 2, (video->h - src_rect.h) / 2, s->w, s->h};
 	if (dst_rect.x < 0)
 		dst_rect.x = 0;
 	if (dst_rect.y < 0)

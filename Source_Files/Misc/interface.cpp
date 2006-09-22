@@ -2331,7 +2331,7 @@ static void handle_interface_menu_screen_click(
 		return; // fixes click-through movie bug
 #endif
 
-#if defined(SDL_FORCERES_HACK)
+#ifdef SDL
 	xoffset = (SDL_GetVideoSurface()->w - 640) / 2;
 	yoffset = (SDL_GetVideoSurface()->h - 480) / 2;
 #endif
@@ -2363,12 +2363,7 @@ static void handle_interface_menu_screen_click(
 				bool state;
 				
 				get_mouse_position(&x, &y);
-#if defined(SDL_FORCERES_HACK)
 				state= point_in_rectangle(x - xoffset, y - yoffset, screen_rect);
-#else
-				state = point_in_rectangle(x, y, screen_rect);
-#endif
-				
 				if(state != last_state)
 				{
 					draw_button(index, state);

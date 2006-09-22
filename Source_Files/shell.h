@@ -85,7 +85,7 @@ struct screen_mode_data
 	short acceleration;
 	
 	bool high_resolution;
-	bool fullscreen, unused1;	// CB: formerly texture_floor/texture_ceiling, which are no longer supported by the renderer
+	bool fullscreen, fill_the_screen;
 	bool draw_every_other_line;
 	
 	short bit_depth;  // currently 8 or 16

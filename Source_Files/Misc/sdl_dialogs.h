@@ -101,6 +101,10 @@ public:
 	// Activate next selectable widget
 	void activate_next_widget(void);
 
+	// exposed to allow toggling fill_the_screen
+	// don't call this unless you know what you're doing
+	void layout(void); 
+
 private:
 	SDL_Surface *get_surface(void) const;
 	void update(SDL_Rect r) const;
@@ -111,7 +115,6 @@ private:
 	void activate_prev_widget(void);
 	int find_widget(int x, int y);
 	void event(SDL_Event &e);
-	void layout(void);
 
 	SDL_Rect rect;				// Position relative to video surface, and dimensions
 

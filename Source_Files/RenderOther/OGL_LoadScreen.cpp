@@ -42,8 +42,8 @@ extern bool OGL_ClearScreen();
 
 #if defined(mac)
 extern WindowPtr screen_window;
-extern void bound_screen();
 #endif
+extern void bound_screen();
 
 bool OGL_LoadScreen::Start()
 {
@@ -71,8 +71,8 @@ bool OGL_LoadScreen::Start()
 	GetPortBounds(GetWindowPort(screen_window), &ScreenRect);
 	screenWidth = ScreenRect.right;
 	screenHeight = ScreenRect.bottom;
-	bound_screen();
 #endif
+	bound_screen();
 	
 	// the true width/height
 	int imageWidth = image.GetWidth() * image.GetVScale();
@@ -114,8 +114,8 @@ bool OGL_LoadScreen::Start()
 
 void OGL_LoadScreen::Stop()
 {
-//	glDeleteTextures(1, &texture_ref);
 	OGL_ClearScreen();
+	OGL_SwapBuffers();
 	Clear();
 }
 

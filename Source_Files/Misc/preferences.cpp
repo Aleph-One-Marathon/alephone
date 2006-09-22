@@ -403,6 +403,7 @@ void write_preferences(
 	fprintf(F,"  scmode_accel=\"%hd\"\n",graphics_preferences->screen_mode.acceleration);
 	fprintf(F,"  scmode_highres=\"%s\"\n",BoolString(graphics_preferences->screen_mode.high_resolution));
 	fprintf(F,"  scmode_fullscreen=\"%s\"\n",BoolString(graphics_preferences->screen_mode.fullscreen));
+	fprintf(F,"  scmode_fill_the_screen=\"%s\"\n", BoolString(graphics_preferences->screen_mode.fill_the_screen));
 	fprintf(F,"  scmode_bitdepth=\"%hd\"\n",graphics_preferences->screen_mode.bit_depth);
 	fprintf(F,"  scmode_gamma=\"%hd\"\n",graphics_preferences->screen_mode.gamma_level);
 #ifdef mac
@@ -619,6 +620,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.acceleration = _no_acceleration;
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = false;
+	preferences->screen_mode.fill_the_screen = false;
 	preferences->screen_mode.bit_depth = 16;
 #endif
 	
@@ -1351,6 +1353,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	else if (StringsEqual(Tag,"scmode_fullscreen"))
 	{
 		return ReadBooleanValue(Value,graphics_preferences->screen_mode.fullscreen);
+	}
+	else if (StringsEqual(Tag, "scmode_fill_the_screen"))
+	{
+		return ReadBooleanValue(Value, graphics_preferences->screen_mode.fill_the_screen);
 	}
 	else if (StringsEqual(Tag,"scmode_bitdepth"))
 	{

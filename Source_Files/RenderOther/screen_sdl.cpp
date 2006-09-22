@@ -90,6 +90,9 @@ extern bool OGL_HUDActive;
 bool OGL_TermActive = false;
 #endif
 
+static int desktop_width;
+static int desktop_height;
+
 // From shell_sdl.cpp
 extern bool option_nogamma;
 
@@ -151,6 +154,9 @@ void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog)
 		world_view->vertical_scale = 1;
 		world_view->tunnel_vision_active = false;
 
+		desktop_height = SDL_GetVideoInfo()->current_h;
+		desktop_width = SDL_GetVideoInfo()->current_w;
+
 	} else {
 
 		unload_all_collections();
@@ -161,11 +167,7 @@ void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog)
 
 	// Set screen to 640x480 without OpenGL for menu
 	screen_mode = *mode;
-#if defined(SDL_FORCERES_HACK)
-	change_screen_mode(get_screen_mode(), true);
-#else
 	change_screen_mode(640, 480, bit_depth, true);
-#endif
 	screen_initialized = true;
 }
 
@@ -249,12 +251,7 @@ void exit_screen(void)
 {
 	// Return to 640x480 without OpenGL
 	in_game = false;
-#if defined(SDL_FORCERES_HACK)
-	change_screen_mode(get_screen_mode(), true);
-#else
 	change_screen_mode(640, 480, bit_depth, true);
-#endif
-
 #ifdef HAVE_OPENGL
 	OGL_StopRun();
 #endif
@@ -267,6 +264,9 @@ void exit_screen(void)
 
 static void change_screen_mode(int width, int height, int depth, bool nogl)
 {
+
+	int vmode_height = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_height : height;
+	int vmode_width = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_width : width;
 	uint32 flags = (screen_mode.fullscreen ? SDL_FULLSCREEN : 0);
 #ifdef HAVE_OPENGL
 	if (!nogl && screen_mode.acceleration == _opengl_acceleration) {
@@ -296,14 +296,14 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		flags |= SDL_HWSURFACE | SDL_HWPALETTE;
 	}
 	
-	main_surface = SDL_SetVideoMode(width, height, depth, flags);
+	main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
 #ifdef HAVE_OPENGL
 #if SDL_VERSION_ATLEAST(1,2,6)
 	if (main_surface == NULL && !nogl && screen_mode.acceleration == _opengl_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
-		main_surface = SDL_SetVideoMode(width, height, depth, flags);
+		main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
 	}
 #endif
 #endif
@@ -318,7 +318,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
  		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
 
-		main_surface = SDL_SetVideoMode(width, height, depth, flags);
+		main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
  		if (main_surface == NULL) {
  			fprintf(stderr, "Can't open video display (%s)\n", SDL_GetError());
  			exit(1);
@@ -389,12 +389,21 @@ void toggle_fullscreen(bool fs)
 		if (in_game)
 			change_screen_mode(&screen_mode, true);
 		else {
-#if defined(SDL_FORCERES_HACK)
-		  change_screen_mode(get_screen_mode(), true);
-#else
 		  change_screen_mode(640, 480, bit_depth, true);
-#endif
 		  clear_screen();
+		}
+	}
+}
+
+void toggle_fill_the_screen(bool fill_the_screen)
+{
+	if (fill_the_screen != screen_mode.fill_the_screen) {
+		screen_mode.fill_the_screen = fill_the_screen;
+		if (in_game)
+			change_screen_mode(&screen_mode, true);
+		else {
+			change_screen_mode(640, 480, bit_depth, true);
+			clear_screen();
 		}
 	}
 }
@@ -640,7 +649,7 @@ void render_screen(short ticks_elapsed)
 
 			// Copy 2D rendering to screen
 
-			SDL_Rect term_dst = { OffsetWidth, OffsetHeight, 640, 320};
+			SDL_Rect term_dst = { OffsetWidth + ScreenOffsetWidth, OffsetHeight + ScreenOffsetHeight, 640, 320};
 			SDL_Rect term_ortho = { 0, 0, ScreenRect.w, ScreenRect.h };
 			SDL_SetAlpha(Term_Buffer, 0, 0xff);
 			OGL_Blitter blitter(*Term_Buffer, term_dst, term_ortho);
@@ -766,6 +775,22 @@ void build_direct_color_table(struct color_table *color_table, short bit_depth)
 	rgb_color *color = color_table->colors;
 	for (int i=0; i<256; i++, color++)
 		color->red = color->green = color->blue = i * 0x0101;
+}
+
+void bound_screen()
+{
+	screen_mode_data *mode = &screen_mode;
+	SDL_Rect ScreenRect = { 0, 0, main_surface->w, main_surface->h };
+
+	const ViewSizeData &VS = ViewSizes[mode->size];
+	short ScreenOffsetWidth = (ScreenRect.w - VS.OverallWidth) / 2;
+	short ScreenOffsetHeight = (ScreenRect.h - VS.OverallHeight) / 2;
+
+	SDL_Rect ViewRect = { ScreenOffsetWidth, ScreenOffsetHeight, VS.OverallWidth, VS.OverallHeight };
+
+	Rect sr = { ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
+	Rect vr = { ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
+	OGL_SetWindow(sr, vr, true);
 }
 
 void change_interface_clut(struct color_table *color_table)

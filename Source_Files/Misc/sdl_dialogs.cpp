@@ -883,12 +883,14 @@ void dialog::update(SDL_Rect r) const
  		glDisable(GL_FOG);
  		glDisable(GL_SCISSOR_TEST);
  		glDisable(GL_STENCIL_TEST);
+
+		glViewport(0, 0, ScreenRect.w, ScreenRect.h);
 		
  		// Direct projection
  		glMatrixMode(GL_PROJECTION);
  		glPushMatrix();
  		glLoadIdentity();
-		
+
 		gluOrtho2D(0.0, ScreenRect.w, 0.0, ScreenRect.h);
  		glMatrixMode(GL_MODELVIEW);
  		glPushMatrix();

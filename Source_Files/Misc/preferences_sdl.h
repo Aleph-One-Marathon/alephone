@@ -418,6 +418,8 @@ static void rendering_options_dialog_demux(void* arg)
 	}
 }
 
+extern void toggle_fill_the_screen(bool);
+
 static void graphics_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
@@ -441,6 +443,8 @@ static void graphics_dialog(void *arg)
 	d.add(size_w);
 	w_toggle *fullscreen_w = new w_toggle("Fullscreen", graphics_preferences->screen_mode.fullscreen);
 	d.add(fullscreen_w);
+	w_toggle *fill_screen_w = new w_toggle("Fill the screen", graphics_preferences->screen_mode.fill_the_screen);
+	d.add(fill_screen_w);
 	w_select_popup *gamma_w = new w_select_popup("Brightness");
 	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
 	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
@@ -477,7 +481,7 @@ static void graphics_dialog(void *arg)
 		    parent->draw();
 		    changed = true;
 	    }
-	    
+
 	    short renderer = static_cast<short>(renderer_w->get_selection());
 	    assert(renderer >= 0);
 	    if(renderer != graphics_preferences->screen_mode.acceleration) {
@@ -504,6 +508,14 @@ static void graphics_dialog(void *arg)
 	    short gamma = static_cast<short>(gamma_w->get_selection());
 	    if (gamma != graphics_preferences->screen_mode.gamma_level) {
 		    graphics_preferences->screen_mode.gamma_level = gamma;
+		    changed = true;
+	    }
+	    
+	    bool fill_the_screen = fill_screen_w->get_selection() != 0;
+	    if (fill_the_screen != graphics_preferences->screen_mode.fill_the_screen) {
+		    graphics_preferences->screen_mode.fill_the_screen = fill_the_screen;
+		    toggle_fill_the_screen(fill_the_screen);
+		    parent->layout();
 		    changed = true;
 	    }
 	    
