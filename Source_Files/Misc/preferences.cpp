@@ -617,9 +617,13 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	
 #else
 	preferences->screen_mode.size = _100_percent;
+#if defined(__APPLE__) && defined(__MACH__)
+	preferences->screen_mode.acceleration = _opengl_acceleration;
+#else
 	preferences->screen_mode.acceleration = _no_acceleration;
+#endif
 	preferences->screen_mode.high_resolution = true;
-	preferences->screen_mode.fullscreen = false;
+	preferences->screen_mode.fullscreen = true;
 	preferences->screen_mode.fill_the_screen = false;
 	preferences->screen_mode.bit_depth = 16;
 #endif
