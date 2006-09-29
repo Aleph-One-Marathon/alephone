@@ -1,0 +1,9 @@
+## Process this file with automake to produce Makefile.in 
+
+noinst_LIBRARIES = libtcpmess.a
+libtcpmess_a_SOURCES = CommunicationsChannel.h Message.h MessageDispatcher.h \
+  MessageHandler.h MessageInflater.h \
+  CommunicationsChannel.cpp Message.cpp MessageDispatcher.cpp MessageHandler.cpp\
+  MessageInflater.cpp
+
+INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files

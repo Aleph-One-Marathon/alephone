@@ -1,0 +1,213 @@
+<marathon>
+<!-- Make Marathon 2/oo flames, energy-weapon bolts, and hit sparks semitransparent -->
+
+<!-- Pure flames get type 3 -->
+
+<opengl>
+
+<!-- Rocket contrail -->
+<texture coll="4" bitmap="5" opac_type="3" opac_scale="1"/>
+
+<!-- Rocket explosion -->
+<texture coll="4" bitmap="14" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="15" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="16" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="17" opac_type="3" opac_scale="1"/>
+
+<!-- Bullet hit -->
+<texture coll="4" bitmap="18" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="19" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="20" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="21" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="22" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="23" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="24" opac_type="3" opac_scale="1"/>
+
+<!-- Fusion bolt -->
+<texture coll="4" bitmap="25" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="26" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="27" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="28" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="29" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="30" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="31" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="32" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="33" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="34" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="35" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="36" opac_type="2" opac_scale="1"/>
+<texture coll="4" bitmap="37" opac_type="2" opac_scale="1"/>
+
+<!-- Alien weapon hit -->
+<texture coll="4" bitmap="48" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="49" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="50" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="51" opac_type="3" opac_scale="1"/>
+
+<!-- Flamethrower -->
+<texture coll="4" bitmap="56" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="57" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="58" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="59" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="60" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="61" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="62" opac_type="3" opac_scale="1"/>
+
+<!-- Dying in flames -->
+<texture coll="4" bitmap="63" opac_type="1" opac_scale="1"/>
+<texture coll="4" bitmap="64" opac_type="1" opac_scale="1"/>
+<texture coll="4" bitmap="65" opac_type="1" opac_scale="1"/>
+<texture coll="4" bitmap="66" opac_type="1" opac_scale="1"/>
+
+<!-- Grenade explosion -->
+<texture coll="4" bitmap="68" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="69" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="70" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="71" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="72" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="73" opac_type="3" opac_scale="1"/>
+
+<!-- Alien weapon bolt -->
+<texture coll="4" bitmap="74" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="75" opac_type="3" opac_scale="1"/>
+<texture coll="4" bitmap="76" opac_type="3" opac_scale="1"/>
+
+<!-- Juggernaut hit spark -->
+<texture coll="2" bitmap="21" opac_type="3" opac_scale="1"/>
+<texture coll="2" bitmap="22" opac_type="3" opac_scale="1"/>
+<texture coll="2" bitmap="23" opac_type="3" opac_scale="1"/>
+<texture coll="2" bitmap="24" opac_type="3" opac_scale="1"/>
+
+<!-- Hunter hit spark -->
+<texture coll="5" bitmap="43" opac_type="3" opac_scale="1"/>
+<texture coll="5" bitmap="44" opac_type="3" opac_scale="1"/>
+<texture coll="5" bitmap="45" opac_type="3" opac_scale="1"/>
+<texture coll="5" bitmap="54" opac_type="3" opac_scale="1"/>
+
+<!-- Hunter bolt -->
+<texture coll="5" bitmap="46" opac_type="3" opac_scale="1.5"/>
+<texture coll="5" bitmap="47" opac_type="3" opac_scale="1.5"/>
+<texture coll="5" bitmap="48" opac_type="3" opac_scale="1.5"/>
+<texture coll="5" bitmap="49" opac_type="3" opac_scale="1.5"/>
+
+<!-- Hunter bolt hit -->
+<texture coll="5" bitmap="50" opac_type="3" opac_scale="1.5"/>
+<texture coll="5" bitmap="51" opac_type="3" opac_scale="1.5"/>
+<texture coll="5" bitmap="52" opac_type="3" opac_scale="1.5"/>
+<texture coll="5" bitmap="53" opac_type="3" opac_scale="1.5"/>
+
+<!-- Pfhor bolt -->
+<texture coll="9" bitmap="59" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="60" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="61" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="62" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="63" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="64" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="65" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="66" opac_type="3" opac_scale="1"/>
+
+<!-- Pfhor bolt hit -->
+<texture coll="9" bitmap="67" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="68" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="69" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="70" opac_type="3" opac_scale="1"/>
+<texture coll="9" bitmap="71" opac_type="3" opac_scale="1"/>
+
+<!-- S'pht'Kr hit/dying -->
+<texture coll="10" bitmap="39" opac_type="1" opac_scale="1"/>
+<texture coll="10" bitmap="40" opac_type="1" opac_scale="1"/>
+<texture coll="10" bitmap="41" opac_type="1" opac_scale="1"/>
+<texture coll="10" bitmap="42" opac_type="1" opac_scale="1"/>
+<texture coll="10" bitmap="43" opac_type="1" opac_scale="1"/>
+<texture coll="10" bitmap="44" opac_type="1" opac_scale="1"/>
+<texture coll="10" bitmap="45" opac_type="1" opac_scale="1"/>
+<texture coll="10" bitmap="46" opac_type="1" opac_scale="1"/>
+<texture coll="10" bitmap="47" opac_type="1" opac_scale="1"/>
+
+<!-- S'pht'Kr hit spark -->
+<texture coll="10" bitmap="31" opac_type="3" opac_scale="1"/>
+<texture coll="10" bitmap="32" opac_type="3" opac_scale="1"/>
+<texture coll="10" bitmap="33" opac_type="3" opac_scale="1"/>
+<texture coll="10" bitmap="34" opac_type="3" opac_scale="1"/>
+
+<!-- S'pht'Kr bolt -->
+<texture coll="10" bitmap="16" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="17" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="18" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="19" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="20" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="21" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="22" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="23" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="24" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="25" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="26" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="27" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="28" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="29" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="30" opac_type="3" opac_scale="1.5"/>
+
+<!-- S'pht'Kr bolt hit -->
+<texture coll="10" bitmap="35" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="36" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="37" opac_type="3" opac_scale="1.5"/>
+<texture coll="10" bitmap="38" opac_type="3" opac_scale="1.5"/>
+
+<!-- VacBob hit spark -->
+<texture coll="13" bitmap="64" opac_type="3" opac_scale="1"/>
+<texture coll="13" bitmap="65" opac_type="3" opac_scale="1"/>
+<texture coll="13" bitmap="66" opac_type="3" opac_scale="1"/>
+
+<!-- Enforcer hit spark -->
+<texture coll="14" bitmap="29" opac_type="3" opac_scale="1"/>
+<texture coll="14" bitmap="30" opac_type="3" opac_scale="1"/>
+<texture coll="14" bitmap="31" opac_type="3" opac_scale="1"/>
+<texture coll="14" bitmap="32" opac_type="3" opac_scale="1"/>
+
+<!-- Drone hit spark -->
+<texture coll="15" bitmap="18" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="19" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="20" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="44" opac_type="3" opac_scale="1"/>
+
+<!-- Drone bolt -->
+<texture coll="15" bitmap="29" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="30" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="31" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="32" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="33" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="34" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="35" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="36" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="37" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="38" opac_type="3" opac_scale="1"/>
+
+<!-- Drone bolt hit -->
+<texture coll="15" bitmap="24" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="25" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="26" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="27" opac_type="3" opac_scale="1"/>
+<texture coll="15" bitmap="28" opac_type="3" opac_scale="1"/>
+
+<!-- S'pht bolt -->
+<texture coll="16" bitmap="31" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="32" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="33" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="34" opac_type="3" opac_scale="1"/>
+
+<!-- S'pht bolt contrail-->
+<texture coll="16" bitmap="35" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="36" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="37" opac_type="3" opac_scale="1"/>
+
+<!-- S'pht bolt hit -->
+<texture coll="16" bitmap="25" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="26" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="27" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="28" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="29" opac_type="3" opac_scale="1"/>
+<texture coll="16" bitmap="30" opac_type="3" opac_scale="1"/>
+
+</opengl>
+
+</marathon>

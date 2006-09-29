@@ -1,0 +1,73 @@
+set exit 1
+
+unset program
+for i in {"Parameters"}
+	if "{i}" !~ /-Å/
+		set program "{i}"
+		break
+	end
+end
+
+if "{program}" == ""
+	echo "### {0} - Specify a program to build." > dev:stderr
+	echo "# Usage - {0} program [optionsÉ]" > dev:stderr
+	exit 1
+end
+
+set library cseries
+
+set Obj68k ":objects:"
+set Targ68k "nonexistent"
+set VersionCOptions ""
+set ObjPPC ":objects:"
+set TargPPC "nonexistent"
+set SymbolsPPC ""
+set VersionPPCCOptions ""
+
+if "{program}" == "{library}.debug.lib"
+	set Targ68k "{program}"
+	set Obj68k ":objects:68k:debug:"
+	set VersionCOptions "-mbg on -d DEBUG -d COMPILE_TIME=`Date -n`"
+else if "{program}" == "{library}.lib"
+	set Targ68k "{program}"
+	set Obj68k ":objects:68k:final:"
+	set VersionCOptions "-opt speed -d COMPILE_TIME=`Date -n`"
+else if "{program}" == "{library}.debug.xcoff"
+	set TargPPC "{program}"
+	set ObjPPC ":objects:ppc:debug:"
+	set SymbolsPPC "-sym on"
+	set VersionPPCCOptions "{SymbolsPPC} -d DEBUG -d COMPILE_TIME=`Date -n`"
+else if "{program}" == "{library}.sym.xcoff"
+	set TargPPC "{program}"
+	set ObjPPC ":objects:ppc:sym:"
+	set SymbolsPPC "-sym on"
+	set VersionPPCCOptions "{SymbolsPPC} -d COMPILE_TIME=`Date -n`"
+else if "{program}" == "{library}.xcoff"
+	set TargPPC "{program}"
+	set ObjPPC ":objects:ppc:final:"
+	set SymbolsPPC "-sym off"
+	set VersionPPCCOptions "-opt speed {SymbolsPPC} -d COMPILE_TIME=`Date -n`"
+else
+	echo "### {0} - Don't know how to build {program}." > dev:stderr
+	exit 1
+end
+
+export Targ68k
+export Obj68k
+export VersionCOptions
+export TargPPC
+export ObjPPC
+export SymbolsPPC
+export VersionPPCCOptions
+
+echo "# `date -t` ----- Build of {program}."
+echo "# `date -t` ----- Analyzing dependencies."
+begin
+	echo "set echo 1"
+	make -f makefile {"Parameters"}
+end > "{program}".makeout
+echo "# `date -t` ----- Executing build commands."
+"{program}".makeout
+delete "{program}".makeout
+echo "# `date -t` ----- Done."
+

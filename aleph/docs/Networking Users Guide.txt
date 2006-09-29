@@ -1,0 +1,146 @@
+Aleph One Networking User's Guide
+
+Document created: February 26, 2003, by Woody Zenfell, III.
+Most recent revision: January 1, 2005.
+
+
+Contents
+
+1  Document purpose
+2  Networking features overview
+3  Using the features
+3.1  Starting a new network game
+3.2  Saving a network game
+3.3  Resuming a saved game as a network game
+3.4  Using realtime network audio
+3.5  Miscellaneous notes
+4  Playing A1 on the Internet
+5  Challenges
+5.1  Incompatibilities between versions
+5.2  Dealing with NAT and firewalls
+5.2.1  A single computer behind NAT
+5.2.2  Multiple computers behind NAT
+6  Document history
+
+
+1  Document purpose
+
+This document exists to help Aleph One (http://source.bungie.org/) players understand the status of network game support, and to give some helpful hints.
+
+This document does not provide a technical overview of Aleph One's network protocol or code.  For that sort of thing, see the marathon-devel mailing list archives (http://sourceforge.net/mailarchive/forum.php?forum=marathon-devel), the Reference Information section under Engine Development at source.bungie.org, and (of course) the source code itself.
+
+
+2  Networking features overview
+
+All recent builds of A1 should be able to gather, join, start, and successfully play network games on a LAN or on the Internet.  (The Mac OS Classic version hasn't been updated in a long time, though, so it may not work so well.)
+
+Cross-platform netplay works.  That is, one network game could have a Linux SDL player, a Mac OS X Carbon player, a Mac OS X SDL player, and a Windows SDL player all together.
+
+All versions support the playback of realtime network audio (i.e. they can "hear" other players' speech in the game).  The Windows SDL, Mac OS X SDL, Mac OS X Carbon, and Mac OS Classic versions support the transmission of realtime network audio (i.e. they can "talk" in the game).
+
+All versions support saving and restoring network games.  SDL versions can restore any single-player or multiplayer game as either a single-player game or a network game.  Mac OS Carbon and Classic versions will restore a game as the same type that was saved.
+
+SDL versions support gatherer-to-joiners pregame text messaging.  I.e. after gathering some players but before starting a game, the gatherer can type messages that joiners will see.  Mac OS Carbon or Classic gatherers cannot send these messages, and Mac OS Carbon or Classic joiners will not see them, but sending a message to a Mac OS Carbon or Classic joiner will not cause any problems.
+
+
+3  Using the features
+
+3.1  Starting a new network game
+
+One player should click "Gather Network Game".  Other players should click "Join Network Game".  In a LAN game, the gatherer should be able to "see" the joiners in his dialog box and add them to the game.  If not, or if playing on the Internet, joiners may need to "join by address", typing in the gatherer's numeric IP address or IP hostname.  Once the desired players have been added, the gatherer clicks the button to start the game.
+
+SDL versions support "auto-gather", in which the gathering computer will automatically try to add every player it can "see".
+
+Players may not join games that have already started.  (Yet.)
+
+3.2  Saving a network game
+
+Using a pattern buffer will save the game on your computer (but nobody else's).  To avoid timing problems associated with halting the game and displaying a dialog box, a filename (based on the current level's name) will be selected for you.  The filename will be chosen so as to not overwrite any of your existing saved games.  The saved-game will be placed in the standard saved-game directory (which varies by platform).  You should hear the pattern buffer bleep and see a printed message near the upper-left of your screen when you successfully save.
+
+If you double-use a pattern buffer (use it twice quickly, like double-clicking a mouse), A1 will attempt to overwrite a recent saved-game instead of creating a new one, as follows:
+
++ If you have saved a game since this netplay session started, replace the most recent saved-game.
++ If this is a resumed game and you were the one who gathered the network game (see below), replace the saved-game file that was restored.
++ Otherwise, create a new file as if you'd only single-used the pattern buffer.
+
+3.3  Resuming a saved game as a network game
+
+Only one machine (the gatherer) participating in the network game needs to have the saved-game file.  The players and the number of players in the resumed game may differ from those in the saved game.
+
+The gatherer should click "Continue Saved Game" at the main menu screen, then choose an appropriate saved-game file.  Some versions optionally allow the resumption of single-player games as network games (and, optionally, the resumption of multiplayer games as single-player games); others can only resume network games as network games.  Other players should click "Join Network Game".  The remainder of the process is nearly identical to that of starting a new network game (see above).  Note that the gatherer will be unable to change some elements in the Setup Network Game dialog (they'll come from the saved game), and elements such as the Map file and Level may display incorrect values (don't worry; things will work right nonetheless).
+
+Players in the resumed game are matched up with players in the saved game as follows:
+
+First, resume-game players are assigned to saved-game players that have exactly the same names.  So if a player named "Carnage Asada" was playing on one machine when the game was saved, but is playing on a different machine (and has set his name correctly) now, he will still take over his own character.  (Note for resuming a multiplayer game as a single-player game (or vice versa): the name used for the single player is (was) taken from the Preferences.)
+
+Next, any unassigned resume-game players are arbitrarily assigned to any unassigned saved-game players.
+
+Finally, if there are more resume-game players than saved-game players, the remaining resume-game players are spawned as new players at the level's normal starting points.  If instead there are more saved-game players than resume-game players, the extra saved-game players will be "zombies" - they exist, but never do anything.
+
+Note that zombies will retain the name and colors of the saved player.  In all other cases, players will take on the resume-game players' names and colors.
+
+3.4  Using realtime network audio
+
+Check that your microphone is selected as your "primary" input device, and configure its gain appropriately (typically in your operating system's control panels).  Use a simple sound recording program (one probably came with your OS) just to test your setup.  Configure a "microphone" key in the Aleph One controls preferences.  Play a network game in which the gatherer has enabled realtime network audio.  (If the gatherer was not given the option, it should be enabled.)  While actually in the game, hold down your microphone key, speak clearly and directly into the microphone, and release the key.  Note that you will not (currently) receive any feedback whatsoever that you made a transmission.  You may not talk while anyone else is talking, and if you are using the ring network protocol (no longer the default), you may not talk if your marine is dead.
+
+3.5  Miscellaneous notes
+
+Remember, when watching a film or playing a cooperative or team game, the "Backspace" or "Delete" (not "Del") key switches which player you're watching.
+
+To ensure consistency, currently "Auto-Switch Weapons" and "Auto-Recenter View" are always enabled in network games.
+
+Note that custom MML settings that adjust the behavior of any game elements are not currently considered for consistency.  The relevant MML settings must be identical on all machines participating in a network game, or the game will go "out-of-sync".  (MML settings that affect only rendering, logging, etc. need not match.)
+
+Any level that uses the A1 scripting language "Pfhortran" is very likely to exhibit problems (including out-of-sync) in a network game.  Lua scripts, if properly written, should work in netgames.
+
+If the gatherer selected a Lua script in the Setup Network Game dialog, films of that game will not play back properly.
+
+There may be an issue in Aleph One currently if some players have selected a Map file (in their Environment Preferences) that has MML, Lua, or Pfhortran embedded in it (e.g., in the resource fork for Macintosh platforms).  If netgames seem to consistently go out-of-sync, players should try all selecting the same map in their Environment Preferences - or at least each selecting some map known to have no associated MML or Pfhortran.
+
+"Out-of-sync" describes the situation where players continue to play a network game, and their actions are transmitted across the wire to the other players etc., but somehow the game-world on some computers differs from that on the others, so e.g. a player who has been killed on one machine may seem to be alive and quite well on another.  Once a game goes "out-of-sync" there's little point to continuing to play it.  A1 does not currently detect or recover from out-of-sync conditions, so your only recourse is to quit out and try again.  Note that realtime network audio should continue to work even in out-of-sync, so you can advise the other players.
+
+
+4  Playing A1 on the Internet
+
+Aleph One now offers a new star-topology network game protocol in addition to Bungie's ring protocol (which has been ported to use IP rather than AppleTalk).  Compared with the ring, the star protocol improves A1's Internet play experience dramatically and has few disadvantages.  So, it has been made the default network game protocol for Aleph One.
+
+Ring protocol support is retained for the curious, for those who need to be able to play with an older ring-only version of Aleph One, and because (unlike the star protocol) the ring protocol lags all players in the game equally (although this lag will be greater - sometimes far greater - than that experienced by the worst-lagged player in a star-protocol game).
+
+Aleph One used to only send uncompressed realtime network audio (microphone chat) data, which was too great a load on most folks' upstream Internet connections.  Now, Aleph One can use the 'speex' speech compression library (enabled by default) to reduce the data rate dramatically at little cost to speech intelligibility, so this should not really be an issue.
+
+In the star protocol, each "spoke" (one spoke per player in the game) communicates only with the "hub" (one hub per game).  Currently, the hub is run on the gatherer's machine.  Spokes with lower latencies to the hub will enjoy more responsive gameplay than spokes with higher latencies; the gatherer, having his spoke as close to the hub as is possible, will enjoy the most responsive gameplay.
+
+The throughput required of each spoke in the star protocol is fairly minimal, small enough to fit in a 56kbps dialup modem's pipe.  (Playing by modem is _not_ recommended, though.)  The throughput required of the hub is much greater;  it's estimated that a standard consumer DSL or cable modem line can support a hub in a 5-6 player game.
+
+The throughput required of each station in the ring protocol is equal and is fairly low.
+
+When playing on the Internet, joiners must use "Join by Address".  Also, see the section on NAT and firewalls below.
+
+As of mid-April 2003, people have begun to use the AOL Instant Messaging chat room named "Aleph One" to find other potential Internet players.
+
+
+5  Challenges
+
+5.1  Incompatibilities between versions
+
+Players using the ring network protocol (including anyone using a build dated earlier than May 25, 2003) will not be able to "see" or "be seen" in the Players on Network box by players using the star protocol (the current default), and vice versa.  Changes to the network protocol in late 2004 have also introduced an incompatibility.  Earlier builds will not be able to "see" or "be seen" by players using a newer build.
+
+From time to time, a newer version of Aleph One will have some additional network features, or will introduce different rules for some game elements.  If some players are using a copy of A1 that has the changes, and others are using older versions of A1, the game could go out of sync or have other problems.  That is, two versions of Aleph One may be compatible in some circumstances, but not in others.  Currently, when a gatherer with a newer version is starting a game that uses special features or elements whose behavior has changed, incompatable joiners should not appear on the available players list.
+
+5.2  Dealing with NAT and firewalls
+
+Note: NAT (Network Address Translation) is sometimes called "IP Masquerading" or, more generically, "Internet Connection Sharing".  It's a facility that lets multiple computers on a private network ("behind the NAT") share a single public IP address.  NAT may run on a standard computer or on a dedicated routing device.
+
+Note also that Mac OS X has a built-in software firewall, which can be configured in the Sharing system preferences.
+
+Currently, if you are behind a NAT or firewall trying to play a game with people on the "outside", there is no need to configure your NAT or firewall if you are joining a game.  You will need to forward TCP and UDP port 4226 to gather a game.
+
+
+6  Document history
+
+February 26, 2003 (Woody Zenfell, III):  Created.
+March 19, 2003 (Woody Zenfell, III):  Revised and posted to marathon-devel for feedback.
+April 24, 2003 (Woody Zenfell, III):  Added section "Incompatibility between versions".  Added note about "Aleph One" AIM chat room.
+May 6, 2003 (Woody Zenfell, III):  In light of experience, reworked comments about Mac OS Classic version's networking and Internet play to be more positive.  Added caution about potential out-of-sync when a Pfhortran or MML-bearing Map is selected in Environment Preferences.  Added details about network microphone bandwidth.  Completely rewrote NAT/firewalls section to be friendlier and more explicit, and to cover new configurable game-port functionality.
+May 29, 2003 (Woody Zenfell, III):  Updated to include information about the star protocol and about speex realtime audio speech compression.
+January 1, 2005 (James Willson):  Updated to reflect changes in the code, in particular NAT/firewalls

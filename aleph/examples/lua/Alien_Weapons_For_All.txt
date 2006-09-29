@@ -1,0 +1,48 @@
+
+--[[	Alien Weapons For All v1.0, Alexei Svitkine
+	May 31, 2005
+
+	This is actually a very simple script intended as a demonstration.
+	Basically, all assault rifles on the level are replaced with alien
+	weapons, including any assault rifles that might appear mid-game.
+
+	Enjoy.
+
+	How it works:
+	  - When the level starts, init() is called, which looks for
+	    any items of type _item_assault_rifle, and deletes them,
+	    while creating a new item of type _item_alien_weapon in
+	    the same polygon where the assault rifle was located.
+	  - Whenever a new item created somewhere, item_created(item_index)
+	    is called, which checks if it is of type _item_assault_rifle,
+	    and if so replaces it with an alien weapon.
+
+	Note: Currently, the only problem with this is the items are not
+	      being created at the exact same location as the items being
+	      replaced, only in the center of the same polygon - which is
+	      close, but not quite the same place.
+]]
+
+
+function init()
+	for item_index = 0, MAXIMUM_OBJECTS_PER_MAP - 1, 1 do
+		valid = item_index_valid(item_index);
+		if (valid == true) then
+			type = get_item_type(item_index);
+			if (type == _item_assault_rifle) then
+				polygon = get_item_polygon(item_index);
+				delete_item(item_index);
+				new_item(_item_alien_weapon, polygon);
+			end
+		end
+	end
+end
+
+function item_created(item_index)
+	type = get_item_type(item_index);
+	if (type == _item_assault_rifle) then
+		polygon = get_item_polygon(item_index);
+		delete_item(item_index);
+		new_item(_item_alien_weapon, polygon);
+	end
+end

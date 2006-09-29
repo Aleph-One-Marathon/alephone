@@ -1,0 +1,95 @@
+
+--[[
+	One-Per-Team KOTH v1.1.1
+	Woody Zenfell, III
+
+	I am donating this work to the public domain.
+
+	This is designed to be played on top of the standard
+	King of the Hill game type.  Only one player from each team
+	will score hill time at any moment, so teammates can defend
+	the hill from places besides the hill.
+
+	July 24, 2003:
+		Created.
+
+	July 30, 2003: (v1.1)
+		Revised to use new use_lua_compass(player_index, bool).
+
+	August 25, 2003: (v1.1.1)
+		Bug fix.
+]]
+
+
+local kNone		= -1;
+local kBlinkPeriod	= 20;
+local kBlinkDutyCycle	= 1/4;
+
+
+local sScoringPlayerOnTeam	= {};	-- which player on the team is currently scoring?
+local sSavedPlayerScore		= {};	-- used to indirectly determine which players are on the hill
+local sPlayerCompassActive	= {};	-- is this player's compass active (are we letting the game control it)?
+local sTickCount		= 0;	-- used to time animations (compass blinking)
+
+
+function init()
+	for thePlayer = 0, number_of_players() - 1 do
+		sScoringPlayerOnTeam[get_player_team(thePlayer)] = kNone;
+		sSavedPlayerScore[thePlayer] = 0;
+		sPlayerCompassActive[thePlayer] = true;
+		set_lua_compass_state(thePlayer, _network_compass_all_off);
+	end
+	sTickCount = 0;
+end -- init
+
+
+function idle()
+	-- Forget players no longer scoring
+	for theTeam, theScorer in sScoringPlayerOnTeam do
+		if(theScorer ~= kNone) then
+			if(get_points(theScorer) == sSavedPlayerScore[theScorer]) then
+				sScoringPlayerOnTeam[theTeam] = kNone;
+			end
+		end
+	end
+
+	-- See who's scoring
+	for thePlayer = 0, number_of_players() - 1 do
+		local compassShouldBeActive = true;
+		local thePlayerScore = get_points(thePlayer);
+		local thePlayerTeam = get_player_team(thePlayer);
+
+		if(thePlayerScore ~= sSavedPlayerScore[thePlayer]) then
+			-- This player is on the hill
+
+			if(sScoringPlayerOnTeam[thePlayerTeam] == kNone) then
+				-- This player is now his team's scorer
+				sScoringPlayerOnTeam[thePlayerTeam] = thePlayer;
+
+			elseif(sScoringPlayerOnTeam[thePlayerTeam] ~= thePlayer) then
+				-- Someone else on this player's team is scoring, so this player won't
+				compassShouldBeActive = false;
+				set_points(thePlayer, sSavedPlayerScore[thePlayer]);
+				thePlayerScore = sSavedPlayerScore[thePlayer];
+
+			-- Else, this player continues to be his team's scorer
+			end
+
+			sSavedPlayerScore[thePlayer] = thePlayerScore;
+		else
+			-- This player is NOT on the hill... blink his compass if team not scoring
+
+			if((sScoringPlayerOnTeam[thePlayerTeam] == kNone) and math.mod(sTickCount, kBlinkPeriod) < kBlinkPeriod * kBlinkDutyCycle) then
+				compassShouldBeActive = false;
+			end
+		end
+
+		if(compassShouldBeActive ~= sPlayerCompassActive[thePlayer]) then
+			use_lua_compass(thePlayer, not compassShouldBeActive);
+			sPlayerCompassActive[thePlayer] = compassShouldBeActive;
+		end
+	end
+
+	sTickCount = sTickCount + 1;
+
+end -- idle

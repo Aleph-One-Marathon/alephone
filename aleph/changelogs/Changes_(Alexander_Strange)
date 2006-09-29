@@ -1,0 +1,2 @@
+December 17, 2001:
+Turned the Classic fader code back off if we aren't in Classic. It was causing colorshift problems.

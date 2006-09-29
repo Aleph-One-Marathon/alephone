@@ -1,0 +1,1431 @@
+The project file is a CodeWarrior 4 one, and the 68K and FAT targets have been removed
+because I was too lazy to change the target every time. However, it should be easy to add
+such targets if one so desires.
+
+January 30, 2000 -> Version 0.1
+
+Changes for making variable names more C++-friendly:
+class -> _class
+new -> _new
+friend -> _friend
+virtual -> _virtual
+private -> _private
+
+Did various typecasts
+Removed some "static" declarations because of conflicts with "extern" declarations
+Suppressed "process_screen_click()" in screen.c -- it does nothing
+
+Surrounded choose_saved_game_to_load with "extern "C"" -- that's because this function has
+different arg types in different places: a generic file descriptor in one place,
+and a FSSpec in another.
+
+Increased transparent-lines limit (MAXIMUM_NODE_ALIASES) from 20 (MacOS version)
+to 32 (Win32 version).
+Added an assert() for the case of DEBUG being turned off.
+
+
+February 1, 2000 -> Version 0.2
+
+Created a "GrowableList" C++ template class for dynamically-allocated lists.
+Replaced "aliases" in "render.c" with GrowableList<node_data *> NodeAliases.
+Seems to work successfully. Several resource limits may be a thing of the past.
+
+Added drop shadow to fps display in screen.c
+Changed font size in screen.c to 14 (more readable)
+
+
+February 2, 2000
+
+Added Marathon Infinity sound definitions to mysound.h
+Changed soundfile type code from 'snd2' to 'snd°' in tags.h;
+set app creator code to 26.A ("Aleph").
+Changed marathon2.resource appropriately.
+Discovered that SOUND_FILE_TAG in sound_definitions.h should stay 'snd2'
+
+Tracking down why Moo ambient sound causes a "game error".
+Answer: Forge automatically sets the header version to 4 (the Moo value)
+whenever Moo stuff is included. Both wad.h and wad.c were chaned to reflect that fact.
+
+
+February 3, 2000 -> Version 0.3
+
+Removed as superfluous:
+demos.demo folder (empty)
+graphics folder and contents (empty files)
+game.resource (empty file)
+
+In marathon2.resource, STR# resource 129 ("Filenames"), changed these strings:
+#5, "Marathon 2 Preferences" to "Aleph One Preferences"
+#9, "Marathon 2 Recording" to "Aleph One Recording"
+
+Suppressed the "dprintf" in open_file_for_reading() in macintosh_files.h,
+because there is no need for a debug interrupt when the Marathon engine
+already knows how to handle nonexistent files.
+
+
+February 3, 2000
+
+Found that the VacBobs take up the _collection_madd slot, and renamed that slot.
+Fixed files_macintosh.c to suppress all the dprintf's.
+
+Added Jjaro control panels to devices.c; I simply cloned the sewage ones.
+Added Jjaro media type and effects to effect_definitions.h, effects.h, media_definitions.h, media.h
+Changed _collection_madd to _collection_vacbob in shapes.c
+Added Jjaro-goo handling to overhead_map.c; treating it like sewage
+Treating Jjaro goo like sewage in monsters.c
+Accounting for Jjaro media apparently complete.
+
+Added VacBobs to monsters.h and monster_definitions.h
+VacBob blood-splatter effects in effects.h and effect_definitions.h
+
+
+February 4, 2000 -> Version 0.4
+
+Added SMG and ammo to items.h and item_definitions.h
+Added SMG bullet to projectiles.h and projectile_definitions.h
+
+Added effects of "penetrates liquid boundary" flag to projectiles.c;
+made it behave like "penetrates liquid" flag until its behavior is better understood.
+
+Added SMG stuff to weapons.h and weapon_definitions.h
+Added SMG display to game_window.c
+Added SMG wielding to player.c
+Renamed environment set #4 in map.c to "jjaro"
+
+Changed halt() to assert(false), since it is only called in abnormal circumstances,
+and since the assert macro is helpful for tracking down what had gone wrong
+(it shows the routine name and line number).
+
+In the file typecodes in tags.h,
+changed most of the other 2's to °'s to be Marathon-Infinity compatible,
+except for the map file type, which has to remain 'sce2'.
+
+These typecodes ought to be moved into the resource fork for easier patching.
+
+Added SMG's name to marathon2.resource STR# 137 to parallel Moo.
+	
+Determined that the projectile flag "penetrates media boundary" means making a splash at a surface
+but nevertheless continuing. However, that has proved rather difficult to implement,
+and I will have to think more carefully about how to do that. The idea is to have it hit a liquid surface, going either upward or downward,
+but for it to continue onwards.
+
+
+February 5, 2000
+
+In render.c, dynamic allocation now done of node data, endpoint-clip data, and line-clip data.
+Better handling of case of scenario files having no resource forks in images.c
+
+In render.c, dynamic allocation now done of accumulated endpoint-clip and line-clip data,
+sorted nodes and clipping windows.
+Suppressed WHITE_SCREEN_BETWEEN_FRAMES in screen.c; it blanks out the screen before each rendering;
+it is set during debug mode, which these builds are using.
+Switching it off creates that smeared look in unrendered places.
+
+February 6, 2000 -> Version 0.5
+
+Savegames are handled in game_wad.c; physics-model support added there
+Added definition-structure size accessors to monsters.c/h, effects.c/h, projectiles.c/h, weapons.c/h and player.h/physics.c
+The "physics model" in the sense of the Marathon source code is the player physics.
+Tracked down dispatching of main menu (New Game, Continue Saved Game, etc.) to interface.c
+"New game" is begin_game() -> new_game() -> goto_level() ->load_level_from_map() -> process_map_wad()
+However, start_game() does setup after loading
+
+Moved SOCK resources from M1, Moo 1.2, and Moo 1.5 into their own file.
+Will link with the M2 one until someone reports on the results of linking with the others.
+These are, however, compiled 68K code, built from the file network_listener.a .
+
+Physics-model loading and saving now works, with the persistent-physics bug being partially fixed.
+There will be no unwanted persistence if there is a physics-mode file in Aleph One's folder;
+however, there will be if there is none. Which means that the built-in defaults will have to be
+cached somehow.
+
+Added system for loading typecodes from the resource fork;
+had to modify some of the other code to turn switch/case statements
+into if-then-else statements, because switch/case statements only accept constants.
+Uses STR# resource 200 with these string ID's:
+
+1: App creator code
+2: Map
+3: Savegame
+4: Film
+5: Physics
+6: Shapes
+7: Sounds
+8: Patch [never implemented]
+
+In game_wad.c, changed physics-chunk-loading code so that it reads smaller physics models correctly.
+Marathon Infinity apparently has Marathon-2-sized physics models embedded into its levels.
+
+Also changed render.c so that it preallocates its growable lists to a significant size.
+
+February 8, 2000
+
+Used Jesse Simko's liquid-style icons to produce a complete set of Aleph One icons.
+
+February 9, 2000
+
+Started on fixing the remaining bugs.
+
+Had placed loading of typecodes in initialize_marathon() in marathon2.c
+
+Absence of initial splash screen:
+Found resource-ID offsets of 16-bit and 32-bit images in images.c
+get_picture_resource_from_images()
+draw_full_screen_pict_resource_from_images()
+draw_picture()
+initialize_images_manager() -- looks for "Images" [that file contains the status-display bkgd]
+That screen's base-resource value is 1000 (INTRO_SCREEN_BASE in screen_definitions.h)
+In interface.c, display_screens[] -- initial screen is first; called from get_screen_data()
+
+Number of credit screens: NUMBER_OF_CREDIT_SCREENS in interface.c
+initialize_game_state() -> display_introduction()
+_display_intro_screens is the first display state, state 0
+
+Changed in interface.c:
+NUMBER_OF_INTRO_SCREENS to 3
+NUMBER_OF_CREDIT_SCREENS to 7
+
+Suppressed "ambiguous clip flags" warning in render.c;
+it gets activated at excessive distances.
+
+Made it stop at nonexistent screens; in interface.c, next_game_screen() moves to next one.
+
+February 10, 2000 -> Version 0.6
+
+Finally got "penetrates media boundaries" flag working right.
+
+Attempting to locate where to reverse run/walk and swim/sink; need to find local player's state.
+The one with index local_player_index. Modified preferences.h, preference.c, and vbl_macintosh.c;
+used stuff in player.h and player.c. "vbl" is the Vertical Blank interrupt, which the Marathon engine
+uses to examine the inputs. Modified parse_keymap() in vbl_macintosh.c; this works in single-player;
+not sure how it will work in multiplayer. May work in multiplayer also; it calls GetKeys(),
+which presumably gets the keypresses straight from the source. It also calls stuff for special
+input controllers.
+
+February 11, 2000
+
+Decided to set several limits from the resource fork instead of the code;
+these are all stuff that's used internally
+MAXIMUM_OBJECTS_PER_MAP in map.h [384] (in current existence; SAVED_OBJECTS is from the mapfile)
+MAXIMUM_MONSTERS_PER_MAP in monsters.h [220] (in current existence)
+MAXIMUM_PATHS in pathfinding.c [20] (determines number of active monsters)
+MAXIMUM_PROJECTILES_PER_MAP in projectiles.h [64] (in current existence)
+MAXIMUM_EFFECTS_PER_MAP in effects.h [64] (currently-active effects)
+MAXIMUM_RENDER_OBJECTS in render.c [72] (how many to render?)
+
+There were numerous other limits, such as to the number of endpoints, lines, and polygons,
+but these require editor support before making any changes.
+And some that would require data-file-format changes. Here, I'll only change stuff
+that gets set up in the game intself, the dynamic limits.
+
+Created dynamic_limits.h and dynamic_limits.c
+
+Changed marathon2.c also.
+
+Decided against changing the path search area or the number of path points
+at this time -- those would allow longer paths, but might take longer to calculate.
+
+Curiosity: MAXIMUM_LEVELS_PER_MAP (value: 128) -- height levels or number of maps in map file?
+
+February 12, 2000 -> Version 0.6.3
+
+Started on recursive directory searches in preferences.c;
+they are normally turned on only for FINAL being defined;
+I turned them on in all cases.
+Also increasing the number of files listed (MAXIMUM_FIND_FILES) to 128;
+what is the maximum number of entries a MacOS menu can have?
+
+Changed default for input-preferences modifiers to "interchange run/walk",
+in default_input_preferences() in preferences.c.
+
+Changed the BNDL resource so that physics, shapes, sounds, savegames, and films have Moo's types.
+
+Added MARATHON_INFINITY_DATA_VERSION to editor.h;
+added use of that to where analogous constants _ONE_ and _TWO_ are used.
+This makes it possible to read Moo savegames.
+
+Changed "vacbob" to "civilian_fusion" in definitions (some had been done earlier).
+
+The routine find_or_add_color() in shapes.c will bomb if there are too many colors;
+use the sensible fallback of returning the nearest color.
+
+Suppressed debug_print_weapon_status() in handle_game_key() in shell.c
+
+February 13, 2000 -> Version 0.6.5
+
+Changed cskeys.h to get more up-to-date key codes (using Inside Macintosh: Event Manager)
+
+Worked on screendump facility, dump_screen(); put it in screen.c; it seems to work.
+It's activated by key F13.
+Also added system-file "snapshot" sound.
+
+Exploring the "floating mine" bug
+
+February 14, 2000 -> Version 0.6.6
+
+Fixed floating-mine bug -- due to incorrect parentheses in setting of will_go_through
+when testing for a media hit.
+
+Also added "escape" as a screenshot-making key.
+
+Checking out problem with old Marathon 2 maps produced by Pfhorte: static_data (Minf) chunks
+are 86 instead of 88 bytes long. Fix: check for 86-byte chunks and fill in
+if that's what was found. In file game_wad.c
+
+Setting dynamic limits and filetypes in resources 'DLim' and 'FTyp', which can be edited
+with the help of appropriate TMPL resources (editor templates).
+
+Need to do more debugging of Pfhorte-produced maps.
+
+Made unrecognized transfer modes act like "normal" in render.c (more graceful degradation)
+Made non-solid lines with no other-side polygons seem solid in projectiles.c
+
+Finding source of error in map "Castles2". Happens inside of build_render_tree()
+-> cast_render_ray() -> next_polygon_along_line(). It featured checking if a line was transparent,
+while not checking whether there was a polygon on the other side. Fixed it to include that
+other-side check.
+
+Modifying world.c so that distance calculations are done with long values,
+as far as is reasonable.
+
+Added some idiot-proofing to the ticks-per-frame value in animate_object() in map.c
+
+Added item animation. No sign of a performance hit :-)
+
+February 15, 2000 -> Version 7
+
+Changed "escape" to F8, so that screenshots now have the keys F8 and F13.
+
+Added supported for objets that have animation attribute _unanimated;
+used my 1-10 Twiddler to verify the randomization and the stationary nature.
+
+Suppressed some consistency checks in map.c and map_accessors.c to get around
+some Pfhorte bugs which appear in maps like "Pfhlush after Using".
+
+Added more graceful degradation in the case of incorrect sound and sound-type indices
+for ambient and random sounds; some Pfhorte maps have a random sound index of 8 (!).
+That degradation is simply to be silent :-)
+
+Decided to do long-distance views, though with some kludges that are designed
+to avoid modifying the endpoint data. In particular, its upper byte of its "flags"
+are unused, making them available to store the upper digits of a long coordinate value.
+In effect, what will be happening is some overflow handling.
+
+Flag-bit use:
+
+| 4 (upper X digits) | 4 (upper Y digits) | 8 (used for what the flags are typically used for)
+Those upper X and Y digits are added just above the short-integer digits and the top digit
+sign-extended.
+
+Routines added to world.c to store a pair of long values as shorts with these flag manipulations,
+and vice versa -- and for doing transforms in this fashion.
+
+Partially successful; need to do some more work on this.
+
+February 16, 2000
+
+Nearly completely successful in squashing long-distance bug.
+
+Fixed bug in monsters.c; checked to see if there is a polygon on the other side of a
+transparent line.
+
+Fixed the "penetrates media boundaries" behavior in projectiles.c yet again. SMG's will produce
+splashes, and a rocket may produce two detonations in a row.
+
+Made comm terminals quit gracefully if no terminal-data chunk could be found (computer_interface.c).
+
+Cursor now hidden after warning about non-Bungie maps.
+
+February 17, 2000 -> Version 0.7.3
+
+Suppressed cursor after warning about non-Bungie map files (game_wad.c).
+Changed scottish_textures.h to be more long-distance-friendly;
+the world geometry is now rendered successfully at long distances.
+
+Turned cross-products into double-precision floats for guaranteed precision.
+
+Added long-distance support to sprites. However, there is a bug where they turn 180 degrees
+at half the world size.
+
+In render.c, the effects of X_MIRRORED were implemented, but not Y_MIRRORED.
+
+Improved some distance calculations that involved GUESS_HYPOTENUSE() and arctangent() in order to be
+long-distance friendly: map.c, monsters.c, projectiles.c
+
+Turned arctangent() into a faster and long-distance-friendly routine
+that gives more accurate results near +/- pi/2. It searches the table with a binary search.
+
+February 18, 2000
+
+Changed scottish_textures.c so that long-distance rendering will work properly -- made
+depth values long-distance-friendly.
+
+Suppressed the dprintf()'s in computer_interface.c, so as to eliminate warning messages
+such as about terminal pictures being too big.
+
+Made VacBobs look like Bobs in motion_detector.c and overhead_map.c
+
+February 19, 2000 -> Version 0.7.5
+
+Got the chase-cam to work after a humongous amount of trial and error.
+It uses STR# resource, entry 1 for the chase cam's distance
+in World Units.
+
+Fixed the SMG-ammo-display bug in game_window.c; it now looks more like Moo.
+
+Suppressed debug messages in weapons.c in get_trigger_definition()
+
+Fixed off-by-one asserts in load routines in game_wad.c; also did correct save size
+of media stuff in tag_to_global_array_and_size() in that file. One problem:
+dynamic_data in map.h lacks a count of current number of media types.
+
+Made directory searches recursive in wad_macintosh.c
+
+Added media-counting feature to media.c/h, and use it to count number that are saved.
+However, this produces incompatibilities with Marathon Infinity, which expects (Max # - 1)
+of them.
+
+Succeeded in implementing a chase cam. It had to be implemented with
+keep_line_segment_out_of_walls(), which uses the exclusion zones to keep the viewpoint
+away from the walls. The bouncy-wall bug appears to be an exclusion-zone bug.
+
+It reads the backward distance from STR# resource 200; if it isn't present,
+the chase cam is permanently inactive. This has the plus of not loading the player shapes,
+which can be bulky.
+
+Debugging of problem with picking up items on ledges. Examining how neighboring polygons
+are found. swipe_nearby_items() in items.c calls get_map_indexes() to find out; this is
+defined in map_accessors.h, where it accesses map_indexes. These are calculated in
+precalculate_map_indexes() in map_constructors.c; this calls find_intersecting_endpoints_and_lines(),
+which calls flood_map() (flood_map.c), which calls intersecting_flood_proc().
+This is a cost function for flood_map().
+
+That was such a mess that I've decided on a kludge: look at the neighbors of
+each polygon returned from the indexed list.
+
+Added growable lists for intersected-object lists; also added settable upper limits of them
+to the DLim resource. The lists are in monsters.h/c, projectiles.c, and map.c; the dynamic limits
+are in dynamic_limits.h/c.
+
+February 20, 2000
+
+Fixing the chase-cam trajectory so that it does not move when one dies.
+Done by setting DROP_DEAD_HEIGHT to zero when it's active; not the most reliable solution,
+it must be said.
+
+Suppressed (new ceiling height >= new floor height) consistency check
+in change_polygon_height() in map.c -- may be a fix for some kind of map bug.
+May want to put in some sort of "floor and ceiling won't pass each other" consistency check
+in update_platforms() in platforms.c
+
+February 21, 2000
+
+Idiot-proofed a search look next_polygon_along_line() in render.c; that had a tendency
+to go in circles in some cases.
+
+Changed player.c so that the chase cam won't have short-integer wraparound;
+positions are pegged to the world walls. This and the previous fix seem to eliminate
+all the freezeups I've had with the chase cam.
+
+Changed the chase-cam key to F6.
+
+Implementing crosshairs; will have key F7. Successful. Uses resource #300, with these parameters:
+1: Distance from center
+2: Length
+3: Width
+Colors, from 0 to 1:
+4: Red
+5: Green
+6: Blue
+
+Corrected a troublesome assert in find_checkpoint_location() in computer_interface.c
+
+Changed NO_TELEPORTATION_DESTINATION in player.c to SHORT_MAX, an idiot-proof value,
+since there are unlikely to be that many polygons in a map.
+
+Added rightward shift to chase-cam position, for avoiding obstruction (upward and rightward
+are STR# 200 strings 2 and 3; backwards is string 1).
+
+February 24, 2000
+
+Added animated textures (AnimatedTextures.c/h), resource type 'ATxr'. These need:
+
+Collection number
+Ticks per animation advance
+Phase
+All the frames in a sequence
+
+February 25, 2000
+
+Named more of the stuff in marathon2.resource
+
+Fixed keys-in-preferences bug by changing the key names in cskeys.h
+
+Suppressed some monster-speed asserts in monsters.c
+
+Created chase-cam and crosshair dialogs; successfully accessed chase-cam and crosshair data
+through accessors in interface.h
+
+Changed STR# 138, the file search path, to its Marathon Trilogy Infinity value.
+
+Made it possible to swim under a liquid if one has the ball; update_players() in player.c
+
+Added tunnel-vision mode
+
+February 26, 2000
+
+Added preview to crosshairs dialog
+
+Decided to take over F9 and leave F5 untouched; new assignments:
+
+F5: flip sides
+F6: chase cam
+F7: tunnel vision
+F8: crosshairs
+F9: screenshot
+
+Added position display; made that key F10
+
+Checking out level-0 teleport bug; finding out which reads and writes the player_data field
+"teleporting_destination" in player.h. teleport_to_level() in computer_interface.c;
+new_player(), update_player_teleport() in player.c. Move the destination value down by 1
+so that value 0 will fit in it. This hack has apparently worked.
+
+Added chase-cam initialization to new_game() in game_wad.c. This reads whether the chase cam
+is initially active and sets the state to that. Chase-cam functions are in player.h,
+while chase-cam data is in interface.h, along with crosshair data.
+
+Made the PICT-not-found computer_interface.c error message always use the system font.
+
+Checking on chase-cam inertia: the problem there is that the camera has to be reset
+whenever one (re)appears in the map from game starting, teleporting, or reviving.
+For teleporting and reviving, only adjust the chase cam if these are one's own chase cam.
+
+ChaseCam_Initialize() must include resetting
+recreate_players_for_new_level() must include resetting
+Both of them call recreate_player()
+revive_player() must include resetting if the player index is the local player index
+update_player_teleport() must include resetting if the player index is the local player index
+and if one's position has changed (PLAYER_TELEPORTING_MIDPOINT).
+
+Tested that feature, and it seems to work correctly, at least in single-player mode.
+
+March 2, 2000
+
+Suppressed player_weapon_has_ammo() assert in weapons.c; caused trouble for "Missed Island"
+
+Added include guards to all the unguarded header files, as per Rhys Hill's work.
+
+Suppressed blank spaces, apostrophes, commas, and infinities in filenames to make them more
+Yoonicks-friendly.
+
+Added alias resolution to shapes_macintosh.c, sounds_macintosh.c, and music.c.
+
+March 3, 2000
+
+Undid a lot of grouping to make it easier to find files; the CW4 IDE seems to be very finicky when it
+has to search through a lot of files.
+
+Suppressed complicated assert in weapons.c; caused trouble for "Dirt Devil".
+
+Finding extravision-persistence bug; fixed it by adding field-of-view reset
+in initialize_view_data() in render.c
+
+Moved view-reset statements to top of that function.
+
+Landscape-mapping bug: left edge of landscape stays in place when view resolution changes;
+it ought to be the center that stays in place.
+Place to fix: _prelandscape_horizontal_polygon_lines();
+add something to the yaw angle when "first_pixels" is calculated, preferably something like
+(field_of_view - normal_value_of_it).
+
+March 4, 2000
+
+Added alias resolution to:
+
+shapes.c, sounds_macintosh.c, music.c
+
+March 5, 2000 -> Versions 0.8.1, 0.8.2
+
+Added more graceful degradation to wad_prefs.c when there was an error in reading in the
+preferences wad.
+
+I've had to undo a lot of the aforementioned grouping just to make it easier for the CW4 IDE
+to search.
+
+Added crude checking for AIFF files in music.c; the first 4 bytes must be 'FORM'.
+
+Improved handling of clipping in computer_interface.c
+
+Make extravision and tunnel vision work again: changed render.c, interface.c, screen.c, and screen.h
+
+March 9, 2000
+
+In render.c, sorted the nodes by polygon index in sort_render_tree() and used them to speed up searches
+for nodes with the same polygon index; maps with slowed-down visibility calculations,
+such as Desla, can become twice as fast.
+
+March 12, 2000
+
+Started to add OpenGL support. Did projected geometry OK.
+Took a whole lot of trial and error to figure out the coordinate transformations
+and other such setup stuff, however.
+
+March 18, 2000
+
+An abundance of progress in adding OpenGL support over the last few days; most of the work
+has been in getting the geometry straight, which is largely complete. Still to be done are the
+texture coordinates for the landscapes and the sprites, and text and crosshairs.
+
+March 20, 2000
+
+Got landscapes sort of working; they take a long time to load -- when loading them does not
+crash the system. Will need a better system of handling them.
+
+March 23, 2000
+
+Added OpenGL crosshairs; put in wrong-side face culling.
+
+Increased maximum number of sound channels from 4 to 8 (mysound.c, the resource file)
+
+March 30, 2000
+
+Continued with OpenGL support; put in a kludge to get the smaller sprites to load,
+making their textures have a minimum size of 128*128. Also added z-buffering and fog.
+
+April 1, 2000
+
+Got the miner's light to work, and used a rather complicated scheme to get it done with
+vertex lighting. All that remains for full support is glow mapping.
+
+April 2, 2000
+
+Got glow mapping to work; used ARB_multitexture
+
+April 13, 2000
+
+Did some minor fixes: no resizing, void color in chase-cam dialog, added 1/8 scaling to pull
+Jesse Simko's leg.
+
+Increased number of ambient sound channels to 4.
+
+April 16, 2000
+
+Starting to add XML-configuration-file support
+
+April 20, 2000
+
+Adding string support; modified csstrings.c to use the TextStrings routines,
+which read off of XML files.
+
+April 21, 2000
+
+Removed unnecessary color tables (5000-5002) from marathon2.resource; also removed the STR#
+resources.
+
+April 22, 2000
+
+Removed the 'nrct' resources and successfully got both <rect> and <color> subelements of the
+<interface> element working.
+
+April 24, 2000
+
+Modified overhead-map code to use a table of entity mappings, in the fashion of the
+motion detector.
+
+Started on separate OpenGL texture manager. Initially will move UseTexture(), then will
+split it up into functions appropriate for each stage: getting texture data,
+then setting up for pass 1, then setting up for pass 2 (if necessary).
+
+April 27, 2000
+
+Completed the OpenGL-renderer redesign.
+Reworked the glow mapping to be more consistent with the engine's design
+(intensity goes down to half when the ambient light is zero).
+Added XML support for text strings and interface rectangles and colors.
+
+Fixed static appearance (invisibility powerup, S'pht being hit, teleportation)
+
+Added patch from:
+
+Josh Elsasser
+joshe@vineyard.net
+http://personal.vineyard.net/joshe
+
+However, I changed its name from "never switch weapons" to "don't switch weapons".
+
+Handled the case of monsters both floating and flying, in order to support
+the map "Aqualung".
+
+April 28, 2000
+
+Added glowmap support to OpenGL wall textures.
+Changed "Marathon 2" to "Marathon" in "Environment" dialog box.
+
+Removed Excalibur definitions from the 5 physics-model files.
+Bo Lindbergh will have to write a version of Fuxource that emits the Fuxable stuff
+in Marathon Markup Language format. That's the flavor of XML that I've created
+for configuring the Marathon engine.
+
+Interchanged the two tests on the current frame in map.c -- animate_object()
+so as to (1) make keyframe=0 recognized and (2) keep existing timing correct.
+
+April 30, 2000
+
+Forced OpenGL-context reloading when reverting so that if one reverts in a different level,
+the textures will be correct. Changed game_wad.c, interface.h, and screen.c
+
+May 1, 2000
+
+Added XML support for changing features of the weapon display (game_window.c),
+the infravision (shapes.c), the motion sensor (motion_sensor.c), and the overhead map
+(overhead_map.c).
+
+May 2, 2000
+
+Banished "draw every other line" dialog-box item and support for it in preferences.c
+
+Working on 2D-graphics-through-OpenGL; apparently successful with the terminal and the overhead map.
+The status bar will need additional buffering, however.
+
+*** Released 0.10.1
+
+Added to overhead map options of displaying aliens, items, projectiles, and paths.
+Fixed bug: dead VacBobs now display as blue squares, just like dead ordinary Bobs.
+Also added colors -- every overhead-map color can now be changed.
+
+Fixed bug: silhouette-texture scanline transparency now works correctly;
+it's for invisibility and invincibility displays)
+(OGL_Textures.c -- where the silhouette texture's color table gets set up).
+
+Fixed minor bug in XML_Configure error messages -- with unrecognized child elements.
+
+May 11, 2000
+
+Made dynamic limits XML-configurable; abolished 'DLim' resource.
+
+Turned vhalts in computer_interface.c into vwarns.
+This should allow for better debugging of bad terminal scripts,
+such as those in Olaf Fub.
+
+May 13, 2000
+
+Added Rhys Hill's fix for problems with quitting OpenGL -- suppressed render_screen(0);
+when OpenGL is active.
+
+May 14, 2000
+
+Added XML animated-texture support. Revised its internal architecture significantly.
+
+Added player-data support; added ability to change initial health, oxygen and items,
+and also the various damage responses.
+
+Increased the number of possible starting items from 6 to 16.
+
+Added George Marsaglia / Joe McMahon random-number generator to OGL_Render.c;
+that made the static effect look *much* more random.
+It was also rewritten as a C++ class, thus making it easier to create multiple instances of it.
+
+*** Released 0.10.3
+
+May 17, 2000
+
+Added XML support for item features and for control panels. One can now have 3x energy rechargers
+in water-texture maps.
+
+Added NUMBER_OF_DAMAGE_TYPES to map.h; also added damage-object parser.
+
+May 18, 2000
+
+Added NUMBER_OF_TRANSFER_MODES to map.h.
+
+Finished adding XML support for liquids and platforms; need to test them.
+Modified liquid definition in media_definitions.h and fader stuff in fade.c and fade.h
+to produce a fifth under-liquid type of effect: underneath Jjaro goo.
+
+The Jjaro-goo splash effects are called "special" in Anvil; I'm not sure if that's a good name.
+I'd prefer as an alternative to "Jjaro" the term "Ydnar".
+
+May 19, 2000
+
+Finished adding XML support for liquids, platforms, and scenery objects.
+
+Also added separate JjaroGoo support to the faders in fades.c/h
+
+May 20, 2000
+
+Added boolean support for what to display in <overhead_map>.
+Finished fader stuff; the major Fuxing is now done.
+
+computer_interface.c (the terminals):
+Put in more graceful degradation for
+get_indexed_grouping()
+get_indexed_font_changes()
+
+Tracking down sound restarts -- very annoying in the Moo version of
+"Excalibur: Morgana's Revenge"
+Tracked down to change_screen_mode(); it contains free_and_unlock_memory(),
+which only calls stop_all_sounds() [name self-explanatory]
+
+*** Released 0.10.4
+
+May 22, 2000
+
+Added XML parser for view-control stuff; begun with adding an attribute
+for disabling the overhead map.
+
+Modified the FOV changes to a more sensible architecture; added XML support for changing
+its parameters.
+
+Added XML configuration of the durations of the powerups to player.c.
+
+May 24, 2000
+
+Added landscape-control support to ViewControl.c/h -- works in both software and OpenGL rendering.
+
+Also fixed view-width bug in OpenGL landscape rendering; it is now very close to software rendering,
+even in extravision mode, where the bug had been the most noticeable.
+
+May 26, 2000
+
+Added shapes-parser element, for use in specifying shapes in some places
+Added option of disabling the motion sensor.
+Addes shapes stuff to parsers for:
+	control panels
+	liquids
+	items
+	scenery
+
+Added modifications to weapons.c to better handle the case of weapon type
+(out of melee, two-fisted, etc.) being NONE.
+Also, if the fists are NONE, one can look at one's weapons but not wield any of them.
+
+May 27, 2000
+
+Added idiot-proofing to the vertical-polygon texture vectors in OGL_Render.c;
+if either or both of the two texture vectors is zero, then it will not be rendered.
+
+Added oxygen depletion and replenishment rates
+
+Added support for flat static effect in OpenGL rendering of "static" effect.
+This is necessary since the 3dfx cards still do not support glPolygonStipple(),
+most likely because their drivers are essentially QuakeGL drivers.
+
+Added parser for landscape options
+
+*** Released 0.10.5
+
+Fixed bug in sound directionality -- made it more long-distance-friendly (mysound.c)
+
+However, distance calculations now return SHORT_MAX for long distances; one problem here
+is that one will have to check out the recipients of the distance-calculation values
+to ensure that they are all long-distance friendly.
+
+Moved infravision and silhouette bitmap definitions into OGL_Setup.h
+Added reading of texture options to OGL_Textures.c/h
+
+May 28, 2000
+
+Implemented texture semitransparency.
+Also composed some semitransparency definitions for Bungie's flames and energy bolts.
+
+Succeeded in getting the HUD piped through OpenGL, after a lot of trial and error.
+How well it will work in a Voodoo card I can't say -- do the drivers for these cards support
+partial-screen buffers?
+
+May 29, 2000
+
+Fixed Hunter-death bug. It was a side effect of fixing the non-teleporting bug
+for the Moo Pfhor in "Charon Does Not Make Change". Location: monsters.c
+The explosion damage is triggered at the keyframe; since the Hunter soft death sequence
+has keyframe 0, that means that it causes explosion damage.
+
+The fix is to ignore keyframe values of 0; the Hunters now die harmlessly.
+
+Extended the ranges of the opacities (values > 1 and < 0 now OK) in fades.c
+
+Directing my attention toward OpenGL blending modes, so as to be able to do the fader effects.
+
+Moved fader-function types out into fades.h, so that they may be more easily used in OpenGL faders.
+There are only two faders that may be active: one liquid fader and one everything-else fader.
+
+May 31, 2000
+
+Implemented OpenGL fader infrastructure in fades.c and OGL_Faders.c/h;
+also implemented tint, soft-tint, and randomize faders.
+
+Found a serious performance hit when copying from the framebuffer to a texture;
+this makes certain sorts of rendering effects more difficult;
+rendering effects such as a wavy view.
+However, small areas may be OK, such as doing Chi Punches (a ZPC thing;
+ZPC is a Marathon-engine licensee that never got very far).
+
+Implemented an OpenGL texture-reset command; assigned it to key F14.
+May be good when textures start dropping out.
+
+June 1, 2000
+
+Implemented negate fader in a rather kludgy fashion, since these extensions
+are not yet implemented in ATI Rage 128 AppleGL version 1.1.3:
+
+EXT_blend_color
+EXT_blend_minmax
+EXT_blend_subtract
+
+Implemented the burn filter in a fashion that can produce some approximation of the
+reversed colors at high filter strength.
+
+June 2, 2000
+
+Finally implemented the dodge filter, but to me, it's still unsatisfactory.
+Annoying that those EXT's are not implemented :-P
+
+Made lighting more idiot-proof, so if some map refers to a nonexistent light, then
+Added fallback for absent lights: "get lights" returns the null pointer.
+It will make blackness.
+
+Changing the media stuff. In monsters.c, there is a case of handling different kinds of media.
+Some monsters will go into media half their height, while some will not step into media at all.
+Dangerous media (lava, goo) won't get stepped into, while harmless ones (water, sewage, JjaroGoo)
+will.
+
+June 3, 2000
+
+Added IsMediaDangerous() function for telling whether or not to wade into dangerous media
+(a monster will wade to half-height in safe media, but not to dangerous media).
+
+Split up element <assign> in <overhead_map> into <assign_live> and <assign_dead>,
+for greater convenience.
+
+June 4, 2000
+
+Added '~' as an OpenGL-reset key.
+
+*** Released 0.10.7
+
+June 9, 2000
+
+Checked out handling of semitransparent grilles with:
+
+<marathon>
+<opengl>
+
+<!-- Semitransparent grilles: water, lava, sewage, jjaro -->
+<texture coll="17" bitmap="16" opac_type="3" opac_scale="1"/>
+<texture coll="18" bitmap="9" opac_type="3" opac_scale="1"/>
+<texture coll="18" bitmap="29" opac_type="3" opac_scale="1"/>
+<texture coll="19" bitmap="9" opac_type="3" opac_scale="1"/>
+<texture coll="20" bitmap="9" opac_type="3" opac_scale="1"/>
+
+</opengl>
+</marathon>
+
+It does exactly what it's supposed to.
+
+June 11, 2000
+
+Clamping the damage at SHORT_MAX:
+player.c, monsters.c: calls of calculate_damage()
+Also did that with oxygen.
+
+Created MacCheckbox.h in order to encapsulate the checkboxes
+in PlayerDialogs.c and OGL_Dialog.c
+
+Added "see through liquids" to OGL_Setup.h and OGL_Dialog.c
+Now must implement semitransparent liquids.
+
+Removed transparent-bit test from OGL_Render.c as irrelevant
+(textures.h -- flag TRANSPARENT_BIT)
+
+Added opacity-value shift (OGL_Setup and OGL_Textures).
+
+Inhabitant objects were handled by rendering in two passes,
+the first pass being on the opposite side from the viewpoint,
+and the second on the viewpoint's side. No twinning of objects was needed;
+the clipping rectangle was constructed differently on each pass.
+
+Did changes for indicating that some rendered surface has one side facing the void;
+if that is the case, the texture is then made opaque.
+
+June 14, 2000
+
+Suppressed assert in weapons.c that follows the one that was suppressed for "Dirt Devil".
+
+*** Released 0.10.8
+
+June 15, 2000
+
+Fixed visibility bug in render.c; full polygons' objects are now rendered correctly from within liquids,
+and empty polygons' objects are now rendered correctly from outside of liquids.
+
+Pfhortran successfully put in.
+
+Restored screen sizing.
+
+June 18, 2000
+
+*** Released 0.10.9
+
+June 28, 2000
+
+Fixed the Aaron Davies bug; rendering below liquids is now correct when semitransparent
+liquids are turned off. A full polygon will now be rendered if the viewpoint is below liquid;
+the bug was that it was not rendered.
+
+Generalized the vulnerability selection for the invulnerability powerup,
+so one can choose something other than the fusion gun.
+
+July 1, 2000
+
+Suppressed dprintf's in sound_macintosh.c; converting accessors to inline functions;
+all the index variables are "const" in them as a compiler hint; "const" should be used
+for anything that does not get changed.
+
+The purpose of all the inlining and template functions
+is to combine the speed of a macro with the type-safety of a function.
+
+csmacros.h now contains a template function for doing bounded-array accessing:
+GetMemberWithBounds()
+
+devices.c
+effects.c/h
+fades.c
+lightsource.c/h
+map.h
+map_accessors.c [now empty]
+media.c/h
+monsters.c/h
+mysound.c
+player.c/h
+projectiles.c/h
+weapons.c
+
+Changed world.c/h so that angles will automatically be normalized;
+also inlined normalize_angle()
+
+Added Benad's changes to activate lost netgame types:
+items.c
+network_dialogs.c
+network_games.c
+player.c
+projectiles.c
+weapons.c
+
+Some of the changes had been made for better compiling on the CodeWarrior Pro 2 compiler;
+I have not included those. Should they be present, but activated only if (say)
+preprocessor variable CODEWARRIOR_2 is set?
+
+July 2, 2000
+
+Prepared for resolution setting by reversing the order of the resolution sizes.
+Also prepared by making the HUD always buffered, so that it is easier to paint it
+wherever one might desire.
+
+July 3, 2000
+
+Hardware acceleration will get deactivated when trying to run in 256-color mode,
+so as to produce a sensible-looking display :-)
+
+July 4, 2000
+
+Had to re-update dialog boxes and menus to implement Benad's changes;
+also made cheats always-on, even if FINAL is #define'd.
+
+July 5, 2000
+
+Working on generalizing the view-size architecture so as to be able to get higher resolutions.
+
+Partially completed the task of generalizing the view-control setup so that it can be generalized
+to higher resolutions. This involved putting all the buffer-size and viewport calculation into
+render_screen(), and of getting as much resizing as possible into render_screen().
+The unavoidable exceptions are resized to 640*480, because Bungie's original resizers
+are inadequate for the task ahead.
+
+Also set the project file so that the OpenGL libraries will be weak-linked.
+
+Changed the resolution-change keys to F1 (decrease) and F2 (increase)
+Also changed F3 to toggle pixel doubling
+Set F4 to reset OpenGL textures, since some people don't have F14 available
+Removed the '~' key from that meaning
+
+July 6, 2000
+
+Readjusted the frame checking yet again, so that both keyframe = 0
+and keyframe = [number of frames] would be detected. In map.c
+This should correct some monster non-firing bugs in Morgana's Revenge
+
+HUD placement now generalized
+Using world_pixels instead of screen_window in computer_interface.c (bug fix)
+All the possible sizes now in; dump_screen()'s picture-frame setting now correct
+
+Constants upped:
+scottish_textures.c: MAXIMUM_SCRATCH_TABLE_ENTRIES from 1024 to 2048
+screen.c: MAXIMUM_WORLD_WIDTH from 640 to 1024
+screen.c: MAXIMUM_WORLD_HEIGHT from 480 to 768
+
+July 7, 2000
+
+Modified Pfhortran so that it does more generalized HUD hiding and showing.
+
+Changed map.c yet again so as to suppress Hunter death bug that had appeared yet again --
+Hunter deaths are now harmless again.
+
+Worked on supporting mouse InputSprocket.
+Changed marathon2.resource; it has an ISp dialog that can be brought up
+Made code changes for ISp mouse support; planning how to do keyboard support.
+
+Proposed architecture for keyboard support: have it do requests; these requests will then
+be sent to places that expect command-P, command-Q, and various local-action keys (shell.h, etc.)
+The requests will be flag bits; pressing a key sets the bit, while satisfying it clears the bit
+Since setting and clearing bits is interrupt-safe, I think that this is a safe strategy.
+
+Fixed bug in crosshairs when in OpenGL mode; they are now always centered.
+
+July 8, 2000
+
+Removed buffer-swapping from writing of 2D stuff; it's now all done on the front buffer.
+
+Worked out where to write the HUD buffer when piped through OpenGL; took some trial-and-error.
+
+Put in map-in-OpenGL dialog item.
+
+Created OpenGL-map-drawing files: OGL_Map.c/h
+
+July 9, 2000
+
+Put in OpenGL overhead-map rendering.
+It appears to work very well, with rendering going at top speed for simpler maps;
+it does slow down when preparing the fonts for use in it, and also when rendering
+complicated map geometries (Aye Mak Sicur, for example).
+
+July 10, 2000:
+
+Made OGL_ResetTextures() harmless when OpenGL is inactive.
+
+Fixed liquid visibility bug reported by Aaron Davies: when semitransparent-liquid mode is off,
+high-and-dry polygons with liquid levels are now skipped when the viewpoint is under a liquid,
+and submerged ones are now skipped when the viewpoint is above a liquid.
+
+Changed calculate_player_team() slightly in player.c at Benad's request;
+no more first vassert()
+
+July 17, 2000
+
+In OGL_Render.c:
+
+Changed the way that the fog state and color is set; the fog color is now set
+at the beginning of each frame, so as to be easier on Pfhortran changes.
+
+In overhead_map.c, overhead_map_macintosh.c, OGL_Map.h, OGL_Map.c,
+now doing caching of map polygons, map lines, and path lines. Factor-of-2 improvements
+for the lines and small improvements for the polygons.
+
+Modified render.c and screen.c so that teleport view stretching will work correctly.
+Works in both software and OpenGL modes.
+
+July 29, 2000
+
+In ISP_Support.c: added support for the full range of global actions (those transmitted
+across a network and stored in action_flags); also created a comprehensive set of icons for them
+in marathon2.resource.
+
+July 30, 2000
+
+Modified Ben Thompson's InputSprocket support and added support for local events,
+all those that are specific to one's local machine, rather than spread around the network.
+This includes quitting, setting screen resolution, sound volume, etc.
+
+This local-event support was done by means of a local-event-flags object (a long integer)
+that receives events from the InputSprocket and composes and posts MacOS events
+so that I can avoid rewriting the bulk of the event handling.
+
+One problem is that of repeats, so I added a refractory period to all local events;
+a time counter for each kind of event that gets set when an instance of that event is posted
+and that gets decremented to zero otherwise.
+
+I've also enabled InputSprocket-only input, but that crashes when I try to start a level.
+That will need to be debugged, and I'll wait until later for that.
+
+Finally, I've created a lot of icons (icl8, ics8, etc.) for use in the InputSprocket.
+
+July 31, 2000
+
+Added a change-weapon icon to marathon2.resource -- change either way.
+
+Also added another front/back axis: changing weapons. That way, one can change weapons
+with a mouse wheel.
+
+August 3, 2000
+
+Reorganized the code in overhead_map.c/h. overhead_map_macintosh.c is now defunct,
+like map_accessors.c. Added OverheadMapRenderer.c/h, OverheadMap_QD.c/h, and
+OverheadMap_OGL.c/h, which contain software and OpenGL renderers of the overhead map
+done as subclasses of a generic base class.
+
+August 6, 2000
+
+Modified the code in OverheadMap_QD.c and OverheadMap_OGL.c so that it displays the player
+object better when it is shrunken; this is done by drawing its perimeter
+as well as its interior. This trick works for both Quickdraw and OpenGL;
+I suggest keeping this trick for other graphics API's that might get used here.
+
+Started reorganization of code in render.c. The first part of it has been put into
+RenderVisTree.c/h
+
+I've created a ResizableList template class for lists of points, lines, etc.
+which get some explicit size but which do not grow.
+
+August 9, 2000
+
+Completed a reorganization of the contents of render.c, and started on a rasterizer class.
+It currently does everything in the base class, though both software and OpenGL rendering
+will be moved to subclasses.
+
+Also, [view_data *view] has been made a member of these classes, and
+[bitmap_defintion *destination] has been edited out of the rasterizer,
+and the various member functions have been edited accordingly.
+
+Started work on a rasterizer class that will eventually be subclassed for both software
+and OpenGL rendering.
+
+August 10, 2000
+
+Created a rasterizer class, turned some scottish_textures functions into some of its methods,
+and continued to ponder how best to create abstractions for the viewports and the screen contexts.
+
+Also added the latest Pfhortran changes and exposed all the fog parameters,
+including whether the fog is present.
+
+August 13, 2000
+
+Started work on creating an abstract filesystem class; it is largely successful, despite some of
+the most difficult parts, such as the directory walking, not yet being done.
+Added two of Christian Bauer's bug fixes.
+
+August 17, 2000
+
+Split the file abstraction into two parts: a file specifier and an opened-file handler.
+The abstraction of the file code is largely done, though there is still some way to go
+in that department, especially in the directory walking.
+
+Also, the shapes and sounds have been converted from handles to pointers, thus eliminating
+a certain MacOS dependency. I expect to be able to clean out most of shapes_macintosh.c
+and sound_macintosh.c before too long.
+
+August 20, 2000
+
+Got up-to-date with the first of Christian Bauer's changes, and flattened the inheritance
+hierarchy of the file-handler objects. CB proposes making platform-specific stuff selectable
+with preprocessor statements.
+
+August 23, 2000
+
+Decided to commit what I'd done so far. I'm almost done abstracting the resource-fork stuff,
+and the main file stuff remaining undone is abstraction of the directory-walking code
+and the getting of the data.
+
+August 24, 2000
+
+Put in asynchronous write dialog box for saving games;
+this is the dialog-box code in the original game, which had been temporarily
+left behind when abstracting the filesystem.
+
+August 25, 2000
+
+Got set_map_file() and load_level_from_map() in game_wad.c
+to ignore errors set in game_errors.c/h.
+
+Tracking down file-search bugs. Fixed them -- they were some bugs in wad-header-reading code.
+Continuing the file abstraction; it is now reaching into file-finding.
+
+I've eradicated portable_files.h and files_macintosh.c from the working codebase.
+Still must check for any GetSpecs() that are not absolutely necessary.
+
+August 27, 2000
+
+Abstraction of the files code is essentially complete; the only thing that remains is
+abstraction of loading and saving of flattened/serialized file specifications.
+
+Discovered that Christian Bauer's endianness-handling code would f*** up some of the read-in
+data. Am replacing it with more reasonable such code, and of using asserts to check against
+his SIZEOF symbolic constants.
+
+Also created some template functions (smart macros) in byte_swapping.h;
+these are wrappers for byte_swap_data: byte_swap_object and byte_swap_object_list
+
+portable_files.h and files_macintosh.h are now obsolete.
+
+August 28, 2000
+
+Added images and preferences filetype names to marathon2.resource's 'FTyp' resource
+by editing its template in TMPL.
+
+Started putting in packing and unpacking routines, beginning in wad.cpp. Which is now complete.
+Moving on to game_wad.c, with the map and the physics stuff.
+
+August 29, 2000
+
+Added convention to packing and unpacking routines -- that they return a pointer
+to the stream position just after the end of the packed data.
+
+September 1, 2000
+
+Continued to write packing and unpacking routines; decided to abolish the default count of 1
+as being potentially dangerous and sometimes pointless.
+
+September 2, 2000
+
+Completed the unpacking code for the shapes and the sounds; generalized the soundfile loading
+to be able to load a soundfile with any number of sound entries.
+
+Completed adding fail-softness for the shapes; had always been present for the sounds.
+However, M2 16-bit sounds are mysteriously offset forward by (# Moo sounds) - (# M2 sounds)
+
+September 3, 2000
+
+Fixed M2-sound support; every time a soundfile gets read in, _sm_globals gets updated;
+it keeps a pointer to the definitions of the sounds to be used. Bungie's programmers
+may have assumed that the overall pointer would be unchanging; however, it can now change.
+
+In weapons.c, suppressed an assert for some weapon-type test that is reached if a weapon
+is not detected in some loop. This ought to make A1 work better for some maps
+
+Evil: Rancid Orange Juice
+Evil: Nukedome
+
+which have two-fisted weapons.
+However, was unable to find railgun-shot absence bug for Evil in OpenGL mode
+
+September 5, 2000
+
+Completed implementing packing/unpacking for the films, and fixed the railgun-shot-absence bug.
+
+September 9, 2000
+
+Restored old AppleGL texture kludge as an option; the kludge is to paint the textures
+into 128*128 tiles instead of the best-fit power-of-2 ones, which may be smaller than that.
+
+Fixed 32-bit flickering bug by forcing a reset of the screen resolution to 16-bit and then
+back to 32-bit when starting a game for the first time (no need to do that after that,
+it seems).
+
+September 10, 2000
+
+Received CB's new changes; there were some adjustments I had to make, such as changing
+"Boolean" and "boolean" to "bool" everywhere except for places where Boolean is really necessary, such as
+MacOS callback returns and MacOS routines like ResolveAlias().
+
+Also, turned push_back() in computer_interface.cpp to push_back(<something>), because CW4
+does not have empty push_back() defined.
+
+September 11, 2000
+
+Made pointer-data and pointer-size definitions RenderVisTree.h and shapes.cp
+completely general.
+
+September 24, 2000
+
+Added level-dependent scripting, fixed a clip-region bug, etc.
+
+October 12, 2000
+
+Added Quicktime music playback -- the introductory music can now be anything that QT recognizes
+
+October 13, 2000
+
+Replaced ResizableList with the STL class "vector"
+
+October 14, 2000
+
+Replaced most GrowableLists with STL's "vector"; also added per-level music support
+and dir/file parsing to FileSpecifier.
+
+October 19, 2000
+
+To get_weapon_display_information() in weapons.cpp, changed the response to no sequence
+from a failed assertion to returning with no further processing; a SMG won't cause a crash
+if using a M2 shapes file.
+
+Nov 12, 2000
+
+Fixed bug in LoadedResource in FileHandler.h; that bug was that the handle value does not
+get initialized, which can cause screwy results if that object is never used.
+
+Also partially implemented texture substitution in OpenGL-rendering mode. One can substitute
+for walls and landscapes, and infravision will work properly, though glowmapping is still
+not supported.
+
+Added alternative, Forge-like automapping modes: currently-visible and all.
+
+Nov 19, 2000
+
+Added glowmapping to texture-substitution support.
+
+Added vertical-texture repeat option for both software and OpenGL rendering.
+
+Added texture-loading control; one can control which wall and scenery collections to load,
+and also whether to load the landscape ones.
+
+Nov 25, 2000
+
+Added support of movies that can begin at any level.
+
+Nov 26, 2000
+
+Added support of end-screen control
+
+Nov 29, 2000
+
+Added support for view-folding and teleport-static control
+
+Dec 1, 2000
+
+Added support for subdirectory searches for MML files/resources
+
+Dec 3, 2000
+
+Attempted to add DrawSprocket support without much success; added even bigger sound caching.
+
+Dec 17, 2000
+
+Added MML support for OpenGL fog and abstracted font. Also added MML support for changing
+overhead-map line thickness. Fixed buffer-overflow bug for precalculate_line_indexes().
+
+Jan 5, 2001
+
+Added *lots* of changes: overhead-map linewidth control in MML, use of named fonts in MML,
+addition of Benonis's dialog-box updating, attempted support of the DrawSprocket, etc.
+
+Jan 6, 2001
+
+Added AlexJS's guided-projectile patch; however, it does not seem to acquire targets correctly,
+even at point-blank range.
+
+Feb 2, 2001
+
+Numerous changes: added OpenGL font-texture support, idle-weapon animations,
+variability of powerup assignments, fixed underwater-dialog-box bug, and so forth.
+
+Feb 8, 2001
+
+Made most of the map data dynamically allocated, so as to banish maximum numbers of points,
+lines, sides, etc. Also fixed some bugs in counting some of the entities.
+
+Feb 11, 2001
+
+Added changing of player shapes with MML, modified the flagging of unanimated item randomizaton,
+and ensured that the map data gets cleared when a level starts.
+
+Apr 27, 2001
+
+Added lots of things, including external-sound loading, making HUD-less view wider,
+and cheat-code modification
+
+Mar 14, 2002
+
+A lot has happened over the past year that I neglected to document, such as
+adding per-level scripting in map files, static 3D-model support, making A1
+Carbon-friendly by using an alternative screen fader, and essentially commenting out
+Classic networking.
+
+Currently working on adding support for Brian Barnes's Dim3 animated models.

@@ -1,0 +1,305 @@
+Change log of the SDL version of Aleph One
+
+May 19, 2002
+ - more additions by Woody Zenfell:
+    - configurable mouse sensitivity
+    - configurable mouse button actions
+    - "Don't auto-recenter" option
+    - "Don't auto-recenter" and "Don't auto-switch weapons" are ignored during
+      netplay and film playback because of their global nature
+    - Alt-F4 quits the game in the Windows version
+
+March 13, 2002
+ - additions by Woody Zenfell:
+    - SDL network speaker (realtime audio playback)
+    - Win32 DirectX network microphone (realtime audio capture)
+    - some fixes and changes to netplay
+    - restoration of working cross-platform netplay
+    - more pleasant SDL level-selection facilities in Setup Network Game
+    - support for multiple sets of action_queues (for later network-prediction
+      efforts)
+
+January 16, 2002
+ - new networking code is operational
+ - fixed crash when picking up infravision in OpenGL mode
+
+January 15, 2002
+ - added TCP/IP networking code contributed by Woody Zenfell (still work
+   in progress)
+
+October 10, 2001
+ - FileSpecified::ReadDirectory() ignores file names starting with '.'
+
+September 2, 2001
+ - integrated patches for MaxOS X by Chris Lovell
+ - integrated patches for MSVC++ by Jeremy
+
+September 1, 2001
+ - added command-line option "-m" for disabling gamma table effects
+ - added option to enable 3D models in OpenGL preferences menu
+
+August 3, 2001
+ - motion sensor works in OpenGL HUD
+
+August 2, 2001
+ - added OpenGL HUD rendering (controlled by OGL_Flag_HUD, similar to the
+   overhead map); motion sensor is not yet implemented but everything else
+   should work
+
+March 12, 2001
+ - added support for M2/Win95 music file (uncompressed WAV)
+
+March 8, 2001
+ - added support for pictures in 'pict' and 'clut' wad tags, like the Win95
+   version of Marathon 2 has (images.cpp)
+
+February 7, 2001
+ - more reasonable default OpenGL flags:
+     FlatStatic on (because the real 'static' effect causes major slowdown)
+     Fader on (gives visual clues when picking up objects etc.)
+     Map on (faster than non-OpenGL map)
+     LiqSeeThru on (looks cool)
+ - implemented support for JPEG compressed, banded terminal PICTs
+
+February 6, 2001
+ - implemented support for 1/2/4-bit PICTs
+ - fixed bug in FPS calculation
+
+February 5, 2001
+ - added image-loading facilities (requires SDL_image to load anthing other
+   than BMP)
+
+February 2, 2001
+ - imported first code for TCP/IP networking based on SDL_net; nothing
+   functional yet, however
+
+January 28, 2001
+ - Makefile.BeOS fixed
+ - under BeOS, Aleph One now supports reading resource forks from "MACOS:RFORK"
+   attributes; this makes copying Marathon data files from HFS CD-ROMs a simple
+   matter of drag-and-drop
+
+November 24, 2000
+ - implemented fading and gamma table effects
+ - now requires SDL 1.1.6 (SDL_SetPalette() and SDL_SetGammaRamp())
+
+November 22, 2000
+ - integrated patches for Win32 (except OpenGL-related ones) by Ian Pitcher
+ - fullscreen vs. windowed mode now selectable in graphics preferences dialog,
+   overridable by "-f" and "-w" command line flags [Ian Pitcher]
+ - pausing the games switches out of fullscreen mode
+ - added option for inverting mouse Y-axis [Ian Pitcher]
+
+November 14, 2000
+ - included patches for Pfhortran monster control, contributed by Mark Levin
+
+October 17, 2000
+ - added support for version 0 sound files as found in the M2 demo
+ - it's no longer possible to bind a key to more than one function or to bind
+   a key that has a fixed function in the game
+ - fixed a bug that caused the "Default" button in the keyboard configuration
+   dialog to not work properly
+ - bumped version number to 0.11
+
+October 6, 2000
+ - new default theme, donated by Ian Pitcher
+ - removed MacOS theme (will be available as a separate download)
+
+October 4, 2000
+ - the ALEPHONE_DATA environment variable can specify a colon-separated list
+   of data directories
+ - bumped version number to 0.10.6
+
+September 23, 2000
+ - screenshots (F9) work with OpenGL
+ - darken_world_window() works with OpenGL
+ - environment file selection lists show items grouped by directory
+
+September 18, 2000
+ - clicking buttons in in-game dialogs that close the dialog won't cause a
+   shot to be fired any more
+
+September 16, 2000
+ - SDL dialog GUI supports loadable themes
+ - added sound volume slider
+
+September 15, 2000
+ - SDL_SetClipping() no longer used
+ - put input_controller task into main event loop
+
+September 14, 2000
+ - Pfhortran language definition is now compiled into the application; the
+   "Pfhortran_Language_Definition" file is not needed any more at runtime
+
+September 13, 2000
+ - resource fork of MacBinary II files was not correctly accessed if data
+   fork size was a multiple of 128 (or 0)
+ - implemented low-resolution display
+ - Ctrl-Shift-"Begin New Game" allows selection of start level from list
+ - Esc is no longer used for quitting (interferes with Esc from terminals);
+   under BeOS, use Alt-C instead
+ - fixes for BeOS/ppc
+ - bumped version number to 0.10.5
+
+September 12, 2000
+ - moved RECTANGLE_WIDTH/HEIGHT to csmacros.h; csdialogs*.* is not used any
+   more by the SDL version
+ - removed global resource file "Resources"
+ - action flags are now of type uint32, not int32 or long
+ - map checkpoints in terminals (circles) display properly
+ - size of sound data was miscalculated for extended sound headers of stereo
+   sounds
+ - fixed many places where it was assumed that sizeof(long) = sizeof(void *) = 4;
+   now it works on Alpha CPUs
+ - building in a separate directory works
+
+September 11, 2000
+ - fixed some remaining alignment bugs, now works on Solaris/sparc (with gcc
+   2.95.2)
+ - fixed problems when no preferences file was present
+ - removed the byte_swap_data() and byte_swap_object() functions since they are
+   superseded by the new pack/unpack functions
+
+September 10, 2000
+ - improved error handling of OpenedFile, OpenedResourceFile and FileSpecifier
+ - implemented file selection dialogs
+ - saving/continuing games and saving/replaying films works
+ - bumped version number to 0.10.4
+
+September 9, 2000
+ - implemented OpenGL prefs menu (only flags)
+ - fixed possible reference to freed memory in RenderVisTree::cast_render_ray()
+   which caused Desla 2 to crash
+ - fixed reference to unallocated memory in possible_intersecting_monsters()
+ - merged with LP_fileio branch -> physics models in maps work
+ - physics environment preferences can now be selected
+ - terminal memory handling rewritten: terminal text is now stored internally
+   in C++ structures/vectors, managed by computer_interface.cpp; allocation
+   is done by calling unpack_map_terminal_data()
+
+September 7, 2000
+ - improved PICT compatibility (implemented opcodes 0x0099 and 0x009b,
+   ignored many more opcodes)
+ - PICTs in terminals are properly scaled
+ - added support for format 2 sound resources
+ - OpenedFile class transparently accesses the data fork of AppleSingle and
+   MacBinary II files
+ - resource manager can handle resource forks of MacBinary II files
+ - fixed long-standing bug where SDL_FreeRW() was used instead of SDL_RWclose(),
+   causing lots of files to stay open
+ - Pfhortran Language Definition file wasn't closed after being read
+ - included nicer fonts for dialog boxes (Futura)
+ - alert_user() properly wraps text
+ - fixed compilation problems under BeOS
+
+September 6, 2000
+ - implemented environment preferences dialog
+ - moved TimeType to cstypes.h
+ - implemented file finding facilities
+ - implemented find_wad_file_that_has_checksum() and find_file_with_modification_date()
+ - find_file_with_modification_date() now takes TimeType argument
+
+September 5, 2000
+ - the rendering engine now uses the native pixel format of the machine it's
+   running on, not MacOS xRGB 1555 or 8888 formats; this can provide a
+   significant speedup, especially on PCs where 16 bit pixels are usually
+   RGB 565
+
+September 4, 2000
+ - implemented dialog/widget system for SDL
+ - first version of preferences dialogs for SDL version (some items still
+   missing, notably environment and OpenGL settings)
+ - consequently, some of the command-line options are gone
+ - alert_user(), quit_without_saving() and get_level_number_from_user()
+   now use the dialog system
+
+September 2, 2000
+ - split preferences.cpp into it's platform-independent part ("preferences.cpp")
+   and platform-specific parts ("preferences_sdl.cpp" and
+   "preferences_macintosh.cpp", one of which is included by preferences.cpp)
+
+September 1, 2000
+ - turned on SDL_INIT_EVENTTHREAD, which seems to have fixed the random
+   mouse control lockups under XFree 4
+ - on non-Mac platforms, the overhead map drawing doesn't use any vertex
+   arrays because this crashed both Mesa and NVidia's OpenGL (I couldn't
+   figure out why)
+ - MML scripts are no longer read from TEXT resources in the "Resources"
+   file but from text files in "MML" subdirectories of the local and
+   global data directories
+ - updated MML and cheat code docs and added them to the Aleph One/SDL
+   distribution
+ - split shell.cpp into it's platform-independent part ("shell.cpp",
+   mostly cheat code handling) and platform-specific parts ("shell_sdl.cpp"
+   and "shell_macintosh.cpp", one of which is included by shell.cpp)
+
+August 31, 2000
+ - fixes to OpenGL rendering
+ - some clean-ups:
+     word -> uint16
+     new definitions INT16_MIN/MAX and INT32_MIN/MAX replacing SHORT_MIN/MAX
+       and LONG_MIN/MAX in cstypes.h
+     SHORT_MIN/MAX -> INT16_MIN/MAX or SHRT_MIN/MAX from limits.h, as
+       appropriate
+     boolean -> bool
+     TRUE/FALSE -> true/false
+ - integrated FreeBSD patches from Michael Alyn Miller
+ - OpenedResourceFile::Check()/Get() can now also take 4 chars instead of a
+   uint32 resource type
+ - wadfile checksums are now uint32 consistently, instead of "long" or
+   "unsigned long"
+
+August 30, 2000
+ - implemented OpenGL rendering
+
+August 29, 2000
+ - intro music and chapter screen sounds now work
+ - implemented darken_world_window()
+ - implemented mouse control, which is now the default
+ - standard key settings are now different when mouse control is on (a little
+   Q3A-like)
+ - new command line arguments "-8" for 8-bit color depth and "-m" to disable
+   mouse control
+ - fixed underwater crash bug
+
+August 28, 2000
+ - restructured images.c: platform-independant parts are now in images.cpp,
+   which includes images_macintosh.cpp or images_sdl.cpp
+ - restored SDL map loading routines in game_wad.cpp...
+ - ...and fixed the byte-swapping stuff again; could someone please stop
+   Loren from messing with it every day?
+ - SDL code changed to use LoadedResource and OpenedResourceFile classes
+
+August 27, 2000
+ - now compiles and works under BeOS (far slower than the Linux version on
+   the same machine, however; probably an SDL issue)
+ - fixed crashing bug on startup when no preferences file was found
+
+August 26, 2000
+ - improved SDL sound mixing routine: ambient sounds, stereo, 16-bit sound
+   and sample rates other than 22050Hz now work
+ - implemented overhead map rendering
+
+August 25, 2000
+ - added endianess-correction to Map, Shapes and Sound file reading routines
+ - removed byte_swap_collection() and associated data because the idea was
+   good but the implementation was bogus (as it assumed that structure fields
+   would be aligned in the same way on all machines)
+ - Mac-specific code for computer terminals now in computer_interface_macintosh.c
+ - some fixes to errors and warnings reported by gcc
+
+August 20, 2000
+ - added definitions and code for the SDL port
+ - added integer types with specific bit size to replace "byte", "word", "long"
+   and "short" in cases where the exact size matters (structures read from disk):
+     int8/uint8
+     int16/uint16
+     int32/uint32
+   These are not yet used in all places, though.
+ - renamed pause() to pause_debug() and random() to global_random() because of
+   name clashes with Unix functions of the same name
+ - put "#ifdef HAVE_OPENGL" around calls to OpenGL-related functions to make
+   it possible to compile A1 without OpenGL
+ - w_open_preferences_file() takes a C string as the file name instead of a
+   Pascal string
+ - implemented resource fork parser for non-Mac platforms

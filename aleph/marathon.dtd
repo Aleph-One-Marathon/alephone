@@ -1,0 +1,390 @@
+<!--
+
+This is an XML document type definition (DTD) for the Marathon MML document
+format. Written by Loren Petrich, updated by Christian Bauer.
+
+-->
+
+<!--==== Entities ====-->
+
+<!ENTITY % index_attr "index CDATA #REQUIRED">
+
+<!--==== The root element "mnarathon" ====-->
+
+<!ELEMENT marathon
+	(	stringset |
+		interface |
+		motion_sensor |
+		overhead_map |
+		infravision |
+		player_name |
+		dynamic_limits |
+		weapons |
+		items |
+		liquids |
+		platforms |
+		control_panels |
+		opengl |
+		cheats
+	)+
+>
+
+<!--==== Other elements ====-->
+
+<!ELEMENT stringset (string)*>
+<!ATTLIST stringset %index_attr;>
+
+<!ELEMENT string (#PCDATA)>
+<!ATTLIST string %index_attr;>
+
+<!ELEMENT interface (rect|color|font|weapon)+>
+
+<!ELEMENT rect EMPTY>
+<!ATTLIST rect
+	%index_attr;
+	top CDATA #REQUIRED
+	left CDATA #REQUIRED
+	bottom CDATA #REQUIRED
+	right CDATA #REQUIRED
+>
+
+<!ELEMENT color EMPTY>
+<!ATTLIST color
+	%index_attr;
+	red CDATA #REQUIRED
+	green CDATA #REQUIRED
+	blue CDATA #REQUIRED
+>
+
+<!ELEMENT font EMPTY>
+<!ATTLIST font
+	%index_attr;
+	name CDATA #IMPLIED
+	size CDATA #IMPLIED
+	style CDATA #IMPLIED
+	file CDATA #IMPLIED
+>
+
+<!ELEMENT weapon (ammo)*>
+<!ATTLIST weapon
+	%index_attr;
+	shape CDATA #IMPLIED
+	start_y CDATA #IMPLIED
+	end_y CDATA #IMPLIED
+	start_x CDATA #IMPLIED
+	end_x CDATA #IMPLIED
+	top CDATA #IMPLIED
+	left CDATA #IMPLIED
+	multiple CDATA #IMPLIED
+>
+
+<!ELEMENT ammo EMPTY>
+<!ATTLIST ammo
+	%index_attr;
+	type CDATA #IMPLIED
+	left CDATA #IMPLIED
+	top CDATA #IMPLIED
+	across CDATA #IMPLIED
+	down CDATA #IMPLIED
+	delta_x CDATA #IMPLIED
+	delta_y CDATA #IMPLIED
+	bullet_shape CDATA #IMPLIED
+	empty_shape CDATA #IMPLIED
+	right_to_left CDATA #IMPLIED
+>
+
+<!ELEMENT motion_sensor (ms_assign)+>
+
+<!ELEMENT ms_assign EMPTY>
+<!ATTLIST ms_assign
+	monster CDATA #REQUIRED
+	type CDATA #REQUIRED
+>
+
+<!-- FIXME: "items" already used in "marathon"
+<!ELEMENT overhead_map (assign_live|assign_dead|aliens|items|projectiles|paths|line|color|font)*>
+-->
+<!ELEMENT overhead_map (assign_live|assign_dead|aliens|projectiles|paths|line|color|font)*>
+<!ATTLIST overhead_map
+	mode CDATA #IMPLIED
+	title_offset CDATA #IMPLIED
+>
+
+<!ELEMENT assign_live EMPTY>
+<!ATTLIST assign_live
+	monster CDATA #REQUIRED
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT assign_dead EMPTY>
+<!ATTLIST assign_dead
+	coll CDATA #REQUIRED
+	type CDATA #REQUIRED
+>
+
+<!ELEMENT aliens EMPTY>
+<!ATTLIST aliens
+	on CDATA #REQUIRED
+>
+
+<!-- FIXME: "items" already used in "marathon"
+<!ELEMENT items EMPTY>
+<!ATTLIST items
+	on CDATA #REQUIRED
+>
+-->
+
+<!ELEMENT projectiles EMPTY>
+<!ATTLIST projectiles
+	on CDATA #REQUIRED
+>
+
+<!ELEMENT paths EMPTY>
+<!ATTLIST paths
+	on CDATA #REQUIRED
+>
+
+<!ELEMENT line EMPTY>
+<!ATTLIST line
+	type CDATA #REQUIRED
+	scale CDATA #REQUIRED
+	width CDATA #REQUIRED
+>
+
+<!ELEMENT infravision (iv_assign|color)+>
+
+<!ELEMENT iv_assign EMPTY>
+<!ATTLIST iv_assign
+	coll CDATA #REQUIRED
+	color CDATA #REQUIRED
+>
+
+<!ELEMENT player_name (#PCDATA)>
+
+<!-- FIXME: "paths" and "projectiles" already used in "overhead_map"
+<!ELEMENT dynamic_limits (objects|monsters|paths|projectiles|effects|rendered|local_collision|global_collision)+>
+-->
+<!ELEMENT dynamic_limits (objects|monsters|effects|rendered|local_collision|global_collision)+>
+
+<!ELEMENT objects EMPTY>
+<!ATTLIST objects
+	value CDATA #REQUIRED
+>
+
+<!ELEMENT monsters EMPTY>
+<!ATTLIST monsters
+	value CDATA #REQUIRED
+>
+
+<!-- FIXME: "paths" and "projectiles" already used in overhead_map
+<!ELEMENT paths EMPTY>
+<!ATTLIST paths
+	value CDATA #REQUIRED
+>
+
+<!ELEMENT projectiles EMPTY>
+<!ATTLIST projectiles
+	value CDATA #REQUIRED
+>
+-->
+
+<!ELEMENT effects EMPTY>
+<!ATTLIST effects
+	value CDATA #REQUIRED
+>
+
+<!ELEMENT rendered EMPTY>
+<!ATTLIST rendered
+	value CDATA #REQUIRED
+>
+
+<!ELEMENT local_collision EMPTY>
+<!ATTLIST local_collision
+	value CDATA #REQUIRED
+>
+
+<!ELEMENT global_collision EMPTY>
+<!ATTLIST global_collision
+	value CDATA #REQUIRED
+>
+
+<!ELEMENT weapons (shell_casings|order)+>
+
+<!ELEMENT shell_casings EMPTY>
+<!ATTLIST shell_casings
+	%index_attr;
+	coll CDATA #IMPLIED
+	seq CDATA #IMPLIED
+	x0 CDATA #IMPLIED
+	y0 CDATA #IMPLIED
+	vx0 CDATA #IMPLIED
+	vy0 CDATA #IMPLIED
+	dvx CDATA #IMPLIED
+	dvy CDATA #IMPLIED
+>
+
+<!ELEMENT order EMPTY>
+<!ATTLIST order
+	%index_attr;
+	weapon CDATA #REQUIRED
+>
+
+<!ELEMENT items (item)+>
+
+<!ELEMENT item (shape?)>
+<!ATTLIST item
+	%index_attr;
+	singular CDATA #IMPLIED
+	plural CDATA #IMPLIED
+	maximum CDATA #IMPLIED
+	invalid CDATA #IMPLIED
+	type CDATA #IMPLIED
+>
+
+<!ELEMENT shape EMPTY>
+<!ATTLIST shape
+	coll CDATA #IMPLIED
+	clut CDATA #IMPLIED
+	seq CDATA #IMPLIED
+	frame CDATA #IMPLIED
+>
+
+<!ELEMENT liquids (liquid)+>
+
+<!ELEMENT liquid (sound|effect|damage)*>
+<!ATTLIST liquid
+	%index_attr;
+	coll CDATA #IMPLIED
+	frame CDATA #IMPLIED
+	transfer CDATA #IMPLIED
+	damage_freq CDATA #IMPLIED
+	submerged CDATA #IMPLIED
+>
+
+<!ELEMENT sound EMPTY>
+<!ATTLIST sound
+	type CDATA #REQUIRED
+	which CDATA #REQUIRED
+>
+
+<!ELEMENT effect EMPTY>
+<!ATTLIST effect
+	type CDATA #REQUIRED
+	which CDATA #REQUIRED
+>
+
+<!ELEMENT damage EMPTY>
+<!ATTLIST damage
+	type CDATA #IMPLIED
+	flags CDATA #IMPLIED
+	base CDATA #IMPLIED
+	random CDATA #IMPLIED
+	scale CDATA #IMPLIED
+>
+
+<!ELEMENT platforms (platform)+>
+
+<!ELEMENT platform (damage?)>
+<!ATTLIST platform
+	%index_attr;
+	start_extend CDATA #IMPLIED
+	start_contract CDATA #IMPLIED
+	stop_extend CDATA #IMPLIED
+	stop_contract CDATA #IMPLIED
+	obstructed CDATA #IMPLIED
+	uncontrollable CDATA #IMPLIED
+	moving CDATA #IMPLIED
+	item CDATA #IMPLIED
+>
+
+<!ELEMENT control_panels (panel)+>
+
+<!ELEMENT panel (sound?)>
+<!ATTLIST panel
+	%index_attr;
+	type CDATA #IMPLIED
+	coll CDATA #IMPLIED
+	active_frame CDATA #IMPLIED
+	inactive_frame CDATA #IMPLIED
+	pitch CDATA #IMPLIED
+	item CDATA #IMPLIED
+>
+
+<!ELEMENT opengl (texture|txtr_clear|model|model_clear|fog)+>
+
+<!ELEMENT texture EMPTY>
+<!ATTLIST texture
+	coll CDATA #REQUIRED
+	clut CDATA #IMPLIED
+	bitmap CDATA #REQUIRED
+	opac_type CDATA #IMPLIED
+	opac_scale CDATA #IMPLIED
+	opac_shift CDATA #IMPLIED
+	void_visible CDATA #IMPLIED
+	normal_image CDATA #IMPLIED
+	normal_mask CDATA #IMPLIED
+	glow_image CDATA #IMPLIED
+	glow_mask CDATA #IMPLIED
+	normal_blend CDATA #IMPLIED
+	glow_blend CDATA #IMPLIED
+	image_scale CDATA #IMPLIED
+	x_offset CDATA #IMPLIED
+	y_offset CDATA #IMPLIED
+>
+
+<!ELEMENT txtr_clear EMPTY>
+<!ATTLIST txtr_clear
+	coll CDATA #IMPLIED
+>
+
+<!ELEMENT model (skin)>
+<!ATTLIST model
+	coll CDATA #REQUIRED
+	seq CDATA #REQUIRED
+	scale CDATA #IMPLIED
+	x_rot CDATA #IMPLIED
+	y_rot CDATA #IMPLIED
+	z_rot CDATA #IMPLIED
+	x_shift CDATA #IMPLIED
+	y_shift CDATA #IMPLIED
+	z_shift CDATA #IMPLIED
+	side CDATA #IMPLIED
+	norm_type CDATA #IMPLIED
+	norm_split CDATA #IMPLIED
+	light_type CDATA #IMPLIED
+	depth_type CDATA #IMPLIED
+	file CDATA #IMPLIED
+	type CDATA #IMPLIED
+>
+
+<!ELEMENT skin EMPTY>
+<!ATTLIST skin
+	clut CDATA #IMPLIED
+	opac_type CDATA #IMPLIED
+	opac_scale CDATA #IMPLIED
+	opac_shift CDATA #IMPLIED
+	normal_image CDATA #IMPLIED
+	normal_mask CDATA #IMPLIED
+	glow_image CDATA #IMPLIED
+	glow_mask CDATA #IMPLIED
+	normal_blend CDATA #IMPLIED
+	glow_blend CDATA #IMPLIED
+>
+
+<!ELEMENT model_clear EMPTY>
+<!ATTLIST model_clear
+	coll CDATA #IMPLIED
+>
+
+<!ELEMENT fog (color)>
+<!ATTLIST fog
+	on CDATA #IMPLIED
+	depth CDATA #IMPLIED
+	type CDATA #IMPLIED
+>
+
+<!ELEMENT cheats EMPTY>
+<!ATTLIST cheats
+	on CDATA #IMPLIED
+	max_keymod CDATA #IMPLIED
+>

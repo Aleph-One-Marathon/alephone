@@ -1,0 +1,20 @@
+
+--[[	Doomcharge, James Willson, July 11, 2003
+
+	Annoyed by recharger camping?
+	Invincibility ruining Everyone's Mortal?
+	This should fix it  ]]
+
+function start_refuel (type, player)
+	if (type ~= _refuel_oxygen) then
+		set_life (player, 0);
+		inflict_damage (player, 1, fusion);
+	end
+end
+
+function got_item (type, player)
+	if (type == _item_invincibility_powerup) then
+		set_life (player, 0);
+		inflict_damage (player, 1, fusion);
+	end
+end

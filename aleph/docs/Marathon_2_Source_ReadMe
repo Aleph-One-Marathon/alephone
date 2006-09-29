@@ -1,0 +1,51 @@
+So here it is, the mysterious #2 you've heard so much about: the source code
+for Marathon 2: Durandal. Now all you mad hackers can see how it was done,
+and nod admiringly or shiver in terror as the situation may demand.
+
+This code is issued under the GNU Public License.  Please read the license
+(a copy is enclosed in the same directory as this ReadMe) and abide by its
+terms.
+
+The following are some things to keep in mind when using and perusing this
+source code:
+
+1. As noted in the license agreement, this code is provided as-is.  We're
+not in a position to offer coding support, so please don't call or email us
+asking for help or explanations. If you're not a programmer you should
+probably delete this and get on with your life. Even experienced coders are
+going to find some of this pretty hairy.
+
+2. These are MPW files, because Macintosh Programmer's Workshop is what we
+used back in the day. Getting these files to compile under any development
+environment will require some effort on your part, as certain bits (like the
+serial number algorithm) have been removed.
+
+3. This is real code written by real programmers and as such contains real
+language, sometimes in variable names where it's impossible to avoid. If you
+(or your parents) are especially sensitive to four-letter words, please
+consider perusing some of the profanity-free source code available on the
+net, such as "Hello World."
+
+4. This is the Mac source.  The sole known archive of the Windows 9x source
+was placed in a lead box and shipped to one of our island laboratories for
+safekeeping. Unbeknownst to us, the boat carrying the box made an
+unscheduled run up the coast of Madagascar, where the ship's captain hoped
+to catch the end of the annual Miss Middle Of Nowhere pageant. The ship was
+approximately six miles from shore when it was torpedoed by a one-man sub
+purchased from the Hammacher-Schlemmer catalog by a punter with more money
+than brains. Divers are still combing the sea floor looking for the box
+containing the Windows code, and if we ever find it I'm sure we'll let you
+know. Windows hackers with lots of spare time may still be able to do
+interesting things with this code.
+
+
+If you manage to do anything cool with this code, please let us know so we
+can download it and check it out.
+
+Regards,
+
+Matthew Soell
+Director of Customer Support
+Bungie Software
+January 17, 2000
+(1/17/2000 = 1 + 1 + 7 + 2 + 0 + 0 + 0 = 11 = 1 + 1 = #2)

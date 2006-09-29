@@ -1,0 +1,227 @@
+<marathon>
+
+<!-- 0 = cumulative, 1 = currently visible, 2 = all -->
+<overhead_map mode="1"/>
+
+<!-- Disable the motion sensor -->
+<interface motion_sensor="false"/>
+
+<!-- Disable the overhead map -->
+<view map="false"/>
+
+<opengl>
+<fog on="true" depth="2"><color red="1" green="0.8" blue="0.4"/></fog>
+</opengl>
+
+<!-- Jjaro-texture animations -->
+<animated_textures>
+
+<sequence coll="20" numticks="15">
+<frame index="31"/>
+<frame index="30"/>
+<frame index="25"/>
+</sequence>
+
+<sequence coll="20" numticks="10">
+<frame index="5"/>
+<frame index="6"/>
+<frame index="26"/>
+<frame index="22"/>
+<frame index="21"/>
+<frame index="20"/>
+</sequence>
+
+</animated_textures>
+
+<landscapes>
+
+<!-- Change the mapping of the daytime landscape as a test -->
+<landscape coll="27" horiz_exp="2" vert_exp="2" vert_repeat="true"/>
+
+</landscapes>
+
+<!-- Marathon-1-texture substitutions -->
+<opengl>
+
+<!-- Water texture gets original Marathon terminals -->
+<texture coll="17" bitmap="4"
+	normal_image="M1 Extracts/M1_Marathon_Terminals.gif"
+/>
+
+<!-- Jjaro texture gets original Pfhor terminals -->
+<texture coll="20" bitmap="4"
+	normal_image="M1 Extracts/M1_Pfhor_Terminals.gif"
+/>
+
+<!-- Replace Jjaro liquid texture -->
+<texture coll="20" bitmap="13"
+normal_image="M1 Extracts/M1_PfhorSlime.gif"
+normal_mask="M1 Extracts/M1_PfhorSlimeOpacity.gif"
+opac_type="1" opac_scale="2"
+/>
+
+<!-- Replace Jjaro lined-floor texture -->
+<texture coll="20" bitmap="23"
+	normal_image="M1 Extracts/M1_Herringbone_Floor.gif"
+	opac_type="1"
+/>
+
+<!-- Replace Jjaro green-wall texture -->
+<texture coll="20" bitmap="25"
+	normal_image="M1 Extracts/M1_Pfhor_Green_Wall.gif"
+	glow_image="M1 Extracts/Raspberry_Custard.png"
+	glow_mask="M1 Extracts/M1_PfhorSlimeOpacity.gif"
+	opac_type="1"
+/>
+
+</opengl>
+
+<!-- Miner's light off -->
+<player light="0"/>
+
+<!-- Powerup Changes -->
+<player>
+<powerup_assign
+invincibility="19"
+invisibility="11"
+infravision="9"
+extravision="34"
+triple_energy="35"
+double_energy="10"
+energy="15"
+oxygen="22"
+/>
+</player>
+<items>
+<item index="19" type="2"/>
+<item index="11" type="2"/>
+<item index="9" type="2"/>
+<item index="34" type="2"/>
+<item index="35" type="2"/>
+<item index="10" type="2"/>
+<item index="15" type="2"/>
+<item index="22" type="2"/>
+</items>
+
+
+<!-- Show everything that can be shown in the overhead map -->
+<overhead_map>
+<aliens on="true"/>
+<items on="true"/>
+<projectiles on="true"/>
+<paths on="true"/>
+</overhead_map>
+
+
+<!-- Does something interesting to the Jjaro ship sounds -->
+<sounds
+	terminal_logon="12"
+	terminal_logoff="13"
+	terminal_page="15"
+	teleport_in="27"
+	teleport_out="28"
+	got_powerup="61"
+	got_item="62"
+	crunched="48"
+	exploding="67"
+	oxygen_warning="17"
+	adjust_volume="19"
+>
+<!-- PfhorSlime -->
+<ambient index="27" sound="93"/>
+<!-- Drone dying -->
+<random index="4" sound="74"/>
+</sounds>
+
+<!-- Teleport, Folding Off -->
+<view fold_effect="false" static_effect="false"/>
+
+<!-- Texture-Loading Test: Marathon 2/oo Default -->
+<texture_loading landscapes="true">
+
+<!-- For each environment: walls, then scenery objects -->
+
+<!-- Water -->
+<texture_env index="0" which="0" coll="17"/>
+<texture_env index="0" which="1" coll="22"/>
+
+<!-- Lava -->
+<texture_env index="1" which="0" coll="18"/>
+<texture_env index="1" which="1" coll="23"/>
+
+<!-- Sewage -->
+<texture_env index="2" which="0" coll="19"/>
+<texture_env index="2" which="1" coll="24"/>
+
+<!-- Jjaro -->
+<texture_env index="3" which="0" coll="20"/>
+<texture_env index="3" which="1" coll="25"/>
+
+<!-- Pfhor -->
+<texture_env index="4" which="0" coll="21"/>
+<texture_env index="4" which="1" coll="26"/>
+
+</texture_loading>
+
+<!-- Texture-Substitution Tests -->
+<opengl>
+
+<!-- Replace Jjaro liquid texture -->
+<texture coll="20" bitmap="13"
+normal_image="goo.png"
+opac_type="3" opac_scale="2"
+/>
+
+<!-- Replace S'pht frames -->
+<texture coll="16" clut="0" bitmap="0"
+normal_image="S'pht 1 Front"
+normal_mask="S'pht 1 Front Mask"
+image_scale="2.5"
+x_offset="131"
+y_offset="500"
+/>
+<texture coll="16" clut="0" bitmap="1"
+normal_image="S'pht 1 Front Side"
+normal_mask="S'pht 1 Front Side Mask"
+/>
+<texture coll="16" clut="0" bitmap="2"
+normal_image="S'pht 1 Side"
+normal_mask="S'pht 1 Side Mask"
+/>
+
+<!-- View and Font Tests -->
+
+<view>
+<font name="Sand" size="18" style="4"/>
+</view>
+
+<interface>
+<font index="0" name="Bullshit, Monaco"/>
+<font index="4" name="Bullshit, Textile, Techno"/>
+</interface>
+
+<overhead_map title_offset="50">
+<!-- Annotation stuff -->
+<font index="0" name="Techno" style="4"/>
+<font index="1" name="Techno" style="4"/>
+<font index="2" name="Techno" style="4"/>
+<font index="3" name="Techno" style="4"/>
+<color index="16" red="1" green="0.5" blue="0.5"/>
+<!-- Title stuff -->
+<font index="4" name="Sand" size="36" style="0"/>
+<color index="17" red="0" green="0.5" blue="1"/>
+<!-- Line thickness -->
+<line type="0" scale="0" width="2"/>
+<line type="0" scale="1" width="4"/>
+<line type="0" scale="2" width="6"/>
+<line type="0" scale="3" width="8"/>
+<line type="1" scale="0" width="1"/>
+<line type="1" scale="1" width="1"/>
+<line type="1" scale="2" width="1"/>
+<line type="1" scale="3" width="1"/>
+</overhead_map>
+
+
+</opengl>
+
+</marathon>

@@ -1,0 +1,131 @@
+Aleph One Troubleshooting Guide
+part of the Marathon Aleph One project (http://source.bungie.org/)
+
+Created: August 24, 2003
+Most recent update: August 24, 2003
+
+
+Document Purpose
+
+Aleph One is a work in progress, and bugs are inevitable.  Though we recognize that all bugs should, of course, be fixed, we acknowledge the reality that it can often take quite a while for a given problem to be resolved.  This document exists to fill the gap: to acknowledge known bugs and to provide workarounds where possible, so users can best enjoy Aleph One in the present.
+
+
+
+Issues
+
+I only have Mac OS 9.
+----------
+I'm sorry to hear that.  We have not officially abandoned Mac OS 9 - indeed, our intention is to continue to support it for some time - but there has not been a Mac OS 9 release build since March 23, 2003.  This leaves Mac OS 9 players without the star network protocol, without player motion prediction, without netscripts, and without various other enhancements.  We hope to have another Mac OS 9 release soon, but until then, Aleph One will be principally useful to you for single-player games or LAN games (see the Networking User's Guide for information on forcing newer Aleph One builds to use the old ring protocol, a requirement for interoperability with the March 23 Mac OS 9 build).
+
+
+
+Aleph One won't start up.  I get an alert or command-line message complaining about an XML parsing error.
+----------
+The most common cause of this behavior is having an old-style Preferences file.  A1 migrated from a binary Preferences format to an XML-based format some time ago, but unfortunately did not preserve the ability to read the old format.  Delete your "Aleph One Preferences" file (use your OS's file-search capabilities if you're not sure where to find it) and try again.
+
+
+
+Aleph One won't start up.  I get an alert or command-line message about "Map", "Shapes", "Sounds", and "Images".
+----------
+The answer to this is probably different depending on whether you're using a Mac-style (Mac OS 9, Mac OS X Carbon) build of A1 or an SDL-style (Windows, Linux, NetBSD, Dreamcast, Mac OS X SDL) build.
+
+SDL-style builds still search for files with those exact names in the directory with A1 (unless custom MML, as with M1A1, tells it to look for other specific names).  Be sure that you have the appropriate files and that they are proper SDL-style files (see INSTALL.<your platform> or make sure you downloaded SDL-style files).  Note that Mac OS X SDL can read both SDL-style and Mac-style files, though it finds them the "SDL way" (by name).
+
+Mac-style builds are willing to start up as long as there's an Images file (found by name in A1's directory) and a Map file, a Shapes file, and a Sounds file *somewhere* in A1's directory structure.  Mac-style A1's don't care what the names of these latter files are, but they do require that they have the correct Mac OS "type code" to be found.  Consider using something like the Macintosh file typing tools (found at http://source.bungie.org/) to make sure your files are properly typed.
+
+Special note: we have received reports that unStuffing Marathon-related files with StuffIt Expander v7.x may cause you to receive this error.  Using version 8.0 should help.
+
+
+
+I'm having trouble getting a major 3rd-party scenario (EVIL, Red, M1A1, etc.) to work right.
+----------
+Due to these scenarios' typical reliance on MML, and the way MML currently works, it's generally best to have a completely separate A1 installation for each major scenario.  That is, *avoid* dropping the M1A1 files into your A1 structure alongside Marathon Infinity etc.  Also, if you're using a Mac, make sure the files have the correct Mac OS "type code".  Use the Macintosh file typing tools (found at http://source.bungie.org/) to set the type codes.
+
+There should not be a problem having M2, Marathon Infinity, and add-ons for both all crammed into one big directory tree.  As long as there's no MML involved (and there isn't, with these standard scenarios) you can dump them all in together and sort them out via Environment Preferences.
+
+
+
+I only have the Marathon Infinity demo (or Marathon 2 demo, or Marathon 2).  Will that be a problem in Internet games?
+----------
+It depends on the game.  Marathon 2 is missing a few graphics sets present in Marathon Infinity; each demo is missing several sets of graphics present in the corresponding full version.  Levels that use these missing graphics will most likely cause your A1 to quit out, giving an error about an undefined collection.  Most Internet players currently assume Marathon Infinity full version unless otherwise specified, since it can play any Marathon 2 or Marathon Infinity level without worries.  If you don't have the full Marathon Infinity, it's probably wise to alert the gatherer of this and see if you can work something out.
+
+
+
+Aleph One doesn't seem to respect my settings for "Auto-recenter" or "Auto-switch weapons" in network games.
+----------
+This is intentional; SDL builds of A1 warn you about it specifically.  We hope to lift this restriction in the future, but until then, forcing Auto-recenter and Auto-switch weapons on (the way they always were in the original games) is the only way to make sure netgames hold together consistently.
+
+
+
+Aleph One doesn't seem to be recording films of my single-player games.
+----------
+If you are using non-default settings for Auto-recenter or Auto-switch weapons (i.e. either one of those disabled), A1 currently will not record a film of your game.  This is intentional; SDL builds of A1 warn you about it specifically.  We hope to lift this restriction in the future, but until then, making sure all films have the same idea of the settings for these features is the only way to make sure they consistently play back properly.
+
+
+
+Aleph One doesn't play back my old M1/M2/Marathon Infinity films correctly.
+----------
+You're right.  Aleph One's film model (and network play model) is very sensitive to the behavior of the game code.  We never had - and never expect to have - code for Marathon 1 or Marathon Infinity, so it would be very difficult to exactly reproduce those games' behaviors in every circumstance as would be needed for correct film playback.  Aleph One is based on the Marathon 2 code, so it would be reasonable to expect it to play back Marathon 2 films.  Unfortunately, some time in the past, well-intentioned changes (with some positive effects) altered the way Aleph One behaves from the way M2 behaved.  So, we can't even play back M2 films properly anymore.
+
+
+
+I have M1A1 set up, but I don't seem to be able to play Marathon: The Gathering or other old Marathon 1 maps.
+----------
+M1A1 is a conversion of the Marathon 1 content for use with Aleph One.  It is not a modification to Aleph One that lets it play Marathon 1 content.  Thus, other old Marathon 1 content needs to be similarly converted to Aleph One-compatible formats for use with Aleph One.
+
+True Marathon 1 support in Aleph One proper is something some (many?) of us want, but there are other, higher priorities for the project currently.  Maybe someday...
+
+
+
+I'm trying to gather an Internet game, but I'm not sure what IP address to give to joiners.
+----------
+It's possible that your machine reports the correct IP address in its network setup control panel or preference pane.  But if you're behind a NAT (such as an internet sharing router), the IP address your computer reports in its network setup is its *private* address, which is only valid behind the NAT.  (Common private addresses are 192.168.x.x and 10.x.x.x.)  There's surely a way to ask your NAT for its *public* address (the one your joiners need), but it's probably easier to simply use a Web site such as http://myip.treellama.org/ , http://whatismyip.com/ , or http://whatismyipaddress.com/ .
+
+
+
+I'm trying to gather a network game.  Other people are joining, but they don't show up in my "Players on Network" list.
+----------
+There are three principal causes for this.  First, if the gatherer and joiners are using different fundamental networking protocols (e.g., one using ring while others using star), the gatherer will not "see" the joiners for everyone's protection.  The star protocol has been the default since the May 30, 2003 releases (and is preferable to the ring protocol in almost every way, especially in Internet play), so this is only likely to happen if someone is using an older Aleph One.  Have that person get a newer Aleph One, or if you're really desperate, see the Networking User's Guide for instructions on setting newer A1's to use the ring protocol.
+
+A second, more likely cause is that the gatherer is behind a firewall or NAT device (like an internet connection sharing router) and does not have the firewall or NAT configured to pass the proper network ports to the computer.  See the Networking User's Guide section on dealing with NAT and firewalls for instructions.
+
+Finally, it's possible that you've given your joiners an incorrect IP address to join.  See the section above about figuring out which IP address to provide.
+
+
+
+I have two (or more) computers behind a single NAT.  I don't seem to be able to get both (all) of them to join an Internet game unless one of them gathers.
+----------
+You can configure a separate game port number for each machine, then configure your NAT's port forwarding to pass the appropriate ports to the appropriate computers.  This allows multiple machines behind a single NAT to join Internet games (though only one of them will be able to gather Internet games without reconfiguration).  See the Networking User's Guide for details.
+
+
+
+I'm trying to join an Internet game "by address".  When I click the Join button, I get a message about A1 not being able to register me on the network.
+----------
+This error almost always means there was a problem resolving the host name you typed to a valid numeric IP address.  Make sure you did not make any typos in the Join Address field, and cursor all the way to the ends of the field to make sure you didn't accidentally include any extraneous spaces or returns (fairly easy to do if copying and pasting).
+
+
+
+I'm trying to join an Internet game.  The gatherer sees me on the list, but cannot add me; the gatherer's A1 hangs up for a long time (about 60 seconds) then finally claims it couldn't find me on the network - that maybe I cancelled.  I didn't!
+----------
+This is the classic symptom for the joiner being behind a firewall or NAT device (such as an internet connection sharing router) and not having that firewall or NAT properly configured to pass through A1 game traffic to the joining computer.  Please see the section of the Networking User's Guide about dealing with NAT and firewalls for instructions.
+
+
+
+I'm playing a network game, but I seem to have split off into a "parallel universe".  Things are different in my game than in the other players'.  I mean, they seem to be playing in mine, but they run into walls a lot and shoot randomly at nothing.  I'm kicking their butts!
+----------
+This describes a condition that's come to be known as "out-of-sync", or OOS for short.  It's been a part of Marathon as long as Marathon has existed, though the stresses of the Internet as a network environment (and surely some lingering bugs in the star protocol and/or "mystic" player movement-prediction code) encourage it to show up much more frequently than we used to see on our EtherTalk LANs.  It is possible for one player to become OOS with the rest of the players.  It is also possible for multiple players to become OOS with other players, but to remain in-sync with each other.  In any of these cases, there's no recovery, and it's up to the players to decide whether it's worth finishing the game, or whether it's better to just quit the current round and try again.  In the most typical case of one player going OOS alone, that one player might quit out but the rest of the players (still being in-sync with one another) may want to finish.
+
+OOS usually seems to strike intermittently - it may happen to some players more than others, or it may not; it usually is not related to the game-type or level being played.  If you *consistently* experience OOS, though, i.e. it splits up every game, there are a few things to check.
+
+First, if the gatherer has *no* physics models available anywhere in his A1 tree (easily verified in the Environment preferences), his machine won't send out physics; if the other players have non-standard physics selected in their Environment preferences, their A1's will each use their own physics, leading to disagreement and OOS.  The easiest way around this is to make sure the gatherer always has at least one physics file (probably the standard Marathon Infinity physics) available, so A1 will always send the physics and ensure consistency.
+
+Outside of that case, players should make sure that they're all using the same scenario (e.g., all using Marathon 2/Infinity, or all using Marathon EVIL, etc.) with the same MML.  MML can affect the way the game behaves, but is not yet sent over the network for consistency, so it's up to players to ensure that their A1's all agree.  (Note that not all MML affects behavior: for example, MML to switch in high resolution replacement textures should not affect the way the game behaves, so some players can use it and others not without OOS.)
+
+
+
+
+Document History
+
+August 24, 2003 (Woody Zenfell): Created.
+
+August 24, 2003 (Woody Zenfell): Fixed error in Mac OS 9 compatibility section; added section about discovering public IP address; added section about multiple machines behind NAT; added section about using demo files.

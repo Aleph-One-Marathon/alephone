@@ -1,0 +1,6 @@
+This directory contains data files needed by the SDL version of Aleph One:
+
+  Fonts - A MacOS resource fork with the fonts needed by Aleph One
+  *.mml - MML scripts
+  default_theme - Default GUI theme data
+  macos_theme - MacOS 7 lookalike theme data

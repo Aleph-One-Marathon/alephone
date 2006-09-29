@@ -1,0 +1,114 @@
+
+--[[	Keep Away From Bob v1.1, James Willson
+	original July 11, 2003; revised July 22, 2003
+
+	My interpretation of what the legendary game "Keep Away From Rob" might have looked like.
+	One player, "Bob", gets extra health, ammo, and weapons.
+	Killing Bob makes you Bob.  ]]
+
+function init ()
+	suicider = -1;
+	bob = -1;
+	proposed_bob = -1;
+	timer = 0;
+	use_lua_compass (true);
+	for player = 0, number_of_players () - 1, 1 do
+		set_lua_compass_state (player, _network_compass_all_off);
+	end
+end
+
+function idle ()
+
+	timer = timer + 1;
+	if (timer == 1600) then
+		timer = 0;
+	end
+
+	if (bob == -1) then
+		look_for_new_bob ();
+	end
+
+	if (bob == -1) then
+		for player = 0, number_of_players () - 1, 1 do
+			set_lua_compass_state (player, _network_compass_all_off);
+		end
+	else
+		bob_x, bob_y, bob_z = get_player_position (bob);
+		for player = 0, number_of_players () - 1, 1 do
+			if (player == bob) then
+				set_lua_compass_state (player, _network_compass_all_on);
+			else
+				set_lua_compass_state (player, _network_compass_use_beacon);
+				set_lua_compass_beacon (player, bob_x, bob_y);
+			end
+		end
+		if (math.mod (timer, 100) == 0) then
+			add_item (bob, _item_magnum_magazine);
+			add_item (bob, _item_shotgun_magazine);
+
+			if (math.mod (timer, 200) == 0) then
+				add_item (bob, assault_rifle_magazine);
+				add_item (bob, smg_ammo);
+				if (math.mod (timer, 400) == 0) then
+					add_item (bob, _item_missile_launcher_magazine);
+					add_item (bob, _item_assault_grenade_magazine);
+					if (math.mod (timer, 800) == 0) then
+						add_item (bob, _item_alien_weapon);
+						if (math.mod (timer, 1600) == 0) then
+							add_item (bob, _item_flamethrower_canister);
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+function player_killed (dead, aggressor, action)
+	if (dead == bob) then
+		if (aggressor == bob) then
+			suicider = bob;
+			bob = -1;
+			proposed_bob = -1;
+		else
+			bob = -1;
+			proposed_bob = aggressor;
+		end
+	elseif (bob == -1 and proposed_bob == -1) then
+		proposed_bob = aggressor;
+	elseif (aggressor == bob and not player_is_dead (bob) and bob ~= -1) then
+		set_life (bob, get_life (bob) + 50);
+	end
+end
+
+function look_for_new_bob ()
+	if (proposed_bob == suicider) then
+		proposed_bob = -1;
+	elseif (proposed_bob ~= -1) then
+		if (not player_is_dead (proposed_bob)) then
+			bob = proposed_bob;
+			proposed_bob = -1;
+			suicider = -1;
+			new_bob ();
+		else
+			proposed_bob = -1;
+		end
+	end
+end
+
+function new_bob ()
+	add_item (bob, _item_magnum);
+	add_item (bob, _item_plasma_pistol);
+	add_item (bob, _item_shotgun);
+	add_item (bob, _item_shotgun);
+	add_item (bob, _item_assault_rifle);
+	add_item (bob, _item_missile_launcher);
+	add_item (bob, _item_flamethrower);
+	add_item (bob, _item_smg);
+	add_item (bob, _item_alien_weapon);
+	set_life (bob, 450);
+	for player = 0, number_of_players () - 1, 1 do
+		screen_print (player, get_player_name (bob) .. " is Bob!");
+	end
+	play_sound (bob, _snd_you_are_it, 1);
+end

@@ -1,0 +1,123 @@
+ *** general stuff
+
+    Added replacement for the CSeries library in a separate directory.
+
+	Added a replacement noresnames MPW tool.
+
+    Changed the names of sound.h and sound.c to mysound.h and mysound.c
+    in order to avoid name collision with Apple's <Sound.h>. 
+
+    Added includes of <stdio.h>, <stdlib.h>, <string.h>, <stddef.h> where
+    appropriate.
+
+    Inserted casts to void in lots of places to shut up compiler warnings
+    about unused values.
+
+    Added "static" to various local function definitions.
+
+    Cleared up char vs. unsigned char * confusion:
+        unsigned char [] and unsigned char * are used for Pascal strings.
+        char [] and char * are used for C strings.
+    This includes changing lots of "" to "\p".
+
+    Removed unnecessary casts to (Ptr) in lots of places.  Most routines
+    use (void *) for general memory addresses these days.
+
+    Since SC doesn't understand #pragma unused, it's been replaced with
+    cast to void everywhere.
+
+    Updated all old MacOS API names to the current ones.
+    (GetDItem -> GetDialogItem, etc.)
+
+    Updated all old MacOS header file names to the current ones.
+    (<GestaltEqu.h> -> <Gestalt.h>, etc.)
+
+    Made #pragma segment depend on env68k instead of mpwc.
+
+    Inserted line breaks before empty loop bodies in lots of places to shut
+    up compiler warnings about extraneous semicolons.
+
+    Changed "%P" in printf formats (used for Pascal strings) to "%.*s" and
+    twiddled the corresponing arguments from string to string[0],string+1.
+
+    Changed all qsort compare functions to have the canonical signature:
+        int (void const *,void const *)
+
+    Changed "if (var=func())" to "if ((var=func())!=0)" in lots of places
+    to shut up compiler warnings about unintended assignments.
+
+    Changed "&array" to "array" in lots of places.  Idiot MPW C and its
+    idiot relaxed pointer type matching....
+
+    Removed symbol directive in *.a files since Asm no longer likes it.
+
+    Renamed HideMenuBar and ShowMenuBar to myHideMenuBar and myShowMenuBar
+    since Apple added functions with those names in a later OS version.
+
+*** file: buildprogram
+
+    Added definitions of CSeriesInterfaces and CSeriesLibraries.
+
+*** file: interface.c
+
+    Fixed bugs in chapter sound playing code: the sound channel was
+    incorrectly allocated and the sound handle wasn't locked while being
+    played asynchronously.
+
+*** file: macintosh_network.h
+
+    Added definition of asyncUncompleted since this seemed to be the
+    natural place for it.
+
+    Cleaned up the socket listener function pointer declarations.  These
+    now use the correct function signatures for 68k and UniversalProcPtr
+    for PPC.
+
+*** file: makefile
+
+    Changed compiler names (C -> SC, PPCC -> MrC) and updated compiler
+    options, linker options, list of standard libraries, etc. to match.
+
+    Inserted lots of double quotes around variable expansions.
+
+*** file: map_constructors.c
+
+    Changed intersecting_flood_proc to have the canonical cost_proc
+    prototype.
+
+*** file: marathon2.resource
+
+    Changed the desired partition size to 18 megs so you can debug the
+    "everything on" case.
+
+*** file: monsters.c
+
+    Changed monster_activation_flood_proc and
+    monster_pathfinding_cost_function to have the canonical cost_proc
+    prototype.
+
+*** file: media.c
+
+    Removed duplicate definition of variable medias.
+
+*** file: network_ddp.c
+
+    Cleaned up socket listener initialization code.  Correct prototypes or
+    UniversalProcPtr, etc.  Removed redundant calls to
+    NewRoutineDescriptor.
+
+*** file: physics.c
+
+    Fixed bug where TRIG_MAGNITUDE was used as the shift count rather than
+    TRIG_SHIFT.
+
+*** file: preferences.c
+
+    Changed the default_* and validate_* functions to have the canonical
+    prototypes.
+
+*** file: sound_macintosh.h
+
+    Fixed bug where the default sound file wasn't loaded because
+    initialize_machine_sound_manager calls open_sound_file before setting
+    _sm_initialized.

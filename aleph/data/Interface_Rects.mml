@@ -1,0 +1,22 @@
+<marathon>
+<interface>
+<rect index="0" top="326" left="300" bottom="338" right="473"/>
+<rect index="1" top="464" left="398" bottom="475" right="578"/>
+<rect index="2" top="464" left="181" bottom="475" right="361"/>
+<rect index="3" top="338" left="17" bottom="0" right="0"/>
+<rect index="4" top="0" left="0" bottom="0" right="0"/>
+<rect index="5" top="352" left="204" bottom="454" right="384"/>
+<rect index="6" top="352" left="384" bottom="454" right="596"/>
+<rect index="7" top="179" left="101" bottom="210" right="268"/>
+<rect index="8" top="221" left="25" bottom="253" right="238"/>
+<rect index="9" top="263" left="11" bottom="294" right="223"/>
+<rect index="10" top="301" left="38" bottom="333" right="236"/>
+<rect index="11" top="304" left="421" bottom="331" right="563"/>
+<rect index="12" top="386" left="231" bottom="413" right="406"/>
+<rect index="13" top="345" left="363" bottom="372" right="516"/>
+<rect index="14" top="344" left="83" bottom="374" right="271"/>
+<rect index="15" top="206" left="246" bottom="347" right="382"/>
+<rect index="16" top="263" left="500" bottom="294" right="585"/>
+<rect index="17" top="0" left="0" bottom="0" right="0"/>
+</interface>
+</marathon>

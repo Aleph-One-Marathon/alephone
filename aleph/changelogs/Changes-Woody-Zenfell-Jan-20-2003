@@ -1,0 +1,27 @@
+Woody Zenfell, III's recent changes to A1 (today is Jan. 19, 2003; these changes were written in the past week or two):
+
+NEW FEATURES
++ Open Transport-based UDP networking for the in-game ring protocol; can be used by Carbon but primarily intended for use in the Classic version.  (SDL_net is still required on all platforms for other network duties.)  Does not yet seem to function in Classic; need someone who can build and debug Classic version to investigate.  (Problem seems to be at initialization-time, don't need two computers to check this out.)
++ new Logging scheme with affiliated MML configuration and MML-configuration documentation.  Now used directly in several places in the code; also, fdprintf() and dprintf() now forward to Logging.  SSLP implementation increases its dependence on A1 code by now using A1's Logging facility.
+
+FIXES FOR KNOWN PROBLEMS
++ fixed an unsafe usage of the MIN() macro in update_world() that was causing out-of-sync netgame errors and film playback errors.
++ temporarily (I hope!) increased player.h's ACTION_QUEUE_BUFFER_DIAMETER fourfold, to make netgames more forgiving of less-than-timely application behaviors.  Principal offender is lengthy OpenGL initialization occurring _after_ NetSync() is called - a player can easily miss the first 15 seconds of a netgame if using hi-res replacement textures.  Fix is to reverse the order of OpenGL initialization (PreloadTextures() principally, probably) and NetSync() somehow; for now, the "grace period" for initialization has been increased to 34 seconds from 8.5 seconds.  If a machine takes longer than that, out-of-sync.
++ now resetting more ActionQueues than just the RealActionQueues when reset_player_queues() (now called reset_action_queues()) is called.  Should improve reliability.
++ overhead map is no longer omniscient in netgames played by A1s built with DEBUG defined (also prevents flipping to enemy views with 'delete'/backspace).
++ Classic and Carbon versions are now more tolerant (i.e. won't exit on an assert(false)) of receiving a gatherer-to-joiners text chat message.
++ reworked "stemmed" SDL resource-file opening behavior, principally to fix a problem opening resource forks stored in the data fork of a file (but not named foo.rsrc or foo.resources) in Mac OS X/SDL version.
++ explicitly resetting motion sensor at game start time.  Previously, the motion_sensor_player_index could be left with a stale value from a previous netgame, so until a player's first death, he could be seeing somebody else's motion sensor (if they got different indices from last game - which they could e.g. in a two-player game if the gatherer and joiner swapped).
+
+MINOR IMPROVEMENTS (may or may not actually fix anything)
++ introduced the 'mytm mutex', which is intended to let chunks of code that would have locked each other out (implicitly) in Mac OS 9 lock each other out (explicitly) now.  Currently used by the SDL_net UDP in-game ring protocol packet handler and all myTMTasks in the SDL version.  Should improve stability/reliability.
++ reworked memory management in SDL network speaker mechanism; now all new and delete there are called by the main thread, in case that's safer.
++ SDL_net UDP ring-protocol module now calls SDLnet_AllocSocketSet() and SDLnet_FreeSocketSet() in the main thread, in case that's safer.
++ poor emulation of snprintf() and vsnprintf() for platforms that don't have them.  At least now we can take advantage of them on platforms that *do*.
++ removed some dead code and comments (e.g. in mytm_sdl.cpp).
+
+NOTES
++ if A1 didn't before, it now requires the C++ Standard Library.  If anybody actually thinks this is a Bad Thing, I invite that person to remove the dependencies on it I created (in Logging).  But having it available now means that we can all take advantage of it.
++ On Mac OS X, Carbon with Open Transport UDP may be less "thread-safe" than Carbon with SDL_net or Classic with Open Transport UDP because it's protected by neither the explicit "mytm mutex" nor Classic's intrinsic "deferred task lockout".  So while Carbon/OT works and is useful for rudimentary testing as I have done, I recommend continuing to use SDL_net-based code in the official Carbon version.
++ Project files will need to be updated to include Logging.h, Logging.cpp, snprintf.h, network_udp_opentransport.cpp (as desired, in lieu of network_udp.cpp), snprintf.cpp (only when linking otherwise fails), and the C++ Standard Library (only when linking otherwise fails).
++ I have also included DefaultStringSets.cpp, which you may build into your project (no other changes needed) to have the standard A1 StringSets compiled-in.  They can still be overridden by external MML; they will only be useful if the user happens to misplace his TextStrings.MML file.  Perhaps not as useful on Mac platforms as on others (where it's easier to lose supporting files).  Well, I'm submitting it; will leave the decision on whether to cvs commit it and whether to build with it to folks wiser than me.  :)

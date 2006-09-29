@@ -1,0 +1,154 @@
+<marathon>
+
+<interface>
+<!-- Cyan box displays for ammo -->
+<color index="0" red="0" green="1" blue="1"/>
+<color index="1" red="0" green="0.1" blue="0.1"/>
+
+<!-- Modify the assault rifle's bullet display to look like the fusion gun's -->
+<weapon index="3">
+<ammo index="0" type="1" across="52" delta_x="50" delta_y="40" bullet_shape="0" empty_shape="1"/>
+<ammo index="1" right_to_left="0"/>
+</weapon>
+</interface>
+
+<motion_sensor>
+<!-- S'pht'Kr look like hostile players -->
+<assign monster="36" type="2"/>
+<assign monster="37" type="2"/>
+</motion_sensor>
+
+<overhead_map>
+
+<!-- F'licktas are honorary Bobs -->
+<assign_live monster="33" type="0"/>
+<assign_live monster="34" type="0"/>
+<assign_live monster="35" type="0"/>
+<assign_dead coll="11" type="0"/>
+
+<!-- Hide the Juggernauts -->
+<assign_live monster="38" type="-1"/>
+<assign_live monster="39" type="-1"/>
+<assign_dead coll="2" type="-1"/>
+
+<!-- Show everything showable -->
+<aliens on="true"/>
+<projectiles on="true"/>
+<items on="true"/>
+<paths on="true"/>
+
+<!-- Fun with colors; make the polygons and lines cyan -->
+<color index="0" red="0" green="0.4" blue="0.4"/>
+<color index="8" red="0" green="1" blue="1"/>
+<color index="9" red="0" green="0.8" blue="0.8"/>
+</overhead_map>
+
+<infravision>
+<!-- S'pht'Kr look friendly -->
+<assign coll="11" color="1"/>
+<!-- Gray walls -->
+<color index="2" red="0.3" green="0.3" blue="0.3"/>
+</infravision>
+
+<animated_textures>
+<!-- Couldn't think of what to put in here -->
+</animated_textures>
+
+<control_panels>
+<!-- Water rechargers giving more energy and sounding like oxygen recharger -->
+<panel index="1" type="2" pitch="0.25">
+<sound type="0" which="10"/>
+</panel>
+<panel index="2" type="3" pitch="0.5">
+<sound type="0" which="10"/>
+</panel>
+</control_panels>
+
+<platforms>
+<!-- S'pht Door sounding weird; also, give health an seem like picking something up -->
+<platform index="0"
+start_extend="12" start_contract="1" stop_extend="13" stop_contract="2"
+obstructed="17" uncontrollable="19" moving="10">
+<damage type="7" base="-10" random="3"/>
+</platform>
+</platforms>
+
+<liquids>
+<!-- Jjaro liquid a bit strange... Pfhorian appearance, Pfhor-staff healing, weird into/out-of effects...-->
+<liquid index="4"  transfer="19" damage_freq="7" submerged="3">
+<damage type="1" base="-1" random="0"/>
+<sound type="0" which="24"/>
+<sound type="1" which="25"/>
+<sound type="2" which="27"/>
+<sound type="3" which="28"/>
+<sound type="4" which="3"/>
+<effect type="2" which="0"/>
+</liquid>
+</liquids>
+
+<faders>
+<!-- Picking up stuff will look very interesting... -->
+<fader index="7"  type="5" initial_opacity="1" period="120">
+<color red="1" green="0" blue="1"/>
+</fader>
+<!-- If hit by a Pfhor bolt... -->
+<fader index="13"  type="3" initial_opacity="1" period="60">
+<color red="0.5" green="1" blue="0.5"/>
+</fader>
+<!-- Make water nearly-opaque cyan; make the sewage look like an alien-weapon hit -->
+<fader index="29" type="0" ><color red="0" green="0.5" blue="0.5"/></fader>
+<liquid index="0" fader="29" opacity="0.8"/>
+<liquid index="2" fader="24" opacity="0.8"/>
+</faders>
+
+<!-- More energy, less oxygen; vulnerable to F'lickta claws when invincible -->
+<player energy="300" oxygen="8100" stripped="100" light="0.1" oxygen_deplete="-18"  oxygen_replenish="-3" vulnerability="14">
+
+<!-- Add a SMG and some ammo -->
+<item index="1" type="34"/>
+<item index="4" type="35"/>
+<item index="7" type="35"/>
+
+<!-- Hunter bolt looks like Pfhor, induces VacBob hit and death sounds, causes flaming death -->
+<damage index="12" threshold="-1" fade="13" sound="205" death_sound="203" death_action="8"/>
+
+<powerup infravision="1800" extravision="900" invisibility="2400" invincibility="3600"/>
+
+</player>
+
+<view>
+<!-- Expand the range and make the change rate slower -->
+<fov normal="90" extra="160" tunnel="15" rate="1"/>
+</view>
+
+<weapons>
+<!-- Make SMG look like assault rifle, but with antigravity -->
+<shell_casings index="4" seq="19" vx0="0.03" dvy="0.1"/>
+
+<!-- Rearrange the weapons; interchange SMG and alien weapon -->
+<order index="5" weapon="6"/>
+<order index="8" weapon="9"/>
+</weapons>
+
+<items>
+<!-- Can pick up more SMG ammo -->
+<item index="35" maximum="16"/>
+<!-- Make a 1x recharger look like an uplink chip -->
+<item index="19"><shape coll="7" seq="16"/></item>
+</items>
+
+<scenery>
+<!-- Make the lamps destroyable -->
+<object index="50" flags="5" destruction="2"/>
+<object index="51" flags="5"><destroyed><shape coll="25" seq="11"/></destroyed></object>
+<!-- Make the glass container very fat -->
+<object index="55" radius="1024" height="256"/>
+<!-- Make the floor whip antenna solid -->
+<object index="59" flags="1" radius="64" height="1024"/>
+</scenery>
+
+<landscapes>
+<landscape coll="27" horiz_exp="0" vert_exp="2" ogl_asprat_exp="0"/>
+</landscapes>
+
+</marathon>
