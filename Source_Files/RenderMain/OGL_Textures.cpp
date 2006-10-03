@@ -563,9 +563,9 @@ bool TextureManager::Setup()
 		
 		// If not, then load the expected textures
 		if (!NormalImage.get() || !NormalImage.get()->IsPresent())
-			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable)));	
+			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable), true));	
 		if (IsGlowing && (!GlowImage.get() || !GlowImage.get()->IsPresent())) 
-			GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(GlowColorTable)));
+			GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(GlowColorTable), true));
 		
 		// Display size: may be shrunk
 		int MaxWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
@@ -922,9 +922,56 @@ void TextureManager::FindColorTables()
 	// The first color is always the transparent color,
 	// except if it is a landscape color
 	if (TextureType != OGL_Txtr_Landscape)
-		{NormalColorTable[0] = 0; GlowColorTable[0] = 0;}	
+		{NormalColorTable[0] = 0; GlowColorTable[0] = 0;}
+
+	PremultiplyColorTables();
 }
 
+void TextureManager::PremultiplyColorTables()
+{
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	uint32 alphaMask = 0xff000000;
+#else
+	uint32 alphaMask = 0x000000ff;
+#endif
+
+	uint32 *tables[2];
+	tables[0] = NormalColorTable;
+	if (!IsShadeless && (TextureType != OGL_Txtr_Landscape))
+		tables[1] = GlowColorTable;
+	else
+		tables[1] = 0;
+
+	for (int table = 0; table < 2; table++)
+	{
+		if (!tables[table]) continue;
+		for (int k = 0; k < MAXIMUM_SHADING_TABLE_INDEXES; k++)
+		{
+			if ((tables[table][k] & alphaMask) == alphaMask)
+				continue;
+			if ((tables[table][k] & alphaMask) == 0) {
+				tables[table][k] = 0;
+				continue;
+			}
+			
+			short r, g, b, a;
+			uint8 *PxlPtr = (uint8 *) &tables[table][k];
+			
+			r = PxlPtr[0];
+			g = PxlPtr[1];
+			b = PxlPtr[2];
+			a = PxlPtr[3];
+			
+			r = (a * r + 127) / 255;
+			g = (a * g + 127) / 255;
+			b = (a * b + 127) / 255;
+			
+			PxlPtr[0] = (uint8) r;
+			PxlPtr[1] = (uint8) g;
+			PxlPtr[2] = (uint8) b;
+		}
+	}
+}
 
 uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 {
@@ -1735,6 +1782,7 @@ void FindSilhouetteVersion(ImageDescriptorManager &imageManager)
 	{
 		FindSilhouetteVersionDXTC35(imageManager.edit()->GetBufferSize(), (unsigned char *) imageManager.edit()->GetBuffer());
 	}
+	imageManager.edit()->PremultipliedAlpha = false;
 }
 
 static inline uint16 SetPixelOpacitiesDXTC3Row(int scale, int shift, uint16 alpha)

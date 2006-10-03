@@ -57,6 +57,7 @@ class ImageDescriptor
 public:
 	
 	bool IsPresent() const {return (Pixels != NULL); }
+	bool IsPremultiplied() const { return (IsPresent() ? PremultipliedAlpha : false); }
 
 	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
 
@@ -94,16 +95,19 @@ public:
 	bool MakeRGBA();
 	bool MakeDXTC3();
 
+	void PremultiplyAlpha();
+	bool PremultipliedAlpha; // public so find silhouette version can unset
+
 	// Clearing
 	void Clear()
 		{Width = Height = Size = 0; delete []Pixels; Pixels = NULL;}
 
 	ImageDescriptor(const ImageDescriptor &CopyFrom);
 	
-	ImageDescriptor(): Width(0), Height(0), VScale(1.0), UScale(1.0), Pixels(NULL), Size(0) {}
+ImageDescriptor(): Width(0), Height(0), VScale(1.0), UScale(1.0), Pixels(NULL), Size(0), PremultipliedAlpha(false) {}
 
 	// asumes RGBA8
-	ImageDescriptor(int width, int height, uint32 *pixels);
+	ImageDescriptor(int width, int height, uint32 *pixels, bool IsAlreadyPremultiplied = false);
 
 	enum ImageFormat {
 		RGBA8,
@@ -205,7 +209,8 @@ enum {
 	ImageLoader_ResizeToPowersOfTwo = 0x1,
 	ImageLoader_CanUseDXTC = 0x2,
 	ImageLoader_LoadMipMaps = 0x4,
-	ImageLoader_LoadDXTC1AsDXTC3 = 0x8
+	ImageLoader_LoadDXTC1AsDXTC3 = 0x8,
+	ImageLoader_ImageIsAlreadyPremultiplied = 0x10
 };
 // Returns whether or not the loading was successful
 //bool LoadImageFromFile(ImageDescriptor& Img, FileSpecifier& File, int ImgMode, int flags, int maxSize = 0);

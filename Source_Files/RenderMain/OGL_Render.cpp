@@ -3257,6 +3257,12 @@ static void SetBlend(short _BlendType)
 	case OGL_BlendType_Add:
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		break;
+	case OGL_BlendType_Crossfade_Premult:
+		glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+		break;
+	case OGL_BlendType_Add_Premult:
+		glBlendFunc(GL_ONE, GL_ONE);
+		break;
 	}
 }
 

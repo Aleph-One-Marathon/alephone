@@ -72,7 +72,10 @@ enum
 {
 	OGL_BlendType_Crossfade,	// The default: crossfade from background to texture value
 	OGL_BlendType_Add,			// Add texture value to background
-	OGL_NUMBER_OF_BLEND_TYPES
+	OGL_BlendType_Crossfade_Premult,
+	OGL_BlendType_Add_Premult,
+	OGL_NUMBER_OF_BLEND_TYPES,
+	OGL_FIRST_PREMULT_ALPHA = OGL_BlendType_Crossfade_Premult
 };
 
 // Shared options for wall/sprite textures and for skins
@@ -86,6 +89,9 @@ struct OGL_TextureOptionsBase
 	// Names of files to load; these will be extended ones with directory specifications
 	// <dirname>/<dirname>/<filename>
 	vector<char> NormalColors, NormalMask, GlowColors, GlowMask;
+
+	// the image is premultiplied
+	bool NormalIsPremultiplied, GlowIsPremultiplied;
 
 	// hints passed into loadfromfile, in case file dimensions are POT
 	short actual_height, actual_width;
@@ -104,8 +110,8 @@ struct OGL_TextureOptionsBase
 	void Unload();
 	
 	OGL_TextureOptionsBase():
-		OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
-		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade), Substitution(false), actual_height(0), actual_width(0), Type(-1)
+	OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
+		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade), Substitution(false), NormalIsPremultiplied(false), GlowIsPremultiplied(false), actual_height(0), actual_width(0), Type(-1)
 		{}
 };
 

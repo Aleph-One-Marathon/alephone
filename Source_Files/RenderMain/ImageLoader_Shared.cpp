@@ -180,7 +180,8 @@ ImageDescriptor::ImageDescriptor(const ImageDescriptor &copyFrom) :
 	UScale(copyFrom.UScale),
 	Size(copyFrom.Size),
 	MipMapCount(copyFrom.MipMapCount),
-	Format(copyFrom.Format)
+	Format(copyFrom.Format),
+	PremultipliedAlpha(copyFrom.PremultipliedAlpha)
 {
 	if (copyFrom.Pixels) {
 		Pixels = new uint32[copyFrom.Size];
@@ -190,16 +191,17 @@ ImageDescriptor::ImageDescriptor(const ImageDescriptor &copyFrom) :
 	}
 }
 
-ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels)
+ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels, bool IsPremultiplied) : 
+	Width(_Width), 
+	Height(_Height), 
+	VScale(1.0), 
+	UScale(1.0), 
+	Pixels(_Pixels), 
+	Format(RGBA8), 
+	MipMapCount(0), 
+	PremultipliedAlpha(IsPremultiplied)
 {
-	Width = _Width;
-	Height = _Height;
-	VScale = 1.0;
-	UScale = 1.0;
 	Size = _Width * _Height * 4;
-	Pixels = _Pixels;
-	Format = RGBA8;
-	MipMapCount = 0;
 }
 
 static inline int padfour(int x)
@@ -609,6 +611,46 @@ bool ImageDescriptor::MakeRGBA()
 	return true;
 }
 
+void ImageDescriptor::PremultiplyAlpha()
+{
+	if (PremultipliedAlpha) return;
+	for (int i = 0; i < GetNumPixels(); i++)
+	{
+		// do these two optimizations without unpacking
+#ifdef ALEPHONE_LITTLE_ENDIAN
+		uint32 alphaMask = 0xff000000;
+#else
+		uint32 alphaMask = 0x000000ff;
+#endif
+
+		if ((Pixels[i] & alphaMask) == alphaMask)
+			continue;
+		if ((Pixels[i] & alphaMask) == 0) {
+			Pixels[i] = 0;
+			continue;
+		}
+		
+		// boo, have to do math
+		short r, g, b, a;
+		uint8 *PxlPtr = (uint8 *)&Pixels[i];
+
+		r = PxlPtr[0];
+		g = PxlPtr[1];
+		b = PxlPtr[2];
+		a = PxlPtr[3];
+		
+		r = (a * r + 127) / 255;
+		g = (g * r + 127) / 255;
+		b = (b * r + 127) / 255;
+
+		PxlPtr[0] = (unsigned char) r;
+		PxlPtr[1] = (unsigned char) g;
+		PxlPtr[2] = (unsigned char) b;
+	}
+
+	PremultipliedAlpha = true;
+}
+
 // DXTC decompression code adapted from DevIL (openil.sourceforge.net)
 
 typedef struct Color8888
@@ -626,7 +668,6 @@ typedef struct Color565
 	unsigned nGreen : 6; //	byte order of output to 32 bit
 	unsigned nRed	: 5;
 } Color565;
-
 
 static bool DecompressDXTC1(uint32 *out, int width, int height, uint32 *in)
 {

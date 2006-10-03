@@ -39,6 +39,9 @@
 
 bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_width, int actual_height, int maxSize)
 {
+	if (flags & ImageLoader_ImageIsAlreadyPremultiplied)
+		PremultipliedAlpha = true;
+
 	// Don't load opacity if there is no color component:
 	switch(ImgMode) {
 		case ImageLoader_Colors:

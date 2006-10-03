@@ -167,6 +167,9 @@ class TextureManager
 	
 	// This one finds the color tables
 	void FindColorTables();
+
+	// premultiplies color table alpha
+	void PremultiplyColorTables();
 	
 	// This one allocates an OpenGL texture buffer and uses a color table
 	uint32 *GetOGLTexture(uint32 *ColorTable);
@@ -216,8 +219,9 @@ public:
 	bool IsGlowMapped() {return IsGlowing;}
 	bool IsBlended() {return (TxtrOptsPtr->OpacityType != OGL_OpacType_Crisp);}
 	bool VoidVisible() {return (TxtrOptsPtr->VoidVisible);}
-	short NormalBlend() {return (TxtrOptsPtr->NormalBlend);}
-	short GlowBlend() {return (TxtrOptsPtr->GlowBlend);}
+	short NormalBlend() {return (TxtrOptsPtr->NormalBlend) + (NormalImage.get() && NormalImage.get()->IsPremultiplied() && TxtrOptsPtr->NormalBlend < OGL_FIRST_PREMULT_ALPHA) ? OGL_FIRST_PREMULT_ALPHA : 0; }
+	short GlowBlend() {return (TxtrOptsPtr->GlowBlend) + (GlowImage.get() && GlowImage.get()->IsPremultiplied() && TxtrOptsPtr->GlowBlend < OGL_FIRST_PREMULT_ALPHA) ? OGL_FIRST_PREMULT_ALPHA : 0; }
+
 	
 	// Scaling and offset of the current texture;
 	// important for sprites, which will be padded to make them OpenGL-friendly.

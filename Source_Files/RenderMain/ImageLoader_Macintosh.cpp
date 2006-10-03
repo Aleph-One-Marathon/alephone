@@ -45,7 +45,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_height, int actual_width, int maxSize)
 {
 	// Needs QT, of course:
-	if (!machine_has_quicktime()) return false;	
+	if (!machine_has_quicktime()) return false;
+
+	if (flags & ImageLoader_ImageIsAlreadyPremultiplied)
+		PremultipliedAlpha = true;
 	
 	// Don't load opacity if there is no color component:
 	switch(ImgMode)

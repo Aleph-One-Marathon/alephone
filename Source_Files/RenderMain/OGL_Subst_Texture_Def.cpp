@@ -340,6 +340,14 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	{
 		return ReadInt16Value(Value, Data.Type);
 	}
+	else if (StringsEqual(Tag, "normal_premultiply"))
+	{
+		return ReadBooleanValueAsBool(Value, Data.NormalIsPremultiplied);
+	}
+	else if (StringsEqual(Tag, "glow_premultiply"))
+	{
+		return ReadBooleanValueAsBool(Value, Data.GlowIsPremultiplied);
+	}
 	UnrecognizedTag();
 	return false;
 }
