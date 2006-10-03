@@ -96,14 +96,9 @@ public:
 		w_toggle *wall_mipmap_w = new w_toggle("Mipmap Walls", false);
 		m_dialog.add_to_tab(wall_mipmap_w, ADVANCED_TAB);
 
-		m_dialog.add_to_tab(new w_spacer(), ADVANCED_TAB);
-
 		w_toggle *sprite_mipmap_w = new w_toggle("Mipmap Sprites", false);
 		m_dialog.add_to_tab(sprite_mipmap_w, ADVANCED_TAB);
 
-		m_dialog.add_to_tab(new w_static_text("Warning: Shapes file sprites exhibit color"), ADVANCED_TAB);
-		m_dialog.add_to_tab(new w_static_text("fringes when Mipmap Sprites is enabled"), ADVANCED_TAB);
-		
 		m_dialog.add_to_tab(new w_spacer(), ADVANCED_TAB);
 
 		w_select_popup *texture_resolution_wa[OGL_NUMBER_OF_TEXTURE_TYPES];

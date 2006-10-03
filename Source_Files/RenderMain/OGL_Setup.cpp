@@ -233,7 +233,7 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	{
 		OGL_Texture_Configure& TxtrData = Data.TxtrConfigList[k];
 		TxtrData.NearFilter = 1;		// GL_LINEAR
-		if (k == OGL_Txtr_Wall)
+		if (k == OGL_Txtr_Wall || k == OGL_Txtr_Inhabitant)
 			TxtrData.FarFilter = 5;		// GL_LINEAR_MIPMAP_LINEAR
 		else
 			TxtrData.FarFilter = 1;		// GL_LINEAR
