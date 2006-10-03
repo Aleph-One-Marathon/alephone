@@ -1482,7 +1482,9 @@ It must be used with a glow_image file.
 If it is zero or less, then it and the offsets are ignored.
 <li>x_offset: The amount to shift the top left corner rightward, in internal units.
 <li>y_offset: The amount to shift the top left corner downward, in internal units. 
-<li>type: the texture type to use for image quality adjustments. If not set, the image quality settings in graphics preferences will be ignore for this image, and the largest version in the file used.
+<li>type: the texture type to use for image quality adjustments. If not set, the image quality settings in graphics preferences will be ignored for this image, and the largest version in the file used.
+<li>normal_premultiply: the normal image uses premultiplied alpha (default: false, the image does not use premultiplied alpha)
+<li>glow_premultiply: the glow image uses premultiplied alpha (default: false, the image does not use premultiplied alpha)
 </ul>
 <p>
 Note: all resulting values will be pegged to the range 0 to 1.
