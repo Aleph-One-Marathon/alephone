@@ -215,6 +215,9 @@ struct NetworkPlayer_hub {
         // mNetDeadTick is the first tick for which the netdead player isn't providing data.
         int32		mNetDeadTick;
 
+	// the last time a recovery set of flags was sent instead of incremental
+	int32           mLastRecoverySend;
+
 	// latency stuff
 	vector<int32> mDisplayLatencyBuffer; // last 30 latency calculations in ticks
 	uint32 mDisplayLatencyCount;
@@ -446,6 +449,7 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
                 }
 
                 thePlayer.mLastNetworkTickHeard = 0;
+		thePlayer.mLastRecoverySend = theFirstTick;
                 thePlayer.mSmallestUnacknowledgedTick = theFirstTick;
 		thePlayer.mSmallestUnheardTick = theFirstTick;
 		thePlayer.mNthElementFinder.reset(sHubPreferences.mPregameWindowSize);
@@ -1155,9 +1159,36 @@ send_packets()
                                 // only if we're actually sending action_flags.
                                 bool haveSentStartTick = false;
 
+				// are we sending an incremental update or a recovery update?
+				int32 startTick;
+				int32 endTick;
+				// never send fewer than 2 full updates per second, or more than 15
+				int effectiveLatency = std::min(2, std::max(thePlayer.mDisplayLatencyTicks / (int32) thePlayer.mDisplayLatencyBuffer.size(), TICKS_PER_SECOND / 2));
+				if (1) {
+					if (sNetworkTicker - thePlayer.mLastRecoverySend >= effectiveLatency)
+					{
+						// send a large update
+						thePlayer.mLastRecoverySend = sNetworkTicker;
+						
+						// we want to send 4 seconds worth of flags per second
+						int maxTicks = 4 * effectiveLatency;
+						startTick = thePlayer.mSmallestUnacknowledgedTick;
+						endTick = (startTick + maxTicks < sSmallestIncompleteTick) ? startTick + maxTicks : sSmallestIncompleteTick;
+					}
+					else
+					{
+						// send the last 2 flags
+						startTick = std::max(sSmallestIncompleteTick - 2, thePlayer.mSmallestUnacknowledgedTick);
+						endTick = sSmallestIncompleteTick;
+					}
+				} else {
+					startTick = thePlayer.mSmallestUnacknowledgedTick;
+					endTick = sSmallestIncompleteTick;
+				}
+
 				bool reflectFlags = false;
 				// find out if we need to reflect flags
-				for (int32 tick = thePlayer.mSmallestUnacknowledgedTick; tick < sSmallestIncompleteTick && !reflectFlags; tick++)
+				for (int32 tick = startTick; tick < endTick && !reflectFlags; tick++)
 				{
 					if (sPlayerReflectedFlags.peek(tick) & (1 << i)) reflectFlags = true;
 				}
@@ -1186,7 +1217,7 @@ send_packets()
         
                                 // Now, encode the flags in tick-major order (this is much easier to decode
                                 // at the other end)
-                                for(int32 tick = thePlayer.mSmallestUnacknowledgedTick; tick < sSmallestIncompleteTick; tick++)
+                                for(int32 tick = startTick; tick < endTick; tick++)
                                 {
                                         for(size_t j = 0; j < sNetworkPlayers.size(); j++)
                                         {
