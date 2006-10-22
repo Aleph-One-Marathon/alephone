@@ -1163,7 +1163,7 @@ send_packets()
 				int32 startTick;
 				int32 endTick;
 				// never send fewer than 2 full updates per second, or more than 15
-				int effectiveLatency = std::min((int32) 2, std::max((int32) (thePlayer.mDisplayLatencyTicks / thePlayer.mDisplayLatencyBuffer.size()), (int32) (TICKS_PER_SECOND / 2)));
+				int effectiveLatency = std::max((int32) 2, std::min((int32) (thePlayer.mDisplayLatencyTicks / thePlayer.mDisplayLatencyBuffer.size()), (int32) (TICKS_PER_SECOND / 2)));
 				if (1) {
 					if (sNetworkTicker - thePlayer.mLastRecoverySend >= effectiveLatency)
 					{
@@ -1177,8 +1177,8 @@ send_packets()
 					}
 					else
 					{
-						// send the last 2 flags
-						startTick = std::max(sSmallestIncompleteTick - 2, thePlayer.mSmallestUnacknowledgedTick);
+						// send the last 3 flags
+						startTick = std::max(sSmallestIncompleteTick - 3, thePlayer.mSmallestUnacknowledgedTick);
 						endTick = sSmallestIncompleteTick;
 					}
 				} else {
