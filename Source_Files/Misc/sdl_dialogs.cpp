@@ -1144,6 +1144,8 @@ void dialog::event(SDL_Event &e)
     if (e.key.keysym.sym == SDLK_RETURN
 	&& ((e.key.keysym.mod & KMOD_ALT) || (e.key.keysym.mod & KMOD_META))) {
       toggle_fullscreen();
+      if (!get_screen_mode()->fill_the_screen)
+	      layout();
       draw();
       handled = true;
     }
