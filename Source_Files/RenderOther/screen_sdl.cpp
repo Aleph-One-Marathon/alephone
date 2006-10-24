@@ -153,9 +153,10 @@ void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog)
 		world_view->horizontal_scale = 1;
 		world_view->vertical_scale = 1;
 		world_view->tunnel_vision_active = false;
-
+#if SDL_VERSION_ATLEAST(1, 2, 10)
 		desktop_height = SDL_GetVideoInfo()->current_h;
 		desktop_width = SDL_GetVideoInfo()->current_w;
+#endif
 
 	} else {
 

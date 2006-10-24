@@ -624,7 +624,12 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 #endif
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
-	preferences->screen_mode.fill_the_screen = false;
+	
+	const SDL_version *version = SDL_Linked_Version();
+	if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
+		preferences->screen_mode.fill_the_screen = false;
+	else
+		preferences->screen_mode.fill_the_screen = true;
 	preferences->screen_mode.bit_depth = 16;
 #endif
 	
@@ -1360,7 +1365,18 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	}
 	else if (StringsEqual(Tag, "scmode_fill_the_screen"))
 	{
-		return ReadBooleanValue(Value, graphics_preferences->screen_mode.fill_the_screen);
+#ifdef SDL
+		const SDL_version *version = SDL_Linked_Version();
+		if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
+#endif
+			return ReadBooleanValue(Value, graphics_preferences->screen_mode.fill_the_screen);
+#ifdef SDL
+		else
+		{
+			graphics_preferences->screen_mode.fill_the_screen = true;
+			return true;
+		}
+#endif
 	}
 	else if (StringsEqual(Tag,"scmode_bitdepth"))
 	{
