@@ -123,7 +123,7 @@ static NetworkState sNetworkState;
 
 
 enum {
-	kFlagsQueueSize = TICKS_PER_SECOND * 5 + 1,
+	kFlagsQueueSize = TICKS_PER_SECOND * 5,
         kDefaultPregameWindowSize = TICKS_PER_SECOND / 2,
         kDefaultInGameWindowSize = TICKS_PER_SECOND * 5,
 	kDefaultPregameNthElement = 2,
@@ -693,7 +693,8 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 
         // Enqueue flags that are new to us
         int	theUsefulActionFlagsCount = theActionFlagsCount - theRedundantActionFlagsCount;
-        int	theRemainingQueueSpace = theQueue.availableCapacity();
+        int	theRemainingQueueSpace = (sPlayerDataDisposition.getReadTick() < sSmallestRealGameTick && theQueue.size() > sHubPreferences.mPregameWindowSize) ? 0 : theQueue.availableCapacity();
+	
         int	theEnqueueableFlagsCount = std::min(theUsefulActionFlagsCount, theRemainingQueueSpace);
         
         for(int i = 0; i < theEnqueueableFlagsCount; i++)
@@ -1163,7 +1164,8 @@ send_packets()
 				int32 startTick;
 				int32 endTick;
 				// never send fewer than 2 full updates per second, or more than 15
-				int effectiveLatency = std::max((int32) 2, std::min((int32) (thePlayer.mDisplayLatencyTicks / thePlayer.mDisplayLatencyBuffer.size()), (int32) (TICKS_PER_SECOND / 2)));
+				int effectiveLatency = std::max((int32) 2, std::min((int32) ((thePlayer.mDisplayLatencyCount > 0) ? (thePlayer.mDisplayLatencyTicks / std::min(thePlayer.mDisplayLatencyCount, (uint32) thePlayer.mDisplayLatencyBuffer.size())) : 5), (int32) (TICKS_PER_SECOND / 2)));
+
 				if (1) {
 					if (sNetworkTicker - thePlayer.mLastRecoverySend >= effectiveLatency)
 					{
