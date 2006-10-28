@@ -40,6 +40,18 @@ void Scenario::AddCompatible(const string Compatible)
 	m_compatibleVersions.push_back(string(Compatible, 0, 23));
 }
 
+bool Scenario::IsCompatible(const string Compatible)
+{
+	if (Compatible == "" || m_id == "") return true;
+	if (Compatible == m_id) return true;
+	for (int i = 0; i < m_compatibleVersions.size(); i++)
+	{
+		if (m_compatibleVersions[i] == Compatible) return true;
+	}
+
+	return false;
+}
+
 class XML_ScenarioParser : public XML_ElementParser
 {
 public:

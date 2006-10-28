@@ -218,6 +218,20 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 
 void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 {
+	// check if the game is compatible...a more elegant dialog should
+	// appear here in the future, but for now, just prevent joining 
+	// incompatible games
+
+	if (!Scenario::instance()->IsCompatible(game.m_description.m_scenarioID))
+	{
+		string joinersScenario = (Scenario::instance()->GetName() != "") ? (Scenario::instance()->GetName()) : (Scenario::instance()->GetID());
+		string gatherersScenario = (game.m_description.m_scenarioName != "") ? game.m_description.m_scenarioName : game.m_description.m_scenarioID;
+		string errorMessage = joinersScenario + " is unable to join " + gatherersScenario + " games. Please restart using " + gatherersScenario + " to join this game.";
+
+		alert_user(const_cast<char *>(errorMessage.c_str()), 0);
+		return;
+	}
+
 	memcpy(&m_joinAddress.host, &game.m_ipAddress, sizeof(m_joinAddress.host));
 	m_joinAddress.port = game.m_port;
 	Stop();
