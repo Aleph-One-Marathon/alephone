@@ -170,7 +170,7 @@ void OGL_StartProgress(int total_progress)
 	if (!OGL_LoadScreen::instance()->Start())
 	{
 		OGL_ClearScreen();
-		open_progress_dialog(_loading);
+		open_progress_dialog(_loading, true);
 	}
 	show_ogl_progress = true;
 }

@@ -41,7 +41,7 @@ enum {
 	_closing_router_ports
 };
 
-void open_progress_dialog(size_t message_id);
+void open_progress_dialog(size_t message_id, bool show_progress_bar = false);
 void close_progress_dialog(void);
 
 void set_progress_dialog_message(size_t message_id);

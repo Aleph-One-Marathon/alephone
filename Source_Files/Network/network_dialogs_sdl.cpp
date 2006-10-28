@@ -900,7 +900,7 @@ dialog*		sProgressDialog 	= NULL;
 w_static_text*	sProgressMessage	= NULL;
 w_progress_bar* sProgressBar		= NULL;
 
-void open_progress_dialog(size_t message_id)
+void open_progress_dialog(size_t message_id, bool show_progress_bar)
 {
 //printf("open_progress_dialog %d\n", message_id);
 
@@ -908,10 +908,12 @@ void open_progress_dialog(size_t message_id)
     
     sProgressDialog 	= new dialog;
     sProgressMessage	= new w_static_text(TS_GetCString(strPROGRESS_MESSAGES, message_id));
-    sProgressBar	= new w_progress_bar(200);
+    if (show_progress_bar) 
+	    sProgressBar	= new w_progress_bar(200);
     
     sProgressDialog->add(sProgressMessage);
-    sProgressDialog->add(sProgressBar);
+    if (show_progress_bar) 
+	    sProgressDialog->add(sProgressBar);
     
     sProgressDialog->start(false);
 
@@ -957,12 +959,14 @@ void close_progress_dialog(void)
 
 void draw_progress_bar(size_t sent, size_t total)
 {
+	if (!sProgressBar) return;
 	sProgressBar->set_progress(sent, total);
 	sProgressDialog->draw();
 }
 
 void reset_progress_bar(void)
 {
+	if (!sProgressBar) return;
 	sProgressBar->set_progress(0, 1);
 	sProgressDialog->draw();
 }

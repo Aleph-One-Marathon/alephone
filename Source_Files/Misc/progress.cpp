@@ -58,7 +58,7 @@ static void Update()
 }
 
 
-void open_progress_dialog(size_t message_id)
+void open_progress_dialog(size_t message_id, bool)
 {
 	OSStatus err;
 	
