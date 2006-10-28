@@ -30,8 +30,8 @@ public:
 		m_dialog.add(new w_spacer());
 		
 		vector<string> tab_strings;
-		tab_strings.push_back ("General");
-		tab_strings.push_back ("Advanced");
+		tab_strings.push_back ("GENERAL");
+		tab_strings.push_back ("ADVANCED");
 		make_tab_buttons_for_dialog (m_dialog, tab_strings, TAB_WIDGET);
 		m_dialog.set_active_tab (BASIC_TAB);
 		

@@ -685,8 +685,8 @@ public:
 		m_dialog.add (new w_static_text ("SETUP NETWORK GAME", TITLE_FONT, TITLE_COLOR));
 		
 		vector<string> tab_strings;
-		tab_strings.push_back ("General");
-		tab_strings.push_back ("More Stuff");
+		tab_strings.push_back ("GENERAL");
+		tab_strings.push_back ("MORE STUFF");
 		make_tab_buttons_for_dialog (m_dialog, tab_strings, iSNG_TABS);
 		m_dialog.set_active_tab (iSNG_GENERAL_TAB);
 	
