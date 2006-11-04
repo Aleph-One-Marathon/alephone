@@ -110,6 +110,12 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	gMetaserverClient->announceGame(GAME_PORT, description);
 }
 
+void GameAvailableMetaserverAnnouncer::Start()
+{
+	// for now, because older aleph one builds do not understand games in progress
+	gMetaserverClient->announceGameDeleted();
+}
+
 extern void PlayInterfaceButtonSound(short);
 
 void GlobalMetaserverChatNotificationAdapter::playersInRoomChanged(const std::vector<MetaserverPlayerInfo>& playerChanges)

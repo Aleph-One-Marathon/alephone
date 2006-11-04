@@ -163,6 +163,8 @@ clearly this is all broken until we have packet types
 
 #include <boost/bind.hpp>
 
+#include "network_metaserver.h"
+
 // For temporary multiple MML specified lua scripts hack
 extern bool gLoadingLuaNetscript;
 
@@ -203,6 +205,7 @@ static GatherCallbacks *gatherCallbacks = NULL;
 static ChatCallbacks *chatCallbacks = NULL;
 
 static UpnpController *controller = NULL;
+extern MetaserverClient* gMetaserverClient;
 
 static bool sDisplayPings;
 struct toggle_ping_display {
@@ -1170,6 +1173,9 @@ void NetExit(
 		delete server;
 		server = NULL;
 	}
+
+	delete gMetaserverClient;
+	gMetaserverClient = new MetaserverClient();
 	
 	#ifndef __MWERKS__
 	if (controller)
@@ -1186,6 +1192,7 @@ void NetExit(
 	Console::instance()->unregister_command("ping");
   
 	NetDDPClose();
+
 }
 
 bool
@@ -2017,6 +2024,9 @@ void NetProcessMessagesInGame() {
       it->second->channel->dispatchIncomingMessages();
     }
   }
+
+  if (gMetaserverClient && gMetaserverClient->isConnected())
+	  gMetaserverClient->pump();
 }
 
 // If a potential joiner has connected to us, handle em

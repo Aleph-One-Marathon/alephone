@@ -193,7 +193,8 @@ bool network_gather(bool inResumingGame)
 	{
 		myPlayerInfo.desired_color= myPlayerInfo.color;
 		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
-	
+		
+		auto_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
 		if(NetEnter())
 		{
 			bool gather_dialog_result;
@@ -205,7 +206,6 @@ bool network_gather(bool inResumingGame)
 				
 				if (!gMetaserverClient) gMetaserverClient = new MetaserverClient ();
 
-				auto_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
 				if(advertiseOnMetaserver)
 				{
 					try
@@ -226,10 +226,18 @@ bool network_gather(bool inResumingGame)
 			
 			if (gather_dialog_result) {
 				NetDoneGathering();
+				if (advertiseOnMetaserver) 
+				{
+					metaserverAnnouncer->Start();
+					gMetaserverClient->sendChatMessage(".afk in game");
+					gMetaserverClient->pump();
+				}
 				successful= true;
 			}
 			else
 			{
+				delete gMetaserverClient;
+				gMetaserverClient = new MetaserverClient();
 				NetCancelGather();
 				NetExit();
 			}
@@ -255,9 +263,8 @@ GatherDialog::~GatherDialog()
 	delete m_chatWidget;
 	delete m_chatChoiceWidget;
 
-	// gMetaserverClient->disconnect ();
-	delete gMetaserverClient;
-	gMetaserverClient = new MetaserverClient ();
+	gMetaserverClient->associateNotificationAdapter(0);
+
 }
 
 bool GatherDialog::GatherNetworkGameByRunning ()
@@ -460,6 +467,11 @@ int network_join(void)
 		
 			game_info* myGameInfo= (game_info *)NetGetGameData();
 			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
+			if (gMetaserverClient && gMetaserverClient->isConnected())
+			{
+				gMetaserverClient->sendChatMessage(".afk in game");
+				gMetaserverClient->pump();
+			}
 		}
 		else
 		{
@@ -483,9 +495,7 @@ JoinDialog::JoinDialog() : join_announcer(true), got_gathered(false)
 
 JoinDialog::~JoinDialog ()
 {
-	// gMetaserverClient->disconnect ();
-	delete gMetaserverClient;
-	gMetaserverClient = new MetaserverClient ();
+	gMetaserverClient->associateNotificationAdapter(0);
 	
 	delete m_cancelWidget;
 	delete m_joinWidget;
