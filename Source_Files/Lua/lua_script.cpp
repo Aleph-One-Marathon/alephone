@@ -1745,6 +1745,27 @@ static int L_Get_Monster_Facing(lua_State *L)
 	return 1;
 }
 
+static int L_Get_Monster_Visible(lua_State *L)
+{
+	if (!lua_isnumber(L, 1))
+	{
+		lua_pushstring(L, "get_monster_visible: incorrect argument type");
+		lua_error(L);
+	}
+
+	int monster_index = static_cast<int>(lua_tonumber(L, 1));
+	
+	struct monster_data *theMonster = GetMemberWithBounds(monsters, monster_index, MAXIMUM_MONSTERS_PER_MAP);
+	if (!SLOT_IS_USED(theMonster))
+	{
+		lua_pushstring(L, "get_monster_visible: invalid monster index");
+		lua_error(L);
+	}
+	struct object_data *object = get_object_data(theMonster->object_index);
+	lua_pushboolean(L, !OBJECT_IS_INVISIBLE(object));
+	return 1;
+}
+
 static int L_Set_Monster_Immunity(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isboolean(L,3))
@@ -4925,6 +4946,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_monster_vitality", L_Get_Monster_Vitality);
 	lua_register(state, "set_monster_vitality", L_Set_Monster_Vitality);
 	//lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
+	lua_register(state, "get_monster_visible", L_Get_Monster_Visible);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_player_position", L_Get_Player_Position);
 	lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
