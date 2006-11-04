@@ -78,7 +78,11 @@ void
 MetaserverClient::handleChatMessage(ChatMessage* message, CommunicationsChannel* inChannel)
 {
 	if(m_notificationAdapter)
+	{
+		if (message->senderName() == "\260Bacon")
+			return;
 		m_notificationAdapter->receivedChatMessage(message->senderName(), message->senderID(), message->message());
+	}
 }
 
 
@@ -281,6 +285,10 @@ MetaserverClient::sendChatMessage(const std::string& message)
 				players += "none";
 			}
 			m_notificationAdapter->receivedLocalMessage(players); 
+		}
+	} else if (message.compare(0, strlen(".pork"), ".pork") == 0) {
+		if (m_notificationAdapter) {
+			m_notificationAdapter->receivedLocalMessage("NO BACON FOR YOU");
 		}
 	} else {
 		m_channel->enqueueOutgoingMessage(ChatMessage(m_playerID, m_playerName, message));
