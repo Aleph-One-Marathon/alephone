@@ -48,6 +48,7 @@ using namespace std;
 
 
 set<MetaserverClient*> MetaserverClient::s_instances;
+set<string> MetaserverClient::s_ignoreNames;
 
 
 static const int kKeyLength = 16;
@@ -79,8 +80,11 @@ MetaserverClient::handleChatMessage(ChatMessage* message, CommunicationsChannel*
 {
 	if(m_notificationAdapter)
 	{
-		if (message->senderName() == "\260Bacon")
+		std::string realSenderName = message->senderName();
+		if (realSenderName[0] == '\260') realSenderName.erase(realSenderName.begin());
+		if (s_ignoreNames.find(realSenderName) != s_ignoreNames.end()) 
 			return;
+
 		m_notificationAdapter->receivedChatMessage(message->senderName(), message->senderID(), message->message());
 	}
 }
@@ -159,6 +163,7 @@ MetaserverClient::MetaserverClient()
 	m_dispatcher->setHandlerForType(m_gameListMessageHandler.get(), GameListMessage::kType);
 
 	s_instances.insert(this);
+	s_ignoreNames.insert("Bacon");
 }
 
 
@@ -290,6 +295,28 @@ MetaserverClient::sendChatMessage(const std::string& message)
 		if (m_notificationAdapter) {
 			m_notificationAdapter->receivedLocalMessage("NO BACON FOR YOU");
 		}
+	} else if (message == ".ignore") {
+		if (m_notificationAdapter) {
+			// list the players on the ignore list
+			string players = "Ignoring: ";
+			for (set<string>::iterator it = s_ignoreNames.begin(); it != s_ignoreNames.end(); it++)
+			{
+				if (it == s_ignoreNames.begin())
+				{
+					players += "\"" + *it + "\"";
+				} 
+				else
+				{
+					players += ", \"" + *it +"\"";
+				}
+			}
+			
+			m_notificationAdapter->receivedLocalMessage(players);
+		}
+	} else if (message.compare(0, strlen(".ignore "), ".ignore ") == 0) {
+		// everything after the space is the name to ignore
+		string name = message.substr(strlen(".ignore "));
+		ignore(name);
 	} else {
 		m_channel->enqueueOutgoingMessage(ChatMessage(m_playerID, m_playerName, message));
 	}
@@ -325,6 +352,21 @@ MetaserverClient::announceGameDeleted()
 	m_channel->enqueueOutgoingMessage(RemoveGameMessage());
 }
 
+void MetaserverClient::ignore(const std::string& name)
+{
+	if (s_ignoreNames.find(name) != s_ignoreNames.end())
+	{
+		s_ignoreNames.erase(name);
+		if (m_notificationAdapter) {
+			m_notificationAdapter->receivedLocalMessage("Removing \"" + name + "\" from the ignore list");
+		}
+	} else {
+		s_ignoreNames.insert(name);
+		if (m_notificationAdapter) {
+			m_notificationAdapter->receivedLocalMessage("Adding \"" + name + "\" to the ignore list");
+		}
+	}
+}
 
 
 void

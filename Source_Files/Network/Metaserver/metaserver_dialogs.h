@@ -81,6 +81,7 @@ protected:
 	virtual void Stop() = 0;
 
 	void GameSelected(GameListMessage::GameListEntry game);
+	void PlayerSelected(MetaserverPlayerInfo info);
 	void playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges);
 	void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &gamesChanges);
 	void sendChat();

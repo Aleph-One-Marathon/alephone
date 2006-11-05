@@ -211,6 +211,7 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 	gMetaserverClient->associateNotificationAdapter(this);
 
 	m_gamesInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::GameSelected, this, _1));
+	m_playersInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::PlayerSelected, this, _1));
 	m_chatEntryWidget->set_callback(bind(&MetaserverClientUi::ChatTextEntered, this, _1));
 	m_cancelWidget->set_callback(boost::bind(&MetaserverClientUi::handleCancel, this));
 
@@ -241,6 +242,13 @@ void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 	memcpy(&m_joinAddress.host, &game.m_ipAddress, sizeof(m_joinAddress.host));
 	m_joinAddress.port = game.m_port;
 	Stop();
+}
+
+void MetaserverClientUi::PlayerSelected(MetaserverPlayerInfo info)
+{
+	string name = info.name();
+	if (name[0] == '\260') name.erase(name.begin());
+	gMetaserverClient->ignore(name);
 }
 
 void MetaserverClientUi::playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges)

@@ -1200,12 +1200,22 @@ class PlayerListWidget
 {
 public:
 	PlayerListWidget (w_players_in_room* players_in_room)
-		: m_players_in_room (players_in_room) {}
+		: m_players_in_room (players_in_room) {
+		m_players_in_room->set_item_clicked_callback(boost::bind(&PlayerListWidget::bounce_callback, this, _1));
+	}
 
 	void SetItems(const vector<MetaserverPlayerInfo>& items) { m_players_in_room->set_collection (items); }
+	void SetItemSelectedCallback(const boost::function<void (MetaserverPlayerInfo)> itemSelected)
+	{ m_callback = itemSelected; }
+
+	
 
 private:
 	w_players_in_room* m_players_in_room;
+	boost::function<void (MetaserverPlayerInfo)> m_callback;
+	
+	void bounce_callback (MetaserverPlayerInfo thingy)
+	{ m_callback(thingy); }
 };
 
 class JoiningPlayerListWidget

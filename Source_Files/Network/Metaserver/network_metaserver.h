@@ -190,6 +190,7 @@ public:
 	void announceGameStarted(int32 gameTimeInSeconds);
 	void announceGameReset();
 	void announceGameDeleted();
+	void ignore(const std::string& name);
 	void syncGames();
 
 	~MetaserverClient();
@@ -223,6 +224,7 @@ private:
 	uint32					m_playerID;
 
 	static std::set<MetaserverClient*>	s_instances;
+	static std::set<std::string>            s_ignoreNames;
 };
 
 #endif // NETWORK_METASERVER_H
