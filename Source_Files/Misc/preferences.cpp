@@ -963,12 +963,10 @@ void load_environment_from_preferences(
 #endif
 	if (File.Exists()) {
 		set_physics_file(File);
-		import_definition_structures();
 	} else {
 		if(find_wad_file_that_has_checksum(File,
 			_typecode_physics, strPATHS, prefs->physics_checksum)) {
 			set_physics_file(File);
-			import_definition_structures();
 		} else {
 			/* Didn't find it.  Don't change them.. */
 		}

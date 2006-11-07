@@ -1528,6 +1528,7 @@ bool process_map_wad(
 	load_random_sound_images(data, count);
 
 	// LP addition: load the physics-model chunks (all fixed-size)
+	init_physics_wad_data();
 	bool PhysicsModelLoaded = false;
 	
 	data= (uint8 *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
@@ -1582,10 +1583,10 @@ bool process_map_wad(
 	
 	// LP addition: Reload the physics model if it had been loaded in the previous level,
 	// but not in the current level. This avoids the persistent-physics bug.
-	if (PhysicsModelLoadedEarlier && !PhysicsModelLoaded)
+	// ghs: always reload the physics model if there isn't one merged
+	if (!PhysicsModelLoaded)
 		import_definition_structures();
-	PhysicsModelLoadedEarlier = PhysicsModelLoaded;
-		
+	
 	/* If we are restoring the game, then we need to add the dynamic data */
 	if(restoring_game)
 	{

@@ -412,6 +412,7 @@ void reset_absolute_positioning_device(_fixed yaw, _fixed pitch, _fixed velocity
 
 /* ---------- prototypes/IMPORT_DEFINITIONS.C */
 
+void init_physics_wad_data();
 void import_definition_structures(void);
 
 /* ---------- prototypes/KEYBOARD_DIALOG.C */

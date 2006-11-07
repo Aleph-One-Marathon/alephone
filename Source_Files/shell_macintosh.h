@@ -482,6 +482,8 @@ std::throws_bad_alloc = false; //AS: can't test this code, if it fails, try thro
 
 #endif
 #endif
+
+	init_physics_wad_data();
 	
 	// Need to set the root directory before doing reading any other files
 	ReadRootDirectory();

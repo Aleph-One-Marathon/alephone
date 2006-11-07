@@ -3666,6 +3666,11 @@ uint8 *pack_monster_definition(uint8 *Stream, monster_definition *Objects, size_
 	return S;
 }
 
+void init_monster_definitions()
+{
+	memcpy(monster_definitions, original_monster_definitions, sizeof(monster_definitions));
+}
+
 struct damage_kick_definition *original_damage_kick_definitions = NULL;
 class XML_DamageKickParser: public XML_ElementParser
 {

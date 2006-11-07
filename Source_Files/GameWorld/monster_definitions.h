@@ -231,7 +231,8 @@ struct monster_definition /* <128 bytes */
 
 /* ---------- monster definitions */
 
-struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES]=
+struct monster_definition monster_definitions[NUMBER_OF_MONSTER_TYPES];
+const struct monster_definition original_monster_definitions[NUMBER_OF_MONSTER_TYPES]=
 {
 	{ /* _monster_marine (canÕt be used as a regular monster) */
 		_collection_player, /* shape collection */

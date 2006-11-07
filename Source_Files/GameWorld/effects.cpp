@@ -419,3 +419,8 @@ uint8 *pack_effect_definition(uint8 *Stream, effect_definition *Objects, size_t 
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_effect_definition));
 	return S;
 }
+
+void init_effect_definitions()
+{
+	memcpy(effect_definitions, original_effect_definitions, sizeof(effect_definitions));
+}

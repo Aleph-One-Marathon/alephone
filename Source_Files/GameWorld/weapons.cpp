@@ -4192,6 +4192,10 @@ uint8 *pack_weapon_definition(uint8 *Stream, weapon_definition *Objects, size_t 
 	return S;
 }
 
+void init_weapon_definitions()
+{
+	memcpy(weapon_definitions, original_weapon_definitions, sizeof(weapon_definitions));
+}
 
 // LP additions: get weapon-definition size and number of weapon types
 size_t get_number_of_weapon_types() {return NUMBER_OF_WEAPONS;}

@@ -1003,6 +1003,10 @@ uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t 
 	return S;
 }
 
+void init_physics_constants()
+{
+	memcpy(physics_models, original_physics_models, sizeof(physics_models));
+}
 
 // LP addition: get number of physics models (restricted sense)
 size_t get_number_of_physics_models() {return NUMBER_OF_PHYSICS_MODELS;}

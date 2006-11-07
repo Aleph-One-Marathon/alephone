@@ -1227,3 +1227,8 @@ uint8 *pack_projectile_definition(uint8 *Stream, size_t Count)
 {
 	return pack_projectile_definition(Stream,projectile_definitions,Count);
 }
+
+void init_projectile_definitions()
+{
+	memcpy(projectile_definitions, original_projectile_definitions, sizeof(projectile_definitions));
+}

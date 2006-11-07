@@ -53,7 +53,8 @@ struct effect_definition
 
 /* ---------- effect definitions */
 
-static struct effect_definition effect_definitions[NUMBER_OF_EFFECT_TYPES]=
+static struct effect_definition effect_definitions[NUMBER_OF_EFFECT_TYPES];
+const struct effect_definition original_effect_definitions[NUMBER_OF_EFFECT_TYPES]=
 {
 	/* rocket explosion, contrail */
 	{_collection_rocket, 1, _normal_frequency, _end_when_animation_loops, 0, NONE},

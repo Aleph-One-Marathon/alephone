@@ -413,6 +413,8 @@ static void initialize_application(void)
 	// Setup resource manager
 	initialize_resources();
 
+	init_physics_wad_data();
+
 	// Parse MML files
 	SetupParseTree();
 	LoadBaseMMLScripts();

@@ -56,7 +56,8 @@ struct physics_constants
 
 /* ---------- globals */
 
-static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS]=
+static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS];
+const struct physics_constants original_physics_models[NUMBER_OF_PHYSICS_MODELS]=
 {
 	/* game walking */
 	{
@@ -98,5 +99,6 @@ static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS]=
 // Added for the convenience of the 1-2-3 Converter
 uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t Count);
 uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t Count);
+void init_physics_constants();
 
 #endif

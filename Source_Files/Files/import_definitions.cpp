@@ -48,6 +48,7 @@ Aug 31, 2000 (Loren Petrich):
 #include "projectiles.h"
 #include "player.h"
 #include "weapons.h"
+#include "physics_models.h"
 
 /* ---------- globals */
 
@@ -74,12 +75,23 @@ void set_to_default_physics_file(
 //	dprintf("Set to: %d %d %.*s", physics_file.vRefNum, physics_file.parID, physics_file.name[0], physics_file.name+1);
 }
 
+void init_physics_wad_data()
+{
+	init_monster_definitions();
+	init_effect_definitions();
+	init_projectile_definitions();
+	init_physics_constants();
+	init_weapon_definitions();
+}
+
 void import_definition_structures(
 	void)
 {
 	struct wad_data *wad;
 	bool bungie_physics;
 	static bool warned_about_physics= false;
+
+	init_physics_wad_data();
 
 	wad= get_physics_wad_data(&bungie_physics);
 	if(wad)
@@ -117,6 +129,8 @@ void *get_network_physics_buffer(
 void process_network_physics_model(
 	void *data)
 {
+	init_physics_wad_data();
+
 	if(data)
 	{
 		struct wad_header header;

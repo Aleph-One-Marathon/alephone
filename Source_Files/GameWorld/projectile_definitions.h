@@ -81,7 +81,8 @@ struct projectile_definition
 
 /* ---------- projectile definitions */
 
-static struct projectile_definition projectile_definitions[NUMBER_OF_PROJECTILE_TYPES]=
+static struct projectile_definition projectile_definitions[NUMBER_OF_PROJECTILE_TYPES];
+const struct projectile_definition original_projectile_definitions[NUMBER_OF_PROJECTILE_TYPES]=
 {
 	{	/* player’s rocket */
 		_collection_rocket, 0, /* collection number, shape number */
