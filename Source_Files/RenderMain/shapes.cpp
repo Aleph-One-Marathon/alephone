@@ -1058,7 +1058,10 @@ int count_replacement_collections()
 	struct collection_header *header;
 	for (collection_index = 0, header = collection_headers; collection_index < MAXIMUM_COLLECTIONS; ++collection_index, ++header)
 	{
-		total_replacements += OGL_CountModelsImages(collection_index);
+		if (collection_loaded(header))
+		{
+			total_replacements += OGL_CountModelsImages(collection_index);
+		}
 	}
 
 	return total_replacements;
