@@ -784,33 +784,26 @@ bool goto_level(
 		if (!new_game)
 		{
 			recreate_players_for_new_level();
-	
-			/* Load the collections */
-			dynamic_world->current_level_number= entry->level_number;
+		}
+		
+		/* Load the collections */
+		dynamic_world->current_level_number= entry->level_number;
 
+		place_initial_objects();
+		initialize_control_panels_for_level();
+
+		if (!new_game) 
+		{
+			
 			/* entering_map might fail if netsync fails, but we will have already displayed */
 			/* the error.. */
 			success= entering_map(false);
 		}
-
-		if(success) /* successfully switched. (guaranteed except in net games) */
-		{
-			/* place_initial_objects should be called in complete_loading_level(), but
-			 * it needs to be called after recreate_players_for_new_level() if we're switching
-			 * levels (the placement stuff calls point_is_player_visible) and loading the game
-			 * wad munges the monster information (which p_i_p_v() needs) */
-			place_initial_objects();
-	
-			initialize_control_panels_for_level(); /* must be called after the players are initialized */
-			
-			dynamic_world->current_level_number= entry->level_number;
-		} else {
-//			assert(error_pending());
-		}
+		
 	}
-
+	
 //	if(!success) alert_user(fatalError, strERRORS, badReadMap, -1);
-
+	
 	/* We be done.. */
 	return success;
 }
