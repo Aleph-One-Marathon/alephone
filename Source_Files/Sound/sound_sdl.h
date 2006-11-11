@@ -910,13 +910,13 @@ static void buffer_sound(struct channel_data *channel, short sound_index, _fixed
 
 		// Yes, queue next header
 		c->next_header = data;
-		c->next_pitch = pitch;
-
+		c->next_pitch = calculate_pitch_modifier(sound_index, pitch);
+		
 	} else {
 
 		// No, load sound header and start channel
 		c->active = true;
-		load_sound_header(c, data, pitch);
+		load_sound_header(c, data, calculate_pitch_modifier(sound_index, pitch));
 	}
 
 	// Unlock sound subsystem
