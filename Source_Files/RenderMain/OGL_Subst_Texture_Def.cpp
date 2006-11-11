@@ -28,6 +28,8 @@
 #include "cseries.h"
 #include "OGL_Subst_Texture_Def.h"
 
+#include <deque>
+
 #ifdef HAVE_OPENGL
 
 void OGL_TextureOptions::FindImagePosition()
@@ -54,7 +56,8 @@ struct TextureOptionsEntry
 
 // Separate texture-options sequence lists for each collection ID,
 // to speed up searching
-static vector<TextureOptionsEntry> TOList[NUMBER_OF_COLLECTIONS];
+typedef deque<TextureOptionsEntry> TOList_t;
+static TOList_t TOList[NUMBER_OF_COLLECTIONS];
 
 // Texture-options hash table for extra-fast searching;
 // the top bit of the hashtable index is set if some specific CLUT had been matched to.
@@ -97,8 +100,8 @@ extern void OGL_ProgressCallback(int);
 
 void OGL_LoadTextures(short Collection)
 {
-	vector<TextureOptionsEntry>& TOL = TOList[Collection];
-	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
+	TOList_t& TOL = TOList[Collection];
+	for (TOList_t::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
 	{
 		// Load the images
 		TOIter->OptionsData.Load();
@@ -114,8 +117,8 @@ void OGL_LoadTextures(short Collection)
 
 void OGL_UnloadTextures(short Collection)
 {
-	vector<TextureOptionsEntry>& TOL = TOList[Collection];
-	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
+	TOList_t& TOL = TOList[Collection];
+	for (TOList_t::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
 	{
 		TOIter->OptionsData.Unload();
 	}
@@ -139,7 +142,7 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 	// Be sure to blank out the specific-CLUT flag when indexing the texture-options list with the hash value.
 	if (HashVal != UNONE)
 	{
-		vector<TextureOptionsEntry>::iterator TOIter = TOList[Collection].begin() + (HashVal & ~Specific_CLUT_Flag);
+		TOList_t::iterator TOIter = TOList[Collection].begin() + (HashVal & ~Specific_CLUT_Flag);
 		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
 		bool Hash_SCS = TEST_FLAG(HashVal,Specific_CLUT_Flag);
 		if ((Specific_CLUT_Set && Hash_SCS) || ((TOIter->CLUT == ALL_CLUTS) && !Hash_SCS))
@@ -151,9 +154,9 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 
 	// Fallback for the case of a hashtable miss;
 	// do a linear search and then update the hash entry appropriately.
-	vector<TextureOptionsEntry>& TOL = TOList[Collection];
+	TOList_t& TOL = TOList[Collection];
 	uint16 Indx = 0;
-	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++, Indx++)
+	for (TOList_t::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++, Indx++)
 	{
 		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
 		if (Specific_CLUT_Set || (TOIter->CLUT == ALL_CLUTS))
@@ -362,8 +365,8 @@ bool XML_TextureOptionsParser::AttributesDone()
 	}
 	
 	// Check to see if a frame is already accounted for
-	vector<TextureOptionsEntry>& TOL = TOList[Collection];
-	for (vector<TextureOptionsEntry>::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
+	TOList_t& TOL = TOList[Collection];
+	for (TOList_t::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
 	{
 		if (TOIter->CLUT == CLUT && TOIter->Bitmap == Bitmap)
 		{
@@ -378,7 +381,10 @@ bool XML_TextureOptionsParser::AttributesDone()
 	DataEntry.CLUT = CLUT;
 	DataEntry.Bitmap = Bitmap;
 	DataEntry.OptionsData = Data;
-	TOL.push_back(DataEntry);
+	if (CLUT == ALL_CLUTS)
+		TOL.push_back(DataEntry);
+	else
+		TOL.push_front(DataEntry);
 	
 	return true;
 }
