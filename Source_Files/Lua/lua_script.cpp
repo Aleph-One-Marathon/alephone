@@ -1405,9 +1405,9 @@ static int L_Activate_Monster(lua_State *L)
 		lua_pushstring(L, "activate_monster: invalid monster index");
 		lua_error(L);
 	}
-	return 0;
 	if(!MONSTER_IS_ACTIVE(monster))
 		activate_monster(monster_index);
+	return 0;
 }
 
 static int L_Deactivate_Monster(lua_State *L)
@@ -1426,9 +1426,9 @@ static int L_Deactivate_Monster(lua_State *L)
 		lua_pushstring(L, "deactivate_monster: invalid monster index");
 		lua_error(L);
 	}
-	return 0;
 	if(MONSTER_IS_ACTIVE(monster))
 		deactivate_monster(monster_index);
+	return 0;
 }
 
 static int L_Damage_Monster(lua_State *L)
