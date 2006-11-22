@@ -160,6 +160,7 @@ bool OGL_CheckExtension(const std::string extension) {
 static int ogl_progress;
 static int total_ogl_progress;
 static bool show_ogl_progress = false;
+static int32 last_update_tick;
 
 extern bool OGL_ClearScreen();
 
@@ -173,17 +174,23 @@ void OGL_StartProgress(int total_progress)
 		open_progress_dialog(_loading, true);
 	}
 	show_ogl_progress = true;
+	last_update_tick = SDL_GetTicks();
 }
 
 void OGL_ProgressCallback(int delta_progress)
 {
 	if (!show_ogl_progress) return;
 	ogl_progress += delta_progress;
-	if (OGL_LoadScreen::instance()->Use())
-
-		OGL_LoadScreen::instance()->Progress(100 * ogl_progress / total_ogl_progress);
-	else
-		draw_progress_bar(ogl_progress, total_ogl_progress);
+	int32 current_ticks = SDL_GetTicks();
+	if (current_ticks > last_update_tick + 33)
+	{
+		if (OGL_LoadScreen::instance()->Use())
+			
+			OGL_LoadScreen::instance()->Progress(100 * ogl_progress / total_ogl_progress);
+		else
+			draw_progress_bar(ogl_progress, total_ogl_progress);
+		last_update_tick = current_ticks;
+	}
 }
 
 void OGL_StopProgress()
