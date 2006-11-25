@@ -214,6 +214,13 @@ struct toggle_ping_display {
 	};
 };
 
+struct send_falg_message {
+	void operator()(const std::string&) const {
+		if (chatCallbacks)
+			chatCallbacks->SendChatMessage("GERT HLIM AD GT THE FALG!");
+	}
+};
+
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
 // don't matter as much.  Do observe, though, that users of the "distribution" mechanism will have
@@ -1101,6 +1108,7 @@ bool NetEnter(void)
 	// net commands!
 	sDisplayPings = false;
 	Console::instance()->register_command("ping", toggle_ping_display());
+	Console::instance()->register_command("falg", send_falg_message());
   
 	next_join_attempt = machine_tick_count();
   
@@ -1190,6 +1198,7 @@ void NetExit(
 	#endif
 
 	Console::instance()->unregister_command("ping");
+	Console::instance()->unregister_command("falg");
   
 	NetDDPClose();
 
