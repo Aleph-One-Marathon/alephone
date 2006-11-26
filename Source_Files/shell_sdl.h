@@ -227,7 +227,6 @@ int main(int argc, char **argv)
 	argc--;
 	argv++;
 	while (argc > 0) {
-		fprintf(stderr, "parsing arg %s\n", *argv);
 		if (strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0) {
 			usage(prg_name);
 		} else if (strcmp(*argv, "-v") == 0 || strcmp(*argv, "--version") == 0) {
@@ -251,7 +250,6 @@ int main(int argc, char **argv)
 			if (f.IsDir())
 			{
 				arg_directory = *argv;
-				fprintf(stderr, "using %s as default data\n", *argv);
 			}
 			
 			else
