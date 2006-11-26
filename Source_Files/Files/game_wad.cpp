@@ -1521,7 +1521,6 @@ bool process_map_wad(
 	load_random_sound_images(data, count);
 
 	// LP addition: load the physics-model chunks (all fixed-size)
-	init_physics_wad_data();
 	bool PhysicsModelLoaded = false;
 	
 	data= (uint8 *)extract_type_from_wad(wad, MONSTER_PHYSICS_TAG, &data_length);
@@ -1530,6 +1529,7 @@ bool process_map_wad(
 	assert(count <= NUMBER_OF_MONSTER_TYPES);
 	if (data_length > 0)
 	{
+		if (!PhysicsModelLoaded) init_physics_wad_data();
 		PhysicsModelLoaded = true;
 		unpack_monster_definition(data,count);
 	}
@@ -1540,6 +1540,7 @@ bool process_map_wad(
 	assert(count <= NUMBER_OF_EFFECT_TYPES);
 	if (data_length > 0)
 	{
+		if (!PhysicsModelLoaded) init_physics_wad_data();
 		PhysicsModelLoaded = true;
 		unpack_effect_definition(data,count);
 	}
@@ -1550,6 +1551,7 @@ bool process_map_wad(
 	assert(count <= NUMBER_OF_PROJECTILE_TYPES);
 	if (data_length > 0)
 	{
+		if (!PhysicsModelLoaded) init_physics_wad_data();
 		PhysicsModelLoaded = true;
 		unpack_projectile_definition(data,count);
 	}
@@ -1560,6 +1562,7 @@ bool process_map_wad(
 	assert(count <= get_number_of_physics_models());
 	if (data_length > 0)
 	{
+		if (!PhysicsModelLoaded) init_physics_wad_data();
 		PhysicsModelLoaded = true;
 		unpack_physics_constants(data,count);
 	}
@@ -1570,6 +1573,7 @@ bool process_map_wad(
 	assert(count <= get_number_of_weapon_types());
 	if (data_length > 0)
 	{
+		if (!PhysicsModelLoaded) init_physics_wad_data();
 		PhysicsModelLoaded = true;
 		unpack_weapon_definition(data,count);
 	}
@@ -1577,8 +1581,9 @@ bool process_map_wad(
 	// LP addition: Reload the physics model if it had been loaded in the previous level,
 	// but not in the current level. This avoids the persistent-physics bug.
 	// ghs: always reload the physics model if there isn't one merged
-	if (!PhysicsModelLoaded)
+	if (PhysicsModelLoadedEarlier && !PhysicsModelLoaded)
 		import_definition_structures();
+	PhysicsModelLoadedEarlier = PhysicsModelLoaded;
 	
 	/* If we are restoring the game, then we need to add the dynamic data */
 	if(restoring_game)

@@ -1918,7 +1918,8 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
   
 	if (!error) {
 		/* Process the physics file & frees it!.. */
-		process_network_physics_model(do_physics ? physics_buffer : 0);
+		if (do_physics)
+			process_network_physics_model(physics_buffer);
 		
 		draw_progress_bar(total_length, total_length);
 		
@@ -1951,8 +1952,6 @@ byte *NetReceiveGameData(bool do_physics)
       process_network_physics_model(handlerPhysicsBuffer);
       handlerPhysicsLength = 0;
       handlerPhysicsBuffer = NULL;
-    } else {
-	    process_network_physics_model(0);
     }
     
     if (handlerMapLength > 0) {
