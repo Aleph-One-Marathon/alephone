@@ -64,6 +64,8 @@
 #include "crc.h"
 #include "player.h" // for masking out action flags triggers :(
 
+#define BANDWIDTH_REDUCTION 1
+
 // Synchronization:
 // hub_received_network_packet() is not reentrant
 // hub_tick() is not reentrant
@@ -1066,15 +1068,20 @@ hub_tick()
 		}
 	}
 
-        if(shouldSend)
-                send_packets();
+#ifdef BANDWIDTH_REDUCTION
+	send_packets();
+#else
+	
+	if(shouldSend)
+		send_packets();
 	else
-        {
-                // Make sure we send at least every once in a while to keep things going
-                if(sNetworkTicker > sLastNetworkTickSent && (sNetworkTicker - sLastNetworkTickSent) >= sHubPreferences.mRecoverySendPeriod)
-                        send_packets();
-        }
-
+	{
+		// Make sure we send at least every once in a while to keep things going
+		if(sNetworkTicker > sLastNetworkTickSent && (sNetworkTicker - sLastNetworkTickSent) >= sHubPreferences.mRecoverySendPeriod)
+			send_packets();
+	}
+	
+#endif
         check_send_packet_to_spoke();
 
         // We want to run again.
@@ -1164,29 +1171,29 @@ send_packets()
 				int32 startTick;
 				int32 endTick;
 				// never send fewer than 2 full updates per second, or more than 15
-				int effectiveLatency = std::max((int32) 2, std::min((int32) ((thePlayer.mDisplayLatencyCount > 0) ? (thePlayer.mDisplayLatencyTicks / std::min(thePlayer.mDisplayLatencyCount, (uint32) thePlayer.mDisplayLatencyBuffer.size())) : 5), (int32) (TICKS_PER_SECOND / 2)));
+				int effectiveLatency = std::max((int32) 2, std::min((int32) ((thePlayer.mDisplayLatencyCount > 0) ? (thePlayer.mDisplayLatencyTicks / std::min(thePlayer.mDisplayLatencyCount, (uint32) thePlayer.mDisplayLatencyBuffer.size())) : 2), (int32) (TICKS_PER_SECOND / 2)));
 
-				if (1) {
-					if (sNetworkTicker - thePlayer.mLastRecoverySend >= effectiveLatency)
-					{
-						// send a large update
-						thePlayer.mLastRecoverySend = sNetworkTicker;
-						
-						// we want to send 4 seconds worth of flags per second
-						int maxTicks = 4 * effectiveLatency;
-						startTick = thePlayer.mSmallestUnacknowledgedTick;
-						endTick = (startTick + maxTicks < sSmallestIncompleteTick) ? startTick + maxTicks : sSmallestIncompleteTick;
-					}
-					else
-					{
-						// send the last 3 flags
-						startTick = std::max(sSmallestIncompleteTick - 3, thePlayer.mSmallestUnacknowledgedTick);
-						endTick = sSmallestIncompleteTick;
-					}
-				} else {
+#ifdef BANDWIDTH_REDUCTION
+				if (sNetworkTicker - thePlayer.mLastRecoverySend >= effectiveLatency)
+				{
+					// send a large update
+					thePlayer.mLastRecoverySend = sNetworkTicker;
+					
+					// we want to send 4 seconds worth of flags per second
+					int maxTicks = 4 * effectiveLatency;
 					startTick = thePlayer.mSmallestUnacknowledgedTick;
+					endTick = (startTick + maxTicks < sSmallestIncompleteTick) ? startTick + maxTicks : sSmallestIncompleteTick;
+				}
+				else
+				{
+					// send the last 3 flags
+					startTick = std::max(sSmallestIncompleteTick - 3, thePlayer.mSmallestUnacknowledgedTick);
 					endTick = sSmallestIncompleteTick;
 				}
+#else
+				startTick = thePlayer.mSmallestUnacknowledgedTick;
+				endTick = sSmallestIncompleteTick;
+#endif
 
 				bool reflectFlags = false;
 				// find out if we need to reflect flags
