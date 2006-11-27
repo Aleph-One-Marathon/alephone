@@ -203,7 +203,18 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
 static void
 InitializeLogging() {
     assert(sOutputFile == NULL);
+#if defined(__APPLE__) && defined(__MACH__)
+    const char *home = getenv("HOME");
+    if (home)
+    {
+	    string filename = home;
+	    filename += "/Library/Logs/Aleph One Log.txt";
+	    sOutputFile = fopen(filename.c_str(), "a");
+    }
+    else
+#endif
     sOutputFile = fopen("Aleph One Log.txt", "a");
+
     sCurrentLogger = new TopLevelLogger;
     if(sOutputFile != NULL)
     {
