@@ -484,6 +484,8 @@ static void graphics_dialog(void *arg)
 		    graphics_preferences->screen_mode.fullscreen = fullscreen;
 		    // This is the only setting that has an immediate effect
 		    toggle_fullscreen(fullscreen);
+		    if (!graphics_preferences->screen_mode.fill_the_screen)
+			    parent->layout();
 		    parent->draw();
 		    changed = true;
 	    }
