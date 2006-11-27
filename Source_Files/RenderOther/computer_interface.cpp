@@ -1099,6 +1099,10 @@ static void display_picture_with_text(
 	draw_computer_text(&text_bounds, terminal_text, terminal_data->current_group, current_line);
 }
 
+#ifdef SDL
+extern int get_pict_header_width(LoadedResource &);
+#endif
+
 static void display_picture(
 	short picture_id,
 	Rect *frame,
@@ -1130,6 +1134,14 @@ static void display_picture(
 		bounds.left = bounds.top = 0;
 		bounds.right = s->w;
 		bounds.bottom = s->h;
+
+		int pict_header_width = get_pict_header_width(PictRsrc);
+		bool cinemascopeHack = false;
+		if (bounds.right != pict_header_width)
+		{
+			cinemascopeHack = true;
+			bounds.right = pict_header_width;
+		}
 #endif
 		OffsetRect(&bounds, -bounds.left, -bounds.top);
 		calculate_bounds_for_object(frame, flags, &screen_bounds, &bounds);
@@ -1170,7 +1182,7 @@ static void display_picture(
 		HUnlock((Handle) picture);
 #elif defined(SDL)
 		SDL_Rect r = {bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top};
-		if (s->w == r.w && s->h == r.h)
+		if ((s->w == r.w && s->h == r.h) || cinemascopeHack)
 			SDL_BlitSurface(s, NULL, /*world_pixels*/draw_surface, &r);
 		else {
 			// Rescale picture

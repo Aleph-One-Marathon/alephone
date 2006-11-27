@@ -301,6 +301,18 @@ no_packing:			const uint8 *p = src;
 	return data_size;
 }
 
+int get_pict_header_width(LoadedResource &rsrc)
+{
+	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), (int) rsrc.GetLength());
+	if (p)
+	{
+		SDL_RWseek(p, 8, SEEK_CUR);
+		int width = SDL_ReadBE16(p);
+		SDL_RWclose(p);
+		return width;
+	}
+	return -1;
+}
 
 /*
  *  Convert picture resource to SDL surface
