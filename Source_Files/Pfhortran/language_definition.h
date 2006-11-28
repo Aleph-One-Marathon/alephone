@@ -804,6 +804,16 @@
 {"_powerup_invincibility", 0x01},
 {"_powerup_infravision", 0x02},
 {"_powerup_extravision", 0x03},
+
+// game types
+{"_game_of_kill_monsters", 0x00},
+{"_game_of_cooperative_play", 0x01},
+{"_game_of_capture_the_flag", 0x02},
+{"_game_of_king_of_the_hill", 0x03},
+{"_game_of_kill_man_with_ball", 0x04},
+{"_game_of_defense", 0x05},
+{"_game_of_rugby", 0x06},
+{"_game_of_tag", 0x07},
 		
 #ifdef LUA_ACCESSING
 {"_refuel_oxygen", _panel_is_oxygen_refuel},

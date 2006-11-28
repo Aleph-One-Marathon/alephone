@@ -2173,6 +2173,12 @@ static int L_Get_Game_Difficulty(lua_State *L)
 	return 1;
 }
 
+static int L_Get_Game_Type(lua_State *L)
+{
+	lua_pushnumber(L, dynamic_world->game_information.game_type);
+	return 1;
+}
+
 static int L_Get_Player_Polygon(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -4948,6 +4954,7 @@ void RegisterLuaFunctions()
 	//lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
 	lua_register(state, "get_monster_visible", L_Get_Monster_Visible);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
+	lua_register(state, "get_game_type", L_Get_Game_Type);
 	lua_register(state, "get_player_position", L_Get_Player_Position);
 	lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
 	lua_register(state, "set_player_position", L_Set_Player_Position);

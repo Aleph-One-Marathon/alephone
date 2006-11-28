@@ -159,6 +159,7 @@ p.note {
 		<LI><A HREF="#3.11">Projectile Types</A>
 		<LI><A HREF="#3.12">Polygon Types</A>
 		<LI><A HREF="#3.13">Powerup Types</A>
+		<LI><A HREF="#3.14">Game Types</A>
 	</OL>
 	<LI class="main"><A HREF="#4.0">Dynamic Limits</A>
 	<LI class="main"><A HREF="#5.0">Example Icon</A>
@@ -1267,6 +1268,11 @@ get_game_difficulty()
 Returns the current difficulty setting, 0 (wuss) through 4 (total carnage)
 
 <p class=func>
+get_game_type()
+<p class=desc>
+Returns the current game type (e.g. _game_of_kill_monsters for solo play)
+
+<p class=func>
 set_overlay_color(overlay, color)
 <p class=desc>
 Sets the color of overlay to color. 
@@ -1834,6 +1840,19 @@ _powerup_invisibility
 _powerup_invincibility
 _powerup_infravision
 _powerup_extravision
+</pre>
+
+<h3><A NAME="3.14"></A>Game Types</h3>
+
+<pre>
+_game_of_kill_monsters
+_game_of_cooperative_play
+_game_of_capture_the_flag
+_game_of_king_of_the_hill
+_game_of_kill_man_with_ball
+_game_of_defense
+_game_of_rugby
+_game_of_tag
 </pre>
 
 <h2><A NAME="4.0"></A>Dynamic Limits</h2>
