@@ -191,7 +191,7 @@ ImageDescriptor::ImageDescriptor(const ImageDescriptor &copyFrom) :
 	}
 }
 
-ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels, bool IsPremultiplied) : 
+ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels) : 
 	Width(_Width), 
 	Height(_Height), 
 	VScale(1.0), 
@@ -199,7 +199,7 @@ ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels, bool 
 	Pixels(_Pixels), 
 	Format(RGBA8), 
 	MipMapCount(0), 
-	PremultipliedAlpha(IsPremultiplied)
+	PremultipliedAlpha(false)
 {
 	Size = _Width * _Height * 4;
 }

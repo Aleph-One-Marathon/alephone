@@ -563,9 +563,9 @@ bool TextureManager::Setup()
 		
 		// If not, then load the expected textures
 		if (!NormalImage.get() || !NormalImage.get()->IsPresent())
-			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable), true));	
+			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable)));	
 		if (IsGlowing && (!GlowImage.get() || !GlowImage.get()->IsPresent())) 
-			GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(GlowColorTable), true));
+			GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(GlowColorTable)));
 		
 		// Display size: may be shrunk
 		int MaxWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
@@ -924,7 +924,7 @@ void TextureManager::FindColorTables()
 	if (TextureType != OGL_Txtr_Landscape)
 		{NormalColorTable[0] = 0; GlowColorTable[0] = 0;}
 
-	PremultiplyColorTables();
+//	PremultiplyColorTables();
 }
 
 void TextureManager::PremultiplyColorTables()

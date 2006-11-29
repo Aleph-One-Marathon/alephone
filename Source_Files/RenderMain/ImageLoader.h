@@ -107,7 +107,7 @@ public:
 ImageDescriptor(): Width(0), Height(0), VScale(1.0), UScale(1.0), Pixels(NULL), Size(0), PremultipliedAlpha(false) {}
 
 	// asumes RGBA8
-	ImageDescriptor(int width, int height, uint32 *pixels, bool IsAlreadyPremultiplied = false);
+	ImageDescriptor(int width, int height, uint32 *pixels);
 
 	enum ImageFormat {
 		RGBA8,
