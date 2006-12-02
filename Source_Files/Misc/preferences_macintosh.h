@@ -186,7 +186,7 @@ const float SliderSensRange = 4;
 static float PrefToSlider(_fixed PrefVal)
 {
 	float CenteredSliderVal = (PrefVal > 0) ?
-		(log(float(PrefVal)) - log(FIXED_ONE))/log(SliderSensRange) :
+		(log(float(PrefVal)) - log((float) FIXED_ONE))/log(SliderSensRange) :
 		0;
 	
 	// -1 to 1 -> 0 to 1
