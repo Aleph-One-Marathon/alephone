@@ -263,7 +263,15 @@ void MetaserverClientUi::playersInRoomChanged(const std::vector<MetaserverPlayer
 
 void MetaserverClientUi::gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &gameChanges)
 {
-	m_gamesInRoomWidget->SetItems(gMetaserverClient->gamesInRoom());	
+	// filter out any games in progress, since we don't know how to display
+	std::vector<GameListMessage::GameListEntry> gamesNotStarted;
+	for (int i = 0; i < gMetaserverClient->gamesInRoom().size(); i++)
+	{
+		if (!gMetaserverClient->gamesInRoom()[i].m_description.m_running) 
+			gamesNotStarted.push_back(gMetaserverClient->gamesInRoom()[i]);
+	}
+	
+	m_gamesInRoomWidget->SetItems(gamesNotStarted);	
 	GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(gameChanges);
 	for (size_t i = 0; i < gameChanges.size(); i++) 
 	{
