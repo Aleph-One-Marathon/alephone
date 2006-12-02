@@ -64,8 +64,6 @@
 #include "crc.h"
 #include "player.h" // for masking out action flags triggers :(
 
-#define BANDWIDTH_REDUCTION 1
-
 // Synchronization:
 // hub_received_network_packet() is not reentrant
 // hub_tick() is not reentrant
@@ -152,6 +150,7 @@ struct HubPreferences {
 	int32	mSendPeriod;
 	int32	mRecoverySendPeriod;
 	int32   mMinimumSendPeriod;
+	bool    mBandwidthReduction;
 };
 
 static HubPreferences sHubPreferences;
@@ -1030,58 +1029,60 @@ hub_tick()
         }
 	
 	// if we're getting behind, make up flags
-
-	if (sHubPreferences.mMinimumSendPeriod >= sHubPreferences.mSendPeriod && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick && sSmallestIncompleteTick < sPlayerDataDisposition.getWriteTick())
+	
+	if (sHubPreferences.mBandwidthReduction)
 	{
-		
-		if (sNetworkTicker - sLastRealUpdate >= sHubPreferences.mMinimumSendPeriod)
+		if (sHubPreferences.mMinimumSendPeriod >= sHubPreferences.mSendPeriod && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick && sSmallestIncompleteTick < sPlayerDataDisposition.getWriteTick())
 		{
-			// add anybody holding us back to the lagging player bitmask
-			for (int i = 0; i < sNetworkPlayers.size(); i++)
+			
+			if (sNetworkTicker - sLastRealUpdate >= sHubPreferences.mMinimumSendPeriod)
 			{
-				if (i != sLocalPlayerIndex && sNetworkPlayers[i].mConnected && sSmallestRealGameTick > sNetworkPlayers[i].mNetDeadTick)
+				// add anybody holding us back to the lagging player bitmask
+				for (int i = 0; i < sNetworkPlayers.size(); i++)
 				{
-					if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << i))
-						sLaggingPlayersBitmask |= (1 << i);
-				}
-			}
-		}
-		
-		if (sLaggingPlayersBitmask) {
-			// make up flags if a majority of players are ready to go
-			int readyPlayers = 0;
-			int nonReadyPlayers = 0;
-			for (int i = 0; i < sNetworkPlayers.size(); i++)
-			{
-				if (sNetworkPlayers[i].mConnected && sSmallestRealGameTick > sNetworkPlayers[i].mNetDeadTick)
-				{
-					if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << i))
-						nonReadyPlayers++;
-					else
-						readyPlayers++;
+					if (i != sLocalPlayerIndex && sNetworkPlayers[i].mConnected && sSmallestRealGameTick > sNetworkPlayers[i].mNetDeadTick)
+					{
+						if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << i))
+							sLaggingPlayersBitmask |= (1 << i);
+					}
 				}
 			}
 			
-			if (readyPlayers > nonReadyPlayers)
-				if (make_up_flags_for_first_incomplete_tick())
-					shouldSend = true;
+			if (sLaggingPlayersBitmask) {
+				// make up flags if a majority of players are ready to go
+				int readyPlayers = 0;
+				int nonReadyPlayers = 0;
+				for (int i = 0; i < sNetworkPlayers.size(); i++)
+				{
+					if (sNetworkPlayers[i].mConnected && sSmallestRealGameTick > sNetworkPlayers[i].mNetDeadTick)
+					{
+						if (sPlayerDataDisposition[sSmallestIncompleteTick] & (1 << i))
+							nonReadyPlayers++;
+						else
+							readyPlayers++;
+					}
+				}
+				
+				if (readyPlayers > nonReadyPlayers)
+					if (make_up_flags_for_first_incomplete_tick())
+						shouldSend = true;
+			}
 		}
-	}
-
-#ifdef BANDWIDTH_REDUCTION
-	send_packets();
-#else
-	
-	if(shouldSend)
+		
 		send_packets();
+	}
 	else
 	{
-		// Make sure we send at least every once in a while to keep things going
-		if(sNetworkTicker > sLastNetworkTickSent && (sNetworkTicker - sLastNetworkTickSent) >= sHubPreferences.mRecoverySendPeriod)
+		if(shouldSend)
 			send_packets();
+		else
+		{
+			// Make sure we send at least every once in a while to keep things going
+			if(sNetworkTicker > sLastNetworkTickSent && (sNetworkTicker - sLastNetworkTickSent) >= sHubPreferences.mRecoverySendPeriod)
+				send_packets();
+		}
+		
 	}
-	
-#endif
         check_send_packet_to_spoke();
 
         // We want to run again.
@@ -1173,27 +1174,30 @@ send_packets()
 				// never send fewer than 2 full updates per second, or more than 15
 				int effectiveLatency = std::max((int32) 2, std::min((int32) ((thePlayer.mDisplayLatencyCount > 0) ? (thePlayer.mDisplayLatencyTicks / std::min(thePlayer.mDisplayLatencyCount, (uint32) thePlayer.mDisplayLatencyBuffer.size())) : 2), (int32) (TICKS_PER_SECOND / 2)));
 
-#ifdef BANDWIDTH_REDUCTION
-				if (sNetworkTicker - thePlayer.mLastRecoverySend >= effectiveLatency)
+				if (sHubPreferences.mBandwidthReduction)
 				{
-					// send a large update
-					thePlayer.mLastRecoverySend = sNetworkTicker;
-					
-					// we want to send 4 seconds worth of flags per second
-					int maxTicks = 4 * effectiveLatency;
-					startTick = thePlayer.mSmallestUnacknowledgedTick;
-					endTick = (startTick + maxTicks < sSmallestIncompleteTick) ? startTick + maxTicks : sSmallestIncompleteTick;
+					if (sNetworkTicker - thePlayer.mLastRecoverySend >= effectiveLatency)
+					{
+						// send a large update
+						thePlayer.mLastRecoverySend = sNetworkTicker;
+						
+						// we want to send 4 seconds worth of flags per second
+						int maxTicks = 4 * effectiveLatency;
+						startTick = thePlayer.mSmallestUnacknowledgedTick;
+						endTick = (startTick + maxTicks < sSmallestIncompleteTick) ? startTick + maxTicks : sSmallestIncompleteTick;
+					}
+					else
+					{
+						// send the last 3 flags
+						startTick = std::max(sSmallestIncompleteTick - 3, thePlayer.mSmallestUnacknowledgedTick);
+						endTick = sSmallestIncompleteTick;
+					}
 				}
-				else
+				else 
 				{
-					// send the last 3 flags
-					startTick = std::max(sSmallestIncompleteTick - 3, thePlayer.mSmallestUnacknowledgedTick);
+					startTick = thePlayer.mSmallestUnacknowledgedTick;
 					endTick = sSmallestIncompleteTick;
 				}
-#else
-				startTick = thePlayer.mSmallestUnacknowledgedTick;
-				endTick = sSmallestIncompleteTick;
-#endif
 
 				bool reflectFlags = false;
 				// find out if we need to reflect flags
@@ -1302,7 +1306,7 @@ enum {
 	kSendPeriodAttribute,
 	kRecoverySendPeriodAttribute,
 	kMinimumSendPeriodAttribute,
-	kNumAttributes
+	kNumAttributes,
 };
 
 static const char* sAttributeStrings[kNumAttributes] =
@@ -1388,6 +1392,10 @@ bool XML_HubConfigurationParser::HandleAttribute(const char *Tag, const char *Va
 				ErrorString = sAttributeMultiplySpecifiedString;
 				return false;
 			}
+		}
+		else if (StringsEqual(Tag, "use_bandwidth_reduction"))
+		{
+			return ReadBooleanValueAsBool(Value, sHubPreferences.mBandwidthReduction);
 		}
 	}
 	
@@ -1498,12 +1506,17 @@ WriteHubPreferences(FILE* F)
 		if(*(sAttributeDestinations[i]) != sDefaultHubPreferences[i])
 			fprintf(F, "      %s=\"%d\"\n", sAttributeStrings[i], *(sAttributeDestinations[i]));
 	}
+	if (!sHubPreferences.mBandwidthReduction)
+	{
+		fprintf(F, "      use_bandwidth_reduction=\"false\"\n");
+	}
 	fprintf(F, "    />\n");
 
 	fprintf(F, "    <!-- current hub defaults:\n");
 	fprintf(F, "      DO NOT EDIT THE FOLLOWING - they're FYI only.  Make settings in 'hub' tag above.\n");
 	for(size_t i = 0; i < kNumAttributes; i++)
 		fprintf(F, "      %s=\"%d\"\n", sAttributeStrings[i], sDefaultHubPreferences[i]);
+	fprintf(F, "      use_bandwidth_reduction=\"true\"\n");
 	fprintf(F, "    -->\n");
 }
 
@@ -1514,6 +1527,7 @@ DefaultHubPreferences()
 {
 	for(size_t i = 0; i < kNumAttributes; i++)
 		*(sAttributeDestinations[i]) = sDefaultHubPreferences[i];
+	sHubPreferences.mBandwidthReduction = true;
 /*
 	sHubPreferences.mPregameWindowSize = kDefaultPregameWindowSize;
 	sHubPreferences.mInGameWindowSize = kDefaultInGameWindowSize;
