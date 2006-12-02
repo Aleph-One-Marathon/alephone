@@ -34,6 +34,9 @@
 
 #include <string>
 #include <vector>
+#include <boost/algorithm/string/case_conv.hpp>
+
+using boost::algorithm::to_lower_copy;
 
 enum
 {
@@ -472,7 +475,7 @@ public:
 	const uint16 *team_color() const { return m_secondaryColor; }
 
 	static bool sort(const MetaserverPlayerInfo& a, const MetaserverPlayerInfo& b)
-	{ return (a.m_status == b.m_status) ? a.m_name < b.m_name : a.m_status < b.m_status; }
+	{ return (a.m_status == b.m_status) ? to_lower_copy(a.m_name) < to_lower_copy(b.m_name) : a.m_status < b.m_status; }
 
 	friend std::ostream& operator <<(std::ostream& out, const MetaserverPlayerInfo& info);
 
