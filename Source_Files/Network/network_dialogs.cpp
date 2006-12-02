@@ -229,7 +229,10 @@ bool network_gather(bool inResumingGame)
 				if (advertiseOnMetaserver) 
 				{
 					metaserverAnnouncer->Start();
-					gMetaserverClient->sendChatMessage(".afk in game");
+					char numPlayers[2];
+					sprintf(numPlayers, "%i", NetGetNumberOfPlayers());
+					string ingameMessage = string(".afk ") + numPlayers + string("p host");
+					gMetaserverClient->sendChatMessage(ingameMessage);
 					gMetaserverClient->pump();
 				}
 				successful= true;
