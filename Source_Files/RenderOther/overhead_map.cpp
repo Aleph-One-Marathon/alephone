@@ -141,7 +141,7 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 		{70*256, 90*256, 0},		// Sewage
 		{70*256, 90*256, 0},		// JjaroGoo
 		{137*256, 0, 137*256},		// PfhorSlime
-		{32768, 32768, 0},			// Hill
+		{0, 12000, 0},			// Hill
 		{76*256, 27*256, 0},		// Minor Damage
 		{137*256, 0, 137*256}		// Major Damage
 	},
