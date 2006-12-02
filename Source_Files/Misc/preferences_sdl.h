@@ -59,22 +59,10 @@
 
 #include <string.h>
 #include <vector>
-#include <math.h>    // logf and expf, for sensitivity slider (ZZZ)
-// JTP: GCC3.1 on OSX was lacking these functions in math.h
-#ifndef logf
-#define logf(x) ((float)log(x))
-#endif
-#ifndef expf
-#define expf(x) ((float)exp(x))
-#endif
+#include <cmath>
 
-// ghs: some math.h's lack these functions
-#ifndef log2
-#define log2(x) (log(x) / log(2))
-#endif
-#ifndef exp2
-#define exp2(x) (exp(x * log(2)))
-#endif
+static inline float log2(int x) { return std::log(x) / std::log(2.0); };
+static inline float exp2(int x) { return std::exp(x + std::log(2.0)); };
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>	// for getlogin()
@@ -878,7 +866,7 @@ static void controls_dialog(void *arg)
 	
 	theSensitivity = ((float) input_preferences->sens_vertical) / FIXED_ONE;
 	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
-	theSensitivityLog = logf(theSensitivity);
+	theSensitivityLog = std::log(theSensitivity);
 	int theVerticalSliderPosition =
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 
@@ -887,7 +875,7 @@ static void controls_dialog(void *arg)
     
 	theSensitivity = ((float) input_preferences->sens_horizontal) / FIXED_ONE;
 	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
-	theSensitivityLog = logf(theSensitivity);
+	theSensitivityLog = std::log(theSensitivity);
 	int theHorizontalSliderPosition =
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 
@@ -898,7 +886,7 @@ static void controls_dialog(void *arg)
     // avoid nasty math problems
     if (theSensitivity <= 0.0f)
         theSensitivity = 1.0f;
-    float   theSensitivityLog = logf(theSensitivity);
+    float   theSensitivityLog = std::log(theSensitivity);
     int     theSliderPosition = (int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 
     w_slider* sensitivity_w = new w_slider("Mouse Sensitivity", 1000, theSliderPosition);
@@ -948,14 +936,14 @@ static void controls_dialog(void *arg)
 		theNewSliderPosition = sens_vertical_w->get_selection();
         if(theNewSliderPosition != theVerticalSliderPosition) {
             theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
-            input_preferences->sens_vertical = _fixed(expf(theNewSensitivityLog) * FIXED_ONE);
+            input_preferences->sens_vertical = _fixed(std::exp(theNewSensitivityLog) * FIXED_ONE);
             changed = true;
         }
 		
 		theNewSliderPosition = sens_horizontal_w->get_selection();
         if(theNewSliderPosition != theHorizontalSliderPosition) {
             theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
-            input_preferences->sens_horizontal = _fixed(expf(theNewSensitivityLog) * FIXED_ONE);
+            input_preferences->sens_horizontal = _fixed(std::exp(theNewSensitivityLog) * FIXED_ONE);
             changed = true;
         }
 
@@ -963,7 +951,7 @@ static void controls_dialog(void *arg)
         int theNewSliderPosition = sensitivity_w->get_selection();
         if(theNewSliderPosition != theSliderPosition) {
             float theNewSensitivityLog = kMinSensitivityLog + ((float) theNewSliderPosition) * (kSensitivityLogRange / 1000.0f);
-            input_preferences->sensitivity = _fixed(expf(theNewSensitivityLog) * FIXED_ONE);
+            input_preferences->sensitivity = _fixed(std::exp(theNewSensitivityLog) * FIXED_ONE);
             changed = true;
         }
 */

@@ -50,6 +50,8 @@
 #include "OGL_Setup.h" // OGL_IsActive
 #endif
 
+#include <cmath>
+static inline float log2(int x) { return std::log(x) / std::log(2.0); };
 
 #include <stdlib.h>
 

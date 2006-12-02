@@ -33,11 +33,6 @@
 #include "cseries.h"
 #include "FileHandler.h"
 
-#include <math.h>
-#ifndef log2
-#define log2(x) (log(x) / log(2))
-#endif
-
 using namespace std;
 
 // Need an object to hold the read-in image.
