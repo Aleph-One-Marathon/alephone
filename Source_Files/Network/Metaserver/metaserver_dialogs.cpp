@@ -253,7 +253,10 @@ void MetaserverClientUi::PlayerSelected(MetaserverPlayerInfo info)
 
 void MetaserverClientUi::playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges)
 {
-	m_playersInRoomWidget->SetItems(gMetaserverClient->playersInRoom());
+	std::vector<MetaserverPlayerInfo> sortedPlayers = gMetaserverClient->playersInRoom();
+	std::sort(sortedPlayers.begin(), sortedPlayers.end(), MetaserverPlayerInfo::sort);
+
+	m_playersInRoomWidget->SetItems(sortedPlayers);
 	GlobalMetaserverChatNotificationAdapter::playersInRoomChanged(playerChanges);
 
 }

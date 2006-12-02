@@ -471,6 +471,9 @@ public:
 	const uint16 *color() const { return m_primaryColor; }
 	const uint16 *team_color() const { return m_secondaryColor; }
 
+	static bool sort(const MetaserverPlayerInfo& a, const MetaserverPlayerInfo& b)
+	{ return (a.m_status == b.m_status) ? a.m_name < b.m_name : a.m_status < b.m_status; }
+
 	friend std::ostream& operator <<(std::ostream& out, const MetaserverPlayerInfo& info);
 
 	// Conformance to metaserver-maintained-list interface
