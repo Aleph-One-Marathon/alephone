@@ -1745,23 +1745,6 @@ static void load_redundant_map_data(
 	}
 	else
 	{
-		static bool have_been_warned= false;
-
-#if !defined(ALPHA) && !defined(BETA)
-		if(!have_been_warned && environment_preferences->non_bungie_warning)
-		{
-			/* Only warn the gatherer.. */
-			if(!game_is_networked || (game_is_networked && local_player_index==0))
-			{
-                                show_cursor();
-				alert_user(infoError, strERRORS, warningExternalMapsFile, -1);
-				// LP addition: makes the game look normal
-				hide_cursor();
-			}
-			have_been_warned= true;
-		}
-#endif
-		
 		recalculate_redundant_map();
 		precalculate_map_indexes();
 	}

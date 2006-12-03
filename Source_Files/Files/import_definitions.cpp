@@ -89,21 +89,12 @@ void import_definition_structures(
 {
 	struct wad_data *wad;
 	bool bungie_physics;
-	static bool warned_about_physics= false;
 
 	init_physics_wad_data();
 
 	wad= get_physics_wad_data(&bungie_physics);
 	if(wad)
 	{
-		//if(!bungie_physics && !warned_about_physics && environment_preferences->non_bungie_warning)
-		if (0)
-		{
-			/* warn the user that external physics models are Bad Thingª */
-			alert_user(infoError, strERRORS, warningExternalPhysicsModel, 0);
-			warned_about_physics= true;
-		}
-		
 		/* Actually load it in.. */		
 		import_physics_wad_data(wad);
 		
