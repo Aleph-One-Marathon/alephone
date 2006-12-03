@@ -22,7 +22,7 @@
 
 /* Use this flag to determine whether we use CPS (docking) or not */
 #define		SDL_USE_CPS		0
-#ifdef SDL_USE_CPS
+#if SDL_USE_CPS
 /* Portions of CPS.h */
 typedef struct CPSProcessSerNum
 {
@@ -283,7 +283,7 @@ static void CustomApplicationMain (int argc, char **argv)
     /* Ensure the application object is initialised */
     [SDLApplication sharedApplication];
     
-#ifdef SDL_USE_CPS
+#if SDL_USE_CPS
     {
         CPSProcessSerNum PSN;
         /* Tell the dock about us */
