@@ -137,7 +137,7 @@ FileSpecifier MapFileSpec;
 static bool file_is_set= false;
 
 // LP addition: was a physics model loaded from the previous level loaded?
-static bool PhysicsModelLoadedEarlier = false;
+static bool PhysicsModelLoadedEarlier = true;
 
 // The following local globals are for handling games that need to be restored.
 struct revert_game_info
