@@ -39,7 +39,7 @@ do
 		if $SINGLE2FORKS "$file";
 		then		
 			mv "${file}.data" "$target_file"
-			cp "${file}.rsrc" "$target_file"/rsrc
+			cp "${file}.rsrc" "$target_file"/..namedfork/rsrc
 			rm "${file}.rsrc"
 			echo $file expanded successfully.
 		fi
