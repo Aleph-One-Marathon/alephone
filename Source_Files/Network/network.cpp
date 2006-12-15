@@ -468,8 +468,11 @@ void Client::handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 		
 		client_chat_info_map_t::iterator it;
 		for (it = client_chat_info.begin(); it != client_chat_info.end(); it++) {
-			ClientInfoMessage clientInfoMessage(it->first, it->second, (int16) ClientInfoMessage::kAdd);
-			channel->enqueueOutgoingMessage(clientInfoMessage);
+			if (it->second)
+			{
+				ClientInfoMessage clientInfoMessage(it->first, it->second, (int16) ClientInfoMessage::kAdd);
+				channel->enqueueOutgoingMessage(clientInfoMessage);
+			}
 		}
 	} else {
 		logAnomaly1("unexpected capabilities message received (state is %i)", state);
