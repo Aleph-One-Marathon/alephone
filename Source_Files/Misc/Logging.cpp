@@ -189,7 +189,7 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
         else
             theString += "\n";
         
-        fprintf(sOutputFile, theString.c_str());
+        fprintf(sOutputFile, "%s", theString.c_str());
         
         if(sFlushOutput)
                 fflush(sOutputFile);
