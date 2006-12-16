@@ -145,7 +145,11 @@ void vhalt(char *message)
 	stop_recording();
         logFatal1("vhalt: %s", message);
 	fprintf(stderr, "vhalt %s\n", message);
+#if defined(__APPLE__) && defined(__MACH__)
+	* (char *) 0x0 = 0;
+#else
 	abort();
+#endif
 }
 
 
