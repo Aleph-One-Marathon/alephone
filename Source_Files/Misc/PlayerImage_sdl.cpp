@@ -28,6 +28,8 @@
 #include	"shell.h"
 #include	"collection_definition.h"
 
+extern short bit_depth;
+
 int16 PlayerImage::sNumOutstandingObjects = 0;
 
 PlayerImage::~PlayerImage() {
@@ -150,6 +152,7 @@ PlayerImage::updateLegsDrawingInfo() {
             continue;
 
         // Get the shape surfaces for the given collection, CLUT (according to color/team), and low-level shape index.
+	if (bit_depth == 8) continue;
 	mLegsSurface	= get_shape_surface(theLegsLowLevelShapeIndex,
                             BUILD_COLLECTION(theShapeDefinitions->collection, theLegsColor), &mLegsData, mLegsBrightness);
 
@@ -303,6 +306,7 @@ PlayerImage::updateTorsoDrawingInfo() {
             continue;
 
         // Get the shape surfaces for the given collection, CLUT (according to color/team), and low-level shape index.
+	if (bit_depth == 8) continue;
 	mTorsoSurface	= get_shape_surface(theTorsoLowLevelShapeIndex,
                                 BUILD_COLLECTION(theShapeDefinitions->collection, theTorsoColor), &mTorsoData, mTorsoBrightness);
 
