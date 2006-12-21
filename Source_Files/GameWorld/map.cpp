@@ -980,7 +980,7 @@ void get_object_shape_and_transfer_mode(
 	else
 	{
 		data->transfer_mode= animation->transfer_mode;
-		data->transfer_phase= animation->transfer_mode!=_xfer_normal ? INTEGER_TO_FIXED(object->transfer_phase)/animation->transfer_mode_period : 0;
+		data->transfer_phase= (animation->transfer_mode!=_xfer_normal && animation->transfer_mode_period) ? INTEGER_TO_FIXED(object->transfer_phase)/animation->transfer_mode_period : 0;
 	}
 }
 
