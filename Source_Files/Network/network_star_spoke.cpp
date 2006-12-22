@@ -601,7 +601,8 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
 					assert(sSmallestUnconfirmedTick >= sUnconfirmedFlags.getReadTick());
 					assert(sSmallestUnconfirmedTick < sUnconfirmedFlags.getWriteTick());
 					// confirm this flag
-					sNetworkPlayers[i].mQueue->enqueue(sUnconfirmedFlags.peek(sSmallestUnconfirmedTick++));
+					sNetworkPlayers[i].mQueue->enqueue(sUnconfirmedFlags.peek(sSmallestUnconfirmedTick));
+					sSmallestUnconfirmedTick++;
 				}
 				
 				continue;
