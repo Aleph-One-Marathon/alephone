@@ -1030,9 +1030,9 @@ hub_tick()
 	
 	// if we're getting behind, make up flags
 	
-	if (sHubPreferences.mBandwidthReduction)
+	if (sHubPreferences.mBandwidthReduction && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick)
 	{
-		if (sHubPreferences.mMinimumSendPeriod >= sHubPreferences.mSendPeriod && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick && sSmallestIncompleteTick < sPlayerDataDisposition.getWriteTick())
+		if (sHubPreferences.mMinimumSendPeriod >= sHubPreferences.mSendPeriod && sSmallestIncompleteTick < sPlayerDataDisposition.getWriteTick())
 		{
 			
 			if (sNetworkTicker - sLastRealUpdate >= sHubPreferences.mMinimumSendPeriod)
@@ -1171,11 +1171,12 @@ send_packets()
 				// are we sending an incremental update or a recovery update?
 				int32 startTick;
 				int32 endTick;
-				// never send fewer than 2 full updates per second, or more than 15
-				int effectiveLatency = std::max((int32) 2, std::min((int32) ((thePlayer.mDisplayLatencyCount > 0) ? (thePlayer.mDisplayLatencyTicks / std::min(thePlayer.mDisplayLatencyCount, (uint32) thePlayer.mDisplayLatencyBuffer.size())) : 2), (int32) (TICKS_PER_SECOND / 2)));
 
-				if (sHubPreferences.mBandwidthReduction)
+				if (sHubPreferences.mBandwidthReduction && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick)
 				{
+					// never send fewer than 2 full updates per second, or more than 15
+					int effectiveLatency = std::max((int32) 2, std::min((int32) ((thePlayer.mDisplayLatencyCount > 0) ? (thePlayer.mDisplayLatencyTicks / std::min(thePlayer.mDisplayLatencyCount, (uint32) thePlayer.mDisplayLatencyBuffer.size())) : 2), (int32) (TICKS_PER_SECOND / 2)));
+					
 					if (sNetworkTicker - thePlayer.mLastRecoverySend >= effectiveLatency)
 					{
 						// send a large update
