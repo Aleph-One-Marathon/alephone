@@ -105,6 +105,8 @@ SDL_Surface *s = NULL;
 		SDL_FreeSurface(s);
 		return false;
 	}
+
+	SDL_SetAlpha(s, 0, 0xff); // disable SDL_SRCALPHA
 	SDL_BlitSurface(s, NULL, rgba, NULL);
 	SDL_FreeSurface(s);
 
