@@ -1456,7 +1456,11 @@ bool XML_HubConfigurationParser::AttributesDone() {
 				} 
 				else
 				{
-					*(sAttributeDestinations[i]) = mAttribute[i];
+					// For some reason, the line below doesn't work in gcc
+					// Even more strangely, if you fprintf the value of
+					// &sHubPreferences.mMinimumSendPeriod, then it works!
+					// *(sAttributeDestinations[i]) = mAttribute[i];
+					sHubPreferences.mMinimumSendPeriod = mAttribute[i];
 				}
 				break;
 				
