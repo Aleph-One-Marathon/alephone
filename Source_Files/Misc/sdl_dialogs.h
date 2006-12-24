@@ -164,6 +164,7 @@ enum {
 	BUTTON_ACTIVE_COLOR,
 	LABEL_COLOR,
 	LABEL_ACTIVE_COLOR,
+	LABEL_OUTLINE_COLOR,
 	ITEM_COLOR,
 	ITEM_ACTIVE_COLOR,
 	MESSAGE_COLOR,
@@ -172,6 +173,7 @@ enum {
 	TEXT_ENTRY_CURSOR_COLOR,
 	KEY_BINDING_COLOR,
 	NUM_DIALOG_COLORS,
+	
     
     // ZZZ: these should eventually be "real" colors gotten from MML theme, but I don't want to
     // get into that at this point.  It should be straightforward, so have at it ;)

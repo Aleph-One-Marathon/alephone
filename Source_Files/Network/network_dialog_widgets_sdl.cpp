@@ -765,8 +765,7 @@ w_players_in_game2::draw_player_names_separately(SDL_Surface* s, TextLayoutHelpe
         name_y = ioTextLayoutHelper.reserveSpaceFor(name_x - kNameMargin / 2, theEntry->name_width + kNameMargin, name_y, font->get_line_height());
         
         draw_text(s, theEntry->player_name, name_x, name_y,
-                    get_dialog_color(BACKGROUND_COLOR), font, style | styleOutline);
-    
+		  get_dialog_color(LABEL_OUTLINE_COLOR), font, style | styleOutline);
         draw_text(s, theEntry->player_name, name_x, name_y,
                     theEntry->name_pixel_color, font, style);
     }
@@ -798,7 +797,7 @@ w_players_in_game2::draw_player_names_clumped(SDL_Surface* s, TextLayoutHelper& 
                                                             name_y, font->get_line_height());
     
             draw_text(s, theEntry->player_name, name_x, name_y,
-                        get_dialog_color(BACKGROUND_COLOR), font, style | styleOutline);
+                        get_dialog_color(LABEL_OUTLINE_COLOR), font, style | styleOutline);
     
             draw_text(s, theEntry->player_name, name_x, name_y,
                         theEntry->name_pixel_color, font, style);
@@ -1050,7 +1049,7 @@ w_players_in_game2::draw_bar_labels(SDL_Surface* s, const vector<bar_info>& inBa
         int theBestY = ioTextLayoutHelper.reserveSpaceFor(theTextX - kNameMargin/2,
                             theStringWidth + kNameMargin, theBarInfo.top_y - 1, font->get_line_height());
 
-        draw_text(s, theBarInfo.label_text.c_str(), theTextX, theBestY, get_dialog_color(BACKGROUND_COLOR), font, style | styleOutline);
+        draw_text(s, theBarInfo.label_text.c_str(), theTextX, theBestY, get_dialog_color(LABEL_OUTLINE_COLOR), font, style | styleOutline);
         draw_text(s, theBarInfo.label_text.c_str(), theTextX, theBestY, theBarInfo.pixel_color, font, style);
     }
 } // draw_bar_labels

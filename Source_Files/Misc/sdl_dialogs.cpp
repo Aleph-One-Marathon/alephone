@@ -244,17 +244,37 @@ private:
 
 	bool have_red, have_green, have_blue;
 
-	int idx;
 	SDL_Color color;
+protected:
+	int idx;
+};
+
+static bool foundLabelOutlineColor = false;
+
+class XML_DLabelColorParser : public XML_DColorParser
+{
+public:
+	XML_DLabelColorParser(int base, int num = 1) : XML_DColorParser(base, num) { }
+
+	bool AttributesDone()
+	{
+		if (idx == 2)
+		{
+			foundLabelOutlineColor = true;
+		}
+
+		return XML_DColorParser::AttributesDone();
+	}
 };
 
 static XML_DColorParser BackgroundColorParser(BACKGROUND_COLOR);
 static XML_DColorParser TitleColorParser(TITLE_COLOR);
 static XML_DColorParser ButtonColorParser(BUTTON_COLOR, 2);
-static XML_DColorParser LabelColorParser(LABEL_COLOR, 2);
+static XML_DLabelColorParser LabelColorParser(LABEL_COLOR, 3);
 static XML_DColorParser ItemColorParser(ITEM_COLOR, 2);
 static XML_DColorParser MessageColorParser(MESSAGE_COLOR);
 static XML_DColorParser TextEntryColorParser(TEXT_ENTRY_COLOR, 3);
+
 
 class XML_DFontParser : public XML_ElementParser {
 public:
@@ -387,7 +407,24 @@ public:
 
 static XML_ButtonParser ButtonParser;
 
-struct XML_LabelParser : public XML_ElementParser {XML_LabelParser() : XML_ElementParser("label") {}};
+struct XML_LabelParser : public XML_ElementParser {
+	XML_LabelParser() : XML_ElementParser("label") {}
+public:
+	bool Start()
+	{
+		foundLabelOutlineColor = false;
+		return true;
+	}
+
+	bool End()
+	{
+		if (!foundLabelOutlineColor)
+		{
+			dialog_color[LABEL_OUTLINE_COLOR] = dialog_color[BACKGROUND_COLOR];
+		}
+		return true;
+	}
+};
 static XML_LabelParser LabelParser;
 
 class XML_DItemParser : public XML_ElementParser {
@@ -603,7 +640,8 @@ static const SDL_Color default_dialog_color[NUM_DIALOG_COLORS] = {
 	{0x40, 0xff, 0x40}, // TEXT_ENTRY_COLOR
 	{0xff, 0xff, 0xff}, // TEXT_ENTRY_ACTIVE_COLOR
 	{0xff, 0xff, 0xff}, // TEXT_ENTRY_CURSOR_COLOR
-	{0x60, 0x60, 0x60}  // KEY_BINDING_COLOR
+	{0x60, 0x60, 0x60},  // KEY_BINDING_COLOR
+	{0x00, 0x00, 0x00}, // LABEL_OUTLINE_COLOR
 };
 
 static const int default_dialog_space[NUM_DIALOG_SPACES] = {
