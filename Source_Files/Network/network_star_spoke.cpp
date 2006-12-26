@@ -632,8 +632,19 @@ spoke_received_game_data_packet_v1(AIStream& ps, bool reflected_flags)
                                 // We effectively generate a tick's worth of flags in lieu of reading it from the packet.
                                 theFlags = static_cast<action_flags_t>(NET_DEAD_ACTION_FLAG);
                         else
+			{
                                 // We should have a flag for this player for this tick!
-                                ps >> theFlags;
+				try 
+				{
+					ps >> theFlags;
+				}
+				catch (const AStream::failure& f)
+				{
+					logWarningNMT3("AStream exception (%s) for player %i at theSmallestUnreadTick %i! OOS is likely!\n", f.what(), i, theSmallestUnreadTick);
+					return;
+				}
+			}
+
 
                         // Now, we've gotten flags, probably from the packet... should we enqueue them?
                         if(theSmallestUnreadTick == sSmallestUnreceivedTick)
