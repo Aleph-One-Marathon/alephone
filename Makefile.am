@@ -21,3 +21,8 @@ $(PACKAGE)-$(VERSION).tar.gz: dist
 # Rule to build RPM distribution package
 rpm: $(PACKAGE)-$(VERSION).tar.gz
 	rpmbuild -ta --clean $(PACKAGE)-$(VERSION).tar.gz
+
+ChangeLog: FORCE
+	cvs2cl --show-dead -S
+
+FORCE:
