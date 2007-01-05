@@ -101,11 +101,6 @@ Feb 8, 2003 (Woody Zenfell):
 #include "ChaseCam.h"
 #include "OGL_Setup.h"
 
-// CP additions:
-#include "scripting.h"
-#include "script_instructions.h"
-#include "script_parser.h"
-
 // MH additions:
 #include "lua_script.h"
 #include <string>
@@ -168,8 +163,6 @@ void initialize_marathon(
 #if defined(HAVE_OPENGL) && !defined(mac)
 	OGL_Initialize();
 #endif
-	// CP addition: init pfhortran
-	init_pfhortran();
 	GameQueue = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, true);
 }
 
@@ -391,10 +384,6 @@ enum {
 static int
 update_world_elements_one_tick()
 {
-        //CP Addition: Scripting handling stuff
-        //AS: removed "success"; it's pointless
-        if (script_in_use())
-                do_next_instruction();
         L_Call_Idle();
 
         update_lights();
@@ -458,7 +447,7 @@ update_world()
                 // Note that GameQueue should be stocked evenly (i.e. every player has the same # of flags)
                 if(GameQueue->countActionFlags(0) == 0)
                 {
-                        canUpdate = overlay_queue_with_queue_into_queue(GetRealActionQueues(), GetPfhortranActionQueues(), GameQueue);
+                        canUpdate = overlay_queue_with_queue_into_queue(GetRealActionQueues(), GetLuaActionQueues(), GameQueue);
                 }
 
 		if(!sPredictionWanted)
@@ -636,8 +625,6 @@ bool entering_map(bool restoring_saved)
 	randomize_scenery_shapes();
 
 	reset_action_queues(); //¦¦
-	//CP Addition: Run startup script (if available)
-	script_init(restoring_saved);
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
 

@@ -54,7 +54,6 @@
 #include "Crosshairs.h"
 #include "OGL_Render.h"
 #include "ViewControl.h"
-#include "scripting.h"
 #include "screen_drawing.h"
 #include "mouse.h"
 #include "network.h"
@@ -580,7 +579,7 @@ void render_screen(short ticks_elapsed)
 	world_view->origin_polygon_index = current_player->camera_polygon_index;
 
 	// Script-based camera control
-	if (!UseLuaCameras() && !script_Camera_Active())
+	if (!UseLuaCameras())
 		world_view->show_weapons_in_hand = !ChaseCam_GetPosition(world_view->origin, world_view->origin_polygon_index, world_view->yaw, world_view->pitch);
 
 #ifdef HAVE_OPENGL

@@ -47,7 +47,6 @@ using namespace std;
 #include "XML_DataBlock.h"
 #include "XML_LevelScript.h"
 #include "XML_ParseTreeRoot.h"
-#include "scripting.h"
 #include "Random.h"
 #include "images.h"
 #include "lua_script.h"
@@ -61,7 +60,6 @@ struct LevelScriptCommand
 	// Types of commands
 	enum {
 		MML,
-		Pfhortran,
 		Music,
 		Movie,
 #ifdef HAVE_LUA
@@ -147,9 +145,6 @@ static GM_Random MusicRandomizer;
 // Map-file parent directory (where all map-related files are supposed to live)
 static DirectorySpecifier MapParentDir;
 
-// Whether Pfhortran had been found for the current level,
-// so as to do the dummy Pfhortran if none was found
-static bool PfhortranFound = false;
 #ifdef HAVE_LUA
 // Same for Lua
 static bool LuaFound = false;
@@ -244,13 +239,12 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 }
 
 
-// Runs a script for some level; loads Pfhortran,
+// Runs a script for some level
 // runs level-specific MML...
 void RunLevelScript(int LevelIndex)
 {
 	static bool FirstTime = true;
 	// None found just yet...
-	PfhortranFound = false;
 #ifdef HAVE_LUA
 	LuaFound = false;
 #endif /* HAVE_LUA */
@@ -285,9 +279,6 @@ void RunLevelScript(int LevelIndex)
 	// Do randomization
 	MusicRandomizer.z ^= machine_tick_count();
 	MusicRandomizer.SetTable();
-	
-	// Dummy Pfhortran loading if no Pfhortran script had been found
-	if (!PfhortranFound) load_script_data(NULL,0);
 	
 	// Best to preload level music here, so as not to load it when the interactivity starts
 	PreloadLevelMusic();
@@ -335,7 +326,7 @@ void GeneralRunScript(int LevelIndex)
 	{
 		LevelScriptCommand& Cmd = CurrScriptPtr->Commands[k];
 		
-		// Data to parse (either MML or Pfhortran)
+		// Data to parse
 		char *Data = NULL;
 		size_t DataLen = 0;
 		
@@ -344,7 +335,6 @@ void GeneralRunScript(int LevelIndex)
 		switch(Cmd.Type)
 		{
 		case LevelScriptCommand::MML:
-		case LevelScriptCommand::Pfhortran:
 #ifdef HAVE_LUA
 		case LevelScriptCommand::Lua:
 #endif /* HAVE_LUA */
@@ -372,16 +362,6 @@ void GeneralRunScript(int LevelIndex)
 			}
 			break;
 		
-		case LevelScriptCommand::Pfhortran:
-			{
-				// Skip if not loaded
-				if (Data == NULL || DataLen <= 0) break;
-				
-				// Load and indicate whether loading was successful
-				if (load_script_data(Data,DataLen) == script_TRUE)
-					PfhortranFound = true;
-			}
-			break;
 #ifdef HAVE_LUA
                         
 			case LevelScriptCommand::Lua:
@@ -605,7 +585,6 @@ bool XML_LSCommandParser::End()
 }
 
 static XML_LSCommandParser MMLParser("mml",LevelScriptCommand::MML);
-static XML_LSCommandParser PfhortranParser("pfhortran",LevelScriptCommand::Pfhortran);
 static XML_LSCommandParser MusicParser("music",LevelScriptCommand::Music);
 static XML_LSCommandParser MovieParser("movie",LevelScriptCommand::Movie);
 #ifdef HAVE_LUA
@@ -645,7 +624,6 @@ static XML_RandomOrderParser RandomOrderParser;
 static void AddScriptCommands(XML_ElementParser& ElementParser)
 {
 	ElementParser.AddChild(&MMLParser);
-	ElementParser.AddChild(&PfhortranParser);
 	ElementParser.AddChild(&MusicParser);
 	ElementParser.AddChild(&RandomOrderParser);
 	ElementParser.AddChild(&MovieParser);

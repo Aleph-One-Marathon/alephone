@@ -2,7 +2,9 @@
 #ifndef LUA_SCRIPT_H
 #define LUA_SCRIPT_H
 
+#include "cseries.h"
 #include "world.h"
+#include "ActionQueues.h"
 
 void L_Call_Init(bool fRestoringSaved);
 void L_Call_Cleanup();
@@ -31,6 +33,8 @@ bool RunLuaScript();
 void CloseLuaScript();
 
 bool UseLuaCameras();
+
+ActionQueues* GetLuaActionQueues();
 
 
 // camera data structures

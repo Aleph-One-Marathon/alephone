@@ -81,7 +81,6 @@ using namespace std;
 #include "Console.h"
 #include "music.h"
 
-#include "script_instructions.h"
 #include "lua_script.h"
 
 #define DONT_REPEAT_DEFINITIONS
@@ -92,6 +91,9 @@ using namespace std;
 bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+
+static ActionQueues* sLuaActionQueues = 0;
+ActionQueues* GetLuaActionQueues() { return sLuaActionQueues; }
 
 #ifndef HAVE_LUA
 
@@ -199,7 +201,7 @@ struct monster_pathfinding_data
 extern ActionQueues *sPfhortranActionQueues;
 extern struct view_data *world_view;
 extern struct static_data *static_world;
-extern short old_size;
+static short old_size;
 
 // globals
 lua_State *state;
@@ -2649,10 +2651,9 @@ static int L_Player_Control(lua_State *L)
 	player_data *player = get_player_data(player_index);
 #endif
 
-	// uses the Pfhortran action queue
-	if (sPfhortranActionQueues == NULL)
+	if (sLuaActionQueues == NULL)
 	{
-		sPfhortranActionQueues = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, true);
+		sLuaActionQueues = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, true);
 	}
 
 	// Put the enqueuing of the action flags in one place in the code,
@@ -2859,8 +2860,8 @@ static int L_Player_Control(lua_State *L)
 			DoAction = true;
 			break;
 
-		case 13: // reset pfhortran_action_queue
-			GetPfhortranActionQueues()->reset();
+		case 13: // reset action queue
+			GetLuaActionQueues()->reset();
 			break;
 #endif
 		default:
@@ -2872,7 +2873,7 @@ static int L_Player_Control(lua_State *L)
 		for (int i=1; i<value; i++)
 			action_flags[i] = action_flags[0];
 
-		GetPfhortranActionQueues()->enqueueActionFlags(player_index, action_flags, value);
+		GetLuaActionQueues()->enqueueActionFlags(player_index, action_flags, value);
 	}
 	return 0;
 }

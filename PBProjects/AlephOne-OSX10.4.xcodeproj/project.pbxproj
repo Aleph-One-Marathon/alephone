@@ -44,9 +44,6 @@
 		2B4EC1840908984D009631F8 /* StudioLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4A01E77D5701BA387C /* StudioLoader.cpp */; };
 		2B4EC1850908984D009631F8 /* WavefrontLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4C01E77D5701BA387C /* WavefrontLoader.cpp */; };
 		2B4EC1860908984D009631F8 /* network_games.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137F0136ABAE01000001 /* network_games.cpp */; };
-		2B4EC1870908984D009631F8 /* script_instructions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139B0136AC1601000001 /* script_instructions.cpp */; };
-		2B4EC1880908984D009631F8 /* script_parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139C0136AC1601000001 /* script_parser.cpp */; };
-		2B4EC1890908984D009631F8 /* scripting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139D0136AC1601000001 /* scripting.cpp */; };
 		2B4EC18B0908984D009631F8 /* PlayerDialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120A0136A6FD01000001 /* PlayerDialogs.cpp */; };
 		2B4EC18C0908984D009631F8 /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
 		2B4EC18D0908984D009631F8 /* game_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211960136A6FD01000001 /* game_dialogs.cpp */; };
@@ -273,9 +270,6 @@
 		AEC3C72609AD68AC003258E4 /* cstypes.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211290136A4DD01000001 /* cstypes.h */; };
 		AEC3C72709AD68AC003258E4 /* sdl_cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F522112E0136A4DD01000001 /* sdl_cseries.h */; };
 		AEC3C72809AD68AC003258E4 /* language_definition.h in Headers */ = {isa = PBXBuildFile; fileRef = F522139E0136AC1601000001 /* language_definition.h */; settings = {ATTRIBUTES = (Private, ); }; };
-		AEC3C72909AD68AC003258E4 /* script_instructions.h in Headers */ = {isa = PBXBuildFile; fileRef = F522139F0136AC1601000001 /* script_instructions.h */; };
-		AEC3C72A09AD68AC003258E4 /* script_parser.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213A00136AC1601000001 /* script_parser.h */; };
-		AEC3C72B09AD68AC003258E4 /* scripting.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213A10136AC1601000001 /* scripting.h */; };
 		AEC3C72C09AD68AC003258E4 /* network.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213900136ABAE01000001 /* network.h */; };
 		AEC3C72D09AD68AC003258E4 /* network_games.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213800136ABAE01000001 /* network_games.h */; };
 		AEC3C72E09AD68AC003258E4 /* confpaths.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CADB5B0136D95E01000001 /* confpaths.h */; settings = {ATTRIBUTES = (Private, ); }; };
@@ -459,9 +453,6 @@
 		AEC3C7E409AD68AC003258E4 /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
 		AEC3C7E509AD68AC003258E4 /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
 		AEC3C7E609AD68AC003258E4 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
-		AEC3C7E709AD68AC003258E4 /* script_instructions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139B0136AC1601000001 /* script_instructions.cpp */; };
-		AEC3C7E809AD68AC003258E4 /* script_parser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139C0136AC1601000001 /* script_parser.cpp */; };
-		AEC3C7E909AD68AC003258E4 /* scripting.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522139D0136AC1601000001 /* scripting.cpp */; };
 		AEC3C7EA09AD68AC003258E4 /* network_games.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137F0136ABAE01000001 /* network_games.cpp */; };
 		AEC3C7EB09AD68AC003258E4 /* Model3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4301E77D5701BA387C /* Model3D.cpp */; };
 		AEC3C7EC09AD68AC003258E4 /* ModelRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4501E77D5701BA387C /* ModelRenderer.cpp */; };
@@ -932,13 +923,7 @@
 		F522138E0136ABAE01000001 /* network_udp.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_udp.cpp; path = ../Source_Files/Network/network_udp.cpp; sourceTree = SOURCE_ROOT; };
 		F522138F0136ABAE01000001 /* network.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network.cpp; path = ../Source_Files/Network/network.cpp; sourceTree = SOURCE_ROOT; };
 		F52213900136ABAE01000001 /* network.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network.h; path = ../Source_Files/Network/network.h; sourceTree = SOURCE_ROOT; };
-		F522139B0136AC1601000001 /* script_instructions.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = script_instructions.cpp; path = ../Source_Files/Pfhortran/script_instructions.cpp; sourceTree = SOURCE_ROOT; };
-		F522139C0136AC1601000001 /* script_parser.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = script_parser.cpp; path = ../Source_Files/Pfhortran/script_parser.cpp; sourceTree = SOURCE_ROOT; };
-		F522139D0136AC1601000001 /* scripting.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = scripting.cpp; path = ../Source_Files/Pfhortran/scripting.cpp; sourceTree = SOURCE_ROOT; };
 		F522139E0136AC1601000001 /* language_definition.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = language_definition.h; path = ../Source_Files/Pfhortran/language_definition.h; sourceTree = SOURCE_ROOT; };
-		F522139F0136AC1601000001 /* script_instructions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = script_instructions.h; path = ../Source_Files/Pfhortran/script_instructions.h; sourceTree = SOURCE_ROOT; };
-		F52213A00136AC1601000001 /* script_parser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = script_parser.h; path = ../Source_Files/Pfhortran/script_parser.h; sourceTree = SOURCE_ROOT; };
-		F52213A10136AC1601000001 /* scripting.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = scripting.h; path = ../Source_Files/Pfhortran/scripting.h; sourceTree = SOURCE_ROOT; };
 		F5281C0501F8C94101E83A66 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL.framework; sourceTree = "<group>"; };
 		F5281C0701F8CA2101E83A66 /* SDL_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_image.framework; path = /Library/Frameworks/SDL_image.framework; sourceTree = "<absolute>"; };
 		F5281C0801F8CA2101E83A66 /* SDL_net.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL_net.framework; sourceTree = "<group>"; };
@@ -1423,13 +1408,7 @@
 		F52211190136A41F01000001 /* Pfhortran */ = {
 			isa = PBXGroup;
 			children = (
-				F522139B0136AC1601000001 /* script_instructions.cpp */,
-				F522139C0136AC1601000001 /* script_parser.cpp */,
-				F522139D0136AC1601000001 /* scripting.cpp */,
 				F522139E0136AC1601000001 /* language_definition.h */,
-				F522139F0136AC1601000001 /* script_instructions.h */,
-				F52213A00136AC1601000001 /* script_parser.h */,
-				F52213A10136AC1601000001 /* scripting.h */,
 			);
 			name = Pfhortran;
 			sourceTree = SOURCE_ROOT;
@@ -2206,9 +2185,6 @@
 				AEC3C72609AD68AC003258E4 /* cstypes.h in Headers */,
 				AEC3C72709AD68AC003258E4 /* sdl_cseries.h in Headers */,
 				AEC3C72809AD68AC003258E4 /* language_definition.h in Headers */,
-				AEC3C72909AD68AC003258E4 /* script_instructions.h in Headers */,
-				AEC3C72A09AD68AC003258E4 /* script_parser.h in Headers */,
-				AEC3C72B09AD68AC003258E4 /* scripting.h in Headers */,
 				AEC3C72C09AD68AC003258E4 /* network.h in Headers */,
 				AEC3C72D09AD68AC003258E4 /* network_games.h in Headers */,
 				AEC3C72E09AD68AC003258E4 /* confpaths.h in Headers */,
@@ -2550,9 +2526,6 @@
 				2B4EC1840908984D009631F8 /* StudioLoader.cpp in Sources */,
 				2B4EC1850908984D009631F8 /* WavefrontLoader.cpp in Sources */,
 				2B4EC1860908984D009631F8 /* network_games.cpp in Sources */,
-				2B4EC1870908984D009631F8 /* script_instructions.cpp in Sources */,
-				2B4EC1880908984D009631F8 /* script_parser.cpp in Sources */,
-				2B4EC1890908984D009631F8 /* scripting.cpp in Sources */,
 				2B4EC18B0908984D009631F8 /* PlayerDialogs.cpp in Sources */,
 				2B4EC18C0908984D009631F8 /* PlayerName.cpp in Sources */,
 				2B4EC18D0908984D009631F8 /* game_dialogs.cpp in Sources */,
@@ -2736,9 +2709,6 @@
 				AEC3C7E409AD68AC003258E4 /* network_lookup_sdl.cpp in Sources */,
 				AEC3C7E509AD68AC003258E4 /* network_udp.cpp in Sources */,
 				AEC3C7E609AD68AC003258E4 /* network.cpp in Sources */,
-				AEC3C7E709AD68AC003258E4 /* script_instructions.cpp in Sources */,
-				AEC3C7E809AD68AC003258E4 /* script_parser.cpp in Sources */,
-				AEC3C7E909AD68AC003258E4 /* scripting.cpp in Sources */,
 				AEC3C7EA09AD68AC003258E4 /* network_games.cpp in Sources */,
 				AEC3C7EB09AD68AC003258E4 /* Model3D.cpp in Sources */,
 				AEC3C7EC09AD68AC003258E4 /* ModelRenderer.cpp in Sources */,

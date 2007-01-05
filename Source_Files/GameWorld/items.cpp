@@ -81,9 +81,6 @@ Feb 11, 2001 (Loren Petrich):
 #include <limits.h>
 #include "ShapesParser.h"
 
-//CP addition: Scripting Hooks
-#include "scripting.h"
-
 //MH: Lua scripting
 #include "lua_script.h"
 
@@ -588,7 +585,6 @@ bool try_and_add_player_item(
 	// jkvw: but only if we actually got the item
 	if (success)
 	{
-		activate_got_item_trap(type);
 		//MH: Call Lua script hook
 		L_Call_Got_Item(type, player_index);
 	}

@@ -69,8 +69,6 @@ Feb 3, 2003 (Woody Zenfell):
 #include "lightsource.h"
 #include "game_window.h"
 #include "items.h"
-//CP Addition: Scripting Hooks
-#include "scripting.h"
 #include "shell.h"	// screen_printf()
 //MH: Lua scripting
 #include "lua_script.h"
@@ -511,8 +509,6 @@ void try_and_toggle_control_panel(
 							SET_CONTROL_PANEL_STATUS(side, state);
 							set_control_panel_texture(side);
 						}
-						//CP Addition: Script Hook; LP: this and its successors made consistent with change_panel_state()
-						activate_tag_switch_trap(side->control_panel_permutation);
                                                 //MH: Lua script hook
                                                 // L_Call_Tag_Switch(side->control_panel_permutation);
 						
@@ -521,8 +517,6 @@ void try_and_toggle_control_panel(
 						state= !state;
 						make_sound= set_light_status(side->control_panel_permutation, state);
 						
-						//CP Addition: Script Hook
-						activate_light_switch_trap(side->control_panel_permutation);
                                                 //MH: Lua script hook
                                                //  L_Call_Light_Switch(side->control_panel_permutation);
 						
@@ -531,8 +525,6 @@ void try_and_toggle_control_panel(
 						state= !state;
 						make_sound= try_and_change_platform_state(get_polygon_data(side->control_panel_permutation)->permutation, state);
 						
-						//CP Addition: Script Hook
-						activate_platform_switch_trap(side->control_panel_permutation);
                                                 //MH: Lua script hook
                                                 // L_Call_Platform_Switch(side->control_panel_permutation);
 						
@@ -802,8 +794,6 @@ static void	change_panel_state(
 		case _panel_is_computer_terminal:
 			if (get_game_state()==_game_in_progress && !PLAYER_HAS_CHEATED(player) && !PLAYER_HAS_MAP_OPEN(player))
 			{
-				//CP Addition: Script Hook
-				activate_terminal_enter_trap(side->control_panel_permutation);
                                 //MH: Lua script hook
                                 L_Call_Terminal_Enter(side->control_panel_permutation,player_index);
 				
@@ -824,8 +814,6 @@ static void	change_panel_state(
 					SET_CONTROL_PANEL_STATUS(side, state);
 					set_control_panel_texture(side);
 				}
-				//CP Addition: Script Hook
-				activate_tag_switch_trap(side->control_panel_permutation);
                                 //MH: Lua script hook
                                 L_Call_Tag_Switch(side->control_panel_permutation,player_index);
 			
@@ -835,8 +823,6 @@ static void	change_panel_state(
 			state= !state;
 			make_sound= set_light_status(side->control_panel_permutation, state);
 			
-			//CP Addition: Script Hook
-			activate_light_switch_trap(side->control_panel_permutation);
                         //MH: Lua script hook
                         L_Call_Light_Switch(side->control_panel_permutation,player_index);
 
@@ -845,8 +831,6 @@ static void	change_panel_state(
 			state= !state;
 			make_sound= try_and_change_platform_state(get_polygon_data(side->control_panel_permutation)->permutation, state);
 			
-			//CP Addition: Script Hook
-			activate_platform_switch_trap(side->control_panel_permutation);
                         //MH: Lua script hook
                         L_Call_Platform_Switch(side->control_panel_permutation,player_index);
 			
@@ -875,8 +859,6 @@ static void	change_panel_state(
                                         {
                                                 play_control_panel_sound(panel_side_index, _activating_sound);
                                                 
-                                                //CP Addition: Script Hook
-                                                activate_pattern_buffer_trap(side->control_panel_permutation);
                                                 //MH: Lua script hook
                                                 L_Call_Pattern_Buffer(side->control_panel_permutation,player_index);
                                         
