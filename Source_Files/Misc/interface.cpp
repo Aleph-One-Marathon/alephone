@@ -120,8 +120,10 @@ extern TP2PerfGlobals perf_globals;
 #endif
 
 #include "map.h"
+#include "shell.h"
 #include "interface.h"
 #include "player.h"
+#include "network.h"
 #include "screen_drawing.h"
 #include "mysound.h"
 #include "fades.h"
@@ -136,6 +138,16 @@ extern TP2PerfGlobals perf_globals;
 #include "preferences.h"
 #include "FileHandler.h"
 #include "lua_script.h" // PostIdle
+#include "interface_menus.h"
+#include "XML_LevelScript.h"
+
+#ifdef HAVE_SMPEG
+#include <smpeg/smpeg.h>
+#endif
+
+#include "sdl_dialogs.h"
+#include "sdl_widgets.h"
+#include "network_dialog_widgets_sdl.h"
 
 /* Change this when marathon changes & replays are no longer valid */
 enum recording_version {
@@ -2609,4 +2621,182 @@ bool interface_fade_finished(
 	void)
 {
 	return fade_finished();
+}
+
+
+void do_preferences(void)
+{
+	struct screen_mode_data mode = graphics_preferences->screen_mode;
+
+	handle_preferences();
+
+	if (mode.bit_depth != graphics_preferences->screen_mode.bit_depth) {
+		paint_window_black();
+		initialize_screen(&graphics_preferences->screen_mode, false);
+
+		/* Re fade in, so that we get the proper colortable loaded.. */
+		display_main_menu();
+	} else if (memcmp(&mode, &graphics_preferences->screen_mode, sizeof(struct screen_mode_data)))
+		change_screen_mode(&graphics_preferences->screen_mode, false);
+}
+
+
+/*
+ *  Toggle system hotkeys
+ */
+
+void toggle_menus(bool game_started)
+{
+	// nothing to do
+}
+
+
+/*
+ *  Update game window
+ */
+
+void update_game_window(void)
+{
+	switch(get_game_state()) {
+		case _game_in_progress:
+			update_screen_window();
+			break;
+			
+		case _display_quit_screens:
+		case _display_intro_screens_for_demo:
+		case _display_intro_screens:
+		case _display_chapter_heading:
+		case _display_prologue:
+		case _display_epilogue:
+		case _display_credits:
+		case _display_main_menu:
+			update_interface_display();
+			break;
+			
+		default:
+			break;
+	}
+}
+
+
+/*
+ *  Exit networking
+ */
+
+void exit_networking(void)
+{
+#if !defined(DISABLE_NETWORKING)
+	NetExit();
+#endif // !defined(DISABLE_NETWORKING)
+}
+
+
+/*
+ *  Show movie
+ */
+
+extern bool option_nosound;
+
+void show_movie(short index)
+{
+#ifdef HAVE_SMPEG
+	float PlaybackSize = 2;
+	
+	FileSpecifier IntroMovie;
+	FileSpecifier *File = GetLevelMovie(PlaybackSize);
+
+	if (!File && index == 0)
+	{
+		if (IntroMovie.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameMOVIE)))
+			File = &IntroMovie;
+	}
+
+	if (!File) return;
+
+	SDL_Surface *s = SDL_GetVideoSurface();
+	
+#if defined(__APPLE__) && defined(__MACH__)
+	if (!(s->flags & SDL_FULLSCREEN))
+		SDL_putenv("SDL_VIDEO_YUV_HWACCEL=0");
+	else
+		SDL_putenv("SDL_VIDEO_YUV_HWACCEL=");
+
+#endif
+	{
+		TakeSDLAudioControl sdlAudioControl;
+		
+		SMPEG_Info info;
+		SMPEG *movie;
+
+		movie = SMPEG_new(File->GetPath(), &info, option_nosound ? 0 : 1);
+		if (!movie) return;
+		if (!info.has_video) {
+			SMPEG_delete(movie);
+			return;
+		}
+		int width = (int) (info.width * PlaybackSize);
+		int height = (int) (info.height * PlaybackSize);
+		
+		SMPEG_setdisplay(movie, SDL_GetVideoSurface(), NULL, NULL);
+		if (width <= s->w && height <= s->h)
+		{
+			SMPEG_scaleXY(movie, width, height);
+			SMPEG_move(movie, (s->w - width) / 2, (s->h - height) / 2);
+		}
+		
+		bool done = false;
+		SMPEG_play(movie);
+		while (!done && SMPEG_status(movie) == SMPEG_PLAYING)
+		{
+			SDL_Event event;
+			while (SDL_PollEvent(&event) )
+			{
+				switch (event.type) {
+				case SDL_KEYDOWN:
+				case SDL_MOUSEBUTTONDOWN:
+					done = true;
+					break;
+				default:
+					break;
+				}
+			}
+			
+			SDL_Delay(100);
+		}
+		SMPEG_delete(movie);
+	}
+#endif // HAVE_SMPEG
+}
+
+
+size_t should_restore_game_networked()
+{
+        dialog d;
+        
+        d.add(new w_static_text("RESUME GAME", TITLE_FONT, TITLE_COLOR));
+        d.add(new w_spacer());
+
+        w_toggle* theRestoreAsNetgameToggle = new w_toggle("Resume as", dynamic_world->player_count > 1);
+        theRestoreAsNetgameToggle->set_labels_stringset(kSingleOrNetworkStringSetID);
+        d.add(theRestoreAsNetgameToggle);
+        
+        d.add(new w_spacer());
+        d.add(new w_spacer());
+        
+        d.add(new w_left_button("RESUME", dialog_ok, &d));
+        d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+        // We return -1 (NONE) for "cancel", 0 for "not networked", and 1 for "networked".
+        size_t theResult;
+
+        if(d.run() == 0)
+        {
+                theResult = theRestoreAsNetgameToggle->get_selection();
+        }
+        else
+        {
+                theResult = UNONE;
+        }
+
+        return theResult;
 }
