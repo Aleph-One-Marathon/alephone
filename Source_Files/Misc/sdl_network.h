@@ -30,9 +30,7 @@
 
 #include <SDL_net.h>
 
-#ifndef mac
-#include	"sdl_cseries.h"
-#endif
+#include "cseries.h"
 
 #include "network.h"
 
