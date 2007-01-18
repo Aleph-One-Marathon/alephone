@@ -7,202 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		2B4EC1610908984D009631F8 /* AlephOne.icns in Resources */ = {isa = PBXBuildFile; fileRef = F53AB44B01F3CB1D01EF2901 /* AlephOne.icns */; };
-		2B4EC1620908984D009631F8 /* SoundsIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F56AEB6D01F8AA1201780311 /* SoundsIcon.icns */; };
-		2B4EC1630908984D009631F8 /* ShapesIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F56AEB6C01F8AA1201780311 /* ShapesIcon.icns */; };
-		2B4EC1640908984D009631F8 /* ImagesIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F56AEB6B01F8AA1201780311 /* ImagesIcon.icns */; };
-		2B4EC1650908984D009631F8 /* FilmIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3D0200FA6B01D80110 /* FilmIcon.icns */; };
-		2B4EC1660908984D009631F8 /* MapIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3E0200FA6B01D80110 /* MapIcon.icns */; };
-		2B4EC1670908984D009631F8 /* MMLIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3F0200FA6B01D80110 /* MMLIcon.icns */; };
-		2B4EC1680908984D009631F8 /* MusakIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD400200FA6B01D80110 /* MusakIcon.icns */; };
-		2B4EC1690908984D009631F8 /* PFIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD410200FA6B01D80110 /* PFIcon.icns */; };
-		2B4EC16A0908984D009631F8 /* PhysIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD420200FA6B01D80110 /* PhysIcon.icns */; };
-		2B4EC16B0908984D009631F8 /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
-		2B4EC16C0908984D009631F8 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 089C165CFE840E0CC02AAC07 /* InfoPlist.strings */; };
-		2B4EC16D0908984D009631F8 /* GUI.nib in Resources */ = {isa = PBXBuildFile; fileRef = 3D3A410C04DF92C400000107 /* GUI.nib */; };
-		2B4EC16E0908984D009631F8 /* Gather Network Game.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A3083782C60063B737 /* Gather Network Game.nib */; };
-		2B4EC16F0908984D009631F8 /* Join Network Game.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A4083782C60063B737 /* Join Network Game.nib */; };
-		2B4EC1700908984D009631F8 /* Metaserver Client.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A5083782C60063B737 /* Metaserver Client.nib */; };
-		2B4EC1710908984D009631F8 /* Postgame Carnage Report.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A6083782C60063B737 /* Postgame Carnage Report.nib */; };
-		2B4EC1720908984D009631F8 /* Setup Network Game.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEF8C0A7083782C60063B737 /* Setup Network Game.nib */; };
-		2B4EC1740908984D009631F8 /* byte_swapping.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211410136A66601000001 /* byte_swapping.cpp */; };
-		2B4EC1750908984D009631F8 /* csalerts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211420136A66601000001 /* csalerts.cpp */; };
-		2B4EC1760908984D009631F8 /* cscluts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211440136A66601000001 /* cscluts.cpp */; };
-		2B4EC1770908984D009631F8 /* csfiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211480136A66601000001 /* csfiles.cpp */; };
-		2B4EC1780908984D009631F8 /* csfonts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211490136A66601000001 /* csfonts.cpp */; };
-		2B4EC1790908984D009631F8 /* csmisc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114A0136A66601000001 /* csmisc.cpp */; };
-		2B4EC17A0908984D009631F8 /* csstrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114C0136A66601000001 /* csstrings.cpp */; };
-		2B4EC17B0908984D009631F8 /* gdspec.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114E0136A66601000001 /* gdspec.cpp */; };
-		2B4EC17C0908984D009631F8 /* my32bqd.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522114F0136A66601000001 /* my32bqd.cpp */; };
-		2B4EC17D0908984D009631F8 /* csdialogs_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F536742802014FC301A80001 /* csdialogs_macintosh.cpp */; };
-		2B4EC17E0908984D009631F8 /* hashtable.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117A0136A6FD01000001 /* hashtable.c */; };
-		2B4EC17F0908984D009631F8 /* xmlparse.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117B0136A6FD01000001 /* xmlparse.c */; };
-		2B4EC1800908984D009631F8 /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117C0136A6FD01000001 /* xmlrole.c */; };
-		2B4EC1810908984D009631F8 /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117D0136A6FD01000001 /* xmltok.c */; };
-		2B4EC1820908984D009631F8 /* Model3D.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4301E77D5701BA387C /* Model3D.cpp */; };
-		2B4EC1830908984D009631F8 /* ModelRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4501E77D5701BA387C /* ModelRenderer.cpp */; };
-		2B4EC1840908984D009631F8 /* StudioLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4A01E77D5701BA387C /* StudioLoader.cpp */; };
-		2B4EC1850908984D009631F8 /* WavefrontLoader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5830B4C01E77D5701BA387C /* WavefrontLoader.cpp */; };
-		2B4EC1860908984D009631F8 /* network_games.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137F0136ABAE01000001 /* network_games.cpp */; };
-		2B4EC18B0908984D009631F8 /* PlayerDialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120A0136A6FD01000001 /* PlayerDialogs.cpp */; };
-		2B4EC18C0908984D009631F8 /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
-		2B4EC18D0908984D009631F8 /* game_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211960136A6FD01000001 /* game_dialogs.cpp */; };
-		2B4EC18E0908984D009631F8 /* game_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211970136A6FD01000001 /* game_errors.cpp */; };
-		2B4EC18F0908984D009631F8 /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C40136A6FD01000001 /* interface.cpp */; };
-		2B4EC1900908984D009631F8 /* keyboard_dialog.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211CC0136A6FD01000001 /* keyboard_dialog.cpp */; };
-		2B4EC1910908984D009631F8 /* preferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120F0136A6FD01000001 /* preferences.cpp */; };
-		2B4EC1920908984D009631F8 /* progress.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212130136A6FD01000001 /* progress.cpp */; };
-		2B4EC1930908984D009631F8 /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
-		2B4EC1940908984D009631F8 /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
-		2B4EC1950908984D009631F8 /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
-		2B4EC1960908984D009631F8 /* interface_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C10136A6FD01000001 /* interface_macintosh.cpp */; };
-		2B4EC1970908984D009631F8 /* vbl_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212570136A6FD01000001 /* vbl_macintosh.cpp */; };
-		2B4EC1980908984D009631F8 /* SSLP_limited.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFE01F4ED6501FEABBD /* SSLP_limited.cpp */; };
-		2B4EC1990908984D009631F8 /* SDL_netx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */; };
-		2B4EC19A0908984D009631F8 /* network_data_formats.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF801F4ECD701FEABBD /* network_data_formats.cpp */; };
-		2B4EC19B0908984D009631F8 /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
-		2B4EC19C0908984D009631F8 /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
-		2B4EC19D0908984D009631F8 /* thread_priority_sdl_macosx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */; };
-		2B4EC19E0908984D009631F8 /* Dim3_Loader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CFAD390200F9D201D80110 /* Dim3_Loader.cpp */; };
-		2B4EC19F0908984D009631F8 /* network.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138F0136ABAE01000001 /* network.cpp */; };
-		2B4EC1A00908984D009631F8 /* network_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522137D0136ABAE01000001 /* network_dialogs.cpp */; };
-		2B4EC1A10908984D009631F8 /* ActionQueues.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A00022023FDA1601A80001 /* ActionQueues.cpp */; };
-		2B4EC1A20908984D009631F8 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
-		2B4EC1A30908984D009631F8 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920B0240D09B01A80001 /* FileHandler.cpp */; };
-		2B4EC1A40908984D009631F8 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
-		2B4EC1A50908984D009631F8 /* find_files.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920E0240D09B01A80001 /* find_files.cpp */; };
-		2B4EC1A60908984D009631F8 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
-		2B4EC1A70908984D009631F8 /* import_definitions.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92110240D09B01A80001 /* import_definitions.cpp */; };
-		2B4EC1A80908984D009631F8 /* preprocess_map_mac.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92120240D09B01A80001 /* preprocess_map_mac.cpp */; };
-		2B4EC1A90908984D009631F8 /* wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92150240D09B01A80001 /* wad.cpp */; };
-		2B4EC1AA0908984D009631F8 /* wad_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92160240D09B01A80001 /* wad_macintosh.cpp */; };
-		2B4EC1AB0908984D009631F8 /* wad_prefs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92170240D09B01A80001 /* wad_prefs.cpp */; };
-		2B4EC1AC0908984D009631F8 /* wad_prefs_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92180240D09B01A80001 /* wad_prefs_macintosh.cpp */; };
-		2B4EC1AD0908984D009631F8 /* devices.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC924F0240D28201A80001 /* devices.cpp */; };
-		2B4EC1AE0908984D009631F8 /* dynamic_limits.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92500240D28201A80001 /* dynamic_limits.cpp */; };
-		2B4EC1AF0908984D009631F8 /* effects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92540240D28201A80001 /* effects.cpp */; };
-		2B4EC1B00908984D009631F8 /* flood_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92560240D28201A80001 /* flood_map.cpp */; };
-		2B4EC1B10908984D009631F8 /* items.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92590240D28201A80001 /* items.cpp */; };
-		2B4EC1B20908984D009631F8 /* lightsource.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC925B0240D28201A80001 /* lightsource.cpp */; };
-		2B4EC1B30908984D009631F8 /* map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC925D0240D28201A80001 /* map.cpp */; };
-		2B4EC1B40908984D009631F8 /* map_constructors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC925F0240D28201A80001 /* map_constructors.cpp */; };
-		2B4EC1B50908984D009631F8 /* marathon2.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92600240D28201A80001 /* marathon2.cpp */; };
-		2B4EC1B60908984D009631F8 /* media.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92610240D28201A80001 /* media.cpp */; };
-		2B4EC1B70908984D009631F8 /* monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92650240D28201A80001 /* monsters.cpp */; };
-		2B4EC1B80908984D009631F8 /* pathfinding.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92670240D28201A80001 /* pathfinding.cpp */; };
-		2B4EC1B90908984D009631F8 /* physics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92680240D28201A80001 /* physics.cpp */; };
-		2B4EC1BA0908984D009631F8 /* placement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC926A0240D28201A80001 /* placement.cpp */; };
-		2B4EC1BB0908984D009631F8 /* platforms.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC926C0240D28201A80001 /* platforms.cpp */; };
-		2B4EC1BC0908984D009631F8 /* player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC926E0240D28201A80001 /* player.cpp */; };
-		2B4EC1BD0908984D009631F8 /* projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92710240D28201A80001 /* projectiles.cpp */; };
-		2B4EC1BE0908984D009631F8 /* scenery.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92730240D28201A80001 /* scenery.cpp */; };
-		2B4EC1BF0908984D009631F8 /* weapons.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92770240D28201A80001 /* weapons.cpp */; };
-		2B4EC1C00908984D009631F8 /* world.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92790240D28201A80001 /* world.cpp */; };
-		2B4EC1C10908984D009631F8 /* ISp_Support.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92DA0240D54401A80001 /* ISp_Support.cpp */; };
-		2B4EC1C20908984D009631F8 /* mouse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92DB0240D54401A80001 /* mouse.cpp */; };
-		2B4EC1C30908984D009631F8 /* AnimatedTextures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92E40240D56101A80001 /* AnimatedTextures.cpp */; };
-		2B4EC1C40908984D009631F8 /* Crosshairs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92E70240D56101A80001 /* Crosshairs.cpp */; };
-		2B4EC1C50908984D009631F8 /* ImageLoader_Macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92EB0240D56101A80001 /* ImageLoader_Macintosh.cpp */; };
-		2B4EC1C60908984D009631F8 /* OGL_Faders.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92EE0240D56101A80001 /* OGL_Faders.cpp */; };
-		2B4EC1C70908984D009631F8 /* OGL_Render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92F00240D56101A80001 /* OGL_Render.cpp */; };
-		2B4EC1C80908984D009631F8 /* OGL_Setup.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92F20240D56101A80001 /* OGL_Setup.cpp */; };
-		2B4EC1C90908984D009631F8 /* OGL_Textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92F40240D56101A80001 /* OGL_Textures.cpp */; };
-		2B4EC1CA0908984D009631F8 /* render.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92FC0240D56101A80001 /* render.cpp */; };
-		2B4EC1CB0908984D009631F8 /* RenderPlaceObjs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92FE0240D56101A80001 /* RenderPlaceObjs.cpp */; };
-		2B4EC1CC0908984D009631F8 /* RenderRasterize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93000240D56101A80001 /* RenderRasterize.cpp */; };
-		2B4EC1CD0908984D009631F8 /* RenderSortPoly.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93020240D56101A80001 /* RenderSortPoly.cpp */; };
-		2B4EC1CE0908984D009631F8 /* RenderVisTree.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93040240D56101A80001 /* RenderVisTree.cpp */; };
-		2B4EC1CF0908984D009631F8 /* scottish_textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93070240D56101A80001 /* scottish_textures.cpp */; };
-		2B4EC1D00908984D009631F8 /* shapes.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC930C0240D56101A80001 /* shapes.cpp */; };
-		2B4EC1D10908984D009631F8 /* textures.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC930F0240D56101A80001 /* textures.cpp */; };
-		2B4EC1D20908984D009631F8 /* ChaseCam.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938C0240D85D01A80001 /* ChaseCam.cpp */; };
-		2B4EC1D30908984D009631F8 /* computer_interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938D0240D85D01A80001 /* computer_interface.cpp */; };
-		2B4EC1D40908984D009631F8 /* fades.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938E0240D85D01A80001 /* fades.cpp */; };
-		2B4EC1D50908984D009631F8 /* FontHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938F0240D85D01A80001 /* FontHandler.cpp */; };
-		2B4EC1D60908984D009631F8 /* game_window.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93900240D85D01A80001 /* game_window.cpp */; };
-		2B4EC1D70908984D009631F8 /* game_window_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93820240D85D01A80001 /* game_window_macintosh.cpp */; };
-		2B4EC1D80908984D009631F8 /* HUDRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93910240D85D01A80001 /* HUDRenderer.cpp */; };
-		2B4EC1D90908984D009631F8 /* HUDRenderer_OGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93920240D85D01A80001 /* HUDRenderer_OGL.cpp */; };
-		2B4EC1DA0908984D009631F8 /* HUDRenderer_SW.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93930240D85D01A80001 /* HUDRenderer_SW.cpp */; };
-		2B4EC1DB0908984D009631F8 /* images.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93940240D85D01A80001 /* images.cpp */; };
-		2B4EC1DC0908984D009631F8 /* motion_sensor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93950240D85D01A80001 /* motion_sensor.cpp */; };
-		2B4EC1DD0908984D009631F8 /* overhead_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93960240D85D01A80001 /* overhead_map.cpp */; };
-		2B4EC1DE0908984D009631F8 /* OverheadMap_OGL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93970240D85D01A80001 /* OverheadMap_OGL.cpp */; };
-		2B4EC1DF0908984D009631F8 /* OverheadMap_QD.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93840240D85D01A80001 /* OverheadMap_QD.cpp */; };
-		2B4EC1E00908984D009631F8 /* OverheadMapRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93980240D85D01A80001 /* OverheadMapRenderer.cpp */; };
-		2B4EC1E10908984D009631F8 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93990240D85D01A80001 /* screen.cpp */; };
-		2B4EC1E20908984D009631F8 /* screen_drawing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC939A0240D85D01A80001 /* screen_drawing.cpp */; };
-		2B4EC1E30908984D009631F8 /* TextLayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */; };
-		2B4EC1E40908984D009631F8 /* TextStrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A30240D85D01A80001 /* TextStrings.cpp */; };
-		2B4EC1E50908984D009631F8 /* ViewControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A50240D85D01A80001 /* ViewControl.cpp */; };
-		2B4EC1E60908984D009631F8 /* music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94180240DA4401A80001 /* music.cpp */; };
-		2B4EC1E70908984D009631F8 /* mysound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94190240DA4401A80001 /* mysound.cpp */; };
-		2B4EC1E80908984D009631F8 /* ColorParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943A0240DE0E01A80001 /* ColorParser.cpp */; };
-		2B4EC1E90908984D009631F8 /* DamageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943B0240DE0E01A80001 /* DamageParser.cpp */; };
-		2B4EC1EA0908984D009631F8 /* ShapesParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */; };
-		2B4EC1EB0908984D009631F8 /* XML_Configure.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */; };
-		2B4EC1EC0908984D009631F8 /* XML_DataBlock.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943E0240DE0E01A80001 /* XML_DataBlock.cpp */; };
-		2B4EC1ED0908984D009631F8 /* XML_ElementParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943F0240DE0E01A80001 /* XML_ElementParser.cpp */; };
-		2B4EC1EE0908984D009631F8 /* XML_LevelScript.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94400240DE0E01A80001 /* XML_LevelScript.cpp */; };
-		2B4EC1EF0908984D009631F8 /* XML_MakeRoot.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94410240DE0E01A80001 /* XML_MakeRoot.cpp */; };
-		2B4EC1F00908984D009631F8 /* XML_ResourceFork.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94360240DE0E01A80001 /* XML_ResourceFork.cpp */; };
-		2B4EC1F10908984D009631F8 /* Packing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5837191031EEE0201000105 /* Packing.cpp */; };
-		2B4EC1F20908984D009631F8 /* DefaultStringSets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A503DC9D1C00000104 /* DefaultStringSets.cpp */; };
-		2B4EC1F30908984D009631F8 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A603DC9D1C00000104 /* Logging.cpp */; };
-		2B4EC1F40908984D009631F8 /* CarbonSndPlayDB.c in Sources */ = {isa = PBXBuildFile; fileRef = 3DF2716B03EDBAA800000104 /* CarbonSndPlayDB.c */; };
-		2B4EC1F50908984D009631F8 /* network_microphone_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF2716F03EDBBF100000104 /* network_microphone_shared.cpp */; };
-		2B4EC1F60908984D009631F8 /* network_speaker_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF2717103EDBBF100000104 /* network_speaker_shared.cpp */; };
-		2B4EC1F70908984D009631F8 /* network_speaker.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138A0136ABAE01000001 /* network_speaker.cpp */; };
-		2B4EC1F80908984D009631F8 /* network_microphone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213830136ABAE01000001 /* network_microphone.cpp */; };
-		2B4EC1F90908984D009631F8 /* preprocess_map_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D5F21430403230F00000104 /* preprocess_map_shared.cpp */; };
-		2B4EC1FA0908984D009631F8 /* OGL_Model_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */; };
-		2B4EC1FB0908984D009631F8 /* OGL_Subst_Texture_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */; };
-		2B4EC1FC0908984D009631F8 /* lua_script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F51B058B047AC6DA01C5C930 /* lua_script.cpp */; };
-		2B4EC1FD0908984D009631F8 /* network_star_hub.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C804819BD700A8000D /* network_star_hub.cpp */; };
-		2B4EC1FE0908984D009631F8 /* network_star_spoke.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5C904819BD700A8000D /* network_star_spoke.cpp */; };
-		2B4EC1FF0908984D009631F8 /* NetworkGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CB04819BD700A8000D /* NetworkGameProtocol.cpp */; };
-		2B4EC2000908984D009631F8 /* RingGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */; };
-		2B4EC2010908984D009631F8 /* StarGameProtocol.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5CF04819BD700A8000D /* StarGameProtocol.cpp */; };
-		2B4EC2020908984D009631F8 /* AStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EF2EF5E304819EBF00A8000D /* AStream.cpp */; };
-		2B4EC2030908984D009631F8 /* network_speex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EFBAF0150485BEA500A8000D /* network_speex.cpp */; };
-		2B4EC2040908984D009631F8 /* mytm_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */; };
-		2B4EC2050908984D009631F8 /* CircularByteBuffer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EFEF1AC504AF552D00C3A19D /* CircularByteBuffer.cpp */; };
-		2B4EC2060908984D009631F8 /* CommunicationsChannel.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152400711123100836977 /* CommunicationsChannel.cpp */; };
-		2B4EC2070908984D009631F8 /* Message.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152430711123200836977 /* Message.cpp */; };
-		2B4EC2080908984D009631F8 /* MessageDispatcher.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152450711123200836977 /* MessageDispatcher.cpp */; };
-		2B4EC2090908984D009631F8 /* MessageHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152470711123200836977 /* MessageHandler.cpp */; };
-		2B4EC20A0908984D009631F8 /* MessageInflater.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DC152490711123200836977 /* MessageInflater.cpp */; };
-		2B4EC20B0908984D009631F8 /* metaserver_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87957D07D11E120078D26B /* metaserver_dialogs.cpp */; };
-		2B4EC20C0908984D009631F8 /* metaserver_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87957F07D11E120078D26B /* metaserver_messages.cpp */; };
-		2B4EC20D0908984D009631F8 /* network_metaserver.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D87958107D11E120078D26B /* network_metaserver.cpp */; };
-		2B4EC20E0908984D009631F8 /* network_messages.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF154D6080376E100BC3C09 /* network_messages.cpp */; };
-		2B4EC20F0908984D009631F8 /* network_dialogs_mac_nibs_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */; };
-		2B4EC2100908984D009631F8 /* NibsMetaserverClientUi.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 088809F0084C1A4000DC9E4D /* NibsMetaserverClientUi.cpp */; };
-		2B4EC2110908984D009631F8 /* carbon_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */; };
-		2B4EC2120908984D009631F8 /* network_capabilities.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE5604DD086F6DF100D9797C /* network_capabilities.cpp */; };
-		2B4EC2130908984D009631F8 /* shared_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE437C8E08779BE500038E30 /* shared_widgets.cpp */; };
-		2B4EC2140908984D009631F8 /* Console.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC6C89B0879A5DE0055EC57 /* Console.cpp */; };
-		2B4EC2160908984D009631F8 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F502014D2D01A80001 /* Carbon.framework */; };
-		2B4EC2170908984D009631F8 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5830B4001E776DE01BA387C /* OpenGL.framework */; };
-		2B4EC2180908984D009631F8 /* QuickTime.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F602014D2D01A80001 /* QuickTime.framework */; };
-		2B4EC2190908984D009631F8 /* ApplicationServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F702014D2D01A80001 /* ApplicationServices.framework */; };
-		2B4EC21A0908984D009631F8 /* AGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F802014D2D01A80001 /* AGL.framework */; };
-		2B4EC21B0908984D009631F8 /* CoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F53673F902014D2D01A80001 /* CoreServices.framework */; };
-		2B4EC21C0908984D009631F8 /* SDL_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
-		2B4EC21D0908984D009631F8 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
-		2B4EC21E0908984D009631F8 /* libobjc.A.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D5F21460403247500000104 /* libobjc.A.dylib */; };
-		2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
-		2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
-		AE0053EF0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
-		AE179F0E09C3D79500512061 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0609C3D79500512061 /* error.c */; };
-		AE179F0F09C3D79500512061 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0709C3D79500512061 /* http.c */; };
-		AE179F1009C3D79500512061 /* libnat.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0809C3D79500512061 /* libnat.c */; };
-		AE179F1109C3D79500512061 /* os_common.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0909C3D79500512061 /* os_common.c */; };
-		AE179F1209C3D79500512061 /* os_unix.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0A09C3D79500512061 /* os_unix.c */; };
-		AE179F1309C3D79500512061 /* ssdp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0B09C3D79500512061 /* ssdp.c */; };
-		AE179F1409C3D79500512061 /* upnp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0C09C3D79500512061 /* upnp.c */; };
-		AE179F1509C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
 		AE179F1609C3D79500512061 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0609C3D79500512061 /* error.c */; };
 		AE179F1709C3D79500512061 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0709C3D79500512061 /* http.c */; };
 		AE179F1809C3D79500512061 /* libnat.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0809C3D79500512061 /* libnat.c */; };
@@ -211,24 +16,10 @@
 		AE179F1B09C3D79500512061 /* ssdp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0B09C3D79500512061 /* ssdp.c */; };
 		AE179F1C09C3D79500512061 /* upnp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0C09C3D79500512061 /* upnp.c */; };
 		AE179F1D09C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
-		AE2A50CD09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
-		AE2FDECB09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
-		AE2FDECE09E934F500A18ABC /* preference_dialogs_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECD09E934F500A18ABC /* preference_dialogs_sdl.cpp */; };
-		AE2FDED009E9350E00A18ABC /* preference_dialogs_nibs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECF09E9350E00A18ABC /* preference_dialogs_nibs.cpp */; };
-		AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
-		AEB5F39A09CDC92E00CDF7C0 /* resource_manager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92140240D09B01A80001 /* resource_manager.cpp */; };
-		AEC09D6909C4A4AF00031524 /* Preferences.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6109C4A4AF00031524 /* Preferences.nib */; };
-		AEC09D6A09C4A4AF00031524 /* Prefs_ChaseCam.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6209C4A4AF00031524 /* Prefs_ChaseCam.nib */; };
-		AEC09D6B09C4A4AF00031524 /* Prefs_Crosshairs.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6309C4A4AF00031524 /* Prefs_Crosshairs.nib */; };
-		AEC09D6C09C4A4AF00031524 /* Prefs_Keyboard.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6409C4A4AF00031524 /* Prefs_Keyboard.nib */; };
-		AEC09D6D09C4A4AF00031524 /* Prefs_Monitor.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6509C4A4AF00031524 /* Prefs_Monitor.nib */; };
-		AEC09D6E09C4A4AF00031524 /* Prefs_MonitorFreq.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6609C4A4AF00031524 /* Prefs_MonitorFreq.nib */; };
-		AEC09D6F09C4A4AF00031524 /* Prefs_OpenGL_Textures.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6709C4A4AF00031524 /* Prefs_OpenGL_Textures.nib */; };
-		AEC09D7009C4A4AF00031524 /* Prefs_OpenGL.nib in Resources */ = {isa = PBXBuildFile; fileRef = AEC09D6809C4A4AF00031524 /* Prefs_OpenGL.nib */; };
 		AEC3C70009AD68AC003258E4 /* LocalEvents.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211CF0136A6FD01000001 /* LocalEvents.h */; };
 		AEC3C70109AD68AC003258E4 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		AEC3C70209AD68AC003258E4 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
@@ -268,7 +59,6 @@
 		AEC3C72409AD68AC003258E4 /* cspixels.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211270136A4DD01000001 /* cspixels.h */; };
 		AEC3C72509AD68AC003258E4 /* csstrings.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211280136A4DD01000001 /* csstrings.h */; };
 		AEC3C72609AD68AC003258E4 /* cstypes.h in Headers */ = {isa = PBXBuildFile; fileRef = F52211290136A4DD01000001 /* cstypes.h */; };
-		AEC3C72709AD68AC003258E4 /* sdl_cseries.h in Headers */ = {isa = PBXBuildFile; fileRef = F522112E0136A4DD01000001 /* sdl_cseries.h */; };
 		AEC3C72809AD68AC003258E4 /* language_definition.h in Headers */ = {isa = PBXBuildFile; fileRef = F522139E0136AC1601000001 /* language_definition.h */; settings = {ATTRIBUTES = (Private, ); }; };
 		AEC3C72C09AD68AC003258E4 /* network.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213900136ABAE01000001 /* network.h */; };
 		AEC3C72D09AD68AC003258E4 /* network_games.h in Headers */ = {isa = PBXBuildFile; fileRef = F52213800136ABAE01000001 /* network_games.h */; };
@@ -279,7 +69,6 @@
 		AEC3C73209AD68AC003258E4 /* StudioLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4B01E77D5701BA387C /* StudioLoader.h */; };
 		AEC3C73309AD68AC003258E4 /* WavefrontLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5830B4D01E77D5701BA387C /* WavefrontLoader.h */; };
 		AEC3C73409AD68AC003258E4 /* Dim3_Loader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CFAD3A0200F9D201D80110 /* Dim3_Loader.h */; };
-		AEC3C73509AD68AC003258E4 /* preferences_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120E0136A6FD01000001 /* preferences_sdl.h */; };
 		AEC3C73609AD68AC003258E4 /* shell_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F522124A0136A6FD01000001 /* shell_sdl.h */; };
 		AEC3C73709AD68AC003258E4 /* network_dialogs.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC61D022179A801A80001 /* network_dialogs.h */; };
 		AEC3C73809AD68AC003258E4 /* network_lookup_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F53DC62002219A3D01A80001 /* network_lookup_sdl.h */; };
@@ -440,7 +229,6 @@
 		AEC3C7D709AD68AC003258E4 /* xmlrole.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117C0136A6FD01000001 /* xmlrole.c */; };
 		AEC3C7D809AD68AC003258E4 /* xmltok.c in Sources */ = {isa = PBXBuildFile; fileRef = F522117D0136A6FD01000001 /* xmltok.c */; };
 		AEC3C7D909AD68AC003258E4 /* game_errors.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211970136A6FD01000001 /* game_errors.cpp */; };
-		AEC3C7DA09AD68AC003258E4 /* interface_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C30136A6FD01000001 /* interface_sdl.cpp */; };
 		AEC3C7DB09AD68AC003258E4 /* interface.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52211C40136A6FD01000001 /* interface.cpp */; };
 		AEC3C7DC09AD68AC003258E4 /* PlayerName.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120B0136A6FD01000001 /* PlayerName.cpp */; };
 		AEC3C7DD09AD68AC003258E4 /* preferences.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522120F0136A6FD01000001 /* preferences.cpp */; };
@@ -448,7 +236,6 @@
 		AEC3C7DF09AD68AC003258E4 /* sdl_widgets.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522123F0136A6FD01000001 /* sdl_widgets.cpp */; };
 		AEC3C7E009AD68AC003258E4 /* shell_misc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212490136A6FD01000001 /* shell_misc.cpp */; };
 		AEC3C7E109AD68AC003258E4 /* shell.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522124B0136A6FD01000001 /* shell.cpp */; };
-		AEC3C7E209AD68AC003258E4 /* vbl_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212580136A6FD01000001 /* vbl_sdl.cpp */; };
 		AEC3C7E309AD68AC003258E4 /* vbl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52212590136A6FD01000001 /* vbl.cpp */; };
 		AEC3C7E409AD68AC003258E4 /* network_lookup_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213810136ABAE01000001 /* network_lookup_sdl.cpp */; };
 		AEC3C7E509AD68AC003258E4 /* network_udp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F522138E0136ABAE01000001 /* network_udp.cpp */; };
@@ -594,7 +381,6 @@
 		AEC3C87809AD68AC003258E4 /* SDL_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
 		AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
-		AEF5025F09A825E2004B0179 /* OGL_LoadScreen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */; };
 		AEFDE7BC0A38DF7E00CFEB97 /* libmikmod-coreaudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B70A38DF7E00CFEB97 /* libmikmod-coreaudio.framework */; };
 		AEFDE7BD0A38DF7E00CFEB97 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
 		AEFDE7BE0A38DF7E00CFEB97 /* SDL_sound.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B90A38DF7E00CFEB97 /* SDL_sound.framework */; };
@@ -659,17 +445,6 @@
 /* End PBXBuildRule section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		2B4EC2230908984D009631F8 /* CopyFiles */ = {
-			isa = PBXCopyFilesBuildPhase;
-			buildActionMask = 2147483647;
-			dstPath = AlephOne.app/Contents/Frameworks;
-			dstSubfolderSpec = 16;
-			files = (
-				2B4EC2240908984D009631F8 /* SDL_net.framework in CopyFiles */,
-				2B4EC2250908984D009631F8 /* SDL.framework in CopyFiles */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		AEC3C87709AD68AC003258E4 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -696,8 +471,6 @@
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		2B4EC22D0908984E009631F8 /* Info-AlephOne_Carbon__NIBs___Upgraded_.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist"; sourceTree = "<group>"; };
-		2B4EC22E09089851009631F8 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		3D3A410C04DF92C400000107 /* GUI.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = GUI.nib; path = ../Resources/GUI.nib; sourceTree = SOURCE_ROOT; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
 		3D5F21460403247500000104 /* libobjc.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.A.dylib; path = /usr/lib/libobjc.A.dylib; sourceTree = "<absolute>"; };
 		3D87957D07D11E120078D26B /* metaserver_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = metaserver_dialogs.cpp; sourceTree = "<group>"; };
@@ -753,8 +526,6 @@
 		AE2A50CF09C6727C007681A4 /* Scenario.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Scenario.h; path = ../Source_Files/Misc/Scenario.h; sourceTree = SOURCE_ROOT; };
 		AE2DEB900815EE1400817EBC /* network_dialogs_mac_nibs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_dialogs_mac_nibs_sdl.cpp; path = ../Source_Files/Network/network_dialogs_mac_nibs_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = preference_dialogs.cpp; path = ../Source_Files/Misc/preference_dialogs.cpp; sourceTree = "<group>"; };
-		AE2FDECD09E934F500A18ABC /* preference_dialogs_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = preference_dialogs_sdl.cpp; path = ../Source_Files/Misc/preference_dialogs_sdl.cpp; sourceTree = "<group>"; };
-		AE2FDECF09E9350E00A18ABC /* preference_dialogs_nibs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = preference_dialogs_nibs.cpp; path = ../Source_Files/Misc/preference_dialogs_nibs.cpp; sourceTree = "<group>"; };
 		AE2FDED109E9352B00A18ABC /* preference_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = preference_dialogs.h; path = ../Source_Files/Misc/preference_dialogs.h; sourceTree = "<group>"; };
 		AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = carbon_widgets.cpp; path = ../Source_Files/Misc/carbon_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEED0864EAB7002AF754 /* carbon_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = carbon_widgets.h; path = ../Source_Files/Misc/carbon_widgets.h; sourceTree = SOURCE_ROOT; };
@@ -765,25 +536,12 @@
 		AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader_Shared.cpp; path = ../Source_Files/RenderMain/ImageLoader_Shared.cpp; sourceTree = SOURCE_ROOT; };
 		AE791CF60968E49100350190 /* DDS.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DDS.h; path = ../Source_Files/RenderMain/DDS.h; sourceTree = SOURCE_ROOT; };
 		AEBF94A70834FD9500C0B18C /* NibsUiHelpers.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NibsUiHelpers.h; path = ../Source_Files/CSeries/NibsUiHelpers.h; sourceTree = SOURCE_ROOT; };
-		AEC09D6109C4A4AF00031524 /* Preferences.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Preferences.nib; path = ../Resources/Preferences.nib; sourceTree = SOURCE_ROOT; };
-		AEC09D6209C4A4AF00031524 /* Prefs_ChaseCam.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_ChaseCam.nib; path = ../Resources/Prefs_ChaseCam.nib; sourceTree = SOURCE_ROOT; };
-		AEC09D6309C4A4AF00031524 /* Prefs_Crosshairs.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_Crosshairs.nib; path = ../Resources/Prefs_Crosshairs.nib; sourceTree = SOURCE_ROOT; };
-		AEC09D6409C4A4AF00031524 /* Prefs_Keyboard.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_Keyboard.nib; path = ../Resources/Prefs_Keyboard.nib; sourceTree = SOURCE_ROOT; };
-		AEC09D6509C4A4AF00031524 /* Prefs_Monitor.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_Monitor.nib; path = ../Resources/Prefs_Monitor.nib; sourceTree = SOURCE_ROOT; };
-		AEC09D6609C4A4AF00031524 /* Prefs_MonitorFreq.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_MonitorFreq.nib; path = ../Resources/Prefs_MonitorFreq.nib; sourceTree = SOURCE_ROOT; };
-		AEC09D6709C4A4AF00031524 /* Prefs_OpenGL_Textures.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_OpenGL_Textures.nib; path = ../Resources/Prefs_OpenGL_Textures.nib; sourceTree = SOURCE_ROOT; };
-		AEC09D6809C4A4AF00031524 /* Prefs_OpenGL.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = Prefs_OpenGL.nib; path = ../Resources/Prefs_OpenGL.nib; sourceTree = SOURCE_ROOT; };
 		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
-		AEC3C89609AD68AE003258E4 /* AlephOneSDL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOneSDL.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
 		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
-		AEF8C0A3083782C60063B737 /* Gather Network Game.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = "Gather Network Game.nib"; path = "../Resources/Gather Network Game.nib"; sourceTree = SOURCE_ROOT; };
-		AEF8C0A4083782C60063B737 /* Join Network Game.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = "Join Network Game.nib"; path = "../Resources/Join Network Game.nib"; sourceTree = SOURCE_ROOT; };
-		AEF8C0A5083782C60063B737 /* Metaserver Client.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = "Metaserver Client.nib"; path = "../Resources/Metaserver Client.nib"; sourceTree = SOURCE_ROOT; };
-		AEF8C0A6083782C60063B737 /* Postgame Carnage Report.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = "Postgame Carnage Report.nib"; path = "../Resources/Postgame Carnage Report.nib"; sourceTree = SOURCE_ROOT; };
-		AEF8C0A7083782C60063B737 /* Setup Network Game.nib */ = {isa = PBXFileReference; lastKnownFileType = wrapper.nib; name = "Setup Network Game.nib"; path = "../Resources/Setup Network Game.nib"; sourceTree = SOURCE_ROOT; };
 		AEFDE7B70A38DF7E00CFEB97 /* libmikmod-coreaudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "libmikmod-coreaudio.framework"; path = "/Library/Frameworks/libmikmod-coreaudio.framework"; sourceTree = "<absolute>"; };
 		AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
 		AEFDE7B90A38DF7E00CFEB97 /* SDL_sound.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_sound.framework; path = /Library/Frameworks/SDL_sound.framework; sourceTree = "<absolute>"; };
@@ -834,10 +592,8 @@
 		F52211280136A4DD01000001 /* csstrings.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = csstrings.h; path = ../Source_Files/CSeries/csstrings.h; sourceTree = SOURCE_ROOT; };
 		F52211290136A4DD01000001 /* cstypes.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cstypes.h; path = ../Source_Files/CSeries/cstypes.h; sourceTree = SOURCE_ROOT; };
 		F522112A0136A4DD01000001 /* gdspec.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = gdspec.h; path = ../Source_Files/CSeries/gdspec.h; sourceTree = SOURCE_ROOT; };
-		F522112B0136A4DD01000001 /* macintosh_cseries.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = macintosh_cseries.h; path = ../Source_Files/CSeries/macintosh_cseries.h; sourceTree = SOURCE_ROOT; };
 		F522112C0136A4DD01000001 /* my32bqd.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = my32bqd.h; path = ../Source_Files/CSeries/my32bqd.h; sourceTree = SOURCE_ROOT; };
 		F522112D0136A4DD01000001 /* mytm.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = mytm.h; path = ../Source_Files/CSeries/mytm.h; sourceTree = SOURCE_ROOT; };
-		F522112E0136A4DD01000001 /* sdl_cseries.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = sdl_cseries.h; path = ../Source_Files/CSeries/sdl_cseries.h; sourceTree = SOURCE_ROOT; };
 		F52211410136A66601000001 /* byte_swapping.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = byte_swapping.cpp; path = ../Source_Files/CSeries/byte_swapping.cpp; sourceTree = SOURCE_ROOT; };
 		F52211420136A66601000001 /* csalerts.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csalerts.cpp; path = ../Source_Files/CSeries/csalerts.cpp; sourceTree = SOURCE_ROOT; };
 		F52211430136A66601000001 /* csalerts_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csalerts_sdl.cpp; path = ../Source_Files/CSeries/csalerts_sdl.cpp; sourceTree = SOURCE_ROOT; };
@@ -870,16 +626,12 @@
 		F522117E0136A6FD01000001 /* xmltok_impl.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = xmltok_impl.c; path = ../Source_Files/Expat/xmltok_impl.c; sourceTree = SOURCE_ROOT; };
 		F522117F0136A6FD01000001 /* xmltok_ns.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = xmltok_ns.c; path = ../Source_Files/Expat/xmltok_ns.c; sourceTree = SOURCE_ROOT; };
 		F522118D0136A6FD01000001 /* export_definitions.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = export_definitions.cpp; path = ../Source_Files/Misc/export_definitions.cpp; sourceTree = SOURCE_ROOT; };
-		F52211960136A6FD01000001 /* game_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = game_dialogs.cpp; path = ../Source_Files/Misc/game_dialogs.cpp; sourceTree = SOURCE_ROOT; };
 		F52211970136A6FD01000001 /* game_errors.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = game_errors.cpp; path = ../Source_Files/Misc/game_errors.cpp; sourceTree = SOURCE_ROOT; };
 		F52211AE0136A6FD01000001 /* game_errors.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = game_errors.h; path = ../Source_Files/Misc/game_errors.h; sourceTree = SOURCE_ROOT; };
-		F52211C10136A6FD01000001 /* interface_macintosh.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = interface_macintosh.cpp; path = ../Source_Files/Misc/interface_macintosh.cpp; sourceTree = SOURCE_ROOT; usesTabs = 1; };
 		F52211C20136A6FD01000001 /* interface_menus.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = interface_menus.h; path = ../Source_Files/Misc/interface_menus.h; sourceTree = SOURCE_ROOT; };
-		F52211C30136A6FD01000001 /* interface_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = interface_sdl.cpp; path = ../Source_Files/Misc/interface_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F52211C40136A6FD01000001 /* interface.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = interface.cpp; path = ../Source_Files/Misc/interface.cpp; sourceTree = SOURCE_ROOT; usesTabs = 1; };
 		F52211C50136A6FD01000001 /* interface.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = interface.h; path = ../Source_Files/Misc/interface.h; sourceTree = SOURCE_ROOT; };
 		F52211CB0136A6FD01000001 /* key_definitions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = key_definitions.h; path = ../Source_Files/Misc/key_definitions.h; sourceTree = SOURCE_ROOT; };
-		F52211CC0136A6FD01000001 /* keyboard_dialog.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = keyboard_dialog.cpp; path = ../Source_Files/Misc/keyboard_dialog.cpp; sourceTree = SOURCE_ROOT; };
 		F52211CF0136A6FD01000001 /* LocalEvents.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = LocalEvents.h; path = ../Source_Files/Misc/LocalEvents.h; sourceTree = SOURCE_ROOT; };
 		F52211D10136A6FD01000001 /* MacCheckbox.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = MacCheckbox.h; path = ../Source_Files/Misc/MacCheckbox.h; sourceTree = SOURCE_ROOT; };
 		F52211D20136A6FD01000001 /* macintosh_network.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = macintosh_network.h; path = ../Source_Files/Misc/macintosh_network.h; sourceTree = SOURCE_ROOT; };
@@ -887,7 +639,6 @@
 		F522120B0136A6FD01000001 /* PlayerName.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = PlayerName.cpp; path = ../Source_Files/Misc/PlayerName.cpp; sourceTree = SOURCE_ROOT; };
 		F522120C0136A6FD01000001 /* PlayerName.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = PlayerName.h; path = ../Source_Files/Misc/PlayerName.h; sourceTree = SOURCE_ROOT; };
 		F522120D0136A6FD01000001 /* preferences_macintosh.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = preferences_macintosh.h; path = ../Source_Files/Misc/preferences_macintosh.h; sourceTree = SOURCE_ROOT; };
-		F522120E0136A6FD01000001 /* preferences_sdl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = preferences_sdl.h; path = ../Source_Files/Misc/preferences_sdl.h; sourceTree = SOURCE_ROOT; };
 		F522120F0136A6FD01000001 /* preferences.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = preferences.cpp; path = ../Source_Files/Misc/preferences.cpp; sourceTree = SOURCE_ROOT; };
 		F52212100136A6FD01000001 /* preferences.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = preferences.h; path = ../Source_Files/Misc/preferences.h; sourceTree = SOURCE_ROOT; };
 		F52212130136A6FD01000001 /* progress.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = progress.cpp; path = ../Source_Files/Misc/progress.cpp; sourceTree = SOURCE_ROOT; };
@@ -898,14 +649,11 @@
 		F522123E0136A6FD01000001 /* sdl_network.h */ = {isa = PBXFileReference; comments = "JTP: No, this isn't a typo or misplacement. Both Carbon and SDL versions use this."; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = sdl_network.h; path = ../Source_Files/Misc/sdl_network.h; sourceTree = SOURCE_ROOT; };
 		F522123F0136A6FD01000001 /* sdl_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = sdl_widgets.cpp; path = ../Source_Files/Misc/sdl_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		F52212400136A6FD01000001 /* sdl_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = sdl_widgets.h; path = ../Source_Files/Misc/sdl_widgets.h; sourceTree = SOURCE_ROOT; };
-		F52212480136A6FD01000001 /* shell_macintosh.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = shell_macintosh.h; path = ../Source_Files/shell_macintosh.h; sourceTree = SOURCE_ROOT; };
 		F52212490136A6FD01000001 /* shell_misc.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shell_misc.cpp; path = ../Source_Files/shell_misc.cpp; sourceTree = SOURCE_ROOT; };
 		F522124A0136A6FD01000001 /* shell_sdl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = shell_sdl.h; path = ../Source_Files/shell_sdl.h; sourceTree = SOURCE_ROOT; };
 		F522124B0136A6FD01000001 /* shell.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shell.cpp; path = ../Source_Files/shell.cpp; sourceTree = SOURCE_ROOT; };
 		F522124C0136A6FD01000001 /* shell.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = shell.h; path = ../Source_Files/shell.h; sourceTree = SOURCE_ROOT; };
 		F52212560136A6FD01000001 /* vbl_definitions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vbl_definitions.h; path = ../Source_Files/Misc/vbl_definitions.h; sourceTree = SOURCE_ROOT; };
-		F52212570136A6FD01000001 /* vbl_macintosh.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = vbl_macintosh.cpp; path = ../Source_Files/Misc/vbl_macintosh.cpp; sourceTree = SOURCE_ROOT; };
-		F52212580136A6FD01000001 /* vbl_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = vbl_sdl.cpp; path = ../Source_Files/Misc/vbl_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F52212590136A6FD01000001 /* vbl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = vbl.cpp; path = ../Source_Files/Misc/vbl.cpp; sourceTree = SOURCE_ROOT; };
 		F522125A0136A6FD01000001 /* vbl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = vbl.h; path = ../Source_Files/Misc/vbl.h; sourceTree = SOURCE_ROOT; };
 		F522137B0136ABAE01000001 /* network_ddp.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_ddp.cpp; path = ../Source_Files/Network/network_ddp.cpp; sourceTree = SOURCE_ROOT; };
@@ -1187,22 +935,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		2B4EC2150908984D009631F8 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2B4EC2160908984D009631F8 /* Carbon.framework in Frameworks */,
-				2B4EC2170908984D009631F8 /* OpenGL.framework in Frameworks */,
-				2B4EC2180908984D009631F8 /* QuickTime.framework in Frameworks */,
-				2B4EC2190908984D009631F8 /* ApplicationServices.framework in Frameworks */,
-				2B4EC21A0908984D009631F8 /* AGL.framework in Frameworks */,
-				2B4EC21B0908984D009631F8 /* CoreServices.framework in Frameworks */,
-				2B4EC21C0908984D009631F8 /* SDL_net.framework in Frameworks */,
-				2B4EC21D0908984D009631F8 /* SDL.framework in Frameworks */,
-				2B4EC21E0908984D009631F8 /* libobjc.A.dylib in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		AEC3C86F09AD68AC003258E4 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -1226,8 +958,7 @@
 		19C28FACFE9D520D11CA2CBB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				2B4EC22E09089851009631F8 /* AlephOne.app */,
-				AEC3C89609AD68AE003258E4 /* AlephOneSDL.app */,
+				AEC3C89609AD68AE003258E4 /* AlephOne.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1249,19 +980,6 @@
 		29B97317FDCFA39411CA2CEA /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				AEC09D6109C4A4AF00031524 /* Preferences.nib */,
-				AEC09D6209C4A4AF00031524 /* Prefs_ChaseCam.nib */,
-				AEC09D6309C4A4AF00031524 /* Prefs_Crosshairs.nib */,
-				AEC09D6409C4A4AF00031524 /* Prefs_Keyboard.nib */,
-				AEC09D6509C4A4AF00031524 /* Prefs_Monitor.nib */,
-				AEC09D6609C4A4AF00031524 /* Prefs_MonitorFreq.nib */,
-				AEC09D6709C4A4AF00031524 /* Prefs_OpenGL_Textures.nib */,
-				AEC09D6809C4A4AF00031524 /* Prefs_OpenGL.nib */,
-				AEF8C0A3083782C60063B737 /* Gather Network Game.nib */,
-				AEF8C0A4083782C60063B737 /* Join Network Game.nib */,
-				AEF8C0A5083782C60063B737 /* Metaserver Client.nib */,
-				AEF8C0A6083782C60063B737 /* Postgame Carnage Report.nib */,
-				AEF8C0A7083782C60063B737 /* Setup Network Game.nib */,
 				F5F50D6C0215DACD01144D54 /* DataFiles */,
 				F56AEB6B01F8AA1201780311 /* ImagesIcon.icns */,
 				F56AEB6C01F8AA1201780311 /* ShapesIcon.icns */,
@@ -1275,7 +993,6 @@
 				F5CFAD410200FA6B01D80110 /* PFIcon.icns */,
 				F5CFAD420200FA6B01D80110 /* PhysIcon.icns */,
 				F5CFAD430200FA6B01D80110 /* SaveIcon.icns */,
-				3D3A410C04DF92C400000107 /* GUI.nib */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -1484,10 +1201,8 @@
 				F52211290136A4DD01000001 /* cstypes.h */,
 				F52211260136A4DD01000001 /* csmisc.h */,
 				F522112A0136A4DD01000001 /* gdspec.h */,
-				F522112B0136A4DD01000001 /* macintosh_cseries.h */,
 				F522112C0136A4DD01000001 /* my32bqd.h */,
 				F522112D0136A4DD01000001 /* mytm.h */,
-				F522112E0136A4DD01000001 /* sdl_cseries.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -1540,9 +1255,7 @@
 				AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */,
 				F522120B0136A6FD01000001 /* PlayerName.cpp */,
 				F522118D0136A6FD01000001 /* export_definitions.cpp */,
-				F52211960136A6FD01000001 /* game_dialogs.cpp */,
 				F52211970136A6FD01000001 /* game_errors.cpp */,
-				F52211CC0136A6FD01000001 /* keyboard_dialog.cpp */,
 				F52211C40136A6FD01000001 /* interface.cpp */,
 				F522120F0136A6FD01000001 /* preferences.cpp */,
 				F52212130136A6FD01000001 /* progress.cpp */,
@@ -1999,13 +1712,10 @@
 		F5CC94280240DB8801A80001 /* Macintosh */ = {
 			isa = PBXGroup;
 			children = (
-				AE2FDECF09E9350E00A18ABC /* preference_dialogs_nibs.cpp */,
 				AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */,
 				F52211D10136A6FD01000001 /* MacCheckbox.h */,
 				F52211D20136A6FD01000001 /* macintosh_network.h */,
 				F522120D0136A6FD01000001 /* preferences_macintosh.h */,
-				F52211C10136A6FD01000001 /* interface_macintosh.cpp */,
-				F52212570136A6FD01000001 /* vbl_macintosh.cpp */,
 			);
 			name = Macintosh;
 			sourceTree = SOURCE_ROOT;
@@ -2013,16 +1723,12 @@
 		F5CC94290240DB8801A80001 /* SDL */ = {
 			isa = PBXGroup;
 			children = (
-				AE2FDECD09E934F500A18ABC /* preference_dialogs_sdl.cpp */,
-				F522120E0136A6FD01000001 /* preferences_sdl.h */,
 				F5A0002B023FDAD101A80001 /* preferences_widgets_sdl.h */,
 				F522123B0136A6FD01000001 /* sdl_dialogs.h */,
 				F52212400136A6FD01000001 /* sdl_widgets.h */,
 				F5A00023023FDA1601A80001 /* preferences_widgets_sdl.cpp */,
-				F52211C30136A6FD01000001 /* interface_sdl.cpp */,
 				F522123A0136A6FD01000001 /* sdl_dialogs.cpp */,
 				F522123F0136A6FD01000001 /* sdl_widgets.cpp */,
-				F52212580136A6FD01000001 /* vbl_sdl.cpp */,
 				F5574EF201F4EBD401FEABBD /* PlayerImage_sdl.cpp */,
 			);
 			name = SDL;
@@ -2112,7 +1818,6 @@
 		F5CF5859024599B601A80001 /* Macintosh */ = {
 			isa = PBXGroup;
 			children = (
-				F52212480136A6FD01000001 /* shell_macintosh.h */,
 			);
 			name = Macintosh;
 			sourceTree = "<group>";
@@ -2183,7 +1888,6 @@
 				AEC3C72409AD68AC003258E4 /* cspixels.h in Headers */,
 				AEC3C72509AD68AC003258E4 /* csstrings.h in Headers */,
 				AEC3C72609AD68AC003258E4 /* cstypes.h in Headers */,
-				AEC3C72709AD68AC003258E4 /* sdl_cseries.h in Headers */,
 				AEC3C72809AD68AC003258E4 /* language_definition.h in Headers */,
 				AEC3C72C09AD68AC003258E4 /* network.h in Headers */,
 				AEC3C72D09AD68AC003258E4 /* network_games.h in Headers */,
@@ -2194,7 +1898,6 @@
 				AEC3C73209AD68AC003258E4 /* StudioLoader.h in Headers */,
 				AEC3C73309AD68AC003258E4 /* WavefrontLoader.h in Headers */,
 				AEC3C73409AD68AC003258E4 /* Dim3_Loader.h in Headers */,
-				AEC3C73509AD68AC003258E4 /* preferences_sdl.h in Headers */,
 				AEC3C73609AD68AC003258E4 /* shell_sdl.h in Headers */,
 				AEC3C73709AD68AC003258E4 /* network_dialogs.h in Headers */,
 				AEC3C73809AD68AC003258E4 /* network_lookup_sdl.h in Headers */,
@@ -2341,30 +2044,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		2B4EC09B0908984D009631F8 /* AlephOne-Carbon (NIBs) */ = {
+		AEC3C6FE09AD68AC003258E4 /* AlephOne */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2B4EC2260908984D009631F8 /* Build configuration list for PBXNativeTarget "AlephOne-Carbon (NIBs)" */;
-			buildPhases = (
-				2B4EC1600908984D009631F8 /* Resources */,
-				2B4EC1730908984D009631F8 /* Sources */,
-				2B4EC2150908984D009631F8 /* Frameworks */,
-				2B4EC21F0908984D009631F8 /* Rez */,
-				2B4EC2220908984D009631F8 /* ShellScript */,
-				2B4EC2230908984D009631F8 /* CopyFiles */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "AlephOne-Carbon (NIBs)";
-			productInstallPath = "$(USER_APPS_DIR)";
-			productName = "AlephOne-Carbon";
-			productReference = 2B4EC22E09089851009631F8 /* AlephOne.app */;
-			productType = "com.apple.product-type.application";
-		};
-		AEC3C6FE09AD68AC003258E4 /* AlephOne-SDL */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = AEC3C87B09AD68AC003258E4 /* Build configuration list for PBXNativeTarget "AlephOne-SDL" */;
+			buildConfigurationList = AEC3C87B09AD68AC003258E4 /* Build configuration list for PBXNativeTarget "AlephOne" */;
 			buildPhases = (
 				AEC3C6FF09AD68AC003258E4 /* Headers */,
 				AEC3C7C209AD68AC003258E4 /* Resources */,
@@ -2384,9 +2066,9 @@
 			);
 			dependencies = (
 			);
-			name = "AlephOne-SDL";
+			name = AlephOne;
 			productName = "SDL Application";
-			productReference = AEC3C89609AD68AE003258E4 /* AlephOneSDL.app */;
+			productReference = AEC3C89609AD68AE003258E4 /* AlephOne.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -2399,46 +2081,12 @@
 			mainGroup = 29B97314FDCFA39411CA2CEA /* SDL Application */;
 			projectDirPath = "";
 			targets = (
-				2B4EC09B0908984D009631F8 /* AlephOne-Carbon (NIBs) */,
-				AEC3C6FE09AD68AC003258E4 /* AlephOne-SDL */,
+				AEC3C6FE09AD68AC003258E4 /* AlephOne */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		2B4EC1600908984D009631F8 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2B4EC1610908984D009631F8 /* AlephOne.icns in Resources */,
-				2B4EC1620908984D009631F8 /* SoundsIcon.icns in Resources */,
-				2B4EC1630908984D009631F8 /* ShapesIcon.icns in Resources */,
-				2B4EC1640908984D009631F8 /* ImagesIcon.icns in Resources */,
-				2B4EC1650908984D009631F8 /* FilmIcon.icns in Resources */,
-				2B4EC1660908984D009631F8 /* MapIcon.icns in Resources */,
-				2B4EC1670908984D009631F8 /* MMLIcon.icns in Resources */,
-				2B4EC1680908984D009631F8 /* MusakIcon.icns in Resources */,
-				2B4EC1690908984D009631F8 /* PFIcon.icns in Resources */,
-				2B4EC16A0908984D009631F8 /* PhysIcon.icns in Resources */,
-				2B4EC16B0908984D009631F8 /* SaveIcon.icns in Resources */,
-				2B4EC16C0908984D009631F8 /* InfoPlist.strings in Resources */,
-				2B4EC16D0908984D009631F8 /* GUI.nib in Resources */,
-				2B4EC16E0908984D009631F8 /* Gather Network Game.nib in Resources */,
-				2B4EC16F0908984D009631F8 /* Join Network Game.nib in Resources */,
-				2B4EC1700908984D009631F8 /* Metaserver Client.nib in Resources */,
-				2B4EC1710908984D009631F8 /* Postgame Carnage Report.nib in Resources */,
-				2B4EC1720908984D009631F8 /* Setup Network Game.nib in Resources */,
-				AEC09D6909C4A4AF00031524 /* Preferences.nib in Resources */,
-				AEC09D6A09C4A4AF00031524 /* Prefs_ChaseCam.nib in Resources */,
-				AEC09D6B09C4A4AF00031524 /* Prefs_Crosshairs.nib in Resources */,
-				AEC09D6C09C4A4AF00031524 /* Prefs_Keyboard.nib in Resources */,
-				AEC09D6D09C4A4AF00031524 /* Prefs_Monitor.nib in Resources */,
-				AEC09D6E09C4A4AF00031524 /* Prefs_MonitorFreq.nib in Resources */,
-				AEC09D6F09C4A4AF00031524 /* Prefs_OpenGL_Textures.nib in Resources */,
-				AEC09D7009C4A4AF00031524 /* Prefs_OpenGL.nib in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		AEC3C7C209AD68AC003258E4 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2461,13 +2109,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXRezBuildPhase section */
-		2B4EC21F0908984D009631F8 /* Rez */ = {
-			isa = PBXRezBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		AEC3C87509AD68AC003258E4 /* Rez */ = {
 			isa = PBXRezBuildPhase;
 			buildActionMask = 2147483647;
@@ -2478,19 +2119,6 @@
 /* End PBXRezBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		2B4EC2220908984D009631F8 /* ShellScript */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "DTE=`date \"+20%y%m%d\"`\nperl -pi -e \"s/XVERSIONX/$DTE/g\" build/AlephOne.app/Contents/Info.plist";
-		};
 		AEC3C87609AD68AC003258E4 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 12;
@@ -2503,185 +2131,6 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		2B4EC1730908984D009631F8 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				2B4EC1740908984D009631F8 /* byte_swapping.cpp in Sources */,
-				2B4EC1750908984D009631F8 /* csalerts.cpp in Sources */,
-				2B4EC1760908984D009631F8 /* cscluts.cpp in Sources */,
-				2B4EC1770908984D009631F8 /* csfiles.cpp in Sources */,
-				2B4EC1780908984D009631F8 /* csfonts.cpp in Sources */,
-				2B4EC1790908984D009631F8 /* csmisc.cpp in Sources */,
-				2B4EC17A0908984D009631F8 /* csstrings.cpp in Sources */,
-				2B4EC17B0908984D009631F8 /* gdspec.cpp in Sources */,
-				2B4EC17C0908984D009631F8 /* my32bqd.cpp in Sources */,
-				2B4EC17D0908984D009631F8 /* csdialogs_macintosh.cpp in Sources */,
-				2B4EC17E0908984D009631F8 /* hashtable.c in Sources */,
-				2B4EC17F0908984D009631F8 /* xmlparse.c in Sources */,
-				2B4EC1800908984D009631F8 /* xmlrole.c in Sources */,
-				2B4EC1810908984D009631F8 /* xmltok.c in Sources */,
-				2B4EC1820908984D009631F8 /* Model3D.cpp in Sources */,
-				2B4EC1830908984D009631F8 /* ModelRenderer.cpp in Sources */,
-				2B4EC1840908984D009631F8 /* StudioLoader.cpp in Sources */,
-				2B4EC1850908984D009631F8 /* WavefrontLoader.cpp in Sources */,
-				2B4EC1860908984D009631F8 /* network_games.cpp in Sources */,
-				2B4EC18B0908984D009631F8 /* PlayerDialogs.cpp in Sources */,
-				2B4EC18C0908984D009631F8 /* PlayerName.cpp in Sources */,
-				2B4EC18D0908984D009631F8 /* game_dialogs.cpp in Sources */,
-				2B4EC18E0908984D009631F8 /* game_errors.cpp in Sources */,
-				2B4EC18F0908984D009631F8 /* interface.cpp in Sources */,
-				2B4EC1900908984D009631F8 /* keyboard_dialog.cpp in Sources */,
-				2B4EC1910908984D009631F8 /* preferences.cpp in Sources */,
-				2B4EC1920908984D009631F8 /* progress.cpp in Sources */,
-				2B4EC1930908984D009631F8 /* shell.cpp in Sources */,
-				2B4EC1940908984D009631F8 /* shell_misc.cpp in Sources */,
-				2B4EC1950908984D009631F8 /* vbl.cpp in Sources */,
-				2B4EC1960908984D009631F8 /* interface_macintosh.cpp in Sources */,
-				2B4EC1970908984D009631F8 /* vbl_macintosh.cpp in Sources */,
-				2B4EC1980908984D009631F8 /* SSLP_limited.cpp in Sources */,
-				2B4EC1990908984D009631F8 /* SDL_netx.cpp in Sources */,
-				2B4EC19A0908984D009631F8 /* network_data_formats.cpp in Sources */,
-				2B4EC19B0908984D009631F8 /* network_udp.cpp in Sources */,
-				2B4EC19C0908984D009631F8 /* network_lookup_sdl.cpp in Sources */,
-				2B4EC19D0908984D009631F8 /* thread_priority_sdl_macosx.cpp in Sources */,
-				2B4EC19E0908984D009631F8 /* Dim3_Loader.cpp in Sources */,
-				2B4EC19F0908984D009631F8 /* network.cpp in Sources */,
-				2B4EC1A00908984D009631F8 /* network_dialogs.cpp in Sources */,
-				2B4EC1A10908984D009631F8 /* ActionQueues.cpp in Sources */,
-				2B4EC1A20908984D009631F8 /* crc.cpp in Sources */,
-				2B4EC1A30908984D009631F8 /* FileHandler.cpp in Sources */,
-				2B4EC1A40908984D009631F8 /* filetypes_macintosh.cpp in Sources */,
-				2B4EC1A50908984D009631F8 /* find_files.cpp in Sources */,
-				2B4EC1A60908984D009631F8 /* game_wad.cpp in Sources */,
-				2B4EC1A70908984D009631F8 /* import_definitions.cpp in Sources */,
-				2B4EC1A80908984D009631F8 /* preprocess_map_mac.cpp in Sources */,
-				2B4EC1A90908984D009631F8 /* wad.cpp in Sources */,
-				2B4EC1AA0908984D009631F8 /* wad_macintosh.cpp in Sources */,
-				2B4EC1AB0908984D009631F8 /* wad_prefs.cpp in Sources */,
-				2B4EC1AC0908984D009631F8 /* wad_prefs_macintosh.cpp in Sources */,
-				2B4EC1AD0908984D009631F8 /* devices.cpp in Sources */,
-				2B4EC1AE0908984D009631F8 /* dynamic_limits.cpp in Sources */,
-				2B4EC1AF0908984D009631F8 /* effects.cpp in Sources */,
-				2B4EC1B00908984D009631F8 /* flood_map.cpp in Sources */,
-				2B4EC1B10908984D009631F8 /* items.cpp in Sources */,
-				2B4EC1B20908984D009631F8 /* lightsource.cpp in Sources */,
-				2B4EC1B30908984D009631F8 /* map.cpp in Sources */,
-				2B4EC1B40908984D009631F8 /* map_constructors.cpp in Sources */,
-				2B4EC1B50908984D009631F8 /* marathon2.cpp in Sources */,
-				2B4EC1B60908984D009631F8 /* media.cpp in Sources */,
-				2B4EC1B70908984D009631F8 /* monsters.cpp in Sources */,
-				2B4EC1B80908984D009631F8 /* pathfinding.cpp in Sources */,
-				2B4EC1B90908984D009631F8 /* physics.cpp in Sources */,
-				2B4EC1BA0908984D009631F8 /* placement.cpp in Sources */,
-				2B4EC1BB0908984D009631F8 /* platforms.cpp in Sources */,
-				2B4EC1BC0908984D009631F8 /* player.cpp in Sources */,
-				2B4EC1BD0908984D009631F8 /* projectiles.cpp in Sources */,
-				2B4EC1BE0908984D009631F8 /* scenery.cpp in Sources */,
-				2B4EC1BF0908984D009631F8 /* weapons.cpp in Sources */,
-				2B4EC1C00908984D009631F8 /* world.cpp in Sources */,
-				2B4EC1C10908984D009631F8 /* ISp_Support.cpp in Sources */,
-				2B4EC1C20908984D009631F8 /* mouse.cpp in Sources */,
-				2B4EC1C30908984D009631F8 /* AnimatedTextures.cpp in Sources */,
-				2B4EC1C40908984D009631F8 /* Crosshairs.cpp in Sources */,
-				2B4EC1C50908984D009631F8 /* ImageLoader_Macintosh.cpp in Sources */,
-				2B4EC1C60908984D009631F8 /* OGL_Faders.cpp in Sources */,
-				2B4EC1C70908984D009631F8 /* OGL_Render.cpp in Sources */,
-				2B4EC1C80908984D009631F8 /* OGL_Setup.cpp in Sources */,
-				2B4EC1C90908984D009631F8 /* OGL_Textures.cpp in Sources */,
-				2B4EC1CA0908984D009631F8 /* render.cpp in Sources */,
-				2B4EC1CB0908984D009631F8 /* RenderPlaceObjs.cpp in Sources */,
-				2B4EC1CC0908984D009631F8 /* RenderRasterize.cpp in Sources */,
-				2B4EC1CD0908984D009631F8 /* RenderSortPoly.cpp in Sources */,
-				2B4EC1CE0908984D009631F8 /* RenderVisTree.cpp in Sources */,
-				2B4EC1CF0908984D009631F8 /* scottish_textures.cpp in Sources */,
-				2B4EC1D00908984D009631F8 /* shapes.cpp in Sources */,
-				2B4EC1D10908984D009631F8 /* textures.cpp in Sources */,
-				2B4EC1D20908984D009631F8 /* ChaseCam.cpp in Sources */,
-				2B4EC1D30908984D009631F8 /* computer_interface.cpp in Sources */,
-				2B4EC1D40908984D009631F8 /* fades.cpp in Sources */,
-				2B4EC1D50908984D009631F8 /* FontHandler.cpp in Sources */,
-				2B4EC1D60908984D009631F8 /* game_window.cpp in Sources */,
-				2B4EC1D70908984D009631F8 /* game_window_macintosh.cpp in Sources */,
-				2B4EC1D80908984D009631F8 /* HUDRenderer.cpp in Sources */,
-				2B4EC1D90908984D009631F8 /* HUDRenderer_OGL.cpp in Sources */,
-				2B4EC1DA0908984D009631F8 /* HUDRenderer_SW.cpp in Sources */,
-				2B4EC1DB0908984D009631F8 /* images.cpp in Sources */,
-				2B4EC1DC0908984D009631F8 /* motion_sensor.cpp in Sources */,
-				2B4EC1DD0908984D009631F8 /* overhead_map.cpp in Sources */,
-				2B4EC1DE0908984D009631F8 /* OverheadMap_OGL.cpp in Sources */,
-				2B4EC1DF0908984D009631F8 /* OverheadMap_QD.cpp in Sources */,
-				2B4EC1E00908984D009631F8 /* OverheadMapRenderer.cpp in Sources */,
-				2B4EC1E10908984D009631F8 /* screen.cpp in Sources */,
-				2B4EC1E20908984D009631F8 /* screen_drawing.cpp in Sources */,
-				2B4EC1E30908984D009631F8 /* TextLayoutHelper.cpp in Sources */,
-				2B4EC1E40908984D009631F8 /* TextStrings.cpp in Sources */,
-				2B4EC1E50908984D009631F8 /* ViewControl.cpp in Sources */,
-				2B4EC1E60908984D009631F8 /* music.cpp in Sources */,
-				2B4EC1E70908984D009631F8 /* mysound.cpp in Sources */,
-				2B4EC1E80908984D009631F8 /* ColorParser.cpp in Sources */,
-				2B4EC1E90908984D009631F8 /* DamageParser.cpp in Sources */,
-				2B4EC1EA0908984D009631F8 /* ShapesParser.cpp in Sources */,
-				2B4EC1EB0908984D009631F8 /* XML_Configure.cpp in Sources */,
-				2B4EC1EC0908984D009631F8 /* XML_DataBlock.cpp in Sources */,
-				2B4EC1ED0908984D009631F8 /* XML_ElementParser.cpp in Sources */,
-				2B4EC1EE0908984D009631F8 /* XML_LevelScript.cpp in Sources */,
-				2B4EC1EF0908984D009631F8 /* XML_MakeRoot.cpp in Sources */,
-				2B4EC1F00908984D009631F8 /* XML_ResourceFork.cpp in Sources */,
-				2B4EC1F10908984D009631F8 /* Packing.cpp in Sources */,
-				2B4EC1F20908984D009631F8 /* DefaultStringSets.cpp in Sources */,
-				2B4EC1F30908984D009631F8 /* Logging.cpp in Sources */,
-				2B4EC1F40908984D009631F8 /* CarbonSndPlayDB.c in Sources */,
-				2B4EC1F50908984D009631F8 /* network_microphone_shared.cpp in Sources */,
-				2B4EC1F60908984D009631F8 /* network_speaker_shared.cpp in Sources */,
-				2B4EC1F70908984D009631F8 /* network_speaker.cpp in Sources */,
-				2B4EC1F80908984D009631F8 /* network_microphone.cpp in Sources */,
-				2B4EC1F90908984D009631F8 /* preprocess_map_shared.cpp in Sources */,
-				2B4EC1FA0908984D009631F8 /* OGL_Model_Def.cpp in Sources */,
-				2B4EC1FB0908984D009631F8 /* OGL_Subst_Texture_Def.cpp in Sources */,
-				2B4EC1FC0908984D009631F8 /* lua_script.cpp in Sources */,
-				2B4EC1FD0908984D009631F8 /* network_star_hub.cpp in Sources */,
-				2B4EC1FE0908984D009631F8 /* network_star_spoke.cpp in Sources */,
-				2B4EC1FF0908984D009631F8 /* NetworkGameProtocol.cpp in Sources */,
-				2B4EC2000908984D009631F8 /* RingGameProtocol.cpp in Sources */,
-				2B4EC2010908984D009631F8 /* StarGameProtocol.cpp in Sources */,
-				2B4EC2020908984D009631F8 /* AStream.cpp in Sources */,
-				2B4EC2030908984D009631F8 /* network_speex.cpp in Sources */,
-				2B4EC2040908984D009631F8 /* mytm_sdl.cpp in Sources */,
-				2B4EC2050908984D009631F8 /* CircularByteBuffer.cpp in Sources */,
-				2B4EC2060908984D009631F8 /* CommunicationsChannel.cpp in Sources */,
-				2B4EC2070908984D009631F8 /* Message.cpp in Sources */,
-				2B4EC2080908984D009631F8 /* MessageDispatcher.cpp in Sources */,
-				2B4EC2090908984D009631F8 /* MessageHandler.cpp in Sources */,
-				2B4EC20A0908984D009631F8 /* MessageInflater.cpp in Sources */,
-				2B4EC20B0908984D009631F8 /* metaserver_dialogs.cpp in Sources */,
-				2B4EC20C0908984D009631F8 /* metaserver_messages.cpp in Sources */,
-				2B4EC20D0908984D009631F8 /* network_metaserver.cpp in Sources */,
-				2B4EC20E0908984D009631F8 /* network_messages.cpp in Sources */,
-				2B4EC20F0908984D009631F8 /* network_dialogs_mac_nibs_sdl.cpp in Sources */,
-				2B4EC2100908984D009631F8 /* NibsMetaserverClientUi.cpp in Sources */,
-				2B4EC2110908984D009631F8 /* carbon_widgets.cpp in Sources */,
-				2B4EC2120908984D009631F8 /* network_capabilities.cpp in Sources */,
-				2B4EC2130908984D009631F8 /* shared_widgets.cpp in Sources */,
-				2B4EC2140908984D009631F8 /* Console.cpp in Sources */,
-				AE791CD70968E16600350190 /* ImageLoader_Shared.cpp in Sources */,
-				AEF5025F09A825E2004B0179 /* OGL_LoadScreen.cpp in Sources */,
-				AE179F0E09C3D79500512061 /* error.c in Sources */,
-				AE179F0F09C3D79500512061 /* http.c in Sources */,
-				AE179F1009C3D79500512061 /* libnat.c in Sources */,
-				AE179F1109C3D79500512061 /* os_common.c in Sources */,
-				AE179F1209C3D79500512061 /* os_unix.c in Sources */,
-				AE179F1309C3D79500512061 /* ssdp.c in Sources */,
-				AE179F1409C3D79500512061 /* upnp.c in Sources */,
-				AE179F1509C3D79500512061 /* utility.c in Sources */,
-				AE2A50CD09C67253007681A4 /* Scenario.cpp in Sources */,
-				AEB5F39A09CDC92E00CDF7C0 /* resource_manager.cpp in Sources */,
-				AE2FDECB09E934E000A18ABC /* preference_dialogs.cpp in Sources */,
-				AE2FDED009E9350E00A18ABC /* preference_dialogs_nibs.cpp in Sources */,
-				AE0053EF0ABE16300038507F /* OGL_Blitter.cpp in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		AEC3C7CF09AD68AC003258E4 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -2696,7 +2145,6 @@
 				AEC3C7D709AD68AC003258E4 /* xmlrole.c in Sources */,
 				AEC3C7D809AD68AC003258E4 /* xmltok.c in Sources */,
 				AEC3C7D909AD68AC003258E4 /* game_errors.cpp in Sources */,
-				AEC3C7DA09AD68AC003258E4 /* interface_sdl.cpp in Sources */,
 				AEC3C7DB09AD68AC003258E4 /* interface.cpp in Sources */,
 				AEC3C7DC09AD68AC003258E4 /* PlayerName.cpp in Sources */,
 				AEC3C7DD09AD68AC003258E4 /* preferences.cpp in Sources */,
@@ -2704,7 +2152,6 @@
 				AEC3C7DF09AD68AC003258E4 /* sdl_widgets.cpp in Sources */,
 				AEC3C7E009AD68AC003258E4 /* shell_misc.cpp in Sources */,
 				AEC3C7E109AD68AC003258E4 /* shell.cpp in Sources */,
-				AEC3C7E209AD68AC003258E4 /* vbl_sdl.cpp in Sources */,
 				AEC3C7E309AD68AC003258E4 /* vbl.cpp in Sources */,
 				AEC3C7E409AD68AC003258E4 /* network_lookup_sdl.cpp in Sources */,
 				AEC3C7E509AD68AC003258E4 /* network_udp.cpp in Sources */,
@@ -2852,7 +2299,6 @@
 				AE179F1D09C3D79500512061 /* utility.c in Sources */,
 				AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */,
 				AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */,
-				AE2FDECE09E934F500A18ABC /* preference_dialogs_sdl.cpp in Sources */,
 				AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2871,459 +2317,214 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		2B4EC2270908984D009631F8 /* Development */ = {
+		AE2A41530B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
 				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"${HOME}/Library/Frameworks",
-					/Library/Frameworks,
-				);
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = precompiled_headers.h;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					mac,
-					TARGET_API_MAC_CARBON,
-					USE_CARBON_ACCESSORS,
-					SUPPRESS_MACOS_CLASSIC,
-					"USE_SHEETS=1",
-					"HAVE_SDL_NET=1",
-					HAVE_UNISTD_H,
-					HAVE_CORE_GRAPHICS,
-					APPLICATION_IS_BUNDLED,
-					EXPLICIT_CARBON_HEADER,
-					HAVE_LUA,
-					SPEEX,
-					DEBUG,
-					USES_NIBS,
-					DEBUG,
-					HAVE_OPENGL,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
-					.,
-					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
-					"${HOME}/Library/Frameworks/SDL.framework/Headers",
-					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
-				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				OTHER_CFLAGS = "-fcommon";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-llua",
-					"-llualib",
-					"-lspeex",
-				);
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = AlephOne;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-import",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"-Wstrict-aliasing",
-				);
-				WRAPPER_EXTENSION = app;
-				ZERO_LINK = NO;
-			};
-			name = Development;
-		};
-		2B4EC2280908984D009631F8 /* Development no precomps */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CC = /usr/bin/gcc3;
-				COPY_PHASE_STRIP = NO;
-				CPLUSPLUS = "/usr/bin/g++3";
-				FRAMEWORK_SEARCH_PATHS = (
-					"${HOME}/Library/Frameworks",
-					/Library/Frameworks,
-				);
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = "";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					mac,
-					TARGET_API_MAC_CARBON,
-					USE_CARBON_ACCESSORS,
-					SUPPRESS_MACOS_CLASSIC,
-					"USE_SHEETS=1",
-					"HAVE_SDL_NET=1",
-					HAVE_UNISTD_H,
-					HAVE_CORE_GRAPHICS,
-					APPLICATION_IS_BUNDLED,
-					EXPLICIT_CARBON_HEADER,
-					HAVE_LUA,
-					SPEEX,
-					DEBUG,
-					USES_NIBS,
-					DEBUG,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				GCC_VERSION = 3.x;
-				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
-					.,
-					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
-					"${HOME}/Library/Frameworks/SDL.framework/Headers",
-					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
-				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				OTHER_CFLAGS = "-fcommon";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-llua",
-					"-llualib",
-					"-lspeex",
-				);
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = "AlephOne (NIBs)";
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-import",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"-Wstrict-aliasing",
-				);
-				WRAPPER_EXTENSION = app;
-			};
-			name = "Development no precomps";
-		};
-		2B4EC2290908984D009631F8 /* Deployment 10.4+ */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = ppc;
-				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"${HOME}/Library/Frameworks",
-					/Library/Frameworks,
-				);
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G3;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = precompiled_headers.h;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					mac,
-					TARGET_API_MAC_CARBON,
-					USE_CARBON_ACCESSORS,
-					SUPPRESS_MACOS_CLASSIC,
-					"USE_SHEETS=1",
-					"HAVE_SDL_NET=1",
-					HAVE_UNISTD_H,
-					HAVE_CORE_GRAPHICS,
-					APPLICATION_IS_BUNDLED,
-					EXPLICIT_CARBON_HEADER,
-					HAVE_LUA,
-					SPEEX,
-					DEBUG,
-					USES_NIBS,
-					HAVE_OPENGL,
-					HAVE_SPEEX,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
-				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
-					.,
-					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
-					"${HOME}/Library/Frameworks/SDL.framework/Headers",
-					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
-				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				OTHER_CFLAGS = "-fcommon";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-llua",
-					"-llualib",
-					"-lspeex",
-				);
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = AlephOne;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = "";
-				WRAPPER_EXTENSION = app;
-				ZERO_LINK = NO;
-			};
-			name = "Deployment 10.4+";
-		};
-		2B4EC22B0908984D009631F8 /* Deployment 10.2+ */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = ppc;
-				CC = "/usr/bin/gcc-3.3";
-				COPY_PHASE_STRIP = YES;
-				CPLUSPLUS = "/usr/bin/g++-3.3";
 				DEPLOYMENT_POSTPROCESSING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
-					"${HOME}/Library/Frameworks",
-					/Library/Frameworks,
-				);
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_MODEL_TUNING = G3;
-				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = "";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					mac,
-					TARGET_API_MAC_CARBON,
-					USE_CARBON_ACCESSORS,
-					SUPPRESS_MACOS_CLASSIC,
-					"USE_SHEETS=1",
-					"HAVE_SDL_NET=1",
-					HAVE_UNISTD_H,
-					HAVE_CORE_GRAPHICS,
-					APPLICATION_IS_BUNDLED,
-					EXPLICIT_CARBON_HEADER,
-					HAVE_LUA,
-					SPEEX,
-					DEBUG,
-					USES_NIBS,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				GCC_VERSION = 3.3;
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
-				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = NO;
-				GCC_WARN_UNKNOWN_PRAGMAS = YES;
-				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
-					.,
-					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
-					"${HOME}/Library/Frameworks/SDL.framework/Headers",
-					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
-				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
-				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				OTHER_CFLAGS = "-fcommon";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-llua",
-					"-llualib",
-					"-lspeex",
-				);
-				OTHER_REZFLAGS = "";
-				PRODUCT_NAME = AlephOne;
-				SECTORDER_FLAGS = "";
-				SEPARATE_STRIP = NO;
-				SKIP_INSTALL = YES;
-				STRIP_INSTALLED_PRODUCT = YES;
-				STRIP_STYLE = debugging;
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wno-import",
-					"-Wno-four-char-constants",
-					"-Wno-unknown-pragmas",
-					"-Wstrict-aliasing",
-				);
-				WRAPPER_EXTENSION = app;
-			};
-			name = "Deployment 10.2+";
-		};
-		AE097FDE08800A9F00C690F9 /* Development */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = Development;
-		};
-		AE097FDF08800A9F00C690F9 /* Development no precomps */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = "Development no precomps";
-		};
-		AE097FE008800A9F00C690F9 /* Deployment 10.4+ */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = (
-					ppc,
-					i386,
-				);
-			};
-			name = "Deployment 10.4+";
-		};
-		AE097FE208800A9F00C690F9 /* Deployment 10.2+ */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-			};
-			name = "Deployment 10.2+";
-		};
-		AE78B59B09B00C34002CACF8 /* Deployment Universal */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"${HOME}/Library/Frameworks",
+					"$(HOME)/Library/Frameworks",
+					/System/Library/Frameworks,
 					/Library/Frameworks,
 				);
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INPUT_FILETYPE = automatic;
 				GCC_MODEL_TUNING = G3;
-				GCC_PRECOMPILE_PREFIX_HEADER = YES;
-				GCC_PREFIX_HEADER = precompiled_headers.h;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					mac,
-					TARGET_API_MAC_CARBON,
-					USE_CARBON_ACCESSORS,
-					SUPPRESS_MACOS_CLASSIC,
-					"USE_SHEETS=1",
-					"HAVE_SDL_NET=1",
-					HAVE_UNISTD_H,
-					HAVE_CORE_GRAPHICS,
-					APPLICATION_IS_BUNDLED,
-					EXPLICIT_CARBON_HEADER,
-					HAVE_LUA,
-					DEBUG,
-					USES_NIBS,
+					SDL,
 					HAVE_OPENGL,
+					HAVE_CONFIG_H,
+					HAVE_UNISTD_H,
+					HAVE_LUA,
+					HAVE_SPEEX,
+					HAVE_SDL_SOUND,
+					HAVE_SDL_SOUND_H,
+					HAVE_SMPEG,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
+				GCC_VERSION = 4.0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
 					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_4)",
-					.,
-					"${HOME}/Library/Frameworks/SDL_net.framework/Headers",
-					"${HOME}/Library/Frameworks/SDL.framework/Headers",
-					/Library/Frameworks/SDL_net.framework/Headers,
+					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
+					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL_Sound.framework/Headers",
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
+					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL_Sound.framework/Headers,
 				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_4 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/";
-				INFOPLIST_FILE = "Info-AlephOne_Carbon__NIBs___Upgraded_.plist";
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
+				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_DEBUGGING_SYMBOLS = NO;
 				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.4;
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				LIBRARY_SEARCH_PATHS = (
-					/usr/local/lib,
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
 					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
 				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				OTHER_CFLAGS = "-fcommon";
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				OTHER_CFLAGS = "";
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = (
 					"-flat_namespace",
+					"-multiply_defined",
+					suppress,
+					"-framework",
+					SDL,
+					"-framework",
+					SDL_image,
+					"-framework",
+					SDL_net,
+					"-framework",
+					SMPEG,
+					"-framework",
+					AppKit,
 					"-llua",
 					"-llualib",
 					"-lspeex",
 				);
-				OTHER_REZFLAGS = "";
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = debugging;
 				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
-			name = "Deployment Universal";
+			name = Development;
 		};
-		AE78B59D09B00C34002CACF8 /* Deployment Universal */ = {
+		AE2A41540B5EFC1F00C567E6 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
+				GCC_OPTIMIZATION_LEVEL = 0;
+				STRIP_INSTALLED_PRODUCT = NO;
+				ZERO_LINK = YES;
+			};
+			name = Development;
+		};
+		AE2A41760B5EFEA000C567E6 /* Deployment (Native gcc 4.0) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
+				COPY_PHASE_STRIP = NO;
+				DEPLOYMENT_POSTPROCESSING = YES;
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(HOME)/Library/Frameworks",
+					/System/Library/Frameworks,
+					/Library/Frameworks,
+				);
+				GCC_DYNAMIC_NO_PIC = YES;
+				GCC_ENABLE_FIX_AND_CONTINUE = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_INPUT_FILETYPE = automatic;
+				GCC_MODEL_TUNING = G3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					SDL,
+					HAVE_OPENGL,
+					HAVE_CONFIG_H,
+					HAVE_UNISTD_H,
+					HAVE_LUA,
+					HAVE_SPEEX,
+					HAVE_SDL_SOUND,
+					HAVE_SDL_SOUND_H,
+					HAVE_SMPEG,
+				);
+				GCC_USE_GCC3_PFE_SUPPORT = YES;
+				GCC_VERSION_i386 = 4.0;
+				GCC_VERSION_ppc = 3.3;
+				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
+				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
+				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				HEADER_SEARCH_PATHS = (
+					/usr/local/include,
+					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
+					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
+					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
+					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL_Sound.framework/Headers",
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					/Library/Frameworks/SDL_image.framework/Headers,
+					/Library/Frameworks/SDL.framework/Headers,
+					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL_Sound.framework/Headers,
+				);
+				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
+				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
+				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				JAVA_ARCHIVE_COMPRESSION = YES;
+				JAVA_COMPILER = /usr/bin/jikes;
+				JAVA_COMPILER_FLAGS = "-O";
+				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
+				LIBRARY_SEARCH_PATHS = (
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
+					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
+				);
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
+				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				MACOSX_DEPLOYMENT_TARGET_i386 = 10.4;
+				MACOSX_DEPLOYMENT_TARGET_ppc = 10.2;
+				OTHER_CFLAGS = "";
+				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
+				OTHER_LDFLAGS = (
+					"-flat_namespace",
+					"-multiply_defined",
+					suppress,
+					"-framework",
+					SDL,
+					"-framework",
+					SDL_image,
+					"-framework",
+					SDL_net,
+					"-framework",
+					SMPEG,
+					"-framework",
+					AppKit,
+					"-llua",
+					"-llualib",
+					"-lspeex",
+				);
+				PRODUCT_NAME = AlephOne;
+				SDKROOT_i386 = /Developer/SDKs/MacOSX10.4u.sdk;
+				SDKROOT_ppc = /Developer/SDKs/MacOSX10.2.8.sdk;
+				SECTORDER_FLAGS = "";
+				STRIP_INSTALLED_PRODUCT = YES;
+				STRIP_STYLE = debugging;
+				WARNING_CFLAGS = "";
+				WRAPPER_EXTENSION = app;
+				ZERO_LINK = NO;
+			};
+			name = "Deployment (Native gcc 4.0)";
+		};
+		AE2A41770B5EFEA000C567E6 /* Deployment (Native gcc 4.0) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH)";
+				GCC_VERSION = 4.0;
+			};
+			name = "Deployment (Native gcc 4.0)";
+		};
+		AE78B59D09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
@@ -3411,7 +2612,7 @@
 					"-llualib",
 					"-lspeex",
 				);
-				PRODUCT_NAME = AlephOneSDL;
+				PRODUCT_NAME = AlephOne;
 				SDKROOT_i386 = /Developer/SDKs/MacOSX10.4u.sdk;
 				SDKROOT_ppc = /Developer/SDKs/MacOSX10.2.8.sdk;
 				SECTORDER_FLAGS = "";
@@ -3421,9 +2622,9 @@
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
-			name = "Deployment Universal";
+			name = "Deployment (Universal)";
 		};
-		AE78B59E09B00C34002CACF8 /* Deployment Universal */ = {
+		AE78B59E09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = (
@@ -3431,380 +2632,30 @@
 					i386,
 				);
 			};
-			name = "Deployment Universal";
-		};
-		AEC3C87C09AD68AC003258E4 /* Development */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(HOME)/Library/Frameworks",
-					/System/Library/Frameworks,
-					/Library/Frameworks,
-				);
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					SDL,
-					HAVE_OPENGL,
-					HAVE_CONFIG_H,
-					HAVE_UNISTD_H,
-					SPEEX,
-					HAVE_LUA,
-					DEBUG,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
-					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
-					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
-					/Library/Frameworks/SDL_image.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-					/Library/Frameworks/SDL_net.framework/Headers,
-				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
-				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = (
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-multiply_defined",
-					suppress,
-					"-framework",
-					SDL,
-					"-framework",
-					SDL_image,
-					"-framework",
-					SDL_net,
-					"-framework",
-					AppKit,
-					"-lspeex",
-					"-llua",
-					"-llualib",
-					"-lSystemStubs",
-				);
-				PRODUCT_NAME = AlephOneSDL;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wpointer-arith",
-					"-Wformat",
-				);
-				WRAPPER_EXTENSION = app;
-				ZERO_LINK = YES;
-			};
-			name = Development;
-		};
-		AEC3C87D09AD68AC003258E4 /* Development no precomps */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CC = /usr/bin/gcc3;
-				COPY_PHASE_STRIP = NO;
-				CPLUSPLUS = "/usr/bin/g++3";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(HOME)/Library/Frameworks",
-					/System/Library/Frameworks,
-					/Library/Frameworks,
-				);
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
-				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = "";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					SDL,
-					HAVE_OPENGL,
-					HAVE_CONFIG_H,
-					HAVE_UNISTD_H,
-					SPEEX,
-					HAVE_LUA,
-					DEBUG,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
-					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
-					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
-					/Library/Frameworks/SDL_image.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-					/Library/Frameworks/SDL_net.framework/Headers,
-				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
-				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = (
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-multiply_defined",
-					suppress,
-					"-framework",
-					SDL,
-					"-framework",
-					SDL_image,
-					"-framework",
-					SDL_net,
-					"-framework",
-					AppKit,
-					"-lspeex",
-					"-llua",
-					"-llualib",
-				);
-				PRODUCT_NAME = AlephOneSDL;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wpointer-arith",
-					"-Wformat",
-				);
-				WRAPPER_EXTENSION = app;
-			};
-			name = "Development no precomps";
-		};
-		AEC3C87E09AD68AC003258E4 /* Deployment 10.4+ */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
-				COPY_PHASE_STRIP = NO;
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(HOME)/Library/Frameworks",
-					/System/Library/Frameworks,
-					/Library/Frameworks,
-				);
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INPUT_FILETYPE = automatic;
-				GCC_MODEL_TUNING = G3;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					SDL,
-					HAVE_OPENGL,
-					HAVE_CONFIG_H,
-					HAVE_UNISTD_H,
-					HAVE_LUA,
-					HAVE_SPEEX,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
-				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
-					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
-					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
-					/Library/Frameworks/SDL_image.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-					/Library/Frameworks/SDL_net.framework/Headers,
-				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
-				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = (
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
-				OTHER_CFLAGS = "";
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-multiply_defined",
-					suppress,
-					"-framework",
-					SDL,
-					"-framework",
-					SDL_image,
-					"-framework",
-					SDL_net,
-					"-framework",
-					AppKit,
-					"-lspeex",
-					"-llua",
-					"-llualib",
-				);
-				PRODUCT_NAME = AlephOneSDL;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = "";
-				WRAPPER_EXTENSION = app;
-				ZERO_LINK = NO;
-			};
-			name = "Deployment 10.4+";
-		};
-		AEC3C88009AD68AC003258E4 /* Deployment 10.2+ */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CC = "/usr/bin/gcc-3.3";
-				COPY_PHASE_STRIP = YES;
-				CPLUSPLUS = "/usr/bin/g++-3.3";
-				FRAMEWORK_SEARCH_PATHS = (
-					"$(HOME)/Library/Frameworks",
-					/System/Library/Frameworks,
-					/Library/Frameworks,
-				);
-				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
-				GCC_INPUT_FILETYPE = sourcecode.cpp.objcpp;
-				GCC_MODEL_TUNING = G3;
-				GCC_PRECOMPILE_PREFIX_HEADER = NO;
-				GCC_PREFIX_HEADER = "";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					SDL,
-					HAVE_OPENGL,
-					HAVE_CONFIG_H,
-					HAVE_UNISTD_H,
-					SPEEX,
-					HAVE_LUA,
-					HAVE_SDL_SOUND,
-					HAVE_SDL_SOUND_H,
-				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_ALLOW_INCOMPLETE_PROTOCOL = NO;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = YES;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
-				GCC_WARN_TYPECHECK_CALLS_TO_PRINTF = YES;
-				GCC_WARN_UNINITIALIZED_AUTOS = NO;
-				GCC_WARN_UNKNOWN_PRAGMAS = YES;
-				HEADER_SEARCH_PATHS = (
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
-					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
-					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
-					/Library/Frameworks/SDL_image.framework/Headers,
-					/Library/Frameworks/SDL.framework/Headers,
-					/Library/Frameworks/SDL_net.framework/Headers,
-				);
-				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
-				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = (
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
-				OTHER_CFLAGS = "";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-multiply_defined",
-					suppress,
-					"-framework",
-					SDL,
-					"-framework",
-					SDL_image,
-					"-framework",
-					SDL_net,
-					"-framework",
-					AppKit,
-					"-lspeex",
-					"-llua",
-					"-llualib",
-				);
-				PRODUCT_NAME = AlephOneSDL;
-				SDKROOT = /Developer/SDKs/MacOSX10.2.8.sdk;
-				SECTORDER_FLAGS = "";
-				WARNING_CFLAGS = (
-					"-Wmost",
-					"-Wpointer-arith",
-					"-Wformat",
-				);
-				WRAPPER_EXTENSION = app;
-			};
-			name = "Deployment 10.2+";
+			name = "Deployment (Universal)";
 		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2B4EC2260908984D009631F8 /* Build configuration list for PBXNativeTarget "AlephOne-Carbon (NIBs)" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				2B4EC2270908984D009631F8 /* Development */,
-				2B4EC2280908984D009631F8 /* Development no precomps */,
-				2B4EC2290908984D009631F8 /* Deployment 10.4+ */,
-				AE78B59B09B00C34002CACF8 /* Deployment Universal */,
-				2B4EC22B0908984D009631F8 /* Deployment 10.2+ */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = "Deployment 10.4+";
-		};
 		AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-OSX10.4" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AE097FDE08800A9F00C690F9 /* Development */,
-				AE097FDF08800A9F00C690F9 /* Development no precomps */,
-				AE097FE008800A9F00C690F9 /* Deployment 10.4+ */,
-				AE78B59E09B00C34002CACF8 /* Deployment Universal */,
-				AE097FE208800A9F00C690F9 /* Deployment 10.2+ */,
+				AE78B59E09B00C34002CACF8 /* Deployment (Universal) */,
+				AE2A41770B5EFEA000C567E6 /* Deployment (Native gcc 4.0) */,
+				AE2A41540B5EFC1F00C567E6 /* Development */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = "Deployment 10.4+";
+			defaultConfigurationName = "Deployment (Universal)";
 		};
-		AEC3C87B09AD68AC003258E4 /* Build configuration list for PBXNativeTarget "AlephOne-SDL" */ = {
+		AEC3C87B09AD68AC003258E4 /* Build configuration list for PBXNativeTarget "AlephOne" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AEC3C87C09AD68AC003258E4 /* Development */,
-				AEC3C87D09AD68AC003258E4 /* Development no precomps */,
-				AEC3C87E09AD68AC003258E4 /* Deployment 10.4+ */,
-				AE78B59D09B00C34002CACF8 /* Deployment Universal */,
-				AEC3C88009AD68AC003258E4 /* Deployment 10.2+ */,
+				AE78B59D09B00C34002CACF8 /* Deployment (Universal) */,
+				AE2A41760B5EFEA000C567E6 /* Deployment (Native gcc 4.0) */,
+				AE2A41530B5EFC1F00C567E6 /* Development */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = "Deployment 10.4+";
+			defaultConfigurationName = "Deployment (Universal)";
 		};
 /* End XCConfigurationList section */
 	};

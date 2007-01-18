@@ -221,13 +221,13 @@
 		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
-	<string>AlephOneSDL</string>
+	<string>AlephOne</string>
 	<key>CFBundleGetInfoString</key>
 	<string>Aleph One SDL Test for OS X</string>
 	<key>CFBundleIconFile</key>
 	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.bungie.source.AlephOneSDL</string>
+	<string>org.bungie.source.AlephOne</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
