@@ -10,7 +10,7 @@ librenderother_a_SOURCES = ChaseCam.h computer_interface.h \
   screen_shared.h sdl_fonts.h TextLayoutHelper.h TextStrings.h ViewControl.h \
   \
   ChaseCam.cpp computer_interface.cpp fades.cpp FontHandler.cpp game_window.cpp \
-  game_window_sdl.cpp HUDRenderer.cpp HUDRenderer_OGL.cpp HUDRenderer_SW.cpp \
+  HUDRenderer.cpp HUDRenderer_OGL.cpp HUDRenderer_SW.cpp \
   images.cpp motion_sensor.cpp OGL_Blitter.cpp OGL_LoadScreen.cpp overhead_map.cpp OverheadMap_OGL.cpp \
   OverheadMapRenderer.cpp OverheadMap_SDL.cpp screen_drawing.cpp screen_sdl.cpp \
   sdl_fonts.cpp TextLayoutHelper.cpp TextStrings.cpp ViewControl.cpp
