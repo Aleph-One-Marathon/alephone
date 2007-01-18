@@ -2902,6 +2902,12 @@ private:
 	dialog m_dialog;
 };
 
+auto_ptr<SetupNetgameDialog>
+SetupNetgameDialog::Create ()
+{
+	return auto_ptr<SetupNetgameDialog>(new SdlSetupNetgameDialog);
+}
+
 // This should really be done better, I guess, but most people will never see it long enough to read it.
 // Currently no actual bar is drawn (just a box with message), and no effort is made to make sure all messages
 // will physically fit into the box.  (should probably somehow force the dialog to a width and set_full_width on
