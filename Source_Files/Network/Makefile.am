@@ -20,7 +20,7 @@ libnetwork_a_SOURCES = network.h network_audio_shared.h network_capabilities.h \
   \
   network.cpp network_capabilities.cpp network_data_formats.cpp \
   network_dialogs.cpp \
-  network_dialogs_sdl.cpp network_dialog_widgets_sdl.cpp network_games.cpp \
+  network_dialog_widgets_sdl.cpp network_games.cpp \
   network_lookup_sdl.cpp network_messages.cpp $(NETWORK_MIC) \
   network_microphone_shared.cpp network_speex.cpp network_speaker_sdl.cpp \
   network_speaker_shared.cpp network_star_hub.cpp network_star_spoke.cpp \
