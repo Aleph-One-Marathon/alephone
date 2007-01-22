@@ -94,7 +94,7 @@ public:
 
 	~SdlMetaserverClientUi () { delete_widgets (); }
 
-	void Run()
+	int Run()
 	{
 		d.set_processing_function(bind(&SdlMetaserverClientUi::pump, this, _1));
 
@@ -102,6 +102,8 @@ public:
 
 		if(result == -1)
 			obj_clear(m_joinAddress);
+
+		return result;
 	}
 	
 	void Stop()

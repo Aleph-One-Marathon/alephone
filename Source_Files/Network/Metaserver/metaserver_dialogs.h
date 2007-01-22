@@ -77,7 +77,7 @@ protected:
 
 	void delete_widgets ();
 
-	virtual void Run() = 0;
+	virtual int Run() = 0;
 	virtual void Stop() = 0;
 
 	void GameSelected(GameListMessage::GameListEntry game);

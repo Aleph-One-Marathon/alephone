@@ -218,7 +218,9 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 	gMetaserverChatHistory.clear ();
 	m_textboxWidget->attachHistory (&gMetaserverChatHistory);
 
-	Run();
+	if (Run() < 0) {
+		handleCancel();
+	}
 	
 	return m_joinAddress;
 }
