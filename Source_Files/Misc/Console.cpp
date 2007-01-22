@@ -51,7 +51,7 @@ void Console::enter() {
 		if (pos != string::npos && pos < m_buffer.size())
 		{
 			remainder = m_buffer.substr(pos + 1);
-			command = m_buffer.substr(1, pos);
+			command = m_buffer.substr(1, pos - 1);
 		}
 		else 
 		{
