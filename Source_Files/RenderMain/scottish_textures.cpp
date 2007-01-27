@@ -252,51 +252,9 @@ static void _pretexture_horizontal_polygon_lines(struct polygon_definition *poly
 	struct bitmap_definition *screen, struct view_data *view, struct _horizontal_polygon_line_data *data,
 	short y0, short *x0_table, short *x1_table, short line_count);
 
-void _texture_horizontal_polygon_lines8(struct bitmap_definition *texture,
-	struct bitmap_definition *screen, struct view_data *view, struct _horizontal_polygon_line_data *data,
-	short y0, short *x0_table, short *x1_table, short line_count);
-//void _fill_horizontal_polygon_lines8(struct bitmap_definition *texture,
-//	struct bitmap_definition *screen, struct view_data *view, struct _horizontal_polygon_line_data *data,
-//	short y0, short *x0_table, short *x1_table, short line_count);
-
-void _texture_horizontal_polygon_lines16(struct bitmap_definition *texture,
-	struct bitmap_definition *screen, struct view_data *view, struct _horizontal_polygon_line_data *data,
-	short y0, short *x0_table, short *x1_table, short line_count);
-
-void _texture_horizontal_polygon_lines32(struct bitmap_definition *texture,
-	struct bitmap_definition *screen, struct view_data *view, struct _horizontal_polygon_line_data *data,
-	short y0, short *x0_table, short *x1_table, short line_count);
-
 static void _pretexture_vertical_polygon_lines(struct polygon_definition *polygon,
 	struct bitmap_definition *screen, struct view_data *view, struct _vertical_polygon_data *data,
 	short x0, short *y0_table, short *y1_table, short line_count);
-
-void _texture_vertical_polygon_lines8(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
-void _transparent_texture_vertical_polygon_lines8(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
-void _tint_vertical_polygon_lines8(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
-void _randomize_vertical_polygon_lines8(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
-
-void _texture_vertical_polygon_lines16(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
-void _transparent_texture_vertical_polygon_lines16(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
-void _tint_vertical_polygon_lines16(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
-void _randomize_vertical_polygon_lines16(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
-
-void _texture_vertical_polygon_lines32(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
-void _transparent_texture_vertical_polygon_lines32(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table);
-void _tint_vertical_polygon_lines32(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
-void _randomize_vertical_polygon_lines32(struct bitmap_definition *screen, struct view_data *view,
-	struct _vertical_polygon_data *data, short *y0_table, short *y1_table, uint16 transfer_data);
 
 static short *build_x_table(short *table, short x0, short y0, short x1, short y1);
 static short *build_y_table(short *table, short x0, short y0, short x1, short y1);
@@ -304,15 +262,6 @@ static short *build_y_table(short *table, short x0, short y0, short x1, short y1
 static void _prelandscape_horizontal_polygon_lines(struct polygon_definition *polygon,
 	struct bitmap_definition *screen, struct view_data *view, struct _horizontal_polygon_line_data *data,
 	short y0, short *x0_table, short *x1_table, short line_count);
-void _landscape_horizontal_polygon_lines8(struct bitmap_definition *texture, struct bitmap_definition *screen,
-	struct view_data *view, struct _horizontal_polygon_line_data *data, short y0,
-	short *x0_table, short *x1_table, short line_count);
-void _landscape_horizontal_polygon_lines16(struct bitmap_definition *texture, struct bitmap_definition *screen,
-	struct view_data *view, struct _horizontal_polygon_line_data *data, short y0,
-	short *x0_table, short *x1_table, short line_count);
-void _landscape_horizontal_polygon_lines32(struct bitmap_definition *texture, struct bitmap_definition *screen,
-	struct view_data *view, struct _horizontal_polygon_line_data *data, short y0,
-	short *x0_table, short *x1_table, short line_count);
 
 /* ---------- code */
 
@@ -326,6 +275,8 @@ inline int NextLowerExponent(int n)
 	while(n > 1) {n >>= 1; xp++;}
 	return xp;
 }
+
+#include "low_level_textures.h"
 
 
 /* set aside memory at launch for two line tables (remember, we precalculate all the y-values
@@ -460,11 +411,11 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 				{
 	
 					case _textured_transfer:
-						_texture_horizontal_polygon_lines8(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
+						texture_horizontal_polygon_lines<pixel8>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
 						break;
 					case _big_landscaped_transfer:
-						_landscape_horizontal_polygon_lines8(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
+						landscape_horizontal_polygon_lines<pixel8>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
 						break;
 						
@@ -478,11 +429,11 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 				switch (polygon->transfer_mode)
 				{
 					case _textured_transfer:
-						_texture_horizontal_polygon_lines16(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
+						texture_horizontal_polygon_lines<pixel16>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
 						break;
 					case _big_landscaped_transfer:
-						_landscape_horizontal_polygon_lines16(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
+						landscape_horizontal_polygon_lines<pixel16>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
 						break;
 					
@@ -496,12 +447,12 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 				switch (polygon->transfer_mode)
 				{
 					case _textured_transfer:
-						_texture_horizontal_polygon_lines32(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
+						texture_horizontal_polygon_lines<pixel32>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 							vertices[highest_vertex].y, left_table, right_table,
 							aggregate_total_line_count);
 						break;
 					case _big_landscaped_transfer:
-						_landscape_horizontal_polygon_lines32(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
+						landscape_horizontal_polygon_lines<pixel32>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
 						break;
 					
@@ -629,8 +580,8 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 				{
 					case _textured_transfer:
 						(polygon->texture->flags&_TRANSPARENT_BIT) ?
-							_transparent_texture_vertical_polygon_lines8(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
-							_texture_vertical_polygon_lines8(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+							transparent_texture_vertical_polygon_lines<pixel8>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
+							texture_vertical_polygon_lines<pixel8>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
 						break;
 					
 					default:
@@ -644,8 +595,8 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 				{
 					case _textured_transfer:
 						(polygon->texture->flags&_TRANSPARENT_BIT) ?
-							_transparent_texture_vertical_polygon_lines16(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
-							_texture_vertical_polygon_lines16(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+							transparent_texture_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
+							texture_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
 						break;
 
 					default:
@@ -659,8 +610,8 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 				{
 					case _textured_transfer:
 						(polygon->texture->flags&_TRANSPARENT_BIT) ?
-							_transparent_texture_vertical_polygon_lines32(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
-							_texture_vertical_polygon_lines32(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+							transparent_texture_vertical_polygon_lines<pixel32>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
+							texture_vertical_polygon_lines<pixel32>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
 						break;
 
 					default:
@@ -830,17 +781,17 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 						switch (rectangle->transfer_mode)
 						{
 							case _textured_transfer:
-								_transparent_texture_vertical_polygon_lines8(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								transparent_texture_vertical_polygon_lines<pixel8>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1);
 								break;
 							
 							case _static_transfer:
-								_randomize_vertical_polygon_lines8(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								randomize_vertical_polygon_lines<pixel8>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
 								break;
 							
 							case _tinted_transfer:
-								_tint_vertical_polygon_lines8(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								tint_vertical_polygon_lines<pixel8>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
 								break;
 							
@@ -854,17 +805,17 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 						switch (rectangle->transfer_mode)
 						{
 							case _textured_transfer:
-								_transparent_texture_vertical_polygon_lines16(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								transparent_texture_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1);
 								break;
 							
 							case _static_transfer:
-								_randomize_vertical_polygon_lines16(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								randomize_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
 								break;
 							
 							case _tinted_transfer:
-								_tint_vertical_polygon_lines16(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								tint_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
 								break;
 							
@@ -878,17 +829,17 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 						switch (rectangle->transfer_mode)
 						{
 							case _textured_transfer:
-								_transparent_texture_vertical_polygon_lines32(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								transparent_texture_vertical_polygon_lines<pixel32>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1);
 								break;
 							
 							case _static_transfer:
-								_randomize_vertical_polygon_lines32(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								randomize_vertical_polygon_lines<pixel32>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
 								break;
 							
 							case _tinted_transfer:
-								_tint_vertical_polygon_lines32(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								tint_vertical_polygon_lines<pixel32>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
 								break;
 							
@@ -906,21 +857,6 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 		}
 	}
 }
-
-/* generate code for 8-bit texture-mapping */
-#define BIT_DEPTH 8
-#include "low_level_textures.h"
-#undef BIT_DEPTH
-
-/* generate code for 16-bit texture-mapping */
-#define BIT_DEPTH 16
-#include "low_level_textures.h"
-#undef BIT_DEPTH
-
-/* generate code for 32-bit texture-mapping */
-#define BIT_DEPTH 32
-#include "low_level_textures.h"
-#undef BIT_DEPTH
 
 /* ---------- private code */
 

@@ -30,51 +30,8 @@ Jan 30, 2000 (Loren Petrich):
 	Removed some "static" declarations that conflict with "extern"
 */
 
-/*
-we don’t include anything here because we are included in SCOTTISH_TEXTURES.C, with
-BIT_DEPTH==8 and BIT_DEPTH==16
-*/
-
-#undef PEL
-#undef TEXTURE_HORIZONTAL_POLYGON_LINES
-#undef TEXTURE_VERTICAL_POLYGON_LINES
-#undef TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES
-#undef RANDOMIZE_VERTICAL_POLYGON_LINES
-#undef TINT_VERTICAL_POLYGON_LINES
-#undef LANDSCAPE_HORIZONTAL_POLYGON_LINES
-
-#if BIT_DEPTH==32
-#define PEL pixel32
-#define TEXTURE_HORIZONTAL_POLYGON_LINES _texture_horizontal_polygon_lines32
-#define TEXTURE_VERTICAL_POLYGON_LINES _texture_vertical_polygon_lines32
-#define TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES _transparent_texture_vertical_polygon_lines32
-#define RANDOMIZE_VERTICAL_POLYGON_LINES _randomize_vertical_polygon_lines32
-#define TINT_VERTICAL_POLYGON_LINES _tint_vertical_polygon_lines32
-#define LANDSCAPE_HORIZONTAL_POLYGON_LINES _landscape_horizontal_polygon_lines32
-#endif
-
-#if BIT_DEPTH==16
-#define PEL pixel16
-#define TEXTURE_HORIZONTAL_POLYGON_LINES _texture_horizontal_polygon_lines16
-#define TEXTURE_VERTICAL_POLYGON_LINES _texture_vertical_polygon_lines16
-#define TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES _transparent_texture_vertical_polygon_lines16
-#define RANDOMIZE_VERTICAL_POLYGON_LINES _randomize_vertical_polygon_lines16
-#define TINT_VERTICAL_POLYGON_LINES _tint_vertical_polygon_lines16
-#define LANDSCAPE_HORIZONTAL_POLYGON_LINES _landscape_horizontal_polygon_lines16
-#endif
-
-#if BIT_DEPTH==8
-#define PEL pixel8
-#define TEXTURE_HORIZONTAL_POLYGON_LINES _texture_horizontal_polygon_lines8
-#define TEXTURE_VERTICAL_POLYGON_LINES _texture_vertical_polygon_lines8
-#define TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES _transparent_texture_vertical_polygon_lines8
-#define RANDOMIZE_VERTICAL_POLYGON_LINES _randomize_vertical_polygon_lines8
-#define TINT_VERTICAL_POLYGON_LINES _tint_vertical_polygon_lines8
-#define LANDSCAPE_HORIZONTAL_POLYGON_LINES _landscape_horizontal_polygon_lines8
-#endif
-
-#if !defined(EXTERNAL) || BIT_DEPTH==32
-void TEXTURE_HORIZONTAL_POLYGON_LINES(
+template <class T>
+void texture_horizontal_polygon_lines(
 	struct bitmap_definition *texture,
 	struct bitmap_definition *screen,
 	struct view_data *view,
@@ -90,9 +47,8 @@ void TEXTURE_HORIZONTAL_POLYGON_LINES(
 	{
 		short x0= *x0_table++, x1= *x1_table++;
 		
-		// LP: changed "unsigned char *" to "PEL *"
-		register PEL *shading_table= (PEL *)data->shading_table;
-		register PEL *write= (PEL *) screen->row_addresses[y0] + x0;
+		register T *shading_table= (T *)data->shading_table;
+		register T *write= (T *) screen->row_addresses[y0] + x0;
 		register pixel8 *base_address= texture->row_addresses[0];
 		register uint32 source_x= data->source_x;
 		register uint32 source_y= data->source_y;
@@ -110,11 +66,11 @@ void TEXTURE_HORIZONTAL_POLYGON_LINES(
 		y0+= 1;
 	}
 }
-#endif
 
 #define LANDSCAPE_WIDTH_BITS 9
 #define LANDSCAPE_TEXTURE_WIDTH_DOWNSHIFT (32-LANDSCAPE_WIDTH_BITS)
-void LANDSCAPE_HORIZONTAL_POLYGON_LINES(
+template <class T>
+void landscape_horizontal_polygon_lines(
 	struct bitmap_definition *texture,
 	struct bitmap_definition *screen,
 	struct view_data *view,
@@ -132,8 +88,8 @@ void LANDSCAPE_HORIZONTAL_POLYGON_LINES(
 	{
 		short x0= *x0_table++, x1= *x1_table++;
 		
-		register PEL *shading_table= (PEL *)data->shading_table;
-		register PEL *write= (PEL *)screen->row_addresses[y0] + x0;
+		register T *shading_table= (T *)data->shading_table;
+		register T *write= (T *)screen->row_addresses[y0] + x0;
 		register pixel8 *read= texture->row_addresses[data->source_y];
 		register uint32 source_x= data->source_x;
 		register uint32 source_dx= data->source_dx;
@@ -150,9 +106,9 @@ void LANDSCAPE_HORIZONTAL_POLYGON_LINES(
 	}
 }
 
-#if !defined(EXTERNAL) || BIT_DEPTH==32
 // LP: "static" removed
-void TEXTURE_VERTICAL_POLYGON_LINES(
+template <class T>
+void texture_vertical_polygon_lines(
 	struct bitmap_definition *screen,
 	struct view_data *view,
 	struct _vertical_polygon_data *data,
@@ -176,16 +132,16 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 			int y0= *y0_table++, y1= *y1_table++;
 			uint32 texture_y= line->texture_y;
 			uint32 texture_dy= line->texture_dy;
-			PEL *write, *shading_table;
+			T *write, *shading_table;
 			pixel8 *read;
 
-			shading_table= (PEL *)line->shading_table;
+			shading_table= (T *)line->shading_table;
 			read= line->texture;
-			write= (PEL *)screen->row_addresses[y0] + x;
+			write= (T *)screen->row_addresses[y0] + x;
 
 			for (count= y1-y0; count>0; --count)
 			{
-				*write= shading_table[read[texture_y>>downshift]], write = (PEL *)((byte *)write + bytes_per_row);
+				*write= shading_table[read[texture_y>>downshift]], write = (T *)((byte *)write + bytes_per_row);
 				texture_y+= texture_dy;
 			}
 			
@@ -199,31 +155,31 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 		{
 			uint32 texture_y0= line[0].texture_y, texture_dy0= line[0].texture_dy;
 			pixel8 *read0= line[0].texture;
-			PEL *shading_table0= (PEL *)line[0].shading_table;
+			T *shading_table0= (T *)line[0].shading_table;
 			
 			uint32 texture_y1= line[1].texture_y, texture_dy1= line[1].texture_dy;
 			pixel8 *read1= line[1].texture;
-			PEL *shading_table1= (PEL *)line[1].shading_table;
+			T *shading_table1= (T *)line[1].shading_table;
 			
 			uint32 texture_y2= line[2].texture_y, texture_dy2= line[2].texture_dy;
 			pixel8 *read2= line[2].texture;
-			PEL *shading_table2= (PEL *)line[2].shading_table;
+			T *shading_table2= (T *)line[2].shading_table;
 			
 			uint32 texture_y3= line[3].texture_y, texture_dy3= line[3].texture_dy;
 			pixel8 *read3= line[3].texture;
-			PEL *shading_table3= (PEL *)line[3].shading_table;
+			T *shading_table3= (T *)line[3].shading_table;
 			
-			PEL *write;
+			T *write;
 
 			int ymax;
 			
 			/* sync */	
 			{
 				int y0= y0_table[0], y1= y0_table[1], y2= y0_table[2], y3= y0_table[3];
-				PEL *temp_write;
+				T *temp_write;
 				
 				ymax= MAX(y0, y1), ymax= MAX(ymax, y2), ymax= MAX(ymax, y3);
-				write= (PEL *)screen->row_addresses[ymax] + x;
+				write= (T *)screen->row_addresses[ymax] + x;
 				
 				{
 					int ymin= MIN(y1_table[0], y1_table[1]);
@@ -238,27 +194,27 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 					}
 				}
 
-				for (count= ymax-y0, temp_write= (PEL *)screen->row_addresses[y0] + x; count>0; --count)
+				for (count= ymax-y0, temp_write= (T *)screen->row_addresses[y0] + x; count>0; --count)
 				{
-					temp_write[0]= shading_table0[read0[texture_y0>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write[0]= shading_table0[read0[texture_y0>>downshift]], temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y0+= texture_dy0;
 				}
 				
-				for (count= ymax-y1, temp_write= (PEL *)screen->row_addresses[y1] + x; count>0; --count)
+				for (count= ymax-y1, temp_write= (T *)screen->row_addresses[y1] + x; count>0; --count)
 				{
-					temp_write[1]= shading_table1[read1[texture_y1>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write[1]= shading_table1[read1[texture_y1>>downshift]], temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y1+= texture_dy1;
 				}
 				
-				for (count= ymax-y2, temp_write= (PEL *)screen->row_addresses[y2] + x; count>0; --count)
+				for (count= ymax-y2, temp_write= (T *)screen->row_addresses[y2] + x; count>0; --count)
 				{
-					temp_write[2]= shading_table2[read2[texture_y2>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write[2]= shading_table2[read2[texture_y2>>downshift]], temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y2+= texture_dy2;
 				}
 		
-				for (count= ymax-y3, temp_write= (PEL *)screen->row_addresses[y3] + x; count>0; --count)
+				for (count= ymax-y3, temp_write= (T *)screen->row_addresses[y3] + x; count>0; --count)
 				{
-					temp_write[3]= shading_table3[read3[texture_y3>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write[3]= shading_table3[read3[texture_y3>>downshift]], temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y3+= texture_dy3;
 				}
 			}
@@ -287,35 +243,35 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 					write[3]= shading_table3[read3[texture_y3>>downshift]];
 					texture_y3+= texture_dy3;
 					
-					write = (PEL *)((byte *)write + bytes_per_row);
+					write = (T *)((byte *)write + bytes_per_row);
 				}
 			}
 
 			/* desync */	
 			{
-				PEL *temp_write;
+				T *temp_write;
 				
 				for (count= y1_table[0] - ymax, temp_write= write; count>0; --count)
 				{
-					temp_write[0]= shading_table0[read0[texture_y0>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write[0]= shading_table0[read0[texture_y0>>downshift]], temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y0+= texture_dy0;
 				}
 				
 				for (count= y1_table[1] - ymax, temp_write= write; count>0; --count)
 				{
-					temp_write[1]= shading_table1[read1[texture_y1>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write[1]= shading_table1[read1[texture_y1>>downshift]], temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y1+= texture_dy1;
 				}
 				
 				for (count= y1_table[2] - ymax, temp_write= write; count>0; --count)
 				{
-					temp_write[2]= shading_table2[read2[texture_y2>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write[2]= shading_table2[read2[texture_y2>>downshift]], temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y2+= texture_dy2;
 				}
 		
 				for (count= y1_table[3] - ymax, temp_write= write; count>0; --count)
 				{
-					temp_write[3]= shading_table3[read3[texture_y3>>downshift]], temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write[3]= shading_table3[read3[texture_y3>>downshift]], temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y3+= texture_dy3;
 				}
 			}
@@ -327,11 +283,10 @@ void TEXTURE_VERTICAL_POLYGON_LINES(
 		}
 	}
 }
-#endif
 
-#if !defined(EXTERNAL) || BIT_DEPTH==32
 // LP: "static" removed
-void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
+template <class T>
+void transparent_texture_vertical_polygon_lines(
 	struct bitmap_definition *screen,
 	struct view_data *view,
 	struct _vertical_polygon_data *data,
@@ -356,18 +311,18 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 			int y0= *y0_table++, y1= *y1_table++;
 			uint32 texture_y= line->texture_y;
 			uint32 texture_dy= line->texture_dy;
-			PEL *write, *shading_table;
+			T *write, *shading_table;
 			pixel8 *read;
 
-			shading_table= (PEL *)line->shading_table;
+			shading_table= (T *)line->shading_table;
 			read= line->texture;
-			write= (PEL *)screen->row_addresses[y0] + x;
+			write= (T *)screen->row_addresses[y0] + x;
 
 			for (count= y1-y0; count>0; --count)
 			{
 				if ((pixel= read[texture_y>>downshift])!=0)
 					*write= shading_table[pixel];
-				write = (PEL *)((byte *)write + bytes_per_row);
+				write = (T *)((byte *)write + bytes_per_row);
 				texture_y+= texture_dy;
 			}
 			
@@ -381,31 +336,31 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 		{
 			uint32 texture_y0= line[0].texture_y, texture_dy0= line[0].texture_dy;
 			pixel8 *read0= line[0].texture;
-			PEL *shading_table0= (PEL *)line[0].shading_table;
+			T *shading_table0= (T *)line[0].shading_table;
 			
 			uint32 texture_y1= line[1].texture_y, texture_dy1= line[1].texture_dy;
 			pixel8 *read1= line[1].texture;
-			PEL *shading_table1= (PEL *)line[1].shading_table;
+			T *shading_table1= (T *)line[1].shading_table;
 			
 			uint32 texture_y2= line[2].texture_y, texture_dy2= line[2].texture_dy;
 			pixel8 *read2= line[2].texture;
-			PEL *shading_table2= (PEL *)line[2].shading_table;
+			T *shading_table2= (T *)line[2].shading_table;
 			
 			uint32 texture_y3= line[3].texture_y, texture_dy3= line[3].texture_dy;
 			pixel8 *read3= line[3].texture;
-			PEL *shading_table3= (PEL *)line[3].shading_table;
+			T *shading_table3= (T *)line[3].shading_table;
 			
-			PEL *write;
+			T *write;
 
 			int ymax;
 			
 			/* sync */	
 			{
 				int y0= y0_table[0], y1= y0_table[1], y2= y0_table[2], y3= y0_table[3];
-				PEL *temp_write;
+				T *temp_write;
 				
 				ymax= MAX(y0, y1), ymax= MAX(ymax, y2), ymax= MAX(ymax, y3);
-				write= (PEL *)screen->row_addresses[ymax] + x;
+				write= (T *)screen->row_addresses[ymax] + x;
 
 				{
 					int ymin= MIN(y1_table[0], y1_table[1]);
@@ -420,35 +375,35 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 					}
 				}
 				
-				for (count= ymax-y0, temp_write= (PEL *)screen->row_addresses[y0] + x; count>0; --count)
+				for (count= ymax-y0, temp_write= (T *)screen->row_addresses[y0] + x; count>0; --count)
 				{
 					if ((pixel= read0[texture_y0>>downshift])!=0)
 						temp_write[0]= shading_table0[pixel];
-					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y0+= texture_dy0;
 				}
 				
-				for (count= ymax-y1, temp_write= (PEL *)screen->row_addresses[y1] + x; count>0; --count)
+				for (count= ymax-y1, temp_write= (T *)screen->row_addresses[y1] + x; count>0; --count)
 				{
 					if ((pixel= read1[texture_y1>>downshift])!=0)
 						temp_write[1]= shading_table1[pixel];
-					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y1+= texture_dy1;
 				}
 				
-				for (count= ymax-y2, temp_write= (PEL *)screen->row_addresses[y2] + x; count>0; --count)
+				for (count= ymax-y2, temp_write= (T *)screen->row_addresses[y2] + x; count>0; --count)
 				{
 					if ((pixel= read2[texture_y2>>downshift])!=0)
 						temp_write[2]= shading_table2[pixel];
-					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y2+= texture_dy2;
 				}
 		
-				for (count= ymax-y3, temp_write= (PEL *)screen->row_addresses[y3] + x; count>0; --count)
+				for (count= ymax-y3, temp_write= (T *)screen->row_addresses[y3] + x; count>0; --count)
 				{
 					if ((pixel= read3[texture_y3>>downshift])!=0)
 						temp_write[3]= shading_table3[pixel];
-					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y3+= texture_dy3;
 				}
 			}
@@ -481,19 +436,19 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 						write[3]= shading_table3[pixel];
 					texture_y3+= texture_dy3;
 					
-					write = (PEL *)((byte *)write + bytes_per_row);
+					write = (T *)((byte *)write + bytes_per_row);
 				}
 			}
 
 			/* desync */	
 			{
-				PEL *temp_write;
+				T *temp_write;
 				
 				for (count= y1_table[0] - ymax, temp_write= write; count>0; --count)
 				{
 					if ((pixel= read0[texture_y0>>downshift])!=0)
 						temp_write[0]= shading_table0[pixel];
-					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y0+= texture_dy0;
 				}
 				
@@ -501,7 +456,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read1[texture_y1>>downshift])!=0)
 						temp_write[1]= shading_table1[pixel];
-					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y1+= texture_dy1;
 				}
 				
@@ -509,7 +464,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read2[texture_y2>>downshift])!=0)
 						temp_write[2]= shading_table2[pixel];
-					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y2+= texture_dy2;
 				}
 		
@@ -517,7 +472,7 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 				{
 					if ((pixel= read3[texture_y3>>downshift])!=0)
 						temp_write[3]= shading_table3[pixel];
-					temp_write = (PEL *)((byte *)temp_write + bytes_per_row);
+					temp_write = (T *)((byte *)temp_write + bytes_per_row);
 					texture_y3+= texture_dy3;
 				}
 			}
@@ -529,10 +484,69 @@ void TRANSPARENT_TEXTURE_VERTICAL_POLYGON_LINES(
 		}
 	}
 }
-#endif
 
-// LP: "static" removed
-void TINT_VERTICAL_POLYGON_LINES(
+// ghs: this is awful, but the rest worked so well as templates I couldn't resist
+
+template <class T>
+inline void *tint_tables_pointer(_vertical_polygon_line_data *line, short tint_table_index)
+{
+	return 0;
+}
+
+template <>
+inline void *tint_tables_pointer<pixel8>(_vertical_polygon_line_data *line, short tint_table_index)
+{
+	return (void *) ((pixel8 *) line->shading_table + tint_table_index * sizeof(struct tint_table8));
+}
+
+template <>
+inline void *tint_tables_pointer<pixel16>(_vertical_polygon_line_data *line, short tint_table_index)
+{
+	return (void *) ((struct tint_table16 *) line->shading_table + (tint_table_index<<1));
+}
+
+template <>
+inline void *tint_tables_pointer<pixel32>(_vertical_polygon_line_data *line, short tint_table_index)
+{
+	return (void *) ((struct tint_table32 *) line->shading_table + (tint_table_index<<3));
+}
+
+template <class T>
+inline T get_pixel_tint(T, void *, SDL_PixelFormat *)
+{
+	return 0;
+}
+
+template <>
+inline pixel8 get_pixel_tint(pixel8 pixel, void *tint_tables, SDL_PixelFormat *)
+{
+	return ((pixel8 *) tint_tables)[pixel];
+}
+
+template<>
+inline pixel16 get_pixel_tint(pixel16 pixel, void *tint_tables_pv, SDL_PixelFormat *fmt)
+{
+	tint_table16 *tint_tables = (tint_table16 *) tint_tables_pv;
+	uint8 r = (((pixel&fmt->Rmask)>>fmt->Rshift)<<fmt->Rloss);
+	uint8 g = (((pixel&fmt->Gmask)>>fmt->Gshift)<<fmt->Gloss);
+	uint8 b = (((pixel&fmt->Bmask)>>fmt->Bshift)<<fmt->Bloss);
+
+	return tint_tables->red[r >> 3] | tint_tables->green[g >> 3] | tint_tables->blue[b >> 3];
+}
+
+template <>
+inline pixel32 get_pixel_tint(pixel32 pixel, void *tint_tables_pv, SDL_PixelFormat *fmt)
+{
+	tint_table32 *tint_tables = (tint_table32 *) tint_tables_pv;
+	uint8 r = (((pixel&fmt->Rmask)>>fmt->Rshift)<<fmt->Rloss);
+	uint8 g = (((pixel&fmt->Gmask)>>fmt->Gshift)<<fmt->Gloss);
+	uint8 b = (((pixel&fmt->Bmask)>>fmt->Bshift)<<fmt->Bloss);
+
+	return tint_tables->red[r] | tint_tables->green[g] | tint_tables->blue[b];
+}
+
+template <class T>
+void tint_vertical_polygon_lines(
 	struct bitmap_definition *screen,
 	struct view_data *view,
 	struct _vertical_polygon_data *data,
@@ -546,31 +560,19 @@ void TINT_VERTICAL_POLYGON_LINES(
 	int line_count= data->width;
 	int x= data->x0;
 
-#if BIT_DEPTH==8
-	register PEL *tint_tables= (PEL *)line->shading_table + tint_table_index*sizeof(struct tint_table8);
-#endif
-
-#if BIT_DEPTH==16
-	register struct tint_table16 *tint_tables= (struct tint_table16 *)line->shading_table + (tint_table_index<<1);
-#endif
-
-#if BIT_DEPTH==32
-	register struct tint_table32 *tint_tables= (struct tint_table32 *)line->shading_table + (tint_table_index<<3);
-#endif
-
+	void *tint_tables = tint_tables_pointer<T>(line, tint_table_index);
+	
 	(void) (view);
 
-#if defined(SDL) && BIT_DEPTH != 8
 	extern SDL_Surface *world_pixels;
 	SDL_PixelFormat *fmt = world_pixels->format;
-#endif
 	
 	assert(tint_table_index>=0 && tint_table_index<number_of_shading_tables);
 
 	while ((line_count-= 1)>=0)
 	{
 		short y0= *y0_table++, y1= *y1_table++;
-		register PEL *write= (PEL *) screen->row_addresses[y0] + x;
+		register T *write= (T *) screen->row_addresses[y0] + x;
 		register pixel8 *read= line->texture;
 		register _fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
 		register short count= y1-y0;
@@ -579,36 +581,11 @@ void TINT_VERTICAL_POLYGON_LINES(
 		{
 			if (read[FIXED_INTEGERAL_PART(texture_y)])
 			{
-#if BIT_DEPTH==8			
-				// In color index mode, this is easy
-				*write= tint_tables[*write];
-#else
-				register PEL pixel= *write;
+				*write = get_pixel_tint<T>(*write, tint_tables, world_pixels->format);
 
-#ifdef SDL
-				// Under SDL, the pixel format is not fixed, so we need to be more flexible
-				uint8 r = (((pixel&fmt->Rmask)>>fmt->Rshift)<<fmt->Rloss);
-				uint8 g = (((pixel&fmt->Gmask)>>fmt->Gshift)<<fmt->Gloss);
-				uint8 b = (((pixel&fmt->Bmask)>>fmt->Bshift)<<fmt->Bloss);
-#if BIT_DEPTH==16
-				*write = tint_tables->red[r >> 3] | tint_tables->green[g >> 3] | tint_tables->blue[b >> 3];
-#elif BIT_DEPTH==32
-				*write = tint_tables->red[r] | tint_tables->green[g] | tint_tables->blue[b];
-#endif
-#else
-				// Under MacOS, there is only one 16 and 32 bit pixel format, so this is easier (and faster)
-#if BIT_DEPTH==16
-				*write= tint_tables->red[RED16(pixel)] | tint_tables->green[GREEN16(pixel)] |
-					tint_tables->blue[BLUE16(pixel)];
-#elif BIT_DEPTH==32
-				*write= tint_tables->red[RED32(pixel)] | tint_tables->green[GREEN32(pixel)] |
-					tint_tables->blue[BLUE32(pixel)];
-#endif
-#endif // def SDL
-#endif // BIT_DEPTH==8
 			}
 
-			write = (PEL *)((byte *)write + bytes_per_row);
+			write = (T *)((byte *)write + bytes_per_row);
 			texture_y+= texture_dy;
 		}
 
@@ -617,8 +594,21 @@ void TINT_VERTICAL_POLYGON_LINES(
 	}
 }
 
-// LP: "static" removed
-void RANDOMIZE_VERTICAL_POLYGON_LINES(
+
+template <class T>
+inline T randomize_vertical_polygon_lines_write(uint16 seed)
+{
+	return static_cast<T>(seed);
+}
+
+template <>
+inline pixel16 randomize_vertical_polygon_lines_write<pixel16>(uint16 seed)
+{
+	return (pixel32)seed^(((pixel32)seed)<<8);
+}
+
+template <class T>
+void randomize_vertical_polygon_lines(
 	struct bitmap_definition *screen,
 	struct view_data *view,
 	struct _vertical_polygon_data *data,
@@ -638,7 +628,7 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 	while ((line_count-= 1)>=0)
 	{
 		short y0= *y0_table++, y1= *y1_table++;
-		register PEL *write= (PEL *) screen->row_addresses[y0] + x;
+		register T *write= (T *) screen->row_addresses[y0] + x;
 		register pixel8 *read= line->texture;
 		register _fixed texture_y= line->texture_y, texture_dy= line->texture_dy;
 		register short count= y1-y0;
@@ -647,15 +637,11 @@ void RANDOMIZE_VERTICAL_POLYGON_LINES(
 		{
 			if (read[FIXED_INTEGERAL_PART(texture_y)])
 			{
-#if BIT_DEPTH==32
-				if (seed>=drop_less_than) *write= (pixel32)seed^(((pixel32)seed)<<8);
-#else
-				if (seed>=drop_less_than) *write= static_cast<PEL>(seed);
-#endif
+				if (seed >= drop_less_than) *write = randomize_vertical_polygon_lines_write<T>(seed);
 				if (seed&1) seed= (seed>>1)^0xb400; else seed= seed>>1;
 			}
 
-			write = (PEL *)((byte *)write + bytes_per_row);
+			write = (T *)((byte *)write + bytes_per_row);
 			texture_y+= texture_dy;
 		}
 
