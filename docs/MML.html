@@ -74,6 +74,7 @@ This element has no attributes and contains these child elements:
 <li><a href="#landscapes">Landscapes Element: &lt;landscapes&gt;</a>
 <li><a href="#textureloading">Texture-Loading Element: &lt;texture_loading&gt;</a>
 <li><a href="#opengl">OpenGL-Rendering Element: &lt;opengl&gt;</a>
+<li><a href="#software">Software Rendering Element: &lt;software&gt;</a>
 <li><a href="#dynlims">Dynamic-Limits Element: &lt;dynamic_limits&gt;</a>
 <li><a href="#playername">Player-Name Element: &lt;player_name&gt;</a>
 <li><a href="#scenario">Scenario Element: &lt;scenario&gt;</a>
@@ -1664,6 +1665,30 @@ The default is 0 (above liquid).
 and a <a href="#color">color</a> subelement, which indicates the fog color
 (default: gray [red = green = blue = 0.5]).
 <p>
+
+<hr>
+
+<h3><a name="software">Software Rendering Element: &lt;software&gt;</a></h3>
+This kind of element is for modifying the software rendering. This element has the child element &lt;texture&gt;
+<p>
+&lt;texture&gt; specifies options for wall textures only, CLUT 0. It takes these attributes:
+<ul>
+<li>coll: which collection
+<li>bitmap: which bitmap to apply the options to
+<li>opac_type: what type of opacity to use (default: 0 -- no change).
+<li>opac_scale: scaling value for the opacity; how much to multiply it by (default: 1 -- no change).
+<li>opac_shift: shift value for the opacity; how much to add after multiplying (default: 0 -- no change).
+</ul>
+<p>
+Here are the various opacity types:
+<ol type=1 start=1000>
+<li>Crisp edges. Opacity is unaltered (this will cause no visible change in the software renderer).
+<li>Fuzzy edges.
+<li>Fuzzy edges with opacity = average of color channels.
+<li>Fuzzy edges with opacity = maximum of color channels.
+</ol>
+<p>
+In all cases, the wall texture's bitmap transparency definition is unaltered by opac_shift, opac_scale, and opac_type. Therefore, if a bitmap is marked transparent, the pixels that use color 0 will always be transparent, regardless of this MML.
 
 <hr>
 

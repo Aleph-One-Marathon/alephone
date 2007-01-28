@@ -130,6 +130,9 @@ not only that, but texture_horizontal_polygon() is actually faster than texture_
 #include <stdlib.h>
 #include <limits.h>
 
+#include "preferences.h"
+#include "SW_Texture_Extras.h"
+
 
 #ifdef env68k
 #pragma segment texture
@@ -278,7 +281,6 @@ inline int NextLowerExponent(int n)
 
 #include "low_level_textures.h"
 
-
 /* set aside memory at launch for two line tables (remember, we precalculate all the y-values
 	for trapezoids and two lines worth of x-values for polygons before mapping them) */
 void allocate_texture_tables(
@@ -411,7 +413,7 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 				{
 	
 					case _textured_transfer:
-						texture_horizontal_polygon_lines<pixel8>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
+						texture_horizontal_polygon_lines<pixel8, _sw_alpha_off>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
 						break;
 					case _big_landscaped_transfer:
@@ -429,14 +431,31 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 				switch (polygon->transfer_mode)
 				{
 					case _textured_transfer:
-						texture_horizontal_polygon_lines<pixel16>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
-							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
-						break;
-					case _big_landscaped_transfer:
+					{
+						SW_Texture *sw_texture = 0;
+						if (graphics_preferences->software_alpha_blending)
+						{
+							sw_texture = SW_Texture_Extras::instance()->GetTexture(polygon->ShapeDesc);
+						}
+						if (sw_texture && !polygon->VoidPresent && sw_texture->opac_type())
+						{
+							if (graphics_preferences->software_alpha_blending == _sw_alpha_fast) {
+								texture_horizontal_polygon_lines<pixel16, _sw_alpha_fast>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table, vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
+							}
+							else if (graphics_preferences->software_alpha_blending == _sw_alpha_nice) {
+								texture_horizontal_polygon_lines<pixel16, _sw_alpha_nice>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *) precalculation_table, vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count, sw_texture->opac_table());
+							}
+						} else {
+							texture_horizontal_polygon_lines<pixel16, _sw_alpha_off>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
+											  vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
+						}
+					}
+					break;
+						
+				case _big_landscaped_transfer:
 						landscape_horizontal_polygon_lines<pixel16>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
 						break;
-					
 					default:
 						assert(false);
 						break;
@@ -446,11 +465,32 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 			case 32:
 				switch (polygon->transfer_mode)
 				{
-					case _textured_transfer:
-						texture_horizontal_polygon_lines<pixel32>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
-							vertices[highest_vertex].y, left_table, right_table,
-							aggregate_total_line_count);
-						break;
+				case _textured_transfer:
+				{
+					SW_Texture *sw_texture = 0;
+					if (graphics_preferences->software_alpha_blending)
+					{
+						sw_texture = SW_Texture_Extras::instance()->GetTexture(polygon->ShapeDesc);
+					}
+					if (sw_texture && sw_texture->opac_type() && !polygon->VoidPresent)
+					{
+						if (graphics_preferences->software_alpha_blending == _sw_alpha_fast)
+						{
+							texture_horizontal_polygon_lines<pixel32, _sw_alpha_fast>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table, vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
+						} 
+						else if (graphics_preferences->software_alpha_blending = _sw_alpha_nice)
+						{
+							texture_horizontal_polygon_lines<pixel32, _sw_alpha_nice>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *) precalculation_table, vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count, sw_texture->opac_table());
+						}
+					}
+					else 
+					{
+						texture_horizontal_polygon_lines<pixel32, _sw_alpha_off>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
+											  vertices[highest_vertex].y, left_table, right_table,
+											  aggregate_total_line_count);
+					}
+				}
+				break;
 					case _big_landscaped_transfer:
 						landscape_horizontal_polygon_lines<pixel32>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table,
 							vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
@@ -579,14 +619,15 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 				switch (polygon->transfer_mode)
 				{
 					case _textured_transfer:
-						(polygon->texture->flags&_TRANSPARENT_BIT) ?
-							transparent_texture_vertical_polygon_lines<pixel8>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
-							texture_vertical_polygon_lines<pixel8>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+						if (polygon->texture->flags&_TRANSPARENT_BIT)
+							texture_vertical_polygon_lines<pixel8, _sw_alpha_off, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+						else
+							texture_vertical_polygon_lines<pixel8, _sw_alpha_off, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
 						break;
-					
-					default:
-						assert(false);
-						break;
+						
+				default:
+					assert(false);
+					break;
 				}
 				break;
 				
@@ -594,9 +635,28 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 				switch (polygon->transfer_mode)
 				{
 					case _textured_transfer:
-						(polygon->texture->flags&_TRANSPARENT_BIT) ?
-							transparent_texture_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
-							texture_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+						if (polygon->texture->flags&_TRANSPARENT_BIT) {
+							texture_vertical_polygon_lines<pixel16, _sw_alpha_off, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+						} 
+						else 
+						{
+							SW_Texture *sw_texture =0 ;
+							if (graphics_preferences->software_alpha_blending)
+							{
+								sw_texture = SW_Texture_Extras::instance()->GetTexture(polygon->ShapeDesc);
+							}
+							if (sw_texture && !polygon->VoidPresent && sw_texture->opac_type())
+							{
+								if (graphics_preferences->software_alpha_blending == _sw_alpha_fast) {
+									texture_vertical_polygon_lines<pixel16, _sw_alpha_fast, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+								} 
+								else if (graphics_preferences->software_alpha_blending == _sw_alpha_nice) {
+									texture_vertical_polygon_lines<pixel16, _sw_alpha_nice, false>(screen, view, (struct _vertical_polygon_data *) precalculation_table, left_table, right_table, sw_texture->opac_table());
+								}
+							} else {
+								texture_vertical_polygon_lines<pixel16, _sw_alpha_off, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+							}
+						}
 						break;
 
 					default:
@@ -609,20 +669,45 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 				switch (polygon->transfer_mode)
 				{
 					case _textured_transfer:
-						(polygon->texture->flags&_TRANSPARENT_BIT) ?
-							transparent_texture_vertical_polygon_lines<pixel32>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table) :
-							texture_vertical_polygon_lines<pixel32>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+					{
+						SW_Texture *sw_texture = 0;
+						if (graphics_preferences->software_alpha_blending)
+						{
+							sw_texture = SW_Texture_Extras::instance()->GetTexture(polygon->ShapeDesc);
+						}
+						if (sw_texture && !polygon->VoidPresent && sw_texture->opac_type())
+						{
+							if (graphics_preferences->software_alpha_blending == _sw_alpha_fast) {
+								if (polygon->texture->flags&_TRANSPARENT_BIT)
+									texture_vertical_polygon_lines<pixel32, _sw_alpha_fast, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+								else
+									texture_vertical_polygon_lines<pixel32, _sw_alpha_fast, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+							}
+							else if (graphics_preferences->software_alpha_blending == _sw_alpha_nice) 
+							{
+								if (polygon->texture->flags & _TRANSPARENT_BIT)
+									texture_vertical_polygon_lines<pixel32, _sw_alpha_nice, true>(screen, view, (struct _vertical_polygon_data *) precalculation_table, left_table, right_table, sw_texture->opac_table());
+								else
+									texture_vertical_polygon_lines<pixel32, _sw_alpha_nice, false>(screen, view, (struct _vertical_polygon_data *) precalculation_table, left_table, right_table, sw_texture->opac_table());
+							}
+						} else {
+							if (polygon->texture->flags & _TRANSPARENT_BIT)
+								texture_vertical_polygon_lines<pixel32, _sw_alpha_off, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+							else
+								texture_vertical_polygon_lines<pixel32, _sw_alpha_off, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+						}
 						break;
-
-					default:
-						assert(false);
-						break;
+					}
+					
+				default:
+					assert(false);
+					break;
 				}
 				break;
-			
-			default:
-				assert(false);
-				break;
+				
+		default:
+			assert(false);
+			break;
 		}
 	}
 }
@@ -781,7 +866,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 						switch (rectangle->transfer_mode)
 						{
 							case _textured_transfer:
-								transparent_texture_vertical_polygon_lines<pixel8>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								texture_vertical_polygon_lines<pixel8, _sw_alpha_off, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1);
 								break;
 							
@@ -805,10 +890,9 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 						switch (rectangle->transfer_mode)
 						{
 							case _textured_transfer:
-								transparent_texture_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
-									scratch_table0, scratch_table1);
+								texture_vertical_polygon_lines<pixel16, _sw_alpha_off, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, scratch_table0, scratch_table1);
 								break;
-							
+								
 							case _static_transfer:
 								randomize_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
@@ -829,7 +913,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 						switch (rectangle->transfer_mode)
 						{
 							case _textured_transfer:
-								transparent_texture_vertical_polygon_lines<pixel32>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								texture_vertical_polygon_lines<pixel32, _sw_alpha_off, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1);
 								break;
 							

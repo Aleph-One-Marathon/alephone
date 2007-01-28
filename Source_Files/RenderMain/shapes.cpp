@@ -107,6 +107,7 @@ Jan 17, 2001 (Loren Petrich):
 #include "ColorParser.h"
 
 #include "Packing.h"
+#include "SW_Texture_Extras.h"
 
 #ifdef env68k
 #pragma segment shell
@@ -1509,6 +1510,7 @@ void load_collections(
 				unload_collection(header);
 			}
 			OGL_UnloadModelsImages(collection_index);
+			SW_Texture_Extras::instance()->Unload(collection_index);
 		}
 		else
 		{
@@ -1553,6 +1555,17 @@ void load_collections(
 	/* remap the shapes, recalculate row base addresses, build our new world color table and
 		(finally) update the screen to reflect our changes */
 	update_color_environment(is_opengl);
+
+	// load software enhancements
+	if (!is_opengl) {
+		for (collection_index= 0, header= collection_headers; collection_index < MAXIMUM_COLLECTIONS; ++collection_index, ++header)
+		{
+			if (collection_loaded(header))
+			{
+				SW_Texture_Extras::instance()->Load(collection_index);
+			}
+		}
+	}
 //	if (with_progress_bar)
 //		close_progress_dialog();
 }

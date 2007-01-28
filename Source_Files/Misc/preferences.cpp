@@ -391,6 +391,10 @@ static const char *resolution_labels[3] = {
 	"Low", "High", NULL
 };
 
+static const char *sw_alpha_blending_labels[4] = {
+	"Off", "Fast", "Nice", NULL
+};
+
 static const char *size_labels[25] = {
 	"320x160", "480x240", "640x480", "640x480 (no HUD)",
 	"800x600", "800x600 (no HUD)", "1024x768", "1024x768 (no HUD)",
@@ -476,7 +480,10 @@ static void software_rendering_options_dialog(void* arg)
 	d.add(depth_w);
 	w_toggle *resolution_w = new w_toggle("Resolution", graphics_preferences->screen_mode.high_resolution, resolution_labels);
 	d.add(resolution_w);
-
+	d.add(new w_spacer());
+	w_select *sw_alpha_blending_w = new w_select("Transparent Liquids", graphics_preferences->software_alpha_blending, sw_alpha_blending_labels);
+	d.add(sw_alpha_blending_w);
+	
 	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
@@ -498,6 +505,12 @@ static void software_rendering_options_dialog(void* arg)
 		bool hi_res = resolution_w->get_selection() != 0;
 		if (hi_res != graphics_preferences->screen_mode.high_resolution) {
 			graphics_preferences->screen_mode.high_resolution = hi_res;
+			changed = true;
+		}
+
+		if (sw_alpha_blending_w->get_selection() != graphics_preferences->software_alpha_blending)
+		{
+			graphics_preferences->software_alpha_blending = sw_alpha_blending_w->get_selection();
 			changed = true;
 		}
 
@@ -1564,6 +1577,7 @@ void write_preferences(
 #endif
 	fprintf(F,"  ogl_flags=\"%hu\"\n",graphics_preferences->OGL_Configure.Flags);
         fprintf(F,"  experimental_rendering=\"%s\"\n",BoolString(graphics_preferences->experimental_rendering));
+	fprintf(F,"  software_alpha_blending=\"%i\"\n", graphics_preferences->software_alpha_blending);
         fprintf(F,"  anisotropy_level=\"%f\"\n", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	fprintf(F,"  multisamples=\"%i\"\n", graphics_preferences->OGL_Configure.Multisamples);
 	fprintf(F,"  geforce_fix=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.GeForceFix));
@@ -1787,6 +1801,8 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 
         preferences->experimental_rendering= false;
 	preferences->double_corpse_limit= false;
+
+	preferences->software_alpha_blending = _sw_alpha_off;
 }
 
 static void default_serial_number_preferences(serial_number_data *preferences)
@@ -2590,6 +2606,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
         {
                 return ReadBooleanValue(Value,graphics_preferences->experimental_rendering);
         }
+	else if (StringsEqual(Tag, "software_alpha_blending"))
+	{
+		return ReadInt16Value(Value, graphics_preferences->software_alpha_blending);
+	}
         else if (StringsEqual(Tag,"anisotropy_level"))
 	  {
 	    return ReadFloatValue(Value, graphics_preferences->OGL_Configure.AnisotropyLevel);

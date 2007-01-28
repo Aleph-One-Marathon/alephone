@@ -60,6 +60,13 @@ May 22, 2003 (Woody Zenfell):
 
 /* New preferences junk */
 const float DEFAULT_MONITOR_REFRESH_FREQUENCY = 60;	// 60 Hz
+
+enum {
+	_sw_alpha_off,
+	_sw_alpha_fast,
+	_sw_alpha_nice,
+};
+
 struct graphics_preferences_data
 {
 	struct screen_mode_data screen_mode;
@@ -75,6 +82,8 @@ struct graphics_preferences_data
 	// for testing things not ready for prime time
 	bool experimental_rendering;
 	bool double_corpse_limit;
+
+	int16 software_alpha_blending;
 };
 
 struct serial_number_data
