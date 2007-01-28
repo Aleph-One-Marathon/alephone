@@ -1,0 +1,22 @@
+<marathon>
+<!-- Make Marathon2/oo liquids semitransparent -->
+
+<software>
+<!-- Water -->
+<texture coll="17" bitmap="19" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+<!-- Lava -->
+<texture coll="18" bitmap="12" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+<!-- Sewage -->
+<texture coll="19" bitmap="13" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+<!-- Jjaro -->
+<texture coll="20" bitmap="13" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+<!-- Pfhor -->
+<texture coll="21" bitmap="5" opac_type="3" opac_scale="0.5" opac_shift="0.5"/>
+
+</software>
+
+</marathon>
