@@ -680,13 +680,13 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 
 				// Allocate surface for complete (but possibly banded) picture
 				if (s == NULL) {
-					s = SDL_CreateRGBSurface(SDL_SWSURFACE, pic_width, pic_height, 24,
+					s = SDL_CreateRGBSurface(SDL_SWSURFACE, pic_width, pic_height, 32,
 #ifdef ALEPHONE_LITTLE_ENDIAN
-							0x0000ff, 0x00ff00, 0xff0000,
+								 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000
 #else
-							0xff0000, 0x00ff00, 0x0000ff,
+								 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff
 #endif
-							0);
+							);
 					if (s == NULL) {
 						done = true;
 						break;
