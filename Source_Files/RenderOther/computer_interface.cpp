@@ -2092,7 +2092,7 @@ static void calculate_bounds_for_object(
 			/* Just return the normal frame.  Aspect ratio will take care of us.. */
 		} else {
 			InsetRect(bounds, (RECTANGLE_WIDTH(frame)-RECTANGLE_WIDTH(source))/2,
-				(RECTANGLE_HEIGHT(frame)-RECTANGLE_WIDTH(source))/2);
+				(RECTANGLE_HEIGHT(frame)-RECTANGLE_HEIGHT(source))/2);
 		}
 	} 
 	else if(flags & _draw_object_on_right)
