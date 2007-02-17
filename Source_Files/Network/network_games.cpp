@@ -34,7 +34,7 @@ Jul 1, 2000 (Loren Petrich):
 #include "network.h"
 #include "network_games.h"
 #include "game_window.h" // for mark_player_network_stats_as_dirty
-#include "mysound.h"
+#include "SoundManager.h"
 
 int32 team_netgame_parameters[NUMBER_OF_TEAM_COLORS][2];
 

@@ -66,7 +66,7 @@ Feb 11, 2001 (Loren Petrich):
 #include "interface.h"
 #include "monsters.h"
 #include "player.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "platforms.h"
 #include "fades.h"
 #include "items.h"
@@ -592,7 +592,7 @@ bool try_and_add_player_item(
 	/* Play the pickup sound */
 	if (success && player_index==current_player_index)
 	{
-		play_local_sound(grabbed_sound_index);
+		SoundManager::instance()->PlayLocalSound(grabbed_sound_index);
 	
 		/* Flash screen */
 		start_fade(_fade_bonus);

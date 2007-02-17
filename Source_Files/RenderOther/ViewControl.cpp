@@ -36,7 +36,7 @@ Dec 17, 2000 (Loren Petrich:
 #include <string.h>
 #include "cseries.h"
 #include "world.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "ViewControl.h"
 
 

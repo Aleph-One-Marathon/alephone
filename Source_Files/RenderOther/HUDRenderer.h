@@ -32,7 +32,7 @@
 #include "map.h"
 #include "interface.h"
 #include "player.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "motion_sensor.h"
 #include "items.h"
 #include "weapons.h"

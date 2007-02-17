@@ -68,7 +68,7 @@ Jun 30, 2002 (tiennou):
 #include "map.h"
 #include "platforms.h"
 #include "lightsource.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "player.h"
 #include "media.h"
 
@@ -917,7 +917,7 @@ static void play_platform_sound(
 	}
 	
 	play_polygon_sound(platform->polygon_index, sound_code);
-	cause_ambient_sound_source_update();
+	SoundManager::instance()->CauseAmbientSoundSourceUpdate();
 }
 
 /* rules for using native polygon heights: a) if this is a floor platform, then take the polygon’s

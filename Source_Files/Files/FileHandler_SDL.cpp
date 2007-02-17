@@ -74,7 +74,7 @@
 
 #include "sdl_dialogs.h"
 #include "sdl_widgets.h"
-#include "mysound.h" // !
+#include "SoundManager.h" // !
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;

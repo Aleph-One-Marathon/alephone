@@ -105,7 +105,7 @@ Jan 12, 2003 (Loren Petrich)
 #include "player.h"
 #include "platforms.h"
 #include "scenery.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "fades.h"
 #include "items.h"
 #include "media.h"
@@ -725,6 +725,11 @@ void initialize_monsters_for_new_level(
 	}
 }
 
+static void load_sound(short sound_index)
+{
+	SoundManager::instance()->LoadSound(sound_index);
+}
+
 void load_monster_sounds(
 	short monster_type)
 {
@@ -737,7 +742,7 @@ void load_monster_sounds(
 		load_projectile_sounds(definition->ranged_attack.type);
 		load_projectile_sounds(definition->melee_attack.type);
 		
-		load_sounds(&definition->activation_sound, 8);
+		SoundManager::instance()->LoadSounds(&definition->activation_sound, 8);
 	}
 }
 
@@ -2522,7 +2527,7 @@ void set_monster_action(
 		if ((definition->flags&_monster_has_nuclear_hard_death) && action==_monster_is_dying_hard)
 		{
 			start_fade(_fade_long_bright);
-			play_local_sound(Sound_Exploding());
+			SoundManager::instance()->PlayLocalSound(Sound_Exploding());
 		}
 	}
 }

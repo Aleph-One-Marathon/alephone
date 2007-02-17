@@ -36,13 +36,12 @@ bool chat_input_mode = false;
 #include "interface.h"
 #include "world.h"
 #include "screen.h"
-#include "mysound.h"
 #include "map.h"
 #include "shell.h"
 #include "preferences.h"
 #include "vbl.h"
 #include "player.h"
-#include "music.h"
+#include "Music.h"
 #include "items.h"
 #include "network_sound.h"
 
@@ -329,10 +328,10 @@ void handle_keyword(int tag)
 
 void global_idle_proc(void)
 {
-	music_idle_proc();
-  network_speaker_idle_proc();
-  network_microphone_idle_proc();
-	sound_manager_idle_proc();
+	Music::instance()->Idle();
+	network_speaker_idle_proc();
+	network_microphone_idle_proc();
+	SoundManager::instance()->Idle();
 }
 
 /*
@@ -341,7 +340,7 @@ void global_idle_proc(void)
 
 void free_and_unlock_memory(void)
 {
-	stop_all_sounds();
+	SoundManager::instance()->StopAllSounds();
 #ifdef mac
     PurgeMem(maxSize);
     CompactMem(maxSize);
@@ -359,7 +358,7 @@ void *level_transition_malloc(
 	void *ptr= malloc(size);
 	if (!ptr)
 	{
-		unload_all_sounds();
+		SoundManager::instance()->UnloadAllSounds();
 		
 		ptr= malloc(size);
 		if (!ptr)

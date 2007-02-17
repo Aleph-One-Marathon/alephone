@@ -63,7 +63,7 @@ Feb 3, 2003 (Woody Zenfell):
 #include "interface.h"
 #include "player.h"
 #include "platforms.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "computer_interface.h"
 //#include "music.h"
 #include "lightsource.h"
@@ -381,7 +381,7 @@ void update_control_panels(
 				else
 				{
 					change_panel_state(player_index, side_index);
-					stop_sound(NONE, definition->sounds[_activating_sound]);
+					SoundManager::instance()->StopSound(NONE, definition->sounds[_activating_sound]);
 				}
 			}
 		}

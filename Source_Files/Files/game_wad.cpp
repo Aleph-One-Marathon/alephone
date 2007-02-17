@@ -113,7 +113,7 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "images.h"
 #include "shell.h"
 #include "preferences.h"
-#include "mysound.h"
+#include "SoundManager.h"
 
 // LP change: added chase-cam init and render allocation
 #include "ChaseCam.h"
@@ -751,7 +751,7 @@ bool goto_level(
 		leaving_map();
 
 		// ghs: hack to get new MML-specified sounds loaded
-		unload_all_sounds();
+		SoundManager::instance()->UnloadAllSounds();
 	}
 
 #if !defined(DISABLE_NETWORKING)

@@ -41,7 +41,7 @@
 #include    "network_distribution_types.h"
 #include    "CircularQueue.h"
 #include    "world.h"   // local_random()
-#include    "mysound.h"
+#include "Mixer.h"
 
 #ifdef SPEEX
 #include "network_speex.h"
@@ -148,7 +148,7 @@ queue_network_speaker_data(byte* inData, short inLength) {
 void
 network_speaker_idle_proc() {
     if(sSpeakerIsOn)
-        ensure_network_audio_playing();
+	    Mixer::instance()->EnsureNetworkAudioPlaying();
 }
 
 
@@ -180,7 +180,7 @@ dequeue_network_speaker_data() {
 void
 close_network_speaker() {
     // Tell the audio system not to get our data anymore
-    stop_network_audio();
+	Mixer::instance()->StopNetworkAudio();
 
     // Bleed the queue dry of any leftover data
     NetworkSpeakerSoundBufferDescriptor*  theDesc;

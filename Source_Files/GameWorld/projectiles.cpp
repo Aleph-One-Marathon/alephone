@@ -90,7 +90,7 @@ Oct 13, 2000 (Loren Petrich)
 #include "player.h"
 #include "scenery.h"
 #include "media.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "items.h"
 
 // LP additions
@@ -602,8 +602,8 @@ void load_projectile_sounds(
 	{
 		struct projectile_definition *definition= get_projectile_definition(projectile_type);
 		
-		load_sound(definition->flyby_sound);
-		load_sound(definition->rebound_sound);
+		SoundManager::instance()->LoadSound(definition->flyby_sound);
+		SoundManager::instance()->LoadSound(definition->rebound_sound);
 	}
 }
 

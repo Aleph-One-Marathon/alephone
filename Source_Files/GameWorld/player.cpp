@@ -139,7 +139,7 @@ May 22, 2003 (Woody Zenfell):
 #include "monster_definitions.h"
 #include "monsters.h"
 #include "interface.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "fades.h"
 #include "media.h"
 #include "items.h"
@@ -1156,8 +1156,10 @@ static void handle_player_in_vacuum(
 			default: breathing_frequency= TICKS_PER_MINUTE/2;
 		}
 
-		if (!(player->suit_oxygen%breathing_frequency)) play_local_sound(Sound_Breathing());
-		if ((player->suit_oxygen+OXYGEN_WARNING_OFFSET)<OXYGEN_WARNING_LEVEL && !((player->suit_oxygen+OXYGEN_WARNING_OFFSET)%OXYGEN_WARNING_FREQUENCY)) play_local_sound(Sound_OxygenWarning());
+		if (!(player->suit_oxygen%breathing_frequency)) 
+			SoundManager::instance()->PlayLocalSound(Sound_Breathing());
+		if ((player->suit_oxygen+OXYGEN_WARNING_OFFSET)<OXYGEN_WARNING_LEVEL && !((player->suit_oxygen+OXYGEN_WARNING_OFFSET)%OXYGEN_WARNING_FREQUENCY)) 
+			SoundManager::instance()->PlayLocalSound(Sound_OxygenWarning());
 		
 		// LP change: modified to use global variable for change rate
 		assert(player_settings.OxygenChange <= 0);

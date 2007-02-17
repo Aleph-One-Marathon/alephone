@@ -96,7 +96,7 @@ Apr 10, 2003 (Woody Zenfell):
 
 #include "network_dialog_widgets_sdl.h"
 #include "screen.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "progress.h"
 
 

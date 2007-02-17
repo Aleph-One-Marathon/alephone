@@ -31,7 +31,7 @@
 #include "preferences.h"
 #include "network_metaserver.h"
 #include "map.h" // for _force_unique_teams!?!
-#include "mysound.h"
+#include "SoundManager.h"
 
 // for game types...
 #include "network_dialogs.h"

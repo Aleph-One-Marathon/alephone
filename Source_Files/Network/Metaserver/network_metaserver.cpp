@@ -223,6 +223,9 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 			break;
 		}
 	}
+
+//	roomServerAddress.host = 0xC0A80108;
+//	roomServerAddress.host = 0x0801A8C0;
 	
 	m_channel->connect(roomServerAddress);
 

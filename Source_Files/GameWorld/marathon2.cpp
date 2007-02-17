@@ -88,12 +88,12 @@ Feb 8, 2003 (Woody Zenfell):
 #include "platforms.h"
 #include "lightsource.h"
 #include "media.h"
-#include "music.h"
+#include "Music.h"
 #include "fades.h"
 #include "items.h"
 #include "weapons.h"
 #include "game_window.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "network_games.h"
 // LP additions:
 #include "tags.h"
@@ -580,8 +580,8 @@ void leaving_map(
 
 	// Hackish. Should probably be in stop_all_sounds(), but that just
 	// doesn't work out. 
-	StopLevelMusic();
-	stop_all_sounds();
+	Music::instance()->StopLevelMusic();
+	SoundManager::instance()->StopAllSounds();
 }
 
 /* call this function after the new level has been completely read into memory, after

@@ -58,8 +58,7 @@ May 22, 2003 (Woody Zenfell):
 #include "map.h"
 #include "shell.h" /* For the screen_mode structure */
 #include "interface.h"
-#include "mysound.h"
-#include "music.h"
+#include "SoundManager.h"
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 
 #include "preferences.h"
@@ -163,7 +162,8 @@ struct serial_number_data *serial_preferences = NULL;
 struct network_preferences_data *network_preferences = NULL;
 struct player_preferences_data *player_preferences = NULL;
 struct input_preferences_data *input_preferences = NULL;
-struct sound_manager_parameters *sound_preferences = NULL;
+//struct sound_manager_parameters *sound_preferences = NULL;
+SoundManager::Parameters *sound_preferences = NULL;
 struct environment_preferences_data *environment_preferences = NULL;
 
 // LP: fake portable-files stuff
@@ -896,7 +896,7 @@ public:
 
 	void item_selected(void)
 	{
-		test_sound_volume(selection, _snd_adjust_volume);
+		SoundManager::instance()->TestVolume(selection, _snd_adjust_volume);
 	}
 };
 
@@ -966,7 +966,8 @@ static void sound_dialog(void *arg)
 		}
 
 		if (changed) {
-			set_sound_manager_parameters(sound_preferences);
+//			set_sound_manager_parameters(sound_preferences);
+			SoundManager::instance()->SetParameters(*sound_preferences);
 			write_preferences();
 		}
 	}
@@ -1406,7 +1407,8 @@ void initialize_preferences(
 		graphics_preferences= new graphics_preferences_data;
 		player_preferences= new player_preferences_data;
 		input_preferences= new input_preferences_data;
-		sound_preferences= new sound_manager_parameters;
+//		sound_preferences= new sound_manager_parameters;
+		sound_preferences = new SoundManager::Parameters;
 		serial_preferences= new serial_number_data;
 		network_preferences= new network_preferences_data;
 		environment_preferences= new environment_preferences_data;
@@ -1436,7 +1438,8 @@ void read_preferences ()
 	default_network_preferences(network_preferences);
 	default_player_preferences(player_preferences);
 	default_input_preferences(input_preferences);
-	default_sound_manager_parameters(sound_preferences);
+//	default_sound_manager_parameters(sound_preferences);
+	*sound_preferences = SoundManager::Parameters();
 	default_environment_preferences(environment_preferences);
 
 	// Slurp in the file and parse it
@@ -2161,11 +2164,11 @@ void load_environment_from_preferences(
 	File = prefs->sounds_file;
 #endif
 	if (File.Exists()) {
-		open_sound_file(File);
+		SoundManager::instance()->OpenSoundFile(File);
 	} else {
 		if(find_file_with_modification_date(File,
 			_typecode_sounds, strPATHS, prefs->sounds_mod_date)) {
-			open_sound_file(File);
+			SoundManager::instance()->OpenSoundFile(File);
 		} else {
 			/* What should I do? */
 		}

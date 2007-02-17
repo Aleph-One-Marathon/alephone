@@ -97,7 +97,7 @@ Apr 10, 2003 (Woody Zenfell):
 #include "projectiles.h"
 #include "player.h"
 #include "weapons.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "interface.h"
 #include "items.h"
 #include "monsters.h"
@@ -2419,7 +2419,7 @@ static bool handle_trigger_up(
 				weapon->triggers[which_trigger].state= _weapon_idle;
 				weapon->triggers[which_trigger].phase= IDLE_PHASE_COUNT;
 				weapon->triggers[which_trigger].sequence= 0;
-				stop_sound(player->object_index, trigger_definition->charging_sound);
+				SoundManager::instance()->StopSound(player->object_index, trigger_definition->charging_sound);
 			}
 		}
 	}
@@ -3793,7 +3793,7 @@ static void	play_shell_casing_sound(
 		location.yaw= location.pitch= 0;
 		location.velocity.i= location.velocity.j= location.velocity.k= 0;
 	
-		play_sound(sound_index, &location, NONE);
+		SoundManager::instance()->PlaySound(sound_index, &location, NONE);
 	}
 }
 

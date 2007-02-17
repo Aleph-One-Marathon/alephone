@@ -56,6 +56,7 @@ May 22, 2003 (Woody Zenfell):
 #include "Crosshairs.h"
 #include "OGL_Setup.h"
 #include "shell.h"
+#include "SoundManager.h"
 
 
 /* New preferences junk */
@@ -217,7 +218,8 @@ extern struct serial_number_data *serial_preferences;
 extern struct network_preferences_data *network_preferences;
 extern struct player_preferences_data *player_preferences;
 extern struct input_preferences_data *input_preferences;
-extern struct sound_manager_parameters *sound_preferences;
+//extern struct sound_manager_parameters *sound_preferences;
+extern SoundManager::Parameters *sound_preferences;
 extern struct environment_preferences_data *environment_preferences;
 
 /* --------- functions */

@@ -47,7 +47,7 @@ Feb 8, 2001 (Loren Petrich):
 #include "effects.h"
 #include "fades.h"
 #include "lightsource.h"
-#include "mysound.h"
+#include "SoundManager.h"
 
 #include "Packing.h"
 

@@ -111,7 +111,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include "platforms.h"
 #include "lightsource.h"
 #include "media.h"
-#include "mysound.h"
+#include "SoundManager.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -679,8 +679,8 @@ void remove_map_object(
 
 		MARK_SLOT_AS_FREE(parasite);
 	}
-	
-	orphan_sound(object_index);
+
+	SoundManager::instance()->OrphanSound(object_index);
 	*next_object= object->next_object;
 	MARK_SLOT_AS_FREE(object);
 }
@@ -2248,7 +2248,7 @@ void play_object_sound(
 		(world_location3d *) &get_monster_data(object->permutation)->sound_location : 
 		(world_location3d *) &object->location;
 
-	_play_sound(sound_code, location, object_index, object->sound_pitch);
+	SoundManager::instance()->PlaySound(sound_code, location, object_index, object->sound_pitch);
 }
 
 void play_polygon_sound(
@@ -2262,7 +2262,7 @@ void play_polygon_sound(
 	source.point.z= polygon->floor_height;
 	source.polygon_index= polygon_index;
 	
-	play_sound(sound_code, &source, NONE);
+	SoundManager::instance()->PlaySound(sound_code, &source, NONE);
 }
 
 void _play_side_sound(
@@ -2276,7 +2276,7 @@ void _play_side_sound(
 	calculate_line_midpoint(side->line_index, &source.point);
 	source.polygon_index= side->polygon_index;
 
-	_play_sound(sound_code, &source, NONE, pitch);
+	SoundManager::instance()->PlaySound(sound_code, &source, NONE, pitch);
 }
 
 void play_world_sound(
@@ -2288,7 +2288,7 @@ void play_world_sound(
 	
 	source.point= *origin;
 	source.polygon_index= polygon_index;
-	play_sound(sound_code, &source, NONE);
+	SoundManager::instance()->PlaySound(sound_code, &source, NONE);
 }
 
 world_location3d *_sound_listener_proc(
@@ -2514,8 +2514,7 @@ void handle_random_sound_image(
 			if (image->delta_direction) direction= NORMALIZE_ANGLE(direction + local_random()%image->delta_direction);
 			if (image->delta_pitch) pitch+= local_random()%image->delta_pitch;
 
-			direct_play_sound(random_sound_index_to_sound_index(image->sound_index),
-				(image->flags&_sound_image_is_non_directional) ? NONE : direction, volume, pitch);
+			SoundManager::instance()->DirectPlaySound(SoundManager::instance()->RandomSoundIndexToSoundIndex(image->sound_index), (image->flags & _sound_image_is_non_directional) ? NONE : direction, volume, pitch);
 		}
 		
 		// lower phase and reset if necessary

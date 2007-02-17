@@ -125,11 +125,12 @@ extern TP2PerfGlobals perf_globals;
 #include "player.h"
 #include "network.h"
 #include "screen_drawing.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "fades.h"
 #include "game_window.h"
 #include "game_errors.h"
-#include "music.h"
+#include "Mixer.h"
+#include "Music.h"
 #include "images.h"
 #include "screen.h"
 #include "network.h"
@@ -1157,9 +1158,9 @@ void display_main_menu(
 	display_screen(MAIN_MENU_BASE);
 	
 	/* Start up the song! */
-	if(!music_playing() && game_state.main_menu_display_count==0)
+	if(!Music::instance()->Playing() && game_state.main_menu_display_count==0)
 	{
-		queue_song(_introduction_song);
+		Music::instance()->RestartIntroMusic();
 	}
 
         // Draw AlephOne Version to screen
@@ -1555,7 +1556,7 @@ static void display_introduction(
 	{
 		if (game_state.state==_display_intro_screens && game_state.current_screen==INTRO_SCREEN_TO_START_SONG_ON)
 		{
-			queue_song(_introduction_song);
+			Music::instance()->RestartIntroMusic();
 		}
 
 		game_state.phase= screen_data->duration;
@@ -1588,14 +1589,14 @@ static void display_introduction_screen_for_demo(
 static void display_epilogue(
 	void)
 {
-	queue_song(_introduction_song); // _epilogue_song
+	Music::instance()->RestartIntroMusic();
 	
 	{
 		long ticks= machine_tick_count();
 		
 		do
 		{
-			music_idle_proc();
+			Music::instance()->Idle();
 		}
 		while (machine_tick_count()-ticks<10);
 	}
@@ -1678,7 +1679,7 @@ static void transfer_to_new_level(
 	{
 		stop_fade();
 		set_fade_effect(NONE);
-		StopLevelMusic();
+		Music::instance()->StopLevelMusic();
 //#ifdef mac
 //		if(OGL_IsActive())
 		{
@@ -2047,13 +2048,13 @@ static void finish_game(
 	leaving_map();
 	
 	// LP: stop playing the background music if it was present
-	StopLevelMusic();
-	fade_out_music(MACHINE_TICKS_PER_SECOND/2);
+	Music::instance()->StopLevelMusic();
+	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND / 2);
 	
 	/* Get as much memory back as we can. */
 	free_and_unlock_memory(); // this could call free_map.. 
 	unload_all_collections();
-	unload_all_sounds();
+	SoundManager::instance()->UnloadAllSounds();
 	
 #if !defined(DISABLE_NETWORKING)
 	if (game_state.user==_network_player)
@@ -2190,7 +2191,7 @@ static void next_game_screen(
 		if(game_state.state==_display_intro_screens && 
 			game_state.current_screen==INTRO_SCREEN_TO_START_SONG_ON)
 		{
-			queue_song(_introduction_song);
+			Music::instance()->RestartIntroMusic();
 		}
 		// LP addition: check to see if a picture exists before drawing it.
 		// Otherwise, set the countdown value to zero.
@@ -2451,7 +2452,7 @@ static void try_and_display_chapter_screen(
 					SndPlay(channel, sound, true);
 				}
 #elif defined(SDL)
-				play_sound_resource(SoundRsrc);
+				Mixer::instance()->PlaySoundResource(SoundRsrc);
 #endif
 			}
 			
@@ -2470,7 +2471,7 @@ static void try_and_display_chapter_screen(
 			if (channel)
 				SndDisposeChannel(channel, true);
 #elif defined(SDL)
-			stop_sound_resource();
+			Mixer::instance()->StopSoundResource();
 #endif
 		}
 		game_state.state= existing_state;
@@ -2584,11 +2585,13 @@ void interface_fade_out(
 		fadeout_animated_color_table= new color_table;
 		obj_copy(*fadeout_animated_color_table, *current_picture_clut);
 
-		if(fade_music) fade_out_music(MACHINE_TICKS_PER_SECOND/2);
+		if(fade_music) 
+			Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
 		if (fadeout_animated_color_table)
 		{
 			explicit_start_fade(_cinematic_fade_out, current_picture_clut, fadeout_animated_color_table);
-			while (update_fades()) music_idle_proc();
+			while (update_fades()) 
+				Music::instance()->Idle();
 
 			/* Oops.  Founda  memory leak.. */
 			delete fadeout_animated_color_table;
@@ -2596,10 +2599,11 @@ void interface_fade_out(
 		
 		if(fade_music) 
 		{
-			while(music_playing()) music_idle_proc();
+			while(Music::instance()->Playing()) 
+				Music::instance()->Idle();
 
 			/* and give up the memory */
-			free_music_channel();
+			Music::instance()->Pause();
 		}
 
 		paint_window_black();
@@ -2723,7 +2727,7 @@ void show_movie(short index)
 
 #endif
 	{
-		TakeSDLAudioControl sdlAudioControl;
+		SoundManager::Pause pauseSoundManager;
 		
 		SMPEG_Info info;
 		SMPEG *movie;

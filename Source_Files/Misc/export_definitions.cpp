@@ -31,7 +31,7 @@ Tuesday, October 31, 1995 11:02:24 AM (Ryan)
 #include "weapons.h"
 #include "wad.h"
 #include "items.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "media.h"
 #include "tags.h"
 

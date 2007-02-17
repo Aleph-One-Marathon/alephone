@@ -51,7 +51,7 @@
 #include "images.h"
 #include "shell.h"
 #include "world.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "interface.h"
 #include "player.h"
 

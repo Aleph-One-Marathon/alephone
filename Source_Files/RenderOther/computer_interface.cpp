@@ -109,7 +109,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "computer_interface.h"
 #include "screen_drawing.h"
 #include "overhead_map.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "interface.h" // for the error strings.
 #include "shell.h"
 #include "platforms.h" // for tagged platforms

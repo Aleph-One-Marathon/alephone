@@ -42,7 +42,7 @@
 #include "screen.h"
 #include "images.h"
 #include "world.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "game_errors.h"
 
 #ifdef HAVE_OPENGL
@@ -777,7 +777,7 @@ uint16 get_dialog_space(size_t which)
 
 void play_dialog_sound(int which)
 {
-	play_sound(which, NULL, NONE);
+	SoundManager::instance()->PlaySound(which, 0, NONE);
 }
 
 

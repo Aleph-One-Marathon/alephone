@@ -72,14 +72,14 @@ using namespace std;
 #include "physics_models.h"
 #include "Crosshairs.h"
 #include "OGL_Setup.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "world.h"
 #include "computer_interface.h"
 #include "network.h"
 #include "network_games.h"
 #include "Random.h"
 #include "Console.h"
-#include "music.h"
+#include "Music.h"
 
 #include "lua_script.h"
 
@@ -2165,7 +2165,7 @@ static int L_Play_Sound(lua_State *L)
 	if (local_player_index != player_index)
 		return 0;
 
-	_play_sound(sound_index, NULL, NONE, _fixed(FIXED_ONE*pitch));
+	SoundManager::instance()->PlaySound(sound_index, NULL, NONE, _fixed(FIXED_ONE * pitch));
 	return 0;
 }
 
@@ -4633,7 +4633,7 @@ static int L_Fade_Music(lua_State* L)
 		duration = 60;
 	else
 		duration = (short)(lua_tonumber(L, 1) * 60);
-	fade_out_music(duration);
+	Music::instance()->FadeOut(duration);
 	Playlist.clear();
 	return 0;
 }
@@ -4648,7 +4648,7 @@ static int L_Play_Music(lua_State* L)
 {
 	bool restart_music;
 	int n;
-	restart_music = !IsLevelMusicActive() && !music_playing();
+	restart_music = !IsLevelMusicActive() && !Music::instance()->Playing();
 	for(n = 1; n <= lua_gettop(L); n++) {
 		if(!lua_isstring(L, n)) {
 			lua_pushstring(L, "play_music: invalid file specifier");
@@ -4659,7 +4659,7 @@ static int L_Play_Music(lua_State* L)
 			Playlist.push_back(file);
 	}
 	if(restart_music)
-		PreloadLevelMusic();
+		Music::instance()->PreloadLevelMusic();
 	return 0;
 }
 

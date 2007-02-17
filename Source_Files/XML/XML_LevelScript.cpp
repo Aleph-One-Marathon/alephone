@@ -42,7 +42,7 @@ using namespace std;
 #include "cseries.h"
 #include "shell.h"
 #include "game_wad.h"
-#include "music.h"
+#include "Music.h"
 #include "ColorParser.h"
 #include "XML_DataBlock.h"
 #include "XML_LevelScript.h"
@@ -250,7 +250,7 @@ void RunLevelScript(int LevelIndex)
 #endif /* HAVE_LUA */
 	
 	// For whatever previous music had been playing...
-	fade_out_music(MACHINE_TICKS_PER_SECOND/2);
+	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
 	
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
@@ -281,7 +281,7 @@ void RunLevelScript(int LevelIndex)
 	MusicRandomizer.SetTable();
 	
 	// Best to preload level music here, so as not to load it when the interactivity starts
-	PreloadLevelMusic();
+	Music::instance()->PreloadLevelMusic();
 }
 
 // Intended to be run at the end of a game

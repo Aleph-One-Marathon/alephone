@@ -31,10 +31,10 @@
 #include "render.h"
 #include "shell.h"
 #include "interface.h"
-#include "mysound.h"
+#include "SoundManager.h"
 #include "fades.h"
 #include "screen.h"
-#include "music.h"
+#include "Music.h"
 #include "images.h"
 #include "vbl.h"
 #include "preferences.h"
@@ -475,7 +475,7 @@ static void initialize_application(void)
 	// Initialize everything
 	mytm_initialize();
 	initialize_fonts();
-	initialize_sound_manager(sound_preferences);
+	SoundManager::instance()->Initialize(*sound_preferences);
 	initialize_marathon_music_handler();
 	initialize_keyboard_controller();
 	initialize_screen(&graphics_preferences->screen_mode, false);
@@ -522,7 +522,7 @@ static void initialize_marathon_music_handler(void)
 {
 	FileSpecifier file;
 	if (get_default_music_spec(file))
-		initialize_music_handler(file);
+		Music::instance()->SetupIntroMusic(file);
 }
 
 bool quit_without_saving(void)
@@ -743,10 +743,10 @@ static void handle_game_key(const SDL_Event &event)
 			break;
 
 		case SDLK_PERIOD:		// Sound volume up
-			changed_prefs = adjust_sound_volume_up(sound_preferences, _snd_adjust_volume);
+			changed_prefs = SoundManager::instance()->AdjustVolumeUp(_snd_adjust_volume);
 			break;
 		case SDLK_COMMA:		// Sound volume down
-			changed_prefs = adjust_sound_volume_down(sound_preferences, _snd_adjust_volume);
+			changed_prefs = SoundManager::instance()->AdjustVolumeDown(_snd_adjust_volume);
 			break;
 
 		case SDLK_BACKSPACE:	// switch player view
@@ -1177,5 +1177,5 @@ void LoadBaseMMLScripts()
 void PlayInterfaceButtonSound(short SoundID)
 {
 	if (TEST_FLAG(input_preferences->modifiers,_inputmod_use_button_sounds))
-		play_sound(SoundID, (world_location3d *) NULL, NONE);
+		SoundManager::instance()->PlaySound(SoundID, (world_location3d *) NULL, NONE);
 }

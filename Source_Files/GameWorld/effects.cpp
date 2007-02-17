@@ -39,7 +39,7 @@ Aug 30, 2000 (Loren Petrich):
 #include "map.h"
 #include "interface.h"
 #include "effects.h"
-#include "mysound.h"
+#include "SoundManager.h"
 
 #include "Packing.h"
 
