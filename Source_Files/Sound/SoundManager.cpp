@@ -593,7 +593,10 @@ void SoundManager::SetStatus(bool active)
 				if (parameters.flags & _ambient_sound_flag)
 					total_channel_count += MAXIMUM_AMBIENT_SOUND_CHANNELS;
 				int32 samples = parameters.samples;
-				total_buffer_size = parameters.flags & _more_sounds_flag ? MORE_SOUND_BUFFER_SIZE : MINIMUM_SOUND_BUFFER_SIZE;
+				if (parameters.flags & _more_sounds_flag)
+					total_buffer_size = MORE_SOUND_BUFFER_SIZE;
+				else
+					total_buffer_size = MINIMUM_SOUND_BUFFER_SIZE;
 				if (parameters.flags & _ambient_sound_flag)
 					total_buffer_size += AMBIENT_SOUND_BUFFER_SIZE;
 				if (parameters.flags & _16bit_sound_flag)
