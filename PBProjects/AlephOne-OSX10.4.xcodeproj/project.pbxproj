@@ -18,6 +18,15 @@
 		AE179F1D09C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
+		AE626E6C0B878534009CFF2D /* Mixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E630B878534009CFF2D /* Mixer.cpp */; };
+		AE626E6D0B878534009CFF2D /* Mixer.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E640B878534009CFF2D /* Mixer.h */; };
+		AE626E6E0B878534009CFF2D /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
+		AE626E6F0B878534009CFF2D /* Music.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E660B878534009CFF2D /* Music.h */; };
+		AE626E700B878534009CFF2D /* SoundFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E670B878534009CFF2D /* SoundFile.cpp */; };
+		AE626E710B878534009CFF2D /* SoundFile.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E680B878534009CFF2D /* SoundFile.h */; };
+		AE626E720B878534009CFF2D /* SoundManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E690B878534009CFF2D /* SoundManager.cpp */; };
+		AE626E730B878534009CFF2D /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
+		AE626E740B878534009CFF2D /* SoundManagerEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
 		AEC02F910B6D8B310095E8C9 /* SW_Texture_Extras.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */; };
@@ -154,11 +163,8 @@
 		AEC3C78D09AD68AC003258E4 /* TextLayoutHelper.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A20240D85D01A80001 /* TextLayoutHelper.h */; };
 		AEC3C78E09AD68AC003258E4 /* TextStrings.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A40240D85D01A80001 /* TextStrings.h */; };
 		AEC3C78F09AD68AC003258E4 /* ViewControl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC93A60240D85D01A80001 /* ViewControl.h */; };
-		AEC3C79009AD68AC003258E4 /* music.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94120240DA4301A80001 /* music.h */; };
-		AEC3C79109AD68AC003258E4 /* mysound.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94130240DA4301A80001 /* mysound.h */; };
 		AEC3C79209AD68AC003258E4 /* song_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94140240DA4301A80001 /* song_definitions.h */; };
 		AEC3C79309AD68AC003258E4 /* sound_definitions.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94150240DA4301A80001 /* sound_definitions.h */; };
-		AEC3C79409AD68AC003258E4 /* sound_sdl.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC94170240DA4401A80001 /* sound_sdl.h */; };
 		AEC3C79509AD68AC003258E4 /* ColorParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942C0240DE0E01A80001 /* ColorParser.h */; };
 		AEC3C79609AD68AC003258E4 /* DamageParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942D0240DE0E01A80001 /* DamageParser.h */; };
 		AEC3C79709AD68AC003258E4 /* ShapesParser.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC942E0240DE0E01A80001 /* ShapesParser.h */; };
@@ -322,7 +328,6 @@
 		AEC3C84009AD68AC003258E4 /* TextLayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */; };
 		AEC3C84109AD68AC003258E4 /* TextStrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A30240D85D01A80001 /* TextStrings.cpp */; };
 		AEC3C84209AD68AC003258E4 /* ViewControl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A50240D85D01A80001 /* ViewControl.cpp */; };
-		AEC3C84309AD68AC003258E4 /* mysound.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC94190240DA4401A80001 /* mysound.cpp */; };
 		AEC3C84409AD68AC003258E4 /* ColorParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943A0240DE0E01A80001 /* ColorParser.cpp */; };
 		AEC3C84509AD68AC003258E4 /* DamageParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943B0240DE0E01A80001 /* DamageParser.cpp */; };
 		AEC3C84609AD68AC003258E4 /* ShapesParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */; };
@@ -441,7 +446,7 @@
 		AEC3C87709AD68AC003258E4 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
-			dstPath = AlephOneSDL.app/Contents/Frameworks;
+			dstPath = AlephOne.app/Contents/Frameworks;
 			dstSubfolderSpec = 16;
 			files = (
 				AEFDE8170A38E99300CFEB97 /* libmikmod-coreaudio.framework in CopyFiles */,
@@ -525,6 +530,15 @@
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604DD086F6DF100D9797C /* network_capabilities.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_capabilities.cpp; path = ../Source_Files/Network/network_capabilities.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604E0086F6E0D00D9797C /* network_capabilities.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_capabilities.h; path = ../Source_Files/Network/network_capabilities.h; sourceTree = SOURCE_ROOT; };
+		AE626E630B878534009CFF2D /* Mixer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Mixer.cpp; sourceTree = "<group>"; };
+		AE626E640B878534009CFF2D /* Mixer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Mixer.h; sourceTree = "<group>"; };
+		AE626E650B878534009CFF2D /* Music.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Music.cpp; sourceTree = "<group>"; };
+		AE626E660B878534009CFF2D /* Music.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Music.h; sourceTree = "<group>"; };
+		AE626E670B878534009CFF2D /* SoundFile.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SoundFile.cpp; sourceTree = "<group>"; };
+		AE626E680B878534009CFF2D /* SoundFile.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SoundFile.h; sourceTree = "<group>"; };
+		AE626E690B878534009CFF2D /* SoundManager.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SoundManager.cpp; sourceTree = "<group>"; };
+		AE626E6A0B878534009CFF2D /* SoundManager.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SoundManager.h; sourceTree = "<group>"; };
+		AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SoundManagerEnums.h; sourceTree = "<group>"; };
 		AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader_Shared.cpp; path = ../Source_Files/RenderMain/ImageLoader_Shared.cpp; sourceTree = SOURCE_ROOT; };
 		AE791CF60968E49100350190 /* DDS.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DDS.h; path = ../Source_Files/RenderMain/DDS.h; sourceTree = SOURCE_ROOT; };
 		AEBF94A70834FD9500C0B18C /* NibsUiHelpers.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = NibsUiHelpers.h; path = ../Source_Files/CSeries/NibsUiHelpers.h; sourceTree = SOURCE_ROOT; };
@@ -870,14 +884,8 @@
 		F5CC93A40240D85D01A80001 /* TextStrings.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = TextStrings.h; sourceTree = "<group>"; };
 		F5CC93A50240D85D01A80001 /* ViewControl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ViewControl.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		F5CC93A60240D85D01A80001 /* ViewControl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ViewControl.h; sourceTree = "<group>"; };
-		F5CC94120240DA4301A80001 /* music.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = music.h; sourceTree = "<group>"; };
-		F5CC94130240DA4301A80001 /* mysound.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = mysound.h; sourceTree = "<group>"; };
 		F5CC94140240DA4301A80001 /* song_definitions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = song_definitions.h; sourceTree = "<group>"; };
 		F5CC94150240DA4301A80001 /* sound_definitions.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = sound_definitions.h; sourceTree = "<group>"; };
-		F5CC94160240DA4301A80001 /* sound_macintosh.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = sound_macintosh.h; sourceTree = "<group>"; };
-		F5CC94170240DA4401A80001 /* sound_sdl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = sound_sdl.h; sourceTree = "<group>"; };
-		F5CC94180240DA4401A80001 /* music.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = music.cpp; sourceTree = "<group>"; };
-		F5CC94190240DA4401A80001 /* mysound.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = mysound.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		F5CC942C0240DE0E01A80001 /* ColorParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ColorParser.h; sourceTree = "<group>"; };
 		F5CC942D0240DE0E01A80001 /* DamageParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = DamageParser.h; sourceTree = "<group>"; };
 		F5CC942E0240DE0E01A80001 /* ShapesParser.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ShapesParser.h; sourceTree = "<group>"; };
@@ -1662,13 +1670,19 @@
 		F5CC94110240DA4301A80001 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
+				AE626E630B878534009CFF2D /* Mixer.cpp */,
+				AE626E640B878534009CFF2D /* Mixer.h */,
+				AE626E650B878534009CFF2D /* Music.cpp */,
+				AE626E660B878534009CFF2D /* Music.h */,
+				AE626E670B878534009CFF2D /* SoundFile.cpp */,
+				AE626E680B878534009CFF2D /* SoundFile.h */,
+				AE626E690B878534009CFF2D /* SoundManager.cpp */,
+				AE626E6A0B878534009CFF2D /* SoundManager.h */,
+				AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */,
 				F5CC94680240F38101A80001 /* Macintosh */,
 				F5CC94690240F38101A80001 /* SDL */,
-				F5CC94120240DA4301A80001 /* music.h */,
-				F5CC94130240DA4301A80001 /* mysound.h */,
 				F5CC94140240DA4301A80001 /* song_definitions.h */,
 				F5CC94150240DA4301A80001 /* sound_definitions.h */,
-				F5CC94190240DA4401A80001 /* mysound.cpp */,
 			);
 			name = Sound;
 			path = ../Source_Files/Sound;
@@ -1753,8 +1767,6 @@
 		F5CC94680240F38101A80001 /* Macintosh */ = {
 			isa = PBXGroup;
 			children = (
-				F5CC94160240DA4301A80001 /* sound_macintosh.h */,
-				F5CC94180240DA4401A80001 /* music.cpp */,
 			);
 			name = Macintosh;
 			sourceTree = "<group>";
@@ -1762,7 +1774,6 @@
 		F5CC94690240F38101A80001 /* SDL */ = {
 			isa = PBXGroup;
 			children = (
-				F5CC94170240DA4401A80001 /* sound_sdl.h */,
 			);
 			name = SDL;
 			sourceTree = "<group>";
@@ -1945,11 +1956,8 @@
 				AEC3C78D09AD68AC003258E4 /* TextLayoutHelper.h in Headers */,
 				AEC3C78E09AD68AC003258E4 /* TextStrings.h in Headers */,
 				AEC3C78F09AD68AC003258E4 /* ViewControl.h in Headers */,
-				AEC3C79009AD68AC003258E4 /* music.h in Headers */,
-				AEC3C79109AD68AC003258E4 /* mysound.h in Headers */,
 				AEC3C79209AD68AC003258E4 /* song_definitions.h in Headers */,
 				AEC3C79309AD68AC003258E4 /* sound_definitions.h in Headers */,
-				AEC3C79409AD68AC003258E4 /* sound_sdl.h in Headers */,
 				AEC3C79509AD68AC003258E4 /* ColorParser.h in Headers */,
 				AEC3C79609AD68AC003258E4 /* DamageParser.h in Headers */,
 				AEC3C79709AD68AC003258E4 /* ShapesParser.h in Headers */,
@@ -1996,6 +2004,11 @@
 				AEC3C7C009AD68AC003258E4 /* Console.h in Headers */,
 				AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */,
 				AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */,
+				AE626E6D0B878534009CFF2D /* Mixer.h in Headers */,
+				AE626E6F0B878534009CFF2D /* Music.h in Headers */,
+				AE626E710B878534009CFF2D /* SoundFile.h in Headers */,
+				AE626E730B878534009CFF2D /* SoundManager.h in Headers */,
+				AE626E740B878534009CFF2D /* SoundManagerEnums.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2084,7 +2097,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes\"\ncp -R \"$SRCROOT/../data/default_theme\" \"$SYMROOT/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default\"\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOneSDL.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes\"\ncp -R \"$SRCROOT/../data/default_theme\" \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\"\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2200,7 +2213,6 @@
 				AEC3C84009AD68AC003258E4 /* TextLayoutHelper.cpp in Sources */,
 				AEC3C84109AD68AC003258E4 /* TextStrings.cpp in Sources */,
 				AEC3C84209AD68AC003258E4 /* ViewControl.cpp in Sources */,
-				AEC3C84309AD68AC003258E4 /* mysound.cpp in Sources */,
 				AEC3C84409AD68AC003258E4 /* ColorParser.cpp in Sources */,
 				AEC3C84509AD68AC003258E4 /* DamageParser.cpp in Sources */,
 				AEC3C84609AD68AC003258E4 /* ShapesParser.cpp in Sources */,
@@ -2256,6 +2268,10 @@
 				AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */,
 				AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */,
 				AEC02F910B6D8B310095E8C9 /* SW_Texture_Extras.cpp in Sources */,
+				AE626E6C0B878534009CFF2D /* Mixer.cpp in Sources */,
+				AE626E6E0B878534009CFF2D /* Music.cpp in Sources */,
+				AE626E700B878534009CFF2D /* SoundFile.cpp in Sources */,
+				AE626E720B878534009CFF2D /* SoundManager.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
