@@ -82,9 +82,8 @@ private:
 		uint8 *loop;			// Pointer to loop start
 		int32 loop_length;		// Loop length in bytes (0 = don't loop)
 		
-		_fixed rate;				// Sample rate (relative to output sample rate)
+		_fixed rate;                    // Sample rate (relative to output sample rate)
 		_fixed counter;			// Counter for up/downsampling
-		int32 pleft, pright;             // Previous sample for interpolation
 		
 		int16 left_volume;		// Volume (0x100 = nominal)
 		int16 right_volume;
@@ -98,7 +97,6 @@ private:
 			next_header = header;
 			next_pitch = pitch;
 		}
-		void PrimeInterpolator();
 
 		void Quiet() { active = false; };
 	};
@@ -153,52 +151,53 @@ private:
 						else
 							dleft = dright = (int32)(int8)(*(c->data) ^ 0x80) << 8;
 					}
+					if ((c->counter & 0xffff) && c->length > c->bytes_per_frame)
+					{
+						uint8 *rdata = c->data + c->bytes_per_frame;
+						int32 rleft, rright;
 
-					int32 ileft, iright;
-					ileft = c->pleft + (((dleft - c->pleft) * (c->counter & 0xffff)) >> 16);
-					iright = c->pright + (((dright - c->pright) * (c->counter & 0xffff)) >> 16);
-					
-					// Mix into output
-					left += (ileft * c->left_volume) >> 8;
-					right += (iright * c->right_volume) >> 8;
+						if (c->stereo) {
+							if (c->sixteen_bit) {
+								rleft = (int16)SDL_SwapBE16(0[(int16 *)rdata]);
+								rright = (int16)SDL_SwapBE16(1[(int16 *)rdata]);
+							} else if (c->signed_8bit) {
+								rleft = (int32)(int8)(0[rdata]) * 256;
+								rright = (int32)(int8)(1[rdata]) * 256;
+							} else {
+								rleft = (int32)(int8)(0[rdata] ^ 0x80) * 256;
+								rright = (int32)(int8)(1[rdata] ^ 0x80) * 256;
+							}
+						} else {
+							if (c->sixteen_bit)
+								rleft = rright = (int16)SDL_SwapBE16(*(int16 *)rdata);
+							else if (c->signed_8bit)
+								rleft = rright = (int32)(int8)(*(rdata)) << 8;
+							else
+								rleft = rright = (int32)(int8)(*(rdata) ^ 0x80) << 8;
+						}
+
+						int32 ileft, iright;
+						ileft = dleft + (((rleft - dleft) * (c->counter & 0xffff)) >> 16);
+						iright = dright + (((rright - dright) * (c->counter & 0xffff)) >> 16);
+
+						// Mix into output
+						left += (ileft * c->left_volume) >> 8;
+						right += (iright * c->right_volume) >> 8;
+					}
+					else
+					{
+						// Mix into output
+						left += (dleft * c->left_volume) >> 8;
+						right += (dright * c->right_volume) >> 8;
+					}
 					
 					// Advance sound data pointer
 					c->counter += c->rate;
 					if (c->counter >= 0x10000) {
 						int count = c->counter >> 16;
 						c->counter &= 0xffff;
-						if (count == 1 || c->length <= c->bytes_per_frame )
-						{
-							c->data += c->bytes_per_frame * count;
-							c->length -= c->bytes_per_frame * count;
-							c->pleft = dleft;
-							c->pright = dright;
-						}
-						else
-						{
-							c->data += c->bytes_per_frame * (count - 1);
-							if (c->stereo) {
-								if (c->sixteen_bit) {
-									c->pleft = (int16)SDL_SwapBE16(0[(int16 *)c->data]);
-									c->pright = (int16)SDL_SwapBE16(1[(int16 *)c->data]);
-								} else if (c->signed_8bit) {
-									c->pleft = (int32)(int8)(0[c->data]) * 256;
-									c->pright = (int32)(int8)(1[c->data]) * 256;
-								} else {
-									c->pleft = (int32)(int8)(0[c->data] ^ 0x80) * 256;
-									c->pright = (int32)(int8)(1[c->data] ^ 0x80) * 256;
-								}
-							} else {
-								if (c->sixteen_bit)
-									c->pleft = c->pright = (int16)SDL_SwapBE16(*(int16 *)c->data);
-								else if (c->signed_8bit)
-									c->pleft = c->pright = (int32)(int8)(*(c->data)) << 8;
-								else
-									c->pleft = c->pright = (int32)(int8)(*(c->data) ^ 0x80) << 8;
-							}
-							c->data += c->bytes_per_frame;
-							c->length -= c->bytes_per_frame * count;
-						}
+						c->data += c->bytes_per_frame * count;
+						c->length -= c->bytes_per_frame * count;
 						
 						// Sound finished? Then enter loop or load next sound header
 						if (c->length <= 0) {

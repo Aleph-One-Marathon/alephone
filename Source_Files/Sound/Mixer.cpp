@@ -107,7 +107,6 @@ void Mixer::StartMusicChannel(bool sixteen_bit, bool stereo, bool signed_8bit, i
 	c->left_volume = c->right_volume = 0x100;
 	c->active = true;
 	c->loop_length = 0;
-	c->pleft = c->pright = 0;
 }
 
 void Mixer::UpdateMusicChannel(uint8* data, int len)
@@ -143,7 +142,6 @@ void Mixer::EnsureNetworkAudioPlaying()
 			c->right_volume = 0x100;
 			c->counter = 0;
 			c->active = true;
-			c->PrimeInterpolator();
 
 			SDL_UnlockAudio();
 		}
@@ -315,42 +313,5 @@ void Mixer::Channel::LoadSoundHeader(uint8 *data, _fixed pitch)
 	// Reset sample counter
 	counter = 0;
 
-	PrimeInterpolator();
-
 	SDL_RWclose(p);	
-}
-
-void Mixer::Channel::PrimeInterpolator()
-{
-	int count = rate >> 16;
-	if (length <= bytes_per_frame * count) 
-	{
-		// who would do this to us!?
-		pleft = pright = 0;
-		return;
-	}
-
-	data += bytes_per_frame * (count - 1);
-	if (stereo) {
-		if (sixteen_bit) {
-			pleft = (int16)SDL_SwapBE16(0[(int16 *)data]);
-			pright = (int16)SDL_SwapBE16(1[(int16 *)data]);
-		} else if (signed_8bit) {
-			pleft = (int32)(int8)(0[data]) * 256;
-			pright = (int32)(int8)(1[data]) * 256;
-		} else {
-			pleft = (int32)(int8)(0[data] ^ 0x80) * 256;
-			pright = (int32)(int8)(1[data] ^ 0x80) * 256;
-		}
-	} else {
-		if (sixteen_bit)
-			pleft = pright = (int16)SDL_SwapBE16(*(int16 *)data);
-		else if (signed_8bit)
-			pleft = pright = (int32)(int8)(*(data)) << 8;
-		else
-			pleft = pright = (int32)(int8)(*(data) ^ 0x80) << 8;
-	}
-	data += bytes_per_frame;
-	length -= bytes_per_frame * count;
-	counter += (rate & 0xffff);
 }
