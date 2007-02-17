@@ -162,7 +162,6 @@ struct serial_number_data *serial_preferences = NULL;
 struct network_preferences_data *network_preferences = NULL;
 struct player_preferences_data *player_preferences = NULL;
 struct input_preferences_data *input_preferences = NULL;
-//struct sound_manager_parameters *sound_preferences = NULL;
 SoundManager::Parameters *sound_preferences = NULL;
 struct environment_preferences_data *environment_preferences = NULL;
 
@@ -1407,7 +1406,6 @@ void initialize_preferences(
 		graphics_preferences= new graphics_preferences_data;
 		player_preferences= new player_preferences_data;
 		input_preferences= new input_preferences_data;
-//		sound_preferences= new sound_manager_parameters;
 		sound_preferences = new SoundManager::Parameters;
 		serial_preferences= new serial_number_data;
 		network_preferences= new network_preferences_data;
@@ -1438,7 +1436,6 @@ void read_preferences ()
 	default_network_preferences(network_preferences);
 	default_player_preferences(player_preferences);
 	default_input_preferences(input_preferences);
-//	default_sound_manager_parameters(sound_preferences);
 	*sound_preferences = SoundManager::Parameters();
 	default_environment_preferences(environment_preferences);
 
@@ -1655,6 +1652,8 @@ void write_preferences(
 	fprintf(F,"  volume=\"%hd\"\n",sound_preferences->volume);
 	fprintf(F,"  music_volume=\"%hd\"\n",sound_preferences->music);
 	fprintf(F,"  flags=\"%hu\"\n",sound_preferences->flags);
+	fprintf(F,"  rate=\"\%hu\"\n", sound_preferences->rate);
+	fprintf(F,"  samples=\"\%hu\"\n", sound_preferences->samples);
 	fprintf(F,"/>\n\n");
 	
 #if !defined(DISABLE_NETWORKING)
@@ -2994,6 +2993,14 @@ bool XML_SoundPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"flags"))
 	{
 		return ReadUInt16Value(Value,sound_preferences->flags);
+	}
+	else if (StringsEqual(Tag,"rate"))
+	{
+		return ReadUInt16Value(Value, sound_preferences->rate);
+	}
+	else if (StringsEqual(Tag,"samples"))
+	{
+		return ReadUInt16Value(Value, sound_preferences->samples);
 	}
 	return true;
 }

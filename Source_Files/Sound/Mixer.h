@@ -32,7 +32,7 @@ class Mixer
 {
 public:
 	static Mixer *instance() { if (!m_instance) m_instance = new Mixer(); return m_instance; }
-	void Start(_fixed pitch, bool sixteen_bit, bool stereo, int num_channels, int volume);
+	void Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, int volume, uint16 samples);
 	void Stop();
 
 	void SetVolume(short volume) { main_volume = volume; }

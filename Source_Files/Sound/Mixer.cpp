@@ -23,14 +23,14 @@
 
 Mixer* Mixer::m_instance = 0;
 
-void Mixer::Start(_fixed pitch, bool sixteen_bit, bool stereo, int num_channels, int volume)
+void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, int volume, uint16 samples)
 {
 	sound_channel_count = num_channels;
 	main_volume = volume;
-	desired.freq = (pitch >> 16) * 22050;
+	desired.freq = rate;
 	desired.format = sixteen_bit ? AUDIO_S16SYS : AUDIO_S8;
 	desired.channels = stereo ? 2 : 1;
-	desired.samples = 2048;
+	desired.samples = samples;
 	desired.callback = MixerCallback;
 	desired.userdata = reinterpret_cast<void *>(this);
 
