@@ -474,7 +474,7 @@ bool Music::FillBuffer()
 		macos_buffer_length = to_read;
 		macos_read_more = false;
 #else
-		Mixer::instance()->UpdateMusicChannel(reinterpret_cast<uint8 *>(music_buffer), to_read);
+		Mixer::instance()->UpdateMusicChannel(&music_buffer.front(), to_read);
 #endif
 		return true;
 	}
