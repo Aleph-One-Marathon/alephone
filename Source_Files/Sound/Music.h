@@ -68,7 +68,11 @@ private:
 	bool Load(FileSpecifier &file);
 	static Music *m_instance;
 
+#ifdef __MACOS__
+	static const int MUSIC_BUFFER_SIZE = 0x10000;
+#else
 	static const int MUSIC_BUFFER_SIZE = 1024;
+#endif
 
 #ifdef HAVE_SDL_SOUND
 	Sound_Sample* music_sample;
