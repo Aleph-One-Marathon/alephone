@@ -408,7 +408,7 @@ void Music::Rewind()
 #endif
 #ifdef __MACOS__
 	macos_file_done = false;
-	fill_music_buffer_at_interrupt();
+	InterruptFillBuffer();
 #endif
 }
 
@@ -416,7 +416,7 @@ void Music::Play()
 {
 	if (FillBuffer()) {
 #ifdef __MACOS__
-		fill_music_buffer_at_interrupt();
+		InterruptFillBuffer();
 #endif
 		// let the mixer handle it
 		Mixer::instance()->StartMusicChannel(sixteen_bit, stereo, signed_8bit, bytes_per_frame, rate);
@@ -426,12 +426,11 @@ void Music::Play()
 #ifdef __MACOS__
 bool Music::InterruptFillBuffer()
 {
-	static uint8 macos_music_buffer[MUSIC_BUFFER_SIZE];
 	if (macos_file_done) return false;
 
 	// otherwise, copy out of the buffer (I know), and set the flag to read more when we're not at interrupt time
-	memcpy(macos_music_buffer, music_buffer, macos_buffer_length);
-	Mixer::instance()->UpdateMusicChannel(macos_music_buffer, macos_buffer_length);
+	memcpy(&macos_music_buffer.front(), &music_buffer.front(), macos_buffer_length);
+	Mixer::instance()->UpdateMusicChannel(&macos_music_buffer.front(), macos_buffer_length);
 	macos_read_more = true;
 	return true;
 }
@@ -469,7 +468,7 @@ bool Music::FillBuffer()
 	uint32 to_read = music_data_remaining > MUSIC_BUFFER_SIZE ? MUSIC_BUFFER_SIZE : music_data_remaining;
 	if (to_read > 0)
 	{
-		SDL_RWread(music_rw, music_buffer, 1, to_read);
+		SDL_RWread(music_rw, &music_buffer.front(), 1, to_read);
 		music_data_remaining -= to_read;
 #ifdef __MACOS__
 		macos_buffer_length = to_read;
