@@ -634,37 +634,44 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 			case 16:
 				switch (polygon->transfer_mode)
 				{
-					case _textured_transfer:
-						if (polygon->texture->flags&_TRANSPARENT_BIT) {
-							texture_vertical_polygon_lines<pixel16, _sw_alpha_off, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
-						} 
-						else 
-						{
-							SW_Texture *sw_texture =0 ;
-							if (graphics_preferences->software_alpha_blending)
-							{
-								sw_texture = SW_Texture_Extras::instance()->GetTexture(polygon->ShapeDesc);
-							}
-							if (sw_texture && !polygon->VoidPresent && sw_texture->opac_type())
-							{
-								if (graphics_preferences->software_alpha_blending == _sw_alpha_fast) {
-									texture_vertical_polygon_lines<pixel16, _sw_alpha_fast, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
-								} 
-								else if (graphics_preferences->software_alpha_blending == _sw_alpha_nice) {
-									texture_vertical_polygon_lines<pixel16, _sw_alpha_nice, false>(screen, view, (struct _vertical_polygon_data *) precalculation_table, left_table, right_table, sw_texture->opac_table());
-								}
+				case _textured_transfer:
+				{
+					SW_Texture *sw_texture =0 ;
+					if (graphics_preferences->software_alpha_blending)
+					{
+						sw_texture = SW_Texture_Extras::instance()->GetTexture(polygon->ShapeDesc);
+					}
+					if (sw_texture && !polygon->VoidPresent && sw_texture->opac_type())
+					{
+						if (graphics_preferences->software_alpha_blending == _sw_alpha_fast) {
+							if (polygon->texture->flags & _TRANSPARENT_BIT) {
+								texture_vertical_polygon_lines<pixel16, _sw_alpha_fast, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
 							} else {
-								texture_vertical_polygon_lines<pixel16, _sw_alpha_off, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+								texture_vertical_polygon_lines<pixel16, _sw_alpha_fast, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+							}
+						} 
+						else if (graphics_preferences->software_alpha_blending == _sw_alpha_nice) {
+							if (polygon->texture->flags & _TRANSPARENT_BIT)  {
+								texture_vertical_polygon_lines<pixel16, _sw_alpha_nice, true>(screen, view, (struct _vertical_polygon_data *) precalculation_table, left_table, right_table, sw_texture->opac_table());
+							} else {
+								texture_vertical_polygon_lines<pixel16, _sw_alpha_nice, false>(screen, view, (struct _vertical_polygon_data *) precalculation_table, left_table, right_table, sw_texture->opac_table());
 							}
 						}
-						break;
-
-					default:
-						assert(false);
-						break;
+					} else {
+						if (polygon->texture->flags & _TRANSPARENT_BIT) {
+							texture_vertical_polygon_lines<pixel16, _sw_alpha_off, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+						} else {
+							texture_vertical_polygon_lines<pixel16, _sw_alpha_off, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+						}
+					}
 				}
 				break;
-			
+				default:
+					assert(false);
+					break;
+				}
+				break;
+				
 			case 32:
 				switch (polygon->transfer_mode)
 				{
@@ -679,9 +686,9 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 						{
 							if (graphics_preferences->software_alpha_blending == _sw_alpha_fast) {
 								if (polygon->texture->flags&_TRANSPARENT_BIT)
-									texture_vertical_polygon_lines<pixel32, _sw_alpha_fast, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
-								else
 									texture_vertical_polygon_lines<pixel32, _sw_alpha_fast, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+								else
+									texture_vertical_polygon_lines<pixel32, _sw_alpha_fast, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
 							}
 							else if (graphics_preferences->software_alpha_blending == _sw_alpha_nice) 
 							{
@@ -692,9 +699,9 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 							}
 						} else {
 							if (polygon->texture->flags & _TRANSPARENT_BIT)
-								texture_vertical_polygon_lines<pixel32, _sw_alpha_off, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
-							else
 								texture_vertical_polygon_lines<pixel32, _sw_alpha_off, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
+							else
+								texture_vertical_polygon_lines<pixel32, _sw_alpha_off, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
 						}
 						break;
 					}
