@@ -147,8 +147,9 @@ case "$target" in
     CPPFLAGS="$CPPFLAGS -D__DARWIN__ -F/System/Library/Frameworks  -I/System/Library/Frameworks/OpenGL.framework/Headers"
     ;;
   *-*-linux*)
-    SYS_GL_LIBS="-lGL -lpthread"
-    CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include -L/usr/X11R6/lib"
+    SYS_GL_LIBS="-lGL -lpthread"	
+    LIBS="$LIBS -L/usr/X11R6/lib"
+    CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include"
     ;;	
   *-*-netbsd*)
     SYS_GL_LIBS="-lGL"
