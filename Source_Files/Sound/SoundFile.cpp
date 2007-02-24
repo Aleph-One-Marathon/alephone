@@ -22,6 +22,152 @@ SOUNDFILE.CPP
 
 #include "SoundFile.h"
 
+SoundHeader::SoundHeader() :
+	sixteen_bit(false),
+	stereo(false),
+	signed_8bit(false),
+	bytes_per_frame(false),
+	loop_start(0),
+	loop_end(0),
+	rate(0),
+	data(0),
+	length(0)
+{
+}
+
+bool SoundHeader::UnpackStandardSystem7Header(AIStreamBE &header)
+{
+	try 
+	{
+		bytes_per_frame = 1;
+		signed_8bit = false;
+		sixteen_bit = false;
+		stereo = false;
+		header.ignore(4); // sample pointer
+		header >> length;
+		header >> rate;
+		header >> loop_start;
+		header >> loop_end;
+		
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+bool SoundHeader::UnpackExtendedSystem7Header(AIStreamBE &header)
+{
+	try 
+	{
+		signed_8bit = false;
+		header.ignore(4); // sample pointer
+		int32 num_channels;
+		header >> num_channels;
+		stereo = (num_channels == 2);
+		header >> rate;
+		header >> loop_start;
+		header >> loop_end;
+		header.ignore(1); // baseFrequency
+		uint8 header_type;
+		header >> header_type;
+		int32 num_frames;
+		header >> num_frames;
+		
+		if (header_type == 0xfe)
+		{
+			header.ignore(10); // AIFF rate
+			header.ignore(4); // marker chunk
+			uint32 format;
+			header >> format;
+			header.ignore(4 * 3); // future use, ptr, ptr
+			int16 comp_id;
+			header >> comp_id;
+			if (format != FOUR_CHARS_TO_INT('t','w','o','s') || comp_id != -1) {
+				return false;
+			}
+			signed_8bit = true;
+			header.ignore(4);
+		} else {
+			header.ignore(22);
+		}
+
+		int16 sample_size;
+		header >> sample_size;
+
+		sixteen_bit = (sample_size == 16);
+		bytes_per_frame = (sixteen_bit ? 2 : 1) * (stereo ? 2 : 1);
+
+		length = num_frames * bytes_per_frame;
+		
+		return true;
+	} catch (...) {
+		return false;
+	}
+}
+
+bool SoundHeader::Load(const uint8* data)
+{
+	Clear();
+	if (data[20] == 0x00)
+	{
+		AIStreamBE header(data, 22);
+		if (!UnpackStandardSystem7Header(header)) return false;
+		this->data = data + 22;
+		return true;
+	}
+	else if (data[20] == 0xff || data[20] == 0xfe)
+	{
+		AIStreamBE header(data, 64);
+		if (!UnpackExtendedSystem7Header(header)) return false;
+		this->data = data + 64;
+		return true;
+	}
+	return false;
+}
+
+bool SoundHeader::Load(OpenedFile &SoundFile)
+{
+	Clear();
+	if (!SoundFile.IsOpen()) return false;
+
+	long file_position;
+	SoundFile.GetPosition(file_position);
+	SoundFile.SetPosition(file_position + 20);
+	uint8 header_type;
+	if (!SoundFile.Read(1, &header_type)) return false;
+	SoundFile.SetPosition(file_position);
+
+	if (header_type == 0x0)
+	{
+		// standard sound header
+		vector<uint8> headerBuffer(22);
+		if (!SoundFile.Read(headerBuffer.size(), &headerBuffer.front()))
+			return false;
+
+		AIStreamBE header(&headerBuffer.front(), headerBuffer.size());
+		if (!UnpackStandardSystem7Header(header)) return false;
+		
+		stored_data.resize(length);
+		if (!SoundFile.Read(stored_data.size(), &stored_data.front())) return false;
+		return true;
+	}
+	else if (header_type == 0xff || header_type == 0xfe)
+	{
+		vector<uint8> headerBuffer(64);
+		if (!SoundFile.Read(headerBuffer.size(), &headerBuffer.front()))
+			return false;
+
+		AIStreamBE header(&headerBuffer.front(), headerBuffer.size());
+		if (!UnpackExtendedSystem7Header(header)) return false;
+
+		stored_data.resize(length);
+		if (!SoundFile.Read(stored_data.size(), &stored_data.front())) return false;
+		return true;
+	}
+
+	return false;
+}
+
 bool SoundDefinition::Unpack(OpenedFile &SoundFile)
 {
 	if (!SoundFile.IsOpen()) return false;
@@ -66,27 +212,30 @@ bool SoundDefinition::Load(OpenedFile &SoundFile, bool LoadPermutations)
 	if (!SoundFile.IsOpen()) return false;
 
 	if (LoadPermutations)
-		sound_data.resize(total_length);
+		sounds.resize(permutations);
 	else
-		sound_data.resize(single_length);
+		sounds.resize(1);
 
-	if (!SoundFile.SetPosition(group_offset))
+	for (int i = 0; i < sounds.size(); i++)
 	{
-		sound_data.clear();
-		return false;
+		if (!SoundFile.SetPosition(group_offset + sound_offsets[i])
+		    || !sounds[i].Load(SoundFile))
+		{
+			sounds.clear();
+			return false;
+		}
+	}
+}
+
+int32 SoundDefinition::LoadedSize()
+{
+	int32 size = 0;
+	for (int i = 0; i < sounds.size(); i++)
+	{
+		size += sounds[i].Length();
 	}
 
-	if (SoundFile.Read(sound_data.size(), &sound_data.front()))
-	{
-//		_sm_globals->loaded_sounds_size += sound_data.size();
-		return true;
-	}
-	else
-	{
-		sound_data.clear();
-		return false;
-	}
-
+	return size;
 }
 
 bool SoundFile::Open(FileSpecifier& SoundFileSpec)

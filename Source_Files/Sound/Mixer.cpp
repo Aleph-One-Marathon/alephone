@@ -23,6 +23,32 @@
 
 Mixer* Mixer::m_instance = 0;
 
+Mixer::Header::Header() : 
+	sixteen_bit(false),
+	stereo(false),
+	signed_8bit(false),
+	bytes_per_frame(0),
+	data(0),
+	length(0),
+	loop(0),
+	loop_length(0),
+	rate(FIXED_ONE)
+{
+}
+
+Mixer::Header::Header(const SoundHeader& header) :
+	sixteen_bit(header.sixteen_bit),
+	stereo(header.stereo),
+	signed_8bit(header.signed_8bit),
+	bytes_per_frame(header.bytes_per_frame),
+	data(header.Data()),
+	length(header.Length()),
+	loop(header.Data() + header.loop_start),
+	loop_length(header.loop_end - header.loop_start),
+	rate(header.rate)
+{
+}
+
 void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, int volume, uint16 samples)
 {
 	sound_channel_count = num_channels;
@@ -53,7 +79,7 @@ void Mixer::Stop()
 	channels.clear();
 }
 
-void Mixer::BufferSound(int channel, uint8* header, _fixed pitch)
+void Mixer::BufferSound(int channel, const Header& header, _fixed pitch)
 {
 	SDL_LockAudio();
 	if (channels[channel].active)
@@ -202,9 +228,10 @@ void Mixer::PlaySoundResource(LoadedResource &rsrc)
 
 		if (cmd == 0x8051) {
 
-			// bufferCmd, load sound header and start channel
+			SoundHeader header;
+			header.Load((uint8 *) rsrc.GetPointer() + param2);
 			c->active = true;
-			c->LoadSoundHeader((uint8 *)rsrc.GetPointer() + param2, FIXED_ONE);
+			c->LoadSoundHeader(header, FIXED_ONE);
 			c->left_volume = c->right_volume = 0x100;
 		}
 	}
@@ -240,78 +267,15 @@ Mixer::Channel::Channel() :
 {
 }
 
-void Mixer::Channel::LoadSoundHeader(uint8 *data, _fixed pitch)
+void Mixer::Channel::LoadSoundHeader(const Header& header, _fixed pitch)
 {
-	// Open stream to header
-	SDL_RWops *p = SDL_RWFromMem(data, 64);
-	if (p == NULL) {
-		active = false;
-		return;
-	}
-
-	// Get sound header type, skip unused sample pointer
-	uint8 header_type = data[20];
-	SDL_RWseek(p, 4, SEEK_CUR);
-
-	// Parse sound header
-	bytes_per_frame = 1;
-	signed_8bit = false;
-	if (header_type == 0x00) {			// Standard sound header
-		//printf("standard sound header\n");
-		this->data = data + 22;
-		sixteen_bit = stereo = false;
-		length = SDL_ReadBE32(p);
-		rate = (pitch >> 8) * ((SDL_ReadBE32(p) >> 8) / instance()->obtained.freq);
-		uint32 loop_start = SDL_ReadBE32(p);
-		loop = this->data + loop_start;
-		loop_length = SDL_ReadBE32(p) - loop_start;
-	} else if (header_type == 0xff || header_type == 0xfe) {	// Extended/compressed sound header
-		//printf("extended/compressed sound header\n");
-		this->data = data + 64;
-		stereo = SDL_ReadBE32(p) == 2;
-		if (stereo)
-			bytes_per_frame *= 2;
-		rate = (pitch >> 8) * ((SDL_ReadBE32(p) >> 8) / instance()->obtained.freq);
-		uint32 loop_start = SDL_ReadBE32(p);
-		loop = this->data + loop_start;
-		loop_length = SDL_ReadBE32(p) - loop_start;
-		SDL_RWseek(p, 2, SEEK_CUR);
-		length = SDL_ReadBE32(p) * bytes_per_frame;
-		if (header_type == 0xfe) {
-			SDL_RWseek(p, 14, SEEK_CUR);
-			uint32 format = SDL_ReadBE32(p);
-			SDL_RWseek(p, 12, SEEK_CUR);
-			int16 comp_id = SDL_ReadBE16(p);
-			if (format != FOUR_CHARS_TO_INT('t', 'w', 'o', 's') || comp_id != -1) {
-				fprintf(stderr, "Unsupported compressed sound header format '%c%c%c%c', ID %d\n", data[40], data[41], data[42], data[43], comp_id);
-				active = false;
-				SDL_RWclose(p);
-				return;
-			}
-			SDL_RWseek(p, 4, SEEK_CUR);
-		} else {
-			SDL_RWseek(p, 22, SEEK_CUR);
-		}
-		sixteen_bit = (SDL_ReadBE16(p) == 16);
-		if (sixteen_bit) {
-			bytes_per_frame *= 2;
-			length *= 2;
-		}
-	} else {							// Unknown header type
-		fprintf(stderr, "Unknown sound header type %02x\n", header_type);
-		active = false;
-		SDL_RWclose(p);
-		return;
-	}
-
-	// Correct loop count
-	if (loop_length < 4)
-		loop_length = 0;
-
-	//printf(" data %p, length %d, loop %p, loop_length %d, rate %08x, stereo %d, 16 bit %d\n", c->data, c->length, c->loop, c->loop_length, c->rate, c->stereo, c->sixteen_bit);
-
-	// Reset sample counter
-	counter = 0;
-
-	SDL_RWclose(p);	
+	sixteen_bit = header.sixteen_bit;
+	stereo = header.stereo;
+	signed_8bit = header.signed_8bit;
+	bytes_per_frame = header.bytes_per_frame;
+	data = header.data;
+	length = header.length;
+	loop = header.loop;
+	loop_length = (header.loop_length >= 4) ? header.loop_length : 0;
+	rate = (pitch >> 8) * ((header.rate >> 8) / instance()->obtained.freq);
 }

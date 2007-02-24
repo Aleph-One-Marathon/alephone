@@ -154,20 +154,20 @@ bool SoundManager::LoadSound(short sound_index)
 		if (definition->sound_code != NONE &&
 		    (parameters.flags & _ambient_sound_flag) || !(definition->flags & _sound_is_ambient))
 		{
-			if (!definition->sound_data.size())
+			if (!definition->LoadedSize())
 			{
 				definition->Load(*(sound_file.opened_sound_file), parameters.flags & _more_sounds_flag);
 				definition->last_played = machine_tick_count();
 				while (loaded_sounds_size > total_buffer_size)
 					ReleaseLeastUsefulSound();
 			}
-			if (definition->sound_data.size())
+			if (definition->LoadedSize())
 			{
 				definition->permutations_played = 0;
 			}
 		}
 		
-		return definition->sound_data.size() ? true : false;
+		return definition->LoadedSize() ? true : false;
 	}	
 
 	return false;
@@ -655,14 +655,16 @@ void SoundManager::BufferSound(Channel &channel, short sound_index, _fixed pitch
 	SoundDefinition *definition = GetSoundDefinition(sound_index);
 	if (!definition || !definition->permutations)
 		return;
-	assert(definition->sound_data.size());
+	assert(definition->LoadedSize());
 
 	int permutation = GetRandomSoundPermutation(sound_index);
 
 	assert(permutation >= 0 && permutation < definition->permutations);
 	
-	uint8 *data = (uint8 *)&definition->sound_data.front() + definition->sound_offsets[permutation];
-	Mixer::instance()->BufferSound(channel.mixer_channel, data, CalculatePitchModifier(sound_index, pitch));
+//	uint8 *data = (uint8 *)&definition->sound_data.front() + definition->sound_offsets[permutation];
+	Mixer::Header header(definition->sounds[permutation]);
+	Mixer::instance()->BufferSound(channel.mixer_channel, header, CalculatePitchModifier(sound_index, pitch));
+//	Mixer::instance()->BufferSound(channel.mixer_channel, data, CalculatePitchModifier(sound_index, pitch));
 }
 
 SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Variables &variables)
@@ -783,7 +785,7 @@ short SoundManager::ReleaseLeastUsefulSound()
 	{
 		SoundDefinition *definition = GetSoundDefinition(sound_index);
 
-		if (definition->sound_data.size() && (!least_used_definition || least_used_definition->last_played > definition->last_played))
+		if (definition->LoadedSize() && (!least_used_definition || least_used_definition->last_played > definition->last_played))
 		{
 			least_used_sound_index = sound_index;
 			least_used_definition = definition;
@@ -803,7 +805,7 @@ void SoundManager::DisposeSound(short sound_index)
 {
 	SoundDefinition *definition = GetSoundDefinition(sound_index);
 	if (!definition) return;
-	loaded_sounds_size -= definition->sound_data.size();
+	loaded_sounds_size -= definition->LoadedSize();
 	definition->Unload();
 }
 

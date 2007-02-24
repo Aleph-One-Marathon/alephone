@@ -37,7 +37,26 @@ public:
 
 	void SetVolume(short volume) { main_volume = volume; }
 
-	void BufferSound(int channel, uint8* header, _fixed pitch);
+	struct Header
+	{
+		bool sixteen_bit;
+		bool stereo;
+		bool signed_8bit;
+		int bytes_per_frame;
+		
+		const uint8* data;
+		int32 length;
+
+		const uint8* loop;
+		int32 loop_length;
+
+		_fixed rate;
+
+		Header();
+		Header(const SoundHeader& header);
+	};
+
+	void BufferSound(int channel, const Header& header, _fixed pitch);
 
 	// returns the number of normal/ambient channels
 	int SoundChannelCount() { return sound_channel_count; }
@@ -75,11 +94,11 @@ private:
 		bool sixteen_bit;		// Flag: 16-bit sound data (8-bit otherwise)
 		bool stereo;			// Flag: stereo sound data (mono otherwise)
 		bool signed_8bit;		// Flag: 8-bit sound data is signed (unsigned otherwise, 16-bit data is always signed)
-		int bytes_per_frame;	// Bytes per sample frame (1, 2 or 4)
+		int bytes_per_frame;	        // Bytes per sample frame (1, 2 or 4)
 		
-		uint8 *data;			// Current pointer to sound data
+		const uint8 *data;              // Current pointer to sound data
 		int32 length;			// Length in bytes remaining to be played
-		uint8 *loop;			// Pointer to loop start
+		const uint8 *loop;		// Pointer to loop start
 		int32 loop_length;		// Loop length in bytes (0 = don't loop)
 		
 		_fixed rate;                    // Sample rate (relative to output sample rate)
@@ -88,13 +107,14 @@ private:
 		int16 left_volume;		// Volume (0x100 = nominal)
 		int16 right_volume;
 		
-		uint8 *next_header;		// Pointer to next queued sound header (NULL = none)
+		Header *next_header;            // Pointer to next queued sound header (NULL = none)
 		_fixed next_pitch;		// Pitch of next queued sound header
 
 		Channel();
-		void LoadSoundHeader(uint8 *data, _fixed pitch);
-		void BufferSoundHeader(uint8 *header, _fixed pitch) {
-			next_header = header;
+		void LoadSoundHeader(const Header& header, _fixed pitch);
+		void BufferSoundHeader(const Header& header, _fixed pitch) {
+			delete next_header;
+			next_header = new Header(header);
 			next_pitch = pitch;
 		}
 
@@ -153,7 +173,7 @@ private:
 					}
 					if ((c->counter & 0xffff) && c->length > c->bytes_per_frame)
 					{
-						uint8 *rdata = c->data + c->bytes_per_frame;
+						const uint8 *rdata = c->data + c->bytes_per_frame;
 						int32 rleft, rright;
 
 						if (c->stereo) {
@@ -252,9 +272,9 @@ private:
 								if (c->next_header) {
 									
 									// Yes, load sound header and continue
-									c->LoadSoundHeader(c->next_header, c->next_pitch);
-									c->next_header = NULL;
-									
+									c->LoadSoundHeader(*(c->next_header), c->next_pitch);
+									delete c->next_header;
+									c->next_header = 0;									
 								} else {
 									
 									// No, turn off channel

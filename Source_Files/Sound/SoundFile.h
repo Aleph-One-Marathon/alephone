@@ -26,14 +26,49 @@ SOUND_DEFINITIONS.H
 #include "AStream.h"
 #include "FileHandler.h"
 
+class SoundHeader
+{
+public:
+	SoundHeader();
+	bool Load(OpenedFile &SoundFile); // loads a system 7 sound from file
+	bool Load(const uint8* data); // loads (but doesn't store) a system 7 sound
+
+	bool sixteen_bit;
+	bool stereo;
+	bool signed_8bit;
+	int bytes_per_frame;
+
+	const uint8* Data() const 
+		{ return stored_data.size() ? &stored_data.front() : data; }
+	int32 Length() const
+		{ return stored_data.size() ? stored_data.size() : length; };
+	
+	int32 loop_start;
+	int32 loop_end;
+
+	_fixed rate;
+
+private:
+	void Clear() { stored_data.clear(); data = 0; length = 0; }
+	bool UnpackStandardSystem7Header(AIStreamBE &header);
+	bool UnpackExtendedSystem7Header(AIStreamBE &header);
+	
+	std::vector<uint8> stored_data;
+	const uint8* data;
+	int32 length;
+
+};
+
 class SoundDefinition
 {
 public:
 	bool Unpack(OpenedFile &SoundFile);
 	bool Load(OpenedFile &SoundFile, bool LoadPermutations);
-	void Unload() { sound_data.clear(); }
+	void Unload() { sounds.clear(); }
 
 	static const int MAXIMUM_PERMUTATIONS_PER_SOUND = 5;
+
+	int32 LoadedSize(); // just the size of the data
 
 private:
 	static int HeaderSize() { return 64; }
@@ -57,7 +92,7 @@ public: // for now
 
 	uint32 last_played; // machine ticks
 
-	std::vector<uint8> sound_data;
+	std::vector<SoundHeader> sounds;
 };
 
 class SoundFile
