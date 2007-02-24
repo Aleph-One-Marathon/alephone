@@ -697,7 +697,7 @@ SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Var
 							break;
 						}
 						
-						if (!(definition->flags * _sound_does_not_self_abort))
+						if (!(definition->flags & _sound_does_not_self_abort))
 						{
 							best_channel = (channel->start_tick + MINIMUM_RESTART_TICKS < machine_tick_count()) ? channel : 0;
 							break;
