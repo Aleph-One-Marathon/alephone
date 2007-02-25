@@ -16,6 +16,7 @@ AM_CONFIG_HEADER(config.h)
 dnl Configure options.
 AC_ARG_ENABLE(opengl, [  --enable-opengl         use OpenGL for rendering [default=yes]], , enable_opengl=yes)
 AC_ARG_ENABLE(mad, [  --enable-mad            use libmad for mp3 playback [default=yes]], , enable_mad=yes)
+AC_ARG_ENABLE(sndfile, [  --enable-sndfile        use libsndfile for decoding audio files [default=yes]], , enable_sndfile=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -97,6 +98,16 @@ AC_CHECK_HEADERS([mad.h], [
 			  AC_CHECK_LIB(mad, mad_stream_init, [
 			  LIBS="-lmad $LIBS"
 			  AC_DEFINE(HAVE_MAD, 1, [MAD mp3 playback is enabled])
+])
+])
+fi
+
+if [[ "x$enable_sndfile" = "xyes" ]]; then
+dnl Check for libsndfile
+AC_CHECK_HEADERS([sndfile.h], [
+			      AC_CHECK_LIB(sndfile, sf_open, [
+			      LIBS="-lsndfile $LIBS"
+			      AC_DEFINE(HAVE_SNDFILE, 1, [libsndfile support is enabled])
 ])
 ])
 fi

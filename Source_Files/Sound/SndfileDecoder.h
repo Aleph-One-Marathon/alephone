@@ -1,6 +1,9 @@
+#ifndef __SNDFILEDECODER_H
+#define __SNDFILEDECODER_H
+
 /*
 
-	Copyright (C) 2007 Gregory Smith
+	Copyright (C) 2007 Gregory Smith.
 	and the "Aleph One" developers.
  
 	This program is free software; you can redistribute it and/or modify
@@ -17,41 +20,36 @@
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-	Decodes music and external sounds
+	Decodes sound files with libsndfile
 
 */
 
 #include "Decoder.h"
-#include "BasicIFFDecoder.h"
-#include "MADDecoder.h"
-#include "SndfileDecoder.h"
-#include <memory>
 
-using std::auto_ptr;
-
-Decoder *Decoder::Get(FileSpecifier& File)
-{
 #ifdef HAVE_SNDFILE
-	{ 
-		auto_ptr<SndfileDecoder> sndfileDecoder(new SndfileDecoder);
-		if (sndfileDecoder->Open(File))
-			return sndfileDecoder.release();
-	}
-#else
-	{
-		auto_ptr<BasicIFFDecoder> iffDecoder(new BasicIFFDecoder);
-		if (iffDecoder->Open(File))
-			return iffDecoder.release();
-	}
+#include "sndfile.h"
+
+class SndfileDecoder : public Decoder
+{
+public:
+	bool Open(FileSpecifier& File);
+	int32 Decode(uint8* buffer, int32 max_length);
+	void Rewind();
+	void Close();
+
+	bool IsSixteenBit() { return true; }
+	bool IsStereo() { return (sfinfo.channels == 2); }
+	bool IsSigned() { return true; }
+	int BytesPerFrame() { return 2 * (IsStereo() ? 2 : 1); }
+	float Rate() { return (float) sfinfo.samplerate; }
+
+	SndfileDecoder();
+	~SndfileDecoder();
+private:
+	SNDFILE* sndfile;
+	SF_INFO sfinfo;
+};
+
 #endif
 
-#ifdef HAVE_MAD
-	{
-		auto_ptr<MADDecoder> madDecoder(new MADDecoder);
-		if (madDecoder->Open(File))
-			return madDecoder.release();
-	}
 #endif
-
-	return 0;
-}
