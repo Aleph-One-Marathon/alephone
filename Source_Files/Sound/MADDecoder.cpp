@@ -23,7 +23,7 @@
 
 #include "MADDecoder.h"
 #ifdef HAVE_MAD
-#include "mad.h"
+#include <mad.h>
 
 MADDecoder::MADDecoder() :
 	stereo(false),
