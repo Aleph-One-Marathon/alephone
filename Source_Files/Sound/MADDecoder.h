@@ -27,7 +27,7 @@
 #include "cseries.h"
 #include "Decoder.h"
 #ifdef HAVE_MAD
-#include "mad.h"
+#include <mad.h>
 
 class MADDecoder : public Decoder
 {
