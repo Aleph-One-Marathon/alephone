@@ -15,6 +15,7 @@ AM_CONFIG_HEADER(config.h)
 
 dnl Configure options.
 AC_ARG_ENABLE(opengl, [  --enable-opengl         use OpenGL for rendering [default=yes]], , enable_opengl=yes)
+AC_ARG_ENABLE(mad, [  --enable-mad            use libmad for mp3 playback [default=yes]], , enable_mad=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -89,6 +90,16 @@ AC_CHECK_HEADERS([smpeg/smpeg.h], [
     AC_DEFINE(HAVE_SMPEG, 1, [SMPEG movie playback is enabled])
   ])
 ])	    
+
+if [[ "x$enable_mad" = "xyes" ]]; then
+dnl Check for libmad
+AC_CHECK_HEADERS([mad.h], [
+			  AC_CHECK_LIB(mad, mad_stream_init, [
+			  LIBS="-lmad $LIBS"
+			  AC_DEFINE(HAVE_MAD, 1, [MAD mp3 playback is enabled])
+])
+])
+fi
 
 dnl Check for Lua.
 AC_ARG_VAR(LUA_CFLAGS,    [C compiler flags for Lua])

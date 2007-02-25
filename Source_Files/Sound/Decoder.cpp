@@ -23,6 +23,7 @@
 
 #include "Decoder.h"
 #include "BasicIFFDecoder.h"
+#include "MADDecoder.h"
 #include <memory>
 
 using std::auto_ptr;
@@ -34,6 +35,14 @@ Decoder *Decoder::Get(FileSpecifier& File)
 		if (iffDecoder->Open(File))
 			return iffDecoder.release();
 	}
+
+#ifdef HAVE_MAD
+	{
+		auto_ptr<MADDecoder> madDecoder(new MADDecoder);
+		if (madDecoder->Open(File))
+			return madDecoder.release();
+	}
+#endif
 
 	return 0;
 }
