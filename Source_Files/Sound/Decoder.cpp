@@ -25,6 +25,7 @@
 #include "BasicIFFDecoder.h"
 #include "MADDecoder.h"
 #include "SndfileDecoder.h"
+#include "VorbisDecoder.h"
 #include <memory>
 
 using std::auto_ptr;
@@ -42,6 +43,14 @@ Decoder *Decoder::Get(FileSpecifier& File)
 		auto_ptr<BasicIFFDecoder> iffDecoder(new BasicIFFDecoder);
 		if (iffDecoder->Open(File))
 			return iffDecoder.release();
+	}
+#endif
+
+#ifdef HAVE_VORBISFILE
+	{
+		auto_ptr<VorbisDecoder> vorbisDecoder(new VorbisDecoder);
+		if (vorbisDecoder->Open(File))
+			return vorbisDecoder.release();
 	}
 #endif
 

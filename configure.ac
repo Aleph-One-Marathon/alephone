@@ -17,6 +17,7 @@ dnl Configure options.
 AC_ARG_ENABLE(opengl, [  --enable-opengl         use OpenGL for rendering [default=yes]], , enable_opengl=yes)
 AC_ARG_ENABLE(mad, [  --enable-mad            use libmad for mp3 playback [default=yes]], , enable_mad=yes)
 AC_ARG_ENABLE(sndfile, [  --enable-sndfile        use libsndfile for decoding audio files [default=yes]], , enable_sndfile=yes)
+AC_ARG_ENABLE(vorbis, [  --enable-vorbis         enable ogg/vorbis music playback [default=yes]], , enable_vorbis=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -108,6 +109,16 @@ AC_CHECK_HEADERS([sndfile.h], [
 			      AC_CHECK_LIB(sndfile, sf_open, [
 			      LIBS="-lsndfile $LIBS"
 			      AC_DEFINE(HAVE_SNDFILE, 1, [libsndfile support is enabled])
+])
+])
+fi
+
+if [[ "x$enable_vorbis" = "xyes" ]]; then
+dnl Check for vorbisfile
+AC_CHECK_HEADERS([vorbis/vorbisfile.h], [
+				 AC_CHECK_LIB(vorbisfile, ov_open, [
+				 LIBS="-lvorbisfile $LIBS"
+				 AC_DEFINE(HAVE_VORBISFILE, 1, [vorbis support is enabled])
 ])
 ])
 fi
