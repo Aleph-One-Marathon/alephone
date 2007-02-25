@@ -34,4 +34,6 @@ Decoder *Decoder::Get(FileSpecifier& File)
 		if (iffDecoder->Open(File))
 			return iffDecoder.release();
 	}
+
+	return 0;
 }
