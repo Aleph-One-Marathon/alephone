@@ -42,6 +42,11 @@ public:
 	bool IsSigned() { return true; }
 	int BytesPerFrame() { return bytes_per_frame; }
 	float Rate() { return rate; }
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	bool IsLittleEndian() { return true; }
+#else
+	bool IsLittleEndian() { return false; }
+#endif
 
 	MADDecoder();
 	~MADDecoder();

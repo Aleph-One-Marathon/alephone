@@ -82,6 +82,7 @@ private:
 	bool signed_8bit;
 	int bytes_per_frame;
 	_fixed rate;
+	bool little_endian;
 
 	FileSpecifier music_file;
 	FileSpecifier music_intro_file;

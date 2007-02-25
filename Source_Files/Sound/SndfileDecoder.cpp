@@ -53,18 +53,8 @@ int32 SndfileDecoder::Decode(uint8* buffer, int32 max_length)
 {
 	if (!sndfile) return 0;
 
-	int32 bytes_read = sf_read_short(sndfile, (int16*) buffer, max_length / 2) * 2;
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	// sndfile puts it in native byte order, so swap it back
-	int16 *buffer_16 = (int16*) buffer;
-	for (int i = 0; i < bytes_read / 2; i++)
-	{
-		buffer_16[i] = SDL_Swap16(buffer_16[i]);
-	}
-#endif
+	return sf_read_short(sndfile, (int16*) buffer, max_length / 2) * 2;
 
-	return bytes_read;
-		
 }
 
 void SndfileDecoder::Rewind()

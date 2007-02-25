@@ -87,14 +87,24 @@ int32 MADDecoder::Decode(uint8* buffer, int32 max_length)
 		{
 			int16 sample_data;
 			sample_data = MadFixedToSshort(Synth.pcm.samples[0][sample]);
+#ifdef ALEPHONE_LITTLE_ENDIAN
+			buffer[bytes_decoded++] = sample_data & 0xff;
+			buffer[bytes_decoded++] = sample_data >> 8;
+#else
 			buffer[bytes_decoded++] = sample_data >> 8;
 			buffer[bytes_decoded++] = sample_data & 0xff;
 
+#endif
 			if (stereo)
 			{
 				sample_data = MadFixedToSshort(Synth.pcm.samples[1][sample]);
+#ifdef ALEPHONE_LITTLE_ENDIAN
+				buffer[bytes_decoded++] = sample_data & 0xff;
+				buffer[bytes_decoded++] = sample_data >> 8;
+#else
 				buffer[bytes_decoded++] = sample_data >> 8;
 				buffer[bytes_decoded++] = sample_data & 0xff;
+#endif
 			}
 
 			sample++;

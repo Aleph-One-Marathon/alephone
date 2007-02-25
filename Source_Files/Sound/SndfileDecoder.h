@@ -42,6 +42,11 @@ public:
 	bool IsSigned() { return true; }
 	int BytesPerFrame() { return 2 * (IsStereo() ? 2 : 1); }
 	float Rate() { return (float) sfinfo.samplerate; }
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	bool IsLittleEndian() { return true; }
+#else
+	bool IsLittleEndian() { return false; }
+#endif
 
 	SndfileDecoder();
 	~SndfileDecoder();

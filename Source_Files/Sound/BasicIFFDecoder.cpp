@@ -33,6 +33,7 @@ BasicIFFDecoder::BasicIFFDecoder() :
 	signed_8bit(false),
 	bytes_per_frame(0),
 	rate(0),
+	little_endian(false),
 	length(0),
 	data_offset(0)
 	
@@ -180,15 +181,6 @@ int32 BasicIFFDecoder::Decode(uint8* buffer, int32 max_length)
 	int32 length = std::min(max_length, (int32) (data_offset + this->length - position));
 	if (length && file.Read(length, buffer))
 	{
-		if (sixteen_bit && little_endian)
-		{
-			assert(!(length % 2));
-			// swap the whole damn thing :(
-			uint16* sbuffer = (uint16 *) buffer;
-			for (int i = 0; i < length / 2; i++, sbuffer++)
-				*sbuffer = SDL_Swap16(*sbuffer);
-		}
-		
 		return length;
 	}
 	else

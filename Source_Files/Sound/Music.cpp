@@ -179,6 +179,7 @@ bool Music::Load(FileSpecifier &song_file)
 		signed_8bit = decoder->IsSigned();
 		bytes_per_frame = decoder->BytesPerFrame();
 		rate = (_fixed) ((decoder->Rate() / Mixer::instance()->obtained.freq) * (1 << FIXED_FRACTIONAL_BITS));
+		little_endian = decoder->IsLittleEndian();
 
 		return true;
 		
@@ -207,7 +208,7 @@ void Music::Play()
 		InterruptFillBuffer();
 #endif
 		// let the mixer handle it
-		Mixer::instance()->StartMusicChannel(sixteen_bit, stereo, signed_8bit, bytes_per_frame, rate);
+		Mixer::instance()->StartMusicChannel(sixteen_bit, stereo, signed_8bit, bytes_per_frame, rate, little_endian);
 	}
 }
 

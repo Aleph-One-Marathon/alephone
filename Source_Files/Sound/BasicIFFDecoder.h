@@ -40,6 +40,7 @@ public:
 	bool IsSigned() { return signed_8bit; }
 	int BytesPerFrame() { return bytes_per_frame; }
 	float Rate() { return rate; }
+	bool IsLittleEndian() { return little_endian; }
 
 	BasicIFFDecoder();
 	~BasicIFFDecoder() { }
@@ -50,13 +51,13 @@ private:
 	bool signed_8bit;
 	int bytes_per_frame;
 	float rate;
+	bool little_endian;
 
 	int32 length;
 
 	OpenedFile file;
 	int32 data_offset;
 
-	bool little_endian;
 };
 
 #endif

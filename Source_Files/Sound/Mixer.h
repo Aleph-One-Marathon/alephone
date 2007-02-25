@@ -51,6 +51,7 @@ public:
 		int32 loop_length;
 
 		_fixed rate;
+		bool little_endian;
 
 		Header();
 		Header(const SoundHeader& header);
@@ -70,7 +71,7 @@ public:
 	bool ChannelBusy(int channel) { return channels[channel].active; }
 
 	// activates the channel
-	void StartMusicChannel(bool sixteen_bit, bool stereo, bool signed_8bit, int bytes_per_frame, _fixed rate);
+	void StartMusicChannel(bool sixteen_bit, bool stereo, bool signed_8bit, int bytes_per_frame, _fixed rate, bool little_endian);
 	void UpdateMusicChannel(uint8* data, int len);
 	bool MusicPlaying() { return channels[sound_channel_count + MUSIC_CHANNEL].active; }
 	void StopMusicChannel() { SDL_LockAudio(); channels[sound_channel_count + MUSIC_CHANNEL].active = false; SDL_UnlockAudio(); }
@@ -95,6 +96,7 @@ private:
 		bool stereo;			// Flag: stereo sound data (mono otherwise)
 		bool signed_8bit;		// Flag: 8-bit sound data is signed (unsigned otherwise, 16-bit data is always signed)
 		int bytes_per_frame;	        // Bytes per sample frame (1, 2 or 4)
+		bool little_endian;             // 16-bit samples are little-endian
 		
 		const uint8 *data;              // Current pointer to sound data
 		int32 length;			// Length in bytes remaining to be played
@@ -154,8 +156,16 @@ private:
 					int32 dleft, dright;
 					if (c->stereo) {
 						if (c->sixteen_bit) {
-							dleft = (int16)SDL_SwapBE16(0[(int16 *)c->data]);
-							dright = (int16)SDL_SwapBE16(1[(int16 *)c->data]);
+							if (c->little_endian)
+							{
+								dleft = (int16)SDL_SwapLE16(0[(int16 *)c->data]);
+								dright = (int16)SDL_SwapLE16(1[(int16 *)c->data]);
+							} 
+							else
+							{
+								dleft = (int16)SDL_SwapBE16(0[(int16 *)c->data]);
+								dright = (int16)SDL_SwapBE16(1[(int16 *)c->data]);
+							}
 						} else if (c->signed_8bit) {
 							dleft = (int32)(int8)(0[c->data]) * 256;
 							dright = (int32)(int8)(1[c->data]) * 256;
@@ -165,7 +175,10 @@ private:
 						}
 					} else {
 						if (c->sixteen_bit)
-							dleft = dright = (int16)SDL_SwapBE16(*(int16 *)c->data);
+							if (c->little_endian)
+								dleft = dright = (int16)SDL_SwapLE16(*(int16 *)c->data);
+							else
+								dleft = dright = (int16)SDL_SwapBE16(*(int16 *)c->data);
 						else if (c->signed_8bit)
 							dleft = dright = (int32)(int8)(*(c->data)) << 8;
 						else
@@ -178,8 +191,16 @@ private:
 
 						if (c->stereo) {
 							if (c->sixteen_bit) {
-								rleft = (int16)SDL_SwapBE16(0[(int16 *)rdata]);
-								rright = (int16)SDL_SwapBE16(1[(int16 *)rdata]);
+								if (c->little_endian)
+								{
+									rleft = (int16)SDL_SwapLE16(0[(int16 *)rdata]);
+									rright = (int16)SDL_SwapLE16(1[(int16 *)rdata]);
+								}
+								else
+								{
+									rleft = (int16)SDL_SwapBE16(0[(int16 *)rdata]);
+									rright = (int16)SDL_SwapBE16(1[(int16 *)rdata]);
+								}
 							} else if (c->signed_8bit) {
 								rleft = (int32)(int8)(0[rdata]) * 256;
 								rright = (int32)(int8)(1[rdata]) * 256;
@@ -189,7 +210,12 @@ private:
 							}
 						} else {
 							if (c->sixteen_bit)
-								rleft = rright = (int16)SDL_SwapBE16(*(int16 *)rdata);
+							{
+								if (c->little_endian)
+									rleft = rright = (int16)SDL_SwapLE16(*(int16 *)rdata);
+								else
+									rleft = rright = (int16)SDL_SwapBE16(*(int16 *)rdata);
+							}
 							else if (c->signed_8bit)
 								rleft = rright = (int32)(int8)(*(rdata)) << 8;
 							else

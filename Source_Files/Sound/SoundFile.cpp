@@ -27,6 +27,7 @@ SoundHeader::SoundHeader() :
 	stereo(false),
 	signed_8bit(false),
 	bytes_per_frame(false),
+	little_endian(false),
 	loop_start(0),
 	loop_end(0),
 	rate(0),
@@ -43,6 +44,7 @@ bool SoundHeader::UnpackStandardSystem7Header(AIStreamBE &header)
 		signed_8bit = false;
 		sixteen_bit = false;
 		stereo = false;
+		little_endian = false;
 		header.ignore(4); // sample pointer
 		header >> length;
 		header >> rate;
@@ -98,6 +100,7 @@ bool SoundHeader::UnpackExtendedSystem7Header(AIStreamBE &header)
 		bytes_per_frame = (sixteen_bit ? 2 : 1) * (stereo ? 2 : 1);
 
 		length = num_frames * bytes_per_frame;
+		little_endian = false;
 		
 		return true;
 	} catch (...) {

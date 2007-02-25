@@ -37,6 +37,7 @@ public:
 	bool stereo;
 	bool signed_8bit;
 	int bytes_per_frame;
+	bool little_endian;
 
 	const uint8* Data() const 
 		{ return stored_data.size() ? &stored_data.front() : data; }

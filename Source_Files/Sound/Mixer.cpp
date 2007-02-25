@@ -32,7 +32,8 @@ Mixer::Header::Header() :
 	length(0),
 	loop(0),
 	loop_length(0),
-	rate(FIXED_ONE)
+	rate(FIXED_ONE),
+	little_endian(false)
 {
 }
 
@@ -41,6 +42,7 @@ Mixer::Header::Header(const SoundHeader& header) :
 	stereo(header.stereo),
 	signed_8bit(header.signed_8bit),
 	bytes_per_frame(header.bytes_per_frame),
+	little_endian(header.little_endian),
 	data(header.Data()),
 	length(header.Length()),
 	loop(header.Data() + header.loop_start),
@@ -121,12 +123,13 @@ void Mixer::Callback(uint8 *stream, int len)
 	}
 }
 
-void Mixer::StartMusicChannel(bool sixteen_bit, bool stereo, bool signed_8bit, int bytes_per_frame, _fixed rate)
+void Mixer::StartMusicChannel(bool sixteen_bit, bool stereo, bool signed_8bit, int bytes_per_frame, _fixed rate, bool little_endian)
 {
 	Channel *c = &channels[sound_channel_count + MUSIC_CHANNEL];
 	c->sixteen_bit = sixteen_bit;
 	c->stereo = stereo;
 	c->signed_8bit = signed_8bit;
+	c->little_endian = little_endian;
 	c->bytes_per_frame = bytes_per_frame;
 	c->counter = 0;
 	c->rate = rate;
@@ -254,6 +257,7 @@ Mixer::Channel::Channel() :
 	stereo(false),
 	signed_8bit(false),
 	bytes_per_frame(0),
+	little_endian(false),
 	data(0),
 	length(0),
 	loop(0),
@@ -273,6 +277,7 @@ void Mixer::Channel::LoadSoundHeader(const Header& header, _fixed pitch)
 	stereo = header.stereo;
 	signed_8bit = header.signed_8bit;
 	bytes_per_frame = header.bytes_per_frame;
+	little_endian = header.little_endian;
 	data = header.data;
 	length = header.length;
 	loop = header.loop;

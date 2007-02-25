@@ -40,6 +40,7 @@ public:
 	virtual bool IsSigned() = 0;
 	virtual int BytesPerFrame() = 0;
 	virtual float Rate() = 0;
+	virtual bool IsLittleEndian() = 0;
 
 	Decoder() { }
 	virtual ~Decoder() { }
