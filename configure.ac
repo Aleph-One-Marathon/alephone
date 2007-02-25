@@ -82,14 +82,6 @@ AC_LANG_PUSH(C++)
 AC_CHECK_HEADER([boost/function.hpp], , [AC_MSG_ERROR([You need boost/function.hpp from the boost library to run Aleph One])])
 AC_LANG_POP(C++)
 
-dnl Check for SDL_sound
-AC_CHECK_HEADERS(SDL_sound.h, [
-  AC_CHECK_LIB(SDL_sound, Sound_Init, [
-    LIBS="-lSDL_sound $LIBS"
-    AC_DEFINE(HAVE_SDL_SOUND, 1, [SDL_sound support is enabled])
-  ])
-])
-
 dnl Check for SMPEG
 AC_CHECK_HEADERS([smpeg/smpeg.h], [
   AC_CHECK_LIB(smpeg, SMPEG_new, [

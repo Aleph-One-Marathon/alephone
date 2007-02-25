@@ -25,12 +25,9 @@
 */
 
 #include "cseries.h"
+#include "Decoder.h"
 #include "FileHandler.h"
 #include <vector>
-
-#ifdef HAVE_SDL_SOUND
-#include "SDL_sound.h"
-#endif
 
 class Music
 {
@@ -74,14 +71,8 @@ private:
 	static const int MUSIC_BUFFER_SIZE = 1024;
 #endif
 
-#ifdef HAVE_SDL_SOUND
-	Sound_Sample* music_sample;
-#else
-	uint32 music_data_length;
-	uint32 music_data_remaining;
-	uint32 music_data_offset;
 	std::vector<uint8> music_buffer;
-#endif
+	Decoder *decoder;
 
 	SDL_RWops* music_rw;
 

@@ -2,7 +2,7 @@
 
 noinst_LIBRARIES = libsound.a
 
-libsound_a_SOURCES = Mixer.h Music.h song_definitions.h sound_definitions.h Mixer.cpp Music.cpp SoundFile.h SoundFile.cpp SoundManager.h SoundManager.cpp
+libsound_a_SOURCES = BasicIFFDecoder.h BasicIFFDecoder.cpp Decoder.h Decoder.cpp Mixer.h Music.h song_definitions.h sound_definitions.h Mixer.cpp Music.cpp SoundFile.h SoundFile.cpp SoundManager.h SoundManager.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
