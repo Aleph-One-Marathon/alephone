@@ -178,7 +178,7 @@ bool Music::Load(FileSpecifier &song_file)
 		stereo = decoder->IsStereo();
 		signed_8bit = decoder->IsSigned();
 		bytes_per_frame = decoder->BytesPerFrame();
-		rate = (_fixed) (decoder->Rate() / Mixer::instance()->obtained.freq) * (1 << FIXED_FRACTIONAL_BITS);
+		rate = (_fixed) ((decoder->Rate() / Mixer::instance()->obtained.freq) * (1 << FIXED_FRACTIONAL_BITS));
 
 		return true;
 		
