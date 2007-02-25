@@ -36,7 +36,6 @@ public:
 	int32 Decode(uint8* buffer, int32 max_length);
 	void Rewind();
 	void Close();
-	bool Done();
 
 	bool IsSixteenBit() { return true; }
 	bool IsStereo() { return stereo; }

@@ -182,11 +182,6 @@ bool MADDecoder::DecodeFrame()
 	return true;
 }
 
-bool MADDecoder::Done()
-{
-	return (file_done && sample >= Synth.pcm.length);
-}
-	
 void MADDecoder::Rewind()
 {
 	mad_stream_finish(&Stream);

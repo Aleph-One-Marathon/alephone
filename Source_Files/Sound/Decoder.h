@@ -32,7 +32,6 @@ class Decoder
 public:
 	virtual bool Open(FileSpecifier &File) = 0;
 	virtual int32 Decode(uint8* buffer, int32 max_length) = 0;
-	virtual bool Done() = 0;
 	virtual void Rewind() = 0;
 	virtual void Close() = 0;
 
