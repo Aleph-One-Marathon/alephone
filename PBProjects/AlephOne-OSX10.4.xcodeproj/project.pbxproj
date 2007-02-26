@@ -18,6 +18,15 @@
 		AE179F1D09C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
+		AE601F0A0B927C25009F881C /* BasicIFFDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */; };
+		AE601F0B0B927C25009F881C /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F060B927C25009F881C /* Decoder.cpp */; };
+		AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
+		AE601F0D0B927C25009F881C /* SndfileDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F080B927C25009F881C /* SndfileDecoder.cpp */; };
+		AE601F0E0B927C25009F881C /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F090B927C25009F881C /* VorbisDecoder.cpp */; };
+		AE601FC00B927DC2009F881C /* libmad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* libmad.framework */; };
+		AE601FC10B927DC2009F881C /* libsndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* libsndfile.framework */; };
+		AE6020080B928517009F881C /* libsndfile.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* libsndfile.framework */; };
+		AE60200B0B92852A009F881C /* libmad.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* libmad.framework */; };
 		AE626E6C0B878534009CFF2D /* Mixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E630B878534009CFF2D /* Mixer.cpp */; };
 		AE626E6D0B878534009CFF2D /* Mixer.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E640B878534009CFF2D /* Mixer.h */; };
 		AE626E6E0B878534009CFF2D /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
@@ -379,16 +388,12 @@
 		AEC3C87809AD68AC003258E4 /* SDL_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
 		AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
-		AEFDE7BC0A38DF7E00CFEB97 /* libmikmod-coreaudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B70A38DF7E00CFEB97 /* libmikmod-coreaudio.framework */; };
 		AEFDE7BD0A38DF7E00CFEB97 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		AEFDE7BE0A38DF7E00CFEB97 /* SDL_sound.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B90A38DF7E00CFEB97 /* SDL_sound.framework */; };
 		AEFDE7BF0A38DF7E00CFEB97 /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
 		AEFDE7C00A38DF7E00CFEB97 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		AEFDE8000A38E98400CFEB97 /* SDL_sound.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7B90A38DF7E00CFEB97 /* SDL_sound.framework */; };
 		AEFDE8010A38E98900CFEB97 /* smpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
 		AEFDE80E0A38E98C00CFEB97 /* Vorbis.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
 		AEFDE8130A38E99000CFEB97 /* Ogg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		AEFDE8170A38E99300CFEB97 /* libmikmod-coreaudio.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7B70A38DF7E00CFEB97 /* libmikmod-coreaudio.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXBuildRule section */
@@ -449,11 +454,11 @@
 			dstPath = AlephOne.app/Contents/Frameworks;
 			dstSubfolderSpec = 16;
 			files = (
-				AEFDE8170A38E99300CFEB97 /* libmikmod-coreaudio.framework in CopyFiles */,
+				AE60200B0B92852A009F881C /* libmad.framework in CopyFiles */,
+				AE6020080B928517009F881C /* libsndfile.framework in CopyFiles */,
 				AEFDE8130A38E99000CFEB97 /* Ogg.framework in CopyFiles */,
 				AEFDE80E0A38E98C00CFEB97 /* Vorbis.framework in CopyFiles */,
 				AEFDE8010A38E98900CFEB97 /* smpeg.framework in CopyFiles */,
-				AEFDE8000A38E98400CFEB97 /* SDL_sound.framework in CopyFiles */,
 				AEC3C87809AD68AC003258E4 /* SDL_image.framework in CopyFiles */,
 				AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */,
 				AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */,
@@ -530,6 +535,18 @@
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604DD086F6DF100D9797C /* network_capabilities.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_capabilities.cpp; path = ../Source_Files/Network/network_capabilities.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604E0086F6E0D00D9797C /* network_capabilities.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_capabilities.h; path = ../Source_Files/Network/network_capabilities.h; sourceTree = SOURCE_ROOT; };
+		AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = BasicIFFDecoder.cpp; sourceTree = "<group>"; };
+		AE601F060B927C25009F881C /* Decoder.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Decoder.cpp; sourceTree = "<group>"; };
+		AE601F070B927C25009F881C /* MADDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = MADDecoder.cpp; sourceTree = "<group>"; };
+		AE601F080B927C25009F881C /* SndfileDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SndfileDecoder.cpp; sourceTree = "<group>"; };
+		AE601F090B927C25009F881C /* VorbisDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = VorbisDecoder.cpp; sourceTree = "<group>"; };
+		AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = BasicIFFDecoder.h; sourceTree = "<group>"; };
+		AE601F100B927C51009F881C /* Decoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Decoder.h; sourceTree = "<group>"; };
+		AE601F110B927C51009F881C /* MADDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MADDecoder.h; sourceTree = "<group>"; };
+		AE601F120B927C51009F881C /* SndfileDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SndfileDecoder.h; sourceTree = "<group>"; };
+		AE601F130B927C51009F881C /* VorbisDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = VorbisDecoder.h; sourceTree = "<group>"; };
+		AE601FBE0B927DC2009F881C /* libmad.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = libmad.framework; sourceTree = "<group>"; };
+		AE601FBF0B927DC2009F881C /* libsndfile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = libsndfile.framework; sourceTree = "<group>"; };
 		AE626E630B878534009CFF2D /* Mixer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Mixer.cpp; sourceTree = "<group>"; };
 		AE626E640B878534009CFF2D /* Mixer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Mixer.h; sourceTree = "<group>"; };
 		AE626E650B878534009CFF2D /* Music.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Music.cpp; sourceTree = "<group>"; };
@@ -549,9 +566,7 @@
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
 		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
-		AEFDE7B70A38DF7E00CFEB97 /* libmikmod-coreaudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "libmikmod-coreaudio.framework"; path = "/Library/Frameworks/libmikmod-coreaudio.framework"; sourceTree = "<absolute>"; };
 		AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
-		AEFDE7B90A38DF7E00CFEB97 /* SDL_sound.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_sound.framework; path = /Library/Frameworks/SDL_sound.framework; sourceTree = "<absolute>"; };
 		AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = smpeg.framework; path = /Library/Frameworks/smpeg.framework; sourceTree = "<absolute>"; };
 		AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
 		EF2EF5C804819BD700A8000D /* network_star_hub.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_star_hub.cpp; path = ../Source_Files/Network/network_star_hub.cpp; sourceTree = "<group>"; };
@@ -930,11 +945,11 @@
 				AEC3C87209AD68AC003258E4 /* SDL.framework in Frameworks */,
 				AEC3C87309AD68AC003258E4 /* SDL_net.framework in Frameworks */,
 				AEC3C87409AD68AC003258E4 /* SDL_image.framework in Frameworks */,
-				AEFDE7BC0A38DF7E00CFEB97 /* libmikmod-coreaudio.framework in Frameworks */,
 				AEFDE7BD0A38DF7E00CFEB97 /* Ogg.framework in Frameworks */,
-				AEFDE7BE0A38DF7E00CFEB97 /* SDL_sound.framework in Frameworks */,
 				AEFDE7BF0A38DF7E00CFEB97 /* smpeg.framework in Frameworks */,
 				AEFDE7C00A38DF7E00CFEB97 /* Vorbis.framework in Frameworks */,
+				AE601FC00B927DC2009F881C /* libmad.framework in Frameworks */,
+				AE601FC10B927DC2009F881C /* libsndfile.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1073,9 +1088,9 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				AEFDE7B70A38DF7E00CFEB97 /* libmikmod-coreaudio.framework */,
+				AE601FBE0B927DC2009F881C /* libmad.framework */,
+				AE601FBF0B927DC2009F881C /* libsndfile.framework */,
 				AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */,
-				AEFDE7B90A38DF7E00CFEB97 /* SDL_sound.framework */,
 				AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */,
 				AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */,
 				F5281C0701F8CA2101E83A66 /* SDL_image.framework */,
@@ -1670,6 +1685,16 @@
 		F5CC94110240DA4301A80001 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
+				AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */,
+				AE601F100B927C51009F881C /* Decoder.h */,
+				AE601F110B927C51009F881C /* MADDecoder.h */,
+				AE601F120B927C51009F881C /* SndfileDecoder.h */,
+				AE601F130B927C51009F881C /* VorbisDecoder.h */,
+				AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */,
+				AE601F060B927C25009F881C /* Decoder.cpp */,
+				AE601F070B927C25009F881C /* MADDecoder.cpp */,
+				AE601F080B927C25009F881C /* SndfileDecoder.cpp */,
+				AE601F090B927C25009F881C /* VorbisDecoder.cpp */,
 				AE626E630B878534009CFF2D /* Mixer.cpp */,
 				AE626E640B878534009CFF2D /* Mixer.h */,
 				AE626E650B878534009CFF2D /* Music.cpp */,
@@ -2272,6 +2297,11 @@
 				AE626E6E0B878534009CFF2D /* Music.cpp in Sources */,
 				AE626E700B878534009CFF2D /* SoundFile.cpp in Sources */,
 				AE626E720B878534009CFF2D /* SoundManager.cpp in Sources */,
+				AE601F0A0B927C25009F881C /* BasicIFFDecoder.cpp in Sources */,
+				AE601F0B0B927C25009F881C /* Decoder.cpp in Sources */,
+				AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */,
+				AE601F0D0B927C25009F881C /* SndfileDecoder.cpp in Sources */,
+				AE601F0E0B927C25009F881C /* VorbisDecoder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2522,8 +2552,9 @@
 					HAVE_UNISTD_H,
 					HAVE_LUA,
 					HAVE_SPEEX,
-					HAVE_SDL_SOUND,
-					HAVE_SDL_SOUND_H,
+					HAVE_VORBISFILE,
+					HAVE_MAD,
+					HAVE_SNDFILE,
 					HAVE_SMPEG,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
@@ -2541,12 +2572,16 @@
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_Sound.framework/Headers",
+					"$(HOME)/Library/Frameworks/libsndfile.framework/Headers",
+					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
+					"$(HOME)/Library/Frameworks/libmad.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL_Sound.framework/Headers,
+					/Library/Frameworks/libsndfile.framework/Headers,
+					/Library/Frameworks/Vorbis.framework/Headers,
+					/Library/Frameworks/libmad.framework/Headers,
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
 				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
