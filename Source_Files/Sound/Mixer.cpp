@@ -283,4 +283,5 @@ void Mixer::Channel::LoadSoundHeader(const Header& header, _fixed pitch)
 	loop = header.loop;
 	loop_length = (header.loop_length >= 4) ? header.loop_length : 0;
 	rate = (pitch >> 8) * ((header.rate >> 8) / instance()->obtained.freq);
+	counter = 0;
 }
