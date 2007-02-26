@@ -69,9 +69,9 @@ bool SoundHeader::UnpackExtendedSystem7Header(AIStreamBE &header)
 		header >> rate;
 		header >> loop_start;
 		header >> loop_end;
-		header.ignore(1); // baseFrequency
 		uint8 header_type;
 		header >> header_type;
+		header.ignore(1); // baseFrequency
 		int32 num_frames;
 		header >> num_frames;
 		
