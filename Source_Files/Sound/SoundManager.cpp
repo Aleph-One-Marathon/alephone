@@ -157,6 +157,7 @@ bool SoundManager::LoadSound(short sound_index)
 			if (!definition->LoadedSize())
 			{
 				definition->Load(*(sound_file.opened_sound_file), parameters.flags & _more_sounds_flag);
+				loaded_sounds_size += definition->LoadedSize();
 				definition->last_played = machine_tick_count();
 				while (loaded_sounds_size > total_buffer_size)
 					ReleaseLeastUsefulSound();
