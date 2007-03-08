@@ -93,6 +93,8 @@ May 22, 2003 (Woody Zenfell):
 #include "preferences_widgets_sdl.h"
 #include "mouse.h"
 
+#include "Music.h"
+
 #include <cmath>
 
 #ifdef HAVE_UNISTD_H
@@ -922,6 +924,8 @@ static void sound_dialog(void *arg)
 	d.add(channels_w);
 	w_volume_slider *volume_w = new w_volume_slider("Volume", sound_preferences->volume);
 	d.add(volume_w);
+	w_slider *music_volume_w = new w_slider("Music Volume", NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
+	d.add(music_volume_w);
 	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
@@ -961,6 +965,12 @@ static void sound_dialog(void *arg)
 		int volume = volume_w->get_selection();
 		if (volume != sound_preferences->volume) {
 			sound_preferences->volume = volume;
+			changed = true;
+		}
+
+		int music_volume = music_volume_w->get_selection();
+		if (music_volume != sound_preferences->music) {
+			sound_preferences->music = music_volume;
 			changed = true;
 		}
 

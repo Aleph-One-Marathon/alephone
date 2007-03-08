@@ -75,6 +75,7 @@ public:
 	void UpdateMusicChannel(uint8* data, int len);
 	bool MusicPlaying() { return channels[sound_channel_count + MUSIC_CHANNEL].active; }
 	void StopMusicChannel() { SDL_LockAudio(); channels[sound_channel_count + MUSIC_CHANNEL].active = false; SDL_UnlockAudio(); }
+	void SetMusicChannelVolume(int16 volume) { channels[sound_channel_count + MUSIC_CHANNEL].left_volume = channels[sound_channel_count + MUSIC_CHANNEL].right_volume = volume; }
 
 	SDL_AudioSpec desired, obtained;
 

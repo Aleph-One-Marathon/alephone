@@ -28,6 +28,7 @@
 #include "Decoder.h"
 #include "FileHandler.h"
 #include "Random.h"
+#include "SoundManager.h"
 #include <vector>
 
 class Music
@@ -65,6 +66,8 @@ public:
 	void LevelMusicRandom(bool fRandom) { random_order = fRandom; }
 	void SeedLevelMusic();
 
+	void CheckVolume();
+
 private:
 	Music();
 	bool Load(FileSpecifier &file);
@@ -72,6 +75,8 @@ private:
 
 	FileSpecifier* GetLevelMusic();
 	void LoadLevelMusic();
+
+	int16 GetVolumeLevel() { return SoundManager::instance()->parameters.music; }
 
 #ifdef __MACOS__
 	static const int MUSIC_BUFFER_SIZE = 0x10000;

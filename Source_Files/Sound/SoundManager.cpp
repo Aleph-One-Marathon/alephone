@@ -77,7 +77,7 @@ void SoundManager::SetParameters(const Parameters& parameters)
 
 		// If it was initially on, turn the sound manager back on
 		if (initial_state && parameters.volume)
-			SetStatus(true);
+			SetStatus(true);		
 	}
 
 }

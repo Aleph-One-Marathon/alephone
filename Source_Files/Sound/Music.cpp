@@ -141,14 +141,17 @@ void Music::Idle()
 	if (music_fading)
 	{
 		uint32 elapsed = SDL_GetTicks() - music_fade_start;
-		int vol = 0x100 - (elapsed * 0x100) / music_fade_duration;
+		int max_vol = GetVolumeLevel() * MAXIMUM_SOUND_VOLUME / NUMBER_OF_SOUND_VOLUME_LEVELS;
+		int vol = max_vol - (elapsed * max_vol) / music_fade_duration;
 		if (vol <= 0)
 			Pause();
 		else
 		{
-			if (vol > 0x100)
-				vol = 0x100;
+			if (vol > max_vol)
+				vol = max_vol;
 			// set music channel volume
+
+			Mixer::instance()->SetMusicChannelVolume(vol);
 		}
 	}
 
@@ -217,6 +220,7 @@ void Music::Play()
 #endif
 		// let the mixer handle it
 		Mixer::instance()->StartMusicChannel(sixteen_bit, stereo, signed_8bit, bytes_per_frame, rate, little_endian);
+		CheckVolume();
 	}
 }
 
@@ -238,6 +242,8 @@ bool Music::FillBuffer()
 #ifdef __MACOS__
 	if (!macos_read_more) return false;
 #endif
+
+	if (!GetVolumeLevel()) return false;
 
 	if (!decoder) return false;
 	int32 bytes_read = decoder->Decode(&music_buffer.front(), MUSIC_BUFFER_SIZE);
@@ -309,4 +315,10 @@ FileSpecifier* Music::GetLevelMusic()
 	else if (song_number >= NumSongs) song_number = 0;
 
 	return &playlist[song_number++];
+}
+
+void Music::CheckVolume()
+{
+	if (!music_fading)
+		Mixer::instance()->SetMusicChannelVolume(GetVolumeLevel() * MAXIMUM_SOUND_VOLUME / NUMBER_OF_SOUND_VOLUME_LEVELS);
 }
