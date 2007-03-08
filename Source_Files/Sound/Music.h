@@ -27,6 +27,7 @@
 #include "cseries.h"
 #include "Decoder.h"
 #include "FileHandler.h"
+#include "Random.h"
 #include <vector>
 
 class Music
@@ -57,13 +58,20 @@ public:
 	bool Initialized() { return music_initialized; }
 
 	void PreloadLevelMusic();
-	void LoadLevelMusic();
 	void StopLevelMusic();
+	void ClearLevelMusic() { playlist.clear(); }
+	void PushBackLevelMusic(FileSpecifier& file) { playlist.push_back(file); }
+	bool IsLevelMusicActive() { return (!playlist.empty()); }
+	void LevelMusicRandom(bool fRandom) { random_order = fRandom; }
+	void SeedLevelMusic();
 
 private:
 	Music();
 	bool Load(FileSpecifier &file);
 	static Music *m_instance;
+
+	FileSpecifier* GetLevelMusic();
+	void LoadLevelMusic();
 
 #ifdef __MACOS__
 	static const int MUSIC_BUFFER_SIZE = 0x10000;
@@ -102,6 +110,12 @@ private:
 	uint32 macos_buffer_length;
 	std::vector<uint8> macos_music_buffer;
 #endif
+
+	// level music
+	std::vector<FileSpecifier> playlist;
+	size_t song_number;
+	bool random_order;
+	GM_Random randomizer;
 };
 
 #endif

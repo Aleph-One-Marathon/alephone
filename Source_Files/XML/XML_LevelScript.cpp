@@ -132,16 +132,6 @@ static vector<LevelScriptHeader> LevelScripts;
 // Current script for adding commands to and for running
 static LevelScriptHeader *CurrScriptPtr = NULL;
 
-// Current playlist:
-/*static*/ vector<FileSpecifier> Playlist;
-
-// Which song is now playing?
-static size_t SongNumber = 0;
-
-// Whether the order is random, and a random-number generator
-static bool RandomOrder = false;
-static GM_Random MusicRandomizer;
-
 // Map-file parent directory (where all map-related files are supposed to live)
 static DirectorySpecifier MapParentDir;
 
@@ -254,7 +244,7 @@ void RunLevelScript(int LevelIndex)
 	
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
-	Playlist.clear();
+	Music::instance()->ClearLevelMusic();
 
 #ifdef HAVE_OPENGL	
 	OGL_LoadScreen::instance()->Clear();
@@ -273,13 +263,8 @@ void RunLevelScript(int LevelIndex)
 	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelIndex);
 	
-	// Set to first song
-	SongNumber = 0;
-	
-	// Do randomization
-	MusicRandomizer.z ^= machine_tick_count();
-	MusicRandomizer.SetTable();
-	
+	Music::instance()->SeedLevelMusic();
+
 	// Best to preload level music here, so as not to load it when the interactivity starts
 	Music::instance()->PreloadLevelMusic();
 }
@@ -316,7 +301,7 @@ void GeneralRunScript(int LevelIndex)
 	if (!CurrScriptPtr) return;
 	
 	// Insures that this order is the last order set
-	RandomOrder = CurrScriptPtr->RandomOrder;
+	Music::instance()->LevelMusicRandom(CurrScriptPtr->RandomOrder);
 	
 	// OpenedResourceFile OFile;
 	// FileSpecifier& MapFile = get_map_file();
@@ -380,7 +365,7 @@ void GeneralRunScript(int LevelIndex)
 			{
 				FileSpecifier MusicFile;
 				if (MusicFile.SetNameWithPath(&Cmd.FileSpec[0]))
-					Playlist.push_back(MusicFile);
+					Music::instance()->PushBackLevelMusic(MusicFile);
 			}
 			break;
 #ifdef HAVE_OPENGL
@@ -441,34 +426,6 @@ void FindMovieInScript(int LevelIndex)
 	}
 }
 
-
-// Music functions
-
-bool IsLevelMusicActive() {return (!Playlist.empty());}
-
-#ifndef SDL
-void StopLevelMusic() {stop_music(); Playlist.clear();}
-#endif
-
-FileSpecifier *GetLevelMusic()
-{
-	// No songs to play
-	if (Playlist.empty()) return NULL;
-	
-	// Only one song to play
-	size_t NumSongs = Playlist.size();
-	if (NumSongs == 1) return &Playlist[0];
-	
-	if (RandomOrder)
-		SongNumber = MusicRandomizer.KISS() % NumSongs;
-	
-	// Get the song number to within range if playing sequentially;
-	// if the song number gets too big, then it's reset back to the first one
-	if (SongNumber < 0) SongNumber = 0;
-	else if (SongNumber >= NumSongs) SongNumber = 0;
-	
-	return &Playlist[SongNumber++];
-}
 
 // Movie functions
 

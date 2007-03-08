@@ -150,9 +150,6 @@ extern void select_next_best_weapon(short player_index);
 extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
 extern void draw_panels();
 
-extern vector<FileSpecifier> Playlist;
-extern bool IsLevelMusicActive();
-
 extern bool player_has_valid_weapon(short player_index);
 extern player_weapon_data *get_player_weapon_data(const short player_index);
 
@@ -4634,13 +4631,13 @@ static int L_Fade_Music(lua_State* L)
 	else
 		duration = (short)(lua_tonumber(L, 1) * 60);
 	Music::instance()->FadeOut(duration);
-	Playlist.clear();
+	Music::instance()->ClearLevelMusic();
 	return 0;
 }
 
 static int L_Clear_Music(lua_State* L)
 {
-	Playlist.clear();
+	Music::instance()->ClearLevelMusic();
 	return 0;
 }
 
@@ -4648,7 +4645,7 @@ static int L_Play_Music(lua_State* L)
 {
 	bool restart_music;
 	int n;
-	restart_music = !IsLevelMusicActive() && !Music::instance()->Playing();
+	restart_music = !Music::instance()->IsLevelMusicActive() && !Music::instance()->Playing();
 	for(n = 1; n <= lua_gettop(L); n++) {
 		if(!lua_isstring(L, n)) {
 			lua_pushstring(L, "play_music: invalid file specifier");
@@ -4656,7 +4653,7 @@ static int L_Play_Music(lua_State* L)
 		}
 		FileSpecifier file;
 		if(file.SetNameWithPath(lua_tostring(L, n)))
-			Playlist.push_back(file);
+			Music::instance()->PushBackLevelMusic(file);
 	}
 	if(restart_music)
 		Music::instance()->PreloadLevelMusic();
@@ -4665,11 +4662,8 @@ static int L_Play_Music(lua_State* L)
 
 static int L_Stop_Music(lua_State* L)
 {
-	Playlist.clear();
-// jkvw: This is ugly and wrong. Please fix.
-#ifndef SDL
-	stop_music();
-#endif
+	Music::instance()->ClearLevelMusic();
+	Music::instance()->StopLevelMusic();
 	return 0;
 }
 

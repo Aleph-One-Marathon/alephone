@@ -25,12 +25,23 @@
 
 Music* Music::m_instance = 0;
 
-Music::Music() : music_initialized(false), music_intro(false), music_play(false), music_prelevel(false),
-		 music_level(false), music_fading(false), music_fade_start(0), music_fade_duration(0)
+Music::Music() : 
+	music_initialized(false), 
+	music_intro(false), 
+	music_play(false), 
+	music_prelevel(false),
+	music_level(false), 
+	music_fading(false), 
+	music_fade_start(0), 
+	music_fade_duration(0),
 #ifdef __MACOS__
-	       , macos_file_done(false), macos_read_more(false), macos_buffer_length(0)
+	macos_file_done(false), 
+	macos_read_more(false), 
+	macos_buffer_length(0)
 #endif
-	       ,decoder(0)
+	decoder(0),
+	song_number(0),
+	random_order(false)
 {
 	music_buffer.resize(MUSIC_BUFFER_SIZE);
 #ifdef __MACOS__
@@ -87,8 +98,6 @@ void Music::FadeOut(short duration)
 {
 	if (music_play)
 	{
-		music_play = false;
-		
 		music_fading = true;
 		music_fade_start = SDL_GetTicks();
 		music_fade_duration = duration;
@@ -152,8 +161,6 @@ void Music::Pause()
 	Mixer::instance()->StopMusicChannel();
 	music_fading = false;
 }
-
-//extern void free_music_channel();
 
 void Music::Close()
 {
@@ -257,6 +264,14 @@ void Music::LoadLevelMusic()
 	Open(level_song_file);
 }
 
+void Music::SeedLevelMusic()
+{
+	song_number = 0;
+	
+	randomizer.z ^= machine_tick_count();
+	randomizer.SetTable();
+}
+
 void Music::PreloadLevelMusic()
 {
 	LoadLevelMusic();
@@ -273,5 +288,24 @@ void Music::StopLevelMusic()
 {
 	music_level = false;
 	music_play = false;
-	Open(0);
+	Close();
+}
+
+FileSpecifier* Music::GetLevelMusic()
+{
+	// No songs to play
+	if (playlist.empty()) return 0;
+
+	size_t NumSongs = playlist.size();
+	if (NumSongs == 1) return &playlist[0];
+
+	if (random_order)
+		song_number = randomizer.KISS() % NumSongs;
+
+	// Get the song number to within range if playing sequentially;
+	// if the song number gets too big, then it's reset back to the first one
+	if (song_number < 0) song_number = 0;
+	else if (song_number >= NumSongs) song_number = 0;
+
+	return &playlist[song_number++];
 }

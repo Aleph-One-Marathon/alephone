@@ -48,17 +48,6 @@ void RunEndScript();
 // by including those defaults in the script.
 void RunRestorationScript();
 
-// Indicates whether a level is active; this is for telling music.cpp not to loop the music
-bool IsLevelMusicActive();
-
-// When leaving the game for the main menu; indicates that there will be no script
-// to use for music files
-void StopLevelMusic();
-
-// Gets the next song file to play music from, as a pointer to the file specifier.
-// A NULL pointer means no music to play
-FileSpecifier *GetLevelMusic();
-
 // Finds the level movie and the end movie, to be used in show_movie()
 // The first is for some level,
 // while the second is for the end of a game
