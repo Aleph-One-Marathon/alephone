@@ -98,6 +98,7 @@ void Music::FadeOut(short duration)
 {
 	if (music_play)
 	{
+		if (!music_level) music_play = false;
 		music_fading = true;
 		music_fade_start = SDL_GetTicks();
 		music_fade_duration = duration;
