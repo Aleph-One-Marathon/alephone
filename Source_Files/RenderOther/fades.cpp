@@ -74,6 +74,8 @@ Jan 31, 2001 (Loren Petrich):
 #include "ColorParser.h"
 #include "OGL_Faders.h"
 
+#include "Music.h"
+
 #ifdef env68k
 #pragma segment shell
 #endif
@@ -415,6 +417,7 @@ void full_fade(
 	
 	explicit_start_fade(type, original_color_table, &animated_color_table);
 	while (update_fades())
+		Music::instance()->Idle();
 		;
 }
 

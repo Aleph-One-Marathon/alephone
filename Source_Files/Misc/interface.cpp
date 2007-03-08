@@ -2039,6 +2039,8 @@ static void finish_game(
 	}
 
 	/* Fade out! (Pray) */ // should be interface_color_table for valkyrie, but doesn't work.
+	Music::instance()->ClearLevelMusic();
+	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND / 2);
 	full_fade(_cinematic_fade_out, interface_color_table);
 	paint_window_black();
 	full_fade(_end_cinematic_fade_out, interface_color_table);
@@ -2049,7 +2051,6 @@ static void finish_game(
 	
 	// LP: stop playing the background music if it was present
 	Music::instance()->StopLevelMusic();
-	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND / 2);
 	
 	/* Get as much memory back as we can. */
 	free_and_unlock_memory(); // this could call free_map.. 
