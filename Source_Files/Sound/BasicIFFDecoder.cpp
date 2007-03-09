@@ -24,6 +24,7 @@
 #include "BasicIFFDecoder.h"
 #include "AStream.h"
 #include <vector>
+#include <SDL_rwops.h>
 
 using std::vector;
 
