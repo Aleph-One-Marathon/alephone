@@ -30,8 +30,16 @@ class SoundHeader
 {
 public:
 	SoundHeader();
+	virtual ~SoundHeader() { };
 	bool Load(OpenedFile &SoundFile); // loads a system 7 sound from file
 	bool Load(const uint8* data); // loads (but doesn't store) a system 7 sound
+
+	// decode raw samples into returned buffer
+	uint8* Load(int32 length) {
+		Clear();
+		stored_data.resize(length);
+		return &stored_data.front();
+	}
 
 	bool sixteen_bit;
 	bool stereo;
@@ -49,8 +57,9 @@ public:
 
 	_fixed rate;
 
-private:
 	void Clear() { stored_data.clear(); data = 0; length = 0; }
+
+private:
 	bool UnpackStandardSystem7Header(AIStreamBE &header);
 	bool UnpackExtendedSystem7Header(AIStreamBE &header);
 	

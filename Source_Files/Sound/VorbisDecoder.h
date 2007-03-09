@@ -29,7 +29,7 @@
 #ifdef HAVE_VORBISFILE
 #include <vorbis/vorbisfile.h>
 
-class VorbisDecoder : public Decoder
+class VorbisDecoder : public StreamDecoder
 {
 public:
 	bool Open(FileSpecifier& File);

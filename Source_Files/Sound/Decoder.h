@@ -27,7 +27,7 @@
 #include "cseries.h"
 #include "FileHandler.h"
 
-class Decoder
+class StreamDecoder
 {
 public:
 	virtual bool Open(FileSpecifier &File) = 0;
@@ -42,8 +42,20 @@ public:
 	virtual float Rate() = 0;
 	virtual bool IsLittleEndian() = 0;
 
-	Decoder() { }
-	virtual ~Decoder() { }
+	StreamDecoder() { }
+	virtual ~StreamDecoder() { }
+
+	static StreamDecoder* Get(FileSpecifier &File); // can return 0
+};
+
+class Decoder : public StreamDecoder
+{
+public:
+	Decoder() : StreamDecoder() { }
+	~Decoder() { }
+
+	// total number of frames in the file
+	virtual int32 Frames() = 0; 
 
 	static Decoder* Get(FileSpecifier &File); // can return 0
 };

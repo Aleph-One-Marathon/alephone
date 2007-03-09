@@ -48,6 +48,8 @@ public:
 	bool IsLittleEndian() { return false; }
 #endif
 
+	int32 Frames() { return sfinfo.frames; }
+
 	SndfileDecoder();
 	~SndfileDecoder();
 private:

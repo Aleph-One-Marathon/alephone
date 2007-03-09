@@ -181,7 +181,7 @@ bool Music::Load(FileSpecifier &song_file)
 {
 
 	delete decoder;
-	decoder = Decoder::Get(song_file);
+	decoder = StreamDecoder::Get(song_file);
 
 	if (decoder)
 	{

@@ -21,6 +21,7 @@ SOUND.C
 */
 
 #include "SoundManager.h"
+#include "ReplacementSounds.h"
 #include "sound_definitions.h"
 #include "Mixer.h"
 
@@ -29,7 +30,7 @@ SOUND.C
 #define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0x8000)
 #define MARK_SLOT_AS_USED(o) ((o)->flags|=(uint16)0x8000)
 
-SoundManager *SoundManager::m_instance;
+SoundManager *SoundManager::m_instance = 0;
 
 static void Shutdown()
 {
@@ -150,6 +151,17 @@ bool SoundManager::LoadSound(short sound_index)
 	{
 		SoundDefinition *definition = GetSoundDefinition(sound_index);
 		if (!definition) return false;
+
+		// Load all the external-file sounds for each index; fill the slots appropriately.
+		int NumSlots= (parameters.flags & _more_sounds_flag) ? definition->permutations : 1;
+		for (int k = 0; k < NumSlots; k++)
+		{
+			SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, k);
+			if (!SndOpts) continue;
+			FileSpecifier File;
+			if (!File.SetNameWithPath(SndOpts->File.c_str())) continue;
+			if (!SndOpts->Sound.LoadExternal(File)) continue;
+		}
 
 		if (definition->sound_code != NONE &&
 		    (parameters.flags & _ambient_sound_flag) || !(definition->flags & _sound_is_ambient))
@@ -661,11 +673,20 @@ void SoundManager::BufferSound(Channel &channel, short sound_index, _fixed pitch
 	int permutation = GetRandomSoundPermutation(sound_index);
 
 	assert(permutation >= 0 && permutation < definition->permutations);
+
+	Mixer::Header header;
+
+	SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, permutation);
+	if (SndOpts && SndOpts->Sound.Length())
+	{
+		header = SndOpts->Sound;
+	}
+	else
+	{
+		header = definition->sounds[permutation];
+	}
 	
-//	uint8 *data = (uint8 *)&definition->sound_data.front() + definition->sound_offsets[permutation];
-	Mixer::Header header(definition->sounds[permutation]);
 	Mixer::instance()->BufferSound(channel.mixer_channel, header, CalculatePitchModifier(sound_index, pitch));
-//	Mixer::instance()->BufferSound(channel.mixer_channel, data, CalculatePitchModifier(sound_index, pitch));
 }
 
 SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Variables &variables)
@@ -805,9 +826,19 @@ short SoundManager::ReleaseLeastUsefulSound()
 void SoundManager::DisposeSound(short sound_index)
 {
 	SoundDefinition *definition = GetSoundDefinition(sound_index);
+
+	// unload replacement sounds
+	int NumSlots = (parameters.flags & _more_sounds_flag) ? definition->permutations : 1;
+	for (int k = 0; k < NumSlots; k++)
+	{
+		SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, k);
+		if (SndOpts) SndOpts->Sound.Clear();
+	}
+
 	if (!definition) return;
 	loaded_sounds_size -= definition->LoadedSize();
 	definition->Unload();
+
 }
 
 void SoundManager::CalculateSoundVariables(short sound_index, world_location3d *source, Channel::Variables& variables)
@@ -1331,7 +1362,7 @@ public:
 bool XML_SO_ClearParser::Start()
 {
 	// Clear the list
-//	SOList.clear();
+	SoundReplacements::instance()->Reset();
 	return true;
 }
 
@@ -1343,7 +1374,7 @@ class XML_SoundOptionsParser: public XML_ElementParser
 	bool IndexPresent;
 	short Index, Slot;
 	
-	//SoundOptions Data;
+	SoundOptions Data;
 
 public:
 	bool Start();
@@ -1359,7 +1390,7 @@ bool XML_SoundOptionsParser::Start()
 	IndexPresent = false;
 	Index = NONE;
 	Slot = 0;			// Default: first slot
-	//Data.File.clear();	// Default: no file
+	Data.File.clear();
 	
 	return true;
 }
@@ -1382,8 +1413,7 @@ bool XML_SoundOptionsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"file"))
 	{
 		size_t nchars = strlen(Value)+1;
-		//Data.File.resize(nchars);
-		//memcpy(&Data.File[0],Value,nchars);
+		Data.File = Value;
 		return true;
 	}
 	UnrecognizedTag();
@@ -1392,40 +1422,21 @@ bool XML_SoundOptionsParser::HandleAttribute(const char *Tag, const char *Value)
 
 bool XML_SoundOptionsParser::AttributesDone()
 {
-	return true;
-#if 0
 	// Verify...
 	if (!IndexPresent)
 	{
 		AttribsMissing();
 		return false;
 	}
-	
-	// Check to see if a frame is already accounted for
-	for (vector<SoundOptionsEntry>::iterator SOIter = SOList.begin(); SOIter < SOList.end(); SOIter++)
-	{
-		if (SOIter->Index == Index && SOIter->Slot == Slot)
-		{
-			// Replace the data
-			SOIter->OptionsData = Data;
-			return true;
-		}
-	}
-	
-	// If not, then add a new frame entry
-	SoundOptionsEntry DataEntry;
-	DataEntry.Index = Index;
-	DataEntry.Slot = Slot;
-	DataEntry.OptionsData = Data;
-	SOList.push_back(DataEntry);
-	
+
+	SoundReplacements::instance()->Add(Data, Index, Slot);
+
 	return true;
-#endif
 }
 
 bool XML_SoundOptionsParser::ResetValues()
 {
-//	SOList.clear();
+	SoundReplacements::instance()->Reset();
 	return true;
 }
 

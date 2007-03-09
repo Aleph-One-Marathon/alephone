@@ -85,7 +85,7 @@ private:
 #endif
 
 	std::vector<uint8> music_buffer;
-	Decoder *decoder;
+	StreamDecoder *decoder;
 
 	SDL_RWops* music_rw;
 

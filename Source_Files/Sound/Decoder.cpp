@@ -30,7 +30,7 @@
 
 using std::auto_ptr;
 
-Decoder *Decoder::Get(FileSpecifier& File)
+StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
 {
 #ifdef HAVE_SNDFILE
 	{ 
@@ -63,4 +63,21 @@ Decoder *Decoder::Get(FileSpecifier& File)
 #endif
 
 	return 0;
+}
+
+Decoder *Decoder::Get(FileSpecifier &File)
+{
+#ifdef HAVE_SNDFILE
+	{
+		auto_ptr<SndfileDecoder> sndfileDecoder(new SndfileDecoder);
+		if (sndfileDecoder->Open(File))
+			return sndfileDecoder.release();
+	}
+#else
+	{
+		auto_ptr<BasicIFFDecoder> iffDecoder(new BasicIFFDecoder);
+		if (iffDecoder->Open(File))
+			return iffDecoder.release();
+	}
+#endif
 }

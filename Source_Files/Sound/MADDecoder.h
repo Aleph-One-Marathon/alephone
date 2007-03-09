@@ -29,7 +29,7 @@
 #ifdef HAVE_MAD
 #include <mad.h>
 
-class MADDecoder : public Decoder
+class MADDecoder : public StreamDecoder
 {
 public:
 	bool Open(FileSpecifier &File);

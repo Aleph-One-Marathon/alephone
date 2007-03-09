@@ -42,6 +42,8 @@ public:
 	float Rate() { return rate; }
 	bool IsLittleEndian() { return little_endian; }
 
+	int32 Frames() { return length / bytes_per_frame; }
+
 	BasicIFFDecoder();
 	~BasicIFFDecoder() { }
 
