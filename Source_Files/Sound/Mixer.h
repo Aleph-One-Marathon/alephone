@@ -22,6 +22,7 @@
 
 */
 
+#include <SDL_endian.h>
 #include "cseries.h"
 #include "network_speaker_sdl.h"
 #include "network_audio_shared.h"
