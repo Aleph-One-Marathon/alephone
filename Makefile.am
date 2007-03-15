@@ -22,7 +22,7 @@ $(PACKAGE)-$(VERSION).tar.gz: dist
 rpm: $(PACKAGE)-$(VERSION).tar.gz
 	rpmbuild -ta --clean $(PACKAGE)-$(VERSION).tar.gz
 
-ChangeLog: FORCE
+ChangeLog:
 	cvs2cl --show-dead -S
 
 FORCE:

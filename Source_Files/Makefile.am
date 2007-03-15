@@ -9,7 +9,7 @@ else
 bin_PROGRAMS = alephone
 endif
 
-alephone_SOURCES = shell.h shell_sdl.h \
+alephone_SOURCES = shell.h \
   \
   shell.cpp shell_misc.cpp Misc/DefaultStringSets.cpp
 
