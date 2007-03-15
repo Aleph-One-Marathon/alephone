@@ -1,6 +1,6 @@
 1 VERSIONINFO
-FILEVERSION 0, 2006, 12, 28 
-PRODUCTVERSION 0, 2006, 12, 28
+FILEVERSION 0, 2007, 3, 14 
+PRODUCTVERSION 0, 2007, 3, 14
 FILEFLAGSMASK 0
 FILEOS 0x40000
 FILETYPE 1
@@ -10,9 +10,9 @@ FILETYPE 1
   BLOCK "040904E4"
   {
    VALUE "AppName", "Aleph One"
-   VALUE "AppVersion", "0.17.2"
+   VALUE "AppVersion", "0.18pre1"
    VALUE "BuildDate", "BUILDDATE"
-   VALUE "FileVersion", "0.17.2"
+   VALUE "FileVersion", "0.18pre1"
    VALUE "FileDescription", "Aleph One/SDL for Win32"
    VALUE "LegalCopyright", "GNU General Public License"
    VALUE "License", "GNU General Public License (For details, see the file COPYING)"
