@@ -23,6 +23,8 @@
 
 #include "OGL_Blitter.h"
 
+#ifdef HAVE_OPENGL
+
 const int OGL_Blitter::tile_size;
 
 OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Rect& ortho) : m_ortho(ortho)
@@ -138,3 +140,4 @@ void OGL_Blitter::RestoreMatrix()
 	glPopAttrib();
 }
 
+#endif

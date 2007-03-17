@@ -233,10 +233,12 @@ void enter_screen(void)
 		OGL_StartRun();
 #endif
 
+#ifdef HAVE_OPENGL
 	if (OGL_IsActive())
 		OGL_HUDActive = true;
 	else
 		OGL_HUDActive = false;
+#endif
 
 	// Reset modifier key status
 	SDL_SetModState(KMOD_NONE);
@@ -790,7 +792,9 @@ void bound_screen()
 
 	Rect sr = { ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
 	Rect vr = { ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
+#ifdef HAVE_OPENGL
 	OGL_SetWindow(sr, vr, true);
+#endif
 }
 
 void change_interface_clut(struct color_table *color_table)

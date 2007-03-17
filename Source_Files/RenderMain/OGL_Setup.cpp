@@ -164,6 +164,7 @@ static int32 last_update_tick;
 
 extern bool OGL_ClearScreen();
 
+#ifdef HAVE_OPENGL
 void OGL_StartProgress(int total_progress)
 {
 	ogl_progress = 0;
@@ -201,7 +202,7 @@ void OGL_StopProgress()
 	else
 		close_progress_dialog();
 }
-
+#endif
 
 // Sensible defaults for the fog:
 static OGL_FogData FogData[OGL_NUMBER_OF_FOG_TYPES] = 
