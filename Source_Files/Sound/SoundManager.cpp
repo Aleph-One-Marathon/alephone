@@ -91,6 +91,7 @@ void SoundManager::Shutdown()
 
 bool SoundManager::OpenSoundFile(FileSpecifier& File)
 {
+	StopAllSounds();
 	if (!sound_file.Open(File)) return false;
 	number_of_sound_definitions = sound_file.sound_count;
 
@@ -103,6 +104,7 @@ bool SoundManager::OpenSoundFile(FileSpecifier& File)
 
 void SoundManager::CloseSoundFile()
 {
+	StopAllSounds();
 	sound_file.Close();
 }
 
