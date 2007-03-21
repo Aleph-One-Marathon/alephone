@@ -53,6 +53,7 @@
 #include "Logging.h"
 #include "Scenario.h"
 #include "SW_Texture_Extras.h"
+#include "Console.h"
 
 #ifdef SDL
 #include "sdl_dialogs.h"
@@ -102,6 +103,7 @@ void SetupParseTree()
 	MarathonParser.AddChild(Theme_GetParser());
 #endif
 	MarathonParser.AddChild(SW_Texture_Extras_GetParser());
+	MarathonParser.AddChild(Console_GetParser());
 }
 
 // This will reset all values changed by MML scripts which implement ResetValues() method
