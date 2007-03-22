@@ -127,9 +127,10 @@ enum {
         kDefaultPregameWindowSize = TICKS_PER_SECOND / 2,
         kDefaultInGameWindowSize = TICKS_PER_SECOND * 5,
 	kDefaultPregameNthElement = 2,
-	kDefaultInGameNthElement = kDefaultInGameWindowSize / 2,
+//	kDefaultInGameNthElement = kDefaultInGameWindowSize / 2,
+	kDefaultInGameNthElement = kDefaultInGameWindowSize,
         kDefaultPregameTicksBeforeNetDeath = 20 * TICKS_PER_SECOND,
-        kDefaultInGameTicksBeforeNetDeath = 3 * TICKS_PER_SECOND,
+        kDefaultInGameTicksBeforeNetDeath = 5 * TICKS_PER_SECOND,
 	kDefaultSendPeriod = 1,
         kDefaultRecoverySendPeriod = TICKS_PER_SECOND / 2,
 	kDefaultMinimumSendPeriod = 5,
@@ -156,6 +157,8 @@ struct HubPreferences {
 static HubPreferences sHubPreferences;
 
 int32& hub_get_minimum_send_period() { return sHubPreferences.mMinimumSendPeriod; }
+
+void hub_set_minimum_send_period(int32 new_minimum) { sHubPreferences.mMinimumSendPeriod = new_minimum; }
 
 // sNetworkTicker advances even if the game clock doesn't.
 // sLastNetworkTickSent is used to force us to resend packets (at a lower rate) even if we're no longer
@@ -251,6 +254,9 @@ static uint32 sLaggingPlayersBitmask;
 // bit for each player we've altered flags and need to reflect flags for
 static MutableElementsTickBasedCircularQueue<uint32> sPlayerReflectedFlags(kFlagsQueueSize);
 
+// sLateFlagsQueues hold late flags we've received from lagging players
+static TickBasedActionQueueCollection sLateFlagsQueues;
+
 // holds the last real flags we received from this player
 static vector<action_flags_t> sLastFlagsReceived;
 
@@ -342,6 +348,12 @@ getFlagsQueue(size_t inIndex)
         return sFlagsQueues[inIndex];
 }
 
+static inline TickBasedActionQueue&
+getLateFlagsQueue(size_t inIndex)
+{
+	assert(inIndex < sFlagsQueues.size());
+	return sLateFlagsQueues[inIndex];
+}
 
 
 static inline bool
@@ -417,8 +429,11 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
 
         sNetworkPlayers.clear();
         sFlagsQueues.clear();
+	sLateFlagsQueues.clear();
         sNetworkPlayers.resize(inNumPlayers);
         sFlagsQueues.resize(inNumPlayers, TickBasedActionQueue(kFlagsQueueSize));
+	sLateFlagsQueues.resize(inNumPlayers, TickBasedActionQueue(kFlagsQueueSize));
+
         sAddressToPlayerIndex.clear();
         sConnectedPlayersBitmask = 0;
 
@@ -463,6 +478,7 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
 		thePlayer.mDisplayLatencyTicks = 0;
 
                 sFlagsQueues[i].reset(theFirstTick);
+		sLateFlagsQueues[i].reset(theFirstTick);
         }
         
         sPlayerDataDisposition.reset(theFirstTick);
@@ -534,6 +550,7 @@ hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
 		
 		sNetworkPlayers.clear();
 		sFlagsQueues.clear();
+		sLateFlagsQueues.clear();
 
 		sAddressToPlayerIndex.clear();
 		NetDDPDisposeFrame(sOutgoingFrame);
@@ -680,29 +697,55 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
         int32	theActionFlagsCount = theRemainingDataLength / kActionFlagsSerializedLength;
 
         TickBasedActionQueue& theQueue = getFlagsQueue(inSenderIndex);
+	TickBasedActionQueue& theLateQueue = getLateFlagsQueue(inSenderIndex);
 
         // Packet is malformed if they're skipping ahead
         if(theStartTick > theQueue.getWriteTick())
+	{
                 return;
+	}
+
+	if (theStartTick > theLateQueue.getWriteTick()) 
+	{
+		while (theLateQueue.getWriteTick() < theQueue.getWriteTick())
+		{
+			theLateQueue.enqueue(sLastFlagsReceived[inSenderIndex]);
+			theLateQueue.dequeue();
+		}
+	}
 
         // Skip redundant flags without processing/checking them
-        int	theRedundantActionFlagsCount = std::min(theQueue.getWriteTick() - theStartTick, theActionFlagsCount);
-        int	theRedundantDataLength = theRedundantActionFlagsCount * kActionFlagsSerializedLength;
+//        int	theRedundantActionFlagsCount = std::min(theQueue.getWriteTick() - theStartTick, theActionFlagsCount);
+	int     theRedundantActionFlagsCount = std::min(theLateQueue.getWriteTick() - theStartTick, theActionFlagsCount);
+	int	theRedundantDataLength = theRedundantActionFlagsCount * kActionFlagsSerializedLength;
 	ps.ignore(theRedundantDataLength);
 
-
+	assert(theQueue.getWriteTick() >= theLateQueue.getWriteTick());
+	// Enqueue late flags
+	int theLateActionFlagsCount = std::min(theQueue.getWriteTick() - theLateQueue.getWriteTick(), theActionFlagsCount - theRedundantActionFlagsCount);
+	for (int i = 0; i < theLateActionFlagsCount; i++)
+	{
+		action_flags_t theActionFlags;
+		ps >> theActionFlags;
+		// we consume these faster than we enqueue them (hopefully)
+		// so, not checking for capacity though we probably should
+		theLateQueue.enqueue(theActionFlags);
+		sLastFlagsReceived[inSenderIndex] = theActionFlags;
+	}
 
         // Enqueue flags that are new to us
-        int	theUsefulActionFlagsCount = theActionFlagsCount - theRedundantActionFlagsCount;
         int	theRemainingQueueSpace = (sPlayerDataDisposition.getReadTick() < sSmallestRealGameTick && theQueue.size() > sHubPreferences.mPregameWindowSize) ? 0 : theQueue.availableCapacity();
-	
+	int theUsefulActionFlagsCount = theActionFlagsCount - theRedundantActionFlagsCount - theLateActionFlagsCount;
         int	theEnqueueableFlagsCount = std::min(theUsefulActionFlagsCount, theRemainingQueueSpace);
+
+	assert(!theEnqueueableFlagsCount || (theQueue.getWriteTick() == theLateQueue.getWriteTick()));
         
         for(int i = 0; i < theEnqueueableFlagsCount; i++)
         {
                 action_flags_t theActionFlags;
                 ps >> theActionFlags;
                 theQueue.enqueue(theActionFlags);
+		theLateQueue.enqueue(theActionFlags);
 		sLastFlagsReceived[inSenderIndex] = theActionFlags;
         }
 
@@ -725,6 +768,14 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 	if(thePlayer.mOutstandingTimingAdjustment == 0 && thePlayer.mNthElementFinder.window_full())
 	{
 		thePlayer.mOutstandingTimingAdjustment = thePlayer.mNthElementFinder.nth_smallest_element((thePlayer.mSmallestUnheardTick >= sSmallestRealGameTick) ? sHubPreferences.mInGameNthElement : sHubPreferences.mPregameNthElement);
+
+		// if anti-lag is on, add a bit of latency based on jitter to try to keep it from triggering
+		if (sHubPreferences.mMinimumSendPeriod)
+		{
+			uint32 jitter = std::min(thePlayer.mNthElementFinder.nth_largest_element(0) - thePlayer.mNthElementFinder.nth_smallest_element(0) - (sHubPreferences.mMinimumSendPeriod - 1), 0);
+			thePlayer.mOutstandingTimingAdjustment -= jitter;
+		}
+
 		if(thePlayer.mOutstandingTimingAdjustment != 0)
 		{
 			thePlayer.mTimingAdjustmentTick = sSmallestIncompleteTick;
@@ -736,7 +787,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
         if(theEnqueueableFlagsCount > 0)
         {
 		// Actually the shouldSend business is probably unnecessary now with sSmallestUnsentTick
-                bool shouldSend = player_provided_flags_from_tick_to_tick(inSenderIndex, theStartTick + theRedundantActionFlagsCount, theStartTick + theRedundantActionFlagsCount + theEnqueueableFlagsCount);
+                bool shouldSend = player_provided_flags_from_tick_to_tick(inSenderIndex, theStartTick + theRedundantActionFlagsCount + theLateActionFlagsCount, theStartTick + theRedundantActionFlagsCount + theEnqueueableFlagsCount + theLateActionFlagsCount);
                 if(shouldSend && (sSmallestIncompleteTick - sSmallestUnsentTick >= sHubPreferences.mSendPeriod))
                         send_packets();
         }
@@ -834,7 +885,29 @@ static bool make_up_flags_for_first_incomplete_tick()
 		if (getFlagsQueue(i).getWriteTick() == sSmallestIncompleteTick)
 		{
 			// network code shouldn't figure this out, someone else should
-			action_flags_t motionFlags = sLastFlagsReceived[i] & (_moving | _sidestepping);
+			action_flags_t motionFlags;
+			TickBasedActionQueue& theLateQueue = getLateFlagsQueue(i);
+			if (sLaggingPlayersBitmask & (1 << i) && theLateQueue.getWriteTick() > theLateQueue.getReadTick())
+			{
+				uint32 midpoint = ((theLateQueue.getWriteTick() - theLateQueue.getReadTick()) / 2 + theLateQueue.getReadTick());
+				// collapse the queue up to the midpoint
+
+				action_flags_t triggerFlags = 0;
+				while (theLateQueue.getReadTick() < midpoint)
+				{
+					motionFlags = theLateQueue.peek(theLateQueue.getReadTick());
+					triggerFlags |= (motionFlags & (_left_trigger_state | _right_trigger_state | _action_trigger_state | _cycle_weapons_forward | _cycle_weapons_backward | _toggle_map | _microphone_button | _swim));
+					theLateQueue.dequeue();
+				}
+
+				motionFlags = theLateQueue.peek(theLateQueue.getReadTick()) | triggerFlags;
+				theLateQueue.dequeue();
+			} 
+			else
+			{
+				motionFlags = sLastFlagsReceived[i] & (_moving | _sidestepping);
+				if (local_random() % 10 > 8) sLastFlagsReceived[i] = 0;
+			}
 			getFlagsQueue(i).enqueue(motionFlags);
 			sPlayerReflectedFlags[sSmallestIncompleteTick] |= (1 << i);
 		}
@@ -868,7 +941,14 @@ player_provided_flags_from_tick_to_tick(size_t inPlayerIndex, int32 inFirstNewTi
 		
                 assert(sPlayerDataDisposition[i] & (((uint32)1) << inPlayerIndex));
                 sPlayerDataDisposition[i] &= ~(((uint32)1) << inPlayerIndex);
+		
+		// remove the player from the list of lagging players, and
+		// dequeue his late flags
 		sLaggingPlayersBitmask &= ~(((uint32)1) << inPlayerIndex);
+		TickBasedActionQueue& theLateQueue = getLateFlagsQueue(inPlayerIndex);
+		while (theLateQueue.getReadTick() < theLateQueue.getWriteTick())
+			theLateQueue.dequeue();
+
                 if(sPlayerDataDisposition[i] == 0)
                 {
                         assert(sSmallestIncompleteTick == i);
@@ -1063,7 +1143,7 @@ hub_tick()
 					}
 				}
 				
-				if (readyPlayers > nonReadyPlayers)
+				if (readyPlayers >= nonReadyPlayers)
 					if (make_up_flags_for_first_incomplete_tick())
 						shouldSend = true;
 			}

@@ -482,7 +482,8 @@ protected:
 	ToggleWidget*		m_laraCroftWidget;
 	
 	ToggleWidget*       m_useUpnpWidget;
-	SelectorWidget*         m_latencyToleranceWidget;
+//	SelectorWidget*         m_latencyToleranceWidget;
+	SliderSelectorWidget*   m_latencyToleranceWidget;
 };
 
 

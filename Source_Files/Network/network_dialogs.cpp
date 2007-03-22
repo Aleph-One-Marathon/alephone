@@ -884,11 +884,11 @@ public:
 	LatencyTolerancePref (int32& pref) : m_pref(pref) { }
 	
 	virtual int bind_export () {
-		return (m_pref == 5) ? 1 : (m_pref == 3) ? 2 : 0;
+		return (m_pref == 0) ? 5 : (m_pref - 1);
 	}
 
 	virtual void bind_import(int value) {
-		m_pref = (value == 2) ? 3 : (value == 1) ? 5 : 0;
+		m_pref = (value == 5) ? 0 : (value + 1);
 	}
 protected:
 	int32& m_pref;
@@ -2815,8 +2815,8 @@ public:
 		m_dialog.add_to_tab (use_upnp_w, iSNG_STUFF_TAB);
 		
 		m_dialog.add_to_tab (new w_spacer(), iSNG_STUFF_TAB);
-		m_dialog.add_to_tab (new w_static_text("Anti-lag smooths games at laggy joiners' expense"), iSNG_STUFF_TAB);
-		w_select_popup *latency_tolerance_w = new w_select_popup("Anti-lag");
+		m_dialog.add_to_tab (new w_static_text("Smooths games at laggy joiners' expense"), iSNG_STUFF_TAB);
+		w_slider *latency_tolerance_w = new w_slider("Latency Tolerance", 6, 0);
 		m_dialog.add_to_tab (latency_tolerance_w, iSNG_STUFF_TAB);
 
 		m_dialog.add (new w_spacer());	
@@ -2865,7 +2865,7 @@ public:
 		m_laraCroftWidget = new ToggleWidget (lara_croft_w);
 		
 		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
-		m_latencyToleranceWidget = new PopupSelectorWidget(latency_tolerance_w);
+		m_latencyToleranceWidget = new SliderSelectorWidget(latency_tolerance_w);
 	}
 	
 	virtual bool Run ()
