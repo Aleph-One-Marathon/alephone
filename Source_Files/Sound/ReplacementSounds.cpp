@@ -44,7 +44,7 @@ bool ExternalSoundHeader::LoadExternal(FileSpecifier& File)
 	bytes_per_frame = decoder->BytesPerFrame();
 	little_endian = decoder->IsLittleEndian();
 	loop_start = loop_end = 0;
-	rate = (_fixed) (FIXED_ONE * decoder->Rate());
+	rate = (uint32 /* unsigned fixed */) (FIXED_ONE * decoder->Rate());
 
 	return true;
 	
