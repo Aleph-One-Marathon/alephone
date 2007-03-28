@@ -51,7 +51,7 @@ public:
 		const uint8* loop;
 		int32 loop_length;
 
-		_fixed rate;
+		uint32 /* unsigned fixed */ rate;
 		bool little_endian;
 
 		Header();

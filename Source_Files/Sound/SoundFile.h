@@ -55,7 +55,7 @@ public:
 	int32 loop_start;
 	int32 loop_end;
 
-	_fixed rate;
+	uint32 /* unsigned fixed */ rate;
 
 	void Clear() { stored_data.clear(); data = 0; length = 0; }
 
