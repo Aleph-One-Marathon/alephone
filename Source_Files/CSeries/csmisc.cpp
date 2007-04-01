@@ -50,7 +50,7 @@ bool wait_for_click_or_keypress(
 	for (;;) {
 		if (GetNextEvent(mDownMask|keyDownMask,&event))
 			return true;
-		if (event.when>=end)
+		if (ticks != -1 && event.when>=end)
 			return false;
 	}
 }
