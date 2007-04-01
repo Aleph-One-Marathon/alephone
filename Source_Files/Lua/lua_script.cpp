@@ -563,9 +563,9 @@ static int L_Screen_Print(lua_State *L)
 		int player_index = static_cast<int>(lua_tonumber(L,1));
 		if (local_player_index != player_index)
 			return 0;
-		screen_printf(lua_tostring(L, 2));
+		screen_printf("%s", lua_tostring(L, 2));
 	} else {
-		screen_printf(lua_tostring(L, 1));
+		screen_printf("%s", lua_tostring(L, 1));
 	}
 
 	return 0;
