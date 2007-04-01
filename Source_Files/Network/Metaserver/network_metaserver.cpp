@@ -383,7 +383,11 @@ MetaserverClient::setPlayerName(const std::string& name)
 	m_playerName = name;
 }
 
-
+void MetaserverClient::setAway(bool away, const std::string& away_message)
+{
+	m_channel->enqueueOutgoingMessage(NameAndTeamMessage(m_playerName, m_teamName, away, away_message));
+	m_channel->enqueueOutgoingMessage(SetPlayerModeMessage(1 /* deaf */));
+}
 
 void
 MetaserverClient::setPlayerTeamName(const std::string& name)

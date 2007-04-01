@@ -193,7 +193,7 @@ void get_metaserver_player_color(size_t colorIndex, uint16* color) {
 }
 
 void
-write_player_aux_data(AOStream& out, const string& name, const string& team)
+write_player_aux_data(AOStream& out, string name, const string& team, bool away, const string& away_message)
 {
 	uint8	unused8 = 0;
 	uint16 primaryColor[3];
@@ -203,12 +203,16 @@ write_player_aux_data(AOStream& out, const string& name, const string& team)
 	get_metaserver_player_color(player_preferences->team, secondaryColor);
 	uint16	orderIndex = 0;
 
-	
+	if (away)
+	{
+		// alter the player's name
+		name = away_message.substr(0, 8) + "-" + name;
+	}
 
 	out
 		<< kPlayerIcon
-		<< kPlayerStatus
 		<< unused8
+		<< (uint16) (away ? kSTATE_AWAY : kSTATE_AWAKE)
 		<< primaryColor[0]
 		<< primaryColor[1]
 		<< primaryColor[2]
@@ -249,7 +253,7 @@ LoginAndPlayerInfoMessage::reallyDeflateTo(AOStream& thePacket) const
 	write_padded_string(thePacket, __TIME__, 32);
 	write_padded_string(thePacket, m_userName.c_str(), 32);
 
-	write_player_aux_data(thePacket, m_playerName, m_teamName);
+	write_player_aux_data(thePacket, m_playerName, m_teamName, false, "");
 }
 
 
@@ -352,10 +356,8 @@ operator <<(ostream& out, const RoomListMessage& message)
 void
 NameAndTeamMessage::reallyDeflateTo(AOStream& out) const
 {
-	write_player_aux_data(out, m_name, m_team);
+	write_player_aux_data(out, m_name, m_team, m_away, m_away_message);
 }
-
-
 
 bool
 IDAndLimitMessage::reallyInflateFrom(AIStream& inStream)
@@ -499,7 +501,7 @@ operator <<(ostream& out, const MetaserverPlayerInfo& info)
 		<< (uint16)info.m_icon	<< "; "
 		<< (uint16)info.m_status << "; "
 		<< info.m_name		<< "; "
-		<< info.m_team
+		<< info.m_team << endl << endl
 	 );
 }
 

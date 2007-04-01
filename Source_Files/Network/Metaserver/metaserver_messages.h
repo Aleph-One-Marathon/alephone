@@ -60,6 +60,7 @@ enum
 	kCLIENT_NAME_TEAM	= 103,
 	kCLIENT_CREATEGAME	= 104,
 	kCLIENT_REMOVEGAME	= 105,
+	kCLIENT_PLAYERMODE      = 107,
 	kCLIENT_KEY		= 109,
 	kCLIENT_SYNCGAMES	= 110,
         kCLIENT_GAMEPLAYERLIST	= 111,
@@ -163,7 +164,30 @@ private:
 	std::string	m_teamName;
 };
 
+class SetPlayerModeMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kCLIENT_PLAYERMODE };
 
+	MessageTypeID type() const { return kType; }
+
+	COVARIANT_RETURN(Message*, SetPlayerModeMessage*) clone() const
+		{ return new SetPlayerModeMessage(*this); }
+
+	SetPlayerModeMessage(uint16 mode) : m_mode(mode) { }
+
+protected:
+	void reallyDeflateTo(AOStream& thePacket) const
+		{
+			thePacket << m_mode;
+		}
+
+	bool reallyInflateFrom(AIStream& inStream)
+		{ assert(false); }
+
+private:
+	uint16 m_mode;
+};
 
 class SaltMessage : public SmallMessageHelper
 {
@@ -318,8 +342,9 @@ public:
 	COVARIANT_RETURN(Message*, NameAndTeamMessage*) clone() const
 	{ return new NameAndTeamMessage(*this); }
 
-	NameAndTeamMessage(const std::string& name, const std::string& team) : m_name(name), m_team(team)
-	{}
+	NameAndTeamMessage(const std::string& name, const std::string& team) : m_name(name), m_team(team), m_away(false), m_away_message("") {}
+
+	NameAndTeamMessage(const std::string& name, const std::string& team, bool away, const std::string& away_message) : m_name(name), m_team(team), m_away(away), m_away_message(away_message) { }
 
 protected:
 	void reallyDeflateTo(AOStream& out) const;
@@ -333,9 +358,10 @@ protected:
 private:
 	std::string	m_name;
 	std::string	m_team;
+
+	bool            m_away;
+	std::string     m_away_message;
 };
-
-
 
 class IDAndLimitMessage : public SmallMessageHelper
 {

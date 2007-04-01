@@ -174,6 +174,8 @@ public:
 	void setPlayerName(const std::string& name);
 	const std::string& playerName() const { return m_playerName; }
 
+	void setAway(bool away, const std::string& away_message);
+
 	void setPlayerTeamName(const std::string& team);
 
 	const Rooms& rooms() const;
