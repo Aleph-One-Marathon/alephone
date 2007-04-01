@@ -2932,8 +2932,8 @@ void open_progress_dialog(size_t message_id, bool show_progress_bar)
     
     sProgressDialog->start(false);
 
-    bool done = sProgressDialog->process_events();
-    assert(!done);
+//    bool done = sProgressDialog->process_events();
+//    assert(!done);
 }
 
 
@@ -2944,9 +2944,9 @@ void set_progress_dialog_message(size_t message_id)
 
     sProgressMessage->set_text(TS_GetCString(strPROGRESS_MESSAGES, message_id));
     
-    bool done = sProgressDialog->process_events();
+//    bool done = sProgressDialog->process_events();
 
-    assert(!done);
+//    assert(!done);
 }
 
 void close_progress_dialog(void)
@@ -2957,9 +2957,9 @@ void close_progress_dialog(void)
     
     sProgressDialog->quit(0);
     
-    bool done = sProgressDialog->process_events();
+//    bool done = sProgressDialog->process_events();
     
-    assert(done);
+//    assert(done);
     
     int result = sProgressDialog->finish(false);
     
