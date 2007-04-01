@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Written in 2000 by Christian Bauer <Christian.Bauer@uni-mainz.de>
 
-AC_INIT([Aleph One/SDL], 20061228, [http://sourceforge.net/bugs/?group_id=1997], [AlephOne])
+AC_INIT([Aleph One/SDL], 20070401, [http://sourceforge.net/bugs/?group_id=1997], [AlephOne])
 AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
 AC_PREREQ(2.52)
 

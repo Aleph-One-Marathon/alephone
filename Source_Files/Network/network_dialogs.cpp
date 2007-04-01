@@ -231,8 +231,7 @@ bool network_gather(bool inResumingGame)
 					metaserverAnnouncer->Start();
 					char numPlayers[2];
 					sprintf(numPlayers, "%i", NetGetNumberOfPlayers());
-					string ingameMessage = string(".afk ") + numPlayers + string("p host");
-					gMetaserverClient->sendChatMessage(ingameMessage);
+					gMetaserverClient->setAway(true, string(numPlayers) + string("p host"));
 					gMetaserverClient->pump();
 				}
 				successful= true;
@@ -472,7 +471,7 @@ int network_join(void)
 			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
 			if (gMetaserverClient && gMetaserverClient->isConnected())
 			{
-				gMetaserverClient->sendChatMessage(".afk in game");
+				gMetaserverClient->setAway(true, "in game");
 				gMetaserverClient->pump();
 			}
 		}
