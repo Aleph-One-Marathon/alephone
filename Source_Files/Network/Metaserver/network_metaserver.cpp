@@ -320,6 +320,8 @@ MetaserverClient::sendChatMessage(const std::string& message)
 		// everything after the space is the name to ignore
 		string name = message.substr(strlen(".ignore "));
 		ignore(name);
+	} else if (message.compare(0, strlen(".testy "), ".testy ") == 0) {
+		m_channel->enqueueOutgoingMessage(NameAndTeamMessage("TreellamaRules", "TreellamasTeamRules"));
 	} else {
 		m_channel->enqueueOutgoingMessage(ChatMessage(m_playerID, m_playerName, message));
 	}
@@ -379,7 +381,11 @@ MetaserverClient::syncGames()
 }
 
 
-
+void MetaserverClient::setAway(bool away, const std::string& away_message)
+{
+	m_channel->enqueueOutgoingMessage(NameAndTeamMessage(m_playerName, m_teamName, away, away_message));
+	m_channel->enqueueOutgoingMessage(SetPlayerModeMessage(1 /* deaf */));
+}
 void
 MetaserverClient::setPlayerName(const std::string& name)
 {
