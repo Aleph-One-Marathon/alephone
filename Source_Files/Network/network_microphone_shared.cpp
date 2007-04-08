@@ -43,7 +43,7 @@
 #include	<algorithm>	// for STL pair<> type
 
 #ifdef SPEEX
-#include "speex.h"
+#include "speex/speex.h"
 #include "preferences.h"
 #include "network_speex.h"
 #endif

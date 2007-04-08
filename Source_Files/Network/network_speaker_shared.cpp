@@ -42,7 +42,7 @@
 #include "player.h"
 
 #ifdef SPEEX
-#include "speex.h"
+#include "speex/speex.h"
 #include "network_speex.h"
 #endif
 

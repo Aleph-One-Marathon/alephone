@@ -28,7 +28,7 @@
 
 #include "cseries.h"
 #ifdef SPEEX
-#include "speex.h"
+#include "speex/speex.h"
 
 // encoder
 extern void *gEncoderState;

@@ -151,7 +151,7 @@ else
 fi
 
 dnl Check for Speex
-AC_CHECK_HEADERS(speex.h, [
+AC_CHECK_HEADERS(speex/speex.h, [
   AC_CHECK_LIB(speex, speex_decoder_init, [
     LIBS="-lspeex $LIBS"
     AC_DEFINE(SPEEX, 1, [Speex support is enabled])
