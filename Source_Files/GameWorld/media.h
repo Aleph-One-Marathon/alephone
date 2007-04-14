@@ -151,6 +151,7 @@ void get_media_detonation_effect(short media_index, short type, short *detonatio
 short get_media_sound(short media_index, short type);
 short get_media_submerged_fade_effect(short media_index);
 struct damage_definition *get_media_damage(short media_index, _fixed scale);
+bool get_media_collection(short media_index, short& collection);
 
 // LP addition: media dangerous?
 bool IsMediaDangerous(short media_type);

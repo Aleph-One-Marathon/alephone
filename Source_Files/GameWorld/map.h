@@ -1093,6 +1093,7 @@ void initialize_map_for_new_game(void);
 void initialize_map_for_new_level(void);
 
 void mark_environment_collections(short environment_code, bool loading);
+void mark_map_collections(bool loading);
 bool collection_in_environment(short collection_code, short environment_code);
 
 bool valid_point2d(world_point2d *p);

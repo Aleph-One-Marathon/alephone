@@ -187,6 +187,25 @@ void damage_scenery(
 	}
 }
 
+bool get_scenery_collection(short scenery_type, short& collection)
+{
+	struct scenery_definition *definition = get_scenery_definition(scenery_type);
+	if (!definition) return false;
+
+	collection = GET_DESCRIPTOR_COLLECTION(definition->shape);
+	return true;
+}
+
+bool get_damaged_scenery_collection(short scenery_type, short& collection)
+{
+	struct scenery_definition *definition = get_scenery_definition(scenery_type);
+	if (!definition || !(definition->flags & _scenery_can_be_destroyed))
+		return false;
+
+	collection = GET_DESCRIPTOR_COLLECTION(definition->destroyed_shape);
+	return true;
+}
+
 /* ---------- private code */
 
 struct scenery_definition *get_scenery_definition(

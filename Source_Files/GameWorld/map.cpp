@@ -111,6 +111,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include "platforms.h"
 #include "lightsource.h"
 #include "media.h"
+#include "scenery.h"
 #include "SoundManager.h"
 
 #include <string.h>
@@ -426,6 +427,127 @@ void initialize_map_for_new_level(
 	// map_endpoints= NULL;
 	// automap_lines= NULL;
 	// automap_polygons= NULL;
+}
+
+static bool map_collections[NUMBER_OF_COLLECTIONS];
+static bool media_effects[NUMBER_OF_EFFECT_TYPES];
+
+void mark_map_collections(bool loading)
+{
+	if (loading)
+	{
+		for (int collection = 0; collection < NUMBER_OF_COLLECTIONS; collection++)
+		{
+			map_collections[collection] = false;
+		}
+		
+		// walls/floors/ceilings
+		for (int n = 0; n < dynamic_world->polygon_count; n++)
+		{
+			polygon_data *polygon = map_polygons + n;
+
+			map_collections[GET_DESCRIPTOR_COLLECTION(polygon->floor_texture)] = true;
+			map_collections[GET_DESCRIPTOR_COLLECTION(polygon->ceiling_texture)] = true;
+			
+			for (int i = 0; i < polygon->vertex_count; i++)
+			{
+				short side_index = polygon->side_indexes[i];
+				if (side_index == NONE) continue;
+				side_data *side = get_side_data(side_index);
+				switch (side->type)
+				{
+				case _full_side:
+					map_collections[GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture)] = true;
+					break;
+				case _split_side:
+					map_collections[GET_DESCRIPTOR_COLLECTION(side->secondary_texture.texture)] = true;
+					// fall through to the high side case
+				case _high_side:
+					map_collections[GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture)] = true;
+					break;
+				case _low_side:
+					map_collections[GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture)] = true;
+				}
+
+				map_collections[GET_DESCRIPTOR_COLLECTION(side->transparent_texture.texture)] = true;
+
+			}
+		}
+
+		// media textures and effects
+		for (int media_effect = 0; media_effect < NUMBER_OF_EFFECT_TYPES; media_effect++)
+		{
+			media_effects[media_effect] = false;
+		}
+
+		for (int media_index = 0; media_index < MAXIMUM_MEDIAS_PER_MAP; ++media_index)
+		{
+			if (get_media_data(media_index))
+			{
+				short collection;
+				if (get_media_collection(media_index, collection))
+				{
+					map_collections[collection] = true;
+				}
+
+				for (int detonation_type = 0; detonation_type < NUMBER_OF_MEDIA_DETONATION_TYPES; detonation_type++)
+				{
+					short detonation_effect;
+					get_media_detonation_effect(media_index, detonation_type, &detonation_effect);
+					media_effects[detonation_effect] = true;
+				}
+			}
+		}
+
+		// scenery
+		for (int object_index = 0; object_index < dynamic_world->initial_objects_count; object_index++)
+		{
+			if (saved_objects[object_index].type == _saved_object)
+			{
+				short collection;
+				if (get_scenery_collection(saved_objects[object_index].index, collection))
+				{
+					map_collections[collection] = true;
+				}
+
+				if (get_damaged_scenery_collection(saved_objects[object_index].index, collection))
+				{
+					map_collections[collection] = true;
+				}
+			}
+		}
+
+		for (int collection = 0; collection < NUMBER_OF_COLLECTIONS; collection++)
+		{
+			if (map_collections[collection])
+			{
+				mark_collection_for_loading(collection);
+			}
+		}
+
+		for (int media_effect = 0; media_effect < NUMBER_OF_EFFECT_TYPES; media_effect++)
+		{
+			if (media_effects[media_effect])
+			{
+				mark_effect_collections(media_effect, true);
+			}
+		}
+
+	} else { // not loading
+		for (int collection = 0; collection < NUMBER_OF_COLLECTIONS; collection++)
+		{
+			if (map_collections[collection])
+			{
+				mark_collection_for_unloading(collection);
+			}
+		}
+
+		for (int media_effect = 0; media_effect < NUMBER_OF_EFFECT_TYPES; media_effect++)
+		{
+			mark_effect_collections(media_effect, false);
+		}
+		
+	}
 }
 
 bool collection_in_environment(

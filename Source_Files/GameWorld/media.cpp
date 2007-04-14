@@ -228,6 +228,19 @@ short get_media_submerged_fade_effect(
 	return definition->submerged_fade_effect;
 }
 
+bool get_media_collection(short media_index, short& collection)
+{
+	media_data *media = get_media_data(media_index);
+
+	if (!media) return false;
+
+	media_definition *definition = get_media_definition(media->type);
+	if (!definition) return false;
+
+	collection = definition->collection;
+	return true;
+}
+
 // LP addition:
 bool IsMediaDangerous(short media_index)
 {

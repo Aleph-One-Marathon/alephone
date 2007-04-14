@@ -42,6 +42,9 @@ void randomize_scenery_shapes(void);
 void get_scenery_dimensions(short scenery_type, world_distance *radius, world_distance *height);
 void damage_scenery(short object_index);
 
+bool get_scenery_collection(short scenery_type, short &collection);
+bool get_damaged_scenery_collection(short scenery_type, short& collection);
+
 // LP change: added scenery-parser export
 XML_ElementParser *Scenery_GetParser();
 

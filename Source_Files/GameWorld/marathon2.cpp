@@ -549,7 +549,6 @@ update_world()
         return std::pair<bool, int16>(didPredict || theElapsedTime != 0, theElapsedTime);
 }
 
-
 /* call this function before leaving the old level, but DO NOT call it when saving the player.
 	it should be called when you're leaving the game (i.e., quitting or reverting, etc.) */
 void leaving_map(
@@ -563,6 +562,7 @@ void leaving_map(
 	mark_environment_collections(static_world->environment_code, false);
 	mark_all_monster_collections(false);
 	mark_player_collections(false);
+	mark_map_collections(false);
 	L_Call_Cleanup ();
 	//Close and unload the Lua state
 	CloseLuaScript();
@@ -602,6 +602,7 @@ bool entering_map(bool restoring_saved)
 	mark_environment_collections(static_world->environment_code, true);
 	mark_all_monster_collections(true);
 	mark_player_collections(true);
+	mark_map_collections(true);
 #ifdef SDL
 	load_collections(true, get_screen_mode()->acceleration == _opengl_acceleration);
 #else
