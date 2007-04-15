@@ -31,21 +31,37 @@
 #include "network_audio_shared.h"
 #include "preferences.h"
 
-void *gEncoderState;
+#include <speex/speex_preprocess.h>
+
+void *gEncoderState = 0;
 SpeexBits gEncoderBits;
-void *gDecoderState;
+SpeexPreprocessState *gPreprocessState = 0;
+void *gDecoderState = 0;
 SpeexBits gDecoderBits;
 
 void init_speex_encoder() {
-    if (gEncoderState == NULL) {
+    if (!gEncoderState) {
         gEncoderState = speex_encoder_init(&speex_nb_mode);
-        int quality = network_preferences->speex_encoder_quality;
+	int quality = 3; // 8000 bps
         speex_encoder_ctl(gEncoderState, SPEEX_SET_QUALITY, &quality);
-        int complexity = network_preferences->speex_encoder_complexity;
+	int complexity = 4; // net play is demanding, ok?
         speex_encoder_ctl(gEncoderState, SPEEX_SET_COMPLEXITY, &complexity);
         int tmp = kNetworkAudioSampleRate;
         speex_encoder_ctl(gEncoderState, SPEEX_SET_SAMPLING_RATE, &tmp);
         speex_bits_init(&gEncoderBits);
+
+	// set up the preprocessor
+	int frame_size;
+	speex_encoder_ctl(gEncoderState, SPEEX_GET_FRAME_SIZE, &frame_size);
+	gPreprocessState = speex_preprocess_state_init(frame_size, kNetworkAudioSampleRate);
+	// turn on AGC and denoise
+	tmp = 1;
+	speex_preprocess_ctl(gPreprocessState, SPEEX_PREPROCESS_SET_DENOISE, &tmp);
+	tmp = 1;
+	speex_preprocess_ctl(gPreprocessState, SPEEX_PREPROCESS_SET_AGC, &tmp);
+	
+	float agc_level = 32768.0 * 0.7;
+	speex_preprocess_ctl(gPreprocessState, SPEEX_PREPROCESS_SET_AGC_LEVEL, &agc_level);
     }
     
 }
@@ -55,6 +71,12 @@ void destroy_speex_encoder() {
         speex_encoder_destroy(gEncoderState);
         speex_bits_destroy(&gEncoderBits);
         gEncoderState = NULL;
+    }
+
+    if (gPreprocessState)
+    {
+	    speex_preprocess_state_destroy(gPreprocessState);
+	    gPreprocessState = 0;
     }
 }
 

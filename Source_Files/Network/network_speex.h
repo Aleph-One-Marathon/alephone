@@ -28,13 +28,15 @@
 
 #include "cseries.h"
 #ifdef SPEEX
-#include "speex/speex.h"
+#include <speex/speex.h>
+#include <speex/speex_preprocess.h>
 
 // encoder
 extern void *gEncoderState;
 extern SpeexBits gEncoderBits;
 extern void *gDecoderState;
 extern SpeexBits gDecoderBits;
+extern SpeexPreprocessState* gPreprocessState;
 
 void init_speex_encoder();
 void destroy_speex_encoder();

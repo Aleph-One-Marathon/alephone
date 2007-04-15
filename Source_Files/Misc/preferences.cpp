@@ -1683,8 +1683,6 @@ void write_preferences(
         fprintf(F,"  local_game_port=\"%hu\"\n",network_preferences->game_port);
 	fprintf(F,"  game_protocol=\"%s\"\n",sNetworkGameProtocolNames[network_preferences->game_protocol]);
 	fprintf(F,"  use_speex_netmic_encoder=\"%s\"\n", BoolString(network_preferences->use_speex_encoder));
-	fprintf(F,"  speex_encoder_quality=\"%hu\"\n", network_preferences->speex_encoder_quality);
-	fprintf(F,"  speex_encoder_complexity=\"%hu\"\n", network_preferences->speex_encoder_complexity);
 	fprintf(F,"  use_netscript=\"%s\"\n", BoolString(network_preferences->use_netscript));
 #ifdef SDL
 	WriteXML_CString(F,"  netscript_file=\"", network_preferences->netscript_file, sizeof(network_preferences->netscript_file), "\"\n");
@@ -1847,8 +1845,6 @@ static void default_network_preferences(network_preferences_data *preferences)
 	DefaultRingPreferences();
 #endif // !defined(DISABLE_NETWORKING)
 	preferences->use_speex_encoder = true;
-	preferences->speex_encoder_quality = 2;
-	preferences->speex_encoder_complexity = 1;
 	preferences->use_netscript = false;
 #ifdef mac
 	obj_clear(preferences->netscript_file);
@@ -3099,14 +3095,6 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"use_speex_netmic_encoder"))
 	{
 		return ReadBooleanValue(Value,network_preferences->use_speex_encoder);
-	}
-	else if (StringsEqual(Tag,"speex_encoder_quality"))
-	{
-		return ReadUInt16Value(Value,network_preferences->speex_encoder_quality);
-	}
-	else if (StringsEqual(Tag,"speex_encoder_complexity"))
-	{
-		return ReadUInt16Value(Value,network_preferences->speex_encoder_complexity);
 	}
 	else if (StringsEqual(Tag,"use_netscript"))
 	{
