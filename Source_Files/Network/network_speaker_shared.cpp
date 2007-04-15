@@ -59,11 +59,8 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
 
     // 0 if using uncompressed audio, 1 if using speex
     if(!(theHeader.mFlags & kNetworkAudioForTeammatesOnlyFlag) || (local_player->team == get_player_data(player_index)->team)) {
-        if (theHeader.mReserved == 0) {
-            queue_network_speaker_data(theSoundData, buffer_size - sizeof(network_audio_header_NET));
-        } 
 #ifdef SPEEX
-        else if (theHeader.mReserved == 1) {
+	    if (theHeader.mReserved == 1) {
 
             // decode the data
             float frame[160];
