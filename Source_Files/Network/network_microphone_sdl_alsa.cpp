@@ -37,6 +37,9 @@ static snd_pcm_hw_params_t *hw_params;
 
 static bool active;
 
+static const int bytes_per_frame = 2; // 16-bit, mono
+static snd_pcm_uframes_t frames = 0;  // period
+
 OSErr
 open_network_microphone() {
 	int err;
@@ -61,7 +64,13 @@ open_network_microphone() {
 		return -1;
 	}
 
-	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, SND_PCM_FORMAT_U8)) < 0) {
+	snd_pcm_format_t format;
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	format = SND_PCM_FORMAT_S16_LE;
+#else
+	format = SND_PCM_FORMAT_S16_BE;
+#endif
+	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, format)) < 0) {
 		fprintf(stderr, "snd_pcm_hw_params_set_format\n");
 		return -1;
 	}
@@ -72,7 +81,7 @@ open_network_microphone() {
 		return -1;
 	}
 
-	if (!announce_microphone_capture_format(rate, false, false)) {
+	if (!announce_microphone_capture_format(rate, false, true)) {
 		fprintf(stderr, "network microphone support code rejectect audio format (rate=%i\n", rate);
 		return -1;
 	}
@@ -82,7 +91,7 @@ open_network_microphone() {
 		return -1;
 	}
 
-	snd_pcm_uframes_t frames = get_capture_byte_count_per_packet();
+	frames = get_capture_byte_count_per_packet() / bytes_per_frame;
 	if ((err = snd_pcm_hw_params_set_period_size_near(capture_handle, hw_params, &frames, 0)) < 0) {
 		fprintf(stderr, "snd_pcm_hw_params_set_period_size_near\n");
 		return -1;
@@ -106,13 +115,13 @@ open_network_microphone() {
 		return -1;
 	}
 
-	if ((err = snd_pcm_sw_params_set_avail_min(capture_handle, sw_params, get_capture_byte_count_per_packet())) < 0)
+	if ((err = snd_pcm_sw_params_set_avail_min(capture_handle, sw_params, frames)) < 0)
 	{
 		fprintf(stderr, "snd_pcm_params_set_avail_min\n");
 		return -1;
 	}
 
-	if ((err = snd_pcm_sw_params_set_start_threshold(capture_handle, sw_params, get_capture_byte_count_per_packet())) < 0) {
+	if ((err = snd_pcm_sw_params_set_start_threshold(capture_handle, sw_params, frames)) < 0) {
 		fprintf(stderr, "snd_pcm_params_set_start_threshold\n");
 		return -1;
 	}
@@ -141,13 +150,13 @@ close_network_microphone() {
 void CaptureCallback(snd_async_handler_t *)
 {
 	snd_pcm_sframes_t avail = snd_pcm_avail_update(capture_handle);
-	while (avail >= get_capture_byte_count_per_packet()) {
+	while (avail >= frames) {
 		static uint8 buffer[8192];
-		int bytes_read = snd_pcm_readi(capture_handle, buffer, get_capture_byte_count_per_packet());
-		if (bytes_read == -EPIPE) {
+		int frames_read = snd_pcm_readi(capture_handle, buffer, frames);
+		if (frames_read == -EPIPE) {
 			snd_pcm_prepare(capture_handle);
-		} else if (bytes_read > 0) {
-			copy_and_send_audio_data(buffer, bytes_read, NULL, 0, true);
+		} else if (frames_read > 0) {
+			copy_and_send_audio_data(buffer, frames_read * bytes_per_frame, NULL, 0, true);
 		}
 
 		avail = snd_pcm_avail_update(capture_handle);
