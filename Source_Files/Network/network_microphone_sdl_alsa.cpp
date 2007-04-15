@@ -160,7 +160,7 @@ static snd_async_handler_t *pcm_callback;
 
 void
 set_network_microphone_state(bool inActive) {
-	if (inActive) {
+	if (inActive && !mic_active) {
 		// prepare the pcm
 		if (snd_pcm_prepare(capture_handle) < 0) {
 			fprintf(stderr, "preparing stream failed\n");
@@ -172,7 +172,7 @@ set_network_microphone_state(bool inActive) {
 			fprintf(stderr, "starting pcm failed\n");
 		}
 		mic_active = true;
-	} else {
+	} else if (!inActive && mic_active) {
 		snd_async_del_handler(pcm_callback);
 		snd_pcm_drop(capture_handle);
 		mic_active = false;
