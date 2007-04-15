@@ -7,7 +7,7 @@ SUBDIRS = Metaserver
 if MAKE_WINDOWS
 NETWORK_MIC = network_microphone_sdl_win32.cpp
 else
-NETWORK_MIC = network_microphone_sdl_dummy.cpp
+NETWORK_MIC = network_microphone_sdl_alsa.cpp
 endif
 
 libnetwork_a_SOURCES = network.h network_audio_shared.h network_capabilities.h \

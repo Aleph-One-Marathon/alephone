@@ -158,6 +158,14 @@ AC_CHECK_HEADERS(speex/speex.h, [
   ])
 ])
 
+dnl Check for ALSA
+AC_CHECK_HEADERS([alsa/asoundlib.h], [
+  AC_CHECK_LIB(asound, snd_pcm_open, [
+    LIBS="-lasound $LIBS"
+    AC_DEFINE(HAVE_ALSA, 1, [ALSA netmic is enabled])
+  ])
+])
+
 dnl Figure out which OpenGL library to use
 case "$target" in
   *-*-cygwin* | *-*-mingw32*)
