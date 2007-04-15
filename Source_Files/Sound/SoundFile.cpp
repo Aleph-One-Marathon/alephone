@@ -21,6 +21,7 @@ SOUNDFILE.CPP
 */
 
 #include "SoundFile.h"
+#include "Logging.h"
 
 SoundHeader::SoundHeader() :
 	sixteen_bit(false),
@@ -101,6 +102,13 @@ bool SoundHeader::UnpackExtendedSystem7Header(AIStreamBE &header)
 
 		length = num_frames * bytes_per_frame;
 		little_endian = false;
+
+		if ((loop_start % bytes_per_frame) || (loop_end % bytes_per_frame))
+		{
+			logWarning3("loop_start=%i and loop_end=%i but bytes_per_frame=%i; interpreting as frame offsets", loop_start, loop_end, bytes_per_frame);
+			loop_start *= bytes_per_frame;
+			loop_end *= bytes_per_frame;
+		}
 		
 		return true;
 	} catch (...) {
