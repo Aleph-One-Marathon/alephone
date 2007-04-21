@@ -49,56 +49,49 @@
 // This is what the network distribution system calls when audio is received.
 void
 received_network_audio_proc(void *buffer, short buffer_size, short player_index) {
-    network_audio_header_NET* theHeader_NET = (network_audio_header_NET*) buffer;
+	network_audio_header_NET* theHeader_NET = (network_audio_header_NET*) buffer;
 
-    network_audio_header    theHeader;
+	network_audio_header    theHeader;
 
-    netcpy(&theHeader, theHeader_NET);
+	netcpy(&theHeader, theHeader_NET);
     
-    byte* theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
+	byte* theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
 
-    // 0 if using uncompressed audio, 1 if using speex
-    if(!(theHeader.mFlags & kNetworkAudioForTeammatesOnlyFlag) || (local_player->team == get_player_data(player_index)->team)) {
+	// 0 if using uncompressed audio, 1 if using speex
+	if(!(theHeader.mFlags & kNetworkAudioForTeammatesOnlyFlag) || (local_player->team == get_player_data(player_index)->team)) 
+	{
 #ifdef SPEEX
-	    if (theHeader.mReserved == 1) {
+		if (theHeader.mReserved == 1) 
+		{
+			
+			// decode the data
+			const int max_frames = 2048 / 160;
+			static int16 frames[max_frames][160];
+			char cbits[200];
+			int nbytes;
+			int i;
+			byte *newBuffer = NULL;
+			int totalBytes = 0;
 
-            // decode the data
-            float frame[160];
-            char cbits[200];
-            int nbytes;
-            int i;
-            byte *newBuffer = NULL;
-            int totalBytes = 0;
-            
-            // allocate buffer space
-            int numFrames = 0;
-            while (theSoundData < static_cast<byte*>(buffer) + buffer_size) {
-                nbytes = *theSoundData++;
-                theSoundData += nbytes;
-                numFrames++;
-            }
-            newBuffer = (byte *) malloc (sizeof(char) * 160 * numFrames);
-            theSoundData = ((byte*)buffer) + sizeof(network_audio_header_NET);
-            
-            while (theSoundData < static_cast<byte*>(buffer) + buffer_size) {
-                // copy a frame into the decoder
-                nbytes = *theSoundData++;
-                for (i = 0; i < nbytes; i++) {
-                    cbits[i] = *theSoundData++;
-                }
-                speex_bits_read_from(&gDecoderBits, cbits, nbytes);
-                speex_decode(gDecoderState, &gDecoderBits, frame);
-                for (i = 0; i < 160; i++) {
-                    int16 framedata = static_cast<int16>(frame[i]);
-                    newBuffer[totalBytes++] = 128 + (framedata >> 8);
-                }
-            }
-            
-            queue_network_speaker_data(newBuffer, 160 * numFrames);
-            free(newBuffer);
-        }
+			int numFrames = 0;
+			while (theSoundData < static_cast<byte*>(buffer) + buffer_size && 
+			       numFrames < max_frames)
+			{
+				// decode a frame
+				nbytes = *theSoundData++;
+				for (i = 0; i < nbytes; i++) {
+					cbits[i] = *theSoundData++;
+				}
+
+				speex_bits_read_from(&gDecoderBits, cbits, nbytes);
+				speex_decode_int(gDecoderState, &gDecoderBits, frames[numFrames]);
+				numFrames++;
+			}
+
+			queue_network_speaker_data((byte *) frames[0], 160 * 2 * numFrames);
+		}
 #endif
-    }
+	}
 }
 
 #endif // !defined(DISABLE_NETWORKING)

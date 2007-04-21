@@ -49,11 +49,11 @@
 
 enum {
     kSoundBufferQueueSize = 32,     // should never get anywhere near here, but at 12 bytes/struct these are cheap.
-    kNoiseBufferSize = 1280,        // how big a buffer we should use for noise (at 11025 this is about 1/9th of a second)
+    kNoiseBufferSize = 1280 * 2,        // how big a buffer we should use for noise (at 11025 this is about 1/9th of a second)
     kMaxDryDequeues = 1,            // how many consecutive empty-buffers before we stop playing?
     kNumPumpPrimes = 1,             // how many noise-buffers should we start with while buffering incoming data?
     kNumSoundDataBuffers = 8,		// how many actual audio storage buffers should we have?
-    kSoundDataBufferSize = 2048		// how big will each audio storage buffer be?
+    kSoundDataBufferSize = 2048 * 2		// how big will each audio storage buffer be?
 };
 
 // "Send queue" of buffers from us to audio code (with descriptors)
@@ -79,7 +79,7 @@ open_network_speaker() {
 
         // Fill in noise data (use whole width of local_random())
         for(int i = 0; i < kNoiseBufferSize / 2; i++)
-            theBuffer[i] = local_random();
+            theBuffer[i] = local_random() / 4;
 
         sNoiseBufferStorage = (byte*) theBuffer;
     }

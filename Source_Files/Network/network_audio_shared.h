@@ -54,7 +54,7 @@ enum {
 // differentiate your format from this one (use a Flag, or value in Reserved, or an
 // entirely new distribution type, or something).
 const bool  kNetworkAudioIsStereo       = false;
-const bool  kNetworkAudioIs16Bit        = false;
+const bool  kNetworkAudioIs16Bit        = true;
 const bool  kNetworkAudioIsSigned8Bit   = false;
 const int   kNetworkAudioSampleRate     = 11025;
 const int   kNetworkAudioBytesPerFrame  = (kNetworkAudioIs16Bit ? 2 : 1) * (kNetworkAudioIsStereo ? 2 : 1);

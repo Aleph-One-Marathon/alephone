@@ -167,6 +167,11 @@ void Mixer::EnsureNetworkAudioPlaying()
 			c->length = sNetworkAudioBufferDesc->mLength;
 			c->loop_length = 0;
 			c->rate = (kNetworkAudioSampleRate << 16) / obtained.freq;
+#ifdef ALEPHONE_LITTLE_ENDIAN
+			c->little_endian = true;
+#else
+			c->little_endian = false;
+#endif
 			c->left_volume = 0x100;
 			c->right_volume = 0x100;
 			c->counter = 0;
