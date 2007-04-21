@@ -16,6 +16,9 @@
 		AE179F1B09C3D79500512061 /* ssdp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0B09C3D79500512061 /* ssdp.c */; };
 		AE179F1C09C3D79500512061 /* upnp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0C09C3D79500512061 /* upnp.c */; };
 		AE179F1D09C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
+		AE23F5640BDAC0E700C11385 /* Speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* Speex.framework */; };
+		AE23F5930BDAC1DF00C11385 /* Speex.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* Speex.framework */; };
+		AE23F59A0BDAC23E00C11385 /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AE601F0A0B927C25009F881C /* BasicIFFDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */; };
@@ -454,6 +457,7 @@
 			dstPath = AlephOne.app/Contents/Frameworks;
 			dstSubfolderSpec = 16;
 			files = (
+				AE23F5930BDAC1DF00C11385 /* Speex.framework in CopyFiles */,
 				AE60200B0B92852A009F881C /* libmad.framework in CopyFiles */,
 				AE6020080B928517009F881C /* libsndfile.framework in CopyFiles */,
 				AEFDE8130A38E99000CFEB97 /* Ogg.framework in CopyFiles */,
@@ -525,6 +529,8 @@
 		AE179F0B09C3D79500512061 /* ssdp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ssdp.c; path = ../Source_Files/LibNAT/ssdp.c; sourceTree = "<group>"; };
 		AE179F0C09C3D79500512061 /* upnp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = upnp.c; path = ../Source_Files/LibNAT/upnp.c; sourceTree = "<group>"; };
 		AE179F0D09C3D79500512061 /* utility.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utility.c; path = ../Source_Files/LibNAT/utility.c; sourceTree = "<group>"; };
+		AE23F5630BDAC0E700C11385 /* Speex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speex.framework; path = /Library/Frameworks/Speex.framework; sourceTree = "<absolute>"; };
+		AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ReplacementSounds.cpp; sourceTree = "<group>"; };
 		AE2A50CC09C67253007681A4 /* Scenario.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Scenario.cpp; path = ../Source_Files/Misc/Scenario.cpp; sourceTree = SOURCE_ROOT; };
 		AE2A50CF09C6727C007681A4 /* Scenario.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Scenario.h; path = ../Source_Files/Misc/Scenario.h; sourceTree = SOURCE_ROOT; };
 		AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = preference_dialogs.cpp; path = ../Source_Files/Misc/preference_dialogs.cpp; sourceTree = "<group>"; };
@@ -950,6 +956,7 @@
 				AEFDE7C00A38DF7E00CFEB97 /* Vorbis.framework in Frameworks */,
 				AE601FC00B927DC2009F881C /* libmad.framework in Frameworks */,
 				AE601FC10B927DC2009F881C /* libsndfile.framework in Frameworks */,
+				AE23F5640BDAC0E700C11385 /* Speex.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1088,6 +1095,7 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AE23F5630BDAC0E700C11385 /* Speex.framework */,
 				AE601FBE0B927DC2009F881C /* libmad.framework */,
 				AE601FBF0B927DC2009F881C /* libsndfile.framework */,
 				AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */,
@@ -1685,6 +1693,7 @@
 		F5CC94110240DA4301A80001 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
+				AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */,
 				AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */,
 				AE601F100B927C51009F881C /* Decoder.h */,
 				AE601F110B927C51009F881C /* MADDecoder.h */,
@@ -2302,6 +2311,7 @@
 				AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */,
 				AE601F0D0B927C25009F881C /* SndfileDecoder.cpp in Sources */,
 				AE601F0E0B927C25009F881C /* VorbisDecoder.cpp in Sources */,
+				AE23F59A0BDAC23E00C11385 /* ReplacementSounds.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2354,33 +2364,31 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_Sound.framework/Headers",
+					"$(HOME)/Library/Frameworks/Speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/libsndfile.framework/Headers",
+					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
+					"$(HOME)/Library/Frameworks/libmad.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL_Sound.framework/Headers,
+					/Library/Frameworks/Speex.framework/Headers,
+					/Library/Frameworks/libsndfile.framework/Headers,
+					/Library/Frameworks/Vorbis.framework/Headers,
+					/Library/Frameworks/libmad.framework/Headers,
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = (
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				LIBRARY_SEARCH_PATHS = "$(LIBRARY_SEARCH_PATHS_QUOTED_1)";
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
 				OTHER_CFLAGS = "";
 				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
 				OTHER_LDFLAGS = (
@@ -2399,7 +2407,6 @@
 					AppKit,
 					"-llua",
 					"-llualib",
-					"-lspeex",
 				);
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
@@ -2457,33 +2464,31 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
-					"$(HOME)/Library/Frameworks/SDL_Sound.framework/Headers",
+					"$(HOME)/Library/Frameworks/Speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/libsndfile.framework/Headers",
+					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
+					"$(HOME)/Library/Frameworks/libmad.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
-					/Library/Frameworks/SDL_Sound.framework/Headers,
+					/Library/Frameworks/Speex.framework/Headers,
+					/Library/Frameworks/libsndfile.framework/Headers,
+					/Library/Frameworks/Vorbis.framework/Headers,
+					/Library/Frameworks/libmad.framework/Headers,
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = (
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				LIBRARY_SEARCH_PATHS = "$(LIBRARY_SEARCH_PATHS_QUOTED_1)";
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
 				MACOSX_DEPLOYMENT_TARGET_i386 = 10.4;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.2;
 				OTHER_CFLAGS = "";
@@ -2504,7 +2509,6 @@
 					AppKit,
 					"-llua",
 					"-llualib",
-					"-lspeex",
 				);
 				PRODUCT_NAME = AlephOne;
 				SDKROOT_i386 = /Developer/SDKs/MacOSX10.4u.sdk;
@@ -2566,12 +2570,11 @@
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_2)",
-					"$(HEADER_SEARCH_PATHS_QUOTED_3)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/Speex.framework/Headers",
 					"$(HOME)/Library/Frameworks/libsndfile.framework/Headers",
 					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
 					"$(HOME)/Library/Frameworks/libmad.framework/Headers",
@@ -2579,24 +2582,19 @@
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/Speex.framework/Headers,
 					/Library/Frameworks/libsndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/libmad.framework/Headers,
 				);
 				HEADER_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/include";
-				HEADER_SEARCH_PATHS_QUOTED_3 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
 				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				LIBRARY_SEARCH_PATHS = (
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_1)",
-					"$(LIBRARY_SEARCH_PATHS_QUOTED_2)",
-				);
-				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Speex/speex-1.0/libspeex/.libs";
-				LIBRARY_SEARCH_PATHS_QUOTED_2 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
+				LIBRARY_SEARCH_PATHS = "$(LIBRARY_SEARCH_PATHS_QUOTED_1)";
+				LIBRARY_SEARCH_PATHS_QUOTED_1 = "$(LOCAL_LIBRARY_DIR)/Application\\ Support/Lua/lua-5.0/lib";
 				MACOSX_DEPLOYMENT_TARGET_i386 = 10.4;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.2;
 				OTHER_CFLAGS = "";
@@ -2617,7 +2615,6 @@
 					AppKit,
 					"-llua",
 					"-llualib",
-					"-lspeex",
 				);
 				PRODUCT_NAME = AlephOne;
 				SDKROOT_i386 = /Developer/SDKs/MacOSX10.4u.sdk;
