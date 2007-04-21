@@ -79,13 +79,12 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
 			{
 				// decode a frame
 				nbytes = *theSoundData++;
-				for (i = 0; i < nbytes; i++) {
-					cbits[i] = *theSoundData++;
-				}
 
-				speex_bits_read_from(&gDecoderBits, cbits, nbytes);
+				speex_bits_read_from(&gDecoderBits, (char *) theSoundData, nbytes);
 				speex_decode_int(gDecoderState, &gDecoderBits, frames[numFrames]);
+
 				numFrames++;
+				theSoundData += nbytes;
 			}
 
 			queue_network_speaker_data((byte *) frames[0], 160 * 2 * numFrames);
