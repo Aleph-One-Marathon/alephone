@@ -257,7 +257,7 @@ bool network_gather(bool inResumingGame)
 	return successful;
 }
 
-GatherDialog::GatherDialog() {  }
+GatherDialog::GatherDialog() : m_enableSinglePlayer(false) {  }
 
 GatherDialog::~GatherDialog()
 {
@@ -284,8 +284,11 @@ bool GatherDialog::GatherNetworkGameByRunning ()
 	m_cancelWidget->set_callback(boost::bind(&GatherDialog::Stop, this, false));
 	m_startWidget->set_callback(boost::bind(&GatherDialog::StartGameHit, this));
 	m_ungatheredWidget->SetItemSelectedCallback(boost::bind(&GatherDialog::gathered_player, this, _1));
-	
-	m_startWidget -> deactivate ();
+
+	if (m_enableSinglePlayer)
+		m_startWidget->activate();
+	else
+		m_startWidget -> deactivate ();
 	
 	NetSetGatherCallbacks(this);
 	
@@ -384,7 +387,7 @@ void GatherDialog::StartGameHit ()
 
 void GatherDialog::JoinSucceeded(const prospective_joiner_info* player)
 {
-	if (NetGetNumberOfPlayers () > 1)
+	if (!m_enableSinglePlayer && NetGetNumberOfPlayers () > 1)
 		m_startWidget->activate ();
 	
 	m_pigWidget->redraw ();
@@ -401,7 +404,7 @@ void GatherDialog::JoiningPlayerDropped(const prospective_joiner_info* player)
 
 void GatherDialog::JoinedPlayerDropped(const prospective_joiner_info* player)
 {
-	if (NetGetNumberOfPlayers () < 2)
+	if (!m_enableSinglePlayer && NetGetNumberOfPlayers () < 2)
 		m_startWidget->deactivate ();
 
 	m_pigWidget->redraw ();
@@ -2496,6 +2499,10 @@ class SdlGatherDialog : public GatherDialog
 public:
 	SdlGatherDialog()
 	{
+		// check if the option key is down
+		SDLMod m = SDL_GetModState();
+		if ((m & KMOD_ALT) || (m & KMOD_META)) m_enableSinglePlayer = true;
+
 		m_dialog.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
 	
 		m_dialog.add(new w_spacer());
