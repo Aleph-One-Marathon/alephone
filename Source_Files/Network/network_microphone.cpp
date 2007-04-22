@@ -62,8 +62,7 @@ Feb 1, 2003 (Woody Zenfell):
 
 #ifdef SPEEX
 #include "network_speex.h"
-#include "preferences.h"
-#define MAC_OPTIMAL_MIC_BUFFER_SIZE 8192
+#define MAC_OPTIMAL_MIC_BUFFER_SIZE 8192 * 2
 #endif SPEEX
 
 #ifdef env68k
@@ -167,9 +166,7 @@ OSErr open_network_microphone()
 	}
         
         #ifdef SPEEX
-        if (network_preferences->use_speex_encoder) {
-            init_speex_encoder();
-        }
+	init_speex_encoder();
         #endif SPEEX
 
 	if (!net_microphone_installed)
@@ -212,11 +209,8 @@ OSErr open_network_microphone()
                                                                 }
                                                                 else {
 #ifdef SPEEX
-if (network_preferences->use_speex_encoder)
 net_microphone.buffer = new char[MAC_OPTIMAL_MIC_BUFFER_SIZE];
-else
 #endif
-net_microphone.buffer = new char[get_capture_byte_count_per_packet()];
                                                                         if(!net_microphone.buffer)
                                                                         {
                                                                                 err = notEnoughMemoryErr;
@@ -274,9 +268,7 @@ void close_network_microphone(void)
 	}
         
         #ifdef SPEEX
-        if (network_preferences->use_speex_encoder) {
             destroy_speex_encoder();
-        }
         #endif SPEEX
 
 }
@@ -449,18 +441,12 @@ static OSErr start_sound_recording(
 
 	net_microphone.param_block.inRefNum= net_microphone.refnum;
 #ifdef SPEEX
-        if (network_preferences->use_speex_encoder)
             net_microphone.param_block.count = MAC_OPTIMAL_MIC_BUFFER_SIZE;
-        else
 #endif
-	net_microphone.param_block.count= get_capture_byte_count_per_packet();
 	net_microphone.param_block.milliseconds= 0;
 #ifdef SPEEX
-        if (network_preferences->use_speex_encoder)
             net_microphone.param_block.bufferLength = MAC_OPTIMAL_MIC_BUFFER_SIZE;
-        else
 #endif
-	net_microphone.param_block.bufferLength= get_capture_byte_count_per_packet();
 	net_microphone.param_block.bufferPtr= net_microphone.buffer;
 	net_microphone.param_block.completionRoutine= net_microphone.completion_proc;
 #ifdef env68k								
@@ -487,18 +473,12 @@ static pascal void sound_recording_completed(
 		case noErr:
 			/* Reset the sounds.. */
 #ifdef SPEEX
-                        if (network_preferences->use_speex_encoder) 
                             pb->count = MAC_OPTIMAL_MIC_BUFFER_SIZE;
-                        else
 #endif
-			pb->count= get_capture_byte_count_per_packet();
 			pb->milliseconds= 0;
 #ifdef SPEEX
-                        if (network_preferences->use_speex_encoder)
                             pb->bufferLength = MAC_OPTIMAL_MIC_BUFFER_SIZE;
-                        else
 #endif SPEEX
-			pb->bufferLength= get_capture_byte_count_per_packet();
 			pb->bufferPtr= net_microphone.buffer;
 			pb->completionRoutine= net_microphone.completion_proc;
 

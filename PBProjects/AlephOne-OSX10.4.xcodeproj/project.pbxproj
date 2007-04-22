@@ -2555,7 +2555,7 @@
 					HAVE_CONFIG_H,
 					HAVE_UNISTD_H,
 					HAVE_LUA,
-					HAVE_SPEEX,
+					SPEEX,
 					HAVE_VORBISFILE,
 					HAVE_MAD,
 					HAVE_SNDFILE,
