@@ -21,6 +21,7 @@
 		AE23F59A0BDAC23E00C11385 /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
+		AE42B4CC0BDBC285003521B7 /* network_microphone_coreaudio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE42B3DC0BDB030B003521B7 /* network_microphone_coreaudio.cpp */; };
 		AE601F0A0B927C25009F881C /* BasicIFFDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */; };
 		AE601F0B0B927C25009F881C /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F060B927C25009F881C /* Decoder.cpp */; };
 		AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
@@ -354,7 +355,6 @@
 		AEC3C84F09AD68AC003258E4 /* Logging.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DAC27A603DC9D1C00000104 /* Logging.cpp */; };
 		AEC3C85009AD68AC003258E4 /* network_microphone_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF2716F03EDBBF100000104 /* network_microphone_shared.cpp */; };
 		AEC3C85109AD68AC003258E4 /* network_speaker_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF2717103EDBBF100000104 /* network_speaker_shared.cpp */; };
-		AEC3C85209AD68AC003258E4 /* network_microphone.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F52213830136ABAE01000001 /* network_microphone.cpp */; };
 		AEC3C85309AD68AC003258E4 /* preprocess_map_shared.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3D5F21430403230F00000104 /* preprocess_map_shared.cpp */; };
 		AEC3C85409AD68AC003258E4 /* OGL_Model_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */; };
 		AEC3C85509AD68AC003258E4 /* OGL_Subst_Texture_Def.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */; };
@@ -529,7 +529,7 @@
 		AE179F0B09C3D79500512061 /* ssdp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ssdp.c; path = ../Source_Files/LibNAT/ssdp.c; sourceTree = "<group>"; };
 		AE179F0C09C3D79500512061 /* upnp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = upnp.c; path = ../Source_Files/LibNAT/upnp.c; sourceTree = "<group>"; };
 		AE179F0D09C3D79500512061 /* utility.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utility.c; path = ../Source_Files/LibNAT/utility.c; sourceTree = "<group>"; };
-		AE23F5630BDAC0E700C11385 /* Speex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Speex.framework; path = /Library/Frameworks/Speex.framework; sourceTree = "<absolute>"; };
+		AE23F5630BDAC0E700C11385 /* Speex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Speex.framework; sourceTree = "<group>"; };
 		AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ReplacementSounds.cpp; sourceTree = "<group>"; };
 		AE2A50CC09C67253007681A4 /* Scenario.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Scenario.cpp; path = ../Source_Files/Misc/Scenario.cpp; sourceTree = SOURCE_ROOT; };
 		AE2A50CF09C6727C007681A4 /* Scenario.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Scenario.h; path = ../Source_Files/Misc/Scenario.h; sourceTree = SOURCE_ROOT; };
@@ -537,6 +537,7 @@
 		AE2FDED109E9352B00A18ABC /* preference_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = preference_dialogs.h; path = ../Source_Files/Misc/preference_dialogs.h; sourceTree = "<group>"; };
 		AE34EEEB0864EA95002AF754 /* carbon_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = carbon_widgets.cpp; path = ../Source_Files/Misc/carbon_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE34EEED0864EAB7002AF754 /* carbon_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = carbon_widgets.h; path = ../Source_Files/Misc/carbon_widgets.h; sourceTree = SOURCE_ROOT; };
+		AE42B3DC0BDB030B003521B7 /* network_microphone_coreaudio.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_microphone_coreaudio.cpp; path = ../Source_Files/Network/network_microphone_coreaudio.cpp; sourceTree = "<group>"; };
 		AE437C8B08779BC900038E30 /* shared_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = shared_widgets.h; path = ../Source_Files/Misc/shared_widgets.h; sourceTree = SOURCE_ROOT; };
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604DD086F6DF100D9797C /* network_capabilities.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_capabilities.cpp; path = ../Source_Files/Network/network_capabilities.cpp; sourceTree = SOURCE_ROOT; };
@@ -689,7 +690,6 @@
 		F52213800136ABAE01000001 /* network_games.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_games.h; path = ../Source_Files/Network/network_games.h; sourceTree = SOURCE_ROOT; };
 		F52213810136ABAE01000001 /* network_lookup_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_lookup_sdl.cpp; path = ../Source_Files/Network/network_lookup_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F52213820136ABAE01000001 /* network_lookup.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_lookup.cpp; path = ../Source_Files/Network/network_lookup.cpp; sourceTree = SOURCE_ROOT; };
-		F52213830136ABAE01000001 /* network_microphone.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_microphone.cpp; path = ../Source_Files/Network/network_microphone.cpp; sourceTree = SOURCE_ROOT; };
 		F52213880136ABAE01000001 /* network_names.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_names.cpp; path = ../Source_Files/Network/network_names.cpp; sourceTree = SOURCE_ROOT; };
 		F52213890136ABAE01000001 /* network_sound.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_sound.h; path = ../Source_Files/Network/network_sound.h; sourceTree = SOURCE_ROOT; };
 		F522138A0136ABAE01000001 /* network_speaker.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_speaker.cpp; path = ../Source_Files/Network/network_speaker.cpp; sourceTree = SOURCE_ROOT; };
@@ -1331,7 +1331,7 @@
 				F52213820136ABAE01000001 /* network_lookup.cpp */,
 				F52213810136ABAE01000001 /* network_lookup_sdl.cpp */,
 				3DF154D6080376E100BC3C09 /* network_messages.cpp */,
-				F52213830136ABAE01000001 /* network_microphone.cpp */,
+				AE42B3DC0BDB030B003521B7 /* network_microphone_coreaudio.cpp */,
 				F5A00031023FDB8001A80001 /* network_microphone_sdl_dummy.cpp */,
 				3DF2716F03EDBBF100000104 /* network_microphone_shared.cpp */,
 				F52213880136ABAE01000001 /* network_names.cpp */,
@@ -2261,7 +2261,6 @@
 				AEC3C84F09AD68AC003258E4 /* Logging.cpp in Sources */,
 				AEC3C85009AD68AC003258E4 /* network_microphone_shared.cpp in Sources */,
 				AEC3C85109AD68AC003258E4 /* network_speaker_shared.cpp in Sources */,
-				AEC3C85209AD68AC003258E4 /* network_microphone.cpp in Sources */,
 				AEC3C85309AD68AC003258E4 /* preprocess_map_shared.cpp in Sources */,
 				AEC3C85409AD68AC003258E4 /* OGL_Model_Def.cpp in Sources */,
 				AEC3C85509AD68AC003258E4 /* OGL_Subst_Texture_Def.cpp in Sources */,
@@ -2312,6 +2311,7 @@
 				AE601F0D0B927C25009F881C /* SndfileDecoder.cpp in Sources */,
 				AE601F0E0B927C25009F881C /* VorbisDecoder.cpp in Sources */,
 				AE23F59A0BDAC23E00C11385 /* ReplacementSounds.cpp in Sources */,
+				AE42B4CC0BDBC285003521B7 /* network_microphone_coreaudio.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2351,9 +2351,10 @@
 					HAVE_CONFIG_H,
 					HAVE_UNISTD_H,
 					HAVE_LUA,
-					HAVE_SPEEX,
-					HAVE_SDL_SOUND,
-					HAVE_SDL_SOUND_H,
+					SPEEX,
+					HAVE_VORBISFILE,
+					HAVE_MAD,
+					HAVE_SNDFILE,
 					HAVE_SMPEG,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
@@ -2450,9 +2451,10 @@
 					HAVE_CONFIG_H,
 					HAVE_UNISTD_H,
 					HAVE_LUA,
-					HAVE_SPEEX,
-					HAVE_SDL_SOUND,
-					HAVE_SDL_SOUND_H,
+					SPEEX,
+					HAVE_VORBISFILE,
+					HAVE_MAD,
+					HAVE_SNDFILE,
 					HAVE_SMPEG,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
