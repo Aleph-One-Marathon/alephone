@@ -57,7 +57,9 @@ using namespace std;
 
 
 enum {
-	kNetworkAudioSamplesPerPacket = 1024
+    kNetworkAudioDataBytesPerPacket = 1024, // this is meaningless in speex
+    kNetworkAudioBytesPerSample = 1,
+    kNetworkAudioSamplesPerPacket = kNetworkAudioDataBytesPerPacket / kNetworkAudioBytesPerSample
 };
 
 
@@ -68,6 +70,7 @@ static	bool	sStereo			= false;
 static	bool	s16Bit			= false;
 static	uint32	sSamplesPerSecond	= 0;	
 static	uint32	sCaptureStride		= 0;
+static	uint32	sCaptureBytesPerNetworkAudioByte	= 0;
 static	uint32	sCaptureBytesPerPacket	= 0;
 
 
@@ -79,13 +82,19 @@ announce_microphone_capture_format(uint32 inSamplesPerSecond, bool inStereo, boo
     s16Bit			= in16Bit;
     sNumberOfBytesPerSample	= (sStereo ? 2 : 1) * (s16Bit ? 2 : 1);
     sCaptureStride		= (sSamplesPerSecond / kNetworkAudioSampleRate) * (sStereo ? 2 : 1);
-    sCaptureBytesPerPacket = sNumberOfBytesPerSample * kNetworkAudioSamplesPerPacket;
+    sCaptureBytesPerNetworkAudioByte = (sSamplesPerSecond / kNetworkAudioSampleRate) * sNumberOfBytesPerSample / kNetworkAudioBytesPerSample;
+    sCaptureBytesPerPacket	= kNetworkAudioDataBytesPerPacket * sCaptureBytesPerNetworkAudioByte;
     
     if(sCaptureStride <= 0)
         return false;
     
+    if(sNumberOfBytesPerSample < kNetworkAudioBytesPerSample)
+        return false;
+    
     return true;
 }
+
+
 
 int32
 get_capture_byte_count_per_packet() {
@@ -199,14 +208,12 @@ static pair<int32, int32>
 copy_data_in_capture_format_to_network_format(uint8* inNetworkStorage, int inAmountOfNetworkStorage,
                                               void* inCaptureStorage, int inAmountOfCaptureStorage) {
 
-	int32 theNetworkAudioSamplesCaptured = inAmountOfCaptureStorage / sNumberOfBytesPerSample;
-
-	// assume speex can compress n samples to fewer than n bytes since it's lossy
-	int32 theNetworkAudioSamplesToCopy = MIN(inAmountOfNetworkStorage, theNetworkAudioSamplesCaptured);
-
-	int32 theNetworkAudioBytesCopied = copy_and_speex_encode(inNetworkStorage, inCaptureStorage, theNetworkAudioSamplesToCopy, inAmountOfNetworkStorage);
-
-	return pair<int32, int32>(theNetworkAudioBytesCopied, theNetworkAudioSamplesToCopy * sNumberOfBytesPerSample);
+    int32	theNetworkAudioBytesCaptured		= inAmountOfCaptureStorage / sCaptureBytesPerNetworkAudioByte;
+    int32	theNetworkAudioBytesToCopy		= MIN(inAmountOfNetworkStorage, theNetworkAudioBytesCaptured);
+    int32	theNumberOfNetworkAudioSamplesToCopy	= theNetworkAudioBytesToCopy / kNetworkAudioBytesPerSample;
+    
+    theNumberOfNetworkAudioSamplesToCopy = copy_and_speex_encode(inNetworkStorage, inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy, inAmountOfNetworkStorage);
+    return pair<int32, int32>(theNumberOfNetworkAudioSamplesToCopy, theNetworkAudioBytesToCopy * sCaptureBytesPerNetworkAudioByte);
 }
 #endif
 
@@ -231,7 +238,7 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     assert(sSamplesPerSecond > 0);
 
     // Let runtime system worry about allocating and freeing the buffer (and don't do it on the stack).
-    static  uint8           sOutgoingPacketBuffer[kNetworkAudioSamplesPerPacket + SIZEOF_network_audio_header];
+    static  uint8           sOutgoingPacketBuffer[kNetworkAudioDataBytesPerPacket + SIZEOF_network_audio_header];
 
     network_audio_header    theHeader;
 #ifdef SPEEX
@@ -249,20 +256,20 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
 	int32 theTotalCaptureBytesConsumed = 0;
 	
 	// Keep sending if we have data and either we're squeezing out the last drop or we have a packet's-worth.
-	while(inFirstChunkBytesRemaining >= sNumberOfBytesPerSample &&
+	while(inFirstChunkBytesRemaining >= static_cast<int32>(sCaptureBytesPerNetworkAudioByte) &&
 	      (inForceSend || inFirstChunkBytesRemaining + inSecondChunkBytesRemaining >= (int32)sCaptureBytesPerPacket)) {
 		
 		theBytesConsumed = copy_data_in_capture_format_to_network_format(theOutgoingAudioData,
-										 kNetworkAudioSamplesPerPacket, inFirstChunkReadPosition, inFirstChunkBytesRemaining);
+										 kNetworkAudioDataBytesPerPacket, inFirstChunkReadPosition, inFirstChunkBytesRemaining);
 		
 		theTotalCaptureBytesConsumed += theBytesConsumed.second;
 		
 		// If there's space left in the packet and we have a second chunk, start on it.
-		if(theBytesConsumed.first < kNetworkAudioSamplesPerPacket && inSecondChunkBytesRemaining > 0) {
+		if(theBytesConsumed.first < kNetworkAudioDataBytesPerPacket && inSecondChunkBytesRemaining > 0) {
 			pair<int32, int32>  theSecondBytesConsumed;
 			
 			theSecondBytesConsumed = copy_data_in_capture_format_to_network_format(
-				&(theOutgoingAudioData[theBytesConsumed.first]), kNetworkAudioSamplesPerPacket - theBytesConsumed.first,
+				&(theOutgoingAudioData[theBytesConsumed.first]), kNetworkAudioDataBytesPerPacket - theBytesConsumed.first,
 				inSecondChunkReadPosition, inSecondChunkBytesRemaining);
 			
 			theTotalCaptureBytesConsumed += theSecondBytesConsumed.second;
@@ -285,10 +292,10 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     }
 	
 	// Now, the first chunk is exhausted.  See if there's any left in the second chunk.  Same rules apply.
-	while(inSecondChunkBytesRemaining >= sNumberOfBytesPerSample &&
-	      (inForceSend || inSecondChunkBytesRemaining >= sCaptureBytesPerPacket)) {
+	while(inSecondChunkBytesRemaining >= static_cast<int32>(sCaptureBytesPerNetworkAudioByte) &&
+	      (inForceSend || inSecondChunkBytesRemaining >= kNetworkAudioDataBytesPerPacket)) {
 		
-		theBytesConsumed = copy_data_in_capture_format_to_network_format(theOutgoingAudioData, kNetworkAudioSamplesPerPacket,
+		theBytesConsumed = copy_data_in_capture_format_to_network_format(theOutgoingAudioData, kNetworkAudioDataBytesPerPacket,
 										 inSecondChunkReadPosition, inSecondChunkBytesRemaining);
 		
 		theTotalCaptureBytesConsumed += theBytesConsumed.second;
