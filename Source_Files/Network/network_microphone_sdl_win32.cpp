@@ -74,18 +74,18 @@ struct  CaptureFormat {
 // List ONLY those with sample rates >= the network audio sample rate, because
 // the format-translation routines can only downsample.
 CaptureFormat   sFormatPreferences[] = {
-    { WAVE_FORMAT_1M08, 11025, false, false },
-    { WAVE_FORMAT_1S08, 11025,  true, false },
     { WAVE_FORMAT_1M16, 11025, false,  true },
     { WAVE_FORMAT_1S16, 11025,  true,  true },
-    { WAVE_FORMAT_2M08, 22050, false, false },
-    { WAVE_FORMAT_2S08, 22050,  true, false },
+    { WAVE_FORMAT_1M08, 11025, false, false },
+    { WAVE_FORMAT_1S08, 11025,  true, false },
     { WAVE_FORMAT_2M16, 22050, false,  true },
     { WAVE_FORMAT_2S16, 22050,  true,  true },
-    { WAVE_FORMAT_4M08, 44100, false, false },
-    { WAVE_FORMAT_4S08, 44100,  true, false },
+    { WAVE_FORMAT_2M08, 22050, false, false },
+    { WAVE_FORMAT_2S08, 22050,  true, false },
     { WAVE_FORMAT_4M16, 44100, false,  true },
-    { WAVE_FORMAT_4S16, 44100,  true,  true }
+    { WAVE_FORMAT_4S16, 44100,  true,  true },
+    { WAVE_FORMAT_4M08, 44100, false, false },
+    { WAVE_FORMAT_4S08, 44100,  true, false }
 };
 
 const int   NUM_CAPTURE_FORMAT_PREFERENCES = sizeof(sFormatPreferences) / sizeof(sFormatPreferences[0]);
