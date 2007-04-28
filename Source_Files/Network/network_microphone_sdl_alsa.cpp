@@ -35,6 +35,7 @@
 static snd_pcm_t *capture_handle = 0;
 static snd_pcm_hw_params_t *hw_params;
 
+static bool initialized = false;
 static bool active;
 
 static const int bytes_per_frame = 2; // 16-bit, mono
@@ -131,12 +132,15 @@ open_network_microphone() {
 		init_speex_encoder();
 	}
 #endif
+
+	initialized = true;
 	
 	return 0;
 }
 
 void
 close_network_microphone() {
+	initialized = false;
 	snd_pcm_close(capture_handle);
 	capture_handle = 0;
 
@@ -169,6 +173,7 @@ static snd_async_handler_t *pcm_callback;
 
 void
 set_network_microphone_state(bool inActive) {
+	if (!initialized) return;
 	if (inActive && !mic_active) {
 		// prepare the pcm
 		if (snd_pcm_prepare(capture_handle) < 0) {
