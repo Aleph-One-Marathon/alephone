@@ -107,6 +107,7 @@ void Music::FadeOut(short duration)
 
 bool Music::Playing()
 {
+	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return false;
 	return Mixer::instance()->MusicPlaying();
 }
 
@@ -129,6 +130,7 @@ void Music::Restart()
 
 void Music::Idle()
 {
+	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
 	if (music_prelevel)
 	{
 		music_prelevel = false;
@@ -162,6 +164,7 @@ void Music::Idle()
 
 void Music::Pause()
 {
+	if (!SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
 	Mixer::instance()->StopMusicChannel();
 	music_fading = false;
 }
@@ -214,6 +217,7 @@ void Music::Rewind()
 
 void Music::Play()
 {
+	if (!music_initialized || !SoundManager::instance()->IsInitialized() || !SoundManager::instance()->IsActive()) return;
 	if (FillBuffer()) {
 #ifdef __MACOS__
 		InterruptFillBuffer();

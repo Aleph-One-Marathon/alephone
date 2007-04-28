@@ -125,6 +125,9 @@ public:
 
 	void IncrementChannelCallbackCount(int channel) { channels[channel].callback_count++; } // fix this
 
+	bool IsActive() { return active; }
+	bool IsInitialized() { return initialized; }
+
 private:
 	SoundManager();
 	void SetStatus(bool active);

@@ -20,8 +20,11 @@
 */
 
 #include "Mixer.h"
+#include "interface.h" // for strERRORS
 
 Mixer* Mixer::m_instance = 0;
+
+extern bool option_nosound;
 
 Mixer::Header::Header() : 
 	sixteen_bit(false),
@@ -62,10 +65,13 @@ void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, 
 	desired.callback = MixerCallback;
 	desired.userdata = reinterpret_cast<void *>(this);
 
-	if (SDL_OpenAudio(&desired, &obtained) < 0) 
+	if (option_nosound || SDL_OpenAudio(&desired, &obtained) < 0) 
 	{
-		// opening audio failed
-//		alert_user(infoError, strERRORS, badSoundChannels, -1);
+		if (!option_nosound)
+			// opening audio failed
+			alert_user(infoError, strERRORS, badSoundChannels, -1);
+		sound_channel_count = 0;
+		channels.clear();
 	}
 	else 
 	{
@@ -79,6 +85,7 @@ void Mixer::Stop()
 {
 	SDL_CloseAudio();
 	channels.clear();
+	sound_channel_count = 0;
 }
 
 void Mixer::BufferSound(int channel, const Header& header, _fixed pitch)
