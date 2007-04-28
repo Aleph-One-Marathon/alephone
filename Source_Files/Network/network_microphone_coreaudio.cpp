@@ -43,6 +43,8 @@ static AudioStreamBasicDescription fOutputFormat, fDeviceFormat;
 static Uint32 fAudioSamples;
 static AudioBufferList *fAudioBuffer = NULL;
 
+static bool initialized = false;
+
 static uint8 captureBuffer[32768];
 static Uint32 captureBufferSize = 0;
 
@@ -210,6 +212,8 @@ OSErr open_network_microphone()
 	init_speex_encoder();
 #endif
 
+	initialized = true;
+
 	return noErr;
 }
 
@@ -217,6 +221,8 @@ static bool mic_active = false;
 
 void set_network_microphone_state(bool inActive)
 {
+	if (!initialized) return;
+
 	if (inActive && !mic_active)
 	{
 		AudioOutputUnitStart(fAudioUnit);
@@ -231,6 +237,7 @@ void set_network_microphone_state(bool inActive)
 
 void close_network_microphone()
 {
+	initialized = false;
 	if (fAudioBuffer)
 		free(fAudioBuffer->mBuffers[0].mData);
 	free(fAudioBuffer);
