@@ -128,7 +128,7 @@ enum {
         kDefaultInGameWindowSize = TICKS_PER_SECOND * 5,
 	kDefaultPregameNthElement = 2,
 //	kDefaultInGameNthElement = kDefaultInGameWindowSize / 2,
-	kDefaultInGameNthElement = kDefaultInGameWindowSize,
+	kDefaultInGameNthElement = kDefaultInGameWindowSize - 1,
         kDefaultPregameTicksBeforeNetDeath = 20 * TICKS_PER_SECOND,
         kDefaultInGameTicksBeforeNetDeath = 5 * TICKS_PER_SECOND,
 	kDefaultSendPeriod = 1,
