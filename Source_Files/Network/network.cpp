@@ -214,28 +214,6 @@ struct toggle_ping_display {
 	};
 };
 
-struct send_falg_message {
-	void operator()(const std::string&) const {
-		if (chatCallbacks)
-			chatCallbacks->SendChatMessage("GERT HLIM AD GT THE FALG!");
-	}
-};
-
-extern void hub_set_minimum_send_period(int32);
-extern int32& hub_get_minimum_send_period();
-
-struct set_minimum_send_period {
-	void operator() (const std::string& arg) const {
-		if (arg == "")
-		{
-			screen_printf("minimum send period is %i", hub_get_minimum_send_period());
-		} else {
-			hub_set_minimum_send_period(atoi(arg.c_str()));
-			screen_printf("minimum send period is now %i", atoi(arg.c_str()));
-		}
-	}
-};
-
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
 // don't matter as much.  Do observe, though, that users of the "distribution" mechanism will have
@@ -1126,8 +1104,6 @@ bool NetEnter(void)
 	// net commands!
 	sDisplayPings = false;
 	Console::instance()->register_command("ping", toggle_ping_display());
-	Console::instance()->register_command("falg", send_falg_message());
-	Console::instance()->register_command("msp", set_minimum_send_period());
   
 	next_join_attempt = machine_tick_count();
   
@@ -1217,7 +1193,6 @@ void NetExit(
 	#endif
 
 	Console::instance()->unregister_command("ping");
-	Console::instance()->unregister_command("falg");
   
 	NetDDPClose();
 
