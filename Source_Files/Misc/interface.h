@@ -256,6 +256,7 @@ bool suppress_background_events(void);
 void set_game_state(short new_state);
 short get_game_state(void);
 short get_game_controller(void);
+bool current_netgame_allows_microphone();
 void set_change_level_destination(short level_number);
 bool check_level_change(void);
 void pause_game(void);

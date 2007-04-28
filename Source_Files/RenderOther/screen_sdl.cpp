@@ -106,6 +106,7 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
 static void update_fps_display(SDL_Surface *s);
 static void DisplayPosition(SDL_Surface *s);
 static void DisplayMessages(SDL_Surface *s);
+static void DisplayNetMicStatus(SDL_Surface *s);
 static void DrawHUD(SDL_Rect &dest_rect);
 
 // LP addition:
@@ -633,7 +634,8 @@ void render_screen(short ticks_elapsed)
 	  if (!chat_input_mode){
 		update_fps_display(world_pixels);
 	  }
-		DisplayPosition(world_pixels);
+	  DisplayPosition(world_pixels);
+	  DisplayNetMicStatus(world_pixels);
 	}
 	DisplayMessages(world_pixels);
 	DisplayInputLine(world_pixels);

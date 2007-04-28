@@ -458,6 +458,10 @@ static short DisplayTextStyle = 0;
 
 }
 
+uint16 DisplayTextWidth(const char *Text)
+{
+	return text_width(Text, DisplayTextFont, DisplayTextStyle);
+}
 
 static void update_fps_display(SDL_Surface *s)
 {
@@ -684,6 +688,54 @@ static void DisplayMessages(SDL_Surface *s)
 
 }
 
+extern short local_player_index;
+extern bool game_is_networked;
+
+static void DisplayNetMicStatus(SDL_Surface *s)
+{
+	if (!game_is_networked) return;
+
+	// the net mic status is a message, and a colored text "icon"
+	string icon;
+	string status;
+	SDL_Color iconColor;
+
+	if (!current_netgame_allows_microphone())
+	{
+		if (dynamic_world->speaking_player_index == local_player_index)
+		{
+			status = "disabled";
+			icon = "  x";
+			iconColor.r = 0xff;
+			iconColor.g = iconColor.b = 0x0;
+
+		}
+	}
+	else if (dynamic_world->speaking_player_index == local_player_index)
+	{
+		status = "all";
+		icon = "<!>";
+
+		player_data *player = get_player_data(dynamic_world->speaking_player_index);
+		_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &iconColor);
+	} 
+	else if (dynamic_world->speaking_player_index != NONE)
+	{
+		// find the name and color of the person who is speaking
+		player_data *player = get_player_data(dynamic_world->speaking_player_index);
+		status = player->name;
+		_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &iconColor);
+		icon = ">!<";
+	}
+
+	FontSpecifier& Font = GetOnScreenFont();
+	short Y = s->h - Font.LineSpacing * 4 / 3;
+	short Xicon = s->w - DisplayTextWidth(icon.c_str()) - Font.LineSpacing / 3;
+	short Xstatus = Xicon - DisplayTextWidth(" ") - DisplayTextWidth(status.c_str());
+
+	DisplayText(Xicon, Y, icon.c_str(), iconColor.r, iconColor.g, iconColor.b);
+	DisplayText(Xstatus, Y, status.c_str());
+}
 
 static void set_overhead_map_status( /* it has changed, this is the new status */
 	bool status)

@@ -437,6 +437,11 @@ short get_game_state(
 	return game_state.state;
 }
 
+bool current_netgame_allows_microphone()
+{
+	return game_state.current_netgame_allows_microphone;
+}
+
 bool suppress_background_events(
 	void)
 {
