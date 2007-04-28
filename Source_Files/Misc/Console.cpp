@@ -25,6 +25,7 @@
 #include "Logging.h"
 
 #include <string>
+#include <boost/bind.hpp>
 #include <boost/function.hpp>
 
 using namespace std;
@@ -52,21 +53,56 @@ static pair<string, string> split(string buffer)
 	if (pos != string::npos && pos < buffer.size())
 	{
 		remainder = buffer.substr(pos + 1);
-		command = buffer.substr(1, pos - 1);
+		command = buffer.substr(0, pos);
 	}
 	else
 	{
-		command = buffer.substr(1);
+		command = buffer;
 	}
 
 	return pair<string, string>(command, remainder);
 }
 
+void CommandParser::register_command(string command, boost::function<void(const string&)> f)
+{
+	lowercase(command);
+	m_commands[command] = f;
+}
+
+void CommandParser::register_command(string command, const CommandParser& command_parser)
+{
+	lowercase(command);
+	m_commands[command] = boost::bind(&CommandParser::parse_and_execute, command_parser, _1);
+}
+
+void CommandParser::unregister_command(string command)
+{
+	lowercase(command);
+	m_commands.erase(command);
+}
+
+void CommandParser::parse_and_execute(const std::string& command_string)
+{
+	pair<string, string> cr = split(command_string);
+
+	string command = cr.first;
+	string remainder = cr.second;
+
+	lowercase(command);
+	
+	command_map::iterator it = m_commands.find(command);
+	if (it != m_commands.end())
+	{
+		it->second(remainder);
+	}
+}
+
+
 void Console::enter() {
 	// macros are processed first
 	if (m_buffer[0] == '.')
 	{
-		pair<string, string> mr = split(m_buffer);
+		pair<string, string> mr = split(m_buffer.substr(1));
 
 		string input = mr.first;
 		string output = mr.second;
@@ -86,20 +122,7 @@ void Console::enter() {
 	// commands are processed before callbacks
 	if (m_buffer[0] == '.')
 	{
-		// see if there's a command
-
-		pair<string, string> cr = split(m_buffer);
-		
-		string command = cr.first;
-		string remainder = cr.second;
-		
-		lowercase(command);
-
-		command_map::iterator it = m_commands.find(command);
-		if (it != m_commands.end())
-		{
-			it->second(remainder);
-		}
+		parse_and_execute(m_buffer.substr(1));
 	} else if (!m_callback) {
 		logAnomaly("console enter activated, but no callback set");
 	} else {
@@ -179,18 +202,6 @@ void Console::deactivate_input() {
 	SDL_EnableKeyRepeat(0, 0);
 	SDL_EnableUNICODE(0);
 #endif
-}
-
-void Console::register_command(string command, boost::function<void(const string&)> f)
-{
-	lowercase(command);
-	m_commands[command] = f;
-}
-
-void Console::unregister_command(string command)
-{
-	lowercase(command);
-	m_commands.erase(command);
 }
 
 void Console::register_macro(string input, string output)

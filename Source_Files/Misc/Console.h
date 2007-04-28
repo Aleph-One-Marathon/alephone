@@ -28,7 +28,22 @@
 #include <boost/function.hpp>
 #include "XML_ElementParser.h"
 
-class Console 
+class CommandParser
+{
+public:
+	CommandParser() { }
+	~CommandParser() { }
+	void register_command(std::string command, boost::function<void(const std::string&)> f);
+	void register_command(std::string command, const CommandParser& command_parser);
+	void unregister_command(std::string command);
+
+	virtual void parse_and_execute(const std::string& command_string);
+private:
+	typedef std::map<std::string, boost::function<void(const std::string&)> > command_map;
+	command_map m_commands;
+};
+
+class Console : public CommandParser
 {
 public:
 	static Console* instance();
@@ -50,16 +65,11 @@ public:
 	void register_macro(std::string macro, std::string replacement);
 	void unregister_macro(std::string macro);
 
-	void register_command(std::string command, boost::function<void(const std::string&)> f);
-	void unregister_command(std::string command);
-  
 private:
 	Console() : m_active(false) { } ;
 	static Console* m_instance;
 
-	typedef std::map<std::string, boost::function<void(const std::string&)> > command_map;
 	boost::function<void (std::string)> m_callback;
-	command_map m_commands;
 	std::string m_buffer;
 	std::string m_displayBuffer;
 	std::string m_prompt;
