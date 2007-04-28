@@ -214,6 +214,41 @@ struct toggle_ping_display {
 	};
 };
 
+// ignore list
+std::set<int> sIgnoredPlayers;
+
+bool player_is_ignored(int player_index)
+{
+	return (sIgnoredPlayers.find(player_index) != sIgnoredPlayers.end());
+}
+
+struct ignore_player {
+	void operator()(const std::string& s) const {
+		int player_index = atoi(s.c_str());
+		if (player_index == localPlayerIndex)
+		{
+			screen_printf("you can't ignore yourself");
+		} 
+		else if (player_index >= 0 && player_index < topology->player_count)
+		{
+			if (sIgnoredPlayers.find(player_index) != sIgnoredPlayers.end())
+			{
+				screen_printf("removing player %i from the ignore list", player_index);
+				sIgnoredPlayers.erase(player_index);
+			} 
+			else
+			{
+				screen_printf("adding player %i to the ignore list", player_index);
+				sIgnoredPlayers.insert(player_index);
+			}
+		} 
+		else
+		{
+			screen_printf("invalid player %i", player_index);
+		}
+	}
+};
+
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
 // don't matter as much.  Do observe, though, that users of the "distribution" mechanism will have
@@ -595,6 +630,7 @@ void Client::handleChatMessage(NetworkChatMessage* netChatMessage,
 			if (chatCallbacks) {
 				for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
 					if (topology->players[playerIndex].stream_id == getStreamIdFromChannel(channel)) {
+						if (player_is_ignored(playerIndex)) return;
 						static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
 						pstrcpy(name, topology->players[playerIndex].player_data.name);
 						a1_p2cstr(name);
@@ -782,6 +818,7 @@ static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, Communicat
 		if (netState == netActive) {
 			for (int playerIndex = 0; playerIndex < topology->player_count; playerIndex++) {
 				if (topology->players[playerIndex].stream_id == chatMessage->senderID()) {
+					if (player_is_ignored(playerIndex)) return;
 					static unsigned char name[MAX_NET_PLAYER_NAME_LENGTH + 1];
 					pstrcpy(name, topology->players[playerIndex].player_data.name);
 					a1_p2cstr(name);
@@ -1104,6 +1141,11 @@ bool NetEnter(void)
 	// net commands!
 	sDisplayPings = false;
 	Console::instance()->register_command("ping", toggle_ping_display());
+
+	sIgnoredPlayers.clear();
+	CommandParser IgnoreParser;
+	IgnoreParser.register_command("player", ignore_player());
+	Console::instance()->register_command("ignore", IgnoreParser);
   
 	next_join_attempt = machine_tick_count();
   
