@@ -72,6 +72,7 @@ May 22, 2003 (Woody Zenfell):
 #include "screen.h"
 #include "fades.h"
 #include "extensions.h"
+#include "Console.h"
 
 #include "XML_ElementParser.h"
 #include "XML_DataBlock.h"
@@ -1399,6 +1400,25 @@ void WriteXML_Char(FILE *F, unsigned char c);
 void WriteXML_FSSpec(FILE *F, const char *Indent, int Index, FSSpec& Spec);
 #endif
 
+extern void hub_set_minimum_send_period(int32);
+extern int32& hub_get_minimum_send_period();
+
+struct set_latency_tolerance
+{
+	void operator() (const std::string& arg) const {
+		hub_set_minimum_send_period(atoi(arg.c_str()));
+		screen_printf("latency tolerance is now %i", atoi(arg.c_str()));
+		write_preferences();
+	}
+};
+
+struct get_latency_tolerance
+{
+	void operator() (const std::string&) const {
+		screen_printf("latency tolerance is %i", hub_get_minimum_send_period());
+	}
+};
+
 /*
  *  Initialize preferences (load from file or setup defaults)
  */
@@ -1433,6 +1453,16 @@ void initialize_preferences(
 		XML_DataBlockLoader.SourceName = "[Preferences]";
 				
 		PrefsInited = true;
+
+		CommandParser PreferenceSetCommandParser;
+		PreferenceSetCommandParser.register_command("latency_tolerance", set_latency_tolerance());
+		CommandParser PreferenceGetCommandParser;
+		PreferenceGetCommandParser.register_command("latency_tolerance", get_latency_tolerance());
+
+		CommandParser PreferenceCommandParser;
+		PreferenceCommandParser.register_command("set", PreferenceSetCommandParser);
+		PreferenceCommandParser.register_command("get", PreferenceGetCommandParser);
+		Console::instance()->register_command("preferences", PreferenceCommandParser);
 		
 		read_preferences ();
 	}
