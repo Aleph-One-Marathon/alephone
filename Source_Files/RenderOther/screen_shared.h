@@ -294,19 +294,11 @@ void SetScriptHUDSquare(int idx, int _color) {
 	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
 	ScriptHUDElements[idx].color = _color % 8;
 	memset(graphic, 0, 256);
-#if defined(mac)
-	RGBColor color;
-	_get_interface_color(_color+_computer_interface_text_color, &color);
-	palette[0] = color.red >> 8;
-	palette[1] = color.green >> 8;
-	palette[2] = color.blue >> 8;
-#elif defined(SDL)
 	SDL_Color color;
 	_get_interface_color(_color+_computer_interface_text_color, &color);
 	palette[0] = color.r;
 	palette[1] = color.g;
 	palette[2] = color.b;
-#endif
 	icon::seticon(idx, palette, graphic);
 }
 /* /SB */
@@ -447,12 +439,10 @@ void change_gamma_level(
 
 // LP addition: routine for displaying text
 
-#ifdef SDL
 // Globals for communicating with the SDL contents of DisplayText
 static SDL_Surface *DisplayTextDest = NULL;
 static sdl_font_info *DisplayTextFont = NULL;
 static short DisplayTextStyle = 0;
-#endif
 
 /*static*/ void DisplayText(short BaseX, short BaseY, const char *Text, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff)
 {
@@ -463,50 +453,17 @@ static short DisplayTextStyle = 0;
 		if (OGL_RenderText(BaseX, BaseY, Text, r, g, b)) return;
 #endif
 
-#if defined(mac)
-	// C to Pascal
-	RGBColor color;
-	Str255 PasText;
-	
-	color.red = (r << 8) | r;
-	color.green = (g << 8) | g;
-	color.blue = (b << 8) | b;
-	
-	int Len = MIN(strlen(Text),255);
-	PasText[0] = Len;
-	memcpy(PasText+1,Text,Len);
-	
-	// LP change: drop shadow in both MacOS and SDL versions
-	RGBForeColor(&rgb_black);
-	MoveTo(BaseX+1,BaseY+1);
-	DrawString(PasText);
-	
-	RGBForeColor(&color);
-	MoveTo(BaseX,BaseY);
-	DrawString(PasText);
-	
-#elif defined(SDL)
-
 	draw_text(DisplayTextDest, Text, BaseX+1, BaseY+1, SDL_MapRGB(world_pixels->format, 0x00, 0x00, 0x00), DisplayTextFont, DisplayTextStyle);
-	draw_text(DisplayTextDest, Text, BaseX, BaseY, SDL_MapRGB(world_pixels->format, r, g, b), DisplayTextFont, DisplayTextStyle);
-	
-#endif
+	draw_text(DisplayTextDest, Text, BaseX, BaseY, SDL_MapRGB(world_pixels->format, r, g, b), DisplayTextFont, DisplayTextStyle);	
+
 }
 
 
-#if defined(mac)
-static void update_fps_display(GrafPtr port, short xoffset = -1, short yoffset = -1)
-#elif defined(SDL)
 static void update_fps_display(SDL_Surface *s)
-#endif
 {
 	if (displaying_fps && !player_in_terminal_mode(current_player_index))
 	{
-#if defined(mac)
-		uint32 ticks= TickCount();
-#elif defined(SDL)
 		uint32 ticks = SDL_GetTicks();
-#endif
 		char fps[sizeof("120.00fps (10000 ms)")];
 		char ms[sizeof("(10000 ms)")];
 		
@@ -534,22 +491,12 @@ static void update_fps_display(SDL_Surface *s)
 		
 		FontSpecifier& Font = GetOnScreenFont();
 		
-#if defined(mac)
-		GrafPtr old_port;
-		GetPort(&old_port);
-		SetPort(port);
-		Font.Use();
-		Rect portRect;
-		GetPortBounds(port, &portRect);
-		short X0 = xoffset==-1?portRect.left:portRect.left+xoffset;
-		short Y0 = yoffset==-1?portRect.bottom:portRect.top + yoffset;
-#elif defined(SDL)
 		DisplayTextDest = s;
 		DisplayTextFont = Font.Info;
 		DisplayTextStyle = Font.Style;
 		short X0 = 0;
 		short Y0 = s->h;
-#endif
+
 		// The line spacing is a generalization of "5" for larger fonts
 		short Offset = Font.LineSpacing / 3;
 		short X = X0 + Offset;
@@ -560,10 +507,6 @@ static void update_fps_display(SDL_Surface *s)
 		}
 		DisplayText(X,Y,fps);
 		
-#if defined(mac)
-		RGBForeColor(&rgb_black);
-		SetPort(old_port);
-#endif
 	}
 	else
 	{
@@ -572,33 +515,17 @@ static void update_fps_display(SDL_Surface *s)
 }
 
 
-#if defined(mac)
-static void DisplayPosition(GrafPtr port)
-#elif defined(SDL)
 static void DisplayPosition(SDL_Surface *s)
-#endif
 {
 	if (!ShowPosition) return;
 		
 	FontSpecifier& Font = GetOnScreenFont();
 	
-#if defined(mac)
-	// Push
-	GrafPtr old_port;
-	GetPort(&old_port);
-	SetPort(port);
-	Font.Use();
-	Rect portRect;
-	GetPortBounds(port, &portRect);
-	short X0 = portRect.left;
-	short Y0 = portRect.top;
-#elif defined(SDL)
 	DisplayTextDest = s;
 	DisplayTextFont = Font.Info;
 	DisplayTextStyle = Font.Style;
 	short X0 = 0;
 	short Y0 = 0;
-#endif
 	
 	short LineSpacing = Font.LineSpacing;
 	short X = X0 + LineSpacing/3;
@@ -627,77 +554,36 @@ static void DisplayPosition(SDL_Surface *s)
 	sprintf(temporary, "Pitch   = %8.3f",AngleConvert*Angle);
 	DisplayText(X,Y,temporary);
 	
-	// Pop
-#ifdef mac
-	RGBForeColor(&rgb_black);
-	SetPort(old_port);
-#endif
 }
 
-#if defined(mac)
-static void DisplayInputLine(GrafPtr port, short offWidth, short offHeight)
-#elif defined(SDL)
 static void DisplayInputLine(SDL_Surface *s)
-#endif
 {
   if (Console::instance()->input_active() && 
       !Console::instance()->displayBuffer().empty()) {
     FontSpecifier& Font = GetOnScreenFont();
     
-#if defined(mac)
-  GrafPtr old_port;
-  GetPort (&old_port);
-  SetPort(port);
-  Font.Use();
-  Rect portRect;
-  GetPortBounds(port, &portRect);
-  short X0 = offWidth==-1?portRect.left:portRect.left+offWidth;
-  short Y0 = offHeight==-1?portRect.bottom:portRect.top + offHeight;
-#elif defined(SDL)
   DisplayTextDest = s;
   DisplayTextFont = Font.Info;
   DisplayTextStyle = Font.Style;
   short X0 = 0;
   short Y0 = s->h;
-#endif
 
   short Offset = Font.LineSpacing / 3;
   short X = X0 + Offset;
   short Y = Y0 - Offset;
   DisplayText(X, Y, Console::instance()->displayBuffer().c_str());
-
-#if defined(mac)
-  RGBForeColor(&rgb_black);
-  SetPort(old_port);
-#endif
   }
 }
 
-#if defined(mac)
-static void DisplayMessages(GrafPtr port, short offWidth, short offHeight)
-#elif defined(SDL)
 static void DisplayMessages(SDL_Surface *s)
-#endif
 {	
 	FontSpecifier& Font = GetOnScreenFont();
 	
-#if defined(mac)
-	// Push
-	GrafPtr old_port;
-	GetPort(&old_port);
-	SetPort(port);
-	Font.Use();
-	Rect portRect;
-	GetPortBounds(port, &portRect);
-	short X0 = portRect.left+offWidth;
-	short Y0 = portRect.top+offHeight;
-#elif defined(SDL)
 	DisplayTextDest = s;
 	DisplayTextFont = Font.Info;
 	DisplayTextStyle = Font.Style;
 	short X0 = 0;
 	short Y0 = 0;
-#endif
 	
 	short LineSpacing = Font.LineSpacing;
 	short X = X0 + LineSpacing/3;
@@ -756,32 +642,6 @@ static void DisplayMessages(SDL_Surface *s)
 					else 
 #endif 
 					{
-#if defined(mac)
-						struct PixMap** map = NewPixMap();
-						Rect target;
-						(*map)->baseAddr = (char *) ScriptHUDElements[i].icon;
-						(*map)->rowBytes = 64 | (1 << 15);
-						(*map)->bounds.top = 0;
-						(*map)->bounds.left = 0;
-						(*map)->bounds.bottom = 16;
-						(*map)->bounds.right = 16;
-						(*map)->packType = 1;
-						(*map)->packSize = 1024;
-						(*map)->pixelType = RGBDirect;
-						(*map)->pixelSize = 32;
-						(*map)->cmpCount = 3;
-						(*map)->cmpSize = 8;
-						(*map)->pmTable = NULL;
-						target.top = Y - 11;
-						target.left = x2;
-						target.bottom = Y + 5;
-						target.right = x2 + 16;
-						RGBForeColor(&rgb_black);
-						RGBBackColor(&rgb_white);
-						CopyBits((BitMap*)*map, GetPortBitMapForCopyBits(port),
-										 &(*map)->bounds, &target, srcCopy, NULL);
-						DisposePixMap(map);
-#elif defined(SDL)
 						SDL_Surface* srf;
 						SDL_Rect rect;
 						rect.x = x2;
@@ -794,20 +654,13 @@ static void DisplayMessages(SDL_Surface *s)
 #endif
 						SDL_BlitSurface(srf, NULL, s, &rect);
 						SDL_FreeSurface(srf);
-#endif
 					}
 					x2 += 20;
 					sk -= 20;
 				}
-#if defined(mac)
-				RGBColor color;
-				_get_interface_color(ScriptHUDElements[i].color+_computer_interface_text_color, &color);
-				DisplayText(x2,Y + (ScriptHUDElements[i].isicon ? 2 : 0),ScriptHUDElements[i].text, color.red >> 8, color.green >> 8, color.blue >> 8);
-#elif defined(SDL)
 				SDL_Color color;
 				_get_interface_color(ScriptHUDElements[i].color+_computer_interface_text_color, &color);
 				DisplayText(x2,Y + (ScriptHUDElements[i].isicon ? 2 : 0),ScriptHUDElements[i].text, color.r, color.g, color.b);
-#endif
 				x2 += sk;
 			}
 			Y += LineSpacing + ysk;
@@ -829,11 +682,6 @@ static void DisplayMessages(SDL_Surface *s)
 		Y += LineSpacing;
 	}
 
-	// Pop
-#ifdef mac
-	RGBForeColor(&rgb_black);
-	SetPort(old_port);
-#endif
 }
 
 
