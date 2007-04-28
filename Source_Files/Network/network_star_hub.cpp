@@ -1401,7 +1401,7 @@ static const char* sAttributeStrings[kNumAttributes] =
 	"ingame_nth_element",
 	"send_period",
 	"recovery_send_period",
-	"minimum_send_period",
+	"latency_tolerance",
 };
 
 static int32* sAttributeDestinations[kNumAttributes] =
