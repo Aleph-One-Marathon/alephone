@@ -772,7 +772,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 		// if anti-lag is on, add a bit of latency based on jitter to try to keep it from triggering
 		if (sHubPreferences.mMinimumSendPeriod)
 		{
-			uint32 jitter = std::min(thePlayer.mNthElementFinder.nth_largest_element(0) - thePlayer.mNthElementFinder.nth_smallest_element(0) - (sHubPreferences.mMinimumSendPeriod - 1), (uint32) 0);
+			uint32 jitter = std::min(thePlayer.mNthElementFinder.nth_largest_element(0) - thePlayer.mNthElementFinder.nth_smallest_element(0) - (sHubPreferences.mMinimumSendPeriod - 1), (int32) 0);
 			thePlayer.mOutstandingTimingAdjustment -= jitter;
 		}
 
