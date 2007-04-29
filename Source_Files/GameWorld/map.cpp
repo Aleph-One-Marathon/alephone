@@ -436,18 +436,24 @@ void mark_map_collections(bool loading)
 {
 	if (loading)
 	{
+
 		for (int collection = 0; collection < NUMBER_OF_COLLECTIONS; collection++)
 		{
 			map_collections[collection] = false;
 		}
-		
+
 		// walls/floors/ceilings
 		for (int n = 0; n < dynamic_world->polygon_count; n++)
 		{
 			polygon_data *polygon = map_polygons + n;
+			int coll;
+			coll = GET_DESCRIPTOR_COLLECTION(polygon->floor_texture);
+			if (coll >= 0 && coll < NUMBER_OF_COLLECTIONS)
+				map_collections[coll] = true;
 
-			map_collections[GET_DESCRIPTOR_COLLECTION(polygon->floor_texture)] = true;
-			map_collections[GET_DESCRIPTOR_COLLECTION(polygon->ceiling_texture)] = true;
+			coll = GET_DESCRIPTOR_COLLECTION(polygon->ceiling_texture);
+			if (coll >= 0 && coll < NUMBER_OF_COLLECTIONS)
+				map_collections[coll] = true;
 			
 			for (int i = 0; i < polygon->vertex_count; i++)
 			{
@@ -457,20 +463,30 @@ void mark_map_collections(bool loading)
 				switch (side->type)
 				{
 				case _full_side:
-					map_collections[GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture)] = true;
+					coll = GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture);
+					if (coll >= 0 && coll < NUMBER_OF_COLLECTIONS)
+						map_collections[coll] = true;
 					break;
 				case _split_side:
-					map_collections[GET_DESCRIPTOR_COLLECTION(side->secondary_texture.texture)] = true;
+					coll = GET_DESCRIPTOR_COLLECTION(side->secondary_texture.texture);
+					if (coll >= 0 && coll < NUMBER_OF_COLLECTIONS)
+						map_collections[coll] = true;
 					// fall through to the high side case
 				case _high_side:
-					map_collections[GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture)] = true;
+					coll = GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture);
+					if (coll >= 0 && coll < NUMBER_OF_COLLECTIONS)
+						map_collections[coll] = true;
 					break;
 				case _low_side:
-					map_collections[GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture)] = true;
+					coll = GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture);
+					if (coll >= 0 && coll < NUMBER_OF_COLLECTIONS)
+						map_collections[coll] = true;
 				}
 
-				map_collections[GET_DESCRIPTOR_COLLECTION(side->transparent_texture.texture)] = true;
-
+				coll = GET_DESCRIPTOR_COLLECTION(side->transparent_texture.texture);
+				if (coll >= 0 && coll < NUMBER_OF_COLLECTIONS)
+					map_collections[coll] = true;
+				
 			}
 		}
 
@@ -494,7 +510,8 @@ void mark_map_collections(bool loading)
 				{
 					short detonation_effect;
 					get_media_detonation_effect(media_index, detonation_type, &detonation_effect);
-					media_effects[detonation_effect] = true;
+					if (detonation_effect >= 0 && detonation_effect < NUMBER_OF_EFFECT_TYPES)
+						media_effects[detonation_effect] = true;
 				}
 			}
 		}
@@ -517,6 +534,7 @@ void mark_map_collections(bool loading)
 			}
 		}
 
+
 		for (int collection = 0; collection < NUMBER_OF_COLLECTIONS; collection++)
 		{
 			if (map_collections[collection])
@@ -525,6 +543,7 @@ void mark_map_collections(bool loading)
 			}
 		}
 
+
 		for (int media_effect = 0; media_effect < NUMBER_OF_EFFECT_TYPES; media_effect++)
 		{
 			if (media_effects[media_effect])
@@ -532,6 +551,7 @@ void mark_map_collections(bool loading)
 				mark_effect_collections(media_effect, true);
 			}
 		}
+
 
 	} else { // not loading
 		for (int collection = 0; collection < NUMBER_OF_COLLECTIONS; collection++)
