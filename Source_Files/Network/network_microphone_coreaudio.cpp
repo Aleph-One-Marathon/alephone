@@ -27,10 +27,7 @@
 #include "cstypes.h"
 #include "network_microphone_shared.h"
 
-     #include <sys/types.h>
-     #include <sys/uio.h>
-     #include <unistd.h>
-#include <fcntl.h>
+#include <vector>
 
 #ifdef SPEEX
 extern void init_speex_encoder();
@@ -45,7 +42,7 @@ static AudioBufferList *fAudioBuffer = NULL;
 
 static bool initialized = false;
 
-static uint8 captureBuffer[32768];
+static std::vector<uint8> captureBuffer;
 static Uint32 captureBufferSize = 0;
 
 static OSStatus audio_input_proc(void *, AudioUnitRenderActionFlags *ioActionFlags, const AudioTimeStamp *inTimeStamp, UInt32 inBusNumber, UInt32 inNumberFrames, AudioBufferList *)
@@ -62,9 +59,9 @@ static OSStatus audio_input_proc(void *, AudioUnitRenderActionFlags *ioActionFla
 		// copy to the capture buffer
 		memcpy(&captureBuffer[captureBufferSize], fAudioBuffer->mBuffers[0].mData, inNumberFrames * 2);
 		captureBufferSize += inNumberFrames * 2;
-		if (captureBufferSize >= 4096)
+		if (captureBufferSize >= get_capture_byte_count_per_packet())
 		{
-			copy_and_send_audio_data(captureBuffer, captureBufferSize, NULL, 0, true);
+			copy_and_send_audio_data(&captureBuffer.front(), captureBufferSize, NULL, 0, true);
 			captureBufferSize = 0;
 		}
 	}
@@ -116,16 +113,25 @@ OSErr open_network_microphone()
 		return err;
 	}
 
-/*
+
 	// try to set the sample rate
 	Float64 sampleRate = 11025.0;
 	err = AudioDeviceSetProperty(fInputDeviceID, 0, 0, 0, kAudioDevicePropertyNominalSampleRate, sizeof(Float64), &sampleRate);
 	if (err != noErr)
 	{
-		fprintf(stderr, "failed to set AU sample rate (%i)\n", err);
-//		return err;
+		sampleRate = 22050.0;
+		err = AudioDeviceSetProperty(fInputDeviceID, 0, 0, 0, kAudioDevicePropertyNominalSampleRate, sizeof(Float64), &sampleRate);
+		if (err != noErr)
+		{
+			sampleRate = 44100.0;
+			err = AudioDeviceSetProperty(fInputDeviceID, 0, 0, 0, kAudioDevicePropertyNominalSampleRate, sizeof(Float64), &sampleRate);
+			if (err != noErr)
+			{
+				fprintf(stderr, "failed to set AU sample rate (%i)\n", err);
+				return err;
+			}
+		}
 	}
-*/
 
 	// Set the current device to the default input device
 	err = AudioUnitSetProperty(fAudioUnit, kAudioOutputUnitProperty_CurrentDevice, kAudioUnitScope_Global, 0, &fInputDeviceID, sizeof(AudioDeviceID));
@@ -147,17 +153,6 @@ OSErr open_network_microphone()
 	{
 		fprintf(stderr, "failed to get input device ASBD\n");		return err;
 	}
-
-/*	// try to set the buffer size
-	UInt32 bufferSize = 1024 * ((int) fDeviceFormat.mSampleRate / 11025);
-	fprintf(stderr, "trying to set bufferSize to %i\n", bufferSize);
-	err = AudioDeviceSetProperty(fInputDeviceID, 0, 0, 0, kAudioDevicePropertyBufferFrameSize, sizeof(UInt32), &bufferSize);
-	if (err != noErr)
-	{
-		fprintf(stderr, "failed to set buffer size\n");
-//		return err;
-	}
-*/
 
 	// change the format to our liking
 	fOutputFormat.mChannelsPerFrame = 1;
@@ -207,7 +202,9 @@ OSErr open_network_microphone()
 		fprintf(stderr, "network microphone support code rejected audio format (rate=%i)\n", fOutputFormat.mSampleRate);
 		return -1;
 	}
-	
+
+	captureBuffer.resize(get_capture_byte_count_per_packet() + fAudioBuffer->mBuffers[0].mDataByteSize);
+
 #ifdef SPEEX
 	init_speex_encoder();
 #endif
