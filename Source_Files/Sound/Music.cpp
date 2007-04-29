@@ -37,7 +37,7 @@ Music::Music() :
 #ifdef __MACOS__
 	macos_file_done(false), 
 	macos_read_more(false), 
-	macos_buffer_length(0)
+	macos_buffer_length(0),
 #endif
 	decoder(0),
 	song_number(0),
