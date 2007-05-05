@@ -158,6 +158,7 @@ void Mixer::UpdateMusicChannel(uint8* data, int len)
 void Mixer::EnsureNetworkAudioPlaying()
 {
 #if !defined(DISABLE_NETWORKING)
+	if (!channels.size()) return;
 	Channel *c = &channels[sound_channel_count + NETWORK_AUDIO_CHANNEL];
 	if (!c->active)
 	{
@@ -195,6 +196,7 @@ void Mixer::EnsureNetworkAudioPlaying()
 void Mixer::StopNetworkAudio()
 {
 #if !defined(DISABLE_NETWORKING)
+	if (!channels.size()) return;
 	SDL_LockAudio();
 	channels[sound_channel_count + NETWORK_AUDIO_CHANNEL].active = false;
 	if (sNetworkAudioBufferDesc)
@@ -209,6 +211,7 @@ void Mixer::StopNetworkAudio()
 
 void Mixer::PlaySoundResource(LoadedResource &rsrc)
 {
+	if (!channels.size()) return;
 	Channel *c = &channels[sound_channel_count + RESOURCE_CHANNEL];
 	// Open stream to resource
 	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), (int)rsrc.GetLength());
@@ -258,6 +261,7 @@ void Mixer::PlaySoundResource(LoadedResource &rsrc)
 
 void Mixer::StopSoundResource()
 {
+	if (!channels.size()) return;
 	SDL_LockAudio();
 	channels[sound_channel_count + RESOURCE_CHANNEL].active = false;
 	SDL_UnlockAudio();
