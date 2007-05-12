@@ -26,6 +26,7 @@
 
 #include "cseries.h"
 
+#include "alephversion.h"
 #include "metaserver_dialogs.h"
 #include "network_private.h" // GAME_PORT
 #include "preferences.h"
@@ -77,21 +78,7 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	
 	// description's constructor gets scenario info, aleph one's protocol ID for us
 	
-	// ghs: blech, need a better way to find this
-	description.m_alephoneBuildString = "0.18pre2";
-	
-	// ghs: this doesn't belong here!
-#if defined(__WIN32__)
-	description.m_alephoneBuildString += " (Windows)";
-#elif defined(__APPLE__) && defined(__MACH__)
-	description.m_alephoneBuildString += " (Mac OS X)";
-#elif defined(__BEOS__)
-	description.m_alephoneBuildString += " (BeOS)";
-#elif defined(linux)
-	description.m_alephoneBuildString += " (Linux)";
-#elif defined(__NETBSD__)
-	description.m_alephoneBuildString += " (NetBSD)";
-#endif
+	description.m_alephoneBuildString = string(A1_DISPLAY_VERSION) + " (" + A1_DISPLAY_PLATFORM + ")";
 	
 	if (network_preferences->use_netscript)
 	{
