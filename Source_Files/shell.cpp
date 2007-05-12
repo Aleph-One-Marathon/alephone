@@ -345,7 +345,7 @@ static void initialize_application(void)
 #define LIST_SEP ':'
 #endif
 	
-#ifndef __APPLE__ && __MACH__
+#if !(defined(__APPLE__) && defined(__MACH__))
 	if (arg_directory != "") 
 		default_data_dir = arg_directory;
 #endif
