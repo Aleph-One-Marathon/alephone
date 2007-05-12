@@ -38,6 +38,9 @@
 #include "network_dialogs.h"
 #include "TextStrings.h"
 
+#include "Update.h"
+#include "progress.h"
+
 extern ChatHistory gMetaserverChatHistory;
 extern MetaserverClient* gMetaserverClient;
 
@@ -57,7 +60,50 @@ setupAndConnectClient(MetaserverClient& client)
 		client.setPlayerName(playerNameCString);
 		free(playerNameCStringStorage);
 	}
+
+	// Check the updates URL for updates
 	
+	static bool user_informed = false;
+
+	if (network_preferences->check_for_updates && !user_informed)
+	{
+		static bool first_check = true;
+		
+		if (first_check)
+		{
+			uint32 ticks = SDL_GetTicks();
+
+			// if we get an update in a short amount of time, don't display progress
+			while (Update::instance()->GetStatus() == Update::CheckingForUpdate && SDL_GetTicks() - ticks < 500);
+
+			// check another couple seconds, but with a progress dialog
+			open_progress_dialog(_checking_for_updates);
+			while (Update::instance()->GetStatus() == Update::CheckingForUpdate && SDL_GetTicks() - ticks < 2500);
+			close_progress_dialog();
+			first_check = false;
+		}
+
+		Update::Status status = Update::instance()->GetStatus();
+		if (status == Update::UpdateAvailable)
+		{
+			dialog d;
+
+			d.add(new w_static_text("UPDATE AVAILABLE", TITLE_FONT, TITLE_COLOR));
+			d.add(new w_spacer());
+
+			d.add(new w_static_text("An update for Aleph One is available."));
+			d.add(new w_static_text("Please download it from"));
+			d.add(new w_static_text("http://marathon.sourceforge.net/"));
+			d.add(new w_static_text("before playing games online."));
+			
+			d.add(new w_spacer());
+			d.add(new w_button("OK", dialog_ok, &d));
+			d.run();
+		}
+		
+		if (status != Update::CheckingForUpdate) user_informed = true;
+	}
+
 	client.setPlayerTeamName("");
 	client.connect("metaserver.lhowon.org", 6321, "guest", "0000000000000000");
 }

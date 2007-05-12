@@ -38,7 +38,8 @@ enum {
 	_loading,
 	// more network ones
 	_opening_router_ports,
-	_closing_router_ports
+	_closing_router_ports,
+	_checking_for_updates
 };
 
 void open_progress_dialog(size_t message_id, bool show_progress_bar = false);

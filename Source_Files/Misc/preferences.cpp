@@ -1720,6 +1720,7 @@ void write_preferences(
 	fprintf(F,"  cheat_flags=\"%hu\"\n",network_preferences->cheat_flags);
 	fprintf(F,"  advertise_on_metaserver=\"%s\"\n",BoolString(network_preferences->advertise_on_metaserver));
 	fprintf(F,"  attempt_upnp=\"%s\"\n", BoolString(network_preferences->attempt_upnp));
+	fprintf(F,"  check_for_updates=\"%s\"\n", BoolString(network_preferences->check_for_updates));
 	fprintf(F,">\n");
 #ifndef SDL
 	WriteXML_FSSpec(F,"  ", kNetworkScriptFileSpecIndex, network_preferences->netscript_file);
@@ -1884,6 +1885,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->cheat_flags = _allow_tunnel_vision | _allow_crosshair | _allow_behindview;
 	preferences->advertise_on_metaserver = false;
 	preferences->attempt_upnp = false;
+	preferences->check_for_updates = true;
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -3148,6 +3150,10 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"attempt_upnp"))
 	{
 		return ReadBooleanValue(Value, network_preferences->attempt_upnp);
+	}
+	else if (StringsEqual(Tag,"check_for_updates"))
+	{
+		return ReadBooleanValue(Value, network_preferences->check_for_updates);
 	}
 	return true;
 }

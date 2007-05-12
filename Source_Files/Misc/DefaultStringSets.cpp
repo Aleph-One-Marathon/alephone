@@ -411,8 +411,9 @@ static char* sStringSetNumber143[] = {
     "Sending environment information to the other players.",
     "Receiving environment information from server.",
     "Loading...",
-	"Attempting to open router ports...",
-	"Closing router ports..."
+    "Attempting to open router ports...",
+    "Closing router ports...",
+    "Checking for updates..."
 };
 
 BUILD_STRINGSET(128, sStringSetNumber128);
