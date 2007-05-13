@@ -1163,7 +1163,7 @@ int w_slider::layout(void)
 	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
 
 	rect.x = -spacing / 2 - name_width;
-	rect.w = name_width + spacing + SLIDER_WIDTH;
+	rect.w = name_width + spacing + SLIDER_WIDTH + thumb->w;
 	rect.h = MAX(font->get_line_height(), static_cast<uint16>(slider_c->h));
 	slider_x = name_width + spacing;
 	set_selection(selection);
@@ -1206,14 +1206,14 @@ void w_slider::mouse_move(int x, int /*y*/)
 {
 	if (thumb_dragging) {
 		int delta_x = (x - slider_x - get_dialog_space(SLIDER_L_SPACE)) - thumb_drag_x;
-		set_selection(delta_x * num_items / trough_width);
+		set_selection(delta_x * num_items / (trough_width - thumb->w));
 	}
 }
 
 void w_slider::click(int x, int /*y*/)
 {
     if(enabled) {
-	    if (x >= slider_x && x < slider_x + SLIDER_WIDTH) {
+	    if (x >= thumb_x && x < thumb_x + thumb->w) {
 		    thumb_dragging = dirty = true;
 		    thumb_drag_x = x - thumb_x;
 	    }
