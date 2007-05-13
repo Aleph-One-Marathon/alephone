@@ -564,20 +564,21 @@ static void graphics_dialog(void *arg)
 	size_w->set_labels(build_stringvector_from_cstring_array(size_labels));
 	size_w->set_selection(graphics_preferences->screen_mode.size);
 	d.add(size_w);
-	w_toggle *fullscreen_w = new w_toggle("Fullscreen", graphics_preferences->screen_mode.fullscreen);
-	d.add(fullscreen_w);
 
 	w_toggle *fill_screen_w;
 	const SDL_version *version = SDL_Linked_Version();
 	if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
 	{
-		fill_screen_w = new w_toggle("Fill the screen", graphics_preferences->screen_mode.fill_the_screen);
+		fill_screen_w = new w_toggle("Fill the Screen", graphics_preferences->screen_mode.fill_the_screen);
 		d.add(fill_screen_w);
 	}
 	w_select_popup *gamma_w = new w_select_popup("Brightness");
 	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
 	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
 	d.add(gamma_w);
+	d.add(new w_spacer());
+	w_toggle *fullscreen_w = new w_toggle("Windowed Mode", !graphics_preferences->screen_mode.fullscreen);
+	d.add(fullscreen_w);
 
     d.add(new w_spacer());
     d.add(new w_button("RENDERING OPTIONS", rendering_options_dialog_demux, &d));
@@ -602,7 +603,7 @@ static void graphics_dialog(void *arg)
     if (d.run() == 0) {	// Accepted
 	    bool changed = false;
 	    
-	    bool fullscreen = fullscreen_w->get_selection() != 0;
+	    bool fullscreen = fullscreen_w->get_selection() == 0;
 	    if (fullscreen != graphics_preferences->screen_mode.fullscreen) {
 		    graphics_preferences->screen_mode.fullscreen = fullscreen;
 		    // This is the only setting that has an immediate effect
