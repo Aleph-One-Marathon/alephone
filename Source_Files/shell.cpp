@@ -725,9 +725,8 @@ static void handle_game_key(const SDL_Event &event)
 	}
 	else
 	{
-	  
-		switch (key) {
-		case SDLK_ESCAPE:   // (ZZZ) Quit gesture (now safer)
+		if (key == SDLK_ESCAPE) // (ZZZ) Quit gesture (now safer)
+		{
 			if(!player_controlling_game())
 				do_menu_item_command(mGame, iQuitGame, false);
 			else {
@@ -740,61 +739,58 @@ static void handle_game_key(const SDL_Event &event)
 					}
 				}
 			}
-			break;
-
-		case SDLK_PERIOD:		// Sound volume up
+		}
+		else if (key == input_preferences->shell_keycodes[_key_volume_up])
+		{
 			changed_prefs = SoundManager::instance()->AdjustVolumeUp(_snd_adjust_volume);
-			break;
-		case SDLK_COMMA:		// Sound volume down
+		}
+		else if (key == input_preferences->shell_keycodes[_key_volume_down])
+		{
 			changed_prefs = SoundManager::instance()->AdjustVolumeDown(_snd_adjust_volume);
-			break;
-
-		case SDLK_BACKSPACE:	// switch player view
+		}
+		else if (key == input_preferences->shell_keycodes[_key_switch_view])
+		{
 			walk_player_list();
 			render_screen(NONE);
-			break;
-
-		case SDLK_EQUALS:
+		}
+		else if (key == input_preferences->shell_keycodes[_key_zoom_in])
+		{
 			if (zoom_overhead_map_in())
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
-			break;
-		case SDLK_MINUS:
+		}
+		else if (key == input_preferences->shell_keycodes[_key_zoom_out])
+		{
 			if (zoom_overhead_map_out())
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
-			break;
-
-		case SDLK_LEFTBRACKET:
+		}
+		else if (key == input_preferences->shell_keycodes[_key_inventory_left])
+		{
 			if (player_controlling_game()) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				scroll_inventory(-1);
 			} else
 				decrement_replay_speed();
-			break;
-		case SDLK_RIGHTBRACKET:
+		}
+		else if (key == input_preferences->shell_keycodes[_key_inventory_right])
+		{
 			if (player_controlling_game()) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				scroll_inventory(1);
 			} else
 				increment_replay_speed();
-			break;
-
-		case SDLK_QUESTION: 
+		}
+		else if (key == input_preferences->shell_keycodes[_key_toggle_fps])
+		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			extern bool displaying_fps;
 			displaying_fps = !displaying_fps;
-			break;
-		case SDLK_SLASH:
-			if (event.key.keysym.mod & KMOD_SHIFT) {
-				PlayInterfaceButtonSound(Sound_ButtonSuccess());
-				extern bool displaying_fps;
-				displaying_fps = !displaying_fps;
-			}
-			break;
-		case SDLK_BACKSLASH:
+		}
+		else if (key == input_preferences->shell_keycodes[_key_activate_console])
+		{
 			if (game_is_networked) {
 #if !defined(DISABLE_NETWORKING)
 				Console::instance()->activate_input(InGameChatCallbacks::SendChatMessage, InGameChatCallbacks::prompt());
@@ -802,36 +798,36 @@ static void handle_game_key(const SDL_Event &event)
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
-			break;
-
-		case SDLK_F1:		// Decrease screen size
+		} 
+		else if (key == SDLK_F1) // Decrease screen size
+		{
 			if (graphics_preferences->screen_mode.size > 0) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.size--;
 				changed_screen_mode = changed_prefs = true;
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
-			break;
-
-		case SDLK_F2:		// Increase screen size
+		}
+		else if (key == SDLK_F2) // Increase screen size
+		{
 			if (graphics_preferences->screen_mode.size < NUMBER_OF_VIEW_SIZES - 1) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.size++;
 				changed_screen_mode = changed_prefs = true;
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
-			break;
-
-		case SDLK_F3:		// Resolution toggle
+		}
+		else if (key == SDLK_F3) // Resolution toggle
+		{
 			if (!OGL_IsActive()) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.high_resolution = !graphics_preferences->screen_mode.high_resolution;
 				changed_screen_mode = changed_prefs = true;
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
-			break;
-
-		case SDLK_F4:		// Reset OpenGL textures
+		}
+		else if (key == SDLK_F4)		// Reset OpenGL textures
+		{
 #ifdef HAVE_OPENGL
 			if (OGL_IsActive()) {
 				// Play the button sound in advance to get the full effect of the sound
@@ -840,44 +836,44 @@ static void handle_game_key(const SDL_Event &event)
 			} else
 #endif
 				PlayInterfaceButtonSound(Sound_ButtonInoperative());
-			break;
-
-		case SDLK_F5:		// Make the chase cam switch sides
+		}
+		else if (key == SDLK_F5) // Make the chase cam switch sides
+		{
 			if (ChaseCam_IsActive())
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			else
 				PlayInterfaceButtonSound(Sound_ButtonInoperative());
 			ChaseCam_SwitchSides();
-			break;
-
-		case SDLK_F6:		// Toggle the chase cam
+		}
+		else if (key == SDLK_F6) // Toggle the chase cam
+		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			ChaseCam_SetActive(!ChaseCam_IsActive());
-			break;
-
-		case SDLK_F7:		// Toggle tunnel vision
+		}
+		else if (key == SDLK_F7) // Toggle tunnel vision
+		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			SetTunnelVision(!GetTunnelVision());
-			break;
-
-		case SDLK_F8:		// Toggle the crosshairs
+		}
+		else if (key == SDLK_F8) // Toggle the crosshairs
+		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			Crosshairs_SetActive(!Crosshairs_IsActive());
-			break;
-
-		case SDLK_F9:		// Screen dump
+		}
+		else if (key == SDLK_F9) // Screen dump
+		{
 			dump_screen();
-			break;
-
-		case SDLK_F10:		// Toggle the position display
+		}
+		else if (key == SDLK_F10) // Toggle the position display
+		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
 			{
 				extern bool ShowPosition;
 				ShowPosition = !ShowPosition;
 			}
-			break;
-
-		case SDLK_F11:		// Decrease gamma level
+		}
+		else if (key == SDLK_F11) // Decrease gamma level
+		{
 			if (graphics_preferences->screen_mode.gamma_level) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.gamma_level--;
@@ -885,9 +881,9 @@ static void handle_game_key(const SDL_Event &event)
 				changed_prefs = true;
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
-			break;
-
-		case SDLK_F12:		// Increase gamma level
+		}
+		else if (key == SDLK_F12) // Increase gamma level
+		{
 			if (graphics_preferences->screen_mode.gamma_level < NUMBER_OF_GAMMA_LEVELS - 1) {
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
 				graphics_preferences->screen_mode.gamma_level++;
@@ -895,15 +891,14 @@ static void handle_game_key(const SDL_Event &event)
 				changed_prefs = true;
 			} else
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
-			break;
-
-		default:
+		}
+		else
+		{
 			if (get_game_controller() == _demo)
 				set_game_state(_close_game);
-			break;
 		}
 	}
-
+	
 	if (changed_screen_mode) {
 		screen_mode_data temp_screen_mode = graphics_preferences->screen_mode;
 		temp_screen_mode.fullscreen = get_screen_mode()->fullscreen;

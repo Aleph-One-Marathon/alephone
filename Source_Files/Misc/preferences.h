@@ -156,6 +156,20 @@ enum {
 	_inputmod_dont_auto_recenter = 0x0020   // ZZZ addition
 };
 
+// shell keys
+enum {
+	_key_inventory_left,
+	_key_inventory_right,
+	_key_switch_view,
+	_key_volume_up,
+	_key_volume_down,
+	_key_zoom_in,
+	_key_zoom_out,
+	_key_toggle_fps,
+	_key_activate_console,
+	NUMBER_OF_SHELL_KEYS
+};
+
 #define MAX_BUTTONS 5
 struct input_preferences_data
 {
@@ -170,6 +184,7 @@ struct input_preferences_data
 	bool mouse_acceleration;
 	// mouse button actions
 	int16 mouse_button_actions[MAX_BUTTONS];
+	int16 shell_keycodes[NUMBER_OF_SHELL_KEYS];
 };
 
 // mouse button action types

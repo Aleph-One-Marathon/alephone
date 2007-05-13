@@ -1132,6 +1132,10 @@ static const char *action_name[NUM_KEYS] = {
 	"Action", "Auto Map", "Microphone"
 };
 
+static const char *shell_action_name[NUMBER_OF_SHELL_KEYS] = {
+	"Inventory Left", "Inventory Right", "Switch Player View", "Volume Up", "Volume Down", "Zoom Map In", "Zoom Map Out", "Toggle FPS", "Chat/Console"
+};
+
 static SDLKey default_keys[NUM_KEYS] = {
 	SDLK_KP8, SDLK_KP5, SDLK_KP4, SDLK_KP6,		// moving/turning
 	SDLK_z, SDLK_x,								// sidestepping
@@ -1158,9 +1162,14 @@ static SDLKey default_mouse_keys[NUM_KEYS] = {
     SDLK_BACKQUOTE                              // microphone (ZZZ)
 };
 
+static SDLKey default_shell_keys[NUMBER_OF_SHELL_KEYS] = {
+	SDLK_LEFTBRACKET, SDLK_RIGHTBRACKET, SDLK_BACKSPACE, SDLK_PERIOD, SDLK_COMMA, SDLK_EQUALS, SDLK_MINUS, SDLK_SLASH, SDLK_BACKSLASH
+};
+
 class w_prefs_key;
 
 static w_prefs_key *key_w[NUM_KEYS];
+static w_prefs_key *shell_key_w[NUMBER_OF_SHELL_KEYS];
 
 class w_prefs_key : public w_key {
 public:
@@ -1171,42 +1180,24 @@ public:
 		// Key used for in-game function?
 		int error = NONE;
 		switch (new_key) {
-			case SDLK_PERIOD:		// Sound volume up/down
-			case SDLK_COMMA:
-				error = keyIsUsedForSound;
-				break;
-
-			case SDLK_EQUALS:		// Map zoom
-			case SDLK_MINUS:
-				error = keyIsUsedForMapZooming;
-				break;
-
-			case SDLK_LEFTBRACKET:	// Inventory scrolling
-			case SDLK_RIGHTBRACKET:
-				error = keyIsUsedForScrolling;
-				break;
-
-			case SDLK_BACKSPACE:
-			case SDLK_BACKSLASH:
-		case SDLK_QUESTION:
-			case SDLK_F1:
-			case SDLK_F2:
-			case SDLK_F3:
-			case SDLK_F4:
-			case SDLK_F5:
-			case SDLK_F6:
-			case SDLK_F7:
-			case SDLK_F8:
-			case SDLK_F9:
-			case SDLK_F10:
-			case SDLK_F11:
-			case SDLK_F12:
-            case SDLK_ESCAPE: // (ZZZ: for quitting)
-				error = keyIsUsedAlready;
-				break;
-
-			default:
-				break;
+		case SDLK_F1:
+		case SDLK_F2:
+		case SDLK_F3:
+		case SDLK_F4:
+		case SDLK_F5:
+		case SDLK_F6:
+		case SDLK_F7:
+		case SDLK_F8:
+		case SDLK_F9:
+		case SDLK_F10:
+		case SDLK_F11:
+		case SDLK_F12:
+		case SDLK_ESCAPE: // (ZZZ: for quitting)
+			error = keyIsUsedAlready;
+			break;
+			
+		default:
+			break;
 		}
 		if (new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 3) || new_key == SDLKey(SDLK_BASE_MOUSE_BUTTON + 4))
 		{
@@ -1228,6 +1219,13 @@ public:
 				key_w[i]->dirty = true;
 			}
 		}
+
+		for (int i =0; i < NUMBER_OF_SHELL_KEYS; i++) {
+			if (shell_key_w[i] && shell_key_w[i] != this && shell_key_w[i]->get_key() == new_key) {
+				shell_key_w[i]->set_key(SDLK_UNKNOWN);
+				shell_key_w[i]->dirty = true;
+			}
+		}
 	}
 };
 
@@ -1238,8 +1236,17 @@ static void load_default_keys(void *arg)
 	SDLKey *keys = (mouse_w->get_selection() ? default_mouse_keys : default_keys);
 	for (int i=0; i<NUM_KEYS; i++)
 		key_w[i]->set_key(keys[i]);
+
+	for (int i=0; i<NUMBER_OF_SHELL_KEYS;i++)
+		shell_key_w[i]->set_key(default_shell_keys[i]);
 	d->draw();
 }
+
+enum {
+	KEYBOARD_TABS,
+	TAB_KEYS,
+	TAB_MORE_KEYS
+};
 
 static void keyboard_dialog(void *arg)
 {
@@ -1250,11 +1257,31 @@ static void keyboard_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	d.add(new w_static_text("CONFIGURE KEYBOARD", TITLE_FONT, TITLE_COLOR));
+	vector<string> tab_strings;
+	tab_strings.push_back ("KEYS");
+	tab_strings.push_back ("MORE KEYS");
+	make_tab_buttons_for_dialog(d, tab_strings, KEYBOARD_TABS);
+	d.set_active_tab(TAB_KEYS);
+
 	d.add(new w_spacer());
-	for (int i=0; i<NUM_KEYS; i++) {
+	for (int i=0; i<19; i++)
+	{
 		key_w[i] = new w_prefs_key(action_name[i], SDLKey(input_preferences->keycodes[i]));
-		d.add(key_w[i]);
+		d.add_to_tab(key_w[i], TAB_KEYS);
 	}
+
+	for (int i=19; i<NUM_KEYS; i++) {
+		key_w[i] = new w_prefs_key(action_name[i], SDLKey(input_preferences->keycodes[i]));
+		d.add_to_tab(key_w[i],TAB_MORE_KEYS);
+	}
+
+	d.add_to_tab(new w_spacer(), TAB_MORE_KEYS);
+
+	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
+		shell_key_w[i] = new w_prefs_key(shell_action_name[i], SDLKey(input_preferences->shell_keycodes[i]));
+		d.add_to_tab(shell_key_w[i], TAB_MORE_KEYS);
+	}
+
 	d.add(new w_spacer());
 	d.add(new w_button("DEFAULTS", load_default_keys, &d));
 	d.add(new w_spacer());
@@ -1272,6 +1299,14 @@ static void keyboard_dialog(void *arg)
 			SDLKey key = key_w[i]->get_key();
 			if (key != input_preferences->keycodes[i]) {
 				input_preferences->keycodes[i] = short(key);
+				changed = true;
+			}
+		}
+
+		for (int i=0; i<NUMBER_OF_SHELL_KEYS;i++) {
+			SDLKey key = shell_key_w[i]->get_key();
+			if (key != input_preferences->shell_keycodes[i]) {
+				input_preferences->shell_keycodes[i] = short(key);
 				changed = true;
 			}
 		}
@@ -1686,6 +1721,9 @@ void write_preferences(
 		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
 			k,input_preferences->keycodes[k]);
 #endif
+	for (int k=0; k<NUMBER_OF_SHELL_KEYS;k++)
+		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
+			k + NUMBER_OF_KEYS, input_preferences->shell_keycodes[k]);
 	fprintf(F,"</input>\n\n");
 	
 	fprintf(F,"<sound\n");
@@ -1927,6 +1965,10 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->input_device= _keyboard_or_game_pad;
 #endif
 	set_default_keys(preferences->keycodes, _standard_keyboard_setup);
+	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++)
+	{
+		preferences->shell_keycodes[i] = default_shell_keys[i];
+	}
 	
 	// LP addition: set up defaults for modifiers:
 	// interchange run and walk, but don't interchange swim and sink.
@@ -2912,7 +2954,7 @@ bool XML_KeyPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_KEYS-1))
+		if (ReadBoundedInt16Value(Value,Index,0,NUMBER_OF_KEYS+NUMBER_OF_SHELL_KEYS-1))
 		{
 			IndexPresent = true;
 			return true;
@@ -2939,8 +2981,10 @@ bool XML_KeyPrefsParser::AttributesDone()
 		AttribsMissing();
 		return false;
 	}
-	
-	input_preferences->keycodes[Index] = KeyVal;
+	if (Index >= NUMBER_OF_KEYS)
+		input_preferences->shell_keycodes[Index - NUMBER_OF_KEYS] = KeyVal;
+	else
+		input_preferences->keycodes[Index] = KeyVal;
 			
 	return true;
 }
