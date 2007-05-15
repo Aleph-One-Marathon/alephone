@@ -18,6 +18,7 @@ AC_ARG_ENABLE(opengl, [  --enable-opengl         use OpenGL for rendering [defau
 AC_ARG_ENABLE(mad, [  --enable-mad            use libmad for mp3 playback [default=yes]], , enable_mad=yes)
 AC_ARG_ENABLE(sndfile, [  --enable-sndfile        use libsndfile for decoding audio files [default=yes]], , enable_sndfile=yes)
 AC_ARG_ENABLE(vorbis, [  --enable-vorbis         enable ogg/vorbis music playback [default=yes]], , enable_vorbis=yes)
+AC_ARG_ENABLE(lua, [ --enable-lua           use built-in Lua scripting [default=yes]], , enable_lua=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -123,31 +124,8 @@ AC_CHECK_HEADERS([vorbis/vorbisfile.h], [
 ])
 fi
 
-dnl Check for Lua.
-AC_ARG_VAR(LUA_CFLAGS,    [C compiler flags for Lua])
-AC_ARG_VAR(LUA_LIBS,      [linker flags for Lua])
-AC_ARG_VAR(LUALIB_CFLAGS, [C compiler flags for Lualib])
-AC_ARG_VAR(LUALIB_LIBS,   [linker flags for Lualib])
-if test "x$LUA_CFLAGS" = x && test "x$LUA_LIBS" = x \
-  && test "x$LUALIB_CFLAGS" = x && test "x$LUALIB_LIBS" = x
-then
-  AC_CHECK_HEADERS(lua.h, [
-    AC_CHECK_HEADERS(lualib.h, [
-      AC_CHECK_LIB(lua, lua_open, [
-        AC_CHECK_LIB(lualib, luaL_loadbuffer, [
-          LIBS="-llua -llualib $LIBS"
-          AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
-        ], [], [-llua])
-      ])
-    ])
-  ])
-else
-  AC_MSG_NOTICE(Using user-specified CFLAGS and LIBS for Lua)
-  CXXFLAGS="$CXXFLAGS $LUA_CFLAGS $LUALIB_CFLAGS"
-  LIBS="$LIBS $LUA_LIBS $LUALIB_LIBS"
-  AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
-  AC_DEFINE(HAVE_LUA_H, 1, [Assuming <lua.h> is present])
-  AC_DEFINE(HAVE_LUALIB_H, 1, [Assuing <lualib.h> is present])
+if [[ "x$enable_lua" = "xyes" ]]; then
+AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
 fi
 
 dnl Check for Speex
