@@ -32,6 +32,9 @@ bool LoadLuaScript(const char *buffer, size_t len);
 bool RunLuaScript();
 void CloseLuaScript();
 
+void ToggleLuaMute();
+void ResetLuaMute();
+
 bool UseLuaCameras();
 
 ActionQueues* GetLuaActionQueues();

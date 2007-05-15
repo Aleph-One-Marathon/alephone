@@ -249,6 +249,13 @@ struct ignore_player {
 	}
 };
 
+struct ignore_lua
+{
+	void operator()(const std::string&) const {
+		ToggleLuaMute();
+	}
+};
+
 // ZZZ note: very few folks touch the streaming data, so the data-format issues outlined above with
 // datagrams (the data from which are passed around, interpreted, and touched by many functions)
 // don't matter as much.  Do observe, though, that users of the "distribution" mechanism will have
@@ -1145,8 +1152,12 @@ bool NetEnter(void)
 	sIgnoredPlayers.clear();
 	CommandParser IgnoreParser;
 	IgnoreParser.register_command("player", ignore_player());
+
+	ResetLuaMute();
+	IgnoreParser.register_command("lua", ignore_lua());
+
 	Console::instance()->register_command("ignore", IgnoreParser);
-  
+
 	next_join_attempt = machine_tick_count();
   
 	if (error) {
@@ -1235,6 +1246,7 @@ void NetExit(
 	#endif
 
 	Console::instance()->unregister_command("ping");
+	Console::instance()->unregister_command("ignore");
   
 	NetDDPClose();
 

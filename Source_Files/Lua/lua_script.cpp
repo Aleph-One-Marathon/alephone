@@ -128,12 +128,17 @@ bool RunLuaScript() {
 }
 void CloseLuaScript() {}
 
+void ToggleLuaMute() {}
+void ResetLuaMute() {}
+
 bool UseLuaCameras() { return false; }
 
 #else /* HAVE_LUA */
 
 // LP: used by several functions here
 const float AngleConvert = 360/float(FULL_CIRCLE);
+
+static bool mute_lua = false;
 
 // Steal all this stuff
 extern bool ready_weapon(short player_index, short weapon_index);
@@ -255,7 +260,7 @@ static void OpenStdLibs(lua_State* l)
 static void
 L_Error(const char* inMessage)
 {
-	screen_printf("%s", inMessage);
+	if (!mute_lua) screen_printf("%s", inMessage);
 	logError(inMessage);
 }
 
@@ -562,9 +567,9 @@ static int L_Screen_Print(lua_State *L)
 		int player_index = static_cast<int>(lua_tonumber(L,1));
 		if (local_player_index != player_index)
 			return 0;
-		screen_printf("%s", lua_tostring(L, 2));
+		if (!mute_lua) screen_printf("%s", lua_tostring(L, 2));
 	} else {
-		screen_printf("%s", lua_tostring(L, 1));
+		if (!mute_lua) screen_printf("%s", lua_tostring(L, 1));
 	}
 
 	return 0;
@@ -5192,6 +5197,24 @@ void CloseLuaScript()
 	number_of_cameras = 0;
 	
 	sLuaNetscriptLoaded = false;
+}
+
+void ToggleLuaMute()
+{
+	mute_lua = !mute_lua;
+	if (mute_lua)
+	{
+		screen_printf("adding Lua messages to the ignore list");
+	} 
+	else
+	{
+		screen_printf("removing Lua messages from the ignore list");
+	}
+}
+
+void ResetLuaMute()
+{
+	mute_lua = false;
 }
 
 bool UseLuaCameras()
