@@ -908,8 +908,8 @@ static bool make_up_flags_for_first_incomplete_tick()
 				motionFlags = sLastFlagsReceived[i] & (_moving | _sidestepping);
 				if (local_random() % 10 > 8) sLastFlagsReceived[i] = 0;
 			}
-			getFlagsQueue(i).enqueue(motionFlags);
 			sPlayerReflectedFlags[sSmallestIncompleteTick] |= (1 << i);
+			getFlagsQueue(i).enqueue(motionFlags);
 		}
 	}
 	sPlayerDataDisposition[sSmallestIncompleteTick] = sConnectedPlayersBitmask;
