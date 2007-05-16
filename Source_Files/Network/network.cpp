@@ -424,7 +424,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 			return false;
 		} else if (capabilities[Capabilities::kStar] < Capabilities::kStarVersion) {
 			if (warn_joiner) {
-				ServerWarningMessage serverWarningMessage("The gatherer is using a newer version of Aleph One than you. You will not appear in the list of available players.", ServerWarningMessage::kJoinerUngatherable);
+				ServerWarningMessage serverWarningMessage("The gatherer is using a preview version of Aleph One. You will not appear in the list of available players.", ServerWarningMessage::kJoinerUngatherable);
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 			return false;

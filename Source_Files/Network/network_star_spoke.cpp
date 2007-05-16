@@ -408,7 +408,11 @@ spoke_received_network_packet(DDPPacketBufferPtr inPacket)
 		uint16 thePacketCRC;
 		ps >> thePacketCRC;
 
-		if (thePacketCRC != calculate_data_crc_ccitt(&inPacket->datagramData[kStarPacketHeaderSize], inPacket->datagramSize - kStarPacketHeaderSize))
+		// blank out the CRC field before calculating
+		inPacket->datagramData[2] = 0;
+		inPacket->datagramData[3] = 0;
+
+		if (thePacketCRC != calculate_data_crc_ccitt(inPacket->datagramData, inPacket->datagramSize))
 		{
 			logWarningNMT1("CRC failure; discarding packet type %i", thePacketMagic);
 			return;
@@ -988,7 +992,12 @@ send_packet()
 
 		logDumpNMT3("preparing to send packet: ACK %d, flags [%d,%d)", sSmallestUnreceivedTick, sOutgoingFlags.getReadTick(), sOutgoingFlags.getWriteTick());
 
-		hdr << calculate_data_crc_ccitt(&sOutgoingFrame->data[kStarPacketHeaderSize], ps.tellp() - kStarPacketHeaderSize);
+		// blank out the CRC before calculating it
+		sOutgoingFrame->data[2] = 0;
+		sOutgoingFrame->data[3] = 0;
+
+		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ps.tellp());
+		hdr << crc;
 
                 // Send the packet
                 sOutgoingFrame->data_size = ps.tellp();
@@ -1019,7 +1028,12 @@ send_identification_packet()
                 // ID
                 ps << (uint16)sLocalPlayerIndex;
 
-		hdr << calculate_data_crc_ccitt(&sOutgoingFrame->data[kStarPacketHeaderSize], ps.tellp() - kStarPacketHeaderSize);
+		// blank out the CRC field before calculating
+		sOutgoingFrame->data[2] = 0;
+		sOutgoingFrame->data[3] = 0;
+
+		uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ps.tellp());
+		hdr << crc;
 
                 // Send the packet
                 sOutgoingFrame->data_size = ps.tellp();
