@@ -1338,6 +1338,7 @@ send_packets()
 				sOutgoingFrame->data[3] = 0;
 
 				uint16 crc = calculate_data_crc_ccitt(sOutgoingFrame->data, ps.tellp());
+				hdr << crc;
         
                                 // Send the packet
                                 sOutgoingFrame->data_size = ps.tellp();
