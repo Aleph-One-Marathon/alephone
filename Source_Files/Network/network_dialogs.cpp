@@ -367,6 +367,7 @@ bool GatherDialog::player_search (prospective_joiner_info& player)
 
 bool GatherDialog::gathered_player (const prospective_joiner_info& player)
 {
+	if (NetGetNumberOfPlayers() >= MAXIMUM_NUMBER_OF_PLAYERS) return false;
 	int theGatherPlayerResult = NetGatherPlayer(player, reassign_player_colors);
 	
 	if (theGatherPlayerResult != kGatherPlayerFailed) {
