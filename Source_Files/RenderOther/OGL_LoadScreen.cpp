@@ -122,11 +122,14 @@ void OGL_LoadScreen::Stop()
 void OGL_LoadScreen::Progress(const int progress)
 {
 
+	OGL_ClearScreen();
+
 	blitter->SetupMatrix();
 	blitter->Draw();
 
 	if (useProgress) 
 	{
+
 		// draw the progress bar background
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glColor3us(colors[0].red, colors[0].green, colors[0].blue);
@@ -191,6 +194,10 @@ void OGL_LoadScreen::Set(const vector<char> Path, bool Stretch, short X, short Y
 
 void OGL_LoadScreen::Clear()
 {
+	OGL_ClearScreen();
+	OGL_SwapBuffers();
+	OGL_ClearScreen();
+
 	use = false;
 	useProgress = false;
 	path.clear();
