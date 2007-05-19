@@ -713,11 +713,17 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 	}
 	else if (dynamic_world->speaking_player_index == local_player_index)
 	{
-		status = "all";
+		if (GET_GAME_OPTIONS() & _force_unique_teams)
+			status = "all";
+		else
+			status = "team";
 		icon = "<!>";
 
 		player_data *player = get_player_data(dynamic_world->speaking_player_index);
-		_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &iconColor);
+		if (GET_GAME_OPTIONS() & _force_unique_teams)
+			_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &iconColor);
+		else
+			_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->team, &iconColor);
 	} 
 	else if (dynamic_world->speaking_player_index != NONE)
 	{
@@ -729,7 +735,11 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 	}
 
 	FontSpecifier& Font = GetOnScreenFont();
-	short Y = s->h - Font.LineSpacing * 4 / 3;
+	short Y = s->h - Font.LineSpacing / 3;
+	if (Console::instance()->input_active())
+	{
+		Y -= Font.LineSpacing;
+	}
 	short Xicon = s->w - DisplayTextWidth(icon.c_str()) - Font.LineSpacing / 3;
 	short Xstatus = Xicon - DisplayTextWidth(" ") - DisplayTextWidth(status.c_str());
 

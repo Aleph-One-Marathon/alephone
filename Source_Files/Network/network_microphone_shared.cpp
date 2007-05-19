@@ -48,6 +48,8 @@
 #include "network_speex.h"
 #endif
 
+#include "map.h" // _force_unique_teams!
+
 using namespace std;
 
 #ifdef DEBUG
@@ -203,7 +205,7 @@ send_audio_data(void* inData, short inSize) {
 #include "network_sound.h"
     received_network_audio_proc(inData, inSize, 0);
 #else
-    NetDistributeInformation(kNewNetworkAudioDistributionTypeID, inData, inSize, false);
+    NetDistributeInformation(kNewNetworkAudioDistributionTypeID, inData, inSize, false, !(GET_GAME_OPTIONS() & _force_unique_teams));
 #endif
 }
 

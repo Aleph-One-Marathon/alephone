@@ -270,7 +270,7 @@ void display_net_game_stats(void);
 // passed along but ignored.  Uses an STL 'map' so ID's need not be consecutive or in any particular
 // sub-range.
 void NetAddDistributionFunction(int16 type, NetDistributionProc proc, bool lossy);
-void NetDistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self);
+void NetDistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self, bool send_only_to_team = false);
 void NetRemoveDistributionFunction(short type);
 
 // disable "cheats"

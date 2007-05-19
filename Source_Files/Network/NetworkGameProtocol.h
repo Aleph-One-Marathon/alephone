@@ -35,7 +35,7 @@ public:
 	virtual bool	Enter(short* inNetStatePtr) = 0;
 	virtual void	Exit1() = 0;
 	virtual void	Exit2() = 0;
-	virtual void	DistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self) = 0;
+	virtual void	DistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self, bool only_send_to_team) = 0;
 	virtual bool	Sync(NetTopology* inTopology, int32 inSmallestGameTick, size_t inLocalPlayerIndex, size_t inServerPlayerIndex) = 0;
 	virtual bool	UnSync(bool inGraceful, int32 inSmallestPostgameTick) = 0;
 	virtual int32	GetNetTime() = 0;

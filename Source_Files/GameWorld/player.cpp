@@ -672,7 +672,11 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 			{
 				if (dynamic_world->speaking_player_index==NONE)
 				{
-					dynamic_world->speaking_player_index= player_index;
+					if (GET_GAME_OPTIONS() & _force_unique_teams || (get_player_data(player_index)->team == get_player_data(local_player_index)->team))
+					{
+						dynamic_world->speaking_player_index= player_index;
+					} 
+
 					if (player_index==local_player_index) set_interface_microphone_recording_state(true);
 				}
 			}

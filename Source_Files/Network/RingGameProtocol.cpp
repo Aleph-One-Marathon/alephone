@@ -812,7 +812,8 @@ RingGameProtocol::DistributeInformation(
 			      short type,
 			      void *buffer,
 			      short buffer_size,
-			      bool send_to_self)
+			      bool send_to_self,
+	bool)
 {
 	NetDistributionPacket 		distribution_header;
         NetDistributionPacket_NET	distribution_header_NET;

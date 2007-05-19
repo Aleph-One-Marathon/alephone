@@ -1311,9 +1311,10 @@ void NetDistributeInformation(
                               short type,
                               void *buffer,
                               short buffer_size,
-                              bool send_to_self)
+                              bool send_to_self,
+	bool only_send_to_team)
 {
-	sCurrentGameProtocol->DistributeInformation(type, buffer, buffer_size, send_to_self);
+	sCurrentGameProtocol->DistributeInformation(type, buffer, buffer_size, send_to_self, only_send_to_team);
 }
 
 

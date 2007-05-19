@@ -331,13 +331,33 @@ spoke_get_net_time()
 
 
 void
-spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistributionType, byte* inBytes, uint16 inLength, bool inExcludeLocalPlayer)
+spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistributionType, byte* inBytes, uint16 inLength, bool inExcludeLocalPlayer, bool onlySendToTeam)
 {
+
+	int16 local_team;
+	if (onlySendToTeam)
+	{
+		player_info* player = (player_info *)NetGetPlayerData(sLocalPlayerIndex);
+		local_team = player->team;
+	}
+
 	uint32 theDestinations = 0;
 	for(size_t i = 0; i < sNetworkPlayers.size(); i++)
 	{
 		if((i != sLocalPlayerIndex || !inExcludeLocalPlayer) && !sNetworkPlayers[i].mZombie && sNetworkPlayers[i].mConnected)
-			theDestinations |= (((uint32)1) << i);
+		{
+			if (onlySendToTeam)
+			{
+				player_info* player = (player_info *)NetGetPlayerData(i);
+				if (player->team == local_team) 
+					theDestinations |= (((uint32)1) << i);
+				
+			}
+			else
+			{
+				theDestinations |= (((uint32)1) << i);
+			}
+		}
 	}
 
 	spoke_distribute_lossy_streaming_bytes(inDistributionType, theDestinations, inBytes, inLength);

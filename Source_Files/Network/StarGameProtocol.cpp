@@ -90,11 +90,11 @@ StarGameProtocol::Exit2()
 
 
 void
-StarGameProtocol::DistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self)
+StarGameProtocol::DistributeInformation(short type, void *buffer, short buffer_size, bool send_to_self, bool only_send_to_team)
 {
 	const NetDistributionInfo* theInfo = NetGetDistributionInfoForType(type);
 	if(theInfo != NULL && theInfo->lossy)
-		spoke_distribute_lossy_streaming_bytes_to_everyone(type, static_cast<byte*>(buffer), buffer_size, !send_to_self);
+		spoke_distribute_lossy_streaming_bytes_to_everyone(type, static_cast<byte*>(buffer), buffer_size, !send_to_self, only_send_to_team);
 }
 
 

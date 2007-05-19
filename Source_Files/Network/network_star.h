@@ -77,7 +77,7 @@ extern void spoke_cleanup(bool inGraceful);
 extern void spoke_received_network_packet(DDPPacketBufferPtr inPacket);
 extern int32 spoke_get_net_time();
 // "Distribute to everyone" helps to match the existing (legacy) interfaces etc.
-extern void spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistributionType, byte* inBytes, uint16 inLength, bool inExcludeLocalPlayer);
+extern void spoke_distribute_lossy_streaming_bytes_to_everyone(int16 inDistributionType, byte* inBytes, uint16 inLength, bool inExcludeLocalPlayer, bool onlySendToTeam);
 // distribute_lossy_streaming_bytes offers a more direct interface (not yet used) to star's lossy
 //	distribution mechanism.  (e.g., can select certain recipients, send unregistered dist types, etc.)
 extern void spoke_distribute_lossy_streaming_bytes(int16 inDistributionType, uint32 inDestinationsBitmask, byte* inBytes, uint16 inLength);
