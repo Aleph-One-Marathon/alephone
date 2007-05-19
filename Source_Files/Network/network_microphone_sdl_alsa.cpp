@@ -71,12 +71,13 @@ open_network_microphone() {
 #else
 	format = SND_PCM_FORMAT_S16_BE;
 #endif
+
 	if ((err = snd_pcm_hw_params_set_format(capture_handle, hw_params, format)) < 0) {
 		fprintf(stderr, "snd_pcm_hw_params_set_format\n");
 		return -1;
 	}
 
-	unsigned int rate = 11025;
+	unsigned int rate = 8000;
 	if ((err = snd_pcm_hw_params_set_rate_near(capture_handle, hw_params, &rate, 0)) < 0) {
 		fprintf(stderr, "snd_pcm_hw_params_set_rate_near\n");
 		return -1;
@@ -155,7 +156,7 @@ void CaptureCallback(snd_async_handler_t *)
 {
 	snd_pcm_sframes_t avail = snd_pcm_avail_update(capture_handle);
 	while (avail >= frames) {
-		static uint8 buffer[8192];
+		static uint8 buffer[16384];
 		int frames_read = snd_pcm_readi(capture_handle, buffer, frames);
 		if (frames_read == -EPIPE) {
 			snd_pcm_prepare(capture_handle);

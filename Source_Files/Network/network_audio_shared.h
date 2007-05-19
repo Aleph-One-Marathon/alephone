@@ -56,7 +56,7 @@ enum {
 const bool  kNetworkAudioIsStereo       = false;
 const bool  kNetworkAudioIs16Bit        = true;
 const bool  kNetworkAudioIsSigned8Bit   = false;
-const int   kNetworkAudioSampleRate     = 11025;
+const int   kNetworkAudioSampleRate     = 8000;
 const int   kNetworkAudioBytesPerFrame  = (kNetworkAudioIs16Bit ? 2 : 1) * (kNetworkAudioIsStereo ? 2 : 1);
 
 #endif // NETWORK_AUDIO_SHARED_H

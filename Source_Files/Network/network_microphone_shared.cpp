@@ -55,45 +55,31 @@ using namespace std;
 //#define MICROPHONE_LOCAL_LOOPBACK
 #endif
 
-
 enum {
-    kNetworkAudioDataBytesPerPacket = 1024, // this is meaningless in speex
-    kNetworkAudioBytesPerSample = 1,
-    kNetworkAudioSamplesPerPacket = kNetworkAudioDataBytesPerPacket / kNetworkAudioBytesPerSample
+	kNetworkAudioSamplesPerPacket = 800,
 };
 
+static uint32 sSamplesPerSecond = 0;
+static uint32 sStereo = false;
+static uint32 s16Bit = false;
+static int32 sCaptureBytesPerPacket = 0;
+static uint32 sNumberOfBytesPerSample = 0;
 
+static _fixed rate = 0;
+static _fixed counter = 0;
 
-// These describe the microphone's capture format characteristics.
-static  int	sNumberOfBytesPerSample = 0;
-static	bool	sStereo			= false;
-static	bool	s16Bit			= false;
-static	uint32	sSamplesPerSecond	= 0;	
-static	uint32	sCaptureStride		= 0;
-static	uint32	sCaptureBytesPerNetworkAudioByte	= 0;
-static	uint32	sCaptureBytesPerPacket	= 0;
+bool announce_microphone_capture_format(uint32 inSamplesPerSecond, bool inStereo, bool in16Bit) 
+{
+	sSamplesPerSecond = inSamplesPerSecond;
+	sStereo = inStereo;
+	s16Bit = in16Bit;
+	
+	rate = (_fixed) (FIXED_ONE * (float) inSamplesPerSecond / (float) kNetworkAudioSampleRate);
+	counter = 0;
 
-
-
-bool
-announce_microphone_capture_format(uint32 inSamplesPerSecond, bool inStereo, bool in16Bit) {
-    sSamplesPerSecond		= inSamplesPerSecond;
-    sStereo			= inStereo;
-    s16Bit			= in16Bit;
-    sNumberOfBytesPerSample	= (sStereo ? 2 : 1) * (s16Bit ? 2 : 1);
-    sCaptureStride		= (sSamplesPerSecond / kNetworkAudioSampleRate) * (sStereo ? 2 : 1);
-    sCaptureBytesPerNetworkAudioByte = (sSamplesPerSecond / kNetworkAudioSampleRate) * sNumberOfBytesPerSample / kNetworkAudioBytesPerSample;
-    sCaptureBytesPerPacket	= kNetworkAudioDataBytesPerPacket * sCaptureBytesPerNetworkAudioByte;
-    
-    if(sCaptureStride <= 0)
-        return false;
-    
-    if(sNumberOfBytesPerSample < kNetworkAudioBytesPerSample)
-        return false;
-    
-    return true;
-}
-
+	sNumberOfBytesPerSample = (inStereo ? 2 : 1) * (in16Bit ? 2 : 1);
+	sCaptureBytesPerPacket = (uint32) ((rate * kNetworkAudioSamplesPerPacket) >> 16) * sNumberOfBytesPerSample;
+};
 
 
 int32
@@ -104,118 +90,112 @@ get_capture_byte_count_per_packet() {
     return sCaptureBytesPerPacket;
 }
 
-
+template<bool stereo, bool sixteenBit>
+inline int16 getSample(void *data)
+{
+	if (sixteenBit)
+	{
+		if (stereo)
+		{
+			return ((int16 *) data)[0] >> 1 + ((int16 *)data)[1] >> 1;
+		}
+		else
+		{
+			return ((int16 *) data)[0];
+		}
+	}
+	else
+	{
+		if (stereo)
+		{
+			return ((((uint8 *) data)[0] / 2 + ((uint8 *) data)[1] / 2) - 128) << 8;
+		}
+		else
+		{
+			return (((uint8 *) data)[0] - 128) << 8;
+		}
+	}
+}
 
 #ifdef SPEEX
-int32 copy_and_speex_encode(uint8* outStorage, void* inStorage, int32 inCount, int32 inAmountOfNetworkStorage) {
+template <bool stereo, bool sixteenBit>
+int32 copy_and_speex_encode_template(uint8* outStorage, void* inStorage, int32 inCount)
+{
+	static int16 frame[160];
+	static int storedSamples = 0;
+	int bytesWritten = 0;
 
-    static float storedFrame[160];
-    static int storedSamples = 0;
-    int bytesWritten = 0;
-    float frame[160];
-	if (inCount + storedSamples < 160) {
-		// not enough to encode a frame; add the data to storedFrame
-	    while (inCount > 0) {
-		    if (s16Bit) {
-			    if (sStereo) {
-				    // downmix to mono
-					storedFrame[storedSamples] = (((int16 *) inStorage)[0] + ((int16 *) inStorage)[1]) / 2.0;
-			    } else {
-			       storedFrame[storedSamples] = *((int16  *) inStorage);
-			    }
-			    inStorage = static_cast<int16*>(inStorage) + sCaptureStride;
-		   } else {
-		       if (sStereo) {
-		          storedFrame[storedSamples] = ((int16) ((((uint8 *)inStorage)[0] + ((uint8 *)inStorage)[1]) / 2) - 128) << 8;
-		      } else {
-		          storedFrame[storedSamples] = ((int16) (*((uint8 *)inStorage) - 128)) << 8;            
-		     }
-		     inStorage = static_cast<uint8*>(inStorage) + sCaptureStride;
-		   }
-		   inCount--;
-		   storedSamples++;
+	while (inCount > 0)
+	{
+		int16 left_sample = getSample<stereo, sixteenBit>(inStorage);
+
+		if (inCount > sNumberOfBytesPerSample)
+		{
+			uint8* data = (uint8 *) inStorage + sNumberOfBytesPerSample;
+			int16 right_sample = getSample<stereo, sixteenBit>(data);
+
+			int32 sample = left_sample + (((right_sample - left_sample) * (counter & 0xffff)) >> 16);
+			frame[storedSamples++] = (int16) sample;
 		}
-		return 0;
+		else
+		{
+			frame[storedSamples++] = left_sample;
+		}
+			
+		// advance data
+		counter += rate;
+		if (counter >= 0x10000) 
+		{
+			int count = counter >> 16;
+			counter &= 0xffff;
+			inStorage = (uint8 *) inStorage + sNumberOfBytesPerSample * count;
+			inCount -= sNumberOfBytesPerSample * count;
+		}
+
+		if (storedSamples >= 160)
+		{
+			// encode the frame
+			speex_bits_reset(&gEncoderBits);
+			speex_encode_int(gEncoderState, frame, &gEncoderBits);
+			uint8 nbytes = speex_bits_write(&gEncoderBits, reinterpret_cast<char *>(outStorage) + 1, 200);
+			bytesWritten += nbytes + 1;
+			// first put the size of this frame in storage
+			*(outStorage) = nbytes;
+			outStorage += nbytes + 1;
+
+			storedSamples = 0;
+		}
+		
 	}
 
-
-    // first, use the old stored samples
-    while (inCount + storedSamples >= 160) {
-        // build a frame	
-        for (int i = 0; i < 160; i++) {
-            if (storedSamples > 0) {
-                frame[i] = storedFrame[i];
-                storedSamples--;
-            } else {
-                if (s16Bit) {
-                    if (sStereo) {
-                        // downmix to mono
-                        frame[i] = (((int16 *) inStorage)[0] + ((int16 *) inStorage)[1]) / 2.0;
-                    } else {
-                        frame[i] = *((int16  *) inStorage);
-                    }
-                    inStorage = static_cast<int16*>(inStorage) + sCaptureStride;
-                } else {
-                    if (sStereo) {
-                        frame[i] = ((int16) ((((uint8 *)inStorage)[0] + ((uint8 *)inStorage)[1]) / 2) - 128) << 8;
-                    } else {
-                        frame[i] = ((int16) (*((uint8 *)inStorage) - 128)) << 8;            
-                    }
-                    inStorage = static_cast<uint8*>(inStorage) + sCaptureStride;
-                }
-                inCount--;
-            }
-        }
-
-        // encode the frame
-        speex_bits_reset(&gEncoderBits);
-        speex_encode(gEncoderState, frame, &gEncoderBits);
-        uint8 nbytes = speex_bits_write(&gEncoderBits, reinterpret_cast<char*>(outStorage) + 1, 200);
-        bytesWritten += nbytes + 1;
-        // first put the size of this frame in storage
-        *(outStorage) = nbytes;
-        outStorage += nbytes + 1;
-    }
-    // fill the storedFrame for next time
-    assert(storedSamples == 0);
-    while (inCount > 0) {
-        if (s16Bit) {
-            if (sStereo) {
-                // downmix to mono
-                storedFrame[storedSamples] = (((int16 *) inStorage)[0] + ((int16 *) inStorage)[1]) / 2.0;
-            } else {
-                storedFrame[storedSamples] = *((int16  *) inStorage);
-            }
-            inStorage = static_cast<int16*>(inStorage) + sCaptureStride;
-        } else {
-            if (sStereo) {
-                storedFrame[storedSamples] = ((int16) ((((uint8 *)inStorage)[0] + ((uint8 *)inStorage)[1]) / 2) - 128) << 8;
-            } else {
-                storedFrame[storedSamples] = ((int16) (*((uint8 *)inStorage) - 128)) << 8;            
-            }
-            inStorage = static_cast<uint8*>(inStorage) + sCaptureStride;
-        }
-        inCount--;
-        storedSamples++;
-    }
-   
-    return bytesWritten;
+	return bytesWritten;
 }
 
-// Returns pair (used network storage bytes, used capture storage bytes)
-// assumes inAmountOfCaptureStorage > sCaptureBytesPerNetworkAudioByte
-static pair<int32, int32>
-copy_data_in_capture_format_to_network_format(uint8* inNetworkStorage, int inAmountOfNetworkStorage,
-                                              void* inCaptureStorage, int inAmountOfCaptureStorage) {
-
-    int32	theNetworkAudioBytesCaptured		= inAmountOfCaptureStorage / sCaptureBytesPerNetworkAudioByte;
-    int32	theNetworkAudioBytesToCopy		= MIN(inAmountOfNetworkStorage, theNetworkAudioBytesCaptured);
-    int32	theNumberOfNetworkAudioSamplesToCopy	= theNetworkAudioBytesToCopy / kNetworkAudioBytesPerSample;
-    
-    theNumberOfNetworkAudioSamplesToCopy = copy_and_speex_encode(inNetworkStorage, inCaptureStorage, theNumberOfNetworkAudioSamplesToCopy, inAmountOfNetworkStorage);
-    return pair<int32, int32>(theNumberOfNetworkAudioSamplesToCopy, theNetworkAudioBytesToCopy * sCaptureBytesPerNetworkAudioByte);
+int32 copy_and_speex_encode(uint8* outStorage, void *inStorage, int32 inCount)
+{
+	if (sStereo) 
+	{
+		if (s16Bit)
+		{
+			return copy_and_speex_encode_template<true, true>(outStorage, inStorage, inCount);
+		}
+		else
+		{
+			return copy_and_speex_encode_template<true, false>(outStorage, inStorage, inCount);
+		}
+	}
+	else
+	{
+		if (s16Bit)
+		{
+			return copy_and_speex_encode_template<false, true>(outStorage, inStorage, inCount);
+		}
+		else
+		{
+			return copy_and_speex_encode_template<false, false>(outStorage, inStorage, inCount);
+		}
+	}
 }
-#endif
 
 static void
 send_audio_data(void* inData, short inSize) {
@@ -227,7 +207,7 @@ send_audio_data(void* inData, short inSize) {
 #endif
 }
 
-
+#endif
 
 int32
 copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkBytesRemaining,
@@ -237,8 +217,13 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     // Make sure the capture format has been announced to us
     assert(sSamplesPerSecond > 0);
 
+    // caller better not be splitting chunks up mid-sample
+    assert(!(inFirstChunkBytesRemaining % sNumberOfBytesPerSample));
+    assert(!(inSecondChunkBytesRemaining % sNumberOfBytesPerSample));
+
     // Let runtime system worry about allocating and freeing the buffer (and don't do it on the stack).
-    static  uint8           sOutgoingPacketBuffer[kNetworkAudioDataBytesPerPacket + SIZEOF_network_audio_header];
+    // assume Speex will not encode kNetworkAudioSamplesPerPacket samples to be larger than kNetworkAudioSamplesPerPacket * kNetworkAudioBytesPerFrame!
+    static uint8 sOutgoingPacketBuffer[kNetworkAudioSamplesPerPacket * kNetworkAudioBytesPerFrame + SIZEOF_network_audio_header];
 
     network_audio_header    theHeader;
 #ifdef SPEEX
@@ -256,54 +241,52 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
 	int32 theTotalCaptureBytesConsumed = 0;
 	
 	// Keep sending if we have data and either we're squeezing out the last drop or we have a packet's-worth.
-	while(inFirstChunkBytesRemaining >= static_cast<int32>(sCaptureBytesPerNetworkAudioByte) &&
+	while(inFirstChunkBytesRemaining >= static_cast<int32>(sNumberOfBytesPerSample) &&
 	      (inForceSend || inFirstChunkBytesRemaining + inSecondChunkBytesRemaining >= (int32)sCaptureBytesPerPacket)) {
 		
-		theBytesConsumed = copy_data_in_capture_format_to_network_format(theOutgoingAudioData,
-										 kNetworkAudioDataBytesPerPacket, inFirstChunkReadPosition, inFirstChunkBytesRemaining);
+		int captureBytesToCopy = std::min(inFirstChunkBytesRemaining, sCaptureBytesPerPacket);
+		int bytesCopied = copy_and_speex_encode(theOutgoingAudioData, inFirstChunkReadPosition, captureBytesToCopy);
 		
-		theTotalCaptureBytesConsumed += theBytesConsumed.second;
+		theTotalCaptureBytesConsumed += captureBytesToCopy;
 		
 		// If there's space left in the packet and we have a second chunk, start on it.
-		if(theBytesConsumed.first < kNetworkAudioDataBytesPerPacket && inSecondChunkBytesRemaining > 0) {
-			pair<int32, int32>  theSecondBytesConsumed;
+		if(captureBytesToCopy < sCaptureBytesPerPacket && inSecondChunkBytesRemaining > 0) {
+			int secondCaptureBytesToCopy = std::min(sCaptureBytesPerPacket - captureBytesToCopy, inSecondChunkBytesRemaining);
 			
-			theSecondBytesConsumed = copy_data_in_capture_format_to_network_format(
-				&(theOutgoingAudioData[theBytesConsumed.first]), kNetworkAudioDataBytesPerPacket - theBytesConsumed.first,
-				inSecondChunkReadPosition, inSecondChunkBytesRemaining);
+			int secondBytesCopied = copy_and_speex_encode(&theOutgoingAudioData[bytesCopied], inSecondChunkReadPosition, secondCaptureBytesToCopy);
+			theTotalCaptureBytesConsumed += secondCaptureBytesToCopy;
 			
-			theTotalCaptureBytesConsumed += theSecondBytesConsumed.second;
-			
-			send_audio_data((void*) sOutgoingPacketBuffer,
-					SIZEOF_network_audio_header + theBytesConsumed.first + theSecondBytesConsumed.first);
+			send_audio_data((void *) sOutgoingPacketBuffer,
+					SIZEOF_network_audio_header + bytesCopied + secondBytesCopied);
 			
 			// Update the second chunk position and length
-			inSecondChunkReadPosition   += theSecondBytesConsumed.second;
-			inSecondChunkBytesRemaining -= theSecondBytesConsumed.second;
+			inSecondChunkReadPosition += secondCaptureBytesToCopy;
+			inSecondChunkBytesRemaining -= secondCaptureBytesToCopy;
 		}
 		// Else, either we've filled up a packet or exhausted the buffer (or both).
 		else {
-			send_audio_data((void*) sOutgoingPacketBuffer, SIZEOF_network_audio_header + theBytesConsumed.first);
+			send_audio_data((void *) sOutgoingPacketBuffer, SIZEOF_network_audio_header + bytesCopied);
 		}
 		
 		// Update the first chunk position and length
-		inFirstChunkReadPosition    += theBytesConsumed.second;
-		inFirstChunkBytesRemaining  -= theBytesConsumed.second;
+		inFirstChunkReadPosition += captureBytesToCopy;
+		inFirstChunkBytesRemaining -= captureBytesToCopy;
     }
 	
 	// Now, the first chunk is exhausted.  See if there's any left in the second chunk.  Same rules apply.
-	while(inSecondChunkBytesRemaining >= static_cast<int32>(sCaptureBytesPerNetworkAudioByte) &&
-	      (inForceSend || inSecondChunkBytesRemaining >= kNetworkAudioDataBytesPerPacket)) {
+	while(inSecondChunkBytesRemaining >= static_cast<int32>(sNumberOfBytesPerSample) &&
+	      (inForceSend || inSecondChunkBytesRemaining >= (int32) sCaptureBytesPerPacket)) {
 		
-		theBytesConsumed = copy_data_in_capture_format_to_network_format(theOutgoingAudioData, kNetworkAudioDataBytesPerPacket,
-										 inSecondChunkReadPosition, inSecondChunkBytesRemaining);
+		int captureBytesToCopy = std::min(inSecondChunkBytesRemaining, sCaptureBytesPerPacket);
 		
-		theTotalCaptureBytesConsumed += theBytesConsumed.second;
+		int bytesCopied = copy_and_speex_encode(theOutgoingAudioData, inSecondChunkReadPosition, captureBytesToCopy);
 		
-		send_audio_data((void*) sOutgoingPacketBuffer, SIZEOF_network_audio_header + theBytesConsumed.first);
+		theTotalCaptureBytesConsumed += captureBytesToCopy;
 		
-		inSecondChunkReadPosition   += theBytesConsumed.second;
-		inSecondChunkBytesRemaining -= theBytesConsumed.second;
+		send_audio_data((void *) sOutgoingPacketBuffer, SIZEOF_network_audio_header + bytesCopied);
+		
+		inSecondChunkReadPosition += captureBytesToCopy;
+		inSecondChunkBytesRemaining -= captureBytesToCopy;
 	}
 	
 	return theTotalCaptureBytesConsumed;
