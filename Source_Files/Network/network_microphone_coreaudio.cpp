@@ -113,24 +113,28 @@ OSErr open_network_microphone()
 		return err;
 	}
 
+	const Float64 sampleRates[] = {
+		8000.0,
+		48000.0,
+		44100.0,
+		22050.0,
+		11025.0
+	};
 
-	// try to set the sample rate
-	Float64 sampleRate = 11025.0;
-	err = AudioDeviceSetProperty(fInputDeviceID, 0, 0, 0, kAudioDevicePropertyNominalSampleRate, sizeof(Float64), &sampleRate);
+	Float64 sampleRate;
+
+	for (int i = 0; i < sizeof(sampleRates) / sizeof(Float64); i++)
+	{
+		sampleRate = sampleRates[i];
+		err = AudioDeviceSetProperty(fInputDeviceID, 0, 0, 0, kAudioDevicePropertyNominalSampleRate, sizeof(Float64), &sampleRate);
+		if (err == noErr)
+			break;
+	}
+
 	if (err != noErr)
 	{
-		sampleRate = 22050.0;
-		err = AudioDeviceSetProperty(fInputDeviceID, 0, 0, 0, kAudioDevicePropertyNominalSampleRate, sizeof(Float64), &sampleRate);
-		if (err != noErr)
-		{
-			sampleRate = 44100.0;
-			err = AudioDeviceSetProperty(fInputDeviceID, 0, 0, 0, kAudioDevicePropertyNominalSampleRate, sizeof(Float64), &sampleRate);
-			if (err != noErr)
-			{
-				fprintf(stderr, "failed to set AU sample rate (%i)\n", err);
-				return err;
-			}
-		}
+		fprintf(stderr, "failed to set AU sample rate (%i)\n", err);
+		return err;
 	}
 
 	// Set the current device to the default input device
