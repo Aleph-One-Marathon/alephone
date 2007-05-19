@@ -1147,7 +1147,7 @@ hub_tick()
 					}
 				}
 				
-				if (readyPlayers >= nonReadyPlayers)
+				if (readyPlayers > nonReadyPlayers)
 					if (make_up_flags_for_first_incomplete_tick())
 						shouldSend = true;
 			}
