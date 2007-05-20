@@ -638,7 +638,7 @@
 		AE7C21D50BFF688000CE63EC /* Update.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Update.cpp; path = ../Source_Files/Network/Update.cpp; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
 		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
-		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
@@ -689,8 +689,6 @@
 		F52211410136A66601000001 /* byte_swapping.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = byte_swapping.cpp; path = ../Source_Files/CSeries/byte_swapping.cpp; sourceTree = SOURCE_ROOT; };
 		F52211430136A66601000001 /* csalerts_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csalerts_sdl.cpp; path = ../Source_Files/CSeries/csalerts_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F52211450136A66601000001 /* cscluts_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = cscluts_sdl.cpp; path = ../Source_Files/CSeries/cscluts_sdl.cpp; sourceTree = SOURCE_ROOT; };
-		F52211470136A66601000001 /* csfiles_beos.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csfiles_beos.cpp; path = ../Source_Files/CSeries/csfiles_beos.cpp; sourceTree = SOURCE_ROOT; };
-		F52211480136A66601000001 /* csfiles.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csfiles.cpp; path = ../Source_Files/CSeries/csfiles.cpp; sourceTree = SOURCE_ROOT; };
 		F522114B0136A66601000001 /* csmisc_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csmisc_sdl.cpp; path = ../Source_Files/CSeries/csmisc_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F522114C0136A66601000001 /* csstrings.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csstrings.cpp; path = ../Source_Files/CSeries/csstrings.cpp; sourceTree = SOURCE_ROOT; };
 		F52211520136A66601000001 /* asciitab.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = asciitab.h; path = ../Source_Files/Expat/asciitab.h; sourceTree = SOURCE_ROOT; };
@@ -751,7 +749,6 @@
 		F53673F702014D2D01A80001 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
 		F53673F802014D2D01A80001 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
 		F53673F902014D2D01A80001 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
-		F536742802014FC301A80001 /* csdialogs_macintosh.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csdialogs_macintosh.cpp; path = ../Source_Files/CSeries/csdialogs_macintosh.cpp; sourceTree = SOURCE_ROOT; };
 		F53AB44B01F3CB1D01EF2901 /* AlephOne.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AlephOne.icns; sourceTree = "<group>"; };
 		F53DC61D022179A801A80001 /* network_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_dialogs.h; path = ../Source_Files/Network/network_dialogs.h; sourceTree = SOURCE_ROOT; };
 		F53DC62002219A3D01A80001 /* network_lookup_sdl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_lookup_sdl.h; path = ../Source_Files/Network/network_lookup_sdl.h; sourceTree = SOURCE_ROOT; };
@@ -855,7 +852,6 @@
 		F5CC92E40240D56101A80001 /* AnimatedTextures.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = AnimatedTextures.cpp; sourceTree = "<group>"; };
 		F5CC92E50240D56101A80001 /* AnimatedTextures.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = AnimatedTextures.h; sourceTree = "<group>"; };
 		F5CC92E60240D56101A80001 /* collection_definition.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = collection_definition.h; sourceTree = "<group>"; };
-		F5CC92E70240D56101A80001 /* Crosshairs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Crosshairs.cpp; sourceTree = "<group>"; };
 		F5CC92E80240D56101A80001 /* Crosshairs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Crosshairs.h; sourceTree = "<group>"; };
 		F5CC92E90240D56101A80001 /* Crosshairs_SDL.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Crosshairs_SDL.cpp; sourceTree = "<group>"; };
 		F5CC92EA0240D56101A80001 /* ImageLoader.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = ImageLoader.h; sourceTree = "<group>"; };
@@ -1248,11 +1244,8 @@
 				F52211410136A66601000001 /* byte_swapping.cpp */,
 				F52211430136A66601000001 /* csalerts_sdl.cpp */,
 				F52211450136A66601000001 /* cscluts_sdl.cpp */,
-				F52211470136A66601000001 /* csfiles_beos.cpp */,
-				F52211480136A66601000001 /* csfiles.cpp */,
 				F522114B0136A66601000001 /* csmisc_sdl.cpp */,
 				F522114C0136A66601000001 /* csstrings.cpp */,
-				F536742802014FC301A80001 /* csdialogs_macintosh.cpp */,
 				F5574EEE01F4EB1E01FEABBD /* csdialogs_sdl.cpp */,
 				F5574EEF01F4EB1E01FEABBD /* mytm_sdl.cpp */,
 				3DAC27AE03DC9D5600000104 /* snprintf.cpp */,
@@ -1639,7 +1632,6 @@
 		F5CC936C0240D75B01A80001 /* Macintosh */ = {
 			isa = PBXGroup;
 			children = (
-				F5CC92E70240D56101A80001 /* Crosshairs.cpp */,
 			);
 			name = Macintosh;
 			sourceTree = "<group>";
