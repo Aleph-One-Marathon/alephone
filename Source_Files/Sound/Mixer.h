@@ -26,8 +26,12 @@
 #include "cseries.h"
 #include "network_speaker_sdl.h"
 #include "network_audio_shared.h"
+#include "map.h" // to find if netmic is transmitting :(
 #include "Music.h"
 #include "SoundManager.h"
+
+extern short local_player_index;
+extern bool game_is_networked;
 
 class Mixer
 {
@@ -143,6 +147,9 @@ private:
 
 	NetworkSpeakerSoundBufferDescriptor* sNetworkAudioBufferDesc;
 
+	inline bool IsNetworkAudioPlaying() { return channels[sound_channel_count + NETWORK_AUDIO_CHANNEL].active; }
+
+
 	// this has to live here :(
 	template <class T, bool stereo, bool is_signed> 
 	inline void Mix(T *p, int len) {
@@ -228,12 +235,24 @@ private:
 						ileft = dleft + (((rleft - dleft) * (c->counter & 0xffff)) >> 16);
 						iright = dright + (((rright - dright) * (c->counter & 0xffff)) >> 16);
 
+						if (IsNetworkAudioPlaying() && i != (sound_channel_count + NETWORK_AUDIO_CHANNEL))
+						{
+							ileft = (ileft * SoundManager::instance()->GetNetmicVolumeAdjustment()) >> 8;
+							iright = (iright * SoundManager::instance()->GetNetmicVolumeAdjustment()) >> 8;
+						}
+
 						// Mix into output
 						left += (ileft * c->left_volume) >> 8;
 						right += (iright * c->right_volume) >> 8;
 					}
 					else
 					{
+						if (IsNetworkAudioPlaying() && i != (sound_channel_count + NETWORK_AUDIO_CHANNEL))
+						{
+							dleft = (dleft * SoundManager::instance()->GetNetmicVolumeAdjustment()) >> 8;
+							dright = (dright * SoundManager::instance()->GetNetmicVolumeAdjustment()) >> 8;
+						}
+
 						// Mix into output
 						left += (dleft * c->left_volume) >> 8;
 						right += (dright * c->right_volume) >> 8;
@@ -320,6 +339,9 @@ private:
 				
 				// Finalize left channel
 				left = (left * main_volume) >> 8; // Apply main volume setting
+				if (game_is_networked && SoundManager::instance()->parameters.mute_while_transmitting && 
+				    dynamic_world->speaking_player_index == local_player_index)
+					left = 0;
 				if (left > 32767) // Clip output value
 					left = 32767;
 				else if (left < -32768)
@@ -334,6 +356,9 @@ private:
 				// Finalize right channel
 				if (stereo) {
 					right = (right * main_volume) >> 8; // Apply main volume setting
+					if (game_is_networked && SoundManager::instance()->parameters.mute_while_transmitting &&
+					    dynamic_world->speaking_player_index == local_player_index)
+						right = 0;
 					if (right > 32767) // Clip output value
 						right = 32767;
 					else if (right < -32768)

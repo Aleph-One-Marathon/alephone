@@ -929,6 +929,10 @@ static void sound_dialog(void *arg)
 	w_slider *music_volume_w = new w_slider("Music Volume", NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
 	d.add(music_volume_w);
 	d.add(new w_spacer());
+	d.add(new w_static_text("Network Microphone"));
+	w_toggle* mute_while_transmitting_w = new w_toggle("Headset Mic Mode", !sound_preferences->mute_while_transmitting);
+	d.add(mute_while_transmitting_w);
+	d.add(new w_spacer());
 	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
 	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
@@ -973,6 +977,13 @@ static void sound_dialog(void *arg)
 		int music_volume = music_volume_w->get_selection();
 		if (music_volume != sound_preferences->music) {
 			sound_preferences->music = music_volume;
+			changed = true;
+		}
+
+		bool mute_while_transmitting = !mute_while_transmitting_w->get_selection();
+		if (mute_while_transmitting != sound_preferences->mute_while_transmitting)
+		{
+			sound_preferences->mute_while_transmitting = mute_while_transmitting;
 			changed = true;
 		}
 
@@ -1733,6 +1744,8 @@ void write_preferences(
 	fprintf(F,"  flags=\"%hu\"\n",sound_preferences->flags);
 	fprintf(F,"  rate=\"\%hu\"\n", sound_preferences->rate);
 	fprintf(F,"  samples=\"\%hu\"\n", sound_preferences->samples);
+	fprintf(F,"  volume_while_speaking=\"\%hu\"\n", sound_preferences->volume_while_speaking);
+	fprintf(F,"  mute_while_transmitting=\"%s\"\n", BoolString(sound_preferences->mute_while_transmitting));
 	fprintf(F,"/>\n\n");
 	
 #if !defined(DISABLE_NETWORKING)
@@ -3084,6 +3097,14 @@ bool XML_SoundPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"samples"))
 	{
 		return ReadUInt16Value(Value, sound_preferences->samples);
+	}
+	else if (StringsEqual(Tag,"volume_while_speaking"))
+	{
+		return ReadInt16Value(Value, sound_preferences->volume_while_speaking);
+	}
+	else if (StringsEqual(Tag,"mute_while_transmitting"))
+	{
+		return ReadBooleanValue(Value, sound_preferences->mute_while_transmitting);
 	}
 	return true;
 }

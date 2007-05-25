@@ -67,6 +67,10 @@ public:
 	void StopSound(short identifier, short sound_index);
 	void StopAllSounds() { StopSound(NONE, NONE); }
 
+	inline int16 GetNetmicVolumeAdjustment() {
+		return (parameters.volume_while_speaking);
+	}
+
 	void Idle();
 
 	class Pause
@@ -95,6 +99,9 @@ public:
 		uint16 samples; // size of buffer
 
 		int16 music; // Music volume: [0, NUMBER_OF_SOUND_VOLUME_LEVELS)
+
+		int16 volume_while_speaking; // [0, NUMBER_OF_SOUND_VOLUME_LEVELS)
+		bool mute_while_transmitting;
 
 		Parameters();
 		bool Verify();
@@ -189,6 +196,7 @@ private:
 	static const int MAXIMUM_AMBIENT_SOUND_VOLUME = 3 * MAXIMUM_SOUND_VOLUME / 2;
 	static const int DEFAULT_SOUND_LEVEL= NUMBER_OF_SOUND_VOLUME_LEVELS/3;
 	static const int DEFAULT_MUSIC_LEVEL = NUMBER_OF_SOUND_VOLUME_LEVELS/2;
+	static const int DEFAULT_VOLUME_WHILE_SPEAKING = MAXIMUM_SOUND_VOLUME / 8;
 
 	// pitch
 	static const int MINIMUM_SOUND_PITCH= 1;

@@ -579,7 +579,9 @@ SoundManager::Parameters::Parameters() :
 	flags(_more_sounds_flag | _stereo_flag | _dynamic_tracking_flag | _ambient_sound_flag | _16bit_sound_flag),
 	rate(DEFAULT_RATE),
 	samples(DEFAULT_SAMPLES),
-	music(DEFAULT_MUSIC_LEVEL)
+	music(DEFAULT_MUSIC_LEVEL),
+	volume_while_speaking(DEFAULT_VOLUME_WHILE_SPEAKING),
+	mute_while_transmitting(true)
 {
 }
 
