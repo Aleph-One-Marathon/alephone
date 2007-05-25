@@ -174,7 +174,7 @@ open_network_microphone() {
             theWaveFormat.cbSize            = 0;
 
             // Let's try a half-second buffer.
-            sCaptureBufferSize              = (theWaveFormat.nAvgBytesPerSec / 2);
+	    sCaptureBufferSize = (theWaveFormat.nSamplesPerSec / 2) * theWaveFormat.nBlockAlign;
 
             DSCBUFFERDESC   theRecordingBufferDescription;
             ZeroMemory(&theRecordingBufferDescription, sizeof(theRecordingBufferDescription));

@@ -220,8 +220,16 @@ copy_and_send_audio_data(uint8* inFirstChunkReadPosition, int32 inFirstChunkByte
     assert(sSamplesPerSecond > 0);
 
     // caller better not be splitting chunks up mid-sample
-    assert(!(inFirstChunkBytesRemaining % sNumberOfBytesPerSample));
-    assert(!(inSecondChunkBytesRemaining % sNumberOfBytesPerSample));
+    if (inFirstChunkBytesRemaining % sNumberOfBytesPerSample)
+    {
+	    inFirstChunkBytesRemaining -= (inFirstChunkBytesRemaining % sNumberOfBytesPerSample);
+	    assert(inSecondChunkBytesRemaining == 0);
+    }
+
+    if (inSecondChunkBytesRemaining % sNumberOfBytesPerSample)
+    {
+	    inSecondChunkBytesRemaining -= (inSecondChunkBytesRemaining % sNumberOfBytesPerSample);
+    }
 
     // Let runtime system worry about allocating and freeing the buffer (and don't do it on the stack).
     // assume Speex will not encode kNetworkAudioSamplesPerPacket samples to be larger than kNetworkAudioSamplesPerPacket * kNetworkAudioBytesPerFrame!
