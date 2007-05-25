@@ -165,6 +165,8 @@ clearly this is all broken until we have packet types
 
 #include "network_metaserver.h"
 
+#include "network_sound.h"
+
 // For temporary multiple MML specified lua scripts hack
 extern bool gLoadingLuaNetscript;
 
@@ -215,7 +217,7 @@ struct toggle_ping_display {
 };
 
 // ignore list
-std::set<int> sIgnoredPlayers;
+static std::set<int> sIgnoredPlayers;
 
 bool player_is_ignored(int player_index)
 {
@@ -253,6 +255,25 @@ struct ignore_lua
 {
 	void operator()(const std::string&) const {
 		ToggleLuaMute();
+	}
+};
+
+struct ignore_mic
+{
+	void operator()(const std::string& s) const {
+		int player_index = atoi(s.c_str());
+		if (player_index == localPlayerIndex)
+		{
+			screen_printf("you can't ignore your own mic");
+		}
+		else if (player_index >= 0 && player_index < topology->player_count)
+		{
+			mute_player_mic(player_index);
+		}
+		else
+		{
+			screen_printf("invalid player %i", player_index);
+		}
 	}
 };
 
@@ -1152,6 +1173,9 @@ bool NetEnter(void)
 	sIgnoredPlayers.clear();
 	CommandParser IgnoreParser;
 	IgnoreParser.register_command("player", ignore_player());
+
+	clear_player_mic_mutes();
+	IgnoreParser.register_command("mic", ignore_mic());
 
 	ResetLuaMute();
 	IgnoreParser.register_command("lua", ignore_lua());

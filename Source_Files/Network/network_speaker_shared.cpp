@@ -40,15 +40,23 @@
 #include "network_data_formats.h"
 #include "network_audio_shared.h"
 #include "player.h"
+#include "shell.h" // screen_print
 
 #ifdef SPEEX
 #include "speex/speex.h"
 #include "network_speex.h"
 #endif
 
+#include <set>
+
+static std::set<short> sIgnoredPlayers;
+
 // This is what the network distribution system calls when audio is received.
 void
 received_network_audio_proc(void *buffer, short buffer_size, short player_index) {
+
+	if (sIgnoredPlayers.find(player_index) != sIgnoredPlayers.end()) return;
+
 	network_audio_header_NET* theHeader_NET = (network_audio_header_NET*) buffer;
 
 	network_audio_header    theHeader;
@@ -91,6 +99,25 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
 		}
 #endif
 	}
+}
+
+void mute_player_mic(short player_index)
+{
+	if (sIgnoredPlayers.find(player_index) != sIgnoredPlayers.end())
+	{
+		screen_printf("removing player %i's mic from the ignore list", player_index);
+		sIgnoredPlayers.erase(player_index);
+	}
+	else
+	{
+		screen_printf("adding player %i's mic to the ignore list", player_index);
+		sIgnoredPlayers.insert(player_index);
+	}
+}
+
+void clear_player_mic_mutes()
+{
+	sIgnoredPlayers.clear();
 }
 
 #endif // !defined(DISABLE_NETWORKING)

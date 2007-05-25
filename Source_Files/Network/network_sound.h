@@ -51,6 +51,9 @@ void received_network_audio_proc(void *buffer, short buffer_size, short player_i
 
 void quiet_network_speaker(void);
 
+void mute_player_mic(short player_index);
+void clear_player_mic_mutes();
+
 /* ---------- prototypes: NETWORK_MICROPHONE.C */
 
 // "true" does not guarantee that the user has a microphone, or even that sound capture will work...
