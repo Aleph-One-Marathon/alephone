@@ -8,10 +8,7 @@
 
 The Marathon Markup Language (MML), a subset of the Extensible Markup Language (XML):
 This was created for the purpose of configuring the Marathon engine in a non-hardcoded way.
-On the MacOS version of Aleph One, MML scripts are stored as TEXT resources
-in the Aleph One app which are accessed in increasing order of ID. On the
-SDL version of Aleph One, the scripts are stored in "MML" subdirectories of
-the local and global data directories and accessed in alphabetical order
+MML scripts are stored in the "Scripts" subdirectory of the local data directory, and the "MML" subdirectory of the global data directories and accessed in alphabetical order
 (scripts in the local directory are read after the global ones so they can
 override their settings).
 <p>
@@ -1755,7 +1752,6 @@ It has an attribute "set" which indicates which of the three sets to set keys fo
 (Standard, Arrows, PowerBook), and a child element &lt;key&gt; with attributes
 <ul>
 <li> index: which key action
-<li> mac: the MacOS key code (*not* ASCII)
 <li> sdl: the SDL key code
 </ul>
 Here are the various actions:
@@ -1783,115 +1779,6 @@ Here are the various actions:
 <li>Microphone Button
 </ol>
 <p>
-
-Here are the MacOS key definitions; note that these are Apple's virtual key values,
-which differ from the ASCII values.
-This documentation was cribbed from Figures 2-9 and 2-10 in <a href="http://developer.apple.com/techpubs/mac/Toolbox/Toolbox-40.html#HEADING40-39">the MacOS Classic low-level keyboard-input documentation</a>.
-Those illustrations show hexadecimal values; they have been converted to decimal here:
-<p>
-<ul>
-<li>&lt;escape&gt; - 53
-<li>F1 - 122
-<li>F2 - 120
-<li>F3 - 99
-<li>F4 - 118
-<li>F5 - 96
-<li>F6 - 97
-<li>F7 - 98
-<li>F8 - 100
-<li>F9 - 101
-<li>F10 - 109
-<li>F11 - 103
-<li>F12 - 111
-<li>F13 - 105
-<li>F14 - 107
-<li>F15 - 113
-<li>` - 50
-<li>1 - 18
-<li>2 - 19
-<li>3 - 20
-<li>4 - 21
-<li>5 - 23
-<li>6 - 22
-<li>7 - 26
-<li>8 - 28
-<li>9 - 25
-<li>0 - 29
-<li>- - 27
-<li>= - 24
-<li>&lt;delete&gt; - 51
-<li>&lt;tab&gt; - 48
-<li>q - 12
-<li>w - 13
-<li>e - 14
-<li>r - 15
-<li>t - 17
-<li>y - 16
-<li>u - 32
-<li>i - 34
-<li>o - 31
-<li>p - 35
-<li>[ - 33
-<li>] - 30
-<li>\ - 42
-<li>&lt;caps lock&gt; - 57
-<li>a - 0
-<li>s - 1
-<li>d - 2
-<li>f - 3
-<li>g - 5
-<li>h - 4
-<li>j - 38
-<li>k - 40
-<li>l - 37
-<li>; - 41
-<li>' - 39
-<li>&lt;return&gt; - 36
-<li>&lt;shift&gt; - 56
-<li>z - 6
-<li>x - 7
-<li>c - 8
-<li>v - 9
-<li>b - 11
-<li>n - 45
-<li>m - 46
-<li>, - 43
-<li>. - 47
-<li>/ - 44
-<li>&lt;control&gt; - 59
-<li>&lt;option&gt; - 58
-<li>&lt;command&gt; - 55
-<li>&lt;space&gt; - 49
-<li>&lt;help&gt; - 114
-<li>&lt;home&gt; - 115
-<li>&lt;page up&gt; - 116
-<li>&lt;del&gt; - 117
-<li>&lt;end&gt; - 119
-<li>&lt;page down&gt; - 121
-<li>&lt;up arrow&gt; - 126
-<li>&lt;left arrow&gt; - 123
-<li>&lt;down arrow&gt; - 125
-<li>&lt;right arrow&gt; - 124
-<li>Keypad Clear - 71
-<li>Keypad = - 81
-<li>Keypad / - 75
-<li>Keypad * - 67
-<li>Keypad 7 - 89
-<li>Keypad 8 - 91
-<li>Keypad 9 - 92
-<li>Keypad - - 78
-<li>Keypad 4 - 86
-<li>Keypad 5 - 87
-<li>Keypad 6 - 88
-<li>Keypad + - 69
-<li>Keypad 1 - 83
-<li>Keypad 2 - 84
-<li>Keypad 3 - 85
-<li>Keypad Enter - 76
-<li>Keypad 0 - 82
-<li>Keypad . - 65
-</ul>
-
 
 Here are the SDL key definitions, which have been cribbed from the SDL include file
 "SDL_keysym.h":
@@ -2161,24 +2048,9 @@ This element controls whether or not the engine will respond to the cheat codes;
 it has these attributes:
 <ul>
 <li>on: it is <a href="#boolean">boolean</a> (default: false [cheating off])
-<li>mac_keymod: Value that indicates the key modifiers to use in the MacOS version;
-these keys must be pressed while typing the cheat code.
 </ul>
 and this child element: &lt;keyword&gt;, which is for specifying the cheat keywords.
 It has a mandatory attribute, "index", and some contained text, as with the text-string elements.
-<p>
-The MacOS key-modifier code is the sum of these values:
-<ul>
-<li>Command: 256
-<li>Shift: 512
-<li>Caps Lock: 1024
-<li>Option: 2048
-<li>Control: 4096
-</ul>
-<p>
-and defaults to the control key only (4096).
-Thus, if one wants the key modifiers to be control+shift,
-the "mac_keymod" attribute would get a value of 4096+512 = 4608.
 <p>
 The cheat-code keywords and their defaults are
 <ol type=1 start=1000>
@@ -2208,7 +2080,7 @@ For example, making the energy cheat into "JUICE" means setting up
 &lt;keyword index="0"&gt;JUICE&lt;/keyword&gt;
 </pre>
 <p>
-
+Hold down control and type the cheat code in to activate it.
 <hr>
 
 <h3><a name="logging">Logging Configuration Element: &lt;logging&gt;</a></h3>
@@ -2319,16 +2191,7 @@ The root directory for such specifications is the map file's parent directory,
 so something like "Music/bang_my_head.mp3" means looking for file "bang_my_head.mp3"
 in the directory "Music", which is in the same directory that the map file lives in.
 <p>
-
-The MacOS version uses Quicktime for music and movie playing,
-meaning that any of these formats can be used:
-<ul>
-<li>AIFF
-<li>Sun's AU
-<li>Microsoft's WAVE
-<li>MP3
-<li>MIDI
-</ul>
+Aleph One supports playing back MPEG-1 movies, and AIFF, WAV, Ogg/Vorbis, and mp3 music.
 <p>
 
 Finally, the &lt;end_screens&gt; element is for specifying which PICT resources
