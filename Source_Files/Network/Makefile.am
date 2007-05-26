@@ -27,7 +27,7 @@ libnetwork_a_SOURCES = network.h network_audio_shared.h network_capabilities.h \
   network_udp.cpp RingGameProtocol.cpp \
   SDL_netx.cpp SSLP_limited.cpp StarGameProtocol.cpp Update.cpp
 
-EXTRA_libnetwork_a_SOURCES = network_dummy.cpp network_microphone_sdl_win32.cpp network_microphone_coreaudio.cpp NetworkGameProtocol.cpp
+EXTRA_libnetwork_a_SOURCES = network_dummy.cpp network_microphone_sdl_win32.cpp network_microphone_coreaudio.cpp NetworkGameProtocol.cpp network_microphone_sdl_dummy.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
