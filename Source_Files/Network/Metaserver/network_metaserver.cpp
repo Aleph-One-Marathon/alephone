@@ -212,7 +212,9 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 	m_channel->disconnect();
 
 	///// ROOM CONNECTION
-	
+
+	if (!m_rooms.size()) throw 0;
+
 	IPaddress roomServerAddress = m_rooms[0].roomServerAddress();
 	
 	for (int i = 0; i < m_rooms.size(); i++) 
