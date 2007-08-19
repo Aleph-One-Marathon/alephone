@@ -2021,7 +2021,7 @@ byte *NetReceiveGameData(bool do_physics)
   auto_ptr<EndGameDataMessage> endGameDataMessage(connection_to_server->receiveSpecificMessage<EndGameDataMessage>((Uint32) 60000, (Uint32) 30000));
   if (endGameDataMessage.get()) {
     // game data was received OK
-    if (do_physics && handlerPhysicsLength > 0) {
+	  if (do_physics) {
       process_network_physics_model(handlerPhysicsBuffer);
       handlerPhysicsLength = 0;
       handlerPhysicsBuffer = NULL;

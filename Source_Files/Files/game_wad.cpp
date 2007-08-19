@@ -1581,7 +1581,7 @@ bool process_map_wad(
 	// LP addition: Reload the physics model if it had been loaded in the previous level,
 	// but not in the current level. This avoids the persistent-physics bug.
 	// ghs: always reload the physics model if there isn't one merged
-	if (PhysicsModelLoadedEarlier && !PhysicsModelLoaded)
+	if (PhysicsModelLoadedEarlier && !PhysicsModelLoaded && !game_is_networked)
 		import_definition_structures();
 	PhysicsModelLoadedEarlier = PhysicsModelLoaded;
 	
