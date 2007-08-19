@@ -65,8 +65,12 @@ public:
 	void register_macro(std::string macro, std::string replacement);
 	void unregister_macro(std::string macro);
 
+	// carnage reporting
+	void set_carnage_message(int16 projectile_type, const std::string& on_kill, const std::string& on_suicide = "");
+	void report_kill(int16 player_index, int16 aggressor_player_index, int16 projectile_index);
+
 private:
-	Console() : m_active(false) { } ;
+	Console();
 	static Console* m_instance;
 
 	boost::function<void (std::string)> m_callback;
@@ -76,6 +80,9 @@ private:
 	bool m_active;
 
 	std::map<std::string, std::string> m_macros;
+
+	bool m_carnage_messages_exist;
+	std::vector<std::pair<std::string, std::string> > m_carnage_messages;
 };
 
 XML_ElementParser *Console_GetParser();

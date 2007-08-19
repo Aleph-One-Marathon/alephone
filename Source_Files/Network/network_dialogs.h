@@ -482,6 +482,7 @@ protected:
 	ToggleWidget*		m_zoomWidget;
 	ToggleWidget*		m_crosshairWidget;
 	ToggleWidget*		m_laraCroftWidget;
+	ToggleWidget*           m_carnageMessagesWidget;
 	
 	ToggleWidget*       m_useUpnpWidget;
 //	SelectorWidget*         m_latencyToleranceWidget;

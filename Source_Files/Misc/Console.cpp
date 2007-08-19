@@ -28,9 +28,21 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
+// for carnage reporting:
+#include "player.h"
+#include "projectiles.h"
+#include "shell.h"
+
 using namespace std;
 
+extern bool game_is_networked;
+
 Console *Console::m_instance = NULL;
+
+Console::Console() : m_active(false), m_carnage_messages_exist(false)
+{
+	m_carnage_messages.resize(NUMBER_OF_PROJECTILE_TYPES);
+}
 
 Console *Console::instance() {
 	if (!m_instance) {
@@ -216,6 +228,126 @@ void Console::unregister_macro(string input)
 	m_macros.erase(input);
 }
 
+void Console::set_carnage_message(int16 projectile_type, const std::string& on_kill, const std::string& on_suicide)
+{
+	m_carnage_messages_exist = true;
+	m_carnage_messages[projectile_type] = std::pair<std::string, std::string>(on_kill, on_suicide);
+}
+
+static std::string replace_first(std::string &result, const std::string& from, const std::string& to)
+{
+	const int pos = result.find(from);
+	if (pos != string::npos)
+	{
+		result.replace(pos, from.size(), to);
+	}
+	return result;
+}
+
+extern bool NetAllowCarnageMessages();
+
+void Console::report_kill(int16 player_index, int16 aggressor_player_index, int16 projectile_index)
+{
+	if (!game_is_networked || !NetAllowCarnageMessages() || !m_carnage_messages_exist) return;
+
+	// do some lookups
+	projectile_data *projectile = get_projectile_data(projectile_index);
+
+	const std::string player_key = "%player%";
+	const std::string aggressor_key = "%aggressor%";
+	if (projectile)
+	{
+		std::string display_string;
+		std::string player_name = get_player_data(player_index)->name;
+		if (player_index != aggressor_player_index)
+		{
+			display_string = m_carnage_messages[projectile->type].first;
+			if (display_string == "") return;
+			std::string aggressor_player_name = get_player_data(aggressor_player_index)->name;
+
+			const int ppos = display_string.find(player_key);
+			const int apos = display_string.find(aggressor_key);
+			if (ppos == string::npos || apos == string::npos || ppos > apos)
+			{
+				replace_first(display_string, player_key, player_name);
+				replace_first(display_string, aggressor_key, aggressor_player_name);
+			}
+			else
+			{
+				replace_first(display_string, aggressor_key, aggressor_player_name);
+				replace_first(display_string, player_key, player_name);
+			}
+			
+		}
+		else
+		{
+			display_string = m_carnage_messages[projectile->type].second;
+			if (display_string == "") return;
+			replace_first(display_string, player_key, player_name);
+		}
+
+		screen_printf("%s", display_string.c_str());
+	}
+}
+			
+
+class XML_CarnageMessageParser : public XML_ElementParser
+{
+	int16 projectile_type;
+	string on_kill;
+	string on_suicide;
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+
+	XML_CarnageMessageParser() : XML_ElementParser("carnage_message") {}
+	
+};
+
+bool XML_CarnageMessageParser::Start()
+{
+	on_kill.clear();
+	on_suicide.clear();
+	projectile_type = NONE;
+	return true;
+}
+
+bool XML_CarnageMessageParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag, "on_kill"))
+	{
+		on_kill = Value;
+		return true;
+	}
+	else if (StringsEqual(Tag, "on_suicide"))
+	{
+		on_suicide = Value;
+		return true;
+	}
+	else if (StringsEqual(Tag, "projectile_type"))
+	{
+		return ReadBoundedInt16Value(Value, projectile_type, 0, NUMBER_OF_PROJECTILE_TYPES);
+	}
+
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_CarnageMessageParser::AttributesDone()
+{
+	if (projectile_type == NONE)
+	{
+		AttribsMissing();
+		return false;
+	}
+	
+	Console::instance()->set_carnage_message(projectile_type, on_kill, on_suicide);
+	return true;
+}		
+
+static XML_CarnageMessageParser CarnageMessageParser;
+
 class XML_MacroParser : public XML_ElementParser
 {
 	string input;
@@ -270,6 +402,7 @@ static XML_ElementParser ConsoleParser("console");
 XML_ElementParser *Console_GetParser()
 {
 	ConsoleParser.AddChild(&MacroParser);
+	ConsoleParser.AddChild(&CarnageMessageParser);
 
 	return &ConsoleParser;
 }

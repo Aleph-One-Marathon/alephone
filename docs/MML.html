@@ -2127,7 +2127,7 @@ This would set up the "global" logging domain such that only messages more impor
 <hr>
 
 <h3><a name="console">Console</a></h3>
-The &lt;console&gt; tag contains a child elements for macros:
+The &lt;console&gt; tag contains a child elements for macros and carnage messages:
 <h4>Macros</h4>
 Macros are substitutions performed on commands entered into the console. For instance, you can make a macro that changes &quot;.1&quot; into &quot;I&apos;ll defend&quot;. Macros can be used for chat, or to shorten other commands. Each macro child element has an input and an output attribute. To trigger the macro, type a dot immediately followed by the macro input into the console. 
 <p>Macro inputs can be letters and numbers, but not spaces. Anything after the first space will remain unsubstituted. For instance, &quot;.1 you losers&quot; becomes &quot;I&apos;ll defend you losers&quot;
@@ -2140,6 +2140,23 @@ Example:
 </pre>
 <p>
 
+<h4>Carnage Messages</h4>
+Carnage messages are printed to the screen when a player is killed by himself or another player in a net game (assuming the gatherer has not disabled carnage messages). Each &lt;carnage_message&gt; tag has these attributes:
+<ul>
+<li>projectile_type: the type of projectile that triggers this message</li>
+<li>on_kill: a string containing the message to print when one player kills another. In the string, %aggressor% will be replaced with the name of the player who did the killing, and %player% will be replaced with the name of the player who was killed.</li>
+<li>on_suicide: a string containing the message to print when a player kills himself. In the string, %player% will be replaced with the name of the player who suicided.</li>
+</ul>
+A blank string (the default) results in nothing being printed.
+<p>
+Example:
+<pre>
+&lt;console&gt;
+&lt;carnage_message projectile_type=&quot;14&quot; 
+     on_kill=&quot;%aggressor% killed %player% with a SPNKR&quot; 
+     on_suicide=&quot;%player% suicided with a SPNKR&quot;/&gt;
+&lt;/console&gt;
+</pre>
 <hr>
 
 <h3><a name="levelscripts">Level Scripting</a></h3>

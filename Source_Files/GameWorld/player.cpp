@@ -151,6 +151,7 @@ May 22, 2003 (Woody Zenfell):
 #include "network.h"
 #include "screen.h"
 #include "shell.h" // for screen_printf()
+#include "Console.h"
 
 /*
 //anybody on the receiving pad of a teleport should explode (what happens to invincible guys?)
@@ -858,6 +859,7 @@ void damage_player(
 									  team_friendly_fire[aggressor_player->team].kills += 1;
 									}
 								}
+								Console::instance()->report_kill(player_index, aggressor_player_index, projectile_index);
 							}
 							else
 #endif // !defined(DISABLE_NETWORKING)

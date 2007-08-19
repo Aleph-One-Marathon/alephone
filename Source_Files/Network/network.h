@@ -277,6 +277,7 @@ void NetRemoveDistributionFunction(short type);
 bool NetAllowCrosshair();
 bool NetAllowTunnelVision();
 bool NetAllowBehindview();
+bool NetAllowCarnageMessages();
 
 // spoke stuf
 

@@ -867,6 +867,7 @@ enum /* cheat flags */
     _allow_crosshair = 0x0001,
     _allow_tunnel_vision = 0x0002,
     _allow_behindview = 0x0004,
+    _disable_carnage_messages = 0x0008
   };
 
 enum // specifies how the user completed the level. saved in dynamic_data

@@ -2324,6 +2324,11 @@ bool NetAllowBehindview() {
 	  dynamic_world->game_information.cheat_flags & _allow_behindview);
 }
 
+bool NetAllowCarnageMessages() {
+	return (dynamic_world->player_count == 1 ||
+		!(dynamic_world->game_information.cheat_flags & _disable_carnage_messages));
+}
+
 extern int32 spoke_latency();
 extern int32 hub_latency(int);
 

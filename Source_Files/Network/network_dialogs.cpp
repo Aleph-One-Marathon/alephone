@@ -949,6 +949,7 @@ SetupNetgameDialog::~SetupNetgameDialog ()
 	delete m_zoomWidget;
 	delete m_crosshairWidget;
 	delete m_laraCroftWidget;
+	delete m_carnageMessagesWidget;
 	
 	delete m_useUpnpWidget;
 }
@@ -1080,6 +1081,8 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	binders.insert<bool> (m_crosshairWidget, &crosshairPref);
 	BitPref laraCroftPref (active_network_preferences->cheat_flags, _allow_behindview);
 	binders.insert<bool> (m_laraCroftWidget, &laraCroftPref);
+	BitPref carnageMessagesPref (active_network_preferences->cheat_flags, _disable_carnage_messages, true);
+	binders.insert<bool> (m_carnageMessagesWidget, &carnageMessagesPref);
 
 	BoolPref useScriptPref (active_network_preferences->use_netscript);
 	binders.insert<bool> (m_useScriptWidget, &useScriptPref);
@@ -2814,6 +2817,9 @@ public:
 	
 		w_toggle *lara_croft_w = new w_toggle ("Allow Chase Cam", true);
 		m_dialog.add_to_tab (lara_croft_w, iSNG_STUFF_TAB);
+
+		w_toggle *carnage_messages_w = new w_toggle("Allow Carnage Messages", true);
+		m_dialog.add_to_tab (carnage_messages_w, iSNG_STUFF_TAB);
 		
 		m_dialog.add_to_tab (new w_spacer(), iSNG_STUFF_TAB);
 		
@@ -2870,6 +2876,7 @@ public:
 		m_zoomWidget = new ToggleWidget (zoom_w);
 		m_crosshairWidget = new ToggleWidget (crosshairs_w);
 		m_laraCroftWidget = new ToggleWidget (lara_croft_w);
+		m_carnageMessagesWidget = new ToggleWidget (carnage_messages_w);
 		
 		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
 		m_latencyToleranceWidget = new SliderSelectorWidget(latency_tolerance_w);
