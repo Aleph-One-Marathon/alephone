@@ -1268,6 +1268,13 @@ send_packets()
 						
 						// we want to send 4 seconds worth of flags per second
 						int maxTicks = 4 * effectiveLatency;
+
+						// don't run out of room in the packet, though
+						if (maxTicks * sNetworkPlayers.size() * 4 > (ps.maxp() - ps.tellp())) 
+						{
+							maxTicks = (ps.maxp() - ps.tellp()) / sNetworkPlayers.size() / 4;
+						}
+
 						startTick = thePlayer.mSmallestUnacknowledgedTick;
 						endTick = (startTick + maxTicks < sSmallestIncompleteTick) ? startTick + maxTicks : sSmallestIncompleteTick;
 					}
