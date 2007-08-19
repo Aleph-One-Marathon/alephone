@@ -78,7 +78,7 @@ This element has no attributes and contains these child elements:
 <li><a href="#keyboard">Keyboard-Defaults Element: &lt;keyboard&gt;</a>
 <li><a href="#cheats">Cheating Element: &lt;cheats&gt;</a>
 <li><a href="#logging">Logging Configuration Element: &lt;logging&gt;</a>
-<li><a href="#macros">Macros: &lt;macros&gt;</a>
+<li><a href="#console">Console: &lt;console&gt;</a>
 <li><a href="#levelscripts">Level Scripting</a>
 <li><a href="#appendix1">Appendix 1: Additional Elements</a>
 <li><a href="#appendix2">Appendix 2: Lists of Entity Types</a>
@@ -2126,16 +2126,17 @@ This would set up the "global" logging domain such that only messages more impor
 
 <hr>
 
-<h3><a name="macros">Macros</a></h3>
-
+<h3><a name="console">Console</a></h3>
+The &lt;console&gt; tag contains a child elements for macros:
+<h4>Macros</h4>
 Macros are substitutions performed on commands entered into the console. For instance, you can make a macro that changes &quot;.1&quot; into &quot;I&apos;ll defend&quot;. Macros can be used for chat, or to shorten other commands. Each macro child element has an input and an output attribute. To trigger the macro, type a dot immediately followed by the macro input into the console. 
 <p>Macro inputs can be letters and numbers, but not spaces. Anything after the first space will remain unsubstituted. For instance, &quot;.1 you losers&quot; becomes &quot;I&apos;ll defend you losers&quot;
 <p>
 Example:
 <pre>
-&lt;macros&gt;
+&lt;console&gt;
 &lt;macro input=&quot;1&quot; output=&quot;I'll defend&quot;/&gt;
-&lt;/macros&gt;
+&lt;/console&gt;
 </pre>
 <p>
 

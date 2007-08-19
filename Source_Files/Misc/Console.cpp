@@ -265,12 +265,12 @@ bool XML_MacroParser::AttributesDone()
 }
 
 static XML_MacroParser MacroParser;
-static XML_ElementParser MacrosParser("macros");
+static XML_ElementParser ConsoleParser("console");
 
 XML_ElementParser *Console_GetParser()
 {
-	MacrosParser.AddChild(&MacroParser);
+	ConsoleParser.AddChild(&MacroParser);
 
-	return &MacrosParser;
+	return &ConsoleParser;
 }
 
