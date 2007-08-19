@@ -43,6 +43,7 @@ Jan 6, 2001 (Loren Petrich):
 
 // LP addition:
 #include "dynamic_limits.h"
+#include "world.h" // for angle
 
 // LP change: made this settable from the resource fork
 #define MAXIMUM_PROJECTILES_PER_MAP (get_dynamic_limit(_dynamic_limit_projectiles))
