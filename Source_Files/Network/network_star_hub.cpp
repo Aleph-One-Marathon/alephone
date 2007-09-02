@@ -1110,15 +1110,17 @@ hub_tick()
                         make_player_netdead(i);
                         shouldSend = true;
                 }
-		else if (getFlagsQueue(i).availableCapacity() == 0  && i != sLocalPlayerIndex && sNetworkPlayers[i].mConnected && sNetworkPlayers[i].mSmallestUnacknowledgedTick >= sSmallestRealGameTick)
-		{
-			logWarningNMT1("Disconnecting player %i whose queue is full!", i);
-			make_player_netdead(i);
-			shouldSend = true;
+		// if this guy's last ACK was longer ago than the queues have space to store things, I guess dump him
+		else if (i != sLocalPlayerIndex && sNetworkPlayers[i].mConnected && sNetworkPlayers[i].mSmallestUnacknowledgedTick >= sSmallestRealGameTick && (sNetworkPlayers[sReferencePlayerIndex].mSmallestUnacknowledgedTick - sNetworkPlayers[i].mSmallestUnacknowledgedTick) >= kFlagsQueueSize) {
+			{
+				logWarningNMT3("Disconnecting player %i for late ACKs (last ACK %i, reference ACK %i", i, sNetworkPlayers[i].mSmallestUnacknowledgedTick, sNetworkPlayers[sReferencePlayerIndex].mSmallestUnacknowledgedTick);
+				make_player_netdead(i);
+				shouldSend = true;
+			}
 		}
 		
 	}
-	
+			
 	// if we're getting behind, make up flags
 	
 	if (sHubPreferences.mBandwidthReduction && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick)
