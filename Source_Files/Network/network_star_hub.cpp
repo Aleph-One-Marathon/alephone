@@ -1105,12 +1105,19 @@ hub_tick()
         for(size_t i = 0; i < sNetworkPlayers.size(); i++)
         {
                 int theSilentTicksBeforeNetDeath = (sNetworkPlayers[i].mSmallestUnacknowledgedTick < sSmallestRealGameTick) ? sHubPreferences.mPregameTicksBeforeNetDeath : sHubPreferences.mInGameTicksBeforeNetDeath;
-                if(sNetworkPlayers[i].mConnected && sNetworkTicker - sNetworkPlayers[i].mLastNetworkTickHeard > theSilentTicksBeforeNetDeath)
+                if (sNetworkPlayers[i].mConnected && sNetworkTicker - sNetworkPlayers[i].mLastNetworkTickHeard > theSilentTicksBeforeNetDeath)
                 {
                         make_player_netdead(i);
                         shouldSend = true;
                 }
-        }
+		else if (getFlagsQueue(i).availableCapacity() == 0  && i != sLocalPlayerIndex && sNetworkPlayers[i].mConnected && sNetworkPlayers[i].mSmallestUnacknowledgedTick >= sSmallestRealGameTick)
+		{
+			logWarningNMT1("Disconnecting player %i whose queue is full!", i);
+			make_player_netdead(i);
+			shouldSend = true;
+		}
+		
+	}
 	
 	// if we're getting behind, make up flags
 	
