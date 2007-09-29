@@ -118,15 +118,6 @@ enum /* hardware acceleration codes */
 
 extern struct color_table *world_color_table, *visible_color_table, *interface_color_table;
 
-// Accessors for the screen's GDevice and GrafPort;
-// this abstraction is used for DrawSprocket support
-#ifdef mac
-GDHandle GetWorldDevice();
-CGrafPtr GetScreenGrafPort();
-// extern GDHandle world_device;
-// extern WindowPtr screen_window;
-#endif
-
 //CP Addition: make screen_mode_data usable here too
 struct screen_mode_data;
 
@@ -173,30 +164,10 @@ short GetSizeWithoutHUD(short Size);
 void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog);
 void change_screen_mode(struct screen_mode_data *mode, bool redraw);
 
-#if defined(mac)
-void process_screen_key(EventRecord *event, short key);
-void process_screen_click(EventRecord *event);
-
-bool machine_supports_16bit(GDSpecPtr spec);
-bool machine_supports_32bit(GDSpecPtr spec);
-short hardware_acceleration_code(GDSpecPtr spec);
-
-void activate_screen_window(WindowPtr window, EventRecord *event, bool active);
-void update_screen_window(WindowPtr window, EventRecord *event);
-
-// LP: for switching to another process and returning (suspend/resume events)
-void SuspendDisplay(EventRecord *EvPtr);
-void ResumeDisplay(EventRecord *EvPtr);
-
-// Bytnar: for updating windows immediately under OSX
-void FlushGrafPortRect(const CGrafPtr port, const Rect &destination);
-
-#elif defined(SDL)
 void toggle_fullscreen(bool fs);
 void toggle_fullscreen();
 void update_screen_window(void);
 void clear_screen(void);
-#endif
 
 void calculate_destination_frame(short size, bool high_resolution, Rect *frame);
 
