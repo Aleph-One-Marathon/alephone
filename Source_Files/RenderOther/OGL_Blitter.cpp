@@ -29,8 +29,8 @@ const int OGL_Blitter::tile_size;
 
 OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Rect& ortho) : m_ortho(ortho)
 {
-	x_scale = (s.w / dst.w);
-	y_scale = (s.h / dst.h);
+	x_scale = (dst.w / (GLdouble) s.w);
+	y_scale = (dst.h / (GLdouble) s.h);
 	x_offset = dst.x;
 	y_offset = dst.y;
 
@@ -124,10 +124,10 @@ void OGL_Blitter::Draw()
 		GLdouble VScale = (double) m_rects[i].w / (double) tile_size;
 		GLdouble UScale = (double) m_rects[i].h / (double) tile_size;
 
-		glTexCoord2f(0.0, 0.0); glVertex3f(m_rects[i].x + x_offset, m_rects[i].y + y_offset, 0);
-		glTexCoord2f(VScale, 0.0); glVertex3f(m_rects[i].x + x_offset + m_rects[i].w * x_scale, m_rects[i].y + y_offset, 0);
-		glTexCoord2f(VScale, UScale); glVertex3f(m_rects[i].x + x_offset + m_rects[i].w * x_scale, m_rects[i].y + y_offset + m_rects[i].h * y_scale, 0);
-		glTexCoord2f(0.0, UScale); glVertex3f(m_rects[i].x + x_offset, m_rects[i].y + y_offset + m_rects[i].h * y_scale, 0);
+		glTexCoord2f(0.0, 0.0); glVertex3f((m_rects[i].x + x_offset) * x_scale, (m_rects[i].y + y_offset) * y_scale, 0);
+		glTexCoord2f(VScale, 0.0); glVertex3f((m_rects[i].x + x_offset + m_rects[i].w) * x_scale, (m_rects[i].y + y_offset) * y_scale, 0);
+		glTexCoord2f(VScale, UScale); glVertex3f((m_rects[i].x + x_offset + m_rects[i].w) * x_scale, (m_rects[i].y + y_offset + m_rects[i].h) * y_scale, 0);
+		glTexCoord2f(0.0, UScale); glVertex3f((m_rects[i].x + x_offset) * x_scale, (m_rects[i].y + y_offset + m_rects[i].h) * y_scale, 0);
 		glEnd();
 	}
 }
