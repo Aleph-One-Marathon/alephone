@@ -352,8 +352,6 @@ MetaserverClient::sendChatMessage(const std::string& message)
 		// everything after the space is the name to ignore
 		string name = message.substr(strlen(".ignore "));
 		ignore(name);
-	} else if (message.compare(0, strlen(".testy "), ".testy ") == 0) {
-		m_channel->enqueueOutgoingMessage(NameAndTeamMessage("TreellamaRules", "TreellamasTeamRules"));
 	} else {
 		m_channel->enqueueOutgoingMessage(ChatMessage(m_playerID, m_playerName, message));
 	}
