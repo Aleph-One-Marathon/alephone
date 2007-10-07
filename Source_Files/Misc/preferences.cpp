@@ -329,6 +329,14 @@ static void player_dialog(void *arg)
 	d.add(pcolor_w);
 	w_player_color *tcolor_w = new w_player_color("Team Color", player_preferences->team);
 	d.add(tcolor_w);
+
+	d.add(new w_spacer());
+	d.add(new w_static_text("\"Find Internet Game\" Server"));
+	d.add(new w_static_text("(default is guest/guest)"));
+	w_text_entry *login_w = new w_text_entry("Login", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
+	d.add(login_w);
+	w_password_entry *password_w = new w_password_entry("Password", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
+	d.add(password_w);
 	
 	d.add(new w_spacer());
         
@@ -353,6 +361,16 @@ static void player_dialog(void *arg)
 		char *theOldName = a1_p2cstr(theOldNameP);
 		if (strcmp(name, theOldName)) {
 			copy_pstring_from_text_field(&d, iNAME, player_preferences->name);
+			changed = true;
+		}
+
+		if (strcmp(login_w->get_text(), network_preferences->metaserver_login)) {
+			strncpy(network_preferences->metaserver_login, login_w->get_text(), network_preferences_data::kMetaserverLoginLength);
+			changed = true;
+		}
+
+		if (strcmp(password_w->get_text(), network_preferences->metaserver_password)) {
+			strncpy(network_preferences->metaserver_password, password_w->get_text(), network_preferences_data::kMetaserverLoginLength);
 			changed = true;
 		}
 

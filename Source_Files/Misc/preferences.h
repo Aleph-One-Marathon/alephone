@@ -131,8 +131,12 @@ struct network_preferences_data
 	bool attempt_upnp;
 	bool check_for_updates;
 
-	char metaserver_login[16];
-	char metaserver_password[16];
+	enum {
+		kMetaserverLoginLength = 16
+	};
+
+	char metaserver_login[kMetaserverLoginLength];
+	char metaserver_password[kMetaserverLoginLength];
 };
 
 struct player_preferences_data
