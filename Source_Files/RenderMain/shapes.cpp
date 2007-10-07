@@ -476,12 +476,12 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
 
 static bool load_collection(short collection_index, bool strip)
 {
-	SDL_RWops *p = ShapesFile.GetRWops();	// Source stream
-	uint32 *t;								// Offset table pointer
+	SDL_RWops *p = ShapesFile.GetRWops(); // Source stream
 
 	// Get offset and length of data in source file from header
 	collection_header *header = get_collection_header(collection_index);
 	long src_offset, src_length;
+
 	if (bit_depth == 8 || header->offset16 == -1) {
 		vassert(header->offset != -1, csprintf(temporary, "collection #%d does not exist.", collection_index));
 		src_offset = header->offset;
@@ -492,79 +492,84 @@ static bool load_collection(short collection_index, bool strip)
 	}
 
 	// Read collection definition
+	std::auto_ptr<collection_definition> cd(new collection_definition);
 	ShapesFile.SetPosition(src_offset);
-	int16 version = SDL_ReadBE16(p);
-	int16 type = SDL_ReadBE16(p);
-	uint16 flags = SDL_ReadBE16(p);
-	int16 color_count = SDL_ReadBE16(p);
-	int16 clut_count = SDL_ReadBE16(p);
-	int32 color_table_offset = SDL_ReadBE32(p);
-	int16 high_level_shape_count = SDL_ReadBE16(p);
-	int32 high_level_shape_offset_table_offset = SDL_ReadBE32(p);
-	int16 low_level_shape_count = SDL_ReadBE16(p);
-	int32 low_level_shape_offset_table_offset = SDL_ReadBE32(p);
-	int16 bitmap_count = SDL_ReadBE16(p);
-	int32 bitmap_offset_table_offset = SDL_ReadBE32(p);
-	int16 pixels_to_world = SDL_ReadBE16(p);
+	cd->version = SDL_ReadBE16(p);
+	cd->type = SDL_ReadBE16(p);
+	cd->flags = SDL_ReadBE16(p);
+	cd->color_count = SDL_ReadBE16(p);
+	cd->clut_count = SDL_ReadBE16(p);
+	cd->color_table_offset = SDL_ReadBE32(p);
+	cd->high_level_shape_count = SDL_ReadBE16(p);
+	cd->high_level_shape_offset_table_offset = SDL_ReadBE32(p);
+	cd->low_level_shape_count = SDL_ReadBE16(p);
+	cd->low_level_shape_offset_table_offset = SDL_ReadBE32(p);
+	cd->bitmap_count = SDL_ReadBE16(p);
+	cd->bitmap_offset_table_offset = SDL_ReadBE32(p);
+	cd->pixels_to_world = SDL_ReadBE16(p);
 	SDL_ReadBE32(p); // skip size
 
-	// Allocate memory for collection
-	int extra_length = 1024 + high_level_shape_count * 4 + low_level_shape_count * 4 + bitmap_count * 2048;
-	uint8 *c = (uint8*)malloc(src_length + extra_length);
-	if (c == NULL)
-		return false;
-
-	// Initialize collection definition
-	collection_definition *cd = (collection_definition *)c;
-	cd->version = version;
-	cd->type = type;
-	cd->flags = flags;
-	cd->color_count = color_count;
-	cd->clut_count = clut_count;
-	cd->high_level_shape_count = high_level_shape_count;
-	cd->low_level_shape_count = low_level_shape_count;
-	cd->bitmap_count = bitmap_count;
-	cd->pixels_to_world = pixels_to_world;
-//	printf(" index %d, version %d, type %d, %d colors, %d cluts, %d hl, %d ll, %d bitmaps\n", collection_index, version, type, color_count, clut_count, high_level_shape_count, low_level_shape_count, bitmap_count);
-
-	// Set up destination pointer
-	size_t dst_offset = 0x220;
-#define q (c + dst_offset)
-
-	// Convert CLUTs
-	ShapesFile.SetPosition(src_offset + color_table_offset);
-	cd->color_table_offset = static_cast<int32>(dst_offset);
-	for (int i=0; i<clut_count*color_count; i++) {
-		rgb_color_value *r = (rgb_color_value *)q;
+	// Convert CLUTS
+	cd->color_tables.resize(cd->clut_count * cd->color_count);
+	ShapesFile.SetPosition(src_offset + cd->color_table_offset);
+	for (int i = 0; i < cd->clut_count * cd->color_count; i++) {
+		rgb_color_value *r = &cd->color_tables[i];
 		SDL_RWread(p, r, 1, 2);
 		r->red = SDL_ReadBE16(p);
 		r->green = SDL_ReadBE16(p);
 		r->blue = SDL_ReadBE16(p);
-		dst_offset += sizeof(rgb_color_value);
 	}
 
 	// Convert high-level shape definitions
-	ShapesFile.SetPosition(src_offset + high_level_shape_offset_table_offset);
-	cd->high_level_shape_offset_table_offset = static_cast<int32>(dst_offset);
+	ShapesFile.SetPosition(src_offset + cd->high_level_shape_offset_table_offset);
+	std::vector<uint32> t(cd->high_level_shape_count);
+	SDL_RWread(p, &t[0], sizeof(uint32), cd->high_level_shape_count);
+	byte_swap_memory(&t[0], _4byte, cd->high_level_shape_count);
+	cd->high_level_shapes.resize(cd->high_level_shape_count);
 
-	t = (uint32 *)q;	// Offset table
-	SDL_RWread(p, t, sizeof(uint32), high_level_shape_count);
-	byte_swap_memory(t, _4byte, high_level_shape_count);
-	dst_offset += high_level_shape_count * sizeof(uint32);
-
-	for (int i=0; i<high_level_shape_count; i++) {
-
-		// Seek to offset in source file, correct destination offset
+	for (int i = 0; i < cd->high_level_shape_count; i++) {
 		ShapesFile.SetPosition(src_offset + t[i]);
-		t[i] = static_cast<int32>(dst_offset);
 
-		// Convert high-level shape definition
-		high_level_shape_definition *d = (high_level_shape_definition *)q;
-		d->type = SDL_ReadBE16(p);
-		d->flags = SDL_ReadBE16(p);
-		SDL_RWread(p, d->name, 1, HIGH_LEVEL_SHAPE_NAME_LENGTH + 2);
-		d->number_of_views = SDL_ReadBE16(p);
-		d->frames_per_view = SDL_ReadBE16(p);
+		int16 type = SDL_ReadBE16(p);
+		int16 flags = SDL_ReadBE16(p);
+		char name[HIGH_LEVEL_SHAPE_NAME_LENGTH + 2];
+		SDL_RWread(p, name, 1, HIGH_LEVEL_SHAPE_NAME_LENGTH + 2);
+		int16 number_of_views = SDL_ReadBE16(p);
+		int16 frames_per_view = SDL_ReadBE16(p);
+
+		// Convert low-level shape index list
+		int num_views;
+		switch (number_of_views) {
+		case _unanimated:
+		case _animated1:
+			num_views = 1;
+			break;
+		case _animated3to4:
+		case _animated4:
+			num_views = 4;
+			break;
+		case _animated3to5:
+		case _animated5:
+			num_views = 5;
+			break;
+		case _animated2to8:
+		case _animated5to8:
+		case _animated8:
+			num_views = 8;
+			break;
+		default:
+			num_views = number_of_views;
+			break;
+		}
+
+		cd->high_level_shapes[i].resize(sizeof(high_level_shape_definition) + num_views * frames_per_view * sizeof(int16));
+		high_level_shape_definition *d = (high_level_shape_definition *) &cd->high_level_shapes[i][0];
+		
+		d->type = type;
+		d->flags = flags;
+		memcpy(d->name, name, HIGH_LEVEL_SHAPE_NAME_LENGTH + 2);
+		d->number_of_views = number_of_views;
+		d->frames_per_view = frames_per_view;
 		d->ticks_per_frame = SDL_ReadBE16(p);
 		d->key_frame = SDL_ReadBE16(p);
 		d->transfer_mode = SDL_ReadBE16(p);
@@ -577,54 +582,22 @@ static bool load_collection(short collection_index, bool strip)
 		SDL_RWseek(p, 28, SEEK_CUR);
 
 		// Convert low-level shape index list
-		int num_views;
-		switch (d->number_of_views) {
-			case _unanimated:
-			case _animated1:
-				num_views = 1;
-				break;
-			case _animated3to4:
-			case _animated4:
-				num_views = 4;
-				break;
-			case _animated3to5:
-			case _animated5:
-				num_views = 5;
-				break;
-			case _animated2to8:
-			case _animated5to8:
-			case _animated8:
-				num_views = 8;
-				break;
-			default:
-				num_views = d->number_of_views;
-				break;
-		}
-		for (int j=0; j<num_views*d->frames_per_view; j++)
+		for (int j = 0; j < num_views * d->frames_per_view; j++) {
 			d->low_level_shape_indexes[j] = SDL_ReadBE16(p);
+		}
 
-		dst_offset += sizeof(high_level_shape_definition) + (num_views * d->frames_per_view - 1) * sizeof(int16);
-		if (dst_offset & 3)	// Align to 32-bit boundary
-			dst_offset += 4 - (dst_offset & 3);
 	}
 
 	// Convert low-level shape definitions
-	ShapesFile.SetPosition(src_offset + low_level_shape_offset_table_offset);
-	cd->low_level_shape_offset_table_offset = static_cast<int32>(dst_offset);
+	ShapesFile.SetPosition(src_offset + cd->low_level_shape_offset_table_offset);
+	t.resize(cd->low_level_shape_count);
+	SDL_RWread(p, &t[0], sizeof(uint32), cd->low_level_shape_count);
+	byte_swap_memory(&t[0], _4byte, cd->low_level_shape_count);
+	cd->low_level_shapes.resize(cd->low_level_shape_count);
 
-	t = (uint32 *)q;	// Offset table
-	SDL_RWread(p, t, sizeof(uint32), low_level_shape_count);
-	byte_swap_memory(t, _4byte, low_level_shape_count);
-	dst_offset += low_level_shape_count * sizeof(uint32);
-
-	for (int i=0; i<low_level_shape_count; i++) {
-
-		// Seek to offset in source file, correct destination offset
+	for (int i = 0; i < cd->low_level_shape_count; i++) {
 		ShapesFile.SetPosition(src_offset + t[i]);
-		t[i] = static_cast<int32>(dst_offset);
-
-		// Convert low-level shape definition
-		low_level_shape_definition *d = (low_level_shape_definition *)q;
+		low_level_shape_definition *d = &cd->low_level_shapes[i];
 		d->flags = SDL_ReadBE16(p);
 		d->minimum_light_intensity = SDL_ReadBE32(p);
 		d->bitmap_index = SDL_ReadBE16(p);
@@ -639,69 +612,91 @@ static bool load_collection(short collection_index, bool strip)
 		d->world_x0 = SDL_ReadBE16(p);
 		d->world_y0 = SDL_ReadBE16(p);
 		SDL_RWseek(p, 8, SEEK_CUR);
-		dst_offset += sizeof(low_level_shape_definition);
+
 	}
 
 	// Convert bitmap definitions
-	ShapesFile.SetPosition(src_offset + bitmap_offset_table_offset);
-	cd->bitmap_offset_table_offset = static_cast<int32>(dst_offset);
+	ShapesFile.SetPosition(src_offset + cd->bitmap_offset_table_offset);
+	t.resize(cd->bitmap_count);
+	SDL_RWread(p, &t[0], sizeof(uint32), cd->bitmap_count);
+	byte_swap_memory(&t[0], _4byte, cd->bitmap_count);
+	cd->bitmaps.resize(cd->bitmap_count);
 
-	t = (uint32 *)q;	// Offset table
-	SDL_RWread(p, t, sizeof(uint32), bitmap_count);
-	byte_swap_memory(t, _4byte, bitmap_count);
-	dst_offset += bitmap_count * sizeof(uint32);
-	if (dst_offset & 7)	// Align to 64-bit boundary
-		dst_offset += 8 - (dst_offset & 7);
-
-	for (int i=0; i<bitmap_count; i++) {
-
-		// Seek to offset in source file, correct destination offset
+	for (int i = 0; i < cd->bitmap_count; i++) {
 		ShapesFile.SetPosition(src_offset + t[i]);
-		t[i] = static_cast<int32>(dst_offset);
+
+		bitmap_definition b;
 
 		// Convert bitmap definition
-		bitmap_definition *d = (bitmap_definition *)q;
-		d->width = SDL_ReadBE16(p);
-		d->height = SDL_ReadBE16(p);
-		d->bytes_per_row = SDL_ReadBE16(p);
-		d->flags = SDL_ReadBE16(p);
-		d->bit_depth = SDL_ReadBE16(p);
+		b.width = SDL_ReadBE16(p);
+		b.height = SDL_ReadBE16(p);
+		b.bytes_per_row = SDL_ReadBE16(p);
+		b.flags = SDL_ReadBE16(p);
+		b.bit_depth = SDL_ReadBE16(p);
+
+		// guess how big to make it
+		int rows = (b.flags & _COLUMN_ORDER_BIT) ? b.width : b.height;
+		
 		SDL_RWseek(p, 16, SEEK_CUR);
-		dst_offset += sizeof(bitmap_definition);
+		
+		// Skip row address pointers
+		SDL_RWseek(p, (rows + 1) * sizeof(uint32), SEEK_CUR);
+
+		if (b.bytes_per_row == NONE) {
+			// ugly--figure out how big it's going to be
+			
+			int32 size = 0;
+			for (int j = 0; j < rows; j++) {
+				int16 first = SDL_ReadBE16(p);
+				int16 last = SDL_ReadBE16(p);
+				size += 4;
+				SDL_RWseek(p, last - first, SEEK_CUR);
+				size += last - first;
+			}
+
+			cd->bitmaps[i].resize(sizeof(bitmap_definition) + rows * sizeof(pixel8*) + size);
+
+			// Now, seek back
+			SDL_RWseek(p, -size, SEEK_CUR);
+		} else {
+			cd->bitmaps[i].resize(sizeof(bitmap_definition) + rows * sizeof(pixel8*) + rows * b.bytes_per_row);
+		}
+
+		uint8* c = &cd->bitmaps[i][0];
+		bitmap_definition *d = (bitmap_definition *) &cd->bitmaps[i][0];
+		d->width = b.width;
+		d->height = b.height;
+		d->bytes_per_row = b.bytes_per_row;
+		d->flags = b.flags;
+		d->bit_depth = b.bit_depth;
+		c += sizeof(bitmap_definition);
 
 		// Skip row address pointers
-		int rows = (d->flags & _COLUMN_ORDER_BIT) ? d->width : d->height;
-		SDL_RWseek(p, (rows + 1) * sizeof(uint32), SEEK_CUR);
-		dst_offset += rows * sizeof(pixel8 *);
+		c += rows * sizeof(pixel8 *);
 
 		// Copy bitmap data
 		if (d->bytes_per_row == NONE) {
 			// RLE format
-			for (int j=0; j<rows; j++) {
+
+			for (int j = 0; j < rows; j++) {
 				int16 first = SDL_ReadBE16(p);
 				int16 last = SDL_ReadBE16(p);
-				*(c + dst_offset++) = (uint8)(first >> 8);
-				*(c + dst_offset++) = (uint8)(first);
-				*(c + dst_offset++) = (uint8)(last >> 8);
-				*(c + dst_offset++) = (uint8)(last);
-				SDL_RWread(p, q, 1, last - first);
-				dst_offset += last - first;
+				*(c++) = (uint8)(first >> 8);
+				*(c++) = (uint8)(first);
+				*(c++) = (uint8)(last >> 8);
+				*(c++) = (uint8)(last);
+				SDL_RWread(p, c, 1, last - first);
+				c += last - first;
 			}
 		} else {
-			// Raw format
-			SDL_RWread(p, q, d->bytes_per_row, rows);
-			dst_offset += rows * d->bytes_per_row;
+			SDL_RWread(p, c, d->bytes_per_row, rows);
+			c += rows * d->bytes_per_row;
 		}
-		if (dst_offset & 7)	// Align to 64-bit boundary
-			dst_offset += 8 - (dst_offset & 7);
+		assert (c - &cd->bitmaps[i][0] <= cd->bitmaps[i].size());
 	}
 
-	// Set pointer to collection in collection header
-	header->collection = cd;
-	cd->size = static_cast<int32>(dst_offset);
-//	printf(" collection at %p, size %d -> %d\n", cd, src_length, cd->size);
-	assert(cd->size <= src_length + extra_length);
-
+	header->collection = cd.release();
+	
 	if (strip) {
 		//!! don't know what to do
 		fprintf(stderr, "Stripped shapes not implemented\n");
@@ -709,23 +704,25 @@ static bool load_collection(short collection_index, bool strip)
 	}
 
 	// Allocate enough space for this collection's shading tables
-	if (strip)
+		if (strip)
 		header->shading_tables = NULL;
 	else {
 		collection_definition *definition = get_collection_definition(collection_index);
 		header->shading_tables = (byte *)malloc(get_shading_table_size(collection_index) * definition->clut_count + shading_table_size * NUMBER_OF_TINT_TABLES);
 	}
 	if (header->shading_tables == NULL) {
-		free(header->collection);
+		delete header->collection;
 		header->collection = NULL;
-		free(c);
 		return false;
 	}
 
 	// Everything OK
 	return true;
 }
-
+	
+					
+			
+			
 
 /*
  *  Unload collection
@@ -734,7 +731,7 @@ static bool load_collection(short collection_index, bool strip)
 static void unload_collection(struct collection_header *header)
 {
 	assert(header->collection);
-	free(header->collection);
+	delete header->collection;
 	free(header->shading_tables);
 	header->collection = NULL;
 	header->shading_tables = NULL;
@@ -2422,15 +2419,6 @@ static struct collection_header *get_collection_header(
 	*/
 }
 
-static void *collection_offset(
-	struct collection_definition *definition,
-	long offset)
-{
-	if (!(offset>=0 && offset<definition->size)) return NULL;
-	
-	return ((byte *)definition) + offset;
-}
-
 static struct collection_definition *get_collection_definition(
 	short collection_index)
 {
@@ -2441,11 +2429,12 @@ static struct rgb_color_value *get_collection_colors(
 	short collection_index,
 	short clut_number)
 {
-	struct collection_definition *definition= get_collection_definition(collection_index);
-
-	if (!(clut_number>=0&&clut_number<definition->clut_count)) return NULL;
+	collection_definition *definition = get_collection_definition(collection_index);
+	if (!definition) return NULL;
+	if (!(clut_number >= 0 && clut_number < definition->clut_count))
+		return NULL;
 	
-	return (struct rgb_color_value *) collection_offset(definition, definition->color_table_offset+clut_number*sizeof(struct rgb_color_value)*definition->color_count);
+	return &definition->color_tables[clut_number * definition->color_count];
 }
 
 struct rgb_color_value *get_collection_colors(
@@ -2453,65 +2442,50 @@ struct rgb_color_value *get_collection_colors(
 	short clut_number,
 	int &num_colors)
 {
-	struct collection_definition *definition= get_collection_definition(collection_index);
-
-	if (!(clut_number>=0&&clut_number<definition->clut_count)) return NULL;
-
+	collection_definition *definition = get_collection_definition(collection_index);
+	if (!definition) return NULL;
+	if (!(clut_number >=0 && clut_number < definition->clut_count)) return NULL;
 	num_colors = definition->color_count;
-	return (struct rgb_color_value *) collection_offset(definition, definition->color_table_offset+clut_number*sizeof(struct rgb_color_value)*definition->color_count);
+	return &definition->color_tables[clut_number * definition->color_count];
 }
 
 static struct high_level_shape_definition *get_high_level_shape_definition(
 	short collection_index,
 	short high_level_shape_index)
 {
-	struct collection_definition *definition= get_collection_definition(collection_index);
-	uint32 *offset_table;
-	
+	struct collection_definition *definition = get_collection_definition(collection_index);
 	if (!definition) return NULL;
-	
-	if (!(high_level_shape_index>=0&&high_level_shape_index<definition->high_level_shape_count))
+
+	if (!(high_level_shape_index >= 0 && high_level_shape_index<definition->high_level_shapes.size()))
 		return NULL;
-	
-	offset_table= (uint32 *) collection_offset(definition, definition->high_level_shape_offset_table_offset);
-	if (!offset_table) return NULL;
-	
-	return (struct high_level_shape_definition *) collection_offset(definition, offset_table[high_level_shape_index]);
+
+	return (high_level_shape_definition *) &definition->high_level_shapes[high_level_shape_index][0];
 }
 
-// ZZZ: exposed this
 struct low_level_shape_definition *get_low_level_shape_definition(
 	short collection_index,
 	short low_level_shape_index)
 {
-	struct collection_definition *definition= get_collection_definition(collection_index);
-	uint32 *offset_table;
-
-	if (low_level_shape_index>=0 && low_level_shape_index<definition->low_level_shape_count)
+	collection_definition *definition = get_collection_definition(collection_index);
+	if (!definition) return NULL;
+	if (low_level_shape_index >= 0 && low_level_shape_index < definition->low_level_shapes.size())
 	{
-	
-	offset_table= (uint32 *) collection_offset(definition, definition->low_level_shape_offset_table_offset);
-	if (!offset_table) return NULL;
-	
-	return (struct low_level_shape_definition *) collection_offset(definition, offset_table[low_level_shape_index]);
+		return &definition->low_level_shapes[low_level_shape_index];
 	}
-	else return NULL;
+	else
+		return NULL;
 }
 
 static struct bitmap_definition *get_bitmap_definition(
 	short collection_index,
 	short bitmap_index)
 {
-	struct collection_definition *definition= get_collection_definition(collection_index);
-	uint32 *offset_table;
-
-	if (!(bitmap_index>=0 && bitmap_index<definition->bitmap_count))
+	collection_definition *definition = get_collection_definition(collection_index);
+	if (!definition) return NULL;
+	if (!(bitmap_index >= 0 && bitmap_index < definition->bitmaps.size()))
 		return NULL;
-	
-	offset_table= (uint32 *) collection_offset(definition, definition->bitmap_offset_table_offset);
-	if (!offset_table) return NULL;
-	
-	return (struct bitmap_definition *) collection_offset(definition, offset_table[bitmap_index]);
+
+	return (bitmap_definition *) &definition->bitmaps[bitmap_index][0];
 }
 
 static void *get_collection_shading_tables(

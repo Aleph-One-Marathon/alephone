@@ -54,6 +54,11 @@ enum /* collection types */
 	_scenery_collection /* rle */
 };
 
+struct high_level_shape_definition;
+struct low_level_shape_definition;
+struct bitmap_definition;
+struct rgb_color_value;
+
 struct collection_definition
 {
 	int16 version;
@@ -78,6 +83,11 @@ struct collection_definition
 	int32 size; /* used to assert offsets */
 	
 	int16 unused[253];
+
+	std::vector<rgb_color_value> color_tables;
+	std::vector<std::vector<uint8> > high_level_shapes;
+	std::vector<low_level_shape_definition> low_level_shapes;
+	std::vector<std::vector<uint8> > bitmaps;
 };
 const int SIZEOF_collection_definition = 544;
 
