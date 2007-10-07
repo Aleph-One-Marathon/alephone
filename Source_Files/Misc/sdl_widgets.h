@@ -507,6 +507,16 @@ public:
 	int get_number(void) {return atoi(get_text());}
 };
 
+/*
+ * Displays asterisks instead of password
+ */
+
+class w_password_entry : public w_text_entry {
+public:
+	w_password_entry(const char *name, size_t max_chars, const char *initial_text = 0);
+
+	void draw(SDL_Surface *s) const;
+};
 
 /*
  *  Key name widget

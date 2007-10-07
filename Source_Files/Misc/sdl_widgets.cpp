@@ -1003,6 +1003,18 @@ void w_number_entry::set_number(int number)
 	set_text(str);
 }
 
+w_password_entry::w_password_entry(const char *name, size_t max_chars, const char *initial_text) : w_text_entry(name, max_chars, initial_text)
+{
+
+}
+
+void w_password_entry::draw(SDL_Surface *s) const
+{
+	string real_text = buf;
+	memset(buf, '*', strlen(buf));
+	w_text_entry::draw(s);
+	strcpy(buf, real_text.c_str());
+}
 
 /*
  *  Key name widget
