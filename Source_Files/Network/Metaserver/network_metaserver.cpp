@@ -185,17 +185,47 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 	{
 		SaltMessage* theSaltMessage = dynamic_cast<SaltMessage*>(theSaltOrAcceptMessage.get());
 
-		uint8 theKey[kKeyLength];
-		uint8 thePasswordCopy[kKeyLength];
-		strncpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str(), kKeyLength);
-		memcpy(theKey, theSaltMessage->salt(), sizeof(theKey));
-		for(size_t i = 0; i < sizeof(theKey); i++)
-			theKey[i] ^= thePasswordCopy[i];
+		char theKey[kKeyLength];
+		char thePasswordCopy[kKeyLength];
+		memset(thePasswordCopy, 0x23, sizeof(thePasswordCopy));
+		if (userPassword.size() < kKeyLength)
+			strcpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str());
+		else 
+			strncpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str(), kKeyLength);
 
-		BigChunkOfDataMessage theKeyMessage(kCLIENT_KEY, theKey, sizeof(theKey));
+		if (theSaltMessage->encryptionType() == SaltMessage::kPlaintextEncryption) 
+		{
+			strncpy(theKey, thePasswordCopy, kKeyLength);
+		} 
+		else if (theSaltMessage->encryptionType() == SaltMessage::kBraindeadSimpleEncryption)
+		{
+			for(size_t i = 0; i < sizeof(theKey); i++)
+			{
+				theKey[i] = thePasswordCopy[i] ^ (theSaltMessage->salt()[i]);
+			}
+			
+			for(size_t i = 1; i < sizeof(theKey); i++)
+			{
+				theKey[i] = theKey[i]^theKey[i - 1];
+			}
+			
+			for(size_t i = 1; i < sizeof(theKey); i++) {
+				short value;
+				
+				value = ~( theKey[i]*theKey[i-1]);
+				theKey[i] = (unsigned char) value;
+			}
+		}
+		else
+		{
+			throw 0;
+		}
+
+		BigChunkOfDataMessage theKeyMessage(kCLIENT_KEY, (uint8 *) theKey, sizeof(theKey));
 		m_channel->enqueueOutgoingMessage(theKeyMessage);
 
 		auto_ptr<AcceptMessage> theAcceptMessage(m_channel->receiveSpecificMessageOrThrow<AcceptMessage>());
+
 	}
 	else if (dynamic_cast<AcceptMessage*>(theSaltOrAcceptMessage.get()) == 0)
 		throw 0;

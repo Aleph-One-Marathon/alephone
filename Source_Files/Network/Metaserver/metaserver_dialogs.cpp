@@ -105,7 +105,7 @@ setupAndConnectClient(MetaserverClient& client)
 	}
 
 	client.setPlayerTeamName("");
-	client.connect("metaserver.lhowon.org", 6321, "guest", "0000000000000000");
+	client.connect("metaserver.lhowon.org", 6321, "guest", "");
 }
 
 
