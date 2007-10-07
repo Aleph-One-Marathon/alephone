@@ -130,6 +130,9 @@ struct network_preferences_data
 	bool advertise_on_metaserver;
 	bool attempt_upnp;
 	bool check_for_updates;
+
+	char metaserver_login[16];
+	char metaserver_password[16];
 };
 
 struct player_preferences_data

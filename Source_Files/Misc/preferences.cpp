@@ -112,6 +112,8 @@ const short FatalErrorAlert = 128;
 const short NonFatalErrorAlert = 129;
 #endif
 
+static const char sPasswordMask[] = "reverof nohtaram";
+
 static const char* sNetworkGameProtocolNames[] =
 {	// These should match up with _network_game_protocol_ring, etc.
 	"ring",
@@ -1773,6 +1775,15 @@ void write_preferences(
 	fprintf(F,"  advertise_on_metaserver=\"%s\"\n",BoolString(network_preferences->advertise_on_metaserver));
 	fprintf(F,"  attempt_upnp=\"%s\"\n", BoolString(network_preferences->attempt_upnp));
 	fprintf(F,"  check_for_updates=\"%s\"\n", BoolString(network_preferences->check_for_updates));
+	fprintf(F,"  metaserver_login=\"%.16s\"\n", network_preferences->metaserver_login);
+	
+	fprintf(F,"  metaserver_password=\"");
+	for (int i = 0; i < 16; i++) {
+		fprintf(F, "%.2x", network_preferences->metaserver_password[i] ^ sPasswordMask[i]);
+	}
+	fprintf(F, "\"\n");
+	
+	
 	fprintf(F,">\n");
 #ifndef SDL
 	WriteXML_FSSpec(F,"  ", kNetworkScriptFileSpecIndex, network_preferences->netscript_file);
@@ -1938,6 +1949,8 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->advertise_on_metaserver = false;
 	preferences->attempt_upnp = false;
 	preferences->check_for_updates = true;
+	strcpy(preferences->metaserver_login, "guest");
+	memset(preferences->metaserver_password, 0, 16);
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -3220,6 +3233,28 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"check_for_updates"))
 	{
 		return ReadBooleanValue(Value, network_preferences->check_for_updates);
+	}
+	else if (StringsEqual(Tag,"metaserver_login"))
+	{
+		DeUTF8_C(Value, strlen(Value),network_preferences->metaserver_login, sizeof(network_preferences->metaserver_login));
+		return true;
+	}
+	else if (StringsEqual(Tag,"metaserver_clear_password"))
+	{
+		DeUTF8_C(Value, strlen(Value),network_preferences->metaserver_password, sizeof(network_preferences->metaserver_password));
+		return true;
+	}
+	else if (StringsEqual(Tag,"metaserver_password"))
+	{
+		char obscure_password[32];
+		DeUTF8_C(Value, strlen(Value), obscure_password, sizeof(obscure_password));
+		for (int i = 0; i < 16; i++)
+		{
+			unsigned int c;
+			sscanf(obscure_password + i*2, "%2x", &c);
+			network_preferences->metaserver_password[i] = (char) c ^ sPasswordMask[i];
+		}
+		return true;
 	}
 	return true;
 }
