@@ -469,6 +469,183 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
 	return s;
 }
 
+static void load_collection_definition(collection_definition* cd, SDL_RWops *p)
+{
+	cd->version = SDL_ReadBE16(p);
+	cd->type = SDL_ReadBE16(p);
+	cd->flags = SDL_ReadBE16(p);
+	cd->color_count = SDL_ReadBE16(p);
+	cd->clut_count = SDL_ReadBE16(p);
+	cd->color_table_offset = SDL_ReadBE32(p);
+	cd->high_level_shape_count = SDL_ReadBE16(p);
+	cd->high_level_shape_offset_table_offset = SDL_ReadBE32(p);
+	cd->low_level_shape_count = SDL_ReadBE16(p);
+	cd->low_level_shape_offset_table_offset = SDL_ReadBE32(p);
+	cd->bitmap_count = SDL_ReadBE16(p);
+	cd->bitmap_offset_table_offset = SDL_ReadBE32(p);
+	cd->pixels_to_world = SDL_ReadBE16(p);
+	SDL_ReadBE32(p); // skip size
+}
+
+static void load_clut(rgb_color_value *r, int count, SDL_RWops *p)
+{
+	for (int i = 0; i < count; i++, r++) 
+	{
+		SDL_RWread(p, r, 1, 2);
+		r->red = SDL_ReadBE16(p);
+		r->green = SDL_ReadBE16(p);
+		r->blue = SDL_ReadBE16(p);
+	}
+}
+
+static void load_high_level_shape(std::vector<uint8>& shape, SDL_RWops *p)
+{
+	int16 type = SDL_ReadBE16(p);
+	int16 flags = SDL_ReadBE16(p);
+	char name[HIGH_LEVEL_SHAPE_NAME_LENGTH + 2];
+	SDL_RWread(p, name, 1, HIGH_LEVEL_SHAPE_NAME_LENGTH + 2);
+	int16 number_of_views = SDL_ReadBE16(p);
+	int16 frames_per_view = SDL_ReadBE16(p);
+
+	// Convert low-level shape index list
+	int num_views;
+	switch (number_of_views) {
+	case _unanimated:
+	case _animated1:
+		num_views = 1;
+		break;
+	case _animated3to4:
+	case _animated4:
+		num_views = 4;
+		break;
+	case _animated3to5:
+	case _animated5:
+		num_views = 5;
+		break;
+	case _animated2to8:
+	case _animated5to8:
+	case _animated8:
+		num_views = 8;
+		break;
+	default:
+		num_views = number_of_views;
+		break;
+	}
+
+	shape.resize(sizeof(high_level_shape_definition) + num_views * frames_per_view * sizeof(int16));
+		
+	high_level_shape_definition *d = (high_level_shape_definition *) &shape[0];
+		
+	d->type = type;
+	d->flags = flags;
+	memcpy(d->name, name, HIGH_LEVEL_SHAPE_NAME_LENGTH + 2);
+	d->number_of_views = number_of_views;
+	d->frames_per_view = frames_per_view;
+	d->ticks_per_frame = SDL_ReadBE16(p);
+	d->key_frame = SDL_ReadBE16(p);
+	d->transfer_mode = SDL_ReadBE16(p);
+	d->transfer_mode_period = SDL_ReadBE16(p);
+	d->first_frame_sound = SDL_ReadBE16(p);
+	d->key_frame_sound = SDL_ReadBE16(p);
+	d->last_frame_sound = SDL_ReadBE16(p);
+	d->pixels_to_world = SDL_ReadBE16(p);
+	d->loop_frame = SDL_ReadBE16(p);
+	SDL_RWseek(p, 28, SEEK_CUR);
+
+	// Convert low-level shape index list
+	for (int j = 0; j < num_views * d->frames_per_view; j++) {
+		d->low_level_shape_indexes[j] = SDL_ReadBE16(p);
+	}
+}
+
+static void load_low_level_shape(low_level_shape_definition *d, SDL_RWops *p)
+{
+	d->flags = SDL_ReadBE16(p);
+	d->minimum_light_intensity = SDL_ReadBE32(p);
+	d->bitmap_index = SDL_ReadBE16(p);
+	d->origin_x = SDL_ReadBE16(p);
+	d->origin_y = SDL_ReadBE16(p);
+	d->key_x = SDL_ReadBE16(p);
+	d->key_y = SDL_ReadBE16(p);
+	d->world_left = SDL_ReadBE16(p);
+	d->world_right = SDL_ReadBE16(p);
+	d->world_top = SDL_ReadBE16(p);
+	d->world_bottom = SDL_ReadBE16(p);
+	d->world_x0 = SDL_ReadBE16(p);
+	d->world_y0 = SDL_ReadBE16(p);
+	SDL_RWseek(p, 8, SEEK_CUR);
+}
+
+static void load_bitmap(std::vector<uint8>& bitmap, SDL_RWops *p)
+{
+	bitmap_definition b;
+
+	// Convert bitmap definition
+	b.width = SDL_ReadBE16(p);
+	b.height = SDL_ReadBE16(p);
+	b.bytes_per_row = SDL_ReadBE16(p);
+	b.flags = SDL_ReadBE16(p);
+	b.bit_depth = SDL_ReadBE16(p);
+
+	// guess how big to make it
+	int rows = (b.flags & _COLUMN_ORDER_BIT) ? b.width : b.height;
+		
+	SDL_RWseek(p, 16, SEEK_CUR);
+		
+	// Skip row address pointers
+	SDL_RWseek(p, (rows + 1) * sizeof(uint32), SEEK_CUR);
+
+	if (b.bytes_per_row == NONE) {
+		// ugly--figure out how big it's going to be
+			
+		int32 size = 0;
+		for (int j = 0; j < rows; j++) {
+			int16 first = SDL_ReadBE16(p);
+			int16 last = SDL_ReadBE16(p);
+			size += 4;
+			SDL_RWseek(p, last - first, SEEK_CUR);
+			size += last - first;
+		}
+
+		bitmap.resize(sizeof(bitmap_definition) + rows * sizeof(pixel8*) + size);
+
+		// Now, seek back
+		SDL_RWseek(p, -size, SEEK_CUR);
+	} else {
+		bitmap.resize(sizeof(bitmap_definition) + rows * sizeof(pixel8*) + rows * b.bytes_per_row);
+	}
+
+	uint8* c = &bitmap[0];
+	bitmap_definition *d = (bitmap_definition *) &bitmap[0];
+	d->width = b.width;
+	d->height = b.height;
+	d->bytes_per_row = b.bytes_per_row;
+	d->flags = b.flags;
+	d->bit_depth = b.bit_depth;
+	c += sizeof(bitmap_definition);
+
+	// Skip row address pointers
+	c += rows * sizeof(pixel8 *);
+
+	// Copy bitmap data
+	if (d->bytes_per_row == NONE) {
+		// RLE format
+
+		for (int j = 0; j < rows; j++) {
+			int16 first = SDL_ReadBE16(p);
+			int16 last = SDL_ReadBE16(p);
+			*(c++) = (uint8)(first >> 8);
+			*(c++) = (uint8)(first);
+			*(c++) = (uint8)(last >> 8);
+			*(c++) = (uint8)(last);
+			SDL_RWread(p, c, 1, last - first);
+			c += last - first;
+		}
+	} else {
+		SDL_RWread(p, c, d->bytes_per_row, rows);
+		c += rows * d->bytes_per_row;
+	}
+}
 
 /*
  *  Load collection
@@ -493,32 +670,13 @@ static bool load_collection(short collection_index, bool strip)
 
 	// Read collection definition
 	std::auto_ptr<collection_definition> cd(new collection_definition);
-	ShapesFile.SetPosition(src_offset);
-	cd->version = SDL_ReadBE16(p);
-	cd->type = SDL_ReadBE16(p);
-	cd->flags = SDL_ReadBE16(p);
-	cd->color_count = SDL_ReadBE16(p);
-	cd->clut_count = SDL_ReadBE16(p);
-	cd->color_table_offset = SDL_ReadBE32(p);
-	cd->high_level_shape_count = SDL_ReadBE16(p);
-	cd->high_level_shape_offset_table_offset = SDL_ReadBE32(p);
-	cd->low_level_shape_count = SDL_ReadBE16(p);
-	cd->low_level_shape_offset_table_offset = SDL_ReadBE32(p);
-	cd->bitmap_count = SDL_ReadBE16(p);
-	cd->bitmap_offset_table_offset = SDL_ReadBE32(p);
-	cd->pixels_to_world = SDL_ReadBE16(p);
-	SDL_ReadBE32(p); // skip size
+ 	ShapesFile.SetPosition(src_offset);
+	load_collection_definition(cd.get(), p);
 
 	// Convert CLUTS
 	cd->color_tables.resize(cd->clut_count * cd->color_count);
 	ShapesFile.SetPosition(src_offset + cd->color_table_offset);
-	for (int i = 0; i < cd->clut_count * cd->color_count; i++) {
-		rgb_color_value *r = &cd->color_tables[i];
-		SDL_RWread(p, r, 1, 2);
-		r->red = SDL_ReadBE16(p);
-		r->green = SDL_ReadBE16(p);
-		r->blue = SDL_ReadBE16(p);
-	}
+	load_clut(&cd->color_tables[0], cd->clut_count * cd->color_count, p);
 
 	// Convert high-level shape definitions
 	ShapesFile.SetPosition(src_offset + cd->high_level_shape_offset_table_offset);
@@ -529,63 +687,7 @@ static bool load_collection(short collection_index, bool strip)
 
 	for (int i = 0; i < cd->high_level_shape_count; i++) {
 		ShapesFile.SetPosition(src_offset + t[i]);
-
-		int16 type = SDL_ReadBE16(p);
-		int16 flags = SDL_ReadBE16(p);
-		char name[HIGH_LEVEL_SHAPE_NAME_LENGTH + 2];
-		SDL_RWread(p, name, 1, HIGH_LEVEL_SHAPE_NAME_LENGTH + 2);
-		int16 number_of_views = SDL_ReadBE16(p);
-		int16 frames_per_view = SDL_ReadBE16(p);
-
-		// Convert low-level shape index list
-		int num_views;
-		switch (number_of_views) {
-		case _unanimated:
-		case _animated1:
-			num_views = 1;
-			break;
-		case _animated3to4:
-		case _animated4:
-			num_views = 4;
-			break;
-		case _animated3to5:
-		case _animated5:
-			num_views = 5;
-			break;
-		case _animated2to8:
-		case _animated5to8:
-		case _animated8:
-			num_views = 8;
-			break;
-		default:
-			num_views = number_of_views;
-			break;
-		}
-
-		cd->high_level_shapes[i].resize(sizeof(high_level_shape_definition) + num_views * frames_per_view * sizeof(int16));
-		high_level_shape_definition *d = (high_level_shape_definition *) &cd->high_level_shapes[i][0];
-		
-		d->type = type;
-		d->flags = flags;
-		memcpy(d->name, name, HIGH_LEVEL_SHAPE_NAME_LENGTH + 2);
-		d->number_of_views = number_of_views;
-		d->frames_per_view = frames_per_view;
-		d->ticks_per_frame = SDL_ReadBE16(p);
-		d->key_frame = SDL_ReadBE16(p);
-		d->transfer_mode = SDL_ReadBE16(p);
-		d->transfer_mode_period = SDL_ReadBE16(p);
-		d->first_frame_sound = SDL_ReadBE16(p);
-		d->key_frame_sound = SDL_ReadBE16(p);
-		d->last_frame_sound = SDL_ReadBE16(p);
-		d->pixels_to_world = SDL_ReadBE16(p);
-		d->loop_frame = SDL_ReadBE16(p);
-		SDL_RWseek(p, 28, SEEK_CUR);
-
-		// Convert low-level shape index list
-		for (int j = 0; j < num_views * d->frames_per_view; j++) {
-			d->low_level_shape_indexes[j] = SDL_ReadBE16(p);
-		}
-
+		load_high_level_shape(cd->high_level_shapes[i], p);
 	}
 
 	// Convert low-level shape definitions
@@ -597,22 +699,7 @@ static bool load_collection(short collection_index, bool strip)
 
 	for (int i = 0; i < cd->low_level_shape_count; i++) {
 		ShapesFile.SetPosition(src_offset + t[i]);
-		low_level_shape_definition *d = &cd->low_level_shapes[i];
-		d->flags = SDL_ReadBE16(p);
-		d->minimum_light_intensity = SDL_ReadBE32(p);
-		d->bitmap_index = SDL_ReadBE16(p);
-		d->origin_x = SDL_ReadBE16(p);
-		d->origin_y = SDL_ReadBE16(p);
-		d->key_x = SDL_ReadBE16(p);
-		d->key_y = SDL_ReadBE16(p);
-		d->world_left = SDL_ReadBE16(p);
-		d->world_right = SDL_ReadBE16(p);
-		d->world_top = SDL_ReadBE16(p);
-		d->world_bottom = SDL_ReadBE16(p);
-		d->world_x0 = SDL_ReadBE16(p);
-		d->world_y0 = SDL_ReadBE16(p);
-		SDL_RWseek(p, 8, SEEK_CUR);
-
+		load_low_level_shape(&cd->low_level_shapes[i], p);
 	}
 
 	// Convert bitmap definitions
@@ -624,75 +711,7 @@ static bool load_collection(short collection_index, bool strip)
 
 	for (int i = 0; i < cd->bitmap_count; i++) {
 		ShapesFile.SetPosition(src_offset + t[i]);
-
-		bitmap_definition b;
-
-		// Convert bitmap definition
-		b.width = SDL_ReadBE16(p);
-		b.height = SDL_ReadBE16(p);
-		b.bytes_per_row = SDL_ReadBE16(p);
-		b.flags = SDL_ReadBE16(p);
-		b.bit_depth = SDL_ReadBE16(p);
-
-		// guess how big to make it
-		int rows = (b.flags & _COLUMN_ORDER_BIT) ? b.width : b.height;
-		
-		SDL_RWseek(p, 16, SEEK_CUR);
-		
-		// Skip row address pointers
-		SDL_RWseek(p, (rows + 1) * sizeof(uint32), SEEK_CUR);
-
-		if (b.bytes_per_row == NONE) {
-			// ugly--figure out how big it's going to be
-			
-			int32 size = 0;
-			for (int j = 0; j < rows; j++) {
-				int16 first = SDL_ReadBE16(p);
-				int16 last = SDL_ReadBE16(p);
-				size += 4;
-				SDL_RWseek(p, last - first, SEEK_CUR);
-				size += last - first;
-			}
-
-			cd->bitmaps[i].resize(sizeof(bitmap_definition) + rows * sizeof(pixel8*) + size);
-
-			// Now, seek back
-			SDL_RWseek(p, -size, SEEK_CUR);
-		} else {
-			cd->bitmaps[i].resize(sizeof(bitmap_definition) + rows * sizeof(pixel8*) + rows * b.bytes_per_row);
-		}
-
-		uint8* c = &cd->bitmaps[i][0];
-		bitmap_definition *d = (bitmap_definition *) &cd->bitmaps[i][0];
-		d->width = b.width;
-		d->height = b.height;
-		d->bytes_per_row = b.bytes_per_row;
-		d->flags = b.flags;
-		d->bit_depth = b.bit_depth;
-		c += sizeof(bitmap_definition);
-
-		// Skip row address pointers
-		c += rows * sizeof(pixel8 *);
-
-		// Copy bitmap data
-		if (d->bytes_per_row == NONE) {
-			// RLE format
-
-			for (int j = 0; j < rows; j++) {
-				int16 first = SDL_ReadBE16(p);
-				int16 last = SDL_ReadBE16(p);
-				*(c++) = (uint8)(first >> 8);
-				*(c++) = (uint8)(first);
-				*(c++) = (uint8)(last >> 8);
-				*(c++) = (uint8)(last);
-				SDL_RWread(p, c, 1, last - first);
-				c += last - first;
-			}
-		} else {
-			SDL_RWread(p, c, d->bytes_per_row, rows);
-			c += rows * d->bytes_per_row;
-		}
-		assert (c - &cd->bitmaps[i][0] <= cd->bitmaps[i].size());
+		load_bitmap(cd->bitmaps[i], p);
 	}
 
 	header->collection = cd.release();
@@ -704,7 +723,7 @@ static bool load_collection(short collection_index, bool strip)
 	}
 
 	// Allocate enough space for this collection's shading tables
-		if (strip)
+	if (strip)
 		header->shading_tables = NULL;
 	else {
 		collection_definition *definition = get_collection_definition(collection_index);
@@ -715,13 +734,10 @@ static bool load_collection(short collection_index, bool strip)
 		header->collection = NULL;
 		return false;
 	}
-
+	
 	// Everything OK
 	return true;
-}
-	
-					
-			
+}	
 			
 
 /*
