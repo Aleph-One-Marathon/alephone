@@ -137,7 +137,8 @@ enum /* collection status */
 	markNONE,
 	markLOAD= 1,
 	markUNLOAD= 2,
-	markSTRIP= 4 /* we donÕt want bitmaps, just high/low-level shape data */
+	markSTRIP= 4 /* we donÕt want bitmaps, just high/low-level shape data */,
+	markPATCHED = 8 /* force re-load */
 };
 
 enum /* flags */
@@ -485,6 +486,14 @@ static void load_collection_definition(collection_definition* cd, SDL_RWops *p)
 	cd->bitmap_offset_table_offset = SDL_ReadBE32(p);
 	cd->pixels_to_world = SDL_ReadBE16(p);
 	SDL_ReadBE32(p); // skip size
+	SDL_RWseek(p, 253 * sizeof(int16), RW_SEEK_CUR); // unused
+
+	// resize members
+	cd->color_tables.resize(cd->clut_count * cd->color_count);
+	cd->high_level_shapes.resize(cd->high_level_shape_count);
+	cd->low_level_shapes.resize(cd->low_level_shape_count);
+	cd->bitmaps.resize(cd->bitmap_count);
+
 }
 
 static void load_clut(rgb_color_value *r, int count, SDL_RWops *p)
@@ -550,7 +559,7 @@ static void load_high_level_shape(std::vector<uint8>& shape, SDL_RWops *p)
 	d->last_frame_sound = SDL_ReadBE16(p);
 	d->pixels_to_world = SDL_ReadBE16(p);
 	d->loop_frame = SDL_ReadBE16(p);
-	SDL_RWseek(p, 28, SEEK_CUR);
+	SDL_RWseek(p, 14 * sizeof(int16), SEEK_CUR);
 
 	// Convert low-level shape index list
 	for (int j = 0; j < num_views * d->frames_per_view; j++) {
@@ -573,7 +582,7 @@ static void load_low_level_shape(low_level_shape_definition *d, SDL_RWops *p)
 	d->world_bottom = SDL_ReadBE16(p);
 	d->world_x0 = SDL_ReadBE16(p);
 	d->world_y0 = SDL_ReadBE16(p);
-	SDL_RWseek(p, 8, SEEK_CUR);
+	SDL_RWseek(p, 4 * sizeof(int16), SEEK_CUR);
 }
 
 static void load_bitmap(std::vector<uint8>& bitmap, SDL_RWops *p)
@@ -645,7 +654,21 @@ static void load_bitmap(std::vector<uint8>& bitmap, SDL_RWops *p)
 		SDL_RWread(p, c, d->bytes_per_row, rows);
 		c += rows * d->bytes_per_row;
 	}
+
 }
+
+static void allocate_shading_tables(short collection_index, bool strip)
+{
+	collection_header *header = get_collection_header(collection_index);
+	// Allocate enough space for this collection's shading tables
+	if (strip)
+		header->shading_tables = NULL;
+	else {
+		collection_definition *definition = get_collection_definition(collection_index);
+		header->shading_tables = (byte *)malloc(get_shading_table_size(collection_index) * definition->clut_count + shading_table_size * NUMBER_OF_TINT_TABLES);
+	}
+}
+
 
 /*
  *  Load collection
@@ -674,7 +697,6 @@ static bool load_collection(short collection_index, bool strip)
 	load_collection_definition(cd.get(), p);
 
 	// Convert CLUTS
-	cd->color_tables.resize(cd->clut_count * cd->color_count);
 	ShapesFile.SetPosition(src_offset + cd->color_table_offset);
 	load_clut(&cd->color_tables[0], cd->clut_count * cd->color_count, p);
 
@@ -683,8 +705,6 @@ static bool load_collection(short collection_index, bool strip)
 	std::vector<uint32> t(cd->high_level_shape_count);
 	SDL_RWread(p, &t[0], sizeof(uint32), cd->high_level_shape_count);
 	byte_swap_memory(&t[0], _4byte, cd->high_level_shape_count);
-	cd->high_level_shapes.resize(cd->high_level_shape_count);
-
 	for (int i = 0; i < cd->high_level_shape_count; i++) {
 		ShapesFile.SetPosition(src_offset + t[i]);
 		load_high_level_shape(cd->high_level_shapes[i], p);
@@ -695,7 +715,6 @@ static bool load_collection(short collection_index, bool strip)
 	t.resize(cd->low_level_shape_count);
 	SDL_RWread(p, &t[0], sizeof(uint32), cd->low_level_shape_count);
 	byte_swap_memory(&t[0], _4byte, cd->low_level_shape_count);
-	cd->low_level_shapes.resize(cd->low_level_shape_count);
 
 	for (int i = 0; i < cd->low_level_shape_count; i++) {
 		ShapesFile.SetPosition(src_offset + t[i]);
@@ -707,7 +726,6 @@ static bool load_collection(short collection_index, bool strip)
 	t.resize(cd->bitmap_count);
 	SDL_RWread(p, &t[0], sizeof(uint32), cd->bitmap_count);
 	byte_swap_memory(&t[0], _4byte, cd->bitmap_count);
-	cd->bitmaps.resize(cd->bitmap_count);
 
 	for (int i = 0; i < cd->bitmap_count; i++) {
 		ShapesFile.SetPosition(src_offset + t[i]);
@@ -722,19 +740,14 @@ static bool load_collection(short collection_index, bool strip)
 		abort();
 	}
 
-	// Allocate enough space for this collection's shading tables
-	if (strip)
-		header->shading_tables = NULL;
-	else {
-		collection_definition *definition = get_collection_definition(collection_index);
-		header->shading_tables = (byte *)malloc(get_shading_table_size(collection_index) * definition->clut_count + shading_table_size * NUMBER_OF_TINT_TABLES);
-	}
+	allocate_shading_tables(collection_index, strip);
+	
 	if (header->shading_tables == NULL) {
 		delete header->collection;
 		header->collection = NULL;
 		return false;
 	}
-	
+
 	// Everything OK
 	return true;
 }	
@@ -751,6 +764,128 @@ static void unload_collection(struct collection_header *header)
 	free(header->shading_tables);
 	header->collection = NULL;
 	header->shading_tables = NULL;
+}
+
+#define ENDC_TAG FOUR_CHARS_TO_INT('e', 'n', 'd', 'c')
+#define CLDF_TAG FOUR_CHARS_TO_INT('c', 'l', 'd', 'f')
+#define HLSH_TAG FOUR_CHARS_TO_INT('h', 'l', 's', 'h')
+#define LLSH_TAG FOUR_CHARS_TO_INT('l', 'l', 's', 'h')
+#define BMAP_TAG FOUR_CHARS_TO_INT('b', 'm', 'a', 'p')
+#define CTAB_TAG FOUR_CHARS_TO_INT('c', 't', 'a', 'b')
+
+bool load_shapes_patch(SDL_RWops *p)
+{
+	int32 collection_index = NONE;
+	int32 start = SDL_RWtell(p);
+	SDL_RWseek(p, 0, RW_SEEK_END);
+	int32 end = SDL_RWtell(p);
+
+	SDL_RWseek(p, start, RW_SEEK_SET);
+	
+	bool done = false;
+	while (!done)
+	{
+		// is there more data to read?
+		if (SDL_RWtell(p) < end)
+		{
+			int32 collection_index = SDL_ReadBE32(p);
+			int32 patch_bit_depth = SDL_ReadBE32(p);
+
+			bool collection_end = false;
+			while (!collection_end)
+			{
+				// read a tag
+				int32 tag = SDL_ReadBE32(p);
+				if (tag == ENDC_TAG) 
+				{
+					collection_end = true;
+				}
+				else if (tag == CLDF_TAG)
+				{
+					// a collection follows directly
+					collection_header *header = get_collection_header(collection_index);
+					if (collection_loaded(header) && patch_bit_depth == 8)
+					{
+						load_collection_definition(header->collection, p);
+						allocate_shading_tables(collection_index, false);
+						header->status|=markPATCHED;
+
+					} else {
+						// ignore
+						SDL_RWseek(p, 544, RW_SEEK_CUR);
+					}
+				} 
+				else if (tag == HLSH_TAG)
+				{
+					collection_definition *cd = get_collection_definition(collection_index);
+					int32 high_level_shape_index = SDL_ReadBE32(p);
+					int32 size = SDL_ReadBE32(p);
+					int32 pos = SDL_RWtell(p);
+					if (cd && patch_bit_depth == 8 && high_level_shape_index < cd->high_level_shapes.size())
+					{
+						load_high_level_shape(cd->high_level_shapes[high_level_shape_index], p);
+						SDL_RWseek(p, pos + size, RW_SEEK_SET);
+						
+					}
+					else
+					{
+						SDL_RWseek(p, size, RW_SEEK_CUR);
+					}
+				}
+				else if (tag == LLSH_TAG)
+				{
+					collection_definition *cd = get_collection_definition(collection_index);
+					int32 low_level_shape_index = SDL_ReadBE32(p);
+					if (cd && patch_bit_depth == 8 && low_level_shape_index < cd->low_level_shapes.size())
+					{
+						load_low_level_shape(&cd->low_level_shapes[low_level_shape_index], p);
+					}
+					else
+					{
+						SDL_RWseek(p, 36, RW_SEEK_CUR);
+					}
+				} 
+				else if (tag == BMAP_TAG)
+				{
+					collection_definition *cd = get_collection_definition(collection_index);
+					int32 bitmap_index = SDL_ReadBE32(p);
+					int32 size = SDL_ReadBE32(p);
+					if (cd && patch_bit_depth == 8 && bitmap_index < cd->bitmaps.size())
+					{
+						load_bitmap(cd->bitmaps[bitmap_index], p);
+					}
+					else
+					{
+						SDL_RWseek(p, size, RW_SEEK_CUR);
+					}
+				}
+				else if (tag == CTAB_TAG)
+				{
+					collection_definition *cd = get_collection_definition(collection_index);
+					int32 color_table_index = SDL_ReadBE32(p);
+					if (cd && patch_bit_depth == 8 && (color_table_index * cd->color_count < cd->color_tables.size())) 
+					{
+						load_clut(&cd->color_tables[color_table_index], cd->color_count, p);
+					}
+					else
+					{
+						SDL_RWseek(p, cd->color_count * sizeof(rgb_color_value), RW_SEEK_CUR);
+					}
+				}
+				else
+				{
+					fprintf(stderr, "Unrecognized tag in patch file '%c%c%c%c'\n %x", tag >> 24, tag >> 16, tag >> 8, tag, tag);
+					return false;
+				}
+			}
+					
+
+		} else {
+			done = true;
+		}
+	}
+
+	
 }
 
 /* ---------- code */
@@ -1516,7 +1651,7 @@ void load_collections(
 	{
 //		if (with_progress_bar)
 //			draw_progress_bar(collection_index, 2*MAXIMUM_COLLECTIONS);
-		if ((header->status&markUNLOAD) && !(header->status&markLOAD))
+		if (((header->status&markUNLOAD) && !(header->status&markLOAD)) || header->status&markPATCHED)
 		{
 			if (collection_loaded(header))
 			{
@@ -1564,7 +1699,7 @@ void load_collections(
 		header->status= markNONE;
 		header->flags= 0;
 	}
-	
+
 	/* remap the shapes, recalculate row base addresses, build our new world color table and
 		(finally) update the screen to reflect our changes */
 	update_color_environment(is_opengl);
