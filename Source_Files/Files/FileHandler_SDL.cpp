@@ -151,9 +151,7 @@ bool OpenedFile::Read(long Count, void *Buffer)
 		return false;
 
 	err = 0;
-	if (SDL_RWread(f, Buffer, 1, Count) != Count)
-		err = errno;
-	return err == 0;
+	return (SDL_RWread(f, Buffer, 1, Count) == Count);
 }
 
 bool OpenedFile::Write(long Count, void *Buffer)
@@ -162,9 +160,7 @@ bool OpenedFile::Write(long Count, void *Buffer)
 		return false;
 
 	err = 0;
-	if (SDL_RWwrite(f, Buffer, 1, Count) != Count)
-		err = errno;
-	return err == 0;
+	return (SDL_RWwrite(f, Buffer, 1, Count) == Count);
 }
 
 
