@@ -110,7 +110,7 @@ bool BigChunkOfZippedDataMessage::inflateFrom(const UninflatedMessage& inUninfla
 
 	// extra copy because we can't access private mBuffer
 	std::auto_ptr<byte> temp(new byte[size]);
-	if (uncompress(temp.get(), &size, inUninflated.buffer() + 4, inUninflated.length() - 4) == Z_OK)
+	if (size == 0 || uncompress(temp.get(), &size, inUninflated.buffer() + 4, inUninflated.length() - 4) == Z_OK)
 	{
 		copyBufferFrom(temp.get(), size);
 		return true;
@@ -125,10 +125,16 @@ UninflatedMessage* BigChunkOfZippedDataMessage::deflate() const
 {
 	uLongf temp_size = length() * 105 / 100 + 12;
 	std::auto_ptr<byte> temp(new byte[temp_size]);
-	int ret = compress(temp.get(), &temp_size, buffer(), length());
-	if (ret != Z_OK)
+	if (length() > 0)
 	{
-		return 0;
+		if (compress(temp.get(), &temp_size, buffer(), length()) != Z_OK)
+		{
+			return 0;
+		}
+	} 
+	else
+	{
+		temp_size = 0;
 	}
 
 	UninflatedMessage* theMessage = new UninflatedMessage(type(), temp_size + 4);
