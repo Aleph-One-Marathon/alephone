@@ -328,6 +328,9 @@ int count_replacement_collections();
 void load_replacement_collections();
 void unload_all_collections(void);
 
+void set_shapes_patch_data(uint8 *data, size_t length);
+uint8* get_shapes_patch_data(size_t &length);
+
 // LP additions:
 // Whether or not collection is present
 bool is_collection_present(short collection_index);

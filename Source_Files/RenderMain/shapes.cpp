@@ -773,6 +773,26 @@ static void unload_collection(struct collection_header *header)
 #define BMAP_TAG FOUR_CHARS_TO_INT('b', 'm', 'a', 'p')
 #define CTAB_TAG FOUR_CHARS_TO_INT('c', 't', 'a', 'b')
 
+std::vector<uint8> shapes_patch;
+void set_shapes_patch_data(uint8 *data, size_t length)
+{
+	if (!length) 
+	{
+		shapes_patch.clear();
+	}
+	else
+	{
+		shapes_patch.resize(length);
+		memcpy(&shapes_patch[0], data, length);
+	}
+}
+
+uint8* get_shapes_patch_data(size_t &length)
+{
+	length = shapes_patch.size();
+	return length ? &shapes_patch[0] : 0;
+}
+
 bool load_shapes_patch(SDL_RWops *p)
 {
 	int32 collection_index = NONE;
@@ -1698,6 +1718,13 @@ void load_collections(
 		/* clear action flags */
 		header->status= markNONE;
 		header->flags= 0;
+	}
+
+	if (shapes_patch.size())
+	{
+		SDL_RWops *f = SDL_RWFromMem(&shapes_patch[0], shapes_patch.size());
+		load_shapes_patch(f);
+		SDL_RWclose(f);
 	}
 
 	/* remap the shapes, recalculate row base addresses, build our new world color table and

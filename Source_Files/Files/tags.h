@@ -155,6 +155,9 @@ const std::vector<OSType> get_all_file_types_for_typecode (Typecode which);
 #define PHYSICS_PHYSICS_TAG FOUR_CHARS_TO_INT('P','X','p','x')
 #define WEAPONS_PHYSICS_TAG FOUR_CHARS_TO_INT('W','P','p','x')
 
+/* Embedded shapes */
+#define SHAPE_PATCH_TAG FOUR_CHARS_TO_INT('S','h','P','a')
+
 /* Preferences Tags.. */
 #define prefGRAPHICS_TAG FOUR_CHARS_TO_INT('g','r','a','f')
 #define prefSERIAL_TAG FOUR_CHARS_TO_INT('s','e','r','l')

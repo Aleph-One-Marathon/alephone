@@ -1520,6 +1520,10 @@ bool process_map_wad(
 	assert(data_length == count*SIZEOF_random_sound_image_data);
 	load_random_sound_images(data, count);
 
+	/* Extract embedded shapes */
+	data= (uint8 *)extract_type_from_wad(wad, SHAPE_PATCH_TAG, &data_length);
+	set_shapes_patch_data(data, data_length);
+
 	// LP addition: load the physics-model chunks (all fixed-size)
 	bool PhysicsModelLoaded = false;
 	
@@ -1813,6 +1817,9 @@ struct save_game_data save_data[]=
 	{ PHYSICS_PHYSICS_TAG, SIZEOF_physics_constants, true},
 	{ WEAPONS_PHYSICS_TAG, SIZEOF_weapon_definition, true},
 
+	// GHS: save the new embedded shapes
+	{ SHAPE_PATCH_TAG, sizeof(byte), true },
+
 	{ MAP_INDEXES_TAG, sizeof(short), true }, // false },
 	{ PLAYER_STRUCTURE_TAG, SIZEOF_player_data, true }, // false },
 	{ DYNAMIC_STRUCTURE_TAG, SIZEOF_dynamic_data, true }, // false },
@@ -1943,6 +1950,9 @@ static uint8 *tag_to_global_array_and_size(
 		case WEAPONS_PHYSICS_TAG:
 			count= get_number_of_weapon_types();
 			break;
+	        case SHAPE_PATCH_TAG:
+			get_shapes_patch_data(count);
+			break;
 		default:
 			assert(false);
 			break;
@@ -2050,6 +2060,9 @@ static uint8 *tag_to_global_array_and_size(
 			break;
 		case WEAPONS_PHYSICS_TAG:
 			pack_weapon_definition(array,count);
+			break;
+	        case SHAPE_PATCH_TAG:
+			memcpy(array, get_shapes_patch_data(count), count);
 			break;
 		default:
 			assert(false);
