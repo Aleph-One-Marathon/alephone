@@ -123,7 +123,7 @@ bool BigChunkOfZippedDataMessage::inflateFrom(const UninflatedMessage& inUninfla
 
 UninflatedMessage* BigChunkOfZippedDataMessage::deflate() const
 {
-	uLongf temp_size = compressBound(length());
+	uLongf temp_size = length() * 105 / 100 + 12;
 	std::auto_ptr<byte> temp(new byte[temp_size]);
 	int ret = compress(temp.get(), &temp_size, buffer(), length());
 	if (ret != Z_OK)
