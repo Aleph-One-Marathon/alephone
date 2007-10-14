@@ -47,7 +47,10 @@ enum {
   kEND_GAME_DATA_MESSAGE,
   kCHANGE_COLORS_MESSAGE,
   kSERVER_WARNING_MESSAGE,
-  kCLIENT_INFO_MESSAGE
+  kCLIENT_INFO_MESSAGE,
+  kZIPPED_MAP_MESSAGE,
+  kZIPPED_PHYSICS_MESSAGE,
+  kZIPPED_LUA_MESSAGE
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -220,6 +223,7 @@ private:
 };
 
 typedef TemplatizedSimpleMessage<kJOIN_PLAYER_MESSAGE, int16> JoinPlayerMessage;
+
 class JoinerInfoMessage : public SmallMessageHelper
 {
 public: 
@@ -256,36 +260,41 @@ private:
 	std::string mVersion;
 };
 
-class LuaMessage : public BigChunkOfDataMessage
+class BigChunkOfZippedDataMessage : public BigChunkOfDataMessage
+// zips on deflate, unzips on inflate
 {
- public:
-  enum { kType = kLUA_MESSAGE };
+public:
+	BigChunkOfZippedDataMessage(MessageTypeID inType, const Uint8* inBuffer = NULL, size_t inLength = 0) : BigChunkOfDataMessage(inType, inBuffer, inLength) { }
+	BigChunkOfZippedDataMessage(const BigChunkOfDataMessage& other) : BigChunkOfDataMessage(other) { }
 
-  LuaMessage(const Uint8* inBuffer = NULL, size_t inLength = 0) :
-    BigChunkOfDataMessage(kType, inBuffer, inLength) { };
-
-  LuaMessage(const LuaMessage& other) : BigChunkOfDataMessage(other) { }
-
-  COVARIANT_RETURN(Message *, LuaMessage *) clone () const {
-    return new LuaMessage(*this);
-  }
+	bool inflateFrom(const UninflatedMessage& inUninflated);
+	UninflatedMessage* deflate() const;
 };
 
-class MapMessage : public BigChunkOfDataMessage
+template<int messageType, class T> class TemplatizedDataMessage : public T
 {
- public:
-  enum { kType = kMAP_MESSAGE };
-  
-  MapMessage(const Uint8* inBuffer = NULL, size_t inLength = 0) : 
-    BigChunkOfDataMessage(kType, inBuffer, inLength) { };
+public:
+	enum {
+		kType = messageType
+	};
 
-  MapMessage(const MapMessage& other) : BigChunkOfDataMessage(other) { }
-
-  COVARIANT_RETURN(Message *, MapMessage *) clone () const {
-    return new MapMessage(*this);
-  }
-
+	TemplatizedDataMessage(const Uint8* inBuffer = NULL, size_t inLength = 0) :
+		T(kType, inBuffer, inLength) { };
+	TemplatizedDataMessage(const TemplatizedDataMessage& other) : T(other) { }
+	COVARIANT_RETURN(Message *, TemplatizedDataMessage *) clone () const {
+		return new TemplatizedDataMessage(*this);
+	}
 };
+
+typedef TemplatizedDataMessage<kMAP_MESSAGE, BigChunkOfDataMessage> MapMessage;
+typedef TemplatizedDataMessage<kZIPPED_MAP_MESSAGE, BigChunkOfZippedDataMessage> ZippedMapMessage;
+
+typedef TemplatizedDataMessage<kPHYSICS_MESSAGE, BigChunkOfDataMessage> PhysicsMessage;
+typedef TemplatizedDataMessage<kZIPPED_PHYSICS_MESSAGE, BigChunkOfZippedDataMessage> ZippedPhysicsMessage;
+
+typedef TemplatizedDataMessage<kLUA_MESSAGE, BigChunkOfDataMessage> LuaMessage;
+typedef TemplatizedDataMessage<kZIPPED_LUA_MESSAGE, BigChunkOfZippedDataMessage> ZippedLuaMessage;
+
 
 class NetworkChatMessage : public SmallMessageHelper
 {
@@ -326,22 +335,6 @@ class NetworkChatMessage : public SmallMessageHelper
   int16 mSenderID;
   int16 mTarget;
   int16 mTargetID;
-};
-
-class PhysicsMessage : public BigChunkOfDataMessage
-{
- public:
-  enum { kType = kPHYSICS_MESSAGE };
-  
-  PhysicsMessage(const Uint8* inBuffer = NULL, size_t inLength = 0) :
-    BigChunkOfDataMessage(kType, inBuffer, inLength) { };
-
-  PhysicsMessage(const PhysicsMessage& other) : BigChunkOfDataMessage(other) { }
-
-  COVARIANT_RETURN(Message *, PhysicsMessage *) clone() const {
-    return new PhysicsMessage(*this);
-  }
-  
 };
 
 class ServerWarningMessage : public SmallMessageHelper

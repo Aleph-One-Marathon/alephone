@@ -43,6 +43,7 @@ class Capabilities : public capabilities_t
   static const int kLuaVersion = 1;
   static const int kSpeexVersion = 1;
   static const int kGatherableVersion = 1;
+  static const int kZippedDataVersion = 1; // map, lua, physics
 
   static const string kGameworld;    // the PRNG, physics, etc.
   static const string kStar;         // the star network protocol
@@ -51,6 +52,7 @@ class Capabilities : public capabilities_t
   static const string kSpeex;        // Speex net-mic
   static const string kGatherable;   // joiner's response indicating he can be
                                      // gathered
+  static const string kZippedData;   // can receive zipped data
   
   uint32& operator[](const string& k) { 
     assert(k.length() < kMaxKeySize);

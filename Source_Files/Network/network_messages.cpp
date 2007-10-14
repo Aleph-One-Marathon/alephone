@@ -29,6 +29,8 @@ NETWORK_MESSAGES.CPP
 #include "network_private.h"
 #include "network_data_formats.h"
 
+#include <zlib.h>
+
 static void write_string(AOStream& outputStream, const char *s) {
   outputStream.write(const_cast<char *>(s), strlen(s) + 1);
 }
@@ -99,6 +101,42 @@ static void inflateNetPlayer(AIStream& inputStream, NetPlayer &player) {
   inputStream.read(player.player_data.long_serial_number, sizeof(player.player_data.long_serial_number));
 }
 
+bool BigChunkOfZippedDataMessage::inflateFrom(const UninflatedMessage& inUninflated)
+{
+	uLongf size;
+	AIStreamBE inputStream(inUninflated.buffer(), 4);
+	
+	inputStream >> (uint32&) size;
+
+	// extra copy because we can't access private mBuffer
+	std::auto_ptr<byte> temp(new byte[size]);
+	if (uncompress(temp.get(), &size, inUninflated.buffer() + 4, inUninflated.length() - 4) == Z_OK)
+	{
+		copyBufferFrom(temp.get(), size);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+UninflatedMessage* BigChunkOfZippedDataMessage::deflate() const
+{
+	uLongf temp_size = compressBound(length());
+	std::auto_ptr<byte> temp(new byte[temp_size]);
+	int ret = compress(temp.get(), &temp_size, buffer(), length());
+	if (ret != Z_OK)
+	{
+		return 0;
+	}
+
+	UninflatedMessage* theMessage = new UninflatedMessage(type(), temp_size + 4);
+	AOStreamBE outputStream(theMessage->buffer(), 4);
+	outputStream << (uint32) length();
+	memcpy(theMessage->buffer() + 4, temp.get(), temp_size);
+	return theMessage;
+}
 
 void AcceptJoinMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << (Uint8) mAccepted;

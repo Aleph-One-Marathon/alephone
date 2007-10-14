@@ -806,7 +806,7 @@ static void handleJoinPlayerMessage(JoinPlayerMessage* joinPlayerMessage, Commun
 static byte *handlerLuaBuffer = NULL;
 static size_t handlerLuaLength = 0;
 
-static void handleLuaMessage(LuaMessage *luaMessage, CommunicationsChannel *) {
+static void handleLuaMessage(BigChunkOfDataMessage *luaMessage, CommunicationsChannel *) {
   if (netState == netStartingUp || netState == netDown) {
     if (handlerLuaBuffer) {
       delete[] handlerLuaBuffer;
@@ -825,7 +825,7 @@ static void handleLuaMessage(LuaMessage *luaMessage, CommunicationsChannel *) {
 static byte *handlerMapBuffer = NULL;
 static size_t handlerMapLength = 0;
 
-static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
+static void handleMapMessage(BigChunkOfDataMessage *mapMessage, CommunicationsChannel *) {
   if (netState == netStartingUp || netState == netDown) {
     if (handlerMapBuffer) { // assume the last map the server sent is right
       delete[] handlerMapBuffer;
@@ -840,7 +840,7 @@ static void handleMapMessage(MapMessage *mapMessage, CommunicationsChannel *) {
     logAnomaly1("unexpected map message received (netState is %i)", netState);
   }
 }
-    
+
 static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, CommunicationsChannel *) {
 	if (chatCallbacks) {
 		if (netState == netActive) {
@@ -872,7 +872,7 @@ static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, Communicat
 static byte *handlerPhysicsBuffer = NULL;
 static size_t handlerPhysicsLength = 0;
 
-static void handlePhysicsMessage(PhysicsMessage *physicsMessage, CommunicationsChannel *) {
+static void handlePhysicsMessage(BigChunkOfDataMessage *physicsMessage, CommunicationsChannel *) {
   if (netState == netStartingUp || netState == netDown) {
     if (handlerPhysicsBuffer) {
       delete[] handlerPhysicsBuffer;
@@ -987,10 +987,10 @@ static void handleUnexpectedMessage(Message *inMessage, CommunicationsChannel *)
     
 static TypedMessageHandlerFunction<HelloMessage> helloMessageHandler(&handleHelloMessage);
 static TypedMessageHandlerFunction<JoinPlayerMessage> joinPlayerMessageHandler(&handleJoinPlayerMessage);
-static TypedMessageHandlerFunction<LuaMessage> luaMessageHandler(&handleLuaMessage);
-static TypedMessageHandlerFunction<MapMessage> mapMessageHandler(&handleMapMessage);
+static TypedMessageHandlerFunction<BigChunkOfDataMessage> luaMessageHandler(&handleLuaMessage);
+static TypedMessageHandlerFunction<BigChunkOfDataMessage> mapMessageHandler(&handleMapMessage);
 static TypedMessageHandlerFunction<NetworkChatMessage> networkChatMessageHandler(&handleNetworkChatMessage);
-static TypedMessageHandlerFunction<PhysicsMessage> physicsMessageHandler(&handlePhysicsMessage);
+static TypedMessageHandlerFunction<BigChunkOfDataMessage> physicsMessageHandler(&handlePhysicsMessage);
  static TypedMessageHandlerFunction<CapabilitiesMessage> capabilitiesMessageHandler(&handleCapabilitiesMessage);
 static TypedMessageHandlerFunction<TopologyMessage> topologyMessageHandler(&handleTopologyMessage);
 static TypedMessageHandlerFunction<ServerWarningMessage> serverWarningMessageHandler(&handleServerWarningMessage);
@@ -1127,9 +1127,12 @@ bool NetEnter(void)
 		inflater->learnPrototype(JoinerInfoMessage());
 		inflater->learnPrototype(JoinPlayerMessage());
 		inflater->learnPrototype(LuaMessage());
+		inflater->learnPrototype(ZippedLuaMessage());
 		inflater->learnPrototype(MapMessage());
+		inflater->learnPrototype(ZippedMapMessage());
 		inflater->learnPrototype(NetworkChatMessage());
 		inflater->learnPrototype(PhysicsMessage());
+		inflater->learnPrototype(ZippedPhysicsMessage());
 		inflater->learnPrototype(CapabilitiesMessage());
 		inflater->learnPrototype(TopologyMessage());
 		inflater->learnPrototype(ChangeColorsMessage());
@@ -1144,9 +1147,12 @@ bool NetEnter(void)
 		joinDispatcher->setHandlerForType(&helloMessageHandler, HelloMessage::kType);
 		joinDispatcher->setHandlerForType(&joinPlayerMessageHandler, JoinPlayerMessage::kType);
 		joinDispatcher->setHandlerForType(&luaMessageHandler, LuaMessage::kType);
+		joinDispatcher->setHandlerForType(&luaMessageHandler, ZippedLuaMessage::kType);
 		joinDispatcher->setHandlerForType(&mapMessageHandler, MapMessage::kType);
+		joinDispatcher->setHandlerForType(&mapMessageHandler, ZippedMapMessage::kType);
 		joinDispatcher->setHandlerForType(&networkChatMessageHandler, NetworkChatMessage::kType);
 		joinDispatcher->setHandlerForType(&physicsMessageHandler, PhysicsMessage::kType);
+		joinDispatcher->setHandlerForType(&physicsMessageHandler, ZippedPhysicsMessage::kType);
 		joinDispatcher->setHandlerForType(&capabilitiesMessageHandler, CapabilitiesMessage::kType);
 		joinDispatcher->setHandlerForType(&serverWarningMessageHandler, ServerWarningMessage::kType);
 		joinDispatcher->setHandlerForType(&clientInfoMessageHandler, ClientInfoMessage::kType);
@@ -1165,6 +1171,7 @@ bool NetEnter(void)
 	my_capabilities[Capabilities::kLua] = Capabilities::kLuaVersion;
 #endif
 	my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
+	my_capabilities[Capabilities::kZippedData] = Capabilities::kZippedDataVersion;
 
 	// net commands!
 	sDisplayPings = false;
@@ -1935,6 +1942,10 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	
 	// build a list of players to send to
 	std::vector<CommunicationsChannel *> channels;
+
+	// also a list of who and who can not take compressed data
+	std::vector<CommunicationsChannel *> zipCapableChannels;
+	std::vector<CommunicationsChannel *> zipIncapableChannels;
 	for (playerIndex = 0; playerIndex < topology->player_count; playerIndex++)
 	{
 		NetPlayer player = topology->players[playerIndex];
@@ -1943,7 +1954,20 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		// ZZZ: and is not going to be a zombie and is not us
 
 		if (!player.net_dead && player.identifier != NONE && playerIndex != localPlayerIndex) 
-			channels.push_back(connections_to_clients[player.stream_id]->channel);
+		{
+			Client *client = connections_to_clients[player.stream_id];
+			channels.push_back(client->channel);
+			if (client->capabilities[Capabilities::kZippedData] >= my_capabilities[Capabilities::kZippedData])
+			{
+				zipCapableChannels.push_back(client->channel);
+			}
+			else
+			{
+				zipIncapableChannels.push_back(client->channel);
+			}
+			
+		}
+		
 	}
 
 	set_progress_dialog_message(message_id);
@@ -1951,19 +1975,53 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 	
 	if (do_physics) 
 	{
-		PhysicsMessage physicsMessage(physics_buffer, physics_length);
-		std::for_each(channels.begin(), channels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, physicsMessage));
-	}
+		if (zipCapableChannels.size())
+		{
+			ZippedPhysicsMessage zippedPhysicsMessage(physics_buffer, physics_length);
+			std::auto_ptr<UninflatedMessage> uninflatedMessage(zippedPhysicsMessage.deflate());
+			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
+		}
 
+		if (zipIncapableChannels.size())
+		{
+			PhysicsMessage physicsMessage(physics_buffer, physics_length);
+			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, physicsMessage));
+		}
+	}
+	
 	{
-		MapMessage mapMessage(wad_buffer, wad_length);
-		std::for_each(channels.begin(), channels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, mapMessage));
+		// send zipped map to anyone who can accept it
+		if (zipCapableChannels.size())
+		{
+			ZippedMapMessage zippedMapMessage(wad_buffer, wad_length);
+			// zipped messages are compressed when deflated
+			// since we may have to send this to multiple joiners,
+			// deflate it now so that compression only happens once
+			std::auto_ptr<UninflatedMessage> uninflatedMessage(zippedMapMessage.deflate());
+			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
+		}
+
+		if (zipIncapableChannels.size())
+		{
+			MapMessage mapMessage(wad_buffer, wad_length);
+			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, mapMessage));
+		}
 	}
 
 	if (do_netscript)
 	{
-		LuaMessage luaMessage(deferred_script_data, deferred_script_length);
-		std::for_each(channels.begin(), channels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, luaMessage));
+		if (zipCapableChannels.size())
+		{
+			ZippedLuaMessage zippedLuaMessage(deferred_script_data, deferred_script_length);
+			std::auto_ptr<UninflatedMessage> uninflatedMessage(zippedLuaMessage.deflate());
+			std::for_each(zipCapableChannels.begin(), zipCapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, *uninflatedMessage));
+		}
+
+		if (zipIncapableChannels.size())
+		{
+			LuaMessage luaMessage(deferred_script_data, deferred_script_length);
+			std::for_each(zipIncapableChannels.begin(), zipIncapableChannels.end(), boost::bind(&CommunicationsChannel::enqueueOutgoingMessage, _1, luaMessage));
+		}
 	}
 
 	{
