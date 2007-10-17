@@ -116,7 +116,7 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 
 	GameDescription description;
 	description.m_type = info.net_game_type;
-	description.m_timeLimit = info.time_limit;
+	description.m_timeLimit = info.time_limit == INT32_MAX ? INT32_MIN : info.time_limit;
 	description.m_difficulty = info.difficulty_level;
 	description.m_mapName = string(info.level_name);
 	description.m_name = gMetaserverClient->playerName() + "'s Game";
@@ -185,7 +185,7 @@ void GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(const std::vect
 				if (name.size() > 0) {
 					string message = name;
 					message += " is hosting ";
-					if (gameChanges[i].m_description.m_timeLimit && gameChanges[i].m_description.m_timeLimit != INT32_MAX)
+					if (gameChanges[i].m_description.m_timeLimit && !(gameChanges[i].m_description.m_timeLimit == INT32_MAX || gameChanges[i].m_description.m_timeLimit == INT32_MIN))
 					{
 						char minutes[5];
 						snprintf(minutes, 4, "%i", gameChanges[i].m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
