@@ -646,6 +646,9 @@ void MakeFloatColor(uint32 IntColor, GLfloat *FloatColor)
 
 bool TextureManager::LoadSubstituteTexture()
 {
+	// don't load replacements for bitmaps that have been patched
+	if (Texture->flags & _PATCHED_BIT) return false;
+
 	// Is there a texture to be substituted?
 	ImageDescriptor& NormalImg = TxtrOptsPtr->NormalImg;
 	if (!NormalImg.IsPresent()) return false;

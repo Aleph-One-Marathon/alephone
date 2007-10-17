@@ -873,6 +873,7 @@ bool load_shapes_patch(SDL_RWops *p)
 					if (cd && patch_bit_depth == 8 && bitmap_index < cd->bitmaps.size())
 					{
 						load_bitmap(cd->bitmaps[bitmap_index], p);
+						get_bitmap_definition(collection_index, bitmap_index)->flags |= _PATCHED_BIT;
 					}
 					else
 					{

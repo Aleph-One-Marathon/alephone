@@ -31,7 +31,8 @@ Saturday, August 20, 1994 12:08:34 PM
 enum /* bitmap flags */
 {
 	_COLUMN_ORDER_BIT= 0x8000,
-	_TRANSPARENT_BIT= 0x4000
+	_TRANSPARENT_BIT= 0x4000,
+	_PATCHED_BIT= 0x2000, // the bitmap should take precedent over MML
 };
 
 struct bitmap_definition
