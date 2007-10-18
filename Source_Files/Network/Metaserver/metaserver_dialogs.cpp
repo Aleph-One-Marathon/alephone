@@ -116,7 +116,7 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 
 	GameDescription description;
 	description.m_type = info.net_game_type;
-	description.m_timeLimit = info.time_limit == INT32_MAX ? INT32_MIN : info.time_limit;
+	description.m_timeLimit = info.time_limit == INT32_MAX ? -1 : info.time_limit;
 	description.m_difficulty = info.difficulty_level;
 	description.m_mapName = string(info.level_name);
 	description.m_name = gMetaserverClient->playerName() + "'s Game";
@@ -143,10 +143,10 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	gMetaserverClient->announceGame(GAME_PORT, description);
 }
 
-void GameAvailableMetaserverAnnouncer::Start()
+void GameAvailableMetaserverAnnouncer::Start(int32 time_limit)
 {
-	// for now, because older aleph one builds do not understand games in progress
-	gMetaserverClient->announceGameDeleted();
+	gMetaserverClient->announceGameStarted(time_limit);
+
 }
 
 extern void PlayInterfaceButtonSound(short);
@@ -185,7 +185,7 @@ void GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(const std::vect
 				if (name.size() > 0) {
 					string message = name;
 					message += " is hosting ";
-					if (gameChanges[i].m_description.m_timeLimit && !(gameChanges[i].m_description.m_timeLimit == INT32_MAX || gameChanges[i].m_description.m_timeLimit == INT32_MIN))
+					if (gameChanges[i].m_description.m_timeLimit && !(gameChanges[i].m_description.m_timeLimit == INT32_MAX || gameChanges[i].m_description.m_timeLimit == -1))
 					{
 						char minutes[5];
 						snprintf(minutes, 4, "%i", gameChanges[i].m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
@@ -199,6 +199,25 @@ void GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(const std::vect
 						message += ", ";
 						message += TS_GetCString(kNetworkGameTypesStringSetID, type);
 					}
+
+					if (gameChanges[i].m_description.m_running)
+					{
+						if (gameChanges[i].m_timeRemaining != -1)
+						{
+							message += " (in progress, about ";
+							char minutes[5];
+							snprintf(minutes, 4, "%i", gameChanges[i].m_timeRemaining / 60);
+							minutes[4] = '\0';
+							message += minutes;
+							message += " minutes remaining)";
+							fprintf(stderr, "%i remaining\n", gameChanges[i].m_timeRemaining);
+						}
+						else
+						{
+							message += " (in progress)";
+						}
+					}
+					
 					
 					receivedLocalMessage(message);
 				}

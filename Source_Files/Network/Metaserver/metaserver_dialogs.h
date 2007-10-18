@@ -43,7 +43,7 @@ class GameAvailableMetaserverAnnouncer
 {
 public:
 	GameAvailableMetaserverAnnouncer(const game_info& info);
-	void Start();
+	void Start(int32 time_limit);
 
 private:
 	// using gMetaserverClient instead

@@ -233,7 +233,7 @@ bool network_gather(bool inResumingGame)
 				NetDoneGathering();
 				if (advertiseOnMetaserver) 
 				{
-					metaserverAnnouncer->Start();
+					metaserverAnnouncer->Start(myGameInfo.time_limit);
 					char numPlayers[2];
 					sprintf(numPlayers, "%i", NetGetNumberOfPlayers());
 					gMetaserverClient->setAway(true, string(numPlayers) + string("p host"));
@@ -392,6 +392,11 @@ void GatherDialog::JoinSucceeded(const prospective_joiner_info* player)
 		m_startWidget->activate ();
 	
 	m_pigWidget->redraw ();
+
+	if (gMetaserverClient->isConnected())
+	{
+		gMetaserverClient->announcePlayersInGame(NetGetNumberOfPlayers());
+	}
 }
 
 void GatherDialog::JoiningPlayerDropped(const prospective_joiner_info* player)
@@ -409,6 +414,11 @@ void GatherDialog::JoinedPlayerDropped(const prospective_joiner_info* player)
 		m_startWidget->deactivate ();
 
 	m_pigWidget->redraw ();
+
+	if (gMetaserverClient->isConnected())
+	{
+		gMetaserverClient->announcePlayersInGame(NetGetNumberOfPlayers());
+	}
 }
 
 void GatherDialog::JoinedPlayerChanged(const prospective_joiner_info* player)

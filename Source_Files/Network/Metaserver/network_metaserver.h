@@ -189,6 +189,7 @@ public:
 
 	void sendChatMessage(const std::string& message);
 	void announceGame(uint16 gamePort, const GameDescription& description);
+	void announcePlayersInGame(uint8 players);
 	void announceGameStarted(int32 gameTimeInSeconds);
 	void announceGameReset();
 	void announceGameDeleted();
@@ -227,6 +228,9 @@ private:
 
 	static std::set<MetaserverClient*>	s_instances;
 	static std::set<std::string>            s_ignoreNames;
+
+	GameDescription                         m_gameDescription;
+	uint16                                  m_gamePort;
 };
 
 #endif // NETWORK_METASERVER_H

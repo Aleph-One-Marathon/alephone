@@ -361,14 +361,24 @@ void
 MetaserverClient::announceGame(uint16 gamePort, const GameDescription& description)
 {
 	m_channel->enqueueOutgoingMessage(CreateGameMessage(gamePort, description));
+	m_gameDescription = description;
+	m_gamePort = gamePort;
 }
 
-
+void
+MetaserverClient::announcePlayersInGame(uint8 players)
+{
+	m_gameDescription.m_numPlayers = players;
+	m_channel->enqueueOutgoingMessage(CreateGameMessage(m_gamePort, m_gameDescription));
+}
 
 void
 MetaserverClient::announceGameStarted(int32 gameTimeInSeconds)
 {
-	m_channel->enqueueOutgoingMessage(StartGameMessage(gameTimeInSeconds));
+	m_gameDescription.m_closed = true;
+	m_gameDescription.m_running = true;
+	m_channel->enqueueOutgoingMessage(CreateGameMessage(m_gamePort, m_gameDescription));
+	m_channel->enqueueOutgoingMessage(StartGameMessage(gameTimeInSeconds == INT32_MAX ? INT32_MIN : gameTimeInSeconds));
 }
 
 
