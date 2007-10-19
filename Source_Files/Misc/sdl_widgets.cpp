@@ -1696,6 +1696,32 @@ const string w_items_in_room_get_name_of_item (MetaserverPlayerInfo item)
 	return item.name ();
 }
 
+void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const
+{
+	y += font->get_ascent();
+	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
+	uint32 color;
+	if (selected)
+	{
+		color = get_dialog_color(ITEM_ACTIVE_COLOR);
+	}
+	else if (!item.compatible())
+	{
+		color = SDL_MapRGB(s->format, 0x7f, 0, 0);
+	}
+	else if (item.running())
+	{
+		color = SDL_MapRGB(s->format, 0x7f, 0x7f, 0x7f);
+	}
+	else
+	{
+		color = SDL_MapRGB(s->format, 0xff, 0xff, 0xff);
+	}
+
+	draw_text(s, w_items_in_room_get_name_of_item(item).c_str(), x, y, color, font, style);
+	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+}
+
 void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface* s,
 					int16 x, int16 y, uint16 width, bool selected) const
 {

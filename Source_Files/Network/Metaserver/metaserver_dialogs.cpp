@@ -283,6 +283,8 @@ void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 	// appear here in the future, but for now, just prevent joining 
 	// incompatible games
 
+	if (game.running()) return;
+
 	if (!Scenario::instance()->IsCompatible(game.m_description.m_scenarioID))
 	{
 		string joinersScenario = (Scenario::instance()->GetName() != "") ? (Scenario::instance()->GetName()) : (Scenario::instance()->GetID());
@@ -317,15 +319,7 @@ void MetaserverClientUi::playersInRoomChanged(const std::vector<MetaserverPlayer
 
 void MetaserverClientUi::gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &gameChanges)
 {
-	// filter out any games in progress, since we don't know how to display
-	std::vector<GameListMessage::GameListEntry> gamesNotStarted;
-	for (int i = 0; i < gMetaserverClient->gamesInRoom().size(); i++)
-	{
-		if (!gMetaserverClient->gamesInRoom()[i].m_description.m_running) 
-			gamesNotStarted.push_back(gMetaserverClient->gamesInRoom()[i]);
-	}
-	
-	m_gamesInRoomWidget->SetItems(gamesNotStarted);	
+	m_gamesInRoomWidget->SetItems(gMetaserverClient->gamesInRoom());
 	GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(gameChanges);
 	for (size_t i = 0; i < gameChanges.size(); i++) 
 	{

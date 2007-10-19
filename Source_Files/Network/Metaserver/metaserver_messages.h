@@ -666,6 +666,9 @@ public:
 		IDType id() const { return m_gameID; }
 		uint8 verb() const { return m_verb; }
 
+		bool running() const { return m_description.m_running; }
+		bool compatible() const { return Scenario::instance()->IsCompatible(m_description.m_scenarioID); }
+
 		// Conformance to w_items_in_game<>'s Element interface
 		const std::string& name() const { return m_description.m_name; }
 

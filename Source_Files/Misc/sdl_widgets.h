@@ -870,8 +870,17 @@ private:
 };
 
 
-typedef w_items_in_room<GameListMessage::GameListEntry> w_games_in_room;
 typedef w_items_in_room<prospective_joiner_info> w_joining_players_in_room;
+
+class w_games_in_room : public w_items_in_room<GameListMessage::GameListEntry>
+{
+public:
+	w_games_in_room(w_items_in_room<GameListMessage::GameListEntry>::ItemClickedCallback itemClicked, int width, int numRows)
+		: w_items_in_room<GameListMessage::GameListEntry>(itemClicked, width, numRows)
+		{}
+private:
+	void draw_item(const GameListMessage::GameListEntry& item, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
+};
 
 class w_players_in_room : public w_items_in_room<MetaserverPlayerInfo>
 {
