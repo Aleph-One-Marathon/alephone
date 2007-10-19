@@ -507,6 +507,8 @@ public:
 
 	friend std::ostream& operator <<(std::ostream& out, const MetaserverPlayerInfo& info);
 
+	bool away() const { return m_status & 0x1; }
+
 	// Conformance to metaserver-maintained-list interface
 	typedef uint32 IDType;
 	IDType id() const { return playerID(); }
