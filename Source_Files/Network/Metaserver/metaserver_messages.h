@@ -502,8 +502,9 @@ public:
 	const uint16 *color() const { return m_primaryColor; }
 	const uint16 *team_color() const { return m_secondaryColor; }
 
-	static bool sort(const MetaserverPlayerInfo& a, const MetaserverPlayerInfo& b)
-	{ return (a.m_status == b.m_status) ? to_lower_copy(a.m_name) < to_lower_copy(b.m_name) : a.m_status < b.m_status; }
+	static bool sort(const MetaserverPlayerInfo& a, const MetaserverPlayerInfo& b) { 
+		return (a.m_adminFlags == b.m_adminFlags) ? ( (a.m_status == b.m_status) ? a.playerID() < b.playerID() : a.m_status < b.m_status) : a.m_adminFlags > b.m_adminFlags;
+	}
 
 	friend std::ostream& operator <<(std::ostream& out, const MetaserverPlayerInfo& info);
 
@@ -668,6 +669,29 @@ public:
 
 		bool running() const { return m_description.m_running; }
 		bool compatible() const { return Scenario::instance()->IsCompatible(m_description.m_scenarioID); }
+
+		static bool sort(const GameListEntry& a, const GameListEntry& b) {
+			// sort compatible/not running, then compatible/running
+			// then not compatible
+			// in those groups, sort by ID
+			if (a.compatible() && b.compatible())
+			{
+				if (a.running() == b.running())
+				{
+					return a.id() < b.id();
+				}
+				else 
+				{
+					return !a.running();
+				}
+			}
+			else if (a.compatible() == b.compatible())
+			{
+				return a.id() < b.id();
+			}
+			else
+				return a.compatible();
+		}
 
 		// Conformance to w_items_in_game<>'s Element interface
 		const std::string& name() const { return m_description.m_name; }
