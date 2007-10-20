@@ -57,6 +57,7 @@ enum
 	// Messages sent from clients to servers
 	kCLIENT_LOGIN		= 100,
 	kCLIENT_ROOM_LOGIN	= 101,
+	kCLIENT_LOGOUT          = 102,
 	kCLIENT_NAME_TEAM	= 103,
 	kCLIENT_CREATEGAME	= 104,
 	kCLIENT_REMOVEGAME	= 105,
@@ -164,6 +165,8 @@ private:
 	std::string	m_playerName;
 	std::string	m_teamName;
 };
+
+typedef DatalessMessage<kCLIENT_LOGOUT> LogoutMessage;
 
 class SetPlayerModeMessage : public SmallMessageHelper
 {

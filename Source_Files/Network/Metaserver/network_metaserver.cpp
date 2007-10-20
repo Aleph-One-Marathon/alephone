@@ -288,6 +288,12 @@ MetaserverClient::isConnected() const
 void
 MetaserverClient::disconnect()
 {
+	// don't throw, we're called in ~MetaserverClient
+	try {
+		m_channel->enqueueOutgoingMessage(LogoutMessage());
+		m_channel->pump();
+	}
+	catch(...) { }
 	m_channel->disconnect();
 }
 
