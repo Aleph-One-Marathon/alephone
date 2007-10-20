@@ -88,6 +88,12 @@ enum /* screen sizes */
 	_1680_1050,
 	_1920_950_HUD,
 	_1920_1200,
+	_2560_1280_HUD,
+	_2560_1600,
+	_1280_768WS_HUD,
+	_1280_768,
+	_1280_640SD_HUD,
+	_1280_960,
 	NUMBER_OF_VIEW_SIZES
 };
 // Original screen-size definitions
