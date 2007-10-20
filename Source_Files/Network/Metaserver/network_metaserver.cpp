@@ -172,6 +172,8 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 {
 	m_channel->setMessageHandler(m_unexpectedMessageHandler.get());
 
+	if (m_channel->isConnected()) m_channel->disconnect();
+
 	m_channel->connect(serverName.c_str(), port);
 
 	LoginAndPlayerInfoMessage theLoginMessage(userName, m_playerName, m_teamName);
