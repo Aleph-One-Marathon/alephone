@@ -34,10 +34,6 @@
 #include "map.h" // for _force_unique_teams!?!
 #include "SoundManager.h"
 
-// for game types...
-#include "network_dialogs.h"
-#include "TextStrings.h"
-
 #include "Update.h"
 #include "progress.h"
 
@@ -171,56 +167,18 @@ void GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(const std::vect
 {
 	for (size_t i = 0; i < gameChanges.size(); i++) {
 		if (gameChanges[i].verb() == MetaserverClient::GamesInRoom::kAdd) {
-			if (!gameChanges[i].m_description.m_closed) {
-				string name;
-				// find the player's name
-				for (size_t playerIndex = 0; playerIndex < gMetaserverClient->playersInRoom().size(); playerIndex++)
-				{
-					if (gMetaserverClient->playersInRoom()[playerIndex].id() == gameChanges[i].m_hostPlayerID) {
-						name = gMetaserverClient->playersInRoom()[playerIndex].name();
-						break;
-					}
+			string name;
+			// find the player's name
+			for (size_t playerIndex = 0; playerIndex < gMetaserverClient->playersInRoom().size(); playerIndex++)
+			{
+				if (gMetaserverClient->playersInRoom()[playerIndex].id() == gameChanges[i].m_hostPlayerID) {
+					name = gMetaserverClient->playersInRoom()[playerIndex].name();
+					break;
 				}
-				
-				if (name.size() > 0) {
-					string message = name;
-					message += " is hosting ";
-					if (gameChanges[i].m_description.m_timeLimit && !(gameChanges[i].m_description.m_timeLimit == INT32_MAX || gameChanges[i].m_description.m_timeLimit == -1))
-					{
-						char minutes[5];
-						snprintf(minutes, 4, "%i", gameChanges[i].m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
-						minutes[4] = '\0';
-						message += minutes;
-						message += " minutes of ";
-					}
-					message += gameChanges[i].m_description.m_mapName;
-					int type = gameChanges[i].m_description.m_type - (gameChanges[i].m_description.m_type > 5 ? 1 : 0);
-					if (TS_GetCString(kNetworkGameTypesStringSetID, type)) {
-						message += ", ";
-						message += TS_GetCString(kNetworkGameTypesStringSetID, type);
-					}
-
-					if (gameChanges[i].m_description.m_running)
-					{
-						if (gameChanges[i].m_timeRemaining != -1)
-						{
-							message += " (in progress, about ";
-							char minutes[5];
-							snprintf(minutes, 4, "%i", gameChanges[i].m_timeRemaining / 60);
-							minutes[4] = '\0';
-							message += minutes;
-							message += " minutes remaining)";
-							fprintf(stderr, "%i remaining\n", gameChanges[i].m_timeRemaining);
-						}
-						else
-						{
-							message += " (in progress)";
-						}
-					}
-					
-					
-					receivedLocalMessage(message);
 				}
+			
+			if (name.size() > 0) {
+				receivedLocalMessage(gameChanges[i].format_for_chat(name));
 			}
 		}
 	}
@@ -283,7 +241,31 @@ void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 	// appear here in the future, but for now, just prevent joining 
 	// incompatible games
 
-	if (game.running()) return;
+	if (game.running()) 
+	{
+		string message = game.name();
+		message += " is in progress";
+		int minutes_remaining = game.minutes_remaining();
+		if (minutes_remaining == 0)
+		{
+			message += ", about to end";
+		}
+		else if (minutes_remaining == 1)
+		{
+			message += ", approximately 1 minute remaining";
+		}
+		else if (minutes_remaining > 0)
+		{
+			char minutes[5];
+			snprintf(minutes, 4, "%i", minutes_remaining);
+			minutes[4] = '\0';
+			message += ", approximately ";
+			message += minutes;
+			message += " minutes remaining";
+		}
+		receivedLocalMessage(message);
+		return;
+	}
 
 	if (!Scenario::instance()->IsCompatible(game.m_description.m_scenarioID))
 	{

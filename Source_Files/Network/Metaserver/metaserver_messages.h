@@ -128,6 +128,7 @@ struct GameDescription
 		, m_scenarioName(Scenario::instance()->GetName())
 		, m_scenarioVersion(Scenario::instance()->GetVersion())
 	{}
+
 };
 
 AIStream& operator >>(AIStream& stream, GameDescription& desc);
@@ -693,6 +694,15 @@ public:
 				return a.compatible();
 		}
 
+		int minutes_remaining() const {
+			if (m_timeRemaining == -1) return -1;
+			int remaining = m_timeRemaining / 60 - (SDL_GetTicks() - m_ticks) / 1000 / 60;
+			if (remaining < 0) remaining = 0;
+			return remaining;
+		}
+
+		std::string format_for_chat(const std::string& player_name) const;
+
 		// Conformance to w_items_in_game<>'s Element interface
 		const std::string& name() const { return m_description.m_name; }
 
@@ -705,6 +715,8 @@ public:
 		uint32		m_hostPlayerID;
 		uint16		m_len;
 		GameDescription	m_description;
+
+		uint32          m_ticks; // SDL ticks at last update
 	};
 	
 	enum { kType = kSERVER_GAMELIST };

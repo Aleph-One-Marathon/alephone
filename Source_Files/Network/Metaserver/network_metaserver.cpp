@@ -313,7 +313,21 @@ MetaserverClient::pumpAll()
 void
 MetaserverClient::sendChatMessage(const std::string& message)
 {
-	if (message == ".who") {
+	if (message == ".available" || message == ".avail") {
+		if(m_notificationAdapter) {
+			string players = "Available Players: ";
+			if (playersInRoom().size()) {
+				players += "\"" + playersInRoom()[0].name() + "\"";
+				for (size_t i = 1; i < playersInRoom().size(); i++) {
+					if (!playersInRoom()[i].away())
+						players += ", \"" + playersInRoom()[i].name() + "\"";
+				}
+			} else {
+				players += "none";
+			}
+			m_notificationAdapter->receivedLocalMessage(players); 
+		}
+	} else if (message == ".who") {
 		if(m_notificationAdapter) {
 			string players = "Players: ";
 			if (playersInRoom().size()) {
@@ -324,7 +338,7 @@ MetaserverClient::sendChatMessage(const std::string& message)
 			} else {
 				players += "none";
 			}
-			m_notificationAdapter->receivedLocalMessage(players); 
+			m_notificationAdapter->receivedLocalMessage(players); 	
 		}
 	} else if (message.compare(0, strlen(".pork"), ".pork") == 0) {
 		if (m_notificationAdapter) {
@@ -352,6 +366,29 @@ MetaserverClient::sendChatMessage(const std::string& message)
 		// everything after the space is the name to ignore
 		string name = message.substr(strlen(".ignore "));
 		ignore(name);
+	} else if (message == ".games") {
+		if (m_notificationAdapter) {
+			m_notificationAdapter->receivedLocalMessage("Games:");
+			vector<GameListMessage::GameListEntry> games = gamesInRoom();
+			vector<MetaserverPlayerInfo> players = playersInRoom();
+			for (vector<GameListMessage::GameListEntry>::iterator it = games.begin(); it != games.end(); ++it)
+			{
+				// look up the player name
+ 				string player_name;
+				for (vector<MetaserverPlayerInfo>::iterator player_it = players.begin(); player_it != players.end(); ++player_it)
+ 				{
+ 					if (player_it->id() == it->m_hostPlayerID) 
+ 					{
+						player_name = player_it->name();
+						break;
+ 					}
+ 				}
+
+ 				if (player_name.size() > 0) {
+ 					m_notificationAdapter->receivedLocalMessage(it->format_for_chat(player_name));
+				}
+			}
+		}
 	} else {
 		m_channel->enqueueOutgoingMessage(ChatMessage(m_playerID, m_playerName, message));
 	}

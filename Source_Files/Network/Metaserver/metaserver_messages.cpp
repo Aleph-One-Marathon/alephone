@@ -43,6 +43,12 @@
 #include "preferences.h"
 #include "shell.h" // get_player_color :(
 
+#include "map.h" // TICKS_PER_SECOND
+
+// game types
+#include "network_dialogs.h"
+#include "TextStrings.h"
+
 using namespace std;
 
 static const char* sRoomNames[] = {
@@ -745,7 +751,27 @@ operator <<(ostream& stream, const GameDescription& desc)
 	return stream;
 }
 
-
+string GameListMessage::GameListEntry::format_for_chat(const string& player_name) const
+{
+	string message = player_name;
+	message += " is hosting ";
+	if (m_description.m_timeLimit && !(m_description.m_timeLimit == INT32_MAX || m_description.m_timeLimit == -1))
+	{
+		char minutes[5];
+		snprintf(minutes, 4, "%i", m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
+		minutes[4] = '\0';
+		message += minutes;
+		message += " minutes of ";
+	}
+	message += m_description.m_mapName;
+	int type = m_description.m_type - (m_description.m_type > 5 ? 1 : 0);
+	if (TS_GetCString(kNetworkGameTypesStringSetID, type)) {
+		message += ", ";
+		message += TS_GetCString(kNetworkGameTypesStringSetID, type);
+	}
+	
+	return message;
+}
 
 bool
 GameListMessage::reallyInflateFrom(AIStream& inStream)
@@ -754,6 +780,7 @@ GameListMessage::reallyInflateFrom(AIStream& inStream)
 	{
 		GameListEntry entry;
 		inStream >> entry;
+		entry.m_ticks = SDL_GetTicks();
 
 		m_entries.push_back(entry);
 	}
