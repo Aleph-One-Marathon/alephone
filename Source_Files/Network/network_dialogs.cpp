@@ -234,9 +234,7 @@ bool network_gather(bool inResumingGame)
 				if (advertiseOnMetaserver) 
 				{
 					metaserverAnnouncer->Start(myGameInfo.time_limit);
-					char numPlayers[2];
-					sprintf(numPlayers, "%i", NetGetNumberOfPlayers());
-					gMetaserverClient->setAway(true, string(numPlayers) + string("p host"));
+					gMetaserverClient->setMode(1);
 					gMetaserverClient->pump();
 				}
 				successful= true;
@@ -490,7 +488,7 @@ int network_join(void)
 			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
 			if (gMetaserverClient && gMetaserverClient->isConnected())
 			{
-				gMetaserverClient->setAway(true, "in game");
+				gMetaserverClient->setMode(1);
 				gMetaserverClient->pump();
 			}
 		}

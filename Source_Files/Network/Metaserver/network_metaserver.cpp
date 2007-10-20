@@ -469,8 +469,13 @@ MetaserverClient::syncGames()
 void MetaserverClient::setAway(bool away, const std::string& away_message)
 {
 	m_channel->enqueueOutgoingMessage(NameAndTeamMessage(m_playerName, m_teamName, away, away_message));
-	m_channel->enqueueOutgoingMessage(SetPlayerModeMessage(1 /* deaf */));
 }
+
+void MetaserverClient::setMode(uint16 mode)
+{
+	m_channel->enqueueOutgoingMessage(SetPlayerModeMessage(mode));
+}
+
 void
 MetaserverClient::setPlayerName(const std::string& name)
 {
