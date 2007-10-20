@@ -14,11 +14,22 @@ AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 
 dnl Configure options.
-AC_ARG_ENABLE(opengl, [  --enable-opengl         use OpenGL for rendering [default=yes]], , enable_opengl=yes)
-AC_ARG_ENABLE(mad, [  --enable-mad            use libmad for mp3 playback [default=yes]], , enable_mad=yes)
-AC_ARG_ENABLE(sndfile, [  --enable-sndfile        use libsndfile for decoding audio files [default=yes]], , enable_sndfile=yes)
-AC_ARG_ENABLE(vorbis, [  --enable-vorbis         enable ogg/vorbis music playback [default=yes]], , enable_vorbis=yes)
-AC_ARG_ENABLE(lua, [ --enable-lua           use built-in Lua scripting [default=yes]], , enable_lua=yes)
+AC_ARG_ENABLE(opengl, 
+[  --enable-opengl         use OpenGL for rendering [default=yes]], , enable_opengl=yes)
+AC_ARG_ENABLE(mad, 
+[  --enable-mad            use libmad for mp3 playback [default=yes]], , enable_mad=yes)
+AC_ARG_ENABLE(sndfile, 
+[  --enable-sndfile        use libsndfile for decoding audio files [default=yes]], , enable_sndfile=yes)
+AC_ARG_ENABLE(vorbis, 
+[  --enable-vorbis         enable ogg/vorbis music playback [default=yes]], , enable_vorbis=yes)
+AC_ARG_ENABLE(lua, 
+[  --enable-lua            use built-in Lua scripting [default=yes]], , enable_lua=yes)
+AC_ARG_ENABLE(smpeg, 
+[  --enable-smpeg          use SMPEG for movie playback [default=yes]], , enable_smpeg=yes)
+AC_ARG_ENABLE(speex, 
+[  --enable-speex          enable Speex net mic playback [default=yes]], , enable_speex=yes)
+AC_ARG_ENABLE(alsa,
+[  --enable-alsa           enable ALSA net mic transmission [default=yes]], , enable_alsa=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -90,13 +101,15 @@ AC_LANG_PUSH(C++)
 AC_CHECK_HEADER([boost/function.hpp], , [AC_MSG_ERROR([You need boost/function.hpp from the boost library to run Aleph One])])
 AC_LANG_POP(C++)
 
+if [[ "x$enable_smpeg" = "xyes" ]]; then
 dnl Check for SMPEG
 AC_CHECK_HEADERS([smpeg/smpeg.h], [
   AC_CHECK_LIB(smpeg, SMPEG_new, [
     LIBS="-lsmpeg $LIBS"
     AC_DEFINE(HAVE_SMPEG, 1, [SMPEG movie playback is enabled])
   ])
-])	    
+])
+fi	    
 
 if [[ "x$enable_mad" = "xyes" ]]; then
 dnl Check for libmad
@@ -132,6 +145,7 @@ if [[ "x$enable_lua" = "xyes" ]]; then
 AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
 fi
 
+if [[ "x$enable_speex" = "xyes" ]]; then
 dnl Check for Speex
 AC_CHECK_HEADERS(speex/speex.h, [
   AC_CHECK_LIB(speex, speex_decoder_init, [
@@ -139,7 +153,9 @@ AC_CHECK_HEADERS(speex/speex.h, [
     AC_DEFINE(SPEEX, 1, [Speex support is enabled])
   ])
 ])
+fi
 
+if [[ "x$enable_alsa" = "xyes" ]]; then
 dnl Check for ALSA
 AC_CHECK_HEADERS([alsa/asoundlib.h], [
   AC_CHECK_LIB(asound, snd_pcm_open, [
@@ -147,6 +163,7 @@ AC_CHECK_HEADERS([alsa/asoundlib.h], [
     AC_DEFINE(HAVE_ALSA, 1, [ALSA netmic is enabled])
   ])
 ])
+fi
 
 dnl Figure out which OpenGL library to use
 case "$target" in
