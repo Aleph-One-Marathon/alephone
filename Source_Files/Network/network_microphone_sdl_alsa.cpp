@@ -84,7 +84,7 @@ open_network_microphone() {
 	}
 
 	if (!announce_microphone_capture_format(rate, false, true)) {
-		fprintf(stderr, "network microphone support code rejectect audio format (rate=%i\n", rate);
+		fprintf(stderr, "network microphone support code rejected audio format (rate=%i)\n", rate);
 		return -1;
 	}
 
