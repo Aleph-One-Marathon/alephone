@@ -354,11 +354,16 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #endif
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
-		printf("GL_VENDOR: %s\n", glGetString(GL_VENDOR));
-		printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
-		printf("GL_VERSION: %s\n", glGetString(GL_VERSION));
+		static bool gl_info_printed = false;
+		if (!gl_info_printed)
+		{
+			printf("GL_VENDOR: %s\n", glGetString(GL_VENDOR));
+			printf("GL_RENDERER: %s\n", glGetString(GL_RENDERER));
+			printf("GL_VERSION: %s\n", glGetString(GL_VERSION));
 //		const char *gl_extensions = (const char *)glGetString(GL_EXTENSIONS);
 //		printf("GL_EXTENSIONS: %s\n", gl_extensions);
+			gl_info_printed = true;
+		}
 		glScissor(0, 0, width, height);
 		glViewport(0, 0, width, height);
 #ifdef __WIN32__
