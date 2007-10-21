@@ -167,6 +167,8 @@ clearly this is all broken until we have packet types
 
 #include "network_sound.h"
 
+#include "ConnectPool.h"
+
 // For temporary multiple MML specified lua scripts hack
 extern bool gLoadingLuaNetscript;
 
@@ -194,6 +196,8 @@ static client_map_t connections_to_clients;
 typedef std::map<int, ClientChatInfo *> client_chat_info_map_t;
 static client_chat_info_map_t client_chat_info;
 static CommunicationsChannel *connection_to_server = NULL;
+static NonblockingConnect *server_nbc = 0;
+static bool nbc_is_resolving = false;
 static int next_stream_id = 1; // 0 is local player
 static IPaddress host_address;
 static bool host_address_specified = false;
@@ -1240,6 +1244,11 @@ void NetExit(
 		delete connection_to_server;
 		connection_to_server = NULL;
 	}
+
+	if (server_nbc) {
+		ConnectPool::instance()->abandon(server_nbc);
+		server_nbc = 0;
+	}
   
 	{  
 		client_map_t::iterator it;
@@ -1538,30 +1547,24 @@ bool NetGameJoin(
   OSErr error = noErr;
   
   /* Attempt a connection to host */
-  
+
+  if (server_nbc)
+  {
+	  ConnectPool::instance()->abandon(server_nbc);
+	  server_nbc = 0;
+  }
+
   host_address_specified = (host_addr_string != NULL);
   if (host_address_specified)
     {
-      // SDL_net declares ResolveAddress without "const" on the char; we can't guarantee
-      // our caller that it will remain const unless we protect it like this.
-      char*		theStringCopy = strdup(host_addr_string);
-      error = SDLNet_ResolveHost(&host_address, theStringCopy, GAME_PORT);
-      free(theStringCopy);
+	    nbc_is_resolving = true;
+	    server_nbc = ConnectPool::instance()->connect(host_addr_string, GAME_PORT);
     }
   
-  if (!error) {
-    connection_to_server = new CommunicationsChannel();
-    connection_to_server->setMessageInflater(inflater);
-    connection_to_server->setMessageHandler(joinDispatcher);
-    
     netState = netConnecting;
     
     NetInitializeTopology((void *) NULL, 0, player_data, player_data_size);
     return true;
-  } else {
-    alert_user(infoError, strNETWORK_ERRORS, netErrCouldntResolve, error);
-    return false;
-  }
 }
 
 void NetRetargetJoinAttempts(const IPaddress* inAddress)
@@ -2236,20 +2239,61 @@ short NetUpdateJoinState(
       //	 refuses connection each time we poll; the dialog will remain responsive.
       //	 It's possible that a connection attempt will take a long time, however,
       //	 so we look for that and abort dialog when it happens.
-      if (machine_tick_count() >= next_join_attempt) {
-	uint32 ticks_before_connection_attempt = machine_tick_count();
-	if(host_address_specified)
-	  connection_to_server->connect(host_address);
-	if (connection_to_server->isConnected()) {
-	  newState = netJoining;
-	  handlerState = netAwaitingHello;
-	} else if (ticks_before_connection_attempt + 3*MACHINE_TICKS_PER_SECOND < machine_tick_count ()) {
-	  newState= netJoinErrorOccurred;
-	  alert_user(infoError, strNETWORK_ERRORS, netErrCouldntJoin, 3);
-	}
-	next_join_attempt = machine_tick_count() + 5*MACHINE_TICKS_PER_SECOND;
-      }
-      break;
+
+	    // ghs: it's possible the guy hasn't opened his firewall yet, so always retry
+	    if (machine_tick_count() >= next_join_attempt) {
+		    uint32 ticks_before_connection_attempt = machine_tick_count();
+		    if(host_address_specified)
+		    {
+			    if (!server_nbc)
+			    {
+				    server_nbc = ConnectPool::instance()->connect(host_address);
+			    }
+		    }
+
+		    if (server_nbc)
+		    {
+			    if (server_nbc->status() == NonblockingConnect::Connected)
+			    {
+				    newState = netJoining;
+				    handlerState = netAwaitingHello;
+				    connection_to_server = server_nbc->release();
+				    ConnectPool::instance()->abandon(server_nbc);
+				    server_nbc = 0;
+				    if (!connection_to_server->isConnected())
+				    {
+					    newState= netJoinErrorOccurred;
+					    alert_user(infoError, strNETWORK_ERRORS, netErrCouldntJoin, 3);  
+				    }
+				    else
+				    {
+					    connection_to_server->setMessageInflater(inflater);
+					    connection_to_server->setMessageHandler(joinDispatcher);
+				    }
+			    }
+			    else if (server_nbc->status() == NonblockingConnect::ResolutionFailed)
+			    {
+				    // name resolution error isn't recoverable
+				    ConnectPool::instance()->abandon(server_nbc);
+				    server_nbc = 0;
+
+				    newState = netJoinErrorOccurred;
+				    alert_user(infoError, strNETWORK_ERRORS, netErrCouldntResolve, 0);
+			    }
+			    else if (server_nbc->status() == NonblockingConnect::ConnectFailed)
+			    {
+				    assert(host_address_specified);
+				    if (nbc_is_resolving)
+					    host_address = server_nbc->address();
+				    nbc_is_resolving = false;
+				    ConnectPool::instance()->abandon(server_nbc);
+				    server_nbc = ConnectPool::instance()->connect(host_address);
+			    }
+		    }
+
+		    next_join_attempt = machine_tick_count() + 5*MACHINE_TICKS_PER_SECOND;
+	    }
+	    break;
       
     case netJoining:	// waiting to be gathered
       if (!connection_to_server->isConnected ()) {
