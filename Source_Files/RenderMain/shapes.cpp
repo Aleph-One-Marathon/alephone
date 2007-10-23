@@ -630,6 +630,7 @@ static void load_bitmap(std::vector<uint8>& bitmap, SDL_RWops *p)
 	d->height = b.height;
 	d->bytes_per_row = b.bytes_per_row;
 	d->flags = b.flags;
+	d->flags &= ~_PATCHED_BIT; // Anvil sets unused flags :( we'll set it later
 	d->bit_depth = b.bit_depth;
 	c += sizeof(bitmap_definition);
 
@@ -695,6 +696,7 @@ static bool load_collection(short collection_index, bool strip)
 	std::auto_ptr<collection_definition> cd(new collection_definition);
  	ShapesFile.SetPosition(src_offset);
 	load_collection_definition(cd.get(), p);
+	header->status &= ~markPATCHED;
 
 	// Convert CLUTS
 	ShapesFile.SetPosition(src_offset + cd->color_table_offset);
