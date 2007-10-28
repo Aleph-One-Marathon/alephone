@@ -194,6 +194,20 @@ sdl_font_info *load_font(const TextSpec &spec)
 	return info;
 }
 
+ttf_and_sdl_font_info *load_ttf_and_sdl_font(const TextSpec& spec)
+{
+	sdl_font_info *info = load_font(spec);
+	if (info)
+	{
+		ttf_and_sdl_font_info* ttf_and_sdl_info = new ttf_and_sdl_font_info;
+		ttf_and_sdl_info->set_sdl_font_info(info);
+		return ttf_and_sdl_info;
+	}
+	else
+	{
+		return 0;
+	}
+}
 
 /*
  *  Unload font, free sdl_font_info
@@ -215,5 +229,85 @@ void unload_font(sdl_font_info *info)
 			}
 		}
 		i++;
+	}
+}
+
+void unload_font(ttf_and_sdl_font_info *info)
+{
+	if (info->get_sdl_font_info())
+	{
+		unload_font(info->get_sdl_font_info());
+	}
+	
+	delete info;
+}
+
+uint16 ttf_and_sdl_font_info::get_ascent() const
+{
+#ifdef HAVE_SDL_TTF
+	if (is_ttf_font())
+	{
+		return TTF_FontAscent(m_ttf_font_info);
+	}
+	else
+#endif
+	{
+		return m_sdl_font_info->get_ascent();
+	}
+}
+
+uint16 ttf_and_sdl_font_info::get_height() const
+{
+#ifdef HAVE_SDL_TTF
+	if (is_ttf_font())
+	{
+		return TTF_FontHeight(m_ttf_font_info);
+	}
+	else
+#endif
+	{
+		return m_sdl_font_info->get_height();
+	}
+}
+
+uint16 ttf_and_sdl_font_info::get_line_height() const
+{
+#ifdef HAVE_SDL_TTF
+	if (is_ttf_font())
+	{
+		return TTF_FontLineSkip(m_ttf_font_info);
+	}
+	else
+#endif
+	{
+		return m_sdl_font_info->get_line_height();
+	}
+}
+
+uint16 ttf_and_sdl_font_info::get_descent() const
+{
+#ifdef HAVE_SDL_TTF
+	if (is_ttf_font())
+	{
+		return TTF_FontDescent(m_ttf_font_info);
+	}
+	else
+#endif
+	{
+		return m_sdl_font_info->get_descent();
+	}
+}
+
+int16 ttf_and_sdl_font_info::get_leading() const
+{
+#ifdef HAVE_SDL_TTF
+	if (is_ttf_font())
+	{
+		return get_line_height() - get_ascent() - get_descent();
+	}
+	else
+#endif
+	{
+		return m_sdl_font_info->get_leading();
 	}
 }

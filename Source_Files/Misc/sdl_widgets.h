@@ -148,7 +148,8 @@ protected:
 	bool dirty;		// Flag: widget needs redraw
     bool    enabled; // ZZZ Flag: roughly, should the user be allowed to interact with the widget?
 
-	const sdl_font_info *font;	// Widget font
+//	const sdl_font_info *font;	// Widget font
+    ttf_and_sdl_font_info *font; // Widget font
 	uint16 style;				// Widget font style
         
         short	identifier;	// ZZZ: numeric ID in support of dialog::find_widget_by_id()
@@ -476,7 +477,8 @@ private:
 
 	std::string name;
 
-	const sdl_font_info *text_font;	// Font for text
+//	const sdl_font_info *text_font;	// Font for text
+	ttf_and_sdl_font_info *text_font; // Font for text
 	uint16 text_style;
 
 	size_t num_chars;		// Length of text in buffer

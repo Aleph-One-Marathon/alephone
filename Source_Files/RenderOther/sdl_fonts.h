@@ -29,7 +29,9 @@
 #define SDL_FONTS_H
 
 #include "FileHandler.h"
-
+#ifdef HAVE_SDL_TTF
+#include <SDL_ttf.h>
+#endif
 
 /*
  *  Definitions
@@ -68,6 +70,37 @@ private:
 	LoadedResource rsrc;
 };
 
+class ttf_and_sdl_font_info {
+public:
+
+	ttf_and_sdl_font_info() : m_sdl_font_info(0)
+#ifdef HAVE_SDL_TTF
+				, m_ttf_font_info(0) 
+#endif
+		{ }
+	uint16 get_ascent() const;
+	uint16 get_height() const;
+	uint16 get_line_height() const;
+	uint16 get_descent() const;
+	int16 get_leading() const;
+
+	void set_sdl_font_info(sdl_font_info *font_info) { m_sdl_font_info = font_info; }
+	sdl_font_info* get_sdl_font_info() { return m_sdl_font_info; }
+#ifdef HAVE_SDL_TTF
+	void set_ttf_font_info(TTF_Font *ttf_font_info) { m_ttf_font_info = ttf_font_info; }
+	TTF_Font* get_ttf_font_info() { return m_ttf_font_info; }
+	bool is_ttf_font() const { return m_ttf_font_info; }
+#endif
+
+private:
+	sdl_font_info* m_sdl_font_info;
+#ifdef HAVE_SDL_TTF
+	TTF_Font* m_ttf_font_info;
+#endif
+
+};
+
+	
 
 /*
  *  Functions
@@ -78,8 +111,10 @@ extern void initialize_fonts(void);
 
 // Load font, return pointer to font info
 extern sdl_font_info *load_font(const TextSpec &spec);
+extern ttf_and_sdl_font_info *load_ttf_and_sdl_font(const TextSpec &spec);
 
 // Unload font
 extern void unload_font(sdl_font_info *font);
+extern void unload_font(ttf_and_sdl_font_info *font);
 
 #endif

@@ -56,6 +56,10 @@ Dec 17, 2000 (Loren Petrich):
 #include "sdl_fonts.h"
 #include <string.h>
 
+#ifdef HAVE_SDL_TTF
+#include <SDL_ttf.h>
+#endif
+
 #define clutSCREEN_COLORS 130
 #define finfFONTS 128
 
@@ -368,6 +372,25 @@ uint16 text_width(const char *text, const sdl_font_info *font, uint16 style)
 	return width;
 }
 
+#ifdef HAVE_SDL_TTF
+static uint16 text_width(const char *text, TTF_Font *font, uint16)
+{
+	int width = 0;
+	TTF_SizeText(font, text, &width, 0);
+	return width;
+}
+#endif
+
+uint16 text_width(const char* text, ttf_and_sdl_font_info *font, uint16 style)
+{
+#ifdef HAVE_SDL_TTF
+	if (font->is_ttf_font())
+		return text_width(text, font->get_ttf_font_info(), style);
+	else
+#endif
+		return text_width(text, font->get_sdl_font_info(), style);
+}
+
 uint16 text_width(const char *text, size_t length, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
@@ -377,6 +400,29 @@ uint16 text_width(const char *text, size_t length, const sdl_font_info *font, ui
 	assert(width == static_cast<int>(static_cast<uint16>(width)));
 	return width;
 }
+
+#ifdef HAVE_SDL_TTF
+static uint16 text_width(const char *text, size_t length, TTF_Font *font, uint16 style)
+{
+	char *s = strdup(text);
+	if (strlen(s) > length)
+		s[length] = '\0';
+	int w = text_width(s, font, style);
+	free(s);
+	return w;
+}
+#endif
+
+uint16 text_width(const char *text, size_t length, ttf_and_sdl_font_info *font, uint16 style)
+{
+#ifdef HAVE_SDL_TTF
+	if (font->is_ttf_font())
+		return text_width(text, font->get_ttf_font_info(), style);
+	else
+#endif
+		return text_width(text, font->get_sdl_font_info(), style);
+}
+	
 
 // Determine how many characters of a string fit into a given width
 int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint16 style)
@@ -392,6 +438,39 @@ int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint1
 	}
 	return num;
 }
+
+#ifdef HAVE_SDL_TTF
+static int trunc_text(const char *text, int max_width, TTF_Font *font, uint16 style)
+{
+	int width;
+	TTF_SizeText(font, text, &width, 0);
+	if (width < max_width) return strlen(text);
+
+	int num = strlen(text) - 1;
+	char *s = strdup(text);
+
+	while (num > 0 && width > max_width)
+	{
+		num--;
+		s[num] = '\0';
+		TTF_SizeText(font, s, &width, 0);
+	}
+
+	free(s);
+	return num;
+}
+#endif
+
+int trunc_text(const char *text, int max_width, ttf_and_sdl_font_info *font, uint16 style)
+{
+#ifdef HAVE_SDL_TTF
+	if (font->is_ttf_font())
+		return trunc_text(text, max_width, font->get_ttf_font_info(), style);
+	else
+#endif
+		return trunc_text(text, max_width, font->get_sdl_font_info(), style);
+}
+	
 
 // Draw single glyph at given position in frame buffer, return glyph width
 template <class T>
@@ -541,6 +620,79 @@ int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uin
 	if (s == SDL_GetVideoSurface())
 		SDL_UpdateRect(s, x, y - font->ascent, text_width(text, font, style), font->rect_height);
 	return width;
+}
+
+#ifdef HAVE_SDL_TTF
+static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, TTF_Font *font, uint16 style)
+{
+	if (!font) 
+	{
+		fprintf(stderr, "No font specified!\n");
+		return 0;
+	}
+
+	int clip_top, clip_bottom, clip_left, clip_right;
+	if (draw_clip_rect_active) {
+		clip_top = draw_clip_rect.top;
+		clip_bottom = draw_clip_rect.bottom - 1;
+		clip_left = draw_clip_rect.left;
+		clip_right = draw_clip_rect.right - 1;
+	} else {
+		clip_top = clip_left = 0;
+		clip_right = s->w - 1;
+		clip_bottom = s->h - 1;
+	}
+
+	SDL_Color c;
+	SDL_GetRGB(pixel, s->format, &c.r, &c.g, &c.b);
+	SDL_Surface *text_surface = TTF_RenderText_Blended(font, text, c);
+	
+	SDL_Rect dst_rect;
+	dst_rect.x = x;
+	dst_rect.y = y - TTF_FontAscent(font);
+
+	if (draw_clip_rect_active)
+	{
+		SDL_Rect src_rect;
+		src_rect.x = 0;
+		src_rect.y = 0;
+
+		if (clip_top > dst_rect.y)
+		{
+			src_rect.y += dst_rect.y - clip_top;
+		}
+
+		if (clip_left > dst_rect.x)
+		{
+			src_rect.x += dst_rect.x - clip_left;
+		}
+
+		src_rect.w = (clip_right > dst_rect.x) ? clip_right - dst_rect.x : 0;
+		src_rect.h = (clip_bottom > dst_rect.y) ? clip_bottom - dst_rect.y : 0;
+
+		SDL_BlitSurface(text_surface, &src_rect, s, &dst_rect);
+	}
+	else
+		SDL_BlitSurface(text_surface, NULL, s, &dst_rect);
+
+	if (s == SDL_GetVideoSurface())
+		SDL_UpdateRect(s, x, y - TTF_FontAscent(font), text_width(text, font, style), TTF_FontHeight(font));
+
+	int width = text_surface->w;
+	SDL_FreeSurface(text_surface);
+	return width;
+	return 0;
+}
+#endif
+
+int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, ttf_and_sdl_font_info *font, uint16 style)
+{
+#ifdef HAVE_SDL_TTF
+	if (font->is_ttf_font())
+		return draw_text(s, text, length, x, y, pixel, font->get_ttf_font_info(), style);
+	else
+#endif
+		return draw_text(s, text, length, x, y, pixel, font->get_sdl_font_info(), style);
 }
 
 static void draw_text(const char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)

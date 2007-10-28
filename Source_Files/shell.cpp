@@ -470,6 +470,13 @@ static void initialize_application(void)
 	}
 #endif
 
+#ifdef HAVE_SDL_TTF
+	if (TTF_Init() < 0) {
+		fprintf (stderr, "Couldn't initialize SDL_ttf (%s)\n", TTF_GetError());
+		exit(1);
+	}
+#endif
+
 
 
 	// Initialize everything
@@ -505,6 +512,9 @@ static void shutdown_application(void)
 #endif
 #ifdef HAVE_SDL_SOUND
 	Sound_Quit();
+#endif
+#ifdef HAVE_SDL_TTF
+	TTF_Quit();
 #endif
 	SDL_Quit();
 }

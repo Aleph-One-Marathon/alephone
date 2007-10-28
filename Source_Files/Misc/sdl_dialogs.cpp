@@ -64,13 +64,14 @@ dialog *top_dialog = NULL;
 
 static SDL_Surface *dialog_surface = NULL;
 
-static sdl_font_info *default_font = NULL;
+static ttf_and_sdl_font_info *default_font = NULL;
 static SDL_Surface *default_image = NULL;
 
 static OpenedResourceFile theme_resources;
 
 static TextSpec dialog_font_spec[NUM_DIALOG_FONTS];
-static sdl_font_info *dialog_font[NUM_DIALOG_FONTS];
+//static sdl_font_info *dialog_font[NUM_DIALOG_FONTS];
+static ttf_and_sdl_font_info *dialog_font[NUM_DIALOG_FONTS];
 static SDL_Color dialog_color[NUM_DIALOG_COLORS];
 static uint16 dialog_space[NUM_DIALOG_SPACES];
 
@@ -102,7 +103,7 @@ void initialize_dialogs(FileSpecifier &theme)
 
 	// Default font and image
 	static const TextSpec default_font_spec = {kFontIDMonaco, styleNormal, 12};
-	default_font = load_font(default_font_spec);
+	default_font = load_ttf_and_sdl_font(default_font_spec);
 	assert(default_font);
 	default_image = SDL_CreateRGBSurface(SDL_SWSURFACE, 1, 1, 24, 0xff0000, 0x00ff00, 0x0000ff, 0);
 	assert(default_image);
@@ -610,7 +611,7 @@ void load_theme(FileSpecifier &theme)
 
 	// Load fonts
 	for (int i=0; i<NUM_DIALOG_FONTS; i++)
-		dialog_font[i] = load_font(dialog_font_spec[i]);
+		dialog_font[i] = load_ttf_and_sdl_font(dialog_font_spec[i]);
 
 	// Load images
 	for (int i=0; i<NUM_DIALOG_IMAGES; i++) {
@@ -716,10 +717,10 @@ static void unload_theme(void)
  *  Get dialog font/color/image/space from theme
  */
 
-const sdl_font_info *get_dialog_font(int which, uint16 &style)
+ttf_and_sdl_font_info *get_dialog_font(int which, uint16 &style)
 {
 	assert(which >= 0 && which < NUM_DIALOG_FONTS);
-	const sdl_font_info *font = dialog_font[which];
+	ttf_and_sdl_font_info *font = dialog_font[which];
 	if (font) {
 		style = dialog_font_spec[which].style;
 		return font;

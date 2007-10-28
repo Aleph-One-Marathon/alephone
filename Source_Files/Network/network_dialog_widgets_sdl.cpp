@@ -997,7 +997,7 @@ w_players_in_game2::draw_carnage_totals(SDL_Surface* s) const {
             sprintf(temporary, "%+d", thePlayerCarnageScore);
         
         uint16			theBiggerFontStyle	= 0;
-        const sdl_font_info*	theBiggerFont		= get_dialog_font(LABEL_FONT, theBiggerFontStyle);
+        ttf_and_sdl_font_info*	theBiggerFont		= get_dialog_font(LABEL_FONT, theBiggerFontStyle);
         
         int	theStringCenter = center_x - (text_width(temporary, theBiggerFont, theBiggerFontStyle) / 2);
         

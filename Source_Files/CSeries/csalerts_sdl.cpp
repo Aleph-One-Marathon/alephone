@@ -55,7 +55,7 @@ void alert_user(char *message, short severity)
     
     // Wrap lines
     uint16 style;
-    const sdl_font_info *font = get_dialog_font(MESSAGE_FONT, style);
+    const sdl_font_info *font = get_dialog_font(MESSAGE_FONT, style)->get_sdl_font_info();
     char *t = message;
     while (strlen(t)) {
       unsigned i = 0, last = 0;
