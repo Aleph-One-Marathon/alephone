@@ -754,7 +754,11 @@ operator <<(ostream& stream, const GameDescription& desc)
 string GameListMessage::GameListEntry::format_for_chat(const string& player_name) const
 {
 	string message = player_name;
-	message += " is hosting ";
+	if (running())
+		message += " is hosting ";
+	else
+		message += " is gathering ";
+
 	if (m_description.m_timeLimit && !(m_description.m_timeLimit == INT32_MAX || m_description.m_timeLimit == -1))
 	{
 		char minutes[5];
