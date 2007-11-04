@@ -307,7 +307,7 @@ void MetaserverClientUi::gamesInRoomChanged(const std::vector<GameListMessage::G
 	GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(gameChanges);
 	for (size_t i = 0; i < gameChanges.size(); i++) 
 	{
-		if (gameChanges[i].verb() == MetaserverClient::GamesInRoom::kAdd)
+		if (gameChanges[i].verb() == MetaserverClient::GamesInRoom::kAdd && !gameChanges[i].running())
 		{
 			PlayInterfaceButtonSound(_snd_got_ball);
 			break;
