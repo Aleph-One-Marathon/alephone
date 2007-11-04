@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 dnl Written in 2000 by Christian Bauer <Christian.Bauer@uni-mainz.de>
 
-AC_INIT([Aleph One/SDL], 20071020, [http://sourceforge.net/bugs/?group_id=1997], [AlephOne])
+AC_INIT([Aleph One/SDL], 20071103, [http://sourceforge.net/bugs/?group_id=1997], [AlephOne])
 AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
 AC_PREREQ(2.52)
 
@@ -30,8 +30,8 @@ AC_ARG_ENABLE(speex,
 [  --enable-speex          enable Speex net mic playback [default=yes]], , enable_speex=yes)
 AC_ARG_ENABLE(alsa,
 [  --enable-alsa           enable ALSA net mic transmission [default=yes]], , enable_alsa=yes)
-AC_ARG_ENABLE(ttf,
-[  --enable-ttf            enable SDL_ttf font rendering [default=yes]], , enable_ttf=yes)
+dnl AC_ARG_ENABLE(ttf,
+dnl [  --enable-ttf            enable SDL_ttf font rendering [default=yes]], , enable_ttf=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -77,14 +77,14 @@ AC_CHECK_HEADERS(SDL_image.h, [
   ])
 ])
 
-if [[ "x$enable_ttf" = "xyes" ]]; then
-AC_CHECK_HEADERS(SDL_ttf.h, [
-  AC_CHECK_LIB(SDL_ttf, TTF_Init, [
-    LIBS="-lSDL_ttf $LIBS"
-    AC_DEFINE(HAVE_SDL_TTF, 1, [SDL_TTF support is enabled])
-  ])
-])
-fi
+dnl if [[ "x$enable_ttf" = "xyes" ]]; then
+dnl AC_CHECK_HEADERS(SDL_ttf.h, [
+dnl  AC_CHECK_LIB(SDL_ttf, TTF_Init, [
+dnl    LIBS="-lSDL_ttf $LIBS"
+dnl    AC_DEFINE(HAVE_SDL_TTF, 1, [SDL_TTF support is enabled])
+dnl  ])
+dnl ])
+dnl fi
 
 dnl Check for SDL_net.
 AC_CHECK_HEADERS(SDL_net.h, [
