@@ -30,8 +30,8 @@ AC_ARG_ENABLE(speex,
 [  --enable-speex          enable Speex net mic playback [default=yes]], , enable_speex=yes)
 AC_ARG_ENABLE(alsa,
 [  --enable-alsa           enable ALSA net mic transmission [default=yes]], , enable_alsa=yes)
-dnl AC_ARG_ENABLE(ttf,
-dnl [  --enable-ttf            enable SDL_ttf font rendering [default=yes]], , enable_ttf=yes)
+AC_ARG_ENABLE(ttf,
+[  --enable-ttf            enable SDL_ttf font rendering [default=yes]], , enable_ttf=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -77,14 +77,14 @@ AC_CHECK_HEADERS(SDL_image.h, [
   ])
 ])
 
-dnl if [[ "x$enable_ttf" = "xyes" ]]; then
-dnl AC_CHECK_HEADERS(SDL_ttf.h, [
-dnl  AC_CHECK_LIB(SDL_ttf, TTF_Init, [
-dnl    LIBS="-lSDL_ttf $LIBS"
-dnl    AC_DEFINE(HAVE_SDL_TTF, 1, [SDL_TTF support is enabled])
-dnl  ])
-dnl ])
-dnl fi
+if [[ "x$enable_ttf" = "xyes" ]]; then
+AC_CHECK_HEADERS(SDL_ttf.h, [
+ AC_CHECK_LIB(SDL_ttf, TTF_Init, [
+   LIBS="-lSDL_ttf $LIBS"
+   AC_DEFINE(HAVE_SDL_TTF, 1, [SDL_TTF support is enabled])
+ ])
+])
+fi
 
 dnl Check for SDL_net.
 AC_CHECK_HEADERS(SDL_net.h, [

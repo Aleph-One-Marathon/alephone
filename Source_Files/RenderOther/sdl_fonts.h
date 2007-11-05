@@ -31,11 +31,43 @@
 #include "FileHandler.h"
 #ifdef HAVE_SDL_TTF
 #include <SDL_ttf.h>
+#include <boost/tuple/tuple.hpp>
 #endif
+
+#include <string>
 
 /*
  *  Definitions
  */
+
+// understands old resource fonts, and new truetype fonts
+struct DualFontSpec
+{
+	enum {
+		styleNormal = 0,
+		styleBold = 1,
+		styleItalic = 2,
+		styleUnderline = 4,
+		styleOutline = 8, // old fonts only
+		styleShadow = 16
+	};
+
+	bool prefer_old_font;
+
+	// old font
+	int16 font_id;
+	int16 size;
+	uint16 style;
+	
+	// new font
+	int16 ttf_size;
+	uint16 ttf_style;
+	std::string path;
+	// optional paths; if blank, generate font based on regular font
+	std::string path_i;  // italic
+	std::string path_b;  // bold
+	std::string path_bi; // bold italic
+};
 
 // Font information structure
 class sdl_font_info {
@@ -70,6 +102,10 @@ private:
 	LoadedResource rsrc;
 };
 
+#ifdef HAVE_SDL_TTF
+typedef boost::tuple<std::string, uint16, int16> ttf_font_key_t;
+#endif
+
 class ttf_and_sdl_font_info {
 public:
 
@@ -90,6 +126,8 @@ public:
 	void set_ttf_font_info(TTF_Font *ttf_font_info) { m_ttf_font_info = ttf_font_info; }
 	TTF_Font* get_ttf_font_info() { return m_ttf_font_info; }
 	bool is_ttf_font() const { return m_ttf_font_info; }
+
+	ttf_font_key_t ttf_key;
 #endif
 
 private:
@@ -112,6 +150,7 @@ extern void initialize_fonts(void);
 // Load font, return pointer to font info
 extern sdl_font_info *load_font(const TextSpec &spec);
 extern ttf_and_sdl_font_info *load_ttf_and_sdl_font(const TextSpec &spec);
+extern ttf_and_sdl_font_info *load_ttf_and_sdl_font(const DualFontSpec &spec);
 
 // Unload font
 extern void unload_font(sdl_font_info *font);

@@ -69,7 +69,8 @@ static SDL_Surface *default_image = NULL;
 
 static OpenedResourceFile theme_resources;
 
-static TextSpec dialog_font_spec[NUM_DIALOG_FONTS];
+//static TextSpec dialog_font_spec[NUM_DIALOG_FONTS];
+static DualFontSpec dialog_font_spec[NUM_DIALOG_FONTS];
 //static sdl_font_info *dialog_font[NUM_DIALOG_FONTS];
 static ttf_and_sdl_font_info *dialog_font[NUM_DIALOG_FONTS];
 static SDL_Color dialog_color[NUM_DIALOG_COLORS];
@@ -315,7 +316,7 @@ public:
 			AttribsMissing();
 			return false;
 		}
-		dialog_font_spec[idx].font = id;
+		dialog_font_spec[idx].font_id = id;
 		dialog_font_spec[idx].style = style;
 		dialog_font_spec[idx].size = size;
 		return true;
@@ -685,6 +686,20 @@ static void set_theme_defaults(void)
 
 	for (int i=0; i<NUM_DIALOG_SPACES; i++)
 		dialog_space[i] = default_dialog_space[i];
+
+	// hand set some font specs here
+	DualFontSpec text_spec = { false, -1, 0, DualFontSpec::styleNormal, 12, DualFontSpec::styleNormal, "gothic", "", "", "" };
+	dialog_font_spec[LABEL_FONT] = text_spec;
+	dialog_font_spec[ITEM_FONT] = text_spec;
+	dialog_font_spec[TEXT_ENTRY_FONT] = text_spec;
+	dialog_font_spec[TEXT_BOX_FONT] = text_spec;
+	dialog_font_spec[MESSAGE_FONT] = text_spec;
+
+	text_spec.prefer_old_font = true;
+	dialog_font_spec[BUTTON_FONT] = text_spec;	
+
+	DualFontSpec title_spec = { false, -1, 0, DualFontSpec::styleNormal, 24, DualFontSpec::styleNormal, "gothic", "", "", "" };
+	dialog_font_spec[TITLE_FONT] = title_spec;
 }
 
 

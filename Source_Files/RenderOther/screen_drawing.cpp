@@ -646,6 +646,7 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 	SDL_Color c;
 	SDL_GetRGB(pixel, s->format, &c.r, &c.g, &c.b);
 	SDL_Surface *text_surface = TTF_RenderText_Blended(font, text, c);
+	if (!text_surface) return 0;
 	
 	SDL_Rect dst_rect;
 	dst_rect.x = x;
