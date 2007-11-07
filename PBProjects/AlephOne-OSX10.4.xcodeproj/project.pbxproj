@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
+		AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
+		AE03850A0CE15194006780AC /* SDL_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		AE179F1609C3D79500512061 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0609C3D79500512061 /* error.c */; };
 		AE179F1709C3D79500512061 /* http.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0709C3D79500512061 /* http.c */; };
 		AE179F1809C3D79500512061 /* libnat.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0809C3D79500512061 /* libnat.c */; };
@@ -490,6 +492,7 @@
 				AEC3C87809AD68AC003258E4 /* SDL_image.framework in CopyFiles */,
 				AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */,
 				AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */,
+				AE03850A0CE15194006780AC /* SDL_ttf.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -534,6 +537,7 @@
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
+		AE0384DB0CE15170006780AC /* SDL_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_ttf.framework; path = /Library/Frameworks/SDL_ttf.framework; sourceTree = "<absolute>"; };
 		AE179EF109C3D77800512061 /* error.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = error.h; path = ../Source_Files/LibNAT/error.h; sourceTree = "<group>"; };
 		AE179EF209C3D77800512061 /* http.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = http.h; path = ../Source_Files/LibNAT/http.h; sourceTree = "<group>"; };
 		AE179EF309C3D77800512061 /* libnat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = libnat.h; path = ../Source_Files/LibNAT/libnat.h; sourceTree = "<group>"; };
@@ -980,6 +984,7 @@
 				AE601FC00B927DC2009F881C /* libmad.framework in Frameworks */,
 				AE601FC10B927DC2009F881C /* libsndfile.framework in Frameworks */,
 				AE23F5640BDAC0E700C11385 /* Speex.framework in Frameworks */,
+				AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1190,6 +1195,7 @@
 				F5281C0701F8CA2101E83A66 /* SDL_image.framework */,
 				F5281C0501F8C94101E83A66 /* SDL.framework */,
 				F5281C0801F8CA2101E83A66 /* SDL_net.framework */,
+				AE0384DB0CE15170006780AC /* SDL_ttf.framework */,
 			);
 			name = Frameworks;
 			path = /Library/Frameworks;
@@ -2410,6 +2416,7 @@
 					HAVE_MAD,
 					HAVE_SNDFILE,
 					HAVE_SMPEG,
+					HAVE_SDL_TTF,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				GCC_VERSION = 4.0;
@@ -2423,6 +2430,7 @@
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/Speex.framework/Headers",
 					"$(HOME)/Library/Frameworks/libsndfile.framework/Headers",
 					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
@@ -2431,6 +2439,7 @@
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/Speex.framework/Headers,
 					/Library/Frameworks/libsndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
@@ -2457,6 +2466,8 @@
 					SMPEG,
 					"-framework",
 					AppKit,
+					"-framework",
+					SDL_ttf,
 				);
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
@@ -2505,6 +2516,7 @@
 					HAVE_MAD,
 					HAVE_SNDFILE,
 					HAVE_SMPEG,
+					HAVE_SDL_TTF,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				GCC_VERSION_i386 = 4.0;
@@ -2519,6 +2531,7 @@
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/Speex.framework/Headers",
 					"$(HOME)/Library/Frameworks/libsndfile.framework/Headers",
 					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
@@ -2527,6 +2540,7 @@
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/Speex.framework/Headers,
 					/Library/Frameworks/libsndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
@@ -2555,6 +2569,8 @@
 					SMPEG,
 					"-framework",
 					AppKit,
+					"-framework",
+					SDL_ttf,
 				);
 				PRODUCT_NAME = AlephOne;
 				SDKROOT_i386 = /Developer/SDKs/MacOSX10.4u.sdk;
@@ -2606,6 +2622,7 @@
 					HAVE_MAD,
 					HAVE_SNDFILE,
 					HAVE_SMPEG,
+					HAVE_SDL_TTF,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				GCC_VERSION_i386 = 4.0;
@@ -2620,6 +2637,7 @@
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
+					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/Speex.framework/Headers",
 					"$(HOME)/Library/Frameworks/libsndfile.framework/Headers",
 					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
@@ -2628,6 +2646,7 @@
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
+					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/Speex.framework/Headers,
 					/Library/Frameworks/libsndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
@@ -2656,6 +2675,8 @@
 					SMPEG,
 					"-framework",
 					AppKit,
+					"-framework",
+					SDL_ttf,
 				);
 				PRODUCT_NAME = AlephOne;
 				SDKROOT_i386 = /Developer/SDKs/MacOSX10.4u.sdk;
