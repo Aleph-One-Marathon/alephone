@@ -376,7 +376,10 @@ uint16 text_width(const char *text, const sdl_font_info *font, uint16 style)
 static uint16 text_width(const char *text, TTF_Font *font, uint16)
 {
 	int width = 0;
-	TTF_SizeText(font, text, &width, 0);
+	uint16 *temp = new uint16[strlen(text) + 1];
+	mac_roman_to_unicode(text, temp);
+	TTF_SizeUNICODE(font, temp, &width, 0);
+	delete temp;
 	return width;
 }
 #endif
@@ -443,20 +446,23 @@ int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint1
 static int trunc_text(const char *text, int max_width, TTF_Font *font, uint16 style)
 {
 	int width;
-	TTF_SizeText(font, text, &width, 0);
+	uint16 *temp = new uint16[strlen(text) + 1];
+	mac_roman_to_unicode(text, temp);
+	TTF_SizeUNICODE(font, temp, &width, 0);
 	if (width < max_width) return strlen(text);
 
 	int num = strlen(text) - 1;
-	char *s = strdup(text);
+//	char *s = strdup(text);
 
 	while (num > 0 && width > max_width)
 	{
 		num--;
-		s[num] = '\0';
-		TTF_SizeText(font, s, &width, 0);
+		temp[num] = 0x0;
+		TTF_SizeUNICODE(font, temp, &width, 0);
 	}
 
-	free(s);
+//	free(s);
+	delete temp;
 	return num;
 }
 #endif
@@ -645,7 +651,10 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 
 	SDL_Color c;
 	SDL_GetRGB(pixel, s->format, &c.r, &c.g, &c.b);
-	SDL_Surface *text_surface = TTF_RenderText_Blended(font, text, c);
+	uint16 *temp = new uint16[strlen(text) + 1];
+	mac_roman_to_unicode(text, temp);
+	SDL_Surface *text_surface = TTF_RenderUNICODE_Blended(font, temp, c);
+	delete temp;
 	if (!text_surface) return 0;
 	
 	SDL_Rect dst_rect;

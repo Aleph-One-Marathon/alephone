@@ -32,6 +32,7 @@
 #define PRINTF_STYLE_ARGS(n,m)
 #endif
 
+#include "cstypes.h"
 #include <string>
 #include <vector>
 
@@ -98,5 +99,9 @@ extern void copy_string_to_pstring (const std::string &s, unsigned char* dst, in
 extern void copy_string_to_cstring (const std::string &s, char* dst, int maxlen = 255);
 
 extern const std::string pstring_to_string (const unsigned char* ps);
+
+extern uint16 mac_roman_to_unicode_table[256];
+inline uint16 mac_roman_to_unicode(const char c) { return mac_roman_to_unicode_table[(unsigned char) c]; }
+extern void mac_roman_to_unicode(const char *input, uint16 *output);
 
 #endif
