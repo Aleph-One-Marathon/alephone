@@ -53,6 +53,59 @@ class FileSpecifier;
  *  Definitions
  */
 
+class placeable {
+public:
+	enum placement_flags
+	{
+		kDefault = 0x0,
+		kAlignLeft = 0x1,
+		kAlignCenter = 0x2,
+		kAlignRight = 0x4,
+		kFill = 0x8,
+	};
+		
+	placeable() { }
+	virtual ~placeable() { }
+	
+	virtual void place(const SDL_Rect &r, placement_flags flags = kDefault) = 0;
+	virtual int min_height() = 0;
+	virtual int min_width() = 0;
+};
+
+class widget_placer : public placeable
+{
+public:
+	widget_placer() { }
+	~widget_placer();
+
+	void place(const SDL_Rect &r, placement_flags flags = kDefault) = 0;
+	int min_height() = 0;
+	int min_width() = 0;
+
+protected:
+	void assume_ownership(placeable *p) { m_owned.push_back(p); }
+
+private:
+	std::vector<placeable *> m_owned;
+};
+
+class vertical_placer : public widget_placer
+{
+public:
+	enum { kSpace = 0 };
+	vertical_placer() { }
+
+	void add(placeable *p, bool assume_ownership = false);
+	int min_height();
+	int min_width();	
+
+	void place(const SDL_Rect &r, placement_flags flags = kDefault);
+
+private:
+	std::vector<placeable *> m_widgets;
+	std::vector<int> m_widget_heights;
+};
+
 // Dialog structure
 class dialog {
 public:
@@ -105,6 +158,9 @@ public:
 	// don't call this unless you know what you're doing
 	void layout(void); 
 
+	// takes ownership
+	void set_widget_placer(widget_placer *w) { placer = w; }
+
 private:
 	SDL_Surface *get_surface(void) const;
 	void update(SDL_Rect r) const;
@@ -115,6 +171,8 @@ private:
 	void activate_prev_widget(void);
 	int find_widget(int x, int y);
 	void event(SDL_Event &e);
+
+	void new_layout(void);
 
 	SDL_Rect rect;				// Position relative to video surface, and dimensions
 
@@ -139,6 +197,8 @@ private:
 
 	// Frame images (frame_t, frame_l, frame_r and frame_b must be freed)
 	SDL_Surface *frame_tl, *frame_t, *frame_tr, *frame_l, *frame_r, *frame_bl, *frame_b, *frame_br;
+
+	widget_placer *placer;
 };
 
 // Pointer to top-level dialog, NULL = no dialog active

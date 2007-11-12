@@ -280,15 +280,35 @@ void handle_preferences(void)
 
 	// Create top-level dialog
 	dialog d;
-	d.add(new w_static_text("PREFERENCES", TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
-	d.add(new w_button("PLAYER", player_dialog, &d));
-	d.add(new w_button("GRAPHICS", graphics_dialog, &d));
-	d.add(new w_button("SOUND", sound_dialog, &d));
-	d.add(new w_button("CONTROLS", controls_dialog, &d));
-	d.add(new w_button("ENVIRONMENT", environment_dialog, &d));
-	d.add(new w_spacer());
-	d.add(new w_button("RETURN", dialog_cancel, &d));
+	vertical_placer *placer = new vertical_placer;
+	w_static_text *w_header = new w_static_text("PREFERENCES", TITLE_FONT, TITLE_COLOR);
+	d.add(w_header);
+	w_button *w_player = new w_button("PLAYER", player_dialog, &d);
+	d.add(w_player);
+
+	w_button *w_graphics = new w_button("GRAPHICS", graphics_dialog, &d);
+	d.add(w_graphics);
+	w_button *w_sound = new w_button("SOUND", sound_dialog, &d);
+	d.add(w_sound);
+	w_button *w_controls = new w_button("CONTROLS", controls_dialog, &d);
+	d.add(w_controls);
+	w_button *w_environment = new w_button("ENVIRONMENT", environment_dialog, &d);
+	d.add(w_environment);
+	
+	w_button *w_return = new w_button("RETURN", dialog_cancel, &d);
+	d.add(w_return);
+
+	placer->add(w_header);
+	placer->add(new w_spacer, true);
+	placer->add(w_player);
+	placer->add(w_graphics);
+	placer->add(w_sound);
+	placer->add(w_controls);
+	placer->add(w_environment);
+	placer->add(new w_spacer, true);
+	placer->add(w_return);
+
+	d.set_widget_placer(placer);
 
 	// Clear menu screen
 	clear_screen();

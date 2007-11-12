@@ -73,7 +73,7 @@ typedef boost::function<void (char)> GotCharacterCallback;
  *  Widget base class
  */
 
-class widget {
+class widget : public placeable{
 	friend class dialog;
 
 public:
@@ -113,6 +113,9 @@ public:
 
         // ZZZ: Get dialog
         dialog*	get_owning_dialog() { return owning_dialog; }
+
+	// New positioning stuff
+	virtual void set_rect(const SDL_Rect &r) { rect = r; }
         
         // ZZZ: Callback (from dialog code) provides additional layout information
         // This could probably be hidden from public: since dialog is a friend class, but I'm leaving
@@ -137,7 +140,14 @@ public:
 
         // ZZZ: Align bottom of widget with bottom of some previously-added widget
         void    align_bottom_with_bottom_of(widget* inWidget);
-        
+
+	// implement placeable
+	void place(const SDL_Rect &r, placement_flags flags);
+	int min_height() { assert(placeable_implemented()); return saved_min_height; }
+	int min_width() { return saved_min_width; }
+	
+	virtual bool placeable_implemented() { return false; }
+	
 protected:
         // ZZZ: called by friend class dialog when we're added
         void	set_owning_dialog(dialog* new_owner) { owning_dialog = new_owner; }
@@ -160,6 +170,9 @@ protected:
         bool    full_width;
         int     width_reduction;
         widget* align_bottom_peer;
+
+	int saved_min_width;
+	int saved_min_height;
 };
 
 
@@ -169,10 +182,12 @@ protected:
 
 class w_spacer : public widget {
 public:
-	w_spacer(uint16 height = get_dialog_space(SPACER_HEIGHT)) {rect.w = 0; rect.h = height;}
+	w_spacer(uint16 height = get_dialog_space(SPACER_HEIGHT)) {rect.w = 0; rect.h = height; saved_min_height = height; }
 
 	void draw(SDL_Surface * /*s*/) const {}
 	bool is_selectable(void) const {return false;}
+
+	bool placeable_implemented() { return true; }
 };
 
 
@@ -194,6 +209,8 @@ public:
 	bool is_selectable(void) const {return false;}
 
         ~w_static_text();
+
+	bool placeable_implemented() { return true; }
 
 private:
 	char *text;
@@ -234,6 +251,8 @@ public:
 
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
+
+	bool placeable_implemented() { return true; }
 
 protected:
 	const std::string text;

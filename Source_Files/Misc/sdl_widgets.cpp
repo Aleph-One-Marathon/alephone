@@ -72,7 +72,7 @@
 // other than spacers.  Spacers are common and I guess we're starting to eat a fair amount of storage for a
 // widget that does nothing and draws nothing... oh well, at least RAM is cheap.  ;) )
 widget::widget() : active(false), dirty(false), enabled(true), font(NULL), identifier(NONE), owning_dialog(NULL),
-                    widget_alignment(kAlignNatural), full_width(false), width_reduction(0), align_bottom_peer(NULL)
+		   widget_alignment(kAlignNatural), full_width(false), width_reduction(0), align_bottom_peer(NULL), saved_min_width(0), saved_min_height(0)
 {
     rect.x = 0;
     rect.y = 0;
@@ -82,7 +82,7 @@ widget::widget() : active(false), dirty(false), enabled(true), font(NULL), ident
 
 widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dialog_font(f, style)),
                         identifier(NONE), owning_dialog(NULL), widget_alignment(kAlignNatural), full_width(false),
-                        width_reduction(0), align_bottom_peer(NULL)
+                        width_reduction(0), align_bottom_peer(NULL), saved_min_width(0), saved_min_height(0)
 {
     rect.x = 0;
     rect.y = 0;
@@ -166,6 +166,34 @@ void widget::capture_layout_information(int16 leftmost_x, int16 available_width)
         rect.w = static_cast<uint16>(available_width - (rect.x - leftmost_x) - width_reduction);
 }
 
+void widget::place(const SDL_Rect &r, placement_flags flags)
+{
+	rect.h = r.h;
+	rect.y = r.y;
+
+	if (flags & placeable::kFill)
+	{
+		rect.x = r.x;
+		rect.w = r.w;
+	}
+	else
+	{
+		rect.w = saved_min_width;
+		if (flags & placeable::kAlignLeft)
+		{
+			rect.x = r.x;
+		}
+		else if (flags & placeable::kAlignRight)
+		{
+			rect.x = r.x + r.w - saved_min_width;
+		}
+		else
+		{
+			rect.x = r.x + (r.w - saved_min_width) / 2;
+		}
+	}
+}
+
 
 /*
  *  Static text
@@ -177,6 +205,8 @@ w_static_text::w_static_text(const char *t, int f, int c) : widget(f), color(c)
         text = strdup(t);
 	rect.w = text_width(text, font, style);
 	rect.h = font->get_line_height();
+	saved_min_height = rect.h;
+	saved_min_width = rect.w;
 }
 
 void w_static_text::draw(SDL_Surface *s) const
@@ -260,6 +290,9 @@ w_button::w_button(const char *t, action_proc p, void *a) : widget(BUTTON_FONT),
 	button_r = get_dialog_image(BUTTON_R_IMAGE);
 	button_c = get_dialog_image(BUTTON_C_IMAGE, rect.w - button_l->w - button_r->w);
 	rect.h = static_cast<uint16>(get_dialog_space(BUTTON_HEIGHT));
+
+	saved_min_width = rect.w;
+	saved_min_height = rect.h;
 }
 
 w_button::~w_button()

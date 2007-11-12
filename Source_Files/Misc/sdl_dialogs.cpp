@@ -796,6 +796,85 @@ void play_dialog_sound(int which)
 	SoundManager::instance()->PlaySound(which, 0, NONE);
 }
 
+widget_placer::~widget_placer()
+{
+	for (std::vector<placeable *>::iterator it = m_owned.begin(); it != m_owned.end(); it++)
+	{
+		delete (*it);
+	}
+}
+
+void vertical_placer::add(placeable *p, bool assume_ownership)
+{
+	m_widgets.push_back(p);
+	m_widget_heights.push_back(p->min_height());
+
+	if (assume_ownership) this->assume_ownership(p);
+}
+
+int vertical_placer::min_height()
+{
+	int height = 0;
+	for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+	{
+		height += (*it)->min_height();
+	}
+
+	if (m_widgets.size()) 
+		height += (m_widgets.size() - 1) * kSpace;
+
+	return height;
+	
+}
+
+int vertical_placer::min_width()
+{
+	if (m_widgets.size())
+	{
+		int min_width = m_widgets[0]->min_width();
+		for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+		{
+			if ((*it)->min_width() > min_width)
+				min_width = (*it)->min_width();
+		}
+		return min_width;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+void vertical_placer::place(const SDL_Rect &r, placement_flags flags)
+{
+	int y_offset = 0;
+	int w = (flags & kFill) ? r.w : min_width();
+	for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+	{
+		SDL_Rect wr;
+		if ((flags & kFill) || (flags & kAlignLeft))
+		{
+			wr.x = r.x;
+		}
+		else if (flags & kAlignRight)
+		{
+			wr.x = r.x + r.w - w;
+		}
+		else
+		{
+			wr.x = r.x + (r.w - w) / 2;
+		}
+		wr.w = w;
+		wr.h = (*it)->min_height();
+		wr.y = r.y + y_offset;
+
+		(*it)->place(wr);
+
+		y_offset += wr.h;
+		y_offset += kSpace;
+		
+	}
+}
 
 /*
  *  Dialog constructor
@@ -803,7 +882,7 @@ void play_dialog_sound(int which)
 
 dialog::dialog() : active_widget(NULL), active_widget_num(UNONE), done(false),
             cursor_was_visible(false), parent_dialog(NULL),
-            processing_function(NULL), active_tab(0)
+		   processing_function(NULL), active_tab(0), placer(0)
 {
 }
 
@@ -819,6 +898,11 @@ dialog::~dialog()
 	while (i != end) {
 		delete *i;
 		i++;
+	}
+
+	if (placer) {
+		delete placer;
+		placer = 0;
 	}
 }
 
@@ -848,6 +932,12 @@ void dialog::add_to_tab(widget *w, int tab)
 
 void dialog::layout()
 {
+	if (placer) 
+	{
+		new_layout();
+		return;
+	}
+
 	// Layout all widgets, calculate total width and height
 	int y = get_dialog_space(FRAME_T_SPACE);
 	int left = 0;
@@ -906,6 +996,27 @@ void dialog::layout()
                 (*i)->capture_layout_information(leftmost_x, usable_width);
 		i++;
 	}
+}
+
+void dialog::new_layout()
+{
+	// Layout all widgets, calculate total width and height
+	SDL_Rect placer_rect;
+	placer_rect.w = placer->min_width();
+	placer_rect.h = placer->min_height();
+
+	rect.w = get_dialog_space(FRAME_L_SPACE) + placer_rect.w + get_dialog_space(FRAME_R_SPACE);
+	rect.h = get_dialog_space(FRAME_T_SPACE) + placer_rect.h + get_dialog_space(FRAME_B_SPACE);
+	
+	// Center dialog on video surfacea
+	SDL_Surface *video = SDL_GetVideoSurface();
+	rect.x = (video->w - rect.w) / 2;
+	rect.y = (video->h - rect.h) / 2;
+	
+	placer_rect.x = get_dialog_space(FRAME_L_SPACE);
+	placer_rect.y = get_dialog_space(FRAME_T_SPACE);
+
+	placer->place(placer_rect);
 }
 
 
