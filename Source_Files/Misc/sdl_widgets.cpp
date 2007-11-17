@@ -766,7 +766,7 @@ void w_player_color::draw(SDL_Surface *s) const
  */
 
 w_text_entry::w_text_entry(const char *n, size_t max, const char *initial_text)
-    : widget(LABEL_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), name(n), max_chars(max), new_rect_valid(false)
+	: widget(LABEL_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), name(n), max_chars(max), new_rect_valid(false), enable_mac_roman(false)
 {
 	// Initialize buffer
 	buf = new char[max_chars + 1];
@@ -859,9 +859,18 @@ backspace:		if (num_chars) {
 
 			default: {				// Printable characters are entered into the buffer
 				uint16 uc = e.key.keysym.unicode;
-				if (uc >= ' ' && uc < 0x80 && (num_chars + 1) < max_chars) {
-					assert(uc == static_cast<char>(uc));
-					buf[num_chars++] = static_cast<char>(uc);
+				if (uc >= ' ' && (uc < 0x80 || enable_mac_roman) && (num_chars + 1) < max_chars)
+				{
+					char c;
+					if (uc < 0x80)
+					{
+						c = static_cast<char>(uc);
+					}
+					else if (enable_mac_roman)
+					{
+						c = unicode_to_mac_roman(uc);
+					}
+					buf[num_chars++] = c;
 					buf[num_chars] = 0;
 					modified_text();
 					play_dialog_sound(DIALOG_TYPE_SOUND);

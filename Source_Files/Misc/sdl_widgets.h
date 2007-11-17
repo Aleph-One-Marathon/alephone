@@ -484,6 +484,8 @@ public:
 	  text_font = get_dialog_font(TEXT_BOX_FONT, style);
 	}
 
+	void enable_mac_roman_input(bool enable = true) { enable_mac_roman = enable; }
+
        
 protected:
 	char *buf;		// Text entry buffer
@@ -511,6 +513,8 @@ private:
     int16     new_rect_x;     // corresponds to rect.x
     uint16     new_rect_w;     // corresponds to rect.w
     int16     new_text_x;     // corresponds to text_x
+
+    bool enable_mac_roman; // enable MacRoman input
 };
 
 

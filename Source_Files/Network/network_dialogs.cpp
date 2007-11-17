@@ -2498,6 +2498,7 @@ setup_metaserver_chat_ui(
 	chatentry_w->set_enter_pressed_callback(send_text);
 	chatentry_w->set_alignment(widget::kAlignLeft);
 	chatentry_w->set_full_width();
+	chatentry_w->enable_mac_roman_input();
 	inDialog.add(chatentry_w);
 
 	inDialog.add(new w_spacer());
@@ -2548,6 +2549,7 @@ public:
 		chatentry_w->set_with_textbox();
 		chatentry_w->set_alignment(widget::kAlignLeft);
 		chatentry_w->set_full_width();
+		chatentry_w->enable_mac_roman_input();
 		m_dialog.add(chatentry_w);
 		
 		
@@ -2646,6 +2648,7 @@ public:
 		chatentry_w->set_with_textbox();
 		chatentry_w->set_alignment(widget::kAlignLeft);
 		chatentry_w->set_full_width();
+		chatentry_w->enable_mac_roman_input();
 		m_dialog.add_to_tab(chatentry_w, iJOIN_POSTJOIN_TAB);
 
 		w_left_button* join_w = new w_left_button("JOIN");
