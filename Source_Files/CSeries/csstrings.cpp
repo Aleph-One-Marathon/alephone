@@ -52,6 +52,8 @@ typedef unsigned char Str255[256];
 #include "TextStrings.h"
 #include "Logging.h"
 
+#include <map>
+
 using namespace std;
 
 char temporary[256];
@@ -286,9 +288,32 @@ unsigned char *pstrdup(const unsigned char *inString)
 	return out;
 }
 
-// from ftp://ftp.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT
+class MacRomanUnicodeConverter
+{
+public:
+	MacRomanUnicodeConverter();
+	inline uint16 ToUnicode(char c) {
+		return mac_roman_to_unicode_table[(unsigned char) c];
+	}
 
-uint16 mac_roman_to_unicode_table[256] = {
+	inline char ToMacRoman(uint16 c) {
+		if (c <= 0x7f) return c;
+		std::map<uint16, char>::iterator it = unicode_to_mac_roman.find(c);
+		if (it != unicode_to_mac_roman.end())
+			return it->second;
+		else
+			return '?';
+	}
+
+private:
+
+	static uint16 mac_roman_to_unicode_table[256];
+	static std::map<uint16, char> unicode_to_mac_roman;
+	static bool initialized;
+};
+
+// from ftp://ftp.unicode.org/Public/MAPPINGS/VENDORS/APPLE/ROMAN.TXT
+uint16 MacRomanUnicodeConverter::mac_roman_to_unicode_table[256] = {
 	0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 
 	0x0008, 0x0009, 0x000A, 0x000B, 0x000C, 0x000D, 0x000E, 0x000F, 
 	0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017, 
@@ -320,7 +345,25 @@ uint16 mac_roman_to_unicode_table[256] = {
 	0x2021, 0x00B7, 0x201A, 0x201E, 0x2030, 0x00C2, 0x00CA, 0x00C1, 
 	0x00CB, 0x00C8, 0x00CD, 0x00CE, 0x00CF, 0x00CC, 0x00D3, 0x00D4, 
 	0xF8FF, 0x00D2, 0x00DA, 0x00DB, 0x00D9, 0x0131, 0x02C6, 0x02DC, 
-	0x00AF, 0x02D8, 0x02D9, 0x02DA, 0x00B8, 0x02DD, 0x02DB, 0x02C7 };
+	0x00AF, 0x02D8, 0x02D9, 0x02DA, 0x00B8, 0x02DD, 0x02DB, 0x02C7 
+};
+
+std::map<uint16, char> MacRomanUnicodeConverter::unicode_to_mac_roman;
+bool MacRomanUnicodeConverter::initialized = false;
+
+MacRomanUnicodeConverter::MacRomanUnicodeConverter()
+{
+	if (!initialized)
+	{
+		for (unsigned char c = 0x80; c < 0xff; c++)
+		{
+			unicode_to_mac_roman[mac_roman_to_unicode_table[c]] = (char) c;
+		}
+		initialized = true;
+	}
+}
+
+static MacRomanUnicodeConverter macRomanUnicodeConverter;
 
 void mac_roman_to_unicode(const char *input, uint16 *output)
 {
@@ -328,7 +371,17 @@ void mac_roman_to_unicode(const char *input, uint16 *output)
 
 	while (*p)
 	{
-		*output++ = mac_roman_to_unicode(*p++);
+		*output++ = macRomanUnicodeConverter.ToUnicode(*p++);
 	}
 	*output = 0x0;
+}
+
+uint16 mac_roman_to_unicode(char c)
+{
+	return macRomanUnicodeConverter.ToUnicode(c);
+}
+
+char unicode_to_mac_roman(uint16 c)
+{
+	return macRomanUnicodeConverter.ToMacRoman(c);
 }

@@ -728,8 +728,8 @@ static void handle_game_key(const SDL_Event &event)
 			Console::instance()->backspace();
 			break;
 		default:
-			if (event.key.keysym.unicode > 0 && (event.key.keysym.unicode & 0xFF80) == 0) {
-				Console::instance()->key(event.key.keysym.unicode & 0x7F);
+			if (event.key.keysym.unicode > 0) {
+				Console::instance()->key(unicode_to_mac_roman(event.key.keysym.unicode));
 			}
 		}
 	}
@@ -924,7 +924,12 @@ static void process_game_key(const SDL_Event &event)
 {
 	switch (get_game_state()) {
 	case _game_in_progress:
-		if ((event.key.keysym.mod & KMOD_ALT) || (event.key.keysym.mod & KMOD_META)) {
+#if defined(__APPLE__) && defined(__MACH__)
+		if ((event.key.keysym.mod & KMOD_META)) 
+#else
+		if ((event.key.keysym.mod & KMOD_ALT) || (event.key.keysym.mod & KMOD_META)) 
+#endif
+		{
 			int item = -1;
 			switch (event.key.keysym.sym) {
 			case SDLK_p:
@@ -1021,7 +1026,12 @@ static void process_game_key(const SDL_Event &event)
 			dump_screen();
 			break;
 		case SDLK_RETURN:
-			if ((event.key.keysym.mod & KMOD_META) || (event.key.keysym.mod & KMOD_ALT)) {
+#if defined(__APPLE__) && defined(__MACH__)
+			if ((event.key.keysym.mod & KMOD_META))
+#else
+			if ((event.key.keysym.mod & KMOD_META) || (event.key.keysym.mod & KMOD_ALT))
+#endif
+			{
 				toggle_fullscreen();
 			}
 			break;

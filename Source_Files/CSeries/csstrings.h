@@ -100,8 +100,8 @@ extern void copy_string_to_cstring (const std::string &s, char* dst, int maxlen 
 
 extern const std::string pstring_to_string (const unsigned char* ps);
 
-extern uint16 mac_roman_to_unicode_table[256];
-inline uint16 mac_roman_to_unicode(const char c) { return mac_roman_to_unicode_table[(unsigned char) c]; }
+extern uint16 mac_roman_to_unicode(char c);
+extern char unicode_to_mac_roman(uint16 c);
 extern void mac_roman_to_unicode(const char *input, uint16 *output);
 
 #endif
