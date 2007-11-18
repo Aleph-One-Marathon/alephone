@@ -1685,6 +1685,7 @@ void write_preferences(
 		return;
 	}
 
+	fprintf(F,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 	fprintf(F,"<!-- Preferences file for the Marathon Open Source \"Aleph One\" engine -->\n\n");
 	
 	fprintf(F,"<mara_prefs>\n\n");
