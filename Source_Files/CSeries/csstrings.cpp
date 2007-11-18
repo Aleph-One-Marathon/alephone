@@ -385,3 +385,70 @@ char unicode_to_mac_roman(uint16 c)
 {
 	return macRomanUnicodeConverter.ToMacRoman(c);
 }
+
+static void unicode_to_utf8(uint16 c, string& output)
+{
+	if (c < 0x80)
+	{
+		output += c;
+	}
+	else if (c < 0x800) 
+	{
+		output += (0xc0 | c >> 6);
+		output += (0x80 | c & 0x3f);
+	}
+	else 
+	{
+		output += (0xe0 | c >> 12);
+		output += (0x80 | c >> 6 & 0x3f);
+		output += (0x80 | c & 0x3f);
+	}
+}
+
+static uint16 utf8_to_unicode(const char *s, int &chars_used)
+{
+	const unsigned char *input = (unsigned char *) s;
+	if ((unsigned char) input[0] < 0x80)
+	{
+		chars_used = 1;
+		return input[0];
+	}
+	else if ((unsigned char) input[0] < 0xe0)
+	{
+		chars_used = 2;
+		return ((input[0] & 0x1f) << 6) | (input[1] & 0x3f);
+	}
+	else
+	{
+		chars_used = 3;
+		return ((input[0] & 0xf) << 12) | ((input[1] & 0x3f) << 6) | (input[2] & 0x3f);
+	}
+}
+
+std::string mac_roman_to_utf8(const std::string& input)
+{
+	const char *p = input.data();
+	std::string output;
+	while (*p)
+	{
+		uint16 uc = mac_roman_to_unicode(*p++);
+		unicode_to_utf8(uc, output);
+	}
+
+	return output;
+}
+
+std::string utf8_to_mac_roman(const std::string& input)
+{
+	const char *p = input.data();
+	std::string output;
+	while (*p)
+	{
+		int advance = 0;
+		uint16 uc = utf8_to_unicode(p, advance);
+		output += unicode_to_mac_roman(uc);
+		p += advance;
+	}
+
+	return output;
+}

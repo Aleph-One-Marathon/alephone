@@ -364,7 +364,8 @@ size_t DeUTF8(const char *InString, size_t InLen, char *OutString, size_t OutMax
 		if (NumExtra == 0)
 		{
 			// Bad characters become a dollar sign
-			uint8 oc = (uc >= 0x20 && uc != 0x7f && uc <= 0xff) ? uint8(uc) : '$';
+//			uint8 oc = (uc >= 0x20 && uc != 0x7f && uc <= 0xff) ? uint8(uc) : '$';
+			uint8 oc = (uc >= 0x20 && uc != 0x7f && uc < 0x10000) ? unicode_to_mac_roman((uint16) uc) : '$';
 			OutString[Len++] = char(oc);
 			if (Len >= OutMaxLen) break;
 		}

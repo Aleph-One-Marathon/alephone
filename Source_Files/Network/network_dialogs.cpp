@@ -2601,6 +2601,7 @@ public:
 		m_dialog.add(new w_spacer());
 
 		w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
+		name_w->enable_mac_roman_input();
 		m_dialog.add(name_w);
 	
 		w_player_color *pcolor_w = new w_player_color("Color", 0);
@@ -2739,6 +2740,7 @@ public:
 		m_dialog.add_to_tab (new w_static_text ("Appearance"), iSNG_GENERAL_TAB);
 
 		w_text_entry *name_w = new w_text_entry ("Name", PREFERENCES_NAME_LENGTH, "");
+		name_w->enable_mac_roman_input();
 		m_dialog.add_to_tab (name_w, iSNG_GENERAL_TAB);
 
 		w_player_color *pcolor_w = new w_player_color ("Color", player_preferences->color);

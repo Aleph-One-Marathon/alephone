@@ -343,6 +343,7 @@ static void player_dialog(void *arg)
 	name_w->set_identifier(iNAME);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
+	name_w->enable_mac_roman_input();
 	d.add(name_w);
 
 	w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
@@ -1730,7 +1731,7 @@ void write_preferences(
 	fprintf(F,"</graphics>\n\n");
 	
 	fprintf(F,"<player\n");
-	WriteXML_PasString(F, "  name=\"",player_preferences->name,"\"\n");
+	fprintf(F, "  name=\"%s\"\n", mac_roman_to_utf8(pstring_to_string(player_preferences->name)).c_str());
 	fprintf(F,"  color=\"%hd\"\n",player_preferences->color);
 	fprintf(F,"  team=\"%hd\"\n",player_preferences->team);
 	fprintf(F,"  last_time_ran=\"%lu\"\n",player_preferences->last_time_ran);
