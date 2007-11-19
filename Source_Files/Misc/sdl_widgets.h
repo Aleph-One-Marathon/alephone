@@ -217,6 +217,10 @@ private:
 	int color;
 };
 
+class w_label : public w_static_text {
+public:
+	w_label(const char *text) : w_static_text(text, LABEL_FONT, LABEL_COLOR) { }
+};
 
 /*
  *  Picture (PICT resource)
@@ -320,6 +324,9 @@ public:
 
 	void set_selection(const char *selection);
 	void set_callback(action_proc p, void* a) { proc = p; arg = a; }
+
+	bool placeable_implemented() { return true; }
+	void place(const SDL_Rect& r, placement_flags flags = placeable::kDefault);
 	
 protected:
 	void set_arg(void *arg) { this->arg = arg; }

@@ -1382,8 +1382,12 @@ static void environment_dialog(void *arg)
 
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text("ENVIRONMENT SETTINGS", TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
+	vertical_placer *placer = new vertical_placer;
+	vertical_placer *label_placer = new vertical_placer;
+	vertical_placer *select_placer = new vertical_placer;
+	w_static_text *w_header = new w_static_text("ENVIRONMENT SETTINGS", TITLE_FONT, TITLE_COLOR);
+	d.add(w_header);
+	
 	w_env_select *map_w = new w_env_select("Map", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
 	d.add(map_w);
 	w_env_select *physics_w = new w_env_select("Physics", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
@@ -1394,9 +1398,28 @@ static void environment_dialog(void *arg)
 	d.add(sounds_w);
 	w_env_select *theme_w = new w_env_select("Theme", environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
 	d.add(theme_w);
-	d.add(new w_spacer());
-	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+
+	w_button *w_accept = new w_button("ACCEPT", dialog_ok, &d);
+	d.add(w_accept);
+	w_button *w_cancel = new w_button("CANCEL", dialog_cancel, &d);
+	d.add(w_cancel);
+
+	placer->add(w_header);
+	placer->add(new w_spacer, true);
+
+	placer->add(map_w);
+	placer->add(physics_w);
+	placer->add(shapes_w);
+	placer->add(sounds_w);
+	placer->add(theme_w);	
+	placer->add(new w_spacer, true);
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->add(w_accept);
+	button_placer->add(w_cancel);
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
 
 	// Clear screen
 	clear_screen();

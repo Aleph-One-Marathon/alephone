@@ -876,6 +876,80 @@ void vertical_placer::place(const SDL_Rect &r, placement_flags flags)
 	}
 }
 
+void horizontal_placer::add(placeable *p, bool assume_ownership)
+{
+	m_widgets.push_back(p);
+	m_widget_widths.push_back(p->min_width());
+	
+	if (assume_ownership) this->assume_ownership(p);
+}
+
+int horizontal_placer::min_height()
+{
+	if (m_widgets.size())
+	{
+		int min_height = m_widgets[0]->min_height();
+		for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+		{
+			if ((*it)->min_height() > min_height)
+ 				min_height = (*it)->min_height();
+		}
+		return min_height;
+	}
+	else
+	{
+		return 0;
+	}
+
+}
+
+int horizontal_placer::min_width()
+{
+	int width = 0;
+	for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+	{
+		width += (*it)->min_width();
+	}
+
+	if (m_widgets.size())
+		width += (m_widgets.size() - 1) * m_space;
+
+	return width;
+}
+
+void horizontal_placer::place(const SDL_Rect &r, placement_flags flags)
+{
+	int x_offset;
+	if (flags & kAlignLeft)
+	{
+		x_offset = 0;
+	}
+	else if (flags & kAlignRight)
+	{
+		x_offset = r.w - min_width();
+	}
+	else
+	{
+		x_offset = (r.w - min_width()) / 2;
+	}
+
+	int h = (flags & kFill) ? r.h : min_height();
+
+	for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+	{
+		SDL_Rect wr;
+		wr.w = (*it)->min_width();
+		wr.h = h;
+		wr.y = r.y;
+		wr.x = r.x + x_offset;
+
+		(*it)->place(wr);
+
+		x_offset += wr.w;
+		x_offset += m_space;
+	}
+}
+	
 /*
  *  Dialog constructor
  */

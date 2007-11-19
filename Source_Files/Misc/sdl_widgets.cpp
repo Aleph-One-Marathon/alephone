@@ -421,7 +421,18 @@ const uint16 MAX_TEXT_WIDTH = 200;
 // Anyway, this fixes the "crash when clicking in the Environment menu" bug we've seen
 // in the Windows version all this time.
 w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a)
-    : widget(LABEL_FONT), name(n), selection(s), proc(p), arg(a) {}
+    : widget(LABEL_FONT), name(n), selection(s), proc(p), arg(a) 
+{
+	uint16 name_width = text_width(name, font, style);
+	uint16 max_selection_width = MAX_TEXT_WIDTH;
+	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
+
+	if (name_width) 
+		saved_min_width = spacing + 2 * max_selection_width;
+	else
+		saved_min_width = max_selection_width;
+	saved_min_height = font->get_line_height();
+}
 
 
 int w_select_button::layout(void)
@@ -441,7 +452,7 @@ int w_select_button::layout(void)
 void w_select_button::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
-
+	
 	// Name (ZZZ: different color for disabled)
     int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
 
@@ -473,6 +484,25 @@ void w_select_button::set_selection(const char *s)
 	dirty = true;
 }
 
+void w_select_button::place(const SDL_Rect &r, placement_flags flags)
+{
+	rect.h = r.h;
+	rect.y = r.y;
+
+	uint16 name_width = text_width(name, font, style);
+	if (name_width)
+	{
+		rect.x = r.x + (MAX_TEXT_WIDTH - name_width);
+		selection_x = name_width + get_dialog_space(LABEL_ITEM_SPACE);
+		rect.w = saved_min_width - (MAX_TEXT_WIDTH - name_width);
+	}
+	else
+	{
+		selection_x = 0;
+		rect.x = r.x;
+		rect.w = r.w;
+	}
+}
 
 /*
  *  Selection widget (base class)

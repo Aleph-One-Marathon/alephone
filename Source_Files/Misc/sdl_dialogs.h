@@ -75,7 +75,7 @@ public:
 class widget_placer : public placeable
 {
 public:
-	widget_placer() { }
+	widget_placer() : placeable() { }
 	~widget_placer();
 
 	void place(const SDL_Rect &r, placement_flags flags = kDefault) = 0;
@@ -93,7 +93,7 @@ class vertical_placer : public widget_placer
 {
 public:
 	enum { kSpace = 0 };
-	vertical_placer() { }
+	vertical_placer() : widget_placer() { }
 
 	void add(placeable *p, bool assume_ownership = false);
 	int min_height();
@@ -105,6 +105,25 @@ private:
 	std::vector<placeable *> m_widgets;
 	std::vector<int> m_widget_heights;
 };
+
+class horizontal_placer : public widget_placer
+{
+public:
+	enum { kSpace = 4 };
+	horizontal_placer(int space = kSpace) : widget_placer(), m_space(space) { }
+	
+	void add(placeable *p, bool assume_ownership = false);
+	int min_height();
+	int min_width();
+
+	void place(const SDL_Rect &r, placement_flags flags = kDefault);
+
+private:
+	std::vector<placeable *> m_widgets;
+	std::vector<int> m_widget_widths;
+	int m_space;
+};
+	
 
 // Dialog structure
 class dialog {
