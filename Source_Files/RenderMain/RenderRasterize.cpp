@@ -806,7 +806,9 @@ void RenderRasterizerClass::xy_clip_flagged_world_points(
 		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
 	while (numerator<=(int32)0x3fffffff && numerator>=(int32)0xc0000000 && shift_count--) numerator<<= 1;
 	if (shift_count>0) denominator>>= shift_count;
-	t= numerator/denominator;
+	t= numerator;
+	if (denominator) 
+		t /= denominator;
 
 	/* calculate the clipped point */
 	clipped->x= local_p0->x + FIXED_INTEGERAL_PART(t*dx);
@@ -1025,7 +1027,9 @@ void RenderRasterizerClass::z_clip_flagged_world_points(
 		didnÕt seem to like (INT32_MIN>>1) and i had to substitute 0xc0000000 instead (hmmm) */
 	while (numerator<=(int32)0x3fffffff && numerator>=(int32)0xc0000000 && shift_count--) numerator<<= 1;
 	if (shift_count>0) denominator>>= shift_count;
-	t= numerator/denominator;
+	t= numerator;
+	if (denominator) 
+		t /= denominator;
 
 	/* calculate the clipped point */
 	clipped->x= local_p0->x + FIXED_INTEGERAL_PART(t*dx);
