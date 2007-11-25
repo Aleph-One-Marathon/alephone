@@ -392,7 +392,7 @@ uint16 ttf_and_sdl_font_info::get_line_height() const
 #ifdef HAVE_SDL_TTF
 	if (is_ttf_font())
 	{
-		return TTF_FontLineSkip(m_ttf_font_info);
+		return max(TTF_FontLineSkip(m_ttf_font_info), TTF_FontHeight(m_ttf_font_info));;
 	}
 	else
 #endif
