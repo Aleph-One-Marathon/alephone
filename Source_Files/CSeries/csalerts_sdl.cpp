@@ -69,7 +69,6 @@ void alert_user(char *message, short severity)
       }
       if (i != strlen(t))
 	t[last] = 0;
-      fprintf(stderr, "Adding '%s'\n", t);
       d.add(new w_static_text(t));
       if (i != strlen(t))
 	t += last + 1;
