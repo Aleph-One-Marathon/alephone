@@ -886,6 +886,9 @@ backspace:		if (num_chars) {
 					play_dialog_sound(DIALOG_DELETE_SOUND);
 				}
 				break;
+		case SDLK_UP:
+		case SDLK_DOWN:
+			break;
 
 			default: {				// Printable characters are entered into the buffer
 				uint16 uc = e.key.keysym.unicode;
