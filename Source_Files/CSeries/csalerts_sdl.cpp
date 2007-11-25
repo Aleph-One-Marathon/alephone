@@ -55,19 +55,21 @@ void alert_user(char *message, short severity)
     
     // Wrap lines
     uint16 style;
-    const sdl_font_info *font = get_dialog_font(MESSAGE_FONT, style)->get_sdl_font_info();
+    ttf_and_sdl_font_info *font = get_dialog_font(MESSAGE_FONT, style);
     char *t = message;
+
     while (strlen(t)) {
       unsigned i = 0, last = 0;
       int width = 0;
       while (i < strlen(t) && width < MAX_ALERT_WIDTH) {
-	width += char_width(t[i], font, style);
+	width = text_width(t, i, font, style);
 	if (t[i] == ' ')
 	  last = i;
 	i++;
       }
       if (i != strlen(t))
 	t[last] = 0;
+      fprintf(stderr, "Adding '%s'\n", t);
       d.add(new w_static_text(t));
       if (i != strlen(t))
 	t += last + 1;
