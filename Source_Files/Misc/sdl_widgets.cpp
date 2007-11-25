@@ -1100,6 +1100,13 @@ static const char *WAITING_TEXT = "waiting for new key";
 w_key::w_key(const char *n, SDLKey key) : widget(LABEL_FONT), name(n), binding(false)
 {
 	set_key(key);
+
+	uint16 name_width = text_width(name, font, style);
+	if (name_width)
+		saved_min_width = get_dialog_space(LABEL_ITEM_SPACE) + 2 * text_width(WAITING_TEXT, font, style);
+	else
+		saved_min_width = text_width(WAITING_TEXT, font, style);
+	saved_min_height = font->get_line_height();
 }
 
 int w_key::layout(void)
@@ -1115,6 +1122,26 @@ int w_key::layout(void)
 	return rect.h;
 }
 
+void w_key::place(const SDL_Rect& r, placement_flags flags)
+{
+	rect.h = r.h;
+	rect.y = r.y;
+
+	uint16 name_width = text_width(name, font, style);
+	if (name_width)
+	{
+		rect.x = (text_width(WAITING_TEXT, font, style) - name_width);
+		key_x = name_width + get_dialog_space(LABEL_ITEM_SPACE);
+		rect.w = saved_min_width - (text_width(WAITING_TEXT, font, style) - name_width);
+	}
+	else
+	{
+		key_x = 0;
+		rect.x = r.x;
+		rect.w = r.w;
+	}
+}
+		
 // ZZZ: we provide phony key names for the phony keys used for mouse buttons.
 static const char* sMouseButtonKeyName[NUM_SDL_MOUSE_BUTTONS] = {
         "Left Mouse",   // things like "Middle Mouse Button" are too long to draw properly

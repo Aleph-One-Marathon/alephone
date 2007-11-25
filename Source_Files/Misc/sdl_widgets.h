@@ -565,6 +565,9 @@ public:
 
 	virtual void set_key(SDLKey key);
 	SDLKey get_key(void) {return key;}
+	void place(const SDL_Rect& r, placement_flags flags);
+
+	bool placeable_implemented() { return true; }
 
 private:
 	const char *name;

@@ -1310,37 +1310,63 @@ static void keyboard_dialog(void *arg)
 
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text("CONFIGURE KEYBOARD", TITLE_FONT, TITLE_COLOR));
-	vector<string> tab_strings;
-	tab_strings.push_back ("KEYS");
-	tab_strings.push_back ("MORE KEYS");
-	make_tab_buttons_for_dialog(d, tab_strings, KEYBOARD_TABS);
-	d.set_active_tab(TAB_KEYS);
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text("CONFIGURE KEYBOARD", TITLE_FONT, TITLE_COLOR), d);
 
-	d.add(new w_spacer());
+	placer->add(new w_spacer(), true);
+
+	vertical_placer *key_label_placer = new vertical_placer;
+	vertical_placer *key_placer = new vertical_placer;
+	vertical_placer *more_keys_label_placer = new vertical_placer;
+	vertical_placer *more_keys_placer = new vertical_placer;
+	key_label_placer->add_flags(placeable::kAlignRight);
+	more_keys_label_placer->add_flags(placeable::kAlignRight);
+
 	for (int i=0; i<19; i++)
 	{
-		key_w[i] = new w_prefs_key(action_name[i], SDLKey(input_preferences->keycodes[i]));
-		d.add_to_tab(key_w[i], TAB_KEYS);
+		key_label_placer->dual_add(new w_label(action_name[i]), d);
+		key_w[i] = new w_prefs_key("", SDLKey(input_preferences->keycodes[i]));
+		key_placer->dual_add(key_w[i], d);
 	}
 
 	for (int i=19; i<NUM_KEYS; i++) {
-		key_w[i] = new w_prefs_key(action_name[i], SDLKey(input_preferences->keycodes[i]));
-		d.add_to_tab(key_w[i],TAB_MORE_KEYS);
+		more_keys_label_placer->dual_add(new w_label(action_name[i]), d);
+		key_w[i] = new w_prefs_key("", SDLKey(input_preferences->keycodes[i]));
+		more_keys_placer->dual_add(key_w[i], d);
 	}
-
-	d.add_to_tab(new w_spacer(), TAB_MORE_KEYS);
 
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
-		shell_key_w[i] = new w_prefs_key(shell_action_name[i], SDLKey(input_preferences->shell_keycodes[i]));
-		d.add_to_tab(shell_key_w[i], TAB_MORE_KEYS);
+		more_keys_label_placer->dual_add(new w_label(shell_action_name[i]), d);
+		shell_key_w[i] = new w_prefs_key("", SDLKey(input_preferences->shell_keycodes[i]));
+		more_keys_placer->dual_add(shell_key_w[i], d);
 	}
 
-	d.add(new w_spacer());
-	d.add(new w_button("DEFAULTS", load_default_keys, &d));
-	d.add(new w_spacer());
-	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+	horizontal_placer *table = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+	int balanced_width = std::max(key_label_placer->min_width(), key_placer->min_width());
+	key_label_placer->min_width(balanced_width);
+	key_placer->min_width(balanced_width);
+
+	balanced_width = std::max(more_keys_placer->min_width(), more_keys_label_placer->min_width());
+	more_keys_label_placer->min_width(balanced_width);
+	more_keys_placer->min_width(balanced_width);
+
+	table->add(key_label_placer, true);
+	table->add(key_placer, true);
+	table->add(more_keys_label_placer, true);
+	table->add(more_keys_placer, true);
+
+	placer->add(table, true);
+
+	placer->add(new w_spacer(), true);
+	placer->dual_add(new w_button("DEFAULTS", load_default_keys, &d), d);
+	placer->add(new w_spacer(), true);
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
 
 	// Clear screen
 	clear_screen();
