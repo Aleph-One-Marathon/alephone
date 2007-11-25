@@ -813,6 +813,12 @@ void vertical_placer::add(placeable *p, bool assume_ownership)
 	if (assume_ownership) this->assume_ownership(p);
 }
 
+void vertical_placer::dual_add(widget *w, dialog &d)
+{
+	add(static_cast<placeable *>(w));
+	d.add(w);
+}
+
 int vertical_placer::min_height()
 {
 	int height = 0;
@@ -884,6 +890,12 @@ void horizontal_placer::add(placeable *p, bool assume_ownership)
 	m_placement_flags.push_back(m_add_flags);
 	
 	if (assume_ownership) this->assume_ownership(p);
+}
+
+void horizontal_placer::dual_add(widget *w, dialog &d)
+{
+	add(static_cast<placeable *>(w));
+	d.add(w);
 }
 
 int horizontal_placer::min_height()

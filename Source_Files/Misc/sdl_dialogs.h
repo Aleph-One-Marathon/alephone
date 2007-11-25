@@ -53,6 +53,8 @@ class FileSpecifier;
  *  Definitions
  */
 
+class dialog;
+
 class placeable {
 public:
 	enum placement_flags
@@ -97,6 +99,7 @@ public:
 
 	void add(placeable *p, bool assume_ownership = false);
 	void add_flags(placement_flags flags = kDefault) { m_add_flags = flags; }
+	void dual_add(widget *w, dialog& d);
 	int min_height();
 	int min_width();
 	void min_width(int w) { m_min_width = w; }
@@ -119,6 +122,8 @@ public:
 	
 	void add(placeable *p, bool assume_ownership = false);
 	void add_flags(placement_flags flags = kDefault) { m_add_flags = flags; }
+	// adds w to this placer, as well as dialog d
+	void dual_add(widget *w, dialog& d);
 	int min_height();
 	int min_width();
 
