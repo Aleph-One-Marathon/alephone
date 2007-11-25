@@ -44,7 +44,7 @@ using std::map;
 
 #ifdef HAVE_SDL_TTF
 #include <boost/tuple/tuple_comparison.hpp>
-#include "urw_gothic.h"
+#include "DejaVuCondensedSansBold.h"
 #endif
 
 // Global variables
@@ -244,7 +244,7 @@ ttf_and_sdl_font_info *load_ttf_and_sdl_font(const DualFontSpec& spec)
 	TTF_Font *font;
 	if (spec.path == "gothic")
 	{
-		font = TTF_OpenFontRW(SDL_RWFromConstMem(urw_gothic, sizeof(urw_gothic)), 0, spec.ttf_size);
+		font = TTF_OpenFontRW(SDL_RWFromConstMem(deja_vu_condensed_sans_bold, sizeof(deja_vu_condensed_sans_bold)), 0, spec.ttf_size);
 	}
 	else
 	{
