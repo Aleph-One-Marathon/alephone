@@ -420,10 +420,10 @@ uint16 text_width(const char *text, size_t length, ttf_and_sdl_font_info *font, 
 {
 #ifdef HAVE_SDL_TTF
 	if (font->is_ttf_font())
-		return text_width(text, font->get_ttf_font_info(), style);
+		return text_width(text, length, font->get_ttf_font_info(), style);
 	else
 #endif
-		return text_width(text, font->get_sdl_font_info(), style);
+		return text_width(text, length, font->get_sdl_font_info(), style);
 }
 	
 
