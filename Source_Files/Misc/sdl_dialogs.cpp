@@ -808,6 +808,7 @@ void vertical_placer::add(placeable *p, bool assume_ownership)
 {
 	m_widgets.push_back(p);
 	m_widget_heights.push_back(p->min_height());
+	m_placement_flags.push_back(m_add_flags);
 
 	if (assume_ownership) this->assume_ownership(p);
 }
@@ -837,11 +838,11 @@ int vertical_placer::min_width()
 			if ((*it)->min_width() > min_width)
 				min_width = (*it)->min_width();
 		}
-		return min_width;
+		return std::max(min_width, m_min_width);
 	}
 	else
 	{
-		return 0;
+		return m_min_width;
 	}
 }
 
@@ -849,7 +850,7 @@ void vertical_placer::place(const SDL_Rect &r, placement_flags flags)
 {
 	int y_offset = 0;
 	int w = (flags & kFill) ? r.w : min_width();
-	for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+	for (int i = 0; i < m_widgets.size(); i++)
 	{
 		SDL_Rect wr;
 		if ((flags & kFill) || (flags & kAlignLeft))
@@ -865,10 +866,10 @@ void vertical_placer::place(const SDL_Rect &r, placement_flags flags)
 			wr.x = r.x + (r.w - w) / 2;
 		}
 		wr.w = w;
-		wr.h = (*it)->min_height();
+		wr.h = m_widgets[i]->min_height();
 		wr.y = r.y + y_offset;
 
-		(*it)->place(wr);
+		m_widgets[i]->place(wr, m_placement_flags[i]);
 
 		y_offset += wr.h;
 		y_offset += kSpace;
@@ -880,6 +881,7 @@ void horizontal_placer::add(placeable *p, bool assume_ownership)
 {
 	m_widgets.push_back(p);
 	m_widget_widths.push_back(p->min_width());
+	m_placement_flags.push_back(m_add_flags);
 	
 	if (assume_ownership) this->assume_ownership(p);
 }
@@ -934,16 +936,16 @@ void horizontal_placer::place(const SDL_Rect &r, placement_flags flags)
 	}
 
 	int h = (flags & kFill) ? r.h : min_height();
-
-	for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+	
+	for (int i = 0; i < m_widgets.size(); i++)
 	{
 		SDL_Rect wr;
-		wr.w = (*it)->min_width();
+		wr.w = m_widgets[i]->min_width();
 		wr.h = h;
 		wr.y = r.y;
 		wr.x = r.x + x_offset;
 
-		(*it)->place(wr);
+		m_widgets[i]->place(wr, m_placement_flags[i]);
 
 		x_offset += wr.w;
 		x_offset += m_space;

@@ -93,26 +93,32 @@ class vertical_placer : public widget_placer
 {
 public:
 	enum { kSpace = 0 };
-	vertical_placer() : widget_placer() { }
+	vertical_placer() : widget_placer(), m_min_width(0), m_add_flags(kDefault) { }
 
 	void add(placeable *p, bool assume_ownership = false);
+	void add_flags(placement_flags flags = kDefault) { m_add_flags = flags; }
 	int min_height();
-	int min_width();	
+	int min_width();
+	void min_width(int w) { m_min_width = w; }
 
 	void place(const SDL_Rect &r, placement_flags flags = kDefault);
 
 private:
 	std::vector<placeable *> m_widgets;
 	std::vector<int> m_widget_heights;
+	std::vector<placement_flags> m_placement_flags;
+	int m_min_width;
+	placement_flags m_add_flags;
 };
 
 class horizontal_placer : public widget_placer
 {
 public:
 	enum { kSpace = 4 };
-	horizontal_placer(int space = kSpace) : widget_placer(), m_space(space) { }
+	horizontal_placer(int space = kSpace) : widget_placer(), m_space(space), m_add_flags(kDefault) { }
 	
 	void add(placeable *p, bool assume_ownership = false);
+	void add_flags(placement_flags flags = kDefault) { m_add_flags = flags; }
 	int min_height();
 	int min_width();
 
@@ -121,7 +127,9 @@ public:
 private:
 	std::vector<placeable *> m_widgets;
 	std::vector<int> m_widget_widths;
+	std::vector<placement_flags> m_placement_flags;
 	int m_space;
+	placement_flags m_add_flags;
 };
 	
 

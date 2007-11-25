@@ -1388,16 +1388,26 @@ static void environment_dialog(void *arg)
 	w_static_text *w_header = new w_static_text("ENVIRONMENT SETTINGS", TITLE_FONT, TITLE_COLOR);
 	d.add(w_header);
 	
-	w_env_select *map_w = new w_env_select("Map", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
+	w_env_select *map_w = new w_env_select("", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
 	d.add(map_w);
-	w_env_select *physics_w = new w_env_select("Physics", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
+	w_label *map_label = new w_label("Map");
+	d.add(map_label);
+	w_env_select *physics_w = new w_env_select("", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
 	d.add(physics_w);
-	w_env_select *shapes_w = new w_env_select("Shapes", environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
+	w_label *physics_label = new w_label("Physics");
+	d.add(physics_label);
+	w_env_select *shapes_w = new w_env_select("", environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
 	d.add(shapes_w);
-	w_env_select *sounds_w = new w_env_select("Sounds", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
+	w_label *shapes_label = new w_label("Shapes");
+	d.add(shapes_label);
+	w_env_select *sounds_w = new w_env_select("", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
 	d.add(sounds_w);
-	w_env_select *theme_w = new w_env_select("Theme", environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
+	w_label *sounds_label = new w_label("Sounds");
+	d.add(sounds_label);
+	w_env_select *theme_w = new w_env_select("", environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
 	d.add(theme_w);
+	w_label *theme_label = new w_label("Theme");
+	d.add(theme_label);
 
 	w_button *w_accept = new w_button("ACCEPT", dialog_ok, &d);
 	d.add(w_accept);
@@ -1407,11 +1417,28 @@ static void environment_dialog(void *arg)
 	placer->add(w_header);
 	placer->add(new w_spacer, true);
 
-	placer->add(map_w);
-	placer->add(physics_w);
-	placer->add(shapes_w);
-	placer->add(sounds_w);
-	placer->add(theme_w);	
+	label_placer->add_flags(placeable::kAlignRight);
+	label_placer->add(map_label);
+	label_placer->add(physics_label);
+	label_placer->add(shapes_label);
+	label_placer->add(sounds_label);
+	label_placer->add(theme_label);
+
+	select_placer->add(map_w);
+	select_placer->add(physics_w);
+	select_placer->add(shapes_w);
+	select_placer->add(sounds_w);
+	select_placer->add(theme_w);	
+
+	int balanced_width = std::max(label_placer->min_width(), select_placer->min_width());
+	label_placer->min_width(balanced_width);
+	select_placer->min_width(balanced_width);
+
+	horizontal_placer *table = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+	table->add(label_placer, true);
+	table->add(select_placer, true);
+	placer->add(table, true);
+
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
