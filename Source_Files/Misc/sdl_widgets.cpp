@@ -883,6 +883,7 @@ void w_text_entry::place(const SDL_Rect& r, placement_flags flags)
 		text_x = 0;
 		rect.x = r.x;
 		rect.w = r.w;
+		max_text_width = rect.w;
 	}
 }
 
