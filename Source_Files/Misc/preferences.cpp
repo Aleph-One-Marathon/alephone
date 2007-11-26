@@ -329,42 +329,87 @@ static void player_dialog(void *arg)
 {
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
-	w_select *level_w = new w_select("Difficulty", player_preferences->difficulty_level, NULL /*level_labels*/);
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR), d);
+	placer->add(new w_spacer());
+
+	// this is a little tedious :(
+	vertical_placer *difficulty_label_placer = new vertical_placer;
+	difficulty_label_placer->add_flags(placeable::kAlignRight);
+	vertical_placer *difficulty_select_placer = new vertical_placer;
+	horizontal_placer *difficulty_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+	difficulty_label_placer->dual_add(new w_label("Difficulty"), d);
+	w_select *level_w = new w_select("", player_preferences->difficulty_level, NULL /*level_labels*/);
 	level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
-	d.add(level_w);
-        
-	d.add(new w_spacer());
+	difficulty_select_placer->dual_add(level_w, d);
+	int balanced_width = max(difficulty_label_placer->min_width(), difficulty_select_placer->min_width());
+	difficulty_label_placer->min_width(balanced_width);
+	difficulty_select_placer->min_width(balanced_width);
+	difficulty_placer->add(difficulty_label_placer, true);
+	difficulty_placer->add(difficulty_select_placer, true);
 
-	d.add(new w_static_text("Appearance"));
+	placer->add(difficulty_placer, true);
+	placer->add(new w_spacer());
 
-	w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
+	placer->dual_add(new w_static_text("Appearance"), d);
+
+	vertical_placer *appearance_label_placer = new vertical_placer;
+	appearance_label_placer->add_flags(placeable::kAlignRight);
+	vertical_placer *appearance_select_placer = new vertical_placer;
+	appearance_label_placer->dual_add(new w_label("Name"), d);
+	w_text_entry *name_w = new w_text_entry("", PREFERENCES_NAME_LENGTH, "");
 	name_w->set_identifier(iNAME);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
 	name_w->enable_mac_roman_input();
-	d.add(name_w);
+	appearance_select_placer->dual_add(name_w, d);
 
-	w_player_color *pcolor_w = new w_player_color("Color", player_preferences->color);
-	d.add(pcolor_w);
-	w_player_color *tcolor_w = new w_player_color("Team Color", player_preferences->team);
-	d.add(tcolor_w);
+	appearance_label_placer->dual_add(new w_label("Color"), d);
+	w_player_color *pcolor_w = new w_player_color("", player_preferences->color);
+	appearance_select_placer->dual_add(pcolor_w, d);
+	appearance_label_placer->dual_add(new w_label("Team Color"), d);
+	w_player_color *tcolor_w = new w_player_color("", player_preferences->team);
+	appearance_select_placer->dual_add(tcolor_w, d);
+	horizontal_placer *appearance_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+	balanced_width = max(appearance_label_placer->min_width(), appearance_select_placer->min_width());
+	appearance_label_placer->min_width(balanced_width);
+	appearance_select_placer->min_width(balanced_width);
+	appearance_placer->add(appearance_label_placer, true);
+	appearance_placer->add(appearance_select_placer, true);
+	placer->add(appearance_placer, true);
 
-	d.add(new w_spacer());
-	d.add(new w_static_text("\"Find Internet Game\" Server"));
-	d.add(new w_static_text("(default is guest/guest)"));
-	w_text_entry *login_w = new w_text_entry("Login", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
-	d.add(login_w);
-	w_password_entry *password_w = new w_password_entry("Password", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
-	d.add(password_w);
+	placer->add(new w_spacer(), true);
+	placer->dual_add(new w_static_text("\"Find Internet Game\" Server"), d);
+	placer->dual_add(new w_static_text("(default is guest/guest)"), d);
+	vertical_placer *fig_label_placer = new vertical_placer;
+	fig_label_placer->add_flags(placeable::kAlignRight);
+	vertical_placer *fig_select_placer = new vertical_placer;
+	fig_label_placer->dual_add(new w_label("Login"), d);
+	w_text_entry *login_w = new w_text_entry("", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
+	fig_select_placer->dual_add(login_w, d);
+	fig_label_placer->dual_add(new w_label("Password"), d);
+	w_password_entry *password_w = new w_password_entry("", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
+	fig_select_placer->dual_add(password_w, d);
+	horizontal_placer *fig_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+	balanced_width = max(fig_label_placer->min_width(), fig_select_placer->min_width());
+	fig_label_placer->min_width(balanced_width);
+	fig_select_placer->min_width(balanced_width);
+	fig_placer->add(fig_label_placer, true);
+	fig_placer->add(fig_select_placer, true);
+	placer->add(fig_placer, true);
 	
-	d.add(new w_spacer());
+	placer->add(new w_spacer(), true);
         
-	w_left_button* ok_button = new w_left_button("ACCEPT", dialog_ok, &d);
+	horizontal_placer *button_placer = new horizontal_placer;
+	
+	w_button* ok_button = new w_button("ACCEPT", dialog_ok, &d);
 	ok_button->set_identifier(iOK);
-	d.add(ok_button);
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+	button_placer->dual_add(ok_button, d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
 
 	// We don't do this earlier because it (indirectly) invokes the name_typing callback, which needs iOK
 	copy_pstring_to_text_field(&d, iNAME, player_preferences->name);

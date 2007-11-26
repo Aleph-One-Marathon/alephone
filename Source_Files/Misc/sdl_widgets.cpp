@@ -524,6 +524,8 @@ w_select::w_select(const char *n, size_t s, const char **l) : widget(LABEL_FONT)
             if (selection >= num_labels || selection < 0)
                     selection = 0;
         }
+
+	saved_min_height = font->get_line_height();
 }
 
 
@@ -532,6 +534,30 @@ w_select::~w_select() {
         free(labels);
 }
 
+void w_select::place(const SDL_Rect& r, placement_flags flags)
+{
+	rect.h = r.h;
+	rect.y = r.y;
+	uint16 name_width = text_width(name, font, style);
+	assert(!name_width);
+	rect.x = r.x;
+	label_x = 0;
+	rect.w = r.w;
+
+}
+
+int w_select::min_width()
+{
+	uint16 name_width = text_width(name, font, style);
+	if (name_width)
+	{
+		return name_width + get_dialog_space(LABEL_ITEM_SPACE) + get_largest_label_width();
+	}
+	else
+	{
+		return get_largest_label_width();
+	}
+}
 
 int w_select::layout(void)
 {
@@ -795,8 +821,8 @@ void w_player_color::draw(SDL_Surface *s) const
  *  Text entry widget
  */
 
-w_text_entry::w_text_entry(const char *n, size_t max, const char *initial_text)
-	: widget(LABEL_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), name(n), max_chars(max), new_rect_valid(false), enable_mac_roman(false)
+w_text_entry::w_text_entry(const char *n, size_t max_c, const char *initial_text)
+	: widget(LABEL_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), name(n), max_chars(max_c), new_rect_valid(false), enable_mac_roman(false)
 {
 	// Initialize buffer
 	buf = new char[max_chars + 1];
@@ -804,6 +830,16 @@ w_text_entry::w_text_entry(const char *n, size_t max, const char *initial_text)
 
 	// Get font
 	text_font = get_dialog_font(TEXT_ENTRY_FONT, text_style);
+
+	uint16 name_width = text_width(name.c_str(), font, style);
+	if (name_width)
+		saved_min_width = 2 * MAX_TEXT_WIDTH + get_dialog_space(LABEL_ITEM_SPACE);
+	else
+		saved_min_width = MAX_TEXT_WIDTH;
+
+	saved_min_height =  max(font->get_ascent(), text_font->get_ascent()) +
+		max (font->get_descent(), text_font->get_descent()) +
+		max (font->get_leading(), text_font->get_leading());
 }
 
 w_text_entry::~w_text_entry()
@@ -828,6 +864,26 @@ int w_text_entry::layout(void)
 
 //	return rect.h;
     return theResult;
+}
+
+void w_text_entry::place(const SDL_Rect& r, placement_flags flags)
+{
+	rect.h = r.h;
+	rect.y = r.y;
+
+	uint16 name_width = text_width(name.c_str(), font, style);
+	if (name_width)
+	{
+		rect.x = r.x + (MAX_TEXT_WIDTH - name_width);
+		text_x = name_width + get_dialog_space(LABEL_ITEM_SPACE);
+		rect.w = saved_min_width - (MAX_TEXT_WIDTH - name_width);
+	}
+	else
+	{
+		text_x = 0;
+		rect.x = r.x;
+		rect.w = r.w;
+	}
 }
 
 void w_text_entry::draw(SDL_Surface *s) const

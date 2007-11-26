@@ -359,6 +359,10 @@ public:
 	void click(int x, int y);
 	void event(SDL_Event &e);
 
+	bool placeable_implemented() { return true; }
+	void place(const SDL_Rect& r, placement_flags flags = placeable::kDefault);
+	int min_width();
+
 	size_t get_selection(void) const {return (num_labels > 0 ? selection : UNONE);}
 	void set_selection(size_t selection, bool simulate_user_input = false);
 
@@ -492,6 +496,8 @@ public:
 	}
 
 	void enable_mac_roman_input(bool enable = true) { enable_mac_roman = enable; }
+	bool placeable_implemented() { return true; }
+	void place(const SDL_Rect& r, placement_flags flags);
 
        
 protected:
