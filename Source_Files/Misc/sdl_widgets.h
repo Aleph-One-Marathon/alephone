@@ -222,6 +222,18 @@ public:
 	w_label(const char *text) : w_static_text(text, LABEL_FONT, LABEL_COLOR) { }
 };
 
+// a convenience class to make the prefs dialogs easy
+class label_maker : public horizontal_placer {
+public:
+	label_maker(const char *text, widget *w, dialog& d) : horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE), true) {
+		w_label *label = new w_label(text);
+		add_flags(placeable::kAlignRight);
+		dual_add(label, d);
+		add_flags();
+		dual_add(w, d);
+	}
+};
+
 /*
  *  Picture (PICT resource)
  */

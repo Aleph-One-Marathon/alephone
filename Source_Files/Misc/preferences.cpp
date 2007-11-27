@@ -333,71 +333,33 @@ static void player_dialog(void *arg)
 	placer->dual_add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR), d);
 	placer->add(new w_spacer());
 
-	// this is a little tedious :(
-	vertical_placer *difficulty_label_placer = new vertical_placer;
-	difficulty_label_placer->add_flags(placeable::kAlignRight);
-	vertical_placer *difficulty_select_placer = new vertical_placer;
-	horizontal_placer *difficulty_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
-	difficulty_label_placer->dual_add(new w_label("Difficulty"), d);
 	w_select *level_w = new w_select("", player_preferences->difficulty_level, NULL /*level_labels*/);
 	level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
-	difficulty_select_placer->dual_add(level_w, d);
-	int balanced_width = max(difficulty_label_placer->min_width(), difficulty_select_placer->min_width());
-	difficulty_label_placer->min_width(balanced_width);
-	difficulty_select_placer->min_width(balanced_width);
-	difficulty_placer->add(difficulty_label_placer, true);
-	difficulty_placer->add(difficulty_select_placer, true);
+	placer->add(new label_maker("Difficulty", level_w, d), true);
 
-	placer->add(difficulty_placer, true);
 	placer->add(new w_spacer());
 
 	placer->dual_add(new w_static_text("Appearance"), d);
 
-	vertical_placer *appearance_label_placer = new vertical_placer;
-	appearance_label_placer->add_flags(placeable::kAlignRight);
-	vertical_placer *appearance_select_placer = new vertical_placer;
-	appearance_label_placer->dual_add(new w_label("Name"), d);
 	w_text_entry *name_w = new w_text_entry("", PREFERENCES_NAME_LENGTH, "");
 	name_w->set_identifier(iNAME);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
 	name_w->enable_mac_roman_input();
-	appearance_select_placer->dual_add(name_w, d);
-
-	appearance_label_placer->dual_add(new w_label("Color"), d);
+	placer->add(new label_maker("Name", name_w, d), true);
 	w_player_color *pcolor_w = new w_player_color("", player_preferences->color);
-	appearance_select_placer->dual_add(pcolor_w, d);
-	appearance_label_placer->dual_add(new w_label("Team Color"), d);
+	placer->add(new label_maker("Color", pcolor_w, d), true);
 	w_player_color *tcolor_w = new w_player_color("", player_preferences->team);
-	appearance_select_placer->dual_add(tcolor_w, d);
-	horizontal_placer *appearance_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
-	balanced_width = max(appearance_label_placer->min_width(), appearance_select_placer->min_width());
-	appearance_label_placer->min_width(balanced_width);
-	appearance_select_placer->min_width(balanced_width);
-	appearance_placer->add(appearance_label_placer, true);
-	appearance_placer->add(appearance_select_placer, true);
-	placer->add(appearance_placer, true);
+	placer->add(new label_maker("Team Color", tcolor_w, d), true);
 
 	placer->add(new w_spacer(), true);
 	placer->dual_add(new w_static_text("\"Find Internet Game\" Server"), d);
 	placer->dual_add(new w_static_text("(default is guest/guest)"), d);
-	vertical_placer *fig_label_placer = new vertical_placer;
-	fig_label_placer->add_flags(placeable::kAlignRight);
-	vertical_placer *fig_select_placer = new vertical_placer;
-	fig_label_placer->dual_add(new w_label("Login"), d);
 	w_text_entry *login_w = new w_text_entry("", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
-	fig_select_placer->dual_add(login_w, d);
-	fig_label_placer->dual_add(new w_label("Password"), d);
+	placer->add(new label_maker("Login", login_w, d), true);
 	w_password_entry *password_w = new w_password_entry("", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
-	fig_select_placer->dual_add(password_w, d);
-	horizontal_placer *fig_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
-	balanced_width = max(fig_label_placer->min_width(), fig_select_placer->min_width());
-	fig_label_placer->min_width(balanced_width);
-	fig_select_placer->min_width(balanced_width);
-	fig_placer->add(fig_label_placer, true);
-	fig_placer->add(fig_select_placer, true);
-	placer->add(fig_placer, true);
-	
+	placer->add(new label_maker("Password", password_w, d), true);
+
 	placer->add(new w_spacer(), true);
         
 	horizontal_placer *button_placer = new horizontal_placer;

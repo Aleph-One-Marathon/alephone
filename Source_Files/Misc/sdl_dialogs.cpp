@@ -920,9 +920,23 @@ int horizontal_placer::min_height()
 int horizontal_placer::min_width()
 {
 	int width = 0;
-	for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+	if (m_balance_widths)
 	{
-		width += (*it)->min_width();
+		// find the largest width
+		for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+		{
+			if ((*it)->min_width() > width)
+				width = (*it)->min_width();
+		}
+
+		width = width * m_widgets.size();
+	}
+	else
+	{
+		for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); it++)
+		{
+			width += (*it)->min_width();
+		}
 	}
 
 	if (m_widgets.size())
@@ -948,11 +962,20 @@ void horizontal_placer::place(const SDL_Rect &r, placement_flags flags)
 	}
 
 	int h = (flags & kFill) ? r.h : min_height();
+	int w = 0;
+	if (m_balance_widths)
+	{
+		for (int i = 0; i < m_widgets.size(); i++)
+		{
+			if (m_widgets[i]->min_width() > w)
+				w = m_widgets[i]->min_width();
+		}
+	}
 	
 	for (int i = 0; i < m_widgets.size(); i++)
 	{
 		SDL_Rect wr;
-		wr.w = m_widgets[i]->min_width();
+		wr.w = m_balance_widths ? w : m_widgets[i]->min_width();
 		wr.h = h;
 		wr.y = r.y;
 		wr.x = r.x + x_offset;
