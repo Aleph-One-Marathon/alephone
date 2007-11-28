@@ -1322,44 +1322,29 @@ static void keyboard_dialog(void *arg)
 
 	placer->add(new w_spacer(), true);
 
-	vertical_placer *key_label_placer = new vertical_placer;
 	vertical_placer *key_placer = new vertical_placer;
-	vertical_placer *more_keys_label_placer = new vertical_placer;
 	vertical_placer *more_keys_placer = new vertical_placer;
-	key_label_placer->add_flags(placeable::kAlignRight);
-	more_keys_label_placer->add_flags(placeable::kAlignRight);
 
 	for (int i=0; i<19; i++)
 	{
-		key_label_placer->dual_add(new w_label(action_name[i]), d);
+		
 		key_w[i] = new w_prefs_key("", SDLKey(input_preferences->keycodes[i]));
-		key_placer->dual_add(key_w[i], d);
+		key_placer->add(new label_maker(action_name[i], key_w[i], d));
 	}
 
 	for (int i=19; i<NUM_KEYS; i++) {
-		more_keys_label_placer->dual_add(new w_label(action_name[i]), d);
 		key_w[i] = new w_prefs_key("", SDLKey(input_preferences->keycodes[i]));
-		more_keys_placer->dual_add(key_w[i], d);
+		more_keys_placer->add(new label_maker(action_name[i], key_w[i], d));
 	}
 
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
-		more_keys_label_placer->dual_add(new w_label(shell_action_name[i]), d);
 		shell_key_w[i] = new w_prefs_key("", SDLKey(input_preferences->shell_keycodes[i]));
-		more_keys_placer->dual_add(shell_key_w[i], d);
+		more_keys_placer->add(new label_maker(shell_action_name[i], shell_key_w[i], d));
 	}
 
-	horizontal_placer *table = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
-	int balanced_width = std::max(key_label_placer->min_width(), key_placer->min_width());
-	key_label_placer->min_width(balanced_width);
-	key_placer->min_width(balanced_width);
+	horizontal_placer *table = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE), true);
 
-	balanced_width = std::max(more_keys_placer->min_width(), more_keys_label_placer->min_width());
-	more_keys_label_placer->min_width(balanced_width);
-	more_keys_placer->min_width(balanced_width);
-
-	table->add(key_label_placer, true);
 	table->add(key_placer, true);
-	table->add(more_keys_label_placer, true);
 	table->add(more_keys_placer, true);
 
 	placer->add(table, true);
@@ -1416,55 +1401,32 @@ static void environment_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	vertical_placer *label_placer = new vertical_placer;
-	vertical_placer *select_placer = new vertical_placer;
 	w_static_text *w_header = new w_static_text("ENVIRONMENT SETTINGS", TITLE_FONT, TITLE_COLOR);
-	d.add(w_header);
-	
-	label_placer->add_flags(placeable::kAlignRight);
-
-	label_placer->dual_add(new w_label("Map"), d);
-	w_env_select *map_w = new w_env_select("", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
-	select_placer->dual_add(map_w, d);
-	
-	label_placer->dual_add(new w_label("Physics"), d);
-	w_env_select *physics_w = new w_env_select("", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
-	select_placer->dual_add(physics_w, d);
-
-	label_placer->dual_add(new w_label("Shapes"), d);
-	w_env_select *shapes_w = new w_env_select("", environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
-	select_placer->dual_add(shapes_w, d);
-
-	label_placer->dual_add(new w_label("Sounds"), d);
-	w_env_select *sounds_w = new w_env_select("", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
-	select_placer->dual_add(sounds_w, d);
-
-	label_placer->dual_add(new w_label("Themes"), d);
-	w_env_select *theme_w = new w_env_select("", environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
-	select_placer->dual_add(theme_w, d);
-
-	w_button *w_accept = new w_button("ACCEPT", dialog_ok, &d);
-	d.add(w_accept);
-	w_button *w_cancel = new w_button("CANCEL", dialog_cancel, &d);
-	d.add(w_cancel);
-
-	placer->add(w_header);
+	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
+	
+	w_env_select *map_w = new w_env_select("", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
+	placer->add(new label_maker("Map", map_w, d));
+	
+	w_env_select *physics_w = new w_env_select("", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
+	placer->add(new label_maker("Physics", physics_w, d));
 
-	int balanced_width = std::max(label_placer->min_width(), select_placer->min_width());
-	label_placer->min_width(balanced_width);
-	select_placer->min_width(balanced_width);
+	w_env_select *shapes_w = new w_env_select("", environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
+	placer->add(new label_maker("Shapes", shapes_w, d));
 
-	horizontal_placer *table = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
-	table->add(label_placer, true);
-	table->add(select_placer, true);
-	placer->add(table, true);
+	w_env_select *sounds_w = new w_env_select("", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
+	placer->add(new label_maker("Sounds", sounds_w, d));
+
+	w_env_select *theme_w = new w_env_select("", environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
+	placer->add(new label_maker("Themes", theme_w, d));
 
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->add(w_accept);
-	button_placer->add(w_cancel);
+	w_button *w_accept = new w_button("ACCEPT", dialog_ok, &d);
+	button_placer->dual_add(w_accept, d);
+	w_button *w_cancel = new w_button("CANCEL", dialog_cancel, &d);
+	button_placer->dual_add(w_cancel, d);
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
