@@ -84,7 +84,7 @@ static char* sStringSetNumber128[] = {
     "Sorry, Aleph One needs 6000k free to play in a networked game.  Give Aleph One more memory and try again.",
     "There appears to be a script conflict.  Perhaps mml and netscript are having differences over who gets to control lua.  Don't be surprised if you get unexpected script behavior or out of sync.",
     "This replay was created with a newer version of Aleph One and cannot be played with this version. Upgrade Aleph One and try again.",
-    "Sorry, the scroll wheel is not yet supported",
+    "Sorry, the scroll wheel can only be used for switching weapons.",
 };
 
 // STR# Resource: "Filenames"
