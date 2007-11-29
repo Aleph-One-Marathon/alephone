@@ -1478,12 +1478,19 @@ void dialog::event(SDL_Event &e)
 		// Mouse moved
 		case SDL_MOUSEMOTION: {
 			int x = e.motion.x, y = e.motion.y;
-			int num = find_widget(x, y);
-			if (num >= 0) {
-				assert(num == (size_t)num);
-				activate_widget(num);
-				widget *w = widgets[num];
-				w->mouse_move(x - rect.x - w->rect.x, y - rect.y - w->rect.y);
+			if (e.motion.state & (SDL_BUTTON(1) | SDL_BUTTON(2)))
+			{
+				active_widget->mouse_move(x - rect.x - active_widget->rect.x, y - rect.y - active_widget->rect.y);
+			}
+			else
+			{
+				int num = find_widget(x, y);
+				if (num >= 0) {
+					assert(num == (size_t)num);
+					activate_widget(num);
+					widget *w = widgets[num];
+					w->mouse_move(x - rect.x - w->rect.x, y - rect.y - w->rect.y);
+				}
 			}
 			break;
 		}
