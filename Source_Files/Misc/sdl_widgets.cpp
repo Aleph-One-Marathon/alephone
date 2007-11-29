@@ -1321,6 +1321,9 @@ w_slider::w_slider(const char *n, int num, int s) : widget(LABEL_FONT), name(n),
 	slider_c = get_dialog_image(SLIDER_C_IMAGE, SLIDER_WIDTH - slider_l->w - slider_r->w);
 	thumb = get_dialog_image(SLIDER_IMAGE);
 	trough_width = SLIDER_WIDTH - get_dialog_space(SLIDER_L_SPACE) - get_dialog_space(SLIDER_R_SPACE);
+
+	saved_min_width = SLIDER_WIDTH;
+	saved_min_height = MAX(font->get_line_height(), static_cast<uint16>(slider_c->h));
 }
 
 w_slider::~w_slider()
@@ -1340,6 +1343,19 @@ int w_slider::layout(void)
 	set_selection(selection);
 
 	return rect.h;
+}
+
+void w_slider::place(const SDL_Rect& r, placement_flags flags)
+{
+	rect.h = r.h;
+	rect.y = r.y;
+	uint16 name_width = text_width(name, font, style);
+	assert(!name_width);
+	rect.x = r.x;
+	slider_x = 0;
+	rect.w = r.w;
+
+	set_selection(selection);
 }
 
 void w_slider::draw(SDL_Surface *s) const

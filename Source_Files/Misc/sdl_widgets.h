@@ -643,6 +643,9 @@ public:
 
 	virtual void item_selected(void) {}
 
+	void place(const SDL_Rect& r, placement_flags flags);
+	bool placeable_implemented() { return true; }
+
 protected:
 	const char *name;
 

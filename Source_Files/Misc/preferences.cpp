@@ -957,35 +957,41 @@ static void sound_dialog(void *arg)
 {
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text("SOUND SETUP", TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text("SOUND SETUP", TITLE_FONT, TITLE_COLOR), d);
+	placer->add(new w_spacer(), true);
 	static const char *quality_labels[3] = {"8 Bit", "16 Bit", NULL};
-	w_toggle *quality_w = new w_toggle("Quality", TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
-	d.add(quality_w);
-	stereo_w = new w_stereo_toggle("Stereo", sound_preferences->flags & _stereo_flag);
-	d.add(stereo_w);
-	dynamic_w = new w_dynamic_toggle("Active Panning", TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
-	d.add(dynamic_w);
-	w_toggle *ambient_w = new w_toggle("Ambient Sounds", TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
-	d.add(ambient_w);
-	w_toggle *more_w = new w_toggle("More Sounds", TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
-	d.add(more_w);
-	w_toggle *button_sounds_w = new w_toggle("Interface Button Sounds", TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
-	d.add(button_sounds_w);
-	w_select *channels_w = new w_select("Channels", sound_preferences->channel_count, channel_labels);
-	d.add(channels_w);
-	w_volume_slider *volume_w = new w_volume_slider("Volume", sound_preferences->volume);
-	d.add(volume_w);
-	w_slider *music_volume_w = new w_slider("Music Volume", NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
-	d.add(music_volume_w);
-	d.add(new w_spacer());
-	d.add(new w_static_text("Network Microphone"));
-	w_toggle* mute_while_transmitting_w = new w_toggle("Headset Mic Mode", !sound_preferences->mute_while_transmitting);
-	d.add(mute_while_transmitting_w);
-	d.add(new w_spacer());
-	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+	w_toggle *quality_w = new w_toggle("", TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
+	placer->add(new label_maker("Quality", quality_w, d), true);
+	stereo_w = new w_stereo_toggle("", sound_preferences->flags & _stereo_flag);
+	placer->add(new label_maker("Stereo", stereo_w, d), true);
+	dynamic_w = new w_dynamic_toggle("", TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
+	placer->add(new label_maker("Active Panning", dynamic_w, d), true);
+	w_toggle *ambient_w = new w_toggle("", TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
+	placer->add(new label_maker("Ambient Sounds", ambient_w, d), true);
+	w_toggle *more_w = new w_toggle("", TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
+	placer->add(new label_maker("More Sounds", more_w, d), true);
+	w_toggle *button_sounds_w = new w_toggle("", TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
+	placer->add(new label_maker("Interface Button Sounds", button_sounds_w, d), true);
+	w_select *channels_w = new w_select("", sound_preferences->channel_count, channel_labels);
+	placer->add(new label_maker("Channels", channels_w, d), true);
+	w_volume_slider *volume_w = new w_volume_slider("", sound_preferences->volume);
+	placer->add(new label_maker("Volume", volume_w, d), true);
+	w_slider *music_volume_w = new w_slider("", NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
+	placer->add(new label_maker("Music Volume", music_volume_w, d), true);
+	placer->add(new w_spacer(), true);
+	placer->dual_add(new w_static_text("Network Microphone"), d);
+	w_toggle* mute_while_transmitting_w = new w_toggle("", !sound_preferences->mute_while_transmitting);
+	placer->add(new label_maker("Headset Mic Mode", mute_while_transmitting_w, d), true);
+	placer->dual_add(new w_spacer(), d);
 
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
 	// Clear screen
 	clear_screen();
 
@@ -1329,17 +1335,17 @@ static void keyboard_dialog(void *arg)
 	{
 		
 		key_w[i] = new w_prefs_key("", SDLKey(input_preferences->keycodes[i]));
-		key_placer->add(new label_maker(action_name[i], key_w[i], d));
+		key_placer->add(new label_maker(action_name[i], key_w[i], d), true);
 	}
 
 	for (int i=19; i<NUM_KEYS; i++) {
 		key_w[i] = new w_prefs_key("", SDLKey(input_preferences->keycodes[i]));
-		more_keys_placer->add(new label_maker(action_name[i], key_w[i], d));
+		more_keys_placer->add(new label_maker(action_name[i], key_w[i], d), true);
 	}
 
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
 		shell_key_w[i] = new w_prefs_key("", SDLKey(input_preferences->shell_keycodes[i]));
-		more_keys_placer->add(new label_maker(shell_action_name[i], shell_key_w[i], d));
+		more_keys_placer->add(new label_maker(shell_action_name[i], shell_key_w[i], d), true);
 	}
 
 	horizontal_placer *table = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE), true);
@@ -1406,19 +1412,19 @@ static void environment_dialog(void *arg)
 	placer->add(new w_spacer, true);
 	
 	w_env_select *map_w = new w_env_select("", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
-	placer->add(new label_maker("Map", map_w, d));
+	placer->add(new label_maker("Map", map_w, d), true);
 	
 	w_env_select *physics_w = new w_env_select("", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
-	placer->add(new label_maker("Physics", physics_w, d));
+	placer->add(new label_maker("Physics", physics_w, d), true);
 
 	w_env_select *shapes_w = new w_env_select("", environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
-	placer->add(new label_maker("Shapes", shapes_w, d));
+	placer->add(new label_maker("Shapes", shapes_w, d), true);
 
 	w_env_select *sounds_w = new w_env_select("", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
-	placer->add(new label_maker("Sounds", sounds_w, d));
+	placer->add(new label_maker("Sounds", sounds_w, d), true);
 
 	w_env_select *theme_w = new w_env_select("", environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
-	placer->add(new label_maker("Themes", theme_w, d));
+	placer->add(new label_maker("Themes", theme_w, d), true);
 
 	placer->add(new w_spacer, true);
 
