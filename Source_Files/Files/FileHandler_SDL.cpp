@@ -788,10 +788,10 @@ public:
 		if(i->is_directory)
 		{
 			string theName = i->name + "/";
-			draw_text(s, theName.c_str (), x, y, selected ? get_dialog_color (ITEM_ACTIVE_COLOR) : get_dialog_color (ITEM_COLOR), font, style);
+			draw_text(s, theName.c_str (), x, y, selected ? get_dialog_color (ITEM_ACTIVE_COLOR) : get_dialog_color (ITEM_COLOR), font, style, true);
 		}
 		else
-			draw_text(s, i->name.c_str (), x, y, selected ? get_dialog_color (ITEM_ACTIVE_COLOR) : get_dialog_color (ITEM_COLOR), font, style);
+			draw_text(s, i->name.c_str (), x, y, selected ? get_dialog_color (ITEM_ACTIVE_COLOR) : get_dialog_color (ITEM_COLOR), font, style, true);
 
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
@@ -884,7 +884,7 @@ public:
 	{
 		y += font->get_ascent();
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, i->name.c_str (), x, y, selected ? get_dialog_color (ITEM_ACTIVE_COLOR) : get_dialog_color (ITEM_COLOR), font, style);
+		draw_text(s, i->name.c_str (), x, y, selected ? get_dialog_color (ITEM_ACTIVE_COLOR) : get_dialog_color (ITEM_COLOR), font, style, true);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 };

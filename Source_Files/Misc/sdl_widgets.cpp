@@ -1818,7 +1818,7 @@ void w_tab_popup::gotSelectedCallback (void* me)
 static const char* const sFileChooserInvalidFileString = "(no valid selection)";
 
 w_file_chooser::w_file_chooser(const char* inLabel, const char* inDialogPrompt, Typecode inTypecode)
-	: w_select_button(inLabel, "", NULL, NULL), typecode(inTypecode)
+	: w_select_button(inLabel, "", NULL, NULL, true), typecode(inTypecode)
 {
 	strncpy(dialog_prompt, inDialogPrompt, sizeof(dialog_prompt));
 	set_selection(sFileChooserInvalidFileString);
