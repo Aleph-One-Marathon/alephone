@@ -2438,11 +2438,6 @@ void WriteXML_Char(FILE *F, unsigned char c)
 		// because Expat dislikes characters below 0x20
 		fprintf(F,"$");
 	}
-	else if (c >= 0x7f)
-	{
-		// Dump as hex
-		fprintf(F,"&#x%x;",int(c));
-	}
 	else
 	{
 		switch(c)
@@ -3450,35 +3445,40 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	if (StringsEqual(Tag,"map_file"))
 	{
 #ifdef SDL
-		DeUTF8_C(Value,strlen(Value),environment_preferences->map_file,255);
+		//DeUTF8_C(Value,strlen(Value),environment_preferences->map_file,255);
+		strncpy(environment_preferences->map_file, Value, 255);
 #endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"physics_file"))
 	{
 #ifdef SDL
-		DeUTF8_C(Value,strlen(Value),environment_preferences->physics_file,255);
+//		DeUTF8_C(Value,strlen(Value),environment_preferences->physics_file,255);
+		strncpy(environment_preferences->physics_file, Value, 255);
 #endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"shapes_file"))
 	{
 #ifdef SDL
-		DeUTF8_C(Value,strlen(Value),environment_preferences->shapes_file,255);
+//		DeUTF8_C(Value,strlen(Value),environment_preferences->shapes_file,255);
+		strncpy(environment_preferences->shapes_file, Value, 255);
 #endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"sounds_file"))
 	{
 #ifdef SDL
-		DeUTF8_C(Value,strlen(Value),environment_preferences->sounds_file,255);
+//		DeUTF8_C(Value,strlen(Value),environment_preferences->sounds_file,255);
+		strncpy(environment_preferences->sounds_file, Value, 255);
 #endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"theme_dir"))
 	{
 #ifdef SDL
-		DeUTF8_C(Value,strlen(Value),environment_preferences->theme_dir,255);
+//		DeUTF8_C(Value,strlen(Value),environment_preferences->theme_dir,255);
+		strncpy(environment_preferences->theme_dir, Value, 255);
 #if defined(__APPLE__) && defined(__MACH__)
 		extern char *bundle_name; // SDLMain.m
 		// replace leading "AlephOneSDL.app" with our actual bundle name (we do reverse when saving)

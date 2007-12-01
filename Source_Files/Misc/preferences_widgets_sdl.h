@@ -116,7 +116,7 @@ public:
 			color = LABEL_COLOR;
 
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, i->name, x + i->indent * 8, y, get_dialog_color(color), font, style);
+		draw_text(s, i->name, x + i->indent * 8, y, get_dialog_color(color), font, style, true);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 
@@ -131,8 +131,8 @@ typedef void (*selection_made_callback_t)(w_env_select* inWidget);
 
 class w_env_select : public w_select_button {
 public:
-	w_env_select(const char *name, const char *path, const char *m, Typecode t, dialog *d)
-		: w_select_button(name, item_name, select_item_callback, NULL),
+w_env_select(const char *name, const char *path, const char *m, Typecode t, dialog *d)
+	: w_select_button(name, item_name, select_item_callback, NULL, true),
 		parent(d), menu_title(m), type(t), mCallback(NULL)
 	{
 		set_arg(this);

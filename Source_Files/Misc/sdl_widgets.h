@@ -328,7 +328,7 @@ void make_tab_buttons_for_dialog (dialog &theDialog, vector<string> &names, int 
 
 class w_select_button : public widget {
 public:
-	w_select_button(const char *name, const char *selection, action_proc proc = NULL, void *arg = NULL);
+	w_select_button(const char *name, const char *selection, action_proc proc = NULL, void *arg = NULL, bool utf8 = false);
 
 	int layout(void);
 	void draw(SDL_Surface *s) const;
@@ -349,6 +349,7 @@ private:
 	void *arg;
 
 	int16 selection_x;			// X offset of selection display
+	bool utf8; // render utf8 text instead of roman
 };
 
 
