@@ -1062,17 +1062,18 @@ static void controls_dialog(void *arg)
 {
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text("CONTROLS", TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
-	mouse_w = new w_toggle("Mouse Control", input_preferences->input_device != 0);
-	d.add(mouse_w);
-	w_toggle *invert_mouse_w = new w_toggle("Invert Mouse", TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
-	d.add(invert_mouse_w);
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text("CONTROLS", TITLE_FONT, TITLE_COLOR), d);
+	placer->add(new w_spacer(), true);
+	mouse_w = new w_toggle("", input_preferences->input_device != 0);
+	placer->add(new label_maker("Mouse Control", mouse_w, d), true);
+	w_toggle *invert_mouse_w = new w_toggle("", TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
+	placer->add(new label_maker("Invert Mouse", invert_mouse_w, d), true);
 
-    const float kMinSensitivityLog = -3.0f;
-    const float kMaxSensitivityLog = 3.0f;
-    const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
-
+	const float kMinSensitivityLog = -3.0f;
+	const float kMaxSensitivityLog = 3.0f;
+	const float kSensitivityLogRange = kMaxSensitivityLog - kMinSensitivityLog;
+	
 	// LP: split this into horizontal and vertical sensitivities
 	float theSensitivity, theSensitivityLog;
 	
@@ -1081,52 +1082,46 @@ static void controls_dialog(void *arg)
 	theSensitivityLog = std::log(theSensitivity);
 	int theVerticalSliderPosition =
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
-
-    w_slider* sens_vertical_w = new w_slider("Mouse Vertical Sensitivity", 1000, theVerticalSliderPosition);
-    d.add(sens_vertical_w);
-    
+	
+	w_slider* sens_vertical_w = new w_slider("", 1000, theVerticalSliderPosition);
+	placer->add(new label_maker("Mouse Vertical Sensitivity", sens_vertical_w, d), true);
+	
 	theSensitivity = ((float) input_preferences->sens_horizontal) / FIXED_ONE;
 	if (theSensitivity <= 0.0f) theSensitivity = 1.0f;
 	theSensitivityLog = std::log(theSensitivity);
 	int theHorizontalSliderPosition =
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 
-    w_slider* sens_horizontal_w = new w_slider("Mouse Horizontal Sensitivity", 1000, theHorizontalSliderPosition);
-    d.add(sens_horizontal_w);
-/*
-    float   theSensitivity = ((float) input_preferences->sensitivity) / FIXED_ONE;
-    // avoid nasty math problems
-    if (theSensitivity <= 0.0f)
-        theSensitivity = 1.0f;
-    float   theSensitivityLog = std::log(theSensitivity);
-    int     theSliderPosition = (int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
+	w_slider* sens_horizontal_w = new w_slider("", 1000, theHorizontalSliderPosition);
+	placer->add(new label_maker("Mouse Horizontal Sensitivity", sens_horizontal_w, d), true);
 
-    w_slider* sensitivity_w = new w_slider("Mouse Sensitivity", 1000, theSliderPosition);
-    d.add(sensitivity_w);
-*/
+	placer->add(new w_spacer(), true);
 
-    d.add(new w_spacer);
+	w_toggle *always_run_w = new w_toggle("", input_preferences->modifiers & _inputmod_interchange_run_walk);
+	placer->add(new label_maker("Always Run", always_run_w, d), true);
+	w_toggle *always_swim_w = new w_toggle("", TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
+	placer->add(new label_maker("Always Swim", always_swim_w, d), true);
+	w_toggle *weapon_w = new w_toggle("", !(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
+	placer->add(new label_maker("Auto-Switch Weapons", weapon_w, d), true);
+	w_toggle* auto_recenter_w = new w_toggle("", !(input_preferences->modifiers & _inputmod_dont_auto_recenter));
+	placer->add(new label_maker("Auto-Recenter View", auto_recenter_w, d), true);
 
-	w_toggle *always_run_w = new w_toggle("Always Run", input_preferences->modifiers & _inputmod_interchange_run_walk);
-	d.add(always_run_w);
-	w_toggle *always_swim_w = new w_toggle("Always Swim", TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
-	d.add(always_swim_w);
-	w_toggle *weapon_w = new w_toggle("Auto-Switch Weapons", !(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
-	d.add(weapon_w);
-    w_toggle* auto_recenter_w = new w_toggle("Auto-Recenter View", !(input_preferences->modifiers & _inputmod_dont_auto_recenter));
-    d.add(auto_recenter_w);
+	placer->add(new w_spacer(), true);
+	placer->add(new w_spacer(), true);
+	placer->dual_add(new w_button("CONFIGURE KEYBOARD", keyboard_dialog, &d), d);
+	
+	placer->add(new w_spacer(), true);
+	placer->dual_add(new w_static_text("Warning: Auto-Switch Weapons and Auto-Recenter View"), d);
+	placer->dual_add(new w_static_text("are always ON in network play.  Turning either one OFF"), d);
+	placer->dual_add(new w_static_text("will also disable film recording for single-player games."), d);
+	placer->add(new w_spacer(), true);
+	
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
+	button_placer->dual_add(new w_right_button("CANCEL", dialog_cancel, &d), d);
+	placer->add(button_placer, true);
 
-    d.add(new w_spacer());
-    d.add(new w_spacer);
-	d.add(new w_button("CONFIGURE KEYBOARD", keyboard_dialog, &d));
-	d.add(new w_spacer());
-    d.add(new w_static_text("Warning: Auto-Switch Weapons and Auto-Recenter View"));
-    d.add(new w_static_text("are always ON in network play.  Turning either one OFF"));
-    d.add(new w_static_text("will also disable film recording for single-player games."));
-    d.add(new w_static_text("Future versions of Aleph One may lift these restrictions."));
-    d.add(new w_spacer);
-	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+	d.set_widget_placer(placer);
 
 	// Clear screen
 	clear_screen();
