@@ -1201,14 +1201,14 @@ void w_key::place(const SDL_Rect& r, placement_flags flags)
 		
 // ZZZ: we provide phony key names for the phony keys used for mouse buttons.
 static const char* sMouseButtonKeyName[NUM_SDL_MOUSE_BUTTONS] = {
-        "Left Mouse",   // things like "Middle Mouse Button" are too long to draw properly
-        "Middle Mouse",
-        "Right Mouse",
-        "Mouse Button 4",
-        "Mouse Button 5",
-        "Mouse Button 6",
-        "Mouse Button 7",
-        "Mouse Button 8"
+        "mouse 1",   // things like "Middle Mouse Button" are too long to draw properly
+        "mouse 3",
+        "mouse 2",
+        "mouse 4",
+        "mouse 5",
+        "mouse 6",
+        "mouse 7",
+        "mouse 8"
 };
 
 // ZZZ: this injects our phony key names but passes along the rest.
