@@ -325,12 +325,16 @@ static void player_dialog(void *arg)
 	placer->add(new label_maker("Team Color", tcolor_w, d), true);
 
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_static_text("\"Find Internet Game\" Server"), d);
-	placer->dual_add(new w_static_text("(default is guest/guest)"), d);
+	placer->dual_add(new w_static_text("\322Find Internet Game\323 Server"), d);
+	w_enabling_toggle *login_as_guest_w = new w_enabling_toggle("", strcmp(network_preferences->metaserver_login, "guest") == 0, false);
+	placer->add(new label_maker("Guest", login_as_guest_w, d), true);
 	w_text_entry *login_w = new w_text_entry("", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
 	placer->add(new label_maker("Login", login_w, d), true);
 	w_password_entry *password_w = new w_password_entry("", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
 	placer->add(new label_maker("Password", password_w, d), true);
+
+	login_as_guest_w->add_dependent_widget(login_w);
+	login_as_guest_w->add_dependent_widget(password_w);
 
 	placer->add(new w_spacer(), true);
         
@@ -364,13 +368,15 @@ static void player_dialog(void *arg)
 			changed = true;
 		}
 
-		if (strcmp(login_w->get_text(), network_preferences->metaserver_login)) {
-			strncpy(network_preferences->metaserver_login, login_w->get_text(), network_preferences_data::kMetaserverLoginLength);
+		const char *metaserver_login = (login_as_guest_w->get_selection() != 0) ? "guest" : login_w->get_text();
+		if (strcmp(metaserver_login, network_preferences->metaserver_login)) {
+			strncpy(network_preferences->metaserver_login, metaserver_login, network_preferences_data::kMetaserverLoginLength);
 			changed = true;
 		}
 
-		if (strcmp(password_w->get_text(), network_preferences->metaserver_password)) {
-			strncpy(network_preferences->metaserver_password, password_w->get_text(), network_preferences_data::kMetaserverLoginLength);
+		const char *metaserver_password = (login_as_guest_w->get_selection() != 0) ? "" : password_w->get_text();
+		if (strcmp(metaserver_password, network_preferences->metaserver_password)) {
+			strncpy(network_preferences->metaserver_password, metaserver_password, network_preferences_data::kMetaserverLoginLength);
 			changed = true;
 		}
 
