@@ -754,7 +754,7 @@ uint16 w_select::get_largest_label_width() {
  */
 
 #ifdef HAVE_SDL_TTF
-const char *w_toggle::onoff_labels[] = {"\342\230\220", "\342\230\222", NULL };
+const char *w_toggle::onoff_labels[] = {"\342\230\220", "\342\230\221", NULL };
 #else
 const char *w_toggle::onoff_labels[] = {"Off", "On", NULL};
 #endif
@@ -763,6 +763,45 @@ w_toggle::w_toggle(const char *name, bool selection, const char **labels) : w_se
 #ifdef HAVE_SDL_TTF
 	labels_are_utf8(true);
 #endif
+}
+
+void w_toggle::draw(SDL_Surface *s) const
+{
+	int y = rect.y + font->get_ascent();
+
+	// Name (ZZZ: different color for disabled)
+    int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
+
+    draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
+
+	// Selection (ZZZ: different color for disabled)
+	const char *str = (num_labels > 0 ? labels[selection] : sNoValidOptionsString);
+
+    theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+
+#ifdef HAVE_SDL_TTF
+    // ghs: disgusting temporary hack to draw larger checkboxes
+    if (labels == onoff_labels)
+    {
+	    static ttf_and_sdl_font_info* checkbox_font = 0;
+	    if (!checkbox_font)
+	    {
+		    DualFontSpec checkbox_font_spec = { false, -1, 0, DualFontSpec::styleNormal, 15, DualFontSpec::styleBold, "gothic", "", "", "" };
+		    checkbox_font = load_ttf_and_sdl_font(checkbox_font_spec);
+	    }
+	    
+	    draw_text(s, str, rect.x + label_x, y + 1, get_dialog_color(theColorToUse), checkbox_font, style, utf8);
+    }
+    else
+#endif
+    {
+	    draw_text(s, str, rect.x + label_x, y, get_dialog_color(theColorToUse), font, style, utf8);
+    }
+	    
+	// Cursor
+	if (active) {
+		//!!
+	}
 }
 
 
