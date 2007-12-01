@@ -106,12 +106,6 @@ May 22, 2003 (Woody Zenfell):
 #include <windows.h> // for GetUserName()
 #endif
 
-#ifdef mac
-// Marathon-engine dialog boxes:
-const short FatalErrorAlert = 128;
-const short NonFatalErrorAlert = 129;
-#endif
-
 static const char sPasswordMask[] = "reverof nohtaram";
 
 static const char* sNetworkGameProtocolNames[] =
@@ -121,24 +115,6 @@ static const char* sNetworkGameProtocolNames[] =
 };
 
 static const size_t NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES = sizeof(sNetworkGameProtocolNames) / sizeof(sNetworkGameProtocolNames[0]);
-
-
-// ZZZ: I'm really, really sorry.  But this is way better than what was here... trust me.
-#ifdef mac
-enum
-{
-	kEnvMapFileSpecIndex = 0,
-	kEnvPhysicsFileSpecIndex = 1,
-	kEnvShapesFileSpecIndex = 2,
-	kEnvSoundsFileSpecIndex = 3,
-	kNetworkScriptFileSpecIndex = 4,
-	kNumberOfFileSpecIndices
-};
-
-static FSSpec* sFileSpecIndexToFileSpecPtr[kNumberOfFileSpecIndices];
-
-#endif // mac
-		
 
 
 // MML-like Preferences Stuff; it makes obsolete
@@ -171,11 +147,7 @@ SoundManager::Parameters *sound_preferences = NULL;
 struct environment_preferences_data *environment_preferences = NULL;
 
 // LP: fake portable-files stuff
-#ifdef mac
-inline short memory_error() {return MemError();}
-#else
 inline short memory_error() {return 0;}
-#endif
 
 // Prototypes
 #ifndef SDL
@@ -1520,9 +1492,6 @@ template<class CType> void WriteColorWithIndex(FILE *F,
 void WriteXML_PasString(FILE *F, const char *Prefix, const unsigned char *String, const char *Suffix);
 void WriteXML_CString(FILE *F, const char *Prefix, const char *String, int MaxLen, const char *Suffix);
 void WriteXML_Char(FILE *F, unsigned char c);
-#ifdef mac
-void WriteXML_FSSpec(FILE *F, const char *Indent, int Index, FSSpec& Spec);
-#endif
 
 extern void hub_set_minimum_send_period(int32);
 extern int32& hub_get_minimum_send_period();
@@ -1564,14 +1533,6 @@ void initialize_preferences(
 		serial_preferences= new serial_number_data;
 		network_preferences= new network_preferences_data;
 		environment_preferences= new environment_preferences_data;
-
-#ifdef mac
-		sFileSpecIndexToFileSpecPtr[kEnvMapFileSpecIndex]	= &(environment_preferences->map_file);
-		sFileSpecIndexToFileSpecPtr[kEnvPhysicsFileSpecIndex]	= &(environment_preferences->physics_file);
-		sFileSpecIndexToFileSpecPtr[kEnvShapesFileSpecIndex]	= &(environment_preferences->shapes_file);
-		sFileSpecIndexToFileSpecPtr[kEnvSoundsFileSpecIndex]	= &(environment_preferences->sounds_file);
-		sFileSpecIndexToFileSpecPtr[kNetworkScriptFileSpecIndex]= &(network_preferences->netscript_file);
-#endif
 
 		XML_DataBlockLoader.CurrentElement = &PrefsRootParser;
 		XML_DataBlockLoader.SourceName = "[Preferences]";
@@ -1712,10 +1673,6 @@ void write_preferences(
 	
 	if (!F)
 	{
-#ifdef mac
-		// Restore the old default directory and quit
-		HSetVol(nil,OldVRefNum,OldParID);
-#endif
 		return;
 	}
 
@@ -1732,14 +1689,6 @@ void write_preferences(
 	fprintf(F,"  scmode_fill_the_screen=\"%s\"\n", BoolString(graphics_preferences->screen_mode.fill_the_screen));
 	fprintf(F,"  scmode_bitdepth=\"%hd\"\n",graphics_preferences->screen_mode.bit_depth);
 	fprintf(F,"  scmode_gamma=\"%hd\"\n",graphics_preferences->screen_mode.gamma_level);
-#ifdef mac
-	fprintf(F,"  devspec_slot=\"%hd\"\n",graphics_preferences->device_spec.slot);
-	fprintf(F,"  devspec_flags=\"%hd\"\n",graphics_preferences->device_spec.flags);
-	fprintf(F,"  devspec_bitdepth=\"%hd\"\n",graphics_preferences->device_spec.bit_depth);
-	fprintf(F,"  devspec_width=\"%hd\"\n",graphics_preferences->device_spec.width);
-	fprintf(F,"  devspec_height=\"%hd\"\n",graphics_preferences->device_spec.height);
-	fprintf(F,"  frequency=\"%f\"\n",graphics_preferences->refresh_frequency);
-#endif
 	fprintf(F,"  ogl_flags=\"%hu\"\n",graphics_preferences->OGL_Configure.Flags);
         fprintf(F,"  experimental_rendering=\"%s\"\n",BoolString(graphics_preferences->experimental_rendering));
 	fprintf(F,"  software_alpha_blending=\"%i\"\n", graphics_preferences->software_alpha_blending);
@@ -1844,9 +1793,7 @@ void write_preferences(
 	fprintf(F,"  game_protocol=\"%s\"\n",sNetworkGameProtocolNames[network_preferences->game_protocol]);
 	fprintf(F,"  use_speex_netmic_encoder=\"%s\"\n", BoolString(network_preferences->use_speex_encoder));
 	fprintf(F,"  use_netscript=\"%s\"\n", BoolString(network_preferences->use_netscript));
-#ifdef SDL
 	WriteXML_CString(F,"  netscript_file=\"", network_preferences->netscript_file, sizeof(network_preferences->netscript_file), "\"\n");
-#endif
 	fprintf(F,"  cheat_flags=\"%hu\"\n",network_preferences->cheat_flags);
 	fprintf(F,"  advertise_on_metaserver=\"%s\"\n",BoolString(network_preferences->advertise_on_metaserver));
 	fprintf(F,"  attempt_upnp=\"%s\"\n", BoolString(network_preferences->attempt_upnp));
@@ -1870,7 +1817,6 @@ void write_preferences(
 #endif // !defined(DISABLE_NETWORKING)
 
 	fprintf(F,"<environment\n");
-#ifdef SDL
 	WriteXML_CString(F,"  map_file=\"",environment_preferences->map_file,256,"\"\n");
 	WriteXML_CString(F,"  physics_file=\"",environment_preferences->physics_file,256,"\"\n");
 	WriteXML_CString(F,"  shapes_file=\"",environment_preferences->shapes_file,256,"\"\n");
@@ -1885,7 +1831,6 @@ void write_preferences(
 	} else
 #endif
 	WriteXML_CString(F,"  theme_dir=\"",environment_preferences->theme_dir,256,"\"\n");
-#endif
 	fprintf(F,"  map_checksum=\"%lu\"\n",environment_preferences->map_checksum);
 	fprintf(F,"  physics_checksum=\"%lu\"\n",environment_preferences->physics_checksum);
 	fprintf(F,"  shapes_mod_date=\"%lu\"\n",uint32(environment_preferences->shapes_mod_date));
@@ -1894,22 +1839,12 @@ void write_preferences(
 	fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
 	fprintf(F,"  non_bungie_warning=\"%s\"\n",BoolString(environment_preferences->non_bungie_warning));
 	fprintf(F,">\n");
-#ifdef mac
-	WriteXML_FSSpec(F,"  ",kEnvMapFileSpecIndex,environment_preferences->map_file);
-	WriteXML_FSSpec(F,"  ",kEnvPhysicsFileSpecIndex,environment_preferences->physics_file);
-	WriteXML_FSSpec(F,"  ",kEnvShapesFileSpecIndex,environment_preferences->shapes_file);
-	WriteXML_FSSpec(F,"  ",kEnvSoundsFileSpecIndex,environment_preferences->sounds_file);
-#endif
 	fprintf(F,"</environment>\n\n");
 			
 	fprintf(F,"</mara_prefs>\n\n");
 	
 	fclose(F);
 	
-#ifdef mac
-	// Restore it
-	HSetVol(nil,OldVRefNum,OldParID);
-#endif
 }
 
 /*
@@ -1933,31 +1868,6 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
   memset(&preferences->screen_mode, '\0', sizeof(screen_mode_data));
 	preferences->screen_mode.gamma_level= DEFAULT_GAMMA_LEVEL;
 
-#ifdef mac
-	preferences->device_spec.slot= NONE;
-	preferences->device_spec.flags= deviceIsColor;
-	preferences->device_spec.bit_depth= 32;
-	preferences->device_spec.width= 800;
-	preferences->device_spec.height= 600;
-
-	preferences->screen_mode.size = _100_percent;
-	preferences->screen_mode.fullscreen = false;
-	preferences->screen_mode.high_resolution = true;
-	
-	preferences->refresh_frequency = DEFAULT_MONITOR_REFRESH_FREQUENCY;
-	
-	if (hardware_acceleration_code(&preferences->device_spec) == _opengl_acceleration)
-	{
-		preferences->screen_mode.acceleration = _opengl_acceleration;
-		preferences->screen_mode.bit_depth = 32;
-	}
-	else
-	{
-		preferences->screen_mode.acceleration = _no_acceleration;
-		preferences->screen_mode.bit_depth = 32;
-	}
-	
-#else
 	preferences->screen_mode.size = _100_percent;
 #if defined(__APPLE__) && defined(__MACH__)
 	preferences->screen_mode.acceleration = _opengl_acceleration;
@@ -1973,7 +1883,6 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	else
 		preferences->screen_mode.fill_the_screen = true;
 	preferences->screen_mode.bit_depth = 16;
-#endif
 	
 	preferences->screen_mode.draw_every_other_line= false;
 	
@@ -2016,11 +1925,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 #endif // !defined(DISABLE_NETWORKING)
 	preferences->use_speex_encoder = true;
 	preferences->use_netscript = false;
-#ifdef mac
-	obj_clear(preferences->netscript_file);
-#else
 	preferences->netscript_file[0] = '\0';
-#endif
 	preferences->cheat_flags = _allow_tunnel_vision | _allow_crosshair | _allow_behindview;
 	preferences->advertise_on_metaserver = false;
 	preferences->attempt_upnp = false;
@@ -2033,9 +1938,6 @@ static void default_player_preferences(player_preferences_data *preferences)
 {
 	obj_clear(*preferences);
 
-#ifdef mac
-	GetDateTime(&preferences->last_time_ran);
-#endif
 	preferences->difficulty_level= 2;
 	get_name_from_system(preferences->name);
 	
@@ -2100,54 +2002,31 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	FileSpecifier DefaultSoundsFile;
 	FileSpecifier DefaultPhysicsFile;
     
-#ifdef mac
-	// Can use "all in one" routine
-	get_default_file_specs(&DefaultMapFile, &DefaultShapesFile, &DefaultSoundsFile, &DefaultPhysicsFile);
-#else
 	get_default_map_spec(DefaultMapFile);
 	get_default_physics_spec(DefaultPhysicsFile);
 	get_default_shapes_spec(DefaultShapesFile);
 	get_default_sounds_spec(DefaultSoundsFile);
-#endif
-                
+	                
 	preferences->map_checksum= read_wad_file_checksum(DefaultMapFile);
-#ifdef mac
-	obj_copy(preferences->map_file, DefaultMapFile.GetSpec());
-#else
 	strncpy(preferences->map_file, DefaultMapFile.GetPath(), 256);
 	preferences->map_file[255] = 0;
-#endif
 	
 	preferences->physics_checksum= read_wad_file_checksum(DefaultPhysicsFile);
-#ifdef mac
-	obj_copy(preferences->physics_file, DefaultPhysicsFile.GetSpec());
-#else
 	strncpy(preferences->physics_file, DefaultPhysicsFile.GetPath(), 256);
 	preferences->physics_file[255] = 0;
-#endif
 	
 	preferences->shapes_mod_date = DefaultShapesFile.GetDate();
-#ifdef mac
-	obj_copy(preferences->shapes_file, DefaultShapesFile.GetSpec());
-#else
 	strncpy(preferences->shapes_file, DefaultShapesFile.GetPath(), 256);
 	preferences->shapes_file[255] = 0;
-#endif
 
 	preferences->sounds_mod_date = DefaultSoundsFile.GetDate();
-#ifdef mac
-	obj_copy(preferences->sounds_file, DefaultSoundsFile.GetSpec());
-#else
 	strncpy(preferences->sounds_file, DefaultSoundsFile.GetPath(), 256);
 	preferences->sounds_file[255] = 0;
-#endif
 
-#ifdef SDL
 	FileSpecifier DefaultThemeFile;
 	get_default_theme_spec(DefaultThemeFile);
 	strncpy(preferences->theme_dir, DefaultThemeFile.GetPath(), 256);
 	preferences->theme_dir[255] = 0;
-#endif
 
 	preferences->group_by_directory = true;
 	preferences->reduce_singletons = false;
@@ -2174,30 +2053,12 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 		changed= true;
 	}
 
-#ifdef mac
-#ifndef __MACH__
-	if (preferences->screen_mode.bit_depth==32 && !machine_supports_32bit(&preferences->device_spec))
-	{
-		preferences->screen_mode.bit_depth= 16;
-		changed= true;
-	}
-
-	/* Don't change out of 16 bit if we are in valkyrie mode. */
-	// LP: good riddance to that old video card :-P
-	if (preferences->screen_mode.bit_depth==16 && !machine_supports_16bit(&preferences->device_spec))
-	{
-		preferences->screen_mode.bit_depth= 8;
-		changed= true;
-	}
-#endif
-#else
 	// OpenGL requires at least 16 bit color depth
 	if (preferences->screen_mode.acceleration == _opengl_acceleration && preferences->screen_mode.bit_depth == 8)
 	{
 		preferences->screen_mode.bit_depth= 16;
 		changed= true;
 	}
-#endif
 
 	return changed;
 }
@@ -2288,11 +2149,7 @@ void load_environment_from_preferences(
 	FileSpecifier File;
 	struct environment_preferences_data *prefs= environment_preferences;
 
-#ifdef mac
-	File.SetSpec(prefs->map_file);
-#else
 	File = prefs->map_file;
-#endif
 	if (File.Exists()) {
 		set_map_file(File);
 	} else {
@@ -2305,11 +2162,7 @@ void load_environment_from_preferences(
 		}
 	}
 
-#ifdef mac
-	File.SetSpec(prefs->physics_file);
-#else
 	File = prefs->physics_file;
-#endif
 	if (File.Exists()) {
 		set_physics_file(File);
 		import_definition_structures();
@@ -2323,11 +2176,7 @@ void load_environment_from_preferences(
 		}
 	}
 	
-#ifdef mac
-	File.SetSpec(prefs->shapes_file);
-#else
 	File = prefs->shapes_file;
-#endif
 	if (File.Exists()) {
 		open_shapes_file(File);
 	} else {
@@ -2340,11 +2189,7 @@ void load_environment_from_preferences(
 		}
 	}
 
-#ifdef mac
-	File.SetSpec(prefs->sounds_file);
-#else
 	File = prefs->sounds_file;
-#endif
 	if (File.Exists()) {
 		SoundManager::instance()->OpenSoundFile(File);
 	} else {
@@ -2470,21 +2315,6 @@ void WriteXML_Char(FILE *F, unsigned char c)
 		}
 	}
 }
-
-#ifdef mac
-void WriteXML_FSSpec(FILE *F, const char *Indent, int Index, FSSpec& Spec)
-{
-	fprintf(F,"%s<mac_fsspec\n",Indent);
-	fprintf(F,"%s  index=\"%d\"\n",Indent,Index);
-	fprintf(F,"%s  v_ref_num=\"%hd\"\n",Indent,Spec.vRefNum);
-	fprintf(F,"%s  par_id=\"%ld\"\n",Indent,Spec.parID);
-	fprintf(F,"%s",Indent);
-	WriteXML_PasString(F,"  name=\"",Spec.name,"\"\n");
-	fprintf(F,"%s/>\n",Indent);
-}
-#endif
-
-
 
 // LP additions: MML-like prefs stuff
 // These parsers are intended to work correctly on both Mac and SDL prefs files;
@@ -2709,18 +2539,14 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	}
 	else if (StringsEqual(Tag, "scmode_fill_the_screen"))
 	{
-#ifdef SDL
 		const SDL_version *version = SDL_Linked_Version();
 		if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
-#endif
 			return ReadBooleanValue(Value, graphics_preferences->screen_mode.fill_the_screen);
-#ifdef SDL
 		else
 		{
 			graphics_preferences->screen_mode.fill_the_screen = true;
 			return true;
 		}
-#endif
 	}
 	else if (StringsEqual(Tag,"scmode_bitdepth"))
 	{
@@ -2729,54 +2555,6 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	else if (StringsEqual(Tag,"scmode_gamma"))
 	{
 		return ReadInt16Value(Value,graphics_preferences->screen_mode.gamma_level);
-	}
-	else if (StringsEqual(Tag,"devspec_slot"))
-	{
-#ifdef mac
-		return ReadInt16Value(Value,graphics_preferences->device_spec.slot);
-#else
-		return true;
-#endif
-	}
-	else if (StringsEqual(Tag,"devspec_flags"))
-	{
-#ifdef mac
-		return ReadInt16Value(Value,graphics_preferences->device_spec.flags);
-#else
-		return true;
-#endif
-	}
-	else if (StringsEqual(Tag,"devspec_bitdepth"))
-	{
-#ifdef mac
-		return ReadInt16Value(Value,graphics_preferences->device_spec.bit_depth);
-#else
-		return true;
-#endif
-	}
-	else if (StringsEqual(Tag,"devspec_width"))
-	{
-#ifdef mac
-		return ReadInt16Value(Value,graphics_preferences->device_spec.width);
-#else
-		return true;
-#endif
-	}
-	else if (StringsEqual(Tag,"devspec_height"))
-	{
-#ifdef mac
-		return ReadInt16Value(Value,graphics_preferences->device_spec.height);
-#else
-		return true;
-#endif
-	}
-	else if (StringsEqual(Tag,"frequency"))
-	{
-#ifdef mac
-		return ReadFloatValue(Value,graphics_preferences->refresh_frequency);
-#else
-		return true;
-#endif
 	}
 	else if (StringsEqual(Tag,"ogl_flags"))
 	{
@@ -3284,10 +3062,7 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"netscript_file"))
 	{
-#ifdef SDL
 		DeUTF8_C(Value,strlen(Value),network_preferences->netscript_file,sizeof(network_preferences->netscript_file));
-#endif
-		return true;
 	}
 	else if (StringsEqual(Tag,"cheat_flags"))
         {
@@ -3333,103 +3108,7 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 static XML_NetworkPrefsParser NetworkPrefsParser;
 
 
-// Make this child-entity class a dummy class for SDL
-#ifdef mac
-
-class XML_MacFSSpecPrefsParser: public XML_ElementParser
-{
-	FSSpec Spec;
-	int32 Index;
-	// Four attributes: index, vRefNum, parID, name, which must be present
-	bool IsPresent[4];
-
-public:
-	bool Start();
-	bool HandleAttribute(const char *Tag, const char *Value);
-	bool AttributesDone();
-
-	XML_MacFSSpecPrefsParser(): XML_ElementParser("mac_fsspec") {}
-};
-
-bool XML_MacFSSpecPrefsParser::Start()
-{
-	// Initially, no attributes are seen
-	for (int k=0; k<4; k++)
-		IsPresent[k] = false;
-	
-	return true;
-}
-
-
-bool XML_MacFSSpecPrefsParser::HandleAttribute(const char *Tag, const char *Value)
-{
-	if (StringsEqual(Tag,"index"))
-	{
-		if (ReadInt32Value(Value,Index))
-		{
-			IsPresent[0] = true;
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"v_ref_num"))
-	{
-		if (ReadInt16Value(Value,Spec.vRefNum))
-		{
-			IsPresent[1] = true;
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"par_id"))
-	{
-		if (ReadInt32Value(Value,Spec.parID))
-		{
-			IsPresent[2] = true;
-			return true;
-		}
-		else
-			return false;
-	}
-	else if (StringsEqual(Tag,"name"))
-	{
-		// Copy in as Pascal string (Classic: length 31; Carbon: length ?)
-		DeUTF8_Pas(Value,strlen(Value),Spec.name,31);
-		
-		IsPresent[3] = true;
-		return true;
-	}
-	return true;
-}
-
-bool XML_MacFSSpecPrefsParser::AttributesDone()
-{
-	// Verify ...
-	// All four attributes (index, vRefNum, parID, and name) must be present
-	for (int k=0; k<4; k++)
-	{
-		if (!IsPresent[k])
-		{
-			AttribsMissing();
-			return false;
-		}
-	}
-
-	if(Index < kNumberOfFileSpecIndices && Index >= 0)
-		*(sFileSpecIndexToFileSpecPtr[Index]) = Spec;
-	
-	return true;
-}
-
-static XML_MacFSSpecPrefsParser MacFSSpecPrefsParser;
-
-#else
-
 static XML_ElementParser MacFSSpecPrefsParser("mac_fsspec");
-
-#endif
 
 
 class XML_EnvironmentPrefsParser: public XML_ElementParser
@@ -3444,40 +3123,26 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 {
 	if (StringsEqual(Tag,"map_file"))
 	{
-#ifdef SDL
-		//DeUTF8_C(Value,strlen(Value),environment_preferences->map_file,255);
 		strncpy(environment_preferences->map_file, Value, 255);
-#endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"physics_file"))
 	{
-#ifdef SDL
-//		DeUTF8_C(Value,strlen(Value),environment_preferences->physics_file,255);
 		strncpy(environment_preferences->physics_file, Value, 255);
-#endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"shapes_file"))
 	{
-#ifdef SDL
-//		DeUTF8_C(Value,strlen(Value),environment_preferences->shapes_file,255);
 		strncpy(environment_preferences->shapes_file, Value, 255);
-#endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"sounds_file"))
 	{
-#ifdef SDL
-//		DeUTF8_C(Value,strlen(Value),environment_preferences->sounds_file,255);
 		strncpy(environment_preferences->sounds_file, Value, 255);
-#endif
 		return true;
 	}
 	else if (StringsEqual(Tag,"theme_dir"))
 	{
-#ifdef SDL
-//		DeUTF8_C(Value,strlen(Value),environment_preferences->theme_dir,255);
 		strncpy(environment_preferences->theme_dir, Value, 255);
 #if defined(__APPLE__) && defined(__MACH__)
 		extern char *bundle_name; // SDLMain.m
@@ -3487,7 +3152,6 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 			strlcat(temporary, environment_preferences->theme_dir + 15, sizeof(temporary));
 			strlcpy(environment_preferences->theme_dir, temporary, 255);			
 		}
-#endif
 #endif
 		return true;
 	}
