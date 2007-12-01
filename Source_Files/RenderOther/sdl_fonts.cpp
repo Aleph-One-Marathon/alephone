@@ -45,6 +45,7 @@ using std::map;
 #ifdef HAVE_SDL_TTF
 #include <boost/tuple/tuple_comparison.hpp>
 #include "DejaVuCondensedSansBold.h"
+#include "preferences.h" // smooth_font
 #endif
 
 // Global variables
@@ -263,7 +264,10 @@ ttf_and_sdl_font_info *load_ttf_and_sdl_font(const DualFontSpec& spec)
 		
 		TTF_SetFontStyle(font, ttf_style);
 #ifdef TTF_HINTING_LIGHT
-		TTF_SetFontHinting(font, TTF_HINTING_LIGHT);
+		if (environment_preferences->smooth_text)
+			TTF_SetFontHinting(font, TTF_HINTING_LIGHT);
+		else
+			TTF_SetFontHinting(font, TTF_HINTING_MONO);
 #endif
 		
 		ttf_font_key_t key(spec.path, loaded_style, spec.ttf_size);

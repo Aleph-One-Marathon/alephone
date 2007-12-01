@@ -1390,8 +1390,14 @@ static void environment_dialog(void *arg)
 	w_env_select *sounds_w = new w_env_select("", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
 	placer->add(new label_maker("Sounds", sounds_w, d), true);
 
+	placer->add(new w_spacer, true);
+	placer->dual_add(new w_static_text("Theme"), d);
+
 	w_env_select *theme_w = new w_env_select("", environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
-	placer->add(new label_maker("Themes", theme_w, d), true);
+	placer->add(new label_maker("Theme", theme_w, d), true);
+
+	w_toggle *smooth_text_w = new w_toggle("", environment_preferences->smooth_text);
+	placer->add(new label_maker("Smooth Text", smooth_text_w, d), true);
 
 	placer->add(new w_spacer, true);
 
@@ -1445,6 +1451,15 @@ static void environment_dialog(void *arg)
 			strcpy(environment_preferences->theme_dir, path);
 			changed = theme_changed = true;
 		}
+
+#ifdef HAVE_SDL_TTF
+		bool smooth_text = smooth_text_w->get_selection() != 0;
+		if (smooth_text != environment_preferences->smooth_text)
+		{
+			environment_preferences->smooth_text = smooth_text;
+			theme_changed = true;
+		}
+#endif
 
 		if (changed)
 			load_environment_from_preferences();
@@ -1838,6 +1853,7 @@ void write_preferences(
 	fprintf(F,"  group_by_directory=\"%s\"\n",BoolString(environment_preferences->group_by_directory));
 	fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
 	fprintf(F,"  non_bungie_warning=\"%s\"\n",BoolString(environment_preferences->non_bungie_warning));
+	fprintf(F,"  smooth_text=\"%s\"\n", BoolString(environment_preferences->smooth_text));
 	fprintf(F,">\n");
 	fprintf(F,"</environment>\n\n");
 			
@@ -2031,6 +2047,7 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->group_by_directory = true;
 	preferences->reduce_singletons = false;
 	preferences->non_bungie_warning = true;
+	preferences->smooth_text = true;
 }
 
 
@@ -3196,6 +3213,10 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	else if (StringsEqual(Tag,"non_bungie_warning"))
 	{
 		return ReadBooleanValue(Value,environment_preferences->non_bungie_warning);
+	}
+	else if (StringsEqual(Tag,"smooth_text"))
+	{
+		return ReadBooleanValue(Value, environment_preferences->smooth_text);
 	}
 	return true;
 }

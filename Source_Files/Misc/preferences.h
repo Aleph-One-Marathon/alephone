@@ -231,6 +231,9 @@ struct environment_preferences_data
 
 	// ZZZ: Hmm and these aren't even that
 	bool non_bungie_warning;	// if not, then don't pop up warning about non-Bungie content
+
+	// ghs: are themes part of the environment? they are now
+	bool smooth_text;
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

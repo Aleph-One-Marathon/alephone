@@ -58,6 +58,7 @@ Dec 17, 2000 (Loren Petrich):
 
 #ifdef HAVE_SDL_TTF
 #include <SDL_ttf.h>
+#include "preferences.h"
 #endif
 
 #define clutSCREEN_COLORS 130
@@ -661,12 +662,18 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 	SDL_GetRGB(pixel, s->format, &c.r, &c.g, &c.b);
 	SDL_Surface *text_surface = 0;
 	if (utf8) 
-		text_surface = TTF_RenderUTF8_Blended(font, text, c);	
+		if (environment_preferences->smooth_text)
+			text_surface = TTF_RenderUTF8_Blended(font, text, c);	
+		else
+			text_surface = TTF_RenderUTF8_Solid(font, text, c);
 	else
 	{
 		uint16 *temp = new uint16[strlen(text) + 1];
 		mac_roman_to_unicode(text, temp);
-		text_surface = TTF_RenderUNICODE_Blended(font, temp, c);
+		if (environment_preferences->smooth_text)
+			text_surface = TTF_RenderUNICODE_Blended(font, temp, c);
+		else
+			text_surface = TTF_RenderUNICODE_Solid(font, temp, c);
 		delete[] temp;
 	}
 	if (!text_surface) return 0;
