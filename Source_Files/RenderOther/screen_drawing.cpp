@@ -373,22 +373,27 @@ uint16 text_width(const char *text, const sdl_font_info *font, uint16 style)
 }
 
 #ifdef HAVE_SDL_TTF
-static uint16 text_width(const char *text, TTF_Font *font, uint16)
+static uint16 text_width(const char *text, TTF_Font *font, uint16, bool utf8)
 {
 	int width = 0;
-	uint16 *temp = new uint16[strlen(text) + 1];
-	mac_roman_to_unicode(text, temp);
-	TTF_SizeUNICODE(font, temp, &width, 0);
-	delete temp;
+	if (utf8)
+		TTF_SizeUTF8(font, text, &width, 0);
+	else
+	{
+		uint16 *temp = new uint16[strlen(text) + 1];
+		mac_roman_to_unicode(text, temp);
+		TTF_SizeUNICODE(font, temp, &width, 0);
+		delete[] temp;
+	}
 	return width;
 }
 #endif
 
-uint16 text_width(const char* text, ttf_and_sdl_font_info *font, uint16 style)
+uint16 text_width(const char* text, ttf_and_sdl_font_info *font, uint16 style, bool utf8)
 {
 #ifdef HAVE_SDL_TTF
 	if (font->is_ttf_font())
-		return text_width(text, font->get_ttf_font_info(), style);
+		return text_width(text, font->get_ttf_font_info(), style, utf8);
 	else
 #endif
 		return text_width(text, font->get_sdl_font_info(), style);
@@ -405,22 +410,22 @@ uint16 text_width(const char *text, size_t length, const sdl_font_info *font, ui
 }
 
 #ifdef HAVE_SDL_TTF
-static uint16 text_width(const char *text, size_t length, TTF_Font *font, uint16 style)
+static uint16 text_width(const char *text, size_t length, TTF_Font *font, uint16 style, bool utf8)
 {
 	char *s = strdup(text);
 	if (strlen(s) > length)
 		s[length] = '\0';
-	int w = text_width(s, font, style);
+	int w = text_width(s, font, style, utf8);
 	free(s);
 	return w;
 }
 #endif
 
-uint16 text_width(const char *text, size_t length, ttf_and_sdl_font_info *font, uint16 style)
+uint16 text_width(const char *text, size_t length, ttf_and_sdl_font_info *font, uint16 style, bool utf8)
 {
 #ifdef HAVE_SDL_TTF
 	if (font->is_ttf_font())
-		return text_width(text, length, font->get_ttf_font_info(), style);
+		return text_width(text, length, font->get_ttf_font_info(), style, utf8);
 	else
 #endif
 		return text_width(text, length, font->get_sdl_font_info(), style);
@@ -447,7 +452,10 @@ static int trunc_text(const char *text, int max_width, TTF_Font *font, uint16 st
 {
 	int width;
 	uint16 *temp = new uint16[strlen(text) + 1];
-	mac_roman_to_unicode(text, temp);
+//	if (utf8)
+//		utf8_to_unicode(text, temp);
+//	else
+		mac_roman_to_unicode(text, temp);
 	TTF_SizeUNICODE(font, temp, &width, 0);
 	if (width < max_width) return strlen(text);
 
@@ -629,7 +637,7 @@ int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uin
 }
 
 #ifdef HAVE_SDL_TTF
-static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, TTF_Font *font, uint16 style)
+static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, TTF_Font *font, uint16 style, bool utf8)
 {
 	if (!font) 
 	{
@@ -651,10 +659,16 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 
 	SDL_Color c;
 	SDL_GetRGB(pixel, s->format, &c.r, &c.g, &c.b);
-	uint16 *temp = new uint16[strlen(text) + 1];
-	mac_roman_to_unicode(text, temp);
-	SDL_Surface *text_surface = TTF_RenderUNICODE_Blended(font, temp, c);
-	delete temp;
+	SDL_Surface *text_surface = 0;
+	if (utf8) 
+		text_surface = TTF_RenderUTF8_Blended(font, text, c);	
+	else
+	{
+		uint16 *temp = new uint16[strlen(text) + 1];
+		mac_roman_to_unicode(text, temp);
+		text_surface = TTF_RenderUNICODE_Blended(font, temp, c);
+		delete[] temp;
+	}
 	if (!text_surface) return 0;
 	
 	SDL_Rect dst_rect;
@@ -686,7 +700,7 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 		SDL_BlitSurface(text_surface, NULL, s, &dst_rect);
 
 	if (s == SDL_GetVideoSurface())
-		SDL_UpdateRect(s, x, y - TTF_FontAscent(font), text_width(text, font, style), TTF_FontHeight(font));
+		SDL_UpdateRect(s, x, y - TTF_FontAscent(font), text_width(text, font, style, utf8), TTF_FontHeight(font));
 
 	int width = text_surface->w;
 	SDL_FreeSurface(text_surface);
@@ -695,11 +709,11 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 }
 #endif
 
-int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, ttf_and_sdl_font_info *font, uint16 style)
+int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, ttf_and_sdl_font_info *font, uint16 style, bool utf8)
 {
 #ifdef HAVE_SDL_TTF
 	if (font->is_ttf_font())
-		return draw_text(s, text, length, x, y, pixel, font->get_ttf_font_info(), style);
+		return draw_text(s, text, length, x, y, pixel, font->get_ttf_font_info(), style, utf8);
 	else
 #endif
 		return draw_text(s, text, length, x, y, pixel, font->get_sdl_font_info(), style);

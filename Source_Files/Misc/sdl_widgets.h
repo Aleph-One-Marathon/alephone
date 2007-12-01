@@ -394,6 +394,8 @@ public:
 	// removes need to subclass this class (or its subclasses!) just to add selection-changed behavior.
 	void	set_selection_changed_callback(selection_changed_callback_t proc) { selection_changed_callback = proc; }
 
+	void labels_are_utf8(bool _utf8) { utf8 = _utf8; }
+
 protected:
 	virtual void selection_changed(void);
 
@@ -414,6 +416,8 @@ protected:
 
 	// ZZZ: ripped this out for sharing
 	uint16				get_largest_label_width();
+
+	bool utf8; // labels are UTF-8
 };
 
 

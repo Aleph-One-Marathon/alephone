@@ -165,12 +165,12 @@ class sdl_font_info;
 class ttf_and_sdl_font_info;
 struct world_point2d;
 extern int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style);
-extern int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, ttf_and_sdl_font_info *font, uint16 style);
+extern int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, ttf_and_sdl_font_info *font, uint16 style, bool utf8 = false);
 extern int8 char_width(uint8 c, const sdl_font_info *font, uint16 style);
 extern uint16 text_width(const char *text, const sdl_font_info *font, uint16 style);
-extern uint16 text_width(const char *text, ttf_and_sdl_font_info *font, uint16 style);
+extern uint16 text_width(const char *text, ttf_and_sdl_font_info *font, uint16 style, bool utf8 = false);
 extern uint16 text_width(const char *text, size_t length, const sdl_font_info *font, uint16 style);
-extern uint16 text_width(const char *text, size_t length, ttf_and_sdl_font_info *font, uint16 style);
+extern uint16 text_width(const char *text, size_t length, ttf_and_sdl_font_info *font, uint16 style, bool utf8 = false);
 extern int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint16 style);
 extern int trunc_text(const char *text, int max_width, ttf_and_sdl_font_info *font, uint16 style);
 extern void draw_polygon(SDL_Surface *s, const world_point2d *vertex_array, int vertex_count, uint32 pixel);
@@ -182,9 +182,9 @@ static inline int draw_text(SDL_Surface *s, const char *text, int x, int y, uint
 	return draw_text(s, text, strlen(text), x, y, pixel, font, style);
 }
 
-static inline int draw_text(SDL_Surface *s, const char *text, int x, int y, uint32 pixel, ttf_and_sdl_font_info *font, uint16 style)
+static inline int draw_text(SDL_Surface *s, const char *text, int x, int y, uint32 pixel, ttf_and_sdl_font_info *font, uint16 style, bool utf8 = false)
 {
-	return draw_text(s, text, strlen(text), x, y, pixel, font, style);
+	return draw_text(s, text, strlen(text), x, y, pixel, font, style, utf8);
 }
 #endif
 

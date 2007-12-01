@@ -515,7 +515,7 @@ void w_select_button::place(const SDL_Rect &r, placement_flags flags)
 
 static const char* sNoValidOptionsString = "(no valid options)"; // XXX should be moved outside compiled code e.g. to MML
 
-w_select::w_select(const char *n, size_t s, const char **l) : widget(LABEL_FONT), name(n), labels(l), we_own_labels(false), selection(s), selection_changed_callback(NULL)//, center_entire_widget(false)
+w_select::w_select(const char *n, size_t s, const char **l) : widget(LABEL_FONT), name(n), labels(l), we_own_labels(false), selection(s), selection_changed_callback(NULL), utf8(false)
 {
 	num_labels = 0;
         if(labels) {
@@ -565,7 +565,7 @@ int w_select::layout(void)
 
     int theResult = widget::layout();
     
-    uint16 name_width = text_width(name, font, style);
+    uint16 name_width = text_width(name, font, style, utf8);
 
 	uint16 max_label_width = get_largest_label_width();
         
@@ -598,14 +598,14 @@ void w_select::draw(SDL_Surface *s) const
 	// Name (ZZZ: different color for disabled)
     int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
 
-	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
+    draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
 
 	// Selection (ZZZ: different color for disabled)
 	const char *str = (num_labels > 0 ? labels[selection] : sNoValidOptionsString);
 
     theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
 
-    draw_text(s, str, rect.x + label_x, y, get_dialog_color(theColorToUse), font, style);
+    draw_text(s, str, rect.x + label_x, y, get_dialog_color(theColorToUse), font, style, utf8);
 
 	// Cursor
 	if (active) {
@@ -753,9 +753,17 @@ uint16 w_select::get_largest_label_width() {
  *  On-off toggle
  */
 
+#ifdef HAVE_SDL_TTF
+const char *w_toggle::onoff_labels[] = {"\342\230\220", "\342\230\222", NULL };
+#else
 const char *w_toggle::onoff_labels[] = {"Off", "On", NULL};
+#endif
 
-w_toggle::w_toggle(const char *name, bool selection, const char **labels) : w_select(name, selection, labels) {}
+w_toggle::w_toggle(const char *name, bool selection, const char **labels) : w_select(name, selection, labels) {
+#ifdef HAVE_SDL_TTF
+	labels_are_utf8(true);
+#endif
+}
 
 
 /*
