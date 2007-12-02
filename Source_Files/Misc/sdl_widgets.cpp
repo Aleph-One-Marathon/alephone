@@ -783,6 +783,7 @@ void w_toggle::draw(SDL_Surface *s) const
     // ghs: disgusting temporary hack to draw larger checkboxes
     if (labels == onoff_labels)
     {
+	    theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
 	    static ttf_and_sdl_font_info* checkbox_font = 0;
 	    if (!checkbox_font)
 	    {
