@@ -203,7 +203,13 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	MapFile.ToDirectory(MapParentDir);
 	
 	// Get rid of the previous level script
-	LevelScripts.clear();
+	// ghs: unless it's the first time, in which case we would be clearing
+	// any external level scripts, so don't
+	static bool FirstTime = true;
+	if (FirstTime)
+		FirstTime = false;
+	else
+		LevelScripts.clear();
 	
 	// Set these to their defaults before trying to change them
 	EndScreenIndex = 99;
@@ -478,6 +484,7 @@ bool XML_LSCommandParser::Start()
 {
 	ObjectWasFound = false;
 	Color_SetArray(Cmd.Colors, 2);
+	return true;
 }
 
 
@@ -534,10 +541,10 @@ bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 bool XML_LSCommandParser::End()
 {
 	if (!ObjectWasFound) return false;
+
 	
 	assert(CurrScriptPtr);
 	CurrScriptPtr->Commands.push_back(Cmd);
-	
 	return true;
 }
 
@@ -685,6 +692,7 @@ static XML_SpecialLevelScriptParser
 	DefaultScriptParser("default",LevelScriptHeader::Default),
 	RestoreScriptParser("restore",LevelScriptHeader::Restore);
 
+static  XML_SpecialLevelScriptParser ExternalDefaultScriptParser("default_levels", LevelScriptHeader::Default);
 
 // For setting up end-screen control
 class XML_EndScreenParser: public XML_ElementParser
@@ -735,6 +743,17 @@ XML_ElementParser *DefaultLevelScript_GetParser()
 
 	return &DefaultScriptParser;
 }
+
+XML_ElementParser *ExternalDefaultLevelScript_GetParser()
+{
+	ExternalDefaultScriptParser.AddChild(&LoadScreenParser);
+	LoadScreenParser.AddChild(Color_GetParser());
+	ExternalDefaultScriptParser.AddChild(&MusicParser);
+	ExternalDefaultScriptParser.AddChild(&RandomOrderParser);
+
+	return &ExternalDefaultScriptParser;
+}
+
 XML_ElementParser *RestoreLevelScript_GetParser()
 {
 	AddScriptCommands(RestoreScriptParser);

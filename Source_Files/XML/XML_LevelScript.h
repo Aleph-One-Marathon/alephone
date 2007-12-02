@@ -64,4 +64,6 @@ FileSpecifier *GetLevelMovie(float& PlaybackSize);
 extern short EndScreenIndex;
 extern short NumEndScreens;
 
+XML_ElementParser *ExternalDefaultLevelScript_GetParser();
+
 #endif
