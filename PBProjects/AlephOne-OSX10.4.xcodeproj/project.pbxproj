@@ -2394,7 +2394,7 @@
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
 				COPY_PHASE_STRIP = NO;
-				DEPLOYMENT_POSTPROCESSING = YES;
+				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
 					/System/Library/Frameworks,
@@ -2471,8 +2471,8 @@
 				);
 				PRODUCT_NAME = AlephOne;
 				SECTORDER_FLAGS = "";
-				STRIP_INSTALLED_PRODUCT = YES;
-				STRIP_STYLE = debugging;
+				STRIP_INSTALLED_PRODUCT = NO;
+				STRIP_STYLE = all;
 				WARNING_CFLAGS = "";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
