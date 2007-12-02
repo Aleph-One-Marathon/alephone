@@ -962,7 +962,7 @@ void w_text_entry::draw(SDL_Surface *s) const
   
   // Cursor
   if (active) {
-    SDL_Rect r = {x + width - 1, rect.y, 1, rect.h};
+	  SDL_Rect r = {x + width - (width ? 1 : 0), rect.y, 1, rect.h};
     SDL_FillRect(s, &r, get_dialog_color(TEXT_ENTRY_CURSOR_COLOR));
   }
 }
