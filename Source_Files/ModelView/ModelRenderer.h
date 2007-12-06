@@ -48,11 +48,21 @@ struct ModelRenderShader
 	ModelRenderShader() {obj_clear(*this);}
 };
 
+struct IndexedCentroidDepth
+{
+	// sort from farthest to nearest
+	bool operator<(const IndexedCentroidDepth& other) const {
+		return depth > other.depth;
+	}
+
+	GLfloat depth;
+	unsigned short index;
+};
+
 class ModelRenderer
 {
 	// Kept here to avoid unnecessary re-allocation
-	vector<GLfloat> CentroidDepths;
-	vector<unsigned short> Indices;
+	vector<IndexedCentroidDepth> IndexedCentroidDepths;
 	vector<GLushort> SortedVertIndices;
 	vector<GLfloat> ExtLightColors;
 	
