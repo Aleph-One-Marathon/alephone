@@ -1473,43 +1473,23 @@ void OGL_ResetTextures()
 }
 
 
-void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT)
+void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 {
 	// A lot of this is copies of TextureManager member code
 	
-	// Texture-buffer management
-	GLuint *Buffer;
-	vector<GLuint> ImageBuffer;
-	vector<GLuint> ShrunkBuffer;
+	ImageDescriptorManager Image;
+	Image.set(&SkinImage);
 	
-	int TxtrWidth = Image.GetWidth();
-	int TxtrHeight = Image.GetHeight();
-	Buffer = (GLuint*)Image.GetPixelBasePtr();
+	int TxtrWidth = Image.get()->GetWidth();
+	int TxtrHeight = Image.get()->GetHeight();
 	
 	bool IsInfravision = (CLUT == INFRAVISION_BITMAP_SET);
 	bool IsSilhouette = (CLUT == SILHOUETTE_BITMAP_SET);
 	
-	// Use special texture buffer because the originals may be needed for "normal" textures
-	int ImageSize = Image.GetNumPixels();
-	if (IsInfravision || IsSilhouette)
-	{
-		ImageBuffer.resize(ImageSize);
-		objlist_copy(&ImageBuffer[0],Buffer,ImageSize);
-		Buffer = (GLuint*)&ImageBuffer[0];
-	}
-	
 	if (IsInfravision)
-		FindInfravisionVersionRGBA(Collection,ImageSize,(uint32*)Buffer);//AS added cast for Darwin compileability
-	
-	if (IsSilhouette)
-	{
-		for (int k=0; k<ImageSize; k++)
-		{
-			// Make the color white, but keep the opacity
-			uint8 *PxlPtr = (uint8 *)((uint32*)Buffer + k);
-			PxlPtr[0] = PxlPtr[1] = PxlPtr[2] = 0xff;
-		}
-	}
+		FindInfravisionVersion(Collection, Image);
+	else if (IsSilhouette)
+		FindSilhouetteVersion(Image);
 	
 	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[OGL_Txtr_Inhabitant];
 
@@ -1526,41 +1506,135 @@ void LoadModelSkin(ImageDescriptor& Image, short Collection, short CLUT)
 		LoadedHeight >>= 1;
 	}
 	
-	if (LoadedWidth != TxtrWidth || LoadedHeight != TxtrHeight)
+	while (Image.get()->GetWidth() > LoadedWidth || Image.get()->GetHeight() > LoadedHeight)
 	{
-		int NumPixels = int(LoadedWidth)*int(LoadedHeight);
-		ShrunkBuffer.resize(NumPixels);
-		gluScaleImage(GL_RGBA, TxtrWidth, TxtrHeight, GL_UNSIGNED_BYTE, Buffer,
-			LoadedWidth, LoadedHeight, GL_UNSIGNED_BYTE, &ShrunkBuffer[0]);
-		
-		Buffer = &ShrunkBuffer[0];
+		if (!Image.edit()->Minify()) break;
 	}
 
+	bool mipmapsLoaded = false;
+
 	// Load the texture
-	switch(TxtrTypeInfo.FarFilter)
+	GLenum internalFormat = TxtrTypeInfo.ColorFormat;
+	if (Image.get()->GetFormat() == ImageDescriptor::RGBA8)
 	{
-	case GL_NEAREST:
-	case GL_LINEAR:
-		glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-			0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
-		break;
-	case GL_NEAREST_MIPMAP_NEAREST:
-	case GL_LINEAR_MIPMAP_NEAREST:
-	case GL_NEAREST_MIPMAP_LINEAR:
-	case GL_LINEAR_MIPMAP_LINEAR:
-		gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
-			GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
-		break;
-	
-	default:
-		// Shouldn't happen
+		switch(TxtrTypeInfo.FarFilter)
+		{
+		case GL_NEAREST:
+		case GL_LINEAR:
+			glTexImage2D(GL_TEXTURE_2D, 0, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
+				     0, GL_RGBA, GL_UNSIGNED_BYTE, Image.get()->GetBuffer());
+			break;
+		case GL_NEAREST_MIPMAP_NEAREST:
+		case GL_LINEAR_MIPMAP_NEAREST:
+		case GL_NEAREST_MIPMAP_LINEAR:
+		case GL_LINEAR_MIPMAP_LINEAR:
+			if (Image.get()->GetMipMapCount() > 1) 
+			{
+#ifdef GL_SGIS_generate_mipmap
+				if (useSGISMipmaps) {
+					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_FALSE);
+				}
+#endif
+				int i = 0;
+				for (i = 0; i < Image.get()->GetMipMapCount(); i++) 
+				{
+					glTexImage2D(GL_TEXTURE_2D, i, internalFormat, max(1, Image.get()->GetWidth() >> i), max(1, Image.get()->GetHeight() >> i), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image.get()->GetMipMapPtr(i));
+				}
+				mipmapsLoaded = true;
+			}
+			else
+			{
+#ifdef GL_SGIS_generate_mipmap
+				if (useSGISMipmaps)
+				{
+					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+					glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, GL_RGBA, GL_UNSIGNED_BYTE, Image.get()->GetBuffer());
+				}
+				else
+#endif
+				{
+					gluBuild2DMipmaps(GL_TEXTURE_2D, TxtrTypeInfo.ColorFormat, LoadedWidth, LoadedHeight,
+							  GL_RGBA, GL_UNSIGNED_BYTE, Image.get()->GetBuffer());
+				}
+				mipmapsLoaded = true;
+			}
+			break;
+			
+		default:
+			// Shouldn't happen
+			assert(false);
+		}
+	}
+	else if (Image.get()->GetFormat() == ImageDescriptor::DXTC1 ||
+		 Image.get()->GetFormat() == ImageDescriptor::DXTC3 ||
+		 Image.get()->GetFormat() == ImageDescriptor::DXTC5)
+	{
+#if defined (GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
+		if (Image.get()->GetFormat() == ImageDescriptor::DXTC1)
+			internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		else if (Image.get()->GetFormat() == ImageDescriptor::DXTC3)
+			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		else if (Image.get()->GetFormat() == ImageDescriptor::DXTC5)
+			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+
+		switch (TxtrTypeInfo.FarFilter)
+		{
+		case GL_NEAREST:
+		case GL_LINEAR:
+			glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
+			break;
+		case GL_NEAREST_MIPMAP_NEAREST:
+		case GL_LINEAR_MIPMAP_NEAREST:
+		case GL_NEAREST_MIPMAP_LINEAR:
+		case GL_LINEAR_MIPMAP_LINEAR:
+			if (Image.get()->GetMipMapCount() > 1)
+			{
+#ifdef GL_SGIS_generate_mipmap
+				if (useSGISMipmaps)
+				{
+					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_FALSE);
+				}
+#endif
+				int i = 0;
+				for (i = 0; i < Image.get()->GetMipMapCount(); i++)
+				{
+					glCompressedTexImage2DARB(GL_TEXTURE_2D, i, internalFormat, max(1, Image.get()->GetWidth() >> i), max(1, Image.get()->GetHeight() >> i), 0, Image.get()->GetMipMapSize(i), Image.get()->GetMipMapPtr(i));
+				}
+				mipmapsLoaded = true;
+			}
+			else
+			{
+#ifdef GL_SGIS_generate_mipmap
+				if (useSGISMipmaps) 
+				{
+					glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP_SGIS, GL_TRUE);
+					mipmapsLoaded = true;
+				}
+#endif
+				glCompressedTexImage2DARB(GL_TEXTURE_2D, 0, internalFormat, Image.get()->GetWidth(), Image.get()->GetHeight(), 0, Image.get()->GetMipMapSize(0), Image.get()->GetBuffer());
+			}
+			break;
+
+		default:
+			// Shouldn't happen
+			assert(false);
+		}
+#else
 		assert(false);
+#endif
 	}
 	
 	// Set texture-mapping features
 	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, TxtrTypeInfo.NearFilter);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, TxtrTypeInfo.FarFilter);
+	if ((TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_NEAREST || TxtrTypeInfo.FarFilter == GL_NEAREST_MIPMAP_LINEAR || TxtrTypeInfo.FarFilter == GL_LINEAR_MIPMAP_LINEAR) && !mipmapsLoaded)
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	}
+	else
+	{
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, TxtrTypeInfo.FarFilter);
+	}
 
 	
 	// Like sprites, model textures have both horizontal and vertical limits
