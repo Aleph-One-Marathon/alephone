@@ -25,6 +25,8 @@
 
 #include "cseries.h"
 #include "Crosshairs.h"
+#include "screen_drawing.h"
+#include "world.h" // for struct world_point2d :(
 
 
 /*
@@ -62,23 +64,91 @@ bool Crosshairs_Render(SDL_Surface *s)
 	// Get coordinates
 	int xcen = s->w / 2 - 1, ycen = s->h / 2 - 1;
 
-	// Left
-	SDL_Rect r = {xcen - Crosshairs.FromCenter - Crosshairs.Length, ycen - Crosshairs.Thickness / 2, Crosshairs.Length, Crosshairs.Thickness};
-	SDL_FillRect(s, &r, pixel);
+	if (Crosshairs.Shape == CHShape_RealCrosshairs)
+	{
 
-	// Right
-	r.x = xcen + Crosshairs.FromCenter;
-	SDL_FillRect(s, &r, pixel);
+		// Left
+		SDL_Rect r = {xcen - Crosshairs.FromCenter - Crosshairs.Length, ycen - Crosshairs.Thickness / 2, Crosshairs.Length, Crosshairs.Thickness};
+		SDL_FillRect(s, &r, pixel);
+		
+		// Right
+		r.x = xcen + Crosshairs.FromCenter;
+		SDL_FillRect(s, &r, pixel);
+		
+		// Top
+		r.x = xcen - Crosshairs.Thickness / 2;
+		r.y = ycen - Crosshairs.FromCenter - Crosshairs.Length;
+		r.w = Crosshairs.Thickness;
+		r.h = Crosshairs.Length;
+		SDL_FillRect(s, &r, pixel);
+		
+		// Bottom
+		r.y = ycen + Crosshairs.FromCenter;
+		SDL_FillRect(s, &r, pixel);
+	}
+	else if (Crosshairs.Shape == CHShape_Circle)
+	{
 
-	// Top
-	r.x = xcen - Crosshairs.Thickness / 2;
-	r.y = ycen - Crosshairs.FromCenter - Crosshairs.Length;
-	r.w = Crosshairs.Thickness;
-	r.h = Crosshairs.Length;
-	SDL_FillRect(s, &r, pixel);
+		// This will really be an octagon, for OpenGL-rendering convenience
+		
+		// Precalculate the line endpoints, for convenience
 
-	// Bottom
-	r.y = ycen + Crosshairs.FromCenter;
-	SDL_FillRect(s, &r, pixel);
+		short octa_points[2][6];
+		short len;
+
+		len = Crosshairs.Length;
+		octa_points[0][0] = xcen - len;
+		octa_points[0][5] = xcen + len;
+		octa_points[1][0] = ycen - len;
+		octa_points[1][5] = ycen + len;
+
+		len = len / 2;
+		octa_points[0][1] = xcen - len;
+		octa_points[0][4] = xcen + len;
+		octa_points[1][1] = ycen - len;
+		octa_points[1][4] = ycen + len;
+
+		len = std::min(len, Crosshairs.FromCenter);
+		octa_points[0][2] = xcen - len;
+		octa_points[0][3] = xcen + len;
+		octa_points[1][2] = ycen - len;
+		octa_points[1][3] = ycen + len;
+
+		// We need to do 12 line segments, so we do them in 2*2*3 fashion
+		for (int ix = 0; ix < 2; ix++)
+		{
+			int ixi = (ix > 0) ? 5 : 0;
+			int ixid = (ix > 0) ? -1 : 1;
+			for (int iy = 0; iy < 2; iy++)
+			{
+				int iyi = (iy > 0) ? 5 : 0;
+				int iyid = (iy > 0) ? -1 : 1;
+
+				world_point2d p1;
+				world_point2d p2;
+
+				// Vertical
+				p1.x = octa_points[0][ixi];
+				p1.y = octa_points[1][iyi + 2 * iyid];
+				p2.x = octa_points[0][ixi];
+				p2.y = octa_points[1][iyi+iyid];
+
+				draw_line(s, &p1, &p2, pixel, Crosshairs.Thickness);
+
+				// Diagonal
+				p1 = p2;
+				p2.x = octa_points[0][ixi+ixid];
+				p2.y = octa_points[1][iyi];
+				draw_line(s, &p1, &p2, pixel, Crosshairs.Thickness);
+
+				// Horizontal
+				p1 = p2;
+				p2.x = octa_points[0][ixi + 2*ixid];
+				p2.y = octa_points[1][iyi];
+				draw_line(s, &p1, &p2, pixel, Crosshairs.Thickness);
+			}
+		}
+	}
+
 	return true;
 }
