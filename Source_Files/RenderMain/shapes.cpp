@@ -85,6 +85,7 @@ Jan 17, 2001 (Loren Petrich):
 
 #include "cseries.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -108,6 +109,8 @@ Jan 17, 2001 (Loren Petrich):
 
 #include "Packing.h"
 #include "SW_Texture_Extras.h"
+
+#include <SDL/SDL_rwops.h>
 
 #ifdef env68k
 #pragma segment shell
@@ -486,7 +489,7 @@ static void load_collection_definition(collection_definition* cd, SDL_RWops *p)
 	cd->bitmap_offset_table_offset = SDL_ReadBE32(p);
 	cd->pixels_to_world = SDL_ReadBE16(p);
 	SDL_ReadBE32(p); // skip size
-	SDL_RWseek(p, 253 * sizeof(int16), RW_SEEK_CUR); // unused
+	SDL_RWseek(p, 253 * sizeof(int16), SEEK_CUR); // unused
 
 	// resize members
 	cd->color_tables.resize(cd->clut_count * cd->color_count);
@@ -834,7 +837,7 @@ bool load_shapes_patch(SDL_RWops *p)
 
 					} else {
 						// ignore
-						SDL_RWseek(p, 544, RW_SEEK_CUR);
+						SDL_RWseek(p, 544, SEEK_CUR);
 					}
 				} 
 				else if (tag == HLSH_TAG)
@@ -851,7 +854,7 @@ bool load_shapes_patch(SDL_RWops *p)
 					}
 					else
 					{
-						SDL_RWseek(p, size, RW_SEEK_CUR);
+						SDL_RWseek(p, size, SEEK_CUR);
 					}
 				}
 				else if (tag == LLSH_TAG)
@@ -864,7 +867,7 @@ bool load_shapes_patch(SDL_RWops *p)
 					}
 					else
 					{
-						SDL_RWseek(p, 36, RW_SEEK_CUR);
+						SDL_RWseek(p, 36, SEEK_CUR);
 					}
 				} 
 				else if (tag == BMAP_TAG)
@@ -879,7 +882,7 @@ bool load_shapes_patch(SDL_RWops *p)
 					}
 					else
 					{
-						SDL_RWseek(p, size, RW_SEEK_CUR);
+						SDL_RWseek(p, size, SEEK_CUR);
 					}
 				}
 				else if (tag == CTAB_TAG)
@@ -892,7 +895,7 @@ bool load_shapes_patch(SDL_RWops *p)
 					}
 					else
 					{
-						SDL_RWseek(p, cd->color_count * sizeof(rgb_color_value), RW_SEEK_CUR);
+						SDL_RWseek(p, cd->color_count * sizeof(rgb_color_value), SEEK_CUR);
 					}
 				}
 				else
