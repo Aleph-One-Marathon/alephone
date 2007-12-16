@@ -199,17 +199,28 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
     }
 }
 
+#include <unistd.h>
+#include <sys/types.h>
+#include <pwd.h>
 
 static void
 InitializeLogging() {
     assert(sOutputFile == NULL);
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
     const char *home = getenv("HOME");
+    if (home == NULL) {
+        struct passwd *pw = getpwuid (getuid ());
+        if (pw != NULL) home = pw->pw_dir;
+    }
     if (home)
     {
-	    string filename = home;
-	    filename += "/Library/Logs/Aleph One Log.txt";
-	    sOutputFile = fopen(filename.c_str(), "a");
+        string filename = home;
+#if defined(__APPLE__) && defined(__MACH__)
+        filename += "/Library/Logs/Aleph One Log.txt";
+#else
+        filename += "/.alephone/Aleph One Log.txt";
+#endif
+        sOutputFile = fopen(filename.c_str(), "a");
     }
     else
 #endif
