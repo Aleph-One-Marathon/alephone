@@ -802,10 +802,10 @@ bool load_shapes_patch(SDL_RWops *p)
 {
 	int32 collection_index = NONE;
 	int32 start = SDL_RWtell(p);
-	SDL_RWseek(p, 0, RW_SEEK_END);
+	SDL_RWseek(p, 0, SEEK_END);
 	int32 end = SDL_RWtell(p);
 
-	SDL_RWseek(p, start, RW_SEEK_SET);
+	SDL_RWseek(p, start, SEEK_SET);
 	
 	bool done = false;
 	while (!done)
@@ -849,7 +849,7 @@ bool load_shapes_patch(SDL_RWops *p)
 					if (cd && patch_bit_depth == 8 && high_level_shape_index < cd->high_level_shapes.size())
 					{
 						load_high_level_shape(cd->high_level_shapes[high_level_shape_index], p);
-						SDL_RWseek(p, pos + size, RW_SEEK_SET);
+						SDL_RWseek(p, pos + size, SEEK_SET);
 						
 					}
 					else
