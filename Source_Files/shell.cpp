@@ -442,6 +442,7 @@ static void initialize_application(void)
 	}
 #endif
 
+	SDL_putenv("SDL_VIDEO_ALLOW_SCREENSAVER=1");
 
 	// Initialize SDL
 	if (SDL_Init(SDL_INIT_VIDEO | 
