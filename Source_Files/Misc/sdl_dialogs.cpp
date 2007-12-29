@@ -1259,7 +1259,7 @@ void
 dialog::draw_dirty_widgets() const
 {
         for (unsigned i=0; i<widgets.size(); i++)
-		if (widgets[i]->dirty)
+		if (widgets[i]->is_dirty())
 			if (tabs[i] == NONE || tabs[i] == active_tab)
 				draw_widget(widgets[i]);
 }       

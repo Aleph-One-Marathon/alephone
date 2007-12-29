@@ -175,4 +175,24 @@ private:
     selection_made_callback_t mCallback;
 };
 
+class w_crosshair_display : public widget {
+public:
+	enum {
+		kSize = 80
+	};
+
+	w_crosshair_display();
+	~w_crosshair_display();
+
+	void draw(SDL_Surface *s) const;
+	bool is_selectable(void) const { return false; }
+
+	bool placeable_implemented() { return true; }
+
+	bool is_dirty() { return true; }
+
+private:
+	SDL_Surface *surface;
+};
+
 #endif

@@ -29,6 +29,7 @@
  */
 
 #include    "preferences_widgets_sdl.h"
+#include "Crosshairs.h"
 
 /*
  *  Environment dialog
@@ -114,4 +115,63 @@ void w_env_select::select_item(dialog *parent)
         if(mCallback)
             mCallback(this);
 	}
+}
+
+w_crosshair_display::w_crosshair_display() : surface(0)
+{
+	rect.w = kSize;
+	rect.y = kSize;
+
+	saved_min_width = kSize;
+	saved_min_height = kSize;
+
+	surface = SDL_CreateRGBSurface(SDL_SWSURFACE, kSize, kSize, 16, 0x7c00, 0x03e0, 0x001f, 0);
+}
+
+w_crosshair_display::~w_crosshair_display()
+{
+	SDL_FreeSurface(surface);
+	surface = 0;
+}
+
+void w_crosshair_display::draw(SDL_Surface *s) const
+{
+	SDL_FillRect(surface, 0, get_dialog_color(BACKGROUND_COLOR));
+	
+	// left border
+	SDL_Rect r;
+	r.x = 0;
+	r.y = 0;
+	r.w = 1;
+	r.h = surface->h;
+	
+	SDL_FillRect(surface, &r, get_dialog_color(MESSAGE_COLOR));
+
+	// top
+	r.w = surface->w;
+	r.h = 1;
+	
+	SDL_FillRect(surface, &r, get_dialog_color(MESSAGE_COLOR));
+
+	// right
+	r.x = surface->w - 1;
+	r.w = 1;
+	r.h = surface->h;
+
+	SDL_FillRect(surface, &r, get_dialog_color(MESSAGE_COLOR));
+
+	// bottom
+	r.x = 0;
+	r.y = surface->h - 1;
+	r.w = surface->w;
+	r.h = 1;
+
+	SDL_FillRect(surface, &r, get_dialog_color(MESSAGE_COLOR));
+	
+	bool Old_Crosshairs_IsActive = Crosshairs_IsActive();
+	Crosshairs_SetActive(true);
+	Crosshairs_Render(surface);
+	Crosshairs_SetActive(Old_Crosshairs_IsActive);
+	
+	SDL_BlitSurface(surface, 0, s, const_cast<SDL_Rect *>(&rect));
 }

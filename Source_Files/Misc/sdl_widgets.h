@@ -147,6 +147,8 @@ public:
 	int min_width() { return saved_min_width; }
 	
 	virtual bool placeable_implemented() { return false; }
+
+	virtual bool is_dirty() { return dirty; }
 	
 protected:
         // ZZZ: called by friend class dialog when we're added

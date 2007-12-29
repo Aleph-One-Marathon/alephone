@@ -292,6 +292,181 @@ void handle_preferences(void)
 	display_main_menu();
 }
 
+class CrosshairPref : public Bindable<int>
+{
+public:
+	CrosshairPref(short& pref) : m_pref(pref) { }
+
+	virtual int bind_export() {
+		return (m_pref - 1);
+	}
+
+	virtual void bind_import(int value) {
+		m_pref = value + 1;
+	}
+
+protected:
+	short& m_pref;
+};
+
+class ColorComponentPref : public Bindable<int>
+{
+public:
+	ColorComponentPref(uint16& pref) : m_pref(pref) { }
+	
+	virtual int bind_export() {
+		return (m_pref >> 12);
+	}
+
+	virtual void bind_import(int value) {
+		m_pref = value << 12;
+	}
+
+protected:
+	uint16& m_pref;
+};
+
+class OpacityPref : public Bindable<int>
+{
+public:
+	OpacityPref(float& pref) : m_pref(pref) { }
+	
+	virtual int bind_export() {
+		return (floor(m_pref * 16));
+	}
+
+	virtual void bind_import(int value) {
+		m_pref = ((float) value / 16.0);
+	}
+protected:
+	float& m_pref;
+};
+
+static const char *shape_labels[3] = {
+	"Cross", "Octagon", NULL
+};
+
+enum { kCrosshairWidget };
+
+static auto_ptr<BinderSet> crosshair_binders;
+
+struct update_crosshair_display
+{
+	void operator()(dialog *d) {
+		crosshair_binders->migrate_all_first_to_second();
+	}
+};
+
+static void crosshair_dialog(void *arg)
+{
+	CrosshairData OldCrosshairs = player_preferences->Crosshairs;
+	crosshair_binders.reset(new BinderSet);
+
+	dialog *parent = (dialog *) arg;
+
+	dialog d;
+	vertical_placer *placer = new vertical_placer;
+	w_static_text *w_header = new w_static_text("CROSSHAIR SETTINGS", TITLE_FONT, TITLE_COLOR);
+	placer->dual_add(w_header, d);
+	placer->add(new w_spacer, true);
+
+	w_crosshair_display *crosshair_w = new w_crosshair_display();
+	placer->dual_add(crosshair_w, d);
+
+	placer->add(new w_spacer, true);
+
+	// Shape
+	w_select *shape_w = new w_select("", 0, shape_labels);
+	SelectSelectorWidget shapeWidget(shape_w);
+	Int16Pref shapePref(player_preferences->Crosshairs.Shape);
+	crosshair_binders->insert<int> (&shapeWidget, &shapePref);
+	placer->add(new label_maker("Shape", shape_w, d), true);
+
+	placer->add(new w_spacer, true);
+
+	// Thickness
+	w_slider* thickness_w = new w_slider("", 7, 0);
+	SliderSelectorWidget thicknessWidget(thickness_w);
+	CrosshairPref thicknessPref(player_preferences->Crosshairs.Thickness);
+	crosshair_binders->insert<int> (&thicknessWidget, &thicknessPref);
+	placer->add(new label_maker("Width", thickness_w, d), true);
+
+	// From Center
+	w_slider *from_center_w = new w_slider("", 15, 0);
+	SliderSelectorWidget fromCenterWidget(from_center_w);
+	Int16Pref fromCenterPref(player_preferences->Crosshairs.FromCenter);
+	crosshair_binders->insert<int> (&fromCenterWidget, &fromCenterPref);
+	placer->add(new label_maker("Gap", from_center_w, d), true);
+
+	// Length
+	w_slider *length_w = new w_slider("", 15, 0);
+	SliderSelectorWidget lengthWidget(length_w);
+	CrosshairPref lengthPref(player_preferences->Crosshairs.Length);
+	crosshair_binders->insert<int> (&lengthWidget, &lengthPref);
+	placer->add(new label_maker("Size", length_w, d), true);
+	
+	placer->add(new w_spacer, true);
+
+	placer->dual_add(new w_static_text("Color"), d);
+
+	// Color
+	w_slider *red_w = new w_slider("", 16, 0);
+	SliderSelectorWidget redWidget(red_w);
+	ColorComponentPref redPref(player_preferences->Crosshairs.Color.red);
+	crosshair_binders->insert<int> (&redWidget, &redPref);
+	placer->add(new label_maker("Red", red_w, d), true);
+
+	w_slider *green_w = new w_slider("", 16, 0);
+	SliderSelectorWidget greenWidget(green_w);;
+	ColorComponentPref greenPref(player_preferences->Crosshairs.Color.green);
+	crosshair_binders->insert<int> (&greenWidget, &greenPref);
+	placer->add(new label_maker("Green", green_w, d), true);
+
+	w_slider *blue_w = new w_slider("", 16, 0);
+	SliderSelectorWidget blueWidget(blue_w);
+	ColorComponentPref bluePref(player_preferences->Crosshairs.Color.blue);
+	crosshair_binders->insert<int> (&blueWidget, &bluePref);
+	placer->add(new label_maker("Blue", blue_w, d), true);
+	
+	placer->add(new w_spacer, true);
+
+	placer->dual_add(new w_static_text("OpenGL Only (no preview)"), d);
+
+	w_slider *opacity_w = new w_slider("", 16, 0);
+	SliderSelectorWidget opacityWidget(opacity_w);
+	OpacityPref opacityPref(player_preferences->Crosshairs.Opacity);
+	crosshair_binders->insert<int> (&opacityWidget, &opacityPref);
+	placer->add(new label_maker("Opacity", opacity_w, d), true);
+
+	placer->add(new w_spacer, true);
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	w_button *w_accept = new w_button("ACCEPT", dialog_ok, &d);
+	button_placer->dual_add(w_accept, d);
+	w_button *w_cancel = new w_button("CANCEL", dialog_cancel, &d);
+	button_placer->dual_add(w_cancel, d);
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
+	d.set_processing_function(update_crosshair_display());
+
+	crosshair_binders->migrate_all_second_to_first();
+
+	clear_screen();
+
+	if (d.run() == 0) // Accepted
+	{
+		crosshair_binders->migrate_all_first_to_second();
+		player_preferences->Crosshairs.PreCalced = false;
+		write_preferences();
+	}
+	else
+	{
+		player_preferences->Crosshairs = OldCrosshairs;
+	}
+
+	crosshair_binders.reset(0);
+}
 
 /*
  *  Player dialog
@@ -308,6 +483,7 @@ static void player_dialog(void *arg)
 	w_select *level_w = new w_select("", player_preferences->difficulty_level, NULL /*level_labels*/);
 	level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
 	placer->add(new label_maker("Difficulty", level_w, d), true);
+        
 
 	placer->add(new w_spacer());
 
@@ -335,9 +511,14 @@ static void player_dialog(void *arg)
 
 	login_as_guest_w->add_dependent_widget(login_w);
 	login_as_guest_w->add_dependent_widget(password_w);
+	
+	placer->add(new w_spacer(), true);
+
+	w_button *crosshair_button = new w_button("CROSSHAIR", crosshair_dialog, &d);
+	placer->dual_add(crosshair_button, d);
 
 	placer->add(new w_spacer(), true);
-        
+
 	horizontal_placer *button_placer = new horizontal_placer;
 	
 	w_button* ok_button = new w_button("ACCEPT", dialog_ok, &d);
