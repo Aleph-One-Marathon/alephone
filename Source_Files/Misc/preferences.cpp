@@ -1567,13 +1567,8 @@ void read_preferences ()
 
 	FileSpecifier FileSpec;
 
-#if defined(mac)
-	FileSpec.SetParentToPreferences();
-	FileSpec.SetName(getcstr(temporary, strFILENAMES, filenamePREFERENCES),'TEXT');
-#elif defined(SDL)
 	FileSpec.SetToPreferencesDir();
 	FileSpec += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
-#endif
 
 	OpenedFile OFile;
 	bool defaults = false;
@@ -1594,12 +1589,10 @@ void read_preferences ()
 			if (OFile.Read(Len, &FileContents[0])) {
 				OFile.Close();
 				if (!XML_DataBlockLoader.ParseData(&FileContents[0], Len)) {
-#if !defined(TARGET_API_MAC_CARBON)
 					if (defaults)
 						alert_user("There were default preferences-file parsing errors (see Aleph One Log.txt for details)", infoError);
 					else
 						alert_user("There were preferences-file parsing errors (see Aleph One Log.txt for details)", infoError);
-#endif
 				}
 			}
 		}
@@ -1634,33 +1627,6 @@ void write_preferences(
 {
 	// LP: I've used plain stdio here because it's simple to do formatted writing with it.
 	
-#if defined(mac)
-	// Mac stuff: save old default directory
-	short OldVRefNum;
-	long OldParID;
-#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
-	//AS: evil hack since HSetVol doesn't affect fopen() on OS X, so we fopen an absolute path
-	char str[257] = "";
-	const char *home = getenv("HOME");
-	if (home) strcat(str, home);
-	strcat(str,"/Library/Preferences/");
-	strcat(str,getcstr(temporary, strFILENAMES, filenamePREFERENCES));
-#endif
-	HGetVol(nil,&OldVRefNum,&OldParID);
-	
-	// Set default directory to prefs directory
-	FileSpecifier FileSpec;
-	if (!FileSpec.SetParentToPreferences()) return;
-	if (HSetVol(nil, FileSpec.GetSpec().vRefNum, FileSpec.GetSpec().parID) != noErr) return;
-    
-	// Open the file
-#if defined(TARGET_API_MAC_CARBON) && defined(__MACH__)
-	FILE *F = fopen(str,"w");
-#else
-	FILE *F = fopen(getcstr(temporary, strFILENAMES, filenamePREFERENCES),"w");
-#endif
-
-#elif defined(SDL)
 	// Fix courtesy of mdadams@ku.edu
 	FileSpecifier FileSpec;
 	FileSpec.SetToPreferencesDir();
@@ -1668,7 +1634,6 @@ void write_preferences(
 	
 	// Open the file
 	FILE *F = fopen(FileSpec.GetPath(),"w");
-#endif
 	
 	if (!F)
 	{
@@ -1749,15 +1714,9 @@ void write_preferences(
 		fprintf(F,"  <mouse_button index=\"%hd\" action=\"%s\"/>\n", i,
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_left_trigger ? "left_trigger" : 
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_right_trigger ? "right_trigger" : "none");
-#if defined(mac)
-	for (int k=0; k<NUMBER_OF_KEYS; k++)
-		fprintf(F,"  <mac_key index=\"%hd\" value=\"%hd\"/>\n",
-			k,input_preferences->keycodes[k]);
-#elif defined(SDL)
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
 		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
 			k,input_preferences->keycodes[k]);
-#endif
 	for (int k=0; k<NUMBER_OF_SHELL_KEYS;k++)
 		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
 			k + NUMBER_OF_KEYS, input_preferences->shell_keycodes[k]);
@@ -1962,12 +1921,7 @@ static void default_player_preferences(player_preferences_data *preferences)
 
 static void default_input_preferences(input_preferences_data *preferences)
 {
-#if defined(TARGET_API_MAC_CARBON)
-	// JTP: No ISP, go with default option
-	preferences->input_device= _mouse_yaw_pitch;
-#else
 	preferences->input_device= _keyboard_or_game_pad;
-#endif
 	set_default_keys(preferences->keycodes, _standard_keyboard_setup);
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++)
 	{
@@ -2869,13 +2823,8 @@ bool XML_KeyPrefsParser::AttributesDone()
 // This compilation trick guarantees that both Mac and SDL versions will ignore the other's
 // key values; for each platform, the parser of the other platform's key values
 // is a dummy parser.
-#if defined(mac)
-static XML_KeyPrefsParser MacKeyPrefsParser("mac_key");
-static XML_ElementParser SDLKeyPrefsParser("sdl_key");
-#elif defined(SDL)
 static XML_ElementParser MacKeyPrefsParser("mac_key");
 static XML_KeyPrefsParser SDLKeyPrefsParser("sdl_key");
-#endif
 
 
 class XML_InputPrefsParser: public XML_ElementParser
