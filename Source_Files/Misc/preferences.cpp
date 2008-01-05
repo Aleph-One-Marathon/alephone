@@ -828,13 +828,6 @@ static void graphics_dialog(void *arg)
 	    if(renderer != graphics_preferences->screen_mode.acceleration) {
 		    graphics_preferences->screen_mode.acceleration = renderer;
 		    if (renderer) graphics_preferences->screen_mode.bit_depth = 32;
-		    
-		    // Disable fading under Mac OS X software rendering
-#if defined(__APPLE__) && defined(__MACH__) && defined(HAVE_OPENGL)
-		    extern bool option_nogamma;
-		    option_nogamma = true;
-#endif
-		    
 		    changed = true;
 	    }
 	    
