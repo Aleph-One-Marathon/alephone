@@ -61,8 +61,8 @@ protected:
 	SelectorWidget* m_textureQualityWidget [OGL_NUMBER_OF_TEXTURE_TYPES];
 	
 	ToggleWidget*		m_geForceFixWidget;
-	ToggleWidget*		m_mipMapWallsWidget;
-	ToggleWidget*		m_mipMapSpritesWidget;
+	SelectSelectorWidget*		m_wallsFilterWidget;
+	SelectSelectorWidget*		m_spritesFilterWidget;
 	
 	SelectorWidget* m_textureResolutionWidget [OGL_NUMBER_OF_TEXTURE_TYPES];
 };

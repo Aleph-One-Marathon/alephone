@@ -62,21 +62,19 @@ protected:
 	RGBColor& m_pref;
 };
 
-class OneOrFivePref : public Bindable<bool>
+class FilterPref : public Bindable<int>
 {
 public:
-	OneOrFivePref (int16& pref) : m_pref (pref) {}
-	
-	virtual bool bind_export ()
-	{
-		return (m_pref > 1);
+	FilterPref (int16& pref) : m_pref(pref) { }
+
+	int bind_export() {
+		return (m_pref - 1) / 2;
 	}
-	
-	virtual void bind_import (bool value)
-	{
-		m_pref = value ? 5 : 1;
+
+	void bind_import(int value) {
+		m_pref = value * 2 + 1;
 	}
-	
+
 protected:
 	int16& m_pref;
 };
@@ -142,8 +140,8 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_fsaaWidget;
 	delete m_anisotropicWidget;
 	delete m_geForceFixWidget;
-	delete m_mipMapWallsWidget;
-	delete m_mipMapSpritesWidget;
+	delete m_wallsFilterWidget;
+	delete m_spritesFilterWidget;
 
 	for (int i=0; i<OGL_NUMBER_OF_TEXTURE_TYPES; ++i) {
 		delete m_textureQualityWidget [i];
@@ -185,10 +183,10 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	BoolPref geForceFixPref (graphics_preferences->OGL_Configure.GeForceFix);
 	binders.insert<bool> (m_geForceFixWidget, &geForceFixPref);
 	
-	OneOrFivePref mipMapWallsPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Wall].FarFilter);
-	binders.insert<bool> (m_mipMapWallsWidget, &mipMapWallsPref);
-	OneOrFivePref mipMapSpritesPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Inhabitant].FarFilter);
-	binders.insert<bool> (m_mipMapSpritesWidget, &mipMapSpritesPref);
+	FilterPref wallsFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Wall].FarFilter);
+	binders.insert<int> (m_wallsFilterWidget, &wallsFilterPref);
+	FilterPref spritesFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Inhabitant].FarFilter);
+	binders.insert<int> (m_spritesFilterWidget, &spritesFilterPref);
 	
 	TexQualityPref wallQualityPref (graphics_preferences->OGL_Configure.TxtrConfigList [0].MaxSize, 128);
 	binders.insert<int> (m_textureQualityWidget [0], &wallQualityPref);
@@ -219,6 +217,10 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 		write_preferences ();
 	}
 }
+
+static const char *filter_labels[4] = {
+	"Linear", "Bilinear", "Trilinear", NULL
+};
 
 class SdlOpenGLDialog : public OpenGLDialog
 {
@@ -291,12 +293,12 @@ public:
 		
 		m_dialog.add_to_tab(new w_spacer(), ADVANCED_TAB);
 
-		m_dialog.add_to_tab(new w_static_text("Distant Texture Smoothing"), ADVANCED_TAB);
-		w_toggle *wall_mipmap_w = new w_toggle("Mipmap Walls", false);
-		m_dialog.add_to_tab(wall_mipmap_w, ADVANCED_TAB);
+		m_dialog.add_to_tab(new w_static_text("Distant Texture Filtering"), ADVANCED_TAB);
+		w_select *wall_filter_w = new w_select("Walls", 0, filter_labels);
+		m_dialog.add_to_tab(wall_filter_w, ADVANCED_TAB);
 
-		w_toggle *sprite_mipmap_w = new w_toggle("Mipmap Sprites", false);
-		m_dialog.add_to_tab(sprite_mipmap_w, ADVANCED_TAB);
+		w_select *sprite_filter_w = new w_select("Sprites", 0, filter_labels);
+		m_dialog.add_to_tab(sprite_filter_w, ADVANCED_TAB);
 
 		m_dialog.add_to_tab(new w_spacer(), ADVANCED_TAB);
 
@@ -347,8 +349,8 @@ public:
 
 		m_geForceFixWidget = new ToggleWidget (geforce_fix_w);
 		
-		m_mipMapWallsWidget = new ToggleWidget (wall_mipmap_w);
-		m_mipMapSpritesWidget = new ToggleWidget (sprite_mipmap_w);
+		m_wallsFilterWidget = new SelectSelectorWidget (wall_filter_w);
+		m_spritesFilterWidget = new SelectSelectorWidget (sprite_filter_w);
 
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i) {
 			m_textureQualityWidget [i] = new PopupSelectorWidget (texture_quality_wa[i]);
