@@ -255,9 +255,9 @@ public:
 		w_select_popup *fsaa_w = new w_select_popup ("Full Scene Antialiasing");
 		m_dialog.add_to_tab(fsaa_w, BASIC_TAB);
 		vector<string> fsaa_strings;
-		fsaa_strings.push_back ("off");
-		fsaa_strings.push_back ("x2");
-		fsaa_strings.push_back ("x4");
+		fsaa_strings.push_back ("Off");
+		fsaa_strings.push_back ("2x");
+		fsaa_strings.push_back ("4x");
 		fsaa_w->set_labels (fsaa_strings);
 		
 		w_slider* aniso_w = new w_slider("Anisotropic Filtering", 6, 1);
@@ -276,10 +276,10 @@ public:
 	
 		vector<string> tex_quality_strings;
 		tex_quality_strings.push_back ("Unlimited");
-		tex_quality_strings.push_back ("normal");
-		tex_quality_strings.push_back ("high");
-		tex_quality_strings.push_back ("higher");
-		tex_quality_strings.push_back ("highest");
+		tex_quality_strings.push_back ("Normal");
+		tex_quality_strings.push_back ("High");
+		tex_quality_strings.push_back ("Higher");
+		tex_quality_strings.push_back ("Highest");
 	
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
 			if (texture_quality_wa[i]) {
@@ -312,7 +312,7 @@ public:
 		m_dialog.add_to_tab(new w_static_text("Texture Resolution (reduce for machines with low VRAM)"), ADVANCED_TAB);
 
 		vector<string> tex_reso_strings;
-		tex_reso_strings.push_back ("full");
+		tex_reso_strings.push_back ("Full");
 		tex_reso_strings.push_back ("1/2");
 		tex_reso_strings.push_back ("1/4");
 
