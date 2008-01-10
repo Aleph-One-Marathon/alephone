@@ -509,7 +509,7 @@ int network_join(void)
 	return join_dialog_result;
 }
 
-JoinDialog::JoinDialog() : join_announcer(true), got_gathered(false)
+JoinDialog::JoinDialog() : got_gathered(false)
 	{ if (!gMetaserverClient) gMetaserverClient = new MetaserverClient (); }
 
 JoinDialog::~JoinDialog ()
@@ -615,7 +615,7 @@ void JoinDialog::attemptJoin ()
 	
 	if (hintString)
 		delete [] hintString;
-	
+
 	if (result) {
 		m_nameWidget->deactivate ();
 		m_teamWidget->deactivate ();
@@ -628,6 +628,10 @@ void JoinDialog::attemptJoin ()
 		
 		getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
 		m_messagesWidget->set_text(pstring_to_string(ptemporary));
+
+		if (!m_joinByAddressWidget->get_value()) {
+			join_announcer.reset(new JoinerSeekingGathererAnnouncer(true));
+		}
 		
 		respondToJoinHit ();
 	}

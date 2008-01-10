@@ -402,7 +402,7 @@ protected:
 	
 	enum { kPregameChat = 0, kMetaserverChat };
 	
-	JoinerSeekingGathererAnnouncer join_announcer;
+	std::auto_ptr<JoinerSeekingGathererAnnouncer> join_announcer;
 	int join_result;
 	bool got_gathered;
 };
