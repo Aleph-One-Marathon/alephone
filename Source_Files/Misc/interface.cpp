@@ -2008,6 +2008,8 @@ void handle_load_game(
 	}
 }
 
+extern bool current_net_game_has_scores();
+
 static void finish_game(
 	bool return_to_main_menu)
 {
@@ -2077,8 +2079,16 @@ static void finish_game(
 		force_system_colors();
 		display_net_game_stats();
 		exit_networking();
-	}
+	} 
+	else
 #endif // !defined(DISABLE_NETWORKING)
+	if (game_state.user == _replay && !(dynamic_world->game_information.game_type == _game_of_kill_monsters && dynamic_world->player_count == 1))
+	{
+		game_state.state = _displaying_network_game_dialogs;
+
+		force_system_colors();
+		display_net_game_stats();
+	}
 	
 	if(return_to_main_menu) display_main_menu();
 }
