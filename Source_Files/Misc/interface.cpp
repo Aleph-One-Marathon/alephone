@@ -1231,9 +1231,6 @@ void do_menu_item_command(
 	short menu_item,
 	bool cheat)
 {
-#ifdef SDL
-  static bool pre_pause_fullscreen = false;
-#endif
 	switch(menu_id)
 	{
             
@@ -1247,30 +1244,10 @@ void do_menu_item_command(
 						case _replay:
 							if (get_keyboard_controller_status())
 							{
-#ifdef SDL
-								// Switch out of fullscreen mode (this is not done in pause_game()
-								// because pause_game() is also called when saving/quitting where we
-								// don't want a mode switch
-							  if (get_screen_mode()->fullscreen) {
-							    pre_pause_fullscreen = true;
-							    
-							    toggle_fullscreen(false);
-							    render_screen(0);
-							  } else {
-							    pre_pause_fullscreen = false;
-							  }
-#endif
 							  pause_game();
 							}
 							else
-							{
-#ifdef SDL
-								// Restore fullscreen mode
-							  if (pre_pause_fullscreen) {
-									toggle_fullscreen(true);
-									render_screen(0);
-								}
-#endif
+							{	
 								resume_game();
 							}
 							break;
