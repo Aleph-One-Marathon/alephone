@@ -1253,7 +1253,7 @@ which has these attributes:
 corresponding to the desired features:
 <ul>
 <li><tt>1 (hex 0001)</tt> Solid (can't pass through it)
-<li><tt>2 (hex 0002)</tt> Animated
+<li><tt>2 (hex 0002)</tt> Unused
 <li><tt>4 (hex 0004)</tt> Destroyable
 </ul>
 <li>radius: horizontal dimension in internal units, for doing collision detection.
@@ -1270,10 +1270,6 @@ each of them has the actual shape value specified with a
 <p>
 
 Some notes on the flags:
-<p>
-
-"Animated" isn't really used by the engine;
-the engine reads the animations off of the sequences without reference to it.
 <p>
 
 "Destroyable" is not meaningful unless the object is also "solid";

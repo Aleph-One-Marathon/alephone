@@ -34,7 +34,7 @@ Feb 4, 2000 (Loren Petrich):
 enum
 {
 	_scenery_is_solid= 0x0001,
-	_scenery_is_animated= 0x0002,
+	_scenery_is_animated= 0x0002, // ghs: unused; sequence is how to make scenery animated
 	_scenery_can_be_destroyed= 0x0004
 };
 
