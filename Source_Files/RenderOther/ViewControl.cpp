@@ -44,19 +44,25 @@ struct view_settings_definition {
 	bool MapActive;
 	bool DoFoldEffect;
 	bool DoStaticEffect;
+	bool DoInterlevelTeleportInEffects;
+	bool DoInterlevelTeleportOutEffects;
 };
 
 // Defaults:
 struct view_settings_definition view_settings = {
 	true, // overhead map is active
 	true, // do the view folding effect (stretch horizontally, squeeze vertically) when teleporting,
-	true  // also do the static effect / folding effect on viewed teleported objects
+	true,  // also do the static effect / folding effect on viewed teleported objects
+	true, // do all effects (and sounds) teleporting into the level
+	true  // do all effects (and sounds) teleporting out of the level
 };
 
 // Accessors:
 bool View_MapActive() {return view_settings.MapActive;}
 bool View_DoFoldEffect() {return view_settings.DoFoldEffect;}
 bool View_DoStaticEffect() {return view_settings.DoStaticEffect;}
+bool View_DoInterlevelTeleportInEffects() { return view_settings.DoInterlevelTeleportInEffects; }
+bool View_DoInterlevelTeleportOutEffects() { return view_settings.DoInterlevelTeleportOutEffects; }
 
 
 // This frame value means that a landscape option will be applied to any frame in a collection:
@@ -285,6 +291,14 @@ bool XML_ViewParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"static_effect"))
 	{
 		return ReadBooleanValueAsBool(Value,view_settings.DoStaticEffect);
+	}
+	else if (StringsEqual(Tag,"interlevel_in_effects"))
+	{
+		return ReadBooleanValueAsBool(Value, view_settings.DoInterlevelTeleportInEffects);
+	}
+	else if (StringsEqual(Tag, "interlevel_out_effects"))
+	{
+		return ReadBooleanValueAsBool(Value, view_settings.DoInterlevelTeleportOutEffects);
 	}
 	UnrecognizedTag();
 	return false;

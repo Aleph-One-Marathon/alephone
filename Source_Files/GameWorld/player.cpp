@@ -152,6 +152,7 @@ May 22, 2003 (Woody Zenfell):
 #include "screen.h"
 #include "shell.h" // for screen_printf()
 #include "Console.h"
+#include "ViewControl.h"
 
 /*
 //anybody on the receiving pad of a teleport should explode (what happens to invincible guys?)
@@ -1252,8 +1253,10 @@ static void update_player_teleport(
 				/* Either the player is teleporting, or everyone is. (level change) */
 				if(player_index==current_player_index)
 				{
-					start_teleporting_effect(false);
-					play_object_sound(player->object_index, Sound_TeleportIn()); 
+					if (View_DoInterlevelTeleportInEffects()) {
+						start_teleporting_effect(false);
+						play_object_sound(player->object_index, Sound_TeleportIn()); 
+					}
 				}
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 				break;
@@ -1304,8 +1307,10 @@ static void update_player_teleport(
 				 /* Interlevel or my intralevel.. */
 				if(player_index==current_player_index)
 				{
-					start_teleporting_effect(false);
-					play_object_sound(player->object_index, Sound_TeleportIn()); 
+					if (player->teleporting_destination >= 0 || View_DoInterlevelTeleportInEffects()) {
+						start_teleporting_effect(false);
+						play_object_sound(player->object_index, Sound_TeleportIn()); 
+					}
 				} 
 				player->teleporting_destination= NO_TELEPORTATION_DESTINATION;
 				break;
@@ -1364,8 +1369,10 @@ static void update_player_teleport(
 					short other_player_index;
 				
 					/* Everyone plays the teleporting effect out. */
-					start_teleporting_effect(true);
-					play_object_sound(current_player->object_index, Sound_TeleportOut());
+					if (View_DoInterlevelTeleportOutEffects()) {
+						start_teleporting_effect(true);
+						play_object_sound(current_player->object_index, Sound_TeleportOut());
+					}
 					
 					/* Every players object plays the sound, and everyones monster responds. */
 					for (other_player_index= 0; other_player_index<dynamic_world->player_count; ++other_player_index)
@@ -1825,13 +1832,19 @@ static void get_player_transfer_mode(
 	*transfer_mode= NONE;
 	if (PLAYER_IS_TELEPORTING(player))
 	{
-		*transfer_mode= player->teleporting_phase<PLAYER_TELEPORTING_MIDPOINT ? _xfer_fold_out : _xfer_fold_in;
-		*transfer_period= PLAYER_TELEPORTING_MIDPOINT+1;
+		if (player->teleporting_destination >= 0 || (player->teleporting_phase < PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportOutEffects()) || (player->teleporting_phase >= PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportInEffects()))
+		{
+			*transfer_mode= player->teleporting_phase<PLAYER_TELEPORTING_MIDPOINT ? _xfer_fold_out : _xfer_fold_in;
+			*transfer_period= PLAYER_TELEPORTING_MIDPOINT+1;
+		}
 	} 
 	else if (PLAYER_IS_INTERLEVEL_TELEPORTING(player))
 	{
-		*transfer_mode= player->interlevel_teleport_phase<PLAYER_TELEPORTING_MIDPOINT ? _xfer_fold_out : _xfer_fold_in;
-		*transfer_period= PLAYER_TELEPORTING_MIDPOINT+1;
+		if (player->teleporting_destination >= 0 || (player->teleporting_phase < PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportOutEffects()) || (player->teleporting_phase >= PLAYER_TELEPORTING_MIDPOINT && View_DoInterlevelTeleportInEffects()))
+		{
+			*transfer_mode= player->teleporting_phase<PLAYER_TELEPORTING_MIDPOINT ? _xfer_fold_out : _xfer_fold_in;
+			*transfer_period= PLAYER_TELEPORTING_MIDPOINT+1;
+		}
 	}
 	else
 	{

@@ -68,6 +68,12 @@ bool View_DoFoldEffect();
 // Indicates whether to do the "static" effect when one is teleporting
 bool View_DoStaticEffect();
 
+// Indicates whether to skip all teleport effects teleporting into a level
+bool View_DoInterlevelTeleportInEffects();
+
+// Indicates whether to skip all teleport effects teleporting out of a level
+bool View_DoInterlevelTeleportOutEffects();
+
 // Gets the on-screen-display font
 FontSpecifier& GetOnScreenFont();
 
