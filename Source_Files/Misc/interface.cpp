@@ -1015,10 +1015,6 @@ void update_interface_display(
 	
 	/* Use this to avoid the fade.. */
 	draw_full_screen_pict_resource_from_images(data->screen_base+game_state.current_screen);
-#if defined(MAC_SDL_KLUDGE)
-	draw_full_screen_pict_resource_from_images(data->screen_base+game_state.current_screen);
-#endif
-
 }
 
 void idle_game_state(
@@ -2287,9 +2283,6 @@ static void display_screen(
 			full_fade(_start_cinematic_fade_in, current_picture_clut);
 
 			draw_full_screen_pict_resource_from_images(pict_resource_number);
-#if defined(MAC_SDL_KLUDGE) 
-			draw_full_screen_pict_resource_from_images(pict_resource_number);
-#endif
 			picture_drawn= true;
 
 			assert(current_picture_clut);	
