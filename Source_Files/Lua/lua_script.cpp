@@ -80,6 +80,7 @@ using namespace std;
 #include "Random.h"
 #include "Console.h"
 #include "Music.h"
+#include "ViewControl.h"
 
 #include "lua_script.h"
 
@@ -2903,8 +2904,10 @@ static int L_Teleport_Player_To_Level(lua_State *L)
 	player->delay_before_teleport= 0;
 
 	player->teleporting_destination= - dest -1;
-	start_teleporting_effect(true);
-	play_object_sound(player->object_index, Sound_TeleportOut());
+	if (View_DoInterlevelTeleportOutEffects()) {
+		start_teleporting_effect(true);
+		play_object_sound(player->object_index, Sound_TeleportOut());
+	}
 	return 0;
 }
 
