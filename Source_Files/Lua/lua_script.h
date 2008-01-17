@@ -33,6 +33,8 @@ bool LoadLuaScript(const char *buffer, size_t len);
 bool RunLuaScript();
 void CloseLuaScript();
 
+void ExecuteLuaString(const std::string&);
+
 void ToggleLuaMute();
 void ResetLuaMute();
 

@@ -49,6 +49,7 @@
 #include "items.h"
 #include "interface_menus.h"
 #include "weapons.h"
+#include "lua_script.h"
 
 #include "Crosshairs.h"
 #include "OGL_Render.h"
@@ -807,8 +808,16 @@ static void handle_game_key(const SDL_Event &event)
 				Console::instance()->activate_input(InGameChatCallbacks::SendChatMessage, InGameChatCallbacks::prompt());
 #endif
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
-			} else
+			} 
+			else if (Console::instance()->use_lua_console())
+			{
+				PlayInterfaceButtonSound(Sound_ButtonSuccess());
+				Console::instance()->activate_input(ExecuteLuaString, ">");
+			}
+			else
+			{
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
+			}
 		} 
 		else if (key == SDLK_F1) // Decrease screen size
 		{

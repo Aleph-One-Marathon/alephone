@@ -39,7 +39,7 @@ extern bool game_is_networked;
 
 Console *Console::m_instance = NULL;
 
-Console::Console() : m_active(false), m_carnage_messages_exist(false)
+Console::Console() : m_active(false), m_carnage_messages_exist(false), m_use_lua_console(false)
 {
 	m_carnage_messages.resize(NUMBER_OF_PROJECTILE_TYPES);
 }
@@ -397,7 +397,37 @@ bool XML_MacroParser::AttributesDone()
 }
 
 static XML_MacroParser MacroParser;
-static XML_ElementParser ConsoleParser("console");
+
+class XML_ConsoleParser : public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char *Tag, const char *Value);
+
+	XML_ConsoleParser() : XML_ElementParser("console") {} 
+};
+
+bool XML_ConsoleParser::HandleAttribute(const char *Tag, const char *Value)
+{
+	if (StringsEqual(Tag, "lua"))
+	{
+		bool use_lua_console;
+		if (ReadBooleanValueAsBool(Value, use_lua_console))
+		{
+			Console::instance()->use_lua_console(use_lua_console);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+	
+	UnrecognizedTag();
+	return false;
+}
+
+
+static XML_ConsoleParser ConsoleParser;
 
 XML_ElementParser *Console_GetParser()
 {

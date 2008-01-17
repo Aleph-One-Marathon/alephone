@@ -69,6 +69,9 @@ public:
 	void set_carnage_message(int16 projectile_type, const std::string& on_kill, const std::string& on_suicide = "");
 	void report_kill(int16 player_index, int16 aggressor_player_index, int16 projectile_index);
 
+	bool use_lua_console() { return m_use_lua_console; };
+	bool use_lua_console(bool f_use) { m_use_lua_console = f_use; }
+
 private:
 	Console();
 	static Console* m_instance;
@@ -83,6 +86,8 @@ private:
 
 	bool m_carnage_messages_exist;
 	std::vector<std::pair<std::string, std::string> > m_carnage_messages;
+
+	bool m_use_lua_console;
 };
 
 XML_ElementParser *Console_GetParser();

@@ -5183,6 +5183,25 @@ bool RunLuaScript()
 	return lua_running;
 }
 
+void ExecuteLuaString(const std::string& line)
+{
+	if (!lua_loaded)
+	{
+		numScriptsLoaded = 0;
+		state = lua_open();
+
+		OpenStdLibs(state);
+		RegisterLuaFunctions();
+		DeclareLuaConstants();
+
+		lua_loaded = true;
+	}
+
+	luaL_loadbuffer(state, line.c_str(), line.size(), "console");
+	if (lua_pcall(state, 0, 0, 0) != 0)
+		L_Error(lua_tostring(state, -1));
+}
+
 void CloseLuaScript()
 {
 	if (lua_loaded)
