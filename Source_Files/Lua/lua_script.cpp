@@ -83,6 +83,7 @@ using namespace std;
 #include "ViewControl.h"
 
 #include "lua_script.h"
+#include "lua_player.h"
 
 #define DONT_REPEAT_DEFINITIONS
 #include "item_definitions.h"
@@ -258,7 +259,7 @@ static void OpenStdLibs(lua_State* l)
 	}
 }
 
-static void
+void
 L_Error(const char* inMessage)
 {
 	if (!mute_lua) screen_printf("%s", inMessage);
@@ -4895,8 +4896,8 @@ void RegisterLuaFunctions()
 	lua_register(state, "show_interface", L_Show_Interface);
 	lua_register(state, "get_tag_state", L_Get_Tag_State);
 	lua_register(state, "set_tag_state", L_Set_Tag_State);
-	lua_register(state, "get_life", L_Get_Life);
-	lua_register(state, "set_life", L_Set_Life);
+//	lua_register(state, "get_life", L_Get_Life);
+//	lua_register(state, "set_life", L_Set_Life);
 	lua_register(state, "get_oxygen", L_Get_Oxygen);
 	lua_register(state, "set_oxygen", L_Set_Oxygen);
 	lua_register(state, "add_item", L_Add_Item);
@@ -5067,6 +5068,8 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_overlay_text", L_Set_Overlay_Text);
 	lua_register(state, "set_overlay_icon", L_Set_Overlay_Icon);
 	lua_register(state, "set_overlay_icon_by_color", L_Set_Overlay_Icon_By_Color);
+
+	Lua_Player_register(state);
 }
 
 void DeclareLuaConstants()

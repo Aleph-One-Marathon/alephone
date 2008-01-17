@@ -2,7 +2,7 @@
 
 noinst_LIBRARIES = liba1lua.a
 
-liba1lua_a_SOURCES = lua_script.h lua_script.cpp lapi.c lapi.h lauxlib.c lauxlib.h lbaselib.c lcode.c lcode.h ldblib.c ldebug.c ldebug.h ldo.c ldo.h ldump.c lfunc.c lfunc.h lgc.c lgc.h linit.c liolib.c llex.c llex.h lmathlib.c lmem.c lmem.h lobject.c lobject.h lopcodes.c lopcodes.h loslib.c lparser.c lparser.h lstate.c lstate.h lstring.c lstring.h lstrlib.c ltable.c ltable.h ltablib.c ltm.c ltm.h lundump.c lundump.h lvm.c lvm.h lzio.c lzio.h llimits.h lua.h lualib.h luaconf.h language_definition.h
+liba1lua_a_SOURCES = lua_script.h lua_script.cpp lua_player.h lua_player.cpp lapi.c lapi.h lauxlib.c lauxlib.h lbaselib.c lcode.c lcode.h ldblib.c ldebug.c ldebug.h ldo.c ldo.h ldump.c lfunc.c lfunc.h lgc.c lgc.h linit.c liolib.c llex.c llex.h lmathlib.c lmem.c lmem.h lobject.c lobject.h lopcodes.c lopcodes.h loslib.c lparser.c lparser.h lstate.c lstate.h lstring.c lstring.h lstrlib.c ltable.c ltable.h ltablib.c ltm.c ltm.h lundump.c lundump.h lvm.c lvm.h lzio.c lzio.h llimits.h lua.h lualib.h luaconf.h language_definition.h
 
 EXTRA_DIST = COPYRIGHT README
 

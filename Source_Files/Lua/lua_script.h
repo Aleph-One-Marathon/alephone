@@ -6,6 +6,7 @@
 #include "world.h"
 #include "ActionQueues.h"
 
+void L_Error(const char *message);
 void L_Call_Init(bool fRestoringSaved);
 void L_Call_Cleanup();
 void L_Call_Idle();
