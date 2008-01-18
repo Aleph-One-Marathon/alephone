@@ -42,6 +42,7 @@
 		AE626E720B878534009CFF2D /* SoundManager.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E690B878534009CFF2D /* SoundManager.cpp */; };
 		AE626E730B878534009CFF2D /* SoundManager.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6A0B878534009CFF2D /* SoundManager.h */; };
 		AE626E740B878534009CFF2D /* SoundManagerEnums.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */; };
+		AE69B5DD0D404F0400C42C11 /* lua_player.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE69B5DB0D404F0400C42C11 /* lua_player.cpp */; };
 		AE7C219C0BFF67B700CE63EC /* lapi.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21800BFF67B700CE63EC /* lapi.c */; };
 		AE7C219D0BFF67B700CE63EC /* lauxlib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21810BFF67B700CE63EC /* lauxlib.c */; };
 		AE7C219E0BFF67B700CE63EC /* lbaselib.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21820BFF67B700CE63EC /* lbaselib.c */; };
@@ -585,6 +586,8 @@
 		AE626E690B878534009CFF2D /* SoundManager.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SoundManager.cpp; sourceTree = "<group>"; };
 		AE626E6A0B878534009CFF2D /* SoundManager.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SoundManager.h; sourceTree = "<group>"; };
 		AE626E6B0B878534009CFF2D /* SoundManagerEnums.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SoundManagerEnums.h; sourceTree = "<group>"; };
+		AE69B5DB0D404F0400C42C11 /* lua_player.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_player.cpp; sourceTree = "<group>"; };
+		AE69B5DC0D404F0400C42C11 /* lua_player.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_player.h; sourceTree = "<group>"; };
 		AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ImageLoader_Shared.cpp; path = ../Source_Files/RenderMain/ImageLoader_Shared.cpp; sourceTree = SOURCE_ROOT; };
 		AE791CF60968E49100350190 /* DDS.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = DDS.h; path = ../Source_Files/RenderMain/DDS.h; sourceTree = SOURCE_ROOT; };
 		AE7C21800BFF67B700CE63EC /* lapi.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; path = lapi.c; sourceTree = "<group>"; };
@@ -1212,6 +1215,8 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
+				AE69B5DB0D404F0400C42C11 /* lua_player.cpp */,
+				AE69B5DC0D404F0400C42C11 /* lua_player.h */,
 				AE7C21D00BFF67FD00CE63EC /* language_definition.h */,
 				AE7C21B80BFF67BE00CE63EC /* Library Headers */,
 				AE7C217F0BFF671E00CE63EC /* Library Sources */,
@@ -2372,6 +2377,7 @@
 				AE7C21B70BFF67B700CE63EC /* lzio.c in Sources */,
 				AE7C21D60BFF688000CE63EC /* Update.cpp in Sources */,
 				AE9A39F70CCADFA7004717E3 /* ConnectPool.cpp in Sources */,
+				AE69B5DD0D404F0400C42C11 /* lua_player.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
