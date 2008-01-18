@@ -167,6 +167,36 @@ static const luaL_reg Lua_Player_meta[] = {
 
 const char *LUA_PLAYERS = "Players";
 
+static int Lua_Players_iterator(lua_State *L);
+
+static int Lua_Players_call(lua_State *L)
+{
+	lua_pushnumber(L, 0); // player index
+	lua_pushcclosure(L, Lua_Players_iterator, 1);
+	return 1;
+}
+
+static int Lua_Players_iterator(lua_State *L)
+{
+	int player_index = lua_tonumber(L, lua_upvalueindex(1));
+	if (player_index < dynamic_world->player_count)
+	{
+		Lua_Player *p = (Lua_Player *) lua_newuserdata(L, sizeof(Lua_Player));
+		luaL_getmetatable(L, LUA_PLAYER);
+		lua_setmetatable(L, -2);
+		p->player_index = player_index;
+		
+		lua_pushnumber(L, ++player_index);
+		lua_replace(L, lua_upvalueindex(1));
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
 int Lua_Players_index(lua_State *L)
 {
 	if (lua_isnumber(L, 2))
@@ -207,6 +237,7 @@ static const luaL_reg Lua_Players_meta[] = {
 	{"__index", Lua_Players_index},
 	{"__newindex", Lua_Players_newindex},
 	{"__len", Lua_Players_len},
+	{"__call", Lua_Players_call},
 	{0, 0}
 };
 
