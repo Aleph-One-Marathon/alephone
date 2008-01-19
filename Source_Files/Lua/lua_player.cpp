@@ -56,6 +56,14 @@ static const luaL_reg Lua_Player_methods[] = {
 	{0, 0}
 };
 
+static int Lua_Player_get_dead(lua_State *L)
+{
+	Lua_Player *p = (Lua_Player *) lua_touserdata(L, 1);
+	player_data *player = get_player_data(p->player_index);
+	lua_pushboolean(L, (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player)));
+	return 1;
+}
+
 static int Lua_Player_get_energy(lua_State *L)
 {
 	Lua_Player *p = (Lua_Player *) lua_touserdata(L, 1);
@@ -63,9 +71,27 @@ static int Lua_Player_get_energy(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_get_name(lua_State *L)
+{
+	Lua_Player *p = (Lua_Player *) lua_touserdata(L, 1);
+	lua_pushstring(L, get_player_data(p->player_index)->name);
+	return 1;
+}
+
+static int Lua_Player_get_oxygen(lua_State *L)
+{
+	Lua_Player *p = (Lua_Player *) lua_touserdata(L, 1);
+	lua_pushnumber(L, get_player_data(p->player_index)->suit_oxygen);
+	return 1;
+}
+
 static const luaL_reg Lua_Player_get[] = {
+	{"dead", Lua_Player_get_dead},
 	{"energy", Lua_Player_get_energy},
 	{"juice", Lua_Player_get_energy},
+	{"life", Lua_Player_get_energy},
+	{"name", Lua_Player_get_name},
+	{"oxygen", Lua_Player_get_oxygen},
 	{0, 0 }
 };
 
@@ -85,6 +111,25 @@ static int Lua_Player_set_energy(lua_State *L)
 
 	get_player_data(p->player_index)->suit_energy = energy;
 	mark_shield_display_as_dirty();
+
+	return 0;
+}
+
+static int Lua_Player_set_oxygen(lua_State *L)
+{
+	Lua_Player *p = (Lua_Player *) lua_touserdata(L, 1);
+	if (!lua_isnumber(L, 2))
+	{
+		luaL_error(L, "player.oxygen: incorrect argument type");
+	}
+	
+	int oxygen = static_cast<int>(lua_tonumber(L, 2));
+	if (oxygen > PLAYER_MAXIMUM_SUIT_OXYGEN)
+		oxygen = PLAYER_MAXIMUM_SUIT_OXYGEN;
+
+	get_player_data(p->player_index)->suit_oxygen = oxygen;
+	mark_shield_display_as_dirty();
+
 	return 0;
 }
 
@@ -92,6 +137,8 @@ static int Lua_Player_set_energy(lua_State *L)
 static const luaL_reg Lua_Player_set[] = {
 	{"energy", Lua_Player_set_energy},
 	{"juice", Lua_Player_set_energy},
+	{"life", Lua_Player_set_energy},
+	{"oxygen", Lua_Player_set_oxygen},
 	{0, 0}
 };
 
@@ -178,7 +225,7 @@ static int Lua_Players_call(lua_State *L)
 
 static int Lua_Players_iterator(lua_State *L)
 {
-	int player_index = lua_tonumber(L, lua_upvalueindex(1));
+	int player_index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
 	if (player_index < dynamic_world->player_count)
 	{
 		Lua_Player *p = (Lua_Player *) lua_newuserdata(L, sizeof(Lua_Player));
@@ -281,7 +328,12 @@ int Lua_Player_register (lua_State *L)
 
 static const char *compatibility_script = ""
 	"function get_life(player) return Players[player + 1].energy end\n"
-	"function set_life(player, shield) Players[player + 1].energy = shield end\n";
+	"function set_life(player, shield) Players[player + 1].energy = shield end\n"
+	"function get_oxygen(player) return Players[player + 1].oxygen end\n"
+	"function set_oxygen(player, oxygen) Players[player + 1].oxygen = oxygen end\n"
+	"function number_of_players() return # Players end\n"
+	"function player_is_dead(player) return Players[player + 1].dead end\n"
+	"function get_player_name(player) return Players[player + 1].name end\n";
 
 static int Lua_Player_load_compatibility(lua_State *L)
 {

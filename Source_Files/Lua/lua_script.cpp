@@ -518,12 +518,6 @@ static int L_Number_of_Polygons (lua_State *L)
 	return 1;
 }
 
-static int L_Number_of_Players(lua_State *L)
-{
-	lua_pushnumber(L, dynamic_world->player_count);
-	return 1;
-}
-
 static int L_Get_Level_Name(lua_State *L)
 {
 	lua_pushstring(L, static_world->level_name);
@@ -798,95 +792,6 @@ static int L_Get_Tag_State(lua_State *L)
 
 	lua_pushboolean(L, changed);
 	return 1;
-}
-
-static int L_Get_Life(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_life: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_life: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, player->suit_energy);
-	return 1;
-}
-
-static int L_Set_Life(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_life: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int energy = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "set_life: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	if (energy > 3*PLAYER_MAXIMUM_SUIT_ENERGY)
-		energy = 3*PLAYER_MAXIMUM_SUIT_ENERGY;
-
-	player->suit_energy = energy;
-	mark_shield_display_as_dirty();
-
-	return 0;
-}
-
-static int L_Get_Oxygen(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_oxygen: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_oxygen: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-
-	lua_pushnumber(L, player->suit_oxygen);
-	return 1;
-}
-
-static int L_Set_Oxygen(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_oxygen: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int oxygen = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "set_oxygen: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	if (oxygen > PLAYER_MAXIMUM_SUIT_OXYGEN)
-		oxygen = PLAYER_MAXIMUM_SUIT_OXYGEN;
-
-	player->suit_oxygen = oxygen;
-	mark_shield_display_as_dirty();
-
-	return 0;
 }
 
 static int L_Add_Item(lua_State *L)
@@ -2381,26 +2286,6 @@ static int L_Set_Player_Team(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Player_Name(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_player_name: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_player_name: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	lua_pushstring(L, player->name);
-	return 1;
-}
-
 static int L_Get_Player_Powerup_Duration(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -2603,28 +2488,6 @@ static int L_Accelerate_Player(lua_State *L)
 	accelerate_player(player->monster_index, static_cast<int>(vertical_velocity*WORLD_ONE), static_cast<int>(direction/AngleConvert), static_cast<int>(velocity*WORLD_ONE));
 
 	return 0;
-}
-
-static int L_Player_Is_Dead(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "player_is_dead: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "player_is_dead: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-
-	if (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player))
-		lua_pushboolean(L, true);
-	else
-		lua_pushboolean(L, false);
-	return 1;
 }
 
 #if TIENNOU_PLAYER_CONTROL
@@ -4885,7 +4748,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "local_player_index", L_Local_Player_Index);
 	lua_register(state, "get_level_name", L_Get_Level_Name);
 	lua_register(state, "player_to_monster_index", L_Player_To_Monster_Index);
-	lua_register(state, "number_of_players", L_Number_of_Players);
 	lua_register(state, "screen_print", L_Screen_Print);
 	//lua_register(state, "display_text", L_Display_Text);
 	lua_register(state, "inflict_damage", L_Inflict_Damage);
@@ -4896,10 +4758,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "show_interface", L_Show_Interface);
 	lua_register(state, "get_tag_state", L_Get_Tag_State);
 	lua_register(state, "set_tag_state", L_Set_Tag_State);
-//	lua_register(state, "get_life", L_Get_Life);
-//	lua_register(state, "set_life", L_Set_Life);
-	lua_register(state, "get_oxygen", L_Get_Oxygen);
-	lua_register(state, "set_oxygen", L_Set_Oxygen);
 	lua_register(state, "add_item", L_Add_Item);
 	lua_register(state, "remove_item", L_Remove_Item);
 	lua_register(state, "count_item", L_Count_Item);
@@ -4968,7 +4826,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_player_color", L_Set_Player_Color);
 	lua_register(state, "get_player_team", L_Get_Player_Team);
 	lua_register(state, "set_player_team", L_Set_Player_Team);
-	lua_register(state, "get_player_name", L_Get_Player_Name);
 	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);
 	lua_register(state, "set_player_powerup_duration", L_Set_Player_Powerup_Duration);
 	lua_register(state, "get_player_internal_velocity", L_Get_Player_Internal_Velocity);
@@ -4976,7 +4833,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_player_external_velocity", L_Set_Player_External_Velocity);
 	lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
 	lua_register(state, "accelerate_player", L_Accelerate_Player);
-	lua_register(state, "player_is_dead", L_Player_Is_Dead);
 	lua_register(state, "player_control", L_Player_Control);
 	lua_register(state, "teleport_player", L_Teleport_Player);
 	lua_register(state, "teleport_player_to_level", L_Teleport_Player_To_Level);
