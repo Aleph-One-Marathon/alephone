@@ -71,6 +71,13 @@ static int Lua_Player_get_energy(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_get_index(lua_State *L)
+{
+	Lua_Player *p = (Lua_Player *) lua_touserdata(L, 1);
+	lua_pushnumber(L, p->player_index);
+	return 1;
+}
+
 static int Lua_Player_get_name(lua_State *L)
 {
 	Lua_Player *p = (Lua_Player *) lua_touserdata(L, 1);
@@ -88,6 +95,7 @@ static int Lua_Player_get_oxygen(lua_State *L)
 static const luaL_reg Lua_Player_get[] = {
 	{"dead", Lua_Player_get_dead},
 	{"energy", Lua_Player_get_energy},
+	{"index", Lua_Player_get_index},
 	{"juice", Lua_Player_get_energy},
 	{"life", Lua_Player_get_energy},
 	{"name", Lua_Player_get_name},
@@ -249,7 +257,7 @@ int Lua_Players_index(lua_State *L)
 	if (lua_isnumber(L, 2))
 	{
 		int player_index = static_cast<int>(lua_tonumber(L, 2));
-		if (player_index < 1 || player_index > dynamic_world->player_count)
+		if (player_index < 0 || player_index >= dynamic_world->player_count)
 		{
 			lua_pushnil(L);
 		}
@@ -258,7 +266,7 @@ int Lua_Players_index(lua_State *L)
 			Lua_Player *p = (Lua_Player *) lua_newuserdata(L, sizeof(Lua_Player));
 			luaL_getmetatable(L, LUA_PLAYER);
 			lua_setmetatable(L, -2);
-			p->player_index = player_index - 1;
+			p->player_index = player_index;
 		}
 	}
 	else
@@ -327,13 +335,13 @@ int Lua_Player_register (lua_State *L)
 }
 
 static const char *compatibility_script = ""
-	"function get_life(player) return Players[player + 1].energy end\n"
-	"function set_life(player, shield) Players[player + 1].energy = shield end\n"
-	"function get_oxygen(player) return Players[player + 1].oxygen end\n"
-	"function set_oxygen(player, oxygen) Players[player + 1].oxygen = oxygen end\n"
+	"function get_life(player) return Players[player].energy end\n"
+	"function set_life(player, shield) Players[player].energy = shield end\n"
+	"function get_oxygen(player) return Players[player].oxygen end\n"
+	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
 	"function number_of_players() return # Players end\n"
-	"function player_is_dead(player) return Players[player + 1].dead end\n"
-	"function get_player_name(player) return Players[player + 1].name end\n";
+	"function player_is_dead(player) return Players[player].dead end\n"
+	"function get_player_name(player) return Players[player].name end\n";
 
 static int Lua_Player_load_compatibility(lua_State *L)
 {
