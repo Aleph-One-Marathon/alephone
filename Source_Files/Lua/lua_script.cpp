@@ -1186,35 +1186,6 @@ static int L_Set_All_Fog_Attributes(lua_State *L)
 	return 0;
 }
 
-static int L_Teleport_Player(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "teleport_player: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int dest = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "teleport_player: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	monster_data *monster= get_monster_data(player->monster_index);
-
-	SET_PLAYER_TELEPORTING_STATUS(player, true);
-	monster->action= _monster_is_teleporting;
-	player->teleporting_phase= 0;
-	player->delay_before_teleport= 0;
-
-	player->teleporting_destination= dest;
-	if (local_player_index == player_index)
-		start_teleporting_effect(true);
-	play_object_sound(player->object_index, Sound_TeleportOut());
-	return 0;
-}
-
 // Note: a monster of the type created must already exist in the map.
 static int L_New_Monster(lua_State *L)
 {
@@ -2204,88 +2175,6 @@ static int L_Set_Player_Angle(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Player_Color(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_player_color: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_player_color: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, player->color);
-	return 1;
-}
-
-static int L_Set_Player_Color(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_player_color: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int color = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "set_player_color: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	player->color = color;
-	return 0;
-}
-
-static int L_Get_Player_Team(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_player_team: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_player_team: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, player->team);
-	return 1;
-}
-
-static int L_Set_Player_Team(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_player_team: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int team = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "set_player_team: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	player->team = team;
-	return 0;
-}
-
 static int L_Get_Player_Powerup_Duration(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -2741,36 +2630,6 @@ static int L_Player_Control(lua_State *L)
 			action_flags[i] = action_flags[0];
 
 		GetLuaActionQueues()->enqueueActionFlags(player_index, action_flags, value);
-	}
-	return 0;
-}
-
-static int L_Teleport_Player_To_Level(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "teleport_player_to_level: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int dest = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "teleport_player_to_level: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	monster_data *monster= get_monster_data(player->monster_index);
-
-	SET_PLAYER_TELEPORTING_STATUS(player, true);
-	monster->action= _monster_is_teleporting;
-	player->teleporting_phase= 0;
-	player->delay_before_teleport= 0;
-
-	player->teleporting_destination= - dest -1;
-	if (View_DoInterlevelTeleportOutEffects()) {
-		start_teleporting_effect(true);
-		play_object_sound(player->object_index, Sound_TeleportOut());
 	}
 	return 0;
 }
@@ -4822,10 +4681,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_player_position", L_Set_Player_Position);
 	lua_register(state, "get_player_angle", L_Get_Player_Angle);
 	lua_register(state, "set_player_angle", L_Set_Player_Angle);
-	lua_register(state, "get_player_color", L_Get_Player_Color);
-	lua_register(state, "set_player_color", L_Set_Player_Color);
-	lua_register(state, "get_player_team", L_Get_Player_Team);
-	lua_register(state, "set_player_team", L_Set_Player_Team);
 	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);
 	lua_register(state, "set_player_powerup_duration", L_Set_Player_Powerup_Duration);
 	lua_register(state, "get_player_internal_velocity", L_Get_Player_Internal_Velocity);
@@ -4834,8 +4689,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
 	lua_register(state, "accelerate_player", L_Accelerate_Player);
 	lua_register(state, "player_control", L_Player_Control);
-	lua_register(state, "teleport_player", L_Teleport_Player);
-	lua_register(state, "teleport_player_to_level", L_Teleport_Player_To_Level);
 	//lua_register(state, "set_player_global_speed", L_Set_Player_Global_Speed);
 	lua_register(state, "set_platform_player_control", L_Set_Platform_Player_Control);
 	lua_register(state, "get_platform_player_control", L_Get_Platform_Player_Control);
@@ -5053,9 +4906,15 @@ void ExecuteLuaString(const std::string& line)
 		lua_loaded = true;
 	}
 
-	luaL_loadbuffer(state, line.c_str(), line.size(), "console");
-	if (lua_pcall(state, 0, 0, 0) != 0)
+	if (luaL_loadbuffer(state, line.c_str(), line.size(), "console") != 0)
+	{
 		L_Error(lua_tostring(state, -1));
+	}
+	else 
+	{
+		if (lua_pcall(state, 0, 0, 0) != 0)
+			L_Error(lua_tostring(state, -1));
+	}
 }
 
 void CloseLuaScript()
