@@ -47,15 +47,6 @@ May 14, 2003 (Woody Zenfell):
 #include "player.h"  // for get_player_data()
 #include "Logging.h"
 
-// Lifted from player.cpp; changed short to int
-struct ActionQueues::action_queue {
-	unsigned int read_index, write_index;
-	
-	uint32 *buffer;
-};
-
-
-
 // basically ripped from player.cpp::allocate_player_memory().
 ActionQueues::ActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize, bool inZombiesControllable) : mNumPlayers(inNumPlayers), mQueueSize(inQueueSize), mZombiesControllable(inZombiesControllable) {
 

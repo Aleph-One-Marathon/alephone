@@ -64,7 +64,11 @@ public:
     ~ActionQueues();
     
 protected:
-    struct action_queue;
+    struct action_queue {
+	    unsigned int read_index, write_index;
+
+	    uint32 *buffer;
+    };
 
     unsigned int	mNumPlayers;
     unsigned int	mQueueSize;
