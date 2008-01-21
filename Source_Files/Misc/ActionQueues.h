@@ -82,4 +82,12 @@ private:
     ActionQueues& operator =(ActionQueues&);
 };
 
+class ModifiableActionQueues : public ActionQueues {
+public:
+	ModifiableActionQueues(unsigned int inNumPlayers, unsigned int inQueueSize, bool inZombiesControllable) : ActionQueues(inNumPlayers, inQueueSize, inZombiesControllable) { }
+
+	// modifies action flags at the head of the queue
+	void modifyActionFlags(int inPlayerIndex, uint32 inFlags, uint32 inFlagsMask);
+};
+
 #endif // ACTIONQUEUES_H

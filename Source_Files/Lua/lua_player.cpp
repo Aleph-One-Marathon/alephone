@@ -20,7 +20,9 @@ LUA_PLAYER.CPP
 	Implements the Lua Player class
 */
 
+#include "ActionQueues.h"
 #include "lua_player.h"
+#include "lua_templates.h"
 #include "map.h"
 #include "monsters.h"
 #include "player.h"
@@ -30,35 +32,113 @@ LUA_PLAYER.CPP
 
 #ifdef HAVE_LUA
 
-const char *LUA_PLAYER = "Player";
-const char *LUA_PLAYER_GET = LUA_PLAYER + 1;
-const char *LUA_PLAYER_SET = LUA_PLAYER + 2;
+struct Lua_Action_Flags {
+	short player_index;
+	static const char *registry;
+	
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+};
 
-extern void L_Error(const char *message);
+const char *Lua_Action_Flags::registry = "ActionFlags";
+
+extern ModifiableActionQueues *GetGameQueue();
+
+template<uint32 flag> 
+static int get_action_flag_T(lua_State *L)
+{
+	Lua_Action_Flags *f = L_To<Lua_Action_Flags>(L, 1);
+	int player_index = f->player_index;
+
+	if (GetGameQueue()->countActionFlags(player_index))
+	{
+		uint32 flags = GetGameQueue()->peekActionFlags(player_index, 0);
+		lua_pushboolean(L, flags & flag);
+	}
+	else
+	{
+		return luaL_error(L, "action flags are only accessible in idle()");
+	}
+
+	return 1;
+}
+
+template<uint32 flag> 
+static int set_action_flag_T(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "action flags: incorrect argument type");
+	
+	Lua_Action_Flags *f = L_To<Lua_Action_Flags>(L, 1);
+	int player_index = f->player_index;
+	if (GetGameQueue()->countActionFlags(player_index))
+	{
+		if (lua_toboolean(L, 2))
+		{
+			GetGameQueue()->modifyActionFlags(player_index, flag, flag);
+		}
+		else
+		{
+			GetGameQueue()->modifyActionFlags(player_index, 0, flag);
+		}
+	}
+	else
+	{
+		return luaL_error(L, "action flags are only acessible in idle()");
+	}
+
+	return 0;
+}
+
+const luaL_reg Lua_Action_Flags::index_table[] = {
+	{"action_trigger", get_action_flag_T<_action_trigger_state>},
+	{"cycle_weapons_backward", get_action_flag_T<_cycle_weapons_backward>},
+	{"cycle_weapons_forward", get_action_flag_T<_cycle_weapons_forward>},
+	{"left_trigger", get_action_flag_T<_left_trigger_state>},
+	{"microphone_button", get_action_flag_T<_microphone_button>},
+	{"right_trigger", get_action_flag_T<_right_trigger_state>},
+	{"toggle_map", get_action_flag_T<_toggle_map>},
+	{0, 0}
+};
+
+const luaL_reg Lua_Action_Flags::newindex_table[] = {
+	{"action_trigger", set_action_flag_T<_action_trigger_state>},
+	{"cycle_weapons_backward", set_action_flag_T<_cycle_weapons_backward>},
+	{"cycle_weapons_forward", set_action_flag_T<_cycle_weapons_forward>},
+	{"left_trigger", set_action_flag_T<_left_trigger_state>},
+	{"microphone_button", set_action_flag_T<_microphone_button>},
+	{"right_trigger", set_action_flag_T<_right_trigger_state>},
+	{"toggle_map", set_action_flag_T<_toggle_map>},
+	{0, 0}
+};
+
+const luaL_reg Lua_Action_Flags::metatable[] = {
+	{"__index", L_Index<Lua_Action_Flags>},
+	{"__newindex", L_Newindex<Lua_Action_Flags>},
+	{0, 0}
+};
 
 struct Lua_Player {
 	short player_index;
+
+	static const char *registry;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
 };
 
-static Lua_Player *toLua_Player(lua_State *L, int index)
-{
-	Lua_Player *p = (Lua_Player *) lua_touserdata(L, index);
-	if (!p) luaL_typerror(L, index, LUA_PLAYER);
-	return p;
-}
+const char *Lua_Player::registry = "Player";
 
-static Lua_Player *checkLua_Player(lua_State *L, int index)
+int L_PushPlayer(lua_State *L, int player_index)
 {
-	Lua_Player *p;
-	luaL_checktype(L, index, LUA_TUSERDATA);
-	p = (Lua_Player *) luaL_checkudata(L, index, LUA_PLAYER);
-	if (!p) luaL_typerror(L, index, LUA_PLAYER);
-	return p;
+	Lua_Player *p = L_Push<Lua_Player>(L);
+	p->player_index = player_index;
 }
 
 static int Lua_Player_index(lua_State *L, int index)
 {
-	Lua_Player *p = toLua_Player(L, index);
+	Lua_Player *p = L_To<Lua_Player>(L, index);
 	return p->player_index;
 }
 
@@ -66,7 +146,7 @@ static int Lua_Player_index(lua_State *L, int index)
 
 static int Lua_Player_teleport(lua_State *L)
 {
-	Lua_Player *p = toLua_Player(L, 1);
+	Lua_Player *p = L_To<Lua_Player>(L, 1);
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "player:teleport(): incorrect argument type");
 
@@ -89,7 +169,7 @@ static int Lua_Player_teleport(lua_State *L)
 
 static int Lua_Player_teleport_to_level(lua_State *L)
 {
-	Lua_Player *p = toLua_Player(L, 1);
+	Lua_Player *p = L_To<Lua_Player>(L, 1);
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "player:teleport_to_level(): incorrect argument type");
 
@@ -112,6 +192,13 @@ static int Lua_Player_teleport_to_level(lua_State *L)
 }
 
 // get accessors
+
+static int Lua_Player_get_action_flags(lua_State *L)
+{
+	Lua_Action_Flags *f = L_Push<Lua_Action_Flags>(L);
+	f->player_index = Lua_Player_index(L, 1);
+	return 1;
+}
 
 static int Lua_Player_get_color(lua_State *L)
 {
@@ -168,7 +255,8 @@ static int Lua_Player_get_teleport_to_level(lua_State *L)
 	return 1;
 }
 
-static const luaL_reg Lua_Player_get[] = {
+const luaL_reg Lua_Player::index_table[] = {
+	{"action_flags", Lua_Player_get_action_flags},
 	{"color", Lua_Player_get_color},
 	{"dead", Lua_Player_get_dead},
 	{"energy", Lua_Player_get_energy},
@@ -180,7 +268,7 @@ static const luaL_reg Lua_Player_get[] = {
 	{"team", Lua_Player_get_team},
 	{"teleport", Lua_Player_get_teleport},
 	{"teleport_to_level", Lua_Player_get_teleport_to_level},
-	{0, 0 }
+	{0, 0}
 };
 
 extern void mark_shield_display_as_dirty();
@@ -248,7 +336,7 @@ static int Lua_Player_set_team(lua_State *L)
 	return 0;
 }
 
-static const luaL_reg Lua_Player_set[] = {
+const luaL_reg Lua_Player::newindex_table[] = {
 	{"color", Lua_Player_set_color},
 	{"energy", Lua_Player_set_energy},
 	{"juice", Lua_Player_set_energy},
@@ -260,88 +348,13 @@ static const luaL_reg Lua_Player_set[] = {
 
 static int Lua_Player_tostring(lua_State *L)
 {
-	lua_pushfstring(L, "Player %d", toLua_Player(L, 1)->player_index);
+	lua_pushfstring(L, "Player %d", L_To<Lua_Player>(L, 1)->player_index);
 	return 1;
 }
 
-static int Lua_Player_index(lua_State *L)
-{
-	if (lua_isstring(L, 2))
-	{
-		luaL_checktype(L, 1, LUA_TUSERDATA);
-		luaL_checkudata(L, 1, LUA_PLAYER);
-
-		// pop the get table
-		lua_pushlightuserdata(L, (void *)&LUA_PLAYER_GET);
-		lua_gettable(L, LUA_REGISTRYINDEX);
-		
-		// get the function from that table
-		lua_pushvalue(L, 2);
-		lua_gettable(L, -2);
-
-		if (lua_isfunction(L, -1))
-		{
-			// execute the function with player as our argument
-			lua_pushvalue(L, 1);
-			if (lua_pcall(L, 1, 1, 0) == LUA_ERRRUN)
-			{
-				// report the error as being on this line
-				luaL_where(L, 1);
-				lua_pushvalue(L, -2);
-				lua_concat(L, 2);
-				lua_error(L);
-			}
-		}
-		else
-		{
-			lua_pushnil(L);
-		}
-	}
-	else
-	{
-		lua_pushnil(L);
-	}
-	
-	return 1;
-}
-
-static int Lua_Player_newindex(lua_State *L)
-{
-	luaL_checktype(L, 1, LUA_TUSERDATA);
-	luaL_checkudata(L, 1, LUA_PLAYER);
-	
-	// pop the set table
-	lua_pushlightuserdata(L, (void *)&LUA_PLAYER_SET);
-	lua_gettable(L, LUA_REGISTRYINDEX);
-	
-	// get the function from that table
-	lua_pushvalue(L, 2);
-	lua_gettable(L, -2);
-	
-	if (lua_isnil(L, -1))
-	{
-		luaL_error(L, "player: no such index");
-	}
-	
-	// execute the function with player, value as our arguments
-	lua_pushvalue(L, 1);
-	lua_pushvalue(L, 3);
-	if (lua_pcall(L, 2, 0, 0) == LUA_ERRRUN)
-	{
-		// report the error as being on this line
-		luaL_where(L, 1);
-		lua_pushvalue(L, -2);
-		lua_concat(L, 2);
-		lua_error(L);
-	}
-
-	return 0;
-}
-
-
-static const luaL_reg Lua_Player_meta[] = {
-	{"__index", Lua_Player_index},
-	{"__newindex", Lua_Player_newindex},
+const luaL_reg Lua_Player::metatable[] = {
+	{"__index", L_Index<Lua_Player>},
+	{"__newindex", L_Newindex<Lua_Player>},
 	{"__tostring", Lua_Player_tostring},
 	{0, 0}
 };
@@ -361,12 +374,9 @@ static int Lua_Players_iterator(lua_State *L)
 {
 	int player_index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
 	if (player_index < dynamic_world->player_count)
-	{
-		Lua_Player *p = (Lua_Player *) lua_newuserdata(L, sizeof(Lua_Player));
-		luaL_getmetatable(L, LUA_PLAYER);
-		lua_setmetatable(L, -2);
-		p->player_index = player_index;
-		
+	{		
+		L_PushPlayer(L, player_index);
+
 		lua_pushnumber(L, ++player_index);
 		lua_replace(L, lua_upvalueindex(1));
 	}
@@ -378,7 +388,7 @@ static int Lua_Players_iterator(lua_State *L)
 	return 1;
 }
 
-int Lua_Players_index(lua_State *L)
+static int Lua_Players_index(lua_State *L)
 {
 	if (lua_isnumber(L, 2))
 	{
@@ -389,10 +399,7 @@ int Lua_Players_index(lua_State *L)
 		}
 		else
 		{
-			Lua_Player *p = (Lua_Player *) lua_newuserdata(L, sizeof(Lua_Player));
-			luaL_getmetatable(L, LUA_PLAYER);
-			lua_setmetatable(L, -2);
-			p->player_index = player_index;
+			L_PushPlayer(L, player_index);
 		}
 	}
 	else
@@ -403,12 +410,12 @@ int Lua_Players_index(lua_State *L)
 	return 1;
 }
 
-int Lua_Players_newindex(lua_State *L)
+static int Lua_Players_newindex(lua_State *L)
 {
 	luaL_error(L, "Players is read-only");
 }
 
-int Lua_Players_len(lua_State *L)
+static int Lua_Players_len(lua_State *L)
 {
 	lua_pushnumber(L, dynamic_world->player_count);
 	return 1;
@@ -426,31 +433,16 @@ static int Lua_Player_load_compatibility(lua_State *L);
 
 int Lua_Player_register (lua_State *L)
 {
-	luaL_newmetatable(L, LUA_PLAYER); // create Player metatable, add to the registry
-	luaL_openlib(L, 0, Lua_Player_meta, 0); // fill metatable
+	L_Register<Lua_Action_Flags>(L);
+	L_Register<Lua_Player>(L);
 	
 	lua_newuserdata(L, 0); // Players
-
 	lua_pushvalue(L, -1);
 	luaL_newmetatable(L, LUA_PLAYERS);
 	luaL_openlib(L, 0, Lua_Players_meta, 0);
-
 	lua_setmetatable(L, -2);
-
 	lua_setglobal(L, LUA_PLAYERS);
 	
-	// register the get accessors for Player
-	lua_pushlightuserdata(L, (void *) &LUA_PLAYER_GET);
-	lua_newtable(L);
-	luaL_openlib(L, 0, Lua_Player_get, 0);
-	lua_settable(L, LUA_REGISTRYINDEX);
-
-	// register the set accessors for Player
-	lua_pushlightuserdata(L, (void *) &LUA_PLAYER_SET);
-	lua_newtable(L);
-	luaL_openlib(L, 0, Lua_Player_set, 0);
-	lua_settable(L, LUA_REGISTRYINDEX);
-
 	Lua_Player_load_compatibility(L);
 	
 	return 0;

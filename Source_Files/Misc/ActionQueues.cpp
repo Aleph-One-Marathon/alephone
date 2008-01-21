@@ -225,3 +225,16 @@ void
 ActionQueues::setZombiesControllable(bool inZombiesControllable) {
         mZombiesControllable = inZombiesControllable;
 }
+
+void ModifiableActionQueues::modifyActionFlags(int inPlayerIndex, uint32 inFlags, uint32 inFlagsMask)
+{
+	if (!countActionFlags(inPlayerIndex))
+	{
+		logError("no flags when modifying ActionQueue for player %d", inPlayerIndex);
+		return;
+	}
+
+	action_queue *queue = mQueueHeaders + inPlayerIndex;
+	queue->buffer[queue->read_index] = (queue->buffer[queue->read_index] & ~inFlagsMask) | (inFlags & inFlagsMask);
+
+}

@@ -60,10 +60,10 @@ struct timed_angle
 struct lua_path
 {
     short index;
-    vector<timed_point> path_points;
+    std::vector<timed_point> path_points;
     short current_point_index;
     long last_point_time;
-    vector<timed_angle> path_angles;
+    std::vector<timed_angle> path_angles;
     short current_angle_index;
     long last_angle_time;
 };

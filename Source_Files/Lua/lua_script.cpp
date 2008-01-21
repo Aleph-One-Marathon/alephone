@@ -94,6 +94,7 @@ bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
+//static ActionQueues* sLuaActionQueues = 0;
 static ActionQueues* sLuaActionQueues = 0;
 ActionQueues* GetLuaActionQueues() { return sLuaActionQueues; }
 

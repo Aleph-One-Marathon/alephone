@@ -127,7 +127,9 @@ Feb 8, 2003 (Woody Zenfell):
 
 // This is an intermediate action-flags queue for transferring action flags
 // from whichever source to the engine's event handling
-static ActionQueues* GameQueue = NULL;
+// ghs: making this externally available for Lua's trigger modifications
+static ModifiableActionQueues* GameQueue = NULL;
+ModifiableActionQueues* GetGameQueue() { return GameQueue; }
 
 // ZZZ: We keep this around for use in prediction (we assume a player keeps on doin' what he's been doin')
 static uint32	sMostRecentFlagsForPlayer[MAXIMUM_NUMBER_OF_PLAYERS];
@@ -163,7 +165,7 @@ void initialize_marathon(
 #if defined(HAVE_OPENGL) && !defined(mac)
 	OGL_Initialize();
 #endif
-	GameQueue = new ActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, true);
+	GameQueue = new ModifiableActionQueues(MAXIMUM_NUMBER_OF_PLAYERS, ACTION_QUEUE_BUFFER_DIAMETER, true);
 }
 
 static size_t sPredictedTicks = 0;
