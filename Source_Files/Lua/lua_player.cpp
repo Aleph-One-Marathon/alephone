@@ -91,6 +91,28 @@ static int set_action_flag_T(lua_State *L)
 	return 0;
 }
 
+static int set_microphone_action_flag(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "action flags: incorrect argument type");
+
+	if (lua_toboolean(L, 2))
+		return luaL_error(L, "you can only disable the microphone button flag");
+
+	Lua_Action_Flags *f = L_To<Lua_Action_Flags>(L, 1);
+	int player_index = f->player_index;
+	if (GetGameQueue()->countActionFlags(player_index))
+	{
+		GetGameQueue()->modifyActionFlags(player_index, 0, _microphone_button);
+	}
+	else
+	{
+		return luaL_error(L, "action flags are only accessible in idle()");
+	}
+
+	return 0;
+}
+
 const luaL_reg Lua_Action_Flags::index_table[] = {
 	{"action_trigger", get_action_flag_T<_action_trigger_state>},
 	{"cycle_weapons_backward", get_action_flag_T<_cycle_weapons_backward>},
@@ -107,7 +129,7 @@ const luaL_reg Lua_Action_Flags::newindex_table[] = {
 	{"cycle_weapons_backward", set_action_flag_T<_cycle_weapons_backward>},
 	{"cycle_weapons_forward", set_action_flag_T<_cycle_weapons_forward>},
 	{"left_trigger", set_action_flag_T<_left_trigger_state>},
-	{"microphone_button", set_action_flag_T<_microphone_button>},
+	{"microphone_button", set_microphone_action_flag},
 	{"right_trigger", set_action_flag_T<_right_trigger_state>},
 	{"toggle_map", set_action_flag_T<_toggle_map>},
 	{0, 0}

@@ -289,10 +289,12 @@ them, or to force him to do so. Here are the available flags:
 left_trigger, microphone_button, and right_trigger
 are <em>unlatched</em>, which means they will be true each tick the
 player holds them down.
-<p class=note>The others are <em>latched</em>: they will be true the
-first tick the player holds them down, and then false, until he
-releases and presses them again.
-
+<p class=note>
+The others are <em>latched</em>: they will be true the first tick the
+player holds them down, and then false, until he releases and presses
+them again.
+<p class=note>
+microphone_button can be set to false, but can not be set to true by Lua
 <p class=note>
 Action flags must only be read or written inside the idle() trigger
 
