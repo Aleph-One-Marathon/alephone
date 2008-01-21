@@ -127,6 +127,15 @@ p.note {
 		<LI><A HREF="#0.2">Running a Script</A>
 		<LI><A HREF="#0.3">Units</A>
 	</OL>
+	<LI class="main"><A HREF="#global_tables">Global Tables</A>
+	  <OL Type="1" class="sub">
+	    <LI><A HREF="#global_table_basics">Basics</a>
+	    <LI><A HREF="#global_table_list">Global Tables</a>
+	  </OL>
+	<LI class="main"><A HREF="#tables">Tables</A>
+	  <OL type="1" class="sub">
+	    <LI class="main"><A HREF="#player_table">Player</A>
+	  </ol>
 	<LI class="main"><A HREF="#1.0">Triggers</A>
 	<LI class="main"><A HREF="#2.0">A1 Functions</A>
 	<OL Type="1" class="sub">
@@ -221,6 +230,119 @@ and 1/1024 of what A1 uses internally and what you'd see in Pfhorte.
 <p>
 Units for speed are . . . well let's say they're messy.  :)
 
+<h2><A NAME="global_tables"></A>Global Tables</h2>
+<p>
+Global tables are the way to get access to entities in the game world.
+
+<h3><a name="global_table_basics"></a>Basics</h3>
+<p>
+Global tables behave like Lua tables: you can access them by index, or
+by iterator, or you can count how many entries they contain. Here are
+some examples using the Players global table:
+
+<p class=func>
+Players[0]
+<p class=desc>
+Returns an table representing the player with player_index 0
+
+<p class=func>
+# Players
+<p class=desc>
+Returns the number of players in the game
+
+<p class=func>
+for p in Players() do<br>&nbsp;p.life = p.life + 1<br>end
+<p class=desc>
+Adds one to each player's life.
+
+<h3><a name="global_table_list"></a>Global Tables</h3>
+Here are the global tables, with links to the representations they contain:
+<ul>
+<li><a href="#player_table">Players</a>
+</ul>
+
+<h2><a name="tables"</a>Tables</h2> 
+<p>
+These tables are representations of entities in the game
+world. Remember, you can access fields two ways: table.field, or
+table["field"]. Also, remember you need to access member functions
+with a colon: table:function()
+
+<h3><a name="player_table"</a>Player</h2>
+The Player table represents a player in the game world.
+<p class=func>
+action_flags
+<p class=desc>
+table: allows access to some of the player's action flags. They can be
+changed to true or false each tick, to keep a player from enacting
+them, or to force him to do so. Here are the available flags:
+<ul>
+<li>action_trigger
+<li>cycle_weapons_backward
+<li>cycle_weapons_forward
+<li>left_trigger
+<li>microphone_button
+<li>right_trigger
+<li>toggle_map
+</ul>
+<p class=note>
+left_trigger, microphone_button, and right_trigger
+are <em>unlatched</em>, which means they will be true each tick the
+player holds them down.
+<p class=note>The others are <em>latched</em>: they will be true the
+first tick the player holds them down, and then false, until he
+releases and presses them again.
+
+<p class=note>
+Action flags must only be read or written inside the idle() trigger
+
+<p class=func>
+color
+<p class=desc>
+the player's color
+
+<p class=func>
+dead
+<p class=desc>
+true if the player is dead, false if alive
+<p class=note>
+read-only
+
+<p class=func>
+energy<br>life
+<p class=desc>
+the amount of shields/suit energy/life the player has
+
+<p class=func>
+name
+<p class=desc>
+the player's name
+<p class=note>
+read-only
+
+<p class=func>
+oxygen
+<p class=desc>
+the amount of oxygen the player has
+
+<p class=func>
+team
+<p class=desc>
+which team the player is on
+
+<p class=func>
+teleport(poly)
+<p class=desc>
+teleports player to poly, similar to using a teleporter
+
+<p class=func>
+teleport_to_level(level)
+<p class=desc>
+teleports player to level. Of course, all the other players will also go to that level
+<p class=note>
+(jkvw: Also be aware that the life of a script expires when you change
+levels. (regardless of whether it was initiated by mml or network
+gather dialog))
 
 <h2><A NAME="1.0"></A>Triggers</h2>
 <p>
@@ -389,10 +511,6 @@ These are functions defined in A1 which scripts can call.
 <h3><A NAME="2.1"></A>Player</h3>
 <p>
 The following are functions related to the player.
-<p class=func>
-number_of_players ()
-<p class=desc>
-Returns the number of players in the game.
 
 <p class=func>
 inflict_damage(player, amount [, type])
@@ -402,23 +520,6 @@ Inflicts damage on player.
 "amount" is how much damage is dealt; type is the damage type used.
 <p class=note>
 If no type is specified, crusher damage is dealt.
-
-<p class=func>
-get_life(player)
-<br>
-get_oxygen(player)
-<p class=desc>
-Returns the shield/oxygen level of player.
-
-<p class=func>
-set_life(player, shield)
-<p class=desc>
-Sets the shield level of player to the amount specified or triple energy (full purple), whichever is less.
-
-<p class=func>
-set_oxygen(player, oxygen)
-<p class=desc>
-Sets the oxygen level of player to the amount specified or one full tank, whichever is less.
 
 <p class=func>
 get_player_position (player)
@@ -443,35 +544,11 @@ set_player_angle (player, yaw, pitch)
 Returns/Sets both the facing (yaw) and the elevation (pitch) of player.
 
 <p class=func>
-get_player_color (player)
-<br>
-set_player_color (player, color)
-<p class=desc>
-Gets/Sets the player's color.
-
-<p class=func>
-get_player_team (player)
-<br>
-set_player_team (player, team)
-<p class=desc>
-Returns/Sets the team of player.
-
-<p class=func>
-get_player_name (player)
-<p class=desc>
-Returns the name of player.
-
-<p class=func>
 get_player_powerup_duration (player, powerup)
 <br>
 set_player_powerup_duration (player, powerup, duration)
 <p class=desc>
 Gets/Sets the duration of the player's powerup. See the mnemonics for the powerup list. No powerup has to be picked up before setting the duration.
-
-<p class=func>
-player_is_dead (player)
-<p class=desc>
-Returns true if player is dead, false if alive.
 
 <p class=func>
 select_weapon(player, type)
@@ -483,20 +560,6 @@ player_control (player, move_type, value)
 <p class=note>
 (jkvw: not sure how this works)
 tiennou: In fact you can use it, but it's behavior is not really useful, and it's pretty hard to have a viable script with it. It's use is like "tell 'player' to 'move_type' by 'value' steps" (altought steps is not appropriate...)
-
-<p class=func>
-teleport_player (player, poly)
-<p class=desc>
-Teleports player to poly, similarly to using a teleporter
-
-<p class=func>
-teleport_player_to_level (player, level)
-<p class=desc>
-Teleports player to level.  Of course, all the other players will also go to that level.
-<p class=note>
-(Note from tiennou: I'm not sure this actually work correctly, because the level index could be off by one... If anyone ever use this thing, tell me if it goes wrong)
-<p class=note>
-(jkvw: Also be aware that the life of a script expires when you change levels.  (regardless of whether it was initiated by mml or network gather dialog))
 
 <p class=func>
 enable_player(player)
