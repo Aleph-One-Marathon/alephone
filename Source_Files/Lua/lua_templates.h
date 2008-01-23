@@ -121,6 +121,21 @@ int L_TableIs(lua_State *L)
 	return 1;
 }
 
+template<class T>
+int L_TableEqual(lua_State *L)
+{
+	if (!L_Is<T>(L, 1) || !L_Is<T>(L, 2)) 
+	{
+		lua_pushboolean(L, false);
+	} 
+	else
+	{
+		lua_pushboolean(L, (L_Index<T>(L, 1) == L_Index<T>(L, 2)));
+	}
+
+	return 1;
+}
+
 /* For these to work, add these fields:
    static const luaL_reg index_table[];
    static const luaL_reg newindex_table[];

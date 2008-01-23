@@ -161,6 +161,7 @@ const luaL_reg Lua_Platform::newindex_table[] = {
 const luaL_reg Lua_Platform::metatable[] = {
 	{"__index", L_TableGet<Lua_Platform>},
 	{"__newindex", L_TableSet<Lua_Platform>},
+	{"__eq", L_TableEqual<Lua_Platform>},
 	{0, 0}
 };
 
@@ -442,6 +443,7 @@ const luaL_reg Lua_Player::metatable[] = {
 	{"__index", L_TableGet<Lua_Player>},
 	{"__newindex", L_TableSet<Lua_Player>},
 	{"__tostring", Lua_Player_tostring},
+	{"__eq", L_TableEqual<Lua_Player>},
 	{0, 0}
 };
 
