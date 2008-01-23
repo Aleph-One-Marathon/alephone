@@ -85,7 +85,6 @@ Feb 3, 2003 (Woody Zenfell):
 #define OXYGEN_RECHARGE_FREQUENCY 0
 #define ENERGY_RECHARGE_FREQUENCY 0
 
-#define MAXIMUM_ACTIVATION_RANGE (3*WORLD_ONE)
 #define MAXIMUM_PLATFORM_ACTIVATION_RANGE (3*WORLD_ONE)
 #define MAXIMUM_CONTROL_ACTIVATION_RANGE (WORLD_ONE+WORLD_ONE_HALF)
 #define OBJECT_RADIUS 50
@@ -95,13 +94,6 @@ Feb 3, 2003 (Woody Zenfell):
 // For detecting double-save (overwrite) in a netgame
 enum {
         kDoubleClickTicks = 10
-};
-
-enum
-{
-	_target_is_platform,
-	_target_is_control_panel,
-	_target_is_unrecognized
 };
 
 /* ---------- structures */
@@ -230,7 +222,6 @@ struct control_panel_settings_definition control_panel_settings = {
 control_panel_definition *get_control_panel_definition(
 	const short control_panel_type);
 
-static short find_action_key_target(short player_index, world_distance range, short *target_type);
 //static bool line_side_has_control_panel(short line_index, short polygon_index, short *side_index_with_panel);
 static void	somebody_save_full_auto(player_data* inWhoSaved, bool inOverwrite);
 static void	change_panel_state(short player_index, short panel_side_index);
@@ -600,7 +591,7 @@ control_panel_definition *get_control_panel_definition(
 	return GetMemberWithBounds(control_panel_definitions,control_panel_type,NUMBER_OF_CONTROL_PANEL_DEFINITIONS);
 }
 
-static short find_action_key_target(
+short find_action_key_target(
 	short player_index,
 	world_distance range,
 	short *target_type)

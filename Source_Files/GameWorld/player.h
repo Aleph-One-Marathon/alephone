@@ -442,6 +442,19 @@ struct player_shape_definitions
 	short firing_torsos[PLAYER_TORSO_SHAPE_COUNT]; /* NONE, ..., double pistols */
 };
 
+// ghs: added these for Lua
+
+#define MAXIMUM_ACTIVATION_RANGE (3*WORLD_ONE)
+
+enum
+{
+	_target_is_platform,
+	_target_is_control_panel,
+	_target_is_unrecognized
+};
+
+short find_action_key_target(short player_index, world_distance range, short *target_type);
+
 /* ---------- globals */
 
 extern struct player_data *players;
