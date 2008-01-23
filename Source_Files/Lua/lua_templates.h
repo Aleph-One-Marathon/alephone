@@ -33,8 +33,11 @@ extern "C"
 #include "lualib.h"
 }
 
+/* There are two sets of templates here: the first is for objects like player,
+   and the second are for the global accessors that get them, like Players */
+
 /* Templates: classes should resemble this one:
-class Lua_Example {
+struct Lua_Example {
 	int16 index;
 	static const char *name;
 	static const luaL_reg metatable[];
@@ -249,6 +252,90 @@ int L_TableFunction(lua_State *L)
 {
 	lua_pushcfunction(L, f);
 	return 1;
+}
+
+/* Templates for Globals: classes should resemble this one:
+struct Lua_Example {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static int length();
+	static bool valid(int index); // whether to return while iterating
+};
+*/
+
+template<class G, class T>
+int L_GlobalIterator(lua_State *L)
+{
+	int index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
+	if (index < G::length() && G::valid(index))
+	{
+		L_Push<T>(L, index);
+		
+		lua_pushnumber(L, ++index);
+		lua_replace(L, lua_upvalueindex(1));
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+template<class G, class T>
+int L_GlobalCall(lua_State *L)
+{
+	lua_pushnumber(L, 0);
+	lua_pushcclosure(L, L_GlobalIterator<G, T>, 1);
+	return 1;
+}
+
+template<class G, class T>
+int L_GlobalIndex(lua_State *L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		int index = static_cast<int>(lua_tonumber(L, 2));
+		if (index < 0 || index >= G::length())
+		{
+			lua_pushnil(L);
+		}
+		else
+		{
+			L_Push<T>(L, index);
+		}
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+template<class G>
+int L_GlobalLength(lua_State *L)
+{
+	lua_pushnumber(L, G::length());
+	return 1;
+}
+
+template<class G>
+int L_GlobalNewindex(lua_State *L)
+{
+	std::string error = std::string(G::name) + " is read-only";
+	luaL_error(L, error.c_str());
+}
+
+template<class G>
+void L_GlobalRegister(lua_State *L)
+{
+	lua_newuserdata(L, 0);
+	lua_pushvalue(L, -1);
+	luaL_newmetatable(L, G::name);
+	luaL_openlib(L, 0, G::metatable, 0);
+	lua_setmetatable(L, -2);
+	lua_setglobal(L, G::name);
 }
 
 #endif

@@ -447,73 +447,22 @@ const luaL_reg Lua_Player::metatable[] = {
 	{0, 0}
 };
 
-const char *LUA_PLAYERS = "Players";
-
-static int Lua_Players_iterator(lua_State *L);
-
-static int Lua_Players_call(lua_State *L)
+struct Lua_Players
 {
-	lua_pushnumber(L, 0); // player index
-	lua_pushcclosure(L, Lua_Players_iterator, 1);
-	return 1;
-}
+	static const char *name;
+	static const luaL_reg metatable[];
 
-static int Lua_Players_iterator(lua_State *L)
-{
-	int player_index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
-	if (player_index < dynamic_world->player_count)
-	{		
-		L_Push<Lua_Player>(L, player_index);
+	static int length() { return dynamic_world->player_count; }
+	static bool valid(int) { return true; }
+};
 
-		lua_pushnumber(L, ++player_index);
-		lua_replace(L, lua_upvalueindex(1));
-	}
-	else
-	{
-		lua_pushnil(L);
-	}
+const char* Lua_Players::name = "Players";
 
-	return 1;
-}
-
-static int Lua_Players_index(lua_State *L)
-{
-	if (lua_isnumber(L, 2))
-	{
-		int player_index = static_cast<int>(lua_tonumber(L, 2));
-		if (player_index < 0 || player_index >= dynamic_world->player_count)
-		{
-			lua_pushnil(L);
-		}
-		else
-		{
-			L_Push<Lua_Player>(L, player_index);
-		}
-	}
-	else
-	{
-		lua_pushnil(L);
-	}
-
-	return 1;
-}
-
-static int Lua_Players_newindex(lua_State *L)
-{
-	luaL_error(L, "Players is read-only");
-}
-
-static int Lua_Players_len(lua_State *L)
-{
-	lua_pushnumber(L, dynamic_world->player_count);
-	return 1;
-}
-
-static const luaL_reg Lua_Players_meta[] = {
-	{"__index", Lua_Players_index},
-	{"__newindex", Lua_Players_newindex},
-	{"__len", Lua_Players_len},
-	{"__call", Lua_Players_call},
+const luaL_reg Lua_Players::metatable[] = {
+	{"__index", L_GlobalIndex<Lua_Players, Lua_Player>},
+	{"__newindex", L_GlobalNewindex<Lua_Players>},
+	{"__len", L_GlobalLength<Lua_Players>},
+	{"__call", L_GlobalCall<Lua_Players, Lua_Player>},
 	{0, 0}
 };
 
@@ -525,13 +474,8 @@ int Lua_Player_register (lua_State *L)
 	L_Register<Lua_Player>(L);
 	L_Register<Lua_Side>(L);
 	L_Register<Lua_Platform>(L);
-	
-	lua_newuserdata(L, 0); // Players
-	lua_pushvalue(L, -1);
-	luaL_newmetatable(L, LUA_PLAYERS);
-	luaL_openlib(L, 0, Lua_Players_meta, 0);
-	lua_setmetatable(L, -2);
-	lua_setglobal(L, LUA_PLAYERS);
+
+	L_GlobalRegister<Lua_Players>(L);
 	
 	Lua_Player_load_compatibility(L);
 	
