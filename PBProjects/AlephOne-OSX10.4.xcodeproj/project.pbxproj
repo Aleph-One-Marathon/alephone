@@ -24,6 +24,7 @@
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AE42B4CC0BDBC285003521B7 /* network_microphone_coreaudio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE42B3DC0BDB030B003521B7 /* network_microphone_coreaudio.cpp */; };
+		AE5154600D46E84A00506B58 /* lua_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE51545D0D46E84A00506B58 /* lua_map.cpp */; };
 		AE601F0A0B927C25009F881C /* BasicIFFDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */; };
 		AE601F0B0B927C25009F881C /* Decoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F060B927C25009F881C /* Decoder.cpp */; };
 		AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
@@ -563,6 +564,9 @@
 		AE42B3DC0BDB030B003521B7 /* network_microphone_coreaudio.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_microphone_coreaudio.cpp; path = ../Source_Files/Network/network_microphone_coreaudio.cpp; sourceTree = "<group>"; };
 		AE437C8B08779BC900038E30 /* shared_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = shared_widgets.h; path = ../Source_Files/Misc/shared_widgets.h; sourceTree = SOURCE_ROOT; };
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
+		AE51545D0D46E84A00506B58 /* lua_map.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_map.cpp; sourceTree = "<group>"; };
+		AE51545E0D46E84A00506B58 /* lua_map.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_map.h; sourceTree = "<group>"; };
+		AE51545F0D46E84A00506B58 /* lua_templates.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_templates.h; sourceTree = "<group>"; };
 		AE5604DD086F6DF100D9797C /* network_capabilities.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_capabilities.cpp; path = ../Source_Files/Network/network_capabilities.cpp; sourceTree = SOURCE_ROOT; };
 		AE5604E0086F6E0D00D9797C /* network_capabilities.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_capabilities.h; path = ../Source_Files/Network/network_capabilities.h; sourceTree = SOURCE_ROOT; };
 		AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = BasicIFFDecoder.cpp; sourceTree = "<group>"; };
@@ -1215,8 +1219,11 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
-				AE69B5DB0D404F0400C42C11 /* lua_player.cpp */,
+				AE51545E0D46E84A00506B58 /* lua_map.h */,
 				AE69B5DC0D404F0400C42C11 /* lua_player.h */,
+				AE51545F0D46E84A00506B58 /* lua_templates.h */,
+				AE51545D0D46E84A00506B58 /* lua_map.cpp */,
+				AE69B5DB0D404F0400C42C11 /* lua_player.cpp */,
 				AE7C21D00BFF67FD00CE63EC /* language_definition.h */,
 				AE7C21B80BFF67BE00CE63EC /* Library Headers */,
 				AE7C217F0BFF671E00CE63EC /* Library Sources */,
@@ -2378,6 +2385,7 @@
 				AE7C21D60BFF688000CE63EC /* Update.cpp in Sources */,
 				AE9A39F70CCADFA7004717E3 /* ConnectPool.cpp in Sources */,
 				AE69B5DD0D404F0400C42C11 /* lua_player.cpp in Sources */,
+				AE5154600D46E84A00506B58 /* lua_map.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

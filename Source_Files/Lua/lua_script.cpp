@@ -83,6 +83,7 @@ using namespace std;
 #include "ViewControl.h"
 
 #include "lua_script.h"
+#include "lua_map.h"
 #include "lua_player.h"
 
 #define DONT_REPEAT_DEFINITIONS
@@ -3386,124 +3387,6 @@ static int L_Activate_Terminal(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Polygon_Floor_Height(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_polygon_floor_height: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon)
-	{
-		lua_pushnumber(L, (double)polygon->floor_height/WORLD_ONE);
-		return 1;
-	}
-	return 0;
-}
-
-static int L_Set_Polygon_Floor_Height(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_polygon_floor_height: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon)
-	{
-		polygon->floor_height = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
-		for(short i = 0; i<polygon->vertex_count;++i)
-		{
-			recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
-			recalculate_redundant_line_data(polygon->line_indexes[i]);
-		}
-	}
-	return 0;
-
-}
-
-static int L_Get_Polygon_Ceiling_Height(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_polygon_ceiling_height: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon)
-	{
-		lua_pushnumber(L, (double)polygon->ceiling_height/WORLD_ONE);
-		return 1;
-	}
-	return 0;
-
-}
-
-static int L_Set_Polygon_Ceiling_Height(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_polygon_ceiling_height: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon)
-	{
-		polygon->ceiling_height = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
-		for(short i = 0; i<polygon->vertex_count;++i)
-		{
-			recalculate_redundant_endpoint_data(polygon->endpoint_indexes[i]);
-			recalculate_redundant_line_data(polygon->line_indexes[i]);
-		}
-	}
-	return 0;
-
-}
-
-static int L_Get_Polygon_Type(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_polygon_type: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon)
-	{
-		lua_pushnumber(L, polygon->type);
-		return 1;
-	}
-	return 0;
-}
-
-static int L_Set_Polygon_Type(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_polygon_type: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon)
-	{
-		polygon->type = static_cast<int>(lua_tonumber(L,2));
-	}
-	return 0;
-}
-
 static int L_Get_Polygon_Center(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -4722,12 +4605,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_terminal_text_number", L_Get_Terminal_Text_Number);
 	lua_register(state, "set_terminal_text_number", L_Set_Terminal_Text_Number);
 	lua_register(state, "activate_terminal", L_Activate_Terminal);
-	lua_register(state, "get_polygon_floor_height", L_Get_Polygon_Floor_Height);
-	lua_register(state, "get_polygon_ceiling_height", L_Get_Polygon_Ceiling_Height);
-	lua_register(state, "set_polygon_floor_height", L_Set_Polygon_Floor_Height);
-	lua_register(state, "set_polygon_ceiling_height", L_Set_Polygon_Ceiling_Height);
-	lua_register(state, "get_polygon_type", L_Get_Polygon_Type);
-	lua_register(state, "set_polygon_type", L_Set_Polygon_Type);
 	lua_register(state, "get_polygon_center", L_Get_Polygon_Center);
 	lua_register(state, "get_polygon_permutation", L_Get_Polygon_Permutation);
 	lua_register(state, "set_polygon_permutation", L_Set_Polygon_Permutation);
@@ -4780,6 +4657,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_overlay_icon_by_color", L_Set_Overlay_Icon_By_Color);
 
 	Lua_Player_register(state);
+	Lua_Map_register(state);
 }
 
 void DeclareLuaConstants()
