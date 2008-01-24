@@ -21,6 +21,7 @@ LUA_PLAYER.CPP
 */
 
 #include "ActionQueues.h"
+#include "lua_map.h"
 #include "lua_player.h"
 #include "lua_templates.h"
 #include "map.h"
@@ -35,6 +36,7 @@ LUA_PLAYER.CPP
 struct Lua_Action_Flags {
 	short index;
 	static const char *name;
+	static bool valid(int index) { return Lua_Players::valid(index); }
 	
 	static const luaL_reg metatable[];
 	static const luaL_reg index_table[];
@@ -138,35 +140,9 @@ const luaL_reg Lua_Action_Flags::metatable[] = {
 	{0, 0}
 };
 
-struct Lua_Platform {
-	short index;
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
-const char *Lua_Platform::name = "platform";
-
-const luaL_reg Lua_Platform::index_table[] = {
-	{"index", L_TableIndex<Lua_Platform>},
-	{0, 0}
-};
-
-const luaL_reg Lua_Platform::newindex_table[] = {
-	{0, 0}
-};
-
-const luaL_reg Lua_Platform::metatable[] = {
-	{"__index", L_TableGet<Lua_Platform>},
-	{"__newindex", L_TableSet<Lua_Platform>},
-	{"__eq", L_TableEqual<Lua_Platform>},
-	{0, 0}
-};
-
 struct Lua_Side {
 	short index;
+	static bool valid(int index) { return true; }
 
 	static const char *name;
 	static const luaL_reg metatable[];
@@ -193,6 +169,7 @@ const luaL_reg Lua_Side::metatable[] = {
 
 struct Lua_Player {
 	short index;
+	static bool valid(int index) { return Lua_Players::valid(index); }
 
 	static const char *name;
 	static const luaL_reg metatable[];
@@ -239,10 +216,15 @@ int Lua_Player_find_action_key_target(lua_State *L)
 
 int Lua_Player_teleport(lua_State *L)
 {
-	if (!lua_isnumber(L, 2))
-		return luaL_error(L, "player:teleport(): incorrect argument type");
+	if (!lua_isnumber(L, 2) && !L_Is<Lua_Polygon>(L, 2))
+		return luaL_error(L, "teleport(): incorrect argument type");
 
-	int destination = static_cast<int>(lua_tonumber(L, 2));
+	int destination = -1;
+	if (lua_isnumber(L, 2))
+		destination = static_cast<int>(lua_tonumber(L, 2));
+	else 
+		destination = L_Index<Lua_Polygon>(L, 2);
+
 	int player_index = L_Index<Lua_Player>(L, 1);
 	
 	player_data *player = get_player_data(player_index);
@@ -263,7 +245,7 @@ int Lua_Player_teleport(lua_State *L)
 int Lua_Player_teleport_to_level(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
-		return luaL_error(L, "player:teleport_to_level(): incorrect argument type");
+		return luaL_error(L, "teleport_to_level(): incorrect argument type");
 
 	int level = static_cast<int>(lua_tonumber(L, 2));
 	int player_index = L_Index<Lua_Player>(L, 1);
@@ -323,6 +305,12 @@ static int Lua_Player_get_oxygen(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_get_polygon(lua_State *L)
+{
+	L_Push<Lua_Polygon>(L, get_player_data(L_Index<Lua_Player>(L, 1))->supporting_polygon_index);
+	return 1;
+}
+
 static int Lua_Player_get_team(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->team);
@@ -352,6 +340,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"life", Lua_Player_get_energy},
 	{"name", Lua_Player_get_name},
 	{"oxygen", Lua_Player_get_oxygen},
+	{"polygon", Lua_Player_get_polygon},
 	{"team", Lua_Player_get_team},
 	{"teleport", L_TableFunction<Lua_Player_teleport>},
 	{"teleport_to_level", L_TableFunction<Lua_Player_teleport_to_level>},
@@ -364,7 +353,7 @@ static int Lua_Player_set_color(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 	{
-		return luaL_error(L, "player.color: incorrect argument type");
+		return luaL_error(L, "color: incorrect argument type");
 	}
 	
 
@@ -381,7 +370,7 @@ static int Lua_Player_set_color(lua_State *L)
 static int Lua_Player_set_energy(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
-		return luaL_error(L, "player.energy: incorrect argument type");
+		return luaL_error(L, "energy: incorrect argument type");
 
 	int energy = static_cast<int>(lua_tonumber(L, 2));
 	if (energy > 3 * PLAYER_MAXIMUM_SUIT_ENERGY)
@@ -396,7 +385,7 @@ static int Lua_Player_set_energy(lua_State *L)
 static int Lua_Player_set_oxygen(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
-		return luaL_error(L, "player.oxygen: incorrect argument type");
+		return luaL_error(L, "oxygen: incorrect argument type");
 	
 	int oxygen = static_cast<int>(lua_tonumber(L, 2));
 	if (oxygen > PLAYER_MAXIMUM_SUIT_OXYGEN)
@@ -411,7 +400,7 @@ static int Lua_Player_set_oxygen(lua_State *L)
 static int Lua_Player_set_team(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
-		return luaL_error(L, "player.team: incorrect argument type");
+		return luaL_error(L, "team: incorrect argument type");
 
 	int team = static_cast<int>(lua_tonumber(L, 2));
 	if (team < 0 || team >= NUMBER_OF_TEAM_COLORS)
@@ -447,15 +436,6 @@ const luaL_reg Lua_Player::metatable[] = {
 	{0, 0}
 };
 
-struct Lua_Players
-{
-	static const char *name;
-	static const luaL_reg metatable[];
-
-	static int length() { return dynamic_world->player_count; }
-	static bool valid(int) { return true; }
-};
-
 const char* Lua_Players::name = "Players";
 
 const luaL_reg Lua_Players::metatable[] = {
@@ -473,7 +453,6 @@ int Lua_Player_register (lua_State *L)
 	L_Register<Lua_Action_Flags>(L);
 	L_Register<Lua_Player>(L);
 	L_Register<Lua_Side>(L);
-	L_Register<Lua_Platform>(L);
 
 	L_GlobalRegister<Lua_Players>(L);
 	
@@ -487,6 +466,7 @@ static const char *compatibility_script = ""
 	"function get_oxygen(player) return Players[player].oxygen end\n"
 	"function get_player_color(player) return Players[player].color end\n"
 	"function get_player_name(player) return Players[player].name end\n"
+	"function get_player_polygon(player) return Players[player].polygon.index end\n"
 	"function get_player_team(player) return Players[player].team end\n"
 	"function set_life(player, shield) Players[player].energy = shield end\n"
 	"function number_of_players() return # Players end\n"

@@ -153,6 +153,9 @@ int L_TableGet(lua_State *L)
 		luaL_checktype(L, 1, LUA_TUSERDATA);
 		luaL_checkudata(L, 1, T::name);
 
+		if (!T::valid(L_Index<T>(L, 1)))
+			luaL_error(L, "invalid object");
+		
 		// pop the get table
 		lua_pushlightuserdata(L, (void *)(&T::index_table));
 		lua_gettable(L, LUA_REGISTRYINDEX);

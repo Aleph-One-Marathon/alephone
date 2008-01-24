@@ -33,6 +33,17 @@ extern "C"
 #include "lualib.h"
 }
 
+#include "map.h"
+
+struct Lua_Players
+{
+	static const char *name;
+	static const luaL_reg metatable[];
+
+	static int length() { return dynamic_world->player_count; }
+	static bool valid(int index) { return (index >= 0 && index < dynamic_world->player_count); }
+};
+
 int Lua_Player_register (lua_State *L);
 
 #endif

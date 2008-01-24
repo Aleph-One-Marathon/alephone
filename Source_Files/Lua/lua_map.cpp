@@ -23,12 +23,39 @@ LUA_MAP.CPP
 #include "lua_map.h"
 #include "lua_templates.h"
 #include "map.h"
+#include "platforms.h"
 
 #ifdef HAVE_LUA
+
+int Lua_Platform::get_polygon(lua_State *L)
+{
+	L_Push<Lua_Polygon>(L, get_platform_data(L_Index<Lua_Platform>(L, 1))->polygon_index);
+	return 1;
+}
+
+const char *Lua_Platform::name = "platform";
+
+const luaL_reg Lua_Platform::index_table[] = {
+	{"index", L_TableIndex<Lua_Platform>},
+	{"polygon", Lua_Platform::get_polygon},
+	{0, 0}
+};
+
+const luaL_reg Lua_Platform::newindex_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_Platform::metatable[] = {
+	{"__index", L_TableGet<Lua_Platform>},
+	{"__newindex", L_TableSet<Lua_Platform>},
+	{"__eq", L_TableEqual<Lua_Platform>},
+	{0, 0}
+};
 
 struct Lua_Polygon_Floor {
 	short index;
 	static const char *name;
+	static bool valid(int index) { return Lua_Polygons::valid(index); }
 
 	static const luaL_reg metatable[];
 	static const luaL_reg index_table[];
@@ -82,6 +109,7 @@ int Lua_Polygon_Floor::set_height(lua_State *L)
 struct Lua_Polygon_Ceiling {
 	short index;
 	static const char *name;
+	static bool valid(int index) { return Lua_Polygons::valid(index); }
 
 	static const luaL_reg metatable[];
 	static const luaL_reg index_table[];
@@ -131,20 +159,6 @@ int Lua_Polygon_Ceiling::set_height(lua_State *L)
 	}
 	return 0;
 }
-
-struct Lua_Polygon {
-	short index;
-	static const char *name;
-
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_ceiling(lua_State *L);
-	static int get_floor(lua_State *L);
-	static int get_type(lua_State *L);
-	static int set_type(lua_State *L);
-};
 
 int Lua_Polygon::get_ceiling(lua_State *L)
 {
@@ -198,13 +212,6 @@ const luaL_reg Lua_Polygon::metatable[] = {
 	{0, 0}
 };
 
-struct Lua_Polygons {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static int length() { return dynamic_world->polygon_count; }
-	static bool valid(int) { return true; }
-};
-
 static int compatibility(lua_State *L);
 
 const char *Lua_Polygons::name = "Polygons";
@@ -218,6 +225,7 @@ const luaL_reg Lua_Polygons::metatable[] = {
 
 int Lua_Map_register(lua_State *L)
 {
+	L_Register<Lua_Platform>(L);
 	L_Register<Lua_Polygon_Floor>(L);
 	L_Register<Lua_Polygon_Ceiling>(L);
 	L_Register<Lua_Polygon>(L);

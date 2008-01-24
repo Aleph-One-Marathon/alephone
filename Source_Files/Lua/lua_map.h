@@ -33,6 +33,42 @@ extern "C"
 #include "lualib.h"
 }
 
+#include "map.h"
+
+struct Lua_Polygons {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static int length() { return dynamic_world->polygon_count; }
+	static bool valid(int index) { return (index >= 0 && index < dynamic_world->polygon_count); }
+};
+
+struct Lua_Platform {
+	short index;
+	static bool valid(int index) { return (index >= 0 && index < dynamic_world->platform_count); }
+
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_polygon(lua_State *L);
+};
+
+struct Lua_Polygon {
+	short index;
+	static const char *name;
+	static bool valid(int index) { return Lua_Polygons::valid(index); }
+
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_ceiling(lua_State *L);
+	static int get_floor(lua_State *L);
+	static int get_type(lua_State *L);
+	static int set_type(lua_State *L);
+};
+
 int Lua_Map_register (lua_State *L);
 
 #endif

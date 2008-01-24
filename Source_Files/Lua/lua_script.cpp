@@ -2063,25 +2063,6 @@ static int L_Get_Game_Type(lua_State *L)
 	return 1;
 }
 
-static int L_Get_Player_Polygon(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_player_polygon: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_player_polygon: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, player->supporting_polygon_index);
-	return 1;
-}
-
 static int L_Get_Player_Position(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -4561,7 +4542,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
 	lua_register(state, "get_player_position", L_Get_Player_Position);
-	lua_register(state, "get_player_polygon", L_Get_Player_Polygon);
 	lua_register(state, "set_player_position", L_Set_Player_Position);
 	lua_register(state, "get_player_angle", L_Get_Player_Angle);
 	lua_register(state, "set_player_angle", L_Set_Player_Angle);
