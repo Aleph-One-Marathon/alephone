@@ -153,7 +153,7 @@ int L_TableGet(lua_State *L)
 		luaL_checktype(L, 1, LUA_TUSERDATA);
 		luaL_checkudata(L, 1, T::name);
 
-		if (!T::valid(L_Index<T>(L, 1)))
+		if (!T::valid(L_Index<T>(L, 1)) && strcmp(lua_tostring(L, 2), "valid") != 0)
 			luaL_error(L, "invalid object");
 		
 		// pop the get table
@@ -270,18 +270,22 @@ template<class G, class T>
 int L_GlobalIterator(lua_State *L)
 {
 	int index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
-	if (index < G::length() && G::valid(index))
+	while (index < G::length())
 	{
-		L_Push<T>(L, index);
-		
-		lua_pushnumber(L, ++index);
-		lua_replace(L, lua_upvalueindex(1));
+		if (G::valid(index))
+		{
+			L_Push<T>(L, index);
+			lua_pushnumber(L, ++index);
+			lua_replace(L, lua_upvalueindex(1));
+			return 1;
+		}
+		else
+		{
+			++index;
+		}
 	}
-	else
-	{
-		lua_pushnil(L);
-	}
-
+	
+	lua_pushnil(L);
 	return 1;
 }
 

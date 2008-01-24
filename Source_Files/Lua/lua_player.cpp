@@ -22,6 +22,7 @@ LUA_PLAYER.CPP
 
 #include "ActionQueues.h"
 #include "lua_map.h"
+#include "lua_monsters.h"
 #include "lua_player.h"
 #include "lua_templates.h"
 #include "map.h"
@@ -293,6 +294,12 @@ static int Lua_Player_get_energy(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_get_monster(lua_State *L)
+{
+	L_Push<Lua_Monster>(L, get_player_data(L_Index<Lua_Player>(L, 1))->monster_index);
+	return 1;
+}
+
 static int Lua_Player_get_name(lua_State *L)
 {
 	lua_pushstring(L, get_player_data(L_Index<Lua_Player>(L, 1))->name);
@@ -338,6 +345,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"index", L_TableIndex<Lua_Player>},
 	{"juice", Lua_Player_get_energy},
 	{"life", Lua_Player_get_energy},
+	{"monster", Lua_Player_get_monster},\
 	{"name", Lua_Player_get_name},
 	{"oxygen", Lua_Player_get_oxygen},
 	{"polygon", Lua_Player_get_polygon},
@@ -471,6 +479,7 @@ static const char *compatibility_script = ""
 	"function set_life(player, shield) Players[player].energy = shield end\n"
 	"function number_of_players() return # Players end\n"
 	"function player_is_dead(player) return Players[player].dead end\n"
+	"function player_to_monster_index(player) return Players[player].monster.index end\n"
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
 	"function set_player_color(player, color) Players[player].color = color end\n"
 	"function set_player_team(player, team) Players[player].team = team end\n"

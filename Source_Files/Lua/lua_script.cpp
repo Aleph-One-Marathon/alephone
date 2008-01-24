@@ -84,6 +84,7 @@ using namespace std;
 
 #include "lua_script.h"
 #include "lua_map.h"
+#include "lua_monsters.h"
 #include "lua_player.h"
 
 #define DONT_REPEAT_DEFINITIONS
@@ -4471,7 +4472,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
 	lua_register(state, "local_player_index", L_Local_Player_Index);
 	lua_register(state, "get_level_name", L_Get_Level_Name);
-	lua_register(state, "player_to_monster_index", L_Player_To_Monster_Index);
 	lua_register(state, "screen_print", L_Screen_Print);
 	//lua_register(state, "display_text", L_Display_Text);
 	lua_register(state, "inflict_damage", L_Inflict_Damage);
@@ -4638,6 +4638,7 @@ void RegisterLuaFunctions()
 
 	Lua_Player_register(state);
 	Lua_Map_register(state);
+	Lua_Monsters_register(state);
 }
 
 void DeclareLuaConstants()
