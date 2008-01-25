@@ -440,7 +440,6 @@ const luaL_reg Lua_Player::metatable[] = {
 	{"__index", L_TableGet<Lua_Player>},
 	{"__newindex", L_TableSet<Lua_Player>},
 	{"__tostring", Lua_Player_tostring},
-	{"__eq", L_TableEqual<Lua_Player>},
 	{0, 0}
 };
 
