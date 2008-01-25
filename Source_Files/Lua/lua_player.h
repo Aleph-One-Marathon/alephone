@@ -44,6 +44,16 @@ struct Lua_Players
 	static bool valid(int index) { return (index >= 0 && index < dynamic_world->player_count); }
 };
 
+struct Lua_Player {
+	short index;
+	static bool valid(int index) { return Lua_Players::valid(index); }
+
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+};
+
 int Lua_Player_register (lua_State *L);
 
 #endif

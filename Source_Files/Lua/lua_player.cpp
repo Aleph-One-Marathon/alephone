@@ -168,16 +168,6 @@ const luaL_reg Lua_Side::metatable[] = {
 	{0, 0}
 };
 
-struct Lua_Player {
-	short index;
-	static bool valid(int index) { return Lua_Players::valid(index); }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
 const char *Lua_Player::name = "player";
 
 // methods

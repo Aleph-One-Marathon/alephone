@@ -1274,48 +1274,6 @@ static int L_New_Monster(lua_State *L)
 	return 1;
 }
 
-static int L_Activate_Monster(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "activate_monster: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	if (monster_index == -1)
-		return 0;
-	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if (!SLOT_IS_USED(monster))
-	{
-		lua_pushstring(L, "activate_monster: invalid monster index");
-		lua_error(L);
-	}
-	if(!MONSTER_IS_ACTIVE(monster))
-		activate_monster(monster_index);
-	return 0;
-}
-
-static int L_Deactivate_Monster(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "deactivate_monster: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	if (monster_index == -1)
-		return 0;
-	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if (!SLOT_IS_USED(monster))
-	{
-		lua_pushstring(L, "deactivate_monster: invalid monster index");
-		lua_error(L);
-	}
-	if(MONSTER_IS_ACTIVE(monster))
-		deactivate_monster(monster_index);
-	return 0;
-}
-
 static int L_Damage_Monster(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -1434,43 +1392,6 @@ static int L_Move_Monster(lua_State *L)
 	return 0;
 }
 
-static int L_Monster_Index_Valid(lua_State *L) {
-	if(!lua_isnumber(L,1)) {
-		lua_pushstring(L, "monster_index_valid: incorrect argument type");
-		lua_error(L);
-	}
-	short monster_index = static_cast<int>(lua_tonumber(L,1));
-	if(monster_index < 0 || monster_index >= MAXIMUM_MONSTERS_PER_MAP) {
-		lua_pushnil(L);
-	}
-	else {
-		struct monster_data* monster;
-		monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-		lua_pushboolean(L, SLOT_IS_USED(monster));
-	}
-	return 1;
-}
-
-static int L_Get_Monster_Type(lua_State *L) {
-	if(!lua_isnumber(L,1)) {
-		lua_pushstring(L, "get_monster_type: incorrect argument type");
-		lua_error(L);
-	}
-	short monster_index = static_cast<int>(lua_tonumber(L,1));
-	if(monster_index < 0 || monster_index >= MAXIMUM_MONSTERS_PER_MAP) {
-		lua_pushstring(L, "get_monster_type: invalid monster index");
-		lua_error(L);
-	}
-	struct monster_data* monster;
-	monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(!SLOT_IS_USED(monster)) {
-		lua_pushstring(L, "get_monster_type: invalid monster index");
-		lua_error(L);
-	}
-	lua_pushnumber(L, monster->type);
-	return 1;
-}
-
 static int L_Get_Monster_Type_Class(lua_State *L) {
 	if(!lua_isnumber(L,1)) {
 		lua_pushstring(L, "get_monster_type_class: incorrect argument type");
@@ -1541,27 +1462,6 @@ static int L_Select_Monster(lua_State *L)
 		}
 	}
 	return 0;
-}
-
-static int L_Get_Monster_Polygon(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_monster_polygon: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-
-	struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(!SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_polygon: invalid monster index");
-		lua_error(L);
-	}
-	struct object_data *object= get_object_data(theMonster->object_index);
-
-	lua_pushnumber(L, object->polygon);
-	return 1;
 }
 
 static int L_Get_Monster_Immunity(lua_State *L)
@@ -1889,104 +1789,6 @@ static int L_Set_Monster_Item(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Monster_Action(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_monster_action: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	if(monster_index == -1)
-	{
-		lua_pushstring(L, "get_monster_immunity: invalid monster index");
-		lua_error(L);
-	}
-
-	struct monster_data *theMonster;
-
-	theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if (!SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_action: invalid monster index");
-		lua_error(L);
-	}
-	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(!SLOT_IS_USED(monster)) return 0;
-	if (monster)
-	{
-		lua_pushnumber(L, monster->action);
-		return 1;
-	}
-	else return 0;
-}
-
-static int L_Get_Monster_Mode(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_monster_mode: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	if(monster_index == -1)
-	{
-		lua_pushstring(L, "get_monster_mode: invalid monster index");
-		lua_error(L);
-	}
-	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(!SLOT_IS_USED(monster)) return 0;
-	if (monster)
-	{
-		lua_pushnumber(L, monster->mode);
-		return 1;
-	}
-	else return 0;
-}
-
-static int L_Get_Monster_Vitality(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_monster_vitality: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	if(monster_index == NONE)
-	{
-		lua_pushstring(L, "get_monster_vitality: invalid monster index");
-		lua_error(L);
-	}
-	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(!SLOT_IS_USED(monster)) return 0;
-	if (monster)
-	{
-		lua_pushnumber(L, monster->vitality);
-		return 1;
-	}
-	else return 0;
-}
-
-static int L_Set_Monster_Vitality(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_monster_vitality: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	int vitality = static_cast<int>(lua_tonumber(L,2));
-	if(monster_index == NONE)
-	{
-		lua_pushstring(L, "set_monster_vitality: invalid monster index");
-		lua_error(L);
-	}
-	struct monster_data *monster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(!SLOT_IS_USED(monster)) return 0;
-	if (monster)
-		monster->vitality = vitality;
-	return 1;
-}
 /*
  // should modify all values needed for a Matrix-style slowdown shot ;)
  // this includes monster_data as well and monster_definition entries
@@ -4510,10 +4312,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_all_fog_attributes", L_Get_All_Fog_Attributes);
 	lua_register(state, "set_all_fog_attributes", L_Set_All_Fog_Attributes);
 	lua_register(state, "new_monster", L_New_Monster);
-	lua_register(state, "activate_monster", L_Activate_Monster);
-	lua_register(state, "deactivate_monster", L_Deactivate_Monster);
-	lua_register(state, "monster_index_valid", L_Monster_Index_Valid);
-	lua_register(state, "get_monster_type", L_Get_Monster_Type);
 	lua_register(state, "get_monster_type_class", L_Get_Monster_Type_Class);
 	lua_register(state, "set_monster_type_class", L_Set_Monster_Type_Class);
 	lua_register(state, "damage_monster", L_Damage_Monster);
@@ -4522,7 +4320,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "get_monster_position", L_Get_Monster_Position);
 	lua_register(state, "get_monster_facing", L_Get_Monster_Facing);
-	lua_register(state, "get_monster_polygon", L_Get_Monster_Polygon);
 	lua_register(state, "get_monster_immunity", L_Get_Monster_Immunity);
 	lua_register(state, "set_monster_immunity", L_Set_Monster_Immunity);
 	lua_register(state, "get_monster_weakness", L_Get_Monster_Weakness);
@@ -4533,10 +4330,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_monster_enemy", L_Set_Monster_Enemy);
 	lua_register(state, "get_monster_item", L_Get_Monster_Item);
 	lua_register(state, "set_monster_item", L_Set_Monster_Item);
-	lua_register(state, "get_monster_action", L_Get_Monster_Action);
-	lua_register(state, "get_monster_mode", L_Get_Monster_Mode);
-	lua_register(state, "get_monster_vitality", L_Get_Monster_Vitality);
-	lua_register(state, "set_monster_vitality", L_Set_Monster_Vitality);
 	//lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
 	lua_register(state, "get_monster_visible", L_Get_Monster_Visible);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);

@@ -41,7 +41,6 @@ struct Lua_Monsters {
 	static const luaL_reg metatable[];
 	static int length() { return MAXIMUM_MONSTERS_PER_MAP; }
 	static bool valid(int);
-
 };
 
 struct Lua_Monster {
@@ -54,6 +53,16 @@ struct Lua_Monster {
 	static const luaL_reg newindex_table[];
 
 	static int valid(lua_State *L);
+
+	static int get_action(lua_State *L);
+	static int get_active(lua_State *L);
+	static int get_mode(lua_State *L);
+	static int get_player(lua_State *L);
+	static int get_polygon(lua_State *L);
+	static int get_type(lua_State *L);
+	static int get_vitality(lua_State *L);
+	static int set_active(lua_State *L);
+	static int set_vitality(lua_State *L);
 };
 
 int Lua_Monsters_register(lua_State *L);
