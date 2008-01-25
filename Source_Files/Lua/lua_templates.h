@@ -61,6 +61,7 @@ T* L_Check(lua_State *L, int index)
 	return t;
 }
 
+/*
 template<class T>
 T* L_Push(lua_State *L)
 {
@@ -70,12 +71,48 @@ T* L_Push(lua_State *L)
 
 	return t;
 }
+*/
 
 template<class T>
 T* L_Push(lua_State *L, int16 index)
 {
-	T* t = L_Push<T>(L);
-	t->index = index;
+	T* t = 0;
+
+	// look it up in the index table
+	lua_pushlightuserdata(L, (void *) &T::metatable);
+	lua_gettable(L, LUA_REGISTRYINDEX);
+
+	lua_pushnumber(L, index);
+	lua_gettable(L, -2);
+
+	if (lua_isuserdata(L, -1))
+	{
+		// return a reference to the existing one
+		T* t = static_cast<T*>(lua_touserdata(L, -1));
+		return t;
+	}
+	else if (lua_isnil(L, -1))
+	{
+		// get rid of the nil
+		lua_pop(L, 1);
+
+		// create a new one
+		t = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
+		luaL_getmetatable(L, T::name);
+		lua_setmetatable(L, -2);
+		t->index = index;
+
+		// keep a reference to it for returning later
+		lua_pushlightuserdata(L, (void *) &T::metatable);
+		lua_gettable(L, LUA_REGISTRYINDEX);
+		lua_pushnumber(L, index);
+		lua_pushvalue(L, -3);
+		lua_settable(L, -3);
+
+		// get rid of the index table, leaving the userdata
+		// reference on top of the stack
+		lua_pop(L, 1);
+	}
 
 	return t;
 }
@@ -241,6 +278,11 @@ void L_Register(lua_State *L)
 	lua_pushlightuserdata(L, (void *) (&T::newindex_table));
 	lua_newtable(L);
 	luaL_openlib(L, 0, T::newindex_table, 0);
+	lua_settable(L, LUA_REGISTRYINDEX);
+
+	// register a table for instances
+	lua_pushlightuserdata(L, (void *) (&T::metatable));
+	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
 
 	// register is_
