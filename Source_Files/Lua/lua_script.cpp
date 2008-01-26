@@ -3726,105 +3726,6 @@ static int L_Get_Projectile_Damage_Type (lua_State *L)
 	return 1;
 }
 
-static int L_Get_Projectile_Angle(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_projectile_angle: incorrect argument type");
-		lua_error(L);
-	}
-	int projectile_index = static_cast<int>(lua_tonumber(L,1));
-
-	struct projectile_data *projectile = GetMemberWithBounds(projectiles,projectile_index,MAXIMUM_PROJECTILES_PER_MAP);
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "get_projectile_angle: invalid projectile index");
-		lua_error(L);
-	}
-	struct object_data *object= get_object_data(projectile->object_index);
-
-	lua_pushnumber(L, (double)object->facing*AngleConvert);
-	lua_pushnumber(L, (double)projectile->elevation*AngleConvert);
-	return 2;
-}
-
-static int L_Set_Projectile_Angle(lua_State *L)
-{
-	if (!lua_isnumber(L,1)||!lua_isnumber(L,2)||!lua_isnumber(L,3))
-	{
-		lua_pushstring(L, "set_projectile_angle: incorrect argument type");
-		lua_error(L);
-	}
-	int projectile_index = static_cast<int>(lua_tonumber(L,1));
-
-	struct projectile_data *projectile = GetMemberWithBounds(projectiles,projectile_index,MAXIMUM_PROJECTILES_PER_MAP);
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "set_projectile_angle: invalid projectile index");
-		lua_error(L);
-	}
-	struct object_data *object= get_object_data(projectile->object_index);
-
-	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
-	projectile->elevation = static_cast<int>(lua_tonumber(L, 3) / AngleConvert);
-
-	return 0;
-}
-
-static int L_Get_Projectile_Position(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_projectile_position: incorrect argument type");
-		lua_error(L);
-	}
-	int projectile_index = static_cast<int>(lua_tonumber(L,1));
-
-	struct projectile_data *projectile = GetMemberWithBounds(projectiles,projectile_index,MAXIMUM_PROJECTILES_PER_MAP);
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "get_projectile_position: invalid projectile index");
-		lua_error(L);
-	}
-	struct object_data *object= get_object_data(projectile->object_index);
-
-	lua_pushnumber(L, (double)object->polygon);
-	lua_pushnumber(L, (double)object->location.x / WORLD_ONE);
-	lua_pushnumber(L, (double)object->location.y / WORLD_ONE);
-	lua_pushnumber(L, (double)object->location.z / WORLD_ONE);
-	return 4;
-}
-
-static int L_Set_Projectile_Position(lua_State *L)
-{
-	if (!lua_isnumber(L,1)||!lua_isnumber(L,2)||!lua_isnumber(L,3)||!lua_isnumber(L,4)||!lua_isnumber(L,5))
-	{
-		lua_pushstring(L, "set_projectile_position: incorrect argument type");
-		lua_error(L);
-	}
-	int projectile_index = static_cast<int>(lua_tonumber(L,1));
-
-	struct projectile_data *projectile = GetMemberWithBounds(projectiles,projectile_index,MAXIMUM_PROJECTILES_PER_MAP);
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "set_projectile_position: invalid projectile index");
-		lua_error(L);
-	}
-	struct object_data *object= get_object_data(projectile->object_index);
-
-	int new_polygon = static_cast<int>(lua_tonumber(L, 2));
-	object->location.x = static_cast<int>(lua_tonumber(L, 3)*WORLD_ONE);
-	object->location.y = static_cast<int>(lua_tonumber(L, 4)*WORLD_ONE);
-	object->location.z = static_cast<int>(lua_tonumber(L, 5)*WORLD_ONE);
-	
-	if (new_polygon != object->polygon) {
-		remove_object_from_polygon_object_list(projectile->object_index);
-		add_object_to_polygon_object_list(projectile->object_index, new_polygon);
-	}
-	
-	return 0;
-}
-
 /*
 Yet to be implemented:
 get/set_projectile_gravity
@@ -4215,10 +4116,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
 	lua_register(state, "get_projectile_damage_type", L_Get_Projectile_Damage_Type);
-	lua_register(state, "get_projectile_angle", L_Get_Projectile_Angle);
-	lua_register(state, "set_projectile_angle", L_Set_Projectile_Angle);
-	lua_register(state, "get_projectile_position", L_Get_Projectile_Position);
-	lua_register(state, "set_projectile_position", L_Set_Projectile_Position);
 	lua_register(state, "prompt", L_Prompt);
 	lua_register(state, "player_media", L_Player_Media);
 	lua_register(state, "get_player_weapon", L_Get_Player_Weapon);
