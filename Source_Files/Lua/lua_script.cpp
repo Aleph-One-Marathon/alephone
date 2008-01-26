@@ -1867,51 +1867,6 @@ static int L_Get_Game_Type(lua_State *L)
 	return 1;
 }
 
-static int L_Get_Player_Angle(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_player_angle: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_player_angle: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, (double)FIXED_INTEGERAL_PART(player->variables.direction)*AngleConvert);
-	lua_pushnumber(L, (double)FIXED_INTEGERAL_PART(player->variables.elevation)*AngleConvert);
-	return 2;
-}
-
-static int L_Set_Player_Angle(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
-	{
-		lua_pushstring(L, "set_player_angle: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	double facing = static_cast<double>(lua_tonumber(L,2));
-	double elevation = static_cast<double>(lua_tonumber(L,3));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "set_player_angle: invalid player index");
-		lua_error(L);
-	}
-	
-	player_data *player = get_player_data(player_index);
-	player->variables.direction = INTEGER_TO_FIXED((int)(facing/AngleConvert));
-	player->variables.elevation = INTEGER_TO_FIXED((int)(elevation/AngleConvert));
-	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0),
-																&player->variables, player_index, false, false);
-	return 0;
-}
-
 static int L_Get_Player_Powerup_Duration(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -3995,8 +3950,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_monster_visible", L_Get_Monster_Visible);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
-	lua_register(state, "get_player_angle", L_Get_Player_Angle);
-	lua_register(state, "set_player_angle", L_Set_Player_Angle);
 	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);
 	lua_register(state, "set_player_powerup_duration", L_Set_Player_Powerup_Duration);
 	lua_register(state, "get_player_internal_velocity", L_Get_Player_Internal_Velocity);

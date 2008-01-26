@@ -34,6 +34,8 @@ LUA_PLAYER.CPP
 
 #ifdef HAVE_LUA
 
+const float AngleConvert = 360/float(FULL_CIRCLE);
+
 struct Lua_Action_Flags {
 	short index;
 	static const char *name;
@@ -324,6 +326,20 @@ static int Lua_Player_get_energy(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_elevation(lua_State *L)
+{
+	double angle = FIXED_INTEGERAL_PART(get_player_data(L_Index<Lua_Player>(L, 1))->variables.elevation) * AngleConvert;
+	lua_pushnumber(L, angle);
+	return 1;
+}
+
+int Lua_Player::get_direction(lua_State *L)
+{
+	double angle = FIXED_INTEGERAL_PART(get_player_data(L_Index<Lua_Player>(L, 1))->variables.direction) * AngleConvert;
+	lua_pushnumber(L, angle);
+	return 1;
+}
+
 static int Lua_Player_get_monster(lua_State *L)
 {
 	L_Push<Lua_Monster>(L, get_player_data(L_Index<Lua_Player>(L, 1))->monster_index);
@@ -388,14 +404,17 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"action_flags", Lua_Player_get_action_flags},
 	{"color", Lua_Player_get_color},
 	{"dead", Lua_Player_get_dead},
+	{"direction", Lua_Player::get_direction},
 	{"energy", Lua_Player_get_energy},
+	{"elevation", Lua_Player::get_elevation},
 	{"find_action_key_target", L_TableFunction<Lua_Player_find_action_key_target>},
 	{"index", L_TableIndex<Lua_Player>},
 	{"juice", Lua_Player_get_energy},
 	{"life", Lua_Player_get_energy},
-	{"monster", Lua_Player_get_monster},\
+	{"monster", Lua_Player_get_monster},
 	{"name", Lua_Player_get_name},
 	{"oxygen", Lua_Player_get_oxygen},
+	{"pitch", Lua_Player::get_elevation},
 	{"polygon", Lua_Player_get_polygon},
 	{"position", L_TableFunction<Lua_Player::position>},
 	{"team", Lua_Player_get_team},
@@ -403,6 +422,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"teleport_to_level", L_TableFunction<Lua_Player_teleport_to_level>},
 	{"x", Lua_Player::get_x},
 	{"y", Lua_Player::get_y},
+	{"yaw", Lua_Player::get_direction},
 	{"z", Lua_Player::get_z},
 	{0, 0}
 };
@@ -424,6 +444,33 @@ static int Lua_Player_set_color(lua_State *L)
 	}
 	get_player_data(L_Index<Lua_Player>(L, 1))->color = color;
 	
+	return 0;
+}
+
+int Lua_Player::set_direction(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "direction: incorrect argument type");
+
+	double facing = static_cast<double>(lua_tonumber(L, 2));
+	int player_index = L_Index<Lua_Player>(L, 1);
+	player_data *player = get_player_data(player_index);
+	player->variables.direction = INTEGER_TO_FIXED((int)(facing/AngleConvert));
+	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
+	return 0;
+}
+
+int Lua_Player::set_elevation(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "elevation: incorrect argument type");
+	
+	double elevation = static_cast<double>(lua_tonumber(L, 2));
+	if (elevation > 180) elevation -= 360.0;
+	int player_index = L_Index<Lua_Player>(L, 1);
+	player_data *player = get_player_data(player_index);
+	player->variables.elevation = INTEGER_TO_FIXED((int)(elevation/AngleConvert));
+	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
 	return 0;
 }
 
@@ -474,12 +521,16 @@ static int Lua_Player_set_team(lua_State *L)
 
 const luaL_reg Lua_Player::newindex_table[] = {
 	{"color", Lua_Player_set_color},
+	{"direction", Lua_Player::set_direction},
+	{"elevation", Lua_Player::set_elevation},
 	{"energy", Lua_Player_set_energy},
 	{"juice", Lua_Player_set_energy},
 	{"life", Lua_Player_set_energy},
 	{"oxygen", Lua_Player_set_oxygen},
+	{"pitch", Lua_Player::set_elevation},
 	{"position", Lua_Player::position},
 	{"team", Lua_Player_set_team},
+	{"yaw", Lua_Player::set_direction},
 	{0, 0}
 };
 
@@ -528,6 +579,7 @@ int Lua_Player_register (lua_State *L)
 static const char *compatibility_script = ""
 	"function get_life(player) return Players[player].energy end\n"
 	"function get_oxygen(player) return Players[player].oxygen end\n"
+	"function get_player_angle(player) return Players[player].yaw, Players[player].pitch end\n"
 	"function get_player_color(player) return Players[player].color end\n"
 	"function get_player_name(player) return Players[player].name end\n"
 	"function get_player_polygon(player) return Players[player].polygon.index end\n"
@@ -537,6 +589,7 @@ static const char *compatibility_script = ""
 	"function number_of_players() return # Players end\n"
 	"function player_is_dead(player) return Players[player].dead end\n"
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
+	"function set_player_angle(player, yaw, pitch) Players[player].yaw = yaw Players[player].pitch = pitch + 360.0 end\n"
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
 	"function set_player_color(player, color) Players[player].color = color end\n"
 	"function set_player_position(player, x, y, z, polygon) Players[player]:position(x, y, z, polygon) end\n"
