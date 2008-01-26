@@ -419,6 +419,8 @@
 		AEC3C87809AD68AC003258E4 /* SDL_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
 		AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
+		AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */; };
+		AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */; };
 		AEFDE7BD0A38DF7E00CFEB97 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
 		AEFDE7BF0A38DF7E00CFEB97 /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
 		AEFDE7C00A38DF7E00CFEB97 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
@@ -655,6 +657,10 @@
 		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
+		AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_monsters.cpp; sourceTree = "<group>"; };
+		AEDCB5CC0D4ADB86004CB40E /* lua_monsters.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_monsters.h; sourceTree = "<group>"; };
+		AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_projectiles.cpp; sourceTree = "<group>"; };
+		AEDCB5DB0D4AEC4D004CB40E /* lua_projectiles.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_projectiles.h; sourceTree = "<group>"; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
 		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
 		AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
@@ -1220,10 +1226,14 @@
 			isa = PBXGroup;
 			children = (
 				AE51545E0D46E84A00506B58 /* lua_map.h */,
+				AEDCB5CC0D4ADB86004CB40E /* lua_monsters.h */,
 				AE69B5DC0D404F0400C42C11 /* lua_player.h */,
+				AEDCB5DB0D4AEC4D004CB40E /* lua_projectiles.h */,
 				AE51545F0D46E84A00506B58 /* lua_templates.h */,
 				AE51545D0D46E84A00506B58 /* lua_map.cpp */,
+				AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */,
 				AE69B5DB0D404F0400C42C11 /* lua_player.cpp */,
+				AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */,
 				AE7C21D00BFF67FD00CE63EC /* language_definition.h */,
 				AE7C21B80BFF67BE00CE63EC /* Library Headers */,
 				AE7C217F0BFF671E00CE63EC /* Library Sources */,
@@ -2386,6 +2396,8 @@
 				AE9A39F70CCADFA7004717E3 /* ConnectPool.cpp in Sources */,
 				AE69B5DD0D404F0400C42C11 /* lua_player.cpp in Sources */,
 				AE5154600D46E84A00506B58 /* lua_map.cpp in Sources */,
+				AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */,
+				AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -86,6 +86,7 @@ using namespace std;
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_player.h"
+#include "lua_projectiles.h"
 
 #define DONT_REPEAT_DEFINITIONS
 #include "item_definitions.h"
@@ -3693,34 +3694,6 @@ static int L_Set_Lua_Compass_Beacon (lua_State *L)
 	return 0;
 }
 
-static int L_Get_Projectile_Type (lua_State *L)
-{
-	if (!lua_isnumber (L, 1))
-	{
-		lua_pushstring (L, "get_projectile_type: incorrect argument type");
-		lua_error (L);
-	}
-	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
-	
-	if(projectile_index < 0 || projectile_index >= MAXIMUM_PROJECTILES_PER_MAP)
-	{
-		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
-		lua_error(L);
-	}
-
-	struct projectile_data *projectile= get_projectile_data(projectile_index);
-	
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
-		lua_error(L);
-	}
-	
-	lua_pushnumber (L, projectile->type);
-	
-	return 1;
-}
-
 extern projectile_definition *get_projectile_definition(short type);
 
 static int L_Get_Projectile_Damage_Type (lua_State *L)
@@ -3750,168 +3723,6 @@ static int L_Get_Projectile_Damage_Type (lua_State *L)
 	struct projectile_definition *definition = get_projectile_definition(projectile->type);
 	lua_pushnumber (L, definition->damage.type);
 
-	return 1;
-}
-
-static int L_Get_Projectile_Owner (lua_State *L)
-{
-	if (!lua_isnumber (L, 1))
-	{
-		lua_pushstring (L, "get_projectile_owner: incorrect argument type");
-		lua_error (L);
-	}
-	
-	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
-	if(projectile_index < 0 || projectile_index >= MAXIMUM_PROJECTILES_PER_MAP)
-	{
-		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
-		lua_error(L);
-	}
-
-	struct projectile_data *projectile= get_projectile_data(projectile_index);
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
-		lua_error(L);
-	}
-
-	if(projectile->owner_index != NONE)
-		lua_pushnumber (L, projectile->owner_index);
-	else
-		lua_pushnil(L);
-
-	return 1;
-}
-
-static int L_Set_Projectile_Owner (lua_State *L)
-{
-	
-	if (!lua_isnumber (L, 1) || (!lua_isnumber (L, 2) && !lua_isnil (L, 2)))
-	{
-		lua_pushstring (L, "set_projectile_owner: incorrect argument type");
-		lua_error (L);
-	}
-	
-	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
-	
-	if(projectile_index < 0 || projectile_index >= MAXIMUM_PROJECTILES_PER_MAP)
-	{
-		lua_pushstring(L, "set_projectile_owner: invalid projectile index");
-		lua_error(L);
-	}
-
-	struct projectile_data *projectile= get_projectile_data(projectile_index);
-	
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "set_projectile_owner: invalid projectile index");
-		lua_error(L);
-	}
-	
-	if(lua_isnil(L, 2))
-		projectile->owner_index = NONE;
-	else {
-		int monster_index = static_cast<int>(lua_tonumber (L, 2));
-		struct monster_data *monster= get_monster_data(monster_index);
-		if(!SLOT_IS_USED(monster))
-		{
-			lua_pushstring(L, "set_projectile_owner: invalid monster index");
-			lua_error(L);
-		}
-		projectile->owner_index = monster_index;
-	}
-	
-	return 0;
-}
-
-static int L_Get_Projectile_Target (lua_State *L)
-{
-	
-	if (!lua_isnumber (L, 1))
-	{
-		lua_pushstring (L, "get_projectile_target: incorrect argument type");
-		lua_error (L);
-	}
-	
-	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
-	
-	if(projectile_index < 0 || projectile_index >= MAXIMUM_PROJECTILES_PER_MAP)
-	{
-		lua_pushstring(L, "get_projectile_target: invalid projectile index");
-		lua_error(L);
-	}
-
-	struct projectile_data *projectile= get_projectile_data(projectile_index);
-	
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "get_projectile_target: invalid projectile index");
-		lua_error(L);
-	}
-	
-	if(projectile->target_index != NONE)
-		lua_pushnumber (L, projectile->target_index);
-	else
-		lua_pushnil(L);
-
-	return 1;
-}
-
-static int L_Set_Projectile_Target (lua_State *L)
-{
-	
-	if (!lua_isnumber (L, 1) || (!lua_isnumber (L, 2) && !lua_isnil (L, 2)))
-	{
-		lua_pushstring (L, "set_projectile_target: incorrect argument type");
-		lua_error (L);
-	}
-	
-	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
-	
-	if(projectile_index < 0 || projectile_index >= MAXIMUM_PROJECTILES_PER_MAP)
-	{
-		lua_pushstring(L, "set_projectile_target: invalid projectile index");
-		lua_error(L);
-	}
-
-	struct projectile_data *projectile= get_projectile_data(projectile_index);
-	
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "set_projectile_target: invalid projectile index");
-		lua_error(L);
-	}
-	
-	if(lua_isnil(L, 2))
-		projectile->target_index = NONE;
-	else {
-		int monster_index = static_cast<int>(lua_tonumber (L, 2));
-		struct monster_data *monster= get_monster_data(monster_index);
-		if(!SLOT_IS_USED(monster))
-		{
-			lua_pushstring(L, "set_projectile_owner: invalid monster index");
-			lua_error(L);
-		}
-		projectile->target_index = monster_index;
-	}
-	
-	return 0;
-}
-
-static int L_Projectile_Index_Valid(lua_State *L) {
-	if(!lua_isnumber(L,1)) {
-		lua_pushstring(L, "projectile_index_valid: incorrect argument type");
-		lua_error(L);
-	}
-	short projectile_index = static_cast<int>(lua_tonumber(L,1));
-	if(projectile_index < 0 || projectile_index >= MAXIMUM_PROJECTILES_PER_MAP) {
-		lua_pushnil(L);
-	}
-	else {
-		struct projectile_data* projectile;
-		projectile = GetMemberWithBounds(projectiles,projectile_index,MAXIMUM_PROJECTILES_PER_MAP);
-		lua_pushboolean(L, SLOT_IS_USED(projectile));
-	}
 	return 1;
 }
 
@@ -4405,11 +4216,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
 	lua_register(state, "get_projectile_type", L_Get_Projectile_Type);
 	lua_register(state, "get_projectile_damage_type", L_Get_Projectile_Damage_Type);
-	lua_register(state, "get_projectile_owner", L_Get_Projectile_Owner);
-	lua_register(state, "set_projectile_owner", L_Set_Projectile_Owner);
-	lua_register(state, "get_projectile_target", L_Get_Projectile_Target);
-	lua_register(state, "set_projectile_target", L_Set_Projectile_Target);
-	lua_register(state, "projectile_index_valid", L_Projectile_Index_Valid);
 	lua_register(state, "get_projectile_angle", L_Get_Projectile_Angle);
 	lua_register(state, "set_projectile_angle", L_Set_Projectile_Angle);
 	lua_register(state, "get_projectile_position", L_Get_Projectile_Position);
@@ -4429,9 +4235,10 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_overlay_icon", L_Set_Overlay_Icon);
 	lua_register(state, "set_overlay_icon_by_color", L_Set_Overlay_Icon_By_Color);
 
-	Lua_Player_register(state);
 	Lua_Map_register(state);
 	Lua_Monsters_register(state);
+	Lua_Player_register(state);
+	Lua_Projectiles_register(state);
 }
 
 void DeclareLuaConstants()

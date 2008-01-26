@@ -78,6 +78,12 @@ T* L_Push(lua_State *L, int16 index)
 {
 	T* t = 0;
 
+	if (!T::valid(index))
+	{
+		lua_pushnil(L);
+		return 0;
+	}
+
 	// look it up in the index table
 	lua_pushlightuserdata(L, (void *) &T::metatable);
 	lua_gettable(L, LUA_REGISTRYINDEX);
