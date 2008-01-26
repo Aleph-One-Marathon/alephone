@@ -46,7 +46,9 @@ int Lua_Projectile::get_damage_scale(lua_State *L)
 int Lua_Projectile::get_elevation(lua_State *L)
 {
 	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
-	lua_pushnumber(L, (double) projectile->elevation * AngleConvert);
+	double elevation = projectile->elevation * AngleConvert;
+	if (elevation > 180) elevation -= 360.0;
+	lua_pushnumber(L, elevation);
 	return 1;
 }
 
@@ -134,7 +136,9 @@ int Lua_Projectile::set_elevation(lua_State *L)
 		return luaL_error(L, "elevation: incorrect argument type");
 
 	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
-	projectile->elevation = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
+	double elevation = lua_tonumber(L, 2);
+	if (elevation < 0.0) elevation += 360.0;
+	projectile->elevation = static_cast<int>(elevation / AngleConvert);
 	return 0;
 }
 
@@ -366,7 +370,7 @@ int Lua_Projectiles_register(lua_State *L)
 }
 
 const char *compatibility_script = ""
-	"function get_projectile_angle(index) return Projectiles[index].facing, Projectiles[index].elevation end\n"
+	"function get_projectile_angle(index) local elevation = Projectiles[index].elevation if elevation < 0.0 then elevation = elevation + 360 end return Projectiles[index].facing, elevation end\n"
 	"function get_projectile_owner(index) if Projectiles[index].owner then return Projectiles[index].owner.index end end\n"
 	"function get_projectile_position(index) return Projectiles[index].polygon.index, Projectiles[index].x, Projectiles[index].y, Projectiles[index].z end\n"
 	"function get_projectile_target(index) if Projectiles[index].target then return Projectiles[index].target.index end end\n"
