@@ -76,6 +76,8 @@ struct Lua_Projectile {
 	static int set_x(lua_State *L);
 	static int set_y(lua_State *L);
 	static int set_z(lua_State *L);
+
+	static int position(lua_State *L);
 };
 
 int Lua_Projectiles_register(lua_State *L);

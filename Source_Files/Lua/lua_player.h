@@ -53,6 +53,16 @@ struct Lua_Player {
 	static const luaL_reg metatable[];
 	static const luaL_reg index_table[];
 	static const luaL_reg newindex_table[];
+
+	static int get_x(lua_State *L);
+	static int get_y(lua_State *L);
+	static int get_z(lua_State *L);
+
+	static int set_x(lua_State *L);
+	static int set_y(lua_State *L);
+	static int set_z(lua_State *L);
+
+	static int position(lua_State *L);
 };
 
 int Lua_Player_register (lua_State *L);

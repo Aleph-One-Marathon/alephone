@@ -1867,56 +1867,6 @@ static int L_Get_Game_Type(lua_State *L)
 	return 1;
 }
 
-static int L_Get_Player_Position(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_player_position: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_player_position: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, (double)player->location.x/WORLD_ONE);
-	lua_pushnumber(L, (double)player->location.y/WORLD_ONE);
-	lua_pushnumber(L, (double)player->location.z/WORLD_ONE);
-	return 3;
-}
-
-static int L_Set_Player_Position(lua_State *L)
-{
-	if (!lua_isnumber(L,1)||!lua_isnumber(L,2)||!lua_isnumber(L,3)||!lua_isnumber(L,4)||!lua_isnumber(L,5))
-	{
-		lua_pushstring(L, "set_player_position: incorrect argument type");
-		lua_error(L);
-	}
-	
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "set_player_position: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	struct object_data *object= get_object_data(player-> object_index);
-	world_point3d loc;
-	loc.x = static_cast<int>(lua_tonumber(L,2) * WORLD_ONE);
-	loc.y = static_cast<int>(lua_tonumber(L,3) * WORLD_ONE);
-	loc.z = static_cast<int>(lua_tonumber(L,4) * WORLD_ONE);
-	translate_map_object(player->object_index, &loc,static_cast<int>(lua_tonumber(L,5)));
-	player->variables.position.x= WORLD_TO_FIXED(object->location.x);
-	player->variables.position.y= WORLD_TO_FIXED(object->location.y);
-	player->variables.position.z= WORLD_TO_FIXED(object->location.z);
-	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0),
-																&player->variables, player_index, false, false);
-	return 0;
-}
-
 static int L_Get_Player_Angle(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -4045,8 +3995,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_monster_visible", L_Get_Monster_Visible);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
-	lua_register(state, "get_player_position", L_Get_Player_Position);
-	lua_register(state, "set_player_position", L_Set_Player_Position);
 	lua_register(state, "get_player_angle", L_Get_Player_Angle);
 	lua_register(state, "set_player_angle", L_Set_Player_Angle);
 	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);

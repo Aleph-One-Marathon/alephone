@@ -191,34 +191,6 @@ int Lua_Projectile::set_owner(lua_State *L)
 
 extern void add_object_to_polygon_object_list(short object_index, short polygon_index);
 
-int Lua_Projectile::set_polygon(lua_State *L)
-{
-	short polygon_index = 0;
-	if (lua_isnumber(L, 2))
-	{
-		polygon_index = static_cast<int>(lua_tonumber(L, 2));
-	}
-	else if (L_Is<Lua_Polygon>(L, 2))
-	{
-		polygon_index = L_Index<Lua_Polygon>(L, 2);
-	}
-	else
-		return luaL_error(L, "polygon: incorrect argument type");
-
-	if (!Lua_Polygons::valid(polygon_index))
-		return luaL_error(L, "polygon: invalid polygon index");
-
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
-	object_data *object = get_object_data(projectile->object_index);
-	if (polygon_index != object->polygon)
-	{
-		remove_object_from_polygon_object_list(projectile->object_index);
-		add_object_to_polygon_object_list(projectile->object_index, polygon_index);
-	}
-
-	return 0;
-}
-
 int Lua_Projectile::set_target(lua_State *L)
 {
 	short monster_index = 0;
@@ -249,39 +221,39 @@ int Lua_Projectile::set_target(lua_State *L)
 	return 0;
 }
 
-int Lua_Projectile::set_x(lua_State *L)
+int Lua_Projectile::position(lua_State *L)
 {
-	if (!lua_isnumber(L, 2))
-		luaL_error(L, "x: incorrect argument type");
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+	{
+		return luaL_error(L, "position: incorrect argument type");
+	}
+	
+	short polygon_index = 0;
+	if (lua_isnumber(L, 5))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 5));
+		if (!Lua_Polygons::valid(polygon_index))
+			return luaL_error(L, "position: invalid polygon index");
+	}
+	else if (L_Is<Lua_Polygon>(L, 5))
+	{
+		polygon_index = L_Index<Lua_Polygon>(L, 5);
+	}
+	else
+		return luaL_error(L, "position: incorrect argument type");
 
 	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
 	object_data *object = get_object_data(projectile->object_index);
 	object->location.x = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
-	return 0;
+	object->location.y = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
+	object->location.z = static_cast<int>(lua_tonumber(L, 4) * WORLD_ONE);
+
+	if (polygon_index != object->polygon)
+	{
+		remove_object_from_polygon_object_list(projectile->object_index);
+		add_object_to_polygon_object_list(projectile->object_index, polygon_index);
+	}
 }
-
-int Lua_Projectile::set_y(lua_State *L)
-{
-	if (!lua_isnumber(L, 2))
-		luaL_error(L, "y: incorrect argument type");
-
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
-	object_data *object = get_object_data(projectile->object_index);
-	object->location.y = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
-	return 0;
-}
-
-int Lua_Projectile::set_z(lua_State *L)
-{
-	if (!lua_isnumber(L, 2))
-		luaL_error(L, "z: incorrect argument type");
-
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
-	object_data *object = get_object_data(projectile->object_index);
-	object->location.z = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
-	return 0;
-}
-	
 
 const luaL_reg Lua_Projectile::index_table[] = {
 	{"damage_scale", get_damage_scale},
@@ -289,6 +261,7 @@ const luaL_reg Lua_Projectile::index_table[] = {
 	{"elevation", get_elevation},
 	{"facing", get_facing},
 	{"index", L_TableIndex<Lua_Projectile>},
+	{"position", L_TableFunction<Lua_Projectile::position>},
 	{"owner", get_owner},
 	{"pitch", get_elevation},
 	{"polygon", get_polygon},
@@ -307,11 +280,7 @@ const luaL_reg Lua_Projectile::newindex_table[] = {
 	{"facing", set_facing},
 	{"owner", set_owner},
 	{"pitch", set_elevation},
-	{"polygon", set_polygon},
-	{"x", set_x},
-	{"y", set_y},
 	{"yaw", set_facing},
-	{"z", set_z},
 	{0, 0}
 };
 
@@ -405,7 +374,7 @@ const char *compatibility_script = ""
 	"function projectile_index_valid(index) if Projectiles[index] then return true else return false end end\n"
 	"function set_projectile_angle(index, yaw, pitch) Projectiles[index].facing = yaw Projectiles[index].elevation = pitch end\n"
 	"function set_projectile_owner(index, owner) Projectiles[index].owner = owner end\n"
-	"function set_projectile_position(index, polygon, x, y, z) p = Projectiles[index] p.polygon, p.x, p.y, p.z = polygon, x, y, z end\n"
+	"function set_projectile_position(index, polygon, x, y, z) Projectiles[index]:position(x, y, z, polygon) end\n"
 	"function set_projectile_target(index, target) Projectiles[index].target = target end\n"
 	;
 

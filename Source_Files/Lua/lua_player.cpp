@@ -205,6 +205,46 @@ int Lua_Player_find_action_key_target(lua_State *L)
 	return 1;
 }
 
+extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
+extern void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
+
+int Lua_Player::position(lua_State *L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+		return luaL_error(L, ("position: incorrect argument type"));
+
+	int polygon_index = 0;
+	if (lua_isnumber(L, 5))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 5));
+		if (!Lua_Polygons::valid(polygon_index))
+			return luaL_error(L, ("position: invalid polygon index"));
+	}
+	else if (L_Is<Lua_Polygon>(L, 5))
+	{
+		polygon_index = L_Index<Lua_Polygon>(L, 5);
+	}
+	else
+		return luaL_error(L, ("position: incorrect argument type"));
+
+	int player_index = L_Index<Lua_Player>(L, 1);
+	player_data *player = get_player_data(player_index);
+	object_data *object = get_object_data(player->object_index);
+
+	world_point3d location;
+	location.x = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	location.y = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
+	location.z = static_cast<int>(lua_tonumber(L, 4) * WORLD_ONE);
+	
+	translate_map_object(player->object_index, &location, polygon_index);
+	player->variables.position.x = WORLD_TO_FIXED(object->location.x);
+	player->variables.position.y = WORLD_TO_FIXED(object->location.y);
+	player->variables.position.z = WORLD_TO_FIXED(object->location.z);
+	
+	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
+	return 0;
+}
+
 int Lua_Player_teleport(lua_State *L)
 {
 	if (!lua_isnumber(L, 2) && !L_Is<Lua_Polygon>(L, 2))
@@ -326,6 +366,24 @@ static int Lua_Player_get_teleport_to_level(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_x(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_Player>(L, 1))->location.x / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Player::get_y(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_Player>(L, 1))->location.y / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Player::get_z(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_Player>(L, 1))->location.z / WORLD_ONE);
+	return 1;
+}
+
 const luaL_reg Lua_Player::index_table[] = {
 	{"action_flags", Lua_Player_get_action_flags},
 	{"color", Lua_Player_get_color},
@@ -339,9 +397,13 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"name", Lua_Player_get_name},
 	{"oxygen", Lua_Player_get_oxygen},
 	{"polygon", Lua_Player_get_polygon},
+	{"position", L_TableFunction<Lua_Player::position>},
 	{"team", Lua_Player_get_team},
 	{"teleport", L_TableFunction<Lua_Player_teleport>},
 	{"teleport_to_level", L_TableFunction<Lua_Player_teleport_to_level>},
+	{"x", Lua_Player::get_x},
+	{"y", Lua_Player::get_y},
+	{"z", Lua_Player::get_z},
 	{0, 0}
 };
 
@@ -416,6 +478,7 @@ const luaL_reg Lua_Player::newindex_table[] = {
 	{"juice", Lua_Player_set_energy},
 	{"life", Lua_Player_set_energy},
 	{"oxygen", Lua_Player_set_oxygen},
+	{"position", Lua_Player::position},
 	{"team", Lua_Player_set_team},
 	{0, 0}
 };
@@ -468,6 +531,7 @@ static const char *compatibility_script = ""
 	"function get_player_color(player) return Players[player].color end\n"
 	"function get_player_name(player) return Players[player].name end\n"
 	"function get_player_polygon(player) return Players[player].polygon.index end\n"
+	"function get_player_position(player) return Players[player].x, Players[player].y, Players[player].z end\n"
 	"function get_player_team(player) return Players[player].team end\n"
 	"function set_life(player, shield) Players[player].energy = shield end\n"
 	"function number_of_players() return # Players end\n"
@@ -475,6 +539,7 @@ static const char *compatibility_script = ""
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
 	"function set_player_color(player, color) Players[player].color = color end\n"
+	"function set_player_position(player, x, y, z, polygon) Players[player]:position(x, y, z, polygon) end\n"
 	"function set_player_team(player, team) Players[player].team = team end\n"
 	"function teleport_player(player, polygon) Players[player]:teleport(polygon) end\n"
 	"function teleport_player_to_level(player, level) Players[player]:teleport_to_level(level) end\n"
