@@ -347,7 +347,13 @@ int L_GlobalIndex(lua_State *L)
 	}
 	else
 	{
-		lua_pushnil(L);
+		// get the function from methods
+
+		lua_pushlightuserdata(L, (void *)(&G::methods));
+		lua_gettable(L, LUA_REGISTRYINDEX);
+
+		lua_pushvalue(L, 2);
+		lua_gettable(L, -2);
 	}
 
 	return 1;
@@ -376,6 +382,11 @@ void L_GlobalRegister(lua_State *L)
 	luaL_openlib(L, 0, G::metatable, 0);
 	lua_setmetatable(L, -2);
 	lua_setglobal(L, G::name);
+
+	lua_pushlightuserdata(L, (void *) (&G::methods));
+	lua_newtable(L);
+	luaL_openlib(L, 0, G::methods, 0);
+	lua_settable(L, LUA_REGISTRYINDEX);
 }
 
 #endif

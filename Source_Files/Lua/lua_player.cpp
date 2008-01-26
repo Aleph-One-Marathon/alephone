@@ -435,6 +435,10 @@ const luaL_reg Lua_Player::metatable[] = {
 
 const char* Lua_Players::name = "Players";
 
+const luaL_reg Lua_Players::methods[] = {
+	{0, 0}
+};
+
 const luaL_reg Lua_Players::metatable[] = {
 	{"__index", L_GlobalIndex<Lua_Players, Lua_Player>},
 	{"__newindex", L_GlobalNewindex<Lua_Players>},

@@ -39,6 +39,7 @@ extern "C"
 struct Lua_Monsters {
 	static const char *name;
 	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
 	static int length() { return MAXIMUM_MONSTERS_PER_MAP; }
 	static bool valid(int);
 };

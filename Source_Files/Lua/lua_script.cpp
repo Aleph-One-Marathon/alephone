@@ -3728,7 +3728,6 @@ static int L_Get_Projectile_Damage_Type (lua_State *L)
 
 /*
 Yet to be implemented:
-get/set_projectile_gravity
 detonate_projectile
 detonate_new_projectile
 new_projectile

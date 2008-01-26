@@ -38,6 +38,7 @@ extern "C"
 struct Lua_Polygons {
 	static const char *name;
 	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
 	static int length() { return dynamic_world->polygon_count; }
 	static bool valid(int index) { return (index >= 0 && index < dynamic_world->polygon_count); }
 };

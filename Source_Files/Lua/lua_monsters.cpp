@@ -158,6 +158,10 @@ const luaL_reg Lua_Monster::metatable[] = {
 
 const char *Lua_Monsters::name = "Monsters";
 
+const luaL_reg Lua_Monsters::methods[] = {
+	{0, 0}
+};
+
 const luaL_reg Lua_Monsters::metatable[] = {
 	{"__index", L_GlobalIndex<Lua_Monsters, Lua_Monster>},
 	{"__newindex", L_GlobalNewindex<Lua_Monsters>},

@@ -36,6 +36,13 @@ const float AngleConvert = 360/float(FULL_CIRCLE);
 
 const char *Lua_Projectile::name = "projectile";
 
+int Lua_Projectile::get_damage_scale(lua_State *L)
+{
+	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	lua_pushnumber(L, (double) projectile->damage_scale / FIXED_ONE);
+	return 1;
+}
+
 int Lua_Projectile::get_elevation(lua_State *L)
 {
 	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
@@ -48,6 +55,13 @@ int Lua_Projectile::get_facing(lua_State *L)
 	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
 	object_data *object = get_object_data(projectile->object_index);
 	lua_pushnumber(L, (double) object->facing * AngleConvert);
+	return 1;
+}
+
+int Lua_Projectile::get_gravity(lua_State *L)
+{
+	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	lua_pushnumber(L, (double) projectile->gravity / WORLD_ONE);
 	return 1;
 }
 
@@ -104,6 +118,16 @@ int Lua_Projectile::get_z(lua_State *L)
 	return 1;
 }
 
+int Lua_Projectile::set_damage_scale(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "damage_scale: incorrect argument type");
+
+	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile->damage_scale = static_cast<int>(lua_tonumber(L, 2) * FIXED_ONE);
+	return 0;
+}
+
 int Lua_Projectile::set_elevation(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -122,6 +146,16 @@ int Lua_Projectile::set_facing(lua_State *L)
 	projectile_data* projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
 	object_data* object = get_object_data(projectile->object_index);
 	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
+	return 0;
+}
+
+int Lua_Projectile::set_gravity(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "dz: incorrect argument type");
+
+	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile->gravity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	return 0;
 }
 
@@ -250,6 +284,8 @@ int Lua_Projectile::set_z(lua_State *L)
 	
 
 const luaL_reg Lua_Projectile::index_table[] = {
+	{"damage_scale", get_damage_scale},
+	{"dz", get_gravity},
 	{"elevation", get_elevation},
 	{"facing", get_facing},
 	{"index", L_TableIndex<Lua_Projectile>},
@@ -265,6 +301,8 @@ const luaL_reg Lua_Projectile::index_table[] = {
 };
 
 const luaL_reg Lua_Projectile::newindex_table[] = {
+	{"damage_scale", set_damage_scale},
+	{"dz", set_gravity},
 	{"elevation", set_elevation},
 	{"facing", set_facing},
 	{"owner", set_owner},
@@ -284,6 +322,53 @@ const luaL_reg Lua_Projectile::metatable[] = {
 };
 
 const char *Lua_Projectiles::name = "Projectiles";
+
+// Projectiles.new(x, y, z, polygon, type)
+int Lua_Projectiles::new_projectile(lua_State *L)
+{
+	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 5))
+	{
+		return luaL_error(L, "new: incorrect argument type");
+	}
+
+	int polygon_index = 0;
+	if (lua_isnumber(L, 4))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 4));
+		if (!Lua_Polygons::valid(polygon_index))
+			return luaL_error(L, "new: invalid polygon index");
+	}
+	else if (L_Is<Lua_Polygon>(L, 4))
+	{
+		polygon_index = L_Index<Lua_Polygon>(L, 4);
+	}
+	else
+		return luaL_error(L, "new: incorrect argument type");
+
+	world_point3d origin;
+	origin.x = static_cast<int>(lua_tonumber(L, 1) * WORLD_ONE);
+	origin.y = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	origin.z = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
+
+	world_point3d vector;
+	vector.x = WORLD_ONE;
+	vector.y = 0;
+	vector.z = 0;
+
+	short type = static_cast<int>(lua_tonumber(L, 5));
+	if (type < 0 || type >= NUMBER_OF_PROJECTILE_TYPES)
+		return luaL_error(L, "new: invalid projectile type");
+
+
+	short projectile_index = ::new_projectile(&origin, polygon_index, &vector, 0, type, NONE, NONE, NONE, FIXED_ONE);
+	L_Push<Lua_Projectile>(L, projectile_index);
+	return 1;
+}
+
+const luaL_reg Lua_Projectiles::methods[] = {
+	{"new", Lua_Projectiles::new_projectile},
+	{0, 0}
+};
 
 const luaL_reg Lua_Projectiles::metatable[] = {
 	{"__index", L_GlobalIndex<Lua_Projectiles, Lua_Projectile>},

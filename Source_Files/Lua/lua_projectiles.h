@@ -38,8 +38,12 @@ extern "C"
 struct Lua_Projectiles {
 	static const char *name;
 	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
 	static int length() { return MAXIMUM_PROJECTILES_PER_MAP; }
 	static bool valid(int);
+
+	// methods
+	static int new_projectile(lua_State *L);
 };
 
 struct Lua_Projectile {
@@ -51,8 +55,10 @@ struct Lua_Projectile {
 	static const luaL_reg index_table[];
 	static const luaL_reg newindex_table[];
 
+	static int get_damage_scale(lua_State *L);
 	static int get_elevation(lua_State *L);
 	static int get_facing(lua_State *L);
+	static int get_gravity(lua_State *L);
 	static int get_owner(lua_State *L);
 	static int get_polygon(lua_State *L);
 	static int get_target(lua_State *L);
@@ -60,8 +66,10 @@ struct Lua_Projectile {
 	static int get_x(lua_State *L);
 	static int get_y(lua_State *L);
 	static int get_z(lua_State *L);
+	static int set_damage_scale(lua_State *L);
 	static int set_elevation(lua_State *L);
 	static int set_facing(lua_State *L);
+	static int set_gravity(lua_State *L);
 	static int set_owner(lua_State *L);
 	static int set_polygon(lua_State *L);
 	static int set_target(lua_State *L);

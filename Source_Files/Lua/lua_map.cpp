@@ -214,6 +214,10 @@ const luaL_reg Lua_Polygon::metatable[] = {
 static int compatibility(lua_State *L);
 
 const char *Lua_Polygons::name = "Polygons";
+const luaL_reg Lua_Polygons::methods[] = {
+	{0, 0}
+};
+
 const luaL_reg Lua_Polygons::metatable[] = {
 	{"__index", L_GlobalIndex<Lua_Polygons, Lua_Polygon>},
 	{"__newindex", L_GlobalNewindex<Lua_Polygons>},
