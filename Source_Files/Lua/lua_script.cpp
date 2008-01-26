@@ -4214,7 +4214,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "use_lua_compass", L_Use_Lua_Compass);
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
-	lua_register(state, "get_projectile_type", L_Get_Projectile_Type);
 	lua_register(state, "get_projectile_damage_type", L_Get_Projectile_Damage_Type);
 	lua_register(state, "get_projectile_angle", L_Get_Projectile_Angle);
 	lua_register(state, "set_projectile_angle", L_Set_Projectile_Angle);

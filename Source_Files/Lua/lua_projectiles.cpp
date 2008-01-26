@@ -20,8 +20,6 @@ LUA_MONSTERS.CPP
 	Implements the Lua monster classes
 */
 
-#ifdef HAVE_LUA
-
 #include "lua_monsters.h"
 #include "lua_player.h"
 #include "lua_projectiles.h"
@@ -29,6 +27,8 @@ LUA_MONSTERS.CPP
 
 #include "monsters.h"
 #include "player.h"
+
+#ifdef HAVE_LUA
 
 const char *Lua_Projectile::name = "projectile";
 
