@@ -4046,9 +4046,7 @@ void DeclareLuaConstants()
 };
 struct lang_def constant_list[] =
 {
-#define LUA_ACCESSING
 #include "language_definition.h"
-#undef LUA_ACCESSING
 };
 int constant_list_size = sizeof(constant_list)/sizeof(lang_def);
 for (int i=0; i<constant_list_size; i++)
