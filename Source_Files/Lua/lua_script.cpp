@@ -1275,70 +1275,6 @@ static int L_New_Monster(lua_State *L)
 	return 1;
 }
 
-static int L_Damage_Monster(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "damage_monster: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	int damage_amount = static_cast<int>(lua_tonumber(L,2));
-	int damage_type = -1;
-	if (lua_gettop(L) == 3 && lua_isnumber(L,3))
-		damage_type = static_cast<int>(lua_tonumber(L,3));
-	if (monster_index == -1)
-	{
-		lua_pushstring(L, "damage_monster: invalid monster index");
-		lua_error(L);
-	}
-
-	struct damage_definition theDamage;
-	struct monster_data *theMonster;
-	if (damage_type != NONE)
-		theDamage.type = damage_type;
-	else
-		theDamage.type = _damage_fist;
-
-	theDamage.base = damage_amount;
-	theDamage.random = 0;
-	theDamage.flags = 0;
-	theDamage.scale = 65536;
-
-	theMonster= GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if (!SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "damage_monster: invalid monster index");
-		lua_error(L);
-	}
-	damage_monster(monster_index, NONE, NONE, &(get_monster_data(monster_index)->sound_location), &theDamage, NONE);
-	return 0;
-}
-
-static int L_Attack_Monster(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "attack_monster: incorrect argument type");
-		lua_error(L);
-	}
-	int attacker_index = static_cast<int>(lua_tonumber(L,1));
-	int target_index = static_cast<int>(lua_tonumber(L,2));
-
-	struct monster_data *bully, *poorHelplessVictim;
-	if(attacker_index == NONE || target_index == NONE) return 0;
-	bully = GetMemberWithBounds(monsters,attacker_index,MAXIMUM_MONSTERS_PER_MAP);
-	poorHelplessVictim = GetMemberWithBounds(monsters,target_index,MAXIMUM_MONSTERS_PER_MAP);
-	if (!SLOT_IS_USED(bully) || !SLOT_IS_USED(poorHelplessVictim))
-	{
-		lua_pushstring(L, "attack_monster: invalid monster index");
-		lua_error(L);
-	}
-	change_monster_target(attacker_index, target_index);
-
-	return 0;
-}
-
 static int L_Move_Monster(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -1484,71 +1420,6 @@ static int L_Get_Monster_Immunity(lua_State *L)
 	}
 	theDef = get_monster_definition_external(monster_type);
 	lua_pushboolean(L, theDef->immunities & 1<<damage_type);
-	return 1;
-}
-
-static int L_Get_Monster_Position(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_monster_position: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-
-	struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(!SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_position: invalid monster index");
-		lua_error(L);
-	}
-	struct object_data *object= get_object_data(theMonster->object_index);
-
-	lua_pushnumber(L, object->location.x);
-	lua_pushnumber(L, object->location.y);
-	lua_pushnumber(L, object->location.z);
-	return 3;
-}
-
-static int L_Get_Monster_Facing(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_monster_facing: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-
-	struct monster_data *theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(!SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_facing: invalid monster index");
-		lua_error(L);
-	}
-	struct object_data *object= get_object_data(theMonster->object_index);
-
-	lua_pushnumber(L, object->facing);
-	return 1;
-}
-
-static int L_Get_Monster_Visible(lua_State *L)
-{
-	if (!lua_isnumber(L, 1))
-	{
-		lua_pushstring(L, "get_monster_visible: incorrect argument type");
-		lua_error(L);
-	}
-
-	int monster_index = static_cast<int>(lua_tonumber(L, 1));
-	
-	struct monster_data *theMonster = GetMemberWithBounds(monsters, monster_index, MAXIMUM_MONSTERS_PER_MAP);
-	if (!SLOT_IS_USED(theMonster))
-	{
-		lua_pushstring(L, "get_monster_visible: invalid monster index");
-		lua_error(L);
-	}
-	struct object_data *object = get_object_data(theMonster->object_index);
-	lua_pushboolean(L, !OBJECT_IS_INVISIBLE(object));
 	return 1;
 }
 
@@ -3794,27 +3665,6 @@ static int L_Environment(lua_State* L) {
 	return 4;
 }
 
-static int L_Set_Monster_Position(lua_State* L) {
-	if(lua_gettop(L) != 5) {
-		lua_pushstring(L, "usage: set_monster_position(monster, polygon, x, y, z)");
-		lua_error(L);
-	}
-	struct monster_data* monster = get_monster_data((int)lua_tonumber(L, 1));
-	struct object_data* object = get_object_data(monster->object_index);
-	
-	object->location.x = static_cast<int>(lua_tonumber(L,3)*WORLD_ONE);
-	object->location.y = static_cast<int>(lua_tonumber(L,4)*WORLD_ONE);
-	object->location.z = static_cast<int>(lua_tonumber(L,5)*WORLD_ONE);
-	int new_polygon = static_cast<int>(lua_tonumber(L,2));
-
-	if (new_polygon != object->polygon) {
-		remove_object_from_polygon_object_list(monster->object_index);
-		add_object_to_polygon_object_list(monster->object_index, new_polygon);
-	}
-
-	return 0;
-}
-
 static int L_Set_Overlay_Color(lua_State* L) {
 	if(lua_gettop(L) != 2) {
 		lua_pushstring(L, "usage: set_overlay_color(overlay, color)");
@@ -3930,12 +3780,8 @@ void RegisterLuaFunctions()
 	lua_register(state, "new_monster", L_New_Monster);
 	lua_register(state, "get_monster_type_class", L_Get_Monster_Type_Class);
 	lua_register(state, "set_monster_type_class", L_Set_Monster_Type_Class);
-	lua_register(state, "damage_monster", L_Damage_Monster);
-	lua_register(state, "attack_monster", L_Attack_Monster);
 	lua_register(state, "move_monster", L_Move_Monster);
 	lua_register(state, "select_monster", L_Select_Monster);
-	lua_register(state, "get_monster_position", L_Get_Monster_Position);
-	lua_register(state, "get_monster_facing", L_Get_Monster_Facing);
 	lua_register(state, "get_monster_immunity", L_Get_Monster_Immunity);
 	lua_register(state, "set_monster_immunity", L_Set_Monster_Immunity);
 	lua_register(state, "get_monster_weakness", L_Get_Monster_Weakness);
@@ -3947,7 +3793,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_monster_item", L_Get_Monster_Item);
 	lua_register(state, "set_monster_item", L_Set_Monster_Item);
 	//lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
-	lua_register(state, "get_monster_visible", L_Get_Monster_Visible);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
 	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);
@@ -4025,7 +3870,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "stop_music", L_Stop_Music);
 	lua_register(state, "annotations", L_Annotations);
 	lua_register(state, "get_map_environment", L_Environment);
-	lua_register(state, "set_monster_position", L_Set_Monster_Position);
 	lua_register(state, "set_overlay_color", L_Set_Overlay_Color);
 	lua_register(state, "set_overlay_text", L_Set_Overlay_Text);
 	lua_register(state, "set_overlay_icon", L_Set_Overlay_Icon);

@@ -30,6 +30,8 @@ LUA_MONSTERS.CPP
 
 #ifdef HAVE_LUA
 
+const float AngleConvert = 360/float(FULL_CIRCLE);
+
 const char *Lua_Monster::name = "monster";
 
 int Lua_Monster::valid(lua_State *L)
@@ -37,6 +39,94 @@ int Lua_Monster::valid(lua_State *L)
 	lua_pushboolean(L, valid(L_Index<Lua_Monster>(L, 1)));
 	return 1;
 }
+
+int Lua_Monster::attack(lua_State *L)
+{
+	short target = 0;
+	if (lua_isnumber(L, 2))
+	{
+		target = static_cast<int>(lua_tonumber(L, 2));
+		if (!Lua_Monsters::valid(target))
+			return luaL_error(L, "attack: invalid monster index");
+	}
+	else if (L_Is<Lua_Monster>(L, 2))
+	{
+		target = L_Index<Lua_Monster>(L, 2);
+	}
+	else
+		return luaL_error(L, "attack: incorrect argument type");
+	
+	change_monster_target(L_Index<Lua_Monster>(L, 1), target);
+	return 0;
+}
+
+int Lua_Monster::damage(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "damage: incorrect argument type");
+	
+	int damage_amount = static_cast<int>(lua_tonumber(L, 2));
+	int damage_type = NONE;
+	if (lua_gettop(L) == 3)
+	{
+		if (lua_isnumber(L, 3))
+			damage_type = static_cast<int>(lua_tonumber(L, 3));
+		else
+			return luaL_error(L, "damage: incorrect argument type");
+	}
+
+	damage_definition damage;
+	if (damage_type != NONE)
+		damage.type = damage_type;
+	else
+		damage.type = _damage_fist;
+
+	damage.base = damage_amount;
+	damage.random = 0;
+	damage.flags = 0;
+	damage.scale = FIXED_ONE;
+	
+	int monster_index = L_Index<Lua_Monster>(L, 1);
+	monster_data *monster = get_monster_data(monster_index);
+	damage_monster(monster_index, NONE, NONE, &(monster->sound_location), &damage, NONE);
+	return 0;
+}
+	
+
+extern void add_object_to_polygon_object_list(short object_index, short polygon_index);
+
+int Lua_Monster::position(lua_State *L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+		return luaL_error(L, "position: incorrect argument type");
+
+	short polygon_index = 0;
+	if (lua_isnumber(L, 5))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 5));
+		if (!Lua_Polygons::valid(polygon_index))
+			return luaL_error(L, "position: invalid polygon index");
+	}
+	else if (L_Is<Lua_Polygon>(L, 5))
+	{
+		polygon_index = L_Index<Lua_Polygon>(L, 5);
+	}
+	else
+		return luaL_error(L, "position: incorrect argument type");
+
+	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	object_data *object = get_object_data(monster->object_index);
+	object->location.x = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	object->location.y = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
+	object->location.z = static_cast<int>(lua_tonumber(L, 4) * WORLD_ONE);
+	
+	if (polygon_index != object->polygon)
+	{
+		remove_object_from_polygon_object_list(monster->object_index);
+		add_object_to_polygon_object_list(monster->object_index, polygon_index);
+	}
+}
+		
 
 int Lua_Monster::get_action(lua_State *L)
 {
@@ -52,6 +142,14 @@ int Lua_Monster::get_active(lua_State *L)
 		return luaL_error(L, "active: monster is a player");
 	
 	lua_pushboolean(L, MONSTER_IS_ACTIVE(monster));
+	return 1;
+}
+
+int Lua_Monster::get_facing(lua_State *L)
+{
+	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	object_data *object = get_object_data(monster->object_index);
+	lua_pushnumber(L, (double) object->facing * AngleConvert);
 	return 1;
 }
 
@@ -89,10 +187,42 @@ int Lua_Monster::get_type(lua_State *L)
 	return 1;
 }
 
+int Lua_Monster::get_visible(lua_State *L)
+{
+	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	object_data *object = get_object_data(monster->object_index);
+	lua_pushboolean(L, !OBJECT_IS_INVISIBLE(object));
+	return 1;
+}
+
 int Lua_Monster::get_vitality(lua_State *L)
 {
 	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
 	lua_pushnumber(L, monster->vitality);
+	return 1;
+}
+
+int Lua_Monster::get_x(lua_State *L)
+{
+	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	object_data *object = get_object_data(monster->object_index);
+	lua_pushnumber(L, (double) object->location.x / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Monster::get_y(lua_State *L)
+{
+	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	object_data *object = get_object_data(monster->object_index);
+	lua_pushnumber(L, (double) object->location.y / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Monster::get_z(lua_State *L)
+{
+	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	object_data *object = get_object_data(monster->object_index);
+	lua_pushnumber(L, (double) object->location.z / WORLD_ONE);
 	return 1;
 }
 
@@ -119,6 +249,19 @@ int Lua_Monster::set_active(lua_State *L)
 	return 0;
 }
 
+int Lua_Monster::set_facing(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "facing: incorrect argument type");
+
+	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	object_data *object = get_object_data(monster->object_index);
+	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
+	return 0;
+}
+	
+	
+
 int Lua_Monster::set_vitality(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -132,21 +275,32 @@ int Lua_Monster::set_vitality(lua_State *L)
 const luaL_reg Lua_Monster::index_table[] = {
 	{"action", Lua_Monster::get_action},
 	{"active", Lua_Monster::get_active},
+	{"attack", L_TableFunction<Lua_Monster::attack>},
+	{"damage", L_TableFunction<Lua_Monster::damage>},
 	{"index", L_TableIndex<Lua_Monster>},
+	{"facing", Lua_Monster::get_facing},
 	{"life", Lua_Monster::get_vitality},
 	{"mode", Lua_Monster::get_mode},
 	{"player", Lua_Monster::get_player},
 	{"polygon", Lua_Monster::get_polygon},
+	{"position", L_TableFunction<Lua_Monster::position>},
 	{"type", Lua_Monster::get_type},
 	{"valid", Lua_Monster::valid},
+	{"visible", Lua_Monster::get_visible},
 	{"vitality", Lua_Monster::get_vitality},
+	{"x", Lua_Monster::get_x},
+	{"y", Lua_Monster::get_y},
+	{"yaw", Lua_Monster::get_facing},
+	{"z", Lua_Monster::get_z},
 	{0, 0}
 };
 
 const luaL_reg Lua_Monster::newindex_table[] = {
 	{"active", Lua_Monster::set_active},
+	{"facing", Lua_Monster::set_facing},
 	{"life", Lua_Monster::set_vitality},
 	{"vitality", Lua_Monster::set_vitality},
+	{"yaw", Lua_Monster::set_facing},
 	{0, 0}
 };
 
@@ -189,14 +343,22 @@ int Lua_Monsters_register(lua_State *L)
 }
 
 static const char *compatibility_script = ""
+// there are some conversions to and from internal units, because old
+// monster API was wrong
 	"function activate_monster(monster) Monsters[monster].active = true end\n"
+	"function attack_monster(agressor, target) Monsters[aggressor]:attack(target) end\n"
+	"function damage_monster(monster, damage, type) if type then Monsters[monster]:damage(damage, type) else Monsters[monster]:damage(damage) end end\n"
 	"function deactivate_monster(monster) Monsters[monster].active = false end\n"
 	"function get_monster_action(monster) return Monsters[monster].action end\n"
+	"function get_monster_facing(monster) return Monsters[monster].facing * 512 / 360 end\n"
 	"function get_monster_mode(monster) return Monsters[monster].mode end\n"
 	"function get_monster_polygon(monster) return Monsters[monster].polygon.index end\n"
+	"function get_monster_position(monster) return Monsters[monster].x * 1024, Monsters[monster].y * 1024, Monsters[monster].z * 1024 end\n"
 	"function get_monster_type(monster) return Monsters[monster].type end\n"
+	"function get_monster_visible(monster) return Monsters[monster].visible end\n"
 	"function get_monster_vitality(monster) return Monsters[monster].vitality end\n"
 	"function monster_index_valid(monster) if Monsters[monster] then return true else return false end end\n"
+	"function set_monster_position(monster, polygon, x, y, z) Monsters[monster]:position(x, y, z, polygon) end\n"
 	"function set_monster_vitality(monster, vitality) Monsters[monster].vitality = vitality end\n"
 	;
 

@@ -57,13 +57,24 @@ struct Lua_Monster {
 
 	static int get_action(lua_State *L);
 	static int get_active(lua_State *L);
+	static int get_facing(lua_State *L);
 	static int get_mode(lua_State *L);
 	static int get_player(lua_State *L);
 	static int get_polygon(lua_State *L);
 	static int get_type(lua_State *L);
+	static int get_visible(lua_State *L);
 	static int get_vitality(lua_State *L);
+	static int get_x(lua_State *L);
+	static int get_y(lua_State *L);
+	static int get_z(lua_State *L);
+
 	static int set_active(lua_State *L);
+	static int set_facing(lua_State *L);
 	static int set_vitality(lua_State *L);
+
+	static int attack(lua_State *L);
+	static int damage(lua_State *L);
+	static int position(lua_State *L);
 };
 
 int Lua_Monsters_register(lua_State *L);
