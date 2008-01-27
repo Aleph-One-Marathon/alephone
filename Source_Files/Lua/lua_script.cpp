@@ -2864,25 +2864,6 @@ static int L_Activate_Terminal(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Polygon_Center(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_polygon_center: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon)
-	{
-		lua_pushnumber(L, polygon->center.x);
-		lua_pushnumber(L, polygon->center.y);
-		return 2;
-	}
-	return 0;
-}
-
 static int L_Get_Polygon_Permutation(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -3748,7 +3729,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_terminal_text_number", L_Get_Terminal_Text_Number);
 	lua_register(state, "set_terminal_text_number", L_Set_Terminal_Text_Number);
 	lua_register(state, "activate_terminal", L_Activate_Terminal);
-	lua_register(state, "get_polygon_center", L_Get_Polygon_Center);
 	lua_register(state, "get_polygon_permutation", L_Get_Polygon_Permutation);
 	lua_register(state, "set_polygon_permutation", L_Set_Polygon_Permutation);
 	lua_register(state, "get_polygon_target", L_Get_Polygon_Permutation);

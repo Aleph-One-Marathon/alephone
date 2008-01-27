@@ -68,11 +68,13 @@ const char* Lua_Polygon_Floor::name = "polygon_floor";
 
 const luaL_reg Lua_Polygon_Floor::index_table[] = {
 	{"height", Lua_Polygon_Floor::get_height},
+	{"z", Lua_Polygon_Floor::get_height},
 	{0, 0}
 };
 
 const luaL_reg Lua_Polygon_Floor::newindex_table[] = {
 	{"height", Lua_Polygon_Floor::set_height},
+	{"z", Lua_Polygon_Floor::set_height},
 	{0, 0}
 };
 
@@ -122,11 +124,13 @@ const char* Lua_Polygon_Ceiling::name = "polygon_ceiling";
 
 const luaL_reg Lua_Polygon_Ceiling::index_table[] = {
 	{"height", Lua_Polygon_Ceiling::get_height},
+	{"z", Lua_Polygon_Ceiling::get_height},
 	{0, 0}
 };
 
 const luaL_reg Lua_Polygon_Ceiling::newindex_table[] = {
 	{"height", Lua_Polygon_Ceiling::set_height},
+	{"z", Lua_Polygon_Ceiling::set_height},
 	{0, 0}
 };
 
@@ -177,6 +181,24 @@ int Lua_Polygon::get_type(lua_State *L)
 	return 1;
 }
 
+int Lua_Polygon::get_x(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_polygon_data(L_Index<Lua_Polygon>(L, 1))->center.x / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Polygon::get_y(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_polygon_data(L_Index<Lua_Polygon>(L, 1))->center.y / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Polygon::get_z(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_polygon_data(L_Index<Lua_Polygon>(L, 1))->floor_height / WORLD_ONE);
+	return 1;
+}
+
 int Lua_Polygon::set_type(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -197,6 +219,9 @@ const luaL_reg Lua_Polygon::index_table[] = {
 	{"floor", Lua_Polygon::get_floor},
 	{"index", L_TableIndex<Lua_Polygon>},
 	{"type", Lua_Polygon::get_type},
+	{"x", Lua_Polygon::get_x},
+	{"y", Lua_Polygon::get_y},
+	{"z", Lua_Polygon::get_z},
 	{0, 0}
 };
 
@@ -239,6 +264,7 @@ int Lua_Map_register(lua_State *L)
 
 static const char* compatibility_script = ""
 	"function get_polygon_ceiling_height(polygon) return Polygons[polygon].ceiling.height end\n"
+	"function get_polygon_center(polygon) return Polygons[polygon].x * 1024, Polygons[polygon].y * 1024 end\n"
 	"function get_polygon_floor_height(polygon) return Polygons[polygon].floor.height end\n"
 	"function get_polygon_type(polygon) return Polygons[polygon].type end\n"
 	"function set_polygon_ceiling_height(polygon, height) Polygons[polygon].ceiling.height = height end\n"

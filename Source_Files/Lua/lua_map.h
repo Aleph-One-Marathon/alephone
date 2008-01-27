@@ -66,6 +66,9 @@ struct Lua_Polygon {
 
 	static int get_ceiling(lua_State *L);
 	static int get_floor(lua_State *L);
+	static int get_x(lua_State *L);
+	static int get_y(lua_State *L);
+	static int get_z(lua_State *L); // shortcut for floor_height
 	static int get_type(lua_State *L);
 	static int set_type(lua_State *L);
 };
