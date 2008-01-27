@@ -528,31 +528,6 @@ static int L_Get_Level_Name(lua_State *L)
 	return 1;
 }
 
-static int L_Local_Player_Index(lua_State *L)
-{
-	lua_pushnumber(L, local_player_index);
-	return 1;
-}
-
-static int L_Player_To_Monster_Index(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "player_to_monster_index: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "player_to_monster_index: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, player->monster_index);
-	return 1;
-}
-
-
 static int L_Screen_Print(lua_State *L)
 {
 	int args = lua_gettop(L);
@@ -592,48 +567,6 @@ static int L_Screen_Print(lua_State *L)
 	 return 0;
  }
  */
-static int L_Inflict_Damage(lua_State *L)
-{
-	int args = lua_gettop(L);
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "inflict_damage: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "inflict_damage: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	if (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player))
-		return 0;
-
-	struct damage_definition damage;
-	float temp = static_cast<int>(lua_tonumber(L,2));
-
-	damage.flags= _alien_damage;  // jkvw: do we really want to set this flag?
-	damage.type= _damage_crushing;
-	damage.base= int16(temp);
-	damage.random= 0;
-	damage.scale= FIXED_ONE;
-
-	if (args > 2)
-	{
-		if (!lua_isnumber(L,3))
-		{
-			lua_pushstring(L, "inflict_damage: incorrect argument type");
-			lua_error(L);
-		}
-		damage.type = static_cast<int>(lua_tonumber(L,3));
-	}
-
-	damage_player(player->monster_index, NONE, NONE, &damage, NONE);
-
-	return 0;
-}
 
 static int L_Enable_Player(lua_State *L)
 {
@@ -1708,23 +1641,6 @@ static int L_Set_Monster_Item(lua_State *L)
 	 return 0;
  }
  */
-static int L_Play_Sound(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
-	{
-		lua_pushstring(L, "play_sound: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int sound_index = static_cast<int>(lua_tonumber(L,2));
-	float pitch = static_cast<float>(lua_tonumber(L,3));
-
-	if (local_player_index != player_index)
-		return 0;
-
-	SoundManager::instance()->PlaySound(sound_index, NULL, NONE, _fixed(FIXED_ONE * pitch));
-	return 0;
-}
 
 static int L_Get_Game_Difficulty(lua_State *L)
 {
@@ -3738,11 +3654,9 @@ static int L_Set_Overlay_Icon(lua_State* L) {
 void RegisterLuaFunctions()
 {
 	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
-	lua_register(state, "local_player_index", L_Local_Player_Index);
 	lua_register(state, "get_level_name", L_Get_Level_Name);
 	lua_register(state, "screen_print", L_Screen_Print);
 	//lua_register(state, "display_text", L_Display_Text);
-	lua_register(state, "inflict_damage", L_Inflict_Damage);
 	lua_register(state, "enable_player", L_Enable_Player);
 	lua_register(state, "disable_player", L_Disable_Player);
 	lua_register(state, "kill_script", L_Kill_Script);
@@ -3829,7 +3743,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_crosshairs_state", L_Set_Crosshairs_State);
 	lua_register(state, "zoom_active", L_Zoom_Active);
 	lua_register(state, "set_zoom_state", L_Set_Zoom_State);
-	lua_register(state, "play_sound", L_Play_Sound);
 	lua_register(state, "screen_fade", L_Screen_Fade);
 	lua_register(state, "start_fade", L_Screen_Fade);
 	lua_register(state, "get_terminal_text_number", L_Get_Terminal_Text_Number);

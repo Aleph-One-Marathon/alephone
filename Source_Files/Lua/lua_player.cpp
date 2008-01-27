@@ -88,7 +88,7 @@ static int set_action_flag_T(lua_State *L)
 	}
 	else
 	{
-		return luaL_error(L, "action flags are only acessible in idle()");
+		return luaL_error(L, "action flags are only accessible in idle()");
 	}
 
 	return 0;
@@ -205,6 +205,60 @@ int Lua_Player_find_action_key_target(lua_State *L)
 	}
 
 	return 1;
+}
+
+int Lua_Player::damage(lua_State *L)
+{
+	int args = lua_gettop(L);
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "damage: incorrect argument type");
+	
+	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	if (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player))
+		return 0;
+
+	damage_definition damage;
+	damage.type = _damage_crushing;
+	damage.base = static_cast<int>(lua_tonumber(L, 2));
+	damage.random = 0;
+	damage.scale = FIXED_ONE;
+
+	if (args > 2)
+	{
+		if (lua_isnumber(L, 3))
+		{
+			damage.type = static_cast<int>(lua_tonumber(L, 3));
+		}
+		else
+			return luaL_error(L, "damage: incorrect type");
+	}
+
+	damage_player(player->monster_index, NONE, NONE, &damage, NONE);
+	return 0;
+}
+
+int Lua_Player::play_sound(lua_State *L)
+{
+	int args = lua_gettop(L);
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "play_sound: incorrect argument type");
+	
+	int player_index = L_Index<Lua_Player>(L, 1);
+	int sound_index = static_cast<int>(lua_tonumber(L, 2));
+	float pitch = 1.0;
+	if (args > 2)
+	{
+		if (lua_isnumber(L, 3))
+			pitch = static_cast<float>(lua_tonumber(L, 3));
+		else
+			return luaL_error(L, "play_sound: incorrect argument type");
+	}
+
+	if (local_player_index != player_index)
+		return 0;
+
+	SoundManager::instance()->PlaySound(sound_index, NULL, NONE, _fixed(FIXED_ONE * pitch));
+	return 0;
 }
 
 extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
@@ -340,6 +394,12 @@ int Lua_Player::get_direction(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_local(lua_State *L)
+{
+	lua_pushboolean(L, L_Index<Lua_Player>(L, 1) == local_player_index);
+	return 1;
+}
+
 static int Lua_Player_get_monster(lua_State *L)
 {
 	L_Push<Lua_Monster>(L, get_player_data(L_Index<Lua_Player>(L, 1))->monster_index);
@@ -403,18 +463,21 @@ int Lua_Player::get_z(lua_State *L)
 const luaL_reg Lua_Player::index_table[] = {
 	{"action_flags", Lua_Player_get_action_flags},
 	{"color", Lua_Player_get_color},
+	{"damage", L_TableFunction<Lua_Player::damage>},
 	{"dead", Lua_Player_get_dead},
 	{"direction", Lua_Player::get_direction},
 	{"energy", Lua_Player_get_energy},
 	{"elevation", Lua_Player::get_elevation},
 	{"find_action_key_target", L_TableFunction<Lua_Player_find_action_key_target>},
 	{"index", L_TableIndex<Lua_Player>},
+	{"local_", Lua_Player::get_local},
 	{"juice", Lua_Player_get_energy},
 	{"life", Lua_Player_get_energy},
 	{"monster", Lua_Player_get_monster},
 	{"name", Lua_Player_get_name},
 	{"oxygen", Lua_Player_get_oxygen},
 	{"pitch", Lua_Player::get_elevation},
+	{"play_sound", L_TableFunction<Lua_Player::play_sound>},
 	{"polygon", Lua_Player_get_polygon},
 	{"position", L_TableFunction<Lua_Player::position>},
 	{"team", Lua_Player_get_team},
@@ -585,12 +648,15 @@ static const char *compatibility_script = ""
 	"function get_player_polygon(player) return Players[player].polygon.index end\n"
 	"function get_player_position(player) return Players[player].x, Players[player].y, Players[player].z end\n"
 	"function get_player_team(player) return Players[player].team end\n"
-	"function set_life(player, shield) Players[player].energy = shield end\n"
+	"function inflict_damage(player, amount, type) if (type) then Players[player]:damage(amount, type) else Players[player]:damage(amount) end end\n"
+	"function local_player_index() for p in Players() do if p.local_ then return p.index end end end\n"
 	"function number_of_players() return # Players end\n"
 	"function player_is_dead(player) return Players[player].dead end\n"
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
-	"function set_player_angle(player, yaw, pitch) Players[player].yaw = yaw Players[player].pitch = pitch + 360.0 end\n"
+	"function play_sound(player, sound, pitch) Players[player]:play_sound(sound, pitch) end\n"
+	"function set_life(player, shield) Players[player].energy = shield end\n"
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
+	"function set_player_angle(player, yaw, pitch) Players[player].yaw = yaw Players[player].pitch = pitch + 360.0 end\n"
 	"function set_player_color(player, color) Players[player].color = color end\n"
 	"function set_player_position(player, x, y, z, polygon) Players[player]:position(x, y, z, polygon) end\n"
 	"function set_player_team(player, team) Players[player].team = team end\n"
