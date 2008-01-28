@@ -25,8 +25,12 @@ LUA_MONSTERS.CPP
 #include "lua_player.h"
 #include "lua_templates.h"
 
+#include "flood_map.h"
 #include "monsters.h"
 #include "player.h"
+
+#define DONT_REPEAT_DEFINITIONS
+#include "monster_definitions.h"
 
 #ifdef HAVE_LUA
 
@@ -91,7 +95,76 @@ int Lua_Monster::damage(lua_State *L)
 	damage_monster(monster_index, NONE, NONE, &(monster->sound_location), &damage, NONE);
 	return 0;
 }
+
+struct monster_pathfinding_data
+{
+	struct monster_definition *definition;
+	struct monster_data *monster;
+
+	bool cross_zone_boundaries;
+};
+
+extern void advance_monster_path(short monster_index);
+extern long monster_pathfinding_cost_function(short source_polygon_index, short line_index, short destination_polygon_index, void *data);
+extern void set_monster_action(short monster_index, short action);
+extern void set_monster_mode(short monster_index, short new_mode, short target_index);
+
+int Lua_Monster::move_by_path(lua_State *L)
+{
+	int monster_index = L_Index<Lua_Monster>(L, 1);
+	int polygon_index = 0;
+	if (lua_isnumber(L, 2))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 2));
+		if (!Lua_Polygons::valid(polygon_index))
+			return luaL_error(L, "move_by_path: invalid polygon index");
+	}
+	else if (L_Is<Lua_Polygon>(L, 2))
+	{
+		polygon_index = L_Index<Lua_Polygon>(L, 2);
+	}
+	else
+		return luaL_error(L, "move_by_path: incorrect argument type");
+
+	monster_data *monster = get_monster_data(monster_index);
+	if (MONSTER_IS_PLAYER(monster))
+		return luaL_error(L, "move_by_path: monster is player");
+
+	monster_definition *definition = get_monster_definition_external(monster->type);
+	object_data *object = get_object_data(monster->object_index);
+	monster_pathfinding_data path;
+	world_point2d destination;
+
+	if (!MONSTER_IS_ACTIVE(monster))
+		activate_monster(monster_index);
+
+	if (monster->path != NONE)
+	{
+		delete_path(monster->path);
+		monster->path = NONE;
+	}
+
+	SET_MONSTER_NEEDS_PATH_STATUS(monster, false);
+	path.definition = definition;
+	path.monster = monster;
+	path.cross_zone_boundaries = true;
+
+	destination = get_polygon_data(polygon_index)->center;
 	
+	monster->path = new_path((world_point2d *) &object->location, object->polygon, &destination, polygon_index, 3 * definition->radius, monster_pathfinding_cost_function, &path);
+	if (monster->path == NONE)
+	{
+		if (monster->action != _monster_is_being_hit || MONSTER_IS_DYING(monster))
+		{
+			set_monster_action(monster_index, _monster_is_stationary);
+		}
+		set_monster_mode(monster_index, _monster_unlocked, NONE);
+		return 0;
+	}
+
+	advance_monster_path(monster_index);
+	return 0;
+}
 
 extern void add_object_to_polygon_object_list(short object_index, short polygon_index);
 
@@ -281,6 +354,7 @@ const luaL_reg Lua_Monster::index_table[] = {
 	{"facing", Lua_Monster::get_facing},
 	{"life", Lua_Monster::get_vitality},
 	{"mode", Lua_Monster::get_mode},
+	{"move_by_path", L_TableFunction<Lua_Monster::move_by_path>},
 	{"player", Lua_Monster::get_player},
 	{"polygon", Lua_Monster::get_polygon},
 	{"position", L_TableFunction<Lua_Monster::position>},
@@ -313,6 +387,7 @@ const luaL_reg Lua_Monster::metatable[] = {
 const char *Lua_Monsters::name = "Monsters";
 
 const luaL_reg Lua_Monsters::methods[] = {
+	{"new", Lua_Monsters::new_monster},
 	{0, 0}
 };
 
@@ -322,6 +397,48 @@ const luaL_reg Lua_Monsters::metatable[] = {
 	{"__call", L_GlobalCall<Lua_Monsters, Lua_Monster>},
 	{0, 0}
 };
+
+// Monsters.new(x, y, z, polygon, type)
+int Lua_Monsters::new_monster(lua_State *L)
+{
+	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 5))
+		luaL_error(L, "new: incorrect argument type");
+
+	int polygon_index = 0;
+	if (lua_isnumber(L, 4))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 4));
+		if (!Lua_Polygons::valid(polygon_index))
+			return luaL_error(L, "new: invalid polygon index");
+	}
+	else if (L_Is<Lua_Polygon>(L, 4))
+	{
+		polygon_index = L_Index<Lua_Polygon>(L, 4);
+	}
+	else
+		return luaL_error(L, "new: incorrect argument type");
+
+	short monster_type = static_cast<int>(lua_tonumber(L, 5));
+	if (monster_type < 0 || monster_type > NUMBER_OF_MONSTER_TYPES)
+		return luaL_error(L, "new: invalid monster type");
+	
+	object_location location;
+	location.p.x = static_cast<int>(lua_tonumber(L, 1) * WORLD_ONE);
+	location.p.y = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	location.p.z = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
+	
+	location.polygon_index = polygon_index;
+	location.yaw = 0;
+	location.pitch = 0;
+	location.flags = 0;
+
+	short monster_index = ::new_monster(&location, monster_type);
+	if (monster_index == NONE)
+		return 0;
+
+	L_Push<Lua_Monster>(L, monster_index);
+	return 1;
+}
 
 bool Lua_Monsters::valid(int index)
 {
@@ -358,6 +475,8 @@ static const char *compatibility_script = ""
 	"function get_monster_visible(monster) return Monsters[monster].visible end\n"
 	"function get_monster_vitality(monster) return Monsters[monster].vitality end\n"
 	"function monster_index_valid(monster) if Monsters[monster] then return true else return false end end\n"
+	"function move_monster(monster, polygon) Monsters[monster]:move_by_path(polygon) end\n"
+	"function new_monster(type, poly, facing, height, x, y) if (x and y) then Monsters.new(x, y, height / 1024, poly, type) elseif (height) then Monsters.new(Polygons[poly].x, Polygons[poly].y, height / 1024, poly, type) else Monsters.new(Polygons[poly].x, Polygons[poly].y, Polygons[poly].floor.height, type) end end\n"	
 	"function set_monster_position(monster, polygon, x, y, z) Monsters[monster]:position(x, y, z, polygon) end\n"
 	"function set_monster_vitality(monster, vitality) Monsters[monster].vitality = vitality end\n"
 	;

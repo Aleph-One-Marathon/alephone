@@ -150,11 +150,6 @@ static bool mute_lua = false;
 extern bool ready_weapon(short player_index, short weapon_index);
 extern void DisplayText(short BaseX, short BaseY, char *Text, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff);
 
-extern void advance_monster_path(short monster_index);
-extern long monster_pathfinding_cost_function(short source_polygon_index, short line_index,
-					      short destination_polygon_index, void *data);
-extern void set_monster_action(short monster_index, short action);
-extern void set_monster_mode(short monster_index, short new_mode, short target_index);
 
 extern void ShootForTargetPoint(bool ThroughWalls, world_point3d& StartPosition, world_point3d& EndPosition, short& Polygon);
 extern void select_next_best_weapon(short player_index);
@@ -197,14 +192,6 @@ struct control_panel_definition
 };
 
 extern control_panel_definition *get_control_panel_definition(const short control_panel_type);
-
-struct monster_pathfinding_data
-{
-	struct monster_definition *definition;
-	struct monster_data *monster;
-
-	bool cross_zone_boundaries;
-};
 
 extern ActionQueues *sPfhortranActionQueues;
 extern struct view_data *world_view;
@@ -1120,145 +1107,6 @@ static int L_Set_All_Fog_Attributes(lua_State *L)
 	lua_gettable(L, -2);
 	OGL_GetFogData(OGL_Fog_BelowLiquid)->AffectsLandscapes = lua_toboolean(L, -1);
 	lua_pop(L, 3);
-	return 0;
-}
-
-// Note: a monster of the type created must already exist in the map.
-static int L_New_Monster(lua_State *L)
-{
-	int args = lua_gettop(L);
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "new_monster: incorrect argument type");
-		lua_error(L);
-	}
-	short monster_type = static_cast<int>(lua_tonumber(L,1));
-	short polygon = static_cast<int>(lua_tonumber(L,2));
-	/* SB: validate the monster type */
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES) {
-		lua_pushstring(L, "new_monster: invalid monster type");
-		lua_error(L);
-	}
-	
-	short facing = 0;
-	if (args > 2)
-	{
-		if (!lua_isnumber(L,3))
-		{
-			lua_pushstring(L, "new_monster: incorrect argument type");
-			lua_error(L);
-		}
-		facing = static_cast<int>(lua_tonumber(L,3));
-	}
-
-	short height = 0;
-	if (args > 3)
-	{
-		if (!lua_isnumber(L,4))
-		{
-			lua_pushstring(L, "new_monster: incorrect argument type");
-			lua_error(L);
-		}
-		height = static_cast<int>(lua_tonumber(L,4));
-	}
-
-	object_location theLocation;
-	struct polygon_data *destination;
-	world_point3d theDestination;
-	world_point2d theCenter;
-	short index;
-
-	theLocation.polygon_index = (int16)polygon;
-	destination = NULL;
-	destination= get_polygon_data(theLocation.polygon_index);
-	if(destination==NULL)
-		return 0;
-	// *((world_point2d *)&theDestination)= destination->center;
- //stolen, assuming it works
-	if (args > 5)
-	{
-		if (!lua_isnumber(L,5) || !lua_isnumber(L,6))
-		{
-			lua_pushstring(L, "new_monster: incorrect argument type");
-			lua_error(L);
-		}
-		theDestination.x = static_cast<int>(lua_tonumber(L,5)*WORLD_ONE);
-		theDestination.y = static_cast<int>(lua_tonumber(L,6)*WORLD_ONE);
-	}
-	else {
-	  find_center_of_polygon(polygon, &theCenter);
-	  theDestination.x = theCenter.x;
-	  theDestination.y = theCenter.y;
-	}
-	theDestination.z= height;
-	theLocation.p = theDestination;
-	theLocation.yaw = 0;
-	theLocation.pitch = 0;
-	theLocation.flags = 0;
-
-	index = new_monster(&theLocation, (short)monster_type);
-	if (index == NONE)
-		return 0;
-	lua_pushnumber(L, index);
-
-	monster_data *monster = get_monster_data(index);
-	object_data *object = get_object_data(monster->object_index);
-	object->facing = normalize_angle(static_cast<int>((double)facing/AngleConvert));
-
-	return 1;
-}
-
-static int L_Move_Monster(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "move_monster: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_index = static_cast<int>(lua_tonumber(L,1));
-	int polygon = static_cast<int>(lua_tonumber(L,2));
-
-	world_point2d *theEnd;
-	struct monster_pathfinding_data thePath;
-	struct monster_data *theRealMonster;
-	struct monster_definition *theDef;
-	struct object_data *theObject;
-
-	if(monster_index == NONE)
-	{
-		lua_pushstring(L, "move_monster: invalid monster index");
-		lua_error(L);
-	}
-	theRealMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	if(!SLOT_IS_USED(theRealMonster)) return 0;		//we must have a legal monster
-	theDef = get_monster_definition_external(theRealMonster->type);
-	theObject = get_object_data(theRealMonster->object_index);
-	//some checks stolen from generate_new_path_for_monster
-	if(!MONSTER_IS_ACTIVE(theRealMonster))
-		activate_monster(monster_index);
-	if (theRealMonster->path!=NONE)
-        {
-		delete_path(theRealMonster->path);
-		theRealMonster->path= NONE;
-        }
-	SET_MONSTER_NEEDS_PATH_STATUS(theRealMonster, false);
-
-	thePath.definition = get_monster_definition_external(theRealMonster->type);
-	thePath.monster = theRealMonster;
-	thePath.cross_zone_boundaries = true;
-
-	theEnd = &(get_polygon_data(polygon)->center);
-
-	theRealMonster->path = new_path((world_point2d *)&theObject->location, theObject->polygon, theEnd, polygon, 3*get_monster_definition_external(theRealMonster->type)->radius, monster_pathfinding_cost_function, &thePath);
-	if (theRealMonster->path==NONE)
-	{
-		if(theRealMonster->action!=_monster_is_being_hit || MONSTER_IS_DYING(theRealMonster))
-		{	set_monster_action(monster_index, _monster_is_stationary); }
-		set_monster_mode(monster_index, _monster_unlocked, NONE);
-		return 0;
-	}
-	advance_monster_path(monster_index);
-
 	return 0;
 }
 
@@ -3672,10 +3520,8 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_underwater_fog_affects_landscapes", L_Get_Underwater_Fog_Affects_Landscapes);
 	lua_register(state, "get_all_fog_attributes", L_Get_All_Fog_Attributes);
 	lua_register(state, "set_all_fog_attributes", L_Set_All_Fog_Attributes);
-	lua_register(state, "new_monster", L_New_Monster);
 	lua_register(state, "get_monster_type_class", L_Get_Monster_Type_Class);
 	lua_register(state, "set_monster_type_class", L_Set_Monster_Type_Class);
-	lua_register(state, "move_monster", L_Move_Monster);
 	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "get_monster_immunity", L_Get_Monster_Immunity);
 	lua_register(state, "set_monster_immunity", L_Set_Monster_Immunity);

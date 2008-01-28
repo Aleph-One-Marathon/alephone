@@ -42,6 +42,8 @@ struct Lua_Monsters {
 	static const luaL_reg methods[];
 	static int length() { return MAXIMUM_MONSTERS_PER_MAP; }
 	static bool valid(int);
+
+	static int new_monster(lua_State *L);
 };
 
 struct Lua_Monster {
@@ -74,6 +76,7 @@ struct Lua_Monster {
 
 	static int attack(lua_State *L);
 	static int damage(lua_State *L);
+	static int move_by_path(lua_State *L);
 	static int position(lua_State *L);
 };
 
