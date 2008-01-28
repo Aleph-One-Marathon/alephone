@@ -180,8 +180,6 @@ int Lua_Player_find_action_key_target(lua_State *L)
 	short target_type;
 	short object_index = find_action_key_target(L_Index<Lua_Player>(L, 1), MAXIMUM_ACTIVATION_RANGE, &target_type);
 
-	fprintf(stderr, "object index is %i\n", object_index);
-
 	if (object_index != NONE)
 	{
 		switch (target_type)
