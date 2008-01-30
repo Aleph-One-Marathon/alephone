@@ -163,6 +163,9 @@ AC_CHECK_HEADERS(speex/speex.h, [
     LIBS="-lspeex $LIBS"
     AC_DEFINE(SPEEX, 1, [Speex support is enabled])
   ])
+  AC_CHECK_LIB(speexdsp, speex_preprocess_state_init, [
+  LIBS="-lspeexdsp $LIBS"
+])
 ])
 fi
 
