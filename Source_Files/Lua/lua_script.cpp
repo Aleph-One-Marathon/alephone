@@ -85,6 +85,7 @@ using namespace std;
 #include "lua_script.h"
 #include "lua_map.h"
 #include "lua_monsters.h"
+#include "lua_objects.h"
 #include "lua_player.h"
 #include "lua_projectiles.h"
 
@@ -2782,130 +2783,6 @@ static int L_Set_Polygon_Media(lua_State *L)
 	return 0;
 }
 
-static int L_Item_Index_Valid(lua_State *L) {
-	if(!lua_isnumber(L,1)) {
-		lua_pushstring(L, "item_index_valid: incorrect argument type");
-		lua_error(L);
-	}
-	short item_index = static_cast<int>(lua_tonumber(L,1));
-	if(item_index < 0 || item_index >= MAXIMUM_OBJECTS_PER_MAP) {
-		lua_pushnil(L);
-	}
-	else {
-		struct object_data *object = GetMemberWithBounds(objects, item_index, MAXIMUM_OBJECTS_PER_MAP);
-		lua_pushboolean(L, SLOT_IS_USED(object) && GET_OBJECT_OWNER(object) == _object_is_item);
-	}
-	return 1;
-}
-
-static int L_Get_Item_Type(lua_State *L) {
-	if(!lua_isnumber(L,1)) {
-		lua_pushstring(L, "get_item_type: incorrect argument type");
-		lua_error(L);
-	}
-	short item_index = static_cast<int>(lua_tonumber(L,1));
-	if(item_index < 0 || item_index >= MAXIMUM_OBJECTS_PER_MAP) {
-		lua_pushstring(L, "get_item_type: invalid item index");
-		lua_error(L);
-	}
-	struct object_data *object = GetMemberWithBounds(objects, item_index, MAXIMUM_OBJECTS_PER_MAP);
-	if(!SLOT_IS_USED(object) || GET_OBJECT_OWNER(object) != _object_is_item) {
-		lua_pushstring(L, "get_item_type: invalid item index");
-		lua_error(L);
-	}
-	lua_pushnumber(L, object->permutation);
-	return 1;
-}
-
-static int L_Get_Item_Polygon(lua_State *L) {
-	if(!lua_isnumber(L,1)) {
-		lua_pushstring(L, "get_item_polygon: incorrect argument type");
-		lua_error(L);
-	}
-	short item_index = static_cast<int>(lua_tonumber(L,1));
-	if(item_index < 0 || item_index >= MAXIMUM_OBJECTS_PER_MAP) {
-		lua_pushstring(L, "get_item_polygon: invalid item index");
-		lua_error(L);
-	}
-	struct object_data *object = GetMemberWithBounds(objects, item_index, MAXIMUM_OBJECTS_PER_MAP);
-	if(!SLOT_IS_USED(object) || GET_OBJECT_OWNER(object) != _object_is_item) {
-		lua_pushstring(L, "get_item_polygon: invalid item index");
-		lua_error(L);
-	}
-	lua_pushnumber(L, object->polygon);
-	return 1;
-}
-
-static int L_Delete_Item(lua_State *L) {
-	if(!lua_isnumber(L,1)) {
-		lua_pushstring(L, "delete_item: incorrect argument type");
-		lua_error(L);
-	}
-	short item_index = static_cast<int>(lua_tonumber(L,1));
-	if(item_index < 0 || item_index >= MAXIMUM_OBJECTS_PER_MAP) {
-		lua_pushstring(L, "delete_item: invalid item index");
-		lua_error(L);
-	}
-	struct object_data *object = GetMemberWithBounds(objects, item_index, MAXIMUM_OBJECTS_PER_MAP);
-	if(!SLOT_IS_USED(object) || GET_OBJECT_OWNER(object) != _object_is_item) {
-		lua_pushstring(L, "delete_item: invalid item index");
-		lua_error(L);
-	}
-  remove_map_object(item_index);
-	return 1;
-}
-
-static int L_New_Item(lua_State *L)
-{
-	int args = lua_gettop(L);
-
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "new_item: incorrect argument type");
-		lua_error(L);
-	}
-	short item_type = static_cast<int>(lua_tonumber(L,1));
-	short polygon = static_cast<int>(lua_tonumber(L,2));
-	short height = 0;
-
-	if (args > 2)
-	{
-		if (!lua_isnumber(L,3))
-		{
-			lua_pushstring(L, "new_item: incorrect argument type");
-			lua_error(L);
-		}
-		height = static_cast<int>(lua_tonumber(L,3));
-	}
-
-	object_location theLocation;
-	struct polygon_data *destination;
-	world_point3d theDestination;
-	world_point2d theCenter;
-	short index;
-
-	theLocation.polygon_index = (int16)polygon;
-	destination = NULL;
-	destination= get_polygon_data(theLocation.polygon_index);
-	if(destination==NULL)
-		return 0;
-	find_center_of_polygon(polygon, &theCenter);
-	theDestination.x = theCenter.x;
-	theDestination.y = theCenter.y;
-	theDestination.z= height;
-	theLocation.p = theDestination;
-	theLocation.yaw = 0;
-	theLocation.pitch = 0;
-	theLocation.flags = 0;
-
-	index = new_item(&theLocation, (short)item_type);
-	if (index == NONE)
-		return 0;
-	lua_pushnumber(L, index);
-
-	return 1;
-}
-
 static int L_Global_Random (lua_State *L)
 {
 	lua_pushnumber (L, global_random ());
@@ -3581,11 +3458,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_polygon_target", L_Set_Polygon_Permutation);
 	lua_register(state, "get_polygon_media", L_Get_Polygon_Media);
 	lua_register(state, "set_polygon_media", L_Set_Polygon_Media);
-	lua_register(state, "item_index_valid", L_Item_Index_Valid);
-	lua_register(state, "get_item_type", L_Get_Item_Type);
-	lua_register(state, "get_item_polygon", L_Get_Item_Polygon);
-	lua_register(state, "delete_item", L_Delete_Item);
-	lua_register(state, "new_item", L_New_Item);
 	lua_register(state, "global_random", L_Global_Random);
 	lua_register(state, "better_random", L_Better_Random);
 	lua_register(state, "local_random", L_Local_Random);
@@ -3616,6 +3488,7 @@ void RegisterLuaFunctions()
 
 	Lua_Map_register(state);
 	Lua_Monsters_register(state);
+	Lua_Objects_register(state);
 	Lua_Player_register(state);
 	Lua_Projectiles_register(state);
 }
