@@ -398,7 +398,7 @@ const luaL_reg Lua_Monsters::metatable[] = {
 	{0, 0}
 };
 
-// Monsters.new(x, y, z, polygon, type)
+// Monsters.new(x, y, height, polygon, type)
 int Lua_Monsters::new_monster(lua_State *L)
 {
 	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 5))
@@ -476,7 +476,7 @@ static const char *compatibility_script = ""
 	"function get_monster_vitality(monster) return Monsters[monster].vitality end\n"
 	"function monster_index_valid(monster) if Monsters[monster] then return true else return false end end\n"
 	"function move_monster(monster, polygon) Monsters[monster]:move_by_path(polygon) end\n"
-	"function new_monster(type, poly, facing, height, x, y) if (x and y) then Monsters.new(x, y, height / 1024, poly, type) elseif (height) then Monsters.new(Polygons[poly].x, Polygons[poly].y, height / 1024, poly, type) else Monsters.new(Polygons[poly].x, Polygons[poly].y, Polygons[poly].floor.height, type) end end\n"	
+	"function new_monster(type, poly, facing, height, x, y) if (x and y) then m = Monsters.new(x, y, height / 1024, poly, type) elseif (height) then m = Monsters.new(Polygons[poly].x, Polygons[poly].y, height / 1024, poly, type) else m = Monsters.new(Polygons[poly].x, Polygons[poly].y, 0, poly, type) end if m then return m.index else return -1 end end\n"	
 	"function set_monster_position(monster, polygon, x, y, z) Monsters[monster]:position(x, y, z, polygon) end\n"
 	"function set_monster_vitality(monster, vitality) Monsters[monster].vitality = vitality end\n"
 	;
