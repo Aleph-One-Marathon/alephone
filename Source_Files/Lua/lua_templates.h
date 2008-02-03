@@ -123,6 +123,8 @@ T* L_Push(lua_State *L, int16 index)
 	return t;
 }
 
+// assumes argument is the correct userdatum, does not perform validation
+// use L_ToIndex<> if you want validation, conversion from number/string
 template<class T>
 int L_Index(lua_State *L, int index)
 {
@@ -147,6 +149,29 @@ bool L_Is(lua_State *L, int index)
 	}
 
 	return false;
+}
+
+template<class T>
+int L_ToIndex(lua_State *L, int index)
+{
+	if (L_Is<T>(L, index))
+		return L_Index<T>(L, index);
+	else if (lua_isnumber(L, index))
+	{
+		int to_index = static_cast<int>(lua_tonumber(L, index));
+		if (!T::valid(to_index))
+		{
+			string error = string(T::name) + ": invalid index";
+			return luaL_error(L, error.c_str());
+		}
+		else
+			return to_index;
+	}
+	else
+	{
+		string error = string(T::name) +  ": incorrect argument type";
+		return luaL_error(L, error.c_str());
+	}
 }
 
 /* the functions below are to be bound in Lua--that's why they only take 1 arg
