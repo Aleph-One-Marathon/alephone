@@ -283,6 +283,7 @@ void L_Register(lua_State *L)
 	// create the metatable itself
 	luaL_newmetatable(L, T::name);
 	luaL_openlib(L, 0, T::metatable, 0);
+	lua_pop(L, 1);
 
 	// register get methods
 	lua_pushlightuserdata(L, (void *) (&T::index_table));
@@ -407,6 +408,7 @@ void L_GlobalRegister(lua_State *L)
 	luaL_openlib(L, 0, G::metatable, 0);
 	lua_setmetatable(L, -2);
 	lua_setglobal(L, G::name);
+	lua_pop(L, 1);
 
 	lua_pushlightuserdata(L, (void *) (&G::methods));
 	lua_newtable(L);
