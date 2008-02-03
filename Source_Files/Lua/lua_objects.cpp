@@ -46,7 +46,7 @@ int Lua_Item::get_polygon(lua_State *L)
 int Lua_Item::get_type(lua_State *L)
 {
 	object_data *object = get_object_data(L_Index<Lua_Item>(L, 1));
-	lua_pushnumber(L, object->permutation);
+	L_Push<Lua_ItemType>(L, object->permutation);
 	return 1;
 }
 
@@ -109,7 +109,7 @@ const luaL_reg Lua_Items::metatable[] = {
 // Items.new(x, y, height, polygon, type)
 int Lua_Items::new_item(lua_State *L)
 {
-	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 5))
+	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
 		luaL_error(L, "new: incorrect argument type");
 
 	int polygon_index = 0;
@@ -126,9 +126,7 @@ int Lua_Items::new_item(lua_State *L)
 	else
 		return luaL_error(L, "new: incorrect argument type");
 
-	short item_type = static_cast<int>(lua_tonumber(L, 5));
-	if (item_type < 0 || item_type >= NUMBER_OF_DEFINED_ITEMS)
-		return luaL_error(L, "new: invalid item type");
+	short item_type = L_ToIndex<Lua_ItemType>(L, 5);
 
 	object_location location;
 	location.p.x = static_cast<int>(lua_tonumber(L, 1) * WORLD_ONE);
@@ -157,12 +155,49 @@ bool Lua_Items::valid(int index)
 	return (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object) == _object_is_item);
 }
 
+int Lua_ItemType::get_ball(lua_State *L)
+{
+	lua_pushboolean(L, (get_item_kind(L_Index<Lua_ItemType>(L, 1)) == _ball));
+	return 1;
+}
+
+const char *Lua_ItemType::name = "item_type";
+const luaL_reg Lua_ItemType::index_table[] = {
+	{"ball", Lua_ItemType::get_ball},
+	{"index", L_TableIndex<Lua_ItemType>},
+	{0, 0}
+};
+
+const luaL_reg Lua_ItemType::newindex_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_ItemType::metatable[] = {
+	{"__index", L_TableGet<Lua_ItemType>},
+	{"__newindex", L_TableSet<Lua_ItemType>},
+	{0, 0}
+};
+
+const char *Lua_ItemTypes::name = "ItemTypes";
+const luaL_reg Lua_ItemTypes::metatable[] = {
+	{"__index", L_GlobalIndex<Lua_ItemTypes, Lua_ItemType>},
+	{"__newindex", L_GlobalNewindex<Lua_ItemTypes>},
+	{"__call", L_GlobalCall<Lua_ItemTypes, Lua_ItemType>},
+	{0, 0}
+};
+
+const luaL_reg Lua_ItemTypes::methods[] = {
+	{0, 0}
+};
+
 static void compatibility(lua_State *L);
 
 int Lua_Objects_register(lua_State *L)
 {
 	L_Register<Lua_Item>(L);
 	L_GlobalRegister<Lua_Items>(L);
+	L_Register<Lua_ItemType>(L);
+	L_GlobalRegister<Lua_ItemTypes>(L);
 
 	compatibility(L);
 }
@@ -170,7 +205,7 @@ int Lua_Objects_register(lua_State *L)
 static const char *compatibility_script = ""
 	"function delete_item(item) Items[item]:delete() end\n"
 	"function get_item_polygon(item) return Items[item].polygon.index end\n"
-	"function get_item_type(item) return Items[item].type end\n"
+	"function get_item_type(item) return Items[item].type.index end\n"
 	"function item_index_valid(item) if Items[item] then return true else return false end end\n"
 	"function new_item(type, polygon, height) if (height) then return Items.new(Polygons[polygon].x, Polygons[polygon].y, height / 1024, polygon, type).index else return Items.new(Polygons[polygon].x, Polygons[polygon].y, 0, polygon, type).index end end\n"
 	;

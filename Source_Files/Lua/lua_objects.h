@@ -33,6 +33,7 @@ extern "C"
 #include "lualib.h"
 }
 
+#include "items.h"
 #include "map.h"
 
 struct Lua_Items {
@@ -61,6 +62,26 @@ struct Lua_Item {
 	static int get_x(lua_State *L);
 	static int get_y(lua_State *L);
 	static int get_z(lua_State *L);
+};
+
+struct Lua_ItemTypes {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
+	static int length() { return NUMBER_OF_DEFINED_ITEMS; }
+	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_DEFINED_ITEMS; }
+};
+
+struct Lua_ItemType {
+	short index;
+	static bool valid(int index) { return Lua_ItemTypes::valid(index); }
+	
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_ball(lua_State *L);
 };
 
 int Lua_Objects_register(lua_State *L);
