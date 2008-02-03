@@ -23,6 +23,7 @@
 		AE23F59A0BDAC23E00C11385 /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
+		AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE38D10C0D555A3100FC2082 /* lua_objects.cpp */; };
 		AE42B4CC0BDBC285003521B7 /* network_microphone_coreaudio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE42B3DC0BDB030B003521B7 /* network_microphone_coreaudio.cpp */; };
 		AE5154600D46E84A00506B58 /* lua_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE51545D0D46E84A00506B58 /* lua_map.cpp */; };
 		AE601F0A0B927C25009F881C /* BasicIFFDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F050B927C25009F881C /* BasicIFFDecoder.cpp */; };
@@ -563,6 +564,8 @@
 		AE2A50CF09C6727C007681A4 /* Scenario.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Scenario.h; path = ../Source_Files/Misc/Scenario.h; sourceTree = SOURCE_ROOT; };
 		AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = preference_dialogs.cpp; path = ../Source_Files/Misc/preference_dialogs.cpp; sourceTree = "<group>"; };
 		AE2FDED109E9352B00A18ABC /* preference_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = preference_dialogs.h; path = ../Source_Files/Misc/preference_dialogs.h; sourceTree = "<group>"; };
+		AE38D10C0D555A3100FC2082 /* lua_objects.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_objects.cpp; sourceTree = "<group>"; };
+		AE38D10D0D555A3100FC2082 /* lua_objects.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_objects.h; sourceTree = "<group>"; };
 		AE42B3DC0BDB030B003521B7 /* network_microphone_coreaudio.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_microphone_coreaudio.cpp; path = ../Source_Files/Network/network_microphone_coreaudio.cpp; sourceTree = "<group>"; };
 		AE437C8B08779BC900038E30 /* shared_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = shared_widgets.h; path = ../Source_Files/Misc/shared_widgets.h; sourceTree = SOURCE_ROOT; };
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
@@ -1227,11 +1230,13 @@
 			children = (
 				AE51545E0D46E84A00506B58 /* lua_map.h */,
 				AEDCB5CC0D4ADB86004CB40E /* lua_monsters.h */,
+				AE38D10D0D555A3100FC2082 /* lua_objects.h */,
 				AE69B5DC0D404F0400C42C11 /* lua_player.h */,
 				AEDCB5DB0D4AEC4D004CB40E /* lua_projectiles.h */,
 				AE51545F0D46E84A00506B58 /* lua_templates.h */,
 				AE51545D0D46E84A00506B58 /* lua_map.cpp */,
 				AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */,
+				AE38D10C0D555A3100FC2082 /* lua_objects.cpp */,
 				AE69B5DB0D404F0400C42C11 /* lua_player.cpp */,
 				AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */,
 				AE7C21D00BFF67FD00CE63EC /* language_definition.h */,
@@ -2398,6 +2403,7 @@
 				AE5154600D46E84A00506B58 /* lua_map.cpp in Sources */,
 				AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */,
 				AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */,
+				AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
