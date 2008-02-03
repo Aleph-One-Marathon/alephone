@@ -3616,15 +3616,41 @@ void ExecuteLuaString(const std::string& line)
 		lua_loaded = true;
 	}
 
-	if (luaL_loadbuffer(state, line.c_str(), line.size(), "console") != 0)
+	string buffer;
+	bool print_result = false;
+	if (line[0] == '=') 
+	{
+		buffer = "return " + line.substr(1);
+		print_result = true;
+	}
+	else
+	{
+		buffer = line;
+	}
+
+
+	if (luaL_loadbuffer(state, buffer.c_str(), buffer.size(), "console") != 0)
 	{
 		L_Error(lua_tostring(state, -1));
 	}
 	else 
 	{
-		if (lua_pcall(state, 0, 0, 0) != 0)
+		if (lua_pcall(state, 0, (print_result) ? 1 : 0, 0) != 0)
 			L_Error(lua_tostring(state, -1));
+
+		if (print_result)
+		{
+			lua_getglobal(state, "tostring");
+			lua_insert(state, 1);
+			lua_pcall(state, 1, 1, 0);
+			if (lua_tostring(state, -1))
+			{
+				screen_printf("%s", lua_tostring(state, -1));
+			}
+		}
 	}
+		
+	lua_settop(state, 0);
 }
 
 void CloseLuaScript()
