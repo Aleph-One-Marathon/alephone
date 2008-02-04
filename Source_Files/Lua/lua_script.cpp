@@ -719,89 +719,6 @@ static int L_Get_Tag_State(lua_State *L)
 	return 1;
 }
 
-static int L_Add_Item(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !static_cast<int>(lua_tonumber(L,2)))
-	{
-		lua_pushstring(L, "add_item: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int item = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "add_item: invalid player index");
-		lua_error(L);
-	}
-
-	try_and_add_player_item(player_index, item);
-
-	return 0;
-}
-
-static int L_Remove_Item(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "remove_item: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int item_type = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "remove_item: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-
-	struct item_definition *definition= get_item_definition_external(item_type);
-
-	if (definition)
-	{
-		if(player->items[item_type] >= 1)// && definition->item_kind==_ammunition)
-		{   player->items[item_type]--; }		/* Decrement your count.. */
-		mark_player_inventory_as_dirty(player_index,item_type);
-		if (player->items[item_type] == 0 && definition->item_kind==_weapon)
-		{    select_next_best_weapon(player_index); }
-    }
-	return 0;
-}
-
-static int L_Count_Item(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "count_item: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int item_type = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "count_item: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, player->items[item_type]);
-	return 1;
-}
-
-static int L_Destroy_Ball(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "destroy_ball: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-
-	if (find_player_ball_color(player_index) != NONE)
-		destroy_players_ball(player_index);
-
-	return 0;
-}
-
 static int L_Select_Weapon(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -3370,10 +3287,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "show_interface", L_Show_Interface);
 	lua_register(state, "get_tag_state", L_Get_Tag_State);
 	lua_register(state, "set_tag_state", L_Set_Tag_State);
-	lua_register(state, "add_item", L_Add_Item);
-	lua_register(state, "remove_item", L_Remove_Item);
-	lua_register(state, "count_item", L_Count_Item);
-	lua_register(state, "destroy_ball", L_Destroy_Ball);
 	lua_register(state, "select_weapon", L_Select_Weapon);
 	lua_register(state, "set_platform_state", L_Set_Platform_State);
 	lua_register(state, "get_platform_state", L_Get_Platform_State);

@@ -21,8 +21,10 @@ LUA_PLAYER.CPP
 */
 
 #include "ActionQueues.h"
+#include "game_window.h"
 #include "lua_map.h"
 #include "lua_monsters.h"
+#include "lua_objects.h"
 #include "lua_player.h"
 #include "lua_templates.h"
 #include "map.h"
@@ -31,6 +33,9 @@ LUA_PLAYER.CPP
 #include "screen.h"
 #include "SoundManager.h"
 #include "ViewControl.h"
+
+#define DONT_REPEAT_DEFINITIONS
+#include "item_definitions.h"
 
 #ifdef HAVE_LUA
 
@@ -170,6 +175,96 @@ const luaL_reg Lua_Side::metatable[] = {
 	{0, 0}
 };
 
+struct Lua_Player_Items {
+	short index;
+	static bool valid(int index) { return Lua_Players::valid(index); }
+	
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get(lua_State *L);
+	static int set(lua_State *L);
+};
+
+const char *Lua_Player_Items::name = "player_items";
+
+const luaL_reg Lua_Player_Items::index_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_Player_Items::newindex_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_Player_Items::metatable[] = {
+	{"__index", Lua_Player_Items::get},
+	{"__newindex", Lua_Player_Items::set},
+	{0, 0}
+};
+
+int Lua_Player_Items::get(lua_State *L)
+{
+	int player_index = L_Index<Lua_Player_Items>(L, 1);
+	int item_type = L_ToIndex<Lua_ItemType>(L, 2);
+
+	player_data *player = get_player_data(player_index);
+	int item_count = player->items[item_type];
+	if (item_count == NONE) item_count = 0;
+	lua_pushnumber(L, item_count);
+	return 1;
+}
+
+extern void destroy_players_ball(short player_index);
+extern void select_next_best_weapon(short player_index);
+
+int Lua_Player_Items::set(lua_State *L)
+{
+	if (!lua_isnumber(L, 3)) 
+		return luaL_error(L, "items: incorrect argument type");
+
+	int player_index = L_Index<Lua_Player_Items>(L, 1);
+	player_data *player = get_player_data(player_index);
+	int item_type = L_ToIndex<Lua_ItemType>(L, 2);
+	int item_count = player->items[item_type];
+	item_definition *definition = get_item_definition_external(item_type);
+	int new_item_count = static_cast<int>(lua_tonumber(L, 3));
+	
+	if (new_item_count < 0) 
+		luaL_error(L, "items: invalid item count");
+
+	if (item_count == NONE) item_count = 0;
+	if (new_item_count == 0) new_item_count = NONE;
+
+	if (new_item_count < item_count)
+	{
+		if (definition->item_kind == _ball)
+		{
+			if (find_player_ball_color(player_index) != NONE)
+				destroy_players_ball(player_index);
+		}
+		else
+		{
+			player->items[item_type] = new_item_count;
+			mark_player_inventory_as_dirty(player_index, item_type);
+			if (definition->item_kind == _weapon && player->items[item_type] == NONE)
+			{
+				select_next_best_weapon(player_index);
+			}
+		}
+	}
+	else if (new_item_count > item_count)
+	{
+		while (new_item_count-- > item_count)
+		{
+			try_and_add_player_item(player_index, item_type);
+		}
+	}
+
+	return 0;
+}
+				
 const char *Lua_Player::name = "player";
 
 // methods
@@ -392,6 +487,13 @@ int Lua_Player::get_direction(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_items(lua_State *L)
+{
+	fprintf(stderr, "pushing items\n");
+	L_Push<Lua_Player_Items>(L, L_Index<Lua_Player>(L, 1));
+	return 1;
+}
+
 int Lua_Player::get_local(lua_State *L)
 {
 	lua_pushboolean(L, L_Index<Lua_Player>(L, 1) == local_player_index);
@@ -468,6 +570,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"elevation", Lua_Player::get_elevation},
 	{"find_action_key_target", L_TableFunction<Lua_Player_find_action_key_target>},
 	{"index", L_TableIndex<Lua_Player>},
+	{"items", Lua_Player::get_items},
 	{"local_", Lua_Player::get_local},
 	{"juice", Lua_Player_get_energy},
 	{"life", Lua_Player_get_energy},
@@ -627,6 +730,7 @@ static int Lua_Player_load_compatibility(lua_State *L);
 int Lua_Player_register (lua_State *L)
 {
 	L_Register<Lua_Action_Flags>(L);
+	L_Register<Lua_Player_Items>(L);
 	L_Register<Lua_Player>(L);
 	L_Register<Lua_Side>(L);
 
@@ -638,6 +742,9 @@ int Lua_Player_register (lua_State *L)
 }
 
 static const char *compatibility_script = ""
+	"function add_item(player, item_type) Players[player].items[item_type] = Players[player].items[item_type] + 1 end\n"
+	"function count_item(player, item_type) return Players[player].items[item_type] end\n"
+	"function destroy_ball(player) for i in ItemTypes() do if i.ball then Players[player].items[i] = 0 end end end\n"
 	"function get_life(player) return Players[player].energy end\n"
 	"function get_oxygen(player) return Players[player].oxygen end\n"
 	"function get_player_angle(player) return Players[player].yaw, Players[player].pitch end\n"
@@ -652,6 +759,7 @@ static const char *compatibility_script = ""
 	"function player_is_dead(player) return Players[player].dead end\n"
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
 	"function play_sound(player, sound, pitch) Players[player]:play_sound(sound, pitch) end\n"
+	"function remove_item(player, item_type) if Players[player].items[item_type] > 0 then Players[player].items[item_type] = Players[player].items[item_type] - 1 end end\n"
 	"function set_life(player, shield) Players[player].energy = shield end\n"
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
 	"function set_player_angle(player, yaw, pitch) Players[player].yaw = yaw Players[player].pitch = pitch + 360.0 end\n"

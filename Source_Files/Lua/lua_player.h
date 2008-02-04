@@ -57,6 +57,7 @@ struct Lua_Player {
 
 	static int get_direction(lua_State *L);
 	static int get_elevation(lua_State *L);
+	static int get_items(lua_State *L);
 	static int get_local(lua_State *L);
 	static int get_x(lua_State *L);
 	static int get_y(lua_State *L);
