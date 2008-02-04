@@ -3637,8 +3637,7 @@ void ExecuteLuaString(const std::string& line)
 	{
 		if (lua_pcall(state, 0, (print_result) ? 1 : 0, 0) != 0)
 			L_Error(lua_tostring(state, -1));
-
-		if (print_result)
+		else if (print_result)
 		{
 			lua_getglobal(state, "tostring");
 			lua_insert(state, 1);
@@ -3649,7 +3648,7 @@ void ExecuteLuaString(const std::string& line)
 			}
 		}
 	}
-		
+	
 	lua_settop(state, 0);
 }
 
