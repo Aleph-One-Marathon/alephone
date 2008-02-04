@@ -173,6 +173,7 @@ const luaL_reg Lua_ItemType::newindex_table[] = {
 };
 
 const luaL_reg Lua_ItemType::metatable[] = {
+	{"__eq", L_Equals<Lua_ItemType>},
 	{"__index", L_TableGet<Lua_ItemType>},
 	{"__newindex", L_TableSet<Lua_ItemType>},
 	{0, 0}

@@ -179,6 +179,13 @@ int L_ToIndex(lua_State *L, int index)
  */
 
 template<class T>
+int L_Equals(lua_State *L)
+{
+	lua_pushboolean(L, L_ToIndex<T>(L, 1) == L_ToIndex<T>(L, 2));
+	return 1;
+}
+
+template<class T>
 int L_TableIndex(lua_State *L)
 {
 	lua_pushnumber(L, L_Index<T>(L, 1));
