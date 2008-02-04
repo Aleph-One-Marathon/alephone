@@ -188,11 +188,9 @@ static const TValue *get_compTM (lua_State *L, Table *mt1, Table *mt2,
 static int call_orderTM (lua_State *L, const TValue *p1, const TValue *p2,
                          TMS event) {
   const TValue *tm1 = luaT_gettmbyobj(L, p1, event);
-  const TValue *tm2;
-  if (ttisnil(tm1)) return -1;  /* no metamethod? */
-  tm2 = luaT_gettmbyobj(L, p2, event);
-  if (!luaO_rawequalObj(tm1, tm2))  /* different metamethods? */
-    return -1;
+  if (ttisnil(tm1))
+	  tm1 = luaT_gettmbyobj(L, p2, event); /* try second operand */
+  if (!ttisfunction(tm1)) return 0;
   callTMres(L, L->top, tm1, p1, p2);
   return !l_isfalse(L->top);
 }
@@ -252,7 +250,9 @@ static int lessequal (lua_State *L, const TValue *l, const TValue *r) {
 
 int luaV_equalval (lua_State *L, const TValue *t1, const TValue *t2) {
   const TValue *tm;
-  lua_assert(ttype(t1) == ttype(t2));
+  if (ttype(t1) != ttype(t2))
+	  return call_orderTM(L, t1, t2, TM_EQ) > 0;
+
   switch (ttype(t1)) {
     case LUA_TNIL: return 1;
     case LUA_TNUMBER: return luai_numeq(nvalue(t1), nvalue(t2));

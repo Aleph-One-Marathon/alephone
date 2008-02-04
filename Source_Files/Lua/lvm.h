@@ -18,8 +18,7 @@
 #define tonumber(o,n)	(ttype(o) == LUA_TNUMBER || \
                          (((o) = luaV_tonumber(o,n)) != NULL))
 
-#define equalobj(L,o1,o2) \
-	(ttype(o1) == ttype(o2) && luaV_equalval(L, o1, o2))
+#define equalobj(L,o1,o2) luaV_equalval(L, o1, o2)
 
 
 LUAI_FUNC int luaV_lessthan (lua_State *L, const TValue *l, const TValue *r);
