@@ -30,6 +30,7 @@ LUA_PLAYER.CPP
 #include "map.h"
 #include "monsters.h"
 #include "player.h"
+#include "network_games.h"
 #include "screen.h"
 #include "SoundManager.h"
 #include "ViewControl.h"
@@ -264,7 +265,76 @@ int Lua_Player_Items::set(lua_State *L)
 
 	return 0;
 }
-				
+
+struct Lua_Player_Kills {
+	short index;
+	static bool valid(int index) { return Lua_Players::valid(index); }
+
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get(lua_State *L);
+	static int set(lua_State *L);
+};
+
+const char *Lua_Player_Kills::name = "player_kills";
+
+const luaL_reg Lua_Player_Kills::index_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_Player_Kills::newindex_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_Player_Kills::metatable[] = {
+	{"__index", Lua_Player_Kills::get},
+	{"__newindex", Lua_Player_Kills::set},
+	{0, 0}
+};
+
+int Lua_Player_Kills::get(lua_State *L)
+{
+	int player_index = L_Index<Lua_Player_Kills>(L, 1);
+	int slain_player_index = L_ToIndex<Lua_Player>(L, 2);
+	
+	player_data *slain_player = get_player_data(slain_player_index);
+
+	lua_pushnumber(L, slain_player->damage_taken[player_index].kills);
+	return 1;
+}			
+
+int Lua_Player_Kills::set(lua_State *L)
+{
+	if (!lua_isnumber(L, 3))
+		return luaL_error(L, "kills: incorrect argument type");
+
+	int player_index = L_Index<Lua_Player_Kills>(L, 1);
+	int slain_player_index = L_ToIndex<Lua_Player>(L, 2);	
+	int kills = static_cast<int>(lua_tonumber(L, 3));
+
+	player_data *player = get_player_data(player_index);
+	player_data *slain_player = get_player_data(slain_player_index);
+
+	if (slain_player->damage_taken[player_index].kills != kills)
+	{
+		team_damage_taken[slain_player->team].kills += kills - slain_player->damage_taken[player_index].kills;
+		if (slain_player_index != player_index)
+		{
+			team_damage_given[player->team].kills += kills - slain_player->damage_taken[player_index].kills;
+		}
+		if (slain_player->team == player->team)
+		{
+			team_friendly_fire[slain_player->team].kills += kills - slain_player->damage_taken[player_index].kills;
+		}
+		slain_player->damage_taken[player_index].kills = kills;
+		mark_player_network_stats_as_dirty(current_player_index);
+	}
+	return 0;
+}
+
 const char *Lua_Player::name = "player";
 
 // methods
@@ -467,6 +537,13 @@ static int Lua_Player_get_dead(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_deaths(lua_State *L)
+{
+	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	lua_pushnumber(L, player->monster_damage_taken.kills);
+	return 1;
+}
+
 static int Lua_Player_get_energy(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->suit_energy);
@@ -489,8 +566,13 @@ int Lua_Player::get_direction(lua_State *L)
 
 int Lua_Player::get_items(lua_State *L)
 {
-	fprintf(stderr, "pushing items\n");
 	L_Push<Lua_Player_Items>(L, L_Index<Lua_Player>(L, 1));
+	return 1;
+}
+
+int Lua_Player::get_kills(lua_State *L)
+{
+	L_Push<Lua_Player_Kills>(L, L_Index<Lua_Player>(L, 1));
 	return 1;
 }
 
@@ -515,6 +597,12 @@ static int Lua_Player_get_name(lua_State *L)
 static int Lua_Player_get_oxygen(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->suit_oxygen);
+	return 1;
+}
+
+int Lua_Player::get_points(lua_State *L)
+{
+	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->netgame_parameters[0]);
 	return 1;
 }
 
@@ -565,6 +653,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"color", Lua_Player_get_color},
 	{"damage", L_TableFunction<Lua_Player::damage>},
 	{"dead", Lua_Player_get_dead},
+	{"deaths", Lua_Player::get_deaths},
 	{"direction", Lua_Player::get_direction},
 	{"energy", Lua_Player_get_energy},
 	{"elevation", Lua_Player::get_elevation},
@@ -573,12 +662,14 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"items", Lua_Player::get_items},
 	{"local_", Lua_Player::get_local},
 	{"juice", Lua_Player_get_energy},
+	{"kills", Lua_Player::get_kills},
 	{"life", Lua_Player_get_energy},
 	{"monster", Lua_Player_get_monster},
 	{"name", Lua_Player_get_name},
 	{"oxygen", Lua_Player_get_oxygen},
 	{"pitch", Lua_Player::get_elevation},
 	{"play_sound", L_TableFunction<Lua_Player::play_sound>},
+	{"points", Lua_Player::get_points},
 	{"polygon", Lua_Player_get_polygon},
 	{"position", L_TableFunction<Lua_Player::position>},
 	{"team", Lua_Player_get_team},
@@ -608,6 +699,23 @@ static int Lua_Player_set_color(lua_State *L)
 	}
 	get_player_data(L_Index<Lua_Player>(L, 1))->color = color;
 	
+	return 0;
+}
+
+int Lua_Player::set_deaths(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "deaths: incorrect argument type");
+
+	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	int kills = static_cast<int>(lua_tonumber(L, 2));
+	if (player->monster_damage_taken.kills != kills)
+	{
+		team_monster_damage_taken[player->team].kills += (kills - player->monster_damage_taken.kills);
+		player->monster_damage_taken.kills = kills;
+		mark_player_network_stats_as_dirty(current_player_index);
+	}
+
 	return 0;
 }
 
@@ -668,6 +776,26 @@ static int Lua_Player_set_oxygen(lua_State *L)
 	return 0;
 }
 
+int Lua_Player::set_points(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "points: incorrect argument type");
+
+	int points = static_cast<int>(lua_tonumber(L, 2));
+
+	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	if (player->netgame_parameters[0] != points)
+	{
+#if !defined(DISABLE_NETWORKING)
+		team_netgame_parameters[player->team][0] += points - player->netgame_parameters[0];
+#endif
+		player->netgame_parameters[0] = points;
+		mark_player_network_stats_as_dirty(current_player_index);
+	}
+
+	return 0;
+}
+
 static int Lua_Player_set_team(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -685,6 +813,7 @@ static int Lua_Player_set_team(lua_State *L)
 
 const luaL_reg Lua_Player::newindex_table[] = {
 	{"color", Lua_Player_set_color},
+	{"deaths", Lua_Player::set_deaths},
 	{"direction", Lua_Player::set_direction},
 	{"elevation", Lua_Player::set_elevation},
 	{"energy", Lua_Player_set_energy},
@@ -692,6 +821,7 @@ const luaL_reg Lua_Player::newindex_table[] = {
 	{"life", Lua_Player_set_energy},
 	{"oxygen", Lua_Player_set_oxygen},
 	{"pitch", Lua_Player::set_elevation},
+	{"points", Lua_Player::set_points},
 	{"position", Lua_Player::position},
 	{"team", Lua_Player_set_team},
 	{"yaw", Lua_Player::set_direction},
@@ -731,6 +861,7 @@ int Lua_Player_register (lua_State *L)
 {
 	L_Register<Lua_Action_Flags>(L);
 	L_Register<Lua_Player_Items>(L);
+	L_Register<Lua_Player_Kills>(L);
 	L_Register<Lua_Player>(L);
 	L_Register<Lua_Side>(L);
 
@@ -743,8 +874,11 @@ int Lua_Player_register (lua_State *L)
 
 static const char *compatibility_script = ""
 	"function add_item(player, item_type) Players[player].items[item_type] = Players[player].items[item_type] + 1 end\n"
+	"function award_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = Players[slain_player].deaths + amount else Players[player].kills[slain_player] = Players[player].kills[slain_player] + amount end end\n"
+	"function award_points(player, amount) Players[player].points = Players[player].points + amount end\n"
 	"function count_item(player, item_type) return Players[player].items[item_type] end\n"
 	"function destroy_ball(player) for i in ItemTypes() do if i.ball then Players[player].items[i] = 0 end end end\n"
+	"function get_kills(player, slain_player) if player == -1 then return Players[slain_player].deaths else return Players[player].kills[slain_player] end end\n"
 	"function get_life(player) return Players[player].energy end\n"
 	"function get_oxygen(player) return Players[player].oxygen end\n"
 	"function get_player_angle(player) return Players[player].yaw, Players[player].pitch end\n"
@@ -753,6 +887,7 @@ static const char *compatibility_script = ""
 	"function get_player_polygon(player) return Players[player].polygon.index end\n"
 	"function get_player_position(player) return Players[player].x, Players[player].y, Players[player].z end\n"
 	"function get_player_team(player) return Players[player].team end\n"
+	"function get_points(player) return Players[player].points end\n"
 	"function inflict_damage(player, amount, type) if (type) then Players[player]:damage(amount, type) else Players[player]:damage(amount) end end\n"
 	"function local_player_index() for p in Players() do if p.local_ then return p.index end end end\n"
 	"function number_of_players() return # Players end\n"
@@ -760,12 +895,14 @@ static const char *compatibility_script = ""
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
 	"function play_sound(player, sound, pitch) Players[player]:play_sound(sound, pitch) end\n"
 	"function remove_item(player, item_type) if Players[player].items[item_type] > 0 then Players[player].items[item_type] = Players[player].items[item_type] - 1 end end\n"
+	"function set_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = amount else Players[player].kills[slain_player] = amount end end\n"
 	"function set_life(player, shield) Players[player].energy = shield end\n"
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
 	"function set_player_angle(player, yaw, pitch) Players[player].yaw = yaw Players[player].pitch = pitch + 360.0 end\n"
 	"function set_player_color(player, color) Players[player].color = color end\n"
 	"function set_player_position(player, x, y, z, polygon) Players[player]:position(x, y, z, polygon) end\n"
 	"function set_player_team(player, team) Players[player].team = team end\n"
+	"function set_points(player, amount) Players[player].points = amount end\n"
 	"function teleport_player(player, polygon) Players[player]:teleport(polygon) end\n"
 	"function teleport_player_to_level(player, level) Players[player]:teleport_to_level(level) end\n"
 	;
