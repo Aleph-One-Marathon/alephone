@@ -1028,39 +1028,6 @@ static int L_Set_All_Fog_Attributes(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Monster_Type_Class(lua_State *L) {
-	if(!lua_isnumber(L,1)) {
-		lua_pushstring(L, "get_monster_type_class: incorrect argument type");
-		lua_error(L);
-	}
-	short type = static_cast<int>(lua_tonumber(L,1));
-	if(type < 0 || type >= NUMBER_OF_MONSTER_TYPES) {
-		lua_pushstring(L, "get_monster_type_class: invalid monster type");
-		lua_error(L);
-	}
-	struct monster_definition* def;
-	def = get_monster_definition_external(type);
-	lua_pushnumber(L, def->_class);
-	return 1;
-}
-
-static int L_Set_Monster_Type_Class(lua_State *L) {
-	if(!lua_isnumber(L,1)||!lua_isnumber(L,2)) {
-		lua_pushstring(L, "set_monster_type_class: incorrect argument type");
-		lua_error(L);
-	}
-	short type = static_cast<int>(lua_tonumber(L,1));
-	short _class = static_cast<int>(lua_tonumber(L,2));
-	if(type < 0 || type >= NUMBER_OF_MONSTER_TYPES) {
-		lua_pushstring(L, "set_monster_type_class: invalid monster type");
-		lua_error(L);
-	}
-	struct monster_definition* def;
-	def = get_monster_definition_external(type);
-	def->_class = _class;
-	return 0;
-}
-
 static int L_Select_Monster(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -1315,49 +1282,6 @@ static int L_Set_Monster_Enemy(lua_State *L)
 		theDef->enemies = theDef->enemies & ~(enemy_class);
 		return 0;
 	}
-}
-
-static int L_Get_Monster_Item(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_monster_item: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-
-	struct monster_definition *theDef;
-
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "get_monster_item: invalid monster type");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(monster_type);
-	lua_pushnumber(L, theDef->carrying_item_type);
-	return 1;
-}
-
-static int L_Set_Monster_Item(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_monster_item: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int item_type = static_cast<int>(lua_tonumber(L,2));
-
-	struct monster_definition *theDef;
-
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "set_monster_item: invalid monster type");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(monster_type);
-	theDef->carrying_item_type = item_type;
-	return 0;
 }
 
 /*
@@ -3090,8 +3014,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_underwater_fog_affects_landscapes", L_Get_Underwater_Fog_Affects_Landscapes);
 	lua_register(state, "get_all_fog_attributes", L_Get_All_Fog_Attributes);
 	lua_register(state, "set_all_fog_attributes", L_Set_All_Fog_Attributes);
-	lua_register(state, "get_monster_type_class", L_Get_Monster_Type_Class);
-	lua_register(state, "set_monster_type_class", L_Set_Monster_Type_Class);
 	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "get_monster_immunity", L_Get_Monster_Immunity);
 	lua_register(state, "set_monster_immunity", L_Set_Monster_Immunity);
@@ -3101,8 +3023,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_monster_friend", L_Set_Monster_Friend);
 	lua_register(state, "get_monster_enemy", L_Get_Monster_Enemy);
 	lua_register(state, "set_monster_enemy", L_Set_Monster_Enemy);
-	lua_register(state, "get_monster_item", L_Get_Monster_Item);
-	lua_register(state, "set_monster_item", L_Set_Monster_Item);
 	//lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
