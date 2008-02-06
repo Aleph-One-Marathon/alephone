@@ -55,6 +55,7 @@ esac
 
 dnl Checks for headers.
 AC_CHECK_HEADERS(unistd.h)
+AC_CHECK_HEADERS(pwd.h)
 
 dnl Checks for library functions.
 AC_CHECK_FUNC(snprintf, [
