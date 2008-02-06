@@ -201,7 +201,9 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
 
 #include <unistd.h>
 #include <sys/types.h>
+#ifdef HAVE_PWD_H
 #include <pwd.h>
+#endif
 
 static void
 InitializeLogging() {
