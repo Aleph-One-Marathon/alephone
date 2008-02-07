@@ -37,12 +37,17 @@ LUA_MONSTERS.CPP
 
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
+static inline bool powerOfTwo(int x)
+{
+	return !((x-1) & x);
+}
+
 struct Lua_MonsterClasses {
 	static const char *name;
 	static const luaL_reg metatable[];
 	static const luaL_reg methods[];
 	static int length() { return _class_yeti_bit + 1; }
-	static bool valid(int index) { return index >= 0 && index <= _class_yeti_bit; }
+	static bool valid(int index) { return index >= 1 && index <= _class_yeti && powerOfTwo(index); }
 };
 
 struct Lua_MonsterClass {
@@ -112,15 +117,7 @@ const char* Lua_MonsterType::name = "monster_type";
 
 int Lua_MonsterType::get_class(lua_State *L) {
 	monster_definition *definition = get_monster_definition_external(L_Index<Lua_MonsterType>(L, 1));
-	short shifted_class = definition->_class;
-	short monster_class = 0;
-	while (shifted_class > 1)
-	{
-		shifted_class >>= 1;
-		monster_class += 1;
-	}
-
-	L_Push<Lua_MonsterClass>(L, monster_class);
+	L_Push<Lua_MonsterClass>(L, definition->_class);
 	return 1;
 }
 
@@ -132,8 +129,7 @@ int Lua_MonsterType::get_item(lua_State *L) {
 
 int Lua_MonsterType::set_class(lua_State *L) {
 	monster_definition *definition = get_monster_definition_external(L_Index<Lua_MonsterType>(L, 1));
-	short monster_class = static_cast<int>(L_ToIndex<Lua_MonsterClass>(L, 2));
-	definition->_class = 1 << monster_class;
+	definition->_class = static_cast<int>(L_ToIndex<Lua_MonsterClass>(L, 2));
 	return 0;
 }
 
@@ -618,7 +614,6 @@ int Lua_Monsters_register(lua_State *L)
 static const char *compatibility_script = ""
 // there are some conversions to and from internal units, because old
 // monster API was wrong
-	"function _get_shift(x) do local c = 0 while x > 1 do x = x / 2 c = c + 1 end return c end end\n"
 	"function activate_monster(monster) Monsters[monster].active = true end\n"
 	"function attack_monster(agressor, target) Monsters[aggressor]:attack(target) end\n"
 	"function damage_monster(monster, damage, type) if type then Monsters[monster]:damage(damage, type) else Monsters[monster]:damage(damage) end end\n"
@@ -630,7 +625,7 @@ static const char *compatibility_script = ""
 	"function get_monster_polygon(monster) return Monsters[monster].polygon.index end\n"
 	"function get_monster_position(monster) return Monsters[monster].x * 1024, Monsters[monster].y * 1024, Monsters[monster].z * 1024 end\n"
 	"function get_monster_type(monster) return Monsters[monster].type end\n"
-	"function get_monster_type_class(monster) return 2 ^ MonsterTypes[monster].class.index end\n"
+	"function get_monster_type_class(monster) return MonsterTypes[monster].class.index end\n"
 	"function get_monster_visible(monster) return Monsters[monster].visible end\n"
 	"function get_monster_vitality(monster) return Monsters[monster].vitality end\n"
 	"function monster_index_valid(monster) if Monsters[monster] then return true else return false end end\n"
@@ -638,7 +633,7 @@ static const char *compatibility_script = ""
 	"function new_monster(type, poly, facing, height, x, y) if (x and y) then m = Monsters.new(x, y, height / 1024, poly, type) elseif (height) then m = Monsters.new(Polygons[poly].x, Polygons[poly].y, height / 1024, poly, type) else m = Monsters.new(Polygons[poly].x, Polygons[poly].y, 0, poly, type) end if m then return m.index else return -1 end end\n"
 	"function set_monster_item(monster, item) if item == -1 then MonsterTypes[monster].item = nil else MonsterTypes[monster].item = item end end\n"
 	"function set_monster_position(monster, polygon, x, y, z) Monsters[monster]:position(x, y, z, polygon) end\n"
-	"function set_monster_type_class(monster, class) MonsterTypes[monster].class = _get_shift(class) end\n"
+	"function set_monster_type_class(monster, class) MonsterTypes[monster].class = class end\n"
 	"function set_monster_vitality(monster, vitality) Monsters[monster].vitality = vitality end\n"
 	;
 

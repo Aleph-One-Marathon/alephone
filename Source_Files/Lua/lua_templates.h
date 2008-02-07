@@ -74,7 +74,7 @@ T* L_Push(lua_State *L)
 */
 
 template<class T>
-T* L_Push(lua_State *L, int16 index)
+T* L_Push(lua_State *L, int index)
 {
 	T* t = 0;
 
@@ -369,7 +369,7 @@ int L_GlobalIndex(lua_State *L)
 	if (lua_isnumber(L, 2))
 	{
 		int index = static_cast<int>(lua_tonumber(L, 2));
-		if (index < 0 || index >= G::length())
+		if (!T::valid(index))
 		{
 			lua_pushnil(L);
 		}
