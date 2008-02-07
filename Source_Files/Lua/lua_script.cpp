@@ -1067,115 +1067,6 @@ static int L_Select_Monster(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Monster_Immunity(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "get_monster_immunity: incorrect argument type");
-		lua_error(L);
-	}
-
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int damage_type = static_cast<int>(lua_tonumber(L,2));
-
-	struct monster_definition *theDef;
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "get_monster_immunity: invalid monster type");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(monster_type);
-	lua_pushboolean(L, theDef->immunities & 1<<damage_type);
-	return 1;
-}
-
-static int L_Set_Monster_Immunity(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isboolean(L,3))
-	{
-		lua_pushstring(L, "set_monster_immunity: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int damage_type = static_cast<int>(lua_tonumber(L,2));
-	bool immune = lua_toboolean(L,3);
-
-	struct monster_definition *theDef;
-
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "set_monster_immunity: invalid monster type");
-		lua_error(L);
-	}
-	if(immune)
-	{
-		theDef = get_monster_definition_external(monster_type);
-		theDef->immunities = theDef->immunities | 1<<damage_type;
-		return 0;
-	}
-	else
-	{
-		theDef = get_monster_definition_external(monster_type);
-		theDef->immunities = theDef->immunities & ~(1<<damage_type);
-		return 0;
-	}
-}
-
-static int L_Get_Monster_Weakness(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "get_monster_weakness: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int damage_type = static_cast<int>(lua_tonumber(L,2));
-
-	struct monster_definition *theDef;
-
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "get_monster_weakness: invalid monster type");
-		lua_error(L);
-	}
-
-	theDef = get_monster_definition_external(monster_type);
-	lua_pushboolean(L, theDef->weaknesses & 1<<damage_type);
-	return 1;
-}
-
-static int L_Set_Monster_Weakness(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isboolean(L,3))
-	{
-		lua_pushstring(L, "set_monster_weakness: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int damage_type = static_cast<int>(lua_tonumber(L,2));
-	bool weak = lua_toboolean(L,3);
-
-	struct monster_definition *theDef;
-
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "set_monster_weakness: invalid monster type");
-		lua_error(L);
-	}
-	if(weak)
-	{
-		theDef = get_monster_definition_external(monster_type);
-		theDef->weaknesses = theDef->weaknesses | 1<<damage_type;
-		return 0;
-	}
-	else
-	{
-		theDef = get_monster_definition_external(monster_type);
-		theDef->weaknesses = theDef->weaknesses & ~(1<<damage_type);
-		return 0;
-	}
-}
-
 /*
  // should modify all values needed for a Matrix-style slowdown shot ;)
  // this includes monster_data as well and monster_definition entries
@@ -2907,10 +2798,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_all_fog_attributes", L_Get_All_Fog_Attributes);
 	lua_register(state, "set_all_fog_attributes", L_Set_All_Fog_Attributes);
 	lua_register(state, "select_monster", L_Select_Monster);
-	lua_register(state, "get_monster_immunity", L_Get_Monster_Immunity);
-	lua_register(state, "set_monster_immunity", L_Set_Monster_Immunity);
-	lua_register(state, "get_monster_weakness", L_Get_Monster_Weakness);
-	lua_register(state, "set_monster_weakness", L_Set_Monster_Weakness);
 	//lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
