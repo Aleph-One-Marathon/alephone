@@ -355,10 +355,7 @@ int Lua_Monster::damage(lua_State *L)
 	int damage_type = NONE;
 	if (lua_gettop(L) == 3)
 	{
-		if (lua_isnumber(L, 3))
-			damage_type = static_cast<int>(lua_tonumber(L, 3));
-		else
-			return luaL_error(L, "damage: incorrect argument type");
+		damage_type = L_ToIndex<Lua_DamageType>(L, 3);
 	}
 
 	damage_definition damage;

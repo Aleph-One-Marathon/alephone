@@ -27,6 +27,36 @@ LUA_MAP.CPP
 
 #ifdef HAVE_LUA
 
+const char *Lua_DamageTypes::name = "DamageTypes";
+
+const luaL_reg Lua_DamageTypes::metatable[] = {
+	{"__call", L_GlobalCall<Lua_DamageTypes, Lua_DamageType>},
+	{"__index", L_GlobalIndex<Lua_DamageTypes, Lua_DamageType>},
+	{"__newindex}", L_GlobalNewindex<Lua_DamageTypes>},
+	{0, 0}
+};
+
+const luaL_reg Lua_DamageTypes::methods[] = {
+	{0, 0}
+};
+
+const char *Lua_DamageType::name = "damage_type";
+
+const luaL_reg Lua_DamageType::metatable[] = {
+	{"__index", L_TableGet<Lua_DamageType>},
+	{"__newindex", L_TableSet<Lua_DamageType>},
+	{0, 0}
+};
+
+const luaL_reg Lua_DamageType::index_table[] = {
+	{"index", L_TableIndex<Lua_DamageType>},
+	{0, 0}
+};
+
+const luaL_reg Lua_DamageType::newindex_table[] = {
+	{0, 0}
+};
+
 int Lua_Platform::get_polygon(lua_State *L)
 {
 	L_Push<Lua_Polygon>(L, get_platform_data(L_Index<Lua_Platform>(L, 1))->polygon_index);
@@ -253,6 +283,8 @@ const luaL_reg Lua_Polygons::metatable[] = {
 
 int Lua_Map_register(lua_State *L)
 {
+	L_Register<Lua_DamageType>(L);
+	L_GlobalRegister<Lua_DamageTypes>(L);
 	L_Register<Lua_Platform>(L);
 	L_Register<Lua_Polygon_Floor>(L);
 	L_Register<Lua_Polygon_Ceiling>(L);

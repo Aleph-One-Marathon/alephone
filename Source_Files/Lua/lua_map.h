@@ -35,6 +35,24 @@ extern "C"
 
 #include "map.h"
 
+struct Lua_DamageTypes {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
+	static int length() { return NUMBER_OF_DAMAGE_TYPES; }
+	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_DAMAGE_TYPES; }
+};
+
+struct Lua_DamageType {
+	short index;
+	static bool valid(int index) { return Lua_DamageTypes::valid(index); }
+	
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+};
+
 struct Lua_Polygons {
 	static const char *name;
 	static const luaL_reg metatable[];

@@ -388,12 +388,7 @@ int Lua_Player::damage(lua_State *L)
 
 	if (args > 2)
 	{
-		if (lua_isnumber(L, 3))
-		{
-			damage.type = static_cast<int>(lua_tonumber(L, 3));
-		}
-		else
-			return luaL_error(L, "damage: incorrect type");
+		damage.type = L_ToIndex<Lua_DamageType>(L, 3);
 	}
 
 	damage_player(player->monster_index, NONE, NONE, &damage, NONE);
