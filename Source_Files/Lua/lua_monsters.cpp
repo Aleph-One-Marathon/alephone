@@ -98,6 +98,126 @@ struct Lua_MonsterTypes {
 	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_MONSTER_TYPES; }
 };
 
+struct Lua_MonsterType_Enemies {
+	short index;
+	static bool valid(int index) { return Lua_MonsterTypes::valid(index); }
+
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get(lua_State *L);
+	static int set(lua_State *L);
+};
+
+const char *Lua_MonsterType_Enemies::name = "monster_type_enemies";
+
+const luaL_reg Lua_MonsterType_Enemies::index_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_MonsterType_Enemies::newindex_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_MonsterType_Enemies::metatable[] = {
+	{"__index", Lua_MonsterType_Enemies::get},
+	{"__newindex", Lua_MonsterType_Enemies::set},
+	{0, 0}
+};
+
+int Lua_MonsterType_Enemies::get(lua_State *L)
+{
+	int monster_type = L_Index<Lua_MonsterType_Enemies>(L, 1);
+	int enemy_class = L_ToIndex<Lua_MonsterClass>(L, 2);
+	
+	monster_definition *definition = get_monster_definition_external(monster_type);
+	lua_pushboolean(L, definition->enemies & enemy_class);
+	return 1;
+}
+
+int Lua_MonsterType_Enemies::set(lua_State *L)
+{
+	if (!lua_isboolean(L, 3))
+		return luaL_error(L, "enemies: incorrect argument type");
+
+	int monster_type = L_Index<Lua_MonsterType_Enemies>(L, 1);
+	int enemy_class = L_ToIndex<Lua_MonsterClass>(L, 2);
+	bool enemy = lua_toboolean(L, 3);
+	monster_definition *definition = get_monster_definition_external(monster_type);
+	if (enemy)
+	{
+		definition->enemies = definition->enemies | enemy_class;
+	}
+	else
+	{
+		definition->enemies = definition->enemies & ~(enemy_class);
+	}
+
+	return 0;
+}
+
+struct Lua_MonsterType_Friends {
+	short index;
+	static bool valid(int index) { return Lua_MonsterTypes::valid(index); }
+
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get(lua_State *L);
+	static int set(lua_State *L);
+};
+
+const char *Lua_MonsterType_Friends::name = "monster_type_enemies";
+
+const luaL_reg Lua_MonsterType_Friends::index_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_MonsterType_Friends::newindex_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_MonsterType_Friends::metatable[] = {
+	{"__index", Lua_MonsterType_Friends::get},
+	{"__newindex", Lua_MonsterType_Friends::set},
+	{0, 0}
+};
+
+int Lua_MonsterType_Friends::get(lua_State *L)
+{
+	int monster_type = L_Index<Lua_MonsterType_Friends>(L, 1);
+	int friend_class = L_ToIndex<Lua_MonsterClass>(L, 2);
+	
+	monster_definition *definition = get_monster_definition_external(monster_type);
+	lua_pushboolean(L, definition->friends & friend_class);
+	return 1;
+}
+
+int Lua_MonsterType_Friends::set(lua_State *L)
+{
+	if (!lua_isboolean(L, 3))
+		return luaL_error(L, "enemies: incorrect argument type");
+
+	int monster_type = L_Index<Lua_MonsterType_Friends>(L, 1);
+	int friend_class = L_ToIndex<Lua_MonsterClass>(L, 2);
+	bool friendly = lua_toboolean(L, 3);
+	monster_definition *definition = get_monster_definition_external(monster_type);
+	if (friendly)
+	{
+		definition->friends = definition->friends | friend_class;
+	}
+	else
+	{
+		definition->friends = definition->friends & ~(friend_class);
+	}
+
+	return 0;
+}
+
 struct Lua_MonsterType {
 	short index;
 	static bool valid(int index) { return Lua_MonsterTypes::valid(index); }
@@ -108,6 +228,8 @@ struct Lua_MonsterType {
 	static const luaL_reg newindex_table[];
 
 	static int get_class(lua_State *);
+	static int get_enemies(lua_State *);
+	static int get_friends(lua_State *);
 	static int get_item(lua_State *);
 	static int set_class(lua_State *);
 	static int set_item(lua_State *);
@@ -118,6 +240,16 @@ const char* Lua_MonsterType::name = "monster_type";
 int Lua_MonsterType::get_class(lua_State *L) {
 	monster_definition *definition = get_monster_definition_external(L_Index<Lua_MonsterType>(L, 1));
 	L_Push<Lua_MonsterClass>(L, definition->_class);
+	return 1;
+}
+
+int Lua_MonsterType::get_enemies(lua_State *L) {
+	L_Push<Lua_MonsterType_Enemies>(L, L_Index<Lua_MonsterType>(L, 1));
+	return 1;
+}
+
+int Lua_MonsterType::get_friends(lua_State *L) {
+	L_Push<Lua_MonsterType_Friends>(L, L_Index<Lua_MonsterType>(L, 1));
 	return 1;
 }
 
@@ -154,6 +286,8 @@ int Lua_MonsterType::set_item(lua_State *L) {
 
 const luaL_reg Lua_MonsterType::index_table[] = {
 	{"class", Lua_MonsterType::get_class},
+	{"enemies", Lua_MonsterType::get_enemies},
+	{"friends", Lua_MonsterType::get_friends},
 	{"index", L_TableIndex<Lua_MonsterType>},
 	{"item", Lua_MonsterType::get_item},
 	{0, 0}
@@ -603,6 +737,8 @@ int Lua_Monsters_register(lua_State *L)
 {
 	L_Register<Lua_MonsterClass>(L);
 	L_GlobalRegister<Lua_MonsterClasses>(L);
+	L_Register<Lua_MonsterType_Enemies>(L);
+	L_Register<Lua_MonsterType_Friends>(L);
 	L_Register<Lua_MonsterType>(L);
 	L_GlobalRegister<Lua_MonsterTypes>(L);
 	L_Register<Lua_Monster>(L);
@@ -619,6 +755,8 @@ static const char *compatibility_script = ""
 	"function damage_monster(monster, damage, type) if type then Monsters[monster]:damage(damage, type) else Monsters[monster]:damage(damage) end end\n"
 	"function deactivate_monster(monster) Monsters[monster].active = false end\n"
 	"function get_monster_action(monster) return Monsters[monster].action end\n"
+	"function get_monster_enemy(monster_type, enemy_type) return MonsterTypes[monster_type].enemies[enemy_type] end\n"
+	"function get_monster_friend(monster_type, friend_type) return MonsterTypes[monster_type].friends[friend_type] end\n"
 	"function get_monster_facing(monster) return Monsters[monster].facing * 512 / 360 end\n"
 	"function get_monster_item(monster) if MonsterTypes[monster].item then return MonsterTypes[monster].item.index else return -1 end end\n"
 	"function get_monster_mode(monster) return Monsters[monster].mode end\n"
@@ -631,6 +769,8 @@ static const char *compatibility_script = ""
 	"function monster_index_valid(monster) if Monsters[monster] then return true else return false end end\n"
 	"function move_monster(monster, polygon) Monsters[monster]:move_by_path(polygon) end\n"
 	"function new_monster(type, poly, facing, height, x, y) if (x and y) then m = Monsters.new(x, y, height / 1024, poly, type) elseif (height) then m = Monsters.new(Polygons[poly].x, Polygons[poly].y, height / 1024, poly, type) else m = Monsters.new(Polygons[poly].x, Polygons[poly].y, 0, poly, type) end if m then return m.index else return -1 end end\n"
+	"function set_monster_enemy(monster_type, enemy_type, hostile) MonsterTypes[monster_type].enemies[enemy_type] = hostile end\n"
+	"function set_monster_friend(monster_type, friend_type, friendly) MonsterTypes[monster_type].friends[friend_type] = friendly end\n"
 	"function set_monster_item(monster, item) if item == -1 then MonsterTypes[monster].item = nil else MonsterTypes[monster].item = item end end\n"
 	"function set_monster_position(monster, polygon, x, y, z) Monsters[monster]:position(x, y, z, polygon) end\n"
 	"function set_monster_type_class(monster, class) MonsterTypes[monster].class = class end\n"

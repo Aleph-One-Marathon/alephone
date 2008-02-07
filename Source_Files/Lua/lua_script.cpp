@@ -1176,114 +1176,6 @@ static int L_Set_Monster_Weakness(lua_State *L)
 	}
 }
 
-static int L_Get_Monster_Friend(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "get_monster_friend: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int friend_class = static_cast<int>(lua_tonumber(L,2));
-
-	struct monster_definition *theDef;
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "get_monster_friend: invalid monster type");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(monster_type);
-	lua_pushboolean(L, theDef->friends & friend_class);
-	return 1;
-}
-
-static int L_Set_Monster_Friend(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isboolean(L,3))
-	{
-		lua_pushstring(L, "set_monster_friend: incorrect argument type");
-		lua_error(L);
-		return 0;
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int friend_class = static_cast<int>(lua_tonumber(L,2));
-	bool friendly = lua_toboolean(L,3);
-
-	struct monster_definition *theDef;
-
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "set_monster_friend: invalid monster type");
-		lua_error(L);
-	}
-	if(friendly)
-	{
-		theDef = get_monster_definition_external(monster_type);
-		theDef->friends = theDef->friends | friend_class;
-		return 0;
-	}
-	else
-	{
-		theDef = get_monster_definition_external(monster_type);
-		theDef->friends = theDef->friends & ~(friend_class);
-		return 0;
-	}
-}
-
-static int L_Get_Monster_Enemy(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "get_monster_enemy: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int enemy_class = static_cast<int>(lua_tonumber(L,2));
-
-	struct monster_definition *theDef;
-	
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "get_monster_enemy: invalid monster type");
-		lua_error(L);
-	}
-	theDef = get_monster_definition_external(monster_type);
-	lua_pushboolean(L, theDef->enemies & enemy_class);
-	return 1;
-}
-
-static int L_Set_Monster_Enemy(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isboolean(L,3))
-	{
-		lua_pushstring(L, "set_monster_enemy: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int enemy_class = static_cast<int>(lua_tonumber(L,2));
-	bool hostile = lua_toboolean(L,3);
-
-	struct monster_definition *theDef;
-
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES)
-	{
-		lua_pushstring(L, "set_monster_enemy: invalid monster type");
-		lua_error(L);
-	}
-	if(hostile)
-	{
-		theDef = get_monster_definition_external(monster_type);
-		theDef->enemies = theDef->enemies | enemy_class;
-		return 0;
-	}
-	else
-	{
-		theDef = get_monster_definition_external(monster_type);
-		theDef->enemies = theDef->enemies & ~(enemy_class);
-		return 0;
-	}
-}
-
 /*
  // should modify all values needed for a Matrix-style slowdown shot ;)
  // this includes monster_data as well and monster_definition entries
@@ -3019,10 +2911,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_monster_immunity", L_Set_Monster_Immunity);
 	lua_register(state, "get_monster_weakness", L_Get_Monster_Weakness);
 	lua_register(state, "set_monster_weakness", L_Set_Monster_Weakness);
-	lua_register(state, "get_monster_friend", L_Get_Monster_Friend);
-	lua_register(state, "set_monster_friend", L_Set_Monster_Friend);
-	lua_register(state, "get_monster_enemy", L_Get_Monster_Enemy);
-	lua_register(state, "set_monster_enemy", L_Set_Monster_Enemy);
 	//lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
