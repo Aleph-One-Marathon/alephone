@@ -1872,50 +1872,6 @@ static int L_Get_Motion_Sensor_State(lua_State *L)
 	return 1;
 }
 
-static int L_Set_Platform_State(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "set_platform_state: incorrect argument type");
-		lua_error(L);
-	}
-
-	short polygon_index = static_cast<short>(lua_tonumber(L,1));
-	bool state = lua_toboolean(L,2);
-	
-	struct polygon_data *polygon = get_polygon_data(polygon_index);
-	if (polygon)
-	{
-		if (polygon->type == _polygon_is_platform)
-		{
-			try_and_change_platform_state(short(polygon->permutation), state);			
-		}
-	}
-	return 0;
-}
-
-static int L_Get_Platform_State(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_platform_state: incorrect argument type");
-		lua_error(L);
-	}
-
-	short polygon_index = static_cast<short>(lua_tonumber(L,1));
-
-	struct polygon_data *polygon = get_polygon_data(polygon_index);
-	if (polygon)
-	{
-		if (polygon->type == _polygon_is_platform)
-		{
-			lua_pushboolean(L,(PLATFORM_IS_ACTIVE(get_platform_data(short(polygon->permutation)))));
-			return 1;
-		}
-	}
-	return 0;
-}
-
 static int L_Set_Light_State(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -2768,8 +2724,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_tag_state", L_Get_Tag_State);
 	lua_register(state, "set_tag_state", L_Set_Tag_State);
 	lua_register(state, "select_weapon", L_Select_Weapon);
-	lua_register(state, "set_platform_state", L_Set_Platform_State);
-	lua_register(state, "get_platform_state", L_Get_Platform_State);
 	lua_register(state, "set_light_state", L_Set_Light_State);
 	lua_register(state, "get_light_state", L_Get_Light_State);
 	lua_register(state, "set_fog_depth", L_Set_Fog_Depth);

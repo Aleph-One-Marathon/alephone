@@ -57,21 +57,41 @@ const luaL_reg Lua_DamageType::newindex_table[] = {
 	{0, 0}
 };
 
+int Lua_Platform::get_active(lua_State *L)
+{
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	lua_pushboolean(L, PLATFORM_IS_ACTIVE(platform));
+	return 1;
+}
+
 int Lua_Platform::get_polygon(lua_State *L)
 {
 	L_Push<Lua_Polygon>(L, get_platform_data(L_Index<Lua_Platform>(L, 1))->polygon_index);
 	return 1;
 }
 
+int Lua_Platform::set_active(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "active: incorrect argument type");
+
+	short platform_index = L_Index<Lua_Platform>(L, 1);
+	try_and_change_platform_state(platform_index, lua_toboolean(L, 2));
+	return 0;
+}
+	
+
 const char *Lua_Platform::name = "platform";
 
 const luaL_reg Lua_Platform::index_table[] = {
+	{"active", Lua_Platform::get_active},
 	{"index", L_TableIndex<Lua_Platform>},
 	{"polygon", Lua_Platform::get_polygon},
 	{0, 0}
 };
 
 const luaL_reg Lua_Platform::newindex_table[] = {
+	{"active", Lua_Platform::set_active},
 	{0, 0}
 };
 
@@ -211,6 +231,21 @@ int Lua_Polygon::get_type(lua_State *L)
 	return 1;
 }
 
+int Lua_Polygon::get_platform(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(L_Index<Lua_Polygon>(L, 1));
+	if (polygon->type == _polygon_is_platform)
+	{
+		L_Push<Lua_Platform>(L, polygon->permutation);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
 int Lua_Polygon::get_x(lua_State *L)
 {
 	lua_pushnumber(L, (double) get_polygon_data(L_Index<Lua_Polygon>(L, 1))->center.x / WORLD_ONE);
@@ -248,6 +283,7 @@ const luaL_reg Lua_Polygon::index_table[] = {
 	{"ceiling", Lua_Polygon::get_ceiling},
 	{"floor", Lua_Polygon::get_floor},
 	{"index", L_TableIndex<Lua_Polygon>},
+	{"platform", Lua_Polygon::get_platform},
 	{"type", Lua_Polygon::get_type},
 	{"x", Lua_Polygon::get_x},
 	{"y", Lua_Polygon::get_y},
@@ -295,11 +331,13 @@ int Lua_Map_register(lua_State *L)
 }
 
 static const char* compatibility_script = ""
+	"function get_platform_state(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.active end end\n"
 	"function get_polygon_ceiling_height(polygon) return Polygons[polygon].ceiling.height end\n"
 	"function get_polygon_center(polygon) return Polygons[polygon].x * 1024, Polygons[polygon].y * 1024 end\n"
 	"function get_polygon_floor_height(polygon) return Polygons[polygon].floor.height end\n"
 	"function get_polygon_type(polygon) return Polygons[polygon].type end\n"
 	"function number_of_polygons() return # Polygons end\n"
+	"function set_platform_state(polygon, state) if Polygons[polygon].platform then Polygons[polygon].platform.active = state end end\n"
 	"function set_polygon_ceiling_height(polygon, height) Polygons[polygon].ceiling.height = height end\n"
 	"function set_polygon_floor_height(polygon, height) Polygons[polygon].floor.height = height end\n"
 	"function set_polygon_type(polygon, type) Polygons[polygon].type = type end\n"

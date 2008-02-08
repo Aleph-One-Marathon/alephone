@@ -70,7 +70,9 @@ struct Lua_Platform {
 	static const luaL_reg index_table[];
 	static const luaL_reg newindex_table[];
 
+	static int get_active(lua_State *L);
 	static int get_polygon(lua_State *L);
+	static int set_active(lua_State *L);
 };
 
 struct Lua_Polygon {
@@ -84,6 +86,7 @@ struct Lua_Polygon {
 
 	static int get_ceiling(lua_State *L);
 	static int get_floor(lua_State *L);
+	static int get_platform(lua_State *L);
 	static int get_x(lua_State *L);
 	static int get_y(lua_State *L);
 	static int get_z(lua_State *L); // shortcut for floor_height
