@@ -63,7 +63,7 @@ int Lua_Projectile::get_facing(lua_State *L)
 int Lua_Projectile::get_gravity(lua_State *L)
 {
 	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
-	lua_pushnumber(L, (double) projectile->gravity / WORLD_ONE);
+	lua_pushnumber(L, (double) projectile->gravity / WORLD_ONE * TICKS_PER_SECOND);
 	return 1;
 }
 
@@ -159,7 +159,7 @@ int Lua_Projectile::set_gravity(lua_State *L)
 		return luaL_error(L, "dz: incorrect argument type");
 
 	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
-	projectile->gravity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	projectile->gravity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE / TICKS_PER_SECOND);
 	return 0;
 }
 
