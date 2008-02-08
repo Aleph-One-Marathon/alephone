@@ -504,12 +504,6 @@ void L_Call_Item_Created (short item_index)
 	L_Call_N("item_created", item_index);
 }
 
-static int L_Number_of_Polygons (lua_State *L)
-{
-	lua_pushnumber (L, dynamic_world->polygon_count);
-	return 1;
-}
-
 static int L_Get_Level_Name(lua_State *L)
 {
 	lua_pushstring(L, static_world->level_name);
@@ -2763,7 +2757,6 @@ static int L_Set_Overlay_Icon(lua_State* L) {
 
 void RegisterLuaFunctions()
 {
-	lua_register(state, "number_of_polygons", L_Number_of_Polygons);
 	lua_register(state, "get_level_name", L_Get_Level_Name);
 	lua_register(state, "screen_print", L_Screen_Print);
 	//lua_register(state, "display_text", L_Display_Text);
