@@ -71,8 +71,22 @@ struct Lua_Platform {
 	static const luaL_reg newindex_table[];
 
 	static int get_active(lua_State *L);
+	static int get_ceiling_height(lua_State *L);
+	static int get_contracting(lua_State *L);
+	static int get_extending(lua_State *L);
+	static int get_floor_height(lua_State *L);
+	static int get_monster_controllable(lua_State *L);
+	static int get_player_controllable(lua_State *L);
 	static int get_polygon(lua_State *L);
+	static int get_speed(lua_State *L);
 	static int set_active(lua_State *L);
+	static int set_ceiling_height(lua_State *L);
+	static int set_contracting(lua_State *L);
+	static int set_extending(lua_State *L);
+	static int set_floor_height(lua_State *L);
+	static int set_monster_controllable(lua_State *L);
+	static int set_player_controllable(lua_State *L);
+	static int set_speed(lua_State *L);
 };
 
 struct Lua_Polygon {

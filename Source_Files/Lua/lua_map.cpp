@@ -64,9 +64,58 @@ int Lua_Platform::get_active(lua_State *L)
 	return 1;
 }
 
+int Lua_Platform::get_ceiling_height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	lua_pushnumber(L, (double) platform->ceiling_height / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Platform::get_contracting(lua_State *L)
+{
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	lua_pushboolean(L, !PLATFORM_IS_EXTENDING(platform));
+	return 1;
+}
+
+int Lua_Platform::get_extending(lua_State *L)
+{
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	lua_pushboolean(L, PLATFORM_IS_EXTENDING(platform));
+	return 1;
+}
+
+int Lua_Platform::get_floor_height(lua_State *L)
+{
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	lua_pushnumber(L, (double) platform->floor_height / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Platform::get_monster_controllable(lua_State *L)
+{
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	lua_pushboolean(L, PLATFORM_IS_MONSTER_CONTROLLABLE(platform));
+	return 1;
+}
+
+int Lua_Platform::get_player_controllable(lua_State *L)
+{
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	lua_pushboolean(L, PLATFORM_IS_PLAYER_CONTROLLABLE(platform));
+	return 1;
+}
+
 int Lua_Platform::get_polygon(lua_State *L)
 {
 	L_Push<Lua_Polygon>(L, get_platform_data(L_Index<Lua_Platform>(L, 1))->polygon_index);
+	return 1;
+}
+
+int Lua_Platform::get_speed(lua_State *L)
+{
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	lua_pushnumber(L, (double) platform->speed * TICKS_PER_SECOND / WORLD_ONE);
 	return 1;
 }
 
@@ -79,19 +128,121 @@ int Lua_Platform::set_active(lua_State *L)
 	try_and_change_platform_state(platform_index, lua_toboolean(L, 2));
 	return 0;
 }
+
+int Lua_Platform::set_ceiling_height(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "ceiling_height: incorrect argument type");
+	
+	short platform_index = L_Index<Lua_Platform>(L, 1);
+	platform_data *platform = get_platform_data(platform_index);
+
+	platform->ceiling_height = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	adjust_platform_endpoint_and_line_heights(platform_index);
+	adjust_platform_for_media(platform_index, false);
+	
+	return 0;
+}	
+
+int Lua_Platform::set_contracting(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "contracting: incorrect argument type");
+
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	bool contracting = lua_toboolean(L, 2);
+	if (contracting)
+		SET_PLATFORM_IS_CONTRACTING(platform);
+	else
+		SET_PLATFORM_IS_EXTENDING(platform);
+	return 0;
+}
+
+int Lua_Platform::set_extending(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "extending: incorrect argument type");
+
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	bool extending = lua_toboolean(L, 2);
+	if (extending)
+		SET_PLATFORM_IS_EXTENDING(platform);
+	else
+		SET_PLATFORM_IS_CONTRACTING(platform);
+	return 0;
+}
+
+int Lua_Platform::set_floor_height(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "ceiling_height: incorrect argument type");
+	
+	short platform_index = L_Index<Lua_Platform>(L, 1);
+	platform_data *platform = get_platform_data(platform_index);
+
+	platform->floor_height = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	adjust_platform_endpoint_and_line_heights(platform_index);
+	adjust_platform_for_media(platform_index, false);
+	
+	return 0;
+}	
+
+int Lua_Platform::set_monster_controllable(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "monster_controllable: incorrect argument type");
+	
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	SET_PLATFORM_IS_MONSTER_CONTROLLABLE(platform, lua_toboolean(L, 2));
+	return 0;
+}
+
+int Lua_Platform::set_player_controllable(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "monster_controllable: incorrect argument type");
+	
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	SET_PLATFORM_IS_PLAYER_CONTROLLABLE(platform, lua_toboolean(L, 2));
+	return 0;
+}
+
+int Lua_Platform::set_speed(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "speed: incorrect argument type");
+	
+	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
+	platform->speed = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE / TICKS_PER_SECOND);
+	return 0;
+}
 	
 
 const char *Lua_Platform::name = "platform";
 
 const luaL_reg Lua_Platform::index_table[] = {
 	{"active", Lua_Platform::get_active},
+	{"ceiling_height", Lua_Platform::get_ceiling_height},
+	{"contracting", Lua_Platform::get_contracting},
+	{"extending", Lua_Platform::get_extending},
+	{"floor_height", Lua_Platform::get_floor_height},
 	{"index", L_TableIndex<Lua_Platform>},
+	{"monster_controllable", Lua_Platform::get_monster_controllable},
+	{"player_controllable", Lua_Platform::get_player_controllable},
 	{"polygon", Lua_Platform::get_polygon},
+	{"speed", Lua_Platform::get_speed},
 	{0, 0}
 };
 
 const luaL_reg Lua_Platform::newindex_table[] = {
 	{"active", Lua_Platform::set_active},
+	{"ceiling_height", Lua_Platform::set_ceiling_height},
+	{"contracting", Lua_Platform::set_contracting},
+	{"extending", Lua_Platform::set_extending},
+	{"floor_height", Lua_Platform::set_floor_height},
+	{"monster_controllable", Lua_Platform::set_monster_controllable},
+	{"player_controllable", Lua_Platform::set_player_controllable},
+	{"speed", Lua_Platform::set_speed},
 	{0, 0}
 };
 
@@ -331,12 +482,25 @@ int Lua_Map_register(lua_State *L)
 }
 
 static const char* compatibility_script = ""
+	"function get_platform_ceiling_height(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.ceiling_height end end\n"
+	"function get_platform_floor_height(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.floor_height end end\n"
+	"function get_platform_index(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.index else return -1 end end\n"
+	"function get_platform_monster_control(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.monster_controllable end end\n"
+	"function get_platform_movement(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.extending end end\n"
+	"function get_platform_player_control(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.player_controllable end end\n"
+	"function get_platform_speed(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.speed * 1024 / 30 end end\n"
 	"function get_platform_state(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.active end end\n"
 	"function get_polygon_ceiling_height(polygon) return Polygons[polygon].ceiling.height end\n"
 	"function get_polygon_center(polygon) return Polygons[polygon].x * 1024, Polygons[polygon].y * 1024 end\n"
 	"function get_polygon_floor_height(polygon) return Polygons[polygon].floor.height end\n"
 	"function get_polygon_type(polygon) return Polygons[polygon].type end\n"
 	"function number_of_polygons() return # Polygons end\n"
+	"function set_platform_ceiling_height(polygon, height) if Polygons[polygon].platform then Polygons[polygon].platform.ceiling_height = height end end\n"
+	"function set_platform_floor_height(polygon, height) if Polygons[polygon].platform then Polygons[polygon].platform.floor_height = height end end\n"
+	"function set_platform_monster_control(polygon, control) if Polygons[polygon].platform then Polygons[polygon].platform.monster_controllable = control end end\n"
+	"function set_platform_movement(polygon, movement) if Polygons[polygon].platform then Polygons[polygon].platform.extending = movement end end\n"
+	"function set_platform_player_control(polygon, control) if Polygons[polygon].platform then Polygons[polygon].platform.player_controllable = control end end\n"
+	"function set_platform_speed(polygon, speed) if Polygons[polygon].platform then Polygons[polygon].platform.speed = speed * 30 / 1024 end end\n"
 	"function set_platform_state(polygon, state) if Polygons[polygon].platform then Polygons[polygon].platform.active = state end end\n"
 	"function set_polygon_ceiling_height(polygon, height) Polygons[polygon].ceiling.height = height end\n"
 	"function set_polygon_floor_height(polygon, height) Polygons[polygon].floor.height = height end\n"
