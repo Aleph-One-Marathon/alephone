@@ -34,6 +34,7 @@ extern "C"
 }
 
 #include "map.h"
+#include "lightsource.h"
 
 struct Lua_DamageTypes {
 	static const char *name;
@@ -106,6 +107,47 @@ struct Lua_Polygon {
 	static int get_z(lua_State *L); // shortcut for floor_height
 	static int get_type(lua_State *L);
 	static int set_type(lua_State *L);
+};
+
+struct Lua_Lights {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
+	static bool valid(int index) { return index >= 0 && index < MAXIMUM_LIGHTS_PER_MAP; }
+	static int length() { return MAXIMUM_LIGHTS_PER_MAP; }
+};
+
+struct Lua_Light {
+	short index;
+	static const char *name;
+	static bool valid(int index) { return Lua_Lights::valid(index); }
+
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_active(lua_State *);
+	static int set_active(lua_State *);
+};
+
+struct Lua_Tags {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
+	static bool valid(int index) { return index >= 0; }
+};
+
+struct Lua_Tag {
+	short index;
+	static const char *name;
+	static bool valid(int index) { return Lua_Tags::valid(index); }
+	
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_active(lua_State *);
+	static int set_active(lua_State *);
 };
 
 int Lua_Map_register (lua_State *L);

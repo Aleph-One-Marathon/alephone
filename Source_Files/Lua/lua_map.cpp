@@ -22,6 +22,7 @@ LUA_MAP.CPP
 
 #include "lua_map.h"
 #include "lua_templates.h"
+#include "lightsource.h"
 #include "map.h"
 #include "platforms.h"
 
@@ -453,8 +454,6 @@ const luaL_reg Lua_Polygon::metatable[] = {
 	{0, 0}
 };
 
-static int compatibility(lua_State *L);
-
 const char *Lua_Polygons::name = "Polygons";
 const luaL_reg Lua_Polygons::methods[] = {
 	{0, 0}
@@ -468,6 +467,141 @@ const luaL_reg Lua_Polygons::metatable[] = {
 	{0, 0}
 };
 
+const char *Lua_Lights::name = "Lights";
+const luaL_reg Lua_Lights::methods[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_Lights::metatable[] = {
+	{"__call", L_GlobalCall<Lua_Lights, Lua_Light>},
+	{"__index", L_GlobalIndex<Lua_Lights, Lua_Light>},
+	{"__len", L_GlobalLength<Lua_Lights>},
+	{"__newindex", L_GlobalNewindex<Lua_Lights>},
+	{0, 0}
+};
+
+const char *Lua_Light::name = "light";
+
+int Lua_Light::get_active(lua_State *L)
+{
+	lua_pushboolean(L, get_light_status(L_Index<Lua_Light>(L, 1)));
+	return 1;
+}
+
+int Lua_Light::set_active(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "active: incorrect argument type");
+
+	size_t light_index = L_Index<Lua_Light>(L, 1);
+	bool active = lua_toboolean(L, 2);
+	
+	set_light_status(light_index, active);
+	assume_correct_switch_position(_panel_is_light_switch, static_cast<short>(light_index), active);
+	return 0;
+}
+
+const luaL_reg Lua_Light::index_table[] = {
+	{"active", Lua_Light::get_active},
+	{"index", L_TableIndex<Lua_Light>},
+	{0, 0}
+};
+
+const luaL_reg Lua_Light::newindex_table[] = {
+	{"active", Lua_Light::set_active},
+	{0, 0}
+};
+
+const luaL_reg Lua_Light::metatable[] = {
+	{"__index", L_TableGet<Lua_Light>},
+	{"__newindex", L_TableSet<Lua_Light>},
+	{0, 0}
+};
+
+const char *Lua_Tags::name = "Tags";
+const luaL_reg Lua_Tags::methods[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_Tags::metatable[] = {
+	{"__index", L_GlobalIndex<Lua_Tags, Lua_Tag>},
+	{"__newindex", L_GlobalNewindex<Lua_Tags>},
+	{0, 0}
+};
+
+const char *Lua_Tag::name = "tag";
+
+int Lua_Tag::get_active(lua_State *L)
+{
+	int tag = L_Index<Lua_Tag>(L, 1);
+	bool changed = false;
+
+	size_t light_index;
+	light_data *light;
+
+	for (light_index= 0, light= lights; light_index<MAXIMUM_LIGHTS_PER_MAP && !changed; ++light_index, ++light)
+	{
+		if (light->static_data.tag==tag)
+		{
+			if (get_light_status(light_index))
+			{
+				changed= true;
+			}
+		}
+	}
+
+	short platform_index;
+	platform_data *platform;
+
+	for (platform_index= 0, platform= platforms; platform_index<dynamic_world->platform_count && !changed; ++platform_index, ++platform)
+	{
+		if (platform->tag==tag)
+		{
+			if (PLATFORM_IS_ACTIVE(platform))
+			{
+				changed= true;
+			}
+		}
+	}
+
+	lua_pushboolean(L, changed);
+	return 1;
+}
+
+int Lua_Tag::set_active(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "active: incorrect argument type");
+
+	int16 tag = L_Index<Lua_Tag>(L, 1);
+	bool active = lua_toboolean(L, 2);
+
+	set_tagged_light_statuses(tag, active);
+	try_and_change_tagged_platform_states(tag, active);
+	assume_correct_switch_position(_panel_is_tag_switch, tag, active);
+
+	return 0;
+}
+
+const luaL_reg Lua_Tag::index_table[] = {
+	{"active", Lua_Tag::get_active},
+	{"index", L_TableIndex<Lua_Tag>},
+	{0, 0}
+};
+
+const luaL_reg Lua_Tag::newindex_table[] = {
+	{"active", Lua_Tag::set_active},
+	{0, 0}
+};
+
+const luaL_reg Lua_Tag::metatable[] = {
+	{"__index", L_TableGet<Lua_Tag>},
+	{"__newindex", L_TableSet<Lua_Tag>},
+	{0, 0}
+};
+
+static int compatibility(lua_State *L);
+
 int Lua_Map_register(lua_State *L)
 {
 	L_Register<Lua_DamageType>(L);
@@ -476,12 +610,17 @@ int Lua_Map_register(lua_State *L)
 	L_Register<Lua_Polygon_Floor>(L);
 	L_Register<Lua_Polygon_Ceiling>(L);
 	L_Register<Lua_Polygon>(L);
+	L_Register<Lua_Light>(L);
+	L_GlobalRegister<Lua_Lights>(L);
+	L_Register<Lua_Tag>(L);
+	L_GlobalRegister<Lua_Tags>(L);
 	L_GlobalRegister<Lua_Polygons>(L);
 
 	compatibility(L);
 }
 
 static const char* compatibility_script = ""
+	"function get_light_state(light) return Lights[light].active end\n"
 	"function get_platform_ceiling_height(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.ceiling_height end end\n"
 	"function get_platform_floor_height(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.floor_height end end\n"
 	"function get_platform_index(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.index else return -1 end end\n"
@@ -494,7 +633,9 @@ static const char* compatibility_script = ""
 	"function get_polygon_center(polygon) return Polygons[polygon].x * 1024, Polygons[polygon].y * 1024 end\n"
 	"function get_polygon_floor_height(polygon) return Polygons[polygon].floor.height end\n"
 	"function get_polygon_type(polygon) return Polygons[polygon].type end\n"
+	"function get_tag_state(tag) return Tags[tag].active end\n"
 	"function number_of_polygons() return # Polygons end\n"
+	"function set_light_state(light, state) Lights[light].active = state end\n"
 	"function set_platform_ceiling_height(polygon, height) if Polygons[polygon].platform then Polygons[polygon].platform.ceiling_height = height end end\n"
 	"function set_platform_floor_height(polygon, height) if Polygons[polygon].platform then Polygons[polygon].platform.floor_height = height end end\n"
 	"function set_platform_monster_control(polygon, control) if Polygons[polygon].platform then Polygons[polygon].platform.monster_controllable = control end end\n"
@@ -505,6 +646,7 @@ static const char* compatibility_script = ""
 	"function set_polygon_ceiling_height(polygon, height) Polygons[polygon].ceiling.height = height end\n"
 	"function set_polygon_floor_height(polygon, height) Polygons[polygon].floor.height = height end\n"
 	"function set_polygon_type(polygon, type) Polygons[polygon].type = type end\n"
+	"function set_tag_state(tag, state) Tags[tag].active = state end\n"
 	;
 
 static int compatibility(lua_State *L)

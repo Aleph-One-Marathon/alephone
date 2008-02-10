@@ -648,71 +648,6 @@ static int L_Show_Interface(lua_State *L)
 	return 0;
 }
 
-static int L_Set_Tag_State(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "set_tag_state: incorrect argument type");
-		lua_error(L);
-	}
-	int tag = static_cast<int>(lua_tonumber(L,1));
-	bool tag_state = lua_toboolean(L,2);
-
-	set_tagged_light_statuses(int16(tag), tag_state);
-	try_and_change_tagged_platform_states(int16(tag), tag_state);
-	assume_correct_switch_position(_panel_is_tag_switch, int16(tag), tag_state);
-
-	return 0;
-}
-
-static int L_Get_Tag_State(lua_State *L)
-{
-	size_t light_index;
-	struct light_data *light;
-	struct platform_data *platform;
-	short platform_index;
-
-	bool changed= false;
-	int tag;
-
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_tag_state: incorrect argument type");
-		lua_error(L);
-	}
-	tag = static_cast<int>(lua_tonumber(L,1));
-
-	for (light_index= 0, light= lights; light_index<MAXIMUM_LIGHTS_PER_MAP; ++light_index, ++light)
-	{
-		if (light->static_data.tag==tag)
-		{
-			if (get_light_status(light_index))
-			{
-				changed= true;
-			}
-		}
-	}
-
-
-	if (!changed)
-	{
-		for (platform_index= 0, platform= platforms; platform_index<dynamic_world->platform_count; ++platform_index, ++platform)
-		{
-			if (platform->tag==tag)
-			{
-				if (PLATFORM_IS_ACTIVE(platform))
-				{
-					changed= true;
-				}
-			}
-		}
-
-	}
-
-	lua_pushboolean(L, changed);
-	return 1;
-}
-
 static int L_Select_Weapon(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -1872,38 +1807,6 @@ static int L_Get_Motion_Sensor_State(lua_State *L)
 	return 1;
 }
 
-static int L_Set_Light_State(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "set_light_state: incorrect argument type");
-		lua_error(L);
-	}
-
-	size_t light_index = static_cast<size_t>(lua_tonumber(L,1));
-	bool state = lua_toboolean(L,2);
-
-	set_light_status(light_index, state);
-	assert(light_index == static_cast<size_t>(static_cast<short>(light_index)));
-	assume_correct_switch_position(_panel_is_light_switch, static_cast<short>(light_index), state);
-	return 0;
-}
-
-static int L_Get_Light_State(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_light_state: incorrect argument type");
-		lua_error(L);
-	}
-
-	size_t light_index = static_cast<size_t>(lua_tonumber(L, 1));
-
-	lua_pushboolean(L, get_light_status(light_index));
-	return 1;
-
-}
-
 static int L_Screen_Fade(lua_State *L)
 {
 	int args = lua_gettop(L);
@@ -2485,11 +2388,7 @@ void RegisterLuaFunctions()
 	lua_register(state, "kill_script", L_Kill_Script);
 	lua_register(state, "hide_interface", L_Hide_Interface);
 	lua_register(state, "show_interface", L_Show_Interface);
-	lua_register(state, "get_tag_state", L_Get_Tag_State);
-	lua_register(state, "set_tag_state", L_Set_Tag_State);
 	lua_register(state, "select_weapon", L_Select_Weapon);
-	lua_register(state, "set_light_state", L_Set_Light_State);
-	lua_register(state, "get_light_state", L_Get_Light_State);
 	lua_register(state, "set_fog_depth", L_Set_Fog_Depth);
 	lua_register(state, "set_fog_color", L_Set_Fog_Color);
 	lua_register(state, "set_fog_present", L_Set_Fog_Present);
