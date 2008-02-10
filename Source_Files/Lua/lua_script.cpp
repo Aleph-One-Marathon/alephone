@@ -504,12 +504,6 @@ void L_Call_Item_Created (short item_index)
 	L_Call_N("item_created", item_index);
 }
 
-static int L_Get_Level_Name(lua_State *L)
-{
-	lua_pushstring(L, static_world->level_name);
-	return 1;
-}
-
 static int L_Screen_Print(lua_State *L)
 {
 	int args = lua_gettop(L);
@@ -2300,14 +2294,6 @@ static int L_Annotations(lua_State* L) {
 	return 3;
 }
 
-static int L_Environment(lua_State* L) {
-	lua_pushboolean(L, static_world->environment_flags&_environment_vacuum);
-	lua_pushboolean(L, static_world->environment_flags&_environment_magnetic);
-	lua_pushboolean(L, static_world->environment_flags&_environment_rebellion);
-	lua_pushboolean(L, static_world->environment_flags&_environment_low_gravity);
-	return 4;
-}
-
 static int L_Set_Overlay_Color(lua_State* L) {
 	if(lua_gettop(L) != 2) {
 		lua_pushstring(L, "usage: set_overlay_color(overlay, color)");
@@ -2380,7 +2366,6 @@ static int L_Set_Overlay_Icon(lua_State* L) {
 
 void RegisterLuaFunctions()
 {
-	lua_register(state, "get_level_name", L_Get_Level_Name);
 	lua_register(state, "screen_print", L_Screen_Print);
 	//lua_register(state, "display_text", L_Display_Text);
 	lua_register(state, "enable_player", L_Enable_Player);
@@ -2459,7 +2444,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "play_music", L_Play_Music);
 	lua_register(state, "stop_music", L_Stop_Music);
 	lua_register(state, "annotations", L_Annotations);
-	lua_register(state, "get_map_environment", L_Environment);
 	lua_register(state, "set_overlay_color", L_Set_Overlay_Color);
 	lua_register(state, "set_overlay_text", L_Set_Overlay_Text);
 	lua_register(state, "set_overlay_icon", L_Set_Overlay_Icon);

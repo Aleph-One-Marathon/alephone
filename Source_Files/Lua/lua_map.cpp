@@ -600,6 +600,55 @@ const luaL_reg Lua_Tag::metatable[] = {
 	{0, 0}
 };
 
+struct Lua_Level {
+	short index;
+	static const char *name;
+
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static bool valid(int) { return true; }
+
+	static int get(lua_State *L);
+
+	static int get_name(lua_State *L);
+};
+
+const char* Lua_Level::name = "Level";
+
+template<int16 flag>
+static int get_environment_flag(lua_State *L)
+{
+	lua_pushboolean(L, static_world->environment_flags & flag);
+	return 1;
+}
+	
+int Lua_Level::get_name(lua_State *L)
+{
+	lua_pushstring(L, static_world->level_name);
+	return 1;
+}
+
+const luaL_reg Lua_Level::index_table[] = {
+	{"low_gravity", get_environment_flag<_environment_low_gravity>},
+	{"magnetic", get_environment_flag<_environment_magnetic>},
+	{"name", Lua_Level::get_name},
+	{"rebellion", get_environment_flag<_environment_rebellion>},
+	{"vacuum", get_environment_flag<_environment_vacuum>},
+	{0, 0}
+};
+
+const luaL_reg Lua_Level::newindex_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_Level::metatable[] = {
+	{"__index", L_TableGet<Lua_Level>},
+	{"__newindex", L_TableSet<Lua_Level>},
+	{0, 0}
+};
+
 static int compatibility(lua_State *L);
 
 int Lua_Map_register(lua_State *L)
@@ -615,12 +664,19 @@ int Lua_Map_register(lua_State *L)
 	L_Register<Lua_Tag>(L);
 	L_GlobalRegister<Lua_Tags>(L);
 	L_GlobalRegister<Lua_Polygons>(L);
+	L_Register<Lua_Level>(L);
+
+	// register one Level userdatum globally
+	L_Push<Lua_Level>(L, 0);
+	lua_setglobal(L, Lua_Level::name);
 
 	compatibility(L);
 }
 
 static const char* compatibility_script = ""
+	"function get_level_name() return Level.name end\n"
 	"function get_light_state(light) return Lights[light].active end\n"
+	"function get_map_environment() return Level.vacuum, Level.magnetic, Level.rebellion, Level.low_gravity end\n"
 	"function get_platform_ceiling_height(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.ceiling_height end end\n"
 	"function get_platform_floor_height(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.floor_height end end\n"
 	"function get_platform_index(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.index else return -1 end end\n"
