@@ -93,14 +93,17 @@ T* L_Push(lua_State *L, int index)
 
 	if (lua_isuserdata(L, -1))
 	{
+		// remove the index talbe
+		lua_remove(L, -2); 
+
 		// return a reference to the existing one
 		T* t = static_cast<T*>(lua_touserdata(L, -1));
 		return t;
 	}
 	else if (lua_isnil(L, -1))
 	{
-		// get rid of the nil
-		lua_pop(L, 1);
+		// get rid of the nil and the index table
+		lua_pop(L, 2);
 
 		// create a new one
 		t = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
@@ -118,6 +121,7 @@ T* L_Push(lua_State *L, int index)
 		// get rid of the index table, leaving the userdata
 		// reference on top of the stack
 		lua_pop(L, 1);
+
 	}
 
 	return t;
@@ -208,6 +212,7 @@ int L_TableIs(lua_State *L)
 template<class T>
 int L_TableGet(lua_State *L)
 {
+
 	if (lua_isstring(L, 2))
 	{
 		luaL_checktype(L, 1, LUA_TUSERDATA);
@@ -223,6 +228,7 @@ int L_TableGet(lua_State *L)
 		// get the function from that table
 		lua_pushvalue(L, 2);
 		lua_gettable(L, -2);
+		lua_remove(L, -2);
 
 		if (lua_isfunction(L, -1))
 		{
@@ -236,9 +242,11 @@ int L_TableGet(lua_State *L)
 				lua_concat(L, 2);
 				lua_error(L);
 			}
+
 		}
 		else
 		{
+			lua_pop(L, 1);
 			lua_pushnil(L);
 		}
 	}
@@ -280,6 +288,8 @@ int L_TableSet(lua_State *L)
 		lua_concat(L, 2);
 		lua_error(L);
 	}
+
+	lua_pop(L, 1);
 
 	return 0;
 };
