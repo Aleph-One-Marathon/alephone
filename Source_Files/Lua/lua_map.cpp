@@ -600,6 +600,185 @@ const luaL_reg Lua_Tag::metatable[] = {
 	{0, 0}
 };
 
+struct Lua_Annotations {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
+	static bool valid(int index) { return index >= 0 && index < dynamic_world->default_annotation_count; }
+	static int length() { return MapAnnotationList.size(); }
+
+	static int new_annotation(lua_State *L);
+};
+
+struct Lua_Annotation {
+	short index;
+	static const char *name;
+	static bool valid(int index) { return index >= 0 && index < MapAnnotationList.size(); }
+	
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_polygon(lua_State *L);
+	static int get_text(lua_State *L);
+	static int get_x(lua_State *L);
+	static int get_y(lua_State *L);
+
+	static int set_polygon(lua_State *L);
+	static int set_text(lua_State *L);
+	static int set_x(lua_State *L);
+	static int set_y(lua_State *L);
+};
+
+const char *Lua_Annotations::name = "Annotations";
+
+// Annotations.new(polygon, text, [x, y])
+int Lua_Annotations::new_annotation(lua_State *L)
+{
+	if (dynamic_world->default_annotation_count == INT16_MAX)
+		return luaL_error(L, "new: annotation limit reached");
+
+	if (!lua_isstring(L, 2))
+		return luaL_error(L, "new: incorrect argument type");
+
+	map_annotation annotation;
+	annotation.type = 0;
+
+	if (lua_isnil(L, 1))
+	{
+		annotation.polygon_index = NONE;
+	}
+	else
+	{
+		annotation.polygon_index = L_ToIndex<Lua_Polygon>(L, 1);
+	}
+
+	int x = 0, y = 0;
+	if (annotation.polygon_index != NONE)
+	{
+		polygon_data *polygon = get_polygon_data(annotation.polygon_index);
+		x = polygon->center.x;
+		y = polygon->center.y;
+	}
+		
+	annotation.location.x = luaL_optint(L, 3, x);
+	annotation.location.y = luaL_optint(L, 4, y);
+
+	strncpy(annotation.text, lua_tostring(L, 2), MAXIMUM_ANNOTATION_TEXT_LENGTH);
+	annotation.text[MAXIMUM_ANNOTATION_TEXT_LENGTH-1] = '\0';
+	
+	MapAnnotationList.push_back(annotation);
+	dynamic_world->default_annotation_count++;
+	L_Push<Lua_Annotation>(L, MapAnnotationList.size() - 1);
+	return 1;
+}
+
+const luaL_reg Lua_Annotations::methods[] = {
+	{"new", Lua_Annotations::new_annotation},
+	{0, 0}
+};
+
+const luaL_reg Lua_Annotations::metatable[] = {
+	{"__call", L_GlobalCall<Lua_Annotations, Lua_Annotation>},
+	{"__len", L_GlobalLength<Lua_Annotations>},
+	{"__index", L_GlobalIndex<Lua_Annotations, Lua_Annotation>},
+	{"__newindex", L_GlobalNewindex<Lua_Annotations>},
+	{0, 0}
+};
+
+const char* Lua_Annotation::name = "annotation";
+
+int Lua_Annotation::get_polygon(lua_State *L)
+{
+	L_Push<Lua_Polygon>(L, MapAnnotationList[L_Index<Lua_Annotation>(L, 1)].polygon_index);
+	return 1;
+}
+
+int Lua_Annotation::get_text(lua_State *L)
+{
+	lua_pushstring(L, MapAnnotationList[L_Index<Lua_Annotation>(L, 1)].text);
+	return 1;
+}
+
+int Lua_Annotation::get_x(lua_State *L)
+{
+	lua_pushnumber(L, (double) MapAnnotationList[L_Index<Lua_Annotation>(L, 1)].location.x / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Annotation::get_y(lua_State *L)
+{
+	lua_pushnumber(L, (double) MapAnnotationList[L_Index<Lua_Annotation>(L, 1)].location.y / WORLD_ONE);
+	return 1;
+}
+
+const luaL_reg Lua_Annotation::index_table[] = {
+	{"polygon", Lua_Annotation::get_polygon},
+	{"text", Lua_Annotation::get_text},
+	{"x", Lua_Annotation::get_x},
+	{"y", Lua_Annotation::get_y},
+	{0, 0}
+};
+
+int Lua_Annotation::set_polygon(lua_State *L)
+{
+	int polygon_index = NONE;
+	if (lua_isnil(L, 2))
+	{
+		polygon_index = NONE;
+	}
+	else
+	{
+		polygon_index = L_ToIndex<Lua_Polygon>(L, 2);
+	}
+
+	MapAnnotationList[L_Index<Lua_Annotation>(L, 1)].polygon_index = polygon_index;
+	return 0;
+}
+
+int Lua_Annotation::set_text(lua_State *L)
+{
+	if (!lua_isstring(L, 2))
+		return luaL_error(L, "text: incorrect argument type");
+
+	int annotation_index = L_Index<Lua_Annotation>(L, 1);
+	strncpy(MapAnnotationList[annotation_index].text, lua_tostring(L, 2), MAXIMUM_ANNOTATION_TEXT_LENGTH);
+	MapAnnotationList[annotation_index].text[MAXIMUM_ANNOTATION_TEXT_LENGTH-1] = '\0';
+	return 0;
+}
+
+int Lua_Annotation::set_x(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "x: incorrect argument type");
+	
+	MapAnnotationList[L_Index<Lua_Annotation>(L, 1)].location.x = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+int Lua_Annotation::set_y(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "y: incorrect argument type");
+
+	MapAnnotationList[L_Index<Lua_Annotation>(L, 1)].location.y = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+const luaL_reg Lua_Annotation::newindex_table[] = {
+	{"polygon", Lua_Annotation::set_polygon},
+	{"text", Lua_Annotation::set_text},
+	{"x", Lua_Annotation::set_x},
+	{"y", Lua_Annotation::set_y},
+	{0, 0}
+};
+
+const luaL_reg Lua_Annotation::metatable[] = {
+	{"__index", L_TableGet<Lua_Annotation>},
+	{"__newindex", L_TableSet<Lua_Annotation>},
+	{0, 0}
+};
+
 struct Lua_Level {
 	short index;
 	static const char *name;
@@ -665,6 +844,8 @@ int Lua_Map_register(lua_State *L)
 	L_GlobalRegister<Lua_Tags>(L);
 	L_GlobalRegister<Lua_Polygons>(L);
 	L_Register<Lua_Level>(L);
+	L_Register<Lua_Annotation>(L);
+	L_GlobalRegister<Lua_Annotations>(L);
 
 	// register one Level userdatum globally
 	L_Push<Lua_Level>(L, 0);
@@ -674,6 +855,7 @@ int Lua_Map_register(lua_State *L)
 }
 
 static const char* compatibility_script = ""
+	"function annotations() local i = 0 local n = # Annotations return function() if i < n then a = Annotations[i] i = i + 1 if a.polygon then p = a.polygon.index else p = -1 end return a.text, p, a.x, a.y else return nil end end end\n"
 	"function get_level_name() return Level.name end\n"
 	"function get_light_state(light) return Lights[light].active end\n"
 	"function get_map_environment() return Level.vacuum, Level.magnetic, Level.rebellion, Level.low_gravity end\n"
