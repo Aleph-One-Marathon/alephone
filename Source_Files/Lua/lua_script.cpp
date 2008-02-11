@@ -700,54 +700,6 @@ static int L_Select_Monster(lua_State *L)
 	return 0;
 }
 
-/*
- // should modify all values needed for a Matrix-style slowdown shot ;)
- // this includes monster_data as well and monster_definition entries
- static int L_Set_Monster_Global_Speed(lua_State *L)
- {
-	 if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	 {
-		 lua_pushstring(L, "set_monster_global_speed: incorrect argument type");
-		 lua_error(L);
-	 }
-	 int monster_index = static_cast<int>(lua_tonumber(L,1));
-	 double scale = static_cast<double>(lua_tonumber(L,2));
-	 if (scale < 0)
-		 return 0;
-
-	 struct monster_data *theMonster;
-	 struct monster_definition *theDef;
-
-	 if(monster_index == -1)
-	 {
-		 lua_pushstring(L, "set_monster_global_speed: invalid monster index");
-		 lua_error(L);
-	 }
-
-	 theMonster = GetMemberWithBounds(monsters,monster_index,MAXIMUM_MONSTERS_PER_MAP);
-	 if (!SLOT_IS_USED(theMonster))
-	 {
-		 lua_pushstring(L, "set_monster_global_speed: invalid monster index");
-		 lua_error(L);
-	 }
-
-	 if(SLOT_IS_USED(theMonster))
-	 {
-		 theDef = get_monster_definition_external(theMonster->type);
-		 //def: external_velocity_scale, speed, gravity, attack_frequency, sound_pitch
-   //    data: external_velocity, vertical_velocity
-		 theDef->external_velocity_scale *= scale;
-		 theDef->speed *= scale;
-		 theDef->gravity *= scale;
-		 theDef->attack_frequency /= scale;
-		 theDef->sound_pitch *= scale;
-		 theMonster->external_velocity *= scale;
-		 theMonster->vertical_velocity *= scale;
-	 }
-	 return 0;
- }
- */
-
 static int L_Get_Game_Difficulty(lua_State *L)
 {
 	lua_pushnumber(L, dynamic_world->game_information.difficulty_level);
@@ -1218,43 +1170,6 @@ static int L_Player_Control(lua_State *L)
 	}
 	return 0;
 }
-
-#if 0
- static int L_Set_Player_Global_Speed(lua_State *L)
- {
-	 if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	 {
-		 lua_pushstring(L, "set_player_global_speed: incorrect argument type");
-		 lua_error(L);
-	 }
-	 int player_index = static_cast<int>(lua_tonumber(L,1));
-	 if (player_index < 0 || player_index >= dynamic_world->player_count)
-	 {
-		 lua_pushstring(L, "set_player_global_speed: invalid player index");
-		 lua_error(L);
-	 }
-	 double scale = static_cast<double>(lua_tonumber(L,2));
-	 player_data *player = get_player_data(player_index);
-	 struct physics_constants *constants = get_physics_constants_for_model(static_world->physics_model, _run_dont_walk);
-
-	 /* angular_velocity, vertical_angular_velocity, velocity, perpendicular_velocity,
-		 external_velocity, external_angular_velocity */
-			 player->variables.angular_velocity *= scale;
-		  player->variables.vertical_angular_velocity *= scale;
-		  player->variables.velocity *= scale;
-		  player->variables.perpendicular_velocity *= scale;
-		  player->variables.external_velocity.i *= scale;
-		  player->variables.external_velocity.j *= scale;
-		  player->variables.external_velocity.k *= scale;
-		  player->variables.external_angular_velocity *= scale;
-		  constants->gravitational_acceleration *= scale;
-		  constants->maximum_forward_velocity *= scale;
-		  constants->maximum_backward_velocity *= scale;
-		  constants->maximum_perpendicular_velocity *= scale;
-		  constants->step_delta *= scale;
-		  return 0;
- }
-#endif
 
 static int L_Create_Camera(lua_State *L)
 {
@@ -2060,7 +1975,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "show_interface", L_Show_Interface);
 	lua_register(state, "select_weapon", L_Select_Weapon);
 	lua_register(state, "select_monster", L_Select_Monster);
-	//lua_register(state, "set_monster_global_speed", L_Set_Monster_Global_Speed);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
 	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);
@@ -2071,7 +1985,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
 	lua_register(state, "accelerate_player", L_Accelerate_Player);
 	lua_register(state, "player_control", L_Player_Control);
-	//lua_register(state, "set_player_global_speed", L_Set_Player_Global_Speed);
 	lua_register(state, "set_motion_sensor_state", L_Set_Motion_Sensor_State);
 	lua_register(state, "get_motion_sensor_state", L_Get_Motion_Sensor_State);
 	lua_register(state, "create_camera", L_Create_Camera);
