@@ -25,6 +25,7 @@ LUA_MAP.CPP
 #include "lightsource.h"
 #include "map.h"
 #include "platforms.h"
+#include "OGL_Setup.h"
 
 #ifdef HAVE_LUA
 
@@ -779,6 +780,191 @@ const luaL_reg Lua_Annotation::metatable[] = {
 	{0, 0}
 };
 
+struct Lua_Fog {
+	short index; // above or under water
+	static const char *name;
+	
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+	
+	static bool valid(int index) { return index == OGL_Fog_AboveLiquid || index == OGL_Fog_BelowLiquid; }
+
+	static int get_active(lua_State *L);
+	static int get_affects_landscapes(lua_State *L);
+	static int get_color(lua_State *L);
+	static int get_depth(lua_State *L);
+
+	static int set_active(lua_State *L);
+	static int set_affects_landscapes(lua_State *L);
+	static int set_depth(lua_State *L);
+};
+
+struct Lua_Fog_Color {
+	short index;
+	static const char *name;
+
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static bool valid(int index) { return Lua_Fog::valid(index); }
+
+	static int get_r(lua_State *L);
+	static int get_g(lua_State *L);
+	static int get_b(lua_State *L);
+
+	static int set_r(lua_State *L);
+	static int set_g(lua_State *L);
+	static int set_b(lua_State *L);
+};
+
+const char* Lua_Fog_Color::name = "fog_color";
+
+int Lua_Fog_Color::get_r(lua_State *L)
+{
+	lua_pushnumber(L, (float) (OGL_GetFogData(L_Index<Lua_Fog_Color>(L, 1))->Color.red) / 65535);
+	return 1;
+}
+
+int Lua_Fog_Color::get_g(lua_State *L)
+{
+	lua_pushnumber(L, (float) (OGL_GetFogData(L_Index<Lua_Fog_Color>(L, 1))->Color.green) / 65535);
+	return 1;
+}
+
+int Lua_Fog_Color::get_b(lua_State *L)
+{
+	lua_pushnumber(L, (float) (OGL_GetFogData(L_Index<Lua_Fog_Color>(L, 1))->Color.blue) / 65535);
+	return 1;
+}
+
+int Lua_Fog_Color::set_r(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		luaL_error(L, "r: incorrect argument type");
+
+	float color = static_cast<float>(lua_tonumber(L, 2));
+	OGL_GetFogData(L_Index<Lua_Fog_Color>(L, 1))->Color.red = PIN(int(65535 * color + 0.5), 0, 65535);
+	return 0;
+}
+
+int Lua_Fog_Color::set_g(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		luaL_error(L, "g: incorrect argument type");
+
+	float color = static_cast<float>(lua_tonumber(L, 2));
+	OGL_GetFogData(L_Index<Lua_Fog_Color>(L, 1))->Color.green = PIN(int(65535 * color + 0.5), 0, 65535);
+	return 0;
+}
+
+int Lua_Fog_Color::set_b(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		luaL_error(L, "b: incorrect argument type");
+
+	float color = static_cast<float>(lua_tonumber(L, 2));
+	OGL_GetFogData(L_Index<Lua_Fog_Color>(L, 1))->Color.blue = PIN(int(65535 * color + 0.5), 0, 65535);
+	return 0;
+}
+
+const luaL_reg Lua_Fog_Color::index_table[] = {
+	{"r", Lua_Fog_Color::get_r},
+	{"g", Lua_Fog_Color::get_g},
+	{"b", Lua_Fog_Color::get_b},
+	{0, 0}
+};
+
+const luaL_reg Lua_Fog_Color::newindex_table[] = {
+	{"r", Lua_Fog_Color::set_r},
+	{"g", Lua_Fog_Color::set_g},
+	{"b", Lua_Fog_Color::set_b},
+	{0, 0}
+};
+
+const luaL_reg Lua_Fog_Color::metatable[] = {
+	{"__index", L_TableGet<Lua_Fog_Color>},
+	{"__newindex", L_TableSet<Lua_Fog_Color>},
+	{0, 0}
+};
+
+const char* Lua_Fog::name = "fog";
+
+int Lua_Fog::get_active(lua_State *L)
+{
+	lua_pushboolean(L, OGL_GetFogData(L_Index<Lua_Fog>(L, 1))->IsPresent);
+	return 1;
+}
+
+int Lua_Fog::get_affects_landscapes(lua_State *L)
+{
+	lua_pushboolean(L, OGL_GetFogData(L_Index<Lua_Fog>(L, 1))->AffectsLandscapes);
+	return 1;
+}
+
+int Lua_Fog::get_color(lua_State *L)
+{
+	L_Push<Lua_Fog_Color>(L, L_Index<Lua_Fog>(L, 1));
+	return 1;
+}
+
+int Lua_Fog::get_depth(lua_State *L)
+{
+	lua_pushnumber(L, OGL_GetFogData(L_Index<Lua_Fog>(L, 1))->Depth);
+	return 1;
+}
+
+const luaL_reg Lua_Fog::index_table[] = {
+	{"active", Lua_Fog::get_active},
+	{"affects_landscapes", Lua_Fog::get_affects_landscapes},
+	{"color", Lua_Fog::get_color},
+	{"depth", Lua_Fog::get_depth},
+	{"present", Lua_Fog::get_active},
+	{0, 0}
+};
+
+int Lua_Fog::set_active(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "active: incorrect argument type");
+	
+	OGL_GetFogData(L_Index<Lua_Fog>(L, 1))->IsPresent = static_cast<bool>(lua_toboolean(L, 2));
+	return 0;
+}
+
+int Lua_Fog::set_affects_landscapes(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "affects_landscapes: incorrect argument type");
+	
+	OGL_GetFogData(L_Index<Lua_Fog>(L, 1))->AffectsLandscapes = static_cast<bool>(lua_toboolean(L, 2));
+	return 0;
+}
+
+int Lua_Fog::set_depth(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "depth: incorrect argument type");
+
+	OGL_GetFogData(L_Index<Lua_Fog>(L, 1))->Depth = static_cast<float>(lua_tonumber(L, 2));
+	return 0;
+}
+
+const luaL_reg Lua_Fog::newindex_table[] = {
+	{"active", Lua_Fog::set_active},
+	{"affects_landscapes", Lua_Fog::set_affects_landscapes},
+	{"depth", Lua_Fog::set_depth},
+	{"present", Lua_Fog::set_active},
+	{0, 0}
+};
+
+const luaL_reg Lua_Fog::metatable[] = {
+	{"__index", L_TableGet<Lua_Fog>},
+	{"__newindex", L_TableSet<Lua_Fog>},
+	{0, 0}
+};
+
 struct Lua_Level {
 	short index;
 	static const char *name;
@@ -791,7 +977,9 @@ struct Lua_Level {
 
 	static int get(lua_State *L);
 
+	static int get_fog(lua_State *L);
 	static int get_name(lua_State *L);
+	static int get_underwater_fog(lua_State *L);
 };
 
 const char* Lua_Level::name = "Level";
@@ -802,6 +990,12 @@ static int get_environment_flag(lua_State *L)
 	lua_pushboolean(L, static_world->environment_flags & flag);
 	return 1;
 }
+
+int Lua_Level::get_fog(lua_State *L)
+{
+	L_Push<Lua_Fog>(L, OGL_Fog_AboveLiquid);
+	return 1;
+}
 	
 int Lua_Level::get_name(lua_State *L)
 {
@@ -809,11 +1003,19 @@ int Lua_Level::get_name(lua_State *L)
 	return 1;
 }
 
+int Lua_Level::get_underwater_fog(lua_State *L)
+{
+	L_Push<Lua_Fog>(L, OGL_Fog_BelowLiquid);
+	return 1;
+}
+
 const luaL_reg Lua_Level::index_table[] = {
+	{"fog", Lua_Level::get_fog},
 	{"low_gravity", get_environment_flag<_environment_low_gravity>},
 	{"magnetic", get_environment_flag<_environment_magnetic>},
 	{"name", Lua_Level::get_name},
 	{"rebellion", get_environment_flag<_environment_rebellion>},
+	{"underwater_fog", Lua_Level::get_underwater_fog},
 	{"vacuum", get_environment_flag<_environment_vacuum>},
 	{0, 0}
 };
@@ -847,6 +1049,9 @@ int Lua_Map_register(lua_State *L)
 	L_Register<Lua_Annotation>(L);
 	L_GlobalRegister<Lua_Annotations>(L);
 
+	L_Register<Lua_Fog>(L);
+	L_Register<Lua_Fog_Color>(L);
+
 	// register one Level userdatum globally
 	L_Push<Lua_Level>(L, 0);
 	lua_setglobal(L, Lua_Level::name);
@@ -856,6 +1061,10 @@ int Lua_Map_register(lua_State *L)
 
 static const char* compatibility_script = ""
 	"function annotations() local i = 0 local n = # Annotations return function() if i < n then a = Annotations[i] i = i + 1 if a.polygon then p = a.polygon.index else p = -1 end return a.text, p, a.x, a.y else return nil end end end\n"
+	"function get_fog_affects_landscapes() return Level.fog.affects_landscapes end\n"
+	"function get_fog_color() return Level.fog.color.r, Level.fog.color.g, Level.fog.color.b end\n"
+	"function get_fog_depth() return Level.fog.depth end\n"
+	"function get_fog_present() return Level.fog.active end\n"
 	"function get_level_name() return Level.name end\n"
 	"function get_light_state(light) return Lights[light].active end\n"
 	"function get_map_environment() return Level.vacuum, Level.magnetic, Level.rebellion, Level.low_gravity end\n"
@@ -872,7 +1081,16 @@ static const char* compatibility_script = ""
 	"function get_polygon_floor_height(polygon) return Polygons[polygon].floor.height end\n"
 	"function get_polygon_type(polygon) return Polygons[polygon].type end\n"
 	"function get_tag_state(tag) return Tags[tag].active end\n"
+	"function get_underwater_fog_affects_landscapes() return Level.underwater_fog.affects_landscapes end\n"
+	"function get_underwater_fog_color() return Level.underwater_fog.color.r, Level.underwater_fog.color.g, Level.underwater_fog.color.b end\n"
+	"function get_underwater_fog_depth() return Level.underwater_fog.depth end\n"
+	"function get_underwater_fog_present() return Level.underwater_fog.active end\n"
+
 	"function number_of_polygons() return # Polygons end\n"
+	"function set_fog_affects_landscapes(affects_landscapes) Level.fog.affects_landscapes = affects_landscapes end\n"
+	"function set_fog_color(r, g, b) Level.fog.color.r = r Level.fog.color.g = g Level.fog.color.b = b end\n"
+	"function set_fog_depth(depth) Level.fog.depth = depth end\n"
+	"function set_fog_present(present) Level.fog.active = present end\n"
 	"function set_light_state(light, state) Lights[light].active = state end\n"
 	"function set_platform_ceiling_height(polygon, height) if Polygons[polygon].platform then Polygons[polygon].platform.ceiling_height = height end end\n"
 	"function set_platform_floor_height(polygon, height) if Polygons[polygon].platform then Polygons[polygon].platform.floor_height = height end end\n"
@@ -885,6 +1103,11 @@ static const char* compatibility_script = ""
 	"function set_polygon_floor_height(polygon, height) Polygons[polygon].floor.height = height end\n"
 	"function set_polygon_type(polygon, type) Polygons[polygon].type = type end\n"
 	"function set_tag_state(tag, state) Tags[tag].active = state end\n"
+	"function set_underwater_fog_affects_landscapes(affects_landscapes) Level.underwater_fog.affects_landscapes = affects_landscapes end\n"
+	"function set_underwater_fog_color(r, g, b) Level.underwater_fog.color.r = r Level.underwater_fog.color.g = g Level.underwater_fog.color.b = b end\n"
+	"function set_underwater_fog_depth(depth) Level.underwater_fog.depth = depth end\n"
+	"function set_underwater_fog_present(present) Level.underwater_fog.active = present end\n"
+
 	;
 
 static int compatibility(lua_State *L)
