@@ -1451,57 +1451,6 @@ static int L_Screen_Fade(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Platform_Movement(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_platform_movement: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon && polygon->type == _polygon_is_platform)
-	{
-		struct platform_data *platform = get_platform_data(polygon->permutation);
-		if (platform)
-		{
-			if PLATFORM_IS_EXTENDING(platform)
-				lua_pushboolean(L, true);
-			else
-				lua_pushboolean(L, false);
-			return 1;
-		}
-	}
-	lua_pushboolean(L, false);
-	return 1;
-}
-
-static int L_Set_Platform_Movement(lua_State *L)
-{
-	if (!lua_isnumber(L,1)) // bool can be any type
-	{
-		lua_pushstring(L, "set_platform_movement: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	bool movement = lua_toboolean(L,2);
-	if (polygon && polygon->type == _polygon_is_platform)
-	{
-		struct platform_data *platform = get_platform_data(polygon->permutation);
-		if (platform)
-		{
-			if (movement)
-			{	SET_PLATFORM_IS_EXTENDING(platform); }
-			else
-			{	SET_PLATFORM_IS_CONTRACTING(platform); }
-		}
-	}
-	return 0;
-}
-
 static int L_Get_Terminal_Text_Number(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
