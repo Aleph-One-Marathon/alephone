@@ -91,37 +91,40 @@ T* L_Push(lua_State *L, int index)
 	lua_pushnumber(L, index);
 	lua_gettable(L, -2);
 
-	if (lua_isuserdata(L, -1))
+	if (lua_istable(L, -1))
 	{
-		// remove the index talbe
-		lua_remove(L, -2); 
+		// remove the index table
+		lua_remove(L, -2);
 
-		// return a reference to the existing one
+		lua_pushnumber(L, 0);
+		lua_gettable(L, -2);
+		lua_remove(L, -2);
+		
 		T* t = static_cast<T*>(lua_touserdata(L, -1));
-		return t;
 	}
 	else if (lua_isnil(L, -1))
 	{
-		// get rid of the nil and the index table
-		lua_pop(L, 2);
+		// get rid of the nil
+		lua_pop(L, 1);
+		
+		lua_newtable(L);
 
-		// create a new one
 		t = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
 		luaL_getmetatable(L, T::name);
 		lua_setmetatable(L, -2);
 		t->index = index;
-
-		// keep a reference to it for returning later
-		lua_pushlightuserdata(L, (void *) &T::metatable);
-		lua_gettable(L, LUA_REGISTRYINDEX);
-		lua_pushnumber(L, index);
-		lua_pushvalue(L, -3);
+		
+		lua_pushvalue(L, -1);
+		lua_insert(L, -4);
+		lua_pushnumber(L, 0);
+		lua_insert(L, -2);
 		lua_settable(L, -3);
 
-		// get rid of the index table, leaving the userdata
-		// reference on top of the stack
-		lua_pop(L, 1);
+		lua_pushnumber(L, index); 
+		lua_insert(L, -2);
+		lua_settable(L, -3);
 
+		lua_pop(L, 1);
 	}
 
 	return t;
