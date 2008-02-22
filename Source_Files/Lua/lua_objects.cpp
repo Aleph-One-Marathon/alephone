@@ -31,6 +31,8 @@ LUA_OBJECTS.CPP
 
 #ifdef HAVE_LUA
 
+const float AngleConvert = 360/float(FULL_CIRCLE);
+
 template<class T>
 int lua_delete_object(lua_State *L)
 {
@@ -45,6 +47,14 @@ int lua_delete_object<Lua_Scenery>(lua_State *L)
 	remove_map_object(object_index);
 	deanimate_scenery(object_index);
 	return 0;
+}
+
+template<class T>
+static int get_object_facing(lua_State *L)
+{
+	object_data *object = get_object_data(L_Index<T>(L, 1));
+	lua_pushnumber(L, (double) object->facing * AngleConvert);
+	return 1;
 }
 
 template<class T>
@@ -87,11 +97,23 @@ static int get_object_z(lua_State *L)
 	return 1;
 }
 
+template<class T>
+static int set_object_facing(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "facing: incorrect argument type");
+
+	object_data *object = get_object_data(L_Index<T>(L, 1));
+	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
+	return 0;
+}
+
 const char *Lua_Item::name = "item";
 
 const luaL_reg Lua_Item::index_table[] = {
 	{"delete", L_TableFunction<lua_delete_object<Lua_Item> >},
 	{"index", L_TableIndex<Lua_Item>},
+	{"facing", get_object_facing<Lua_Item>},
 	{"polygon", get_object_polygon<Lua_Item>},
 	{"type", get_object_type<Lua_Item, Lua_ItemType>},
 	{"x", get_object_x<Lua_Item>},
@@ -101,6 +123,7 @@ const luaL_reg Lua_Item::index_table[] = {
 };
 
 const luaL_reg Lua_Item::newindex_table[] = {
+	{"facing", set_object_facing<Lua_Item>},
 	{0, 0}
 };
 
@@ -274,6 +297,7 @@ int Lua_Scenery::get_solid(lua_State *L)
 const luaL_reg Lua_Scenery::index_table[] = {
 	{"damage", L_TableFunction<Lua_Scenery::damage>},
 	{"delete", L_TableFunction<lua_delete_object<Lua_Scenery> >},
+	{"facing", get_object_facing<Lua_Scenery>},
 	{"index", L_TableIndex<Lua_Scenery>},
 	{"polygon", get_object_polygon<Lua_Scenery>},
 	{"solid", Lua_Scenery::get_solid},
@@ -295,6 +319,7 @@ int Lua_Scenery::set_solid(lua_State *L)
 }
 
 const luaL_reg Lua_Scenery::newindex_table[] = {
+	{"facing", set_object_facing<Lua_Scenery>},
 	{"solid", Lua_Scenery::set_solid},
 	{0, 0}
 };
