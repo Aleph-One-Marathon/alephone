@@ -266,6 +266,209 @@ int Lua_Player_Items::set(lua_State *L)
 	return 0;
 }
 
+struct Lua_WeaponTypes {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
+	static int length() { return MAXIMUM_NUMBER_OF_WEAPONS; }
+	static bool valid(int index) { return index >= 0 && index < MAXIMUM_NUMBER_OF_WEAPONS; }
+};
+
+struct Lua_WeaponType {
+	short index;
+	static bool valid(int index) { return Lua_WeaponTypes::valid(index); }
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+};
+
+const char *Lua_WeaponType::name = "weapon_type";
+const luaL_reg Lua_WeaponType::index_table[] = {
+	{"index", L_TableIndex<Lua_WeaponType>},
+	{0, 0}
+};
+
+const luaL_reg Lua_WeaponType::newindex_table[] = { {0, 0 } };
+
+const luaL_reg Lua_WeaponType::metatable[] = {
+	{"__eq", L_Equals<Lua_WeaponType>},
+	{"__index", L_TableGet<Lua_WeaponType>},
+	{"__newindex", L_TableSet<Lua_WeaponType>},
+	{0, 0}
+};
+
+const char *Lua_WeaponTypes::name = "WeaponTypes";
+const luaL_reg Lua_WeaponTypes::metatable[] = {
+	{"__index", L_GlobalIndex<Lua_WeaponTypes, Lua_WeaponType>},
+	{"__newindex", L_GlobalNewindex<Lua_WeaponTypes>},
+	{"__call", L_GlobalCall<Lua_WeaponTypes, Lua_WeaponType>},
+	{0, 0}
+};
+	
+const luaL_reg Lua_WeaponTypes::methods[] = { {0, 0 } };
+	
+struct Lua_Player_Weapon_Trigger {
+	short index;
+	short player_index;
+	short trigger_index;
+
+	static bool valid(int index) { return Lua_WeaponTypes::valid(index); }
+
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_rounds(lua_State *L);
+};
+
+const char *Lua_Player_Weapon_Trigger::name = "player_weapon_trigger";
+
+int Lua_Player_Weapon_Trigger::get_rounds(lua_State *L)
+{
+	Lua_Player_Weapon_Trigger *trigger = L_To<Lua_Player_Weapon_Trigger>(L, 1);
+	short rounds = get_player_weapon_ammo_count(trigger->player_index, trigger->index, trigger->trigger_index);
+	lua_pushnumber(L, rounds);
+	return 1;
+}
+
+const luaL_reg Lua_Player_Weapon_Trigger::index_table[] = {
+	{"rounds", Lua_Player_Weapon_Trigger::get_rounds},
+	{0, 0}
+};
+
+const luaL_reg Lua_Player_Weapon_Trigger::newindex_table[] = { {0, 0} };
+
+const luaL_reg Lua_Player_Weapon_Trigger::metatable[] = {
+	{"__index", L_TableGet<Lua_Player_Weapon_Trigger>},
+	{"__newindex", L_TableSet<Lua_Player_Weapon_Trigger>},
+	{0, 0}
+};
+
+struct Lua_Player_Weapons {
+	short index;
+	static bool valid(int index) { return Lua_Players::valid(index); }
+	
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get(lua_State *L);
+};
+
+struct Lua_Player_Weapon {
+	short index;
+	short player_index;
+
+	static bool valid(int index) { return Lua_WeaponTypes::valid(index); }
+
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_type(lua_State *L);
+
+	static int select(lua_State *L);
+};
+
+const char *Lua_Player_Weapon::name = "player_weapon";
+
+template<int trigger>
+static int get_weapon_trigger(lua_State *L)
+{
+	Lua_Player_Weapon *weapon = L_To<Lua_Player_Weapon>(L, 1);
+	Lua_Player_Weapon_Trigger *t = L_PushNew<Lua_Player_Weapon_Trigger>(L);
+	t->index = weapon->index;
+	t->player_index = weapon->player_index;
+	t->trigger_index = trigger;
+	return 1;
+}
+
+int Lua_Player_Weapon::get_type(lua_State *L)
+{
+	L_Push<Lua_WeaponType>(L, L_Index<Lua_Player_Weapon>(L, 1));
+	return 1;
+}
+
+extern bool ready_weapon(short player_index, short weapon_index);
+
+int Lua_Player_Weapon::select(lua_State *L)
+{
+	Lua_Player_Weapon *weapon = L_To<Lua_Player_Weapon>(L, 1);
+	ready_weapon(weapon->player_index, weapon->index);
+	return 0;
+}
+
+const luaL_reg Lua_Player_Weapon::index_table[] = { 
+	{"index", L_TableIndex<Lua_Player_Weapon>},
+	{"primary", get_weapon_trigger<_primary_weapon>},
+	{"secondary", get_weapon_trigger<_secondary_weapon>},
+	{"select", L_TableFunction<Lua_Player_Weapon::select>},
+	{"type", Lua_Player_Weapon::get_type},
+	{0, 0} 
+};
+const luaL_reg Lua_Player_Weapon::newindex_table[] = { {0, 0} };
+const luaL_reg Lua_Player_Weapon::metatable[] = {
+	{"__index", L_TableGet<Lua_Player_Weapon>},
+	{"__newindex", L_TableSet<Lua_Player_Weapon>},
+	{0, 0}
+};
+
+const char *Lua_Player_Weapons::name = "player_weapons";
+const luaL_reg Lua_Player_Weapons::index_table[] = { {0, 0} };
+const luaL_reg Lua_Player_Weapons::newindex_table[] = { {0, 0} };
+const luaL_reg Lua_Player_Weapons::metatable[] = {
+	{"__index", Lua_Player_Weapons::get},
+	{0, 0}
+};
+
+extern player_weapon_data *get_player_weapon_data(const short player_index);
+
+int Lua_Player_Weapons::get(lua_State *L)
+{
+	if (lua_isnumber(L, 2) || L_Is<Lua_WeaponType>(L, 2))
+	{
+		int player_index = L_Index<Lua_Player_Weapons>(L, 1);
+		int index = L_ToIndex<Lua_WeaponType>(L, 2);
+		if (!Lua_Player_Weapons::valid(player_index) || !Lua_WeaponTypes::valid(index))
+		{
+			lua_pushnil(L);
+		}
+		else
+		{
+			Lua_Player_Weapon *t = L_PushNew<Lua_Player_Weapon>(L);
+			t->index = index;
+			t->player_index = player_index;
+		}
+	}
+	else if (lua_isstring(L, 2))
+	{
+		if (strcmp(lua_tostring(L, 2), "current") == 0)
+		{
+			int player_index = L_Index<Lua_Player_Weapons>(L, 1);
+			player_weapon_data *weapon_data = get_player_weapon_data(player_index);
+			player_data *player = get_player_data(player_index);
+			
+			Lua_Player_Weapon *t = L_PushNew<Lua_Player_Weapon>(L);
+			t->index = weapon_data->current_weapon;
+			t->player_index = player_index;
+		}
+		else
+		{
+			lua_pushnil(L);
+		}
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
 struct Lua_Player_Kills {
 	short index;
 	static bool valid(int index) { return Lua_Players::valid(index); }
@@ -625,6 +828,12 @@ static int Lua_Player_get_teleport_to_level(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_weapons(lua_State *L)
+{
+	L_Push<Lua_Player_Weapons>(L, L_Index<Lua_Player>(L, 1));
+	return 1;
+}
+
 int Lua_Player::get_x(lua_State *L)
 {
 	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_Player>(L, 1))->location.x / WORLD_ONE);
@@ -670,6 +879,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"team", Lua_Player_get_team},
 	{"teleport", L_TableFunction<Lua_Player_teleport>},
 	{"teleport_to_level", L_TableFunction<Lua_Player_teleport_to_level>},
+	{"weapons", Lua_Player::get_weapons},
 	{"x", Lua_Player::get_x},
 	{"y", Lua_Player::get_y},
 	{"yaw", Lua_Player::get_direction},
@@ -859,6 +1069,11 @@ int Lua_Player_register (lua_State *L)
 	L_Register<Lua_Player_Kills>(L);
 	L_Register<Lua_Player>(L);
 	L_Register<Lua_Side>(L);
+	L_Register<Lua_WeaponType>(L);
+	L_GlobalRegister<Lua_WeaponTypes>(L);
+	L_Register<Lua_Player_Weapon>(L);
+	L_Register<Lua_Player_Weapons>(L);
+	L_Register<Lua_Player_Weapon_Trigger>(L);
 
 	L_GlobalRegister<Lua_Players>(L);
 	
@@ -890,6 +1105,7 @@ static const char *compatibility_script = ""
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
 	"function play_sound(player, sound, pitch) Players[player]:play_sound(sound, pitch) end\n"
 	"function remove_item(player, item_type) if Players[player].items[item_type] > 0 then Players[player].items[item_type] = Players[player].items[item_type] - 1 end end\n"
+	"function select_weapon(player, weapon) Players[player].weapons[weapon]:select() end\n"
 	"function set_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = amount else Players[player].kills[slain_player] = amount end end\n"
 	"function set_life(player, shield) Players[player].energy = shield end\n"
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"

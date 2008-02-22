@@ -61,17 +61,15 @@ T* L_Check(lua_State *L, int index)
 	return t;
 }
 
-/*
+
 template<class T>
-T* L_Push(lua_State *L)
+T* L_PushNew(lua_State *L)
 {
 	T* t = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
 	luaL_getmetatable(L, T::name);
 	lua_setmetatable(L, -2);
-
 	return t;
 }
-*/
 
 template<class T>
 T* L_Push(lua_State *L, int index)
@@ -109,9 +107,7 @@ T* L_Push(lua_State *L, int index)
 		
 		lua_newtable(L);
 
-		t = static_cast<T*>(lua_newuserdata(L, sizeof(T)));
-		luaL_getmetatable(L, T::name);
-		lua_setmetatable(L, -2);
+		t = L_PushNew<T>(L);
 		t->index = index;
 		
 		lua_pushvalue(L, -1);

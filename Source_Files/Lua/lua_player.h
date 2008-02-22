@@ -62,6 +62,7 @@ struct Lua_Player {
 	static int get_kills(lua_State *L);
 	static int get_local(lua_State *L);
 	static int get_points(lua_State *L);
+	static int get_weapons(lua_State *L);
 	static int get_x(lua_State *L);
 	static int get_y(lua_State *L);
 	static int get_z(lua_State *L);

@@ -643,25 +643,6 @@ static int L_Show_Interface(lua_State *L)
 	return 0;
 }
 
-static int L_Select_Weapon(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "select_weapon: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int weapon_index = static_cast<int>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "select_weapon: invalid player index");
-		lua_error(L);
-	}
-
-	ready_weapon(player_index, weapon_index);
-	return 0;
-}
-
 static int L_Select_Monster(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -1923,7 +1904,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "kill_script", L_Kill_Script);
 	lua_register(state, "hide_interface", L_Hide_Interface);
 	lua_register(state, "show_interface", L_Show_Interface);
-	lua_register(state, "select_weapon", L_Select_Weapon);
 	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
