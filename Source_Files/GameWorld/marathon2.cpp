@@ -565,6 +565,7 @@ void leaving_map(
 	mark_all_monster_collections(false);
 	mark_player_collections(false);
 	mark_map_collections(false);
+	MarkLuaCollections(false);
 	L_Call_Cleanup ();
 	//Close and unload the Lua state
 	CloseLuaScript();
@@ -605,6 +606,11 @@ bool entering_map(bool restoring_saved)
 	mark_all_monster_collections(true);
 	mark_player_collections(true);
 	mark_map_collections(true);
+
+	// ghs: load the Lua script here to see if it needs any additional collections
+	RunLuaScript();
+	MarkLuaCollections(true);
+
 #ifdef SDL
 	load_collections(true, get_screen_mode()->acceleration == _opengl_acceleration);
 #else
@@ -631,9 +637,6 @@ bool entering_map(bool restoring_saved)
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
 
-	// MH: Load the Lua script and run its init function.
-	// Availability of the script is checked within.
-	RunLuaScript();
 	L_Call_Init(restoring_saved);
 
 #if !defined(DISABLE_NETWORKING)

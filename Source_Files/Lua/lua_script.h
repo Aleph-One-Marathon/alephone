@@ -42,6 +42,7 @@ bool UseLuaCameras();
 
 ActionQueues* GetLuaActionQueues();
 
+void MarkLuaCollections(bool active);
 
 // camera data structures
 struct timed_point

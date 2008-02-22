@@ -52,6 +52,7 @@ extern "C"
 #include <string>
 using namespace std;
 #include <stdlib.h>
+#include <set>
 
 #include "screen.h"
 #include "tags.h"
@@ -2181,6 +2182,65 @@ void ToggleLuaMute()
 void ResetLuaMute()
 {
 	mute_lua = false;
+}
+
+void MarkLuaCollections(bool loading)
+{
+	static set<short> lua_collections;
+
+	if (loading)
+	{
+		lua_collections.clear();
+
+		if (!lua_running)
+			return;
+		
+		lua_pushstring(state, "CollectionsUsed");
+		lua_gettable(state, LUA_GLOBALSINDEX);
+		
+		if (lua_istable(state, -1))
+		{
+			int i = 1;
+			lua_pushnumber(state, i++);
+			lua_gettable(state, -2);
+			while (lua_isnumber(state, -1))
+			{
+				short collection_index = static_cast<short>(lua_tonumber(state, -1));
+				if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
+				{
+					mark_collection_for_loading(collection_index);
+					lua_collections.insert(collection_index);
+				}
+				lua_pop(state, 1);
+				lua_pushnumber(state, i++);
+				lua_gettable(state, -2);
+			}
+			
+			lua_pop(state, 2);
+		}
+		else if (lua_isnumber(state, -1))
+		{
+			short collection_index = static_cast<short>(lua_tonumber(state, -1));
+			if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
+			{
+				mark_collection_for_loading(collection_index);
+				lua_collections.insert(collection_index);
+			}
+
+			lua_pop(state, 1);
+		}
+		else
+		{
+			lua_pop(state, 1);
+		}
+	}
+	else
+	{
+		for (set<short>::iterator it = lua_collections.begin(); it != lua_collections.end(); it++)
+		{
+			mark_collection_for_unloading(*it);
+		}
+	}
 }
 
 bool UseLuaCameras()
