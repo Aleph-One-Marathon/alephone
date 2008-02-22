@@ -694,92 +694,6 @@ static int L_Get_Game_Type(lua_State *L)
 	return 1;
 }
 
-static int L_Get_Player_Powerup_Duration(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "get_player_powerup_duration: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_player_powerup_duration: invalid player index");
-		lua_error(L);
-	}
-	
-	int powerup = static_cast<int>(lua_tonumber(L,2));
-	if (powerup < 0 || powerup > 3){
-		lua_pushstring(L, "get_player_powerup_duration: invalid powerup type");
-		lua_error(L);
-	}
-	
-	player_data *player = get_player_data(player_index);
-	
-	switch(powerup){
-		case 0:
-			lua_pushnumber(L, player->invisibility_duration);
-			break;
-		
-		case 1:
-			lua_pushnumber(L, player->invincibility_duration);
-			break;
-		
-		case 2:
-			lua_pushnumber(L, player->infravision_duration);
-			break;
-		
-		case 3:
-			lua_pushnumber(L, player->extravision_duration);
-			break;
-	}
-	
-	return 1;
-}
-
-static int L_Set_Player_Powerup_Duration(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
-	{
-		lua_pushstring(L, "set_player_powerup_duration: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	int powerup = static_cast<int>(lua_tonumber(L,2));
-	int duration = static_cast<int>(lua_tonumber(L,3));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "set_player_powerup_duration: invalid player index");
-		lua_error(L);
-	}
-	if (powerup < 0 || powerup > 3){
-		lua_pushstring(L, "set_player_powerup_duration: invalid powerup type");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	switch(powerup){
-		case 0:
-			player->invisibility_duration = duration;
-			break;
-		
-		case 1:
-			player->invincibility_duration = duration;
-			break;
-		
-		case 2:
-			player->infravision_duration = duration;
-			break;
-		
-		case 3:
-			player->extravision_duration = duration;
-			break;
-	}
-	return 0;
-}
-
 static int L_Get_Player_Internal_Velocity(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -1907,8 +1821,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
-	lua_register(state, "get_player_powerup_duration", L_Get_Player_Powerup_Duration);
-	lua_register(state, "set_player_powerup_duration", L_Set_Player_Powerup_Duration);
 	lua_register(state, "get_player_internal_velocity", L_Get_Player_Internal_Velocity);
 	lua_register(state, "get_player_external_velocity", L_Get_Player_External_Velocity);
 	lua_register(state, "set_player_external_velocity", L_Set_Player_External_Velocity);

@@ -762,6 +762,30 @@ int Lua_Player::get_direction(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_extravision_duration(lua_State *L)
+{
+	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->extravision_duration);
+	return 1;
+}
+
+int Lua_Player::get_infravision_duration(lua_State *L)
+{
+	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->infravision_duration);
+	return 1;
+}
+
+int Lua_Player::get_invincibility_duration(lua_State *L)
+{
+	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->invincibility_duration);
+	return 1;
+}
+
+int Lua_Player::get_invisibility_duration(lua_State *L)
+{
+	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->invisibility_duration);
+	return 1;
+}
+
 int Lua_Player::get_items(lua_State *L)
 {
 	L_Push<Lua_Player_Items>(L, L_Index<Lua_Player>(L, 1));
@@ -861,8 +885,12 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"direction", Lua_Player::get_direction},
 	{"energy", Lua_Player_get_energy},
 	{"elevation", Lua_Player::get_elevation},
+	{"extravision_duration", Lua_Player::get_extravision_duration},
 	{"find_action_key_target", L_TableFunction<Lua_Player_find_action_key_target>},
 	{"index", L_TableIndex<Lua_Player>},
+	{"infravision_duration", Lua_Player::get_infravision_duration},
+	{"invincibility_duration", Lua_Player::get_invincibility_duration},
+	{"invisibility_duration", Lua_Player::get_invisibility_duration},
 	{"items", Lua_Player::get_items},
 	{"local_", Lua_Player::get_local},
 	{"juice", Lua_Player_get_energy},
@@ -951,6 +979,36 @@ int Lua_Player::set_elevation(lua_State *L)
 	return 0;
 }
 
+int Lua_Player::set_infravision_duration(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "extravision: incorrect argument type");
+
+	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player->infravision_duration = static_cast<int>(lua_tonumber(L, 2));
+	return 0;
+}
+
+int Lua_Player::set_invincibility_duration(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "extravision: incorrect argument type");
+
+	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player->invincibility_duration = static_cast<int>(lua_tonumber(L, 2));
+	return 0;
+}
+
+int Lua_Player::set_invisibility_duration(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "extravision: incorrect argument type");
+
+	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player->invisibility_duration = static_cast<int>(lua_tonumber(L, 2));
+	return 0;
+}
+
 static int Lua_Player_set_energy(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -963,6 +1021,22 @@ static int Lua_Player_set_energy(lua_State *L)
 	get_player_data(L_Index<Lua_Player>(L, 1))->suit_energy = energy;
 	mark_shield_display_as_dirty();
 
+	return 0;
+}
+
+int Lua_Player::set_extravision_duration(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "extravision: incorrect argument type");
+
+	int player_index = L_Index<Lua_Player>(L, 1);
+	player_data *player = get_player_data(player_index);
+	short extravision_duration = static_cast<short>(lua_tonumber(L, 2));
+	if ((player_index == local_player_index) && (extravision_duration == 0) != (player->extravision_duration == 0))
+	{
+		start_extravision_effect(extravision_duration);
+	}
+	player->extravision_duration = static_cast<int>(lua_tonumber(L, 2));
 	return 0;
 }
 
@@ -1022,6 +1096,10 @@ const luaL_reg Lua_Player::newindex_table[] = {
 	{"direction", Lua_Player::set_direction},
 	{"elevation", Lua_Player::set_elevation},
 	{"energy", Lua_Player_set_energy},
+	{"extravision_duration", Lua_Player::set_extravision_duration},
+	{"infravision_duration", Lua_Player::set_infravision_duration},
+	{"invincibility_duration", Lua_Player::set_invincibility_duration},
+	{"invisibility_duration", Lua_Player::set_invisibility_duration},
 	{"juice", Lua_Player_set_energy},
 	{"life", Lua_Player_set_energy},
 	{"oxygen", Lua_Player_set_oxygen},
@@ -1096,6 +1174,7 @@ static const char *compatibility_script = ""
 	"function get_player_name(player) return Players[player].name end\n"
 	"function get_player_polygon(player) return Players[player].polygon.index end\n"
 	"function get_player_position(player) return Players[player].x, Players[player].y, Players[player].z end\n"
+	"function get_player_powerup_duration(player, powerup) if powerup == _powerup_invisibility then return Players[player].invisibility_duration elseif powerup == _powerup_invincibility then return Players[player].invincibility_duration elseif powerup == _powerup_infravision then return Players[player].infravision_duratiohn elseif powerup == _powerup_extravision then return Players[player].extravision_duration end end\n"
 	"function get_player_team(player) return Players[player].team end\n"
 	"function get_points(player) return Players[player].points end\n"
 	"function inflict_damage(player, amount, type) if (type) then Players[player]:damage(amount, type) else Players[player]:damage(amount) end end\n"
@@ -1112,6 +1191,7 @@ static const char *compatibility_script = ""
 	"function set_player_angle(player, yaw, pitch) Players[player].yaw = yaw Players[player].pitch = pitch + 360.0 end\n"
 	"function set_player_color(player, color) Players[player].color = color end\n"
 	"function set_player_position(player, x, y, z, polygon) Players[player]:position(x, y, z, polygon) end\n"
+	"function set_player_powerup_duration(player, powerup, duration) if powerup == _powerup_invisibility then Players[player].invisibility_duration = duration elseif powerup == _powerup_invincibility then Players[player].invincibility_duration = duration elseif powerup == _powerup_infravision then Players[player].infravision_duration = duration elseif powerup == _powerup_extravision then Players[player].extravision_duration = duration end end\n"
 	"function set_player_team(player, team) Players[player].team = team end\n"
 	"function set_points(player, amount) Players[player].points = amount end\n"
 	"function teleport_player(player, polygon) Players[player]:teleport(polygon) end\n"

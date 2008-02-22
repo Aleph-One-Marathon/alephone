@@ -58,6 +58,10 @@ struct Lua_Player {
 	static int get_deaths(lua_State *L);
 	static int get_direction(lua_State *L);
 	static int get_elevation(lua_State *L);
+	static int get_extravision_duration(lua_State *L);
+	static int get_infravision_duration(lua_State *L);
+	static int get_invincibility_duration(lua_State *L);
+	static int get_invisibility_duration(lua_State *L);
 	static int get_items(lua_State *L);
 	static int get_kills(lua_State *L);
 	static int get_local(lua_State *L);
@@ -70,6 +74,10 @@ struct Lua_Player {
 	static int set_deaths(lua_State *L);
 	static int set_direction(lua_State *L);
 	static int set_elevation(lua_State *L);
+	static int set_extravision_duration(lua_State *L);
+	static int set_infravision_duration(lua_State *L);
+	static int set_invincibility_duration(lua_State *L);
+	static int set_invisibility_duration(lua_State *L);
 	static int set_points(lua_State *L);
 
 	static int damage(lua_State *L);
