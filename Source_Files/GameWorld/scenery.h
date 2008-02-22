@@ -37,6 +37,10 @@ short new_scenery(struct object_location *location, short scenery_type);
 
 void animate_scenery(void);
 
+// ghs: allow Lua to add and delete scenery
+void deanimate_scenery(short object_index);
+void randomize_scenery_shape(short object_index);
+
 void randomize_scenery_shapes(void);
 
 void get_scenery_dimensions(short scenery_type, world_distance *radius, world_distance *height);

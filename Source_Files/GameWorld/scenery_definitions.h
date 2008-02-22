@@ -53,7 +53,10 @@ struct scenery_definition
 
 /* ---------- globals */
 
-#define NUMBER_OF_SCENERY_DEFINITIONS (sizeof(scenery_definitions)/sizeof(struct scenery_definition))
+// #define NUMBER_OF_SCENERY_DEFINITIONS (sizeof(scenery_definitions)/sizeof(struct scenery_definition))
+#define NUMBER_OF_SCENERY_DEFINITIONS 61
+
+#ifndef DONT_REPEAT_DEFINITIONS
 
 struct scenery_definition scenery_definitions[]=
 {
@@ -128,5 +131,7 @@ struct scenery_definition scenery_definitions[]=
 	{0, BUILD_DESCRIPTOR(_collection_scenery4, 14)}, // floor whip antenna
 	{0, BUILD_DESCRIPTOR(_collection_scenery4, 15)}, // ceiling whip antenna
 };
+
+#endif
 
 #endif

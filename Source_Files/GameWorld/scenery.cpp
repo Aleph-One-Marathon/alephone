@@ -129,6 +129,27 @@ void animate_scenery(
 		animate_object(AnimatedSceneryObjects[i]);
 }
 
+void deanimate_scenery(short object_index)
+{
+	std::vector<short>::iterator it;
+	for (it = AnimatedSceneryObjects.begin(); it != AnimatedSceneryObjects.end() && *it != object_index; it++);
+	
+	if (it != AnimatedSceneryObjects.end())
+		AnimatedSceneryObjects.erase(it);
+}
+
+void randomize_scenery_shape(short object_index)
+{
+	object_data *object = get_object_data(object_index);
+	scenery_definition *definition = get_scenery_definition(object->permutation);
+	if (!definition) return;
+
+	if (!randomize_object_sequence(object_index, definition->shape))
+	{
+		AnimatedSceneryObjects.push_back(object_index);
+	}
+}
+
 void randomize_scenery_shapes(
 	void)
 {

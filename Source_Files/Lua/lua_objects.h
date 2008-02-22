@@ -54,14 +54,6 @@ struct Lua_Item {
 	static const luaL_reg metatable[];
 	static const luaL_reg index_table[];
 	static const luaL_reg newindex_table[];
-
-	static int delete_item(lua_State *L);
-
-	static int get_polygon(lua_State *L);
-	static int get_type(lua_State *L);
-	static int get_x(lua_State *L);
-	static int get_y(lua_State *L);
-	static int get_z(lua_State *L);
 };
 
 struct Lua_ItemTypes {
@@ -82,6 +74,32 @@ struct Lua_ItemType {
 	static const luaL_reg newindex_table[];
 
 	static int get_ball(lua_State *L);
+};
+
+struct Lua_Sceneries {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
+	static int length() { return MAXIMUM_OBJECTS_PER_MAP; }
+	static bool valid(int);
+
+	static int new_scenery(lua_State *);
+};
+
+struct Lua_Scenery {
+	short index;
+	static bool valid(int index) { return Lua_Sceneries::valid(index); }
+	
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_solid(lua_State *);
+	
+	static int set_solid(lua_State *);
+
+	static int damage(lua_State *);
 };
 
 int Lua_Objects_register(lua_State *L);
