@@ -95,6 +95,7 @@ struct Lua_Scenery {
 	static const luaL_reg index_table[];
 	static const luaL_reg newindex_table[];
 
+	static int get_damaged(lua_State *);
 	static int get_solid(lua_State *);
 	
 	static int set_solid(lua_State *);

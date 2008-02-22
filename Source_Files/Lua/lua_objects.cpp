@@ -25,7 +25,9 @@ LUA_OBJECTS.CPP
 #include "lua_templates.h"
 
 #include "items.h"
+#include "monsters.h"
 #include "scenery.h"
+#include "player.h"
 #define DONT_REPEAT_DEFINITIONS
 #include "scenery_definitions.h"
 
@@ -287,6 +289,16 @@ int Lua_Scenery::damage(lua_State *L)
 	return 0;
 }
 
+int Lua_Scenery::get_damaged(lua_State *L)
+{
+	object_data *object = get_object_data(L_Index<Lua_Scenery>(L, 1));
+
+	// if it made it this far (past valid() check),
+	// it's either scenery or normal
+	lua_pushboolean(L, GET_OBJECT_OWNER(object) == _object_is_normal);
+	return 1;
+}
+
 int Lua_Scenery::get_solid(lua_State *L)
 {
 	object_data *object = get_object_data(L_Index<Lua_Scenery>(L, 1));
@@ -296,6 +308,7 @@ int Lua_Scenery::get_solid(lua_State *L)
 
 const luaL_reg Lua_Scenery::index_table[] = {
 	{"damage", L_TableFunction<Lua_Scenery::damage>},
+	{"damaged", Lua_Scenery::get_damaged},
 	{"delete", L_TableFunction<lua_delete_object<Lua_Scenery> >},
 	{"facing", get_object_facing<Lua_Scenery>},
 	{"index", L_TableIndex<Lua_Scenery>},
@@ -380,7 +393,32 @@ bool Lua_Sceneries::valid(int index)
 		return false;
 
 	object_data *object = GetMemberWithBounds(objects, index, MAXIMUM_OBJECTS_PER_MAP);
-	return (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object) == _object_is_scenery);
+	if (SLOT_IS_USED(object))
+	{
+		if (GET_OBJECT_OWNER(object) == _object_is_scenery) 
+			return true;
+		else if (GET_OBJECT_OWNER(object) == _object_is_normal)
+		{
+			// check to make sure it's not a player's legs or torso
+			for (int player_index = 0; player_index < dynamic_world->player_count; player_index++)
+			{
+				player_data *player = get_player_data(player_index);
+				monster_data *monster = get_monster_data(player->monster_index);
+				if (monster->object_index == index) 
+					return false;
+				else
+				{
+					object_data *object = get_object_data(monster->object_index);
+					if (object->parasitic_object == index)
+						return false;
+				}
+			}
+
+			return true;
+		}
+	}
+
+	return false;
 }
 
 const luaL_reg Lua_Sceneries::methods[] = {
