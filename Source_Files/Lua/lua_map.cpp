@@ -117,7 +117,7 @@ int Lua_Platform::get_polygon(lua_State *L)
 int Lua_Platform::get_speed(lua_State *L)
 {
 	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
-	lua_pushnumber(L, (double) platform->speed * TICKS_PER_SECOND / WORLD_ONE);
+	lua_pushnumber(L, (double) platform->speed / WORLD_ONE);
 	return 1;
 }
 
@@ -215,7 +215,7 @@ int Lua_Platform::set_speed(lua_State *L)
 		return luaL_error(L, "speed: incorrect argument type");
 	
 	platform_data *platform = get_platform_data(L_Index<Lua_Platform>(L, 1));
-	platform->speed = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE / TICKS_PER_SECOND);
+	platform->speed = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	return 0;
 }
 	
@@ -1074,7 +1074,7 @@ static const char* compatibility_script = ""
 	"function get_platform_monster_control(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.monster_controllable end end\n"
 	"function get_platform_movement(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.extending end end\n"
 	"function get_platform_player_control(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.player_controllable end end\n"
-	"function get_platform_speed(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.speed * 1024 / 30 end end\n"
+	"function get_platform_speed(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.speed * 1024 end end\n"
 	"function get_platform_state(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.active end end\n"
 	"function get_polygon_ceiling_height(polygon) return Polygons[polygon].ceiling.height end\n"
 	"function get_polygon_center(polygon) return Polygons[polygon].x * 1024, Polygons[polygon].y * 1024 end\n"
@@ -1097,7 +1097,7 @@ static const char* compatibility_script = ""
 	"function set_platform_monster_control(polygon, control) if Polygons[polygon].platform then Polygons[polygon].platform.monster_controllable = control end end\n"
 	"function set_platform_movement(polygon, movement) if Polygons[polygon].platform then Polygons[polygon].platform.extending = movement end end\n"
 	"function set_platform_player_control(polygon, control) if Polygons[polygon].platform then Polygons[polygon].platform.player_controllable = control end end\n"
-	"function set_platform_speed(polygon, speed) if Polygons[polygon].platform then Polygons[polygon].platform.speed = speed * 30 / 1024 end end\n"
+	"function set_platform_speed(polygon, speed) if Polygons[polygon].platform then Polygons[polygon].platform.speed = speed / 1024 end end\n"
 	"function set_platform_state(polygon, state) if Polygons[polygon].platform then Polygons[polygon].platform.active = state end end\n"
 	"function set_polygon_ceiling_height(polygon, height) Polygons[polygon].ceiling.height = height end\n"
 	"function set_polygon_floor_height(polygon, height) Polygons[polygon].floor.height = height end\n"
