@@ -211,6 +211,183 @@ const luaL_reg Lua_Crosshairs::metatable[] = {
 	{0, 0}
 };
 
+struct Lua_OverlayColor {
+	short index;
+	static bool valid(int index) { return index >= 0 && index < 8; }
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+};
+
+const char *Lua_OverlayColor::name = "overlay_color";
+const luaL_reg Lua_OverlayColor::index_table[] = {
+	{"index", L_TableIndex<Lua_OverlayColor>},
+	{0, 0}
+};
+
+const luaL_reg Lua_OverlayColor::newindex_table[] = { {0, 0} };
+const luaL_reg Lua_OverlayColor::metatable[] = {
+	{"__eq", L_Equals<Lua_OverlayColor>},
+	{"__index", L_TableGet<Lua_OverlayColor>},
+	{"__newindex", L_TableSet<Lua_OverlayColor>},
+	{0, 0}
+};
+
+struct Lua_Overlays {
+	short index;
+	static bool valid(int index) { return Lua_Players::valid(index); }
+	
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get(lua_State *L);
+};
+
+struct Lua_Overlay {
+	short index;
+	short player_index;
+
+	static bool valid(int index) { return Lua_Overlays::valid(index); }
+
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int set_icon(lua_State *L);
+	static int set_text(lua_State *L);
+	static int set_text_color(lua_State *L);
+
+	static int clear(lua_State *L);
+	static int fill_icon(lua_State *L);
+};
+
+const char *Lua_Overlay::name = "overlay";
+
+int Lua_Overlay::clear(lua_State *L)
+{
+	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
+	if (t->player_index == local_player_index)
+	{
+		SetScriptHUDIcon(t->index, 0, 0);
+		SetScriptHUDText(t->index, 0);
+	}
+
+	return 0;
+}
+
+int Lua_Overlay::fill_icon(lua_State *L)
+{
+	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
+	if (t->player_index == local_player_index)
+	{
+		int color = L_ToIndex<Lua_OverlayColor>(L, 2);
+		SetScriptHUDSquare(t->index, color);
+	}
+
+	return 0;
+}
+
+const luaL_reg Lua_Overlay::index_table[] = {
+	{"clear", L_TableFunction<Lua_Overlay::clear>},
+	{"fill_icon", L_TableFunction<Lua_Overlay::fill_icon>},
+	{0, 0}
+};
+
+int Lua_Overlay::set_icon(lua_State *L)
+{
+	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
+	if (t->player_index == local_player_index)
+	{
+		if (lua_isstring(L, 2))
+		{
+			SetScriptHUDIcon(t->index, lua_tostring(L, 2), lua_strlen(L, 2));
+		}
+		else
+		{
+			SetScriptHUDIcon(t->index, 0, 0);
+		}
+	}
+
+	return 0;
+}
+
+int Lua_Overlay::set_text(lua_State *L)
+{
+	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
+	if (t->player_index == local_player_index)
+	{
+		const char *text = 0;
+		if (lua_isstring(L, 2)) 
+			text = lua_tostring(L, 2);
+		
+		SetScriptHUDText(t->index, text);
+	}
+
+	return 0;
+}
+
+int Lua_Overlay::set_text_color(lua_State *L)
+{
+	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
+	if (t->player_index == local_player_index)
+	{
+		int color = L_ToIndex<Lua_OverlayColor>(L, 2);
+		SetScriptHUDColor(t->index, color);
+	}
+
+	return 0;
+}
+
+const luaL_reg Lua_Overlay::newindex_table[] = {
+	{"color", Lua_Overlay::set_text_color},
+	{"icon", Lua_Overlay::set_icon},
+	{"text", Lua_Overlay::set_text},
+	{0, 0}
+};
+
+const luaL_reg Lua_Overlay::metatable[] = {
+	{"__index", L_TableGet<Lua_Overlay>},
+	{"__newindex", L_TableSet<Lua_Overlay>},
+	{0, 0}
+};
+
+const char *Lua_Overlays::name = "overlays";
+const luaL_reg Lua_Overlays::index_table[] = { {0, 0} };
+const luaL_reg Lua_Overlays::newindex_table[] = { {0, 0} };
+const luaL_reg Lua_Overlays::metatable[] = {
+	{"__index", Lua_Overlays::get},
+	{0, 0}
+};
+
+int Lua_Overlays::get(lua_State *L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		int player_index = L_Index<Lua_Overlays>(L, 1);
+		int index = static_cast<int>(lua_tonumber(L, 2));
+		if (Lua_Overlays::valid(player_index) && index >= 0 && index < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS)
+		{
+			Lua_Overlay *t = L_PushNew<Lua_Overlay>(L);
+			t->index = index;
+			t->player_index = player_index;
+		}
+		else
+		{
+			lua_pushnil(L);
+		}
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
 struct Lua_Side {
 	short index;
 	static bool valid(int index) { return true; }
@@ -1124,6 +1301,12 @@ static int Lua_Player_get_name(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_overlays(lua_State *L)
+{
+	L_Push<Lua_Overlays>(L, L_Index<Lua_Player>(L, 1));
+	return 1;
+}
+
 static int Lua_Player_get_oxygen(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->suit_oxygen);
@@ -1226,6 +1409,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"monster", Lua_Player_get_monster},
 	{"motion_sensor_active", Lua_Player::get_motion_sensor},
 	{"name", Lua_Player_get_name},
+	{"overlays", Lua_Player::get_overlays},
 	{"oxygen", Lua_Player_get_oxygen},
 	{"pitch", Lua_Player::get_elevation},
 	{"play_sound", L_TableFunction<Lua_Player::play_sound>},
@@ -1522,6 +1706,9 @@ int Lua_Player_register (lua_State *L)
 	L_Register<Lua_Player_Weapon>(L);
 	L_Register<Lua_Player_Weapons>(L);
 	L_Register<Lua_Player_Weapon_Trigger>(L);
+	L_Register<Lua_OverlayColor>(L);
+	L_Register<Lua_Overlays>(L);
+	L_Register<Lua_Overlay>(L);
 
 	L_GlobalRegister<Lua_Players>(L);
 	
@@ -1567,6 +1754,10 @@ static const char *compatibility_script = ""
 	"function set_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = amount else Players[player].kills[slain_player] = amount end end\n"
 	"function set_life(player, shield) Players[player].energy = shield end\n"
 	"function set_motion_sensor_state(player, state) Players[player].motion_sensor_active = state end\n"
+	"function set_overlay_color(overlay, color) for p in Players() do if p.local_ then p.overlays[overlay].color = color end end end\n"
+	"function set_overlay_icon(overlay, icon) for p in Players() do if p.local_ then p.overlays[overlay].icon = icon end end end\n"
+	"function set_overlay_icon_by_color(overlay, color) for p in Players() do if p.local_ then p.overlays[overlay]:fill_icon(color) end end end\n"
+	"function set_overlay_text(overlay, text) for p in Players() do if p.local_ then p.overlays[overlay].text = text end end end\n"
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
 	"function set_player_angle(player, yaw, pitch) Players[player].yaw = yaw Players[player].pitch = pitch + 360.0 end\n"
 	"function set_player_color(player, color) Players[player].color = color end\n"

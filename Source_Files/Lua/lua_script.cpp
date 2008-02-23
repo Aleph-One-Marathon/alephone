@@ -1461,76 +1461,6 @@ static int L_Player_Media(lua_State *L)
 	return 1;
 }
 
-static int L_Set_Overlay_Color(lua_State* L) {
-	if(lua_gettop(L) != 2) {
-		lua_pushstring(L, "usage: set_overlay_color(overlay, color)");
-		lua_error(L);
-	}
-	int idx = (int)lua_tonumber(L, 1);
-	if(idx < 0 || idx >= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS) {
-		lua_pushstring(L, "invalid overlay index");
-		lua_error(L);
-	}
-	int color = (int)lua_tonumber(L, 2);
-	if(idx < 0 || idx >= 8) {
-		lua_pushstring(L, "invalid terminal color");
-		lua_error(L);
-	}
-	SetScriptHUDColor(idx, color);
-	return 0;
-}
-
-static int L_Set_Overlay_Text(lua_State* L) {
-	if(lua_gettop(L) != 2) {
-		lua_pushstring(L, "usage: set_overlay_text(overlay, text)");
-		lua_error(L);
-	}
-	int idx = (int)lua_tonumber(L, 1);
-	if(idx < 0 || idx >= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS) {
-		lua_pushstring(L, "invalid overlay index");
-		lua_error(L);
-	}
-	const char* text;
-	if(!lua_isstring(L, 2)) text = NULL;
-	else text = lua_tostring(L, 2);
-	SetScriptHUDText(idx, text);
-	return 0;
-}
-
-static int L_Set_Overlay_Icon_By_Color(lua_State* L) {
-	if(lua_gettop(L) != 2) {
-		lua_pushstring(L, "usage: set_overlay_icon_by_color(overlay, color)");
-		lua_error(L);
-	}
-	int idx = (int)lua_tonumber(L, 1);
-	if(idx < 0 || idx >= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS) {
-		lua_pushstring(L, "invalid overlay index");
-		lua_error(L);
-	}
-	int color = (int)lua_tonumber(L, 2);
-	if(idx < 0 || idx >= 8) {
-		lua_pushstring(L, "invalid terminal color");
-		lua_error(L);
-	}
-	SetScriptHUDSquare(idx, color);
-	return 0;
-}
-
-static int L_Set_Overlay_Icon(lua_State* L) {
-	if(lua_gettop(L) != 2) {
-		lua_pushstring(L, "usage: set_overlay_icon_by_color(overlay, color)");
-		lua_error(L);
-	}
-	int idx = (int)lua_tonumber(L, 1);
-	if(idx < 0 || idx >= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS) {
-		lua_pushstring(L, "invalid overlay index");
-		lua_error(L);
-	}
-	if(!lua_isstring(L, 2)) lua_pushboolean(L, SetScriptHUDIcon(idx, NULL, 0));
-	else lua_pushboolean(L, SetScriptHUDIcon(idx, lua_tostring(L, 2), lua_strlen(L, 2)));
-	return 1;
-}
-
 void RegisterLuaFunctions()
 {
 	lua_register(state, "screen_print", L_Screen_Print);
@@ -1573,10 +1503,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "clear_music", L_Clear_Music);
 	lua_register(state, "play_music", L_Play_Music);
 	lua_register(state, "stop_music", L_Stop_Music);
-	lua_register(state, "set_overlay_color", L_Set_Overlay_Color);
-	lua_register(state, "set_overlay_text", L_Set_Overlay_Text);
-	lua_register(state, "set_overlay_icon", L_Set_Overlay_Icon);
-	lua_register(state, "set_overlay_icon_by_color", L_Set_Overlay_Icon_By_Color);
 
 	Lua_Map_register(state);
 	Lua_Monsters_register(state);
