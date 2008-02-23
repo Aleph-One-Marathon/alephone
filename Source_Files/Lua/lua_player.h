@@ -60,6 +60,8 @@ struct Lua_Player {
 	static int get_elevation(lua_State *L);
 	static int get_extravision_duration(lua_State *L);
 	static int get_infravision_duration(lua_State *L);
+	static int get_internal_velocity(lua_State *L);
+	static int get_internal_perpendicular_velocity(lua_State *L);
 	static int get_invincibility_duration(lua_State *L);
 	static int get_invisibility_duration(lua_State *L);
 	static int get_items(lua_State *L);

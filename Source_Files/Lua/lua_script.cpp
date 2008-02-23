@@ -158,9 +158,6 @@ extern void select_next_best_weapon(short player_index);
 extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
 extern void draw_panels();
 
-extern bool player_has_valid_weapon(short player_index);
-extern player_weapon_data *get_player_weapon_data(const short player_index);
-
 extern bool MotionSensorActive;
 
 extern void destroy_players_ball(short player_index);
@@ -1720,25 +1717,6 @@ static int L_Player_Media(lua_State *L)
 	return 1;
 }
 
-static int L_Get_Player_Weapon(lua_State *L)
-{
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	 {
-		lua_pushstring(L, "get_player_weapon: invalid player index");
-		lua_error(L);
-	 }
-	if(player_has_valid_weapon(player_index))
-	 {
-		struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
-		lua_pushnumber(L, player_weapons->current_weapon);
-	 }
-	else {
-		lua_pushnil(L);
-		}
-	return 1;
-}
-
 static int L_Set_Overlay_Color(lua_State* L) {
 	if(lua_gettop(L) != 2) {
 		lua_pushstring(L, "usage: set_overlay_color(overlay, color)");
@@ -1821,7 +1799,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
-	lua_register(state, "get_player_internal_velocity", L_Get_Player_Internal_Velocity);
 	lua_register(state, "get_player_external_velocity", L_Get_Player_External_Velocity);
 	lua_register(state, "set_player_external_velocity", L_Set_Player_External_Velocity);
 	lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
@@ -1860,7 +1837,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_projectile_damage_type", L_Get_Projectile_Damage_Type);
 	lua_register(state, "prompt", L_Prompt);
 	lua_register(state, "player_media", L_Player_Media);
-	lua_register(state, "get_player_weapon", L_Get_Player_Weapon);
 	lua_register(state, "fade_music", L_Fade_Music);
 	lua_register(state, "clear_music", L_Clear_Music);
 	lua_register(state, "play_music", L_Play_Music);

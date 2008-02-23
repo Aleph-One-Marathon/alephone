@@ -426,6 +426,7 @@ const luaL_reg Lua_Player_Weapons::metatable[] = {
 };
 
 extern player_weapon_data *get_player_weapon_data(const short player_index);
+extern bool player_has_valid_weapon(short player_index);
 
 int Lua_Player_Weapons::get(lua_State *L)
 {
@@ -449,12 +450,19 @@ int Lua_Player_Weapons::get(lua_State *L)
 		if (strcmp(lua_tostring(L, 2), "current") == 0)
 		{
 			int player_index = L_Index<Lua_Player_Weapons>(L, 1);
-			player_weapon_data *weapon_data = get_player_weapon_data(player_index);
-			player_data *player = get_player_data(player_index);
-			
-			Lua_Player_Weapon *t = L_PushNew<Lua_Player_Weapon>(L);
-			t->index = weapon_data->current_weapon;
-			t->player_index = player_index;
+			if (player_has_valid_weapon(player_index))
+			{
+				player_weapon_data *weapon_data = get_player_weapon_data(player_index);
+				player_data *player = get_player_data(player_index);
+				
+				Lua_Player_Weapon *t = L_PushNew<Lua_Player_Weapon>(L);
+				t->index = weapon_data->current_weapon;
+				t->player_index = player_index;
+			}
+			else
+			{
+				lua_pushnil(L);
+			}
 		}
 		else
 		{
@@ -774,6 +782,22 @@ int Lua_Player::get_infravision_duration(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_internal_velocity(lua_State *L)
+{
+	int player_index = L_Index<Lua_Player>(L, 1);
+	player_data *player = get_player_data(player_index);
+	lua_pushnumber(L, (double) player->variables.velocity / FIXED_ONE);
+	return 1;
+}
+
+int Lua_Player::get_internal_perpendicular_velocity(lua_State *L)
+{
+	int player_index = L_Index<Lua_Player>(L, 1);
+	player_data *player = get_player_data(player_index);
+	lua_pushnumber(L, (double) player->variables.perpendicular_velocity / FIXED_ONE);
+	return 1;
+}
+
 int Lua_Player::get_invincibility_duration(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->invincibility_duration);
@@ -889,6 +913,8 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"find_action_key_target", L_TableFunction<Lua_Player_find_action_key_target>},
 	{"index", L_TableIndex<Lua_Player>},
 	{"infravision_duration", Lua_Player::get_infravision_duration},
+	{"internal_velocity", Lua_Player::get_internal_velocity},
+	{"internal_perpendicular_velocity", Lua_Player::get_internal_perpendicular_velocity},
 	{"invincibility_duration", Lua_Player::get_invincibility_duration},
 	{"invisibility_duration", Lua_Player::get_invisibility_duration},
 	{"items", Lua_Player::get_items},
@@ -1171,11 +1197,13 @@ static const char *compatibility_script = ""
 	"function get_oxygen(player) return Players[player].oxygen end\n"
 	"function get_player_angle(player) return Players[player].yaw, Players[player].pitch end\n"
 	"function get_player_color(player) return Players[player].color end\n"
+	"function get_player_internal_velocity(player) return Players[player].internal_velocity * 65536, Players[player].internal_perpendicular_velocity * 65536 end\n"
 	"function get_player_name(player) return Players[player].name end\n"
 	"function get_player_polygon(player) return Players[player].polygon.index end\n"
 	"function get_player_position(player) return Players[player].x, Players[player].y, Players[player].z end\n"
 	"function get_player_powerup_duration(player, powerup) if powerup == _powerup_invisibility then return Players[player].invisibility_duration elseif powerup == _powerup_invincibility then return Players[player].invincibility_duration elseif powerup == _powerup_infravision then return Players[player].infravision_duratiohn elseif powerup == _powerup_extravision then return Players[player].extravision_duration end end\n"
 	"function get_player_team(player) return Players[player].team end\n"
+	"function get_player_weapon(player) if Players[player].weapons.current then return Players[player].weapons.current.index else return nil end end\n"
 	"function get_points(player) return Players[player].points end\n"
 	"function inflict_damage(player, amount, type) if (type) then Players[player]:damage(amount, type) else Players[player]:damage(amount) end end\n"
 	"function local_player_index() for p in Players() do if p.local_ then return p.index end end end\n"
