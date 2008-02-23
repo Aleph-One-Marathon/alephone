@@ -209,7 +209,7 @@ int number_of_cameras = 0;
 uint32 *action_flags;
 
 // For better_random
-static GM_Random lua_random_generator;
+GM_Random lua_random_generator;
 
 double FindLinearValue(double startValue, double endValue, double timeRange, double timeTaken)
 {
@@ -677,18 +677,6 @@ static int L_Select_Monster(lua_State *L)
 		}
 	}
 	return 0;
-}
-
-static int L_Get_Game_Difficulty(lua_State *L)
-{
-	lua_pushnumber(L, dynamic_world->game_information.difficulty_level);
-	return 1;
-}
-
-static int L_Get_Game_Type(lua_State *L)
-{
-	lua_pushnumber(L, dynamic_world->game_information.game_type);
-	return 1;
 }
 
 #if TIENNOU_PLAYER_CONTROL
@@ -1229,30 +1217,6 @@ static int L_Set_Polygon_Media(lua_State *L)
 	return 0;
 }
 
-static int L_Global_Random (lua_State *L)
-{
-	lua_pushnumber (L, global_random ());
-	return 1;
-}
-
-static int L_Better_Random (lua_State *L)
-{
-	lua_pushnumber (L, lua_random_generator.KISS ());
-	return 1;
-}
-
-static int L_Local_Random (lua_State *L)
-{
-	lua_pushnumber (L, local_random ());
-	return 1;
-}
-
-static int L_Get_Kill_Limit (lua_State *L)
-{
-	lua_pushnumber (L, dynamic_world->game_information.kill_limit);
-	return 1;
-}
-
 static int L_Use_Lua_Compass (lua_State *L)
 {
 
@@ -1471,8 +1435,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "hide_interface", L_Hide_Interface);
 	lua_register(state, "show_interface", L_Show_Interface);
 	lua_register(state, "select_monster", L_Select_Monster);
-	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
-	lua_register(state, "get_game_type", L_Get_Game_Type);
 	lua_register(state, "player_control", L_Player_Control);
 	lua_register(state, "create_camera", L_Create_Camera);
 	lua_register(state, "add_path_point", L_Add_Path_Point);
@@ -1489,10 +1451,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_polygon_target", L_Set_Polygon_Permutation);
 	lua_register(state, "get_polygon_media", L_Get_Polygon_Media);
 	lua_register(state, "set_polygon_media", L_Set_Polygon_Media);
-	lua_register(state, "global_random", L_Global_Random);
-	lua_register(state, "better_random", L_Better_Random);
-	lua_register(state, "local_random", L_Local_Random);
-	lua_register(state, "get_kill_limit", L_Get_Kill_Limit);
 	lua_register(state, "use_lua_compass", L_Use_Lua_Compass);
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);

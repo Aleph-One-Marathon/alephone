@@ -33,6 +33,7 @@ LUA_PLAYER.CPP
 #include "monsters.h"
 #include "player.h"
 #include "network_games.h"
+#include "Random.h"
 #include "screen.h"
 #include "SoundManager.h"
 #include "ViewControl.h"
@@ -1687,6 +1688,154 @@ const luaL_reg Lua_Players::metatable[] = {
 	{0, 0}
 };
 
+struct Lua_DifficultyType {
+	short index;
+	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_GAME_DIFFICULTY_LEVELS; }
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+};
+
+const char *Lua_DifficultyType::name = "difficulty_type";
+const luaL_reg Lua_DifficultyType::index_table[] = {
+	{"index", L_TableIndex<Lua_DifficultyType>},
+	{0, 0}
+};
+
+const luaL_reg Lua_DifficultyType::newindex_table[] = { {0, 0} };
+
+const luaL_reg Lua_DifficultyType::metatable[] = {
+	{"__eq", L_Equals<Lua_DifficultyType>},
+	{"__index", L_TableGet<Lua_DifficultyType>},
+	{"__newindex", L_TableSet<Lua_DifficultyType>},
+	{0, 0}
+};
+
+struct Lua_GameType {
+	short index;
+	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_GAME_TYPES; }
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+};
+
+const char *Lua_GameType::name = "game_type";
+const luaL_reg Lua_GameType::index_table[] = {
+	{"index", L_TableIndex<Lua_GameType>},
+	{0, 0}
+};
+
+const luaL_reg Lua_GameType::newindex_table[] = { {0, 0} };
+
+const luaL_reg Lua_GameType::metatable[] = {
+	{"__eq", L_Equals<Lua_GameType>},
+	{"__index", L_TableGet<Lua_GameType>},
+	{"__newindex", L_TableSet<Lua_GameType>},
+	{0, 0}
+};
+
+struct Lua_Game {
+	short index;
+	static const char *name;
+
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static bool valid(int) { return true; }
+
+	static int get_difficulty(lua_State *L);
+	static int get_kill_limit(lua_State *L);
+	static int get_type(lua_State *L);
+
+	static int better_random(lua_State *L);
+	static int global_random(lua_State *L);
+	static int local_random(lua_State *L);
+};
+
+const char *Lua_Game::name = "Game";
+
+int Lua_Game::get_difficulty(lua_State *L)
+{
+	L_Push<Lua_DifficultyType>(L, dynamic_world->game_information.difficulty_level);
+	return 1;
+}
+
+int Lua_Game::get_kill_limit(lua_State *L)
+{
+	lua_pushnumber(L, dynamic_world->game_information.kill_limit);
+	return 1;
+}
+
+int Lua_Game::get_type(lua_State *L)
+{
+	L_Push<Lua_GameType>(L, GET_GAME_TYPE());
+	return 1;
+}
+
+extern GM_Random lua_random_generator;
+
+int Lua_Game::better_random(lua_State *L)
+{
+	if (lua_isnumber(L, 1))
+	{
+		lua_pushnumber(L, lua_random_generator.KISS() % static_cast<uint32>(lua_tonumber(L, 1)));
+	}
+	{
+		lua_pushnumber(L, lua_random_generator.KISS());
+	}
+	return 1;
+}
+
+int Lua_Game::global_random(lua_State *L)
+{
+	if (lua_isnumber(L, 1))
+	{
+		lua_pushnumber(L, ::global_random() % static_cast<uint16>(lua_tonumber(L, 1)));
+	}
+	else
+	{
+		lua_pushnumber(L, ::global_random());
+	}
+	return 1;
+}
+
+int Lua_Game::local_random(lua_State *L)
+{
+	if (lua_isnumber(L, 1))
+	{
+		lua_pushnumber(L, ::local_random() % static_cast<uint16>(lua_tonumber(L, 1)));
+	}
+	else
+	{
+		lua_pushnumber(L, ::local_random());
+	}
+	return 1;
+}
+
+const luaL_reg Lua_Game::index_table[] = {
+	{"difficulty", Lua_Game::get_difficulty},
+	{"global_random", L_TableFunction<Lua_Game::global_random>},
+	{"kill_limit", Lua_Game::get_kill_limit},
+	{"local_random", L_TableFunction<Lua_Game::local_random>},
+	{"random", L_TableFunction<Lua_Game::better_random>},
+	{"type", Lua_Game::get_type},
+	{0, 0}
+};
+
+const luaL_reg Lua_Game::newindex_table[] = {
+	{0, 0}
+};
+
+const luaL_reg Lua_Game::metatable[] = {
+	{"__index", L_TableGet<Lua_Game>},
+	{"__newindex", L_TableSet<Lua_Game>},
+	{0, 0}
+};
+	
+
 static int Lua_Player_load_compatibility(lua_State *L);
 
 int Lua_Player_register (lua_State *L)
@@ -1711,6 +1860,13 @@ int Lua_Player_register (lua_State *L)
 	L_Register<Lua_Overlay>(L);
 
 	L_GlobalRegister<Lua_Players>(L);
+
+	L_Register<Lua_Game>(L);
+	L_Register<Lua_GameType>(L);
+	L_Register<Lua_DifficultyType>(L);
+	// register one Game userdatum globally
+	L_Push<Lua_Game>(L, 0);
+	lua_setglobal(L, Lua_Game::name);
 	
 	Lua_Player_load_compatibility(L);
 	
@@ -1723,10 +1879,14 @@ static const char *compatibility_script = ""
 	"function award_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = Players[slain_player].deaths + amount else Players[player].kills[slain_player] = Players[player].kills[slain_player] + amount end end\n"
 	"function add_to_player_external_velocity(player, x, y, z) Players[player].external_velocity.i = Players[player].external_velocity.i + x Players[player].external_velocity.j = Players[player].external_velocity.j + y Players[player].external_velocity.k = Players[player].external_velocity.k + z end\n"
 	"function award_points(player, amount) Players[player].points = Players[player].points + amount end\n"
+	"function better_random() return Game.random() end\n"
 	"function count_item(player, item_type) return Players[player].items[item_type] end\n"
 	"function crosshairs_active(player) return Players[player].crosshairs.active end\n"
 	"function destroy_ball(player) for i in ItemTypes() do if i.ball then Players[player].items[i] = 0 end end end\n"
+	"function get_game_difficulty() return Game.difficulty.index end\n"
+	"function get_game_type() return Game.type.index end\n"
 	"function get_kills(player, slain_player) if player == -1 then return Players[slain_player].deaths else return Players[player].kills[slain_player] end end\n"
+	"function get_kill_limit() return Game.kill_limit end\n"
 	"function get_life(player) return Players[player].energy end\n"
 	"function get_motion_sensor_state(player) return Players[player].motion_sensor_active end\n"
 	"function get_oxygen(player) return Players[player].oxygen end\n"
@@ -1741,8 +1901,10 @@ static const char *compatibility_script = ""
 	"function get_player_team(player) return Players[player].team end\n"
 	"function get_player_weapon(player) if Players[player].weapons.current then return Players[player].weapons.current.index else return nil end end\n"
 	"function get_points(player) return Players[player].points end\n"
+	"function global_random() return Game.global_random() end\n"
 	"function inflict_damage(player, amount, type) if (type) then Players[player]:damage(amount, type) else Players[player]:damage(amount) end end\n"
 	"function local_player_index() for p in Players() do if p.local_ then return p.index end end end\n"
+	"function local_random() return Game.local_random() end\n"
 	"function number_of_players() return # Players end\n"
 	"function player_is_dead(player) return Players[player].dead end\n"
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
