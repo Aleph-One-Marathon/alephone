@@ -266,6 +266,142 @@ int Lua_Player_Items::set(lua_State *L)
 	return 0;
 }
 
+struct Lua_InternalVelocity {
+	short index;
+	static const char *name;
+	static bool valid(int index) { return Lua_Players::valid(index); }
+	
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_forward(lua_State *L);
+	static int get_perpendicular(lua_State *L);
+};
+
+const char *Lua_InternalVelocity::name = "internal_velocity";
+
+int Lua_InternalVelocity::get_forward(lua_State *L)
+{
+	int player_index = L_Index<Lua_InternalVelocity>(L, 1);
+	player_data *player = get_player_data(player_index);
+	lua_pushnumber(L, (double) player->variables.velocity / FIXED_ONE);
+	return 1;
+}
+
+int Lua_InternalVelocity::get_perpendicular(lua_State *L)
+{
+	int player_index = L_Index<Lua_InternalVelocity>(L, 1);
+	player_data *player = get_player_data(player_index);
+	lua_pushnumber(L, (double) player->variables.perpendicular_velocity / FIXED_ONE);
+	return 1;
+}
+
+const luaL_reg Lua_InternalVelocity::index_table[] = {
+	{"forward", Lua_InternalVelocity::get_forward},
+	{"perpendicular", Lua_InternalVelocity::get_perpendicular},
+	{0, 0}
+};
+
+const luaL_reg Lua_InternalVelocity::newindex_table[] = { {0, 0} };
+
+const luaL_reg Lua_InternalVelocity::metatable[] = {
+	{"__index", L_TableGet<Lua_InternalVelocity>},
+	{"__newindex", L_TableSet<Lua_InternalVelocity>},
+	{0, 0}
+};
+
+struct Lua_ExternalVelocity {
+	short index;
+	static const char* name;
+	static bool valid(int index) { return Lua_Players::valid(index); }
+	
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_i(lua_State *);
+	static int get_j(lua_State *);
+	static int get_k(lua_State *);
+
+	static int set_i(lua_State *);
+	static int set_j(lua_State *);
+	static int set_k(lua_State *);
+};
+
+const char *Lua_ExternalVelocity::name = "external_velocity";
+
+int Lua_ExternalVelocity::get_i(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.i / WORLD_ONE);
+	return 1;
+}
+
+int Lua_ExternalVelocity::get_j(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.j / WORLD_ONE);
+	return 1;
+}
+
+int Lua_ExternalVelocity::get_k(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.k / WORLD_ONE);
+	return 1;
+}
+
+const luaL_reg Lua_ExternalVelocity::index_table[] = {
+	{"i", Lua_ExternalVelocity::get_i},
+	{"j", Lua_ExternalVelocity::get_j},
+	{"k", Lua_ExternalVelocity::get_k},
+	{"x", Lua_ExternalVelocity::get_i},
+	{"y", Lua_ExternalVelocity::get_j},
+	{"z", Lua_ExternalVelocity::get_k},
+	{0, 0}
+};
+
+int Lua_ExternalVelocity::set_i(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "i: incorrect argument type");
+
+	int raw_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.i = raw_velocity;
+}
+
+int Lua_ExternalVelocity::set_j(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "j: incorrect argument type");
+
+	int raw_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.j = raw_velocity;
+}
+
+int Lua_ExternalVelocity::set_k(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "k: incorrect argument type");
+
+	int raw_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.k = raw_velocity;
+}
+
+const luaL_reg Lua_ExternalVelocity::newindex_table[] = {
+	{"i", Lua_ExternalVelocity::set_i},
+	{"j", Lua_ExternalVelocity::set_j},
+	{"k", Lua_ExternalVelocity::set_k},
+	{"x", Lua_ExternalVelocity::set_i},
+	{"y", Lua_ExternalVelocity::set_j},
+	{"z", Lua_ExternalVelocity::set_k},
+	{0, 0}
+};
+
+const luaL_reg Lua_ExternalVelocity::metatable[] = {
+	{"__index", L_TableGet<Lua_ExternalVelocity>},
+	{"__newindex", L_TableSet<Lua_ExternalVelocity>},
+	{0, 0}
+};
+
 struct Lua_WeaponTypes {
 	static const char *name;
 	static const luaL_reg metatable[];
@@ -550,6 +686,21 @@ const char *Lua_Player::name = "player";
 
 // methods
 
+// accelerate(direction, velocity, vertical_velocity)
+int Lua_Player::accelerate(lua_State *L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+		return luaL_error(L, "accelerate: incorrect argument type");
+
+	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	double direction = static_cast<double>(lua_tonumber(L, 2));
+	double velocity = static_cast<double>(lua_tonumber(L, 3));
+	double vertical_velocity = static_cast<double>(lua_tonumber(L, 4));
+
+	accelerate_player(player->monster_index, static_cast<int>(vertical_velocity * WORLD_ONE), static_cast<int>(direction/AngleConvert), static_cast<int>(velocity * WORLD_ONE));
+	return 0;
+}
+
 int Lua_Player_find_action_key_target(lua_State *L)
 {
 	// no arguments
@@ -770,6 +921,12 @@ int Lua_Player::get_direction(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_external_velocity(lua_State *L)
+{
+	L_Push<Lua_ExternalVelocity>(L, L_Index<Lua_Player>(L, 1));
+	return 1;
+}
+
 int Lua_Player::get_extravision_duration(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->extravision_duration);
@@ -784,17 +941,7 @@ int Lua_Player::get_infravision_duration(lua_State *L)
 
 int Lua_Player::get_internal_velocity(lua_State *L)
 {
-	int player_index = L_Index<Lua_Player>(L, 1);
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, (double) player->variables.velocity / FIXED_ONE);
-	return 1;
-}
-
-int Lua_Player::get_internal_perpendicular_velocity(lua_State *L)
-{
-	int player_index = L_Index<Lua_Player>(L, 1);
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, (double) player->variables.perpendicular_velocity / FIXED_ONE);
+	L_Push<Lua_InternalVelocity>(L, L_Index<Lua_Player>(L, 1));
 	return 1;
 }
 
@@ -901,6 +1048,7 @@ int Lua_Player::get_z(lua_State *L)
 }
 
 const luaL_reg Lua_Player::index_table[] = {
+	{"accelerate", L_TableFunction<Lua_Player::accelerate>},
 	{"action_flags", Lua_Player_get_action_flags},
 	{"color", Lua_Player_get_color},
 	{"damage", L_TableFunction<Lua_Player::damage>},
@@ -909,12 +1057,12 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"direction", Lua_Player::get_direction},
 	{"energy", Lua_Player_get_energy},
 	{"elevation", Lua_Player::get_elevation},
+	{"external_velocity", Lua_Player::get_external_velocity},
 	{"extravision_duration", Lua_Player::get_extravision_duration},
 	{"find_action_key_target", L_TableFunction<Lua_Player_find_action_key_target>},
 	{"index", L_TableIndex<Lua_Player>},
 	{"infravision_duration", Lua_Player::get_infravision_duration},
 	{"internal_velocity", Lua_Player::get_internal_velocity},
-	{"internal_perpendicular_velocity", Lua_Player::get_internal_perpendicular_velocity},
 	{"invincibility_duration", Lua_Player::get_invincibility_duration},
 	{"invisibility_duration", Lua_Player::get_invisibility_duration},
 	{"items", Lua_Player::get_items},
@@ -1173,6 +1321,8 @@ int Lua_Player_register (lua_State *L)
 	L_Register<Lua_Player_Kills>(L);
 	L_Register<Lua_Player>(L);
 	L_Register<Lua_Side>(L);
+	L_Register<Lua_InternalVelocity>(L);
+	L_Register<Lua_ExternalVelocity>(L);
 	L_Register<Lua_WeaponType>(L);
 	L_GlobalRegister<Lua_WeaponTypes>(L);
 	L_Register<Lua_Player_Weapon>(L);
@@ -1187,8 +1337,10 @@ int Lua_Player_register (lua_State *L)
 }
 
 static const char *compatibility_script = ""
+	"function accelerate_player(player, vertical_velocity, direction, velocity) Players[player]:accelerate(direction, velocity, vertical_velocity) end\n"
 	"function add_item(player, item_type) Players[player].items[item_type] = Players[player].items[item_type] + 1 end\n"
 	"function award_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = Players[slain_player].deaths + amount else Players[player].kills[slain_player] = Players[player].kills[slain_player] + amount end end\n"
+	"function add_to_player_external_velocity(player, x, y, z) Players[player].external_velocity.i = Players[player].external_velocity.i + x Players[player].external_velocity.j = Players[player].external_velocity.j + y Players[player].external_velocity.k = Players[player].external_velocity.k + z end\n"
 	"function award_points(player, amount) Players[player].points = Players[player].points + amount end\n"
 	"function count_item(player, item_type) return Players[player].items[item_type] end\n"
 	"function destroy_ball(player) for i in ItemTypes() do if i.ball then Players[player].items[i] = 0 end end end\n"
@@ -1197,7 +1349,8 @@ static const char *compatibility_script = ""
 	"function get_oxygen(player) return Players[player].oxygen end\n"
 	"function get_player_angle(player) return Players[player].yaw, Players[player].pitch end\n"
 	"function get_player_color(player) return Players[player].color end\n"
-	"function get_player_internal_velocity(player) return Players[player].internal_velocity * 65536, Players[player].internal_perpendicular_velocity * 65536 end\n"
+	"function get_player_external_velocity(player) return Players[player].external_velocity.i * 1024, Players[player].external_velocity.j * 1024, Players[player].external_velocity.k * 1024 end\n"
+	"function get_player_internal_velocity(player) return Players[player].internal_velocity.forward * 65536, Players[player].internal_velocity.perpendicular * 65536 end\n"
 	"function get_player_name(player) return Players[player].name end\n"
 	"function get_player_polygon(player) return Players[player].polygon.index end\n"
 	"function get_player_position(player) return Players[player].x, Players[player].y, Players[player].z end\n"
@@ -1218,6 +1371,7 @@ static const char *compatibility_script = ""
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
 	"function set_player_angle(player, yaw, pitch) Players[player].yaw = yaw Players[player].pitch = pitch + 360.0 end\n"
 	"function set_player_color(player, color) Players[player].color = color end\n"
+	"function set_player_external_velocity(player, x, y, z) Players[player].external_velocity.i = x / 1024 Players[player].external_velocity.j = y / 1024 Players[player].external_velocity.k = z / 1024 end\n"
 	"function set_player_position(player, x, y, z, polygon) Players[player]:position(x, y, z, polygon) end\n"
 	"function set_player_powerup_duration(player, powerup, duration) if powerup == _powerup_invisibility then Players[player].invisibility_duration = duration elseif powerup == _powerup_invincibility then Players[player].invincibility_duration = duration elseif powerup == _powerup_infravision then Players[player].infravision_duration = duration elseif powerup == _powerup_extravision then Players[player].extravision_duration = duration end end\n"
 	"function set_player_team(player, team) Players[player].team = team end\n"

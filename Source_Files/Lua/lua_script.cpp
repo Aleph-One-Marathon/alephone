@@ -691,124 +691,6 @@ static int L_Get_Game_Type(lua_State *L)
 	return 1;
 }
 
-static int L_Get_Player_Internal_Velocity(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_player_internal_velocity: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_player_internal_velocity: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, player->variables.velocity);
-	lua_pushnumber(L, player->variables.perpendicular_velocity);
-	return 2;
-}
-
-static int L_Get_Player_External_Velocity(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_player_external_velocity: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "get_player_external_velocity: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	lua_pushnumber(L, player->variables.external_velocity.i);
-        lua_pushnumber(L, player->variables.external_velocity.j);
-        lua_pushnumber(L, player->variables.external_velocity.k);
-	return 3;
-}
-
-static int L_Set_Player_External_Velocity(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3) || !lua_isnumber(L,4))
-	{
-		lua_pushstring(L, "set_player_external_velocity: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-        int raw_velocity_i = static_cast<int>(lua_tonumber(L,2));
-        int raw_velocity_j = static_cast<int>(lua_tonumber(L,3));
-        int raw_velocity_k = static_cast<int>(lua_tonumber(L,4));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "set_player_external_velocity: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	player->variables.external_velocity.i = raw_velocity_i;
-        player->variables.external_velocity.j = raw_velocity_j;
-        player->variables.external_velocity.k = raw_velocity_k;
-	return 0;
-}
-
-static int L_Add_To_Player_External_Velocity(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3) || !lua_isnumber(L,4))
-	{
-		lua_pushstring(L, "add_to_player_external_velocity: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-        int raw_velocity_i = static_cast<int>(lua_tonumber(L,2));
-        int raw_velocity_j = static_cast<int>(lua_tonumber(L,3));
-        int raw_velocity_k = static_cast<int>(lua_tonumber(L,4));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "add_to_player_external_velocity: invalid player index");
-		lua_error(L);
-	}
-
-	player_data *player = get_player_data(player_index);
-	player->variables.external_velocity.i += raw_velocity_i * WORLD_ONE;
-        player->variables.external_velocity.j += raw_velocity_j * WORLD_ONE;
-        player->variables.external_velocity.k += raw_velocity_k * WORLD_ONE;
-	return 0;
-}
-
-static int L_Accelerate_Player(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3) || !lua_isnumber(L,4))
-	{
-		lua_pushstring(L, "accelerate_player: incorrect argument type");
-		lua_error(L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-        double vertical_velocity = static_cast<double>(lua_tonumber(L,2));
-        double direction = static_cast<double>(lua_tonumber(L,3));
-        double velocity = static_cast<double>(lua_tonumber(L,4));
-	
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "accelerate_player: invalid player index");
-		lua_error(L);
-	}
-	player_data *player = get_player_data(player_index);
-	
-	accelerate_player(player->monster_index, static_cast<int>(vertical_velocity*WORLD_ONE), static_cast<int>(direction/AngleConvert), static_cast<int>(velocity*WORLD_ONE));
-
-	return 0;
-}
-
 #if TIENNOU_PLAYER_CONTROL
 enum
 {
@@ -1799,10 +1681,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
-	lua_register(state, "get_player_external_velocity", L_Get_Player_External_Velocity);
-	lua_register(state, "set_player_external_velocity", L_Set_Player_External_Velocity);
-	lua_register(state, "add_to_player_external_velocity", L_Add_To_Player_External_Velocity);
-	lua_register(state, "accelerate_player", L_Accelerate_Player);
 	lua_register(state, "player_control", L_Player_Control);
 	lua_register(state, "set_motion_sensor_state", L_Set_Motion_Sensor_State);
 	lua_register(state, "get_motion_sensor_state", L_Get_Motion_Sensor_State);
