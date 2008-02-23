@@ -975,6 +975,22 @@ int Lua_Player::get_local(lua_State *L)
 	return 1;
 }
 
+extern bool MotionSensorActive;
+
+int Lua_Player::get_motion_sensor(lua_State *L)
+{
+	short player_index = L_Index<Lua_Player>(L, 1);
+	if (player_index == local_player_index)
+	{
+		lua_pushboolean(L, MotionSensorActive);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 static int Lua_Player_get_monster(lua_State *L)
 {
 	L_Push<Lua_Monster>(L, get_player_data(L_Index<Lua_Player>(L, 1))->monster_index);
@@ -1071,6 +1087,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"kills", Lua_Player::get_kills},
 	{"life", Lua_Player_get_energy},
 	{"monster", Lua_Player_get_monster},
+	{"motion_sensor_active", Lua_Player::get_motion_sensor},
 	{"name", Lua_Player_get_name},
 	{"oxygen", Lua_Player_get_oxygen},
 	{"pitch", Lua_Player::get_elevation},
@@ -1214,6 +1231,26 @@ int Lua_Player::set_extravision_duration(lua_State *L)
 	return 0;
 }
 
+extern void draw_panels();
+
+int Lua_Player::set_motion_sensor(lua_State *L)
+{
+	short player_index = L_Index<Lua_Player>(L, 1);
+	if (player_index == local_player_index)
+	{
+		if (!lua_isboolean(L, 2))
+			return luaL_error(L, "motion_sensor: incorrect argument type");
+		bool state = lua_toboolean(L, 2);
+		if (MotionSensorActive != state)
+		{
+			MotionSensorActive = lua_toboolean(L, 2);
+			draw_panels();
+		}
+	}
+	
+	return 0;
+}	
+
 static int Lua_Player_set_oxygen(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -1276,6 +1313,7 @@ const luaL_reg Lua_Player::newindex_table[] = {
 	{"invisibility_duration", Lua_Player::set_invisibility_duration},
 	{"juice", Lua_Player_set_energy},
 	{"life", Lua_Player_set_energy},
+	{"motion_sensor_active", Lua_Player::set_motion_sensor},
 	{"oxygen", Lua_Player_set_oxygen},
 	{"pitch", Lua_Player::set_elevation},
 	{"points", Lua_Player::set_points},
@@ -1346,6 +1384,7 @@ static const char *compatibility_script = ""
 	"function destroy_ball(player) for i in ItemTypes() do if i.ball then Players[player].items[i] = 0 end end end\n"
 	"function get_kills(player, slain_player) if player == -1 then return Players[slain_player].deaths else return Players[player].kills[slain_player] end end\n"
 	"function get_life(player) return Players[player].energy end\n"
+	"function get_motion_sensor_state(player) return Players[player].motion_sensor_active end\n"
 	"function get_oxygen(player) return Players[player].oxygen end\n"
 	"function get_player_angle(player) return Players[player].yaw, Players[player].pitch end\n"
 	"function get_player_color(player) return Players[player].color end\n"
@@ -1368,6 +1407,7 @@ static const char *compatibility_script = ""
 	"function select_weapon(player, weapon) Players[player].weapons[weapon]:select() end\n"
 	"function set_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = amount else Players[player].kills[slain_player] = amount end end\n"
 	"function set_life(player, shield) Players[player].energy = shield end\n"
+	"function set_motion_sensor_state(player, state) Players[player].motion_sensor_active = state end\n"
 	"function set_oxygen(player, oxygen) Players[player].oxygen = oxygen end\n"
 	"function set_player_angle(player, yaw, pitch) Players[player].yaw = yaw Players[player].pitch = pitch + 360.0 end\n"
 	"function set_player_color(player, color) Players[player].color = color end\n"

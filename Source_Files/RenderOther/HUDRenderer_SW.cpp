@@ -40,10 +40,7 @@ extern bool MotionSensorActive;
 
 void HUD_SW_Class::update_motion_sensor(short time_elapsed)
 {
-	if (!MotionSensorActive)
-		GET_GAME_OPTIONS() |= _motion_sensor_does_not_work;
-	
-	if (!(GET_GAME_OPTIONS() & _motion_sensor_does_not_work)) {
+	if (!(GET_GAME_OPTIONS() & _motion_sensor_does_not_work) && MotionSensorActive) {
 		if (time_elapsed == NONE) {
 			reset_motion_sensor(current_player_index);
 			ForceUpdate = true;

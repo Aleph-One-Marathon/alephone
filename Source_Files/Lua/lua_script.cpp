@@ -1155,52 +1155,6 @@ static int L_Set_Zoom_State(lua_State *L)
 	return 0;
 }
 
-static int L_Set_Motion_Sensor_State(lua_State *L)
-{
-	if(!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "set_motion_sensor_state: incorrect argument type");
-		lua_error(L);
-	}
-
-	short player_index = static_cast<short>(lua_tonumber(L,1));
-	/*
-	 Useless... There is no way to disable the motion sensor of a given player,
-	 it's just a flag in HUD Renderer
-	 */
-	/* MH: on the contrary, it's better to have it disable a single player's
-        motion sensor and do nothing for the others, right?
-	*/
-	/* tiennou: Changed the code to reflect this behavior, so that the local_player
-	motion_sensor wasn't disabled/enabled when this function was passed another player_index
-	*/
-	bool state = lua_toboolean(L,2);
-	if (state && player_index == local_player_index)
-		MotionSensorActive = true;
-	else
-		MotionSensorActive = false;
-	return 0;
-}
-
-static int L_Get_Motion_Sensor_State(lua_State *L)
-{
-	/* MH: here we can return the true state if the local player
-        is the player referenced, or just return the default value
-        (could possibly screw some things up)
-	*/
-	if(!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_motion_sensor_state: incorrect argument type");
-		lua_error(L);
-	}
-	short player_index = static_cast<short>(lua_tonumber(L,1));
-	if (local_player_index != player_index)
-		return 0;
-
-	lua_pushboolean(L, MotionSensorActive);
-	return 1;
-}
-
 static int L_Screen_Fade(lua_State *L)
 {
 	int args = lua_gettop(L);
@@ -1682,8 +1636,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "get_game_difficulty", L_Get_Game_Difficulty);
 	lua_register(state, "get_game_type", L_Get_Game_Type);
 	lua_register(state, "player_control", L_Player_Control);
-	lua_register(state, "set_motion_sensor_state", L_Set_Motion_Sensor_State);
-	lua_register(state, "get_motion_sensor_state", L_Get_Motion_Sensor_State);
 	lua_register(state, "create_camera", L_Create_Camera);
 	lua_register(state, "add_path_point", L_Add_Path_Point);
 	lua_register(state, "add_path_angle", L_Add_Path_Angle);
@@ -1813,6 +1765,29 @@ bool LoadLuaScript(const char *buffer, size_t len)
 #ifdef HAVE_OPENGL
 static OGL_FogData PreLuaFogState[OGL_NUMBER_OF_FOG_TYPES];
 #endif
+static bool MotionSensorWasActive;
+
+static void PreservePreLuaSettings()
+{
+	#ifdef HAVE_OPENGL
+	for (int i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++) 
+	{
+		PreLuaFogState[i] = *OGL_GetFogData(i);
+	}
+#endif
+	MotionSensorWasActive = MotionSensorActive;
+}
+
+static void RestorePreLuaSettings()
+{
+#ifdef HAVE_OPENGL
+	for (int i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++)
+	{
+		*OGL_GetFogData(i) = PreLuaFogState[i];
+	}
+#endif
+	MotionSensorActive = MotionSensorWasActive;
+}
 
 bool RunLuaScript()
 {
@@ -1821,12 +1796,7 @@ bool RunLuaScript()
 	if (!lua_loaded)
 		return false;
 
-#ifdef HAVE_OPENGL
-	for (int i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++) 
-	{
-		PreLuaFogState[i] = *OGL_GetFogData(i);
-	}
-#endif
+	PreservePreLuaSettings();
 
 	int result = 0;
 	// Reverse the functions we're calling
@@ -1850,6 +1820,7 @@ void ExecuteLuaString(const std::string& line)
 		OpenStdLibs(state);
 		RegisterLuaFunctions();
 		DeclareLuaConstants();
+		PreservePreLuaSettings();
 
 		lua_loaded = true;
 	}
@@ -1896,12 +1867,7 @@ void CloseLuaScript()
 	{
 		lua_close(state);
 		
-#ifdef HAVE_OPENGL
-		for (int i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++)
-		{
-			*OGL_GetFogData(i) = PreLuaFogState[i];
-		}
-#endif
+		RestorePreLuaSettings();
 	}
 
 	lua_loaded = false;
