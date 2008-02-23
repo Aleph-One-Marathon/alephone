@@ -21,6 +21,8 @@ LUA_PLAYER.CPP
 */
 
 #include "ActionQueues.h"
+#include "Crosshairs.h"
+#include "fades.h"
 #include "game_window.h"
 #include "lua_map.h"
 #include "lua_monsters.h"
@@ -146,6 +148,66 @@ const luaL_reg Lua_Action_Flags::newindex_table[] = {
 const luaL_reg Lua_Action_Flags::metatable[] = {
 	{"__index", L_TableGet<Lua_Action_Flags>},
 	{"__newindex", L_TableSet<Lua_Action_Flags>},
+	{0, 0}
+};
+
+struct Lua_Crosshairs {
+	short index;
+	static const char *name;
+	static bool valid(int index) { return Lua_Players::valid(index); }
+	
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+
+	static int get_active(lua_State *L);
+
+	static int set_active(lua_State *L);
+};
+
+const char *Lua_Crosshairs::name = "crosshairs";
+
+int Lua_Crosshairs::get_active(lua_State *L)
+{
+	int player_index = L_Index<Lua_Crosshairs>(L, 1);
+	if (player_index == local_player_index)
+	{
+		lua_pushboolean(L, Crosshairs_IsActive());
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+const luaL_reg Lua_Crosshairs::index_table[] = {
+	{"active", Lua_Crosshairs::get_active},
+	{0, 0}
+};
+
+int Lua_Crosshairs::set_active(lua_State *L)
+{
+	int player_index = L_Index<Lua_Crosshairs>(L, 1);
+	if (player_index == local_player_index)
+	{
+		if (!lua_isboolean(L, 2))
+			return luaL_error(L, "active: incorrect argument type");
+
+		Crosshairs_SetActive(lua_toboolean(L, 2));
+	}
+	
+	return 0;
+}
+
+const luaL_reg Lua_Crosshairs::newindex_table[] = {
+	{"active", Lua_Crosshairs::set_active},
+	{0, 0}
+};
+
+const luaL_reg Lua_Crosshairs::metatable[] = {
+	{"__index", L_TableGet<Lua_Crosshairs>},
+	{"__newindex", L_TableSet<Lua_Crosshairs>},
 	{0, 0}
 };
 
@@ -401,6 +463,48 @@ const luaL_reg Lua_ExternalVelocity::metatable[] = {
 	{"__newindex", L_TableSet<Lua_ExternalVelocity>},
 	{0, 0}
 };
+
+struct Lua_FadeTypes {
+	static const char *name;
+	static const luaL_reg metatable[];
+	static const luaL_reg methods[];
+	static int length() { return NUMBER_OF_FADE_TYPES; }
+	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_FADE_TYPES; }
+};
+
+struct Lua_FadeType {
+	short index;
+	static const char *name;
+	static bool valid(int index) { return Lua_FadeTypes::valid(index); }
+	static const luaL_reg metatable[];
+	static const luaL_reg index_table[];
+	static const luaL_reg newindex_table[];
+};
+
+const char *Lua_FadeType::name = "fade_type";
+const luaL_reg Lua_FadeType::index_table[] = {
+	{"index", L_TableIndex<Lua_FadeType>},
+	{0, 0}
+};
+
+const luaL_reg Lua_FadeType::newindex_table[] = { {0, 0} };
+
+const luaL_reg Lua_FadeType::metatable[] = {
+	{"__eq", L_Equals<Lua_FadeType>},
+	{"__index", L_TableGet<Lua_FadeType>},
+	{"__newindex", L_TableSet<Lua_FadeType>},
+	{0, 0}
+};
+
+const char *Lua_FadeTypes::name = "FadeTypes";
+const luaL_reg Lua_FadeTypes::metatable[] = {
+	{"__index", L_GlobalIndex<Lua_FadeTypes, Lua_FadeType>},
+	{"__newindex", L_GlobalNewindex<Lua_FadeTypes>},
+	{"__call", L_GlobalCall<Lua_FadeTypes, Lua_FadeType>},
+	{0, 0}
+};
+
+const luaL_reg Lua_FadeTypes::methods[] = { {0, 0} };
 
 struct Lua_WeaponTypes {
 	static const char *name;
@@ -757,6 +861,17 @@ int Lua_Player::damage(lua_State *L)
 	return 0;
 }
 
+int Lua_Player::fade_screen(lua_State *L)
+{
+	short player_index = L_Index<Lua_Player>(L, 1);
+	if (player_index == local_player_index)
+	{
+		int fade_index = L_ToIndex<Lua_FadeType>(L, 2);
+		start_fade(fade_index);
+	}
+	return 0;
+}
+
 int Lua_Player::play_sound(lua_State *L)
 {
 	int args = lua_gettop(L);
@@ -884,6 +999,12 @@ static int Lua_Player_get_action_flags(lua_State *L)
 static int Lua_Player_get_color(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->color);
+	return 1;
+}
+
+int Lua_Player::get_crosshairs(lua_State *L)
+{
+	L_Push<Lua_Crosshairs>(L, L_Index<Lua_Player>(L, 1));
 	return 1;
 }
 
@@ -1063,10 +1184,25 @@ int Lua_Player::get_z(lua_State *L)
 	return 1;
 }
 
+int Lua_Player::get_zoom(lua_State *L)
+{
+	short player_index = L_Index<Lua_Player>(L, 1);
+	if (player_index == local_player_index)
+	{
+		lua_pushboolean(L, GetTunnelVision());
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
 const luaL_reg Lua_Player::index_table[] = {
 	{"accelerate", L_TableFunction<Lua_Player::accelerate>},
 	{"action_flags", Lua_Player_get_action_flags},
 	{"color", Lua_Player_get_color},
+	{"crosshairs", Lua_Player::get_crosshairs},
 	{"damage", L_TableFunction<Lua_Player::damage>},
 	{"dead", Lua_Player_get_dead},
 	{"deaths", Lua_Player::get_deaths},
@@ -1075,6 +1211,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"elevation", Lua_Player::get_elevation},
 	{"external_velocity", Lua_Player::get_external_velocity},
 	{"extravision_duration", Lua_Player::get_extravision_duration},
+	{"fade_screen", L_TableFunction<Lua_Player::fade_screen>},
 	{"find_action_key_target", L_TableFunction<Lua_Player_find_action_key_target>},
 	{"index", L_TableIndex<Lua_Player>},
 	{"infravision_duration", Lua_Player::get_infravision_duration},
@@ -1103,6 +1240,7 @@ const luaL_reg Lua_Player::index_table[] = {
 	{"y", Lua_Player::get_y},
 	{"yaw", Lua_Player::get_direction},
 	{"z", Lua_Player::get_z},
+	{"zoom_active", Lua_Player::get_zoom},
 	{0, 0}
 };
 
@@ -1301,6 +1439,20 @@ static int Lua_Player_set_team(lua_State *L)
 	return 0;
 }
 
+int Lua_Player::set_zoom(lua_State *L)
+{
+	short player_index = L_Index<Lua_Player>(L, 1);
+	if (player_index == local_player_index)
+	{
+		if (!lua_isboolean(L, 2))
+			return luaL_error(L, "zoom_active: incorrect argument type");
+		
+		SetTunnelVision(lua_toboolean(L, 2));
+	}
+
+	return 0;
+}
+
 const luaL_reg Lua_Player::newindex_table[] = {
 	{"color", Lua_Player_set_color},
 	{"deaths", Lua_Player::set_deaths},
@@ -1320,6 +1472,7 @@ const luaL_reg Lua_Player::newindex_table[] = {
 	{"position", Lua_Player::position},
 	{"team", Lua_Player_set_team},
 	{"yaw", Lua_Player::set_direction},
+	{"zoom_active", Lua_Player::set_zoom},
 	{0, 0}
 };
 
@@ -1355,12 +1508,15 @@ static int Lua_Player_load_compatibility(lua_State *L);
 int Lua_Player_register (lua_State *L)
 {
 	L_Register<Lua_Action_Flags>(L);
+	L_Register<Lua_Crosshairs>(L);
 	L_Register<Lua_Player_Items>(L);
 	L_Register<Lua_Player_Kills>(L);
 	L_Register<Lua_Player>(L);
 	L_Register<Lua_Side>(L);
 	L_Register<Lua_InternalVelocity>(L);
 	L_Register<Lua_ExternalVelocity>(L);
+	L_Register<Lua_FadeType>(L);
+	L_GlobalRegister<Lua_FadeTypes>(L);
 	L_Register<Lua_WeaponType>(L);
 	L_GlobalRegister<Lua_WeaponTypes>(L);
 	L_Register<Lua_Player_Weapon>(L);
@@ -1381,6 +1537,7 @@ static const char *compatibility_script = ""
 	"function add_to_player_external_velocity(player, x, y, z) Players[player].external_velocity.i = Players[player].external_velocity.i + x Players[player].external_velocity.j = Players[player].external_velocity.j + y Players[player].external_velocity.k = Players[player].external_velocity.k + z end\n"
 	"function award_points(player, amount) Players[player].points = Players[player].points + amount end\n"
 	"function count_item(player, item_type) return Players[player].items[item_type] end\n"
+	"function crosshairs_active(player) return Players[player].crosshairs.active end\n"
 	"function destroy_ball(player) for i in ItemTypes() do if i.ball then Players[player].items[i] = 0 end end end\n"
 	"function get_kills(player, slain_player) if player == -1 then return Players[slain_player].deaths else return Players[player].kills[slain_player] end end\n"
 	"function get_life(player) return Players[player].energy end\n"
@@ -1404,7 +1561,9 @@ static const char *compatibility_script = ""
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
 	"function play_sound(player, sound, pitch) Players[player]:play_sound(sound, pitch) end\n"
 	"function remove_item(player, item_type) if Players[player].items[item_type] > 0 then Players[player].items[item_type] = Players[player].items[item_type] - 1 end end\n"
+	"function screen_fade(player, fade) if fade then Players[player]:fade_screen(fade) else for p in Players() do p:fade_screen(player) end end end\n"
 	"function select_weapon(player, weapon) Players[player].weapons[weapon]:select() end\n"
+	"function set_crosshairs_active(player, state) Players[player].crosshairs.active = state end\n"
 	"function set_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = amount else Players[player].kills[slain_player] = amount end end\n"
 	"function set_life(player, shield) Players[player].energy = shield end\n"
 	"function set_motion_sensor_state(player, state) Players[player].motion_sensor_active = state end\n"
@@ -1416,8 +1575,10 @@ static const char *compatibility_script = ""
 	"function set_player_powerup_duration(player, powerup, duration) if powerup == _powerup_invisibility then Players[player].invisibility_duration = duration elseif powerup == _powerup_invincibility then Players[player].invincibility_duration = duration elseif powerup == _powerup_infravision then Players[player].infravision_duration = duration elseif powerup == _powerup_extravision then Players[player].extravision_duration = duration end end\n"
 	"function set_player_team(player, team) Players[player].team = team end\n"
 	"function set_points(player, amount) Players[player].points = amount end\n"
+	"function set_zoom_state(player, state) Players[player].zoom_active = state end\n"
 	"function teleport_player(player, polygon) Players[player]:teleport(polygon) end\n"
 	"function teleport_player_to_level(player, level) Players[player]:teleport_to_level(level) end\n"
+	"function zoom_active(player) return Players[player].zoom_active end\n"
 	;
 
 static int Lua_Player_load_compatibility(lua_State *L)

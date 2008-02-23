@@ -43,7 +43,6 @@ struct Lua_Players
 
 	static int length() { return dynamic_world->player_count; }
 	static bool valid(int index) { return (index >= 0 && index < dynamic_world->player_count); }
-
 };
 
 struct Lua_Player {
@@ -55,6 +54,7 @@ struct Lua_Player {
 	static const luaL_reg index_table[];
 	static const luaL_reg newindex_table[];
 
+	static int get_crosshairs(lua_State *L);
 	static int get_deaths(lua_State *L);
 	static int get_direction(lua_State *L);
 	static int get_elevation(lua_State *L);
@@ -74,6 +74,7 @@ struct Lua_Player {
 	static int get_x(lua_State *L);
 	static int get_y(lua_State *L);
 	static int get_z(lua_State *L);
+	static int get_zoom(lua_State *L);
 
 	static int set_deaths(lua_State *L);
 	static int set_direction(lua_State *L);
@@ -84,9 +85,11 @@ struct Lua_Player {
 	static int set_invisibility_duration(lua_State *L);
 	static int set_motion_sensor(lua_State *L);
 	static int set_points(lua_State *L);
+	static int set_zoom(lua_State *L);
 
 	static int accelerate(lua_State *L);
 	static int damage(lua_State *L);
+	static int fade_screen(lua_State *L);
 	static int position(lua_State *L);
 	static int play_sound(lua_State *L);
 };

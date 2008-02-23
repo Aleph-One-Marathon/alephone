@@ -1088,98 +1088,6 @@ static int L_Clear_Camera(lua_State *L)
 	return 0;
 }
 
-static int L_Crosshairs_Active(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "crosshairs_active: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (local_player_index != player_index)
-		return 0;
-
-	lua_pushnumber(L, Crosshairs_IsActive());
-	return 1;
-}
-
-static int L_Set_Crosshairs_State(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isboolean(L,2))
-	{
-		lua_pushstring(L, "set_crosshairs_state: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	bool state = lua_toboolean(L,2);
-	if (local_player_index != player_index)
-		return 0;
-
-	Crosshairs_SetActive(state);
-	return 0;
-}
-
-static int L_Zoom_Active(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "zoom_active: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	{
-		lua_pushstring(L, "zoom_active: invalid player index");
-		lua_error(L);
-	}
-	if (local_player_index != player_index)
-		return 0;
-
-	lua_pushnumber(L, GetTunnelVision());
-	return 1;
-}
-
-static int L_Set_Zoom_State(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isboolean(L,2))
-	{
-		lua_pushstring(L, "set_zoom_state: incorrect argument type");
-		lua_error(L);
-	}
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	bool state = lua_toboolean(L,2);
-	if (local_player_index != player_index)
-		return 0;
-
-	SetTunnelVision(state);
-	return 0;
-}
-
-static int L_Screen_Fade(lua_State *L)
-{
-	int args = lua_gettop(L);
-	int fade_index;
-	
-	if (args == 2)
-	{
-		if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-		{
-			lua_pushstring(L, "start_fade: incorrect argument type");
-			lua_error(L);
-		}
-		short player_index = static_cast<short>(lua_tonumber(L,1));
-		if (local_player_index != player_index)
-			return 0;
-
-		fade_index = static_cast<int>(lua_tonumber(L, 2));
-	} else {
-		fade_index = static_cast<int>(lua_tonumber(L, 1));
-	}
-	
-	start_fade(fade_index);
-	return 0;
-}
-
 static int L_Get_Terminal_Text_Number(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
@@ -1642,12 +1550,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "activate_camera", L_Activate_Camera);
 	lua_register(state, "deactivate_camera", L_Deactivate_Camera);
 	lua_register(state, "clear_camera", L_Clear_Camera);
-	lua_register(state, "crosshairs_active", L_Crosshairs_Active);
-	lua_register(state, "set_crosshairs_state", L_Set_Crosshairs_State);
-	lua_register(state, "zoom_active", L_Zoom_Active);
-	lua_register(state, "set_zoom_state", L_Set_Zoom_State);
-	lua_register(state, "screen_fade", L_Screen_Fade);
-	lua_register(state, "start_fade", L_Screen_Fade);
 	lua_register(state, "get_terminal_text_number", L_Get_Terminal_Text_Number);
 	lua_register(state, "set_terminal_text_number", L_Set_Terminal_Text_Number);
 	lua_register(state, "activate_terminal", L_Activate_Terminal);
