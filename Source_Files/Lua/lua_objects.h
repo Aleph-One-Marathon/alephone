@@ -35,73 +35,25 @@ extern "C"
 
 #include "items.h"
 #include "map.h"
+#include "lua_templates.h"
 
-struct Lua_Items {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return MAXIMUM_OBJECTS_PER_MAP; }
-	static bool valid(int);
+extern char Lua_Item_Name[]; // "item"
+typedef L_Class<Lua_Item_Name> Lua_Item;
 
-	static int new_item(lua_State *L);
-};
+extern char Lua_Items_Name[]; // "Items"
+typedef L_Container<Lua_Items_Name, Lua_Item> Lua_Items;
 
-struct Lua_Item {
-	short index;
-	static bool valid(int index) { return Lua_Items::valid(index); }
+extern char Lua_ItemType_Name[]; // "item_type"
+typedef L_Enum<Lua_ItemType_Name> Lua_ItemType;
 
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
+extern char Lua_ItemTypes_Name[]; // "ItemTypes"
+typedef L_EnumContainer<Lua_ItemTypes_Name, Lua_ItemType> Lua_ItemTypes;
 
-struct Lua_ItemTypes {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return NUMBER_OF_DEFINED_ITEMS; }
-	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_DEFINED_ITEMS; }
-};
+extern char Lua_Scenery_Name[]; // "scenery"
+typedef L_Class<Lua_Scenery_Name> Lua_Scenery;
 
-struct Lua_ItemType {
-	short index;
-	static bool valid(int index) { return Lua_ItemTypes::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_ball(lua_State *L);
-};
-
-struct Lua_Sceneries {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return MAXIMUM_OBJECTS_PER_MAP; }
-	static bool valid(int);
-
-	static int new_scenery(lua_State *);
-};
-
-struct Lua_Scenery {
-	short index;
-	static bool valid(int index) { return Lua_Sceneries::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_damaged(lua_State *);
-	static int get_solid(lua_State *);
-	
-	static int set_solid(lua_State *);
-
-	static int damage(lua_State *);
-};
+extern char Lua_Sceneries_Name[]; // "Scenery"
+typedef L_Container<Lua_Sceneries_Name, Lua_Scenery> Lua_Sceneries;
 
 int Lua_Objects_register(lua_State *L);
 

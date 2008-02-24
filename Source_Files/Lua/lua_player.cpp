@@ -448,7 +448,7 @@ const luaL_reg Lua_Player_Items::metatable[] = {
 int Lua_Player_Items::get(lua_State *L)
 {
 	int player_index = L_Index<Lua_Player_Items>(L, 1);
-	int item_type = L_ToIndex<Lua_ItemType>(L, 2);
+	int item_type = Lua_ItemType::ToIndex(L, 2);
 
 	player_data *player = get_player_data(player_index);
 	int item_count = player->items[item_type];
@@ -467,7 +467,7 @@ int Lua_Player_Items::set(lua_State *L)
 
 	int player_index = L_Index<Lua_Player_Items>(L, 1);
 	player_data *player = get_player_data(player_index);
-	int item_type = L_ToIndex<Lua_ItemType>(L, 2);
+	int item_type = Lua_ItemType::ToIndex(L, 2);
 	int item_count = player->items[item_type];
 	item_definition *definition = get_item_definition_external(item_type);
 	int new_item_count = static_cast<int>(lua_tonumber(L, 3));

@@ -31,6 +31,8 @@ LUA_OBJECTS.CPP
 #define DONT_REPEAT_DEFINITIONS
 #include "scenery_definitions.h"
 
+#include <boost/bind.hpp>
+
 #ifdef HAVE_LUA
 
 const float AngleConvert = 360/float(FULL_CIRCLE);
@@ -38,14 +40,14 @@ const float AngleConvert = 360/float(FULL_CIRCLE);
 template<class T>
 int lua_delete_object(lua_State *L)
 {
-	remove_map_object(L_Index<T>(L, 1));
+	remove_map_object(T::Index(L, 1));
 	return 0;
 }
 
 template<>
 int lua_delete_object<Lua_Scenery>(lua_State *L)
 {
-	short object_index = L_Index<Lua_Scenery>(L, 1);
+	short object_index = Lua_Scenery::Index(L, 1);
 	remove_map_object(object_index);
 	deanimate_scenery(object_index);
 	return 0;
@@ -54,7 +56,7 @@ int lua_delete_object<Lua_Scenery>(lua_State *L)
 template<class T>
 static int get_object_facing(lua_State *L)
 {
-	object_data *object = get_object_data(L_Index<T>(L, 1));
+	object_data *object = get_object_data(T::Index(L, 1));
 	lua_pushnumber(L, (double) object->facing * AngleConvert);
 	return 1;
 }
@@ -62,7 +64,7 @@ static int get_object_facing(lua_State *L)
 template<class T>
 static int get_object_polygon(lua_State *L)
 {
-	object_data *object = get_object_data(L_Index<T>(L, 1));
+	object_data *object = get_object_data(T::Index(L, 1));
 	L_Push<Lua_Polygon>(L, object->polygon);
 	return 1;
 }
@@ -70,15 +72,15 @@ static int get_object_polygon(lua_State *L)
 template<class T, class TT>
 static int get_object_type(lua_State *L)
 {
-	object_data *object = get_object_data(L_Index<T>(L, 1));
-	L_Push<TT>(L, object->permutation);
+	object_data *object = get_object_data(T::Index(L, 1));
+	TT::Push(L, object->permutation);
 	return 1;
 }
 
 template<class T>
 static int get_object_x(lua_State *L)
 {
-	object_data *object = get_object_data(L_Index<T>(L, 1));
+	object_data *object = get_object_data(T::Index(L, 1));
 	lua_pushnumber(L, (double) object->location.x / WORLD_ONE);
 	return 1;
 }
@@ -86,7 +88,7 @@ static int get_object_x(lua_State *L)
 template<class T>
 static int get_object_y(lua_State *L)
 {
-	object_data *object = get_object_data(L_Index<T>(L, 1));
+	object_data *object = get_object_data(T::Index(L, 1));
 	lua_pushnumber(L, (double) object->location.y / WORLD_ONE);
 	return 1;
 }
@@ -94,7 +96,7 @@ static int get_object_y(lua_State *L)
 template<class T>
 static int get_object_z(lua_State *L)
 {
-	object_data *object = get_object_data(L_Index<T>(L, 1));
+	object_data *object = get_object_data(T::Index(L, 1));
 	lua_pushnumber(L, (double) object->location.z / WORLD_ONE);
 	return 1;
 }
@@ -105,16 +107,15 @@ static int set_object_facing(lua_State *L)
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "facing: incorrect argument type");
 
-	object_data *object = get_object_data(L_Index<T>(L, 1));
+	object_data *object = get_object_data(T::Index(L, 1));
 	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
 	return 0;
 }
 
-const char *Lua_Item::name = "item";
+char Lua_Item_Name[] = "item";
 
-const luaL_reg Lua_Item::index_table[] = {
+const luaL_reg Lua_Item_Get[] = {
 	{"delete", L_TableFunction<lua_delete_object<Lua_Item> >},
-	{"index", L_TableIndex<Lua_Item>},
 	{"facing", get_object_facing<Lua_Item>},
 	{"polygon", get_object_polygon<Lua_Item>},
 	{"type", get_object_type<Lua_Item, Lua_ItemType>},
@@ -124,33 +125,15 @@ const luaL_reg Lua_Item::index_table[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Item::newindex_table[] = {
+const luaL_reg Lua_Item_Set[] = {
 	{"facing", set_object_facing<Lua_Item>},
 	{0, 0}
 };
 
-const luaL_reg Lua_Item::metatable[] = {
-	{"__index", L_TableGet<Lua_Item>},
-	{"__newindex", L_TableSet<Lua_Item>},
-	{0, 0}
-};
-
-const char *Lua_Items::name = "Items";
-
-const luaL_reg Lua_Items::methods[] = {
-	{"new", Lua_Items::new_item},
-	{0, 0}
-};
-
-const luaL_reg Lua_Items::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_Items, Lua_Item>},
-	{"__newindex", L_GlobalNewindex<Lua_Items>},
-	{"__call", L_GlobalCall<Lua_Items, Lua_Item>},
-	{0, 0}
-};
+char Lua_Items_Name[] = "Items";
 
 // Items.new(x, y, height, polygon, type)
-int Lua_Items::new_item(lua_State *L)
+int Lua_Items_New(lua_State *L)
 {
 	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
 		luaL_error(L, "new: incorrect argument type");
@@ -169,7 +152,7 @@ int Lua_Items::new_item(lua_State *L)
 	else
 		return luaL_error(L, "new: incorrect argument type");
 
-	short item_type = L_ToIndex<Lua_ItemType>(L, 5);
+	short item_type = Lua_ItemType::ToIndex(L, 5);
 
 	object_location location;
 	location.p.x = static_cast<int>(lua_tonumber(L, 1) * WORLD_ONE);
@@ -185,11 +168,17 @@ int Lua_Items::new_item(lua_State *L)
 	if (item_index == NONE)
 		return 0;
 
-	L_Push<Lua_Item>(L, item_index);
+	Lua_Item::Push(L, item_index);
 	return 1;
 }
+
+const luaL_reg Lua_Items_Methods[] = {
+	{"new", Lua_Items_New},
+	{0, 0}
+};
+
 	
-bool Lua_Items::valid(int index)
+bool Lua_Item_Valid(int32 index)
 {
 	if (index < 0 || index >= MAXIMUM_OBJECTS_PER_MAP)
 		return false;
@@ -198,100 +187,46 @@ bool Lua_Items::valid(int index)
 	return (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object) == _object_is_item);
 }
 
-int Lua_ItemType::get_ball(lua_State *L)
+static int Lua_ItemType_Get_Ball(lua_State *L)
 {
-	lua_pushboolean(L, (get_item_kind(L_Index<Lua_ItemType>(L, 1)) == _ball));
+	lua_pushboolean(L, (get_item_kind(Lua_ItemType::Index(L, 1)) == _ball));
 	return 1;
 }
 
-const char *Lua_ItemType::name = "item_type";
-const luaL_reg Lua_ItemType::index_table[] = {
-	{"ball", Lua_ItemType::get_ball},
-	{"index", L_TableIndex<Lua_ItemType>},
+static bool Lua_ItemType_Valid(int32 index) { 
+	return index >= 0 && index < NUMBER_OF_DEFINED_ITEMS;
+}
+
+char Lua_ItemType_Name[] = "item_type";
+const luaL_reg Lua_ItemType_Get[] = {
+	{"ball", Lua_ItemType_Get_Ball},
 	{0, 0}
 };
 
-const luaL_reg Lua_ItemType::newindex_table[] = {
-	{0, 0}
-};
+char Lua_ItemTypes_Name[] = "ItemTypes";
 
-const luaL_reg Lua_ItemType::metatable[] = {
-	{"__eq", L_Equals<Lua_ItemType>},
-	{"__index", L_TableGet<Lua_ItemType>},
-	{"__newindex", L_TableSet<Lua_ItemType>},
-	{0, 0}
-};
+char Lua_SceneryType_Name[] = "scenery_type";
+typedef L_Enum<Lua_SceneryType_Name> Lua_SceneryType;
 
-const char *Lua_ItemTypes::name = "ItemTypes";
-const luaL_reg Lua_ItemTypes::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_ItemTypes, Lua_ItemType>},
-	{"__newindex", L_GlobalNewindex<Lua_ItemTypes>},
-	{"__call", L_GlobalCall<Lua_ItemTypes, Lua_ItemType>},
-	{0, 0}
-};
-
-const luaL_reg Lua_ItemTypes::methods[] = {
-	{0, 0}
-};
-
-struct Lua_SceneryTypes {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return NUMBER_OF_SCENERY_DEFINITIONS; }
-	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_SCENERY_DEFINITIONS; }
-};
-
-struct Lua_SceneryType {
-	short index;
-	static bool valid(int index) { return Lua_SceneryTypes::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
-const char *Lua_SceneryType::name = "scenery_type";
-const luaL_reg Lua_SceneryType::index_table[] = {
-	{"index", L_TableIndex<Lua_SceneryType>},
-	{0, 0}
-};
-
-const luaL_reg Lua_SceneryType::newindex_table[] = {
-	{0, 0}
-};
-
-const luaL_reg Lua_SceneryType::metatable[] = {
-	{"__eq", L_Equals<Lua_SceneryType>},
-	{"__index", L_TableGet<Lua_SceneryType>},
-	{"__newindex", L_TableSet<Lua_SceneryType>},
-	{0, 0}
-};
-
-const char *Lua_SceneryTypes::name = "SceneryTypes";
-const luaL_reg Lua_SceneryTypes::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_SceneryTypes, Lua_SceneryType>},
-	{"__newindex", L_GlobalNewindex<Lua_SceneryTypes>},
-	{"__call", L_GlobalCall<Lua_SceneryTypes, Lua_SceneryType>},
-	{0, 0}
-};
-
-const luaL_reg Lua_SceneryTypes::methods[] = {
-	{0, 0}
-};
-
-const char *Lua_Scenery::name = "scenery";
-
-int Lua_Scenery::damage(lua_State *L)
+static bool Lua_SceneryType_Valid(int32 index)
 {
-	damage_scenery(L_Index<Lua_Scenery>(L, 1));
+	return index >= 0 && index <= NUMBER_OF_SCENERY_DEFINITIONS;
+}
+
+char Lua_SceneryTypes_Name[] = "SceneryTypes";
+typedef L_EnumContainer<Lua_SceneryTypes_Name, Lua_SceneryType> Lua_SceneryTypes;
+
+char Lua_Scenery_Name[] = "scenery";
+
+int Lua_Scenery_Damage(lua_State *L)
+{
+	damage_scenery(Lua_Scenery::Index(L, 1));
 	return 0;
 }
 
-int Lua_Scenery::get_damaged(lua_State *L)
+static int Lua_Scenery_Get_Damaged(lua_State *L)
 {
-	object_data *object = get_object_data(L_Index<Lua_Scenery>(L, 1));
+	object_data *object = get_object_data(Lua_Scenery::Index(L, 1));
 
 	// if it made it this far (past valid() check),
 	// it's either scenery or normal
@@ -299,21 +234,20 @@ int Lua_Scenery::get_damaged(lua_State *L)
 	return 1;
 }
 
-int Lua_Scenery::get_solid(lua_State *L)
+static int Lua_Scenery_Get_Solid(lua_State *L)
 {
-	object_data *object = get_object_data(L_Index<Lua_Scenery>(L, 1));
+	object_data *object = get_object_data(Lua_Scenery::Index(L, 1));
 	lua_pushboolean(L, OBJECT_IS_SOLID(object));
 	return 1;
 }
 
-const luaL_reg Lua_Scenery::index_table[] = {
-	{"damage", L_TableFunction<Lua_Scenery::damage>},
-	{"damaged", Lua_Scenery::get_damaged},
+const luaL_reg Lua_Scenery_Get[] = {
+	{"damage", L_TableFunction<Lua_Scenery_Damage>},
+	{"damaged", Lua_Scenery_Get_Damaged},
 	{"delete", L_TableFunction<lua_delete_object<Lua_Scenery> >},
 	{"facing", get_object_facing<Lua_Scenery>},
-	{"index", L_TableIndex<Lua_Scenery>},
 	{"polygon", get_object_polygon<Lua_Scenery>},
-	{"solid", Lua_Scenery::get_solid},
+	{"solid", Lua_Scenery_Get_Solid},
 	{"type", get_object_type<Lua_Scenery, Lua_SceneryType>},
 	{"x", get_object_x<Lua_Scenery>},
 	{"y", get_object_y<Lua_Scenery>},
@@ -321,32 +255,26 @@ const luaL_reg Lua_Scenery::index_table[] = {
 	{0, 0}
 };
 
-int Lua_Scenery::set_solid(lua_State *L)
+static int Lua_Scenery_Set_Solid(lua_State *L)
 {
 	if (!lua_isboolean(L, 2))
 		return luaL_error(L, "solid: incorrect argument type");
 
-	object_data *object = get_object_data(L_Index<Lua_Scenery>(L, 1));
+	object_data *object = get_object_data(Lua_Scenery::Index(L, 1));
 	SET_OBJECT_SOLIDITY(object, lua_toboolean(L, 2));
 	return 0;
 }
 
-const luaL_reg Lua_Scenery::newindex_table[] = {
+const luaL_reg Lua_Scenery_Set[] = {
 	{"facing", set_object_facing<Lua_Scenery>},
-	{"solid", Lua_Scenery::set_solid},
+	{"solid", Lua_Scenery_Set_Solid},
 	{0, 0}
 };
 
-const luaL_reg Lua_Scenery::metatable[] = {
-	{"__index", L_TableGet<Lua_Scenery>},
-	{"__newindex", L_TableSet<Lua_Scenery>},
-	{0, 0}
-};
-
-const char *Lua_Sceneries::name = "Scenery";
+char Lua_Sceneries_Name[] = "Scenery";
 
 // Scenery.new(x, y, height, polygon, type)
-int Lua_Sceneries::new_scenery(lua_State *L)
+static int Lua_Sceneries_New(lua_State *L)
 {
 	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
 		luaL_error(L, "new: incorrect argument type");
@@ -365,7 +293,7 @@ int Lua_Sceneries::new_scenery(lua_State *L)
 	else
 		return luaL_error(L, "new: incorrect argument type");
 
-	short scenery_type = L_ToIndex<Lua_SceneryType>(L, 5);
+	short scenery_type = Lua_SceneryType::ToIndex(L, 5);
 
 	object_location location;
 	location.p.x = static_cast<int>(lua_tonumber(L, 1) * WORLD_ONE);
@@ -383,11 +311,11 @@ int Lua_Sceneries::new_scenery(lua_State *L)
 
 	randomize_scenery_shape(scenery_index);
 
-	L_Push<Lua_Scenery>(L, scenery_index);
+	Lua_Scenery::Push(L, scenery_index);
 	return 1;
 }
 
-bool Lua_Sceneries::valid(int index)
+static bool Lua_Scenery_Valid(int32 index)
 {
 	if (index < 0 || index >= MAXIMUM_OBJECTS_PER_MAP)
 		return false;
@@ -421,15 +349,8 @@ bool Lua_Sceneries::valid(int index)
 	return false;
 }
 
-const luaL_reg Lua_Sceneries::methods[] = {
-	{"new", Lua_Sceneries::new_scenery},
-	{0, 0}
-};
-
-const luaL_reg Lua_Sceneries::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_Sceneries, Lua_Scenery>},
-	{"__newindex", L_GlobalNewindex<Lua_Sceneries>},
-	{"__call", L_GlobalCall<Lua_Sceneries, Lua_Scenery>},
+const luaL_reg Lua_Sceneries_Methods[] = {
+	{"new", Lua_Sceneries_New},
 	{0, 0}
 };
 
@@ -437,14 +358,29 @@ static void compatibility(lua_State *L);
 
 int Lua_Objects_register(lua_State *L)
 {
-	L_Register<Lua_Item>(L);
-	L_GlobalRegister<Lua_Items>(L);
-	L_Register<Lua_ItemType>(L);
-	L_GlobalRegister<Lua_ItemTypes>(L);
-	L_Register<Lua_Scenery>(L);
-	L_GlobalRegister<Lua_Sceneries>(L);
-	L_Register<Lua_SceneryType>(L);
-	L_GlobalRegister<Lua_SceneryTypes>(L);
+	Lua_Item::Register(L, Lua_Item_Get, Lua_Item_Set);
+	Lua_Item::Valid = Lua_Item_Valid;
+
+	Lua_Items::Register(L, Lua_Items_Methods);
+	Lua_Items::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
+
+	Lua_Scenery::Register(L, Lua_Scenery_Get, Lua_Scenery_Set);
+	Lua_Scenery::Valid = Lua_Scenery_Valid;
+
+	Lua_Sceneries::Register(L, Lua_Sceneries_Methods);
+	Lua_Sceneries::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
+
+	Lua_ItemType::Register(L, Lua_ItemType_Get);
+	Lua_ItemType::Valid = Lua_ItemType_Valid;
+
+	Lua_ItemTypes::Register(L);
+	Lua_ItemTypes::Length = Lua_ItemTypes::ConstantLength<NUMBER_OF_DEFINED_ITEMS>;
+
+	Lua_SceneryType::Register(L);
+	Lua_SceneryType::Valid = Lua_SceneryType_Valid;
+
+	Lua_SceneryTypes::Register(L);
+	Lua_SceneryTypes::Length = Lua_SceneryTypes::ConstantLength<NUMBER_OF_SCENERY_DEFINITIONS>;
 
 	compatibility(L);
 }

@@ -389,7 +389,7 @@ int Lua_MonsterType::get_weaknesses(lua_State *L) {
 
 int Lua_MonsterType::get_item(lua_State *L) {
 	monster_definition *definition = get_monster_definition_external(L_Index<Lua_MonsterType>(L, 1));
-	L_Push<Lua_ItemType>(L, definition->carrying_item_type);
+	Lua_ItemType::Push(L, definition->carrying_item_type);
 	return 1;
 }
 
