@@ -32,53 +32,19 @@ extern "C"
 #include "lualib.h"
 }
 
-#include "map.h"
-#include "projectiles.h"
+#include "lua_templates.h"
 
-struct Lua_Projectiles {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return MAXIMUM_PROJECTILES_PER_MAP; }
-	static bool valid(int);
+extern char Lua_Projectile_Name[]; // "projectile"
+typedef L_Class<Lua_Projectile_Name> Lua_Projectile;
 
-	// methods
-	static int new_projectile(lua_State *L);
-};
+extern char Lua_Projectiles_Name[]; // "Projectiles"
+typedef L_Container<Lua_Projectiles_Name, Lua_Projectile> Lua_Projectiles;
 
-struct Lua_Projectile {
-	short index;
-	static bool valid(int index) { return Lua_Projectiles::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
+extern char Lua_ProjectileType_Name[]; // "projectile_type"
+typedef L_Enum<Lua_ProjectileType_Name> Lua_ProjectileType;
 
-	static int get_damage_scale(lua_State *L);
-	static int get_elevation(lua_State *L);
-	static int get_facing(lua_State *L);
-	static int get_gravity(lua_State *L);
-	static int get_owner(lua_State *L);
-	static int get_polygon(lua_State *L);
-	static int get_target(lua_State *L);
-	static int get_type(lua_State *L);
-	static int get_x(lua_State *L);
-	static int get_y(lua_State *L);
-	static int get_z(lua_State *L);
-	static int set_damage_scale(lua_State *L);
-	static int set_elevation(lua_State *L);
-	static int set_facing(lua_State *L);
-	static int set_gravity(lua_State *L);
-	static int set_owner(lua_State *L);
-	static int set_polygon(lua_State *L);
-	static int set_target(lua_State *L);
-	static int set_x(lua_State *L);
-	static int set_y(lua_State *L);
-	static int set_z(lua_State *L);
-
-	static int position(lua_State *L);
-};
+extern char Lua_ProjectileTypes_Name[]; // "ProjectileTypes"
+typedef L_EnumContainer<Lua_ProjectileTypes_Name, Lua_ProjectileType> Lua_ProjectileTypes;
 
 int Lua_Projectiles_register(lua_State *L);
 

@@ -26,144 +26,149 @@ LUA_MONSTERS.CPP
 #include "lua_projectiles.h"
 #include "lua_templates.h"
 
+#include "dynamic_limits.h"
+#include "map.h"
 #include "monsters.h"
 #include "player.h"
+#include "projectiles.h"
+
+#include <boost/bind.hpp>
 
 #ifdef HAVE_LUA
 
 
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
-const char *Lua_Projectile::name = "projectile";
+char Lua_Projectile_Name[] = "projectile";
 
-int Lua_Projectile::get_damage_scale(lua_State *L)
+static int Lua_Projectile_Get_Damage_Scale(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	lua_pushnumber(L, (double) projectile->damage_scale / FIXED_ONE);
 	return 1;
 }
 
-int Lua_Projectile::get_elevation(lua_State *L)
+static int Lua_Projectile_Get_Elevation(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	double elevation = projectile->elevation * AngleConvert;
 	if (elevation > 180) elevation -= 360.0;
 	lua_pushnumber(L, elevation);
 	return 1;
 }
 
-int Lua_Projectile::get_facing(lua_State *L)
+static int Lua_Projectile_Get_Facing(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	object_data *object = get_object_data(projectile->object_index);
 	lua_pushnumber(L, (double) object->facing * AngleConvert);
 	return 1;
 }
 
-int Lua_Projectile::get_gravity(lua_State *L)
+static int Lua_Projectile_Get_Gravity(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	lua_pushnumber(L, (double) projectile->gravity / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Projectile::get_owner(lua_State *L)
+static int Lua_Projectile_Get_Owner(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	L_Push<Lua_Monster>(L, projectile->owner_index);
 	return 1;
 }
 
-int Lua_Projectile::get_polygon(lua_State *L)
+static int Lua_Projectile_Get_Polygon(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	object_data *object = get_object_data(projectile->object_index);
 	L_Push<Lua_Polygon>(L, object->polygon);
 	return 1;
 }
 
-int Lua_Projectile::get_target(lua_State *L)
+static int Lua_Projectile_Get_Target(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	L_Push<Lua_Monster>(L, projectile->target_index);
 	return 1;
 }
 
-int Lua_Projectile::get_type(lua_State *L)
+static int Lua_Projectile_Get_Type(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
-	lua_pushnumber(L, projectile->type);
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
+	Lua_Projectile::Push(L, projectile->type);
 	return 1;
 }
 
-int Lua_Projectile::get_x(lua_State *L)
+static int Lua_Projectile_Get_X(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	object_data *object = get_object_data(projectile->object_index);
 	lua_pushnumber(L, (double) object->location.x / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Projectile::get_y(lua_State *L)
+static int Lua_Projectile_Get_Y(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	object_data *object = get_object_data(projectile->object_index);
 	lua_pushnumber(L, (double) object->location.y / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Projectile::get_z(lua_State *L)
+static int Lua_Projectile_Get_Z(lua_State *L)
 {
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	object_data *object = get_object_data(projectile->object_index);
 	lua_pushnumber(L, (double) object->location.z / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Projectile::set_damage_scale(lua_State *L)
+static int Lua_Projectile_Set_Damage_Scale(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "damage_scale: incorrect argument type");
 
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	projectile->damage_scale = static_cast<int>(lua_tonumber(L, 2) * FIXED_ONE);
 	return 0;
 }
 
-int Lua_Projectile::set_elevation(lua_State *L)
+static int Lua_Projectile_Set_Elevation(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "elevation: incorrect argument type");
 
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	double elevation = lua_tonumber(L, 2);
 	if (elevation < 0.0) elevation += 360.0;
 	projectile->elevation = static_cast<int>(elevation / AngleConvert);
 	return 0;
 }
 
-int Lua_Projectile::set_facing(lua_State *L)
+static int Lua_Projectile_Set_Facing(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "facing: incorrect argument type");
 
-	projectile_data* projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data* projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	object_data* object = get_object_data(projectile->object_index);
 	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
 	return 0;
 }
 
-int Lua_Projectile::set_gravity(lua_State *L)
+static int Lua_Projectile_Set_Gravity(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "dz: incorrect argument type");
 
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	projectile->gravity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	return 0;
 }
 
-int Lua_Projectile::set_owner(lua_State *L)
+static int Lua_Projectile_Set_Owner(lua_State *L)
 {
 	short monster_index = 0;
 	if (lua_isnil(L, 2))
@@ -188,14 +193,14 @@ int Lua_Projectile::set_owner(lua_State *L)
 		return luaL_error(L, "owner: incorrect argument type");
 	}
 
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	projectile->owner_index = monster_index;
 	return 0;
 }
 
 extern void add_object_to_polygon_object_list(short object_index, short polygon_index);
 
-int Lua_Projectile::set_target(lua_State *L)
+static int Lua_Projectile_Set_Target(lua_State *L)
 {
 	short monster_index = 0;
 	if (lua_isnil(L, 2))
@@ -220,12 +225,12 @@ int Lua_Projectile::set_target(lua_State *L)
 		return luaL_error(L, "owner: incorrect argument type");
 	}
 
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	projectile->target_index = monster_index;
 	return 0;
 }
 
-int Lua_Projectile::position(lua_State *L)
+int Lua_Projectile_Position(lua_State *L)
 {
 	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
 	{
@@ -246,7 +251,7 @@ int Lua_Projectile::position(lua_State *L)
 	else
 		return luaL_error(L, "position: incorrect argument type");
 
-	projectile_data *projectile = get_projectile_data(L_Index<Lua_Projectile>(L, 1));
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	object_data *object = get_object_data(projectile->object_index);
 	object->location.x = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	object->location.y = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
@@ -259,45 +264,38 @@ int Lua_Projectile::position(lua_State *L)
 	}
 }
 
-const luaL_reg Lua_Projectile::index_table[] = {
-	{"damage_scale", get_damage_scale},
-	{"dz", get_gravity},
-	{"elevation", get_elevation},
-	{"facing", get_facing},
-	{"index", L_TableIndex<Lua_Projectile>},
-	{"position", L_TableFunction<Lua_Projectile::position>},
-	{"owner", get_owner},
-	{"pitch", get_elevation},
-	{"polygon", get_polygon},
-	{"type", get_type},
-	{"x", get_x},
-	{"y", get_y},
-	{"yaw", get_facing},
-	{"z", get_z},
+const luaL_reg Lua_Projectile_Get[] = {
+	{"damage_scale", Lua_Projectile_Get_Damage_Scale},
+	{"dz", Lua_Projectile_Get_Gravity},
+	{"elevation", Lua_Projectile_Get_Elevation},
+	{"facing", Lua_Projectile_Get_Facing},
+	{"position", L_TableFunction<Lua_Projectile_Position>},
+	{"owner", Lua_Projectile_Get_Owner},
+	{"pitch", Lua_Projectile_Get_Elevation},
+	{"polygon", Lua_Projectile_Get_Polygon},
+	{"type", Lua_Projectile_Get_Type},
+	{"x", Lua_Projectile_Get_X},
+	{"y", Lua_Projectile_Get_Y},
+	{"yaw", Lua_Projectile_Get_Facing},
+	{"z", Lua_Projectile_Get_Z},
 	{0, 0}
 };
 
-const luaL_reg Lua_Projectile::newindex_table[] = {
-	{"damage_scale", set_damage_scale},
-	{"dz", set_gravity},
-	{"elevation", set_elevation},
-	{"facing", set_facing},
-	{"owner", set_owner},
-	{"pitch", set_elevation},
-	{"yaw", set_facing},
+const luaL_reg Lua_Projectile_Set[] = {
+	{"damage_scale", Lua_Projectile_Set_Damage_Scale},
+	{"dz", Lua_Projectile_Set_Gravity},
+	{"elevation", Lua_Projectile_Set_Elevation},
+	{"facing", Lua_Projectile_Set_Facing},
+	{"owner", Lua_Projectile_Set_Owner},
+	{"pitch", Lua_Projectile_Set_Elevation},
+	{"yaw", Lua_Projectile_Set_Facing},
 	{0, 0}
 };
 
-const luaL_reg Lua_Projectile::metatable[] = {
-	{"__index", L_TableGet<Lua_Projectile>},
-	{"__newindex", L_TableSet<Lua_Projectile>},
-	{ 0, 0}
-};
-
-const char *Lua_Projectiles::name = "Projectiles";
+char Lua_Projectiles_Name[] = "Projectiles";
 
 // Projectiles.new(x, y, z, polygon, type)
-int Lua_Projectiles::new_projectile(lua_State *L)
+static int Lua_Projectiles_New_Projectile(lua_State *L)
 {
 	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 5))
 	{
@@ -328,29 +326,19 @@ int Lua_Projectiles::new_projectile(lua_State *L)
 	vector.y = 0;
 	vector.z = 0;
 
-	short type = static_cast<int>(lua_tonumber(L, 5));
-	if (type < 0 || type >= NUMBER_OF_PROJECTILE_TYPES)
-		return luaL_error(L, "new: invalid projectile type");
-
+	short type = Lua_ProjectileType::ToIndex(L, 5);
 
 	short projectile_index = ::new_projectile(&origin, polygon_index, &vector, 0, type, NONE, NONE, NONE, FIXED_ONE);
-	L_Push<Lua_Projectile>(L, projectile_index);
+	Lua_Projectile::Push(L, projectile_index);
 	return 1;
 }
 
-const luaL_reg Lua_Projectiles::methods[] = {
-	{"new", Lua_Projectiles::new_projectile},
+const luaL_reg Lua_Projectiles_Methods[] = {
+	{"new", Lua_Projectiles_New_Projectile},
 	{0, 0}
 };
 
-const luaL_reg Lua_Projectiles::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_Projectiles, Lua_Projectile>},
-	{"__newindex", L_GlobalNewindex<Lua_Projectiles>},
-	{"__call", L_GlobalCall<Lua_Projectiles, Lua_Projectile>},
-	{0, 0}
-};
-
-bool Lua_Projectiles::valid(int index)
+bool Lua_Projectile_Valid(int32 index)
 {
 	if (index < 0 || index >= MAXIMUM_PROJECTILES_PER_MAP)
 		return false;
@@ -359,12 +347,30 @@ bool Lua_Projectiles::valid(int index)
 	return (SLOT_IS_USED(projectile));
 }
 
+char Lua_ProjectileType_Name[] = "projectile_type";
+
+char Lua_ProjectileTypes_Name[] = "ProjectileTypes";
+
+static bool Lua_ProjectileType_Valid(int32 index)
+{
+	return (index >= 0 && index < NUMBER_OF_PROJECTILE_TYPES);
+}
+
 static void compatibility(lua_State *L);
 
 int Lua_Projectiles_register(lua_State *L)
 {
-	L_Register<Lua_Projectile>(L);
-	L_GlobalRegister<Lua_Projectiles>(L);
+	Lua_Projectile::Register(L, Lua_Projectile_Get, Lua_Projectile_Set);
+	Lua_Projectile::Valid = Lua_Projectile_Valid;
+
+	Lua_Projectiles::Register(L, Lua_Projectiles_Methods);
+	Lua_Projectiles::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_projectiles);
+
+	Lua_ProjectileType::Register(L);
+	Lua_ProjectileType::Valid = Lua_ProjectileType_Valid;
+	
+	Lua_ProjectileTypes::Register(L);
+	Lua_ProjectileTypes::Length = Lua_ProjectileTypes::ConstantLength<NUMBER_OF_PROJECTILE_TYPES>;
 
 	compatibility(L);
 }
@@ -374,7 +380,7 @@ const char *compatibility_script = ""
 	"function get_projectile_owner(index) if Projectiles[index].owner then return Projectiles[index].owner.index end end\n"
 	"function get_projectile_position(index) return Projectiles[index].polygon.index, Projectiles[index].x, Projectiles[index].y, Projectiles[index].z end\n"
 	"function get_projectile_target(index) if Projectiles[index].target then return Projectiles[index].target.index end end\n"
-	"function get_projectile_type(index) return Projectiles[index].type end\n"
+	"function get_projectile_type(index) return Projectiles[index].type.index end\n"
 	"function projectile_index_valid(index) if Projectiles[index] then return true else return false end end\n"
 	"function set_projectile_angle(index, yaw, pitch) Projectiles[index].facing = yaw Projectiles[index].elevation = pitch end\n"
 	"function set_projectile_owner(index, owner) Projectiles[index].owner = owner end\n"
