@@ -434,17 +434,17 @@ void L_GlobalRegister(lua_State *L)
 	lua_settable(L, LUA_REGISTRYINDEX);
 }
 
-template<char *name>
+template<char *name, typename index_t = int16>
 class L_Class {
 public:
 
-	short m_index;
+	index_t m_index;
 
 	static void Register(lua_State *L, const luaL_reg get[] = 0, const luaL_reg set[] = 0, const luaL_reg metatable[] = 0);
-	static L_Class *Push(lua_State *L, int32 index);
-	static int32 Index(lua_State *L, int index);
+	static L_Class *Push(lua_State *L, index_t index);
+	static index_t Index(lua_State *L, int index);
 	static bool Is(lua_State *L, int index);
-	static boost::function<bool (int32)> Valid;
+	static boost::function<bool (index_t)> Valid;
 private:
 	// C functions for Lua
 	static int _index(lua_State *L);
@@ -453,13 +453,14 @@ private:
 	static int _is(lua_State *L);
 };
 
-static bool always_valid(int32) { return true; }
+template<typename t>
+static bool always_valid(t) { return true; }
 
-template<char *name>
-boost::function<bool (int32)> L_Class<name>::Valid = always_valid;
+template<char *name, typename index_t>
+boost::function<bool (index_t)> L_Class<name, index_t>::Valid = always_valid<index_t>;
 
-template<char *name>
-void L_Class<name>::Register(lua_State *L, const luaL_reg get[], const luaL_reg set[], const luaL_reg metatable[])
+template<char *name, typename index_t>
+void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const luaL_reg set[], const luaL_reg metatable[])
 {
 	// create the metatable itself
 	luaL_newmetatable(L, name);
@@ -511,10 +512,10 @@ void L_Class<name>::Register(lua_State *L, const luaL_reg get[], const luaL_reg 
 	lua_setglobal(L, is_name.c_str());
 }
 
-template<char *name>
-L_Class<name> *L_Class<name>::Push(lua_State *L, int32 index)
+template<char *name, typename index_t>
+L_Class<name, index_t> *L_Class<name, index_t>::Push(lua_State *L, index_t index)
 {
-	L_Class<name>* t = 0;
+	L_Class<name, index_t>* t = 0;
 
 	if (!Valid(index))
 	{
@@ -538,7 +539,7 @@ L_Class<name> *L_Class<name>::Push(lua_State *L, int32 index)
 		lua_gettable(L, -2);
 		lua_remove(L, -2);
 
-		t = static_cast<L_Class<name> *>(lua_touserdata(L, -1));
+		t = static_cast<L_Class<name, index_t> *>(lua_touserdata(L, -1));
 	}
 	else if (lua_isnil(L, -1))
 	{
@@ -547,7 +548,7 @@ L_Class<name> *L_Class<name>::Push(lua_State *L, int32 index)
 		lua_newtable(L);
 		
 		
-		t = static_cast<L_Class<name> *>(lua_newuserdata(L, sizeof(L_Class<name>)));
+		t = static_cast<L_Class<name, index_t> *>(lua_newuserdata(L, sizeof(L_Class<name>)));
 		luaL_getmetatable(L, name);
 		lua_setmetatable(L, -2);
 		t->m_index = index;
@@ -568,18 +569,18 @@ L_Class<name> *L_Class<name>::Push(lua_State *L, int32 index)
 	return t;
 }
 
-template<char *name>
-int32 L_Class<name>::Index(lua_State *L, int index)
+template<char *name, typename index_t>
+index_t L_Class<name, index_t>::Index(lua_State *L, int index)
 {
-	L_Class<name> *t = static_cast<L_Class<name> *>(lua_touserdata(L, index));
+	L_Class<name, index_t> *t = static_cast<L_Class<name, index_t> *>(lua_touserdata(L, index));
 	if (!t) luaL_typerror(L, index, name);
 	return t->m_index;
 }
 
-template<char *name>
-bool L_Class<name>::Is(lua_State *L, int index)
+template<char *name, typename index_t>
+bool L_Class<name, index_t>::Is(lua_State *L, int index)
 {
-	L_Class<name>* t = static_cast<L_Class<name>*>(lua_touserdata(L, index));
+	L_Class<name, index_t>* t = static_cast<L_Class<name, index_t>*>(lua_touserdata(L, index));
 	if (!t) return false;
 
 	if (lua_getmetatable(L, index))
@@ -600,22 +601,22 @@ bool L_Class<name>::Is(lua_State *L, int index)
 	return false;
 }
 
-template<char *name>
-int L_Class<name>::_index(lua_State *L)
+template<char *name, typename index_t>
+int L_Class<name, index_t>::_index(lua_State *L)
 {
 	lua_pushnumber(L, Index(L, 1));
 	return 1;
 }
 
-template<char *name>
-int L_Class<name>::_is(lua_State *L)
+template<char *name, typename index_t>
+int L_Class<name, index_t>::_is(lua_State *L)
 {
 	lua_pushboolean(L, Is(L, 1));
 	return 1;
 }
 
-template<char *name>
-int L_Class<name>::_get(lua_State *L)
+template<char *name, typename index_t>
+int L_Class<name, index_t>::_get(lua_State *L)
 {
 	if (lua_isstring(L, 2))
 	{
@@ -660,8 +661,8 @@ int L_Class<name>::_get(lua_State *L)
 	return 1;
 }
 
-template<char *name>
-int L_Class<name>::_set(lua_State *L)
+template<char *name, typename index_t>
+int L_Class<name, index_t>::_set(lua_State *L)
 {
 	luaL_checktype(L, 1, LUA_TUSERDATA);
 	luaL_checkudata(L, 1, name);
@@ -697,20 +698,20 @@ int L_Class<name>::_set(lua_State *L)
 }
 
 // enum classes define equality with numbers
-template<char *name>
-class L_Enum : public L_Class<name>
+template<char *name, typename index_t = int16>
+class L_Enum : public L_Class<name, index_t>
 {
 public:
 	static void Register(lua_State *L, const luaL_reg get[] = 0, const luaL_reg set[] = 0, const luaL_reg metatable[] = 0);
-	static int32 ToIndex(lua_State *L, int index);
+	static index_t ToIndex(lua_State *L, int index);
 private:
 	static int _equals(lua_State *L);
 };
 
-template<char *name>
-void L_Enum<name>::Register(lua_State *L, const luaL_reg get[], const luaL_reg set[], const luaL_reg metatable[])
+template<char *name, typename index_t>
+void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const luaL_reg set[], const luaL_reg metatable[])
 {
-	L_Class<name>::Register(L, get, set, 0);
+	L_Class<name, index_t>::Register(L, get, set, 0);
 
 	luaL_getmetatable(L, name);
 	lua_pushstring(L, "__eq");
@@ -723,15 +724,15 @@ void L_Enum<name>::Register(lua_State *L, const luaL_reg get[], const luaL_reg s
 	lua_pop(L, 1);
 }
 
-template<char *name>
-int32 L_Enum<name>::ToIndex(lua_State *L, int index)
+template<char *name, typename index_t>
+index_t L_Enum<name, index_t>::ToIndex(lua_State *L, int index)
 {
-	if (L_Class<name>::Is(L, index))
-		return L_Class<name>::Index(L, index);
+	if (L_Class<name, index_t>::Is(L, index))
+		return L_Class<name, index_t>::Index(L, index);
 	else if (lua_isnumber(L, index))
 	{
-		int to_index = static_cast<int>(lua_tonumber(L, index));
-		if (!L_Class<name>::Valid(to_index))
+		index_t to_index = static_cast<index_t>(lua_tonumber(L, index));
+		if (!L_Class<name, index_t>::Valid(to_index))
 		{
 			string error = string(name) + ": invalid index";
 			return luaL_error(L, error.c_str());
@@ -746,8 +747,8 @@ int32 L_Enum<name>::ToIndex(lua_State *L, int index)
 	}
 }
 
-template<char *name>
-int L_Enum<name>::_equals(lua_State *L)
+template<char *name, typename index_t>
+int L_Enum<name, index_t>::_equals(lua_State *L)
 {
 	lua_pushboolean(L, ToIndex(L, 1) == ToIndex(L, 2));
 	return 1;
