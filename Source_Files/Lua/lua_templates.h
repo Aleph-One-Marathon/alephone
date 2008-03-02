@@ -787,6 +787,9 @@ void L_Container<name, T>::Register(lua_State *L, const luaL_reg methods[], cons
 	lua_pushstring(L, "__call");
 	lua_pushcfunction(L, _call);
 	lua_settable(L, -3);
+	lua_pushstring(L, "__len");
+	lua_pushcfunction(L, _length);
+	lua_settable(L, -3);
 	if (metatable)
 		luaL_openlib(L, 0, metatable, 0);
 	lua_setmetatable(L, -2);
@@ -863,6 +866,13 @@ int L_Container<name, T>::_call(lua_State *L)
 {
 	lua_pushnumber(L, 0);
 	lua_pushcclosure(L, _iterator, 1);
+	return 1;
+}
+
+template<char *name, class T>
+int L_Container<name, T>::_length(lua_State *L)
+{
+	lua_pushnumber(L, Length());
 	return 1;
 }
 
