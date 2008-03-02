@@ -164,7 +164,7 @@ typedef L_Class<Lua_MonsterType_Immunities_Name> Lua_MonsterType_Immunities;
 static int Lua_MonsterType_Immunities_Get(lua_State *L)
 {
 	int monster_type = Lua_MonsterType_Immunities::Index(L, 1);
-	int damage_type = L_ToIndex<Lua_DamageType>(L, 2);
+	int damage_type = Lua_DamageType::ToIndex(L, 2);
 
 	monster_definition *definition = get_monster_definition_external(monster_type);
 	lua_pushboolean(L, definition->immunities & (1 << damage_type));
@@ -177,7 +177,7 @@ static int Lua_MonsterType_Immunities_Set(lua_State *L)
 		luaL_error(L, "immunities: incorrect argument type");
 
 	int monster_type = Lua_MonsterType_Immunities::Index(L, 1);
-	int damage_type = L_ToIndex<Lua_DamageType>(L, 2);
+	int damage_type = Lua_DamageType::ToIndex(L, 2);
 	bool immune = lua_toboolean(L, 3);
 	
 	monster_definition *definition = get_monster_definition_external(monster_type);
@@ -205,7 +205,7 @@ typedef L_Class<Lua_MonsterType_Weaknesses_Name> Lua_MonsterType_Weaknesses;
 int Lua_MonsterType_Weaknesses_Get(lua_State *L)
 {
 	int monster_type = Lua_MonsterType_Weaknesses::Index(L, 1);
-	int damage_type = L_ToIndex<Lua_DamageType>(L, 2);
+	int damage_type = Lua_DamageType::ToIndex(L, 2);
 
 	monster_definition *definition = get_monster_definition_external(monster_type);
 	lua_pushboolean(L, definition->weaknesses & (1 << damage_type));
@@ -218,7 +218,7 @@ int Lua_MonsterType_Weaknesses_Set(lua_State *L)
 		luaL_error(L, "immunities: incorrect argument type");
 
 	int monster_type = Lua_MonsterType_Weaknesses::Index(L, 1);
-	int damage_type = L_ToIndex<Lua_DamageType>(L, 2);
+	int damage_type = Lua_DamageType::ToIndex(L, 2);
 	bool weakness = lua_toboolean(L, 3);
 	
 	monster_definition *definition = get_monster_definition_external(monster_type);
@@ -349,7 +349,7 @@ int Lua_Monster_Damage(lua_State *L)
 	int damage_type = NONE;
 	if (lua_gettop(L) == 3)
 	{
-		damage_type = L_ToIndex<Lua_DamageType>(L, 3);
+		damage_type = Lua_DamageType::ToIndex(L, 3);
 	}
 
 	damage_definition damage;
@@ -398,12 +398,12 @@ int Lua_Monster_Move_By_Path(lua_State *L)
 	if (lua_isnumber(L, 2))
 	{
 		polygon_index = static_cast<int>(lua_tonumber(L, 2));
-		if (!Lua_Polygons::valid(polygon_index))
+		if (!Lua_Polygon::Valid(polygon_index))
 			return luaL_error(L, "move_by_path: invalid polygon index");
 	}
-	else if (L_Is<Lua_Polygon>(L, 2))
+	else if (Lua_Polygon::Is(L, 2))
 	{
-		polygon_index = L_Index<Lua_Polygon>(L, 2);
+		polygon_index = Lua_Polygon::Index(L, 2);
 	}
 	else
 		return luaL_error(L, "move_by_path: incorrect argument type");
@@ -459,12 +459,12 @@ int Lua_Monster_Position(lua_State *L)
 	if (lua_isnumber(L, 5))
 	{
 		polygon_index = static_cast<int>(lua_tonumber(L, 5));
-		if (!Lua_Polygons::valid(polygon_index))
+		if (!Lua_Polygon::Valid(polygon_index))
 			return luaL_error(L, "position: invalid polygon index");
 	}
-	else if (L_Is<Lua_Polygon>(L, 5))
+	else if (Lua_Polygon::Is(L, 5))
 	{
-		polygon_index = L_Index<Lua_Polygon>(L, 5);
+		polygon_index = Lua_Polygon::Index(L, 5);
 	}
 	else
 		return luaL_error(L, "position: incorrect argument type");
@@ -531,7 +531,7 @@ static int Lua_Monster_Get_Polygon(lua_State *L)
 {
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
-	L_Push<Lua_Polygon>(L, object->polygon);
+	Lua_Polygon::Push(L, object->polygon);
 	return 1;
 }
 
@@ -677,12 +677,12 @@ int Lua_Monsters_New(lua_State *L)
 	if (lua_isnumber(L, 4))
 	{
 		polygon_index = static_cast<int>(lua_tonumber(L, 4));
-		if (!Lua_Polygons::valid(polygon_index))
+		if (!Lua_Polygon::Valid(polygon_index))
 			return luaL_error(L, "new: invalid polygon index");
 	}
-	else if (L_Is<Lua_Polygon>(L, 4))
+	else if (Lua_Polygon::Is(L, 4))
 	{
-		polygon_index = L_Index<Lua_Polygon>(L, 4);
+		polygon_index = Lua_Polygon::Index(L, 4);
 	}
 	else
 		return luaL_error(L, "new: incorrect argument type");

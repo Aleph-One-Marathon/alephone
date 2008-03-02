@@ -36,119 +36,43 @@ extern "C"
 #include "map.h"
 #include "lightsource.h"
 
-struct Lua_DamageTypes {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return NUMBER_OF_DAMAGE_TYPES; }
-	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_DAMAGE_TYPES; }
-};
+#include "lua_templates.h"
 
-struct Lua_DamageType {
-	short index;
-	static bool valid(int index) { return Lua_DamageTypes::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
+extern char Lua_DamageType_Name[]; // "damage_type"
+typedef L_Enum<Lua_DamageType_Name> Lua_DamageType;
 
-struct Lua_Polygons {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return dynamic_world->polygon_count; }
-	static bool valid(int index) { return (index >= 0 && index < dynamic_world->polygon_count); }
-};
+extern char Lua_DamageTypes_Name[]; // "DamageTypes"
+typedef L_EnumContainer<Lua_DamageTypes_Name, Lua_DamageType> Lua_DamageTypes;
 
-struct Lua_Platform {
-	short index;
-	static bool valid(int index) { return (index >= 0 && index < dynamic_world->platform_count); }
+extern char Lua_Polygon_Ceiling_Name[]; // "polygon_ceiling"
+typedef L_Class<Lua_Polygon_Ceiling_Name> Lua_Polygon_Ceiling;
 
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
+extern char Lua_Polygon_Floor_Name[]; // "polygon_floor"
+typedef L_Class<Lua_Polygon_Floor_Name> Lua_Polygon_Floor;
 
-	static int get_active(lua_State *L);
-	static int get_ceiling_height(lua_State *L);
-	static int get_contracting(lua_State *L);
-	static int get_extending(lua_State *L);
-	static int get_floor_height(lua_State *L);
-	static int get_monster_controllable(lua_State *L);
-	static int get_player_controllable(lua_State *L);
-	static int get_polygon(lua_State *L);
-	static int get_speed(lua_State *L);
-	static int set_active(lua_State *L);
-	static int set_ceiling_height(lua_State *L);
-	static int set_contracting(lua_State *L);
-	static int set_extending(lua_State *L);
-	static int set_floor_height(lua_State *L);
-	static int set_monster_controllable(lua_State *L);
-	static int set_player_controllable(lua_State *L);
-	static int set_speed(lua_State *L);
-};
+extern char Lua_Platform_Name[]; // "platform"
+typedef L_Class<Lua_Platform_Name> Lua_Platform;
 
-struct Lua_Polygon {
-	short index;
-	static const char *name;
-	static bool valid(int index) { return Lua_Polygons::valid(index); }
+extern char Lua_Platforms_Name[]; // "Platforms";
+typedef L_Container<Lua_Platforms_Name, Lua_Platform> Lua_Platforms;
 
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
+extern char Lua_Polygon_Name[]; // "polygon"
+typedef L_Class<Lua_Polygon_Name> Lua_Polygon;
 
-	static int get_ceiling(lua_State *L);
-	static int get_floor(lua_State *L);
-	static int get_platform(lua_State *L);
-	static int get_x(lua_State *L);
-	static int get_y(lua_State *L);
-	static int get_z(lua_State *L); // shortcut for floor_height
-	static int get_type(lua_State *L);
-	static int set_type(lua_State *L);
-};
+extern char Lua_Polygons_Name[]; // "Polygons"
+typedef L_Container<Lua_Polygons_Name, Lua_Polygon> Lua_Polygons;
 
-struct Lua_Lights {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static bool valid(int index) { return index >= 0 && index < MAXIMUM_LIGHTS_PER_MAP; }
-	static int length() { return MAXIMUM_LIGHTS_PER_MAP; }
-};
+extern char Lua_Light_Name[]; // "light"
+typedef L_Class<Lua_Light_Name> Lua_Light;
 
-struct Lua_Light {
-	short index;
-	static const char *name;
-	static bool valid(int index) { return Lua_Lights::valid(index); }
+extern char Lua_Lights_Name[]; // "Lights"
+typedef L_Container<Lua_Lights_Name, Lua_Light> Lua_Lights;
 
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
+extern char Lua_Tag_Name[]; // "tag"
+typedef L_Class<Lua_Tag_Name> Lua_Tag;
 
-	static int get_active(lua_State *);
-	static int set_active(lua_State *);
-};
-
-struct Lua_Tags {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static bool valid(int index) { return index >= 0; }
-};
-
-struct Lua_Tag {
-	short index;
-	static const char *name;
-	static bool valid(int index) { return Lua_Tags::valid(index); }
-	
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_active(lua_State *);
-	static int set_active(lua_State *);
-};
+extern char Lua_Tags_Name[]; // "Tags"
+typedef L_Container<Lua_Tags_Name, Lua_Tag> Lua_Tags;
 
 int Lua_Map_register (lua_State *L);
 

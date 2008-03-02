@@ -83,7 +83,7 @@ static int Lua_Projectile_Get_Polygon(lua_State *L)
 {
 	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	object_data *object = get_object_data(projectile->object_index);
-	L_Push<Lua_Polygon>(L, object->polygon);
+	Lua_Polygon::Push(L, object->polygon);
 	return 1;
 }
 
@@ -241,12 +241,12 @@ int Lua_Projectile_Position(lua_State *L)
 	if (lua_isnumber(L, 5))
 	{
 		polygon_index = static_cast<int>(lua_tonumber(L, 5));
-		if (!Lua_Polygons::valid(polygon_index))
+		if (!Lua_Polygon::Valid(polygon_index))
 			return luaL_error(L, "position: invalid polygon index");
 	}
-	else if (L_Is<Lua_Polygon>(L, 5))
+	else if (Lua_Polygon::Is(L, 5))
 	{
-		polygon_index = L_Index<Lua_Polygon>(L, 5);
+		polygon_index = Lua_Polygon::Index(L, 5);
 	}
 	else
 		return luaL_error(L, "position: incorrect argument type");
@@ -306,12 +306,12 @@ static int Lua_Projectiles_New_Projectile(lua_State *L)
 	if (lua_isnumber(L, 4))
 	{
 		polygon_index = static_cast<int>(lua_tonumber(L, 4));
-		if (!Lua_Polygons::valid(polygon_index))
+		if (!Lua_Polygon::Valid(polygon_index))
 			return luaL_error(L, "new: invalid polygon index");
 	}
-	else if (L_Is<Lua_Polygon>(L, 4))
+	else if (Lua_Polygon::Is(L, 4))
 	{
-		polygon_index = L_Index<Lua_Polygon>(L, 4);
+		polygon_index = Lua_Polygon::Index(L, 4);
 	}
 	else
 		return luaL_error(L, "new: incorrect argument type");

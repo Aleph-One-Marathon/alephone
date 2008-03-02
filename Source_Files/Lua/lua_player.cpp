@@ -994,7 +994,7 @@ int Lua_Player_find_action_key_target(lua_State *L)
 		switch (target_type)
 		{
 		case _target_is_platform:
-			L_Push<Lua_Platform>(L, object_index);
+			Lua_Platform::Push(L, object_index);
 			break;
 
 		case _target_is_control_panel:
@@ -1032,7 +1032,7 @@ int Lua_Player::damage(lua_State *L)
 
 	if (args > 2)
 	{
-		damage.type = L_ToIndex<Lua_DamageType>(L, 3);
+		damage.type = Lua_DamageType::ToIndex(L, 3);
 	}
 
 	damage_player(player->monster_index, NONE, NONE, &damage, NONE);
@@ -1086,12 +1086,12 @@ int Lua_Player::position(lua_State *L)
 	if (lua_isnumber(L, 5))
 	{
 		polygon_index = static_cast<int>(lua_tonumber(L, 5));
-		if (!Lua_Polygons::valid(polygon_index))
+		if (!Lua_Polygon::Valid(polygon_index))
 			return luaL_error(L, ("position: invalid polygon index"));
 	}
-	else if (L_Is<Lua_Polygon>(L, 5))
+	else if (Lua_Polygon::Is(L, 5))
 	{
-		polygon_index = L_Index<Lua_Polygon>(L, 5);
+		polygon_index = Lua_Polygon::Index(L, 5);
 	}
 	else
 		return luaL_error(L, ("position: incorrect argument type"));
@@ -1116,14 +1116,14 @@ int Lua_Player::position(lua_State *L)
 
 int Lua_Player_teleport(lua_State *L)
 {
-	if (!lua_isnumber(L, 2) && !L_Is<Lua_Polygon>(L, 2))
+	if (!lua_isnumber(L, 2) && !Lua_Polygon::Is(L, 2))
 		return luaL_error(L, "teleport(): incorrect argument type");
 
 	int destination = -1;
 	if (lua_isnumber(L, 2))
 		destination = static_cast<int>(lua_tonumber(L, 2));
 	else 
-		destination = L_Index<Lua_Polygon>(L, 2);
+		destination = Lua_Polygon::Index(L, 2);
 
 	int player_index = L_Index<Lua_Player>(L, 1);
 	
@@ -1322,7 +1322,7 @@ int Lua_Player::get_points(lua_State *L)
 
 static int Lua_Player_get_polygon(lua_State *L)
 {
-	L_Push<Lua_Polygon>(L, get_player_data(L_Index<Lua_Player>(L, 1))->supporting_polygon_index);
+	Lua_Polygon::Push(L, get_player_data(L_Index<Lua_Player>(L, 1))->supporting_polygon_index);
 	return 1;
 }
 

@@ -65,7 +65,7 @@ template<class T>
 static int get_object_polygon(lua_State *L)
 {
 	object_data *object = get_object_data(T::Index(L, 1));
-	L_Push<Lua_Polygon>(L, object->polygon);
+	Lua_Polygon::Push(L, object->polygon);
 	return 1;
 }
 
@@ -142,12 +142,12 @@ int Lua_Items_New(lua_State *L)
 	if (lua_isnumber(L, 4))
 	{
 		polygon_index = static_cast<int>(lua_tonumber(L, 4));
-		if (!Lua_Polygons::valid(polygon_index))
+		if (!Lua_Polygon::Valid(polygon_index))
 			return luaL_error(L, "new: invalid polygon index");
 	}
-	else if (L_Is<Lua_Polygon>(L, 4))
+	else if (Lua_Polygon::Is(L, 4))
 	{
-		polygon_index = L_Index<Lua_Polygon>(L, 4);
+		polygon_index = Lua_Polygon::Index(L, 4);
 	}
 	else
 		return luaL_error(L, "new: incorrect argument type");
@@ -283,12 +283,12 @@ static int Lua_Sceneries_New(lua_State *L)
 	if (lua_isnumber(L, 4))
 	{
 		polygon_index = static_cast<int>(lua_tonumber(L, 4));
-		if (!Lua_Polygons::valid(polygon_index))
+		if (!Lua_Polygon::Valid(polygon_index))
 			return luaL_error(L, "new: invalid polygon index");
 	}
-	else if (L_Is<Lua_Polygon>(L, 4))
+	else if (Lua_Polygon::Is(L, 4))
 	{
-		polygon_index = L_Index<Lua_Polygon>(L, 4);
+		polygon_index = Lua_Polygon::Index(L, 4);
 	}
 	else
 		return luaL_error(L, "new: incorrect argument type");
