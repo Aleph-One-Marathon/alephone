@@ -439,12 +439,14 @@ class L_Class {
 public:
 
 	index_t m_index;
+	typedef index_t index_type;
 
 	static void Register(lua_State *L, const luaL_reg get[] = 0, const luaL_reg set[] = 0, const luaL_reg metatable[] = 0);
 	static L_Class *Push(lua_State *L, index_t index);
 	static index_t Index(lua_State *L, int index);
 	static bool Is(lua_State *L, int index);
 	static boost::function<bool (index_t)> Valid;
+	template<index_t max_index> static bool ValidRange(index_t index) { return index >= 0 && index < max_index; }
 private:
 	// C functions for Lua
 	static int _index(lua_State *L);
@@ -758,8 +760,8 @@ template<char *name, class T>
 class L_Container {
 public:
 	static void Register(lua_State *L, const luaL_reg methods[] = 0, const luaL_reg metatable[] = 0);
-	static boost::function<int (void)> Length;
-	template<int length> static int ConstantLength() { return length; }
+	static boost::function<typename T::index_type (void)> Length;
+	template<typename T::index_type length> static typename T::index_type ConstantLength() { return length; }
 private:
 	static int _get(lua_State *);
 	static int _set(lua_State *);
@@ -769,7 +771,7 @@ private:
 };
 
 template<char *name, class T>
-boost::function<int (void)> L_Container<name, T>::Length = ConstantLength<1>;
+boost::function<typename T::index_type (void)> L_Container<name, T>::Length = ConstantLength<1>;
 
 template<char *name, class T>
 void L_Container<name, T>::Register(lua_State *L, const luaL_reg methods[], const luaL_reg metatable[])
