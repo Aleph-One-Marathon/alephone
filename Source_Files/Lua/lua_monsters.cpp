@@ -30,6 +30,8 @@ LUA_MONSTERS.CPP
 #include "monsters.h"
 #include "player.h"
 
+#include <boost/bind.hpp>
+
 #define DONT_REPEAT_DEFINITIONS
 #include "monster_definitions.h"
 
@@ -37,113 +39,65 @@ LUA_MONSTERS.CPP
 
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
-static inline bool powerOfTwo(int x)
+static inline bool powerOfTwo(int32 x)
 {
 	return !((x-1) & x);
 }
 
-struct Lua_MonsterClasses {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return _class_yeti_bit + 1; }
-	static bool valid(int index) { return index >= 1 && index <= _class_yeti && powerOfTwo(index); }
-};
+char Lua_MonsterClass_Name[] = "monster_class";
+typedef L_Enum<Lua_MonsterClass_Name, int32> Lua_MonsterClass;
 
-struct Lua_MonsterClass {
-	short index;
-	static bool valid(int index) { return Lua_MonsterClasses::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
-const char* Lua_MonsterClasses::name = "MonsterClasses";
-
-const luaL_reg Lua_MonsterClasses::metatable[] = {
-	{"__call", L_GlobalCall<Lua_MonsterClasses, Lua_MonsterClass>},
-	{"__index", L_GlobalIndex<Lua_MonsterClasses, Lua_MonsterClass>},
-	{"__newindex", L_GlobalNewindex<Lua_MonsterClasses>},	 
-	{0, 0}
-};
-
-const luaL_reg Lua_MonsterClasses::methods[] = {
-	{0, 0}
-};
-
-const char *Lua_MonsterClass::name = "monster_class";
-
-const luaL_reg Lua_MonsterClass::metatable[] = {
-	{"__index", L_TableGet<Lua_MonsterClass>},
-	{"__newindex", L_TableSet<Lua_MonsterClass>},
-	{0, 0}
-};
-
-const luaL_reg Lua_MonsterClass::index_table[] = {
-	{"index", L_TableIndex<Lua_MonsterClass>},
-	{0, 0}
-};
-
-const luaL_reg Lua_MonsterClass::newindex_table[] = {
-	{0, 0}
-};
-
-struct Lua_MonsterTypes {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return NUMBER_OF_MONSTER_TYPES; }
-	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_MONSTER_TYPES; }
-};
-
-struct Lua_MonsterType_Enemies {
-	short index;
-	static bool valid(int index) { return Lua_MonsterTypes::valid(index); }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get(lua_State *L);
-	static int set(lua_State *L);
-};
-
-const char *Lua_MonsterType_Enemies::name = "monster_type_enemies";
-
-const luaL_reg Lua_MonsterType_Enemies::index_table[] = {
-	{0, 0}
-};
-
-const luaL_reg Lua_MonsterType_Enemies::newindex_table[] = {
-	{0, 0}
-};
-
-const luaL_reg Lua_MonsterType_Enemies::metatable[] = {
-	{"__index", Lua_MonsterType_Enemies::get},
-	{"__newindex", Lua_MonsterType_Enemies::set},
-	{0, 0}
-};
-
-int Lua_MonsterType_Enemies::get(lua_State *L)
+bool Lua_MonsterClass_Valid(int32 index)
 {
-	int monster_type = L_Index<Lua_MonsterType_Enemies>(L, 1);
-	int enemy_class = L_ToIndex<Lua_MonsterClass>(L, 2);
+	return index >= 1 && index <= _class_yeti && powerOfTwo(index);
+}
+
+char Lua_MonsterClasses_Name[] = "MonsterClasses";
+typedef L_EnumContainer<Lua_MonsterClasses_Name, Lua_MonsterClass> Lua_MonsterClasses;
+
+template<>
+int L_Container<Lua_MonsterClasses_Name, Lua_MonsterClass>::_iterator(lua_State *L)
+{
+	int32 index = static_cast<int32>(lua_tonumber(L, lua_upvalueindex(1)));
+	while (index < Length())
+	{
+		if (Lua_MonsterClass::Valid(1 << index))
+		{
+			Lua_MonsterClass::Push(L, 1 << index);
+			lua_pushnumber(L, ++index);
+			lua_replace(L, lua_upvalueindex(1));
+			return 1;
+		}
+		else
+		{
+			++index;
+		}
+	}
+
+	lua_pushnil(L);
+	return 1;
+}
+
+char Lua_MonsterType_Enemies_Name[] = "monster_type_enemies";
+typedef L_Class<Lua_MonsterType_Enemies_Name> Lua_MonsterType_Enemies;
+
+static int Lua_MonsterType_Enemies_Get(lua_State *L)
+{
+	int monster_type = Lua_MonsterType_Enemies::Index(L, 1);
+	int enemy_class = Lua_MonsterClass::ToIndex(L, 2);
 	
 	monster_definition *definition = get_monster_definition_external(monster_type);
 	lua_pushboolean(L, definition->enemies & enemy_class);
 	return 1;
 }
 
-int Lua_MonsterType_Enemies::set(lua_State *L)
+static int Lua_MonsterType_Enemies_Set(lua_State *L)
 {
 	if (!lua_isboolean(L, 3))
 		return luaL_error(L, "enemies: incorrect argument type");
 
-	int monster_type = L_Index<Lua_MonsterType_Enemies>(L, 1);
-	int enemy_class = L_ToIndex<Lua_MonsterClass>(L, 2);
+	int monster_type = Lua_MonsterType_Enemies::Index(L, 1);
+	int enemy_class = Lua_MonsterClass::ToIndex(L, 2);
 	bool enemy = lua_toboolean(L, 3);
 	monster_definition *definition = get_monster_definition_external(monster_type);
 	if (enemy)
@@ -158,52 +112,32 @@ int Lua_MonsterType_Enemies::set(lua_State *L)
 	return 0;
 }
 
-struct Lua_MonsterType_Friends {
-	short index;
-	static bool valid(int index) { return Lua_MonsterTypes::valid(index); }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get(lua_State *L);
-	static int set(lua_State *L);
-};
-
-const char *Lua_MonsterType_Friends::name = "monster_type_enemies";
-
-const luaL_reg Lua_MonsterType_Friends::index_table[] = {
+const luaL_reg Lua_MonsterType_Enemies_Metatable[] = {
+	{"__index", Lua_MonsterType_Enemies_Get},
+	{"__newindex", Lua_MonsterType_Enemies_Set},
 	{0, 0}
 };
 
-const luaL_reg Lua_MonsterType_Friends::newindex_table[] = {
-	{0, 0}
-};
+char Lua_MonsterType_Friends_Name[] = "monster_type_friends";
+typedef L_Class<Lua_MonsterType_Friends_Name> Lua_MonsterType_Friends;
 
-const luaL_reg Lua_MonsterType_Friends::metatable[] = {
-	{"__index", Lua_MonsterType_Friends::get},
-	{"__newindex", Lua_MonsterType_Friends::set},
-	{0, 0}
-};
-
-int Lua_MonsterType_Friends::get(lua_State *L)
+static int Lua_MonsterType_Friends_Get(lua_State *L)
 {
-	int monster_type = L_Index<Lua_MonsterType_Friends>(L, 1);
-	int friend_class = L_ToIndex<Lua_MonsterClass>(L, 2);
+	int monster_type = Lua_MonsterType_Friends::Index(L, 1);
+	int friend_class = Lua_MonsterClass::ToIndex(L, 2);
 	
 	monster_definition *definition = get_monster_definition_external(monster_type);
 	lua_pushboolean(L, definition->friends & friend_class);
 	return 1;
 }
 
-int Lua_MonsterType_Friends::set(lua_State *L)
+static int Lua_MonsterType_Friends_Set(lua_State *L)
 {
 	if (!lua_isboolean(L, 3))
 		return luaL_error(L, "enemies: incorrect argument type");
 
-	int monster_type = L_Index<Lua_MonsterType_Friends>(L, 1);
-	int friend_class = L_ToIndex<Lua_MonsterClass>(L, 2);
+	int monster_type = Lua_MonsterType_Friends::Index(L, 1);
+	int friend_class = Lua_MonsterClass::ToIndex(L, 2);
 	bool friendly = lua_toboolean(L, 3);
 	monster_definition *definition = get_monster_definition_external(monster_type);
 	if (friendly)
@@ -218,38 +152,18 @@ int Lua_MonsterType_Friends::set(lua_State *L)
 	return 0;
 }
 
-struct Lua_MonsterType_Immunities {
-	short index;
-	static bool valid(int index) { return Lua_MonsterTypes::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get(lua_State *);
-	static int set(lua_State *);
-};
-
-const char *Lua_MonsterType_Immunities::name = "monster_type_immunities";
-
-const luaL_reg Lua_MonsterType_Immunities::index_table[] = {
+const luaL_reg Lua_MonsterType_Friends_Metatable[] = {
+	{"__index", Lua_MonsterType_Friends_Get},
+	{"__newindex", Lua_MonsterType_Friends_Set},
 	{0, 0}
 };
 
-const luaL_reg Lua_MonsterType_Immunities::newindex_table[] = {
-	{0, 0}
-};
+char Lua_MonsterType_Immunities_Name[] = "monster_type_immunities";
+typedef L_Class<Lua_MonsterType_Immunities_Name> Lua_MonsterType_Immunities;
 
-const luaL_reg Lua_MonsterType_Immunities::metatable[] = {
-	{"__index", Lua_MonsterType_Immunities::get},
-	{"__newindex", Lua_MonsterType_Immunities::set},
-	{0, 0}
-};
-
-int Lua_MonsterType_Immunities::get(lua_State *L)
+static int Lua_MonsterType_Immunities_Get(lua_State *L)
 {
-	int monster_type = L_Index<Lua_MonsterType_Immunities>(L, 1);
+	int monster_type = Lua_MonsterType_Immunities::Index(L, 1);
 	int damage_type = L_ToIndex<Lua_DamageType>(L, 2);
 
 	monster_definition *definition = get_monster_definition_external(monster_type);
@@ -257,12 +171,12 @@ int Lua_MonsterType_Immunities::get(lua_State *L)
 	return 1;
 }
 
-int Lua_MonsterType_Immunities::set(lua_State *L)
+static int Lua_MonsterType_Immunities_Set(lua_State *L)
 {
 	if (!lua_isboolean(L, 3))
 		luaL_error(L, "immunities: incorrect argument type");
 
-	int monster_type = L_Index<Lua_MonsterType_Immunities>(L, 1);
+	int monster_type = Lua_MonsterType_Immunities::Index(L, 1);
 	int damage_type = L_ToIndex<Lua_DamageType>(L, 2);
 	bool immune = lua_toboolean(L, 3);
 	
@@ -279,38 +193,18 @@ int Lua_MonsterType_Immunities::set(lua_State *L)
 	return 0;
 }
 
-struct Lua_MonsterType_Weaknesses {
-	short index;
-	static bool valid(int index) { return Lua_MonsterTypes::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get(lua_State *);
-	static int set(lua_State *);
-};
-
-const char *Lua_MonsterType_Weaknesses::name = "monster_type_weaknesses";
-
-const luaL_reg Lua_MonsterType_Weaknesses::index_table[] = {
+const luaL_reg Lua_MonsterType_Immunities_Metatable[] = {
+	{"__index", Lua_MonsterType_Immunities_Get},
+	{"__newindex", Lua_MonsterType_Immunities_Set},
 	{0, 0}
 };
 
-const luaL_reg Lua_MonsterType_Weaknesses::newindex_table[] = {
-	{0, 0}
-};
+char Lua_MonsterType_Weaknesses_Name[] = "monster_type_weaknesses";
+typedef L_Class<Lua_MonsterType_Weaknesses_Name> Lua_MonsterType_Weaknesses;
 
-const luaL_reg Lua_MonsterType_Weaknesses::metatable[] = {
-	{"__index", Lua_MonsterType_Weaknesses::get},
-	{"__newindex", Lua_MonsterType_Weaknesses::set},
-	{0, 0}
-};
-
-int Lua_MonsterType_Weaknesses::get(lua_State *L)
+int Lua_MonsterType_Weaknesses_Get(lua_State *L)
 {
-	int monster_type = L_Index<Lua_MonsterType_Weaknesses>(L, 1);
+	int monster_type = Lua_MonsterType_Weaknesses::Index(L, 1);
 	int damage_type = L_ToIndex<Lua_DamageType>(L, 2);
 
 	monster_definition *definition = get_monster_definition_external(monster_type);
@@ -318,12 +212,12 @@ int Lua_MonsterType_Weaknesses::get(lua_State *L)
 	return 1;
 }
 
-int Lua_MonsterType_Weaknesses::set(lua_State *L)
+int Lua_MonsterType_Weaknesses_Set(lua_State *L)
 {
 	if (!lua_isboolean(L, 3))
 		luaL_error(L, "immunities: incorrect argument type");
 
-	int monster_type = L_Index<Lua_MonsterType_Weaknesses>(L, 1);
+	int monster_type = Lua_MonsterType_Weaknesses::Index(L, 1);
 	int damage_type = L_ToIndex<Lua_DamageType>(L, 2);
 	bool weakness = lua_toboolean(L, 3);
 	
@@ -340,66 +234,59 @@ int Lua_MonsterType_Weaknesses::set(lua_State *L)
 	return 0;
 }
 
-struct Lua_MonsterType {
-	short index;
-	static bool valid(int index) { return Lua_MonsterTypes::valid(index); }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_class(lua_State *);
-	static int get_enemies(lua_State *);
-	static int get_friends(lua_State *);
-	static int get_immunities(lua_State *);
-	static int get_weaknesses(lua_State *);
-	static int get_item(lua_State *);
-	static int set_class(lua_State *);
-	static int set_item(lua_State *);
+const luaL_reg Lua_MonsterType_Weaknesses_Metatable[] = {
+	{"__index", Lua_MonsterType_Weaknesses_Get},
+	{"__newindex", Lua_MonsterType_Weaknesses_Set},
+	{0, 0}
 };
 
-const char* Lua_MonsterType::name = "monster_type";
+char Lua_MonsterType_Name[] = "monster_type";
+typedef L_Enum<Lua_MonsterType_Name> Lua_MonsterType;
 
-int Lua_MonsterType::get_class(lua_State *L) {
-	monster_definition *definition = get_monster_definition_external(L_Index<Lua_MonsterType>(L, 1));
-	L_Push<Lua_MonsterClass>(L, definition->_class);
+static bool Lua_MonsterType_Valid(int16 index)
+{
+	return index >= 0 && index < NUMBER_OF_MONSTER_TYPES;
+}
+
+static int Lua_MonsterType_Get_Class(lua_State *L) {
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	Lua_MonsterClass::Push(L, definition->_class);
 	return 1;
 }
 
-int Lua_MonsterType::get_enemies(lua_State *L) {
-	L_Push<Lua_MonsterType_Enemies>(L, L_Index<Lua_MonsterType>(L, 1));
+static int Lua_MonsterType_Get_Enemies(lua_State *L) {
+	Lua_MonsterType_Enemies::Push(L, Lua_MonsterType::Index(L, 1));
 	return 1;
 }
 
-int Lua_MonsterType::get_friends(lua_State *L) {
-	L_Push<Lua_MonsterType_Friends>(L, L_Index<Lua_MonsterType>(L, 1));
+static int Lua_MonsterType_Get_Friends(lua_State *L) {
+	Lua_MonsterType_Friends::Push(L, Lua_MonsterType::Index(L, 1));
 	return 1;
 }
 
-int Lua_MonsterType::get_immunities(lua_State *L) {
-	L_Push<Lua_MonsterType_Immunities>(L, L_Index<Lua_MonsterType>(L, 1));
+static int Lua_MonsterType_Get_Immunities(lua_State *L) {
+	Lua_MonsterType_Immunities::Push(L, Lua_MonsterType::Index(L, 1));
 	return 1;
 }
 
-int Lua_MonsterType::get_weaknesses(lua_State *L) {
-	L_Push<Lua_MonsterType_Weaknesses>(L, L_Index<Lua_MonsterType>(L, 1));
+static int Lua_MonsterType_Get_Weaknesses(lua_State *L) {
+	Lua_MonsterType_Weaknesses::Push(L, Lua_MonsterType::Index(L, 1));
 	return 1;
 }
 
-int Lua_MonsterType::get_item(lua_State *L) {
-	monster_definition *definition = get_monster_definition_external(L_Index<Lua_MonsterType>(L, 1));
+static int Lua_MonsterType_Get_Item(lua_State *L) {
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
 	Lua_ItemType::Push(L, definition->carrying_item_type);
 	return 1;
 }
 
-int Lua_MonsterType::set_class(lua_State *L) {
-	monster_definition *definition = get_monster_definition_external(L_Index<Lua_MonsterType>(L, 1));
-	definition->_class = static_cast<int>(L_ToIndex<Lua_MonsterClass>(L, 2));
+static int Lua_MonsterType_Set_Class(lua_State *L) {
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	definition->_class = static_cast<int32>(Lua_MonsterClass::ToIndex(L, 2));
 	return 0;
 }
 
-int Lua_MonsterType::set_item(lua_State *L) {
+static int Lua_MonsterType_Set_Item(lua_State *L) {
 	int item_type = 0;
 	if (lua_isnumber(L, 2))
 	{
@@ -412,77 +299,48 @@ int Lua_MonsterType::set_item(lua_State *L) {
 	else
 		return luaL_error(L, "item: incorrect argument type");
 	
-	monster_definition *definition = get_monster_definition_external(L_ToIndex<Lua_MonsterType>(L, 1));
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::ToIndex(L, 1));
 
 	definition->carrying_item_type = item_type;
 	return 0;
 }
 
-const luaL_reg Lua_MonsterType::index_table[] = {
-	{"class", Lua_MonsterType::get_class},
-	{"enemies", Lua_MonsterType::get_enemies},
-	{"friends", Lua_MonsterType::get_friends},
-	{"immunities", Lua_MonsterType::get_immunities},
-	{"index", L_TableIndex<Lua_MonsterType>},
-	{"item", Lua_MonsterType::get_item},
-	{"weaknesses", Lua_MonsterType::get_weaknesses},
+const luaL_reg Lua_MonsterType_Get[] = {
+	{"class", Lua_MonsterType_Get_Class},
+	{"enemies", Lua_MonsterType_Get_Enemies},
+	{"friends", Lua_MonsterType_Get_Friends},
+	{"immunities", Lua_MonsterType_Get_Immunities},
+	{"item", Lua_MonsterType_Get_Item},
+	{"weaknesses", Lua_MonsterType_Get_Weaknesses},
 	{0, 0}
 };
 
-const luaL_reg Lua_MonsterType::newindex_table[] = {
-	{"class", Lua_MonsterType::set_class},
-	{"item", Lua_MonsterType::set_item},
+const luaL_reg Lua_MonsterType_Set[] = {
+	{"class", Lua_MonsterType_Set_Class},
+	{"item", Lua_MonsterType_Set_Item},
 	{0, 0}
 };
 
-const luaL_reg Lua_MonsterType::metatable[] = {
-	{"__index", L_TableGet<Lua_MonsterType>},
-	{"__newindex", L_TableSet<Lua_MonsterType>},
-	{0, 0}
-};
+char Lua_MonsterTypes_Name[] = "MonsterTypes";
+typedef L_EnumContainer<Lua_MonsterTypes_Name, Lua_MonsterType> Lua_MonsterTypes;
 
-const char *Lua_MonsterTypes::name = "MonsterTypes";
-const luaL_reg Lua_MonsterTypes::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_MonsterTypes, Lua_MonsterType>},
-	{"__len", L_GlobalLength<Lua_MonsterTypes>},
-	{"__newindex", L_GlobalNewindex<Lua_MonsterTypes>},
-	{"__call", L_GlobalCall<Lua_MonsterTypes, Lua_MonsterType>},
-	{0, 0}
-};
+char Lua_Monster_Name[] = "monster";
 
-const luaL_reg Lua_MonsterTypes::methods[] = {
-	{0, 0}
-};
-
-const char *Lua_Monster::name = "monster";
-
-int Lua_Monster::valid(lua_State *L)
-{
-	lua_pushboolean(L, valid(L_Index<Lua_Monster>(L, 1)));
-	return 1;
-}
-
-int Lua_Monster::attack(lua_State *L)
+int Lua_Monster_Attack(lua_State *L)
 {
 	short target = 0;
 	if (lua_isnumber(L, 2))
-	{
-		target = static_cast<int>(lua_tonumber(L, 2));
-		if (!Lua_Monsters::valid(target))
-			return luaL_error(L, "attack: invalid monster index");
-	}
-	else if (L_Is<Lua_Monster>(L, 2))
-	{
-		target = L_Index<Lua_Monster>(L, 2);
-	}
+		target = static_cast<short>(lua_tonumber(L, 2));
+	else if (Lua_Monster::Is(L, 2))
+		target = Lua_Monster::Index(L, 2);
 	else
 		return luaL_error(L, "attack: incorrect argument type");
 	
-	change_monster_target(L_Index<Lua_Monster>(L, 1), target);
+	change_monster_target(Lua_Monster::Index(L, 1), target);
 	return 0;
 }
 
-int Lua_Monster::damage(lua_State *L)
+int Lua_Monster_Damage(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "damage: incorrect argument type");
@@ -505,10 +363,19 @@ int Lua_Monster::damage(lua_State *L)
 	damage.flags = 0;
 	damage.scale = FIXED_ONE;
 	
-	int monster_index = L_Index<Lua_Monster>(L, 1);
+	int monster_index = Lua_Monster::Index(L, 1);
 	monster_data *monster = get_monster_data(monster_index);
 	damage_monster(monster_index, NONE, NONE, &(monster->sound_location), &damage, NONE);
 	return 0;
+}
+
+int Lua_Monster_Valid(int16 index)
+{
+	if (index < 0 || index >= MAXIMUM_MONSTERS_PER_MAP)
+		return false;
+
+	monster_data *monster = GetMemberWithBounds(monsters, index, MAXIMUM_MONSTERS_PER_MAP);
+	return (SLOT_IS_USED(monster));
 }
 
 struct monster_pathfinding_data
@@ -524,9 +391,9 @@ extern long monster_pathfinding_cost_function(short source_polygon_index, short 
 extern void set_monster_action(short monster_index, short action);
 extern void set_monster_mode(short monster_index, short new_mode, short target_index);
 
-int Lua_Monster::move_by_path(lua_State *L)
+int Lua_Monster_Move_By_Path(lua_State *L)
 {
-	int monster_index = L_Index<Lua_Monster>(L, 1);
+	int monster_index = Lua_Monster::Index(L, 1);
 	int polygon_index = 0;
 	if (lua_isnumber(L, 2))
 	{
@@ -583,7 +450,7 @@ int Lua_Monster::move_by_path(lua_State *L)
 
 extern void add_object_to_polygon_object_list(short object_index, short polygon_index);
 
-int Lua_Monster::position(lua_State *L)
+int Lua_Monster_Position(lua_State *L)
 {
 	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
 		return luaL_error(L, "position: incorrect argument type");
@@ -602,7 +469,7 @@ int Lua_Monster::position(lua_State *L)
 	else
 		return luaL_error(L, "position: incorrect argument type");
 
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
 	object->location.x = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	object->location.y = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
@@ -616,16 +483,16 @@ int Lua_Monster::position(lua_State *L)
 }
 		
 
-int Lua_Monster::get_action(lua_State *L)
+static int Lua_Monster_Get_Action(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	lua_pushnumber(L, monster->action);
 	return 1;
 }
 
-int Lua_Monster::get_active(lua_State *L)
+static int Lua_Monster_Get_Active(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	if (MONSTER_IS_PLAYER(monster))
 		return luaL_error(L, "active: monster is a player");
 	
@@ -633,24 +500,24 @@ int Lua_Monster::get_active(lua_State *L)
 	return 1;
 }
 
-int Lua_Monster::get_facing(lua_State *L)
+static int Lua_Monster_Get_Facing(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
 	lua_pushnumber(L, (double) object->facing * AngleConvert);
 	return 1;
 }
 
-int Lua_Monster::get_mode(lua_State *L)
+static int Lua_Monster_Get_Mode(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	lua_pushnumber(L, monster->mode);
 	return 1;
 }
 
-int Lua_Monster::get_player(lua_State *L)
+static int Lua_Monster_Get_Player(lua_State *L)
 {
-	int monster_index = L_Index<Lua_Monster>(L, 1);
+	int monster_index = Lua_Monster::Index(L, 1);
 	monster_data *monster = get_monster_data(monster_index);
 	if (MONSTER_IS_PLAYER(monster))
 		L_Push<Lua_Player>(L, monster_index_to_player_index(monster_index));
@@ -660,67 +527,73 @@ int Lua_Monster::get_player(lua_State *L)
 	return 1;
 }
 
-int Lua_Monster::get_polygon(lua_State *L)
+static int Lua_Monster_Get_Polygon(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
 	L_Push<Lua_Polygon>(L, object->polygon);
 	return 1;
 }
 
-int Lua_Monster::get_type(lua_State *L)
+static int Lua_Monster_Get_Type(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	lua_pushnumber(L, monster->type);
 	return 1;
 }
 
-int Lua_Monster::get_visible(lua_State *L)
+static int Lua_Monster_Get_Valid(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	lua_pushboolean(L, Lua_Monster::Valid(Lua_Monster::Index(L, 1)));
+	return 1;
+}
+
+static int Lua_Monster_Get_Visible(lua_State *L)
+{
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
 	lua_pushboolean(L, !OBJECT_IS_INVISIBLE(object));
 	return 1;
 }
 
-int Lua_Monster::get_vitality(lua_State *L)
+static int Lua_Monster_Get_Vitality(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	lua_pushnumber(L, monster->vitality);
 	return 1;
 }
 
-int Lua_Monster::get_x(lua_State *L)
+static int Lua_Monster_Get_X(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
 	lua_pushnumber(L, (double) object->location.x / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Monster::get_y(lua_State *L)
+static int Lua_Monster_Get_Y(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
 	lua_pushnumber(L, (double) object->location.y / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Monster::get_z(lua_State *L)
+static int Lua_Monster_Get_Z(lua_State *L)
 {
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
 	lua_pushnumber(L, (double) object->location.z / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Monster::set_active(lua_State *L)
+static int Lua_Monster_Set_Active(lua_State *L)
 {
 	if (!lua_isboolean(L, 2))
 		return luaL_error(L, "active: incorrect argument type");	
 	
 	bool activate = lua_toboolean(L, 2);
-	int monster_index = L_Index<Lua_Monster>(L, 1);
+	int monster_index = Lua_Monster::Index(L, 1);
 	monster_data *monster = get_monster_data(monster_index);
 	if (MONSTER_IS_PLAYER(monster))
 		return luaL_error(L, "active: monster is a player");
@@ -737,12 +610,12 @@ int Lua_Monster::set_active(lua_State *L)
 	return 0;
 }
 
-int Lua_Monster::set_facing(lua_State *L)
+static int Lua_Monster_Set_Facing(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "facing: incorrect argument type");
 
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
 	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
 	return 0;
@@ -750,71 +623,52 @@ int Lua_Monster::set_facing(lua_State *L)
 	
 	
 
-int Lua_Monster::set_vitality(lua_State *L)
+static int Lua_Monster_Set_Vitality(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "vitality: incorrect argument type");
 
-	monster_data *monster = get_monster_data(L_Index<Lua_Monster>(L, 1));
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	monster->vitality = static_cast<int>(lua_tonumber(L, 2));
 	return 0;
 }
 
-const luaL_reg Lua_Monster::index_table[] = {
-	{"action", Lua_Monster::get_action},
-	{"active", Lua_Monster::get_active},
-	{"attack", L_TableFunction<Lua_Monster::attack>},
-	{"damage", L_TableFunction<Lua_Monster::damage>},
-	{"index", L_TableIndex<Lua_Monster>},
-	{"facing", Lua_Monster::get_facing},
-	{"life", Lua_Monster::get_vitality},
-	{"mode", Lua_Monster::get_mode},
-	{"move_by_path", L_TableFunction<Lua_Monster::move_by_path>},
-	{"player", Lua_Monster::get_player},
-	{"polygon", Lua_Monster::get_polygon},
-	{"position", L_TableFunction<Lua_Monster::position>},
-	{"type", Lua_Monster::get_type},
-	{"valid", Lua_Monster::valid},
-	{"visible", Lua_Monster::get_visible},
-	{"vitality", Lua_Monster::get_vitality},
-	{"x", Lua_Monster::get_x},
-	{"y", Lua_Monster::get_y},
-	{"yaw", Lua_Monster::get_facing},
-	{"z", Lua_Monster::get_z},
+const luaL_reg Lua_Monster_Get[] = {
+	{"action", Lua_Monster_Get_Action},
+	{"active", Lua_Monster_Get_Active},
+	{"attack", L_TableFunction<Lua_Monster_Attack>},
+	{"damage", L_TableFunction<Lua_Monster_Damage>},
+	{"facing", Lua_Monster_Get_Facing},
+	{"life", Lua_Monster_Get_Vitality},
+	{"mode", Lua_Monster_Get_Mode},
+	{"move_by_path", L_TableFunction<Lua_Monster_Move_By_Path>},
+	{"player", Lua_Monster_Get_Player},
+	{"polygon", Lua_Monster_Get_Polygon},
+	{"position", L_TableFunction<Lua_Monster_Position>},
+	{"type", Lua_Monster_Get_Type},
+	{"valid", Lua_Monster_Get_Valid},
+	{"visible", Lua_Monster_Get_Visible},
+	{"vitality", Lua_Monster_Get_Vitality},
+	{"x", Lua_Monster_Get_X},
+	{"y", Lua_Monster_Get_Y},
+	{"yaw", Lua_Monster_Get_Facing},
+	{"z", Lua_Monster_Get_Z},
 	{0, 0}
 };
 
-const luaL_reg Lua_Monster::newindex_table[] = {
-	{"active", Lua_Monster::set_active},
-	{"facing", Lua_Monster::set_facing},
-	{"life", Lua_Monster::set_vitality},
-	{"vitality", Lua_Monster::set_vitality},
-	{"yaw", Lua_Monster::set_facing},
+const luaL_reg Lua_Monster_Set[] = {
+	{"active", Lua_Monster_Set_Active},
+	{"facing", Lua_Monster_Set_Facing},
+	{"life", Lua_Monster_Set_Vitality},
+	{"vitality", Lua_Monster_Set_Vitality},
+	{"yaw", Lua_Monster_Set_Facing},
 	{0, 0}
 };
 
-const luaL_reg Lua_Monster::metatable[] = {
-	{"__index", L_TableGet<Lua_Monster>},
-	{"__newindex", L_TableSet<Lua_Monster>},
-	{0, 0}
-};
-
-const char *Lua_Monsters::name = "Monsters";
-
-const luaL_reg Lua_Monsters::methods[] = {
-	{"new", Lua_Monsters::new_monster},
-	{0, 0}
-};
-
-const luaL_reg Lua_Monsters::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_Monsters, Lua_Monster>},
-	{"__newindex", L_GlobalNewindex<Lua_Monsters>},
-	{"__call", L_GlobalCall<Lua_Monsters, Lua_Monster>},
-	{0, 0}
-};
+char Lua_Monsters_Name[] = "Monsters";
 
 // Monsters.new(x, y, height, polygon, type)
-int Lua_Monsters::new_monster(lua_State *L)
+int Lua_Monsters_New(lua_State *L)
 {
 	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 5))
 		luaL_error(L, "new: incorrect argument type");
@@ -851,33 +705,42 @@ int Lua_Monsters::new_monster(lua_State *L)
 	if (monster_index == NONE)
 		return 0;
 
-	L_Push<Lua_Monster>(L, monster_index);
+	Lua_Monster::Push(L, monster_index);
 	return 1;
 }
 
-bool Lua_Monsters::valid(int index)
-{
-	if (index < 0 || index >= MAXIMUM_MONSTERS_PER_MAP)
-		return false;
-
-	monster_data *monster = GetMemberWithBounds(monsters, index, MAXIMUM_MONSTERS_PER_MAP);
-	return (SLOT_IS_USED(monster));
-}
+const luaL_reg Lua_Monsters_Methods[] = {
+	{"new", Lua_Monsters_New},
+	{0, 0}
+};
 
 static int compatibility(lua_State *L);
 
 int Lua_Monsters_register(lua_State *L)
 {
-	L_Register<Lua_MonsterClass>(L);
-	L_GlobalRegister<Lua_MonsterClasses>(L);
-	L_Register<Lua_MonsterType_Enemies>(L);
-	L_Register<Lua_MonsterType_Friends>(L);
-	L_Register<Lua_MonsterType_Immunities>(L);
-	L_Register<Lua_MonsterType_Weaknesses>(L);
-	L_Register<Lua_MonsterType>(L);
-	L_GlobalRegister<Lua_MonsterTypes>(L);
-	L_Register<Lua_Monster>(L);
-	L_GlobalRegister<Lua_Monsters>(L);
+	Lua_MonsterClass::Register(L);
+	Lua_MonsterClass::Valid = Lua_MonsterClass_Valid;
+
+	Lua_MonsterClasses::Register(L);
+	Lua_MonsterClasses::Length = Lua_MonsterClasses::ConstantLength<_class_yeti_bit + 1>;
+
+
+	Lua_MonsterType_Enemies::Register(L, 0, 0, Lua_MonsterType_Enemies_Metatable);
+	Lua_MonsterType_Friends::Register(L, 0, 0, Lua_MonsterType_Friends_Metatable);
+	Lua_MonsterType_Immunities::Register(L, 0, 0, Lua_MonsterType_Immunities_Metatable);
+	Lua_MonsterType_Weaknesses::Register(L, 0, 0, Lua_MonsterType_Weaknesses_Metatable);
+
+	Lua_MonsterType::Register(L, Lua_MonsterType_Get, Lua_MonsterType_Set);
+	Lua_MonsterType::Valid = Lua_MonsterType_Valid;
+	
+	Lua_MonsterTypes::Register(L);
+	Lua_MonsterTypes::Length = Lua_MonsterTypes::ConstantLength<NUMBER_OF_MONSTER_TYPES>;
+
+	Lua_Monster::Register(L, Lua_Monster_Get, Lua_Monster_Set);
+	Lua_Monster::Valid = Lua_Monster_Valid;
+
+	Lua_Monsters::Register(L, Lua_Monsters_Methods);
+	Lua_Monsters::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_monsters);
 
 	compatibility(L);
 }

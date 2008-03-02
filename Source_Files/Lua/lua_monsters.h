@@ -35,50 +35,13 @@ extern "C"
 
 #include "map.h"
 #include "monsters.h"
+#include "lua_templates.h"
 
-struct Lua_Monsters {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return MAXIMUM_MONSTERS_PER_MAP; }
-	static bool valid(int);
+extern char Lua_Monster_Name[]; // "monster"
+typedef L_Class<Lua_Monster_Name> Lua_Monster;
 
-	static int new_monster(lua_State *L);
-};
-
-struct Lua_Monster {
-	short index;
-	static bool valid(int index) { return Lua_Monsters::valid(index); }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int valid(lua_State *L);
-
-	static int get_action(lua_State *L);
-	static int get_active(lua_State *L);
-	static int get_facing(lua_State *L);
-	static int get_mode(lua_State *L);
-	static int get_player(lua_State *L);
-	static int get_polygon(lua_State *L);
-	static int get_type(lua_State *L);
-	static int get_visible(lua_State *L);
-	static int get_vitality(lua_State *L);
-	static int get_x(lua_State *L);
-	static int get_y(lua_State *L);
-	static int get_z(lua_State *L);
-
-	static int set_active(lua_State *L);
-	static int set_facing(lua_State *L);
-	static int set_vitality(lua_State *L);
-
-	static int attack(lua_State *L);
-	static int damage(lua_State *L);
-	static int move_by_path(lua_State *L);
-	static int position(lua_State *L);
-};
+extern char Lua_Monsters_Name[]; // "Monsters"
+typedef L_Container<Lua_Monsters_Name, Lua_Monster> Lua_Monsters;
 
 int Lua_Monsters_register(lua_State *L);
 

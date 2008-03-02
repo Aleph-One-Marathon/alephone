@@ -1292,7 +1292,7 @@ int Lua_Player::get_motion_sensor(lua_State *L)
 
 static int Lua_Player_get_monster(lua_State *L)
 {
-	L_Push<Lua_Monster>(L, get_player_data(L_Index<Lua_Player>(L, 1))->monster_index);
+	Lua_Monster::Push(L, get_player_data(L_Index<Lua_Player>(L, 1))->monster_index);
 	return 1;
 }
 

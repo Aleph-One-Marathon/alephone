@@ -75,7 +75,7 @@ static int Lua_Projectile_Get_Gravity(lua_State *L)
 static int Lua_Projectile_Get_Owner(lua_State *L)
 {
 	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
-	L_Push<Lua_Monster>(L, projectile->owner_index);
+	Lua_Monster::Push(L, projectile->owner_index);
 	return 1;
 }
 
@@ -90,7 +90,7 @@ static int Lua_Projectile_Get_Polygon(lua_State *L)
 static int Lua_Projectile_Get_Target(lua_State *L)
 {
 	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
-	L_Push<Lua_Monster>(L, projectile->target_index);
+	Lua_Monster::Push(L, projectile->target_index);
 	return 1;
 }
 
@@ -179,9 +179,9 @@ static int Lua_Projectile_Set_Owner(lua_State *L)
 	{
 		monster_index = static_cast<int>(lua_tonumber(L, 2));
 	}
-	else if (L_Is<Lua_Monster>(L, 2))
+	else if (Lua_Monster::Is(L, 2))
 	{
-		monster_index = L_Index<Lua_Monster>(L, 2);
+		monster_index = Lua_Monster::Index(L, 2);
 	}
 	else if (L_Is<Lua_Player>(L, 2))
 	{
@@ -211,9 +211,9 @@ static int Lua_Projectile_Set_Target(lua_State *L)
 	{
 		monster_index = static_cast<int>(lua_tonumber(L, 2));
 	}
-	else if (L_Is<Lua_Monster>(L, 2))
+	else if (Lua_Monster::Is(L, 2))
 	{
-		monster_index = L_Index<Lua_Monster>(L, 2);
+		monster_index = Lua_Monster::Index(L, 2);
 	}
 	else if (L_Is<Lua_Player>(L, 2))
 	{
