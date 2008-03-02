@@ -183,9 +183,9 @@ static int Lua_Projectile_Set_Owner(lua_State *L)
 	{
 		monster_index = Lua_Monster::Index(L, 2);
 	}
-	else if (L_Is<Lua_Player>(L, 2))
+	else if (Lua_Player::Is(L, 2))
 	{
-		player_data *player = get_player_data(L_Index<Lua_Player>(L, 2));
+		player_data *player = get_player_data(Lua_Player::Index(L, 2));
 		monster_index = player->monster_index;
 	}
 	else
@@ -215,9 +215,9 @@ static int Lua_Projectile_Set_Target(lua_State *L)
 	{
 		monster_index = Lua_Monster::Index(L, 2);
 	}
-	else if (L_Is<Lua_Player>(L, 2))
+	else if (Lua_Player::Is(L, 2))
 	{
-		player_data *player = get_player_data(L_Index<Lua_Player>(L, 2));
+		player_data *player = get_player_data(Lua_Player::Index(L, 2));
 		monster_index = player->monster_index;
 	}
 	else

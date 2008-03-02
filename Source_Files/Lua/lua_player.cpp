@@ -45,24 +45,15 @@ LUA_PLAYER.CPP
 
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
-struct Lua_Action_Flags {
-	short index;
-	static const char *name;
-	static bool valid(int index) { return Lua_Players::valid(index); }
-	
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
-const char *Lua_Action_Flags::name = "action_flags";
+char Lua_Action_Flags_Name[] = "action_flags";
+typedef L_Class<Lua_Action_Flags_Name> Lua_Action_Flags;
 
 extern ModifiableActionQueues *GetGameQueue();
 
 template<uint32 flag> 
-static int get_action_flag_T(lua_State *L)
+static int Lua_Action_Flags_Get_t(lua_State *L)
 {
-	int player_index = L_Index<Lua_Action_Flags>(L, 1);
+	int player_index = Lua_Action_Flags::Index(L, 1);
 
 	if (GetGameQueue()->countActionFlags(player_index))
 	{
@@ -78,12 +69,12 @@ static int get_action_flag_T(lua_State *L)
 }
 
 template<uint32 flag> 
-static int set_action_flag_T(lua_State *L)
+static int Lua_Action_Flags_Set_t(lua_State *L)
 {
 	if (!lua_isboolean(L, 2))
 		return luaL_error(L, "action flags: incorrect argument type");
 	
-	int player_index = L_Index<Lua_Action_Flags>(L, 1);
+	int player_index = Lua_Action_Flags::Index(L, 1);
 	if (GetGameQueue()->countActionFlags(player_index))
 	{
 		if (lua_toboolean(L, 2))
@@ -103,7 +94,7 @@ static int set_action_flag_T(lua_State *L)
 	return 0;
 }
 
-static int set_microphone_action_flag(lua_State *L)
+static int Lua_Action_Flags_Set_Microphone(lua_State *L)
 {
 	if (!lua_isboolean(L, 2))
 		return luaL_error(L, "action flags: incorrect argument type");
@@ -111,7 +102,7 @@ static int set_microphone_action_flag(lua_State *L)
 	if (lua_toboolean(L, 2))
 		return luaL_error(L, "you can only disable the microphone button flag");
 
-	int player_index = L_Index<Lua_Action_Flags>(L, 1);
+	int player_index = Lua_Action_Flags::Index(L, 1);
 	if (GetGameQueue()->countActionFlags(player_index))
 	{
 		GetGameQueue()->modifyActionFlags(player_index, 0, _microphone_button);
@@ -124,53 +115,34 @@ static int set_microphone_action_flag(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Action_Flags::index_table[] = {
-	{"action_trigger", get_action_flag_T<_action_trigger_state>},
-	{"cycle_weapons_backward", get_action_flag_T<_cycle_weapons_backward>},
-	{"cycle_weapons_forward", get_action_flag_T<_cycle_weapons_forward>},
-	{"left_trigger", get_action_flag_T<_left_trigger_state>},
-	{"microphone_button", get_action_flag_T<_microphone_button>},
-	{"right_trigger", get_action_flag_T<_right_trigger_state>},
-	{"toggle_map", get_action_flag_T<_toggle_map>},
+const luaL_reg Lua_Action_Flags_Get[] = {
+	{"action_trigger", Lua_Action_Flags_Get_t<_action_trigger_state>},
+	{"cycle_weapons_backward", Lua_Action_Flags_Get_t<_cycle_weapons_backward>},
+	{"cycle_weapons_forward", Lua_Action_Flags_Get_t<_cycle_weapons_forward>},
+	{"left_trigger", Lua_Action_Flags_Get_t<_left_trigger_state>},
+	{"microphone_button", Lua_Action_Flags_Get_t<_microphone_button>},
+	{"right_trigger", Lua_Action_Flags_Get_t<_right_trigger_state>},
+	{"toggle_map", Lua_Action_Flags_Get_t<_toggle_map>},
 	{0, 0}
 };
 
-const luaL_reg Lua_Action_Flags::newindex_table[] = {
-	{"action_trigger", set_action_flag_T<_action_trigger_state>},
-	{"cycle_weapons_backward", set_action_flag_T<_cycle_weapons_backward>},
-	{"cycle_weapons_forward", set_action_flag_T<_cycle_weapons_forward>},
-	{"left_trigger", set_action_flag_T<_left_trigger_state>},
-	{"microphone_button", set_microphone_action_flag},
-	{"right_trigger", set_action_flag_T<_right_trigger_state>},
-	{"toggle_map", set_action_flag_T<_toggle_map>},
+const luaL_reg Lua_Action_Flags_Set[] = {
+	{"action_trigger", Lua_Action_Flags_Set_t<_action_trigger_state>},
+	{"cycle_weapons_backward", Lua_Action_Flags_Set_t<_cycle_weapons_backward>},
+	{"cycle_weapons_forward", Lua_Action_Flags_Set_t<_cycle_weapons_forward>},
+	{"left_trigger", Lua_Action_Flags_Set_t<_left_trigger_state>},
+	{"microphone_button", Lua_Action_Flags_Set_Microphone},
+	{"right_trigger", Lua_Action_Flags_Set_t<_right_trigger_state>},
+	{"toggle_map", Lua_Action_Flags_Set_t<_toggle_map>},
 	{0, 0}
 };
 
-const luaL_reg Lua_Action_Flags::metatable[] = {
-	{"__index", L_TableGet<Lua_Action_Flags>},
-	{"__newindex", L_TableSet<Lua_Action_Flags>},
-	{0, 0}
-};
+char Lua_Crosshairs_Name[] = "crosshairs";
+typedef L_Class<Lua_Crosshairs_Name> Lua_Crosshairs;
 
-struct Lua_Crosshairs {
-	short index;
-	static const char *name;
-	static bool valid(int index) { return Lua_Players::valid(index); }
-	
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_active(lua_State *L);
-
-	static int set_active(lua_State *L);
-};
-
-const char *Lua_Crosshairs::name = "crosshairs";
-
-int Lua_Crosshairs::get_active(lua_State *L)
+static int Lua_Crosshairs_Get_Active(lua_State *L)
 {
-	int player_index = L_Index<Lua_Crosshairs>(L, 1);
+	int player_index = Lua_Crosshairs::Index(L, 1);
 	if (player_index == local_player_index)
 	{
 		lua_pushboolean(L, Crosshairs_IsActive());
@@ -182,14 +154,14 @@ int Lua_Crosshairs::get_active(lua_State *L)
 	}
 }
 
-const luaL_reg Lua_Crosshairs::index_table[] = {
-	{"active", Lua_Crosshairs::get_active},
+const luaL_reg Lua_Crosshairs_Get[] = {
+	{"active", Lua_Crosshairs_Get_Active},
 	{0, 0}
 };
 
-int Lua_Crosshairs::set_active(lua_State *L)
+static int Lua_Crosshairs_Set_Active(lua_State *L)
 {
-	int player_index = L_Index<Lua_Crosshairs>(L, 1);
+	int player_index = Lua_Crosshairs::Index(L, 1);
 	if (player_index == local_player_index)
 	{
 		if (!lua_isboolean(L, 2))
@@ -201,180 +173,144 @@ int Lua_Crosshairs::set_active(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Crosshairs::newindex_table[] = {
-	{"active", Lua_Crosshairs::set_active},
+const luaL_reg Lua_Crosshairs_Set[] = {
+	{"active", Lua_Crosshairs_Set_Active},
 	{0, 0}
 };
 
-const luaL_reg Lua_Crosshairs::metatable[] = {
-	{"__index", L_TableGet<Lua_Crosshairs>},
-	{"__newindex", L_TableSet<Lua_Crosshairs>},
-	{0, 0}
-};
+char Lua_OverlayColor_Name[] = "overlay_color";
+typedef L_Enum<Lua_OverlayColor_Name> Lua_OverlayColor;
 
-struct Lua_OverlayColor {
-	short index;
-	static bool valid(int index) { return index >= 0 && index < 8; }
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
-const char *Lua_OverlayColor::name = "overlay_color";
-const luaL_reg Lua_OverlayColor::index_table[] = {
-	{"index", L_TableIndex<Lua_OverlayColor>},
-	{0, 0}
-};
-
-const luaL_reg Lua_OverlayColor::newindex_table[] = { {0, 0} };
-const luaL_reg Lua_OverlayColor::metatable[] = {
-	{"__eq", L_Equals<Lua_OverlayColor>},
-	{"__index", L_TableGet<Lua_OverlayColor>},
-	{"__newindex", L_TableSet<Lua_OverlayColor>},
-	{0, 0}
-};
-
-struct Lua_Overlays {
-	short index;
-	static bool valid(int index) { return Lua_Players::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get(lua_State *L);
-};
-
-struct Lua_Overlay {
-	short index;
-	short player_index;
-
-	static bool valid(int index) { return Lua_Overlays::valid(index); }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int set_icon(lua_State *L);
-	static int set_text(lua_State *L);
-	static int set_text_color(lua_State *L);
-
-	static int clear(lua_State *L);
-	static int fill_icon(lua_State *L);
-};
-
-const char *Lua_Overlay::name = "overlay";
-
-int Lua_Overlay::clear(lua_State *L)
+template<char *name>
+class PlayerSubtable : public L_Class<name>
 {
-	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
-	if (t->player_index == local_player_index)
+public:
+	int16 m_player_index;
+	static PlayerSubtable *Push(lua_State *L, int16 player_index, int16 index);
+	static int16 PlayerIndex(lua_State *L, int index);
+};
+
+template<char *name>
+PlayerSubtable<name> *PlayerSubtable<name>::Push(lua_State *L, int16 player_index, int16 index)
+{
+	PlayerSubtable<name> *t = 0;
+
+	if (!L_Class<name, int16>::Valid(index) || !Lua_Player::Valid(player_index))
 	{
-		SetScriptHUDIcon(t->index, 0, 0);
-		SetScriptHUDText(t->index, 0);
+		lua_pushnil(L);
+		return 0;
+	}
+
+	t = static_cast<PlayerSubtable<name>*>(lua_newuserdata(L, sizeof(PlayerSubtable<name>)));
+	luaL_getmetatable(L, name);
+	lua_setmetatable(L, -2);
+	t->m_index = index;
+	t->m_player_index = player_index;
+
+	return t;
+}
+
+template<char *name>
+int16 PlayerSubtable<name>::PlayerIndex(lua_State *L, int index)
+{
+	PlayerSubtable<name> *t = static_cast<PlayerSubtable<name> *>(lua_touserdata(L, index));
+	if (!t) luaL_typerror(L, index, name);
+	return t->m_player_index;
+}
+
+char Lua_Overlay_Name[] = "overlay";
+typedef PlayerSubtable<Lua_Overlay_Name> Lua_Overlay;
+
+int Lua_Overlay_Clear(lua_State *L)
+{
+	int index = Lua_Overlay::Index(L, 1);
+	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
+	{
+		SetScriptHUDIcon(index, 0, 0);
+		SetScriptHUDText(index, 0);
 	}
 
 	return 0;
 }
 
-int Lua_Overlay::fill_icon(lua_State *L)
+int Lua_Overlay_Fill_Icon(lua_State *L)
 {
-	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
-	if (t->player_index == local_player_index)
+	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
 	{
-		int color = L_ToIndex<Lua_OverlayColor>(L, 2);
-		SetScriptHUDSquare(t->index, color);
+		int color = Lua_OverlayColor::ToIndex(L, 2);
+		SetScriptHUDSquare(Lua_Overlay::Index(L, 1), color);
 	}
 
 	return 0;
 }
 
-const luaL_reg Lua_Overlay::index_table[] = {
-	{"clear", L_TableFunction<Lua_Overlay::clear>},
-	{"fill_icon", L_TableFunction<Lua_Overlay::fill_icon>},
+const luaL_reg Lua_Overlay_Get[] = {
+	{"clear", L_TableFunction<Lua_Overlay_Clear>},
+	{"fill_icon", L_TableFunction<Lua_Overlay_Fill_Icon>},
 	{0, 0}
 };
 
-int Lua_Overlay::set_icon(lua_State *L)
+static int Lua_Overlay_Set_Icon(lua_State *L)
 {
-	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
-	if (t->player_index == local_player_index)
+	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
 	{
 		if (lua_isstring(L, 2))
 		{
-			SetScriptHUDIcon(t->index, lua_tostring(L, 2), lua_strlen(L, 2));
+			SetScriptHUDIcon(Lua_Overlay::Index(L, 1), lua_tostring(L, 2), lua_strlen(L, 2));
 		}
 		else
 		{
-			SetScriptHUDIcon(t->index, 0, 0);
+			SetScriptHUDIcon(Lua_Overlay::Index(L, 1), 0, 0);
 		}
 	}
 
 	return 0;
 }
 
-int Lua_Overlay::set_text(lua_State *L)
+static int Lua_Overlay_Set_Text(lua_State *L)
 {
-	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
-	if (t->player_index == local_player_index)
+	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
 	{
 		const char *text = 0;
 		if (lua_isstring(L, 2)) 
 			text = lua_tostring(L, 2);
 		
-		SetScriptHUDText(t->index, text);
+		SetScriptHUDText(Lua_Overlay::Index(L, 1), text);
 	}
 
 	return 0;
 }
 
-int Lua_Overlay::set_text_color(lua_State *L)
+static int Lua_Overlay_Set_Text_Color(lua_State *L)
 {
-	Lua_Overlay *t = L_To<Lua_Overlay>(L, 1);
-	if (t->player_index == local_player_index)
+	if (Lua_Overlay::PlayerIndex(L, 1) == local_player_index)
 	{
-		int color = L_ToIndex<Lua_OverlayColor>(L, 2);
-		SetScriptHUDColor(t->index, color);
+		int color = Lua_OverlayColor::ToIndex(L, 2);
+		SetScriptHUDColor(Lua_Overlay::Index(L, 1), color);
 	}
 
 	return 0;
 }
 
-const luaL_reg Lua_Overlay::newindex_table[] = {
-	{"color", Lua_Overlay::set_text_color},
-	{"icon", Lua_Overlay::set_icon},
-	{"text", Lua_Overlay::set_text},
+const luaL_reg Lua_Overlay_Set[] = {
+	{"color", Lua_Overlay_Set_Text_Color},
+	{"icon", Lua_Overlay_Set_Icon},
+	{"text", Lua_Overlay_Set_Text},
 	{0, 0}
 };
 
-const luaL_reg Lua_Overlay::metatable[] = {
-	{"__index", L_TableGet<Lua_Overlay>},
-	{"__newindex", L_TableSet<Lua_Overlay>},
-	{0, 0}
-};
+char Lua_Overlays_Name[] = "overlays";
+typedef L_Class<Lua_Overlays_Name> Lua_Overlays;
 
-const char *Lua_Overlays::name = "overlays";
-const luaL_reg Lua_Overlays::index_table[] = { {0, 0} };
-const luaL_reg Lua_Overlays::newindex_table[] = { {0, 0} };
-const luaL_reg Lua_Overlays::metatable[] = {
-	{"__index", Lua_Overlays::get},
-	{0, 0}
-};
-
-int Lua_Overlays::get(lua_State *L)
+static int Lua_Overlays_Get(lua_State *L)
 {
 	if (lua_isnumber(L, 2))
 	{
-		int player_index = L_Index<Lua_Overlays>(L, 1);
+		int player_index = Lua_Overlays::Index(L, 1);
 		int index = static_cast<int>(lua_tonumber(L, 2));
-		if (Lua_Overlays::valid(player_index) && index >= 0 && index < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS)
+		if (Lua_Overlays::Valid(player_index) && index >= 0 && index < MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS)
 		{
-			Lua_Overlay *t = L_PushNew<Lua_Overlay>(L);
-			t->index = index;
-			t->player_index = player_index;
+			Lua_Overlay::Push(L, player_index, index);
 		}
 		else
 		{
@@ -389,65 +325,20 @@ int Lua_Overlays::get(lua_State *L)
 	return 1;
 }
 
-struct Lua_Side {
-	short index;
-	static bool valid(int index) { return true; }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
-const char *Lua_Side::name = "side";
-
-const luaL_reg Lua_Side::index_table[] = {
-	{"index", L_TableIndex<Lua_Side>},
+const luaL_reg Lua_Overlays_Metatable[] = {
+	{"__index", Lua_Overlays_Get},
 	{0, 0}
 };
 
-const luaL_reg Lua_Side::newindex_table[] = {
-	{0, 0}
-};
+char Lua_Side_Name[] = "side";
+typedef L_Class<Lua_Side_Name> Lua_Side;
 
-const luaL_reg Lua_Side::metatable[] = {
-	{"__index", L_TableGet<Lua_Side>},
-	{"__newindex", L_TableSet<Lua_Side>},
-	{0, 0}
-};
+char Lua_Player_Items_Name[] = "player_items";
+typedef L_Class<Lua_Player_Items_Name> Lua_Player_Items;
 
-struct Lua_Player_Items {
-	short index;
-	static bool valid(int index) { return Lua_Players::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get(lua_State *L);
-	static int set(lua_State *L);
-};
-
-const char *Lua_Player_Items::name = "player_items";
-
-const luaL_reg Lua_Player_Items::index_table[] = {
-	{0, 0}
-};
-
-const luaL_reg Lua_Player_Items::newindex_table[] = {
-	{0, 0}
-};
-
-const luaL_reg Lua_Player_Items::metatable[] = {
-	{"__index", Lua_Player_Items::get},
-	{"__newindex", Lua_Player_Items::set},
-	{0, 0}
-};
-
-int Lua_Player_Items::get(lua_State *L)
+static int Lua_Player_Items_Get(lua_State *L)
 {
-	int player_index = L_Index<Lua_Player_Items>(L, 1);
+	int player_index = Lua_Player_Items::Index(L, 1);
 	int item_type = Lua_ItemType::ToIndex(L, 2);
 
 	player_data *player = get_player_data(player_index);
@@ -460,12 +351,12 @@ int Lua_Player_Items::get(lua_State *L)
 extern void destroy_players_ball(short player_index);
 extern void select_next_best_weapon(short player_index);
 
-int Lua_Player_Items::set(lua_State *L)
+static int Lua_Player_Items_Set(lua_State *L)
 {
 	if (!lua_isnumber(L, 3)) 
 		return luaL_error(L, "items: incorrect argument type");
 
-	int player_index = L_Index<Lua_Player_Items>(L, 1);
+	int player_index = Lua_Player_Items::Index(L, 1);
 	player_data *player = get_player_data(player_index);
 	int item_type = Lua_ItemType::ToIndex(L, 2);
 	int item_count = player->items[item_type];
@@ -506,376 +397,223 @@ int Lua_Player_Items::set(lua_State *L)
 	return 0;
 }
 
-struct Lua_InternalVelocity {
-	short index;
-	static const char *name;
-	static bool valid(int index) { return Lua_Players::valid(index); }
-	
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_forward(lua_State *L);
-	static int get_perpendicular(lua_State *L);
+const luaL_reg Lua_Player_Items_Metatable[] = {
+	{"__index", Lua_Player_Items_Get},
+	{"__newindex", Lua_Player_Items_Set},
+	{0, 0}
 };
 
-const char *Lua_InternalVelocity::name = "internal_velocity";
+char Lua_InternalVelocity_Name[] = "internal_velocity";
+typedef L_Class<Lua_InternalVelocity_Name> Lua_InternalVelocity;
 
-int Lua_InternalVelocity::get_forward(lua_State *L)
+static int Lua_InternalVelocity_Get_Forward(lua_State *L)
 {
-	int player_index = L_Index<Lua_InternalVelocity>(L, 1);
+	int player_index = Lua_InternalVelocity::Index(L, 1);
 	player_data *player = get_player_data(player_index);
 	lua_pushnumber(L, (double) player->variables.velocity / FIXED_ONE);
 	return 1;
 }
 
-int Lua_InternalVelocity::get_perpendicular(lua_State *L)
+static int Lua_InternalVelocity_Get_Perpendicular(lua_State *L)
 {
-	int player_index = L_Index<Lua_InternalVelocity>(L, 1);
+	int player_index = Lua_InternalVelocity::Index(L, 1);
 	player_data *player = get_player_data(player_index);
 	lua_pushnumber(L, (double) player->variables.perpendicular_velocity / FIXED_ONE);
 	return 1;
 }
 
-const luaL_reg Lua_InternalVelocity::index_table[] = {
-	{"forward", Lua_InternalVelocity::get_forward},
-	{"perpendicular", Lua_InternalVelocity::get_perpendicular},
+const luaL_reg Lua_InternalVelocity_Get[] = {
+	{"forward", Lua_InternalVelocity_Get_Forward},
+	{"perpendicular", Lua_InternalVelocity_Get_Perpendicular},
 	{0, 0}
 };
 
-const luaL_reg Lua_InternalVelocity::newindex_table[] = { {0, 0} };
+char Lua_ExternalVelocity_Name[] = "external_velocity";
+typedef L_Class<Lua_ExternalVelocity_Name> Lua_ExternalVelocity;
 
-const luaL_reg Lua_InternalVelocity::metatable[] = {
-	{"__index", L_TableGet<Lua_InternalVelocity>},
-	{"__newindex", L_TableSet<Lua_InternalVelocity>},
+static int Lua_ExternalVelocity_Get_I(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_player_data(Lua_ExternalVelocity::Index(L, 1))->variables.external_velocity.i / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_ExternalVelocity_Get_J(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_player_data(Lua_ExternalVelocity::Index(L, 1))->variables.external_velocity.j / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_ExternalVelocity_Get_K(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_player_data(Lua_ExternalVelocity::Index(L, 1))->variables.external_velocity.k / WORLD_ONE);
+	return 1;
+}
+
+const luaL_reg Lua_ExternalVelocity_Get[] = {
+	{"i", Lua_ExternalVelocity_Get_I},
+	{"j", Lua_ExternalVelocity_Get_J},
+	{"k", Lua_ExternalVelocity_Get_K},
+	{"x", Lua_ExternalVelocity_Get_I},
+	{"y", Lua_ExternalVelocity_Get_J},
+	{"z", Lua_ExternalVelocity_Get_K},
 	{0, 0}
 };
 
-struct Lua_ExternalVelocity {
-	short index;
-	static const char* name;
-	static bool valid(int index) { return Lua_Players::valid(index); }
-	
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_i(lua_State *);
-	static int get_j(lua_State *);
-	static int get_k(lua_State *);
-
-	static int set_i(lua_State *);
-	static int set_j(lua_State *);
-	static int set_k(lua_State *);
-};
-
-const char *Lua_ExternalVelocity::name = "external_velocity";
-
-int Lua_ExternalVelocity::get_i(lua_State *L)
-{
-	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.i / WORLD_ONE);
-	return 1;
-}
-
-int Lua_ExternalVelocity::get_j(lua_State *L)
-{
-	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.j / WORLD_ONE);
-	return 1;
-}
-
-int Lua_ExternalVelocity::get_k(lua_State *L)
-{
-	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.k / WORLD_ONE);
-	return 1;
-}
-
-const luaL_reg Lua_ExternalVelocity::index_table[] = {
-	{"i", Lua_ExternalVelocity::get_i},
-	{"j", Lua_ExternalVelocity::get_j},
-	{"k", Lua_ExternalVelocity::get_k},
-	{"x", Lua_ExternalVelocity::get_i},
-	{"y", Lua_ExternalVelocity::get_j},
-	{"z", Lua_ExternalVelocity::get_k},
-	{0, 0}
-};
-
-int Lua_ExternalVelocity::set_i(lua_State *L)
+static int Lua_ExternalVelocity_Set_I(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "i: incorrect argument type");
 
 	int raw_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
-	get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.i = raw_velocity;
+	get_player_data(Lua_ExternalVelocity::Index(L, 1))->variables.external_velocity.i = raw_velocity;
 }
 
-int Lua_ExternalVelocity::set_j(lua_State *L)
+static int Lua_ExternalVelocity_Set_J(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "j: incorrect argument type");
 
 	int raw_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
-	get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.j = raw_velocity;
+	get_player_data(Lua_ExternalVelocity::Index(L, 1))->variables.external_velocity.j = raw_velocity;
 }
 
-int Lua_ExternalVelocity::set_k(lua_State *L)
+static int Lua_ExternalVelocity_Set_K(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "k: incorrect argument type");
 
 	int raw_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
-	get_player_data(L_Index<Lua_ExternalVelocity>(L, 1))->variables.external_velocity.k = raw_velocity;
+	get_player_data(Lua_ExternalVelocity::Index(L, 1))->variables.external_velocity.k = raw_velocity;
 }
 
-const luaL_reg Lua_ExternalVelocity::newindex_table[] = {
-	{"i", Lua_ExternalVelocity::set_i},
-	{"j", Lua_ExternalVelocity::set_j},
-	{"k", Lua_ExternalVelocity::set_k},
-	{"x", Lua_ExternalVelocity::set_i},
-	{"y", Lua_ExternalVelocity::set_j},
-	{"z", Lua_ExternalVelocity::set_k},
+const luaL_reg Lua_ExternalVelocity_Set[] = {
+	{"i", Lua_ExternalVelocity_Set_I},
+	{"j", Lua_ExternalVelocity_Set_J},
+	{"k", Lua_ExternalVelocity_Set_K},
+	{"x", Lua_ExternalVelocity_Set_I},
+	{"y", Lua_ExternalVelocity_Set_J},
+	{"z", Lua_ExternalVelocity_Set_K},
 	{0, 0}
 };
 
-const luaL_reg Lua_ExternalVelocity::metatable[] = {
-	{"__index", L_TableGet<Lua_ExternalVelocity>},
-	{"__newindex", L_TableSet<Lua_ExternalVelocity>},
-	{0, 0}
-};
+char Lua_FadeType_Name[] = "fade_type";
+typedef L_Enum<Lua_FadeType_Name> Lua_FadeType;
 
-struct Lua_FadeTypes {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return NUMBER_OF_FADE_TYPES; }
-	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_FADE_TYPES; }
-};
+char Lua_FadeTypes_Name[] = "FadeTypes";
+typedef L_EnumContainer<Lua_FadeTypes_Name, Lua_FadeType> Lua_FadeTypes;
 
-struct Lua_FadeType {
-	short index;
-	static const char *name;
-	static bool valid(int index) { return Lua_FadeTypes::valid(index); }
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
+char Lua_WeaponType_Name[] = "weapon_type";
+typedef L_Enum<Lua_WeaponType_Name> Lua_WeaponType;
 
-const char *Lua_FadeType::name = "fade_type";
-const luaL_reg Lua_FadeType::index_table[] = {
-	{"index", L_TableIndex<Lua_FadeType>},
-	{0, 0}
-};
-
-const luaL_reg Lua_FadeType::newindex_table[] = { {0, 0} };
-
-const luaL_reg Lua_FadeType::metatable[] = {
-	{"__eq", L_Equals<Lua_FadeType>},
-	{"__index", L_TableGet<Lua_FadeType>},
-	{"__newindex", L_TableSet<Lua_FadeType>},
-	{0, 0}
-};
-
-const char *Lua_FadeTypes::name = "FadeTypes";
-const luaL_reg Lua_FadeTypes::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_FadeTypes, Lua_FadeType>},
-	{"__newindex", L_GlobalNewindex<Lua_FadeTypes>},
-	{"__call", L_GlobalCall<Lua_FadeTypes, Lua_FadeType>},
-	{0, 0}
-};
-
-const luaL_reg Lua_FadeTypes::methods[] = { {0, 0} };
-
-struct Lua_WeaponTypes {
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg methods[];
-	static int length() { return MAXIMUM_NUMBER_OF_WEAPONS; }
-	static bool valid(int index) { return index >= 0 && index < MAXIMUM_NUMBER_OF_WEAPONS; }
-};
-
-struct Lua_WeaponType {
-	short index;
-	static bool valid(int index) { return Lua_WeaponTypes::valid(index); }
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
-const char *Lua_WeaponType::name = "weapon_type";
-const luaL_reg Lua_WeaponType::index_table[] = {
-	{"index", L_TableIndex<Lua_WeaponType>},
-	{0, 0}
-};
-
-const luaL_reg Lua_WeaponType::newindex_table[] = { {0, 0 } };
-
-const luaL_reg Lua_WeaponType::metatable[] = {
-	{"__eq", L_Equals<Lua_WeaponType>},
-	{"__index", L_TableGet<Lua_WeaponType>},
-	{"__newindex", L_TableSet<Lua_WeaponType>},
-	{0, 0}
-};
-
-const char *Lua_WeaponTypes::name = "WeaponTypes";
-const luaL_reg Lua_WeaponTypes::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_WeaponTypes, Lua_WeaponType>},
-	{"__newindex", L_GlobalNewindex<Lua_WeaponTypes>},
-	{"__call", L_GlobalCall<Lua_WeaponTypes, Lua_WeaponType>},
-	{0, 0}
-};
+char Lua_WeaponTypes_Name[] = "WeaponTypes";
+typedef L_EnumContainer<Lua_WeaponTypes_Name, Lua_WeaponType> Lua_WeaponTypes;
 	
-const luaL_reg Lua_WeaponTypes::methods[] = { {0, 0 } };
-	
-struct Lua_Player_Weapon_Trigger {
-	short index;
-	short player_index;
-	short trigger_index;
-
-	static bool valid(int index) { return Lua_WeaponTypes::valid(index); }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_rounds(lua_State *L);
-};
-
-const char *Lua_Player_Weapon_Trigger::name = "player_weapon_trigger";
-
-int Lua_Player_Weapon_Trigger::get_rounds(lua_State *L)
+char Lua_Player_Weapon_Trigger_Name[] = "player_weapon_trigger";
+class Lua_Player_Weapon_Trigger : public PlayerSubtable<Lua_Player_Weapon_Trigger_Name>
 {
-	Lua_Player_Weapon_Trigger *trigger = L_To<Lua_Player_Weapon_Trigger>(L, 1);
-	short rounds = get_player_weapon_ammo_count(trigger->player_index, trigger->index, trigger->trigger_index);
+public:
+	int16 m_weapon_index;
+
+	static Lua_Player_Weapon_Trigger *Push(lua_State *L, int16 player_index, int16 weapon_index, int16 index);
+	static int16 WeaponIndex(lua_State *L, int index);
+};
+
+Lua_Player_Weapon_Trigger *Lua_Player_Weapon_Trigger::Push(lua_State *L, int16 player_index, int16 weapon_index, int16 index)
+{
+	Lua_Player_Weapon_Trigger *t = static_cast<Lua_Player_Weapon_Trigger *>(PlayerSubtable<Lua_Player_Weapon_Trigger_Name>::Push(L, player_index, index));
+	if (t)
+	{
+		t->m_weapon_index = weapon_index;
+	}
+
+	return t;
+}
+
+int16 Lua_Player_Weapon_Trigger::WeaponIndex(lua_State *L, int index)
+{
+	Lua_Player_Weapon_Trigger *t = static_cast<Lua_Player_Weapon_Trigger*>(lua_touserdata(L, index));
+	if (!t) luaL_typerror(L, index, Lua_Player_Weapon_Trigger_Name);
+	return t->m_weapon_index;
+}
+
+int Lua_Player_Weapon_Trigger_Get_Rounds(lua_State *L)
+{
+	short rounds = get_player_weapon_ammo_count(
+		Lua_Player_Weapon_Trigger::PlayerIndex(L, 1), 
+		Lua_Player_Weapon_Trigger::WeaponIndex(L, 1),
+		Lua_Player_Weapon_Trigger::Index(L, 1));
 	lua_pushnumber(L, rounds);
 	return 1;
 }
 
-const luaL_reg Lua_Player_Weapon_Trigger::index_table[] = {
-	{"rounds", Lua_Player_Weapon_Trigger::get_rounds},
+const luaL_reg Lua_Player_Weapon_Trigger_Get[] = {
+	{"rounds", Lua_Player_Weapon_Trigger_Get_Rounds},
 	{0, 0}
 };
 
-const luaL_reg Lua_Player_Weapon_Trigger::newindex_table[] = { {0, 0} };
-
-const luaL_reg Lua_Player_Weapon_Trigger::metatable[] = {
-	{"__index", L_TableGet<Lua_Player_Weapon_Trigger>},
-	{"__newindex", L_TableSet<Lua_Player_Weapon_Trigger>},
-	{0, 0}
-};
-
-struct Lua_Player_Weapons {
-	short index;
-	static bool valid(int index) { return Lua_Players::valid(index); }
-	
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get(lua_State *L);
-};
-
-struct Lua_Player_Weapon {
-	short index;
-	short player_index;
-
-	static bool valid(int index) { return Lua_WeaponTypes::valid(index); }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get_type(lua_State *L);
-
-	static int select(lua_State *L);
-};
-
-const char *Lua_Player_Weapon::name = "player_weapon";
+char Lua_Player_Weapon_Name[] = "player_weapon";
+typedef PlayerSubtable<Lua_Player_Weapon_Name> Lua_Player_Weapon;
 
 template<int trigger>
 static int get_weapon_trigger(lua_State *L)
 {
-	Lua_Player_Weapon *weapon = L_To<Lua_Player_Weapon>(L, 1);
-	Lua_Player_Weapon_Trigger *t = L_PushNew<Lua_Player_Weapon_Trigger>(L);
-	t->index = weapon->index;
-	t->player_index = weapon->player_index;
-	t->trigger_index = trigger;
+	Lua_Player_Weapon_Trigger::Push(L, Lua_Player_Weapon::PlayerIndex(L, 1), Lua_Player_Weapon::Index(L, 1), trigger);
 	return 1;
 }
 
-int Lua_Player_Weapon::get_type(lua_State *L)
+static int Lua_Player_Weapon_Get_Type(lua_State *L)
 {
-	L_Push<Lua_WeaponType>(L, L_Index<Lua_Player_Weapon>(L, 1));
+	Lua_WeaponType::Push(L, Lua_Player_Weapon::Index(L, 1));
 	return 1;
 }
 
 extern bool ready_weapon(short player_index, short weapon_index);
 
-int Lua_Player_Weapon::select(lua_State *L)
+int Lua_Player_Weapon_Select(lua_State *L)
 {
-	Lua_Player_Weapon *weapon = L_To<Lua_Player_Weapon>(L, 1);
-	ready_weapon(weapon->player_index, weapon->index);
+	ready_weapon(Lua_Player_Weapon::PlayerIndex(L, 1), Lua_Player_Weapon::Index(L, 1));
 	return 0;
 }
 
-const luaL_reg Lua_Player_Weapon::index_table[] = { 
-	{"index", L_TableIndex<Lua_Player_Weapon>},
+const luaL_reg Lua_Player_Weapon_Get[] = { 
 	{"primary", get_weapon_trigger<_primary_weapon>},
 	{"secondary", get_weapon_trigger<_secondary_weapon>},
-	{"select", L_TableFunction<Lua_Player_Weapon::select>},
-	{"type", Lua_Player_Weapon::get_type},
+	{"select", L_TableFunction<Lua_Player_Weapon_Select>},
+	{"type", Lua_Player_Weapon_Get_Type},
 	{0, 0} 
-};
-const luaL_reg Lua_Player_Weapon::newindex_table[] = { {0, 0} };
-const luaL_reg Lua_Player_Weapon::metatable[] = {
-	{"__index", L_TableGet<Lua_Player_Weapon>},
-	{"__newindex", L_TableSet<Lua_Player_Weapon>},
-	{0, 0}
-};
-
-const char *Lua_Player_Weapons::name = "player_weapons";
-const luaL_reg Lua_Player_Weapons::index_table[] = { {0, 0} };
-const luaL_reg Lua_Player_Weapons::newindex_table[] = { {0, 0} };
-const luaL_reg Lua_Player_Weapons::metatable[] = {
-	{"__index", Lua_Player_Weapons::get},
-	{0, 0}
 };
 
 extern player_weapon_data *get_player_weapon_data(const short player_index);
 extern bool player_has_valid_weapon(short player_index);
 
-int Lua_Player_Weapons::get(lua_State *L)
+char Lua_Player_Weapons_Name[] = "player_weapons";
+typedef L_Class<Lua_Player_Weapons_Name> Lua_Player_Weapons;
+
+static int Lua_Player_Weapons_Get(lua_State *L)
 {
-	if (lua_isnumber(L, 2) || L_Is<Lua_WeaponType>(L, 2))
+	if (lua_isnumber(L, 2) || Lua_WeaponType::Is(L, 2))
 	{
-		int player_index = L_Index<Lua_Player_Weapons>(L, 1);
-		int index = L_ToIndex<Lua_WeaponType>(L, 2);
-		if (!Lua_Player_Weapons::valid(player_index) || !Lua_WeaponTypes::valid(index))
+		int player_index = Lua_Player_Weapons::Index(L, 1);
+		int index = Lua_WeaponType::ToIndex(L, 2);
+		if (!Lua_Player_Weapons::Valid(player_index) || !Lua_WeaponType::Valid(index))
 		{
 			lua_pushnil(L);
 		}
 		else
 		{
-			Lua_Player_Weapon *t = L_PushNew<Lua_Player_Weapon>(L);
-			t->index = index;
-			t->player_index = player_index;
+			Lua_Player_Weapon::Push(L, player_index, index);
 		}
 	}
 	else if (lua_isstring(L, 2))
 	{
 		if (strcmp(lua_tostring(L, 2), "current") == 0)
 		{
-			int player_index = L_Index<Lua_Player_Weapons>(L, 1);
+			int player_index = Lua_Player_Weapons::Index(L, 1);
 			if (player_has_valid_weapon(player_index))
 			{
 				player_weapon_data *weapon_data = get_player_weapon_data(player_index);
 				player_data *player = get_player_data(player_index);
-				
-				Lua_Player_Weapon *t = L_PushNew<Lua_Player_Weapon>(L);
-				t->index = weapon_data->current_weapon;
-				t->player_index = player_index;
+				Lua_Player_Weapon::Push(L, player_index, weapon_data->current_weapon);
 			}
 			else
 			{
@@ -895,39 +633,18 @@ int Lua_Player_Weapons::get(lua_State *L)
 	return 1;
 }
 
-struct Lua_Player_Kills {
-	short index;
-	static bool valid(int index) { return Lua_Players::valid(index); }
-
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static int get(lua_State *L);
-	static int set(lua_State *L);
-};
-
-const char *Lua_Player_Kills::name = "player_kills";
-
-const luaL_reg Lua_Player_Kills::index_table[] = {
+const luaL_reg Lua_Player_Weapons_Metatable[] = {
+	{"__index", Lua_Player_Weapons_Get},
 	{0, 0}
 };
 
-const luaL_reg Lua_Player_Kills::newindex_table[] = {
-	{0, 0}
-};
+char Lua_Player_Kills_Name[] = "player_kills";
+typedef L_Class<Lua_Player_Kills_Name> Lua_Player_Kills;
 
-const luaL_reg Lua_Player_Kills::metatable[] = {
-	{"__index", Lua_Player_Kills::get},
-	{"__newindex", Lua_Player_Kills::set},
-	{0, 0}
-};
-
-int Lua_Player_Kills::get(lua_State *L)
+static int Lua_Player_Kills_Get(lua_State *L)
 {
-	int player_index = L_Index<Lua_Player_Kills>(L, 1);
-	int slain_player_index = L_ToIndex<Lua_Player>(L, 2);
+	int player_index = Lua_Player_Kills::Index(L, 1);
+	int slain_player_index = Lua_Player::Index(L, 2);
 	
 	player_data *slain_player = get_player_data(slain_player_index);
 
@@ -935,13 +652,13 @@ int Lua_Player_Kills::get(lua_State *L)
 	return 1;
 }			
 
-int Lua_Player_Kills::set(lua_State *L)
+static int Lua_Player_Kills_Set(lua_State *L)
 {
 	if (!lua_isnumber(L, 3))
 		return luaL_error(L, "kills: incorrect argument type");
 
-	int player_index = L_Index<Lua_Player_Kills>(L, 1);
-	int slain_player_index = L_ToIndex<Lua_Player>(L, 2);	
+	int player_index = Lua_Player_Kills::Index(L, 1);
+	int slain_player_index = Lua_Player::Index(L, 2);	
 	int kills = static_cast<int>(lua_tonumber(L, 3));
 
 	player_data *player = get_player_data(player_index);
@@ -964,17 +681,24 @@ int Lua_Player_Kills::set(lua_State *L)
 	return 0;
 }
 
-const char *Lua_Player::name = "player";
+const luaL_reg Lua_Player_Kills_Metatable[] = {
+	{"__index", Lua_Player_Kills_Get},
+	{"__newindex", Lua_Player_Kills_Set},
+	{0, 0}
+};
+
+
+char Lua_Player_Name[] = "player";
 
 // methods
 
 // accelerate(direction, velocity, vertical_velocity)
-int Lua_Player::accelerate(lua_State *L)
+int Lua_Player_Accelerate(lua_State *L)
 {
 	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
 		return luaL_error(L, "accelerate: incorrect argument type");
 
-	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
 	double direction = static_cast<double>(lua_tonumber(L, 2));
 	double velocity = static_cast<double>(lua_tonumber(L, 3));
 	double vertical_velocity = static_cast<double>(lua_tonumber(L, 4));
@@ -983,11 +707,11 @@ int Lua_Player::accelerate(lua_State *L)
 	return 0;
 }
 
-int Lua_Player_find_action_key_target(lua_State *L)
+int Lua_Player_Find_Action_Key_Target(lua_State *L)
 {
 	// no arguments
 	short target_type;
-	short object_index = find_action_key_target(L_Index<Lua_Player>(L, 1), MAXIMUM_ACTIVATION_RANGE, &target_type);
+	short object_index = find_action_key_target(Lua_Player::Index(L, 1), MAXIMUM_ACTIVATION_RANGE, &target_type);
 
 	if (object_index != NONE)
 	{
@@ -998,7 +722,7 @@ int Lua_Player_find_action_key_target(lua_State *L)
 			break;
 
 		case _target_is_control_panel:
-			L_Push<Lua_Side>(L, object_index);
+			Lua_Side::Push(L, object_index);
 			break;
 
 		default:
@@ -1014,13 +738,13 @@ int Lua_Player_find_action_key_target(lua_State *L)
 	return 1;
 }
 
-int Lua_Player::damage(lua_State *L)
+int Lua_Player_Damage(lua_State *L)
 {
 	int args = lua_gettop(L);
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "damage: incorrect argument type");
 	
-	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
 	if (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player))
 		return 0;
 
@@ -1039,24 +763,24 @@ int Lua_Player::damage(lua_State *L)
 	return 0;
 }
 
-int Lua_Player::fade_screen(lua_State *L)
+int Lua_Player_Fade_Screen(lua_State *L)
 {
-	short player_index = L_Index<Lua_Player>(L, 1);
+	short player_index = Lua_Player::Index(L, 1);
 	if (player_index == local_player_index)
 	{
-		int fade_index = L_ToIndex<Lua_FadeType>(L, 2);
+		int fade_index = Lua_FadeType::ToIndex(L, 2);
 		start_fade(fade_index);
 	}
 	return 0;
 }
 
-int Lua_Player::play_sound(lua_State *L)
+int Lua_Player_Play_Sound(lua_State *L)
 {
 	int args = lua_gettop(L);
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "play_sound: incorrect argument type");
 	
-	int player_index = L_Index<Lua_Player>(L, 1);
+	int player_index = Lua_Player::Index(L, 1);
 	int sound_index = static_cast<int>(lua_tonumber(L, 2));
 	float pitch = 1.0;
 	if (args > 2)
@@ -1077,7 +801,7 @@ int Lua_Player::play_sound(lua_State *L)
 extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
 extern void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 
-int Lua_Player::position(lua_State *L)
+int Lua_Player_Position(lua_State *L)
 {
 	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
 		return luaL_error(L, ("position: incorrect argument type"));
@@ -1096,7 +820,7 @@ int Lua_Player::position(lua_State *L)
 	else
 		return luaL_error(L, ("position: incorrect argument type"));
 
-	int player_index = L_Index<Lua_Player>(L, 1);
+	int player_index = Lua_Player::Index(L, 1);
 	player_data *player = get_player_data(player_index);
 	object_data *object = get_object_data(player->object_index);
 
@@ -1114,7 +838,7 @@ int Lua_Player::position(lua_State *L)
 	return 0;
 }
 
-int Lua_Player_teleport(lua_State *L)
+int Lua_Player_Teleport(lua_State *L)
 {
 	if (!lua_isnumber(L, 2) && !Lua_Polygon::Is(L, 2))
 		return luaL_error(L, "teleport(): incorrect argument type");
@@ -1125,7 +849,7 @@ int Lua_Player_teleport(lua_State *L)
 	else 
 		destination = Lua_Polygon::Index(L, 2);
 
-	int player_index = L_Index<Lua_Player>(L, 1);
+	int player_index = Lua_Player::Index(L, 1);
 	
 	player_data *player = get_player_data(player_index);
 	monster_data *monster = get_monster_data(player->monster_index);
@@ -1142,13 +866,13 @@ int Lua_Player_teleport(lua_State *L)
 	return 0;
 }
 
-int Lua_Player_teleport_to_level(lua_State *L)
+int Lua_Player_Teleport_To_Level(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "teleport_to_level(): incorrect argument type");
 
 	int level = static_cast<int>(lua_tonumber(L, 2));
-	int player_index = L_Index<Lua_Player>(L, 1);
+	int player_index = Lua_Player::Index(L, 1);
 	
 	player_data *player = get_player_data(player_index);
 	monster_data *monster = get_monster_data(player->monster_index);
@@ -1168,117 +892,117 @@ int Lua_Player_teleport_to_level(lua_State *L)
 
 // get accessors
 
-static int Lua_Player_get_action_flags(lua_State *L)
+static int Lua_Player_Get_Action_Flags(lua_State *L)
 {
-	L_Push<Lua_Action_Flags>(L, L_Index<Lua_Player>(L, 1));
+	Lua_Action_Flags::Push(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
-static int Lua_Player_get_color(lua_State *L)
+static int Lua_Player_Get_Color(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->color);
+	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->color);
 	return 1;
 }
 
-int Lua_Player::get_crosshairs(lua_State *L)
+static int Lua_Player_Get_Crosshairs(lua_State *L)
 {
-	L_Push<Lua_Crosshairs>(L, L_Index<Lua_Player>(L, 1));
+	Lua_Crosshairs::Push(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
-static int Lua_Player_get_dead(lua_State *L)
+static int Lua_Player_Get_Dead(lua_State *L)
 {
-	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
 	lua_pushboolean(L, (PLAYER_IS_DEAD(player) || PLAYER_IS_TOTALLY_DEAD(player)));
 	return 1;
 }
 
-int Lua_Player::get_deaths(lua_State *L)
+static int Lua_Player_Get_Deaths(lua_State *L)
 {
-	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
 	lua_pushnumber(L, player->monster_damage_taken.kills);
 	return 1;
 }
 
-static int Lua_Player_get_energy(lua_State *L)
+static int Lua_Player_Get_Energy(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->suit_energy);
+	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->suit_energy);
 	return 1;
 }
 
-int Lua_Player::get_elevation(lua_State *L)
+static int Lua_Player_Get_Elevation(lua_State *L)
 {
-	double angle = FIXED_INTEGERAL_PART(get_player_data(L_Index<Lua_Player>(L, 1))->variables.elevation) * AngleConvert;
+	double angle = FIXED_INTEGERAL_PART(get_player_data(Lua_Player::Index(L, 1))->variables.elevation) * AngleConvert;
 	lua_pushnumber(L, angle);
 	return 1;
 }
 
-int Lua_Player::get_direction(lua_State *L)
+static int Lua_Player_Get_Direction(lua_State *L)
 {
-	double angle = FIXED_INTEGERAL_PART(get_player_data(L_Index<Lua_Player>(L, 1))->variables.direction) * AngleConvert;
+	double angle = FIXED_INTEGERAL_PART(get_player_data(Lua_Player::Index(L, 1))->variables.direction) * AngleConvert;
 	lua_pushnumber(L, angle);
 	return 1;
 }
 
-int Lua_Player::get_external_velocity(lua_State *L)
+static int Lua_Player_Get_External_Velocity(lua_State *L)
 {
-	L_Push<Lua_ExternalVelocity>(L, L_Index<Lua_Player>(L, 1));
+	Lua_ExternalVelocity::Index(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
-int Lua_Player::get_extravision_duration(lua_State *L)
+static int Lua_Player_Get_Extravision_Duration(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->extravision_duration);
+	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->extravision_duration);
 	return 1;
 }
 
-int Lua_Player::get_infravision_duration(lua_State *L)
+static int Lua_Player_Get_Infravision_Duration(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->infravision_duration);
+	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->infravision_duration);
 	return 1;
 }
 
-int Lua_Player::get_internal_velocity(lua_State *L)
+static int Lua_Player_Get_Internal_Velocity(lua_State *L)
 {
-	L_Push<Lua_InternalVelocity>(L, L_Index<Lua_Player>(L, 1));
+	Lua_InternalVelocity::Push(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
-int Lua_Player::get_invincibility_duration(lua_State *L)
+static int Lua_Player_Get_Invincibility_Duration(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->invincibility_duration);
+	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->invincibility_duration);
 	return 1;
 }
 
-int Lua_Player::get_invisibility_duration(lua_State *L)
+static int Lua_Player_Get_Invisibility_Duration(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->invisibility_duration);
+	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->invisibility_duration);
 	return 1;
 }
 
-int Lua_Player::get_items(lua_State *L)
+static int Lua_Player_Get_Items(lua_State *L)
 {
-	L_Push<Lua_Player_Items>(L, L_Index<Lua_Player>(L, 1));
+	Lua_Player_Items::Push(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
-int Lua_Player::get_kills(lua_State *L)
+static int Lua_Player_Get_Kills(lua_State *L)
 {
-	L_Push<Lua_Player_Kills>(L, L_Index<Lua_Player>(L, 1));
+	Lua_Player_Kills::Push(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
-int Lua_Player::get_local(lua_State *L)
+static int Lua_Player_Get_Local(lua_State *L)
 {
-	lua_pushboolean(L, L_Index<Lua_Player>(L, 1) == local_player_index);
+	lua_pushboolean(L, Lua_Player::Index(L, 1) == local_player_index);
 	return 1;
 }
 
 extern bool MotionSensorActive;
 
-int Lua_Player::get_motion_sensor(lua_State *L)
+static int Lua_Player_Get_Motion_Sensor(lua_State *L)
 {
-	short player_index = L_Index<Lua_Player>(L, 1);
+	short player_index = Lua_Player::Index(L, 1);
 	if (player_index == local_player_index)
 	{
 		lua_pushboolean(L, MotionSensorActive);
@@ -1290,87 +1014,75 @@ int Lua_Player::get_motion_sensor(lua_State *L)
 	}
 }
 
-static int Lua_Player_get_monster(lua_State *L)
+static int Lua_Player_Get_Monster(lua_State *L)
 {
-	Lua_Monster::Push(L, get_player_data(L_Index<Lua_Player>(L, 1))->monster_index);
+	Lua_Monster::Push(L, get_player_data(Lua_Player::Index(L, 1))->monster_index);
 	return 1;
 }
 
-static int Lua_Player_get_name(lua_State *L)
+static int Lua_Player_Get_Name(lua_State *L)
 {
-	lua_pushstring(L, get_player_data(L_Index<Lua_Player>(L, 1))->name);
+	lua_pushstring(L, get_player_data(Lua_Player::Index(L, 1))->name);
 	return 1;
 }
 
-int Lua_Player::get_overlays(lua_State *L)
+static int Lua_Player_Get_Overlays(lua_State *L)
 {
-	L_Push<Lua_Overlays>(L, L_Index<Lua_Player>(L, 1));
+	Lua_Overlays::Push(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
-static int Lua_Player_get_oxygen(lua_State *L)
+static int Lua_Player_Get_Oxygen(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->suit_oxygen);
+	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->suit_oxygen);
 	return 1;
 }
 
-int Lua_Player::get_points(lua_State *L)
+static int Lua_Player_Get_Points(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->netgame_parameters[0]);
+	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->netgame_parameters[0]);
 	return 1;
 }
 
-static int Lua_Player_get_polygon(lua_State *L)
+static int Lua_Player_Get_Polygon(lua_State *L)
 {
-	Lua_Polygon::Push(L, get_player_data(L_Index<Lua_Player>(L, 1))->supporting_polygon_index);
+	Lua_Polygon::Push(L, get_player_data(Lua_Player::Index(L, 1))->supporting_polygon_index);
 	return 1;
 }
 
-static int Lua_Player_get_team(lua_State *L)
+static int Lua_Player_Get_Team(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(L_Index<Lua_Player>(L, 1))->team);
+	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->team);
 	return 1;
 }
 
-static int Lua_Player_get_teleport(lua_State *L)
+static int Lua_Player_Get_Weapons(lua_State *L)
 {
-	lua_pushcfunction(L, Lua_Player_teleport);
+	Lua_Player_Weapons::Push(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
-static int Lua_Player_get_teleport_to_level(lua_State *L)
+static int Lua_Player_Get_X(lua_State *L)
 {
-	lua_pushcfunction(L, Lua_Player_teleport_to_level);
+	lua_pushnumber(L, (double) get_player_data(Lua_Player::Index(L, 1))->location.x / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Player::get_weapons(lua_State *L)
+static int Lua_Player_Get_Y(lua_State *L)
 {
-	L_Push<Lua_Player_Weapons>(L, L_Index<Lua_Player>(L, 1));
+	lua_pushnumber(L, (double) get_player_data(Lua_Player::Index(L, 1))->location.y / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Player::get_x(lua_State *L)
+static int Lua_Player_Get_Z(lua_State *L)
 {
-	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_Player>(L, 1))->location.x / WORLD_ONE);
+	lua_pushnumber(L, (double) get_player_data(Lua_Player::Index(L, 1))->location.z / WORLD_ONE);
 	return 1;
 }
 
-int Lua_Player::get_y(lua_State *L)
+static int Lua_Player_Get_Zoom(lua_State *L)
 {
-	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_Player>(L, 1))->location.y / WORLD_ONE);
-	return 1;
-}
-
-int Lua_Player::get_z(lua_State *L)
-{
-	lua_pushnumber(L, (double) get_player_data(L_Index<Lua_Player>(L, 1))->location.z / WORLD_ONE);
-	return 1;
-}
-
-int Lua_Player::get_zoom(lua_State *L)
-{
-	short player_index = L_Index<Lua_Player>(L, 1);
+	short player_index = Lua_Player::Index(L, 1);
 	if (player_index == local_player_index)
 	{
 		lua_pushboolean(L, GetTunnelVision());
@@ -1382,56 +1094,55 @@ int Lua_Player::get_zoom(lua_State *L)
 	}
 }
 
-const luaL_reg Lua_Player::index_table[] = {
-	{"accelerate", L_TableFunction<Lua_Player::accelerate>},
-	{"action_flags", Lua_Player_get_action_flags},
-	{"color", Lua_Player_get_color},
-	{"crosshairs", Lua_Player::get_crosshairs},
-	{"damage", L_TableFunction<Lua_Player::damage>},
-	{"dead", Lua_Player_get_dead},
-	{"deaths", Lua_Player::get_deaths},
-	{"direction", Lua_Player::get_direction},
-	{"energy", Lua_Player_get_energy},
-	{"elevation", Lua_Player::get_elevation},
-	{"external_velocity", Lua_Player::get_external_velocity},
-	{"extravision_duration", Lua_Player::get_extravision_duration},
-	{"fade_screen", L_TableFunction<Lua_Player::fade_screen>},
-	{"find_action_key_target", L_TableFunction<Lua_Player_find_action_key_target>},
-	{"index", L_TableIndex<Lua_Player>},
-	{"infravision_duration", Lua_Player::get_infravision_duration},
-	{"internal_velocity", Lua_Player::get_internal_velocity},
-	{"invincibility_duration", Lua_Player::get_invincibility_duration},
-	{"invisibility_duration", Lua_Player::get_invisibility_duration},
-	{"items", Lua_Player::get_items},
-	{"local_", Lua_Player::get_local},
-	{"juice", Lua_Player_get_energy},
-	{"kills", Lua_Player::get_kills},
-	{"life", Lua_Player_get_energy},
-	{"monster", Lua_Player_get_monster},
-	{"motion_sensor_active", Lua_Player::get_motion_sensor},
-	{"name", Lua_Player_get_name},
-	{"overlays", Lua_Player::get_overlays},
-	{"oxygen", Lua_Player_get_oxygen},
-	{"pitch", Lua_Player::get_elevation},
-	{"play_sound", L_TableFunction<Lua_Player::play_sound>},
-	{"points", Lua_Player::get_points},
-	{"polygon", Lua_Player_get_polygon},
-	{"position", L_TableFunction<Lua_Player::position>},
-	{"team", Lua_Player_get_team},
-	{"teleport", L_TableFunction<Lua_Player_teleport>},
-	{"teleport_to_level", L_TableFunction<Lua_Player_teleport_to_level>},
-	{"weapons", Lua_Player::get_weapons},
-	{"x", Lua_Player::get_x},
-	{"y", Lua_Player::get_y},
-	{"yaw", Lua_Player::get_direction},
-	{"z", Lua_Player::get_z},
-	{"zoom_active", Lua_Player::get_zoom},
+const luaL_reg Lua_Player_Get[] = {
+	{"accelerate", L_TableFunction<Lua_Player_Accelerate>},
+	{"action_flags", Lua_Player_Get_Action_Flags},
+	{"color", Lua_Player_Get_Color},
+	{"crosshairs", Lua_Player_Get_Crosshairs},
+	{"damage", L_TableFunction<Lua_Player_Damage>},
+	{"dead", Lua_Player_Get_Dead},
+	{"deaths", Lua_Player_Get_Deaths},
+	{"direction", Lua_Player_Get_Direction},
+	{"energy", Lua_Player_Get_Energy},
+	{"elevation", Lua_Player_Get_Elevation},
+	{"external_velocity", Lua_Player_Get_External_Velocity},
+	{"extravision_duration", Lua_Player_Get_Extravision_Duration},
+	{"fade_screen", L_TableFunction<Lua_Player_Fade_Screen>},
+	{"find_action_key_target", L_TableFunction<Lua_Player_Find_Action_Key_Target>},
+	{"infravision_duration", Lua_Player_Get_Infravision_Duration},
+	{"internal_velocity", Lua_Player_Get_Internal_Velocity},
+	{"invincibility_duration", Lua_Player_Get_Invincibility_Duration},
+	{"invisibility_duration", Lua_Player_Get_Invisibility_Duration},
+	{"items", Lua_Player_Get_Items},
+	{"local_", Lua_Player_Get_Local},
+	{"juice", Lua_Player_Get_Energy},
+	{"kills", Lua_Player_Get_Kills},
+	{"life", Lua_Player_Get_Energy},
+	{"monster", Lua_Player_Get_Monster},
+	{"motion_sensor_active", Lua_Player_Get_Motion_Sensor},
+	{"name", Lua_Player_Get_Name},
+	{"overlays", Lua_Player_Get_Overlays},
+	{"oxygen", Lua_Player_Get_Oxygen},
+	{"pitch", Lua_Player_Get_Elevation},
+	{"play_sound", L_TableFunction<Lua_Player_Play_Sound>},
+	{"points", Lua_Player_Get_Points},
+	{"polygon", Lua_Player_Get_Polygon},
+	{"position", L_TableFunction<Lua_Player_Position>},
+	{"team", Lua_Player_Get_Team},
+	{"teleport", L_TableFunction<Lua_Player_Teleport>},
+	{"teleport_to_level", L_TableFunction<Lua_Player_Teleport_To_Level>},
+	{"weapons", Lua_Player_Get_Weapons},
+	{"x", Lua_Player_Get_X},
+	{"y", Lua_Player_Get_Y},
+	{"yaw", Lua_Player_Get_Direction},
+	{"z", Lua_Player_Get_Z},
+	{"zoom_active", Lua_Player_Get_Zoom},
 	{0, 0}
 };
 
 extern void mark_shield_display_as_dirty();
 
-static int Lua_Player_set_color(lua_State *L)
+static int Lua_Player_Set_Color(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 	{
@@ -1444,17 +1155,17 @@ static int Lua_Player_set_color(lua_State *L)
 	{
 		luaL_error(L, "player.color: invalid color");
 	}
-	get_player_data(L_Index<Lua_Player>(L, 1))->color = color;
+	get_player_data(Lua_Player::Index(L, 1))->color = color;
 	
 	return 0;
 }
 
-int Lua_Player::set_deaths(lua_State *L)
+static int Lua_Player_Set_Deaths(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "deaths: incorrect argument type");
 
-	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
 	int kills = static_cast<int>(lua_tonumber(L, 2));
 	if (player->monster_damage_taken.kills != kills)
 	{
@@ -1466,64 +1177,64 @@ int Lua_Player::set_deaths(lua_State *L)
 	return 0;
 }
 
-int Lua_Player::set_direction(lua_State *L)
+static int Lua_Player_Set_Direction(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "direction: incorrect argument type");
 
 	double facing = static_cast<double>(lua_tonumber(L, 2));
-	int player_index = L_Index<Lua_Player>(L, 1);
+	int player_index = Lua_Player::Index(L, 1);
 	player_data *player = get_player_data(player_index);
 	player->variables.direction = INTEGER_TO_FIXED((int)(facing/AngleConvert));
 	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
 	return 0;
 }
 
-int Lua_Player::set_elevation(lua_State *L)
+static int Lua_Player_Set_Elevation(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "elevation: incorrect argument type");
 	
 	double elevation = static_cast<double>(lua_tonumber(L, 2));
 	if (elevation > 180) elevation -= 360.0;
-	int player_index = L_Index<Lua_Player>(L, 1);
+	int player_index = Lua_Player::Index(L, 1);
 	player_data *player = get_player_data(player_index);
 	player->variables.elevation = INTEGER_TO_FIXED((int)(elevation/AngleConvert));
 	instantiate_physics_variables(get_physics_constants_for_model(static_world->physics_model, 0), &player->variables, player_index, false, false);
 	return 0;
 }
 
-int Lua_Player::set_infravision_duration(lua_State *L)
+static int Lua_Player_Set_Infravision_Duration(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "extravision: incorrect argument type");
 
-	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
 	player->infravision_duration = static_cast<int>(lua_tonumber(L, 2));
 	return 0;
 }
 
-int Lua_Player::set_invincibility_duration(lua_State *L)
+static int Lua_Player_Set_Invincibility_Duration(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "extravision: incorrect argument type");
 
-	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
 	player->invincibility_duration = static_cast<int>(lua_tonumber(L, 2));
 	return 0;
 }
 
-int Lua_Player::set_invisibility_duration(lua_State *L)
+static int Lua_Player_Set_Invisibility_Duration(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "extravision: incorrect argument type");
 
-	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
 	player->invisibility_duration = static_cast<int>(lua_tonumber(L, 2));
 	return 0;
 }
 
-static int Lua_Player_set_energy(lua_State *L)
+static int Lua_Player_Set_Energy(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "energy: incorrect argument type");
@@ -1532,18 +1243,18 @@ static int Lua_Player_set_energy(lua_State *L)
 	if (energy > 3 * PLAYER_MAXIMUM_SUIT_ENERGY)
 		energy = 3 * PLAYER_MAXIMUM_SUIT_ENERGY;
 
-	get_player_data(L_Index<Lua_Player>(L, 1))->suit_energy = energy;
+	get_player_data(Lua_Player::Index(L, 1))->suit_energy = energy;
 	mark_shield_display_as_dirty();
 
 	return 0;
 }
 
-int Lua_Player::set_extravision_duration(lua_State *L)
+static int Lua_Player_Set_Extravision_Duration(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "extravision: incorrect argument type");
 
-	int player_index = L_Index<Lua_Player>(L, 1);
+	int player_index = Lua_Player::Index(L, 1);
 	player_data *player = get_player_data(player_index);
 	short extravision_duration = static_cast<short>(lua_tonumber(L, 2));
 	if ((player_index == local_player_index) && (extravision_duration == 0) != (player->extravision_duration == 0))
@@ -1556,9 +1267,9 @@ int Lua_Player::set_extravision_duration(lua_State *L)
 
 extern void draw_panels();
 
-int Lua_Player::set_motion_sensor(lua_State *L)
+int Lua_Player_Set_Motion_Sensor(lua_State *L)
 {
-	short player_index = L_Index<Lua_Player>(L, 1);
+	short player_index = Lua_Player::Index(L, 1);
 	if (player_index == local_player_index)
 	{
 		if (!lua_isboolean(L, 2))
@@ -1574,7 +1285,7 @@ int Lua_Player::set_motion_sensor(lua_State *L)
 	return 0;
 }	
 
-static int Lua_Player_set_oxygen(lua_State *L)
+static int Lua_Player_Set_Oxygen(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "oxygen: incorrect argument type");
@@ -1583,20 +1294,20 @@ static int Lua_Player_set_oxygen(lua_State *L)
 	if (oxygen > PLAYER_MAXIMUM_SUIT_OXYGEN)
 		oxygen = PLAYER_MAXIMUM_SUIT_OXYGEN;
 
-	get_player_data(L_Index<Lua_Player>(L, 1))->suit_oxygen = oxygen;
+	get_player_data(Lua_Player::Index(L, 1))->suit_oxygen = oxygen;
 	mark_shield_display_as_dirty();
 
 	return 0;
 }
 
-int Lua_Player::set_points(lua_State *L)
+int Lua_Player_Set_Points(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "points: incorrect argument type");
 
 	int points = static_cast<int>(lua_tonumber(L, 2));
 
-	player_data *player = get_player_data(L_Index<Lua_Player>(L, 1));
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
 	if (player->netgame_parameters[0] != points)
 	{
 #if !defined(DISABLE_NETWORKING)
@@ -1609,7 +1320,7 @@ int Lua_Player::set_points(lua_State *L)
 	return 0;
 }
 
-static int Lua_Player_set_team(lua_State *L)
+static int Lua_Player_Set_Team(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "team: incorrect argument type");
@@ -1619,14 +1330,14 @@ static int Lua_Player_set_team(lua_State *L)
 	{
 		luaL_error(L, "player.team: invalid team");
 	}
-	get_player_data(L_Index<Lua_Player>(L, 1))->team = team;
+	get_player_data(Lua_Player::Index(L, 1))->team = team;
 
 	return 0;
 }
 
-int Lua_Player::set_zoom(lua_State *L)
+static int Lua_Player_Set_Zoom(lua_State *L)
 {
-	short player_index = L_Index<Lua_Player>(L, 1);
+	short player_index = Lua_Player::Index(L, 1);
 	if (player_index == local_player_index)
 	{
 		if (!lua_isboolean(L, 2))
@@ -1638,158 +1349,82 @@ int Lua_Player::set_zoom(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Player::newindex_table[] = {
-	{"color", Lua_Player_set_color},
-	{"deaths", Lua_Player::set_deaths},
-	{"direction", Lua_Player::set_direction},
-	{"elevation", Lua_Player::set_elevation},
-	{"energy", Lua_Player_set_energy},
-	{"extravision_duration", Lua_Player::set_extravision_duration},
-	{"infravision_duration", Lua_Player::set_infravision_duration},
-	{"invincibility_duration", Lua_Player::set_invincibility_duration},
-	{"invisibility_duration", Lua_Player::set_invisibility_duration},
-	{"juice", Lua_Player_set_energy},
-	{"life", Lua_Player_set_energy},
-	{"motion_sensor_active", Lua_Player::set_motion_sensor},
-	{"oxygen", Lua_Player_set_oxygen},
-	{"pitch", Lua_Player::set_elevation},
-	{"points", Lua_Player::set_points},
-	{"position", Lua_Player::position},
-	{"team", Lua_Player_set_team},
-	{"yaw", Lua_Player::set_direction},
-	{"zoom_active", Lua_Player::set_zoom},
+const luaL_reg Lua_Player_Set[] = {
+	{"color", Lua_Player_Set_Color},
+	{"deaths", Lua_Player_Set_Deaths},
+	{"direction", Lua_Player_Set_Direction},
+	{"elevation", Lua_Player_Set_Elevation},
+	{"energy", Lua_Player_Set_Energy},
+	{"extravision_duration", Lua_Player_Set_Extravision_Duration},
+	{"infravision_duration", Lua_Player_Set_Infravision_Duration},
+	{"invincibility_duration", Lua_Player_Set_Invincibility_Duration},
+	{"invisibility_duration", Lua_Player_Set_Invisibility_Duration},
+	{"juice", Lua_Player_Set_Energy},
+	{"life", Lua_Player_Set_Energy},
+	{"motion_sensor_active", Lua_Player_Set_Motion_Sensor},
+	{"oxygen", Lua_Player_Set_Oxygen},
+	{"pitch", Lua_Player_Set_Elevation},
+	{"points", Lua_Player_Set_Points},
+	{"team", Lua_Player_Set_Team},
+	{"yaw", Lua_Player_Set_Direction},
+	{"zoom_active", Lua_Player_Set_Zoom},
 	{0, 0}
 };
 
-static int Lua_Player_tostring(lua_State *L)
+bool Lua_Player_Valid(int16 index)
 {
-	lua_pushfstring(L, "Player %d", L_Index<Lua_Player>(L, 1));
+	return index >= 0 && index < dynamic_world->player_count;
+}
+
+char Lua_Players_Name[] = "Players";
+
+int16 Lua_Players_Length() {
+	return dynamic_world->player_count;
+}
+
+char Lua_DifficultyType_Name[] = "difficulty_type";
+typedef L_Enum<Lua_DifficultyType_Name> Lua_DifficultyType;
+
+char Lua_GameType_Name[] = "game_type";
+typedef L_Enum<Lua_GameType_Name> Lua_GameType;
+
+char Lua_Game_Name[] = "Game";
+typedef L_Class<Lua_Game_Name> Lua_Game;
+
+static int Lua_Game_Get_Difficulty(lua_State *L)
+{
+	Lua_DifficultyType::Push(L, dynamic_world->game_information.difficulty_level);
 	return 1;
 }
 
-const luaL_reg Lua_Player::metatable[] = {
-	{"__index", L_TableGet<Lua_Player>},
-	{"__newindex", L_TableSet<Lua_Player>},
-	{"__tostring", Lua_Player_tostring},
-	{0, 0}
-};
-
-const char* Lua_Players::name = "Players";
-
-const luaL_reg Lua_Players::methods[] = {
-	{0, 0}
-};
-
-const luaL_reg Lua_Players::metatable[] = {
-	{"__index", L_GlobalIndex<Lua_Players, Lua_Player>},
-	{"__newindex", L_GlobalNewindex<Lua_Players>},
-	{"__len", L_GlobalLength<Lua_Players>},
-	{"__call", L_GlobalCall<Lua_Players, Lua_Player>},
-	{0, 0}
-};
-
-struct Lua_DifficultyType {
-	short index;
-	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_GAME_DIFFICULTY_LEVELS; }
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
-const char *Lua_DifficultyType::name = "difficulty_type";
-const luaL_reg Lua_DifficultyType::index_table[] = {
-	{"index", L_TableIndex<Lua_DifficultyType>},
-	{0, 0}
-};
-
-const luaL_reg Lua_DifficultyType::newindex_table[] = { {0, 0} };
-
-const luaL_reg Lua_DifficultyType::metatable[] = {
-	{"__eq", L_Equals<Lua_DifficultyType>},
-	{"__index", L_TableGet<Lua_DifficultyType>},
-	{"__newindex", L_TableSet<Lua_DifficultyType>},
-	{0, 0}
-};
-
-struct Lua_GameType {
-	short index;
-	static bool valid(int index) { return index >= 0 && index < NUMBER_OF_GAME_TYPES; }
-	static const char *name;
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-};
-
-const char *Lua_GameType::name = "game_type";
-const luaL_reg Lua_GameType::index_table[] = {
-	{"index", L_TableIndex<Lua_GameType>},
-	{0, 0}
-};
-
-const luaL_reg Lua_GameType::newindex_table[] = { {0, 0} };
-
-const luaL_reg Lua_GameType::metatable[] = {
-	{"__eq", L_Equals<Lua_GameType>},
-	{"__index", L_TableGet<Lua_GameType>},
-	{"__newindex", L_TableSet<Lua_GameType>},
-	{0, 0}
-};
-
-struct Lua_Game {
-	short index;
-	static const char *name;
-
-	static const luaL_reg metatable[];
-	static const luaL_reg index_table[];
-	static const luaL_reg newindex_table[];
-
-	static bool valid(int) { return true; }
-
-	static int get_difficulty(lua_State *L);
-	static int get_kill_limit(lua_State *L);
-	static int get_type(lua_State *L);
-
-	static int better_random(lua_State *L);
-	static int global_random(lua_State *L);
-	static int local_random(lua_State *L);
-};
-
-const char *Lua_Game::name = "Game";
-
-int Lua_Game::get_difficulty(lua_State *L)
-{
-	L_Push<Lua_DifficultyType>(L, dynamic_world->game_information.difficulty_level);
-	return 1;
-}
-
-int Lua_Game::get_kill_limit(lua_State *L)
+static int Lua_Game_Get_Kill_Limit(lua_State *L)
 {
 	lua_pushnumber(L, dynamic_world->game_information.kill_limit);
 	return 1;
 }
 
-int Lua_Game::get_type(lua_State *L)
+static int Lua_Game_Get_Type(lua_State *L)
 {
-	L_Push<Lua_GameType>(L, GET_GAME_TYPE());
+	Lua_GameType::Push(L, GET_GAME_TYPE());
 	return 1;
 }
 
 extern GM_Random lua_random_generator;
 
-int Lua_Game::better_random(lua_State *L)
+int Lua_Game_Better_Random(lua_State *L)
 {
 	if (lua_isnumber(L, 1))
 	{
 		lua_pushnumber(L, lua_random_generator.KISS() % static_cast<uint32>(lua_tonumber(L, 1)));
 	}
+	else
 	{
 		lua_pushnumber(L, lua_random_generator.KISS());
 	}
 	return 1;
 }
 
-int Lua_Game::global_random(lua_State *L)
+int Lua_Game_Global_Random(lua_State *L)
 {
 	if (lua_isnumber(L, 1))
 	{
@@ -1802,7 +1437,7 @@ int Lua_Game::global_random(lua_State *L)
 	return 1;
 }
 
-int Lua_Game::local_random(lua_State *L)
+int Lua_Game_Local_Random(lua_State *L)
 {
 	if (lua_isnumber(L, 1))
 	{
@@ -1815,58 +1450,74 @@ int Lua_Game::local_random(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Game::index_table[] = {
-	{"difficulty", Lua_Game::get_difficulty},
-	{"global_random", L_TableFunction<Lua_Game::global_random>},
-	{"kill_limit", Lua_Game::get_kill_limit},
-	{"local_random", L_TableFunction<Lua_Game::local_random>},
-	{"random", L_TableFunction<Lua_Game::better_random>},
-	{"type", Lua_Game::get_type},
+const luaL_reg Lua_Game_Get[] = {
+	{"difficulty", Lua_Game_Get_Difficulty},
+	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
+	{"kill_limit", Lua_Game_Get_Kill_Limit},
+	{"local_random", L_TableFunction<Lua_Game_Local_Random>},
+	{"random", L_TableFunction<Lua_Game_Better_Random>},
+	{"type", Lua_Game_Get_Type},
 	{0, 0}
 };
-
-const luaL_reg Lua_Game::newindex_table[] = {
-	{0, 0}
-};
-
-const luaL_reg Lua_Game::metatable[] = {
-	{"__index", L_TableGet<Lua_Game>},
-	{"__newindex", L_TableSet<Lua_Game>},
-	{0, 0}
-};
-	
 
 static int Lua_Player_load_compatibility(lua_State *L);
 
 int Lua_Player_register (lua_State *L)
 {
-	L_Register<Lua_Action_Flags>(L);
-	L_Register<Lua_Crosshairs>(L);
-	L_Register<Lua_Player_Items>(L);
-	L_Register<Lua_Player_Kills>(L);
-	L_Register<Lua_Player>(L);
-	L_Register<Lua_Side>(L);
-	L_Register<Lua_InternalVelocity>(L);
-	L_Register<Lua_ExternalVelocity>(L);
-	L_Register<Lua_FadeType>(L);
-	L_GlobalRegister<Lua_FadeTypes>(L);
-	L_Register<Lua_WeaponType>(L);
-	L_GlobalRegister<Lua_WeaponTypes>(L);
-	L_Register<Lua_Player_Weapon>(L);
-	L_Register<Lua_Player_Weapons>(L);
-	L_Register<Lua_Player_Weapon_Trigger>(L);
-	L_Register<Lua_OverlayColor>(L);
-	L_Register<Lua_Overlays>(L);
-	L_Register<Lua_Overlay>(L);
+	Lua_Action_Flags::Register(L, Lua_Action_Flags_Get, Lua_Action_Flags_Set);
+	Lua_Crosshairs::Register(L, Lua_Crosshairs_Get, Lua_Crosshairs_Set);
+	Lua_Player_Items::Register(L, 0, 0, Lua_Player_Items_Metatable);
+	Lua_Player_Kills::Register(L, 0, 0, Lua_Player_Kills_Metatable);
+	Lua_Side::Register(L);
+	Lua_InternalVelocity::Register(L, Lua_InternalVelocity_Get);
+	Lua_ExternalVelocity::Register(L, Lua_ExternalVelocity_Get, Lua_ExternalVelocity_Set);
+	Lua_FadeType::Register(L);
+	Lua_FadeType::Valid = Lua_FadeType::ValidRange<NUMBER_OF_FADE_TYPES>;
+	
+	Lua_FadeTypes::Register(L);
+	Lua_FadeTypes::Length = Lua_FadeTypes::ConstantLength<NUMBER_OF_FADE_TYPES>;
 
-	L_GlobalRegister<Lua_Players>(L);
+	Lua_WeaponType::Register(L);
+	Lua_WeaponType::Valid = Lua_WeaponType::ValidRange<MAXIMUM_NUMBER_OF_WEAPONS>;
 
-	L_Register<Lua_Game>(L);
-	L_Register<Lua_GameType>(L);
-	L_Register<Lua_DifficultyType>(L);
+	Lua_WeaponTypes::Register(L);
+	Lua_WeaponTypes::Length = Lua_WeaponTypes::ConstantLength<MAXIMUM_NUMBER_OF_WEAPONS>;
+
+	Lua_Player_Weapon::Register(L, Lua_Player_Weapon_Get);
+	Lua_Player_Weapon::Valid = Lua_Player_Weapon::ValidRange<MAXIMUM_NUMBER_OF_WEAPONS>;
+
+	Lua_Player_Weapons::Register(L, 0, 0, Lua_Player_Weapons_Metatable);
+	Lua_Player_Weapons::Valid = Lua_Player_Valid;
+
+	Lua_Player_Weapon_Trigger::Register(L, Lua_Player_Weapon_Trigger_Get);
+	Lua_Player_Weapon_Trigger::Valid = Lua_Player_Weapon_Trigger::ValidRange<(int) _secondary_weapon + 1>;
+
+	Lua_OverlayColor::Register(L);
+	Lua_OverlayColor::Valid = Lua_OverlayColor::ValidRange<8>;
+
+	Lua_Overlays::Register(L, 0, 0, Lua_Overlays_Metatable);
+	Lua_Overlays::Valid = Lua_Player_Valid;
+
+	Lua_Overlay::Register(L, Lua_Overlay_Get, Lua_Overlay_Set);
+	Lua_Overlay::Valid = Lua_Overlay::ValidRange<MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS>;
+
+	Lua_Player::Register(L, Lua_Player_Get, Lua_Player_Set);
+	Lua_Player::Valid = Lua_Player_Valid;
+	
+	Lua_Players::Register(L);
+	Lua_Players::Length = Lua_Players_Length;
+
+	Lua_Game::Register(L, Lua_Game_Get);
+
+	Lua_GameType::Register(L);
+	Lua_GameType::Valid = Lua_GameType::ValidRange<NUMBER_OF_GAME_TYPES>;
+
+	Lua_DifficultyType::Register(L);
+	Lua_DifficultyType::Valid = Lua_DifficultyType::ValidRange<NUMBER_OF_GAME_DIFFICULTY_LEVELS>;
+
 	// register one Game userdatum globally
-	L_Push<Lua_Game>(L, 0);
-	lua_setglobal(L, Lua_Game::name);
+	Lua_Game::Push(L, 0);
+	lua_setglobal(L, Lua_Game_Name);
 	
 	Lua_Player_load_compatibility(L);
 	

@@ -520,7 +520,7 @@ static int Lua_Monster_Get_Player(lua_State *L)
 	int monster_index = Lua_Monster::Index(L, 1);
 	monster_data *monster = get_monster_data(monster_index);
 	if (MONSTER_IS_PLAYER(monster))
-		L_Push<Lua_Player>(L, monster_index_to_player_index(monster_index));
+		Lua_Player::Push(L, monster_index_to_player_index(monster_index));
 	else
 		lua_pushnil(L);
 	
