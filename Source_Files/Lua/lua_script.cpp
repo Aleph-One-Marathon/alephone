@@ -93,7 +93,6 @@ using namespace std;
 #define DONT_REPEAT_DEFINITIONS
 #include "item_definitions.h"
 #include "monster_definitions.h"
-#include "projectile_definitions.h"
 
 bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
@@ -1247,45 +1246,6 @@ static int L_Set_Lua_Compass_Beacon (lua_State *L)
 	return 0;
 }
 
-extern projectile_definition *get_projectile_definition(short type);
-
-static int L_Get_Projectile_Damage_Type (lua_State *L)
-{
-	if (!lua_isnumber (L, 1))
-	{
-		lua_pushstring (L, "get_projectile_type: incorrect argument type");
-		lua_error (L);
-	}
-	
-	int projectile_index = static_cast<int>(lua_tonumber (L, 1));
-	
-	if(projectile_index < 0 || projectile_index >= MAXIMUM_PROJECTILES_PER_MAP)
-	{
-		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
-		lua_error(L);
-	}
-
-	struct projectile_data *projectile= get_projectile_data(projectile_index);
-	
-	if(!SLOT_IS_USED(projectile))
-	{
-		lua_pushstring(L, "get_projectile_owner: invalid projectile index");
-		lua_error(L);
-	}
-	
-	struct projectile_definition *definition = get_projectile_definition(projectile->type);
-	lua_pushnumber (L, definition->damage.type);
-
-	return 1;
-}
-
-/*
-Yet to be implemented:
-detonate_projectile
-detonate_new_projectile
-new_projectile
-*/
-
 static int L_Fade_Music(lua_State* L)
 {
 	short duration;
@@ -1391,7 +1351,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "use_lua_compass", L_Use_Lua_Compass);
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
-	lua_register(state, "get_projectile_damage_type", L_Get_Projectile_Damage_Type);
 	lua_register(state, "prompt", L_Prompt);
 	lua_register(state, "fade_music", L_Fade_Music);
 	lua_register(state, "clear_music", L_Clear_Music);

@@ -34,8 +34,10 @@ LUA_MONSTERS.CPP
 
 #include <boost/bind.hpp>
 
-#ifdef HAVE_LUA
+#define DONT_REPEAT_DEFINITIONS
+#include "projectile_definitions.h"
 
+#ifdef HAVE_LUA
 
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
@@ -97,7 +99,7 @@ static int Lua_Projectile_Get_Target(lua_State *L)
 static int Lua_Projectile_Get_Type(lua_State *L)
 {
 	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
-	Lua_Projectile::Push(L, projectile->type);
+	Lua_ProjectileType::Push(L, projectile->type);
 	return 1;
 }
 
@@ -347,7 +349,35 @@ bool Lua_Projectile_Valid(int32 index)
 	return (SLOT_IS_USED(projectile));
 }
 
+extern projectile_definition *get_projectile_definition(short type);
+
+char Lua_ProjectileTypeDamage_Name[] = "projectile_type_damage";
+typedef L_Class<Lua_ProjectileTypeDamage_Name> Lua_ProjectileTypeDamage;
+
+static int Lua_ProjectileTypeDamage_Get_Type(lua_State *L)
+{
+	projectile_definition *definition = get_projectile_definition(Lua_ProjectileTypeDamage::Index(L, 1));
+	Lua_DamageType::Push(L, definition->damage.type);
+	return 1;
+}
+
+const luaL_reg Lua_ProjectileTypeDamage_Get[] = {
+	{"type", Lua_ProjectileTypeDamage_Get_Type},
+	{0, 0}
+};
+
 char Lua_ProjectileType_Name[] = "projectile_type";
+
+static int Lua_ProjectileType_Get_Damage(lua_State *L)
+{
+	Lua_ProjectileTypeDamage::Push(L, Lua_ProjectileType::Index(L, 1));
+	return 1;
+}
+
+const luaL_reg Lua_ProjectileType_Get[] = {
+	{"damage", Lua_ProjectileType_Get_Damage},
+	{0, 0}
+};
 
 char Lua_ProjectileTypes_Name[] = "ProjectileTypes";
 
@@ -366,8 +396,10 @@ int Lua_Projectiles_register(lua_State *L)
 	Lua_Projectiles::Register(L, Lua_Projectiles_Methods);
 	Lua_Projectiles::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_projectiles);
 
-	Lua_ProjectileType::Register(L);
+	Lua_ProjectileType::Register(L, Lua_ProjectileType_Get);
 	Lua_ProjectileType::Valid = Lua_ProjectileType_Valid;
+
+	Lua_ProjectileTypeDamage::Register(L, Lua_ProjectileTypeDamage_Get);
 	
 	Lua_ProjectileTypes::Register(L);
 	Lua_ProjectileTypes::Length = Lua_ProjectileTypes::ConstantLength<NUMBER_OF_PROJECTILE_TYPES>;
@@ -377,6 +409,7 @@ int Lua_Projectiles_register(lua_State *L)
 
 const char *compatibility_script = ""
 	"function get_projectile_angle(index) local elevation = Projectiles[index].elevation if elevation < 0.0 then elevation = elevation + 360 end return Projectiles[index].facing, elevation end\n"
+	"function get_projectile_damage_type(index) return Projectiles[index].type.damage.type.index end\n"
 	"function get_projectile_owner(index) if Projectiles[index].owner then return Projectiles[index].owner.index end end\n"
 	"function get_projectile_position(index) return Projectiles[index].polygon.index, Projectiles[index].x, Projectiles[index].y, Projectiles[index].z end\n"
 	"function get_projectile_target(index) if Projectiles[index].target then return Projectiles[index].target.index end end\n"
