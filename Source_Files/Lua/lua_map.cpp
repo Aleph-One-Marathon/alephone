@@ -24,6 +24,7 @@ LUA_MAP.CPP
 #include "lua_templates.h"
 #include "lightsource.h"
 #include "map.h"
+#include "media.h"
 #include "platforms.h"
 #include "OGL_Setup.h"
 
@@ -319,6 +320,21 @@ static int Lua_Polygon_Get_Floor(lua_State *L)
 	return 1;
 }
 
+static int Lua_Polygon_Get_Media(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon::Index(L, 1));
+	if (polygon->media_index != NONE)
+	{
+		Lua_Media::Push(L, polygon->media_index);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
 static int Lua_Polygon_Get_Type(lua_State *L)
 {
 	lua_pushnumber(L, get_polygon_data(Lua_Polygon::Index(L, 1))->type);
@@ -358,6 +374,31 @@ static int Lua_Polygon_Get_Z(lua_State *L)
 	return 1;
 }
 
+static int Lua_Polygon_Set_Media(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon::Index(L, 1));
+	short media_index = NONE;
+	if (lua_isnumber(L, 2))
+	{
+		media_index = static_cast<short>(lua_tonumber(L, 2));
+		if (media_index < 0 || media_index > MAXIMUM_MEDIAS_PER_MAP)
+			return luaL_error(L, "media: invalid media index");
+
+	} 
+	else if (Lua_Media::Is(L, 2))
+	{
+		media_index = Lua_Media::Index(L, 2);
+	}
+	else if (!lua_isnil(L, 2))
+	{
+		return luaL_error(L, "media: incorrect argument type");
+	}
+
+	polygon->media_index = media_index;
+	return 0;
+}
+		
+
 static int Lua_Polygon_Set_Type(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -379,6 +420,7 @@ static bool Lua_Polygon_Valid(int16 index)
 const luaL_reg Lua_Polygon_Get[] = {
 	{"ceiling", Lua_Polygon_Get_Ceiling},
 	{"floor", Lua_Polygon_Get_Floor},
+	{"media", Lua_Polygon_Get_Media},
 	{"platform", Lua_Polygon_Get_Platform},
 	{"type", Lua_Polygon_Get_Type},
 	{"x", Lua_Polygon_Get_X},
@@ -388,6 +430,7 @@ const luaL_reg Lua_Polygon_Get[] = {
 };
 
 const luaL_reg Lua_Polygon_Set[] = {
+	{"media", Lua_Polygon_Set_Media},
 	{"type", Lua_Polygon_Set_Type},
 	{0, 0}
 };
@@ -503,6 +546,33 @@ const luaL_reg Lua_Tag_Set[] = {
 bool Lua_Tag_Valid(int16 index) { return index >= 0; }
 
 char Lua_Tags_Name[] = "Tags";
+
+char Lua_MediaType_Name[] = "media_type";
+typedef L_Enum<Lua_MediaType_Name> Lua_MediaType;
+
+char Lua_MediaTypes_Name[] = "MediaTypes";
+typedef L_EnumContainer<Lua_MediaTypes_Name, Lua_MediaType> Lua_MediaTypes;
+
+char Lua_Media_Name[] = "media";
+
+static int Lua_Media_Get_Type(lua_State *L)
+{
+	media_data *media = get_media_data(Lua_Media::Index(L, 1));
+	Lua_MediaType::Push(L, media->type);
+	return 1;
+}
+
+const luaL_reg Lua_Media_Get[] = {
+	{"type", Lua_Media_Get_Type},
+	{0, 0}
+};
+
+static bool Lua_Media_Valid(int16 index)
+{
+	return index >= 0 && index< MAXIMUM_MEDIAS_PER_MAP;
+}
+
+char Lua_Medias_Name[] = "Media";
 
 char Lua_Annotation_Name[] = "annotation";
 typedef L_Class<Lua_Annotation_Name> Lua_Annotation;
@@ -864,6 +934,18 @@ int Lua_Map_register(lua_State *L)
 	Lua_Tags::Register(L);
 	Lua_Tags::Length = Lua_Tags::ConstantLength<INT16_MAX>;
 
+	Lua_MediaType::Register(L);
+	Lua_MediaType::Valid = Lua_MediaType::ValidRange<NUMBER_OF_MEDIA_TYPES>;
+
+	Lua_MediaTypes::Register(L);
+	Lua_MediaTypes::Length = Lua_MediaTypes::ConstantLength<NUMBER_OF_MEDIA_TYPES>;
+
+	Lua_Media::Register(L, Lua_Media_Get);
+	Lua_Media::Valid = Lua_Media_Valid;
+
+	Lua_Medias::Register(L);
+	Lua_Medias::Length = boost::bind(&std::vector<media_data>::size, &MediaList);
+
 	Lua_Level::Register(L, Lua_Level_Get);
 
 	Lua_Annotation::Register(L, Lua_Annotation_Get, Lua_Annotation_Set);
@@ -895,6 +977,7 @@ static const char* compatibility_script = ""
 	"function get_platform_ceiling_height(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.ceiling_height end end\n"
 	"function get_platform_floor_height(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.floor_height end end\n"
 	"function get_platform_index(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.index else return -1 end end\n"
+	"function get_polygon_media(polygon) if Polygons[polygon].media then return Polygons[polygon].media.index else return -1 end end\n"
 	"function get_platform_monster_control(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.monster_controllable end end\n"
 	"function get_platform_movement(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.extending end end\n"
 	"function get_platform_player_control(polygon) if Polygons[polygon].platform then return Polygons[polygon].platform.player_controllable end end\n"
@@ -925,13 +1008,13 @@ static const char* compatibility_script = ""
 	"function set_platform_state(polygon, state) if Polygons[polygon].platform then Polygons[polygon].platform.active = state end end\n"
 	"function set_polygon_ceiling_height(polygon, height) Polygons[polygon].ceiling.height = height end\n"
 	"function set_polygon_floor_height(polygon, height) Polygons[polygon].floor.height = height end\n"
+	"function set_polygon_media(polygon, media) if media == -1 then Polygons[polygon].media = nil else Polygons[polygon].media = media end end\n"
 	"function set_polygon_type(polygon, type) Polygons[polygon].type = type end\n"
 	"function set_tag_state(tag, state) Tags[tag].active = state end\n"
 	"function set_underwater_fog_affects_landscapes(affects_landscapes) Level.underwater_fog.affects_landscapes = affects_landscapes end\n"
 	"function set_underwater_fog_color(r, g, b) Level.underwater_fog.color.r = r Level.underwater_fog.color.g = g Level.underwater_fog.color.b = b end\n"
 	"function set_underwater_fog_depth(depth) Level.underwater_fog.depth = depth end\n"
 	"function set_underwater_fog_present(present) Level.underwater_fog.active = present end\n"
-
 	;
 
 static int compatibility(lua_State *L)

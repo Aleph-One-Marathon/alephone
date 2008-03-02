@@ -74,6 +74,12 @@ typedef L_Class<Lua_Tag_Name> Lua_Tag;
 extern char Lua_Tags_Name[]; // "Tags"
 typedef L_Container<Lua_Tags_Name, Lua_Tag> Lua_Tags;
 
+extern char Lua_Media_Name[]; // "media"
+typedef L_Class<Lua_Media_Name> Lua_Media;
+
+extern char Lua_Medias_Name[]; // "Media"
+typedef L_Container<Lua_Medias_Name, Lua_Media> Lua_Medias;
+
 int Lua_Map_register (lua_State *L);
 
 #endif

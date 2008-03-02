@@ -1182,41 +1182,6 @@ static int L_Set_Polygon_Permutation(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Polygon_Media(lua_State *L)
-{
-	if (!lua_isnumber(L,1))
-	{
-		lua_pushstring(L, "get_polygon_media: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon)
-	{
-		lua_pushnumber(L, polygon->media_index);
-		return 1;
-	}
-	return 0;
-}
-
-static int L_Set_Polygon_Media(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "set_polygon_media: incorrect argument type");
-		lua_error(L);
-	}
-
-	int polygon_index = static_cast<int>(lua_tonumber(L,1));
-	struct polygon_data *polygon = get_polygon_data(short(polygon_index));
-	if (polygon)
-	{
-		polygon->media_index = static_cast<int>(lua_tonumber(L,2));
-	}
-	return 0;
-}
-
 static int L_Use_Lua_Compass (lua_State *L)
 {
 
@@ -1399,32 +1364,6 @@ static int L_Prompt(lua_State *L)
 	return 0;
 }
 
-static int L_Player_Media(lua_State *L)
-{
-	int player_index = static_cast<int>(lua_tonumber(L,1));
-	if (player_index < 0 || player_index >= dynamic_world->player_count)
-	 {
-		lua_pushstring(L, "set_player_position: invalid player index");
-		lua_error(L);
-	 }
-	player_data *player = get_player_data(player_index);
-	struct polygon_data* polygon = get_polygon_data(player->supporting_polygon_index);
-	if (polygon->media_index!=NONE)
-			{
-				media_data *media = get_media_data(polygon->media_index);
-				if (media)
-				 {
-					if (player->camera_location.z<media->height)
-					 {
-						lua_pushnumber(L, media->type);
-						return 1;
-					 }
-				 }
-			}
-	lua_pushnil(L);
-	return 1;
-}
-
 void RegisterLuaFunctions()
 {
 	lua_register(state, "screen_print", L_Screen_Print);
@@ -1449,14 +1388,11 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_polygon_permutation", L_Set_Polygon_Permutation);
 	lua_register(state, "get_polygon_target", L_Get_Polygon_Permutation);
 	lua_register(state, "set_polygon_target", L_Set_Polygon_Permutation);
-	lua_register(state, "get_polygon_media", L_Get_Polygon_Media);
-	lua_register(state, "set_polygon_media", L_Set_Polygon_Media);
 	lua_register(state, "use_lua_compass", L_Use_Lua_Compass);
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
 	lua_register(state, "get_projectile_damage_type", L_Get_Projectile_Damage_Type);
 	lua_register(state, "prompt", L_Prompt);
-	lua_register(state, "player_media", L_Player_Media);
 	lua_register(state, "fade_music", L_Fade_Music);
 	lua_register(state, "clear_music", L_Clear_Music);
 	lua_register(state, "play_music", L_Play_Music);

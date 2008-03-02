@@ -956,6 +956,14 @@ static int Lua_Player_Get_Extravision_Duration(lua_State *L)
 	return 1;
 }
 
+template<uint16 flag>
+static int Lua_Player_Get_Flag(lua_State *L)
+{
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
+	lua_pushboolean(L, player->variables.flags & flag);
+	return 1;
+}
+
 static int Lua_Player_Get_Infravision_Duration(lua_State *L)
 {
 	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->infravision_duration);
@@ -1107,8 +1115,10 @@ const luaL_reg Lua_Player_Get[] = {
 	{"elevation", Lua_Player_Get_Elevation},
 	{"external_velocity", Lua_Player_Get_External_Velocity},
 	{"extravision_duration", Lua_Player_Get_Extravision_Duration},
+	{"feet_below_media", Lua_Player_Get_Flag<_FEET_BELOW_MEDIA_BIT>},
 	{"fade_screen", L_TableFunction<Lua_Player_Fade_Screen>},
 	{"find_action_key_target", L_TableFunction<Lua_Player_Find_Action_Key_Target>},
+	{"head_below_media", Lua_Player_Get_Flag<_HEAD_BELOW_MEDIA_BIT>},
 	{"infravision_duration", Lua_Player_Get_Infravision_Duration},
 	{"internal_velocity", Lua_Player_Get_Internal_Velocity},
 	{"invincibility_duration", Lua_Player_Get_Invincibility_Duration},
@@ -1558,6 +1568,7 @@ static const char *compatibility_script = ""
 	"function local_random() return Game.local_random() end\n"
 	"function number_of_players() return # Players end\n"
 	"function player_is_dead(player) return Players[player].dead end\n"
+	"function player_media(player) if Players[player].head_below_media then return Players[player].polygon.media.index else return nil end end\n"
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
 	"function play_sound(player, sound, pitch) Players[player]:play_sound(sound, pitch) end\n"
 	"function remove_item(player, item_type) if Players[player].items[item_type] > 0 then Players[player].items[item_type] = Players[player].items[item_type] - 1 end end\n"
