@@ -335,6 +335,13 @@ static int Lua_Polygon_Get_Media(lua_State *L)
 	return 1;
 }
 
+static int Lua_Polygon_Get_Permutation(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon::Index(L, 1));
+	lua_pushnumber(L, polygon->permutation);
+	return 1;
+}
+
 static int Lua_Polygon_Get_Type(lua_State *L)
 {
 	lua_pushnumber(L, get_polygon_data(Lua_Polygon::Index(L, 1))->type);
@@ -398,6 +405,15 @@ static int Lua_Polygon_Set_Media(lua_State *L)
 	return 0;
 }
 		
+static int Lua_Polygon_Set_Permutation(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, ("type: incorrect argument type"));
+	
+	int permutation = static_cast<int>(lua_tonumber(L, 2));
+	get_polygon_data(Lua_Polygon::Index(L, 1))->permutation = permutation;
+	return 0;
+}
 
 static int Lua_Polygon_Set_Type(lua_State *L)
 {
@@ -421,6 +437,7 @@ const luaL_reg Lua_Polygon_Get[] = {
 	{"ceiling", Lua_Polygon_Get_Ceiling},
 	{"floor", Lua_Polygon_Get_Floor},
 	{"media", Lua_Polygon_Get_Media},
+	{"permutation", Lua_Polygon_Get_Permutation},
 	{"platform", Lua_Polygon_Get_Platform},
 	{"type", Lua_Polygon_Get_Type},
 	{"x", Lua_Polygon_Get_X},
@@ -431,6 +448,7 @@ const luaL_reg Lua_Polygon_Get[] = {
 
 const luaL_reg Lua_Polygon_Set[] = {
 	{"media", Lua_Polygon_Set_Media},
+	{"permutation", Lua_Polygon_Set_Permutation},
 	{"type", Lua_Polygon_Set_Type},
 	{0, 0}
 };
@@ -986,6 +1004,7 @@ static const char* compatibility_script = ""
 	"function get_polygon_ceiling_height(polygon) return Polygons[polygon].ceiling.height end\n"
 	"function get_polygon_center(polygon) return Polygons[polygon].x * 1024, Polygons[polygon].y * 1024 end\n"
 	"function get_polygon_floor_height(polygon) return Polygons[polygon].floor.height end\n"
+	"function get_polygon_target(polygon) return Polygons[polygon].permutation end\n"
 	"function get_polygon_type(polygon) return Polygons[polygon].type end\n"
 	"function get_tag_state(tag) return Tags[tag].active end\n"
 	"function get_underwater_fog_affects_landscapes() return Level.underwater_fog.affects_landscapes end\n"
@@ -1009,6 +1028,7 @@ static const char* compatibility_script = ""
 	"function set_polygon_ceiling_height(polygon, height) Polygons[polygon].ceiling.height = height end\n"
 	"function set_polygon_floor_height(polygon, height) Polygons[polygon].floor.height = height end\n"
 	"function set_polygon_media(polygon, media) if media == -1 then Polygons[polygon].media = nil else Polygons[polygon].media = media end end\n"
+	"function set_polygon_target(polygon, target) Polygons[polygon].permutation = target end\n"
 	"function set_polygon_type(polygon, type) Polygons[polygon].type = type end\n"
 	"function set_tag_state(tag, state) Tags[tag].active = state end\n"
 	"function set_underwater_fog_affects_landscapes(affects_landscapes) Level.underwater_fog.affects_landscapes = affects_landscapes end\n"
