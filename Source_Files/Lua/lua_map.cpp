@@ -21,6 +21,7 @@ LUA_MAP.CPP
 */
 
 #include "lua_map.h"
+#include "lua_monsters.h"
 #include "lua_templates.h"
 #include "lightsource.h"
 #include "map.h"
@@ -308,6 +309,46 @@ const luaL_reg Lua_Polygon_Ceiling_Set[] = {
 
 char Lua_Polygon_Name[] = "polygon";
 
+static int Lua_Polygon_Monsters_Iterator(lua_State *L)
+{
+	int index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
+	lua_pushvalue(L, lua_upvalueindex(2));
+	lua_pushnumber(L, index);
+	lua_gettable(L, -2);
+	lua_remove(L, -2);
+
+	lua_pushnumber(L, ++index);
+	lua_replace(L, lua_upvalueindex(1));
+
+	return 1;
+}	
+
+int Lua_Polygon_Monsters(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon::Index(L, 1));
+	
+	int table_index = 1;
+	short object_index = polygon->first_object;
+
+	lua_pushnumber(L, 1);
+	lua_newtable(L);
+	while (object_index != NONE)
+	{
+		object_data *object = get_object_data(object_index);
+		if (GET_OBJECT_OWNER(object) == _object_is_monster)
+		{
+			lua_pushnumber(L, table_index++);
+			Lua_Monster::Push(L, object->permutation);
+			lua_settable(L, -3);
+		}
+
+		object_index = object->next_object;
+	}
+	
+	lua_pushcclosure(L, Lua_Polygon_Monsters_Iterator, 2);
+	return 1;
+}
+
 static int Lua_Polygon_Get_Ceiling(lua_State *L)
 {
 	Lua_Polygon_Ceiling::Push(L, Lua_Polygon::Index(L, 1));
@@ -437,6 +478,7 @@ const luaL_reg Lua_Polygon_Get[] = {
 	{"ceiling", Lua_Polygon_Get_Ceiling},
 	{"floor", Lua_Polygon_Get_Floor},
 	{"media", Lua_Polygon_Get_Media},
+	{"monsters", L_TableFunction<Lua_Polygon_Monsters>},
 	{"permutation", Lua_Polygon_Get_Permutation},
 	{"platform", Lua_Polygon_Get_Platform},
 	{"type", Lua_Polygon_Get_Type},
@@ -1013,6 +1055,7 @@ static const char* compatibility_script = ""
 	"function get_underwater_fog_present() return Level.underwater_fog.active end\n"
 
 	"function number_of_polygons() return # Polygons end\n"
+	"function select_monster(type, poly) for m in Polygons[poly]:monsters() do if m.type == type and m.visible and (m.action < 6 or m.action > 9) then return m.index end end return nil end\n"
 	"function set_fog_affects_landscapes(affects_landscapes) Level.fog.affects_landscapes = affects_landscapes end\n"
 	"function set_fog_color(r, g, b) Level.fog.color.r = r Level.fog.color.g = g Level.fog.color.b = b end\n"
 	"function set_fog_depth(depth) Level.fog.depth = depth end\n"

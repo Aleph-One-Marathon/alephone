@@ -639,45 +639,6 @@ static int L_Show_Interface(lua_State *L)
 	return 0;
 }
 
-static int L_Select_Monster(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "select_monster: incorrect argument type");
-		lua_error(L);
-	}
-	int monster_type = static_cast<int>(lua_tonumber(L,1));
-	int polygon = static_cast<int>(lua_tonumber(L,2));
-	/* SB: validate here too */
-	if(monster_type < 0 || monster_type >= NUMBER_OF_MONSTER_TYPES) {
-		lua_pushstring(L, "select_monster: invalid monster type");
-		lua_error(L);
-	}
-	
-	//we are using IntersectedObjects
-	int found;
-	size_t i, objectCount;
-	struct monster_data * theMonster;
-
-	found = possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, (short)polygon, false);
-	//now we have a list of stuff
-	objectCount = IntersectedObjects.size();
-	for(i=0;i<objectCount;i++)
-	{
-		theMonster = GetMemberWithBounds(monsters,get_object_data(IntersectedObjects[i])->permutation,MAXIMUM_MONSTERS_PER_MAP);
-		if((theMonster->type == monster_type) && SLOT_IS_USED(theMonster) && theMonster->unused[0] != polygon)
-		{
-			if(get_object_data(theMonster->object_index)->polygon == polygon)
-			{
-				theMonster->unused[0]=polygon;
-				lua_pushnumber(L, get_object_data(IntersectedObjects[i])->permutation);
-				return 1;
-			}
-		}
-	}
-	return 0;
-}
-
 #if TIENNOU_PLAYER_CONTROL
 enum
 {
@@ -1298,7 +1259,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "kill_script", L_Kill_Script);
 	lua_register(state, "hide_interface", L_Hide_Interface);
 	lua_register(state, "show_interface", L_Show_Interface);
-	lua_register(state, "select_monster", L_Select_Monster);
 	lua_register(state, "player_control", L_Player_Control);
 	lua_register(state, "create_camera", L_Create_Camera);
 	lua_register(state, "add_path_point", L_Add_Path_Point);
