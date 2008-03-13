@@ -31,6 +31,7 @@ LUA_PLAYER.CPP
 #include "lua_templates.h"
 #include "map.h"
 #include "monsters.h"
+#include "Music.h"
 #include "player.h"
 #include "network_games.h"
 #include "Random.h"
@@ -1470,6 +1471,61 @@ const luaL_reg Lua_Game_Get[] = {
 	{0, 0}
 };
 
+char Lua_Music_Name[] = "Music";
+typedef L_Class<Lua_Music_Name> Lua_Music;
+
+int Lua_Music_Clear(lua_State *L)
+{
+	Music::instance()->ClearLevelMusic();
+	return 0;
+}
+
+int Lua_Music_Fade(lua_State *L)
+{
+	int duration;
+	if (!lua_isnumber(L, 1))
+		duration = 1000;
+	else
+		duration = static_cast<int>(lua_tonumber(L, 1) * 1000);
+	Music::instance()->FadeOut(duration);
+	Music::instance()->ClearLevelMusic();
+	return 0;
+}
+
+int Lua_Music_Play(lua_State *L)
+{
+	bool restart_music;
+	restart_music = !Music::instance()->IsLevelMusicActive() && !Music::instance()->Playing();
+	for (int n = 1; n <= lua_gettop(L); n++)
+	{
+		if (!lua_isstring(L, n))
+			return luaL_error(L, "play: invalid file specifier");
+	
+		FileSpecifier file;
+		if (file.SetNameWithPath(lua_tostring(L, n)))
+			Music::instance()->PushBackLevelMusic(file);
+	}
+
+	if (restart_music)
+		Music::instance()->PreloadLevelMusic();
+	return 0;
+}
+
+int Lua_Music_Stop(lua_State *L)
+{
+	Music::instance()->ClearLevelMusic();
+	Music::instance()->StopLevelMusic();
+	return 0;
+}
+
+const luaL_reg Lua_Music_Get[] = {
+	{"clear", L_TableFunction<Lua_Music_Clear>},
+	{"fade", L_TableFunction<Lua_Music_Fade>},
+	{"play", L_TableFunction<Lua_Music_Play>},
+	{"stop", L_TableFunction<Lua_Music_Stop>},
+	{0, 0}
+};
+
 static int Lua_Player_load_compatibility(lua_State *L);
 
 int Lua_Player_register (lua_State *L)
@@ -1525,9 +1581,15 @@ int Lua_Player_register (lua_State *L)
 	Lua_DifficultyType::Register(L);
 	Lua_DifficultyType::Valid = Lua_DifficultyType::ValidRange<NUMBER_OF_GAME_DIFFICULTY_LEVELS>;
 
+	Lua_Music::Register(L, Lua_Music_Get);
+
 	// register one Game userdatum globally
 	Lua_Game::Push(L, 0);
 	lua_setglobal(L, Lua_Game_Name);
+
+	// register one Music userdatum
+	Lua_Music::Push(L, 0);
+	lua_setglobal(L, Lua_Music_Name);
 	
 	Lua_Player_load_compatibility(L);
 	
@@ -1541,9 +1603,11 @@ static const char *compatibility_script = ""
 	"function add_to_player_external_velocity(player, x, y, z) Players[player].external_velocity.i = Players[player].external_velocity.i + x Players[player].external_velocity.j = Players[player].external_velocity.j + y Players[player].external_velocity.k = Players[player].external_velocity.k + z end\n"
 	"function award_points(player, amount) Players[player].points = Players[player].points + amount end\n"
 	"function better_random() return Game.random() end\n"
+	"function clear_music() Music.clear() end\n"
 	"function count_item(player, item_type) return Players[player].items[item_type] end\n"
 	"function crosshairs_active(player) return Players[player].crosshairs.active end\n"
 	"function destroy_ball(player) for i in ItemTypes() do if i.ball then Players[player].items[i] = 0 end end end\n"
+	"function fade_music(duration) if duration then Music.fade(duration * 60 / 1000) else Music.fade(60 / 1000) end end\n"
 	"function get_game_difficulty() return Game.difficulty.index end\n"
 	"function get_game_type() return Game.type.index end\n"
 	"function get_kills(player, slain_player) if player == -1 then return Players[slain_player].deaths else return Players[player].kills[slain_player] end end\n"
@@ -1567,6 +1631,7 @@ static const char *compatibility_script = ""
 	"function local_player_index() for p in Players() do if p.local_ then return p.index end end end\n"
 	"function local_random() return Game.local_random() end\n"
 	"function number_of_players() return # Players end\n"
+	"function play_music(...) Music.play(...) end\n"
 	"function player_is_dead(player) return Players[player].dead end\n"
 	"function player_media(player) if Players[player].head_below_media then return Players[player].polygon.media.index else return nil end end\n"
 	"function player_to_monster_index(player) return Players[player].monster.index end\n"
@@ -1590,6 +1655,7 @@ static const char *compatibility_script = ""
 	"function set_player_powerup_duration(player, powerup, duration) if powerup == _powerup_invisibility then Players[player].invisibility_duration = duration elseif powerup == _powerup_invincibility then Players[player].invincibility_duration = duration elseif powerup == _powerup_infravision then Players[player].infravision_duration = duration elseif powerup == _powerup_extravision then Players[player].extravision_duration = duration end end\n"
 	"function set_player_team(player, team) Players[player].team = team end\n"
 	"function set_points(player, amount) Players[player].points = amount end\n"
+	"function stop_music() Music.stop() end\n"
 	"function set_zoom_state(player, state) Players[player].zoom_active = state end\n"
 	"function teleport_player(player, polygon) Players[player]:teleport(polygon) end\n"
 	"function teleport_player_to_level(player, level) Players[player]:teleport_to_level(level) end\n"

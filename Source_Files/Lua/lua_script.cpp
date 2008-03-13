@@ -1172,50 +1172,6 @@ static int L_Set_Lua_Compass_Beacon (lua_State *L)
 	return 0;
 }
 
-static int L_Fade_Music(lua_State* L)
-{
-	short duration;
-	if(!lua_isnumber(L, 1))
-		duration = 60;
-	else
-		duration = (short)(lua_tonumber(L, 1) * 60);
-	Music::instance()->FadeOut(duration);
-	Music::instance()->ClearLevelMusic();
-	return 0;
-}
-
-static int L_Clear_Music(lua_State* L)
-{
-	Music::instance()->ClearLevelMusic();
-	return 0;
-}
-
-static int L_Play_Music(lua_State* L)
-{
-	bool restart_music;
-	int n;
-	restart_music = !Music::instance()->IsLevelMusicActive() && !Music::instance()->Playing();
-	for(n = 1; n <= lua_gettop(L); n++) {
-		if(!lua_isstring(L, n)) {
-			lua_pushstring(L, "play_music: invalid file specifier");
-			lua_error(L);
-		}
-		FileSpecifier file;
-		if(file.SetNameWithPath(lua_tostring(L, n)))
-			Music::instance()->PushBackLevelMusic(file);
-	}
-	if(restart_music)
-		Music::instance()->PreloadLevelMusic();
-	return 0;
-}
-
-static int L_Stop_Music(lua_State* L)
-{
-	Music::instance()->ClearLevelMusic();
-	Music::instance()->StopLevelMusic();
-	return 0;
-}
-
 static void L_Prompt_Callback(const std::string& str) {
   if(L_Should_Call("prompt_callback"))
    {
@@ -1273,10 +1229,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
 	lua_register(state, "prompt", L_Prompt);
-	lua_register(state, "fade_music", L_Fade_Music);
-	lua_register(state, "clear_music", L_Clear_Music);
-	lua_register(state, "play_music", L_Play_Music);
-	lua_register(state, "stop_music", L_Stop_Music);
 
 	Lua_Map_register(state);
 	Lua_Monsters_register(state);
