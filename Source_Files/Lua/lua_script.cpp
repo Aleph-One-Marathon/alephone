@@ -1036,71 +1036,6 @@ static int L_Clear_Camera(lua_State *L)
 	return 0;
 }
 
-static int L_Use_Lua_Compass (lua_State *L)
-{
-
-	int args = lua_gettop(L);
-
-	if (args == 1)
-	{
-		if (!lua_isboolean (L, 1))
-		{
-			lua_pushstring (L, "use_lua_compass: incorrect argument type");
-			lua_error (L);
-		}
-
-		for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
-		{
-			use_lua_compass [i] = lua_toboolean (L, 1);
-		}
-	}
-
-	if (args == 2)
-	{
-		if (!lua_isnumber (L, 1) || !lua_isboolean (L, 2))
-		{
-			lua_pushstring (L, "use_lua_compass: incorrect argument type");
-			lua_error (L);
-		}
-
-		int player_index = static_cast<int>(lua_tonumber(L,1));
-
-		use_lua_compass [player_index] = lua_toboolean (L, 2);
-	}
-
-	return 0;
-}
-
-static int L_Set_Lua_Compass_State (lua_State *L)
-{
-	if (!lua_isnumber (L, 1) || !lua_isnumber (L, 2))
-	{
-		lua_pushstring (L, "set_lua_compass_state: incorrect argument type");
-		lua_error (L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber (L, 1));
-	int compass_state = static_cast<int>(lua_tonumber (L, 2));
-	lua_compass_states [player_index] = compass_state;
-	return 0;
-}
-
-static int L_Set_Lua_Compass_Beacon (lua_State *L)
-{
-	if (!lua_isnumber (L, 1) || !lua_isnumber (L, 2) || !lua_isnumber (L, 3))
-	{
-		lua_pushstring (L, "set_lua_compass_beacon: incorrect argument type");
-		lua_error (L);
-	}
-
-	int player_index = static_cast<int>(lua_tonumber (L, 1));
-	int beacon_x = static_cast<world_distance>(lua_tonumber(L,2)*WORLD_ONE);
-	int beacon_y = static_cast<world_distance>(lua_tonumber(L,3)*WORLD_ONE);
-	lua_compass_beacons [player_index].x = beacon_x;
-	lua_compass_beacons [player_index].y = beacon_y;
-	return 0;
-}
-
 static void L_Prompt_Callback(const std::string& str) {
   if(L_Should_Call("prompt_callback"))
    {
@@ -1151,9 +1086,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "activate_camera", L_Activate_Camera);
 	lua_register(state, "deactivate_camera", L_Deactivate_Camera);
 	lua_register(state, "clear_camera", L_Clear_Camera);
-	lua_register(state, "use_lua_compass", L_Use_Lua_Compass);
-	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
-	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);
 	lua_register(state, "prompt", L_Prompt);
 
 	Lua_Map_register(state);

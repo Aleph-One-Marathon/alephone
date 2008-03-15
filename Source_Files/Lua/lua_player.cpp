@@ -33,6 +33,7 @@ LUA_PLAYER.CPP
 #include "map.h"
 #include "monsters.h"
 #include "Music.h"
+#include "network.h"
 #include "player.h"
 #include "network_games.h"
 #include "Random.h"
@@ -329,6 +330,133 @@ static int Lua_Overlays_Get(lua_State *L)
 
 const luaL_reg Lua_Overlays_Metatable[] = {
 	{"__index", Lua_Overlays_Get},
+	{0, 0}
+};
+
+extern bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+extern world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+extern short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+
+char Lua_Player_Compass_Name[] = "player_compass";
+typedef L_Class<Lua_Player_Compass_Name> Lua_Player_Compass;
+
+template<short state>
+int Lua_Player_Compass_All(lua_State *L)
+{
+	int player_index = Lua_Player_Compass::Index(L, 1);
+	lua_compass_states[player_index] = state;
+	return 0;
+}
+
+static int Lua_Player_Compass_Get_Lua(lua_State *L)
+{
+	int player_index = Lua_Player_Compass::Index(L, 1);
+	lua_pushboolean(L, use_lua_compass[player_index]);
+	return 1;
+}
+
+template<short state>
+static int Lua_Player_Compass_Get_State(lua_State *L)
+{
+	int player_index = Lua_Player_Compass::Index(L, 1);
+	lua_pushboolean(L, lua_compass_states[player_index] & state);
+	return 1;
+}
+
+static int Lua_Player_Compass_Get_X(lua_State *L)
+{
+	int player_index = Lua_Player_Compass::Index(L, 1);
+	lua_pushnumber(L, static_cast<double>(lua_compass_beacons[player_index].x / WORLD_ONE));
+	return 1;
+}
+
+static int Lua_Player_Compass_Get_Y(lua_State *L)
+{
+	int player_index = Lua_Player_Compass::Index(L, 1);
+	lua_pushnumber(L, static_cast<double>(lua_compass_beacons[player_index].y / WORLD_ONE));
+	return 1;
+}
+
+const luaL_reg Lua_Player_Compass_Get[] = {
+	{"all_off", L_TableFunction<Lua_Player_Compass_All<_network_compass_all_off> >},
+	{"all_on", L_TableFunction<Lua_Player_Compass_All<_network_compass_all_on> >},
+	{"beacon", Lua_Player_Compass_Get_State<_network_compass_use_beacon>},
+	{"lua", Lua_Player_Compass_Get_Lua},
+	{"ne", Lua_Player_Compass_Get_State<_network_compass_ne>},
+	{"northeast", Lua_Player_Compass_Get_State<_network_compass_ne>},
+	{"northwest", Lua_Player_Compass_Get_State<_network_compass_nw>},
+	{"nw", Lua_Player_Compass_Get_State<_network_compass_nw>},
+	{"se", Lua_Player_Compass_Get_State<_network_compass_se>},
+	{"southeast", Lua_Player_Compass_Get_State<_network_compass_se>},
+	{"southwest", Lua_Player_Compass_Get_State<_network_compass_sw>},
+	{"sw", Lua_Player_Compass_Get_State<_network_compass_sw>},
+	{"x", Lua_Player_Compass_Get_X},
+	{"y", Lua_Player_Compass_Get_Y},
+	{0, 0}
+};
+
+static int Lua_Player_Compass_Set_Lua(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "lua: incorrect argument type");
+
+	int player_index = Lua_Player_Compass::Index(L, 1);
+	use_lua_compass[player_index] = lua_toboolean(L, 2);
+	return 0;
+}
+
+template<short state>
+static int Lua_Player_Compass_Set_State(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "compass: incorrect argument type");
+	
+	int player_index = Lua_Player_Compass::Index(L, 1);
+	if (lua_toboolean(L, 2))
+	{
+		lua_compass_states[player_index] |= state;
+	}
+	else
+	{
+		lua_compass_states[player_index] &= ~state;
+	}
+
+	return 0;
+}
+
+static int Lua_Player_Compass_Set_X(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "x: incorrect argument type");
+
+	int player_index = Lua_Player_Compass::Index(L, 1);
+	lua_compass_beacons[player_index].x = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Player_Compass_Set_Y(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "y: incorrect argument type");
+
+	int player_index = Lua_Player_Compass::Index(L, 1);
+	lua_compass_beacons[player_index].y = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+const luaL_reg Lua_Player_Compass_Set[] = {
+	{"beacon", Lua_Player_Compass_Set_State<_network_compass_use_beacon>},
+	{"lua", Lua_Player_Compass_Set_Lua},
+	{"ne", Lua_Player_Compass_Set_State<_network_compass_ne>},
+	{"northeast", Lua_Player_Compass_Set_State<_network_compass_ne>},
+	{"northwest", Lua_Player_Compass_Set_State<_network_compass_nw>},
+	{"nw", Lua_Player_Compass_Set_State<_network_compass_nw>},
+	{"se", Lua_Player_Compass_Set_State<_network_compass_se>},
+	{"southeast", Lua_Player_Compass_Set_State<_network_compass_se>},
+	{"southwest", Lua_Player_Compass_Set_State<_network_compass_sw>},
+	{"sw", Lua_Player_Compass_Set_State<_network_compass_sw>},
+	{"x", Lua_Player_Compass_Set_X},
+	{"y", Lua_Player_Compass_Set_Y},
 	{0, 0}
 };
 
@@ -917,6 +1045,12 @@ static int Lua_Player_Get_Color(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Get_Compass(lua_State *L)
+{
+	Lua_Player_Compass::Push(L, 0);
+	return 1;
+}
+
 static int Lua_Player_Get_Crosshairs(lua_State *L)
 {
 	Lua_Crosshairs::Push(L, Lua_Player::Index(L, 1));
@@ -1120,6 +1254,7 @@ const luaL_reg Lua_Player_Get[] = {
 	{"action_flags", Lua_Player_Get_Action_Flags},
 	{"activate_terminal", L_TableFunction<Lua_Player_Activate_Terminal>},
 	{"color", Lua_Player_Get_Color},
+	{"compass", Lua_Player_Get_Compass},
 	{"crosshairs", Lua_Player_Get_Crosshairs},
 	{"damage", L_TableFunction<Lua_Player_Damage>},
 	{"dead", Lua_Player_Get_Dead},
@@ -1545,6 +1680,7 @@ int Lua_Player_register (lua_State *L)
 {
 	Lua_Action_Flags::Register(L, Lua_Action_Flags_Get, Lua_Action_Flags_Set);
 	Lua_Crosshairs::Register(L, Lua_Crosshairs_Get, Lua_Crosshairs_Set);
+	Lua_Player_Compass::Register(L, Lua_Player_Compass_Get, Lua_Player_Compass_Set);
 	Lua_Player_Items::Register(L, 0, 0, Lua_Player_Items_Metatable);
 	Lua_Player_Kills::Register(L, 0, 0, Lua_Player_Kills_Metatable);
 
@@ -1656,6 +1792,8 @@ static const char *compatibility_script = ""
 	"function set_crosshairs_active(player, state) Players[player].crosshairs.active = state end\n"
 	"function set_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = amount else Players[player].kills[slain_player] = amount end end\n"
 	"function set_life(player, shield) Players[player].energy = shield end\n"
+	"function set_lua_compass_beacon(player, x, y) Players[player].compass.x = x Players[player].compass.y = y end\n"
+	"function set_lua_compass_state(player, state) if state > 15 then Players[player].compass.beacon = true state = state % 16 else Players[player].compass.beacon = false end if state > 7 then Players[player].compass.se = true state = state - 8 else Players[player].compass.se = false end if state > 3 then Players[player].compass.sw = true state = state - 4 else Players[player].compass.sw = false end if state > 1 then Players[player].compass.ne = true state = state - 2 else Players[player].compass.ne = false end if state == 1 then Players[player].compass.nw = true else Players[player].compass.nw = false end end\n"
 	"function set_motion_sensor_state(player, state) Players[player].motion_sensor_active = state end\n"
 	"function set_overlay_color(overlay, color) for p in Players() do if p.local_ then p.overlays[overlay].color = color end end end\n"
 	"function set_overlay_icon(overlay, icon) for p in Players() do if p.local_ then p.overlays[overlay].icon = icon end end end\n"
@@ -1673,6 +1811,7 @@ static const char *compatibility_script = ""
 	"function set_zoom_state(player, state) Players[player].zoom_active = state end\n"
 	"function teleport_player(player, polygon) Players[player]:teleport(polygon) end\n"
 	"function teleport_player_to_level(player, level) Players[player]:teleport_to_level(level) end\n"
+	"function use_lua_compass(player, state) if state ~= nil then Players[player].compass.lua = state else for p in Players() do p.compass.lua = player end end end\n"
 	"function zoom_active(player) return Players[player].zoom_active end\n"
 	;
 
