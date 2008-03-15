@@ -553,7 +553,9 @@ static bool shape_is_control_panel(
 	return is_control_panel;
 }
 
-static short get_panel_class(
+#endif
+
+short get_panel_class(
 	short panel_type)
 {
 	struct control_panel_definition *definition= get_control_panel_definition(panel_type);
@@ -561,6 +563,7 @@ static short get_panel_class(
 	return definition->_class;
 }
 
+#if 0
 //---------- changed 9.18.95
 static bool control_panel_type_valid_for_texture(
 	shape_descriptor shape,
