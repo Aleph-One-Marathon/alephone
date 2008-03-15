@@ -288,6 +288,9 @@ struct terminal_text_t {	// Object describing one terminal
 
 static vector<terminal_text_t> map_terminal_text;
 
+// ghs: for Lua
+short number_of_terminal_texts() { return map_terminal_text.size(); }
+
 /* internal global structure */
 static struct player_terminal_data *player_terminals;
 
