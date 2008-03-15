@@ -1036,77 +1036,6 @@ static int L_Clear_Camera(lua_State *L)
 	return 0;
 }
 
-static int L_Get_Terminal_Text_Number(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "get_terminal_text_number: incorrect argument type");
-		lua_error(L);
-	}
-
-	short polygon_index = static_cast<short>(lua_tonumber(L,1));
-	short line_index = static_cast<short>(lua_tonumber(L,2));
-	short side_index;
-	if (line_side_has_control_panel(line_index, polygon_index, &side_index))
-	{
-		struct side_data *side_data = get_side_data(side_index);
-		if (side_data && SIDE_IS_CONTROL_PANEL(side_data) && side_data->control_panel_type == _panel_is_computer_terminal)
-		{
-			lua_pushnumber(L, side_data->control_panel_permutation);
-			return 1;
-		}
-	}
-	lua_pushnumber(L, -1);
-	return 1;
-}
-
-static int L_Set_Terminal_Text_Number(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
-	{
-		lua_pushstring(L, "get_terminal_text_number: incorrect argument type");
-		lua_error(L);
-	}
-
-	short polygon_index = static_cast<short>(lua_tonumber(L,1));
-	short line_index = static_cast<short>(lua_tonumber(L,2));
-	int16 terminal_text_id = static_cast<int16>(lua_tonumber(L,3));
-	short side_index;
-	if (line_side_has_control_panel(line_index, polygon_index, &side_index))
-	{
-		struct side_data *side_data = get_side_data(side_index);
-		if (side_data && SIDE_IS_CONTROL_PANEL(side_data))
-		{
-			struct control_panel_definition *definition= get_control_panel_definition(side_data->control_panel_type);
-			if (definition->_class == _panel_is_computer_terminal)
-			{
-				side_data->control_panel_permutation = terminal_text_id;
-			}
-		}
-	}
-	return 0;
-}
-
-static int L_Activate_Terminal(lua_State *L)
-{
-	if (!lua_isnumber(L,1) || !lua_isnumber(L,2))
-	{
-		lua_pushstring(L, "activate_terminal: incorrect argument type");
-		lua_error(L);
-	}
-
-	short player_index = static_cast<short>(lua_tonumber(L,1));
-	short text_index = static_cast<short>(lua_tonumber(L,2));
-	if (player_index < 0 || player_index >= dynamic_world->player_count){
-		lua_pushstring(L, "activate_terminal: invalid player index");
-		lua_error(L);
-	}
-	
-	enter_computer_interface(player_index, text_index, calculate_level_completion_state());
-	
-	return 0;
-}
-
 static int L_Use_Lua_Compass (lua_State *L)
 {
 
@@ -1222,9 +1151,6 @@ void RegisterLuaFunctions()
 	lua_register(state, "activate_camera", L_Activate_Camera);
 	lua_register(state, "deactivate_camera", L_Deactivate_Camera);
 	lua_register(state, "clear_camera", L_Clear_Camera);
-	lua_register(state, "get_terminal_text_number", L_Get_Terminal_Text_Number);
-	lua_register(state, "set_terminal_text_number", L_Set_Terminal_Text_Number);
-	lua_register(state, "activate_terminal", L_Activate_Terminal);
 	lua_register(state, "use_lua_compass", L_Use_Lua_Compass);
 	lua_register(state, "set_lua_compass_state", L_Set_Lua_Compass_State);
 	lua_register(state, "set_lua_compass_beacon", L_Set_Lua_Compass_Beacon);

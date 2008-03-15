@@ -38,11 +38,29 @@ extern "C"
 
 #include "lua_templates.h"
 
+extern char Lua_ControlPanelClass_Name[]; // "control_panel_class"
+typedef L_Enum<Lua_ControlPanelClass_Name> Lua_ControlPanelClass;
+
+extern char Lua_ControlPanelClasses_Name[]; // "ControlPanelClasses"
+typedef L_EnumContainer<Lua_ControlPanelClasses_Name, Lua_ControlPanelClass> Lua_ControlPanelClasses;
+
+extern char Lua_ControlPanelType_Name[]; // "control_panel_type"
+typedef L_Enum<Lua_ControlPanelType_Name> Lua_ControlPanelType;
+
+extern char Lua_ControlPanelTypes_Name[]; // "ControlPanelTypes"
+typedef L_EnumContainer<Lua_ControlPanelTypes_Name, Lua_ControlPanelType> Lua_ControlPanelTypes;
+
 extern char Lua_DamageType_Name[]; // "damage_type"
 typedef L_Enum<Lua_DamageType_Name> Lua_DamageType;
 
 extern char Lua_DamageTypes_Name[]; // "DamageTypes"
 typedef L_EnumContainer<Lua_DamageTypes_Name, Lua_DamageType> Lua_DamageTypes;
+
+extern char Lua_Line_Name[]; // "line"
+typedef L_Class<Lua_Line_Name> Lua_Line;
+
+extern char Lua_Lines_Name[]; // "Lines"
+typedef L_Container<Lua_Lines_Name, Lua_Line> Lua_Lines;
 
 extern char Lua_Polygon_Ceiling_Name[]; // "polygon_ceiling"
 typedef L_Class<Lua_Polygon_Ceiling_Name> Lua_Polygon_Ceiling;
@@ -73,6 +91,18 @@ typedef L_Class<Lua_Tag_Name> Lua_Tag;
 
 extern char Lua_Tags_Name[]; // "Tags"
 typedef L_Container<Lua_Tags_Name, Lua_Tag> Lua_Tags;
+
+extern char Lua_Terminal_Name[]; // "terminal"
+typedef L_Class<Lua_Terminal_Name> Lua_Terminal;
+
+extern char Lua_Terminals_Name[]; // "Terminals"
+typedef L_Container<Lua_Terminals_Name, Lua_Terminal> Lua_Terminals;
+
+extern char Lua_Side_Name[]; // "side"
+typedef L_Class<Lua_Side_Name> Lua_Side;
+
+extern char Lua_Sides_Name[]; // "Sides"
+typedef L_Container<Lua_Sides_Name, Lua_Side> Lua_Sides;
 
 extern char Lua_Media_Name[]; // "media"
 typedef L_Class<Lua_Media_Name> Lua_Media;

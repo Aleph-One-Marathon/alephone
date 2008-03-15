@@ -33,8 +33,73 @@ LUA_MAP.CPP
 
 #ifdef HAVE_LUA
 
+char Lua_ControlPanelClass_Name[] = "control_panel_class";
+char Lua_ControlPanelClasses_Name[] = "ControlPanelClasses";
+
+char Lua_ControlPanelType_Name[] = "control_panel_type";
+
+extern short get_panel_class(short panel_type);
+
+static int Lua_ControlPanelType_Get_Class(lua_State *L)
+{
+	Lua_ControlPanelClass::Push(L, get_panel_class(Lua_ControlPanelType::Index(L, 1)));
+	return 1;
+}
+
+const luaL_reg Lua_ControlPanelType_Get[] = {
+	{"class", Lua_ControlPanelType_Get_Class},
+	{0, 0}
+};
+
+char Lua_ControlPanelTypes_Name[] = "ControlPanelTypes";
+
 char Lua_DamageType_Name[] = "damage_type";
 char Lua_DamageTypes_Name[] = "DamageTypes";
+
+char Lua_Line_Name[] = "line";
+
+static int Lua_Line_Get_Clockwise_Polygon(lua_State *L)
+{
+	Lua_Polygon::Push(L, get_line_data(Lua_Line::Index(L, 1))->clockwise_polygon_owner);
+	return 1;
+}
+
+static int Lua_Line_Get_Counterclockwise_Polygon(lua_State *L)
+{
+	Lua_Polygon::Push(L, get_line_data(Lua_Line::Index(L, 1))->counterclockwise_polygon_owner);
+	return 1;
+}
+
+static int Lua_Line_Get_Clockwise_Side(lua_State *L)
+{
+	Lua_Side::Push(L, get_line_data(Lua_Line::Index(L, 1))->clockwise_polygon_side_index);
+	return 1;
+}
+
+static int Lua_Line_Get_Counterclockwise_Side(lua_State *L)
+{
+	Lua_Side::Push(L, get_line_data(Lua_Line::Index(L, 1))->counterclockwise_polygon_side_index);
+	return 1;
+}
+
+const luaL_reg Lua_Line_Get[] = {
+	{"cw_polygon", Lua_Line_Get_Clockwise_Polygon},
+	{"ccw_polygon", Lua_Line_Get_Counterclockwise_Polygon},
+	{"cw_side", Lua_Line_Get_Clockwise_Side},
+	{"ccw_side", Lua_Line_Get_Counterclockwise_Side},
+	{"clockwise_polygon", Lua_Line_Get_Clockwise_Polygon},
+	{"clockwise_side", Lua_Line_Get_Clockwise_Side},
+	{"counterclockwise_polygon", Lua_Line_Get_Counterclockwise_Polygon},
+	{"counterclockwise_side", Lua_Line_Get_Counterclockwise_Side},
+	{0, 0}
+};
+
+static bool Lua_Line_Valid(int16 index)
+{
+	return index >= 0 && index < LineList.size();
+}
+
+char Lua_Lines_Name[] = "Lines";
 
 char Lua_Platform_Name[] = "platform";
 bool Lua_Platform_Valid(int16 index)
@@ -501,6 +566,86 @@ int16 Lua_Polygons_Length() {
 	return dynamic_world->polygon_count;
 }
 
+char Lua_Side_ControlPanel_Name[] = "side_control_panel";
+typedef L_Class<Lua_Side_ControlPanel_Name> Lua_Side_ControlPanel;
+
+static int Lua_Side_ControlPanel_Get_Type(lua_State *L)
+{
+	Lua_ControlPanelType::Push(L, get_side_data(Lua_Side_ControlPanel::Index(L, 1))->control_panel_type);
+	return 1;
+}
+
+static int Lua_Side_ControlPanel_Get_Permutation(lua_State *L)
+{
+	lua_pushnumber(L, get_side_data(Lua_Side_ControlPanel::Index(L, 1))->control_panel_permutation);
+	return 1;
+}
+
+const luaL_reg Lua_Side_ControlPanel_Get[] = {
+	{"type", Lua_Side_ControlPanel_Get_Type},
+	{"permutation", Lua_Side_ControlPanel_Get_Permutation},
+	{0, 0}
+};
+
+static int Lua_Side_ControlPanel_Set_Permutation(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "permutation: incorrect argument type");
+
+	side_data *side = get_side_data(Lua_Side_ControlPanel::Index(L, 1));
+	side->control_panel_permutation = static_cast<int16>(lua_tonumber(L, 2));
+	return 0;
+}
+
+const luaL_reg Lua_Side_ControlPanel_Set[] = {
+	{"permutation", Lua_Side_ControlPanel_Set_Permutation},
+	{0, 0}
+};
+
+char Lua_Side_Name[] = "side";
+
+static int Lua_Side_Get_Control_Panel(lua_State *L)
+{
+	int16 side_index = Lua_Side::Index(L, 1);
+	side_data *side = get_side_data(side_index);
+	if (SIDE_IS_CONTROL_PANEL(side))
+	{
+		Lua_Side_ControlPanel::Push(L, side_index);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+static int Lua_Side_Get_Line(lua_State *L)
+{
+	Lua_Line::Push(L, get_side_data(Lua_Side::Index(L, 1))->line_index);
+	return 1;
+}
+
+static int Lua_Side_Get_Polygon(lua_State *L)
+{
+	Lua_Polygon::Push(L, get_side_data(Lua_Side::Index(L, 1))->polygon_index);
+	return 1;
+}
+
+const luaL_reg Lua_Side_Get[] = {
+	{"control_panel", Lua_Side_Get_Control_Panel},
+	{"line", Lua_Side_Get_Line},
+	{"polygon", Lua_Side_Get_Polygon},
+	{0, 0}
+};
+
+static bool Lua_Side_Valid(int16 index)
+{
+	return index >= 0 && index < SideList.size();
+}
+
+char Lua_Sides_Name[] = "Sides";
+
 char Lua_Light_Name[] = "light";
 
 static int Lua_Light_Get_Active(lua_State *L)
@@ -606,6 +751,21 @@ const luaL_reg Lua_Tag_Set[] = {
 bool Lua_Tag_Valid(int16 index) { return index >= 0; }
 
 char Lua_Tags_Name[] = "Tags";
+
+char Lua_Terminal_Name[] = "terminal";
+
+extern short number_of_terminal_texts();
+
+static bool Lua_Terminal_Valid(int16 index) 
+{
+	return index >= 0 && index < number_of_terminal_texts();
+}
+
+char Lua_Terminals_Name[] = "Terminals";
+
+static int16 Lua_Terminals_Length() {
+	return number_of_terminal_texts();
+}
 
 char Lua_MediaType_Name[] = "media_type";
 typedef L_Enum<Lua_MediaType_Name> Lua_MediaType;
@@ -956,14 +1116,33 @@ const luaL_reg Lua_Level_Get[] = {
 };
 
 static int compatibility(lua_State *L);
+#define NUMBER_OF_CONTROL_PANEL_DEFINITIONS 54
 
 int Lua_Map_register(lua_State *L)
 {
+	Lua_ControlPanelClass::Register(L);
+	Lua_ControlPanelClass::Valid = Lua_ControlPanelClass::ValidRange<NUMBER_OF_CONTROL_PANELS>;
+
+	Lua_ControlPanelClasses::Register(L);
+	Lua_ControlPanelClasses::Length = Lua_ControlPanelClasses::ConstantLength<NUMBER_OF_CONTROL_PANELS>;
+
+	Lua_ControlPanelType::Register(L, Lua_ControlPanelType_Get);
+	Lua_ControlPanelType::Valid = Lua_ControlPanelType::ValidRange<NUMBER_OF_CONTROL_PANEL_DEFINITIONS>;
+	
+	Lua_ControlPanelTypes::Register(L);
+	Lua_ControlPanelTypes::Length = Lua_ControlPanelTypes::ConstantLength<NUMBER_OF_CONTROL_PANEL_DEFINITIONS>;
+
 	Lua_DamageType::Register(L);
 	Lua_DamageType::Valid = Lua_DamageType::ValidRange<NUMBER_OF_DAMAGE_TYPES>;
 	Lua_DamageTypes::Register(L);
 	Lua_DamageTypes::Length = Lua_DamageTypes::ConstantLength<NUMBER_OF_DAMAGE_TYPES>;
 	
+	Lua_Line::Register(L, Lua_Line_Get);
+	Lua_Line::Valid = Lua_Line_Valid;
+
+	Lua_Lines::Register(L);
+	Lua_Lines::Length = boost::bind(&std::vector<line_data>::size, &LineList);
+
 	Lua_Platform::Register(L, Lua_Platform_Get, Lua_Platform_Set);
 	Lua_Platform::Valid = Lua_Platform_Valid;
 
@@ -982,6 +1161,14 @@ int Lua_Map_register(lua_State *L)
 	Lua_Polygons::Register(L);
 	Lua_Polygons::Length = Lua_Polygons_Length;
 
+	Lua_Side_ControlPanel::Register(L, Lua_Side_ControlPanel_Get, Lua_Side_ControlPanel_Set);
+
+	Lua_Side::Register(L, Lua_Side_Get);
+	Lua_Side::Valid = Lua_Side_Valid;
+
+	Lua_Sides::Register(L);
+	Lua_Sides::Length = boost::bind(&std::vector<side_data>::size, &SideList);
+
 	Lua_Light::Register(L, Lua_Light_Get, Lua_Light_Set);
 	Lua_Light::Valid = Lua_Light_Valid;
 
@@ -993,6 +1180,12 @@ int Lua_Map_register(lua_State *L)
 
 	Lua_Tags::Register(L);
 	Lua_Tags::Length = Lua_Tags::ConstantLength<INT16_MAX>;
+	
+	Lua_Terminal::Register(L);
+	Lua_Terminal::Valid = Lua_Terminal_Valid;
+	
+	Lua_Terminals::Register(L);
+	Lua_Terminals::Length = Lua_Terminals_Length;
 
 	Lua_MediaType::Register(L);
 	Lua_MediaType::Valid = Lua_MediaType::ValidRange<NUMBER_OF_MEDIA_TYPES>;
@@ -1049,6 +1242,7 @@ static const char* compatibility_script = ""
 	"function get_polygon_target(polygon) return Polygons[polygon].permutation end\n"
 	"function get_polygon_type(polygon) return Polygons[polygon].type end\n"
 	"function get_tag_state(tag) return Tags[tag].active end\n"
+	"function get_terminal_text_number(poly, line) if Lines[line].ccw_polygon == Polygons[poly] then s = Lines[line].ccw_side elseif Lines[line].cw_polygon == Polygons[poly] then s = Lines[line].cw_side else return line end if s.control_panel and s.control_panel.type.class == 8 then return s.control_panel.permutation else return line end end\n"
 	"function get_underwater_fog_affects_landscapes() return Level.underwater_fog.affects_landscapes end\n"
 	"function get_underwater_fog_color() return Level.underwater_fog.color.r, Level.underwater_fog.color.g, Level.underwater_fog.color.b end\n"
 	"function get_underwater_fog_depth() return Level.underwater_fog.depth end\n"
@@ -1074,6 +1268,7 @@ static const char* compatibility_script = ""
 	"function set_polygon_target(polygon, target) Polygons[polygon].permutation = target end\n"
 	"function set_polygon_type(polygon, type) Polygons[polygon].type = type end\n"
 	"function set_tag_state(tag, state) Tags[tag].active = state end\n"
+	"function set_terminal_text_number(poly, line, id) if Lines[line].ccw_polygon == Polygons[poly] then s = Lines[line].ccw_side elseif Lines[line].cw_polygon == Polygons[poly] then s = Lines[line].cw_side else return end if s.control_panel and s.control_panel.type.class == 8 then s.control_panel.permutation = id end end\n"
 	"function set_underwater_fog_affects_landscapes(affects_landscapes) Level.underwater_fog.affects_landscapes = affects_landscapes end\n"
 	"function set_underwater_fog_color(r, g, b) Level.underwater_fog.color.r = r Level.underwater_fog.color.g = g Level.underwater_fog.color.b = b end\n"
 	"function set_underwater_fog_depth(depth) Level.underwater_fog.depth = depth end\n"

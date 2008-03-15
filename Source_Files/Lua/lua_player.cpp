@@ -21,6 +21,7 @@ LUA_PLAYER.CPP
 */
 
 #include "ActionQueues.h"
+#include "computer_interface.h"
 #include "Crosshairs.h"
 #include "fades.h"
 #include "game_window.h"
@@ -330,9 +331,6 @@ const luaL_reg Lua_Overlays_Metatable[] = {
 	{"__index", Lua_Overlays_Get},
 	{0, 0}
 };
-
-char Lua_Side_Name[] = "side";
-typedef L_Class<Lua_Side_Name> Lua_Side;
 
 char Lua_Player_Items_Name[] = "player_items";
 typedef L_Class<Lua_Player_Items_Name> Lua_Player_Items;
@@ -705,6 +703,20 @@ int Lua_Player_Accelerate(lua_State *L)
 	double vertical_velocity = static_cast<double>(lua_tonumber(L, 4));
 
 	accelerate_player(player->monster_index, static_cast<int>(vertical_velocity * WORLD_ONE), static_cast<int>(direction/AngleConvert), static_cast<int>(velocity * WORLD_ONE));
+	return 0;
+}
+
+int Lua_Player_Activate_Terminal(lua_State *L)
+{
+	int16 text_index = NONE;
+	if (lua_isnumber(L, 2))
+		text_index = static_cast<int16>(lua_tonumber(L, 2));
+	else if (Lua_Terminal::Is(L, 2))
+		text_index = Lua_Terminal::Index(L, 2);
+	else
+		return luaL_error(L, "activate_terminal: invalid terminal index");
+
+	enter_computer_interface(Lua_Player::Index(L, 1), text_index, calculate_level_completion_state());
 	return 0;
 }
 
@@ -1106,6 +1118,7 @@ static int Lua_Player_Get_Zoom(lua_State *L)
 const luaL_reg Lua_Player_Get[] = {
 	{"accelerate", L_TableFunction<Lua_Player_Accelerate>},
 	{"action_flags", Lua_Player_Get_Action_Flags},
+	{"activate_terminal", L_TableFunction<Lua_Player_Activate_Terminal>},
 	{"color", Lua_Player_Get_Color},
 	{"crosshairs", Lua_Player_Get_Crosshairs},
 	{"damage", L_TableFunction<Lua_Player_Damage>},
@@ -1534,7 +1547,7 @@ int Lua_Player_register (lua_State *L)
 	Lua_Crosshairs::Register(L, Lua_Crosshairs_Get, Lua_Crosshairs_Set);
 	Lua_Player_Items::Register(L, 0, 0, Lua_Player_Items_Metatable);
 	Lua_Player_Kills::Register(L, 0, 0, Lua_Player_Kills_Metatable);
-	Lua_Side::Register(L);
+
 	Lua_InternalVelocity::Register(L, Lua_InternalVelocity_Get);
 	Lua_ExternalVelocity::Register(L, Lua_ExternalVelocity_Get, Lua_ExternalVelocity_Set);
 	Lua_FadeType::Register(L);
@@ -1598,6 +1611,7 @@ int Lua_Player_register (lua_State *L)
 
 static const char *compatibility_script = ""
 	"function accelerate_player(player, vertical_velocity, direction, velocity) Players[player]:accelerate(direction, velocity, vertical_velocity) end\n"
+	"function activate_terminal(player, text) Players[player]:activate_terminal(text) end\n"
 	"function add_item(player, item_type) Players[player].items[item_type] = Players[player].items[item_type] + 1 end\n"
 	"function award_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = Players[slain_player].deaths + amount else Players[player].kills[slain_player] = Players[player].kills[slain_player] + amount end end\n"
 	"function add_to_player_external_velocity(player, x, y, z) Players[player].external_velocity.i = Players[player].external_velocity.i + x Players[player].external_velocity.j = Players[player].external_velocity.j + y Players[player].external_velocity.k = Players[player].external_velocity.k + z end\n"
