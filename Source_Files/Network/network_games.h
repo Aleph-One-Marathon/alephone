@@ -65,7 +65,9 @@ enum
 	_network_compass_sw= 0x0004,
 	_network_compass_se= 0x0008,
 	
-	_network_compass_all_on= 0x000f
+	_network_compass_all_on= 0x000f,
+	
+	_network_compass_use_beacon = 0x0010
 };
 
 short get_network_compass_state(short player_index);

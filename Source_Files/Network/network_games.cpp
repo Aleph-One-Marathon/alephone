@@ -320,7 +320,7 @@ short get_network_compass_state(
 
         if (use_lua_compass [player_index])
         {
-                if (lua_compass_states [player_index] > _network_compass_all_on)
+                if (lua_compass_states [player_index] & _network_compass_use_beacon)
                     beacon = lua_compass_beacons + player_index;
                 else
                     state = lua_compass_states [player_index];
