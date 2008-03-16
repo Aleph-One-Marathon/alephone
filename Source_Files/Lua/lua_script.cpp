@@ -1256,6 +1256,7 @@ void ExecuteLuaString(const std::string& line)
 	}
 	else 
 	{
+		if (!lua_running) lua_running = true;
 		if (lua_pcall(state, 0, (print_result) ? 1 : 0, 0) != 0)
 			L_Error(lua_tostring(state, -1));
 		else if (print_result)
