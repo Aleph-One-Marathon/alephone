@@ -475,7 +475,7 @@ void FontSpecifier::OGL_Render(const char *Text)
 	// Bug out if no texture to render
 	if (!OGL_Texture) return;
 	
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	glPushAttrib(GL_ENABLE_BIT);
 	
 	glEnable(GL_TEXTURE_2D);
 	glDisable(GL_CULL_FACE);
