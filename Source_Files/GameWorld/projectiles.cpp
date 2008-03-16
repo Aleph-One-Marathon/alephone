@@ -562,7 +562,7 @@ void remove_projectile(
 	short projectile_index)
 {
 	struct projectile_data *projectile= get_projectile_data(projectile_index);
-	
+	L_Invalidate_Projectile(projectile_index);
 	remove_map_object(projectile->object_index);
 	MARK_SLOT_AS_FREE(projectile);
 }

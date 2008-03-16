@@ -54,6 +54,7 @@ public:
 	static L_Class *Push(lua_State *L, index_t index);
 	static index_t Index(lua_State *L, int index);
 	static bool Is(lua_State *L, int index);
+	static void Invalidate(lua_State *L, index_t index);
 	static boost::function<bool (index_t)> Valid;
 	template<index_t max_index> static bool ValidRange(index_t index) { return index >= 0 && index < max_index; }
 private:
@@ -213,6 +214,19 @@ bool L_Class<name, index_t>::Is(lua_State *L, int index)
 }
 
 template<char *name, typename index_t>
+void L_Class<name, index_t>::Invalidate(lua_State *L, index_t index)
+{
+	// remove it from the index table
+	lua_pushlightuserdata(L, (void *) (&name[3]));
+	lua_gettable(L, LUA_REGISTRYINDEX);
+
+	lua_pushnumber(L, index);
+	lua_pushnil(L);
+	lua_settable(L, -3);
+	lua_pop(L, 1);
+}
+
+template<char *name, typename index_t>
 int L_Class<name, index_t>::_index(lua_State *L)
 {
 	lua_pushnumber(L, Index(L, 1));
@@ -236,32 +250,58 @@ int L_Class<name, index_t>::_get(lua_State *L)
 		if (!Valid(Index(L, 1)) && strcmp(lua_tostring(L, 2), "valid") != 0)
 			luaL_error(L, "invalid object");
 
-		// pop the get table
-		lua_pushlightuserdata(L, (void *) (&name[1]));
-		lua_gettable(L, LUA_REGISTRYINDEX);
-
-		// get the function from that table
-		lua_pushvalue(L, 2);
-		lua_gettable(L, -2);
-		lua_remove(L, -2);
-		
-		if (lua_isfunction(L, -1))
+		if (lua_tostring(L, 2)[0] == '_')
 		{
-			// execute the function with table as our argument
-			lua_pushvalue(L, 1);
-			if (lua_pcall(L, 1, 1, 0) == LUA_ERRRUN)
+			// look it up in the custom table
+			lua_pushlightuserdata(L, (void *) (&name[3]));
+			lua_gettable(L, LUA_REGISTRYINDEX);
+
+			lua_pushnumber(L, Index(L, 1));
+			lua_gettable(L, -2);
+
+			if (lua_istable(L, -1))
 			{
-				// report the error as being on this line
-				luaL_where(L, 1);
+				// remove the index table
+				lua_remove(L, -2);
 				lua_pushvalue(L, -2);
-				lua_concat(L, 2);
-				lua_error(L);
+				lua_gettable(L, -2);
+				lua_remove(L, -2);
+			}
+			else
+			{
+				lua_pop(L, 2);
+				lua_pushnil(L);
 			}
 		}
 		else
 		{
-			lua_pop(L, 1);
-			lua_pushnil(L);
+			// pop the get table
+			lua_pushlightuserdata(L, (void *) (&name[1]));
+			lua_gettable(L, LUA_REGISTRYINDEX);
+
+			// get the function from that table
+			lua_pushvalue(L, 2);
+			lua_gettable(L, -2);
+			lua_remove(L, -2);
+		
+			if (lua_isfunction(L, -1))
+			{
+				// execute the function with table as our argument
+				lua_pushvalue(L, 1);
+				if (lua_pcall(L, 1, 1, 0) == LUA_ERRRUN)
+				{
+					// report the error as being on this line
+					luaL_where(L, 1);
+					lua_pushvalue(L, -2);
+					lua_concat(L, 2);
+					lua_error(L);
+				}
+			}
+			else
+			{
+				lua_pop(L, 1);
+				lua_pushnil(L);
+			}
 		}
 	}
 	else
@@ -277,34 +317,54 @@ int L_Class<name, index_t>::_set(lua_State *L)
 {
 	luaL_checktype(L, 1, LUA_TUSERDATA);
 	luaL_checkudata(L, 1, name);
-	
-	// pop the set table
-	lua_pushlightuserdata(L, (void *)(&name[2]));
-	lua_gettable(L, LUA_REGISTRYINDEX);
 
-	// get the function from that table
-	lua_pushvalue(L, 2);
-	lua_gettable(L, -2);
-
-	if (lua_isnil(L, -1))
+	if (lua_isstring(L, 2) && lua_tostring(L, 2)[0] == '_')
 	{
-		luaL_error(L, "no such index");
-	}
+		// get the index table
+		lua_pushlightuserdata(L, (void *)(&name[3]));
+		lua_gettable(L, LUA_REGISTRYINDEX);
 
-	// execute the function with table, value as our arguments
-	lua_pushvalue(L, 1);
-	lua_pushvalue(L, 3);
-	if (lua_pcall(L, 2, 0, 0) == LUA_ERRRUN)
+		lua_pushnumber(L, Index(L, 1));
+		lua_gettable(L, -2);
+
+		if (lua_istable(L, -1))
+		{
+			lua_pushvalue(L, 2);
+			lua_pushvalue(L, 3);
+			lua_settable(L, -3);
+			lua_pop(L, 1);
+		}
+	}
+	else
 	{
-		// report the error as being on this line
-		luaL_where(L, 1);
-		lua_pushvalue(L, -2);
-		lua_concat(L, 2);
-		lua_error(L);
+		// pop the set table
+		lua_pushlightuserdata(L, (void *)(&name[2]));
+		lua_gettable(L, LUA_REGISTRYINDEX);
+		
+		// get the function from that table
+		lua_pushvalue(L, 2);
+		lua_gettable(L, -2);
+		
+		if (lua_isnil(L, -1))
+		{
+			luaL_error(L, "no such index");
+		}
+		
+		// execute the function with table, value as our arguments
+		lua_pushvalue(L, 1);
+		lua_pushvalue(L, 3);
+		if (lua_pcall(L, 2, 0, 0) == LUA_ERRRUN)
+		{
+			// report the error as being on this line
+			luaL_where(L, 1);
+			lua_pushvalue(L, -2);
+			lua_concat(L, 2);
+			lua_error(L);
+		}
+		
+		lua_pop(L, 1);
 	}
-
-	lua_pop(L, 1);
-
+		
 	return 0;
 }
 

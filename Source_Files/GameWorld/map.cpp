@@ -110,6 +110,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include "player.h"
 #include "platforms.h"
 #include "lightsource.h"
+#include "lua_script.h"
 #include "media.h"
 #include "scenery.h"
 #include "SoundManager.h"
@@ -818,11 +819,12 @@ void remove_map_object(
 	if (object->parasitic_object!=NONE) 
 	{
 		struct object_data *parasite= get_object_data(object->parasitic_object);
-
+		
 		MARK_SLOT_AS_FREE(parasite);
 	}
 
 	SoundManager::instance()->OrphanSound(object_index);
+	L_Invalidate_Object(object_index);
 	*next_object= object->next_object;
 	MARK_SLOT_AS_FREE(object);
 }

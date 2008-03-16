@@ -554,6 +554,7 @@ void move_monsters(
 									monster_died(monster_index);
 									teleport_object_out(monster->object_index);
 									remove_map_object(monster->object_index);
+									L_Invalidate_Monster(monster_index);
 									MARK_SLOT_AS_FREE(monster);
 								}
 								break;
@@ -2607,6 +2608,7 @@ static void kill_monster(
 	if (monster->flags&_monster_was_demoted) monster->type+= 1;
 	object_was_just_destroyed(_object_is_monster, monster->type);
 
+	L_Invalidate_Monster(monster_index);
 	MARK_SLOT_AS_FREE(monster);
 }
 		

@@ -127,6 +127,10 @@ void L_Call_Player_Damaged(short player_index, short aggressor_player_index, sho
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) {}
 void L_Call_Item_Created(short item_index) {}
 
+void L_Invalidate_Monster(short) { }
+void L_Invalidate_Projectile(short) { }
+void L_Invalidate_Object(short) { }
+
 bool LoadLuaScript(const char *buffer, size_t len) { /* Should never get here! */ return false; }
 bool RunLuaScript() {
 	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
@@ -499,6 +503,35 @@ void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, w
 void L_Call_Item_Created (short item_index)
 {
 	L_Call_N("item_created", item_index);
+}
+
+void L_Invalidate_Monster(short monster_index)
+{
+	if (!lua_running) return;
+
+	Lua_Monster::Invalidate(state, monster_index);
+}
+
+void L_Invalidate_Projectile(short projectile_index)
+{
+	if (!lua_running) return;
+
+	Lua_Projectile::Invalidate(state, projectile_index);
+}
+
+void L_Invalidate_Object(short object_index)
+{
+	if (!lua_running) return;
+
+	object_data *object = GetMemberWithBounds(objects, object_index, MAXIMUM_OBJECTS_PER_MAP);
+	if (GET_OBJECT_OWNER(object) == _object_is_item)
+	{
+		Lua_Item::Invalidate(state, object_index);
+	}
+	else if (Lua_Scenery::Valid(object_index))
+	{
+		Lua_Scenery::Invalidate(state, object_index);
+	}
 }
 
 static int L_Screen_Print(lua_State *L)
