@@ -29,6 +29,7 @@ LUA_PLAYER.CPP
 #include "lua_monsters.h"
 #include "lua_objects.h"
 #include "lua_player.h"
+#include "lua_script.h"
 #include "lua_templates.h"
 #include "map.h"
 #include "monsters.h"
@@ -139,6 +140,183 @@ const luaL_reg Lua_Action_Flags_Set[] = {
 	{"toggle_map", Lua_Action_Flags_Set_t<_toggle_map>},
 	{0, 0}
 };
+
+extern vector<lua_camera> lua_cameras;
+extern int number_of_cameras;
+
+char Lua_Camera_Path_Points_Name[] = "camera_path_points";
+typedef L_Class<Lua_Camera_Path_Points_Name> Lua_Camera_Path_Points;
+
+int Lua_Camera_Path_Points_New(lua_State *L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4) || !lua_isnumber(L, 6))
+		return luaL_error(L, "new: incorrect argument type");
+
+	int camera_index = Lua_Camera_Path_Points::Index(L, 1);
+	
+	int polygon = 0;
+	if (lua_isnumber(L, 5))
+	{
+		polygon = static_cast<int>(lua_tonumber(L, 5));
+		if (!Lua_Polygon::Valid(polygon))
+			return luaL_error(L, "new: invalid polygon index");
+	}
+	else if (Lua_Polygon::Is(L, 5))
+	{
+		polygon = Lua_Polygon::Index(L, 5);
+	}
+	else
+		return luaL_error(L, "new: incorrect argument type");
+
+	world_point3d point = {
+		static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE),
+		static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE)
+	};
+
+	long time = static_cast<long>(lua_tonumber(L, 6));
+	int point_index = lua_cameras[camera_index].path.path_points.size();
+	lua_cameras[camera_index].path.path_points.resize(point_index+1);
+	lua_cameras[camera_index].path.path_points[point_index].polygon = polygon;
+	lua_cameras[camera_index].path.path_points[point_index].point = point;
+	lua_cameras[camera_index].path.path_points[point_index].delta_time = time;
+	return 0;
+}
+
+const luaL_reg Lua_Camera_Path_Points_Get[] = {
+	{"new", L_TableFunction<Lua_Camera_Path_Points_New>},
+	{0, 0}
+};
+
+char Lua_Camera_Path_Angles_Name[] = "camera_path_angles";
+typedef L_Class<Lua_Camera_Path_Angles_Name> Lua_Camera_Path_Angles;
+
+int Lua_Camera_Path_Angles_New(lua_State *L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+		return luaL_error(L, "new: incorrect argument type");
+
+	int camera_index = Lua_Camera_Path_Angles::Index(L, 1);
+	short yaw = static_cast<short>(lua_tonumber(L,2));
+	short pitch = static_cast<short>(lua_tonumber(L,3));
+	long time = static_cast<long>(lua_tonumber(L,4));
+	int angle_index = lua_cameras[camera_index].path.path_angles.size();
+
+	lua_cameras[camera_index].path.path_angles.resize(angle_index+1);
+	lua_cameras[camera_index].path.path_angles[angle_index].yaw = static_cast<short>(yaw/AngleConvert);
+	lua_cameras[camera_index].path.path_angles[angle_index].pitch = static_cast<short>(pitch/AngleConvert);
+	lua_cameras[camera_index].path.path_angles[angle_index].delta_time = time;
+	return 0;
+};
+
+const luaL_reg Lua_Camera_Path_Angles_Get[] = {
+	{"new", L_TableFunction<Lua_Camera_Path_Angles_New>},
+	{0, 0}
+};
+
+char Lua_Camera_Name[] = "camera";
+typedef L_Class<Lua_Camera_Name> Lua_Camera;
+
+
+int Lua_Camera_Activate(lua_State *L)
+{
+	int player_index = -1;
+	if (lua_isnumber(L, 2))
+	{
+		player_index = static_cast<int>(lua_tonumber(L, 2));
+	}
+	else if (Lua_Player::Is(L, 2))
+	{
+		player_index = Lua_Player::Index(L, 2);
+	} 
+	else
+		return luaL_error(L, "activate: incorrect argument type");
+
+	if (player_index == local_player_index)
+	{
+		int camera_index = Lua_Camera::Index(L, 1);
+		lua_cameras[camera_index].time_elapsed = 0;
+		lua_cameras[camera_index].player_active = player_index;
+		lua_cameras[camera_index].path.current_point_index = 0;
+		lua_cameras[camera_index].path.current_angle_index = 0;
+		lua_cameras[camera_index].path.last_point_time = 0;
+		lua_cameras[camera_index].path.last_angle_time = 0;
+	}
+	
+	return 0;
+}
+
+int Lua_Camera_Clear(lua_State *L)
+{
+	int camera_index = Lua_Camera::Index(L, 1);
+	lua_cameras[camera_index].path.path_points.resize(0);
+	lua_cameras[camera_index].path.path_angles.resize(0);
+	return 0;
+}
+
+int Lua_Camera_Deactivate(lua_State *L)
+{
+	int camera_index = Lua_Camera::Index(L, 1);
+	lua_cameras[camera_index].time_elapsed = 0;
+	lua_cameras[camera_index].player_active = -1;
+	lua_cameras[camera_index].path.last_point_time = 0;
+	lua_cameras[camera_index].path.last_angle_time = 0;
+	return 0;
+}
+
+static int Lua_Get_Path_Angles(lua_State *L)
+{
+	Lua_Camera_Path_Angles::Push(L, Lua_Camera::Index(L, 1));
+	return 1;
+}
+
+static int Lua_Get_Path_Points(lua_State *L)
+{
+	Lua_Camera_Path_Points::Push(L, Lua_Camera::Index(L, 1));
+	return 1;
+}
+
+const luaL_reg Lua_Camera_Get[] = {
+	{"activate", L_TableFunction<Lua_Camera_Activate>},
+	{"clear", L_TableFunction<Lua_Camera_Clear>},
+	{"deactivate", L_TableFunction<Lua_Camera_Deactivate>},
+	{"path_angles", Lua_Get_Path_Angles},
+	{"path_points", Lua_Get_Path_Points},
+	{0, 0}
+};
+
+static int Lua_Camera_Valid(int16 index)
+{
+	return index >= 0 && index < number_of_cameras;
+}
+
+char Lua_Cameras_Name[] = "Cameras";
+typedef L_Container<Lua_Cameras_Name, Lua_Camera> Lua_Cameras;
+
+static int Lua_Cameras_New(lua_State *L)
+{
+	number_of_cameras++;
+	lua_cameras.resize(number_of_cameras);
+	lua_cameras[number_of_cameras-1].index = number_of_cameras-1;
+	lua_cameras[number_of_cameras-1].path.index = number_of_cameras-1;
+	lua_cameras[number_of_cameras-1].path.current_point_index = 0;
+	lua_cameras[number_of_cameras-1].path.current_angle_index = 0;
+	lua_cameras[number_of_cameras-1].path.last_point_time = 0;
+	lua_cameras[number_of_cameras-1].path.last_angle_time = 0;
+	lua_cameras[number_of_cameras-1].time_elapsed = 0;
+	lua_cameras[number_of_cameras-1].player_active = -1;
+	Lua_Camera::Push(L, number_of_cameras - 1);
+	return 1;
+}
+
+const luaL_reg Lua_Cameras_Methods[] = {
+	{"new", Lua_Cameras_New},
+	{0, 0}
+};
+
+static int16 Lua_Cameras_Length() {
+	return number_of_cameras;
+}
 
 char Lua_Crosshairs_Name[] = "crosshairs";
 typedef L_Class<Lua_Crosshairs_Name> Lua_Crosshairs;
@@ -1679,6 +1857,15 @@ static int Lua_Player_load_compatibility(lua_State *L);
 int Lua_Player_register (lua_State *L)
 {
 	Lua_Action_Flags::Register(L, Lua_Action_Flags_Get, Lua_Action_Flags_Set);
+
+	Lua_Camera_Path_Angles::Register(L, Lua_Camera_Path_Angles_Get);
+	Lua_Camera_Path_Points::Register(L, Lua_Camera_Path_Points_Get);
+	Lua_Camera::Register(L, Lua_Camera_Get);
+	Lua_Camera::Valid = Lua_Camera_Valid;
+
+	Lua_Cameras::Register(L, Lua_Cameras_Methods);
+	Lua_Cameras::Length = Lua_Cameras_Length;
+	
 	Lua_Crosshairs::Register(L, Lua_Crosshairs_Get, Lua_Crosshairs_Set);
 	Lua_Player_Compass::Register(L, Lua_Player_Compass_Get, Lua_Player_Compass_Set);
 	Lua_Player_Items::Register(L, 0, 0, Lua_Player_Items_Metatable);
@@ -1747,15 +1934,21 @@ int Lua_Player_register (lua_State *L)
 
 static const char *compatibility_script = ""
 	"function accelerate_player(player, vertical_velocity, direction, velocity) Players[player]:accelerate(direction, velocity, vertical_velocity) end\n"
+	"function activate_camera(player, camera) Cameras[camera]:activate(player) end\n"
 	"function activate_terminal(player, text) Players[player]:activate_terminal(text) end\n"
 	"function add_item(player, item_type) Players[player].items[item_type] = Players[player].items[item_type] + 1 end\n"
+	"function add_path_angle(camera, yaw, pitch, time) Cameras[camera].path_angles:new(yaw, pitch, time) end\n"
+	"function add_path_point(camera, polygon, x, y, z, time) Cameras[camera].path_points:new(x, y, z, polygon, time) end\n"
 	"function award_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = Players[slain_player].deaths + amount else Players[player].kills[slain_player] = Players[player].kills[slain_player] + amount end end\n"
 	"function add_to_player_external_velocity(player, x, y, z) Players[player].external_velocity.i = Players[player].external_velocity.i + x Players[player].external_velocity.j = Players[player].external_velocity.j + y Players[player].external_velocity.k = Players[player].external_velocity.k + z end\n"
 	"function award_points(player, amount) Players[player].points = Players[player].points + amount end\n"
 	"function better_random() return Game.random() end\n"
+	"function clear_camera(camera) Cameras[camera]:clear() end\n"
 	"function clear_music() Music.clear() end\n"
 	"function count_item(player, item_type) return Players[player].items[item_type] end\n"
+	"function create_camera() return Cameras.new().index end\n"
 	"function crosshairs_active(player) return Players[player].crosshairs.active end\n"
+	"function deactivate_camera(camera) Cameras[camera]:deactivate() end\n"
 	"function destroy_ball(player) for i in ItemTypes() do if i.ball then Players[player].items[i] = 0 end end end\n"
 	"function fade_music(duration) if duration then Music.fade(duration * 60 / 1000) else Music.fade(60 / 1000) end end\n"
 	"function get_game_difficulty() return Game.difficulty.index end\n"
