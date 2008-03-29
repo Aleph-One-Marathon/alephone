@@ -1622,7 +1622,7 @@
 	<mnemonic name="puddles"/>
 	<mnemonic name="big puddles"/>
 	<mnemonic name="security monitor"/>
-	<mnemonic name="alien supply can"/>
+	<mnemonic name="water alien supply can"/>
 	<mnemonic name="machine"/>
 	<mnemonic name="staff"/>
 	
@@ -1631,7 +1631,7 @@
 	<mnemonic name="junk"/>
 	<mnemonic name="antenna"/>
 	<mnemonic name="big antenna"/>
-	<mnemonic name="alien supply can"/>
+	<mnemonic name="sewage alien supply can"/>
 	<mnemonic name="sewage bones"/>
 	<mnemonic name="sewage big bones"/>
 	<mnemonic name="pfhor pieces"/>
