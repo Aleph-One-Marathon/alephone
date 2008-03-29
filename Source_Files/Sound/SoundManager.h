@@ -67,6 +67,8 @@ public:
 	void StopSound(short identifier, short sound_index);
 	void StopAllSounds() { StopSound(NONE, NONE); }
 
+	int NumberOfSoundDefinitions();
+
 	inline int16 GetNetmicVolumeAdjustment() {
 		return (parameters.volume_while_speaking);
 	}

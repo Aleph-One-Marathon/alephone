@@ -366,6 +366,11 @@ void SoundManager::StopSound(short identifier, short sound_index)
 	return;
 }
 
+int SoundManager::NumberOfSoundDefinitions()
+{
+	return number_of_sound_definitions;
+}
+
 void SoundManager::Idle()
 {
 	if (active && total_channel_count > 0)
