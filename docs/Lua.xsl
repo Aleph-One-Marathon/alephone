@@ -198,7 +198,9 @@
       <xsl:when test="count(id(@contains)/*) - count(id(@contains)/mnemonics) > 0">
 	<dt><xsl:value-of select="@name"/>[<xsl:value-of select="@contains"/>]</dt>
 	<dd>
-	  <xsl:apply-templates select="id(@contains)"/>
+	  <dl>
+	    <xsl:apply-templates select="id(@contains)"/>
+	  </dl>
 	</dd>
       </xsl:when>
     </xsl:choose>
@@ -259,6 +261,7 @@
 	</dd>
       </xsl:when>
       <xsl:otherwise>
+	<dt><xsl:value-of select="@name"/></dt>
 	<dd>
 	  <xsl:apply-templates select="id(@contains)"/>
 	</dd>
