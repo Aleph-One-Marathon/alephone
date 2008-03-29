@@ -809,6 +809,11 @@
 <dd>
 <p class="description">iterates through all valid monsters (including player monsters)</p>
 </dd>
+<dt>Monsters.new(x, y, height, polygon, type)
+  </dt>
+<dd>
+<p class="description">returns a new monster</p>
+</dd>
 <dt>Monsters[index]</dt>
 <dd>
 <dl>
@@ -1227,7 +1232,7 @@
       <dt>:find_action_key_target()
   </dt>
 <dd>
-<p class="description">if player is in range of a polygon or control panel, returns a platform or side; otherwise returns nil</p>
+<p class="description">if player is in range of a platform or control panel, returns a platform or side; otherwise returns nil</p>
 <p class="note">you can check the type of the return with is_polygon() and is_side()</p>
 </dd>
       <dt>
@@ -1699,7 +1704,8 @@
 <dt>Sides[index]</dt>
 <dd>
 <dl>
-      <dt>.control_panel</dt>
+      <dt>.control_panel<p class="note">nil if the side is not a control panel</p>
+</dt>
 <dd>
 <dl>
 <dt>
