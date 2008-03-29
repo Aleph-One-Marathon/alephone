@@ -52,6 +52,11 @@
 	  border-bottom: thin solid;
       }
 
+      h4 {
+	  margin: 0px;
+	  color: #003300;
+      }
+
       div.tables p {
 	  margin: 4px;
       }
@@ -61,7 +66,7 @@
 	  font-style: italic;
       }
 
-      ul.args {
+      ul {
 	  list-style-type: none;
       }
 
@@ -74,17 +79,31 @@
 	  font-style: italic;
       }
 
+      div.end-mnemonics {
+	  clear: both;
+      }
+
+      div.mnemonics-column {
+	  float: left;
+	  #width: 250px;
+	  width: 33%;
+      }
+
+      ul.mnemonics li {
+	  color: #006600;
+      }
+
 --&gt;
       </style>
     </head>
     <body>
       <h1>Table of Contents</h1>
       <ol>
-      <xsl:for-each select="section|triggers|tables">
+      <xsl:for-each select="section|triggers|tables|types">
 	<xsl:call-template name="toc"/>
       </xsl:for-each>
       </ol>
-      <xsl:apply-templates select="section|triggers|tables"/>
+      <xsl:apply-templates select="section|triggers|tables|types"/>
     </body>
   </html>
 </xsl:template>
@@ -95,6 +114,7 @@
     <xsl:choose>
       <xsl:when test="self::triggers">Triggers</xsl:when>
       <xsl:when test="self::tables">Tables</xsl:when>
+      <xsl:when test="self::types">Types and Mnemonics</xsl:when>
       <xsl:otherwise>
 	<xsl:value-of select="@name"/>
       </xsl:otherwise>
@@ -110,6 +130,14 @@
 	  <xsl:for-each select="accessor">
 	    <xsl:sort select="@name"/>
 	    <li><a><xsl:attribute name="href">#<xsl:value-of select="@name"/></xsl:attribute><xsl:value-of select="@name"/></a></li>
+	  </xsl:for-each>
+	</ol>
+      </xsl:when>
+      <xsl:when test="self::types">
+	<ol>
+	  <xsl:for-each select="../tables/enum-accessor">
+	    <xsl:sort select="@nice-name"/>
+	    <li><a><xsl:attribute name="href">#<xsl:value-of select="@name"/></xsl:attribute><xsl:value-of select="@nice-name"/></a></li>
 	  </xsl:for-each>
 	</ol>
       </xsl:when>
@@ -131,9 +159,19 @@
   <h1><a><xsl:attribute name="name"><xsl:value-of select="@id"/></xsl:attribute>Tables</a></h1>
   <div><xsl:attribute name="class">tables</xsl:attribute>
   <xsl:for-each select="description"><p><xsl:copy-of select="node()"/></p></xsl:for-each>
-  <xsl:apply-templates select="accessor|enum-accessor">
+  <xsl:apply-templates select="accessor">
     <xsl:sort select="@name"/>
   </xsl:apply-templates>
+  </div>
+</xsl:template>
+
+<xsl:template match="types">
+  <h1><a><xsl:attribute name="name"><xsl:value-of select="@id"/></xsl:attribute></a>Types and Mnemonics</h1>
+  <div class="tables">
+    <xsl:for-each select="description"><p><xsl:copy-of select="node()"/></p></xsl:for-each>
+    <xsl:apply-templates select="../tables/enum-accessor">
+      <xsl:sort select="@name"/>
+    </xsl:apply-templates>
   </div>
 </xsl:template>
 
@@ -151,15 +189,60 @@
 </xsl:template>
 
 <xsl:template match="enum-accessor">
-  <h3><a><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></a><xsl:value-of select="@name"/></h3>
+  <h3><a><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></a><xsl:value-of select="@nice-name"/></h3>
   <dl>
-    <xsl:apply-templates select="length"/>
+    <dt># <xsl:value-of select="@name"/></dt>
+    <dt><xsl:value-of select="@name"/>()</dt>
     <xsl:apply-templates select="call"/>
-    <dt><xsl:value-of select="@name"/>[<xsl:value-of select="@contains"/>]</dt>
-    <dd>
-      <xsl:apply-templates select="id(@contains)"/>
-    </dd>
+    <xsl:choose>
+      <xsl:when test="count(id(@contains)/*) - count(id(@contains)/mnemonics) > 0">
+	<dt><xsl:value-of select="@name"/>[<xsl:value-of select="@contains"/>]</dt>
+	<dd>
+	  <xsl:apply-templates select="id(@contains)"/>
+	</dd>
+      </xsl:when>
+    </xsl:choose>
   </dl>
+  <xsl:choose>
+      <xsl:when test="id(@contains)/mnemonics">
+	<h4>Mnemonics</h4>
+	<xsl:variable name="total" select="count(id(@contains)/mnemonics/mnemonic)"/>
+	  <xsl:choose>
+	    <xsl:when test="$total > 8">
+	      <xsl:variable name="third" select="ceiling($total div 3)"/>
+	      <ul class="mnemonics">
+		<div class="mnemonics-column">
+		  <xsl:for-each select="id(@contains)/mnemonics/mnemonic[position() &lt;= $third]">
+		    <xsl:call-template name="mnemonic"/>
+		  </xsl:for-each>
+		</div>
+		<div class="mnemonics-column">
+		  <xsl:for-each select="id(@contains)/mnemonics/mnemonic[position() &gt; $third and position() &lt;= $third * 2]">
+		    <xsl:call-template name="mnemonic"/>
+		  </xsl:for-each>
+		</div>
+		<div class="mnemonics-column">
+		  <xsl:for-each select="id(@contains)/mnemonics/mnemonic[position() &gt; $third * 2]">
+		    <xsl:call-template name="mnemonic"/>
+		  </xsl:for-each>
+		</div>
+		<div class="end-mnemonics"/>
+	      </ul>
+	    </xsl:when>
+	    <xsl:otherwise>
+	      <ul class="mnemonics">
+		<xsl:for-each select="id(@contains)/mnemonics/mnemonic">
+		  <xsl:call-template name="mnemonic"/>
+		</xsl:for-each>
+	      </ul>
+	    </xsl:otherwise>
+	  </xsl:choose>
+      </xsl:when>
+    </xsl:choose>
+</xsl:template>
+
+<xsl:template name="mnemonic">
+  <li>"<xsl:value-of select="@name"/>"</li>
 </xsl:template>
 
 <xsl:template match="accessor">

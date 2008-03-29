@@ -48,6 +48,11 @@
 	  border-bottom: thin solid;
       }
 
+      h4 {
+	  margin: 0px;
+	  color: #003300;
+      }
+
       div.tables p {
 	  margin: 4px;
       }
@@ -57,7 +62,7 @@
 	  font-style: italic;
       }
 
-      ul.args {
+      ul {
 	  list-style-type: none;
       }
 
@@ -68,6 +73,20 @@
       span.access {
 	  color: #666666;
 	  font-style: italic;
+      }
+
+      div.end-mnemonics {
+	  clear: both;
+      }
+
+      div.mnemonics-column {
+	  float: left;
+	  #width: 250px;
+	  width: 33%;
+      }
+
+      ul.mnemonics li {
+	  color: #006600;
       }
 
 -->
@@ -152,6 +171,65 @@
 </li>
 <li>
 <a href="#Terminals">Terminals</a>
+</li>
+</ol>
+</li>
+<li>
+<a href="#types">Types and Mnemonics</a>
+<ol>
+<li>
+<a href="#ControlPanelClasses">Control Panel Classes</a>
+</li>
+<li>
+<a href="#ControlPanelTypes">Control Panel Types</a>
+</li>
+<li>
+<a href="#DamageTypes">Damage</a>
+</li>
+<li>
+<a href="#DifficultyTypes">Difficulty</a>
+</li>
+<li>
+<a href="#FadeTypes">Faders</a>
+</li>
+<li>
+<a href="#GameTypes">Game Types</a>
+</li>
+<li>
+<a href="#ItemTypes">Items</a>
+</li>
+<li>
+<a href="#MediaTypes">Media</a>
+</li>
+<li>
+<a href="#MonsterActions">Monster Actions</a>
+</li>
+<li>
+<a href="#MonsterClasses">Monster Classes</a>
+</li>
+<li>
+<a href="#MonsterModes">Monster Modes</a>
+</li>
+<li>
+<a href="#MonsterTypes">Monsters</a>
+</li>
+<li>
+<a href="#OverlayColors">Overlay Colors</a>
+</li>
+<li>
+<a href="#PlayerColors">Player and Team Colors</a>
+</li>
+<li>
+<a href="#PolygonTypes">Polygons</a>
+</li>
+<li>
+<a href="#ProjectileTypes">Projectiles</a>
+</li>
+<li>
+<a href="#SceneryTypes">Scenery</a>
+</li>
+<li>
+<a href="#WeaponTypes">Weapons</a>
 </li>
 </ol>
 </li>
@@ -430,43 +508,6 @@
 </dd>
 </dl>
 <h3>
-<a name="ControlPanelClasses"></a>ControlPanelClasses</h3>
-<dl>
-<dt>ControlPanelClasses[control_panel_class]</dt>
-<dd></dd>
-</dl>
-<h3>
-<a name="ControlPanelTypes"></a>ControlPanelTypes</h3>
-<dl>
-<dt>ControlPanelTypes[control_panel_type]</dt>
-<dd>
-      <dt>
-    .class<span class="access"> (read-only)</span>
-</dt>
-<dd>
-<p class="description">class of this control panel type</p>
-</dd>
-    </dd>
-</dl>
-<h3>
-<a name="DamageTypes"></a>DamageTypes</h3>
-<dl>
-<dt>DamageTypes[damage_type]</dt>
-<dd></dd>
-</dl>
-<h3>
-<a name="DifficultyTypes"></a>DifficultyTypes</h3>
-<dl>
-<dt>DifficultyTypes[difficulty_type]</dt>
-<dd></dd>
-</dl>
-<h3>
-<a name="FadeTypes"></a>FadeTypes</h3>
-<dl>
-<dt>FadeTypes[fade_type]</dt>
-<dd></dd>
-</dl>
-<h3>
 <a name="Game"></a>Game</h3>
 <dl>
 <dd>
@@ -505,12 +546,6 @@
 <p class="description">whether the game is EMFH, KOTH, etc.</p>
 </dd>
     </dd>
-</dl>
-<h3>
-<a name="ItemTypes"></a>ItemTypes</h3>
-<dl>
-<dt>ItemTypes[item_type]</dt>
-<dd></dd>
 </dl>
 <h3>
 <a name="Items"></a>Items</h3>
@@ -744,59 +779,6 @@
 </dd>
     </dl>
 </dd>
-</dl>
-<h3>
-<a name="MediaTypes"></a>MediaTypes</h3>
-<dl>
-<dt>MediaTypes[media_type]</dt>
-<dd></dd>
-</dl>
-<h3>
-<a name="MonsterClasses"></a>MonsterClasses</h3>
-<dl>
-<dt>MonsterClasses[monster_class]</dt>
-<dd></dd>
-</dl>
-<h3>
-<a name="MonsterTypes"></a>MonsterTypes</h3>
-<dl>
-<dt>MonsterTypes[monster_type]</dt>
-<dd>
-      <dt>
-    .class</dt>
-<dd>
-<p class="description">class of monster type</p>
-</dd>
-      <dt>
-    .enemies[monster_class]
-  </dt>
-<dd>
-<p class="description">whether monster class is an emeny</p>
-</dd>
-      <dt>
-    .friends[monster_class]
-  </dt>
-<dd>
-<p class="description">whether monster class is a friend</p>
-</dd>
-      <dt>
-    .immunities[damage_type]
-  </dt>
-<dd>
-<p class="description">whether monster type is immune to damage type</p>
-</dd>
-      <dt>
-    .item</dt>
-<dd>
-<p class="description">item the monster drops when it dies</p>
-</dd>
-      <dt>
-    .weaknesses[damage type]
-  </dt>
-<dd>
-<p class="description">whether monster type has a weakness to damage type</p>
-</dd>
-    </dd>
 </dl>
 <h3>
 <a name="Monsters"></a>Monsters</h3>
@@ -1519,12 +1501,6 @@
 </dd>
 </dl>
 <h3>
-<a name="ProjectileTypes"></a>ProjectileTypes</h3>
-<dl>
-<dt>ProjectileTypes[projectile_type]</dt>
-<dd></dd>
-</dl>
-<h3>
 <a name="Projectiles"></a>Projectiles</h3>
 <dl>
 <dt># Projectiles</dt>
@@ -1685,12 +1661,6 @@
 </dd>
 </dl>
 <h3>
-<a name="SceneryTypes"></a>SceneryTypes</h3>
-<dl>
-<dt>SceneryTypes[scenery_type]</dt>
-<dd></dd>
-</dl>
-<h3>
 <a name="Sides"></a>Sides</h3>
 <dl>
 <dt># Sides</dt>
@@ -1767,12 +1737,699 @@
     </dl>
 </dd>
 </dl>
+</div>
+<h1>
+<a name="types"></a>Types and Mnemonics</h1>
+<div class="tables">
+<p>The string mnemonics listed below can be used for assignment and as arguments to functions. Additionally, Aleph One's Lua interpreter has been modified so that equality comparisons between userdata types and strings are possible.</p>
+<p>For example, this script would move all players on the blue team to the red team:
+<pre>for p in Players() do
+  if (p.team == "blue") then
+    p.team = "red"
+  end
+end</pre>
+And this one would damage all major compilers with 10 points of fusion damage:
+      <pre>for m in Monsters() do
+  if (m.type == "major compiler") then
+    m:damage(10, "fusion")
+  end
+end</pre>
+    </p>
 <h3>
-<a name="WeaponTypes"></a>WeaponTypes</h3>
+<a name="ControlPanelClasses"></a>Control Panel Classes</h3>
 <dl>
-<dt>WeaponTypes[weapon_type]</dt>
-<dd></dd>
+<dt># ControlPanelClasses</dt>
+<dt>ControlPanelClasses()</dt>
 </dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"oxygen recharger"</li>
+<li>"single shield recharger"</li>
+<li>"double shield recharger"</li>
+</div>
+<div class="mnemonics-column">
+<li>"triple shield recharger"</li>
+<li>"light switch"</li>
+<li>"platform switch"</li>
+</div>
+<div class="mnemonics-column">
+<li>"tag switch"</li>
+<li>"pattern buffer"</li>
+<li>"terminal"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="ControlPanelTypes"></a>Control Panel Types</h3>
+<dl>
+<dt># ControlPanelTypes</dt>
+<dt>ControlPanelTypes()</dt>
+<dt>ControlPanelTypes[control_panel_type]</dt>
+<dd>
+      <dt>
+    .class<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description">class of this control panel type</p>
+</dd>
+    </dd>
+</dl>
+<h3>
+<a name="DamageTypes"></a>Damage</h3>
+<dl>
+<dt># DamageTypes</dt>
+<dt>DamageTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"explosion"</li>
+<li>"staff"</li>
+<li>"projectile"</li>
+<li>"absorbed"</li>
+<li>"flame"</li>
+<li>"claws"</li>
+<li>"alien weapon"</li>
+<li>"hulk slap"</li>
+</div>
+<div class="mnemonics-column">
+<li>"compiler"</li>
+<li>"fusion"</li>
+<li>"hunter"</li>
+<li>"fists"</li>
+<li>"teleporter"</li>
+<li>"defender"</li>
+<li>"yeti claws"</li>
+<li>"yeti projectile"</li>
+</div>
+<div class="mnemonics-column">
+<li>"crushing"</li>
+<li>"lava"</li>
+<li>"suffocation"</li>
+<li>"goo"</li>
+<li>"energy drain"</li>
+<li>"oxygen drain"</li>
+<li>"drone"</li>
+<li>"shotgun"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="DifficultyTypes"></a>Difficulty</h3>
+<dl>
+<dt># DifficultyTypes</dt>
+<dt>DifficultyTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"kindergarten"</li>
+<li>"easy"</li>
+<li>"normal"</li>
+<li>"major damage"</li>
+<li>"total carnage"</li>
+</ul>
+<h3>
+<a name="FadeTypes"></a>Faders</h3>
+<dl>
+<dt># FadeTypes</dt>
+<dt>FadeTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"red"</li>
+<li>"big red"</li>
+<li>"bonus"</li>
+<li>"bright"</li>
+<li>"long bright"</li>
+<li>"yellow"</li>
+<li>"big yellow"</li>
+<li>"purple"</li>
+<li>"cyan"</li>
+<li>"white"</li>
+</div>
+<div class="mnemonics-column">
+<li>"big white"</li>
+<li>"orange"</li>
+<li>"long orange"</li>
+<li>"green"</li>
+<li>"long green"</li>
+<li>"static"</li>
+<li>"negative"</li>
+<li>"big negative"</li>
+<li>"flicker negative"</li>
+<li>"dodge purple"</li>
+</div>
+<div class="mnemonics-column">
+<li>"burn cyan"</li>
+<li>"dodge yellow"</li>
+<li>"burn green"</li>
+<li>"tint green"</li>
+<li>"tint blue"</li>
+<li>"tint orange"</li>
+<li>"tint gross"</li>
+<li>"tint jjaro"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="GameTypes"></a>Game Types</h3>
+<dl>
+<dt># GameTypes</dt>
+<dt>GameTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"kill monsters"</li>
+<li>"cooperative play"</li>
+<li>"capture the flag"</li>
+<li>"king of the hill"</li>
+<li>"kill the man with the ball"</li>
+<li>"defense"</li>
+<li>"rugby"</li>
+<li>"tag"</li>
+</ul>
+<h3>
+<a name="ItemTypes"></a>Items</h3>
+<dl>
+<dt># ItemTypes</dt>
+<dt>ItemTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"knife"</li>
+<li>"pistol"</li>
+<li>"pistol ammo"</li>
+<li>"fusion pistol"</li>
+<li>"fusion pistol ammo"</li>
+<li>"assault rifle"</li>
+<li>"assault rifle ammo"</li>
+<li>"assault rifle grenades"</li>
+<li>"missile launcher"</li>
+<li>"missile launcher ammo"</li>
+<li>"invisibility"</li>
+<li>"invincibility"</li>
+</div>
+<div class="mnemonics-column">
+<li>"infravision"</li>
+<li>"alien weapon"</li>
+<li>"alien weapon ammo"</li>
+<li>"flamethrower"</li>
+<li>"flamethrower ammo"</li>
+<li>"extravision"</li>
+<li>"oxygen"</li>
+<li>"single health"</li>
+<li>"double health"</li>
+<li>"triple health"</li>
+<li>"shotgun"</li>
+<li>"shotgun ammo"</li>
+</div>
+<div class="mnemonics-column">
+<li>"key"</li>
+<li>"uplink chip"</li>
+<li>"light blue ball"</li>
+<li>"ball"</li>
+<li>"violet ball"</li>
+<li>"yellow ball"</li>
+<li>"brown ball"</li>
+<li>"orange ball"</li>
+<li>"blue ball"</li>
+<li>"green ball"</li>
+<li>"smg"</li>
+<li>"smg ammo"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="MediaTypes"></a>Media</h3>
+<dl>
+<dt># MediaTypes</dt>
+<dt>MediaTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"water"</li>
+<li>"lava"</li>
+<li>"goo"</li>
+<li>"sewage"</li>
+<li>"jjaro"</li>
+</ul>
+<h3>
+<a name="MonsterActions"></a>Monster Actions</h3>
+<dl>
+<dt># MonsterActions</dt>
+<dt>MonsterActions()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"stationary"</li>
+<li>"waiting to attack again"</li>
+<li>"moving"</li>
+<li>"attacking close"</li>
+</div>
+<div class="mnemonics-column">
+<li>"attacking far"</li>
+<li>"being hit"</li>
+<li>"dying hard"</li>
+<li>"dying soft"</li>
+</div>
+<div class="mnemonics-column">
+<li>"dying flaming"</li>
+<li>"teleporting"</li>
+<li>"teleporting in"</li>
+<li>"teleporting out"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="MonsterClasses"></a>Monster Classes</h3>
+<dl>
+<dt># MonsterClasses</dt>
+<dt>MonsterClasses()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"player"</li>
+<li>"bob"</li>
+<li>"madd"</li>
+<li>"possessed drone"</li>
+<li>"defender"</li>
+<li>"fighter"</li>
+</div>
+<div class="mnemonics-column">
+<li>"trooper"</li>
+<li>"hunter"</li>
+<li>"enforcer"</li>
+<li>"juggernaut"</li>
+<li>"drone"</li>
+<li>"compiler"</li>
+</div>
+<div class="mnemonics-column">
+<li>"cyborg"</li>
+<li>"explodabob"</li>
+<li>"tick"</li>
+<li>"yeti"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="MonsterModes"></a>Monster Modes</h3>
+<dl>
+<dt># MonsterModes</dt>
+<dt>MonsterModes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"locked"</li>
+<li>"losing lock"</li>
+<li>"lost lock"</li>
+<li>"unlocked"</li>
+<li>"running"</li>
+</ul>
+<h3>
+<a name="MonsterTypes"></a>Monsters</h3>
+<dl>
+<dt># MonsterTypes</dt>
+<dt>MonsterTypes()</dt>
+<dt>MonsterTypes[monster_type]</dt>
+<dd>
+      <dt>
+    .class</dt>
+<dd>
+<p class="description">class of monster type</p>
+</dd>
+      <dt>
+    .enemies[monster_class]
+  </dt>
+<dd>
+<p class="description">whether monster class is an emeny</p>
+</dd>
+      <dt>
+    .friends[monster_class]
+  </dt>
+<dd>
+<p class="description">whether monster class is a friend</p>
+</dd>
+      <dt>
+    .immunities[damage_type]
+  </dt>
+<dd>
+<p class="description">whether monster type is immune to damage type</p>
+</dd>
+      <dt>
+    .item</dt>
+<dd>
+<p class="description">item the monster drops when it dies</p>
+</dd>
+      <dt>
+    .weaknesses[damage type]
+  </dt>
+<dd>
+<p class="description">whether monster type has a weakness to damage type</p>
+</dd>
+      
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+      
+    </dd>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"player"</li>
+<li>"minor tick"</li>
+<li>"major tick"</li>
+<li>"kamikaze tick"</li>
+<li>"minor compiler"</li>
+<li>"major compiler"</li>
+<li>"minor invisible compiler"</li>
+<li>"major invisible compiler"</li>
+<li>"minor fighter"</li>
+<li>"major fighter"</li>
+<li>"minor projectile fighter"</li>
+<li>"major projectile fighter"</li>
+<li>"green bob"</li>
+<li>"blue bob"</li>
+<li>"security bob"</li>
+<li>"explodabob"</li>
+</div>
+<div class="mnemonics-column">
+<li>"minor drone"</li>
+<li>"major drone"</li>
+<li>"big minor drone"</li>
+<li>"big major drone"</li>
+<li>"possessed drone"</li>
+<li>"minor cyborg"</li>
+<li>"major cyborg"</li>
+<li>"minor flame cyborg"</li>
+<li>"major flame cyborg"</li>
+<li>"minor enforcer"</li>
+<li>"major enforcer"</li>
+<li>"minor hunter"</li>
+<li>"major hunter"</li>
+<li>"minor trooper"</li>
+<li>"major trooper"</li>
+<li>"mother of all cyborgs"</li>
+</div>
+<div class="mnemonics-column">
+<li>"mother of all hunters"</li>
+<li>"sewage yeti"</li>
+<li>"water yeti"</li>
+<li>"lava yeti"</li>
+<li>"minor defender"</li>
+<li>"major defender"</li>
+<li>"minor juggernaut"</li>
+<li>"major juggernaut"</li>
+<li>"tiny pfhor"</li>
+<li>"tiny bob"</li>
+<li>"tiny yeti"</li>
+<li>"green vacbob"</li>
+<li>"blue vacbob"</li>
+<li>"security vacbob"</li>
+<li>"explodavacbob"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="OverlayColors"></a>Overlay Colors</h3>
+<dl>
+<dt># OverlayColors</dt>
+<dt>OverlayColors()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"green"</li>
+<li>"white"</li>
+<li>"red"</li>
+<li>"dark green"</li>
+<li>"cyan"</li>
+<li>"yellow"</li>
+<li>"dark red"</li>
+<li>"blue"</li>
+</ul>
+<h3>
+<a name="PlayerColors"></a>Player and Team Colors</h3>
+<dl>
+<dt># PlayerColors</dt>
+<dt>PlayerColors()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"slate"</li>
+<li>"red"</li>
+<li>"violet"</li>
+<li>"yellow"</li>
+<li>"white"</li>
+<li>"orange"</li>
+<li>"blue"</li>
+<li>"green"</li>
+</ul>
+<h3>
+<a name="PolygonTypes"></a>Polygons</h3>
+<dl>
+<dt># PolygonTypes</dt>
+<dt>PolygonTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"normal"</li>
+<li>"item impassable"</li>
+<li>"monster impassable"</li>
+<li>"hill"</li>
+<li>"base"</li>
+<li>"platform"</li>
+<li>"light on trigger"</li>
+<li>"platform on trigger"</li>
+</div>
+<div class="mnemonics-column">
+<li>"light off trigger"</li>
+<li>"platform off trigger"</li>
+<li>"teleporter"</li>
+<li>"zone border"</li>
+<li>"goal"</li>
+<li>"visible monster trigger"</li>
+<li>"invisible monster trigger"</li>
+<li>"dual monster trigger"</li>
+</div>
+<div class="mnemonics-column">
+<li>"item trigger"</li>
+<li>"must be explored"</li>
+<li>"automatic exit"</li>
+<li>"minor ouch"</li>
+<li>"major ouch"</li>
+<li>"glue"</li>
+<li>"glue trigger"</li>
+<li>"superglue"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="ProjectileTypes"></a>Projectiles</h3>
+<dl>
+<dt># ProjectileTypes</dt>
+<dt>ProjectileTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"missile"</li>
+<li>"grenade"</li>
+<li>"pistol bullet"</li>
+<li>"rifle bullet"</li>
+<li>"shotgun bullet"</li>
+<li>"staff"</li>
+<li>"staff bolt"</li>
+<li>"flamethrower burst"</li>
+<li>"compiler bolt minor"</li>
+<li>"compiler bolt major"</li>
+<li>"alien weapon"</li>
+<li>"fusion bolt minor"</li>
+<li>"fusion bolt major"</li>
+</div>
+<div class="mnemonics-column">
+<li>"hunter"</li>
+<li>"fist"</li>
+<li>"armageddon sphere"</li>
+<li>"armageddon electricity"</li>
+<li>"juggernaut rocket"</li>
+<li>"trooper bullet"</li>
+<li>"trooper grenade"</li>
+<li>"minor defender"</li>
+<li>"major defender"</li>
+<li>"juggernaut missile"</li>
+<li>"minor energy drain"</li>
+<li>"major energy drain"</li>
+<li>"oxygen drain"</li>
+</div>
+<div class="mnemonics-column">
+<li>"minor hummer"</li>
+<li>"major hummer"</li>
+<li>"durandal hummer"</li>
+<li>"minor cyborg ball"</li>
+<li>"major cyborg ball"</li>
+<li>"ball"</li>
+<li>"minor fusion dispersal"</li>
+<li>"major fusion dispersal"</li>
+<li>"overloaded fusion dispersal"</li>
+<li>"yeti"</li>
+<li>"sewage yeti"</li>
+<li>"lava yeti"</li>
+<li>"smg bullet"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="SceneryTypes"></a>Scenery</h3>
+<dl>
+<dt># SceneryTypes</dt>
+<dt>SceneryTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"light dirt"</li>
+<li>"dark dirt"</li>
+<li>"lava bones"</li>
+<li>"lava bone"</li>
+<li>"ribs"</li>
+<li>"skull"</li>
+<li>"hanging light 1"</li>
+<li>"hanging light 2"</li>
+<li>"small cylinder"</li>
+<li>"large cylinder"</li>
+<li>"block 1"</li>
+<li>"block 2"</li>
+<li>"block 3"</li>
+<li>"pistol clip"</li>
+<li>"water short light"</li>
+<li>"water long light"</li>
+<li>"siren"</li>
+<li>"rocks"</li>
+<li>"blood drops"</li>
+<li>"water thing"</li>
+<li>"gun"</li>
+</div>
+<div class="mnemonics-column">
+<li>"bob remains"</li>
+<li>"puddles"</li>
+<li>"big puddles"</li>
+<li>"security monitor"</li>
+<li>"alien supply can"</li>
+<li>"machine"</li>
+<li>"staff"</li>
+<li>"sewage short light"</li>
+<li>"sewage long light"</li>
+<li>"junk"</li>
+<li>"antenna"</li>
+<li>"big antenna"</li>
+<li>"alien supply can"</li>
+<li>"sewage bones"</li>
+<li>"sewage big bones"</li>
+<li>"pfhor pieces"</li>
+<li>"bob pieces"</li>
+<li>"bob blood"</li>
+<li>"alien short light"</li>
+<li>"alien long light"</li>
+<li>"alien ceiling rod light"</li>
+</div>
+<div class="mnemonics-column">
+<li>"bulbous yellow alien object"</li>
+<li>"square gray organic object"</li>
+<li>"pfhor skeleton"</li>
+<li>"pfhor mask"</li>
+<li>"green stuff"</li>
+<li>"hunter shield"</li>
+<li>"alien bones"</li>
+<li>"alien sludge"</li>
+<li>"jjaro short light"</li>
+<li>"jjaro long light"</li>
+<li>"weird rod"</li>
+<li>"pfhor ship"</li>
+<li>"sun"</li>
+<li>"large glass container"</li>
+<li>"nub 1"</li>
+<li>"nub 2"</li>
+<li>"lh'owon"</li>
+<li>"floor whip antenna"</li>
+<li>"ceiling whip antenna"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="WeaponTypes"></a>Weapons</h3>
+<dl>
+<dt># WeaponTypes</dt>
+<dt>WeaponTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"fist"</li>
+<li>"pistol"</li>
+<li>"fusion pistol"</li>
+</div>
+<div class="mnemonics-column">
+<li>"assault rifle"</li>
+<li>"flamethrower"</li>
+<li>"alien weapon"</li>
+</div>
+<div class="mnemonics-column">
+<li>"shotgun"</li>
+<li>"ball"</li>
+<li>"smg"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
 </div>
 <h1>
 <a name="example_icon"></a>Example Icon</h1>

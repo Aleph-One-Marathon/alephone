@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="Lua.xsl"?>
 <!DOCTYPE document [
-	  <!ELEMENT document (section*,triggers,tables,section*)>
+	  <!ELEMENT document (section*,triggers,tables,types,section*)>
 	  <!ELEMENT triggers (description?,(function*))>
 	  <!ATTLIST triggers id ID #REQUIRED>
 	  <!ELEMENT tables (description*,(table|accessor|enum|enum-accessor)*)>
 	  <!ATTLIST tables id ID #REQUIRED>
+	  <!ELEMENT types (description*)>
+	  <!ATTLIST types id ID #REQUIRED>
 
 	  <!ELEMENT section (description?,(section*))>
 	  <!ATTLIST section name CDATA #REQUIRED>
@@ -55,9 +57,15 @@
 	  <!ELEMENT enum-accessor ((description?),(length?),(index?),(call?))>
 	  <!ATTLIST enum-accessor name ID #REQUIRED>
 	  <!ATTLIST enum-accessor contains IDREF #REQUIRED>
+	  <!ATTLIST enum-accessor nice-name CDATA #IMPLIED>
 	  
-	  <!ELEMENT enum ((description?),(function|function-variable|subtable|variable)*)>
+	  <!ELEMENT enum ((description?),(function|function-variable|subtable|variable)*,(mnemonics?))>
 	  <!ATTLIST enum name ID #REQUIRED>
+
+	  <!ELEMENT mnemonics (mnemonic*)>
+	  <!ELEMENT mnemonic EMPTY>
+
+	  <!ATTLIST mnemonic name CDATA #REQUIRED>
 
 	  <!ELEMENT length (description?)>
 	  <!ELEMENT index ((description?),(type?))>
@@ -1218,19 +1226,200 @@
 	<description>iterates through all terminal texts on the level</description>
       </call>
     </accessor>
-    <enum name="control_panel_class"/>
+    <enum name="control_panel_class">
+      <mnemonics>
+	<mnemonic name="oxygen recharger"/>
+	<mnemonic name="single shield recharger"/>
+	<mnemonic name="double shield recharger"/>
+	<mnemonic name="triple shield recharger"/>
+	<mnemonic name="light switch"/>
+	<mnemonic name="platform switch"/>
+	<mnemonic name="tag switch"/>
+	<mnemonic name="pattern buffer"/>
+	<mnemonic name="terminal"/>
+      </mnemonics>
+    </enum>
     <enum name="control_panel_type">
       <variable name="class" access="read-only">
 	<description>class of this control panel type</description>
 	<type>control_panel_class</type>
       </variable>
     </enum>
-    <enum name="damage_type"/>
-    <enum name="difficulty_type"/>
-    <enum name="fade_type"/>
-    <enum name="item_type"/>
-    <enum name="media_type"/>
-    <enum name="monster_class"/>
+    <enum name="damage_type">
+      <mnemonics>
+	<mnemonic name="explosion"/>
+	<mnemonic name="staff"/>
+	<mnemonic name="projectile"/>
+	<mnemonic name="absorbed"/>
+	<mnemonic name="flame"/>
+	<mnemonic name="claws"/>
+	<mnemonic name="alien weapon"/>
+	<mnemonic name="hulk slap"/>
+	<mnemonic name="compiler"/>
+	<mnemonic name="fusion"/>
+	<mnemonic name="hunter"/>
+	<mnemonic name="fists"/>
+	<mnemonic name="teleporter"/>
+	<mnemonic name="defender"/>
+	<mnemonic name="yeti claws"/>
+	<mnemonic name="yeti projectile"/>
+	<mnemonic name="crushing"/>
+	<mnemonic name="lava"/>
+	<mnemonic name="suffocation"/>
+	<mnemonic name="goo"/>
+	<mnemonic name="energy drain"/>
+	<mnemonic name="oxygen drain"/>
+	<mnemonic name="drone"/>
+	<mnemonic name="shotgun"/>
+      </mnemonics>
+    </enum>
+    <enum name="difficulty_type">
+      <mnemonics>
+	<mnemonic name="kindergarten"/>
+	<mnemonic name="easy"/>
+	<mnemonic name="normal"/>
+	<mnemonic name="major damage"/>
+	<mnemonic name="total carnage"/>
+      </mnemonics>
+    </enum>
+    <enum name="fade_type">
+      <mnemonics>
+	<mnemonic name="red"/>
+	<mnemonic name="big red"/>
+	<mnemonic name="bonus"/>
+	<mnemonic name="bright"/>
+	<mnemonic name="long bright"/>
+	<mnemonic name="yellow"/>
+	<mnemonic name="big yellow"/>
+	<mnemonic name="purple"/>
+	<mnemonic name="cyan"/>
+	<mnemonic name="white"/>
+	<mnemonic name="big white"/>
+	<mnemonic name="orange"/>
+	<mnemonic name="long orange"/>
+	<mnemonic name="green"/>
+	<mnemonic name="long green"/>
+	<mnemonic name="static"/>
+	<mnemonic name="negative"/>
+	<mnemonic name="big negative"/>
+	<mnemonic name="flicker negative"/>
+	<mnemonic name="dodge purple"/>
+	<mnemonic name="burn cyan"/>
+	<mnemonic name="dodge yellow"/>
+	<mnemonic name="burn green"/>
+	<mnemonic name="tint green"/>
+	<mnemonic name="tint blue"/>
+	<mnemonic name="tint orange"/>
+	<mnemonic name="tint gross"/>
+	<mnemonic name="tint jjaro"/>
+      </mnemonics>
+    </enum>
+    <enum name="game_type">
+      <mnemonics>
+	<mnemonic name="kill monsters"/>
+	<mnemonic name="cooperative play"/>
+	<mnemonic name="capture the flag"/>
+	<mnemonic name="king of the hill"/>
+	<mnemonic name="kill the man with the ball"/>
+	<mnemonic name="defense"/>
+	<mnemonic name="rugby"/>
+	<mnemonic name="tag"/>
+      </mnemonics>
+    </enum>
+    <enum name="item_type">
+      <mnemonics>
+	<mnemonic name="knife"/>
+	<mnemonic name="pistol"/>
+	<mnemonic name="pistol ammo"/>
+	<mnemonic name="fusion pistol"/>
+	<mnemonic name="fusion pistol ammo"/>
+	<mnemonic name="assault rifle"/>
+	<mnemonic name="assault rifle ammo"/>
+	<mnemonic name="assault rifle grenades"/>
+	<mnemonic name="missile launcher"/>
+	<mnemonic name="missile launcher ammo"/>
+	<mnemonic name="invisibility"/>
+	<mnemonic name="invincibility"/>
+	<mnemonic name="infravision"/>
+	<mnemonic name="alien weapon"/>
+	<mnemonic name="alien weapon ammo"/>
+	<mnemonic name="flamethrower"/>
+	<mnemonic name="flamethrower ammo"/>
+	<mnemonic name="extravision"/>
+	<mnemonic name="oxygen"/>
+	<mnemonic name="single health"/>
+	<mnemonic name="double health"/>
+	<mnemonic name="triple health"/>
+	<mnemonic name="shotgun"/>
+	<mnemonic name="shotgun ammo"/>
+	<mnemonic name="key"/>
+	<mnemonic name="uplink chip"/>
+	<mnemonic name="light blue ball"/>
+	<mnemonic name="ball"/>
+	<mnemonic name="violet ball"/>
+	<mnemonic name="yellow ball"/>
+	<mnemonic name="brown ball"/>
+	<mnemonic name="orange ball"/>
+	<mnemonic name="blue ball"/>
+	<mnemonic name="green ball"/>
+	<mnemonic name="smg"/>
+	<mnemonic name="smg ammo"/>
+      </mnemonics>
+    </enum>
+    <enum name="media_type">
+      <mnemonics>
+	<mnemonic name="water"/>
+	<mnemonic name="lava"/>
+	<mnemonic name="goo"/>
+	<mnemonic name="sewage"/>
+	<mnemonic name="jjaro"/>
+      </mnemonics>
+    </enum>
+    <enum name="monster_action">
+      <mnemonics>
+	<mnemonic name="stationary"/>
+	<mnemonic name="waiting to attack again"/>
+	<mnemonic name="moving"/>
+	<mnemonic name="attacking close"/>
+	<mnemonic name="attacking far"/>
+	<mnemonic name="being hit"/>
+	<mnemonic name="dying hard"/>
+	<mnemonic name="dying soft"/>
+	<mnemonic name="dying flaming"/>
+	<mnemonic name="teleporting"/>
+	<mnemonic name="teleporting in"/>
+	<mnemonic name="teleporting out"/>
+      </mnemonics>
+    </enum>
+    <enum name="monster_class">
+      <mnemonics>
+	<mnemonic name="player"/>
+	<mnemonic name="bob"/>
+	<mnemonic name="madd"/>
+	<mnemonic name="possessed drone"/>
+	<mnemonic name="defender"/>
+	<mnemonic name="fighter"/>
+	<mnemonic name="trooper"/>
+	<mnemonic name="hunter"/>
+	<mnemonic name="enforcer"/>
+	<mnemonic name="juggernaut"/>
+	<mnemonic name="drone"/>
+	<mnemonic name="compiler"/>
+	<mnemonic name="cyborg"/>
+	<mnemonic name="explodabob"/>
+	<mnemonic name="tick"/>
+	<mnemonic name="yeti"/>
+      </mnemonics>
+    </enum>
+    <enum name="monster_mode">
+      <mnemonics>
+	<mnemonic name="locked"/>
+	<mnemonic name="losing lock"/>
+	<mnemonic name="lost lock"/>
+	<mnemonic name="unlocked"/>
+	<mnemonic name="running"/>
+      </mnemonics>
+    </enum>
     <enum name="monster_type">
       <variable name="class">
 	<description>class of monster type</description>
@@ -1260,23 +1449,268 @@
 	<argument name="damage type"><type>damage_type</type></argument>
 	<type>boolean</type>
       </function-variable>
+      <mnemonics>
+	<mnemonic name="player"/>
+	<mnemonic name="minor tick"/>
+	<mnemonic name="major tick"/>
+	<mnemonic name="kamikaze tick"/>
+	<mnemonic name="minor compiler"/>
+	<mnemonic name="major compiler"/>
+	<mnemonic name="minor invisible compiler"/>
+	<mnemonic name="major invisible compiler"/>
+	<mnemonic name="minor fighter"/>
+	<mnemonic name="major fighter"/>
+	<mnemonic name="minor projectile fighter"/>
+	<mnemonic name="major projectile fighter"/>
+	<mnemonic name="green bob"/>
+	<mnemonic name="blue bob"/>
+	<mnemonic name="security bob"/>
+	<mnemonic name="explodabob"/>
+	<mnemonic name="minor drone"/>
+	<mnemonic name="major drone"/>
+	<mnemonic name="big minor drone"/>
+	<mnemonic name="big major drone"/>
+	<mnemonic name="possessed drone"/>
+	<mnemonic name="minor cyborg"/>
+	<mnemonic name="major cyborg"/>
+	<mnemonic name="minor flame cyborg"/>
+	<mnemonic name="major flame cyborg"/>
+	<mnemonic name="minor enforcer"/>
+	<mnemonic name="major enforcer"/>
+	<mnemonic name="minor hunter"/>
+	<mnemonic name="major hunter"/>
+	<mnemonic name="minor trooper"/>
+	<mnemonic name="major trooper"/>
+	<mnemonic name="mother of all cyborgs"/>
+	<mnemonic name="mother of all hunters"/>
+	<mnemonic name="sewage yeti"/>
+	<mnemonic name="water yeti"/>
+	<mnemonic name="lava yeti"/>
+	<mnemonic name="minor defender"/>
+	<mnemonic name="major defender"/>
+	<mnemonic name="minor juggernaut"/>
+	<mnemonic name="major juggernaut"/>
+	<mnemonic name="tiny pfhor"/>
+	<mnemonic name="tiny bob"/>
+	<mnemonic name="tiny yeti"/>
+	<mnemonic name="green vacbob"/>
+	<mnemonic name="blue vacbob"/>
+	<mnemonic name="security vacbob"/>
+	<mnemonic name="explodavacbob"/>
+      </mnemonics>
     </enum>
-    <enum name="projectile_type"/>
-    <enum name="scenery_type"/>
-    <enum name="weapon_type"/>
-    <enum-accessor name="ControlPanelClasses" contains="control_panel_class"/>
-    <enum-accessor name="ControlPanelTypes" contains="control_panel_type"/>
-    <enum-accessor name="DamageTypes" contains="damage_type"/>
-    <enum-accessor name="DifficultyTypes" contains="difficulty_type"/>
-    <enum-accessor name="FadeTypes" contains="fade_type"/>
-    <enum-accessor name="ItemTypes" contains="item_type"/>
-    <enum-accessor name="MediaTypes" contains="media_type"/>
-    <enum-accessor name="MonsterClasses" contains="monster_class"/>
-    <enum-accessor name="MonsterTypes" contains="monster_type"/>
-    <enum-accessor name="ProjectileTypes" contains="projectile_type"/>
-    <enum-accessor name="SceneryTypes" contains="scenery_type"/>
-    <enum-accessor name="WeaponTypes" contains="weapon_type"/>
+    <enum name="overlay_color">
+      <mnemonics>
+	<mnemonic name="green"/>
+	<mnemonic name="white"/>
+	<mnemonic name="red"/>
+	<mnemonic name="dark green"/>
+	<mnemonic name="cyan"/>
+	<mnemonic name="yellow"/>
+	<mnemonic name="dark red"/>
+	<mnemonic name="blue"/>
+      </mnemonics>
+    </enum>
+    <enum name="player_color">
+      <mnemonics>
+	<mnemonic name="slate"/>
+	<mnemonic name="red"/>
+	<mnemonic name="violet"/>
+	<mnemonic name="yellow"/>
+	<mnemonic name="white"/>
+	<mnemonic name="orange"/>
+	<mnemonic name="blue"/>
+	<mnemonic name="green"/>
+      </mnemonics>
+    </enum>
+    <enum name="polygon_type">
+      <mnemonics>
+	<mnemonic name="normal"/>
+	<mnemonic name="item impassable"/>
+	<mnemonic name="monster impassable"/>
+	<mnemonic name="hill"/>
+	<mnemonic name="base"/>
+	<mnemonic name="platform"/>
+	<mnemonic name="light on trigger"/>
+	<mnemonic name="platform on trigger"/>
+	<mnemonic name="light off trigger"/>
+	<mnemonic name="platform off trigger"/>
+	<mnemonic name="teleporter"/>
+	<mnemonic name="zone border"/>
+	<mnemonic name="goal"/>
+	<mnemonic name="visible monster trigger"/>
+	<mnemonic name="invisible monster trigger"/>
+	<mnemonic name="dual monster trigger"/>
+	<mnemonic name="item trigger"/>
+	<mnemonic name="must be explored"/>
+	<mnemonic name="automatic exit"/>
+	<mnemonic name="minor ouch"/>
+	<mnemonic name="major ouch"/>
+	<mnemonic name="glue"/>
+	<mnemonic name="glue trigger"/>
+	<mnemonic name="superglue"/>
+      </mnemonics>
+    </enum>
+    <enum name="projectile_type">
+      <mnemonics>
+	<mnemonic name="missile"/>
+	<mnemonic name="grenade"/>
+	<mnemonic name="pistol bullet"/>
+	<mnemonic name="rifle bullet"/>
+	<mnemonic name="shotgun bullet"/>
+	<mnemonic name="staff"/>
+	<mnemonic name="staff bolt"/>
+	<mnemonic name="flamethrower burst"/>
+	<mnemonic name="compiler bolt minor"/>
+	<mnemonic name="compiler bolt major"/>
+	<mnemonic name="alien weapon"/>
+	<mnemonic name="fusion bolt minor"/>
+	<mnemonic name="fusion bolt major"/>
+	<mnemonic name="hunter"/>
+	<mnemonic name="fist"/>
+	<mnemonic name="armageddon sphere"/>
+	<mnemonic name="armageddon electricity"/>
+	<mnemonic name="juggernaut rocket"/>
+	<mnemonic name="trooper bullet"/>
+	<mnemonic name="trooper grenade"/>
+	<mnemonic name="minor defender"/>
+	<mnemonic name="major defender"/>
+	<mnemonic name="juggernaut missile"/>
+	<mnemonic name="minor energy drain"/>
+	<mnemonic name="major energy drain"/>
+	<mnemonic name="oxygen drain"/>
+	<mnemonic name="minor hummer"/>
+	<mnemonic name="major hummer"/>
+	<mnemonic name="durandal hummer"/>
+	<mnemonic name="minor cyborg ball"/>
+	<mnemonic name="major cyborg ball"/>
+	<mnemonic name="ball"/>
+	<mnemonic name="minor fusion dispersal"/>
+	<mnemonic name="major fusion dispersal"/>
+	<mnemonic name="overloaded fusion dispersal"/>
+	<mnemonic name="yeti"/>
+	<mnemonic name="sewage yeti"/>
+	<mnemonic name="lava yeti"/>
+	<mnemonic name="smg bullet"/>
+      </mnemonics>
+    </enum>
+    <enum name="scenery_type">
+      <mnemonics>
+	<mnemonic name="light dirt"/>
+	<mnemonic name="dark dirt"/>
+	<mnemonic name="lava bones"/>
+	<mnemonic name="lava bone"/>
+	<mnemonic name="ribs"/>
+	<mnemonic name="skull"/>
+	<mnemonic name="hanging light 1"/>
+	<mnemonic name="hanging light 2"/>
+	<mnemonic name="small cylinder"/>
+	<mnemonic name="large cylinder"/>
+	<mnemonic name="block 1"/>
+	<mnemonic name="block 2"/>
+	<mnemonic name="block 3"/>
+
+	<mnemonic name="pistol clip"/>
+	<mnemonic name="water short light"/>
+	<mnemonic name="water long light"/>
+	<mnemonic name="siren"/>
+	<mnemonic name="rocks"/>
+	<mnemonic name="blood drops"/>
+	<mnemonic name="water thing"/>
+	<mnemonic name="gun"/>
+	<mnemonic name="bob remains"/>
+	<mnemonic name="puddles"/>
+	<mnemonic name="big puddles"/>
+	<mnemonic name="security monitor"/>
+	<mnemonic name="alien supply can"/>
+	<mnemonic name="machine"/>
+	<mnemonic name="staff"/>
+	
+	<mnemonic name="sewage short light"/>
+	<mnemonic name="sewage long light"/>
+	<mnemonic name="junk"/>
+	<mnemonic name="antenna"/>
+	<mnemonic name="big antenna"/>
+	<mnemonic name="alien supply can"/>
+	<mnemonic name="sewage bones"/>
+	<mnemonic name="sewage big bones"/>
+	<mnemonic name="pfhor pieces"/>
+	<mnemonic name="bob pieces"/>
+	<mnemonic name="bob blood"/>
+	
+	<mnemonic name="alien short light"/>
+	<mnemonic name="alien long light"/>
+	<mnemonic name="alien ceiling rod light"/>
+	<mnemonic name="bulbous yellow alien object"/>
+	<mnemonic name="square gray organic object"/>
+	<mnemonic name="pfhor skeleton"/>
+	<mnemonic name="pfhor mask"/>
+	<mnemonic name="green stuff"/>
+	<mnemonic name="hunter shield"/>
+	<mnemonic name="alien bones"/>
+	<mnemonic name="alien sludge"/>
+
+	<mnemonic name="jjaro short light"/>
+	<mnemonic name="jjaro long light"/>
+	<mnemonic name="weird rod"/>
+	<mnemonic name="pfhor ship"/>
+	<mnemonic name="sun"/>
+	<mnemonic name="large glass container"/>
+	<mnemonic name="nub 1"/>
+	<mnemonic name="nub 2"/>
+	<mnemonic name="lh'owon"/>
+	<mnemonic name="floor whip antenna"/>
+	<mnemonic name="ceiling whip antenna"/>
+      </mnemonics>
+    </enum>
+    <enum name="weapon_type">
+      <mnemonics>
+	<mnemonic name="fist"/>
+	<mnemonic name="pistol"/>
+	<mnemonic name="fusion pistol"/>
+	<mnemonic name="assault rifle"/>
+	<mnemonic name="flamethrower"/>
+	<mnemonic name="alien weapon"/>
+	<mnemonic name="shotgun"/>
+	<mnemonic name="ball"/>
+	<mnemonic name="smg"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="ControlPanelClasses" contains="control_panel_class" nice-name="Control Panel Classes"/>
+    <enum-accessor name="ControlPanelTypes" contains="control_panel_type" nice-name="Control Panel Types"/>
+    <enum-accessor name="DamageTypes" contains="damage_type" nice-name="Damage"/>
+    <enum-accessor name="DifficultyTypes" contains="difficulty_type" nice-name="Difficulty"/>
+    <enum-accessor name="FadeTypes" contains="fade_type" nice-name="Faders"/>
+    <enum-accessor name="GameTypes" contains="game_type" nice-name="Game Types"/>
+    <enum-accessor name="ItemTypes" contains="item_type" nice-name="Items"/>
+    <enum-accessor name="MediaTypes" contains="media_type" nice-name="Media"/>
+    <enum-accessor name="MonsterActions" contains="monster_action" nice-name="Monster Actions"/>
+    <enum-accessor name="MonsterClasses" contains="monster_class" nice-name="Monster Classes"/>
+    <enum-accessor name="MonsterModes" contains="monster_mode" nice-name="Monster Modes"/>
+    <enum-accessor name="MonsterTypes" contains="monster_type" nice-name="Monsters"/>
+    <enum-accessor name="OverlayColors" contains="overlay_color" nice-name="Overlay Colors"/>
+    <enum-accessor name="PlayerColors" contains="player_color" nice-name="Player and Team Colors"/>
+    <enum-accessor name="PolygonTypes" contains="polygon_type" nice-name="Polygons"/>
+    <enum-accessor name="ProjectileTypes" contains="projectile_type" nice-name="Projectiles"/>
+    <enum-accessor name="SceneryTypes" contains="scenery_type" nice-name="Scenery"/>
+    <enum-accessor name="WeaponTypes" contains="weapon_type" nice-name="Weapons"/>
   </tables>
+  <types id="types">
+    <description>The string mnemonics listed below can be used for assignment and as arguments to functions. Additionally, Aleph One's Lua interpreter has been modified so that equality comparisons between userdata types and strings are possible.</description>
+    <description>For example, this script would move all players on the blue team to the red team:
+<pre>for p in Players() do
+  if (p.team == "blue") then
+    p.team = "red"
+  end
+end</pre>
+And this one would damage all major compilers with 10 points of fusion damage:
+      <pre>for m in Monsters() do
+  if (m.type == "major compiler") then
+    m:damage(10, "fusion")
+  end
+end</pre>
+    </description>
+  </types>
   <section name="Example Icon" id="example_icon">
     <description>
       <pre>
