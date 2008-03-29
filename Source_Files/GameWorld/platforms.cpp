@@ -102,7 +102,7 @@ Jun 30, 2002 (tiennou):
 
 static short polygon_index_to_platform_index(short polygon_index);
 
-static bool set_platform_state(short platform_index, bool state, short parent_platform_index);
+bool set_platform_state(short platform_index, bool state, short parent_platform_index);
 static void set_adjacent_platform_states(short platform_index, bool state);
 
 static void take_out_the_garbage(short platform_index);
@@ -667,7 +667,7 @@ static short polygon_index_to_platform_index(
 	return platform_index;
 }
 
-static bool set_platform_state(
+bool set_platform_state(
 	short platform_index,
 	bool state,
 	short parent_platform_index)
