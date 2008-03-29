@@ -1232,6 +1232,7 @@ int Lua_Map_register(lua_State *L)
 
 static const char* compatibility_script = ""
 	"function annotations() local i = 0 local n = # Annotations return function() if i < n then a = Annotations[i] i = i + 1 if a.polygon then p = a.polygon.index else p = -1 end return a.text, p, a.x, a.y else return nil end end end\n"
+	"function get_all_fog_attributes() local attributes = { OGL_Fog_AboveLiquid = { Depth = Level.fog.depth, Color = { red = Level.fog.color.r, blue = Level.fog.color.b, green = Level.fog.color.g }, IsPresent = Level.fog.present, AffectsLandscapes = Level.fog.affects_landscapes }, OGL_Fog_BelowLiquid = { Depth = Level.underwater_fog.depth, Color = { red = Level.underwater_fog.color.r, green = Level.underwater_fog.color.g, blue = Level.underwater_fog.color.b, }, IsPresent = Level.underwater_fog.present, AffectsLandscapes = Level.underwater_fog.affects_landscapes } } return attributes end\n"
 	"function get_fog_affects_landscapes() return Level.fog.affects_landscapes end\n"
 	"function get_fog_color() return Level.fog.color.r, Level.fog.color.g, Level.fog.color.b end\n"
 	"function get_fog_depth() return Level.fog.depth end\n"
@@ -1262,6 +1263,7 @@ static const char* compatibility_script = ""
 
 	"function number_of_polygons() return # Polygons end\n"
 	"function select_monster(type, poly) for m in Polygons[poly]:monsters() do if m.type == type and m.visible and (m.action < 6 or m.action > 9) then return m.index end end return nil end\n"
+	"function set_all_fog_attributes(t) Level.fog.depth = t.OGL_Fog_AboveLiquid.Depth Level.fog.present = t.OGL_Fog_AboveLiquid.IsPresent Level.fog.affects_landscapes = t.OGL_Fog_AboveLiquid.AffectsLandscapes Level.fog.color.r = t.OGL_Fog_AboveLiquid.Color.red Level.fog.color.g = t.OGL_Fog_AboveLiquid.Color.green Level.fog.color.b = t.OGL_Fog_AboveLiquid.Color.blue Level.underwater_fog.depth = t.OGL_Fog_BelowLiquid.Depth Level.underwater_fog.present = t.OGL_Fog_BelowLiquid.IsPresent Level.underwater_fog.affects_landscapes = t.OGL_Fog_BelowLiquid.AffectsLandscapes Level.underwater_fog.color.r = t.OGL_Fog_BelowLiquid.Color.red Level.underwater_fog.color.g = t.OGL_Fog_BelowLiquid.Color.green Level.underwater_fog.color.b = t.OGL_Fog_BelowLiquid.Color.blue end\n"
 	"function set_fog_affects_landscapes(affects_landscapes) Level.fog.affects_landscapes = affects_landscapes end\n"
 	"function set_fog_color(r, g, b) Level.fog.color.r = r Level.fog.color.g = g Level.fog.color.b = b end\n"
 	"function set_fog_depth(depth) Level.fog.depth = depth end\n"
