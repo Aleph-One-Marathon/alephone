@@ -169,13 +169,15 @@ static int Lua_Platform_Get_Speed(lua_State *L)
 	return 1;
 }
 
+extern bool set_platform_state(short, bool, short);
+
 static int Lua_Platform_Set_Active(lua_State *L)
 {
 	if (!lua_isboolean(L, 2))
 		return luaL_error(L, "active: incorrect argument type");
 
 	short platform_index = Lua_Platform::Index(L, 1);
-	try_and_change_platform_state(platform_index, lua_toboolean(L, 2));
+	set_platform_state(platform_index, lua_toboolean(L, 2), NONE);
 	return 0;
 }
 
