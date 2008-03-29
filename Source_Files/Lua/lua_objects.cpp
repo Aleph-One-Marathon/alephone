@@ -31,6 +31,8 @@ LUA_OBJECTS.CPP
 #define DONT_REPEAT_DEFINITIONS
 #include "scenery_definitions.h"
 
+#include "SoundManager.h"
+
 #include <boost/bind.hpp>
 
 #ifdef HAVE_LUA
@@ -354,6 +356,15 @@ const luaL_reg Lua_Sceneries_Methods[] = {
 	{0, 0}
 };
 
+// these are not sound objects
+char Lua_Sound_Name[] = "lua_sound";
+char Lua_Sounds_Name[] = "Sounds";
+
+int Lua_Sounds_Length()
+{
+	return SoundManager::instance()->NumberOfSoundDefinitions();
+}
+
 static void compatibility(lua_State *L);
 
 int Lua_Objects_register(lua_State *L)
@@ -381,6 +392,11 @@ int Lua_Objects_register(lua_State *L)
 
 	Lua_SceneryTypes::Register(L);
 	Lua_SceneryTypes::Length = Lua_SceneryTypes::ConstantLength<NUMBER_OF_SCENERY_DEFINITIONS>;
+
+	Lua_Sound::Register(L, 0, 0, 0, Lua_Sound_Mnemonics);
+
+	Lua_Sounds::Register(L);
+	Lua_Sounds::Length = Lua_Sounds_Length;
 
 	compatibility(L);
 }

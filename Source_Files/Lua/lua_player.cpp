@@ -1083,11 +1083,9 @@ int Lua_Player_Fade_Screen(lua_State *L)
 int Lua_Player_Play_Sound(lua_State *L)
 {
 	int args = lua_gettop(L);
-	if (!lua_isnumber(L, 2))
-		return luaL_error(L, "play_sound: incorrect argument type");
 	
 	int player_index = Lua_Player::Index(L, 1);
-	int sound_index = static_cast<int>(lua_tonumber(L, 2));
+	int sound_index = Lua_Sound::ToIndex(L, 2);
 	float pitch = 1.0;
 	if (args > 2)
 	{

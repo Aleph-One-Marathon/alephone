@@ -55,6 +55,12 @@ typedef L_Class<Lua_Scenery_Name> Lua_Scenery;
 extern char Lua_Sceneries_Name[]; // "Scenery"
 typedef L_Container<Lua_Sceneries_Name, Lua_Scenery> Lua_Sceneries;
 
+extern char Lua_Sound_Name[]; // "sound"
+typedef L_Enum<Lua_Sound_Name> Lua_Sound;
+
+extern char Lua_Sounds_Name[]; // "Sounds"
+typedef L_EnumContainer<Lua_Sounds_Name, Lua_Sound> Lua_Sounds;
+
 int Lua_Objects_register(lua_State *L);
 
 #endif
