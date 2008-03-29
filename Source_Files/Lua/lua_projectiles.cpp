@@ -299,7 +299,7 @@ char Lua_Projectiles_Name[] = "Projectiles";
 // Projectiles.new(x, y, z, polygon, type)
 static int Lua_Projectiles_New_Projectile(lua_State *L)
 {
-	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 5))
+	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
 	{
 		return luaL_error(L, "new: incorrect argument type");
 	}
@@ -396,7 +396,7 @@ int Lua_Projectiles_register(lua_State *L)
 	Lua_Projectiles::Register(L, Lua_Projectiles_Methods);
 	Lua_Projectiles::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_projectiles);
 
-	Lua_ProjectileType::Register(L, Lua_ProjectileType_Get);
+	Lua_ProjectileType::Register(L, Lua_ProjectileType_Get, 0, 0, Lua_ProjectileType_Mnemonics);
 	Lua_ProjectileType::Valid = Lua_ProjectileType_Valid;
 
 	Lua_ProjectileTypeDamage::Register(L, Lua_ProjectileTypeDamage_Get);

@@ -370,13 +370,13 @@ int Lua_Objects_register(lua_State *L)
 	Lua_Sceneries::Register(L, Lua_Sceneries_Methods);
 	Lua_Sceneries::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
 
-	Lua_ItemType::Register(L, Lua_ItemType_Get);
+	Lua_ItemType::Register(L, Lua_ItemType_Get, 0, 0, Lua_ItemType_Mnemonics);
 	Lua_ItemType::Valid = Lua_ItemType_Valid;
 
 	Lua_ItemTypes::Register(L);
 	Lua_ItemTypes::Length = Lua_ItemTypes::ConstantLength<NUMBER_OF_DEFINED_ITEMS>;
 
-	Lua_SceneryType::Register(L);
+	Lua_SceneryType::Register(L, 0, 0, 0, Lua_SceneryType_Mnemonics);
 	Lua_SceneryType::Valid = Lua_SceneryType_Valid;
 
 	Lua_SceneryTypes::Register(L);

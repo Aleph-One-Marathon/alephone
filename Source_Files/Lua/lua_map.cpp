@@ -372,6 +372,12 @@ const luaL_reg Lua_Polygon_Ceiling_Set[] = {
 	{0, 0}
 };
 
+char Lua_PolygonType_Name[] = "polygon_type";
+typedef L_Enum<Lua_PolygonType_Name> Lua_PolygonType;
+
+char Lua_PolygonTypes_Name[] = "PolygonTypes";
+typedef L_EnumContainer<Lua_PolygonTypes_Name, Lua_PolygonType> Lua_PolygonTypes;
+
 char Lua_Polygon_Name[] = "polygon";
 
 static int Lua_Polygon_Monsters_Iterator(lua_State *L)
@@ -450,7 +456,7 @@ static int Lua_Polygon_Get_Permutation(lua_State *L)
 
 static int Lua_Polygon_Get_Type(lua_State *L)
 {
-	lua_pushnumber(L, get_polygon_data(Lua_Polygon::Index(L, 1))->type);
+	Lua_PolygonType::Push(L, get_polygon_data(Lua_Polygon::Index(L, 1))->type);
 	return 1;
 }
 
@@ -1120,7 +1126,7 @@ static int compatibility(lua_State *L);
 
 int Lua_Map_register(lua_State *L)
 {
-	Lua_ControlPanelClass::Register(L);
+	Lua_ControlPanelClass::Register(L, 0, 0, 0, Lua_ControlPanelClass_Mnemonics);
 	Lua_ControlPanelClass::Valid = Lua_ControlPanelClass::ValidRange<NUMBER_OF_CONTROL_PANELS>;
 
 	Lua_ControlPanelClasses::Register(L);
@@ -1132,7 +1138,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_ControlPanelTypes::Register(L);
 	Lua_ControlPanelTypes::Length = Lua_ControlPanelTypes::ConstantLength<NUMBER_OF_CONTROL_PANEL_DEFINITIONS>;
 
-	Lua_DamageType::Register(L);
+	Lua_DamageType::Register(L, 0, 0, 0, Lua_DamageType_Mnemonics);
 	Lua_DamageType::Valid = Lua_DamageType::ValidRange<NUMBER_OF_DAMAGE_TYPES>;
 	Lua_DamageTypes::Register(L);
 	Lua_DamageTypes::Length = Lua_DamageTypes::ConstantLength<NUMBER_OF_DAMAGE_TYPES>;
@@ -1154,6 +1160,12 @@ int Lua_Map_register(lua_State *L)
 
 	Lua_Polygon_Ceiling::Register(L, Lua_Polygon_Ceiling_Get, Lua_Polygon_Ceiling_Set);
 	Lua_Polygon_Ceiling::Valid = Lua_Polygon_Valid;
+
+	Lua_PolygonType::Register(L, 0, 0, 0, Lua_PolygonType_Mnemonics);
+	Lua_PolygonType::Valid = Lua_PolygonType::ValidRange<static_cast<int16>(_polygon_is_superglue) + 1>;
+	
+	Lua_PolygonTypes::Register(L);
+	Lua_PolygonTypes::Length = Lua_PolygonTypes::ConstantLength<static_cast<int16>(_polygon_is_superglue) + 1>;
 
 	Lua_Polygon::Register(L, Lua_Polygon_Get, Lua_Polygon_Set);
 	Lua_Polygon::Valid = Lua_Polygon_Valid;
@@ -1187,7 +1199,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_Terminals::Register(L);
 	Lua_Terminals::Length = Lua_Terminals_Length;
 
-	Lua_MediaType::Register(L);
+	Lua_MediaType::Register(L, 0, 0, 0, Lua_MediaType_Mnemonics);
 	Lua_MediaType::Valid = Lua_MediaType::ValidRange<NUMBER_OF_MEDIA_TYPES>;
 
 	Lua_MediaTypes::Register(L);
@@ -1240,7 +1252,7 @@ static const char* compatibility_script = ""
 	"function get_polygon_center(polygon) return Polygons[polygon].x * 1024, Polygons[polygon].y * 1024 end\n"
 	"function get_polygon_floor_height(polygon) return Polygons[polygon].floor.height end\n"
 	"function get_polygon_target(polygon) return Polygons[polygon].permutation end\n"
-	"function get_polygon_type(polygon) return Polygons[polygon].type end\n"
+	"function get_polygon_type(polygon) return Polygons[polygon].type.index end\n"
 	"function get_tag_state(tag) return Tags[tag].active end\n"
 	"function get_terminal_text_number(poly, line) if Lines[line].ccw_polygon == Polygons[poly] then s = Lines[line].ccw_side elseif Lines[line].cw_polygon == Polygons[poly] then s = Lines[line].cw_side else return line end if s.control_panel and s.control_panel.type.class == 8 then return s.control_panel.permutation else return line end end\n"
 	"function get_underwater_fog_affects_landscapes() return Level.underwater_fog.affects_landscapes end\n"

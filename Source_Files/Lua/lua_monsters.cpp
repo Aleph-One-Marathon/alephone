@@ -321,6 +321,18 @@ const luaL_reg Lua_MonsterType_Set[] = {
 	{0, 0}
 };
 
+char Lua_MonsterMode_Name[] = "monster_mode";
+typedef L_Enum<Lua_MonsterMode_Name> Lua_MonsterMode;
+
+char Lua_MonsterModes_Name[] = "MonsterModes";
+typedef L_EnumContainer<Lua_MonsterModes_Name, Lua_MonsterMode> Lua_MonsterModes;
+
+char Lua_MonsterAction_Name[] = "monster_action";
+typedef L_Enum<Lua_MonsterAction_Name> Lua_MonsterAction;
+
+char Lua_MonsterActions_Name[] = "MonsterActions";
+typedef L_EnumContainer<Lua_MonsterActions_Name, Lua_MonsterAction> Lua_MonsterActions;
+
 char Lua_MonsterTypes_Name[] = "MonsterTypes";
 typedef L_EnumContainer<Lua_MonsterTypes_Name, Lua_MonsterType> Lua_MonsterTypes;
 
@@ -486,7 +498,7 @@ int Lua_Monster_Position(lua_State *L)
 static int Lua_Monster_Get_Action(lua_State *L)
 {
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
-	lua_pushnumber(L, monster->action);
+	Lua_MonsterAction::Push(L, monster->action);
 	return 1;
 }
 
@@ -511,7 +523,7 @@ static int Lua_Monster_Get_Facing(lua_State *L)
 static int Lua_Monster_Get_Mode(lua_State *L)
 {
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
-	lua_pushnumber(L, monster->mode);
+	Lua_MonsterMode::Push(L, monster->mode);
 	return 1;
 }
 
@@ -538,7 +550,7 @@ static int Lua_Monster_Get_Polygon(lua_State *L)
 static int Lua_Monster_Get_Type(lua_State *L)
 {
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
-	lua_pushnumber(L, monster->type);
+	Lua_MonsterType::Push(L, monster->type);
 	return 1;
 }
 
@@ -670,7 +682,7 @@ char Lua_Monsters_Name[] = "Monsters";
 // Monsters.new(x, y, height, polygon, type)
 int Lua_Monsters_New(lua_State *L)
 {
-	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 5))
+	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
 		luaL_error(L, "new: incorrect argument type");
 
 	int polygon_index = 0;
@@ -687,9 +699,7 @@ int Lua_Monsters_New(lua_State *L)
 	else
 		return luaL_error(L, "new: incorrect argument type");
 
-	short monster_type = static_cast<int>(lua_tonumber(L, 5));
-	if (monster_type < 0 || monster_type > NUMBER_OF_MONSTER_TYPES)
-		return luaL_error(L, "new: invalid monster type");
+	short monster_type = Lua_MonsterType::ToIndex(L, 5);
 	
 	object_location location;
 	location.p.x = static_cast<int>(lua_tonumber(L, 1) * WORLD_ONE);
@@ -718,7 +728,7 @@ static int compatibility(lua_State *L);
 
 int Lua_Monsters_register(lua_State *L)
 {
-	Lua_MonsterClass::Register(L);
+	Lua_MonsterClass::Register(L, 0, 0, 0, Lua_MonsterClass_Mnemonics);
 	Lua_MonsterClass::Valid = Lua_MonsterClass_Valid;
 
 	Lua_MonsterClasses::Register(L);
@@ -730,7 +740,17 @@ int Lua_Monsters_register(lua_State *L)
 	Lua_MonsterType_Immunities::Register(L, 0, 0, Lua_MonsterType_Immunities_Metatable);
 	Lua_MonsterType_Weaknesses::Register(L, 0, 0, Lua_MonsterType_Weaknesses_Metatable);
 
-	Lua_MonsterType::Register(L, Lua_MonsterType_Get, Lua_MonsterType_Set);
+	Lua_MonsterMode::Register(L, 0, 0, 0, Lua_MonsterMode_Mnemonics);
+	Lua_MonsterMode::Valid = Lua_MonsterMode::ValidRange<NUMBER_OF_MONSTER_MODES>;
+	Lua_MonsterModes::Register(L);
+	Lua_MonsterModes::Length = Lua_MonsterModes::ConstantLength<NUMBER_OF_MONSTER_MODES>;
+	
+	Lua_MonsterAction::Register(L, 0, 0, 0, Lua_MonsterAction_Mnemonics);
+	Lua_MonsterAction::Valid = Lua_MonsterAction::ValidRange<NUMBER_OF_MONSTER_ACTIONS>;
+	Lua_MonsterActions::Register(L);
+	Lua_MonsterActions::Length = Lua_MonsterActions::ConstantLength<NUMBER_OF_MONSTER_ACTIONS>;
+
+	Lua_MonsterType::Register(L, Lua_MonsterType_Get, Lua_MonsterType_Set, 0, Lua_MonsterType_Mnemonics);
 	Lua_MonsterType::Valid = Lua_MonsterType_Valid;
 	
 	Lua_MonsterTypes::Register(L);
@@ -752,16 +772,16 @@ static const char *compatibility_script = ""
 	"function attack_monster(agressor, target) Monsters[aggressor]:attack(target) end\n"
 	"function damage_monster(monster, damage, type) if type then Monsters[monster]:damage(damage, type) else Monsters[monster]:damage(damage) end end\n"
 	"function deactivate_monster(monster) Monsters[monster].active = false end\n"
-	"function get_monster_action(monster) return Monsters[monster].action end\n"
+	"function get_monster_action(monster) if Monsters[monster].action then return Monsters[monster].action.index else return -1 end end\n"
 	"function get_monster_enemy(monster_type, enemy_type) return MonsterTypes[monster_type].enemies[enemy_type] end\n"
 	"function get_monster_friend(monster_type, friend_type) return MonsterTypes[monster_type].friends[friend_type] end\n"
 	"function get_monster_facing(monster) return Monsters[monster].facing * 512 / 360 end\n"
 	"function get_monster_immunity(monster, damage_type) return MonsterTypes[monster].immunities[damage_type] end\n"
 	"function get_monster_item(monster) if MonsterTypes[monster].item then return MonsterTypes[monster].item.index else return -1 end end\n"
-	"function get_monster_mode(monster) return Monsters[monster].mode end\n"
+	"function get_monster_mode(monster) if Monsters[monster].mode then return Monsters[monster].mode.index else return -1 end end\n"
 	"function get_monster_polygon(monster) return Monsters[monster].polygon.index end\n"
 	"function get_monster_position(monster) return Monsters[monster].x * 1024, Monsters[monster].y * 1024, Monsters[monster].z * 1024 end\n"
-	"function get_monster_type(monster) return Monsters[monster].type end\n"
+	"function get_monster_type(monster) return Monsters[monster].type.index end\n"
 	"function get_monster_type_class(monster) return MonsterTypes[monster].class.index end\n"
 	"function get_monster_visible(monster) return Monsters[monster].visible end\n"
 	"function get_monster_vitality(monster) return Monsters[monster].vitality end\n"

@@ -896,23 +896,8 @@ typedef L_Class<Lua_Player_Weapons_Name> Lua_Player_Weapons;
 
 static int Lua_Player_Weapons_Get(lua_State *L)
 {
-	if (lua_isnumber(L, 2) || Lua_WeaponType::Is(L, 2))
+	if (lua_isstring(L, 2) && strcmp(lua_tostring(L, 2), "current") == 0)
 	{
-		int player_index = Lua_Player_Weapons::Index(L, 1);
-		int index = Lua_WeaponType::ToIndex(L, 2);
-		if (!Lua_Player_Weapons::Valid(player_index) || !Lua_WeaponType::Valid(index))
-		{
-			lua_pushnil(L);
-		}
-		else
-		{
-			Lua_Player_Weapon::Push(L, player_index, index);
-		}
-	}
-	else if (lua_isstring(L, 2))
-	{
-		if (strcmp(lua_tostring(L, 2), "current") == 0)
-		{
 			int player_index = Lua_Player_Weapons::Index(L, 1);
 			if (player_has_valid_weapon(player_index))
 			{
@@ -924,15 +909,12 @@ static int Lua_Player_Weapons_Get(lua_State *L)
 			{
 				lua_pushnil(L);
 			}
-		}
-		else
-		{
-			lua_pushnil(L);
-		}
 	}
 	else
 	{
-		lua_pushnil(L);
+		int player_index = Lua_Player_Weapons::Index(L, 1);
+		int index = Lua_WeaponType::ToIndex(L, 2);
+		Lua_Player_Weapon::Push(L, player_index, index);
 	}
 
 	return 1;
@@ -992,6 +974,11 @@ const luaL_reg Lua_Player_Kills_Metatable[] = {
 	{0, 0}
 };
 
+char Lua_PlayerColor_Name[] = "player_color";
+typedef L_Enum<Lua_PlayerColor_Name> Lua_PlayerColor;
+
+char Lua_PlayerColors_Name[] = "PlayerColors";
+typedef L_EnumContainer<Lua_PlayerColors_Name, Lua_PlayerColor> Lua_PlayerColors;
 
 char Lua_Player_Name[] = "player";
 
@@ -1219,7 +1206,7 @@ static int Lua_Player_Get_Action_Flags(lua_State *L)
 
 static int Lua_Player_Get_Color(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->color);
+	Lua_PlayerColor::Push(L, get_player_data(Lua_Player::Index(L, 1))->color);
 	return 1;
 }
 
@@ -1385,7 +1372,7 @@ static int Lua_Player_Get_Polygon(lua_State *L)
 
 static int Lua_Player_Get_Team(lua_State *L)
 {
-	lua_pushnumber(L, get_player_data(Lua_Player::Index(L, 1))->team);
+	Lua_PlayerColor::Push(L, get_player_data(Lua_Player::Index(L, 1))->team);
 	return 1;
 }
 
@@ -1481,17 +1468,7 @@ extern void mark_shield_display_as_dirty();
 
 static int Lua_Player_Set_Color(lua_State *L)
 {
-	if (!lua_isnumber(L, 2))
-	{
-		return luaL_error(L, "color: incorrect argument type");
-	}
-	
-
-	int color = static_cast<int>(lua_tonumber(L, 2));
-	if (color < 0 || color > NUMBER_OF_TEAM_COLORS)
-	{
-		luaL_error(L, "player.color: invalid color");
-	}
+	int color = Lua_PlayerColor::ToIndex(L, 2);
 	get_player_data(Lua_Player::Index(L, 1))->color = color;
 	
 	return 0;
@@ -1659,14 +1636,7 @@ int Lua_Player_Set_Points(lua_State *L)
 
 static int Lua_Player_Set_Team(lua_State *L)
 {
-	if (!lua_isnumber(L, 2))
-		return luaL_error(L, "team: incorrect argument type");
-
-	int team = static_cast<int>(lua_tonumber(L, 2));
-	if (team < 0 || team >= NUMBER_OF_TEAM_COLORS)
-	{
-		luaL_error(L, "player.team: invalid team");
-	}
+	int team = Lua_PlayerColor::ToIndex(L, 2);
 	get_player_data(Lua_Player::Index(L, 1))->team = team;
 
 	return 0;
@@ -1724,6 +1694,9 @@ typedef L_Enum<Lua_DifficultyType_Name> Lua_DifficultyType;
 
 char Lua_GameType_Name[] = "game_type";
 typedef L_Enum<Lua_GameType_Name> Lua_GameType;
+
+char Lua_GameTypes_Name[] = "GameTypes";
+typedef L_EnumContainer<Lua_GameTypes_Name, Lua_GameType> Lua_GameTypes;
 
 char Lua_Game_Name[] = "Game";
 typedef L_Class<Lua_Game_Name> Lua_Game;
@@ -1873,13 +1846,13 @@ int Lua_Player_register (lua_State *L)
 
 	Lua_InternalVelocity::Register(L, Lua_InternalVelocity_Get);
 	Lua_ExternalVelocity::Register(L, Lua_ExternalVelocity_Get, Lua_ExternalVelocity_Set);
-	Lua_FadeType::Register(L);
+	Lua_FadeType::Register(L, 0, 0, 0, Lua_FadeType_Mnemonics);
 	Lua_FadeType::Valid = Lua_FadeType::ValidRange<NUMBER_OF_FADE_TYPES>;
 	
 	Lua_FadeTypes::Register(L);
 	Lua_FadeTypes::Length = Lua_FadeTypes::ConstantLength<NUMBER_OF_FADE_TYPES>;
 
-	Lua_WeaponType::Register(L);
+	Lua_WeaponType::Register(L, 0, 0, 0, Lua_WeaponType_Mnemonics);
 	Lua_WeaponType::Valid = Lua_WeaponType::ValidRange<MAXIMUM_NUMBER_OF_WEAPONS>;
 
 	Lua_WeaponTypes::Register(L);
@@ -1894,7 +1867,7 @@ int Lua_Player_register (lua_State *L)
 	Lua_Player_Weapon_Trigger::Register(L, Lua_Player_Weapon_Trigger_Get);
 	Lua_Player_Weapon_Trigger::Valid = Lua_Player_Weapon_Trigger::ValidRange<(int) _secondary_weapon + 1>;
 
-	Lua_OverlayColor::Register(L);
+	Lua_OverlayColor::Register(L, 0, 0, 0, Lua_OverlayColor_Mnemonics);
 	Lua_OverlayColor::Valid = Lua_OverlayColor::ValidRange<8>;
 
 	Lua_Overlays::Register(L, 0, 0, Lua_Overlays_Metatable);
@@ -1902,6 +1875,12 @@ int Lua_Player_register (lua_State *L)
 
 	Lua_Overlay::Register(L, Lua_Overlay_Get, Lua_Overlay_Set);
 	Lua_Overlay::Valid = Lua_Overlay::ValidRange<MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS>;
+
+	Lua_PlayerColor::Register(L, 0, 0, 0, Lua_PlayerColor_Mnemonics);
+	Lua_PlayerColor::Valid = Lua_PlayerColor::ValidRange<NUMBER_OF_TEAM_COLORS>;
+
+	Lua_PlayerColors::Register(L);
+	Lua_PlayerColors::Length = Lua_PlayerColors::ConstantLength<NUMBER_OF_TEAM_COLORS>;
 
 	Lua_Player::Register(L, Lua_Player_Get, Lua_Player_Set);
 	Lua_Player::Valid = Lua_Player_Valid;
@@ -1911,10 +1890,13 @@ int Lua_Player_register (lua_State *L)
 
 	Lua_Game::Register(L, Lua_Game_Get);
 
-	Lua_GameType::Register(L);
+	Lua_GameType::Register(L, 0, 0, 0, Lua_GameType_Mnemonics);
 	Lua_GameType::Valid = Lua_GameType::ValidRange<NUMBER_OF_GAME_TYPES>;
 
-	Lua_DifficultyType::Register(L);
+	Lua_GameTypes::Register(L);
+	Lua_GameTypes::Length = Lua_GameTypes::ConstantLength<NUMBER_OF_GAME_TYPES>;
+
+	Lua_DifficultyType::Register(L, 0, 0, 0, Lua_DifficultyType_Mnemonics);
 	Lua_DifficultyType::Valid = Lua_DifficultyType::ValidRange<NUMBER_OF_GAME_DIFFICULTY_LEVELS>;
 
 	Lua_Music::Register(L, Lua_Music_Get);
@@ -1959,14 +1941,14 @@ static const char *compatibility_script = ""
 	"function get_motion_sensor_state(player) return Players[player].motion_sensor_active end\n"
 	"function get_oxygen(player) return Players[player].oxygen end\n"
 	"function get_player_angle(player) return Players[player].yaw, Players[player].pitch end\n"
-	"function get_player_color(player) return Players[player].color end\n"
+	"function get_player_color(player) return Players[player].color.index end\n"
 	"function get_player_external_velocity(player) return Players[player].external_velocity.i * 1024, Players[player].external_velocity.j * 1024, Players[player].external_velocity.k * 1024 end\n"
 	"function get_player_internal_velocity(player) return Players[player].internal_velocity.forward * 65536, Players[player].internal_velocity.perpendicular * 65536 end\n"
 	"function get_player_name(player) return Players[player].name end\n"
 	"function get_player_polygon(player) return Players[player].polygon.index end\n"
 	"function get_player_position(player) return Players[player].x, Players[player].y, Players[player].z end\n"
 	"function get_player_powerup_duration(player, powerup) if powerup == _powerup_invisibility then return Players[player].invisibility_duration elseif powerup == _powerup_invincibility then return Players[player].invincibility_duration elseif powerup == _powerup_infravision then return Players[player].infravision_duratiohn elseif powerup == _powerup_extravision then return Players[player].extravision_duration end end\n"
-	"function get_player_team(player) return Players[player].team end\n"
+	"function get_player_team(player) return Players[player].team.index end\n"
 	"function get_player_weapon(player) if Players[player].weapons.current then return Players[player].weapons.current.index else return nil end end\n"
 	"function get_points(player) return Players[player].points end\n"
 	"function global_random() return Game.global_random() end\n"

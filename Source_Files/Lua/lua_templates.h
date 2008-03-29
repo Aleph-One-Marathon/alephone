@@ -34,12 +34,7 @@ extern "C"
 }
 
 #include <boost/function.hpp>
-
-struct lang_def
-{
-	char *name;
-	int32 value;
-};
+#include "lua_mnemonics.h" // for lang_def and mnemonics
 
 // pushes a function that returns the parameterized function
 template<lua_CFunction f>
@@ -404,7 +399,7 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const l
 
 	if (mnemonics)
 	{
-		lua_pushlightuserdata(L, (void *) (name[4]));
+		lua_pushlightuserdata(L, (void *) (&name[4]));
 		lua_newtable(L);
 		
 		const lang_def *mnemonic = mnemonics;
@@ -428,7 +423,7 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const l
 template<char *name, typename index_t>
 void L_Enum<name, index_t>::PushMnemonicTable(lua_State *L)
 {
-	lua_pushlightuserdata(L, (void *) (name[4]));
+	lua_pushlightuserdata(L, (void *) (&name[4]));
 	lua_gettable(L, LUA_REGISTRYINDEX);
 }
 
@@ -488,14 +483,14 @@ index_t L_Enum<name, index_t>::ToIndex(lua_State *L, int index)
 	}
 	else
 	{
-		string error;
+		std::string error;
 		if (lua_isnumber(L, index) || lua_isstring(L, index))
 		{
-			error = string(name) + ": invalid index";
+			error = std::string(name) + ": invalid index";
 		}
 		else
 		{
-			error = string(name) + ": incorrect argument type";
+			error = std::string(name) + ": incorrect argument type";
 		}
 		return luaL_error(L, error.c_str());
 	}
@@ -682,8 +677,9 @@ int L_EnumContainer<name, T>::_get(lua_State *L)
 			lua_gettable(L, -2);
 			if (lua_isnumber(L, -1))
 			{
+				int32 index = static_cast<int32>(lua_tonumber(L, -1));
 				lua_pop(L, 2);
-				T::Push(L, static_cast<int>(lua_tonumber(L, -1)));
+				T::Push(L, index);
 				return 1;
 			}
 			else
