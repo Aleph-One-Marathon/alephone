@@ -259,6 +259,12 @@ static int Lua_MonsterType_Get_Enemies(lua_State *L) {
 	return 1;
 }
 
+static int Lua_MonsterType_Get_Height(lua_State *L) {
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	lua_pushnumber(L, (double) definition->height / WORLD_ONE);
+	return 1;
+}
+
 static int Lua_MonsterType_Get_Friends(lua_State *L) {
 	Lua_MonsterType_Friends::Push(L, Lua_MonsterType::Index(L, 1));
 	return 1;
@@ -309,6 +315,7 @@ const luaL_reg Lua_MonsterType_Get[] = {
 	{"class", Lua_MonsterType_Get_Class},
 	{"enemies", Lua_MonsterType_Get_Enemies},
 	{"friends", Lua_MonsterType_Get_Friends},
+	{"height", Lua_MonsterType_Get_Height},
 	{"immunities", Lua_MonsterType_Get_Immunities},
 	{"item", Lua_MonsterType_Get_Item},
 	{"weaknesses", Lua_MonsterType_Get_Weaknesses},

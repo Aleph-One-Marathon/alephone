@@ -1452,6 +1452,10 @@
 	<argument name="damage_type"><type>damage_type</type></argument>
 	<type>boolean</type>
       </function-variable>
+      <variable name="height" access="read-only">
+	<description>monster's height</description>
+	<type>WU</type>
+      </variable>
       <variable name="item">
 	<description>item the monster drops when it dies</description>
 	<type>item_type</type>
