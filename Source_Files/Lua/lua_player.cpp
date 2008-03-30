@@ -36,6 +36,7 @@ LUA_PLAYER.CPP
 #include "Music.h"
 #include "network.h"
 #include "player.h"
+#include "projectiles.h"
 #include "network_games.h"
 #include "Random.h"
 #include "screen.h"
@@ -1044,6 +1045,67 @@ int Lua_Player_Find_Action_Key_Target(lua_State *L)
 	return 1;
 }
 
+int Lua_Player_Find_Target(lua_State *L)
+{
+	// find the origin of projectiles (don't move left/right)
+	player_data *player = get_player_data(Lua_Player::Index(L, 1));
+	world_point3d origin = player->camera_location;
+	world_point3d destination = origin;
+
+	translate_point3d(&destination, WORLD_ONE, player->facing, player->elevation);
+	short old_polygon = get_object_data(player->object_index)->polygon;
+	short new_polygon;
+	short obstruction_index;
+	short line_index;
+
+	// preflight a projectile, 1 WU at a time (because of projectile speed bug)
+	uint16 flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true);
+
+	while (!(flags & _projectile_hit))
+	{
+		origin = destination;
+		old_polygon = new_polygon;
+
+		translate_point3d(&destination, WORLD_ONE, player->facing, player->elevation);
+		flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true);
+	}
+
+	if (flags & _projectile_hit_monster)
+	{
+		object_data *object = get_object_data(obstruction_index);
+		Lua_Monster::Push(L, object->permutation);
+	}
+	else if (flags & _projectile_hit_floor)
+	{
+		Lua_Polygon_Floor::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit_media)
+	{
+		Lua_Polygon::Push(L, new_polygon);
+	}
+	else if (flags & _projectile_hit_scenery)
+	{
+		Lua_Scenery::Push(L, obstruction_index);
+	}
+	else if (obstruction_index != NONE)
+	{
+		Lua_Polygon_Ceiling::Push(L, new_polygon);
+	}
+	else
+	{
+		short side_index = find_adjacent_side(new_polygon, line_index);
+		Lua_Side::Push(L, side_index);
+	}
+
+	lua_pushnumber(L, (double) destination.x / WORLD_ONE);
+	lua_pushnumber(L, (double) destination.y / WORLD_ONE);
+	lua_pushnumber(L, (double) destination.z / WORLD_ONE);
+	Lua_Polygon::Push(L, new_polygon);
+
+	return 5;
+}
+	
+
 int Lua_Player_Damage(lua_State *L)
 {
 	int args = lua_gettop(L);
@@ -1430,6 +1492,7 @@ const luaL_reg Lua_Player_Get[] = {
 	{"feet_below_media", Lua_Player_Get_Flag<_FEET_BELOW_MEDIA_BIT>},
 	{"fade_screen", L_TableFunction<Lua_Player_Fade_Screen>},
 	{"find_action_key_target", L_TableFunction<Lua_Player_Find_Action_Key_Target>},
+	{"find_target", L_TableFunction<Lua_Player_Find_Target>},
 	{"head_below_media", Lua_Player_Get_Flag<_HEAD_BELOW_MEDIA_BIT>},
 	{"infravision_duration", Lua_Player_Get_Infravision_Duration},
 	{"internal_velocity", Lua_Player_Get_Internal_Velocity},
