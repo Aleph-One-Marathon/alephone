@@ -350,6 +350,10 @@
 	<description>direction item is facing</description>
 	<type>degrees</type>
       </variable>
+      <function name="play_sound">
+	<description>play sound coming from this item</description>
+	<argument name="sound"><type>sound</type></argument>
+      </function>
       <variable name="polygon" access="read-only">
 	<description>polygon the item is in</description>
 	<type>polygon</type>
@@ -499,6 +503,10 @@
 	<description>if monster is a player monster, the player; otherwise, nil</description>
 	<type>player</type>
       </variable>
+      <function name="play_sound">
+	<description>plays sound coming from this monster</description>
+	<argument name="sound"><type>sound</type></argument>
+      </function>
       <function name="position">
 	<description>sets position of monster</description>
 	<argument name="x">
@@ -833,6 +841,7 @@
 	<description>plays sound that only player can hear</description>
 	<argument name="sound"><type>sound</type></argument>
 	<argument name="pitch"><type>scale</type></argument>
+	<note>if you want all players to hear the sound as if it is coming from this player, use .monster:play_sound() instead</note>
       </function>
       <variable name="points">
 	<description>how many points player has</description>
@@ -931,6 +940,19 @@
 	<description>raw permutation index of this polygon</description>
 	<type>number</type>
       </variable>
+      <function name="play_sound">
+	<description>plays sound in center of polygon on floor</description>
+	<argument name="sound"><type>sound</type></argument>
+      </function>
+      <function name="play_sound">
+	<description>plays sound at location</description>
+	<argument name="x"><type>WU</type></argument>
+	<argument name="y"><type>WU</type></argument>
+	<argument name="z"><type>WU</type></argument>
+	<argument name="sound"><type>sound</type></argument>
+	<argument name="pitch" required="false"><type>number</type></argument>
+	<note>if you want to play a sound at an object location, use that object's play_sound function instead</note>
+      </function>
       <variable name="type">
 	<description>polygon type</description>
 	<type>polygon_type</type>
@@ -967,6 +989,10 @@
 	<description>direction</description>
 	<type>angle</type>
       </variable>
+      <function name="play_sound">
+	<description>plays sound coming from this projectile</description>
+	<argument name="sound"><type>sound</type></argument>
+      </function>
       <function name="position">
 	<description>sets projectile position</description>
 	<argument name="x"><type>WU</type></argument>
@@ -1011,6 +1037,10 @@
 	<description>direction scenery is facing</description>
 	<type>angle</type>
       </variable>
+      <function name="play_sound">
+	<description>play sound coming from this scenery</description>
+	<argument name="sound"><type>sound</type></argument>
+      </function>
       <variable name="polygon" access="read-only">
 	<description>polygon the scenery is in</description>
 	<type>polygon</type>
@@ -1045,6 +1075,11 @@
 	</variable>
 	<note>nil if the side is not a control panel</note>
       </subtable>
+      <function name="play_sound">
+	<description>play sound coming from this side</description>
+	<argument name="sound"><type>sound</type></argument>
+	<argument name="pitch" required="false"><type>number</type></argument>
+      </function>
       <variable name="line" access="read-only">
 	<description>line this side is attached to</description>
 	<type>line</type>

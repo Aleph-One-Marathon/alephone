@@ -22,12 +22,14 @@ LUA_MAP.CPP
 
 #include "lua_map.h"
 #include "lua_monsters.h"
+#include "lua_objects.h"
 #include "lua_templates.h"
 #include "lightsource.h"
 #include "map.h"
 #include "media.h"
 #include "platforms.h"
 #include "OGL_Setup.h"
+#include "SoundManager.h"
 
 #include <boost/bind.hpp>
 
@@ -518,6 +520,38 @@ int Lua_Polygon_Monsters(lua_State *L)
 	return 1;
 }
 
+// play_sound(sound) or play_sound(x, y, z, sound, [pitch])
+int Lua_Polygon_Play_Sound(lua_State *L)
+{
+	if (lua_gettop(L) == 2)
+	{
+		short sound_code = Lua_Sound::ToIndex(L, 2);
+		play_polygon_sound(Lua_Polygon::Index(L, 1), sound_code);
+	}
+	else 
+	{
+		if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+			return luaL_error(L, "play_sound: incorrect argument type");
+		world_location3d source;
+		source.point.x = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+		source.point.y = static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE);
+		source.point.z = static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE);
+		source.polygon_index = Lua_Polygon::Index(L, 1);
+		short sound_code = Lua_Sound::ToIndex(L, 5);
+		_fixed pitch = FIXED_ONE;
+		if (lua_gettop(L) == 6) 
+		{
+			if (!lua_isnumber(L, 6))
+				return luaL_error(L, "play_sound: incorrect argument type");
+			pitch = static_cast<_fixed>(lua_tonumber(L, 6) * FIXED_ONE);
+		}
+
+		SoundManager::instance()->PlaySound(sound_code, &source, NONE, pitch);
+	}
+
+	return 0;
+}
+
 static int Lua_Polygon_Get_Adjacent(lua_State *L)
 {
 	Lua_Adjacent_Polygons::Push(L, Lua_Polygon::Index(L, 1));
@@ -658,6 +692,7 @@ const luaL_reg Lua_Polygon_Get[] = {
 	{"monsters", L_TableFunction<Lua_Polygon_Monsters>},
 	{"permutation", Lua_Polygon_Get_Permutation},
 	{"platform", Lua_Polygon_Get_Platform},
+	{"play_sound", L_TableFunction<Lua_Polygon_Play_Sound>},
 	{"type", Lua_Polygon_Get_Type},
 	{"x", Lua_Polygon_Get_X},
 	{"y", Lua_Polygon_Get_Y},
@@ -716,6 +751,20 @@ const luaL_reg Lua_Side_ControlPanel_Set[] = {
 
 char Lua_Side_Name[] = "side";
 
+int Lua_Side_Play_Sound(lua_State *L)
+{
+	short sound_code = Lua_Sound::ToIndex(L, 2);
+	_fixed pitch = FIXED_ONE;
+	if (lua_gettop(L) == 3)
+	{
+		if (!lua_isnumber(L, 3))
+			return luaL_error(L, "play_sound: incorrect argument type");
+		pitch = static_cast<_fixed>(lua_tonumber(L, 3) * FIXED_ONE);
+	}
+
+	_play_side_sound(Lua_Side::Index(L, 1), sound_code, pitch);
+}
+
 static int Lua_Side_Get_Control_Panel(lua_State *L)
 {
 	int16 side_index = Lua_Side::Index(L, 1);
@@ -747,6 +796,7 @@ static int Lua_Side_Get_Polygon(lua_State *L)
 const luaL_reg Lua_Side_Get[] = {
 	{"control_panel", Lua_Side_Get_Control_Panel},
 	{"line", Lua_Side_Get_Line},
+	{"play_sound", L_TableFunction<Lua_Side_Play_Sound>},
 	{"polygon", Lua_Side_Get_Polygon},
 	{0, 0}
 };

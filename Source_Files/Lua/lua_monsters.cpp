@@ -359,6 +359,13 @@ int Lua_Monster_Attack(lua_State *L)
 	return 0;
 }
 
+int Lua_Monster_Play_Sound(lua_State *L)
+{
+	short sound_index = Lua_Sound::ToIndex(L, 2);
+	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
+	play_object_sound(monster->object_index, sound_index);
+}
+
 int Lua_Monster_Damage(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -662,6 +669,7 @@ const luaL_reg Lua_Monster_Get[] = {
 	{"mode", Lua_Monster_Get_Mode},
 	{"move_by_path", L_TableFunction<Lua_Monster_Move_By_Path>},
 	{"player", Lua_Monster_Get_Player},
+	{"play_sound", L_TableFunction<Lua_Monster_Play_Sound>},
 	{"polygon", Lua_Monster_Get_Polygon},
 	{"position", L_TableFunction<Lua_Monster_Position>},
 	{"type", Lua_Monster_Get_Type},

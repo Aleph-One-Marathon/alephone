@@ -56,6 +56,13 @@ int lua_delete_object<Lua_Scenery>(lua_State *L)
 }
 
 template<class T>
+int lua_play_object_sound(lua_State *L)
+{
+	short sound_code = Lua_Sound::ToIndex(L, 2);
+	play_object_sound(T::Index(L, 1), sound_code);
+}
+
+template<class T>
 static int get_object_facing(lua_State *L)
 {
 	object_data *object = get_object_data(T::Index(L, 1));
@@ -119,6 +126,7 @@ char Lua_Item_Name[] = "item";
 const luaL_reg Lua_Item_Get[] = {
 	{"delete", L_TableFunction<lua_delete_object<Lua_Item> >},
 	{"facing", get_object_facing<Lua_Item>},
+	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Item> >},
 	{"polygon", get_object_polygon<Lua_Item>},
 	{"type", get_object_type<Lua_Item, Lua_ItemType>},
 	{"x", get_object_x<Lua_Item>},
@@ -248,6 +256,7 @@ const luaL_reg Lua_Scenery_Get[] = {
 	{"damaged", Lua_Scenery_Get_Damaged},
 	{"delete", L_TableFunction<lua_delete_object<Lua_Scenery> >},
 	{"facing", get_object_facing<Lua_Scenery>},
+	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Scenery> >},
 	{"polygon", get_object_polygon<Lua_Scenery>},
 	{"solid", Lua_Scenery_Get_Solid},
 	{"type", get_object_type<Lua_Scenery, Lua_SceneryType>},

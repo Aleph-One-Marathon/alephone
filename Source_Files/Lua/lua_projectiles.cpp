@@ -22,6 +22,7 @@ LUA_MONSTERS.CPP
 
 #include "lua_map.h"
 #include "lua_monsters.h"
+#include "lua_objects.h"
 #include "lua_player.h"
 #include "lua_projectiles.h"
 #include "lua_templates.h"
@@ -232,6 +233,13 @@ static int Lua_Projectile_Set_Target(lua_State *L)
 	return 0;
 }
 
+int Lua_Projectile_Play_Sound(lua_State *L)
+{
+	short sound_code = Lua_Sound::ToIndex(L, 2);
+	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
+	play_object_sound(projectile->object_index, sound_code);
+}
+
 int Lua_Projectile_Position(lua_State *L)
 {
 	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
@@ -271,6 +279,7 @@ const luaL_reg Lua_Projectile_Get[] = {
 	{"dz", Lua_Projectile_Get_Gravity},
 	{"elevation", Lua_Projectile_Get_Elevation},
 	{"facing", Lua_Projectile_Get_Facing},
+	{"play_sound", L_TableFunction<Lua_Projectile_Play_Sound>},
 	{"position", L_TableFunction<Lua_Projectile_Position>},
 	{"owner", Lua_Projectile_Get_Owner},
 	{"pitch", Lua_Projectile_Get_Elevation},

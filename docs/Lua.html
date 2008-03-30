@@ -580,6 +580,11 @@
 <dd>
 <p class="description">direction item is facing</p>
 </dd>
+      <dt>:play_sound(sound)
+  </dt>
+<dd>
+<p class="description">play sound coming from this item</p>
+</dd>
       <dt>
     .polygon<span class="access"> (read-only)</span>
 </dt>
@@ -857,6 +862,11 @@
 </dt>
 <dd>
 <p class="description">if monster is a player monster, the player; otherwise, nil</p>
+</dd>
+      <dt>:play_sound(sound)
+  </dt>
+<dd>
+<p class="description">plays sound coming from this monster</p>
 </dd>
       <dt>:position(x, y, z, polygon)
   </dt>
@@ -1339,6 +1349,7 @@
   </dt>
 <dd>
 <p class="description">plays sound that only player can hear</p>
+<p class="note">if you want all players to hear the sound as if it is coming from this player, use .monster:play_sound() instead</p>
 </dd>
       <dt>
     .points</dt>
@@ -1497,6 +1508,17 @@
 <dd>
 <p class="description">raw permutation index of this polygon</p>
 </dd>
+      <dt>:play_sound(sound)
+  </dt>
+<dd>
+<p class="description">plays sound in center of polygon on floor</p>
+</dd>
+      <dt>:play_sound(x, y, z, sound [, pitch])
+  </dt>
+<dd>
+<p class="description">plays sound at location</p>
+<p class="note">if you want to play a sound at an object location, use that object's play_sound function instead</p>
+</dd>
       <dt>
     .type</dt>
 <dd>
@@ -1564,6 +1586,11 @@
       .yaw</dt>
 <dd>
 <p class="description">direction</p>
+</dd>
+      <dt>:play_sound(sound)
+  </dt>
+<dd>
+<p class="description">plays sound coming from this projectile</p>
 </dd>
       <dt>:position(x, y, z, polygon)
   </dt>
@@ -1648,6 +1675,11 @@
 <dd>
 <p class="description">direction scenery is facing</p>
 </dd>
+      <dt>:play_sound(sound)
+  </dt>
+<dd>
+<p class="description">play sound coming from this scenery</p>
+</dd>
       <dt>
     .polygon<span class="access"> (read-only)</span>
 </dt>
@@ -1713,6 +1745,11 @@
 <p class="description">type of control panel</p>
 </dd>
 </dl>
+</dd>
+      <dt>:play_sound(sound [, pitch])
+  </dt>
+<dd>
+<p class="description">play sound coming from this side</p>
 </dd>
       <dt>
     .line<span class="access"> (read-only)</span>
