@@ -1888,6 +1888,7 @@
 	<mnemonic name="pistol"/>
 	<mnemonic name="fusion pistol"/>
 	<mnemonic name="assault rifle"/>
+	<mnemonic name="missile launcher"/>
 	<mnemonic name="flamethrower"/>
 	<mnemonic name="alien weapon"/>
 	<mnemonic name="shotgun"/>
