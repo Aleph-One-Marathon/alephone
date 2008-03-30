@@ -1443,6 +1443,18 @@
 <dt>Polygons[index]</dt>
 <dd>
 <dl>
+      <dt>
+    .adjacent_polygons[n]
+  </dt>
+<dd>
+<p class="description">returns adjacent polygon n (across from line n), if one exists, or nil</p>
+<dl></dl>
+</dd>
+      <dt>:adjacent_polygons()
+  </dt>
+<dd>
+<p class="description">iterates through all polygons directly adjacent to this polygon</p>
+</dd>
       <dt>.ceiling</dt>
 <dd>
 <dl>
@@ -1453,6 +1465,11 @@
 <p class="description">ceiling height</p>
 </dd>
 </dl>
+</dd>
+      <dt>:contains(x, y [, z])
+  </dt>
+<dd>
+<p class="description">whether the point is in this polygon</p>
 </dd>
       <dt>.floor</dt>
 <dd>

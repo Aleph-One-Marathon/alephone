@@ -894,6 +894,12 @@
       </variable>
     </table>
     <table name="polygon">
+      <subtable-accessor name="adjacent_polygons" classname="adjacent_polygons" index="n">
+	<description>returns adjacent polygon n (across from line n), if one exists, or nil</description>
+      </subtable-accessor>
+      <function name="adjacent_polygons">
+	<description>iterates through all polygons directly adjacent to this polygon</description>
+      </function>
       <subtable name="ceiling" classname="polygon_ceiling">
 	<variable name="height">
 	  <alias>z</alias>
@@ -901,6 +907,12 @@
 	  <type>WU</type>
 	</variable>
       </subtable>
+      <function name="contains">
+	<description>whether the point is in this polygon</description>
+	<argument name="x"><type>WU</type></argument>
+	<argument name="y"><type>WU</type></argument>
+	<argument name="z" required="false"><type>WU</type></argument>
+      </function>
       <subtable name="floor" classname="polygon_floor">
 	<variable name="height">
 	  <alias>z</alias>

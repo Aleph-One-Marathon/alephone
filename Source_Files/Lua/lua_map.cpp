@@ -382,6 +382,102 @@ typedef L_EnumContainer<Lua_PolygonTypes_Name, Lua_PolygonType> Lua_PolygonTypes
 
 char Lua_Polygon_Name[] = "polygon";
 
+char Lua_Adjacent_Polygons_Name[] = "adjacent_polygons";
+typedef L_Class<Lua_Adjacent_Polygons_Name> Lua_Adjacent_Polygons;
+
+static int Lua_Adjacent_Polygons_Iterator(lua_State *L)
+{
+	int index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
+	short polygon_index = Lua_Adjacent_Polygons::Index(L, lua_upvalueindex(2));
+	polygon_data *polygon = get_polygon_data(polygon_index);
+
+	while (index < polygon->vertex_count)
+	{
+		if (polygon->adjacent_polygon_indexes[index] != NONE)
+		{
+			Lua_Polygon::Push(L, polygon->adjacent_polygon_indexes[index]);
+			lua_pushnumber(L, ++index);
+			lua_replace(L, lua_upvalueindex(1));
+			return 1;
+		}
+		else
+		{
+			index++;
+		}
+	}
+
+	lua_pushnil(L);
+	return 1;
+}
+
+static int Lua_Adjacent_Polygons_Call(lua_State *L)
+{
+	lua_pushnumber(L, 0);
+	lua_pushvalue(L, 1);
+	lua_pushcclosure(L, Lua_Adjacent_Polygons_Iterator, 2);
+	return 1;
+}
+
+static int Lua_Adjacent_Polygons_Get(lua_State *L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		short polygon_index = Lua_Polygon::Index(L, 1);
+		polygon_data *polygon = get_polygon_data(polygon_index);
+		int adjacent_polygon_index = static_cast<int>(lua_tonumber(L, 2));
+		if (adjacent_polygon_index >= 0 && adjacent_polygon_index < polygon->vertex_count)
+		{
+			Lua_Polygon::Push(L, polygon->adjacent_polygon_indexes[adjacent_polygon_index]);
+		}
+		else
+		{
+			lua_pushnil(L);
+		}
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+const luaL_reg Lua_Adjacent_Polygons_Metatable[] = {
+	{"__index", Lua_Adjacent_Polygons_Get},
+	{"__call", Lua_Adjacent_Polygons_Call},
+	{0, 0}
+};
+
+// contains(x, y, z)
+int Lua_Polygon_Contains(lua_State *L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3))
+		return luaL_error(L, ("contains: incorrect argument type"));
+
+	short polygon_index = Lua_Polygon::Index(L, 1);
+	polygon_data *polygon = get_polygon_data(polygon_index);
+
+	world_point2d p;
+	p.x = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	p.y = static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE);
+
+	world_distance z;
+	if (lua_gettop(L) == 4)
+	{
+		if (lua_isnumber(L, 4))
+			z = static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE);
+		else
+			return luaL_error(L, "contains: incorrect argument type");
+	}
+	else
+	{
+		z = polygon->floor_height;
+	}
+
+	lua_pushboolean(L, point_in_polygon(polygon_index, &p) && z >= polygon->floor_height && z <= polygon->ceiling_height);
+	return 1;
+}
+
 static int Lua_Polygon_Monsters_Iterator(lua_State *L)
 {
 	int index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
@@ -419,6 +515,12 @@ int Lua_Polygon_Monsters(lua_State *L)
 	}
 	
 	lua_pushcclosure(L, Lua_Polygon_Monsters_Iterator, 2);
+	return 1;
+}
+
+static int Lua_Polygon_Get_Adjacent(lua_State *L)
+{
+	Lua_Adjacent_Polygons::Push(L, Lua_Polygon::Index(L, 1));
 	return 1;
 }
 
@@ -548,7 +650,9 @@ static bool Lua_Polygon_Valid(int16 index)
 }
 
 const luaL_reg Lua_Polygon_Get[] = {
+	{"adjacent_polygons", Lua_Polygon_Get_Adjacent},
 	{"ceiling", Lua_Polygon_Get_Ceiling},
+	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"floor", Lua_Polygon_Get_Floor},
 	{"media", Lua_Polygon_Get_Media},
 	{"monsters", L_TableFunction<Lua_Polygon_Monsters>},
@@ -1168,6 +1272,8 @@ int Lua_Map_register(lua_State *L)
 	
 	Lua_PolygonTypes::Register(L);
 	Lua_PolygonTypes::Length = Lua_PolygonTypes::ConstantLength<static_cast<int16>(_polygon_is_superglue) + 1>;
+
+	Lua_Adjacent_Polygons::Register(L, 0, 0, Lua_Adjacent_Polygons_Metatable);
 
 	Lua_Polygon::Register(L, Lua_Polygon_Get, Lua_Polygon_Set);
 	Lua_Polygon::Valid = Lua_Polygon_Valid;
