@@ -133,6 +133,18 @@ const int SIZEOF_projectile_data = 32;
 
 const int SIZEOF_projectile_definition = 48;
 
+
+enum /* translate_projectile() flags */
+{
+	_flyby_of_current_player= 0x0001,
+	_projectile_hit= 0x0002,
+	_projectile_hit_monster= 0x0004, // monster_index in *obstruction_index
+	_projectile_hit_floor= 0x0008, // polygon_index in *obstruction_index
+	_projectile_hit_media= 0x0010, // polygon_index in *obstruction_index
+	_projectile_hit_landscape= 0x0020,
+	_projectile_hit_scenery= 0x0040
+};
+
 /* ---------- globals */
 
 // Turned the list of active projectiles into a variable array
@@ -151,6 +163,11 @@ short new_projectile(world_point3d *origin, short polygon_index, world_point3d *
 	_fixed damage_scale);
 void detonate_projectile(world_point3d *origin, short polygon_index, short type,
 	short owner_index, short owner_type, _fixed damage_scale);
+
+// LP change: added a location of hitting something;
+// it may be different from the new location,
+// as may happen for a "penetrates media boundary" projectile.
+uint16 translate_projectile(short type, world_point3d *old_location, short old_polygon_index, world_point3d *new_location, short *new_polygon_index, short owner_index, short *obstruction_index, short *last_line_index, bool preflight);
 
 void move_projectiles(void); /* assumes ¶t==1 tick */
 

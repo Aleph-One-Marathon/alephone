@@ -118,17 +118,6 @@ enum
 	MINIMUM_REBOUND_VELOCITY= GRAVITATIONAL_ACCELERATION*TICKS_PER_SECOND/3
 };
 
-enum /* translate_projectile() flags */
-{
-	_flyby_of_current_player= 0x0001,
-	_projectile_hit= 0x0002,
-	_projectile_hit_monster= 0x0004, // monster_index in *obstruction_index
-	_projectile_hit_floor= 0x0008, // polygon_index in *obstruction_index
-	_projectile_hit_media= 0x0010, // polygon_index in *obstruction_index
-	_projectile_hit_landscape= 0x0020,
-	_projectile_hit_scenery= 0x0040
-};
-
 enum /* things the projectile can hit in detonate_projectile() */
 {
 	_hit_nothing,
@@ -164,13 +153,6 @@ static short adjust_projectile_type(world_point3d *origin, short polygon_index, 
 	short owner_index, short owner_type, short intended_target_index, _fixed damage_scale);
 
 static void update_guided_projectile(short projectile_index);
-
-// LP change: added a location of hitting something;
-// it may be different from the new location,
-// as may happen for a "penetrates media boundary" projectile.
-static uint16 translate_projectile(short type, world_point3d *old_location, short old_polygon_index,
-	world_point3d *new_location, short *new_polygon_index, short owner_index,
-	short *obstruction_index);
 
 /*static*/ projectile_definition *get_projectile_definition(
 	short type);
@@ -235,7 +217,7 @@ bool preflight_projectile(
 				(origin_polygon->media_index==NONE || definition->flags&(_penetrates_media) || (media ? origin->z>media->height : true)))
 			{
 				/* make sure it hits something */
-				uint16 flags= translate_projectile(type, origin, origin_polygon_index, destination, (short *) NULL, owner, obstruction_index);
+				uint16 flags= translate_projectile(type, origin, origin_polygon_index, destination, (short *) NULL, owner, obstruction_index, 0, true);
 				
 				*obstruction_index= (flags&_projectile_hit_monster) ? get_object_data(*obstruction_index)->permutation : NONE;
 				legal_projectile= true;
@@ -396,7 +378,7 @@ void move_projectiles(
 					translate_point3d(&new_location, speed, object->facing, projectile->elevation);
 					if (definition->flags&_vertical_wander) new_location.z+= (global_random()&1) ? WANDER_MAGNITUDE : -WANDER_MAGNITUDE;
 					if (definition->flags&_horizontal_wander) translate_point3d(&new_location, (global_random()&1) ? WANDER_MAGNITUDE : -WANDER_MAGNITUDE, NORMALIZE_ANGLE(object->facing+QUARTER_CIRCLE), 0);
-					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index);
+					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index, 0, false);
 					
 					// LP change: set up for penetrating media boundary
 					bool will_go_through = false;
@@ -759,7 +741,7 @@ static void update_guided_projectile(
 				case _major_damage_level:
 				case _total_carnage_level:
 					flags= translate_projectile(projectile->type, &projectile_object->location, projectile_object->polygon,
-						&target_location, (short *) NULL, projectile->owner_index, &obstruction_index);
+								    &target_location, (short *) NULL, projectile->owner_index, &obstruction_index, 0, true);
 					if (!(flags&_projectile_hit_monster)) break; /* if weÕre headed for a wall, donÕt steer */
 				default:
 					projectile_object->facing= NORMALIZE_ANGLE(projectile_object->facing+PIN(delta_yaw, -maximum_delta_yaw, maximum_delta_yaw));
@@ -770,7 +752,6 @@ static void update_guided_projectile(
 	}
 }
 
-/* new_polygon_index==NULL means weÕre preflighting */
 uint16 translate_projectile(
 	short type,
 	world_point3d *old_location,
@@ -778,7 +759,9 @@ uint16 translate_projectile(
 	world_point3d *new_location,
 	short *new_polygon_index,
 	short owner_index,
-	short *obstruction_index)
+	short *obstruction_index,
+	short *last_line_index,
+	bool preflight)
 {
 	struct projectile_definition *definition= get_projectile_definition(type);
 	struct polygon_data *old_polygon;
@@ -823,7 +806,7 @@ uint16 translate_projectile(
 			find_line_intersection(&get_endpoint_data(line->endpoint_indexes[0])->vertex,
 				&get_endpoint_data(line->endpoint_indexes[1])->vertex, old_location, new_location,
 				&intersection);
-				
+
 			// LP change: workaround for Pfhorte map bug: check to see if there is a polygon
 			// on the other side
 			short adjacent_polygon_index= find_adjacent_polygon(old_polygon_index, line_index);
@@ -844,7 +827,7 @@ uint16 translate_projectile(
 					{
 						if (intersection.z>adjacent_polygon->floor_height&&intersection.z<adjacent_polygon->ceiling_height)
 						{
-							if (!LINE_HAS_TRANSPARENT_SIDE(line) || (!new_polygon_index && (definition->flags&(_usually_pass_transparent_side|_sometimes_pass_transparent_side))) ||
+							if (!LINE_HAS_TRANSPARENT_SIDE(line) || (preflight && (definition->flags&(_usually_pass_transparent_side|_sometimes_pass_transparent_side))) ||
 								((definition->flags&_usually_pass_transparent_side) && (global_random()&3)) ||
 								((definition->flags&_sometimes_pass_transparent_side) && !(global_random()&3)))
 							{
@@ -863,7 +846,7 @@ uint16 translate_projectile(
 						{
 							/* hit wall created by ceiling or floor of new polygon; test to see
 								if we toggle a control panel */
-							if (new_polygon_index && (definition->flags&_can_toggle_control_panels)) try_and_toggle_control_panel(old_polygon_index, line_index);
+							if (!preflight && (definition->flags&_can_toggle_control_panels)) try_and_toggle_control_panel(old_polygon_index, line_index);
 							contact= _hit_wall;
 						}
 					}
@@ -888,7 +871,7 @@ uint16 translate_projectile(
 			else
 			{
 				/* hit wall created by solid line; test to see if we toggle a control panel */
-				if (new_polygon_index && (definition->flags&_can_toggle_control_panels)) try_and_toggle_control_panel(old_polygon_index, line_index);
+				if (!preflight && (definition->flags&_can_toggle_control_panels)) try_and_toggle_control_panel(old_polygon_index, line_index);
 				if (line_is_landscaped(old_polygon_index, line_index, intersection.z)) flags|= _projectile_hit_landscape;
 				contact= _hit_wall;
 			}
@@ -948,6 +931,7 @@ uint16 translate_projectile(
 		
 		/* change new_location to the point of intersection with the ceiling, floor, or wall */
 		*new_location= intersection;
+
 	}
 	
 	/* check our object list and find the best intersection ... if we find an intersection at all,
@@ -1060,6 +1044,8 @@ uint16 translate_projectile(
 		case _hit_nothing: break;
 		default: flags|= _projectile_hit; break;
 	}
+
+	if (last_line_index) *last_line_index = line_index;
 
 	/* returns true if we hit something, false otherwise */
 	return flags;
