@@ -37,6 +37,18 @@ extern "C"
 #include "map.h"
 #include "lua_templates.h"
 
+extern char Lua_Effect_Name[]; // "effect"
+typedef L_Class<Lua_Effect_Name> Lua_Effect;
+
+extern char Lua_Effects_Name[]; // "Effects"
+typedef L_Container<Lua_Effects_Name, Lua_Effect> Lua_Effects;
+
+extern char Lua_EffectType_Name[]; // "effect_type"
+typedef L_Enum<Lua_EffectType_Name> Lua_EffectType;
+
+extern char Lua_EffectTypes_Name[]; // "EffectTypes"
+typedef L_EnumContainer<Lua_EffectTypes_Name, Lua_EffectType> Lua_EffectTypes;
+
 extern char Lua_Item_Name[]; // "item"
 typedef L_Class<Lua_Item_Name> Lua_Item;
 

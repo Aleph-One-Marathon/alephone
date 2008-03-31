@@ -24,6 +24,7 @@ LUA_OBJECTS.CPP
 #include "lua_map.h"
 #include "lua_templates.h"
 
+#include "effects.h"
 #include "items.h"
 #include "monsters.h"
 #include "scenery.h"
@@ -120,6 +121,75 @@ static int set_object_facing(lua_State *L)
 	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
 	return 0;
 }
+
+char Lua_Effect_Name[] = "effect";
+
+const luaL_reg Lua_Effect_Get[] = {
+	{"delete", L_TableFunction<lua_delete_object<Lua_Effect> >},
+	{"facing", get_object_facing<Lua_Effect>},
+	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Effect> >},
+	{"polygon", get_object_polygon<Lua_Effect>},
+	{"type", get_object_type<Lua_Effect, Lua_EffectType>},
+	{"x", get_object_x<Lua_Effect>},
+	{"y", get_object_y<Lua_Effect>},
+	{"z", get_object_z<Lua_Effect>},
+	{0, 0}
+};
+
+bool Lua_Effect_Valid(int32 index)
+{
+	if (index < 0 || index >= MAXIMUM_OBJECTS_PER_MAP)
+		return false;
+
+	object_data *object = GetMemberWithBounds(objects, index, MAXIMUM_OBJECTS_PER_MAP);
+	return (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object) == _object_is_effect);
+}
+
+char Lua_Effects_Name[] = "Effects";
+
+// Effects.new(x, y, height, polygon, type)
+static int Lua_Effects_New(lua_State *L)
+{
+	if (!lua_isnumber(L, 1) || !lua_isnumber(L, 2) || !lua_isnumber(L, 3))
+		luaL_error(L, "new: incorrect argument type");
+	
+	int polygon_index = 0;
+	if (lua_isnumber(L, 4))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 4));
+		if (!Lua_Polygon::Valid(polygon_index))
+			return luaL_error(L, "new: invalid polygon index");
+	}
+	else if (Lua_Polygon::Is(L, 4))
+	{
+		polygon_index = Lua_Polygon::Index(L, 4);
+	}
+	else
+		return luaL_error(L, "new: incorrect argument type");
+	
+	short effect_type = Lua_EffectType::ToIndex(L, 5);
+	
+	world_point3d location;
+	location.x = static_cast<world_distance>(lua_tonumber(L, 1) * WORLD_ONE);
+	location.y = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	location.z = static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE);
+
+	short effect_index = ::new_effect(&location, polygon_index, effect_type, 0);
+	if (effect_index == NONE)
+		return 0;
+
+	Lua_Effect::Push(L, effect_index);
+	return 1;
+}
+
+const luaL_reg Lua_Effects_Methods[] = {
+	{"new", Lua_Effects_New},
+	{0, 0}
+};
+
+char Lua_EffectType_Name[] = "effect_type";
+
+char Lua_EffectTypes_Name[] = "EffectTypes";
 
 char Lua_Item_Name[] = "item";
 
@@ -378,6 +448,12 @@ static void compatibility(lua_State *L);
 
 int Lua_Objects_register(lua_State *L)
 {
+	Lua_Effect::Register(L, Lua_Effect_Get);
+	Lua_Effect::Valid = Lua_Effect_Valid;
+
+	Lua_Effects::Register(L, Lua_Effects_Methods);
+	Lua_Effects::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
+
 	Lua_Item::Register(L, Lua_Item_Get, Lua_Item_Set);
 	Lua_Item::Valid = Lua_Item_Valid;
 
@@ -389,6 +465,12 @@ int Lua_Objects_register(lua_State *L)
 
 	Lua_Sceneries::Register(L, Lua_Sceneries_Methods);
 	Lua_Sceneries::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
+
+	Lua_EffectType::Register(L, 0, 0, 0, Lua_EffectType_Mnemonics);
+	Lua_EffectType::Valid = Lua_EffectType::ValidRange<NUMBER_OF_EFFECT_TYPES>;
+
+	Lua_EffectTypes::Register(L);
+	Lua_EffectTypes::Length = Lua_EffectTypes::ConstantLength<NUMBER_OF_EFFECT_TYPES>;
 
 	Lua_ItemType::Register(L, Lua_ItemType_Get, 0, 0, Lua_ItemType_Mnemonics);
 	Lua_ItemType::Valid = Lua_ItemType_Valid;

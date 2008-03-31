@@ -125,6 +125,9 @@
 <a href="#Cameras">Cameras</a>
 </li>
 <li>
+<a href="#Effects">Effects</a>
+</li>
+<li>
 <a href="#Game">Game</a>
 </li>
 <li>
@@ -188,6 +191,9 @@
 </li>
 <li>
 <a href="#DifficultyTypes">Difficulty</a>
+</li>
+<li>
+<a href="#EffectTypes">Effects</a>
 </li>
 <li>
 <a href="#FadeTypes">Faders</a>
@@ -506,6 +512,73 @@
 <p class="description">adds a path point</p>
 </dd>
 </dl>
+</dd>
+    </dl>
+</dd>
+</dl>
+<h3>
+<a name="Effects"></a>Effects</h3>
+<dl>
+<dt># Effects</dt>
+<dd>
+<p class="description">maximum number of map objects</p>
+</dd>
+<dt>Effects()</dt>
+<dd>
+<p class="description">iterates through all valid effects</p>
+</dd>
+<dt>Effects.new(x, y, height, polygon, type)
+  </dt>
+<dd>
+<p class="description">returns a new effect</p>
+</dd>
+<dt>Effects[index]</dt>
+<dd>
+<dl>
+      <dt>:delete()
+  </dt>
+<dd>
+<p class="description">removes effect from map</p>
+</dd>
+      <dt>
+    .facing</dt>
+<dd>
+<p class="description">direction effect is facing</p>
+</dd>
+      <dt>:play_sound(sound)
+  </dt>
+<dd>
+<p class="description">play sound coming from this effect</p>
+</dd>
+      <dt>
+    .polygon<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description">polygon the effect is in</p>
+</dd>
+      <dt>
+    .type<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description">type of effect</p>
+</dd>
+      <dt>
+    .x<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description"></p>
+</dd>
+      <dt>
+    .y<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description"></p>
+</dd>
+      <dt>
+    .z<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description"></p>
 </dd>
     </dl>
 </dd>
@@ -1916,6 +1989,95 @@ end</pre>
 <li>"normal"</li>
 <li>"major damage"</li>
 <li>"total carnage"</li>
+</ul>
+<h3>
+<a name="EffectTypes"></a>Effects</h3>
+<dl>
+<dt># EffectTypes</dt>
+<dt>EffectTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"rocket explosion"</li>
+<li>"rocket contrail"</li>
+<li>"grenade explosion"</li>
+<li>"grenade contrail"</li>
+<li>"bullet ricochet"</li>
+<li>"alien weapon ricochet"</li>
+<li>"flamethrower burst"</li>
+<li>"fighter blood splash"</li>
+<li>"player blood splash"</li>
+<li>"civilian blood splash"</li>
+<li>"assimilated civilian blood splash"</li>
+<li>"enforcer blood splash"</li>
+<li>"compiler bolt minor detonation"</li>
+<li>"compiler bolt major detonation"</li>
+<li>"compiler bolt major contrail"</li>
+<li>"fighter projectile detonation"</li>
+<li>"fighter melee detonation"</li>
+<li>"hunter projectile detonation"</li>
+<li>"hunter spark"</li>
+<li>"minor fusion detonation"</li>
+<li>"major fusion detonation"</li>
+<li>"major fusion contrail"</li>
+<li>"fist detonation"</li>
+<li>"minor defender detonation"</li>
+<li>"major defender detonation"</li>
+</div>
+<div class="mnemonics-column">
+<li>"defender spark"</li>
+<li>"trooper blood splash"</li>
+<li>"water lamp breaking"</li>
+<li>"lava lamp breaking"</li>
+<li>"sewage lamp breaking"</li>
+<li>"alien lamp breaking"</li>
+<li>"metallic clang"</li>
+<li>"teleport object in"</li>
+<li>"teleport object out"</li>
+<li>"small water splash"</li>
+<li>"medium water splash"</li>
+<li>"large water splash"</li>
+<li>"large water emergence"</li>
+<li>"small lava splash"</li>
+<li>"medium lava splash"</li>
+<li>"large lava splash"</li>
+<li>"large lava emergence"</li>
+<li>"small sewage splash"</li>
+<li>"medium sewage splash"</li>
+<li>"large sewage splash"</li>
+<li>"large sewage emergence"</li>
+<li>"small goo splash"</li>
+<li>"medium goo splash"</li>
+<li>"large goo splash"</li>
+<li>"large goo emergence"</li>
+</div>
+<div class="mnemonics-column">
+<li>"minor hummer projectile detonation"</li>
+<li>"major hummer projectile detonation"</li>
+<li>"durandal hummer projectile detonation"</li>
+<li>"hummer spark"</li>
+<li>"cyborg projectile detonation"</li>
+<li>"cyborg blood splash"</li>
+<li>"minor fusion dispersal"</li>
+<li>"major fusion dispersal"</li>
+<li>"overloaded fusion dispersal"</li>
+<li>"sewage yeti blood splash"</li>
+<li>"sewage yeti projectile detonation"</li>
+<li>"water yeti blood splash"</li>
+<li>"lava yeti blood splash"</li>
+<li>"lava yeti projectile detonation"</li>
+<li>"yeti melee detonation"</li>
+<li>"juggernaut spark"</li>
+<li>"juggernaut missile contrail"</li>
+<li>"small jjaro splash"</li>
+<li>"medium jjaro splash"</li>
+<li>"large jjaro splash"</li>
+<li>"large jjaro emergence"</li>
+<li>"civilian fusion blood splash"</li>
+<li>"assimilated civilian fusion blood splash"</li>
+</div>
+<div class="end-mnemonics"></div>
 </ul>
 <h3>
 <a name="FadeTypes"></a>Faders</h3>
