@@ -457,6 +457,17 @@ void
 CommunicationsChannel::connect(const IPaddress& inAddress)
 {
 	assert(!isConnected());
+
+	mIncomingHeaderPosition = 0;
+	mIncomingMessagePosition = 0;
+	delete mIncomingMessage;
+	mIncomingMessage = 0;
+
+	for(MessageQueue::iterator i = mIncomingMessages.begin(); i != mIncomingMessages.end(); ++i)
+		delete *i;
+	
+	mIncomingMessages.clear();
+
 	// Have to copy the address since we get a const, but SDL_net takes a non-const
 	IPaddress theAddress = inAddress;
 	mSocket = SDLNet_TCP_Open(&theAddress);
@@ -501,19 +512,8 @@ CommunicationsChannel::disconnect()
 	}
 
     // Discard all data so next connect()ion starts with a clean slate
-    mIncomingHeaderPosition = 0;
-    mIncomingMessagePosition = 0;
-
     mOutgoingHeaderPosition = 0;
     mOutgoingMessagePosition = 0;
-
-    delete mIncomingMessage;
-    mIncomingMessage = NULL;
-
-    for(MessageQueue::iterator i = mIncomingMessages.begin(); i != mIncomingMessages.end(); ++i)
-        delete *i;
-
-    mIncomingMessages.clear();
 
     for(UninflatedMessageQueue::iterator i = mOutgoingMessages.begin(); i != mOutgoingMessages.end(); ++i)
         delete *i;
