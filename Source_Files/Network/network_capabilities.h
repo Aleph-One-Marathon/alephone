@@ -40,7 +40,7 @@ class Capabilities : public capabilities_t
   static const int kGameworldVersion = 1;
   static const int kStarVersion = 5;
   static const int kRingVersion = 1;
-  static const int kLuaVersion = 1;
+  static const int kLuaVersion = 2;
   static const int kSpeexVersion = 1;
   static const int kGatherableVersion = 1;
   static const int kZippedDataVersion = 1; // map, lua, physics
