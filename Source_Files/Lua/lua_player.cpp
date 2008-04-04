@@ -1774,6 +1774,12 @@ static int Lua_Game_Get_Kill_Limit(lua_State *L)
 	return 1;
 }
 
+static int Lua_Game_Get_Ticks(lua_State *L)
+{
+	lua_pushnumber(L, dynamic_world->tick_count);
+	return 1;
+}
+
 static int Lua_Game_Get_Type(lua_State *L)
 {
 	Lua_GameType::Push(L, GET_GAME_TYPE());
@@ -1827,6 +1833,7 @@ const luaL_reg Lua_Game_Get[] = {
 	{"kill_limit", Lua_Game_Get_Kill_Limit},
 	{"local_random", L_TableFunction<Lua_Game_Local_Random>},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
+	{"ticks", Lua_Game_Get_Ticks},
 	{"type", Lua_Game_Get_Type},
 	{0, 0}
 };

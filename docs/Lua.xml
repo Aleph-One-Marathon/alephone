@@ -367,6 +367,10 @@
 	<argument name="n"><type>number</type></argument>
 	<return><type>number</type></return>
       </function>
+      <variable name="ticks" access="read-only">
+	<description>ticks since game started</description>
+	<type>time</type>
+      </variable>
       <variable name="type" access="read-only">
 	<description>whether the game is EMFH, KOTH, etc.</description>
 	<type>game_type</type>
