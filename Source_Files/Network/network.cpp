@@ -464,14 +464,24 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		}
 	}
 	
-	if (do_netscript &&
-	    capabilities[Capabilities::kLua] == 0) {
-		if (warn_joiner) {
-			char s[256];
-			ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerNoLua), ServerWarningMessage::kJoinerUngatherable);
-			channel->enqueueOutgoingMessage(serverWarningMessage);
-		}
+	if (do_netscript)
+	{
+		if (capabilities[Capabilities::kLua] == 0) {
+			if (warn_joiner) {
+				char s[256];
+				ServerWarningMessage serverWarningMessage(getcstr(s, strNETWORK_ERRORS, netWarnJoinerNoLua), ServerWarningMessage::kJoinerUngatherable);
+				channel->enqueueOutgoingMessage(serverWarningMessage);
+			}
+			return false;
+		} else if (capabilities[Capabilities::kLua] < Capabilities::kLuaVersion)
+		{
+			if (warn_joiner)
+			{
+				ServerWarningMessage serverWarningMessage("The gatherer is using a net script with a preview version of Lua that you do not have. You will not appear in the list of available players.", ServerWarningMessage::kJoinerUngatherable);
+				channel->enqueueOutgoingMessage(serverWarningMessage);
+			}
 		return false;
+		}
 	}
 	
 	return true;
