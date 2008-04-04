@@ -27,6 +27,7 @@
 
 #include "metaserver_messages.h" // RoomDescription
 
+#include <exception>
 #include <vector>
 #include <map>
 #include <memory> // auto_ptr
@@ -167,7 +168,39 @@ public:
                 { m_notificationAdapter = adapter; }
         NotificationAdapter* notificationAdapter() const { return m_notificationAdapter; }
 
-	void connect(const std::string& serverName, uint16 port, const std::string& userName, const std::string& userPassword);
+	class LoginDeniedException : public std::runtime_error 
+	{
+	public:
+		enum {
+			SyntaxError,
+			GamesNotAllowed,
+			InvalidVersion,
+			BadUserOrPassword,
+			UserNotLoggedIn,
+			BadMetaserverVersion,
+			UserAlreadyLoggedIn,
+			LoginSuccessful,
+			LogoutSuccessful,
+			PlayerNotInRoom,
+			GameAlreadyExists,
+			AccountAlreadyLoggedIn,
+			RoomFull,
+			AccountLocked,
+			NotSupported
+		};
+
+		LoginDeniedException(int code, const std::string& arg) : std::runtime_error(arg), m_code(code) { }
+		int code() const { return m_code; }
+	private:
+		int m_code;
+	};
+	class ServerConnectException : public std::runtime_error 
+	{ 
+	public:
+		ServerConnectException(const std::string& arg) : std::runtime_error(arg) { }
+	};
+
+        void connect(const std::string& serverName, uint16 port, const std::string& userName, const std::string& userPassword);
 	void disconnect();
 	bool isConnected() const;
 

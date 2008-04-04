@@ -217,7 +217,37 @@ bool network_gather(bool inResumingGame)
 					{
 						metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
 					}
-					catch (...)
+					catch (MetaserverClient::LoginDeniedException e)
+					{
+						char message[1024];
+						if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
+						{
+							strcpy(message, "Login denied: bad username or password. Your game could not be advertised on the Internet.");
+						}
+						else if (e.code() == MetaserverClient::LoginDeniedException::UserAlreadyLoggedIn)
+						{
+							strcpy(message, "Login denied: that user is already logged in. Your game could not be advertised on the Internet.");
+						}
+						else if (e.code() == MetaserverClient::LoginDeniedException::AccountAlreadyLoggedIn)
+						{
+							strcpy(message, "Login denied: that account is already logged in. Your game could not be advertised on the Internet.");
+						}
+						else if (e.code() == MetaserverClient::LoginDeniedException::RoomFull)
+						{
+							strcpy(message, "Login denied: room full! Your game could not be advertised on the Internet.");
+						}
+						else if (e.code() == MetaserverClient::LoginDeniedException::AccountLocked)
+						{
+							strcpy(message, "Login denied: your account is locked. Your game could not be advertised on the Internet.");
+						}
+						else
+						{
+							sprintf(message, "There was a problem connecting to the server that tracks Internet games (%s). Please try again later.", e.what());
+						}
+
+						alert_user(message, 0);
+					}
+					catch (MetaserverClient::ServerConnectException)
 					{
 						alert_user(infoError, strNETWORK_ERRORS, netWarnCouldNotAdvertiseOnMetaserver, 0);
 					}
@@ -731,7 +761,37 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 			m_joinWidget->push ();
 		}
 	}
-	catch (...)
+	catch (MetaserverClient::LoginDeniedException e)
+	{
+		char message[1024];
+		if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
+		{
+			strcpy(message, "Login denied: bad username or password.");
+		}
+		else if (e.code() == MetaserverClient::LoginDeniedException::UserAlreadyLoggedIn)
+		{
+			strcpy(message, "Login denied: that user is already logged in.");
+		}
+		else if (e.code() == MetaserverClient::LoginDeniedException::AccountAlreadyLoggedIn)
+		{
+			strcpy(message, "Login denied: that account is already logged in.");
+		}
+		else if (e.code() == MetaserverClient::LoginDeniedException::RoomFull)
+		{
+			strcpy(message, "Login denied: room is full!?");
+		}
+		else if (e.code() == MetaserverClient::LoginDeniedException::AccountLocked)
+		{
+			strcpy(message, "Login denied: your account is locked.");
+		}
+		else
+		{
+			sprintf(message, "There was a problem connecting to the server that tracks Internet games (%s). Please try again later.", e.what());
+		}
+
+		alert_user(message, 0);
+	}
+	catch (MetaserverClient::ServerConnectException)
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrMetaserverConnectionFailure, 0);
 	}

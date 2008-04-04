@@ -166,113 +166,146 @@ MetaserverClient::MetaserverClient()
 	s_ignoreNames.insert("Bacon");
 }
 
-
 void
 MetaserverClient::connect(const std::string& serverName, uint16 port, const std::string& userName, const std::string& userPassword)
 {
-	m_channel->setMessageHandler(m_unexpectedMessageHandler.get());
-
-	if (m_channel->isConnected()) m_channel->disconnect();
-
-	m_channel->connect(serverName.c_str(), port);
-
-	LoginAndPlayerInfoMessage theLoginMessage(userName, m_playerName, m_teamName);
-	m_channel->enqueueOutgoingMessage(theLoginMessage);
-	
-	auto_ptr<Message> theSaltOrAcceptMessage(m_channel->receiveMessage());
-	if (theSaltOrAcceptMessage.get() == 0)
-		throw 0;
-	
-	if (dynamic_cast<SaltMessage*>(theSaltOrAcceptMessage.get()) != 0)
+	try 
 	{
-		SaltMessage* theSaltMessage = dynamic_cast<SaltMessage*>(theSaltOrAcceptMessage.get());
+		m_channel->setMessageHandler(m_unexpectedMessageHandler.get());
 
-		char theKey[kKeyLength];
-		char thePasswordCopy[kKeyLength];
-		memset(thePasswordCopy, 0x23, sizeof(thePasswordCopy));
-		if (userPassword.size() < kKeyLength)
-			strcpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str());
-		else 
-			strncpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str(), kKeyLength);
+		if (m_channel->isConnected()) m_channel->disconnect();
 
-		if (theSaltMessage->encryptionType() == SaltMessage::kPlaintextEncryption) 
+		m_channel->connect(serverName.c_str(), port);
+
+		LoginAndPlayerInfoMessage theLoginMessage(userName, m_playerName, m_teamName);
+		m_channel->enqueueOutgoingMessage(theLoginMessage);
+	
+		auto_ptr<Message> theSaltOrAcceptMessage(m_channel->receiveMessage());
+		if (theSaltOrAcceptMessage.get() == 0)
+			throw ServerConnectException("Server Disconnected");
+	
+		if (dynamic_cast<SaltMessage*>(theSaltOrAcceptMessage.get()) != 0)
 		{
-			strncpy(theKey, thePasswordCopy, kKeyLength);
-		} 
-		else if (theSaltMessage->encryptionType() == SaltMessage::kBraindeadSimpleEncryption)
-		{
-			for(size_t i = 0; i < sizeof(theKey); i++)
+			SaltMessage* theSaltMessage = dynamic_cast<SaltMessage*>(theSaltOrAcceptMessage.get());
+
+			char theKey[kKeyLength];
+			char thePasswordCopy[kKeyLength];
+			memset(thePasswordCopy, 0x23, sizeof(thePasswordCopy));
+			if (userPassword.size() < kKeyLength)
+				strcpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str());
+			else 
+				strncpy(reinterpret_cast<char*>(thePasswordCopy), userPassword.c_str(), kKeyLength);
+
+			if (theSaltMessage->encryptionType() == SaltMessage::kPlaintextEncryption) 
 			{
-				theKey[i] = thePasswordCopy[i] ^ (theSaltMessage->salt()[i]);
-			}
-			
-			for(size_t i = 1; i < sizeof(theKey); i++)
+				strncpy(theKey, thePasswordCopy, kKeyLength);
+			} 
+			else if (theSaltMessage->encryptionType() == SaltMessage::kBraindeadSimpleEncryption)
 			{
-				theKey[i] = theKey[i]^theKey[i - 1];
-			}
+				for(size_t i = 0; i < sizeof(theKey); i++)
+				{
+					theKey[i] = thePasswordCopy[i] ^ (theSaltMessage->salt()[i]);
+				}
 			
-			for(size_t i = 1; i < sizeof(theKey); i++) {
-				short value;
+				for(size_t i = 1; i < sizeof(theKey); i++)
+				{
+					theKey[i] = theKey[i]^theKey[i - 1];
+				}
+			
+				for(size_t i = 1; i < sizeof(theKey); i++) {
+					short value;
 				
-				value = ~( theKey[i]*theKey[i-1]);
-				theKey[i] = (unsigned char) value;
+					value = ~( theKey[i]*theKey[i-1]);
+					theKey[i] = (unsigned char) value;
+				}
+			}
+			else
+			{
+				throw ServerConnectException("Unsupported Encryption");
+			}
+
+			BigChunkOfDataMessage theKeyMessage(kCLIENT_KEY, (uint8 *) theKey, sizeof(theKey));
+			m_channel->enqueueOutgoingMessage(theKeyMessage);
+
+			auto_ptr<Message> theResponseMessage(m_channel->receiveMessage());
+			if (!theResponseMessage.get())
+			{
+				throw ServerConnectException("Server Disconnected");
+			}
+			else if (dynamic_cast<DenialMessage*>(theResponseMessage.get()))
+			{
+				DenialMessage *dm = dynamic_cast<DenialMessage*>(theResponseMessage.get());
+				throw LoginDeniedException(dm->code(), dm->message());
+			}
+			else if (!dynamic_cast<AcceptMessage*>(theResponseMessage.get()))
+			{
+				throw CommunicationsChannel::FailedToReceiveSpecificMessageException();
 			}
 		}
-		else
+		else if (dynamic_cast<AcceptMessage*>(theSaltOrAcceptMessage.get()) == 0)
 		{
-			throw 0;
+			if (dynamic_cast<DenialMessage*>(theSaltOrAcceptMessage.get()))
+			{
+				DenialMessage *dm = dynamic_cast<DenialMessage*>(theSaltOrAcceptMessage.get());
+				throw LoginDeniedException(dm->code(), dm->message());
+			}
+			else
+			{
+				throw CommunicationsChannel::FailedToReceiveSpecificMessageException();
+			}
 		}
 
-		BigChunkOfDataMessage theKeyMessage(kCLIENT_KEY, (uint8 *) theKey, sizeof(theKey));
-		m_channel->enqueueOutgoingMessage(theKeyMessage);
+		m_channel->enqueueOutgoingMessage(LocalizationMessage());
 
-		auto_ptr<AcceptMessage> theAcceptMessage(m_channel->receiveSpecificMessageOrThrow<AcceptMessage>());
-
-	}
-	else if (dynamic_cast<AcceptMessage*>(theSaltOrAcceptMessage.get()) == 0)
-		throw 0;
-
-	m_channel->enqueueOutgoingMessage(LocalizationMessage());
-
-	auto_ptr<LoginSuccessfulMessage> theLoginSuccessfulMessage(m_channel->receiveSpecificMessageOrThrow<LoginSuccessfulMessage>());
+		auto_ptr<LoginSuccessfulMessage> theLoginSuccessfulMessage(m_channel->receiveSpecificMessageOrThrow<LoginSuccessfulMessage>());
 
 //	auto_ptr<SetPlayerDataMessage> theSetPlayerDataMessage(m_channel->receiveSpecificMessageOrThrow<SetPlayerDataMessage>());
 
-	auto_ptr<RoomListMessage> theRoomListMessage(m_channel->receiveSpecificMessageOrThrow<RoomListMessage>());
-	m_dispatcher.get()->handle(theRoomListMessage.get(), m_channel.get());
+		auto_ptr<RoomListMessage> theRoomListMessage(m_channel->receiveSpecificMessageOrThrow<RoomListMessage>());
+		m_dispatcher.get()->handle(theRoomListMessage.get(), m_channel.get());
 
-	m_channel->disconnect();
+		m_channel->disconnect();
 
-	///// ROOM CONNECTION
+		///// ROOM CONNECTION
 
-	if (!m_rooms.size()) throw 0;
+		if (!m_rooms.size()) throw 0;
 
-	IPaddress roomServerAddress = m_rooms[0].roomServerAddress();
+		IPaddress roomServerAddress = m_rooms[0].roomServerAddress();
 	
-	for (int i = 0; i < m_rooms.size(); i++) 
-	{
-		if (m_rooms[i].roomName() == "Arrival")
+		for (int i = 0; i < m_rooms.size(); i++) 
 		{
-			roomServerAddress = m_rooms[i].roomServerAddress();
-			break;
+			if (m_rooms[i].roomName() == "Arrival")
+			{
+				roomServerAddress = m_rooms[i].roomServerAddress();
+				break;
+			}
 		}
-	}
 
 //	roomServerAddress.host = 0xC0A80108;
 //	roomServerAddress.host = 0x0801A8C0;
 	
-	m_channel->connect(roomServerAddress);
+		m_channel->connect(roomServerAddress);
 
-	m_channel->enqueueOutgoingMessage(RoomLoginMessage(userName, theLoginSuccessfulMessage->token()));
+		m_channel->enqueueOutgoingMessage(RoomLoginMessage(userName, theLoginSuccessfulMessage->token()));
 
-	m_channel->enqueueOutgoingMessage(NameAndTeamMessage(m_playerName, m_teamName));
+		m_channel->enqueueOutgoingMessage(NameAndTeamMessage(m_playerName, m_teamName));
 
-	auto_ptr<IDAndLimitMessage> theIDAndLimitMessage(m_channel->receiveSpecificMessageOrThrow<IDAndLimitMessage>());
-	m_playerID = theIDAndLimitMessage->playerID();
+		auto_ptr<IDAndLimitMessage> theIDAndLimitMessage(m_channel->receiveSpecificMessageOrThrow<IDAndLimitMessage>());
+		m_playerID = theIDAndLimitMessage->playerID();
 
-	auto_ptr<DenialMessage> theRoomAcceptMessage(m_channel->receiveSpecificMessageOrThrow<DenialMessage>());
+		auto_ptr<DenialMessage> theRoomAcceptMessage(m_channel->receiveSpecificMessageOrThrow<DenialMessage>());
 
-	m_channel->setMessageHandler(m_dispatcher.get());
+		m_channel->setMessageHandler(m_dispatcher.get());
+	} 
+	catch (CommunicationsChannel::FailedToReceiveSpecificMessageException)
+	{
+		// translate for caller
+		throw ServerConnectException("Unexpected Response");
+	}
+	catch (...)
+	{
+		throw;
+	}
 }
 
 
