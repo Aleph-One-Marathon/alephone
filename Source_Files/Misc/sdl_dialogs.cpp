@@ -1149,7 +1149,7 @@ void dialog::update(SDL_Rect r) const
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
 		SDL_Rect ScreenRect = {0, 0, video->w, video->h};
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		glPushAttrib(GL_ENABLE_BIT);
 		
  		// Disable everything but alpha blending
  		glDisable(GL_CULL_FACE);
