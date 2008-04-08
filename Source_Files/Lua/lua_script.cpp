@@ -528,6 +528,10 @@ void L_Invalidate_Object(short object_index)
 	{
 		Lua_Item::Invalidate(state, object_index);
 	}
+	else if (GET_OBJECT_OWNER(object) == _object_is_effect)
+	{
+		Lua_Effect::Invalidate(state, object_index);
+	}
 	else if (Lua_Scenery::Valid(object_index))
 	{
 		Lua_Scenery::Invalidate(state, object_index);
