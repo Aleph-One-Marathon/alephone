@@ -658,7 +658,7 @@ static void DisplayMessages(SDL_Surface *s)
 						rect.y = Y - 11;
 						rect.w = rect.h = 16;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<24, 0xFF<<16, 0xFF<<8, 0);
+						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<8, 0xFF<<16, 0xFF<<24, 0);
 #else
 						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<16, 0xFF<<8, 0xFF, 0);
 #endif
