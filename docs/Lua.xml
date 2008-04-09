@@ -110,6 +110,13 @@
 	<p>So, the only local player variables the script running on player 4's machine will be able to read from are the ones in Players[4]. For his script, the value of Players[1].zoom_active, for example, will return nil. If this confuses you, it might be better to avoid reading from any variable marked "local player."</p>
       </description>
     </section>
+    <section name="Loading Collections" id="loading_collections">
+      <description>
+	<p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
+<pre>CollectionsUsed = { 10, 16 }</pre>
+	</p>
+      </description>
+    </section>
   </section>
   <triggers id="triggers">
     <description>These are functions scripts can define which Aleph One will call at specific times or events.</description>
@@ -262,7 +269,8 @@
     </function>
   </triggers>
   <tables id="tables">
-    <description>These are tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game</description>
+    <description>These are tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game.</description>
+    <description>There is one important difference: in a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</description>
     <description>Each table also has a read-only .index variable that corresponds to the engine's index</description>
     <table name="annotation">
       <variable name="polygon">
@@ -829,6 +837,11 @@
 	<type>time</type>
 	<note>player will become subtly invisible if this is set higher than the standard invisibility duration (70 seconds)</note>
       </variable>
+      <function-variable name="items">
+	<description>how many of item the player is carrying</description>
+	<argument name="item_type"><type>item_type</type></argument>
+	<type>number</type>
+      </function-variable>
       <variable name="local_" access="read-only">
 	<description>true if this player is the local player</description>
 	<type>boolean</type>
@@ -2108,13 +2121,13 @@
     <description>The string mnemonics listed below can be used for assignment and as arguments to functions. Additionally, Aleph One's Lua interpreter has been modified so that equality comparisons between userdata types and strings are possible.</description>
     <description>For example, this script would move all players on the blue team to the red team:
 <pre>for p in Players() do
-  if (p.team == "blue") then
+  if p.team == "blue" then
     p.team = "red"
   end
 end</pre>
 And this one would damage all major compilers with 10 points of fusion damage:
       <pre>for m in Monsters() do
-  if (m.type == "major compiler") then
+  if m.type == "major compiler" then
     m:damage(10, "fusion")
   end
 end</pre>
