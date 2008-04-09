@@ -804,6 +804,16 @@ widget_placer::~widget_placer()
 	}
 }
 
+void widget_placer::visible(bool visible)
+{
+	for (std::vector<placeable *>::iterator it = m_owned.begin(); it != m_owned.end(); it++)
+	{
+		(*it)->visible(visible);
+	}
+
+	placeable::visible(visible);
+}
+
 void vertical_placer::add(placeable *p, bool assume_ownership)
 {
 	m_widgets.push_back(p);
@@ -1244,7 +1254,7 @@ void dialog::draw(void) const
 	vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
 	vector<int>::const_iterator j = tabs.begin();
 	while (i != end) {
-		if (*j == NONE || *j == active_tab)
+		if ((*j == NONE || *j == active_tab) && (*i)->visible())
 			draw_widget(*i, false);
 		i++;
 		j++;
@@ -1260,7 +1270,7 @@ dialog::draw_dirty_widgets() const
 {
         for (unsigned i=0; i<widgets.size(); i++)
 		if (widgets[i]->is_dirty())
-			if (tabs[i] == NONE || tabs[i] == active_tab)
+			if ((tabs[i] == NONE || tabs[i] == active_tab) &&  widgets[i]->visible())
 				draw_widget(widgets[i]);
 }       
 
@@ -1334,10 +1344,10 @@ void dialog::activate_next_widget(void)
 		i++;
 		if (i >= int(widgets.size()))
 			i = 0;
-	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab)) && i != active_widget_num);
+	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab) && widgets[i]->visible()) && i != active_widget_num);
 
     // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
-	if (widgets[i]->is_selectable())
+	if (widgets[i]->is_selectable() && widgets[i]->visible())
 		activate_widget(i);
 	else
 		deactivate_currently_active_widget();
@@ -1352,10 +1362,10 @@ void dialog::activate_prev_widget(void)
 			i = widgets.size() - 1;
 		else
 			i--;
-	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab)) && i != active_widget_num);
+	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab) && widgets[i]->visible()) && i != active_widget_num);
 
     // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
-	if (widgets[i]->is_selectable())
+	if (widgets[i]->is_selectable() && widgets[i]->visible())
 		activate_widget(i);
 	else
 		deactivate_currently_active_widget();
@@ -1378,7 +1388,7 @@ int dialog::find_widget(int x, int y)
 	int num = 0;
 	while (i != end) {
 		widget *w = *i;
-		if (*j == NONE || *j == active_tab) // Don't find widgets in inactive tabs
+		if ((*j == NONE || *j == active_tab) && (*i)->visible()) // Don't find widgets in inactive tabs
 			if (x >= w->rect.x && y >= w->rect.y && x < w->rect.x + w->rect.w && y < w->rect.y + w->rect.h)
 				return num;
 		i++; j++; num++;

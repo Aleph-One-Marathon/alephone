@@ -66,12 +66,18 @@ public:
 		kFill = 0x8,
 	};
 		
-	placeable() { }
+	placeable() : m_visible(true) { }
 	virtual ~placeable() { }
 	
 	virtual void place(const SDL_Rect &r, placement_flags flags = kDefault) = 0;
 	virtual int min_height() = 0;
 	virtual int min_width() = 0;
+
+	virtual bool visible() { return m_visible; }
+	virtual void visible(bool visible) { m_visible = visible; }
+
+private:
+	bool m_visible;
 };
 
 class widget_placer : public placeable
@@ -83,6 +89,8 @@ public:
 	void place(const SDL_Rect &r, placement_flags flags = kDefault) = 0;
 	int min_height() = 0;
 	int min_width() = 0;
+
+	virtual void visible(bool visible);
 
 protected:
 	void assume_ownership(placeable *p) { m_owned.push_back(p); }
