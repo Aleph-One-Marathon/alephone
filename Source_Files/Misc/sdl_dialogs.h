@@ -90,14 +90,30 @@ public:
 	int min_height() = 0;
 	int min_width() = 0;
 
-	virtual void visible(bool visible);
-
 protected:
 	void assume_ownership(placeable *p) { m_owned.push_back(p); }
 
 private:
 	std::vector<placeable *> m_owned;
 };
+
+class tab_placer : public widget_placer
+{
+public:
+	tab_placer() : widget_placer(), m_tab(0) { }
+	void add(placeable *p, bool assume_ownership = false);
+	int min_height();
+	int min_width();
+	int tabs() { return m_tabs.size(); };
+	void choose_tab(int new_tab);
+	void place(const SDL_Rect &r, placement_flags flags = kDefault);
+	bool visible() { return widget_placer::visible(); }
+	void visible(bool visible);
+private:
+	int m_tab;
+	std::vector<placeable *> m_tabs;
+};
+
 
 class vertical_placer : public widget_placer
 {
@@ -113,6 +129,7 @@ public:
 	void min_width(int w) { m_min_width = w; }
 
 	void place(const SDL_Rect &r, placement_flags flags = kDefault);
+	void visible(bool visible);
 
 private:
 	std::vector<placeable *> m_widgets;
@@ -136,6 +153,7 @@ public:
 	int min_width();
 
 	void place(const SDL_Rect &r, placement_flags flags = kDefault);
+	void visible(bool visible);
 
 private:
 	std::vector<placeable *> m_widgets;

@@ -804,16 +804,6 @@ widget_placer::~widget_placer()
 	}
 }
 
-void widget_placer::visible(bool visible)
-{
-	for (std::vector<placeable *>::iterator it = m_owned.begin(); it != m_owned.end(); it++)
-	{
-		(*it)->visible(visible);
-	}
-
-	placeable::visible(visible);
-}
-
 void vertical_placer::add(placeable *p, bool assume_ownership)
 {
 	m_widgets.push_back(p);
@@ -891,6 +881,15 @@ void vertical_placer::place(const SDL_Rect &r, placement_flags flags)
 		y_offset += kSpace;
 		
 	}
+}
+
+void vertical_placer::visible(bool visible)
+{
+	for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); ++it)
+	{
+		(*it)->visible(visible);
+	}
+	widget_placer::visible(visible);
 }
 
 void horizontal_placer::add(placeable *p, bool assume_ownership)
@@ -996,7 +995,103 @@ void horizontal_placer::place(const SDL_Rect &r, placement_flags flags)
 		x_offset += m_space;
 	}
 }
+void horizontal_placer::visible(bool visible)
+{
+	for (std::vector<placeable *>::iterator it = m_widgets.begin(); it != m_widgets.end(); ++it)
+	{
+		(*it)->visible(visible);
+	}
+	widget_placer::visible(visible);
+}	
+
+void tab_placer::add(placeable *p, bool assume_ownership)
+{
+	if (m_tabs.size())
+		p->visible(false);
+	else
+		p->visible(true);
+
+	m_tabs.push_back(p);
 	
+	if (assume_ownership) this->assume_ownership(p);
+}
+
+int tab_placer::min_height()
+{
+	int height = 0;
+	for (std::vector<placeable *>::iterator it = m_tabs.begin(); it != m_tabs.end(); it++)
+	{
+		if ((*it)->min_height() > height) 
+			height = (*it)->min_height();
+	}
+}
+
+int tab_placer::min_width()
+{
+	int width = 0;
+	for (std::vector<placeable *>::iterator it = m_tabs.begin(); it != m_tabs.end(); it++)
+	{
+		if ((*it)->min_width() > width) 
+			width = (*it)->min_width();
+	}
+}
+
+void tab_placer::choose_tab(int new_tab)
+{
+	assert(new_tab < m_tabs.size());
+	
+	m_tabs[m_tab]->visible(false);
+	if (visible())
+		m_tabs[new_tab]->visible(true);
+}
+
+void tab_placer::place(const SDL_Rect& r, placement_flags flags)
+{
+	int x_offset;
+	if (flags & kAlignLeft)
+	{
+		x_offset = 0;
+	}
+	else if (flags & kAlignRight)
+	{
+		x_offset = r.w - min_width();
+	}
+	else
+	{
+		x_offset = (r.w - min_width()) / 2;
+	}
+
+	int h = (flags & kFill) ? r.h : min_height();
+
+	for (std::vector<placeable *>::iterator it = m_tabs.begin(); it != m_tabs.end(); ++it)
+	{
+		SDL_Rect wr;
+		wr.w = (*it)->min_width();
+		wr.h = h;
+		wr.y = r.y;
+		int x_offset;
+		if (flags & kAlignLeft)
+			x_offset = 0;
+		else if (flags & kAlignRight)
+			x_offset = r.w - (*it)->min_width();
+		else 
+			x_offset = (r.w - (*it)->min_width()) / 2;
+
+		wr.x = r.x + x_offset;
+		
+		(*it)->place(wr);
+	}
+}
+
+void tab_placer::visible(bool visible)
+{
+	widget_placer::visible(visible);
+	if (m_tabs.size())
+	{
+		m_tabs[m_tab]->visible(visible);
+	}
+}
+		
 /*
  *  Dialog constructor
  */
