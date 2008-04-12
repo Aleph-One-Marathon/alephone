@@ -438,7 +438,7 @@ static void crosshair_dialog(void *arg)
 	table->dual_add(blue_w, d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("OpenGL Only (no preview"), d);
+	table->dual_add_row(new w_static_text("OpenGL Only (no preview)"), d);
 
 	w_slider *opacity_w = new w_slider("", 16, 0);
 	SliderSelectorWidget opacityWidget(opacity_w);
