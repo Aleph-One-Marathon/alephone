@@ -817,9 +817,26 @@ void table_placer::add(placeable *p, bool assume_ownership)
 	if (assume_ownership) this->assume_ownership(p);
 }
 
+void table_placer::add_row(placeable *p, bool assume_ownership)
+{
+	assert(m_add == 0);
+	m_table.resize(m_table.size() + 1);
+	m_table[m_table.size() - 1].resize(1);
+
+	m_table[m_table.size() - 1][0] = p;
+	
+	if (assume_ownership) this->assume_ownership(p);
+}
+
 void table_placer::dual_add(widget *w, dialog &d)
 {
 	add(static_cast<placeable *>(w));
+	d.add(w);
+}
+
+void table_placer::dual_add_row(widget *w, dialog &d)
+{
+	add_row(static_cast<placeable *>(w));
 	d.add(w);
 }
 
@@ -839,6 +856,7 @@ int table_placer::col_width(int col)
 	int width = 0;
 	for (int row = 0; row < m_table.size(); ++row)
 	{
+		if (m_table[row].size() == 1) continue;
 		int min_width = m_table[row][col]->min_width();
 		if (min_width > width)
 			width = min_width;
@@ -873,6 +891,15 @@ int table_placer::min_width()
 
 	width += (m_columns - 1) * m_space;
 
+	for (int row = 0; row < m_table.size(); ++row)
+	{
+		if (m_table[row].size() == 1)
+		{
+			int min_width = m_table[row][0]->min_width();
+			if (min_width > width) width = min_width;
+		}
+	}
+
 	return width;
 }
 		
@@ -883,6 +910,7 @@ void table_placer::place(const SDL_Rect &r, placement_flags flags)
 	int y_offset = 0;
 	for (int row = 0; row < m_table.size(); ++row)
 	{
+		bool full_row = m_table[row].size() == 1;
 		int x_offset;
 		if ((flags & kFill) || (flags & kAlignLeft))
 		{
@@ -896,15 +924,16 @@ void table_placer::place(const SDL_Rect &r, placement_flags flags)
 		{
 			x_offset = (r.w - w) / 2;
 		}
+
 		for (int col = 0; col < m_table[row].size(); ++col)
 		{
 			SDL_Rect wr;
-			wr.w = col_width(col);
+			wr.w = (full_row) ? w : col_width(col);
 			wr.h = row_height(row);
 			wr.x = r.x + x_offset;
 			wr.y = r.y + y_offset;
 
-			m_table[row][col]->place(wr, m_col_flags[col]);
+			m_table[row][col]->place(wr, full_row ? placeable::kDefault : m_col_flags[col]);
 
 			x_offset += wr.w;
 			x_offset += m_space;

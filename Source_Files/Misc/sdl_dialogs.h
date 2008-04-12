@@ -121,9 +121,11 @@ public:
 	enum { kSpace = 4 };
 	table_placer(int columns, int space = kSpace) : widget_placer(), m_add(0), m_columns(columns), m_space(space) { m_col_flags.resize(m_columns); m_col_min_widths.resize(m_columns);}
 	void add(placeable *p, bool assume_ownership = false);
+	void add_row(placeable *p, bool assume_ownership = false);
 	void col_flags(int col, placement_flags flags = kDefault) { m_col_flags[col] = flags; }
 	void col_min_width(int col, int min_width) { m_col_min_widths[col] = min_width; }
 	void dual_add(widget *w, dialog& d);
+	void dual_add_row(widget *w, dialog& d);
 	int min_height();
 	int min_width();
 	void place(const SDL_Rect &r, placement_flags flags = kDefault);
