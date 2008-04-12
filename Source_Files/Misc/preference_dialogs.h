@@ -34,7 +34,6 @@ public:
 	void OpenGLPrefsByRunning ();
 
 	virtual ~OpenGLDialog ();
-
 protected:
 	OpenGLDialog ();
 	
@@ -65,6 +64,7 @@ protected:
 	SelectSelectorWidget*		m_spritesFilterWidget;
 	
 	SelectorWidget* m_textureResolutionWidget [OGL_NUMBER_OF_TEXTURE_TYPES];
+
 };
 
 #endif

@@ -102,6 +102,7 @@ class tab_placer : public widget_placer
 public:
 	tab_placer() : widget_placer(), m_tab(0) { }
 	void add(placeable *p, bool assume_ownership = false);
+	void dual_add(widget *w, dialog& d);
 	int min_height();
 	int min_width();
 	int tabs() { return m_tabs.size(); };

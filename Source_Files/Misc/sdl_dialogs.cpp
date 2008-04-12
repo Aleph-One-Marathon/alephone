@@ -1016,6 +1016,12 @@ void tab_placer::add(placeable *p, bool assume_ownership)
 	if (assume_ownership) this->assume_ownership(p);
 }
 
+void tab_placer::dual_add(widget *w, dialog& d)
+{
+	add(static_cast<placeable *>(w));
+	d.add(w);
+}
+
 int tab_placer::min_height()
 {
 	int height = 0;
@@ -1024,6 +1030,8 @@ int tab_placer::min_height()
 		if ((*it)->min_height() > height) 
 			height = (*it)->min_height();
 	}
+
+	return height;
 }
 
 int tab_placer::min_width()
@@ -1034,6 +1042,8 @@ int tab_placer::min_width()
 		if ((*it)->min_width() > width) 
 			width = (*it)->min_width();
 	}
+
+	return width;
 }
 
 void tab_placer::choose_tab(int new_tab)
@@ -1043,6 +1053,7 @@ void tab_placer::choose_tab(int new_tab)
 	m_tabs[m_tab]->visible(false);
 	if (visible())
 		m_tabs[new_tab]->visible(true);
+	m_tab = new_tab;
 }
 
 void tab_placer::place(const SDL_Rect& r, placement_flags flags)

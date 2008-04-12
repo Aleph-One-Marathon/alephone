@@ -147,6 +147,7 @@ OpenGLDialog::~OpenGLDialog()
 		delete m_textureQualityWidget [i];
 		delete m_textureResolutionWidget [i];
 	}
+
 }
 
 void OpenGLDialog::OpenGLPrefsByRunning ()
@@ -227,44 +228,53 @@ class SdlOpenGLDialog : public OpenGLDialog
 public:
 	SdlOpenGLDialog ()
 	{
-		m_dialog.add(new w_static_text("OPENGL OPTIONS", TITLE_FONT, TITLE_COLOR));
-		m_dialog.add(new w_spacer());
+
+		vertical_placer *placer = new vertical_placer;
+		placer->dual_add(new w_static_text("OPENGL OPTIONS", TITLE_FONT, TITLE_COLOR), m_dialog);
+		placer->add(new w_spacer(), true);
 		
-		vector<string> tab_strings;
-		tab_strings.push_back ("GENERAL");
-		tab_strings.push_back ("ADVANCED");
-		make_tab_buttons_for_dialog (m_dialog, tab_strings, TAB_WIDGET);
-		m_dialog.set_active_tab (BASIC_TAB);
+		horizontal_placer *tabs_placer = new horizontal_placer;
+		w_button *w_general_tab = new w_button("GENERAL");
+		w_general_tab->set_callback(choose_generic_tab, static_cast<void *>(this));
+		tabs_placer->dual_add(w_general_tab, m_dialog);
+		w_button *w_advanced_tab = new w_button("ADVANCED");
+		w_advanced_tab->set_callback(choose_advanced_tab, static_cast<void *>(this));
+		tabs_placer->dual_add(w_advanced_tab, m_dialog);
+		placer->add(tabs_placer, true);
+
 		
-		m_dialog.add(new w_spacer());
+		placer->add(new w_spacer(), true);
+
+		vertical_placer *general_placer = new vertical_placer;
 		
-		w_toggle *zbuffer_w = new w_toggle("Z Buffer", false);
-		m_dialog.add_to_tab(zbuffer_w, BASIC_TAB);
-		w_toggle *fog_w = new w_toggle("Fog", false);
-		m_dialog.add_to_tab(fog_w, BASIC_TAB);
-		w_toggle *static_w = new w_toggle("Static Effect", false);
-		m_dialog.add_to_tab(static_w, BASIC_TAB);
-		w_toggle *fader_w = new w_toggle("Color Effects", false);
-		m_dialog.add_to_tab(fader_w, BASIC_TAB);
-		w_toggle *liq_w = new w_toggle("Transparent Liquids", false);
-		m_dialog.add_to_tab(liq_w, BASIC_TAB);
-		w_toggle *models_w = new w_toggle("3D Models", false);
-		m_dialog.add_to_tab(models_w, BASIC_TAB);
-		m_dialog.add_to_tab(new w_spacer(), BASIC_TAB);
+		w_toggle *zbuffer_w = new w_toggle("", false);
+		general_placer->add(new label_maker("Z Buffer", zbuffer_w, m_dialog), true);
+		w_toggle *fog_w = new w_toggle("", false);
+		general_placer->add(new label_maker("Fog", fog_w, m_dialog), true);
+		w_toggle *static_w = new w_toggle("", false);
+		general_placer->add(new label_maker("Static Effect", static_w, m_dialog), true);
+		w_toggle *fader_w = new w_toggle("", false);
+		general_placer->add(new label_maker("Color Effects", fader_w, m_dialog), true);
+		w_toggle *liq_w = new w_toggle("", false);
+		general_placer->add(new label_maker("Transparent Liquids", liq_w, m_dialog), true);
+		w_toggle *models_w = new w_toggle("", false);
+		general_placer->add(new label_maker("3D Models", models_w, m_dialog), true);
+
+		general_placer->add(new w_spacer(), true);
 
 		w_select_popup *fsaa_w = new w_select_popup ("Full Scene Antialiasing");
-		m_dialog.add_to_tab(fsaa_w, BASIC_TAB);
+		general_placer->dual_add(fsaa_w, m_dialog);
 		vector<string> fsaa_strings;
 		fsaa_strings.push_back ("Off");
 		fsaa_strings.push_back ("2x");
 		fsaa_strings.push_back ("4x");
 		fsaa_w->set_labels (fsaa_strings);
 		
-		w_slider* aniso_w = new w_slider("Anisotropic Filtering", 6, 1);
-		m_dialog.add_to_tab(aniso_w, BASIC_TAB);
-		m_dialog.add_to_tab(new w_spacer(), BASIC_TAB);
+		w_slider* aniso_w = new w_slider("", 6, 1);
+		general_placer->add(new label_maker("Anisotropic Filtering", aniso_w, m_dialog), true);		
+		general_placer->add(new w_spacer(), true);
 
-		m_dialog.add_to_tab(new w_static_text("Replacement Texture Quality"), BASIC_TAB);
+		general_placer->dual_add(new w_static_text("Replacement Texture Quality"), m_dialog);
 	
 		w_select_popup *texture_quality_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) texture_quality_wa[i] = NULL;
@@ -283,25 +293,25 @@ public:
 	
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
 			if (texture_quality_wa[i]) {
-				m_dialog.add_to_tab(texture_quality_wa[i], BASIC_TAB);
+				general_placer->dual_add(texture_quality_wa[i], m_dialog);
 				texture_quality_wa[i]->set_labels (tex_quality_strings);
 			}
 		}
+
+		vertical_placer *advanced_placer = new vertical_placer;
 	
-		w_toggle *geforce_fix_w = new w_toggle("GeForce 1-4 Texture Fix", false);
-		m_dialog.add_to_tab(geforce_fix_w, ADVANCED_TAB);
+		w_toggle *geforce_fix_w = new w_toggle("", false);
+		advanced_placer->add(new label_maker("GeForce 1-4 Texture Fix", geforce_fix_w, m_dialog), true);
 		
-		m_dialog.add_to_tab(new w_spacer(), ADVANCED_TAB);
+		advanced_placer->add(new w_spacer(), true);
+		advanced_placer->dual_add(new w_static_text("Distant Texture Filtering"), m_dialog);
+		w_select *wall_filter_w = new w_select("", 0, filter_labels);
+		advanced_placer->add(new label_maker("Walls", wall_filter_w, m_dialog), true);
 
-		m_dialog.add_to_tab(new w_static_text("Distant Texture Filtering"), ADVANCED_TAB);
-		w_select *wall_filter_w = new w_select("Walls", 0, filter_labels);
-		m_dialog.add_to_tab(wall_filter_w, ADVANCED_TAB);
+		w_select *sprite_filter_w = new w_select("", 0, filter_labels);
+		advanced_placer->add(new label_maker("Sprites", sprite_filter_w, m_dialog), true);
 
-		w_select *sprite_filter_w = new w_select("Sprites", 0, filter_labels);
-		m_dialog.add_to_tab(sprite_filter_w, ADVANCED_TAB);
-
-		m_dialog.add_to_tab(new w_spacer(), ADVANCED_TAB);
-
+		advanced_placer->add(new w_spacer(), true);
 		w_select_popup *texture_resolution_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) texture_resolution_wa[i] = NULL;
 		texture_resolution_wa[OGL_Txtr_Wall] = new w_select_popup("Walls");
@@ -309,7 +319,7 @@ public:
 		texture_resolution_wa[OGL_Txtr_Inhabitant] = new w_select_popup("Sprites");
 		texture_resolution_wa[OGL_Txtr_WeaponsInHand] = new w_select_popup("Weapons in Hand / HUD");
 
-		m_dialog.add_to_tab(new w_static_text("Texture Resolution (reduce for machines with low VRAM)"), ADVANCED_TAB);
+		advanced_placer->dual_add(new w_static_text("Texture Resolution (reduce for machines with low VRAM)"), m_dialog);
 
 		vector<string> tex_reso_strings;
 		tex_reso_strings.push_back ("Full");
@@ -318,17 +328,27 @@ public:
 
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
 			if (texture_resolution_wa[i]) {
-				m_dialog.add_to_tab(texture_resolution_wa[i], ADVANCED_TAB);
+				advanced_placer->dual_add(texture_resolution_wa[i], m_dialog);
 				texture_resolution_wa[i]->set_labels (tex_reso_strings);
 			}
 		}
-	
-		m_dialog.add(new w_spacer());
 
-		w_left_button* ok_w = new w_left_button("ACCEPT");
-		m_dialog.add(ok_w);
-		w_right_button* cancel_w = new w_right_button("CANCEL");
-		m_dialog.add(cancel_w);
+		m_tabs = new tab_placer();
+		m_tabs->add(general_placer, true);
+		m_tabs->add(advanced_placer, true);
+		placer->add(m_tabs, false);
+	
+		placer->add(new w_spacer(), true);
+
+		horizontal_placer *button_placer = new horizontal_placer;
+		w_button* ok_w = new w_button("ACCEPT");
+		button_placer->dual_add(ok_w, m_dialog);
+		
+		w_button* cancel_w = new w_button("CANCEL");
+		button_placer->dual_add(cancel_w, m_dialog);
+		placer->add(button_placer, true);
+
+		m_dialog.set_widget_placer(placer);
 
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_okWidget = new ButtonWidget (ok_w);
@@ -358,6 +378,10 @@ public:
 		}
 	}
 
+	~SdlOpenGLDialog() {
+		delete m_tabs;
+	}
+
 	virtual bool Run ()
 	{	
 		return (m_dialog.run () == 0);
@@ -368,6 +392,9 @@ public:
 		m_dialog.quit (result ? 0 : -1);
 	}
 
+	static void choose_generic_tab(void *arg);
+	static void choose_advanced_tab(void *arg);
+
 private:
 	enum {
 		TAB_WIDGET = 400,
@@ -375,8 +402,23 @@ private:
 		ADVANCED_TAB
 	};
 	
+	tab_placer* m_tabs;
 	dialog m_dialog;
 };
+
+void SdlOpenGLDialog::choose_generic_tab(void *arg)
+{
+	SdlOpenGLDialog *d = static_cast<SdlOpenGLDialog *>(arg);
+	d->m_tabs->choose_tab(0);
+	d->m_dialog.draw();
+}
+
+void SdlOpenGLDialog::choose_advanced_tab(void *arg)
+{
+	SdlOpenGLDialog *d = static_cast<SdlOpenGLDialog *>(arg);
+	d->m_tabs->choose_tab(1);
+	d->m_dialog.draw();
+}
 
 auto_ptr<OpenGLDialog>
 OpenGLDialog::Create()
