@@ -375,69 +375,79 @@ static void crosshair_dialog(void *arg)
 
 	placer->add(new w_spacer, true);
 
+	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+	table->col_flags(0, placeable::kAlignRight);
+
 	// Shape
 	w_select *shape_w = new w_select("", 0, shape_labels);
 	SelectSelectorWidget shapeWidget(shape_w);
 	Int16Pref shapePref(player_preferences->Crosshairs.Shape);
 	crosshair_binders->insert<int> (&shapeWidget, &shapePref);
-	placer->add(new label_maker("Shape", shape_w, d), true);
+	table->dual_add(new w_label("Shape"), d);
+	table->dual_add(shape_w, d);
 
-	placer->add(new w_spacer, true);
+	table->add_row(new w_spacer(), true);
 
 	// Thickness
 	w_slider* thickness_w = new w_slider("", 7, 0);
 	SliderSelectorWidget thicknessWidget(thickness_w);
 	CrosshairPref thicknessPref(player_preferences->Crosshairs.Thickness);
 	crosshair_binders->insert<int> (&thicknessWidget, &thicknessPref);
-	placer->add(new label_maker("Width", thickness_w, d), true);
+	table->dual_add(new w_label("Width"), d);
+	table->dual_add(thickness_w, d);
 
 	// From Center
 	w_slider *from_center_w = new w_slider("", 15, 0);
 	SliderSelectorWidget fromCenterWidget(from_center_w);
 	Int16Pref fromCenterPref(player_preferences->Crosshairs.FromCenter);
 	crosshair_binders->insert<int> (&fromCenterWidget, &fromCenterPref);
-	placer->add(new label_maker("Gap", from_center_w, d), true);
+	table->dual_add(new w_label("Gap"), d);
+	table->dual_add(from_center_w, d);
 
 	// Length
 	w_slider *length_w = new w_slider("", 15, 0);
 	SliderSelectorWidget lengthWidget(length_w);
 	CrosshairPref lengthPref(player_preferences->Crosshairs.Length);
 	crosshair_binders->insert<int> (&lengthWidget, &lengthPref);
-	placer->add(new label_maker("Size", length_w, d), true);
-	
-	placer->add(new w_spacer, true);
+	table->dual_add(new w_label("Size"), d);
+	table->dual_add(length_w, d);
 
-	placer->dual_add(new w_static_text("Color"), d);
+	table->add_row(new w_spacer(), true);
+	table->dual_add_row(new w_static_text("Color"), d);
 
 	// Color
 	w_slider *red_w = new w_slider("", 16, 0);
 	SliderSelectorWidget redWidget(red_w);
 	ColorComponentPref redPref(player_preferences->Crosshairs.Color.red);
 	crosshair_binders->insert<int> (&redWidget, &redPref);
-	placer->add(new label_maker("Red", red_w, d), true);
+	table->dual_add(new w_label("Red"), d);
+	table->dual_add(red_w, d);
 
 	w_slider *green_w = new w_slider("", 16, 0);
 	SliderSelectorWidget greenWidget(green_w);;
 	ColorComponentPref greenPref(player_preferences->Crosshairs.Color.green);
 	crosshair_binders->insert<int> (&greenWidget, &greenPref);
-	placer->add(new label_maker("Green", green_w, d), true);
+	table->dual_add(new w_label("Green"), d);
+	table->dual_add(green_w, d);
 
 	w_slider *blue_w = new w_slider("", 16, 0);
 	SliderSelectorWidget blueWidget(blue_w);
 	ColorComponentPref bluePref(player_preferences->Crosshairs.Color.blue);
 	crosshair_binders->insert<int> (&blueWidget, &bluePref);
-	placer->add(new label_maker("Blue", blue_w, d), true);
-	
-	placer->add(new w_spacer, true);
+	table->dual_add(new w_label("Blue"), d);
+	table->dual_add(blue_w, d);
 
-	placer->dual_add(new w_static_text("OpenGL Only (no preview)"), d);
+	table->add_row(new w_spacer(), true);
+	table->dual_add_row(new w_static_text("OpenGL Only (no preview"), d);
 
 	w_slider *opacity_w = new w_slider("", 16, 0);
 	SliderSelectorWidget opacityWidget(opacity_w);
 	OpacityPref opacityPref(player_preferences->Crosshairs.Opacity);
 	crosshair_binders->insert<int> (&opacityWidget, &opacityPref);
-	placer->add(new label_maker("Opacity", opacity_w, d), true);
+	table->dual_add(new w_label("Opacity"), d);
+	table->dual_add(opacity_w, d);
 
+	placer->add(table, true);
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
