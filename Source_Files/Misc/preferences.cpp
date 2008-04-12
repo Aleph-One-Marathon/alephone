@@ -684,21 +684,26 @@ static void software_rendering_options_dialog(void* arg)
 {
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text("SOFTWARE RENDERING OPTIONS", TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text("SOFTWARE RENDERING OPTIONS", TITLE_FONT, TITLE_COLOR), d);
+	placer->add(new w_spacer(), true);
 
-	w_select *depth_w = new w_select("Color Depth", graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
-	d.add(depth_w);
-	w_toggle *resolution_w = new w_toggle("Resolution", graphics_preferences->screen_mode.high_resolution, resolution_labels);
-	d.add(resolution_w);
-	d.add(new w_spacer());
-	w_select *sw_alpha_blending_w = new w_select("Transparent Liquids", graphics_preferences->software_alpha_blending, sw_alpha_blending_labels);
-	d.add(sw_alpha_blending_w);
+	w_select *depth_w = new w_select("", graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
+	placer->add(new label_maker("Color Depth", depth_w, d), true);
+	w_toggle *resolution_w = new w_toggle("", graphics_preferences->screen_mode.high_resolution, resolution_labels);
+	placer->add(new label_maker("Resolution", resolution_w, d), true);
+	placer->add(new w_spacer(), true);
+	w_select *sw_alpha_blending_w = new w_select("", graphics_preferences->software_alpha_blending, sw_alpha_blending_labels);
+	placer->add(new label_maker("Transparent Liquids", sw_alpha_blending_w, d), true);
 	
-	d.add(new w_spacer());
-	d.add(new w_left_button("ACCEPT", dialog_ok, &d));
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
 
+	placer->add(new w_spacer(), true);
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
 	// Clear screen
 	clear_screen();
 
