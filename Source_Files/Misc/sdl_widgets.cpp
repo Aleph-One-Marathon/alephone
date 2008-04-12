@@ -885,9 +885,9 @@ w_text_entry::w_text_entry(const char *n, size_t max_c, const char *initial_text
 	else
 		saved_min_width = MAX_TEXT_WIDTH;
 
-	saved_min_height =  max(font->get_ascent(), text_font->get_ascent()) +
-		max (font->get_descent(), text_font->get_descent()) +
-		max (font->get_leading(), text_font->get_leading());
+	saved_min_height =  (int16) max(font->get_ascent(), text_font->get_ascent()) +
+		(int16) max (font->get_descent(), text_font->get_descent()) +
+		(int16) max (font->get_leading(), text_font->get_leading());
 }
 
 w_text_entry::~w_text_entry()
@@ -897,9 +897,9 @@ w_text_entry::~w_text_entry()
 
 int w_text_entry::layout(void)
 {
-  rect.h = max(font->get_ascent(), text_font->get_ascent()) +
-    max (font->get_descent(), text_font->get_descent()) +
-    max (font->get_leading(), text_font->get_leading());
+	rect.h = (int16) max(font->get_ascent(), text_font->get_ascent()) +
+		(int16) max (font->get_descent(), text_font->get_descent()) +
+		(int16) max (font->get_leading(), text_font->get_leading());
 
     int theResult = widget::layout();
     uint16 name_width = text_width(name.c_str(), font, style);
