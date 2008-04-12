@@ -804,6 +804,127 @@ widget_placer::~widget_placer()
 	}
 }
 
+void table_placer::add(placeable *p, bool assume_ownership)
+{
+	if (m_add == 0)
+	{
+		m_table.resize(m_table.size() + 1);
+		m_table[m_table.size() - 1].resize(m_columns);
+	}
+	m_table[m_table.size() - 1][m_add++] = p;
+	if (m_add == m_columns) m_add = 0;
+
+	if (assume_ownership) this->assume_ownership(p);
+}
+
+void table_placer::dual_add(widget *w, dialog &d)
+{
+	add(static_cast<placeable *>(w));
+	d.add(w);
+}
+
+int table_placer::min_height()
+{
+	int height = 0;
+	for (int row = 0; row < m_table.size(); ++row)
+	{
+		height += row_height(row);
+	}
+
+	return height;
+}
+
+int table_placer::col_width(int col)
+{
+	int width = 0;
+	for (int row = 0; row < m_table.size(); ++row)
+	{
+		int min_width = m_table[row][col]->min_width();
+		if (min_width > width)
+			width = min_width;
+	}
+
+	if (m_col_min_widths[col] > width)
+		width = m_col_min_widths[col];
+
+	return width;
+}
+
+int table_placer::row_height(int row)
+{
+	int height = 0;
+	for (int col = 0; col < m_table[row].size(); ++col)
+	{
+		int min_height = m_table[row][col]->min_height();
+		if (min_height > height)
+			height = min_height;
+	}
+
+	return height;
+}
+
+int table_placer::min_width()
+{
+	int width = 0;
+	for (int col = 0; col < m_columns; ++col)
+	{
+		width += col_width(col);
+	}
+
+	width += (m_columns - 1) * m_space;
+
+	return width;
+}
+		
+void table_placer::place(const SDL_Rect &r, placement_flags flags)
+{
+	int w = min_width();
+
+	int y_offset = 0;
+	for (int row = 0; row < m_table.size(); ++row)
+	{
+		int x_offset;
+		if ((flags & kFill) || (flags & kAlignLeft))
+		{
+			x_offset = 0;
+		}
+		else if (flags & kAlignRight)
+		{
+			x_offset = r.w - w;
+		}
+		else
+		{
+			x_offset = (r.w - w) / 2;
+		}
+		for (int col = 0; col < m_table[row].size(); ++col)
+		{
+			SDL_Rect wr;
+			wr.w = col_width(col);
+			wr.h = row_height(row);
+			wr.x = r.x + x_offset;
+			wr.y = r.y + y_offset;
+
+			m_table[row][col]->place(wr, m_col_flags[col]);
+
+			x_offset += wr.w;
+			x_offset += m_space;
+		}
+
+		y_offset += row_height(row);
+	}
+}
+		
+void table_placer::visible(bool visible)
+{
+	for (int row = 0; row < m_table.size(); ++row)
+	{
+		for (int col = 0; col < m_table[row].size(); ++col)
+		{
+			m_table[row][col]->visible(visible);
+		}
+	}
+}
+
 void vertical_placer::add(placeable *p, bool assume_ownership)
 {
 	m_widgets.push_back(p);

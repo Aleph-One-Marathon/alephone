@@ -115,6 +115,30 @@ private:
 	std::vector<placeable *> m_tabs;
 };
 
+class table_placer : public widget_placer
+{
+public:
+	enum { kSpace = 4 };
+	table_placer(int columns, int space = kSpace) : widget_placer(), m_add(0), m_columns(columns), m_space(space) { m_col_flags.resize(m_columns); m_col_min_widths.resize(m_columns);}
+	void add(placeable *p, bool assume_ownership = false);
+	void col_flags(int col, placement_flags flags = kDefault) { m_col_flags[col] = flags; }
+	void col_min_width(int col, int min_width) { m_col_min_widths[col] = min_width; }
+	void dual_add(widget *w, dialog& d);
+	int min_height();
+	int min_width();
+	void place(const SDL_Rect &r, placement_flags flags = kDefault);
+	void visible(bool visible);
+	int col_width(int column);
+private:
+	int row_height(int row);
+	int m_add; // column to add next widget to
+	int m_columns; // number of columns
+	int m_space;
+	std::vector<std::vector<placeable *> > m_table;
+	std::vector<placement_flags> m_col_flags;
+	std::vector<int> m_col_min_widths;
+};
+
 
 class vertical_placer : public widget_placer
 {
