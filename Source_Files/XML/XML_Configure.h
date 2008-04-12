@@ -27,7 +27,7 @@
 	appropriately, based on its parsing of that file 
 */
 
-#include "xmlparse.h"
+#include "expat.h"
 #include "XML_ElementParser.h"
 
 class XML_Configure

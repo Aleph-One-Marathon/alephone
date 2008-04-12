@@ -36,7 +36,7 @@
 #include "ssdp.h"
 #include "os.h"       /* for getting the local ip */
 #include "utility.h"
-#include "xmlparse.h"
+#include "expat.h"
 
 /***************************************************************
 ** Discovery/Description Defines                               *

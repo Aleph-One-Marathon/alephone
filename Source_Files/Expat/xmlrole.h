@@ -1,35 +1,15 @@
-/*
-The contents of this file are subject to the Mozilla Public License
-Version 1.1 (the "License"); you may not use this file except in
-compliance with the License. You may obtain a copy of the License at
-http://www.mozilla.org/MPL/
-
-Software distributed under the License is distributed on an "AS IS"
-basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
-License for the specific language governing rights and limitations
-under the License.
-
-The Original Code is expat.
-
-The Initial Developer of the Original Code is James Clark.
-Portions created by James Clark are Copyright (C) 1998, 1999
-James Clark. All Rights Reserved.
-
-Contributor(s):
-
-Alternatively, the contents of this file may be used under the terms
-of the GNU General Public License (the "GPL"), in which case the
-provisions of the GPL are applicable instead of those above.  If you
-wish to allow use of your version of this file only under the terms of
-the GPL and not to allow others to use your version of this file under
-the MPL, indicate your decision by deleting the provisions above and
-replace them with the notice and other provisions required by the
-GPL. If you do not delete the provisions above, a recipient may use
-your version of this file under either the MPL or the GPL.
+/* Copyright (c) 1998, 1999 Thai Open Source Software Center Ltd
+   See the file COPYING for copying permission.
 */
 
 #ifndef XmlRole_INCLUDED
 #define XmlRole_INCLUDED 1
+
+#ifdef __VMS
+/*      0        1         2         3      0        1         2         3
+        1234567890123456789012345678901     1234567890123456789012345678901 */
+#define XmlPrologStateInitExternalEntity    XmlPrologStateInitExternalEnt
+#endif
 
 #include "xmltok.h"
 
@@ -42,16 +22,21 @@ enum {
   XML_ROLE_NONE = 0,
   XML_ROLE_XML_DECL,
   XML_ROLE_INSTANCE_START,
+  XML_ROLE_DOCTYPE_NONE,
   XML_ROLE_DOCTYPE_NAME,
   XML_ROLE_DOCTYPE_SYSTEM_ID,
   XML_ROLE_DOCTYPE_PUBLIC_ID,
+  XML_ROLE_DOCTYPE_INTERNAL_SUBSET,
   XML_ROLE_DOCTYPE_CLOSE,
   XML_ROLE_GENERAL_ENTITY_NAME,
   XML_ROLE_PARAM_ENTITY_NAME,
+  XML_ROLE_ENTITY_NONE,
   XML_ROLE_ENTITY_VALUE,
   XML_ROLE_ENTITY_SYSTEM_ID,
   XML_ROLE_ENTITY_PUBLIC_ID,
+  XML_ROLE_ENTITY_COMPLETE,
   XML_ROLE_ENTITY_NOTATION_NAME,
+  XML_ROLE_NOTATION_NONE,
   XML_ROLE_NOTATION_NAME,
   XML_ROLE_NOTATION_SYSTEM_ID,
   XML_ROLE_NOTATION_NO_SYSTEM_ID,
@@ -67,11 +52,13 @@ enum {
   XML_ROLE_ATTRIBUTE_TYPE_NMTOKENS,
   XML_ROLE_ATTRIBUTE_ENUM_VALUE,
   XML_ROLE_ATTRIBUTE_NOTATION_VALUE,
+  XML_ROLE_ATTLIST_NONE,
   XML_ROLE_ATTLIST_ELEMENT_NAME,
   XML_ROLE_IMPLIED_ATTRIBUTE_VALUE,
   XML_ROLE_REQUIRED_ATTRIBUTE_VALUE,
   XML_ROLE_DEFAULT_ATTRIBUTE_VALUE,
   XML_ROLE_FIXED_ATTRIBUTE_VALUE,
+  XML_ROLE_ELEMENT_NONE,
   XML_ROLE_ELEMENT_NAME,
   XML_ROLE_CONTENT_ANY,
   XML_ROLE_CONTENT_EMPTY,
@@ -87,19 +74,35 @@ enum {
   XML_ROLE_CONTENT_ELEMENT_REP,
   XML_ROLE_CONTENT_ELEMENT_OPT,
   XML_ROLE_CONTENT_ELEMENT_PLUS,
+  XML_ROLE_PI,
+  XML_ROLE_COMMENT,
+#ifdef XML_DTD
+  XML_ROLE_TEXT_DECL,
+  XML_ROLE_IGNORE_SECT,
+  XML_ROLE_INNER_PARAM_ENTITY_REF,
+#endif /* XML_DTD */
   XML_ROLE_PARAM_ENTITY_REF
 };
 
 typedef struct prolog_state {
-  int (*handler)(struct prolog_state *state,
-	         int tok,
-		 const char *ptr,
-		 const char *end,
-		 const ENCODING *enc);
+  int (PTRCALL *handler) (struct prolog_state *state,
+                          int tok,
+                          const char *ptr,
+                          const char *end,
+                          const ENCODING *enc);
   unsigned level;
+  int role_none;
+#ifdef XML_DTD
+  unsigned includeLevel;
+  int documentEntity;
+  int inEntityValue;
+#endif /* XML_DTD */
 } PROLOG_STATE;
 
-void XMLTOKAPI XmlPrologStateInit(PROLOG_STATE *);
+void XmlPrologStateInit(PROLOG_STATE *);
+#ifdef XML_DTD
+void XmlPrologStateInitExternalEntity(PROLOG_STATE *);
+#endif /* XML_DTD */
 
 #define XmlTokenRole(state, tok, ptr, end, enc) \
  (((state)->handler)(state, tok, ptr, end, enc))
