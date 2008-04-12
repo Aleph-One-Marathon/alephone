@@ -1814,6 +1814,22 @@ w_select_popup::w_select_popup (const char *name, action_proc p, void *a) : w_se
 	arg = a;
 }
 
+void w_select_popup::set_labels(const vector<string>& inLabels)
+{
+	labels = inLabels;
+	if (!text_width(name, font, style))
+	{
+		// recalculate min width
+		saved_min_width = 0;
+		for (vector<string>::iterator it = labels.begin(); it != labels.end(); ++it)
+		{
+			uint16 width = text_width(it->c_str(), font, style);
+			if (width > saved_min_width)
+				saved_min_width = width;
+		}
+	}
+}
+
 void w_select_popup::set_selection (int value)
 {
 	if (value < labels.size () && value >= 0)

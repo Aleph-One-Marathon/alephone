@@ -344,9 +344,9 @@ public:
 	
 protected:
 	void set_arg(void *arg) { this->arg = arg; }
-
+	const char *name;
 private:
-	const char *name, *selection;
+	const char *selection;
 	action_proc proc;
 	void *arg;
 
@@ -800,7 +800,7 @@ class w_select_popup : public w_select_button {
 public:
 	w_select_popup (const char *name, action_proc p = NULL, void *a = NULL);
 	
-	void set_labels (const vector<string>& inLabels) {labels = inLabels;}
+	void set_labels (const vector<string>& inLabels);/* {labels = inLabels;}*/
 	void set_selection (int value);
 	int get_selection () {return selection;}
 
