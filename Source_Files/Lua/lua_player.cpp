@@ -952,18 +952,21 @@ static int Lua_Player_Kills_Set(lua_State *L)
 	player_data *player = get_player_data(player_index);
 	player_data *slain_player = get_player_data(slain_player_index);
 
-	if (slain_player->damage_taken[player_index].kills != kills)
+	int kills_award = kills - slain_player->damage_taken[player_index].kills;
+	if (kills_award)
 	{
-		team_damage_taken[slain_player->team].kills += kills - slain_player->damage_taken[player_index].kills;
-		if (slain_player_index != player_index)
+		slain_player->damage_taken[player_index].kills += kills_award;
+		team_damage_taken[slain_player->team].kills += kills_award;
+
+		if (player_index != slain_player_index)
 		{
-			team_damage_given[player->team].kills += kills - slain_player->damage_taken[player_index].kills;
+			player->total_damage_given.kills += kills_award;
+			team_damage_given[player->team].kills += kills_award;
 		}
 		if (slain_player->team == player->team)
 		{
-			team_friendly_fire[slain_player->team].kills += kills - slain_player->damage_taken[player_index].kills;
+			team_friendly_fire[slain_player->team].kills += kills_award;
 		}
-		slain_player->damage_taken[player_index].kills = kills;
 		mark_player_network_stats_as_dirty(current_player_index);
 	}
 	return 0;
