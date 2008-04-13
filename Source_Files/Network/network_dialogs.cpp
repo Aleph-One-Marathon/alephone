@@ -2873,10 +2873,12 @@ public:
 
 		horizontal_placer *lua_file_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
 		w_file_chooser* choose_script_w = new w_file_chooser ("", "Choose Script", _typecode_netscript);
-		lua_file_placer->dual_add(choose_script_w->label("Script"), m_dialog);
+//		lua_file_placer->dual_add(choose_script_w->label("Script"), m_dialog);
+		lua_file_placer->add_flags(placeable::kAlignRight);
 		lua_file_placer->dual_add(choose_script_w, m_dialog);
 		static_cast<w_enabling_toggle*>(use_netscript_w)->add_dependent_widget(choose_script_w);
-		network_table->add_row(lua_file_placer, true);
+		network_table->add(lua_file_placer, true);
+		network_table->add(new w_spacer(), true);
 
 		left_placer->add(new w_spacer(), true);
 		table_placer *options_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
