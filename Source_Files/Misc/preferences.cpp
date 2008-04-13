@@ -1971,7 +1971,11 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 		preferences->screen_mode.fill_the_screen = false;
 	else
 		preferences->screen_mode.fill_the_screen = true;
-	preferences->screen_mode.bit_depth = 16;
+
+	if (preferences->screen_mode.acceleration == _opengl_acceleration)
+		preferences->screen_mode.bit_depth = 32;
+	else
+		preferences->screen_mode.bit_depth = 16;
 	
 	preferences->screen_mode.draw_every_other_line= false;
 	
