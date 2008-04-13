@@ -458,7 +458,8 @@ static char*    sNetworkGameTypesStrings[] = {
 };
 
 static char*    sEndConditionTypeStrings[] = {
-    "No Limit (Alt+Q to quit)",
+//    "No Limit (Alt+Q to quit)",
+	"Unlimited",
     "Time Limit",
     "Score Limit",
 };

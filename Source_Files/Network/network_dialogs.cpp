@@ -1094,9 +1094,12 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	m_limitTypeWidget->set_labels (kEndConditionTypeStringSetID);
 
 	vector<string> toleranceLabels;
-	toleranceLabels.push_back("Off");
-	toleranceLabels.push_back("Lenient");
-	toleranceLabels.push_back("Strict");
+	toleranceLabels.push_back("33 ms");
+	toleranceLabels.push_back("66 ms");
+	toleranceLabels.push_back("100 ms");
+	toleranceLabels.push_back("133 ms");
+	toleranceLabels.push_back("166 ms");
+	toleranceLabels.push_back("2 sec");
 	m_latencyToleranceWidget->set_labels (toleranceLabels);
 	
 	BinderSet binders;
@@ -1352,7 +1355,7 @@ void SetupNetgameDialog::setupForGameType ()
 			m_aliensWidget->set_value (true);
 			
 			getpstr (ptemporary, strSETUP_NET_GAME_MESSAGES, killsString);
-			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
+//			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
 			break;
 			
 		case _game_of_kill_monsters:
@@ -1364,7 +1367,7 @@ void SetupNetgameDialog::setupForGameType ()
 			m_aliensWidget->activate ();
 			
 			getpstr (ptemporary, strSETUP_NET_GAME_MESSAGES, killsString);
-			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
+//			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
 			break;
 
 		case _game_of_capture_the_flag:
@@ -1376,7 +1379,7 @@ void SetupNetgameDialog::setupForGameType ()
 			m_teamWidget->activate ();
 			
 			getpstr (ptemporary, strSETUP_NET_GAME_MESSAGES, flagsString);
-			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
+//			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
 			break;
 			
 		case _game_of_rugby:
@@ -1388,7 +1391,7 @@ void SetupNetgameDialog::setupForGameType ()
 			m_teamWidget->activate ();
 			
 			getpstr (ptemporary, strSETUP_NET_GAME_MESSAGES, pointsString);
-			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
+//			m_scoreLimitWidget->set_label (pstring_to_string (ptemporary));
 			break;
 			
 		default:
@@ -2791,131 +2794,176 @@ class SdlSetupNetgameDialog : public SetupNetgameDialog
 public:
 	SdlSetupNetgameDialog ()
 	{
-		m_dialog.add (new w_static_text ("SETUP NETWORK GAME", TITLE_FONT, TITLE_COLOR));
+		vertical_placer *placer = new vertical_placer;
+
+		placer->dual_add(new w_static_text("SETUP NETWORK GAME", TITLE_FONT, TITLE_COLOR), m_dialog);
+		placer->add(new w_spacer(), true);
+
+		table_placer *table = new table_placer(2, 10);
+		vertical_placer *left_placer = new vertical_placer;
+		vertical_placer *right_placer = new vertical_placer;
 		
-		vector<string> tab_strings;
-		tab_strings.push_back ("GENERAL");
-		tab_strings.push_back ("MORE STUFF");
-		make_tab_buttons_for_dialog (m_dialog, tab_strings, iSNG_TABS);
-		m_dialog.set_active_tab (iSNG_GENERAL_TAB);
-	
-		m_dialog.add (new w_spacer ());
-	
-		m_dialog.add_to_tab (new w_static_text ("Appearance"), iSNG_GENERAL_TAB);
-
-		w_text_entry *name_w = new w_text_entry ("Name", PREFERENCES_NAME_LENGTH, "");
+		table_placer *player_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+		player_table->col_flags(0, placeable::kAlignRight);
+		player_table->dual_add_row(new w_static_text("Appearance"), m_dialog);
+		w_text_entry *name_w = new w_text_entry ("", PREFERENCES_NAME_LENGTH, "");
 		name_w->enable_mac_roman_input();
-		m_dialog.add_to_tab (name_w, iSNG_GENERAL_TAB);
 
-		w_player_color *pcolor_w = new w_player_color ("Color", player_preferences->color);
-		m_dialog.add_to_tab (pcolor_w, iSNG_GENERAL_TAB);
+		player_table->dual_add(new w_label("Name"), m_dialog);
+		player_table->dual_add(name_w, m_dialog);
 
-		w_player_color *tcolor_w = new w_player_color ("Team Color", player_preferences->team);
-		m_dialog.add_to_tab (tcolor_w, iSNG_GENERAL_TAB);
+		w_player_color *pcolor_w = new w_player_color ("", player_preferences->color);
+		player_table->dual_add(new w_label("Color"), m_dialog);
+		player_table->dual_add(pcolor_w, m_dialog);
 
-		m_dialog.add_to_tab (new w_spacer (), iSNG_GENERAL_TAB);
-		m_dialog.add_to_tab (new w_static_text ("Game Options"), iSNG_GENERAL_TAB);
+		w_player_color *tcolor_w = new w_player_color ("", player_preferences->team);
+		player_table->dual_add(new w_label("Team"), m_dialog);
+		player_table->dual_add(tcolor_w, m_dialog);
+
+		right_placer->dual_add(new w_static_text("Network"), m_dialog);
+		table_placer *network_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+		network_table->col_flags(0, placeable::kAlignRight);
+
+		w_toggle *advertise_on_metaserver_w = new w_toggle ("", sAdvertiseGameOnMetaserver);
+		network_table->dual_add(new w_label("Advertise Game on Internet"), m_dialog);
+		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
+
+		w_toggle *use_upnp_w = new w_toggle ("", true);
+		network_table->dual_add(new w_label("Configure UPnP Router"), m_dialog);
+		network_table->dual_add(use_upnp_w, m_dialog);
+
+		w_toggle* realtime_audio_w = new w_toggle ("", network_preferences->allow_microphone);
+		network_table->dual_add(new w_label("Allow Microphone"), m_dialog);
+		network_table->dual_add(realtime_audio_w, m_dialog);
+
+		w_select_popup *latency_tolerance_w = new w_select_popup("");
+		network_table->dual_add(new w_label("Latency Tolerance"), m_dialog);
+		network_table->dual_add(latency_tolerance_w, m_dialog);
+
+		right_placer->add(network_table, true);
+
+		player_table->dual_add_row(new w_spacer(), m_dialog);
+		player_table->dual_add_row(new w_static_text("Game"), m_dialog);
 
 		// Could eventually store this path in network_preferences somewhere, so to have separate map file
 		// prefs for single- and multi-player.
-		w_file_chooser* map_w = new w_file_chooser ("Map", "Choose Map", _typecode_scenario);
-		m_dialog.add_to_tab (map_w, iSNG_GENERAL_TAB);
+		w_file_chooser* map_w = new w_file_chooser ("", "Choose Map", _typecode_scenario);
+		player_table->dual_add(new w_label("Map"), m_dialog);
+		player_table->dual_add(map_w, m_dialog);
 
-		w_select_popup* entry_point_w = new w_select_popup ("Level");
-		entry_point_w->set_full_width ();
-		m_dialog.add_to_tab (entry_point_w, iSNG_GENERAL_TAB);
+		w_select_popup* entry_point_w = new w_select_popup ("");
+		player_table->dual_add(new w_label("Level"), m_dialog);
+		player_table->dual_add(entry_point_w, m_dialog);
 
-		w_select_popup* game_type_w = new w_select_popup ("Game Type");
-		game_type_w->set_full_width ();
-		m_dialog.add_to_tab (game_type_w, iSNG_GENERAL_TAB);
+		w_select_popup* game_type_w = new w_select_popup ("");
+		player_table->dual_add(new w_label("Game Type"), m_dialog);
+		player_table->dual_add(game_type_w, m_dialog);
 
-		w_select *diff_w = new w_select ("Difficulty", network_preferences->difficulty_level, NULL);
-		m_dialog.add_to_tab(diff_w, iSNG_GENERAL_TAB);
+		w_select *diff_w = new w_select ("", network_preferences->difficulty_level, NULL);
+		player_table->dual_add(new w_label("Difficulty"), m_dialog);
+		player_table->dual_add(diff_w, m_dialog);
 
-		m_dialog.add_to_tab(new w_spacer (), iSNG_GENERAL_TAB);
-        
-		w_select* endcondition_w = new w_select ("Game Ends At", kTimeLimit, NULL);
-		endcondition_w->set_full_width ();
-		m_dialog.add_to_tab (endcondition_w, iSNG_GENERAL_TAB);
+		left_placer->add(player_table, true);
 
-		w_number_entry*	timelimit_w = new w_number_entry ("Time Limit (minutes)", network_preferences->time_limit);
-		m_dialog.add_to_tab(timelimit_w, iSNG_GENERAL_TAB);
+		network_table->add_row(new w_spacer(), true);
+		network_table->dual_add_row(new w_static_text("Net Script"), m_dialog);
+		w_toggle* use_netscript_w = new w_enabling_toggle ("", false);
+		network_table->dual_add(new w_label("Use Netscript"), m_dialog);
+		network_table->dual_add(use_netscript_w, m_dialog);
+
+		horizontal_placer *lua_file_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+		w_file_chooser* choose_script_w = new w_file_chooser ("", "Choose Script", _typecode_netscript);
+		lua_file_placer->dual_add(new w_label("Script"), m_dialog);
+		lua_file_placer->dual_add(choose_script_w, m_dialog);
+		network_table->add_row(lua_file_placer, true);
+
+		left_placer->add(new w_spacer(), true);
+		table_placer *options_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+		options_table->col_flags(1, placeable::kAlignLeft);
+		options_table->dual_add_row(new w_static_text("Options"), m_dialog);
+
+		w_toggle *aliens_w = new w_toggle ("", (network_preferences->game_options & _monsters_replenish) != 0);
+		options_table->dual_add(aliens_w, m_dialog);
+		options_table->dual_add(new w_label("Aliens"), m_dialog);
+
+		w_toggle *live_w = new w_toggle ("", (network_preferences->game_options & _live_network_stats) != 0);
+		options_table->dual_add(live_w, m_dialog);
+		options_table->dual_add(new w_label("Live Carnage Reporting"), m_dialog);
+
+		w_toggle *teams_w = new w_toggle ("", !(network_preferences->game_options & _force_unique_teams));
+		options_table->dual_add(teams_w, m_dialog);
+		options_table->dual_add(new w_label("Teams"), m_dialog);
+
+		w_toggle *drop_w = new w_toggle ("", !(network_preferences->game_options & _burn_items_on_death));
+		options_table->dual_add(drop_w, m_dialog);
+		options_table->dual_add(new w_label("Dead Players Drop Items"), m_dialog);
+
+		w_toggle *sensor_w = new w_toggle ("", (network_preferences->game_options & _motion_sensor_does_not_work) != 0);
+		options_table->dual_add(sensor_w, m_dialog);
+		options_table->dual_add(new w_label("Disable Motion Sensor"), m_dialog);
+
+		w_toggle *pen_die_w = new w_toggle ("", (network_preferences->game_options & _dying_is_penalized) != 0);
+		options_table->dual_add(pen_die_w, m_dialog);
+		options_table->dual_add(new w_label("Penalize Dying (10 seconds)"), m_dialog);
+
+		w_toggle *pen_sui_w = new w_toggle ("", (network_preferences->game_options & _suicide_is_penalized) != 0);
+		options_table->dual_add(pen_sui_w, m_dialog);
+		options_table->dual_add(new w_label("Penalize Suicide (15 seconds)"), m_dialog);
+
+		left_placer->add(options_table, true);
+
+		network_table->add_row(new w_spacer(), true);
+		network_table->dual_add_row(new w_static_text("Extras"), m_dialog);
+		w_toggle *zoom_w = new w_toggle ("", true);
+		network_table->dual_add(new w_label("Allow Zoom"), m_dialog);
+		network_table->dual_add(zoom_w, m_dialog);
+	
+		w_toggle *crosshairs_w = new w_toggle ("", true);
+		network_table->dual_add(new w_label("Allow Crosshairs"), m_dialog);
+		network_table->dual_add(crosshairs_w, m_dialog);
+	
+		w_toggle *lara_croft_w = new w_toggle ("", true);
+		network_table->dual_add(new w_label("Allow Chase Cam"), m_dialog);
+		network_table->dual_add(lara_croft_w, m_dialog);
+
+		w_toggle *carnage_messages_w = new w_toggle("", true);
+		network_table->dual_add(new w_label("Allow Carnage Messages"), m_dialog);
+		network_table->dual_add(carnage_messages_w, m_dialog);
+
+		right_placer->add(new w_spacer(), true);
+		right_placer->dual_add(new w_static_text("Duration"), m_dialog);
+		table_placer *limits_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+		limits_table->col_flags(0, placeable::kAlignRight);
+		
+		w_select* endcondition_w = new w_select ("", kTimeLimit, NULL);
+		limits_table->dual_add(new w_label("Game Ends At"), m_dialog);
+		limits_table->dual_add(endcondition_w, m_dialog);
+
+		w_number_entry*	timelimit_w = new w_number_entry ("", network_preferences->time_limit);
+		limits_table->dual_add(new w_label("Time Limit (minutes)"), m_dialog);
+		limits_table->dual_add(timelimit_w, m_dialog);
 
 		// The name of this widget (score limit) will be replaced by Kill Limit, Flag Capture Limit, etc.
-		w_number_entry*	scorelimit_w = new w_number_entry ("(score limit)", network_preferences->kill_limit);
-		m_dialog.add_to_tab (scorelimit_w, iSNG_GENERAL_TAB);
-
-		m_dialog.add_to_tab(new w_spacer(), iSNG_GENERAL_TAB);
-
-		w_toggle *aliens_w = new w_toggle ("Aliens", (network_preferences->game_options & _monsters_replenish) != 0);
-		m_dialog.add_to_tab (aliens_w, iSNG_GENERAL_TAB);
-
-		w_toggle *teams_w = new w_toggle ("Teams", !(network_preferences->game_options & _force_unique_teams));
-		m_dialog.add_to_tab (teams_w, iSNG_GENERAL_TAB);
-
-		w_toggle *drop_w = new w_toggle ("Dead Players Drop Items", !(network_preferences->game_options & _burn_items_on_death));
-		m_dialog.add_to_tab (drop_w, iSNG_GENERAL_TAB);
-
-		w_toggle *pen_die_w = new w_toggle ("Penalize Dying (10 seconds)", (network_preferences->game_options & _dying_is_penalized) != 0);
-		m_dialog.add_to_tab (pen_die_w, iSNG_GENERAL_TAB);
-
-		w_toggle *pen_sui_w = new w_toggle ("Penalize Suicide (15 seconds)", (network_preferences->game_options & _suicide_is_penalized) != 0);
-		m_dialog.add_to_tab (pen_sui_w, iSNG_GENERAL_TAB);
-
-		m_dialog.add_to_tab (new w_spacer (), iSNG_GENERAL_TAB);
-
-		w_toggle *advertise_on_metaserver_w = new w_toggle ("Advertise Game on Internet", sAdvertiseGameOnMetaserver);
-		m_dialog.add_to_tab (advertise_on_metaserver_w, iSNG_GENERAL_TAB);
-
-		w_toggle* use_netscript_w = new w_enabling_toggle ("Use Netscript", false);
-		m_dialog.add_to_tab (use_netscript_w, iSNG_STUFF_TAB);
-	
-		w_file_chooser* choose_script_w = new w_file_chooser ("Script", "Choose Script", _typecode_netscript);
-		m_dialog.add_to_tab (choose_script_w, iSNG_STUFF_TAB);
-
-		m_dialog.add_to_tab(new w_spacer (), iSNG_STUFF_TAB);
-
-		w_toggle* realtime_audio_w = new w_toggle ("Allow Microphone", network_preferences->allow_microphone);
-		m_dialog.add_to_tab (realtime_audio_w, iSNG_STUFF_TAB);
-
-		w_toggle *live_w = new w_toggle ("Live Carnage Reporting", (network_preferences->game_options & _live_network_stats) != 0);
-		m_dialog.add_to_tab (live_w, iSNG_STUFF_TAB);
-
-		w_toggle *sensor_w = new w_toggle ("Disable Motion Sensor", (network_preferences->game_options & _motion_sensor_does_not_work) != 0);
-		m_dialog.add_to_tab (sensor_w, iSNG_STUFF_TAB);
-
-		m_dialog.add_to_tab (new w_spacer(), iSNG_STUFF_TAB);
-
-		w_toggle *zoom_w = new w_toggle ("Allow Zoom", true);
-		m_dialog.add_to_tab (zoom_w, iSNG_STUFF_TAB);
-	
-		w_toggle *crosshairs_w = new w_toggle ("Allow Crosshairs", true);
-		m_dialog.add_to_tab (crosshairs_w, iSNG_STUFF_TAB);
-	
-		w_toggle *lara_croft_w = new w_toggle ("Allow Chase Cam", true);
-		m_dialog.add_to_tab (lara_croft_w, iSNG_STUFF_TAB);
-
-		w_toggle *carnage_messages_w = new w_toggle("Allow Carnage Messages", true);
-		m_dialog.add_to_tab (carnage_messages_w, iSNG_STUFF_TAB);
+		w_number_entry*	scorelimit_w = new w_number_entry ("", network_preferences->kill_limit);
+		limits_table->dual_add(new w_label("Kill / Score Limit"), m_dialog);
+		limits_table->dual_add(scorelimit_w, m_dialog);
+		right_placer->add(limits_table, true);
 		
-		m_dialog.add_to_tab (new w_spacer(), iSNG_STUFF_TAB);
-		
-		m_dialog.add_to_tab (new w_static_text("Attempt to configure routers"), iSNG_STUFF_TAB);
-		w_toggle *use_upnp_w = new w_toggle ("UPnP (non-Apple)", true);
-		m_dialog.add_to_tab (use_upnp_w, iSNG_STUFF_TAB);
-		
-		m_dialog.add_to_tab (new w_spacer(), iSNG_STUFF_TAB);
-		m_dialog.add_to_tab (new w_static_text("Smooths games at laggy joiners' expense"), iSNG_STUFF_TAB);
-		w_slider *latency_tolerance_w = new w_slider("Latency Tolerance", 6, 0);
-		m_dialog.add_to_tab (latency_tolerance_w, iSNG_STUFF_TAB);
+		table->add(left_placer, true);
+		table->add(right_placer, true);
 
-		m_dialog.add (new w_spacer());	
+		placer->add(table, true);
 
-		w_left_button* ok_w = new w_left_button ("OK");
-		m_dialog.add (ok_w);
-        
-		w_right_button*	cancel_w = new w_right_button ("CANCEL");
-		m_dialog.add (cancel_w);
+		placer->add(new w_spacer(), true);
+
+		horizontal_placer *button_placer = new horizontal_placer;
+		w_button* ok_w = new w_button ("OK");
+		button_placer->dual_add(ok_w, m_dialog);
+		w_button* cancel_w = new w_button ("CANCEL");
+		button_placer->dual_add(cancel_w, m_dialog);
+		placer->add(button_placer, true);
+
+		m_dialog.set_widget_placer(placer);
 
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_okWidget = new ButtonWidget (ok_w);
@@ -2956,7 +3004,7 @@ public:
 		m_carnageMessagesWidget = new ToggleWidget (carnage_messages_w);
 		
 		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
-		m_latencyToleranceWidget = new SliderSelectorWidget(latency_tolerance_w);
+		m_latencyToleranceWidget = new PopupSelectorWidget(latency_tolerance_w);
 	}
 	
 	virtual bool Run ()

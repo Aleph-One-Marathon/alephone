@@ -485,8 +485,7 @@ protected:
 	ToggleWidget*           m_carnageMessagesWidget;
 	
 	ToggleWidget*       m_useUpnpWidget;
-//	SelectorWidget*         m_latencyToleranceWidget;
-	SliderSelectorWidget*   m_latencyToleranceWidget;
+	SelectorWidget*         m_latencyToleranceWidget;
 };
 
 
