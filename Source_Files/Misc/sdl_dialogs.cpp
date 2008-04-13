@@ -1144,7 +1144,7 @@ int horizontal_placer::min_width()
 void horizontal_placer::place(const SDL_Rect &r, placement_flags flags)
 {
 	int x_offset;
-	if (flags & kAlignLeft)
+	if ((flags & kAlignLeft) || (flags & kFill))
 	{
 		x_offset = 0;
 	}
@@ -1159,19 +1159,83 @@ void horizontal_placer::place(const SDL_Rect &r, placement_flags flags)
 
 	int h = (flags & kFill) ? r.h : min_height();
 	int w = 0;
+
+	bool fill_all_widgets = false;
 	if (m_balance_widths)
 	{
+		if (flags & kFill)
+		{
+			w = r.w / m_widgets.size();
+		}
+		else
+		{
+			for (int i = 0; i < m_widgets.size(); i++)
+			{
+				if (m_widgets[i]->min_width() > w)
+					w = m_widgets[i]->min_width();
+			}
+		}
+	} 
+	else if (flags & kFill)
+	{
+		int pool = r.w - (m_widgets.size() - 1) * m_space;
+		int widgets_remaining = m_widgets.size();
 		for (int i = 0; i < m_widgets.size(); i++)
 		{
-			if (m_widgets[i]->min_width() > w)
-				w = m_widgets[i]->min_width();
+			if (!(m_placement_flags[i] & kFill))
+			{
+				widgets_remaining--;
+				pool -= m_widgets[i]->min_width();
+			}
+		}
+			
+		if (widgets_remaining == m_widgets.size() || widgets_remaining == 0)
+		{
+			fill_all_widgets = true;
+			w = r.w / m_widgets.size();
+		}
+		else
+		{
+			w = r.w / widgets_remaining;
+			for (int i = 0; i < m_widgets.size(); i++)
+			{
+				if (m_placement_flags[i] & kFill)
+				{
+					int min_width = m_widgets[i]->min_width();
+					if (min_width > w)
+					{
+						pool -= min_width - w;
+					}
+				}
+			}
+			
+			if (pool < 0)
+			{
+				// bail!
+				fill_all_widgets = true;
+				w = r.w / m_widgets.size();
+			}
+			else
+			{
+				w = pool / widgets_remaining;
+			}
 		}
 	}
-	
+
 	for (int i = 0; i < m_widgets.size(); i++)
 	{
+		int min_width = m_widgets[i]->min_width();
+
 		SDL_Rect wr;
-		wr.w = m_balance_widths ? w : m_widgets[i]->min_width();
+		if (m_balance_widths || fill_all_widgets || (m_placement_flags[i] & kFill && w > min_width))
+		{
+			wr.w = w;
+		}
+		else 
+		{
+			wr.w = min_width;
+		}
+
 		wr.h = h;
 		wr.y = r.y;
 		wr.x = r.x + x_offset;
