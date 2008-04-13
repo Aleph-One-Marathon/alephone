@@ -1560,19 +1560,11 @@ void dialog::deactivate_currently_active_widget(bool draw)
 		active_widget->active = false;
 		if (active_widget->associated_label)
 			active_widget->associated_label->active = false;
-		else if (dynamic_cast<w_label *>(active_widget) && dynamic_cast<w_label *>(active_widget)->associated_widget)
-		{
-			dynamic_cast<w_label *>(active_widget)->associated_widget->active = false;
-		}
 
 		if (draw)
 		{
 			if (active_widget->associated_label)
 				draw_widget(active_widget->associated_label, false);
-			else if (dynamic_cast<w_label *>(active_widget) && dynamic_cast<w_label *>(active_widget)->associated_widget)
-			{
-				draw_widget(dynamic_cast<w_label *>(active_widget)->associated_widget, false);
-			}
 			draw_widget(active_widget);
 		}
 
@@ -1599,18 +1591,17 @@ void dialog::activate_widget(size_t num, bool draw)
 
 	// Activate new widget
 	active_widget = widgets[num];
+	if (dynamic_cast<w_label *>(active_widget) && dynamic_cast<w_label*>(active_widget)->associated_widget)
+		active_widget = dynamic_cast<w_label*>(active_widget)->associated_widget;
+
 	active_widget_num = num;
 	active_widget->active = true;
 	if (active_widget->associated_label)
 		active_widget->associated_label->active = true;
-	else if (dynamic_cast<w_label*>(active_widget) && dynamic_cast<w_label*>(active_widget)->associated_widget)
-		dynamic_cast<w_label*>(active_widget)->associated_widget->active = true;
 	
 	if (draw) {
 		if (active_widget->associated_label)
 			draw_widget(active_widget->associated_label, false);
-		else if (dynamic_cast<w_label*>(active_widget) && dynamic_cast<w_label*>(active_widget)->associated_widget)
-			draw_widget(dynamic_cast<w_label*>(active_widget)->associated_widget, false);
 		draw_widget(active_widget);
 		
 //		play_dialog_sound(DIALOG_SELECT_SOUND);
