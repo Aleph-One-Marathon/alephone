@@ -72,6 +72,7 @@ typedef boost::function<void (char)> GotCharacterCallback;
 /*
  *  Widget base class
  */
+class w_label;
 
 class widget : public placeable{
 	friend class dialog;
@@ -149,6 +150,12 @@ public:
 	virtual bool placeable_implemented() { return false; }
 
 	virtual bool is_dirty() { return dirty; }
+
+	// labels are activated/enabled/disabled at the same time as this widget
+
+	// creates and returns a new label
+	w_label *label(const char *);
+	void associate_label(w_label *label);
 	
 protected:
         // ZZZ: called by friend class dialog when we're added
@@ -175,6 +182,8 @@ protected:
 
 	int saved_min_width;
 	int saved_min_height;
+
+	w_label* associated_label;
 };
 
 
@@ -213,15 +222,22 @@ public:
         ~w_static_text();
 
 	bool placeable_implemented() { return true; }
-
-private:
+protected:
 	char *text;
+private:
 	int color;
 };
 
 class w_label : public w_static_text {
 public:
-	w_label(const char *text) : w_static_text(text, LABEL_FONT, LABEL_COLOR) { }
+	w_label(const char *text) : w_static_text(text, LABEL_FONT, LABEL_COLOR), associated_widget(0) { }
+
+	void associate_widget(widget *w) { associated_widget = w; }
+	void draw(SDL_Surface *s) const;
+	void click(int, int);
+	bool is_selectable(void) const { if (associated_widget) return associated_widget->is_selectable(); else return false; }
+private:
+	widget *associated_widget;
 };
 
 // a convenience class to make the prefs dialogs easy

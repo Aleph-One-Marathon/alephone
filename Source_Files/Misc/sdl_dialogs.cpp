@@ -1538,8 +1538,15 @@ void dialog::deactivate_currently_active_widget(bool draw)
 {
 	if (active_widget) {
 		active_widget->active = false;
+		if (active_widget->associated_label)
+			active_widget->associated_label->active = false;
+
 		if (draw)
+		{
 			draw_widget(active_widget);
+			if (active_widget->associated_label)
+				draw_widget(active_widget->associated_label);
+		}
 
         active_widget = NULL;
         active_widget_num = UNONE;
@@ -1566,8 +1573,13 @@ void dialog::activate_widget(size_t num, bool draw)
 	active_widget = widgets[num];
 	active_widget_num = num;
 	active_widget->active = true;
+	if (active_widget->associated_label)
+		active_widget->associated_label->active = true;
+
 	if (draw) {
 		draw_widget(active_widget);
+		if (active_widget->associated_label)
+			draw_widget(active_widget->associated_label);
 //		play_dialog_sound(DIALOG_SELECT_SOUND);
 	}
 }

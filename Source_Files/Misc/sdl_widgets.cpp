@@ -72,7 +72,7 @@
 // other than spacers.  Spacers are common and I guess we're starting to eat a fair amount of storage for a
 // widget that does nothing and draws nothing... oh well, at least RAM is cheap.  ;) )
 widget::widget() : active(false), dirty(false), enabled(true), font(NULL), identifier(NONE), owning_dialog(NULL),
-		   widget_alignment(kAlignNatural), full_width(false), width_reduction(0), align_bottom_peer(NULL), saved_min_width(0), saved_min_height(0)
+		   widget_alignment(kAlignNatural), full_width(false), width_reduction(0), align_bottom_peer(NULL), saved_min_width(0), saved_min_height(0), associated_label(0)
 {
     rect.x = 0;
     rect.y = 0;
@@ -82,7 +82,7 @@ widget::widget() : active(false), dirty(false), enabled(true), font(NULL), ident
 
 widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dialog_font(f, style)),
                         identifier(NONE), owning_dialog(NULL), widget_alignment(kAlignNatural), full_width(false),
-                        width_reduction(0), align_bottom_peer(NULL), saved_min_width(0), saved_min_height(0)
+                        width_reduction(0), align_bottom_peer(NULL), saved_min_width(0), saved_min_height(0), associated_label(0)
 {
     rect.x = 0;
     rect.y = 0;
@@ -90,19 +90,39 @@ widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dia
     rect.h = 0;
 }
 
+void widget::associate_label(w_label *label)
+{
+	associated_label = label;
+	label->associate_widget(this);
+}
+
+w_label *widget::label(const char *text)
+{
+	if (!associated_label)
+	{
+		associated_label = new w_label(text);
+		associated_label->associate_widget(this);
+	}
+
+	return associated_label;
+}
+
 // ZZZ: enable/disable
 void widget::set_enabled(bool inEnabled)
 {
-    if(enabled != inEnabled) {
-        enabled = inEnabled;
-        
-        // If we had the focus when we were disabled, we should not have the focus afterward.
-        if(active && !enabled)
-            owning_dialog->activate_next_widget();
-            
-        // Assume we need a redraw to reflect new state
-        dirty = true;
-    }
+	if(enabled != inEnabled) {
+		enabled = inEnabled;
+		
+		// If we had the focus when we were disabled, we should not have the focus afterward.
+		if(active && !enabled)
+			owning_dialog->activate_next_widget();
+		
+		// Assume we need a redraw to reflect new state
+		dirty = true;
+		
+		if (associated_label)
+			associated_label->set_enabled(inEnabled);
+	}
 }
 
 // ZZZ: several new stupid layout tricks(tm) methods here
@@ -212,6 +232,19 @@ w_static_text::w_static_text(const char *t, int f, int c) : widget(f), color(c)
 void w_static_text::draw(SDL_Surface *s) const
 {
 	draw_text(s, text, rect.x, rect.y + font->get_ascent(), get_dialog_color(color), font, style);
+}
+
+void w_label::click(int x, int y)
+{
+	if (associated_widget)
+		associated_widget->click(x, y);
+
+}
+
+void w_label::draw(SDL_Surface *s) const
+{
+	int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
+	draw_text(s, text, rect.x, rect.y + font->get_ascent(), get_dialog_color(theColorToUse), font, style);
 }
 
 /*
