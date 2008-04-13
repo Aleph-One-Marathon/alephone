@@ -884,12 +884,26 @@ int table_placer::row_height(int row)
 int table_placer::min_width()
 {
 	int width = 0;
-	for (int col = 0; col < m_columns; ++col)
+	if (m_balance_widths)
 	{
-		width += col_width(col);
-	}
+		for (int col = 0; col < m_columns; ++col)
+		{
+			int c_width = col_width(col);
+			if (c_width > width)
+				width = c_width;
+		}
 
-	width += (m_columns - 1) * m_space;
+		width = width * m_columns + (m_columns - 1) * m_space;
+	}
+	else
+	{
+		for (int col = 0; col < m_columns; ++col)
+		{
+			width += col_width(col);
+		}
+		
+		width += (m_columns - 1) * m_space;
+	}
 
 	for (int row = 0; row < m_table.size(); ++row)
 	{
@@ -928,7 +942,13 @@ void table_placer::place(const SDL_Rect &r, placement_flags flags)
 		for (int col = 0; col < m_table[row].size(); ++col)
 		{
 			SDL_Rect wr;
-			wr.w = (full_row) ? w : col_width(col);
+			if (full_row)
+				wr.w = w;
+			else if (m_balance_widths)
+				wr.w = (w - (m_columns - 1) * m_space) / m_columns;
+			else
+				wr.w = col_width(col);
+
 			wr.h = row_height(row);
 			wr.x = r.x + x_offset;
 			wr.y = r.y + y_offset;

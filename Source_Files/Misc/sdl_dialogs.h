@@ -119,7 +119,7 @@ class table_placer : public widget_placer
 {
 public:
 	enum { kSpace = 4 };
-	table_placer(int columns, int space = kSpace) : widget_placer(), m_add(0), m_columns(columns), m_space(space) { m_col_flags.resize(m_columns); m_col_min_widths.resize(m_columns);}
+	table_placer(int columns, int space = kSpace, bool balance_widths = false) : widget_placer(), m_add(0), m_columns(columns), m_space(space), m_balance_widths(balance_widths) { m_col_flags.resize(m_columns); m_col_min_widths.resize(m_columns);}
 	void add(placeable *p, bool assume_ownership = false);
 	void add_row(placeable *p, bool assume_ownership = false);
 	void col_flags(int col, placement_flags flags = kDefault) { m_col_flags[col] = flags; }
@@ -136,6 +136,7 @@ private:
 	int m_add; // column to add next widget to
 	int m_columns; // number of columns
 	int m_space;
+	bool m_balance_widths;
 	std::vector<std::vector<placeable *> > m_table;
 	std::vector<placement_flags> m_col_flags;
 	std::vector<int> m_col_min_widths;
