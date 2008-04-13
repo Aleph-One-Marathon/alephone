@@ -93,7 +93,6 @@ widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dia
 void widget::associate_label(w_label *label)
 {
 	associated_label = label;
-	label->associate_widget(this);
 }
 
 w_label *widget::label(const char *text)
