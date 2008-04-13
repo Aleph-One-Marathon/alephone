@@ -52,39 +52,56 @@ class SdlMetaserverClientUi : public MetaserverClientUi
 public:
 	SdlMetaserverClientUi()
 	{
-		d.add(new w_static_text("LOCATE NETWORK GAMES", TITLE_FONT, TITLE_COLOR));
+		vertical_placer *placer = new vertical_placer;
+		placer->dual_add(new w_static_text("LOCATE NETWORK GAMES", TITLE_FONT, TITLE_COLOR), d);
 
-		d.add(new w_spacer());
+		placer->add(new w_spacer(), true);
 
+		horizontal_placer *players_games_placer = new horizontal_placer(get_dialog_space(SPACER_HEIGHT));
 		w_players_in_room* players_in_room_w = new w_players_in_room(NULL, 260, 8);
-		players_in_room_w->set_alignment(widget::kAlignLeft);
-		d.add(players_in_room_w);
+		
+		players_games_placer->add_flags(placeable::kFill);
+		players_games_placer->dual_add(players_in_room_w, d);
+		players_games_placer->add_flags();
 
 		w_games_in_room* games_in_room_w = new w_games_in_room(
 			bind(&SdlMetaserverClientUi::GameSelected, this, _1),
 			320,
 			8
 		);
-		games_in_room_w->set_alignment(widget::kAlignRight);
-		games_in_room_w->align_bottom_with_bottom_of(players_in_room_w);
-		d.add(games_in_room_w);
 
-		d.add(new w_spacer());
+		players_games_placer->dual_add(games_in_room_w, d);
+
+		placer->add_flags(placeable::kFill);
+		placer->add(players_games_placer, true);
+		placer->add_flags();
+		placer->add(new w_spacer(), true);
 
 		w_text_box* chat_history_w = new w_text_box(600, 12);
-		d.add(chat_history_w);
+		placer->dual_add(chat_history_w, d);
 
-		w_text_entry* chatentry_w = new w_text_entry("Say:", 240, "");
+		placer->add(new w_spacer(), true);
+
+		horizontal_placer *entry_cancel_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+
+		w_text_entry* chatentry_w = new w_text_entry("", 240, "");
 		chatentry_w->set_with_textbox();
-		chatentry_w->set_alignment(widget::kAlignLeft);
-		chatentry_w->set_full_width();
 		chatentry_w->enable_mac_roman_input();
-		d.add(chatentry_w);
 
-		d.add(new w_spacer());
+		entry_cancel_placer->dual_add(chatentry_w->label("Say:"), d);
+
+		entry_cancel_placer->add_flags(placeable::kFill);
+		entry_cancel_placer->dual_add(chatentry_w, d);
+		entry_cancel_placer->add_flags();
 
 		w_button* cancel_w = new w_button("CANCEL", NULL, &d);
-		d.add(cancel_w);
+		entry_cancel_placer->dual_add(cancel_w, d);
+
+		placer->add_flags(placeable::kFill);
+		placer->add(entry_cancel_placer, true);
+		placer->add_flags();
+		
+		d.set_widget_placer(placer);
 		
 		m_playersInRoomWidget = new PlayerListWidget (players_in_room_w);
 		m_gamesInRoomWidget = new GameListWidget (games_in_room_w);
