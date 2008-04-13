@@ -79,9 +79,6 @@ struct graphics_preferences_data
 	// LP change: added OpenGL support
 	OGL_ConfigureData OGL_Configure;
 
-	// ZZZ addition: intended to be enabled by user hand-editing file (no UI),
-	// for testing things not ready for prime time
-	bool experimental_rendering;
 	bool double_corpse_limit;
 
 	int16 software_alpha_blending;

@@ -1784,7 +1784,6 @@ void write_preferences(
 	fprintf(F,"  scmode_bitdepth=\"%hd\"\n",graphics_preferences->screen_mode.bit_depth);
 	fprintf(F,"  scmode_gamma=\"%hd\"\n",graphics_preferences->screen_mode.gamma_level);
 	fprintf(F,"  ogl_flags=\"%hu\"\n",graphics_preferences->OGL_Configure.Flags);
-        fprintf(F,"  experimental_rendering=\"%s\"\n",BoolString(graphics_preferences->experimental_rendering));
 	fprintf(F,"  software_alpha_blending=\"%i\"\n", graphics_preferences->software_alpha_blending);
         fprintf(F,"  anisotropy_level=\"%f\"\n", graphics_preferences->OGL_Configure.AnisotropyLevel);
 	fprintf(F,"  multisamples=\"%i\"\n", graphics_preferences->OGL_Configure.Multisamples);
@@ -1981,7 +1980,6 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	
 	OGL_SetDefaults(preferences->OGL_Configure);
 
-        preferences->experimental_rendering= false;
 	preferences->double_corpse_limit= false;
 
 	preferences->software_alpha_blending = _sw_alpha_off;
@@ -2651,7 +2649,8 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	}
         else if (StringsEqual(Tag,"experimental_rendering"))
         {
-                return ReadBooleanValue(Value,graphics_preferences->experimental_rendering);
+		// obsolete
+		return true;
         }
 	else if (StringsEqual(Tag, "software_alpha_blending"))
 	{
