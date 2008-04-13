@@ -962,7 +962,10 @@ int w_text_entry::layout(void)
 
 void w_text_entry::place(const SDL_Rect& r, placement_flags flags)
 {
-	rect.h = r.h;
+	rect.h = (int16) max(font->get_ascent(), text_font->get_ascent()) +
+		(int16) max (font->get_descent(), text_font->get_descent()) +
+		(int16) max (font->get_leading(), text_font->get_leading());
+
 	rect.y = r.y;
 
 	uint16 name_width = text_width(name.c_str(), font, style);
@@ -1573,6 +1576,9 @@ w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(IT
 	trough_rect.w = get_dialog_space(TROUGH_WIDTH);
 	trough_rect.h = rect.h - get_dialog_space(TROUGH_T_SPACE) - get_dialog_space(TROUGH_B_SPACE);
 
+	saved_min_width = rect.w;
+	saved_min_height = rect.h;
+
 }
 
 w_list_base::~w_list_base()
@@ -1637,6 +1643,21 @@ void w_list_base::mouse_move(int x, int y)
 		else
 		{	set_selection(num_items - 1); }
 	}
+}
+
+void w_list_base::place(const SDL_Rect& r, placement_flags flags)
+{
+	widget::place(r, flags);
+	
+	trough_rect.x = rect.w - get_dialog_space(TROUGH_R_SPACE);
+	trough_rect.y = get_dialog_space(TROUGH_T_SPACE);
+	trough_rect.w = get_dialog_space(TROUGH_WIDTH);
+	trough_rect.h = rect.h - get_dialog_space(TROUGH_T_SPACE) - get_dialog_space(TROUGH_B_SPACE);
+
+	frame_t = get_dialog_image(LIST_T_IMAGE, rect.w - frame_tl->w - frame_tr->w, 0);
+	frame_l = get_dialog_image(LIST_L_IMAGE, 0, rect.h - frame_tl->h - frame_bl->h);
+	frame_r = get_dialog_image(LIST_R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
+	frame_b = get_dialog_image(LIST_B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
 }
 
 void w_list_base::click(int x, int y)

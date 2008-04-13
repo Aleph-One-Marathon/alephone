@@ -697,6 +697,9 @@ public:
 	virtual bool is_item_selectable(size_t /*i*/) {return true;}
 	virtual void item_selected(void) = 0;
 
+	void place(const SDL_Rect& r, placement_flags flags);
+	bool placeable_implemented() { return true; }
+
 protected:
 	virtual void draw_items(SDL_Surface *s) const = 0;
 	void draw_image(SDL_Surface *dst, SDL_Surface *s, int16 x, int16 y) const;
