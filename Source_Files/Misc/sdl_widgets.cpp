@@ -454,7 +454,7 @@ const uint16 MAX_TEXT_WIDTH = 200;
 // Anyway, this fixes the "crash when clicking in the Environment menu" bug we've seen
 // in the Windows version all this time.
 w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a, bool u)
-	: widget(LABEL_FONT), name(n), selection(s), proc(p), arg(a), utf8(u)
+	: widget(LABEL_FONT), name(n), selection(s), proc(p), arg(a), utf8(u), p_flags(placeable::kDefault)
 {
 	uint16 name_width = text_width(name, font, style);
 	uint16 max_selection_width = MAX_TEXT_WIDTH;
@@ -487,18 +487,18 @@ void w_select_button::draw(SDL_Surface *s) const
 	int y = rect.y + font->get_ascent();
 	
 	// Name (ZZZ: different color for disabled)
-    int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
+	int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
 
-    draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style, utf8);
-
+	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style, utf8);
+	
 	// Selection (ZZZ: different color for disabled)
 	set_drawing_clip_rectangle(0, rect.x + selection_x, static_cast<uint16>(s->h), rect.x + rect.w);
-
-    theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
-
-    draw_text(s, selection, rect.x + selection_x, y, get_dialog_color(theColorToUse), font, style, utf8);
+	
+	theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+	
+	draw_text(s, selection, rect.x + selection_x, y, get_dialog_color(theColorToUse), font, style, utf8);
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
-
+	
 	// Cursor
 	if (active) {
 		//!!
@@ -514,6 +514,10 @@ void w_select_button::click(int /*x*/, int /*y*/)
 void w_select_button::set_selection(const char *s)
 {
 	selection = s;
+	if (p_flags & placeable::kAlignRight)
+	{
+		selection_x = rect.w - text_width(selection, font, style);
+	}
 	dirty = true;
 }
 
@@ -531,10 +535,20 @@ void w_select_button::place(const SDL_Rect &r, placement_flags flags)
 	}
 	else
 	{
-		selection_x = 0;
 		rect.x = r.x;
 		rect.w = r.w;
+		p_flags = flags;
+
+		if (flags & placeable::kAlignRight)
+		{
+			selection_x = rect.w - text_width(selection, font, style);
+		}
+		else
+		{
+			selection_x = 0;
+		}
 	}
+
 }
 
 /*

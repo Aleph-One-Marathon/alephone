@@ -361,6 +361,7 @@ public:
 protected:
 	void set_arg(void *arg) { this->arg = arg; }
 	const char *name;
+	placement_flags p_flags;
 private:
 	const char *selection;
 	action_proc proc;
