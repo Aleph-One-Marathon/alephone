@@ -1137,9 +1137,13 @@ w_text_entry::capture_layout_information(int16 leftmost_x, int16 usable_width) {
  *  Number entry widget
  */
 
-w_number_entry::w_number_entry(const char *name, int initial_number) : w_text_entry(name, 16, NULL)
+w_number_entry::w_number_entry(const char *name, int initial_number) : w_text_entry(name, /*16*/4, NULL)
 {
 	set_number(initial_number);
+	if (strcmp(name, "") == 0)
+	{
+		saved_min_width = MAX_TEXT_WIDTH / 2;
+	}
 }
 
 void w_number_entry::event(SDL_Event &e)
