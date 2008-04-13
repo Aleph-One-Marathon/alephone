@@ -256,25 +256,38 @@ public:
 		
 		placer->add(new w_spacer(), true);
 
-		vertical_placer *general_placer = new vertical_placer;
+		table_placer *general_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+		general_table->col_flags(0, placeable::kAlignRight);
 		
 		w_toggle *zbuffer_w = new w_toggle("", false);
-		general_placer->add(new label_maker("Z Buffer", zbuffer_w, m_dialog), true);
+		general_table->dual_add(zbuffer_w->label("Z Buffer"), m_dialog);
+		general_table->dual_add(zbuffer_w, m_dialog);
+
 		w_toggle *fog_w = new w_toggle("", false);
-		general_placer->add(new label_maker("Fog", fog_w, m_dialog), true);
+		general_table->dual_add(fog_w->label("Fog"), m_dialog);
+		general_table->dual_add(fog_w, m_dialog);
+
 		w_toggle *static_w = new w_toggle("", false);
-		general_placer->add(new label_maker("Static Effect", static_w, m_dialog), true);
+		general_table->dual_add(static_w->label("Static Effect"), m_dialog);
+		general_table->dual_add(static_w, m_dialog);
+
 		w_toggle *fader_w = new w_toggle("", false);
-		general_placer->add(new label_maker("Color Effects", fader_w, m_dialog), true);
+		general_table->dual_add(fader_w->label("Color Effects"), m_dialog);
+		general_table->dual_add(fader_w, m_dialog);
+
 		w_toggle *liq_w = new w_toggle("", false);
-		general_placer->add(new label_maker("Transparent Liquids", liq_w, m_dialog), true);
+		general_table->dual_add(liq_w->label("Transparent Liquids"), m_dialog);
+		general_table->dual_add(liq_w, m_dialog);
+
 		w_toggle *models_w = new w_toggle("", false);
-		general_placer->add(new label_maker("3D Models", models_w, m_dialog), true);
+		general_table->dual_add(models_w->label("3D Models"), m_dialog);
+		general_table->dual_add(models_w, m_dialog);
 
-		general_placer->add(new w_spacer(), true);
+		general_table->add_row(new w_spacer(), true);
 
-		w_select_popup *fsaa_w = new w_select_popup ("Full Scene Antialiasing");
-		general_placer->dual_add(fsaa_w, m_dialog);
+		w_select_popup *fsaa_w = new w_select_popup ("");
+		general_table->dual_add(fsaa_w->label("Full Scene Antialiasing"), m_dialog);
+		general_table->dual_add(fsaa_w, m_dialog);
 		vector<string> fsaa_strings;
 		fsaa_strings.push_back ("Off");
 		fsaa_strings.push_back ("2x");
@@ -282,18 +295,31 @@ public:
 		fsaa_w->set_labels (fsaa_strings);
 		
 		w_slider* aniso_w = new w_slider("", 6, 1);
-		general_placer->add(new label_maker("Anisotropic Filtering", aniso_w, m_dialog), true);		
-		general_placer->add(new w_spacer(), true);
+		general_table->dual_add(aniso_w->label("Anisotropic Filtering"),m_dialog);
+		general_table->dual_add(aniso_w, m_dialog);
 
-		general_placer->dual_add(new w_static_text("Replacement Texture Quality"), m_dialog);
+		general_table->add_row(new w_spacer(), true);
+
+		general_table->dual_add_row(new w_static_text("Replacement Texture Quality"), m_dialog);
 	
 		w_select_popup *texture_quality_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) texture_quality_wa[i] = NULL;
 		
-		texture_quality_wa[OGL_Txtr_Wall] =  new w_select_popup ("Walls");
-		texture_quality_wa[OGL_Txtr_Landscape] = new w_select_popup ("Landscapes");
-		texture_quality_wa[OGL_Txtr_Inhabitant] = new w_select_popup ("Sprites");
-		texture_quality_wa[OGL_Txtr_WeaponsInHand] = new w_select_popup ("Weapons in Hand");
+		texture_quality_wa[OGL_Txtr_Wall] =  new w_select_popup ("");
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall]->label("Walls"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall], m_dialog);
+		
+		texture_quality_wa[OGL_Txtr_Landscape] = new w_select_popup ("");
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape]->label("Landscapes"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape], m_dialog);
+
+		texture_quality_wa[OGL_Txtr_Inhabitant] = new w_select_popup ("");
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant]->label("Sprites"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant], m_dialog);
+
+		texture_quality_wa[OGL_Txtr_WeaponsInHand] = new w_select_popup ("");
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("Weapons in Hand"), m_dialog);
+		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand], m_dialog);
 	
 		vector<string> tex_quality_strings;
 		tex_quality_strings.push_back ("Unlimited");
@@ -304,23 +330,31 @@ public:
 	
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
 			if (texture_quality_wa[i]) {
-				general_placer->dual_add(texture_quality_wa[i], m_dialog);
 				texture_quality_wa[i]->set_labels (tex_quality_strings);
 			}
 		}
 
 		vertical_placer *advanced_placer = new vertical_placer;
+
+		table_placer *advanced_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+		advanced_table->col_flags(0, placeable::kAlignRight);
 	
 		w_toggle *geforce_fix_w = new w_toggle("", false);
-		advanced_placer->add(new label_maker("GeForce 1-4 Texture Fix", geforce_fix_w, m_dialog), true);
+		advanced_table->dual_add(geforce_fix_w->label("GeForce 1-4 Texture Fix"), m_dialog);
+		advanced_table->dual_add(geforce_fix_w, m_dialog);
 		
-		advanced_placer->add(new w_spacer(), true);
-		advanced_placer->dual_add(new w_static_text("Distant Texture Filtering"), m_dialog);
+		advanced_table->add_row(new w_spacer(), true);
+		advanced_table->dual_add_row(new w_static_text("Distant Texture Filtering"), m_dialog);
+
 		w_select *wall_filter_w = new w_select("", 0, filter_labels);
-		advanced_placer->add(new label_maker("Walls", wall_filter_w, m_dialog), true);
+		advanced_table->dual_add(wall_filter_w->label("Walls"), m_dialog);
+		advanced_table->dual_add(wall_filter_w, m_dialog);
 
 		w_select *sprite_filter_w = new w_select("", 0, filter_labels);
-		advanced_placer->add(new label_maker("Sprites", sprite_filter_w, m_dialog), true);
+		advanced_table->dual_add(sprite_filter_w->label("Sprites"), m_dialog);
+		advanced_table->dual_add(sprite_filter_w, m_dialog);
+
+		advanced_placer->add(advanced_table, true);
 
 		advanced_placer->add(new w_spacer(), true);
 		w_select_popup *texture_resolution_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
@@ -330,6 +364,12 @@ public:
 			texture_resolution_wa[i] = new w_select_popup("");
 			texture_depth_wa[i] = new w_select_popup("");
 		}
+
+		w_label *texture_labels[OGL_NUMBER_OF_TEXTURE_TYPES];
+		texture_labels[OGL_Txtr_Wall] = new w_label("Walls");
+		texture_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
+		texture_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
+		texture_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
 
 		advanced_placer->dual_add(new w_static_text("Built-in Texture Size and Depth"), m_dialog);
 		advanced_placer->dual_add(new w_static_text("(reduce for machines with low VRAM)"), m_dialog);
@@ -354,27 +394,17 @@ public:
 		table->dual_add(new w_label("Size"), m_dialog);
 		table->dual_add(new w_label("Depth"), m_dialog);
 
-		table->dual_add(new w_label("Walls"), m_dialog);
-		table->dual_add(texture_resolution_wa[OGL_Txtr_Wall], m_dialog);
-		table->dual_add(texture_depth_wa[OGL_Txtr_Wall], m_dialog);
+		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++)
+		{
+			table->dual_add(texture_labels[i], m_dialog);
+			table->dual_add(texture_resolution_wa[i], m_dialog);
+			table->dual_add(texture_depth_wa[i], m_dialog);
 
-		table->dual_add(new w_label("Landscapes"), m_dialog);
-		table->dual_add(texture_resolution_wa[OGL_Txtr_Landscape], m_dialog);
-		table->dual_add(texture_depth_wa[OGL_Txtr_Landscape], m_dialog);
+			texture_resolution_wa[i]->associate_label(texture_labels[i]);
+			texture_resolution_wa[i]->set_labels(tex_reso_strings);
 
-		table->dual_add(new w_label("Sprites"), m_dialog);
-		table->dual_add(texture_resolution_wa[OGL_Txtr_Inhabitant], m_dialog);
-		table->dual_add(texture_depth_wa[OGL_Txtr_Inhabitant], m_dialog);
-
-		table->dual_add(new w_label("Weapons in Hand / HUD"), m_dialog);
-		table->dual_add(texture_resolution_wa[OGL_Txtr_WeaponsInHand], m_dialog);
-		table->dual_add(texture_depth_wa[OGL_Txtr_WeaponsInHand], m_dialog);
-
-		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) {
-			if (texture_resolution_wa[i]) {
-				texture_resolution_wa[i]->set_labels (tex_reso_strings);
-				texture_depth_wa[i]->set_labels(tex_depth_strings);
-			}
+			texture_depth_wa[i]->associate_label(texture_labels[i]);
+			texture_depth_wa[i]->set_labels(tex_depth_strings);
 		}
 
 		table->col_min_width(1, (table->col_width(0) - get_dialog_space(LABEL_ITEM_SPACE)) / 2);
@@ -383,7 +413,7 @@ public:
 		advanced_placer->add(table, true);
 
 		m_tabs = new tab_placer();
-		m_tabs->add(general_placer, true);
+		m_tabs->add(general_table, true);
 		m_tabs->add(advanced_placer, true);
 		placer->add(m_tabs, false);
 	
