@@ -1540,12 +1540,20 @@ void dialog::deactivate_currently_active_widget(bool draw)
 		active_widget->active = false;
 		if (active_widget->associated_label)
 			active_widget->associated_label->active = false;
+		else if (dynamic_cast<w_label *>(active_widget) && dynamic_cast<w_label *>(active_widget)->associated_widget)
+		{
+			dynamic_cast<w_label *>(active_widget)->associated_widget->active = false;
+		}
 
 		if (draw)
 		{
 			draw_widget(active_widget);
 			if (active_widget->associated_label)
 				draw_widget(active_widget->associated_label);
+			else if (dynamic_cast<w_label *>(active_widget) && dynamic_cast<w_label *>(active_widget)->associated_widget)
+			{
+				draw_widget(dynamic_cast<w_label *>(active_widget)->associated_widget);
+			}
 		}
 
         active_widget = NULL;
@@ -1575,11 +1583,16 @@ void dialog::activate_widget(size_t num, bool draw)
 	active_widget->active = true;
 	if (active_widget->associated_label)
 		active_widget->associated_label->active = true;
-
+	else if (dynamic_cast<w_label*>(active_widget) && dynamic_cast<w_label*>(active_widget)->associated_widget)
+		dynamic_cast<w_label*>(active_widget)->associated_widget->active = true;
+	
 	if (draw) {
 		draw_widget(active_widget);
 		if (active_widget->associated_label)
 			draw_widget(active_widget->associated_label);
+		else if (dynamic_cast<w_label*>(active_widget) && dynamic_cast<w_label*>(active_widget)->associated_widget)
+			draw_widget(dynamic_cast<w_label*>(active_widget)->associated_widget);
+		
 //		play_dialog_sound(DIALOG_SELECT_SOUND);
 	}
 }

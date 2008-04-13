@@ -229,6 +229,7 @@ private:
 };
 
 class w_label : public w_static_text {
+	friend class dialog;
 public:
 	w_label(const char *text) : w_static_text(text, LABEL_FONT, LABEL_COLOR), associated_widget(0) { }
 
