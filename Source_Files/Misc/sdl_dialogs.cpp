@@ -1587,14 +1587,34 @@ void dialog::activate_widget(size_t num, bool draw)
 		return;
 
 	// Deactivate previously active widget
-    deactivate_currently_active_widget(draw);
-
+	deactivate_currently_active_widget(draw);
+	
 	// Activate new widget
-	active_widget = widgets[num];
-	if (dynamic_cast<w_label *>(active_widget) && dynamic_cast<w_label*>(active_widget)->associated_widget)
-		active_widget = dynamic_cast<w_label*>(active_widget)->associated_widget;
+	w_label *label = dynamic_cast<w_label *>(widgets[num]);
+	if (label && label->associated_widget)
+	{
+		if (widgets[num + 1 % widgets.size()] == label->associated_widget)
+		{
+			active_widget = label->associated_widget;
+			active_widget_num = num + 1 % widgets.size();
+		}
+		else if (widgets[num - 1 % widgets.size()] == label->associated_widget)
+		{
+			active_widget = label->associated_widget;
+			active_widget_num = num - 1 % widgets.size();
+		}
+		else
+			// labels must be placed immediately before or
+			// after their associated widgets!
+			assert(false);
+	}
+	else
+	{
+		active_widget = widgets[num];
+		active_widget_num = num;
+	}
+			
 
-	active_widget_num = num;
 	active_widget->active = true;
 	if (active_widget->associated_label)
 		active_widget->associated_label->active = true;
@@ -1636,7 +1656,7 @@ void dialog::activate_next_widget(void)
 		i++;
 		if (i >= int(widgets.size()))
 			i = 0;
-	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab) && widgets[i]->visible()) && i != active_widget_num);
+	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab) && widgets[i]->visible()) || (widgets[i]->associated_label == widgets[active_widget_num] || widgets[active_widget_num]->associated_label == widgets[i]) && i != active_widget_num);
 
     // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
 	if (widgets[i]->is_selectable() && widgets[i]->visible())
@@ -1654,7 +1674,7 @@ void dialog::activate_prev_widget(void)
 			i = widgets.size() - 1;
 		else
 			i--;
-	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab) && widgets[i]->visible()) && i != active_widget_num);
+	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab) && widgets[i]->visible()) || (widgets[i]->associated_label == widgets[active_widget_num] || widgets[active_widget_num]->associated_label == widgets[i]) && i != active_widget_num);
 
     // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
 	if (widgets[i]->is_selectable() && widgets[i]->visible())
