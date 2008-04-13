@@ -45,6 +45,10 @@
 #include "SoundManager.h"
 #include "game_errors.h"
 
+// for fixing broken theme paths
+#include "interface.h"
+#include "preferences.h"
+
 #ifdef HAVE_OPENGL
 #include "SDL_opengl.h"
 #include "OGL_Setup.h"
@@ -112,9 +116,20 @@ void initialize_dialogs(FileSpecifier &theme)
 	SDL_FillRect(default_image, NULL, transp);
 	SDL_SetColorKey(default_image, SDL_SRCCOLORKEY, transp);
 
-	// Load theme from preferences
-	load_theme(theme);
-
+	// Load theme from preferences, if it exists
+	if (!load_theme(theme) && strcmp(theme.GetPath(), "none") != 0)
+	{
+		// reset to default
+		get_default_theme_spec(theme);
+		if (load_theme(theme))
+		{
+			strncpy(environment_preferences->theme_dir, theme.GetPath(), 256);
+			environment_preferences->theme_dir[255] = 0;
+			write_preferences();
+		}
+		
+		
+	}
 	atexit(shutdown_dialogs);
 }
 
@@ -591,7 +606,7 @@ XML_ElementParser *Theme_GetParser()
  *  Load theme
  */
 
-void load_theme(FileSpecifier &theme)
+bool load_theme(FileSpecifier &theme)
 {
 	// Unload previous theme
 	unload_theme();
@@ -603,7 +618,7 @@ void load_theme(FileSpecifier &theme)
 	FileSpecifier theme_mml = theme + "theme.mml";
 	XML_Loader_SDL loader;
 	loader.CurrentElement = &RootParser;
-	loader.ParseFile(theme_mml);
+	bool success = loader.ParseFile(theme_mml);
 
 	// Open resource file
 	FileSpecifier theme_rsrc = theme + "resources";
@@ -622,6 +637,8 @@ void load_theme(FileSpecifier &theme)
 			SDL_SetColorKey(s, SDL_SRCCOLORKEY, SDL_MapRGB(s->format, 0x00, 0xff, 0xff));
 		dialog_image[i] = s;
 	}
+
+	return success;
 }
 
 

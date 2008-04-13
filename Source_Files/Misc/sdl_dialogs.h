@@ -421,7 +421,7 @@ enum {
 
 extern void initialize_dialogs(FileSpecifier &theme);
 
-extern void load_theme(FileSpecifier &theme);
+extern bool load_theme(FileSpecifier &theme);
 
 //extern const sdl_font_info *get_dialog_font(int which, uint16 &style);
 extern ttf_and_sdl_font_info *get_dialog_font(int which, uint16 &style);
