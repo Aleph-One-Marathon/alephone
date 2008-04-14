@@ -92,7 +92,7 @@ public:
 
 bool XML_CanJoinParser::HandleString(const char *String, int Length)
 {
-	Scenario::instance()->AddCompatible(String);
+	Scenario::instance()->AddCompatible(string(String, Length));
 	return true;
 }
 
