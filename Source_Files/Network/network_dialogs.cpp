@@ -2863,23 +2863,27 @@ public:
 
 		right_placer->dual_add(new w_static_text("Network"), m_dialog);
 		table_placer *network_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
-		network_table->col_flags(0, placeable::kAlignRight);
+		network_table->col_flags(1, placeable::kAlignLeft);
 
 		w_toggle *advertise_on_metaserver_w = new w_toggle ("", sAdvertiseGameOnMetaserver);
-		network_table->dual_add(advertise_on_metaserver_w->label("Advertise Game on Internet"), m_dialog);
 		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
+		network_table->dual_add(advertise_on_metaserver_w->label("Advertise Game on Internet"), m_dialog);
 
 		w_toggle *use_upnp_w = new w_toggle ("", true);
-		network_table->dual_add(use_upnp_w->label("Configure UPnP Router"), m_dialog);
 		network_table->dual_add(use_upnp_w, m_dialog);
+		network_table->dual_add(use_upnp_w->label("Configure UPnP Router"), m_dialog);
 
 		w_toggle* realtime_audio_w = new w_toggle ("", network_preferences->allow_microphone);
-		network_table->dual_add(realtime_audio_w->label("Allow Microphone"), m_dialog);
 		network_table->dual_add(realtime_audio_w, m_dialog);
+		network_table->dual_add(realtime_audio_w->label("Allow Microphone"), m_dialog);
 
 		w_select_popup *latency_tolerance_w = new w_select_popup("");
-		network_table->dual_add(latency_tolerance_w->label("Latency Tolerance"), m_dialog);
-		network_table->dual_add(latency_tolerance_w, m_dialog);
+		horizontal_placer *latency_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+		latency_placer->dual_add(latency_tolerance_w->label("Latency Tolerance"), m_dialog);
+		latency_placer->dual_add(latency_tolerance_w, m_dialog);
+		
+		network_table->add(new w_spacer(), true);
+		network_table->add(latency_placer, true);
 
 		right_placer->add(network_table, true);
 
@@ -2909,17 +2913,14 @@ public:
 		network_table->add_row(new w_spacer(), true);
 		network_table->dual_add_row(new w_static_text("Net Script"), m_dialog);
 		w_toggle* use_netscript_w = new w_enabling_toggle ("", false);
-		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
 		network_table->dual_add(use_netscript_w, m_dialog);
+		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
 
 		horizontal_placer *lua_file_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
 		w_file_chooser* choose_script_w = new w_file_chooser ("", "Choose Script", _typecode_netscript);
-//		lua_file_placer->dual_add(choose_script_w->label("Script"), m_dialog);
-		lua_file_placer->add_flags(placeable::kAlignRight);
-		lua_file_placer->dual_add(choose_script_w, m_dialog);
-		static_cast<w_enabling_toggle*>(use_netscript_w)->add_dependent_widget(choose_script_w);
-		network_table->add(lua_file_placer, true);
 		network_table->add(new w_spacer(), true);
+		network_table->dual_add(choose_script_w, m_dialog);
+		static_cast<w_enabling_toggle*>(use_netscript_w)->add_dependent_widget(choose_script_w);
 
 		left_placer->add(new w_spacer(), true);
 		table_placer *options_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
@@ -2959,20 +2960,20 @@ public:
 		network_table->add_row(new w_spacer(), true);
 		network_table->dual_add_row(new w_static_text("Extras"), m_dialog);
 		w_toggle *zoom_w = new w_toggle ("", true);
-		network_table->dual_add(zoom_w->label("Allow Zoom"), m_dialog);
 		network_table->dual_add(zoom_w, m_dialog);
+		network_table->dual_add(zoom_w->label("Allow Zoom"), m_dialog);
 	
 		w_toggle *crosshairs_w = new w_toggle ("", true);
-		network_table->dual_add(crosshairs_w->label("Allow Crosshairs"), m_dialog);
 		network_table->dual_add(crosshairs_w, m_dialog);
+		network_table->dual_add(crosshairs_w->label("Allow Crosshairs"), m_dialog);
 	
 		w_toggle *lara_croft_w = new w_toggle ("", true);
-		network_table->dual_add(lara_croft_w->label("Allow Chase Cam"), m_dialog);
 		network_table->dual_add(lara_croft_w, m_dialog);
+		network_table->dual_add(lara_croft_w->label("Allow Chase Cam"), m_dialog);
 
 		w_toggle *carnage_messages_w = new w_toggle("", true);
-		network_table->dual_add(carnage_messages_w->label("Allow Carnage Messages"), m_dialog);
 		network_table->dual_add(carnage_messages_w, m_dialog);
+		network_table->dual_add(carnage_messages_w->label("Allow Carnage Messages"), m_dialog);
 
 		right_placer->add(new w_spacer(), true);
 		right_placer->dual_add(new w_static_text("Duration"), m_dialog);
