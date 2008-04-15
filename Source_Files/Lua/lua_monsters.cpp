@@ -578,7 +578,7 @@ static int Lua_Monster_Get_Visible(lua_State *L)
 {
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
-	lua_pushboolean(L, !OBJECT_IS_INVISIBLE(object));
+	lua_pushboolean(L, OBJECT_IS_VISIBLE(object));
 	return 1;
 }
 
@@ -647,7 +647,28 @@ static int Lua_Monster_Set_Facing(lua_State *L)
 	return 0;
 }
 	
-	
+static int Lua_Monster_Set_Visible(lua_State *L) {
+	int monster_index = Lua_Monster::Index(L, 1);
+	monster_data *monster = get_monster_data(monster_index);
+	object_data *object = get_object_data(monster->object_index);
+	int invisible = !lua_toboolean(L, 2);
+	if(monster->action == _monster_is_teleporting_out) return 0;
+	if(MONSTER_IS_ACTIVE(monster) || monster->vitality >= 0) {
+		// Cool stuff happens if you just set an active
+		// monster to invisible.  What we should do instead of
+		// the below is expose teleports_out_when_deactivated
+		/*if(invisible) {
+		  monster->flags |= (uint16)_monster_teleports_out_when_deactivated;
+		  deactivate_monster(monster_index);
+		  }*/
+		return luaL_error(L, "visible: monster already activated");
+	}
+	else {
+		// No real possibility of messing stuff up here.
+		SET_OBJECT_INVISIBILITY(object, invisible);
+	}
+	return 0;
+}
 
 static int Lua_Monster_Set_Vitality(lua_State *L)
 {
@@ -687,6 +708,7 @@ const luaL_reg Lua_Monster_Set[] = {
 	{"active", Lua_Monster_Set_Active},
 	{"facing", Lua_Monster_Set_Facing},
 	{"life", Lua_Monster_Set_Vitality},
+	{"visible", Lua_Monster_Set_Visible},
 	{"vitality", Lua_Monster_Set_Vitality},
 	{"yaw", Lua_Monster_Set_Facing},
 	{0, 0}

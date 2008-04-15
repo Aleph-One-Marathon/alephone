@@ -565,10 +565,11 @@
 	<description>whether monster is still valid</description>
 	<type>boolean</type>
       </variable>
-      <variable name="visible" access="read-only">
+      <variable name="visible">
 	<description>whether monster is visible (e.g. has teleported in)</description>
 	<type>boolean</type>
 	<note>this has nothing to do with whether monsters are cloaked (like invisible S'pht) or not</note>
+	<note>only writable before the monster is activated</note>
       </variable>
       <variable name="x" access="read-only">
 	<type>WU</type>
