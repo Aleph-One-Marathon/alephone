@@ -598,6 +598,12 @@
       <function name="stop">
 	<description>stops level music and clears the playlist</description>
       </function>
+      <function name="valid">
+	<description>for every track passed, return true if it exists and is playable and false otherwise</description>
+	<argument name="track1"><type>string</type></argument>
+	<argument name="track2" required="false"><type>string</type></argument>
+	<argument name="..." required="false"><type>string</type></argument>
+      </function>
     </table>
     <table name="platform">
       <variable name="active">

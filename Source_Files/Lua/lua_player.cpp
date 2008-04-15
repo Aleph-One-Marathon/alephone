@@ -1885,7 +1885,25 @@ int Lua_Music_Stop(lua_State *L)
 {
 	Music::instance()->ClearLevelMusic();
 	Music::instance()->StopLevelMusic();
+
 	return 0;
+}
+
+int Lua_Music_Valid(lua_State* L) {
+	int top = lua_gettop(L);
+	for(int n = 1; n <= top; n++) {
+		if(!lua_isstring(L, n))
+			return luaL_error(L, "valid: invalid file specifier");
+		FileSpecifier path;
+		if(path.SetNameWithPath(lua_tostring(L, n))) {
+			StreamDecoder* stream = StreamDecoder::Get(path);
+			if(stream) {
+				lua_pushboolean(L, true);
+				delete stream;
+			} else lua_pushboolean(L, false);
+		} else lua_pushboolean(L, false);
+	}
+	return top;
 }
 
 const luaL_reg Lua_Music_Get[] = {
@@ -1893,6 +1911,7 @@ const luaL_reg Lua_Music_Get[] = {
 	{"fade", L_TableFunction<Lua_Music_Fade>},
 	{"play", L_TableFunction<Lua_Music_Play>},
 	{"stop", L_TableFunction<Lua_Music_Stop>},
+	{"valid", L_TableFunction<Lua_Music_Valid>},
 	{0, 0}
 };
 
