@@ -2662,68 +2662,107 @@ extern struct color_table *build_8bit_system_color_table(void);
 class SdlJoinDialog : public JoinDialog
 {
 public:
-	SdlJoinDialog()
+	SdlJoinDialog() : m_tabs(0)
 	{
-		m_dialog.add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR));
-		m_dialog.add(new w_spacer());
+		vertical_placer *placer = new vertical_placer;
+		placer->dual_add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR), m_dialog);
+		placer->add(new w_spacer(), true);
 
-		w_text_entry *name_w = new w_text_entry("Name", PREFERENCES_NAME_LENGTH, "");
+		table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+		table->col_flags(0, placeable::kAlignRight);
+
+		w_text_entry *name_w = new w_text_entry("", PREFERENCES_NAME_LENGTH, "");
 		name_w->enable_mac_roman_input();
-		m_dialog.add(name_w);
+		table->dual_add(name_w->label("Name"), m_dialog);
+		table->dual_add(name_w, m_dialog);
 	
-		w_player_color *pcolor_w = new w_player_color("Color", 0);
-		m_dialog.add(pcolor_w);
+		w_player_color *pcolor_w = new w_player_color("", 0);
+		table->dual_add(pcolor_w->label("Color"), m_dialog);
+		table->dual_add(pcolor_w, m_dialog);
 
-		w_player_color *tcolor_w = new w_player_color("Team Color", 0);
-		m_dialog.add(tcolor_w);
-	
-		m_dialog.add(new w_spacer());
+		w_player_color *tcolor_w = new w_player_color("", 0);
+		table->dual_add(tcolor_w->label("Team Color"), m_dialog);
+		table->dual_add(tcolor_w, m_dialog);
 
-		w_toggle* hint_w = new w_toggle("Join by address", false);
-                m_dialog.add_to_tab(hint_w, iJOIN_PREJOIN_TAB);
+		placer->add(table, true);
+		placer->add(new w_spacer(), true);
 
-		w_text_entry* hint_address_w = new w_text_entry("Join address", kJoinHintingAddressLength, "");
-		m_dialog.add_to_tab(hint_address_w, iJOIN_PREJOIN_TAB);
+		m_tabs = new tab_placer;
 
-		m_dialog.add_to_tab(new w_spacer(), iJOIN_PREJOIN_TAB);
+		vertical_placer *prejoin_placer = new vertical_placer;
+		table_placer *prejoin_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+		prejoin_table->col_flags(0, placeable::kAlignRight);
+		
+		w_toggle* hint_w = new w_toggle("", false);
+		prejoin_table->dual_add(hint_w->label("Join by address"), m_dialog);
+		prejoin_table->dual_add(hint_w, m_dialog);
+
+		w_text_entry* hint_address_w = new w_text_entry("", kJoinHintingAddressLength, "");
+		prejoin_table->dual_add(hint_address_w->label("Join address"), m_dialog);
+		prejoin_table->dual_add(hint_address_w, m_dialog);
+
+		prejoin_placer->add(prejoin_table, true);
+		prejoin_placer->add(new w_spacer(), true);
+
+		vertical_placer *postjoin_placer = new vertical_placer;
 
 		w_static_text* join_messages_w = new w_static_text("");
+
 		join_messages_w->set_full_width ();
 		// jkvw: add it to dialog, but never show it.
 		//       Two things which we need don't work:
 		//       1) w_static_text can't handle text longer than the dialog width
 		//       2) widgets in dialog don't update layout position once dialog starts to run
 		//       If we get solutions to these issues, then we can show the join messages.
-		m_dialog.add_to_tab(join_messages_w, iJOIN_NEVERSHOW_TAB);
 
-		m_dialog.add_to_tab(new w_spacer(), iJOIN_PREJOIN_TAB);
+		prejoin_placer->add(new w_spacer(), true);
 
 		w_button* join_by_metaserver_w = new w_button("FIND INTERNET GAME");
-		m_dialog.add_to_tab(join_by_metaserver_w, iJOIN_PREJOIN_TAB);
-
-		m_dialog.add_to_tab(new w_spacer(), iJOIN_PREJOIN_TAB);
-
+		prejoin_placer->dual_add(join_by_metaserver_w, m_dialog);
+		
 		w_players_in_game2* players_w = new w_players_in_game2(false);
-		m_dialog.add_to_tab(players_w, iJOIN_POSTJOIN_TAB);
+		postjoin_placer->dual_add(players_w, m_dialog);
 
-		w_select_popup* chat_choice_w = new w_select_popup("chat:");
-		m_dialog.add_to_tab(chat_choice_w, iJOIN_POSTJOIN_TAB);
+		horizontal_placer *chat_choice_placer = new horizontal_placer;
+
+		w_select_popup* chat_choice_w = new w_select_popup("");
+		chat_choice_placer->dual_add(chat_choice_w->label("chat:"), m_dialog);
+		chat_choice_placer->dual_add(chat_choice_w, m_dialog);
+
+		postjoin_placer->add(chat_choice_placer, true);
 
 		w_text_box* chat_history_w = new w_text_box(600, 7);
-		m_dialog.add_to_tab(chat_history_w, iJOIN_POSTJOIN_TAB);
+		postjoin_placer->dual_add(chat_history_w, m_dialog);
 
-		w_text_entry* chatentry_w = new w_text_entry("Say:", 240, "");
+		w_text_entry* chatentry_w = new w_text_entry("", 240, "");
 		chatentry_w->set_with_textbox();
-		chatentry_w->set_alignment(widget::kAlignLeft);
-		chatentry_w->set_full_width();
 		chatentry_w->enable_mac_roman_input();
-		m_dialog.add_to_tab(chatentry_w, iJOIN_POSTJOIN_TAB);
 
-		w_left_button* join_w = new w_left_button("JOIN");
-		m_dialog.add(join_w);
-	
-		w_right_button* cancel_w = new w_right_button("CANCEL");
-		m_dialog.add(cancel_w);
+		horizontal_placer *say_placer = new horizontal_placer;
+		say_placer->dual_add(chatentry_w->label("Say:"), m_dialog);
+		say_placer->add_flags(placeable::kFill);
+		say_placer->dual_add(chatentry_w, m_dialog);
+
+		postjoin_placer->add_flags(placeable::kFill);
+		postjoin_placer->add(say_placer, true);
+		postjoin_placer->add_flags();
+
+		m_tabs->add(prejoin_placer, true);
+		m_tabs->add(postjoin_placer, true);
+		m_tabs->dual_add(join_messages_w, m_dialog);
+		placer->add(m_tabs, true);
+
+		horizontal_placer *button_placer = new horizontal_placer;
+		
+		w_button* join_w = new w_button("JOIN");
+		button_placer->dual_add(join_w, m_dialog);
+
+		w_button* cancel_w = new w_button("CANCEL");
+		button_placer->dual_add(cancel_w, m_dialog);
+
+		placer->add(button_placer, true);
+
+		m_dialog.set_widget_placer(placer);
 
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_joinWidget = new ButtonWidget (join_w);
@@ -2769,7 +2808,8 @@ public:
 	virtual void respondToJoinHit()
 	{
 		play_dialog_sound(DIALOG_OK_SOUND);
-		m_dialog.set_active_tab (iJOIN_POSTJOIN_TAB);
+		m_tabs->choose_tab(1);
+		m_dialog.draw();
 		JoinDialog::respondToJoinHit();
 	}
 
@@ -2780,6 +2820,7 @@ private:
 		iJOIN_NEVERSHOW_TAB
 	};
 
+	tab_placer *m_tabs;
 	dialog m_dialog;
 };
 
