@@ -190,122 +190,137 @@ static void set_terminal_status(bool status);
 /* SB */
 namespace icon {
 	
-	static inline char nextc(const char*& p, size_t& rem) {
-		if(rem == 0) throw "end of string";
-		--rem;
-		return *(p++);
-	}
+  static inline char nextc(const char*& p, size_t& rem) {
+    if(rem == 0) throw "end of string";
+    --rem;
+    return *(p++);
+  }
 	
-	static inline unsigned char digit(char p) {
-		if(p >= '0' && p <= '9') return p - '0';
-		else if(p >= 'A' && p <= 'F') return p - 'A' + 0xA;
-		else if(p >= 'a' && p <= 'f') return p - 'a' + 0xA;
-		else throw "invalid digit";
-	}
+  // we can't use ctype for this because of locales and hexadecimal
+  static inline bool isadigit(char p) {
+    if(p >= '0' && p <= '9') return true;
+    else if(p >= 'A' && p <= 'F') return true;
+    else if(p >= 'a' && p <= 'f') return true;
+    else return false;
+  }
 	
-	static inline unsigned char readuc(const char*& p, size_t& rem) {
-		char a = nextc(p, rem), b;
-		b = nextc(p, rem);
-		return (digit(a) << 4) | digit(b);
-	}
+  static inline unsigned char digit(char p) {
+    if(p >= '0' && p <= '9') return p - '0';
+    else if(p >= 'A' && p <= 'F') return p - 'A' + 0xA;
+    else if(p >= 'a' && p <= 'f') return p - 'a' + 0xA;
+    else throw "invalid digit";
+  }
 	
-	static bool parseicon(const char* p, size_t rem,
-												unsigned char palette[768], int& numcolors,
-												unsigned char graphic[256]) {
-		char chars[256];
-		try {
-			char oc, c;
-			size_t n, m;
-			numcolors = 0;
-			while(1) {
-				c = nextc(p, rem);
-				if(c >= '0' && c <= '9')
-					numcolors = numcolors * 10 + (c - '0');
-				else break;
-			}
-			if(numcolors == 0) return 1;
-			oc = c;
-			do {
-				c = nextc(p, rem);
-			} while(c == oc);
-			n = 0;
-			while(n < numcolors) {
-				chars[n] = c;
-				palette[n * 3] = readuc(p, rem);
-				palette[n * 3 + 1] = readuc(p, rem);
-				palette[n * 3 + 2] = readuc(p, rem);
-				++n;
-				nextc(p, rem); /* ignore a char */
-				c = nextc(p, rem);
-			}
-			n = 0;
-			while(n < 256) {
-				for(m = 0; m < numcolors; ++m) {
-					if(chars[m] == c) {
-						graphic[n++] = m;
-						break;
-					}
-				}
-				c = nextc(p, rem);
-			}
-		} catch(...) {
-			return false;
-		}
-		return true;
-	}
+  static inline unsigned char readuc(const char*& p, size_t& rem) {
+    char a = nextc(p, rem), b;
+    b = nextc(p, rem);
+    return (digit(a) << 4) | digit(b);
+  }
 	
-	void seticon(int idx, unsigned char palette[768], unsigned char graphic[256]) {
-		unsigned char* p1, *p2, px;
-		int n;
-		p1 = ScriptHUDElements[idx].icon;
-		p2 = graphic;
-		for(n = 0; n < 256; ++n) {
-			px = *(p2++);
-			*(p1++) = 0xFF;
-			*(p1++) = palette[px * 3];
-			*(p1++) = palette[px * 3 + 1];
-			*(p1++) = palette[px * 3 + 2];
-		}
-		ScriptHUDElements[idx].isicon = true;
+  static bool parseicon(const char* p, size_t rem,
+			unsigned char palette[1024], int& numcolors,
+			unsigned char graphic[256]) {
+    char chars[256];
+    try {
+      char oc, c;
+      size_t n, m;
+      numcolors = 0;
+      while(1) {
+	c = nextc(p, rem);
+	if(c >= '0' && c <= '9')
+	  numcolors = numcolors * 10 + (c - '0');
+	else break;
+      }
+      if(numcolors == 0) return 1;
+      oc = c;
+      do {
+	c = nextc(p, rem);
+      } while(c == oc);
+      n = 0;
+      while(n < numcolors) {
+	chars[n] = c;
+	palette[n * 4] = readuc(p, rem);
+	palette[n * 4 + 1] = readuc(p, rem);
+	palette[n * 4 + 2] = readuc(p, rem);
+	c = nextc(p, rem); /* ignore a char, UNLESS... */
+	if(isadigit(c)) {  /* ...it's a digit */
+	  --p; ++rem; /* let readuc see it */
+	  palette[n * 4 + 3] = readuc(p, rem);
+	  nextc(p, rem); /* remember to ignore another char */
 	}
+	else
+	  palette[n * 4 + 3] = 255;
+	++n;
+	c = nextc(p, rem);
+      }
+      n = 0;
+      while(n < 256) {
+	for(m = 0; m < numcolors; ++m) {
+	  if(chars[m] == c) {
+	    graphic[n++] = m;
+	    break;
+	  }
+	}
+	c = nextc(p, rem);
+      }
+    } catch(...) {
+      return false;
+    }
+    return true;
+  }
+	
+  void seticon(int idx, unsigned char palette[1024], unsigned char graphic[256]) {
+    unsigned char* p1, *p2, px;
+    int n;
+    p1 = ScriptHUDElements[idx].icon;
+    p2 = graphic;
+    for(n = 0; n < 256; ++n) {
+      px = *(p2++);
+      *(p1++) = palette[px * 4 + 3];
+      *(p1++) = palette[px * 4];
+      *(p1++) = palette[px * 4 + 1];
+      *(p1++) = palette[px * 4 + 2];
+    }
+    ScriptHUDElements[idx].isicon = true;
+  }
 	
 }
 
 void SetScriptHUDColor(int idx, int color) {
-	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; /* o_o */
-	ScriptHUDElements[idx].color = color % 8; /* O_O */
+  idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS; /* o_o */
+  ScriptHUDElements[idx].color = color % 8; /* O_O */
 }
 
 void SetScriptHUDText(int idx, const char* text) {
-	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
-	if(!text) text = "";
-	strncpy(ScriptHUDElements[idx].text, text, 255);
-	ScriptHUDElements[idx].text[255] = 0;
+  idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
+  if(!text) text = "";
+  strncpy(ScriptHUDElements[idx].text, text, 255);
+  ScriptHUDElements[idx].text[255] = 0;
 }
 
 bool SetScriptHUDIcon(int idx, const char* text, size_t rem) {
-	unsigned char palette[768], graphic[256];
-	int numcolors;
-	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
-	if(text) {
-		if(!icon::parseicon(text, rem, palette, numcolors, graphic)) return false;
-		icon::seticon(idx, palette, graphic);
-	} else ScriptHUDElements[idx].isicon = false;
-	return true;
+  unsigned char palette[1024], graphic[256];
+  int numcolors;
+  idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
+  if(text) {
+    if(!icon::parseicon(text, rem, palette, numcolors, graphic)) return false;
+    icon::seticon(idx, palette, graphic);
+  } else ScriptHUDElements[idx].isicon = false;
+  return true;
 }
 
 void SetScriptHUDSquare(int idx, int _color) {
-	unsigned char palette[3]; /* short, I KNOW. */
-	unsigned char graphic[256];
-	idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
-	ScriptHUDElements[idx].color = _color % 8;
-	memset(graphic, 0, 256);
-	SDL_Color color;
-	_get_interface_color(_color+_computer_interface_text_color, &color);
-	palette[0] = color.r;
-	palette[1] = color.g;
-	palette[2] = color.b;
-	icon::seticon(idx, palette, graphic);
+  unsigned char palette[3]; /* short, I KNOW. */
+  unsigned char graphic[256];
+  idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
+  ScriptHUDElements[idx].color = _color % 8;
+  memset(graphic, 0, 256);
+  SDL_Color color;
+  _get_interface_color(_color+_computer_interface_text_color, &color);
+  palette[0] = color.r;
+  palette[1] = color.g;
+  palette[2] = color.b;
+  icon::seticon(idx, palette, graphic);
 }
 /* /SB */
 
@@ -658,9 +673,9 @@ static void DisplayMessages(SDL_Surface *s)
 						rect.y = Y - 11;
 						rect.w = rect.h = 16;
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
-						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<8, 0xFF<<16, 0xFF<<24, 0);
+						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<8, 0xFF<<16, 0xFF<<24, 0xFF);
 #else
-						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<16, 0xFF<<8, 0xFF, 0);
+						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<16, 0xFF<<8, 0xFF, 0xFF<<24);
 #endif
 						SDL_BlitSurface(srf, NULL, s, &rect);
 						SDL_FreeSurface(srf);
