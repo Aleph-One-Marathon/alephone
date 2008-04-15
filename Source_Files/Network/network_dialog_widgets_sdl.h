@@ -171,6 +171,8 @@ public:
 
         ~w_players_in_game2();
 
+	bool placeable_implemented() { return true; }
+
 protected:
     // Local storage
     vector<player_entry2>	player_entries;

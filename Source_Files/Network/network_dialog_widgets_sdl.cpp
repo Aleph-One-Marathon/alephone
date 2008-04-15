@@ -501,6 +501,9 @@ w_players_in_game2::w_players_in_game2(bool inPostgameLayout) :
 {
     rect.w = kWPIG2Width;
     rect.h = postgame_layout ? kPostgameHeight : kWPIG2Height;
+
+    saved_min_width = rect.w;
+    saved_min_height = rect.h;
 }
 
 
