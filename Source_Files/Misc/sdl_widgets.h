@@ -265,14 +265,14 @@ private:
 // typedef void (*action_proc)(void *);
 typedef boost::function<void (void*)> action_proc;
 
-class w_button : public widget {
+class w_button_base : public widget {
 public:
-	w_button(const char *text, action_proc proc = NULL, void *arg = NULL);
-	~w_button();
+	w_button_base(const char *text, action_proc proc = NULL, void *arg = NULL);
+	virtual ~w_button_base() { }
 
 	void set_callback (action_proc proc, void *arg);
-
-	void draw(SDL_Surface *s) const;
+	
+	void draw(SDL_Surface *s) const = 0;
 	void click(int x, int y);
 
 	bool placeable_implemented() { return true; }
@@ -281,8 +281,26 @@ protected:
 	const std::string text;
 	action_proc proc;
 	void *arg;
-        
+};
+	
+
+class w_button : public w_button_base {
+public:
+	w_button(const char *text, action_proc proc = NULL, void *arg = NULL);
+	~w_button();
+
+	void draw(SDL_Surface *s) const;
+
+	bool placeable_implemented() { return true; }
+
+protected:
 	SDL_Surface *button_l, *button_c, *button_r;
+};
+
+class w_tiny_button : public w_button_base {
+public:
+	w_tiny_button(const char *text, action_proc proc = NULL, void *arg = NULL);
+	void draw(SDL_Surface *s) const;
 };
 
 
@@ -1154,7 +1172,7 @@ private:
 class ButtonWidget : public SDLWidgetWidget
 {
 public:
-	ButtonWidget (w_button* button)
+	ButtonWidget (w_button_base* button)
 		: SDLWidgetWidget (button)
 		, m_button (button)
 		, m_callback (NULL)
@@ -1168,7 +1186,7 @@ private:
 	static void bounce_callback(void* arg)
 		{ reinterpret_cast<ButtonWidget*>(arg)->push (); }
 
-	w_button* m_button;
+	w_button_base* m_button;
 	ControlHitCallback m_callback;
 };
 

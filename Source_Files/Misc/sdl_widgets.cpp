@@ -313,9 +313,24 @@ void w_pict::draw(SDL_Surface *s) const
  *  Button
  */
 
-w_button::w_button(const char *t, action_proc p, void *a) : widget(BUTTON_FONT), text(t),
-                    proc(p),
-                    arg(a)
+w_button_base::w_button_base(const char *t, action_proc p, void *a) : widget(BUTTON_FONT), text(t), proc(p), arg(a)
+{
+
+}
+
+void w_button_base::set_callback(action_proc p, void *a)
+{
+	proc = p;
+	arg = a;
+}
+
+void w_button_base::click(int /*x*/, int /*y*/)
+{
+    if(enabled && proc)
+	    proc(arg);
+}
+
+w_button::w_button(const char *t, action_proc p, void *a) : w_button_base(t, p, a)
 {
 	rect.w = text_width(text.c_str(), font, style) + get_dialog_space(BUTTON_L_SPACE) + get_dialog_space(BUTTON_R_SPACE);
 	button_l = get_dialog_image(BUTTON_L_IMAGE);
@@ -330,12 +345,6 @@ w_button::w_button(const char *t, action_proc p, void *a) : widget(BUTTON_FONT),
 w_button::~w_button()
 {
 	if (button_c) SDL_FreeSurface(button_c);
-}
-
-void w_button::set_callback(action_proc p, void *a)
-{
-	proc = p;
-	arg = a;
 }
 
 void w_button::draw(SDL_Surface *s) const
@@ -362,12 +371,23 @@ void w_button::draw(SDL_Surface *s) const
         get_dialog_color(theColorToUse), font, style);
 }
 
-void w_button::click(int /*x*/, int /*y*/)
+w_tiny_button::w_tiny_button(const char *t, action_proc p, void *a) : w_button_base(t, p, a)
 {
-    if(enabled && proc)
-	    proc(arg);
+	font = get_dialog_font(LABEL_FONT, style);
+	
+	rect.w = text_width(this->text.c_str(), font, style);
+	rect.h = font->get_line_height();
+
+	saved_min_width = rect.w;
+	saved_min_height = rect.h;
 }
 
+void w_tiny_button::draw(SDL_Surface *s) const 
+{
+	int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+
+	draw_text(s, text.c_str(), rect.x, rect.y + font->get_ascent(), get_dialog_color(theColorToUse), font, style);
+}
 
 /*
  *  Button on left/right side of dialog box
