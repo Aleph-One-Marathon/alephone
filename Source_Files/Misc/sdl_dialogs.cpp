@@ -938,6 +938,110 @@ void table_placer::place(const SDL_Rect &r, placement_flags flags)
 {
 	int w = min_width();
 
+	std::vector<int> column_widths(m_columns);
+	bool fill_all_columns;
+
+	if (m_balance_widths)
+	{
+		if (flags & kFill)
+		{
+			for (int i = 0; i < column_widths.size(); i++)
+			{
+				column_widths[i] = (r.w - (m_columns - 1) * m_space) / m_columns;
+			}
+		}
+		else
+		{
+			int column_width = col_width(0);
+			for (int i = 1; i < column_widths.size(); i++)
+			{
+				if (col_width(i) > column_width)
+					column_width = col_width(i);
+			}
+
+			for (int i = 0; i < column_widths.size(); i++)
+			{
+				column_widths[i] = column_width;
+			}
+		}
+	}
+	else if (flags & kFill)
+	{
+		int pool = r.w - (m_columns - 1) * m_space;
+		int columns_remaining = m_columns;
+		for (int i = 0; i < m_columns; i++)
+		{
+			if (!(m_col_flags[i] & kFill))
+			{
+				columns_remaining--;
+				column_widths[i] = col_width(i);
+				pool -= column_widths[i];
+			}
+		}
+
+		if (columns_remaining == m_columns || columns_remaining == 0)
+		{
+			fill_all_columns = true;
+			for (int i = 0; i < column_widths.size(); i++)
+			{
+				column_widths[i] = col_width(i) + (pool / m_columns);
+			}
+		}
+		else
+		{
+			int remaining_w = r.w / columns_remaining;
+			for (int i = 0; i < m_columns; i++)
+			{
+				if (m_col_flags[i] & kFill)
+				{
+					int column_width = col_width(i);
+					if (column_width > remaining_w)
+					{
+						pool -= column_width - remaining_w;
+						column_widths[i] = column_width;
+					}
+				}
+
+				if (pool < 0)
+				{
+					// bail!
+					fill_all_columns = true;
+					for (int i = 0; i < column_widths.size(); i++)
+					{
+						column_widths[i] = col_width(i) + (pool / m_columns);
+					}
+				}
+				else
+				{
+					remaining_w = pool / columns_remaining;
+					for (int i = 0; i < column_widths.size(); i++)
+					{
+						if (m_col_flags[i] & kFill)
+						{
+							int column_width = col_width(i);
+							if (remaining_w > column_width)
+							{
+								column_widths[i] = remaining_w;
+							}
+							else
+							{
+								column_widths[i] = column_width;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < column_widths.size(); i++)
+		{
+			column_widths[i] = col_width(i);
+		}
+	}
+
+
 	int y_offset = 0;
 	for (int row = 0; row < m_table.size(); ++row)
 	{
@@ -959,12 +1063,7 @@ void table_placer::place(const SDL_Rect &r, placement_flags flags)
 		for (int col = 0; col < m_table[row].size(); ++col)
 		{
 			SDL_Rect wr;
-			if (full_row)
-				wr.w = w;
-			else if (m_balance_widths)
-				wr.w = (w - (m_columns - 1) * m_space) / m_columns;
-			else
-				wr.w = col_width(col);
+			wr.w = full_row ? w : column_widths[col];
 
 			wr.h = row_height(row);
 			wr.x = r.x + x_offset;
