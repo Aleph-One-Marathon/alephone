@@ -147,7 +147,7 @@ class vertical_placer : public widget_placer
 {
 public:
 	enum { kSpace = 0 };
-	vertical_placer() : widget_placer(), m_min_width(0), m_add_flags(kDefault) { }
+	vertical_placer(int space = kSpace) : m_space(space), widget_placer(), m_min_width(0), m_add_flags(kDefault) { }
 
 	void add(placeable *p, bool assume_ownership = false);
 	void add_flags(placement_flags flags = kDefault) { m_add_flags = flags; }
@@ -165,6 +165,7 @@ private:
 	std::vector<placement_flags> m_placement_flags;
 	int m_min_width;
 	placement_flags m_add_flags;
+	int m_space;
 };
 
 class horizontal_placer : public widget_placer

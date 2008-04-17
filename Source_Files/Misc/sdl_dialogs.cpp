@@ -1114,7 +1114,7 @@ int vertical_placer::min_height()
 	}
 
 	if (m_widgets.size()) 
-		height += (m_widgets.size() - 1) * kSpace;
+		height += (m_widgets.size() - 1) * m_space;
 
 	return height;
 	
@@ -1164,7 +1164,7 @@ void vertical_placer::place(const SDL_Rect &r, placement_flags flags)
 		m_widgets[i]->place(wr, m_placement_flags[i]);
 
 		y_offset += wr.h;
-		y_offset += kSpace;
+		y_offset += m_space;
 		
 	}
 }
