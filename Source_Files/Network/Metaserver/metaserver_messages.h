@@ -452,12 +452,49 @@ private:
 	std::string m_message;
 };
 
+class PrivateMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kBOTH_PRIVATE_MESSAGE };
+	static const int kDirectedBit = 0x1;
+	
+	MessageTypeID type() const { return kType; }
 
+	PrivateMessage() {}
+
+	PrivateMessage(uint32 inSenderID, const std::string& inSenderName, uint32 inSelectedID, const std::string& inMessage);
+
+	const uint32 senderID() const { return m_senderID; }
+	const uint32 selectedID() const { return m_selectedID; }
+	const uint16 internalType() const { return m_internalType; }
+	const std::string senderName() const { return m_senderName; }
+	const std::string message() const { return m_message; }
+	const bool directed() const { return m_flags & kDirectedBit; }
+	
+	COVARIANT_RETURN(Message*, PrivateMessage*) clone() const
+		{ return new PrivateMessage(*this); }
+
+protected:
+	void reallyDeflateTo(AOStream& thePacket) const;
+	bool reallyInflateFrom(AIStream& inStream);
+
+private:
+	uint16 m_color[3];
+	uint32 m_senderID;
+	uint32 m_selectedID;
+	uint16 m_internalType;
+	uint16 m_flags;
+	std::string m_senderName;
+	std::string m_message;
+};
+	
 
 class ChatMessage : public SmallMessageHelper
 {
 public:
 	enum { kType = kBOTH_CHAT };
+
+	static const int kDirectedBit = 0x1;
 
 	MessageTypeID type() const { return kType; }
 
@@ -466,8 +503,10 @@ public:
 	ChatMessage(uint32 inSenderID, const std::string& inSenderName, const std::string& inMessage);
 
 	const uint32 senderID() const { return m_senderID; }
+	const uint16 internalType() const { return m_internalType; }
 	const std::string senderName() const { return m_senderName; }
 	const std::string message() const { return m_message; }
+	const bool directed() const { return m_flags & kDirectedBit; }
 
 	COVARIANT_RETURN(Message*, ChatMessage*) clone() const
 	{ return new ChatMessage(*this); }
@@ -479,6 +518,8 @@ protected:
 private:
 	uint16		m_color[3];
 	uint32		m_senderID;
+	uint16          m_internalType;
+	uint16          m_flags;
 	std::string	m_senderName;
 	std::string	m_message;
 };

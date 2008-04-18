@@ -181,6 +181,7 @@ public:
                 virtual void receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message) = 0;
 		virtual void receivedLocalMessage(const std::string& message) = 0;
                 virtual void receivedBroadcastMessage(const std::string& message) = 0;
+                virtual void receivedPrivateMessage(const std::string& senderName, uint32 senderID, const std::string& message) = 0;
                 virtual ~NotificationAdapter() {}
         };
 	
@@ -274,6 +275,7 @@ public:
 	static void pumpAll();
 
 	void sendChatMessage(const std::string& message);
+	void sendPrivateMessage(MetaserverPlayerInfo::IDType destination, const std::string& message);
 	void announceGame(uint16 gamePort, const GameDescription& description);
 	void announcePlayersInGame(uint8 players);
 	void announceGameStarted(int32 gameTimeInSeconds);
@@ -292,6 +294,7 @@ public:
 private:
 	void handleUnexpectedMessage(Message* inMessage, CommunicationsChannel* inChannel);
 	void handleChatMessage(ChatMessage* inMessage, CommunicationsChannel* inChannel);
+	void handlePrivateMessage(PrivateMessage* inMessage, CommunicationsChannel* inChannel);
 	void handleKeepAliveMessage(Message* inMessage, CommunicationsChannel* inChannel);
 	void handleBroadcastMessage(BroadcastMessage* inMessage, CommunicationsChannel* inChannel);
         void handlePlayerListMessage(PlayerListMessage* inMessage, CommunicationsChannel* inChannel);
@@ -308,6 +311,7 @@ private:
         std::auto_ptr<MessageHandler>		m_playerListMessageHandler;
         std::auto_ptr<MessageHandler>		m_roomListMessageHandler;
 	std::auto_ptr<MessageHandler>		m_gameListMessageHandler;
+	std::auto_ptr<MessageHandler>           m_privateMessageHandler;
 	Rooms					m_rooms;
 	RoomDescription				m_room;
         PlayersInRoom				m_playersInRoom;

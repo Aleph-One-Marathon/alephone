@@ -399,10 +399,73 @@ BroadcastMessage::reallyInflateFrom(AIStream& inStream)
 	return true;
 }
 
+PrivateMessage::PrivateMessage(uint32 inSenderID, const string& inSenderName, uint32 inSelectedID, const string& inMessage) : m_senderID(inSenderID), m_selectedID(inSelectedID), m_internalType(0), m_flags(kDirectedBit), m_senderName(inSenderName), m_message(inMessage)
+{
+	get_metaserver_player_color(player_preferences->color, m_color);
+}
 
+void
+PrivateMessage::reallyDeflateTo(AOStream& thePacket) const
+{
+	uint32 echo = 1;
+	uint16 size = 0;
+	uint16 colorFlags = 0;
+	uint16 flags = 1; // directed bit
+	uint16 unused16 = 0;
+
+	thePacket
+		<< m_selectedID
+		<< echo
+		<< m_internalType
+		<< size;
+	
+	thePacket.write(m_color, 3);
+
+	thePacket
+		<< colorFlags
+		<< m_flags
+		<< unused16
+		<< m_senderID
+		<< m_selectedID;
+
+	write_string(thePacket, m_senderName);
+	write_string(thePacket, m_message);
+}
+
+bool
+PrivateMessage::reallyInflateFrom(AIStream& inStream)
+{
+	uint32 player_id;
+	uint32 echo;
+	uint16 size;
+	uint16 colorFlags;
+	uint16 flags;
+	uint16 unused16;
+
+	inStream
+		>> player_id
+		>> echo
+		>> m_internalType
+		>> size;
+
+	inStream.read(m_color, 3);
+
+	inStream
+		>> colorFlags
+		>> m_flags
+		>> unused16
+		>> m_senderID
+		>> m_selectedID;
+
+	m_senderName = read_string(inStream);
+	m_message = read_string(inStream);
+	remove_formatting(m_message);
+
+	return true;
+}
 
 ChatMessage::ChatMessage(uint32 inSenderID, const string& inSenderName, const string& inMessage)
-	: m_senderID(inSenderID), m_senderName(inSenderName), m_message(inMessage)
+	: m_senderID(inSenderID), m_internalType(0), m_flags(0), m_senderName(inSenderName), m_message(inMessage)
 {
   get_metaserver_player_color(player_preferences->color, m_color);
 }
@@ -410,7 +473,6 @@ ChatMessage::ChatMessage(uint32 inSenderID, const string& inSenderName, const st
 void
 ChatMessage::reallyDeflateTo(AOStream& thePacket) const
 {
-	uint16 type = 0;
 	uint16 size = 0;
 	uint16 colorFlags = 0;
 	uint16 flags = 0;
@@ -418,14 +480,14 @@ ChatMessage::reallyDeflateTo(AOStream& thePacket) const
 	uint32 destinationPlayerID = 0;
 
 	thePacket
-		<< type
+		<< m_internalType
 		<< size;
 	
 	thePacket.write(m_color, 3);
 
 	thePacket
 		<< colorFlags
-		<< flags
+		<< m_flags
 		<< unused16
 		<< m_senderID
 		<< destinationPlayerID;
@@ -437,7 +499,6 @@ ChatMessage::reallyDeflateTo(AOStream& thePacket) const
 bool
 ChatMessage::reallyInflateFrom(AIStream& inStream)
 {
-	uint16 type;
 	uint16 size;
 	uint16 colorFlags;
 	uint16 flags;
@@ -445,14 +506,14 @@ ChatMessage::reallyInflateFrom(AIStream& inStream)
 	uint32 destinationPlayerID;
 
 	inStream
-		>> type
+		>> m_internalType
 		>> size;
 
 	inStream.read(m_color, 3);
 
 	inStream
 		>> colorFlags
-		>> flags
+		>> m_flags
 		>> unused16
 		>> m_senderID
 		>> destinationPlayerID;

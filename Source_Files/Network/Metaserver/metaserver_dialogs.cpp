@@ -190,6 +190,11 @@ void GlobalMetaserverChatNotificationAdapter::receivedChatMessage(const std::str
 	PlayInterfaceButtonSound(_snd_computer_interface_logon);
 }
 
+void GlobalMetaserverChatNotificationAdapter::receivedPrivateMessage(const std::string& senderName, uint32 senderID, const std::string& message)
+{
+	gMetaserverChatHistory.appendString(senderName + "> " + message);
+}
+
 void GlobalMetaserverChatNotificationAdapter::receivedBroadcastMessage(const std::string& message)
 {
 	gMetaserverChatHistory.appendString("@ " + message + " @");
@@ -348,11 +353,18 @@ void MetaserverClientUi::gamesInRoomChanged(const std::vector<GameListMessage::G
 void MetaserverClientUi::sendChat()
 {
 	string message = m_chatEntryWidget->get_text();
-#ifndef SDL
-	// It's just a little semantic difference, really.  :)
-	message = string(message.data (), message.length () - 1); // lose the last character, i.e. '\r'.
-#endif
-	gMetaserverClient->sendChatMessage(message);
+	if (gMetaserverClient->player_target() != MetaserverPlayerInfo::IdNone)
+	{
+		gMetaserverClient->sendPrivateMessage(gMetaserverClient->player_target(), message);
+		gMetaserverClient->player_target(MetaserverPlayerInfo::IdNone);
+		std::vector<MetaserverPlayerInfo> sortedPlayers = gMetaserverClient->playersInRoom();
+		std::sort(sortedPlayers.begin(), sortedPlayers.end(), MetaserverPlayerInfo::sort);
+		
+		m_playersInRoomWidget->SetItems(sortedPlayers);
+		UpdatePlayerButtons();
+	}
+	else
+		gMetaserverClient->sendChatMessage(message);
 	m_chatEntryWidget->set_text(string());
 }
 	

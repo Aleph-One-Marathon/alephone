@@ -2510,6 +2510,12 @@ public:
 		m_chatHistory.get_owning_dialog()->draw_dirty_widgets();
 	}
 
+	void receivedPrivateMessage(const std::string& senderName, uint32 senderID, const std::string& message)
+        {
+		m_chatHistory.append_chat_entry(senderName.c_str(), 0xaaaaaaaa, 0xaaaaaaaa, message.c_str());
+		m_chatHistory.get_owning_dialog()->draw_dirty_widgets();
+	}
+
 	void receivedLocalMessage(const std::string& message) {	}
 	
 	void receivedBroadcastMessage(const std::string& message)

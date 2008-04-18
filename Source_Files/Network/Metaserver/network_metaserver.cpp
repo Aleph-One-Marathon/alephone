@@ -78,14 +78,33 @@ MetaserverClient::handleBroadcastMessage(BroadcastMessage* inMessage, Communicat
 void
 MetaserverClient::handleChatMessage(ChatMessage* message, CommunicationsChannel* inChannel)
 {
-	if(m_notificationAdapter)
+	if(message->internalType() == 0 && m_notificationAdapter)
 	{
 		std::string realSenderName = message->senderName();
 		if (realSenderName[0] == '\260') realSenderName.erase(realSenderName.begin());
 		if (s_ignoreNames.find(realSenderName) != s_ignoreNames.end()) 
 			return;
 
-		m_notificationAdapter->receivedChatMessage(message->senderName(), message->senderID(), message->message());
+		if (message->directed())
+			m_notificationAdapter->receivedPrivateMessage(message->senderName(), message->senderID(), message->message());
+		else
+			m_notificationAdapter->receivedChatMessage(message->senderName(), message->senderID(), message->message());
+	}
+}
+
+void MetaserverClient::handlePrivateMessage(PrivateMessage* message, CommunicationsChannel* inChannel)
+{
+	if (message->internalType() == 0 && m_notificationAdapter)
+	{		
+		std::string realSenderName = message->senderName();
+		if (realSenderName[0] == '\260') realSenderName.erase(realSenderName.begin());
+		if (s_ignoreNames.find(realSenderName) != s_ignoreNames.end()) 
+			return;
+
+		if (message->directed())
+			m_notificationAdapter->receivedPrivateMessage(message->senderName(), message->senderID(), message->message());
+		else
+			m_notificationAdapter->receivedChatMessage(message->senderName(), message->senderID(), message->message());
 	}
 }
 
@@ -134,6 +153,7 @@ MetaserverClient::MetaserverClient()
 	m_unexpectedMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleUnexpectedMessage));
 	m_broadcastMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleBroadcastMessage));
 	m_chatMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleChatMessage));
+	m_privateMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handlePrivateMessage));
 	m_keepAliveMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleKeepAliveMessage));
 	m_playerListMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handlePlayerListMessage));
 	m_roomListMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleRoomListMessage));
@@ -146,6 +166,7 @@ MetaserverClient::MetaserverClient()
 	m_inflater->learnPrototype(DenialMessage());
 	m_inflater->learnPrototype(BroadcastMessage());
 	m_inflater->learnPrototype(ChatMessage());
+	m_inflater->learnPrototype(PrivateMessage());
 	m_inflater->learnPrototype(KeepAliveMessage());
 	m_inflater->learnPrototype(PlayerListMessage());
 	m_inflater->learnPrototype(LoginSuccessfulMessage());
@@ -157,6 +178,7 @@ MetaserverClient::MetaserverClient()
 	m_dispatcher->setDefaultHandler(m_unexpectedMessageHandler.get());
 	m_dispatcher->setHandlerForType(m_broadcastMessageHandler.get(), BroadcastMessage::kType);
 	m_dispatcher->setHandlerForType(m_chatMessageHandler.get(), ChatMessage::kType);
+	m_dispatcher->setHandlerForType(m_privateMessageHandler.get(), PrivateMessage::kType);
 	m_dispatcher->setHandlerForType(m_keepAliveMessageHandler.get(), KeepAliveMessage::kType);
 	m_dispatcher->setHandlerForType(m_playerListMessageHandler.get(), PlayerListMessage::kType);
 	m_dispatcher->setHandlerForType(m_roomListMessageHandler.get(), RoomListMessage::kType);
@@ -433,6 +455,12 @@ MetaserverClient::sendChatMessage(const std::string& message)
 	} else {
 		m_channel->enqueueOutgoingMessage(ChatMessage(m_playerID, m_playerName, message));
 	}
+}
+
+void
+MetaserverClient::sendPrivateMessage(MetaserverPlayerInfo::IDType id, const std::string& message)
+{
+	m_channel->enqueueOutgoingMessage(PrivateMessage(m_playerID, m_playerName, id, message));
 }
 
 void
