@@ -466,7 +466,7 @@ ChatMessage::reallyInflateFrom(AIStream& inStream)
 
 
 
-MetaserverPlayerInfo::MetaserverPlayerInfo(AIStream& inStream)
+MetaserverPlayerInfo::MetaserverPlayerInfo(AIStream& inStream) : m_target(false)
 {
 	uint32 ignore32;
 	uint8 ignore8;

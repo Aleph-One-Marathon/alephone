@@ -222,6 +222,7 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 
 	m_gamesInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::GameSelected, this, _1));
 	m_playersInRoomWidget->SetItemSelectedCallback(bind(&MetaserverClientUi::PlayerSelected, this, _1));
+	m_muteWidget->set_callback(boost::bind(&MetaserverClientUi::MuteClicked, this));
 	m_chatEntryWidget->set_callback(bind(&MetaserverClientUi::ChatTextEntered, this, _1));
 	m_cancelWidget->set_callback(boost::bind(&MetaserverClientUi::handleCancel, this));
 
@@ -282,11 +283,39 @@ void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 	Stop();
 }
 
+void MetaserverClientUi::UpdatePlayerButtons()
+{
+	if (gMetaserverClient->player_target() == MetaserverPlayerInfo::IdNone)
+	{
+		m_muteWidget->deactivate();
+	}
+	else
+	{
+		m_muteWidget->activate();
+	}	
+}
+
 void MetaserverClientUi::PlayerSelected(MetaserverPlayerInfo info)
 {
-	string name = info.name();
-	if (name[0] == '\260') name.erase(name.begin());
-	gMetaserverClient->ignore(name);
+	if (gMetaserverClient->player_target() == info.id())
+	{
+		gMetaserverClient->player_target(MetaserverPlayerInfo::IdNone);
+	}
+	else
+	{
+		gMetaserverClient->player_target(info.id());
+	}
+
+	std::vector<MetaserverPlayerInfo> sortedPlayers = gMetaserverClient->playersInRoom();
+	std::sort(sortedPlayers.begin(), sortedPlayers.end(), MetaserverPlayerInfo::sort);
+
+	m_playersInRoomWidget->SetItems(sortedPlayers);
+	UpdatePlayerButtons();
+}
+
+void MetaserverClientUi::MuteClicked()
+{
+	gMetaserverClient->ignore(gMetaserverClient->player_target());
 }
 
 void MetaserverClientUi::playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges)
@@ -295,6 +324,7 @@ void MetaserverClientUi::playersInRoomChanged(const std::vector<MetaserverPlayer
 	std::sort(sortedPlayers.begin(), sortedPlayers.end(), MetaserverPlayerInfo::sort);
 
 	m_playersInRoomWidget->SetItems(sortedPlayers);
+	UpdatePlayerButtons();
 	GlobalMetaserverChatNotificationAdapter::playersInRoomChanged(playerChanges);
 
 }

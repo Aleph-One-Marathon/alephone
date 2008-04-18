@@ -52,17 +52,16 @@ class SdlMetaserverClientUi : public MetaserverClientUi
 public:
 	SdlMetaserverClientUi()
 	{
-		vertical_placer *placer = new vertical_placer;
+		vertical_placer *placer = new vertical_placer(4);
 		placer->dual_add(new w_static_text("LOCATE NETWORK GAMES", TITLE_FONT, TITLE_COLOR), d);
 
 		placer->add(new w_spacer(), true);
 
-		horizontal_placer *players_games_placer = new horizontal_placer(get_dialog_space(SPACER_HEIGHT));
-		w_players_in_room* players_in_room_w = new w_players_in_room(NULL, 260, 8);
+		table_placer *players_games_placer = new table_placer(2, get_dialog_space(SPACER_HEIGHT));
+		w_players_in_room* players_in_room_w = new w_players_in_room(NULL, 200, 8);
 		
-		players_games_placer->add_flags(placeable::kFill);
+		players_games_placer->col_flags(1, placeable::kFill);
 		players_games_placer->dual_add(players_in_room_w, d);
-		players_games_placer->add_flags();
 
 		w_games_in_room* games_in_room_w = new w_games_in_room(
 			bind(&SdlMetaserverClientUi::GameSelected, this, _1),
@@ -71,16 +70,29 @@ public:
 		);
 
 		players_games_placer->dual_add(games_in_room_w, d);
+		horizontal_placer *player_button_placer = new horizontal_placer;
+		w_tiny_button *mute_w = new w_tiny_button("IGNORE");
+		mute_w->set_enabled(false);
+		player_button_placer->dual_add(mute_w, d);
+		players_games_placer->add(player_button_placer, true);
+
+		horizontal_placer *game_button_placer = new horizontal_placer;
+		w_tiny_button *w_game_info = new w_tiny_button("INFO");
+		w_game_info->set_enabled(false);
+		game_button_placer->dual_add(w_game_info, d);
+
+		w_tiny_button *w_join_game = new w_tiny_button("JOIN");
+		w_join_game->set_enabled(false);
+		game_button_placer->dual_add(w_join_game, d);
+
+		players_games_placer->add(game_button_placer, true);
 
 		placer->add_flags(placeable::kFill);
 		placer->add(players_games_placer, true);
 		placer->add_flags();
-		placer->add(new w_spacer(), true);
 
 		w_text_box* chat_history_w = new w_text_box(600, 12);
 		placer->dual_add(chat_history_w, d);
-
-		placer->add(new w_spacer(), true);
 
 		horizontal_placer *entry_cancel_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
 
@@ -93,8 +105,8 @@ public:
 		entry_cancel_placer->add_flags(placeable::kFill);
 		entry_cancel_placer->dual_add(chatentry_w, d);
 		entry_cancel_placer->add_flags();
-
-		w_button* cancel_w = new w_button("CANCEL", NULL, &d);
+		
+		w_tiny_button* cancel_w = new w_tiny_button("CANCEL", NULL, &d);
 		entry_cancel_placer->dual_add(cancel_w, d);
 
 		placer->add_flags(placeable::kFill);
@@ -108,6 +120,7 @@ public:
 		m_chatEntryWidget = new EditTextWidget (chatentry_w);
 		m_textboxWidget = new HistoricTextboxWidget (new TextboxWidget(chat_history_w));
 		m_cancelWidget = new ButtonWidget (cancel_w);
+		m_muteWidget = new ButtonWidget(mute_w);
 	}
 
 	~SdlMetaserverClientUi () { delete_widgets (); }

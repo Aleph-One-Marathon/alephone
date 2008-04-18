@@ -1768,6 +1768,10 @@ void w_list_base::set_selection(size_t s)
 void w_list_base::new_items(void)
 {
 	// Reset top item and selection
+	
+	// ghs: actually, remember top item and selection
+	size_t saved_top_item = top_item;
+	size_t saved_selection = get_selection();
 	top_item = selection = 0;
 	dirty = true;
 
@@ -1797,6 +1801,11 @@ void w_list_base::new_items(void)
 	if (thumb_y > trough_rect.h - thumb_height)
 		thumb_y = trough_rect.h - thumb_height;
 	thumb_y = thumb_y + trough_rect.y;
+
+	if (saved_selection < num_items) 
+		set_selection(saved_selection);
+	if (saved_top_item)
+		set_top_item(saved_top_item);
 }
 
 void w_list_base::center_item(size_t i)
@@ -2066,7 +2075,24 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 {
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
 
-	SDL_Rect r = {x, y + 1, kPlayerColorSwatchWidth, font->get_ascent() - 2};
+	SDL_Rect r = {x - 1, y - 1, width + 2, font->get_line_height() + 2};
+
+	if (item.target())
+	{
+		SDL_FillRect(s, &r, SDL_MapRGB(s->format, 0xff, 0xff, 0xff));
+		r.x = x;
+		r.y = y;
+		r.w = width;
+		r.h = font->get_line_height();
+
+		SDL_FillRect(s, &r, get_dialog_color(BACKGROUND_COLOR));
+	}
+
+	r.x = x;
+	r.y = y + 1;
+	r.w = kPlayerColorSwatchWidth;
+	r.h = font->get_ascent() - 2;
+
 	uint32 pixel = SDL_MapRGB(s->format,
 				  item.color()[0] >> 8, 
 				  item.color()[1] >> 8, 
@@ -2095,6 +2121,7 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 	{
 		color = SDL_MapRGB(s->format, 0xff, 0xff, 0xff);
 	}
+
 	draw_text(s, item.name().c_str(), x + kTeamColorSwatchWidth + kPlayerColorSwatchWidth + kSwatchGutter, y, color, font, style);
 
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);

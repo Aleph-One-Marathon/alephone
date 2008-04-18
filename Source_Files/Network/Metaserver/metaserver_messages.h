@@ -516,8 +516,13 @@ public:
 
 	// Conformance to metaserver-maintained-list interface
 	typedef uint32 IDType;
+	static const IDType IdNone = -1;
+
 	IDType id() const { return playerID(); }
 	
+	bool target() const { return m_target; }
+	void target(bool _target) { m_target = _target; } 
+
 private:
 	MetaserverPlayerInfo();
 
@@ -534,6 +539,8 @@ private:
 	uint16		m_secondaryColor[3];
 	std::string	m_name;
 	std::string	m_team;
+
+	bool m_target;
 };
 
 class PlayerListMessage : public SmallMessageHelper
@@ -668,8 +675,12 @@ public:
 	{
 		// Conformance to MetaserverMaintainedList's Element interface
 		typedef uint32 IDType;
+		static const IDType IdNone = -1;
 		IDType id() const { return m_gameID; }
 		uint8 verb() const { return m_verb; }
+
+		bool target() const { return m_target; }
+		void target(bool _target) { m_target = _target; }
 
 		bool running() const { return m_description.m_running; }
 		bool compatible() const { return Scenario::instance()->IsCompatible(m_description.m_scenarioID); }
@@ -720,6 +731,9 @@ public:
 		GameDescription	m_description;
 
 		uint32          m_ticks; // SDL ticks at last update
+
+	GameListEntry() : m_target(false) { }
+		bool            m_target;
 	};
 	
 	enum { kType = kSERVER_GAMELIST };

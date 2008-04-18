@@ -39,6 +39,7 @@ template <typename tElement>
 class MetaserverMaintainedList
 {
 public:
+	MetaserverMaintainedList() : m_target(Element::IdNone) { }
 	typedef tElement		 	Element;
 	typedef typename Element::IDType	IDType;
 
@@ -46,6 +47,19 @@ public:
 	{
 		for(size_t i = 0; i < updates.size(); i++)
 			processUpdate(updates[i].verb(), updates[i].id(), updates[i]);
+
+		if (m_target != Element::IdNone)
+		{
+			typename Map::iterator target = m_entries.find(m_target);
+			if (target != m_entries.end())
+			{
+				target->second.target(true);
+			}
+			else
+			{
+				m_target = Element::IdNone;
+			}
+		}
 	}
 
 	const std::vector<Element> entries() const
@@ -60,12 +74,48 @@ public:
 		return result;
 	}
 
+	const Element* find(IDType id) const
+	{
+		typename Map::const_iterator it = m_entries.find(id);
+		if (it != m_entries.end())
+		{
+			return &it->second;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+
 	enum
 	{
 		kAdd		= 0,
 		kDelete		= 1,
 		kRefresh	= 2
 	};
+
+	IDType target() { return m_target; }
+	void target(IDType id) 
+	{
+		// clear the old target
+		typename Map::iterator old_target = (m_target == Element::IdNone) ? m_entries.end() : m_entries.find(m_target);
+		if (old_target != m_entries.end())
+		{
+			old_target->second.target(false);
+		}
+		
+		typename Map::iterator e = (id == Element::IdNone) ? m_entries.end() : m_entries.find(id);
+		if (e == m_entries.end())
+		{
+			m_target = Element::IdNone;
+		}
+		else
+		{
+			m_target = id;
+			e->second.target(true);
+		}
+	}
+		
 	
 private:
 	typedef std::map<IDType, Element>	Map;
@@ -105,6 +155,8 @@ private:
 				break;
 		}
 	}
+
+	IDType m_target;
 };
 
 
@@ -228,7 +280,12 @@ public:
 	void announceGameReset();
 	void announceGameDeleted();
 	void ignore(const std::string& name);
+	void ignore(MetaserverPlayerInfo::IDType id);
+	bool is_ignored(MetaserverPlayerInfo::IDType id);
 	void syncGames();
+
+	void player_target(MetaserverPlayerInfo::IDType id) { m_playersInRoom.target(id); };
+	MetaserverPlayerInfo::IDType player_target() { return m_playersInRoom.target(); };
 
 	~MetaserverClient();
 
@@ -265,6 +322,9 @@ private:
 
 	GameDescription                         m_gameDescription;
 	uint16                                  m_gamePort;
+
+	MetaserverPlayerInfo::IDType            m_player_target;
+	bool                                    m_player_target_exists;
 };
 
 #endif // NETWORK_METASERVER_H

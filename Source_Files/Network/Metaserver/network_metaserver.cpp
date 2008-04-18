@@ -491,6 +491,37 @@ void MetaserverClient::ignore(const std::string& name)
 	}
 }
 
+void MetaserverClient::ignore(MetaserverPlayerInfo::IDType id)
+{
+	// find the guy's name, remove the \266 if it's there
+	const MetaserverPlayerInfo *player = m_playersInRoom.find(id);
+	if (player)
+	{
+		std::string name = player->name();
+		if (name[0] == '\260') name.erase(name.begin());
+
+		ignore(name);
+	}
+}
+
+bool MetaserverClient::is_ignored(MetaserverPlayerInfo::IDType id)
+{
+	std::string name;
+	const MetaserverPlayerInfo *player = m_playersInRoom.find(id);
+	if (player)
+	{
+		std::string name = player->name();
+		if (name[0] == '\260') name.erase(name.begin());
+
+		return (s_ignoreNames.find(name) != s_ignoreNames.end());
+	}
+	else
+	{
+		// uh, what do we do?
+		return false;
+	}
+}
+
 
 void
 MetaserverClient::syncGames()
