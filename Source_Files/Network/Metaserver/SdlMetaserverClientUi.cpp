@@ -42,10 +42,13 @@
 #include <boost/function.hpp>
 #include <boost/bind.hpp>
 
+#include "TextStrings.h"
+
 using namespace std;
 using boost::bind;
 using boost::ref;
 
+extern MetaserverClient* gMetaserverClient;
 
 class SdlMetaserverClientUi : public MetaserverClientUi
 {
@@ -121,6 +124,8 @@ public:
 		m_textboxWidget = new HistoricTextboxWidget (new TextboxWidget(chat_history_w));
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_muteWidget = new ButtonWidget(mute_w);
+		m_joinWidget = new ButtonWidget(w_join_game);
+		m_gameInfoWidget = new ButtonWidget(w_game_info);
 	}
 
 	~SdlMetaserverClientUi () { delete_widgets (); }
@@ -140,6 +145,128 @@ public:
 	void Stop()
 	{
 		dialog_ok(&d);
+	}
+
+	void InfoClicked()
+	{
+		const GameListMessage::GameListEntry *game = gMetaserverClient->find_game(gMetaserverClient->game_target());
+		if (game)
+		{
+			dialog info_dialog;
+			vertical_placer *placer = new vertical_placer;
+			placer->dual_add(new w_static_text("GAME INFO", TITLE_FONT, TITLE_COLOR), info_dialog);
+			placer->add(new w_spacer(), true);
+			table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+			table->col_flags(0, placeable::kAlignRight);
+			table->col_flags(1, placeable::kAlignLeft);
+
+			table->dual_add_row(new w_static_text("Gatherer"), info_dialog);
+			table->dual_add(new w_label("Name"), info_dialog);
+			const MetaserverPlayerInfo *player = gMetaserverClient->find_player(game->m_hostPlayerID);
+			if (player)
+			{
+				table->dual_add(new w_static_text(player->name().c_str()), info_dialog);
+			}
+			else
+			{
+				table->add(new w_spacer(), true);
+			}
+			table->dual_add(new w_label("Version"), info_dialog);
+			table->dual_add(new w_static_text(game->m_description.m_alephoneBuildString.c_str()), info_dialog);
+
+			table->add_row(new w_spacer(), true);
+			table->dual_add_row(new w_static_text("Scenario"), info_dialog);
+			table->dual_add(new w_label("Name"), info_dialog);
+			table->dual_add(new w_static_text(game->m_description.m_scenarioName.c_str()), info_dialog);
+			table->dual_add(new w_label("Version"), info_dialog);
+			table->dual_add(new w_static_text(game->m_description.m_scenarioVersion.c_str()), info_dialog);
+
+			table->add_row(new w_spacer(), true);
+			table->dual_add_row(new w_static_text("Game"), info_dialog);
+			table->dual_add(new w_label("Name"), info_dialog);
+			table->dual_add(new w_static_text(game->name().c_str()), info_dialog);
+			table->dual_add(new w_label("Level"), info_dialog);
+			table->dual_add(new w_static_text(game->m_description.m_mapName.c_str()), info_dialog);
+			table->dual_add(new w_label("Difficulty"), info_dialog);
+			if (TS_GetCString(kDifficultyLevelsStringSetID, game->m_description.m_difficulty))
+			{
+				table->dual_add(new w_static_text(TS_GetCString(kDifficultyLevelsStringSetID, game->m_description.m_difficulty)), info_dialog);
+			}
+			else
+			{
+				table->add(new w_spacer(), true);
+			}
+			table->add_row(new w_spacer(), true);
+			table->dual_add(new w_label("Type"), info_dialog);
+			int type = game->m_description.m_type - (game->m_description.m_type > 5 ? 1 : 0);
+			if (TS_GetCString(kNetworkGameTypesStringSetID, type))
+			{
+				table->dual_add(new w_static_text(TS_GetCString(kNetworkGameTypesStringSetID, type)), info_dialog);
+			}
+			else
+			{
+				table->add(new w_spacer(), true);
+			}
+			table->dual_add(new w_label("Netscript"), info_dialog);
+			table->dual_add(new w_static_text(game->m_description.m_netScript.c_str()), info_dialog);
+			table->add_row(new w_spacer(), true);
+			table->dual_add(new w_label("Teams"), info_dialog);
+			table->dual_add(new w_static_text(game->m_description.m_teamsAllowed ? "Yes" : "No"), info_dialog);
+			table->dual_add(new w_label("Time Limit"), info_dialog);
+			if (game->m_description.m_timeLimit && !(game->m_description.m_timeLimit == INT32_MAX || game->m_description.m_timeLimit == -1))
+			{
+				char minutes[32];
+				snprintf(minutes, 32, "%i minutes", game->m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
+				minutes[32] = '\0';
+				table->dual_add(new w_static_text(minutes), info_dialog);
+			}
+			else
+			{
+				table->dual_add(new w_static_text("No"), info_dialog);
+				
+			}
+			table->add_row(new w_spacer(), true);
+			table->dual_add(new w_label("Status"), info_dialog);
+			table->dual_add(new w_static_text(game->running() ? "In Progress" : "Gathering"), info_dialog);
+			if (game->running() && game->minutes_remaining() >= 0)
+			{
+				table->dual_add(new w_label("Approximate Time Remaining"), info_dialog);
+				char minutes[32];
+				if (game->minutes_remaining() < 1)
+				{
+					sprintf(minutes, "less than 1 minute");
+				}
+				else if (game->minutes_remaining() == 1)
+				{
+					sprintf(minutes, "1 minute");
+				}
+				else
+				{
+					snprintf(minutes, 32, "%i minutes", game->minutes_remaining());
+					minutes[32] = '\0';
+				}
+
+				table->dual_add(new w_static_text(minutes), info_dialog);
+			}
+			placer->add(table, true);
+			placer->add(new w_spacer(), true);
+			horizontal_placer *button_placer = new horizontal_placer;
+			w_button *join_w = new w_button("JOIN", dialog_ok, &info_dialog);
+			button_placer->dual_add(join_w, info_dialog);
+			if (game->running() || !Scenario::instance()->IsCompatible(game->m_description.m_scenarioID))
+			{
+				join_w->set_enabled(false);
+			}
+			button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &info_dialog), info_dialog);
+			placer->add(button_placer, true);
+			
+			info_dialog.set_widget_placer(placer);
+			info_dialog.set_processing_function(bind(&SdlMetaserverClientUi::pump, this, _1));
+			if (info_dialog.run() == 0)
+			{
+				JoinGame(*game);
+			}
+		}
 	}
 
 private:

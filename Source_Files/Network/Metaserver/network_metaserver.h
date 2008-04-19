@@ -288,6 +288,10 @@ public:
 
 	void player_target(MetaserverPlayerInfo::IDType id) { m_playersInRoom.target(id); };
 	MetaserverPlayerInfo::IDType player_target() { return m_playersInRoom.target(); };
+	const MetaserverPlayerInfo* find_player(MetaserverPlayerInfo::IDType id) { return m_playersInRoom.find(id); }
+	void game_target(GameListMessage::GameListEntry::IDType id) { m_gamesInRoom.target(id); }
+	GameListMessage::GameListEntry::IDType game_target() { return m_gamesInRoom.target(); };
+	const GameListMessage::GameListEntry* find_game(GameListMessage::GameListEntry::IDType id) { return m_gamesInRoom.find(id); }
 
 	~MetaserverClient();
 

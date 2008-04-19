@@ -2037,6 +2037,13 @@ const string w_items_in_room_get_name_of_item (MetaserverPlayerInfo item)
 
 void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const
 {
+
+	if (item.target())
+	{
+		SDL_Rect r = { x, y, width, font->get_line_height()};
+		SDL_FillRect(s, &r, SDL_MapRGB(s->format, 0xff, 0xff, 0xff));
+	}
+
 	y += font->get_ascent();
 
 	uint32 color;
@@ -2051,6 +2058,10 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	else if (item.running())
 	{
 		color = SDL_MapRGB(s->format, 0x7f, 0x7f, 0x7f);
+	}
+	else if (item.target())
+	{
+		color = SDL_MapRGB(s->format, 0, 0, 0);
 	}
 	else
 	{

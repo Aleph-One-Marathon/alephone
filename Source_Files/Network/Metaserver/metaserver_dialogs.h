@@ -82,14 +82,18 @@ protected:
 	virtual void Stop() = 0;
 
 	void GameSelected(GameListMessage::GameListEntry game);
+	void JoinGame(const GameListMessage::GameListEntry&);
 	void PlayerSelected(MetaserverPlayerInfo info);
 	void MuteClicked();
+	void JoinClicked();
+	virtual void InfoClicked() { };
 	void playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges);
 	void gamesInRoomChanged(const std::vector<GameListMessage::GameListEntry> &gamesChanges);
 	void sendChat();
 	void ChatTextEntered (char character);
 	void handleCancel();
 	void UpdatePlayerButtons();
+	void UpdateGameButtons();
 	
 	PlayerListWidget*				m_playersInRoomWidget;
 	GameListWidget*					m_gamesInRoomWidget;
@@ -99,6 +103,8 @@ protected:
 	IPaddress					m_joinAddress;
 	bool						m_used;
 	ButtonWidget*                                   m_muteWidget;
+	ButtonWidget*                                   m_joinWidget;
+	ButtonWidget*                                   m_gameInfoWidget;
 };
 
 #endif // METASERVER_DIALOGS_H

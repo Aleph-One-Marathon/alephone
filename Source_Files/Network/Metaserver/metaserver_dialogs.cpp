@@ -212,6 +212,9 @@ void MetaserverClientUi::delete_widgets ()
 	delete m_chatEntryWidget;
 	delete m_textboxWidget;
 	delete m_cancelWidget;
+	delete m_muteWidget;
+	delete m_joinWidget;
+	delete m_gameInfoWidget;
 }
 
 const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
@@ -230,7 +233,9 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 	m_muteWidget->set_callback(boost::bind(&MetaserverClientUi::MuteClicked, this));
 	m_chatEntryWidget->set_callback(bind(&MetaserverClientUi::ChatTextEntered, this, _1));
 	m_cancelWidget->set_callback(boost::bind(&MetaserverClientUi::handleCancel, this));
-
+	m_joinWidget->set_callback(boost::bind(&MetaserverClientUi::JoinClicked, this));
+	m_gameInfoWidget->set_callback(boost::bind(&MetaserverClientUi::InfoClicked, this));
+	
 	gMetaserverChatHistory.clear ();
 	m_textboxWidget->attachHistory (&gMetaserverChatHistory);
 
@@ -243,49 +248,19 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 
 void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 {
-	// check if the game is compatible...a more elegant dialog should
-	// appear here in the future, but for now, just prevent joining 
-	// incompatible games
-
-	if (game.running()) 
+	if (gMetaserverClient->game_target() == game.id())
 	{
-		string message = game.name();
-		message += " is in progress";
-		int minutes_remaining = game.minutes_remaining();
-		if (minutes_remaining == 0)
-		{
-			message += ", about to end";
-		}
-		else if (minutes_remaining == 1)
-		{
-			message += ", approximately 1 minute remaining";
-		}
-		else if (minutes_remaining > 0)
-		{
-			char minutes[5];
-			snprintf(minutes, 4, "%i", minutes_remaining);
-			minutes[4] = '\0';
-			message += ", approximately ";
-			message += minutes;
-			message += " minutes remaining";
-		}
-		receivedLocalMessage(message);
-		return;
+		gMetaserverClient->game_target(GameListMessage::GameListEntry::IdNone);
+	}
+	else
+	{
+		gMetaserverClient->game_target(game.id());
 	}
 
-	if (!Scenario::instance()->IsCompatible(game.m_description.m_scenarioID))
-	{
-		string joinersScenario = (Scenario::instance()->GetName() != "") ? (Scenario::instance()->GetName()) : (Scenario::instance()->GetID());
-		string gatherersScenario = (game.m_description.m_scenarioName != "") ? game.m_description.m_scenarioName : game.m_description.m_scenarioID;
-		string errorMessage = joinersScenario + " is unable to join " + gatherersScenario + " games. Please restart using " + gatherersScenario + " to join this game.";
-
-		alert_user(const_cast<char *>(errorMessage.c_str()), 0);
-		return;
-	}
-
-	memcpy(&m_joinAddress.host, &game.m_ipAddress, sizeof(m_joinAddress.host));
-	m_joinAddress.port = game.m_port;
-	Stop();
+	std::vector<GameListMessage::GameListEntry> sortedGames = gMetaserverClient->gamesInRoom();
+	std::sort(sortedGames.begin(), sortedGames.end(), GameListMessage::GameListEntry::sort);
+	m_gamesInRoomWidget->SetItems(sortedGames);
+	UpdateGameButtons();
 }
 
 void MetaserverClientUi::UpdatePlayerButtons()
@@ -298,6 +273,37 @@ void MetaserverClientUi::UpdatePlayerButtons()
 	{
 		m_muteWidget->activate();
 	}	
+}
+
+void MetaserverClientUi::UpdateGameButtons()
+{
+	if (gMetaserverClient->game_target() == GameListMessage::GameListEntry::IdNone)
+	{
+		m_joinWidget->deactivate();
+		m_gameInfoWidget->deactivate();
+	}
+	else
+	{
+		const GameListMessage::GameListEntry *game = gMetaserverClient->find_game(gMetaserverClient->game_target());
+		if (game)
+		{
+			m_gameInfoWidget->activate();
+			if (!game->running() && Scenario::instance()->IsCompatible(game->m_description.m_scenarioID))
+			{
+				m_joinWidget->activate();
+			}
+			else
+			{
+				m_joinWidget->deactivate();
+			}
+		}
+		else
+		{
+			// huh?
+			m_gameInfoWidget->deactivate();
+			m_joinWidget->deactivate();
+		}
+	}
 }
 
 void MetaserverClientUi::PlayerSelected(MetaserverPlayerInfo info)
@@ -321,6 +327,22 @@ void MetaserverClientUi::PlayerSelected(MetaserverPlayerInfo info)
 void MetaserverClientUi::MuteClicked()
 {
 	gMetaserverClient->ignore(gMetaserverClient->player_target());
+}
+
+void MetaserverClientUi::JoinClicked()
+{
+	const GameListMessage::GameListEntry *game = gMetaserverClient->find_game(gMetaserverClient->game_target());
+	if (game)
+	{
+		JoinGame(*game);
+	}
+}
+
+void MetaserverClientUi::JoinGame(const GameListMessage::GameListEntry& game)
+{
+	memcpy(&m_joinAddress.host, &game.m_ipAddress, sizeof(m_joinAddress.host));
+	m_joinAddress.port = game.m_port;
+	Stop();
 }
 
 void MetaserverClientUi::playersInRoomChanged(const std::vector<MetaserverPlayerInfo> &playerChanges)

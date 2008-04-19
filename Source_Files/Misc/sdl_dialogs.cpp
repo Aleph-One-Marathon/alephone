@@ -1724,10 +1724,12 @@ void dialog::draw(void) const
 void
 dialog::draw_dirty_widgets() const
 {
+	if (top_dialog != this) return;
         for (unsigned i=0; i<widgets.size(); i++)
 		if (widgets[i]->is_dirty())
 			if ((tabs[i] == NONE || tabs[i] == active_tab) &&  widgets[i]->visible())
 				draw_widget(widgets[i]);
+	
 }       
 
 /*
