@@ -565,7 +565,7 @@ w_players_in_game2::update_display(bool inFromDynamicWorld /* default=false */) 
                 }
                 
                 // Set the size of the text
-                thePlayerEntry.name_width	= text_width(thePlayerEntry.player_name, font, style);
+                thePlayerEntry.name_width	= text_width(thePlayerEntry.player_name, font, style | styleShadow);
 		
                 // Get the pixel-color for the player's team (for drawing the name)
 		thePlayerEntry.name_pixel_color	= get_dialog_player_color(thePlayerTeam);
@@ -768,9 +768,7 @@ w_players_in_game2::draw_player_names_separately(SDL_Surface* s, TextLayoutHelpe
         name_y = ioTextLayoutHelper.reserveSpaceFor(name_x - kNameMargin / 2, theEntry->name_width + kNameMargin, name_y, font->get_line_height());
         
         draw_text(s, theEntry->player_name, name_x, name_y,
-		  get_dialog_color(LABEL_OUTLINE_COLOR), font, style | styleOutline);
-        draw_text(s, theEntry->player_name, name_x, name_y,
-                    theEntry->name_pixel_color, font, style);
+                    theEntry->name_pixel_color, font, style | styleShadow);
     }
 }
 
@@ -800,10 +798,7 @@ w_players_in_game2::draw_player_names_clumped(SDL_Surface* s, TextLayoutHelper& 
                                                             name_y, font->get_line_height());
     
             draw_text(s, theEntry->player_name, name_x, name_y,
-                        get_dialog_color(LABEL_OUTLINE_COLOR), font, style | styleOutline);
-    
-            draw_text(s, theEntry->player_name, name_x, name_y,
-                        theEntry->name_pixel_color, font, style);
+                        theEntry->name_pixel_color, font, style | styleShadow);
         }
     }
 }
@@ -1002,12 +997,10 @@ w_players_in_game2::draw_carnage_totals(SDL_Surface* s) const {
         uint16			theBiggerFontStyle	= 0;
         ttf_and_sdl_font_info*	theBiggerFont		= get_dialog_font(LABEL_FONT, theBiggerFontStyle);
         
-        int	theStringCenter = center_x - (text_width(temporary, theBiggerFont, theBiggerFontStyle) / 2);
+        int	theStringCenter = center_x - (text_width(temporary, theBiggerFont, theBiggerFontStyle | styleShadow) / 2);
         
-        draw_text(s, temporary, theStringCenter, rect.y + rect.h - 1, SDL_MapRGB(s->format, 0, 0, 0),
-                    theBiggerFont, theBiggerFontStyle | styleOutline);
         draw_text(s, temporary, theStringCenter, rect.y + rect.h - 1, SDL_MapRGB(s->format, 0xff, 0xff, 0xff),
-                    theBiggerFont, theBiggerFontStyle);
+                    theBiggerFont, theBiggerFontStyle | styleShadow);
     } // walk through rankings
 } // draw_carnage_totals
 
@@ -1047,13 +1040,12 @@ w_players_in_game2::draw_bar_labels(SDL_Surface* s, const vector<bar_info>& inBa
     for(size_t i = 0; i < theNumberOfLabels; i++) {
         const bar_info& theBarInfo = inBarInfos[i];
         
-        int theStringWidth = text_width(theBarInfo.label_text.c_str(), font, style);
+        int theStringWidth = text_width(theBarInfo.label_text.c_str(), font, style | styleShadow);
         int theTextX = theBarInfo.center_x - theStringWidth / 2;
         int theBestY = ioTextLayoutHelper.reserveSpaceFor(theTextX - kNameMargin/2,
                             theStringWidth + kNameMargin, theBarInfo.top_y - 1, font->get_line_height());
 
-        draw_text(s, theBarInfo.label_text.c_str(), theTextX, theBestY, get_dialog_color(LABEL_OUTLINE_COLOR), font, style | styleOutline);
-        draw_text(s, theBarInfo.label_text.c_str(), theTextX, theBestY, theBarInfo.pixel_color, font, style);
+        draw_text(s, theBarInfo.label_text.c_str(), theTextX, theBestY, theBarInfo.pixel_color, font, style | styleShadow);
     }
 } // draw_bar_labels
 
@@ -1161,9 +1153,9 @@ w_players_in_game2::draw_bar(SDL_Surface* s, int inCenterX, int inBarColorIndex,
         if(inBarValue < 0)
             assert(inMaxValue < 0);
         
-        // "- 2" leaves room for outline style.  Leave two line-heights so a kills and deaths at the top of widget resolve
+        // "- 1" leaves room for shadow style.  Leave two line-heights so a kills and deaths at the top of widget resolve
         // (thanks to TextLayoutHelper) and still have space to live.
-        int	theMaximumBarHeight = kBarBottomTotalOffset - font->get_line_height() * 2 - 2;
+        int	theMaximumBarHeight = kBarBottomTotalOffset - font->get_line_height() * 2 - 1;
         int	theBarHeight = (theMaximumBarHeight * inBarValue) / inMaxValue;
 
         SDL_Rect	theBarRect;

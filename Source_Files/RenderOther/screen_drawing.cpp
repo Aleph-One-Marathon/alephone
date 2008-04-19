@@ -394,10 +394,10 @@ uint16 text_width(const char* text, ttf_and_sdl_font_info *font, uint16 style, b
 {
 #ifdef HAVE_SDL_TTF
 	if (font->is_ttf_font())
-		return text_width(text, font->get_ttf_font_info(), style, utf8);
+		return text_width(text, font->get_ttf_font_info(), style, utf8) + ((style & styleShadow) ? 1 : 0);
 	else
 #endif
-		return text_width(text, font->get_sdl_font_info(), style);
+		return text_width(text, font->get_sdl_font_info(), style) + ((style & styleShadow) ? 1 : 0);
 }
 
 uint16 text_width(const char *text, size_t length, const sdl_font_info *font, uint16 style)
@@ -567,7 +567,7 @@ inline static int draw_text(const uint8 *text, size_t length, int x, int y, T *p
 
                 int width;
 
-                if(style & styleOutline) {
+/*                if(style & styleOutline) {
                     draw_glyph(c, x-1, y-1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
                     draw_glyph(c, x  , y-1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
                     draw_glyph(c, x+1, y-1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
@@ -578,7 +578,7 @@ inline static int draw_text(const uint8 *text, size_t length, int x, int y, T *p
                     width =
                     draw_glyph(c, x+1, y+1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
                 }
-                else
+                else */
                     width = draw_glyph(c, x, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
 		if (style & styleBold) {
 			draw_glyph(c, x + 1, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
@@ -720,10 +720,24 @@ int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uin
 {
 #ifdef HAVE_SDL_TTF
 	if (font->is_ttf_font())
-		return draw_text(s, text, length, x, y, pixel, font->get_ttf_font_info(), style, utf8);
+	{
+		if (style & styleShadow)
+		{
+			draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), font->get_ttf_font_info(), style, utf8);
+		}
+		int width = draw_text(s, text, length, x, y, pixel, font->get_ttf_font_info(), style, utf8);
+		return (style & styleShadow) ? width + 1 : width;
+	}
 	else
 #endif
-		return draw_text(s, text, length, x, y, pixel, font->get_sdl_font_info(), style);
+	{
+		if (style & styleShadow)
+		{
+			draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), font->get_sdl_font_info(), style);
+		}
+		int width = draw_text(s, text, length, x, y, pixel, font->get_sdl_font_info(), style);
+		return (style & styleShadow) ? width + 1 : width;
+	}
 }
 
 static void draw_text(const char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)

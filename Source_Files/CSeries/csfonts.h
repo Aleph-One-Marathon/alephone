@@ -30,15 +30,7 @@ const int styleNormal = 0;
 const int styleBold = 1;
 const int styleItalic = 2;
 const int styleUnderline = 4;
-// ZZZ addition - implemented and used in SDL version.  May not play well with other styles.
-// Actually this is sort of a poor name.  It will NOT leave a blank area in the middle where
-// the text would normally have been drawn.  Also, the width returned when it's drawn won't
-// include the extra pixel at each side.
-// It's designed mostly to be used like draw_text(blahblah, darkColor, style | styleOutline);
-// draw_text(blahblah, normalColor, style); to surround text with a solid color and set it off
-// from a complex background image.
-// Hope nobody depends on being able to use the upper nybble of this byte ;)
-const int styleOutline = 8;
+const int styleShadow = 8;
 
 typedef struct TextSpec {
 	int16 font;

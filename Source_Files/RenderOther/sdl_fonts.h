@@ -48,8 +48,7 @@ struct DualFontSpec
 		styleBold = 1,
 		styleItalic = 2,
 		styleUnderline = 4,
-		styleOutline = 8, // old fonts only
-		styleShadow = 16
+		styleShadow = 8
 	};
 
 	bool prefer_old_font;
