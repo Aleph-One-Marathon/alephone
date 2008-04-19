@@ -1568,9 +1568,8 @@ void w_slider::set_selection(int s)
 
 w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(ITEM_FONT), num_items(0), shown_items(lines), thumb_dragging(false)
 {
-	font_height = font->get_line_height();
 	rect.w = width;
-	rect.h = font_height * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE);
+	rect.h = item_height() * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE);
 
 	frame_tl = get_dialog_image(LIST_TL_IMAGE);
 	frame_tr = get_dialog_image(LIST_TR_IMAGE);
@@ -1598,7 +1597,6 @@ w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(IT
 
 	saved_min_width = rect.w;
 	saved_min_height = rect.h;
-
 }
 
 w_list_base::~w_list_base()
@@ -1658,8 +1656,8 @@ void w_list_base::mouse_move(int x, int y)
 		 || y < get_dialog_space(LIST_T_SPACE) || y >= rect.h - get_dialog_space(LIST_B_SPACE))
 			return;
 
-		if ((y - get_dialog_space(LIST_T_SPACE)) / font_height + top_item < num_items)
-		{	set_selection((y - get_dialog_space(LIST_T_SPACE)) / font_height + top_item); }
+		if ((y - get_dialog_space(LIST_T_SPACE)) / item_height() + top_item < num_items)
+		{	set_selection((y - get_dialog_space(LIST_T_SPACE)) / item_height() + top_item); }
 		else
 		{	set_selection(num_items - 1); }
 	}
@@ -2081,41 +2079,52 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }
 
+static uint8 target_color(uint8 component)
+{
+	return PIN((uint16) component + (255 - component) * 127 / 255, 0, 255);
+}
+
+static uint8 away_color(uint8 component)
+{
+	return PIN((uint16) component * 127 / 255, 0, 255);
+}
+
 void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface* s,
 					int16 x, int16 y, uint16 width, bool selected) const
 {
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
 
-	SDL_Rect r = {x - 1, y - 1, width + 2, font->get_line_height() + 2};
+	SDL_Rect r = {x, y, width, font->get_line_height() + 4};
 
 	if (item.target())
 	{
 		SDL_FillRect(s, &r, SDL_MapRGB(s->format, 0xff, 0xff, 0xff));
-		r.x = x;
-		r.y = y;
-		r.w = width;
-		r.h = font->get_line_height();
-
-		SDL_FillRect(s, &r, get_dialog_color(BACKGROUND_COLOR));
 	}
 
-	r.x = x;
-	r.y = y + 1;
-	r.w = kPlayerColorSwatchWidth;
-	r.h = font->get_ascent() - 2;
-
+	// background is player color
 	uint32 pixel = SDL_MapRGB(s->format,
-				  item.color()[0] >> 8, 
-				  item.color()[1] >> 8, 
-				  item.color()[2] >> 8);
+				  (item.target() ? target_color(item.color()[0] >> 8) : item.away() ? away_color(item.color()[0] >> 8) : item.color()[0] >> 8),
+				  (item.target() ? target_color(item.color()[1] >> 8) : item.away() ? away_color(item.color()[1] >> 8) : item.color()[1] >> 8),
+				  (item.target() ? target_color(item.color()[2] >> 8) : item.away() ? away_color(item.color()[2] >> 8) : item.color()[2] >> 8));
+
+
+	r.x = x + kPlayerColorSwatchWidth + kSwatchGutter + 1;
+	r.y = y + 1;
+	r.w = width - kPlayerColorSwatchWidth - kSwatchGutter - 2;
+	r.h = font->get_line_height() + 2;
 	SDL_FillRect(s, &r, pixel);
 
-	r.x += kPlayerColorSwatchWidth;
-	r.w = kTeamColorSwatchWidth;
+	// team swatch
+	r.x = x + 1;
+	r.y = y + 1;
+	r.w = kPlayerColorSwatchWidth;
+	r.h = font->get_line_height() + 2;
+
 	pixel = SDL_MapRGB(s->format,
-				  item.team_color()[0] >> 8, 
-				  item.team_color()[1] >> 8, 
-				  item.team_color()[2] >> 8);
+				  (item.target() ? target_color(item.team_color()[0] >> 8) : item.away() ? away_color(item.team_color()[0] >> 8) : item.team_color()[0] >> 8),
+				  (item.target() ? target_color(item.team_color()[1] >> 8) : item.away() ? away_color(item.team_color()[1] >> 8) : item.team_color()[1] >> 8),
+				  (item.target() ? target_color(item.team_color()[2] >> 8) : item.away() ? away_color(item.team_color()[2] >> 8) : item.team_color()[2] >> 8));
+
 	SDL_FillRect(s, &r, pixel);
 
 	y += font->get_ascent();
@@ -2133,7 +2142,7 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 		color = SDL_MapRGB(s->format, 0xff, 0xff, 0xff);
 	}
 
-	draw_text(s, item.name().c_str(), x + kTeamColorSwatchWidth + kPlayerColorSwatchWidth + kSwatchGutter, y, color, font, style);
+	draw_text(s, item.name().c_str(), x + kPlayerColorSwatchWidth + kSwatchGutter + 2, y + 1, color, font, style | styleShadow);
 
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }

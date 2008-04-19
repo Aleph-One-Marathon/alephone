@@ -725,9 +725,9 @@ protected:
 	void new_items(void);
 	void center_item(size_t i);
 	void set_top_item(size_t i);
+	virtual uint16 item_height() const { return font->get_line_height(); }
 
 	size_t selection;		// Currently selected item
-	uint16 font_height;		// Height of font
 
 	size_t num_items;		// Total number of items
 	size_t shown_items;		// Number of shown items
@@ -756,6 +756,8 @@ public:
 		center_item(selection);
 	}
 
+	uint16 item_height() const { return font->get_line_height(); }
+
 	~w_list() {}
 
 protected:
@@ -765,7 +767,7 @@ protected:
 		int16 x = rect.x + get_dialog_space(LIST_L_SPACE);
 		int16 y = rect.y + get_dialog_space(LIST_T_SPACE);
 		uint16 width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
-		for (size_t n=top_item; n<top_item + MIN(shown_items, num_items); n++, i++, y=y+font_height)
+		for (size_t n=top_item; n<top_item + MIN(shown_items, num_items); n++, i++, y=y+item_height())
 			draw_item(i, s, x, y, width, n == selection && active);
 	}
 
@@ -929,6 +931,8 @@ public:
 			m_itemClicked(m_items[selection]);
 	}
 
+	uint16 item_height() const { fprintf(stderr, "w_items_in_room::get_height()\n"); return font->get_line_height(); }
+
 protected:
 	void draw_items(SDL_Surface* s) const {
 		typename ElementVector::const_iterator i = m_items.begin();
@@ -939,7 +943,7 @@ protected:
 		for(size_t n = 0; n < top_item; n++)
 			++i;
 
-		for (size_t n=top_item; n<top_item + MIN(shown_items, num_items); n++, ++i, y=y+font_height)
+		for (size_t n=top_item; n<top_item + MIN(shown_items, num_items); n++, ++i, y=y+item_height())
 			draw_item(*i, s, x, y, width, n == selection && active);
 	}
 
@@ -969,6 +973,8 @@ public:
 	w_games_in_room(w_items_in_room<GameListMessage::GameListEntry>::ItemClickedCallback itemClicked, int width, int numRows)
 		: w_items_in_room<GameListMessage::GameListEntry>(itemClicked, width, numRows)
 		{}
+
+	uint16 item_height() const { return font->get_line_height(); }
 private:
 	void draw_item(const GameListMessage::GameListEntry& item, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
 };
@@ -978,8 +984,12 @@ class w_players_in_room : public w_items_in_room<MetaserverPlayerInfo>
 public:
 	w_players_in_room(w_items_in_room<MetaserverPlayerInfo>::ItemClickedCallback itemClicked, int width, int numRows)
 	: w_items_in_room<MetaserverPlayerInfo>(itemClicked, width, numRows)
-	{}
+	{
+		saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE);
+	}
 
+protected:
+	uint16 item_height() const { return font->get_line_height() + 4; }
 private:
 	static const int kPlayerColorSwatchWidth = 8;
 	static const int kTeamColorSwatchWidth = 4;

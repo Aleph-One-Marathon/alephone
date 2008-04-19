@@ -61,7 +61,7 @@ public:
 		placer->add(new w_spacer(), true);
 
 		table_placer *players_games_placer = new table_placer(2, get_dialog_space(SPACER_HEIGHT));
-		w_players_in_room* players_in_room_w = new w_players_in_room(NULL, 200, 8);
+		w_players_in_room* players_in_room_w = new w_players_in_room(NULL, 216, 8);
 		
 		players_games_placer->col_flags(1, placeable::kFill);
 		players_games_placer->dual_add(players_in_room_w, d);
@@ -94,7 +94,7 @@ public:
 		placer->add(players_games_placer, true);
 		placer->add_flags();
 
-		w_text_box* chat_history_w = new w_text_box(600, 12);
+		w_text_box* chat_history_w = new w_text_box(600, 11);
 		placer->dual_add(chat_history_w, d);
 
 		horizontal_placer *entry_cancel_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
