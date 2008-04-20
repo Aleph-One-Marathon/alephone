@@ -451,6 +451,8 @@ int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint1
 #ifdef HAVE_SDL_TTF
 static int trunc_text(const char *text, int max_width, TTF_Font *font, uint16 style)
 {
+	if (style & styleShadow) max_width--;
+
 	int width;
 	uint16 *temp = new uint16[strlen(text) + 1];
 //	if (utf8)
