@@ -341,7 +341,7 @@ protected:
 	
 	EditTextWidget*			m_chatEntryWidget;
 	SelectorWidget*			m_chatChoiceWidget;
-	HistoricTextboxWidget*		m_chatWidget;
+	ColorfulChatWidget*             m_chatWidget;
 
 	bool                            m_enableSinglePlayer;
 	
@@ -396,7 +396,7 @@ protected:
 	
 	EditTextWidget*		m_chatEntryWidget;
 	SelectorWidget*		m_chatChoiceWidget;
-	HistoricTextboxWidget*	m_chatWidget;
+	ColorfulChatWidget*     m_chatWidget;
 	
 	BinderSet binders;
 	

@@ -2625,7 +2625,7 @@ public:
 		w_select_popup* chat_choice_w = new w_select_popup("chat:");
 		m_dialog.add(chat_choice_w);
 
-		w_text_box* chat_history_w = new w_text_box(600, 6);
+		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 6);
 		m_dialog.add(chat_history_w);
 
 		w_text_entry* chatentry_w = new w_text_entry("Say:", 240, "");
@@ -2645,7 +2645,7 @@ public:
 		m_pigWidget = new PlayersInGameWidget (players_w);
 		
 		m_chatEntryWidget = new EditTextWidget (chatentry_w);
-		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget (chat_history_w));
+		m_chatWidget = new ColorfulChatWidget(new ColorfulChatWidgetImpl(chat_history_w));
 		m_chatChoiceWidget = new PopupSelectorWidget (chat_choice_w);
 	}
 	
@@ -2747,7 +2747,7 @@ public:
 
 		postjoin_placer->add(chat_choice_placer, true);
 
-		w_text_box* chat_history_w = new w_text_box(600, 7);
+		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 7);
 		postjoin_placer->dual_add(chat_history_w, m_dialog);
 
 		w_text_entry* chatentry_w = new w_text_entry("", 240, "");
@@ -2796,7 +2796,7 @@ public:
 		m_pigWidget = new PlayersInGameWidget (players_w);
 		
 		m_chatEntryWidget = new EditTextWidget (chatentry_w);
-		m_chatWidget = new HistoricTextboxWidget (new TextboxWidget (chat_history_w));
+		m_chatWidget = new ColorfulChatWidget(new ColorfulChatWidgetImpl(chat_history_w));
 		m_chatChoiceWidget = new PopupSelectorWidget (chat_choice_w);
 	}
 
