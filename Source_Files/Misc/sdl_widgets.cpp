@@ -2208,12 +2208,12 @@ void w_colorful_chat::append_entry(const ColoredChatEntry& e)
 	int available_width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
 	if (e.type == ColoredChatEntry::ChatMessage)
 	{
-		available_width -= kNameWidth + taper_width() + 1;
+		available_width -= kNameWidth + taper_width() + 2;
 	}
 	else if (e.type == ColoredChatEntry::PrivateMessage)
 	{
 		message_style |= styleShadow;
-		available_width -= kNameWidth + taper_width() + 3;
+		available_width -= kNameWidth + taper_width() + 4;
 	}
 	else
 	{
@@ -2294,8 +2294,8 @@ void w_colorful_chat::draw_item(vector<ColoredChatEntry>::const_iterator it, SDL
 		set_drawing_clip_rectangle(0, x, static_cast<uint16>(s->h), x + kNameWidth);
 		draw_text(s, (*it).sender.c_str(), x + 1, computed_y, SDL_MapRGB(s->format, 0xff, 0xff, 0xff), font, style | styleShadow);
 
-		message_x += kNameWidth + taper_width() + 1;
-		message_width -= kNameWidth + taper_width() + 1;
+		message_x += kNameWidth + taper_width() + 2;
+		message_width -= kNameWidth + taper_width() + 2;
 	}
 
 	uint32 message_color = SDL_MapRGB(s->format, 0xff, 0xff, 0xff);
