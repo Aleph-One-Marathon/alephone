@@ -392,6 +392,7 @@ void MetaserverClientUi::gamesInRoomChanged(const std::vector<GameListMessage::G
 	std::vector<GameListMessage::GameListEntry> sortedGames = gMetaserverClient->gamesInRoom();
 	std::sort(sortedGames.begin(), sortedGames.end(), GameListMessage::GameListEntry::sort);
 	m_gamesInRoomWidget->SetItems(sortedGames);
+	UpdateGameButtons();
 	GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(gameChanges);
 	for (size_t i = 0; i < gameChanges.size(); i++) 
 	{
