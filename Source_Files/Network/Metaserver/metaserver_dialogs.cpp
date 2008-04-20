@@ -184,25 +184,56 @@ void GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(const std::vect
 	}
 }
 
+static int color_entry(ColoredChatEntry& e, const MetaserverPlayerInfo *player)
+{
+	if (player)
+	{
+		e.color.red = player->color()[0];
+		e.color.green = player->color()[1];
+		e.color.blue = player->color()[2];
+	}
+}
 void GlobalMetaserverChatNotificationAdapter::receivedChatMessage(const std::string& senderName, uint32 senderID, const std::string& message)
 {
-	gMetaserverChatHistory.appendString(senderName + ": " + message);
+	ColoredChatEntry e;
+	e.type = ColoredChatEntry::ChatMessage;
+	e.sender = senderName;
+	e.message = message;
+
+	color_entry(e, gMetaserverClient->find_player(senderID));
+
+	gMetaserverChatHistory.append(e);
 	PlayInterfaceButtonSound(_snd_computer_interface_logon);
 }
 
 void GlobalMetaserverChatNotificationAdapter::receivedPrivateMessage(const std::string& senderName, uint32 senderID, const std::string& message)
 {
-	gMetaserverChatHistory.appendString(senderName + "> " + message);
+	ColoredChatEntry e;
+	e.type = ColoredChatEntry::PrivateMessage;
+	e.sender = senderName;
+	e.message = message;
+
+	color_entry(e, gMetaserverClient->find_player(senderID));
+	
+	gMetaserverChatHistory.append(e);
 }
 
 void GlobalMetaserverChatNotificationAdapter::receivedBroadcastMessage(const std::string& message)
 {
-	gMetaserverChatHistory.appendString("@ " + message + " @");
+	ColoredChatEntry e;
+	e.type = ColoredChatEntry::ServerMessage;
+	e.message = message;
+	
+	gMetaserverChatHistory.append(e);
 }
 
 void GlobalMetaserverChatNotificationAdapter::receivedLocalMessage(const std::string& message)
 {
-	gMetaserverChatHistory.appendString("( " + message + " )");
+	ColoredChatEntry e;
+	e.type = ColoredChatEntry::LocalMessage;
+	e.message = message;
+
+	gMetaserverChatHistory.append(e);
 }
 
 void MetaserverClientUi::delete_widgets ()
@@ -210,7 +241,7 @@ void MetaserverClientUi::delete_widgets ()
 	delete m_playersInRoomWidget;
 	delete m_gamesInRoomWidget;
 	delete m_chatEntryWidget;
-	delete m_textboxWidget;
+	delete m_chatWidget;
 	delete m_cancelWidget;
 	delete m_muteWidget;
 	delete m_joinWidget;
@@ -237,7 +268,7 @@ const IPaddress MetaserverClientUi::GetJoinAddressByRunning()
 	m_gameInfoWidget->set_callback(boost::bind(&MetaserverClientUi::InfoClicked, this));
 	
 	gMetaserverChatHistory.clear ();
-	m_textboxWidget->attachHistory (&gMetaserverChatHistory);
+	m_chatWidget->attachHistory (&gMetaserverChatHistory);
 
 	if (Run() < 0) {
 		handleCancel();

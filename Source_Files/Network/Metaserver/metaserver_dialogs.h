@@ -98,7 +98,8 @@ protected:
 	PlayerListWidget*				m_playersInRoomWidget;
 	GameListWidget*					m_gamesInRoomWidget;
 	EditTextWidget*					m_chatEntryWidget;
-	HistoricTextboxWidget*				m_textboxWidget;
+//	HistoricTextboxWidget*				m_textboxWidget;
+	ColorfulChatWidget*                             m_chatWidget;
 	ButtonWidget*					m_cancelWidget;
 	IPaddress					m_joinAddress;
 	bool						m_used;

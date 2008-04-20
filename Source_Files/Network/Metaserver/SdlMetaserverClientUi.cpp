@@ -94,7 +94,7 @@ public:
 		placer->add(players_games_placer, true);
 		placer->add_flags();
 
-		w_text_box* chat_history_w = new w_text_box(600, 11);
+		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 10);
 		placer->dual_add(chat_history_w, d);
 
 		horizontal_placer *entry_cancel_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
@@ -121,7 +121,8 @@ public:
 		m_playersInRoomWidget = new PlayerListWidget (players_in_room_w);
 		m_gamesInRoomWidget = new GameListWidget (games_in_room_w);
 		m_chatEntryWidget = new EditTextWidget (chatentry_w);
-		m_textboxWidget = new HistoricTextboxWidget (new TextboxWidget(chat_history_w));
+		m_chatWidget = new ColorfulChatWidget(new ColorfulChatWidgetImpl(chat_history_w));
+
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_muteWidget = new ButtonWidget(mute_w);
 		m_joinWidget = new ButtonWidget(w_join_game);

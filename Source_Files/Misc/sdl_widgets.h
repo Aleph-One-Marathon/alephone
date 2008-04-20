@@ -1028,8 +1028,54 @@ private:
 	void draw_item(vector<string>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
 };
 
+struct ColoredChatEntry
+{
+	enum Type {
+		ChatMessage,
+		PrivateMessage,
+		ServerMessage,
+		LocalMessage
+	} type;
+	
+	// these next two are only valid for chat and private
+	// otherwise they should be gray and ""
+	rgb_color color;
+	std::string sender;
+	
+	std::string message;
+	
+	ColoredChatEntry() : type(ChatMessage) { color.red = color.blue = color.green = 0x7fff; }
+};
 
+class w_colorful_chat : public w_list<ColoredChatEntry>
+{
+private:
+	vector<ColoredChatEntry> entries;
+public:
+	w_colorful_chat(int width, int numRows) :
+		w_list<ColoredChatEntry>(entries, width, numRows, 0),
+		kNameWidth(text_width("M", font, style | styleShadow) * 9 - taper_width())
+		{ num_items = 0; font = get_dialog_font(TEXT_BOX_FONT, style); saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE); }
 
+	virtual bool is_selectable(void) const { return true; }
+
+	void item_selected() {} 
+
+	void append_entry(const ColoredChatEntry&);
+
+	void clear() { entries.clear(); num_items = 0; new_items(); }
+
+	~w_colorful_chat() {} 
+
+	uint16 item_height() const { return font->get_line_height() + 2; }
+
+private:
+	const int kNameWidth;
+
+	uint16 taper_width() const { return (font->get_line_height() + 1) / 2 - 1; }
+
+	void draw_item(vector<ColoredChatEntry>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const;
+};
 
 /*
  *	Wrappers to common widget interface follow
@@ -1057,6 +1103,20 @@ private:
 	bool hidden, inactive;
 };
 
+class ColorfulChatWidgetImpl : public SDLWidgetWidget
+{
+public:
+	ColorfulChatWidgetImpl(w_colorful_chat* w)
+		: SDLWidgetWidget(w), m_chat(w) { }
+	
+	void Append(const ColoredChatEntry& e) { m_chat->append_entry(e); }
+	void Clear () { m_chat->clear (); }
+
+private:
+	w_colorful_chat *m_chat;
+};
+
+	
 class ToggleWidget : public SDLWidgetWidget, public Bindable<bool>
 {
 public:

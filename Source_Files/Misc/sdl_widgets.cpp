@@ -2190,6 +2190,151 @@ void w_text_box::draw_item(vector<string>::const_iterator i, SDL_Surface* s, int
     draw_text(s, (*i).c_str (), x, computed_y, get_dialog_color(MESSAGE_COLOR), font, style);
 }
 
+void w_colorful_chat::append_entry(const ColoredChatEntry& e)
+{
+	if (e.message.empty())
+	{
+		get_owning_dialog()->draw_dirty_widgets();
+		return;
+	}
+
+	string name;
+	if (text_width(e.sender.c_str(), font, style | styleShadow) > kNameWidth)
+		name = string(e.sender, 0, trunc_text(e.sender.c_str(), kNameWidth, font, style | styleShadow));
+	else
+		name = e.sender;
+	
+	int message_style = style;
+	int available_width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+	if (e.type == ColoredChatEntry::ChatMessage)
+	{
+		available_width -= kNameWidth + taper_width() + 1;
+	}
+	else if (e.type == ColoredChatEntry::PrivateMessage)
+	{
+		message_style |= styleShadow;
+		available_width -= kNameWidth + taper_width() + 3;
+	}
+	else
+	{
+		message_style |= styleShadow;
+		available_width -= 2;
+	}
+
+	size_t usable_characters = trunc_text(e.message.c_str(), available_width, font, message_style);
+	string::const_iterator middle;
+	string::const_iterator rest;
+	if (usable_characters != e.message.size()) {
+		size_t last_space = e.message.find_last_of(' ', usable_characters);
+		if (last_space != 0 && last_space <= usable_characters)
+		{
+			middle = e.message.begin() + last_space;
+			rest = middle + 1;
+		}
+		else
+		{
+			middle = e.message.begin() + usable_characters;
+			rest = middle;
+		}
+	} else {
+		middle = e.message.begin() + usable_characters;
+		rest = middle;
+	}
+
+	ColoredChatEntry e_begin = e;
+	e_begin.message = string(e.message.begin(), middle);
+	e_begin.sender = name;
+	
+	ColoredChatEntry e_rest = e;
+	e_rest.message = string(rest, e.message.end());
+	e_rest.sender = name;
+	
+	bool save_top_item = top_item < num_items - shown_items;
+	size_t saved_top_item = top_item;
+	entries.push_back(e_begin);
+	
+	num_items = entries.size();
+	new_items();
+	if (save_top_item) {
+		set_top_item(saved_top_item);
+	} else if (num_items > shown_items) {
+		set_top_item(num_items - shown_items);
+	}
+	
+	append_entry(e_rest);
+}
+
+void w_colorful_chat::draw_item(vector<ColoredChatEntry>::const_iterator it, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const
+{
+	int computed_y = y + font->get_ascent();
+
+	uint16 message_x = x;
+	uint16 message_width = width;
+
+	if ((*it).type == ColoredChatEntry::ChatMessage || (*it).type == ColoredChatEntry::PrivateMessage)
+	{
+		// draw the name
+		SDL_Rect r = { x, y, kNameWidth, font->get_line_height() + 1};
+		uint32 pixel = SDL_MapRGB(s->format,
+					  (*it).color.red >> 8,
+					  (*it).color.green >> 8,
+					  (*it).color.blue >> 8);
+		SDL_FillRect(s, &r, pixel);
+		// draw taper
+		r.x += kNameWidth ;
+		r.w = 1;
+		for (int i = 0; i < taper_width(); ++i)
+		{
+			r.y++;
+			r.h -= 2;
+			SDL_FillRect(s, &r, pixel);
+			r.x++;
+		}
+		
+		set_drawing_clip_rectangle(0, x, static_cast<uint16>(s->h), x + kNameWidth);
+		draw_text(s, (*it).sender.c_str(), x + 1, computed_y, SDL_MapRGB(s->format, 0xff, 0xff, 0xff), font, style | styleShadow);
+
+		message_x += kNameWidth + taper_width() + 1;
+		message_width -= kNameWidth + taper_width() + 1;
+	}
+
+	uint32 message_color = SDL_MapRGB(s->format, 0xff, 0xff, 0xff);
+	int message_style = style;
+	if ((*it).type != ColoredChatEntry::ChatMessage) message_style |= styleShadow;
+
+	if ((*it).type == ColoredChatEntry::ServerMessage)
+	{
+		// draw the blue bar
+		uint32 pixel = SDL_MapRGB(s->format, 0x0, 0x0, 0x7f);
+		SDL_Rect r = { message_x, y, message_width, font->get_line_height() + 1 };
+		SDL_FillRect(s, &r, pixel);
+		message_x += 1;
+		message_width -= 2;
+	}
+	else if ((*it).type == ColoredChatEntry::PrivateMessage)
+	{
+		// draw a red bar
+		uint32 pixel = SDL_MapRGB(s->format, 0x7f, 0x0, 0x0);
+		SDL_Rect r = { message_x, y, message_width, font->get_line_height() + 1 };
+		SDL_FillRect(s, &r, pixel);
+		message_x += 1;
+		message_width -= 2;
+	}
+	else if ((*it).type == ColoredChatEntry::LocalMessage)
+	{
+		// draw a gray bar
+		uint32 pixel = SDL_MapRGB(s->format, 0x3f, 0x3f, 0x3f);
+		SDL_Rect r = { message_x, y, message_width, font->get_line_height() + 1 };
+		SDL_FillRect(s, &r, pixel);
+		message_x += 1;
+		message_width -= 2;
+	}
+	
+	set_drawing_clip_rectangle(0, message_x, static_cast<uint16>(s->h), message_x + message_width);
+	draw_text(s, (*it).message.c_str(), message_x, computed_y, message_color, font, message_style);
+
+	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+}
 
 void SDLWidgetWidget::hide ()
 {

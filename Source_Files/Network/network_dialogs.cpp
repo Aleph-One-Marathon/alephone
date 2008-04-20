@@ -489,7 +489,12 @@ void GatherDialog::ReceivedMessageFromPlayer(
 	const char *player_name, 
 	const char *message)
 {
-	gPregameChatHistory.appendString(std::string(player_name) + ": " + std::string(message));
+	ColoredChatEntry e;
+	e.type = ColoredChatEntry::ChatMessage;
+	e.sender = player_name;
+	e.message = message;
+
+	gPregameChatHistory.append(e);
 }
 
 /****************************************************
@@ -829,7 +834,12 @@ void JoinDialog::chatChoiceHit ()
 
 void JoinDialog::ReceivedMessageFromPlayer(const char *player_name, const char *message)
 {
-	gPregameChatHistory.appendString(std::string(player_name) + ": " + std::string(message));
+	ColoredChatEntry e;
+	e.type = ColoredChatEntry::ChatMessage;
+	e.sender = player_name;
+	e.message = message;
+	
+	gPregameChatHistory.append(e);
 }
 
 /****************************************************

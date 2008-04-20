@@ -136,23 +136,43 @@ class ChatHistory
 public:
 	class NotificationAdapter {
 	public:
-		virtual void contentAdded (const string& s) = 0;
+		virtual void contentAdded (const ColoredChatEntry& e) = 0;
 		virtual void contentCleared () = 0;
 		virtual ~NotificationAdapter() {}
 	};
 
 	ChatHistory () : m_notificationAdapter (NULL) {}
 	
-	void appendString (const string& s);
+	void append(const ColoredChatEntry& e);
 	void clear ();
-	const vector<string> getHistory () { return m_history; }
+	const vector<ColoredChatEntry> getHistory() { return m_history; }
 	
 	void setObserver (NotificationAdapter* notificationAdapter)
 		{ m_notificationAdapter = notificationAdapter; }
 
 private:
-	vector<string> m_history;
+	vector<ColoredChatEntry> m_history;
 	NotificationAdapter* m_notificationAdapter;
+};
+
+class ColorfulChatWidget : ChatHistory::NotificationAdapter
+{
+public:
+	ColorfulChatWidget(ColorfulChatWidgetImpl* componentWidget)
+		: m_componentWidget(componentWidget),
+		  m_history(NULL)
+		{}
+
+	virtual ~ColorfulChatWidget();
+
+	void attachHistory(ChatHistory* history);
+
+	virtual void contentAdded(const ColoredChatEntry& e);
+	virtual void contentCleared() { m_componentWidget->Clear(); }
+
+private:
+	ColorfulChatWidgetImpl* m_componentWidget;
+	ChatHistory* m_history;
 };
 
 class HistoricTextboxWidget : ChatHistory::NotificationAdapter
@@ -167,10 +187,11 @@ public:
 	
 	void attachHistory (ChatHistory* history);
 	
-	virtual void contentAdded (const string& s) { m_componentWidget->AppendString (s); }
+	virtual void contentAdded(const ColoredChatEntry& e);
 	virtual void contentCleared () { m_componentWidget->Clear (); }
 	
 private:
+	std::string formatEntry(const ColoredChatEntry& e);
 	TextboxWidget* m_componentWidget;
 	ChatHistory* m_history;
 };
