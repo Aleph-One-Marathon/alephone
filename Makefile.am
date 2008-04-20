@@ -8,6 +8,8 @@ AUTOMAKE_OPTIONS = 1.5 foreign
 EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows Makefile.BeOS \
   docs/MML.html docs/Cheat_Codes data/Fonts Resources/Windows/alephone.ico Resources/Windows/alephone.rc PBProjects/AlephOne-OSX10.4.xcodeproj/project.pbxproj PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns PBProjects/PFIcon.icns PBProjects/PhysIcon.icns PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns PBProjects/SoundsIcon.icns PBProjects/Info-AlephOne_SDL.plist PBProjects/precompiled_headers.h PBProjects/SDLMain.h PBProjects/SDLMain.m PBProjects/AlephOne.icns Expat/xmltok/nametab.h PBProjects/config.h PBProjects/confpaths.h data/DejaVuCondensedSansBold.ttf data/LICENSE-DejaVuFonts
 
+man_MANS = docs/alephone.6
+
 dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
 	cp "Aleph One Classic SDL.mcp" $(distdir)

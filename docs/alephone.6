@@ -1,0 +1,60 @@
+.\" define fallback URL and MTO macros 
+.de URL
+\\$2 \(laURL: \\$1 \(ra\\$3
+..
+.de MTO
+\\$2 \(la\\$1\(ra\\$3
+..
+.\" the www.tmac package wil provide better macros which will override those
+.\" above if it is present
+.if \n[.g] .mso www.tmac
+.TH alephone 6 2005-11-20 "Aleph One 20060719"
+.SH NAME
+alephone \- game engine based on Marathon 2
+.SH SYNOPSIS
+.B alephone
+[
+.I options
+]
+.SH DESCRIPTION
+Aleph One is an open-source descendant of Bungie's Marathon 2 first-person 3D shooting game.
+A1 plays Marathon 2, Infinity, and 3rd-party content on a wide variety of platforms, with (optional) OpenGL rendering, Internet play, Lua scripting, and more.
+.SH OPTIONS
+.TP
+.B \-h, \-\-help
+Show summary of options.
+.TP
+.B \-v, \-\-version
+Show version of program.
+.TP
+.B \-f, \-\-fullscreen
+Run the game fullscreen.
+.TP
+.B \-w, \-\-windowed
+Run the game in a window.
+.TP
+.B \-g, \-\-nogl
+Do not use OpenGL.
+.TP
+.B \-s, \-\-nosound
+Do not access the sound card.
+.TP
+.B \-m, \-\-nogamma
+Disable gamma table effects (menu fades).
+.SH ENVIRONMENT
+.TP
+.B ALEPHONE_DATA
+Overrides the paths in which data files are searched for.
+This is a colon-separated list.
+Entries
+.I later
+in the list have precedence over entries earlier in the list.
+The default is
+.BR /usr/share/games/AlephOne:/usr/share/games/AlephOne .
+.SH "SEE ALSO"
+The latest news regarding engine and scenario development can be found at
+.URL "http://source.bungie.org/" "the project web site" "."
+.SH AUTHOR
+This manual page was written by
+.MTO sam@robots.org.uk "Sam Morris" ","
+for the Debian GNU/Linux system (but may be used by others).
