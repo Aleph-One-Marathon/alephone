@@ -459,6 +459,7 @@ PrivateMessage::reallyInflateFrom(AIStream& inStream)
 
 	m_senderName = read_string(inStream);
 	m_message = read_string(inStream);
+	remove_formatting(m_senderName);
 	remove_formatting(m_message);
 
 	return true;
@@ -520,6 +521,7 @@ ChatMessage::reallyInflateFrom(AIStream& inStream)
 
 	m_senderName = read_string(inStream);
 	m_message = read_string(inStream);
+	remove_formatting(m_senderName);
 	remove_formatting(m_message);
 
 	return true;
