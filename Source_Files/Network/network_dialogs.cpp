@@ -2599,42 +2599,57 @@ public:
 		SDLMod m = SDL_GetModState();
 		if ((m & KMOD_ALT) || (m & KMOD_META)) m_enableSinglePlayer = true;
 
-		m_dialog.add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR));
-	
-		m_dialog.add(new w_spacer());
+		vertical_placer *placer = new vertical_placer;
+		placer->dual_add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR), m_dialog);
+		placer->add(new w_spacer());
 	
 		// m_dialog.add(new w_static_text("Players on Network"));
-	
+
 		w_joining_players_in_room* foundplayers_w = new w_joining_players_in_room(NULL, 320, 3);
-		m_dialog.add(foundplayers_w);
+		placer->dual_add(foundplayers_w, m_dialog);
 	
-		w_toggle* autogather_w = new w_toggle("Auto-Gather", false);
-		m_dialog.add(autogather_w);
-	
-		m_dialog.add(new w_spacer());
+		horizontal_placer *autogather_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE), true);
+		w_toggle* autogather_w = new w_toggle("", false);
+		autogather_placer->dual_add(autogather_w->label("Auto-Gather"), m_dialog);
+		autogather_placer->dual_add(autogather_w, m_dialog);
+
+		placer->add(autogather_placer, true);
+		placer->add(new w_spacer(), true);
 	
 		w_players_in_game2* players_w = new w_players_in_game2(false);
-		m_dialog.add(players_w);
-		
-		w_left_button* play_button_w = new w_left_button("PLAY");
-		m_dialog.add(play_button_w);
-	
-		w_right_button* cancel_w = new w_right_button("CANCEL");
-		m_dialog.add(cancel_w);
+		placer->dual_add(players_w, m_dialog);
 
-		w_select_popup* chat_choice_w = new w_select_popup("chat:");
-		m_dialog.add(chat_choice_w);
+		horizontal_placer *button_placer = new horizontal_placer;
+		w_button* play_button_w = new w_button("PLAY");
+		button_placer->dual_add(play_button_w, m_dialog);
+
+		w_button* cancel_w = new w_button("CANCEL");
+		button_placer->dual_add(cancel_w, m_dialog);
+
+		placer->add(button_placer, true);
+
+		horizontal_placer *chat_choice_placer = new horizontal_placer;
+		w_select_popup* chat_choice_w = new w_select_popup("");
+		chat_choice_placer->dual_add(chat_choice_w->label("chat:"), m_dialog);
+		chat_choice_placer->dual_add(chat_choice_w, m_dialog);
+		placer->add(chat_choice_placer, true);
 
 		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 6);
-		m_dialog.add(chat_history_w);
+		placer->dual_add(chat_history_w, m_dialog);
 
-		w_text_entry* chatentry_w = new w_text_entry("Say:", 240, "");
+		w_text_entry* chatentry_w = new w_text_entry("", 240, "");
 		chatentry_w->set_with_textbox();
-		chatentry_w->set_alignment(widget::kAlignLeft);
-		chatentry_w->set_full_width();
 		chatentry_w->enable_mac_roman_input();
-		m_dialog.add(chatentry_w);
-		
+
+		horizontal_placer *say_placer = new horizontal_placer;
+		say_placer->dual_add(chatentry_w->label("Say:"), m_dialog);
+		say_placer->add_flags(placeable::kFill);
+		say_placer->dual_add(chatentry_w, m_dialog);
+
+		placer->add_flags(placeable::kFill);
+		placer->add(say_placer, true);
+
+		m_dialog.set_widget_placer(placer);
 		
 		m_cancelWidget = new ButtonWidget (cancel_w);
 		m_startWidget = new ButtonWidget (play_button_w);
