@@ -931,7 +931,7 @@ public:
 			m_itemClicked(m_items[selection]);
 	}
 
-	uint16 item_height() const { fprintf(stderr, "w_items_in_room::get_height()\n"); return font->get_line_height(); }
+	uint16 item_height() const { return font->get_line_height(); }
 
 protected:
 	void draw_items(SDL_Surface* s) const {
