@@ -66,10 +66,10 @@ public:
 		players_games_placer->col_flags(1, placeable::kFill);
 		players_games_placer->dual_add(players_in_room_w, d);
 
-		w_games_in_room* games_in_room_w = new w_games_in_room(
+		games_in_room_w = new w_games_in_room(
 			bind(&SdlMetaserverClientUi::GameSelected, this, _1),
 			320,
-			8
+			3
 		);
 
 		players_games_placer->dual_add(games_in_room_w, d);
@@ -267,14 +267,29 @@ public:
 			{
 				JoinGame(*game);
 			}
+			else
+			{
+				// deselect
+				GameSelected(*game);
+				
+			}
 		}
 	}
 
 private:
 
+	w_games_in_room* games_in_room_w;
+
 	void
 	pump(dialog* d)
 	{
+		static uint32 last_update = 0;
+		uint32 ticks = SDL_GetTicks();
+		if (ticks > last_update + 5000)
+		{
+			last_update = ticks;
+			games_in_room_w->refresh();
+		}
 		MetaserverClient::pumpAll();
 	}
 

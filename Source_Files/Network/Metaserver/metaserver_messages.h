@@ -757,7 +757,6 @@ public:
 		}
 
 		std::string format_for_chat(const std::string& player_name) const;
-
 		// Conformance to w_items_in_game<>'s Element interface
 		const std::string& name() const { return m_description.m_name; }
 
@@ -772,6 +771,7 @@ public:
 		GameDescription	m_description;
 
 		uint32          m_ticks; // SDL ticks at last update
+		std::string     m_hostPlayerName;
 
 	GameListEntry() : m_target(false) { }
 		bool            m_target;

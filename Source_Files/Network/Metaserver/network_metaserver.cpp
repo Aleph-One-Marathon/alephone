@@ -136,7 +136,17 @@ MetaserverClient::handleRoomListMessage(RoomListMessage* inMessage, Communicatio
 void
 MetaserverClient::handleGameListMessage(GameListMessage* inMessage, CommunicationsChannel* inChannel)
 {
-	m_gamesInRoom.processUpdates(inMessage->entries());
+	vector<GameListMessage::GameListEntry> entries = inMessage->entries();
+	for (vector<GameListMessage::GameListEntry>::iterator it = entries.begin(); it != entries.end(); ++it)
+	{
+		const MetaserverPlayerInfo *player = m_playersInRoom.find(it->m_hostPlayerID);
+		if (player)
+		{
+			it->m_hostPlayerName = player->name();
+		}
+	}
+
+	m_gamesInRoom.processUpdates(entries);
 
 	if(m_notificationAdapter) {
 		m_notificationAdapter->gamesInRoomChanged(inMessage->entries());
@@ -186,6 +196,7 @@ MetaserverClient::MetaserverClient()
 
 	s_instances.insert(this);
 	s_ignoreNames.insert("Bacon");
+
 }
 
 void

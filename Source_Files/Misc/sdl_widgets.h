@@ -972,10 +972,16 @@ class w_games_in_room : public w_items_in_room<GameListMessage::GameListEntry>
 public:
 	w_games_in_room(w_items_in_room<GameListMessage::GameListEntry>::ItemClickedCallback itemClicked, int width, int numRows)
 		: w_items_in_room<GameListMessage::GameListEntry>(itemClicked, width, numRows)
-		{}
+	{ saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE); }
 
-	uint16 item_height() const { return font->get_line_height(); }
+	uint16 item_height() const { return 3 * font->get_line_height() + 2 + kGameSpacing; }
+
+	void refresh() {
+		dirty = true;
+		get_owning_dialog()->draw_dirty_widgets();
+	}
 private:
+	static const int kGameSpacing = 4;
 	void draw_item(const GameListMessage::GameListEntry& item, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
 };
 
