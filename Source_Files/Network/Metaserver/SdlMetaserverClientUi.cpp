@@ -226,29 +226,7 @@ public:
 				table->dual_add(new w_static_text("No"), info_dialog);
 				
 			}
-			table->add_row(new w_spacer(), true);
-			table->dual_add(new w_label("Status"), info_dialog);
-			table->dual_add(new w_static_text(game->running() ? "In Progress" : "Gathering"), info_dialog);
-			if (game->running() && game->minutes_remaining() >= 0)
-			{
-				table->dual_add(new w_label("Approximate Time Remaining"), info_dialog);
-				char minutes[32];
-				if (game->minutes_remaining() < 1)
-				{
-					sprintf(minutes, "less than 1 minute");
-				}
-				else if (game->minutes_remaining() == 1)
-				{
-					sprintf(minutes, "1 minute");
-				}
-				else
-				{
-					snprintf(minutes, 32, "%i minutes", game->minutes_remaining());
-					minutes[32] = '\0';
-				}
 
-				table->dual_add(new w_static_text(minutes), info_dialog);
-			}
 			placer->add(table, true);
 			placer->add(new w_spacer(), true);
 			horizontal_placer *button_placer = new horizontal_placer;
