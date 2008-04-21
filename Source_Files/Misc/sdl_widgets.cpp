@@ -2083,10 +2083,17 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	{
 		if (item.m_description.m_timeLimit && !(item.m_description.m_timeLimit == INT32_MAX || item.m_description.m_timeLimit == -1))
 		{
-			char buf[32];
-			snprintf(buf, 32, "~%i minutes", item.minutes_remaining());
-			buf[32] = '\0';
-			running_time = buf;
+			if (item.minutes_remaining() == 1)
+			{
+				running_time = "~1 Minute";
+			}
+			else
+			{
+				char buf[32];
+				snprintf(buf, 32, "~%i Minutes", item.minutes_remaining());
+				buf[32] = '\0';
+				running_time = buf;
+			}
 		}
 		else
 		{
