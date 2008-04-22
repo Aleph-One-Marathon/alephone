@@ -2076,6 +2076,7 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	y += font->get_ascent() + 1;
 
 	string running_time;
+	char buffer[1024];
 	int right_text_width = 0;
 
 	// first line, game name, ping or time remaining
@@ -2085,27 +2086,25 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 		{
 			if (item.minutes_remaining() == 1)
 			{
-				running_time = "~1 Minute";
+				strcpy(buffer, "~1 Minute");
 			}
 			else
 			{
-				char buf[32];
-				snprintf(buf, 32, "~%i Minutes", item.minutes_remaining());
-				buf[32] = '\0';
-				running_time = buf;
+				sprintf(buffer, "~%i Minutes", item.minutes_remaining());
 			}
 		}
 		else
 		{
-			running_time = "Untimed";
+			strcpy(buffer, "Untimed");
 		}
 	}
 	else
 	{
 		// draw ping
+		buffer[0] = '\0';
 	}
 
-	right_text_width = text_width(running_time.c_str(), font, game_style);
+	right_text_width = text_width(buffer, font, game_style);
 
 	// draw game name
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width - right_text_width);
@@ -2113,19 +2112,17 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	
 	// draw remaining or ping
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
-	draw_text(s, running_time.c_str(), x + width - right_text_width, y, fg, font, game_style);
+	draw_text(s, buffer, x + width - right_text_width, y, fg, font, game_style);
 
 	y += font->get_line_height();
 
-	string game_type;
-
 	if (!item.compatible())
 	{
-		game_type = item.m_description.m_scenarioName;
+		strcpy(buffer, item.m_description.m_scenarioName.c_str());
 		if (item.m_description.m_scenarioVersion != "")
 		{
-			game_type += ", Version ";
-			game_type += item.m_description.m_scenarioVersion;
+			strcat(buffer, ", Version ");
+			strcat(buffer, item.m_description.m_scenarioVersion.c_str());
 		}
 	} 
 	else
@@ -2133,52 +2130,49 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 		// game type, map
 		int type = item.m_description.m_type - (item.m_description.m_type > 5 ? 1 : 0);
 		if (TS_GetCString(kNetworkGameTypesStringSetID, type))
-			game_type = TS_GetCString(kNetworkGameTypesStringSetID, type);
+			strcpy(buffer, TS_GetCString(kNetworkGameTypesStringSetID, type));
 		else
-			game_type = "Unknown";
+			strcpy(buffer, "Unknown");
 		
-		game_type += " on ";
-		game_type += item.m_description.m_mapName;
+		strcat(buffer, " on ");
+		strcat(buffer, item.m_description.m_mapName.c_str());
 	}
 	
-	draw_text(s, game_type.c_str(), x, y, fg, font, game_style);
+	draw_text(s, buffer, x, y, fg, font, game_style);
 
 	y += font->get_line_height();
 
 	right_text_width = text_width(item.m_hostPlayerName.c_str(), font, game_style);
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width - right_text_width);
-	string game_options;
+
 	if (item.running())
 	{
-		char buf[3];
-		snprintf(buf, 3, "%i", item.m_description.m_numPlayers);
-		buf[3] = '\0';
-		game_options = buf;
-		game_options += item.m_description.m_numPlayers == 1 ? " Player" : " Players";
+		if (item.m_description.m_numPlayers == 1)
+		{
+			strcpy(buffer, "1 Player");
+		}
+		else
+		{
+			sprintf(buffer, "%i Players", item.m_description.m_numPlayers);
+		}
 	}
 	else
 	{
-		char buf[8];
-		snprintf(buf, 8, "%i/%i", item.m_description.m_numPlayers, item.m_description.m_maxPlayers);
-		buf[8] = '\0';
-		game_options = buf;
-		game_options += " Players";
+		sprintf(buffer, "%i/%i Players", item.m_description.m_numPlayers, item.m_description.m_maxPlayers);
 	}
 
 	if (item.m_description.m_timeLimit && !(item.m_description.m_timeLimit == INT32_MAX || item.m_description.m_timeLimit == -1))
 	{
-		char buf[32];
-		snprintf(buf, 32, ", %i Minutes", item.m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
-		buf[32] = '\0';
-		game_options += buf;
+		char *p = &buffer[strlen(buffer)];
+		sprintf(p, ", %i Minutes", item.m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
 	}
 
 	if (item.m_description.m_teamsAllowed)
 	{
-		game_options += ", Teams";
+		strcat(buffer, ", Teams");
 	}
 
-	draw_text(s, game_options.c_str(), x, y, fg, font, game_style);
+	draw_text(s, buffer, x, y, fg, font, game_style);
 
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
 	draw_text(s, item.m_hostPlayerName.c_str(), x + width - right_text_width, y, fg, font, game_style);
