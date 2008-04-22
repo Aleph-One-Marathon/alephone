@@ -182,6 +182,7 @@ public:
 		virtual void receivedLocalMessage(const std::string& message) = 0;
                 virtual void receivedBroadcastMessage(const std::string& message) = 0;
                 virtual void receivedPrivateMessage(const std::string& senderName, uint32 senderID, const std::string& message) = 0;
+		virtual void roomDisconnected() = 0;
                 virtual ~NotificationAdapter() {}
         };
 	
@@ -333,6 +334,8 @@ private:
 
 	MetaserverPlayerInfo::IDType            m_player_target;
 	bool                                    m_player_target_exists;
+
+	bool                                    m_notifiedOfDisconnected;
 };
 
 #endif // NETWORK_METASERVER_H

@@ -53,7 +53,7 @@ extern MetaserverClient* gMetaserverClient;
 class SdlMetaserverClientUi : public MetaserverClientUi
 {
 public:
-	SdlMetaserverClientUi()
+	SdlMetaserverClientUi() : m_disconnected(false)
 	{
 		vertical_placer *placer = new vertical_placer(4);
 		placer->dual_add(new w_static_text("LOCATE NETWORK GAMES", TITLE_FONT, TITLE_COLOR), d);
@@ -268,12 +268,21 @@ private:
 			last_update = ticks;
 			games_in_room_w->refresh();
 		}
-		MetaserverClient::pumpAll();
+		if (gMetaserverClient->isConnected())
+			MetaserverClient::pumpAll();
+		else if (!m_disconnected)
+		{ 
+			alert_user("Connection to room lost.", 0);
+			m_disconnected = true;
+			Stop();
+		}
 	}
 
 
 private:
 	dialog d;
+	std::auto_ptr<dialog> m_info_dialog;
+	bool m_disconnected;
 };
 
 

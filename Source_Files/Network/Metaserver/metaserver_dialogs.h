@@ -59,6 +59,7 @@ public:
 	virtual void receivedLocalMessage(const std::string& message);
 	virtual void receivedBroadcastMessage(const std::string& message);
 	virtual void receivedPrivateMessage(const std::string& message, uint32 senderID, const std::string& message);
+	virtual void roomDisconnected();
 };
 
 // Eventually this may disappear behind the facade of run_network_metaserver_ui()

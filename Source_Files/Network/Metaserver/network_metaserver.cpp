@@ -158,7 +158,8 @@ MetaserverClient::MetaserverClient()
 	: m_channel(new CommunicationsChannel())
 	, m_inflater(new MessageInflater())
 	, m_dispatcher(new MessageDispatcher())
-	, m_notificationAdapter(NULL)
+	, m_notificationAdapter(NULL),
+	  m_notifiedOfDisconnected(false)
 {
 	m_unexpectedMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleUnexpectedMessage));
 	m_broadcastMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleBroadcastMessage));
@@ -370,6 +371,11 @@ MetaserverClient::pump()
 {
 	m_channel->pump();
 	m_channel->dispatchIncomingMessages();	
+	if (!m_channel->isConnected() && !m_notifiedOfDisconnected && m_notificationAdapter)
+	{
+		m_notifiedOfDisconnected = true;
+		m_notificationAdapter->roomDisconnected();
+	}
 }
 
 

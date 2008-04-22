@@ -236,6 +236,15 @@ void GlobalMetaserverChatNotificationAdapter::receivedLocalMessage(const std::st
 	gMetaserverChatHistory.append(e);
 }
 
+void GlobalMetaserverChatNotificationAdapter::roomDisconnected()
+{
+	ColoredChatEntry e;
+	e.type = ColoredChatEntry::LocalMessage;
+	e.message = "Connection to room lost.";
+	
+	gMetaserverChatHistory.append(e);
+}
+
 void MetaserverClientUi::delete_widgets ()
 {
 	delete m_playersInRoomWidget;

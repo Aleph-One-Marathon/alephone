@@ -2533,6 +2533,8 @@ public:
 		receivedChatMessage("Metaserver", 0, message);
 	}
 
+	void roomDisconnected() { }
+
 	void playersInRoomChanged(const vector<MetaserverPlayerInfo> &) {}
 	void gamesInRoomChanged(const vector<GameListMessage::GameListEntry> &) {}
 
