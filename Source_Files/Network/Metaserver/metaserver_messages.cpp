@@ -198,15 +198,27 @@ void get_metaserver_player_color(size_t colorIndex, uint16* color) {
   color[2] = c.blue;
 }
 
+void get_metaserver_player_color(rgb_color color, uint16* metaserver_color) {
+	metaserver_color[0] = color.red;
+	metaserver_color[1] = color.green;
+	metaserver_color[2] = color.blue;
+}
+
 void
 write_player_aux_data(AOStream& out, string name, const string& team, bool away, const string& away_message)
 {
 	uint8	unused8 = 0;
 	uint16 primaryColor[3];
-	get_metaserver_player_color(player_preferences->color, primaryColor);
+	if (network_preferences->use_custom_metaserver_colors)
+		get_metaserver_player_color(network_preferences->metaserver_colors[0], primaryColor);
+	else
+		get_metaserver_player_color(player_preferences->color, primaryColor);
 	uint16	unused16 = 0;
 	uint16	secondaryColor[3];
-	get_metaserver_player_color(player_preferences->team, secondaryColor);
+	if (network_preferences->use_custom_metaserver_colors)
+		get_metaserver_player_color(network_preferences->metaserver_colors[1], secondaryColor);
+	else
+		get_metaserver_player_color(player_preferences->team, secondaryColor);
 	uint16	orderIndex = 0;
 
 	if (away)

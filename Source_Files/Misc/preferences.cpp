@@ -492,6 +492,7 @@ static void player_dialog(void *arg)
 
 	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
 	table->col_flags(0, placeable::kAlignRight);
+	table->col_flags(1, placeable::kAlignLeft);
 
 	w_select *level_w = new w_select("", player_preferences->difficulty_level, NULL /*level_labels*/);
 	level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
@@ -532,6 +533,21 @@ static void player_dialog(void *arg)
 	w_password_entry *password_w = new w_password_entry("", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
 	table->dual_add(password_w->label("Password"), d);
 	table->dual_add(password_w, d);
+
+	w_enabling_toggle *custom_colors_w = new w_enabling_toggle("", network_preferences->use_custom_metaserver_colors);
+	table->dual_add(custom_colors_w->label("Use Custom Colors"), d);
+	table->dual_add(custom_colors_w, d);
+	
+	w_color_picker *primary_w = new w_color_picker(network_preferences->metaserver_colors[0]);
+	table->dual_add(primary_w->label("Primary"), d);
+	table->dual_add(primary_w, d);
+	
+	w_color_picker *secondary_w = new w_color_picker(network_preferences->metaserver_colors[1]);
+	table->dual_add(secondary_w->label("Secondary"), d);
+	table->dual_add(secondary_w, d);
+
+	custom_colors_w->add_dependent_widget(primary_w);
+	custom_colors_w->add_dependent_widget(secondary_w);
 
 	login_as_guest_w->add_dependent_widget(login_w);
 	login_as_guest_w->add_dependent_widget(password_w);
@@ -587,6 +603,30 @@ static void player_dialog(void *arg)
 			changed = true;
 		}
 
+		bool use_custom_metaserver_colors = custom_colors_w->get_selection();
+		if (use_custom_metaserver_colors != network_preferences->use_custom_metaserver_colors)
+		{
+			network_preferences->use_custom_metaserver_colors = use_custom_metaserver_colors;
+			changed = true;
+		}
+
+		if (use_custom_metaserver_colors)
+		{
+			rgb_color primary_color = primary_w->get_selection();
+			if (primary_color.red != network_preferences->metaserver_colors[0].red || primary_color.green != network_preferences->metaserver_colors[0].green || primary_color.blue != network_preferences->metaserver_colors[0].blue)
+			{
+				network_preferences->metaserver_colors[0] = primary_color;
+				changed = true;
+			}
+
+			rgb_color secondary_color = secondary_w->get_selection();
+			if (secondary_color.red != network_preferences->metaserver_colors[1].red || secondary_color.green != network_preferences->metaserver_colors[1].green || secondary_color.blue != network_preferences->metaserver_colors[1].blue)			{
+				network_preferences->metaserver_colors[1] = secondary_color;
+				changed = true;
+			}
+
+		}
+					
 		int16 level = static_cast<int16>(level_w->get_selection());
 		assert(level >= 0);
 		if (level != player_preferences->difficulty_level) {
@@ -1892,12 +1932,16 @@ void write_preferences(
 		fprintf(F, "%.2x", network_preferences->metaserver_password[i] ^ sPasswordMask[i]);
 	}
 	fprintf(F, "\"\n");
-	
+	fprintf(F,"  use_custom_metaserver_colors=\"%s\"\n", BoolString(network_preferences->use_custom_metaserver_colors));
 	
 	fprintf(F,">\n");
 #ifndef SDL
 	WriteXML_FSSpec(F,"  ", kNetworkScriptFileSpecIndex, network_preferences->netscript_file);
 #endif
+	for (int i = 0; i < 2; i++)
+	{
+		WriteColorWithIndex(F, "  ", i, network_preferences->metaserver_colors[i], "\n");
+	}
 	WriteStarPreferences(F);
 	WriteRingPreferences(F);
 	fprintf(F,"</network>\n\n");
@@ -2023,6 +2067,9 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->check_for_updates = true;
 	strcpy(preferences->metaserver_login, "guest");
 	memset(preferences->metaserver_password, 0, 16);
+	preferences->use_custom_metaserver_colors = false;
+	preferences->metaserver_colors[0] = get_interface_color(PLAYER_COLOR_BASE_INDEX);
+	preferences->metaserver_colors[1] = get_interface_color(PLAYER_COLOR_BASE_INDEX);
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -3058,11 +3105,35 @@ static XML_SoundPrefsParser SoundPrefsParser;
 
 class XML_NetworkPrefsParser: public XML_ElementParser
 {
+	rgb_color Colors[2];
 public:
+	bool Start();
+	bool End();
 	bool HandleAttribute(const char *Tag, const char *Value);
 
 	XML_NetworkPrefsParser(): XML_ElementParser("network") {}
 };
+
+bool XML_NetworkPrefsParser::Start()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		CopyColor(Colors[i], network_preferences->metaserver_colors[i]);
+	}
+	Color_SetArray(Colors, 2);
+
+	return true;
+}
+
+bool XML_NetworkPrefsParser::End()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		CopyColor(network_preferences->metaserver_colors[i], Colors[i]);
+	}
+
+	return true;
+}
 
 bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 {
@@ -3162,6 +3233,10 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"check_for_updates"))
 	{
 		return ReadBooleanValue(Value, network_preferences->check_for_updates);
+	}
+	else if (StringsEqual(Tag,"use_custom_metaserver_colors"))
+	{
+		return ReadBooleanValue(Value, network_preferences->use_custom_metaserver_colors);
 	}
 	else if (StringsEqual(Tag,"metaserver_login"))
 	{
@@ -3318,6 +3393,7 @@ void SetupPrefsParseTree()
 	MarathonPrefsParser.AddChild(&SoundPrefsParser);
 
 #if !defined(DISABLE_NETWORKING)
+	NetworkPrefsParser.AddChild(Color_GetParser());
 	NetworkPrefsParser.AddChild(StarGameProtocol::GetParser());
 	NetworkPrefsParser.AddChild(RingGameProtocol::GetParser());
 #endif // !defined(DISABLE_NETWORKING)

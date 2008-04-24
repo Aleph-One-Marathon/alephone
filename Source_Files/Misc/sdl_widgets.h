@@ -696,11 +696,12 @@ protected:
 
 class w_color_picker : public widget {
 public:
-	w_color_picker(RGBColor &color) : widget(MESSAGE_FONT), m_color(color) {
+	w_color_picker(rgb_color &color) : widget(MESSAGE_FONT), m_color(color) {
 		saved_min_width = 48;
 		saved_min_height = font->get_line_height();
 	}
 	
+	const rgb_color& get_selection() { return m_color; }
 
 	void draw(SDL_Surface *s) const;
 	void click(int, int);
@@ -708,7 +709,7 @@ public:
 	bool placeable_implemented() { return true; }
 
 private:
-	RGBColor m_color;
+	rgb_color m_color;
 
 	struct update_color {
 		update_color(w_slider *red, w_slider *green, w_slider *blue, uint16 *i_red, uint16 *i_green, uint16 *i_blue) : red_w(red), green_w(green), blue_w(blue), red(i_red), blue(i_blue), green(i_green) { }

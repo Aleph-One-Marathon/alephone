@@ -932,7 +932,7 @@ void w_player_color::draw(SDL_Surface *s) const
 
 class w_color_block : public widget {
 public:
-	w_color_block(const RGBColor *color) : m_color(color) { 
+	w_color_block(const rgb_color *color) : m_color(color) { 
 		saved_min_height = 64;
 		saved_min_width = 64;
 	}
@@ -947,12 +947,13 @@ public:
 
 	bool is_dirty() { return true; }
 private:
-	const RGBColor *m_color;
+	const rgb_color *m_color;
 };
 
 
 void w_color_picker::click(int, int)
 {
+	if (!enabled) return;
 	dialog d;
 	
 	vertical_placer *placer = new vertical_placer;
@@ -986,6 +987,8 @@ void w_color_picker::click(int, int)
 	
 	placer->add(button_placer, true);
 
+	rgb_color old_color = m_color;
+
 	d.set_widget_placer(placer);
 	d.set_processing_function(w_color_picker::update_color(red_w, green_w, blue_w, &m_color.red, &m_color.green, &m_color.blue));
 
@@ -997,6 +1000,10 @@ void w_color_picker::click(int, int)
 
 		dirty = true;
 		get_owning_dialog()->draw_dirty_widgets();
+	}
+	else
+	{
+		m_color = old_color;
 	}
 }
 
