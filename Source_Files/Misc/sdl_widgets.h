@@ -501,7 +501,6 @@ public:
 	void draw(SDL_Surface *s) const;
 };
 
-
 /*
  *  Text entry widget
  */
@@ -693,6 +692,40 @@ protected:
 	int thumb_drag_x;		// X start position when dragging
 
 	SDL_Surface *slider_l, *slider_c, *slider_r, *thumb;
+};
+
+class w_color_picker : public widget {
+public:
+	w_color_picker(RGBColor &color) : widget(MESSAGE_FONT), m_color(color) {
+		saved_min_width = 48;
+		saved_min_height = font->get_line_height();
+	}
+	
+
+	void draw(SDL_Surface *s) const;
+	void click(int, int);
+	
+	bool placeable_implemented() { return true; }
+
+private:
+	RGBColor m_color;
+
+	struct update_color {
+		update_color(w_slider *red, w_slider *green, w_slider *blue, uint16 *i_red, uint16 *i_green, uint16 *i_blue) : red_w(red), green_w(green), blue_w(blue), red(i_red), blue(i_blue), green(i_green) { }
+		void operator()(dialog *) {
+			*red = red_w->get_selection() << 12;
+			*green = green_w->get_selection() << 12;
+			*blue = blue_w->get_selection() << 12;
+		}
+
+		w_slider *red_w;
+		w_slider *green_w;
+		w_slider *blue_w;
+		
+		uint16* red;
+		uint16* blue;
+		uint16* green;
+	};
 };
 
 

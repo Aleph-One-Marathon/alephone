@@ -930,6 +930,82 @@ void w_player_color::draw(SDL_Surface *s) const
 	}
 }
 
+class w_color_block : public widget {
+public:
+	w_color_block(const RGBColor *color) : m_color(color) { 
+		saved_min_height = 64;
+		saved_min_width = 64;
+	}
+
+	void draw(SDL_Surface *s) const {
+		uint32 pixel = SDL_MapRGB(s->format, m_color->red >> 8, m_color->green >> 8, m_color->blue >> 8);
+		SDL_Rect r = { rect.x, rect.y, 64, 64 };
+		SDL_FillRect(s, &r, pixel);
+	}
+
+	bool placeable_implemented() { return true; }
+
+	bool is_dirty() { return true; }
+private:
+	const RGBColor *m_color;
+};
+
+
+void w_color_picker::click(int, int)
+{
+	dialog d;
+	
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text("CHOOSE A COLOR", TITLE_FONT, TITLE_COLOR), d);
+	placer->add(new w_spacer(), true);
+
+	w_color_block *color_block = new w_color_block(&m_color);
+	placer->dual_add(color_block, d);
+
+	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+	table->col_flags(0, placeable::kAlignRight);
+
+	w_slider *red_w = new w_slider("", 16, m_color.red >> 12);
+	table->dual_add(red_w->label("Red"), d);
+	table->dual_add(red_w, d);
+
+	w_slider *green_w = new w_slider("", 16, m_color.green >> 12);
+	table->dual_add(green_w->label("Green"), d);
+	table->dual_add(green_w, d);
+
+	w_slider *blue_w = new w_slider("", 16, m_color.blue >> 12);
+	table->dual_add(blue_w->label("Blue"), d);
+	table->dual_add(blue_w, d);
+
+	placer->add(table, true);
+	placer->add(new w_spacer(), true);
+	
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("OK", dialog_ok, &d), d);
+	
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
+	d.set_processing_function(w_color_picker::update_color(red_w, green_w, blue_w, &m_color.red, &m_color.green, &m_color.blue));
+
+	if (d.run() == 0)
+	{
+		m_color.red = red_w->get_selection() << 12;
+		m_color.green = green_w->get_selection() << 12;
+		m_color.blue = blue_w->get_selection() << 12;
+
+		dirty = true;
+		get_owning_dialog()->draw_dirty_widgets();
+	}
+}
+
+void w_color_picker::draw(SDL_Surface *s) const
+{
+	uint32 pixel = SDL_MapRGB(s->format, m_color.red >> 8, m_color.green >> 8, m_color.blue >> 8);
+	SDL_Rect r = {rect.x, rect.y + 1, 48, rect.h - 2 };
+	SDL_FillRect(s, &r, pixel);
+}
 
 /*
  *  Text entry widget
