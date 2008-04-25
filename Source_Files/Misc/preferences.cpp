@@ -877,11 +877,16 @@ static void graphics_dialog(void *arg)
 	table->dual_add(gamma_w->label("Brightness"), d);
 	table->dual_add(gamma_w, d);
 
-	table->add_row(new w_spacer());
+	table->add_row(new w_spacer(), true);
 
 	w_toggle *fullscreen_w = new w_toggle("", !graphics_preferences->screen_mode.fullscreen);
 	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
 	table->dual_add(fullscreen_w, d);
+
+	table->add_row(new w_spacer, true);
+	w_toggle *hog_cpu_w = new w_toggle("", graphics_preferences->hog_the_cpu);
+	table->dual_add(hog_cpu_w->label("Hog the CPU"), d);
+	table->dual_add(hog_cpu_w, d);
 
 	placer->add(table, true);
 
@@ -957,6 +962,13 @@ static void graphics_dialog(void *arg)
 			    parent->layout();
 			    changed = true;
 		    }
+	    }
+
+	    bool hog_the_cpu = hog_cpu_w->get_selection();
+	    if (hog_the_cpu != graphics_preferences->hog_the_cpu)
+	    {
+		    graphics_preferences->hog_the_cpu = hog_the_cpu;
+		    changed = true;
 	    }
 	    
 	    if (changed) {
@@ -1829,6 +1841,7 @@ void write_preferences(
 	fprintf(F,"  multisamples=\"%i\"\n", graphics_preferences->OGL_Configure.Multisamples);
 	fprintf(F,"  geforce_fix=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.GeForceFix));
 	fprintf(F,"  double_corpse_limit=\"%s\"\n", BoolString(graphics_preferences->double_corpse_limit));
+	fprintf(F,"  hog_the_cpu=\"%s\"\n", BoolString(graphics_preferences->hog_the_cpu));
 	fprintf(F,">\n");
 	fprintf(F,"  <void>\n");
 	WriteColor(F,"    ",graphics_preferences->OGL_Configure.VoidColor,"\n");
@@ -2025,6 +2038,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	OGL_SetDefaults(preferences->OGL_Configure);
 
 	preferences->double_corpse_limit= false;
+	preferences->hog_the_cpu = false;
 
 	preferences->software_alpha_blending = _sw_alpha_off;
 }
@@ -2719,6 +2733,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	  {
 	    return ReadBooleanValue(Value,graphics_preferences->double_corpse_limit);
 	  }
+	else if (StringsEqual(Tag,"hog_the_cpu"))
+	{
+		return ReadBooleanValue(Value, graphics_preferences->hog_the_cpu);
+	}
 	return true;
 }
 

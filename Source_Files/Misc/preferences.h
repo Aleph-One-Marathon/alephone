@@ -82,6 +82,8 @@ struct graphics_preferences_data
 	bool double_corpse_limit;
 
 	int16 software_alpha_blending;
+
+	bool hog_the_cpu;
 };
 
 struct serial_number_data

@@ -634,8 +634,10 @@ static void main_event_loop(void)
 			  if (Console::instance()->input_active() || SDL_GetTicks() - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
 					poll_event = true;
 					last_event_poll = SDL_GetTicks();
-				} else
+			  } else {				  
 					SDL_PumpEvents ();	// This ensures a responsive keyboard control
+					if (!graphics_preferences->hog_the_cpu) SDL_Delay(10);
+			  }
 				break;
 
 			case _display_intro_screens:
