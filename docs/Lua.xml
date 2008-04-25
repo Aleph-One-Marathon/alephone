@@ -1638,18 +1638,30 @@
 	<argument name="monster_class"><type>monster_class</type></argument>
 	<type>boolean</type>
       </function-variable>
+      <variable name="impact_effect" access="read-only">
+	<description>type of effect generated when monster gets hit by a bleeding projectile</description>
+	<type>effect_type</type>
+      </variable>
       <function-variable name="immunities" classname="monster_type_immunities">
 	<description>whether monster type is immune to damage type</description>
 	<argument name="damage_type"><type>damage_type</type></argument>
 	<type>boolean</type>
       </function-variable>
       <variable name="height" access="read-only">
-	<description>monster's height</description>
+	<description>height of monster</description>
 	<type>WU</type>
       </variable>
       <variable name="item">
-	<description>item the monster drops when it dies</description>
+	<description>type of item the monster drops when it dies</description>
 	<type>item_type</type>
+      </variable>
+      <variable name="melee_impact_effect" access="read-only">
+	<description>type of effect generated when monster gets hit by a melee projectile</description>
+	<type>effect_type</type>
+      </variable>
+      <variable name="radius" access="read-only">
+	<description>radius of monster</description>
+	<type>WU</type>
       </variable>
       <function-variable name="weaknesses" classname="monster_type_weaknesses">
 	<description>whether monster type has a weakness to damage type</description>

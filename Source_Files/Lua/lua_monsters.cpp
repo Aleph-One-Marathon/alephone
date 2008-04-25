@@ -275,6 +275,24 @@ static int Lua_MonsterType_Get_Immunities(lua_State *L) {
 	return 1;
 }
 
+static int Lua_MonsterType_Get_Impact_Effect(lua_State *L) {
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	Lua_EffectType::Push(L, definition->impact_effect);
+	return 1;
+}
+
+static int Lua_MonsterType_Get_Melee_Impact_Effect(lua_State *L) {
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	Lua_EffectType::Push(L, definition->melee_impact_effect);
+	return 1;
+}
+
+static int Lua_MonsterType_Get_Radius(lua_State *L) {
+	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
+	lua_pushnumber(L, (double) definition->radius / WORLD_ONE);
+	return 1;
+}
+
 static int Lua_MonsterType_Get_Weaknesses(lua_State *L) {
 	Lua_MonsterType_Weaknesses::Push(L, Lua_MonsterType::Index(L, 1));
 	return 1;
@@ -317,7 +335,10 @@ const luaL_reg Lua_MonsterType_Get[] = {
 	{"friends", Lua_MonsterType_Get_Friends},
 	{"height", Lua_MonsterType_Get_Height},
 	{"immunities", Lua_MonsterType_Get_Immunities},
+	{"impact_effect", Lua_MonsterType_Get_Impact_Effect},
+	{"melee_impact_effect", Lua_MonsterType_Get_Melee_Impact_Effect},
 	{"item", Lua_MonsterType_Get_Item},
+	{"radius", Lua_MonsterType_Get_Radius},
 	{"weaknesses", Lua_MonsterType_Get_Weaknesses},
 	{0, 0}
 };
