@@ -264,7 +264,7 @@ void resume_game(void);
 void portable_process_screen_click(short x, short y, bool cheatkeys_down);
 void draw_menu_button_for_command(short index);
 void update_interface_display(void);
-void idle_game_state(uint32 ticks);
+bool idle_game_state(uint32 ticks);
 void display_main_menu(void);
 void do_menu_item_command(short menu_id, short menu_item, bool cheat);
 bool interface_fade_finished(void);

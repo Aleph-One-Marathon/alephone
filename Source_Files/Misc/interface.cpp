@@ -1017,7 +1017,7 @@ void update_interface_display(
 	draw_full_screen_pict_resource_from_images(data->screen_base+game_state.current_screen);
 }
 
-void idle_game_state(uint32 time)
+bool idle_game_state(uint32 time)
 {
 	int machine_ticks_elapsed = time - game_state.last_ticks_on_idle;
 
@@ -1139,9 +1139,12 @@ void idle_game_state(uint32 time)
 			if (theUpdateResult.first)
 				render_screen(ticks_elapsed);
 		}
+		
+		return theUpdateResult.first;
 	} else {
 		/* Update the fade ins, etc.. */
 		update_interface_fades();
+		return false;
 	}
 }
 
