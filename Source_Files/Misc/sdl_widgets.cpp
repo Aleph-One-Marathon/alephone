@@ -71,8 +71,7 @@
 // (thought: I guess "widget" could be simplified, and have a subclass "useful_widget" to handle most things
 // other than spacers.  Spacers are common and I guess we're starting to eat a fair amount of storage for a
 // widget that does nothing and draws nothing... oh well, at least RAM is cheap.  ;) )
-widget::widget() : active(false), dirty(false), enabled(true), font(NULL), identifier(NONE), owning_dialog(NULL),
-		   widget_alignment(kAlignNatural), full_width(false), width_reduction(0), align_bottom_peer(NULL), saved_min_width(0), saved_min_height(0), associated_label(0)
+widget::widget() : active(false), dirty(false), enabled(true), font(NULL), identifier(NONE), owning_dialog(NULL), saved_min_width(0), saved_min_height(0), associated_label(0)
 {
     rect.x = 0;
     rect.y = 0;
@@ -80,9 +79,7 @@ widget::widget() : active(false), dirty(false), enabled(true), font(NULL), ident
     rect.h = 0;
 }
 
-widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dialog_font(f, style)),
-                        identifier(NONE), owning_dialog(NULL), widget_alignment(kAlignNatural), full_width(false),
-                        width_reduction(0), align_bottom_peer(NULL), saved_min_width(0), saved_min_height(0), associated_label(0)
+widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dialog_font(f, style)), identifier(NONE), owning_dialog(NULL), saved_min_width(0), saved_min_height(0), associated_label(0)
 {
     rect.x = 0;
     rect.y = 0;
@@ -122,67 +119,6 @@ void widget::set_enabled(bool inEnabled)
 		if (associated_label)
 			associated_label->set_enabled(inEnabled);
 	}
-}
-
-// ZZZ: several new stupid layout tricks(tm) methods here
-void widget::set_alignment(widget::alignment inAlignment) {
-    widget_alignment = inAlignment;
-}
-
-void widget::align_bottom_with_bottom_of(widget* inWidget) {
-    align_bottom_peer = inWidget;
-}
-
-void widget::set_full_width() {
-    full_width = true;
-}
-
-void widget::reduce_width_by_width_of(widget* inEncroachingWidget) {
-    width_reduction = inEncroachingWidget->rect.w;
-}
-
-int widget::layout(void)
-{
-	// Default layout behaviour: center horizontally
-	rect.x = -rect.w / 2;
-	
-    // ZZZ: stupid layout tricks(tm)
-    if(align_bottom_peer != NULL) {
-        rect.y = align_bottom_peer->rect.y + align_bottom_peer->rect.h - rect.h;
-        return 0;
-    }
-    else
-        return rect.h;
-}
-
-// ZZZ: more stupid layout tricks(tm)
-void widget::capture_layout_information(int16 leftmost_x, int16 available_width) {
-    switch(widget_alignment) {
-    case kAlignNatural:
-        // (no changes)
-        break;
-
-    case kAlignLeft:
-        rect.x = leftmost_x;
-        break;
-
-    case kAlignCenter:
-        rect.x = leftmost_x + (available_width - rect.w) / 2;
-        break;
-
-    case kAlignRight:
-        rect.x = leftmost_x + available_width - rect.w;
-        break;
-
-    default:
-        assert(false);
-        break;
-    }
-
-	assert(static_cast<uint16>(available_width - (rect.x - leftmost_x) - width_reduction)
-		== available_width - (rect.x - leftmost_x) - width_reduction);
-    if(full_width)
-        rect.w = static_cast<uint16>(available_width - (rect.x - leftmost_x) - width_reduction);
 }
 
 void widget::place(const SDL_Rect &r, placement_flags flags)
@@ -245,26 +181,6 @@ void w_label::draw(SDL_Surface *s) const
 	int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
 	draw_text(s, text, rect.x, rect.y + font->get_ascent(), get_dialog_color(theColorToUse), font, style);
 }
-
-/*
-// ZZZ addition: in support of left-justification
-void w_static_text::capture_layout_information(int leftmost_x, int usable_width) {
-    if(left_justified) {
-        rect.x = leftmost_x;
-        rect.w = usable_width - width_reduction;
-    }
-}
-
-// ZZZ addition: left-justification
-void w_static_text::set_left_justified() {
-    left_justified = true;
-}
-
-// ZZZ addition: reduce width of left-justified text (usually it would take the whole dialog width)
-void w_static_text::reduce_left_justified_width_by_width_of(widget* otherWidget) {
-    width_reduction = otherWidget->rect.w;
-}
-*/
 
 // ZZZ addition: change text.
 void
@@ -395,74 +311,6 @@ void w_tiny_button::draw(SDL_Surface *s) const
 
 const uint16 LR_BUTTON_OFFSET = 100;
 
-int w_left_button::layout(void)
-{
-	rect.x = (LR_BUTTON_OFFSET + rect.w) / 2;
-	rect.x = -rect.x; // MVCPP Warnings require this funny way of doing things.  Yuck!
-	return 0;	// This will place the right button on the same y position
-}
-
-int w_right_button::layout(void)
-{
-	rect.x = (LR_BUTTON_OFFSET - rect.w) / 2;
-	return rect.h;
-}
-
-
-/*
- *  Tab-changing buttons
- */
-
-w_tab_button::w_tab_button (const char *name)
-	: w_button (name, &w_tab_button::click_callback, this)
-	{}
-
-void w_tab_button::click_callback (void* me)
-{
-	w_tab_button* w = reinterpret_cast<w_tab_button*>(me);
-	w->get_owning_dialog ()->set_active_tab (w->get_identifier ());
-	w->get_owning_dialog ()->draw ();
-}
-
-int w_tab_button::layout(void)
-{
-	rect.x = xPos;
-	if (last)
-		return rect.h;
-	else
-		return 0;
-}
-
-void make_tab_buttons_for_dialog (dialog &theDialog, vector<string> &names, int tabBase)
-{
-	vector<w_tab_button*> tab_buttons;
-	int fullWidth = 0;
-	int tabNum = 1;
-	
-	for (vector<string>::iterator it = names.begin (); it != names.end (); ++it) {
-		w_tab_button* tab_button_w = new w_tab_button (it->c_str ());
-		tab_buttons.push_back (tab_button_w);
-		fullWidth += tab_button_w->rect.w;
-		tab_button_w->set_identifier (tabBase+tabNum);
-		++tabNum;
-		theDialog.add (tab_button_w);
-	}
-	
-	int pos = 0;
-	
-	for (vector<w_tab_button*>::iterator it = tab_buttons.begin (); it != tab_buttons.end (); ++it) {
-		if (it == tab_buttons.begin ()) {
-			pos = (*it)->rect.x - fullWidth/2;
-		}
-		(*it)->xPos = pos;
-		pos += (*it)->rect.w;
-		(*it)->last = false;
-	}
-	
-	tab_buttons[tab_buttons.size() - 1]->last = true;
-}
-
-
 /*
  *  Selection button
  */
@@ -487,19 +335,6 @@ w_select_button::w_select_button(const char *n, const char *s, action_proc p, vo
 }
 
 
-int w_select_button::layout(void)
-{
-	uint16 name_width = text_width(name, font, style);
-	uint16 max_selection_width = MAX_TEXT_WIDTH;
-	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
-
-	rect.x = -spacing / 2 - name_width;
-	rect.w = name_width + spacing + max_selection_width;
-	rect.h = font->get_line_height();
-	selection_x = name_width + spacing;
-
-	return rect.h;
-}
 
 void w_select_button::draw(SDL_Surface *s) const
 {
@@ -623,38 +458,6 @@ int w_select::min_width()
 	{
 		return get_largest_label_width();
 	}
-}
-
-int w_select::layout(void)
-{
-    rect.h = font->get_line_height();
-
-    int theResult = widget::layout();
-    
-    uint16 name_width = text_width(name, font, style, utf8);
-
-	uint16 max_label_width = get_largest_label_width();
-        
-	max_label_width += 6;
-
-	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
-
-	rect.w = name_width + spacing + max_label_width;
-/*
-        if(center_entire_widget)
-            rect.x = -rect.w / 2;
-        else
-*/
-	label_x = name_width + spacing;
-
-        // We do this so widget contributes minimally to dialog layout unless we're forcing natural alignment.
-	if(widget_alignment == kAlignNatural)
-            rect.x = -spacing / 2 - name_width;
-        else
-            rect.x = -rect.w / 2;
-            
-    //	return rect.h;
-    return theResult;
 }
 
 void w_select::draw(SDL_Surface *s) const
@@ -943,8 +746,6 @@ public:
 		SDL_FillRect(s, &r, pixel);
 	}
 
-	bool placeable_implemented() { return true; }
-
 	bool is_dirty() { return true; }
 private:
 	const rgb_color *m_color;
@@ -1042,25 +843,6 @@ w_text_entry::w_text_entry(const char *n, size_t max_c, const char *initial_text
 w_text_entry::~w_text_entry()
 {
 	delete[] buf;
-}
-
-int w_text_entry::layout(void)
-{
-	rect.h = (int16) max(font->get_ascent(), text_font->get_ascent()) +
-		(int16) max (font->get_descent(), text_font->get_descent()) +
-		(int16) max (font->get_leading(), text_font->get_leading());
-
-    int theResult = widget::layout();
-    uint16 name_width = text_width(name.c_str(), font, style);
-	max_text_width = MAX_TEXT_WIDTH;
-	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
-
-	rect.x = -spacing / 2 - name_width;
-	rect.w = name_width + spacing + max_text_width;
-	text_x = name_width + spacing;
-
-//	return rect.h;
-    return theResult;
 }
 
 void w_text_entry::place(const SDL_Rect& r, placement_flags flags)
@@ -1240,24 +1022,6 @@ void w_text_entry::set_name(const char* inName)
             // Always place text the same wrt name
             new_text_x = text_x + name_width_diff;
             
-            // Adjust placement of rect in dialog according to alignment
-            switch(widget_alignment) {
-                case kAlignLeft:
-                    // do nothing - widget remains left-justified
-                break;
-    
-                case kAlignCenter:
-                    // rect shifts somewhat to accomodate new name.  Hmm... possible rounding error?
-                    new_rect_x = rect.x - name_width_diff / 2;
-                break;
-    
-                case kAlignRight:
-                case kAlignNatural:
-                    // rect needs to shift to accomodate new name.
-                    new_rect_x = rect.x - name_width_diff;
-                break;
-            }
-    
             // If we're moving to a larger rect, make the changes now so drawing works right.
             if(new_rect_w >= rect.w) {
                 rect.w = new_rect_w;
@@ -1272,17 +1036,6 @@ void w_text_entry::set_name(const char* inName)
     } // had already been laid out
     
 } // set_name
-
-
-void
-w_text_entry::capture_layout_information(int16 leftmost_x, int16 usable_width) {
-    widget::capture_layout_information(leftmost_x, usable_width);
-
-    if(full_width) {
-		assert(rect.w >= text_x);
-        max_text_width	= rect.w - text_x;
-    }
-}
 
 
 /*
@@ -1368,19 +1121,6 @@ w_key::w_key(const char *n, SDLKey key) : widget(LABEL_FONT), name(n), binding(f
 	else
 		saved_min_width = text_width(WAITING_TEXT, font, style);
 	saved_min_height = font->get_line_height();
-}
-
-int w_key::layout(void)
-{
-	uint16 name_width = text_width(name, font, style);
-	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
-
-	rect.x = -spacing / 2 - name_width;
-	rect.w = name_width + spacing + text_width(WAITING_TEXT, font, style);
-	rect.h = font->get_line_height();
-	key_x = name_width + spacing;
-
-	return rect.h;
 }
 
 void w_key::place(const SDL_Rect& r, placement_flags flags)
@@ -1533,20 +1273,6 @@ w_slider::w_slider(const char *n, int num, int s) : widget(LABEL_FONT), name(n),
 w_slider::~w_slider()
 {
 	if (slider_c) SDL_FreeSurface(slider_c);
-}
-
-int w_slider::layout(void)
-{
-	uint16 name_width = text_width(name, font, style);
-	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
-
-	rect.x = -spacing / 2 - name_width;
-	rect.w = name_width + spacing + SLIDER_WIDTH + thumb->w;
-	rect.h = MAX(font->get_line_height(), static_cast<uint16>(slider_c->h));
-	slider_x = name_width + spacing;
-	set_selection(selection);
-
-	return rect.h;
 }
 
 void w_slider::place(const SDL_Rect& r, placement_flags flags)
@@ -2039,16 +1765,6 @@ void w_select_popup::gotSelected ()
 	
 	if (action)
 		action (arg);
-}
-
-
-w_tab_popup::w_tab_popup (const char *name) : w_select_popup (name, gotSelectedCallback, this) {}
-
-void w_tab_popup::gotSelectedCallback (void* me)
-{
-	w_tab_popup* w = reinterpret_cast<w_tab_popup*>(me);
-	w->get_owning_dialog ()->set_active_tab (w->get_selection ()  + w->get_identifier () + 1);
-	w->get_owning_dialog ()->draw ();
 }
 
 

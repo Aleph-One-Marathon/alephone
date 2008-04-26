@@ -540,11 +540,16 @@ static void initialize_marathon_music_handler(void)
 bool quit_without_saving(void)
 {
 	dialog d;
-	d.add (new w_static_text("Are you sure you wish to"));
-	d.add (new w_static_text("cancel the game in progress?"));
-	d.add (new w_spacer());
-	d.add (new w_left_button("YES", dialog_ok, &d));
-	d.add (new w_right_button("NO", dialog_cancel, &d));
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add (new w_static_text("Are you sure you wish to"), d);
+	placer->dual_add (new w_static_text("cancel the game in progress?"), d);
+	placer->add (new w_spacer(), true);
+	
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add (new w_button("YES", dialog_ok, &d), d);
+	button_placer->dual_add (new w_button("NO", dialog_cancel, &d), d);
+	placer->add(button_placer, true);
+	d.set_widget_placer(placer);
 	return d.run() == 0;
 }
 
@@ -565,6 +570,7 @@ short get_level_number_from_user(void)
 
 	// Create dialog
 	dialog d;
+	vertical_placer *placer = new vertical_placer;
 	if (vidmasterStringSetID != -1 && TS_IsPresent(vidmasterStringSetID) && TS_CountStrings(vidmasterStringSetID) > 0) {
 		// if we there's a stringset present for it, load the message from there
 		int num_lines = TS_CountStrings(vidmasterStringSetID);
@@ -577,33 +583,35 @@ short get_level_number_from_user(void)
 				message_font_title_color = false;
 			}
 			if (!strlen(string))
-				d.add(new w_spacer());
+				placer->add(new w_spacer(), true);
 			else if (message_font_title_color)
-				d.add(new w_static_text(string, MESSAGE_FONT, TITLE_COLOR));
+				placer->dual_add(new w_static_text(string, MESSAGE_FONT, TITLE_COLOR), d);
 			else
-				d.add(new w_static_text(string));
+				placer->dual_add(new w_static_text(string), d);
 		}
 
 	} else {
 		// no stringset or no strings in stringset - use default message
-		d.add(new w_static_text("Before proceeding any further, you", MESSAGE_FONT, TITLE_COLOR));
-		d.add(new w_static_text ("must take the oath of the vidmaster:", MESSAGE_FONT, TITLE_COLOR));
-		d.add(new w_spacer());
-		d.add(new w_static_text("\xd2I pledge to punch all switches,"));
-		d.add(new w_static_text("to never shoot where I could use grenades,"));
-		d.add(new w_static_text("to admit the existence of no level"));
-		d.add(new w_static_text("except Total Carnage,"));
-		d.add(new w_static_text("to never use Caps Lock as my \xd4run\xd5 key,"));
-		d.add(new w_static_text("and to never, ever, leave a single Bob alive.\xd3"));
+		placer->dual_add(new w_static_text("Before proceeding any further, you", MESSAGE_FONT, TITLE_COLOR), d);
+		placer->dual_add(new w_static_text ("must take the oath of the vidmaster:", MESSAGE_FONT, TITLE_COLOR), d);
+		placer->add(new w_spacer(), true);
+		placer->dual_add(new w_static_text("\xd2I pledge to punch all switches,"), d);
+		placer->dual_add(new w_static_text("to never shoot where I could use grenades,"), d);
+		placer->dual_add(new w_static_text("to admit the existence of no level"), d);
+		placer->dual_add(new w_static_text("except Total Carnage,"), d);
+		placer->dual_add(new w_static_text("to never use Caps Lock as my \xd4run\xd5 key,"), d);
+		placer->dual_add(new w_static_text("and to never, ever, leave a single Bob alive.\xd3"), d);
 	}
 
-	d.add(new w_spacer());
-	d.add(new w_static_text("Start at level:", MESSAGE_FONT, TITLE_COLOR));
+	placer->add(new w_spacer(), true);
+	placer->dual_add(new w_static_text("Start at level:", MESSAGE_FONT, TITLE_COLOR), d);
 
 	w_levels *level_w = new w_levels(levels, &d);
-	d.add(level_w);
-	d.add(new w_spacer());
-	d.add(new w_button("CANCEL", dialog_cancel, &d));
+	placer->dual_add(level_w, d);
+	placer->add(new w_spacer(), true);
+	placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+
+	d.set_widget_placer(placer);
 
 	// Run dialog
 	short level;

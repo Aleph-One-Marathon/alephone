@@ -980,32 +980,36 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text(prompt, TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text(prompt, TITLE_FONT, TITLE_COLOR), d);
+	placer->add(new w_spacer, true);
 
 	dir.GetName(temporary);
 	w_static_text* directory_name_w = new w_static_text(temporary, LABEL_FONT);
 	directory_name_w->set_identifier(iDIRBROWSE_DIR_NAME);
-	directory_name_w->set_full_width();
-	directory_name_w->set_alignment(widget::kAlignCenter);
-	d.add(directory_name_w);
+	placer->dual_add(directory_name_w, d);
 
-	d.add(new w_spacer());
+	placer->add(new w_spacer(), true);
 
 	w_directory_browsing_list* list_w = ((type == _typecode_netscript)
 		? new w_directory_browsing_list(dir, &d, filename)
 		: new w_directory_browsing_list(dir, &d));
 	list_w->set_identifier(iDIRBROWSE_BROWSER);
 	list_w->set_directory_changed_callback(respond_to_directory_changed, &d);
-	d.add(list_w);
+	placer->dual_add(list_w, d);
+	placer->add(new w_spacer, true);
 
-	d.add(new w_spacer());
+	horizontal_placer *button_placer = new horizontal_placer;
+	w_button* up_button_w = new w_button("UP", bounce_up_a_directory_level, list_w);
+	button_placer->dual_add(up_button_w, d);
 
-	w_left_button* up_button_w = new w_left_button("UP", bounce_up_a_directory_level, list_w);
 	up_button_w->set_identifier(iDIRBROWSE_UP_BUTTON);
-	d.add(up_button_w);
 
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
 
 	// Run dialog
 	bool result = false;
@@ -1102,17 +1106,32 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text(prompt, TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
-	w_file_name *name_w = new w_file_name("File Name", &d, default_name);
-	w_write_file_list *list_w = new w_write_file_list(entries, default_name, &d, name_w);
-	d.add(list_w);
-	d.add(new w_spacer());
-	d.add(name_w);
-	d.add(new w_spacer());
-	d.add(new w_left_button("OK", dialog_ok, &d));
-	d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text(prompt, TITLE_FONT, TITLE_COLOR), d);
+	placer->add(new w_spacer(), true);
 
+	horizontal_placer *file_name_placer = new horizontal_placer;
+	w_file_name *name_w = new w_file_name("", &d, default_name);
+	file_name_placer->dual_add(name_w->label("File Name:"), d);
+	file_name_placer->add_flags(placeable::kFill);
+	file_name_placer->dual_add(name_w, d);
+
+	w_write_file_list *list_w = new w_write_file_list(entries, default_name, &d, name_w);
+	placer->dual_add(list_w, d);
+	placer->add(new w_spacer(), true);
+
+	placer->add_flags(placeable::kFill);
+	placer->add(file_name_placer, true);
+	placer->add_flags();
+	placer->add(new w_spacer, true);
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("OK", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
 	// Run dialog
 again:
 	bool result = false;
@@ -1153,11 +1172,18 @@ static bool confirm_save_choice(FileSpecifier & file)
 
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text(message));
-	d.add(new w_static_text("Ok to overwrite?"));
-	d.add(new w_spacer());
-	d.add(new w_left_button("YES", dialog_ok, &d));
-	d.add(new w_right_button("NO", dialog_cancel, &d));
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text(message), d);
+	placer->dual_add(new w_static_text("Ok to overwrite?"), d);
+	placer->add(new w_spacer(), true);
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("YES", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("NO", dialog_cancel, &d), d);
+
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
 
 	// Run dialog
 	return d.run() == 0;

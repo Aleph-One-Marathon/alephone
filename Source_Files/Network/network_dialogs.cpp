@@ -2434,22 +2434,27 @@ void display_net_game_stats(void)
 
     dialog d;
     
-    d.add(new w_static_text("POSTGAME CARNAGE REPORT", TITLE_FONT, TITLE_COLOR));
+    vertical_placer *placer = new vertical_placer;
+    placer->dual_add(new w_static_text("POSTGAME CARNAGE REPORT", TITLE_FONT, TITLE_COLOR), d);
     
-    w_select* graph_type_w = new w_select("Report on", 0, NULL);
+    horizontal_placer *graph_type_placer = new horizontal_placer;
+    w_select* graph_type_w = new w_select("", 0, NULL);
     graph_type_w->set_identifier(iGRAPH_POPUP);
     graph_type_w->set_selection_changed_callback(respond_to_graph_type_change);
-    graph_type_w->set_alignment(widget::kAlignCenter);
-    d.add(graph_type_w);
+    graph_type_placer->dual_add(graph_type_w->label("Report on"), d);
+    graph_type_placer->dual_add(graph_type_w, d);
+
+    placer->add(graph_type_placer, true);
     
     w_players_in_game2* wpig2 = new w_players_in_game2(true);	// "true": extra space for postgame labels etc.
     wpig2->set_identifier(iDAMAGE_STATS);
     wpig2->set_element_clicked_callback(respond_to_element_clicked);
     wpig2->update_display(true);	// "true": widget gets data from dynamic_world, not topology
-    d.add(wpig2);
+    placer->dual_add(wpig2, d);
     
-    d.add(new w_spacer());
+    placer->add(new w_spacer(), true);
 
+#if 0
 // these conditionals don't do the right thing for network_postgame_chat && !network_two_way_chat - there's no
 // UI for the gatherer to send.  oh well, since that combination seems unlikely at the moment, I'll leave it
 // as it; someone can easily fix it if the underlying functionality is added.
@@ -2469,40 +2474,43 @@ void display_net_game_stats(void)
 #endif // NETWORK_TWO_WAY_CHAT
 #endif // NETWORK_POSTGAME_CHAT
 
+#endif
+
+    horizontal_placer *carnage_and_ok_placer = new horizontal_placer;
+    vertical_placer *carnage_placer = new vertical_placer;
+
+    carnage_placer->add_flags((placeable::placement_flags) ((int) placeable::kAlignLeft | (int) placeable::kFill));
     // (total kills) and (total deaths) will be replaced by update_carnage_summary() or set to "".
     w_static_text*  total_kills_w = new w_static_text("(total kills)");
     total_kills_w->set_identifier(iTOTAL_KILLS);
-    total_kills_w->set_alignment(widget::kAlignLeft);
-    total_kills_w->set_full_width();
-    d.add(total_kills_w);
+    carnage_placer->dual_add(total_kills_w, d);
 
     w_static_text*  total_deaths_w = new w_static_text("(total deaths)");
     total_deaths_w->set_identifier(iTOTAL_DEATHS);
-    total_deaths_w->set_alignment(widget::kAlignLeft);
-    total_deaths_w->set_full_width();
-    d.add(total_deaths_w);
+    carnage_placer->dual_add(total_deaths_w, d);
+    
+    carnage_and_ok_placer->add_flags(placeable::kFill);
+    carnage_and_ok_placer->add(carnage_placer, true);
+    carnage_and_ok_placer->add_flags();
+    carnage_and_ok_placer->dual_add(new w_button("OK", dialog_ok, &d), d);
 
-    // Place OK button in the lower right to save a little vertical space (this is more important when chat UI is present)
-    w_button* ok_w = new w_button("OK", dialog_ok, &d);
-    ok_w->set_alignment(widget::kAlignRight);
-    ok_w->align_bottom_with_bottom_of(total_deaths_w);
-    total_deaths_w->reduce_width_by_width_of(ok_w);
-    total_kills_w->reduce_width_by_width_of(ok_w);
-    d.add(ok_w);
+    placer->add_flags(placeable::kFill);
+    placer->add(carnage_and_ok_placer, true);
 
-	/* Calculate the rankings (once) for the entire graph */
-	calculate_rankings(rankings, dynamic_world->player_count);
-	qsort(rankings, dynamic_world->player_count, sizeof(struct net_rank), rank_compare);
-
-	/* Create the graph popup menu */
-	create_graph_popup_menu(graph_type_w);
-
-{
-	DialogPtr p = &d;
-	draw_new_graph(p);
-}
-
-	d.run();
+    /* Calculate the rankings (once) for the entire graph */
+    calculate_rankings(rankings, dynamic_world->player_count);
+    qsort(rankings, dynamic_world->player_count, sizeof(struct net_rank), rank_compare);
+    
+    /* Create the graph popup menu */
+    create_graph_popup_menu(graph_type_w);
+    
+    {
+	    DialogPtr p = &d;
+	    draw_new_graph(p);
+    }
+    
+    d.set_widget_placer(placer);
+    d.run();
 }
 
 /////// Shared metaserver chat hookup stuff
@@ -2582,8 +2590,6 @@ setup_metaserver_chat_ui(
 	chatentry_w->set_with_textbox();
 	chatentry_w->set_identifier(iCHAT_ENTRY);
 	chatentry_w->set_enter_pressed_callback(send_text);
-	chatentry_w->set_alignment(widget::kAlignLeft);
-	chatentry_w->set_full_width();
 	chatentry_w->enable_mac_roman_input();
 	inDialog.add(chatentry_w);
 
@@ -2742,7 +2748,6 @@ public:
 
 		w_static_text* join_messages_w = new w_static_text("");
 
-		join_messages_w->set_full_width ();
 		// jkvw: add it to dialog, but never show it.
 		//       Two things which we need don't work:
 		//       1) w_static_text can't handle text longer than the dialog width
@@ -3145,9 +3150,12 @@ void open_progress_dialog(size_t message_id, bool show_progress_bar)
     if (show_progress_bar) 
 	    sProgressBar	= new w_progress_bar(200);
     
-    sProgressDialog->add(sProgressMessage);
+    vertical_placer *placer = new vertical_placer;
+    placer->dual_add(sProgressMessage, *sProgressDialog);
     if (show_progress_bar) 
-	    sProgressDialog->add(sProgressBar);
+	    placer->dual_add(sProgressBar, *sProgressDialog);
+    
+    sProgressDialog->set_widget_placer(placer);
     
     sProgressDialog->start(false);
 

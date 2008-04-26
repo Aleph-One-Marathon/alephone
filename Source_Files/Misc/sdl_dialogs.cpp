@@ -1459,7 +1459,7 @@ void tab_placer::visible(bool visible)
 
 dialog::dialog() : active_widget(NULL), active_widget_num(UNONE), done(false),
             cursor_was_visible(false), parent_dialog(NULL),
-		   processing_function(NULL), active_tab(0), placer(0)
+		   processing_function(NULL), placer(0)
 {
 }
 
@@ -1491,17 +1491,8 @@ dialog::~dialog()
 void dialog::add(widget *w)
 {
 	widgets.push_back(w);
-	tabs.push_back(NONE);
         w->set_owning_dialog(this);
 }
-
-void dialog::add_to_tab(widget *w, int tab)
-{
-	widgets.push_back(w);
-	tabs.push_back(tab);
-        w->set_owning_dialog(this);
-}
-
 
 /*
  *  Layout dialog
@@ -1509,74 +1500,8 @@ void dialog::add_to_tab(widget *w, int tab)
 
 void dialog::layout()
 {
-	if (placer) 
-	{
-		new_layout();
-		return;
-	}
+	assert(placer);
 
-	// Layout all widgets, calculate total width and height
-	int y = get_dialog_space(FRAME_T_SPACE);
-	int left = 0;
-	int right = 0;
-	
-	// Initialise tab-specific y's
-	map<int, int> y_per_tab;
-	for (vector<int>::const_iterator tab = tabs.begin(); tab != tabs.end(); ++tab)
-		if (*tab != NONE)
-			y_per_tab[*tab] = y;
-	
-	vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
-	vector<int>::const_iterator j = tabs.begin();
-	while (i != end) {
-		// Are we interested in the global y or a tab-specific?
-		int& the_y = (*j == NONE) ? y : y_per_tab[*j];
-		
-		widget *w = *i;
-		w->rect.y = the_y;
-		the_y += w->layout();
-		if (w->rect.x < left)
-			left = w->rect.x;
-		if (w->rect.x + w->rect.w > right)
-			right = w->rect.x + w->rect.w;
-		
-		if (*j == NONE)
-			// Later tabbed widgets must appear below this widget
-			for (map<int, int>::iterator tab = y_per_tab.begin(); tab != y_per_tab.end(); ++tab)
-				(*tab).second = y;
-		else
-			// The next untabbed widget must appear below this widget
-			if (y < y_per_tab[*j])
-				y = y_per_tab[*j];
-		
-		i++;
-		j++;
-	}
-	left = abs(left);
-	rect.w = (left > right ? left : right) * 2 + get_dialog_space(FRAME_L_SPACE) + get_dialog_space(FRAME_R_SPACE);
-	rect.h = y + get_dialog_space(FRAME_B_SPACE);
-
-	// Center dialog on video surface
-	SDL_Surface *video = SDL_GetVideoSurface();
-	rect.x = (video->w - rect.w) / 2;
-	rect.y = (video->h - rect.h) / 2;
-
-	// Transform positions of all widgets to be relative to the dialog surface
-	i = widgets.begin();
-	int offset_x = (rect.w - get_dialog_space(FRAME_L_SPACE) - get_dialog_space(FRAME_R_SPACE)) / 2 + get_dialog_space(FRAME_L_SPACE);
-        // ZZZ: to provide more detailed layout info to widgets
-        int leftmost_x = get_dialog_space(FRAME_L_SPACE);
-        int usable_width = rect.w - leftmost_x - get_dialog_space(FRAME_R_SPACE);
-        
-	while (i != end) {
-		(*i)->rect.x += offset_x;
-                (*i)->capture_layout_information(leftmost_x, usable_width);
-		i++;
-	}
-}
-
-void dialog::new_layout()
-{
 	// Layout all widgets, calculate total width and height
 	SDL_Rect placer_rect;
 	placer_rect.w = placer->min_width();
@@ -1706,14 +1631,12 @@ void dialog::draw(void) const
 	draw_frame_image(frame_b, frame_bl->w, rect.h - frame_b->h);
 	draw_frame_image(frame_br, frame_bl->w + frame_b->w, frame_tr->h + frame_r->h);
 
-	// Draw all widgets, except those with inactive tabs
+	// Draw all visible widgets
 	vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
-	vector<int>::const_iterator j = tabs.begin();
 	while (i != end) {
-		if ((*j == NONE || *j == active_tab) && (*i)->visible())
+		if ((*i)->visible())
 			draw_widget(*i, false);
 		i++;
-		j++;
 	}
 
 	// Blit to screen
@@ -1727,7 +1650,7 @@ dialog::draw_dirty_widgets() const
 	if (top_dialog != this) return;
         for (unsigned i=0; i<widgets.size(); i++)
 		if (widgets[i]->is_dirty())
-			if ((tabs[i] == NONE || tabs[i] == active_tab) &&  widgets[i]->visible())
+			if (widgets[i]->visible())
 				draw_widget(widgets[i]);
 	
 }       
@@ -1818,7 +1741,7 @@ void dialog::activate_widget(size_t num, bool draw)
 void dialog::activate_first_widget(void)
 {
 	for (size_t i=0; i<widgets.size(); i++) {
-		if (widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab)) {
+		if (widgets[i]->is_selectable() && widgets[i]->visible()) {
 			activate_widget(i, false);
 			break;
 		}
@@ -1838,7 +1761,7 @@ void dialog::activate_next_widget(void)
 		i++;
 		if (i >= int(widgets.size()))
 			i = 0;
-	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab) && widgets[i]->visible()) || (widgets[i]->associated_label == widgets[active_widget_num] || widgets[active_widget_num]->associated_label == widgets[i]) && i != active_widget_num);
+	} while (!(widgets[i]->is_selectable() && widgets[i]->visible()) || (widgets[i]->associated_label == widgets[active_widget_num] || widgets[active_widget_num]->associated_label == widgets[i]) && i != active_widget_num);
 
     // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
 	if (widgets[i]->is_selectable() && widgets[i]->visible())
@@ -1856,7 +1779,7 @@ void dialog::activate_prev_widget(void)
 			i = widgets.size() - 1;
 		else
 			i--;
-	} while (!(widgets[i]->is_selectable() && (tabs[i] == NONE || tabs[i] == active_tab) && widgets[i]->visible()) || (widgets[i]->associated_label == widgets[active_widget_num] || widgets[active_widget_num]->associated_label == widgets[i]) && i != active_widget_num);
+	} while (!(widgets[i]->is_selectable() && widgets[i]->visible()) || (widgets[i]->associated_label == widgets[active_widget_num] || widgets[active_widget_num]->associated_label == widgets[i]) && i != active_widget_num);
 
     // Either widgets[i] is selectable, or i == active_widget_num (in which case we wrapped all the way around)
 	if (widgets[i]->is_selectable() && widgets[i]->visible())
@@ -1877,15 +1800,14 @@ int dialog::find_widget(int x, int y)
 	y -= rect.y;
 
 	// Find widget
-	vector<int>::const_iterator j = tabs.begin();
 	vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
 	int num = 0;
 	while (i != end) {
 		widget *w = *i;
-		if ((*j == NONE || *j == active_tab) && (*i)->visible()) // Don't find widgets in inactive tabs
+		if ((*i)->visible())
 			if (x >= w->rect.x && y >= w->rect.y && x < w->rect.x + w->rect.w && y < w->rect.y + w->rect.h)
 				return num;
-		i++; j++; num++;
+		i++; num++;
 	}
 	return -1;
 }

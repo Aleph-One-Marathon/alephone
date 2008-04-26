@@ -50,8 +50,9 @@ void alert_user(char *message, short severity)
     fprintf(stderr, "%s: %s\n", severity == infoError ? "INFO" : "FATAL", message);
   } else {
     dialog d;
-    d.add(new w_static_text(severity == infoError ? "WARNING" : "ERROR", TITLE_FONT, TITLE_COLOR));
-    d.add(new w_spacer());
+    vertical_placer *placer = new vertical_placer;
+    placer->dual_add(new w_static_text(severity == infoError ? "WARNING" : "ERROR", TITLE_FONT, TITLE_COLOR), d);
+    placer->add(new w_spacer, true);
     
     // Wrap lines
     uint16 style;
@@ -69,15 +70,17 @@ void alert_user(char *message, short severity)
       }
       if (i != strlen(t))
 	t[last] = 0;
-      d.add(new w_static_text(t));
+      placer->dual_add(new w_static_text(t), d);
       if (i != strlen(t))
 	t += last + 1;
       else
 	t += i;
     }
     
-    d.add (new w_spacer());
-    d.add (new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d));
+    placer->add(new w_spacer, true);
+    placer->dual_add (new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d), d);
+    d.set_widget_placer(placer);
+
     d.run();
     if (severity == infoError && top_dialog == NULL)
       update_game_window();

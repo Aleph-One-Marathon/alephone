@@ -90,10 +90,6 @@ public:
         widget(int font);
 	virtual ~widget() {}
 
-	// Layout widget: calculate x position relative to dialog center (-> rect.x)
-	// and return effective height of widget
-	virtual int layout(void);
-
 	// Draw widget
 	virtual void draw(SDL_Surface *s) const = 0;
 
@@ -118,37 +114,11 @@ public:
 	// New positioning stuff
 	virtual void set_rect(const SDL_Rect &r) { rect = r; }
         
-        // ZZZ: Callback (from dialog code) provides additional layout information
-        // This could probably be hidden from public: since dialog is a friend class, but I'm leaving
-        // it exposed since layout() is exposed for some reason.
-        virtual void	capture_layout_information(int16 x_offset, int16 available_width);
-
-        // ZZZ: You must do most of these stupid layout tricks(tm) before dialog::run() or dialog::start().
-        // They are basically "static" - there is no dynamic adjustment made once the dialog has been displayed.
-        // They are of various quality from barely masked hack to nearly generally-applicable.  YMMV.  Most
-        // combinations of layout options have NOT been tested.
-        // ZZZ: Set widget alignment
-        void    set_alignment(alignment inAlignment);
-
-        // ZZZ: Set widget to full width of dialog - by default, widget uses "natural" width based on its contents
-        // Important note: this generally increases only the width of the "mutable" part of the widget (e.g.,
-        // the area the user types text into for w_text_entry), not the "static" part (e.g., the "prompt").
-        void    set_full_width();
-
-        // ZZZ: Reduce widget width (probably because another widget is being crammed in next to it)
-        // You probably ought to do this to widgets that were set_full_width().
-        void    reduce_width_by_width_of(widget* inEncroachingWidget);
-
-        // ZZZ: Align bottom of widget with bottom of some previously-added widget
-        void    align_bottom_with_bottom_of(widget* inWidget);
-
 	// implement placeable
 	void place(const SDL_Rect &r, placement_flags flags);
-	int min_height() { assert(placeable_implemented()); return saved_min_height; }
+	int min_height() { return saved_min_height; }
 	int min_width() { return saved_min_width; }
 	
-	virtual bool placeable_implemented() { return false; }
-
 	virtual bool is_dirty() { return dirty; }
 
 	// labels are activated/enabled/disabled at the same time as this widget
@@ -174,12 +144,6 @@ protected:
         short	identifier;	// ZZZ: numeric ID in support of dialog::find_widget_by_id()
         dialog*	owning_dialog;	// ZZZ: which dialog currently contains us?  for get_dialog()
 
-        // ZZZ: stupid layout tricks(tm) support
-        alignment   widget_alignment;
-        bool    full_width;
-        int     width_reduction;
-        widget* align_bottom_peer;
-
 	int saved_min_width;
 	int saved_min_height;
 
@@ -198,7 +162,6 @@ public:
 	void draw(SDL_Surface * /*s*/) const {}
 	bool is_selectable(void) const {return false;}
 
-	bool placeable_implemented() { return true; }
 };
 
 
@@ -221,7 +184,6 @@ public:
 
         ~w_static_text();
 
-	bool placeable_implemented() { return true; }
 protected:
 	char *text;
 private:
@@ -275,8 +237,6 @@ public:
 	void draw(SDL_Surface *s) const = 0;
 	void click(int x, int y);
 
-	bool placeable_implemented() { return true; }
-
 protected:
 	const std::string text;
 	action_proc proc;
@@ -290,8 +250,6 @@ public:
 	~w_button();
 
 	void draw(SDL_Surface *s) const;
-
-	bool placeable_implemented() { return true; }
 
 protected:
 	SDL_Surface *button_l, *button_c, *button_r;
@@ -313,7 +271,6 @@ public:
 
 	w_left_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button(text, proc, arg) {}
 
-	int layout(void);
 };
 
 class w_right_button : public w_button {
@@ -321,30 +278,7 @@ public:
 
 	w_right_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button(text, proc, arg) {}
 
-	int layout(void);
 };
-
-
-/*
- *  Tab-changing buttons
- */
-
-class w_tab_button : public w_button {
-public:
-	w_tab_button (const char *name);
-	
-	int layout (void);
-	
-	friend void make_tab_buttons_for_dialog (dialog &theDialog, vector<string> &names, int tabBase);
-	
-private:
-	static void click_callback (void* me);
-	
-	int xPos;
-	bool last;
-};
-
-void make_tab_buttons_for_dialog (dialog &theDialog, vector<string> &names, int tabBase);
 
 
 /*
@@ -355,14 +289,12 @@ class w_select_button : public widget {
 public:
 	w_select_button(const char *name, const char *selection, action_proc proc = NULL, void *arg = NULL, bool utf8 = false);
 
-	int layout(void);
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
 
 	void set_selection(const char *selection);
 	void set_callback(action_proc p, void* a) { proc = p; arg = a; }
 
-	bool placeable_implemented() { return true; }
 	void place(const SDL_Rect& r, placement_flags flags = placeable::kDefault);
 	
 protected:
@@ -393,12 +325,10 @@ public:
 	w_select(const char *name, size_t selection, const char **labels);
 	virtual ~w_select();
 
-	int layout(void);
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
 	void event(SDL_Event &e);
 
-	bool placeable_implemented() { return true; }
 	void place(const SDL_Rect& r, placement_flags flags = placeable::kDefault);
 	int min_width();
 
@@ -512,7 +442,6 @@ public:
 	w_text_entry(const char *name, size_t max_chars, const char *initial_text = NULL);
 	~w_text_entry();
 
-	int layout(void);
 	void draw(SDL_Surface *s) const;
 	void event(SDL_Event &e);
 
@@ -529,9 +458,6 @@ public:
         // (thought: this probably ought to be unified with w_select selection changed callback)
         void	set_value_changed_callback(Callback func) { value_changed_callback = func; }
 
-        // ZZZ: capture more detailed layout information
-        void	capture_layout_information(int16 leftmost_x, int16 usable_width);
-
 	// ghs: a temporary hack to set the text_font to match text_box's font
 	// call this immediately after creating the widget!
 	void set_with_textbox() { 
@@ -539,7 +465,6 @@ public:
 	}
 
 	void enable_mac_roman_input(bool enable = true) { enable_mac_roman = enable; }
-	bool placeable_implemented() { return true; }
 	void place(const SDL_Rect& r, placement_flags flags);
 
        
@@ -607,7 +532,6 @@ class w_key : public widget {
 public:
 	w_key(const char *name, SDLKey key);
 
-	int layout(void);
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
 	void event(SDL_Event &e);
@@ -616,7 +540,6 @@ public:
 	SDLKey get_key(void) {return key;}
 	void place(const SDL_Rect& r, placement_flags flags);
 
-	bool placeable_implemented() { return true; }
 
 private:
 	const char *name;
@@ -637,6 +560,9 @@ public:
 w_progress_bar(int inWidth) : widget(), max_value(10), value(0) {
 		rect.w = inWidth;
 		rect.h = 14;
+
+		saved_min_width = rect.w;
+		saved_min_height = rect.h;
         }
         
         ~w_progress_bar() {}
@@ -646,7 +572,7 @@ w_progress_bar(int inWidth) : widget(), max_value(10), value(0) {
         bool is_selectable() { return false; }
 	
         void set_progress(int inValue, int inMaxValue);
-	
+
 protected:
         int max_value;
         int value;
@@ -663,7 +589,6 @@ public:
 	w_slider(const char *name, int num_items, int sel);
 	~w_slider();
 
-	int layout(void);
 	void draw(SDL_Surface *s) const;
 	void mouse_move(int x, int y);
 	void click(int x, int y);
@@ -675,7 +600,6 @@ public:
 	virtual void item_selected(void) {}
 
 	void place(const SDL_Rect& r, placement_flags flags);
-	bool placeable_implemented() { return true; }
 
 protected:
 	const char *name;
@@ -706,8 +630,6 @@ public:
 	void draw(SDL_Surface *s) const;
 	void click(int, int);
 	
-	bool placeable_implemented() { return true; }
-
 private:
 	rgb_color m_color;
 
@@ -750,7 +672,6 @@ public:
 	virtual void item_selected(void) = 0;
 
 	void place(const SDL_Rect& r, placement_flags flags);
-	bool placeable_implemented() { return true; }
 
 protected:
 	virtual void draw_items(SDL_Surface *s) const = 0;
@@ -879,19 +800,6 @@ private:
 
 	static void gotSelectedCallback (void* arg) {reinterpret_cast<w_select_popup*>(arg)->gotSelected();}
 	void gotSelected ();
-};
-
-
-/*
- *  Tab-Changing Popup
- */
-
-class w_tab_popup : public w_select_popup {
-public:
-	w_tab_popup (const char *name);
-	
-private:
-	static void gotSelectedCallback (void* me);
 };
 
 
