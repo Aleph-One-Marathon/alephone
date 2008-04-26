@@ -1426,10 +1426,10 @@ void remove_timer_task(timer_task_proc proc)
 	tm_func = NULL;
 }
 
-void execute_timer_tasks(void)
+void execute_timer_tasks(uint32 time)
 {
 	if (tm_func) {
-		uint32 now = SDL_GetTicks();
+		uint32 now = time;
 		tm_accum += now - tm_last;
 		tm_last = now;
 		bool first_time = true;

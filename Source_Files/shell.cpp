@@ -147,7 +147,7 @@ extern string get_preferences_directory(void);
 extern bool get_default_music_spec(FileSpecifier &file);
 
 // From vbl_sdl.cpp
-void execute_timer_tasks(void);
+void execute_timer_tasks(uint32 time);
 
 // Prototypes
 static void initialize_application(void);
@@ -622,21 +622,21 @@ const uint32 TICKS_BETWEEN_EVENT_POLL = 167; // 6 Hz
 static void main_event_loop(void)
 {
 	uint32 last_event_poll = 0;
+	short game_state;
 
-	while (get_game_state() != _quit_game) {
-
+	while ((game_state = get_game_state()) != _quit_game) {
+		uint32 cur_time = SDL_GetTicks();
 		bool yield_time = false;
 		bool poll_event = false;
 
-		switch (get_game_state()) {
+		switch (game_state) {
 			case _game_in_progress:
 			case _change_level:
-			  if (Console::instance()->input_active() || SDL_GetTicks() - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
+			  if (Console::instance()->input_active() || cur_time - last_event_poll >= TICKS_BETWEEN_EVENT_POLL) {
 					poll_event = true;
-					last_event_poll = SDL_GetTicks();
+					last_event_poll = cur_time;
 			  } else {				  
 					SDL_PumpEvents ();	// This ensures a responsive keyboard control
-					if (!graphics_preferences->hog_the_cpu) SDL_Delay(10);
 			  }
 				break;
 
@@ -670,7 +670,6 @@ static void main_event_loop(void)
 				SDL_PollEvent(&event);
 
 				if (yield_time) {
-
 					// The game is not in a "hot" state, yield time to other
 					// processes by calling SDL_Delay() but only try for a maximum
 					// of 30ms
@@ -686,10 +685,17 @@ static void main_event_loop(void)
 
 				process_event(event);
 			}
+			
+			cur_time = SDL_GetTicks();
 		}
 
-		execute_timer_tasks();
-		idle_game_state();
+		execute_timer_tasks(cur_time);
+		idle_game_state(cur_time);
+		
+		if (game_state == _game_in_progress) {
+			uint32 time_elapsed = SDL_GetTicks() - cur_time;
+			if (time_elapsed < TICKS_PER_SECOND) SDL_Delay(TICKS_PER_SECOND - time_elapsed);
+		}
 	}
 }
 

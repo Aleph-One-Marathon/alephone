@@ -1017,11 +1017,10 @@ void update_interface_display(
 	draw_full_screen_pict_resource_from_images(data->screen_base+game_state.current_screen);
 }
 
-void idle_game_state(
-	void)
+void idle_game_state(uint32 time)
 {
-	short machine_ticks_elapsed;
-	machine_ticks_elapsed = (machine_tick_count() - game_state.last_ticks_on_idle);
+	int machine_ticks_elapsed = time - game_state.last_ticks_on_idle;
+
 	if(machine_ticks_elapsed || game_state.phase==0)
 	{
 		if(game_state.phase != INDEFINATE_TIME_DELAY)
@@ -1108,7 +1107,7 @@ void idle_game_state(
 
 				case _game_in_progress:
 					game_state.phase = 15 * MACHINE_TICKS_PER_SECOND;
-					game_state.last_ticks_on_idle= machine_tick_count();
+					//game_state.last_ticks_on_idle= machine_tick_count();
 					break;
 
 				case _change_level:
