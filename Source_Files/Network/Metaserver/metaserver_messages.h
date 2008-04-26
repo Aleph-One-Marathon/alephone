@@ -557,7 +557,7 @@ public:
 
 	// Conformance to metaserver-maintained-list interface
 	typedef uint32 IDType;
-	static const IDType IdNone = -1;
+	static const IDType IdNone = 0xffffffff;
 
 	IDType id() const { return playerID(); }
 	
@@ -716,7 +716,7 @@ public:
 	{
 		// Conformance to MetaserverMaintainedList's Element interface
 		typedef uint32 IDType;
-		static const IDType IdNone = -1;
+		static const IDType IdNone = 0xffffffff;
 		IDType id() const { return m_gameID; }
 		uint8 verb() const { return m_verb; }
 
