@@ -2946,7 +2946,7 @@ public:
 
 		network_table->add_row(new w_spacer(), true);
 		network_table->dual_add_row(new w_static_text("Net Script"), m_dialog);
-		w_toggle* use_netscript_w = new w_enabling_toggle ("", false);
+		w_enabling_toggle* use_netscript_w = new w_enabling_toggle ("", network_preferences->use_netscript);
 		network_table->dual_add(use_netscript_w, m_dialog);
 		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
 
@@ -2954,7 +2954,7 @@ public:
 		w_file_chooser* choose_script_w = new w_file_chooser ("", "Choose Script", _typecode_netscript);
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
-		static_cast<w_enabling_toggle*>(use_netscript_w)->add_dependent_widget(choose_script_w);
+		use_netscript_w->add_dependent_widget(choose_script_w);
 
 		left_placer->add(new w_spacer(), true);
 		table_placer *options_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
