@@ -1069,7 +1069,7 @@ static void sound_dialog(void *arg)
 
 	placer->add(table, true);
 
-	placer->dual_add(new w_spacer(), d);
+	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
 	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);

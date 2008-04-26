@@ -97,12 +97,16 @@ void w_env_select::select_item(dialog *parent)
 
 	// Create dialog
 	dialog d;
-	d.add(new w_static_text(menu_title, TITLE_FONT, TITLE_COLOR));
-	d.add(new w_spacer());
+	vertical_placer *placer = new vertical_placer;
+	
+	placer->dual_add(new w_static_text(menu_title, TITLE_FONT, TITLE_COLOR), d);
+	placer->add(new w_spacer(), true);
 	w_env_list *list_w = new w_env_list(items, item.GetPath(), &d);
-	d.add(list_w);
-	d.add(new w_spacer());
-	d.add(new w_button("CANCEL", dialog_cancel, &d));
+	placer->dual_add(list_w, d);
+	placer->add(new w_spacer(), true);
+	placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+
+	d.set_widget_placer(placer);
 
 	// Clear screen
 	clear_screen();

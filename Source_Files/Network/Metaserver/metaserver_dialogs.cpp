@@ -83,17 +83,19 @@ setupAndConnectClient(MetaserverClient& client)
 		if (status == Update::UpdateAvailable)
 		{
 			dialog d;
+			vertical_placer *placer = new vertical_placer;
 
-			d.add(new w_static_text("UPDATE AVAILABLE", TITLE_FONT, TITLE_COLOR));
-			d.add(new w_spacer());
+			placer->dual_add(new w_static_text("UPDATE AVAILABLE", TITLE_FONT, TITLE_COLOR), d);
+			placer->add(new w_spacer(), true);
 
-			d.add(new w_static_text("An update for Aleph One is available."));
-			d.add(new w_static_text("Please download it from"));
-			d.add(new w_static_text("http://marathon.sourceforge.net/"));
-			d.add(new w_static_text("before playing games online."));
+			placer->dual_add(new w_static_text("An update for Aleph One is available."), d);
+			placer->dual_add(new w_static_text("Please download it from"), d);
+			placer->dual_add(new w_static_text("http://marathon.sourceforge.net/"), d);
+			placer->dual_add(new w_static_text("before playing games online."), d);
 			
-			d.add(new w_spacer());
-			d.add(new w_button("OK", dialog_ok, &d));
+			placer->add(new w_spacer(), true);
+			placer->dual_add(new w_button("OK", dialog_ok, &d), d);
+			d.set_widget_placer(placer);
 			d.run();
 		}
 		

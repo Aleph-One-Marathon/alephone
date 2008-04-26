@@ -2569,36 +2569,6 @@ send_text(w_text_entry* te) {
 	te->set_text("");
 }
 
-static void
-setup_metaserver_chat_ui(
-			 dialog& inDialog,
-			 MetaserverClient& metaserverClient,
-			 int historyLines,
-			 auto_ptr<PregameDialogNotificationAdapter>& outNotificationAdapter,
-			 auto_ptr<MetaserverClient::NotificationAdapterInstaller>& outNotificationAdapterInstaller
-			 )
-{
-	assert (metaserverClient.isConnected());
-
-	sMetaserverClient = &metaserverClient;
-
-	w_chat_history* chatHistory = new w_chat_history(600, historyLines);
-	chatHistory->set_identifier(iCHAT_HISTORY);
-	inDialog.add(chatHistory);
-
-	w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
-	chatentry_w->set_with_textbox();
-	chatentry_w->set_identifier(iCHAT_ENTRY);
-	chatentry_w->set_enter_pressed_callback(send_text);
-	chatentry_w->enable_mac_roman_input();
-	inDialog.add(chatentry_w);
-
-	inDialog.add(new w_spacer());
-
-	outNotificationAdapter.reset(new PregameDialogNotificationAdapter(*chatHistory));
-	outNotificationAdapterInstaller.reset(new MetaserverClient::NotificationAdapterInstaller(outNotificationAdapter.get(), metaserverClient));	
-}
-
 class SdlGatherDialog : public GatherDialog
 {
 public:
@@ -2926,7 +2896,7 @@ public:
 
 		right_placer->add(network_table, true);
 
-		player_table->dual_add_row(new w_spacer(), m_dialog);
+		player_table->add_row(new w_spacer(), true);
 		player_table->dual_add_row(new w_static_text("Game"), m_dialog);
 
 		// Could eventually store this path in network_preferences somewhere, so to have separate map file

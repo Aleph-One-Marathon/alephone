@@ -1272,32 +1272,35 @@ w_entry_point_selector::gotSelected() {
     if(mEntryPoints.size() > 1) {
         dialog theDialog;
 
-        theDialog.add(new w_static_text("SELECT LEVEL", TITLE_FONT, TITLE_COLOR));
+	vertical_placer *placer = new vertical_placer;
+        placer->dual_add(new w_static_text("SELECT LEVEL", TITLE_FONT, TITLE_COLOR), theDialog);
 
-        theDialog.add(new w_spacer());
+	placer->add(new w_spacer(), true);
 
         FileSpecifier   theFile(environment_preferences->map_file);
         char            theName[256];
         theFile.GetName(theName);
         sprintf(temporary, "%s", theName);
-        theDialog.add(new w_static_text(temporary, LABEL_FONT));
+        placer->dual_add(new w_static_text(temporary, LABEL_FONT), theDialog);
 
-        theDialog.add(new w_spacer());
+        placer->add(new w_spacer(), true);
 
         w_levels*   levels_w = new w_levels(mEntryPoints, &theDialog, 480, 16, mCurrentIndex, false);
-        theDialog.add(levels_w);
+        placer->dual_add(levels_w, theDialog);
 
-        theDialog.add(new w_spacer());
+        placer->add(new w_spacer(), true);
 
         sprintf(temporary, "%d %s levels available",
             mEntryPoints.size(),
             TS_GetCString(kNetworkGameTypesStringSetID, mGameType)
         );
-        theDialog.add(new w_static_text(temporary));
+        placer->dual_add(new w_static_text(temporary), theDialog);
 
-        theDialog.add(new w_spacer());
+        placer->add(new w_spacer(), true);
 
-        theDialog.add(new w_button("CANCEL", dialog_cancel, &theDialog));
+        placer->dual_add(new w_button("CANCEL", dialog_cancel, &theDialog), theDialog);
+
+	theDialog.set_widget_placer(placer);
 
         clear_screen();
 

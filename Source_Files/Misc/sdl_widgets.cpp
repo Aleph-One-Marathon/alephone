@@ -1754,10 +1754,12 @@ void w_select_popup::gotSelected ()
 {
 	if (labels.size () > 1) {
 		dialog theDialog;
+		vertical_placer *placer = new vertical_placer;
 		
 		w_string_list* string_list_w = new w_string_list (labels, &theDialog, selection >= 0 ? selection : 0);
-		theDialog.add (string_list_w);
+		placer->dual_add (string_list_w, theDialog);
 		
+		theDialog.set_widget_placer(placer);
 		theDialog.run ();
 		
 		set_selection (string_list_w->get_selection ());

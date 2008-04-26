@@ -2764,22 +2764,32 @@ void show_movie(short index)
 size_t should_restore_game_networked()
 {
         dialog d;
-        
-        d.add(new w_static_text("RESUME GAME", TITLE_FONT, TITLE_COLOR));
-        d.add(new w_spacer());
 
+	vertical_placer *placer = new vertical_placer;
+	placer->dual_add(new w_static_text("RESUME GAME", TITLE_FONT, TITLE_COLOR), d);
+	placer->add(new w_spacer, true);
+
+	horizontal_placer *resume_as_placer = new horizontal_placer;
         w_toggle* theRestoreAsNetgameToggle = new w_toggle("Resume as", dynamic_world->player_count > 1);
         theRestoreAsNetgameToggle->set_labels_stringset(kSingleOrNetworkStringSetID);
-        d.add(theRestoreAsNetgameToggle);
-        
-        d.add(new w_spacer());
-        d.add(new w_spacer());
-        
-        d.add(new w_left_button("RESUME", dialog_ok, &d));
-        d.add(new w_right_button("CANCEL", dialog_cancel, &d));
+	resume_as_placer->dual_add(theRestoreAsNetgameToggle->label("Resume as"), d);
+	resume_as_placer->dual_add(theRestoreAsNetgameToggle, d);
+
+	placer->add(resume_as_placer, true);
+	
+	placer->add(new w_spacer(), true);
+	placer->add(new w_spacer(), true);
+
+	horizontal_placer *button_placer = new horizontal_placer;
+	button_placer->dual_add(new w_button("RESUME", dialog_ok, &d), d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
+
+	placer->add(button_placer, true);
 
         // We return -1 (NONE) for "cancel", 0 for "not networked", and 1 for "networked".
         size_t theResult;
+
+	d.set_widget_placer(placer);
 
         if(d.run() == 0)
         {

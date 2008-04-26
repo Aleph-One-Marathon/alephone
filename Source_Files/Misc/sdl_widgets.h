@@ -155,6 +155,7 @@ protected:
  *  Vertical space
  */
 
+#if 0
 class w_spacer : public widget {
 public:
 	w_spacer(uint16 height = get_dialog_space(SPACER_HEIGHT)) {rect.w = 0; rect.h = height; saved_min_height = height; }
@@ -162,6 +163,18 @@ public:
 	void draw(SDL_Surface * /*s*/) const {}
 	bool is_selectable(void) const {return false;}
 
+};
+#endif
+class w_spacer : public placeable {
+public:
+	w_spacer(uint16 space = get_dialog_space(SPACER_HEIGHT)) : m_space(space) { }
+
+	int min_height() { return m_space; }
+	int min_width() { return m_space; }
+	void place(const SDL_Rect&, placement_flags) { }
+
+private:
+	uint16 m_space;
 };
 
 
