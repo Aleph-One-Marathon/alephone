@@ -628,7 +628,6 @@ static void main_event_loop(void)
 		uint32 cur_time = SDL_GetTicks();
 		bool yield_time = false;
 		bool poll_event = false;
-		bool should_sleep;
 
 		switch (game_state) {
 			case _game_in_progress:
@@ -688,18 +687,10 @@ static void main_event_loop(void)
 			}
 		}
 
-		cur_time = SDL_GetTicks();
-		execute_timer_tasks(cur_time);
-		should_sleep = idle_game_state(cur_time);
-		
-		if (should_sleep) {
-			uint32 time_elapsed = SDL_GetTicks() - cur_time;
-			uint32 to_sleep = TICKS_PER_SECOND - time_elapsed;
-			
-			//to_sleep -= to_sleep%10; // maybe useful on Win32
-			
-			if (time_elapsed < TICKS_PER_SECOND) SDL_Delay(to_sleep);
-		}
+		execute_timer_tasks(SDL_GetTicks());
+		idle_game_state(SDL_GetTicks());
+				
+		if (game_state == _game_in_progress && !graphics_preferences->hog_the_cpu) SDL_Delay(10);
 	}
 }
 
