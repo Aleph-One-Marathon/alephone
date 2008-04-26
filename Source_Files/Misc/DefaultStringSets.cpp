@@ -460,7 +460,7 @@ static char*    sNetworkGameTypesStrings[] = {
     "Kill the Man With the Ball",
     "Rugby",
     "Tag",
-    "Use Netscript",
+    "Netscript",
 };
 
 static char*    sEndConditionTypeStrings[] = {

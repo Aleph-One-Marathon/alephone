@@ -194,7 +194,7 @@ const lang_def Lua_GameType_Mnemonics[] = {
 	{"defense", 0x05},
 	{"rugby", 0x06},
 	{"tag", 0x07},
-	{"custom", 0x08},
+	{"netscript", 0x08},
 	{0, 0}
 };
 

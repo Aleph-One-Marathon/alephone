@@ -1765,7 +1765,7 @@ typedef L_EnumContainer<Lua_GameTypes_Name, Lua_GameType> Lua_GameTypes;
 char Lua_Game_Name[] = "Game";
 typedef L_Class<Lua_Game_Name> Lua_Game;
 
-char Lua_ScoringMode_Name[] = "ScoringMode";
+char Lua_ScoringMode_Name[] = "scoring_mode";
 typedef L_Enum<Lua_ScoringMode_Name> Lua_ScoringMode;
 
 char Lua_ScoringModes_Name[] = "ScoringModes";

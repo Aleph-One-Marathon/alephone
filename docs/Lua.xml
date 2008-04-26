@@ -1420,7 +1420,7 @@
 	<mnemonic name="total carnage"/>
       </mnemonics>
     </enum>
-    <enum name="scoring_mode_type">
+    <enum name="scoring_mode">
       <mnemonics>
 	<mnemonic name="most points"/>
 	<mnemonic name="most time"/>
@@ -1547,7 +1547,7 @@
 	<mnemonic name="defense"/>
 	<mnemonic name="rugby"/>
 	<mnemonic name="tag"/>
-	<mnemonic name="custom"/>
+	<mnemonic name="netscript"/>
       </mnemonics>
     </enum>
     <enum name="item_type">
@@ -2154,6 +2154,7 @@
     <enum-accessor name="PolygonTypes" contains="polygon_type" nice-name="Polygons"/>
     <enum-accessor name="ProjectileTypes" contains="projectile_type" nice-name="Projectiles"/>
     <enum-accessor name="SceneryTypes" contains="scenery_type" nice-name="Scenery"/>
+    <enum-accessor name="ScoringModes" contains="scoring_mode" nice-name="Scoring Modes"/>
     <enum-accessor name="Sounds" contains="sound" nice-name="Sounds"/>
     <enum-accessor name="WeaponTypes" contains="weapon_type" nice-name="Weapons"/>
   </tables>

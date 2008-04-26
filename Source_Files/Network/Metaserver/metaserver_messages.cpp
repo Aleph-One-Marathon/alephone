@@ -798,7 +798,7 @@ static const char* gameTypeString[] =
 	"Defense",
 	"Rugby",
 	"Tag",
-	"Use Netscript",
+	"Netscript",
 };
 
 static const char* difficultyLevelString[] =
