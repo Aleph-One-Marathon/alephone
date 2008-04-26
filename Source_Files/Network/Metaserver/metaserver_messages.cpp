@@ -787,7 +787,7 @@ operator <<(AOStream& stream, const GameDescription& desc)
 	return stream;
 }
 
-
+/* shouldn't these be using the STR# that contains the list instead? */
 static const char* gameTypeString[] =
 {
 	"Every Man for Himself",
@@ -797,7 +797,8 @@ static const char* gameTypeString[] =
 	"Kill the Man With the Ball",
 	"Defense",
 	"Rugby",
-	"Tag"
+	"Tag",
+	"Use Netscript",
 };
 
 static const char* difficultyLevelString[] =

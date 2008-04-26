@@ -1929,6 +1929,7 @@ static short calculate_player_team(
 			team= NONE;
 			break;
 
+	case _game_of_custom:
 		case _game_of_defense:
 		case _game_of_rugby:						
 		case _game_of_capture_the_flag:

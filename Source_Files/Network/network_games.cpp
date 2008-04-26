@@ -128,6 +128,19 @@ long get_player_net_ranking(
 			ranking= total_monster_damage ? (100*monster_damage)/total_monster_damage : 0;
 			break;
 
+	case _game_of_custom:
+	  switch(game_scoring_mode) {
+	  case _game_of_most_points:
+	  case _game_of_most_time:
+	    ranking = player->netgame_parameters[_points_scored];
+	    break;
+	  case _game_of_least_points:
+	  case _game_of_least_time:
+	    ranking = -player->netgame_parameters[_points_scored];
+	    break;
+	  }
+	  break;
+
 		case _game_of_capture_the_flag:
 			ranking= player->netgame_parameters[_flag_pulls];
 			break;
@@ -209,6 +222,18 @@ long get_team_net_ranking(short team, short *kills, short *deaths,
     {
     case _game_of_kill_monsters:
       ranking = (*kills)-(*deaths);
+      break;
+    case _game_of_custom:
+      switch(game_scoring_mode) {
+      case _game_of_most_points:
+      case _game_of_most_time:
+	ranking = team_netgame_parameters[team][_points_scored];
+	break;
+      case _game_of_least_points:
+      case _game_of_least_time:
+	ranking = -team_netgame_parameters[team][_points_scored];
+	break;
+      }
       break;
     case _game_of_cooperative_play:
       ranking = total_monster_damage ? (100*monster_damage)/total_monster_damage : 0;
@@ -452,6 +477,7 @@ bool update_net_game(
 		{
 			case _game_of_kill_monsters:
 			case _game_of_cooperative_play:
+		case _game_of_custom:
 				/* These games have no housekeeping associated with them. */
 				break;
 				
@@ -662,6 +688,22 @@ void calculate_ranking_text(
 		case _game_of_rugby:
 			sprintf(buffer, "%ld", ranking);
 			break;
+
+	case _game_of_custom:
+	  switch(game_scoring_mode) {
+	  case _game_of_most_points:
+	    sprintf(buffer, "%ld", ranking);
+	    break;
+	  case _game_of_least_points:
+	    sprintf(buffer, "%ld", -ranking);
+	    break;
+	  case _game_of_most_time:
+	  case _game_of_least_time:
+	    seconds= ABS(ranking)/TICKS_PER_SECOND;
+	    sprintf(buffer, "%ld:%02ld", seconds/60, seconds%60);
+	    break;
+	  }
+	  break;
 			
 		case _game_of_cooperative_play:
 			sprintf(buffer, "%ld%%", ranking);
@@ -693,7 +735,10 @@ enum {
 	goalsString,
 	reignString,
 	// Benad
-	timeOnBaseString
+	timeOnBaseString,
+	// SB
+	pointsString,
+	timeString,
 };
 
 void calculate_ranking_text_for_post_game(
@@ -708,6 +753,25 @@ void calculate_ranking_text_for_post_game(
 		case _game_of_kill_monsters:
 		case _game_of_cooperative_play:
 			break;
+
+	case _game_of_custom:
+	  switch(game_scoring_mode) {
+	  case _game_of_most_points:
+	    getcstr(format, strNETWORK_GAME_STRINGS, pointsFormatString);
+	    sprintf(buffer, format, ranking);
+	    break;
+	  case _game_of_least_points:
+	    getcstr(format, strNETWORK_GAME_STRINGS, pointsFormatString);
+	    sprintf(buffer, format, -ranking);
+	    break;
+	  case _game_of_most_time:
+	  case _game_of_least_time:
+	    seconds= ABS(ranking)/TICKS_PER_SECOND;
+	    getcstr(format, strNETWORK_GAME_STRINGS, minutesPossessedFormatString);
+	    sprintf(buffer, format, seconds/60, seconds%60);
+	    break;
+	  }
+	  break;
 			
 		case _game_of_capture_the_flag:
 			getcstr(format, strNETWORK_GAME_STRINGS, flagPullsFormatString);
@@ -746,6 +810,19 @@ bool get_network_score_text_for_postgame(
 		case _game_of_cooperative_play:
 			string_id= NONE;
 			break;
+
+	case _game_of_custom:
+	  switch(game_scoring_mode) {
+	  case _game_of_most_points:
+	  case _game_of_least_points:
+	    string_id= pointsString;
+	    break;
+	  case _game_of_most_time:
+	  case _game_of_least_time:
+	    string_id= timeString;
+	    break;
+	  }
+	  break;
 			
 		case _game_of_capture_the_flag:
 			string_id= flagsCapturedString;
@@ -809,6 +886,7 @@ bool current_net_game_has_scores(
 			has_scores= false;
 			break;
 			
+	case _game_of_custom:
 		case _game_of_capture_the_flag:
 		case _game_of_rugby:
 		case _game_of_king_of_the_hill:
@@ -839,6 +917,7 @@ bool current_game_has_balls(
 		case _game_of_king_of_the_hill:
 		case _game_of_defense:
 		case _game_of_tag:
+	case _game_of_custom:
 			has_ball= false;
 			break;
 			
@@ -867,7 +946,15 @@ bool game_is_over(
 	if (dynamic_world->game_information.game_time_remaining<=0)
 	{
 		game_over= true;
-	} 
+	}
+	else if(game_end_condition == _game_end_now_condition)
+	  {
+	    game_over = true;
+	  }
+	else if(game_end_condition == _game_no_end_condition)
+	  {
+	    game_over = false;
+	  }
 	else if(GET_GAME_OPTIONS() & _game_has_kill_limit) 
 	{
 		short player_index;
@@ -897,6 +984,7 @@ bool game_is_over(
 				}
 				break;
 				
+		case _game_of_custom: // default scoring behavior is like CTF
 			case _game_of_capture_the_flag:
 				/* Kill limit is the number of flag pulls */
 				for (int i = 0; i < NUMBER_OF_TEAM_COLORS; i++) {
@@ -956,7 +1044,8 @@ enum {
 	_kill_the_man_with_the_ball,
 	_defender_offender,
 	_rugby,
-	_tag
+	_tag,
+	_custom_string
 };
 
 void get_network_joined_message(
@@ -989,8 +1078,10 @@ void get_network_joined_message(
 		getcstr(game_type_word, joinNetworkStrings, format_word);
 		sprintf(buffer, format_string, game_type_word);
 	} else {
-		/* Cooperative */
-		getcstr(buffer, joinNetworkStrings, _cooperative_string);
+	  if(game_type == _game_of_cooperative_play)
+	    getcstr(buffer, joinNetworkStrings, _cooperative_string);
+	  else
+	    getcstr(buffer, joinNetworkStrings, _custom_string);
 	}
 }
 
@@ -1008,6 +1099,7 @@ long get_entry_point_flags_for_game_type(
 			
 		case _game_of_kill_monsters:
 		case _game_of_tag:
+	case _game_of_custom:
 			entry_flags= _multiplayer_carnage_entry_point;
 			break;
 			

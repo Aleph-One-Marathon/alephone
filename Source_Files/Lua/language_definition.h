@@ -689,6 +689,13 @@
 {"_game_of_defense", 0x05},
 {"_game_of_rugby", 0x06},
 {"_game_of_tag", 0x07},
+{"_game_of_custom", 0x08},
+
+// netscript stuff (useless in this file?)
+{"_game_of_most_points", _game_of_most_points},
+{"_game_of_most_time", _game_of_most_time},
+{"_game_of_least_points", _game_of_least_points},
+{"_game_of_least_time", _game_of_least_time},
 		
 {"_refuel_oxygen", _panel_is_oxygen_refuel},
 {"_refuel_single_shield", _panel_is_shield_refuel},

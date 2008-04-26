@@ -1372,6 +1372,7 @@ void SetupNetgameDialog::setupForGameType ()
 		case _game_of_king_of_the_hill:
 		case _game_of_kill_man_with_ball:
 		case _game_of_tag:
+	case _game_of_custom:
 			m_allowTeamsWidget->activate ();
 			m_deadPlayersDropItemsWidget->activate ();
 			m_aliensWidget->activate ();

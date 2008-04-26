@@ -614,6 +614,23 @@
 <dd>
 <p class="description">the game kill limit, or 0 if there is none</p>
 </dd>
+      <dt>
+    .time_remaining<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description">the number of ticks until the game ends, or nil if there is no time limit</p>
+</dd>
+      <dt>
+    .scoring_mode</dt>
+<dd>
+<p class="description">the current scoring mode (if the gametype is "custom")</p>
+</dd>
+      <dt>
+    .over<span class="access"> (write-only)</span>
+</dt>
+<dd>
+<p class="description">Use this variable to override the game's default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</p>
+</dd>
       <dt>.local_random(n)
   </dt>
 <dd>
@@ -2157,14 +2174,22 @@ end</pre>
 </dl>
 <h4>Mnemonics</h4>
 <ul class="mnemonics">
+<div class="mnemonics-column">
 <li>"kill monsters"</li>
 <li>"cooperative play"</li>
 <li>"capture the flag"</li>
+</div>
+<div class="mnemonics-column">
 <li>"king of the hill"</li>
 <li>"kill the man with the ball"</li>
 <li>"defense"</li>
+</div>
+<div class="mnemonics-column">
 <li>"rugby"</li>
 <li>"tag"</li>
+<li>"custom"</li>
+</div>
+<div class="end-mnemonics"></div>
 </ul>
 <h3>
 <a name="ItemTypes"></a>Items</h3>

@@ -374,6 +374,8 @@ static char* sStringSetNumber140[] = {
     "Goals",
     "Time On Hill",
     "Time On Hill",
+    "Points",
+    "Time",
 };
 
 // STR# Resource: "Net Game Setup"
@@ -386,6 +388,8 @@ static char* sStringSetNumber141[] = {
     "points",
     "Time On Hill:",
     "minutes",
+    "Points",
+    "Time",
 };
 
 // STR# Resource: "New Join Dialog Messages"
@@ -399,6 +403,7 @@ static char* sStringSetNumber142[] = {
     "Defense",
     "Rugby",
     "Tag",
+    "You have been accepted into a custom game. Now waiting for the server to add the remaining players...",
 };
 
 // STR# Resource: "Progress strings for networking"
@@ -454,7 +459,8 @@ static char*    sNetworkGameTypesStrings[] = {
     "King of the Hill",
     "Kill the Man With the Ball",
     "Rugby",
-    "Tag"
+    "Tag",
+    "Use Netscript",
 };
 
 static char*    sEndConditionTypeStrings[] = {

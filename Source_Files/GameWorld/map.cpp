@@ -180,6 +180,8 @@ static struct environment_definition environment_definitions[]=
 struct static_data *static_world = NULL;
 struct dynamic_data *dynamic_world = NULL;
 
+int16 game_scoring_mode, game_end_condition;
+
 // These are allocated here because the numbers of these objects vary as a game progresses.
 vector<effect_data> EffectList(MAXIMUM_EFFECTS_PER_MAP);
 vector<object_data> ObjectList(MAXIMUM_OBJECTS_PER_MAP);

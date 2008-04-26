@@ -194,7 +194,16 @@ const lang_def Lua_GameType_Mnemonics[] = {
 	{"defense", 0x05},
 	{"rugby", 0x06},
 	{"tag", 0x07},
+	{"custom", 0x08},
 	{0, 0}
+};
+
+const lang_def Lua_ScoringMode_Mnemonics[] = {
+  {"most points", _game_of_most_points},
+  {"most time", _game_of_most_time},
+  {"least points", _game_of_least_points},
+  {"least time", _game_of_least_time},
+  {0, 0}
 };
 
 const lang_def Lua_ItemType_Mnemonics[] = {

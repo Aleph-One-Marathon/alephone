@@ -1765,6 +1765,12 @@ typedef L_EnumContainer<Lua_GameTypes_Name, Lua_GameType> Lua_GameTypes;
 char Lua_Game_Name[] = "Game";
 typedef L_Class<Lua_Game_Name> Lua_Game;
 
+char Lua_ScoringMode_Name[] = "ScoringMode";
+typedef L_Enum<Lua_ScoringMode_Name> Lua_ScoringMode;
+
+char Lua_ScoringModes_Name[] = "ScoringModes";
+typedef L_Container<Lua_ScoringModes_Name, Lua_ScoringMode> Lua_ScoringModes;
+
 static int Lua_Game_Get_Difficulty(lua_State *L)
 {
 	Lua_DifficultyType::Push(L, dynamic_world->game_information.difficulty_level);
@@ -1777,6 +1783,15 @@ static int Lua_Game_Get_Kill_Limit(lua_State *L)
 	return 1;
 }
 
+static int Lua_Game_Get_Time_Remaining(lua_State* L)
+{
+  if(dynamic_world->game_information.game_time_remaining > 999 * 30)
+    lua_pushnil(L);
+  else
+    lua_pushnumber(L, dynamic_world->game_information.game_time_remaining);
+  return 1;
+}
+
 static int Lua_Game_Get_Ticks(lua_State *L)
 {
 	lua_pushnumber(L, dynamic_world->tick_count);
@@ -1787,6 +1802,27 @@ static int Lua_Game_Get_Type(lua_State *L)
 {
 	Lua_GameType::Push(L, GET_GAME_TYPE());
 	return 1;
+}
+
+static int Lua_Game_Get_Scoring_Mode(lua_State *L)
+{
+	Lua_ScoringMode::Push(L, game_scoring_mode);
+	return 1;
+}
+
+static int Lua_Game_Set_Scoring_Mode(lua_State *L)
+{
+  int mode = Lua_ScoringMode::ToIndex(L, 2);
+  game_scoring_mode = mode;
+  // TODO: set network stats to dirty
+  return 0;
+}
+
+static int Lua_Game_Set_Over(lua_State *L)
+{
+  if(lua_isnil(L, 2)) game_end_condition = _game_normal_end_condition;
+  else game_end_condition = lua_toboolean(L, 2) ? _game_end_now_condition : _game_no_end_condition;
+  return 0;
 }
 
 extern GM_Random lua_random_generator;
@@ -1834,11 +1870,19 @@ const luaL_reg Lua_Game_Get[] = {
 	{"difficulty", Lua_Game_Get_Difficulty},
 	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
 	{"kill_limit", Lua_Game_Get_Kill_Limit},
+	{"time_remaining", Lua_Game_Get_Time_Remaining},
 	{"local_random", L_TableFunction<Lua_Game_Local_Random>},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
 	{"ticks", Lua_Game_Get_Ticks},
 	{"type", Lua_Game_Get_Type},
+	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
 	{0, 0}
+};
+
+const luaL_reg Lua_Game_Set[] = {
+  {"scoring_mode", Lua_Game_Set_Scoring_Mode},
+  {"over", Lua_Game_Set_Over},
+  {0, 0}
 };
 
 char Lua_Music_Name[] = "Music";
@@ -1978,13 +2022,19 @@ int Lua_Player_register (lua_State *L)
 	Lua_Players::Register(L);
 	Lua_Players::Length = Lua_Players_Length;
 
-	Lua_Game::Register(L, Lua_Game_Get);
+	Lua_Game::Register(L, Lua_Game_Get, Lua_Game_Set);
 
 	Lua_GameType::Register(L, 0, 0, 0, Lua_GameType_Mnemonics);
 	Lua_GameType::Valid = Lua_GameType::ValidRange<NUMBER_OF_GAME_TYPES>;
 
 	Lua_GameTypes::Register(L);
 	Lua_GameTypes::Length = Lua_GameTypes::ConstantLength<NUMBER_OF_GAME_TYPES>;
+
+	Lua_ScoringMode::Register(L, 0, 0, 0, Lua_ScoringMode_Mnemonics);
+	Lua_ScoringMode::Valid = Lua_ScoringMode::ValidRange<NUMBER_OF_GAME_SCORING_MODES>;
+
+	Lua_ScoringModes::Register(L);
+	Lua_ScoringModes::Length = Lua_ScoringModes::ConstantLength<NUMBER_OF_GAME_SCORING_MODES>;
 
 	Lua_DifficultyType::Register(L, 0, 0, 0, Lua_DifficultyType_Mnemonics);
 	Lua_DifficultyType::Valid = Lua_DifficultyType::ValidRange<NUMBER_OF_GAME_DIFFICULTY_LEVELS>;

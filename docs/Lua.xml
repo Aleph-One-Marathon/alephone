@@ -364,6 +364,18 @@
 	<description>the game kill limit, or 0 if there is none</description>
 	<type>number</type>
       </variable>
+      <variable name="time_remaining" access="read-only">
+	<description>the number of ticks until the game ends, or nil if there is no time limit</description>
+	<type>number</type>
+      </variable>
+      <variable name="scoring_mode">
+	<description>the current scoring mode (if the gametype is "custom")</description>
+	<type>scoring_mode_type</type>
+      </variable>
+      <variable name="over" access="write-only">
+	<description>Use this variable to override the game's default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</description>
+	<type>boolean</type>
+      </variable>
       <function name="local_random">
 	<description>returns a random number between 0 and n-1 from Aleph One's original random number generator</description>
 	<argument name="n"><type>number</type></argument>
@@ -1408,6 +1420,14 @@
 	<mnemonic name="total carnage"/>
       </mnemonics>
     </enum>
+    <enum name="scoring_mode_type">
+      <mnemonics>
+	<mnemonic name="most points"/>
+	<mnemonic name="most time"/>
+	<mnemonic name="least points"/>
+	<mnemonic name="least time"/>
+      </mnemonics>
+    </enum>
     <enum name="effect_type">
       <mnemonics>
 	<mnemonic name="rocket explosion"/>
@@ -1527,6 +1547,7 @@
 	<mnemonic name="defense"/>
 	<mnemonic name="rugby"/>
 	<mnemonic name="tag"/>
+	<mnemonic name="custom"/>
       </mnemonics>
     </enum>
     <enum name="item_type">
