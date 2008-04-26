@@ -1228,7 +1228,7 @@ static void controls_dialog(void *arg)
 	
 	horizontal_placer *button_placer = new horizontal_placer;
 	button_placer->dual_add(new w_button("ACCEPT", dialog_ok, &d), d);
-	button_placer->dual_add(new w_right_button("CANCEL", dialog_cancel, &d), d);
+	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);

@@ -266,25 +266,6 @@ public:
 
 
 /*
- *  Button on left/right side of dialog box (always use in pairs, left button first)
- */
-
-class w_left_button : public w_button {
-public:
-
-	w_left_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button(text, proc, arg) {}
-
-};
-
-class w_right_button : public w_button {
-public:
-
-	w_right_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button(text, proc, arg) {}
-
-};
-
-
-/*
  *  Selection button
  */
 
