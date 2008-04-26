@@ -112,7 +112,8 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 
 	GameDescription description;
 	description.m_type = info.net_game_type;
-	description.m_timeLimit = info.time_limit == INT32_MAX ? -1 : info.time_limit;
+	// If the time limit is longer than a week, we figure it's untimed (  ;)
+	description.m_timeLimit = (info.time_limit > 7 * 24 * 3600 * TICKS_PER_SECOND) ? -1 : info.time_limit;
 	description.m_difficulty = info.difficulty_level;
 	description.m_mapName = string(info.level_name);
 	description.m_name = gMetaserverClient->playerName() + "'s Game";
