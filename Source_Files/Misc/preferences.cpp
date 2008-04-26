@@ -883,11 +883,6 @@ static void graphics_dialog(void *arg)
 	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
 	table->dual_add(fullscreen_w, d);
 
-	table->add_row(new w_spacer, true);
-	w_toggle *hog_cpu_w = new w_toggle("", graphics_preferences->hog_the_cpu);
-	table->dual_add(hog_cpu_w->label("Hog the CPU"), d);
-	table->dual_add(hog_cpu_w, d);
-
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
@@ -964,13 +959,6 @@ static void graphics_dialog(void *arg)
 		    }
 	    }
 
-	    bool hog_the_cpu = hog_cpu_w->get_selection();
-	    if (hog_the_cpu != graphics_preferences->hog_the_cpu)
-	    {
-		    graphics_preferences->hog_the_cpu = hog_the_cpu;
-		    changed = true;
-	    }
-	    
 	    if (changed) {
 		    write_preferences();
 		    parent->draw();		// DirectX seems to need this
