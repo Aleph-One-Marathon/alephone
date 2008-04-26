@@ -271,7 +271,7 @@ public:
 
 class w_select_button : public widget {
 public:
-	w_select_button(const char *name, const char *selection, action_proc proc = NULL, void *arg = NULL, bool utf8 = false);
+	w_select_button(const char *selection, action_proc proc = NULL, void *arg = NULL, bool utf8 = false);
 
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
@@ -283,7 +283,6 @@ public:
 	
 protected:
 	void set_arg(void *arg) { this->arg = arg; }
-	const char *name;
 	placement_flags p_flags;
 private:
 	const char *selection;
@@ -306,7 +305,7 @@ typedef boost::function<void (w_select*)> selection_changed_callback_t;
 
 class w_select : public widget {
 public:
-	w_select(const char *name, size_t selection, const char **labels);
+	w_select(size_t selection, const char **labels);
 	virtual ~w_select();
 
 	void draw(SDL_Surface *s) const;
@@ -340,8 +339,6 @@ public:
 protected:
 	virtual void selection_changed(void);
 
-	const char *name;
-
 	const char **labels;
 	size_t num_labels;
 	bool	we_own_labels;	// true if set up via stringset; false if not
@@ -350,7 +347,6 @@ protected:
 	// storage for the data member "labels".
 
 	size_t selection;			// UNONE means unknown selection
-	int16 label_x;			// X offset of label display
         
 	// ZZZ: storage for callback function
 	selection_changed_callback_t	selection_changed_callback;
@@ -370,7 +366,7 @@ class w_toggle : public w_select {
 public:
 	static const char *onoff_labels[3];
 
-	w_toggle(const char *name, bool selection, const char **labels = onoff_labels);
+	w_toggle(bool selection, const char **labels = onoff_labels);
 	void draw(SDL_Surface *) const;
 };
 
@@ -384,7 +380,7 @@ public:
 class w_enabling_toggle : public w_toggle
 {
 public:
-	w_enabling_toggle(const char* inName, bool inSelection, bool inEnablesWhenOn = true, const char** inLabels = onoff_labels);
+	w_enabling_toggle(bool inSelection, bool inEnablesWhenOn = true, const char** inLabels = onoff_labels);
 	void add_dependent_widget(widget* inWidget) { dependents.insert(inWidget); update_widget_enabled(inWidget); }
 	void remove_dependent_widget(widget* inWidget) { dependents.erase(inWidget); }
 	
@@ -410,7 +406,7 @@ private:
 
 class w_player_color : public w_select {
 public:
-	w_player_color(const char *name, int selection);
+	w_player_color(int selection);
 
 	void draw(SDL_Surface *s) const;
 };
@@ -423,7 +419,7 @@ class w_text_entry : public widget {
 public:
 	typedef boost::function<void (w_text_entry*)> Callback;
 
-	w_text_entry(const char *name, size_t max_chars, const char *initial_text = NULL);
+	w_text_entry(size_t max_chars, const char *initial_text = NULL);
 	~w_text_entry();
 
 	void draw(SDL_Surface *s) const;
@@ -432,9 +428,6 @@ public:
 	void set_text(const char *text);
 	const char *get_text(void) {return buf;}
 
-        // ZZZ: Change prompt for entry
-        void set_name(const char *inName);
-        
         // ZZZ: set callback for "enter" or "return" keypress
         void	set_enter_pressed_callback(Callback func) { enter_pressed_callback = func; }
         
@@ -461,8 +454,6 @@ protected:
 private:
 	void modified_text(void);
 
-	std::string name;
-
 //	const sdl_font_info *text_font;	// Font for text
 	ttf_and_sdl_font_info *text_font; // Font for text
 	uint16 text_style;
@@ -472,14 +463,7 @@ private:
 	int16 text_x;			// X offset of text display
 	uint16 max_text_width;	// Maximum width of text display
 
-    // ZZZ: these are used in conjunction with set_name to allow late updating of the real widget rect
-    // so that moving from a larger rect to a smaller one correctly erases the leftover space.
-    bool    new_rect_valid; // should these be used instead of the widget rect for internal drawing/computation?
-    int16     new_rect_x;     // corresponds to rect.x
-    uint16     new_rect_w;     // corresponds to rect.w
-    int16     new_text_x;     // corresponds to text_x
-
-    bool enable_mac_roman; // enable MacRoman input
+	bool enable_mac_roman; // enable MacRoman input
 };
 
 
@@ -489,7 +473,7 @@ private:
 
 class w_number_entry : public w_text_entry {
 public:
-	w_number_entry(const char *name, int initial_number = 0);
+	w_number_entry(int initial_number = 0);
 
 	void event(SDL_Event &e);
 
@@ -503,7 +487,7 @@ public:
 
 class w_password_entry : public w_text_entry {
 public:
-	w_password_entry(const char *name, size_t max_chars, const char *initial_text = 0);
+	w_password_entry(size_t max_chars, const char *initial_text = 0);
 
 	void draw(SDL_Surface *s) const;
 };
@@ -514,7 +498,7 @@ public:
 
 class w_key : public widget {
 public:
-	w_key(const char *name, SDLKey key);
+	w_key(SDLKey key);
 
 	void draw(SDL_Surface *s) const;
 	void click(int x, int y);
@@ -570,7 +554,7 @@ protected:
 
 class w_slider : public widget {
 public:
-	w_slider(const char *name, int num_items, int sel);
+	w_slider(int num_items, int sel);
 	~w_slider();
 
 	void draw(SDL_Surface *s) const;
@@ -586,8 +570,6 @@ public:
 	void place(const SDL_Rect& r, placement_flags flags);
 
 protected:
-	const char *name;
-
 	int16 slider_x;			// X offset of slider image
 
 	int selection;			// Currently selected item
@@ -766,7 +748,7 @@ private:
 
 class w_select_popup : public w_select_button {
 public:
-	w_select_popup (const char *name, action_proc p = NULL, void *a = NULL);
+	w_select_popup (action_proc p = NULL, void *a = NULL);
 	
 	void set_labels (const vector<string>& inLabels);/* {labels = inLabels;}*/
 	void set_selection (int value);
@@ -794,7 +776,7 @@ private:
 class w_file_chooser : public w_select_button
 {
 public:
-	w_file_chooser(const char* inLabel, const char* inDialogPrompt, Typecode inTypecode);
+	w_file_chooser(const char* inDialogPrompt, Typecode inTypecode);
 
 	void click(int x, int y);
 
@@ -1238,7 +1220,7 @@ public:
 		, m_number_entry (number_entry)
 		{}
 
-	void set_label (const std::string& s) { m_number_entry->set_name (s.c_str ()); }
+	void set_label (const std::string& s) {  }
 
 	void set_value (int value) { m_number_entry->set_number (value); }
 	int get_value () { return m_number_entry->get_number (); }

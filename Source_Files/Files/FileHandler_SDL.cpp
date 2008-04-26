@@ -1025,7 +1025,7 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 
 class w_file_name : public w_text_entry {
 public:
-	w_file_name(const char *name, dialog *d, const char *initial_name = NULL) : w_text_entry(name, 31, initial_name), parent(d) {}
+	w_file_name(dialog *d, const char *initial_name = NULL) : w_text_entry(31, initial_name), parent(d) {}
 	~w_file_name() {}
 
 	void event(SDL_Event & e)
@@ -1111,7 +1111,7 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *file_name_placer = new horizontal_placer;
-	w_file_name *name_w = new w_file_name("", &d, default_name);
+	w_file_name *name_w = new w_file_name(&d, default_name);
 	file_name_placer->dual_add(name_w->label("File Name:"), d);
 	file_name_placer->add_flags(placeable::kFill);
 	file_name_placer->dual_add(name_w, d);

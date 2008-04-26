@@ -131,8 +131,8 @@ typedef void (*selection_made_callback_t)(w_env_select* inWidget);
 
 class w_env_select : public w_select_button {
 public:
-w_env_select(const char *name, const char *path, const char *m, Typecode t, dialog *d)
-	: w_select_button(name, item_name, select_item_callback, NULL, true),
+w_env_select(const char *path, const char *m, Typecode t, dialog *d)
+	: w_select_button(item_name, select_item_callback, NULL, true),
 		parent(d), menu_title(m), type(t), mCallback(NULL)
 	{
 		set_arg(this);

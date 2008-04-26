@@ -259,33 +259,33 @@ public:
 		table_placer *general_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
 		general_table->col_flags(0, placeable::kAlignRight);
 		
-		w_toggle *zbuffer_w = new w_toggle("", false);
+		w_toggle *zbuffer_w = new w_toggle(false);
 		general_table->dual_add(zbuffer_w->label("Z Buffer"), m_dialog);
 		general_table->dual_add(zbuffer_w, m_dialog);
 
-		w_toggle *fog_w = new w_toggle("", false);
+		w_toggle *fog_w = new w_toggle(false);
 		general_table->dual_add(fog_w->label("Fog"), m_dialog);
 		general_table->dual_add(fog_w, m_dialog);
 
-		w_toggle *static_w = new w_toggle("", false);
+		w_toggle *static_w = new w_toggle(false);
 		general_table->dual_add(static_w->label("Static Effect"), m_dialog);
 		general_table->dual_add(static_w, m_dialog);
 
-		w_toggle *fader_w = new w_toggle("", false);
+		w_toggle *fader_w = new w_toggle(false);
 		general_table->dual_add(fader_w->label("Color Effects"), m_dialog);
 		general_table->dual_add(fader_w, m_dialog);
 
-		w_toggle *liq_w = new w_toggle("", false);
+		w_toggle *liq_w = new w_toggle(false);
 		general_table->dual_add(liq_w->label("Transparent Liquids"), m_dialog);
 		general_table->dual_add(liq_w, m_dialog);
 
-		w_toggle *models_w = new w_toggle("", false);
+		w_toggle *models_w = new w_toggle(false);
 		general_table->dual_add(models_w->label("3D Models"), m_dialog);
 		general_table->dual_add(models_w, m_dialog);
 
 		general_table->add_row(new w_spacer(), true);
 
-		w_select_popup *fsaa_w = new w_select_popup ("");
+		w_select_popup *fsaa_w = new w_select_popup ();
 		general_table->dual_add(fsaa_w->label("Full Scene Antialiasing"), m_dialog);
 		general_table->dual_add(fsaa_w, m_dialog);
 		vector<string> fsaa_strings;
@@ -294,7 +294,7 @@ public:
 		fsaa_strings.push_back ("4x");
 		fsaa_w->set_labels (fsaa_strings);
 		
-		w_slider* aniso_w = new w_slider("", 6, 1);
+		w_slider* aniso_w = new w_slider(6, 1);
 		general_table->dual_add(aniso_w->label("Anisotropic Filtering"),m_dialog);
 		general_table->dual_add(aniso_w, m_dialog);
 
@@ -305,19 +305,19 @@ public:
 		w_select_popup *texture_quality_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) texture_quality_wa[i] = NULL;
 		
-		texture_quality_wa[OGL_Txtr_Wall] =  new w_select_popup ("");
+		texture_quality_wa[OGL_Txtr_Wall] =  new w_select_popup ();
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall]->label("Walls"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Wall], m_dialog);
 		
-		texture_quality_wa[OGL_Txtr_Landscape] = new w_select_popup ("");
+		texture_quality_wa[OGL_Txtr_Landscape] = new w_select_popup ();
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape]->label("Landscapes"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Landscape], m_dialog);
 
-		texture_quality_wa[OGL_Txtr_Inhabitant] = new w_select_popup ("");
+		texture_quality_wa[OGL_Txtr_Inhabitant] = new w_select_popup ();
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant]->label("Sprites"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_Inhabitant], m_dialog);
 
-		texture_quality_wa[OGL_Txtr_WeaponsInHand] = new w_select_popup ("");
+		texture_quality_wa[OGL_Txtr_WeaponsInHand] = new w_select_popup ();
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("Weapons in Hand"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand], m_dialog);
 	
@@ -339,18 +339,18 @@ public:
 		table_placer *advanced_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
 		advanced_table->col_flags(0, placeable::kAlignRight);
 	
-		w_toggle *geforce_fix_w = new w_toggle("", false);
+		w_toggle *geforce_fix_w = new w_toggle(false);
 		advanced_table->dual_add(geforce_fix_w->label("GeForce 1-4 Texture Fix"), m_dialog);
 		advanced_table->dual_add(geforce_fix_w, m_dialog);
 		
 		advanced_table->add_row(new w_spacer(), true);
 		advanced_table->dual_add_row(new w_static_text("Distant Texture Filtering"), m_dialog);
 
-		w_select *wall_filter_w = new w_select("", 0, filter_labels);
+		w_select *wall_filter_w = new w_select(0, filter_labels);
 		advanced_table->dual_add(wall_filter_w->label("Walls"), m_dialog);
 		advanced_table->dual_add(wall_filter_w, m_dialog);
 
-		w_select *sprite_filter_w = new w_select("", 0, filter_labels);
+		w_select *sprite_filter_w = new w_select(0, filter_labels);
 		advanced_table->dual_add(sprite_filter_w->label("Sprites"), m_dialog);
 		advanced_table->dual_add(sprite_filter_w, m_dialog);
 
@@ -361,8 +361,8 @@ public:
 		w_select_popup *texture_depth_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; i++) 
 		{
-			texture_resolution_wa[i] = new w_select_popup("");
-			texture_depth_wa[i] = new w_select_popup("");
+			texture_resolution_wa[i] = new w_select_popup();
+			texture_depth_wa[i] = new w_select_popup();
 		}
 
 		w_label *texture_labels[OGL_NUMBER_OF_TEXTURE_TYPES];

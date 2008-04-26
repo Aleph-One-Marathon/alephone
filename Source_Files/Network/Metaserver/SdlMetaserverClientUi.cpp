@@ -99,7 +99,7 @@ public:
 
 		horizontal_placer *entry_cancel_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
 
-		w_text_entry* chatentry_w = new w_text_entry("", 240, "");
+		w_text_entry* chatentry_w = new w_text_entry(240, "");
 		chatentry_w->set_with_textbox();
 		chatentry_w->enable_mac_roman_input();
 

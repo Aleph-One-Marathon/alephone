@@ -320,17 +320,12 @@ const uint16 MAX_TEXT_WIDTH = 200;
 // ZZZ: how come we have to do this?  because of that "&" in the typedef for action_proc?
 // Anyway, this fixes the "crash when clicking in the Environment menu" bug we've seen
 // in the Windows version all this time.
-w_select_button::w_select_button(const char *n, const char *s, action_proc p, void *a, bool u)
-	: widget(LABEL_FONT), name(n), selection(s), proc(p), arg(a), utf8(u), p_flags(placeable::kDefault)
+w_select_button::w_select_button(const char *s, action_proc p, void *a, bool u)
+	: widget(LABEL_FONT), selection(s), proc(p), arg(a), utf8(u), p_flags(placeable::kDefault)
 {
-	uint16 name_width = text_width(name, font, style);
 	uint16 max_selection_width = MAX_TEXT_WIDTH;
-	uint16 spacing = get_dialog_space(LABEL_ITEM_SPACE);
 
-	if (name_width) 
-		saved_min_width = spacing + 2 * max_selection_width;
-	else
-		saved_min_width = max_selection_width;
+	saved_min_width = max_selection_width;
 	saved_min_height = font->get_line_height();
 }
 
@@ -340,15 +335,10 @@ void w_select_button::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
 	
-	// Name (ZZZ: different color for disabled)
-	int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-
-	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style, utf8);
-	
 	// Selection (ZZZ: different color for disabled)
 	set_drawing_clip_rectangle(0, rect.x + selection_x, static_cast<uint16>(s->h), rect.x + rect.w);
 	
-	theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+	int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
 	
 	draw_text(s, selection, rect.x + selection_x, y, get_dialog_color(theColorToUse), font, style, utf8);
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
@@ -380,27 +370,17 @@ void w_select_button::place(const SDL_Rect &r, placement_flags flags)
 	rect.h = r.h;
 	rect.y = r.y;
 
-	uint16 name_width = text_width(name, font, style);
-	if (name_width)
+	rect.x = r.x;
+	rect.w = r.w;
+	p_flags = flags;
+
+	if (flags & placeable::kAlignRight)
 	{
-		rect.x = r.x + (MAX_TEXT_WIDTH - name_width);
-		selection_x = name_width + get_dialog_space(LABEL_ITEM_SPACE);
-		rect.w = saved_min_width - (MAX_TEXT_WIDTH - name_width);
+		selection_x = rect.w - text_width(selection, font, style);
 	}
 	else
 	{
-		rect.x = r.x;
-		rect.w = r.w;
-		p_flags = flags;
-
-		if (flags & placeable::kAlignRight)
-		{
-			selection_x = rect.w - text_width(selection, font, style);
-		}
-		else
-		{
-			selection_x = 0;
-		}
+		selection_x = 0;
 	}
 
 }
@@ -416,7 +396,7 @@ void w_select_button::place(const SDL_Rect &r, placement_flags flags)
 
 static const char* sNoValidOptionsString = "(no valid options)"; // XXX should be moved outside compiled code e.g. to MML
 
-w_select::w_select(const char *n, size_t s, const char **l) : widget(LABEL_FONT), name(n), labels(l), we_own_labels(false), selection(s), selection_changed_callback(NULL), utf8(false)
+w_select::w_select(size_t s, const char **l) : widget(LABEL_FONT), labels(l), we_own_labels(false), selection(s), selection_changed_callback(NULL), utf8(false)
 {
 	num_labels = 0;
         if(labels) {
@@ -439,42 +419,26 @@ void w_select::place(const SDL_Rect& r, placement_flags flags)
 {
 	rect.h = r.h;
 	rect.y = r.y;
-	uint16 name_width = text_width(name, font, style);
-	assert(!name_width);
 	rect.x = r.x;
-	label_x = 0;
 	rect.w = r.w;
 
 }
 
 int w_select::min_width()
 {
-	uint16 name_width = text_width(name, font, style);
-	if (name_width)
-	{
-		return name_width + get_dialog_space(LABEL_ITEM_SPACE) + get_largest_label_width();
-	}
-	else
-	{
-		return get_largest_label_width();
-	}
+	return get_largest_label_width();
 }
 
 void w_select::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
 
-	// Name (ZZZ: different color for disabled)
-    int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-
-    draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
-
 	// Selection (ZZZ: different color for disabled)
 	const char *str = (num_labels > 0 ? labels[selection] : sNoValidOptionsString);
 
-    theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+    int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
 
-    draw_text(s, str, rect.x + label_x, y, get_dialog_color(theColorToUse), font, style, utf8);
+    draw_text(s, str, rect.x, y, get_dialog_color(theColorToUse), font, style, utf8);
 
 	// Cursor
 	if (active) {
@@ -628,7 +592,7 @@ const char *w_toggle::onoff_labels[] = {"\342\230\220", "\342\230\221", NULL };
 const char *w_toggle::onoff_labels[] = {"Off", "On", NULL};
 #endif
 
-w_toggle::w_toggle(const char *name, bool selection, const char **labels) : w_select(name, selection, labels) {
+w_toggle::w_toggle(bool selection, const char **labels) : w_select(selection, labels) {
 #ifdef HAVE_SDL_TTF
 	labels_are_utf8(true);
 #endif
@@ -638,15 +602,10 @@ void w_toggle::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
 
-	// Name (ZZZ: different color for disabled)
-    int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-
-    draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
-
 	// Selection (ZZZ: different color for disabled)
 	const char *str = (num_labels > 0 ? labels[selection] : sNoValidOptionsString);
 
-    theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+	int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
 
 #ifdef HAVE_SDL_TTF
     // ghs: disgusting temporary hack to draw larger checkboxes
@@ -660,12 +619,12 @@ void w_toggle::draw(SDL_Surface *s) const
 		    checkbox_font = load_ttf_and_sdl_font(checkbox_font_spec);
 	    }
 	    
-	    draw_text(s, str, rect.x + label_x, y + 1, get_dialog_color(theColorToUse), checkbox_font, style, utf8);
+	    draw_text(s, str, rect.x, y + 1, get_dialog_color(theColorToUse), checkbox_font, style, utf8);
     }
     else
 #endif
     {
-	    draw_text(s, str, rect.x + label_x, y, get_dialog_color(theColorToUse), font, style, utf8);
+	    draw_text(s, str, rect.x, y, get_dialog_color(theColorToUse), font, style, utf8);
     }
 	    
 	// Cursor
@@ -682,8 +641,8 @@ void w_toggle::draw(SDL_Surface *s) const
  */
 
 
-w_enabling_toggle::w_enabling_toggle(const char* inName, bool inSelection, bool inEnablesWhenOn, const char** inLabels)
-	: w_toggle(inName, inSelection, inLabels), enables_when_on(inEnablesWhenOn)
+w_enabling_toggle::w_enabling_toggle(bool inSelection, bool inEnablesWhenOn, const char** inLabels)
+	: w_toggle(inSelection, inLabels), enables_when_on(inEnablesWhenOn)
 {
 }
 
@@ -702,7 +661,7 @@ w_enabling_toggle::selection_changed()
  *  Player color selection
  */
 
-w_player_color::w_player_color(const char *name, int selection) : w_select(name, selection, NULL)
+w_player_color::w_player_color(int selection) : w_select(selection, NULL)
 {
 	set_labels_stringset(kTeamColorsStringSetID);
 }
@@ -711,20 +670,15 @@ void w_player_color::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
 
-	// Name (ZZZ: different color for disabled)
-	int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-
-	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
-
 	// Selection
 	if (selection >= 0) {
 		uint32 pixel = get_dialog_player_color(selection);
-		SDL_Rect r = {rect.x + label_x, rect.y + 1, 48, rect.h - 2};
+		SDL_Rect r = {rect.x, rect.y + 1, 48, rect.h - 2};
 		SDL_FillRect(s, &r, pixel);
 	} else {
-		theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+		int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
 
-		draw_text(s, "<unknown>", rect.x + label_x, y, get_dialog_color(theColorToUse), font, style);
+		draw_text(s, "<unknown>", rect.x, y, get_dialog_color(theColorToUse), font, style);
 	}
 
 	// Cursor
@@ -767,15 +721,15 @@ void w_color_picker::click(int, int)
 	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
 	table->col_flags(0, placeable::kAlignRight);
 
-	w_slider *red_w = new w_slider("", 16, m_color.red >> 12);
+	w_slider *red_w = new w_slider(16, m_color.red >> 12);
 	table->dual_add(red_w->label("Red"), d);
 	table->dual_add(red_w, d);
 
-	w_slider *green_w = new w_slider("", 16, m_color.green >> 12);
+	w_slider *green_w = new w_slider(16, m_color.green >> 12);
 	table->dual_add(green_w->label("Green"), d);
 	table->dual_add(green_w, d);
 
-	w_slider *blue_w = new w_slider("", 16, m_color.blue >> 12);
+	w_slider *blue_w = new w_slider(16, m_color.blue >> 12);
 	table->dual_add(blue_w->label("Blue"), d);
 	table->dual_add(blue_w, d);
 
@@ -819,8 +773,8 @@ void w_color_picker::draw(SDL_Surface *s) const
  *  Text entry widget
  */
 
-w_text_entry::w_text_entry(const char *n, size_t max_c, const char *initial_text)
-	: widget(LABEL_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), name(n), max_chars(max_c), new_rect_valid(false), enable_mac_roman(false)
+w_text_entry::w_text_entry(size_t max_c, const char *initial_text)
+	: widget(LABEL_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), max_chars(max_c), enable_mac_roman(false)
 {
 	// Initialize buffer
 	buf = new char[max_chars + 1];
@@ -829,11 +783,7 @@ w_text_entry::w_text_entry(const char *n, size_t max_c, const char *initial_text
 	// Get font
 	text_font = get_dialog_font(TEXT_ENTRY_FONT, text_style);
 
-	uint16 name_width = text_width(name.c_str(), font, style);
-	if (name_width)
-		saved_min_width = 2 * MAX_TEXT_WIDTH + get_dialog_space(LABEL_ITEM_SPACE);
-	else
-		saved_min_width = MAX_TEXT_WIDTH;
+	saved_min_width = MAX_TEXT_WIDTH;
 
 	saved_min_height =  (int16) max(font->get_ascent(), text_font->get_ascent()) +
 		(int16) max (font->get_descent(), text_font->get_descent()) +
@@ -853,34 +803,19 @@ void w_text_entry::place(const SDL_Rect& r, placement_flags flags)
 
 	rect.y = r.y;
 
-	uint16 name_width = text_width(name.c_str(), font, style);
-	if (name_width)
-	{
-		rect.x = r.x + (MAX_TEXT_WIDTH - name_width);
-		text_x = name_width + get_dialog_space(LABEL_ITEM_SPACE);
-		rect.w = saved_min_width - (MAX_TEXT_WIDTH - name_width);
-	}
-	else
-	{
-		text_x = 0;
-		rect.x = r.x;
-		rect.w = r.w;
-		max_text_width = rect.w;
-	}
+	text_x = 0;
+	rect.x = r.x;
+	rect.w = r.w;
+	max_text_width = rect.w;
 }
 
 void w_text_entry::draw(SDL_Surface *s) const
 {
   int y = rect.y + max(font->get_ascent(), text_font->get_ascent());
   
-  int16 theRectX = new_rect_valid ? new_rect_x : rect.x;
-  uint16 theRectW = new_rect_valid ? new_rect_w : rect.w;
-  int16 theTextX = new_rect_valid ? new_text_x : text_x;
-  
-  // Name (ZZZ: different color for disabled)
-  int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-  
-  draw_text(s, name.c_str(), theRectX, y, get_dialog_color(theColorToUse), font, style);
+  int16 theRectX = rect.x;
+  uint16 theRectW = rect.w;
+  int16 theTextX = text_x;
   
   // Text
   int16 x = theRectX + theTextX;
@@ -889,7 +824,7 @@ void w_text_entry::draw(SDL_Surface *s) const
     x -= width - max_text_width;
   set_drawing_clip_rectangle(0, theRectX + theTextX, static_cast<uint16>(s->h), theRectX + theRectW);
   
-  theColorToUse = enabled ? (active ? TEXT_ENTRY_ACTIVE_COLOR : TEXT_ENTRY_COLOR) : TEXT_ENTRY_DISABLED_COLOR;
+  int theColorToUse = enabled ? (active ? TEXT_ENTRY_ACTIVE_COLOR : TEXT_ENTRY_COLOR) : TEXT_ENTRY_DISABLED_COLOR;
   
   draw_text(s, buf, x, y, get_dialog_color(theColorToUse), text_font, text_style);
   set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
@@ -977,78 +912,14 @@ void w_text_entry::modified_text(void)
             value_changed_callback(this);
 }
 
-// (ZZZ addition) this really ought to be available for more widgets.
-void w_text_entry::set_name(const char* inName) 
-{
-    name = inName;    
-    dirty = true;
-
-    // Here we assume that if rect.w == 0, we have not been laid out yet.  So, we should
-    // only try to "fix" our layout if rect.w != 0...
-    if(rect.w != 0) {
-        //    printf("set_name: old=%s, new=%s\n", name, inName);
-        
-        // I used to compare inName to name, but because of the way I am using this, (and
-        // because for some reason I am not doing the right thing and making my own copy),
-        // the storage to which name points becomes invalid right before this call is made.
-        // (At the least, it no longer contains the previous name...)
-    
-        // So now, I infer what the old width must have been based on the total widget size.
-    
-        // I can't update this information in draw() because draw() is const and I don't feel
-        // like jumping through TOO many hoops...
-        if(new_rect_valid) {
-            rect.w = new_rect_w;
-            rect.x = new_rect_x;
-            text_x = new_text_x;
-    
-            new_rect_valid = false;
-        }
-    
-        // This calculation based on w_text_entry::layout(), we "invert" its operation a bit.
-		uint16 spacing         = get_dialog_space(LABEL_ITEM_SPACE);
-        uint16 old_name_width  = rect.w - spacing - max_text_width;
-        uint16 new_name_width  = text_width(inName, font, style);
-        int16 name_width_diff = new_name_width - old_name_width;
-    
-        if(name_width_diff != 0) {
-            // Note here we now keep a "new width" and "new x".  We need the rect to stay where it was
-            // so that adjusting to a narrower rect still manages to erase the old name.
-    
-            new_rect_valid = true;
-    
-            // Adjust the overall widget width to accomodate new name (hope it fits in dialog!!)
-            new_rect_w = rect.w + name_width_diff;
-            // Always place text the same wrt name
-            new_text_x = text_x + name_width_diff;
-            
-            // If we're moving to a larger rect, make the changes now so drawing works right.
-            if(new_rect_w >= rect.w) {
-                rect.w = new_rect_w;
-                rect.x = new_rect_x;
-                text_x = new_text_x;
-    
-                new_rect_valid = false;
-            }
-    
-        } // name width differs
-        
-    } // had already been laid out
-    
-} // set_name
-
-
 /*
  *  Number entry widget
  */
 
-w_number_entry::w_number_entry(const char *name, int initial_number) : w_text_entry(name, /*16*/4, NULL)
+w_number_entry::w_number_entry(int initial_number) : w_text_entry(/*16*/4, NULL)
 {
 	set_number(initial_number);
-	if (strcmp(name, "") == 0)
-	{
-		saved_min_width = MAX_TEXT_WIDTH / 2;
-	}
+	saved_min_width = MAX_TEXT_WIDTH / 2;
 }
 
 void w_number_entry::event(SDL_Event &e)
@@ -1092,7 +963,7 @@ void w_number_entry::set_number(int number)
 	set_text(str);
 }
 
-w_password_entry::w_password_entry(const char *name, size_t max_chars, const char *initial_text) : w_text_entry(name, max_chars, initial_text)
+w_password_entry::w_password_entry(size_t max_chars, const char *initial_text) : w_text_entry(max_chars, initial_text)
 {
 
 }
@@ -1111,15 +982,11 @@ void w_password_entry::draw(SDL_Surface *s) const
 
 static const char *WAITING_TEXT = "waiting for new key";
 
-w_key::w_key(const char *n, SDLKey key) : widget(LABEL_FONT), name(n), binding(false)
+w_key::w_key(SDLKey key) : widget(LABEL_FONT), binding(false)
 {
 	set_key(key);
 
-	uint16 name_width = text_width(name, font, style);
-	if (name_width)
-		saved_min_width = get_dialog_space(LABEL_ITEM_SPACE) + 2 * text_width(WAITING_TEXT, font, style);
-	else
-		saved_min_width = text_width(WAITING_TEXT, font, style);
+	saved_min_width = text_width(WAITING_TEXT, font, style);
 	saved_min_height = font->get_line_height();
 }
 
@@ -1128,19 +995,9 @@ void w_key::place(const SDL_Rect& r, placement_flags flags)
 	rect.h = r.h;
 	rect.y = r.y;
 
-	uint16 name_width = text_width(name, font, style);
-	if (name_width)
-	{
-		rect.x = (text_width(WAITING_TEXT, font, style) - name_width);
-		key_x = name_width + get_dialog_space(LABEL_ITEM_SPACE);
-		rect.w = saved_min_width - (text_width(WAITING_TEXT, font, style) - name_width);
-	}
-	else
-	{
-		key_x = 0;
-		rect.x = r.x;
-		rect.w = r.w;
-	}
+	key_x = 0;
+	rect.x = r.x;
+	rect.w = r.w;
 }
 		
 // ZZZ: we provide phony key names for the phony keys used for mouse buttons.
@@ -1168,11 +1025,6 @@ void w_key::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent();
 
-	// Name (ZZZ: different color for disabled)
-    int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-
-	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
-
 	// Key
 	int16 x = rect.x + key_x;
 	if (binding) {
@@ -1180,7 +1032,7 @@ void w_key::draw(SDL_Surface *s) const
 		SDL_FillRect(s, &r, get_dialog_color(KEY_BINDING_COLOR));
 		draw_text(s, WAITING_TEXT, x, y, get_dialog_color(ITEM_ACTIVE_COLOR), font, style);
 	} else {
-        theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+        int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
 
         // ZZZ: potential to use the phony (i.e. mouse-button) key names
 		draw_text(s, GetSDLKeyName(key), x, y, get_dialog_color(theColorToUse), font, style);
@@ -1258,7 +1110,7 @@ void w_progress_bar::set_progress(int inValue, int inMaxValue)
 
 const int SLIDER_WIDTH = 160;
 
-w_slider::w_slider(const char *n, int num, int s) : widget(LABEL_FONT), name(n), selection(s), num_items(num), thumb_dragging(false)
+w_slider::w_slider(int num, int s) : widget(LABEL_FONT), selection(s), num_items(num), thumb_dragging(false)
 {
 	slider_l = get_dialog_image(SLIDER_L_IMAGE);
 	slider_r = get_dialog_image(SLIDER_R_IMAGE);
@@ -1279,8 +1131,6 @@ void w_slider::place(const SDL_Rect& r, placement_flags flags)
 {
 	rect.h = r.h;
 	rect.y = r.y;
-	uint16 name_width = text_width(name, font, style);
-	assert(!name_width);
 	rect.x = r.x;
 	slider_x = 0;
 	rect.w = r.w;
@@ -1291,11 +1141,6 @@ void w_slider::place(const SDL_Rect& r, placement_flags flags)
 void w_slider::draw(SDL_Surface *s) const
 {
 	int y = rect.y + font->get_ascent() + (rect.h - font->get_line_height()) / 2;
-
-	// Name (ZZZ: different color for disabled)
-    int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-
-	draw_text(s, name, rect.x, y, get_dialog_color(theColorToUse), font, style);
 
 	// Slider trough
 	SDL_Rect r = {rect.x + slider_x, rect.y,
@@ -1712,7 +1557,7 @@ void w_string_list::draw_item(vector<string>::const_iterator i, SDL_Surface *s, 
  *  Selection Popup
  */
 
-w_select_popup::w_select_popup (const char *name, action_proc p, void *a) : w_select_button (name, "", gotSelectedCallback, NULL)
+w_select_popup::w_select_popup (action_proc p, void *a) : w_select_button ("", gotSelectedCallback, NULL)
 {
 	set_arg(this);
 	selection = -1;
@@ -1724,16 +1569,14 @@ w_select_popup::w_select_popup (const char *name, action_proc p, void *a) : w_se
 void w_select_popup::set_labels(const vector<string>& inLabels)
 {
 	labels = inLabels;
-	if (!text_width(name, font, style))
+
+	// recalculate min width
+	saved_min_width = 0;
+	for (vector<string>::iterator it = labels.begin(); it != labels.end(); ++it)
 	{
-		// recalculate min width
-		saved_min_width = 0;
-		for (vector<string>::iterator it = labels.begin(); it != labels.end(); ++it)
-		{
-			uint16 width = text_width(it->c_str(), font, style);
-			if (width > saved_min_width)
-				saved_min_width = width;
-		}
+		uint16 width = text_width(it->c_str(), font, style);
+		if (width > saved_min_width)
+			saved_min_width = width;
 	}
 }
 
@@ -1772,8 +1615,8 @@ void w_select_popup::gotSelected ()
 
 static const char* const sFileChooserInvalidFileString = "(no valid selection)";
 
-w_file_chooser::w_file_chooser(const char* inLabel, const char* inDialogPrompt, Typecode inTypecode)
-	: w_select_button(inLabel, "", NULL, NULL, true), typecode(inTypecode)
+w_file_chooser::w_file_chooser(const char* inDialogPrompt, Typecode inTypecode)
+	: w_select_button("", NULL, NULL, true), typecode(inTypecode)
 {
 	strncpy(dialog_prompt, inDialogPrompt, sizeof(dialog_prompt));
 	set_selection(sFileChooserInvalidFileString);

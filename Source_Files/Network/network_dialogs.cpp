@@ -2438,7 +2438,7 @@ void display_net_game_stats(void)
     placer->dual_add(new w_static_text("POSTGAME CARNAGE REPORT", TITLE_FONT, TITLE_COLOR), d);
     
     horizontal_placer *graph_type_placer = new horizontal_placer;
-    w_select* graph_type_w = new w_select("", 0, NULL);
+    w_select* graph_type_w = new w_select(0, NULL);
     graph_type_w->set_identifier(iGRAPH_POPUP);
     graph_type_w->set_selection_changed_callback(respond_to_graph_type_change);
     graph_type_placer->dual_add(graph_type_w->label("Report on"), d);
@@ -2463,7 +2463,7 @@ void display_net_game_stats(void)
     chat_history_w->set_identifier(iCHAT_HISTORY);
     d.add(chat_history_w);
 #ifdef NETWORK_TWO_WAY_CHAT
-    w_text_entry*	chatentry_w = new w_text_entry("Say:", 240, "");
+    w_text_entry*	chatentry_w = new w_text_entry(240, "");
     chatentry_w->set_identifier(iCHAT_ENTRY);
     chatentry_w->set_enter_pressed_callback(send_text_fake);
     chatentry_w->set_alignment(widget::kAlignLeft);
@@ -2588,7 +2588,7 @@ public:
 		placer->dual_add(foundplayers_w, m_dialog);
 	
 		horizontal_placer *autogather_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE), true);
-		w_toggle* autogather_w = new w_toggle("", false);
+		w_toggle* autogather_w = new w_toggle(false);
 		autogather_placer->dual_add(autogather_w->label("Auto-Gather"), m_dialog);
 		autogather_placer->dual_add(autogather_w, m_dialog);
 
@@ -2608,7 +2608,7 @@ public:
 		placer->add(button_placer, true);
 
 		horizontal_placer *chat_choice_placer = new horizontal_placer;
-		w_select_popup* chat_choice_w = new w_select_popup("");
+		w_select_popup* chat_choice_w = new w_select_popup();
 		chat_choice_placer->dual_add(chat_choice_w->label("chat:"), m_dialog);
 		chat_choice_placer->dual_add(chat_choice_w, m_dialog);
 		placer->add(chat_choice_placer, true);
@@ -2616,7 +2616,7 @@ public:
 		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 6);
 		placer->dual_add(chat_history_w, m_dialog);
 
-		w_text_entry* chatentry_w = new w_text_entry("", 240, "");
+		w_text_entry* chatentry_w = new w_text_entry(240, "");
 		chatentry_w->set_with_textbox();
 		chatentry_w->enable_mac_roman_input();
 
@@ -2681,16 +2681,16 @@ public:
 		table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
 		table->col_flags(0, placeable::kAlignRight);
 
-		w_text_entry *name_w = new w_text_entry("", PREFERENCES_NAME_LENGTH, "");
+		w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, "");
 		name_w->enable_mac_roman_input();
 		table->dual_add(name_w->label("Name"), m_dialog);
 		table->dual_add(name_w, m_dialog);
 	
-		w_player_color *pcolor_w = new w_player_color("", 0);
+		w_player_color *pcolor_w = new w_player_color(0);
 		table->dual_add(pcolor_w->label("Color"), m_dialog);
 		table->dual_add(pcolor_w, m_dialog);
 
-		w_player_color *tcolor_w = new w_player_color("", 0);
+		w_player_color *tcolor_w = new w_player_color(0);
 		table->dual_add(tcolor_w->label("Team Color"), m_dialog);
 		table->dual_add(tcolor_w, m_dialog);
 
@@ -2703,11 +2703,11 @@ public:
 		table_placer *prejoin_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
 		prejoin_table->col_flags(0, placeable::kAlignRight);
 		
-		w_toggle* hint_w = new w_toggle("", false);
+		w_toggle* hint_w = new w_toggle(false);
 		prejoin_table->dual_add(hint_w->label("Join by address"), m_dialog);
 		prejoin_table->dual_add(hint_w, m_dialog);
 
-		w_text_entry* hint_address_w = new w_text_entry("", kJoinHintingAddressLength, "");
+		w_text_entry* hint_address_w = new w_text_entry(kJoinHintingAddressLength, "");
 		prejoin_table->dual_add(hint_address_w->label("Join address"), m_dialog);
 		prejoin_table->dual_add(hint_address_w, m_dialog);
 
@@ -2734,7 +2734,7 @@ public:
 
 		horizontal_placer *chat_choice_placer = new horizontal_placer;
 
-		w_select_popup* chat_choice_w = new w_select_popup("");
+		w_select_popup* chat_choice_w = new w_select_popup();
 		chat_choice_placer->dual_add(chat_choice_w->label("chat:"), m_dialog);
 		chat_choice_placer->dual_add(chat_choice_w, m_dialog);
 
@@ -2743,7 +2743,7 @@ public:
 		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 7);
 		postjoin_placer->dual_add(chat_history_w, m_dialog);
 
-		w_text_entry* chatentry_w = new w_text_entry("", 240, "");
+		w_text_entry* chatentry_w = new w_text_entry(240, "");
 		chatentry_w->set_with_textbox();
 		chatentry_w->enable_mac_roman_input();
 
@@ -2856,17 +2856,17 @@ public:
 		table_placer *player_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
 		player_table->col_flags(0, placeable::kAlignRight);
 		player_table->dual_add_row(new w_static_text("Appearance"), m_dialog);
-		w_text_entry *name_w = new w_text_entry ("", PREFERENCES_NAME_LENGTH, "");
+		w_text_entry *name_w = new w_text_entry (PREFERENCES_NAME_LENGTH, "");
 		name_w->enable_mac_roman_input();
 
 		player_table->dual_add(name_w->label("Name"), m_dialog);
 		player_table->dual_add(name_w, m_dialog);
 
-		w_player_color *pcolor_w = new w_player_color ("", player_preferences->color);
+		w_player_color *pcolor_w = new w_player_color (player_preferences->color);
 		player_table->dual_add(pcolor_w->label("Color"), m_dialog);
 		player_table->dual_add(pcolor_w, m_dialog);
 
-		w_player_color *tcolor_w = new w_player_color ("", player_preferences->team);
+		w_player_color *tcolor_w = new w_player_color (player_preferences->team);
 		player_table->dual_add(tcolor_w->label("Team"), m_dialog);
 		player_table->dual_add(tcolor_w, m_dialog);
 
@@ -2874,19 +2874,19 @@ public:
 		table_placer *network_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
 		network_table->col_flags(1, placeable::kAlignLeft);
 
-		w_toggle *advertise_on_metaserver_w = new w_toggle ("", sAdvertiseGameOnMetaserver);
+		w_toggle *advertise_on_metaserver_w = new w_toggle (sAdvertiseGameOnMetaserver);
 		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
 		network_table->dual_add(advertise_on_metaserver_w->label("Advertise Game on Internet"), m_dialog);
 
-		w_toggle *use_upnp_w = new w_toggle ("", true);
+		w_toggle *use_upnp_w = new w_toggle (true);
 		network_table->dual_add(use_upnp_w, m_dialog);
 		network_table->dual_add(use_upnp_w->label("Configure UPnP Router"), m_dialog);
 
-		w_toggle* realtime_audio_w = new w_toggle ("", network_preferences->allow_microphone);
+		w_toggle* realtime_audio_w = new w_toggle(network_preferences->allow_microphone);
 		network_table->dual_add(realtime_audio_w, m_dialog);
 		network_table->dual_add(realtime_audio_w->label("Allow Microphone"), m_dialog);
 
-		w_select_popup *latency_tolerance_w = new w_select_popup("");
+		w_select_popup *latency_tolerance_w = new w_select_popup();
 		horizontal_placer *latency_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
 		latency_placer->dual_add(latency_tolerance_w->label("Latency Tolerance"), m_dialog);
 		latency_placer->dual_add(latency_tolerance_w, m_dialog);
@@ -2901,19 +2901,19 @@ public:
 
 		// Could eventually store this path in network_preferences somewhere, so to have separate map file
 		// prefs for single- and multi-player.
-		w_file_chooser* map_w = new w_file_chooser ("", "Choose Map", _typecode_scenario);
+		w_file_chooser* map_w = new w_file_chooser ("Choose Map", _typecode_scenario);
 		player_table->dual_add(map_w->label("Map"), m_dialog);
 		player_table->dual_add(map_w, m_dialog);
 
-		w_select_popup* entry_point_w = new w_select_popup ("");
+		w_select_popup* entry_point_w = new w_select_popup ();
 		player_table->dual_add(entry_point_w->label("Level"), m_dialog);
 		player_table->dual_add(entry_point_w, m_dialog);
 
-		w_select_popup* game_type_w = new w_select_popup ("");
+		w_select_popup* game_type_w = new w_select_popup ();
 		player_table->dual_add(game_type_w->label("Game Type"), m_dialog);
 		player_table->dual_add(game_type_w, m_dialog);
 
-		w_select *diff_w = new w_select ("", network_preferences->difficulty_level, NULL);
+		w_select *diff_w = new w_select(network_preferences->difficulty_level, NULL);
 		player_table->dual_add(diff_w->label("Difficulty"), m_dialog);
 		player_table->dual_add(diff_w, m_dialog);
 
@@ -2921,12 +2921,12 @@ public:
 
 		network_table->add_row(new w_spacer(), true);
 		network_table->dual_add_row(new w_static_text("Net Script"), m_dialog);
-		w_enabling_toggle* use_netscript_w = new w_enabling_toggle ("", network_preferences->use_netscript);
+		w_enabling_toggle* use_netscript_w = new w_enabling_toggle (network_preferences->use_netscript);
 		network_table->dual_add(use_netscript_w, m_dialog);
 		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
 
 		horizontal_placer *lua_file_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
-		w_file_chooser* choose_script_w = new w_file_chooser ("", "Choose Script", _typecode_netscript);
+		w_file_chooser* choose_script_w = new w_file_chooser ("Choose Script", _typecode_netscript);
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
 		use_netscript_w->add_dependent_widget(choose_script_w);
@@ -2936,31 +2936,31 @@ public:
 		options_table->col_flags(1, placeable::kAlignLeft);
 		options_table->dual_add_row(new w_static_text("Options"), m_dialog);
 
-		w_toggle *aliens_w = new w_toggle ("", (network_preferences->game_options & _monsters_replenish) != 0);
+		w_toggle *aliens_w = new w_toggle((network_preferences->game_options & _monsters_replenish) != 0);
 		options_table->dual_add(aliens_w, m_dialog);
 		options_table->dual_add(aliens_w->label("Aliens"), m_dialog);
 
-		w_toggle *live_w = new w_toggle ("", (network_preferences->game_options & _live_network_stats) != 0);
+		w_toggle *live_w = new w_toggle((network_preferences->game_options & _live_network_stats) != 0);
 		options_table->dual_add(live_w, m_dialog);
 		options_table->dual_add(live_w->label("Live Carnage Reporting"), m_dialog);
 
-		w_toggle *teams_w = new w_toggle ("", !(network_preferences->game_options & _force_unique_teams));
+		w_toggle *teams_w = new w_toggle(!(network_preferences->game_options & _force_unique_teams));
 		options_table->dual_add(teams_w, m_dialog);
 		options_table->dual_add(teams_w->label("Teams"), m_dialog);
 
-		w_toggle *drop_w = new w_toggle ("", !(network_preferences->game_options & _burn_items_on_death));
+		w_toggle *drop_w = new w_toggle(!(network_preferences->game_options & _burn_items_on_death));
 		options_table->dual_add(drop_w, m_dialog);
 		options_table->dual_add(drop_w->label("Dead Players Drop Items"), m_dialog);
 
-		w_toggle *sensor_w = new w_toggle ("", (network_preferences->game_options & _motion_sensor_does_not_work) != 0);
+		w_toggle *sensor_w = new w_toggle((network_preferences->game_options & _motion_sensor_does_not_work) != 0);
 		options_table->dual_add(sensor_w, m_dialog);
 		options_table->dual_add(sensor_w->label("Disable Motion Sensor"), m_dialog);
 
-		w_toggle *pen_die_w = new w_toggle ("", (network_preferences->game_options & _dying_is_penalized) != 0);
+		w_toggle *pen_die_w = new w_toggle((network_preferences->game_options & _dying_is_penalized) != 0);
 		options_table->dual_add(pen_die_w, m_dialog);
 		options_table->dual_add(pen_die_w->label("Penalize Dying (10 seconds)"), m_dialog);
 
-		w_toggle *pen_sui_w = new w_toggle ("", (network_preferences->game_options & _suicide_is_penalized) != 0);
+		w_toggle *pen_sui_w = new w_toggle((network_preferences->game_options & _suicide_is_penalized) != 0);
 		options_table->dual_add(pen_sui_w, m_dialog);
 		options_table->dual_add(pen_sui_w->label("Penalize Suicide (15 seconds)"), m_dialog);
 
@@ -2968,19 +2968,19 @@ public:
 
 		network_table->add_row(new w_spacer(), true);
 		network_table->dual_add_row(new w_static_text("Extras"), m_dialog);
-		w_toggle *zoom_w = new w_toggle ("", true);
+		w_toggle *zoom_w = new w_toggle(true);
 		network_table->dual_add(zoom_w, m_dialog);
 		network_table->dual_add(zoom_w->label("Allow Zoom"), m_dialog);
 	
-		w_toggle *crosshairs_w = new w_toggle ("", true);
+		w_toggle *crosshairs_w = new w_toggle(true);
 		network_table->dual_add(crosshairs_w, m_dialog);
 		network_table->dual_add(crosshairs_w->label("Allow Crosshairs"), m_dialog);
 	
-		w_toggle *lara_croft_w = new w_toggle ("", true);
+		w_toggle *lara_croft_w = new w_toggle(true);
 		network_table->dual_add(lara_croft_w, m_dialog);
 		network_table->dual_add(lara_croft_w->label("Allow Chase Cam"), m_dialog);
 
-		w_toggle *carnage_messages_w = new w_toggle("", true);
+		w_toggle *carnage_messages_w = new w_toggle(true);
 		network_table->dual_add(carnage_messages_w, m_dialog);
 		network_table->dual_add(carnage_messages_w->label("Allow Carnage Messages"), m_dialog);
 
@@ -2989,16 +2989,16 @@ public:
 		table_placer *limits_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
 		limits_table->col_flags(0, placeable::kAlignRight);
 		
-		w_select* endcondition_w = new w_select ("", kTimeLimit, NULL);
+		w_select* endcondition_w = new w_select(kTimeLimit, NULL);
 		limits_table->dual_add(endcondition_w->label("Game Ends At"), m_dialog);
 		limits_table->dual_add(endcondition_w, m_dialog);
 
-		w_number_entry*	timelimit_w = new w_number_entry ("", network_preferences->time_limit);
+		w_number_entry*	timelimit_w = new w_number_entry (network_preferences->time_limit);
 		limits_table->dual_add(timelimit_w->label("Time Limit (minutes)"), m_dialog);
 		limits_table->dual_add(timelimit_w, m_dialog);
 
 		// The name of this widget (score limit) will be replaced by Kill Limit, Flag Capture Limit, etc.
-		w_number_entry*	scorelimit_w = new w_number_entry ("", network_preferences->kill_limit);
+		w_number_entry*	scorelimit_w = new w_number_entry (network_preferences->kill_limit);
 		limits_table->dual_add(scorelimit_w->label("Kill / Score Limit"), m_dialog);
 		limits_table->dual_add(scorelimit_w, m_dialog);
 		right_placer->add(limits_table, true);

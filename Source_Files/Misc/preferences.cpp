@@ -379,7 +379,7 @@ static void crosshair_dialog(void *arg)
 	table->col_flags(0, placeable::kAlignRight);
 
 	// Shape
-	w_select *shape_w = new w_select("", 0, shape_labels);
+	w_select *shape_w = new w_select(0, shape_labels);
 	SelectSelectorWidget shapeWidget(shape_w);
 	Int16Pref shapePref(player_preferences->Crosshairs.Shape);
 	crosshair_binders->insert<int> (&shapeWidget, &shapePref);
@@ -389,7 +389,7 @@ static void crosshair_dialog(void *arg)
 	table->add_row(new w_spacer(), true);
 
 	// Thickness
-	w_slider* thickness_w = new w_slider("", 7, 0);
+	w_slider* thickness_w = new w_slider(7, 0);
 	SliderSelectorWidget thicknessWidget(thickness_w);
 	CrosshairPref thicknessPref(player_preferences->Crosshairs.Thickness);
 	crosshair_binders->insert<int> (&thicknessWidget, &thicknessPref);
@@ -397,7 +397,7 @@ static void crosshair_dialog(void *arg)
 	table->dual_add(thickness_w, d);
 
 	// From Center
-	w_slider *from_center_w = new w_slider("", 15, 0);
+	w_slider *from_center_w = new w_slider(15, 0);
 	SliderSelectorWidget fromCenterWidget(from_center_w);
 	Int16Pref fromCenterPref(player_preferences->Crosshairs.FromCenter);
 	crosshair_binders->insert<int> (&fromCenterWidget, &fromCenterPref);
@@ -405,7 +405,7 @@ static void crosshair_dialog(void *arg)
 	table->dual_add(from_center_w, d);
 
 	// Length
-	w_slider *length_w = new w_slider("", 15, 0);
+	w_slider *length_w = new w_slider(15, 0);
 	SliderSelectorWidget lengthWidget(length_w);
 	CrosshairPref lengthPref(player_preferences->Crosshairs.Length);
 	crosshair_binders->insert<int> (&lengthWidget, &lengthPref);
@@ -416,21 +416,21 @@ static void crosshair_dialog(void *arg)
 	table->dual_add_row(new w_static_text("Color"), d);
 
 	// Color
-	w_slider *red_w = new w_slider("", 16, 0);
+	w_slider *red_w = new w_slider(16, 0);
 	SliderSelectorWidget redWidget(red_w);
 	ColorComponentPref redPref(player_preferences->Crosshairs.Color.red);
 	crosshair_binders->insert<int> (&redWidget, &redPref);
 	table->dual_add(red_w->label("Red"), d);
 	table->dual_add(red_w, d);
 
-	w_slider *green_w = new w_slider("", 16, 0);
+	w_slider *green_w = new w_slider(16, 0);
 	SliderSelectorWidget greenWidget(green_w);;
 	ColorComponentPref greenPref(player_preferences->Crosshairs.Color.green);
 	crosshair_binders->insert<int> (&greenWidget, &greenPref);
 	table->dual_add(green_w->label("Green"), d);
 	table->dual_add(green_w, d);
 
-	w_slider *blue_w = new w_slider("", 16, 0);
+	w_slider *blue_w = new w_slider(16, 0);
 	SliderSelectorWidget blueWidget(blue_w);
 	ColorComponentPref bluePref(player_preferences->Crosshairs.Color.blue);
 	crosshair_binders->insert<int> (&blueWidget, &bluePref);
@@ -440,7 +440,7 @@ static void crosshair_dialog(void *arg)
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("OpenGL Only (no preview)"), d);
 
-	w_slider *opacity_w = new w_slider("", 16, 0);
+	w_slider *opacity_w = new w_slider(16, 0);
 	SliderSelectorWidget opacityWidget(opacity_w);
 	OpacityPref opacityPref(player_preferences->Crosshairs.Opacity);
 	crosshair_binders->insert<int> (&opacityWidget, &opacityPref);
@@ -494,7 +494,7 @@ static void player_dialog(void *arg)
 	table->col_flags(0, placeable::kAlignRight);
 	table->col_flags(1, placeable::kAlignLeft);
 
-	w_select *level_w = new w_select("", player_preferences->difficulty_level, NULL /*level_labels*/);
+	w_select *level_w = new w_select(player_preferences->difficulty_level, NULL /*level_labels*/);
 	level_w->set_labels_stringset(kDifficultyLevelsStringSetID);
 	table->dual_add(level_w->label("Difficulty"), d);
 	table->dual_add(level_w, d);
@@ -503,7 +503,7 @@ static void player_dialog(void *arg)
 
 	table->dual_add_row(new w_static_text("Appearance"), d);
 
-	w_text_entry *name_w = new w_text_entry("", PREFERENCES_NAME_LENGTH, "");
+	w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, "");
 	name_w->set_identifier(iNAME);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
@@ -511,30 +511,30 @@ static void player_dialog(void *arg)
 	table->dual_add(name_w->label("Name"), d);
 	table->dual_add(name_w, d);
 
-	w_player_color *pcolor_w = new w_player_color("", player_preferences->color);
+	w_player_color *pcolor_w = new w_player_color(player_preferences->color);
 	table->dual_add(pcolor_w->label("Color"), d);
 	table->dual_add(pcolor_w, d);
 
-	w_player_color *tcolor_w = new w_player_color("", player_preferences->team);
+	w_player_color *tcolor_w = new w_player_color(player_preferences->team);
 	table->dual_add(tcolor_w->label("Team"), d);
 	table->dual_add(tcolor_w, d);
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("\322Find Internet Game\323 Server"), d);
 
-	w_enabling_toggle *login_as_guest_w = new w_enabling_toggle("", strcmp(network_preferences->metaserver_login, "guest") == 0, false);
+	w_enabling_toggle *login_as_guest_w = new w_enabling_toggle(strcmp(network_preferences->metaserver_login, "guest") == 0, false);
 	table->dual_add(login_as_guest_w->label("Guest"), d);
 	table->dual_add(login_as_guest_w, d);
 
-	w_text_entry *login_w = new w_text_entry("", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
+	w_text_entry *login_w = new w_text_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
 	table->dual_add(login_w->label("Login"), d);
 	table->dual_add(login_w, d);
 
-	w_password_entry *password_w = new w_password_entry("", network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
+	w_password_entry *password_w = new w_password_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
 	table->dual_add(password_w->label("Password"), d);
 	table->dual_add(password_w, d);
 
-	w_enabling_toggle *custom_colors_w = new w_enabling_toggle("", network_preferences->use_custom_metaserver_colors);
+	w_enabling_toggle *custom_colors_w = new w_enabling_toggle(network_preferences->use_custom_metaserver_colors);
 	table->dual_add(custom_colors_w->label("Use Custom Colors"), d);
 	table->dual_add(custom_colors_w, d);
 	
@@ -757,17 +757,17 @@ static void software_rendering_options_dialog(void* arg)
 	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
 	table->col_flags(0, placeable::kAlignRight);
 
-	w_select *depth_w = new w_select("", graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
+	w_select *depth_w = new w_select(graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
 	table->dual_add(depth_w->label("Color Depth"), d);
 	table->dual_add(depth_w, d);
 
-	w_toggle *resolution_w = new w_toggle("", graphics_preferences->screen_mode.high_resolution, resolution_labels);
+	w_toggle *resolution_w = new w_toggle(graphics_preferences->screen_mode.high_resolution, resolution_labels);
 	table->dual_add(resolution_w->label("Resolution"), d);
 	table->dual_add(resolution_w, d);
 
 	table->add_row(new w_spacer(), true);
 
-	w_select *sw_alpha_blending_w = new w_select("", graphics_preferences->software_alpha_blending, sw_alpha_blending_labels);
+	w_select *sw_alpha_blending_w = new w_select(graphics_preferences->software_alpha_blending, sw_alpha_blending_labels);
 	table->dual_add(sw_alpha_blending_w->label("Transparent Liquids"), d);
 	table->dual_add(sw_alpha_blending_w, d);
 
@@ -847,7 +847,7 @@ static void graphics_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
 	table->col_flags(0, placeable::kAlignRight);
 	
-	w_select* renderer_w = new w_select("", graphics_preferences->screen_mode.acceleration, renderer_labels);
+	w_select* renderer_w = new w_select(graphics_preferences->screen_mode.acceleration, renderer_labels);
 	renderer_w->set_identifier(iRENDERING_SYSTEM);
 #ifndef HAVE_OPENGL
 	renderer_w->set_selection(_no_acceleration);
@@ -856,7 +856,7 @@ static void graphics_dialog(void *arg)
 	table->dual_add(renderer_w->label("Rendering System"), d);
 	table->dual_add(renderer_w, d);
 
-	w_select_popup *size_w = new w_select_popup("");
+	w_select_popup *size_w = new w_select_popup();
 	size_w->set_labels(build_stringvector_from_cstring_array(size_labels));
 	size_w->set_selection(graphics_preferences->screen_mode.size);
 	table->dual_add(size_w->label("Screen Size"), d);
@@ -866,12 +866,12 @@ static void graphics_dialog(void *arg)
 	const SDL_version *version = SDL_Linked_Version();
 	if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
 	{
-		fill_screen_w = new w_toggle("", graphics_preferences->screen_mode.fill_the_screen);
+		fill_screen_w = new w_toggle(graphics_preferences->screen_mode.fill_the_screen);
 		table->dual_add(fill_screen_w->label("Fill the Screen"), d);
 		table->dual_add(fill_screen_w, d);
 	}
 
-	w_select_popup *gamma_w = new w_select_popup("");
+	w_select_popup *gamma_w = new w_select_popup();
 	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
 	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
 	table->dual_add(gamma_w->label("Brightness"), d);
@@ -879,7 +879,7 @@ static void graphics_dialog(void *arg)
 
 	table->add_row(new w_spacer(), true);
 
-	w_toggle *fullscreen_w = new w_toggle("", !graphics_preferences->screen_mode.fullscreen);
+	w_toggle *fullscreen_w = new w_toggle(!graphics_preferences->screen_mode.fullscreen);
 	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
 	table->dual_add(fullscreen_w, d);
 
@@ -974,7 +974,7 @@ class w_toggle *stereo_w, *dynamic_w;
 
 class w_stereo_toggle : public w_toggle {
 public:
-	w_stereo_toggle(const char *name, bool selection) : w_toggle(name, selection) {}
+	w_stereo_toggle(bool selection) : w_toggle(selection) {}
 
 	void selection_changed(void)
 	{
@@ -987,7 +987,7 @@ public:
 
 class w_dynamic_toggle : public w_toggle {
 public:
-	w_dynamic_toggle(const char *name, bool selection) : w_toggle(name, selection) {}
+	w_dynamic_toggle(bool selection) : w_toggle(selection) {}
 
 	void selection_changed(void)
 	{
@@ -1002,7 +1002,7 @@ static const char *channel_labels[] = {"0", "1", "2", "3", "4", "5", "6", "7", "
 
 class w_volume_slider : public w_slider {
 public:
-	w_volume_slider(const char *name, int vol) : w_slider(name, NUMBER_OF_SOUND_VOLUME_LEVELS, vol) {}
+	w_volume_slider(int vol) : w_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, vol) {}
 	~w_volume_slider() {}
 
 	void item_selected(void)
@@ -1023,39 +1023,39 @@ static void sound_dialog(void *arg)
 	table->col_flags(0, placeable::kAlignRight);
 
 	static const char *quality_labels[3] = {"8 Bit", "16 Bit", NULL};
-	w_toggle *quality_w = new w_toggle("", TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
+	w_toggle *quality_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _16bit_sound_flag), quality_labels);
 	table->dual_add(quality_w->label("Quality"), d);
 	table->dual_add(quality_w, d);
 
-	stereo_w = new w_stereo_toggle("", sound_preferences->flags & _stereo_flag);
+	stereo_w = new w_stereo_toggle(sound_preferences->flags & _stereo_flag);
 	table->dual_add(stereo_w->label("Stereo"), d);
 	table->dual_add(stereo_w, d);
 
-	dynamic_w = new w_dynamic_toggle("", TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
+	dynamic_w = new w_dynamic_toggle(TEST_FLAG(sound_preferences->flags, _dynamic_tracking_flag));
 	table->dual_add(dynamic_w->label("Active Panning"), d);
 	table->dual_add(dynamic_w, d);
 
-	w_toggle *ambient_w = new w_toggle("", TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
+	w_toggle *ambient_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _ambient_sound_flag));
 	table->dual_add(ambient_w->label("Ambient Sounds"), d);
 	table->dual_add(ambient_w, d);
 
-	w_toggle *more_w = new w_toggle("", TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
+	w_toggle *more_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _more_sounds_flag));
 	table->dual_add(more_w->label("More Sounds"), d);
 	table->dual_add(more_w, d);
 
-	w_toggle *button_sounds_w = new w_toggle("", TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
+	w_toggle *button_sounds_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_use_button_sounds));
 	table->dual_add(button_sounds_w->label("Interface Button Sounds"), d);
 	table->dual_add(button_sounds_w, d);
 
-	w_select *channels_w = new w_select("", sound_preferences->channel_count, channel_labels);
+	w_select *channels_w = new w_select(sound_preferences->channel_count, channel_labels);
 	table->dual_add(channels_w->label("Channels"), d);
 	table->dual_add(channels_w, d);
 
-	w_volume_slider *volume_w = new w_volume_slider("", sound_preferences->volume);
+	w_volume_slider *volume_w = new w_volume_slider(sound_preferences->volume);
 	table->dual_add(volume_w->label("Volume"), d);
 	table->dual_add(volume_w, d);
 
-	w_slider *music_volume_w = new w_slider("", NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
+	w_slider *music_volume_w = new w_slider(NUMBER_OF_SOUND_VOLUME_LEVELS, sound_preferences->music);
 	table->dual_add(music_volume_w->label("Music Volume"), d);
 	table->dual_add(music_volume_w, d);
 
@@ -1063,7 +1063,7 @@ static void sound_dialog(void *arg)
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Network Microphone"), d);
 
-	w_toggle* mute_while_transmitting_w = new w_toggle("", !sound_preferences->mute_while_transmitting);
+	w_toggle* mute_while_transmitting_w = new w_toggle(!sound_preferences->mute_while_transmitting);
 	table->dual_add(mute_while_transmitting_w->label("Headset Mic Mode"), d);
 	table->dual_add(mute_while_transmitting_w, d);
 
@@ -1155,11 +1155,11 @@ static void controls_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
 	table->col_flags(0, placeable::kAlignRight);
 
-	mouse_w = new w_enabling_toggle("", input_preferences->input_device != 0);
+	mouse_w = new w_enabling_toggle(input_preferences->input_device != 0);
 	table->dual_add(mouse_w->label("Mouse Control"), d);
 	table->dual_add(mouse_w, d);
 
-	w_toggle *invert_mouse_w = new w_toggle("", TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
+	w_toggle *invert_mouse_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
 	table->dual_add(invert_mouse_w->label("Invert Mouse"), d);
 	table->dual_add(invert_mouse_w, d);
 	
@@ -1178,7 +1178,7 @@ static void controls_dialog(void *arg)
 	int theVerticalSliderPosition =
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 	
-	w_slider* sens_vertical_w = new w_slider("", 1000, theVerticalSliderPosition);
+	w_slider* sens_vertical_w = new w_slider(1000, theVerticalSliderPosition);
 	table->dual_add(sens_vertical_w->label("Mouse Vertical Sensitivity"), d);
 	table->dual_add(sens_vertical_w, d);
 
@@ -1190,7 +1190,7 @@ static void controls_dialog(void *arg)
 	int theHorizontalSliderPosition =
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 
-	w_slider* sens_horizontal_w = new w_slider("", 1000, theHorizontalSliderPosition);
+	w_slider* sens_horizontal_w = new w_slider(1000, theHorizontalSliderPosition);
 	table->dual_add(sens_horizontal_w->label("Mouse Horizontal Sensitivity"), d);
 	table->dual_add(sens_horizontal_w, d);
 
@@ -1198,19 +1198,19 @@ static void controls_dialog(void *arg)
 
 	table->add_row(new w_spacer(), true);
 
-	w_toggle *always_run_w = new w_toggle("", input_preferences->modifiers & _inputmod_interchange_run_walk);
+	w_toggle *always_run_w = new w_toggle(input_preferences->modifiers & _inputmod_interchange_run_walk);
 	table->dual_add(always_run_w->label("Always Run"), d);
 	table->dual_add(always_run_w, d);
 
-	w_toggle *always_swim_w = new w_toggle("", TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
+	w_toggle *always_swim_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
 	table->dual_add(always_swim_w->label("Always Swim"), d);
 	table->dual_add(always_swim_w, d);
 
-	w_toggle *weapon_w = new w_toggle("", !(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
+	w_toggle *weapon_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
 	table->dual_add(weapon_w->label("Auto-Switch Weapons"), d);
 	table->dual_add(weapon_w, d);
 
-	w_toggle* auto_recenter_w = new w_toggle("", !(input_preferences->modifiers & _inputmod_dont_auto_recenter));
+	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
 	table->dual_add(auto_recenter_w->label("Auto-Recenter View"), d);
 	table->dual_add(auto_recenter_w, d);
 
@@ -1345,7 +1345,7 @@ static w_prefs_key *shell_key_w[NUMBER_OF_SHELL_KEYS];
 
 class w_prefs_key : public w_key {
 public:
-	w_prefs_key(const char *name, SDLKey key) : w_key(name, key) {}
+	w_prefs_key(SDLKey key) : w_key(key) {}
 
 	void set_key(SDLKey new_key)
 	{
@@ -1441,19 +1441,19 @@ static void keyboard_dialog(void *arg)
 	for (int i=0; i<19; i++)
 	{
 		
-		key_w[i] = new w_prefs_key("", SDLKey(input_preferences->keycodes[i]));
+		key_w[i] = new w_prefs_key(SDLKey(input_preferences->keycodes[i]));
 		left_table->dual_add(key_w[i]->label(action_name[i]), d);
 		left_table->dual_add(key_w[i], d);
 	}
 
 	for (int i=19; i<NUM_KEYS; i++) {
-		key_w[i] = new w_prefs_key("", SDLKey(input_preferences->keycodes[i]));
+		key_w[i] = new w_prefs_key(SDLKey(input_preferences->keycodes[i]));
 		right_table->dual_add(key_w[i]->label(action_name[i]), d);
 		right_table->dual_add(key_w[i], d);
 	}
 
 	for (int i = 0; i < NUMBER_OF_SHELL_KEYS; i++) {
-		shell_key_w[i] = new w_prefs_key("", SDLKey(input_preferences->shell_keycodes[i]));
+		shell_key_w[i] = new w_prefs_key(SDLKey(input_preferences->shell_keycodes[i]));
 		right_table->dual_add(shell_key_w[i]->label(shell_action_name[i]), d);
 		right_table->dual_add(shell_key_w[i], d);
 	}
@@ -1524,30 +1524,30 @@ static void environment_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
 	table->col_flags(0, placeable::kAlignRight);
 	
-	w_env_select *map_w = new w_env_select("", environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
+	w_env_select *map_w = new w_env_select(environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
 	table->dual_add(map_w->label("Map"), d);
 	table->dual_add(map_w, d);
 	
-	w_env_select *physics_w = new w_env_select("", environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
+	w_env_select *physics_w = new w_env_select(environment_preferences->physics_file, "AVAILABLE PHYSICS MODELS", _typecode_physics, &d);
 	table->dual_add(physics_w->label("Physics"), d);
 	table->dual_add(physics_w, d);
 
-	w_env_select *shapes_w = new w_env_select("", environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
+	w_env_select *shapes_w = new w_env_select(environment_preferences->shapes_file, "AVAILABLE SHAPES", _typecode_shapes, &d);
 	table->dual_add(shapes_w->label("Shapes"), d);
 	table->dual_add(shapes_w, d);
 
-	w_env_select *sounds_w = new w_env_select("", environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
+	w_env_select *sounds_w = new w_env_select(environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
 	table->dual_add(sounds_w->label("Sounds"), d);
 	table->dual_add(sounds_w, d);
 
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Theme"), d);
 
-	w_env_select *theme_w = new w_env_select("", environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
+	w_env_select *theme_w = new w_env_select(environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
 	table->dual_add(theme_w->label("Theme"), d);
 	table->dual_add(theme_w, d);
 
-	w_toggle *smooth_text_w = new w_toggle("", environment_preferences->smooth_text);
+	w_toggle *smooth_text_w = new w_toggle(environment_preferences->smooth_text);
 	table->dual_add(smooth_text_w->label("Smooth Text"), d);
 	table->dual_add(smooth_text_w, d);
 

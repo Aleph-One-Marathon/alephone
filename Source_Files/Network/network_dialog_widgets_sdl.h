@@ -217,8 +217,8 @@ protected:
 // from the currently active map file
 class w_entry_point_selector : public w_select_button {
 public:
-    w_entry_point_selector(const char* inName, size_t inGameType, int16 inLevelNumber)
-        : w_select_button(inName, mEntryPoint.level_name, gotSelectedCallback, NULL), mGameType(UNONE)
+    w_entry_point_selector(size_t inGameType, int16 inLevelNumber)
+        : w_select_button(mEntryPoint.level_name, gotSelectedCallback, NULL), mGameType(UNONE)
     {
         mEntryPoint.level_number = inLevelNumber;
 		set_arg(this);
