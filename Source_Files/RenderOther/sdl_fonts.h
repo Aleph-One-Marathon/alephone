@@ -40,25 +40,6 @@
  *  Definitions
  */
 
-// understands old resource fonts, and new truetype fonts
-struct DualFontSpec
-{
-	bool prefer_old_font;
-
-	// old font
-	int16 font_id;
-	int16 size;
-	uint16 style;
-	
-	// new font
-	int16 ttf_size;
-	uint16 ttf_style;
-	std::string path;
-	// optional paths; if blank, generate font based on regular font
-	std::string path_i;  // italic
-	std::string path_b;  // bold
-	std::string path_bi; // bold italic
-};
 
 class font_info {
 public:
