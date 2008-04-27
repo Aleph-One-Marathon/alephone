@@ -59,9 +59,7 @@
 
 #include <map>
 
-#ifdef __MVCPP__
 #include <string>
-#endif
 
 // Global variables
 dialog *top_dialog = NULL;
@@ -316,6 +314,19 @@ public:
 				return false;
 		} else if (StringsEqual(tag, "style")) {
 			return ReadNumericalValue(value, "%d", style);
+		} else if (StringsEqual(tag, "path")) {
+			normal = value;
+			have_path = true;
+			return true;
+		} else if (StringsEqual(tag, "path_b")) {
+			bold = value;
+			return true;
+		} else if (StringsEqual(tag, "path_i")) {
+			oblique = value;
+			return true;
+		} else if (StringsEqual(tag, "path_bi")) {
+			bold_oblique = value;
+			return true;
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -325,21 +336,27 @@ public:
 
 	bool AttributesDone()
 	{
-		if (!have_id || !have_size) {
+		if (!(have_id || have_path) || !have_size) {
 			AttribsMissing();
 			return false;
 		}
 		dialog_font_spec[idx].font = id;
 		dialog_font_spec[idx].style = style;
 		dialog_font_spec[idx].size = size;
+		dialog_font_spec[idx].normal = normal;
+		dialog_font_spec[idx].bold = bold;
+		dialog_font_spec[idx].oblique = oblique;
+		dialog_font_spec[idx].bold_oblique = bold_oblique;
 		return true;
 	}
 
 private:
-	bool have_id, have_size;
+	bool have_id, have_size, have_path;
 
 	int idx;
 	int id, size, style;
+
+	std::string normal, bold, oblique, bold_oblique;
 };
 
 static XML_DFontParser TitleFontParser(TITLE_FONT);
