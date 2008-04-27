@@ -534,6 +534,8 @@ static void player_dialog(void *arg)
 	table->dual_add(password_w->label("Password"), d);
 	table->dual_add(password_w, d);
 
+	table->add_row(new w_spacer(), true);
+	table->dual_add_row(new w_static_text("Custom Internet Chat Colors"), d);
 	w_enabling_toggle *custom_colors_w = new w_enabling_toggle(network_preferences->use_custom_metaserver_colors);
 	table->dual_add(custom_colors_w->label("Use Custom Colors"), d);
 	table->dual_add(custom_colors_w, d);
