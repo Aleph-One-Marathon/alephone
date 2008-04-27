@@ -272,6 +272,12 @@ font_info *load_font(const TextSpec &spec) {
 			info->ttf_key = ttf_font_key_t(spec.normal, loaded_style, spec.size);
 			return info;
 		}
+		else if (spec.font != -1)
+		{
+			return static_cast<font_info *>(load_sdl_font(spec));
+		}
+		else
+			return 0;
 	}
 	else
 #endif
@@ -378,6 +384,13 @@ int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 // sdl_font_info::_draw_text is in screen_drawing.cpp
 
 #ifdef HAVE_SDL_TTF
+int8 ttf_font_info::char_width(uint8 c, uint16 style) const
+{
+	int advance;
+	TTF_GlyphMetrics(m_ttf, mac_roman_to_unicode(static_cast<char>(c)), 0, 0, 0, 0, &advance);
+
+	return advance;
+}
 uint16 ttf_font_info::_text_width(const char *text, uint16, bool utf8) const
 {
 	int width = 0;

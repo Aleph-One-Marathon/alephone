@@ -115,13 +115,13 @@ public:
 	uint16 get_ascent() const { return TTF_FontAscent(m_ttf); };
 	uint16 get_height() const { return TTF_FontHeight(m_ttf); };
 	uint16 get_line_height() const { return max(TTF_FontLineSkip(m_ttf), TTF_FontHeight(m_ttf)); }
-	uint16 get_descent() const { return TTF_FontDescent(m_ttf); }
+	uint16 get_descent() const { return -TTF_FontDescent(m_ttf); }
 	int16 get_leading() const { return get_line_height() - get_ascent() - get_descent(); }
 
 	ttf_font_key_t ttf_key;
 	TTF_Font *m_ttf;
 
-	int8 char_width(uint8, uint16) const { return 0; } // not implemented yet
+	int8 char_width(uint8, uint16) const;
 protected:
 	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const;
 	virtual uint16 _text_width(const char *text, size_t length, uint16 style, bool utf8) const;

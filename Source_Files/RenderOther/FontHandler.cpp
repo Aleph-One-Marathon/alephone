@@ -187,18 +187,22 @@ void FontSpecifier::Update()
 		unload_font(Info);
 		Info = NULL;
 	}
-	
-	// Simply implements format "#<value>"; may want to generalize this
-	short ID;
-	if (File[0] != '#') {
-		fprintf(stderr, "WARNING: Font file names not (yet) supported\n");
-		return;
-	}
-	sscanf(File+1, "%hd", &ID);
-	
-	// Actual loading
+		
 	TextSpec Spec;
-	Spec.font = ID;
+	// Simply implements format "#<value>"; may want to generalize this
+	if (File[0] == '#') 
+	{
+		short ID;
+		sscanf(File+1, "%hd", &ID);
+		
+		Spec.font = ID;
+	}
+	else
+	{
+		Spec.font = -1; // no way to fall back :(
+		Spec.normal = File;
+	}
+
 	Spec.size = Size;
 	Spec.style = Style;
 	Info = load_font(Spec);
