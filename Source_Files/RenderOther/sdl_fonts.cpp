@@ -257,7 +257,7 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 }
 #endif
 
-font_info *load_font_info(const TextSpec &spec) {
+font_info *load_font(const TextSpec &spec) {
 //	return static_cast<font_info*>(load_font(spec));
 
 #ifdef HAVE_SDL_TTF
@@ -288,17 +288,17 @@ font_info *load_font_info(const TextSpec &spec) {
  *  Unload font, free sdl_font_info
  */
 
-void unload_sdl_font(sdl_font_info *info)
+void sdl_font_info::_unload()
 {
 	// Look for font in list of loaded fonts
 	font_list_t::const_iterator i = font_list.begin(), end = font_list.end();
 	while (i != end) {
-		if (i->second == info) {
+		if (i->second == this) {
 
 			// Found, decrement reference counter and delete
-			info->ref_count--;
-			if (info->ref_count <= 0) {
-				delete info;
+			ref_count--;
+			if (ref_count <= 0) {
+				delete this; // !
 				font_list.erase(i->first);
 				return;
 			}
@@ -308,36 +308,155 @@ void unload_sdl_font(sdl_font_info *info)
 }
 
 #ifdef HAVE_SDL_TTF
-static void unload_ttf_font(ttf_font_info *info)
+void ttf_font_info::_unload()
 {
-	ttf_font_list_t::iterator it = ttf_font_list.find(info->ttf_key);
+	ttf_font_list_t::iterator it = ttf_font_list.find(ttf_key);
 	if (it != ttf_font_list.end())
 	{
 		--(it->second.second);
 		if (it->second.second <= 0)
 		{
 			TTF_CloseFont(it->second.first);
-			ttf_font_list.erase(info->ttf_key);
+			ttf_font_list.erase(ttf_key);
 		}
 	}
+
+	delete this;
 }
 #endif
 
 void unload_font(font_info *info)
 {
-	if (dynamic_cast<sdl_font_info*>(info))
-	{
-		unload_sdl_font(dynamic_cast<sdl_font_info*>(info));
-	}
-#ifdef HAVE_SDL_TTF
-	else if (dynamic_cast<ttf_font_info*>(info))
-	{
-		unload_ttf_font(dynamic_cast<ttf_font_info*>(info));
-	}
-#endif
-	else
-	{
-		assert(false);
-	}
+	info->_unload();
 }
 
+int8 sdl_font_info::char_width(uint8 c, uint16 style) const
+{
+	if (c < first_character || c > last_character)
+		return 0;
+	int8 width = width_table[(c - first_character) * 2 + 1] + ((style & styleBold) ? 1 : 0);
+	if (width == -1)	// non-existant character
+		width = width_table[(last_character - first_character + 1) * 2 + 1] + ((style & styleBold) ? 1 : 0);
+	return width;
+}
+
+uint16 sdl_font_info::_text_width(const char *text, uint16 style, bool) const
+{
+	int width = 0;
+	char c;
+	while ((c = *text++) != 0)
+		width += char_width(c, style);
+	assert(0 <= width);
+	assert(width == static_cast<int>(static_cast<uint16>(width)));
+	return width;
+}
+
+uint16 sdl_font_info::_text_width(const char *text, size_t length, uint16 style, bool) const
+{
+	int width = 0;
+	while (length--)
+		width += char_width(*text++, style); 
+	assert(0 <= width);
+	assert(width == static_cast<int>(static_cast<uint16>(width)));
+	return width;
+}
+
+int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) const
+{
+	int width = 0;
+	int num = 0;
+	char c;
+	while ((c = *text++) != 0) {
+		width += char_width(c, style);
+		if (width > max_width)
+			break;
+		num++;
+	}
+	return num;
+}
+
+// sdl_font_info::_draw_text is in screen_drawing.cpp
+
+#ifdef HAVE_SDL_TTF
+uint16 ttf_font_info::_text_width(const char *text, uint16, bool utf8) const
+{
+	int width = 0;
+	if (utf8)
+		TTF_SizeUTF8(m_ttf, text, &width, 0);
+	else
+	{
+		uint16 *temp = new uint16[strlen(text) + 1];
+		mac_roman_to_unicode(text, temp);
+		TTF_SizeUNICODE(m_ttf, temp, &width, 0);
+		delete[] temp;
+	}
+	return width;
+}
+
+uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style, bool utf8) const
+{
+	char *s = strdup(text);
+	if (strlen(s) > length)
+		s[length] = '\0';
+	int w = text_width(s, style, utf8);
+	free(s);
+	return w;
+}
+
+int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) const
+{
+	int width;
+	uint16 *temp = new uint16[strlen(text) + 1];
+	mac_roman_to_unicode(text, temp);
+	TTF_SizeUNICODE(m_ttf, temp, &width, 0);
+	if (width < max_width) return strlen(text);
+
+	int num = strlen(text) - 1;
+
+	while (num > 0 && width > max_width)
+	{
+		num--;
+		temp[num] = 0x0;
+		TTF_SizeUNICODE(m_ttf, temp, &width, 0);
+	}
+
+	delete temp;
+	return num;
+}
+
+// ttf_font_info::_draw_text is in screen_drawing.cpp
+#endif
+
+uint16 font_info::text_width(const char *text, uint16 style, bool utf8) const
+{
+	if (style & styleShadow)
+		return _text_width(text, style, utf8) + 1;
+	else
+		return _text_width(text, style, utf8);
+}
+
+uint16 font_info::text_width(const char *text, size_t length, uint16 style, bool utf8) const
+{
+	if (style & styleShadow)
+		return _text_width(text, length, style, utf8) + 1;
+	else
+		return _text_width(text, length, style, utf8);
+}
+
+int font_info::draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const
+{
+	if (style & styleShadow)
+	{
+		_draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), style, utf8);
+	}
+
+	_draw_text(s, text, length, x, y, pixel, style, utf8);
+}
+
+int font_info::trunc_text(const char *text, int max_width, uint16 style) const
+{
+	if (style & styleShadow)
+		return _trunc_text(text, max_width - 1, style);
+	else
+		return _trunc_text(text, max_width, style);
+}

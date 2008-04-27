@@ -104,7 +104,7 @@ void initialize_dialogs(FileSpecifier &theme)
 
 	// Default font and image
 	static const TextSpec default_font_spec = {kFontIDMonaco, styleNormal, 12, "gothic"};
-	default_font = load_font_info(default_font_spec);
+	default_font = load_font(default_font_spec);
 	assert(default_font);
 	default_image = SDL_CreateRGBSurface(SDL_SWSURFACE, 1, 1, 24, 0xff0000, 0x00ff00, 0x0000ff, 0);
 	assert(default_image);
@@ -642,7 +642,7 @@ bool load_theme(FileSpecifier &theme)
 
 	// Load fonts
 	for (int i=0; i<NUM_DIALOG_FONTS; i++)
-		dialog_font[i] = load_font_info(dialog_font_spec[i]);
+		dialog_font[i] = load_font(dialog_font_spec[i]);
 
 	// Load images
 	for (int i=0; i<NUM_DIALOG_IMAGES; i++) {

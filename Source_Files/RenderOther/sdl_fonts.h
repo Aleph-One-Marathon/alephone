@@ -42,12 +42,28 @@
 
 
 class font_info {
+	friend void unload_font(font_info *font);
 public:
 	virtual uint16 get_ascent(void) const = 0;
 	virtual uint16 get_height(void) const = 0;
 	virtual uint16 get_line_height(void) const = 0;
 	virtual uint16 get_descent(void) const = 0;
 	virtual int16 get_leading(void) const = 0;
+
+	int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8 = false) const;
+	uint16 text_width(const char *text, size_t length, uint16 style, bool utf8 = false) const;
+	uint16 text_width(const char *text, uint16 style, bool utf8 = false) const;
+	int trunc_text(const char *text, int max_width, uint16 style) const;
+	virtual int8 char_width(uint8 c, uint16 style) const = 0;
+
+protected:
+	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const = 0;
+	virtual uint16 _text_width(const char *text, size_t length, uint16 style, bool utf8) const = 0;
+	virtual uint16 _text_width(const char *text, uint16 style, bool utf8) const = 0;
+	virtual int _trunc_text(const char *text, int max_width, uint16 style) const = 0;
+private:
+	// wrapped behind unload_font, because we call delete this!
+	virtual void _unload() = 0;
 };
 
 // Font information structure
@@ -78,7 +94,15 @@ public:
 	uint16 *location_table;	// Table of byte-offsets into pixmap (points into resource)
 	int8 *width_table;		// Table of kerning/width info (points into resource)
 
+	int8 char_width(uint8 c, uint16 style) const;
+
+protected:
+	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const;
+	virtual uint16 _text_width(const char *text, size_t length, uint16 style, bool utf8) const;
+	virtual uint16 _text_width(const char *text, uint16 style, bool utf8) const;
+	virtual int _trunc_text(const char *text, int max_width, uint16 style) const;
 private:
+	virtual void _unload();
 	int ref_count;
 	LoadedResource rsrc;
 };
@@ -96,6 +120,15 @@ public:
 
 	ttf_font_key_t ttf_key;
 	TTF_Font *m_ttf;
+
+	int8 char_width(uint8, uint16) const { return 0; } // not implemented yet
+protected:
+	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const;
+	virtual uint16 _text_width(const char *text, size_t length, uint16 style, bool utf8) const;
+	virtual uint16 _text_width(const char *text, uint16 style, bool utf8) const;	
+	virtual int _trunc_text(const char *text, int max_width, uint16 style) const;
+private:
+	virtual void _unload();
 };
 #endif
 
@@ -107,7 +140,7 @@ public:
 extern void initialize_fonts(void);
 
 // Load font, return pointer to font info
-extern font_info *load_font_info(const TextSpec &spec);
+extern font_info *load_font(const TextSpec &spec);
 
 // Unload font
 extern void unload_font(font_info *font);

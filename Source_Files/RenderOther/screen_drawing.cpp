@@ -350,173 +350,6 @@ void _draw_screen_shape_at_x_y(shape_descriptor shape_id, short x, short y)
  *  Draw text
  */
 
-// Calculate width of single character
-static int8 char_width(uint8 c, const sdl_font_info *font, uint16 style)
-{
-	if (font == NULL || c < font->first_character || c > font->last_character)
-		return 0;
-	int8 width = font->width_table[(c - font->first_character) * 2 + 1] + ((style & styleBold) ? 1 : 0);
-	if (width == -1)	// non-existant character
-		width = font->width_table[(font->last_character - font->first_character + 1) * 2 + 1] + ((style & styleBold) ? 1 : 0);
-	return width;
-}
-
-int8 char_width(uint8 c, const font_info *font, uint16 style)
-{
-	if (dynamic_cast<const sdl_font_info*>(font))
-	{
-		return char_width(c, dynamic_cast<const sdl_font_info*>(font), style);
-	}
-}
-
-// Calculate width of text string
-static uint16 text_width(const char *text, const sdl_font_info *font, uint16 style)
-{
-	int width = 0;
-	char c;
-	while ((c = *text++) != 0)
-		width += char_width(c, font, style);
-	assert(0 <= width);
-	assert(width == static_cast<int>(static_cast<uint16>(width)));
-	return width;
-}
-
-#ifdef HAVE_SDL_TTF
-static uint16 text_width(const char *text, TTF_Font *font, uint16, bool utf8)
-{
-	int width = 0;
-	if (utf8)
-		TTF_SizeUTF8(font, text, &width, 0);
-	else
-	{
-		uint16 *temp = new uint16[strlen(text) + 1];
-		mac_roman_to_unicode(text, temp);
-		TTF_SizeUNICODE(font, temp, &width, 0);
-		delete[] temp;
-	}
-	return width;
-}
-#endif
-
-uint16 text_width(const char *text, const font_info *font, uint16 style, bool utf8)
-{
-#ifdef HAVE_SDL_TTF
-	if (dynamic_cast<const ttf_font_info*>(font))
-	{
-		const ttf_font_info *info = dynamic_cast<const ttf_font_info*>(font);
-		return text_width(text, info->m_ttf, style, utf8) + ((style & styleShadow) ? 1 : 0);
-	}
-	else
-#endif
-        if (dynamic_cast<const sdl_font_info*>(font))
-	{
-		const sdl_font_info *info = dynamic_cast<const sdl_font_info*>(font);
-		return text_width(text, info, style) + ((style & styleShadow) ? 1 : 0);
-	}
-}
-
-
-static uint16 text_width(const char *text, size_t length, const sdl_font_info *font, uint16 style)
-{
-	int width = 0;
-	while (length--)
-		width += char_width(*text++, font, style); 
-	assert(0 <= width);
-	assert(width == static_cast<int>(static_cast<uint16>(width)));
-	return width;
-}
-
-#ifdef HAVE_SDL_TTF
-static uint16 text_width(const char *text, size_t length, TTF_Font *font, uint16 style, bool utf8)
-{
-	char *s = strdup(text);
-	if (strlen(s) > length)
-		s[length] = '\0';
-	int w = text_width(s, font, style, utf8);
-	free(s);
-	return w;
-}
-#endif
-
-uint16 text_width(const char *text, size_t length, const font_info *font, uint16 style, bool utf8)
-{
-#ifdef HAVE_SDL_TTF
-	if (dynamic_cast<const ttf_font_info*>(font))
-	{
-		const ttf_font_info *info = dynamic_cast<const ttf_font_info*>(font);
-		return text_width(text, length, info->m_ttf, style, utf8);
-	}
-	else
-#endif
-        if (dynamic_cast<const sdl_font_info*>(font))
-	{
-		const sdl_font_info *info = dynamic_cast<const sdl_font_info*>(font);
-		return text_width(text, length, info, style);
-	}
-}	
-
-// Determine how many characters of a string fit into a given width
-static int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint16 style)
-{
-	int width = 0;
-	int num = 0;
-	char c;
-	while ((c = *text++) != 0) {
-		width += char_width(c, font, style);
-		if (width > max_width)
-			break;
-		num++;
-	}
-	return num;
-}
-
-#ifdef HAVE_SDL_TTF
-static int trunc_text(const char *text, int max_width, TTF_Font *font, uint16 style)
-{
-	if (style & styleShadow) max_width--;
-
-	int width;
-	uint16 *temp = new uint16[strlen(text) + 1];
-//	if (utf8)
-//		utf8_to_unicode(text, temp);
-//	else
-		mac_roman_to_unicode(text, temp);
-	TTF_SizeUNICODE(font, temp, &width, 0);
-	if (width < max_width) return strlen(text);
-
-	int num = strlen(text) - 1;
-//	char *s = strdup(text);
-
-	while (num > 0 && width > max_width)
-	{
-		num--;
-		temp[num] = 0x0;
-		TTF_SizeUNICODE(font, temp, &width, 0);
-	}
-
-//	free(s);
-	delete temp;
-	return num;
-}
-#endif
-
-int trunc_text(const char *text, int max_width, const font_info *font, uint16 style)
-{
-#ifdef HAVE_SDL_TTF
-	if (dynamic_cast<const ttf_font_info*>(font))
-	{
-		const ttf_font_info *info = dynamic_cast<const ttf_font_info*>(font);
-		return trunc_text(text, max_width, info->m_ttf, style);
-	}
-	else
-#endif
-        if (dynamic_cast<const sdl_font_info*>(font))
-	{
-		const sdl_font_info *info = dynamic_cast<const sdl_font_info*>(font);
-		return trunc_text(text, max_width, info, style);
-	}
-}
-
 // Draw single glyph at given position in frame buffer, return glyph width
 template <class T>
 inline static int draw_glyph(uint8 c, int x, int y, T *p, int pitch, int clip_left, int clip_top, int clip_right, int clip_bottom, uint32 pixel, const sdl_font_info *font, bool oblique)
@@ -614,11 +447,8 @@ inline static int draw_text(const uint8 *text, size_t length, int x, int y, T *p
 }
 
 // Draw text at given coordinates, return total width
-static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
+int sdl_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool) const
 {
-	if (font == NULL)
-		return 0;
-
 	// Get clipping rectangle
 	int clip_top, clip_bottom, clip_left, clip_right;
 	if (draw_clip_rect_active) {
@@ -638,32 +468,26 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 	int width = 0;
 	switch (s->format->BytesPerPixel) {
 		case 1:
-			width = draw_text((const uint8 *)text, length, x, y, (pixel8 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
+			width = ::draw_text((const uint8 *)text, length, x, y, (pixel8 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, this, style);
 			break;
 		case 2:
-			width = draw_text((const uint8 *)text, length, x, y, (pixel16 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
+			width = ::draw_text((const uint8 *)text, length, x, y, (pixel16 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, this, style);
 			break;
 		case 4:
-			width = draw_text((const uint8 *)text, length, x, y, (pixel32 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, style);
+			width = ::draw_text((const uint8 *)text, length, x, y, (pixel32 *)s->pixels, s->pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, this, style);
 			break;
 	}
 	if (SDL_MUSTLOCK (s)) {
 	  SDL_UnlockSurface(s);
 	}
 	if (s == SDL_GetVideoSurface())
-		SDL_UpdateRect(s, x, y - font->ascent, text_width(text, font, style), font->rect_height);
+		SDL_UpdateRect(s, x, y - ascent, text_width(text, style, false), rect_height);
 	return width;
 }
 
 #ifdef HAVE_SDL_TTF
-static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, TTF_Font *font, uint16 style, bool utf8)
+int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const
 {
-	if (!font) 
-	{
-		fprintf(stderr, "No font specified!\n");
-		return 0;
-	}
-
 	int clip_top, clip_bottom, clip_left, clip_right;
 	if (draw_clip_rect_active) {
 		clip_top = draw_clip_rect.top;
@@ -681,24 +505,24 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 	SDL_Surface *text_surface = 0;
 	if (utf8) 
 		if (environment_preferences->smooth_text)
-			text_surface = TTF_RenderUTF8_Blended(font, text, c);	
+			text_surface = TTF_RenderUTF8_Blended(m_ttf, text, c);	
 		else
-			text_surface = TTF_RenderUTF8_Solid(font, text, c);
+			text_surface = TTF_RenderUTF8_Solid(m_ttf, text, c);
 	else
 	{
 		uint16 *temp = new uint16[strlen(text) + 1];
 		mac_roman_to_unicode(text, temp);
 		if (environment_preferences->smooth_text)
-			text_surface = TTF_RenderUNICODE_Blended(font, temp, c);
+			text_surface = TTF_RenderUNICODE_Blended(m_ttf, temp, c);
 		else
-			text_surface = TTF_RenderUNICODE_Solid(font, temp, c);
+			text_surface = TTF_RenderUNICODE_Solid(m_ttf, temp, c);
 		delete[] temp;
 	}
 	if (!text_surface) return 0;
 	
 	SDL_Rect dst_rect;
 	dst_rect.x = x;
-	dst_rect.y = y - TTF_FontAscent(font);
+	dst_rect.y = y - TTF_FontAscent(m_ttf);
 
 	if (draw_clip_rect_active)
 	{
@@ -725,49 +549,13 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 		SDL_BlitSurface(text_surface, NULL, s, &dst_rect);
 
 	if (s == SDL_GetVideoSurface())
-		SDL_UpdateRect(s, x, y - TTF_FontAscent(font), text_width(text, font, style, utf8), TTF_FontHeight(font));
+		SDL_UpdateRect(s, x, y - TTF_FontAscent(m_ttf), text_width(text, style, utf8), TTF_FontHeight(m_ttf));
 
 	int width = text_surface->w;
 	SDL_FreeSurface(text_surface);
 	return width;
-	return 0;
 }
 #endif
-
-int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const font_info *font, uint16 style, bool utf8)
-{
-#ifdef HAVE_SDL_TTF
-	if (dynamic_cast<const ttf_font_info*>(font))
-	{
-		const ttf_font_info *ttf_font = dynamic_cast<const ttf_font_info*>(font);
-
-		if (style & styleShadow)
-		{
-			draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), ttf_font->m_ttf, style, utf8);
-		}
-		int width = draw_text(s, text, length, x, y, pixel, ttf_font->m_ttf, style, utf8);
-		return (style & styleShadow) ? width + 1 : width;
-	}
-	else
-#endif
-        if (dynamic_cast<const sdl_font_info*>(font))
-	{
-		const sdl_font_info *info = dynamic_cast<const sdl_font_info*>(font);
-		if (style & styleShadow)
-		{
-			draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), info, style);
-		}
-		int width = draw_text(s, text, length, x, y, pixel, info, style);
-		return (style & styleShadow) ? width + 1 : width;
-	}
-}
-
-
-
-static void draw_text(const char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
-{
-	draw_text(draw_surface, text, strlen(text), x, y, pixel, font, style);
-}
 
 static void draw_text(const char *text, int x, int y, uint32 pixel, const font_info *font, uint16 style)
 {

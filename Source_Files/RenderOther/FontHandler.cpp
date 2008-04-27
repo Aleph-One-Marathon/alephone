@@ -201,7 +201,7 @@ void FontSpecifier::Update()
 	Spec.font = ID;
 	Spec.size = Size;
 	Spec.style = Style;
-	Info = load_font_info(Spec);
+	Info = load_font(Spec);
 	
 	if (Info) {
 		Ascent = Info->get_ascent();
