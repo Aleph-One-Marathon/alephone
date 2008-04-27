@@ -43,14 +43,6 @@
 // understands old resource fonts, and new truetype fonts
 struct DualFontSpec
 {
-	enum {
-		styleNormal = 0,
-		styleBold = 1,
-		styleItalic = 2,
-		styleUnderline = 4,
-		styleShadow = 8
-	};
-
 	bool prefer_old_font;
 
 	// old font
@@ -68,10 +60,19 @@ struct DualFontSpec
 	std::string path_bi; // bold italic
 };
 
+class font_info {
+public:
+	virtual uint16 get_ascent(void) const = 0;
+	virtual uint16 get_height(void) const = 0;
+	virtual uint16 get_line_height(void) const = 0;
+	virtual uint16 get_descent(void) const = 0;
+	virtual int16 get_leading(void) const = 0;
+};
+
 // Font information structure
-class sdl_font_info {
-	friend sdl_font_info *load_font(const TextSpec &spec);
-	friend void unload_font(sdl_font_info *font);
+class sdl_font_info : public font_info {
+	friend sdl_font_info *load_sdl_font(const TextSpec &spec);
+	friend void unload_sdl_font(sdl_font_info *font);
 
 public:
 	sdl_font_info() : first_character(0), last_character(0),
@@ -103,41 +104,19 @@ private:
 
 #ifdef HAVE_SDL_TTF
 typedef boost::tuple<std::string, uint16, int16> ttf_font_key_t;
-#endif
 
-class ttf_and_sdl_font_info {
+class ttf_font_info : public font_info { 
 public:
-
-	ttf_and_sdl_font_info() : m_sdl_font_info(0)
-#ifdef HAVE_SDL_TTF
-				, m_ttf_font_info(0) 
-#endif
-		{ }
-	uint16 get_ascent() const;
-	uint16 get_height() const;
-	uint16 get_line_height() const;
-	uint16 get_descent() const;
-	int16 get_leading() const;
-
-	void set_sdl_font_info(sdl_font_info *font_info) { m_sdl_font_info = font_info; }
-	sdl_font_info* get_sdl_font_info() { return m_sdl_font_info; }
-#ifdef HAVE_SDL_TTF
-	void set_ttf_font_info(TTF_Font *ttf_font_info) { m_ttf_font_info = ttf_font_info; }
-	TTF_Font* get_ttf_font_info() { return m_ttf_font_info; }
-	bool is_ttf_font() const { return m_ttf_font_info; }
+	uint16 get_ascent() const { return TTF_FontAscent(m_ttf); };
+	uint16 get_height() const { return TTF_FontHeight(m_ttf); };
+	uint16 get_line_height() const { return max(TTF_FontLineSkip(m_ttf), TTF_FontHeight(m_ttf)); }
+	uint16 get_descent() const { return TTF_FontDescent(m_ttf); }
+	int16 get_leading() const { return get_line_height() - get_ascent() - get_descent(); }
 
 	ttf_font_key_t ttf_key;
-#endif
-
-private:
-	sdl_font_info* m_sdl_font_info;
-#ifdef HAVE_SDL_TTF
-	TTF_Font* m_ttf_font_info;
-#endif
-
+	TTF_Font *m_ttf;
 };
-
-	
+#endif
 
 /*
  *  Functions
@@ -147,12 +126,9 @@ private:
 extern void initialize_fonts(void);
 
 // Load font, return pointer to font info
-extern sdl_font_info *load_font(const TextSpec &spec);
-extern ttf_and_sdl_font_info *load_ttf_and_sdl_font(const TextSpec &spec);
-extern ttf_and_sdl_font_info *load_ttf_and_sdl_font(const DualFontSpec &spec);
+extern font_info *load_font_info(const TextSpec &spec);
 
 // Unload font
-extern void unload_font(sdl_font_info *font);
-extern void unload_font(ttf_and_sdl_font_info *font);
+extern void unload_font(font_info *font);
 
 #endif

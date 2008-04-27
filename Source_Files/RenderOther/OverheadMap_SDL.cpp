@@ -145,7 +145,7 @@ void OverheadMap_SDL_Class::draw_player(world_point2d &center, angle facing, rgb
 void OverheadMap_SDL_Class::draw_text(world_point2d &location, rgb_color &color, char *text, FontSpecifier& FontData, short justify)
 {
 	// Load font
-	const sdl_font_info *font = FontData.Info;
+	const font_info *font = FontData.Info;
 	short style = FontData.Style;
 
 	// Find left-side location

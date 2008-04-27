@@ -462,7 +462,7 @@ void change_gamma_level(
 
 // Globals for communicating with the SDL contents of DisplayText
 static SDL_Surface *DisplayTextDest = NULL;
-static sdl_font_info *DisplayTextFont = NULL;
+static font_info *DisplayTextFont = NULL;
 static short DisplayTextStyle = 0;
 
 /*static*/ void DisplayText(short BaseX, short BaseY, const char *Text, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff)

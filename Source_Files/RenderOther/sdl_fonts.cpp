@@ -99,7 +99,7 @@ void initialize_fonts(void)
  *  Load font from resources and allocate sdl_font_info
  */
 
-sdl_font_info *load_font(const TextSpec &spec)
+sdl_font_info *load_sdl_font(const TextSpec &spec)
 {
 	sdl_font_info *info = NULL;
 
@@ -205,61 +205,38 @@ sdl_font_info *load_font(const TextSpec &spec)
 	return info;
 }
 
-ttf_and_sdl_font_info *load_ttf_and_sdl_font(const DualFontSpec& spec)
-{
 #ifdef HAVE_SDL_TTF
-	if (spec.prefer_old_font && spec.font_id >= 0)
-	{
-		TextSpec old_spec;
-		old_spec.font = spec.font_id;
-		old_spec.style = spec.style;
-		old_spec.size = spec.size;
-
-		sdl_font_info *info = load_font(old_spec);
-		if (info)
-		{
-			std::auto_ptr<ttf_and_sdl_font_info> ttf_and_sdl_info(new ttf_and_sdl_font_info);
-			ttf_and_sdl_info->set_sdl_font_info(info);
-			return ttf_and_sdl_info.release();
-		}
-	}
-
-
-	// look for loaded fonts
-	int loaded_style = spec.ttf_style & (DualFontSpec::styleBold | DualFontSpec::styleItalic | DualFontSpec::styleUnderline);
-
-	ttf_font_key_t search_key(spec.path, loaded_style, spec.ttf_size);
-	
+static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size)
+{
+	// already loaded? increment reference counter and return pointer
+	ttf_font_key_t search_key(path, style, size);
 	ttf_font_list_t::iterator it = ttf_font_list.find(search_key);
-	if (it != ttf_font_list.end()) 
+	if (it != ttf_font_list.end())
 	{
 		TTF_Font *font = it->second.first;
 		it->second.second++;
-		
-		std::auto_ptr<ttf_and_sdl_font_info> ttf_and_sdl_info(new ttf_and_sdl_font_info);
-		ttf_and_sdl_info->set_ttf_font_info(font);
-		ttf_and_sdl_info->ttf_key = search_key;
-		return ttf_and_sdl_info.release();
+
+		return font;
 	}
-	
+
 	TTF_Font *font;
-	if (spec.path == "gothic")
+	if (path == "gothic")
 	{
-		font = TTF_OpenFontRW(SDL_RWFromConstMem(deja_vu_condensed_sans_bold, sizeof(deja_vu_condensed_sans_bold)), 0, spec.ttf_size);
+		font = TTF_OpenFontRW(SDL_RWFromConstMem(deja_vu_condensed_sans_bold, sizeof(deja_vu_condensed_sans_bold)), 0, size);
 	}
 	else
 	{
-		font = TTF_OpenFont(spec.path.c_str(), spec.ttf_size);
+		font = TTF_OpenFont(path.c_str(), size);
 	}
 
 	if (font)
 	{
 		int ttf_style = TTF_STYLE_NORMAL;
-		if (spec.ttf_style & DualFontSpec::styleBold)
+		if (style & styleBold)
 			ttf_style |= TTF_STYLE_BOLD;
-		if (spec.ttf_style & DualFontSpec::styleItalic)
+		if (style & styleItalic)
 			ttf_style |= TTF_STYLE_ITALIC;
-		if (spec.ttf_style & DualFontSpec::styleUnderline)
+		if (style & styleUnderline)
 			ttf_style |= TTF_STYLE_UNDERLINE;
 		
 		TTF_SetFontStyle(font, ttf_style);
@@ -270,54 +247,48 @@ ttf_and_sdl_font_info *load_ttf_and_sdl_font(const DualFontSpec& spec)
 			TTF_SetFontHinting(font, TTF_HINTING_MONO);
 #endif
 		
-		ttf_font_key_t key(spec.path, loaded_style, spec.ttf_size);
+		ttf_font_key_t key(path, style, size);
 		ref_counted_ttf_font_t value(font, 1);
-
+		
 		ttf_font_list[key] = value;
-
-		std::auto_ptr<ttf_and_sdl_font_info> ttf_and_sdl_info(new ttf_and_sdl_font_info);
-		ttf_and_sdl_info->set_ttf_font_info(font);
-		ttf_and_sdl_info->ttf_key = key;
-		return ttf_and_sdl_info.release();
-	}
-#endif
-	// not loaded, try the old font
-	TextSpec old_spec;
-	old_spec.font = spec.font_id;
-	old_spec.style = spec.style;
-	old_spec.size = spec.size;
-	
-	sdl_font_info *info = load_font(old_spec);
-	if (info)
-	{
-		std::auto_ptr<ttf_and_sdl_font_info> ttf_and_sdl_info(new ttf_and_sdl_font_info);
-		ttf_and_sdl_info->set_sdl_font_info(info);
-		return ttf_and_sdl_info.release();
 	}
 	
-	return 0;
+	return font;	
 }
+#endif
 
-ttf_and_sdl_font_info *load_ttf_and_sdl_font(const TextSpec& spec)
-{
-	sdl_font_info *info = load_font(spec);
-	if (info)
+font_info *load_font_info(const TextSpec &spec) {
+//	return static_cast<font_info*>(load_font(spec));
+
+#ifdef HAVE_SDL_TTF
+	if (spec.normal != "")
 	{
-		ttf_and_sdl_font_info* ttf_and_sdl_info = new ttf_and_sdl_font_info;
-		ttf_and_sdl_info->set_sdl_font_info(info);
-		return ttf_and_sdl_info;
+		uint16 loaded_style = spec.style & (styleBold | styleItalic | styleUnderline);
+		TTF_Font *font = load_ttf_font(spec.normal, loaded_style, spec.size);
+		if (font) 
+		{
+			ttf_font_info *info = new ttf_font_info;
+			info->m_ttf = font;
+			info->ttf_key = ttf_font_key_t(spec.normal, loaded_style, spec.size);
+			return info;
+		}
 	}
 	else
+#endif
+        if (spec.font != -1)
 	{
-		return 0;
+		return static_cast<font_info *>(load_sdl_font(spec));
 	}
+	else
+		return 0;
 }
+
 
 /*
  *  Unload font, free sdl_font_info
  */
 
-void unload_font(sdl_font_info *info)
+void unload_sdl_font(sdl_font_info *info)
 {
 	// Look for font in list of loaded fonts
 	font_list_t::const_iterator i = font_list.begin(), end = font_list.end();
@@ -336,99 +307,37 @@ void unload_font(sdl_font_info *info)
 	}
 }
 
-void unload_font(ttf_and_sdl_font_info *info)
-{
 #ifdef HAVE_SDL_TTF
-	if (info->get_ttf_font_info())
+static void unload_ttf_font(ttf_font_info *info)
+{
+	ttf_font_list_t::iterator it = ttf_font_list.find(info->ttf_key);
+	if (it != ttf_font_list.end())
 	{
-		ttf_font_list_t::iterator it = ttf_font_list.find(info->ttf_key);
-		if (it != ttf_font_list.end())
+		--(it->second.second);
+		if (it->second.second <= 0)
 		{
-			--(it->second.second);
-			if (it->second.second <= 0)
-			{
-				TTF_CloseFont(it->second.first);
-				ttf_font_list.erase(info->ttf_key);
-			}
+			TTF_CloseFont(it->second.first);
+			ttf_font_list.erase(info->ttf_key);
 		}
-
 	}
+}
 #endif
 
-	if (info->get_sdl_font_info())
-	{
-		unload_font(info->get_sdl_font_info());
-	}
-	
-	delete info;
-}
-
-uint16 ttf_and_sdl_font_info::get_ascent() const
+void unload_font(font_info *info)
 {
-#ifdef HAVE_SDL_TTF
-	if (is_ttf_font())
+	if (dynamic_cast<sdl_font_info*>(info))
 	{
-		return TTF_FontAscent(m_ttf_font_info);
+		unload_sdl_font(dynamic_cast<sdl_font_info*>(info));
 	}
-	else
-#endif
+#ifdef HAVE_SDL_TTF
+	else if (dynamic_cast<ttf_font_info*>(info))
 	{
-		return m_sdl_font_info->get_ascent();
+		unload_ttf_font(dynamic_cast<ttf_font_info*>(info));
+	}
+#endif
+	else
+	{
+		assert(false);
 	}
 }
 
-uint16 ttf_and_sdl_font_info::get_height() const
-{
-#ifdef HAVE_SDL_TTF
-	if (is_ttf_font())
-	{
-		return TTF_FontHeight(m_ttf_font_info);
-	}
-	else
-#endif
-	{
-		return m_sdl_font_info->get_height();
-	}
-}
-
-uint16 ttf_and_sdl_font_info::get_line_height() const
-{
-#ifdef HAVE_SDL_TTF
-	if (is_ttf_font())
-	{
-		return max(TTF_FontLineSkip(m_ttf_font_info), TTF_FontHeight(m_ttf_font_info));;
-	}
-	else
-#endif
-	{
-		return m_sdl_font_info->get_line_height();
-	}
-}
-
-uint16 ttf_and_sdl_font_info::get_descent() const
-{
-#ifdef HAVE_SDL_TTF
-	if (is_ttf_font())
-	{
-		return TTF_FontDescent(m_ttf_font_info);
-	}
-	else
-#endif
-	{
-		return m_sdl_font_info->get_descent();
-	}
-}
-
-int16 ttf_and_sdl_font_info::get_leading() const
-{
-#ifdef HAVE_SDL_TTF
-	if (is_ttf_font())
-	{
-		return get_line_height() - get_ascent() - get_descent();
-	}
-	else
-#endif
-	{
-		return m_sdl_font_info->get_leading();
-	}
-}

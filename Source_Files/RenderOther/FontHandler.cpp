@@ -201,12 +201,12 @@ void FontSpecifier::Update()
 	Spec.font = ID;
 	Spec.size = Size;
 	Spec.style = Style;
-	Info = load_font(Spec);
+	Info = load_font_info(Spec);
 	
 	if (Info) {
-		Ascent = Info->ascent;
-		Descent = Info->descent;
-		Leading = Info->leading;
+		Ascent = Info->get_ascent();
+		Descent = Info->get_descent();
+		Leading = Info->get_leading();
 		Height = Ascent + Leading;
 		LineSpacing = Ascent + Descent + Leading;
 		for (int k=0; k<256; k++)

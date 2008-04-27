@@ -38,7 +38,7 @@ using std::vector;
 
 class widget;
 struct SDL_Surface;
-class ttf_and_sdl_font_info;
+class font_info;
 class FileSpecifier;
 
 
@@ -418,7 +418,8 @@ extern void initialize_dialogs(FileSpecifier &theme);
 extern bool load_theme(FileSpecifier &theme);
 
 //extern const sdl_font_info *get_dialog_font(int which, uint16 &style);
-extern ttf_and_sdl_font_info *get_dialog_font(int which, uint16 &style);
+//extern ttf_and_sdl_font_info *get_dialog_font(int which, uint16 &style);
+extern font_info *get_dialog_font(int which, uint16 &style);
 extern uint32 get_dialog_color(int which);
 extern uint32 get_dialog_player_color(size_t colorIndex); // ZZZ: added
 extern SDL_Surface *get_dialog_image(int which, int width = 0, int height = 0);

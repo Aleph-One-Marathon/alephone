@@ -25,6 +25,7 @@
 #define _CSERIES_FONTS_
 
 #include "cstypes.h"
+#include <string>
 
 const int styleNormal = 0;
 const int styleBold = 1;
@@ -34,19 +35,16 @@ const int styleShadow = 8;
 
 typedef struct TextSpec {
 	int16 font;
+
 	uint16 style;
 	int16 size;
+
+	// paths to fonts
+	std::string normal;
+	std::string oblique;
+	std::string bold;
+	std::string bold_oblique;
 } TextSpec;
-
-extern void GetNewTextSpec(
-	TextSpec *spec,
-	short resid,
-	short item);
-
-extern void GetFont(
-	TextSpec *spec);
-extern void SetFont(
-	TextSpec *spec);
 
 #endif
 

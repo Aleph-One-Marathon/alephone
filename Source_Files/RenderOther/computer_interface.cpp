@@ -301,7 +301,7 @@ extern TextSpec *_get_font_spec(short font_index);
 #if defined(mac)
 extern void UseInterfaceFont(short font_index);
 #elif defined(SDL)
-extern sdl_font_info *GetInterfaceFont(short font_index);
+extern font_info *GetInterfaceFont(short font_index);
 extern uint16 GetInterfaceStyle(short font_index);
 #endif
 
@@ -450,7 +450,7 @@ static bool calculate_line(char *base_text, short width, short start_index, shor
 		int index = start_index, running_width = 0;
 		
 		// terminal_font no longer a global, since it may change
-		sdl_font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
+		font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
 
 		while (running_width < width && base_text[index] && base_text[index] != MAC_LINE_END) {
 			running_width += char_width(base_text[index], terminal_font, current_style);
@@ -858,7 +858,7 @@ static void draw_logon_text(
 		SetFont(&old_font);
 	}
 #else
-	sdl_font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
+	font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
 	uint16 terminal_style = GetInterfaceStyle(_computer_interface_font);
 	width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, terminal_style);
 	// width = text_width(base_text + current_group->start_index, current_group->length, terminal_font, _get_font_spec(_computer_interface_font)->style);
@@ -1080,7 +1080,7 @@ static void draw_line(
 #ifdef mac
 	MoveTo(bounds->left, bounds->top+line_height*(line_number+FUDGE_FACTOR));
 #else
-	sdl_font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
+	font_info *terminal_font = GetInterfaceFont(_computer_interface_font);
 	int xpos = bounds->left;
 #endif
 
@@ -1320,7 +1320,7 @@ static void display_picture(
 			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
 		DrawText(temporary, 0, strlen(temporary));
 #elif defined(SDL)
-		const sdl_font_info *font = GetInterfaceFont(_computer_interface_title_font);
+		const font_info *font = GetInterfaceFont(_computer_interface_title_font);
 		int width = text_width(temporary, font, styleNormal);
 		draw_text(/*world_pixels*/draw_surface, temporary,
 		          bounds.left + (RECTANGLE_WIDTH(&bounds) - width) / 2,
@@ -1852,7 +1852,7 @@ static void present_checkpoint_text(
 			bounds.top+RECTANGLE_HEIGHT(&bounds)/2);
 		DrawText(temporary, 0, strlen(temporary));
 #elif defined(SDL)
-		const sdl_font_info *font = GetInterfaceFont(_computer_interface_title_font);
+		const font_info *font = GetInterfaceFont(_computer_interface_title_font);
 		// const sdl_font_info *font = load_font(*_get_font_spec(_computer_interface_title_font));
 		int width = text_width(temporary, font, styleNormal);
 		draw_text(/*world_pixels*/draw_surface, temporary,

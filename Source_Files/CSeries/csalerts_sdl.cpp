@@ -56,7 +56,7 @@ void alert_user(char *message, short severity)
     
     // Wrap lines
     uint16 style;
-    ttf_and_sdl_font_info *font = get_dialog_font(MESSAGE_FONT, style);
+    font_info *font = get_dialog_font(MESSAGE_FONT, style);
     char *t = message;
 
     while (strlen(t)) {

@@ -212,7 +212,7 @@ static SDL_Surface *old_draw_surface = NULL;
 
 // Gets interface font and style;
 // used in computer_interface.cpp
-extern sdl_font_info *GetInterfaceFont(short font_index);
+extern font_info *GetInterfaceFont(short font_index);
 extern uint16 GetInterfaceStyle(short font_index);
 
 bool draw_clip_rect_active = false;			// Flag: clipping rect active
@@ -351,7 +351,7 @@ void _draw_screen_shape_at_x_y(shape_descriptor shape_id, short x, short y)
  */
 
 // Calculate width of single character
-int8 char_width(uint8 c, const sdl_font_info *font, uint16 style)
+static int8 char_width(uint8 c, const sdl_font_info *font, uint16 style)
 {
 	if (font == NULL || c < font->first_character || c > font->last_character)
 		return 0;
@@ -361,8 +361,16 @@ int8 char_width(uint8 c, const sdl_font_info *font, uint16 style)
 	return width;
 }
 
+int8 char_width(uint8 c, const font_info *font, uint16 style)
+{
+	if (dynamic_cast<const sdl_font_info*>(font))
+	{
+		return char_width(c, dynamic_cast<const sdl_font_info*>(font), style);
+	}
+}
+
 // Calculate width of text string
-uint16 text_width(const char *text, const sdl_font_info *font, uint16 style)
+static uint16 text_width(const char *text, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
 	char c;
@@ -390,17 +398,25 @@ static uint16 text_width(const char *text, TTF_Font *font, uint16, bool utf8)
 }
 #endif
 
-uint16 text_width(const char* text, ttf_and_sdl_font_info *font, uint16 style, bool utf8)
+uint16 text_width(const char *text, const font_info *font, uint16 style, bool utf8)
 {
 #ifdef HAVE_SDL_TTF
-	if (font->is_ttf_font())
-		return text_width(text, font->get_ttf_font_info(), style, utf8) + ((style & styleShadow) ? 1 : 0);
+	if (dynamic_cast<const ttf_font_info*>(font))
+	{
+		const ttf_font_info *info = dynamic_cast<const ttf_font_info*>(font);
+		return text_width(text, info->m_ttf, style, utf8) + ((style & styleShadow) ? 1 : 0);
+	}
 	else
 #endif
-		return text_width(text, font->get_sdl_font_info(), style) + ((style & styleShadow) ? 1 : 0);
+        if (dynamic_cast<const sdl_font_info*>(font))
+	{
+		const sdl_font_info *info = dynamic_cast<const sdl_font_info*>(font);
+		return text_width(text, info, style) + ((style & styleShadow) ? 1 : 0);
+	}
 }
 
-uint16 text_width(const char *text, size_t length, const sdl_font_info *font, uint16 style)
+
+static uint16 text_width(const char *text, size_t length, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
 	while (length--)
@@ -422,19 +438,25 @@ static uint16 text_width(const char *text, size_t length, TTF_Font *font, uint16
 }
 #endif
 
-uint16 text_width(const char *text, size_t length, ttf_and_sdl_font_info *font, uint16 style, bool utf8)
+uint16 text_width(const char *text, size_t length, const font_info *font, uint16 style, bool utf8)
 {
 #ifdef HAVE_SDL_TTF
-	if (font->is_ttf_font())
-		return text_width(text, length, font->get_ttf_font_info(), style, utf8);
+	if (dynamic_cast<const ttf_font_info*>(font))
+	{
+		const ttf_font_info *info = dynamic_cast<const ttf_font_info*>(font);
+		return text_width(text, length, info->m_ttf, style, utf8);
+	}
 	else
 #endif
-		return text_width(text, length, font->get_sdl_font_info(), style);
-}
-	
+        if (dynamic_cast<const sdl_font_info*>(font))
+	{
+		const sdl_font_info *info = dynamic_cast<const sdl_font_info*>(font);
+		return text_width(text, length, info, style);
+	}
+}	
 
 // Determine how many characters of a string fit into a given width
-int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint16 style)
+static int trunc_text(const char *text, int max_width, const sdl_font_info *font, uint16 style)
 {
 	int width = 0;
 	int num = 0;
@@ -478,16 +500,22 @@ static int trunc_text(const char *text, int max_width, TTF_Font *font, uint16 st
 }
 #endif
 
-int trunc_text(const char *text, int max_width, ttf_and_sdl_font_info *font, uint16 style)
+int trunc_text(const char *text, int max_width, const font_info *font, uint16 style)
 {
 #ifdef HAVE_SDL_TTF
-	if (font->is_ttf_font())
-		return trunc_text(text, max_width, font->get_ttf_font_info(), style);
+	if (dynamic_cast<const ttf_font_info*>(font))
+	{
+		const ttf_font_info *info = dynamic_cast<const ttf_font_info*>(font);
+		return trunc_text(text, max_width, info->m_ttf, style);
+	}
 	else
 #endif
-		return trunc_text(text, max_width, font->get_sdl_font_info(), style);
+        if (dynamic_cast<const sdl_font_info*>(font))
+	{
+		const sdl_font_info *info = dynamic_cast<const sdl_font_info*>(font);
+		return trunc_text(text, max_width, info, style);
+	}
 }
-	
 
 // Draw single glyph at given position in frame buffer, return glyph width
 template <class T>
@@ -569,19 +597,7 @@ inline static int draw_text(const uint8 *text, size_t length, int x, int y, T *p
 
                 int width;
 
-/*                if(style & styleOutline) {
-                    draw_glyph(c, x-1, y-1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
-                    draw_glyph(c, x  , y-1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
-                    draw_glyph(c, x+1, y-1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
-                    draw_glyph(c, x-1, y  , p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
-                    draw_glyph(c, x+1, y  , p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
-                    draw_glyph(c, x-1, y+1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
-                    draw_glyph(c, x  , y+1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
-                    width =
-                    draw_glyph(c, x+1, y+1, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
-                }
-                else */
-                    width = draw_glyph(c, x, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
+		width = draw_glyph(c, x, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
 		if (style & styleBold) {
 			draw_glyph(c, x + 1, y, p, pitch, clip_left, clip_top, clip_right, clip_bottom, pixel, font, oblique);
 			width++;
@@ -598,7 +614,7 @@ inline static int draw_text(const uint8 *text, size_t length, int x, int y, T *p
 }
 
 // Draw text at given coordinates, return total width
-int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
+static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
 	if (font == NULL)
 		return 0;
@@ -718,34 +734,45 @@ static int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int
 }
 #endif
 
-int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, ttf_and_sdl_font_info *font, uint16 style, bool utf8)
+int draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, const font_info *font, uint16 style, bool utf8)
 {
 #ifdef HAVE_SDL_TTF
-	if (font->is_ttf_font())
+	if (dynamic_cast<const ttf_font_info*>(font))
 	{
+		const ttf_font_info *ttf_font = dynamic_cast<const ttf_font_info*>(font);
+
 		if (style & styleShadow)
 		{
-			draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), font->get_ttf_font_info(), style, utf8);
+			draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), ttf_font->m_ttf, style, utf8);
 		}
-		int width = draw_text(s, text, length, x, y, pixel, font->get_ttf_font_info(), style, utf8);
+		int width = draw_text(s, text, length, x, y, pixel, ttf_font->m_ttf, style, utf8);
 		return (style & styleShadow) ? width + 1 : width;
 	}
 	else
 #endif
+        if (dynamic_cast<const sdl_font_info*>(font))
 	{
+		const sdl_font_info *info = dynamic_cast<const sdl_font_info*>(font);
 		if (style & styleShadow)
 		{
-			draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), font->get_sdl_font_info(), style);
+			draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), info, style);
 		}
-		int width = draw_text(s, text, length, x, y, pixel, font->get_sdl_font_info(), style);
+		int width = draw_text(s, text, length, x, y, pixel, info, style);
 		return (style & styleShadow) ? width + 1 : width;
 	}
 }
+
+
 
 static void draw_text(const char *text, int x, int y, uint32 pixel, const sdl_font_info *font, uint16 style)
 {
 	draw_text(draw_surface, text, strlen(text), x, y, pixel, font, style);
 }
+
+static void draw_text(const char *text, int x, int y, uint32 pixel, const font_info *font, uint16 style)
+{
+	draw_text(draw_surface, text, strlen(text), x, y, pixel, font, style);
+}	
 
 void _draw_screen_text(const char *text, screen_rectangle *destination, short flags, short font_id, short text_color)
 {
@@ -754,7 +781,7 @@ void _draw_screen_text(const char *text, screen_rectangle *destination, short fl
 	// Find font information
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
 	uint16 style = InterfaceFonts[font_id].Style;
-	const sdl_font_info *font = InterfaceFonts[font_id].Info;
+	const font_info *font = InterfaceFonts[font_id].Info;
 	if (font == NULL)
 		return;
 
@@ -844,11 +871,11 @@ TextSpec *_get_font_spec(short font_index)
 
 // Sets current font to this index of interface font;
 // used in computer_interface.cpp
-sdl_font_info *GetInterfaceFont(short font_index)
+font_info *GetInterfaceFont(short font_index)
 {
 	assert(font_index>=0 && font_index<NUMBER_OF_INTERFACE_FONTS);
 	
-	return InterfaceFonts[font_index].Info;
+	return static_cast<font_info*>(InterfaceFonts[font_index].Info);
 }
 
 // Gets the current font style;
@@ -871,7 +898,7 @@ short _text_width(const char *text, short font_id)
 	// Find font information
 	assert(font_id >= 0 && font_id < NUMBER_OF_INTERFACE_FONTS);
 	uint16 style = InterfaceFonts[font_id].Style;
-	const sdl_font_info *font = InterfaceFonts[font_id].Info;
+	const font_info *font = InterfaceFonts[font_id].Info;
 	if (font == NULL)
 		return 0;
 

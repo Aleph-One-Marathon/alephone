@@ -86,7 +86,7 @@ public:
 #if defined(mac)
 	short ID;
 #elif defined(SDL)
-	sdl_font_info *Info;
+	font_info *Info;
 #endif
 	
 	// Initialize: call this before calling anything else;

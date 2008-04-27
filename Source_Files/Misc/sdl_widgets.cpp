@@ -612,11 +612,11 @@ void w_toggle::draw(SDL_Surface *s) const
     if (labels == onoff_labels)
     {
 	    theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-	    static ttf_and_sdl_font_info* checkbox_font = 0;
+	    static font_info* checkbox_font = 0;
 	    if (!checkbox_font)
 	    {
-		    DualFontSpec checkbox_font_spec = { false, -1, 0, DualFontSpec::styleNormal, 15, DualFontSpec::styleBold, "gothic", "", "", "" };
-		    checkbox_font = load_ttf_and_sdl_font(checkbox_font_spec);
+		    TextSpec checkbox_font_spec = { -1, styleBold, 15, "gothic", "", "", "" };
+		    checkbox_font = load_font_info(checkbox_font_spec);
 	    }
 	    
 	    draw_text(s, str, rect.x, y + 1, get_dialog_color(theColorToUse), checkbox_font, style, utf8);
