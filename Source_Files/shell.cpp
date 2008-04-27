@@ -744,7 +744,15 @@ static void handle_game_key(const SDL_Event &event)
 			Console::instance()->backspace();
 			break;
 		default:
-			if (event.key.keysym.unicode > 0) {
+			if (event.key.keysym.unicode == 8) // Crtl-H
+			{
+				Console::instance()->backspace();
+			}
+			else if (event.key.keysym.unicode == 21) // Crtl-U
+			{
+				Console::instance()->clear();
+			}
+			else if (event.key.keysym.unicode >= ' ') {
 				Console::instance()->key(unicode_to_mac_roman(event.key.keysym.unicode));
 			}
 		}
