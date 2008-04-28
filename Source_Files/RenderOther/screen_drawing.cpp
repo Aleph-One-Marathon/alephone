@@ -505,25 +505,21 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	SDL_Surface *text_surface = 0;
 	if (utf8) 
 	{
-		char *temp = new char[length + 1];
-		strncpy(temp, text, length);
-		temp[length] = '\0';
+		char *temp = strndup_printable(text, length);
 		if (environment_preferences->smooth_text)
 			text_surface = TTF_RenderUTF8_Blended(m_ttf, temp, c);	
 		else
 			text_surface = TTF_RenderUTF8_Solid(m_ttf, temp, c);
-		delete []temp;
+		free(temp);
 	}
 	else
 	{
-		uint16 *temp = new uint16[strlen(text) + 1];
-		mac_roman_to_unicode(text, temp);
-		temp[length] = 0x0;
+		uint16 *temp = strndup_macroman(text, length);
 		if (environment_preferences->smooth_text)
 			text_surface = TTF_RenderUNICODE_Blended(m_ttf, temp, c);
 		else
 			text_surface = TTF_RenderUNICODE_Solid(m_ttf, temp, c);
-		delete[] temp;
+		free(temp);
 	}
 	if (!text_surface) return 0;
 	

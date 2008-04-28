@@ -128,6 +128,8 @@ protected:
 	virtual uint16 _text_width(const char *text, uint16 style, bool utf8) const;	
 	virtual int _trunc_text(const char *text, int max_width, uint16 style) const;
 private:
+	char *strndup_printable(const char *c, int len) const;
+	uint16 *strndup_macroman(const char *c, int len) const;
 	virtual void _unload();
 };
 #endif

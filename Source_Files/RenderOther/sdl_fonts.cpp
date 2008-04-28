@@ -391,29 +391,28 @@ int8 ttf_font_info::char_width(uint8 c, uint16 style) const
 
 	return advance;
 }
-uint16 ttf_font_info::_text_width(const char *text, uint16, bool utf8) const
+uint16 ttf_font_info::_text_width(const char *text, uint16 style, bool utf8) const
 {
-	int width = 0;
-	if (utf8)
-		TTF_SizeUTF8(m_ttf, text, &width, 0);
-	else
-	{
-		uint16 *temp = new uint16[strlen(text) + 1];
-		mac_roman_to_unicode(text, temp);
-		TTF_SizeUNICODE(m_ttf, temp, &width, 0);
-		delete[] temp;
-	}
-	return width;
+	return _text_width(text, strlen(text), style, utf8);
 }
 
 uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style, bool utf8) const
 {
-	char *s = strdup(text);
-	if (strlen(s) > length)
-		s[length] = '\0';
-	int w = text_width(s, style, utf8);
-	free(s);
-	return w;
+	int width = 0;
+	if (utf8)
+	{
+		char *temp = strndup_printable(text, length);
+		TTF_SizeUTF8(m_ttf, temp, &width, 0);
+		free(temp);
+	}
+	else
+	{
+		uint16 *temp = strndup_macroman(text, length);
+		TTF_SizeUNICODE(m_ttf, temp, &width, 0);
+		free(temp);
+	}
+	
+	return width;
 }
 
 int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) const
@@ -438,6 +437,36 @@ int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 }
 
 // ttf_font_info::_draw_text is in screen_drawing.cpp
+
+char *ttf_font_info::strndup_printable(const char *src, int len) const 
+{
+	char *dst = static_cast<char *>(malloc(len + 1));
+	char *p = dst;
+	int i = 0;
+	while (*src && i++ < len)
+	{
+		if ((unsigned char) *src >= ' ') *dst++ = *src;
+		*src++;
+	}
+
+	*dst = '\0';
+	return p;
+}
+
+uint16 *ttf_font_info::strndup_macroman(const char *src, int len) const 
+{
+	uint16 *dst = static_cast<uint16 *>(malloc((len + 1) * 2));
+	uint16 *p = dst;
+	int i = 0;
+	while (*src && i++ < len)
+	{
+		if (*src >= ' ') *dst++ = mac_roman_to_unicode(*src);
+		*src++;
+	}
+
+	*dst = 0x0;
+	return p;
+}
 #endif
 
 uint16 font_info::text_width(const char *text, uint16 style, bool utf8) const
