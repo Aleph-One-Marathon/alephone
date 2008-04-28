@@ -31,9 +31,10 @@ const int styleNormal = 0;
 const int styleBold = 1;
 const int styleItalic = 2;
 const int styleUnderline = 4;
-const int styleShadow = 8;
+// const int styleOutline = 8; -- can't be used with TTF
+const int styleShadow = 16;
 
-typedef struct TextSpec {
+struct TextSpec {
 	int16 font;
 
 	uint16 style;
@@ -44,7 +45,7 @@ typedef struct TextSpec {
 	std::string oblique;
 	std::string bold;
 	std::string bold_oblique;
-} TextSpec;
+};
 
 #endif
 
