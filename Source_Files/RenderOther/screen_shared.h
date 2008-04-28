@@ -310,7 +310,7 @@ bool SetScriptHUDIcon(int idx, const char* text, size_t rem) {
 }
 
 void SetScriptHUDSquare(int idx, int _color) {
-  unsigned char palette[3]; /* short, I KNOW. */
+  unsigned char palette[4]; /* short, I KNOW. */
   unsigned char graphic[256];
   idx %= MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS;
   ScriptHUDElements[idx].color = _color % 8;
@@ -320,6 +320,7 @@ void SetScriptHUDSquare(int idx, int _color) {
   palette[0] = color.r;
   palette[1] = color.g;
   palette[2] = color.b;
+  palette[3] = 0xff;
   icon::seticon(idx, palette, graphic);
 }
 /* /SB */
