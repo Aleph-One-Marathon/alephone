@@ -460,7 +460,7 @@ uint16 *ttf_font_info::strndup_macroman(const char *src, int len) const
 	int i = 0;
 	while (*src && i++ < len)
 	{
-		if (*src >= ' ') *dst++ = mac_roman_to_unicode(*src);
+		if ((unsigned char) *src >= ' ') *dst++ = mac_roman_to_unicode(*src);
 		*src++;
 	}
 
