@@ -91,8 +91,8 @@ public:
 	void StopSoundResource();
 
 private:
-	Mixer() { };
-
+        Mixer() : sNetworkAudioBufferDesc(0) { };
+	
 	static Mixer *m_instance;
 	
 	struct Channel {
