@@ -401,15 +401,13 @@ uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style,
 	int width = 0;
 	if (utf8)
 	{
-		char *temp = strndup_printable(text, length);
+		char *temp = process_printable(text, length);
 		TTF_SizeUTF8(m_ttf, temp, &width, 0);
-		free(temp);
 	}
 	else
 	{
-		uint16 *temp = strndup_macroman(text, length);
+		uint16 *temp = process_macroman(text, length);
 		TTF_SizeUNICODE(m_ttf, temp, &width, 0);
-		free(temp);
 	}
 	
 	return width;
@@ -418,8 +416,8 @@ uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style,
 int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) const
 {
 	int width;
-	uint16 *temp = new uint16[strlen(text) + 1];
-	mac_roman_to_unicode(text, temp);
+	static uint16 temp[1024];
+	mac_roman_to_unicode(text, temp, 1024);
 	TTF_SizeUNICODE(m_ttf, temp, &width, 0);
 	if (width < max_width) return strlen(text);
 
@@ -432,40 +430,39 @@ int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 		TTF_SizeUNICODE(m_ttf, temp, &width, 0);
 	}
 
-	delete temp;
 	return num;
 }
 
 // ttf_font_info::_draw_text is in screen_drawing.cpp
 
-char *ttf_font_info::strndup_printable(const char *src, int len) const 
+char *ttf_font_info::process_printable(const char *src, int len) const 
 {
-	char *dst = static_cast<char *>(malloc(len + 1));
+	static char dst[1024];
+	if (len > 1023) len = 1023;
 	char *p = dst;
-	int i = 0;
-	while (*src && i++ < len)
+	while (*src && len-- > 0)
 	{
-		if ((unsigned char) *src >= ' ') *dst++ = *src;
+		if ((unsigned char) *src >= ' ') *p++ = *src;
 		*src++;
 	}
 
-	*dst = '\0';
-	return p;
+	*p = '\0';
+	return dst;
 }
 
-uint16 *ttf_font_info::strndup_macroman(const char *src, int len) const 
+uint16 *ttf_font_info::process_macroman(const char *src, int len) const 
 {
-	uint16 *dst = static_cast<uint16 *>(malloc((len + 1) * 2));
+	static uint16 dst[1024];
+	if (len > 1023) len = 1023;
 	uint16 *p = dst;
-	int i = 0;
-	while (*src && i++ < len)
+	while (*src && len-- > 0)
 	{
-		if ((unsigned char) *src >= ' ') *dst++ = mac_roman_to_unicode(*src);
+		if ((unsigned char) *src >= ' ') *p++ = mac_roman_to_unicode(*src);
 		*src++;
 	}
 
-	*dst = 0x0;
-	return p;
+	*p = 0x0;
+	return dst;
 }
 #endif
 

@@ -103,6 +103,7 @@ extern const std::string pstring_to_string (const unsigned char* ps);
 extern uint16 mac_roman_to_unicode(char c);
 extern char unicode_to_mac_roman(uint16 c);
 extern void mac_roman_to_unicode(const char *input, uint16 *output);
+extern void mac_roman_to_unicode(const char *input, uint16 *output, int max_len);
 std::string mac_roman_to_utf8(const std::string& input);
 std::string utf8_to_mac_roman(const std::string& input);
 #endif

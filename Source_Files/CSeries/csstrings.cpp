@@ -376,6 +376,17 @@ void mac_roman_to_unicode(const char *input, uint16 *output)
 	*output = 0x0;
 }
 
+void mac_roman_to_unicode(const char *input, uint16 *output, int max_len)
+{
+	const char *p = input;
+
+	while (*p && --max_len > 0)
+	{
+		*output++ = macRomanUnicodeConverter.ToUnicode(*p++);
+	}
+	*output = 0x0;
+}
+
 uint16 mac_roman_to_unicode(char c)
 {
 	return macRomanUnicodeConverter.ToUnicode(c);
