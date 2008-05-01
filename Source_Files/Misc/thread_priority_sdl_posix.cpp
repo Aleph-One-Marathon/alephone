@@ -32,6 +32,7 @@
 
 bool
 BoostThreadPriority(SDL_Thread* inThread) {
+#if defined(_POSIX_PRIORITY_SCHEDULING)
     pthread_t		theTargetThread = (pthread_t) SDL_GetThreadID(inThread);
     int			theSchedulingPolicy;
     struct sched_param	theSchedulingParameters;
@@ -44,6 +45,6 @@ BoostThreadPriority(SDL_Thread* inThread) {
     
     if(pthread_setschedparam(theTargetThread, theSchedulingPolicy, &theSchedulingParameters) != 0)
       return false;
-    
+#endif
     return true;
 }

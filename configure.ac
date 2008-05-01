@@ -46,7 +46,7 @@ case $target in
 *-*-mingw32*)
 	AC_CHECK_TOOL(WINDRES, windres, :)
 	;;
-*-*-netbsd*)
+*-*-netbsd*) | *-*-openbsd*)
 	CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"	
 	;;
 *)

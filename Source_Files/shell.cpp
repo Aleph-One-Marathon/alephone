@@ -176,7 +176,7 @@ static void usage(const char *prg_name)
 #endif
 	  "\t[-s | --nosound]       Do not access the sound card\n"
 	  "\t[-m | --nogamma]       Disable gamma table effects (menu fades)\n"
-#if defined(unix) || defined(__BEOS__) || defined(__WIN32__) || defined(__NetBSD__)
+#if defined(unix) || defined(__BEOS__) || defined(__WIN32__) || defined(__NetBSD__) || defined(__OpenBSD__)
 	  "\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 	  "the data directory.\n"
 #endif
@@ -287,7 +287,7 @@ static void initialize_application(void)
 	// Find data directories, construct search path
 	DirectorySpecifier default_data_dir;
 
-#if defined(unix) || defined(__NetBSD__)
+#if defined(unix) || defined(__NetBSD__) || defined(__OpenBSD__)
 
 	default_data_dir = PKGDATADIR;
 	const char *home = getenv("HOME");
