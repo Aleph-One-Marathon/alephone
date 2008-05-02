@@ -236,8 +236,6 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 			ttf_style |= TTF_STYLE_BOLD;
 		if (style & styleItalic)
 			ttf_style |= TTF_STYLE_ITALIC;
-		if (style & styleUnderline)
-			ttf_style |= TTF_STYLE_UNDERLINE;
 		
 		TTF_SetFontStyle(font, ttf_style);
 #ifdef TTF_HINTING_LIGHT
@@ -264,12 +262,79 @@ font_info *load_font(const TextSpec &spec) {
 	if (spec.normal != "")
 	{
 		uint16 loaded_style = spec.style & (styleBold | styleItalic | styleUnderline);
-		TTF_Font *font = load_ttf_font(spec.normal, loaded_style, spec.size);
+		TTF_Font *font = load_ttf_font(spec.normal, 0, spec.size);
 		if (font) 
 		{
 			ttf_font_info *info = new ttf_font_info;
-			info->m_ttf = font;
-			info->ttf_key = ttf_font_key_t(spec.normal, loaded_style, spec.size);
+			info->m_styles[styleNormal] = font;
+			info->m_keys[styleNormal] = ttf_font_key_t(spec.normal, 0, spec.size);
+
+			// load bold face
+			font = load_ttf_font(spec.bold, styleNormal, spec.size);
+			if (font)
+			{
+				info->m_styles[styleBold] = font;
+				info->m_keys[styleBold] = ttf_font_key_t(spec.bold, styleNormal, spec.size);
+			}
+			else
+			{
+				font = load_ttf_font(spec.normal, styleBold, spec.size);
+				assert(font); // I loaded you once, you should load again
+				info->m_styles[styleBold] = font;
+				info->m_keys[styleBold] = ttf_font_key_t(spec.normal, styleBold, spec.size);
+			}
+
+			// oblique
+			font = load_ttf_font(spec.oblique, styleNormal, spec.size);
+			if (font)
+			{
+				info->m_styles[styleItalic] = font;
+				info->m_keys[styleItalic] = ttf_font_key_t(spec.oblique, styleNormal, spec.size);
+			}
+			else
+			{
+				font = load_ttf_font(spec.normal, styleItalic, spec.size);
+				assert(font); // same as above
+				info->m_styles[styleItalic] = font;
+				info->m_keys[styleItalic] = ttf_font_key_t(spec.normal, styleItalic, spec.size);
+			}
+
+			// bold oblique
+			font = load_ttf_font(spec.bold_oblique, styleNormal, spec.size);
+			if (font)
+			{
+				info->m_styles[styleBold | styleItalic] = font;
+				info->m_keys[styleBold | styleItalic] = ttf_font_key_t(spec.bold_oblique, styleNormal, spec.size);
+			}
+			else
+			{
+				// try boldening the oblique
+				font = load_ttf_font(spec.oblique, styleBold, spec.size);
+				if (font)
+				{
+					info->m_styles[styleBold | styleItalic] = font;
+					info->m_keys[styleBold | styleItalic] = ttf_font_key_t(spec.oblique, styleBold, spec.size);
+				}
+				else
+				{
+					// try obliquing the bold!
+					font = load_ttf_font(spec.bold, styleItalic, spec.size);
+					if (font)
+					{
+						info->m_styles[styleBold | styleItalic] = font;
+						info->m_keys[styleBold | styleItalic] = ttf_font_key_t(spec.bold, styleItalic, spec.size);
+					}
+					else
+					{
+						font = load_ttf_font(spec.normal, styleBold | styleItalic, spec.size);
+						assert(font);
+						info->m_styles[styleBold | styleItalic] = font;
+						info->m_keys[styleBold | styleItalic] = ttf_font_key_t(spec.normal, styleBold | styleItalic, spec.size);
+					}
+				}
+			}
+			
+				
 			return info;
 		}
 		else if (spec.font != -1)
@@ -316,15 +381,20 @@ void sdl_font_info::_unload()
 #ifdef HAVE_SDL_TTF
 void ttf_font_info::_unload()
 {
-	ttf_font_list_t::iterator it = ttf_font_list.find(ttf_key);
-	if (it != ttf_font_list.end())
+	for (int i = 0; i < styleUnderline; ++i)
 	{
-		--(it->second.second);
-		if (it->second.second <= 0)
+		ttf_font_list_t::iterator it = ttf_font_list.find(m_keys[i]);
+		if (it != ttf_font_list.end())
 		{
-			TTF_CloseFont(it->second.first);
-			ttf_font_list.erase(ttf_key);
+			--(it->second.second);
+			if (it->second.second <= 0)
+			{
+				TTF_CloseFont(it->second.first);
+				ttf_font_list.erase(m_keys[i]);
+			}
 		}
+
+		m_styles[i] = 0;
 	}
 
 	delete this;
@@ -387,7 +457,7 @@ int sdl_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 int8 ttf_font_info::char_width(uint8 c, uint16 style) const
 {
 	int advance;
-	TTF_GlyphMetrics(m_ttf, mac_roman_to_unicode(static_cast<char>(c)), 0, 0, 0, 0, &advance);
+	TTF_GlyphMetrics(get_ttf(style), mac_roman_to_unicode(static_cast<char>(c)), 0, 0, 0, 0, &advance);
 
 	return advance;
 }
@@ -402,12 +472,12 @@ uint16 ttf_font_info::_text_width(const char *text, size_t length, uint16 style,
 	if (utf8)
 	{
 		char *temp = process_printable(text, length);
-		TTF_SizeUTF8(m_ttf, temp, &width, 0);
+		TTF_SizeUTF8(get_ttf(style), temp, &width, 0);
 	}
 	else
 	{
 		uint16 *temp = process_macroman(text, length);
-		TTF_SizeUNICODE(m_ttf, temp, &width, 0);
+		TTF_SizeUNICODE(get_ttf(style), temp, &width, 0);
 	}
 	
 	return width;
@@ -418,7 +488,7 @@ int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 	int width;
 	static uint16 temp[1024];
 	mac_roman_to_unicode(text, temp, 1024);
-	TTF_SizeUNICODE(m_ttf, temp, &width, 0);
+	TTF_SizeUNICODE(get_ttf(style), temp, &width, 0);
 	if (width < max_width) return strlen(text);
 
 	int num = strlen(text) - 1;
@@ -427,7 +497,7 @@ int ttf_font_info::_trunc_text(const char *text, int max_width, uint16 style) co
 	{
 		num--;
 		temp[num] = 0x0;
-		TTF_SizeUNICODE(m_ttf, temp, &width, 0);
+		TTF_SizeUNICODE(get_ttf(style), temp, &width, 0);
 	}
 
 	return num;

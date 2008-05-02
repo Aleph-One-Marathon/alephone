@@ -507,23 +507,23 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	{
 		char *temp = process_printable(text, length);
 		if (environment_preferences->smooth_text)
-			text_surface = TTF_RenderUTF8_Blended(m_ttf, temp, c);	
+			text_surface = TTF_RenderUTF8_Blended(get_ttf(style), temp, c);	
 		else
-			text_surface = TTF_RenderUTF8_Solid(m_ttf, temp, c);
+			text_surface = TTF_RenderUTF8_Solid(get_ttf(style), temp, c);
 	}
 	else
 	{
 		uint16 *temp = process_macroman(text, length);
 		if (environment_preferences->smooth_text)
-			text_surface = TTF_RenderUNICODE_Blended(m_ttf, temp, c);
+			text_surface = TTF_RenderUNICODE_Blended(get_ttf(style), temp, c);
 		else
-			text_surface = TTF_RenderUNICODE_Solid(m_ttf, temp, c);
+			text_surface = TTF_RenderUNICODE_Solid(get_ttf(style), temp, c);
 	}
 	if (!text_surface) return 0;
 	
 	SDL_Rect dst_rect;
 	dst_rect.x = x;
-	dst_rect.y = y - TTF_FontAscent(m_ttf);
+	dst_rect.y = y - TTF_FontAscent(get_ttf(style));
 
 	if (draw_clip_rect_active)
 	{
@@ -550,7 +550,7 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 		SDL_BlitSurface(text_surface, NULL, s, &dst_rect);
 
 	if (s == SDL_GetVideoSurface())
-		SDL_UpdateRect(s, x, y - TTF_FontAscent(m_ttf), text_width(text, style, utf8), TTF_FontHeight(m_ttf));
+		SDL_UpdateRect(s, x, y - TTF_FontAscent(get_ttf(style)), text_width(text, style, utf8), TTF_FontHeight(get_ttf(style)));
 
 	int width = text_surface->w;
 	SDL_FreeSurface(text_surface);

@@ -112,16 +112,20 @@ typedef boost::tuple<std::string, uint16, int16> ttf_font_key_t;
 
 class ttf_font_info : public font_info { 
 public:
-	uint16 get_ascent() const { return TTF_FontAscent(m_ttf); };
-	uint16 get_height() const { return TTF_FontHeight(m_ttf); };
-	uint16 get_line_height() const { return max(TTF_FontLineSkip(m_ttf), TTF_FontHeight(m_ttf)); }
-	uint16 get_descent() const { return -TTF_FontDescent(m_ttf); }
+	uint16 get_ascent() const { return TTF_FontAscent(m_styles[styleNormal]); };
+	uint16 get_height() const { return TTF_FontHeight(m_styles[styleNormal]); };
+	uint16 get_line_height() const { return max(TTF_FontLineSkip(m_styles[styleNormal]), TTF_FontHeight(m_styles[styleNormal])); }
+	uint16 get_descent() const { return -TTF_FontDescent(m_styles[styleNormal]); }
 	int16 get_leading() const { return get_line_height() - get_ascent() - get_descent(); }
 
-	ttf_font_key_t ttf_key;
-	TTF_Font *m_ttf;
+	TTF_Font* m_styles[styleUnderline];
+	ttf_font_key_t m_keys[styleUnderline];
 
 	int8 char_width(uint8, uint16) const;
+
+	ttf_font_info() { 
+		for (int i = 0; i < styleUnderline; i++) { m_styles[i] = 0; } 
+	}
 protected:
 	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const;
 	virtual uint16 _text_width(const char *text, size_t length, uint16 style, bool utf8) const;
@@ -130,6 +134,7 @@ protected:
 private:
 	char *process_printable(const char *src, int len) const;
 	uint16 *process_macroman(const char *src, int len) const;
+	TTF_Font *get_ttf(uint16 style) const { return m_styles[style & (styleBold | styleItalic)]; }
 	virtual void _unload();
 };
 #endif
