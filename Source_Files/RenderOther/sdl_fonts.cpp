@@ -36,6 +36,9 @@
 #include <vector>
 #include <map>
 
+#include <boost/tokenizer.hpp>
+#include <string>
+
 #ifndef NO_STD_NAMESPACE
 using std::vector;
 using std::pair;
@@ -550,6 +553,111 @@ uint16 font_info::text_width(const char *text, size_t length, uint16 style, bool
 		return _text_width(text, length, style, utf8) + 1;
 	else
 		return _text_width(text, length, style, utf8);
+}
+
+class style_separator
+{
+public:
+	bool operator() (std::string::const_iterator& next, std::string::const_iterator end, std::string& token)
+	{
+		if (next == end) return false;
+
+		token = std::string();
+
+		// if we start with a token, return it
+		if (*next == '|' && next + 1 != end && style_code(*(next + 1)))
+		{
+			token += *next;
+			++next;
+			token += *next;
+			++next;
+			return true;
+		}
+
+		token += *next;
+		++next;
+
+		// add characters until we hit a token
+		for (;next != end && !(*next == '|' && next + 1 != end && style_code(*(next + 1))); ++next)
+		{
+			token += *next;
+		}
+
+		return true;
+	}
+
+	void reset() { }
+
+private:
+	inline bool style_code(char c)
+	{
+		switch(c) {
+		case 'p':
+		case 'b':
+		case 'i':
+		case 'l':
+		case 'r':
+		case 'c':
+		case 's':
+			return true;
+			break;
+		default:
+			return false;
+		}
+	}
+};
+
+int font_info::draw_styled_text(SDL_Surface *s, const std::string& text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const 
+{
+	int width = 0;
+	boost::tokenizer<style_separator> tok(text.begin(), text.begin() + length);
+	for (boost::tokenizer<style_separator>::iterator it = tok.begin(); it != tok.end(); ++it)
+	{
+		if (*it == "|p")
+			style &= ~(styleBold | styleItalic);
+		else if (*it == "|b")
+			style |= styleBold;
+		else if (*it == "|i")
+			style |= styleItalic;
+		else if (*it == "|l" || *it == "|r" || *it == "|c" || *it == "|s")
+			;
+		else
+		{
+			if (style & styleShadow)
+			{
+				_draw_text(s, it->c_str(), it->size(), x + width + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), style, utf8);
+			}
+			width += _draw_text(s, it->c_str(), it->size(), x + width, y, pixel, style, utf8);
+		}
+	}
+
+	return width;
+}
+
+int font_info::styled_text_width(const std::string& text, size_t length, uint16 style, bool utf8) const 
+{
+	int width = 0;
+	boost::tokenizer<style_separator> tok(text.begin(), text.begin() + length);
+	for (boost::tokenizer<style_separator>::iterator it = tok.begin(); it != tok.end(); ++it)
+	{
+		if (*it == "|p")
+			style &= ~(styleBold | styleItalic);
+		else if (*it == "|b")
+			style |= styleBold;
+		else if (*it == "|i")
+			style |= styleItalic;
+		else if (*it == "|l" || *it == "|r" || *it == "|c" || *it == "|s")
+			;
+		else
+		{
+			width += _text_width(it->c_str(), it->length(), style, utf8);
+		}
+	}
+
+	if (style & styleShadow)
+		return width + 1;
+	else
+		return width;
 }
 
 int font_info::draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const

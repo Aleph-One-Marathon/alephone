@@ -56,6 +56,9 @@ public:
 	int trunc_text(const char *text, int max_width, uint16 style) const;
 	virtual int8 char_width(uint8 c, uint16 style) const = 0;
 
+	int draw_styled_text(SDL_Surface *s, const std::string& text, size_t length, int x, int y, uint32 pixel, uint16 initial_style, bool utf = false) const;
+	int styled_text_width(const std::string& text, size_t length, uint16 initial_style, bool utf8 = false) const;
+
 protected:
 	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const = 0;
 	virtual uint16 _text_width(const char *text, size_t length, uint16 style, bool utf8) const = 0;
