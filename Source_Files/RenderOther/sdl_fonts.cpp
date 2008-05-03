@@ -47,8 +47,8 @@ using std::map;
 
 #ifdef HAVE_SDL_TTF
 #include <boost/tuple/tuple_comparison.hpp>
-#include "DejaVuCondensedSansBold.h"
 #include "preferences.h" // smooth_font
+#include "AlephSansMono-Bold.h"
 #endif
 
 // Global variables
@@ -223,9 +223,9 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 	}
 
 	TTF_Font *font;
-	if (path == "gothic")
+	if (path == "mono")
 	{
-		font = TTF_OpenFontRW(SDL_RWFromConstMem(deja_vu_condensed_sans_bold, sizeof(deja_vu_condensed_sans_bold)), 0, size);
+		font = TTF_OpenFontRW(SDL_RWFromConstMem(aleph_sans_mono_bold, sizeof(aleph_sans_mono_bold)), 0, size);
 	}
 	else
 	{

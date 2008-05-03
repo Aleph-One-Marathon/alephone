@@ -615,11 +615,11 @@ void w_toggle::draw(SDL_Surface *s) const
 	    static font_info* checkbox_font = 0;
 	    if (!checkbox_font)
 	    {
-		    TextSpec checkbox_font_spec = { -1, styleBold, 15, "gothic", "", "", "" };
+		    TextSpec checkbox_font_spec = { -1, styleNormal, 18, "mono", "", "", "" };
 		    checkbox_font = load_font(checkbox_font_spec);
 	    }
 	    
-	    draw_text(s, str, rect.x, y + 1, get_dialog_color(theColorToUse), checkbox_font, style, utf8);
+	    draw_text(s, str, rect.x, y, get_dialog_color(theColorToUse), checkbox_font, style, utf8);
     }
     else
 #endif
