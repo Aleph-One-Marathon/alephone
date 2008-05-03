@@ -46,7 +46,7 @@ case $target in
 *-*-mingw32*)
 	AC_CHECK_TOOL(WINDRES, windres, :)
 	;;
-*-*-netbsd*) | *-*-openbsd*)
+*-*-netbsd*)
 	CPPFLAGS="$CPPFLAGS -I/usr/pkg/include"	
 	;;
 *)
@@ -198,7 +198,7 @@ case "$target" in
     LIBS="$LIBS -L/usr/X11R6/lib"
     CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include"
     ;;	
-  *-*-netbsd*)
+  *-*-netbsd* | *-*-openbsd*)
     SYS_GL_LIBS="-lGL"
     CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include"
     ;;
