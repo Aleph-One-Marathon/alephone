@@ -58,6 +58,8 @@ public:
 
 	int draw_styled_text(SDL_Surface *s, const std::string& text, size_t length, int x, int y, uint32 pixel, uint16 initial_style, bool utf = false) const;
 	int styled_text_width(const std::string& text, size_t length, uint16 initial_style, bool utf8 = false) const;
+	int trunc_styled_text(const std::string& text, int max_width, uint16 style) const;
+	std::string style_at(const std::string& text, std::string::const_iterator pos, uint16 style) const;
 
 protected:
 	virtual int _draw_text(SDL_Surface *s, const char *text, size_t length, int x, int y, uint32 pixel, uint16 style, bool utf8) const = 0;

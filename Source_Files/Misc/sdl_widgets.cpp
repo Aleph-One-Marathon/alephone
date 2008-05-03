@@ -1752,7 +1752,7 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 
 	// draw game name
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width - right_text_width);
-	draw_text(s, item.name().c_str(), x, y, fg, font, game_style);
+	font->draw_styled_text(s, item.name(), item.name().size(), x, y, fg, game_style);
 	
 	// draw remaining or ping
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
@@ -1762,7 +1762,8 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 
 	if (!item.compatible())
 	{
-		strcpy(buffer, item.m_description.m_scenarioName.c_str());
+		strcpy(buffer, "|i");
+		strcat(buffer, item.m_description.m_scenarioName.c_str());
 		if (item.m_description.m_scenarioVersion != "")
 		{
 			strcat(buffer, ", Version ");
@@ -1778,15 +1779,15 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 		else
 			strcpy(buffer, "Unknown");
 		
-		strcat(buffer, " on ");
+		strcat(buffer, " on |i");
 		strcat(buffer, item.m_description.m_mapName.c_str());
 	}
 	
-	draw_text(s, buffer, x, y, fg, font, game_style);
+	font->draw_styled_text(s, buffer, strlen(buffer), x, y, fg, game_style);
 
 	y += font->get_line_height();
 
-	right_text_width = text_width(item.m_hostPlayerName.c_str(), font, game_style);
+	right_text_width = font->styled_text_width(item.m_hostPlayerName, item.m_hostPlayerName.size(), game_style);
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width - right_text_width);
 
 	if (item.running())
@@ -1819,7 +1820,7 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	draw_text(s, buffer, x, y, fg, font, game_style);
 
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
-	draw_text(s, item.m_hostPlayerName.c_str(), x + width - right_text_width, y, fg, font, game_style);
+	font->draw_styled_text(s, item.m_hostPlayerName, item.m_hostPlayerName.size(), x + width - right_text_width, y, fg, game_style);
 
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }
@@ -1882,7 +1883,7 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 		color = SDL_MapRGB(s->format, 0xff, 0xff, 0xff);
 	}
 
-	draw_text(s, item.name().c_str(), x + kPlayerColorSwatchWidth + kSwatchGutter + 2, y + 1, color, font, style | styleShadow);
+	font->draw_styled_text(s, item.name(), item.name().size(), x + kPlayerColorSwatchWidth + kSwatchGutter + 2, y + 1, color, style | styleShadow);
 
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }
@@ -1939,8 +1940,8 @@ void w_colorful_chat::append_entry(const ColoredChatEntry& e)
 	}
 
 	string name;
-	if (text_width(e.sender.c_str(), font, style | styleShadow) > kNameWidth)
-		name = string(e.sender, 0, trunc_text(e.sender.c_str(), kNameWidth, font, style | styleShadow));
+	if (font->styled_text_width(e.sender, e.sender.size(), style | styleShadow) > kNameWidth)
+		name = string(e.sender, 0, font->trunc_styled_text(e.sender, kNameWidth, style | styleShadow));
 	else
 		name = e.sender;
 	
@@ -1961,7 +1962,7 @@ void w_colorful_chat::append_entry(const ColoredChatEntry& e)
 		available_width -= 2;
 	}
 
-	size_t usable_characters = trunc_text(e.message.c_str(), available_width, font, message_style);
+	size_t usable_characters = font->trunc_styled_text(e.message, available_width, message_style);
 	string::const_iterator middle;
 	string::const_iterator rest;
 	if (usable_characters != e.message.size()) {
@@ -1986,7 +1987,12 @@ void w_colorful_chat::append_entry(const ColoredChatEntry& e)
 	e_begin.sender = name;
 	
 	ColoredChatEntry e_rest = e;
-	e_rest.message = string(rest, e.message.end());
+	if (rest != e.message.end())
+	{
+		e_rest.message = font->style_at(e.message, middle, message_style) + string(rest, e.message.end());
+	}
+	else
+		e_rest.message = string(rest, e.message.end());
 	e_rest.sender = name;
 	
 	bool save_top_item = top_item < num_items - shown_items;
@@ -2032,7 +2038,7 @@ void w_colorful_chat::draw_item(vector<ColoredChatEntry>::const_iterator it, SDL
 		}
 		
 		set_drawing_clip_rectangle(0, x, static_cast<uint16>(s->h), x + kNameWidth);
-		draw_text(s, (*it).sender.c_str(), x + 1, computed_y, SDL_MapRGB(s->format, 0xff, 0xff, 0xff), font, style | styleShadow);
+		font->draw_styled_text(s, it->sender, it->sender.size(), x + 1, computed_y, SDL_MapRGB(s->format, 0xff, 0xff, 0xff), style | styleShadow);
 
 		message_x += kNameWidth + taper_width() + 2;
 		message_width -= kNameWidth + taper_width() + 2;
@@ -2071,7 +2077,7 @@ void w_colorful_chat::draw_item(vector<ColoredChatEntry>::const_iterator it, SDL
 	}
 	
 	set_drawing_clip_rectangle(0, message_x, static_cast<uint16>(s->h), message_x + message_width);
-	draw_text(s, (*it).message.c_str(), message_x, computed_y, message_color, font, message_style);
+	font->draw_styled_text(s, it->message, it->message.size(), message_x, computed_y, message_color, message_style);
 
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }

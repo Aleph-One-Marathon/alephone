@@ -407,7 +407,6 @@ bool
 BroadcastMessage::reallyInflateFrom(AIStream& inStream)
 {
 	m_message = read_string(inStream);
-	remove_formatting(m_message);
 	return true;
 }
 
@@ -471,8 +470,6 @@ PrivateMessage::reallyInflateFrom(AIStream& inStream)
 
 	m_senderName = read_string(inStream);
 	m_message = read_string(inStream);
-	remove_formatting(m_senderName);
-	remove_formatting(m_message);
 
 	return true;
 }
@@ -533,8 +530,6 @@ ChatMessage::reallyInflateFrom(AIStream& inStream)
 
 	m_senderName = read_string(inStream);
 	m_message = read_string(inStream);
-	remove_formatting(m_senderName);
-	remove_formatting(m_message);
 
 	return true;
 }
@@ -565,7 +560,6 @@ MetaserverPlayerInfo::MetaserverPlayerInfo(AIStream& inStream) : m_target(false)
 	inStream.read(m_secondaryColor, 3);
 	inStream.ignore(20);
 	m_name = read_string(inStream);
-	remove_formatting(m_name);
 	m_team = read_string(inStream);
 }
 
@@ -846,7 +840,7 @@ string GameListMessage::GameListEntry::format_for_chat(const string& player_name
 	message += m_description.m_mapName;
 	int type = m_description.m_type - (m_description.m_type > 5 ? 1 : 0);
 	if (TS_GetCString(kNetworkGameTypesStringSetID, type)) {
-		message += ", ";
+		message += ", |i";
 		message += TS_GetCString(kNetworkGameTypesStringSetID, type);
 	}
 	
