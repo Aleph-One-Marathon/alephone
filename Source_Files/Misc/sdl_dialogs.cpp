@@ -103,7 +103,7 @@ void initialize_dialogs(FileSpecifier &theme)
 	assert(dialog_surface);
 
 	// Default font and image
-	static const TextSpec default_font_spec = {kFontIDMonaco, styleNormal, 12, "mono"};
+	static const TextSpec default_font_spec = {kFontIDMonaco, styleNormal, 12, 0, "mono"};
 	default_font = load_font(default_font_spec);
 	assert(default_font);
 	default_image = SDL_CreateRGBSurface(SDL_SWSURFACE, 1, 1, 24, 0xff0000, 0x00ff00, 0x0000ff, 0);

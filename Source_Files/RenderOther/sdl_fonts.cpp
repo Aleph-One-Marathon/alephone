@@ -70,6 +70,11 @@ extern vector<DirectorySpecifier> data_search_path;
  *  Initialize font management
  */
 
+#ifdef HAVE_SDL_TTF
+extern void fix_missing_overhead_map_fonts();
+extern void fix_missing_interface_fonts();
+#endif
+
 void initialize_fonts(void)
 {
         logContext("initializing fonts");
@@ -81,9 +86,21 @@ void initialize_fonts(void)
 
 		if (open_res_file(fonts))
 			found = true;
+
+		if (!found)
+		{
+			fonts = *i + "Fonts.fntA";
+			if (open_res_file(fonts))
+				found = true;
+		}
 		i++;
 	}
 	if (!found) {
+#ifdef HAVE_SDL_TTF
+		// use our own built-in font
+		fix_missing_overhead_map_fonts();
+		fix_missing_interface_fonts();
+#else
 		logFatal("Can't open font resource file");
 /*
                 vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
@@ -94,6 +111,7 @@ void initialize_fonts(void)
                 }
 */                
 		exit(1);
+#endif
 	}
 }
 
@@ -269,6 +287,7 @@ font_info *load_font(const TextSpec &spec) {
 		if (font) 
 		{
 			ttf_font_info *info = new ttf_font_info;
+			info->m_adjust_height = spec.adjust_height;
 			info->m_styles[styleNormal] = font;
 			info->m_keys[styleNormal] = ttf_font_key_t(spec.normal, 0, spec.size);
 

@@ -615,7 +615,7 @@ void w_toggle::draw(SDL_Surface *s) const
 	    static font_info* checkbox_font = 0;
 	    if (!checkbox_font)
 	    {
-		    TextSpec checkbox_font_spec = { -1, styleNormal, 18, "mono", "", "", "" };
+		    TextSpec checkbox_font_spec = { -1, styleNormal, 18, 0, "mono", "", "", "" };
 		    checkbox_font = load_font(checkbox_font_spec);
 	    }
 	    

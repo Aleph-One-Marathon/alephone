@@ -111,15 +111,29 @@ static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES] =
 // static struct interface_font_info interface_fonts = 
 static FontSpecifier InterfaceFonts[NUMBER_OF_INTERFACE_FONTS] =
 {
-	{"Monaco",   9, styleBold,  "#4"},
-	{"Monaco",   9, styleBold,  "#4"},
-	{"Monaco",   9, styleBold,  "#4"},
-	{"Monaco",   9, styleNormal,"#4"},
-	{"Courier", 12, styleNormal,"#22"},
-	{"Courier", 14, styleBold,  "#22"},
-	{"Monaco",   9, styleNormal,"#4"}
+	{"Monaco",   9, styleBold,  0, "#4"},
+	{"Monaco",   9, styleBold,  0, "#4"},
+	{"Monaco",   9, styleBold,  0, "#4"},
+	{"Monaco",   9, styleNormal,0, "#4"},
+	{"Courier", 12, styleNormal,0, "#22"},
+	{"Courier", 14, styleBold,  0, "#22"},
+	{"Monaco",   9, styleNormal,0, "#4"}
 };
 
+#ifdef HAVE_SDL_TTF
+void fix_missing_interface_fonts()
+{
+	for (int i = 0; i < NUMBER_OF_INTERFACE_FONTS; i++)
+	{
+		strcpy(InterfaceFonts[i].File, "mono");
+	}
+
+	InterfaceFonts[0].AdjustLineHeight = -1;
+	InterfaceFonts[3].AdjustLineHeight = -1;
+	InterfaceFonts[4].Size = 11;
+	InterfaceFonts[4].AdjustLineHeight = -2;
+}
+#endif
 
 // LP change: hardcoding the interface and player colors,
 // so as to banish the 'clut' resources

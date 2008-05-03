@@ -39,6 +39,7 @@ struct TextSpec {
 
 	uint16 style;
 	int16 size;
+	int16 adjust_height;
 
 	// paths to fonts
 	std::string normal;

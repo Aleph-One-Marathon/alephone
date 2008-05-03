@@ -72,6 +72,7 @@ public:
 	char NameSet[NameSetLen];
 	short Size;
 	short Style;
+	short AdjustLineHeight;
 	
 	// For SDL font support: a font filename
 	char File[NameSetLen];

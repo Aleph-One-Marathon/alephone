@@ -406,6 +406,8 @@ static void initialize_application(void)
 
 	init_physics_wad_data();
 
+	initialize_fonts();
+
 	// Parse MML files
 	SetupParseTree();
 	LoadBaseMMLScripts();
@@ -483,7 +485,7 @@ static void initialize_application(void)
 
 	// Initialize everything
 	mytm_initialize();
-	initialize_fonts();
+//	initialize_fonts();
 	SoundManager::instance()->Initialize(*sound_preferences);
 	initialize_marathon_music_handler();
 	initialize_keyboard_controller();

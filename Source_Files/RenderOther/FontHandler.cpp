@@ -205,6 +205,7 @@ void FontSpecifier::Update()
 
 	Spec.size = Size;
 	Spec.style = Style;
+	Spec.adjust_height = AdjustLineHeight;
 	Info = load_font(Spec);
 	
 	if (Info) {

@@ -92,7 +92,7 @@ struct FOV_settings_definition FOV_settings = {
 #define FOV_FixHorizontalNotVertical FOV_settings.FixHorizontalNotVertical
 
 
-static FontSpecifier OnScreenFont = {"Monaco", 12, styleNormal, "mono"};
+static FontSpecifier OnScreenFont = {"Monaco", 12, styleNormal, 0, "mono"};
 static bool ScreenFontInited = false;
 
 // Accessors:
