@@ -224,7 +224,7 @@ bool res_file_t::read_map(void)
 	// Verify integrity of resource header
 	if (data_offset >= file_size || map_offset >= file_size ||
 	    data_offset + data_size > file_size || map_offset + map_size > file_size) {
-		logAnomaly("file's resource header corrupt");
+		logTrace("file's resource header corrupt");
 		return false;
 	}
 
@@ -236,7 +236,7 @@ bool res_file_t::read_map(void)
 
 	// Verify integrity of map header
 	if (type_list_offset >= file_size) {
-		logAnomaly("file's resource map header corrupt");
+		logTrace("file's resource map header corrupt");
 		return false;
 	}
 
