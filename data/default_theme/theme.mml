@@ -24,7 +24,7 @@
 
 <!-- Dialog title -->
 <title>
-  <font id="1400" size="32" style="0"/>
+<font file="DejaVuLGCSansCondensed-Bold.ttf" size="24"/>
   <color red="0.85" green="0.85" blue="0.80"/>
 </title>
 
@@ -43,34 +43,34 @@
 
 <!-- Label -->
 <label>
-  <font path="gothic" size="12" style="0"/>
+  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
   <color index="0" red="0.875" green="0.65" blue="0.65"/>
   <color index="1" red="0.75" green="0.875" blue="0.65"/>
 </label>
 
 <!-- Item -->
 <item space="10">
-  <font path="gothic" size="12" style="0"/>
+  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
   <color index="0" red="0.75" green="0.25" blue="0.25"/>
   <color index="1" red="0.25" green="0.75" blue="0.25"/>
 </item>
 
 <!-- Text message -->
-<message>
-  <font path="gothic" size="12" style="0"/>
+<message> 
+  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
   <color red="0.875" green="0.875" blue="0.75"/>
 </message>
 
 <!-- Text entry widget -->
 <text_entry>
-  <font path="gothic" size="12" style="0"/>
+  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
   <color index="0" red="1" green="0.875" blue="0.875"/>
   <color index="1" red="1" green="1" blue="1"/>
   <color index="2" red="0.875" green="1" blue="0.875"/>
 </text_entry>
 
 <text_box>
-  <font path="gothic" size="12" style="0"/>
+  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
 </text_box>
 
 <!-- List selection widget -->
