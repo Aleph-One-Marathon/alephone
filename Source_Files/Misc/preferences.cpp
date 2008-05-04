@@ -3259,7 +3259,7 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"metaserver_password"))
 	{
 		char obscure_password[32];
-		DeUTF8_C(Value, strlen(Value), obscure_password, sizeof(obscure_password));
+		DeUTF8(Value, strlen(Value), obscure_password, sizeof(obscure_password));
 		for (int i = 0; i < 16; i++)
 		{
 			unsigned int c;
