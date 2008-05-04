@@ -29,8 +29,11 @@
 #elif defined (__BEOS__)
 #define A1_DISPLAY_PLATFORM "BeOS"
 #define A1_UPDATE_PLATFORM "source"
-#elif defined (__NETBSD__)
+#elif defined (__NetBSD__)
 #define A1_DISPLAY_PLATFORM "NetBSD"
+#define A1_UPDATE_PLATFORM "source"
+#elif defined (__OpenBSD__)
+#define A1_DISPLAY_PLATFORM "OpenBSD"
 #define A1_UPDATE_PLATFORM "source"
 #else
 #define A1_DISPLAY_PLATFORM "Unknown"
