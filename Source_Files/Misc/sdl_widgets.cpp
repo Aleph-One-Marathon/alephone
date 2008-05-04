@@ -1677,11 +1677,6 @@ const string w_items_in_room_get_name_of_item (MetaserverPlayerInfo item)
 	return item.name ();
 }
 
-static uint8 target_color(uint8 component)
-{
-	return PIN((uint16) component + (255 - component) * 127 / 255, 0, 255);
-}
-
 void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const
 {
 	int game_style = style;
@@ -1825,9 +1820,15 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }
 
-static uint8 away_color(uint8 component)
+
+static inline uint8 darken(uint8 component, uint8 amount)
 {
-	return PIN((uint16) component * 127 / 255, 0, 255);
+	return PIN((uint16) component * (255 - amount) / 255, 0, 255);
+}
+
+static inline uint8 lighten(uint8 component, uint8 amount)
+{
+	return PIN((uint16) component + (255 - component) * amount / 255, 0, 255);
 }
 
 void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface* s,
@@ -1843,11 +1844,28 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 	}
 
 	// background is player color
-	uint32 pixel = SDL_MapRGB(s->format,
-				  (item.target() ? target_color(item.color()[0] >> 8) : item.away() ? away_color(item.color()[0] >> 8) : item.color()[0] >> 8),
-				  (item.target() ? target_color(item.color()[1] >> 8) : item.away() ? away_color(item.color()[1] >> 8) : item.color()[1] >> 8),
-				  (item.target() ? target_color(item.color()[2] >> 8) : item.away() ? away_color(item.color()[2] >> 8) : item.color()[2] >> 8));
+	uint32 pixel;
+	if (item.target())
+	{
+		int amount = 0x7f;
+		pixel = SDL_MapRGB(s->format, 
+				   lighten(item.color()[0] >> 8, amount),
+				   lighten(item.color()[1] >> 8, amount),
+				   lighten(item.color()[2] >> 8, amount));
+	}
+	else
+	{
+		int amount;
+		if (item.away()) 
+			amount = 0xbf;
+		else
+			amount = 0x3f;
 
+		pixel = SDL_MapRGB(s->format,
+				   darken(item.color()[0] >> 8, amount),
+				   darken(item.color()[1] >> 8, amount),
+				   darken(item.color()[2] >> 8, amount));
+	}
 
 	r.x = x + kPlayerColorSwatchWidth + kSwatchGutter + 1;
 	r.y = y + 1;
@@ -1861,10 +1879,27 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 	r.w = kPlayerColorSwatchWidth;
 	r.h = font->get_line_height() + 2;
 
-	pixel = SDL_MapRGB(s->format,
-				  (item.target() ? target_color(item.team_color()[0] >> 8) : item.away() ? away_color(item.team_color()[0] >> 8) : item.team_color()[0] >> 8),
-				  (item.target() ? target_color(item.team_color()[1] >> 8) : item.away() ? away_color(item.team_color()[1] >> 8) : item.team_color()[1] >> 8),
-				  (item.target() ? target_color(item.team_color()[2] >> 8) : item.away() ? away_color(item.team_color()[2] >> 8) : item.team_color()[2] >> 8));
+	if (item.target())
+	{
+		int amount = 0x7f;
+		pixel = SDL_MapRGB(s->format, 
+				   lighten(item.team_color()[0] >> 8, amount),
+				   lighten(item.team_color()[1] >> 8, amount),
+				   lighten(item.team_color()[2] >> 8, amount));
+	}
+	else
+	{
+		int amount;
+		if (item.away()) 
+			amount = 0x7f;
+		else
+			amount = 0;
+
+		pixel = SDL_MapRGB(s->format,
+				   darken(item.team_color()[0] >> 8, amount),
+				   darken(item.team_color()[1] >> 8, amount),
+				   darken(item.team_color()[2] >> 8, amount));
+	}
 
 	SDL_FillRect(s, &r, pixel);
 
@@ -1883,7 +1918,7 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 		color = SDL_MapRGB(s->format, 0xff, 0xff, 0xff);
 	}
 
-	font->draw_styled_text(s, item.name(), item.name().size(), x + kPlayerColorSwatchWidth + kSwatchGutter + 2, y + 1, color, style | styleShadow);
+	font->draw_styled_text(s, item.name(), item.name().size(), x + kPlayerColorSwatchWidth + kSwatchGutter + 2, y + 1, color, item.away() ? style : style | styleShadow);
 
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }
