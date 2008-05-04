@@ -823,7 +823,7 @@ operator <<(ostream& stream, const GameDescription& desc)
 
 string GameListMessage::GameListEntry::format_for_chat(const string& player_name) const
 {
-	string message = player_name;
+	string message = player_name + "|p";
 	if (running())
 		message += " is hosting ";
 	else
@@ -835,12 +835,12 @@ string GameListMessage::GameListEntry::format_for_chat(const string& player_name
 		snprintf(minutes, 4, "%i", m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
 		minutes[4] = '\0';
 		message += minutes;
-		message += " minutes of ";
+		message += " minutes of |i";
 	}
 	message += m_description.m_mapName;
 	int type = m_description.m_type - (m_description.m_type > 5 ? 1 : 0);
 	if (TS_GetCString(kNetworkGameTypesStringSetID, type)) {
-		message += ", |i";
+		message += ",|p ";
 		message += TS_GetCString(kNetworkGameTypesStringSetID, type);
 	}
 	

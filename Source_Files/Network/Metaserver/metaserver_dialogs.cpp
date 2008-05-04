@@ -157,11 +157,11 @@ void GlobalMetaserverChatNotificationAdapter::playersInRoomChanged(const std::ve
 	{
 		if (playerChanges[i].verb() == MetaserverClient::PlayersInRoom::kAdd)
 		{
-			receivedLocalMessage(playerChanges[i].name() + " has joined the room");
+			receivedLocalMessage(playerChanges[i].name() + "|p has joined the room");
 		}
 		else if (playerChanges[i].verb() == MetaserverClient::PlayersInRoom::kDelete)
 		{
-			receivedLocalMessage(playerChanges[i].name() + " has left the room");
+			receivedLocalMessage(playerChanges[i].name() + "|p has left the room");
 		}
 	}
 }
@@ -243,7 +243,7 @@ void GlobalMetaserverChatNotificationAdapter::roomDisconnected()
 {
 	ColoredChatEntry e;
 	e.type = ColoredChatEntry::LocalMessage;
-	e.message = "Connection to room lost.";
+	e.message = "|iConnection to room lost.";
 	
 	gMetaserverChatHistory.append(e);
 }
