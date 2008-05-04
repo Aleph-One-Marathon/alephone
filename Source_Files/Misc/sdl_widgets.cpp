@@ -1859,7 +1859,7 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 		if (item.away()) 
 			amount = 0xbf;
 		else
-			amount = 0x3f;
+			amount = 0;
 
 		pixel = SDL_MapRGB(s->format,
 				   darken(item.color()[0] >> 8, amount),
