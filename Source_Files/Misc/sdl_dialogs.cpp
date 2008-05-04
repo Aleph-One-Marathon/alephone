@@ -314,17 +314,17 @@ public:
 				return false;
 		} else if (StringsEqual(tag, "style")) {
 			return ReadNumericalValue(value, "%d", style);
-		} else if (StringsEqual(tag, "path")) {
+		} else if (StringsEqual(tag, "file")) {
 			normal = value;
 			have_path = true;
 			return true;
-		} else if (StringsEqual(tag, "path_b")) {
+		} else if (StringsEqual(tag, "bold_file")) {
 			bold = value;
 			return true;
-		} else if (StringsEqual(tag, "path_i")) {
+		} else if (StringsEqual(tag, "italic_file")) {
 			oblique = value;
 			return true;
-		} else if (StringsEqual(tag, "path_bi")) {
+		} else if (StringsEqual(tag, "bold_italic_file")) {
 			bold_oblique = value;
 			return true;
 		} else {
