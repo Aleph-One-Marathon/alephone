@@ -274,6 +274,22 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 	
 	return font;	
 }
+
+static const char *locate_font(const std::string& path)
+{
+	if (path == "mono" || path == "")
+	{
+		return path.c_str();
+	}
+	else
+	{
+		static FileSpecifier file;
+		if (file.SetNameWithPath(path.c_str()))
+			return file.GetPath();
+		else
+			return "";
+	}
+}
 #endif
 
 font_info *load_font(const TextSpec &spec) {
@@ -283,75 +299,85 @@ font_info *load_font(const TextSpec &spec) {
 	if (spec.normal != "")
 	{
 		uint16 loaded_style = spec.style & (styleBold | styleItalic | styleUnderline);
-		TTF_Font *font = load_ttf_font(spec.normal, 0, spec.size);
+		std::string file;
+		file = locate_font(spec.normal);
+		TTF_Font *font = load_ttf_font(file, 0, spec.size);
 		if (font) 
 		{
 			ttf_font_info *info = new ttf_font_info;
 			info->m_adjust_height = spec.adjust_height;
 			info->m_styles[styleNormal] = font;
-			info->m_keys[styleNormal] = ttf_font_key_t(spec.normal, 0, spec.size);
+			info->m_keys[styleNormal] = ttf_font_key_t(file, 0, spec.size);
 
 			// load bold face
-			font = load_ttf_font(spec.bold, styleNormal, spec.size);
+			file = locate_font(spec.bold);
+			font = load_ttf_font(file, styleNormal, spec.size);
 			if (font)
 			{
 				info->m_styles[styleBold] = font;
-				info->m_keys[styleBold] = ttf_font_key_t(spec.bold, styleNormal, spec.size);
+				info->m_keys[styleBold] = ttf_font_key_t(file, styleNormal, spec.size);
 			}
 			else
 			{
-				font = load_ttf_font(spec.normal, styleBold, spec.size);
+				file = locate_font(spec.normal);
+				font = load_ttf_font(file, styleBold, spec.size);
 				assert(font); // I loaded you once, you should load again
 				info->m_styles[styleBold] = font;
-				info->m_keys[styleBold] = ttf_font_key_t(spec.normal, styleBold, spec.size);
+				info->m_keys[styleBold] = ttf_font_key_t(file, styleBold, spec.size);
 			}
 
 			// oblique
-			font = load_ttf_font(spec.oblique, styleNormal, spec.size);
+			file = locate_font(spec.oblique);
+			font = load_ttf_font(file, styleNormal, spec.size);
 			if (font)
 			{
 				info->m_styles[styleItalic] = font;
-				info->m_keys[styleItalic] = ttf_font_key_t(spec.oblique, styleNormal, spec.size);
+				info->m_keys[styleItalic] = ttf_font_key_t(file, styleNormal, spec.size);
 			}
 			else
 			{
-				font = load_ttf_font(spec.normal, styleItalic, spec.size);
+				file = locate_font(spec.normal);
+				font = load_ttf_font(file, styleItalic, spec.size);
 				assert(font); // same as above
 				info->m_styles[styleItalic] = font;
-				info->m_keys[styleItalic] = ttf_font_key_t(spec.normal, styleItalic, spec.size);
+				info->m_keys[styleItalic] = ttf_font_key_t(file, styleItalic, spec.size);
 			}
 
 			// bold oblique
-			font = load_ttf_font(spec.bold_oblique, styleNormal, spec.size);
+			file = locate_font(spec.bold_oblique);
+			font = load_ttf_font(file, styleNormal, spec.size);
 			if (font)
 			{
 				info->m_styles[styleBold | styleItalic] = font;
-				info->m_keys[styleBold | styleItalic] = ttf_font_key_t(spec.bold_oblique, styleNormal, spec.size);
+				info->m_keys[styleBold | styleItalic] = ttf_font_key_t(file, styleNormal, spec.size);
 			}
 			else
 			{
 				// try boldening the oblique
-				font = load_ttf_font(spec.oblique, styleBold, spec.size);
+				file = locate_font(spec.oblique);
+				font = load_ttf_font(file, styleBold, spec.size);
 				if (font)
 				{
 					info->m_styles[styleBold | styleItalic] = font;
-					info->m_keys[styleBold | styleItalic] = ttf_font_key_t(spec.oblique, styleBold, spec.size);
+					info->m_keys[styleBold | styleItalic] = ttf_font_key_t(file, styleBold, spec.size);
 				}
 				else
 				{
 					// try obliquing the bold!
-					font = load_ttf_font(spec.bold, styleItalic, spec.size);
+					file = locate_font(spec.bold);
+					font = load_ttf_font(file, styleItalic, spec.size);
 					if (font)
 					{
 						info->m_styles[styleBold | styleItalic] = font;
-						info->m_keys[styleBold | styleItalic] = ttf_font_key_t(spec.bold, styleItalic, spec.size);
+						info->m_keys[styleBold | styleItalic] = ttf_font_key_t(file, styleItalic, spec.size);
 					}
 					else
 					{
-						font = load_ttf_font(spec.normal, styleBold | styleItalic, spec.size);
+						file = locate_font(spec.normal);
+						font = load_ttf_font(file, styleBold | styleItalic, spec.size);
 						assert(font);
 						info->m_styles[styleBold | styleItalic] = font;
-						info->m_keys[styleBold | styleItalic] = ttf_font_key_t(spec.normal, styleBold | styleItalic, spec.size);
+						info->m_keys[styleBold | styleItalic] = ttf_font_key_t(file, styleBold | styleItalic, spec.size);
 					}
 				}
 			}

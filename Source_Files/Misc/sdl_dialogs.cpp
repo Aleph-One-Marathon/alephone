@@ -621,6 +621,8 @@ XML_ElementParser *Theme_GetParser()
  *  Load theme
  */
 
+extern vector<DirectorySpecifier> data_search_path;
+
 bool load_theme(FileSpecifier &theme)
 {
 	// Unload previous theme
@@ -641,8 +643,12 @@ bool load_theme(FileSpecifier &theme)
 	clear_game_error();
 
 	// Load fonts
+	data_search_path.insert(data_search_path.begin(), theme);
 	for (int i=0; i<NUM_DIALOG_FONTS; i++)
+	{
 		dialog_font[i] = load_font(dialog_font_spec[i]);
+	}
+	data_search_path.erase(data_search_path.begin());
 
 	// Load images
 	for (int i=0; i<NUM_DIALOG_IMAGES; i++) {
