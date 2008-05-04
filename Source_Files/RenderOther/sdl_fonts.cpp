@@ -600,6 +600,23 @@ uint16 font_info::text_width(const char *text, size_t length, uint16 style, bool
 		return _text_width(text, length, style, utf8);
 }
 
+static 	inline bool style_code(char c)
+{
+	switch(tolower(c)) {
+	case 'p':
+	case 'b':
+	case 'i':
+	case 'l':
+	case 'r':
+	case 'c':
+	case 's':
+		return true;
+		break;
+	default:
+		return false;
+	}
+}
+
 class style_separator
 {
 public:
@@ -633,40 +650,23 @@ public:
 
 	void reset() { }
 
-private:
-	inline bool style_code(char c)
-	{
-		switch(c) {
-		case 'p':
-		case 'b':
-		case 'i':
-		case 'l':
-		case 'r':
-		case 'c':
-		case 's':
-			return true;
-			break;
-		default:
-			return false;
-		}
-	}
 };
 
 static inline bool is_style_token(const std::string& token)
 {
-	return (token == "|p" || token == "|i" || token == "|b" || token == "|c" || token == "|l" || token == "|s");
+	return (token.size() == 2 && token[0] == '|' && style_code(token[1]));
 }
 
 static void update_style(uint16& style, const std::string& token)
 {
-	if (token == "|p")
+	if (tolower(token[1]) == 'p')
 		style &= ~(styleBold | styleItalic);
-	else if (token == "|b")
+	else if (tolower(token[1]) == 'b')
 	{
 		style |= styleBold;
 		style &= ~styleItalic;
 	}
-	else if (token == "|i")
+	else if (tolower(token[1]) == 'i')
 	{
 		style |= styleItalic;
 		style &= ~styleBold;
