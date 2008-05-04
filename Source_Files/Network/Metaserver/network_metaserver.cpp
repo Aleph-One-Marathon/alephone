@@ -520,18 +520,51 @@ MetaserverClient::announceGameDeleted()
 	m_channel->enqueueOutgoingMessage(RemoveGameMessage());
 }
 
+static 	inline bool style_code(char c)
+{
+	switch(tolower(c)) {
+	case 'p':
+	case 'b':
+	case 'i':
+	case 'l':
+	case 'r':
+	case 'c':
+	case 's':
+		return true;
+		break;
+	default:
+		return false;
+	}
+}
+
+static std::string remove_formatting(const std::string &s)
+{
+	string temp;
+	int pos = 0;
+	int i = 0;
+	while (i < s.size()) {
+		if (s[i] == '|' && style_code(s[i + 1]))
+			i += 2;
+		else
+			temp += s[i++];
+	}
+
+	return temp;
+}
+
 void MetaserverClient::ignore(const std::string& name)
 {
-	if (s_ignoreNames.find(name) != s_ignoreNames.end())
+	std::string cleaned_name = remove_formatting(name);
+	if (s_ignoreNames.find(cleaned_name) != s_ignoreNames.end())
 	{
-		s_ignoreNames.erase(name);
+		s_ignoreNames.erase(cleaned_name);
 		if (m_notificationAdapter) {
-			m_notificationAdapter->receivedLocalMessage("Removing \"" + name + "\" from the ignore list");
+			m_notificationAdapter->receivedLocalMessage("Removing \"" + cleaned_name + "\" from the ignore list");
 		}
 	} else {
-		s_ignoreNames.insert(name);
+		s_ignoreNames.insert(cleaned_name);
 		if (m_notificationAdapter) {
-			m_notificationAdapter->receivedLocalMessage("Adding \"" + name + "\" to the ignore list");
+			m_notificationAdapter->receivedLocalMessage("Adding \"" + cleaned_name + "\" to the ignore list");
 		}
 	}
 }
@@ -558,7 +591,7 @@ bool MetaserverClient::is_ignored(MetaserverPlayerInfo::IDType id)
 		std::string name = player->name();
 		if (name[0] == '\260') name.erase(name.begin());
 
-		return (s_ignoreNames.find(name) != s_ignoreNames.end());
+		return (s_ignoreNames.find(remove_formatting(name)) != s_ignoreNames.end());
 	}
 	else
 	{

@@ -167,28 +167,6 @@ read_padded_string(AIStream& in, size_t length)
 	string result = (&temp[0]);
 	return result;
 }
-	
-	
-
-static void remove_formatting(std::string &s)
-{
-	char* temp = new char[s.size() + 1];
-	int pos = 0;
-	int i = 0;
-	while (i < s.size()) {
-		if (s[i] == '|' && (s[i + 1] == 'p' || s[i + 1] == 'i' || s[i + 1] == 'b')) {
-			i += 2;
-		} else {
-			temp[pos++] = s[i++];
-		}
-	}
-
-	temp[pos] = '\0';
-	s = temp;
-	delete[] temp;
-}
-	
-	
 
 void get_metaserver_player_color(size_t colorIndex, uint16* color) {
   RGBColor c;
