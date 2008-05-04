@@ -158,6 +158,7 @@ MetaserverClient::MetaserverClient()
 	: m_channel(new CommunicationsChannel())
 	, m_inflater(new MessageInflater())
 	, m_dispatcher(new MessageDispatcher())
+	, m_loginDispatcher(new MessageDispatcher())
 	, m_notificationAdapter(NULL),
 	  m_notifiedOfDisconnected(false)
 {
@@ -169,6 +170,7 @@ MetaserverClient::MetaserverClient()
 	m_playerListMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handlePlayerListMessage));
 	m_roomListMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleRoomListMessage));
 	m_gameListMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleGameListMessage));
+	m_setPlayerDataMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleSetPlayerDataMessage));
 
 	m_inflater->learnPrototype(SaltMessage());
 	m_inflater->learnPrototype(AcceptMessage());
@@ -194,6 +196,10 @@ MetaserverClient::MetaserverClient()
 	m_dispatcher->setHandlerForType(m_playerListMessageHandler.get(), PlayerListMessage::kType);
 	m_dispatcher->setHandlerForType(m_roomListMessageHandler.get(), RoomListMessage::kType);
 	m_dispatcher->setHandlerForType(m_gameListMessageHandler.get(), GameListMessage::kType);
+	m_dispatcher->setHandlerForType(m_setPlayerDataMessageHandler.get(), SetPlayerDataMessage::kType);
+
+	m_loginDispatcher->setDefaultHandler(m_unexpectedMessageHandler.get());
+	m_loginDispatcher->setHandlerForType(m_setPlayerDataMessageHandler.get(), SetPlayerDataMessage::kType);
 
 	s_instances.insert(this);
 	s_ignoreNames.insert("Bacon");
@@ -205,7 +211,7 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 {
 	try 
 	{
-		m_channel->setMessageHandler(m_unexpectedMessageHandler.get());
+		m_channel->setMessageHandler(m_loginDispatcher.get());
 
 		if (m_channel->isConnected()) m_channel->disconnect();
 

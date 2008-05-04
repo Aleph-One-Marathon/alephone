@@ -100,9 +100,12 @@ enum
 	kSTATE_AWAKE = 0,
 	kSTATE_AWAY = 1,
 
-	kPlatformType = 1,	// whatever that is
+	kPlatformIsMacintosh = 0,
+	kPlatformIsWindows = 1,
+	kPlatformIsOther = 4,
 
-	kMNetType = 1,		// whatever that is
+	kResetPlayerData = 1,
+
 };
 
 static const uint16 kPlayerStatus = kSTATE_AWAKE;
@@ -235,14 +238,27 @@ LoginAndPlayerInfoMessage::reallyDeflateTo(AOStream& thePacket) const
 	// I'd much rather write the stuff and THEN figure out how much there is, but
 	// given the way AStreams work currently, this is much easier.  Trust me.  :)
 	uint16 thePlayerDataSize = 40 + strlen(m_playerName.c_str()) + strlen(m_teamName.c_str());
-	uint32 unknown32 = 0;
-	uint16 mystery = 1;
 
-	thePacket << (uint32)kPlatformType
-		<< unknown32
-		<< unknown32
-		<< mystery
-		<< thePlayerDataSize;
+	uint16 platform_type;
+#ifdef WIN32
+	platform_type = kPlatformIsWindows;
+#elif defined(__APPLE__) && defined(__MACH__)
+	platform_type = kPlatformIsMacintosh;
+#else
+	platform_type = kPlatformIsOther;
+#endif
+
+	uint16 metaserver_version = 0;
+	uint32 flags = kResetPlayerData;
+	uint32 user_id = 0;
+	uint16 max_authentication = kCRYPT_SIMPLE;
+
+	thePacket << platform_type
+		  << metaserver_version
+		  << flags
+		  << user_id
+		  << max_authentication
+		  << thePlayerDataSize;
 
 	write_padded_string(thePacket, kServiceName, 32);
 	write_padded_string(thePacket, __DATE__, 32);
