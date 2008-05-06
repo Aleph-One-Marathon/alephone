@@ -1041,6 +1041,7 @@ void w_key::draw(SDL_Surface *s) const
 
 void w_key::click(int /*x*/, int /*y*/)
 {
+	get_owning_dialog()->activate_widget(this);
     if(enabled) {
 	    if (!binding) {
 		    binding = true;
