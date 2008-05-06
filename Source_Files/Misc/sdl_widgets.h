@@ -425,6 +425,7 @@ public:
 
 	void draw(SDL_Surface *s) const;
 	void event(SDL_Event &e);
+	void click(int, int) { get_owning_dialog()->activate_widget(this); }
 
 	void set_text(const char *text);
 	const char *get_text(void) {return buf;}

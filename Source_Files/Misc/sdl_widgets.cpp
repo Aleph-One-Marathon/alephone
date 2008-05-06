@@ -1306,6 +1306,7 @@ void w_list_base::mouse_move(int x, int y)
 		  set_top_item(0);
 		}
 	} else {
+#if 0 // no more focus-follows-mouse
 		if (x < get_dialog_space(LIST_L_SPACE) || x >= rect.w - get_dialog_space(LIST_R_SPACE)
 		 || y < get_dialog_space(LIST_T_SPACE) || y >= rect.h - get_dialog_space(LIST_B_SPACE))
 			return;
@@ -1314,6 +1315,7 @@ void w_list_base::mouse_move(int x, int y)
 		{	set_selection((y - get_dialog_space(LIST_T_SPACE)) / item_height() + top_item); }
 //		else
 //		{	set_selection(num_items - 1); }
+#endif
 	}
 }
 

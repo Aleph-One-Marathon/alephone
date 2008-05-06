@@ -1465,7 +1465,7 @@ void tab_placer::visible(bool visible)
  *  Dialog constructor
  */
 
-dialog::dialog() : active_widget(NULL), active_widget_num(UNONE), done(false),
+dialog::dialog() : active_widget(NULL), mouse_widget(0), active_widget_num(UNONE), done(false),
             cursor_was_visible(false), parent_dialog(NULL),
 		   processing_function(NULL), placer(0)
 {
@@ -1691,6 +1691,18 @@ void dialog::deactivate_currently_active_widget(bool draw)
  *  Activate widget
  */
 
+void dialog::activate_widget(widget *w)
+{
+	for (size_t i = 0; i < widgets.size(); i++)
+	{
+		if (widgets[i] == w)
+		{
+			activate_widget(i);
+			return;
+		}
+	}
+}
+
 void dialog::activate_widget(size_t num, bool draw)
 {
 	if (num == active_widget_num)
@@ -1750,7 +1762,7 @@ void dialog::activate_first_widget(void)
 {
 	for (size_t i=0; i<widgets.size(); i++) {
 		if (widgets[i]->is_selectable() && widgets[i]->visible()) {
-			activate_widget(i, false);
+			activate_widget(i);
 			break;
 		}
 	}
@@ -1763,6 +1775,11 @@ void dialog::activate_first_widget(void)
 
 void dialog::activate_next_widget(void)
 {
+	if (!active_widget)
+	{
+		activate_first_widget();
+		return;
+	}
 	size_t i = active_widget_num;
 	// BUG: infinate loop if active_widget_num == UNONE or NONE
 	do {
@@ -1780,6 +1797,12 @@ void dialog::activate_next_widget(void)
 
 void dialog::activate_prev_widget(void)
 {
+	if (!active_widget)
+	{
+		activate_first_widget();
+		return;
+	}
+	
 	size_t i = active_widget_num;
 	// BUG: infinate loop if active_widget_num == UNONE or NONE
 	do {
@@ -1871,6 +1894,49 @@ void dialog::event(SDL_Event &e)
   }
   
   if (!handled) {
+	  // handle mouse events
+	  if (e.type == SDL_MOUSEMOTION)
+	  {
+		  int x = e.motion.x, y = e.motion.y;
+		  widget *target;
+		  if (mouse_widget)
+			  target = mouse_widget;
+		  else
+		  {	  
+			  int num = find_widget(x, y);
+			  if (num >= 0)
+			  {
+				  assert(num == (size_t) num);
+				  target = widgets[num];
+			  }
+		  }
+
+		  if (target)
+		  {
+			  target->event(e);
+			  target->mouse_move(x - rect.x - target->rect.x, y - rect.y - target->rect.y);
+		  }
+	  }
+	  else if (e.type == SDL_MOUSEBUTTONDOWN)
+	  {
+		  int x = e.button.x, y = e.button.y;
+		  int num = find_widget(x, y);
+		  if (num >= 0)
+		  {
+			  assert(num == (size_t) num);
+			  mouse_widget = widgets[num];
+			  mouse_widget->event(e);
+			  if (e.button.button == SDL_BUTTON_LEFT || e.button.button == SDL_BUTTON_RIGHT)
+				  mouse_widget->click(x - rect.x - mouse_widget->rect.x, y - rect.y - mouse_widget->rect.y);
+		  }
+	  }
+	  else if (e.type == SDL_MOUSEBUTTONUP)
+	  {
+		  if (mouse_widget)
+			  mouse_widget->event(e);
+		  mouse_widget = 0;
+	  }	  
+	  else
   // First pass event to active widget (which may modify it)
   if (active_widget)
     active_widget->event(e);
@@ -1908,43 +1974,6 @@ void dialog::event(SDL_Event &e)
 				break;
 			}
 			break;
-
-		// Mouse moved
-		case SDL_MOUSEMOTION: {
-			int x = e.motion.x, y = e.motion.y;
-			if (e.motion.state & (SDL_BUTTON(1) | SDL_BUTTON(2)))
-			{
-				active_widget->mouse_move(x - rect.x - active_widget->rect.x, y - rect.y - active_widget->rect.y);
-			}
-			else
-			{
-				int num = find_widget(x, y);
-				if (num >= 0) {
-					assert(num == (size_t)num);
-					activate_widget(num);
-					widget *w = widgets[num];
-					w->mouse_move(x - rect.x - w->rect.x, y - rect.y - w->rect.y);
-				}
-			}
-			break;
-		}
-
-		// Mouse button pressed
-		case SDL_MOUSEBUTTONDOWN: {
-			switch (e.button.button) {
-			case SDL_BUTTON_LEFT:
-			case SDL_BUTTON_RIGHT: {
-				int x = e.button.x, y = e.button.y;
-				int num = find_widget(x, y);
-				if (num >= 0) {
-					widget *w = widgets[num];
-					w->click(x - rect.x - w->rect.x, y - rect.y - w->rect.y);
-				}
-				break;
-			}
-			}
-			break;
-		}
 
 		// Quit requested
 		case SDL_QUIT:
@@ -2004,7 +2033,7 @@ void dialog::start(bool play_sound)
 	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
 
 	// Activate first widget
-	activate_first_widget();
+//	activate_first_widget();
 
 	// Layout dialog
 	layout();

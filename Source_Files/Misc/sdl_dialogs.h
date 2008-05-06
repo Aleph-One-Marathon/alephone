@@ -245,6 +245,8 @@ public:
 	// takes ownership
 	void set_widget_placer(widget_placer *w) { placer = w; }
 
+	void activate_widget(widget *w);
+
 private:
 	SDL_Surface *get_surface(void) const;
 	void update(SDL_Rect r) const;
@@ -263,6 +265,7 @@ private:
 	vector<widget *> widgets;	// List of widgets
 
 	widget *active_widget;		// Pointer to active widget
+	widget *mouse_widget;           // Pointer to mouse event widget
 	size_t active_widget_num;		// Number of active widget
 
 	int result;					// Dialog result code
