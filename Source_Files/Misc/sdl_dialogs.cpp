@@ -1898,7 +1898,7 @@ void dialog::event(SDL_Event &e)
 	  if (e.type == SDL_MOUSEMOTION)
 	  {
 		  int x = e.motion.x, y = e.motion.y;
-		  widget *target;
+		  widget *target = 0;
 		  if (mouse_widget)
 			  target = mouse_widget;
 		  else
