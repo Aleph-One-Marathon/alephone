@@ -1725,6 +1725,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		{
 			glEnable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
+			if (Z_Buffering) glDisable(GL_DEPTH_TEST);
 		} else {
 			glDisable(GL_BLEND);
 			glEnable(GL_ALPHA_TEST);
@@ -1890,6 +1891,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		glColor3f(1,1,1);
 		glEnable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
+		if (Z_Buffering) glDisable(GL_DEPTH_TEST);
 		
 		TMgr.RenderGlowing();
 		SetBlend(TMgr.GlowBlend());
@@ -1898,6 +1900,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	
 	// Revert to default blend
 	SetBlend(OGL_BlendType_Crossfade);
+	if (Z_Buffering) glEnable(GL_DEPTH_TEST);
 	TMgr.RestoreTextureMatrix();
 
 	return true;
@@ -2255,17 +2258,16 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	else if (IsWeaponsInHand)
 		SetProjectionType(Projection_Screen);
 
-	// rely on Aleph One rendering sprites in the right order, since OpenGL
-	// doesn't get them right
-	if (Z_Buffering)
-		glDepthFunc(GL_ALWAYS);
-	
-	
 	bool IsBlended = TMgr.IsBlended();
 	bool ExternallyLit = false;
 	GLfloat Color[4];
 	DoLightingAndBlending(RenderRectangle, IsBlended,
 		Color, ExternallyLit);
+
+	if (Z_Buffering && (IsBlended || RenderRectangle.Opacity < 1 || RenderRectangle.transfer_mode == _tinted_transfer))
+		// alpha test will be disabled, so don't hose z buffer
+		glDisable(GL_DEPTH_TEST);
+
 	glColor4fv(Color);
 	
 	// Location of data:
@@ -2281,6 +2283,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		SetupStaticMode(RenderRectangle);
 		if (UseFlatStatic)
 		{
+			if (Z_Buffering) glDisable(GL_DEPTH_TEST);
 			glDrawArrays(GL_POLYGON,0,4);
 		} else {
 			// Do multitextured stippling to create the static effect
@@ -2307,6 +2310,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			glColor4f(1,1,1,Color[3]);
 			glEnable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
+			if (Z_Buffering) glDisable(GL_DEPTH_TEST);
 			
 			TMgr.RenderGlowing();
 			SetBlend(TMgr.GlowBlend());
@@ -2319,7 +2323,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	TMgr.RestoreTextureMatrix();
 
 	if (Z_Buffering)
-		glDepthFunc(GL_LEQUAL);
+		glEnable(GL_DEPTH_TEST);
 		
 	return true;
 }
