@@ -53,7 +53,7 @@ private:
 		// Look for "theme.mml" files
 		string base, part;
 		file.SplitPath(base, part);
-		if (part == "theme.mml")
+		if (part == "theme2.mml")
 			dest_vector.push_back(base);
 		return false;
 	}

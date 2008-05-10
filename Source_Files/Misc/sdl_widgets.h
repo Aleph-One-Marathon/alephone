@@ -192,6 +192,7 @@ protected:
 	char *text;
 private:
 	int color;
+	int theme_type;
 };
 
 class w_label : public w_static_text {

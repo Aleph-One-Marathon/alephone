@@ -411,7 +411,6 @@ enum {
 #define DIALOG_DELETE_SOUND _snd_hummer_attack
 #define DIALOG_ERASE_SOUND _snd_compiler_death
 
-
 /*
  *  Functions
  */
@@ -428,6 +427,26 @@ extern uint32 get_dialog_player_color(size_t colorIndex); // ZZZ: added
 extern SDL_Surface *get_dialog_image(int which, int width = 0, int height = 0);
 extern uint16 get_dialog_space(size_t which);
 extern void play_dialog_sound(int which);
+
+// new theme stuff
+
+// States
+enum {
+	DEFAULT_STATE
+};
+
+// Widget types
+enum {
+	DEFAULT_WIDGET,
+	TITLE_WIDGET
+};
+
+enum {
+	FOREGROUND_COLOR
+};
+
+extern font_info *get_theme_font(int widget_type, int state, int which, uint16 &style);
+extern uint32 get_theme_color(int widget_type, int state, int which);
 
 extern void dialog_ok(void *arg);
 extern void dialog_cancel(void *arg);

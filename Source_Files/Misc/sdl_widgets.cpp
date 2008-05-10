@@ -157,6 +157,20 @@ void widget::place(const SDL_Rect &r, placement_flags flags)
 // ZZZ change: copy the given string instead of just pointing to it.  Much easier for messages that change.
 w_static_text::w_static_text(const char *t, int f, int c) : widget(f), color(c)
 {
+	if (f == TITLE_FONT)
+	{
+		font = get_theme_font(TITLE_WIDGET, DEFAULT_STATE, 0, style);
+	}
+
+	if (c == TITLE_COLOR)
+	{
+		theme_type = TITLE_WIDGET;
+	}
+	else
+	{
+		theme_type = -1;
+	}
+
         text = strdup(t);
 	rect.w = text_width(text, font, style);
 	rect.h = font->get_line_height();
@@ -166,7 +180,13 @@ w_static_text::w_static_text(const char *t, int f, int c) : widget(f), color(c)
 
 void w_static_text::draw(SDL_Surface *s) const
 {
-	draw_text(s, text, rect.x, rect.y + font->get_ascent(), get_dialog_color(color), font, style);
+	uint32 pixel;
+	if (theme_type != -1)
+		pixel = get_theme_color(theme_type, DEFAULT_STATE, 0);
+	else
+		pixel = get_dialog_color(color);
+
+	draw_text(s, text, rect.x, rect.y + font->get_ascent(), pixel, font, style);
 }
 
 void w_label::click(int x, int y)

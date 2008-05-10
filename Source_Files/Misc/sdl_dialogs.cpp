@@ -83,6 +83,18 @@ static struct dialog_image_spec_type {
 
 static SDL_Surface *dialog_image[NUM_DIALOG_IMAGES];
 
+struct theme_state
+{
+	std::map<int, SDL_Color> color;
+	std::map<int, TextSpec> font_spec;
+	std::map<int, font_info*> font;
+	std::map<int, uint16> space;
+};
+
+typedef std::map<int, theme_state> dialog_theme_widget_t;
+typedef std::map<int, dialog_theme_widget_t> dialog_theme_t;
+static dialog_theme_t dialog_theme;
+
 bool dialog::sKeyRepeatActive = false;
 
 // Prototypes
@@ -262,6 +274,65 @@ protected:
 	int idx;
 };
 
+class XML_DTColorParser : public XML_ElementParser {
+public:
+	XML_DTColorParser(int _type, int _state, int num = 1) : XML_ElementParser("color"), type(_type), state(_state), max_index(num - 1) {}
+
+	bool Start()
+	{
+		have_red = have_green = have_blue = false;
+		idx = 0;
+		return true;
+	}
+	
+		bool HandleAttribute(const char *tag, const char *value)
+	{
+		float v;
+		if (StringsEqual(tag, "index")) {
+			return ReadBoundedNumericalValue(value, "%d", idx, 0, max_index);
+		} else if (StringsEqual(tag, "red")) {
+			if (ReadNumericalValue(value, "%f", v)) {
+				have_red = true;
+				color.r = uint8(PIN(255 * v + 0.5, 0, 255));
+			} else
+				return false;
+		} else if (StringsEqual(tag, "green")) {
+			if (ReadNumericalValue(value, "%f", v)) {
+				have_green = true;
+				color.g = uint8(PIN(255 * v + 0.5, 0, 255));
+			} else
+				return false;
+		} else if (StringsEqual(tag, "blue")) {
+			if (ReadNumericalValue(value, "%f", v)) {
+				have_blue = true;
+				color.b = uint8(PIN(255 * v + 0.5, 0, 255));
+			} else
+				return false;
+		} else {
+			UnrecognizedTag();
+			return false;
+		}
+		return true;
+	}
+
+	bool AttributesDone()
+	{
+		if (!have_red || !have_green || !have_blue) {
+			AttribsMissing();
+			return false;
+		}
+		dialog_theme[type][state].color[idx] = color;
+		return true;
+	}
+private:
+	int max_index;
+	int type, state;
+	bool have_red, have_green, have_blue;
+	SDL_Color color;
+protected:
+	int idx;
+};
+
 static bool foundLabelOutlineColor = false;
 
 class XML_DLabelColorParser : public XML_DColorParser
@@ -281,7 +352,7 @@ public:
 };
 
 static XML_DColorParser BackgroundColorParser(BACKGROUND_COLOR);
-static XML_DColorParser TitleColorParser(TITLE_COLOR);
+static XML_DTColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
 static XML_DColorParser ButtonColorParser(BUTTON_COLOR, 2);
 static XML_DLabelColorParser LabelColorParser(LABEL_COLOR, 3);
 static XML_DColorParser ItemColorParser(ITEM_COLOR, 2);
@@ -359,7 +430,78 @@ private:
 	std::string normal, bold, oblique, bold_oblique;
 };
 
-static XML_DFontParser TitleFontParser(TITLE_FONT);
+class XML_DTFontParser : public XML_ElementParser {
+public:
+	XML_DTFontParser(int _type, int _state, int i = 0) : XML_ElementParser("font"), type(_type), state(_state), idx(i) {}
+	
+	bool Start()
+	{
+		have_id = have_size = false;
+		style = 0;
+		return true;
+	}
+
+	bool HandleAttribute(const char *tag, const char *value)
+	{
+		if (StringsEqual(tag, "id")) {
+			if (ReadNumericalValue(value, "%d", id))
+				have_id = true;
+			else
+				return false;
+		} else if (StringsEqual(tag, "size")) {
+			if (ReadNumericalValue(value, "%d", size))
+				have_size = true;
+			else
+				return false;
+		} else if (StringsEqual(tag, "style")) {
+			return ReadNumericalValue(value, "%d", style);
+		} else if (StringsEqual(tag, "file")) {
+			normal = value;
+			have_path = true;
+			return true;
+		} else if (StringsEqual(tag, "bold_file")) {
+			bold = value;
+			return true;
+		} else if (StringsEqual(tag, "italic_file")) {
+			oblique = value;
+			return true;
+		} else if (StringsEqual(tag, "bold_italic_file")) {
+			bold_oblique = value;
+			return true;
+		} else {
+			UnrecognizedTag();
+			return false;
+		}
+		return true;
+	}
+
+	bool AttributesDone()
+	{
+		if (!(have_id || have_path) || !have_size) {
+			AttribsMissing();
+			return false;
+		}
+		dialog_theme[type][state].font_spec[idx].font = id;
+		dialog_theme[type][state].font_spec[idx].style = style;
+		dialog_theme[type][state].font_spec[idx].size = size;
+		dialog_theme[type][state].font_spec[idx].normal = normal;
+		dialog_theme[type][state].font_spec[idx].bold = bold;
+		dialog_theme[type][state].font_spec[idx].oblique = oblique;
+		dialog_theme[type][state].font_spec[idx].bold_oblique = bold_oblique;
+		return true;
+	}
+
+private:
+	bool have_id, have_size, have_path;
+
+	int idx;
+	int id, size, style;
+	int state, type;
+
+	std::string normal, bold, oblique, bold_oblique;
+};
+
+static XML_DTFontParser TitleFontParser(TITLE_WIDGET, DEFAULT_STATE);
 static XML_DFontParser ButtonFontParser(BUTTON_FONT);
 static XML_DFontParser LabelFontParser(LABEL_FONT);
 static XML_DFontParser ItemFontParser(ITEM_FONT);
@@ -632,7 +774,7 @@ bool load_theme(FileSpecifier &theme)
 	set_theme_defaults();
 
 	// Parse theme MML script
-	FileSpecifier theme_mml = theme + "theme.mml";
+	FileSpecifier theme_mml = theme + "theme2.mml";
 	XML_Loader_SDL loader;
 	loader.CurrentElement = &RootParser;
 	bool success = loader.ParseFile(theme_mml);
@@ -647,6 +789,16 @@ bool load_theme(FileSpecifier &theme)
 	for (int i=0; i<NUM_DIALOG_FONTS; i++)
 	{
 		dialog_font[i] = load_font(dialog_font_spec[i]);
+	}
+	for (dialog_theme_t::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
+	{
+		for (dialog_theme_widget_t::iterator j = i->second.begin(); j != i->second.end(); ++j)
+		{
+			for (std::map<int, TextSpec>::iterator k = j->second.font_spec.begin(); k != j->second.font_spec.end(); ++k)
+			{
+				j->second.font[k->first] = load_font(k->second);
+			}
+		}
 	}
 	data_search_path.erase(data_search_path.begin());
 
@@ -708,6 +860,15 @@ static const int default_dialog_space[NUM_DIALOG_SPACES] = {
 	14	// BUTTON_HEIGHT
 };
 
+static inline SDL_Color make_color(uint8 r, uint8 g, uint8 b)
+{
+	SDL_Color c;
+	c.r = r;
+	c.g = g;
+	c.b = b;
+	return c;
+}
+
 static void set_theme_defaults(void)
 {
 	for (int i=0; i<NUM_DIALOG_FONTS; i++)
@@ -725,6 +886,12 @@ static void set_theme_defaults(void)
 	for (int i=0; i<NUM_DIALOG_SPACES; i++)
 		dialog_space[i] = default_dialog_space[i];
 
+	// new theme defaults
+	static const TextSpec default_font_spec = {kFontIDMonaco, styleNormal, 12, 0, "mono"};
+#ifdef HAVE_SDL_TTF
+	dialog_theme[TITLE_WIDGET][DEFAULT_STATE].font_spec[0] = default_font_spec;
+	dialog_theme[TITLE_WIDGET][DEFAULT_STATE].font_spec[0].size = 24;
+#endif
 }
 
 
@@ -741,6 +908,17 @@ static void unload_theme(void)
 			dialog_font[i] = NULL;
 		}
 
+	for (dialog_theme_t::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
+	{
+		for (dialog_theme_widget_t::iterator j = i->second.begin(); j != i->second.end(); ++j)
+		{
+			for (std::map<int, font_info*>::iterator k = j->second.font.begin(); k != j->second.font.end(); ++k)
+			{
+				unload_font(k->second);
+				j->second.font.erase(k);
+			}
+		}
+	}
 	// Free surfaces
 	for (int i=0; i<NUM_DIALOG_IMAGES; i++)
 		if (dialog_image[i]) {
@@ -811,6 +989,64 @@ uint16 get_dialog_space(size_t which)
 	return dialog_space[which];
 }
 
+font_info *get_theme_font(int widget_type, int state, int which, uint16 &style)
+{
+	dialog_theme_t::iterator i = dialog_theme.find(widget_type);
+	if (i != dialog_theme.end())
+	{
+		dialog_theme_widget_t::iterator j = i->second.find(state);
+		if (j != i->second.end())
+		{
+			std::map<int, font_info*>::iterator k = j->second.font.find(which);
+			if (k != j->second.font.end())
+			{
+				style = j->second.font_spec[which].style;
+				return k->second;
+			}
+		}
+		
+		j = i->second.find(DEFAULT_STATE);
+		std::map<int, font_info*>::iterator k = j->second.font.find(which);
+		if (k != j->second.font.end())
+		{
+			style = j->second.font_spec[which].style;
+			return k->second;
+		}
+	}
+	
+	style = styleNormal;
+	return default_font;	
+}
+
+uint32 get_theme_color(int widget_type, int state, int which)
+{
+	SDL_Color c = {0xff, 0xff, 0xff};
+
+	dialog_theme_t::iterator i = dialog_theme.find(widget_type);
+	if (i != dialog_theme.end())
+	{
+		dialog_theme_widget_t::iterator j = i->second.find(state);
+		if (j != i->second.end())
+		{
+			std::map<int, SDL_Color>::iterator k = j->second.color.find(which);
+			if (k != j->second.color.end())
+			{
+				c = k->second;
+			}
+		} 
+		else
+		{
+			j = i->second.find(DEFAULT_STATE);
+			std::map<int, SDL_Color>::iterator k = j->second.color.find(which);
+			if (k != j->second.color.end())
+			{
+				c = k->second;
+			}
+		}
+	}
+	
+	return SDL_MapRGB(dialog_surface->format, c.r, c.g, c.b);
+}
 
 /*
  *  Play dialog sound
