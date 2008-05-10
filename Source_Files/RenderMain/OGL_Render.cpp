@@ -2264,7 +2264,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	DoLightingAndBlending(RenderRectangle, IsBlended,
 		Color, ExternallyLit);
 
-	if (Z_Buffering && (IsBlended || RenderRectangle.Opacity < 1 || RenderRectangle.transfer_mode == _tinted_transfer))
+	if (Z_Buffering && IsBlended)
 		// alpha test will be disabled, so don't hose z buffer
 		glDisable(GL_DEPTH_TEST);
 
