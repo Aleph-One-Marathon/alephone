@@ -314,33 +314,32 @@ void OGL_TextureOptionsBase::Load()
 	}
 	
 	// Load the normal image with alpha channel
-	try
+
+	// Check to see if loading needs to be done;
+	// it does not need to be if an image is present.
+	if (NormalImg.IsPresent()) return;
+
+	NormalImg.Clear();
+	
+	// Load the normal image if it has a filename specified for it
+	if (StringPresent(NormalColors) && File.SetNameWithPath(&NormalColors[0]))
 	{
-		// Check to see if loading needs to be done;
-		// it does not need to be if an image is present.
-		if (NormalImg.IsPresent()) throw 0;
-		NormalImg.Clear();
-		
-		// Load the normal image if it has a filename specified for it
-		if (!StringPresent(NormalColors)) throw 0;
-		if (!File.SetNameWithPath(&NormalColors[0])) throw 0;
-		if (!NormalImg.LoadFromFile(File,ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) throw 0;
+		if (!NormalImg.LoadFromFile(File,ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize))
+		{
+			// A texture must have a normal colored part
+			return;
+		}
 	}
-	catch(...)
+	else
 	{
-		// A texture must have a normal colored part
 		return;
 	}
 	
-	try
+	// Load the normal mask if it has a filename specified for it
+	if (StringPresent(NormalMask) && File.SetNameWithPath(&NormalMask[0]))
 	{
-		// Load the normal mask if it has a filename specified for it
-		if (!StringPresent(NormalMask)) throw 0;
-		if (!File.SetNameWithPath(&NormalMask[0])) throw 0;
-		if (!NormalImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize)) throw 0;
+		NormalImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize);
 	}
-	catch(...)
-	{}
 
 	if (maxTextureSize)
 	{
@@ -351,26 +350,27 @@ void OGL_TextureOptionsBase::Load()
 	}
 	
 	// Load the glow image with alpha channel
-	try
+	if (!GlowImg.IsPresent())
 	{
-		// Check to see if loading needs to be done;
-		// it does not need to be if an image is present.
-		if (GlowImg.IsPresent()) throw 0;
 		GlowImg.Clear();
 		
 		// Load the glow image if it has a filename specified for it
-		if (!StringPresent(GlowColors)) throw 0;
-		if (!File.SetNameWithPath(&GlowColors[0])) throw 0;
-		if (!GlowImg.LoadFromFile(File,ImageLoader_Colors, flags | (GlowIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) throw 0;
+		if (StringPresent(GlowColors) && File.SetNameWithPath(&GlowColors[0]))
+		{
+			if (GlowImg.LoadFromFile(File,ImageLoader_Colors, flags | (GlowIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize))
+			{
 		
-		// Load the glow mask if it has a filename specified for it;
-		// only loaded if an image has been loaded for it
-		if (!StringPresent(GlowMask)) throw 0;
-		if (!File.SetNameWithPath(&GlowMask[0])) throw 0;
-		if (!GlowImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize)) throw 0;
+				// Load the glow mask if it has a
+				// filename specified for it; only
+				// loaded if an image has been loaded
+				// for it
+				if (StringPresent(GlowMask) && File.SetNameWithPath(&GlowMask[0]))
+				{
+					GlowImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize);
+				}
+			}
+		}
 	}
-	catch(...)
-	{}
 	
 	if (GlowImg.IsPresent() && maxTextureSize)
 	{
