@@ -35,7 +35,7 @@
 
 <!-- Button -->
 <button top="5" left="16" right="16" height="32">
-  <font id="128" size="14" style="0"/>
+  <font file="bankgthd.ttf" size="14" style="0"/>
   <color red="0.5" green="0.5" blue="0.5"/>
   <image index="0" file="button_l.bmp" scale="false"/>
   <image index="1" file="button_c.bmp" scale="false"/>
