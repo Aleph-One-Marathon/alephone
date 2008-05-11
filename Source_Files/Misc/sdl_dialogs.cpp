@@ -95,7 +95,13 @@ struct theme_widget
 	TextSpec font_spec;
 	std::map<int, uint16> spaces;
 
-	theme_widget() : font(0) {}
+	theme_widget() : font(0) {
+		font_spec.font = kFontIDMonaco;
+		font_spec.style = styleNormal;
+		font_spec.size = 12;
+		font_spec.adjust_height = 0;
+		font_spec.normal = "mono";
+	}
 };
 
 static std::map<int, theme_widget> dialog_theme;
@@ -281,7 +287,7 @@ protected:
 
 class XML_DTColorParser : public XML_ElementParser {
 public:
-	XML_DTColorParser(int _type, int _state, int num = 1) : XML_ElementParser("color"), type(_type), state(_state), max_index(num - 1) {}
+	XML_DTColorParser(int _type, int _state, int max = 0) : XML_ElementParser("color"), type(_type), state(_state), max_index(max) {}
 
 	bool Start()
 	{
@@ -350,7 +356,12 @@ static XML_DTColorParser DefaultItemColorParser(ITEM_WIDGET, DEFAULT_STATE);
 static XML_DTColorParser ActiveItemColorParser(ITEM_WIDGET, ACTIVE_STATE);
 static XML_DTColorParser DisabledItemColorParser(ITEM_WIDGET, DISABLED_STATE);
 static XML_DTColorParser MessageColorParser(MESSAGE_WIDGET, DEFAULT_STATE);
-static XML_DColorParser TextEntryColorParser(TEXT_ENTRY_COLOR, 3);
+static XML_DTColorParser DefaultTextEntryColorParser(TEXT_ENTRY_WIDGET, DEFAULT_STATE);
+static XML_DTColorParser ActiveTextEntryColorParser(TEXT_ENTRY_WIDGET, ACTIVE_STATE);
+static XML_DTColorParser DisabledTextEntryColorParser(TEXT_ENTRY_WIDGET, DISABLED_STATE);
+static XML_DTColorParser CursorTextEntryColorParser(TEXT_ENTRY_WIDGET, CURSOR_STATE);
+
+
 
 
 class XML_DFontParser : public XML_ElementParser {
@@ -498,7 +509,7 @@ static XML_DFontParser ButtonFontParser(BUTTON_FONT);
 static XML_DTFontParser LabelFontParser(LABEL_FONT);
 static XML_DTFontParser ItemFontParser(ITEM_FONT);
 static XML_DTFontParser MessageFontParser(MESSAGE_WIDGET);
-static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_FONT);
+static XML_DTFontParser TextEntryFontParser(TEXT_ENTRY_WIDGET);
 static XML_DFontParser TextBoxFontParser(TEXT_BOX_FONT);
 
 class XML_DFrameParser : public XML_ElementParser {
@@ -603,6 +614,9 @@ static XML_MessageParser MessageParser;
 
 struct XML_TextEntryParser : public XML_ElementParser {XML_TextEntryParser() : XML_ElementParser("text_entry") {}};
 static XML_TextEntryParser TextEntryParser;
+static XML_ElementParser ActiveTextEntryParser("active");
+static XML_ElementParser DisabledTextEntryParser("disabled");
+static XML_ElementParser CursorTextEntryParser("cursor");
 
 struct XML_TextBoxParser : public XML_ElementParser { XML_TextBoxParser() : XML_ElementParser("text_box") {}};
 static XML_TextBoxParser TextBoxParser;
@@ -727,7 +741,13 @@ XML_ElementParser *Theme_GetParser()
 	ThemeParser.AddChild(&MessageParser);
 
 	TextEntryParser.AddChild(&TextEntryFontParser);
-	TextEntryParser.AddChild(&TextEntryColorParser);
+	TextEntryParser.AddChild(&DefaultTextEntryColorParser);
+	ActiveTextEntryParser.AddChild(&ActiveTextEntryColorParser);
+	DisabledTextEntryParser.AddChild(&DisabledTextEntryColorParser);
+	CursorTextEntryParser.AddChild(&CursorTextEntryColorParser);
+	TextEntryParser.AddChild(&ActiveTextEntryParser);
+	TextEntryParser.AddChild(&DisabledTextEntryParser);
+	TextEntryParser.AddChild(&CursorTextEntryParser);
 	ThemeParser.AddChild(&TextEntryParser);
 
 	TextBoxParser.AddChild(&TextBoxFontParser);
@@ -868,9 +888,7 @@ static void set_theme_defaults(void)
 		dialog_space[i] = default_dialog_space[i];
 
 	// new theme defaults
-	static const TextSpec default_font_spec = {kFontIDMonaco, styleNormal, 12, 0, "mono"};
 #ifdef HAVE_SDL_TTF
-	dialog_theme[TITLE_WIDGET].font_spec = default_font_spec;
 	dialog_theme[TITLE_WIDGET].font_spec.size = 24;
 #endif
 
@@ -882,6 +900,12 @@ static void set_theme_defaults(void)
 	dialog_theme[ITEM_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[ITEM_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
 	dialog_theme[ITEM_WIDGET].spaces[0] = 16;
+
+	dialog_theme[TEXT_ENTRY_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xff, 0x0);
+	dialog_theme[TEXT_ENTRY_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
+	dialog_theme[TEXT_ENTRY_WIDGET].states[CURSOR_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
+	dialog_theme[TEXT_ENTRY_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
+
 }
 
 

@@ -441,7 +441,7 @@ public:
 	// ghs: a temporary hack to set the text_font to match text_box's font
 	// call this immediately after creating the widget!
 	void set_with_textbox() { 
-	  text_font = get_dialog_font(TEXT_BOX_FONT, style);
+	  font = get_dialog_font(TEXT_BOX_FONT, style);
 	}
 
 	void enable_mac_roman_input(bool enable = true) { enable_mac_roman = enable; }
@@ -456,11 +456,6 @@ protected:
         
 private:
 	void modified_text(void);
-
-//	const sdl_font_info *text_font;	// Font for text
-//	ttf_and_sdl_font_info *text_font; // Font for text
-	font_info *text_font;
-	uint16 text_style;
 
 	size_t num_chars;		// Length of text in buffer
 	size_t max_chars;		// Maximum number of chars in buffer

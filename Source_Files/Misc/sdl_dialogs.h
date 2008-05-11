@@ -434,7 +434,8 @@ extern void play_dialog_sound(int which);
 enum {
 	DEFAULT_STATE,
 	DISABLED_STATE,
-	ACTIVE_STATE
+	ACTIVE_STATE,
+	CURSOR_STATE
 };
 
 // Widget types
@@ -443,7 +444,8 @@ enum {
 	TITLE_WIDGET,
 	LABEL_WIDGET,
 	MESSAGE_WIDGET,
-	ITEM_WIDGET
+	ITEM_WIDGET,
+	TEXT_ENTRY_WIDGET
 };
 
 enum {

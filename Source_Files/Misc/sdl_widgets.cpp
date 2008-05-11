@@ -102,6 +102,10 @@ widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dia
     {
 	    font = get_theme_font(ITEM_WIDGET, style);
     }
+    else if (f == TEXT_ENTRY_FONT)
+    {
+	    font = get_theme_font(TEXT_ENTRY_WIDGET, style);
+    }
 }
 
 void widget::associate_label(w_label *label)
@@ -811,20 +815,15 @@ void w_color_picker::draw(SDL_Surface *s) const
  */
 
 w_text_entry::w_text_entry(size_t max_c, const char *initial_text)
-	: widget(LABEL_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), max_chars(max_c), enable_mac_roman(false)
+	: widget(TEXT_ENTRY_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), max_chars(max_c), enable_mac_roman(false)
 {
 	// Initialize buffer
 	buf = new char[max_chars + 1];
 	set_text(initial_text);
 
-	// Get font
-	text_font = get_dialog_font(TEXT_ENTRY_FONT, text_style);
-
 	saved_min_width = MAX_TEXT_WIDTH;
 
-	saved_min_height =  (int16) max(font->get_ascent(), text_font->get_ascent()) +
-		(int16) max (font->get_descent(), text_font->get_descent()) +
-		(int16) max (font->get_leading(), text_font->get_leading());
+	saved_min_height =  (int16) font->get_ascent() + font->get_descent() + font->get_leading();
 }
 
 w_text_entry::~w_text_entry()
@@ -834,9 +833,7 @@ w_text_entry::~w_text_entry()
 
 void w_text_entry::place(const SDL_Rect& r, placement_flags flags)
 {
-	rect.h = (int16) max(font->get_ascent(), text_font->get_ascent()) +
-		(int16) max (font->get_descent(), text_font->get_descent()) +
-		(int16) max (font->get_leading(), text_font->get_leading());
+	rect.h = (int16) font->get_ascent() + (int16) font->get_descent() + font->get_leading();
 
 	rect.y = r.y;
 
@@ -848,7 +845,7 @@ void w_text_entry::place(const SDL_Rect& r, placement_flags flags)
 
 void w_text_entry::draw(SDL_Surface *s) const
 {
-  int y = rect.y + max(font->get_ascent(), text_font->get_ascent());
+  int y = rect.y + font->get_ascent();
   
   int16 theRectX = rect.x;
   uint16 theRectW = rect.w;
@@ -856,20 +853,20 @@ void w_text_entry::draw(SDL_Surface *s) const
   
   // Text
   int16 x = theRectX + theTextX;
-  uint16 width = text_width(buf, text_font, text_style);
+  uint16 width = text_width(buf, font, style);
   if (width > max_text_width)
     x -= width - max_text_width;
   set_drawing_clip_rectangle(0, theRectX + theTextX, static_cast<uint16>(s->h), theRectX + theRectW);
   
-  int theColorToUse = enabled ? (active ? TEXT_ENTRY_ACTIVE_COLOR : TEXT_ENTRY_COLOR) : TEXT_ENTRY_DISABLED_COLOR;
+  int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
   
-  draw_text(s, buf, x, y, get_dialog_color(theColorToUse), text_font, text_style);
+  draw_text(s, buf, x, y, get_theme_color(TEXT_ENTRY_WIDGET, state), font, style);
   set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
   
   // Cursor
   if (active) {
 	  SDL_Rect r = {x + width - (width ? 1 : 0), rect.y, 1, rect.h};
-    SDL_FillRect(s, &r, get_dialog_color(TEXT_ENTRY_CURSOR_COLOR));
+	  SDL_FillRect(s, &r, get_theme_color(TEXT_ENTRY_WIDGET, CURSOR_STATE));
   }
 }
 

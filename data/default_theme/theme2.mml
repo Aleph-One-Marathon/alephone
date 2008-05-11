@@ -74,9 +74,10 @@
 <!-- Text entry widget -->
 <text_entry>
   <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
-  <color index="0" red="1" green="0.875" blue="0.875"/>
-  <color index="1" red="1" green="1" blue="1"/>
-  <color index="2" red="0.875" green="1" blue="0.875"/>
+  <color red="1" green="0.875" blue="0.875"/>
+  <active><color red="1" green="1" blue="1"/></active>
+  <disabled><color red="0.5" green="0.5" blue="0.5"/></disabled>
+  <cursor><color red="0.875" green="1" blue="0.875"/></cursor>
 </text_entry>
 
 <text_box>
