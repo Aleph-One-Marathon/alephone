@@ -302,8 +302,7 @@ enum {
 
 // Colors
 enum {
-	BACKGROUND_COLOR,
-	TITLE_COLOR,
+	TITLE_COLOR = 1,
 	BUTTON_COLOR,
 	BUTTON_ACTIVE_COLOR,
 	LABEL_COLOR,
@@ -441,6 +440,7 @@ enum {
 // Widget types
 enum {
 	DEFAULT_WIDGET,
+	DIALOG_FRAME,
 	TITLE_WIDGET,
 	LABEL_WIDGET,
 	MESSAGE_WIDGET,
@@ -449,12 +449,34 @@ enum {
 };
 
 enum {
-	FOREGROUND_COLOR
+	FOREGROUND_COLOR,
+	BACKGROUND_COLOR,
+	FRAME_COLOR
+};
+
+enum {
+	TL_IMAGE,
+	T_IMAGE,
+	TR_IMAGE,
+	L_IMAGE,
+	R_IMAGE,
+	BL_IMAGE,
+	B_IMAGE,
+	BR_IMAGE
+};
+
+enum {
+	T_SPACE,
+	L_SPACE,
+	R_SPACE,
+	B_SPACE
 };
 
 extern font_info *get_theme_font(int widget_type, uint16 &style);
 
 extern uint32 get_theme_color(int widget_type, int state, int which = 0);
+extern SDL_Surface* get_theme_image(int widget_type, int state, int which, int width = 0, int height = 0);
+extern bool use_theme_images(int widget_type);
 extern uint16 get_theme_space(int widget_type, int which = 0);
 
 extern void dialog_ok(void *arg);

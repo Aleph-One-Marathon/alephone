@@ -5,6 +5,12 @@
 <marathon>
 <theme>
 
+<!-- color indices:
+     0 foreground color
+     1 background color
+     2 frame color
+-->
+
 <!-- Dialog frame -->
 <frame top="12" bottom="12" left="12" right="12">
   <image index="0" file="frame_tl.bmp" scale="false"/>
@@ -15,12 +21,8 @@
   <image index="5" file="frame_bl.bmp" scale="false"/>
   <image index="6" file="frame_b.bmp" scale="false"/>
   <image index="7" file="frame_br.bmp" scale="false"/>
+  <color index="1" red="0.145" green="0.145" blue="0.145"/>
 </frame>
-
-<!-- Dialog background -->
-<background>
-  <color red="0.145" green="0.145" blue="0.145"/>
-</background>
 
 <!-- Dialog title -->
 <title>

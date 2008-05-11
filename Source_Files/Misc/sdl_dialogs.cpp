@@ -86,6 +86,8 @@ static SDL_Surface *dialog_image[NUM_DIALOG_IMAGES];
 struct theme_state
 {
 	std::map<int, SDL_Color> colors;
+	std::map<int, dialog_image_spec_type> image_specs;
+	std::map<int, SDL_Surface *> images;
 };
 
 struct theme_widget
@@ -218,7 +220,58 @@ private:
 	bool scale;
 };
 
-static XML_ImageParser FrameImageParser(FRAME_TL_IMAGE, 8);
+class XML_TImageParser : public XML_ElementParser {
+public:
+	XML_TImageParser(int _type, int _state, int max = 0) : XML_ElementParser("image"), type(_type), state(_state), max_index(max) {}
+
+	bool Start()
+	{
+		have_index = have_name = false;
+		scale = false;
+		return true;
+	}
+
+	bool HandleAttribute(const char *tag, const char *value)
+	{
+		if (StringsEqual(tag, "index")) {
+			if (ReadBoundedNumericalValue(value, "%d", index, 0, max_index))
+				have_index = true;
+			else
+				return false;
+		} else if (StringsEqual(tag, "file")) {
+			name = value;
+			have_name = true;
+		} else if (StringsEqual(tag, "scale")) {
+			return ReadBooleanValue(value, scale);
+		} else {
+			UnrecognizedTag();
+			return false;
+		}
+		return true;
+	}
+
+	bool AttributesDone()
+	{
+		if (!have_index || !have_name) {
+			AttribsMissing();
+			return false;
+		}
+		dialog_theme[type].states[state].image_specs[index].name = name;
+		dialog_theme[type].states[state].image_specs[index].scale = scale;
+		return true;
+	}
+
+private:
+	int max_index;
+	int type, state;
+	bool have_index, have_name;
+
+	int index;
+	string name;
+	bool scale;
+};
+
+static XML_TImageParser FrameImageParser(DIALOG_FRAME, DEFAULT_STATE, 8);
 static XML_ImageParser ListImageParser(LIST_TL_IMAGE, 8);
 static XML_ImageParser ThumbImageParser(THUMB_T_IMAGE, 5);
 static XML_ImageParser SliderImageParser(SLIDER_L_IMAGE, 4);
@@ -346,7 +399,7 @@ protected:
 
 static bool foundLabelOutlineColor = false;
 
-static XML_DColorParser BackgroundColorParser(BACKGROUND_COLOR);
+static XML_DTColorParser FrameColorParser(DIALOG_FRAME, DEFAULT_STATE, 3);
 static XML_DTColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
 static XML_DColorParser ButtonColorParser(BUTTON_COLOR, 2);
 static XML_DTColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
@@ -506,7 +559,7 @@ private:
 
 static XML_DTFontParser TitleFontParser(TITLE_WIDGET);
 static XML_DFontParser ButtonFontParser(BUTTON_FONT);
-static XML_DTFontParser LabelFontParser(LABEL_FONT);
+static XML_DTFontParser LabelFontParser(LABEL_WIDGET);
 static XML_DTFontParser ItemFontParser(ITEM_WIDGET);
 static XML_DTFontParser MessageFontParser(MESSAGE_WIDGET);
 static XML_DTFontParser TextEntryFontParser(TEXT_ENTRY_WIDGET);
@@ -519,13 +572,13 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[FRAME_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[DIALOG_FRAME].spaces[T_SPACE]);
 		} else if (StringsEqual(tag, "bottom")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[FRAME_B_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[DIALOG_FRAME].spaces[B_SPACE]);
 		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[FRAME_L_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[DIALOG_FRAME].spaces[L_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[FRAME_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[DIALOG_FRAME].spaces[R_SPACE]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -535,9 +588,6 @@ public:
 };
 
 static XML_DFrameParser FrameParser;
-
-struct XML_BackgroundParser : public XML_ElementParser {XML_BackgroundParser() : XML_ElementParser("background") {}};
-static XML_BackgroundParser BackgroundParser;
 
 struct XML_TitleParser : public XML_ElementParser {XML_TitleParser() : XML_ElementParser("title") {}};
 static XML_TitleParser TitleParser;
@@ -704,10 +754,8 @@ static XML_ThemeParser ThemeParser;
 XML_ElementParser *Theme_GetParser()
 {
 	FrameParser.AddChild(&FrameImageParser);
+	FrameParser.AddChild(&FrameColorParser);
 	ThemeParser.AddChild(&FrameParser);
-
-	BackgroundParser.AddChild(&BackgroundColorParser);
-	ThemeParser.AddChild(&BackgroundParser);
 
 	TitleParser.AddChild(&TitleFontParser);
 	TitleParser.AddChild(&TitleColorParser);
@@ -811,6 +859,20 @@ bool load_theme(FileSpecifier &theme)
 			SDL_SetColorKey(s, SDL_SRCCOLORKEY, SDL_MapRGB(s->format, 0x00, 0xff, 0xff));
 		dialog_image[i] = s;
 	}
+	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
+	{
+		for (std::map<int, theme_state>::iterator j = i->second.states.begin(); j != i->second.states.end(); ++j)
+		{
+			for (std::map<int, dialog_image_spec_type>::iterator k = j->second.image_specs.begin(); k != j->second.image_specs.end(); ++k)
+			{
+				FileSpecifier file = theme + k->second.name;
+				SDL_Surface *s = SDL_LoadBMP(file.GetPath());
+				if (s) 
+					SDL_SetColorKey(s, SDL_SRCCOLORKEY, SDL_MapRGB(s->format, 0x00, 0xff, 0xff));
+				j->second.images[k->first] = s;
+			}
+		}
+	}
 
 	return success;
 }
@@ -892,6 +954,12 @@ static void set_theme_defaults(void)
 	dialog_theme[TITLE_WIDGET].font_spec.size = 24;
 #endif
 
+	dialog_theme[DIALOG_FRAME].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[DIALOG_FRAME].spaces[T_SPACE] = 8;
+	dialog_theme[DIALOG_FRAME].spaces[L_SPACE] = 8;
+	dialog_theme[DIALOG_FRAME].spaces[R_SPACE] = 8;
+	dialog_theme[DIALOG_FRAME].spaces[B_SPACE] = 8;
+
 	dialog_theme[LABEL_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xff, 0x0);
 	dialog_theme[LABEL_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
 	dialog_theme[LABEL_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
@@ -936,6 +1004,23 @@ static void unload_theme(void)
 			SDL_FreeSurface(dialog_image[i]);
 			dialog_image[i] = NULL;
 		}
+
+	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
+	{
+		for (std::map<int, theme_state>::iterator j = i->second.states.begin(); j != i->second.states.end(); ++j)
+		{
+			for (std::map<int, SDL_Surface*>::iterator k = j->second.images.begin(); k != j->second.images.end(); ++k)
+			{
+				if (k->second)
+				{
+					SDL_FreeSurface(k->second);
+					k->second = 0;
+				}
+			}
+		}
+	}
+
+	dialog_theme.clear();
 
 	// Close resource file
 	theme_resources.Close();
@@ -1046,6 +1131,71 @@ uint32 get_theme_color(int widget_type, int state, int which)
 	}
 	
 	return SDL_MapRGB(dialog_surface->format, c.r, c.g, c.b);
+}
+
+SDL_Surface *get_theme_image(int widget_type, int state, int which, int width, int height)
+{
+	SDL_Surface *s = default_image;
+	bool scale = false;
+
+	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
+	if (i != dialog_theme.end())
+	{
+		std::map<int, theme_state>::iterator j = i->second.states.find(state);
+		if (j != i->second.states.end())
+		{
+			std::map<int, SDL_Surface*>::iterator k = j->second.images.find(which);
+			if (k != j->second.images.end())
+			{
+				s = k->second;
+				scale = j->second.image_specs[k->first].scale;
+			}
+		}
+		else
+		{
+			j = i->second.states.find(DEFAULT_STATE);
+			if (j != i->second.states.end())
+			{
+				std::map<int, SDL_Surface*>::iterator k = j->second.images.find(which);
+				if (k != j->second.images.end())
+				{
+					s = k->second;
+					scale = j->second.image_specs[k->first].scale;
+				}
+			}
+		}
+	}
+
+	// If no width and height is given, the surface is returned
+	// as-is and must not be freed by the caller
+	if (width == 0 && height == 0)
+	{
+		return s;
+	}
+
+	// Otherwise, a new tiled/rescaled surface is created which
+	// must be freed by the caller
+	int req_width = width ? width : s->w;
+	int req_height = height ? height : s->h;
+	SDL_Surface *s2 = dialog_image_spec[which].scale ? rescale_surface(s, req_width, req_height) : tile_surface(s, req_width, req_height);
+	SDL_SetColorKey(s2, SDL_SRCCOLORKEY, SDL_MapRGB(s2->format, 0x00, 0xff, 0xff));
+	return s2;
+
+}
+
+bool use_theme_images(int widget_type)
+{
+	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
+	if (i != dialog_theme.end())
+	{
+		std::map<int, theme_state>::iterator j = i->second.states.find(DEFAULT_STATE);
+		if (j != i->second.states.end())
+		{
+			return j->second.image_specs.size();
+		}
+	}
+
+	return false;
 }
 
 uint16 get_theme_space(int widget_type, int which)
@@ -1767,16 +1917,16 @@ void dialog::layout()
 	placer_rect.w = placer->min_width();
 	placer_rect.h = placer->min_height();
 
-	rect.w = get_dialog_space(FRAME_L_SPACE) + placer_rect.w + get_dialog_space(FRAME_R_SPACE);
-	rect.h = get_dialog_space(FRAME_T_SPACE) + placer_rect.h + get_dialog_space(FRAME_B_SPACE);
+	rect.w = get_theme_space(DIALOG_FRAME, L_SPACE) + placer_rect.w + get_theme_space(DIALOG_FRAME, R_SPACE);
+	rect.h = get_theme_space(DIALOG_FRAME, T_SPACE) + placer_rect.h + get_theme_space(DIALOG_FRAME, B_SPACE);
 	
 	// Center dialog on video surfacea
 	SDL_Surface *video = SDL_GetVideoSurface();
 	rect.x = (video->w - rect.w) / 2;
 	rect.y = (video->h - rect.h) / 2;
 	
-	placer_rect.x = get_dialog_space(FRAME_L_SPACE);
-	placer_rect.y = get_dialog_space(FRAME_T_SPACE);
+	placer_rect.x = get_theme_space(DIALOG_FRAME, L_SPACE);
+	placer_rect.y = get_theme_space(DIALOG_FRAME, T_SPACE);
 
 	placer->place(placer_rect);
 }
@@ -1861,7 +2011,7 @@ void dialog::update(SDL_Rect r) const
 void dialog::draw_widget(widget *w, bool do_update) const
 {
 	// Clear and redraw widget
-	SDL_FillRect(dialog_surface, &w->rect, get_dialog_color(BACKGROUND_COLOR));
+	SDL_FillRect(dialog_surface, &w->rect, get_theme_color(DIALOG_FRAME, DEFAULT_STATE, BACKGROUND_COLOR));
 	w->draw(dialog_surface);
 	w->dirty = false;
 
@@ -1879,17 +2029,26 @@ static void draw_frame_image(SDL_Surface *s, int x, int y)
 void dialog::draw(void) const
 {
 	// Clear dialog surface
-	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
+	SDL_FillRect(dialog_surface, NULL, get_theme_color(DIALOG_FRAME, DEFAULT_STATE, BACKGROUND_COLOR));
 
-	// Draw frame
-	draw_frame_image(frame_tl, 0, 0);
-	draw_frame_image(frame_t, frame_tl->w, 0);
-	draw_frame_image(frame_tr, frame_tl->w + frame_t->w, 0);
-	draw_frame_image(frame_l, 0, frame_tl->h);
-	draw_frame_image(frame_r, rect.w - frame_r->w, frame_tr->h);
-	draw_frame_image(frame_bl, 0, frame_tl->h + frame_l->h);
-	draw_frame_image(frame_b, frame_bl->w, rect.h - frame_b->h);
-	draw_frame_image(frame_br, frame_bl->w + frame_b->w, frame_tr->h + frame_r->h);
+	if (use_theme_images(DIALOG_FRAME))
+	{
+		// Draw frame
+		draw_frame_image(frame_tl, 0, 0);
+		draw_frame_image(frame_t, frame_tl->w, 0);
+		draw_frame_image(frame_tr, frame_tl->w + frame_t->w, 0);
+		draw_frame_image(frame_l, 0, frame_tl->h);
+		draw_frame_image(frame_r, rect.w - frame_r->w, frame_tr->h);
+		draw_frame_image(frame_bl, 0, frame_tl->h + frame_l->h);
+		draw_frame_image(frame_b, frame_bl->w, rect.h - frame_b->h);
+		draw_frame_image(frame_br, frame_bl->w + frame_b->w, frame_tr->h + frame_r->h);
+	}
+	else
+	{
+		uint32 pixel = get_theme_color(DIALOG_FRAME, DEFAULT_STATE, FRAME_COLOR);
+		SDL_Rect r = {0, 0, rect.w, rect.h};
+		draw_rectangle(dialog_surface, &r, pixel);
+	}
 
 	// Draw all visible widgets
 	vector<widget *>::const_iterator i = widgets.begin(), end = widgets.end();
@@ -2282,7 +2441,7 @@ void dialog::start(bool play_sound)
 	top_dialog = this;
 
 	// Clear dialog surface
-	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
+	SDL_FillRect(dialog_surface, NULL, get_theme_color(DIALOG_FRAME, DEFAULT_STATE, BACKGROUND_COLOR));
 
 	// Activate first widget
 //	activate_first_widget();
@@ -2291,14 +2450,14 @@ void dialog::start(bool play_sound)
 	layout();
 
 	// Get frame images
-	frame_tl = get_dialog_image(FRAME_TL_IMAGE);
-	frame_tr = get_dialog_image(FRAME_TR_IMAGE);
-	frame_bl = get_dialog_image(FRAME_BL_IMAGE);
-	frame_br = get_dialog_image(FRAME_BR_IMAGE);
-	frame_t = get_dialog_image(FRAME_T_IMAGE, rect.w - frame_tl->w - frame_tr->w, 0);
-	frame_l = get_dialog_image(FRAME_L_IMAGE, 0, rect.h - frame_tl->h - frame_bl->h);
-	frame_r = get_dialog_image(FRAME_R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
-	frame_b = get_dialog_image(FRAME_B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
+	frame_tl = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, TL_IMAGE);
+	frame_tr = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, TR_IMAGE);
+	frame_bl = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, BL_IMAGE);
+	frame_br = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, BR_IMAGE);
+	frame_t = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, T_IMAGE, rect.w - frame_tl->w - frame_tr->w, 0);
+	frame_l = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, L_IMAGE, 0, rect.h - frame_tl->h - frame_bl->h);
+	frame_r = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
+	frame_b = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
 
 #if defined(HAVE_OPENGL)
 	if (OGL_IsActive()) {
@@ -2383,7 +2542,7 @@ int dialog::finish(bool play_sound)
 		SDL_ShowCursor(false);
 
 	// Clear dialog surface
-	SDL_FillRect(dialog_surface, NULL, get_dialog_color(BACKGROUND_COLOR));
+	SDL_FillRect(dialog_surface, NULL, get_theme_color(DIALOG_FRAME, DEFAULT_STATE, BACKGROUND_COLOR));
 
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {

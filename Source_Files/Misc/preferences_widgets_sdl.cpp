@@ -140,7 +140,7 @@ w_crosshair_display::~w_crosshair_display()
 
 void w_crosshair_display::draw(SDL_Surface *s) const
 {
-	SDL_FillRect(surface, 0, get_dialog_color(BACKGROUND_COLOR));
+	SDL_FillRect(surface, 0, get_theme_color(DIALOG_FRAME, DEFAULT_STATE, BACKGROUND_COLOR));
 	
 	// left border
 	SDL_Rect r;
