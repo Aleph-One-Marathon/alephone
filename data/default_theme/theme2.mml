@@ -47,6 +47,12 @@
   <disabled>
     <color red="0.33" green="0.33" blue="0.33"/>
   </disabled>
+  <pressed>
+    <image index="0" file="button_l_p.bmp" scale="false"/>
+    <image index="1" file="button_c_p.bmp" scale="false"/>
+    <image index="2" file="button_r_p.bmp" scale="false"/>
+    <color red="0.95" green="0.70" blue="0.28"/>
+  </pressed>
 </button>
 
 <!-- Label -->

@@ -274,7 +274,7 @@ void w_pict::draw(SDL_Surface *s) const
  *  Button
  */
 
-w_button_base::w_button_base(const char *t, action_proc p, void *a) : widget(BUTTON_FONT), text(t), proc(p), arg(a)
+w_button_base::w_button_base(const char *t, action_proc p, void *a) : widget(BUTTON_FONT), text(t), proc(p), arg(a), down(false), pressed(false)
 {
 
 }
@@ -285,10 +285,51 @@ void w_button_base::set_callback(action_proc p, void *a)
 	arg = a;
 }
 
+void w_button_base::mouse_move(int x, int y)
+{
+	if (down)
+	{
+		if (x >= 0 && x <= rect.w && y >= 0 && y <= rect.h)
+		{
+			if (!pressed)
+				dirty = true;
+			pressed = true;
+		}
+		else
+		{
+			if (pressed)
+				dirty = true;
+			pressed = false;
+		}
+		get_owning_dialog()->draw_dirty_widgets();
+	}
+}
+
+void w_button_base::mouse_down(int, int)
+{
+	down = true;
+	pressed = true;
+	dirty = true;
+	get_owning_dialog()->draw_dirty_widgets();
+}
+
+void w_button_base::mouse_up(int x, int y)
+{
+	down = false;
+	pressed = false;
+	dirty = true;
+	get_owning_dialog()->draw_dirty_widgets();
+	
+	if (proc && x >= 0 && x <= rect.w && y >= 0 && y <= rect.h)
+		proc(arg);
+}
+
 void w_button_base::click(int /*x*/, int /*y*/)
 {
-    if(enabled && proc)
-	    proc(arg);
+	// simulate a mouse press
+	mouse_down(0, 0);
+	SDL_Delay(1000 / 12);
+	mouse_up(0, 0);
 }
 
 w_button::w_button(const char *t, action_proc p, void *a) : w_button_base(t, p, a)
@@ -297,6 +338,7 @@ w_button::w_button(const char *t, action_proc p, void *a) : w_button_base(t, p, 
 	button_c_default = get_theme_image(BUTTON_WIDGET, DEFAULT_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, DEFAULT_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, DEFAULT_STATE, BUTTON_R_IMAGE)->w);
 	button_c_active = get_theme_image(BUTTON_WIDGET, ACTIVE_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, ACTIVE_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, ACTIVE_STATE, BUTTON_R_IMAGE)->w);
 	button_c_disabled = get_theme_image(BUTTON_WIDGET, DISABLED_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, DISABLED_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, DISABLED_STATE, BUTTON_R_IMAGE)->w);
+	button_c_pressed = get_theme_image(BUTTON_WIDGET, PRESSED_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, PRESSED_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, PRESSED_STATE, BUTTON_R_IMAGE)->w);
 
 	rect.h = static_cast<uint16>(get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT));
 
@@ -309,18 +351,32 @@ w_button::~w_button()
 	if (button_c_default) SDL_FreeSurface(button_c_default);
 	if (button_c_active) SDL_FreeSurface(button_c_active);
 	if (button_c_disabled) SDL_FreeSurface(button_c_disabled);
+	if (button_c_pressed) SDL_FreeSurface(button_c_pressed);
 }
 
 void w_button::draw(SDL_Surface *s) const
 {
 	// Label (ZZZ: different color for disabled)
-	int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
-	
+	int state = DEFAULT_STATE;
+	if (pressed)
+		state = PRESSED_STATE;
+	else if (!enabled)
+		state = DISABLED_STATE;
+	else if (active)
+		state = ACTIVE_STATE;
+		
 	if (use_theme_images(BUTTON_WIDGET))
 	{
 		SDL_Surface *button_l = get_theme_image(BUTTON_WIDGET, state, BUTTON_L_IMAGE);
 		SDL_Surface *button_r = get_theme_image(BUTTON_WIDGET, state, BUTTON_R_IMAGE);
-		SDL_Surface *button_c = enabled ? (active ? button_c_active : button_c_default) : button_c_disabled;
+		SDL_Surface *button_c = button_c_default;
+		if (pressed)
+			button_c = button_c_pressed;
+		else if (!enabled)
+			button_c = button_c_disabled;
+		else if (active)
+			button_c = button_c_active;
+
 		// Button image
 		SDL_Rect r = {rect.x, rect.y, 
 			      static_cast<Uint16>(button_l->w), 
@@ -337,7 +393,11 @@ void w_button::draw(SDL_Surface *s) const
 	}
 	else
 	{
-		uint32 pixel = get_theme_color(BUTTON_WIDGET, state, FRAME_COLOR);
+		uint32 pixel = get_theme_color(BUTTON_WIDGET, state, BACKGROUND_COLOR);
+		SDL_Rect r = {rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2};
+		SDL_FillRect(s, &r, pixel);
+
+		pixel = get_theme_color(BUTTON_WIDGET, state, FRAME_COLOR);
 		draw_rectangle(s, &rect, pixel);
 	}
 

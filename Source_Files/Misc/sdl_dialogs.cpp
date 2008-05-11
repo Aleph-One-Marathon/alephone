@@ -276,6 +276,9 @@ static XML_ImageParser ListImageParser(LIST_TL_IMAGE, 8);
 static XML_ImageParser ThumbImageParser(THUMB_T_IMAGE, 5);
 static XML_ImageParser SliderImageParser(SLIDER_L_IMAGE, 4);
 static XML_TImageParser DefaultButtonImageParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
+static XML_TImageParser ActiveButtonImageParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
+static XML_TImageParser DisabledButtonImageParser(BUTTON_WIDGET, DISABLED_STATE, 3);
+static XML_TImageParser PressedButtonImageParser(BUTTON_WIDGET, PRESSED_STATE, 3);
 
 class XML_DColorParser : public XML_ElementParser {
 public:
@@ -404,6 +407,7 @@ static XML_DTColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
 static XML_DTColorParser DefaultButtonColorParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
 static XML_DTColorParser ActiveButtonColorParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
 static XML_DTColorParser DisabledButtonColorParser(BUTTON_WIDGET, DISABLED_STATE, 3);
+static XML_DTColorParser PressedButtonColorParser(BUTTON_WIDGET, PRESSED_STATE, 3);
 static XML_DTColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
 static XML_DTColorParser ActiveLabelColorParser(LABEL_WIDGET, ACTIVE_STATE);
 static XML_DTColorParser DisabledLabelColorParser(LABEL_WIDGET, DISABLED_STATE);
@@ -637,6 +641,7 @@ public:
 static XML_ButtonParser ButtonParser;
 static XML_ElementParser ActiveButtonParser("active");
 static XML_ElementParser DisabledButtonParser("disabled");
+static XML_ElementParser PressedButtonParser("pressed");
 
 struct XML_LabelParser : public XML_ElementParser {XML_LabelParser() : XML_ElementParser("label") {}};
 static XML_LabelParser LabelParser;
@@ -770,10 +775,15 @@ XML_ElementParser *Theme_GetParser()
 	ButtonParser.AddChild(&ButtonFontParser);
 	ButtonParser.AddChild(&DefaultButtonColorParser);
 	ActiveButtonParser.AddChild(&ActiveButtonColorParser);
+	ActiveButtonParser.AddChild(&ActiveButtonImageParser);
 	DisabledButtonParser.AddChild(&DisabledButtonColorParser);
+	DisabledButtonParser.AddChild(&DisabledButtonImageParser);
+	PressedButtonParser.AddChild(&PressedButtonColorParser);
+	PressedButtonParser.AddChild(&PressedButtonImageParser);
 	ButtonParser.AddChild(&ActiveButtonParser);
 	ButtonParser.AddChild(&DisabledButtonParser);
 	ButtonParser.AddChild(&DefaultButtonImageParser);
+	ButtonParser.AddChild(&PressedButtonParser);
 	ThemeParser.AddChild(&ButtonParser);
 
 	LabelParser.AddChild(&LabelFontParser);
@@ -989,8 +999,12 @@ static void set_theme_defaults(void)
 	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_R_SPACE] = 4;
 	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_HEIGHT] = 22;
 	dialog_theme[BUTTON_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
-	dialog_theme[BUTTON_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xb0, 0xc9);
+	dialog_theme[BUTTON_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[BUTTON_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[BUTTON_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x7f, 0x7f, 0x7f);
+
+	dialog_theme[BUTTON_WIDGET].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[BUTTON_WIDGET].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
 
 }
 
@@ -2364,14 +2378,19 @@ void dialog::event(SDL_Event &e)
 			  mouse_widget = widgets[num];
 			  mouse_widget->event(e);
 			  if (e.button.button == SDL_BUTTON_LEFT || e.button.button == SDL_BUTTON_RIGHT)
-				  mouse_widget->click(x - rect.x - mouse_widget->rect.x, y - rect.y - mouse_widget->rect.y);
+				  mouse_widget->mouse_down(x - rect.x - mouse_widget->rect.x, y - rect.y - mouse_widget->rect.y);
 		  }
 	  }
 	  else if (e.type == SDL_MOUSEBUTTONUP)
 	  {
 		  if (mouse_widget)
+		  {
 			  mouse_widget->event(e);
-		  mouse_widget = 0;
+			  if (e.button.button == SDL_BUTTON_LEFT || e.button.button == SDL_BUTTON_RIGHT)
+				  mouse_widget->mouse_up(e.button.x - rect.x - mouse_widget->rect.x, e.button.y - rect.y - mouse_widget->rect.y);
+			  
+			  mouse_widget = 0;
+		  }
 	  }	  
 	  else
   // First pass event to active widget (which may modify it)

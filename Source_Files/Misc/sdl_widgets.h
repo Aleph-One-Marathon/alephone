@@ -98,6 +98,8 @@ public:
     
 	// Handle event
 	virtual void mouse_move(int /*x*/, int /*y*/) {}
+	virtual void mouse_down(int x, int y) { click(x, y); }
+	virtual void mouse_up(int /*x*/, int /*y*/) {}
 	virtual void click(int /*x*/, int /*y*/) {}
 	virtual void event(SDL_Event & /*e*/) {}
 
@@ -240,12 +242,17 @@ public:
 	void set_callback (action_proc proc, void *arg);
 	
 	void draw(SDL_Surface *s) const = 0;
+	void mouse_move(int x, int y);
+	void mouse_down(int x, int y);
+	void mouse_up(int x, int y);
 	void click(int x, int y);
 
 protected:
 	const std::string text;
 	action_proc proc;
 	void *arg;
+
+	bool down, pressed;
 };
 	
 
@@ -261,6 +268,7 @@ protected:
 	SDL_Surface *button_c_default;
 	SDL_Surface *button_c_active;
 	SDL_Surface *button_c_disabled;
+	SDL_Surface *button_c_pressed;
 };
 
 class w_tiny_button : public w_button_base {
