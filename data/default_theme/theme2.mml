@@ -44,8 +44,13 @@
 <!-- Label -->
 <label>
   <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
-  <color index="0" red="0.875" green="0.65" blue="0.65"/>
-  <color index="1" red="0.75" green="0.875" blue="0.65"/>
+  <color red="0.875" green="0.65" blue="0.65"/>
+  <active>
+    <color red="0.75" green="0.875" blue="0.65"/>
+  </active>
+  <disabled>
+    <color red="0.5" green="0.5" blue="0.5"/>
+  </disabled>
 </label>
 
 <!-- Item -->

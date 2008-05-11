@@ -432,20 +432,25 @@ extern void play_dialog_sound(int which);
 
 // States
 enum {
-	DEFAULT_STATE
+	DEFAULT_STATE,
+	DISABLED_STATE,
+	ACTIVE_STATE
 };
 
 // Widget types
 enum {
 	DEFAULT_WIDGET,
-	TITLE_WIDGET
+	TITLE_WIDGET,
+	LABEL_WIDGET,
+	MESSAGE_WIDGET,
 };
 
 enum {
 	FOREGROUND_COLOR
 };
 
-extern font_info *get_theme_font(int widget_type, int state, int which, uint16 &style);
+extern font_info *get_theme_font(int widget_type, uint16 &style);
+
 extern uint32 get_theme_color(int widget_type, int state, int which);
 
 extern void dialog_ok(void *arg);

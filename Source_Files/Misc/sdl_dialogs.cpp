@@ -85,15 +85,20 @@ static SDL_Surface *dialog_image[NUM_DIALOG_IMAGES];
 
 struct theme_state
 {
-	std::map<int, SDL_Color> color;
-	std::map<int, TextSpec> font_spec;
-	std::map<int, font_info*> font;
-	std::map<int, uint16> space;
+	std::map<int, SDL_Color> colors;
 };
 
-typedef std::map<int, theme_state> dialog_theme_widget_t;
-typedef std::map<int, dialog_theme_widget_t> dialog_theme_t;
-static dialog_theme_t dialog_theme;
+struct theme_widget
+{
+	std::map<int, theme_state> states;
+	font_info *font;
+	TextSpec font_spec;
+	std::map<int, uint16> spaces;
+
+	theme_widget() : font(0) {}
+};
+
+static std::map<int, theme_widget> dialog_theme;
 
 bool dialog::sKeyRepeatActive = false;
 
@@ -321,7 +326,7 @@ public:
 			AttribsMissing();
 			return false;
 		}
-		dialog_theme[type][state].color[idx] = color;
+		dialog_theme[type].states[state].colors[idx] = color;
 		return true;
 	}
 private:
@@ -335,28 +340,14 @@ protected:
 
 static bool foundLabelOutlineColor = false;
 
-class XML_DLabelColorParser : public XML_DColorParser
-{
-public:
-	XML_DLabelColorParser(int base, int num = 1) : XML_DColorParser(base, num) { }
-
-	bool AttributesDone()
-	{
-		if (idx == 2)
-		{
-			foundLabelOutlineColor = true;
-		}
-
-		return XML_DColorParser::AttributesDone();
-	}
-};
-
 static XML_DColorParser BackgroundColorParser(BACKGROUND_COLOR);
 static XML_DTColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
 static XML_DColorParser ButtonColorParser(BUTTON_COLOR, 2);
-static XML_DLabelColorParser LabelColorParser(LABEL_COLOR, 3);
+static XML_DTColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
+static XML_DTColorParser ActiveLabelColorParser(LABEL_WIDGET, ACTIVE_STATE);
+static XML_DTColorParser DisabledLabelColorParser(LABEL_WIDGET, DISABLED_STATE);
 static XML_DColorParser ItemColorParser(ITEM_COLOR, 2);
-static XML_DColorParser MessageColorParser(MESSAGE_COLOR);
+static XML_DTColorParser MessageColorParser(MESSAGE_WIDGET, DEFAULT_STATE);
 static XML_DColorParser TextEntryColorParser(TEXT_ENTRY_COLOR, 3);
 
 
@@ -432,7 +423,7 @@ private:
 
 class XML_DTFontParser : public XML_ElementParser {
 public:
-	XML_DTFontParser(int _type, int _state, int i = 0) : XML_ElementParser("font"), type(_type), state(_state), idx(i) {}
+	XML_DTFontParser(int _type) : XML_ElementParser("font"), type(_type) {}
 	
 	bool Start()
 	{
@@ -481,31 +472,30 @@ public:
 			AttribsMissing();
 			return false;
 		}
-		dialog_theme[type][state].font_spec[idx].font = id;
-		dialog_theme[type][state].font_spec[idx].style = style;
-		dialog_theme[type][state].font_spec[idx].size = size;
-		dialog_theme[type][state].font_spec[idx].normal = normal;
-		dialog_theme[type][state].font_spec[idx].bold = bold;
-		dialog_theme[type][state].font_spec[idx].oblique = oblique;
-		dialog_theme[type][state].font_spec[idx].bold_oblique = bold_oblique;
+		dialog_theme[type].font_spec.font = id;
+		dialog_theme[type].font_spec.style = style;
+		dialog_theme[type].font_spec.size = size;
+		dialog_theme[type].font_spec.normal = normal;
+		dialog_theme[type].font_spec.bold = bold;
+		dialog_theme[type].font_spec.oblique = oblique;
+		dialog_theme[type].font_spec.bold_oblique = bold_oblique;
 		return true;
 	}
 
 private:
 	bool have_id, have_size, have_path;
 
-	int idx;
 	int id, size, style;
-	int state, type;
+	int type;
 
 	std::string normal, bold, oblique, bold_oblique;
 };
 
-static XML_DTFontParser TitleFontParser(TITLE_WIDGET, DEFAULT_STATE);
+static XML_DTFontParser TitleFontParser(TITLE_WIDGET);
 static XML_DFontParser ButtonFontParser(BUTTON_FONT);
-static XML_DFontParser LabelFontParser(LABEL_FONT);
+static XML_DTFontParser LabelFontParser(LABEL_FONT);
 static XML_DFontParser ItemFontParser(ITEM_FONT);
-static XML_DFontParser MessageFontParser(MESSAGE_FONT);
+static XML_DTFontParser MessageFontParser(MESSAGE_WIDGET);
 static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_FONT);
 static XML_DFontParser TextBoxFontParser(TEXT_BOX_FONT);
 
@@ -581,25 +571,10 @@ public:
 
 static XML_ButtonParser ButtonParser;
 
-struct XML_LabelParser : public XML_ElementParser {
-	XML_LabelParser() : XML_ElementParser("label") {}
-public:
-	bool Start()
-	{
-		foundLabelOutlineColor = false;
-		return true;
-	}
-
-	bool End()
-	{
-		if (!foundLabelOutlineColor)
-		{
-			dialog_color[LABEL_OUTLINE_COLOR] = dialog_color[BACKGROUND_COLOR];
-		}
-		return true;
-	}
-};
+struct XML_LabelParser : public XML_ElementParser {XML_LabelParser() : XML_ElementParser("label") {}};
 static XML_LabelParser LabelParser;
+static XML_ElementParser ActiveLabelParser("active");
+static XML_ElementParser DisabledLabelParser("disabled");
 
 class XML_DItemParser : public XML_ElementParser {
 public:
@@ -728,7 +703,11 @@ XML_ElementParser *Theme_GetParser()
 	ThemeParser.AddChild(&ButtonParser);
 
 	LabelParser.AddChild(&LabelFontParser);
-	LabelParser.AddChild(&LabelColorParser);
+	LabelParser.AddChild(&DefaultLabelColorParser);
+	ActiveLabelParser.AddChild(&ActiveLabelColorParser);
+	DisabledLabelParser.AddChild(&DisabledLabelColorParser);
+	LabelParser.AddChild(&ActiveLabelParser);
+	LabelParser.AddChild(&DisabledLabelParser);
 	ThemeParser.AddChild(&LabelParser);
 
 	ItemParser.AddChild(&ItemFontParser);
@@ -790,15 +769,9 @@ bool load_theme(FileSpecifier &theme)
 	{
 		dialog_font[i] = load_font(dialog_font_spec[i]);
 	}
-	for (dialog_theme_t::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
+	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
 	{
-		for (dialog_theme_widget_t::iterator j = i->second.begin(); j != i->second.end(); ++j)
-		{
-			for (std::map<int, TextSpec>::iterator k = j->second.font_spec.begin(); k != j->second.font_spec.end(); ++k)
-			{
-				j->second.font[k->first] = load_font(k->second);
-			}
-		}
+		i->second.font = load_font(i->second.font_spec);
 	}
 	data_search_path.erase(data_search_path.begin());
 
@@ -889,9 +862,13 @@ static void set_theme_defaults(void)
 	// new theme defaults
 	static const TextSpec default_font_spec = {kFontIDMonaco, styleNormal, 12, 0, "mono"};
 #ifdef HAVE_SDL_TTF
-	dialog_theme[TITLE_WIDGET][DEFAULT_STATE].font_spec[0] = default_font_spec;
-	dialog_theme[TITLE_WIDGET][DEFAULT_STATE].font_spec[0].size = 24;
+	dialog_theme[TITLE_WIDGET].font_spec = default_font_spec;
+	dialog_theme[TITLE_WIDGET].font_spec.size = 24;
 #endif
+
+	dialog_theme[LABEL_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xff, 0x0);
+	dialog_theme[LABEL_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
+	dialog_theme[LABEL_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 }
 
 
@@ -908,15 +885,12 @@ static void unload_theme(void)
 			dialog_font[i] = NULL;
 		}
 
-	for (dialog_theme_t::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
+	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
 	{
-		for (dialog_theme_widget_t::iterator j = i->second.begin(); j != i->second.end(); ++j)
+		if (i->second.font)
 		{
-			for (std::map<int, font_info*>::iterator k = j->second.font.begin(); k != j->second.font.end(); ++k)
-			{
-				unload_font(k->second);
-				j->second.font.erase(k);
-			}
+			unload_font(i->second.font);
+			i->second.font = 0;
 		}
 	}
 	// Free surfaces
@@ -989,58 +963,47 @@ uint16 get_dialog_space(size_t which)
 	return dialog_space[which];
 }
 
-font_info *get_theme_font(int widget_type, int state, int which, uint16 &style)
+font_info *get_theme_font(int widget_type, uint16 &style)
 {
-	dialog_theme_t::iterator i = dialog_theme.find(widget_type);
-	if (i != dialog_theme.end())
+	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
+	if (i != dialog_theme.end() && i->second.font)
 	{
-		dialog_theme_widget_t::iterator j = i->second.find(state);
-		if (j != i->second.end())
-		{
-			std::map<int, font_info*>::iterator k = j->second.font.find(which);
-			if (k != j->second.font.end())
-			{
-				style = j->second.font_spec[which].style;
-				return k->second;
-			}
-		}
-		
-		j = i->second.find(DEFAULT_STATE);
-		std::map<int, font_info*>::iterator k = j->second.font.find(which);
-		if (k != j->second.font.end())
-		{
-			style = j->second.font_spec[which].style;
-			return k->second;
-		}
+		style = i->second.font_spec.style;
+		return i->second.font;
 	}
-	
-	style = styleNormal;
-	return default_font;	
+	else 
+	{
+		style = styleNormal;
+		return default_font;
+	}
 }
 
 uint32 get_theme_color(int widget_type, int state, int which)
 {
 	SDL_Color c = {0xff, 0xff, 0xff};
 
-	dialog_theme_t::iterator i = dialog_theme.find(widget_type);
+	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
 	if (i != dialog_theme.end())
 	{
-		dialog_theme_widget_t::iterator j = i->second.find(state);
-		if (j != i->second.end())
+		std::map<int, theme_state>::iterator j = i->second.states.find(state);
+		if (j != i->second.states.end())
 		{
-			std::map<int, SDL_Color>::iterator k = j->second.color.find(which);
-			if (k != j->second.color.end())
+			std::map<int, SDL_Color>::iterator k = j->second.colors.find(which);
+			if (k != j->second.colors.end())
 			{
 				c = k->second;
 			}
 		} 
 		else
 		{
-			j = i->second.find(DEFAULT_STATE);
-			std::map<int, SDL_Color>::iterator k = j->second.color.find(which);
-			if (k != j->second.color.end())
+			j = i->second.states.find(DEFAULT_STATE);
+			if (j != i->second.states.end())
 			{
-				c = k->second;
+				std::map<int, SDL_Color>::iterator k = j->second.colors.find(which);
+				if (k != j->second.colors.end())
+				{
+					c = k->second;
+				}
 			}
 		}
 	}

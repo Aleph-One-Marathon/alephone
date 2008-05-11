@@ -85,6 +85,19 @@ widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dia
     rect.y = 0;
     rect.w = 0;
     rect.h = 0;
+
+    if (f == TITLE_FONT)
+    {
+	    font = get_theme_font(TITLE_WIDGET, style);
+    }
+    else if (f == LABEL_FONT)
+    {
+	    font = get_theme_font(LABEL_WIDGET, style);
+    }
+    else if (f == MESSAGE_FONT)
+    {
+	    font = get_theme_font(MESSAGE_WIDGET, style);
+    }
 }
 
 void widget::associate_label(w_label *label)
@@ -157,14 +170,13 @@ void widget::place(const SDL_Rect &r, placement_flags flags)
 // ZZZ change: copy the given string instead of just pointing to it.  Much easier for messages that change.
 w_static_text::w_static_text(const char *t, int f, int c) : widget(f), color(c)
 {
-	if (f == TITLE_FONT)
-	{
-		font = get_theme_font(TITLE_WIDGET, DEFAULT_STATE, 0, style);
-	}
-
 	if (c == TITLE_COLOR)
 	{
 		theme_type = TITLE_WIDGET;
+	}
+	else if (c == MESSAGE_COLOR)
+	{
+		theme_type = MESSAGE_WIDGET;
 	}
 	else
 	{
@@ -198,8 +210,9 @@ void w_label::click(int x, int y)
 
 void w_label::draw(SDL_Surface *s) const
 {
-	int theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
-	draw_text(s, text, rect.x, rect.y + font->get_ascent(), get_dialog_color(theColorToUse), font, style);
+	int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
+	uint16 style = 0;
+	draw_text(s, text, rect.x, rect.y + font->get_ascent(), get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), font, style);
 }
 
 // ZZZ addition: change text.
@@ -309,7 +322,7 @@ void w_button::draw(SDL_Surface *s) const
 
 w_tiny_button::w_tiny_button(const char *t, action_proc p, void *a) : w_button_base(t, p, a)
 {
-	font = get_dialog_font(LABEL_FONT, style);
+	font = get_theme_font(LABEL_WIDGET, style);
 	
 	rect.w = text_width(this->text.c_str(), font, style);
 	rect.h = font->get_line_height();
@@ -631,7 +644,7 @@ void w_toggle::draw(SDL_Surface *s) const
     // ghs: disgusting temporary hack to draw larger checkboxes
     if (labels == onoff_labels)
     {
-	    theColorToUse = enabled ? (active ? LABEL_ACTIVE_COLOR : LABEL_COLOR) : LABEL_DISABLED_COLOR;
+	    int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 	    static font_info* checkbox_font = 0;
 	    if (!checkbox_font)
 	    {
@@ -639,7 +652,7 @@ void w_toggle::draw(SDL_Surface *s) const
 		    checkbox_font = load_font(checkbox_font_spec);
 	    }
 	    
-	    draw_text(s, str, rect.x, y, get_dialog_color(theColorToUse), checkbox_font, style, utf8);
+	    draw_text(s, str, rect.x, y, get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), checkbox_font, style, utf8);
     }
     else
 #endif
@@ -1108,7 +1121,7 @@ void w_progress_bar::draw(SDL_Surface* s) const
 	SDL_Rect dst_rect = rect;
 	dst_rect.h -= 2;
 	dst_rect.y += 2;
-	SDL_FillRect(s, &dst_rect, get_dialog_color(MESSAGE_COLOR));
+	SDL_FillRect(s, &dst_rect, get_theme_color(MESSAGE_WIDGET, DEFAULT_STATE, FOREGROUND_COLOR));
 	dst_rect.x += filled_width + 1;
 	dst_rect.y++;
 	dst_rect.h -= 2;
@@ -1986,7 +1999,7 @@ void w_text_box::draw_item(vector<string>::const_iterator i, SDL_Surface* s, int
 {
     int computed_y = y + font->get_ascent();
 
-    draw_text(s, (*i).c_str (), x, computed_y, get_dialog_color(MESSAGE_COLOR), font, style);
+    draw_text(s, (*i).c_str (), x, computed_y, get_theme_color(MESSAGE_WIDGET, DEFAULT_STATE, FOREGROUND_COLOR), font, style);
 }
 
 void w_colorful_chat::append_entry(const ColoredChatEntry& e)
