@@ -98,6 +98,10 @@ widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dia
     {
 	    font = get_theme_font(MESSAGE_WIDGET, style);
     }
+    else if (f == ITEM_FONT)
+    {
+	    font = get_theme_font(ITEM_WIDGET, style);
+    }
 }
 
 void widget::associate_label(w_label *label)
@@ -333,9 +337,9 @@ w_tiny_button::w_tiny_button(const char *t, action_proc p, void *a) : w_button_b
 
 void w_tiny_button::draw(SDL_Surface *s) const 
 {
-	int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+	int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 
-	draw_text(s, text.c_str(), rect.x, rect.y + font->get_ascent(), get_dialog_color(theColorToUse), font, style);
+	draw_text(s, text.c_str(), rect.x, rect.y + font->get_ascent(), get_theme_color(ITEM_WIDGET, state), font, style);
 }
 
 /*
@@ -371,9 +375,9 @@ void w_select_button::draw(SDL_Surface *s) const
 	// Selection (ZZZ: different color for disabled)
 	set_drawing_clip_rectangle(0, rect.x + selection_x, static_cast<uint16>(s->h), rect.x + rect.w);
 	
-	int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+	int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 	
-	draw_text(s, selection, rect.x + selection_x, y, get_dialog_color(theColorToUse), font, style, utf8);
+	draw_text(s, selection, rect.x + selection_x, y, get_theme_color(ITEM_WIDGET, state), font, style, utf8);
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	
 	// Cursor
@@ -469,9 +473,9 @@ void w_select::draw(SDL_Surface *s) const
 	// Selection (ZZZ: different color for disabled)
 	const char *str = (num_labels > 0 ? labels[selection] : sNoValidOptionsString);
 
-    int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+    int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 
-    draw_text(s, str, rect.x, y, get_dialog_color(theColorToUse), font, style, utf8);
+    draw_text(s, str, rect.x, y, get_theme_color(ITEM_WIDGET, state), font, style, utf8);
 
 	// Cursor
 	if (active) {
@@ -638,7 +642,7 @@ void w_toggle::draw(SDL_Surface *s) const
 	// Selection (ZZZ: different color for disabled)
 	const char *str = (num_labels > 0 ? labels[selection] : sNoValidOptionsString);
 
-	int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+	int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 
 #ifdef HAVE_SDL_TTF
     // ghs: disgusting temporary hack to draw larger checkboxes
@@ -657,7 +661,7 @@ void w_toggle::draw(SDL_Surface *s) const
     else
 #endif
     {
-	    draw_text(s, str, rect.x, y, get_dialog_color(theColorToUse), font, style, utf8);
+	    draw_text(s, str, rect.x, y, get_theme_color(ITEM_WIDGET, state), font, style, utf8);
     }
 	    
 	// Cursor
@@ -709,9 +713,9 @@ void w_player_color::draw(SDL_Surface *s) const
 		SDL_Rect r = {rect.x, rect.y + 1, 48, rect.h - 2};
 		SDL_FillRect(s, &r, pixel);
 	} else {
-		int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+		int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 
-		draw_text(s, "<unknown>", rect.x, y, get_dialog_color(theColorToUse), font, style);
+		draw_text(s, "<unknown>", rect.x, y, get_theme_color(ITEM_WIDGET, state), font, style);
 	}
 
 	// Cursor
@@ -751,7 +755,7 @@ void w_color_picker::click(int, int)
 	w_color_block *color_block = new w_color_block(&m_color);
 	placer->dual_add(color_block, d);
 
-	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 	table->col_flags(0, placeable::kAlignRight);
 
 	w_slider *red_w = new w_slider(16, m_color.red >> 12);
@@ -1065,10 +1069,10 @@ void w_key::draw(SDL_Surface *s) const
 		SDL_FillRect(s, &r, get_dialog_color(KEY_BINDING_COLOR));
 		draw_text(s, WAITING_TEXT, x, y, get_dialog_color(ITEM_ACTIVE_COLOR), font, style);
 	} else {
-        int theColorToUse = enabled ? (active ? ITEM_ACTIVE_COLOR : ITEM_COLOR) : ITEM_DISABLED_COLOR;
+        int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 
         // ZZZ: potential to use the phony (i.e. mouse-button) key names
-		draw_text(s, GetSDLKeyName(key), x, y, get_dialog_color(theColorToUse), font, style);
+	draw_text(s, GetSDLKeyName(key), x, y, get_theme_color(ITEM_WIDGET, state), font, style);
 	}
 }
 
@@ -1559,7 +1563,7 @@ w_levels::draw_item(vector<entry_point>::const_iterator i, SDL_Surface *s, int16
         sprintf(str, "%s", i->level_name);
 
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
-	draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+	draw_text(s, str, x, y, get_theme_color(ITEM_WIDGET, selected ? ACTIVE_STATE : DEFAULT_STATE), font, style);
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }
 
@@ -1584,7 +1588,7 @@ void w_string_list::draw_item(vector<string>::const_iterator i, SDL_Surface *s, 
 	sprintf(str, "%s", i->c_str ());
 
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
-	draw_text(s, str, x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+	draw_text(s, str, x, y, get_theme_color(ITEM_WIDGET, selected ? ACTIVE_STATE : DEFAULT_STATE), font, style);
 	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 }
 

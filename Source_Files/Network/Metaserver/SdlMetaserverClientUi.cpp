@@ -97,7 +97,7 @@ public:
 		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 10);
 		placer->dual_add(chat_history_w, d);
 
-		horizontal_placer *entry_cancel_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+		horizontal_placer *entry_cancel_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
 
 		w_text_entry* chatentry_w = new w_text_entry(240, "");
 		chatentry_w->set_with_textbox();
@@ -157,7 +157,7 @@ public:
 			vertical_placer *placer = new vertical_placer;
 			placer->dual_add(new w_static_text("GAME INFO", TITLE_FONT, TITLE_COLOR), info_dialog);
 			placer->add(new w_spacer(), true);
-			table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+			table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 			table->col_flags(0, placeable::kAlignRight);
 			table->col_flags(1, placeable::kAlignLeft);
 

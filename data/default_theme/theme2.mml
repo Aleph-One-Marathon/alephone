@@ -56,8 +56,13 @@
 <!-- Item -->
 <item space="10">
   <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
-  <color index="0" red="0.75" green="0.25" blue="0.25"/>
-  <color index="1" red="0.25" green="0.75" blue="0.25"/>
+  <color red="0.75" green="0.25" blue="0.25"/>
+  <active>
+    <color red="0.25" green="0.75" blue="0.25"/>
+  </active>
+  <disabled>
+    <color red="0.5" green="0.5" blue="0.5"/>
+  </disabled>
 </item>
 
 <!-- Text message -->

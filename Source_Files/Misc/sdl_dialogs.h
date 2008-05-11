@@ -443,6 +443,7 @@ enum {
 	TITLE_WIDGET,
 	LABEL_WIDGET,
 	MESSAGE_WIDGET,
+	ITEM_WIDGET
 };
 
 enum {
@@ -451,7 +452,8 @@ enum {
 
 extern font_info *get_theme_font(int widget_type, uint16 &style);
 
-extern uint32 get_theme_color(int widget_type, int state, int which);
+extern uint32 get_theme_color(int widget_type, int state, int which = 0);
+extern uint16 get_theme_space(int widget_type, int which = 0);
 
 extern void dialog_ok(void *arg);
 extern void dialog_cancel(void *arg);

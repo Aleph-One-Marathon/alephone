@@ -346,7 +346,9 @@ static XML_DColorParser ButtonColorParser(BUTTON_COLOR, 2);
 static XML_DTColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
 static XML_DTColorParser ActiveLabelColorParser(LABEL_WIDGET, ACTIVE_STATE);
 static XML_DTColorParser DisabledLabelColorParser(LABEL_WIDGET, DISABLED_STATE);
-static XML_DColorParser ItemColorParser(ITEM_COLOR, 2);
+static XML_DTColorParser DefaultItemColorParser(ITEM_WIDGET, DEFAULT_STATE);
+static XML_DTColorParser ActiveItemColorParser(ITEM_WIDGET, ACTIVE_STATE);
+static XML_DTColorParser DisabledItemColorParser(ITEM_WIDGET, DISABLED_STATE);
 static XML_DTColorParser MessageColorParser(MESSAGE_WIDGET, DEFAULT_STATE);
 static XML_DColorParser TextEntryColorParser(TEXT_ENTRY_COLOR, 3);
 
@@ -494,7 +496,7 @@ private:
 static XML_DTFontParser TitleFontParser(TITLE_WIDGET);
 static XML_DFontParser ButtonFontParser(BUTTON_FONT);
 static XML_DTFontParser LabelFontParser(LABEL_FONT);
-static XML_DFontParser ItemFontParser(ITEM_FONT);
+static XML_DTFontParser ItemFontParser(ITEM_FONT);
 static XML_DTFontParser MessageFontParser(MESSAGE_WIDGET);
 static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_FONT);
 static XML_DFontParser TextBoxFontParser(TEXT_BOX_FONT);
@@ -583,7 +585,7 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "space")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[LABEL_ITEM_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[ITEM_WIDGET].spaces[0]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -593,6 +595,8 @@ public:
 };
 
 static XML_DItemParser ItemParser;
+static XML_ElementParser ActiveItemParser("active");
+static XML_ElementParser DisabledItemParser("disabled");
 
 struct XML_MessageParser : public XML_ElementParser {XML_MessageParser() : XML_ElementParser("message") {}};
 static XML_MessageParser MessageParser;
@@ -711,7 +715,11 @@ XML_ElementParser *Theme_GetParser()
 	ThemeParser.AddChild(&LabelParser);
 
 	ItemParser.AddChild(&ItemFontParser);
-	ItemParser.AddChild(&ItemColorParser);
+	ItemParser.AddChild(&DefaultItemColorParser);
+	ActiveItemParser.AddChild(&ActiveItemColorParser);
+	DisabledItemParser.AddChild(&DisabledItemColorParser);
+	ItemParser.AddChild(&ActiveItemParser);
+	ItemParser.AddChild(&DisabledItemParser);
 	ThemeParser.AddChild(&ItemParser);
 
 	MessageParser.AddChild(&MessageFontParser);
@@ -869,6 +877,11 @@ static void set_theme_defaults(void)
 	dialog_theme[LABEL_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xff, 0x0);
 	dialog_theme[LABEL_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
 	dialog_theme[LABEL_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
+
+	dialog_theme[ITEM_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xff, 0x0);
+	dialog_theme[ITEM_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
+	dialog_theme[ITEM_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
+	dialog_theme[ITEM_WIDGET].spaces[0] = 16;
 }
 
 
@@ -1010,6 +1023,22 @@ uint32 get_theme_color(int widget_type, int state, int which)
 	
 	return SDL_MapRGB(dialog_surface->format, c.r, c.g, c.b);
 }
+
+uint16 get_theme_space(int widget_type, int which)
+{
+	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
+	if (i != dialog_theme.end())
+	{
+		std::map<int, uint16>::iterator j = i->second.spaces.find(which);
+		if (j != i->second.spaces.end())
+		{
+			return j->second;
+		}
+	}
+
+	return 0;
+}
+
 
 /*
  *  Play dialog sound

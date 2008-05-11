@@ -375,7 +375,7 @@ static void crosshair_dialog(void *arg)
 
 	placer->add(new w_spacer, true);
 
-	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 	table->col_flags(0, placeable::kAlignRight);
 
 	// Shape
@@ -490,7 +490,7 @@ static void player_dialog(void *arg)
 	placer->dual_add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR), d);
 	placer->add(new w_spacer());
 
-	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 	table->col_flags(1, placeable::kAlignLeft);
 
@@ -756,7 +756,7 @@ static void software_rendering_options_dialog(void* arg)
 	placer->dual_add(new w_static_text("SOFTWARE RENDERING OPTIONS", TITLE_FONT, TITLE_COLOR), d);
 	placer->add(new w_spacer(), true);
 
-	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
 	w_select *depth_w = new w_select(graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
@@ -846,7 +846,7 @@ static void graphics_dialog(void *arg)
 	placer->dual_add(new w_static_text("GRAPHICS SETUP", TITLE_FONT, TITLE_COLOR), d);
 	placer->add(new w_spacer(), true);
 
-	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 	
 	w_select* renderer_w = new w_select(graphics_preferences->screen_mode.acceleration, renderer_labels);
@@ -1021,7 +1021,7 @@ static void sound_dialog(void *arg)
 	placer->dual_add(new w_static_text("SOUND SETUP", TITLE_FONT, TITLE_COLOR), d);
 	placer->add(new w_spacer(), true);
 
-	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
 	static const char *quality_labels[3] = {"8 Bit", "16 Bit", NULL};
@@ -1154,7 +1154,7 @@ static void controls_dialog(void *arg)
 	placer->dual_add(new w_static_text("CONTROLS", TITLE_FONT, TITLE_COLOR), d);
 	placer->add(new w_spacer(), true);
 
-	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
 	mouse_w = new w_enabling_toggle(input_preferences->input_device != 0);
@@ -1435,9 +1435,9 @@ static void keyboard_dialog(void *arg)
 
 	placer->add(new w_spacer(), true);
 	
-	table_placer *left_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+	table_placer *left_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	left_table->col_flags(0, placeable::kAlignRight);
-	table_placer *right_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+	table_placer *right_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	right_table->col_flags(0, placeable::kAlignRight);
 
 	for (int i=0; i<19; i++)
@@ -1460,7 +1460,7 @@ static void keyboard_dialog(void *arg)
 		right_table->dual_add(shell_key_w[i], d);
 	}
 
-	horizontal_placer *table = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE), true);
+	horizontal_placer *table = new horizontal_placer(get_theme_space(ITEM_WIDGET), true);
 
 	table->add(left_table, true);
 	table->add(right_table, true);
@@ -1523,7 +1523,7 @@ static void environment_dialog(void *arg)
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 
-	table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 	
 	w_env_select *map_w = new w_env_select(environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);

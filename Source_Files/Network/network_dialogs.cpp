@@ -2587,7 +2587,7 @@ public:
 		w_joining_players_in_room* foundplayers_w = new w_joining_players_in_room(NULL, 320, 3);
 		placer->dual_add(foundplayers_w, m_dialog);
 	
-		horizontal_placer *autogather_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE), true);
+		horizontal_placer *autogather_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET), true);
 		w_toggle* autogather_w = new w_toggle(false);
 		autogather_placer->dual_add(autogather_w->label("Auto-Gather"), m_dialog);
 		autogather_placer->dual_add(autogather_w, m_dialog);
@@ -2678,7 +2678,7 @@ public:
 		placer->dual_add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR), m_dialog);
 		placer->add(new w_spacer(), true);
 
-		table_placer *table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+		table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		table->col_flags(0, placeable::kAlignRight);
 
 		w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, "");
@@ -2700,7 +2700,7 @@ public:
 		m_tabs = new tab_placer;
 
 		vertical_placer *prejoin_placer = new vertical_placer;
-		table_placer *prejoin_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+		table_placer *prejoin_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		prejoin_table->col_flags(0, placeable::kAlignRight);
 		
 		w_toggle* hint_w = new w_toggle(false);
@@ -2853,7 +2853,7 @@ public:
 		vertical_placer *left_placer = new vertical_placer;
 		vertical_placer *right_placer = new vertical_placer;
 		
-		table_placer *player_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+		table_placer *player_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		player_table->col_flags(0, placeable::kAlignRight);
 		player_table->dual_add_row(new w_static_text("Appearance"), m_dialog);
 		w_text_entry *name_w = new w_text_entry (PREFERENCES_NAME_LENGTH, "");
@@ -2871,7 +2871,7 @@ public:
 		player_table->dual_add(tcolor_w, m_dialog);
 
 		right_placer->dual_add(new w_static_text("Network"), m_dialog);
-		table_placer *network_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+		table_placer *network_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		network_table->col_flags(1, placeable::kAlignLeft);
 
 		w_toggle *advertise_on_metaserver_w = new w_toggle (sAdvertiseGameOnMetaserver);
@@ -2887,7 +2887,7 @@ public:
 		network_table->dual_add(realtime_audio_w->label("Allow Microphone"), m_dialog);
 
 		w_select_popup *latency_tolerance_w = new w_select_popup();
-		horizontal_placer *latency_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+		horizontal_placer *latency_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
 		latency_placer->dual_add(latency_tolerance_w->label("Latency Tolerance"), m_dialog);
 		latency_placer->dual_add(latency_tolerance_w, m_dialog);
 		
@@ -2925,14 +2925,14 @@ public:
 		network_table->dual_add(use_netscript_w, m_dialog);
 		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
 
-		horizontal_placer *lua_file_placer = new horizontal_placer(get_dialog_space(LABEL_ITEM_SPACE));
+		horizontal_placer *lua_file_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
 		w_file_chooser* choose_script_w = new w_file_chooser ("Choose Script", _typecode_netscript);
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
 		use_netscript_w->add_dependent_widget(choose_script_w);
 
 		left_placer->add(new w_spacer(), true);
-		table_placer *options_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+		table_placer *options_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		options_table->col_flags(1, placeable::kAlignLeft);
 		options_table->dual_add_row(new w_static_text("Options"), m_dialog);
 
@@ -2986,7 +2986,7 @@ public:
 
 		right_placer->add(new w_spacer(), true);
 		right_placer->dual_add(new w_static_text("Duration"), m_dialog);
-		table_placer *limits_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE));
+		table_placer *limits_table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 		limits_table->col_flags(0, placeable::kAlignRight);
 		
 		w_select* endcondition_w = new w_select(kTimeLimit, NULL);

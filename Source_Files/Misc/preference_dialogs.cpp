@@ -256,7 +256,7 @@ public:
 		
 		placer->add(new w_spacer(), true);
 
-		table_placer *general_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+		table_placer *general_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		general_table->col_flags(0, placeable::kAlignRight);
 		
 		w_toggle *zbuffer_w = new w_toggle(false);
@@ -336,7 +336,7 @@ public:
 
 		vertical_placer *advanced_placer = new vertical_placer;
 
-		table_placer *advanced_table = new table_placer(2, get_dialog_space(LABEL_ITEM_SPACE), true);
+		table_placer *advanced_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		advanced_table->col_flags(0, placeable::kAlignRight);
 	
 		w_toggle *geforce_fix_w = new w_toggle(false);
@@ -384,7 +384,7 @@ public:
 		tex_depth_strings.push_back ("16-bit");
 		tex_depth_strings.push_back ("8-bit");
 
-		table_placer *table = new table_placer(3, get_dialog_space(LABEL_ITEM_SPACE));
+		table_placer *table = new table_placer(3, get_theme_space(ITEM_WIDGET));
 
 		table->col_flags(0, placeable::kAlignRight);
 		table->col_flags(1, placeable::kAlignLeft);
@@ -407,8 +407,8 @@ public:
 			texture_depth_wa[i]->set_labels(tex_depth_strings);
 		}
 
-		table->col_min_width(1, (table->col_width(0) - get_dialog_space(LABEL_ITEM_SPACE)) / 2);
-		table->col_min_width(2, (table->col_width(0) - get_dialog_space(LABEL_ITEM_SPACE)) / 2);
+		table->col_min_width(1, (table->col_width(0) - get_theme_space(ITEM_WIDGET)) / 2);
+		table->col_min_width(2, (table->col_width(0) - get_theme_space(ITEM_WIDGET)) / 2);
 
 		advanced_placer->add(table, true);
 
