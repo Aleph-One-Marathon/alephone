@@ -60,7 +60,7 @@ public:
 
 		placer->add(new w_spacer(), true);
 
-		table_placer *players_games_placer = new table_placer(2, get_dialog_space(SPACER_HEIGHT));
+		table_placer *players_games_placer = new table_placer(2, get_theme_space(SPACER_WIDGET));
 		w_players_in_room* players_in_room_w = new w_players_in_room(NULL, 216, 8);
 		
 		players_games_placer->col_flags(1, placeable::kFill);

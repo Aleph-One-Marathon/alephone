@@ -599,7 +599,7 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "height")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[SPACER_HEIGHT]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[SPACER_WIDGET].spaces[0]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -959,6 +959,8 @@ static void set_theme_defaults(void)
 	dialog_theme[DIALOG_FRAME].spaces[L_SPACE] = 8;
 	dialog_theme[DIALOG_FRAME].spaces[R_SPACE] = 8;
 	dialog_theme[DIALOG_FRAME].spaces[B_SPACE] = 8;
+
+	dialog_theme[SPACER_WIDGET].spaces[0] = 8;
 
 	dialog_theme[LABEL_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xff, 0x0);
 	dialog_theme[LABEL_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);

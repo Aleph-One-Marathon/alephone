@@ -158,7 +158,7 @@ protected:
 
 class w_spacer : public placeable {
 public:
-	w_spacer(uint16 space = get_dialog_space(SPACER_HEIGHT)) : m_space(space) { }
+	w_spacer(uint16 space = get_theme_space(SPACER_WIDGET)) : m_space(space) { }
 
 	int min_height() { return m_space; }
 	int min_width() { return m_space; }
