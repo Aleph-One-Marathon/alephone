@@ -507,7 +507,7 @@ private:
 static XML_DTFontParser TitleFontParser(TITLE_WIDGET);
 static XML_DFontParser ButtonFontParser(BUTTON_FONT);
 static XML_DTFontParser LabelFontParser(LABEL_FONT);
-static XML_DTFontParser ItemFontParser(ITEM_FONT);
+static XML_DTFontParser ItemFontParser(ITEM_WIDGET);
 static XML_DTFontParser MessageFontParser(MESSAGE_WIDGET);
 static XML_DTFontParser TextEntryFontParser(TEXT_ENTRY_WIDGET);
 static XML_DFontParser TextBoxFontParser(TEXT_BOX_FONT);
