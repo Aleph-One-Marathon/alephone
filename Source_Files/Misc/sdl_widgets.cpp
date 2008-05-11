@@ -106,6 +106,10 @@ widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dia
     {
 	    font = get_theme_font(TEXT_ENTRY_WIDGET, style);
     }
+    else if (f == BUTTON_FONT)
+    {
+	    font = get_theme_font(BUTTON_WIDGET, style);
+    }
 }
 
 void widget::associate_label(w_label *label)
@@ -289,11 +293,12 @@ void w_button_base::click(int /*x*/, int /*y*/)
 
 w_button::w_button(const char *t, action_proc p, void *a) : w_button_base(t, p, a)
 {
-	rect.w = text_width(text.c_str(), font, style) + get_dialog_space(BUTTON_L_SPACE) + get_dialog_space(BUTTON_R_SPACE);
-	button_l = get_dialog_image(BUTTON_L_IMAGE);
-	button_r = get_dialog_image(BUTTON_R_IMAGE);
-	button_c = get_dialog_image(BUTTON_C_IMAGE, rect.w - button_l->w - button_r->w);
-	rect.h = static_cast<uint16>(get_dialog_space(BUTTON_HEIGHT));
+	rect.w = text_width(text.c_str(), font, style) + get_theme_space(BUTTON_WIDGET, BUTTON_L_SPACE) + get_theme_space(BUTTON_WIDGET, BUTTON_R_SPACE);
+	button_c_default = get_theme_image(BUTTON_WIDGET, DEFAULT_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, DEFAULT_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, DEFAULT_STATE, BUTTON_R_IMAGE)->w);
+	button_c_active = get_theme_image(BUTTON_WIDGET, ACTIVE_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, ACTIVE_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, ACTIVE_STATE, BUTTON_R_IMAGE)->w);
+	button_c_disabled = get_theme_image(BUTTON_WIDGET, DISABLED_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, DISABLED_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, DISABLED_STATE, BUTTON_R_IMAGE)->w);
+
+	rect.h = static_cast<uint16>(get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT));
 
 	saved_min_width = rect.w;
 	saved_min_height = rect.h;
@@ -301,31 +306,44 @@ w_button::w_button(const char *t, action_proc p, void *a) : w_button_base(t, p, 
 
 w_button::~w_button()
 {
-	if (button_c) SDL_FreeSurface(button_c);
+	if (button_c_default) SDL_FreeSurface(button_c_default);
+	if (button_c_active) SDL_FreeSurface(button_c_active);
+	if (button_c_disabled) SDL_FreeSurface(button_c_disabled);
 }
 
 void w_button::draw(SDL_Surface *s) const
 {
-	// Button image
-	SDL_Rect r = {rect.x, rect.y, 
-		static_cast<Uint16>(button_l->w), 
-		static_cast<Uint16>(button_l->h)};
-	SDL_BlitSurface(button_l, NULL, s, &r);
-	r.x = r.x + static_cast<Sint16>(button_l->w); // MDA: MSVC throws warnings if we use +=
-	r.w = static_cast<Uint16>(button_c->w);
-	r.h = static_cast<Uint16>(button_c->h);
-	SDL_BlitSurface(button_c, NULL, s, &r);
-	r.x = r.x + static_cast<Sint16>(button_c->w);
-	r.w = static_cast<Uint16>(button_r->w);
-	r.h = static_cast<Uint16>(button_r->h);
-	SDL_BlitSurface(button_r, NULL, s, &r);
-
 	// Label (ZZZ: different color for disabled)
-    int theColorToUse = enabled ? (active ? BUTTON_ACTIVE_COLOR : BUTTON_COLOR) : BUTTON_DISABLED_COLOR;
+	int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
+	
+	if (use_theme_images(BUTTON_WIDGET))
+	{
+		SDL_Surface *button_l = get_theme_image(BUTTON_WIDGET, state, BUTTON_L_IMAGE);
+		SDL_Surface *button_r = get_theme_image(BUTTON_WIDGET, state, BUTTON_R_IMAGE);
+		SDL_Surface *button_c = enabled ? (active ? button_c_active : button_c_default) : button_c_disabled;
+		// Button image
+		SDL_Rect r = {rect.x, rect.y, 
+			      static_cast<Uint16>(button_l->w), 
+			      static_cast<Uint16>(button_l->h)};
+		SDL_BlitSurface(button_l, NULL, s, &r);
+		r.x = r.x + static_cast<Sint16>(button_l->w); // MDA: MSVC throws warnings if we use +=
+		r.w = static_cast<Uint16>(button_c->w);
+		r.h = static_cast<Uint16>(button_c->h);
+		SDL_BlitSurface(button_c, NULL, s, &r);
+		r.x = r.x + static_cast<Sint16>(button_c->w);
+		r.w = static_cast<Uint16>(button_r->w);
+		r.h = static_cast<Uint16>(button_r->h);
+		SDL_BlitSurface(button_r, NULL, s, &r);
+	}
+	else
+	{
+		uint32 pixel = get_theme_color(BUTTON_WIDGET, state, FRAME_COLOR);
+		draw_rectangle(s, &rect, pixel);
+	}
 
-	draw_text(s, text.c_str(), rect.x + get_dialog_space(BUTTON_L_SPACE),
-        rect.y + get_dialog_space(BUTTON_T_SPACE) + font->get_ascent(),
-        get_dialog_color(theColorToUse), font, style);
+	draw_text(s, text.c_str(), rect.x + get_theme_space(BUTTON_WIDGET, BUTTON_L_SPACE),
+		  rect.y + get_theme_space(BUTTON_WIDGET, BUTTON_T_SPACE) + font->get_ascent(),
+		  get_theme_color(BUTTON_WIDGET, state), font, style);
 }
 
 w_tiny_button::w_tiny_button(const char *t, action_proc p, void *a) : w_button_base(t, p, a)

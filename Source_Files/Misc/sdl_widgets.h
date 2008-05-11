@@ -257,7 +257,10 @@ public:
 	void draw(SDL_Surface *s) const;
 
 protected:
-	SDL_Surface *button_l, *button_c, *button_r;
+	// cache button centers since they are tiled or scaled
+	SDL_Surface *button_c_default;
+	SDL_Surface *button_c_active;
+	SDL_Surface *button_c_disabled;
 };
 
 class w_tiny_button : public w_button_base {

@@ -275,7 +275,7 @@ static XML_TImageParser FrameImageParser(DIALOG_FRAME, DEFAULT_STATE, 8);
 static XML_ImageParser ListImageParser(LIST_TL_IMAGE, 8);
 static XML_ImageParser ThumbImageParser(THUMB_T_IMAGE, 5);
 static XML_ImageParser SliderImageParser(SLIDER_L_IMAGE, 4);
-static XML_ImageParser ButtonImageParser(BUTTON_L_IMAGE, 3);
+static XML_TImageParser DefaultButtonImageParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
 
 class XML_DColorParser : public XML_ElementParser {
 public:
@@ -401,7 +401,9 @@ static bool foundLabelOutlineColor = false;
 
 static XML_DTColorParser FrameColorParser(DIALOG_FRAME, DEFAULT_STATE, 3);
 static XML_DTColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
-static XML_DColorParser ButtonColorParser(BUTTON_COLOR, 2);
+static XML_DTColorParser DefaultButtonColorParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
+static XML_DTColorParser ActiveButtonColorParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
+static XML_DTColorParser DisabledButtonColorParser(BUTTON_WIDGET, DISABLED_STATE, 3);
 static XML_DTColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
 static XML_DTColorParser ActiveLabelColorParser(LABEL_WIDGET, ACTIVE_STATE);
 static XML_DTColorParser DisabledLabelColorParser(LABEL_WIDGET, DISABLED_STATE);
@@ -558,7 +560,7 @@ private:
 };
 
 static XML_DTFontParser TitleFontParser(TITLE_WIDGET);
-static XML_DFontParser ButtonFontParser(BUTTON_FONT);
+static XML_DTFontParser ButtonFontParser(BUTTON_WIDGET);
 static XML_DTFontParser LabelFontParser(LABEL_WIDGET);
 static XML_DTFontParser ItemFontParser(ITEM_WIDGET);
 static XML_DTFontParser MessageFontParser(MESSAGE_WIDGET);
@@ -617,13 +619,13 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[BUTTON_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_T_SPACE]);
 		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[BUTTON_L_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_L_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[BUTTON_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_R_SPACE]);
 		} else if (StringsEqual(tag, "height")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[BUTTON_HEIGHT]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[BUTTON_WIDGET].spaces[BUTTON_HEIGHT]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -633,6 +635,8 @@ public:
 };
 
 static XML_ButtonParser ButtonParser;
+static XML_ElementParser ActiveButtonParser("active");
+static XML_ElementParser DisabledButtonParser("disabled");
 
 struct XML_LabelParser : public XML_ElementParser {XML_LabelParser() : XML_ElementParser("label") {}};
 static XML_LabelParser LabelParser;
@@ -764,8 +768,12 @@ XML_ElementParser *Theme_GetParser()
 	ThemeParser.AddChild(&SpacerParser);
 
 	ButtonParser.AddChild(&ButtonFontParser);
-	ButtonParser.AddChild(&ButtonColorParser);
-	ButtonParser.AddChild(&ButtonImageParser);
+	ButtonParser.AddChild(&DefaultButtonColorParser);
+	ActiveButtonParser.AddChild(&ActiveButtonColorParser);
+	DisabledButtonParser.AddChild(&DisabledButtonColorParser);
+	ButtonParser.AddChild(&ActiveButtonParser);
+	ButtonParser.AddChild(&DisabledButtonParser);
+	ButtonParser.AddChild(&DefaultButtonImageParser);
 	ThemeParser.AddChild(&ButtonParser);
 
 	LabelParser.AddChild(&LabelFontParser);
@@ -917,10 +925,10 @@ static const int default_dialog_space[NUM_DIALOG_SPACES] = {
 	0,	// SLIDER_T_SPACE
 	0,	// SLIDER_L_SPACE
 	0,	// SLIDER_R_SPACE
-	0,	// BUTTON_T_SPACE
-	0,	// BUTTON_L_SPACE
-	0,	// BUTTON_R_SPACE
-	14	// BUTTON_HEIGHT
+//	0,	// BUTTON_T_SPACE
+//	0,	// BUTTON_L_SPACE
+//	0,	// BUTTON_R_SPACE
+//	14	// BUTTON_HEIGHT
 };
 
 static inline SDL_Color make_color(uint8 r, uint8 g, uint8 b)
@@ -975,6 +983,14 @@ static void set_theme_defaults(void)
 	dialog_theme[TEXT_ENTRY_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[TEXT_ENTRY_WIDGET].states[CURSOR_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[TEXT_ENTRY_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
+
+	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_T_SPACE] = 4;
+	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_L_SPACE] = 4;
+	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_R_SPACE] = 4;
+	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_HEIGHT] = 22;
+	dialog_theme[BUTTON_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
+	dialog_theme[BUTTON_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xb0, 0xc9);
+	dialog_theme[BUTTON_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x7f, 0x7f, 0x7f);
 
 }
 
@@ -1106,6 +1122,7 @@ uint32 get_theme_color(int widget_type, int state, int which)
 {
 	SDL_Color c = {0xff, 0xff, 0xff};
 
+	bool found = false;
 	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
 	if (i != dialog_theme.end())
 	{
@@ -1116,9 +1133,11 @@ uint32 get_theme_color(int widget_type, int state, int which)
 			if (k != j->second.colors.end())
 			{
 				c = k->second;
+				found = true;
 			}
 		} 
-		else
+
+		if (!found)
 		{
 			j = i->second.states.find(DEFAULT_STATE);
 			if (j != i->second.states.end())
@@ -1127,6 +1146,7 @@ uint32 get_theme_color(int widget_type, int state, int which)
 				if (k != j->second.colors.end())
 				{
 					c = k->second;
+					found = true;
 				}
 			}
 		}
@@ -1139,6 +1159,7 @@ SDL_Surface *get_theme_image(int widget_type, int state, int which, int width, i
 {
 	SDL_Surface *s = default_image;
 	bool scale = false;
+	bool found = false;
 
 	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
 	if (i != dialog_theme.end())
@@ -1151,9 +1172,11 @@ SDL_Surface *get_theme_image(int widget_type, int state, int which, int width, i
 			{
 				s = k->second;
 				scale = j->second.image_specs[k->first].scale;
+				found = true;
 			}
 		}
-		else
+
+		if (!found)
 		{
 			j = i->second.states.find(DEFAULT_STATE);
 			if (j != i->second.states.end())
@@ -1163,6 +1186,7 @@ SDL_Surface *get_theme_image(int widget_type, int state, int which, int width, i
 				{
 					s = k->second;
 					scale = j->second.image_specs[k->first].scale;
+					found = true;
 				}
 			}
 		}
