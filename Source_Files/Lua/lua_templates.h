@@ -161,7 +161,7 @@ L_Class<name, index_t> *L_Class<name, index_t>::Push(lua_State *L, index_t index
 		lua_newtable(L);
 		
 		
-		t = static_cast<L_Class<name, index_t> *>(lua_newuserdata(L, sizeof(L_Class<name>)));
+		t = static_cast<L_Class<name, index_t> *>(lua_newuserdata(L, sizeof(L_Class<name, index_t>)));
 		luaL_getmetatable(L, name);
 		lua_setmetatable(L, -2);
 		t->m_index = index;
