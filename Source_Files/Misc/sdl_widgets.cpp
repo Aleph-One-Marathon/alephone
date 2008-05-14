@@ -1222,17 +1222,24 @@ void w_progress_bar::set_progress(int inValue, int inMaxValue)
  */
 
 const int SLIDER_WIDTH = 160;
+const int SLIDER_THUMB_HEIGHT = 14;
+const int SLIDER_THUMB_WIDTH = 8;
+const int SLIDER_TROUGH_HEIGHT = 8;
 
 w_slider::w_slider(int num, int s) : widget(LABEL_FONT), selection(s), num_items(num), thumb_dragging(false)
 {
-	slider_l = get_dialog_image(SLIDER_L_IMAGE);
-	slider_r = get_dialog_image(SLIDER_R_IMAGE);
-	slider_c = get_dialog_image(SLIDER_C_IMAGE, SLIDER_WIDTH - slider_l->w - slider_r->w);
-	thumb = get_dialog_image(SLIDER_IMAGE);
-	trough_width = SLIDER_WIDTH - get_dialog_space(SLIDER_L_SPACE) - get_dialog_space(SLIDER_R_SPACE);
+	slider_l = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_L_IMAGE);
+	slider_r = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_R_IMAGE);
+	slider_c = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_C_IMAGE, SLIDER_WIDTH - slider_l->w - slider_r->w);
+	thumb = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_IMAGE);
+	
+	trough_width = SLIDER_WIDTH - get_theme_space(SLIDER_WIDGET, SLIDER_L_SPACE) - get_theme_space(SLIDER_WIDGET, SLIDER_R_SPACE);
 
 	saved_min_width = SLIDER_WIDTH;
-	saved_min_height = MAX(font->get_line_height(), static_cast<uint16>(slider_c->h));
+	if (use_theme_images(SLIDER_WIDGET))
+		saved_min_height = static_cast<uint16>(slider_c->h);
+	else
+		saved_min_height = SLIDER_THUMB_HEIGHT + 2;
 }
 
 w_slider::~w_slider()
@@ -1253,42 +1260,71 @@ void w_slider::place(const SDL_Rect& r, placement_flags flags)
 
 void w_slider::draw(SDL_Surface *s) const
 {
-	int y = rect.y + font->get_ascent() + (rect.h - font->get_line_height()) / 2;
+	if (use_theme_images(SLIDER_WIDGET))
+	{
+		// Slider trough
+		SDL_Rect r = {rect.x + slider_x, rect.y,
+			      static_cast<Uint16>(slider_l->w),
+			      static_cast<Uint16>(slider_l->h)};
+		SDL_BlitSurface(slider_l, NULL, s, &r);
+		r.x = r.x + static_cast<Sint16>(slider_l->w);
+		r.w = static_cast<Uint16>(slider_c->w);
+		r.h = static_cast<Uint16>(slider_c->h);
+		SDL_BlitSurface(slider_c, NULL, s, &r);
+		r.x = r.x + static_cast<Sint16>(slider_c->w);
+		r.w = static_cast<Uint16>(slider_r->w);
+		r.h = static_cast<Uint16>(slider_r->h);
+		SDL_BlitSurface(slider_r, NULL, s, &r);
 
-	// Slider trough
-	SDL_Rect r = {rect.x + slider_x, rect.y,
-		static_cast<Uint16>(slider_l->w),
-		static_cast<Uint16>(slider_l->h)};
-	SDL_BlitSurface(slider_l, NULL, s, &r);
-	r.x = r.x + static_cast<Sint16>(slider_l->w);
-	r.w = static_cast<Uint16>(slider_c->w);
-	r.h = static_cast<Uint16>(slider_c->h);
-	SDL_BlitSurface(slider_c, NULL, s, &r);
-	r.x = r.x + static_cast<Sint16>(slider_c->w);
-	r.w = static_cast<Uint16>(slider_r->w);
-	r.h = static_cast<Uint16>(slider_r->h);
-	SDL_BlitSurface(slider_r, NULL, s, &r);
+		// Slider thumb
+		r.x = rect.x + static_cast<Sint16>(thumb_x);
+		r.y = rect.y + get_theme_space(SLIDER_WIDGET, SLIDER_T_SPACE);
+		r.w = static_cast<Uint16>(thumb->w);
+		r.h = static_cast<Uint16>(thumb->h);
+		SDL_BlitSurface(thumb, NULL, s, &r);
+	} 
+	else
+	{
+		SDL_Rect r = {rect.x, rect.y + (SLIDER_THUMB_HEIGHT - SLIDER_TROUGH_HEIGHT) / 2 + get_theme_space(SLIDER_WIDGET, SLIDER_T_SPACE), SLIDER_WIDTH, SLIDER_TROUGH_HEIGHT};
+		uint32 pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, FRAME_COLOR);
+		draw_rectangle(s, &r, pixel);
 
-	// Slider thumb
-	r.x = rect.x + static_cast<Sint16>(thumb_x);
-	r.y = rect.y + get_dialog_space(SLIDER_T_SPACE);
-	r.w = static_cast<Uint16>(thumb->w);
-	r.h = static_cast<Uint16>(thumb->h);
-	SDL_BlitSurface(thumb, NULL, s, &r);
+		pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, BACKGROUND_COLOR);
+		r.x = r.x + 1;
+		r.y = r.y + 1;
+		r.w = r.w - 2;
+		r.h = r.h - 2;
+		SDL_FillRect(s, &r, pixel);
+
+		pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, FOREGROUND_COLOR);
+		r.x = rect.x + static_cast<Sint16>(thumb_x);
+		r.y = rect.y + get_theme_space(SLIDER_WIDGET, SLIDER_T_SPACE);
+		r.w = thumb_width();
+		r.h = SLIDER_THUMB_HEIGHT;
+		draw_rectangle(s, &r, pixel);
+
+		pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, BACKGROUND_COLOR);
+		r.x = r.x + 1;
+		r.y = r.y + 1;
+		r.w = r.w - 2;
+		r.h = r.h - 2;
+		SDL_FillRect(s, &r, pixel);
+		
+	}
 }
 
 void w_slider::mouse_move(int x, int /*y*/)
 {
 	if (thumb_dragging) {
-		int delta_x = (x - slider_x - get_dialog_space(SLIDER_L_SPACE)) - thumb_drag_x;
-		set_selection(delta_x * num_items / (trough_width - thumb->w));
+		int delta_x = (x - slider_x - get_theme_space(SLIDER_WIDGET, SLIDER_L_SPACE)) - thumb_drag_x;
+		set_selection(delta_x * num_items / (trough_width - thumb_width()));
 	}
 }
 
 void w_slider::click(int x, int /*y*/)
 {
     if(enabled) {
-	    if (x >= thumb_x && x < thumb_x + thumb->w) {
+	    if (x >= thumb_x && x < thumb_x + thumb_width()) {
 		    thumb_dragging = dirty = true;
 		    thumb_drag_x = x - thumb_x;
 	    }
@@ -1323,9 +1359,17 @@ void w_slider::set_selection(int s)
 	else if (s < 0)
 		s = 0;
 	selection = s;
-	thumb_x = int(float(selection * (trough_width - thumb->w)) / (num_items - 1) + 0.5);
-	thumb_x += get_dialog_space(SLIDER_L_SPACE) + slider_x;
+	thumb_x = int(float(selection * (trough_width - thumb_width())) / (num_items - 1) + 0.5);
+	thumb_x += get_theme_space(SLIDER_WIDGET, SLIDER_L_SPACE) + slider_x;
 	dirty = true;
+}
+
+int w_slider::thumb_width() const
+{
+	if (use_theme_images(SLIDER_WIDGET))
+		return thumb->w;
+	else
+		return SLIDER_THUMB_WIDTH;
 }
 
 

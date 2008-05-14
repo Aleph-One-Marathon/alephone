@@ -592,6 +592,8 @@ protected:
 	int thumb_drag_x;		// X start position when dragging
 
 	SDL_Surface *slider_l, *slider_c, *slider_r, *thumb;
+private:
+	int thumb_width() const;
 };
 
 class w_color_picker : public widget {

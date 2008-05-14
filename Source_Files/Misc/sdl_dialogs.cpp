@@ -274,7 +274,7 @@ private:
 static XML_TImageParser FrameImageParser(DIALOG_FRAME, DEFAULT_STATE, 8);
 static XML_ImageParser ListImageParser(LIST_TL_IMAGE, 8);
 static XML_ImageParser ThumbImageParser(THUMB_T_IMAGE, 5);
-static XML_ImageParser SliderImageParser(SLIDER_L_IMAGE, 4);
+static XML_TImageParser SliderImageParser(SLIDER_WIDGET, DEFAULT_STATE, 4);
 static XML_TImageParser DefaultButtonImageParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
 static XML_TImageParser ActiveButtonImageParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
 static XML_TImageParser DisabledButtonImageParser(BUTTON_WIDGET, DISABLED_STATE, 3);
@@ -738,11 +738,11 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[SLIDER_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[SLIDER_WIDGET].spaces[SLIDER_T_SPACE]);
 		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[SLIDER_L_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[SLIDER_WIDGET].spaces[SLIDER_L_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[SLIDER_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[SLIDER_WIDGET].spaces[SLIDER_R_SPACE]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -932,9 +932,9 @@ static const int default_dialog_space[NUM_DIALOG_SPACES] = {
 	16,	// TROUGH_R_SPACE
 	0,	// TROUGH_B_SPACE
 	16,	// TROUGH_WIDTH
-	0,	// SLIDER_T_SPACE
-	0,	// SLIDER_L_SPACE
-	0,	// SLIDER_R_SPACE
+//	0,	// SLIDER_T_SPACE
+//	0,	// SLIDER_L_SPACE
+//	0,	// SLIDER_R_SPACE
 //	0,	// BUTTON_T_SPACE
 //	0,	// BUTTON_L_SPACE
 //	0,	// BUTTON_R_SPACE
@@ -1005,6 +1005,11 @@ static void set_theme_defaults(void)
 
 	dialog_theme[BUTTON_WIDGET].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[BUTTON_WIDGET].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+
+	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
+	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xff, 0x0);
+	dialog_theme[SLIDER_WIDGET].spaces[SLIDER_T_SPACE] = 1;
 
 }
 
