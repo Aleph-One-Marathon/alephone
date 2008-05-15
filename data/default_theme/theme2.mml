@@ -123,7 +123,9 @@
   <image index="0" file="slider_l.bmp" scale="false"/>
   <image index="1" file="slider_c.bmp" scale="false"/>
   <image index="2" file="slider_r.bmp" scale="false"/>
-  <image index="3" file="slider.bmp" scale="false"/>
+  <thumb>
+    <image index="0" file="slider.bmp" scale="false"/>
+  </thumb>
 </slider>
 
 </theme>

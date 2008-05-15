@@ -1231,7 +1231,7 @@ w_slider::w_slider(int num, int s) : widget(LABEL_FONT), selection(s), num_items
 	slider_l = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_L_IMAGE);
 	slider_r = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_R_IMAGE);
 	slider_c = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_C_IMAGE, SLIDER_WIDTH - slider_l->w - slider_r->w);
-	thumb = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_IMAGE);
+	thumb = get_theme_image(SLIDER_THUMB, DEFAULT_STATE, 0);
 	
 	trough_width = SLIDER_WIDTH - get_theme_space(SLIDER_WIDGET, SLIDER_L_SPACE) - get_theme_space(SLIDER_WIDGET, SLIDER_R_SPACE);
 
@@ -1289,21 +1289,21 @@ void w_slider::draw(SDL_Surface *s) const
 		uint32 pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, FRAME_COLOR);
 		draw_rectangle(s, &r, pixel);
 
-		pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, BACKGROUND_COLOR);
+		pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, FOREGROUND_COLOR);
 		r.x = r.x + 1;
 		r.y = r.y + 1;
 		r.w = r.w - 2;
 		r.h = r.h - 2;
 		SDL_FillRect(s, &r, pixel);
 
-		pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, FOREGROUND_COLOR);
+		pixel = get_theme_color(SLIDER_THUMB, DEFAULT_STATE, FRAME_COLOR);
 		r.x = rect.x + static_cast<Sint16>(thumb_x);
 		r.y = rect.y + (saved_min_height - SLIDER_THUMB_HEIGHT) / 2;
 		r.w = thumb_width();
 		r.h = SLIDER_THUMB_HEIGHT;
 		draw_rectangle(s, &r, pixel);
 
-		pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, BACKGROUND_COLOR);
+		pixel = get_theme_color(SLIDER_THUMB, DEFAULT_STATE, FOREGROUND_COLOR);
 		r.x = r.x + 1;
 		r.y = r.y + 1;
 		r.w = r.w - 2;

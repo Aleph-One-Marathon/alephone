@@ -274,7 +274,8 @@ private:
 static XML_TImageParser FrameImageParser(DIALOG_FRAME, DEFAULT_STATE, 8);
 static XML_ImageParser ListImageParser(LIST_TL_IMAGE, 8);
 static XML_ImageParser ThumbImageParser(THUMB_T_IMAGE, 5);
-static XML_TImageParser SliderImageParser(SLIDER_WIDGET, DEFAULT_STATE, 4);
+static XML_TImageParser SliderImageParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
+static XML_TImageParser SliderThumbImageParser(SLIDER_THUMB, DEFAULT_STATE, 1);
 static XML_TImageParser DefaultButtonImageParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
 static XML_TImageParser ActiveButtonImageParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
 static XML_TImageParser DisabledButtonImageParser(BUTTON_WIDGET, DISABLED_STATE, 3);
@@ -419,7 +420,8 @@ static XML_DTColorParser DefaultTextEntryColorParser(TEXT_ENTRY_WIDGET, DEFAULT_
 static XML_DTColorParser ActiveTextEntryColorParser(TEXT_ENTRY_WIDGET, ACTIVE_STATE);
 static XML_DTColorParser DisabledTextEntryColorParser(TEXT_ENTRY_WIDGET, DISABLED_STATE);
 static XML_DTColorParser CursorTextEntryColorParser(TEXT_ENTRY_WIDGET, CURSOR_STATE);
-
+static XML_DTColorParser SliderColorParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
+static XML_DTColorParser SliderThumbColorParser(SLIDER_THUMB, DEFAULT_STATE, 3);
 
 
 
@@ -707,6 +709,8 @@ static XML_TroughParser TroughParser;
 struct XML_ThumbParser : public XML_ElementParser {XML_ThumbParser() : XML_ElementParser("thumb") {}};
 static XML_ThumbParser ThumbParser;
 
+static XML_ElementParser SliderThumbParser("thumb");
+
 class XML_ListParser : public XML_ElementParser {
 public:
 	XML_ListParser() : XML_ElementParser("list") {}
@@ -826,6 +830,10 @@ XML_ElementParser *Theme_GetParser()
 	ThemeParser.AddChild(&ListParser);
 
 	SliderParser.AddChild(&SliderImageParser);
+	SliderParser.AddChild(&SliderColorParser);
+	SliderThumbParser.AddChild(&SliderThumbColorParser);
+	SliderThumbParser.AddChild(&SliderThumbImageParser);
+	SliderParser.AddChild(&SliderThumbParser);
 	ThemeParser.AddChild(&SliderParser);
 
 	return &ThemeParser;
@@ -1007,8 +1015,9 @@ static void set_theme_defaults(void)
 	dialog_theme[BUTTON_WIDGET].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
 
 	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
-	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
-	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xff, 0x0);
+	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[SLIDER_THUMB].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x0, 0xff, 0x0);
+	dialog_theme[SLIDER_THUMB].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 
 }
 
