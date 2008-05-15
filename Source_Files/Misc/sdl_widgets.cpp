@@ -1237,7 +1237,7 @@ w_slider::w_slider(int num, int s) : widget(LABEL_FONT), selection(s), num_items
 
 	saved_min_width = SLIDER_WIDTH;
 	if (use_theme_images(SLIDER_WIDGET))
-		saved_min_height = static_cast<uint16>(slider_c->h);
+		saved_min_height = std::max(static_cast<uint16>(slider_c->h), static_cast<uint16>(thumb->h));
 	else
 		saved_min_height = SLIDER_THUMB_HEIGHT + 2;
 }
@@ -1250,7 +1250,7 @@ w_slider::~w_slider()
 void w_slider::place(const SDL_Rect& r, placement_flags flags)
 {
 	rect.h = r.h;
-	rect.y = r.y;
+	rect.y = r.y + (r.h - saved_min_height) / 2;
 	rect.x = r.x;
 	slider_x = 0;
 	rect.w = r.w;
@@ -1263,7 +1263,7 @@ void w_slider::draw(SDL_Surface *s) const
 	if (use_theme_images(SLIDER_WIDGET))
 	{
 		// Slider trough
-		SDL_Rect r = {rect.x + slider_x, rect.y,
+		SDL_Rect r = {rect.x + slider_x, rect.y + (saved_min_height - slider_l->h) / 2,
 			      static_cast<Uint16>(slider_l->w),
 			      static_cast<Uint16>(slider_l->h)};
 		SDL_BlitSurface(slider_l, NULL, s, &r);
@@ -1278,14 +1278,14 @@ void w_slider::draw(SDL_Surface *s) const
 
 		// Slider thumb
 		r.x = rect.x + static_cast<Sint16>(thumb_x);
-		r.y = rect.y + get_theme_space(SLIDER_WIDGET, SLIDER_T_SPACE);
+		r.y = rect.y + (saved_min_height - thumb->h) / 2 + get_theme_space(SLIDER_WIDGET, SLIDER_T_SPACE);
 		r.w = static_cast<Uint16>(thumb->w);
 		r.h = static_cast<Uint16>(thumb->h);
 		SDL_BlitSurface(thumb, NULL, s, &r);
 	} 
 	else
 	{
-		SDL_Rect r = {rect.x, rect.y + (SLIDER_THUMB_HEIGHT - SLIDER_TROUGH_HEIGHT) / 2 + get_theme_space(SLIDER_WIDGET, SLIDER_T_SPACE), SLIDER_WIDTH, SLIDER_TROUGH_HEIGHT};
+		SDL_Rect r = {rect.x, rect.y + (saved_min_height - SLIDER_TROUGH_HEIGHT) / 2 + get_theme_space(SLIDER_WIDGET, SLIDER_T_SPACE), SLIDER_WIDTH, SLIDER_TROUGH_HEIGHT};
 		uint32 pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, FRAME_COLOR);
 		draw_rectangle(s, &r, pixel);
 
@@ -1298,7 +1298,7 @@ void w_slider::draw(SDL_Surface *s) const
 
 		pixel = get_theme_color(SLIDER_WIDGET, DEFAULT_STATE, FOREGROUND_COLOR);
 		r.x = rect.x + static_cast<Sint16>(thumb_x);
-		r.y = rect.y + get_theme_space(SLIDER_WIDGET, SLIDER_T_SPACE);
+		r.y = rect.y + (saved_min_height - SLIDER_THUMB_HEIGHT) / 2;
 		r.w = thumb_width();
 		r.h = SLIDER_THUMB_HEIGHT;
 		draw_rectangle(s, &r, pixel);

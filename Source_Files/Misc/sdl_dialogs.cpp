@@ -1009,7 +1009,6 @@ static void set_theme_defaults(void)
 	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
 	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0xff, 0x0);
-	dialog_theme[SLIDER_WIDGET].spaces[SLIDER_T_SPACE] = 1;
 
 }
 

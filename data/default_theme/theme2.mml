@@ -119,7 +119,7 @@
 </list>
 
 <!-- Slider -->
-<slider top="3" left="1" right="1">
+<slider top="0" left="1" right="1">
   <image index="0" file="slider_l.bmp" scale="false"/>
   <image index="1" file="slider_c.bmp" scale="false"/>
   <image index="2" file="slider_r.bmp" scale="false"/>
