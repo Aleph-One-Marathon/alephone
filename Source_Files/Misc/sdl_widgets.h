@@ -697,9 +697,9 @@ protected:
 	void draw_items(SDL_Surface *s) const
 	{
 		typename vector<T>::const_iterator i = items.begin() + top_item;
-		int16 x = rect.x + get_dialog_space(LIST_L_SPACE);
-		int16 y = rect.y + get_dialog_space(LIST_T_SPACE);
-		uint16 width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+		int16 x = rect.x + get_theme_space(LIST_WIDGET, L_SPACE);
+		int16 y = rect.y + get_theme_space(LIST_WIDGET, T_SPACE);
+		uint16 width = rect.w - get_theme_space(LIST_WIDGET, L_SPACE) - get_theme_space(LIST_WIDGET, R_SPACE);
 		for (size_t n=top_item; n<top_item + MIN(shown_items, num_items); n++, i++, y=y+item_height())
 			draw_item(i, s, x, y, width, n == selection && active);
 	}
@@ -856,9 +856,9 @@ public:
 protected:
 	void draw_items(SDL_Surface* s) const {
 		typename ElementVector::const_iterator i = m_items.begin();
-		int16 x = rect.x + get_dialog_space(LIST_L_SPACE);
-		int16 y = rect.y + get_dialog_space(LIST_T_SPACE);
-		uint16 width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+		int16 x = rect.x + get_theme_space(LIST_WIDGET, L_SPACE);
+		int16 y = rect.y + get_theme_space(LIST_WIDGET, T_SPACE);
+		uint16 width = rect.w - get_theme_space(LIST_WIDGET, L_SPACE) - get_theme_space(LIST_WIDGET, R_SPACE);
 
 		for(size_t n = 0; n < top_item; n++)
 			++i;
@@ -892,7 +892,7 @@ class w_games_in_room : public w_items_in_room<GameListMessage::GameListEntry>
 public:
 	w_games_in_room(w_items_in_room<GameListMessage::GameListEntry>::ItemClickedCallback itemClicked, int width, int numRows)
 		: w_items_in_room<GameListMessage::GameListEntry>(itemClicked, width, numRows)
-	{ saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE); }
+		{ saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE); }
 
 	uint16 item_height() const { return 3 * font->get_line_height() + 2 + kGameSpacing; }
 
@@ -911,7 +911,7 @@ public:
 	w_players_in_room(w_items_in_room<MetaserverPlayerInfo>::ItemClickedCallback itemClicked, int width, int numRows)
 	: w_items_in_room<MetaserverPlayerInfo>(itemClicked, width, numRows)
 	{
-		saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE);
+		saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE);
 	}
 
 protected:
@@ -981,7 +981,7 @@ public:
 	w_colorful_chat(int width, int numRows) :
 		w_list<ColoredChatEntry>(entries, width, numRows, 0),
 		kNameWidth(text_width("M", font, style | styleShadow) * 9 - taper_width())
-		{ num_items = 0; font = get_dialog_font(TEXT_BOX_FONT, style); saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE); }
+		{ num_items = 0; font = get_dialog_font(TEXT_BOX_FONT, style); saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE); }
 
 	virtual bool is_selectable(void) const { return true; }
 

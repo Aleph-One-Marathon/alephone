@@ -1380,31 +1380,31 @@ int w_slider::thumb_width() const
 w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(ITEM_FONT), num_items(0), shown_items(lines), thumb_dragging(false)
 {
 	rect.w = width;
-	rect.h = item_height() * static_cast<uint16>(shown_items) + get_dialog_space(LIST_T_SPACE) + get_dialog_space(LIST_B_SPACE);
+	rect.h = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE);
 
-	frame_tl = get_dialog_image(LIST_TL_IMAGE);
-	frame_tr = get_dialog_image(LIST_TR_IMAGE);
-	frame_bl = get_dialog_image(LIST_BL_IMAGE);
-	frame_br = get_dialog_image(LIST_BR_IMAGE);
-	frame_t = get_dialog_image(LIST_T_IMAGE, rect.w - frame_tl->w - frame_tr->w, 0);
-	frame_l = get_dialog_image(LIST_L_IMAGE, 0, rect.h - frame_tl->h - frame_bl->h);
-	frame_r = get_dialog_image(LIST_R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
-	frame_b = get_dialog_image(LIST_B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
+	frame_tl = get_theme_image(LIST_WIDGET, DEFAULT_STATE, TL_IMAGE);
+	frame_tr = get_theme_image(LIST_WIDGET, DEFAULT_STATE, TR_IMAGE);
+	frame_bl = get_theme_image(LIST_WIDGET, DEFAULT_STATE, BL_IMAGE);
+	frame_br = get_theme_image(LIST_WIDGET, DEFAULT_STATE, BR_IMAGE);
+	frame_t = get_theme_image(LIST_WIDGET, DEFAULT_STATE, T_IMAGE, rect.w - frame_tl->w - frame_tr->w, 0);
+	frame_l = get_theme_image(LIST_WIDGET, DEFAULT_STATE, L_IMAGE, 0, rect.h - frame_tl->h - frame_bl->h);
+	frame_r = get_theme_image(LIST_WIDGET, DEFAULT_STATE, R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
+	frame_b = get_theme_image(LIST_WIDGET, DEFAULT_STATE, B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
 
-	thumb_t = get_dialog_image(THUMB_T_IMAGE);
+	thumb_t = get_theme_image(LIST_THUMB, DEFAULT_STATE, THUMB_T_IMAGE);
 	thumb_tc = NULL;
-	SDL_Surface *thumb_tc_unscaled = get_dialog_image(THUMB_TC_IMAGE);
-	thumb_c = get_dialog_image(THUMB_C_IMAGE);
-	SDL_Surface *thumb_bc_unscaled = get_dialog_image(THUMB_BC_IMAGE);
+	SDL_Surface *thumb_tc_unscaled = get_theme_image(LIST_THUMB, DEFAULT_STATE, THUMB_TC_IMAGE);
+	thumb_c = get_theme_image(LIST_THUMB, DEFAULT_STATE, THUMB_C_IMAGE);
+	SDL_Surface *thumb_bc_unscaled = get_theme_image(LIST_THUMB, DEFAULT_STATE, THUMB_BC_IMAGE);
 	thumb_bc = NULL;
-	thumb_b = get_dialog_image(THUMB_B_IMAGE);
+	thumb_b = get_theme_image(LIST_THUMB, DEFAULT_STATE, THUMB_B_IMAGE);
 
 	min_thumb_height = static_cast<uint16>(thumb_t->h + thumb_tc_unscaled->h + thumb_c->h + thumb_bc_unscaled->h + thumb_b->h);
 
-	trough_rect.x = rect.w - get_dialog_space(TROUGH_R_SPACE);
-	trough_rect.y = get_dialog_space(TROUGH_T_SPACE);
-	trough_rect.w = get_dialog_space(TROUGH_WIDTH);
-	trough_rect.h = rect.h - get_dialog_space(TROUGH_T_SPACE) - get_dialog_space(TROUGH_B_SPACE);
+	trough_rect.x = rect.w - get_theme_space(LIST_WIDGET, TROUGH_R_SPACE);
+	trough_rect.y = get_theme_space(LIST_WIDGET, TROUGH_T_SPACE);
+	trough_rect.w = get_theme_space(LIST_WIDGET, TROUGH_WIDTH);
+	trough_rect.h = rect.h - get_theme_space(LIST_WIDGET, TROUGH_T_SPACE) - get_theme_space(LIST_WIDGET, TROUGH_B_SPACE);
 
 	saved_min_width = rect.w;
 	saved_min_height = rect.h;
@@ -1428,27 +1428,57 @@ void w_list_base::draw_image(SDL_Surface *dst, SDL_Surface *s, int16 x, int16 y)
 
 void w_list_base::draw(SDL_Surface *s) const
 {
-	// Draw frame
-	int16 x = rect.x;
-	int16 y = rect.y;
-	draw_image(s, frame_tl, x, y);
-	draw_image(s, frame_t, x + static_cast<int16>(frame_tl->w), y);
-	draw_image(s, frame_tr, x + static_cast<int16>(frame_tl->w) + static_cast<int16>(frame_t->w), y);
-	draw_image(s, frame_l, x, y + static_cast<int16>(frame_tl->h));
-	draw_image(s, frame_r, x + rect.w - static_cast<int16>(frame_r->w), y + static_cast<int16>(frame_tr->h));
-	draw_image(s, frame_bl, x, y + static_cast<int16>(frame_tl->h) + static_cast<int16>(frame_l->h));
-	draw_image(s, frame_b, x + static_cast<int16>(frame_bl->w), y + rect.h - static_cast<int16>(frame_b->h));
-	draw_image(s, frame_br, x + static_cast<int16>(frame_bl->w) + static_cast<int16>(frame_b->w), y + static_cast<int16>(frame_tr->h) + static_cast<int16>(frame_r->h));
+	if (use_theme_images(LIST_WIDGET))
+	{
+		// Draw frame
+		int16 x = rect.x;
+		int16 y = rect.y;
+		draw_image(s, frame_tl, x, y);
+		draw_image(s, frame_t, x + static_cast<int16>(frame_tl->w), y);
+		draw_image(s, frame_tr, x + static_cast<int16>(frame_tl->w) + static_cast<int16>(frame_t->w), y);
+		draw_image(s, frame_l, x, y + static_cast<int16>(frame_tl->h));
+		draw_image(s, frame_r, x + rect.w - static_cast<int16>(frame_r->w), y + static_cast<int16>(frame_tr->h));
+		draw_image(s, frame_bl, x, y + static_cast<int16>(frame_tl->h) + static_cast<int16>(frame_l->h));
+		draw_image(s, frame_b, x + static_cast<int16>(frame_bl->w), y + rect.h - static_cast<int16>(frame_b->h));
+		draw_image(s, frame_br, x + static_cast<int16>(frame_bl->w) + static_cast<int16>(frame_b->w), y + static_cast<int16>(frame_tr->h) + static_cast<int16>(frame_r->h));
 
-	// Draw thumb
-	x = rect.x + trough_rect.x;
-	y = rect.y + thumb_y;
-	draw_image(s, thumb_t, x, y);
-	draw_image(s, thumb_tc, x, y = y + static_cast<int16>(thumb_t->h));
-	draw_image(s, thumb_c, x, y = y + static_cast<int16>(thumb_tc->h));
-	draw_image(s, thumb_bc, x, y = y + static_cast<int16>(thumb_c->h));
-	draw_image(s, thumb_b, x, y = y + static_cast<int16>(thumb_bc->h));
+		// Draw thumb
+		x = rect.x + trough_rect.x;
+		y = rect.y + thumb_y;
+		draw_image(s, thumb_t, x, y);
+		draw_image(s, thumb_tc, x, y = y + static_cast<int16>(thumb_t->h));
+		draw_image(s, thumb_c, x, y = y + static_cast<int16>(thumb_tc->h));
+		draw_image(s, thumb_bc, x, y = y + static_cast<int16>(thumb_c->h));
+		draw_image(s, thumb_b, x, y = y + static_cast<int16>(thumb_bc->h));
+		
+	}
+	else
+	{
+		uint32 pixel = get_theme_color(LIST_WIDGET, DEFAULT_STATE, FRAME_COLOR);
+		draw_rectangle(s, &rect, pixel);
 
+		SDL_Rect real_trough = { rect.x + trough_rect.x, rect.y + trough_rect.y, trough_rect.w, trough_rect.h };
+		draw_rectangle(s, &real_trough, pixel);
+		real_trough.x = real_trough.x + 1;
+		real_trough.y = real_trough.y + 1;
+		real_trough.w = real_trough.w - 2;
+		real_trough.h = real_trough.h - 2;
+		pixel = get_theme_color(LIST_THUMB, DEFAULT_STATE, BACKGROUND_COLOR);
+		SDL_FillRect(s, &real_trough, pixel);
+
+		pixel = get_theme_color(LIST_THUMB, DEFAULT_STATE, FRAME_COLOR);
+		SDL_Rect thumb_rect = { rect.x + trough_rect.x, rect.y + thumb_y, trough_rect.w, thumb_t->h + thumb_tc->h + thumb_c->h + thumb_bc->h + thumb_b->h};
+		draw_rectangle(s, &thumb_rect, pixel);
+		
+		pixel = get_theme_color(LIST_THUMB, DEFAULT_STATE, FOREGROUND_COLOR);
+		thumb_rect.x = thumb_rect.x + 1;
+		thumb_rect.y = thumb_rect.y + 1;
+		thumb_rect.w = thumb_rect.w - 2;
+		thumb_rect.h = thumb_rect.h - 2;
+		SDL_FillRect(s, &thumb_rect, pixel);
+		
+	}
+		
 	// Draw items
 	draw_items(s);
 }
@@ -1463,12 +1493,12 @@ void w_list_base::mouse_move(int x, int y)
 		  set_top_item(0);
 		}
 	} else {
-		if (x < get_dialog_space(LIST_L_SPACE) || x >= rect.w - get_dialog_space(LIST_R_SPACE)
-		 || y < get_dialog_space(LIST_T_SPACE) || y >= rect.h - get_dialog_space(LIST_B_SPACE))
+		if (x < get_theme_space(LIST_WIDGET, L_SPACE) || x >= rect.w - get_theme_space(LIST_WIDGET, R_SPACE)
+		    || y < get_theme_space(LIST_WIDGET, T_SPACE) || y >= rect.h - get_theme_space(LIST_WIDGET, B_SPACE))
 			return;
 
-		if ((y - get_dialog_space(LIST_T_SPACE)) / item_height() + top_item < min(num_items, top_item + shown_items))
-		{	set_selection((y - get_dialog_space(LIST_T_SPACE)) / item_height() + top_item); }
+		if ((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item < min(num_items, top_item + shown_items))
+		{	set_selection((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item); }
 		else
 		{	set_selection(num_items - 1); }
 	}
@@ -1478,15 +1508,15 @@ void w_list_base::place(const SDL_Rect& r, placement_flags flags)
 {
 	widget::place(r, flags);
 	
-	trough_rect.x = rect.w - get_dialog_space(TROUGH_R_SPACE);
-	trough_rect.y = get_dialog_space(TROUGH_T_SPACE);
-	trough_rect.w = get_dialog_space(TROUGH_WIDTH);
-	trough_rect.h = rect.h - get_dialog_space(TROUGH_T_SPACE) - get_dialog_space(TROUGH_B_SPACE);
+	trough_rect.x = rect.w - get_theme_space(LIST_WIDGET, TROUGH_R_SPACE);
+	trough_rect.y = get_theme_space(LIST_WIDGET, TROUGH_T_SPACE);
+	trough_rect.w = get_theme_space(LIST_WIDGET, TROUGH_WIDTH);
+	trough_rect.h = rect.h - get_theme_space(LIST_WIDGET, TROUGH_T_SPACE) - get_theme_space(LIST_WIDGET, TROUGH_B_SPACE);
 
-	frame_t = get_dialog_image(LIST_T_IMAGE, rect.w - frame_tl->w - frame_tr->w, 0);
-	frame_l = get_dialog_image(LIST_L_IMAGE, 0, rect.h - frame_tl->h - frame_bl->h);
-	frame_r = get_dialog_image(LIST_R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
-	frame_b = get_dialog_image(LIST_B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
+	frame_t = get_theme_image(LIST_WIDGET, DEFAULT_STATE, T_IMAGE, rect.w - frame_tl->w - frame_tr->w, 0);
+	frame_l = get_theme_image(LIST_WIDGET, DEFAULT_STATE, L_IMAGE, 0, rect.h - frame_tl->h - frame_bl->h);
+	frame_r = get_theme_image(LIST_WIDGET, DEFAULT_STATE, R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
+	frame_b = get_theme_image(LIST_WIDGET, DEFAULT_STATE, B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
 }
 
 void w_list_base::click(int x, int y)
@@ -1605,8 +1635,8 @@ void w_list_base::new_items(void)
 		SDL_FreeSurface(thumb_bc);
 	int rem_height = thumb_height - thumb_t->h - thumb_c->h - thumb_b->h;
 	int dyn_height = rem_height / 2;
-	thumb_tc = get_dialog_image(THUMB_TC_IMAGE, 0, dyn_height);
-	thumb_bc = get_dialog_image(THUMB_BC_IMAGE, 0, (rem_height & 1) ? dyn_height + 1 : dyn_height);
+	thumb_tc = get_theme_image(LIST_THUMB, DEFAULT_STATE, THUMB_TC_IMAGE, 0, dyn_height);
+	thumb_bc = get_theme_image(LIST_THUMB, DEFAULT_STATE, THUMB_BC_IMAGE, 0, (rem_height & 1) ? dyn_height + 1 : dyn_height);
 
 	thumb_y = 0;
 	if (thumb_y > trough_rect.h - thumb_height)
@@ -2090,7 +2120,7 @@ void w_text_box::append_text(const string& s)
 		return;
 	}
 		
-	int available_width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+	int available_width = rect.w - get_theme_space(LIST_WIDGET, L_SPACE) - get_theme_space(LIST_WIDGET, R_SPACE);
 	size_t usable_characters = trunc_text(s.c_str (), available_width, font, style);
 	
 	string::const_iterator middle;
@@ -2140,7 +2170,7 @@ void w_colorful_chat::append_entry(const ColoredChatEntry& e)
 		name = e.sender;
 	
 	int message_style = style;
-	int available_width = rect.w - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+	int available_width = rect.w - get_theme_space(LIST_WIDGET, L_SPACE) - get_theme_space(LIST_WIDGET, R_SPACE);
 	if (e.type == ColoredChatEntry::ChatMessage)
 	{
 		available_width -= kNameWidth + taper_width() + 2;

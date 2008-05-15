@@ -272,8 +272,8 @@ private:
 };
 
 static XML_TImageParser FrameImageParser(DIALOG_FRAME, DEFAULT_STATE, 8);
-static XML_ImageParser ListImageParser(LIST_TL_IMAGE, 8);
-static XML_ImageParser ThumbImageParser(THUMB_T_IMAGE, 5);
+static XML_TImageParser ListImageParser(LIST_WIDGET, DEFAULT_STATE, 8);
+static XML_TImageParser ThumbImageParser(LIST_THUMB, DEFAULT_STATE, 5);
 static XML_TImageParser SliderImageParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
 static XML_TImageParser SliderThumbImageParser(SLIDER_THUMB, DEFAULT_STATE, 1);
 static XML_TImageParser DefaultButtonImageParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
@@ -689,13 +689,13 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[TROUGH_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[TROUGH_T_SPACE]);
 		} else if (StringsEqual(tag, "bottom")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[TROUGH_B_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[TROUGH_B_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[TROUGH_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[TROUGH_R_SPACE]);
 		} else if (StringsEqual(tag, "width")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[TROUGH_WIDTH]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[TROUGH_WIDTH]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -718,13 +718,13 @@ public:
 	bool HandleAttribute(const char *tag, const char *value)
 	{
 		if (StringsEqual(tag, "top")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[LIST_T_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[T_SPACE]);
 		} else if (StringsEqual(tag, "bottom")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[LIST_B_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[B_SPACE]);
 		} else if (StringsEqual(tag, "left")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[LIST_L_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[L_SPACE]);
 		} else if (StringsEqual(tag, "right")) {
-			return ReadNumericalValue(value, "%hu", dialog_space[LIST_R_SPACE]);
+			return ReadNumericalValue(value, "%hu", dialog_theme[LIST_WIDGET].spaces[R_SPACE]);
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -1019,6 +1019,16 @@ static void set_theme_defaults(void)
 	dialog_theme[SLIDER_THUMB].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x0, 0xff, 0x0);
 	dialog_theme[SLIDER_THUMB].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 
+	dialog_theme[LIST_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
+	dialog_theme[LIST_THUMB].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[LIST_THUMB].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[LIST_THUMB].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x0, 0xff, 0x0);
+	dialog_theme[LIST_WIDGET].spaces[T_SPACE] = 2;
+	dialog_theme[LIST_WIDGET].spaces[L_SPACE] = 2;
+	dialog_theme[LIST_WIDGET].spaces[R_SPACE] = 14;
+	dialog_theme[LIST_WIDGET].spaces[B_SPACE] = 2;
+	dialog_theme[LIST_WIDGET].spaces[TROUGH_R_SPACE] = 12;
+	dialog_theme[LIST_WIDGET].spaces[TROUGH_WIDTH] = 12;
 }
 
 
