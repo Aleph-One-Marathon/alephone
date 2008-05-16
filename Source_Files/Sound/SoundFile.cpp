@@ -157,7 +157,6 @@ bool SoundHeader::Load(OpenedFile &SoundFile)
 
 		AIStreamBE header(&headerBuffer.front(), headerBuffer.size());
 		if (!UnpackStandardSystem7Header(header)) return false;
-		
 		stored_data.resize(length);
 		if (!SoundFile.Read(stored_data.size(), &stored_data.front())) return false;
 		return true;
@@ -170,7 +169,6 @@ bool SoundHeader::Load(OpenedFile &SoundFile)
 
 		AIStreamBE header(&headerBuffer.front(), headerBuffer.size());
 		if (!UnpackExtendedSystem7Header(header)) return false;
-
 		stored_data.resize(length);
 		if (!SoundFile.Read(stored_data.size(), &stored_data.front())) return false;
 		return true;
@@ -224,8 +222,8 @@ bool SoundDefinition::Load(OpenedFile &SoundFile, bool LoadPermutations)
 
 	if (LoadPermutations)
 		sounds.resize(permutations);
-	else
-		sounds.resize(1);
+	else 
+		sounds.resize(std::min(permutations, static_cast<int16>(1)));
 
 	for (int i = 0; i < sounds.size(); i++)
 	{
