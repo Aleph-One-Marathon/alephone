@@ -253,7 +253,7 @@ void handle_preferences(void)
 	// Create top-level dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_static_text *w_header = new w_static_text("PREFERENCES", TITLE_FONT, TITLE_COLOR);
+	w_title *w_header = new w_title("PREFERENCES");
 	d.add(w_header);
 	w_button *w_player = new w_button("PLAYER", player_dialog, &d);
 	d.add(w_player);
@@ -366,7 +366,7 @@ static void crosshair_dialog(void *arg)
 
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_static_text *w_header = new w_static_text("CROSSHAIR SETTINGS", TITLE_FONT, TITLE_COLOR);
+	w_title *w_header = new w_title("CROSSHAIR SETTINGS");
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 
@@ -487,7 +487,7 @@ static void player_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text("PLAYER SETTINGS", TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title("PLAYER SETTINGS"), d);
 	placer->add(new w_spacer());
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -753,7 +753,7 @@ static void software_rendering_options_dialog(void* arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text("SOFTWARE RENDERING OPTIONS", TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title("SOFTWARE RENDERING OPTIONS"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -843,7 +843,7 @@ static void graphics_dialog(void *arg)
 	dialog d;
 
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text("GRAPHICS SETUP", TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title("GRAPHICS SETUP"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -1018,7 +1018,7 @@ static void sound_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text("SOUND SETUP", TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title("SOUND SETUP"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -1151,7 +1151,7 @@ static void controls_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text("CONTROLS", TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title("CONTROLS"), d);
 	placer->add(new w_spacer(), true);
 
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -1431,7 +1431,7 @@ static void keyboard_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text("CONFIGURE KEYBOARD", TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title("CONFIGURE KEYBOARD"), d);
 
 	placer->add(new w_spacer(), true);
 	
@@ -1519,7 +1519,7 @@ static void environment_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	w_static_text *w_header = new w_static_text("ENVIRONMENT SETTINGS", TITLE_FONT, TITLE_COLOR);
+	w_title *w_header = new w_title("ENVIRONMENT SETTINGS");
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 

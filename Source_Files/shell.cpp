@@ -587,15 +587,15 @@ short get_level_number_from_user(void)
 			if (!strlen(string))
 				placer->add(new w_spacer(), true);
 			else if (message_font_title_color)
-				placer->dual_add(new w_static_text(string, MESSAGE_FONT, TITLE_COLOR), d);
+				placer->dual_add(new w_static_text(string), d);
 			else
 				placer->dual_add(new w_static_text(string), d);
 		}
 
 	} else {
 		// no stringset or no strings in stringset - use default message
-		placer->dual_add(new w_static_text("Before proceeding any further, you", MESSAGE_FONT, TITLE_COLOR), d);
-		placer->dual_add(new w_static_text ("must take the oath of the vidmaster:", MESSAGE_FONT, TITLE_COLOR), d);
+		placer->dual_add(new w_static_text("Before proceeding any further, you"), d);
+		placer->dual_add(new w_static_text ("must take the oath of the vidmaster:"), d);
 		placer->add(new w_spacer(), true);
 		placer->dual_add(new w_static_text("\xd2I pledge to punch all switches,"), d);
 		placer->dual_add(new w_static_text("to never shoot where I could use grenades,"), d);
@@ -606,7 +606,7 @@ short get_level_number_from_user(void)
 	}
 
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_static_text("Start at level:", MESSAGE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_static_text("Start at level:"), d);
 
 	w_levels *level_w = new w_levels(levels, &d);
 	placer->dual_add(level_w, d);

@@ -981,11 +981,11 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text(prompt, TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title(prompt), d);
 	placer->add(new w_spacer, true);
 
 	dir.GetName(temporary);
-	w_static_text* directory_name_w = new w_static_text(temporary, LABEL_FONT);
+	w_static_text* directory_name_w = new w_static_text(temporary);
 	directory_name_w->set_identifier(iDIRBROWSE_DIR_NAME);
 	placer->dual_add(directory_name_w, d);
 
@@ -1107,7 +1107,7 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text(prompt, TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title(prompt), d);
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *file_name_placer = new horizontal_placer;

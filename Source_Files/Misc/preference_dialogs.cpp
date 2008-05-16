@@ -241,7 +241,7 @@ public:
 	{
 
 		vertical_placer *placer = new vertical_placer;
-		placer->dual_add(new w_static_text("OPENGL OPTIONS", TITLE_FONT, TITLE_COLOR), m_dialog);
+		placer->dual_add(new w_title("OPENGL OPTIONS"), m_dialog);
 		placer->add(new w_spacer(), true);
 		
 		horizontal_placer *tabs_placer = new horizontal_placer;

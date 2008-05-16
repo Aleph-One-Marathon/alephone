@@ -79,37 +79,12 @@ widget::widget() : active(false), dirty(false), enabled(true), font(NULL), ident
     rect.h = 0;
 }
 
-widget::widget(int f) : active(false), dirty(false), enabled(true), font(get_dialog_font(f, style)), identifier(NONE), owning_dialog(NULL), saved_min_width(0), saved_min_height(0), associated_label(0)
+widget::widget(int theme_widget) : active(false), dirty(false), enabled(true), font(get_theme_font(theme_widget, style)), identifier(NONE), owning_dialog(NULL), saved_min_width(0), saved_min_height(0), associated_label(0)
 {
     rect.x = 0;
     rect.y = 0;
     rect.w = 0;
     rect.h = 0;
-
-    if (f == TITLE_FONT)
-    {
-	    font = get_theme_font(TITLE_WIDGET, style);
-    }
-    else if (f == LABEL_FONT)
-    {
-	    font = get_theme_font(LABEL_WIDGET, style);
-    }
-    else if (f == MESSAGE_FONT)
-    {
-	    font = get_theme_font(MESSAGE_WIDGET, style);
-    }
-    else if (f == ITEM_FONT)
-    {
-	    font = get_theme_font(ITEM_WIDGET, style);
-    }
-    else if (f == TEXT_ENTRY_FONT)
-    {
-	    font = get_theme_font(TEXT_ENTRY_WIDGET, style);
-    }
-    else if (f == BUTTON_FONT)
-    {
-	    font = get_theme_font(BUTTON_WIDGET, style);
-    }
 }
 
 void widget::associate_label(w_label *label)
@@ -180,21 +155,8 @@ void widget::place(const SDL_Rect &r, placement_flags flags)
  */
 
 // ZZZ change: copy the given string instead of just pointing to it.  Much easier for messages that change.
-w_static_text::w_static_text(const char *t, int f, int c) : widget(f), color(c)
+w_static_text::w_static_text(const char *t, int _theme_type) : widget(_theme_type), theme_type(_theme_type)
 {
-	if (c == TITLE_COLOR)
-	{
-		theme_type = TITLE_WIDGET;
-	}
-	else if (c == MESSAGE_COLOR)
-	{
-		theme_type = MESSAGE_WIDGET;
-	}
-	else
-	{
-		theme_type = -1;
-	}
-
         text = strdup(t);
 	rect.w = text_width(text, font, style);
 	rect.h = font->get_line_height();
@@ -205,10 +167,7 @@ w_static_text::w_static_text(const char *t, int f, int c) : widget(f), color(c)
 void w_static_text::draw(SDL_Surface *s) const
 {
 	uint32 pixel;
-	if (theme_type != -1)
-		pixel = get_theme_color(theme_type, DEFAULT_STATE, 0);
-	else
-		pixel = get_dialog_color(color);
+	pixel = get_theme_color(theme_type, DEFAULT_STATE, 0);
 
 	draw_text(s, text, rect.x, rect.y + font->get_ascent(), pixel, font, style);
 }
@@ -274,7 +233,7 @@ void w_pict::draw(SDL_Surface *s) const
  *  Button
  */
 
-w_button_base::w_button_base(const char *t, action_proc p, void *a) : widget(BUTTON_FONT), text(t), proc(p), arg(a), down(false), pressed(false)
+w_button_base::w_button_base(const char *t, action_proc p, void *a) : widget(BUTTON_WIDGET), text(t), proc(p), arg(a), down(false), pressed(false)
 {
 
 }
@@ -440,7 +399,7 @@ const uint16 MAX_TEXT_WIDTH = 200;
 // Anyway, this fixes the "crash when clicking in the Environment menu" bug we've seen
 // in the Windows version all this time.
 w_select_button::w_select_button(const char *s, action_proc p, void *a, bool u)
-	: widget(LABEL_FONT), selection(s), proc(p), arg(a), utf8(u), p_flags(placeable::kDefault)
+	: widget(LABEL_WIDGET), selection(s), proc(p), arg(a), utf8(u), p_flags(placeable::kDefault)
 {
 	uint16 max_selection_width = MAX_TEXT_WIDTH;
 
@@ -515,7 +474,7 @@ void w_select_button::place(const SDL_Rect &r, placement_flags flags)
 
 static const char* sNoValidOptionsString = "(no valid options)"; // XXX should be moved outside compiled code e.g. to MML
 
-w_select::w_select(size_t s, const char **l) : widget(LABEL_FONT), labels(l), we_own_labels(false), selection(s), selection_changed_callback(NULL), utf8(false)
+w_select::w_select(size_t s, const char **l) : widget(LABEL_WIDGET), labels(l), we_own_labels(false), selection(s), selection_changed_callback(NULL), utf8(false)
 {
 	num_labels = 0;
         if(labels) {
@@ -831,7 +790,7 @@ void w_color_picker::click(int, int)
 	dialog d;
 	
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text("CHOOSE A COLOR", TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title("CHOOSE A COLOR"), d);
 	placer->add(new w_spacer(), true);
 
 	w_color_block *color_block = new w_color_block(&m_color);
@@ -893,7 +852,7 @@ void w_color_picker::draw(SDL_Surface *s) const
  */
 
 w_text_entry::w_text_entry(size_t max_c, const char *initial_text)
-	: widget(TEXT_ENTRY_FONT), enter_pressed_callback(NULL), value_changed_callback(NULL), max_chars(max_c), enable_mac_roman(false)
+	: widget(TEXT_ENTRY_WIDGET), enter_pressed_callback(NULL), value_changed_callback(NULL), max_chars(max_c), enable_mac_roman(false)
 {
 	// Initialize buffer
 	buf = new char[max_chars + 1];
@@ -1094,7 +1053,7 @@ void w_password_entry::draw(SDL_Surface *s) const
 
 static const char *WAITING_TEXT = "waiting for new key";
 
-w_key::w_key(SDLKey key) : widget(LABEL_FONT), binding(false)
+w_key::w_key(SDLKey key) : widget(LABEL_WIDGET), binding(false)
 {
 	set_key(key);
 
@@ -1226,7 +1185,7 @@ const int SLIDER_THUMB_HEIGHT = 14;
 const int SLIDER_THUMB_WIDTH = 8;
 const int SLIDER_TROUGH_HEIGHT = 8;
 
-w_slider::w_slider(int num, int s) : widget(LABEL_FONT), selection(s), num_items(num), thumb_dragging(false)
+w_slider::w_slider(int num, int s) : widget(LABEL_WIDGET), selection(s), num_items(num), thumb_dragging(false)
 {
 	slider_l = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_L_IMAGE);
 	slider_r = get_theme_image(SLIDER_WIDGET, DEFAULT_STATE, SLIDER_R_IMAGE);
@@ -1377,7 +1336,7 @@ int w_slider::thumb_width() const
  *  List selection
  */
 
-w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(ITEM_FONT), num_items(0), shown_items(lines), thumb_dragging(false)
+w_list_base::w_list_base(uint16 width, size_t lines, size_t /*sel*/) : widget(ITEM_WIDGET), num_items(0), shown_items(lines), thumb_dragging(false)
 {
 	rect.w = width;
 	rect.h = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE);

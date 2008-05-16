@@ -995,7 +995,7 @@ w_players_in_game2::draw_carnage_totals(SDL_Surface* s) const {
             sprintf(temporary, "%+d", thePlayerCarnageScore);
         
         uint16			theBiggerFontStyle	= 0;
-        font_info*	theBiggerFont		= get_dialog_font(LABEL_FONT, theBiggerFontStyle);
+        font_info*	theBiggerFont		= get_theme_font(LABEL_WIDGET, theBiggerFontStyle);
         
         int	theStringCenter = center_x - (text_width(temporary, theBiggerFont, theBiggerFontStyle | styleShadow) / 2);
         
@@ -1273,7 +1273,7 @@ w_entry_point_selector::gotSelected() {
         dialog theDialog;
 
 	vertical_placer *placer = new vertical_placer;
-        placer->dual_add(new w_static_text("SELECT LEVEL", TITLE_FONT, TITLE_COLOR), theDialog);
+        placer->dual_add(new w_title("SELECT LEVEL"), theDialog);
 
 	placer->add(new w_spacer(), true);
 
@@ -1281,7 +1281,7 @@ w_entry_point_selector::gotSelected() {
         char            theName[256];
         theFile.GetName(theName);
         sprintf(temporary, "%s", theName);
-        placer->dual_add(new w_static_text(temporary, LABEL_FONT), theDialog);
+        placer->dual_add(new w_static_text(temporary), theDialog);
 
         placer->add(new w_spacer(), true);
 

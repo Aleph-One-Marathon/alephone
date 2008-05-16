@@ -87,7 +87,7 @@ public:
 
     // ZZZ: initialize identifier, owning dialog, layout extensions
 	widget();
-        widget(int font);
+        widget(int theme_widget);
 	virtual ~widget() {}
 
 	// Draw widget
@@ -139,9 +139,7 @@ protected:
 	bool dirty;		// Flag: widget needs redraw
     bool    enabled; // ZZZ Flag: roughly, should the user be allowed to interact with the widget?
 
-//	const sdl_font_info *font;	// Widget font
-//    ttf_and_sdl_font_info *font; // Widget font
-    font_info *font;
+	font_info *font;
 	uint16 style;				// Widget font style
         
         short	identifier;	// ZZZ: numeric ID in support of dialog::find_widget_by_id()
@@ -179,7 +177,7 @@ private:
 // allocates storage, destructor frees, etc.
 class w_static_text : public widget {
 public:
-	w_static_text(const char *text, int font = MESSAGE_FONT, int color = MESSAGE_COLOR);
+	w_static_text(const char *text, int theme_type = MESSAGE_WIDGET);
 
 	void draw(SDL_Surface *s) const;
 
@@ -193,14 +191,13 @@ public:
 protected:
 	char *text;
 private:
-	int color;
 	int theme_type;
 };
 
 class w_label : public w_static_text {
 	friend class dialog;
 public:
-	w_label(const char *text) : w_static_text(text, LABEL_FONT, LABEL_COLOR), associated_widget(0) {}
+	w_label(const char *text) : w_static_text(text, LABEL_WIDGET), associated_widget(0) {}
 
 	void associate_widget(widget *w) { associated_widget = w; }
 	void draw(SDL_Surface *s) const;
@@ -208,6 +205,11 @@ public:
 	bool is_selectable(void) const { if (associated_widget) return associated_widget->is_selectable(); else return false; }
 private:
 	widget *associated_widget;
+};
+
+class w_title : public w_static_text {
+public:
+	w_title(const char *text) : w_static_text(text, TITLE_WIDGET) {}
 };
 
 /*

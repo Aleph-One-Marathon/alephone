@@ -2435,7 +2435,7 @@ void display_net_game_stats(void)
     dialog d;
     
     vertical_placer *placer = new vertical_placer;
-    placer->dual_add(new w_static_text("POSTGAME CARNAGE REPORT", TITLE_FONT, TITLE_COLOR), d);
+    placer->dual_add(new w_title("POSTGAME CARNAGE REPORT"), d);
     
     horizontal_placer *graph_type_placer = new horizontal_placer;
     w_select* graph_type_w = new w_select(0, NULL);
@@ -2579,7 +2579,7 @@ public:
 		if ((m & KMOD_ALT) || (m & KMOD_META)) m_enableSinglePlayer = true;
 
 		vertical_placer *placer = new vertical_placer;
-		placer->dual_add(new w_static_text("GATHER NETWORK GAME", TITLE_FONT, TITLE_COLOR), m_dialog);
+		placer->dual_add(new w_title("GATHER NETWORK GAME"), m_dialog);
 		placer->add(new w_spacer());
 	
 		// m_dialog.add(new w_static_text("Players on Network"));
@@ -2675,7 +2675,7 @@ public:
 	SdlJoinDialog() : m_tabs(0)
 	{
 		vertical_placer *placer = new vertical_placer;
-		placer->dual_add(new w_static_text("JOIN NETWORK GAME", TITLE_FONT, TITLE_COLOR), m_dialog);
+		placer->dual_add(new w_title("JOIN NETWORK GAME"), m_dialog);
 		placer->add(new w_spacer(), true);
 
 		table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -2846,7 +2846,7 @@ public:
 	{
 		vertical_placer *placer = new vertical_placer;
 
-		placer->dual_add(new w_static_text("SETUP NETWORK GAME", TITLE_FONT, TITLE_COLOR), m_dialog);
+		placer->dual_add(new w_title("SETUP NETWORK GAME"), m_dialog);
 		placer->add(new w_spacer(), true);
 
 		table_placer *table = new table_placer(2, 10);
@@ -3270,7 +3270,7 @@ network_gather(bool) {
 
     dialog d;
 
-    d.add(new w_static_text("TEST MICROPHONE", TITLE_FONT, TITLE_COLOR));
+    d.add(new w_title("TEST MICROPHONE"));
 
     w_toggle*   onoff_w = new w_toggle("Active", 0);
     onoff_w->set_selection_changed_callback(respond_to_microphone_toggle);

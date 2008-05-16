@@ -2766,7 +2766,7 @@ size_t should_restore_game_networked()
         dialog d;
 
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_static_text("RESUME GAME", TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title("RESUME GAME"), d);
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *resume_as_placer = new horizontal_placer;

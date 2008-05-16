@@ -85,7 +85,7 @@ setupAndConnectClient(MetaserverClient& client)
 			dialog d;
 			vertical_placer *placer = new vertical_placer;
 
-			placer->dual_add(new w_static_text("UPDATE AVAILABLE", TITLE_FONT, TITLE_COLOR), d);
+			placer->dual_add(new w_title("UPDATE AVAILABLE"), d);
 			placer->add(new w_spacer(), true);
 
 			placer->dual_add(new w_static_text("An update for Aleph One is available."), d);

@@ -51,12 +51,12 @@ void alert_user(char *message, short severity)
   } else {
     dialog d;
     vertical_placer *placer = new vertical_placer;
-    placer->dual_add(new w_static_text(severity == infoError ? "WARNING" : "ERROR", TITLE_FONT, TITLE_COLOR), d);
+    placer->dual_add(new w_title(severity == infoError ? "WARNING" : "ERROR"), d);
     placer->add(new w_spacer, true);
     
     // Wrap lines
     uint16 style;
-    font_info *font = get_dialog_font(MESSAGE_FONT, style);
+    font_info *font = get_theme_font(MESSAGE_WIDGET, style);
     char *t = message;
 
     while (strlen(t)) {

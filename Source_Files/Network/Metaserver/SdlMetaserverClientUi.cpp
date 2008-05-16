@@ -56,7 +56,7 @@ public:
 	SdlMetaserverClientUi() : m_disconnected(false)
 	{
 		vertical_placer *placer = new vertical_placer(4);
-		placer->dual_add(new w_static_text("LOCATE NETWORK GAMES", TITLE_FONT, TITLE_COLOR), d);
+		placer->dual_add(new w_title("LOCATE NETWORK GAMES"), d);
 
 		placer->add(new w_spacer(), true);
 
@@ -155,7 +155,7 @@ public:
 		{
 			dialog info_dialog;
 			vertical_placer *placer = new vertical_placer;
-			placer->dual_add(new w_static_text("GAME INFO", TITLE_FONT, TITLE_COLOR), info_dialog);
+			placer->dual_add(new w_title("GAME INFO"), info_dialog);
 			placer->add(new w_spacer(), true);
 			table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 			table->col_flags(0, placeable::kAlignRight);

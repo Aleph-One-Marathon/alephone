@@ -99,7 +99,7 @@ void w_env_select::select_item(dialog *parent)
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
 	
-	placer->dual_add(new w_static_text(menu_title, TITLE_FONT, TITLE_COLOR), d);
+	placer->dual_add(new w_title(menu_title), d);
 	placer->add(new w_spacer(), true);
 	w_env_list *list_w = new w_env_list(items, item.GetPath(), &d);
 	placer->dual_add(list_w, d);
