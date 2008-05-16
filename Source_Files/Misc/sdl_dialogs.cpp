@@ -75,12 +75,10 @@ static TextSpec dialog_font_spec[NUM_DIALOG_FONTS];
 static font_info *dialog_font[NUM_DIALOG_FONTS];
 static SDL_Color dialog_color[NUM_DIALOG_COLORS];
 
-static struct dialog_image_spec_type {
+struct dialog_image_spec_type {
 	string name;
 	bool scale;
-} dialog_image_spec[NUM_DIALOG_IMAGES];
-
-static SDL_Surface *dialog_image[NUM_DIALOG_IMAGES];
+};
 
 struct theme_state
 {
@@ -170,58 +168,7 @@ static void shutdown_dialogs(void)
 
 class XML_ImageParser : public XML_ElementParser {
 public:
-	XML_ImageParser(int base, int num = 1) : XML_ElementParser("image"), base_index(base), max_index(num - 1) {}
-
-	bool Start()
-	{
-		have_index = have_name = false;
-		scale = false;
-		return true;
-	}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "index")) {
-			if (ReadBoundedNumericalValue(value, "%d", index, 0, max_index))
-				have_index = true;
-			else
-				return false;
-		} else if (StringsEqual(tag, "file")) {
-			name = value;
-			have_name = true;
-		} else if (StringsEqual(tag, "scale")) {
-			return ReadBooleanValue(value, scale);
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-
-	bool AttributesDone()
-	{
-		if (!have_index || !have_name) {
-			AttribsMissing();
-			return false;
-		}
-		dialog_image_spec[base_index + index].name = name;
-		dialog_image_spec[base_index + index].scale = scale;
-		return true;
-	}
-
-private:
-	int base_index, max_index;
-
-	bool have_index, have_name;
-
-	int index;
-	string name;
-	bool scale;
-};
-
-class XML_TImageParser : public XML_ElementParser {
-public:
-	XML_TImageParser(int _type, int _state, int max = 0) : XML_ElementParser("image"), type(_type), state(_state), max_index(max) {}
+	XML_ImageParser(int _type, int _state, int max = 0) : XML_ElementParser("image"), type(_type), state(_state), max_index(max) {}
 
 	bool Start()
 	{
@@ -270,80 +217,19 @@ private:
 	bool scale;
 };
 
-static XML_TImageParser FrameImageParser(DIALOG_FRAME, DEFAULT_STATE, 8);
-static XML_TImageParser ListImageParser(LIST_WIDGET, DEFAULT_STATE, 8);
-static XML_TImageParser ThumbImageParser(LIST_THUMB, DEFAULT_STATE, 5);
-static XML_TImageParser SliderImageParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
-static XML_TImageParser SliderThumbImageParser(SLIDER_THUMB, DEFAULT_STATE, 1);
-static XML_TImageParser DefaultButtonImageParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
-static XML_TImageParser ActiveButtonImageParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
-static XML_TImageParser DisabledButtonImageParser(BUTTON_WIDGET, DISABLED_STATE, 3);
-static XML_TImageParser PressedButtonImageParser(BUTTON_WIDGET, PRESSED_STATE, 3);
+static XML_ImageParser FrameImageParser(DIALOG_FRAME, DEFAULT_STATE, 8);
+static XML_ImageParser ListImageParser(LIST_WIDGET, DEFAULT_STATE, 8);
+static XML_ImageParser ThumbImageParser(LIST_THUMB, DEFAULT_STATE, 5);
+static XML_ImageParser SliderImageParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
+static XML_ImageParser SliderThumbImageParser(SLIDER_THUMB, DEFAULT_STATE, 1);
+static XML_ImageParser DefaultButtonImageParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
+static XML_ImageParser ActiveButtonImageParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
+static XML_ImageParser DisabledButtonImageParser(BUTTON_WIDGET, DISABLED_STATE, 3);
+static XML_ImageParser PressedButtonImageParser(BUTTON_WIDGET, PRESSED_STATE, 3);
 
 class XML_DColorParser : public XML_ElementParser {
 public:
-	XML_DColorParser(int base, int num = 1) : XML_ElementParser("color"), base_index(base), max_index(num - 1) {}
-
-	bool Start()
-	{
-		have_red = have_green = have_blue = false;
-		idx = 0;
-		return true;
-	}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		float v;
-		if (StringsEqual(tag, "index")) {
-			return ReadBoundedNumericalValue(value, "%d", idx, 0, max_index);
-		} else if (StringsEqual(tag, "red")) {
-			if (ReadNumericalValue(value, "%f", v)) {
-				have_red = true;
-				color.r = uint8(PIN(255 * v + 0.5, 0, 255));
-			} else
-				return false;
-		} else if (StringsEqual(tag, "green")) {
-			if (ReadNumericalValue(value, "%f", v)) {
-				have_green = true;
-				color.g = uint8(PIN(255 * v + 0.5, 0, 255));
-			} else
-				return false;
-		} else if (StringsEqual(tag, "blue")) {
-			if (ReadNumericalValue(value, "%f", v)) {
-				have_blue = true;
-				color.b = uint8(PIN(255 * v + 0.5, 0, 255));
-			} else
-				return false;
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-
-	bool AttributesDone()
-	{
-		if (!have_red || !have_green || !have_blue) {
-			AttribsMissing();
-			return false;
-		}
-		dialog_color[base_index + idx] = color;
-		return true;
-	}
-
-private:
-	int base_index, max_index;
-
-	bool have_red, have_green, have_blue;
-
-	SDL_Color color;
-protected:
-	int idx;
-};
-
-class XML_DTColorParser : public XML_ElementParser {
-public:
-	XML_DTColorParser(int _type, int _state, int max = 0) : XML_ElementParser("color"), type(_type), state(_state), max_index(max) {}
+	XML_DColorParser(int _type, int _state, int max = 0) : XML_ElementParser("color"), type(_type), state(_state), max_index(max) {}
 
 	bool Start()
 	{
@@ -402,25 +288,25 @@ protected:
 
 static bool foundLabelOutlineColor = false;
 
-static XML_DTColorParser FrameColorParser(DIALOG_FRAME, DEFAULT_STATE, 3);
-static XML_DTColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
-static XML_DTColorParser DefaultButtonColorParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
-static XML_DTColorParser ActiveButtonColorParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
-static XML_DTColorParser DisabledButtonColorParser(BUTTON_WIDGET, DISABLED_STATE, 3);
-static XML_DTColorParser PressedButtonColorParser(BUTTON_WIDGET, PRESSED_STATE, 3);
-static XML_DTColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
-static XML_DTColorParser ActiveLabelColorParser(LABEL_WIDGET, ACTIVE_STATE);
-static XML_DTColorParser DisabledLabelColorParser(LABEL_WIDGET, DISABLED_STATE);
-static XML_DTColorParser DefaultItemColorParser(ITEM_WIDGET, DEFAULT_STATE);
-static XML_DTColorParser ActiveItemColorParser(ITEM_WIDGET, ACTIVE_STATE);
-static XML_DTColorParser DisabledItemColorParser(ITEM_WIDGET, DISABLED_STATE);
-static XML_DTColorParser MessageColorParser(MESSAGE_WIDGET, DEFAULT_STATE);
-static XML_DTColorParser DefaultTextEntryColorParser(TEXT_ENTRY_WIDGET, DEFAULT_STATE);
-static XML_DTColorParser ActiveTextEntryColorParser(TEXT_ENTRY_WIDGET, ACTIVE_STATE);
-static XML_DTColorParser DisabledTextEntryColorParser(TEXT_ENTRY_WIDGET, DISABLED_STATE);
-static XML_DTColorParser CursorTextEntryColorParser(TEXT_ENTRY_WIDGET, CURSOR_STATE);
-static XML_DTColorParser SliderColorParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
-static XML_DTColorParser SliderThumbColorParser(SLIDER_THUMB, DEFAULT_STATE, 3);
+static XML_DColorParser FrameColorParser(DIALOG_FRAME, DEFAULT_STATE, 3);
+static XML_DColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
+static XML_DColorParser DefaultButtonColorParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
+static XML_DColorParser ActiveButtonColorParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
+static XML_DColorParser DisabledButtonColorParser(BUTTON_WIDGET, DISABLED_STATE, 3);
+static XML_DColorParser PressedButtonColorParser(BUTTON_WIDGET, PRESSED_STATE, 3);
+static XML_DColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
+static XML_DColorParser ActiveLabelColorParser(LABEL_WIDGET, ACTIVE_STATE);
+static XML_DColorParser DisabledLabelColorParser(LABEL_WIDGET, DISABLED_STATE);
+static XML_DColorParser DefaultItemColorParser(ITEM_WIDGET, DEFAULT_STATE);
+static XML_DColorParser ActiveItemColorParser(ITEM_WIDGET, ACTIVE_STATE);
+static XML_DColorParser DisabledItemColorParser(ITEM_WIDGET, DISABLED_STATE);
+static XML_DColorParser MessageColorParser(MESSAGE_WIDGET, DEFAULT_STATE);
+static XML_DColorParser DefaultTextEntryColorParser(TEXT_ENTRY_WIDGET, DEFAULT_STATE);
+static XML_DColorParser ActiveTextEntryColorParser(TEXT_ENTRY_WIDGET, ACTIVE_STATE);
+static XML_DColorParser DisabledTextEntryColorParser(TEXT_ENTRY_WIDGET, DISABLED_STATE);
+static XML_DColorParser CursorTextEntryColorParser(TEXT_ENTRY_WIDGET, CURSOR_STATE);
+static XML_DColorParser SliderColorParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
+static XML_DColorParser SliderThumbColorParser(SLIDER_THUMB, DEFAULT_STATE, 3);
 
 
 
@@ -877,13 +763,6 @@ bool load_theme(FileSpecifier &theme)
 	data_search_path.erase(data_search_path.begin());
 
 	// Load images
-	for (int i=0; i<NUM_DIALOG_IMAGES; i++) {
-		FileSpecifier file = theme + dialog_image_spec[i].name;
-		SDL_Surface *s =SDL_LoadBMP(file.GetPath());
-		if (s)
-			SDL_SetColorKey(s, SDL_SRCCOLORKEY, SDL_MapRGB(s->format, 0x00, 0xff, 0xff));
-		dialog_image[i] = s;
-	}
 	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
 	{
 		for (std::map<int, theme_state>::iterator j = i->second.states.begin(); j != i->second.states.end(); ++j)
@@ -940,12 +819,6 @@ static void set_theme_defaults(void)
 
 	for (int i=0; i<NUM_DIALOG_COLORS; i++)
 		dialog_color[i] = default_dialog_color[i];
-
-	for (int i=0; i<NUM_DIALOG_IMAGES; i++) {
-		dialog_image_spec[i].name = "";
-		dialog_image_spec[i].scale = false;
-		dialog_image[i] = NULL;
-	}
 
 	// new theme defaults
 #ifdef HAVE_SDL_TTF
@@ -1026,11 +899,6 @@ static void unload_theme(void)
 		}
 	}
 	// Free surfaces
-	for (int i=0; i<NUM_DIALOG_IMAGES; i++)
-		if (dialog_image[i]) {
-			SDL_FreeSurface(dialog_image[i]);
-			dialog_image[i] = NULL;
-		}
 
 	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
 	{
@@ -1083,27 +951,6 @@ uint32 get_dialog_player_color(size_t colorIndex) {
         SDL_Color c;
         _get_interface_color(PLAYER_COLOR_BASE_INDEX + colorIndex, &c);
         return SDL_MapRGB(dialog_surface->format, c.r, c.g, c.b);
-}
-
-SDL_Surface *get_dialog_image(int which, int width, int height)
-{
-	assert(which >= 0 && which < NUM_DIALOG_IMAGES);
-	SDL_Surface *s = dialog_image[which];
-	if (s == NULL)
-		s = default_image;
-
-	// If no width and height is given, the surface is returned as-is and must
-	// not be freed by the caller
-	if (width == 0 && height == 0)
-		return s;
-
-	// Otherwise, a new tiled/rescaled surface is created which must be freed
-	// by the caller
-	int req_width = width ? width : s->w;
-	int req_height = height ? height : s->h;
-	SDL_Surface *s2 = dialog_image_spec[which].scale ? rescale_surface(s, req_width, req_height) : tile_surface(s, req_width, req_height);
-	SDL_SetColorKey(s2, SDL_SRCCOLORKEY, SDL_MapRGB(s2->format, 0x00, 0xff, 0xff));
-	return s2;
 }
 
 font_info *get_theme_font(int widget_type, uint16 &style)
@@ -1206,7 +1053,7 @@ SDL_Surface *get_theme_image(int widget_type, int state, int which, int width, i
 	// must be freed by the caller
 	int req_width = width ? width : s->w;
 	int req_height = height ? height : s->h;
-	SDL_Surface *s2 = dialog_image_spec[which].scale ? rescale_surface(s, req_width, req_height) : tile_surface(s, req_width, req_height);
+	SDL_Surface *s2 = scale ? rescale_surface(s, req_width, req_height) : tile_surface(s, req_width, req_height);
 	SDL_SetColorKey(s2, SDL_SRCCOLORKEY, SDL_MapRGB(s2->format, 0x00, 0xff, 0xff));
 	return s2;
 

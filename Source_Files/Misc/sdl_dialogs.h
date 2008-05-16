@@ -340,39 +340,6 @@ enum {
     TEXT_ENTRY_DISABLED_COLOR = BUTTON_COLOR
 };
 
-// Images
-enum {
-	FRAME_TL_IMAGE,
-	FRAME_T_IMAGE,
-	FRAME_TR_IMAGE,
-	FRAME_L_IMAGE,
-	FRAME_R_IMAGE,
-	FRAME_BL_IMAGE,
-	FRAME_B_IMAGE,
-	FRAME_BR_IMAGE,
-	LIST_TL_IMAGE,
-	LIST_T_IMAGE,
-	LIST_TR_IMAGE,
-	LIST_L_IMAGE,
-	LIST_R_IMAGE,
-	LIST_BL_IMAGE,
-	LIST_B_IMAGE,
-	LIST_BR_IMAGE,
-	// THUMB_T_IMAGE,
-	// THUMB_TC_IMAGE,
-	// THUMB_C_IMAGE,
-	// THUMB_BC_IMAGE,
-	// THUMB_B_IMAGE,
-//	SLIDER_L_IMAGE,
-//	SLIDER_C_IMAGE,
-//	SLIDER_R_IMAGE,
-//	SLIDER_IMAGE,
-//	BUTTON_L_IMAGE,
-//	BUTTON_C_IMAGE,
-//	BUTTON_R_IMAGE,
-	NUM_DIALOG_IMAGES
-};
-
 // Sounds
 #define DIALOG_INTRO_SOUND _snd_pattern_buffer
 #define DIALOG_OK_SOUND _snd_pattern_buffer
@@ -397,7 +364,6 @@ extern bool load_theme(FileSpecifier &theme);
 extern font_info *get_dialog_font(int which, uint16 &style);
 extern uint32 get_dialog_color(int which);
 extern uint32 get_dialog_player_color(size_t colorIndex); // ZZZ: added
-extern SDL_Surface *get_dialog_image(int which, int width = 0, int height = 0);
 extern void play_dialog_sound(int which);
 
 // new theme stuff
