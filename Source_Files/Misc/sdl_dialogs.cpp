@@ -74,7 +74,6 @@ static OpenedResourceFile theme_resources;
 static TextSpec dialog_font_spec[NUM_DIALOG_FONTS];
 static font_info *dialog_font[NUM_DIALOG_FONTS];
 static SDL_Color dialog_color[NUM_DIALOG_COLORS];
-static uint16 dialog_space[NUM_DIALOG_SPACES];
 
 static struct dialog_image_spec_type {
 	string name;
@@ -925,30 +924,6 @@ static const SDL_Color default_dialog_color[NUM_DIALOG_COLORS] = {
 	{0x00, 0x00, 0x00}, // LABEL_OUTLINE_COLOR
 };
 
-static const int default_dialog_space[NUM_DIALOG_SPACES] = {
-	6,	// FRAME_T_SPACE
-	6,	// FRAME_L_SPACE
-	6,	// FRAME_R_SPACE
-	6,	// FRAME_B_SPACE
-	8,	// SPACER_HEIGHT
-	16,	// LABEL_ITEM_SPACE
-	2,	// LIST_T_SPACE
-	2,	// LIST_L_SPACE
-	18,	// LIST_R_SPACE
-	2,	// LIST_B_SPACE
-	0,	// TROUGH_T_SPACE
-	16,	// TROUGH_R_SPACE
-	0,	// TROUGH_B_SPACE
-	16,	// TROUGH_WIDTH
-//	0,	// SLIDER_T_SPACE
-//	0,	// SLIDER_L_SPACE
-//	0,	// SLIDER_R_SPACE
-//	0,	// BUTTON_T_SPACE
-//	0,	// BUTTON_L_SPACE
-//	0,	// BUTTON_R_SPACE
-//	14	// BUTTON_HEIGHT
-};
-
 static inline SDL_Color make_color(uint8 r, uint8 g, uint8 b)
 {
 	SDL_Color c;
@@ -971,9 +946,6 @@ static void set_theme_defaults(void)
 		dialog_image_spec[i].scale = false;
 		dialog_image[i] = NULL;
 	}
-
-	for (int i=0; i<NUM_DIALOG_SPACES; i++)
-		dialog_space[i] = default_dialog_space[i];
 
 	// new theme defaults
 #ifdef HAVE_SDL_TTF
@@ -1132,12 +1104,6 @@ SDL_Surface *get_dialog_image(int which, int width, int height)
 	SDL_Surface *s2 = dialog_image_spec[which].scale ? rescale_surface(s, req_width, req_height) : tile_surface(s, req_width, req_height);
 	SDL_SetColorKey(s2, SDL_SRCCOLORKEY, SDL_MapRGB(s2->format, 0x00, 0xff, 0xff));
 	return s2;
-}
-
-uint16 get_dialog_space(size_t which)
-{
-	assert(which < NUM_DIALOG_SPACES);
-	return dialog_space[which];
 }
 
 font_info *get_theme_font(int widget_type, uint16 &style)

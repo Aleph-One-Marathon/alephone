@@ -239,7 +239,7 @@ w_chat_history::append_chat_entry(const char* playerName, uint32 player_pixel_co
 
 	int name_width = text_width(theNameBuffer, font, style);
 
-	int available_width = rect.w - name_width - get_dialog_space(LIST_L_SPACE) - get_dialog_space(LIST_R_SPACE);
+	int available_width = rect.w - name_width - get_theme_space(LIST_WIDGET, L_SPACE) - get_theme_space(LIST_WIDGET, R_SPACE);
 
 	// Badly-formed dialog (or widget, anyway) if there's not enough room to print a player's name.
 	assert(available_width > 0);

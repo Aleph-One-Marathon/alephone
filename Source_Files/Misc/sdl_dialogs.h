@@ -373,32 +373,6 @@ enum {
 	NUM_DIALOG_IMAGES
 };
 
-// Spaces
-enum {
-	FRAME_T_SPACE,
-	FRAME_L_SPACE,
-	FRAME_R_SPACE,
-	FRAME_B_SPACE,
-	SPACER_HEIGHT,
-	LABEL_ITEM_SPACE,
-	LIST_T_SPACE,
-	LIST_L_SPACE,
-	LIST_R_SPACE,
-	LIST_B_SPACE,
-	TROUGH_T_SPACE,
-	TROUGH_R_SPACE,
-	TROUGH_B_SPACE,
-	TROUGH_WIDTH,
-//	SLIDER_T_SPACE,
-//	SLIDER_L_SPACE,
-//	SLIDER_R_SPACE,
-//	BUTTON_T_SPACE,
-//	BUTTON_L_SPACE,
-//	BUTTON_R_SPACE,
-//	BUTTON_HEIGHT,
-	NUM_DIALOG_SPACES
-};
-
 // Sounds
 #define DIALOG_INTRO_SOUND _snd_pattern_buffer
 #define DIALOG_OK_SOUND _snd_pattern_buffer
@@ -424,7 +398,6 @@ extern font_info *get_dialog_font(int which, uint16 &style);
 extern uint32 get_dialog_color(int which);
 extern uint32 get_dialog_player_color(size_t colorIndex); // ZZZ: added
 extern SDL_Surface *get_dialog_image(int which, int width = 0, int height = 0);
-extern uint16 get_dialog_space(size_t which);
 extern void play_dialog_sound(int which);
 
 // new theme stuff
@@ -502,6 +475,13 @@ enum {
 	BUTTON_L_SPACE,
 	BUTTON_R_SPACE,
 	BUTTON_HEIGHT
+};
+
+enum {
+	TROUGH_T_SPACE,
+	TROUGH_R_SPACE,
+	TROUGH_B_SPACE,
+	TROUGH_WIDTH
 };
 
 enum {
