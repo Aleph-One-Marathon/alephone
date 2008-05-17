@@ -266,6 +266,7 @@ void w_button_base::mouse_move(int x, int y)
 
 void w_button_base::mouse_down(int, int)
 {
+	if (!enabled) return;
 	down = true;
 	pressed = true;
 	dirty = true;
@@ -274,6 +275,8 @@ void w_button_base::mouse_down(int, int)
 
 void w_button_base::mouse_up(int x, int y)
 {
+	if (!enabled) return;
+
 	down = false;
 	pressed = false;
 	dirty = true;
