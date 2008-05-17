@@ -1161,6 +1161,10 @@ static void controls_dialog(void *arg)
 	table->dual_add(mouse_w->label("Mouse Control"), d);
 	table->dual_add(mouse_w, d);
 
+	w_toggle *mouse_acceleration_w = new w_toggle(input_preferences->mouse_acceleration);
+	table->dual_add(mouse_acceleration_w->label("Accelerate Mouse"), d);
+	table->dual_add(mouse_acceleration_w, d);
+
 	w_toggle *invert_mouse_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
 	table->dual_add(invert_mouse_w->label("Invert Mouse"), d);
 	table->dual_add(invert_mouse_w, d);
@@ -1283,6 +1287,12 @@ static void controls_dialog(void *arg)
 
 		if (flags != input_preferences->modifiers) {
 			input_preferences->modifiers = flags;
+			changed = true;
+		}
+
+		if (mouse_acceleration_w->get_selection() != input_preferences->mouse_acceleration)
+		{
+			input_preferences->mouse_acceleration = mouse_acceleration_w->get_selection();
 			changed = true;
 		}
 
