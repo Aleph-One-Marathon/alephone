@@ -2576,8 +2576,7 @@ public:
 		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 6);
 		placer->dual_add(chat_history_w, m_dialog);
 
-		w_text_entry* chatentry_w = new w_text_entry(240, "");
-		chatentry_w->set_with_textbox();
+		w_chat_entry* chatentry_w = new w_chat_entry(240);
 		chatentry_w->enable_mac_roman_input();
 
 		horizontal_placer *say_placer = new horizontal_placer;
@@ -2703,8 +2702,7 @@ public:
 		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 7);
 		postjoin_placer->dual_add(chat_history_w, m_dialog);
 
-		w_text_entry* chatentry_w = new w_text_entry(240, "");
-		chatentry_w->set_with_textbox();
+		w_chat_entry* chatentry_w = new w_chat_entry(240);
 		chatentry_w->enable_mac_roman_input();
 
 		horizontal_placer *say_placer = new horizontal_placer;

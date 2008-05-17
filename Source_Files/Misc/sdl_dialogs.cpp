@@ -71,8 +71,6 @@ static SDL_Surface *default_image = NULL;
 
 static OpenedResourceFile theme_resources;
 
-static TextSpec dialog_font_spec[NUM_DIALOG_FONTS];
-static font_info *dialog_font[NUM_DIALOG_FONTS];
 static SDL_Color dialog_color[NUM_DIALOG_COLORS];
 
 struct dialog_image_spec_type {
@@ -308,81 +306,9 @@ static XML_DColorParser CursorTextEntryColorParser(TEXT_ENTRY_WIDGET, CURSOR_STA
 static XML_DColorParser SliderColorParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
 static XML_DColorParser SliderThumbColorParser(SLIDER_THUMB, DEFAULT_STATE, 3);
 
-
-
 class XML_DFontParser : public XML_ElementParser {
 public:
-	XML_DFontParser(int i) : XML_ElementParser("font"), idx(i) {}
-	
-	bool Start()
-	{
-		have_id = have_size = false;
-		style = 0;
-		return true;
-	}
-
-	bool HandleAttribute(const char *tag, const char *value)
-	{
-		if (StringsEqual(tag, "id")) {
-			if (ReadNumericalValue(value, "%d", id))
-				have_id = true;
-			else
-				return false;
-		} else if (StringsEqual(tag, "size")) {
-			if (ReadNumericalValue(value, "%d", size))
-				have_size = true;
-			else
-				return false;
-		} else if (StringsEqual(tag, "style")) {
-			return ReadNumericalValue(value, "%d", style);
-		} else if (StringsEqual(tag, "file")) {
-			normal = value;
-			have_path = true;
-			return true;
-		} else if (StringsEqual(tag, "bold_file")) {
-			bold = value;
-			return true;
-		} else if (StringsEqual(tag, "italic_file")) {
-			oblique = value;
-			return true;
-		} else if (StringsEqual(tag, "bold_italic_file")) {
-			bold_oblique = value;
-			return true;
-		} else {
-			UnrecognizedTag();
-			return false;
-		}
-		return true;
-	}
-
-	bool AttributesDone()
-	{
-		if (!(have_id || have_path) || !have_size) {
-			AttribsMissing();
-			return false;
-		}
-		dialog_font_spec[idx].font = id;
-		dialog_font_spec[idx].style = style;
-		dialog_font_spec[idx].size = size;
-		dialog_font_spec[idx].normal = normal;
-		dialog_font_spec[idx].bold = bold;
-		dialog_font_spec[idx].oblique = oblique;
-		dialog_font_spec[idx].bold_oblique = bold_oblique;
-		return true;
-	}
-
-private:
-	bool have_id, have_size, have_path;
-
-	int idx;
-	int id, size, style;
-
-	std::string normal, bold, oblique, bold_oblique;
-};
-
-class XML_DTFontParser : public XML_ElementParser {
-public:
-	XML_DTFontParser(int _type) : XML_ElementParser("font"), type(_type) {}
+	XML_DFontParser(int _type) : XML_ElementParser("font"), type(_type) {}
 	
 	bool Start()
 	{
@@ -450,13 +376,13 @@ private:
 	std::string normal, bold, oblique, bold_oblique;
 };
 
-static XML_DTFontParser TitleFontParser(TITLE_WIDGET);
-static XML_DTFontParser ButtonFontParser(BUTTON_WIDGET);
-static XML_DTFontParser LabelFontParser(LABEL_WIDGET);
-static XML_DTFontParser ItemFontParser(ITEM_WIDGET);
-static XML_DTFontParser MessageFontParser(MESSAGE_WIDGET);
-static XML_DTFontParser TextEntryFontParser(TEXT_ENTRY_WIDGET);
-static XML_DFontParser TextBoxFontParser(TEXT_BOX_FONT);
+static XML_DFontParser TitleFontParser(TITLE_WIDGET);
+static XML_DFontParser ButtonFontParser(BUTTON_WIDGET);
+static XML_DFontParser LabelFontParser(LABEL_WIDGET);
+static XML_DFontParser ItemFontParser(ITEM_WIDGET);
+static XML_DFontParser MessageFontParser(MESSAGE_WIDGET);
+static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_WIDGET);
+static XML_DFontParser ChatEntryFontParser(CHAT_ENTRY);
 
 class XML_DFrameParser : public XML_ElementParser {
 public:
@@ -564,8 +490,8 @@ static XML_ElementParser ActiveTextEntryParser("active");
 static XML_ElementParser DisabledTextEntryParser("disabled");
 static XML_ElementParser CursorTextEntryParser("cursor");
 
-struct XML_TextBoxParser : public XML_ElementParser { XML_TextBoxParser() : XML_ElementParser("text_box") {}};
-static XML_TextBoxParser TextBoxParser;
+struct XML_ChatEntryParser : public XML_ElementParser { XML_ChatEntryParser() : XML_ElementParser("chat_entry") {}};
+static XML_ChatEntryParser ChatEntryParser;
 
 class XML_TroughParser : public XML_ElementParser {
 public:
@@ -705,8 +631,8 @@ XML_ElementParser *Theme_GetParser()
 	TextEntryParser.AddChild(&CursorTextEntryParser);
 	ThemeParser.AddChild(&TextEntryParser);
 
-	TextBoxParser.AddChild(&TextBoxFontParser);
-	ThemeParser.AddChild(&TextBoxParser);
+	ChatEntryParser.AddChild(&ChatEntryFontParser);
+	ThemeParser.AddChild(&ChatEntryParser);
 
 	ListParser.AddChild(&ListImageParser);
 	ListParser.AddChild(&TroughParser);
@@ -752,10 +678,6 @@ bool load_theme(FileSpecifier &theme)
 
 	// Load fonts
 	data_search_path.insert(data_search_path.begin(), theme);
-	for (int i=0; i<NUM_DIALOG_FONTS; i++)
-	{
-		dialog_font[i] = load_font(dialog_font_spec[i]);
-	}
 	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
 	{
 		i->second.font = load_font(i->second.font_spec);
@@ -814,9 +736,6 @@ static inline SDL_Color make_color(uint8 r, uint8 g, uint8 b)
 
 static void set_theme_defaults(void)
 {
-	for (int i=0; i<NUM_DIALOG_FONTS; i++)
-		dialog_font[i] = NULL;
-
 	for (int i=0; i<NUM_DIALOG_COLORS; i++)
 		dialog_color[i] = default_dialog_color[i];
 
@@ -884,12 +803,6 @@ static void set_theme_defaults(void)
 static void unload_theme(void)
 {
 	// Unload fonts
-	for (int i=0; i<NUM_DIALOG_FONTS; i++)
-		if (dialog_font[i]) {
-			unload_font(dialog_font[i]);
-			dialog_font[i] = NULL;
-		}
-
 	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
 	{
 		if (i->second.font)
@@ -925,19 +838,6 @@ static void unload_theme(void)
 /*
  *  Get dialog font/color/image/space from theme
  */
-
-font_info *get_dialog_font(int which, uint16 &style)
-{
-	assert(which >= 0 && which < NUM_DIALOG_FONTS);
-	font_info *font = dialog_font[which];
-	if (font) {
-		style = dialog_font_spec[which].style;
-		return font;
-	} else {
-		style = styleNormal;
-		return default_font;
-	}
-}
 
 uint32 get_dialog_color(int which)
 {

@@ -99,8 +99,7 @@ public:
 
 		horizontal_placer *entry_cancel_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
 
-		w_text_entry* chatentry_w = new w_text_entry(240, "");
-		chatentry_w->set_with_textbox();
+		w_chat_entry* chatentry_w = new w_chat_entry(240);
 		chatentry_w->enable_mac_roman_input();
 
 		entry_cancel_placer->dual_add(chatentry_w->label("Say:"), d);

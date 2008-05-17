@@ -94,9 +94,10 @@
   <cursor><color red="0.875" green="1" blue="0.875"/></cursor>
 </text_entry>
 
-<text_box>
+<!-- Metaserver and pre-game chat -->
+<chat_entry>
   <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
-</text_box>
+</chat_entry>
 
 <!-- List selection widget -->
 <list top="10" bottom="12" left="10" right="32">

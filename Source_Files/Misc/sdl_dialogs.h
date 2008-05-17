@@ -359,9 +359,6 @@ extern void initialize_dialogs(FileSpecifier &theme);
 
 extern bool load_theme(FileSpecifier &theme);
 
-//extern const sdl_font_info *get_dialog_font(int which, uint16 &style);
-//extern ttf_and_sdl_font_info *get_dialog_font(int which, uint16 &style);
-extern font_info *get_dialog_font(int which, uint16 &style);
 extern uint32 get_dialog_color(int which);
 extern uint32 get_dialog_player_color(size_t colorIndex); // ZZZ: added
 extern void play_dialog_sound(int which);
@@ -391,7 +388,8 @@ enum {
 	SLIDER_WIDGET,
 	SLIDER_THUMB,
 	LIST_WIDGET,
-	LIST_THUMB
+	LIST_THUMB,
+	CHAT_ENTRY
 };
 
 enum {

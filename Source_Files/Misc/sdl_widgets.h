@@ -451,12 +451,6 @@ public:
         // (thought: this probably ought to be unified with w_select selection changed callback)
         void	set_value_changed_callback(Callback func) { value_changed_callback = func; }
 
-	// ghs: a temporary hack to set the text_font to match text_box's font
-	// call this immediately after creating the widget!
-	void set_with_textbox() { 
-	  font = get_dialog_font(TEXT_BOX_FONT, style);
-	}
-
 	void enable_mac_roman_input(bool enable = true) { enable_mac_roman = enable; }
 	void place(const SDL_Rect& r, placement_flags flags);
 
@@ -478,7 +472,13 @@ private:
 	bool enable_mac_roman; // enable MacRoman input
 };
 
-
+class w_chat_entry : public w_text_entry {
+public:
+	w_chat_entry(size_t max_c) : w_text_entry(max_c, "") {
+		font = get_theme_font(CHAT_ENTRY, style);
+		saved_min_height =  (int16) font->get_ascent() + font->get_descent() + font->get_leading();
+	}
+};
 /*
  *  Number entry widget
  */
@@ -955,8 +955,8 @@ private:
 public:
 	w_colorful_chat(int width, int numRows) :
 		w_list<ColoredChatEntry>(entries, width, numRows, 0),
-		kNameWidth(text_width("M", font, style | styleShadow) * 9 - taper_width())
-		{ num_items = 0; font = get_dialog_font(TEXT_BOX_FONT, style); saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE); }
+		kNameWidth(text_width("M", get_theme_font(CHAT_ENTRY, style), style | styleShadow) * 9 - taper_width())
+		{ num_items = 0; font = get_theme_font(CHAT_ENTRY, style); saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE); }
 
 	virtual bool is_selectable(void) const { return true; }
 
