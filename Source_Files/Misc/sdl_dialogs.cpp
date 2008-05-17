@@ -2054,6 +2054,10 @@ void dialog::event(SDL_Event &e)
   }
   
   if (!handled) {
+	  // First pass event to active widget (which may modify it)
+	  if (active_widget)
+		  active_widget->event(e);
+
 	  // handle mouse events
 	  if (e.type == SDL_MOUSEMOTION)
 	  {
@@ -2100,51 +2104,42 @@ void dialog::event(SDL_Event &e)
 			  
 			  mouse_widget = 0;
 		  }
-	  }	  
-	  else
-  // First pass event to active widget (which may modify it)
-  if (active_widget)
-    active_widget->event(e);
-	
-	// Remaining events handled by dialog
-	switch (e.type) {
-
-		// Key pressed
-		case SDL_KEYDOWN:
-			switch (e.key.keysym.sym) {
-				case SDLK_ESCAPE:		// ESC = Exit dialog
-					quit(-1);
-					break;
-				case SDLK_UP:			// Up = Activate previous widget
-				case SDLK_LEFT:
-					activate_prev_widget();
-					break;
-				case SDLK_DOWN:			// Down = Activate next widget
-				case SDLK_RIGHT:
-					activate_next_widget();
-					break;
-				case SDLK_TAB:
-					if (e.key.keysym.mod & KMOD_SHIFT)
-						activate_prev_widget();
-					else
-						activate_next_widget();
-					break;
-			case SDLK_RETURN: 		// Return = Action on widget
-				if (active_widget) active_widget->click(0, 0);
-				break;
-			case SDLK_F9:			// F9 = Screen dump
-				dump_screen();
-				break;
-			default:
-				break;
-			}
-			break;
-
+	  }
+	  else if (e.type == SDL_KEYDOWN)
+	  {
+		  switch (e.key.keysym.sym) {
+		  case SDLK_ESCAPE:		// ESC = Exit dialog
+			  quit(-1);
+			  break;
+		  case SDLK_UP:			// Up = Activate previous widget
+		  case SDLK_LEFT:
+			  activate_prev_widget();
+			  break;
+		  case SDLK_DOWN:			// Down = Activate next widget
+		  case SDLK_RIGHT:
+			  activate_next_widget();
+			  break;
+		  case SDLK_TAB:
+			  if (e.key.keysym.mod & KMOD_SHIFT)
+				  activate_prev_widget();
+			  else
+				  activate_next_widget();
+			  break;
+		  case SDLK_RETURN: 		// Return = Action on widget
+			  if (active_widget) active_widget->click(0, 0);
+			  break;
+		  case SDLK_F9:			// F9 = Screen dump
+			  dump_screen();
+			  break;
+		  default:
+			  break;
+		  }
+	  }
+	  else if (e.type == SDL_QUIT)
+	  {
 		// Quit requested
-		case SDL_QUIT:
 			exit(0);
-			break;
-	}
+	  }
   }
 	// Redraw dirty widgets
         draw_dirty_widgets();
