@@ -175,25 +175,4 @@ private:
 	ChatHistory* m_history;
 };
 
-class HistoricTextboxWidget : ChatHistory::NotificationAdapter
-{
-public:
-	HistoricTextboxWidget (TextboxWidget* componentWidget)
-		: m_componentWidget (componentWidget)
-		, m_history (NULL)
-		{}
-	
-	virtual ~HistoricTextboxWidget ();
-	
-	void attachHistory (ChatHistory* history);
-	
-	virtual void contentAdded(const ColoredChatEntry& e);
-	virtual void contentCleared () { m_componentWidget->Clear (); }
-	
-private:
-	std::string formatEntry(const ColoredChatEntry& e);
-	TextboxWidget* m_componentWidget;
-	ChatHistory* m_history;
-};
-
 #endif

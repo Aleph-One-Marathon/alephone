@@ -2072,48 +2072,6 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 }
 
 
-void w_text_box::append_text(const string& s)
-{
-	if (s.empty ()) {
-		get_owning_dialog()->draw_dirty_widgets();
-		return;
-	}
-		
-	int available_width = rect.w - get_theme_space(LIST_WIDGET, L_SPACE) - get_theme_space(LIST_WIDGET, R_SPACE);
-	size_t usable_characters = trunc_text(s.c_str (), available_width, font, style);
-	
-	string::const_iterator middle;
-	if (usable_characters != s.size ()) {
-		size_t last_space = s.find_last_of(' ', usable_characters);
-		if (last_space != 0 && last_space < usable_characters)
-			middle = s.begin() + last_space;
-		else
-			middle = s.begin() + usable_characters;
-	} else
-		middle = s.begin() + usable_characters;
-
-	bool save_top_item = top_item < num_items - shown_items;
-	size_t saved_top_item = top_item;
-	text_lines.push_back (string (s.begin(), middle));
-
-	num_items = text_lines.size();
-	new_items();
-	if (save_top_item) {
-		set_top_item(saved_top_item);
-	} else if(num_items > shown_items) {
-		set_top_item(num_items - shown_items);
-	}
-	
-	append_text (string (middle, s.end ()));
-}
-
-void w_text_box::draw_item(vector<string>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const
-{
-    int computed_y = y + font->get_ascent();
-
-    draw_text(s, (*i).c_str (), x, computed_y, get_theme_color(MESSAGE_WIDGET, DEFAULT_STATE, FOREGROUND_COLOR), font, style);
-}
-
 void w_colorful_chat::append_entry(const ColoredChatEntry& e)
 {
 	if (e.message.empty())

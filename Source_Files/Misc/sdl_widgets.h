@@ -929,33 +929,6 @@ private:
 
 
 
-//////// w_text_box ////////
-// Based on w_chat_history, but more general
-class w_text_box : public w_list<string> {
-private:    
-	vector<string> text_lines;
-
-public:
-	w_text_box(int width, int numRows) :
-	  w_list<string>(text_lines, width, numRows, 0)
-	  { num_items = 0; font = get_dialog_font(TEXT_BOX_FONT, style); }
-		// must update num_items since text_lines was not initialized when w_list<> acted on it.
-
-	// Widget selectable?
-	virtual bool is_selectable(void) const {return true;}
-
-	void item_selected() {}
-
-	void append_text(const string&);
-	
-	void clear() { text_lines.clear (); num_items = 0; new_items (); }
-	
-	~w_text_box() {}
-	
-private:
-	void draw_item(vector<string>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
-};
-
 struct ColoredChatEntry
 {
 	enum Type {
@@ -1266,21 +1239,6 @@ private:
 	w_file_chooser* m_file_chooser;
 };
 
-
-class TextboxWidget : public SDLWidgetWidget
-{
-public:
-	TextboxWidget (w_text_box* text_box)
-	: SDLWidgetWidget (text_box)
-	, m_text_box (text_box)
-	{}
-
-	void AppendString (const string& s) { m_text_box->append_text (s); }
-	void Clear () { m_text_box->clear (); }
-
-private:
-	w_text_box* m_text_box;
-};
 
 class GameListWidget
 {
