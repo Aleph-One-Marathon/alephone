@@ -149,20 +149,20 @@ void w_crosshair_display::draw(SDL_Surface *s) const
 	r.w = 1;
 	r.h = surface->h;
 	
-	SDL_FillRect(surface, &r, get_dialog_color(MESSAGE_COLOR));
+	SDL_FillRect(surface, &r, get_theme_color(DIALOG_FRAME, FRAME_COLOR));
 
 	// top
 	r.w = surface->w;
 	r.h = 1;
 	
-	SDL_FillRect(surface, &r, get_dialog_color(MESSAGE_COLOR));
+	SDL_FillRect(surface, &r, get_theme_color(DIALOG_FRAME, FRAME_COLOR));
 
 	// right
 	r.x = surface->w - 1;
 	r.w = 1;
 	r.h = surface->h;
 
-	SDL_FillRect(surface, &r, get_dialog_color(MESSAGE_COLOR));
+	SDL_FillRect(surface, &r, get_theme_color(DIALOG_FRAME, FRAME_COLOR));
 
 	// bottom
 	r.x = 0;
@@ -170,7 +170,7 @@ void w_crosshair_display::draw(SDL_Surface *s) const
 	r.w = surface->w;
 	r.h = 1;
 
-	SDL_FillRect(surface, &r, get_dialog_color(MESSAGE_COLOR));
+	SDL_FillRect(surface, &r, get_theme_color(DIALOG_FRAME, FRAME_COLOR));
 	
 	bool Old_Crosshairs_IsActive = Crosshairs_IsActive();
 	Crosshairs_SetActive(true);

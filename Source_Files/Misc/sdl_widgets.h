@@ -600,7 +600,7 @@ private:
 
 class w_color_picker : public widget {
 public:
-	w_color_picker(rgb_color &color) : widget(MESSAGE_FONT), m_color(color) {
+	w_color_picker(rgb_color &color) : widget(MESSAGE_WIDGET), m_color(color) {
 		saved_min_width = 48;
 		saved_min_height = font->get_line_height();
 	}
@@ -878,7 +878,7 @@ private:
 			int16 x, int16 y, uint16 width, bool selected) const {
 		y += font->get_ascent();
 		set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
-		draw_text(s, w_items_in_room_get_name_of_item(item).c_str(), x, y, selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+		draw_text(s, w_items_in_room_get_name_of_item(item).c_str(), x, y, selected ? get_theme_color(ITEM_WIDGET, ACTIVE_STATE) : get_theme_color(ITEM_WIDGET, DEFAULT_STATE), font, style);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 

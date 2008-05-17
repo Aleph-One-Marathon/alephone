@@ -177,10 +177,10 @@ w_found_players::draw_item(vector<prospective_joiner_info>::const_iterator i, SD
 	//if(text_length > SSLP_MAX_NAME_LENGTH - 1)
 	//    text_length = SSLP_MAX_NAME_LENGTH - 1;
 	if ((*i).gathering) {
-	  draw_text(s, theNameBuffer, computed_x, computed_y, get_dialog_color(ITEM_DISABLED_COLOR), font, style);
+		draw_text(s, theNameBuffer, computed_x, computed_y, get_theme_color(ITEM_WIDGET, DISABLED_STATE), font, style);
 	} else {
 	  draw_text(s, /*&((*i)->sslps_name[1]), text_length,*/ theNameBuffer, computed_x, computed_y,
-		    selected ? get_dialog_color(ITEM_ACTIVE_COLOR) : get_dialog_color(ITEM_COLOR), font, style);
+		    selected ? get_theme_color(ITEM_WIDGET, ACTIVE_STATE) : get_theme_color(ITEM_WIDGET, DEFAULT_STATE), font, style);
 	}
 }
 
@@ -268,7 +268,7 @@ get_close_spaced_width(int available_width, size_t num_items) {
 
 
 w_players_in_game2::w_players_in_game2(bool inPostgameLayout) :
-            widget(MESSAGE_FONT), displaying_actual_information(false), postgame_layout(inPostgameLayout),
+            widget(MESSAGE_WIDGET), displaying_actual_information(false), postgame_layout(inPostgameLayout),
             draw_carnage_graph(false), num_valid_net_rankings(0), selected_player(NONE),
             clump_players_by_team(false), draw_scores_not_carnage(false)
 {

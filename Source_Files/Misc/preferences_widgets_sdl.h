@@ -109,14 +109,14 @@ public:
 	{
 		y += font->get_ascent();
 
-		int color;
+		uint32 color;
 		if (i->selectable) {
-			color = selected ? ITEM_ACTIVE_COLOR : ITEM_COLOR;
+			color = selected ? get_theme_color(ITEM_WIDGET, ACTIVE_STATE) : get_theme_color(ITEM_WIDGET, DEFAULT_STATE);
 		} else
-			color = LABEL_COLOR;
+			color = get_theme_color(LABEL_WIDGET, DEFAULT_STATE);
 
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, i->name, x + i->indent * 8, y, get_dialog_color(color), font, style, true);
+		draw_text(s, i->name, x + i->indent * 8, y, color, font, style, true);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 

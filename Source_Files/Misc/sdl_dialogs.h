@@ -288,58 +288,6 @@ private:
 // Pointer to top-level dialog, NULL = no dialog active
 extern dialog *top_dialog;
 
-// Fonts
-enum {
-	TITLE_FONT,
-	BUTTON_FONT,
-	LABEL_FONT,
-	ITEM_FONT,
-	MESSAGE_FONT,
-	TEXT_ENTRY_FONT,
-	TEXT_BOX_FONT,
-	NUM_DIALOG_FONTS
-};
-
-// Colors
-enum {
-	TITLE_COLOR = 1,
-	BUTTON_COLOR,
-	BUTTON_ACTIVE_COLOR,
-	LABEL_COLOR,
-	LABEL_ACTIVE_COLOR,
-	LABEL_OUTLINE_COLOR,
-	ITEM_COLOR,
-	ITEM_ACTIVE_COLOR,
-	MESSAGE_COLOR,
-	TEXT_ENTRY_COLOR,
-	TEXT_ENTRY_ACTIVE_COLOR,
-	TEXT_ENTRY_CURSOR_COLOR,
-	KEY_BINDING_COLOR,
-	NUM_DIALOG_COLORS,
-	
-    
-    // ZZZ: these should eventually be "real" colors gotten from MML theme, but I don't want to
-    // get into that at this point.  It should be straightforward, so have at it ;)
-    // Actually while I'm talking about this, really a better way would probably be to have the
-    // MML do something like (I know little about XML/MML, so you'll have to interpret this a bit)
-    // <widget>
-    // <state default> <property> <property> etc. </state>
-    // <state enabled> <property> etc. </state>
-    // <state active> <property> etc. </state>
-    // <state disabled> <property> etc. </state>
-    // </widget>
-    // Anything not specified in other substates would be gotten from the default state.  This way
-    // other states like "pressed" or whatever could be easily added, and most widgets would get
-    // reasonable default values.  Also, widgets with graphics (like buttons and lists) could easily
-    // use different graphics for different states.
-    // Maybe the default state need not be explicitly defined - it could get whatever properties are
-    // listed for the widget (that are not claimed inside a different <state></state> pair).
-    BUTTON_DISABLED_COLOR   = BUTTON_COLOR,
-    LABEL_DISABLED_COLOR    = BUTTON_COLOR,
-    ITEM_DISABLED_COLOR     = BUTTON_COLOR,
-    TEXT_ENTRY_DISABLED_COLOR = BUTTON_COLOR
-};
-
 // Sounds
 #define DIALOG_INTRO_SOUND _snd_pattern_buffer
 #define DIALOG_OK_SOUND _snd_pattern_buffer
@@ -359,7 +307,6 @@ extern void initialize_dialogs(FileSpecifier &theme);
 
 extern bool load_theme(FileSpecifier &theme);
 
-extern uint32 get_dialog_color(int which);
 extern uint32 get_dialog_player_color(size_t colorIndex); // ZZZ: added
 extern void play_dialog_sound(int which);
 

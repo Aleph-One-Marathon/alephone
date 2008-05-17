@@ -71,8 +71,6 @@ static SDL_Surface *default_image = NULL;
 
 static OpenedResourceFile theme_resources;
 
-static SDL_Color dialog_color[NUM_DIALOG_COLORS];
-
 struct dialog_image_spec_type {
 	string name;
 	bool scale;
@@ -708,23 +706,6 @@ bool load_theme(FileSpecifier &theme)
  *  Set theme default values
  */
 
-static const SDL_Color default_dialog_color[NUM_DIALOG_COLORS] = {
-	{0x00, 0x00, 0x00}, // BACKGROUND COLOR
-	{0xc0, 0xc0, 0xc0}, // TITLE_COLOR
-	{0xc0, 0x00, 0x00}, // BUTTON_COLOR
-	{0xff, 0xff, 0xff}, // BUTTON_ACTIVE_COLOR
-	{0x20, 0x20, 0xff}, // LABEL_COLOR
-	{0x80, 0x80, 0xff}, // LABEL_ACTIVE_COLOR
-	{0x40, 0xff, 0x40}, // ITEM_COLOR
-	{0xff, 0xff, 0xff}, // ITEM_ACTIVE_COLOR
-	{0xff, 0xff, 0xff}, // MESSAGE_COLOR
-	{0x40, 0xff, 0x40}, // TEXT_ENTRY_COLOR
-	{0xff, 0xff, 0xff}, // TEXT_ENTRY_ACTIVE_COLOR
-	{0xff, 0xff, 0xff}, // TEXT_ENTRY_CURSOR_COLOR
-	{0x60, 0x60, 0x60},  // KEY_BINDING_COLOR
-	{0x00, 0x00, 0x00}, // LABEL_OUTLINE_COLOR
-};
-
 static inline SDL_Color make_color(uint8 r, uint8 g, uint8 b)
 {
 	SDL_Color c;
@@ -736,9 +717,6 @@ static inline SDL_Color make_color(uint8 r, uint8 g, uint8 b)
 
 static void set_theme_defaults(void)
 {
-	for (int i=0; i<NUM_DIALOG_COLORS; i++)
-		dialog_color[i] = default_dialog_color[i];
-
 	// new theme defaults
 #ifdef HAVE_SDL_TTF
 	dialog_theme[TITLE_WIDGET].font_spec.size = 24;
@@ -839,11 +817,6 @@ static void unload_theme(void)
  *  Get dialog font/color/image/space from theme
  */
 
-uint32 get_dialog_color(int which)
-{
-	assert(which >= 0 && which < NUM_DIALOG_COLORS);
-	return SDL_MapRGB(dialog_surface->format, dialog_color[which].r, dialog_color[which].g, dialog_color[which].b);
-}
 
 // ZZZ: added this for convenience; taken from w_player_color::draw().
 // Obviously, this color does not come from the theme.

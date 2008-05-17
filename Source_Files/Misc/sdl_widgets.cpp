@@ -1100,8 +1100,8 @@ void w_key::draw(SDL_Surface *s) const
 	int16 x = rect.x + key_x;
 	if (binding) {
 		SDL_Rect r = {x, rect.y, text_width(WAITING_TEXT, font, style), rect.h};
-		SDL_FillRect(s, &r, get_dialog_color(KEY_BINDING_COLOR));
-		draw_text(s, WAITING_TEXT, x, y, get_dialog_color(ITEM_ACTIVE_COLOR), font, style);
+//		SDL_FillRect(s, &r, get_dialog_color(KEY_BINDING_COLOR));
+		draw_text(s, WAITING_TEXT, x, y, get_theme_color(ITEM_WIDGET, ACTIVE_STATE), font, style);
 	} else {
         int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 
@@ -1834,7 +1834,7 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	uint32 fg;
 	if (selected)
 	{
-		fg = get_dialog_color(ITEM_ACTIVE_COLOR);
+		fg = get_theme_color(ITEM_WIDGET, ACTIVE_STATE);
 	}
 	else if (!item.compatible())
 	{
@@ -2055,7 +2055,7 @@ void w_players_in_room::draw_item(const MetaserverPlayerInfo& item, SDL_Surface*
 	uint32 color;
 	if (selected)
 	{
-		color = get_dialog_color(ITEM_ACTIVE_COLOR);
+		color = get_theme_color(ITEM_WIDGET, ACTIVE_STATE);
 	}
 	else if (item.away())
 	{
