@@ -152,6 +152,9 @@ public:
 		const GameListMessage::GameListEntry *game = gMetaserverClient->find_game(gMetaserverClient->game_target());
 		if (game)
 		{
+			GameListMessage::GameListEntry cachedGame = *game;
+			game = &cachedGame;
+
 			dialog info_dialog;
 			vertical_placer *placer = new vertical_placer;
 			placer->dual_add(new w_title("GAME INFO"), info_dialog);
@@ -240,7 +243,7 @@ public:
 			
 			info_dialog.set_widget_placer(placer);
 			info_dialog.set_processing_function(bind(&SdlMetaserverClientUi::pump, this, _1));
-			if (info_dialog.run() == 0)
+			if (info_dialog.run() == 0 && gMetaserverClient->find_game(gMetaserverClient->game_target()))
 			{
 				JoinGame(*game);
 			}
