@@ -230,9 +230,6 @@ struct environment_preferences_data
 	bool group_by_directory;	// if not, display popup as one giant flat list
 	bool reduce_singletons;		// make groups of a single element part of a larger parent group
 
-	// ZZZ: Hmm and these aren't even that
-	bool non_bungie_warning;	// if not, then don't pop up warning about non-Bungie content
-
 	// ghs: are themes part of the environment? they are now
 	bool smooth_text;
 };

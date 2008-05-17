@@ -1981,7 +1981,6 @@ void write_preferences(
 	fprintf(F,"  sounds_mod_date=\"%lu\"\n",uint32(environment_preferences->sounds_mod_date));
 	fprintf(F,"  group_by_directory=\"%s\"\n",BoolString(environment_preferences->group_by_directory));
 	fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
-	fprintf(F,"  non_bungie_warning=\"%s\"\n",BoolString(environment_preferences->non_bungie_warning));
 	fprintf(F,"  smooth_text=\"%s\"\n", BoolString(environment_preferences->smooth_text));
 	fprintf(F,">\n");
 	fprintf(F,"</environment>\n\n");
@@ -2177,7 +2176,6 @@ static void default_environment_preferences(environment_preferences_data *prefer
 
 	preferences->group_by_directory = true;
 	preferences->reduce_singletons = false;
-	preferences->non_bungie_warning = true;
 	preferences->smooth_text = true;
 }
 
@@ -3371,7 +3369,8 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	}
 	else if (StringsEqual(Tag,"non_bungie_warning"))
 	{
-		return ReadBooleanValue(Value,environment_preferences->non_bungie_warning);
+		// obsolete
+		return true;
 	}
 	else if (StringsEqual(Tag,"smooth_text"))
 	{
