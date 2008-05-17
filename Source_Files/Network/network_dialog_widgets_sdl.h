@@ -80,46 +80,6 @@ private:
 };
 
 
-
-
-//////// w_chat_history ////////
-// This lists things people have said in a chat history scrollback buffer thingy.
-struct chat_entry {
-    uint32		player_pixel_color;
-    uint32		team_pixel_color;
-    char*		player_name;
-    char*		chat_text;
-};
-
-class w_chat_history : public w_list<chat_entry> {
-private:    
-    vector<chat_entry>	chat_lines;
-
-public:
-    w_chat_history(int width, int numRows) :
-        w_list<chat_entry>(chat_lines, width, numRows, 0)
-      { num_items = 0; font = get_dialog_font(TEXT_BOX_FONT, style);}
-        // must update num_items since chat_lines was not initialized when w_list<> acted on it.
-        
-	// Widget selectable?
-	virtual bool is_selectable(void) const {return true;}
-
-    void item_selected() {}
-    
-    // player may be NULL, to put informational messages into the chat buffer.
-    void append_chat_entry(const player_info* player, const char* chat_text);
-
-	void append_chat_entry(const char* playerName, uint32 player_pixel_color, uint32 team_pixel_color, const char* text);
-    
-	~w_chat_history();
-private:
-    void append_chat_entry(const chat_entry& entry);
-
-    void draw_item(vector<chat_entry>::const_iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
-};
-
-
-
 //////// w_players_in_game2 ////////
 // This serves both as a "who's in the game?" widget for gather/join AND as the graph widget in
 // the Postgame Carnage Report.  Yes, there WAS a w_players_in_game, that was used just for the
