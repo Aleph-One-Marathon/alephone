@@ -794,10 +794,14 @@ static void set_theme_defaults(void)
 	dialog_theme[TEXT_ENTRY_WIDGET].states[CURSOR_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[TEXT_ENTRY_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
 
+#ifdef HAVE_SDL_TTF
+	dialog_theme[BUTTON_WIDGET].font_spec.size = 14;
+#endif
+
 	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_T_SPACE] = 4;
 	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_L_SPACE] = 4;
 	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_R_SPACE] = 4;
-	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_HEIGHT] = 22;
+	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_HEIGHT] = 24;
 	dialog_theme[BUTTON_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
 	dialog_theme[BUTTON_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[BUTTON_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
