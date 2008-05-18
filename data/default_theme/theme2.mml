@@ -55,7 +55,7 @@
   </pressed>
 </button>
 
-<tiny_button top="1" left="14" right="14" height="20">
+<tiny_button top="1" left="12" right="12" height="20">
   <font file="bankgthd.ttf" size="14" style="0"/>
   <color red="0.5" green="0.5" blue="0.5"/>
   <image index="0" file="tiny_button_l.bmp" scale="false"/>
