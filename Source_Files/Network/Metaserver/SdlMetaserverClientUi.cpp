@@ -55,7 +55,8 @@ class SdlMetaserverClientUi : public MetaserverClientUi
 public:
 	SdlMetaserverClientUi() : m_disconnected(false)
 	{
-		vertical_placer *placer = new vertical_placer(4);
+		const int kSpace = 4;
+		vertical_placer *placer = new vertical_placer(kSpace);
 		placer->dual_add(new w_title("LOCATE NETWORK GAMES"), d);
 
 		placer->add(new w_spacer(), true);
@@ -73,6 +74,9 @@ public:
 		);
 
 		players_games_placer->dual_add(games_in_room_w, d);
+		
+		players_games_placer->add_row(new w_spacer(kSpace), true);
+
 		horizontal_placer *player_button_placer = new horizontal_placer;
 		w_tiny_button *mute_w = new w_tiny_button("IGNORE");
 		mute_w->set_enabled(false);
@@ -80,9 +84,14 @@ public:
 		players_games_placer->add(player_button_placer, true);
 
 		horizontal_placer *game_button_placer = new horizontal_placer;
+		game_button_placer->add_flags(placeable::kFill);
+		game_button_placer->add(new w_spacer, true);
+		game_button_placer->add_flags(placeable::kDefault);
 		w_tiny_button *w_game_info = new w_tiny_button("INFO");
 		w_game_info->set_enabled(false);
 		game_button_placer->dual_add(w_game_info, d);
+
+		game_button_placer->add(new w_spacer(kSpace), true);
 
 		w_tiny_button *w_join_game = new w_tiny_button("JOIN");
 		w_join_game->set_enabled(false);
