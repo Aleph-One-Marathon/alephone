@@ -117,7 +117,7 @@
 </chat_entry>
 
 <!-- List selection widget -->
-<list top="10" bottom="12" left="10" right="32">
+<list top="8" bottom="8" left="8" right="24">
   <image index="0" file="list_tl.bmp" scale="false"/>
   <image index="1" file="list_t.bmp" scale="false"/>
   <image index="2" file="list_tr.bmp" scale="false"/>
