@@ -505,13 +505,13 @@ int ttf_font_info::_draw_text(SDL_Surface *s, const char *text, size_t length, i
 	int clip_top, clip_bottom, clip_left, clip_right;
 	if (draw_clip_rect_active) {
 		clip_top = draw_clip_rect.top;
-		clip_bottom = draw_clip_rect.bottom - 1;
+		clip_bottom = draw_clip_rect.bottom;
 		clip_left = draw_clip_rect.left;
-		clip_right = draw_clip_rect.right - 1;
+		clip_right = draw_clip_rect.right;
 	} else {
 		clip_top = clip_left = 0;
-		clip_right = s->w - 1;
-		clip_bottom = s->h - 1;
+		clip_right = s->w;
+		clip_bottom = s->h;
 	}
 
 	SDL_Color c;
