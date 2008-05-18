@@ -1421,8 +1421,8 @@ void w_list_base::mouse_move(int x, int y)
 {
 	if (thumb_dragging) {
 		int delta_y = y - thumb_drag_y;
-		if (delta_y > 0) {
-		  set_top_item(delta_y * num_items / trough_rect.h);
+		if (delta_y > 0 && num_items > shown_items && trough_rect.h > thumb_height) {
+			set_top_item(delta_y * (num_items - shown_items) / (trough_rect.h - thumb_height));
 		} else {
 		  set_top_item(0);
 		}
@@ -1600,10 +1600,10 @@ void w_list_base::set_top_item(size_t i)
 	top_item = i;
 
 	// Calculate thumb y position
-	if (num_items == 0)
+	if (num_items <= shown_items)
 		thumb_y = 0;
 	else
-		thumb_y = int16(float(top_item * trough_rect.h) / num_items + 0.5);
+		thumb_y = int16(float(top_item * (trough_rect.h - thumb_height)) / (num_items - shown_items) + 0.5);
 	if (thumb_y > trough_rect.h - thumb_height)
 		thumb_y = trough_rect.h - thumb_height;
 	thumb_y = thumb_y + trough_rect.y;
