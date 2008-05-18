@@ -187,7 +187,7 @@ private:
 	static const int MAXIMUM_SOUND_BUFFER_SIZE = 1*MEG;
 
 	// channels
-	static const int MAXIMUM_SOUND_CHANNELS = 8;
+	static const int MAXIMUM_SOUND_CHANNELS = 32;
 	static const int MAXIMUM_AMBIENT_SOUND_CHANNELS = 4;
 	static const int MAXIMUM_PROCESSED_AMBIENT_SOUNDS = 5;
 
