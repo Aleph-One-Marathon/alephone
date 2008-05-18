@@ -1724,11 +1724,11 @@ void w_select_popup::gotSelected ()
 		
 		w_string_list* string_list_w = new w_string_list (labels, &theDialog, selection >= 0 ? selection : 0);
 		placer->dual_add (string_list_w, theDialog);
+		theDialog.activate_widget(string_list_w);
 		
 		theDialog.set_widget_placer(placer);
-		theDialog.run ();
-		
-		set_selection (string_list_w->get_selection ());
+		if (theDialog.run () == 0)
+			set_selection (string_list_w->get_selection ());
 	}
 	
 	if (action)
