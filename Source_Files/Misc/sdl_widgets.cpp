@@ -1803,8 +1803,6 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 {
 	int game_style = style;
 
-	x += kGameSpacing / 2;
-
 	uint32 fg;
 	if (selected)
 	{
