@@ -1433,8 +1433,8 @@ void w_list_base::mouse_move(int x, int y)
 
 		if ((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item < min(num_items, top_item + shown_items))
 		{	set_selection((y - get_theme_space(LIST_WIDGET, T_SPACE)) / item_height() + top_item); }
-		else
-		{	set_selection(num_items - 1); }
+//		else
+//		{	set_selection(num_items - 1); }
 	}
 }
 
