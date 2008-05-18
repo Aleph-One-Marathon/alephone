@@ -2026,7 +2026,6 @@ void dialog::activate_prev_widget(void)
 	if (!active_widget)
 	{
 		activate_first_widget();
-		return;
 	}
 	
 	size_t i = active_widget_num;
