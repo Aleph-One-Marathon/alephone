@@ -2587,6 +2587,8 @@ public:
 		placer->add_flags(placeable::kFill);
 		placer->add(say_placer, true);
 
+		m_dialog.activate_widget(chatentry_w);
+
 		m_dialog.set_widget_placer(placer);
 		
 		m_cancelWidget = new ButtonWidget (cancel_w);
@@ -2702,7 +2704,7 @@ public:
 		w_colorful_chat* chat_history_w = new w_colorful_chat(600, 7);
 		postjoin_placer->dual_add(chat_history_w, m_dialog);
 
-		w_chat_entry* chatentry_w = new w_chat_entry(240);
+		chatentry_w = new w_chat_entry(240);
 		chatentry_w->enable_mac_roman_input();
 
 		horizontal_placer *say_placer = new horizontal_placer;
@@ -2778,6 +2780,7 @@ public:
 		m_tabs->choose_tab(1);
 		m_dialog.draw();
 		JoinDialog::respondToJoinHit();
+		m_dialog.activate_widget(chatentry_w);		
 	}
 
 private:
@@ -2788,6 +2791,7 @@ private:
 	};
 
 	tab_placer *m_tabs;
+	w_chat_entry *chatentry_w;
 	dialog m_dialog;
 };
 

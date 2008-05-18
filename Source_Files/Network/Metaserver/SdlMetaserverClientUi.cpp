@@ -135,6 +135,8 @@ public:
 		m_muteWidget = new ButtonWidget(mute_w);
 		m_joinWidget = new ButtonWidget(w_join_game);
 		m_gameInfoWidget = new ButtonWidget(w_game_info);
+
+		d.activate_widget(chatentry_w);
 	}
 
 	~SdlMetaserverClientUi () { delete_widgets (); }
@@ -142,7 +144,6 @@ public:
 	int Run()
 	{
 		d.set_processing_function(bind(&SdlMetaserverClientUi::pump, this, _1));
-
 		int result = d.run();
 
 		if(result == -1)

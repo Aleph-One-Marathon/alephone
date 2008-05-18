@@ -78,8 +78,11 @@ void alert_user(char *message, short severity)
     }
     
     placer->add(new w_spacer, true);
-    placer->dual_add (new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d), d);
+    w_button *button = new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d);
+    placer->dual_add (button, d);
     d.set_widget_placer(placer);
+
+    d.activate_widget(button);
 
     d.run();
     if (severity == infoError && top_dialog == NULL)

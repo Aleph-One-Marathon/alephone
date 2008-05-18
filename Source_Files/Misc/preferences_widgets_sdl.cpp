@@ -106,6 +106,7 @@ void w_env_select::select_item(dialog *parent)
 	placer->add(new w_spacer(), true);
 	placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
 
+	d.activate_widget(list_w);
 	d.set_widget_placer(placer);
 
 	// Clear screen

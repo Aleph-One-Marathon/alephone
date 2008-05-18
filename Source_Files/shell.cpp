@@ -548,8 +548,10 @@ bool quit_without_saving(void)
 	placer->add (new w_spacer(), true);
 	
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add (new w_button("YES", dialog_ok, &d), d);
+	w_button *default_button = new w_button("YES", dialog_ok, &d);
+	button_placer->dual_add (default_button, d);
 	button_placer->dual_add (new w_button("NO", dialog_cancel, &d), d);
+	d.activate_widget(default_button);
 	placer->add(button_placer, true);
 	d.set_widget_placer(placer);
 	return d.run() == 0;
@@ -613,6 +615,7 @@ short get_level_number_from_user(void)
 	placer->add(new w_spacer(), true);
 	placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
 
+	d.activate_widget(level_w);
 	d.set_widget_placer(placer);
 
 	// Run dialog

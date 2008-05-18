@@ -1009,6 +1009,8 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 
 	placer->add(button_placer, true);
 
+	d.activate_widget(list_w);
+
 	d.set_widget_placer(placer);
 
 	// Run dialog
@@ -1132,6 +1134,8 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
+
+	d.activate_widget(name_w);
 	// Run dialog
 again:
 	bool result = false;
@@ -1178,10 +1182,13 @@ static bool confirm_save_choice(FileSpecifier & file)
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("YES", dialog_ok, &d), d);
+	w_button *default_button = new w_button("YES", dialog_ok, &d);
+	button_placer->dual_add(default_button, d);
 	button_placer->dual_add(new w_button("NO", dialog_cancel, &d), d);
 
 	placer->add(button_placer, true);
+
+	d.activate_widget(default_button);
 
 	d.set_widget_placer(placer);
 
