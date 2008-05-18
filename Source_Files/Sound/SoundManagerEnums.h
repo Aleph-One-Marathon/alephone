@@ -376,7 +376,8 @@ enum // initialization flags (some of these are used by the prefs, which fixes t
 	_more_sounds_flag= 0x0020, /* loads all permutations; only loads #0 if false [prefs] */
 	_relative_volume_flag = 0x0040, /* LP: Ian Rickard's relative-volume flag [prefs] */
 	_extra_memory_flag= 0x0100, /* double usual memory */
-	_extra_extra_memory_flag= 0x0200 /* LP: quadruple usual memory, because RAM is more available */
+	_extra_extra_memory_flag= 0x0200, /* LP: quadruple usual memory, because RAM is more available */
+	_zero_restart_delay = 0x0400 /* ghs: restart sounds immediately */
 };
 
 enum // _sound_obstructed_proc() flags

@@ -1069,6 +1069,12 @@ static void sound_dialog(void *arg)
 	table->dual_add(mute_while_transmitting_w->label("Headset Mic Mode"), d);
 	table->dual_add(mute_while_transmitting_w, d);
 
+	table->add_row(new w_spacer(), true);
+	table->dual_add_row(new w_static_text("Experimental Sound Options"), d);
+		w_toggle *zrd_w = new w_toggle(TEST_FLAG(sound_preferences->flags, _zero_restart_delay));
+	table->dual_add(zrd_w->label("Zero Restart Delay"), d);
+	table->dual_add(zrd_w, d);
+
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
@@ -1093,6 +1099,7 @@ static void sound_dialog(void *arg)
 		if (dynamic_w->get_selection()) flags |= _dynamic_tracking_flag;
 		if (ambient_w->get_selection()) flags |= _ambient_sound_flag;
 		if (more_w->get_selection()) flags |= _more_sounds_flag;
+		if (zrd_w->get_selection()) flags |= _zero_restart_delay;
 
 		if (flags != sound_preferences->flags) {
 			sound_preferences->flags = flags;

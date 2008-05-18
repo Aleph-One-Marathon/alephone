@@ -730,7 +730,10 @@ SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Var
 						
 						if (!(definition->flags & _sound_does_not_self_abort))
 						{
-							best_channel = (channel->start_tick + MINIMUM_RESTART_TICKS < machine_tick_count()) ? channel : 0;
+							if ((parameters.flags & _zero_restart_delay) || channel->start_tick + MINIMUM_RESTART_TICKS < machine_tick_count())
+								best_channel = channel;
+							else
+								best_channel = 0;
 							break;
 						}
 					}
