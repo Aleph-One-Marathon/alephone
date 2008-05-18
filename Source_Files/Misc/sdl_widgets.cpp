@@ -1456,7 +1456,8 @@ void w_list_base::place(const SDL_Rect& r, placement_flags flags)
 void w_list_base::click(int x, int y)
 {
 	if (x >= trough_rect.x && x < trough_rect.x + trough_rect.w
-	 && y >= trough_rect.y && y < trough_rect.y + trough_rect.h) {
+//	 && y >= trough_rect.y && y < trough_rect.y + trough_rect.h) {
+	    && y >= thumb_y && y <= thumb_y + thumb_height) {
 		thumb_dragging = dirty = true;
 		thumb_drag_y = y - thumb_y;
 	} else {
