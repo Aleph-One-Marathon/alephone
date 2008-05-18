@@ -238,12 +238,12 @@ typedef boost::function<void (void*)> action_proc;
 
 class w_button_base : public widget {
 public:
-	w_button_base(const char *text, action_proc proc = NULL, void *arg = NULL);
-	virtual ~w_button_base() { }
+	w_button_base(const char *text, action_proc proc = NULL, void *arg = NULL, int type = BUTTON_WIDGET);
+	virtual ~w_button_base();
 
 	void set_callback (action_proc proc, void *arg);
 	
-	void draw(SDL_Surface *s) const = 0;
+	void draw(SDL_Surface *s) const;
 	void mouse_move(int x, int y);
 	void mouse_down(int x, int y);
 	void mouse_up(int x, int y);
@@ -255,28 +255,24 @@ protected:
 	void *arg;
 
 	bool down, pressed;
-};
-	
 
-class w_button : public w_button_base {
-public:
-	w_button(const char *text, action_proc proc = NULL, void *arg = NULL);
-	~w_button();
-
-	void draw(SDL_Surface *s) const;
-
-protected:
+	int type;
 	// cache button centers since they are tiled or scaled
 	SDL_Surface *button_c_default;
 	SDL_Surface *button_c_active;
 	SDL_Surface *button_c_disabled;
 	SDL_Surface *button_c_pressed;
 };
+	
+
+class w_button : public w_button_base {
+public:
+	w_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button_base(text, proc, arg, BUTTON_WIDGET) {}
+};
 
 class w_tiny_button : public w_button_base {
 public:
-	w_tiny_button(const char *text, action_proc proc = NULL, void *arg = NULL);
-	void draw(SDL_Surface *s) const;
+	w_tiny_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button_base(text, proc, arg, TINY_BUTTON) {}
 };
 
 

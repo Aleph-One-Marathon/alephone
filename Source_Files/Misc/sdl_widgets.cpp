@@ -233,15 +233,84 @@ void w_pict::draw(SDL_Surface *s) const
  *  Button
  */
 
-w_button_base::w_button_base(const char *t, action_proc p, void *a) : widget(BUTTON_WIDGET), text(t), proc(p), arg(a), down(false), pressed(false)
+w_button_base::w_button_base(const char *t, action_proc p, void *a, int _type) : widget(_type), text(t), proc(p), arg(a), down(false), pressed(false), type(_type)
 {
+	rect.w = text_width(text.c_str(), font, style) + get_theme_space(_type, BUTTON_L_SPACE) + get_theme_space(_type, BUTTON_R_SPACE);
+	button_c_default = get_theme_image(_type, DEFAULT_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(_type, DEFAULT_STATE, BUTTON_L_IMAGE)->w - get_theme_image(_type, DEFAULT_STATE, BUTTON_R_IMAGE)->w);
+	button_c_active = get_theme_image(_type, ACTIVE_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(_type, ACTIVE_STATE, BUTTON_L_IMAGE)->w - get_theme_image(_type, ACTIVE_STATE, BUTTON_R_IMAGE)->w);
+	button_c_disabled = get_theme_image(_type, DISABLED_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(_type, DISABLED_STATE, BUTTON_L_IMAGE)->w - get_theme_image(_type, DISABLED_STATE, BUTTON_R_IMAGE)->w);
+	button_c_pressed = get_theme_image(_type, PRESSED_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(_type, PRESSED_STATE, BUTTON_L_IMAGE)->w - get_theme_image(_type, PRESSED_STATE, BUTTON_R_IMAGE)->w);
 
+	rect.h = static_cast<uint16>(get_theme_space(_type, BUTTON_HEIGHT));
+
+	saved_min_width = rect.w;
+	saved_min_height = rect.h;
+}
+
+w_button_base::~w_button_base()
+{
+	if (button_c_default) SDL_FreeSurface(button_c_default);
+	if (button_c_active) SDL_FreeSurface(button_c_active);
+	if (button_c_disabled) SDL_FreeSurface(button_c_disabled);
+	if (button_c_pressed) SDL_FreeSurface(button_c_pressed);
 }
 
 void w_button_base::set_callback(action_proc p, void *a)
 {
 	proc = p;
 	arg = a;
+}
+
+void w_button_base::draw(SDL_Surface *s) const
+{
+	// Label (ZZZ: different color for disabled)
+	int state = DEFAULT_STATE;
+	if (pressed)
+		state = PRESSED_STATE;
+	else if (!enabled)
+		state = DISABLED_STATE;
+	else if (active)
+		state = ACTIVE_STATE;
+		
+	if (use_theme_images(type))
+	{
+		SDL_Surface *button_l = get_theme_image(type, state, BUTTON_L_IMAGE);
+		SDL_Surface *button_r = get_theme_image(type, state, BUTTON_R_IMAGE);
+		SDL_Surface *button_c = button_c_default;
+		if (pressed)
+			button_c = button_c_pressed;
+		else if (!enabled)
+			button_c = button_c_disabled;
+		else if (active)
+			button_c = button_c_active;
+
+		// Button image
+		SDL_Rect r = {rect.x, rect.y, 
+			      static_cast<Uint16>(button_l->w), 
+			      static_cast<Uint16>(button_l->h)};
+		SDL_BlitSurface(button_l, NULL, s, &r);
+		r.x = r.x + static_cast<Sint16>(button_l->w); // MDA: MSVC throws warnings if we use +=
+		r.w = static_cast<Uint16>(button_c->w);
+		r.h = static_cast<Uint16>(button_c->h);
+		SDL_BlitSurface(button_c, NULL, s, &r);
+		r.x = r.x + static_cast<Sint16>(button_c->w);
+		r.w = static_cast<Uint16>(button_r->w);
+		r.h = static_cast<Uint16>(button_r->h);
+		SDL_BlitSurface(button_r, NULL, s, &r);
+	}
+	else
+	{
+		uint32 pixel = get_theme_color(type, state, BACKGROUND_COLOR);
+		SDL_Rect r = {rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2};
+		SDL_FillRect(s, &r, pixel);
+
+		pixel = get_theme_color(type, state, FRAME_COLOR);
+		draw_rectangle(s, &rect, pixel);
+	}
+
+	draw_text(s, text.c_str(), rect.x + get_theme_space(type, BUTTON_L_SPACE),
+		  rect.y + get_theme_space(type, BUTTON_T_SPACE) + font->get_ascent(),
+		  get_theme_color(type, state), font, style);
 }
 
 void w_button_base::mouse_move(int x, int y)
@@ -293,104 +362,6 @@ void w_button_base::click(int /*x*/, int /*y*/)
 	SDL_Delay(1000 / 12);
 	mouse_up(0, 0);
 }
-
-w_button::w_button(const char *t, action_proc p, void *a) : w_button_base(t, p, a)
-{
-	rect.w = text_width(text.c_str(), font, style) + get_theme_space(BUTTON_WIDGET, BUTTON_L_SPACE) + get_theme_space(BUTTON_WIDGET, BUTTON_R_SPACE);
-	button_c_default = get_theme_image(BUTTON_WIDGET, DEFAULT_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, DEFAULT_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, DEFAULT_STATE, BUTTON_R_IMAGE)->w);
-	button_c_active = get_theme_image(BUTTON_WIDGET, ACTIVE_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, ACTIVE_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, ACTIVE_STATE, BUTTON_R_IMAGE)->w);
-	button_c_disabled = get_theme_image(BUTTON_WIDGET, DISABLED_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, DISABLED_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, DISABLED_STATE, BUTTON_R_IMAGE)->w);
-	button_c_pressed = get_theme_image(BUTTON_WIDGET, PRESSED_STATE, BUTTON_C_IMAGE, rect.w - get_theme_image(BUTTON_WIDGET, PRESSED_STATE, BUTTON_L_IMAGE)->w - get_theme_image(BUTTON_WIDGET, PRESSED_STATE, BUTTON_R_IMAGE)->w);
-
-	rect.h = static_cast<uint16>(get_theme_space(BUTTON_WIDGET, BUTTON_HEIGHT));
-
-	saved_min_width = rect.w;
-	saved_min_height = rect.h;
-}
-
-w_button::~w_button()
-{
-	if (button_c_default) SDL_FreeSurface(button_c_default);
-	if (button_c_active) SDL_FreeSurface(button_c_active);
-	if (button_c_disabled) SDL_FreeSurface(button_c_disabled);
-	if (button_c_pressed) SDL_FreeSurface(button_c_pressed);
-}
-
-void w_button::draw(SDL_Surface *s) const
-{
-	// Label (ZZZ: different color for disabled)
-	int state = DEFAULT_STATE;
-	if (pressed)
-		state = PRESSED_STATE;
-	else if (!enabled)
-		state = DISABLED_STATE;
-	else if (active)
-		state = ACTIVE_STATE;
-		
-	if (use_theme_images(BUTTON_WIDGET))
-	{
-		SDL_Surface *button_l = get_theme_image(BUTTON_WIDGET, state, BUTTON_L_IMAGE);
-		SDL_Surface *button_r = get_theme_image(BUTTON_WIDGET, state, BUTTON_R_IMAGE);
-		SDL_Surface *button_c = button_c_default;
-		if (pressed)
-			button_c = button_c_pressed;
-		else if (!enabled)
-			button_c = button_c_disabled;
-		else if (active)
-			button_c = button_c_active;
-
-		// Button image
-		SDL_Rect r = {rect.x, rect.y, 
-			      static_cast<Uint16>(button_l->w), 
-			      static_cast<Uint16>(button_l->h)};
-		SDL_BlitSurface(button_l, NULL, s, &r);
-		r.x = r.x + static_cast<Sint16>(button_l->w); // MDA: MSVC throws warnings if we use +=
-		r.w = static_cast<Uint16>(button_c->w);
-		r.h = static_cast<Uint16>(button_c->h);
-		SDL_BlitSurface(button_c, NULL, s, &r);
-		r.x = r.x + static_cast<Sint16>(button_c->w);
-		r.w = static_cast<Uint16>(button_r->w);
-		r.h = static_cast<Uint16>(button_r->h);
-		SDL_BlitSurface(button_r, NULL, s, &r);
-	}
-	else
-	{
-		uint32 pixel = get_theme_color(BUTTON_WIDGET, state, BACKGROUND_COLOR);
-		SDL_Rect r = {rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2};
-		SDL_FillRect(s, &r, pixel);
-
-		pixel = get_theme_color(BUTTON_WIDGET, state, FRAME_COLOR);
-		draw_rectangle(s, &rect, pixel);
-	}
-
-	draw_text(s, text.c_str(), rect.x + get_theme_space(BUTTON_WIDGET, BUTTON_L_SPACE),
-		  rect.y + get_theme_space(BUTTON_WIDGET, BUTTON_T_SPACE) + font->get_ascent(),
-		  get_theme_color(BUTTON_WIDGET, state), font, style);
-}
-
-w_tiny_button::w_tiny_button(const char *t, action_proc p, void *a) : w_button_base(t, p, a)
-{
-	font = get_theme_font(LABEL_WIDGET, style);
-	
-	rect.w = text_width(this->text.c_str(), font, style);
-	rect.h = font->get_line_height();
-
-	saved_min_width = rect.w;
-	saved_min_height = rect.h;
-}
-
-void w_tiny_button::draw(SDL_Surface *s) const 
-{
-	int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
-
-	draw_text(s, text.c_str(), rect.x, rect.y + font->get_ascent(), get_theme_color(ITEM_WIDGET, state), font, style);
-}
-
-/*
- *  Button on left/right side of dialog box
- */
-
-const uint16 LR_BUTTON_OFFSET = 100;
 
 /*
  *  Selection button

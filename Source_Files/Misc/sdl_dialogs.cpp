@@ -222,6 +222,10 @@ static XML_ImageParser DefaultButtonImageParser(BUTTON_WIDGET, DEFAULT_STATE, 3)
 static XML_ImageParser ActiveButtonImageParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
 static XML_ImageParser DisabledButtonImageParser(BUTTON_WIDGET, DISABLED_STATE, 3);
 static XML_ImageParser PressedButtonImageParser(BUTTON_WIDGET, PRESSED_STATE, 3);
+static XML_ImageParser DefaultTinyButtonImageParser(TINY_BUTTON, DEFAULT_STATE, 3);
+static XML_ImageParser ActiveTinyButtonImageParser(TINY_BUTTON, ACTIVE_STATE, 3);
+static XML_ImageParser DisabledTinyButtonImageParser(TINY_BUTTON, DISABLED_STATE, 3);
+static XML_ImageParser PressedTinyButtonImageParser(TINY_BUTTON, PRESSED_STATE, 3);
 
 class XML_DColorParser : public XML_ElementParser {
 public:
@@ -290,6 +294,10 @@ static XML_DColorParser DefaultButtonColorParser(BUTTON_WIDGET, DEFAULT_STATE, 3
 static XML_DColorParser ActiveButtonColorParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
 static XML_DColorParser DisabledButtonColorParser(BUTTON_WIDGET, DISABLED_STATE, 3);
 static XML_DColorParser PressedButtonColorParser(BUTTON_WIDGET, PRESSED_STATE, 3);
+static XML_DColorParser DefaultTinyButtonColorParser(TINY_BUTTON, DEFAULT_STATE, 3);
+static XML_DColorParser ActiveTinyButtonColorParser(TINY_BUTTON, ACTIVE_STATE, 3);
+static XML_DColorParser DisabledTinyButtonColorParser(TINY_BUTTON, DISABLED_STATE, 3);
+static XML_DColorParser PressedTinyButtonColorParser(TINY_BUTTON, PRESSED_STATE, 3);
 static XML_DColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
 static XML_DColorParser ActiveLabelColorParser(LABEL_WIDGET, ACTIVE_STATE);
 static XML_DColorParser DisabledLabelColorParser(LABEL_WIDGET, DISABLED_STATE);
@@ -376,6 +384,7 @@ private:
 
 static XML_DFontParser TitleFontParser(TITLE_WIDGET);
 static XML_DFontParser ButtonFontParser(BUTTON_WIDGET);
+static XML_DFontParser TinyButtonFontParser(TINY_BUTTON);
 static XML_DFontParser LabelFontParser(LABEL_WIDGET);
 static XML_DFontParser ItemFontParser(ITEM_WIDGET);
 static XML_DFontParser MessageFontParser(MESSAGE_WIDGET);
@@ -453,6 +462,33 @@ static XML_ButtonParser ButtonParser;
 static XML_ElementParser ActiveButtonParser("active");
 static XML_ElementParser DisabledButtonParser("disabled");
 static XML_ElementParser PressedButtonParser("pressed");
+
+class XML_TinyButtonParser : public XML_ElementParser {
+public:
+	XML_TinyButtonParser() : XML_ElementParser("tiny_button") {}
+
+	bool HandleAttribute(const char *tag, const char *value)
+	{
+		if (StringsEqual(tag, "top")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TINY_BUTTON].spaces[BUTTON_T_SPACE]);
+		} else if (StringsEqual(tag, "left")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TINY_BUTTON].spaces[BUTTON_L_SPACE]);
+		} else if (StringsEqual(tag, "right")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TINY_BUTTON].spaces[BUTTON_R_SPACE]);
+		} else if (StringsEqual(tag, "height")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TINY_BUTTON].spaces[BUTTON_HEIGHT]);
+		} else {
+			UnrecognizedTag();
+			return false;
+		}
+		return true;
+	}
+};
+
+static XML_TinyButtonParser TinyButtonParser;
+static XML_ElementParser ActiveTinyButtonParser("active");
+static XML_ElementParser DisabledTinyButtonParser("disabled");
+static XML_ElementParser PressedTinyButtonParser("pressed");
 
 struct XML_LabelParser : public XML_ElementParser {XML_LabelParser() : XML_ElementParser("label") {}};
 static XML_LabelParser LabelParser;
@@ -598,6 +634,20 @@ XML_ElementParser *Theme_GetParser()
 	ButtonParser.AddChild(&DefaultButtonImageParser);
 	ButtonParser.AddChild(&PressedButtonParser);
 	ThemeParser.AddChild(&ButtonParser);
+
+	TinyButtonParser.AddChild(&TinyButtonFontParser);
+	TinyButtonParser.AddChild(&DefaultTinyButtonColorParser);
+	ActiveTinyButtonParser.AddChild(&ActiveTinyButtonColorParser);
+	ActiveTinyButtonParser.AddChild(&ActiveTinyButtonImageParser);
+	DisabledTinyButtonParser.AddChild(&DisabledTinyButtonColorParser);
+	DisabledTinyButtonParser.AddChild(&DisabledTinyButtonImageParser);
+	PressedTinyButtonParser.AddChild(&PressedTinyButtonColorParser);
+	PressedTinyButtonParser.AddChild(&PressedTinyButtonImageParser);
+	TinyButtonParser.AddChild(&ActiveTinyButtonParser);
+	TinyButtonParser.AddChild(&DisabledTinyButtonParser);
+	TinyButtonParser.AddChild(&DefaultTinyButtonImageParser);
+	TinyButtonParser.AddChild(&PressedTinyButtonParser);
+	ThemeParser.AddChild(&TinyButtonParser);
 
 	LabelParser.AddChild(&LabelFontParser);
 	LabelParser.AddChild(&DefaultLabelColorParser);
@@ -771,6 +821,18 @@ static void set_theme_defaults(void)
 	dialog_theme[LIST_WIDGET].spaces[B_SPACE] = 2;
 	dialog_theme[LIST_WIDGET].spaces[TROUGH_R_SPACE] = 12;
 	dialog_theme[LIST_WIDGET].spaces[TROUGH_WIDTH] = 12;
+
+	dialog_theme[TINY_BUTTON].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
+	dialog_theme[TINY_BUTTON].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[TINY_BUTTON].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
+	dialog_theme[TINY_BUTTON].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x7f, 0x7f, 0x7f);
+	dialog_theme[TINY_BUTTON].spaces[BUTTON_T_SPACE] = 2;
+	dialog_theme[TINY_BUTTON].spaces[BUTTON_L_SPACE] = 2;
+	dialog_theme[TINY_BUTTON].spaces[BUTTON_R_SPACE] = 2;
+	dialog_theme[TINY_BUTTON].spaces[BUTTON_HEIGHT] = 18;
+	dialog_theme[TINY_BUTTON].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[TINY_BUTTON].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+	
 }
 
 

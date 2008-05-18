@@ -55,6 +55,23 @@
   </pressed>
 </button>
 
+<tiny_button top="1" left="14" right="14" height="20">
+  <font file="bankgthd.ttf" size="14" style="0"/>
+  <color red="0.5" green="0.5" blue="0.5"/>
+  <image index="0" file="tiny_button_l.bmp" scale="false"/>
+  <image index="1" file="tiny_button_c.bmp" scale="false"/>
+  <image index="2" file="tiny_button_r.bmp" scale="false"/>
+  <active>
+    <color red="0.67" green="0.67" blue="0.67"/>
+  </active>
+  <disabled>
+    <color red="0.33" green="0.33" blue="0.33"/>
+  </disabled>
+  <pressed>
+    <color red="0.95" green="0.70" blue="0.28"/>
+  </pressed>
+</tiny_button>
+
 <!-- Label -->
 <label>
   <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
