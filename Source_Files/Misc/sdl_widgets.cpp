@@ -62,6 +62,7 @@
 
 #include    "mouse.h"   // (ZZZ) NUM_SDL_MOUSE_BUTTONS, SDLK_BASE_MOUSE_BUTTON
 
+#include <sstream>
 
 /*
  *  Widget base class
@@ -1834,8 +1835,7 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	width -= 2;
 	y += font->get_ascent() + 1;
 
-	string running_time;
-	char buffer[1024];
+	ostringstream time_or_ping;
 	int right_text_width = 0;
 
 	// first line, game name, ping or time remaining
@@ -1845,25 +1845,24 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 		{
 			if (item.minutes_remaining() == 1)
 			{
-				strcpy(buffer, "~1 Minute");
+				time_or_ping << "~1 Minute";
 			}
 			else
 			{
-				sprintf(buffer, "~%i Minutes", item.minutes_remaining());
+				time_or_ping << item.minutes_remaining() << " Minutes";
 			}
 		}
 		else
 		{
-			strcpy(buffer, "Untimed");
+			time_or_ping << "Untimed";
 		}
 	}
 	else
 	{
 		// draw ping
-		buffer[0] = '\0';
 	}
 
-	right_text_width = text_width(buffer, font, game_style);
+	right_text_width = text_width(time_or_ping.str().c_str(), font, game_style);
 
 	// draw game name
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width - right_text_width);
@@ -1871,18 +1870,18 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	
 	// draw remaining or ping
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
-	draw_text(s, buffer, x + width - right_text_width, y, fg, font, game_style);
+	draw_text(s, time_or_ping.str().c_str(), x + width - right_text_width, y, fg, font, game_style);
 
 	y += font->get_line_height();
 
+	ostringstream game_and_map;
+
 	if (!item.compatible())
 	{
-		strcpy(buffer, "|i");
-		strcat(buffer, item.m_description.m_scenarioName.c_str());
+		game_and_map << "|i" << item.m_description.m_scenarioName;
 		if (item.m_description.m_scenarioVersion != "")
 		{
-			strcat(buffer, ", Version ");
-			strcat(buffer, item.m_description.m_scenarioVersion.c_str());
+			game_and_map << ", Version " << item.m_description.m_scenarioVersion;
 		}
 	} 
 	else
@@ -1890,49 +1889,53 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 		// game type, map
 		int type = item.m_description.m_type - (item.m_description.m_type > 5 ? 1 : 0);
 		if (TS_GetCString(kNetworkGameTypesStringSetID, type))
-			strcpy(buffer, TS_GetCString(kNetworkGameTypesStringSetID, type));
+			game_and_map << TS_GetCString(kNetworkGameTypesStringSetID, type);
 		else
-			strcpy(buffer, "Unknown");
-		
-		strcat(buffer, " on |i");
-		strcat(buffer, item.m_description.m_mapName.c_str());
+			game_and_map << "Unknown";
+
+		game_and_map << " on |i" << item.m_description.m_mapName;
 	}
 	
-	font->draw_styled_text(s, buffer, strlen(buffer), x, y, fg, game_style);
+	font->draw_styled_text(s, game_and_map.str().c_str(), game_and_map.str().size(), x, y, fg, game_style);
 
 	y += font->get_line_height();
 
 	right_text_width = font->styled_text_width(item.m_hostPlayerName, item.m_hostPlayerName.size(), game_style);
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width - right_text_width);
 
+	ostringstream game_settings;
 	if (item.running())
 	{
 		if (item.m_description.m_numPlayers == 1)
 		{
-			strcpy(buffer, "1 Player");
+			game_settings << "1 Player";
 		}
 		else
 		{
-			sprintf(buffer, "%i Players", item.m_description.m_numPlayers);
+			game_settings << static_cast<uint16>(item.m_description.m_numPlayers) << " Players";
 		}
 	}
 	else
 	{
-		sprintf(buffer, "%i/%i Players", item.m_description.m_numPlayers, item.m_description.m_maxPlayers);
+		game_settings << static_cast<uint16>(item.m_description.m_numPlayers)
+			      << "/"
+			      << item.m_description.m_maxPlayers
+			      << " Players";
 	}
 
 	if (item.m_description.m_timeLimit && !(item.m_description.m_timeLimit == INT32_MAX || item.m_description.m_timeLimit == -1))
 	{
-		char *p = &buffer[strlen(buffer)];
-		sprintf(p, ", %i Minutes", item.m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
+		game_settings << ", " 
+			      << item.m_description.m_timeLimit / 60 / TICKS_PER_SECOND 
+			      << " Minutes";
 	}
 
 	if (item.m_description.m_teamsAllowed)
 	{
-		strcat(buffer, ", Teams");
+		game_settings << ", Teams";
 	}
 
-	draw_text(s, buffer, x, y, fg, font, game_style);
+	draw_text(s, game_settings.str().c_str(), x, y, fg, font, game_style);
 
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
 	font->draw_styled_text(s, item.m_hostPlayerName, item.m_hostPlayerName.size(), x + width - right_text_width, y, fg, game_style);
