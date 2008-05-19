@@ -404,7 +404,22 @@ public:
 	}
 };
 
-static XML_ElementParser DefaultParser("default");
+class XML_ThemeWidgetParser : public XML_ElementParser
+{
+public:
+	XML_ThemeWidgetParser(const char *name, int theme_widget) : XML_ElementParser(name), m_theme_widget(theme_widget) { }
+
+	bool Start() { 
+		if (dialog_theme.find(m_theme_widget) != dialog_theme.end())
+			dialog_theme[m_theme_widget].states.clear();
+		return true;
+	}
+
+private:
+	int m_theme_widget;
+};
+
+static XML_ThemeWidgetParser DefaultParser("default", DEFAULT_WIDGET);
 
 static XML_DFrameParser FrameParser;
 
@@ -429,9 +444,9 @@ public:
 
 static XML_SpacerParser SpacerParser;
 
-class XML_ButtonParser : public XML_ElementParser {
+class XML_ButtonParser : public XML_ThemeWidgetParser {
 public:
-	XML_ButtonParser() : XML_ElementParser("button") {}
+	XML_ButtonParser() : XML_ThemeWidgetParser("button", BUTTON_WIDGET) {}
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
@@ -456,9 +471,9 @@ static XML_ElementParser ActiveButtonParser("active");
 static XML_ElementParser DisabledButtonParser("disabled");
 static XML_ElementParser PressedButtonParser("pressed");
 
-class XML_TinyButtonParser : public XML_ElementParser {
+class XML_TinyButtonParser : public XML_ThemeWidgetParser {
 public:
-	XML_TinyButtonParser() : XML_ElementParser("tiny_button") {}
+	XML_TinyButtonParser() : XML_ThemeWidgetParser("tiny_button", TINY_BUTTON) {}
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
@@ -483,14 +498,13 @@ static XML_ElementParser ActiveTinyButtonParser("active");
 static XML_ElementParser DisabledTinyButtonParser("disabled");
 static XML_ElementParser PressedTinyButtonParser("pressed");
 
-struct XML_LabelParser : public XML_ElementParser {XML_LabelParser() : XML_ElementParser("label") {}};
-static XML_LabelParser LabelParser;
+static XML_ThemeWidgetParser LabelParser("label", LABEL_WIDGET);
 static XML_ElementParser ActiveLabelParser("active");
 static XML_ElementParser DisabledLabelParser("disabled");
 
-class XML_DItemParser : public XML_ElementParser {
+class XML_DItemParser : public XML_ThemeWidgetParser {
 public:
-	XML_DItemParser() : XML_ElementParser("item") {}
+	XML_DItemParser() : XML_ThemeWidgetParser("item", ITEM_WIDGET) {}
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
@@ -508,17 +522,14 @@ static XML_DItemParser ItemParser;
 static XML_ElementParser ActiveItemParser("active");
 static XML_ElementParser DisabledItemParser("disabled");
 
-struct XML_MessageParser : public XML_ElementParser {XML_MessageParser() : XML_ElementParser("message") {}};
-static XML_MessageParser MessageParser;
+static XML_ThemeWidgetParser MessageParser("message", MESSAGE_WIDGET);
 
-struct XML_TextEntryParser : public XML_ElementParser {XML_TextEntryParser() : XML_ElementParser("text_entry") {}};
-static XML_TextEntryParser TextEntryParser;
+static XML_ThemeWidgetParser TextEntryParser("text_entry", TEXT_ENTRY_WIDGET);
 static XML_ElementParser ActiveTextEntryParser("active");
 static XML_ElementParser DisabledTextEntryParser("disabled");
 static XML_ElementParser CursorTextEntryParser("cursor");
 
-struct XML_ChatEntryParser : public XML_ElementParser { XML_ChatEntryParser() : XML_ElementParser("chat_entry") {}};
-static XML_ChatEntryParser ChatEntryParser;
+static XML_ThemeWidgetParser ChatEntryParser("chat_entry", CHAT_ENTRY);
 
 class XML_TroughParser : public XML_ElementParser {
 public:
@@ -544,14 +555,12 @@ public:
 
 static XML_TroughParser TroughParser;
 
-struct XML_ThumbParser : public XML_ElementParser {XML_ThumbParser() : XML_ElementParser("thumb") {}};
-static XML_ThumbParser ThumbParser;
+static XML_ThemeWidgetParser ThumbParser("thumb", LIST_THUMB);
+static XML_ThemeWidgetParser SliderThumbParser("thumb", SLIDER_THUMB);
 
-static XML_ElementParser SliderThumbParser("thumb");
-
-class XML_ListParser : public XML_ElementParser {
+class XML_ListParser : public XML_ThemeWidgetParser {
 public:
-	XML_ListParser() : XML_ElementParser("list") {}
+	XML_ListParser() : XML_ThemeWidgetParser("list", LIST_WIDGET) {}
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{
@@ -573,9 +582,9 @@ public:
 
 static XML_ListParser ListParser;
 
-class XML_SliderParser : public XML_ElementParser {
+class XML_SliderParser : public XML_ThemeWidgetParser {
 public:
-	XML_SliderParser() : XML_ElementParser("slider") {}
+	XML_SliderParser() : XML_ThemeWidgetParser("slider", SLIDER_WIDGET) {}
 
 	bool HandleAttribute(const char *tag, const char *value)
 	{

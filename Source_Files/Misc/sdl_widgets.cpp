@@ -1143,7 +1143,7 @@ void w_progress_bar::draw(SDL_Surface* s) const
 	dst_rect.y++;
 	dst_rect.h -= 2;
 	dst_rect.w = dst_rect.w - filled_width - 2;
-	if (use_theme_color)
+	if (use_theme_color(DIALOG_FRAME, BACKGROUND_COLOR))
 		SDL_FillRect(s, &dst_rect, get_theme_color(DIALOG_FRAME, DEFAULT_STATE, BACKGROUND_COLOR));
 }
 
