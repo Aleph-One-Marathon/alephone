@@ -626,14 +626,14 @@ void w_select::selection_changed(void)
 uint16 w_select::get_largest_label_width() {
     uint16 max_label_width = 0;
     for (size_t i=0; i<num_labels; i++) {
-            uint16 width = text_width(labels[i], font, style);
+            uint16 width = text_width(labels[i], font, style, utf8);
             if (width > max_label_width)
                     max_label_width = width;
     }
 
     // ZZZ: account for "no valid options" string
     if(num_labels <= 0)
-        max_label_width = text_width(sNoValidOptionsString, font, style);
+	    max_label_width = text_width(sNoValidOptionsString, font, style, utf8);
     
     return max_label_width;
 }
@@ -656,10 +656,10 @@ w_toggle::w_toggle(bool selection, const char **labels) : w_select(selection, la
 	if (labels == onoff_labels)
 	{
 		font = get_theme_font(CHECKBOX, style);
+
+		saved_min_height = get_theme_space(CHECKBOX, BUTTON_HEIGHT);
 	}
 #endif
-
-	saved_min_height = get_theme_space(CHECKBOX, BUTTON_HEIGHT);
 }
 
 void w_toggle::draw(SDL_Surface *s) const
