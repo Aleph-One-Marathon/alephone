@@ -66,7 +66,6 @@ dialog *top_dialog = NULL;
 
 static SDL_Surface *dialog_surface = NULL;
 
-static font_info *default_font = NULL;
 static SDL_Surface *default_image = NULL;
 
 static OpenedResourceFile theme_resources;
@@ -88,15 +87,10 @@ struct theme_widget
 	std::map<int, theme_state> states;
 	font_info *font;
 	TextSpec font_spec;
+	bool font_set;
 	std::map<int, uint16> spaces;
 
-	theme_widget() : font(0) {
-		font_spec.font = kFontIDMonaco;
-		font_spec.style = styleNormal;
-		font_spec.size = 12;
-		font_spec.adjust_height = 0;
-		font_spec.normal = "mono";
-	}
+	theme_widget() : font(0), font_set(false) { }
 };
 
 static std::map<int, theme_widget> dialog_theme;
@@ -107,7 +101,6 @@ bool dialog::sKeyRepeatActive = false;
 static void shutdown_dialogs(void);
 static void unload_theme(void);
 static void set_theme_defaults(void);
-
 
 /*
  *  Initialize dialog manager
@@ -120,10 +113,7 @@ void initialize_dialogs(FileSpecifier &theme)
 	dialog_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 16, 0x7c00, 0x03e0, 0x001f, 0);
 	assert(dialog_surface);
 
-	// Default font and image
-	static const TextSpec default_font_spec = {kFontIDMonaco, styleNormal, 12, 0, "mono"};
-	default_font = load_font(default_font_spec);
-	assert(default_font);
+	// Default image
 	default_image = SDL_CreateRGBSurface(SDL_SWSURFACE, 1, 1, 24, 0xff0000, 0x00ff00, 0x0000ff, 0);
 	assert(default_image);
 	uint32 transp = SDL_MapRGB(default_image->format, 0x00, 0xff, 0xff);
@@ -141,8 +131,6 @@ void initialize_dialogs(FileSpecifier &theme)
 			environment_preferences->theme_dir[255] = 0;
 			write_preferences();
 		}
-		
-		
 	}
 	atexit(shutdown_dialogs);
 }
@@ -288,6 +276,7 @@ protected:
 
 static bool foundLabelOutlineColor = false;
 
+static XML_DColorParser DefaultColorParser(DEFAULT_WIDGET, DEFAULT_STATE, 3);
 static XML_DColorParser FrameColorParser(DIALOG_FRAME, DEFAULT_STATE, 3);
 static XML_DColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
 static XML_DColorParser DefaultButtonColorParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
@@ -370,6 +359,7 @@ public:
 		dialog_theme[type].font_spec.bold = bold;
 		dialog_theme[type].font_spec.oblique = oblique;
 		dialog_theme[type].font_spec.bold_oblique = bold_oblique;
+		dialog_theme[type].font_set = true;
 		return true;
 	}
 
@@ -382,6 +372,7 @@ private:
 	std::string normal, bold, oblique, bold_oblique;
 };
 
+static XML_DFontParser DefaultFontParser(DEFAULT_WIDGET);
 static XML_DFontParser TitleFontParser(TITLE_WIDGET);
 static XML_DFontParser ButtonFontParser(BUTTON_WIDGET);
 static XML_DFontParser TinyButtonFontParser(TINY_BUTTON);
@@ -412,6 +403,8 @@ public:
 		return true;
 	}
 };
+
+static XML_ElementParser DefaultParser("default");
 
 static XML_DFrameParser FrameParser;
 
@@ -611,6 +604,10 @@ static XML_ThemeParser ThemeParser;
 
 XML_ElementParser *Theme_GetParser()
 {
+	DefaultParser.AddChild(&DefaultColorParser);
+	DefaultParser.AddChild(&DefaultFontParser);
+	ThemeParser.AddChild(&DefaultParser);
+
 	FrameParser.AddChild(&FrameImageParser);
 	FrameParser.AddChild(&FrameColorParser);
 	ThemeParser.AddChild(&FrameParser);
@@ -728,7 +725,10 @@ bool load_theme(FileSpecifier &theme)
 	data_search_path.insert(data_search_path.begin(), theme);
 	for (std::map<int, theme_widget>::iterator i = dialog_theme.begin(); i != dialog_theme.end(); ++i)
 	{
-		i->second.font = load_font(i->second.font_spec);
+		if (i->second.font_set)
+			i->second.font = load_font(i->second.font_spec);
+		else
+			i->second.font = 0;
 	}
 	data_search_path.erase(data_search_path.begin());
 
@@ -768,11 +768,20 @@ static inline SDL_Color make_color(uint8 r, uint8 g, uint8 b)
 static void set_theme_defaults(void)
 {
 	// new theme defaults
+	static const TextSpec default_font_spec = {kFontIDMonaco, styleNormal, 12, 0, "mono"};
+	dialog_theme[DEFAULT_WIDGET].font_spec = default_font_spec;
+	dialog_theme[DEFAULT_WIDGET].font_set = true;
+
+	dialog_theme[DEFAULT_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+	dialog_theme[DEFAULT_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[DEFAULT_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
+
 #ifdef HAVE_SDL_TTF
+	dialog_theme[TITLE_WIDGET].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
 	dialog_theme[TITLE_WIDGET].font_spec.size = 24;
+	dialog_theme[TITLE_WIDGET].font_set = true;
 #endif
 
-	dialog_theme[DIALOG_FRAME].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[DIALOG_FRAME].spaces[T_SPACE] = 8;
 	dialog_theme[DIALOG_FRAME].spaces[L_SPACE] = 8;
 	dialog_theme[DIALOG_FRAME].spaces[R_SPACE] = 8;
@@ -794,15 +803,10 @@ static void set_theme_defaults(void)
 	dialog_theme[TEXT_ENTRY_WIDGET].states[CURSOR_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[TEXT_ENTRY_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
 
-#ifdef HAVE_SDL_TTF
-	dialog_theme[BUTTON_WIDGET].font_spec.size = 14;
-#endif
-
 	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_T_SPACE] = 4;
 	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_L_SPACE] = 4;
 	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_R_SPACE] = 4;
 	dialog_theme[BUTTON_WIDGET].spaces[BUTTON_HEIGHT] = 24;
-	dialog_theme[BUTTON_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
 	dialog_theme[BUTTON_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[BUTTON_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[BUTTON_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x7f, 0x7f, 0x7f);
@@ -810,14 +814,17 @@ static void set_theme_defaults(void)
 	dialog_theme[BUTTON_WIDGET].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[BUTTON_WIDGET].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
 
-	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
+#ifdef HAVE_SDL_TTF
+	dialog_theme[BUTTON_WIDGET].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
+	dialog_theme[BUTTON_WIDGET].font_spec.size = 14;
+	dialog_theme[BUTTON_WIDGET].font_set = true;
+#endif
+
 	dialog_theme[SLIDER_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[SLIDER_THUMB].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x0, 0xff, 0x0);
 	dialog_theme[SLIDER_THUMB].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 
-	dialog_theme[LIST_WIDGET].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
 	dialog_theme[LIST_THUMB].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
-	dialog_theme[LIST_THUMB].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[LIST_THUMB].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x0, 0xff, 0x0);
 	dialog_theme[LIST_WIDGET].spaces[T_SPACE] = 2;
 	dialog_theme[LIST_WIDGET].spaces[L_SPACE] = 2;
@@ -826,7 +833,6 @@ static void set_theme_defaults(void)
 	dialog_theme[LIST_WIDGET].spaces[TROUGH_R_SPACE] = 12;
 	dialog_theme[LIST_WIDGET].spaces[TROUGH_WIDTH] = 12;
 
-	dialog_theme[TINY_BUTTON].states[DEFAULT_STATE].colors[FRAME_COLOR] = make_color(0x3f, 0x3f, 0x3f);
 	dialog_theme[TINY_BUTTON].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[TINY_BUTTON].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[TINY_BUTTON].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x7f, 0x7f, 0x7f);
@@ -838,7 +844,6 @@ static void set_theme_defaults(void)
 	dialog_theme[TINY_BUTTON].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
 	
 }
-
 
 /*
  *  Unload theme
@@ -902,14 +907,15 @@ font_info *get_theme_font(int widget_type, uint16 &style)
 	}
 	else 
 	{
-		style = styleNormal;
-		return default_font;
+		i = dialog_theme.find(DEFAULT_WIDGET);
+		style = i->second.font_spec.style;
+		return i->second.font;
 	}
 }
 
 uint32 get_theme_color(int widget_type, int state, int which)
 {
-	SDL_Color c = {0xff, 0xff, 0xff};
+	SDL_Color c = dialog_theme[DEFAULT_WIDGET].states[DEFAULT_STATE].colors[which];
 
 	bool found = false;
 	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
@@ -1010,6 +1016,24 @@ bool use_theme_images(int widget_type)
 		}
 	}
 
+	return false;
+}
+
+bool use_theme_color(int widget_type, int which)
+{
+	std::map<int, theme_widget>::iterator i = dialog_theme.find(widget_type);
+	if (i != dialog_theme.end())
+	{
+		std::map<int, theme_state>::iterator j = i->second.states.find(DEFAULT_STATE);
+		if (j != i->second.states.end())
+		{
+			std::map<int, SDL_Color>::iterator k = j->second.colors.find(which);
+			if (k != j->second.colors.end())
+			{
+				return true;
+			}
+		}
+	}
 	return false;
 }
 

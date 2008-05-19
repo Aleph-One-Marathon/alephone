@@ -301,9 +301,13 @@ void w_button_base::draw(SDL_Surface *s) const
 	}
 	else
 	{
-		uint32 pixel = get_theme_color(type, state, BACKGROUND_COLOR);
-		SDL_Rect r = {rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2};
-		SDL_FillRect(s, &r, pixel);
+		uint32 pixel;
+		if (use_theme_color(type, BACKGROUND_COLOR))
+		{
+			uint32 pixel = get_theme_color(type, state, BACKGROUND_COLOR);
+			SDL_Rect r = {rect.x + 1, rect.y + 1, rect.w - 2, rect.h - 2};
+			SDL_FillRect(s, &r, pixel);
+		}
 
 		pixel = get_theme_color(type, state, FRAME_COLOR);
 		draw_rectangle(s, &rect, pixel);
@@ -1139,7 +1143,8 @@ void w_progress_bar::draw(SDL_Surface* s) const
 	dst_rect.y++;
 	dst_rect.h -= 2;
 	dst_rect.w = dst_rect.w - filled_width - 2;
-	SDL_FillRect(s, &dst_rect, get_theme_color(DIALOG_FRAME, DEFAULT_STATE, BACKGROUND_COLOR));
+	if (use_theme_color)
+		SDL_FillRect(s, &dst_rect, get_theme_color(DIALOG_FRAME, DEFAULT_STATE, BACKGROUND_COLOR));
 }
 
 void w_progress_bar::set_progress(int inValue, int inMaxValue)
@@ -1397,8 +1402,11 @@ void w_list_base::draw(SDL_Surface *s) const
 		real_trough.y = real_trough.y + 1;
 		real_trough.w = real_trough.w - 2;
 		real_trough.h = real_trough.h - 2;
-		pixel = get_theme_color(LIST_THUMB, DEFAULT_STATE, BACKGROUND_COLOR);
-		SDL_FillRect(s, &real_trough, pixel);
+		if (use_theme_color(LIST_THUMB, BACKGROUND_COLOR))
+		{
+			pixel = get_theme_color(LIST_THUMB, DEFAULT_STATE, BACKGROUND_COLOR);
+			SDL_FillRect(s, &real_trough, pixel);
+		}
 
 		pixel = get_theme_color(LIST_THUMB, DEFAULT_STATE, FRAME_COLOR);
 		SDL_Rect thumb_rect = { rect.x + trough_rect.x, rect.y + thumb_y, trough_rect.w, thumb_t->h + thumb_tc->h + thumb_c->h + thumb_bc->h + thumb_b->h};

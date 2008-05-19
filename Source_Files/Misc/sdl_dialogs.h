@@ -409,6 +409,7 @@ extern font_info *get_theme_font(int widget_type, uint16 &style);
 extern uint32 get_theme_color(int widget_type, int state, int which = 0);
 extern SDL_Surface* get_theme_image(int widget_type, int state, int which, int width = 0, int height = 0);
 extern bool use_theme_images(int widget_type);
+extern bool use_theme_color(int widget_type, int which);
 extern uint16 get_theme_space(int widget_type, int which = 0);
 
 extern void dialog_ok(void *arg);

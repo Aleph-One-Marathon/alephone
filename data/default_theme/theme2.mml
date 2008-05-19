@@ -11,6 +11,13 @@
      2 frame color
 -->
 
+<default>
+  <color index="0" red="0.875" green="0.875" blue="0.75"/>
+  <color index="1" red="0.145" green="0.145" blue="0.145"/>
+  <color index="2" red="0.5" green="0.5" blue="0.5"/>
+  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12"/>
+</default>
+
 <!-- Dialog frame -->
 <frame top="12" bottom="12" left="12" right="12">
   <image index="0" file="frame_tl.bmp" scale="false"/>
@@ -41,7 +48,6 @@
   <image index="1" file="button_c.bmp" scale="false"/>
   <image index="2" file="button_r.bmp" scale="false"/>
   <active>
-    <!--    <color red="0.95" green="0.70" blue="0.28"/>-->
     <color red="0.67" green="0.67" blue="0.67"/>
   </active>
   <disabled>
@@ -74,7 +80,6 @@
 
 <!-- Label -->
 <label>
-  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
   <color red="0.875" green="0.65" blue="0.65"/>
   <active>
     <color red="0.75" green="0.875" blue="0.65"/>
@@ -86,7 +91,6 @@
 
 <!-- Item -->
 <item space="10">
-  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
   <color red="0.75" green="0.25" blue="0.25"/>
   <active>
     <color red="0.25" green="0.75" blue="0.25"/>
@@ -98,13 +102,10 @@
 
 <!-- Text message -->
 <message> 
-  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
-  <color red="0.875" green="0.875" blue="0.75"/>
 </message>
 
 <!-- Text entry widget -->
 <text_entry>
-  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
   <color red="1" green="0.875" blue="0.875"/>
   <active><color red="1" green="1" blue="1"/></active>
   <disabled><color red="0.5" green="0.5" blue="0.5"/></disabled>
@@ -113,7 +114,6 @@
 
 <!-- Metaserver and pre-game chat -->
 <chat_entry>
-  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12" style="0"/>
 </chat_entry>
 
 <!-- List selection widget -->
