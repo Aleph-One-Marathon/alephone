@@ -381,6 +381,7 @@ static XML_DFontParser ItemFontParser(ITEM_WIDGET);
 static XML_DFontParser MessageFontParser(MESSAGE_WIDGET);
 static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_WIDGET);
 static XML_DFontParser ChatEntryFontParser(CHAT_ENTRY);
+static XML_DFontParser CheckboxFontParser(CHECKBOX);
 
 class XML_DFrameParser : public XML_ElementParser {
 public:
@@ -558,6 +559,25 @@ static XML_TroughParser TroughParser;
 static XML_ThemeWidgetParser ThumbParser("thumb", LIST_THUMB);
 static XML_ThemeWidgetParser SliderThumbParser("thumb", SLIDER_THUMB);
 
+class XML_CheckboxParser : public XML_ThemeWidgetParser {
+public:
+	XML_CheckboxParser() : XML_ThemeWidgetParser("checkbox", CHECKBOX) {}
+
+	bool HandleAttribute(const char *tag, const char *value)
+	{
+		if (StringsEqual(tag, "height")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[CHECKBOX].spaces[BUTTON_HEIGHT]);
+		} else if (StringsEqual(tag, "top")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[CHECKBOX].spaces[BUTTON_T_SPACE]);
+		} else {
+			UnrecognizedTag();
+			return false;
+		}
+		return true;
+	}
+};
+static XML_CheckboxParser CheckboxParser;
+
 class XML_ListParser : public XML_ThemeWidgetParser {
 public:
 	XML_ListParser() : XML_ThemeWidgetParser("list", LIST_WIDGET) {}
@@ -700,6 +720,9 @@ XML_ElementParser *Theme_GetParser()
 	SliderThumbParser.AddChild(&SliderThumbImageParser);
 	SliderParser.AddChild(&SliderThumbParser);
 	ThemeParser.AddChild(&SliderParser);
+
+	CheckboxParser.AddChild(&CheckboxFontParser);
+	ThemeParser.AddChild(&CheckboxParser);
 
 	return &ThemeParser;
 }
@@ -851,6 +874,12 @@ static void set_theme_defaults(void)
 	dialog_theme[TINY_BUTTON].spaces[BUTTON_HEIGHT] = 18;
 	dialog_theme[TINY_BUTTON].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[TINY_BUTTON].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+
+	dialog_theme[CHECKBOX].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
+	dialog_theme[CHECKBOX].font_spec.size = 22;
+	dialog_theme[CHECKBOX].font_set = true;
+	dialog_theme[CHECKBOX].spaces[BUTTON_T_SPACE] = 13;
+	dialog_theme[CHECKBOX].spaces[BUTTON_HEIGHT] = 15;
 	
 }
 

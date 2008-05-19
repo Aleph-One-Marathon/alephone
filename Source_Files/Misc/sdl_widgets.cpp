@@ -652,7 +652,14 @@ const char *w_toggle::onoff_labels[] = {"Off", "On", NULL};
 w_toggle::w_toggle(bool selection, const char **labels) : w_select(selection, labels) {
 #ifdef HAVE_SDL_TTF
 	labels_are_utf8(true);
+
+	if (labels == onoff_labels)
+	{
+		font = get_theme_font(CHECKBOX, style);
+	}
 #endif
+
+	saved_min_height = get_theme_space(CHECKBOX, BUTTON_HEIGHT);
 }
 
 void w_toggle::draw(SDL_Surface *s) const
@@ -668,20 +675,12 @@ void w_toggle::draw(SDL_Surface *s) const
     // ghs: disgusting temporary hack to draw larger checkboxes
     if (labels == onoff_labels)
     {
-	    int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
-	    static font_info* checkbox_font = 0;
-	    if (!checkbox_font)
-	    {
-		    TextSpec checkbox_font_spec = { -1, styleNormal, 18, 0, "mono", "", "", "" };
-		    checkbox_font = load_font(checkbox_font_spec);
-	    }
-	    
-	    draw_text(s, str, rect.x, y, get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), checkbox_font, style, utf8);
+	    draw_text(s, str, rect.x, rect.y + (rect.h - saved_min_height) / 2 + get_theme_space(CHECKBOX, BUTTON_T_SPACE), get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), font, style, utf8);
     }
     else
 #endif
     {
-	    draw_text(s, str, rect.x, y, get_theme_color(ITEM_WIDGET, state), font, style, utf8);
+	    draw_text(s, str, rect.x, rect.y + font->get_ascent(), get_theme_color(ITEM_WIDGET, state), font, style, utf8);
     }
 	    
 	// Cursor
