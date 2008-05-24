@@ -1173,6 +1173,8 @@ static void controls_dialog(void *arg)
 	table->dual_add(mouse_acceleration_w->label("Accelerate Mouse"), d);
 	table->dual_add(mouse_acceleration_w, d);
 
+	mouse_w->add_dependent_widget(mouse_acceleration_w);
+
 	w_toggle *invert_mouse_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
 	table->dual_add(invert_mouse_w->label("Invert Mouse"), d);
 	table->dual_add(invert_mouse_w, d);
