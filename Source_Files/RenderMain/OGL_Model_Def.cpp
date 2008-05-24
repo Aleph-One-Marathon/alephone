@@ -785,6 +785,7 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
+	bool ResetValues();
 	bool End();
 	
 	XML_ModelDataParser(): XML_ElementParser("model") {}
@@ -909,6 +910,12 @@ bool XML_ModelDataParser::AttributesDone()
 		AttribsMissing();
 		return false;
 	}
+	return true;
+}
+
+bool XML_ModelDataParser::ResetValues()
+{
+	MdlDeleteAll();
 	return true;
 }
 
