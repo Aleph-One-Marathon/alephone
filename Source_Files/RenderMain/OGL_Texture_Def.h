@@ -108,6 +108,8 @@ struct OGL_TextureOptionsBase
 	// For convenience
 	void Load();
 	void Unload();
+
+	virtual int GetMaxSize();
 	
 	OGL_TextureOptionsBase():
 	OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),

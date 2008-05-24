@@ -1866,6 +1866,9 @@ void write_preferences(
 		fprintf(F,"  <texture index=\"%hd\" near_filter=\"%hd\" far_filter=\"%hd\" resolution=\"%hd\" color_format=\"%d\" max_size=\"%d\"/>\n",
 			k, TxtrConfig.NearFilter, TxtrConfig.FarFilter, TxtrConfig.Resolution, TxtrConfig.ColorFormat, TxtrConfig.MaxSize);
 	}
+	OGL_Texture_Configure& TxtrConfig = graphics_preferences->OGL_Configure.ModelConfig;
+	fprintf(F,"  <texture index=\"%hd\" near_filter=\"%hd\" far_filter=\"%hd\" resolution=\"%hd\" color_format=\"%d\" max_size=\"%d\"/>\n",
+		OGL_NUMBER_OF_TEXTURE_TYPES, TxtrConfig.NearFilter, TxtrConfig.FarFilter, TxtrConfig.Resolution, TxtrConfig.ColorFormat, TxtrConfig.MaxSize);
 	fprintf(F,"</graphics>\n\n");
 	
 	fprintf(F,"<player\n");
@@ -2573,7 +2576,7 @@ bool XML_TexturePrefsParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"index"))
 	{
-		if (ReadBoundedInt16Value(Value,Index,0,OGL_NUMBER_OF_TEXTURE_TYPES-1))
+		if (ReadBoundedInt16Value(Value,Index,0,OGL_NUMBER_OF_TEXTURE_TYPES))
 		{
 			IndexPresent = true;
 			return true;
@@ -2643,21 +2646,23 @@ bool XML_TexturePrefsParser::AttributesDone()
 		AttribsMissing();
 		return false;
 	}
-	
+
+	OGL_Texture_Configure& Config = (Index == OGL_NUMBER_OF_TEXTURE_TYPES) ?  graphics_preferences->OGL_Configure.ModelConfig : graphics_preferences->OGL_Configure.TxtrConfigList[Index];
+
 	if (ValuesPresent[0])
-		graphics_preferences->OGL_Configure.TxtrConfigList[Index].NearFilter = Values[0];
+		Config.NearFilter = Values[0];
 	
 	if (ValuesPresent[1])
-		graphics_preferences->OGL_Configure.TxtrConfigList[Index].FarFilter = Values[1];
+		Config.FarFilter = Values[1];
 	
 	if (ValuesPresent[2])
-		graphics_preferences->OGL_Configure.TxtrConfigList[Index].Resolution = Values[2];
+		Config.Resolution = Values[2];
 	
 	if (ValuesPresent[3])
-		graphics_preferences->OGL_Configure.TxtrConfigList[Index].ColorFormat = Values[3];
+		Config.ColorFormat = Values[3];
 
 	if (ValuesPresent[4])
-		graphics_preferences->OGL_Configure.TxtrConfigList[Index].MaxSize = Values[4];
+		Config.MaxSize = Values[4];
 	
 	return true;
 }

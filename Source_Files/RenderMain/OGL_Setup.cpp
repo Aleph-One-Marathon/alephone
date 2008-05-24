@@ -249,6 +249,12 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 		TxtrData.ColorFormat = 0;		// 32-bit color
 		TxtrData.MaxSize = 0;                   // Unlimited
 	}
+
+	Data.ModelConfig.NearFilter = 1;
+	Data.ModelConfig.FarFilter = 5;
+	Data.ModelConfig.Resolution = 0;
+	Data.ModelConfig.ColorFormat = 0;
+	Data.ModelConfig.MaxSize = 0;
 	
 #ifdef SDL
 	// Reasonable default flags ("static" effect causes massive slowdown, so we turn it off)
@@ -291,9 +297,9 @@ void OGL_TextureOptionsBase::Load()
 		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
 	}
 
-	if (Type >= 0 && Type < OGL_NUMBER_OF_TEXTURE_TYPES && Get_OGL_ConfigureData().TxtrConfigList[Type].MaxSize)
+	if (GetMaxSize())
 	{
-		maxTextureSize = MIN(maxTextureSize, Get_OGL_ConfigureData().TxtrConfigList[Type].MaxSize);
+		maxTextureSize = MIN(maxTextureSize, GetMaxSize());
 	}
 	
 	int flags = ImageLoader_ResizeToPowersOfTwo;
@@ -402,6 +408,16 @@ void OGL_TextureOptionsBase::Unload()
 {
 	NormalImg.Clear();
 	GlowImg.Clear();
+}
+
+int OGL_TextureOptionsBase::GetMaxSize()
+{
+	if (Type >= 0 && Type < OGL_NUMBER_OF_TEXTURE_TYPES)
+	{
+		return Get_OGL_ConfigureData().TxtrConfigList[Type].MaxSize;
+	}
+	else
+		return 0; // Unlimited
 }
 #endif
 

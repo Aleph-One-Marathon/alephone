@@ -58,6 +58,7 @@ protected:
 	SelectorWidget*		m_anisotropicWidget;
 	
 	SelectorWidget* m_textureQualityWidget [OGL_NUMBER_OF_TEXTURE_TYPES];
+	SelectorWidget* m_modelQualityWidget;
 	
 	ToggleWidget*		m_geForceFixWidget;
 	SelectSelectorWidget*		m_wallsFilterWidget;

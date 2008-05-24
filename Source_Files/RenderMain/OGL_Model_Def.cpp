@@ -26,6 +26,7 @@
 
 #include "cseries.h"
 #include "OGL_Model_Def.h"
+#include "OGL_Setup.h"
 
 #ifdef HAVE_OPENGL
 
@@ -178,6 +179,11 @@ OGL_ModelData *OGL_GetModelData(short Collection, short Sequence, short& ModelSe
 	
 	// None found!
 	return NULL;
+}
+
+int OGL_SkinData::GetMaxSize()
+{
+	return Get_OGL_ConfigureData().ModelConfig.MaxSize;
 }
 
 

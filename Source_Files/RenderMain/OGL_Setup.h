@@ -164,6 +164,9 @@ struct OGL_ConfigureData
 	// Configure textures
 	OGL_Texture_Configure TxtrConfigList[OGL_NUMBER_OF_TEXTURE_TYPES];
 
+	// Configure models
+	OGL_Texture_Configure ModelConfig;
+
 	// Overall rendering flags
 	uint16 Flags;
 	

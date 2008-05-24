@@ -55,9 +55,7 @@ struct OGL_SkinData: public OGL_TextureOptionsBase
 {
 	short CLUT;				// Which color table is this skin for? (-1 is all)
 	
-	OGL_SkinData(): CLUT(ALL_CLUTS) {
-		Type = 2; // OGL_Txtr_Inhabitant
-	}
+	int GetMaxSize();
 };
 
 // Manages skins, in case we decide to have separate static and animated models

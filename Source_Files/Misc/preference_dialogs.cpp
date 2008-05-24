@@ -198,6 +198,8 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<int> (m_textureQualityWidget [2], &spriteQualityPref);
 	TexQualityPref weaponQualityPref (graphics_preferences->OGL_Configure.TxtrConfigList [3].MaxSize, 256);
 	binders.insert<int> (m_textureQualityWidget [3], &weaponQualityPref);
+	TexQualityPref modelQualityPref (graphics_preferences->OGL_Configure.ModelConfig.MaxSize, 256);
+	binders.insert<int> (m_modelQualityWidget, &modelQualityPref);
 	
 	Int16Pref wallResoPref (graphics_preferences->OGL_Configure.TxtrConfigList [0].Resolution);
 	binders.insert<int> (m_textureResolutionWidget [0], &wallResoPref);
@@ -320,6 +322,10 @@ public:
 		texture_quality_wa[OGL_Txtr_WeaponsInHand] = new w_select_popup ();
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand]->label("Weapons in Hand"), m_dialog);
 		general_table->dual_add(texture_quality_wa[OGL_Txtr_WeaponsInHand], m_dialog);
+
+		w_select_popup *model_quality_w = new w_select_popup();
+		general_table->dual_add(model_quality_w->label("3D Model Skins"), m_dialog);
+		general_table->dual_add(model_quality_w, m_dialog);
 	
 		vector<string> tex_quality_strings;
 		tex_quality_strings.push_back ("Unlimited");
@@ -333,6 +339,7 @@ public:
 				texture_quality_wa[i]->set_labels (tex_quality_strings);
 			}
 		}
+		model_quality_w->set_labels(tex_quality_strings);
 
 		vertical_placer *advanced_placer = new vertical_placer;
 
@@ -456,6 +463,7 @@ public:
 			m_textureResolutionWidget [i] = new PopupSelectorWidget (texture_resolution_wa[i]);
 			m_textureDepthWidget [i] = new PopupSelectorWidget(texture_depth_wa[i]);
 		}
+		m_modelQualityWidget = new PopupSelectorWidget(model_quality_w);
 	}
 
 	~SdlOpenGLDialog() {

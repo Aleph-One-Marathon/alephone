@@ -147,6 +147,7 @@ struct TxtrTypeInfoData
 
 
 static TxtrTypeInfoData TxtrTypeInfoList[OGL_NUMBER_OF_TEXTURE_TYPES];
+static TxtrTypeInfoData ModelSkinInfo;
 
 static bool useSGISMipmaps = false;
 
@@ -328,6 +329,32 @@ void OGL_StartTextures()
 	{
 		OGL_Texture_Configure& TxtrConfigure = ConfigureData.TxtrConfigList[k];
 		TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[k];
+		
+		short NearFilter = TxtrConfigure.NearFilter;
+		if (NearFilter < NUMBER_OF_NEAR_FILTERS)
+			TxtrTypeInfo.NearFilter = NearFilterList[NearFilter];
+		else
+			TxtrTypeInfo.NearFilter = GL_NEAREST;
+		
+		short FarFilter = TxtrConfigure.FarFilter;
+		if (FarFilter < NUMBER_OF_FAR_FILTERS)
+			TxtrTypeInfo.FarFilter = FarFilterList[FarFilter];
+		else
+			TxtrTypeInfo.FarFilter = GL_NEAREST;
+		
+		TxtrTypeInfo.Resolution = TxtrConfigure.Resolution;
+		
+		short ColorFormat = TxtrConfigure.ColorFormat;
+		if (ColorFormat < NUMBER_OF_COLOR_FORMATS)
+			TxtrTypeInfo.ColorFormat = ColorFormatList[ColorFormat];
+		else
+			TxtrTypeInfo.ColorFormat = GL_RGBA8;
+	}
+
+	// Model skin
+	{
+		OGL_Texture_Configure& TxtrConfigure = ConfigureData.ModelConfig;
+		TxtrTypeInfoData& TxtrTypeInfo = ModelSkinInfo;
 		
 		short NearFilter = TxtrConfigure.NearFilter;
 		if (NearFilter < NUMBER_OF_NEAR_FILTERS)
@@ -1491,7 +1518,7 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 	else if (IsSilhouette)
 		FindSilhouetteVersion(Image);
 	
-	TxtrTypeInfoData& TxtrTypeInfo = TxtrTypeInfoList[OGL_Txtr_Inhabitant];
+	TxtrTypeInfoData& TxtrTypeInfo = ModelSkinInfo;
 
 	// Display size: may be shrunk
 	int LoadedWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);
