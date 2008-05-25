@@ -35,12 +35,6 @@
 	  margin-bottom: 4px;
       }
       
-      div.triggers dt {
-	  border-bottom: thin solid;
-	  border-color: #006600;
-	  padding-bottom: 1px;
-      }
-
       h3 {
 	  color: #003300;
 	  margin-bottom: 4px;
@@ -289,9 +283,23 @@
       <h1>
 <a name="triggers"></a>Triggers</h1>
 <div class="triggers">
-<p>These are functions scripts can define which Aleph One will call at specific times or events.</p>
+<p>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:
+<pre>Triggers = {}
+function Triggers.idle()
+  for p in Players() do 
+    if p.life &lt; 150 and not p.dead then 
+      p.life = p.life + 1
+    end
+  end
+end
+</pre>
+Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
+</p>
 <dl>
-<dt>init(restoring_game)
+<dt>Triggers</dt>
+<dd>
+<dl>
+<dt>.init(restoring_game)
   </dt>
 <dd>
 <p class="description">at beginning of level</p>
@@ -299,129 +307,135 @@
 <li>restoring_game: true if restoring from a saved game</li>
 </ul>
 </dd>
-<dt>cleanup()
+<dt>.cleanup()
   </dt>
 <dd>
 <p class="description">at end of the level</p>
-<p class="note">Primarily this is intended as a last chance for changing netgame scores before the postgame carnage report.</p>
+<p class="note">primarily this is intended as a last chance for changing netgame scores before the postgame carnage report.</p>
 </dd>
-<dt>idle()
+<dt>.idle()
   </dt>
 <dd>
 <p class="description">at each tick, before physics and such</p>
 </dd>
-<dt>postidle()
+<dt>.postidle()
   </dt>
 <dd>
 <p class="description">at each tick, after physics and such, but before rendering</p>
 </dd>
-<dt>start_refuel(type, player_index, side_index)
+<dt>.start_refuel(class, player, side)
   </dt>
 <dd>
 <p class="description">whenever a player starts to use a refuel panel</p>
 </dd>
-<dt>end_refuel(type, player_index, side_index)
+<dt>.end_refuel(class, player, side)
   </dt>
 <dd>
 <p class="description">whenever a player stops using a refuel panel</p>
 </dd>
-<dt>tag_switch(tag, player)
+<dt>.tag_switch(tag, player)
   </dt>
 <dd>
 <p class="description">whenever a player uses a tag switch</p>
-<p class="note">Not called when a projectile (e.g., fists) toggles a tag switch</p>
+<p class="note">not called when a projectile (e.g., fists) toggles a tag switch</p>
 </dd>
-<dt>light_switch(light, player)
+<dt>.light_switch(light, player)
   </dt>
 <dd>
 <p class="description">whenever a player uses a light switch</p>
-<p class="note">Not called when a projectile (e.g., fists) toggles a light switch</p>
+<p class="note">not called when a projectile (e.g., fists) toggles a light switch</p>
 </dd>
-<dt>platform_switch(platform, player)
+<dt>.platform_switch(polygon, player)
   </dt>
 <dd>
 <p class="description">whenever a player uses a platform switch</p>
-<p class="note">Not called when a projectile (e.g., fists) toggles a platform switch</p>
+<ul class="args">
+<li>polygon: polygon of the platform being toggled</li>
+</ul>
+<p class="note">not called when a projectile (e.g., fists) toggles a platform switch</p>
 </dd>
-<dt>terminal_enter(terminal_id, player)
+<dt>.terminal_enter(terminal, player)
   </dt>
 <dd>
 <p class="description">whenever a player starts using a terminal</p>
 </dd>
-<dt>terminal_exit(terminal_id, player)
+<dt>.terminal_exit(terminal, player)
   </dt>
 <dd>
 <p class="description">whenever a player stops using a terminal</p>
 </dd>
-<dt>pattern_buffer(buffer_id, player)
+<dt>.pattern_buffer(side, player)
   </dt>
 <dd>
 <p class="description">whenever a player uses a pattern buffer</p>
 </dd>
-<dt>got_item(type, player)
+<dt>.got_item(type, player)
   </dt>
 <dd>
 <p class="description">whenever a player picks up an item</p>
-<p class="note">Also whenever a player gets an item when a script calls .items.add()</p>
+<p class="note">also whenever a player gets an item when a script calls .items.add()</p>
 </dd>
-<dt>light_activated(index)
+<dt>.light_activated(light)
   </dt>
 <dd>
 <p class="description">whenever a light is activated or deactivated</p>
 </dd>
-<dt>platform_activated(index)
+<dt>.platform_activated(polygon)
   </dt>
 <dd>
 <p class="description">whenever a platform is activated or deactivated</p>
 </dd>
-<dt>player_revived(player)
+<dt>.player_revived(player)
   </dt>
 <dd>
 <p class="description">whenever a player revives (presumably only happens in a netgame)</p>
 </dd>
-<dt>player_killed(player, aggressor_player, action, projectile)
+<dt>.player_killed(player, aggressor_player, action, projectile)
   </dt>
 <dd>
 <p class="description">whenever a player dies</p>
 <ul class="args">
-<li>aggressor_player: the player who killed player, possibly himself (suicide), or -1 if killed by a non-player</li>
-<li>action: there are no mnemonics for this at this time, making its use difficult</li>
-<li>projectile: the projectile that delivered the final blow, or -1 if there is no such projectile</li>
+<li>aggressor_player: the player who killed player, possibly himself (suicide) (can be nil)</li>
+<li>action: dying soft, dying hard, or dying flaming</li>
+<li>projectile: the projectile that delivered the final blow (can be nil)</li>
 </ul>
 </dd>
-<dt>player_damaged(victim_player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile)
+<dt>.player_damaged(victim, aggressor_player, aggressor_monster, damage_type, damage_amount, projectile)
   </dt>
 <dd>
 <p class="description">whenever a player has taken damage, but before he dies if applicable. The player's suit energy or oxygen may be negative when this trigger is called; if it still is when the trigger returns, it will be set to 0. The player's suit energy is tested again after this trigger returns, so a script may prevent a player's death
       </p>
 <ul class="args">
-<li>victim_player_index: -1 if the victim was damaged by a non-player</li>
-<li>aggressor_monster_index: -1 if the victim was damaged by neither a player nor a monster</li>
-<li>damage_type: one of the Damage Types, e.g. _damage_fusion</li>
-<li>damage_amount: the amount recently subtracted from the player. If _damage_oxygen_drain, damage_amount was assessed against player's oxygen; else against player's suit energy</li>
-<li>projectile: the projectile that delivered the damage, or -1 if there is no such projectile</li>
+<li>aggressor_player: player who got the kill (can be nil)</li>
+<li>aggressor_monster: monster that got the kill (can be nil)</li>
+<li>damage_type: e.g. "fists"</li>
+<li>damage_amount: the amount recently subtracted from the player. If "oxygen drain", damage_amount was assessed against player's oxygen; otherwise against player's suit energy</li>
+<li>projectile: the projectile that delivered the damage (can be nil)</li>
 </ul>
 </dd>
-<dt>monster_killed(monster, aggressor_player, projectile)
+<dt>.monster_killed(monster, aggressor_player, projectile)
   </dt>
 <dd>
 <p class="description">whenever a monster dies</p>
 <ul class="args">
-<li>aggressor_player: player index of who killed it, or -1 if killed by non-player</li>
-<li>projectile: projectile that delivered the final blow, or -1 if there is no such projectile</li>
+<li>aggressor_player: player who killed it (can be nil)</li>
+<li>projectile: projectile that delivered the final blow (can be nil)</li>
 </ul>
-<p class="note">This is called after a monster has taken lethal damage, but before it's removed form the monster list. You can use this to find out when a monster created with new_monster dies, but a monster discovered by select_monster may have already taken lethal damage, so you may need to check for that case when using select_monster.</p>
+<p class="note">called after a monster has taken lethal damage, but before it's removed from the monster list</p>
+<p class="note">you can use this to find out when a monster created with new_monster dies, but a monster discovered by Polygons.monsters() may have already taken lethal damage, so you may need to check for that case when using Polygons.monsters()</p>
 </dd>
-<dt>item_created(item_index)
+<dt>.item_created(item)
   </dt>
 <dd>
 <p class="description">whenever an item is created and placed on the ground (or floating) somewhere</p>
-<p class="note">Currently, this does not trigger on initial item placement because the initial item placement is done before Lua becomes initialised.</p>
+<p class="note">does not trigger on initial item placement because the initial item placement is done before Lua becomes initialised.</p>
 </dd>
-<dt>projectile_detonated(type, owner, polygon, x, y, z)
+<dt>.projectile_detonated(type, owner, polygon, x, y, z)
   </dt>
 <dd>
 <p class="description">whenever a projectile detonates, after it has done any area of effect damage</p>
+</dd>
+</dl>
 </dd>
 </dl>
 </div>
@@ -600,6 +614,7 @@
 <dl>
 <dt>Game</dt>
 <dd>
+<dl>
       <dt>
     .difficulty<span class="access"> (read-only)</span>
 </dt>
@@ -657,7 +672,8 @@
 <dd>
 <p class="description">whether the game is EMFH, KOTH, etc.</p>
 </dd>
-    </dd>
+    </dl>
+</dd>
 </dl>
 <h3>
 <a name="Items"></a>Items</h3>
@@ -731,6 +747,7 @@
 <dl>
 <dt>Level</dt>
 <dd>
+<dl>
       <dt>.fog<br>.underwater_fog</dt>
 <dd>
 <dl>
@@ -803,7 +820,8 @@
 <dd>
 <p class="description">whether level is vacuum</p>
 </dd>
-    </dd>
+    </dl>
+</dd>
 </dl>
 <h3>
 <a name="Lights"></a>Lights</h3>
@@ -1026,6 +1044,7 @@
 <dl>
 <dt>Music</dt>
 <dd>
+<dl>
       <dt>.clear()
   </dt>
 <dd>
@@ -1051,7 +1070,8 @@
 <dd>
 <p class="description">for every track passed, return true if it exists and is playable and false otherwise</p>
 </dd>
-    </dd>
+    </dl>
+</dd>
 </dl>
 <h3>
 <a name="Platforms"></a>Platforms</h3>

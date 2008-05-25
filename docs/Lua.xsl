@@ -39,12 +39,6 @@
 	  margin-bottom: 4px;
       }
       
-      div.triggers dt {
-	  border-bottom: thin solid;
-	  border-color: #006600;
-	  padding-bottom: 1px;
-      }
-
       h3 {
 	  color: #003300;
 	  margin-bottom: 4px;
@@ -150,8 +144,13 @@
   <div><xsl:attribute name="class">triggers</xsl:attribute>
   <p><xsl:copy-of select="description/node()"/></p>
   <dl>
+    <dt>Triggers</dt>
+    <dd>
+  <dl>
     <xsl:apply-templates select="function"/>
   </dl>
+    </dd>
+    </dl>
   </div>
 </xsl:template>
 
@@ -263,7 +262,9 @@
       <xsl:otherwise>
 	<dt><xsl:value-of select="@name"/></dt>
 	<dd>
-	  <xsl:apply-templates select="id(@contains)"/>
+	  <dl>
+	    <xsl:apply-templates select="id(@contains)"/>
+	  </dl>
 	</dd>
       </xsl:otherwise>
     </xsl:choose>
@@ -284,7 +285,7 @@
     <xsl:choose>
       <xsl:when test="(parent::table and ../@singleton = 'false') or parent::subtable-accessor">:</xsl:when>
       <xsl:when test="parent::table or parent::subtable">.</xsl:when>
-      <xsl:when test="parent::triggers"></xsl:when>
+      <xsl:when test="parent::triggers">.</xsl:when>
       <xsl:otherwise><xsl:value-of select="../@name"/>.</xsl:otherwise>
     </xsl:choose>
     <xsl:value-of select="@name"/>(<xsl:for-each select="argument">

@@ -43,6 +43,10 @@ typedef L_Class<Lua_Monster_Name> Lua_Monster;
 extern char Lua_Monsters_Name[]; // "Monsters"
 typedef L_Container<Lua_Monsters_Name, Lua_Monster> Lua_Monsters;
 
+extern char Lua_MonsterAction_Name[]; // "monster_action"
+typedef L_Enum<Lua_MonsterAction_Name> Lua_MonsterAction;
+
+
 int Lua_Monsters_register(lua_State *L);
 
 #endif

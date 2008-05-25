@@ -854,7 +854,7 @@ static void	change_panel_state(
                                                 play_control_panel_sound(panel_side_index, _activating_sound);
                                                 
                                                 //MH: Lua script hook
-                                                L_Call_Pattern_Buffer(side->control_panel_permutation,player_index);
+                                                L_Call_Pattern_Buffer(/*side->control_panel_permutation*/panel_side_index,player_index);
                                         
                 //				fade_out_background_music(30);
                 

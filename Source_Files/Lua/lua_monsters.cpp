@@ -356,7 +356,6 @@ char Lua_MonsterModes_Name[] = "MonsterModes";
 typedef L_EnumContainer<Lua_MonsterModes_Name, Lua_MonsterMode> Lua_MonsterModes;
 
 char Lua_MonsterAction_Name[] = "monster_action";
-typedef L_Enum<Lua_MonsterAction_Name> Lua_MonsterAction;
 
 char Lua_MonsterActions_Name[] = "MonsterActions";
 typedef L_EnumContainer<Lua_MonsterActions_Name, Lua_MonsterAction> Lua_MonsterActions;

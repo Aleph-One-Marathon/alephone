@@ -116,7 +116,7 @@ void L_Call_Light_Switch(short light, short player_index) {}
 void L_Call_Platform_Switch(short platform, short player_index) {}
 void L_Call_Terminal_Enter(short terminal_id, short player_index) {}
 void L_Call_Terminal_Exit(short terminal_id, short player_index) {}
-void L_Call_Pattern_Buffer(short buffer_id, short player_index) {}
+void L_Call_Pattern_Buffer(short side_index, short player_index) {}
 void L_Call_Got_Item(short type, short player_index) {}
 void L_Call_Light_Activated(short index) {}
 void L_Call_Platform_Activated(short index) {}
@@ -284,88 +284,35 @@ L_Do_Call(const char* inLuaFunctionName, int inNumArgs = 0, int inNumResults = 0
 		L_Error(lua_tostring(state,-1));
 }
 
-static void
-L_Call(const char* inLuaFunctionName)
+static bool L_Get_Trigger(const char* inLuaTriggerName)
 {
-	if(L_Should_Call(inLuaFunctionName))
-		L_Do_Call(inLuaFunctionName);
+	if (!lua_running)
+		return false;
+
+	lua_pushstring(state, "Triggers");
+	lua_gettable(state, LUA_GLOBALSINDEX);
+	if (!lua_istable(state, -1))
+	{
+		lua_pop(state, 1);
+		return false;
+	}
+
+	lua_pushstring(state, inLuaTriggerName);
+	lua_gettable(state, -2);
+	if (!lua_isfunction(state, -1))
+	{
+		lua_pop(state, 2);
+		return false;
+	}
+
+	lua_remove(state, -2);
+	return true;
 }
 
-static void
-L_Call_N(const char* inLuaFunctionName, lua_Number inArg1)
+static void L_Call_Trigger(int numArgs = 0)
 {
-	if(L_Should_Call(inLuaFunctionName))
-	{
-		lua_pushnumber(state, inArg1);
-		L_Do_Call(inLuaFunctionName, 1);
-	}
-}
-
-static void
-L_Call_NN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2)
-{
-	if(L_Should_Call(inLuaFunctionName))
-	{
-		lua_pushnumber(state, inArg1);
-		lua_pushnumber(state, inArg2);
-		L_Do_Call(inLuaFunctionName, 2);
-	}
-}
-
-static void
-L_Call_NNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3)
-{
-	if(L_Should_Call(inLuaFunctionName))
-	{
-		lua_pushnumber(state, inArg1);
-		lua_pushnumber(state, inArg2);
-		lua_pushnumber(state, inArg3);
-		L_Do_Call(inLuaFunctionName, 3);
-	}
-}
-
-static void
-L_Call_NNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4)
-{
-	if(L_Should_Call(inLuaFunctionName))
-	{
-		lua_pushnumber(state, inArg1);
-		lua_pushnumber(state, inArg2);
-		lua_pushnumber(state, inArg3);
-		lua_pushnumber(state, inArg4);
-		L_Do_Call(inLuaFunctionName, 4);
-	}
-}
-
-#if 0
-static void
-L_Call_NNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4, lua_Number inArg5)
-{
-	if(L_Should_Call(inLuaFunctionName))
-	{
-		lua_pushnumber(state, inArg1);
-		lua_pushnumber(state, inArg2);
-		lua_pushnumber(state, inArg3);
-		lua_pushnumber(state, inArg4);
-		lua_pushnumber(state, inArg5);
-		L_Do_Call(inLuaFunctionName, 5);
-	}
-}
-#endif
-
-static void
-L_Call_NNNNNN(const char* inLuaFunctionName, lua_Number inArg1, lua_Number inArg2, lua_Number inArg3, lua_Number inArg4, lua_Number inArg5, lua_Number inArg6)
-{
-	if(L_Should_Call(inLuaFunctionName))
-	{
-		lua_pushnumber(state, inArg1);
-		lua_pushnumber(state, inArg2);
-		lua_pushnumber(state, inArg3);
-		lua_pushnumber(state, inArg4);
-		lua_pushnumber(state, inArg5);
-		lua_pushnumber(state, inArg6);
-		L_Do_Call(inLuaFunctionName, 6);
-	}
+	if (lua_pcall(state, numArgs, 0, 0)==LUA_ERRRUN)
+		L_Error(lua_tostring(state,-1));
 }
 
 void L_Call_Init(bool fRestoringSaved)
@@ -378,131 +325,249 @@ void L_Call_Init(bool fRestoringSaved)
 		lua_random_generator.jsr = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 		lua_random_generator.jcong = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 	}
-	if (L_Should_Call("init")) {
+	if (L_Get_Trigger("init"))
+	{
 		lua_pushboolean(state, fRestoringSaved);
-		L_Do_Call("init", 1);
+		L_Call_Trigger(1);
 	}
 }
 
 void L_Call_Cleanup ()
 {
-	L_Call("cleanup");
+	if (L_Get_Trigger("cleanup"))
+	{
+		L_Call_Trigger();
+	}
 }
 
 void L_Call_Idle()
 {
-	L_Call("idle");
+	if (L_Get_Trigger("idle"))
+	{
+		L_Call_Trigger();
+	}
 }
 
 void L_Call_PostIdle()
 {
-	L_Call("postidle");
-}
-
-void L_Call_Sent_Message(const char* player, const char* message) {
-  if(L_Should_Call("sent_message"))
-   {
-	lua_pushstring(state, player);
-	lua_pushstring(state, message);
-	L_Do_Call("sent_message", 2);
-   }
+	if (L_Get_Trigger("postidle"))
+	{
+		L_Call_Trigger();
+	}
 }
 
 void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
 {
-	// ZZZ: Preserving existing behavior which is to only pass along two of these parameters
-	L_Call_NN("start_refuel", type, player_index);
+	if (L_Get_Trigger("start_refuel"))
+	{
+		Lua_ControlPanelClass::Push(state, type);
+		Lua_Player::Push(state, player_index);
+		Lua_Side::Push(state, panel_side_index);
+		L_Call_Trigger(3);
+	}
 }
 
 void L_Call_End_Refuel (short type, short player_index, short panel_side_index)
 {
-	// ZZZ: Preserving existing behavior which is to only pass along two of these parameters
-	L_Call_NN("end_refuel", type, player_index);
+	if (L_Get_Trigger("end_refuel"))
+	{
+		Lua_ControlPanelClass::Push(state, type);
+		Lua_Player::Push(state, player_index);
+		Lua_Side::Push(state, panel_side_index);
+		L_Call_Trigger(3);
+	}
 }
 
 void L_Call_Tag_Switch(short tag, short player_index)
 {
-	L_Call_NN("tag_switch", tag, player_index);
+	if (L_Get_Trigger("tag_switch"))
+	{
+		Lua_Tag::Push(state, tag);
+		Lua_Player::Push(state, player_index);
+		L_Call_Trigger(2);
+	}
 }
 
 void L_Call_Light_Switch(short light, short player_index)
 {
-	L_Call_NN("light_switch", light, player_index);
+	if (L_Get_Trigger("light_switch"))
+	{
+		Lua_Light::Push(state, light);
+		Lua_Player::Push(state, player_index);
+		L_Call_Trigger(2);
+	}
 }
 
 void L_Call_Platform_Switch(short platform, short player_index)
 {
-	L_Call_NN("platform_switch", platform, player_index);
+	if (L_Get_Trigger("platform_switch"))
+	{
+		Lua_Polygon::Push(state, platform);
+		Lua_Player::Push(state, player_index);
+		L_Call_Trigger(2);
+	}
 }
 
 void L_Call_Terminal_Enter(short terminal_id, short player_index)
 {
-	L_Call_NN("terminal_enter", terminal_id, player_index);
+	if (L_Get_Trigger("terminal_enter"))
+	{
+		Lua_Terminal::Push(state, terminal_id);
+		Lua_Player::Push(state, player_index);
+		L_Call_Trigger(2);
+	}
 }
 
 void L_Call_Terminal_Exit(short terminal_id, short player_index)
 {
-	L_Call_NN("terminal_exit", terminal_id, player_index);
+	if (L_Get_Trigger("terminal_exit"))
+	{
+		Lua_Terminal::Push(state, terminal_id);
+		Lua_Player::Push(state, player_index);
+		L_Call_Trigger(2);
+	}
 }
 
-void L_Call_Pattern_Buffer(short buffer_id, short player_index)
+void L_Call_Pattern_Buffer(short side_index, short player_index)
 {
-	L_Call_NN("pattern_buffer", buffer_id, player_index);
+	if (L_Get_Trigger("pattern_buffer"))
+	{
+		Lua_Side::Push(state, side_index);
+		Lua_Player::Push(state, player_index);
+		L_Call_Trigger(2);
+	}
 }
 
 void L_Call_Got_Item(short type, short player_index)
 {
-	L_Call_NN("got_item", type, player_index);
+	if (L_Get_Trigger("got_item"))
+	{
+		Lua_ItemType::Push(state, type);
+		Lua_Player::Push(state, player_index);
+		L_Call_Trigger(2);
+	}
 }
 
 void L_Call_Light_Activated(short index)
 {
-	L_Call_N("light_activated", index);
+	if (L_Get_Trigger("light_activated"))
+	{
+		Lua_Light::Push(state, index);
+		L_Call_Trigger(1);
+	}
 }
 
 void L_Call_Platform_Activated(short index)
 {
-	L_Call_N("platform_activated", index);
+	if (L_Get_Trigger("platform_activated"))
+	{
+		Lua_Polygon::Push(state, index);
+		L_Call_Trigger(1);
+	}
 }
 
 void L_Call_Player_Revived (short player_index)
 {
-	L_Call_N("player_revived", player_index);
+	if (L_Get_Trigger("player_revived"))
+	{
+		Lua_Player::Push(state, player_index);
+		L_Call_Trigger(1);
+	}
 }
 
 void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action, short projectile_index)
 {
-	L_Call_NNNN("player_killed", player_index, aggressor_player_index, action, projectile_index);
+	if (L_Get_Trigger("player_killed"))
+	{
+		Lua_Player::Push(state, player_index);
+
+		if (aggressor_player_index != -1)
+			Lua_Player::Push(state, aggressor_player_index);
+		else
+			lua_pushnil(state);
+
+		Lua_MonsterAction::Push(state, action);
+		if (projectile_index != -1)
+			Lua_Projectile::Push(state, projectile_index);
+		else
+			lua_pushnil(state);
+
+		L_Call_Trigger(4);
+	}
 }
 
 void L_Call_Monster_Killed (short monster_index, short aggressor_player_index, short projectile_index)
 {
-	L_Call_NNN("monster_killed", monster_index, aggressor_player_index, projectile_index);
+	if (L_Get_Trigger("monster_killed"))
+	{
+		Lua_Monster::Push(state, monster_index);
+		if (aggressor_player_index != -1)
+			Lua_Player::Push(state, aggressor_player_index);
+		else
+			lua_pushnil(state);
+
+		if (projectile_index != -1)
+			Lua_Projectile::Push(state, projectile_index);
+		else
+			lua_pushnil(state);
+
+		L_Call_Trigger(3);
+	}
 }
 
-//  Woody Zenfell, 08/03/03
 void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
-	L_Call_NNNNNN("player_damaged", player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
+	if (L_Get_Trigger("player_damaged"))
+	{
+		Lua_Player::Push(state, player_index);
+
+		if (aggressor_player_index != -1)
+			Lua_Player::Push(state, aggressor_player_index);
+		else
+			lua_pushnil(state);
+		
+		if (aggressor_monster_index != -1)
+			Lua_Monster::Push(state, aggressor_monster_index);
+		else
+			lua_pushnil(state);
+		
+		Lua_DamageType::Push(state, damage_type);
+		lua_pushnumber(state, damage_amount);
+		
+		if (projectile_index != -1)
+			Lua_Projectile::Push(state, projectile_index);
+		else
+			lua_pushnil(state);
+
+		L_Call_Trigger(6);
+	}
 }
 
-/* can't use a L_Call function for this */
-void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) {
-  if(L_Should_Call("projectile_detonated"))
-   {
-	lua_pushnumber(state, type);
-	lua_pushnumber(state, owner_index);
-	lua_pushnumber(state, polygon);
-	lua_pushnumber(state, location.x / (double)WORLD_ONE);
-	lua_pushnumber(state, location.y / (double)WORLD_ONE);
-	lua_pushnumber(state, location.z / (double)WORLD_ONE);
-	L_Do_Call("projectile_detonated", 6);
-   }
+void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) 
+{
+	if (L_Get_Trigger("projectile_detonated"))
+	{
+		Lua_ProjectileType::Push(state, type);
+		if (owner_index != -1)
+			Lua_Monster::Push(state, owner_index);
+		else
+			lua_pushnil(state);
+		Lua_Polygon::Push(state, polygon);
+		lua_pushnumber(state, location.x / (double)WORLD_ONE);
+		lua_pushnumber(state, location.y / (double)WORLD_ONE);
+		lua_pushnumber(state, location.z / (double)WORLD_ONE);
+
+		L_Call_Trigger(6);
+	}
 }
 
 void L_Call_Item_Created (short item_index)
 {
-	L_Call_N("item_created", item_index);
+	if (L_Get_Trigger("item_created"))
+	{
+		Lua_Item::Push(state, item_index);
+		L_Call_Trigger(1);
+	}
 }
 
 void L_Invalidate_Monster(short monster_index)
@@ -965,6 +1030,31 @@ static int L_Prompt(lua_State *L)
 	return 0;
 }
 
+static const char *compatibility_triggers = ""
+	"Triggers = {}\n"
+	"Triggers.init = function(restoring_game) if init then init(restoring_game) end end\n"
+	"Triggers.cleanup = function() if cleanup then cleanup() end end\n"
+	"Triggers.idle = function() if idle then idle() end end\n"
+	"Triggers.postidle = function() if postidle then postidle() end end\n"
+	"Triggers.start_refuel = function(class, player, side) if start_refuel then start_refuel(class.index, player.index) end end\n"
+	"Triggers.end_refuel = function(class, player, side) if end_refuel then end_refuel(class.index, player.index) end end\n"
+	"Triggers.tag_switch = function(tag, player) if tag_switch then tag_switch(tag.index, player.index) end end\n"
+	"Triggers.light_switch = function(light, player) if light_switch then light_switch(light.index, player.index) end end\n"
+	"Triggers.platform_switch = function(platform, player) if platform_switch then platform_switch(platform.index, player.index) end end\n"
+	"Triggers.terminal_enter = function(terminal, player) if terminal_enter then terminal_enter(terminal.index, player.index) end end\n"
+	"Triggers.terminal_exit = function(terminal, player) if terminal_exit then terminal_exit(terminal.index, player.index) end end\n"
+	"Triggers.pattern_buffer = function(side, player) if pattern_buffer then pattern_buffer(side.control_panel.permutation, player.index) end end\n"
+	"Triggers.got_item = function(type, player) if got_item then got_item(type.index, player.index) end end\n"
+	"Triggers.light_activated = function(light) if light_activated then light_activated(light.index) end end\n"
+	"Triggers.platform_activated = function(polygon) if platform_activated then platform_activated(polygon.index) end end\n"
+	"Triggers.player_revived = function(player) if player_revived then player_revived(player.index) end end\n"
+	"Triggers.player_killed = function(player, aggressor, action, projectile) if player_killed then if aggressor then aggressor_index = aggressor.index else aggressor_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end player_killed(player.index, aggressor_index, action.index, projectile_index) end end\n"
+	"Triggers.monster_killed = function(monster, aggressor, projectile) if monster_killed then if aggressor then aggressor_index = aggressor.index else aggressor_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end monster_killed(monster.index, aggressor_index, projectile_index) end end\n"
+	"Triggers.player_damaged = function(player, aggressor_player, aggressor_monster, type, amount, projectile) if player_damaged then if aggressor_player then aggressor_player_index = aggressor_player.index else aggressor_player_index = -1 end if aggressor_monster then aggressor_monster_index = aggressor_monster.index else aggressor_monster_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end player_damaged(player.index, aggressor_player_index, aggressor_monster_index, type.index, amount, projectile_index) end end\n"
+	"Triggers.projectile_detonated = function(type, owner, polygon, x, y, z) if projectile_detonated then if owner then owner_index = owner.index else owner_index = -1 end projectile_detonated(type.index, owner_index, polygon.index, x, y, z) end end\n"
+	"Triggers.item_created = function(item) if item_created then item_created(item.index) end end\n"
+	;
+
 void RegisterLuaFunctions()
 {
 	lua_register(state, "screen_print", L_Screen_Print);
@@ -982,6 +1072,9 @@ void RegisterLuaFunctions()
 	Lua_Objects_register(state);
 	Lua_Player_register(state);
 	Lua_Projectiles_register(state);
+
+	luaL_loadbuffer(state, compatibility_triggers, strlen(compatibility_triggers), "compatibility_triggers");
+	lua_pcall(state, 0, 0, 0);
 }
 
 void DeclareLuaConstants()
