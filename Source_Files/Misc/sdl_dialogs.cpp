@@ -1985,7 +1985,7 @@ void dialog::activate_widget(widget *w)
 	{
 		if (widgets[i] == w)
 		{
-			activate_widget(i);
+			activate_widget(i, false);
 			return;
 		}
 	}
