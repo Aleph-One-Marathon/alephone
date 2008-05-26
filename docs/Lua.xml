@@ -2182,12 +2182,28 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   end
 end</pre>
 And this one would damage all major compilers with 10 points of fusion damage:
-      <pre>for m in Monsters() do
+<pre>for m in Monsters() do
   if m.type == "major compiler" then
     m:damage(10, "fusion")
   end
 end</pre>
-    </description>
+Each type has a read-only .index field, which represents the game's internal index:
+<pre>&gt; =ItemTypes["pistol"].index
+1
+</pre>
+Each type also has a .mnemonic field, which is handy for finding the mnemonic of a given type:
+<pre>&gt; =MonsterTypes["major compiler"].class.mnemonic
+compiler
+</pre>
+You can even use the mnemonic field to customize the mnemonics for your scenario. Note that you can only have one string mnemonic per type index:
+<pre>&gt; WeaponTypes["fist"].mnemonic = "puncher"
+&gt; =WeaponTypes["puncher"].index
+0
+&gt; =WeaponTypes["fist"]
+nil
+</pre>
+If you do this, you should customize them all at the beginning of the script. Changing mnemonics mid-game will confuse anyone who tries to read your script, and probably yourself as well!
+</description>
   </types>
   <section name="Example Icon" id="example_icon">
     <description>

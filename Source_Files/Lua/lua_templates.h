@@ -35,6 +35,7 @@ extern "C"
 
 #include <boost/function.hpp>
 #include "lua_mnemonics.h" // for lang_def and mnemonics
+#include <sstream>
 
 // pushes a function that returns the parameterized function
 template<lua_CFunction f>
@@ -64,6 +65,7 @@ private:
 	static int _get(lua_State *L);
 	static int _set(lua_State *L);
 	static int _is(lua_State *L);
+	static int _tostring(lua_State *L);
 };
 
 template<typename t>
@@ -86,6 +88,11 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	// register metatable set
 	lua_pushstring(L, "__newindex");
 	lua_pushcfunction(L, _set);
+	lua_settable(L, -3);
+
+	// register metatable tostring
+	lua_pushstring(L, "__tostring");
+	lua_pushcfunction(L, _tostring);
 	lua_settable(L, -3);
 
 	if (metatable)
@@ -369,6 +376,15 @@ int L_Class<name, index_t>::_set(lua_State *L)
 	return 0;
 }
 
+template<char *name, typename index_t>
+int L_Class<name, index_t>::_tostring(lua_State *L)
+{
+	std::ostringstream s;
+	s << name << " " << Index(L, 1);
+	lua_pushstring(L, s.str().c_str());
+	return 1;
+}
+
 // enum classes define equality with numbers
 template<char *name, typename index_t = int16>
 class L_Enum : public L_Class<name, index_t>
@@ -380,6 +396,8 @@ public:
 private:
 	static bool _lookup(lua_State *L, int index, index_t& to);
 	static int _equals(lua_State *L);
+	static int _get_mnemonic(lua_State *L);
+	static int _set_mnemonic(lua_State *L);
 };
 
 template<char *name, typename index_t>
@@ -387,9 +405,27 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const l
 {
 	L_Class<name, index_t>::Register(L, get, set, 0);
 
+	lua_pushlightuserdata(L, (void *) (&name[1]));
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_pushstring(L, "mnemonic");
+	lua_pushcfunction(L, _get_mnemonic);
+	lua_settable(L, -3);
+	lua_pop(L, 1);
+
+	lua_pushlightuserdata(L, (void *) (&name[2]));
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_pushstring(L, "mnemonic");
+	lua_pushcfunction(L, _set_mnemonic);
+	lua_settable(L, -3);
+	lua_pop(L, 1);
+
 	luaL_getmetatable(L, name);
 	lua_pushstring(L, "__eq");
 	lua_pushcfunction(L, _equals);
+	lua_settable(L, -3);
+
+	lua_pushstring(L, "__tostring");
+	lua_pushcfunction(L, _get_mnemonic);
 	lua_settable(L, -3);
 
 	if (metatable)
@@ -502,6 +538,64 @@ int L_Enum<name, index_t>::_equals(lua_State *L)
 	index_t a, b;
 	lua_pushboolean(L, _lookup(L, 1, a) && _lookup(L, 2, b) && (a == b));
 	return 1;
+}
+
+template<char *name, typename index_t>
+int L_Enum<name, index_t>::_get_mnemonic(lua_State *L)
+{
+	PushMnemonicTable(L);
+	lua_pushnumber(L, ToIndex(L, 1));
+	lua_gettable(L, -2);
+	if (lua_isstring(L, -1))
+	{
+		lua_remove(L, -2);
+		return 1;
+	}
+	else
+	{
+		lua_pop(L, 2);
+		return 0;
+	}
+}
+
+template<char *name, typename index_t>
+int L_Enum<name, index_t>::_set_mnemonic(lua_State *L)
+{
+	if (!lua_isstring(L, 2))
+		return luaL_error(L, "mnemonic: incorrect argument type");
+
+	index_t index = ToIndex(L, 1);
+	const char *new_mnemonic = lua_tostring(L, 2);
+
+	PushMnemonicTable(L);
+	
+	// look up the old mnemonic
+	lua_pushnumber(L, index);
+	lua_gettable(L, -2);
+	if (lua_isstring(L, -1))
+	{
+		// if it exists, remove the string key
+		lua_pushnil(L);
+		lua_settable(L, -3);
+		
+	}
+	else
+	{
+		lua_pop(L, 1);
+	}
+	
+	// update string key
+	lua_pushstring(L, new_mnemonic);
+	lua_pushnumber(L, index);
+	lua_settable(L, -3);
+
+	// update index key
+	lua_pushnumber(L, index);
+	lua_pushstring(L, new_mnemonic);
+	lua_settable(L, -3);
+
+	lua_pop(L, 1);
+	return 0;
 }
 
 template<char *name, class T>
