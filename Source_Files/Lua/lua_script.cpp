@@ -98,7 +98,6 @@ bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
-//static ActionQueues* sLuaActionQueues = 0;
 static ActionQueues* sLuaActionQueues = 0;
 ActionQueues* GetLuaActionQueues() { return sLuaActionQueues; }
 
@@ -152,50 +151,14 @@ const float AngleConvert = 360/float(FULL_CIRCLE);
 static bool mute_lua = false;
 
 // Steal all this stuff
-extern bool ready_weapon(short player_index, short weapon_index);
-extern void DisplayText(short BaseX, short BaseY, char *Text, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff);
-
-
 extern void ShootForTargetPoint(bool ThroughWalls, world_point3d& StartPosition, world_point3d& EndPosition, short& Polygon);
-extern void select_next_best_weapon(short player_index);
 extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
 extern void draw_panels();
 
 extern bool MotionSensorActive;
 
-extern void destroy_players_ball(short player_index);
-
-extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
 extern void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 
-extern void add_object_to_polygon_object_list(short object_index, short polygon_index);
-
-enum // control panel sounds
-{
-	_activating_sound,
-	_deactivating_sound,
-	_unusuable_sound,
-	
-	NUMBER_OF_CONTROL_PANEL_SOUNDS
-};
-
-struct control_panel_definition
-{
-	int16 _class;
-	uint16 flags;
-	
-	int16 collection;
-	int16 active_shape, inactive_shape;
-
-	int16 sounds[NUMBER_OF_CONTROL_PANEL_SOUNDS];
-	_fixed sound_frequency;
-	
-	int16 item;
-};
-
-extern control_panel_definition *get_control_panel_definition(const short control_panel_type);
-
-extern ActionQueues *sPfhortranActionQueues;
 extern struct view_data *world_view;
 extern struct static_data *static_world;
 static short old_size;
@@ -204,7 +167,6 @@ static short old_size;
 lua_State *state;
 bool lua_loaded = false;
 bool lua_running = false;
-static vector<short> IntersectedObjects;
 
 vector<lua_camera> lua_cameras;
 int number_of_cameras = 0;
@@ -624,24 +586,6 @@ static int L_Screen_Print(lua_State *L)
 
 	return 0;
 }
-/*
- static int L_Display_Text(lua_State *L)
- {
-	 if (!lua_isnumber(L,1) || !lua_isstring(L,2) || !lua_isnumber(L,3) || !lua_isnumber(L,4))
-	 {
-		 lua_pushstring(L, "display_text: incorrect argument type");
-		 lua_error(L);
-	 }
-	 int player_index = static_cast<int>(lua_tonumber(L,1));
-	 if (local_player_index != player_index)
-		 return 0;
-	 short x = static_cast<int>(lua_tonumber(L,3));
-	 short y = static_cast<int>(lua_tonumber(L,4));
-	 DisplayText(x, y, lua_tostring(L, 2));
-	 screen_printf(lua_tostring(L,2));
-	 return 0;
- }
- */
 
 static int L_Enable_Player(lua_State *L)
 {
@@ -1058,7 +1002,6 @@ static const char *compatibility_triggers = ""
 void RegisterLuaFunctions()
 {
 	lua_register(state, "screen_print", L_Screen_Print);
-	//lua_register(state, "display_text", L_Display_Text);
 	lua_register(state, "enable_player", L_Enable_Player);
 	lua_register(state, "disable_player", L_Disable_Player);
 	lua_register(state, "kill_script", L_Kill_Script);
