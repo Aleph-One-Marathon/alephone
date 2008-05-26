@@ -154,6 +154,11 @@ const lang_def Lua_EffectType_Mnemonics[] = {
 };
 
 const lang_def Lua_FadeType_Mnemonics[] = {
+	{"start cinematic fade in", 0x0},
+	{"cinematic fade in", 0x1},
+	{"long cinematic fade in", 0x2},
+	{"cinematic fade out", 0x3},
+	{"end cinematic fade out", 0x4},
 	{"red", 0x05},
 	{"big red", 0x06},
 	{"bonus", 0x07},

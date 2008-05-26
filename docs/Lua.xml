@@ -1534,6 +1534,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     </enum>
     <enum name="fade_type">
       <mnemonics>
+	<mnemonic name="start cinematic fade in"/>
+	<mnemonic name="cinematic fade in"/>
+	<mnemonic name="long cinematic fade out"/>
+	<mnemonic name="cinematic fade out"/>
+	<mnemonic name="end cinematic fade out"/>
 	<mnemonic name="red"/>
 	<mnemonic name="big red"/>
 	<mnemonic name="bonus"/>
