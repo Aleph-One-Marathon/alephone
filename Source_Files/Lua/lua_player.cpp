@@ -40,6 +40,7 @@ LUA_PLAYER.CPP
 #include "network_games.h"
 #include "Random.h"
 #include "screen.h"
+#include "shell.h"
 #include "SoundManager.h"
 #include "ViewControl.h"
 
@@ -1167,6 +1168,31 @@ int Lua_Player_Play_Sound(lua_State *L)
 	return 0;
 }
 
+extern bool mute_lua;
+
+int Lua_Player_Print(lua_State *L)
+{
+	if (mute_lua) return 0;
+
+	if (lua_gettop(L) != 2) 
+		return luaL_error(L, "print: incorrect argument type");
+
+	int player_index = Lua_Player::Index(L, 1);
+	if (local_player_index == player_index)
+	{
+		lua_getglobal(L, "tostring");
+		lua_insert(L, -2);
+		lua_pcall(L, 1, 1, 0);
+		if (lua_tostring(L, -1))
+		{
+			screen_printf("%s", lua_tostring(L, -1));
+		}
+		lua_pop(L, 1);
+	}
+	
+	return 0;
+}
+
 extern struct physics_constants *get_physics_constants_for_model(short physics_model, uint32 action_flags);
 extern void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 
@@ -1512,6 +1538,7 @@ const luaL_reg Lua_Player_Get[] = {
 	{"overlays", Lua_Player_Get_Overlays},
 	{"oxygen", Lua_Player_Get_Oxygen},
 	{"pitch", Lua_Player_Get_Elevation},
+	{"print", L_TableFunction<Lua_Player_Print>},
 	{"play_sound", L_TableFunction<Lua_Player_Play_Sound>},
 	{"points", Lua_Player_Get_Points},
 	{"polygon", Lua_Player_Get_Polygon},
@@ -1748,6 +1775,31 @@ bool Lua_Player_Valid(int16 index)
 }
 
 char Lua_Players_Name[] = "Players";
+
+int Lua_Players_Print(lua_State *L)
+{
+	if (mute_lua) return 0;
+
+	if (lua_gettop(L) != 1) 
+		return luaL_error(L, "print: incorrect argument type");
+
+	lua_getglobal(L, "tostring");
+	lua_insert(L, -2);
+	lua_pcall(L, 1, 1, 0);
+	if (lua_tostring(L, -1))
+	{
+		screen_printf("%s", lua_tostring(L, -1));
+	}
+	lua_pop(L, 1);
+
+	return 0;
+}
+
+
+const luaL_reg Lua_Players_Methods[] = {
+	{"print", Lua_Players_Print},
+	{0, 0}
+};
 
 int16 Lua_Players_Length() {
 	return dynamic_world->player_count;
@@ -2019,7 +2071,7 @@ int Lua_Player_register (lua_State *L)
 	Lua_Player::Register(L, Lua_Player_Get, Lua_Player_Set);
 	Lua_Player::Valid = Lua_Player_Valid;
 	
-	Lua_Players::Register(L);
+	Lua_Players::Register(L, Lua_Players_Methods);
 	Lua_Players::Length = Lua_Players_Length;
 
 	Lua_Game::Register(L, Lua_Game_Get, Lua_Game_Set);
@@ -2103,6 +2155,7 @@ static const char *compatibility_script = ""
 	"function play_sound(player, sound, pitch) Players[player]:play_sound(sound, pitch) end\n"
 	"function remove_item(player, item_type) if Players[player].items[item_type] > 0 then Players[player].items[item_type] = Players[player].items[item_type] - 1 end end\n"
 	"function screen_fade(player, fade) if fade then Players[player]:fade_screen(fade) else for p in Players() do p:fade_screen(player) end end end\n"
+	"function screen_print(player, message) if message then if Players[player] then Players[player]:print(message) end else Players.print(player) end end\n"
 	"function select_weapon(player, weapon) Players[player].weapons[weapon]:select() end\n"
 	"function set_crosshairs_active(player, state) Players[player].crosshairs.active = state end\n"
 	"function set_kills(player, slain_player, amount) if player == -1 then Players[slain_player].deaths = amount else Players[player].kills[slain_player] = amount end end\n"

@@ -947,6 +947,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="z"><type>WU</type></argument>
 	<argument name="polygon"><type>polygon</type></argument>
       </function>
+      <function name="print">
+	<description>prints message to player's screen</description>
+	<argument name="message"><type>string</type></argument>
+      </function>
       <variable name="team">
 	<description>player's team (pants color)</description>
 	<type>number</type>
@@ -1312,6 +1316,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <call>
 	<description>iterates through all players in the game</description>
       </call>
+      <function name="print">
+	<description>prints message to all players' screens</description>
+	<argument name="message"><type>string</type></argument>
+      </function>
     </accessor>
     <accessor name="Polygons" contains="polygon">
       <length>

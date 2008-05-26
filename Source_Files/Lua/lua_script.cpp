@@ -148,7 +148,7 @@ bool UseLuaCameras() { return false; }
 // LP: used by several functions here
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
-static bool mute_lua = false;
+bool mute_lua = false;
 
 // Steal all this stuff
 extern void ShootForTargetPoint(bool ThroughWalls, world_point3d& StartPosition, world_point3d& EndPosition, short& Polygon);
@@ -565,28 +565,6 @@ void L_Invalidate_Object(short object_index)
 	}
 }
 
-static int L_Screen_Print(lua_State *L)
-{
-	int args = lua_gettop(L);
-	
-	if (args == 2)
-	{
-		if (!lua_isnumber(L,1) || !lua_isstring(L,2))
-		{
-			lua_pushstring(L, "screen_print: incorrect argument type");
-			lua_error(L);
-		}
-		int player_index = static_cast<int>(lua_tonumber(L,1));
-		if (local_player_index != player_index)
-			return 0;
-		if (!mute_lua) screen_printf("%s", lua_tostring(L, 2));
-	} else {
-		if (!mute_lua) screen_printf("%s", lua_tostring(L, 1));
-	}
-
-	return 0;
-}
-
 static int L_Enable_Player(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
@@ -1001,7 +979,6 @@ static const char *compatibility_triggers = ""
 
 void RegisterLuaFunctions()
 {
-	lua_register(state, "screen_print", L_Screen_Print);
 	lua_register(state, "enable_player", L_Enable_Player);
 	lua_register(state, "disable_player", L_Disable_Player);
 	lua_register(state, "kill_script", L_Kill_Script);
