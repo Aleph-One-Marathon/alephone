@@ -1213,6 +1213,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <call>
 	<description>iterates through all cameras</description>
       </call>
+      <function name="new">
+	<description>returns a new uninitialized camera</description>
+	<note>make sure to add path points and angles before activating the camera</note>
+      </function>
     </accessor>
     <accessor name="Effects" contains="effect">
       <length>
