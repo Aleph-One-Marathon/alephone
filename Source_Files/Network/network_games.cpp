@@ -1057,6 +1057,7 @@ void get_network_joined_message(
 	switch(game_type)
 	{
 		case _game_of_kill_monsters: format_word= _carnage_word; break;
+	case _game_of_custom:
 		case _game_of_cooperative_play:	format_word= NONE; break;
 		case _game_of_capture_the_flag: format_word= _capture_the_flag; break;
 		case _game_of_rugby: format_word= _rugby; break;
