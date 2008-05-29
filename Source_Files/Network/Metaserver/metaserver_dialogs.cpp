@@ -138,6 +138,23 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 		netScriptName[32] = '\0';
 		description.m_netScript = netScriptName;
 	} // else constructor's blank string is desirable
+
+	description.m_hasGameOptions = true;
+	description.m_gameOptions = info.game_options;
+	description.m_cheatFlags = info.cheat_flags;
+	description.m_killLimit = info.kill_limit;
+
+	char name[256];
+	FileSpecifier fs = environment_preferences->map_file;
+	fs.GetName(name);
+	description.m_mapFileName = name;
+
+	fs = environment_preferences->physics_file;
+	if (fs.Exists() && fs.GetType() == _typecode_physics)
+	{
+		fs.GetName(name);
+		description.m_physicsName = name;
+	}
 	
 	gMetaserverClient->announceGame(GAME_PORT, description);
 }

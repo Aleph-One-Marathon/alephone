@@ -111,6 +111,14 @@ struct GameDescription
 	std::string m_scenarioVersion;
 	std::string m_alephoneBuildString;
 	std::string m_netScript;
+
+	// more stuff
+	bool m_hasGameOptions;
+	int16 m_gameOptions;
+	int16 m_cheatFlags;
+	int16 m_killLimit;
+	std::string m_mapFileName;
+	std::string m_physicsName;
 	
 	GameDescription()
 		: m_type(0)
@@ -128,6 +136,10 @@ struct GameDescription
 		, m_networkSetupProtocolID(kNetworkSetupProtocolID)
 		, m_scenarioName(Scenario::instance()->GetName())
 		, m_scenarioVersion(Scenario::instance()->GetVersion())
+		, m_hasGameOptions(false)
+		, m_gameOptions(0)
+		, m_cheatFlags(0)
+		, m_killLimit(0)
 	{}
 
 };

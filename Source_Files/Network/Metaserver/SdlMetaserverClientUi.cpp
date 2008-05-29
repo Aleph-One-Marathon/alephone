@@ -44,6 +44,8 @@
 
 #include "TextStrings.h"
 
+#include <sstream>
+
 using namespace std;
 using boost::bind;
 using boost::ref;
@@ -194,12 +196,15 @@ public:
 			table->dual_add(new w_label("Version"), info_dialog);
 			table->dual_add(new w_static_text(game->m_description.m_scenarioVersion.c_str()), info_dialog);
 
+
 			table->add_row(new w_spacer(), true);
 			table->dual_add_row(new w_static_text("Game"), info_dialog);
 			table->dual_add(new w_label("Name"), info_dialog);
 			table->dual_add(new w_static_text(game->name().c_str()), info_dialog);
 			table->dual_add(new w_label("Level"), info_dialog);
 			table->dual_add(new w_static_text(game->m_description.m_mapName.c_str()), info_dialog);
+			table->dual_add(new w_label("Pack"), info_dialog);
+			table->dual_add(new w_static_text(game->m_description.m_mapFileName.c_str()), info_dialog);
 			table->dual_add(new w_label("Difficulty"), info_dialog);
 			if (TS_GetCString(kDifficultyLevelsStringSetID, game->m_description.m_difficulty))
 			{
@@ -222,21 +227,86 @@ public:
 			}
 			table->dual_add(new w_label("Netscript"), info_dialog);
 			table->dual_add(new w_static_text(game->m_description.m_netScript.c_str()), info_dialog);
+			table->dual_add(new w_label("Physics"), info_dialog);
+			table->dual_add(new w_static_text(game->m_description.m_physicsName.c_str()), info_dialog);
 			table->add_row(new w_spacer(), true);
-			table->dual_add(new w_label("Teams"), info_dialog);
-			table->dual_add(new w_static_text(game->m_description.m_teamsAllowed ? "Yes" : "No"), info_dialog);
-			table->dual_add(new w_label("Time Limit"), info_dialog);
-			if (game->m_description.m_timeLimit && !(game->m_description.m_timeLimit == INT32_MAX || game->m_description.m_timeLimit == -1))
+			table->dual_add_row(new w_static_text("Options"), info_dialog);
+			if (game->m_description.m_hasGameOptions && (game->m_description.m_gameOptions & _game_has_kill_limit))
 			{
-				char minutes[32];
-				snprintf(minutes, 32, "%i minutes", game->m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
-				minutes[32] = '\0';
-				table->dual_add(new w_static_text(minutes), info_dialog);
+				const char *s;
+				switch (game->m_description.m_type)
+				{
+				case _game_of_capture_the_flag:
+					s = TS_GetCString(strSETUP_NET_GAME_MESSAGES, flagPullsString);
+					break;
+				case _game_of_rugby:
+				case _game_of_custom:
+					s = TS_GetCString(strSETUP_NET_GAME_MESSAGES, pointLimitString);
+					break;
+				default:
+					s = TS_GetCString(strSETUP_NET_GAME_MESSAGES, killLimitString);
+				}
+
+				table->dual_add(new w_label(s), info_dialog);
+				ostringstream os;
+				os << game->m_description.m_killLimit;
+				table->dual_add(new w_label(os.str().c_str()), info_dialog);
 			}
 			else
 			{
-				table->dual_add(new w_static_text("No"), info_dialog);
+				table->dual_add(new w_label("Time Limit"), info_dialog);
+				if (game->m_description.m_timeLimit && !(game->m_description.m_timeLimit == INT32_MAX || game->m_description.m_timeLimit == -1))
+				{
+					char minutes[32];
+					snprintf(minutes, 32, "%i minutes", game->m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
+					minutes[32] = '\0';
+					table->dual_add(new w_static_text(minutes), info_dialog);
+				}
+				else
+				{
+					table->dual_add(new w_static_text("No"), info_dialog);
+					
+				}
+			}
+			if (game->m_description.m_hasGameOptions)
+			{
+				table->dual_add(new w_label("Aliens"), info_dialog);
+				w_toggle *aliens_w = new w_toggle(game->m_description.m_gameOptions & _monsters_replenish);
+				aliens_w->set_enabled(false);
+				table->dual_add(aliens_w, info_dialog);
+
+				table->dual_add(new w_label("Teams"), info_dialog);
+				w_toggle *teams_w = new w_toggle(game->m_description.m_teamsAllowed);
+				teams_w->set_enabled(false);
+				table->dual_add(teams_w, info_dialog);
 				
+				table->dual_add(new w_label("Dead Players Drop Items"), info_dialog);
+				w_toggle *dpdi_w = new w_toggle(!(game->m_description.m_gameOptions & _burn_items_on_death));
+				dpdi_w->set_enabled(false);
+				table->dual_add(dpdi_w, info_dialog);
+
+				table->dual_add(new w_label("Disable Motion Sensor"), info_dialog);
+				w_toggle *motion_w = new w_toggle(game->m_description.m_gameOptions & _motion_sensor_does_not_work);
+				motion_w->set_enabled(false);
+				table->dual_add(motion_w, info_dialog);
+
+				table->dual_add(new w_label("Death Penalty"), info_dialog);
+				w_toggle *death_penalty_w = new w_toggle(game->m_description.m_gameOptions & _dying_is_penalized);
+				death_penalty_w->set_enabled(false);
+				table->dual_add(death_penalty_w, info_dialog);
+
+				table->dual_add(new w_label("Suicide Penalty"), info_dialog);
+				w_toggle *suicide_penalty_w = new w_toggle(game->m_description.m_gameOptions & _suicide_is_penalized);
+				suicide_penalty_w->set_enabled(false);
+				table->dual_add(suicide_penalty_w, info_dialog);
+				
+			}
+			else
+			{
+				table->dual_add(new w_label("Teams"), info_dialog);
+				w_toggle *teams_w = new w_toggle(game->m_description.m_teamsAllowed);
+				teams_w->set_enabled(false);
+				table->dual_add(teams_w, info_dialog);	
 			}
 
 			placer->add(table, true);

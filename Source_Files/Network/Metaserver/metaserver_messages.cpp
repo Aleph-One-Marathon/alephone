@@ -690,8 +690,24 @@ operator >>(AIStream& stream, GameDescription& desc)
 		desc.m_scenarioVersion = read_padded_string(stream, 8);
 		desc.m_netScript = read_padded_string(stream, 32);
 		
-		stream.ignore(kPluginListSize - (32 + 32 + 32 + 24 + 8 + 32));
+		if (pluginFlag & 0x2)
+		{
+			desc.m_hasGameOptions = true;
+			stream >> desc.m_gameOptions
+			       >> desc.m_cheatFlags
+			       >> desc.m_killLimit;
+
+			desc.m_mapFileName = read_padded_string(stream, 32);
+			desc.m_physicsName = read_padded_string(stream, 32);
+			stream.ignore(kPluginListSize - (32 + 32 + 32 + 24 + 8 + 32) - (2 + 2 + 2 + 32 + 32));
+		}
+		else
+		{
+			desc.m_hasGameOptions = false;
+			stream.ignore(kPluginListSize - (32 + 32 + 32 + 24 + 8 + 32));
+		}
 	} else {
+		desc.m_hasGameOptions = false;
 		stream.ignore(kPluginListSize);
 	}
 
@@ -724,7 +740,7 @@ operator <<(AOStream& stream, const GameDescription& desc)
 	uint32 randomSeed = 0;
 	uint32 planningTime = 0;
 	uint32 unused32 = 0;
-	uint16 pluginFlag = 0x1;
+	uint16 pluginFlag = 0x3;
 	const int kPluginListSize = 512;
 	uint32 clientVersion = 0xc136e436;
 	uint32 unknown32 = 0;
@@ -751,6 +767,8 @@ operator <<(AOStream& stream, const GameDescription& desc)
 		<< unknown16
 		<< pluginFlag;
 	
+	// plugin flag 0x1 stuff
+	const int pluginFlag1Size = 32 + 32 + 32 + 24 + 8 + 32;
 	{
 		write_padded_string(stream, desc.m_alephoneBuildString.c_str(), 32);
 		write_padded_string(stream, desc.m_networkSetupProtocolID.c_str(), 32);
@@ -759,8 +777,19 @@ operator <<(AOStream& stream, const GameDescription& desc)
 		write_padded_string(stream, desc.m_scenarioVersion.c_str(), 8);
 		write_padded_string(stream, desc.m_netScript.c_str(), 32);
 	}
+
+	const int pluginFlag2Size = 2 + 2 + 2 + 32 + 32;
+	// plugin flag 0x2 stuff
+	{
+		stream << desc.m_gameOptions
+		       << desc.m_cheatFlags
+		       << desc.m_killLimit;
+
+		write_padded_string(stream, desc.m_mapFileName.c_str(), 32);
+		write_padded_string(stream, desc.m_physicsName.c_str(), 32);
+	}
 	
-	write_padded_bytes(stream, NULL, 0, kPluginListSize - (32 + 32 + 32 + 24 + 8 + 32));
+	write_padded_bytes(stream, NULL, 0, kPluginListSize - pluginFlag1Size - pluginFlag2Size);
 
 	stream
 		<< clientVersion
