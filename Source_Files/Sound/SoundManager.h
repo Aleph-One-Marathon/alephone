@@ -52,6 +52,11 @@ public:
 	bool AdjustVolumeDown(short sound_index = NONE);
 	void TestVolume(short volume, short sound_index);
 
+	// These three get forwarded to the open SoundFile.
+	int NewCustomSoundDefinition();
+	bool AddCustomSoundSlot(int index, const char* file);
+	void UnloadCustomSounds();
+
 	bool LoadSound(short sound);
 	void LoadSounds(short *sounds, short count);
 

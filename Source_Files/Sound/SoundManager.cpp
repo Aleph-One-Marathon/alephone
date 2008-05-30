@@ -30,6 +30,8 @@ SOUND.C
 #define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0x8000)
 #define MARK_SLOT_AS_USED(o) ((o)->flags|=(uint16)0x8000)
 
+static int16 real_number_of_sound_definitions;
+
 SoundManager *SoundManager::m_instance = 0;
 
 static void Shutdown()
@@ -93,7 +95,7 @@ bool SoundManager::OpenSoundFile(FileSpecifier& File)
 {
 	StopAllSounds();
 	if (!sound_file.Open(File)) return false;
-	number_of_sound_definitions = sound_file.sound_count;
+	real_number_of_sound_definitions = number_of_sound_definitions = sound_file.sound_count;	
 
 	sound_source = (parameters.flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
 	if (sound_file.source_count == 1)
@@ -145,6 +147,22 @@ void SoundManager::TestVolume(short volume, short sound_index)
 			Mixer::instance()->SetVolume(parameters.volume * SOUND_VOLUME_DELTA);
 		}
 	}
+}
+
+int SoundManager::NewCustomSoundDefinition() {
+  int ret = sound_file.NewCustomSoundDefinition();
+  if(ret >= 0)
+    ++number_of_sound_definitions;
+  return ret;
+}
+
+bool SoundManager::AddCustomSoundSlot(int index, const char* file) {
+  return sound_file.AddCustomSoundSlot(index, file);
+}
+
+void SoundManager::UnloadCustomSounds() {
+  sound_file.UnloadCustomSounds();
+  number_of_sound_definitions = real_number_of_sound_definitions;
 }
 
 bool SoundManager::LoadSound(short sound_index)

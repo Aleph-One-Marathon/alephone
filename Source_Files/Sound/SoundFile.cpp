@@ -22,6 +22,10 @@ SOUNDFILE.CPP
 
 #include "SoundFile.h"
 #include "Logging.h"
+#include "csmisc.h"
+#include "Decoder.h"
+
+#include <assert.h>
 
 SoundHeader::SoundHeader() :
 	sixteen_bit(false),
@@ -266,6 +270,7 @@ bool SoundFile::Open(FileSpecifier& SoundFileSpec)
 	header >> tag;
 	header >> source_count;
 	header >> sound_count;
+	real_sound_count = sound_count;
 	header.ignore(v1Unused * 2);
 
 	if ((version != 0 && version != 1) ||
@@ -306,6 +311,79 @@ bool SoundFile::Open(FileSpecifier& SoundFileSpec)
 void SoundFile::Close()
 {
 	sound_definitions.clear();
+}
+
+void SoundFile::UnloadCustomSounds() {
+  sound_count = real_sound_count;
+  for(vector<vector<SoundDefinition> >::iterator it = sound_definitions.begin(); it != sound_definitions.end(); ++it) {
+    (*it).resize(sound_count);
+  }
+}
+
+int SoundFile::NewCustomSoundDefinition() {
+  SoundDefinition def;
+  def.behavior_index = 2; // _sound_is_normal?
+  def.flags = 0;
+  def.chance = 0;
+  def.low_pitch = def.high_pitch = 0;
+  def.permutations = 0;
+  def.permutations_played = 0;
+  def.group_offset = def.single_length = def.total_length = 0;
+  def.last_played = machine_tick_count();
+  int index = sound_count;
+  def.sound_code = 19000 + index; // necessary...
+  ++sound_count;
+  for(vector<vector<SoundDefinition> >::iterator it = sound_definitions.begin(); it != sound_definitions.end(); ++it) {
+    // this makes me squirm, what if index is wrong?
+    (*it).push_back(def);
+    // make me feel better
+    assert(sound_count == (*it).size());
+  }
+  return index;
+}
+
+// ReplacementSounds.cpp refuses to cooperate because of a weird interaction
+// with the existing sound loading code... so I ended up having to copy and
+// paste a fair amount of code from there.
+static bool TryLoadingExternal(SoundHeader& hdr, const char* path) {
+  FileSpecifier file;
+  if(!file.SetNameWithPath(path)) return false;
+  auto_ptr<Decoder> decoder(Decoder::Get(file));
+  if(!decoder.get()) return false;
+  int32 length = decoder->Frames() * decoder->BytesPerFrame();
+  if(!length) return false;
+  // it has to be done this way because of some weirdness that happens if it
+  // isn't. Is it normal for this much weirdness to be concentrated in this
+  // little code?
+  if(decoder->Decode(hdr.Load(length), length) != length) {
+    hdr.Clear();
+    return false;
+  }
+  else {
+    hdr.sixteen_bit = decoder->IsSixteenBit();
+    hdr.stereo = decoder->IsStereo();
+    hdr.signed_8bit = decoder->IsSigned();
+    hdr.bytes_per_frame = decoder->BytesPerFrame();
+    hdr.little_endian = decoder->IsLittleEndian();
+    hdr.loop_start = hdr.loop_end = 0;
+    hdr.rate = (uint32) (FIXED_ONE * decoder->Rate());
+    return true;
+  }
+}
+
+bool SoundFile::AddCustomSoundSlot(int index, const char* file) {
+  if(index < real_sound_count && index >= sound_count) return false;
+  SoundHeader sound;
+  bool ret = TryLoadingExternal(sound, file);
+  if(!ret) return false;
+  for(vector<vector<SoundDefinition> >::iterator it = sound_definitions.begin(); it != sound_definitions.end(); ++it) {
+    if((*it)[index].sounds.size() >= 5 /*MAXIMUM_PERMUTATIONS_PER_SOUND*/) continue;
+    int sound_index = (*it)[index].sounds.size();
+    (*it)[index].sounds.resize(sound_index+1);
+    (*it)[index].sounds[sound_index] = sound;
+    ++(*it)[index].permutations;
+  }
+  return true;
 }
 
 SoundDefinition* SoundFile::GetSoundDefinition(int source, int sound_index)

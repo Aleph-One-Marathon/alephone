@@ -393,11 +393,32 @@ public:
 	static void Register(lua_State *L, const luaL_reg get[] = 0, const luaL_reg set[] = 0, const luaL_reg metatable[] = 0, const lang_def mnemonics[] = 0);
 	static index_t ToIndex(lua_State *L, int index);
 	static void PushMnemonicTable(lua_State *L);
-private:
+protected:
 	static bool _lookup(lua_State *L, int index, index_t& to);
 	static int _equals(lua_State *L);
+private:
 	static int _get_mnemonic(lua_State *L);
 	static int _set_mnemonic(lua_State *L);
+};
+
+// the justification for this specialization is long
+template<char *name, typename index_t = int16>
+class L_LazyEnum : public L_Enum<name, index_t>
+{
+public:
+	static index_t ToIndex(lua_State *L, int index) {
+		index_t to;
+		if(lua_isnil(L, index)) return -1;
+		else if(_lookup(L, index, to)) return to;
+		else {
+			std::string error;
+			if(lua_isnumber(L, index) || lua_isstring(L, index))
+				error = std::string(name) + ": invalid index";
+			else
+				error = std::string(name) + ": incorrect argument type";
+			return luaL_error(L, error.c_str());
+		}
+	}
 };
 
 template<char *name, typename index_t>

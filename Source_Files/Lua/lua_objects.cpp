@@ -444,6 +444,31 @@ int Lua_Sounds_Length()
 	return SoundManager::instance()->NumberOfSoundDefinitions();
 }
 
+// Sounds.new(path)
+static int Lua_Sounds_New(lua_State *L) {
+  int top = lua_gettop(L);
+  for(int n = 1; n <= top; ++n)
+    if(!lua_isstring(L, n))
+      luaL_error(L, "new: incorrect argument type");
+  int index = SoundManager::instance()->NewCustomSoundDefinition();
+  if(index < 0)
+    lua_pushnil(L);
+  else {
+    int slots = 0;
+    for(int n = 1; n <= top; ++n) {
+      if(SoundManager::instance()->AddCustomSoundSlot(index, lua_tostring(L, n)))
+	if(++slots >= 5 /*MAXIMUM_PERMUTATIONS_PER_SOUND*/) break;
+    }
+    Lua_Sound::Push(L, index);
+  }
+  return 1;
+}
+
+const luaL_reg Lua_Sounds_Methods[] = {
+	{"new", Lua_Sounds_New},
+	{0, 0}
+};
+
 static void compatibility(lua_State *L);
 
 int Lua_Objects_register(lua_State *L)
@@ -486,7 +511,7 @@ int Lua_Objects_register(lua_State *L)
 
 	Lua_Sound::Register(L, 0, 0, 0, Lua_Sound_Mnemonics);
 
-	Lua_Sounds::Register(L);
+	Lua_Sounds::Register(L, Lua_Sounds_Methods);
 	Lua_Sounds::Length = Lua_Sounds_Length;
 
 	compatibility(L);
