@@ -576,6 +576,9 @@ uint16 *ttf_font_info::process_macroman(const char *src, int len) const
 	while (*src && len-- > 0)
 	{
 		if ((unsigned char) *src >= ' ') *p++ = mac_roman_to_unicode(*src);
+		else if ((unsigned char) *src == '\t')
+			*p++ = ' ';
+		
 		*src++;
 	}
 
