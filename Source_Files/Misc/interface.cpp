@@ -141,6 +141,7 @@ extern TP2PerfGlobals perf_globals;
 #include "lua_script.h" // PostIdle
 #include "interface_menus.h"
 #include "XML_LevelScript.h"
+#include "Music.h"
 
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
@@ -806,7 +807,11 @@ bool join_networked_resume_game()
                 }
         }
         
-        if(success) start_game(_network_player, false /*changing level?*/);
+        if(success)
+	{
+		Music::instance()->PreloadLevelMusic();
+		start_game(_network_player, false /*changing level?*/);
+	}
         
         return success;
 }
@@ -918,6 +923,7 @@ bool load_and_start_game(FileSpecifier& File)
 				success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
 				if (success)
 				{
+					Music::instance()->PreloadLevelMusic();
 					start_game(userWantsMultiplayer ? _network_player : _single_player, false);
 				}
 			}

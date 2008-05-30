@@ -126,6 +126,8 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 
 #include "motion_sensor.h"	// ZZZ for reset_motion_sensor()
 
+#include "Music.h"
+
 #ifdef env68k
 #pragma segment file_io
 #endif
@@ -779,6 +781,7 @@ bool goto_level(
 		// Being careful to carry over errors so that Pfhortran errors can be ignored
 		short SavedType, SavedError = get_game_error(&SavedType);
 		RunLevelScript(entry->level_number);
+		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);
 		
 		if (!new_game)

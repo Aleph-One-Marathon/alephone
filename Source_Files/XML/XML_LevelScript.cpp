@@ -271,8 +271,6 @@ void RunLevelScript(int LevelIndex)
 	
 	Music::instance()->SeedLevelMusic();
 
-	// Best to preload level music here, so as not to load it when the interactivity starts
-	Music::instance()->PreloadLevelMusic();
 }
 
 // Intended to be run at the end of a game
