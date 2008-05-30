@@ -2776,7 +2776,7 @@ size_t should_restore_game_networked()
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *resume_as_placer = new horizontal_placer;
-        w_toggle* theRestoreAsNetgameToggle = new w_toggle(dynamic_world->player_count > 1);
+        w_toggle* theRestoreAsNetgameToggle = new w_toggle(dynamic_world->player_count > 1, 0);
         theRestoreAsNetgameToggle->set_labels_stringset(kSingleOrNetworkStringSetID);
 	resume_as_placer->dual_add(theRestoreAsNetgameToggle->label("Resume as"), d);
 	resume_as_placer->dual_add(theRestoreAsNetgameToggle, d);
