@@ -54,7 +54,7 @@ static vector<char> InputLine(64);
 // Compare input-line beginning to a keyword;
 // returns pointer to rest of line if it was found,
 // otherwise returns NULL
-char *CompareToKeyword(char *Keyword);
+char *CompareToKeyword(const char *Keyword);
 
 // Gets a pointer to a string of vertex-index sets and picks off one of them,
 // returning a pointer to the character just after it. Also returns the presence and values
@@ -575,7 +575,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 }
 
 
-char *CompareToKeyword(char *Keyword)
+char *CompareToKeyword(const char *Keyword)
 {
 	size_t KWLen = strlen(Keyword);
 	

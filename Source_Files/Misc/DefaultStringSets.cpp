@@ -34,7 +34,7 @@
 
 class AutoStringSetBuilder {
 public:
-    AutoStringSetBuilder(short inStringSetID, char** inStrings, short inNumStrings) {
+    AutoStringSetBuilder(short inStringSetID, const char** inStrings, short inNumStrings) {
         for(int i = 0; i < inNumStrings; i++)
             TS_PutCString(inStringSetID, i, inStrings[i]);
     }
@@ -49,7 +49,7 @@ public:
 // StringSets from original Bungie resources
 // -----------------------------------------------------------------------------------------
 // <!-- STR# Resource: "Errors" -->
-static char* sStringSetNumber128[] = {
+static const char* sStringSetNumber128[] = {
     "Sorry, Aleph One requires a 68040 processor or higher.",
     "Sorry, Aleph One requires Color QuickDraw.",
     "Sorry, Aleph One requires System Software 7.0 or higher.",
@@ -88,7 +88,7 @@ static char* sStringSetNumber128[] = {
 };
 
 // STR# Resource: "Filenames"
-static char* sStringSetNumber129[] = {
+static const char* sStringSetNumber129[] = {
     "Shapes",
     "Shapes.16",
     "Sounds",
@@ -106,7 +106,7 @@ static char* sStringSetNumber129[] = {
 };
 
 // STR# Resource: "Top-Level Interface Items"
-static char* sStringSetNumber130[] = {
+static const char* sStringSetNumber130[] = {
     "BEGIN GAME",
     "OPEN SAVED GAME",
     "",
@@ -123,7 +123,7 @@ static char* sStringSetNumber130[] = {
 };
 
 // STR# Resource: "Prompts"
-static char* sStringSetNumber131[] = {
+static const char* sStringSetNumber131[] = {
     "Save game as:",
     "Save recording as:",
     "Select recording as:",
@@ -131,7 +131,7 @@ static char* sStringSetNumber131[] = {
 };
 
 // STR# Resource: "Network Errors"
-static char* sStringSetNumber132[] = {
+static const char* sStringSetNumber132[] = {
     "Sorry, that player could not be found on the network.  He may have cancelled his Join Game dialog.",
 
     "One or more of the players in the game could not be found to receive the "
@@ -175,7 +175,7 @@ static char* sStringSetNumber132[] = {
 };
 
 // STR# Resource: "Key Codes To Names"
-static char* sStringSetNumber133[] = {
+static const char* sStringSetNumber133[] = {
     "A",
     "S",
     "D",
@@ -307,14 +307,14 @@ static char* sStringSetNumber133[] = {
 };
 
 // STR# Resource: "Preferences Advice"
-static char* sStringSetNumber134[] = {
+static const char* sStringSetNumber134[] = {
     "Be sure your external speakers or headphones are connected properly, and that you have enabled stereo output from the Sound Control Panel.",
     "Be sure that your Cybermaxx helmet is properly hooked up to the serial port and turned on.",
     "Please check to be sure you have the file “QuickTime[TM] Musical Instruments” in your “Extensions” folder, because Aleph One's background music will sound really, really stupid without it.",
 };
 
 // STR# Resource: "Computer Interface"
-static char* sStringSetNumber135[] = {
+static const char* sStringSetNumber135[] = {
     "U.E.S.C. Marathon",
     "Opening Connection to b.4.5-23",
     "CAS.qterm//CyberAcme Systems Inc.",
@@ -328,14 +328,14 @@ static char* sStringSetNumber135[] = {
 };
 
 // STR# Resource: "Join Dialog Messages"
-static char* sStringSetNumber136[] = {
+static const char* sStringSetNumber136[] = {
     "Click 'Join' to wait for an invitation into a network game of Aleph One.",
     "Now waiting to be gathered into a network game by a server.  Click 'Cancel' to give up.",
     "You have been accepted into a game.  Now waiting for the server to add the remaining players… ",
 };
 
 // STR# Resource: "Weapon Names"
-static char* sStringSetNumber137[] = {
+static const char* sStringSetNumber137[] = {
     "FISTS",
     ".44 MAGNUM MEGA CLASS A1",
     "ZEUS-CLASS FUSION PISTOL",
@@ -349,12 +349,12 @@ static char* sStringSetNumber137[] = {
 };
 
 // STR# Resource: "file search path"
-static char* sStringSetNumber138[] = {
+static const char* sStringSetNumber138[] = {
     "Marathon Trilogy:Marathon Infinity ƒ:Marathon Infinity:",
 };
 
 // STR# Resource: "Preferences Groupings"
-static char* sStringSetNumber139[] = {
+static const char* sStringSetNumber139[] = {
     "Graphics",
     "Player",
     "Sound",
@@ -363,7 +363,7 @@ static char* sStringSetNumber139[] = {
 };
 
 // STR# Resource: "Postgame network game stats"
-static char* sStringSetNumber140[] = {
+static const char* sStringSetNumber140[] = {
     "%d flags",
     "%d:%02d",
     "%d points",
@@ -379,7 +379,7 @@ static char* sStringSetNumber140[] = {
 };
 
 // STR# Resource: "Net Game Setup"
-static char* sStringSetNumber141[] = {
+static const char* sStringSetNumber141[] = {
     "Kill Limit",
     "kills",
     "Capture Limit",
@@ -393,7 +393,7 @@ static char* sStringSetNumber141[] = {
 };
 
 // STR# Resource: "New Join Dialog Messages"
-static char* sStringSetNumber142[] = {
+static const char* sStringSetNumber142[] = {
     "You have been accepted into a game of '%s'.  Now waiting for the server to add the remaining players...",
     "Every Man For Himself",
     "You have been accepted into a cooperative game.  Now waiting for the server to add the remaining players...",
@@ -407,7 +407,7 @@ static char* sStringSetNumber142[] = {
 };
 
 // STR# Resource: "Progress strings for networking"
-static char* sStringSetNumber143[] = {
+static const char* sStringSetNumber143[] = {
     "Sending map to remote player.",
     "Sending map to remote players.",
     "Receiving map from server.",
@@ -444,7 +444,7 @@ BUILD_STRINGSET(143, sStringSetNumber143);
 // -----------------------------------------------------------------------------------------
 #include    "network_dialogs.h"  // for stringset ID's
 
-static char*    sDifficultyLevelsStrings[] = {
+static const char*    sDifficultyLevelsStrings[] = {
     "Kindergarten",
     "Easy",
     "Normal",
@@ -452,7 +452,7 @@ static char*    sDifficultyLevelsStrings[] = {
     "Total Carnage"
 };
 
-static char*    sNetworkGameTypesStrings[] = {
+static const char*    sNetworkGameTypesStrings[] = {
     "Every Man for Himself",
     "Cooperative Play",
     "Capture the Flag",
@@ -463,14 +463,14 @@ static char*    sNetworkGameTypesStrings[] = {
     "Netscript",
 };
 
-static char*    sEndConditionTypeStrings[] = {
+static const char*    sEndConditionTypeStrings[] = {
 //    "No Limit (Alt+Q to quit)",
 	"Unlimited",
     "Time Limit",
     "Score Limit",
 };
 
-static char*	sSingleOrNetworkStrings[] = {
+static const char*	sSingleOrNetworkStrings[] = {
     "Single-player game",
     "Network game"
 };
@@ -485,7 +485,7 @@ BUILD_STRINGSET(kSingleOrNetworkStringSetID,	sSingleOrNetworkStrings);
 // More Mac OS string-resource stringsets.
 // -----------------------------------------------------------------------------------------
 // STR# Resource: "Item names"
-static char* sStringSetNumber150[] = {
+static const char* sStringSetNumber150[] = {
     "FISTS",
     ".44 MAGNUM MEGA CLASS",
     ".44 MAGNUM MEGA CLASS",
@@ -533,7 +533,7 @@ static char* sStringSetNumber150[] = {
 };
 
 // STR# Resource: "Item types"
-static char* sStringSetNumber151[] = {
+static const char* sStringSetNumber151[] = {
     "WEAPONS",
     "AMMUNITION",
     "POWERUPS",
@@ -544,7 +544,7 @@ static char* sStringSetNumber151[] = {
 };
 
 // STR# Resource: "Net Statistics Strings"
-static char* sStringSetNumber153[] = {
+static const char* sStringSetNumber153[] = {
     "%d kills",
     "%d deaths",
     "%d suicides",
@@ -567,7 +567,7 @@ static char* sStringSetNumber153[] = {
 };
 
 // STR# Resource: "OpenGL-Option Color-Picker Prompts"
-static char* sStringSetNumber200[] = {
+static const char* sStringSetNumber200[] = {
     "What color for the Void?",
     "What day ground color?",
     "What day sky color?",
@@ -588,7 +588,7 @@ BUILD_STRINGSET(200, sStringSetNumber200);
 
 #include "player.h" // for kTeamColorsStringSetID
 
-static char* sTeamColorNamesStrings[] = {
+static const char* sTeamColorNamesStrings[] = {
     "Slate",
     "Red",
     "Violet",

@@ -86,7 +86,7 @@ public:
 	int GetNumInterpretErrors() {return NumInterpretErrors;}
 	
 	// Compose an interpretation error; use <>printf syntax
-	void ComposeInterpretError(char *Format, ...);
+	void ComposeInterpretError(const char *Format, ...);
 	
 	// Pointer to the currently-active element.
 	// Initially, this is to be set to a behind-the-scenes element

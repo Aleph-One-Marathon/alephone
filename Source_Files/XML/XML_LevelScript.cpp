@@ -475,7 +475,7 @@ public:
 	// For grabbing the level ID
 	bool HandleAttribute(const char *Tag, const char *Value);
 
-	XML_LSCommandParser(char *_Name, int _CmdType): XML_ElementParser(_Name) {Cmd.Type = _CmdType;}
+	XML_LSCommandParser(const char *_Name, int _CmdType): XML_ElementParser(_Name) {Cmd.Type = _CmdType;}
 };
 
 bool XML_LSCommandParser::Start()

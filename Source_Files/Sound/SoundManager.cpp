@@ -1264,7 +1264,7 @@ public:
 		Random
 	};
 	
-	XML_AmbientRandomAssignParser(char *_Name, int _Type): XML_ElementParser(_Name), Type(_Type) {}
+	XML_AmbientRandomAssignParser(const char *_Name, int _Type): XML_ElementParser(_Name), Type(_Type) {}
 };
 
 bool XML_AmbientRandomAssignParser::Start()

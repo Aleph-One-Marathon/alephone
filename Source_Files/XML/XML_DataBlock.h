@@ -57,7 +57,7 @@ public:
 		{Buffer = _Buffer; BufLen = _BufLen; return DoParse();}
 		
 	// Pointer to name of XML-code source for error-message convenience (C string)
-	char *SourceName;
+	const char *SourceName;
 
 	XML_DataBlock(): SourceName(NULL) {Buffer = NULL;}
 };

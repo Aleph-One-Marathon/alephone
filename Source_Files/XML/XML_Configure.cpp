@@ -176,7 +176,7 @@ bool XML_Configure::DoParse()
 
 
 // Compose an interpretation error; use <>printf syntax
-void XML_Configure::ComposeInterpretError(char *Format, ...)
+void XML_Configure::ComposeInterpretError(const char *Format, ...)
 {
 	char ErrorString[256];
 

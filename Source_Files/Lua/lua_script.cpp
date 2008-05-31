@@ -1001,7 +1001,7 @@ void DeclareLuaConstants()
 {
 	struct lang_def
 {
-        char *name;
+        const char *name;
         int value;
 };
 struct lang_def constant_list[] =
