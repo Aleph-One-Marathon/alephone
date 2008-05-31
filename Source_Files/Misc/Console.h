@@ -72,6 +72,9 @@ public:
 	bool use_lua_console() { return m_use_lua_console; };
 	bool use_lua_console(bool f_use) { m_use_lua_console = f_use; }
 
+	// clear last saved level name
+	void clear_saves();
+
 private:
 	Console();
 	static Console* m_instance;
@@ -88,6 +91,8 @@ private:
 	std::vector<std::pair<std::string, std::string> > m_carnage_messages;
 
 	bool m_use_lua_console;
+
+	void register_save_commands();
 };
 
 XML_ElementParser *Console_GetParser();

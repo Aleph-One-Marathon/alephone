@@ -36,6 +36,7 @@ Aug 12, 2000 (Loren Petrich):
 class FileSpecifier;
 
 bool save_game_file(FileSpecifier& File);
+bool export_level(FileSpecifier& File);
 
 /* -------------- New functions */
 void pause_game(void);

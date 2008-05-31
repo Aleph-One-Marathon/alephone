@@ -114,6 +114,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 #include "media.h"
 #include "scenery.h"
 #include "SoundManager.h"
+#include "Console.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -414,6 +415,7 @@ void initialize_map_for_new_level(
 	dynamic_world->garbage_object_count= 0;
 
 	obj_clear(*static_world);
+	Console::instance()->clear_saves();
 	
 	// Clear all these out -- supposed to be none of the contents of these when starting a level.
 	objlist_clear(automap_lines, AutomapLineList.size());

@@ -33,6 +33,12 @@
 #include "projectiles.h"
 #include "shell.h"
 
+// for saving
+#include "FileHandler.h"
+#include "game_wad.h"
+
+#include <boost/algorithm/string/predicate.hpp>
+
 using namespace std;
 
 extern bool game_is_networked;
@@ -42,6 +48,7 @@ Console *Console::m_instance = NULL;
 Console::Console() : m_active(false), m_carnage_messages_exist(false), m_use_lua_console(false)
 {
 	m_carnage_messages.resize(NUMBER_OF_PROJECTILE_TYPES);
+	register_save_commands();
 }
 
 Console *Console::instance() {
@@ -53,7 +60,7 @@ Console *Console::instance() {
 
 static inline void lowercase(string& s)
 {
-	transform(s.begin(), s.end(), s.begin(), tolower);
+	transform(s.begin(), s.end(), s.begin(), ::tolower);
 }
 
 static pair<string, string> split(string buffer)
@@ -289,7 +296,52 @@ void Console::report_kill(int16 player_index, int16 aggressor_player_index, int1
 		screen_printf("%s", display_string.c_str());
 	}
 }
-			
+
+static std::string last_level;
+
+struct save_level
+{
+	void operator() (const std::string& arg) const {
+		std::string filename = arg;
+		if (filename == "")
+		{
+			if (last_level != "")
+				filename = last_level;
+			else
+			{
+				filename = mac_roman_to_utf8(static_world->level_name);
+				if (!boost::algorithm::ends_with(filename, ".sceA"))
+					filename += ".sceA";
+			}
+		}
+		else
+		{
+			if (!boost::algorithm::ends_with(filename, ".sceA"))
+				filename += ".sceA";	
+		}
+
+		last_level = filename;
+		FileSpecifier fs;
+		fs.SetToLocalDataDir();
+		fs += filename;
+		if (export_level(fs))
+			screen_printf("Saved %s", utf8_to_mac_roman(fs.GetPath()).c_str());
+		else
+			screen_printf("An error occurred while saving the level");
+	}
+};
+
+void Console::register_save_commands()
+{
+	CommandParser saveParser;
+	saveParser.register_command("level", save_level());
+	register_command("save", saveParser);
+}
+	
+void Console::clear_saves()
+{
+	last_level.clear();
+}
 
 class XML_CarnageMessageParser : public XML_ElementParser
 {

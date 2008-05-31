@@ -188,6 +188,7 @@ static void scan_and_add_scenery(void);
 static void complete_restoring_level(struct wad_data *wad);
 static void load_redundant_map_data(short *redundant_data, size_t count);
 static void allocate_map_structure_for_map(struct wad_data *wad);
+static wad_data *build_export_wad(wad_header *header, long *length);
 static struct wad_data *build_save_game_wad(struct wad_header *header, long *length);
 
 static void allocate_map_for_counts(size_t polygon_count, size_t side_count,
@@ -360,6 +361,9 @@ bool load_level_from_map(
 	return (!error_pending());
 }
 
+// keep these around for level export
+static std::vector<static_platform_data> static_platforms;
+
 /* Hopefully this is in the correct order of initialization... */
 /* This sucks, beavis. */
 void complete_loading_level(
@@ -374,6 +378,8 @@ void complete_loading_level(
 	/* Scan, add the doors, recalculate, and generally tie up all loose ends */
 	/* Recalculate the redundant data.. */
 	load_redundant_map_data(_map_indexes, map_index_count);
+
+	static_platforms.clear();
 
 	/* Add the platforms. */
 	if(_platform_data || (_platform_data==NULL && actual_platform_data==NULL))
@@ -968,7 +974,6 @@ void load_polygons(
 	}
 }
 
-
 void load_lights(
 	uint8 *_lights, 
 	size_t count,
@@ -1209,6 +1214,81 @@ bool revert_game(
 	return successful;
 }
 
+bool export_level(FileSpecifier& File)
+{
+	struct wad_header header;
+	short err = 0;
+	bool success = false;
+	long offset, wad_length;
+	struct directory_entry entry;
+	struct wad_data *wad;
+
+	FileSpecifier TempFile;
+	DirectorySpecifier TempFileDir;
+	File.ToDirectory(TempFileDir);
+	TempFile.FromDirectory(TempFileDir);
+	TempFile.AddPart("savetemp.dat");
+
+	/* Fill in the default wad header (we are using File instead of TempFile to get the name right in the header) */
+	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
+
+	if (create_wadfile(TempFile, _typecode_scenario))
+	{
+		OpenedFile SaveFile;
+		if (open_wad_file_for_writing(TempFile, SaveFile))
+		{
+			/* Write out the new header */
+			if (write_wad_header(SaveFile, &header))
+			{
+				offset = SIZEOF_wad_header;
+				
+				wad = build_export_wad(&header, &wad_length);
+				if (wad)
+				{
+					set_indexed_directory_offset_and_length(&header, &entry, 0, offset, wad_length, 0);
+					
+					if (write_wad(SaveFile, &header, wad, offset))
+					{
+						/* Update the new header */
+												offset+= wad_length;
+						header.directory_offset= offset;
+						header.parent_checksum= read_wad_file_checksum(MapFileSpec);
+						if (write_wad_header(SaveFile, &header) && write_directorys(SaveFile, &header, &entry))
+						{
+							/* We win. */
+							success= true;
+						} 
+					}
+					
+					free_wad(wad);
+				}
+			}
+
+			err = SaveFile.GetError();
+			close_wad_file(SaveFile);
+		}
+
+		if (!err)
+		{
+			if (!File.Exists())
+				create_wadfile(File,_typecode_savegame);
+			
+			TempFile.Exchange(File);
+			err = TempFile.GetError();
+			TempFile.Delete(); // it's not an error if this fails
+		}
+	}
+	
+	if (err || error_pending())
+	{	
+		success = false;
+	}
+
+
+	return success;
+	
+}
+
 void get_current_saved_game_name(FileSpecifier& File)
 {
 	File = revert_game_data.SavedGame;
@@ -1323,9 +1403,13 @@ static void scan_and_add_platforms(
 {
 	struct polygon_data *polygon;
 	short loop;
-	
+
 	PlatformList.resize(count);
 	objlist_clear(platforms,count);
+
+	static_platforms.resize(count);
+	unpack_static_platform_data(platform_static_data, &static_platforms[0], count);
+
 	polygon= map_polygons;
 	for(loop=0; loop<dynamic_world->polygon_count; ++loop)
 	{
@@ -1334,15 +1418,12 @@ static void scan_and_add_platforms(
 			/* Search and find the extra data.  If it is not there, use the permutation for */
 			/* backwards compatibility! */
 
-			uint8 *_static_data= platform_static_data;
 			size_t platform_static_data_index;
 			for(platform_static_data_index = 0; platform_static_data_index<count; ++platform_static_data_index)
 			{
-				static_platform_data TempPlatform;
-				_static_data = unpack_static_platform_data(_static_data, &TempPlatform, 1);
-				if(TempPlatform.polygon_index==loop)
+				if (static_platforms[platform_static_data_index].polygon_index == loop)
 				{
-					new_platform(&TempPlatform, loop);
+					new_platform(&static_platforms[platform_static_data_index], loop);
 					break;
 				}
 			}
@@ -1693,6 +1774,7 @@ bool process_map_wad(
 		complete_loading_level((short *) map_index_data, map_index_count,
 			data, count, platform_structures,
 			platform_structure_count, version);
+
 	}
 	
 	/* ... and bail */
@@ -1796,6 +1878,27 @@ struct save_game_data
 	bool loaded_by_level;
 };
 
+#define NUMBER_OF_EXPORT_ARRAYS (sizeof(export_data)/sizeof(struct save_game_data))
+save_game_data export_data[]=
+{
+	{ POINT_TAG, SIZEOF_world_point2d, true },
+	{ LINE_TAG, SIZEOF_line_data, true },
+	{ SIDE_TAG, SIZEOF_side_data, true },
+	{ POLYGON_TAG, SIZEOF_polygon_data, true },
+	{ LIGHTSOURCE_TAG, SIZEOF_static_light_data, true, },
+	{ ANNOTATION_TAG, SIZEOF_map_annotation, true },
+	{ OBJECT_TAG, SIZEOF_map_object, true },
+	{ MAP_INFO_TAG, SIZEOF_static_data, true },
+	{ ITEM_PLACEMENT_STRUCTURE_TAG, SIZEOF_object_frequency_definition, true },
+	{ TERMINAL_DATA_TAG, sizeof(byte), true },
+	{ MEDIA_TAG, SIZEOF_media_data, true }, // false },
+	{ AMBIENT_SOUND_TAG, SIZEOF_ambient_sound_image_data, true },
+	{ RANDOM_SOUND_TAG, SIZEOF_random_sound_image_data, true },
+	{ SHAPE_PATCH_TAG, sizeof(byte), true },
+//	{ PLATFORM_STRUCTURE_TAG, SIZEOF_platform_data, true },
+	{ PLATFORM_STATIC_DATA_TAG, SIZEOF_static_platform_data, true },
+};
+
 #define NUMBER_OF_SAVE_ARRAYS (sizeof(save_data)/sizeof(struct save_game_data))
 struct save_game_data save_data[]=
 {
@@ -1836,6 +1939,123 @@ struct save_game_data save_data[]=
 	{ WEAPON_STATE_TAG, SIZEOF_player_weapon_data, true }, // false },
 	{ TERMINAL_STATE_TAG, SIZEOF_player_terminal_data, true }, // false }
 };
+
+static uint8 *export_tag_to_global_array_and_size(
+	uint32 tag,
+	size_t *size
+	)
+{
+	uint8 *array = NULL;
+	size_t unit_size = 0;
+	size_t count = 0;
+	unsigned index;
+
+	for (index=0; index<NUMBER_OF_EXPORT_ARRAYS; ++index)
+	{
+		if(export_data[index].tag==tag)
+		{
+			unit_size= export_data[index].unit_size;
+			break;
+		}
+	}
+	assert(index != NUMBER_OF_EXPORT_ARRAYS);
+
+	switch (tag)
+	{
+	case POINT_TAG:
+		count = dynamic_world->endpoint_count;
+		break;
+
+	case LIGHTSOURCE_TAG:
+		count = dynamic_world->light_count;
+		break;
+
+	case PLATFORM_STATIC_DATA_TAG:
+		count = dynamic_world->platform_count;
+		break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+	// Allocate a temporary packed-data chunk;
+	// indicate if there is nothing to be written
+	*size= count*unit_size;
+	if (*size > 0)
+		array = new byte[*size];
+	else
+		return NULL;
+	
+	// An OK-to-alter version of that array pointer
+	uint8 *temp_array = array;
+
+	switch (tag)
+	{
+	case POINT_TAG:
+		for (size_t loop = 0; loop < count; ++loop)
+		{
+			world_point2d& vertex = map_endpoints[loop].vertex;
+			ValueToStream(temp_array, vertex.x);
+			ValueToStream(temp_array, vertex.y);
+		}
+		break;
+
+	case LIGHTSOURCE_TAG:
+		for (size_t loop = 0; loop < count; ++loop)
+		{
+			temp_array = pack_static_light_data(temp_array, &lights[loop].static_data, 1);
+		}
+		break;
+
+	case PLATFORM_STATIC_DATA_TAG:
+		if (static_platforms.size() == count)
+		{
+			// export them directly as they came in
+			pack_static_platform_data(array, &static_platforms[0], count);
+		}
+		else
+		{
+			for (size_t loop = 0; loop < count; ++loop)
+			{
+				// ghs: this belongs somewhere else
+				static_platform_data platform;
+				obj_clear(platform);
+				platform.type = platforms[loop].type;
+				platform.speed = platforms[loop].speed;
+				platform.delay = platforms[loop].delay;
+				if (PLATFORM_GOES_BOTH_WAYS(&platforms[loop]))
+				{
+					platform.maximum_height = platforms[loop].maximum_ceiling_height;
+					platform.minimum_height = platforms[loop].minimum_floor_height;
+				}
+				else if (PLATFORM_COMES_FROM_FLOOR(&platforms[loop]))
+				{
+					platform.maximum_height = platforms[loop].maximum_floor_height;
+					platform.minimum_height = platforms[loop].minimum_floor_height;
+				}
+				else
+				{
+					platform.maximum_height = platforms[loop].maximum_ceiling_height;
+					platform.minimum_height = platforms[loop].minimum_floor_height;
+				}
+				platform.static_flags = platforms[loop].static_flags;
+				platform.polygon_index = platforms[loop].polygon_index;
+				platform.tag = platforms[loop].tag;
+
+				temp_array = pack_static_platform_data(temp_array, &platform, 1);
+			}
+		}
+		break;
+
+	default:
+		assert(false);
+		break;
+	}
+
+	return array;
+}
+		
 
 /* the sizes are the sizes to save in the file, be aware! */
 static uint8 *tag_to_global_array_and_size(
@@ -2073,6 +2293,43 @@ static uint8 *tag_to_global_array_and_size(
 	}
 	
 	return array;
+}
+
+static wad_data *build_export_wad(wad_header *header, long *length)
+{
+	struct wad_data *wad= NULL;
+	uint8 *array_to_slam;
+	size_t size;
+
+	wad= create_empty_wad();
+	if(wad)
+	{
+		recalculate_map_counts();
+		for(unsigned loop= 0; loop<NUMBER_OF_EXPORT_ARRAYS; ++loop)
+		{
+			/* If there is a conversion function, let it handle it */
+			switch (export_data[loop].tag)
+			{
+			case POINT_TAG:
+			case LIGHTSOURCE_TAG:
+			case PLATFORM_STATIC_DATA_TAG:
+				array_to_slam= export_tag_to_global_array_and_size(export_data[loop].tag, &size);
+				break;
+			default:
+				array_to_slam= tag_to_global_array_and_size(export_data[loop].tag, &size);
+			}
+	
+			/* Add it to the wad.. */
+			if(size)
+			{
+				wad= append_data_to_wad(wad, export_data[loop].tag, array_to_slam, size, 0);
+				delete []array_to_slam;
+			}
+		}
+		if(wad) *length= calculate_wad_length(header, wad);
+	}
+	
+	return wad;
 }
 
 /* Build the wad, with all the crap */
