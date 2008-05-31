@@ -22,7 +22,7 @@ LUA_OBJECTS.CPP
 
 struct lang_def
 {
-	char *name;
+	const char *name;
 	int32 value;
 };
 
