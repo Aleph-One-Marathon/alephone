@@ -44,7 +44,7 @@ const int MAX_ALERT_WIDTH = 320;
 
 extern void update_game_window(void);
 
-void alert_user(char *message, short severity) 
+void alert_user(const char *message, short severity) 
 {
   if (SDL_GetVideoSurface() == NULL) {
     fprintf(stderr, "%s: %s\n", severity == infoError ? "INFO" : "FATAL", message);
@@ -57,7 +57,7 @@ void alert_user(char *message, short severity)
     // Wrap lines
     uint16 style;
     font_info *font = get_theme_font(MESSAGE_WIDGET, style);
-    char *t = message;
+    char *t = strdup(message);
 
     while (strlen(t)) {
       unsigned i = 0, last = 0;
@@ -76,7 +76,7 @@ void alert_user(char *message, short severity)
       else
 	t += i;
     }
-    
+    free(t);
     placer->add(new w_spacer, true);
     w_button *button = new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d);
     placer->dual_add (button, d);
@@ -122,7 +122,7 @@ void pause_debug(void)
  *  Display message
  */
 
-void vpause(char *message)
+void vpause(const char *message)
 {
         logWarning1("vpause: %s", message);
 	fprintf(stderr, "vpause %s\n", message);
@@ -147,7 +147,7 @@ void halt(void)
 
 extern void stop_recording();
 
-void vhalt(char *message)
+void vhalt(const char *message)
 {
 	stop_recording();
         logFatal1("vhalt: %s", message);
@@ -166,12 +166,12 @@ void vhalt(char *message)
 
 static char assert_text[256];
 
-void _alephone_assert(char *file, long line, char *what)
+void _alephone_assert(const char *file, long line, const char *what)
 {
 	vhalt(csprintf(assert_text, "%s:%ld: %s", file, line, what));
 }
 
-void _alephone_warn(char *file, long line, char *what)
+void _alephone_warn(const char *file, long line, const char *what)
 {
 	vpause(csprintf(assert_text, "%s:%ld: %s", file, line, what));
 }

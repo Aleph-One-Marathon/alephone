@@ -34,7 +34,7 @@ enum {
 	fatalError
 };
 
-extern void alert_user(char *message, short severity = infoError);
+extern void alert_user(const char *message, short severity = infoError);
 
 extern void alert_user(
 	short severity,
@@ -44,20 +44,20 @@ extern void alert_user(
 
 extern void pause_debug(void);
 extern void vpause(
-	char *message);
+	const char *message);
 
 extern void halt(void) NORETURN;
 extern void vhalt(
-	char *message) NORETURN;
+	const char *message) NORETURN;
 
 extern void _alephone_assert(
-	char *file,
+	const char *file,
 	long line,
-	char *what) NORETURN;
+	const char *what) NORETURN;
 extern void _alephone_warn(
-	char *file,
+	const char *file,
 	long line,
-	char *what);
+	const char *what);
 
 #if TARGET_API_MAC_CARBON && !defined(SDL)
 DialogItemIndex SimpleAlert(AlertType Type, const char *Message, const char *Explain = NULL);
