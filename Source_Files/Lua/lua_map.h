@@ -38,6 +38,12 @@ extern "C"
 
 #include "lua_templates.h"
 
+extern char Lua_Collection_Name[]; // "collection"
+typedef L_Enum<Lua_Collection_Name> Lua_Collection;
+
+extern char Lua_Collections_Name[]; // "Collections"
+typedef L_EnumContainer<Lua_Collections_Name, Lua_Collection> Lua_Collections;
+
 extern char Lua_ControlPanelClass_Name[]; // "control_panel_class"
 typedef L_Enum<Lua_ControlPanelClass_Name> Lua_ControlPanelClass;
 

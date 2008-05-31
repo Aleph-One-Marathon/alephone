@@ -1391,6 +1391,45 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>iterates through all terminal texts on the level</description>
       </call>
     </accessor>
+    <enum name="collection">
+      <variable name="bitmap_count">
+	<description>number of bitmaps in collection</description>
+      </variable>
+      <mnemonics>
+	<mnemonic name="interface"/>
+	<mnemonic name="weapons in hand"/>
+	<mnemonic name="juggernaut"/>
+	<mnemonic name="tick"/>
+	<mnemonic name="explosions"/>
+	<mnemonic name="hunter"/>
+	<mnemonic name="player"/>
+	<mnemonic name="items"/>
+	<mnemonic name="trooper"/>
+	<mnemonic name="fighter"/>
+	<mnemonic name="defender"/>
+	<mnemonic name="yeti"/>
+	<mnemonic name="bob"/>
+	<mnemonic name="vacbob"/>
+	<mnemonic name="enforcer"/>
+	<mnemonic name="drone"/>
+	<mnemonic name="compiler"/>
+	<mnemonic name="water"/>
+	<mnemonic name="lava"/>
+	<mnemonic name="sewage"/>
+	<mnemonic name="jjaro"/>
+	<mnemonic name="pfhor"/>
+	<mnemonic name="water scenery"/>
+	<mnemonic name="lava scenery"/>
+	<mnemonic name="sewage scenery"/>
+	<mnemonic name="jjaro scenery"/>
+	<mnemonic name="pfhor scenery"/>
+	<mnemonic name="day"/>
+	<mnemonic name="night"/>
+	<mnemonic name="moon"/>
+	<mnemonic name="space"/>
+	<mnemonic name="cyborg"/>
+      </mnemonics>
+    </enum>
     <enum name="control_panel_class">
       <mnemonics>
 	<mnemonic name="oxygen recharger"/>
@@ -2168,6 +2207,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="smg"/>
       </mnemonics>
     </enum>
+    <enum-accessor name="Collections" contains="collection" nice-name="Collections"/>
     <enum-accessor name="ControlPanelClasses" contains="control_panel_class" nice-name="Control Panel Classes"/>
     <enum-accessor name="ControlPanelTypes" contains="control_panel_type" nice-name="Control Panel Types"/>
     <enum-accessor name="DamageTypes" contains="damage_type" nice-name="Damage"/>

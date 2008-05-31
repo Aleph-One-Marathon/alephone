@@ -31,9 +31,29 @@ LUA_MAP.CPP
 #include "OGL_Setup.h"
 #include "SoundManager.h"
 
+#include "collection_definition.h"
+
 #include <boost/bind.hpp>
 
 #ifdef HAVE_LUA
+
+extern collection_definition *get_collection_definition(short);
+
+char Lua_Collection_Name[] = "collection";
+
+static int Lua_Collection_Get_Bitmap_Count(lua_State *L)
+{
+	collection_definition *collection = get_collection_definition(Lua_Collection::Index(L, 1));
+	lua_pushnumber(L, collection->bitmap_count);
+	return 1;
+}
+
+const luaL_reg Lua_Collection_Get[] = {
+	{"bitmap_count", Lua_Collection_Get_Bitmap_Count},
+	{0, 0},
+};
+
+char Lua_Collections_Name[] = "Collections";
 
 char Lua_ControlPanelClass_Name[] = "control_panel_class";
 char Lua_ControlPanelClasses_Name[] = "ControlPanelClasses";
@@ -1280,8 +1300,15 @@ const luaL_reg Lua_Level_Get[] = {
 static int compatibility(lua_State *L);
 #define NUMBER_OF_CONTROL_PANEL_DEFINITIONS 54
 
+extern bool collection_loaded(short);
+
 int Lua_Map_register(lua_State *L)
 {
+	Lua_Collection::Register(L, Lua_Collection_Get, 0, 0, Lua_Collection_Mnemonics);
+	Lua_Collection::Valid = collection_loaded;
+	Lua_Collections::Register(L);
+	Lua_Collections::Length = Lua_Collections::ConstantLength<MAXIMUM_COLLECTIONS>;
+
 	Lua_ControlPanelClass::Register(L, 0, 0, 0, Lua_ControlPanelClass_Mnemonics);
 	Lua_ControlPanelClass::Valid = Lua_ControlPanelClass::ValidRange<NUMBER_OF_CONTROL_PANELS>;
 

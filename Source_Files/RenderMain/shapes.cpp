@@ -220,7 +220,7 @@ static byte *read_object_from_file(OpenedFile& OFile, long offset, long length);
 // This is to allow for more graceful degradation.
 
 static struct collection_header *get_collection_header(short collection_index);
-static struct collection_definition *get_collection_definition(short collection_index);
+/*static*/ struct collection_definition *get_collection_definition(short collection_index);
 static void *get_collection_shading_tables(short collection_index, short clut_index);
 static void *get_collection_tint_tables(short collection_index, short tint_index);
 static void *collection_offset(struct collection_definition *definition, long offset);
@@ -1355,6 +1355,11 @@ static bool collection_loaded(
 	return header->collection ? true : false;
 }
 
+bool collection_loaded(short collection_index)
+{
+	collection_header *header = get_collection_header(collection_index);
+	return collection_loaded(header);
+}
 
 static void lock_collection(
 	struct collection_header *header)
@@ -2603,7 +2608,7 @@ static struct collection_header *get_collection_header(
 	*/
 }
 
-static struct collection_definition *get_collection_definition(
+/*static*/ struct collection_definition *get_collection_definition(
 	short collection_index)
 {
 	return get_collection_header(collection_index)->collection;

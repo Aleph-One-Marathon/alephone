@@ -26,6 +26,41 @@ struct lang_def
 	int32 value;
 };
 
+const lang_def Lua_Collection_Mnemonics[] = {
+	{"interface", 0},
+	{"weapons in hand", 1},
+	{"juggernaut", 2},
+	{"tick", 3},
+	{"explosions", 4},
+	{"hunter", 5},
+	{"player", 6},
+	{"items", 7},
+	{"trooper", 8},
+	{"fighter", 9},
+	{"defender", 10},
+	{"yeti", 11},
+	{"bob", 12},
+	{"vacbob", 13},
+	{"enforcer", 14},
+	{"drone", 15},
+	{"compiler", 16},
+	{"water", 17},
+	{"lava", 18},
+	{"sewage", 19},
+	{"jjaro", 20},
+	{"pfhor", 21},
+	{"water scenery", 22},
+	{"lava scenery", 23},
+	{"sewage scenery", 24},
+	{"jjaro scenery", 25},
+	{"pfhor scenery", 26},
+	{"day", 27},
+	{"night", 28},
+	{"moon", 29},
+	{"space", 30},
+	{"cyborg", 31},
+};
+
 const lang_def Lua_ControlPanelClass_Mnemonics[] = {
 	{"oxygen recharger", 0},
 	{"single shield recharger", 1},
