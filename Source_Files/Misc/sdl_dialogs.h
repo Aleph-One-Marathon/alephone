@@ -221,7 +221,7 @@ public:
 	void quit(int result);
 
 	// Draw dialog
-	void draw(void) const;
+	void draw(void);
         
         // ZZZ: Draw those widgets that are marked as needing redraw
         // This is used automatically by the dialog code in response to user events --
@@ -283,6 +283,7 @@ private:
 	SDL_Surface *frame_tl, *frame_t, *frame_tr, *frame_l, *frame_r, *frame_bl, *frame_b, *frame_br;
 
 	widget_placer *placer;
+	bool layout_for_fullscreen; // is the current layout for fullscreen?
 };
 
 // Pointer to top-level dialog, NULL = no dialog active

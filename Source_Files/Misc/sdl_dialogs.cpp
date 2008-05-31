@@ -1789,6 +1789,8 @@ void dialog::layout()
 {
 	assert(placer);
 
+	layout_for_fullscreen = get_screen_mode()->fullscreen;
+
 	// Layout all widgets, calculate total width and height
 	SDL_Rect placer_rect;
 	placer_rect.w = placer->min_width();
@@ -1903,8 +1905,11 @@ static void draw_frame_image(SDL_Surface *s, int x, int y)
 	SDL_BlitSurface(s, NULL, dialog_surface, &r);
 }
 
-void dialog::draw(void) const
+void dialog::draw(void)
 {
+	if (!get_screen_mode()->fill_the_screen && get_screen_mode()->fullscreen != layout_for_fullscreen)
+		layout();
+
 	// Clear dialog surface
 	SDL_FillRect(dialog_surface, NULL, get_theme_color(DIALOG_FRAME, DEFAULT_STATE, BACKGROUND_COLOR));
 
@@ -2164,8 +2169,6 @@ void dialog::event(SDL_Event &e)
     if (e.key.keysym.sym == SDLK_RETURN
 	&& ((e.key.keysym.mod & KMOD_ALT) || (e.key.keysym.mod & KMOD_META))) {
       toggle_fullscreen();
-      if (!get_screen_mode()->fill_the_screen)
-	      layout();
       draw();
       handled = true;
     }
