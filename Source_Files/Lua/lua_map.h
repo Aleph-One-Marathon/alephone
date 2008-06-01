@@ -104,6 +104,12 @@ typedef L_Class<Lua_Terminal_Name> Lua_Terminal;
 extern char Lua_Terminals_Name[]; // "Terminals"
 typedef L_Container<Lua_Terminals_Name, Lua_Terminal> Lua_Terminals;
 
+extern char Lua_TransferMode_Name[]; // "transfer_mode"
+typedef L_Enum<Lua_TransferMode_Name> Lua_TransferMode;
+
+extern char Lua_TransferModes_Name[]; // "TransferModes"
+typedef L_EnumContainer<Lua_TransferModes_Name, Lua_TransferMode> Lua_TransferModes;
+
 extern char Lua_Side_Name[]; // "side"
 typedef L_Class<Lua_Side_Name> Lua_Side;
 

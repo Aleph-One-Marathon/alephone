@@ -774,6 +774,21 @@ const lang_def Lua_Sound_Mnemonics[] = {
 	{0, 0}
 };
 
+const lang_def Lua_TransferMode_Mnemonics[] = {
+	{"normal", 0},
+	{"pulsate", 4},
+	{"wobble", 5},
+	{"fast wobble", 6},
+	{"landscape", 9},
+	{"horizontal slide", 15},
+	{"fast horizontal slide", 16},
+	{"vertical slide", 17},
+	{"fast vertical slide", 18},
+	{"wander", 19},
+	{"fast wander", 20},
+	{0, 0}
+};
+
 const lang_def Lua_WeaponType_Mnemonics[] = {
 	{"fist", 0},
 	{"pistol", 1},

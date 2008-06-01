@@ -324,10 +324,56 @@ int16 Lua_Platforms_Length() {
 
 char Lua_Polygon_Floor_Name[] = "polygon_floor";
 
+static int Lua_Polygon_Floor_Get_Collection(lua_State *L)
+{
+	Lua_Collection::Push(L, GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(get_polygon_data(Lua_Polygon_Floor::Index(L, 1))->floor_texture)));
+	return 1;
+}
+
 static int Lua_Polygon_Floor_Get_Height(lua_State *L)
 {
 	lua_pushnumber(L, (double) (get_polygon_data(Lua_Polygon_Floor::Index(L, 1))->floor_height) / WORLD_ONE);
 	return 1;
+}
+
+static int Lua_Polygon_Floor_Get_Light(lua_State *L)
+{
+	Lua_Light::Push(L, get_polygon_data(Lua_Polygon_Floor::Index(L, 1))->floor_lightsource_index);
+	return 1;
+}
+
+static int Lua_Polygon_Floor_Get_Texture_Index(lua_State *L)
+{
+	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(get_polygon_data(Lua_Polygon_Floor::Index(L, 1))->floor_texture));
+	return 1;
+}
+
+static int Lua_Polygon_Floor_Get_Texture_X(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_polygon_data(Lua_Polygon_Floor::Index(L, 1))->floor_origin.x) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Polygon_Floor_Get_Texture_Y(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_polygon_data(Lua_Polygon_Floor::Index(L, 1))->floor_origin.y) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Polygon_Floor_Get_Transfer_Mode(lua_State *L)
+{
+	Lua_TransferMode::Push(L, get_polygon_data(Lua_Polygon_Floor::Index(L, 1))->floor_transfer_mode);
+	return 1;
+}
+
+static int Lua_Polygon_Floor_Set_Collection(lua_State *L)
+{
+	short polygon_index = Lua_Polygon_Floor::Index(L, 1);
+	short collection_index = Lua_Collection::ToIndex(L, 2);
+
+	polygon_data *polygon = get_polygon_data(polygon_index);
+	polygon->floor_texture = BUILD_DESCRIPTOR(collection_index, GET_DESCRIPTOR_SHAPE(polygon->floor_texture));
+	return 0;
 }
 
 static int Lua_Polygon_Floor_Set_Height(lua_State *L)
@@ -347,24 +393,141 @@ static int Lua_Polygon_Floor_Set_Height(lua_State *L)
 	return 0;
 }
 
+static int Lua_Polygon_Floor_Set_Light(lua_State *L)
+{
+	short light_index;
+	if (lua_isnumber(L, 2))
+	{
+		light_index = static_cast<short>(lua_tonumber(L, 2));
+		if (light_index < 0 || light_index >= MAXIMUM_LIGHTS_PER_MAP)
+			return luaL_error(L, "light: invalid light index");
+	}
+	else
+	{
+		light_index = Lua_Light::Index(L, 2);
+	}
+	
+	get_polygon_data(Lua_Polygon_Floor::Index(L, 1))->floor_lightsource_index = light_index;
+	return 0;
+}
+
+static int Lua_Polygon_Floor_Set_Texture_Index(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon_Floor::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_index: incorrect argument type");
+
+	short shape_index = static_cast<short>(lua_tonumber(L, 2));
+	if (shape_index < 0 || shape_index >= MAXIMUM_SHAPES_PER_COLLECTION)
+		return luaL_error(L, "texture_index: invalid texture index");
+	
+	polygon->floor_texture = BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(polygon->floor_texture), shape_index);
+	return 0;
+}
+
+static int Lua_Polygon_Floor_Set_Texture_X(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon_Floor::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_x: incorrect argument type");
+
+	polygon->floor_origin.x = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Polygon_Floor_Set_Texture_Y(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon_Floor::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_y: incorrect argument type");
+
+	polygon->floor_origin.y = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Polygon_Floor_Set_Transfer_Mode(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon_Floor::Index(L, 1));
+	polygon->floor_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
+	return 0;
+}
+
 const luaL_reg Lua_Polygon_Floor_Get[] = {
+	{"collection", Lua_Polygon_Floor_Get_Collection},
 	{"height", Lua_Polygon_Floor_Get_Height},
+	{"light", Lua_Polygon_Floor_Get_Light},
+	{"texture_index", Lua_Polygon_Floor_Get_Texture_Index},
+	{"texture_x", Lua_Polygon_Floor_Get_Texture_X},
+	{"texture_y", Lua_Polygon_Floor_Get_Texture_Y},
+	{"transfer_mode", Lua_Polygon_Floor_Get_Transfer_Mode},
 	{"z", Lua_Polygon_Floor_Get_Height},
 	{0, 0}
 };
 
 const luaL_reg Lua_Polygon_Floor_Set[] = {
+	{"collection", Lua_Polygon_Floor_Set_Collection},
 	{"height", Lua_Polygon_Floor_Set_Height},
+	{"light", Lua_Polygon_Floor_Set_Light},
+	{"texture_index", Lua_Polygon_Floor_Set_Texture_Index},
+	{"texture_x", Lua_Polygon_Floor_Set_Texture_X},
+	{"texture_y", Lua_Polygon_Floor_Set_Texture_Y},
+	{"transfer_mode", Lua_Polygon_Floor_Set_Transfer_Mode},
 	{"z", Lua_Polygon_Floor_Set_Height},
 	{0, 0}
 };
 
 char Lua_Polygon_Ceiling_Name[] = "polygon_ceiling";
 
+static int Lua_Polygon_Ceiling_Get_Collection(lua_State *L)
+{
+	Lua_Collection::Push(L, GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1))->ceiling_texture)));
+	return 1;
+}
+
 static int Lua_Polygon_Ceiling_Get_Height(lua_State *L)
 {
 	lua_pushnumber(L, (double) (get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1))->ceiling_height) / WORLD_ONE);
 	return 1;
+}
+
+static int Lua_Polygon_Ceiling_Get_Light(lua_State *L)
+{
+	Lua_Light::Push(L, get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1))->ceiling_lightsource_index);
+	return 1;
+}
+
+static int Lua_Polygon_Ceiling_Get_Texture_Index(lua_State *L)
+{
+	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1))->ceiling_texture));
+	return 1;
+}
+
+static int Lua_Polygon_Ceiling_Get_Texture_X(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1))->ceiling_origin.x) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Polygon_Ceiling_Get_Texture_Y(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1))->ceiling_origin.y) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Polygon_Ceiling_Get_Transfer_Mode(lua_State *L)
+{
+	Lua_TransferMode::Push(L, get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1))->ceiling_transfer_mode);
+	return 1;
+}
+
+static int Lua_Polygon_Ceiling_Set_Collection(lua_State *L)
+{
+	short polygon_index = Lua_Polygon_Ceiling::Index(L, 1);
+	short collection_index = Lua_Collection::ToIndex(L, 2);
+
+	polygon_data *polygon = get_polygon_data(polygon_index);
+	polygon->ceiling_texture = BUILD_DESCRIPTOR(collection_index, GET_DESCRIPTOR_SHAPE(polygon->ceiling_texture));
+	return 0;
 }
 
 static int Lua_Polygon_Ceiling_Set_Height(lua_State *L)
@@ -384,14 +547,85 @@ static int Lua_Polygon_Ceiling_Set_Height(lua_State *L)
 	return 0;
 }
 
+static int Lua_Polygon_Ceiling_Set_Light(lua_State *L)
+{
+	short light_index;
+	if (lua_isnumber(L, 2))
+	{
+		light_index = static_cast<short>(lua_tonumber(L, 2));
+		if (light_index < 0 || light_index >= MAXIMUM_LIGHTS_PER_MAP)
+			return luaL_error(L, "light: invalid light index");
+	}
+	else
+	{
+		light_index = Lua_Light::Index(L, 2);
+	}
+	
+	get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1))->ceiling_lightsource_index = light_index;
+	return 0;
+}
+
+static int Lua_Polygon_Ceiling_Set_Texture_Index(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_index: incorrect argument type");
+
+	short shape_index = static_cast<short>(lua_tonumber(L, 2));
+	if (shape_index < 0 || shape_index >= MAXIMUM_SHAPES_PER_COLLECTION)
+		return luaL_error(L, "texture_index: invalid texture index");
+	
+	polygon->ceiling_texture = BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(polygon->ceiling_texture), shape_index);
+	return 0;
+}
+
+static int Lua_Polygon_Ceiling_Set_Texture_X(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_x: incorrect argument type");
+
+	polygon->ceiling_origin.x = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Polygon_Ceiling_Set_Texture_Y(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_y: incorrect argument type");
+
+	polygon->ceiling_origin.y = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Polygon_Ceiling_Set_Transfer_Mode(lua_State *L)
+{
+	polygon_data *polygon = get_polygon_data(Lua_Polygon_Ceiling::Index(L, 1));
+	polygon->ceiling_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
+	return 0;
+}
+
 const luaL_reg Lua_Polygon_Ceiling_Get[] = {
+	{"collection", Lua_Polygon_Ceiling_Get_Collection},
 	{"height", Lua_Polygon_Ceiling_Get_Height},
+	{"light", Lua_Polygon_Ceiling_Get_Light},
+	{"texture_index", Lua_Polygon_Ceiling_Get_Texture_Index},
+	{"texture_x", Lua_Polygon_Ceiling_Get_Texture_X},
+	{"texture_y", Lua_Polygon_Ceiling_Get_Texture_Y},
+	{"transfer_mode", Lua_Polygon_Ceiling_Get_Transfer_Mode},
 	{"z", Lua_Polygon_Ceiling_Get_Height},
 	{0, 0}
 };
 
 const luaL_reg Lua_Polygon_Ceiling_Set[] = {
+	{"collection", Lua_Polygon_Ceiling_Set_Collection},
 	{"height", Lua_Polygon_Ceiling_Set_Height},
+	{"light", Lua_Polygon_Ceiling_Set_Light},
+	{"texture_index", Lua_Polygon_Ceiling_Set_Texture_Index},
+	{"texture_x", Lua_Polygon_Ceiling_Set_Texture_X},
+	{"texture_y", Lua_Polygon_Ceiling_Set_Texture_Y},
+	{"transfer_mode", Lua_Polygon_Ceiling_Set_Transfer_Mode},
 	{"z", Lua_Polygon_Ceiling_Set_Height},
 	{0, 0}
 };
@@ -769,6 +1003,447 @@ const luaL_reg Lua_Side_ControlPanel_Set[] = {
 	{0, 0}
 };
 
+char Lua_Primary_Side_Name[] = "primary_side";
+typedef L_Class<Lua_Primary_Side_Name> Lua_Primary_Side;
+
+static int Lua_Primary_Side_Get_Collection(lua_State *L)
+{
+	Lua_Collection::Push(L, GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(get_side_data(Lua_Primary_Side::Index(L, 1))->primary_texture.texture)));
+	return 1;
+}
+
+static int Lua_Primary_Side_Get_Light(lua_State *L)
+{
+	Lua_Light::Push(L, get_side_data(Lua_Primary_Side::Index(L, 1))->primary_lightsource_index);
+	return 1;
+}
+
+static int Lua_Primary_Side_Get_Texture_Index(lua_State *L)
+{
+	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(get_side_data(Lua_Primary_Side::Index(L, 1))->primary_texture.texture));
+	return 1;
+}
+
+static int Lua_Primary_Side_Get_Texture_X(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_side_data(Lua_Primary_Side::Index(L, 1))->primary_texture.x0) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Primary_Side_Get_Texture_Y(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_side_data(Lua_Primary_Side::Index(L, 1))->primary_texture.y0) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Primary_Side_Get_Transfer_Mode(lua_State *L)
+{
+	Lua_TransferMode::Push(L, get_side_data(Lua_Primary_Side::Index(L, 1))->primary_transfer_mode);
+	return 1;
+}
+
+static void update_line_redundancy(short line_index)
+{
+	line_data *line= get_line_data(line_index);
+	side_data *clockwise_side= NULL, *counterclockwise_side= NULL;
+	
+	bool landscaped= false;
+	bool transparent_texture= false;
+
+	if (line->clockwise_polygon_side_index!=NONE)
+	{
+		clockwise_side= get_side_data(line->clockwise_polygon_side_index);
+	}
+	if (line->counterclockwise_polygon_side_index!=NONE)
+	{
+		counterclockwise_side= get_side_data(line->counterclockwise_polygon_side_index);
+	}
+
+	if ((clockwise_side&&clockwise_side->primary_transfer_mode==_xfer_landscape) ||
+		(counterclockwise_side&&counterclockwise_side->primary_transfer_mode==_xfer_landscape))
+	{
+		landscaped= true;
+	}
+	
+	if ((clockwise_side && clockwise_side->transparent_texture.texture!=UNONE) ||
+		(counterclockwise_side && counterclockwise_side->transparent_texture.texture!=UNONE))
+	{
+		transparent_texture= true;
+	}
+	
+	SET_LINE_LANDSCAPE_STATUS(line, landscaped);
+	SET_LINE_HAS_TRANSPARENT_SIDE(line, transparent_texture);
+}
+
+static int Lua_Primary_Side_Set_Collection(lua_State *L)
+{
+	short side_index = Lua_Primary_Side::Index(L, 1);
+	short collection_index = Lua_Collection::ToIndex(L, 2);
+
+	side_data *side = get_side_data(side_index);
+	side->primary_texture.texture = BUILD_DESCRIPTOR(collection_index, GET_DESCRIPTOR_SHAPE(side->primary_texture.texture));
+	update_line_redundancy(side->line_index);
+	return 0;
+}
+
+static int Lua_Primary_Side_Set_Light(lua_State *L)
+{
+	short light_index;
+	if (lua_isnumber(L, 2))
+	{
+		light_index = static_cast<short>(lua_tonumber(L, 2));
+		if (light_index < 0 || light_index >= MAXIMUM_LIGHTS_PER_MAP)
+			return luaL_error(L, "light: invalid light index");
+	}
+	else
+	{
+		light_index = Lua_Light::Index(L, 2);
+	}
+	
+	get_side_data(Lua_Polygon_Floor::Index(L, 1))->primary_lightsource_index = light_index;
+	return 0;
+}
+static int Lua_Primary_Side_Set_Texture_Index(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Primary_Side::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_index: incorrect argument type");
+
+	short shape_index = static_cast<short>(lua_tonumber(L, 2));
+	if (shape_index < 0 || shape_index >= MAXIMUM_SHAPES_PER_COLLECTION)
+		return luaL_error(L, "texture_index: invalid texture index");
+	
+	side->primary_texture.texture = BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(side->primary_texture.texture), shape_index);
+	update_line_redundancy(side->line_index);
+	return 0;
+}
+
+static int Lua_Primary_Side_Set_Texture_X(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Primary_Side::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_x: incorrect argument type");
+
+	side->primary_texture.x0 = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Primary_Side_Set_Texture_Y(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Primary_Side::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_y: incorrect argument type");
+
+	side->primary_texture.y0 = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Primary_Side_Set_Transfer_Mode(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Primary_Side::Index(L, 1));
+	side->primary_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
+	return 0;
+}
+const luaL_reg Lua_Primary_Side_Get[] = {
+	{"collection", Lua_Primary_Side_Get_Collection},
+	{"light", Lua_Primary_Side_Get_Light},
+	{"texture_index", Lua_Primary_Side_Get_Texture_Index},
+	{"texture_x", Lua_Primary_Side_Get_Texture_X},
+	{"texture_y", Lua_Primary_Side_Get_Texture_Y},
+	{"transfer_mode", Lua_Primary_Side_Get_Transfer_Mode},
+	{0, 0}
+};
+
+const luaL_reg Lua_Primary_Side_Set[] = {
+	{"collection", Lua_Primary_Side_Set_Collection},
+	{"light", Lua_Primary_Side_Set_Light},
+	{"texture_index", Lua_Primary_Side_Set_Texture_Index},
+	{"texture_x", Lua_Primary_Side_Set_Texture_X},
+	{"texture_y", Lua_Primary_Side_Set_Texture_Y},
+	{"transfer_mode", Lua_Primary_Side_Set_Transfer_Mode},
+	{0, 0}
+};
+
+char Lua_Secondary_Side_Name[] = "secondary_side";
+typedef L_Class<Lua_Secondary_Side_Name> Lua_Secondary_Side;
+
+static int Lua_Secondary_Side_Get_Collection(lua_State *L)
+{
+	Lua_Collection::Push(L, GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(get_side_data(Lua_Secondary_Side::Index(L, 1))->secondary_texture.texture)));
+	return 1;
+}
+
+static int Lua_Secondary_Side_Get_Light(lua_State *L)
+{
+	Lua_Light::Push(L, get_side_data(Lua_Secondary_Side::Index(L, 1))->secondary_lightsource_index);
+	return 1;
+}
+
+static int Lua_Secondary_Side_Get_Texture_Index(lua_State *L)
+{
+	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(get_side_data(Lua_Secondary_Side::Index(L, 1))->secondary_texture.texture));
+	return 1;
+}
+
+static int Lua_Secondary_Side_Get_Texture_X(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_side_data(Lua_Secondary_Side::Index(L, 1))->secondary_texture.x0) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Secondary_Side_Get_Texture_Y(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_side_data(Lua_Secondary_Side::Index(L, 1))->secondary_texture.y0) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Secondary_Side_Get_Transfer_Mode(lua_State *L)
+{
+	Lua_TransferMode::Push(L, get_side_data(Lua_Secondary_Side::Index(L, 1))->secondary_transfer_mode);
+	return 1;
+}
+
+static int Lua_Secondary_Side_Set_Collection(lua_State *L)
+{
+	short side_index = Lua_Secondary_Side::Index(L, 1);
+	short collection_index = Lua_Collection::ToIndex(L, 2);
+
+	side_data *side = get_side_data(side_index);
+	side->secondary_texture.texture = BUILD_DESCRIPTOR(collection_index, GET_DESCRIPTOR_SHAPE(side->secondary_texture.texture));
+	update_line_redundancy(side->line_index);
+	return 0;
+}
+
+static int Lua_Secondary_Side_Set_Light(lua_State *L)
+{
+	short light_index;
+	if (lua_isnumber(L, 2))
+	{
+		light_index = static_cast<short>(lua_tonumber(L, 2));
+		if (light_index < 0 || light_index >= MAXIMUM_LIGHTS_PER_MAP)
+			return luaL_error(L, "light: invalid light index");
+	}
+	else
+	{
+		light_index = Lua_Light::Index(L, 2);
+	}
+	
+	get_side_data(Lua_Polygon_Floor::Index(L, 1))->secondary_lightsource_index = light_index;
+	return 0;
+}
+static int Lua_Secondary_Side_Set_Texture_Index(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Secondary_Side::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_index: incorrect argument type");
+
+	short shape_index = static_cast<short>(lua_tonumber(L, 2));
+	if (shape_index < 0 || shape_index >= MAXIMUM_SHAPES_PER_COLLECTION)
+		return luaL_error(L, "texture_index: invalid texture index");
+	
+	side->secondary_texture.texture = BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(side->secondary_texture.texture), shape_index);
+	update_line_redundancy(side->line_index);
+	return 0;
+}
+
+static int Lua_Secondary_Side_Set_Texture_X(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Secondary_Side::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_x: incorrect argument type");
+
+	side->secondary_texture.x0 = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Secondary_Side_Set_Texture_Y(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Secondary_Side::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_y: incorrect argument type");
+
+	side->secondary_texture.y0 = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Secondary_Side_Set_Transfer_Mode(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Secondary_Side::Index(L, 1));
+	side->secondary_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
+	return 0;
+}
+const luaL_reg Lua_Secondary_Side_Get[] = {
+	{"collection", Lua_Secondary_Side_Get_Collection},
+	{"light", Lua_Secondary_Side_Get_Light},
+	{"texture_index", Lua_Secondary_Side_Get_Texture_Index},
+	{"texture_x", Lua_Secondary_Side_Get_Texture_X},
+	{"texture_y", Lua_Secondary_Side_Get_Texture_Y},
+	{"transfer_mode", Lua_Secondary_Side_Get_Transfer_Mode},
+	{0, 0}
+};
+
+const luaL_reg Lua_Secondary_Side_Set[] = {
+	{"collection", Lua_Secondary_Side_Set_Collection},
+	{"light", Lua_Secondary_Side_Set_Light},
+	{"texture_index", Lua_Secondary_Side_Set_Texture_Index},
+	{"texture_x", Lua_Secondary_Side_Set_Texture_X},
+	{"texture_y", Lua_Secondary_Side_Set_Texture_Y},
+	{"transfer_mode", Lua_Secondary_Side_Set_Transfer_Mode},
+	{0, 0}
+};
+
+char Lua_Transparent_Side_Name[] = "transparent_side";
+typedef L_Class<Lua_Transparent_Side_Name> Lua_Transparent_Side;
+
+static int Lua_Transparent_Side_Get_Collection(lua_State *L)
+{
+	Lua_Collection::Push(L, GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(get_side_data(Lua_Transparent_Side::Index(L, 1))->transparent_texture.texture)));
+	return 1;
+}
+
+static int Lua_Transparent_Side_Get_Empty(lua_State *L)
+{
+	lua_pushboolean(L, get_side_data(Lua_Transparent_Side::Index(L, 1))->transparent_texture.texture == UNONE);
+	return 1;
+}
+
+static int Lua_Transparent_Side_Get_Light(lua_State *L)
+{
+	Lua_Light::Push(L, get_side_data(Lua_Transparent_Side::Index(L, 1))->transparent_lightsource_index);
+	return 1;
+}
+
+static int Lua_Transparent_Side_Get_Texture_Index(lua_State *L)
+{
+	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(get_side_data(Lua_Transparent_Side::Index(L, 1))->transparent_texture.texture));
+	return 1;
+}
+
+static int Lua_Transparent_Side_Get_Texture_X(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_side_data(Lua_Transparent_Side::Index(L, 1))->transparent_texture.x0) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Transparent_Side_Get_Texture_Y(lua_State *L)
+{
+	lua_pushnumber(L, (double) (get_side_data(Lua_Transparent_Side::Index(L, 1))->transparent_texture.y0) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Transparent_Side_Get_Transfer_Mode(lua_State *L)
+{
+	Lua_TransferMode::Push(L, get_side_data(Lua_Transparent_Side::Index(L, 1))->transparent_transfer_mode);
+	return 1;
+}
+
+static int Lua_Transparent_Side_Set_Collection(lua_State *L)
+{
+	short side_index = Lua_Transparent_Side::Index(L, 1);
+	short collection_index = Lua_Collection::ToIndex(L, 2);
+
+	side_data *side = get_side_data(side_index);
+	side->transparent_texture.texture = BUILD_DESCRIPTOR(collection_index, GET_DESCRIPTOR_SHAPE(side->transparent_texture.texture));
+	update_line_redundancy(side->line_index);
+	return 0;
+}
+
+static int Lua_Transparent_Side_Set_Empty(lua_State *L)
+{
+	short side_index = Lua_Transparent_Side::Index(L, 1);
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "empty: incorrect argument type");
+
+	if (lua_toboolean(L, 2))
+	{
+		side_data *side = get_side_data(side_index);
+		side->transparent_texture.texture = UNONE;
+		update_line_redundancy(side->line_index);
+	}
+	return 0;
+}
+
+static int Lua_Transparent_Side_Set_Light(lua_State *L)
+{
+	short light_index;
+	if (lua_isnumber(L, 2))
+	{
+		light_index = static_cast<short>(lua_tonumber(L, 2));
+		if (light_index < 0 || light_index >= MAXIMUM_LIGHTS_PER_MAP)
+			return luaL_error(L, "light: invalid light index");
+	}
+	else
+	{
+		light_index = Lua_Light::Index(L, 2);
+	}
+	
+	get_side_data(Lua_Polygon_Floor::Index(L, 1))->transparent_lightsource_index = light_index;
+	return 0;
+}
+
+static int Lua_Transparent_Side_Set_Texture_Index(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Transparent_Side::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_index: incorrect argument type");
+
+	short shape_index = static_cast<short>(lua_tonumber(L, 2));
+	if (shape_index < 0 || shape_index >= MAXIMUM_SHAPES_PER_COLLECTION)
+		return luaL_error(L, "texture_index: invalid texture index");
+	
+	side->transparent_texture.texture = BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(side->transparent_texture.texture), shape_index);
+	update_line_redundancy(side->line_index);
+	return 0;
+}
+
+static int Lua_Transparent_Side_Set_Texture_X(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Transparent_Side::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_x: incorrect argument type");
+
+	side->transparent_texture.x0 = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Transparent_Side_Set_Texture_Y(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Transparent_Side::Index(L, 1));
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "texture_y: incorrect argument type");
+
+	side->transparent_texture.y0 = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Transparent_Side_Set_Transfer_Mode(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Transparent_Side::Index(L, 1));
+	side->primary_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
+	return 0;
+}
+const luaL_reg Lua_Transparent_Side_Get[] = {
+	{"collection", Lua_Transparent_Side_Get_Collection},
+	{"empty", Lua_Transparent_Side_Get_Empty},
+	{"light", Lua_Transparent_Side_Get_Light},
+	{"texture_index", Lua_Transparent_Side_Get_Texture_Index},
+	{"texture_x", Lua_Transparent_Side_Get_Texture_X},
+	{"texture_y", Lua_Transparent_Side_Get_Texture_Y},
+	{"transfer_mode", Lua_Transparent_Side_Get_Transfer_Mode},
+	{0, 0}
+};
+
+const luaL_reg Lua_Transparent_Side_Set[] = {
+	{"collection", Lua_Transparent_Side_Set_Collection},
+	{"empty", Lua_Transparent_Side_Set_Empty},
+	{"light", Lua_Transparent_Side_Set_Light},
+	{"texture_index", Lua_Transparent_Side_Set_Texture_Index},
+	{"texture_x", Lua_Transparent_Side_Set_Texture_X},
+	{"texture_y", Lua_Transparent_Side_Set_Texture_Y},
+	{"transfer_mode", Lua_Transparent_Side_Set_Transfer_Mode},
+	{0, 0}
+};
+
 char Lua_Side_Name[] = "side";
 
 int Lua_Side_Play_Sound(lua_State *L)
@@ -813,11 +1488,32 @@ static int Lua_Side_Get_Polygon(lua_State *L)
 	return 1;
 }
 
+static int Lua_Side_Get_Primary(lua_State *L)
+{
+	Lua_Primary_Side::Push(L, Lua_Side::Index(L, 1));
+	return 1;
+}
+
+static int Lua_Side_Get_Secondary(lua_State *L)
+{
+	Lua_Secondary_Side::Push(L, Lua_Side::Index(L, 1));
+	return 1;
+}
+
+static int Lua_Side_Get_Transparent(lua_State *L)
+{
+	Lua_Transparent_Side::Push(L, Lua_Side::Index(L, 1));
+	return 1;
+}
+
 const luaL_reg Lua_Side_Get[] = {
 	{"control_panel", Lua_Side_Get_Control_Panel},
 	{"line", Lua_Side_Get_Line},
 	{"play_sound", L_TableFunction<Lua_Side_Play_Sound>},
 	{"polygon", Lua_Side_Get_Polygon},
+	{"primary", Lua_Side_Get_Primary},
+	{"secondary", Lua_Side_Get_Secondary},
+	{"transparent", Lua_Side_Get_Transparent},
 	{0, 0}
 };
 
@@ -1297,6 +1993,9 @@ const luaL_reg Lua_Level_Get[] = {
 	{0, 0}
 };
 
+char Lua_TransferMode_Name[] = "transfer_mode";
+char Lua_TransferModes_Name[] = "TransferModes";
+
 static int compatibility(lua_State *L);
 #define NUMBER_OF_CONTROL_PANEL_DEFINITIONS 54
 
@@ -1360,6 +2059,10 @@ int Lua_Map_register(lua_State *L)
 
 	Lua_Side_ControlPanel::Register(L, Lua_Side_ControlPanel_Get, Lua_Side_ControlPanel_Set);
 
+	Lua_Primary_Side::Register(L, Lua_Primary_Side_Get, Lua_Primary_Side_Set);
+	Lua_Secondary_Side::Register(L, Lua_Secondary_Side_Get, Lua_Secondary_Side_Set);
+	Lua_Transparent_Side::Register(L, Lua_Transparent_Side_Get, Lua_Transparent_Side_Set);
+
 	Lua_Side::Register(L, Lua_Side_Get);
 	Lua_Side::Valid = Lua_Side_Valid;
 
@@ -1383,6 +2086,12 @@ int Lua_Map_register(lua_State *L)
 	
 	Lua_Terminals::Register(L);
 	Lua_Terminals::Length = Lua_Terminals_Length;
+
+	Lua_TransferMode::Register(L, 0, 0, 0, Lua_TransferMode_Mnemonics);
+	Lua_TransferMode::Valid = Lua_TransferMode::ValidRange<NUMBER_OF_TRANSFER_MODES>;
+	
+	Lua_TransferModes::Register(L);
+	Lua_TransferModes::Length = Lua_TransferModes::ConstantLength<NUMBER_OF_TRANSFER_MODES>;
 
 	Lua_MediaType::Register(L, 0, 0, 0, Lua_MediaType_Mnemonics);
 	Lua_MediaType::Valid = Lua_MediaType::ValidRange<NUMBER_OF_MEDIA_TYPES>;

@@ -145,6 +145,7 @@
 <li><a href="#SceneryTypes">Scenery</a></li>
 <li><a href="#ScoringModes">Scoring Modes</a></li>
 <li><a href="#Sounds">Sounds</a></li>
+<li><a href="#TransferModes">Transfer Modes</a></li>
 <li><a href="#WeaponTypes">Weapons</a></li>
 </ol>
 </li>
@@ -1131,23 +1132,34 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:adjacent_polygons()
   </dt>
 <dd><p class="description">iterates through all polygons directly adjacent to this polygon</p></dd>
-      <dt>.ceiling</dt>
+      <dt>.ceiling<br>.floor</dt>
 <dd><dl>
+<dt>
+    .collection</dt>
+<dd><p class="description">texture collection</p></dd>
 <dt>
     .height<br>
       .z</dt>
-<dd><p class="description">ceiling height</p></dd>
+<dd><p class="description">height</p></dd>
+<dt>
+    .light</dt>
+<dd><p class="description">texture light</p></dd>
+<dt>
+    .texture_index</dt>
+<dd><p class="description">texture bitmap index</p></dd>
+<dt>
+    .texture_x</dt>
+<dd><p class="description">texture x offset</p></dd>
+<dt>
+    .texture_y</dt>
+<dd><p class="description">texture y offset</p></dd>
+<dt>
+    .transfer_mode</dt>
+<dd><p class="description">texture transfer mode</p></dd>
 </dl></dd>
       <dt>:contains(x, y [, z])
   </dt>
 <dd><p class="description">whether the point is in this polygon</p></dd>
-      <dt>.floor</dt>
-<dd><dl>
-<dt>
-    .height<br>
-      .z</dt>
-<dd><p class="description">floor height</p></dd>
-</dl></dd>
       <dt>
     .media</dt>
 <dd><p class="description">polygon media (liquid)</p></dd>
@@ -1312,6 +1324,34 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">type of control panel</p></dd>
+</dl></dd>
+      <dt>.primary<br>.secondary<br>.transparent</dt>
+<dd><dl>
+<dt>
+    .collection</dt>
+<dd><p class="description">texture collection</p></dd>
+<dt>
+    .empty</dt>
+<dd>
+<p class="description">whether transparent side is empty</p>
+<p class="note">transparent side only</p>
+<p class="note">setting empty to false is a no-op; set collection and texture_index instead</p>
+</dd>
+<dt>
+    .light</dt>
+<dd><p class="description">texture light</p></dd>
+<dt>
+    .texture_index</dt>
+<dd><p class="description">texture bitmap index</p></dd>
+<dt>
+    .texture_x</dt>
+<dd><p class="description">texture x offset</p></dd>
+<dt>
+    .texture_y</dt>
+<dd><p class="description">texture y offset</p></dd>
+<dt>
+    .transfer_mode</dt>
+<dd><p class="description">texture transfer mode</p></dd>
 </dl></dd>
       <dt>:play_sound(sound [, pitch])
   </dt>
@@ -2464,6 +2504,33 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"vacbob angry"</li>
 <li>"vacbob secure"</li>
 <li>"vacbob kill the player"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="TransferModes"></a>Transfer Modes</h3>
+<dl>
+<dt># TransferModes</dt>
+<dt>TransferModes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"normal"</li>
+<li>"pulsate"</li>
+<li>"wobble"</li>
+<li>"fast wobble"</li>
+</div>
+<div class="mnemonics-column">
+<li>"landscape"</li>
+<li>"horizontal slide"</li>
+<li>"fast horizontal slide"</li>
+<li>"vertical slide"</li>
+</div>
+<div class="mnemonics-column">
+<li>"fast vertical slide"</li>
+<li>"wander"</li>
+<li>"fast wander"</li>
 </div>
 <div class="end-mnemonics"></div>
 </ul>

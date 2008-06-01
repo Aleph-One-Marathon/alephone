@@ -1002,10 +1002,35 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>iterates through all polygons directly adjacent to this polygon</description>
       </function>
       <subtable name="ceiling" classname="polygon_ceiling">
+	<alias>floor</alias>
+	<variable name="collection">
+	  <description>texture collection</description>
+	  <type>collection</type>
+	</variable>
 	<variable name="height">
 	  <alias>z</alias>
-	  <description>ceiling height</description>
+	  <description>height</description>
 	  <type>WU</type>
+	</variable>
+	<variable name="light">
+	  <description>texture light</description>
+	  <type>light</type>
+	</variable>
+	<variable name="texture_index">
+	  <description>texture bitmap index</description>
+	  <type>number</type>
+	</variable>
+	<variable name="texture_x">
+	  <description>texture x offset</description>
+	  <type>WU</type>
+	</variable>
+	<variable name="texture_y">
+	  <description>texture y offset</description>
+	  <type>WU</type>
+	</variable>
+	<variable name="transfer_mode">
+	  <description>texture transfer mode</description>
+	  <type>transfer_mode</type>
 	</variable>
       </subtable>
       <function name="contains">
@@ -1014,13 +1039,6 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="y"><type>WU</type></argument>
 	<argument name="z" required="false"><type>WU</type></argument>
       </function>
-      <subtable name="floor" classname="polygon_floor">
-	<variable name="height">
-	  <alias>z</alias>
-	  <description>floor height</description>
-	  <type>WU</type>
-	</variable>
-      </subtable>
       <variable name="media">
 	<description>polygon media (liquid)</description>
 	<type>media</type>
@@ -1166,6 +1184,40 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <type>number</type>
 	</variable>
 	<note>nil if the side is not a control panel</note>
+      </subtable>
+      <subtable name="primary" classname="primary_side">
+	<alias>secondary</alias>
+	<alias>transparent</alias>
+	<variable name="collection">
+	  <description>texture collection</description>
+	  <type>collection</type>
+	</variable>
+	<variable name="empty">
+	  <description>whether transparent side is empty</description>
+	  <type>boolean</type>
+	  <note>transparent side only</note>
+	  <note>setting empty to false is a no-op; set collection and texture_index instead</note>
+	</variable>
+	<variable name="light">
+	  <description>texture light</description>
+	  <type>light</type>
+	</variable>
+	<variable name="texture_index">
+	  <description>texture bitmap index</description>
+	  <type>number</type>
+	</variable>
+	<variable name="texture_x">
+	  <description>texture x offset</description>
+	  <type>WU</type>
+	</variable>
+	<variable name="texture_y">
+	  <description>texture y offset</description>
+	  <type>WU</type>
+	</variable>
+	<variable name="transfer_mode">
+	  <description>texture transfer mode</description>
+	  <type>transfer_mode</type>
+	</variable>
       </subtable>
       <function name="play_sound">
 	<description>play sound coming from this side</description>
@@ -2193,6 +2245,21 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="vacbob kill the player"/>
       </mnemonics>
     </enum>
+    <enum name="transfer_mode">
+      <mnemonics>
+	<mnemonic name="normal"/>
+	<mnemonic name="pulsate"/>
+	<mnemonic name="wobble"/>
+	<mnemonic name="fast wobble"/>
+	<mnemonic name="landscape"/>
+	<mnemonic name="horizontal slide"/>
+	<mnemonic name="fast horizontal slide"/>
+	<mnemonic name="vertical slide"/>
+	<mnemonic name="fast vertical slide"/>
+	<mnemonic name="wander"/>
+	<mnemonic name="fast wander"/>
+      </mnemonics>
+    </enum>
     <enum name="weapon_type">
       <mnemonics>
 	<mnemonic name="fist"/>
@@ -2228,6 +2295,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     <enum-accessor name="SceneryTypes" contains="scenery_type" nice-name="Scenery"/>
     <enum-accessor name="ScoringModes" contains="scoring_mode" nice-name="Scoring Modes"/>
     <enum-accessor name="Sounds" contains="sound" nice-name="Sounds"/>
+    <enum-accessor name="TransferModes" contains="transfer_mode" nice-name="Transfer Modes"/>
     <enum-accessor name="WeaponTypes" contains="weapon_type" nice-name="Weapons"/>
   </tables>
   <types id="types">
