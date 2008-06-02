@@ -232,6 +232,9 @@ struct environment_preferences_data
 
 	// ghs: are themes part of the environment? they are now
 	bool smooth_text;
+
+	char solo_lua_file[256];
+	bool use_solo_lua;
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

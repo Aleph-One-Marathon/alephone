@@ -38,6 +38,7 @@ bool RunLuaScript();
 void CloseLuaScript();
 
 void ExecuteLuaString(const std::string&);
+void LoadSoloLua();
 
 void ToggleLuaMute();
 void ResetLuaMute();

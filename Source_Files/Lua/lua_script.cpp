@@ -82,6 +82,7 @@ using namespace std;
 #include "Console.h"
 #include "Music.h"
 #include "ViewControl.h"
+#include "preferences.h"
 
 #include "lua_script.h"
 #include "lua_map.h"
@@ -1174,6 +1175,26 @@ void ExecuteLuaString(const std::string& line)
 	}
 	
 	lua_settop(state, 0);
+}
+
+void LoadSoloLua()
+{
+	if (environment_preferences->use_solo_lua)
+	{
+		FileSpecifier fs (environment_preferences->solo_lua_file);
+		OpenedFile script_file;
+		if (fs.Open(script_file))
+		{
+			long script_length;
+			script_file.GetLength(script_length);
+
+			std::vector<char> script_buffer(script_length);
+			if (script_file.Read(script_length, &script_buffer[0]))
+			{
+				LoadLuaScript(&script_buffer[0], script_length);
+			}
+		}
+	}
 }
 
 void CloseLuaScript()

@@ -743,6 +743,8 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 	return success;
 }
 
+extern void LoadSoloLua();
+
 /* This is called when the game level is changed somehow */
 /* The only thing that has to be valid in the entry point is the level_index */
 
@@ -787,6 +789,7 @@ bool goto_level(
 		// Being careful to carry over errors so that Pfhortran errors can be ignored
 		short SavedType, SavedError = get_game_error(&SavedType);
 		RunLevelScript(entry->level_number);
+		if (!game_is_networked) LoadSoloLua();
 		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);
 		
@@ -1139,6 +1142,7 @@ bool load_game_from_file(FileSpecifier& File)
 			// Being careful to carry over errors so that Pfhortran errors can be ignored
 			short SavedType, SavedError = get_game_error(&SavedType);
 			RunLevelScript(dynamic_world->current_level_number);
+			if (!game_is_networked) LoadSoloLua();
 			set_game_error(SavedType,SavedError);
 		}
 		else

@@ -1563,6 +1563,18 @@ static void environment_dialog(void *arg)
 	table->dual_add(sounds_w, d);
 
 	table->add_row(new w_spacer, true);
+	table->dual_add_row(new w_static_text("Solo Script"), d);
+	w_enabling_toggle* use_solo_lua_w = new w_enabling_toggle(environment_preferences->use_solo_lua);
+	table->dual_add(use_solo_lua_w->label("Use Solo Script"), d);
+	table->dual_add(use_solo_lua_w, d);
+
+	w_file_chooser *solo_lua_w = new w_file_chooser("Choose Script", _typecode_netscript);
+	solo_lua_w->set_file(environment_preferences->solo_lua_file);
+	table->dual_add(solo_lua_w->label("Script File"), d);
+	table->dual_add(solo_lua_w, d);
+	use_solo_lua_w->add_dependent_widget(solo_lua_w);
+
+	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Theme"), d);
 
 	w_env_select *theme_w = new w_env_select(environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
@@ -1622,6 +1634,19 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 		
+		bool use_solo_lua = use_solo_lua_w->get_selection() != 0;
+		if (use_solo_lua != environment_preferences->use_solo_lua)
+		{
+			environment_preferences->use_solo_lua = use_solo_lua;
+			changed = true;
+		}
+		
+		path = solo_lua_w->get_file().GetPath();
+		if (strcmp(path, environment_preferences->solo_lua_file)) {
+			strcpy(environment_preferences->solo_lua_file, path);
+			changed = true;
+		}
+
 		path = theme_w->get_path();
 		if (strcmp(path, environment_preferences->theme_dir)) {
 			strcpy(environment_preferences->theme_dir, path);
@@ -1995,6 +2020,8 @@ void write_preferences(
 	fprintf(F,"  group_by_directory=\"%s\"\n",BoolString(environment_preferences->group_by_directory));
 	fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
 	fprintf(F,"  smooth_text=\"%s\"\n", BoolString(environment_preferences->smooth_text));
+	WriteXML_CString(F,"  solo_lua_file=\"", environment_preferences->solo_lua_file, 256, "\"\n");
+	fprintf(F,"  use_solo_lua=\"%s\"\n", BoolString(environment_preferences->use_solo_lua));
 	fprintf(F,">\n");
 	fprintf(F,"</environment>\n\n");
 			
@@ -2190,6 +2217,9 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->group_by_directory = true;
 	preferences->reduce_singletons = false;
 	preferences->smooth_text = true;
+
+	preferences->solo_lua_file[0] = 0;
+	preferences->use_solo_lua = false;
 }
 
 
@@ -3390,6 +3420,15 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	else if (StringsEqual(Tag,"smooth_text"))
 	{
 		return ReadBooleanValue(Value, environment_preferences->smooth_text);
+	}
+	else if (StringsEqual(Tag,"solo_lua_file"))
+	{
+		strncpy(environment_preferences->solo_lua_file, Value, 255);
+		return true;
+	}
+	else if (StringsEqual(Tag,"use_solo_lua"))
+	{
+		return ReadBooleanValue(Value, environment_preferences->use_solo_lua);
 	}
 	return true;
 }
