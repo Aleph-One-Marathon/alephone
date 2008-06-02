@@ -1021,7 +1021,7 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 	}
 
 	// Redraw game window
-	update_game_window();
+	if (get_game_state() == _game_in_progress) update_game_window();
 	return result;
 }
 
