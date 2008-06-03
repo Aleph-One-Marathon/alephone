@@ -726,7 +726,7 @@ const lang_def Lua_Sound_Mnemonics[] = {
 	{"flickta projectile lava flyby", 167},
 	{"flickta dying", 168},
 	{"machine binder", 169},
-	{"macine bookpress", 170},
+	{"machine bookpress", 170},
 	{"machine puncher", 171},
 	{"electric hum", 172},
 	{"alarm", 173},
