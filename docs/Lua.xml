@@ -365,6 +365,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<type>WU</type>
       </variable>
     </table>
+    <table name="endpoint">
+      <variable name="x" access="read-only">
+	<type>WU</type>
+      </variable>
+      <variable name="y" access="read-only">
+	<type>WU</type>
+      </variable>
+    </table>
     <table name="game" singleton="true">
       <variable name="difficulty" access="read-only">
 	<description>the difficulty level</description>
@@ -521,6 +529,9 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>counterclockwise side of line</description>
 	<type>side</type>
       </variable>
+      <subtable-accessor name="endpoints" classname="line_endpoints" index="n">
+	<description>returns line endpoint n</description>
+      </subtable-accessor>
     </table>
     <table name="media">
       <variable name="type">
@@ -1039,6 +1050,18 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="y"><type>WU</type></argument>
 	<argument name="z" required="false"><type>WU</type></argument>
       </function>
+      <subtable-accessor name="endpoints" classname="polygon_endpoints" index="n">
+	<description>returns endpoint n</description>
+      </subtable-accessor>
+      <function name="endpoints">
+	<description>iterates through all of this polygon's endpoints</description>
+      </function>
+      <subtable-accessor name="lines" classname="polygon_lines" index="n">
+	<description>returns polygon line n</description>
+      </subtable-accessor>
+      <function name="lines">
+	<description>iterates through all of this polygon's lines</description>
+      </function>
       <variable name="media">
 	<description>polygon media (liquid)</description>
 	<type>media</type>
@@ -1287,6 +1310,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="type"><type>effect_type</type></argument>
 	<return><type>effect</type></return>
       </function>
+    </accessor>
+    <accessor name="Endpoints" contains="endpoint">
+      <length>
+	<description>number of endpoints in level</description>
+      </length>
+      <index/>
+      <call>
+	<description>iterates through all endpoints in the level</description>
+      </call>
     </accessor>
     <accessor name="Game" contains="game"/>
     <accessor name="Items" contains="item">

@@ -104,6 +104,7 @@
 <li><a href="#Annotations">Annotations</a></li>
 <li><a href="#Cameras">Cameras</a></li>
 <li><a href="#Effects">Effects</a></li>
+<li><a href="#Endpoints">Endpoints</a></li>
 <li><a href="#Game">Game</a></li>
 <li><a href="#Items">Items</a></li>
 <li><a href="#Level">Level</a></li>
@@ -434,6 +435,25 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     </dl></dd>
 </dl>
 <h3>
+<a name="Endpoints"></a>Endpoints</h3>
+<dl>
+<dt># Endpoints</dt>
+<dd><p class="description">number of endpoints in level</p></dd>
+<dt>Endpoints()</dt>
+<dd><p class="description">iterates through all endpoints in the level</p></dd>
+<dt>Endpoints[index]</dt>
+<dd><dl>
+      <dt>
+    .x<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>
+    .y<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+    </dl></dd>
+</dl>
+<h3>
 <a name="Game"></a>Game</h3>
 <dl>
 <dt>Game</dt>
@@ -618,6 +638,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       .ccw_side<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">counterclockwise side of line</p></dd>
+      <dt>
+    .endpoints[n]
+  </dt>
+<dd>
+<p class="description">returns line endpoint n</p>
+<dl></dl>
+</dd>
     </dl></dd>
 </dl>
 <h3>
@@ -1160,6 +1187,26 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:contains(x, y [, z])
   </dt>
 <dd><p class="description">whether the point is in this polygon</p></dd>
+      <dt>
+    .endpoints[n]
+  </dt>
+<dd>
+<p class="description">returns endpoint n</p>
+<dl></dl>
+</dd>
+      <dt>:endpoints()
+  </dt>
+<dd><p class="description">iterates through all of this polygon's endpoints</p></dd>
+      <dt>
+    .lines[n]
+  </dt>
+<dd>
+<p class="description">returns polygon line n</p>
+<dl></dl>
+</dd>
+      <dt>:lines()
+  </dt>
+<dd><p class="description">iterates through all of this polygon's lines</p></dd>
       <dt>
     .media</dt>
 <dd><p class="description">polygon media (liquid)</p></dd>
