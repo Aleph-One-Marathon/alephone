@@ -278,6 +278,7 @@ bool NetAllowCrosshair();
 bool NetAllowTunnelVision();
 bool NetAllowBehindview();
 bool NetAllowCarnageMessages();
+bool NetAllowSavingLevel();
 
 // spoke stuf
 

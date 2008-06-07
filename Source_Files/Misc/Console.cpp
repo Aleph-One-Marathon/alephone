@@ -28,6 +28,8 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 
+#include "network.h"
+
 // for carnage reporting:
 #include "player.h"
 #include "projectiles.h"
@@ -251,8 +253,6 @@ static std::string replace_first(std::string &result, const std::string& from, c
 	return result;
 }
 
-extern bool NetAllowCarnageMessages();
-
 void Console::report_kill(int16 player_index, int16 aggressor_player_index, int16 projectile_index)
 {
 	if (!game_is_networked || !NetAllowCarnageMessages() || !m_carnage_messages_exist) return;
@@ -302,6 +302,12 @@ static std::string last_level;
 struct save_level
 {
 	void operator() (const std::string& arg) const {
+		if (!NetAllowSavingLevel())
+		{
+			screen_printf("Level saving disabled");
+			return;
+		}
+
 		std::string filename = arg;
 		if (filename == "")
 		{

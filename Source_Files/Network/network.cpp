@@ -2441,6 +2441,13 @@ bool NetAllowCarnageMessages() {
 		!(dynamic_world->game_information.cheat_flags & _disable_carnage_messages));
 }
 
+bool NetAllowSavingLevel() {
+	return (dynamic_world->player_count == 1 ||
+		localPlayerIndex == sServerPlayerIndex ||
+		dynamic_world->game_information.cheat_flags & _allow_saving_level);
+
+}
+
 extern int32 spoke_latency();
 extern int32 hub_latency(int);
 

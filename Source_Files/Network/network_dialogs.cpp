@@ -1168,6 +1168,8 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	binders.insert<bool> (m_laraCroftWidget, &laraCroftPref);
 	BitPref carnageMessagesPref (active_network_preferences->cheat_flags, _disable_carnage_messages, true);
 	binders.insert<bool> (m_carnageMessagesWidget, &carnageMessagesPref);
+	BitPref savingLevelPref (active_network_preferences->cheat_flags, _allow_saving_level);
+	binders.insert<bool> (m_savingLevelWidget, &savingLevelPref);
 
 	BoolPref useScriptPref (active_network_preferences->use_netscript);
 	binders.insert<bool> (m_useScriptWidget, &useScriptPref);
@@ -2929,7 +2931,7 @@ public:
 		left_placer->add(options_table, true);
 
 		network_table->add_row(new w_spacer(), true);
-		network_table->dual_add_row(new w_static_text("Extras"), m_dialog);
+		network_table->dual_add_row(new w_static_text("Cheats / Extras"), m_dialog);
 		w_toggle *zoom_w = new w_toggle(true);
 		network_table->dual_add(zoom_w, m_dialog);
 		network_table->dual_add(zoom_w->label("Allow Zoom"), m_dialog);
@@ -2945,6 +2947,10 @@ public:
 		w_toggle *carnage_messages_w = new w_toggle(true);
 		network_table->dual_add(carnage_messages_w, m_dialog);
 		network_table->dual_add(carnage_messages_w->label("Allow Carnage Messages"), m_dialog);
+
+		w_toggle *saving_level_w = new w_toggle(true);
+		network_table->dual_add(saving_level_w, m_dialog);
+		network_table->dual_add(saving_level_w->label("Allow .save level"), m_dialog);
 
 		right_placer->add(new w_spacer(), true);
 		right_placer->dual_add(new w_static_text("Duration"), m_dialog);
@@ -3018,6 +3024,7 @@ public:
 		m_crosshairWidget = new ToggleWidget (crosshairs_w);
 		m_laraCroftWidget = new ToggleWidget (lara_croft_w);
 		m_carnageMessagesWidget = new ToggleWidget (carnage_messages_w);
+		m_savingLevelWidget = new ToggleWidget (saving_level_w);
 		
 		m_useUpnpWidget = new ToggleWidget (use_upnp_w);
 		m_latencyToleranceWidget = new PopupSelectorWidget(latency_tolerance_w);
