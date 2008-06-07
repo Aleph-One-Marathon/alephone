@@ -1147,7 +1147,7 @@ bool load_game_from_file(FileSpecifier& File)
 		}
 		else
 		{
-			/* Tell the user they’re screwed when they try to leave this level. */
+			/* Tell the user they√ïre screwed when they try to leave this level. */
 			alert_user(infoError, strERRORS, cantFindMap, 0);
 
 			// LP addition: makes the game look normal
@@ -1234,7 +1234,7 @@ bool export_level(FileSpecifier& File)
 	TempFile.AddPart("savetemp.dat");
 
 	/* Fill in the default wad header (we are using File instead of TempFile to get the name right in the header) */
-	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
+	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, MARATHON_TWO_DATA_VERSION, 1, 0, &header);
 
 	if (create_wadfile(TempFile, _typecode_scenario))
 	{
@@ -1256,7 +1256,6 @@ bool export_level(FileSpecifier& File)
 						/* Update the new header */
 												offset+= wad_length;
 						header.directory_offset= offset;
-						header.parent_checksum= read_wad_file_checksum(MapFileSpec);
 						if (write_wad_header(SaveFile, &header) && write_directorys(SaveFile, &header, &entry))
 						{
 							/* We win. */
@@ -1269,6 +1268,7 @@ bool export_level(FileSpecifier& File)
 			}
 
 			err = SaveFile.GetError();
+			calculate_and_store_wadfile_checksum(SaveFile);
 			close_wad_file(SaveFile);
 		}
 
@@ -1531,7 +1531,7 @@ bool process_map_wad(
 			load_lights(data, count, version);
 		}
 
-		//	HACK!!!!!!!!!!!!!!! vulcan doesn’t NONE .first_object field after adding scenery
+		//	HACK!!!!!!!!!!!!!!! vulcan doesn√ït NONE .first_object field after adding scenery
 		{
 			for (count= 0; count<static_cast<size_t>(dynamic_world->polygon_count); ++count)
 			{
@@ -1887,20 +1887,20 @@ save_game_data export_data[]=
 {
 	{ POINT_TAG, SIZEOF_world_point2d, true },
 	{ LINE_TAG, SIZEOF_line_data, true },
-	{ SIDE_TAG, SIZEOF_side_data, true },
 	{ POLYGON_TAG, SIZEOF_polygon_data, true },
+	{ SIDE_TAG, SIZEOF_side_data, true },
 	{ LIGHTSOURCE_TAG, SIZEOF_static_light_data, true, },
 	{ ANNOTATION_TAG, SIZEOF_map_annotation, true },
 	{ OBJECT_TAG, SIZEOF_map_object, true },
 	{ MAP_INFO_TAG, SIZEOF_static_data, true },
 	{ ITEM_PLACEMENT_STRUCTURE_TAG, SIZEOF_object_frequency_definition, true },
+	{ PLATFORM_STATIC_DATA_TAG, SIZEOF_static_platform_data, true },
 	{ TERMINAL_DATA_TAG, sizeof(byte), true },
 	{ MEDIA_TAG, SIZEOF_media_data, true }, // false },
 	{ AMBIENT_SOUND_TAG, SIZEOF_ambient_sound_image_data, true },
 	{ RANDOM_SOUND_TAG, SIZEOF_random_sound_image_data, true },
 	{ SHAPE_PATCH_TAG, sizeof(byte), true },
 //	{ PLATFORM_STRUCTURE_TAG, SIZEOF_platform_data, true },
-	{ PLATFORM_STATIC_DATA_TAG, SIZEOF_static_platform_data, true },
 };
 
 #define NUMBER_OF_SAVE_ARRAYS (sizeof(save_data)/sizeof(struct save_game_data))
@@ -1990,6 +1990,8 @@ static uint8 *export_tag_to_global_array_and_size(
 		array = new byte[*size];
 	else
 		return NULL;
+
+	objlist_clear(array, *size);
 	
 	// An OK-to-alter version of that array pointer
 	uint8 *temp_array = array;
@@ -2192,6 +2194,8 @@ static uint8 *tag_to_global_array_and_size(
 		array = new byte[*size];
 	else
 		return NULL;
+
+	objlist_clear(array, *size);
 	
 	// An OK-to-alter version of that array pointer
 	uint8 *temp_array = array;

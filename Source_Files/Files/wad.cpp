@@ -407,6 +407,7 @@ bool write_wad_header(
 	bool success= true;
 
 	uint8 buffer[SIZEOF_wad_header];
+	obj_clear(buffer);
 	pack_wad_header(buffer,header,1);
 	write_to_file(OFile, 0, buffer, SIZEOF_wad_header);
 

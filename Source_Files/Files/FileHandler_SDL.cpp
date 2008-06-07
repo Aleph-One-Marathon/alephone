@@ -323,7 +323,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 		f = OFile.f = open_fork_from_existing_path(GetPath(), false);
 	else
 #endif
-		f = OFile.f = SDL_RWFromFile(GetPath(), Writable ? "wb" : "rb");
+		f = OFile.f = SDL_RWFromFile(GetPath(), Writable ? "wb+" : "rb");
 
 	err = f ? 0 : errno;
 	if (f == NULL) {
