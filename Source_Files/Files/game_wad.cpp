@@ -1978,6 +1978,10 @@ static uint8 *export_tag_to_global_array_and_size(
 		count = dynamic_world->platform_count;
 		break;
 
+	case POLYGON_TAG:
+		count = dynamic_world->polygon_count;
+		break;
+
 	default:
 		assert(false);
 		break;
@@ -2051,6 +2055,16 @@ static uint8 *export_tag_to_global_array_and_size(
 
 				temp_array = pack_static_platform_data(temp_array, &platform, 1);
 			}
+		}
+		break;
+
+	case POLYGON_TAG:
+		for (size_t loop = 0; loop < count; ++loop)
+		{
+			// Forge visual mode crashes if we don't do this
+			polygon_data polygon = PolygonList[loop];
+			polygon.first_object = NONE;
+			temp_array = pack_polygon_data(temp_array, &polygon, 1);
 		}
 		break;
 
@@ -2321,6 +2335,7 @@ static wad_data *build_export_wad(wad_header *header, long *length)
 			case POINT_TAG:
 			case LIGHTSOURCE_TAG:
 			case PLATFORM_STATIC_DATA_TAG:
+			case POLYGON_TAG:
 				array_to_slam= export_tag_to_global_array_and_size(export_data[loop].tag, &size);
 				break;
 			default:
