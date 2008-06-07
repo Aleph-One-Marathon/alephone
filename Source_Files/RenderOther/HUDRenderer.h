@@ -238,6 +238,8 @@ protected:
 	virtual void FillRect(screen_rectangle *r, short color_index) = 0;
 	virtual void FrameRect(screen_rectangle *r, short color_index) = 0;
 
+	virtual void DrawTexture(shape_descriptor shape, short x, short y, int size) = 0;
+
 	virtual void SetClipPlane(int x, int y, int c_x, int c_y, int radius) = 0;
 	virtual void DisableClipPlane(void) = 0;
 

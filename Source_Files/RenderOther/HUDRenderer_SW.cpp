@@ -27,6 +27,9 @@
 
 #include "HUDRenderer_SW.h"
 
+#include "images.h"
+#include "shell.h" // get_shape_surface!?
+
 #if defined(__WIN32__) || defined(__MINGW32__)
 #undef DrawText
 #endif
@@ -72,6 +75,74 @@ void HUD_SW_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool 
 	_draw_screen_shape_at_x_y(shape, x, y);
 }
 
+extern SDL_Surface *HUD_Buffer;
+
+template <class T>
+static void rotate(T *src_pixels, int src_pitch, T *dst_pixels, int dst_pitch, int width, int height)
+{
+	for (int y = 0; y < height; y++)
+	{
+		for (int x = 0; x < width; x++)
+		{
+			dst_pixels[x * dst_pitch + y] = src_pixels[y * src_pitch + x];
+		}
+	}
+}
+
+SDL_Surface *rotate_surface(SDL_Surface *s, int width, int height)
+{
+	if (!s) return 0;
+
+	SDL_Surface *s2 = SDL_CreateRGBSurface(SDL_SWSURFACE, height, width, s->format->BitsPerPixel, s->format->Rmask, s->format->Gmask, s->format->Bmask, s->format->Amask);
+
+	switch (s->format->BytesPerPixel) {
+		case 1:
+			rotate((pixel8 *)s->pixels, s->pitch, (pixel8 *)s2->pixels, s2->pitch, width, height);
+			break;
+		case 2:
+			rotate((pixel16 *)s->pixels, s->pitch / 2, (pixel16 *)s2->pixels, s2->pitch / 2, width, height);
+			break;
+		case 4:
+			rotate((pixel32 *)s->pixels, s->pitch / 4, (pixel32 *)s2->pixels, s2->pitch / 4, width, height);
+			break;
+	}
+
+	if (s->format->palette)
+		SDL_SetColors(s2, s->format->palette->colors, 0, s->format->palette->ncolors);
+
+	return s2;
+}	
+
+void HUD_SW_Class::DrawTexture(shape_descriptor shape, short x, short y, int size)
+{
+	SDL_Surface *s = get_shape_surface(shape);
+	if (!s) return;
+
+	
+	if (HUD_Buffer->format->BitsPerPixel == 8) {
+		// SDL doesn't seem to be able to handle direct blits between 8-bit surfaces with different cluts
+		SDL_Surface *s2 = SDL_DisplayFormat(s);
+		SDL_FreeSurface(s);
+		s = s2;
+	}
+
+	SDL_Surface *s2 = rescale_surface(s, size, size);
+	SDL_FreeSurface(s);
+	s = s2;
+
+	s2 = rotate_surface(s, size, size);
+	SDL_FreeSurface(s);
+	s = s2;
+
+	// Setup destination rectangle
+	SDL_Rect dst_rect = {x, y, s->w, s->h};
+
+	// Blit the surface
+	SDL_BlitSurface(s, NULL, HUD_Buffer, &dst_rect);
+
+	// Free the surface
+	SDL_FreeSurface(s);
+}
 
 /*
  *  Draw text

@@ -276,7 +276,13 @@
   <xsl:for-each select="alias"><br/>.<xsl:value-of select="."/></xsl:for-each>
   <xsl:for-each select="note"><p class="note"><xsl:value-of select="."/></p></xsl:for-each>
   </dt>
-  <dd><dl><xsl:apply-templates select="function|function-variable|variable|subtable"><xsl:sort select="@name"/></xsl:apply-templates>
+  <dd>
+    <xsl:choose>
+      <xsl:when test="description">
+	<p class="description"><xsl:copy-of select="description/node()"/></p>
+      </xsl:when>
+    </xsl:choose>
+    <dl><xsl:apply-templates select="function|function-variable|variable|subtable|subtable-accessor"><xsl:sort select="@name"/></xsl:apply-templates>
   </dl></dd>
 </xsl:template>
 

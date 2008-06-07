@@ -27,6 +27,9 @@
 
 #include "HUDRenderer.h"
 #include "network.h" // NetDisplayPings(), NetGetLatency()
+#include "lua_script.h" // texture palette
+
+using namespace std;
 
 /*
  *  Move rectangle
@@ -49,16 +52,64 @@ bool HUD_Class::update_everything(short time_elapsed)
 {
 	ForceUpdate = false;
 
-	update_motion_sensor(time_elapsed);
-	update_inventory_panel((time_elapsed == NONE) ? true : false);
-	update_weapon_panel((time_elapsed == NONE) ? true : false);
-	update_ammo_display((time_elapsed == NONE) ? true : false);
-	update_suit_energy(time_elapsed);
-	update_suit_oxygen(time_elapsed);
+	if (!LuaTexturePaletteSize())
+	{
 
-	// Draw the message area if the player count is greater than one
-	if (dynamic_world->player_count > 1)
-		draw_message_area(time_elapsed);
+		update_motion_sensor(time_elapsed);
+		update_inventory_panel((time_elapsed == NONE) ? true : false);
+		update_weapon_panel((time_elapsed == NONE) ? true : false);
+		update_ammo_display((time_elapsed == NONE) ? true : false);
+		update_suit_energy(time_elapsed);
+		update_suit_oxygen(time_elapsed);
+
+		// Draw the message area if the player count is greater than one
+		if (dynamic_world->player_count > 1)
+			draw_message_area(time_elapsed);
+	}
+	else
+	{
+		int size;
+		// some good looking break points, based on 640x160
+		if (LuaTexturePaletteSize() <= 5)
+			size = 128;
+		else if (LuaTexturePaletteSize() <= 16)
+			size = 80;
+		else if (LuaTexturePaletteSize() <= 36)
+			size = 53;
+		else if (LuaTexturePaletteSize() <= 64)
+			size = 40;
+		else if (LuaTexturePaletteSize() <= 100)
+			size = 32;
+		else if (LuaTexturePaletteSize() <= 144)
+			size = 26;
+		else
+			size = 20;
+
+		int rows = 160 / size;
+		int cols = 640 / size;
+
+		int x_offset = (640 - cols * size) / 2;
+		int y_offset = (160 - rows * size) / 2;
+		
+		for (int i = 0; i < LuaTexturePaletteSize(); ++i)
+		{
+			if (LuaTexturePaletteTexture(i) != UNONE)
+				DrawTexture(LuaTexturePaletteTexture(i), (i % cols) * size + x_offset, 320 + y_offset + (i / cols) * size, size - 1);
+		}
+		
+		if (LuaTexturePaletteSelected() >= 0)
+		{
+			int i = LuaTexturePaletteSelected();
+			screen_rectangle r;
+			r.left = (i % cols) * size + x_offset;
+			r.right = r.left + size;
+			r.top = 320 + y_offset + (i / cols) * size;
+			r.bottom = r.top + size;
+			FrameRect(&r, _inventory_text_color);
+		}
+
+		ForceUpdate = true;
+	}
 
 	return ForceUpdate;
 }

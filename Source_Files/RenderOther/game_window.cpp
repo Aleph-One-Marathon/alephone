@@ -521,6 +521,8 @@ void ensure_HUD_buffer(void) {
  *  Draw HUD (to HUD surface)
  */
 
+extern int LuaTexturePaletteSize();
+
 void draw_panels(void)
 {
 	if (OGL_HUDActive)
@@ -541,7 +543,10 @@ void draw_panels(void)
 
 	if (!hud_pict_not_found) {
 		SDL_Rect dst_rect = {0, 320, 640, 160};
-		SDL_BlitSurface(static_hud_pict, NULL, HUD_Buffer, &dst_rect);
+		if (!LuaTexturePaletteSize())
+			SDL_BlitSurface(static_hud_pict, NULL, HUD_Buffer, &dst_rect);
+		else
+			SDL_FillRect(HUD_Buffer, &dst_rect, 0);
 	}
 
 	// Add dynamic elements

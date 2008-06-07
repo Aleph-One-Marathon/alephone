@@ -978,6 +978,33 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>teleports player to level (of course, all the other players will also go to that level)</description>
 	<argument name="level"><type>number</type></argument>
       </function>
+      <subtable name="texture_palette">
+	<description>displays a texture palette instead of the classic HUD</description>
+	<variable name="highlight" access="local-player">
+	  <description>number of slot to highlight</description>
+	  <note>can be nil</note>
+	</variable>
+	<variable name="size" access="local-player">
+	  <description>how many slots the palette has</description>
+	  <type>number</type>
+	  <note>there is a maximum of 256 slots</note>
+	  <note>the texture palette is visible whenever the size is greater than 0</note>
+	  <note>rows/columns may change in the future based on the user's screen layout prefs</note>
+	</variable>
+	<subtable-accessor name="slots" classname="texture_palette_slots" index="n">
+	  <variable name="texture_index" access="local-player">
+	    <description>texture index of this slot</description>
+	    <type>number</type>
+	  </variable>
+	  <variable name="collection" access="local-player">
+	    <description>collection of this slot</description>
+	    <type>collection</type>
+	  </variable>
+	  <function name="clear">
+	    <description>makes this slot empty</description>
+	  </function>
+	</subtable-accessor>
+      </subtable>
       <subtable-accessor name="weapons" classname="player_weapon" index="weapon_type">
 	<subtable name="primary" classname="player_weapon_trigger">
 	  <alias>secondary</alias>

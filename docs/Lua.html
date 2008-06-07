@@ -1106,6 +1106,44 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:teleport_to_level(level)
   </dt>
 <dd><p class="description">teleports player to level (of course, all the other players will also go to that level)</p></dd>
+      <dt>.texture_palette</dt>
+<dd>
+<p class="description">displays a texture palette instead of the classic HUD</p>
+<dl>
+<dt>
+    .highlight<span class="access"> (local player)</span>
+</dt>
+<dd>
+<p class="description">number of slot to highlight</p>
+<p class="note">can be nil</p>
+</dd>
+<dt>
+    .size<span class="access"> (local player)</span>
+</dt>
+<dd>
+<p class="description">how many slots the palette has</p>
+<p class="note">there is a maximum of 256 slots</p>
+<p class="note">the texture palette is visible whenever the size is greater than 0</p>
+<p class="note">rows/columns may change in the future based on the user's screen layout prefs</p>
+</dd>
+<dt>
+    .slots[n]
+  </dt>
+<dd><dl>
+<dt>:clear()
+  </dt>
+<dd><p class="description">makes this slot empty</p></dd>
+<dt>
+    .collection<span class="access"> (local player)</span>
+</dt>
+<dd><p class="description">collection of this slot</p></dd>
+<dt>
+    .texture_index<span class="access"> (local player)</span>
+</dt>
+<dd><p class="description">texture index of this slot</p></dd>
+</dl></dd>
+</dl>
+</dd>
       <dt>
     .weapons[weapon_type]
   </dt>

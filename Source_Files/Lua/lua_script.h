@@ -5,6 +5,7 @@
 #include "cseries.h"
 #include "world.h"
 #include "ActionQueues.h"
+#include "shape_descriptors.h"
 
 void L_Error(const char *message);
 void L_Call_Init(bool fRestoringSaved);
@@ -48,6 +49,10 @@ bool UseLuaCameras();
 ActionQueues* GetLuaActionQueues();
 
 void MarkLuaCollections(bool active);
+
+int LuaTexturePaletteSize();
+shape_descriptor LuaTexturePaletteTexture(size_t);
+int LuaTexturePaletteSelected();
 
 // camera data structures
 struct timed_point

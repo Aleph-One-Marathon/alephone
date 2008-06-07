@@ -88,6 +88,8 @@ static GLuint txtr_id[NUM_TEX];
 static bool hud_pict_loaded = false;	// HUD backdrop picture loaded and ready
 static bool hud_pict_not_found = false;	// HUD backdrop picture not found, don't try again to load it
 
+extern int LuaTexturePaletteSize();
+
 void OGL_DrawHUD(Rect &dest, short time_elapsed)
 {
 	static const int txtr_width[NUM_TEX] = {256, 256, 128, 256, 256, 128};
@@ -226,7 +228,10 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
 
-		glEnable(GL_TEXTURE_2D);
+		if (LuaTexturePaletteSize())
+			glDisable(GL_TEXTURE_2D);
+		else
+			glEnable(GL_TEXTURE_2D);
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_ALPHA_TEST);
@@ -235,8 +240,14 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 
 		// Draw static HUD picture
 		for (int i=0; i<NUM_TEX; i++) {
-			glBindTexture(GL_TEXTURE_2D, txtr_id[i]);
-			glColor3f(1.0, 1.0, 1.0);
+			if (!LuaTexturePaletteSize())
+			{
+				glBindTexture(GL_TEXTURE_2D, txtr_id[i]);
+				glColor3f(1.0, 1.0, 1.0);
+			}
+			else
+				glColor3f(0.0, 0.0, 0.0);
+
 			glBegin(GL_TRIANGLE_FAN);
 				glTexCoord2f(0.0, 0.0);
 				glVertex2i(txtr_x[i] + dest.left, txtr_y[i] + dest.top);
@@ -380,6 +391,45 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 		glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
 		glVertex2i(x + width, y + height);
 		glTexCoord2d(U_Offset, V_Offset + V_Scale);
+		glVertex2i(x, y + height);
+	glEnd();
+	TMgr.RestoreTextureMatrix();
+}
+
+void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short x, short y, int size)
+{
+	// Set up texture
+	TextureManager TMgr;
+	TMgr.ShapeDesc = shape;
+	get_shape_bitmap_and_shading_table(shape, &TMgr.Texture, &TMgr.ShadingTables, _shading_normal);
+	TMgr.IsShadeless = false;
+	TMgr.TransferMode = _shadeless_transfer;
+	TMgr.TextureType = OGL_Txtr_Wall;
+	if (!TMgr.Setup())
+		return;
+
+	// Get dimensions
+	int width = size, height = size;
+//	int width = TMgr.Texture->width, height = TMgr.Texture->height;
+	GLdouble U_Scale = TMgr.U_Scale;
+	GLdouble V_Scale = TMgr.V_Scale;
+	GLdouble U_Offset = TMgr.U_Offset;
+	GLdouble V_Offset = TMgr.V_Offset;
+
+	// Draw shape
+	glColor3f(1.0, 1.0, 1.0);
+	glEnable(GL_TEXTURE_2D);
+	glDisable(GL_BLEND);
+	TMgr.SetupTextureMatrix();
+	TMgr.RenderNormal();
+	glBegin(GL_TRIANGLE_FAN);
+		glTexCoord2d(U_Offset, V_Offset + V_Scale);
+		glVertex2i(x, y);
+		glTexCoord2d(U_Offset, V_Offset);
+		glVertex2i(x + width, y);
+		glTexCoord2d(U_Offset + U_Scale, V_Offset);
+		glVertex2i(x + width, y + height);
+		glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
 		glVertex2i(x, y + height);
 	glEnd();
 	TMgr.RestoreTextureMatrix();
