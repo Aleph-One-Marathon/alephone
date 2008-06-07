@@ -25,6 +25,7 @@ LUA_PLAYER.CPP
 #include "Crosshairs.h"
 #include "fades.h"
 #include "game_window.h"
+#include "interface.h"
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
@@ -1918,6 +1919,14 @@ int Lua_Game_Local_Random(lua_State *L)
 	return 1;
 }
 
+int Lua_Game_Save(lua_State *L)
+{
+	if (!game_is_networked)
+		save_game();
+
+	return 0;
+}
+
 const luaL_reg Lua_Game_Get[] = {
 	{"difficulty", Lua_Game_Get_Difficulty},
 	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
@@ -1927,6 +1936,7 @@ const luaL_reg Lua_Game_Get[] = {
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
 	{"ticks", Lua_Game_Get_Ticks},
 	{"type", Lua_Game_Get_Type},
+	{"save", L_TableFunction<Lua_Game_Save>},
 	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
 	{0, 0}
 };

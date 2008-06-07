@@ -410,6 +410,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="n"><type>number</type></argument>
 	<return><type>number</type></return>
       </function>
+      <function name="save">
+	<description>saves the game (as if the user had activated a pattern buffer)</description>
+	<note>solo only</note>
+      </function>
       <variable name="ticks" access="read-only">
 	<description>ticks since game started</description>
 	<type>time</type>
