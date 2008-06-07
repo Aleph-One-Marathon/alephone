@@ -2444,7 +2444,7 @@ bool NetAllowCarnageMessages() {
 bool NetAllowSavingLevel() {
 	return (dynamic_world->player_count == 1 ||
 		localPlayerIndex == sServerPlayerIndex ||
-		dynamic_world->game_information.cheat_flags & _allow_saving_level);
+		!(dynamic_world->game_information.cheat_flags & _disable_saving_level));
 
 }
 

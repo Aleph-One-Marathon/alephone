@@ -1168,7 +1168,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	binders.insert<bool> (m_laraCroftWidget, &laraCroftPref);
 	BitPref carnageMessagesPref (active_network_preferences->cheat_flags, _disable_carnage_messages, true);
 	binders.insert<bool> (m_carnageMessagesWidget, &carnageMessagesPref);
-	BitPref savingLevelPref (active_network_preferences->cheat_flags, _allow_saving_level);
+	BitPref savingLevelPref (active_network_preferences->cheat_flags, _disable_saving_level, true);
 	binders.insert<bool> (m_savingLevelWidget, &savingLevelPref);
 
 	BoolPref useScriptPref (active_network_preferences->use_netscript);
