@@ -246,15 +246,22 @@ public:
 		placer->dual_add(new w_title("OPENGL OPTIONS"), m_dialog);
 		placer->add(new w_spacer(), true);
 		
-		horizontal_placer *tabs_placer = new horizontal_placer;
-		w_button *w_general_tab = new w_button("GENERAL");
-		w_general_tab->set_callback(choose_generic_tab, static_cast<void *>(this));
-		tabs_placer->dual_add(w_general_tab, m_dialog);
-		w_button *w_advanced_tab = new w_button("ADVANCED");
-		w_advanced_tab->set_callback(choose_advanced_tab, static_cast<void *>(this));
-		tabs_placer->dual_add(w_advanced_tab, m_dialog);
-		placer->add(tabs_placer, true);
+		// horizontal_placer *tabs_placer = new horizontal_placer;
+		// w_button *w_general_tab = new w_button("GENERAL");
+		// w_general_tab->set_callback(choose_generic_tab, static_cast<void *>(this));
+		// tabs_placer->dual_add(w_general_tab, m_dialog);
+		// w_button *w_advanced_tab = new w_button("ADVANCED");
+		// w_advanced_tab->set_callback(choose_advanced_tab, static_cast<void *>(this));
+		// tabs_placer->dual_add(w_advanced_tab, m_dialog);
+		// placer->add(tabs_placer, true);
 
+		m_tabs = new tab_placer();
+
+		std::vector<std::string> labels;
+		labels.push_back("GENERAL");
+		labels.push_back("ADVANCED");
+		w_tab *tabs = new w_tab(labels, m_tabs);
+		placer->dual_add(tabs, m_dialog);
 		
 		placer->add(new w_spacer(), true);
 
@@ -419,7 +426,6 @@ public:
 
 		advanced_placer->add(table, true);
 
-		m_tabs = new tab_placer();
 		m_tabs->add(general_table, true);
 		m_tabs->add(advanced_placer, true);
 		placer->add(m_tabs, false);

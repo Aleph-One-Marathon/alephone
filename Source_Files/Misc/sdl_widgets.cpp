@@ -368,6 +368,209 @@ void w_button_base::click(int /*x*/, int /*y*/)
 	mouse_up(0, 0);
 }
 
+/* 
+ * Tabs
+ */
+
+w_tab::w_tab(const vector<string>& _labels, tab_placer *_placer) : widget(TAB_WIDGET), labels(_labels), placer(_placer), active_tab(1), pressed_tab(0)
+{
+	saved_min_height = get_theme_space(TAB_WIDGET, BUTTON_HEIGHT);
+	for (vector<string>::iterator it = labels.begin(); it != labels.end(); ++it)
+	{
+		int l_space = (it == labels.begin()) ? get_theme_space(TAB_WIDGET, BUTTON_L_SPACE) : get_theme_space(TAB_WIDGET, TAB_LC_SPACE);
+		int r_space = (it == labels.end() - 1) ? get_theme_space(TAB_WIDGET, BUTTON_R_SPACE) : get_theme_space(TAB_WIDGET, TAB_RC_SPACE);
+		int width = l_space + r_space + font->text_width(it->c_str(), style);
+		widths.push_back(width);
+		saved_min_width += width;
+
+		// load center images
+		const int states[] = { DEFAULT_STATE, PRESSED_STATE, ACTIVE_STATE, DISABLED_STATE };
+		images.resize(PRESSED_STATE + 1);
+		for (int i = 0; i < 4; ++i)
+		{
+			int li_space = (it == labels.begin()) ? get_theme_image(TAB_WIDGET, states[i], TAB_L_IMAGE)->w : get_theme_image(TAB_WIDGET, states[i], TAB_LC_IMAGE)->w;
+			int ri_space = (it == labels.end() - 1) ? get_theme_image(TAB_WIDGET, states[i], TAB_R_IMAGE)->w : get_theme_image(TAB_WIDGET, states[i], TAB_RC_IMAGE)->w;
+			int c_space = width - li_space - ri_space;
+			images[states[i]].push_back(get_theme_image(TAB_WIDGET, states[i], TAB_C_IMAGE, c_space));
+		}
+	}
+
+}
+
+w_tab::~w_tab()
+{
+	for (std::vector<std::vector<SDL_Surface *> >::iterator it = images.begin(); it != images.end(); ++it)
+	{
+		for (std::vector<SDL_Surface *>::iterator it2 = it->begin(); it2 != it->end(); ++it2)
+		{
+			SDL_FreeSurface(*it2);
+		}
+	}
+}
+
+void w_tab::draw(SDL_Surface *s) const 
+{
+	int x = rect.x;
+	for (int i = 0; i < labels.size(); ++i)
+	{
+		int state;
+		if (!enabled)
+			state = DISABLED_STATE;
+		else if (i == pressed_tab)
+			state = PRESSED_STATE;
+		else if (active && i == active_tab)
+			state = ACTIVE_STATE;
+		else
+			state = DEFAULT_STATE;
+
+		int l_space;
+		int l_offset = 0;
+
+		SDL_Surface *l_image;
+		if (i == 0)
+		{
+			l_space = get_theme_space(TAB_WIDGET, BUTTON_L_SPACE);
+			l_offset = 1;
+			l_image = get_theme_image(TAB_WIDGET, state, TAB_L_IMAGE);
+		}
+		else
+		{
+			l_space = get_theme_space(TAB_WIDGET, TAB_LC_SPACE);
+			l_image = get_theme_image(TAB_WIDGET, state, TAB_LC_IMAGE);
+		}
+
+		int r_space;
+		int r_offset = 0;
+		SDL_Surface *r_image;
+		if (i == labels.size() - 1)
+		{
+			r_space = get_theme_space(TAB_WIDGET, BUTTON_R_SPACE);
+			r_offset = 1;
+			r_image = get_theme_image(TAB_WIDGET, state, TAB_R_IMAGE);
+		}
+		else
+		{
+			r_space = get_theme_space(TAB_WIDGET, TAB_RC_SPACE);
+			r_image = get_theme_image(TAB_WIDGET, state, TAB_RC_IMAGE);
+		}
+
+		int c_space;
+		SDL_Surface *c_image = images[state][i];
+		c_space = font->text_width(labels[i].c_str(), style);
+
+		if (use_theme_images(TAB_WIDGET))
+		{
+			SDL_Rect r = { x, rect.y, static_cast<Uint16>(l_image->w), static_cast<Uint16>(l_image->h) };
+			SDL_BlitSurface(l_image, NULL, s, &r);
+			r.x = r.x + static_cast<Sint16>(l_image->w);
+			r.w = static_cast<Uint16>(c_image->w);
+			r.h = static_cast<Uint16>(c_image->h);
+			SDL_BlitSurface(c_image, NULL, s, &r);
+			r.x = r.x + static_cast<Sint16>(c_image->w);
+			r.w = static_cast<Uint16>(r_image->w);
+			r.h = static_cast<Uint16>(r_image->h);
+			SDL_BlitSurface(r_image, NULL, s, &r);
+		}
+		else
+		{
+			if (use_theme_color(TAB_WIDGET, BACKGROUND_COLOR))
+			{
+				SDL_Rect r = { x + l_offset, rect.y + 1, l_space + c_space + r_space - l_offset - r_offset, get_theme_space(TAB_WIDGET, BUTTON_HEIGHT) - 2 };
+				uint32 pixel = get_theme_color(TAB_WIDGET, state, BACKGROUND_COLOR);
+				SDL_FillRect(s, &r, pixel);
+			}
+		}
+
+		font->draw_text(s, labels[i].c_str(), labels[i].size(), x + l_space, rect.y + get_theme_space(TAB_WIDGET, BUTTON_T_SPACE) + font->get_ascent(), get_theme_color(TAB_WIDGET, state, FOREGROUND_COLOR), style);
+
+		x += l_space + c_space + r_space;
+	}
+
+	if (!use_theme_images(TAB_WIDGET))
+	{
+		uint32 pixel = get_theme_color(TAB_WIDGET, DEFAULT_STATE, FRAME_COLOR);
+		// draw the frame
+		SDL_Rect frame = { rect.x, rect.y, x - rect.x, get_theme_space(TAB_WIDGET, BUTTON_HEIGHT) };
+		draw_rectangle(s, &frame, pixel);
+	}
+}
+
+void w_tab::choose_tab(int i)
+{
+	pressed_tab = i;
+	active_tab = (i + 1) % labels.size();
+	placer->choose_tab(i);
+	get_owning_dialog()->draw();
+}
+
+void w_tab::click(int x, int y)
+{
+	if (enabled)
+	{
+		if (!x && !y)
+		{
+			choose_tab(active_tab);
+		}
+		else
+		{
+			int width = 0;
+			for (int i = 0; i < labels.size(); ++i)
+			{
+				if (x > width && x < width + widths[i])
+				{
+					choose_tab(i);
+					return;
+				}
+
+				width += widths[i];
+			}
+		}
+	}
+}
+
+void w_tab::event(SDL_Event& e)
+{
+	if (e.type == SDL_KEYDOWN)
+	{
+		switch (e.key.keysym.sym) {
+		case SDLK_LEFT:
+			if (active_tab > 0)
+			{
+				if (active_tab - 1== pressed_tab)
+				{
+					if (pressed_tab > 0)
+						active_tab -= 2;
+				}
+				else
+					active_tab--;
+
+			}
+			dirty = true;
+			e.type = SDL_NOEVENT;
+			break;
+
+		case SDLK_RIGHT:
+			if (active_tab < labels.size() - 1)
+			{
+				if (active_tab + 1 == pressed_tab)
+				{
+					if (pressed_tab < labels.size() - 1)
+						active_tab += 2;
+				}
+				else
+					active_tab++;
+			}
+			dirty = true;
+			e.type = SDL_NOEVENT;
+			break;
+		
+		default:
+			break;
+
+		}
+	}
+}
+
 /*
  *  Selection button
  */

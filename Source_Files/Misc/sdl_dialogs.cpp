@@ -214,6 +214,10 @@ static XML_ImageParser DefaultTinyButtonImageParser(TINY_BUTTON, DEFAULT_STATE, 
 static XML_ImageParser ActiveTinyButtonImageParser(TINY_BUTTON, ACTIVE_STATE, 3);
 static XML_ImageParser DisabledTinyButtonImageParser(TINY_BUTTON, DISABLED_STATE, 3);
 static XML_ImageParser PressedTinyButtonImageParser(TINY_BUTTON, PRESSED_STATE, 3);
+static XML_ImageParser TabImageParser(TAB_WIDGET, DEFAULT_STATE, 5);
+static XML_ImageParser ActiveTabImageParser(TAB_WIDGET, ACTIVE_STATE, 5);
+static XML_ImageParser PressedTabImageParser(TAB_WIDGET, PRESSED_STATE, 5);
+static XML_ImageParser DisabledTabImageParser(TAB_WIDGET, DISABLED_STATE, 5);
 
 class XML_DColorParser : public XML_ElementParser {
 public:
@@ -300,6 +304,10 @@ static XML_DColorParser DisabledTextEntryColorParser(TEXT_ENTRY_WIDGET, DISABLED
 static XML_DColorParser CursorTextEntryColorParser(TEXT_ENTRY_WIDGET, CURSOR_STATE);
 static XML_DColorParser SliderColorParser(SLIDER_WIDGET, DEFAULT_STATE, 3);
 static XML_DColorParser SliderThumbColorParser(SLIDER_THUMB, DEFAULT_STATE, 3);
+static XML_DColorParser TabColorParser(TAB_WIDGET, DEFAULT_STATE, 3);
+static XML_DColorParser ActiveTabColorParser(TAB_WIDGET, ACTIVE_STATE, 3);
+static XML_DColorParser PressedTabColorParser(TAB_WIDGET, PRESSED_STATE, 3);
+static XML_DColorParser DisabledTabColorParser(TAB_WIDGET, DISABLED_STATE, 3);
 
 class XML_DFontParser : public XML_ElementParser {
 public:
@@ -382,6 +390,7 @@ static XML_DFontParser MessageFontParser(MESSAGE_WIDGET);
 static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_WIDGET);
 static XML_DFontParser ChatEntryFontParser(CHAT_ENTRY);
 static XML_DFontParser CheckboxFontParser(CHECKBOX);
+static XML_DFontParser TabFontParser(TAB_WIDGET);
 
 class XML_DFrameParser : public XML_ElementParser {
 public:
@@ -624,6 +633,38 @@ public:
 
 static XML_SliderParser SliderParser;
 
+class XML_TabParser : public XML_ThemeWidgetParser {
+public:
+	XML_TabParser() : XML_ThemeWidgetParser("tab", TAB_WIDGET) {}
+
+	bool HandleAttribute(const char *tag, const char *value)
+	{
+		if (StringsEqual(tag, "top")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[BUTTON_T_SPACE]);
+		} else if (StringsEqual(tag, "height")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[BUTTON_HEIGHT]);
+		} else if (StringsEqual(tag, "left")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[BUTTON_L_SPACE]);
+		} else if (StringsEqual(tag, "right")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[BUTTON_R_SPACE]);
+		} else if (StringsEqual(tag, "inner_left")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[TAB_LC_SPACE]);
+		} else if (StringsEqual(tag, "inner_right")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[TAB_WIDGET].spaces[TAB_RC_SPACE]);
+		} else {
+			UnrecognizedTag();
+			return false;
+		}
+		return true;
+	}
+};
+
+static XML_TabParser TabParser;
+static XML_ElementParser ActiveTabParser("active");
+static XML_ElementParser DisabledTabParser("disabled");
+static XML_ElementParser PressedTabParser("pressed");
+		
+
 class XML_ThemeParser : public XML_ElementParser {
 public:
 	XML_ThemeParser() : XML_ElementParser("theme") {}
@@ -723,6 +764,20 @@ XML_ElementParser *Theme_GetParser()
 
 	CheckboxParser.AddChild(&CheckboxFontParser);
 	ThemeParser.AddChild(&CheckboxParser);
+
+	TabParser.AddChild(&TabImageParser);
+	TabParser.AddChild(&TabColorParser);
+	TabParser.AddChild(&TabFontParser);
+	ActiveTabParser.AddChild(&ActiveTabColorParser);
+	ActiveTabParser.AddChild(&ActiveTabImageParser);
+	DisabledTabParser.AddChild(&DisabledTabColorParser);
+	DisabledTabParser.AddChild(&DisabledTabImageParser);
+	PressedTabParser.AddChild(&PressedTabColorParser);
+	PressedTabParser.AddChild(&PressedTabImageParser);
+	TabParser.AddChild(&ActiveTabParser);
+	TabParser.AddChild(&DisabledTabParser);
+	TabParser.AddChild(&PressedTabParser);
+	ThemeParser.AddChild(&TabParser);
 
 	return &ThemeParser;
 }
@@ -881,6 +936,22 @@ static void set_theme_defaults(void)
 	dialog_theme[CHECKBOX].spaces[BUTTON_T_SPACE] = 13;
 	dialog_theme[CHECKBOX].spaces[BUTTON_HEIGHT] = 15;
 	
+	dialog_theme[TAB_WIDGET].spaces[BUTTON_T_SPACE] = 4;
+	dialog_theme[TAB_WIDGET].spaces[BUTTON_L_SPACE] = 4;
+	dialog_theme[TAB_WIDGET].spaces[BUTTON_R_SPACE] = 4;
+	dialog_theme[TAB_WIDGET].spaces[BUTTON_HEIGHT] = 24;
+	dialog_theme[TAB_WIDGET].spaces[TAB_LC_SPACE] = 4;
+	dialog_theme[TAB_WIDGET].spaces[TAB_RC_SPACE] = 4;
+#ifdef HAVE_SDL_TTF
+	dialog_theme[TAB_WIDGET].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
+	dialog_theme[TAB_WIDGET].font_spec.size = 14;
+	dialog_theme[TAB_WIDGET].font_set = true;
+	dialog_theme[TAB_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[TAB_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
+	dialog_theme[TAB_WIDGET].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[TAB_WIDGET].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+#endif
+
 }
 
 /*

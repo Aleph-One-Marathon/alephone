@@ -275,6 +275,29 @@ public:
 	w_tiny_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button_base(text, proc, arg, TINY_BUTTON) {}
 };
 
+/* 
+ * Tabs
+ */
+
+class w_tab : public widget {
+public:
+	w_tab(const vector<string>& labels, tab_placer *placer);
+	~w_tab();
+	void draw(SDL_Surface *s) const;
+	void click(int x, int y);
+	void event(SDL_Event& e);
+
+	void choose_tab(int i);
+private:
+	vector<string> labels;
+	vector<int> widths;
+	tab_placer *placer;
+
+	vector<vector<SDL_Surface *> > images;
+
+	int pressed_tab;
+	int active_tab;
+};
 
 /*
  *  Selection button
