@@ -1984,13 +1984,13 @@ void dialog::deactivate_currently_active_widget(bool draw)
  *  Activate widget
  */
 
-void dialog::activate_widget(widget *w)
+void dialog::activate_widget(widget *w, bool draw)
 {
 	for (size_t i = 0; i < widgets.size(); i++)
 	{
 		if (widgets[i] == w)
 		{
-			activate_widget(i, false);
+			activate_widget(i, draw);
 			return;
 		}
 	}

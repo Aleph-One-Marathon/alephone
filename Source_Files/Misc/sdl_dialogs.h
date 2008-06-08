@@ -245,7 +245,7 @@ public:
 	// takes ownership
 	void set_widget_placer(widget_placer *w) { placer = w; }
 
-	void activate_widget(widget *w);
+	void activate_widget(widget *w, bool draw = false);
 
 private:
 	SDL_Surface *get_surface(void) const;
