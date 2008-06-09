@@ -1117,6 +1117,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="pitch" required="false"><type>number</type></argument>
 	<note>if you want to play a sound at an object location, use that object's play_sound function instead</note>
       </function>
+      <subtable-accessor name="sides" classname="polygon_sides" index="n">
+	<description>returns polygon side n if it exists</description>
+      </subtable-accessor>
+      <function name="sides">
+	<description>iterates through all of this polygon's sides</description>
+      </function>
       <variable name="type">
 	<description>polygon type</description>
 	<type>polygon_type</type>

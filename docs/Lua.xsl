@@ -289,7 +289,7 @@
 <xsl:template match="function">
   <dt>
     <xsl:choose>
-      <xsl:when test="(parent::table and ../@singleton = 'false') or parent::subtable-accessor">:</xsl:when>
+      <xsl:when test="(parent::table and ../@singleton = 'false') or parent::subtable-accessor or parent::subtable">:</xsl:when>
       <xsl:when test="parent::table or parent::subtable">.</xsl:when>
       <xsl:when test="parent::triggers">.</xsl:when>
       <xsl:otherwise><xsl:value-of select="../@name"/>.</xsl:otherwise>

@@ -379,13 +379,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">deactivates camera</p></dd>
       <dt>.path_angles</dt>
 <dd><dl>
-<dt>.new(yaw, pitch, time)
+<dt>:new(yaw, pitch, time)
   </dt>
 <dd><p class="description">adds a path angle</p></dd>
 </dl></dd>
       <dt>.path_points</dt>
 <dd><dl>
-<dt>.new(x, y, z, polygon, time)
+<dt>:new(x, y, z, polygon, time)
   </dt>
 <dd><p class="description">adds a path point</p></dd>
 </dl></dd>
@@ -882,10 +882,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">color of player (shirt color, if teams are enabled)</p></dd>
       <dt>.compass</dt>
 <dd><dl>
-<dt>.all_off()
+<dt>:all_off()
   </dt>
 <dd><p class="description">turns all compass quadrants off, disables beacon</p></dd>
-<dt>.all_on()
+<dt>:all_on()
   </dt>
 <dd><p class="description">turns all compass quadrants on, disables beacon</p></dd>
 <dt>
@@ -1269,6 +1269,16 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">plays sound at location</p>
 <p class="note">if you want to play a sound at an object location, use that object's play_sound function instead</p>
 </dd>
+      <dt>
+    .sides[n]
+  </dt>
+<dd>
+<p class="description">returns polygon side n if it exists</p>
+<dl></dl>
+</dd>
+      <dt>:sides()
+  </dt>
+<dd><p class="description">iterates through all of this polygon's sides</p></dd>
       <dt>
     .type</dt>
 <dd><p class="description">polygon type</p></dd>

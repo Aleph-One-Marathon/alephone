@@ -824,7 +824,7 @@ static int Lua_Polygon_Endpoints_Get(lua_State *L)
 {
 	if (lua_isnumber(L, 2))
 	{
-		short polygon_index = Lua_Polygon::Index(L, 1);
+		short polygon_index = Lua_Polygon_Endpoints::Index(L, 1);
 		polygon_data *polygon = get_polygon_data(polygon_index);
 		int endpoint_index = static_cast<int>(lua_tonumber(L, 2));
 		if (endpoint_index >= 0 && endpoint_index < polygon->vertex_count)
@@ -893,7 +893,7 @@ static int Lua_Polygon_Lines_Get(lua_State *L)
 {
 	if (lua_isnumber(L, 2))
 	{
-		short polygon_index = Lua_Polygon::Index(L, 1);
+		short polygon_index = Lua_Polygon_Lines::Index(L, 1);
 		polygon_data *polygon = get_polygon_data(polygon_index);
 		int line_index = static_cast<int>(lua_tonumber(L, 2));
 		if (line_index >= 0 && line_index < polygon->vertex_count)
@@ -919,6 +919,68 @@ const luaL_reg Lua_Polygon_Lines_Metatable[] = {
 	{"__index", Lua_Polygon_Lines_Get},
 	{"__call", Lua_Polygon_Lines_Call},
 	{"__len", Lua_Polygon_Lines_Length},
+	{0, 0}
+};
+
+char Lua_Polygon_Sides_Name[] = "polygon_sides";
+typedef L_Class<Lua_Polygon_Sides_Name> Lua_Polygon_Sides;
+
+static int Lua_Polygon_Sides_Iterator(lua_State *L)
+{
+	int index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
+	short polygon_index = Lua_Polygon_Sides::Index(L, lua_upvalueindex(2));
+	polygon_data *polygon = get_polygon_data(polygon_index);
+	
+	while (index < polygon->vertex_count)
+	{
+		if (polygon->side_indexes[index] != NONE)
+		{
+			Lua_Side::Push(L, polygon->side_indexes[index]);
+			lua_pushnumber(L, ++index);
+			lua_replace(L, lua_upvalueindex(1));
+			return 1;
+		}
+		else
+		{
+			index++;
+		}
+	}
+
+	lua_pushnil(L);
+	return 1;
+}
+
+static int Lua_Polygon_Sides_Call(lua_State *L)
+{
+	lua_pushnumber(L, 0);
+	lua_pushvalue(L, 1);
+	lua_pushcclosure(L, Lua_Polygon_Sides_Iterator, 2);
+	return 1;
+}
+
+static int Lua_Polygon_Sides_Get(lua_State *L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		short polygon_index = Lua_Polygon_Sides::Index(L, 1);
+		polygon_data *polygon = get_polygon_data(polygon_index);
+		int side_index = static_cast<int>(lua_tonumber(L, 2));
+		if (side_index >= 0 && side_index < polygon->vertex_count)
+		{
+			Lua_Side::Push(L, polygon->side_indexes[side_index]);
+		}
+		else
+		{
+			lua_pushnil(L);
+		}
+	}
+
+	return 1;
+}
+
+const luaL_reg Lua_Polygon_Sides_Metatable[] = {
+	{"__index", Lua_Polygon_Sides_Get},
+	{"__call", Lua_Polygon_Sides_Call},
 	{0, 0}
 };
 
@@ -1076,6 +1138,12 @@ static int Lua_Polygon_Get_Permutation(lua_State *L)
 	return 1;
 }
 
+static int Lua_Polygon_Get_Sides(lua_State *L)
+{
+	Lua_Polygon_Sides::Push(L, Lua_Polygon::Index(L, 1));
+	return 1;
+}
+
 static int Lua_Polygon_Get_Type(lua_State *L)
 {
 	Lua_PolygonType::Push(L, get_polygon_data(Lua_Polygon::Index(L, 1))->type);
@@ -1179,6 +1247,7 @@ const luaL_reg Lua_Polygon_Get[] = {
 	{"permutation", Lua_Polygon_Get_Permutation},
 	{"platform", Lua_Polygon_Get_Platform},
 	{"play_sound", L_TableFunction<Lua_Polygon_Play_Sound>},
+	{"sides", Lua_Polygon_Get_Sides},
 	{"type", Lua_Polygon_Get_Type},
 	{"x", Lua_Polygon_Get_X},
 	{"y", Lua_Polygon_Get_Y},
@@ -2292,6 +2361,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_Adjacent_Polygons::Register(L, 0, 0, Lua_Adjacent_Polygons_Metatable);
 	Lua_Polygon_Endpoints::Register(L, 0, 0, Lua_Polygon_Endpoints_Metatable);
 	Lua_Polygon_Lines::Register(L, 0, 0, Lua_Polygon_Lines_Metatable);
+	Lua_Polygon_Sides::Register(L, 0, 0, Lua_Polygon_Sides_Metatable);
 
 	Lua_Polygon::Register(L, Lua_Polygon_Get, Lua_Polygon_Set);
 	Lua_Polygon::Valid = Lua_Polygon_Valid;
