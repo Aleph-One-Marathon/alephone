@@ -183,10 +183,11 @@ enum { /* entry point types- this is per map level (int32). */
 	_single_player_entry_point= 0x01,
 	_multiplayer_cooperative_entry_point= 0x02,
 	_multiplayer_carnage_entry_point= 0x04,
-	_capture_the_flag_entry_point= 0x08,
+	_kill_the_man_with_the_ball_entry_point = 0x08, // was _capture_the_flag_entry_point, even though Bungie used it for KTMWTB
 	_king_of_hill_entry_point= 0x10,
 	_defense_entry_point= 0x20,
-	_rugby_entry_point= 0x40
+	_rugby_entry_point= 0x40,
+	_capture_the_flag_entry_point = 0x80
 };
 
 struct entry_point 

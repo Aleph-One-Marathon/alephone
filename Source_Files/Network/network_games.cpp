@@ -1095,7 +1095,7 @@ long get_entry_point_flags_for_game_type(
 	switch(game_type)
 	{
 		case _game_of_kill_man_with_ball:
-			entry_flags= _capture_the_flag_entry_point;
+			entry_flags= _kill_the_man_with_the_ball_entry_point;
 			break;
 			
 		case _game_of_kill_monsters:
