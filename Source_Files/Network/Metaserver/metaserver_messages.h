@@ -769,6 +769,8 @@ public:
 		}
 
 		std::string format_for_chat(const std::string& player_name) const;
+		std::string game_string() const;
+
 		// Conformance to w_items_in_game<>'s Element interface
 		const std::string& name() const { return m_description.m_name; }
 

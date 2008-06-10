@@ -39,6 +39,7 @@
 #include <string>
 #include <vector>
 #include <iterator>
+#include <sstream>
 
 #include "preferences.h"
 #include "shell.h" // get_player_color :(
@@ -48,6 +49,8 @@
 // game types
 #include "network_dialogs.h"
 #include "TextStrings.h"
+
+#include <boost/algorithm/string/predicate.hpp>
 
 using namespace std;
 
@@ -844,30 +847,63 @@ operator <<(ostream& stream, const GameDescription& desc)
 	return stream;
 }
 
+static string lua_to_game_string(const std::string& lua)
+{
+	string game_string = lua;
+	if (boost::algorithm::ends_with(game_string, ".lua") || boost::algorithm::ends_with(game_string, ".txt"))
+	{
+		game_string.resize(game_string.length() - 4);
+	}
+
+	for (string::iterator it = game_string.begin(); it != game_string.end(); ++it)
+	{
+		if (*it == '_')
+			*it = ' ';
+	}
+
+	return game_string;
+}
+
+string GameListMessage::GameListEntry::game_string() const
+{
+	if (m_description.m_type == _game_of_custom)
+	{
+		// convert the Lua script to a name
+		return lua_to_game_string(m_description.m_netScript);
+	}
+	else
+	{
+		int type = m_description.m_type - (m_description.m_type > 5 ? 1 : 0);
+		if (TS_GetCString(kNetworkGameTypesStringSetID, type))
+		{
+			return string(TS_GetCString(kNetworkGameTypesStringSetID, type));
+		}
+		else
+		{
+			return string("Unknown Game Type");
+		}
+	}
+}
+
 string GameListMessage::GameListEntry::format_for_chat(const string& player_name) const
 {
-	string message = player_name + "|p";
+	ostringstream message;
+	message << player_name << "|p";
 	if (running())
-		message += " is hosting ";
+		message << "is hosting ";
 	else
-		message += " is gathering ";
+		message << " is gathering ";
 
 	if (m_description.m_timeLimit && !(m_description.m_timeLimit == INT32_MAX || m_description.m_timeLimit == -1))
 	{
-		char minutes[5];
-		snprintf(minutes, 4, "%i", m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
-		minutes[4] = '\0';
-		message += minutes;
-		message += " minutes of |i";
+		message << m_description.m_timeLimit / 60 / TICKS_PER_SECOND
+			<< " minutes of |i";
 	}
-	message += m_description.m_mapName;
-	int type = m_description.m_type - (m_description.m_type > 5 ? 1 : 0);
-	if (TS_GetCString(kNetworkGameTypesStringSetID, type)) {
-		message += ",|p ";
-		message += TS_GetCString(kNetworkGameTypesStringSetID, type);
-	}
+	message << m_description.m_mapName
+		<< ",|p "
+		<< game_string();
 	
-	return message;
+	return message.str();
 }
 
 bool

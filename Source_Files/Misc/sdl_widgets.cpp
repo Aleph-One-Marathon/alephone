@@ -2097,14 +2097,9 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 	} 
 	else
 	{
-		// game type, map
-		int type = item.m_description.m_type - (item.m_description.m_type > 5 ? 1 : 0);
-		if (TS_GetCString(kNetworkGameTypesStringSetID, type))
-			game_and_map << TS_GetCString(kNetworkGameTypesStringSetID, type);
-		else
-			game_and_map << "Unknown";
-
-		game_and_map << " on |i" << item.m_description.m_mapName;
+		game_and_map << item.game_string()
+			     << " on |i"
+			     << item.m_description.m_mapName;
 	}
 	
 	font->draw_styled_text(s, game_and_map.str().c_str(), game_and_map.str().size(), x, y, fg, game_style);
