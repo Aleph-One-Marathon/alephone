@@ -912,8 +912,8 @@ class w_games_in_room : public w_items_in_room<GameListMessage::GameListEntry>
 {
 public:
 	w_games_in_room(w_items_in_room<GameListMessage::GameListEntry>::ItemClickedCallback itemClicked, int width, int numRows)
-		: w_items_in_room<GameListMessage::GameListEntry>(itemClicked, width, numRows)
-		{ saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE); }
+		: w_items_in_room<GameListMessage::GameListEntry>(itemClicked, width, numRows), kGameSpacing(get_theme_space(METASERVER_GAMES, GAME_SPACING))
+		{ font = get_theme_font(METASERVER_GAMES, style); saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE); }
 
 	uint16 item_height() const { return 3 * font->get_line_height() + 2 + kGameSpacing; }
 
@@ -921,8 +921,13 @@ public:
 		dirty = true;
 		get_owning_dialog()->draw_dirty_widgets();
 	}
+
+	enum {
+		GAME_ENTRIES,
+		GAME_SPACING,
+	};
 private:
-	static const int kGameSpacing = 4;
+	const int kGameSpacing;
 	void draw_item(const GameListMessage::GameListEntry& item, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
 };
 
@@ -932,6 +937,7 @@ public:
 	w_players_in_room(w_items_in_room<MetaserverPlayerInfo>::ItemClickedCallback itemClicked, int width, int numRows)
 	: w_items_in_room<MetaserverPlayerInfo>(itemClicked, width, numRows)
 	{
+		font = get_theme_font(METASERVER_PLAYERS, style);
 		saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE);
 	}
 
@@ -974,7 +980,7 @@ private:
 public:
 	w_colorful_chat(int width, int numRows) :
 		w_list<ColoredChatEntry>(entries, width, numRows, 0),
-		kNameWidth(text_width("M", get_theme_font(CHAT_ENTRY, style), style | styleShadow) * 9 - taper_width())
+		kNameWidth(get_theme_space(CHAT_ENTRY) - taper_width())
 		{ num_items = 0; font = get_theme_font(CHAT_ENTRY, style); saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE); }
 
 	virtual bool is_selectable(void) const { return true; }

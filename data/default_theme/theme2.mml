@@ -113,7 +113,7 @@
 </text_entry>
 
 <!-- Metaserver and pre-game chat -->
-<chat_entry>
+<chat_entry name_width="100">
 </chat_entry>
 
 <!-- List selection widget -->
@@ -169,6 +169,12 @@
     <color red="0.33" green="0.33" blue="0.33"/>
   </disabled>
 </tab>
+
+<metaserver>
+<games spacing="7">
+  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="11"/>
+</games>
+</metaserver>
 
 </theme>
 </marathon>

@@ -64,7 +64,7 @@ public:
 		placer->add(new w_spacer(), true);
 
 		table_placer *players_games_placer = new table_placer(2, get_theme_space(SPACER_WIDGET));
-		w_players_in_room* players_in_room_w = new w_players_in_room(NULL, 216, 8);
+		w_players_in_room* players_in_room_w = new w_players_in_room(NULL, 216, get_theme_space(METASERVER_PLAYERS));
 		
 		players_games_placer->col_flags(1, placeable::kFill);
 		players_games_placer->dual_add(players_in_room_w, d);
@@ -72,7 +72,7 @@ public:
 		games_in_room_w = new w_games_in_room(
 			bind(&SdlMetaserverClientUi::GameSelected, this, _1),
 			320,
-			3
+			get_theme_space(METASERVER_GAMES, w_games_in_room::GAME_ENTRIES)
 		);
 
 		players_games_placer->dual_add(games_in_room_w, d);

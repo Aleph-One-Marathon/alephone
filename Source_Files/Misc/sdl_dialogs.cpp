@@ -391,6 +391,8 @@ static XML_DFontParser TextEntryFontParser(TEXT_ENTRY_WIDGET);
 static XML_DFontParser ChatEntryFontParser(CHAT_ENTRY);
 static XML_DFontParser CheckboxFontParser(CHECKBOX);
 static XML_DFontParser TabFontParser(TAB_WIDGET);
+static XML_DFontParser MetaserverPlayersFontParser(METASERVER_PLAYERS);
+static XML_DFontParser MetaserverGamesFontParser(METASERVER_GAMES);
 
 class XML_DFrameParser : public XML_ElementParser {
 public:
@@ -539,7 +541,22 @@ static XML_ElementParser ActiveTextEntryParser("active");
 static XML_ElementParser DisabledTextEntryParser("disabled");
 static XML_ElementParser CursorTextEntryParser("cursor");
 
-static XML_ThemeWidgetParser ChatEntryParser("chat_entry", CHAT_ENTRY);
+class XML_ChatEntryParser : public XML_ThemeWidgetParser {
+public:
+	XML_ChatEntryParser() : XML_ThemeWidgetParser("chat_entry", CHAT_ENTRY) {}
+	
+	bool HandleAttribute(const char *tag, const char *value)
+	{
+		if (StringsEqual(tag, "name_width")) {
+			return ReadNumericalValue(value, "%hu", dialog_theme[CHAT_ENTRY].spaces[0]);
+		} else {
+			UnrecognizedTag();
+			return false;
+		}
+	}
+};
+
+static XML_ChatEntryParser ChatEntryParser;
 
 class XML_TroughParser : public XML_ElementParser {
 public:
@@ -663,6 +680,55 @@ static XML_TabParser TabParser;
 static XML_ElementParser ActiveTabParser("active");
 static XML_ElementParser DisabledTabParser("disabled");
 static XML_ElementParser PressedTabParser("pressed");
+
+class XML_MetaserverPlayersParser : public XML_ThemeWidgetParser {
+public:
+	XML_MetaserverPlayersParser() : XML_ThemeWidgetParser("players", METASERVER_PLAYERS) {}
+	
+	bool HandleAttribute(const char *tag, const char *value)
+	{
+		if (StringsEqual(tag, "lines"))
+		{
+			return ReadNumericalValue(value, "%hu", dialog_theme[METASERVER_PLAYERS].spaces[0]);
+		} else {
+			UnrecognizedTag();
+			return false;
+		}
+		return true;
+	}
+};
+
+static XML_MetaserverPlayersParser MetaserverPlayersParser;
+
+class XML_MetaserverGamesParser : public XML_ThemeWidgetParser {
+public:
+	XML_MetaserverGamesParser() : XML_ThemeWidgetParser("games", METASERVER_GAMES) {}
+
+	bool HandleAttribute(const char *tag, const char *value)
+	{
+		if (StringsEqual(tag, "entries"))
+		{
+			return ReadNumericalValue(value, "%hu", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_ENTRIES]);
+		} else if (StringsEqual(tag, "spacing"))
+		{
+			return ReadNumericalValue(value, "%hu", dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_SPACING]);
+		} else {
+			UnrecognizedTag();
+			return false;
+		}
+		return true;
+	}
+};
+
+static XML_MetaserverGamesParser MetaserverGamesParser;
+
+class XML_MetaserverParser : public XML_ThemeWidgetParser {
+public:
+	XML_MetaserverParser() : XML_ThemeWidgetParser("metaserver", METASERVER_WIDGETS) {}
+
+};
+
+static XML_MetaserverParser MetaserverParser;
 		
 
 class XML_ThemeParser : public XML_ElementParser {
@@ -778,6 +844,13 @@ XML_ElementParser *Theme_GetParser()
 	TabParser.AddChild(&DisabledTabParser);
 	TabParser.AddChild(&PressedTabParser);
 	ThemeParser.AddChild(&TabParser);
+
+	MetaserverGamesParser.AddChild(&MetaserverGamesFontParser);
+	MetaserverParser.AddChild(&MetaserverGamesParser);
+
+	MetaserverPlayersParser.AddChild(&MetaserverPlayersFontParser);
+	MetaserverParser.AddChild(&MetaserverPlayersParser);
+	ThemeParser.AddChild(&MetaserverParser);
 
 	return &ThemeParser;
 }
@@ -950,6 +1023,13 @@ static void set_theme_defaults(void)
 	dialog_theme[TAB_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[TAB_WIDGET].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[TAB_WIDGET].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+
+	dialog_theme[CHAT_ENTRY].spaces[0] = 100;
+
+	dialog_theme[METASERVER_PLAYERS].spaces[0] = 8;
+
+	dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_SPACING] = 4;
+	dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_ENTRIES] = 3;
 #endif
 
 }
