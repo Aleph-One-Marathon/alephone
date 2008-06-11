@@ -890,7 +890,7 @@ string GameListMessage::GameListEntry::format_for_chat(const string& player_name
 	ostringstream message;
 	message << player_name << "|p";
 	if (running())
-		message << "is hosting ";
+		message << " is hosting ";
 	else
 		message << " is gathering ";
 
