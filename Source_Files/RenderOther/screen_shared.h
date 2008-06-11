@@ -101,6 +101,8 @@ enum { // view flags, has room for expansion
 	{1280, 768, 1280, 768, _1280_768WS_HUD, _1280_768, 0},
 	{1280, 960, 1280, 640, _1280_640SD_HUD, _1280_960, _view_show_HUD},
 	{1280, 960, 1280, 960, _1280_640SD_HUD, _1280_960, 0},
+	{1280, 720, 1280, 520, _1280_720_HUD, _1280_720, _view_show_HUD},
+	{1280, 720, 1280, 720, _1280_720_HUD, _1280_720, 0},
 };
 
 // Note: the overhead map will always fill all of the screen except for the HUD,
