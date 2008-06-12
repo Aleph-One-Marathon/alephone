@@ -176,6 +176,12 @@ static int Lua_Line_Get_Endpoints(lua_State *L)
 	return 1;
 }
 
+static int Lua_Line_Get_Length(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_line_data(Lua_Line::Index(L, 1))->length / WORLD_ONE);
+	return 1;
+}
+
 const luaL_reg Lua_Line_Get[] = {
 	{"cw_polygon", Lua_Line_Get_Clockwise_Polygon},
 	{"ccw_polygon", Lua_Line_Get_Counterclockwise_Polygon},
@@ -186,6 +192,7 @@ const luaL_reg Lua_Line_Get[] = {
 	{"counterclockwise_polygon", Lua_Line_Get_Counterclockwise_Polygon},
 	{"counterclockwise_side", Lua_Line_Get_Counterclockwise_Side},
 	{"endpoints", Lua_Line_Get_Endpoints},
+	{"length", Lua_Line_Get_Length},
 	{0, 0}
 };
 
@@ -1092,6 +1099,12 @@ static int Lua_Polygon_Get_Adjacent(lua_State *L)
 	return 1;
 }
 
+static int Lua_Polygon_Get_Area(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_polygon_data(Lua_Polygon::Index(L, 1))->area / WORLD_ONE / WORLD_ONE);
+	return 1;
+}
+
 static int Lua_Polygon_Get_Ceiling(lua_State *L)
 {
 	Lua_Polygon_Ceiling::Push(L, Lua_Polygon::Index(L, 1));
@@ -1237,6 +1250,7 @@ static bool Lua_Polygon_Valid(int16 index)
 
 const luaL_reg Lua_Polygon_Get[] = {
 	{"adjacent_polygons", Lua_Polygon_Get_Adjacent},
+	{"area", Lua_Polygon_Get_Area},
 	{"ceiling", Lua_Polygon_Get_Ceiling},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"endpoints", Lua_Polygon_Get_Endpoints},

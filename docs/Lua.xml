@@ -536,6 +536,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <subtable-accessor name="endpoints" classname="line_endpoints" index="n">
 	<description>returns line endpoint n</description>
       </subtable-accessor>
+      <variable name="length" access="read-only">
+	<description>the length of this line</description>
+	<note>this might not be accurate, if someone used Chisel's stretch plugin</note>
+      </variable>
     </table>
     <table name="media">
       <variable name="type">
@@ -1043,6 +1047,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <function name="adjacent_polygons">
 	<description>iterates through all polygons directly adjacent to this polygon</description>
       </function>
+      <variable name="area" access="read-only">
+	<description>the area of this polygon</description>
+	<type>square WU</type>
+      </variable>
       <subtable name="ceiling" classname="polygon_ceiling">
 	<alias>floor</alias>
 	<variable name="collection">

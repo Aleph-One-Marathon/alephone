@@ -651,6 +651,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">returns line endpoint n</p>
 <dl></dl>
 </dd>
+      <dt>
+    .length<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description">the length of this line</p>
+<p class="note">this might not be accurate, if someone used Chisel's stretch plugin</p>
+</dd>
     </dl></dd>
 </dl>
 <h3>
@@ -1203,6 +1210,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:adjacent_polygons()
   </dt>
 <dd><p class="description">iterates through all polygons directly adjacent to this polygon</p></dd>
+      <dt>
+    .area<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">the area of this polygon</p></dd>
       <dt>.ceiling<br>.floor</dt>
 <dd><dl>
 <dt>
