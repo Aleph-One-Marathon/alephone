@@ -58,6 +58,7 @@ void alert_user(const char *message, short severity)
     uint16 style;
     font_info *font = get_theme_font(MESSAGE_WIDGET, style);
     char *t = strdup(message);
+    char *p = t;
 
     while (strlen(t)) {
       unsigned i = 0, last = 0;
@@ -76,7 +77,7 @@ void alert_user(const char *message, short severity)
       else
 	t += i;
     }
-    free(t);
+    free(p);
     placer->add(new w_spacer, true);
     w_button *button = new w_button(severity == infoError ? "OK" : "QUIT", dialog_ok, &d);
     placer->dual_add (button, d);
