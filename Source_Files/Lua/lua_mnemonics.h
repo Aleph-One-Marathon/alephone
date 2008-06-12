@@ -59,6 +59,7 @@ const lang_def Lua_Collection_Mnemonics[] = {
 	{"moon", 29},
 	{"space", 30},
 	{"cyborg", 31},
+	{0, 0}
 };
 
 const lang_def Lua_ControlPanelClass_Mnemonics[] = {
