@@ -2034,32 +2034,40 @@ void w_games_in_room::draw_item(const GameListMessage::GameListEntry& item, SDL_
 {
 	int game_style = style;
 
+	int state;
+	if (!item.compatible())
+	{
+		state = item.target() ? SELECTED_INCOMPATIBLE_GAME : INCOMPATIBLE_GAME;
+	}
+	else if (item.running())
+	{
+		state = item.target() ? SELECTED_RUNNING_GAME : RUNNING_GAME;
+	}
+	else 
+	{
+		state = item.target() ? SELECTED_GAME : GAME;
+	}
+
 	uint32 fg;
 	if (selected)
 	{
 		fg = get_theme_color(ITEM_WIDGET, ACTIVE_STATE);
 	}
-	else if (!item.compatible())
+	else 
 	{
-		fg = SDL_MapRGB(s->format, 0x7f, 0, 0);
-	}
-	else if (item.running())
-	{
-		fg = SDL_MapRGB(s->format, 0x7f, 0x7f, 0x7f);
-	}
-	else
-	{
-		fg = SDL_MapRGB(s->format, 0xff, 0xff, 0xff);
-		
+		fg = get_theme_color(METASERVER_GAMES, state, FOREGROUND_COLOR);
 	}
 
-	
-	if (item.target())
+	uint32 bg = get_theme_color(METASERVER_GAMES, state, BACKGROUND_COLOR);
+	SDL_Rect r = { x, y, width, 3 * font->get_line_height() + 2};
+	SDL_FillRect(s, &r, bg);
+
+	if (use_theme_color(METASERVER_GAMES, FRAME_COLOR))
 	{
-		uint32 bg = SDL_MapRGB(s->format, 0x3f, 0x3f, 0x3f);
-		SDL_Rect r = { x, y, width, 3 * font->get_line_height() + 2};
-		SDL_FillRect(s, &r, bg);
+		uint32 frame = get_theme_color(METASERVER_GAMES, state, FRAME_COLOR);
+		draw_rectangle(s, &r, frame);
 	}
+	
 
 	x += 1;
 	width -= 2;
@@ -2386,6 +2394,11 @@ void w_colorful_chat::draw_item(vector<ColoredChatEntry>::const_iterator it, SDL
 	}
 
 	uint32 message_color = SDL_MapRGB(s->format, 0xff, 0xff, 0xff);
+	if (it->type == ColoredChatEntry::ChatMessage)
+	{
+		message_color = get_theme_color(CHAT_ENTRY, DEFAULT_STATE, FOREGROUND_COLOR);
+	}
+
 	int message_style = style;
 	if ((*it).type != ColoredChatEntry::ChatMessage) message_style |= styleShadow;
 

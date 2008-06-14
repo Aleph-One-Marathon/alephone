@@ -311,6 +311,14 @@ static XML_DColorParser TabColorParser(TAB_WIDGET, DEFAULT_STATE, 3);
 static XML_DColorParser ActiveTabColorParser(TAB_WIDGET, ACTIVE_STATE, 3);
 static XML_DColorParser PressedTabColorParser(TAB_WIDGET, PRESSED_STATE, 3);
 static XML_DColorParser DisabledTabColorParser(TAB_WIDGET, DISABLED_STATE, 3);
+static XML_DColorParser ChatEntryColorParser(CHAT_ENTRY, DEFAULT_STATE, 1);
+static XML_DColorParser MetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::GAME, 3);
+static XML_DColorParser RunningMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::RUNNING_GAME, 3);
+static XML_DColorParser IncompatibleMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::INCOMPATIBLE_GAME, 3);
+static XML_DColorParser SelectedMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::SELECTED_GAME, 3);
+static XML_DColorParser SelectedRunningMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::SELECTED_RUNNING_GAME, 3);
+static XML_DColorParser SelectedIncompatibleMetaserverGamesColorParser(METASERVER_GAMES, w_games_in_room::SELECTED_INCOMPATIBLE_GAME, 3);
+
 
 class XML_DFontParser : public XML_ElementParser {
 public:
@@ -726,6 +734,12 @@ public:
 };
 
 static XML_MetaserverGamesParser MetaserverGamesParser;
+static XML_ElementParser SelectedMetaserverGamesParser("selected");
+static XML_ElementParser RunningMetaserverGamesParser("running");
+static XML_ElementParser SelectedRunningMetaserverGamesParser("selected");
+static XML_ElementParser IncompatibleMetaserverGamesParser("incompatible");
+static XML_ElementParser SelectedIncompatibleMetaserverGamesParser("selected");
+
 
 class XML_MetaserverParser : public XML_ThemeWidgetParser {
 public:
@@ -818,6 +832,7 @@ XML_ElementParser *Theme_GetParser()
 	ThemeParser.AddChild(&TextEntryParser);
 
 	ChatEntryParser.AddChild(&ChatEntryFontParser);
+	ChatEntryParser.AddChild(&ChatEntryColorParser);
 	ThemeParser.AddChild(&ChatEntryParser);
 
 	ListParser.AddChild(&ListImageParser);
@@ -855,6 +870,17 @@ XML_ElementParser *Theme_GetParser()
 	TabParser.AddChild(&PressedTabParser);
 	ThemeParser.AddChild(&TabParser);
 
+	SelectedMetaserverGamesParser.AddChild(&SelectedMetaserverGamesColorParser);
+	SelectedRunningMetaserverGamesParser.AddChild(&SelectedRunningMetaserverGamesColorParser);
+	RunningMetaserverGamesParser.AddChild(&SelectedRunningMetaserverGamesParser);
+	RunningMetaserverGamesParser.AddChild(&RunningMetaserverGamesColorParser);
+	SelectedIncompatibleMetaserverGamesParser.AddChild(&SelectedIncompatibleMetaserverGamesColorParser);
+	IncompatibleMetaserverGamesParser.AddChild(&SelectedIncompatibleMetaserverGamesParser);
+	IncompatibleMetaserverGamesParser.AddChild(&IncompatibleMetaserverGamesColorParser);
+	MetaserverGamesParser.AddChild(&MetaserverGamesColorParser);
+	MetaserverGamesParser.AddChild(&SelectedMetaserverGamesParser);
+	MetaserverGamesParser.AddChild(&RunningMetaserverGamesParser);
+	MetaserverGamesParser.AddChild(&IncompatibleMetaserverGamesParser);
 	MetaserverGamesParser.AddChild(&MetaserverGamesFontParser);
 	MetaserverParser.AddChild(&MetaserverGamesParser);
 
@@ -1040,6 +1066,17 @@ static void set_theme_defaults(void)
 
 	dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_SPACING] = 4;
 	dialog_theme[METASERVER_GAMES].spaces[w_games_in_room::GAME_ENTRIES] = 3;
+	dialog_theme[METASERVER_GAMES].states[w_games_in_room::GAME].colors[FOREGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+	dialog_theme[METASERVER_GAMES].states[w_games_in_room::INCOMPATIBLE_GAME].colors[FOREGROUND_COLOR] = make_color(0x7f, 0, 0);
+	dialog_theme[METASERVER_GAMES].states[w_games_in_room::RUNNING_GAME].colors[FOREGROUND_COLOR] = make_color(0x7f, 0x7f, 0x7f);
+
+	dialog_theme[METASERVER_GAMES].states[w_games_in_room::SELECTED_GAME].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
+	dialog_theme[METASERVER_GAMES].states[w_games_in_room::SELECTED_GAME].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+
+	dialog_theme[METASERVER_GAMES].states[w_games_in_room::SELECTED_INCOMPATIBLE_GAME].colors[FOREGROUND_COLOR] = make_color(0x7f, 0, 0);
+	dialog_theme[METASERVER_GAMES].states[w_games_in_room::SELECTED_INCOMPATIBLE_GAME].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+	dialog_theme[METASERVER_GAMES].states[w_games_in_room::SELECTED_RUNNING_GAME].colors[FOREGROUND_COLOR] = make_color(0x7f, 0x7f, 0x7f);
+	dialog_theme[METASERVER_GAMES].states[w_games_in_room::SELECTED_RUNNING_GAME].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
 #endif
 
 }

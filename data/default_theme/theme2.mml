@@ -114,6 +114,7 @@
 
 <!-- Metaserver and pre-game chat -->
 <chat_entry name_width="100">
+  <color index="0" red="1" green="1" blue="1"/>
 </chat_entry>
 
 <!-- List selection widget -->
@@ -173,6 +174,25 @@
 <metaserver>
 <games spacing="7">
   <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="11"/>
+  <color index="0" red="1" green="1" blue="1"/>
+  <selected>
+    <color index="0" red="0" green="0" blue="0"/>
+    <color index="1" red="1" green="1" blue="1"/>
+  </selected>
+  <incompatible>
+    <color index="0" red=".5" green="0" blue="0"/>
+    <selected>
+      <color index="0" red=".5" green="0" blue="0"/>
+      <color index="1" red="1" green="1" blue="1"/>
+    </selected>
+  </incompatible>
+  <running>
+    <color index="0" red="0.5" green="0.5" blue="0.5"/>
+    <selected>
+      <color index="0" red="0.5" green="0.5" blue="0.5"/>
+      <color index="1" red="1" green="1" blue="1"/>
+    </selected>
+  </running>
 </games>
 </metaserver>
 

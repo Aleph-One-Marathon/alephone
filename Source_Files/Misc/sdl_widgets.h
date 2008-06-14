@@ -927,6 +927,15 @@ public:
 		GAME_ENTRIES,
 		GAME_SPACING,
 	};
+
+	enum {
+		GAME,
+		RUNNING_GAME,
+		INCOMPATIBLE_GAME,
+		SELECTED_GAME,
+		SELECTED_RUNNING_GAME,
+		SELECTED_INCOMPATIBLE_GAME,
+	};
 private:
 	const int kGameSpacing;
 	void draw_item(const GameListMessage::GameListEntry& item, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
