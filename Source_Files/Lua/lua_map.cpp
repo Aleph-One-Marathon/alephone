@@ -108,6 +108,7 @@ const luaL_reg Lua_Endpoint_Get[] = {
 
 char Lua_Endpoints_Name[] = "Endpoints";
 typedef L_Container<Lua_Endpoints_Name, Lua_Endpoint> Lua_Endpoints;
+int16 Lua_Endpoints_Length() { return EndpointList.size(); }
 
 char Lua_Line_Endpoints_Name[] = "line_endpoints";
 typedef L_Class<Lua_Line_Endpoints_Name> Lua_Line_Endpoints;
@@ -202,6 +203,7 @@ static bool Lua_Line_Valid(int16 index)
 }
 
 char Lua_Lines_Name[] = "Lines";
+static int16 Lua_Lines_Length() { return LineList.size(); }
 
 char Lua_Platform_Name[] = "platform";
 bool Lua_Platform_Valid(int16 index)
@@ -1838,6 +1840,7 @@ static bool Lua_Side_Valid(int16 index)
 }
 
 char Lua_Sides_Name[] = "Sides";
+static int16 Lua_Sides_Length() { return SideList.size(); }
 
 char Lua_Light_Name[] = "light";
 
@@ -1876,6 +1879,7 @@ bool Lua_Light_Valid(int16 index)
 }
 
 char Lua_Lights_Name[] = "Lights";
+static int16 Lua_Lights_Length() { return LightList.size(); }
 
 char Lua_Tag_Name[] = "tag";
 
@@ -1986,6 +1990,7 @@ static bool Lua_Media_Valid(int16 index)
 }
 
 char Lua_Medias_Name[] = "Media";
+static int16 Lua_Medias_Length() { return MediaList.size(); }
 
 char Lua_Annotation_Name[] = "annotation";
 typedef L_Class<Lua_Annotation_Name> Lua_Annotation;
@@ -2321,30 +2326,32 @@ int Lua_Map_register(lua_State *L)
 	Lua_Collection::Register(L, Lua_Collection_Get, 0, 0, Lua_Collection_Mnemonics);
 	Lua_Collection::Valid = collection_loaded;
 	Lua_Collections::Register(L);
-	Lua_Collections::Length = Lua_Collections::ConstantLength<MAXIMUM_COLLECTIONS>;
+	Lua_Collections::Length = Lua_Collections::ConstantLength(MAXIMUM_COLLECTIONS);
 
 	Lua_ControlPanelClass::Register(L, 0, 0, 0, Lua_ControlPanelClass_Mnemonics);
-	Lua_ControlPanelClass::Valid = Lua_ControlPanelClass::ValidRange<NUMBER_OF_CONTROL_PANELS>;
+	Lua_ControlPanelClass::Valid = Lua_ControlPanelClass::ValidRange(NUMBER_OF_CONTROL_PANELS);
 
 	Lua_ControlPanelClasses::Register(L);
-	Lua_ControlPanelClasses::Length = Lua_ControlPanelClasses::ConstantLength<NUMBER_OF_CONTROL_PANELS>;
+	Lua_ControlPanelClasses::Length = Lua_ControlPanelClasses::ConstantLength(NUMBER_OF_CONTROL_PANELS);
 
 	Lua_ControlPanelType::Register(L, Lua_ControlPanelType_Get);
-	Lua_ControlPanelType::Valid = Lua_ControlPanelType::ValidRange<NUMBER_OF_CONTROL_PANEL_DEFINITIONS>;
+	Lua_ControlPanelType::Valid = Lua_ControlPanelType::ValidRange(NUMBER_OF_CONTROL_PANEL_DEFINITIONS);
 	
 	Lua_ControlPanelTypes::Register(L);
-	Lua_ControlPanelTypes::Length = Lua_ControlPanelTypes::ConstantLength<NUMBER_OF_CONTROL_PANEL_DEFINITIONS>;
+	Lua_ControlPanelTypes::Length = Lua_ControlPanelTypes::ConstantLength(NUMBER_OF_CONTROL_PANEL_DEFINITIONS);
 
 	Lua_DamageType::Register(L, 0, 0, 0, Lua_DamageType_Mnemonics);
-	Lua_DamageType::Valid = Lua_DamageType::ValidRange<NUMBER_OF_DAMAGE_TYPES>;
+	Lua_DamageType::Valid = Lua_DamageType::ValidRange(NUMBER_OF_DAMAGE_TYPES);
 	Lua_DamageTypes::Register(L);
-	Lua_DamageTypes::Length = Lua_DamageTypes::ConstantLength<NUMBER_OF_DAMAGE_TYPES>;
+	Lua_DamageTypes::Length = Lua_DamageTypes::ConstantLength(NUMBER_OF_DAMAGE_TYPES);
 
 	Lua_Endpoint::Register(L, Lua_Endpoint_Get);
 	Lua_Endpoint::Valid = Lua_Endpoint_Valid;
 
 	Lua_Endpoints::Register(L);
-	Lua_Endpoints::Length = boost::bind(&std::vector<endpoint_data>::size, &EndpointList);
+	// CodeWarrior doesn't let me do this:
+//	Lua_Endpoints::Length = boost::bind(&std::vector<endpoint_data>::size, &EndpointList);
+	Lua_Endpoints::Length = Lua_Endpoints_Length;
 
 	Lua_Line_Endpoints::Register(L, 0, 0, Lua_Line_Endpoints_Metatable);
 	
@@ -2352,7 +2359,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_Line::Valid = Lua_Line_Valid;
 
 	Lua_Lines::Register(L);
-	Lua_Lines::Length = boost::bind(&std::vector<line_data>::size, &LineList);
+	Lua_Lines::Length = Lua_Lines_Length;
 
 	Lua_Platform::Register(L, Lua_Platform_Get, Lua_Platform_Set);
 	Lua_Platform::Valid = Lua_Platform_Valid;
@@ -2367,10 +2374,10 @@ int Lua_Map_register(lua_State *L)
 	Lua_Polygon_Ceiling::Valid = Lua_Polygon_Valid;
 
 	Lua_PolygonType::Register(L, 0, 0, 0, Lua_PolygonType_Mnemonics);
-	Lua_PolygonType::Valid = Lua_PolygonType::ValidRange<static_cast<int16>(_polygon_is_superglue) + 1>;
+	Lua_PolygonType::Valid = Lua_PolygonType::ValidRange(static_cast<int16>(_polygon_is_superglue) + 1);
 	
 	Lua_PolygonTypes::Register(L);
-	Lua_PolygonTypes::Length = Lua_PolygonTypes::ConstantLength<static_cast<int16>(_polygon_is_superglue) + 1>;
+	Lua_PolygonTypes::Length = Lua_PolygonTypes::ConstantLength(static_cast<int16>(_polygon_is_superglue) + 1);
 
 	Lua_Adjacent_Polygons::Register(L, 0, 0, Lua_Adjacent_Polygons_Metatable);
 	Lua_Polygon_Endpoints::Register(L, 0, 0, Lua_Polygon_Endpoints_Metatable);
@@ -2393,19 +2400,19 @@ int Lua_Map_register(lua_State *L)
 	Lua_Side::Valid = Lua_Side_Valid;
 
 	Lua_Sides::Register(L);
-	Lua_Sides::Length = boost::bind(&std::vector<side_data>::size, &SideList);
+	Lua_Sides::Length = Lua_Sides_Length;
 
 	Lua_Light::Register(L, Lua_Light_Get, Lua_Light_Set);
 	Lua_Light::Valid = Lua_Light_Valid;
 
 	Lua_Lights::Register(L);
-	Lua_Lights::Length = boost::bind(&std::vector<light_data>::size, &LightList);
+	Lua_Lights::Length = Lua_Lights_Length;
 		
 	Lua_Tag::Register(L, Lua_Tag_Get, Lua_Tag_Set);
 	Lua_Tag::Valid = Lua_Tag_Valid;
 
 	Lua_Tags::Register(L);
-	Lua_Tags::Length = Lua_Tags::ConstantLength<INT16_MAX>;
+	Lua_Tags::Length = Lua_Tags::ConstantLength(INT16_MAX);
 	
 	Lua_Terminal::Register(L);
 	Lua_Terminal::Valid = Lua_Terminal_Valid;
@@ -2414,22 +2421,22 @@ int Lua_Map_register(lua_State *L)
 	Lua_Terminals::Length = Lua_Terminals_Length;
 
 	Lua_TransferMode::Register(L, 0, 0, 0, Lua_TransferMode_Mnemonics);
-	Lua_TransferMode::Valid = Lua_TransferMode::ValidRange<NUMBER_OF_TRANSFER_MODES>;
+	Lua_TransferMode::Valid = Lua_TransferMode::ValidRange(NUMBER_OF_TRANSFER_MODES);
 	
 	Lua_TransferModes::Register(L);
-	Lua_TransferModes::Length = Lua_TransferModes::ConstantLength<NUMBER_OF_TRANSFER_MODES>;
+	Lua_TransferModes::Length = Lua_TransferModes::ConstantLength(NUMBER_OF_TRANSFER_MODES);
 
 	Lua_MediaType::Register(L, 0, 0, 0, Lua_MediaType_Mnemonics);
-	Lua_MediaType::Valid = Lua_MediaType::ValidRange<NUMBER_OF_MEDIA_TYPES>;
+	Lua_MediaType::Valid = Lua_MediaType::ValidRange(NUMBER_OF_MEDIA_TYPES);
 
 	Lua_MediaTypes::Register(L);
-	Lua_MediaTypes::Length = Lua_MediaTypes::ConstantLength<NUMBER_OF_MEDIA_TYPES>;
+	Lua_MediaTypes::Length = Lua_MediaTypes::ConstantLength(NUMBER_OF_MEDIA_TYPES);
 
 	Lua_Media::Register(L, Lua_Media_Get);
 	Lua_Media::Valid = Lua_Media_Valid;
 
 	Lua_Medias::Register(L);
-	Lua_Medias::Length = boost::bind(&std::vector<media_data>::size, &MediaList);
+	Lua_Medias::Length = Lua_Medias_Length;
 
 	Lua_Level::Register(L, Lua_Level_Get);
 
@@ -2437,7 +2444,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_Annotation::Valid = Lua_Annotation_Valid;
 
 	Lua_Annotations::Register(L, Lua_Annotations_Methods);
-	Lua_Annotations::Length = boost::bind(&std::vector<map_annotation>::size, &MapAnnotationList);
+	Lua_Annotations::Length = Lua_Annotations_Length;
 
 	Lua_Fog::Register(L, Lua_Fog_Get, Lua_Fog_Set);
 

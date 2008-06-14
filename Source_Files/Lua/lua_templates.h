@@ -58,7 +58,19 @@ public:
 	static bool Is(lua_State *L, int index);
 	static void Invalidate(lua_State *L, index_t index);
 	static boost::function<bool (index_t)> Valid;
-	template<index_t max_index> static bool ValidRange(index_t index) { return index >= 0 && index < max_index; }
+	struct ValidRange
+	{
+		ValidRange(int32 max_index) : m_max(max_index) {}
+		bool operator() (int32 index)
+		{
+			return (index >= 0 && index < m_max);
+		}
+
+		int32 m_max;
+	};
+
+	// ghs: codewarrior chokes on this:
+	//	template<index_t max_index> static bool ValidRange(index_t index) { return index >= 0 && index < max_index; }
 private:
 	// C functions for Lua
 	static int _index(lua_State *L);
@@ -68,11 +80,13 @@ private:
 	static int _tostring(lua_State *L);
 };
 
-template<typename t>
-static bool always_valid(t) { return true; }
+struct always_valid
+{
+	bool operator()(int32 x) { return true; }
+};
 
 template<char *name, typename index_t>
-boost::function<bool (index_t)> L_Class<name, index_t>::Valid = always_valid<index_t>;
+boost::function<bool (index_t)> L_Class<name, index_t>::Valid = always_valid();
 
 template<char *name, typename index_t>
 void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const luaL_reg set[], const luaL_reg metatable[])
@@ -624,7 +638,12 @@ class L_Container {
 public:
 	static void Register(lua_State *L, const luaL_reg methods[] = 0, const luaL_reg metatable[] = 0);
 	static boost::function<typename T::index_type (void)> Length;
-	template<typename T::index_type length> static typename T::index_type ConstantLength() { return length; }
+	struct ConstantLength
+	{
+		ConstantLength(int32 length) : m_length(length) {}
+		int32 operator() (void) { return m_length; }
+		int32 m_length;
+	};
 private:
 	static int _get(lua_State *);
 	static int _set(lua_State *);
@@ -634,7 +653,7 @@ private:
 };
 
 template<char *name, class T>
-boost::function<typename T::index_type (void)> L_Container<name, T>::Length = ConstantLength<1>;
+boost::function<typename T::index_type (void)> L_Container<name, T>::Length = ConstantLength(1);
 
 template<char *name, class T>
 void L_Container<name, T>::Register(lua_State *L, const luaL_reg methods[], const luaL_reg metatable[])

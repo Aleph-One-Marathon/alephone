@@ -492,22 +492,22 @@ int Lua_Objects_register(lua_State *L)
 	Lua_Sceneries::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
 
 	Lua_EffectType::Register(L, 0, 0, 0, Lua_EffectType_Mnemonics);
-	Lua_EffectType::Valid = Lua_EffectType::ValidRange<NUMBER_OF_EFFECT_TYPES>;
+	Lua_EffectType::Valid = Lua_EffectType::ValidRange(NUMBER_OF_EFFECT_TYPES);
 
 	Lua_EffectTypes::Register(L);
-	Lua_EffectTypes::Length = Lua_EffectTypes::ConstantLength<NUMBER_OF_EFFECT_TYPES>;
+	Lua_EffectTypes::Length = Lua_EffectTypes::ConstantLength(NUMBER_OF_EFFECT_TYPES);
 
 	Lua_ItemType::Register(L, Lua_ItemType_Get, 0, 0, Lua_ItemType_Mnemonics);
 	Lua_ItemType::Valid = Lua_ItemType_Valid;
 
 	Lua_ItemTypes::Register(L);
-	Lua_ItemTypes::Length = Lua_ItemTypes::ConstantLength<NUMBER_OF_DEFINED_ITEMS>;
+	Lua_ItemTypes::Length = Lua_ItemTypes::ConstantLength(NUMBER_OF_DEFINED_ITEMS);
 
 	Lua_SceneryType::Register(L, 0, 0, 0, Lua_SceneryType_Mnemonics);
 	Lua_SceneryType::Valid = Lua_SceneryType_Valid;
 
 	Lua_SceneryTypes::Register(L);
-	Lua_SceneryTypes::Length = Lua_SceneryTypes::ConstantLength<NUMBER_OF_SCENERY_DEFINITIONS>;
+	Lua_SceneryTypes::Length = Lua_SceneryTypes::ConstantLength(NUMBER_OF_SCENERY_DEFINITIONS);
 
 	Lua_Sound::Register(L, 0, 0, 0, Lua_Sound_Mnemonics);
 

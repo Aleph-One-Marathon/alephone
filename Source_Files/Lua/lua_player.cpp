@@ -2300,44 +2300,44 @@ int Lua_Player_register (lua_State *L)
 	Lua_InternalVelocity::Register(L, Lua_InternalVelocity_Get);
 	Lua_ExternalVelocity::Register(L, Lua_ExternalVelocity_Get, Lua_ExternalVelocity_Set);
 	Lua_FadeType::Register(L, 0, 0, 0, Lua_FadeType_Mnemonics);
-	Lua_FadeType::Valid = Lua_FadeType::ValidRange<NUMBER_OF_FADE_TYPES>;
+	Lua_FadeType::Valid = Lua_FadeType::ValidRange(NUMBER_OF_FADE_TYPES);
 	
 	Lua_FadeTypes::Register(L);
-	Lua_FadeTypes::Length = Lua_FadeTypes::ConstantLength<NUMBER_OF_FADE_TYPES>;
+	Lua_FadeTypes::Length = Lua_FadeTypes::ConstantLength((int16) NUMBER_OF_FADE_TYPES);
 	
 	Lua_Texture_Palette_Slot::Register(L, Lua_Texture_Palette_Slot_Get, Lua_Texture_Palette_Slot_Set);
 	Lua_Texture_Palette_Slots::Register(L, 0, 0, Lua_Texture_Palette_Slots_Metatable);
 	Lua_Texture_Palette::Register(L, Lua_Texture_Palette_Get, Lua_Texture_Palette_Set);
 
 	Lua_WeaponType::Register(L, 0, 0, 0, Lua_WeaponType_Mnemonics);
-	Lua_WeaponType::Valid = Lua_WeaponType::ValidRange<MAXIMUM_NUMBER_OF_WEAPONS>;
+	Lua_WeaponType::Valid = Lua_WeaponType::ValidRange(MAXIMUM_NUMBER_OF_WEAPONS);
 
 	Lua_WeaponTypes::Register(L);
-	Lua_WeaponTypes::Length = Lua_WeaponTypes::ConstantLength<MAXIMUM_NUMBER_OF_WEAPONS>;
+	Lua_WeaponTypes::Length = Lua_WeaponTypes::ConstantLength((int16) MAXIMUM_NUMBER_OF_WEAPONS);
 
 	Lua_Player_Weapon::Register(L, Lua_Player_Weapon_Get);
-	Lua_Player_Weapon::Valid = Lua_Player_Weapon::ValidRange<MAXIMUM_NUMBER_OF_WEAPONS>;
+	Lua_Player_Weapon::Valid = Lua_Player_Weapon::ValidRange(MAXIMUM_NUMBER_OF_WEAPONS);
 
 	Lua_Player_Weapons::Register(L, 0, 0, Lua_Player_Weapons_Metatable);
 	Lua_Player_Weapons::Valid = Lua_Player_Valid;
 
 	Lua_Player_Weapon_Trigger::Register(L, Lua_Player_Weapon_Trigger_Get);
-	Lua_Player_Weapon_Trigger::Valid = Lua_Player_Weapon_Trigger::ValidRange<(int) _secondary_weapon + 1>;
+	Lua_Player_Weapon_Trigger::Valid = Lua_Player_Weapon_Trigger::ValidRange((int) _secondary_weapon + 1);
 
 	Lua_OverlayColor::Register(L, 0, 0, 0, Lua_OverlayColor_Mnemonics);
-	Lua_OverlayColor::Valid = Lua_OverlayColor::ValidRange<8>;
+	Lua_OverlayColor::Valid = Lua_OverlayColor::ValidRange(8);
 
 	Lua_Overlays::Register(L, 0, 0, Lua_Overlays_Metatable);
 	Lua_Overlays::Valid = Lua_Player_Valid;
 
 	Lua_Overlay::Register(L, Lua_Overlay_Get, Lua_Overlay_Set);
-	Lua_Overlay::Valid = Lua_Overlay::ValidRange<MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS>;
+	Lua_Overlay::Valid = Lua_Overlay::ValidRange(MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS);
 
 	Lua_PlayerColor::Register(L, 0, 0, 0, Lua_PlayerColor_Mnemonics);
-	Lua_PlayerColor::Valid = Lua_PlayerColor::ValidRange<NUMBER_OF_TEAM_COLORS>;
+	Lua_PlayerColor::Valid = Lua_PlayerColor::ValidRange(NUMBER_OF_TEAM_COLORS);
 
 	Lua_PlayerColors::Register(L);
-	Lua_PlayerColors::Length = Lua_PlayerColors::ConstantLength<NUMBER_OF_TEAM_COLORS>;
+	Lua_PlayerColors::Length = Lua_PlayerColors::ConstantLength((int16) NUMBER_OF_TEAM_COLORS);
 
 	Lua_Player::Register(L, Lua_Player_Get, Lua_Player_Set);
 	Lua_Player::Valid = Lua_Player_Valid;
@@ -2348,19 +2348,19 @@ int Lua_Player_register (lua_State *L)
 	Lua_Game::Register(L, Lua_Game_Get, Lua_Game_Set);
 
 	Lua_GameType::Register(L, 0, 0, 0, Lua_GameType_Mnemonics);
-	Lua_GameType::Valid = Lua_GameType::ValidRange<NUMBER_OF_GAME_TYPES>;
+	Lua_GameType::Valid = Lua_GameType::ValidRange(NUMBER_OF_GAME_TYPES);
 
 	Lua_GameTypes::Register(L);
-	Lua_GameTypes::Length = Lua_GameTypes::ConstantLength<NUMBER_OF_GAME_TYPES>;
+	Lua_GameTypes::Length = Lua_GameTypes::ConstantLength(NUMBER_OF_GAME_TYPES);
 
 	Lua_ScoringMode::Register(L, 0, 0, 0, Lua_ScoringMode_Mnemonics);
-	Lua_ScoringMode::Valid = Lua_ScoringMode::ValidRange<NUMBER_OF_GAME_SCORING_MODES>;
+	Lua_ScoringMode::Valid = Lua_ScoringMode::ValidRange(NUMBER_OF_GAME_SCORING_MODES);
 
 	Lua_ScoringModes::Register(L);
-	Lua_ScoringModes::Length = Lua_ScoringModes::ConstantLength<NUMBER_OF_GAME_SCORING_MODES>;
+	Lua_ScoringModes::Length = Lua_ScoringModes::ConstantLength(NUMBER_OF_GAME_SCORING_MODES);
 
 	Lua_DifficultyType::Register(L, 0, 0, 0, Lua_DifficultyType_Mnemonics);
-	Lua_DifficultyType::Valid = Lua_DifficultyType::ValidRange<NUMBER_OF_GAME_DIFFICULTY_LEVELS>;
+	Lua_DifficultyType::Valid = Lua_DifficultyType::ValidRange(NUMBER_OF_GAME_DIFFICULTY_LEVELS);
 
 	Lua_Music::Register(L, Lua_Music_Get);
 

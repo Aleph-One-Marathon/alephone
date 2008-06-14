@@ -411,7 +411,7 @@ int Lua_Projectiles_register(lua_State *L)
 	Lua_ProjectileTypeDamage::Register(L, Lua_ProjectileTypeDamage_Get);
 	
 	Lua_ProjectileTypes::Register(L);
-	Lua_ProjectileTypes::Length = Lua_ProjectileTypes::ConstantLength<NUMBER_OF_PROJECTILE_TYPES>;
+	Lua_ProjectileTypes::Length = Lua_ProjectileTypes::ConstantLength(NUMBER_OF_PROJECTILE_TYPES);
 
 	compatibility(L);
 }

@@ -789,7 +789,7 @@ int Lua_Monsters_register(lua_State *L)
 	Lua_MonsterClass::Valid = Lua_MonsterClass_Valid;
 
 	Lua_MonsterClasses::Register(L);
-	Lua_MonsterClasses::Length = Lua_MonsterClasses::ConstantLength<_class_yeti_bit + 1>;
+	Lua_MonsterClasses::Length = Lua_MonsterClasses::ConstantLength(_class_yeti_bit + 1);
 
 
 	Lua_MonsterType_Enemies::Register(L, 0, 0, Lua_MonsterType_Enemies_Metatable);
@@ -798,20 +798,20 @@ int Lua_Monsters_register(lua_State *L)
 	Lua_MonsterType_Weaknesses::Register(L, 0, 0, Lua_MonsterType_Weaknesses_Metatable);
 
 	Lua_MonsterMode::Register(L, 0, 0, 0, Lua_MonsterMode_Mnemonics);
-	Lua_MonsterMode::Valid = Lua_MonsterMode::ValidRange<NUMBER_OF_MONSTER_MODES>;
+	Lua_MonsterMode::Valid = Lua_MonsterMode::ValidRange(NUMBER_OF_MONSTER_MODES);
 	Lua_MonsterModes::Register(L);
-	Lua_MonsterModes::Length = Lua_MonsterModes::ConstantLength<NUMBER_OF_MONSTER_MODES>;
+	Lua_MonsterModes::Length = Lua_MonsterModes::ConstantLength(NUMBER_OF_MONSTER_MODES);
 	
 	Lua_MonsterAction::Register(L, 0, 0, 0, Lua_MonsterAction_Mnemonics);
-	Lua_MonsterAction::Valid = Lua_MonsterAction::ValidRange<NUMBER_OF_MONSTER_ACTIONS>;
+	Lua_MonsterAction::Valid = Lua_MonsterAction::ValidRange(NUMBER_OF_MONSTER_ACTIONS);
 	Lua_MonsterActions::Register(L);
-	Lua_MonsterActions::Length = Lua_MonsterActions::ConstantLength<NUMBER_OF_MONSTER_ACTIONS>;
+	Lua_MonsterActions::Length = Lua_MonsterActions::ConstantLength(NUMBER_OF_MONSTER_ACTIONS);
 
 	Lua_MonsterType::Register(L, Lua_MonsterType_Get, Lua_MonsterType_Set, 0, Lua_MonsterType_Mnemonics);
 	Lua_MonsterType::Valid = Lua_MonsterType_Valid;
 	
 	Lua_MonsterTypes::Register(L);
-	Lua_MonsterTypes::Length = Lua_MonsterTypes::ConstantLength<NUMBER_OF_MONSTER_TYPES>;
+	Lua_MonsterTypes::Length = Lua_MonsterTypes::ConstantLength(NUMBER_OF_MONSTER_TYPES);
 
 	Lua_Monster::Register(L, Lua_Monster_Get, Lua_Monster_Set);
 	Lua_Monster::Valid = Lua_Monster_Valid;
