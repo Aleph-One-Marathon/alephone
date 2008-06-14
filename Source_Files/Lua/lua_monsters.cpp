@@ -384,6 +384,7 @@ int Lua_Monster_Play_Sound(lua_State *L)
 	short sound_index = Lua_Sound::ToIndex(L, 2);
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	play_object_sound(monster->object_index, sound_index);
+	return 0;
 }
 
 int Lua_Monster_Damage(lua_State *L)
@@ -526,6 +527,7 @@ int Lua_Monster_Position(lua_State *L)
 		remove_object_from_polygon_object_list(monster->object_index);
 		add_object_to_polygon_object_list(monster->object_index, polygon_index);
 	}
+	return 0;
 }
 		
 
@@ -781,7 +783,7 @@ const luaL_reg Lua_Monsters_Methods[] = {
 	{0, 0}
 };
 
-static int compatibility(lua_State *L);
+static void compatibility(lua_State *L);
 
 int Lua_Monsters_register(lua_State *L)
 {
@@ -820,6 +822,7 @@ int Lua_Monsters_register(lua_State *L)
 	Lua_Monsters::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_monsters);
 
 	compatibility(L);
+	return 0;
 }
 
 static const char *compatibility_script = ""
@@ -856,7 +859,7 @@ static const char *compatibility_script = ""
 	"function set_monster_weakness(monster, damage, weak) MonsterTypes[monster].weaknesses[damage] = weak end\n"
 	;
 
-static int compatibility(lua_State *L)
+static void compatibility(lua_State *L)
 {
 	luaL_loadbuffer(L, compatibility_script, strlen(compatibility_script), "monsters_compatibility");
 	lua_pcall(L, 0, 0, 0);

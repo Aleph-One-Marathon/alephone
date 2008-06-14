@@ -1775,6 +1775,7 @@ int Lua_Side_Play_Sound(lua_State *L)
 	}
 
 	_play_side_sound(Lua_Side::Index(L, 1), sound_code, pitch);
+	return 0;
 }
 
 static int Lua_Side_Get_Control_Panel(lua_State *L)
@@ -2316,7 +2317,7 @@ const luaL_reg Lua_Level_Get[] = {
 char Lua_TransferMode_Name[] = "transfer_mode";
 char Lua_TransferModes_Name[] = "TransferModes";
 
-static int compatibility(lua_State *L);
+static void compatibility(lua_State *L);
 #define NUMBER_OF_CONTROL_PANEL_DEFINITIONS 54
 
 extern bool collection_loaded(short);
@@ -2455,6 +2456,7 @@ int Lua_Map_register(lua_State *L)
 	lua_setglobal(L, Lua_Level_Name);
 
 	compatibility(L);
+	return 0;
 }
 
 static const char* compatibility_script = ""
@@ -2516,7 +2518,7 @@ static const char* compatibility_script = ""
 	"function set_underwater_fog_present(present) Level.underwater_fog.active = present end\n"
 	;
 
-static int compatibility(lua_State *L)
+static void compatibility(lua_State *L)
 {
 	luaL_loadbuffer(L, compatibility_script, strlen(compatibility_script), "map_compatibility");
 	lua_pcall(L, 0, 0, 0);

@@ -61,6 +61,7 @@ int lua_play_object_sound(lua_State *L)
 {
 	short sound_code = Lua_Sound::ToIndex(L, 2);
 	play_object_sound(T::Index(L, 1), sound_code);
+	return 0;
 }
 
 template<class T>
@@ -515,6 +516,7 @@ int Lua_Objects_register(lua_State *L)
 	Lua_Sounds::Length = Lua_Sounds_Length;
 
 	compatibility(L);
+	return 0;
 }
 
 static const char *compatibility_script = ""

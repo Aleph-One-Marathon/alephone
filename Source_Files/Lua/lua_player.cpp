@@ -775,6 +775,7 @@ static int Lua_ExternalVelocity_Set_I(lua_State *L)
 
 	int raw_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	get_player_data(Lua_ExternalVelocity::Index(L, 1))->variables.external_velocity.i = raw_velocity;
+	return 0;
 }
 
 static int Lua_ExternalVelocity_Set_J(lua_State *L)
@@ -784,6 +785,7 @@ static int Lua_ExternalVelocity_Set_J(lua_State *L)
 
 	int raw_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	get_player_data(Lua_ExternalVelocity::Index(L, 1))->variables.external_velocity.j = raw_velocity;
+	return 0;
 }
 
 static int Lua_ExternalVelocity_Set_K(lua_State *L)
@@ -793,6 +795,7 @@ static int Lua_ExternalVelocity_Set_K(lua_State *L)
 
 	int raw_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	get_player_data(Lua_ExternalVelocity::Index(L, 1))->variables.external_velocity.k = raw_velocity;
+	return 0;
 }
 
 const luaL_reg Lua_ExternalVelocity_Set[] = {
@@ -2278,7 +2281,7 @@ const luaL_reg Lua_Music_Get[] = {
 	{0, 0}
 };
 
-static int Lua_Player_load_compatibility(lua_State *L);
+static void Lua_Player_load_compatibility(lua_State *L);
 
 int Lua_Player_register (lua_State *L)
 {
@@ -2454,7 +2457,7 @@ static const char *compatibility_script = ""
 	"function zoom_active(player) return Players[player].zoom_active end\n"
 	;
 
-static int Lua_Player_load_compatibility(lua_State *L)
+static void Lua_Player_load_compatibility(lua_State *L)
 {
 	luaL_loadbuffer(L, compatibility_script, strlen(compatibility_script), "player_compatibility");
 	lua_pcall(L, 0, 0, 0);

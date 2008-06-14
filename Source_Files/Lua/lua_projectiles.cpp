@@ -238,6 +238,7 @@ int Lua_Projectile_Play_Sound(lua_State *L)
 	short sound_code = Lua_Sound::ToIndex(L, 2);
 	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
 	play_object_sound(projectile->object_index, sound_code);
+	return 0;
 }
 
 int Lua_Projectile_Position(lua_State *L)
@@ -272,6 +273,7 @@ int Lua_Projectile_Position(lua_State *L)
 		remove_object_from_polygon_object_list(projectile->object_index);
 		add_object_to_polygon_object_list(projectile->object_index, polygon_index);
 	}
+	return 0;
 }
 
 const luaL_reg Lua_Projectile_Get[] = {
@@ -414,6 +416,7 @@ int Lua_Projectiles_register(lua_State *L)
 	Lua_ProjectileTypes::Length = Lua_ProjectileTypes::ConstantLength(NUMBER_OF_PROJECTILE_TYPES);
 
 	compatibility(L);
+	return 0;
 }
 
 const char *compatibility_script = ""

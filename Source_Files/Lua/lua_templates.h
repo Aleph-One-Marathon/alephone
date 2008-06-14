@@ -719,7 +719,7 @@ template<char *name, class T>
 int L_Container<name, T>::_set(lua_State *L)
 {
 	std::string error = std::string(name) + " is read-only";
-	luaL_error(L, error.c_str());
+	return luaL_error(L, error.c_str());
 }
 
 template<char *name, class T>
