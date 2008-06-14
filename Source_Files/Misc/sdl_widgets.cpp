@@ -184,7 +184,7 @@ void w_label::draw(SDL_Surface *s) const
 {
 	int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 	uint16 style = 0;
-	draw_text(s, text, rect.x, rect.y + font->get_ascent(), get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), font, style);
+	draw_text(s, text, rect.x, rect.y + font->get_ascent() + (rect.h - font->get_line_height()) / 2, get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), font, style);
 }
 
 // ZZZ addition: change text.
