@@ -310,10 +310,18 @@ void MetaserverClientUi::GameSelected(GameListMessage::GameListEntry game)
 {
 	if (gMetaserverClient->game_target() == game.id())
 	{
-		gMetaserverClient->game_target(GameListMessage::GameListEntry::IdNone);
+		if (SDL_GetTicks() - m_lastGameSelected < 333 && (!game.running() && Scenario::instance()->IsCompatible(game.m_description.m_scenarioID)))
+		{
+			JoinClicked();
+		}
+		else
+		{
+			gMetaserverClient->game_target(GameListMessage::GameListEntry::IdNone);
+		}
 	}
 	else
 	{
+		m_lastGameSelected = SDL_GetTicks();
 		gMetaserverClient->game_target(game.id());
 	}
 

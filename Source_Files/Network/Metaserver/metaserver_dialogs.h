@@ -75,7 +75,7 @@ public:
 	virtual ~MetaserverClientUi () {};
 
 protected:
-	MetaserverClientUi() : m_used (false) {}
+	MetaserverClientUi() : m_used (false), m_lastGameSelected(0) {}
 
 	void delete_widgets ();
 
@@ -107,6 +107,8 @@ protected:
 	ButtonWidget*                                   m_muteWidget;
 	ButtonWidget*                                   m_joinWidget;
 	ButtonWidget*                                   m_gameInfoWidget;
+
+	Uint32 m_lastGameSelected;
 };
 
 #endif // METASERVER_DIALOGS_H
