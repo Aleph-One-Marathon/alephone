@@ -405,6 +405,8 @@ protected:
 	std::auto_ptr<JoinerSeekingGathererAnnouncer> join_announcer;
 	int join_result;
 	bool got_gathered;
+
+	bool skipToMetaserver;
 };
 
 

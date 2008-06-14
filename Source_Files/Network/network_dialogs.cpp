@@ -544,7 +544,7 @@ int network_join(void)
 	return join_dialog_result;
 }
 
-JoinDialog::JoinDialog() : got_gathered(false)
+JoinDialog::JoinDialog() : got_gathered(false), skipToMetaserver(false)
 	{ if (!gMetaserverClient) gMetaserverClient = new MetaserverClient (); }
 
 JoinDialog::~JoinDialog ()
@@ -674,6 +674,12 @@ void JoinDialog::attemptJoin ()
 
 void JoinDialog::gathererSearch ()
 {
+	if (skipToMetaserver)
+	{
+		skipToMetaserver = false;
+		getJoinAddressFromMetaserver();
+	}
+
 	JoinerSeekingGathererAnnouncer::pump();
 	MetaserverClient::pumpAll();
 	
@@ -2637,6 +2643,9 @@ class SdlJoinDialog : public JoinDialog
 public:
 	SdlJoinDialog() : m_tabs(0)
 	{
+		SDLMod m = SDL_GetModState();
+		if ((m & KMOD_ALT) || (m & KMOD_META)) skipToMetaserver = true;
+
 		vertical_placer *placer = new vertical_placer;
 		placer->dual_add(new w_title("JOIN NETWORK GAME"), m_dialog);
 		placer->add(new w_spacer(), true);
