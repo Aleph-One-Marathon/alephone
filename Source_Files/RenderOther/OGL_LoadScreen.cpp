@@ -75,8 +75,8 @@ bool OGL_LoadScreen::Start()
 	bound_screen();
 	
 	// the true width/height
-	int imageWidth = image.GetWidth() * image.GetVScale();
-	int imageHeight = image.GetHeight() * image.GetUScale();
+	int imageWidth = static_cast<int>(image.GetWidth() * image.GetVScale());
+	int imageHeight = static_cast<int>(image.GetHeight() * image.GetUScale());
 
 	int scaledScreenWidth, scaledScreenHeight;
 

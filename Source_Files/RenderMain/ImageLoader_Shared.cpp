@@ -466,7 +466,7 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 
 		// hehe, resizing to the next power of two could have
 		// introduced another mipmap
-		MipMapCount = 1 + floor(log2(max(Width, Height)));
+		MipMapCount = static_cast<int>(1 + floor(log2(max(Width, Height))));
 		
 		int skip  = 0;
 		if (maxSize) {

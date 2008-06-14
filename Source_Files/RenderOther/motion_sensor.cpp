@@ -924,7 +924,7 @@ public:
 		{
 			float range;
 			if (ReadFloatValue(Value, range)) {
-				MOTION_SENSOR_RANGE = range * WORLD_ONE;
+				MOTION_SENSOR_RANGE = static_cast<uint16>(range * WORLD_ONE);
 				return true;
 			} else {
 				return false;
