@@ -199,16 +199,18 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
     }
 }
 
+#if defined(__unix__) || defined(__NetBSD__) || defined(__OpenBSD__) || (defined(__APPLE__) && defined(__MACH__))
 #include <unistd.h>
 #include <sys/types.h>
 #ifdef HAVE_PWD_H
 #include <pwd.h>
 #endif
+#endif
 
 static void
 InitializeLogging() {
     assert(sOutputFile == NULL);
-#if defined(__unix__) || (defined(__APPLE__) && defined(__MACH__))
+#if defined(__unix__) || defined(__NetBSD__) || defined(__OpenBSD__) || (defined(__APPLE__) && defined(__MACH__))
     const char *home = getenv("HOME");
     if (home == NULL) {
         struct passwd *pw = getpwuid (getuid ());
