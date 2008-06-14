@@ -21,6 +21,7 @@ LUA_PLAYER.CPP
 */
 
 #include "ActionQueues.h"
+#include "alephversion.h"
 #include "computer_interface.h"
 #include "Crosshairs.h"
 #include "fades.h"
@@ -2108,6 +2109,12 @@ static int Lua_Game_Get_Scoring_Mode(lua_State *L)
 	return 1;
 }
 
+static int Lua_Game_Get_Version(lua_State *L)
+{
+	lua_pushstring(L, A1_DATE_VERSION);
+	return 1;
+}
+
 static int Lua_Game_Set_Scoring_Mode(lua_State *L)
 {
   int mode = Lua_ScoringMode::ToIndex(L, 2);
@@ -2183,6 +2190,7 @@ const luaL_reg Lua_Game_Get[] = {
 	{"type", Lua_Game_Get_Type},
 	{"save", L_TableFunction<Lua_Game_Save>},
 	{"scoring_mode", Lua_Game_Get_Scoring_Mode},
+	{"version", Lua_Game_Get_Version},
 	{0, 0}
 };
 

@@ -422,6 +422,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether the game is EMFH, KOTH, etc.</description>
 	<type>game_type</type>
       </variable>
+      <variable name="version" access="read-only">
+	<description>the date version of the local player's engine</description>
+	<note>for example, "20071103"</note>
+      </variable>
     </table>
     <table name="item">
       <function name="delete">
