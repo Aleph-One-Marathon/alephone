@@ -110,7 +110,7 @@ Jan 17, 2001 (Loren Petrich):
 #include "Packing.h"
 #include "SW_Texture_Extras.h"
 
-#include <SDL/SDL_rwops.h>
+#include <SDL_rwops.h>
 
 #ifdef env68k
 #pragma segment shell
