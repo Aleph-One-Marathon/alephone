@@ -2375,8 +2375,16 @@ void w_colorful_chat::draw_item(vector<ColoredChatEntry>::const_iterator it, SDL
 					  (*it).color.green >> 8,
 					  (*it).color.blue >> 8);
 		SDL_FillRect(s, &r, pixel);
+
 		// draw taper
 		r.x += kNameWidth ;
+		if (it->type == ColoredChatEntry::PrivateMessage)
+		{
+			// red bar under taper
+			r.w = taper_width() + 2;
+			SDL_FillRect(s, &r, SDL_MapRGB(s->format, 0x7f, 0x0, 0x0));
+		}
+			
 		r.w = 1;
 		for (int i = 0; i < taper_width(); ++i)
 		{
