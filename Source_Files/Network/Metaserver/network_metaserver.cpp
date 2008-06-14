@@ -159,8 +159,9 @@ MetaserverClient::MetaserverClient()
 	, m_inflater(new MessageInflater())
 	, m_dispatcher(new MessageDispatcher())
 	, m_loginDispatcher(new MessageDispatcher())
-	, m_notificationAdapter(NULL),
-	  m_notifiedOfDisconnected(false)
+	, m_notificationAdapter(NULL)
+	, m_notifiedOfDisconnected(false)
+	, m_gameAnnounced(false)
 {
 	m_unexpectedMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleUnexpectedMessage));
 	m_broadcastMessageHandler.reset(newMessageHandlerMethod(this, &MetaserverClient::handleBroadcastMessage));
@@ -492,6 +493,7 @@ MetaserverClient::announceGame(uint16 gamePort, const GameDescription& descripti
 	m_channel->enqueueOutgoingMessage(CreateGameMessage(gamePort, description));
 	m_gameDescription = description;
 	m_gamePort = gamePort;
+	m_gameAnnounced = true;
 }
 
 void
@@ -523,7 +525,11 @@ MetaserverClient::announceGameReset()
 void
 MetaserverClient::announceGameDeleted()
 {
-	m_channel->enqueueOutgoingMessage(RemoveGameMessage());
+	if (m_gameAnnounced)
+	{
+		m_channel->enqueueOutgoingMessage(RemoveGameMessage());
+		m_gameAnnounced = false;
+	}
 }
 
 static 	inline bool style_code(char c)

@@ -2435,10 +2435,16 @@ send_text_fake(w_text_entry* te) {
 }
 #endif // NETWORK_TWO_WAY_CHAT
 
-// Here's the main entry point for the postgame carnage report.
+// Here's the main entry point for thgametypee postgame carnage report.
 void display_net_game_stats(void)
 {
 //printf("display_net_game_stats\n");
+
+	if (gMetaserverClient) 
+	{
+		gMetaserverClient->announceGameDeleted();
+		gMetaserverClient->pump();
+	}
 
     dialog d;
     

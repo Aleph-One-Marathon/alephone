@@ -339,6 +339,7 @@ private:
 	bool                                    m_player_target_exists;
 
 	bool                                    m_notifiedOfDisconnected;
+	bool                                    m_gameAnnounced;
 };
 
 #endif // NETWORK_METASERVER_H
