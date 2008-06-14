@@ -401,6 +401,7 @@ public:
 	static const char *onoff_labels[3];
 
 	w_toggle(bool selection, const char **labels = onoff_labels);
+	int min_width();
 	void draw(SDL_Surface *) const;
 };
 

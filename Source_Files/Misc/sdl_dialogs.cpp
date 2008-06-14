@@ -218,6 +218,9 @@ static XML_ImageParser TabImageParser(TAB_WIDGET, DEFAULT_STATE, 5);
 static XML_ImageParser ActiveTabImageParser(TAB_WIDGET, ACTIVE_STATE, 5);
 static XML_ImageParser PressedTabImageParser(TAB_WIDGET, PRESSED_STATE, 5);
 static XML_ImageParser DisabledTabImageParser(TAB_WIDGET, DISABLED_STATE, 5);
+static XML_ImageParser CheckboxImageParser(CHECKBOX, DEFAULT_STATE, 2);
+static XML_ImageParser ActiveCheckboxImageParser(CHECKBOX, ACTIVE_STATE, 2);
+static XML_ImageParser DisabledCheckboxImageParser(CHECKBOX, DISABLED_STATE, 2);
 
 class XML_DColorParser : public XML_ElementParser {
 public:
@@ -603,6 +606,8 @@ public:
 	}
 };
 static XML_CheckboxParser CheckboxParser;
+static XML_ElementParser ActiveCheckboxParser("active");
+static XML_ElementParser DisabledCheckboxParser("disabled");
 
 class XML_ListParser : public XML_ThemeWidgetParser {
 public:
@@ -828,6 +833,11 @@ XML_ElementParser *Theme_GetParser()
 	SliderParser.AddChild(&SliderThumbParser);
 	ThemeParser.AddChild(&SliderParser);
 
+	ActiveCheckboxParser.AddChild(&ActiveCheckboxImageParser);
+	DisabledCheckboxParser.AddChild(&DisabledCheckboxImageParser);
+	CheckboxParser.AddChild(&CheckboxImageParser);
+	CheckboxParser.AddChild(&ActiveCheckboxParser);
+	CheckboxParser.AddChild(&DisabledCheckboxParser);
 	CheckboxParser.AddChild(&CheckboxFontParser);
 	ThemeParser.AddChild(&CheckboxParser);
 

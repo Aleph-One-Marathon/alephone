@@ -853,13 +853,15 @@ const char *w_toggle::onoff_labels[] = {"Off", "On", NULL};
 #endif
 
 w_toggle::w_toggle(bool selection, const char **labels) : w_select(selection, labels) {
-#ifdef HAVE_SDL_TTF
-	labels_are_utf8(true);
-
-	if (labels == onoff_labels)
+	if (labels == onoff_labels && use_theme_images(CHECKBOX))
 	{
+		saved_min_height = get_theme_space(CHECKBOX, BUTTON_HEIGHT);
+	}
+#ifdef HAVE_SDL_TTF
+	else if (labels == onoff_labels)
+	{
+		labels_are_utf8(true);
 		font = get_theme_font(CHECKBOX, style);
-
 		saved_min_height = get_theme_space(CHECKBOX, BUTTON_HEIGHT);
 	}
 #endif
@@ -874,21 +876,38 @@ void w_toggle::draw(SDL_Surface *s) const
 
 	int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;
 
+	if (labels == onoff_labels && use_theme_images(CHECKBOX))
+	{
+		SDL_Surface *image = get_theme_image(CHECKBOX, state, selection);
+		SDL_Rect r = { rect.x, rect.y + (rect.h - saved_min_height) / 2 + get_theme_space(CHECKBOX, BUTTON_T_SPACE), image->w, image->h };
+		SDL_BlitSurface(image, 0, s, &r); 
+	}
 #ifdef HAVE_SDL_TTF
-    // ghs: disgusting temporary hack to draw larger checkboxes
-    if (labels == onoff_labels)
-    {
-	    draw_text(s, str, rect.x, rect.y + (rect.h - saved_min_height) / 2 + get_theme_space(CHECKBOX, BUTTON_T_SPACE), get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), font, style, utf8);
-    }
-    else
+	else if (labels == onoff_labels)
+	{
+		draw_text(s, str, rect.x, rect.y + (rect.h - saved_min_height) / 2 + get_theme_space(CHECKBOX, BUTTON_T_SPACE), get_theme_color(LABEL_WIDGET, state, FOREGROUND_COLOR), font, style, utf8);
+	}
 #endif
-    {
-	    draw_text(s, str, rect.x, rect.y + font->get_ascent(), get_theme_color(ITEM_WIDGET, state), font, style, utf8);
-    }
-	    
+	else
+	{
+		draw_text(s, str, rect.x, rect.y + font->get_ascent(), get_theme_color(ITEM_WIDGET, state), font, style, utf8);
+	}
+	
 	// Cursor
 	if (active) {
 		//!!
+	}
+}
+
+int w_toggle::min_width()
+{
+	if (labels == onoff_labels && use_theme_images(CHECKBOX))
+	{
+		return get_theme_image(CHECKBOX, DEFAULT_STATE, 0)->w;
+	}
+	else
+	{
+		return w_select::min_width();
 	}
 }
 
