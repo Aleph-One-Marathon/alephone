@@ -815,6 +815,10 @@ const int MAX_TEXTURE_PALETTE_SIZE = 256;
 static std::vector<shape_descriptor> lua_texture_palette;
 static int lua_texture_palette_selected = -1;
 
+void LuaTexturePaletteClear() {
+	lua_texture_palette.clear();
+}
+
 int LuaTexturePaletteSize() {
 	return lua_texture_palette.size();
 }

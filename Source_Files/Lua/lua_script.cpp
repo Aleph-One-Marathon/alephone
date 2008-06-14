@@ -1210,6 +1210,8 @@ void CloseLuaScript()
 	lua_running = false;
 	lua_cameras.resize(0);
 	number_of_cameras = 0;
+
+	LuaTexturePaletteClear();
 	
 	sLuaNetscriptLoaded = false;
 }

@@ -50,6 +50,7 @@ ActionQueues* GetLuaActionQueues();
 
 void MarkLuaCollections(bool active);
 
+void LuaTexturePaletteClear();
 int LuaTexturePaletteSize();
 shape_descriptor LuaTexturePaletteTexture(size_t);
 int LuaTexturePaletteSelected();
