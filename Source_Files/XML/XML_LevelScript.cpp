@@ -744,8 +744,10 @@ XML_ElementParser *DefaultLevelScript_GetParser()
 
 XML_ElementParser *ExternalDefaultLevelScript_GetParser()
 {
+#ifdef HAVE_OPENGL
 	ExternalDefaultScriptParser.AddChild(&LoadScreenParser);
 	LoadScreenParser.AddChild(Color_GetParser());
+#endif
 	ExternalDefaultScriptParser.AddChild(&MusicParser);
 	ExternalDefaultScriptParser.AddChild(&RandomOrderParser);
 
