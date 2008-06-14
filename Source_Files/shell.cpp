@@ -376,7 +376,9 @@ static void initialize_application(void)
 			free (buf);
 		}
 #endif
+#ifndef __MACOS__
 		data_search_path.push_back(default_data_dir);
+#endif
 		data_search_path.push_back(local_data_dir);
 	}
 
