@@ -703,10 +703,12 @@ static void main_event_loop(void)
 		execute_timer_tasks(SDL_GetTicks());
 		idle_game_state(SDL_GetTicks());
 
+#ifndef __MACOS__
 		if (game_state == _game_in_progress && !graphics_preferences->hog_the_cpu && (TICKS_PER_SECOND - (SDL_GetTicks() - cur_time)) > 10) 
 		{
 			SDL_Delay(1);
 		}
+#endif
 	}
 }
 
