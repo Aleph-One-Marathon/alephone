@@ -1596,7 +1596,7 @@ static int Lua_Player_Get_Direction(lua_State *L)
 
 static int Lua_Player_Get_External_Velocity(lua_State *L)
 {
-	Lua_ExternalVelocity::Index(L, Lua_Player::Index(L, 1));
+	Lua_ExternalVelocity::Push(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
