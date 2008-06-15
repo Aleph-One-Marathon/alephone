@@ -3,7 +3,6 @@
 
 /* If you change the version number here, you should also change it in:
 
-   configure.ac
    Resources/Windows/alephone.rc
    Resources/Aleph One Classic SDL.r
    PBProjects/English.lproj/InfoPlist.strings
