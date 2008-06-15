@@ -45,14 +45,16 @@ $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
 	unix2dos -n docs/Troubleshooting.txt $(WINDISTDIR)/docs/Troubleshooting.txt
 	mkdir $(WINDISTDIR)/Themes
 	cp -r data/default_theme $(WINDISTDIR)/Themes/Default
+	rm -rf "$(WINDISTDIR)/Themes/Default/CVS"
 	mkdir $(WINDISTDIR)/Extras
 	cp data/Software_Transparent_Liquids.mml $(WINDISTDIR)/Extras
 	cp data/Transparent_Liquids.mml $(WINDISTDIR)/Extras
 	cp data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
 	cp data/Fonts $(WINDISTDIR)/
 	cp -r "Resources/Library Licenses" $(WINDISTDIR)/
+	rm -rf "$(WINDISTDIR)/Library Licenses/CVS"
 	zip -r $(PACKAGE)-$(VERSION).zip $(WINDISTDIR)
-	rm -rf $(WINDISTDIR)
+	rm -rf "$(WINDISTDIR)"
 
 winzip: $(PACKAGE)-$(VERSION).zip
 
