@@ -817,6 +817,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>direction player is facing</description>
 	<type>angle</type>
       </variable>
+      <variable name="disconnected">
+	<description>whether player dropped out of the game</description>
+	<type>boolean</type>
+      </variable>
       <variable name="energy">
 	<alias>life</alias>
 	<description>amount of suit energy player has (150 is normal red health)</description>

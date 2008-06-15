@@ -1684,6 +1684,12 @@ static int Lua_Player_Get_Name(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Get_Netdead(lua_State *L)
+{
+	lua_pushboolean(L, get_player_data(Lua_Player::Index(L, 1))->netdead);
+	return 1;
+}
+
 static int Lua_Player_Get_Overlays(lua_State *L)
 {
 	Lua_Overlays::Push(L, Lua_Player::Index(L, 1));
@@ -1769,6 +1775,7 @@ const luaL_reg Lua_Player_Get[] = {
 	{"dead", Lua_Player_Get_Dead},
 	{"deaths", Lua_Player_Get_Deaths},
 	{"direction", Lua_Player_Get_Direction},
+	{"disconnected", Lua_Player_Get_Netdead},
 	{"energy", Lua_Player_Get_Energy},
 	{"elevation", Lua_Player_Get_Elevation},
 	{"external_velocity", Lua_Player_Get_External_Velocity},
