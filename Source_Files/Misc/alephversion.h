@@ -3,7 +3,6 @@
 
 /* If you change the version number here, you should also change it in:
 
-   Resources/Windows/alephone.rc
    Resources/Aleph One Classic SDL.r
 
 */

@@ -45,8 +45,16 @@ confpaths.h: Makefile
 
 DISTCLEANFILES = confpaths.h
 
+if MAKE_WINDOWS
+BUILD_YEAR = `echo $(VERSION) | cut -c 1-4`
+BUILD_MONTH = `echo $(VERSION) | cut -c 5-6`
+BUILD_DAY = `echo $(VERSION) | cut -c 7-8`
+WIN_VERSION_STRING= 0, $(BUILD_YEAR), $(BUILD_MONTH), $(BUILD_DAY)
+A1_DISPLAY_VERSION= `grep '^\#define A1_DISPLAY_VERSION' Misc/alephversion.h | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g' | tr -d '\n'`
+endif
+
 alephone-resources.o: FORCE
-	sed -e s/BUILDDATE/`date +%Y-%m-%d`/g ../Resources/Windows/alephone.rc | @WINDRES@ -o alephone-resources.o
+	sed -e s/BUILDDATE/`date +%Y-%m-%d`/g -e "s/WIN_VERSION_STRING/$(WIN_VERSION_STRING)/g" -e "s/A1_DISPLAY_VERSION/$(A1_DISPLAY_VERSION)/g" ../Resources/Windows/alephone.rc | @WINDRES@ -o alephone-resources.o
 
 FORCE:
 
