@@ -235,6 +235,7 @@ void ModifiableActionQueues::modifyActionFlags(int inPlayerIndex, uint32 inFlags
 	}
 
 	action_queue *queue = mQueueHeaders + inPlayerIndex;
-	queue->buffer[queue->read_index] = (queue->buffer[queue->read_index] & ~inFlagsMask) | (inFlags & inFlagsMask);
+	if (queue->buffer[queue->read_index] != 0xffffffff)
+		queue->buffer[queue->read_index] = (queue->buffer[queue->read_index] & ~inFlagsMask) | (inFlags & inFlagsMask);
 
 }
