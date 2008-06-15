@@ -10,6 +10,8 @@ EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows Makefile.BeOS
 
 man_MANS = docs/alephone.6
 
+WINDISTDIR=$(PACKAGE)-$(VERSION)
+
 dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
 	cp "Aleph One Classic SDL.mcp" $(distdir)
@@ -28,5 +30,30 @@ rpm: $(PACKAGE)-$(VERSION).tar.gz
 
 ChangeLog:
 	cvs2cl --show-dead -S
+
+# Windows version
+$(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
+	mkdir $(WINDISTDIR)
+	cp Source_Files/AlephOne.exe $(WINDISTDIR)/
+	unix2dos -n AUTHORS $(WINDISTDIR)/AUTHORS.txt
+	unix2dos -n COPYING $(WINDISTDIR)/COPYING.txt
+	unix2dos -n INSTALL.Windows $(WINDISTDIR)/INSTALL.Windows.txt
+	unix2dos -n README $(WINDISTDIR)/README.txt
+	mkdir $(WINDISTDIR)/docs
+	cp docs/Lua.html $(WINDISTDIR)/docs/Lua.html
+	cp docs/MML.html $(WINDISTDIR)/docs/MML.html
+	unix2dos -n docs/Troubleshooting.txt $(WINDISTDIR)/docs/Troubleshooting.txt
+	mkdir $(WINDISTDIR)/Themes
+	cp -r data/default_theme $(WINDISTDIR)/Themes/Default
+	mkdir $(WINDISTDIR)/Extras
+	cp data/Software_Transparent_Liquids.mml $(WINDISTDIR)/Extras
+	cp data/Transparent_Liquids.mml $(WINDISTDIR)/Extras
+	cp data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
+	cp data/Fonts $(WINDISTDIR)/
+	cp -r "Library Licenses" $(WINDISTDIR)/
+	zip -r $(PACKAGE)-$(VERSION).zip $(WINDISTDIR)
+	rm -rf $(WINDISTDIR)
+
+winzip: $(PACKAGE)-$(VERSION).zip
 
 FORCE:
