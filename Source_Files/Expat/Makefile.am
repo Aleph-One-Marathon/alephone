@@ -6,5 +6,5 @@ libexpat_a_SOURCES = ascii.h asciitab.h expat.h expat_external.h internal.h iasc
   xmltok.c xmltok.h xmltok_impl.h
 EXTRA_libexpat_a_SOURCES = xmltok_impl.c xmltok_ns.c
 
-CPPFLAGS = -DHAVE_MEMMOVE
+AM_CPPFLAGS = -DHAVE_MEMMOVE
 
