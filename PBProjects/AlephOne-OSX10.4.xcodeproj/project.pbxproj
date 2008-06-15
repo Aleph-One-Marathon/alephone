@@ -682,7 +682,7 @@
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
 		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
-		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_monsters.cpp; sourceTree = "<group>"; };
@@ -2216,11 +2216,11 @@
 				"$(TARGET_BUILD_DIR)/AlephOne.app",
 			);
 			outputPaths = (
-				"$(TARGET_BUILD_DIR)/AlephOne.dmg",
+				"$(TARGET_BUILD_DIR)/AlephOne-$( grep '^#define A1_DATE_VERSION' $SRCROOT/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' ).dmg",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir /tmp/Aleph\nrsync -a \"$TARGET_BUILD_DIR/AlephOne.app\" /tmp/Aleph/\ncp $SRCROOT/../COPYING /tmp/Aleph/COPYING.txt\ncp $SRCROOT/../docs/Lua.html /tmp/Aleph/\ncp $SRCROOT/../docs/MML.html /tmp/Aleph/\ncp $SRCROOT/../docs/Troubleshooting.txt /tmp/Aleph/\n/Developer/Tools/Rez -o \"/tmp/Aleph/Aleph One Website.webloc\" $SRCROOT/../Resources/AlephOneWebsite.webloc.r\ncp -r \"$SRCROOT/../Resources/Library Licenses\" /tmp/Aleph/\nrm -rf \"/tmp/Aleph/Library Licenses/CVS\"\nmkdir /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Sprites.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Software_Transparent_Liquids.mml /tmp/Aleph/Extras\nhdiutil create -fs HFS+ -layout SPUD -srcfolder /tmp/Aleph -volname \"Aleph One\" \"$TARGET_BUILD_DIR/AlephOne.dmg\"\nrm -rf /tmp/Aleph\n";
+			shellScript = "mkdir /tmp/Aleph\nrsync -a \"$TARGET_BUILD_DIR/AlephOne.app\" /tmp/Aleph/\ncp $SRCROOT/../COPYING /tmp/Aleph/COPYING.txt\ncp $SRCROOT/../docs/Lua.html /tmp/Aleph/\ncp $SRCROOT/../docs/MML.html /tmp/Aleph/\ncp $SRCROOT/../docs/Troubleshooting.txt /tmp/Aleph/\n/Developer/Tools/Rez -o \"/tmp/Aleph/Aleph One Website.webloc\" $SRCROOT/../Resources/AlephOneWebsite.webloc.r\ncp -r \"$SRCROOT/../Resources/Library Licenses\" /tmp/Aleph/\nrm -rf \"/tmp/Aleph/Library Licenses/CVS\"\nmkdir /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Sprites.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Software_Transparent_Liquids.mml /tmp/Aleph/Extras\nhdiutil create -fs HFS+ -layout SPUD -srcfolder /tmp/Aleph -volname \"Aleph One\" \"$TARGET_BUILD_DIR/AlephOne-$( grep '^#define A1_DATE_VERSION' $SRCROOT/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' ).dmg\"\nrm -rf /tmp/Aleph\n";
 		};
 		AEC3C87609AD68AC003258E4 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -2229,7 +2229,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes\"\ncp -R \"$SRCROOT/../data/default_theme\" \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\"\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes\"\ncp -R \"$SRCROOT/../data/default_theme\" \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\"\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -ie s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\nsed -ie s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -2526,6 +2526,7 @@
 					/Library/Frameworks/libmad.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				INFOPLIST_PREPROCESS = NO;
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
@@ -2564,6 +2565,8 @@
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
 				GCC_OPTIMIZATION_LEVEL = 0;
+				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				INFOPLIST_PREPROCESS = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				STRIP_INSTALLED_PRODUCT = NO;
 				ZERO_LINK = YES;
@@ -2627,6 +2630,7 @@
 					/Library/Frameworks/libmad.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				INFOPLIST_PREPROCESS = NO;
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
@@ -2665,6 +2669,8 @@
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
 				GCC_VERSION = 4.0;
+				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				INFOPLIST_PREPROCESS = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = "Deployment (Native gcc 4.0)";
@@ -2756,6 +2762,7 @@
 					/Library/Frameworks/libmad.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				INFOPLIST_PREPROCESS = NO;
 				JAVA_ARCHIVE_COMPRESSION = YES;
 				JAVA_COMPILER = /usr/bin/jikes;
 				JAVA_COMPILER_FLAGS = "-O";
@@ -2800,6 +2807,8 @@
 					ppc,
 					i386,
 				);
+				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
+				INFOPLIST_PREPROCESS = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = "Deployment (Universal)";

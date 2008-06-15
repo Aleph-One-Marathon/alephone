@@ -5,7 +5,6 @@
 
    Resources/Windows/alephone.rc
    Resources/Aleph One Classic SDL.r
-   PBProjects/English.lproj/InfoPlist.strings
 
 */
 

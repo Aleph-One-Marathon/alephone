@@ -222,8 +222,6 @@
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>AlephOne</string>
-	<key>CFBundleGetInfoString</key>
-	<string>Aleph One SDL Test for OS X</string>
 	<key>CFBundleIconFile</key>
 	<string>AlephOne.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -240,5 +238,9 @@
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
+	<key>CFBundleShortVersionString</key>
+	<string>A1_DISPLAY_VERSION</string>
+	<key>CFBundleVersion</key>
+	<string>A1_DATE_VERSION</string>
 </dict>
 </plist>
