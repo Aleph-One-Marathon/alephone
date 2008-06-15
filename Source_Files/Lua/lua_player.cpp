@@ -1550,7 +1550,7 @@ static int Lua_Player_Get_Color(lua_State *L)
 
 static int Lua_Player_Get_Compass(lua_State *L)
 {
-	Lua_Player_Compass::Push(L, 0);
+	Lua_Player_Compass::Push(L, Lua_Player::Index(L, 1));
 	return 1;
 }
 
