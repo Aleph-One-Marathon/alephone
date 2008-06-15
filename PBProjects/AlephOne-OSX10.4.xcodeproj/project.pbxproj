@@ -6,6 +6,21 @@
 	objectVersion = 42;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		AE3B83970E04C87E00FD963D /* AlephOne.dmg */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = AE3B839B0E04C8CA00FD963D /* Build configuration list for PBXAggregateTarget "AlephOne.dmg" */;
+			buildPhases = (
+				AE3B83960E04C87E00FD963D /* ShellScript */,
+			);
+			dependencies = (
+				AE3B839A0E04C89000FD963D /* PBXTargetDependency */,
+			);
+			name = AlephOne.dmg;
+			productName = AlephOne.dmg;
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
@@ -480,6 +495,16 @@
 			);
 		};
 /* End PBXBuildRule section */
+
+/* Begin PBXContainerItemProxy section */
+		AE3B83990E04C89000FD963D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AEC3C6FE09AD68AC003258E4 /* AlephOne */;
+			remoteInfo = AlephOne;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		AEC3C87709AD68AC003258E4 /* CopyFiles */ = {
@@ -2144,6 +2169,7 @@
 			projectDirPath = "";
 			targets = (
 				AEC3C6FE09AD68AC003258E4 /* AlephOne */,
+				AE3B83970E04C87E00FD963D /* AlephOne.dmg */,
 			);
 		};
 /* End PBXProject section */
@@ -2181,6 +2207,21 @@
 /* End PBXRezBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		AE3B83960E04C87E00FD963D /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(TARGET_BUILD_DIR)/AlephOne.app",
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/AlephOne.dmg",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "mkdir /tmp/Aleph\nrsync -a \"$TARGET_BUILD_DIR/AlephOne.app\" /tmp/Aleph/\ncp $SRCROOT/../COPYING /tmp/Aleph/COPYING.txt\ncp $SRCROOT/../docs/Lua.html /tmp/Aleph/\ncp $SRCROOT/../docs/MML.html /tmp/Aleph/\ncp $SRCROOT/../docs/Troubleshooting.txt /tmp/Aleph/\n/Developer/Tools/Rez -o \"/tmp/Aleph/Aleph One Website.webloc\" $SRCROOT/../Resources/AlephOneWebsite.webloc.r\ncp -r \"$SRCROOT/../Resources/Library Licenses\" /tmp/Aleph/\nrm -rf \"/tmp/Aleph/Library Licenses/CVS\"\nmkdir /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Sprites.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Software_Transparent_Liquids.mml /tmp/Aleph/Extras\nhdiutil create -fs HFS+ -layout SPUD -srcfolder /tmp/Aleph -volname \"Aleph One\" \"$TARGET_BUILD_DIR/AlephOne.dmg\"\nrm -rf /tmp/Aleph\n";
+		};
 		AEC3C87609AD68AC003258E4 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 12;
@@ -2407,6 +2448,14 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		AE3B839A0E04C89000FD963D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AEC3C6FE09AD68AC003258E4 /* AlephOne */;
+			targetProxy = AE3B83990E04C89000FD963D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin PBXVariantGroup section */
 		089C165CFE840E0CC02AAC07 /* InfoPlist.strings */ = {
 			isa = PBXVariantGroup;
@@ -2620,6 +2669,31 @@
 			};
 			name = "Deployment (Native gcc 4.0)";
 		};
+		AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = AlephOne.dmg;
+			};
+			name = "Deployment (Universal)";
+		};
+		AE3B839D0E04C8CA00FD963D /* Deployment (Native gcc 4.0) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = AlephOne.dmg;
+			};
+			name = "Deployment (Native gcc 4.0)";
+		};
+		AE3B839E0E04C8CA00FD963D /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				PRODUCT_NAME = AlephOne.dmg;
+			};
+			name = Development;
+		};
 		AE78B59D09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2739,6 +2813,16 @@
 				AE78B59E09B00C34002CACF8 /* Deployment (Universal) */,
 				AE2A41770B5EFEA000C567E6 /* Deployment (Native gcc 4.0) */,
 				AE2A41540B5EFC1F00C567E6 /* Development */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Deployment (Universal)";
+		};
+		AE3B839B0E04C8CA00FD963D /* Build configuration list for PBXAggregateTarget "AlephOne.dmg" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */,
+				AE3B839D0E04C8CA00FD963D /* Deployment (Native gcc 4.0) */,
+				AE3B839E0E04C8CA00FD963D /* Development */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Deployment (Universal)";
