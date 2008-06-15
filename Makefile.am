@@ -50,7 +50,7 @@ $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
 	cp data/Transparent_Liquids.mml $(WINDISTDIR)/Extras
 	cp data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
 	cp data/Fonts $(WINDISTDIR)/
-	cp -r "Library Licenses" $(WINDISTDIR)/
+	cp -r "Resources/Library Licenses" $(WINDISTDIR)/
 	zip -r $(PACKAGE)-$(VERSION).zip $(WINDISTDIR)
 	rm -rf $(WINDISTDIR)
 
