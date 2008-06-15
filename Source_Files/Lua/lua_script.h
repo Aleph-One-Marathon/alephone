@@ -55,6 +55,26 @@ int LuaTexturePaletteSize();
 shape_descriptor LuaTexturePaletteTexture(size_t);
 int LuaTexturePaletteSelected();
 
+/* Custom game scoring modes */
+enum {
+  _game_of_most_points,
+  _game_of_most_time,
+  _game_of_least_points,
+  _game_of_least_time,
+  NUMBER_OF_GAME_SCORING_MODES
+};
+
+/* Game end conditions */
+enum {
+  _game_normal_end_condition,
+  _game_no_end_condition,
+  _game_end_now_condition,
+  NUMBER_OF_GAME_END_CONDITIONS
+};
+
+int GetLuaScoringMode();
+int GetLuaGameEndCondition();
+
 // camera data structures
 struct timed_point
 {

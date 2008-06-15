@@ -34,6 +34,7 @@ extern "C"
 }
 
 #include <boost/function.hpp>
+#include "lua_script.h"
 #include "lua_mnemonics.h" // for lang_def and mnemonics
 #include <sstream>
 

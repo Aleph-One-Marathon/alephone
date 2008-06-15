@@ -2117,6 +2117,9 @@ static int Lua_Game_Get_Type(lua_State *L)
 	return 1;
 }
 
+extern int game_end_condition;
+extern int game_scoring_mode;
+
 static int Lua_Game_Get_Scoring_Mode(lua_State *L)
 {
 	Lua_ScoringMode::Push(L, game_scoring_mode);

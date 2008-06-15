@@ -893,22 +893,6 @@ enum {
 	NUMBER_OF_GAME_TYPES
 };
 
-/* Custom game scoring modes */
-enum {
-  _game_of_most_points,
-  _game_of_most_time,
-  _game_of_least_points,
-  _game_of_least_time,
-  NUMBER_OF_GAME_SCORING_MODES
-};
-
-/* Game end conditions */
-enum {
-  _game_normal_end_condition,
-  _game_no_end_condition,
-  _game_end_now_condition,
-  NUMBER_OF_GAME_END_CONDITIONS
-};
 #define GET_GAME_TYPE() (dynamic_world->game_information.game_type)
 #define GET_GAME_OPTIONS() (dynamic_world->game_information.game_options)
 #define GET_GAME_PARAMETER(x) (dynamic_world->game_information.parameters[(x)])
@@ -1005,8 +989,6 @@ const unsigned int SIZEOF_dynamic_data = 604;
 
 extern struct static_data *static_world;
 extern struct dynamic_data *dynamic_world;
-
-extern int16 game_scoring_mode, game_end_condition;
 
 extern vector<object_data> ObjectList;
 #define objects (&ObjectList[0])

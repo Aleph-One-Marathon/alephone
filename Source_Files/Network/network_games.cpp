@@ -29,6 +29,7 @@ Jul 1, 2000 (Loren Petrich):
 #include "cseries.h"
 #include "map.h"
 #include "items.h"
+#include "lua_script.h"
 #include "player.h"
 #include "monsters.h"
 #include "network.h"
@@ -129,7 +130,7 @@ long get_player_net_ranking(
 			break;
 
 	case _game_of_custom:
-	  switch(game_scoring_mode) {
+		switch(GetLuaScoringMode()) {
 	  case _game_of_most_points:
 	  case _game_of_most_time:
 	    ranking = player->netgame_parameters[_points_scored];
@@ -224,7 +225,7 @@ long get_team_net_ranking(short team, short *kills, short *deaths,
       ranking = (*kills)-(*deaths);
       break;
     case _game_of_custom:
-      switch(game_scoring_mode) {
+	    switch(GetLuaScoringMode()) {
       case _game_of_most_points:
       case _game_of_most_time:
 	ranking = team_netgame_parameters[team][_points_scored];
@@ -690,7 +691,7 @@ void calculate_ranking_text(
 			break;
 
 	case _game_of_custom:
-	  switch(game_scoring_mode) {
+		switch(GetLuaScoringMode()) {
 	  case _game_of_most_points:
 	    sprintf(buffer, "%ld", ranking);
 	    break;
@@ -755,7 +756,7 @@ void calculate_ranking_text_for_post_game(
 			break;
 
 	case _game_of_custom:
-	  switch(game_scoring_mode) {
+		switch(GetLuaScoringMode()) {
 	  case _game_of_most_points:
 	    getcstr(format, strNETWORK_GAME_STRINGS, pointsFormatString);
 	    sprintf(buffer, format, ranking);
@@ -812,7 +813,7 @@ bool get_network_score_text_for_postgame(
 			break;
 
 	case _game_of_custom:
-	  switch(game_scoring_mode) {
+		switch(GetLuaScoringMode()) {
 	  case _game_of_most_points:
 	  case _game_of_least_points:
 	    string_id= pointsString;
@@ -947,11 +948,11 @@ bool game_is_over(
 	{
 		game_over= true;
 	}
-	else if(game_end_condition == _game_end_now_condition)
+	else if(GetLuaGameEndCondition() == _game_end_now_condition)
 	  {
 	    game_over = true;
 	  }
-	else if(game_end_condition == _game_no_end_condition)
+	else if(GetLuaGameEndCondition() == _game_no_end_condition)
 	  {
 	    game_over = false;
 	  }

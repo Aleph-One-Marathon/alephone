@@ -102,6 +102,13 @@ short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 static ActionQueues* sLuaActionQueues = 0;
 ActionQueues* GetLuaActionQueues() { return sLuaActionQueues; }
 
+int game_scoring_mode = _game_of_most_points;
+int game_end_condition = _game_normal_end_condition;
+
+int GetLuaScoringMode() {
+	return game_scoring_mode;
+}
+
 #ifndef HAVE_LUA
 
 void L_Call_Init(bool) {}
@@ -143,6 +150,10 @@ void ToggleLuaMute() {}
 void ResetLuaMute() {}
 
 bool UseLuaCameras() { return false; }
+
+int GetLuaGameEndCondition() {
+	return _game_normal_end_condition;
+}
 
 #else /* HAVE_LUA */
 
@@ -1212,6 +1223,9 @@ void CloseLuaScript()
 	number_of_cameras = 0;
 
 	LuaTexturePaletteClear();
+
+	game_end_condition = _game_normal_end_condition;
+	game_scoring_mode = _game_of_most_points;
 	
 	sLuaNetscriptLoaded = false;
 }
@@ -1354,6 +1368,10 @@ bool UseLuaCameras()
 		}
 	}
 	return using_lua_cameras;
+}
+
+int GetLuaGameEndCondition() {
+	return game_end_condition;
 }
 
 #endif /* HAVE_LUA */
