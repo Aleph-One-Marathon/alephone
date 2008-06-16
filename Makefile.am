@@ -16,10 +16,13 @@ dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
 	cp "Aleph One Classic SDL.mcp" $(distdir)
 	cp "Resources/Aleph One Classic SDL.r" $(distdir)/Resources
-	mkdir -p ${srcdir}/Libraries
-	cp -r ${srcdir}/Libraries ${distdir}/Libraries
-	rmdir --ignore-fail-on-non-empty ${srcdir}/Libraries
-	rmdir --ignore-fail-on-non-empty ${distdir}/Libraries
+
+$(PACKAGE)-$(VERSION)-MacWinSrc.7z: distdir
+	cp -r ${srcdir}/Libraries ${distdir}/
+	7z a -bd -mx=9 $(PACKAGE)-$(VERSION)-MacWinSrc.7z $(distdir)
+	$(am__remove_distdir)
+
+libsrc: $(PACKAGE)-$(VERSION)-MacWinSrc.7z
 
 # Rule to build tar-gzipped distribution package
 $(PACKAGE)-$(VERSION).tar.gz: dist
