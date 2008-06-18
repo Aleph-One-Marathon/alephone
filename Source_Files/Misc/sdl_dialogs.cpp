@@ -379,6 +379,7 @@ public:
 		dialog_theme[type].font_spec.bold = bold;
 		dialog_theme[type].font_spec.oblique = oblique;
 		dialog_theme[type].font_spec.bold_oblique = bold_oblique;
+		dialog_theme[type].font_spec.adjust_height = 0;
 		dialog_theme[type].font_set = true;
 		return true;
 	}
