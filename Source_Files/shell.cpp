@@ -778,7 +778,11 @@ static void handle_game_key(const SDL_Event &event)
 						do_menu_item_command(mGame, iQuitGame, false);
 					}
 					else {
+#if defined(__APPLE__) && defined(__MACH__)
+						screen_printf("If you wish to quit, press Command-Q");
+#else
 						screen_printf("If you wish to quit, press Alt+Q.");
+#endif
 					}
 				}
 			}
