@@ -599,6 +599,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>plays sound coming from this monster</description>
 	<argument name="sound"><type>sound</type></argument>
       </function>
+      <variable name="polygon" access="read-only">
+	<description>polygon this monster is in</description>
+	<type>polygon</type>
+      </variable>
       <function name="position">
 	<description>sets position of monster</description>
 	<argument name="x">
