@@ -323,7 +323,7 @@ static XML_DColorParser SelectedIncompatibleMetaserverGamesColorParser(METASERVE
 
 class XML_DFontParser : public XML_ElementParser {
 public:
-	XML_DFontParser(int _type) : XML_ElementParser("font"), type(_type) {}
+	XML_DFontParser(int _type) : XML_ElementParser("font"), type(_type), id(kFontIDMonaco), size(12), style(styleNormal) {}
 	
 	bool Start()
 	{
@@ -1057,6 +1057,7 @@ static void set_theme_defaults(void)
 	dialog_theme[TAB_WIDGET].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
 	dialog_theme[TAB_WIDGET].font_spec.size = 14;
 	dialog_theme[TAB_WIDGET].font_set = true;
+#endif
 	dialog_theme[TAB_WIDGET].states[DEFAULT_STATE].colors[BACKGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[TAB_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
 	dialog_theme[TAB_WIDGET].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
@@ -1079,7 +1080,6 @@ static void set_theme_defaults(void)
 	dialog_theme[METASERVER_GAMES].states[w_games_in_room::SELECTED_INCOMPATIBLE_GAME].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
 	dialog_theme[METASERVER_GAMES].states[w_games_in_room::SELECTED_RUNNING_GAME].colors[FOREGROUND_COLOR] = make_color(0x7f, 0x7f, 0x7f);
 	dialog_theme[METASERVER_GAMES].states[w_games_in_room::SELECTED_RUNNING_GAME].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
-#endif
 
 }
 
