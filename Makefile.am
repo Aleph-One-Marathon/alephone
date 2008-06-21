@@ -6,7 +6,7 @@ SUBDIRS = Source_Files tools data
 AUTOMAKE_OPTIONS = 1.5 foreign
 
 EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows Makefile.BeOS \
-  docs/MML.html docs/Cheat_Codes data/Fonts Resources/Windows/alephone.ico Resources/Windows/alephone.rc PBProjects/AlephOne-OSX10.4.xcodeproj/project.pbxproj PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns PBProjects/PFIcon.icns PBProjects/PhysIcon.icns PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns PBProjects/SoundsIcon.icns PBProjects/Info-AlephOne_SDL.plist PBProjects/precompiled_headers.h PBProjects/SDLMain.h PBProjects/SDLMain.m PBProjects/AlephOne.icns Expat/xmltok/nametab.h PBProjects/config.h PBProjects/confpaths.h data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt docs/alephone.6
+  docs/MML.html data/Fonts Resources/Windows/alephone.ico Resources/Windows/alephone.rc PBProjects/AlephOne-OSX10.4.xcodeproj/project.pbxproj PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns PBProjects/PFIcon.icns PBProjects/PhysIcon.icns PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns PBProjects/SoundsIcon.icns PBProjects/Info-AlephOne_SDL.plist PBProjects/precompiled_headers.h PBProjects/SDLMain.h PBProjects/SDLMain.m PBProjects/AlephOne.icns Expat/xmltok/nametab.h PBProjects/config.h PBProjects/confpaths.h data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt docs/alephone.6 examples/lua/Cheats.lua
 
 man_MANS = docs/alephone.6
 
@@ -53,6 +53,7 @@ $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
 	cp data/Software_Transparent_Liquids.mml $(WINDISTDIR)/Extras
 	cp data/Transparent_Liquids.mml $(WINDISTDIR)/Extras
 	cp data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
+	unix2dos -n examples/lua/Cheats.lua $(WINDISTDIR)/Extras
 	cp data/Fonts $(WINDISTDIR)/
 	cp -r "Resources/Library Licenses" $(WINDISTDIR)/
 	rm -rf "$(WINDISTDIR)/Library Licenses/CVS"
