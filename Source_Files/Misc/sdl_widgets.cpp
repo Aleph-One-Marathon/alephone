@@ -1072,7 +1072,7 @@ void w_text_entry::place(const SDL_Rect& r, placement_flags flags)
 {
 	rect.h = (int16) font->get_ascent() + (int16) font->get_descent() + font->get_leading();
 
-	rect.y = r.y;
+	rect.y = r.y + (r.h - rect.h) / 2;
 
 	text_x = 0;
 	rect.x = r.x;
