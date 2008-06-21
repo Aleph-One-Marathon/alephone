@@ -25,6 +25,8 @@ SOUND_DEFINITIONS.H
 
 #include "AStream.h"
 #include "FileHandler.h"
+#include <memory>
+#include <vector>
 
 class SoundHeader
 {

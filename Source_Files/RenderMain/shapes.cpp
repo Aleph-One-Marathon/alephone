@@ -111,6 +111,7 @@ Jan 17, 2001 (Loren Petrich):
 #include "SW_Texture_Extras.h"
 
 #include <SDL_rwops.h>
+#include <memory>
 
 #ifdef env68k
 #pragma segment shell
