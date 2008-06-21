@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <vector>
 #include <algorithm>
+#include <boost/algorithm/string/predicate.hpp>
 
 
 /*
@@ -150,6 +151,9 @@ bool XML_Loader_SDL::ParseDirectory(FileSpecifier &dir)
 		if (i->is_directory)
 			continue;
 		if (i->name[i->name.length() - 1] == '~') 
+			continue;
+		// people stick Lua scripts in Scripts/
+		if (boost::algorithm::ends_with(i->name, ".lua"))
 			continue;
 
 		// Construct full path name
