@@ -14,9 +14,8 @@ BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root
 # not relocatable because the data file packages depend upon the location
 # of the data files in this package
 
-Requires: AlephOne-core-data
-Requires: SDL >= 1.2.0 SDL_image >= 1.2.0 SDL_net lua speex
-BuildRequires: SDL-devel SDL_image-devel SDL_net-devel speex-devel
+Requires: SDL >= 1.2.0 SDL_image >= 1.2.0 SDL_net 
+BuildRequires: SDL-devel SDL_image-devel SDL_net-devel boost-devel 
 
 %description
 Aleph One is an Open Source 3D first-person shooter game, based on the game
@@ -24,9 +23,13 @@ Marathon 2 by Bungie Software. It is set in a Sci-Fi universe dominated by
 deviant computer AIs and features a well thought-out plot. Aleph One
 supports, but doesn't require, OpenGL for rendering.
 
-This package requires additional data -- shape, sound, and map information
--- in order to be installed. One possible source of this core data is the
-AlephOne-minf-demo package.
+Aleph One requires additional data -- shape, sound, and map
+information -- in order to run. The easiest way to get this is to go
+to http://source.bungie.org/get/, and download one of the scenario zip
+files there. Unzip it, and pass the resulting directory as an argument
+to alephone. For example:
+
+alephone "~/Marathon Infinity"
 
 %prep
 %setup -q
@@ -44,13 +47,19 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files
 %defattr(-,root,root)
-%doc AUTHORS COPYING INSTALL.Unix README docs/MML.html docs/Cheat_Codes
+%doc AUTHORS COPYING INSTALL.Unix README docs/MML.html docs/Lua.html
 %{_bindir}/alephone
 %{_datadir}/AlephOne/Fonts
 %{_datadir}/AlephOne/MML
 %{_datadir}/AlephOne/Themes/Default
+%{_mandir}/man6/alephone.6.gz
 
 %changelog
+* Sat Jun 21 2008 Gregory Smith <wolfy@treellama.org>
+- removed the dependence on AlephOne-core-data (users can use unimap zip files)
+- removed deprecated cheats docs
+- updated required libraries (there are many)
+
 * Sun Nov 20 2005 Christian Bauer <www.cebix.net>
 - modernized the spec file a bit
 
