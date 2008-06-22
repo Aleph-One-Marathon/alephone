@@ -477,7 +477,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		{
 			if (warn_joiner)
 			{
-				ServerWarningMessage serverWarningMessage("The gatherer is using a net script with a preview version of Lua that you do not have. You will not appear in the list of available players.", ServerWarningMessage::kJoinerUngatherable);
+				ServerWarningMessage serverWarningMessage("The gatherer is using a newer version of Lua (net script) that you do not have. You will not appear in the list of available players.", ServerWarningMessage::kJoinerUngatherable);
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 		return false;
