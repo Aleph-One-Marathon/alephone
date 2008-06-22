@@ -53,7 +53,7 @@ $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
 	cp data/Software_Transparent_Liquids.mml $(WINDISTDIR)/Extras
 	cp data/Transparent_Liquids.mml $(WINDISTDIR)/Extras
 	cp data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
-	unix2dos -n examples/lua/Cheats.lua $(WINDISTDIR)/Extras
+	unix2dos -n examples/lua/Cheats.lua $(WINDISTDIR)/Extras/Cheats.lua
 	cp data/Fonts $(WINDISTDIR)/
 	cp -r "Resources/Library Licenses" $(WINDISTDIR)/
 	rm -rf "$(WINDISTDIR)/Library Licenses/CVS"
