@@ -132,7 +132,7 @@ bool XML_Configure::DoParse()
 	if (!CurrentElement) return false;
 
 	// Create the parser
-	Parser = XML_ParserCreate(NULL);
+	Parser = XML_ParserCreate("iso-8859-1");
 	
 	// Set up the callbacks
 	XML_SetUserData(Parser, this);
