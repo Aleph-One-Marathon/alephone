@@ -931,6 +931,9 @@ respond_to_directory_changed(void* inArg)
 	// Update enabled state of Up button
 	w_button* theUpButton = dynamic_cast<w_button*>(theDialog->get_widget_by_id(iDIRBROWSE_UP_BUTTON));
 	theUpButton->set_enabled(theBrowser->can_move_up_a_level());
+
+	// ghs: hack till static text can update its rect correctly
+	theDialog->draw();
 }
 
 bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
