@@ -1187,6 +1187,7 @@ bool revert_game(
 	{
 		/* Reload their last saved game.. */
 		successful= load_game_from_file(revert_game_data.SavedGame);
+		if (successful) Music::instance()->PreloadLevelMusic();
 		
 		// LP: added for loading the textures if one had died on another level;
 		// this gets around WZ's moving of this line into make_restored_game_relevant()
