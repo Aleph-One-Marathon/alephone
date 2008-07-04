@@ -62,14 +62,65 @@ char Lua_ControlPanelType_Name[] = "control_panel_type";
 
 extern short get_panel_class(short panel_type);
 
+// no devices.h, so copy this from devices.cpp:
+
+enum // control panel sounds
+{
+	_activating_sound,
+	_deactivating_sound,
+	_unusuable_sound,
+	
+	NUMBER_OF_CONTROL_PANEL_SOUNDS
+};
+
+struct control_panel_definition
+{
+	int16 _class;
+	uint16 flags;
+	
+	int16 collection;
+	int16 active_shape, inactive_shape;
+
+	int16 sounds[NUMBER_OF_CONTROL_PANEL_SOUNDS];
+	_fixed sound_frequency;
+	
+	int16 item;
+};
+
+extern control_panel_definition* get_control_panel_definition(int16);
+
+static int Lua_ControlPanelType_Get_Active_Texture_Index(lua_State *L)
+{
+	control_panel_definition *definition = get_control_panel_definition(Lua_ControlPanelType::Index(L, 1));
+	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(definition->active_shape));
+	return 1;
+}
+
+static int Lua_ControlPanelType_Get_Inactive_Texture_Index(lua_State *L)
+{
+	control_panel_definition *definition = get_control_panel_definition(Lua_ControlPanelType::Index(L, 1));
+	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(definition->inactive_shape));
+	return 1;
+}
+
 static int Lua_ControlPanelType_Get_Class(lua_State *L)
 {
 	Lua_ControlPanelClass::Push(L, get_panel_class(Lua_ControlPanelType::Index(L, 1)));
 	return 1;
 }
 
+static int Lua_ControlPanelType_Get_Collection(lua_State *L)
+{
+	control_panel_definition *definition = get_control_panel_definition(Lua_ControlPanelType::Index(L, 1));
+	Lua_Collection::Push(L, definition->collection);
+	return 1;
+}
+
 const luaL_reg Lua_ControlPanelType_Get[] = {
+	{"active_texture_index", Lua_ControlPanelType_Get_Active_Texture_Index},
 	{"class", Lua_ControlPanelType_Get_Class},
+	{"collection", Lua_ControlPanelType_Get_Collection},
+	{"inactive_texture_index", Lua_ControlPanelType_Get_Inactive_Texture_Index},
 	{0, 0}
 };
 
@@ -1287,6 +1338,28 @@ int16 Lua_Polygons_Length() {
 char Lua_Side_ControlPanel_Name[] = "side_control_panel";
 typedef L_Class<Lua_Side_ControlPanel_Name> Lua_Side_ControlPanel;
 
+template<int16 flag>
+static int Lua_Side_ControlPanel_Get_Flag(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Side_ControlPanel::Index(L, 1));
+	lua_pushboolean(L, side->flags & flag);
+	return 1;
+}
+
+template<int16 flag>
+static int Lua_Side_ControlPanel_Set_Flag(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "control_panel: incorrect argument type");
+	
+	side_data *side = get_side_data(Lua_Side_ControlPanel::Index(L, 1));
+	if (lua_toboolean(L, 2))
+		side->flags |= flag;
+	else
+		side->flags &= ~flag;
+	return 0;
+}
+
 static int Lua_Side_ControlPanel_Get_Type(lua_State *L)
 {
 	Lua_ControlPanelType::Push(L, get_side_data(Lua_Side_ControlPanel::Index(L, 1))->control_panel_type);
@@ -1300,8 +1373,14 @@ static int Lua_Side_ControlPanel_Get_Permutation(lua_State *L)
 }
 
 const luaL_reg Lua_Side_ControlPanel_Get[] = {
+	{"can_be_destroyed", Lua_Side_ControlPanel_Get_Flag<_side_switch_can_be_destroyed>},
+	{"light_dependent", Lua_Side_ControlPanel_Get_Flag<_side_is_lighted_switch>},
+	{"only_toggled_by_weapons", Lua_Side_ControlPanel_Get_Flag<_side_switch_can_only_be_hit_by_projectiles>},
+	{"repair", Lua_Side_ControlPanel_Get_Flag<_side_is_repair_switch>},
+	{"status", Lua_Side_ControlPanel_Get_Flag<_control_panel_status>},
 	{"type", Lua_Side_ControlPanel_Get_Type},
 	{"permutation", Lua_Side_ControlPanel_Get_Permutation},
+	{"uses_item", Lua_Side_ControlPanel_Get_Flag<_side_is_destructive_switch>},
 	{0, 0}
 };
 
@@ -1315,8 +1394,25 @@ static int Lua_Side_ControlPanel_Set_Permutation(lua_State *L)
 	return 0;
 }
 
+extern void set_control_panel_texture(side_data *);
+
+static int Lua_Side_ControlPanel_Set_Type(lua_State *L)
+{
+	side_data *side = get_side_data(Lua_Side_ControlPanel::Index(L, 1));
+	side->control_panel_type = Lua_ControlPanelType::ToIndex(L, 2);
+	set_control_panel_texture(side);
+	return 0;
+}
+
 const luaL_reg Lua_Side_ControlPanel_Set[] = {
+	{"can_be_destroyed", Lua_Side_ControlPanel_Set_Flag<_side_switch_can_be_destroyed>},
+	{"light_dependent", Lua_Side_ControlPanel_Set_Flag<_side_is_lighted_switch>},
+	{"only_toggled_by_weapons", Lua_Side_ControlPanel_Set_Flag<_side_switch_can_only_be_hit_by_projectiles>},
 	{"permutation", Lua_Side_ControlPanel_Set_Permutation},
+	{"repair", Lua_Side_ControlPanel_Set_Flag<_side_is_repair_switch>},
+	{"status", Lua_Side_ControlPanel_Set_Flag<_control_panel_status>},
+	{"type", Lua_Side_ControlPanel_Set_Type},
+	{"uses_item", Lua_Side_ControlPanel_Set_Flag<_side_is_destructive_switch>},
 	{0, 0}
 };
 
@@ -1834,6 +1930,32 @@ const luaL_reg Lua_Side_Get[] = {
 	{"transparent", Lua_Side_Get_Transparent},
 	{0, 0}
 };
+
+static int Lua_Side_Set_Control_Panel(lua_State *L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "control_panel: incorrect argument type");
+	
+	side_data *side = get_side_data(Lua_Side::Index(L, 1));
+
+	if (lua_toboolean(L, 2) != (side->flags & _side_is_control_panel))
+	{
+		// new control panel, or deleting old; clear either way
+		side->control_panel_type = NONE;
+		side->flags &= ~(_control_panel_status | _side_is_control_panel | _side_is_repair_switch | _side_is_destructive_switch | _side_is_lighted_switch | _side_switch_can_be_destroyed | _side_switch_can_only_be_hit_by_projectiles);
+		
+		if (lua_toboolean(L, 2))
+			side->flags |= _side_is_control_panel;
+	}
+
+	return 0;
+}
+
+const luaL_reg Lua_Side_Set[] = {
+	{"control_panel", Lua_Side_Set_Control_Panel},
+	{0, 0}
+};
+	
 
 static bool Lua_Side_Valid(int16 index)
 {
@@ -2397,7 +2519,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_Secondary_Side::Register(L, Lua_Secondary_Side_Get, Lua_Secondary_Side_Set);
 	Lua_Transparent_Side::Register(L, Lua_Transparent_Side_Get, Lua_Transparent_Side_Set);
 
-	Lua_Side::Register(L, Lua_Side_Get);
+	Lua_Side::Register(L, Lua_Side_Get, Lua_Side_Set);
 	Lua_Side::Valid = Lua_Side_Valid;
 
 	Lua_Sides::Register(L);

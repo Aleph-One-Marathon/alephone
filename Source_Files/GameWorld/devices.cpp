@@ -225,7 +225,7 @@ control_panel_definition *get_control_panel_definition(
 //static bool line_side_has_control_panel(short line_index, short polygon_index, short *side_index_with_panel);
 static void	somebody_save_full_auto(player_data* inWhoSaved, bool inOverwrite);
 static void	change_panel_state(short player_index, short panel_side_index);
-static void set_control_panel_texture(struct side_data *side);
+void set_control_panel_texture(struct side_data *side);
 
 static bool line_is_within_range(short monster_index, short line_index, world_distance range);
 
@@ -879,7 +879,7 @@ static void	change_panel_state(
 	return;	
 }
 
-static void set_control_panel_texture(
+void set_control_panel_texture(
 	struct side_data *side)
 {
 	struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);

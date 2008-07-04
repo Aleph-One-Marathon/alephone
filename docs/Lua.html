@@ -69,6 +69,16 @@
 	  font-style: italic;
       }
 
+      span.version {
+	  color: #000066;
+	  font-style: normal;
+	  font-size: 8pt;
+	  color: #FFFFFF;
+	  background-color: #006600;
+	  padding-left: 1px;
+	  padding-right: 1px;
+      }
+
       div.end-mnemonics {
 	  clear: both;
       }
@@ -215,7 +225,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">at end of the level</p>
-<p class="note">primarily this is intended as a last chance for changing netgame scores before the postgame carnage report.</p>
+<p class="note">primarily this is intended as a last chance for changing netgame scores before the postgame carnage report. </p>
 </dd>
 <dt>.idle()
   </dt>
@@ -233,20 +243,20 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">whenever a player uses a tag switch</p>
-<p class="note">not called when a projectile (e.g., fists) toggles a tag switch</p>
+<p class="note">not called when a projectile (e.g., fists) toggles a tag switch </p>
 </dd>
 <dt>.light_switch(light, player)
   </dt>
 <dd>
 <p class="description">whenever a player uses a light switch</p>
-<p class="note">not called when a projectile (e.g., fists) toggles a light switch</p>
+<p class="note">not called when a projectile (e.g., fists) toggles a light switch </p>
 </dd>
 <dt>.platform_switch(polygon, player)
   </dt>
 <dd>
 <p class="description">whenever a player uses a platform switch</p>
 <ul class="args"><li>polygon: polygon of the platform being toggled</li></ul>
-<p class="note">not called when a projectile (e.g., fists) toggles a platform switch</p>
+<p class="note">not called when a projectile (e.g., fists) toggles a platform switch </p>
 </dd>
 <dt>.terminal_enter(terminal, player)
   </dt>
@@ -261,7 +271,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">whenever a player picks up an item</p>
-<p class="note">also whenever a player gets an item when a script calls .items.add()</p>
+<p class="note">also whenever a player gets an item when a script calls .items.add() </p>
 </dd>
 <dt>.light_activated(light)
   </dt>
@@ -303,14 +313,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <li>aggressor_player: player who killed it (can be nil)</li>
 <li>projectile: projectile that delivered the final blow (can be nil)</li>
 </ul>
-<p class="note">called after a monster has taken lethal damage, but before it's removed from the monster list</p>
-<p class="note">you can use this to find out when a monster created with new_monster dies, but a monster discovered by Polygons.monsters() may have already taken lethal damage, so you may need to check for that case when using Polygons.monsters()</p>
+<p class="note">called after a monster has taken lethal damage, but before it's removed from the monster list </p>
+<p class="note">you can use this to find out when a monster created with new_monster dies, but a monster discovered by Polygons.monsters() may have already taken lethal damage, so you may need to check for that case when using Polygons.monsters() </p>
 </dd>
 <dt>.item_created(item)
   </dt>
 <dd>
 <p class="description">whenever an item is created and placed on the ground (or floating) somewhere</p>
-<p class="note">does not trigger on initial item placement because the initial item placement is done before Lua becomes initialised.</p>
+<p class="note">does not trigger on initial item placement because the initial item placement is done before Lua becomes initialised. </p>
 </dd>
 <dt>.projectile_detonated(type, owner, polygon, x, y, z)
   </dt>
@@ -339,8 +349,8 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .polygon</dt>
 <dd>
 <p class="description">polygon this annotation is associated with</p>
-<p class="note">can be nil</p>
-<p class="note">an annotation is only shown when its polygon is visible on the overhead map</p>
+<p class="note">can be nil </p>
+<p class="note">an annotation is only shown when its polygon is visible on the overhead map </p>
 </dd>
       <dt>
     .text</dt>
@@ -364,7 +374,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">returns a new uninitialized camera</p>
-<p class="note">make sure to add path points and angles before activating the camera</p>
+<p class="note">make sure to add path points and angles before activating the camera </p>
 </dd>
 <dt>Cameras[index]</dt>
 <dd><dl>
@@ -484,7 +494,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">returns a random number between 0 and n-1 from Aleph One's original random number generator</p>
-<p class="note">this is a good way to put net games out of sync</p>
+<p class="note">this is a good way to put net games out of sync </p>
 </dd>
       <dt>.random(n)
   </dt>
@@ -493,7 +503,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">saves the game (as if the user had activated a pattern buffer)</p>
-<p class="note">solo only</p>
+<p class="note">solo only </p>
 </dd>
       <dt>
     .ticks<span class="access"> (read-only)</span>
@@ -508,7 +518,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">the date version of the local player's engine</p>
-<p class="note">for example, "20071103"</p>
+<p class="note">for example, "20071103" </p>
 </dd>
     </dl></dd>
 </dl>
@@ -569,7 +579,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>
     .affects_landscapes</dt>
 <dd><p class="description">whether fog affects landscapes</p></dd>
-<dt>.color<p class="note">values range from 0.0 to 1.0</p>
+<dt>.color<p class="note">values range from 0.0 to 1.0 </p>
 </dt>
 <dd><dl>
 <dt>
@@ -663,7 +673,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">the length of this line</p>
-<p class="note">this might not be accurate, if someone used Chisel's stretch plugin</p>
+<p class="note">this might not be accurate, if someone used Chisel's stretch plugin </p>
 </dd>
     </dl></dd>
 </dl>
@@ -707,7 +717,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">damages monster</p>
-<p class="note">if no type is specified, fist damage is dealt</p>
+<p class="note">if no type is specified, fist damage is dealt </p>
 </dd>
       <dt>
     .facing<br>
@@ -718,7 +728,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       .vitality</dt>
 <dd>
 <p class="description">the monster's vitality</p>
-<p class="note">monsters that haven't spawned or teleported in yet don't have vitality</p>
+<p class="note">monsters that haven't spawned or teleported in yet don't have vitality </p>
 </dd>
       <dt>
     .mode<span class="access"> (read-only)</span>
@@ -728,8 +738,8 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">instructs monster to move to polygon</p>
-<p class="note">monsters get distracted easily en route</p>
-<p class="note">once it gets there, it probably won't choose to stay</p>
+<p class="note">monsters get distracted easily en route </p>
+<p class="note">once it gets there, it probably won't choose to stay </p>
 </dd>
       <dt>
     .player<span class="access"> (read-only)</span>
@@ -757,8 +767,8 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .visible</dt>
 <dd>
 <p class="description">whether monster is visible (e.g. has teleported in)</p>
-<p class="note">this has nothing to do with whether monsters are cloaked (like invisible S'pht) or not</p>
-<p class="note">only writable before the monster is activated</p>
+<p class="note">this has nothing to do with whether monsters are cloaked (like invisible S'pht) or not </p>
+<p class="note">only writable before the monster is activated </p>
 </dd>
       <dt>
     .x<span class="access"> (read-only)</span>
@@ -850,28 +860,28 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>:accelerate(direction, velocity, vertical_velocity)
   </dt>
 <dd><p class="description">accelerates player</p></dd>
-      <dt>.action_flags<p class="note">only valid when read/written in idle()</p>
-<p class="note">disabled when the player is viewing a terminal</p>
-<p class="note">latched action flags are only true the first tick the key is held down</p>
+      <dt>.action_flags<p class="note">only valid when read/written in idle() </p>
+<p class="note">disabled when the player is viewing a terminal </p>
+<p class="note">latched action flags are only true the first tick the key is held down </p>
 </dt>
 <dd><dl>
 <dt>
     .action_trigger</dt>
 <dd>
 <p class="description">respawns, or activates platforms/doors/control panels</p>
-<p class="note">latched</p>
+<p class="note">latched </p>
 </dd>
 <dt>
     .cycle_weapons_backward</dt>
 <dd>
 <p class="description">switches to previous weapon</p>
-<p class="note">latched</p>
+<p class="note">latched </p>
 </dd>
 <dt>
     .cycle_weapons_forward</dt>
 <dd>
 <p class="description">switches to next weapon</p>
-<p class="note">latched</p>
+<p class="note">latched </p>
 </dd>
 <dt>
     .left_trigger</dt>
@@ -880,7 +890,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .microphone_button</dt>
 <dd>
 <p class="description">activates the net mic</p>
-<p class="note">can not be set to true; can be set to false</p>
+<p class="note">can not be set to true; can be set to false </p>
 </dd>
 <dt>
     .right_trigger</dt>
@@ -889,7 +899,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .toggle_map</dt>
 <dd>
 <p class="description">toggles the overhead map</p>
-<p class="note">latched</p>
+<p class="note">latched </p>
 </dd>
 </dl></dd>
       <dt>:activate_terminal(terminal)
@@ -942,7 +952,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">whether crosshairs are visible</p>
-<p class="note">if you wish to stop the user from toggling the crosshairs, you must set the state every tick</p>
+<p class="note">if you wish to stop the user from toggling the crosshairs, you must set the state every tick </p>
 </dd>
 </dl></dd>
       <dt>:damage(amount [, type])
@@ -1002,13 +1012,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">if player is in range of a platform or control panel, returns a platform or side; otherwise returns nil</p>
-<p class="note">you can check the type of the return with is_polygon() and is_side()</p>
+<p class="note">you can check the type of the return with is_polygon() and is_side() </p>
 </dd>
       <dt>:find_target()
   </dt>
 <dd>
 <p class="description">returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid) the player is looking at; and x, y, z, and polygon are the point the player is looking at</p>
-<p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon()</p>
+<p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon() </p>
 </dd>
       <dt>
     .head_below_media<span class="access"> (read-only)</span>
@@ -1035,7 +1045,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .invisibility_duration</dt>
 <dd>
 <p class="description">invisibility time remaining</p>
-<p class="note">player will become subtly invisible if this is set higher than the standard invisibility duration (70 seconds)</p>
+<p class="note">player will become subtly invisible if this is set higher than the standard invisibility duration (70 seconds) </p>
 </dd>
       <dt>
     .items[item_type]
@@ -1046,7 +1056,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">true if this player is the local player</p>
-<p class="note">normally, you shouldn't need this--you'll just make the game go out of sync</p>
+<p class="note">normally, you shouldn't need this--you'll just make the game go out of sync </p>
 </dd>
       <dt>
     .kills[slain_player]
@@ -1061,7 +1071,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">whether player can view his motion sensor</p>
-<p class="note">currently, this also controls compass visibility</p>
+<p class="note">currently, this also controls compass visibility </p>
 </dd>
       <dt>
     .name<span class="access"> (read-only)</span>
@@ -1100,7 +1110,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">plays sound that only player can hear</p>
-<p class="note">if you want all players to hear the sound as if it is coming from this player, use .monster:play_sound() instead</p>
+<p class="note">if you want all players to hear the sound as if it is coming from this player, use .monster:play_sound() instead </p>
 </dd>
       <dt>
     .points</dt>
@@ -1110,7 +1120,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">polygon the player is standing on</p>
-<p class="note">if this gives you trouble, try .monster.polygon</p>
+<p class="note">if this gives you trouble, try .monster.polygon </p>
 </dd>
       <dt>:position(x, y, z, polygon)
   </dt>
@@ -1136,16 +1146,16 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">number of slot to highlight</p>
-<p class="note">can be nil</p>
+<p class="note">can be nil </p>
 </dd>
 <dt>
     .size<span class="access"> (local player)</span>
 </dt>
 <dd>
 <p class="description">how many slots the palette has</p>
-<p class="note">there is a maximum of 256 slots</p>
-<p class="note">the texture palette is visible whenever the size is greater than 0</p>
-<p class="note">rows/columns may change in the future based on the user's screen layout prefs</p>
+<p class="note">there is a maximum of 256 slots </p>
+<p class="note">the texture palette is visible whenever the size is greater than 0 </p>
+<p class="note">rows/columns may change in the future based on the user's screen layout prefs </p>
 </dd>
 <dt>
     .slots[n]
@@ -1185,7 +1195,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd>
 <p class="description">weapon the player is currently wielding</p>
-<p class="note">can be nil</p>
+<p class="note">can be nil </p>
 </dd>
       <dt>
     .x<span class="access"> (read-only)</span>
@@ -1292,7 +1302,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">plays sound at location</p>
-<p class="note">if you want to play a sound at an object location, use that object's play_sound function instead</p>
+<p class="note">if you want to play a sound at an object location, use that object's play_sound function instead </p>
 </dd>
       <dt>
     .sides[n]
@@ -1332,7 +1342,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd>
 <p class="description">returns a new projectile</p>
-<p class="note">remember to set the projectile's elevation, facing and owner immediately after you've created it</p>
+<p class="note">remember to set the projectile's elevation, facing and owner immediately after you've created it </p>
 </dd>
 <dt>Projectiles[index]</dt>
 <dd><dl>
@@ -1440,16 +1450,37 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">iterates through all sides on the level</p></dd>
 <dt>Sides[index]</dt>
 <dd><dl>
-      <dt>.control_panel<p class="note">nil if the side is not a control panel</p>
+      <dt>.control_panel<p class="note">nil if the side is not a control panel </p>
+<p class="note">set to true or false to create/destroy a control panel <span class="version">CVS</span></p>
 </dt>
 <dd><dl>
+<dt>
+    .can_be_destroyed <span class="version">CVS</span>
+</dt>
+<dd><p class="description">whether projectiles destroy this switch</p></dd>
+<dt>
+    .light_dependent <span class="version">CVS</span>
+</dt>
+<dd><p class="description">switch can only be activated if light &gt; 75%</p></dd>
+<dt>
+    .only_toggled_by_weapons <span class="version">CVS</span>
+</dt>
+<dd><p class="description">switch can only be toggled by weapons</p></dd>
 <dt>
     .permutation</dt>
 <dd><p class="description">permutation of control panel</p></dd>
 <dt>
-    .type<span class="access"> (read-only)</span>
+    .repair <span class="version">CVS</span>
+</dt>
+<dd><p class="description">switch is a repair switch</p></dd>
+<dt>
+    .type <span class="version">CVS</span>
 </dt>
 <dd><p class="description">type of control panel</p></dd>
+<dt>
+    .uses_item <span class="version">CVS</span>
+</dt>
+<dd><p class="description">i.e. chip insertion</p></dd>
 </dl></dd>
       <dt>.primary<br>.secondary<br>.transparent</dt>
 <dd><dl>
@@ -1460,8 +1491,8 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .empty</dt>
 <dd>
 <p class="description">whether transparent side is empty</p>
-<p class="note">transparent side only</p>
-<p class="note">setting empty to false is a no-op; set collection and texture_index instead</p>
+<p class="note">transparent side only </p>
+<p class="note">setting empty to false is a no-op; set collection and texture_index instead </p>
 </dd>
 <dt>
     .light</dt>
@@ -1668,9 +1699,21 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>ControlPanelTypes[control_panel_type]</dt>
 <dd><dl>
       <dt>
+    .active_texture_index<span class="access"> (read-only)</span> <span class="version">CVS</span>
+</dt>
+<dd><p class="description">bitmap index when control panel is active</p></dd>
+      <dt>
     .class<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">class of this control panel type</p></dd>
+      <dt>
+    .collection<span class="access"> (read-only)</span> <span class="version">CVS</span>
+</dt>
+<dd><p class="description">collection this control panel belongs to</p></dd>
+      <dt>
+    .inactive_texture_index<span class="access"> (read-only)</span> <span class="version">CVS</span>
+</dt>
+<dd><p class="description">bitmap index when control panel is inactive/destroyed</p></dd>
     </dl></dd>
 </dl>
 <h3>

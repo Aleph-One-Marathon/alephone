@@ -73,6 +73,16 @@
 	  font-style: italic;
       }
 
+      span.version {
+	  color: #000066;
+	  font-style: normal;
+	  font-size: 8pt;
+	  color: #FFFFFF;
+	  background-color: #006600;
+	  padding-left: 1px;
+	  padding-right: 1px;
+      }
+
       div.end-mnemonics {
 	  clear: both;
       }
@@ -274,7 +284,7 @@
 <xsl:template match="subtable">
   <dt>.<xsl:value-of select="@name"/>
   <xsl:for-each select="alias"><br/>.<xsl:value-of select="."/></xsl:for-each>
-  <xsl:for-each select="note"><p class="note"><xsl:value-of select="."/></p></xsl:for-each>
+  <xsl:apply-templates select="note"/>
   </dt>
   <dd>
     <xsl:choose>
@@ -308,9 +318,7 @@
       <ul class="args"><xsl:for-each select="argument/description"><li><xsl:value-of select="../@name"/>: <xsl:value-of select="."/></li></xsl:for-each></ul>
     </xsl:when>
   </xsl:choose>
-  <xsl:for-each select="note">
-    <p class="note"><xsl:value-of select="."/></p>
-  </xsl:for-each>
+  <xsl:apply-templates select="note"/>
   </dd>
 </xsl:template>
 
@@ -343,11 +351,15 @@
 	</xsl:when>
       </xsl:choose>
     </xsl:for-each>
+    <xsl:choose>
+      <xsl:when test="@version">
+	<xsl:text> </xsl:text>
+	<span class="version"><xsl:value-of select="@version"/></span>
+      </xsl:when>
+    </xsl:choose>
   </dt>
   <dd><p class="description"><xsl:value-of select="description/node()"/></p>
-  <xsl:for-each select="note">
-    <p class="note"><xsl:value-of select="."/></p>
-  </xsl:for-each>
+  <xsl:apply-templates select="note"/>
   </dd>
 </xsl:template>
 
@@ -400,6 +412,18 @@
     </xsl:choose>]
   </dt>
   <dd><p class="description"><xsl:copy-of select="description/node()"/></p></dd>
+</xsl:template>
+
+<xsl:template match="note">
+  <p class="note">
+  <xsl:value-of select="."/>
+  <xsl:text> </xsl:text>
+  <xsl:choose>
+    <xsl:when test="@version">
+      <span class="version"><xsl:value-of select="@version"/></span>
+    </xsl:when>
+  </xsl:choose>
+  </p>
 </xsl:template>
 
 </xsl:transform>

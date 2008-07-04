@@ -49,6 +49,7 @@
 	  <!ELEMENT variable ((alias*), (description?),(type),(note*))>
 	  <!ATTLIST variable name CDATA #REQUIRED>
 	  <!ATTLIST variable access (read-only|read-write|local-player|write-only) "read-write">
+	  <!ATTLIST variable version CDATA #IMPLIED>
 
 	  <!ELEMENT accessor ((description?),(length?),(index?),(call?),(function)*)>
 	  <!ATTLIST accessor name ID #REQUIRED>
@@ -73,6 +74,7 @@
 	  <!ELEMENT type (#PCDATA)>
 	  <!ELEMENT alias (#PCDATA)>
 	  <!ELEMENT note (#PCDATA)>
+	  <!ATTLIST note version CDATA #IMPLIED>
 	  ]>
 <document>
   <section name="General" id="general">
@@ -1255,7 +1257,23 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     </table>
     <table name="side">
       <subtable name="control_panel" classname="side_control_panel">
-	<variable name="type" access="read-only">
+	<variable name="can_be_destroyed" version="CVS">
+	  <description>whether projectiles destroy this switch</description>
+	  <type>boolean</type>
+	</variable>
+	<variable name="light_dependent" version="CVS">
+	  <description>switch can only be activated if light > 75%</description>
+	  <type>boolean</type>
+	</variable>
+	<variable name="only_toggled_by_weapons" version="CVS">
+	  <description>switch can only be toggled by weapons</description>
+	  <type>boolean</type>
+	</variable>
+	<variable name="repair" version="CVS">
+	  <description>switch is a repair switch</description>
+	  <type>boolean</type>
+	</variable>
+	<variable name="type" version="CVS">
 	  <description>type of control panel</description>
 	  <type>control_panel_type</type>
 	</variable>
@@ -1263,7 +1281,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <description>permutation of control panel</description>
 	  <type>number</type>
 	</variable>
+	<variable name="uses_item" version="CVS">
+	  <description>i.e. chip insertion</description>
+	  <type>boolean</type>
+	</variable>
 	<note>nil if the side is not a control panel</note>
+	<note version="CVS">set to true or false to create/destroy a control panel</note>
       </subtable>
       <subtable name="primary" classname="primary_side">
 	<alias>secondary</alias>
@@ -1585,9 +1608,21 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </mnemonics>
     </enum>
     <enum name="control_panel_type">
+      <variable name="active_texture_index" access="read-only" version="CVS">
+	<description>bitmap index when control panel is active</description>
+	<type>number</type>
+      </variable>
       <variable name="class" access="read-only">
 	<description>class of this control panel type</description>
 	<type>control_panel_class</type>
+      </variable>
+      <variable name="collection" access="read-only" version="CVS">
+	<description>collection this control panel belongs to</description>
+	<type>collection</type>
+      </variable>
+      <variable name="inactive_texture_index" access="read-only" version="CVS">
+	<description>bitmap index when control panel is inactive/destroyed</description>
+	<type>number</type>
       </variable>
     </enum>
     <enum name="damage_type">
