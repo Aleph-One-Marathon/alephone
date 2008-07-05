@@ -117,6 +117,63 @@ static long intersecting_flood_proc(short source_polygon_index, short line_index
 static void precalculate_polygon_sound_sources(void);
 
 /* ---------- code */
+
+void recalculate_side_type(short side_index)
+{
+	side_data *side = get_side_data(side_index);
+	short opposite_index = find_adjacent_polygon(side->polygon_index, side->line_index);
+	polygon_data *polygon = get_polygon_data(side->polygon_index);
+	if (opposite_index != NONE)
+	{
+		polygon_data *opposite = get_polygon_data(opposite_index);
+		if (opposite->ceiling_height < polygon->ceiling_height && opposite->floor_height > polygon->floor_height)
+		{
+			side->type = _split_side;
+		}
+		else if (opposite->floor_height > polygon->floor_height)
+		{
+			side->type = _low_side;
+		}
+		else
+		{
+			side->type = _high_side;
+		}
+	}
+	else
+	{
+		side->type = _full_side;
+	}
+}
+
+short new_side(short polygon_index, short line_index)
+{
+	line_data *line = get_line_data(line_index);
+	polygon_data *polygon = get_polygon_data(polygon_index);
+
+	assert((line->clockwise_polygon_owner == polygon_index && line->clockwise_polygon_side_index == NONE )|| (line->counterclockwise_polygon_owner == polygon_index && line->counterclockwise_polygon_side_index == NONE));
+
+	side_data side;
+	obj_clear(side);
+	side.primary_texture.texture = UNONE;
+	side.secondary_texture.texture = UNONE;
+	side.transparent_texture.texture = UNONE;
+
+	short side_index = SideList.size();
+	SideList.push_back(side);
+	dynamic_world->side_count++;
+
+	if (line->clockwise_polygon_owner == polygon_index) 
+		line->clockwise_polygon_side_index = side_index;
+	else
+		line->counterclockwise_polygon_side_index = side_index;
+	recalculate_redundant_side_data(side_index, line_index);
+	calculate_adjacent_sides(polygon_index, polygon->side_indexes);
+
+	recalculate_side_type(side_index);
+	return side_index;
+}
+
+
 /* calculates area, clockwise endpoint list, adjacent polygons */
 void recalculate_redundant_polygon_data(
 	short polygon_index)

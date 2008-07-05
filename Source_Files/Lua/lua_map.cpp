@@ -2032,6 +2032,29 @@ static bool Lua_Side_Valid(int16 index)
 char Lua_Sides_Name[] = "Sides";
 static int16 Lua_Sides_Length() { return SideList.size(); }
 
+// Sides.new(polygon, line)
+static int Lua_Sides_New(lua_State *L)
+{
+	short polygon_index = Lua_Polygon::Index(L, 1);
+	short line_index = Lua_Line::Index(L, 2);
+
+	// make sure we don't assert
+	line_data *line = get_line_data(line_index);
+	if (!(line->clockwise_polygon_owner == polygon_index || line->counterclockwise_polygon_owner == polygon_index)) 
+		return luaL_error(L, "new: line does not belong to polygon");
+
+	if ((line->clockwise_polygon_owner == polygon_index && line->clockwise_polygon_side_index != NONE) || (line->counterclockwise_polygon_owner == polygon_index && line->counterclockwise_polygon_side_index != NONE))
+		return luaL_error(L, "new: side already exists");
+	
+	Lua_Side::Push(L, new_side(polygon_index, line_index));
+	return 1;
+}
+
+const luaL_reg Lua_Sides_Methods[] = {
+	{"new", Lua_Sides_New},
+	{0, 0}
+};
+
 char Lua_Light_Name[] = "light";
 
 static int Lua_Light_Get_Active(lua_State *L)
@@ -2589,7 +2612,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_Side::Register(L, Lua_Side_Get, Lua_Side_Set);
 	Lua_Side::Valid = Lua_Side_Valid;
 
-	Lua_Sides::Register(L);
+	Lua_Sides::Register(L, Lua_Sides_Methods);
 	Lua_Sides::Length = Lua_Sides_Length;
 
 	Lua_SideType::Register(L, 0, 0, 0, Lua_SideType_Mnemonics);

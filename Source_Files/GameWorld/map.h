@@ -1255,6 +1255,8 @@ short new_map_line(short a, short b, short poly_a, short poly_b, short side_a, s
 short duplicate_map_line(short old_line_index);
 short new_map_polygon(short *line_indexes, short line_count, short floor_height,
 	short ceiling_height, short floor_texture, short ceiling_texture, short lightsource_index);
+void recalculate_side_type(short side_index);
+short new_side(short polygon_index, short line_index);
 
 void precalculate_map_indexes(void);
 

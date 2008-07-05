@@ -1569,6 +1569,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <call>
 	<description>iterates through all sides on the level</description>
       </call>
+      <function name="new" version="CVS">
+	<description>creates a new side</description>
+	<argument name="polygon"><type>polygon</type></argument>
+	<argument name="line"><type>line</type></argument>
+	<return><type>side</type></return>
+	<note>side must not already exist</note>
+      </function>
     </accessor>
     <accessor name="Tags" contains="tag">
       <index/>
