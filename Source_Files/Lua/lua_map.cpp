@@ -228,6 +228,12 @@ static int Lua_Line_Get_Endpoints(lua_State *L)
 	return 1;
 }
 
+static int Lua_Line_Get_Has_Transparent_Side(lua_State *L)
+{
+	lua_pushboolean(L, LINE_HAS_TRANSPARENT_SIDE(get_line_data(Lua_Line::Index(L, 1))));
+	return 1;
+}
+
 static int Lua_Line_Get_Highest_Adjacent_Floor(lua_State *L)
 {
 	lua_pushnumber(L, (double) get_line_data(Lua_Line::Index(L, 1))->highest_adjacent_floor / WORLD_ONE);
@@ -263,6 +269,7 @@ const luaL_reg Lua_Line_Get[] = {
 	{"counterclockwise_polygon", Lua_Line_Get_Counterclockwise_Polygon},
 	{"counterclockwise_side", Lua_Line_Get_Counterclockwise_Side},
 	{"endpoints", Lua_Line_Get_Endpoints},
+	{"has_transparent_side", Lua_Line_Get_Has_Transparent_Side},
 	{"highest_adjacent_floor", Lua_Line_Get_Highest_Adjacent_Floor},
 	{"length", Lua_Line_Get_Length},
 	{"lowest_adjacent_ceiling", Lua_Line_Get_Lowest_Adjacent_Ceiling},
@@ -1096,6 +1103,33 @@ int Lua_Polygon_Contains(lua_State *L)
 	return 1;
 }
 
+// line_crossed_leaving(x1, y1, x2, y2)
+int Lua_Polygon_Find_Line_Crossed_Leaving(lua_State *L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4) || !lua_isnumber(L, 5))
+		return luaL_error(L, ("find_line_crossed_leaving: incorrect argument type"));
+	
+	world_point2d origin;
+	origin.x = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	origin.y = static_cast<world_distance>(lua_tonumber(L, 3) * WORLD_ONE);
+
+	world_point2d destination;
+	destination.x = static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE);
+	destination.y = static_cast<world_distance>(lua_tonumber(L, 5) * WORLD_ONE);
+
+	short line_index = find_line_crossed_leaving_polygon(Lua_Polygon::Index(L, 1), &origin, &destination);
+	if (line_index != NONE)
+	{
+		Lua_Line::Push(L, line_index);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
 static int Lua_Polygon_Monsters_Iterator(lua_State *L)
 {
 	int index = static_cast<int>(lua_tonumber(L, lua_upvalueindex(1)));
@@ -1329,6 +1363,7 @@ const luaL_reg Lua_Polygon_Get[] = {
 	{"ceiling", Lua_Polygon_Get_Ceiling},
 	{"contains", L_TableFunction<Lua_Polygon_Contains>},
 	{"endpoints", Lua_Polygon_Get_Endpoints},
+	{"find_line_crossed_leaving", L_TableFunction<Lua_Polygon_Find_Line_Crossed_Leaving>},
 	{"floor", Lua_Polygon_Get_Floor},
 	{"lines", Lua_Polygon_Get_Lines},
 	{"media", Lua_Polygon_Get_Media},

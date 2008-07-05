@@ -311,6 +311,12 @@
     </xsl:choose>
     <xsl:value-of select="@name"/><xsl:choose><xsl:when test="@required = 'false'">]</xsl:when></xsl:choose>
     </xsl:for-each>)
+    <xsl:choose>
+      <xsl:when test="@version">
+	<xsl:text> </xsl:text>
+	<span class="version"><xsl:value-of select="@version"/></span>
+      </xsl:when>
+    </xsl:choose>
   </dt>
   <dd><p class="description"><xsl:copy-of select="description/node()"/></p>
   <xsl:choose>

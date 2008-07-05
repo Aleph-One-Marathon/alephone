@@ -542,6 +542,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <subtable-accessor name="endpoints" classname="line_endpoints" index="n">
 	<description>returns line endpoint n</description>
       </subtable-accessor>
+      <variable name="has_transparent_side" access="read-only" version="CVS">
+	<description>whether one of the line's sides has a transparent texture</description>
+	<type>boolean</type>
+      </variable>
       <variable name="highest_adjacent_floor" access="read-only" version="CVS">
 	<description>height of higher adjacent polygon floor</description>
 	<type>WU</type>
@@ -1120,6 +1124,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </subtable-accessor>
       <function name="endpoints">
 	<description>iterates through all of this polygon's endpoints</description>
+      </function>
+      <function name="find_line_crossed_leaving" version="CVS">
+	<description>returns the polygon line crossed by line segment (x1, y1) (x2, y2)</description>
+	<argument name="x1"><type>WU</type></argument>
+	<argument name="y1"><type>WU</type></argument>
+	<argument name="x2"><type>WU</type></argument>
+	<argument name="y2"><type>WU</type></argument>
+	<note>can be nil if the line segment doesn't intersect a polygon line</note>
       </function>
       <subtable-accessor name="lines" classname="polygon_lines" index="n">
 	<description>returns polygon line n</description>

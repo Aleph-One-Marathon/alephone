@@ -217,74 +217,74 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Triggers</dt>
 <dd><dl>
 <dt>.init(restoring_game)
-  </dt>
+    </dt>
 <dd>
 <p class="description">at beginning of level</p>
 <ul class="args"><li>restoring_game: true if restoring from a saved game</li></ul>
 </dd>
 <dt>.cleanup()
-  </dt>
+    </dt>
 <dd>
 <p class="description">at end of the level</p>
 <p class="note">primarily this is intended as a last chance for changing netgame scores before the postgame carnage report. </p>
 </dd>
 <dt>.idle()
-  </dt>
+    </dt>
 <dd><p class="description">at each tick, before physics and such</p></dd>
 <dt>.postidle()
-  </dt>
+    </dt>
 <dd><p class="description">at each tick, after physics and such, but before rendering</p></dd>
 <dt>.start_refuel(class, player, side)
-  </dt>
+    </dt>
 <dd><p class="description">whenever a player starts to use a refuel panel</p></dd>
 <dt>.end_refuel(class, player, side)
-  </dt>
+    </dt>
 <dd><p class="description">whenever a player stops using a refuel panel</p></dd>
 <dt>.tag_switch(tag, player)
-  </dt>
+    </dt>
 <dd>
 <p class="description">whenever a player uses a tag switch</p>
 <p class="note">not called when a projectile (e.g., fists) toggles a tag switch </p>
 </dd>
 <dt>.light_switch(light, player)
-  </dt>
+    </dt>
 <dd>
 <p class="description">whenever a player uses a light switch</p>
 <p class="note">not called when a projectile (e.g., fists) toggles a light switch </p>
 </dd>
 <dt>.platform_switch(polygon, player)
-  </dt>
+    </dt>
 <dd>
 <p class="description">whenever a player uses a platform switch</p>
 <ul class="args"><li>polygon: polygon of the platform being toggled</li></ul>
 <p class="note">not called when a projectile (e.g., fists) toggles a platform switch </p>
 </dd>
 <dt>.terminal_enter(terminal, player)
-  </dt>
+    </dt>
 <dd><p class="description">whenever a player starts using a terminal</p></dd>
 <dt>.terminal_exit(terminal, player)
-  </dt>
+    </dt>
 <dd><p class="description">whenever a player stops using a terminal</p></dd>
 <dt>.pattern_buffer(side, player)
-  </dt>
+    </dt>
 <dd><p class="description">whenever a player uses a pattern buffer</p></dd>
 <dt>.got_item(type, player)
-  </dt>
+    </dt>
 <dd>
 <p class="description">whenever a player picks up an item</p>
 <p class="note">also whenever a player gets an item when a script calls .items.add() </p>
 </dd>
 <dt>.light_activated(light)
-  </dt>
+    </dt>
 <dd><p class="description">whenever a light is activated or deactivated</p></dd>
 <dt>.platform_activated(polygon)
-  </dt>
+    </dt>
 <dd><p class="description">whenever a platform is activated or deactivated</p></dd>
 <dt>.player_revived(player)
-  </dt>
+    </dt>
 <dd><p class="description">whenever a player revives (presumably only happens in a netgame)</p></dd>
 <dt>.player_killed(player, aggressor_player, action, projectile)
-  </dt>
+    </dt>
 <dd>
 <p class="description">whenever a player dies</p>
 <ul class="args">
@@ -294,7 +294,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </ul>
 </dd>
 <dt>.player_damaged(victim, aggressor_player, aggressor_monster, damage_type, damage_amount, projectile)
-  </dt>
+    </dt>
 <dd>
 <p class="description">whenever a player has taken damage, but before he dies if applicable. The player's suit energy or oxygen may be negative when this trigger is called; if it still is when the trigger returns, it will be set to 0. The player's suit energy is tested again after this trigger returns, so a script may prevent a player's death
       </p>
@@ -307,7 +307,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </ul>
 </dd>
 <dt>.monster_killed(monster, aggressor_player, projectile)
-  </dt>
+    </dt>
 <dd>
 <p class="description">whenever a monster dies</p>
 <ul class="args">
@@ -318,13 +318,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="note">you can use this to find out when a monster created with new_monster dies, but a monster discovered by Polygons.monsters() may have already taken lethal damage, so you may need to check for that case when using Polygons.monsters() </p>
 </dd>
 <dt>.item_created(item)
-  </dt>
+    </dt>
 <dd>
 <p class="description">whenever an item is created and placed on the ground (or floating) somewhere</p>
 <p class="note">does not trigger on initial item placement because the initial item placement is done before Lua becomes initialised. </p>
 </dd>
 <dt>.projectile_detonated(type, owner, polygon, x, y, z)
-  </dt>
+    </dt>
 <dd><p class="description">whenever a projectile detonates, after it has done any area of effect damage</p></dd>
 </dl></dd>
 </dl>
@@ -342,7 +342,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Annotations()</dt>
 <dd><p class="description">iterates through all annotations</p></dd>
 <dt>Annotations.new(polygon, text [, x] [, y])
-  </dt>
+    </dt>
 <dd><p class="description">returns a new annotation</p></dd>
 <dt>Annotations[index]</dt>
 <dd><dl>
@@ -372,7 +372,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Cameras()</dt>
 <dd><p class="description">iterates through all cameras</p></dd>
 <dt>Cameras.new()
-  </dt>
+    </dt>
 <dd>
 <p class="description">returns a new uninitialized camera</p>
 <p class="note">make sure to add path points and angles before activating the camera </p>
@@ -380,24 +380,24 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Cameras[index]</dt>
 <dd><dl>
       <dt>:activate(player)
-  </dt>
+    </dt>
 <dd><p class="description">activate camera for player</p></dd>
       <dt>:clear()
-  </dt>
+    </dt>
 <dd><p class="description">deletes all path points and angles</p></dd>
       <dt>:deactivate()
-  </dt>
+    </dt>
 <dd><p class="description">deactivates camera</p></dd>
       <dt>.path_angles</dt>
 <dd><dl>
 <dt>:new(yaw, pitch, time)
-  </dt>
+    </dt>
 <dd><p class="description">adds a path angle</p></dd>
 </dl></dd>
       <dt>.path_points</dt>
 <dd><dl>
 <dt>:new(x, y, z, polygon, time)
-  </dt>
+    </dt>
 <dd><p class="description">adds a path point</p></dd>
 </dl></dd>
     </dl></dd>
@@ -410,18 +410,18 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Effects()</dt>
 <dd><p class="description">iterates through all valid effects</p></dd>
 <dt>Effects.new(x, y, height, polygon, type)
-  </dt>
+    </dt>
 <dd><p class="description">returns a new effect</p></dd>
 <dt>Effects[index]</dt>
 <dd><dl>
       <dt>:delete()
-  </dt>
+    </dt>
 <dd><p class="description">removes effect from map</p></dd>
       <dt>
     .facing</dt>
 <dd><p class="description">direction effect is facing</p></dd>
       <dt>:play_sound(sound)
-  </dt>
+    </dt>
 <dd><p class="description">play sound coming from this effect</p></dd>
       <dt>
     .polygon<span class="access"> (read-only)</span>
@@ -474,7 +474,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">the difficulty level</p></dd>
       <dt>.global_random(n)
-  </dt>
+    </dt>
 <dd><p class="description">returns a random number between 0 and n-1 from Aleph One's original random number generator</p></dd>
       <dt>
     .kill_limit<span class="access"> (read-only)</span>
@@ -492,16 +492,16 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">Use this variable to override the game's default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</p></dd>
       <dt>.local_random(n)
-  </dt>
+    </dt>
 <dd>
 <p class="description">returns a random number between 0 and n-1 from Aleph One's original random number generator</p>
 <p class="note">this is a good way to put net games out of sync </p>
 </dd>
       <dt>.random(n)
-  </dt>
+    </dt>
 <dd><p class="description">returns a random number between 0 and n-1 using a good random number generator</p></dd>
       <dt>.save()
-  </dt>
+    </dt>
 <dd>
 <p class="description">saves the game (as if the user had activated a pattern buffer)</p>
 <p class="note">solo only </p>
@@ -531,18 +531,18 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Items()</dt>
 <dd><p class="description">iterates through all valid items</p></dd>
 <dt>Items.new(x, y, height, polygon, type)
-  </dt>
+    </dt>
 <dd><p class="description">returns a new item</p></dd>
 <dt>Items[index]</dt>
 <dd><dl>
       <dt>:delete()
-  </dt>
+    </dt>
 <dd><p class="description">removes item from map</p></dd>
       <dt>
     .facing</dt>
 <dd><p class="description">direction item is facing</p></dd>
       <dt>:play_sound(sound)
-  </dt>
+    </dt>
 <dd><p class="description">play sound coming from this item</p></dd>
       <dt>
     .polygon<span class="access"> (read-only)</span>
@@ -670,6 +670,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl></dl>
 </dd>
       <dt>
+    .has_transparent_side<span class="access"> (read-only)</span> <span class="version">CVS</span>
+</dt>
+<dd><p class="description">whether one of the line's sides has a transparent texture</p></dd>
+      <dt>
     .highest_adjacent_floor<span class="access"> (read-only)</span> <span class="version">CVS</span>
 </dt>
 <dd><p class="description">height of higher adjacent polygon floor</p></dd>
@@ -712,7 +716,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Monsters()</dt>
 <dd><p class="description">iterates through all valid monsters (including player monsters)</p></dd>
 <dt>Monsters.new(x, y, height, polygon, type)
-  </dt>
+    </dt>
 <dd><p class="description">returns a new monster</p></dd>
 <dt>Monsters[index]</dt>
 <dd><dl>
@@ -724,10 +728,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .active</dt>
 <dd><p class="description">whether monster has been activated</p></dd>
       <dt>:attack(target)
-  </dt>
+    </dt>
 <dd><p class="description">instructs monster to attack target</p></dd>
       <dt>:damage(amount [, type])
-  </dt>
+    </dt>
 <dd>
 <p class="description">damages monster</p>
 <p class="note">if no type is specified, fist damage is dealt </p>
@@ -748,7 +752,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">current AI mode of the monster</p></dd>
       <dt>:move_by_path(polygon)
-  </dt>
+    </dt>
 <dd>
 <p class="description">instructs monster to move to polygon</p>
 <p class="note">monsters get distracted easily en route </p>
@@ -759,14 +763,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">if monster is a player monster, the player; otherwise, nil</p></dd>
       <dt>:play_sound(sound)
-  </dt>
+    </dt>
 <dd><p class="description">plays sound coming from this monster</p></dd>
       <dt>
     .polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon this monster is in</p></dd>
       <dt>:position(x, y, z, polygon)
-  </dt>
+    </dt>
 <dd><p class="description">sets position of monster</p></dd>
       <dt>
     .type<span class="access"> (read-only)</span>
@@ -803,19 +807,19 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Music</dt>
 <dd><dl>
       <dt>.clear()
-  </dt>
+    </dt>
 <dd><p class="description">clears the level playlist</p></dd>
       <dt>.fade(duration)
-  </dt>
+    </dt>
 <dd><p class="description">fades out the currently playing track and clears the playlist</p></dd>
       <dt>.play(track1 [, track2] [, ...])
-  </dt>
+    </dt>
 <dd><p class="description">appends all of the specified tracks to the end of the playlist</p></dd>
       <dt>.stop()
-  </dt>
+    </dt>
 <dd><p class="description">stops level music and clears the playlist</p></dd>
       <dt>.valid(track1 [, track2] [, ...])
-  </dt>
+    </dt>
 <dd><p class="description">for every track passed, return true if it exists and is playable and false otherwise</p></dd>
     </dl></dd>
 </dl>
@@ -866,12 +870,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Players()</dt>
 <dd><p class="description">iterates through all players in the game</p></dd>
 <dt>Players.print(message)
-  </dt>
+    </dt>
 <dd><p class="description">prints message to all players' screens</p></dd>
 <dt>Players[index]</dt>
 <dd><dl>
       <dt>:accelerate(direction, velocity, vertical_velocity)
-  </dt>
+    </dt>
 <dd><p class="description">accelerates player</p></dd>
       <dt>.action_flags<p class="note">only valid when read/written in idle() </p>
 <p class="note">disabled when the player is viewing a terminal </p>
@@ -916,7 +920,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
 </dl></dd>
       <dt>:activate_terminal(terminal)
-  </dt>
+    </dt>
 <dd><p class="description">activates terminal</p></dd>
       <dt>
     .color</dt>
@@ -924,10 +928,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>.compass</dt>
 <dd><dl>
 <dt>:all_off()
-  </dt>
+    </dt>
 <dd><p class="description">turns all compass quadrants off, disables beacon</p></dd>
 <dt>:all_on()
-  </dt>
+    </dt>
 <dd><p class="description">turns all compass quadrants on, disables beacon</p></dd>
 <dt>
     .beacon</dt>
@@ -969,7 +973,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
 </dl></dd>
       <dt>:damage(amount [, type])
-  </dt>
+    </dt>
 <dd>
 <p class="description">inflicts damage on player</p>
 <ul class="args"><li>type: if unspecified, crush damage is delt</li></ul>
@@ -1019,16 +1023,16 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">whether player is standing in liquid</p></dd>
       <dt>:fade_screen(type)
-  </dt>
+    </dt>
 <dd><p class="description">fades player's screen</p></dd>
       <dt>:find_action_key_target()
-  </dt>
+    </dt>
 <dd>
 <p class="description">if player is in range of a platform or control panel, returns a platform or side; otherwise returns nil</p>
 <p class="note">you can check the type of the return with is_polygon() and is_side() </p>
 </dd>
       <dt>:find_target()
-  </dt>
+    </dt>
 <dd>
 <p class="description">returns t, x, y, z, polygon, where t is the side, polygon_floor, polygon_ceiling, monster, scenery, or polygon (if the target is the surface of a liquid) the player is looking at; and x, y, z, and polygon are the point the player is looking at</p>
 <p class="note">you can check the type of t with is_side(), is_polygon_floor(), is_polygon_ceiling(), is_monster(), is_scenery(), and is_polygon() </p>
@@ -1100,14 +1104,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">there are 6 overlays, numbered 0 through 5</p>
 <dl>
 <dt>:clear()
-  </dt>
+    </dt>
 <dd><p class="description">turns off overlay</p></dd>
 <dt>
     .color<span class="access"> (write-only)</span>
 </dt>
 <dd><p class="description">text color</p></dd>
 <dt>:fill_icon(color)
-  </dt>
+    </dt>
 <dd><p class="description">fills icon with solid color</p></dd>
 <dt>
     .icon<span class="access"> (write-only)</span>
@@ -1120,7 +1124,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dl>
 </dd>
       <dt>:play_sound(sound, pitch)
-  </dt>
+    </dt>
 <dd>
 <p class="description">plays sound that only player can hear</p>
 <p class="note">if you want all players to hear the sound as if it is coming from this player, use .monster:play_sound() instead </p>
@@ -1136,19 +1140,19 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="note">if this gives you trouble, try .monster.polygon </p>
 </dd>
       <dt>:position(x, y, z, polygon)
-  </dt>
+    </dt>
 <dd><p class="description">set player position</p></dd>
       <dt>:print(message)
-  </dt>
+    </dt>
 <dd><p class="description">prints message to player's screen</p></dd>
       <dt>
     .team</dt>
 <dd><p class="description">player's team (pants color)</p></dd>
       <dt>:teleport(polygon)
-  </dt>
+    </dt>
 <dd><p class="description">teleports player to polygon</p></dd>
       <dt>:teleport_to_level(level)
-  </dt>
+    </dt>
 <dd><p class="description">teleports player to level (of course, all the other players will also go to that level)</p></dd>
       <dt>.texture_palette</dt>
 <dd>
@@ -1175,7 +1179,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd><dl>
 <dt>:clear()
-  </dt>
+    </dt>
 <dd><p class="description">makes this slot empty</p></dd>
 <dt>
     .collection<span class="access"> (local player)</span>
@@ -1200,7 +1204,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">how many rounds are currently loaded into the weapon</p></dd>
 </dl></dd>
 <dt>:select()
-  </dt>
+    </dt>
 <dd><p class="description">attempts to force player to ready weapon</p></dd>
 </dl></dd>
       <dt>
@@ -1245,7 +1249,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl></dl>
 </dd>
       <dt>:adjacent_polygons()
-  </dt>
+    </dt>
 <dd><p class="description">iterates through all polygons directly adjacent to this polygon</p></dd>
       <dt>
     .area<span class="access"> (read-only)</span>
@@ -1277,7 +1281,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">texture transfer mode</p></dd>
 </dl></dd>
       <dt>:contains(x, y [, z])
-  </dt>
+    </dt>
 <dd><p class="description">whether the point is in this polygon</p></dd>
       <dt>
     .endpoints[n]
@@ -1287,8 +1291,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl></dl>
 </dd>
       <dt>:endpoints()
-  </dt>
+    </dt>
 <dd><p class="description">iterates through all of this polygon's endpoints</p></dd>
+      <dt>:find_line_crossed_leaving(x1, y1, x2, y2)
+     <span class="version">CVS</span>
+</dt>
+<dd>
+<p class="description">returns the polygon line crossed by line segment (x1, y1) (x2, y2)</p>
+<p class="note">can be nil if the line segment doesn't intersect a polygon line </p>
+</dd>
       <dt>
     .lines[n]
   </dt>
@@ -1297,22 +1308,22 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl></dl>
 </dd>
       <dt>:lines()
-  </dt>
+    </dt>
 <dd><p class="description">iterates through all of this polygon's lines</p></dd>
       <dt>
     .media</dt>
 <dd><p class="description">polygon media (liquid)</p></dd>
       <dt>:monsters()
-  </dt>
+    </dt>
 <dd><p class="description">iterates through all monsters in this polygon (including player monsters)</p></dd>
       <dt>
     .permutation</dt>
 <dd><p class="description">raw permutation index of this polygon</p></dd>
       <dt>:play_sound(sound)
-  </dt>
+    </dt>
 <dd><p class="description">plays sound in center of polygon on floor</p></dd>
       <dt>:play_sound(x, y, z, sound [, pitch])
-  </dt>
+    </dt>
 <dd>
 <p class="description">plays sound at location</p>
 <p class="note">if you want to play a sound at an object location, use that object's play_sound function instead </p>
@@ -1325,7 +1336,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl></dl>
 </dd>
       <dt>:sides()
-  </dt>
+    </dt>
 <dd><p class="description">iterates through all of this polygon's sides</p></dd>
       <dt>
     .type</dt>
@@ -1352,7 +1363,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Projectiles()</dt>
 <dd><p class="description">iterates through all valid projectiles</p></dd>
 <dt>Projectiles.new(x, y, z, polygon, type)
-  </dt>
+    </dt>
 <dd>
 <p class="description">returns a new projectile</p>
 <p class="note">remember to set the projectile's elevation, facing and owner immediately after you've created it </p>
@@ -1374,10 +1385,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       .yaw</dt>
 <dd><p class="description">direction</p></dd>
       <dt>:play_sound(sound)
-  </dt>
+    </dt>
 <dd><p class="description">plays sound coming from this projectile</p></dd>
       <dt>:position(x, y, z, polygon)
-  </dt>
+    </dt>
 <dd><p class="description">sets projectile position</p></dd>
       <dt>
     .owner</dt>
@@ -1412,25 +1423,25 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Scenery()</dt>
 <dd><p class="description">iterates through all valid scenery</p></dd>
 <dt>Scenery.new(x, y, height, polygon, type)
-  </dt>
+    </dt>
 <dd><p class="description">returns a new scenery</p></dd>
 <dt>Scenery[index]</dt>
 <dd><dl>
       <dt>:damage()
-  </dt>
+    </dt>
 <dd><p class="description">damages scenery</p></dd>
       <dt>
     .damaged<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether this scenery has been damaged</p></dd>
       <dt>:delete()
-  </dt>
+    </dt>
 <dd><p class="description">removes scenery from the map</p></dd>
       <dt>
     .facing</dt>
 <dd><p class="description">direction scenery is facing</p></dd>
       <dt>:play_sound(sound)
-  </dt>
+    </dt>
 <dd><p class="description">play sound coming from this scenery</p></dd>
       <dt>
     .polygon<span class="access"> (read-only)</span>
@@ -1524,7 +1535,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">texture transfer mode</p></dd>
 </dl></dd>
       <dt>:play_sound(sound [, pitch])
-  </dt>
+    </dt>
 <dd><p class="description">play sound coming from this side</p></dd>
       <dt>
     .line<span class="access"> (read-only)</span>
