@@ -1192,6 +1192,24 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dl></dd>
 </dl>
 </dd>
+      <dt>:view_player(player)
+     <span class="version">CVS</span>
+</dt>
+<dd><p class="description">switch to another player's view</p></dd>
+      <dt>.weapons</dt>
+<dd><dl>
+<dt>
+    .active <span class="version">CVS</span>
+</dt>
+<dd><p class="description">when a player's weapons are not active, he does not see weapons in hand, and can not fire</p></dd>
+<dt>
+    .current<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description">weapon the player is currently wielding</p>
+<p class="note">can be nil </p>
+</dd>
+</dl></dd>
       <dt>
     .weapons[weapon_type]
   </dt>
@@ -1207,10 +1225,6 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     </dt>
 <dd><p class="description">attempts to force player to ready weapon</p></dd>
 </dl></dd>
-      <dt>:view_player(player)
-     <span class="version">CVS</span>
-</dt>
-<dd><p class="description">switch to another player's view</p></dd>
       <dt>
     .weapons.current<span class="access"> (read-only)</span>
 </dt>

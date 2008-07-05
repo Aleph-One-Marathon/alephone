@@ -96,6 +96,7 @@ using namespace std;
 #include "monster_definitions.h"
 
 bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+bool can_wield_weapons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
@@ -150,6 +151,7 @@ void ToggleLuaMute() {}
 void ResetLuaMute() {}
 
 bool UseLuaCameras() { return false; }
+bool LuaPlayerCanWieldWeapons(short) { return true; }
 
 int GetLuaGameEndCondition() {
 	return _game_normal_end_condition;
@@ -1118,7 +1120,10 @@ static void RestorePreLuaSettings()
 bool RunLuaScript()
 {
 	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
+	{
 		use_lua_compass [i] = false;
+		can_wield_weapons[i] = true;
+	}
 	if (!lua_loaded)
 		return false;
 
@@ -1369,6 +1374,11 @@ bool UseLuaCameras()
 	}
 	return using_lua_cameras;
 }
+
+bool LuaPlayerCanWieldWeapons(short player_index)
+{
+	return (!lua_running || can_wield_weapons[player_index]);
+}		
 
 int GetLuaGameEndCondition() {
 	return game_end_condition;

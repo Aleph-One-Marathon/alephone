@@ -1146,6 +1146,8 @@ extern bool player_has_valid_weapon(short player_index);
 char Lua_Player_Weapons_Name[] = "player_weapons";
 typedef L_Class<Lua_Player_Weapons_Name> Lua_Player_Weapons;
 
+extern bool can_wield_weapons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
+
 static int Lua_Player_Weapons_Get(lua_State *L)
 {
 	if (lua_isstring(L, 2) && strcmp(lua_tostring(L, 2), "current") == 0)
@@ -1162,6 +1164,12 @@ static int Lua_Player_Weapons_Get(lua_State *L)
 				lua_pushnil(L);
 			}
 	}
+	else if (lua_isstring(L, 2) && strcmp(lua_tostring(L, 2), "active") == 0)
+	{
+		int player_index = Lua_Player_Weapons::Index(L, 1);
+		lua_pushboolean(L, can_wield_weapons[player_index]);
+		return 1;
+	}
 	else
 	{
 		int player_index = Lua_Player_Weapons::Index(L, 1);
@@ -1172,8 +1180,22 @@ static int Lua_Player_Weapons_Get(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Weapons_Set(lua_State *L)
+{
+	if (lua_isstring(L, 2) && strcmp(lua_tostring(L, 2), "active") == 0)
+	{
+		if (!lua_isboolean(L, 3))
+			return luaL_error(L, "can_wield: incorrect argument type");
+		can_wield_weapons[Lua_Player_Weapons::Index(L, 1)] = lua_toboolean(L, 3);
+		return 0;
+	}
+	else
+		return luaL_error(L, "no such index");
+}
+
 const luaL_reg Lua_Player_Weapons_Metatable[] = {
 	{"__index", Lua_Player_Weapons_Get},
+	{"__newindex", Lua_Player_Weapons_Set},
 	{0, 0}
 };
 

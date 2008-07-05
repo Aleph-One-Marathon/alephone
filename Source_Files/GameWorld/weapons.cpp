@@ -3427,11 +3427,13 @@ static void update_player_ammo_count(
 	}
 }
 
+extern bool LuaPlayerCanWieldWeapons(short);
+
 /*static*/ bool player_has_valid_weapon(
 	short player_index)
 {
 	// LP change:
-	if (CannotWieldWeapons()) return false;
+	if (CannotWieldWeapons() || !LuaPlayerCanWieldWeapons(player_index)) return false;
 
 	struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 

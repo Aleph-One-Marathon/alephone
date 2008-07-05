@@ -1039,6 +1039,21 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  </function>
 	</subtable-accessor>
       </subtable>
+      <function name="view_player" version="CVS">
+	<description>switch to another player's view</description>
+	<argument name="player"><type>player</type></argument>
+      </function>
+      <subtable name="weapons">
+	<variable name="current" access="read-only">
+	  <description>weapon the player is currently wielding</description>
+	  <type>player_weapon</type>
+	  <note>can be nil</note>
+	</variable>
+	<variable name="active" version="CVS">
+	  <description>when a player's weapons are not active, he does not see weapons in hand, and can not fire</description>
+	  <type>boolean</type>
+	</variable>
+      </subtable>
       <subtable-accessor name="weapons" classname="player_weapon" index="weapon_type">
 	<subtable name="primary" classname="player_weapon_trigger">
 	  <alias>secondary</alias>
@@ -1051,10 +1066,6 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <description>attempts to force player to ready weapon</description>
 	</function>
       </subtable-accessor>
-      <function name="view_player" version="CVS">
-	<description>switch to another player's view</description>
-	<argument name="player"><type>player</type></argument>
-      </function>
       <variable name="weapons.current" access="read-only">
 	<description>weapon the player is currently wielding</description>
 	<type>player_weapon</type>

@@ -55,6 +55,8 @@ int LuaTexturePaletteSize();
 shape_descriptor LuaTexturePaletteTexture(size_t);
 int LuaTexturePaletteSelected();
 
+bool LuaPlayerCanWieldWeapons(short player_index);
+
 /* Custom game scoring modes */
 enum {
   _game_of_most_points,
