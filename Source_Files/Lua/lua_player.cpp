@@ -48,6 +48,7 @@ LUA_PLAYER.CPP
 
 #define DONT_REPEAT_DEFINITIONS
 #include "item_definitions.h"
+#include "projectile_definitions.h"
 
 #ifdef HAVE_LUA
 
@@ -1298,6 +1299,8 @@ int Lua_Player_Find_Action_Key_Target(lua_State *L)
 	return 1;
 }
 
+extern projectile_definition *get_projectile_definition(short type);
+
 int Lua_Player_Find_Target(lua_State *L)
 {
 	// find the origin of projectiles (don't move left/right)
@@ -1311,6 +1314,11 @@ int Lua_Player_Find_Target(lua_State *L)
 	short obstruction_index;
 	short line_index;
 
+	projectile_definition *definition = get_projectile_definition(0);
+	bool was_pass_transparent = definition->flags & _usually_pass_transparent_side;
+	if (!was_pass_transparent)
+		definition->flags |= _usually_pass_transparent_side;
+
 	// preflight a projectile, 1 WU at a time (because of projectile speed bug)
 	uint16 flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true);
 
@@ -1322,6 +1330,9 @@ int Lua_Player_Find_Target(lua_State *L)
 		translate_point3d(&destination, WORLD_ONE, player->facing, player->elevation);
 		flags = translate_projectile(0, &origin, old_polygon, &destination, &new_polygon, player->monster_index, &obstruction_index, &line_index, true);
 	}
+
+	if (!was_pass_transparent) 
+		definition->flags &= ~_usually_pass_transparent_side;
 
 	if (flags & _projectile_hit_monster)
 	{
