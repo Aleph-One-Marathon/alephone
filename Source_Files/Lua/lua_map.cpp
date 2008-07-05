@@ -2035,8 +2035,29 @@ static int16 Lua_Sides_Length() { return SideList.size(); }
 // Sides.new(polygon, line)
 static int Lua_Sides_New(lua_State *L)
 {
-	short polygon_index = Lua_Polygon::Index(L, 1);
-	short line_index = Lua_Line::Index(L, 2);
+	short polygon_index;
+	if (lua_isnumber(L, 1))
+	{
+		polygon_index = static_cast<short>(lua_tonumber(L, 1));
+		if (!Lua_Polygon::Valid(polygon_index))
+			return luaL_error(L, "new: invalid polygon index");
+	}
+	else if (Lua_Polygon::Is(L, 1))
+		polygon_index = Lua_Polygon::Index(L, 1);
+	else
+		return luaL_error(L, "new: incorrect argument type");
+
+	short line_index;
+	if (lua_isnumber(L, 2))
+	{
+		line_index = static_cast<short>(lua_tonumber(L, 2));
+		if (!Lua_Line::Valid(line_index))
+			return luaL_error(L, "new: invalid line index");
+	}
+	else if (Lua_Line::Is(L, 2))
+		line_index = Lua_Line::Index(L, 2);
+	else
+		return luaL_error(L, "new: incorrect argument type");
 
 	// make sure we don't assert
 	line_data *line = get_line_data(line_index);
