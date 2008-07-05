@@ -542,9 +542,21 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <subtable-accessor name="endpoints" classname="line_endpoints" index="n">
 	<description>returns line endpoint n</description>
       </subtable-accessor>
+      <variable name="highest_adjacent_floor" access="read-only" version="CVS">
+	<description>height of higher adjacent polygon floor</description>
+	<type>WU</type>
+      </variable>
       <variable name="length" access="read-only">
 	<description>the length of this line</description>
 	<note>this might not be accurate, if someone used Chisel's stretch plugin</note>
+      </variable>
+      <variable name="lowest_adjacent_ceiling" access="read-only" version="CVS">
+	<description>height of lower adjacent polygon ceiling</description>
+	<type>WU</type>
+      </variable>
+      <variable name="solid" access="read-only" version="CVS">
+	<description>whether line is solid</description>
+	<type>boolean</type>
       </variable>
     </table>
     <table name="media">
@@ -1334,6 +1346,9 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <variable name="polygon" access="read-only">
 	<description>polygon this side is attached to</description>
 	<type>polygon</type>
+      </variable>
+      <variable name="type" access="read-only" version="CVS">
+	<description>type of side</description>
       </variable>
     </table>
     <table name="tag">
@@ -2150,6 +2165,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="ceiling whip antenna"/>
       </mnemonics>
     </enum>
+    <enum name="side_type">
+      <mnemonics>
+	<mnemonic name="full"/>
+	<mnemonic name="high"/>
+	<mnemonic name="low"/>
+	<mnemonic name="split"/>
+      </mnemonics>
+    </enum>
     <enum name="sound">
       <mnemonics>
 	<mnemonic name="startup"/>
@@ -2418,6 +2441,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     <enum-accessor name="ProjectileTypes" contains="projectile_type" nice-name="Projectiles"/>
     <enum-accessor name="SceneryTypes" contains="scenery_type" nice-name="Scenery"/>
     <enum-accessor name="ScoringModes" contains="scoring_mode" nice-name="Scoring Modes"/>
+    <enum-accessor name="SideTypes" contains="side_type" nice-name="Side Types"/>
     <enum-accessor name="Sounds" contains="sound" nice-name="Sounds"/>
     <enum-accessor name="TransferModes" contains="transfer_mode" nice-name="Transfer Modes"/>
     <enum-accessor name="WeaponTypes" contains="weapon_type" nice-name="Weapons"/>

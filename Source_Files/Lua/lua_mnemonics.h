@@ -556,6 +556,14 @@ const lang_def Lua_SceneryType_Mnemonics[] = {
 	{0, 0}
 };
 
+const lang_def Lua_SideType_Mnemonics[] = {
+	{"full", 0},
+	{"high", 1},
+	{"low", 2},
+	{"split", 4},
+	{0, 0}
+};
+
 const lang_def Lua_Sound_Mnemonics[] = {
 	{"startup", 0},
 	{"teleport in", 1},

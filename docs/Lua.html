@@ -155,6 +155,7 @@
 <li><a href="#ProjectileTypes">Projectiles</a></li>
 <li><a href="#SceneryTypes">Scenery</a></li>
 <li><a href="#ScoringModes">Scoring Modes</a></li>
+<li><a href="#SideTypes">Side Types</a></li>
 <li><a href="#Sounds">Sounds</a></li>
 <li><a href="#TransferModes">Transfer Modes</a></li>
 <li><a href="#WeaponTypes">Weapons</a></li>
@@ -669,12 +670,24 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl></dl>
 </dd>
       <dt>
+    .highest_adjacent_floor<span class="access"> (read-only)</span> <span class="version">CVS</span>
+</dt>
+<dd><p class="description">height of higher adjacent polygon floor</p></dd>
+      <dt>
     .length<span class="access"> (read-only)</span>
 </dt>
 <dd>
 <p class="description">the length of this line</p>
 <p class="note">this might not be accurate, if someone used Chisel's stretch plugin </p>
 </dd>
+      <dt>
+    .lowest_adjacent_ceiling<span class="access"> (read-only)</span> <span class="version">CVS</span>
+</dt>
+<dd><p class="description">height of lower adjacent polygon ceiling</p></dd>
+      <dt>
+    .solid<span class="access"> (read-only)</span> <span class="version">CVS</span>
+</dt>
+<dd><p class="description">whether line is solid</p></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -1521,6 +1534,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .polygon<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">polygon this side is attached to</p></dd>
+      <dt>
+    .type<span class="access"> (read-only)</span> <span class="version">CVS</span>
+</dt>
+<dd><p class="description">type of side</p></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -2444,6 +2461,19 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"most time"</li>
 <li>"least points"</li>
 <li>"least time"</li>
+</ul>
+<h3>
+<a name="SideTypes"></a>Side Types</h3>
+<dl>
+<dt># SideTypes</dt>
+<dt>SideTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"full"</li>
+<li>"high"</li>
+<li>"low"</li>
+<li>"split"</li>
 </ul>
 <h3>
 <a name="Sounds"></a>Sounds</h3>

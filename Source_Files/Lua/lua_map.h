@@ -116,6 +116,12 @@ typedef L_Class<Lua_Side_Name> Lua_Side;
 extern char Lua_Sides_Name[]; // "Sides"
 typedef L_Container<Lua_Sides_Name, Lua_Side> Lua_Sides;
 
+extern char Lua_SideType_Name[]; // "side_type"
+typedef L_Enum<Lua_SideType_Name> Lua_SideType;
+
+extern char Lua_SideTypes_Name[]; // "SideTypes"
+typedef L_EnumContainer<Lua_SideTypes_Name, Lua_SideType> Lua_SideTypes;
+
 extern char Lua_Media_Name[]; // "media"
 typedef L_Class<Lua_Media_Name> Lua_Media;
 

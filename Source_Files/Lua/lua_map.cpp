@@ -228,9 +228,28 @@ static int Lua_Line_Get_Endpoints(lua_State *L)
 	return 1;
 }
 
+static int Lua_Line_Get_Highest_Adjacent_Floor(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_line_data(Lua_Line::Index(L, 1))->highest_adjacent_floor / WORLD_ONE);
+	return 1;
+}
+
 static int Lua_Line_Get_Length(lua_State *L)
 {
 	lua_pushnumber(L, (double) get_line_data(Lua_Line::Index(L, 1))->length / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Line_Get_Lowest_Adjacent_Ceiling(lua_State *L)
+{
+	lua_pushnumber(L, (double) get_line_data(Lua_Line::Index(L, 1))->lowest_adjacent_ceiling / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Line_Get_Solid(lua_State *L)
+{
+	line_data *line = get_line_data(Lua_Line::Index(L, 1));
+	lua_pushboolean(L, LINE_IS_SOLID(line));
 	return 1;
 }
 
@@ -244,7 +263,10 @@ const luaL_reg Lua_Line_Get[] = {
 	{"counterclockwise_polygon", Lua_Line_Get_Counterclockwise_Polygon},
 	{"counterclockwise_side", Lua_Line_Get_Counterclockwise_Side},
 	{"endpoints", Lua_Line_Get_Endpoints},
+	{"highest_adjacent_floor", Lua_Line_Get_Highest_Adjacent_Floor},
 	{"length", Lua_Line_Get_Length},
+	{"lowest_adjacent_ceiling", Lua_Line_Get_Lowest_Adjacent_Ceiling},
+	{"solid", Lua_Line_Get_Solid},
 	{0, 0}
 };
 
@@ -1857,6 +1879,9 @@ const luaL_reg Lua_Transparent_Side_Set[] = {
 	{0, 0}
 };
 
+char Lua_SideType_Name[] = "side_type";
+char Lua_SideTypes_Name[] = "SideTypes";
+
 char Lua_Side_Name[] = "side";
 
 int Lua_Side_Play_Sound(lua_State *L)
@@ -1920,6 +1945,12 @@ static int Lua_Side_Get_Transparent(lua_State *L)
 	return 1;
 }
 
+static int Lua_Side_Get_Type(lua_State *L)
+{
+	Lua_SideType::Push(L, get_side_data(Lua_Side::Index(L, 1))->type);
+	return 1;
+}
+
 const luaL_reg Lua_Side_Get[] = {
 	{"control_panel", Lua_Side_Get_Control_Panel},
 	{"line", Lua_Side_Get_Line},
@@ -1928,6 +1959,7 @@ const luaL_reg Lua_Side_Get[] = {
 	{"primary", Lua_Side_Get_Primary},
 	{"secondary", Lua_Side_Get_Secondary},
 	{"transparent", Lua_Side_Get_Transparent},
+	{"type", Lua_Side_Get_Type},
 	{0, 0}
 };
 
@@ -2524,6 +2556,11 @@ int Lua_Map_register(lua_State *L)
 
 	Lua_Sides::Register(L);
 	Lua_Sides::Length = Lua_Sides_Length;
+
+	Lua_SideType::Register(L, 0, 0, 0, Lua_SideType_Mnemonics);
+	Lua_SideType::Valid = Lua_SideType::ValidRange(static_cast<int16>(_split_side) + 1);
+	Lua_SideTypes::Register(L);
+	Lua_SideTypes::Length = Lua_SideTypes::ConstantLength(static_cast<int16>(_split_side) + 1);
 
 	Lua_Light::Register(L, Lua_Light_Get, Lua_Light_Set);
 	Lua_Light::Valid = Lua_Light_Valid;
