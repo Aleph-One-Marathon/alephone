@@ -1545,6 +1545,37 @@ int Lua_Player_Teleport_To_Level(lua_State *L)
 	return 0;
 }
 
+extern short current_player_index;
+
+int Lua_Player_View_Player(lua_State *L)
+{
+	int player_index = Lua_Player::Index(L, 1);
+	if (player_index != local_player_index)
+		return 0;
+
+	int view_player_index;
+	if (lua_isnumber(L, 2))
+	{
+		view_player_index = static_cast<int>(lua_tonumber(L, 2));
+		if (view_player_index < 0 || view_player_index >= dynamic_world->player_count)
+			return luaL_error(L, "view_player(): invalid player index");
+	}
+	else if (Lua_Player::Is(L, 2))
+		view_player_index = Lua_Player::Index(L, 2);
+	else
+		return luaL_error(L, "view_player(): incorrect argument type");
+	
+	if (view_player_index != current_player_index)
+	{
+		set_current_player_index(view_player_index);
+		update_interface(NONE);
+		dirty_terminal_view(player_index);
+	}
+
+	return 0;
+		
+}
+
 // get accessors
 
 static int Lua_Player_Get_Action_Flags(lua_State *L)
@@ -1820,6 +1851,7 @@ const luaL_reg Lua_Player_Get[] = {
 	{"teleport", L_TableFunction<Lua_Player_Teleport>},
 	{"teleport_to_level", L_TableFunction<Lua_Player_Teleport_To_Level>},
 	{"texture_palette", Lua_Player_Get_Texture_Palette},
+	{"view_player", L_TableFunction<Lua_Player_View_Player>},
 	{"weapons", Lua_Player_Get_Weapons},
 	{"x", Lua_Player_Get_X},
 	{"y", Lua_Player_Get_Y},
