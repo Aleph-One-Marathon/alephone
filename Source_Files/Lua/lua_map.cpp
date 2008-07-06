@@ -1889,7 +1889,7 @@ static int Lua_Transparent_Side_Set_Texture_Y(lua_State *L)
 static int Lua_Transparent_Side_Set_Transfer_Mode(lua_State *L)
 {
 	side_data *side = get_side_data(Lua_Transparent_Side::Index(L, 1));
-	side->primary_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
+	side->transparent_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
 	return 0;
 }
 const luaL_reg Lua_Transparent_Side_Get[] = {
