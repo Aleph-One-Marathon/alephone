@@ -134,10 +134,13 @@ void recalculate_side_type(short side_index)
 		{
 			side->type = _low_side;
 		}
-		else
+		else if (opposite->ceiling_height < polygon->ceiling_height)
 		{
 			side->type = _high_side;
 		}
+		else
+			side->type = _full_side;
+		
 	}
 	else
 	{
