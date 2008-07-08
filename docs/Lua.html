@@ -670,11 +670,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl></dl>
 </dd>
       <dt>
-    .has_transparent_side<span class="access"> (read-only)</span> <span class="version">CVS</span>
+    .has_transparent_side<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">whether one of the line's sides has a transparent texture</p></dd>
       <dt>
-    .highest_adjacent_floor<span class="access"> (read-only)</span> <span class="version">CVS</span>
+    .highest_adjacent_floor<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">height of higher adjacent polygon floor</p></dd>
       <dt>
@@ -685,11 +685,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="note">this might not be accurate, if someone used Chisel's stretch plugin </p>
 </dd>
       <dt>
-    .lowest_adjacent_ceiling<span class="access"> (read-only)</span> <span class="version">CVS</span>
+    .lowest_adjacent_ceiling<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">height of lower adjacent polygon ceiling</p></dd>
       <dt>
-    .solid<span class="access"> (read-only)</span> <span class="version">CVS</span>
+    .solid<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">whether line is solid</p></dd>
     </dl></dd>
@@ -1193,13 +1193,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dl>
 </dd>
       <dt>:view_player(player)
-     <span class="version">CVS</span>
+     <span class="version">20080707</span>
 </dt>
 <dd><p class="description">switch to another player's view</p></dd>
       <dt>.weapons</dt>
 <dd><dl>
 <dt>
-    .active <span class="version">CVS</span>
+    .active <span class="version">20080707</span>
 </dt>
 <dd><p class="description">when a player's weapons are not active, he does not see weapons in hand, and can not fire</p></dd>
 <dt>
@@ -1312,7 +1312,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     </dt>
 <dd><p class="description">iterates through all of this polygon's endpoints</p></dd>
       <dt>:find_line_crossed_leaving(x1, y1, x2, y2)
-     <span class="version">CVS</span>
+     <span class="version">20080707</span>
 </dt>
 <dd>
 <p class="description">returns the polygon line crossed by line segment (x1, y1) (x2, y2)</p>
@@ -1491,7 +1491,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Sides()</dt>
 <dd><p class="description">iterates through all sides on the level</p></dd>
 <dt>Sides.new(polygon, line)
-     <span class="version">CVS</span>
+     <span class="version">20080707</span>
 </dt>
 <dd>
 <p class="description">creates a new side</p>
@@ -1500,34 +1500,34 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Sides[index]</dt>
 <dd><dl>
       <dt>.control_panel<p class="note">nil if the side is not a control panel </p>
-<p class="note">set to true or false to create/destroy a control panel <span class="version">CVS</span></p>
+<p class="note">set to true or false to create/destroy a control panel <span class="version">20080707</span></p>
 </dt>
 <dd><dl>
 <dt>
-    .can_be_destroyed <span class="version">CVS</span>
+    .can_be_destroyed <span class="version">20080707</span>
 </dt>
 <dd><p class="description">whether projectiles destroy this switch</p></dd>
 <dt>
-    .light_dependent <span class="version">CVS</span>
+    .light_dependent <span class="version">20080707</span>
 </dt>
 <dd><p class="description">switch can only be activated if light &gt; 75%</p></dd>
 <dt>
-    .only_toggled_by_weapons <span class="version">CVS</span>
+    .only_toggled_by_weapons <span class="version">20080707</span>
 </dt>
 <dd><p class="description">switch can only be toggled by weapons</p></dd>
 <dt>
     .permutation</dt>
 <dd><p class="description">permutation of control panel</p></dd>
 <dt>
-    .repair <span class="version">CVS</span>
+    .repair <span class="version">20080707</span>
 </dt>
 <dd><p class="description">switch is a repair switch</p></dd>
 <dt>
-    .type <span class="version">CVS</span>
+    .type <span class="version">20080707</span>
 </dt>
 <dd><p class="description">type of control panel</p></dd>
 <dt>
-    .uses_item <span class="version">CVS</span>
+    .uses_item <span class="version">20080707</span>
 </dt>
 <dd><p class="description">i.e. chip insertion</p></dd>
 </dl></dd>
@@ -1571,7 +1571,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">polygon this side is attached to</p></dd>
       <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">CVS</span>
+    .type<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">type of side</p></dd>
     </dl></dd>
@@ -1752,7 +1752,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>ControlPanelTypes[control_panel_type]</dt>
 <dd><dl>
       <dt>
-    .active_texture_index<span class="access"> (read-only)</span> <span class="version">CVS</span>
+    .active_texture_index<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">bitmap index when control panel is active</p></dd>
       <dt>
@@ -1760,11 +1760,11 @@ If you do this, you should customize them all at the beginning of the script. Ch
 </dt>
 <dd><p class="description">class of this control panel type</p></dd>
       <dt>
-    .collection<span class="access"> (read-only)</span> <span class="version">CVS</span>
+    .collection<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">collection this control panel belongs to</p></dd>
       <dt>
-    .inactive_texture_index<span class="access"> (read-only)</span> <span class="version">CVS</span>
+    .inactive_texture_index<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
 <dd><p class="description">bitmap index when control panel is inactive/destroyed</p></dd>
     </dl></dd>

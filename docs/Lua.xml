@@ -542,11 +542,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <subtable-accessor name="endpoints" classname="line_endpoints" index="n">
 	<description>returns line endpoint n</description>
       </subtable-accessor>
-      <variable name="has_transparent_side" access="read-only" version="CVS">
+      <variable name="has_transparent_side" access="read-only" version="20080707">
 	<description>whether one of the line's sides has a transparent texture</description>
 	<type>boolean</type>
       </variable>
-      <variable name="highest_adjacent_floor" access="read-only" version="CVS">
+      <variable name="highest_adjacent_floor" access="read-only" version="20080707">
 	<description>height of higher adjacent polygon floor</description>
 	<type>WU</type>
       </variable>
@@ -554,11 +554,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>the length of this line</description>
 	<note>this might not be accurate, if someone used Chisel's stretch plugin</note>
       </variable>
-      <variable name="lowest_adjacent_ceiling" access="read-only" version="CVS">
+      <variable name="lowest_adjacent_ceiling" access="read-only" version="20080707">
 	<description>height of lower adjacent polygon ceiling</description>
 	<type>WU</type>
       </variable>
-      <variable name="solid" access="read-only" version="CVS">
+      <variable name="solid" access="read-only" version="20080707">
 	<description>whether line is solid</description>
 	<type>boolean</type>
       </variable>
@@ -1039,7 +1039,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  </function>
 	</subtable-accessor>
       </subtable>
-      <function name="view_player" version="CVS">
+      <function name="view_player" version="20080707">
 	<description>switch to another player's view</description>
 	<argument name="player"><type>player</type></argument>
       </function>
@@ -1049,7 +1049,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <type>player_weapon</type>
 	  <note>can be nil</note>
 	</variable>
-	<variable name="active" version="CVS">
+	<variable name="active" version="20080707">
 	  <description>when a player's weapons are not active, he does not see weapons in hand, and can not fire</description>
 	  <type>boolean</type>
 	</variable>
@@ -1140,7 +1140,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <function name="endpoints">
 	<description>iterates through all of this polygon's endpoints</description>
       </function>
-      <function name="find_line_crossed_leaving" version="CVS">
+      <function name="find_line_crossed_leaving" version="20080707">
 	<description>returns the polygon line crossed by line segment (x1, y1) (x2, y2)</description>
 	<argument name="x1"><type>WU</type></argument>
 	<argument name="y1"><type>WU</type></argument>
@@ -1296,23 +1296,23 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     </table>
     <table name="side">
       <subtable name="control_panel" classname="side_control_panel">
-	<variable name="can_be_destroyed" version="CVS">
+	<variable name="can_be_destroyed" version="20080707">
 	  <description>whether projectiles destroy this switch</description>
 	  <type>boolean</type>
 	</variable>
-	<variable name="light_dependent" version="CVS">
+	<variable name="light_dependent" version="20080707">
 	  <description>switch can only be activated if light > 75%</description>
 	  <type>boolean</type>
 	</variable>
-	<variable name="only_toggled_by_weapons" version="CVS">
+	<variable name="only_toggled_by_weapons" version="20080707">
 	  <description>switch can only be toggled by weapons</description>
 	  <type>boolean</type>
 	</variable>
-	<variable name="repair" version="CVS">
+	<variable name="repair" version="20080707">
 	  <description>switch is a repair switch</description>
 	  <type>boolean</type>
 	</variable>
-	<variable name="type" version="CVS">
+	<variable name="type" version="20080707">
 	  <description>type of control panel</description>
 	  <type>control_panel_type</type>
 	</variable>
@@ -1320,12 +1320,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <description>permutation of control panel</description>
 	  <type>number</type>
 	</variable>
-	<variable name="uses_item" version="CVS">
+	<variable name="uses_item" version="20080707">
 	  <description>i.e. chip insertion</description>
 	  <type>boolean</type>
 	</variable>
 	<note>nil if the side is not a control panel</note>
-	<note version="CVS">set to true or false to create/destroy a control panel</note>
+	<note version="20080707">set to true or false to create/destroy a control panel</note>
       </subtable>
       <subtable name="primary" classname="primary_side">
 	<alias>secondary</alias>
@@ -1374,7 +1374,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon this side is attached to</description>
 	<type>polygon</type>
       </variable>
-      <variable name="type" access="read-only" version="CVS">
+      <variable name="type" access="read-only" version="20080707">
 	<description>type of side</description>
       </variable>
     </table>
@@ -1584,7 +1584,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <call>
 	<description>iterates through all sides on the level</description>
       </call>
-      <function name="new" version="CVS">
+      <function name="new" version="20080707">
 	<description>creates a new side</description>
 	<argument name="polygon"><type>polygon</type></argument>
 	<argument name="line"><type>line</type></argument>
@@ -1657,7 +1657,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </mnemonics>
     </enum>
     <enum name="control_panel_type">
-      <variable name="active_texture_index" access="read-only" version="CVS">
+      <variable name="active_texture_index" access="read-only" version="20080707">
 	<description>bitmap index when control panel is active</description>
 	<type>number</type>
       </variable>
@@ -1665,11 +1665,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>class of this control panel type</description>
 	<type>control_panel_class</type>
       </variable>
-      <variable name="collection" access="read-only" version="CVS">
+      <variable name="collection" access="read-only" version="20080707">
 	<description>collection this control panel belongs to</description>
 	<type>collection</type>
       </variable>
-      <variable name="inactive_texture_index" access="read-only" version="CVS">
+      <variable name="inactive_texture_index" access="read-only" version="20080707">
 	<description>bitmap index when control panel is inactive/destroyed</description>
 	<type>number</type>
       </variable>
