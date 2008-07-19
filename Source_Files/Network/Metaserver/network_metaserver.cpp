@@ -53,6 +53,7 @@ set<string> MetaserverClient::s_ignoreNames;
 
 static const int kKeyLength = 16;
 
+static std::string remove_formatting(const std::string &s);
 
 void
 MetaserverClient::handleUnexpectedMessage(Message* inMessage, CommunicationsChannel* inChannel)
@@ -80,7 +81,7 @@ MetaserverClient::handleChatMessage(ChatMessage* message, CommunicationsChannel*
 {
 	if(message->internalType() == 0 && m_notificationAdapter)
 	{
-		std::string realSenderName = message->senderName();
+		std::string realSenderName = remove_formatting(message->senderName());
 		if (realSenderName[0] == '\260') realSenderName.erase(realSenderName.begin());
 		if (s_ignoreNames.find(realSenderName) != s_ignoreNames.end()) 
 			return;
@@ -96,7 +97,7 @@ void MetaserverClient::handlePrivateMessage(PrivateMessage* message, Communicati
 {
 	if (message->internalType() == 0 && m_notificationAdapter)
 	{		
-		std::string realSenderName = message->senderName();
+		std::string realSenderName = remove_formatting(message->senderName());
 		if (realSenderName[0] == '\260') realSenderName.erase(realSenderName.begin());
 		if (s_ignoreNames.find(realSenderName) != s_ignoreNames.end()) 
 			return;
