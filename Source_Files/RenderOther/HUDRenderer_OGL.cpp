@@ -423,13 +423,13 @@ void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short x, short y, int si
 	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();
 	glBegin(GL_TRIANGLE_FAN);
-		glTexCoord2d(U_Offset, V_Offset + V_Scale);
-		glVertex2i(x, y);
 		glTexCoord2d(U_Offset, V_Offset);
+		glVertex2i(x, y);
+		glTexCoord2d(U_Offset, V_Offset + V_Scale);
 		glVertex2i(x + width, y);
-		glTexCoord2d(U_Offset + U_Scale, V_Offset);
-		glVertex2i(x + width, y + height);
 		glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
+		glVertex2i(x + width, y + height);
+		glTexCoord2d(U_Offset + U_Scale, V_Offset);
 		glVertex2i(x, y + height);
 	glEnd();
 	TMgr.RestoreTextureMatrix();
