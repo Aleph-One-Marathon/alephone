@@ -2328,6 +2328,39 @@ static wad_data *build_export_wad(wad_header *header, long *length)
 	if(wad)
 	{
 		recalculate_map_counts();
+
+		// try to divine initial platform/polygon states
+		vector<platform_data> SavedPlatforms = PlatformList;
+		vector<polygon_data> SavedPolygons = PolygonList;
+		vector<line_data> SavedLines = LineList;
+
+		for (size_t loop = 0; loop < PlatformList.size(); ++loop)
+		{
+			platform_data *platform = &PlatformList[loop];
+			// reset the polygon heights
+			if (PLATFORM_COMES_FROM_FLOOR(platform))
+			{
+				platform->floor_height = platform->minimum_floor_height;
+				PolygonList[platform->polygon_index].floor_height = platform->floor_height;
+			}
+			if (PLATFORM_COMES_FROM_CEILING(platform))
+			{
+				platform->ceiling_height = platform->maximum_ceiling_height;
+				PolygonList[platform->polygon_index].ceiling_height = platform->ceiling_height;
+			}
+		}
+
+		for (size_t loop = 0; loop < LineList.size(); ++loop)
+		{
+			line_data *line = &LineList[loop];
+			if (LINE_IS_VARIABLE_ELEVATION(line))
+			{
+				SET_LINE_VARIABLE_ELEVATION(line, false);
+				SET_LINE_SOLIDITY(line, false);
+				SET_LINE_TRANSPARENCY(line, true);
+			}
+		}
+
 		for(unsigned loop= 0; loop<NUMBER_OF_EXPORT_ARRAYS; ++loop)
 		{
 			/* If there is a conversion function, let it handle it */
@@ -2350,6 +2383,11 @@ static wad_data *build_export_wad(wad_header *header, long *length)
 				delete []array_to_slam;
 			}
 		}
+
+		PlatformList = SavedPlatforms;
+		PolygonList = SavedPolygons;
+		LineList = SavedLines;
+
 		if(wad) *length= calculate_wad_length(header, wad);
 	}
 	
