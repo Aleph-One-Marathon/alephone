@@ -138,6 +138,7 @@ struct network_preferences_data
 	char metaserver_password[kMetaserverLoginLength];
 	bool use_custom_metaserver_colors;
 	rgb_color metaserver_colors[2];
+	bool mute_metaserver_guests;
 };
 
 struct player_preferences_data

@@ -534,6 +534,9 @@ static void player_dialog(void *arg)
 	w_password_entry *password_w = new w_password_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
 	table->dual_add(password_w->label("Password"), d);
 	table->dual_add(password_w, d);
+	w_toggle *mute_guests_w = new w_toggle(network_preferences->mute_metaserver_guests);
+	table->dual_add(mute_guests_w->label("Mute All Guests"), d);
+	table->dual_add(mute_guests_w, d);
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Custom Internet Chat Colors"), d);
@@ -554,6 +557,7 @@ static void player_dialog(void *arg)
 
 	login_as_guest_w->add_dependent_widget(login_w);
 	login_as_guest_w->add_dependent_widget(password_w);
+	login_as_guest_w->add_dependent_widget(mute_guests_w);
 
 	placer->add(table, true);
 
@@ -603,6 +607,13 @@ static void player_dialog(void *arg)
 		const char *metaserver_password = (login_as_guest_w->get_selection() != 0) ? "" : password_w->get_text();
 		if (strcmp(metaserver_password, network_preferences->metaserver_password)) {
 			strncpy(network_preferences->metaserver_password, metaserver_password, network_preferences_data::kMetaserverLoginLength);
+			changed = true;
+		}
+
+		bool mute_metaserver_guests = (login_as_guest_w->get_selection() != 0) ? false : mute_guests_w->get_selection() == 1;
+		if (mute_metaserver_guests != network_preferences->mute_metaserver_guests)
+		{
+			network_preferences->mute_metaserver_guests = mute_metaserver_guests;
 			changed = true;
 		}
 
@@ -1985,6 +1996,7 @@ void write_preferences(
 	}
 	fprintf(F, "\"\n");
 	fprintf(F,"  use_custom_metaserver_colors=\"%s\"\n", BoolString(network_preferences->use_custom_metaserver_colors));
+	fprintf(F,"  mute_metaserver_guests=\"%s\"\n", BoolString(network_preferences->mute_metaserver_guests));
 	
 	fprintf(F,">\n");
 #ifndef SDL
@@ -2121,6 +2133,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->check_for_updates = true;
 	strcpy(preferences->metaserver_login, "guest");
 	memset(preferences->metaserver_password, 0, 16);
+	preferences->mute_metaserver_guests = false;
 	preferences->use_custom_metaserver_colors = false;
 	preferences->metaserver_colors[0] = get_interface_color(PLAYER_COLOR_BASE_INDEX);
 	preferences->metaserver_colors[1] = get_interface_color(PLAYER_COLOR_BASE_INDEX);
@@ -3304,6 +3317,10 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		DeUTF8_C(Value, strlen(Value),network_preferences->metaserver_login, sizeof(network_preferences->metaserver_login));
 		return true;
+	}
+	else if (StringsEqual(Tag,"mute_metaserver_guests"))
+	{
+		return ReadBooleanValue(Value, network_preferences->mute_metaserver_guests);
 	}
 	else if (StringsEqual(Tag,"metaserver_clear_password"))
 	{
