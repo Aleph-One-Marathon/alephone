@@ -236,6 +236,7 @@ void GlobalMetaserverChatNotificationAdapter::receivedPrivateMessage(const std::
 	color_entry(e, gMetaserverClient->find_player(senderID));
 	
 	gMetaserverChatHistory.append(e);
+	PlayInterfaceButtonSound(_snd_compiler_projectile_flyby);
 }
 
 void GlobalMetaserverChatNotificationAdapter::receivedBroadcastMessage(const std::string& message)
