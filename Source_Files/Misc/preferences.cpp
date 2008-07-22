@@ -535,7 +535,7 @@ static void player_dialog(void *arg)
 	table->dual_add(password_w->label("Password"), d);
 	table->dual_add(password_w, d);
 	w_toggle *mute_guests_w = new w_toggle(network_preferences->mute_metaserver_guests);
-	table->dual_add(mute_guests_w->label("Mute All Guests"), d);
+	table->dual_add(mute_guests_w->label("Mute All Guest Chat"), d);
 	table->dual_add(mute_guests_w, d);
 
 	table->add_row(new w_spacer(), true);
