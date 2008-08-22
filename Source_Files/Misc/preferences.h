@@ -71,11 +71,6 @@ enum {
 struct graphics_preferences_data
 {
 	struct screen_mode_data screen_mode;
-#ifdef mac
-	GDSpec device_spec;
-	// LP: converted this to floating-point for convenience
-	float refresh_frequency;
-#endif
 	// LP change: added OpenGL support
 	OGL_ConfigureData OGL_Configure;
 
@@ -120,11 +115,7 @@ struct network_preferences_data
 	uint16 game_protocol; // _network_game_protocol_star, etc.
 	bool use_speex_encoder;
 	bool use_netscript;
-#ifdef mac
-	FSSpec netscript_file;
-#else
 	char netscript_file[256];
-#endif	
 	uint16 cheat_flags;
 	bool advertise_on_metaserver;
 	bool attempt_upnp;
@@ -207,25 +198,19 @@ enum {
 
 struct environment_preferences_data
 {
-#ifdef mac
-	FSSpec map_file;
-	FSSpec physics_file;
-	FSSpec shapes_file;
-	FSSpec sounds_file;
-#else
 	char map_file[256];
 	char physics_file[256];
 	char shapes_file[256];
 	char sounds_file[256];
-#endif
+
 	uint32 map_checksum;
 	uint32 physics_checksum;
 	TimeType shapes_mod_date;
 	TimeType sounds_mod_date;
 	uint32 patches[MAXIMUM_PATCHES_PER_ENVIRONMENT];
-#ifdef SDL
+
 	char theme_dir[256];
-#endif
+
 	// ZZZ: these aren't really environment preferences, but
 	// preferences that affect the environment preferences dialog
 	bool group_by_directory;	// if not, display popup as one giant flat list

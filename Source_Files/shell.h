@@ -45,28 +45,6 @@ class FileSpecifier;
 
 #include "XML_ElementParser.h"
 
-#define MAXIMUM_COLORS ((short)256)
-
-enum /* window reference numbers */
-{
-	refSCREEN_WINDOW= 1000
-};
-
-enum /* dialog reference numbers */
-{
-	refPREFERENCES_DIALOG= 8000,
-	refCONFIGURE_KEYBOARD_DIALOG,
-	refNETWORK_SETUP_DIALOG,
-	refNETWORK_GATHER_DIALOG,
-	refNETWORK_JOIN_DIALOG,
-	refNETWORK_CARNAGE_DIALOG,
-	
-	LAST_DIALOG_REFCON= refNETWORK_CARNAGE_DIALOG,
-	FIRST_DIALOG_REFCON= refPREFERENCES_DIALOG
-};
-
-#define sndCHANGED_VOLUME_SOUND 2000
-
 /* ---------- resources */
 
 enum {
@@ -97,11 +75,6 @@ struct screen_mode_data
 #define NUMBER_OF_KEYS 21
 #define NUMBER_UNUSED_KEYS 10
 
-#define PREFERENCES_VERSION 17
-#define PREFERENCES_CREATOR '52.4'
-#define PREFERENCES_TYPE 'pref'
-#define PREFERENCES_NAME_LENGTH 32
-
 enum // input devices
 {
 	_keyboard_or_game_pad,
@@ -111,56 +84,11 @@ enum // input devices
 	_input_sprocket_only
 };
 
-struct system_information_data
-{
-	bool has_seven;
-	bool has_ten;
-	bool has_apple_events;
-	bool appletalk_is_available;
-	bool machine_is_68k;
-	bool machine_is_68040;
-	bool machine_is_ppc;
-	bool machine_has_network_memory;
-	bool machine_is_bluebox;
-	bool sdl_networking_is_available;
-};
-
-/* ---------- globals */
-
-extern struct system_information_data *system_information;
-
-#ifdef TARGET_API_MAC_CARBON
-#ifdef USES_NIBS
-
-extern CFBundleRef MainBundle;
-extern IBNibRef GUI_Nib;
-
-#endif
-#endif
+#define PREFERENCES_NAME_LENGTH 32
 
 /* ---------- prototypes/SHELL.C [now shell_misc.cpp, shell_macintosh.cpp, shell_sdl.cpp] */
 
 void global_idle_proc(void);
-
-#ifdef mac
-// LP: added Navigation-Services detection
-void handle_game_key(EventRecord *event, short key);
-bool machine_has_quicktime();
-bool machine_has_nav_services();
-
-// For loading MML from shapes and sounds resource forks
-// when one of those files is opened
-void XML_LoadFromResourceFork(FileSpecifier& File);
-
-#ifdef TARGET_API_MAC_CARBON
-
-// Gets a function pointer for a MacOS-X function
-// that may not be explicitly available for CFM Carbon (Carbon/Classic).
-// Returns NULL if such a function pointer could not be found
-void *GetSystemFunctionPointer(const CFStringRef FunctionName);
-
-#endif
-#endif
 
 // LP addition for handling XML stuff:
 XML_ElementParser *Cheats_GetParser();
@@ -172,9 +100,6 @@ void LoadBaseMMLScripts();
 
 void initialize_shape_handler(void);
 
-#if defined(mac)
-PixMapHandle get_shape_pixmap(short shape, bool force_copy);
-#elif defined(SDL)
 // ZZZ: this now works with RLE'd shapes, but needs extra storage.  Caller should
 // be prepared to take a byte* if using an RLE shape (it will be set to NULL if
 // shape is straight-coded); caller will need to free() that storage after freeing
@@ -190,7 +115,6 @@ PixMapHandle get_shape_pixmap(short shape, bool force_copy);
 // Sigh, the extensions keep piling up... now we can also provide a quarter-sized surface from a shape.  It's hacky -
 // the shape is shrunk by nearest-neighbor-style scaling (no smoothing), even at 16-bit and above, and it only works for RLE shapes.
 SDL_Surface *get_shape_surface(int shape, int collection = NONE, byte** outPointerToPixelData = NULL, float inIllumination = -1.0f, bool inShrinkImage = false);
-#endif
 
 void open_shapes_file(FileSpecifier& File);
 
@@ -198,20 +122,12 @@ void open_shapes_file(FileSpecifier& File);
 
 void _get_player_color(size_t color_index, RGBColor *color);
 void _get_interface_color(size_t color_index, RGBColor *color);
-#if defined(SDL)
 void _get_player_color(size_t color_index, SDL_Color *color);
 void _get_interface_color(size_t color_index, SDL_Color *color);
-#endif
+
 
 /* ---------- protoypes/INTERFACE_MACINTOSH.C */
-#ifdef mac
-bool try_for_event(bool *use_waitnext);
-void process_game_key(EventRecord *event, short key);
-void update_game_window(WindowPtr window, EventRecord *event);
-bool has_cheat_modifiers(EventRecord *event);
-#elif defined(SDL)
 void update_game_window(void);
-#endif
 
 /* ---------- prototypes/PREFERENCES.C */
 void load_environment_from_preferences(void);
