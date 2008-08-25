@@ -1115,7 +1115,7 @@ bool image_file_t::has_rsrc(uint32 rsrc_type, uint32 wad_type, int id)
 
 bool image_file_t::has_pict(int id)
 {
-	return has_rsrc(FOUR_CHARS_TO_INT('P','I','C','T'), FOUR_CHARS_TO_INT('p','i','c','t'), id);
+	return has_rsrc(FOUR_CHARS_TO_INT('P','I','C','T'), FOUR_CHARS_TO_INT('P','I','C','T'), id) || has_rsrc(FOUR_CHARS_TO_INT('P','I','C','T'), FOUR_CHARS_TO_INT('p','i','c','t'), id);
 }
 
 bool image_file_t::has_clut(int id)
@@ -1143,9 +1143,19 @@ bool image_file_t::get_rsrc(uint32 rsrc_type, uint32 wad_type, int id, LoadedRes
 			{
 				if (rsrc_type == FOUR_CHARS_TO_INT('P','I','C','T'))
 				{
-					size_t clut_length;
-					void *clut_data = extract_type_from_wad(d, FOUR_CHARS_TO_INT('c','l','u','t'), &clut_length);
-					success = make_rsrc_from_pict(raw, raw_length, rsrc, clut_data, clut_length);
+					if (wad_type == FOUR_CHARS_TO_INT('P','I','C','T'))
+					{
+						void *pict_data = malloc(raw_length);
+						memcpy(pict_data, raw, raw_length);
+						rsrc.SetData(pict_data, raw_length);
+						success = true;
+					}
+					else
+					{
+						size_t clut_length;
+						void *clut_data = extract_type_from_wad(d, FOUR_CHARS_TO_INT('c','l','u','t'), &clut_length);
+						success = make_rsrc_from_pict(raw, raw_length, rsrc, clut_data, clut_length);
+					}
 				}
 				else if (rsrc_type == FOUR_CHARS_TO_INT('c','l','u','t'))
 					success = make_rsrc_from_clut(raw, raw_length, rsrc);
@@ -1174,7 +1184,7 @@ bool image_file_t::get_rsrc(uint32 rsrc_type, uint32 wad_type, int id, LoadedRes
 
 bool image_file_t::get_pict(int id, LoadedResource &rsrc)
 {
-	return get_rsrc(FOUR_CHARS_TO_INT('P','I','C','T'), FOUR_CHARS_TO_INT('p','i','c','t'), id, rsrc);
+	return get_rsrc(FOUR_CHARS_TO_INT('P','I','C','T'), FOUR_CHARS_TO_INT('P','I','C','T'), id, rsrc) || get_rsrc(FOUR_CHARS_TO_INT('P','I','C','T'), FOUR_CHARS_TO_INT('p','i','c','t'), id, rsrc);
 }
 
 bool image_file_t::get_clut(int id, LoadedResource &rsrc)
