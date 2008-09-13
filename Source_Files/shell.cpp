@@ -431,29 +431,38 @@ static void initialize_application(void)
 		graphics_preferences->screen_mode.fullscreen = false;
 	write_preferences();
 
-// grr, Windows
 #if defined(__WIN32__) 
 	if (!SDL_getenv("SDL_VIDEODRIVER")) {
-#if defined(HAVE_OPENGL)
-		if (!option_nogl && 
-		    graphics_preferences->screen_mode.acceleration != _no_acceleration)
-		{
-			SDL_putenv("SDL_VIDEODRIVER=windib");
-		} else 
-#endif
+		if (graphics_preferences->use_directx_backend)
 		{
 			SDL_putenv("SDL_VIDEODRIVER=directx");
 		}
+		else
+		{
+			SDL_putenv("SDL_VIDEODRIVER=windib");
+		} 
 	}
 #endif
 
 	SDL_putenv("SDL_VIDEO_ALLOW_SCREENSAVER=1");
 
 	// Initialize SDL
-	if (SDL_Init(SDL_INIT_VIDEO | 
-		     (option_nosound ? 0 : SDL_INIT_AUDIO) |
-		     (option_debug ? SDL_INIT_NOPARACHUTE : 0)
-		     ) < 0) {
+	int retval = SDL_Init(SDL_INIT_VIDEO | 
+			      (option_nosound ? 0 : SDL_INIT_AUDIO) |
+			      (option_debug ? SDL_INIT_NOPARACHUTE : 0));
+#ifdef __WIN32__
+	if (retval < 0 && strcmp(SDL_getenv("SDL_VIDEODRIVER"), "directx") == 0)
+	{
+		// directx failed? try windib
+		fprintf(stderr, "Couldn't initialize SDL (%s); retrying with windib backend\n", SDL_GetError());
+		SDL_putenv("SDL_VIDEODRIVER=windib");
+		retval = SDL_Init(SDL_INIT_VIDEO |
+				  (option_nosound ? 0 : SDL_INIT_AUDIO) |
+				  (option_debug ? SDL_INIT_NOPARACHUTE : 0));
+	}
+#endif
+	if (retval < 0)
+	{
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
 	}

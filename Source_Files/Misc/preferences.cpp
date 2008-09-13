@@ -898,6 +898,13 @@ static void graphics_dialog(void *arg)
 	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
 	table->dual_add(fullscreen_w, d);
 
+#if defined(__WIN32__)
+	table->add_row(new w_spacer(), true);
+	w_toggle *directx_w = new w_toggle(graphics_preferences->use_directx_backend);
+	table->dual_add(directx_w->label("DirectDraw / DirectInput"), d);
+	table->dual_add(directx_w, d);
+#endif
+
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
@@ -906,11 +913,6 @@ static void graphics_dialog(void *arg)
 
 #ifndef HAVE_OPENGL
 	placer->dual_add(new w_static_text("This copy of Aleph One was built without OpenGL support."), d);
-#else
-#if defined(__WIN32__)
-	placer->dual_add(new w_static_text("Warning: you should quit and restart Aleph One"), d);
-	placer->dual_add(new w_static_text("if you switch rendering systems."), d);
-#endif
 #endif
 	placer->add(new w_spacer(), true);
 
@@ -973,6 +975,16 @@ static void graphics_dialog(void *arg)
 			    changed = true;
 		    }
 	    }
+
+#ifdef __WIN32__
+	    bool use_directx = directx_w->get_selection();
+	    if (use_directx != graphics_preferences->use_directx_backend)
+	    {
+		    graphics_preferences->use_directx_backend = use_directx;
+		    changed = true;
+		    alert_user("DirectDraw/DirectInput changes will take effect the next time you launch Aleph One.");
+	    }
+#endif
 
 	    if (changed) {
 		    write_preferences();
@@ -1889,6 +1901,9 @@ void write_preferences(
 	fprintf(F,"  geforce_fix=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.GeForceFix));
 	fprintf(F,"  double_corpse_limit=\"%s\"\n", BoolString(graphics_preferences->double_corpse_limit));
 	fprintf(F,"  hog_the_cpu=\"%s\"\n", BoolString(graphics_preferences->hog_the_cpu));
+#ifdef __WIN32__
+	fprintf(F,"  use_directx_backend=\"%s\"\n", BoolString(graphics_preferences->use_directx_backend));
+#endif
 	fprintf(F,">\n");
 	fprintf(F,"  <void>\n");
 	WriteColor(F,"    ",graphics_preferences->OGL_Configure.VoidColor,"\n");
@@ -2093,6 +2108,10 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->hog_the_cpu = false;
 
 	preferences->software_alpha_blending = _sw_alpha_off;
+
+#ifdef __WIN32__
+	preferences->use_directx_backend = true;
+#endif
 }
 
 static void default_serial_number_preferences(serial_number_data *preferences)
@@ -2793,6 +2812,14 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	else if (StringsEqual(Tag,"hog_the_cpu"))
 	{
 		return ReadBooleanValue(Value, graphics_preferences->hog_the_cpu);
+	}
+	else if (StringsEqual(Tag,"use_directx_backend"))
+	{
+#ifdef __WIN32__
+		return ReadBooleanValue(Value, graphics_preferences->use_directx_backend);
+#else
+		return true;
+#endif
 	}
 	return true;
 }
