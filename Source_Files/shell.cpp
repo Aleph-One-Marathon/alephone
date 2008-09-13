@@ -94,6 +94,15 @@
 #include <SDL_net.h>
 #endif
 
+#ifdef HAVE_SDL_IMAGE
+#include <SDL_image.h>
+#if defined(__WIN32__)
+#include "alephone32.xpm"
+#elif !(defined(__APPLE__) && defined(__MACH__))
+#include "alephone.xpm"
+#endif
+#endif
+
 #ifdef __WIN32__
 #include <windows.h>
 #endif
@@ -465,6 +474,9 @@ static void initialize_application(void)
 		exit(1);
 	}
 	SDL_WM_SetCaption("Aleph One", "Aleph One");
+#if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__))
+	SDL_WM_SetIcon(IMG_ReadXPMFromArray(alephone_xpm), 0);
+#endif
 	atexit(shutdown_application);
 
 #ifdef HAVE_SDL_NET
