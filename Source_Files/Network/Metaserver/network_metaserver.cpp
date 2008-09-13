@@ -127,10 +127,28 @@ MetaserverClient::handleKeepAliveMessage(Message* inMessage, CommunicationsChann
 void
 MetaserverClient::handlePlayerListMessage(PlayerListMessage* inMessage, CommunicationsChannel* inChannel)
 {
+	std::vector<MetaserverPlayerInfo> players = inMessage->players();
+	if (m_notificationAdapter)
+	{
+		// metaserver says invisible people leave twice
+		std::vector<MetaserverPlayerInfo>::iterator it = players.begin();
+		while (it != players.end())
+		{
+			if (it->verb() == PlayersInRoom::kDelete && !find_player(it->playerID()))
+			{
+				it = players.erase(it);
+			}
+			else
+			{
+				++it;
+			}
+		}
+	}
+
 	m_playersInRoom.processUpdates(inMessage->players());
 
 	if(m_notificationAdapter) {
-		m_notificationAdapter->playersInRoomChanged(inMessage->players());
+		m_notificationAdapter->playersInRoomChanged(players);
 	}
 }
 
