@@ -1,5 +1,5 @@
 /* XPM */
-static char * alephone_xpm[] = {
+static const char * alephone_xpm[] = {
 "32 32 210 2",
 "  	c None",
 ". 	c #000000",

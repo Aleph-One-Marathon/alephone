@@ -475,7 +475,7 @@ static void initialize_application(void)
 	}
 	SDL_WM_SetCaption("Aleph One", "Aleph One");
 #if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__))
-	SDL_WM_SetIcon(IMG_ReadXPMFromArray(alephone_xpm), 0);
+	SDL_WM_SetIcon(IMG_ReadXPMFromArray(const_cast<char**>(alephone_xpm)), 0);
 #endif
 	atexit(shutdown_application);
 
