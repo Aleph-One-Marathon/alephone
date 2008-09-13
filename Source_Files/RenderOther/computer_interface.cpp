@@ -1339,7 +1339,7 @@ static inline T randomize_pixel(uint16 pixel)
 }
 
 template <>
-static inline uint32 randomize_pixel(uint16 pixel)
+inline uint32 randomize_pixel(uint16 pixel)
 {
 	return (uint32)pixel^(((uint32)pixel)<<8);
 }
