@@ -455,6 +455,8 @@ static void initialize_application(void)
 	{
 		// directx failed? try windib
 		fprintf(stderr, "Couldn't initialize SDL (%s); retrying with windib backend\n", SDL_GetError());
+		graphics_preferences->use_directx_backend = false;
+		write_preferences();
 		SDL_putenv("SDL_VIDEODRIVER=windib");
 		retval = SDL_Init(SDL_INIT_VIDEO |
 				  (option_nosound ? 0 : SDL_INIT_AUDIO) |
