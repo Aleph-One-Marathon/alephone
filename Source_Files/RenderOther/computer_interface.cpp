@@ -658,6 +658,8 @@ void _render_computer_interface(
 	// assert(terminal_data->state != _no_terminal_state);
 	if(TERMINAL_IS_DIRTY(terminal_data))
 	{
+		SET_TERMINAL_IS_DIRTY(terminal_data, false);
+
 		terminal_text_t *terminal_text;
 		struct terminal_groupings *current_group;
 		Rect bounds;
@@ -736,6 +738,7 @@ void _render_computer_interface(
 			
 					case _static_group:
 						fill_terminal_with_static(&bounds);
+						SET_TERMINAL_IS_DIRTY(terminal_data, true);
 						break;
 						
 					case _camera_group:
@@ -762,8 +765,6 @@ void _render_computer_interface(
 		// Disable clipping
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 #endif
-		
-		SET_TERMINAL_IS_DIRTY(terminal_data, false);
 	}
 }
 
@@ -1331,11 +1332,52 @@ static void display_picture(
 	}
 }
 
-/* Not completed. Remember 16/24 bit & valkyrie */
+template <typename T>
+static inline T randomize_pixel(uint16 pixel)
+{
+	return static_cast<T>(pixel);
+}
+
+template <>
+static inline uint32 randomize_pixel(uint16 pixel)
+{
+	return (uint32)pixel^(((uint32)pixel)<<8);
+}
+
+template <typename T>
+static inline void randomize_line(T* start, uint32 count)
+{
+	static uint16 random_seed = 6906;
+	for (int i = 0; i < count; ++i)
+	{
+		*start++ = randomize_pixel<T>(random_seed);
+		if (random_seed&1) random_seed = (random_seed>>1)^0xb400;
+		else random_seed = random_seed >> 1;
+	}
+}
+
 static void fill_terminal_with_static(
 	Rect *bounds)
 {
-	(void) (bounds);
+	for (int y = bounds->top; y < bounds->bottom; ++y)
+	{
+		int bpp = draw_surface->format->BytesPerPixel;
+		int width = bounds->right - bounds->left;
+
+		uint8* p = (uint8*)draw_surface->pixels + y * draw_surface->pitch + bounds->left * bpp;
+		if (bpp == 1)
+		{
+			randomize_line<uint8>(p, width);
+		}
+		else if (bpp == 2)
+		{
+			randomize_line<uint16>(reinterpret_cast<uint16*>(p), width);
+		}
+		else if (bpp == 4)
+		{
+			randomize_line<uint32>(reinterpret_cast<uint32*>(p), width);
+		}
+	}
 }
 
 #ifndef PREPROCESSING_CODE
