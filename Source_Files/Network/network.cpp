@@ -2199,22 +2199,23 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info)
 	}
 	
 	{
-		client_map_t::iterator it;
-		for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+		client_map_t::iterator it = connections_to_clients.begin();
+		while (it != connections_to_clients.end()) {
 			if (it->second->channel->isConnected()) {
 				it->second->channel->pump();
 				it->second->channel->dispatchIncomingMessages();
+				++it;
 			} else {
 				it->second->drop();
 				delete connections_to_clients[it->first];
-				connections_to_clients.erase(it->first);
+				connections_to_clients.erase(it++);
 			}
 		}
 	}
 	
 	// now check to see if any one has actually connected
-	client_map_t::iterator it;
-	for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+	client_map_t::iterator it = connections_to_clients.begin();
+	while (it != connections_to_clients.end()) {
 		if (it->second->state == Client::_connected_but_not_yet_shown) {
 			info.stream_id = it->first;
 			pstrcpy(info.name, it->second->name);
@@ -2224,7 +2225,11 @@ bool NetCheckForNewJoiner (prospective_joiner_info &info)
 		} else if (it->second->state == Client::_disconnect) {
 			connections_to_clients[it->first]->drop();
 			delete connections_to_clients[it->first];
-			connections_to_clients.erase(it->first);
+			connections_to_clients.erase(it++);
+		}
+		else
+		{
+			++it;
 		}
 	}
 	
