@@ -1097,13 +1097,25 @@ static bool MotionSensorWasActive;
 
 static void PreservePreLuaSettings()
 {
-	#ifdef HAVE_OPENGL
+#ifdef HAVE_OPENGL
 	for (int i = 0; i < OGL_NUMBER_OF_FOG_TYPES; i++) 
 	{
 		PreLuaFogState[i] = *OGL_GetFogData(i);
 	}
 #endif
 	MotionSensorWasActive = MotionSensorActive;
+}
+
+static void InitializeLuaVariables()
+{
+	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; ++i)
+	{
+		use_lua_compass[i] = false;
+		can_wield_weapons[i] = true;
+	}
+	
+	game_end_condition = _game_normal_end_condition;
+	game_scoring_mode = _game_of_most_points;
 }
 
 static void RestorePreLuaSettings()
@@ -1119,11 +1131,7 @@ static void RestorePreLuaSettings()
 
 bool RunLuaScript()
 {
-	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
-	{
-		use_lua_compass [i] = false;
-		can_wield_weapons[i] = true;
-	}
+	InitializeLuaVariables();
 	if (!lua_loaded)
 		return false;
 
@@ -1151,6 +1159,7 @@ void ExecuteLuaString(const std::string& line)
 		OpenStdLibs(state);
 		RegisterLuaFunctions();
 		DeclareLuaConstants();
+		InitializeLuaVariables();
 		PreservePreLuaSettings();
 
 		lua_loaded = true;
@@ -1230,7 +1239,6 @@ void CloseLuaScript()
 	LuaTexturePaletteClear();
 
 	game_end_condition = _game_normal_end_condition;
-	game_scoring_mode = _game_of_most_points;
 	
 	sLuaNetscriptLoaded = false;
 }
