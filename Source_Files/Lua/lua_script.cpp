@@ -177,11 +177,625 @@ extern struct view_data *world_view;
 extern struct static_data *static_world;
 static short old_size;
 
-// globals
-lua_State *state;
-bool lua_loaded = false;
-bool lua_running = false;
+static const luaL_Reg lualibs[] = {
+	{"", luaopen_base},
+	{LUA_TABLIBNAME, luaopen_table},
+	{LUA_STRLIBNAME, luaopen_string},
+	{LUA_MATHLIBNAME, luaopen_math},
+	{LUA_DBLIBNAME, luaopen_debug},
+	{NULL, NULL}
+};
 
+class LuaState
+{
+public:
+	LuaState() : running_(false), num_scripts_(0) {
+		state_ = lua_open();
+	}
+
+	virtual ~LuaState() {
+		lua_close(state_);
+	}
+
+private:
+	LuaState& operator=(const LuaState& other) { }
+	LuaState(const LuaState& other) { }
+
+public:
+
+	bool Load(const char *buffer, size_t len);
+	bool Loaded() { return num_scripts_ > 0; }
+	bool Running() { return running_; }
+	bool Run();
+	void Stop() { running_ = false; }
+	bool Matches(lua_State *state) { return state == state_; }
+	void MarkCollections(std::set<short>& collections);
+	void ExecuteCommand(const std::string& line);
+
+	virtual void Initialize() {
+		const luaL_Reg *lib = lualibs;
+		for (; lib->func; lib++)
+		{
+			lua_pushcfunction(state_, lib->func);
+			lua_pushstring(state_, lib->name);
+			lua_call(state_, 1, 0);
+		}
+
+		RegisterFunctions();
+		LoadCompatibility();
+	}
+
+protected:
+	bool GetTrigger(const char *trigger);
+	void CallTrigger(int numArgs = 0);
+
+	virtual void RegisterFunctions();
+	virtual void LoadCompatibility();
+
+	lua_State* state_;
+
+public:
+	// triggers
+	void Init(bool fRestoringSaved);
+	void Idle();
+	void Cleanup();
+	void PostIdle();
+	void StartRefuel(short type, short player_index, short panel_side_index);
+	void EndRefuel(short type, short player_index, short panel_side_index);
+	void TagSwitch(short tag, short player_index);
+	void LightSwitch(short tag, short player_index);
+	void PlatformSwitch(short tag, short player_index);
+	void TerminalEnter(short terminal_id, short player_index);
+	void TerminalExit(short terminal_id, short player_index);
+	void PatternBuffer(short side_index, short player_index);
+	void GotItem(short type, short player_index);
+	void LightActivated(short index);
+	void PlatformActivated(short index);
+	void PlayerRevived(short player_index);
+	void PlayerKilled(short player_index, short aggressor_player_index, short action, short projectile_index);
+	void MonsterKilled(short monster_index, short aggressor_player_index, short projectile_index);
+	void PlayerDamaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
+	void ProjectileDetonated(short type, short owner_index, short polygon, world_point3d location);
+	void ItemCreated(short item_index);
+
+	void InvalidateMonster(short monster_index);
+	void InvalidateProjectile(short projectile_index);
+	void InvalidateObject(short object_index);
+
+private:
+	bool running_;
+	int num_scripts_;
+};
+
+typedef LuaState EmbeddedLuaState;
+typedef LuaState NetscriptState;
+
+class SoloScriptState : public LuaState
+{
+public:
+	SoloScriptState() : LuaState() { }
+
+	void Initialize() {
+		LuaState::Initialize();
+		lua_pushcfunction(state_, luaopen_io);
+		lua_pushstring(state_, LUA_IOLIBNAME);
+		lua_call(state_, 1, 0);
+	}
+};
+
+bool LuaState::GetTrigger(const char* trigger)
+{
+	if (!running_)
+		return false;
+
+	lua_pushstring(state_, "Triggers");
+	lua_gettable(state_, LUA_GLOBALSINDEX);
+	if (!lua_istable(state_, -1))
+	{
+		lua_pop(state_, 1);
+		return false;
+	}
+
+	lua_pushstring(state_, trigger);
+	lua_gettable(state_, -2);
+	if (!lua_isfunction(state_, -1))
+	{
+		lua_pop(state_, 2);
+		return false;
+	}
+
+	lua_remove(state_, -2);
+	return true;
+}
+
+void LuaState::CallTrigger(int numArgs)
+{
+	if (lua_pcall(state_, numArgs, 0, 0) == LUA_ERRRUN)
+		L_Error(lua_tostring(state_, -1));
+}
+
+void LuaState::Init(bool fRestoringSaved)
+{
+	if (GetTrigger("init"))
+	{
+		lua_pushboolean(state_, fRestoringSaved);
+		CallTrigger(1);
+	}
+}
+
+void LuaState::Idle()
+{
+	if (GetTrigger("idle"))
+		CallTrigger();
+}
+
+void LuaState::Cleanup()
+{
+	if (GetTrigger("cleanup"))
+		CallTrigger();
+}
+
+void LuaState::PostIdle()
+{
+	if (GetTrigger("postidle"))
+		CallTrigger();
+}
+
+void LuaState::StartRefuel(short type, short player_index, short panel_side_index)
+{
+	if (GetTrigger("start_refuel"))
+	{
+		Lua_ControlPanelClass::Push(state_, type);
+		Lua_Player::Push(state_, player_index);
+		Lua_Side::Push(state_, panel_side_index);
+		CallTrigger(3);
+	}
+}
+
+void LuaState::EndRefuel(short type, short player_index, short panel_side_index)
+{
+	if (GetTrigger("end_refuel"))
+	{
+		Lua_ControlPanelClass::Push(state_, type);
+		Lua_Player::Push(state_, player_index);
+		Lua_Side::Push(state_, panel_side_index);
+		CallTrigger(3);
+	}
+}
+
+void LuaState::TagSwitch(short tag, short player_index)
+{
+	if (GetTrigger("tag_switch"))
+	{
+		Lua_Tag::Push(state_, tag);
+		Lua_Player::Push(state_, player_index);
+		CallTrigger(2);
+	}
+}
+
+void LuaState::LightSwitch(short light, short player_index)
+{
+	if (GetTrigger("light_switch"))
+	{
+		Lua_Light::Push(state_, light);
+		Lua_Player::Push(state_, player_index);
+		CallTrigger(2);
+	}
+}
+
+void LuaState::PlatformSwitch(short platform, short player_index)
+{
+	if (GetTrigger("platform_switch"))
+	{
+		Lua_Polygon::Push(state_, platform);
+		Lua_Player::Push(state_, player_index);
+		CallTrigger(2);
+	}
+}
+
+void LuaState::TerminalEnter(short terminal_id, short player_index)
+{
+	if (GetTrigger("terminal_enter"))
+	{
+		Lua_Terminal::Push(state_, terminal_id);
+		Lua_Player::Push(state_, player_index);
+		CallTrigger(2);
+	}
+}
+
+void LuaState::TerminalExit(short terminal_id, short player_index)
+{
+	if (GetTrigger("terminal_exit"))
+	{
+		Lua_Terminal::Push(state_, terminal_id);
+		Lua_Player::Push(state_, player_index);
+		CallTrigger(2);
+	}
+}
+
+void LuaState::PatternBuffer(short side_index, short player_index)
+{
+	if (GetTrigger("pattern_buffer"))
+	{
+		Lua_Side::Push(state_, side_index);
+		Lua_Player::Push(state_, player_index);
+		CallTrigger(2);
+	}
+}
+
+void LuaState::GotItem(short type, short player_index)
+{
+	if (GetTrigger("got_item"))
+	{
+		Lua_ItemType::Push(state_, type);
+		Lua_Player::Push(state_, player_index);
+		CallTrigger(2);
+	}
+}
+
+void LuaState::LightActivated(short index)
+{
+	if (GetTrigger("light_activated"))
+	{
+		Lua_Light::Push(state_, index);
+		CallTrigger(1);
+	}
+}
+
+void LuaState::PlatformActivated(short index)
+{
+	if (GetTrigger("platform_activated"))
+	{
+		Lua_Polygon::Push(state_, index);
+		CallTrigger(1);
+	}
+}
+
+void LuaState::PlayerRevived (short player_index)
+{
+	if (GetTrigger("player_revived"))
+	{
+		Lua_Player::Push(state_, player_index);
+		CallTrigger(1);
+	}
+}
+
+void LuaState::PlayerKilled (short player_index, short aggressor_player_index, short action, short projectile_index)
+{
+	if (GetTrigger("player_killed"))
+	{
+		Lua_Player::Push(state_, player_index);
+
+		if (aggressor_player_index != -1)
+			Lua_Player::Push(state_, aggressor_player_index);
+		else
+			lua_pushnil(state_);
+
+		Lua_MonsterAction::Push(state_, action);
+		if (projectile_index != -1)
+			Lua_Projectile::Push(state_, projectile_index);
+		else
+			lua_pushnil(state_);
+
+		CallTrigger(4);
+	}
+}
+
+void LuaState::MonsterKilled (short monster_index, short aggressor_player_index, short projectile_index)
+{
+	if (GetTrigger("monster_killed"))
+	{
+		Lua_Monster::Push(state_, monster_index);
+		if (aggressor_player_index != -1)
+			Lua_Player::Push(state_, aggressor_player_index);
+		else
+			lua_pushnil(state_);
+
+		if (projectile_index != -1)
+			Lua_Projectile::Push(state_, projectile_index);
+		else
+			lua_pushnil(state_);
+
+		CallTrigger(3);
+	}
+}
+
+void LuaState::PlayerDamaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
+{
+	if (GetTrigger("player_damaged"))
+	{
+		Lua_Player::Push(state_, player_index);
+
+		if (aggressor_player_index != -1)
+			Lua_Player::Push(state_, aggressor_player_index);
+		else
+			lua_pushnil(state_);
+		
+		if (aggressor_monster_index != -1)
+			Lua_Monster::Push(state_, aggressor_monster_index);
+		else
+			lua_pushnil(state_);
+		
+		Lua_DamageType::Push(state_, damage_type);
+		lua_pushnumber(state_, damage_amount);
+		
+		if (projectile_index != -1)
+			Lua_Projectile::Push(state_, projectile_index);
+		else
+			lua_pushnil(state_);
+
+		CallTrigger(6);
+	}
+}
+
+void LuaState::ProjectileDetonated(short type, short owner_index, short polygon, world_point3d location) 
+{
+	if (GetTrigger("projectile_detonated"))
+	{
+		Lua_ProjectileType::Push(state_, type);
+		if (owner_index != -1)
+			Lua_Monster::Push(state_, owner_index);
+		else
+			lua_pushnil(state_);
+		Lua_Polygon::Push(state_, polygon);
+		lua_pushnumber(state_, location.x / (double)WORLD_ONE);
+		lua_pushnumber(state_, location.y / (double)WORLD_ONE);
+		lua_pushnumber(state_, location.z / (double)WORLD_ONE);
+
+		CallTrigger(6);
+	}
+}
+
+void LuaState::ItemCreated (short item_index)
+{
+	if (GetTrigger("item_created"))
+	{
+		Lua_Item::Push(state_, item_index);
+		CallTrigger(1);
+	}
+}
+
+void LuaState::InvalidateMonster(short monster_index)
+{
+	if (!running_) return;
+
+	Lua_Monster::Invalidate(state_, monster_index);
+}
+
+void LuaState::InvalidateProjectile(short projectile_index)
+{
+	if (!running_) return;
+
+	Lua_Projectile::Invalidate(state_, projectile_index);
+}
+
+void LuaState::InvalidateObject(short object_index)
+{
+	if (!running_) return;
+
+	object_data *object = GetMemberWithBounds(objects, object_index, MAXIMUM_OBJECTS_PER_MAP);
+	if (GET_OBJECT_OWNER(object) == _object_is_item)
+	{
+		Lua_Item::Invalidate(state_, object_index);
+	}
+	else if (GET_OBJECT_OWNER(object) == _object_is_effect)
+	{
+		Lua_Effect::Invalidate(state_, object_index);
+	}
+	else if (Lua_Scenery::Valid(object_index))
+	{
+		Lua_Scenery::Invalidate(state_, object_index);
+	}
+}
+
+
+static int L_Enable_Player(lua_State*);
+static int L_Disable_Player(lua_State*);
+static int L_Kill_Script(lua_State*);
+static int L_Hide_Interface(lua_State*);
+static int L_Show_Interface(lua_State*);
+static int L_Player_Control(lua_State*);
+
+void LuaState::RegisterFunctions()
+{
+	lua_register(state_, "enable_player", L_Enable_Player);
+	lua_register(state_, "disable_player", L_Disable_Player);
+	lua_register(state_, "kill_script", L_Kill_Script);
+	lua_register(state_, "hide_interface", L_Hide_Interface);
+	lua_register(state_, "show_interface", L_Show_Interface);
+	lua_register(state_, "player_control", L_Player_Control);
+//	lua_register(state, "prompt", L_Prompt);
+
+	Lua_Map_register(state_);
+	Lua_Monsters_register(state_);
+	Lua_Objects_register(state_);
+	Lua_Player_register(state_);
+	Lua_Projectiles_register(state_);
+}
+
+static const char *compatibility_triggers = ""
+	"Triggers = {}\n"
+	"Triggers.init = function(restoring_game) if init then init(restoring_game) end end\n"
+	"Triggers.cleanup = function() if cleanup then cleanup() end end\n"
+	"Triggers.idle = function() if idle then idle() end end\n"
+	"Triggers.postidle = function() if postidle then postidle() end end\n"
+	"Triggers.start_refuel = function(class, player, side) if start_refuel then start_refuel(class.index, player.index) end end\n"
+	"Triggers.end_refuel = function(class, player, side) if end_refuel then end_refuel(class.index, player.index) end end\n"
+	"Triggers.tag_switch = function(tag, player) if tag_switch then tag_switch(tag.index, player.index) end end\n"
+	"Triggers.light_switch = function(light, player) if light_switch then light_switch(light.index, player.index) end end\n"
+	"Triggers.platform_switch = function(platform, player) if platform_switch then platform_switch(platform.index, player.index) end end\n"
+	"Triggers.terminal_enter = function(terminal, player) if terminal_enter then terminal_enter(terminal.index, player.index) end end\n"
+	"Triggers.terminal_exit = function(terminal, player) if terminal_exit then terminal_exit(terminal.index, player.index) end end\n"
+	"Triggers.pattern_buffer = function(side, player) if pattern_buffer then pattern_buffer(side.control_panel.permutation, player.index) end end\n"
+	"Triggers.got_item = function(type, player) if got_item then got_item(type.index, player.index) end end\n"
+	"Triggers.light_activated = function(light) if light_activated then light_activated(light.index) end end\n"
+	"Triggers.platform_activated = function(polygon) if platform_activated then platform_activated(polygon.index) end end\n"
+	"Triggers.player_revived = function(player) if player_revived then player_revived(player.index) end end\n"
+	"Triggers.player_killed = function(player, aggressor, action, projectile) if player_killed then if aggressor then aggressor_index = aggressor.index else aggressor_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end player_killed(player.index, aggressor_index, action.index, projectile_index) end end\n"
+	"Triggers.monster_killed = function(monster, aggressor, projectile) if monster_killed then if aggressor then aggressor_index = aggressor.index else aggressor_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end monster_killed(monster.index, aggressor_index, projectile_index) end end\n"
+	"Triggers.player_damaged = function(player, aggressor_player, aggressor_monster, type, amount, projectile) if player_damaged then if aggressor_player then aggressor_player_index = aggressor_player.index else aggressor_player_index = -1 end if aggressor_monster then aggressor_monster_index = aggressor_monster.index else aggressor_monster_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end player_damaged(player.index, aggressor_player_index, aggressor_monster_index, type.index, amount, projectile_index) end end\n"
+	"Triggers.projectile_detonated = function(type, owner, polygon, x, y, z) if projectile_detonated then if owner then owner_index = owner.index else owner_index = -1 end projectile_detonated(type.index, owner_index, polygon.index, x, y, z) end end\n"
+	"Triggers.item_created = function(item) if item_created then item_created(item.index) end end\n"
+	;
+
+void LuaState::LoadCompatibility()
+{
+	luaL_loadbuffer(state_, compatibility_triggers, strlen(compatibility_triggers), "compatibility_triggers");
+	lua_pcall(state_, 0, 0, 0);
+
+	struct lang_def
+	{
+		const char *name;
+		int value;
+	};
+	struct lang_def constant_list[] = {
+#include "language_definition.h"
+	};
+
+	int constant_list_size = sizeof(constant_list)/sizeof(lang_def);
+	for (int i=0; i<constant_list_size; i++)
+	{
+		lua_pushnumber(state_, constant_list[i].value);
+		lua_setglobal(state_, constant_list[i].name);
+	}
+/* SB: Don't think this is a constant? */
+	lua_pushnumber(state_, MAXIMUM_MONSTERS_PER_MAP);
+	lua_setglobal(state_, "MAXIMUM_MONSTERS_PER_MAP");
+	lua_pushnumber(state_, MAXIMUM_PROJECTILES_PER_MAP);
+	lua_setglobal(state_, "MAXIMUM_PROJECTILES_PER_MAP");
+	lua_pushnumber(state_, MAXIMUM_OBJECTS_PER_MAP);
+	lua_setglobal(state_, "MAXIMUM_OBJECTS_PER_MAP");
+}
+
+bool LuaState::Load(const char *buffer, size_t len)
+{
+	int status = luaL_loadbuffer(state_, buffer, len, "level_script");
+	if (status == LUA_ERRRUN)
+		logWarning("Lua loading failed: error running script.");
+	if (status == LUA_ERRFILE)
+		logWarning("Lua loading failed: error loading file.");
+	if (status == LUA_ERRSYNTAX) {
+		logWarning("Lua loading failed: syntax error.");
+		logWarning(lua_tostring(state_, -1));
+	}
+	if (status == LUA_ERRMEM)
+		logWarning("Lua loading failed: error allocating memory.");
+	if (status == LUA_ERRERR)
+		logWarning("Lua loading failed: unknown error.");
+
+	num_scripts_ += ((status == 0) ? 1 : 0);
+	return (status == 0);
+}
+
+
+bool LuaState::Run()
+{
+	if (!Loaded()) return false;
+
+	int result = 0;
+	// Reverse the functions we're calling
+	for (int i = 0; i < num_scripts_ - 1; ++i)
+		lua_insert(state_, -(num_scripts_ - i));
+
+	// Call 'em
+	for (int i = 0; i < num_scripts_; ++i)
+		result = result || lua_pcall(state_, 0, LUA_MULTRET, 0);
+	
+	if (result == 0) running_ = true;
+	return (result == 0);
+}
+
+void LuaState::ExecuteCommand(const std::string& line)
+{
+
+	string buffer;
+	bool print_result = false;
+	if (line[0] == '=') 
+	{
+		buffer = "return " + line.substr(1);
+		print_result = true;
+	}
+	else
+	{
+		buffer = line;
+	}
+
+
+	if (luaL_loadbuffer(state_, buffer.c_str(), buffer.size(), "console") != 0)
+	{
+		L_Error(lua_tostring(state_, -1));
+	}
+	else 
+	{
+		running_ = true;
+		if (lua_pcall(state_, 0, (print_result) ? 1 : 0, 0) != 0)
+			L_Error(lua_tostring(state_, -1));
+		else if (print_result)
+		{
+			lua_getglobal(state_, "tostring");
+			lua_insert(state_, 1);
+			lua_pcall(state_, 1, 1, 0);
+			if (lua_tostring(state_, -1))
+			{
+				screen_printf("%s", lua_tostring(state_, -1));
+			}
+		}
+	}
+	
+	lua_settop(state_, 0);	
+}
+
+void LuaState::MarkCollections(std::set<short>& collections)
+{
+	if (!running_)
+		return;
+		
+	lua_pushstring(state_, "CollectionsUsed");
+	lua_gettable(state_, LUA_GLOBALSINDEX);
+	
+	if (lua_istable(state_, -1))
+	{
+		int i = 1;
+		lua_pushnumber(state_, i++);
+		lua_gettable(state_, -2);
+		while (lua_isnumber(state_, -1))
+		{
+			short collection_index = static_cast<short>(lua_tonumber(state_, -1));
+			if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
+			{
+				mark_collection_for_loading(collection_index);
+				collections.insert(collection_index);
+			}
+			lua_pop(state_, 1);
+			lua_pushnumber(state_, i++);
+			lua_gettable(state_, -2);
+		}
+			
+		lua_pop(state_, 2);
+	}
+	else if (lua_isnumber(state_, -1))
+	{
+		short collection_index = static_cast<short>(lua_tonumber(state_, -1));
+		if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
+		{
+			mark_collection_for_loading(collection_index);
+			collections.insert(collection_index);
+		}
+
+		lua_pop(state_, 1);
+	}
+	else
+	{
+		lua_pop(state_, 1);
+	}
+}
+
+std::vector<LuaState*> states;
+std::auto_ptr<EmbeddedLuaState> embedded_state;
+std::auto_ptr<NetscriptState> netscript_state;
+std::auto_ptr<SoloScriptState> solo_script_state;
+
+// globals
 vector<lua_camera> lua_cameras;
 int number_of_cameras = 0;
 
@@ -204,30 +818,6 @@ world_point3d FindLinearValue(world_point3d startPoint, world_point3d endPoint, 
 	return realPoint;
 }
 
-static const luaL_reg lualibs[] =
-{
-	{"base", luaopen_base},
-	{"table", luaopen_table},
-//	{"io", luaopen_io}, //jkvw: This is just begging to be a security problem, isn't it?
-	{"string", luaopen_string},
-	{"math", luaopen_math},
-	{"debug", luaopen_debug},
-	// {"loadlib", luaopen_loadlib}, jkvw: Do you really want evil scripts calling loadlib?
-	// jkvw: And don't even think about adding the operating system facilities library, burrito.
-	/* add your libraries here */
-	{NULL, NULL}
-};
-
-static void OpenStdLibs(lua_State* l)
-{
-	const luaL_reg *lib = lualibs;
-	for (; lib->func; lib++)
-	{
-		lib->func(l);
-		lua_settop(l,0);
-	}
-}
-
 void
 L_Error(const char* inMessage)
 {
@@ -235,6 +825,7 @@ L_Error(const char* inMessage)
 	logError(inMessage);
 }
 
+/*
 static bool
 L_Should_Call(const char* inLuaFunctionName)
 {
@@ -259,327 +850,227 @@ L_Do_Call(const char* inLuaFunctionName, int inNumArgs = 0, int inNumResults = 0
 	if (lua_pcall(state, inNumArgs, inNumResults, 0)==LUA_ERRRUN)
 		L_Error(lua_tostring(state,-1));
 }
+*/
 
-static bool L_Get_Trigger(const char* inLuaTriggerName)
+static bool LuaRunning()
 {
-	if (!lua_running)
-		return false;
-
-	lua_pushstring(state, "Triggers");
-	lua_gettable(state, LUA_GLOBALSINDEX);
-	if (!lua_istable(state, -1))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		lua_pop(state, 1);
-		return false;
-	}
+		if ((*it)->Running())
+		{
+			return true;
+		}
+	}	
 
-	lua_pushstring(state, inLuaTriggerName);
-	lua_gettable(state, -2);
-	if (!lua_isfunction(state, -1))
-	{
-		lua_pop(state, 2);
-		return false;
-	}
-
-	lua_remove(state, -2);
-	return true;
-}
-
-static void L_Call_Trigger(int numArgs = 0)
-{
-	if (lua_pcall(state, numArgs, 0, 0)==LUA_ERRRUN)
-		L_Error(lua_tostring(state,-1));
+	return false;
 }
 
 void L_Call_Init(bool fRestoringSaved)
 {
-	// jkvw: Seeding our better random number generator from the lousy one
-	// is clearly not ideal, but it should be good enough for our purposes.
-	if (lua_running) {
+	if (LuaRunning())
+	{
+		// jkvw: Seeding our better random number
+		// generator from the lousy one is clearly not
+		// ideal, but it should be good enough for our
+		// purposes.
 		lua_random_generator.z = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 		lua_random_generator.w = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 		lua_random_generator.jsr = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 		lua_random_generator.jcong = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
+		
 	}
-	if (L_Get_Trigger("init"))
+
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		lua_pushboolean(state, fRestoringSaved);
-		L_Call_Trigger(1);
+		(*it)->Init(fRestoringSaved);
 	}
 }
 
 void L_Call_Cleanup ()
 {
-	if (L_Get_Trigger("cleanup"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		L_Call_Trigger();
+		(*it)->Cleanup();
 	}
 }
 
 void L_Call_Idle()
 {
-	if (L_Get_Trigger("idle"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		L_Call_Trigger();
+		(*it)->Idle();
 	}
 }
 
 void L_Call_PostIdle()
 {
-	if (L_Get_Trigger("postidle"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		L_Call_Trigger();
+		(*it)->PostIdle();
 	}
 }
 
 void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
 {
-	if (L_Get_Trigger("start_refuel"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_ControlPanelClass::Push(state, type);
-		Lua_Player::Push(state, player_index);
-		Lua_Side::Push(state, panel_side_index);
-		L_Call_Trigger(3);
+		(*it)->StartRefuel(type, player_index, panel_side_index);
 	}
 }
 
 void L_Call_End_Refuel (short type, short player_index, short panel_side_index)
 {
-	if (L_Get_Trigger("end_refuel"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_ControlPanelClass::Push(state, type);
-		Lua_Player::Push(state, player_index);
-		Lua_Side::Push(state, panel_side_index);
-		L_Call_Trigger(3);
+		(*it)->EndRefuel(type, player_index, panel_side_index);
 	}
 }
 
 void L_Call_Tag_Switch(short tag, short player_index)
 {
-	if (L_Get_Trigger("tag_switch"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Tag::Push(state, tag);
-		Lua_Player::Push(state, player_index);
-		L_Call_Trigger(2);
+		(*it)->TagSwitch(tag, player_index);
 	}
 }
 
 void L_Call_Light_Switch(short light, short player_index)
 {
-	if (L_Get_Trigger("light_switch"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Light::Push(state, light);
-		Lua_Player::Push(state, player_index);
-		L_Call_Trigger(2);
+		(*it)->LightSwitch(light, player_index);
 	}
 }
 
 void L_Call_Platform_Switch(short platform, short player_index)
 {
-	if (L_Get_Trigger("platform_switch"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Polygon::Push(state, platform);
-		Lua_Player::Push(state, player_index);
-		L_Call_Trigger(2);
+		(*it)->PlatformSwitch(platform, player_index);
 	}
 }
 
 void L_Call_Terminal_Enter(short terminal_id, short player_index)
 {
-	if (L_Get_Trigger("terminal_enter"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Terminal::Push(state, terminal_id);
-		Lua_Player::Push(state, player_index);
-		L_Call_Trigger(2);
+		(*it)->TerminalEnter(terminal_id, player_index);
 	}
 }
 
 void L_Call_Terminal_Exit(short terminal_id, short player_index)
 {
-	if (L_Get_Trigger("terminal_exit"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Terminal::Push(state, terminal_id);
-		Lua_Player::Push(state, player_index);
-		L_Call_Trigger(2);
+		(*it)->TerminalExit(terminal_id, player_index);
 	}
 }
 
 void L_Call_Pattern_Buffer(short side_index, short player_index)
 {
-	if (L_Get_Trigger("pattern_buffer"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Side::Push(state, side_index);
-		Lua_Player::Push(state, player_index);
-		L_Call_Trigger(2);
+		(*it)->PatternBuffer(side_index, player_index);
 	}
 }
 
 void L_Call_Got_Item(short type, short player_index)
 {
-	if (L_Get_Trigger("got_item"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_ItemType::Push(state, type);
-		Lua_Player::Push(state, player_index);
-		L_Call_Trigger(2);
+		(*it)->GotItem(type, player_index);
 	}
 }
 
 void L_Call_Light_Activated(short index)
 {
-	if (L_Get_Trigger("light_activated"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Light::Push(state, index);
-		L_Call_Trigger(1);
+		(*it)->LightActivated(index);
 	}
 }
 
 void L_Call_Platform_Activated(short index)
 {
-	if (L_Get_Trigger("platform_activated"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Polygon::Push(state, index);
-		L_Call_Trigger(1);
+		(*it)->PlatformActivated(index);
 	}
 }
 
 void L_Call_Player_Revived (short player_index)
 {
-	if (L_Get_Trigger("player_revived"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Player::Push(state, player_index);
-		L_Call_Trigger(1);
+		(*it)->PlayerRevived(player_index);
 	}
 }
 
 void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action, short projectile_index)
 {
-	if (L_Get_Trigger("player_killed"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Player::Push(state, player_index);
-
-		if (aggressor_player_index != -1)
-			Lua_Player::Push(state, aggressor_player_index);
-		else
-			lua_pushnil(state);
-
-		Lua_MonsterAction::Push(state, action);
-		if (projectile_index != -1)
-			Lua_Projectile::Push(state, projectile_index);
-		else
-			lua_pushnil(state);
-
-		L_Call_Trigger(4);
+		(*it)->PlayerKilled(player_index, aggressor_player_index, action, projectile_index);
 	}
 }
 
 void L_Call_Monster_Killed (short monster_index, short aggressor_player_index, short projectile_index)
 {
-	if (L_Get_Trigger("monster_killed"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Monster::Push(state, monster_index);
-		if (aggressor_player_index != -1)
-			Lua_Player::Push(state, aggressor_player_index);
-		else
-			lua_pushnil(state);
-
-		if (projectile_index != -1)
-			Lua_Projectile::Push(state, projectile_index);
-		else
-			lua_pushnil(state);
-
-		L_Call_Trigger(3);
+		(*it)->MonsterKilled(monster_index, aggressor_player_index, projectile_index);
 	}
 }
 
 void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
-	if (L_Get_Trigger("player_damaged"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Player::Push(state, player_index);
-
-		if (aggressor_player_index != -1)
-			Lua_Player::Push(state, aggressor_player_index);
-		else
-			lua_pushnil(state);
-		
-		if (aggressor_monster_index != -1)
-			Lua_Monster::Push(state, aggressor_monster_index);
-		else
-			lua_pushnil(state);
-		
-		Lua_DamageType::Push(state, damage_type);
-		lua_pushnumber(state, damage_amount);
-		
-		if (projectile_index != -1)
-			Lua_Projectile::Push(state, projectile_index);
-		else
-			lua_pushnil(state);
-
-		L_Call_Trigger(6);
+		(*it)->PlayerDamaged(player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
 	}
 }
 
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) 
 {
-	if (L_Get_Trigger("projectile_detonated"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_ProjectileType::Push(state, type);
-		if (owner_index != -1)
-			Lua_Monster::Push(state, owner_index);
-		else
-			lua_pushnil(state);
-		Lua_Polygon::Push(state, polygon);
-		lua_pushnumber(state, location.x / (double)WORLD_ONE);
-		lua_pushnumber(state, location.y / (double)WORLD_ONE);
-		lua_pushnumber(state, location.z / (double)WORLD_ONE);
-
-		L_Call_Trigger(6);
+		(*it)->ProjectileDetonated(type, owner_index, polygon, location);
 	}
 }
 
 void L_Call_Item_Created (short item_index)
 {
-	if (L_Get_Trigger("item_created"))
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Item::Push(state, item_index);
-		L_Call_Trigger(1);
+		(*it)->ItemCreated(item_index);
 	}
 }
 
 void L_Invalidate_Monster(short monster_index)
 {
-	if (!lua_running) return;
-
-	Lua_Monster::Invalidate(state, monster_index);
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		(*it)->InvalidateMonster(monster_index);
+	}	
 }
 
 void L_Invalidate_Projectile(short projectile_index)
 {
-	if (!lua_running) return;
-
-	Lua_Projectile::Invalidate(state, projectile_index);
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		(*it)->InvalidateProjectile(projectile_index);
+	}
 }
 
 void L_Invalidate_Object(short object_index)
 {
-	if (!lua_running) return;
-
-	object_data *object = GetMemberWithBounds(objects, object_index, MAXIMUM_OBJECTS_PER_MAP);
-	if (GET_OBJECT_OWNER(object) == _object_is_item)
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		Lua_Item::Invalidate(state, object_index);
-	}
-	else if (GET_OBJECT_OWNER(object) == _object_is_effect)
-	{
-		Lua_Effect::Invalidate(state, object_index);
-	}
-	else if (Lua_Scenery::Valid(object_index))
-	{
-		Lua_Scenery::Invalidate(state, object_index);
+		(*it)->InvalidateObject(object_index);
 	}
 }
 
-static int L_Enable_Player(lua_State *L)
+int L_Enable_Player(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
 	{
@@ -600,7 +1091,7 @@ static int L_Enable_Player(lua_State *L)
 	return 0;
 }
 
-static int L_Disable_Player(lua_State *L)
+int L_Disable_Player(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
 	{
@@ -621,13 +1112,19 @@ static int L_Disable_Player(lua_State *L)
 	return 0;
 }
 
-static int L_Kill_Script(lua_State *L)
+int L_Kill_Script(lua_State *L)
 {
-	lua_running = false;
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		if ((*it)->Matches(L))
+		{
+			(*it)->Stop();
+		}
+	}
 	return 0;
 }
 
-static int L_Hide_Interface(lua_State *L)
+int L_Hide_Interface(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
 	{
@@ -652,7 +1149,7 @@ static int L_Hide_Interface(lua_State *L)
 	return 0;
 }
 
-static int L_Show_Interface(lua_State *L)
+int L_Show_Interface(lua_State *L)
 {
 	if (!lua_isnumber(L,1))
 	{
@@ -686,7 +1183,7 @@ enum
 };
 #endif
 
-static int L_Player_Control(lua_State *L)
+int L_Player_Control(lua_State *L)
 {
 	if (!lua_isnumber(L,1) || !lua_isnumber(L,2) || !lua_isnumber(L,3))
 	{
@@ -931,7 +1428,7 @@ static int L_Player_Control(lua_State *L)
 	}
 	return 0;
 }
-
+/*
 static void L_Prompt_Callback(const std::string& str) {
   if(L_Should_Call("prompt_callback"))
    {
@@ -965,129 +1462,56 @@ static int L_Prompt(lua_State *L)
 	(Console::instance())->activate_input(L_Prompt_Callback, lua_tostring(L, 2));
 	return 0;
 }
+*/
 
-static const char *compatibility_triggers = ""
-	"Triggers = {}\n"
-	"Triggers.init = function(restoring_game) if init then init(restoring_game) end end\n"
-	"Triggers.cleanup = function() if cleanup then cleanup() end end\n"
-	"Triggers.idle = function() if idle then idle() end end\n"
-	"Triggers.postidle = function() if postidle then postidle() end end\n"
-	"Triggers.start_refuel = function(class, player, side) if start_refuel then start_refuel(class.index, player.index) end end\n"
-	"Triggers.end_refuel = function(class, player, side) if end_refuel then end_refuel(class.index, player.index) end end\n"
-	"Triggers.tag_switch = function(tag, player) if tag_switch then tag_switch(tag.index, player.index) end end\n"
-	"Triggers.light_switch = function(light, player) if light_switch then light_switch(light.index, player.index) end end\n"
-	"Triggers.platform_switch = function(platform, player) if platform_switch then platform_switch(platform.index, player.index) end end\n"
-	"Triggers.terminal_enter = function(terminal, player) if terminal_enter then terminal_enter(terminal.index, player.index) end end\n"
-	"Triggers.terminal_exit = function(terminal, player) if terminal_exit then terminal_exit(terminal.index, player.index) end end\n"
-	"Triggers.pattern_buffer = function(side, player) if pattern_buffer then pattern_buffer(side.control_panel.permutation, player.index) end end\n"
-	"Triggers.got_item = function(type, player) if got_item then got_item(type.index, player.index) end end\n"
-	"Triggers.light_activated = function(light) if light_activated then light_activated(light.index) end end\n"
-	"Triggers.platform_activated = function(polygon) if platform_activated then platform_activated(polygon.index) end end\n"
-	"Triggers.player_revived = function(player) if player_revived then player_revived(player.index) end end\n"
-	"Triggers.player_killed = function(player, aggressor, action, projectile) if player_killed then if aggressor then aggressor_index = aggressor.index else aggressor_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end player_killed(player.index, aggressor_index, action.index, projectile_index) end end\n"
-	"Triggers.monster_killed = function(monster, aggressor, projectile) if monster_killed then if aggressor then aggressor_index = aggressor.index else aggressor_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end monster_killed(monster.index, aggressor_index, projectile_index) end end\n"
-	"Triggers.player_damaged = function(player, aggressor_player, aggressor_monster, type, amount, projectile) if player_damaged then if aggressor_player then aggressor_player_index = aggressor_player.index else aggressor_player_index = -1 end if aggressor_monster then aggressor_monster_index = aggressor_monster.index else aggressor_monster_index = -1 end if projectile then projectile_index = projectile.index else projectile_index = -1 end player_damaged(player.index, aggressor_player_index, aggressor_monster_index, type.index, amount, projectile_index) end end\n"
-	"Triggers.projectile_detonated = function(type, owner, polygon, x, y, z) if projectile_detonated then if owner then owner_index = owner.index else owner_index = -1 end projectile_detonated(type.index, owner_index, polygon.index, x, y, z) end end\n"
-	"Triggers.item_created = function(item) if item_created then item_created(item.index) end end\n"
-	;
-
-void RegisterLuaFunctions()
+static void OrderStates()
 {
-	lua_register(state, "enable_player", L_Enable_Player);
-	lua_register(state, "disable_player", L_Disable_Player);
-	lua_register(state, "kill_script", L_Kill_Script);
-	lua_register(state, "hide_interface", L_Hide_Interface);
-	lua_register(state, "show_interface", L_Show_Interface);
-	lua_register(state, "player_control", L_Player_Control);
-	lua_register(state, "prompt", L_Prompt);
-
-	Lua_Map_register(state);
-	Lua_Monsters_register(state);
-	Lua_Objects_register(state);
-	Lua_Player_register(state);
-	Lua_Projectiles_register(state);
-
-	luaL_loadbuffer(state, compatibility_triggers, strlen(compatibility_triggers), "compatibility_triggers");
-	lua_pcall(state, 0, 0, 0);
+	states.clear();
+	if (embedded_state.get())
+		states.push_back(embedded_state.get());
+	if (netscript_state.get())
+		states.push_back(netscript_state.get());
+	if (solo_script_state.get())
+		states.push_back(solo_script_state.get());
 }
 
-void DeclareLuaConstants()
+bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 {
-	struct lang_def
-{
-        const char *name;
-        int value;
-};
-struct lang_def constant_list[] =
-{
-#include "language_definition.h"
-};
-int constant_list_size = sizeof(constant_list)/sizeof(lang_def);
-for (int i=0; i<constant_list_size; i++)
-{
-        lua_pushnumber(state, constant_list[i].value);
-        lua_setglobal(state, constant_list[i].name);
-}
-/* SB: Don't think this is a constant? */
-lua_pushnumber(state, MAXIMUM_MONSTERS_PER_MAP);
-lua_setglobal(state, "MAXIMUM_MONSTERS_PER_MAP");
-lua_pushnumber(state, MAXIMUM_PROJECTILES_PER_MAP);
-lua_setglobal(state, "MAXIMUM_PROJECTILES_PER_MAP");
-lua_pushnumber(state, MAXIMUM_OBJECTS_PER_MAP);
-lua_setglobal(state, "MAXIMUM_OBJECTS_PER_MAP");
-}
-
-// We want to allow MML to load multiple scripts, but we want to show an error if
-// we try to load a netscript and another script.
-// Netscirpt system will set gLoadingLuaNetscript true when it calls LoadLuaScript.
-// Intended as a temporary hack, this should change once we get a system for
-// simultaneous independant scripts.
-bool gLoadingLuaNetscript = false;
-static bool sLuaNetscriptLoaded = false;
-
-static int numScriptsLoaded;
-
-bool LoadLuaScript(const char *buffer, size_t len)
-{
-	int status;
-
-	if (gLoadingLuaNetscript)
-		sLuaNetscriptLoaded = true;
-
-	if (lua_loaded == true && sLuaNetscriptLoaded)
+	LuaState *state = 0;
+	if (script_type == _embedded_lua_script)
 	{
-		// Probably the mml and netscript systems are fighting over control of lua
-		show_cursor ();
-		alert_user(infoError, strERRORS, luascriptconflict, 0);
-		hide_cursor (); // this is bad bad badtz-maru if LoadLuaScript gets called when the pointer isn't supposed to be hidden
-	} else if(!lua_loaded) {
-		numScriptsLoaded = 0;
-		state = lua_open();
-
-		OpenStdLibs(state);
-
-		RegisterLuaFunctions();
-		DeclareLuaConstants();
+		if (!embedded_state.get())
+		{
+			embedded_state.reset(new EmbeddedLuaState());
+			embedded_state->Initialize();
+			OrderStates();
+		}
+		state = embedded_state.get();
 	}
-
-	status = luaL_loadbuffer(state, buffer, len, "level_script");
-	if (status == LUA_ERRRUN)
-		logWarning("Lua loading failed: error running script.");
-	if (status == LUA_ERRFILE)
-		logWarning("Lua loading failed: error loading file.");
-	if (status == LUA_ERRSYNTAX) {
-		logWarning("Lua loading failed: syntax error.");
-		logWarning(lua_tostring(state, -1));
+	else if (script_type == _lua_netscript)
+	{
+		if (!netscript_state.get())
+		{
+			netscript_state.reset(new NetscriptState());
+			netscript_state->Initialize();
+			OrderStates();
+		}
+		state = netscript_state.get();
 	}
-	if (status == LUA_ERRMEM)
-		logWarning("Lua loading failed: error allocating memory.");
-	if (status == LUA_ERRERR)
-		logWarning("Lua loading failed: unknown error.");
+	else if (script_type == _solo_lua_script)
+	{
+		if (!solo_script_state.get())
+		{
+			solo_script_state.reset(new SoloScriptState());
+			solo_script_state->Initialize();
+			OrderStates();
+		}
+		state = solo_script_state.get();
+	}
+	else
+		assert(false);
 
-	lua_loaded = (status==0);
-	numScriptsLoaded += lua_loaded;
-	
-	return lua_loaded;
+	return state->Load(buffer, len);
 }
 
 #ifdef HAVE_OPENGL
@@ -1132,74 +1556,27 @@ static void RestorePreLuaSettings()
 bool RunLuaScript()
 {
 	InitializeLuaVariables();
-	if (!lua_loaded)
-		return false;
-
 	PreservePreLuaSettings();
 
-	int result = 0;
-	// Reverse the functions we're calling
-	for(int i = 0; i < numScriptsLoaded - 1; ++i)
-		lua_insert(state, -(numScriptsLoaded - i));
-	// Call 'em
-	for(int i = 0; i < numScriptsLoaded; ++i)
-		result = result || lua_pcall(state, 0, LUA_MULTRET, 0);
-	lua_running = (result==0);
+	bool running = false;
+	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		running |= (*it)->Run();
+	}
 
-	return lua_running;
+	return running;
 }
 
 void ExecuteLuaString(const std::string& line)
 {
-	if (!lua_loaded)
+	if (!solo_script_state.get())
 	{
-		numScriptsLoaded = 0;
-		state = lua_open();
-
-		OpenStdLibs(state);
-		RegisterLuaFunctions();
-		DeclareLuaConstants();
-		InitializeLuaVariables();
-		PreservePreLuaSettings();
-
-		lua_loaded = true;
+		solo_script_state.reset(new SoloScriptState);
+		solo_script_state->Initialize();
+		OrderStates();
 	}
 
-	string buffer;
-	bool print_result = false;
-	if (line[0] == '=') 
-	{
-		buffer = "return " + line.substr(1);
-		print_result = true;
-	}
-	else
-	{
-		buffer = line;
-	}
-
-
-	if (luaL_loadbuffer(state, buffer.c_str(), buffer.size(), "console") != 0)
-	{
-		L_Error(lua_tostring(state, -1));
-	}
-	else 
-	{
-		if (!lua_running) lua_running = true;
-		if (lua_pcall(state, 0, (print_result) ? 1 : 0, 0) != 0)
-			L_Error(lua_tostring(state, -1));
-		else if (print_result)
-		{
-			lua_getglobal(state, "tostring");
-			lua_insert(state, 1);
-			lua_pcall(state, 1, 1, 0);
-			if (lua_tostring(state, -1))
-			{
-				screen_printf("%s", lua_tostring(state, -1));
-			}
-		}
-	}
-	
-	lua_settop(state, 0);
+	solo_script_state->ExecuteCommand(line);
 }
 
 void LoadSoloLua()
@@ -1216,7 +1593,7 @@ void LoadSoloLua()
 			std::vector<char> script_buffer(script_length);
 			if (script_file.Read(script_length, &script_buffer[0]))
 			{
-				LoadLuaScript(&script_buffer[0], script_length);
+				LoadLuaScript(&script_buffer[0], script_length, _solo_lua_script);
 			}
 		}
 	}
@@ -1224,15 +1601,13 @@ void LoadSoloLua()
 
 void CloseLuaScript()
 {
-	if (lua_loaded)
-	{
-		lua_close(state);
-		
-		RestorePreLuaSettings();
-	}
+	states.clear();
+	embedded_state.reset(0);
+	netscript_state.reset(0);
+	solo_script_state.reset(0);
 
-	lua_loaded = false;
-	lua_running = false;
+	RestorePreLuaSettings();
+
 	lua_cameras.resize(0);
 	number_of_cameras = 0;
 
@@ -1240,7 +1615,6 @@ void CloseLuaScript()
 
 	game_end_condition = _game_normal_end_condition;
 	
-	sLuaNetscriptLoaded = false;
 }
 
 void ToggleLuaMute()
@@ -1263,57 +1637,19 @@ void ResetLuaMute()
 
 void MarkLuaCollections(bool loading)
 {
-	static set<short> lua_collections;
-
+	static set<short> collections;
 	if (loading)
 	{
-		lua_collections.clear();
+		collections.clear();
 
-		if (!lua_running)
-			return;
-		
-		lua_pushstring(state, "CollectionsUsed");
-		lua_gettable(state, LUA_GLOBALSINDEX);
-		
-		if (lua_istable(state, -1))
+		for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
 		{
-			int i = 1;
-			lua_pushnumber(state, i++);
-			lua_gettable(state, -2);
-			while (lua_isnumber(state, -1))
-			{
-				short collection_index = static_cast<short>(lua_tonumber(state, -1));
-				if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
-				{
-					mark_collection_for_loading(collection_index);
-					lua_collections.insert(collection_index);
-				}
-				lua_pop(state, 1);
-				lua_pushnumber(state, i++);
-				lua_gettable(state, -2);
-			}
-			
-			lua_pop(state, 2);
-		}
-		else if (lua_isnumber(state, -1))
-		{
-			short collection_index = static_cast<short>(lua_tonumber(state, -1));
-			if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
-			{
-				mark_collection_for_loading(collection_index);
-				lua_collections.insert(collection_index);
-			}
-
-			lua_pop(state, 1);
-		}
-		else
-		{
-			lua_pop(state, 1);
+			(*it)->MarkCollections(collections);
 		}
 	}
 	else
 	{
-		for (set<short>::iterator it = lua_collections.begin(); it != lua_collections.end(); it++)
+		for (set<short>::iterator it = collections.begin(); it != collections.end(); it++)
 		{
 			mark_collection_for_unloading(*it);
 		}
@@ -1322,7 +1658,7 @@ void MarkLuaCollections(bool loading)
 
 bool UseLuaCameras()
 {
-	if (!lua_running)
+	if (!LuaRunning())
 		return false;
 
 	bool using_lua_cameras = false;
@@ -1385,7 +1721,7 @@ bool UseLuaCameras()
 
 bool LuaPlayerCanWieldWeapons(short player_index)
 {
-	return (!lua_running || can_wield_weapons[player_index]);
+	return (can_wield_weapons[player_index] || !LuaRunning());
 }		
 
 int GetLuaGameEndCondition() {

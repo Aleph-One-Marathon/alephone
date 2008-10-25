@@ -34,7 +34,13 @@ void L_Invalidate_Monster(short monster_index);
 void L_Invalidate_Projectile(short projectile_index);
 void L_Invalidate_Object(short object_index);
 
-bool LoadLuaScript(const char *buffer, size_t len);
+enum ScriptType {
+	_embedded_lua_script,
+	_lua_netscript,
+	_solo_lua_script
+};
+
+bool LoadLuaScript(const char *buffer, size_t len, ScriptType type);
 bool RunLuaScript();
 void CloseLuaScript();
 

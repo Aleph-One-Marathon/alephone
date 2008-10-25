@@ -169,9 +169,6 @@ clearly this is all broken until we have packet types
 
 #include "ConnectPool.h"
 
-// For temporary multiple MML specified lua scripts hack
-extern bool gLoadingLuaNetscript;
-
 /* ---------- globals */
 
 static short ddpSocket; /* our ddp socket number */
@@ -2069,9 +2066,7 @@ OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer,
 		
 #ifdef HAVE_LUA
 		if (do_netscript) {
-			gLoadingLuaNetscript = true;
-			LoadLuaScript ((char*)deferred_script_data, deferred_script_length);
-			gLoadingLuaNetscript = false;
+			LoadLuaScript ((char*)deferred_script_data, deferred_script_length, _lua_netscript);
 		}
 #endif
 	}
@@ -2107,9 +2102,7 @@ byte *NetReceiveGameData(bool do_physics)
     if (handlerLuaLength > 0) {
       do_netscript = true;
 #ifdef HAVE_LUA
-      gLoadingLuaNetscript = true;
-      LoadLuaScript((char *) handlerLuaBuffer, handlerLuaLength);
-      gLoadingLuaNetscript = false;
+      LoadLuaScript((char *) handlerLuaBuffer, handlerLuaLength, _lua_netscript);
 #endif
       handlerLuaBuffer = NULL;
       handlerLuaLength = 0;

@@ -359,7 +359,7 @@ void GeneralRunScript(int LevelIndex)
 				if (Data == NULL || DataLen <= 0) break;
 				
 				// Load and indicate whether loading was successful
-				if (LoadLuaScript(Data, DataLen))
+				if (LoadLuaScript(Data, DataLen, _embedded_lua_script))
 					LuaFound = true;
 			}
 			break;
