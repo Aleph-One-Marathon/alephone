@@ -1071,9 +1071,12 @@ static void adjust_platform_sides(
 					side->primary_texture.y0-= delta_height;
 					break;
 				case _low_side: /* primary */
+					// ghs: the following doesn't appear to be necessary at all!
+/*
 					top_of_side_height= MIN(line->highest_adjacent_floor, polygon->ceiling_height);
 					side->primary_texture.y0-= (old_ceiling_height<top_of_side_height && new_ceiling_height<top_of_side_height) ?
 						delta_height : new_ceiling_height-top_of_side_height;
+*/
 					break;
 			
 				default:
