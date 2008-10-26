@@ -570,6 +570,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="monster">
+      <function name="accelerate" version="SVN">
+	<description>accelerates monster</description>
+	<argument name="direction"><type>angle</type></argument>
+	<argument name="velocity"><type>speed</type></argument>
+	<argument name="vertical_velocity"><type>speed</type></argument>
+      </function>
       <variable name="action" access="read-only">
 	<description>current AI action of the monster</description>
 	<type>number</type>

@@ -365,6 +365,21 @@ typedef L_EnumContainer<Lua_MonsterTypes_Name, Lua_MonsterType> Lua_MonsterTypes
 
 char Lua_Monster_Name[] = "monster";
 
+int Lua_Monster_Accelerate(lua_State *L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+		return luaL_error(L, "accelerate: incorrect argument type");
+
+	short monster_index = Lua_Monster::Index(L, 1);
+	monster_data *monster = get_monster_data(monster_index);
+	double direction = static_cast<double>(lua_tonumber(L, 2));
+	double velocity = static_cast<double>(lua_tonumber(L, 3));
+	double vertical_velocity = static_cast<double>(lua_tonumber(L, 4));
+	
+	accelerate_monster(monster_index, static_cast<int>(vertical_velocity * WORLD_ONE), static_cast<int>(direction/AngleConvert), static_cast<int>(velocity * WORLD_ONE));
+	return 0;
+}
+
 int Lua_Monster_Attack(lua_State *L)
 {
 	short target = 0;
@@ -703,6 +718,7 @@ static int Lua_Monster_Set_Vitality(lua_State *L)
 }
 
 const luaL_reg Lua_Monster_Get[] = {
+	{"accelerate", L_TableFunction<Lua_Monster_Accelerate>},
 	{"action", Lua_Monster_Get_Action},
 	{"active", Lua_Monster_Get_Active},
 	{"attack", L_TableFunction<Lua_Monster_Attack>},
