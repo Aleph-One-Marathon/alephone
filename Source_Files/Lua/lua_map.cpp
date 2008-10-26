@@ -2511,10 +2511,29 @@ const luaL_reg Lua_Fog_Set[] = {
 char Lua_Level_Name[] = "Level";
 typedef L_Class<Lua_Level_Name> Lua_Level;
 
+char Lua_CompletionState_Name[] = "completion_state";
+typedef L_Enum<Lua_CompletionState_Name> Lua_CompletionState;
+
+char Lua_CompletionStates_Name[] = "CompletionStates";
+typedef L_EnumContainer<Lua_CompletionStates_Name, Lua_CompletionState> Lua_CompletionStates;
+
+int Lua_Level_Calculate_Completion_State(lua_State *L)
+{
+	Lua_CompletionState::Push(L, calculate_level_completion_state());
+	return 1;
+}
+
 template<int16 flag>
 static int Lua_Level_Get_Environment_Flag(lua_State *L)
 {
 	lua_pushboolean(L, static_world->environment_flags & flag);
+	return 1;
+}
+
+template<int16 flag>
+static int Lua_Level_Get_Mission_Flag(lua_State *L)
+{
+	lua_pushboolean(L, static_world->mission_flags & flag);
 	return 1;
 }
 
@@ -2537,11 +2556,17 @@ static int Lua_Level_Get_Underwater_Fog(lua_State *L)
 }
 
 const luaL_reg Lua_Level_Get[] = {
+	{"calculate_completion_state", L_TableFunction<Lua_Level_Calculate_Completion_State>},
+	{"extermination", Lua_Level_Get_Mission_Flag<_mission_extermination>},
+	{"exploration", Lua_Level_Get_Mission_Flag<_mission_exploration>},
 	{"fog", Lua_Level_Get_Fog},
 	{"low_gravity", Lua_Level_Get_Environment_Flag<_environment_low_gravity>},
 	{"magnetic", Lua_Level_Get_Environment_Flag<_environment_magnetic>},
 	{"name", Lua_Level_Get_Name},
 	{"rebellion", Lua_Level_Get_Environment_Flag<_environment_rebellion>},
+	{"retrieval", Lua_Level_Get_Mission_Flag<_mission_retrieval>},
+	{"repair", Lua_Level_Get_Mission_Flag<_mission_repair>},
+	{"rescue", Lua_Level_Get_Mission_Flag<_mission_rescue>},
 	{"underwater_fog", Lua_Level_Get_Underwater_Fog},
 	{"vacuum", Lua_Level_Get_Environment_Flag<_environment_vacuum>},
 	{0, 0}
@@ -2561,6 +2586,11 @@ int Lua_Map_register(lua_State *L)
 	Lua_Collection::Valid = collection_loaded;
 	Lua_Collections::Register(L);
 	Lua_Collections::Length = Lua_Collections::ConstantLength(MAXIMUM_COLLECTIONS);
+
+	Lua_CompletionState::Register(L, 0, 0, 0, Lua_CompletionState_Mnemonics);
+	Lua_CompletionState::Valid = Lua_CompletionState::ValidRange(static_cast<int16>(_level_failed) + 1);
+	Lua_CompletionStates::Register(L);
+	Lua_CompletionStates::Length = Lua_CompletionStates::ConstantLength(static_cast<int16>(_level_failed) + 1);	
 
 	Lua_ControlPanelClass::Register(L, 0, 0, 0, Lua_ControlPanelClass_Mnemonics);
 	Lua_ControlPanelClass::Valid = Lua_ControlPanelClass::ValidRange(NUMBER_OF_CONTROL_PANELS);

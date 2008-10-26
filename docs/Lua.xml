@@ -460,6 +460,18 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="level" singleton="true">
+      <function name="calculate_completion_state" version="SVN">
+	<description>returns whether level is finished, unfinished, or failed</description>
+	<return><type>completion_state</type></return>
+      </function>
+      <variable name="extermination" access="read-only" version="SVN">
+	<description>whether level has extermination flag set</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="exploration" access="read-only" version="SVN">
+	<description>whether level has exploration flag set</description>
+	<type>boolean</type>
+      </variable>
       <subtable name="fog" classname="lua_fog">
 	<alias>underwater_fog</alias>
 	<variable name="active">
@@ -505,6 +517,18 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
       <variable name="rebellion" access="read-only">
 	<description>whether level is rebellion</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="repair" access="read-only" version="SVN">
+	<description>whether level has repair flag set</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="rescue" access="read-only" version="SVN">
+	<description>whether level has rescue flag set</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="retrieval" access="read-only" version="SVN">
+	<description>whether level has retrieval flag set</description>
 	<type>boolean</type>
       </variable>
       <variable name="vacuum" access="read-only">
@@ -1610,6 +1634,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>iterates through all terminal texts on the level</description>
       </call>
     </accessor>
+    <enum name="completion_state">
+      <mnemonics>
+	<mnemonic name="unfinished"/>
+	<mnemonic name="finished"/>
+	<mnemonic name="failed"/>
+      </mnemonics>
+    </enum>
     <enum name="collection">
       <variable name="bitmap_count">
 	<description>number of bitmaps in collection</description>
@@ -2461,6 +2492,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="smg"/>
       </mnemonics>
     </enum>
+    <enum-accessor name="CompletionStates" contains="completion_state" nice-name="Completion States"/>
     <enum-accessor name="Collections" contains="collection" nice-name="Collections"/>
     <enum-accessor name="ControlPanelClasses" contains="control_panel_class" nice-name="Control Panel Classes"/>
     <enum-accessor name="ControlPanelTypes" contains="control_panel_type" nice-name="Control Panel Types"/>

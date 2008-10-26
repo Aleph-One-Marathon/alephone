@@ -136,6 +136,7 @@
 <li>
 <a href="#types">Types and Mnemonics</a><ol>
 <li><a href="#Collections">Collections</a></li>
+<li><a href="#CompletionStates">Completion States</a></li>
 <li><a href="#ControlPanelClasses">Control Panel Classes</a></li>
 <li><a href="#ControlPanelTypes">Control Panel Types</a></li>
 <li><a href="#DamageTypes">Damage</a></li>
@@ -571,6 +572,18 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl>
 <dt>Level</dt>
 <dd><dl>
+      <dt>.calculate_completion_state()
+     <span class="version">SVN</span>
+</dt>
+<dd><p class="description">returns whether level is finished, unfinished, or failed</p></dd>
+      <dt>
+    .extermination<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether level has extermination flag set</p></dd>
+      <dt>
+    .exploration<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether level has exploration flag set</p></dd>
       <dt>.fog<br>.underwater_fog</dt>
 <dd><dl>
 <dt>
@@ -613,6 +626,18 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .rebellion<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is rebellion</p></dd>
+      <dt>
+    .repair<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether level has repair flag set</p></dd>
+      <dt>
+    .rescue<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether level has rescue flag set</p></dd>
+      <dt>
+    .retrieval<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether level has retrieval flag set</p></dd>
       <dt>
     .vacuum<span class="access"> (read-only)</span>
 </dt>
@@ -1722,6 +1747,18 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"cyborg"</li>
 </div>
 <div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="CompletionStates"></a>Completion States</h3>
+<dl>
+<dt># CompletionStates</dt>
+<dt>CompletionStates()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"unfinished"</li>
+<li>"finished"</li>
+<li>"failed"</li>
 </ul>
 <h3>
 <a name="ControlPanelClasses"></a>Control Panel Classes</h3>

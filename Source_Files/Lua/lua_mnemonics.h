@@ -62,6 +62,12 @@ const lang_def Lua_Collection_Mnemonics[] = {
 	{0, 0}
 };
 
+const lang_def Lua_CompletionState_Mnemonics[] = {
+	{"unfinished", 0},
+	{"finished", 1},
+	{"failed", 2}
+};
+
 const lang_def Lua_ControlPanelClass_Mnemonics[] = {
 	{"oxygen recharger", 0},
 	{"single shield recharger", 1},
