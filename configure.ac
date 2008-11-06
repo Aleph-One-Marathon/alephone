@@ -99,6 +99,11 @@ if [[ "x$ac_cv_lib_SDL_net_SDLNet_Init" != xyes ]]; then
 fi
 AM_CONDITIONAL(HAVE_SDL_NET, test x$ac_cv_lib_SDL_net_SDLNet_Init = xyes)
 
+AC_SEARCH_LIBS(gethostbyname, nsl)
+AC_SEARCH_LIBS(socket, socket, ,
+    [AC_CHECK_LIB(nsl, socket, LIBS="$LIBS -lsocket -lnsl", , -lsocket)])
+
+
 dnl Check for zlib
 AC_CHECK_HEADER(zlib.h, , AC_ERROR([Aleph One requires zlib]))
 AC_CHECK_LIB(z, zlibVersion, LIBS="-lz $LIBS", AC_ERROR([Aleph One requires zlib]))
