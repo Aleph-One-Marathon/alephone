@@ -12,7 +12,7 @@ librenderother_a_SOURCES = ChaseCam.h computer_interface.h \
   ChaseCam.cpp computer_interface.cpp fades.cpp FontHandler.cpp game_window.cpp \
   HUDRenderer.cpp HUDRenderer_OGL.cpp HUDRenderer_SW.cpp \
   images.cpp motion_sensor.cpp OGL_Blitter.cpp OGL_LoadScreen.cpp overhead_map.cpp OverheadMap_OGL.cpp \
-  OverheadMapRenderer.cpp OverheadMap_SDL.cpp screen_drawing.cpp screen_sdl.cpp \
+  OverheadMapRenderer.cpp OverheadMap_SDL.cpp screen_drawing.cpp screen.cpp \
   sdl_fonts.cpp TextLayoutHelper.cpp TextStrings.cpp ViewControl.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
