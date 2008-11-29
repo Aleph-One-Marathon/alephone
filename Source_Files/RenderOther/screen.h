@@ -179,7 +179,7 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw);
 void toggle_fullscreen(bool fs);
 void toggle_fullscreen();
 void update_screen_window(void);
-void clear_screen(void);
+void clear_screen(bool update = true);
 
 void calculate_destination_frame(short size, bool high_resolution, Rect *frame);
 

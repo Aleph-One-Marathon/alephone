@@ -81,16 +81,6 @@ SDL_Surface *Term_Buffer = NULL;
 static bool PrevFullscreen = false;
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
 
-#ifdef HAVE_OPENGL
-// This is defined in overhead_map.c
-// It indicates whether to render the overhead map in OpenGL
-extern bool OGL_MapActive;
-// This is the same for the HUD
-extern bool OGL_HUDActive;
-// and lastly, for the terminal buffer
-bool OGL_TermActive = false;
-#endif
-
 static int desktop_width;
 static int desktop_height;
 
@@ -392,13 +382,6 @@ void enter_screen(void)
 		OGL_StartRun();
 #endif
 
-#ifdef HAVE_OPENGL
-	if (OGL_IsActive())
-		OGL_HUDActive = true;
-	else
-		OGL_HUDActive = false;
-#endif
-
 	// Reset modifier key status
 	SDL_SetModState(KMOD_NONE);
 }
@@ -587,6 +570,8 @@ GLuint OGL_Term_Texture;
  *  Render game screen
  */
 
+static bool clear_next_screen = false;
+
 void render_screen(short ticks_elapsed)
 {
 	// Make whatever changes are necessary to the world_view structure based on whichever player is frontmost
@@ -671,8 +656,10 @@ void render_screen(short ticks_elapsed)
 	} else
 		ChangedSize = true;
 
+	bool update_full_screen = false;
 	if (ChangedSize) {
-		clear_screen();
+		clear_screen(false);
+		update_full_screen = true;
 		if (Screen::instance()->hud())
 			draw_interface();
 
@@ -680,6 +667,15 @@ void render_screen(short ticks_elapsed)
 		reallocate_world_pixels(BufferRect.w, BufferRect.h);
 
 		dirty_terminal_view(current_player_index);
+	} 
+	else if (screen_mode.acceleration == _opengl_acceleration && clear_next_screen)
+	{
+		clear_screen(false);
+		update_full_screen = true;
+		if (Screen::instance()->hud())
+			draw_interface();
+
+		clear_next_screen = false;
 	}
 
 	switch (screen_mode.acceleration) {
@@ -715,26 +711,8 @@ void render_screen(short ticks_elapsed)
 	// Is map to be drawn with OpenGL?
 	if (OGL_IsActive() && world_view->overhead_map_active)
 		OGL_MapActive = true;
-	else {
-		if (OGL_MapActive) {
-			// switching off map
-			// clear the remnants of the map out of the back buffer
-			glClearColor(0,0,0,0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		}
+	else
 		OGL_MapActive = false;
-	}
-	if (OGL_IsActive() && world_view->terminal_mode_active) {
-		if (!OGL_TermActive)
-		{
-			glClearColor(0,0,0,0);
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			
-		}
-		OGL_TermActive = true;
-	} else {
-		OGL_TermActive = false;
-	}
 
 	// Set OpenGL viewport to world view
 	Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
@@ -775,7 +753,7 @@ void render_screen(short ticks_elapsed)
 	// then blit the software rendering to the screen
 	if (screen_mode.acceleration == _opengl_acceleration) {
 #ifdef HAVE_OPENGL
-		if (world_view->terminal_mode_active || (world_view->overhead_map_active && !OGL_MapActive)) {
+		if (world_view->terminal_mode_active) {
 			// Copy 2D rendering to screen
 
 			SDL_Rect term_dst = Screen::instance()->term_rect();
@@ -788,17 +766,10 @@ void render_screen(short ticks_elapsed)
 		}
 
 		if (Screen::instance()->hud()) {
-			if (OGL_HUDActive) {
-				Rect dr = {HUD_DestRect.y, HUD_DestRect.x, HUD_DestRect.y + HUD_DestRect.h, HUD_DestRect.x + HUD_DestRect.w};
-				OGL_DrawHUD(dr, ticks_elapsed);
-			} else {
-				if (HUD_RenderRequest) {
-					DrawHUD(HUD_DestRect);
-					HUD_RenderRequest = false;
-				}
-			}
+			Rect dr = {HUD_DestRect.y, HUD_DestRect.x, HUD_DestRect.y + HUD_DestRect.h, HUD_DestRect.x + HUD_DestRect.w};
+			OGL_DrawHUD(dr, ticks_elapsed);
 		}
-
+		
 #endif
 	} else {
 
@@ -809,6 +780,12 @@ void render_screen(short ticks_elapsed)
 		if (HUD_RenderRequest) {
 			DrawHUD(HUD_DestRect);
 			HUD_RenderRequest = false;
+		}
+
+		if (update_full_screen)
+		{
+			SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+			update_full_screen = false;
 		}
 	}
 
@@ -1184,16 +1161,18 @@ void DrawHUD(SDL_Rect &dest_rect)
  *  Clear screen
  */
 
-void clear_screen(void)
+void clear_screen(bool update)
 {
 #ifdef HAVE_OPENGL
 	if (SDL_GetVideoSurface()->flags & SDL_OPENGL) {
 		OGL_ClearScreen();
-		SDL_GL_SwapBuffers();
+		if (update) SDL_GL_SwapBuffers();
 	} else 
 #endif
 	{
 		SDL_FillRect(main_surface, NULL, SDL_MapRGB(main_surface->format, 0, 0, 0));
-		SDL_UpdateRect(main_surface, 0, 0, 0, 0);
+		if (update) SDL_UpdateRect(main_surface, 0, 0, 0, 0);
 	}
+
+	clear_next_screen = true;
 }
