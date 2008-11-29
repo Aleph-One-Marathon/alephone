@@ -864,21 +864,47 @@ static void handle_game_key(const SDL_Event &event)
 		} 
 		else if (key == SDLK_F1) // Decrease screen size
 		{
-			if (graphics_preferences->screen_mode.size > 0) {
+			if (!graphics_preferences->screen_mode.hud)
+			{
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
-				graphics_preferences->screen_mode.size--;
+				graphics_preferences->screen_mode.hud = true;
 				changed_screen_mode = changed_prefs = true;
-			} else
-				PlayInterfaceButtonSound(Sound_ButtonFailure());
+			}
+			else
+			{
+				int mode = alephone::Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height);
+				if (mode < alephone::Screen::instance()->GetModes().size() - 1)
+				{
+					PlayInterfaceButtonSound(Sound_ButtonSuccess());
+					graphics_preferences->screen_mode.width = alephone::Screen::instance()->ModeWidth(mode + 1);
+					graphics_preferences->screen_mode.height = alephone::Screen::instance()->ModeHeight(mode + 1);
+					graphics_preferences->screen_mode.hud = false;
+					changed_screen_mode = changed_prefs = true;
+				} else
+					PlayInterfaceButtonSound(Sound_ButtonFailure());
+			}
 		}
 		else if (key == SDLK_F2) // Increase screen size
 		{
-			if (graphics_preferences->screen_mode.size < NUMBER_OF_VIEW_SIZES - 1) {
+			if (graphics_preferences->screen_mode.hud)
+			{
 				PlayInterfaceButtonSound(Sound_ButtonSuccess());
-				graphics_preferences->screen_mode.size++;
+				graphics_preferences->screen_mode.hud = false;
 				changed_screen_mode = changed_prefs = true;
-			} else
-				PlayInterfaceButtonSound(Sound_ButtonFailure());
+			}
+			else
+			{
+				int mode = alephone::Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height);
+				if (mode > 0)
+				{
+					PlayInterfaceButtonSound(Sound_ButtonSuccess());
+					graphics_preferences->screen_mode.width = alephone::Screen::instance()->ModeWidth(mode - 1);
+					graphics_preferences->screen_mode.height = alephone::Screen::instance()->ModeHeight(mode - 1);
+					graphics_preferences->screen_mode.hud = true;
+					changed_screen_mode = changed_prefs = true;
+				} else
+					PlayInterfaceButtonSound(Sound_ButtonFailure());
+			}
 		}
 		else if (key == SDLK_F3) // Resolution toggle
 		{

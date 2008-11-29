@@ -97,6 +97,7 @@ May 22, 2003 (Woody Zenfell):
 #include "Music.h"
 
 #include <cmath>
+#include <sstream>
 
 #ifdef HAVE_UNISTD_H
 #include <unistd.h>
@@ -105,6 +106,8 @@ May 22, 2003 (Woody Zenfell):
 #ifdef __WIN32__
 #include <windows.h> // for GetUserName()
 #endif
+
+using namespace alephone;
 
 static const char sPasswordMask[] = "reverof nohtaram";
 
@@ -848,6 +851,19 @@ static void rendering_options_dialog_demux(void* arg)
 
 extern void toggle_fill_the_screen(bool);
 
+std::vector<std::string> build_resolution_labels()
+{
+	std::vector<std::string> result;
+	for (std::vector<std::pair<int, int> >::const_iterator it = Screen::instance()->GetModes().begin(); it != Screen::instance()->GetModes().end(); ++it)
+	{
+		ostringstream os;
+		os << it->first << "x" << it->second;
+		result.push_back(os.str());
+	}
+
+	return result;
+}
+
 static void graphics_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
@@ -872,8 +888,8 @@ static void graphics_dialog(void *arg)
 	table->dual_add(renderer_w, d);
 
 	w_select_popup *size_w = new w_select_popup();
-	size_w->set_labels(build_stringvector_from_cstring_array(size_labels));
-	size_w->set_selection(graphics_preferences->screen_mode.size);
+	size_w->set_labels(build_resolution_labels());
+	size_w->set_selection(Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height));
 	table->dual_add(size_w->label("Screen Size"), d);
 	table->dual_add(size_w, d);
 
@@ -897,6 +913,12 @@ static void graphics_dialog(void *arg)
 	w_toggle *fullscreen_w = new w_toggle(!graphics_preferences->screen_mode.fullscreen);
 	table->dual_add(fullscreen_w->label("Windowed Mode"), d);
 	table->dual_add(fullscreen_w, d);
+
+	table->add_row(new w_spacer(), true);
+	table->dual_add_row(new w_static_text("Heads-Up Display"), d);
+	w_toggle *hud_w = new w_toggle(graphics_preferences->screen_mode.hud);
+	table->dual_add(hud_w->label("Show HUD"), d);
+	table->dual_add(hud_w, d);
 
 #if defined(__WIN32__)
 	table->add_row(new w_spacer(), true);
@@ -950,10 +972,11 @@ static void graphics_dialog(void *arg)
 		    changed = true;
 	    }
 	    
-	    short size = static_cast<short>(size_w->get_selection());
-	    assert(size >= 0);
-	    if (size != graphics_preferences->screen_mode.size) {
-		    graphics_preferences->screen_mode.size = size;
+	    short resolution = static_cast<short>(size_w->get_selection());
+	    if (Screen::instance()->ModeWidth(resolution) != graphics_preferences->screen_mode.width || Screen::instance()->ModeHeight(resolution) != graphics_preferences->screen_mode.height)
+	    {
+		    graphics_preferences->screen_mode.width = Screen::instance()->ModeWidth(resolution);
+		    graphics_preferences->screen_mode.height = Screen::instance()->ModeHeight(resolution);
 		    changed = true;
 		    // don't change mode now; it will be changed when the game starts
 	    }
@@ -961,6 +984,13 @@ static void graphics_dialog(void *arg)
 	    short gamma = static_cast<short>(gamma_w->get_selection());
 	    if (gamma != graphics_preferences->screen_mode.gamma_level) {
 		    graphics_preferences->screen_mode.gamma_level = gamma;
+		    changed = true;
+	    }
+
+	    bool hud = hud_w->get_selection() != 0;
+	    if (hud != graphics_preferences->screen_mode.hud)
+	    {
+		    graphics_preferences->screen_mode.hud = hud;
 		    changed = true;
 	    }
 	    
@@ -1887,7 +1917,9 @@ void write_preferences(
 	fprintf(F,"<mara_prefs>\n\n");
 	
 	fprintf(F,"<graphics\n");
-	fprintf(F,"  scmode_size=\"%hd\"\n",graphics_preferences->screen_mode.size);
+	fprintf(F,"  scmode_width=\"%hd\"\n", graphics_preferences->screen_mode.width);
+	fprintf(F,"  scmode_height=\"%hd\"\n", graphics_preferences->screen_mode.height);
+	fprintf(F,"  scmode_hud=\"%s\"\n", BoolString(graphics_preferences->screen_mode.hud));
 	fprintf(F,"  scmode_accel=\"%hd\"\n",graphics_preferences->screen_mode.acceleration);
 	fprintf(F,"  scmode_highres=\"%s\"\n",BoolString(graphics_preferences->screen_mode.high_resolution));
 	fprintf(F,"  scmode_fullscreen=\"%s\"\n",BoolString(graphics_preferences->screen_mode.fullscreen));
@@ -2080,7 +2112,9 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
   memset(&preferences->screen_mode, '\0', sizeof(screen_mode_data));
 	preferences->screen_mode.gamma_level= DEFAULT_GAMMA_LEVEL;
 
-	preferences->screen_mode.size = _100_percent;
+	preferences->screen_mode.width = 640;
+	preferences->screen_mode.height = 480;
+	preferences->screen_mode.hud = true;
 #if defined(__APPLE__) && defined(__MACH__)
 	preferences->screen_mode.acceleration = _opengl_acceleration;
 #else
@@ -2335,7 +2369,7 @@ static bool validate_network_preferences(network_preferences_data *preferences)
 		preferences->game_protocol= _network_game_protocol_default;
 		changed= true;
 	}
-	
+
 	return changed;
 }
 
@@ -2743,11 +2777,83 @@ public:
 	XML_GraphicsPrefsParser(): XML_ElementParser("graphics") {}
 };
 
+struct ViewSizeData
+{
+	short Width, Height;
+	bool HUD;
+};
+
+const ViewSizeData LegacyViewSizes[32] = 
+{
+	{ 320, 160, true},
+	{ 480, 240, true},
+	{ 640, 480, true},
+	{ 640, 480, false},
+	{ 800, 600, true},
+	{ 800, 600, false},
+	{ 1024, 768, true},
+	{ 1024, 768, false},
+	{ 1280, 1024, true},
+	{ 1280, 1024, false},
+	{ 1600, 1200, true},
+	{ 1600, 1200, false},
+	{ 1024, 640, true},
+	{ 1024, 640, false},
+	{ 1280, 800, true},
+	{ 1280, 800, false},
+	{ 1280, 854, true},
+	{ 1280, 854, false},
+	{ 1440, 900, true},
+	{ 1440, 900, false},
+	{ 1680, 1050, true},
+	{ 1680, 1050, false},
+	{ 1920, 1200, true},
+	{ 1920, 1200, false},
+	{ 2560, 1600, true},
+	{ 2560, 1600, false},
+	{ 1280, 768, true},
+	{ 1280, 768, false},
+	{ 1280, 960, true},
+	{ 1280, 960, false},
+	{ 1280, 720, true},
+	{ 1280, 720, false}
+};
+
 bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"scmode_size"))
 	{
-		return ReadInt16Value(Value,graphics_preferences->screen_mode.size);
+		short scmode;
+		if (ReadInt16Value(Value, scmode))
+		{
+			if (scmode >= 0 && scmode < 32)
+			{
+				graphics_preferences->screen_mode.height = LegacyViewSizes[scmode].Height;
+				graphics_preferences->screen_mode.width = LegacyViewSizes[scmode].Width;
+				graphics_preferences->screen_mode.hud = LegacyViewSizes[scmode].HUD;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else if (StringsEqual(Tag,"scmode_height"))
+	{
+		return ReadInt16Value(Value, graphics_preferences->screen_mode.height);
+	}
+	else if (StringsEqual(Tag,"scmode_width"))
+	{
+		return ReadInt16Value(Value, graphics_preferences->screen_mode.width);
+	}
+	else if (StringsEqual(Tag,"scmode_hud"))
+	{
+		return ReadBooleanValue(Value, graphics_preferences->screen_mode.hud);
 	}
 	else if (StringsEqual(Tag,"scmode_accel"))
 	{

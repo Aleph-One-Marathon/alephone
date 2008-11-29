@@ -62,6 +62,8 @@
 
 #include "lua_script.h"
 
+#include <algorithm>
+
 #if defined(__WIN32__) || (defined(__MACH__) && defined(__APPLE__)) || defined(__MACOS__)
 #define MUST_RELOAD_VIEW_CONTEXT
 #endif
@@ -163,6 +165,34 @@ void Screen::Initialize(screen_mode_data* mode)
 		desktop_width = SDL_GetVideoInfo()->current_w;
 #endif
 
+		// build a list of fullscreen modes
+		// list some modes
+		SDL_Rect **modes = SDL_ListModes(NULL, SDL_FULLSCREEN);
+		if (modes)
+		{
+			for (int i = 0; modes[i]; ++i)
+			{
+				if (modes[i]->w >= 640 && modes[i]->h >= 480)
+				{
+					m_modes.push_back(std::pair<int, int>(modes[i]->w, modes[i]->h));
+					if (modes[i]->w == 640 && modes[i]->h == 480)
+					{
+						m_modes.push_back(std::pair<int, int>(480, 240));
+						m_modes.push_back(std::pair<int, int>(320, 160));
+					}
+				}
+			}
+		}
+
+		// these are not validated in graphics prefs because
+		// SDL is not initialized yet when prefs load, so
+		// validate them here
+		if (Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height) < 0)
+		{
+			graphics_preferences->screen_mode.width = 640;
+			graphics_preferences->screen_mode.height = 480;
+			write_preferences();
+		}
 	} else {
 
 		unload_all_collections();
@@ -190,27 +220,27 @@ int Screen::width()
 
 int Screen::window_height()
 {
-	return ViewSizes[screen_mode.size].OverallHeight;
+	return std::max(static_cast<short>(480), screen_mode.height);
 }
 
 int Screen::window_width()
 {
-	return ViewSizes[screen_mode.size].OverallWidth;
+	return std::max(static_cast<short>(640), screen_mode.width);
 }
 
 bool Screen::hud()
 {
-	return ViewSizes[screen_mode.size].flags & _view_show_HUD;
+	return screen_mode.hud;
 }
 
 bool Screen::fifty_percent()
 {
-	return screen_mode.size == 0;
+	return screen_mode.height == 160;
 }
 
 bool Screen::seventyfive_percent()
 {
-	return screen_mode.size == 1;
+	return screen_mode.height == 240;;
 }
 
 SDL_Rect Screen::view_rect()
@@ -508,9 +538,7 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 
 	// "Redraw" change now and clear the screen
 	if (redraw) {
-		int msize = mode->size;
-		assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
-		change_screen_mode(ViewSizes[msize].OverallWidth, ViewSizes[msize].OverallHeight, mode->bit_depth, false);
+		change_screen_mode(std::max(mode->width, static_cast<short>(640)), std::max(mode->height, static_cast<short>(480)), mode->bit_depth, false);
 		clear_screen();
 		recenter_mouse();
 	}
@@ -1051,8 +1079,7 @@ static inline void draw_pattern_rect(T *p, int pitch, uint32 pixel, const SDL_Re
 void darken_world_window(void)
 {
 	// Get world window bounds
-	int size = screen_mode.size;
-	SDL_Rect r = {0, 0, ViewSizes[size].OverallWidth, ViewSizes[size].OverallHeight - (TEST_FLAG(ViewSizes[size].flags, _view_show_HUD) ? 160 : 0)};
+	SDL_Rect r = Screen::instance()->view_rect();
 
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {

@@ -59,6 +59,9 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Included Steve Bytnar's OSX QDPort flushing code
 */
 
+#include <utility>
+#include <vector>
+
 struct screen_mode_data;
 namespace alephone
 {
@@ -70,6 +73,20 @@ namespace alephone
 		}
 
 		void Initialize(screen_mode_data* mode);
+		const std::vector<std::pair<int, int> >& GetModes() { return m_modes; };
+		int FindMode(int width, int height) {
+			for (int i = 0; i < m_modes.size(); ++i)
+			{
+				if (m_modes[i].first == width &&
+				    m_modes[i].second == height)
+				{
+					return i;
+				}
+			}
+			return -1;
+		}
+		int ModeHeight(int mode) { return m_modes[mode].second; }
+		int ModeWidth(int mode) { return m_modes[mode].first; }
 
 		int height();
 		int width();
@@ -87,48 +104,13 @@ namespace alephone
 		Screen() : m_initialized(false) { }
 		static Screen m_instance;
 		bool m_initialized;
+
+		std::vector<std::pair<int, int> > m_modes;
 	};
 }
 
 /* ---------- constants */
 
-// New screen-size definitions
-enum /* screen sizes */
-{
-	_320_160_HUD,
-	_480_240_HUD,
-	_640_320_HUD,
-	_640_480,
-	_800_400_HUD,
-	_800_600,
-	_1024_512_HUD,
-	_1024_768,
-	_1280_640_HUD,
-	_1280_1024,
-	_1600_800_HUD,
-	_1600_1200,
-        _1024_440_HUD,
-	_1024_640,
-	_1280_600_HUD,
-	_1280_800,
-        _1280_640WS_HUD,
-        _1280_854,
-        _1440_700_HUD,
-        _1440_900,
-	_1680_840_HUD,
-	_1680_1050,
-	_1920_950_HUD,
-	_1920_1200,
-	_2560_1280_HUD,
-	_2560_1600,
-	_1280_768WS_HUD,
-	_1280_768,
-	_1280_640SD_HUD,
-	_1280_960,
-	_1280_720_HUD,
-	_1280_720,
-	NUMBER_OF_VIEW_SIZES
-};
 // Original screen-size definitions
 enum /* screen sizes */
 {
@@ -189,10 +171,6 @@ void reset_screen();
 
 // CP addition: added function to return the the game size
 screen_mode_data *get_screen_mode(void);
-
-// LP: gets a size ID's related size ID's that show or hide the HUD, respectively
-short GetSizeWithHUD(short Size);
-short GetSizeWithoutHUD(short Size);
 
 // LP: when initing, ask whether to show the monitor-frequency dialog
 //void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog);

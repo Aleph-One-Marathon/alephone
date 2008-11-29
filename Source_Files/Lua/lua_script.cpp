@@ -1138,11 +1138,9 @@ int L_Hide_Interface(lua_State *L)
 
 	screen_mode_data *the_mode;
 	the_mode = get_screen_mode();
-	old_size = the_mode->size;
-	short new_size = GetSizeWithoutHUD(old_size);
-	if(the_mode->size != new_size)
+	if(the_mode->hud)
 	{
-		the_mode->size = new_size;
+		the_mode->hud = false;
 		change_screen_mode(the_mode,true);
 	}
 
@@ -1163,10 +1161,9 @@ int L_Show_Interface(lua_State *L)
 
 	screen_mode_data *the_mode;
 	the_mode = get_screen_mode();
-	short the_size = the_mode->size;
-	if(the_size == GetSizeWithHUD(the_size))
+	if (!the_mode->hud)
 	{
-		the_mode->size = old_size;
+		the_mode->hud = true;
 		change_screen_mode(the_mode,true);
 		draw_panels();
 	}

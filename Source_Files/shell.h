@@ -59,7 +59,6 @@ enum {
 
 struct screen_mode_data
 {
-	short size;
 	short acceleration;
 	
 	bool high_resolution;
@@ -68,8 +67,11 @@ struct screen_mode_data
 	
 	short bit_depth;  // currently 8 or 16
 	short gamma_level;
+
+	short width;
+	short height;
+	bool hud;
 	
-	short unused[8];
 };
 
 #define NUMBER_OF_KEYS 21
