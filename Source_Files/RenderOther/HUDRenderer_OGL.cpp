@@ -271,6 +271,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		glPushMatrix();
 		glTranslated(dest.left, dest.top - 320, 0.0);
 		HUD_OGL.update_everything(time_elapsed);
+		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
 
 		glPopAttrib();
