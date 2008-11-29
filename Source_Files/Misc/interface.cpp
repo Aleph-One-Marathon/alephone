@@ -180,6 +180,8 @@ const short max_handled_recording= aleph_recording_version;
 
 #include "motion_sensor.h" // for reset_motion_sensor()
 
+using alephone::Screen;
+
 #ifdef env68k
 	#pragma segment shell
 #endif
@@ -2630,7 +2632,7 @@ void do_preferences(void)
 
 	if (mode.bit_depth != graphics_preferences->screen_mode.bit_depth) {
 		paint_window_black();
-		initialize_screen(&graphics_preferences->screen_mode, false);
+		Screen::instance()->Initialize(&graphics_preferences->screen_mode);
 
 		/* Re fade in, so that we get the proper colortable loaded.. */
 		display_main_menu();

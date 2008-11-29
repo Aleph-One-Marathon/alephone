@@ -502,7 +502,7 @@ static void initialize_application(void)
 	SoundManager::instance()->Initialize(*sound_preferences);
 	initialize_marathon_music_handler();
 	initialize_keyboard_controller();
-	initialize_screen(&graphics_preferences->screen_mode, false);
+	alephone::Screen::instance()->Initialize(&graphics_preferences->screen_mode);
 	initialize_marathon();
 	initialize_screen_drawing();
 	FileSpecifier theme = environment_preferences->theme_dir;

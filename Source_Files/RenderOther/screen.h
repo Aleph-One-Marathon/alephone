@@ -59,6 +59,37 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 	Included Steve Bytnar's OSX QDPort flushing code
 */
 
+struct screen_mode_data;
+namespace alephone
+{
+	class Screen
+	{
+	public:
+		static inline Screen* instance() {
+			return &m_instance;
+		}
+
+		void Initialize(screen_mode_data* mode);
+
+		int height();
+		int width();
+		int window_height();
+		int window_width();
+		bool hud();
+		bool fifty_percent();
+		bool seventyfive_percent();
+		SDL_Rect view_rect(); // main 3D view
+		SDL_Rect map_rect();
+		SDL_Rect term_rect();
+		SDL_Rect hud_rect();
+
+	private:
+		Screen() : m_initialized(false) { }
+		static Screen m_instance;
+		bool m_initialized;
+	};
+}
+
 /* ---------- constants */
 
 // New screen-size definitions
@@ -120,14 +151,9 @@ enum /* hardware acceleration codes */
 
 /* ---------- structures */
 
-// screen_mode_data in SHELL.H for PREFERENCES.H
-
 /* ---------- globals */
 
 extern struct color_table *world_color_table, *visible_color_table, *interface_color_table;
-
-//CP Addition: make screen_mode_data usable here too
-struct screen_mode_data;
 
 /* ---------- prototypes/SCREEN.C */
 
@@ -169,7 +195,7 @@ short GetSizeWithHUD(short Size);
 short GetSizeWithoutHUD(short Size);
 
 // LP: when initing, ask whether to show the monitor-frequency dialog
-void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog);
+//void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog);
 void change_screen_mode(struct screen_mode_data *mode, bool redraw);
 
 void toggle_fullscreen(bool fs);

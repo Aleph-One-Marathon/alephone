@@ -97,6 +97,10 @@ extern bool option_nogamma;
 
 #include "screen_shared.h"
 
+using namespace alephone;
+
+Screen Screen::m_instance;
+
 
 // Prototypes
 static void change_screen_mode(int width, int height, int depth, bool nogl);
@@ -122,7 +126,8 @@ void start_tunnel_vision_effect(
  *  Initialize screen management
  */
 
-void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog)
+void Screen::Initialize(screen_mode_data* mode)
+//void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog)
 {
 	interface_bit_depth = bit_depth = mode->bit_depth;
 
@@ -170,8 +175,131 @@ void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog)
 	screen_mode = *mode;
 	change_screen_mode(640, 480, bit_depth, true);
 	screen_initialized = true;
+
 }
 
+int Screen::height()
+{
+	return SDL_GetVideoSurface()->h;
+}
+
+int Screen::width()
+{
+	return SDL_GetVideoSurface()->w;
+}
+
+int Screen::window_height()
+{
+	return ViewSizes[screen_mode.size].OverallHeight;
+}
+
+int Screen::window_width()
+{
+	return ViewSizes[screen_mode.size].OverallWidth;
+}
+
+bool Screen::hud()
+{
+	return ViewSizes[screen_mode.size].flags & _view_show_HUD;
+}
+
+bool Screen::fifty_percent()
+{
+	return screen_mode.size == 0;
+}
+
+bool Screen::seventyfive_percent()
+{
+	return screen_mode.size == 1;
+}
+
+SDL_Rect Screen::view_rect()
+{
+	SDL_Rect r;
+	if (!hud())
+	{
+		r.x = (width() - window_width()) / 2;
+		r.y = (height() - window_height()) / 2;
+		r.w = window_width();
+		r.h = window_height();
+	}
+	else
+	{
+		int available_height = window_height() - 160;
+		if (window_width() > available_height * 2)
+		{
+			r.w = available_height * 2;
+			r.h = available_height;
+		}
+		else
+		{
+			r.w = window_width();
+			r.h = window_width() / 2;
+		}
+		r.x = (width() - r.w) / 2;
+		r.y = (height() - window_height()) / 2 + (available_height - r.h) / 2;
+	}
+
+	if (fifty_percent())
+	{
+		r.y += r.h / 4;
+		r.x += r.w / 4;
+		r.w /= 2;
+		r.h /= 2;
+	}
+	else if (seventyfive_percent())
+	{
+		r.y += r.h / 8;
+		r.x += r.w / 8;
+		r.w = r.w * 3 / 4;
+		r.h = r.h * 3 / 4;
+	}
+
+	return r;
+}
+
+SDL_Rect Screen::map_rect()
+{
+	SDL_Rect r;
+	r.w = window_width();
+	r.h = window_height();
+	if (hud()) 
+		r.h -= 160;
+
+	r.x = (width() - window_width()) / 2;
+	r.y = (height() - window_height()) / 2;
+
+	return r;
+}
+
+SDL_Rect Screen::term_rect()
+{
+	SDL_Rect r;
+	r.w = 640;
+	r.h = 320;
+	r.x = (width() - r.w) / 2;
+	if (hud())
+	{
+		r.y = (height() - 160 - r.h) / 2;
+	}
+	else
+	{
+		r.y = (height() - r.h) / 2;
+	}
+
+	return r;
+}
+
+SDL_Rect Screen::hud_rect()
+{
+	SDL_Rect r;
+	r.w = 640;
+	r.h = 160;
+	r.x = (width() - r.w) / 2;
+	r.y = window_height() - 160 + (height() - window_height()) / 2;
+
+	return r;
+}
 
 /*
  *  (Re)allocate off-screen buffer
@@ -461,24 +589,10 @@ void render_screen(short ticks_elapsed)
 	// Set rendering-window bounds for the current sort of display to render
 	screen_mode_data *mode = &screen_mode;
 	bool HighResolution;
-	SDL_Rect ScreenRect = {0, 0, main_surface->w, main_surface->h};
+	SDL_Rect ScreenRect = {0, 0, Screen::instance()->width(), Screen::instance()->height()};
 
-	int msize = mode->size;
-	assert(msize >= 0 && msize < NUMBER_OF_VIEW_SIZES);
-	const ViewSizeData &VS = ViewSizes[msize];
-
-	// Rectangle where the view is to go (must not overlap the HUD)
-	int OverallWidth = VS.OverallWidth;
-	int OverallHeight = VS.OverallHeight - (TEST_FLAG(VS.flags, _view_show_HUD) ? 160 : 0);
-	int BufferWidth, BufferHeight;
-
-	// Offsets for placement in the screen
-	int ScreenOffsetWidth = ((ScreenRect.w - VS.OverallWidth) / 2) + ScreenRect.x;
-	int ScreenOffsetHeight = ((ScreenRect.h - VS.OverallHeight) / 2) + ScreenRect.y;
-
-	// HUD location
-	int HUD_Offset = (OverallWidth - 640) / 2;
-	SDL_Rect HUD_DestRect = {HUD_Offset + ScreenOffsetWidth, OverallHeight + ScreenOffsetHeight, 640, 160};
+	SDL_Rect HUD_DestRect = Screen::instance()->hud_rect();
+	SDL_Rect ViewRect;
 
 	bool ChangedSize = false;
 
@@ -491,68 +605,47 @@ void render_screen(short ticks_elapsed)
 	// Each kind of display needs its own size
 	if (world_view->terminal_mode_active) {
 		// Standard terminal size
-		BufferWidth = 640;
-		BufferHeight = 320;
+		ViewRect = Screen::instance()->term_rect();
 		HighResolution = true;
 	} else if (world_view->overhead_map_active) {
 		// Fill the available space
-		BufferWidth = OverallWidth;
-		BufferHeight = OverallHeight;
-		HighResolution = true;		
+		ViewRect = Screen::instance()->map_rect();
+		HighResolution = true;
 	} else {
-		BufferWidth = VS.MainWidth;
-		BufferHeight = VS.MainHeight;
+		ViewRect = Screen::instance()->view_rect();
 		HighResolution = mode->high_resolution;
 	}
-
-	if (BufferWidth != PrevBufferWidth) {
+	
+	static SDL_Rect PrevViewRect = { 0, 0, 0, 0};
+	if (memcmp(&PrevViewRect, &ViewRect, sizeof(SDL_Rect)))
+	{
 		ChangedSize = true;
-		PrevBufferWidth = BufferWidth;
-	}
-	if (BufferHeight != PrevBufferHeight) {
-		ChangedSize = true;
-		PrevBufferHeight = BufferHeight;
+		PrevViewRect = ViewRect;
 	}
 
-	// Do the buffer/viewport rectangle setup:
-
-	// First, the destination rectangle (viewport to be drawn in)
-	int OffsetWidth = (OverallWidth - BufferWidth) / 2;
-	int OffsetHeight = (OverallHeight - BufferHeight) / 2;
-	SDL_Rect ViewRect = {OffsetWidth + ScreenOffsetWidth, OffsetHeight + ScreenOffsetHeight, BufferWidth, BufferHeight};
-
-	if (OffsetWidth != PrevOffsetWidth) {
-		ChangedSize = true;
-		PrevOffsetWidth = OffsetWidth;
-	}
-	if (OffsetHeight != PrevOffsetHeight) {
-		ChangedSize = true;
-		PrevOffsetHeight = OffsetHeight;
-	}
-
+	SDL_Rect BufferRect = {0, 0, ViewRect.w, ViewRect.h};
 	// Now the buffer rectangle; be sure to shrink it as appropriate
 	if (!HighResolution && screen_mode.acceleration == _no_acceleration) {
-		BufferWidth >>= 1;
-		BufferHeight >>= 1;
+		BufferRect.w >>= 1;
+		BufferRect.h >>= 1;
 	}
-	SDL_Rect BufferRect = {0, 0, BufferWidth, BufferHeight};
 
 	// Set up view data appropriately
-	world_view->screen_width = BufferWidth;
-	world_view->screen_height = BufferHeight;
-	world_view->standard_screen_width = 2*BufferHeight;	
+	world_view->screen_width = BufferRect.w;
+	world_view->screen_height = BufferRect.h;
+	world_view->standard_screen_width = 2 * BufferRect.h;
 	initialize_view_data(world_view);
 
 	if (world_pixels) {
 		// Check on the drawing buffer's size
-		if (world_pixels->w != BufferWidth || world_pixels->h != BufferHeight)
+		if (world_pixels->w != BufferRect.w || world_pixels->h != BufferRect.h)
 			ChangedSize = true;
 	} else
 		ChangedSize = true;
 
 	if (ChangedSize) {
 		clear_screen();
-		if (TEST_FLAG(VS.flags, _view_show_HUD))
+		if (Screen::instance()->hud())
 			draw_interface();
 
 		// Reallocate the drawing buffer
@@ -616,7 +709,7 @@ void render_screen(short ticks_elapsed)
 	}
 
 	// Set OpenGL viewport to world view
-	Rect sr = {ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
+	Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
 	Rect vr = {ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
 	OGL_SetWindow(sr, vr, true);
 #endif
@@ -655,19 +748,18 @@ void render_screen(short ticks_elapsed)
 	if (screen_mode.acceleration == _opengl_acceleration) {
 #ifdef HAVE_OPENGL
 		if (world_view->terminal_mode_active || (world_view->overhead_map_active && !OGL_MapActive)) {
-
 			// Copy 2D rendering to screen
 
-			SDL_Rect term_dst = { OffsetWidth + ScreenOffsetWidth, OffsetHeight + ScreenOffsetHeight, 640, 320};
-			SDL_Rect term_ortho = { 0, 0, ScreenRect.w, ScreenRect.h };
+			SDL_Rect term_dst = Screen::instance()->term_rect();
+			SDL_Rect term_ortho = { 0, 0, Screen::instance()->width(), Screen::instance()->height() };
 			SDL_SetAlpha(Term_Buffer, 0, 0xff);
 			OGL_Blitter blitter(*Term_Buffer, term_dst, term_ortho);
 			blitter.SetupMatrix();
 			blitter.Draw();
 			blitter.RestoreMatrix();
 		}
-		
-		if (TEST_FLAG(VS.flags, _view_show_HUD)) {
+
+		if (Screen::instance()->hud()) {
 			if (OGL_HUDActive) {
 				Rect dr = {HUD_DestRect.y, HUD_DestRect.x, HUD_DestRect.y + HUD_DestRect.h, HUD_DestRect.x + HUD_DestRect.w};
 				OGL_DrawHUD(dr, ticks_elapsed);
@@ -678,6 +770,7 @@ void render_screen(short ticks_elapsed)
 				}
 			}
 		}
+
 #endif
 	} else {
 
@@ -789,13 +882,9 @@ void build_direct_color_table(struct color_table *color_table, short bit_depth)
 void bound_screen()
 {
 	screen_mode_data *mode = &screen_mode;
-	SDL_Rect ScreenRect = { 0, 0, main_surface->w, main_surface->h };
+	SDL_Rect ScreenRect = {0, 0, Screen::instance()->width(), Screen::instance()->height()};
 
-	const ViewSizeData &VS = ViewSizes[mode->size];
-	short ScreenOffsetWidth = (ScreenRect.w - VS.OverallWidth) / 2;
-	short ScreenOffsetHeight = (ScreenRect.h - VS.OverallHeight) / 2;
-
-	SDL_Rect ViewRect = { ScreenOffsetWidth, ScreenOffsetHeight, VS.OverallWidth, VS.OverallHeight };
+	SDL_Rect ViewRect = Screen::instance()->view_rect();
 
 	Rect sr = { ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
 	Rect vr = { ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
