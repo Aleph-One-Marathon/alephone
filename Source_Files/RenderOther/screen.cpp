@@ -887,9 +887,10 @@ void build_direct_color_table(struct color_table *color_table, short bit_depth)
 void bound_screen()
 {
 	screen_mode_data *mode = &screen_mode;
-	SDL_Rect ScreenRect = {0, 0, Screen::instance()->width(), Screen::instance()->height()};
+	Screen *screen = Screen::instance();
+	SDL_Rect ScreenRect = {0, 0, screen->width(), screen->height()};
 
-	SDL_Rect ViewRect = Screen::instance()->view_rect();
+	SDL_Rect ViewRect = { (screen->width() - screen->window_width()) / 2, (screen->height() - screen->window_height()) / 2, screen->window_width(), screen->window_height() };
 
 	Rect sr = { ScreenRect.y, ScreenRect.x, ScreenRect.y + ScreenRect.h, ScreenRect.x + ScreenRect.w};
 	Rect vr = { ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
