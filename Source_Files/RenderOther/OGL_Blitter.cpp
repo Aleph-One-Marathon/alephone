@@ -104,10 +104,6 @@ void OGL_Blitter::SetupMatrix()
 	glPushMatrix();
 	glLoadIdentity();
 	
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	
 	// transform ortho into screen co-ordinates
 	gluOrtho2D(m_ortho.x, m_ortho.x + m_ortho.w, m_ortho.y + m_ortho.h, m_ortho.y);
 
@@ -134,7 +130,6 @@ void OGL_Blitter::Draw()
 
 void OGL_Blitter::RestoreMatrix()
 {
-	glPopMatrix();
 	glMatrixMode(GL_PROJECTION);
 	glPopMatrix();
 	glPopAttrib();
