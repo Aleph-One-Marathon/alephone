@@ -43,6 +43,8 @@ public:
 	typedef tElement		 	Element;
 	typedef typename Element::IDType	IDType;
 
+	void clear() { m_entries.clear(); }
+
 	void processUpdates(const std::vector<Element>& updates)
 	{
 		for(size_t i = 0; i < updates.size(); i++)

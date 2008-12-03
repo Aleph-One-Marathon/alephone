@@ -242,6 +242,9 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 
 		if (m_channel->isConnected()) m_channel->disconnect();
 
+		m_playersInRoom.clear();
+		m_gamesInRoom.clear();
+
 		m_channel->connect(serverName.c_str(), port);
 
 		LoginAndPlayerInfoMessage theLoginMessage(userName, m_playerName, m_teamName);
