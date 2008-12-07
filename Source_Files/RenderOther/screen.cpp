@@ -174,6 +174,35 @@ void Screen::Initialize(screen_mode_data* mode)
 			}
 		}
 
+		if (m_modes.empty())
+		{
+			m_modes.push_back(std::pair<int, int>(640, 480));
+			m_modes.push_back(std::pair<int, int>(480, 240));
+			m_modes.push_back(std::pair<int, int>(320, 160));
+		} 
+		else if (m_modes.size() == 1)
+		{
+			// insert some common window sizes
+			std::vector<std::pair<int, int> > common_modes;
+			common_modes.push_back(std::pair<int, int>(1600, 1200));
+			common_modes.push_back(std::pair<int, int>(1280, 1024));
+			common_modes.push_back(std::pair<int, int>(1280, 960));
+			common_modes.push_back(std::pair<int, int>(1024, 768));
+			common_modes.push_back(std::pair<int, int>(800, 600));
+			
+			for (std::vector<std::pair<int, int> >::const_iterator it = common_modes.begin(); it != common_modes.end(); ++it)
+			{
+				if (it->first <= m_modes[0].first && it->second <= m_modes[0].second && !(it->first == m_modes[0].first && it->second == m_modes[0].second))
+				{
+					m_modes.push_back(*it);
+				}
+			}
+
+			m_modes.push_back(std::pair<int, int>(640, 480));
+			m_modes.push_back(std::pair<int, int>(480, 240));
+			m_modes.push_back(std::pair<int, int>(320, 160));
+		}
+
 		// these are not validated in graphics prefs because
 		// SDL is not initialized yet when prefs load, so
 		// validate them here
