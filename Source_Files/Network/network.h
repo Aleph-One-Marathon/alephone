@@ -81,6 +81,7 @@ typedef struct game_info
 	// where the game takes place
 	int16  level_number;
 	char   level_name[MAX_LEVEL_NAME_LENGTH+1];
+	uint32 parent_checksum;
 	
 	// network parameters
 	int16  initial_updates_per_packet;

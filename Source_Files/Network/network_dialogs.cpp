@@ -78,6 +78,7 @@ Apr 10, 2003 (Woody Zenfell):
 #include	"player.h" // ZZZ: for MAXIMUM_NUMBER_OF_PLAYERS, for reassign_player_colors
 #include	"metaserver_dialogs.h" // GameAvailableMetaserverAnnouncer
 #include	"wad.h" // jkvw: for read_wad_file_checksum 
+#include "game_wad.h" // get_map_file
 
 #include <map>
 
@@ -1245,7 +1246,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 		menu_index_to_level_entry (active_network_preferences->entry_point, NONE, &entry);
 		game_information->level_number = entry.level_number;
 		strcpy (game_information->level_name, entry.level_name);
-		
+		game_information->parent_checksum = read_wad_file_checksum(get_map_file());
 		game_information->difficulty_level = active_network_preferences->difficulty_level;
 		game_information->allow_mic = active_network_preferences->allow_microphone;
 

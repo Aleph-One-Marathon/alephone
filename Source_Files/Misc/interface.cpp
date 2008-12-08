@@ -1743,6 +1743,7 @@ static bool begin_game(
 	bool is_networked= false;
 	bool clean_up_on_failure= true;
 	bool record_game= false;
+	uint32 parent_checksum = 0;
 
 	objlist_clear(starts, MAXIMUM_NUMBER_OF_PLAYERS);
 	
@@ -1761,6 +1762,7 @@ static bool begin_game(
 				game_information.game_options= network_game_info->game_options;
 				game_information.initial_random_seed= network_game_info->initial_random_seed;
 				game_information.difficulty_level= network_game_info->difficulty_level;
+				parent_checksum = network_game_info->parent_checksum;
 				entry.level_number = network_game_info->level_number;
 				entry.level_name[0] = 0;
 	
@@ -1883,7 +1885,7 @@ static bool begin_game(
 	{
 		if(record_game)
 		{
-			set_recording_header_data(number_of_players, entry.level_number, get_current_map_checksum(), 
+			set_recording_header_data(number_of_players, entry.level_number, (user == _network_player) ? parent_checksum : get_current_map_checksum(), 
 				default_recording_version, starts, &game_information);
 			start_recording();
 		}

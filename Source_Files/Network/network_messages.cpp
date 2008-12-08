@@ -279,6 +279,7 @@ void TopologyMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << mTopology.game_data.cheat_flags;
   outputStream << mTopology.game_data.level_number;
   write_string(outputStream, mTopology.game_data.level_name);
+  outputStream << mTopology.game_data.parent_checksum;
   outputStream << mTopology.game_data.initial_updates_per_packet;
   outputStream << mTopology.game_data.initial_update_latency;
 
@@ -303,6 +304,7 @@ bool TopologyMessage::reallyInflateFrom(AIStream& inputStream) {
   inputStream >> mTopology.game_data.cheat_flags;
   inputStream >> mTopology.game_data.level_number;
   read_string(inputStream, mTopology.game_data.level_name, MAX_LEVEL_NAME_LENGTH - 1);
+  inputStream >> mTopology.game_data.parent_checksum;
   inputStream >> mTopology.game_data.initial_updates_per_packet;
   inputStream >> mTopology.game_data.initial_update_latency;
 
