@@ -788,7 +788,8 @@ bool goto_level(
 		// textures to load.
 		// Being careful to carry over errors so that Pfhortran errors can be ignored
 		short SavedType, SavedError = get_game_error(&SavedType);
-		RunLevelScript(entry->level_number);
+		if (!game_is_networked || use_map_file(((game_info *) NetGetGameData())->parent_checksum))
+			RunLevelScript(entry->level_number);
 		if (!game_is_networked) LoadSoloLua();
 		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);
