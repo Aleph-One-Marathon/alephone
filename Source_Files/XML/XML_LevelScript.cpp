@@ -53,6 +53,8 @@ using namespace std;
 
 #include "OGL_LoadScreen.h"
 
+#include "AStream.h"
+#include "map.h"
 
 // The "command" is an instruction to process a file/resource in a certain sort of way
 struct LevelScriptCommand
@@ -234,17 +236,10 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 	LSXML_Loader.ParseData((char *)ScriptRsrc.GetPointer(),ScriptRsrc.GetLength());
 }
 
-
-// Runs a script for some level
-// runs level-specific MML...
-void RunLevelScript(int LevelIndex)
+void ResetLevelScript()
 {
 	static bool FirstTime = true;
-	// None found just yet...
-#ifdef HAVE_LUA
-	LuaFound = false;
-#endif /* HAVE_LUA */
-	
+
 	// For whatever previous music had been playing...
 	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
 	
@@ -265,12 +260,83 @@ void RunLevelScript(int LevelIndex)
 		// then load the base stuff (from Scripts folder and whatnot)
 		LoadBaseMMLScripts();
 	}
+}
+
+
+// Runs a script for some level
+// runs level-specific MML...
+void RunLevelScript(int LevelIndex)
+{
+	// None found just yet...
+#ifdef HAVE_LUA
+	LuaFound = false;
+#endif /* HAVE_LUA */
+	
+	ResetLevelScript();
 
 	GeneralRunScript(LevelScriptHeader::Default);
 	GeneralRunScript(LevelIndex);
 	
 	Music::instance()->SeedLevelMusic();
 
+}
+
+std::vector<uint8> mmls_chunk;
+std::vector<uint8> luas_chunk;
+
+void RunScriptChunks()
+{
+	int offset = 2;
+	while (offset < mmls_chunk.size())
+	{
+		if (offset + 8 + LEVEL_NAME_LENGTH > mmls_chunk.size())
+			break;
+
+		AIStreamBE header(&mmls_chunk[offset], 8 + LEVEL_NAME_LENGTH);
+		offset += 8 + LEVEL_NAME_LENGTH;
+		
+		uint32 flags;
+		char name[LEVEL_NAME_LENGTH];
+		uint32 length;
+		header >> flags;
+		header.read(name, LEVEL_NAME_LENGTH);
+		name[LEVEL_NAME_LENGTH - 1] = '\0';
+		header >> length;
+		if (offset + length > mmls_chunk.size())
+			break;
+
+		if (length)
+		{
+			LSXML_Loader.SourceName = name;
+			LSXML_Loader.CurrentElement = &RootParser;
+			LSXML_Loader.ParseData(reinterpret_cast<char *>(&mmls_chunk[offset]), length);
+		}
+
+		offset += length;
+	}
+
+	offset = 2;
+	while (offset < luas_chunk.size())
+	{
+		if (offset + 8 + LEVEL_NAME_LENGTH > luas_chunk.size())
+			break;
+
+		AIStreamBE header(&luas_chunk[offset], 8 + LEVEL_NAME_LENGTH);
+		offset += 8 + LEVEL_NAME_LENGTH;
+		
+		uint32 flags;
+		char name[LEVEL_NAME_LENGTH];
+		uint32 length;
+		header >> flags;
+		header.read(name, LEVEL_NAME_LENGTH);
+		name[LEVEL_NAME_LENGTH - 1] = '\0';
+		header >> length;
+		if (offset + length > luas_chunk.size())
+			break;
+
+		LoadLuaScript(reinterpret_cast<char *>(&luas_chunk[offset]), length, _embedded_lua_script);
+		offset += length;
+	}
 }
 
 // Intended to be run at the end of a game
@@ -457,6 +523,43 @@ FileSpecifier *GetLevelMovie(float& Size)
 		return NULL;
 }
 
+void SetMMLS(uint8* data, size_t length)
+{
+	if (!length)
+	{
+		mmls_chunk.clear();
+	}
+	else
+	{
+		mmls_chunk.resize(length);
+		memcpy(&mmls_chunk[0], data, length);
+	}
+}
+
+uint8* GetMMLS(size_t& length)
+{
+	length = mmls_chunk.size();
+	return length ? &mmls_chunk[0] : 0;
+}
+
+void SetLUAS(uint8* data, size_t length)
+{
+	if (!length)
+	{
+		luas_chunk.clear();
+	}
+	else
+	{
+		luas_chunk.resize(length);
+		memcpy(&luas_chunk[0], data, length);
+	}
+}
+
+uint8* GetLUAS(size_t& length)
+{
+	length = luas_chunk.size();
+	return length ? &luas_chunk[0] : 0;
+}
 
 // Generalized parser for level-script commands; they all use the same format,
 // but will be distinguished by their names

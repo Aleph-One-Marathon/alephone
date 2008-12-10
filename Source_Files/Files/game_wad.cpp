@@ -789,7 +789,14 @@ bool goto_level(
 		// Being careful to carry over errors so that Pfhortran errors can be ignored
 		short SavedType, SavedError = get_game_error(&SavedType);
 		if (!game_is_networked || use_map_file(((game_info *) NetGetGameData())->parent_checksum))
+		{
 			RunLevelScript(entry->level_number);
+		}
+		else
+		{
+			ResetLevelScript();
+		}
+		RunScriptChunks();
 		if (!game_is_networked) LoadSoloLua();
 		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);
@@ -1143,6 +1150,7 @@ bool load_game_from_file(FileSpecifier& File)
 			// Being careful to carry over errors so that Pfhortran errors can be ignored
 			short SavedType, SavedError = get_game_error(&SavedType);
 			RunLevelScript(dynamic_world->current_level_number);
+			RunScriptChunks();
 			if (!game_is_networked) LoadSoloLua();
 			set_game_error(SavedType,SavedError);
 		}
@@ -1156,6 +1164,9 @@ bool load_game_from_file(FileSpecifier& File)
 		
 			/* Set to the default map. */
 			set_to_default_map();
+
+			ResetLevelScript();
+			RunScriptChunks();
 		}
 	} 
 
@@ -1614,6 +1625,14 @@ bool process_map_wad(
 	data= (uint8 *)extract_type_from_wad(wad, SHAPE_PATCH_TAG, &data_length);
 	set_shapes_patch_data(data, data_length);
 
+	/* Extract MMLS */
+	data= (uint8 *)extract_type_from_wad(wad, MMLS_TAG, &data_length);
+	SetMMLS(data, data_length);
+
+	/* Extract LUAS */
+	data= (uint8 *)extract_type_from_wad(wad, LUAS_TAG, &data_length);
+	SetLUAS(data, data_length);
+
 	// LP addition: load the physics-model chunks (all fixed-size)
 	bool PhysicsModelLoaded = false;
 	
@@ -1932,6 +1951,9 @@ struct save_game_data save_data[]=
 	// GHS: save the new embedded shapes
 	{ SHAPE_PATCH_TAG, sizeof(byte), true },
 
+	{ MMLS_TAG, sizeof(byte), true },
+	{ LUAS_TAG, sizeof(byte), true },
+
 	{ MAP_INDEXES_TAG, sizeof(short), true }, // false },
 	{ PLAYER_STRUCTURE_TAG, SIZEOF_player_data, true }, // false },
 	{ DYNAMIC_STRUCTURE_TAG, SIZEOF_dynamic_data, true }, // false },
@@ -2198,6 +2220,12 @@ static uint8 *tag_to_global_array_and_size(
 	        case SHAPE_PATCH_TAG:
 			get_shapes_patch_data(count);
 			break;
+	        case MMLS_TAG:
+			GetMMLS(count);
+			break;
+	        case LUAS_TAG:
+			GetLUAS(count);
+			break;
 		default:
 			assert(false);
 			break;
@@ -2310,6 +2338,12 @@ static uint8 *tag_to_global_array_and_size(
 			break;
 	        case SHAPE_PATCH_TAG:
 			memcpy(array, get_shapes_patch_data(count), count);
+			break;
+	        case MMLS_TAG:
+			memcpy(array, GetMMLS(count), count);
+			break;
+	        case LUAS_TAG:
+			memcpy(array, GetLUAS(count), count);
 			break;
 		default:
 			assert(false);

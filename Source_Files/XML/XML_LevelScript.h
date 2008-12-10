@@ -38,7 +38,9 @@ void LoadLevelScripts(FileSpecifier& MapFile);
 
 // Runs a script for some level; loads Pfhortran,
 // runs level-specific MML...
+void ResetLevelScript();
 void RunLevelScript(int LevelIndex);
+void RunScriptChunks();
 
 // Intended to be run at the end of a game
 void RunEndScript();
@@ -57,6 +59,12 @@ void FindLevelMovie(short index);
 // A NULL pointer means no movie to play.
 // Its arg is the playback size, which will not be changed if not specified explicitly.
 FileSpecifier *GetLevelMovie(float& PlaybackSize);
+
+// handle new embedded MML and Lua scripts
+void SetMMLS(uint8* data, size_t length);
+void SetLUAS(uint8* data, size_t length);
+uint8* GetMMLS(size_t& length);
+uint8* GetLUAS(size_t& length);
 
 // For selecting the end-of-game screens --
 // what fake level index for them, and how many to display

@@ -783,6 +783,7 @@ bool join_networked_resume_game()
                                 // Being careful to carry over errors so that Pfhortran errors can be ignored
                                 short SavedType, SavedError = get_game_error(&SavedType);
                                 RunLevelScript(dynamic_world->current_level_number);
+				RunScriptChunks();
                                 set_game_error(SavedType,SavedError);
                         }
                         else
@@ -796,6 +797,9 @@ bool join_networked_resume_game()
                         
                                 /* Set to the default map. */
                                 set_to_default_map();
+				
+				ResetLevelScript();
+				RunScriptChunks();
                         }
                         
                         // set the revert-game info to defaults (for full-auto saving on the local machine)

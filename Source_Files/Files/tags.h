@@ -158,6 +158,10 @@ const std::vector<OSType> get_all_file_types_for_typecode (Typecode which);
 /* Embedded shapes */
 #define SHAPE_PATCH_TAG FOUR_CHARS_TO_INT('S','h','P','a')
 
+/* Embedded scripts */
+#define MMLS_TAG FOUR_CHARS_TO_INT('M','M','L','S')
+#define LUAS_TAG FOUR_CHARS_TO_INT('L','U','A','S')
+
 /* Preferences Tags.. */
 #define prefGRAPHICS_TAG FOUR_CHARS_TO_INT('g','r','a','f')
 #define prefSERIAL_TAG FOUR_CHARS_TO_INT('s','e','r','l')
