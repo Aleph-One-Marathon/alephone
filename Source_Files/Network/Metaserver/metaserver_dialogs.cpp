@@ -399,6 +399,14 @@ void MetaserverClientUi::PlayerSelected(MetaserverPlayerInfo info)
 	else
 	{
 		gMetaserverClient->player_target(info.id());
+		if (SDL_GetModState() & KMOD_CTRL)
+		{
+			m_stay_selected = true;
+		}
+		else
+		{
+			m_stay_selected = false;
+		}
 	}
 
 	std::vector<MetaserverPlayerInfo> sortedPlayers = gMetaserverClient->playersInRoom();
@@ -463,7 +471,8 @@ void MetaserverClientUi::sendChat()
 	if (gMetaserverClient->player_target() != MetaserverPlayerInfo::IdNone)
 	{
 		gMetaserverClient->sendPrivateMessage(gMetaserverClient->player_target(), message);
-		gMetaserverClient->player_target(MetaserverPlayerInfo::IdNone);
+		if (!m_stay_selected)
+			gMetaserverClient->player_target(MetaserverPlayerInfo::IdNone);
 		std::vector<MetaserverPlayerInfo> sortedPlayers = gMetaserverClient->playersInRoom();
 		std::sort(sortedPlayers.begin(), sortedPlayers.end(), MetaserverPlayerInfo::sort);
 		

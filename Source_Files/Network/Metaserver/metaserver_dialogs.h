@@ -109,6 +109,7 @@ protected:
 	ButtonWidget*                                   m_gameInfoWidget;
 
 	Uint32 m_lastGameSelected;
+	bool m_stay_selected; // doesn't deselect after PM
 };
 
 #endif // METASERVER_DIALOGS_H
