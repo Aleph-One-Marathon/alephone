@@ -286,6 +286,8 @@ static bool foundLabelOutlineColor = false;
 
 static XML_DColorParser DefaultColorParser(DEFAULT_WIDGET, DEFAULT_STATE, 3);
 static XML_DColorParser FrameColorParser(DIALOG_FRAME, DEFAULT_STATE, 3);
+static XML_DColorParser ListColorParser(LIST_WIDGET, DEFAULT_STATE, 3);
+static XML_DColorParser ThumbColorParser(LIST_THUMB, DEFAULT_STATE, 3);
 static XML_DColorParser TitleColorParser(TITLE_WIDGET, DEFAULT_STATE);
 static XML_DColorParser DefaultButtonColorParser(BUTTON_WIDGET, DEFAULT_STATE, 3);
 static XML_DColorParser ActiveButtonColorParser(BUTTON_WIDGET, ACTIVE_STATE, 3);
@@ -838,8 +840,10 @@ XML_ElementParser *Theme_GetParser()
 	ThemeParser.AddChild(&ChatEntryParser);
 
 	ListParser.AddChild(&ListImageParser);
+	ListParser.AddChild(&ListColorParser);
 	ListParser.AddChild(&TroughParser);
 	ThumbParser.AddChild(&ThumbImageParser);
+	ThumbParser.AddChild(&ThumbColorParser);
 	ListParser.AddChild(&ThumbParser);
 	ThemeParser.AddChild(&ListParser);
 
