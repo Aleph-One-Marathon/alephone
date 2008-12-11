@@ -55,6 +55,8 @@ void set_map_file(FileSpecifier& File);
 //CP Addition: get_map_file returns the FileDesc pointer to the current map
 FileSpecifier& get_map_file(void);
 
+void level_has_embedded_physics_lua(int Level, bool& HasPhysics, bool& HasLua);
+
 /* --------- from PREPROCESS_MAP_MAC.C */
 // Most of the get_default_filespecs moved to interface.h
 void get_savegame_filedesc(FileSpecifier& File);

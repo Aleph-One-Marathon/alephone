@@ -2475,6 +2475,34 @@ FileSpecifier& get_map_file()
 	return MapFileSpec;
 }
 
+void level_has_embedded_physics_lua(int Level, bool& HasPhysics, bool& HasLua)
+{
+	bool hasEmbeddedLua;
+	bool hasEmbeddedPhysics;
+	// load the wad file and look for chunks !!??
+	wad_header header;
+	wad_data* wad;
+	OpenedFile MapFile;
+	if (open_wad_file_for_reading(get_map_file(), MapFile))
+	{
+		if (read_wad_header(MapFile, &header))
+		{
+			wad = read_indexed_wad_from_file(MapFile, &header, Level, true);
+			if (wad)
+			{
+				size_t data_length;
+				extract_type_from_wad(wad, PHYSICS_PHYSICS_TAG, &data_length);
+				HasPhysics = data_length > 0;
+
+				extract_type_from_wad(wad, LUAS_TAG, &data_length);
+				HasLua = data_length > 0;
+				free_wad(wad);
+			}
+		}
+		close_wad_file(MapFile);
+	}
+}
+
 
 /*
  *  Unpacking/packing functions

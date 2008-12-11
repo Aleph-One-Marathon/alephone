@@ -33,6 +33,7 @@
 #include "network_metaserver.h"
 #include "map.h" // for _force_unique_teams!?!
 #include "SoundManager.h"
+#include "game_wad.h" // embedded physics/lua detection!!?!?!!
 
 #include "Update.h"
 #include "progress.h"
@@ -124,7 +125,10 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	// description's constructor gets scenario info, aleph one's protocol ID for us
 	
 	description.m_alephoneBuildString = string(A1_DISPLAY_VERSION) + " (" + A1_DISPLAY_PLATFORM + ")";
-	
+
+	bool HasPhysics, HasLua;
+	level_has_embedded_physics_lua(info.level_number, HasPhysics, HasLua);
+
 	if (network_preferences->use_netscript)
 	{
 #ifdef mac
@@ -137,6 +141,10 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 		netScript.GetName(netScriptName);
 		netScriptName[32] = '\0';
 		description.m_netScript = netScriptName;
+	}
+	else if (HasLua)
+	{
+		description.m_netScript = "Embedded";
 	} // else constructor's blank string is desirable
 
 	description.m_hasGameOptions = true;
@@ -144,16 +152,23 @@ GameAvailableMetaserverAnnouncer::GameAvailableMetaserverAnnouncer(const game_in
 	description.m_cheatFlags = info.cheat_flags;
 	description.m_killLimit = info.kill_limit;
 
-	char name[256];
-	FileSpecifier fs = environment_preferences->map_file;
-	fs.GetName(name);
-	description.m_mapFileName = name;
-
-	fs = environment_preferences->physics_file;
-	if (fs.Exists() && fs.GetType() == _typecode_physics)
+	if (HasPhysics)
 	{
+		description.m_physicsName = "Embedded";
+	}
+	else
+	{
+		char name[256];
+		FileSpecifier fs = environment_preferences->map_file;
 		fs.GetName(name);
-		description.m_physicsName = name;
+		description.m_mapFileName = name;
+		
+		fs = environment_preferences->physics_file;
+		if (fs.Exists() && fs.GetType() == _typecode_physics)
+		{
+			fs.GetName(name);
+			description.m_physicsName = name;
+		}
 	}
 	
 	gMetaserverClient->announceGame(GAME_PORT, description);
