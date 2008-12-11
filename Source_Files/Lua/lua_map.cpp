@@ -1934,6 +1934,12 @@ int Lua_Side_Play_Sound(lua_State *L)
 	return 0;
 }
 
+int Lua_Side_Recalculate_Type(lua_State *L)
+{
+	recalculate_side_type(Lua_Side::Index(L, 1));
+	return 0;
+}
+
 static int Lua_Side_Get_Control_Panel(lua_State *L)
 {
 	int16 side_index = Lua_Side::Index(L, 1);
@@ -1992,6 +1998,7 @@ const luaL_reg Lua_Side_Get[] = {
 	{"play_sound", L_TableFunction<Lua_Side_Play_Sound>},
 	{"polygon", Lua_Side_Get_Polygon},
 	{"primary", Lua_Side_Get_Primary},
+	{"recalculate_type", L_TableFunction<Lua_Side_Recalculate_Type>},
 	{"secondary", Lua_Side_Get_Secondary},
 	{"transparent", Lua_Side_Get_Transparent},
 	{"type", Lua_Side_Get_Type},

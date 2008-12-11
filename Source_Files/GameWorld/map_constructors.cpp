@@ -50,6 +50,7 @@ const bool DoIncorrectCountVWarn = true;
 #include "cseries.h"
 #include "map.h"
 #include "flood_map.h"
+#include "platforms.h"
 #include "Packing.h"
 
 #include <limits.h>
@@ -126,15 +127,40 @@ void recalculate_side_type(short side_index)
 	if (opposite_index != NONE)
 	{
 		polygon_data *opposite = get_polygon_data(opposite_index);
-		if (opposite->ceiling_height < polygon->ceiling_height && opposite->floor_height > polygon->floor_height)
+		int ceiling_height, floor_height, opposite_ceiling_height, opposite_floor_height;
+		if (polygon->type == _polygon_is_platform)
+		{
+			platform_data *platform = get_platform_data(polygon->permutation);
+			ceiling_height = platform->maximum_ceiling_height;
+			floor_height = platform->minimum_floor_height;
+		}
+		else
+		{
+			ceiling_height = polygon->ceiling_height;
+			floor_height = polygon->floor_height;
+		}
+
+		if (opposite->type == _polygon_is_platform)
+		{
+			platform_data *platform = get_platform_data(opposite->permutation);
+			opposite_ceiling_height = platform->minimum_ceiling_height;
+			opposite_floor_height = platform->maximum_floor_height;
+		}
+		else
+		{
+			opposite_ceiling_height = opposite->ceiling_height;
+			opposite_floor_height = opposite->floor_height;
+		}
+
+		if (opposite_ceiling_height < ceiling_height && opposite_floor_height > floor_height)
 		{
 			side->type = _split_side;
 		}
-		else if (opposite->floor_height > polygon->floor_height)
+		else if (opposite_floor_height > floor_height)
 		{
 			side->type = _low_side;
 		}
-		else if (opposite->ceiling_height < polygon->ceiling_height)
+		else if (opposite_ceiling_height < ceiling_height)
 		{
 			side->type = _high_side;
 		}
