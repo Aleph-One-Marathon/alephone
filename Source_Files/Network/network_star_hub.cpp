@@ -608,6 +608,7 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 		if (thePacketCRC != calculate_data_crc_ccitt(inPacket->datagramData, inPacket->datagramSize))
 		{
 			logWarningNMT1("CRC failure; discarding packet type %i", thePacketMagic);
+			return;
 		}
 		
                 switch(thePacketMagic)
