@@ -23,6 +23,7 @@
 
 /* Begin PBXBuildFile section */
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
+		AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE005FD30EE2D6DE007FE7C6 /* screen.cpp */; };
 		AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		AE03850A0CE15194006780AC /* SDL_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		AE179F1609C3D79500512061 /* error.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0609C3D79500512061 /* error.c */; };
@@ -376,7 +377,6 @@
 		AEC3C83B09AD68AC003258E4 /* OverheadMap_SDL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC938A0240D85D01A80001 /* OverheadMap_SDL.cpp */; };
 		AEC3C83C09AD68AC003258E4 /* OverheadMapRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93980240D85D01A80001 /* OverheadMapRenderer.cpp */; };
 		AEC3C83D09AD68AC003258E4 /* screen_drawing.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC939A0240D85D01A80001 /* screen_drawing.cpp */; };
-		AEC3C83E09AD68AC003258E4 /* screen_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC939D0240D85D01A80001 /* screen_sdl.cpp */; };
 		AEC3C83F09AD68AC003258E4 /* sdl_fonts.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC939F0240D85D01A80001 /* sdl_fonts.cpp */; };
 		AEC3C84009AD68AC003258E4 /* TextLayoutHelper.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */; };
 		AEC3C84109AD68AC003258E4 /* TextStrings.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC93A30240D85D01A80001 /* TextStrings.cpp */; };
@@ -567,6 +567,7 @@
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
+		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
 		AE0384DB0CE15170006780AC /* SDL_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_ttf.framework; path = /Library/Frameworks/SDL_ttf.framework; sourceTree = "<absolute>"; };
 		AE179EF109C3D77800512061 /* error.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = error.h; path = ../Source_Files/LibNAT/error.h; sourceTree = "<group>"; };
 		AE179EF209C3D77800512061 /* http.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = http.h; path = ../Source_Files/LibNAT/http.h; sourceTree = "<group>"; };
@@ -682,7 +683,7 @@
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
 		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
-		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_monsters.cpp; sourceTree = "<group>"; };
@@ -964,7 +965,6 @@
 		F5CC93970240D85D01A80001 /* OverheadMap_OGL.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OverheadMap_OGL.cpp; sourceTree = "<group>"; };
 		F5CC93980240D85D01A80001 /* OverheadMapRenderer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OverheadMapRenderer.cpp; sourceTree = "<group>"; };
 		F5CC939A0240D85D01A80001 /* screen_drawing.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = screen_drawing.cpp; sourceTree = "<group>"; };
-		F5CC939D0240D85D01A80001 /* screen_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = screen_sdl.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		F5CC939E0240D85D01A80001 /* screen_shared.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = screen_shared.h; sourceTree = "<group>"; usesTabs = 1; };
 		F5CC939F0240D85D01A80001 /* sdl_fonts.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = sdl_fonts.cpp; sourceTree = "<group>"; };
 		F5CC93A00240D85D01A80001 /* sdl_fonts.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = sdl_fonts.h; sourceTree = "<group>"; };
@@ -1727,6 +1727,7 @@
 				F5CC93960240D85D01A80001 /* overhead_map.cpp */,
 				F5CC93970240D85D01A80001 /* OverheadMap_OGL.cpp */,
 				F5CC93980240D85D01A80001 /* OverheadMapRenderer.cpp */,
+				AE005FD30EE2D6DE007FE7C6 /* screen.cpp */,
 				F5CC939A0240D85D01A80001 /* screen_drawing.cpp */,
 				F5CC93A10240D85D01A80001 /* TextLayoutHelper.cpp */,
 				F5CC93A30240D85D01A80001 /* TextStrings.cpp */,
@@ -1777,7 +1778,6 @@
 				F5CC938B0240D85D01A80001 /* OverheadMap_SDL.h */,
 				F5CC93A00240D85D01A80001 /* sdl_fonts.h */,
 				F5CC938A0240D85D01A80001 /* OverheadMap_SDL.cpp */,
-				F5CC939D0240D85D01A80001 /* screen_sdl.cpp */,
 				F5CC939F0240D85D01A80001 /* sdl_fonts.cpp */,
 			);
 			name = SDL;
@@ -2338,7 +2338,6 @@
 				AEC3C83B09AD68AC003258E4 /* OverheadMap_SDL.cpp in Sources */,
 				AEC3C83C09AD68AC003258E4 /* OverheadMapRenderer.cpp in Sources */,
 				AEC3C83D09AD68AC003258E4 /* screen_drawing.cpp in Sources */,
-				AEC3C83E09AD68AC003258E4 /* screen_sdl.cpp in Sources */,
 				AEC3C83F09AD68AC003258E4 /* sdl_fonts.cpp in Sources */,
 				AEC3C84009AD68AC003258E4 /* TextLayoutHelper.cpp in Sources */,
 				AEC3C84109AD68AC003258E4 /* TextStrings.cpp in Sources */,
@@ -2443,6 +2442,7 @@
 				AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */,
 				AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */,
 				AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */,
+				AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
