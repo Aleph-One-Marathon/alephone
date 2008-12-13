@@ -32,7 +32,7 @@ rpm: $(PACKAGE)-$(VERSION).tar.gz
 	rpmbuild -ta --clean $(PACKAGE)-$(VERSION).tar.gz
 
 ChangeLog:
-	cvs2cl --show-dead -S
+	svn2cl --break-before-msg
 
 # Windows version
 $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
