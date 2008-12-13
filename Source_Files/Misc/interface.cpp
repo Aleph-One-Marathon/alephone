@@ -112,6 +112,7 @@ Feb 13, 2003 (Woody Zenfell):
 #include <string.h>
 #include <stdlib.h>
 #include <limits.h>
+#include <algorithm>
 
 #ifdef PERFORMANCE
 #include <perf.h>
@@ -1778,6 +1779,7 @@ static bool begin_game(
 					game_state.current_netgame_allows_microphone= false;
 				}
 				game_information.cheat_flags = network_game_info->cheat_flags;
+				std::fill_n(game_information.parameters, 2, 0);
 
 				is_networked= true;
 				record_game= true;
@@ -1873,7 +1875,8 @@ static bool begin_game(
 			game_information.game_options= _burn_items_on_death|_ammo_replenishes|_weapons_replenish|_monsters_replenish;
 			game_information.initial_random_seed= machine_tick_count();
 			game_information.difficulty_level= get_difficulty_level();
-
+			std::fill_n(game_information.parameters, 2, 0);
+				
                         // ZZZ: until film files store player behavior flags, we must require
                         // that all films recorded be made with standard behavior.
 			record_game= is_player_behavior_standard();
