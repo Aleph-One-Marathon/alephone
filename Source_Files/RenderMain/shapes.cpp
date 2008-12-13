@@ -801,6 +801,7 @@ uint8* get_shapes_patch_data(size_t &length)
 
 bool load_shapes_patch(SDL_RWops *p)
 {
+	std::vector<int16> color_counts(MAXIMUM_COLLECTIONS);
 	int32 collection_index = NONE;
 	int32 start = SDL_RWtell(p);
 	SDL_RWseek(p, 0, SEEK_END);
@@ -833,12 +834,15 @@ bool load_shapes_patch(SDL_RWops *p)
 					if (collection_loaded(header) && patch_bit_depth == 8)
 					{
 						load_collection_definition(header->collection, p);
+						color_counts[collection_index] = header->collection->color_count;
 						allocate_shading_tables(collection_index, false);
 						header->status|=markPATCHED;
 
 					} else {
-						// ignore
-						SDL_RWseek(p, 544, SEEK_CUR);
+						// get the color count (it's the only way to skip the CTAB_TAG
+						SDL_RWseek(p, 6, SEEK_CUR);
+						color_counts[collection_index] = SDL_ReadBE16(p);
+						SDL_RWseek(p, 544 - 8, SEEK_CUR);
 					}
 				} 
 				else if (tag == HLSH_TAG)
@@ -896,7 +900,7 @@ bool load_shapes_patch(SDL_RWops *p)
 					}
 					else
 					{
-						SDL_RWseek(p, cd->color_count * sizeof(rgb_color_value), SEEK_CUR);
+						SDL_RWseek(p, color_counts[collection_index] * sizeof(rgb_color_value), SEEK_CUR);
 					}
 				}
 				else
