@@ -1404,6 +1404,9 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon this side is attached to</description>
 	<type>polygon</type>
       </variable>
+      <function name="recalculate_type" version="SVN">
+	<description>correct the side type (Forge can generate incorrect side types)</description>
+      </function>
       <variable name="type" access="read-only" version="20080707">
 	<description>type of side</description>
       </variable>
