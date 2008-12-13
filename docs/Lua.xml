@@ -460,15 +460,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="level" singleton="true">
-      <function name="calculate_completion_state" version="SVN">
+      <function name="calculate_completion_state" version="20081213">
 	<description>returns whether level is finished, unfinished, or failed</description>
 	<return><type>completion_state</type></return>
       </function>
-      <variable name="extermination" access="read-only" version="SVN">
+      <variable name="extermination" access="read-only" version="20081213">
 	<description>whether level has extermination flag set</description>
 	<type>boolean</type>
       </variable>
-      <variable name="exploration" access="read-only" version="SVN">
+      <variable name="exploration" access="read-only" version="20081213">
 	<description>whether level has exploration flag set</description>
 	<type>boolean</type>
       </variable>
@@ -519,15 +519,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether level is rebellion</description>
 	<type>boolean</type>
       </variable>
-      <variable name="repair" access="read-only" version="SVN">
+      <variable name="repair" access="read-only" version="20081213">
 	<description>whether level has repair flag set</description>
 	<type>boolean</type>
       </variable>
-      <variable name="rescue" access="read-only" version="SVN">
+      <variable name="rescue" access="read-only" version="20081213">
 	<description>whether level has rescue flag set</description>
 	<type>boolean</type>
       </variable>
-      <variable name="retrieval" access="read-only" version="SVN">
+      <variable name="retrieval" access="read-only" version="20081213">
 	<description>whether level has retrieval flag set</description>
 	<type>boolean</type>
       </variable>
@@ -594,7 +594,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="monster">
-      <function name="accelerate" version="SVN">
+      <function name="accelerate" version="20081213">
 	<description>accelerates monster</description>
 	<argument name="direction"><type>angle</type></argument>
 	<argument name="velocity"><type>speed</type></argument>
@@ -1404,7 +1404,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon this side is attached to</description>
 	<type>polygon</type>
       </variable>
-      <function name="recalculate_type" version="SVN">
+      <function name="recalculate_type" version="20081213">
 	<description>correct the side type (Forge can generate incorrect side types)</description>
       </function>
       <variable name="type" access="read-only" version="20080707">
