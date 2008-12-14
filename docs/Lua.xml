@@ -86,18 +86,10 @@
     </section>
     <section name="Running a Script" id="running_a_script">
       <description>
-	<p>There are two ways to get a script to run - level specific MML, and selecting a script at the gather network game dialog. To use level specific MML, put the script in a TEXT resource in the map file. Then put in TEXT resource 128 MML telling A1 where to find the script, which in its most basic form is this:</p>
-	<pre>
-  &lt;marathon_levels&gt;
-    &lt;level index="0"&gt;
-      &lt;lua resource="1000"/&gt;
-    &lt;/level&gt;
-  &lt;/marathon_levels&gt;
-	</pre>
-	<p>By convention we use TEXT resource 1000+x to hold the script for level x, so the first level in the map file (which has level index 0) gets its script in TEXT resource 1000.</p>
-	<p>This works fine for single player games. It will also work for multiplayer games, but only if every player has a copy of the map file and selects it in enviroment prefs.</p>
-	<p>To use a script via the network game dialog, put then script in a text file. Then, at the gather network game dialog, select "use script", then select your script file.</p>
-	<p>When playing network games, even if you are not gathering, it's important not to have a map file with level specific MML selected in your environment prefs, unless it's the map file for the map you are playing. A1 will run the script for that map file, your game will go out of sync, and you'll be unhappy.</p>
+	<p>There are three ways to get a script to run - by embedding it in a level, by selecting a solo script in the Environment Preferences, or by selecting a script at the gather network game dialog.</p>
+	<p>To embed a script in a level, use a tool such as Atque. Use embedded Lua scripts only for map specific features, not for modifying game types. For instance, it may be tempting to embed the latest version of the Lua CTF script in a map designed only for playing CTF; however, this would prevent the user from using a later version of CTF if it were to come out, or from using another net script that works on CTF maps. Some older scenarios use Lua scripts in TEXT resources, but this is no longer recommended since they are not transmitted in net games.</p>
+	<p>To use a solo script, check the "Use Solo Script" box in Environment Preferences, and choose the script file to use.</p>
+	<p>To use a script via the network game dialog, put then script in a text file with the extension .lua. Then, at the gather network game dialog, select "use script", then select your script file.</p>
       </description>
     </section>
     <section name="Units" id="units">
