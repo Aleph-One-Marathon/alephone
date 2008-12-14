@@ -372,7 +372,7 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 		// translate for caller
 		throw ServerConnectException("Unexpected Response");
 	}
-	catch (...)
+	catch (std::exception e)
 	{
 		throw;
 	}
