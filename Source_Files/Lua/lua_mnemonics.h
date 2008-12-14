@@ -65,7 +65,8 @@ const lang_def Lua_Collection_Mnemonics[] = {
 const lang_def Lua_CompletionState_Mnemonics[] = {
 	{"unfinished", 0},
 	{"finished", 1},
-	{"failed", 2}
+	{"failed", 2},
+	{0, 0}
 };
 
 const lang_def Lua_ControlPanelClass_Mnemonics[] = {
