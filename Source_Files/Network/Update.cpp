@@ -24,7 +24,7 @@
 #include "Update.h"
 #include "SDL_net.h"
 #include <boost/tokenizer.hpp>
-#include <string>
+#include <string.h>
 #include "alephversion.h"
 
 Update *Update::m_instance = 0;
@@ -87,18 +87,15 @@ int Update::Thread()
 		return 2;
 	}
 
-	std::string request = 
-		std::string("GET /update_check/") + A1_UPDATE_PLATFORM + ".php HTTP/1.1\r\n" + 
-		"Host: marathon.sourceforge.net\r\n" + 
-		"Connection: close\r\n" +
-		"\r\n";
-	
-	if (SDLNet_TCP_Send(sock, const_cast<char *>(request.c_str()), request.size()) < request.size())
+	char request[1024];
+	sprintf(request, "GET /update_check/%s.php HTTP/1.1\r\nHost: marathon.sourceforge.net\r\nConnection: close\r\n\r\n", A1_UPDATE_PLATFORM);
+
+	if (SDLNet_TCP_Send(sock, request, strlen(request)) < strlen(request))
 	{
 		m_status = UpdateCheckFailed;
 		return 3;
 	}
-	
+
 	// ghs: SHOULD but doesn't:
 	// handle Location: header
 	// handle chunked transfers?
@@ -115,22 +112,18 @@ int Update::Thread()
 
 	reply[len] = 0;
 
-	std::string reply_string = reply;
-
-	typedef boost::tokenizer<boost::char_separator<char> > tokenizer;
-	boost::char_separator<char> sep("\r\n");
-	tokenizer tokens(reply_string, sep);
-
-	for (tokenizer::iterator tok_iter = tokens.begin(); tok_iter != tokens.end(); ++tok_iter)
+	char *line = strtok(reply, "\r\n");
+	while (line)
 	{
-		if (tok_iter->compare(0, strlen("A1_DATE_VERSION: "), "A1_DATE_VERSION: ") == 0)
+		if (strncmp(line, "A1_DATE_VERSION: ", strlen("A1_DATE_VERSION: ")) == 0)
 		{
-			m_new_date_version = tok_iter->substr(strlen("A1_DATE_VERSION: "));
+			m_new_date_version.assign(line + strlen("A1_DATE_VERSION: "));
 		}
-		else if (tok_iter->compare(0, strlen("A1_DISPLAY_VERSION: "), "A1_DISPLAY_VERSION: ") == 0)
+		else if (strncmp(line, "A1_DISPLAY_VERSION: ", strlen("A1_DISPLAY_VERSION: ")) == 0)
 		{
-			m_new_display_version = tok_iter->substr(strlen("A1_DISPLAY_VERSION: "));
+			m_new_display_version.assign(line + strlen("A1_DISPLAY_VERSION: "));
 		}
+		line = strtok(0, "\r\n");
 	}
 
 	if (m_new_date_version.size())
