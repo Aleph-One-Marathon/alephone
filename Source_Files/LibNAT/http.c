@@ -71,7 +71,7 @@
 #define MAX_HTTP_BODY_LEN          65536
 
 /* timeouts in seconds */
-#define HTTP_CONNECT_TIMEOUT       1
+#define HTTP_CONNECT_TIMEOUT       2
 #define HTTP_RECEIVE_TIMEOUT       10
 
 

@@ -57,7 +57,7 @@
 #define MAX_DISCOVERY_RECEIVE_SIZE 1024
 
 /* timeout in seconds of a discovery request */
-#define DISCOVERY_TIMEOUT     1
+#define DISCOVERY_TIMEOUT     2
 
 
 /* local file defines */
