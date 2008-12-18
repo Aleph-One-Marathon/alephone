@@ -343,10 +343,11 @@ Client::~Client() {
   delete channel;
 }
 
-CheckPlayerProcPtr Client::check_player;
+CheckPlayerProcPtr Client::check_player = 0;
 
-Client::Client(CommunicationsChannel *inChannel) : mDispatcher(new MessageDispatcher()), channel(inChannel)
+Client::Client(CommunicationsChannel *inChannel) : channel(inChannel), state(_connecting), network_version(0), mDispatcher(new MessageDispatcher())
 {
+	std::fill_n(name, MAX_NET_PLAYER_NAME_LENGTH, '\0');
 	mJoinerInfoMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleJoinerInfoMessage));
 	mCapabilitiesMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleCapabilitiesMessage));
 	mAcceptJoinMessageHandler.reset(newMessageHandlerMethod(this, &Client::handleAcceptJoinMessage));
