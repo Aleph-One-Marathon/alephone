@@ -203,6 +203,23 @@ void Screen::Initialize(screen_mode_data* mode)
 			m_modes.push_back(std::pair<int, int>(320, 160));
 		}
 
+		// insert custom mode if it's in the prefs
+		if (graphics_preferences->screen_mode.width <= m_modes[0].first && graphics_preferences->screen_mode.height <= m_modes[0].second)
+		{
+			// sort it into the list
+			for (std::vector<std::pair<int, int> >::iterator it = m_modes.begin(); it != m_modes.end(); ++it)
+			{
+				if (graphics_preferences->screen_mode.width >= it->first && graphics_preferences->screen_mode.height >= it->second)
+				{
+					if (graphics_preferences->screen_mode.width != it->first || graphics_preferences->screen_mode.height != it->second)
+					{
+						m_modes.insert(it, std::pair<int, int>(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height));
+					}
+					break;
+				}
+			}
+		}
+
 		// these are not validated in graphics prefs because
 		// SDL is not initialized yet when prefs load, so
 		// validate them here
