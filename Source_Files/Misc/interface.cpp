@@ -2071,6 +2071,7 @@ static void finish_game(
 		force_system_colors();
 		display_net_game_stats();
 		exit_networking();
+		load_environment_from_preferences();
 	} 
 	else
 #endif // !defined(DISABLE_NETWORKING)
