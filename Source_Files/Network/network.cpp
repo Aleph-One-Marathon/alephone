@@ -1686,7 +1686,7 @@ void *NetGetPlayerData(
 void *NetGetGameData(
 	void)
 {
-	assert(netState!=netUninitialized&&netState!=netDown&&netState!=netJoining);
+	assert(netState!=netUninitialized && netState!=netJoining);
 	
 	return &topology->game_data;
 }
