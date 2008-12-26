@@ -3369,7 +3369,7 @@ processXmlDecl(XML_Parser parser, int isGeneralTextEntity,
   }
   else if (defaultHandler)
     reportDefault(parser, encoding, s, next);
-  if (protocolEncodingName == NULL) {
+//  if (protocolEncodingName == NULL) {
     if (newEncoding) {
       if (newEncoding->minBytesPerChar != encoding->minBytesPerChar) {
         eventPtr = encodingName;
@@ -3392,7 +3392,7 @@ processXmlDecl(XML_Parser parser, int isGeneralTextEntity,
         eventPtr = encodingName;
       return result;
     }
-  }
+//  }
 
   if (storedEncName || storedversion)
     poolClear(&temp2Pool);
