@@ -42,6 +42,8 @@ if [ "$DIE" -eq 1 ]; then
         exit 1
 fi
 
+rm -rf autom4te.cache
+
 aclocalinclude="$ACLOCAL_FLAGS"; \
 (echo $_echo_n " + Running aclocal: $_echo_c"; \
     aclocal $aclocalinclude; \
