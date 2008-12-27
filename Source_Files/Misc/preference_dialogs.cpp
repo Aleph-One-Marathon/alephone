@@ -140,6 +140,7 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_fsaaWidget;
 	delete m_anisotropicWidget;
 	delete m_geForceFixWidget;
+	delete m_vsyncWidget;
 	delete m_wallsFilterWidget;
 	delete m_spritesFilterWidget;
 
@@ -184,6 +185,9 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	
 	BoolPref geForceFixPref (graphics_preferences->OGL_Configure.GeForceFix);
 	binders.insert<bool> (m_geForceFixWidget, &geForceFixPref);
+	
+	BoolPref vsyncPref (graphics_preferences->OGL_Configure.WaitForVSync);
+	binders.insert<bool> (m_vsyncWidget, &vsyncPref);
 	
 	FilterPref wallsFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Wall].FarFilter);
 	binders.insert<int> (m_wallsFilterWidget, &wallsFilterPref);
@@ -294,6 +298,10 @@ public:
 
 		general_table->add_row(new w_spacer(), true);
 
+		w_toggle *vsync_w = new w_toggle(false);
+		general_table->dual_add(vsync_w->label("VSync"), m_dialog);
+		general_table->dual_add(vsync_w, m_dialog);
+
 		w_select_popup *fsaa_w = new w_select_popup ();
 		general_table->dual_add(fsaa_w->label("Full Scene Antialiasing"), m_dialog);
 		general_table->dual_add(fsaa_w, m_dialog);
@@ -306,6 +314,7 @@ public:
 		w_slider* aniso_w = new w_slider(6, 1);
 		general_table->dual_add(aniso_w->label("Anisotropic Filtering"),m_dialog);
 		general_table->dual_add(aniso_w, m_dialog);
+
 
 		general_table->add_row(new w_spacer(), true);
 
@@ -460,6 +469,7 @@ public:
 		m_anisotropicWidget = new SliderSelectorWidget (aniso_w);
 
 		m_geForceFixWidget = new ToggleWidget (geforce_fix_w);
+		m_vsyncWidget = new ToggleWidget (vsync_w);
 		
 		m_wallsFilterWidget = new SelectSelectorWidget (wall_filter_w);
 		m_spritesFilterWidget = new SelectSelectorWidget (sprite_filter_w);

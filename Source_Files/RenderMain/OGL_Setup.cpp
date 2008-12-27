@@ -279,6 +279,7 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 			Data.LscpColors[il][ie] = DefaultLscpColors[il][ie];
 
 	Data.GeForceFix = false;
+	Data.WaitForVSync = true;
 }
 
 

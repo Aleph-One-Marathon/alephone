@@ -184,6 +184,7 @@ struct OGL_ConfigureData
 	int16 Multisamples;
 
 	bool GeForceFix;
+	bool WaitForVSync;
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();
