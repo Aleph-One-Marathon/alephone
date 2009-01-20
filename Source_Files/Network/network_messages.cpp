@@ -109,10 +109,10 @@ bool BigChunkOfZippedDataMessage::inflateFrom(const UninflatedMessage& inUninfla
 	inputStream >> (uint32&) size;
 
 	// extra copy because we can't access private mBuffer
-	std::auto_ptr<byte> temp(new byte[size]);
-	if (size == 0 || uncompress(temp.get(), &size, inUninflated.buffer() + 4, inUninflated.length() - 4) == Z_OK)
+	std::vector<byte> temp(size);
+	if (size == 0 || uncompress(&temp[0], &size, inUninflated.buffer() + 4, inUninflated.length() - 4) == Z_OK)
 	{
-		copyBufferFrom(temp.get(), size);
+		copyBufferFrom(&temp[0], size);
 		return true;
 	}
 	else
@@ -124,10 +124,10 @@ bool BigChunkOfZippedDataMessage::inflateFrom(const UninflatedMessage& inUninfla
 UninflatedMessage* BigChunkOfZippedDataMessage::deflate() const
 {
 	uLongf temp_size = length() * 105 / 100 + 12;
-	std::auto_ptr<byte> temp(new byte[temp_size]);
+	std::vector<byte> temp(temp_size);
 	if (length() > 0)
 	{
-		if (compress(temp.get(), &temp_size, buffer(), length()) != Z_OK)
+		if (compress(&temp[0], &temp_size, buffer(), length()) != Z_OK)
 		{
 			return 0;
 		}
@@ -140,7 +140,7 @@ UninflatedMessage* BigChunkOfZippedDataMessage::deflate() const
 	UninflatedMessage* theMessage = new UninflatedMessage(type(), temp_size + 4);
 	AOStreamBE outputStream(theMessage->buffer(), 4);
 	outputStream << (uint32) length();
-	memcpy(theMessage->buffer() + 4, temp.get(), temp_size);
+	memcpy(theMessage->buffer() + 4, &temp[0], temp_size);
 	return theMessage;
 }
 
