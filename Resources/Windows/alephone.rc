@@ -22,4 +22,4 @@ FILETYPE 1
  }
 }
 
-AppIcon ICON "../Resources/Windows/alephone.ico"
+AppIcon ICON "alephone.ico"

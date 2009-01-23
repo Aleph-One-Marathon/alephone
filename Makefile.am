@@ -13,9 +13,9 @@ man_MANS = docs/alephone.6
 WINDISTDIR=$(PACKAGE)-$(VERSION)
 
 dist-hook: AlephOne.spec
-	cp AlephOne.spec $(distdir)
-	cp "Aleph One Classic SDL.mcp" $(distdir)
-	cp "Resources/Aleph One Classic SDL.r" $(distdir)/Resources
+	cp $(srcdir)/AlephOne.spec $(distdir)
+	cp "$(srcdir)/Aleph One Classic SDL.mcp" $(distdir)
+	cp "$(srcdir)/Resources/Aleph One Classic SDL.r" $(distdir)/Resources
 
 $(PACKAGE)-$(VERSION)-MacWinSrc.7z: distdir
 	cp -r ${srcdir}/Libraries ${distdir}/
@@ -38,26 +38,26 @@ ChangeLog:
 $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
 	mkdir $(WINDISTDIR)
 	cp Source_Files/AlephOne.exe $(WINDISTDIR)/
-	unix2dos -n AUTHORS $(WINDISTDIR)/AUTHORS.txt
-	unix2dos -n COPYING $(WINDISTDIR)/COPYING.txt
-	unix2dos -n INSTALL.Windows $(WINDISTDIR)/INSTALL.Windows.txt
-	unix2dos -n README $(WINDISTDIR)/README.txt
+	unix2dos -n $(srcdir)/AUTHORS $(WINDISTDIR)/AUTHORS.txt
+	unix2dos -n $(srcdir)/COPYING $(WINDISTDIR)/COPYING.txt
+	unix2dos -n $(srcdir)/INSTALL.Windows $(WINDISTDIR)/INSTALL.Windows.txt
+	unix2dos -n $(srcdir)/README $(WINDISTDIR)/README.txt
 	mkdir $(WINDISTDIR)/docs
-	cp docs/Lua.html $(WINDISTDIR)/docs/Lua.html
-	cp docs/MML.html $(WINDISTDIR)/docs/MML.html
-	unix2dos -n docs/Troubleshooting.txt $(WINDISTDIR)/docs/Troubleshooting.txt
+	cp $(srcdir)/docs/Lua.html $(WINDISTDIR)/docs/Lua.html
+	cp $(srcdir)/docs/MML.html $(WINDISTDIR)/docs/MML.html
+	unix2dos -n $(srcdir)/docs/Troubleshooting.txt $(WINDISTDIR)/docs/Troubleshooting.txt
 	mkdir $(WINDISTDIR)/Themes
-	cp -r data/default_theme $(WINDISTDIR)/Themes/Default
-	rm -rf "$(WINDISTDIR)/Themes/Default/CVS"
+	cp -r $(srcdir)/data/default_theme $(WINDISTDIR)/Themes/Default
+	rm -rf "$(WINDISTDIR)/Themes/Default/.svn"
 	mkdir $(WINDISTDIR)/Extras
-	cp data/Software_Transparent_Liquids.mml $(WINDISTDIR)/Extras
-	cp data/Transparent_Liquids.mml $(WINDISTDIR)/Extras
-	cp data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
-	cp data/Carnage_Messages.mml $(WINDISTDIR)/Extras
-	unix2dos -n examples/lua/Cheats.lua $(WINDISTDIR)/Extras/Cheats.lua
-	cp data/Fonts $(WINDISTDIR)/
-	cp -r "Resources/Library Licenses" $(WINDISTDIR)/
-	rm -rf "$(WINDISTDIR)/Library Licenses/CVS"
+	cp $(srcdir)/data/Software_Transparent_Liquids.mml $(WINDISTDIR)/Extras
+	cp $(srcdir)/data/Transparent_Liquids.mml $(WINDISTDIR)/Extras
+	cp $(srcdir)/data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
+	cp $(srcdir)/data/Carnage_Messages.mml $(WINDISTDIR)/Extras
+	unix2dos -n $(srcdir)/examples/lua/Cheats.lua $(WINDISTDIR)/Extras/Cheats.lua
+	cp $(srcdir)/data/Fonts $(WINDISTDIR)/
+	cp -r "$(srcdir)/Resources/Library Licenses" $(WINDISTDIR)/
+	rm -rf "$(WINDISTDIR)/Library Licenses/.svn"
 	zip -r $(PACKAGE)-$(VERSION).zip $(WINDISTDIR)
 	rm -rf "$(WINDISTDIR)"
 
