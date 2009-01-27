@@ -235,6 +235,7 @@ public:
 			UserNotLoggedIn,
 			BadMetaserverVersion,
 			UserAlreadyLoggedIn,
+			UnknownGameType,
 			LoginSuccessful,
 			LogoutSuccessful,
 			PlayerNotInRoom,
