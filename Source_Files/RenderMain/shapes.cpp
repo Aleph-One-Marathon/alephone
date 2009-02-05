@@ -460,7 +460,7 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
 	} else {
 
 		// Row-order shape, we can directly create a surface from it
-		s = SDL_CreateRGBSurfaceFrom(bitmap->row_addresses[0], bitmap->width, bitmap->height, 8, bitmap->bytes_per_row, 0xff, 0xff, 0xff, 0xff);
+		s = SDL_CreateRGBSurfaceFrom(bitmap->row_addresses[0], bitmap->height, bitmap->width, 8, bitmap->bytes_per_row, 0xff, 0xff, 0xff, 0xff);
                 // ZZZ: caller should not dispose of any additional data - just free the surface.
                 if(outPointerToPixelData != NULL)
                     *outPointerToPixelData = NULL;
