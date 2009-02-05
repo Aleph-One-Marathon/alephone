@@ -28,6 +28,7 @@ NETWORK_MESSAGES.CPP
 #include "network_messages.h"
 #include "network_private.h"
 #include "network_data_formats.h"
+#include "Logging.h"
 
 #include <zlib.h>
 
@@ -110,14 +111,24 @@ bool BigChunkOfZippedDataMessage::inflateFrom(const UninflatedMessage& inUninfla
 
 	// extra copy because we can't access private mBuffer
 	std::vector<byte> temp(size);
-	if (size == 0 || uncompress(&temp[0], &size, inUninflated.buffer() + 4, inUninflated.length() - 4) == Z_OK)
+	if (size == 0)
 	{
-		copyBufferFrom(&temp[0], size);
+		copyBufferFrom(0, 0);
 		return true;
 	}
 	else
 	{
-		return false;
+		int ret = uncompress(&temp[0], &size, inUninflated.buffer() + 4, inUninflated.length() - 4);
+		if (ret == Z_OK)
+		{
+			copyBufferFrom(&temp[0], size);
+			return true;
+		}
+		else
+		{
+			logWarning1("Error decompressing BigChunkOfZippedDataMessage; result is %i", ret);
+			return false;
+		}
 	}
 }
 
@@ -140,7 +151,8 @@ UninflatedMessage* BigChunkOfZippedDataMessage::deflate() const
 	UninflatedMessage* theMessage = new UninflatedMessage(type(), temp_size + 4);
 	AOStreamBE outputStream(theMessage->buffer(), 4);
 	outputStream << (uint32) length();
-	memcpy(theMessage->buffer() + 4, &temp[0], temp_size);
+	if (temp_size)
+		memcpy(theMessage->buffer() + 4, &temp[0], temp_size);
 	return theMessage;
 }
 
