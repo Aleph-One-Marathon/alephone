@@ -269,6 +269,11 @@ bool Screen::hud()
 	return screen_mode.hud;
 }
 
+bool Screen::openGL()
+{
+	return screen_mode.acceleration == _opengl_acceleration;
+}
+
 bool Screen::fifty_percent()
 {
 	return screen_mode.height == 160;

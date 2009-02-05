@@ -283,9 +283,6 @@ struct weapon_interface_data weapon_interface_definitions[NUMBER_OF_WEAPON_INTER
 	},
 };
 
-// Is OpenGL rendering of the HUD currently active?
-bool OGL_HUDActive = false;
-
 // Software rendering
 HUD_SW_Class HUD_SW;
 
@@ -306,7 +303,7 @@ void initialize_game_window(void)
 /* draws the entire interface */
 void draw_interface(void)
 {
-	if (OGL_HUDActive)
+	if (alephone::Screen::instance()->openGL())
 		return;
 
 	if (!game_window_is_full_screen())
@@ -322,7 +319,7 @@ void draw_interface(void)
 	but skip the interface frame) */
 void update_interface(short time_elapsed)
 {
-	if (OGL_HUDActive) {
+	if (alephone::Screen::instance()->openGL()) {
 		if (time_elapsed == NONE)
 			reset_motion_sensor(current_player_index);
 		else
@@ -499,7 +496,6 @@ extern void build_sdl_color_table(const color_table *color_table, SDL_Color *col
 
 // From game_window.cpp
 extern HUD_SW_Class HUD_SW;
-extern bool OGL_HUDActive;
 
 extern void draw_panels(void);
 
@@ -525,7 +521,7 @@ extern int LuaTexturePaletteSize();
 
 void draw_panels(void)
 {
-	if (OGL_HUDActive)
+	if (alephone::Screen::instance()->openGL())
 		return;
 
 	ensure_HUD_buffer();

@@ -93,6 +93,7 @@ namespace alephone
 		int window_height();
 		int window_width();
 		bool hud();
+		bool openGL();
 		bool fifty_percent();
 		bool seventyfive_percent();
 		SDL_Rect view_rect(); // main 3D view
