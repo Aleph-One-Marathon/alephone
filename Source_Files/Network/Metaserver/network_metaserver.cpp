@@ -338,7 +338,10 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 
 		///// ROOM CONNECTION
 
-		if (!m_rooms.size()) throw 0;
+		if (!m_rooms.size())
+		{
+			throw ServerConnectException("No Rooms Available");
+		}
 
 		IPaddress roomServerAddress = m_rooms[0].roomServerAddress();
 	
@@ -367,7 +370,7 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 
 		m_channel->setMessageHandler(m_dispatcher.get());
 	} 
-	catch (CommunicationsChannel::FailedToReceiveSpecificMessageException)
+	catch (const CommunicationsChannel::FailedToReceiveSpecificMessageException&)
 	{
 		// translate for caller
 		throw ServerConnectException("Unexpected Response");

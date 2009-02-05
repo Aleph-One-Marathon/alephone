@@ -218,7 +218,7 @@ bool network_gather(bool inResumingGame)
 					{
 						metaserverAnnouncer.reset(new GameAvailableMetaserverAnnouncer(myGameInfo));
 					}
-					catch (MetaserverClient::LoginDeniedException e)
+					catch (const MetaserverClient::LoginDeniedException& e)
 					{
 						char message[1024];
 						if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
@@ -248,7 +248,7 @@ bool network_gather(bool inResumingGame)
 
 						alert_user(message, 0);
 					}
-					catch (MetaserverClient::ServerConnectException)
+					catch (const MetaserverClient::ServerConnectException&)
 					{
 						alert_user(infoError, strNETWORK_ERRORS, netWarnCouldNotAdvertiseOnMetaserver, 0);
 					}
@@ -773,7 +773,7 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 			m_joinWidget->push ();
 		}
 	}
-	catch (MetaserverClient::LoginDeniedException e)
+	catch (const MetaserverClient::LoginDeniedException& e)
 	{
 		char message[1024];
 		if (e.code() == MetaserverClient::LoginDeniedException::BadUserOrPassword)
@@ -803,7 +803,7 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 
 		alert_user(message, 0);
 	}
-	catch (MetaserverClient::ServerConnectException)
+	catch (const MetaserverClient::ServerConnectException&)
 	{
 		alert_user(infoError, strNETWORK_ERRORS, netErrMetaserverConnectionFailure, 0);
 	}
