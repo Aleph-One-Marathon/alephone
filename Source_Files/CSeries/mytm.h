@@ -50,6 +50,16 @@ extern void myTMCleanup(bool waitForFinishers);
 extern bool take_mytm_mutex();
 extern bool release_mytm_mutex();
 
+// ghs: exception-safe version of above
+class MyTMMutexTaker
+{
+public :
+	MyTMMutexTaker() { m_release = take_mytm_mutex(); }
+	~MyTMMutexTaker() { if (m_release) release_mytm_mutex(); }
+private:
+	bool m_release;
+};
+
 // ZZZ: call before any other mytm routines
 extern void mytm_initialize();
 
