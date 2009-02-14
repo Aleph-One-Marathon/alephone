@@ -1077,10 +1077,14 @@ make_player_netdead(int inPlayerIndex)
 	
         NetworkPlayer_hub& thePlayer = getNetworkPlayer(inPlayerIndex);
 
-        thePlayer.mNetDeadTick = sSmallestIncompleteTick;
-        thePlayer.mConnected = false;
-        sConnectedPlayersBitmask &= ~(((uint32)1) << inPlayerIndex);
-        sAddressToPlayerIndex.erase(thePlayer.mAddress);
+	// make sure we're not processing a packet
+	{
+		MyTMMutexTaker mutex;
+		thePlayer.mNetDeadTick = sSmallestIncompleteTick;
+		thePlayer.mConnected = false;
+		sConnectedPlayersBitmask &= ~(((uint32)1) << inPlayerIndex);
+		sAddressToPlayerIndex.erase(thePlayer.mAddress);
+	}
 
 	// We save this off because player_provided... call below may change it.
 	int32 theSavedIncompleteTick = sSmallestIncompleteTick;
