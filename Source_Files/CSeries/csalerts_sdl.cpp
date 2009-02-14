@@ -152,6 +152,7 @@ void vhalt(const char *message)
 {
 	stop_recording();
         logFatal1("vhalt: %s", message);
+	GetCurrentLogger()->flush();
 	fprintf(stderr, "vhalt %s\n", message);
 	abort();
 }

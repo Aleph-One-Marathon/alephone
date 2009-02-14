@@ -100,7 +100,6 @@ Logger::logMessageNMT(const char* inDomain, int inLevel, const char* inFile, int
 #endif
 }
 
-
 Logger::~Logger() {
 }
 
@@ -114,6 +113,7 @@ public:
     virtual void pushLogContextV(const char* inFile, int inLine, const char* inContext, va_list inArgs);
     virtual void popLogContext();
     virtual void logMessageV(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, va_list inArgs);
+	void flush();
 protected:
     vector<string>	mContextStack;
     size_t	mMostRecentCommonStackDepth;
@@ -197,6 +197,14 @@ TopLevelLogger::logMessageV(const char* inDomain, int inLevel, const char* inFil
         mMostRecentCommonStackDepth = mContextStack.size();
         mMostRecentlyPrintedStackDepth = mContextStack.size();
     }
+}
+
+void TopLevelLogger::flush()
+{
+	if (sOutputFile)
+	{
+		fflush(sOutputFile);
+	}
 }
 
 #if defined(__unix__) || defined(__NetBSD__) || defined(__OpenBSD__) || (defined(__APPLE__) && defined(__MACH__))

@@ -53,6 +53,7 @@ public:
 	virtual void pushLogContextV(const char* inFile, int inLine, const char* inContext, va_list inArgList) = 0;
 	virtual void popLogContext() = 0;
 	virtual void logMessageV(const char* inDomain, int inLevel, const char* inFile, int inLine, const char* inMessage, va_list inArgList) = 0;
+	virtual void flush() = 0;
 
 	virtual ~Logger();
 };
