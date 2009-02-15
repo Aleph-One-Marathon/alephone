@@ -76,6 +76,8 @@
 #include "sdl_widgets.h"
 #include "SoundManager.h" // !
 
+#include <boost/algorithm/string/predicate.hpp>
+
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
 extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, recordings_dir;
@@ -1117,6 +1119,19 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 		}
 	}
 
+	const char *extension = 0;
+	switch (type) 
+	{
+		case _typecode_savegame:
+			extension = ".sgaA";
+			break;
+		case _typecode_film:
+			extension = ".filA";
+			break;
+		default:
+			break;
+	};
+
 	// Read directory
 	FileSpecifier dir;
 	switch (type) {
@@ -1175,7 +1190,12 @@ again:
 			goto again;
 		}
 		name = dir.name;
-		AddPart(name_w->get_text());
+		std::string filename = name_w->get_text();
+		if (extension && !boost::algorithm::ends_with(filename, extension))
+		{
+			filename += extension;
+		}
+		AddPart(filename);
 		result = confirm_save_choice(*this);
 		if (!result)
 			goto again;
