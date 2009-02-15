@@ -399,6 +399,32 @@ TimeType FileSpecifier::GetDate()
 	return st.st_mtime;
 }
 
+static const char * alephone_extensions[] = {
+	".sceA",
+	".sgaA",
+	".filA",
+	".phyA",
+	".shpA",
+	".sndA",
+	0
+};
+
+std::string FileSpecifier::HideExtension(const std::string& filename)
+{
+	const char **extension = alephone_extensions;
+	while (*extension)
+	{
+		if (boost::algorithm::ends_with(filename, *extension))
+		{
+			return filename.substr(0, filename.length() - strlen(*extension));
+		}
+
+		++extension;
+	}
+
+	return filename;
+}
+
 struct extension_mapping
 {
 	const char *extension;
@@ -819,7 +845,7 @@ public:
 			draw_text(s, theName.c_str (), x, y, selected ? get_theme_color (ITEM_WIDGET, ACTIVE_STATE) : get_theme_color (ITEM_WIDGET, DEFAULT_STATE), font, style, true);
 		}
 		else
-			draw_text(s, i->name.c_str (), x, y, selected ? get_theme_color (ITEM_WIDGET, ACTIVE_STATE) : get_theme_color (ITEM_WIDGET, DEFAULT_STATE), font, style, true);
+			draw_text(s, FileSpecifier::HideExtension(i->name).c_str (), x, y, selected ? get_theme_color (ITEM_WIDGET, ACTIVE_STATE) : get_theme_color (ITEM_WIDGET, DEFAULT_STATE), font, style, true);
 
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
@@ -912,7 +938,7 @@ public:
 	{
 		y += font->get_ascent();
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, i->name.c_str (), x, y, selected ? get_theme_color (ITEM_WIDGET, ACTIVE_STATE) : get_theme_color (ITEM_WIDGET, DEFAULT_STATE), font, style, true);
+		draw_text(s, FileSpecifier::HideExtension(i->name).c_str (), x, y, selected ? get_theme_color (ITEM_WIDGET, ACTIVE_STATE) : get_theme_color (ITEM_WIDGET, DEFAULT_STATE), font, style, true);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 };

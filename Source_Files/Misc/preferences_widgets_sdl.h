@@ -116,7 +116,7 @@ public:
 			color = get_theme_color(LABEL_WIDGET, DEFAULT_STATE);
 
 		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, i->name, x + i->indent * 8, y, color, font, style, true);
+		draw_text(s, FileSpecifier::HideExtension(i->name).c_str(), x + i->indent * 8, y, color, font, style, true);
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
 
@@ -148,6 +148,8 @@ w_env_select(const char *path, const char *m, Typecode t, dialog *d)
 	{
 		item = p;
 		item.GetName(item_name);
+		std::string filename = item_name;
+		strcpy(item_name, FileSpecifier::HideExtension(filename).c_str());
 		set_selection(item_name);
 	}
 

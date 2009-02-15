@@ -450,6 +450,9 @@ public:
 
 	// Copy file specification
 	const FileSpecifier &operator=(const FileSpecifier &other);
+
+	// hide extensions known to Aleph One
+	static std::string HideExtension(const std::string& filename);
 	
 #ifdef SDL
 	const char *GetPath(void) const {return name.c_str();}
