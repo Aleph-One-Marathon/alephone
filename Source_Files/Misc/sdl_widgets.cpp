@@ -2008,6 +2008,8 @@ w_file_chooser::update_filename()
 	if(file.Exists())
 	{
 		file.GetName(filename);
+		std::string filename_copy = filename;
+		strcpy(filename, FileSpecifier::HideExtension(filename_copy).c_str());
 		set_selection(filename);
 	}
 	else
