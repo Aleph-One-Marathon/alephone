@@ -397,6 +397,35 @@ TimeType FileSpecifier::GetDate()
 	return st.st_mtime;
 }
 
+struct extension_mapping
+{
+	const char *extension;
+	Typecode typecode;
+};
+
+static extension_mapping extensions[] = 
+{
+	// some common extensions, to speed up building map lists
+	{ "dds", _typecode_unknown },
+	{ "jpg", _typecode_unknown },
+	{ "png", _typecode_unknown },
+	{ "bmp", _typecode_unknown },
+	{ "txt", _typecode_unknown },
+	{ "ttf", _typecode_unknown },
+
+	{ "lua", _typecode_netscript }, // netscript, or unknown?
+	{ "mml", _typecode_unknown }, // no type code for this yet
+
+	{ "sceA", _typecode_scenario },
+        { "sgaA", _typecode_savegame },
+        { "filA", _typecode_film },
+        { "phyA", _typecode_physics },
+        { "shpA", _typecode_shapes },
+        { "sndA", _typecode_sounds },
+
+	{0, _typecode_unknown}
+};
+
 // Determine file type
 Typecode FileSpecifier::GetType()
 {
@@ -404,17 +433,14 @@ Typecode FileSpecifier::GetType()
 	// if there's an extension, assume it's correct
 	const char *extension = strrchr(GetPath(), '.');
 	if (extension) {
-		if (strcasecmp(extension, ".sce2") == 0 || strcasecmp(extension, ".sceA") == 0) return _typecode_scenario;
-		
-		// don't bother checking files with these extensions
-		// this helps a lot because there can be many of these files
-		if (
-			strcasecmp(extension, ".dds") == 0 ||
-			strcasecmp(extension, ".jpg") == 0 ||
-			strcasecmp(extension, ".png") == 0
-			) 
+		extension_mapping *mapping = extensions;
+		while (mapping->extension)
 		{
-			return _typecode_unknown;
+			if (strcasecmp(extension + 1, mapping->extension) == 0)
+			{
+				return mapping->typecode;
+			}
+			++mapping;
 		}
 	}
 
