@@ -76,6 +76,8 @@
 #include "sdl_widgets.h"
 #include "SoundManager.h" // !
 
+#include "preferences.h"
+
 #include <boost/algorithm/string/predicate.hpp>
 
 // From shell_sdl.cpp
@@ -411,15 +413,18 @@ static const char * alephone_extensions[] = {
 
 std::string FileSpecifier::HideExtension(const std::string& filename)
 {
-	const char **extension = alephone_extensions;
-	while (*extension)
+	if (environment_preferences->hide_extensions)
 	{
-		if (boost::algorithm::ends_with(filename, *extension))
+		const char **extension = alephone_extensions;
+		while (*extension)
 		{
-			return filename.substr(0, filename.length() - strlen(*extension));
-		}
-
+			if (boost::algorithm::ends_with(filename, *extension))
+			{
+				return filename.substr(0, filename.length() - strlen(*extension));
+			}
+			
 		++extension;
+		}
 	}
 
 	return filename;

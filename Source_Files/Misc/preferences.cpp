@@ -1639,6 +1639,13 @@ static void environment_dialog(void *arg)
 	table->dual_add(smooth_text_w->label("Smooth Text"), d);
 	table->dual_add(smooth_text_w, d);
 
+	table->add_row(new w_spacer, true);
+	table->dual_add_row(new w_static_text("Options"), d);
+
+	w_toggle *hide_extensions_w = new w_toggle(environment_preferences->hide_extensions);
+	table->dual_add(hide_extensions_w->label("Hide File Extensions"), d);
+	table->dual_add(hide_extensions_w, d);
+
 	placer->add(table, true);
 
 	placer->add(new w_spacer, true);
@@ -1715,6 +1722,13 @@ static void environment_dialog(void *arg)
 			theme_changed = true;
 		}
 #endif
+
+		bool hide_extensions = hide_extensions_w->get_selection() != 0;
+		if (hide_extensions != environment_preferences->hide_extensions)
+		{
+			environment_preferences->hide_extensions = hide_extensions;
+			changed = true;
+		}
 
 		if (changed)
 			load_environment_from_preferences();
@@ -2083,6 +2097,7 @@ void write_preferences(
 	fprintf(F,"  smooth_text=\"%s\"\n", BoolString(environment_preferences->smooth_text));
 	WriteXML_CString(F,"  solo_lua_file=\"", environment_preferences->solo_lua_file, 256, "\"\n");
 	fprintf(F,"  use_solo_lua=\"%s\"\n", BoolString(environment_preferences->use_solo_lua));
+	fprintf(F,"  hide_alephone_extensions=\"%s\"\n", BoolString(environment_preferences->hide_extensions));
 	fprintf(F,">\n");
 	fprintf(F,"</environment>\n\n");
 			
@@ -2288,6 +2303,7 @@ static void default_environment_preferences(environment_preferences_data *prefer
 
 	preferences->solo_lua_file[0] = 0;
 	preferences->use_solo_lua = false;
+	preferences->hide_extensions = true;
 }
 
 
@@ -3585,6 +3601,10 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	else if (StringsEqual(Tag,"use_solo_lua"))
 	{
 		return ReadBooleanValue(Value, environment_preferences->use_solo_lua);
+	}
+	else if (StringsEqual(Tag, "hide_alephone_extensions"))
+	{
+		return ReadBooleanValue(Value, environment_preferences->hide_extensions);
 	}
 	return true;
 }

@@ -224,6 +224,7 @@ struct environment_preferences_data
 
 	char solo_lua_file[256];
 	bool use_solo_lua;
+	bool hide_extensions;
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */
