@@ -366,14 +366,9 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, const 
 	return TMgr;
 }
 
-bool FSRenderer::setupTexture(const shape_descriptor& texture, short transferMode, const RenderStep& renderStep) {
+bool FSRenderer::setupTexture(const shape_descriptor& Texture, short transferMode, const RenderStep& renderStep) {
 
 	Shader *s = NULL;
-
-	shape_descriptor Texture = AnimTxtr_Translate(texture);
-	if(Texture == UNONE) {
-		return false;
-	}
 
 	glEnable(GL_BLEND);
 	glEnable(GL_ALPHA_TEST);
@@ -458,7 +453,10 @@ inline void setWallColor(GLfloat intensity, const RenderStep& renderStep) {
 void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 	polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, const RenderStep& renderStep) {
 
-	bool tex = setupTexture(surface->texture, surface->transfer_mode, renderStep);
+	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
+
+	if(texture == UNONE) { return; }
+	bool tex = setupTexture(texture, surface->transfer_mode, renderStep);
 	float intensity = get_light_data(surface->lightsource_index)->intensity / 65535.0;
 	if(!tex) {
 		intensity = 0;
@@ -498,7 +496,10 @@ void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 
 void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *surface, bool void_present, const RenderStep& renderStep) {
 
-	bool tex = setupTexture(surface->texture_definition->texture, surface->transfer_mode, renderStep);
+	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture_definition->texture);
+	if(texture == UNONE) { return; }
+
+	bool tex = setupTexture(texture, surface->transfer_mode, renderStep);
 	
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
@@ -718,6 +719,9 @@ void FSRenderer::render_viewer_sprite_layer(view_data *view) {
 		rect.ShapeDesc = BUILD_DESCRIPTOR(display_data.collection,0);
 		rect.LowLevelShape = display_data.low_level_shape_index;
 
+		if (shape_information->flags&_X_MIRRORED_BIT) display_data.flip_horizontal= !display_data.flip_horizontal;
+		if (shape_information->flags&_Y_MIRRORED_BIT) display_data.flip_vertical= !display_data.flip_vertical;
+
 		position_sprite_axis(&rect.x0, &rect.x1, view->screen_height, view->screen_width, display_data.horizontal_positioning_mode,
 							 display_data.horizontal_position, display_data.flip_horizontal, shape_information->world_left, shape_information->world_right);
 		position_sprite_axis(&rect.y0, &rect.y1, view->screen_height, view->screen_height, display_data.vertical_positioning_mode,
@@ -760,7 +764,7 @@ void FSRenderer::render_viewer_sprite_layer(view_data *view) {
 		glBegin(GL_QUADS);
 
 		glTexCoord2f(texCoords[0][1], texCoords[1][0]);
-		glVertex2i( rect.x0, rect.y1);
+		glVertex2i(rect.x0, rect.y1);
 
 		glTexCoord2f(texCoords[0][1], texCoords[1][1]);
 		glVertex2i(rect.x1, rect.y1);

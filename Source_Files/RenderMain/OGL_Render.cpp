@@ -698,7 +698,7 @@ bool OGL_StartRun()
 	
 	// [DEFAULT]
 	// Set standard alpha-test function; cut off at halfway point (for sharp edges)
-	glAlphaFunc(GL_GREATER,0.5);
+	glAlphaFunc(GL_GREATER,0.01);
 	
 	// [DEFAULT]
 	// Set standard crossfade blending function (for smooth transitions)

@@ -27,5 +27,5 @@ void main (void) {
 	float diffuse = dot(norm, viewv);
 	diffuse = log2(clamp(diffuse, 0.0, 1.0)) / 8.0 + 1.0;
 	vec4 color = texture2D(texture0, texCoords.xy);
-	gl_FragColor = vec4(color.rgb * vertexColor.rgb * diffuse, 1.0);
+	gl_FragColor = vec4(color.rgb * vertexColor.rgb * diffuse, color.a);
 }
