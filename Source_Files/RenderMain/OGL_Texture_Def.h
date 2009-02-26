@@ -78,6 +78,8 @@ enum
 	OGL_FIRST_PREMULT_ALPHA = OGL_BlendType_Crossfade_Premult
 };
 
+#include "OGL_Shader.h"
+
 // Shared options for wall/sprite textures and for skins
 struct OGL_TextureOptionsBase
 {
@@ -88,7 +90,7 @@ struct OGL_TextureOptionsBase
 	
 	// Names of files to load; these will be extended ones with directory specifications
 	// <dirname>/<dirname>/<filename>
-	vector<char> NormalColors, NormalMask, GlowColors, GlowMask;
+	vector<char> NormalColors, NormalMask, GlowColors, GlowMask, OffsetMap;
 
 	// the image is premultiplied
 	bool NormalIsPremultiplied, GlowIsPremultiplied;
@@ -100,7 +102,7 @@ struct OGL_TextureOptionsBase
 	short Type;
 	
 	// Normal and glow-mapped images
-	ImageDescriptor NormalImg, GlowImg;
+	ImageDescriptor NormalImg, GlowImg, OffsetImg;
 	
 	// Normal and glow blending
 	short NormalBlend, GlowBlend;

@@ -232,6 +232,7 @@ extern WindowPtr screen_window;
 #include "RenderRasterize.h"
 #include "Rasterizer_SW.h"
 #include "Rasterizer_OGL.h"
+#include "FSRenderer.h"
 
 #ifdef env68k
 #pragma segment render
@@ -282,13 +283,19 @@ vector<uint16> RenderFlagList;
 static RenderVisTreeClass RenderVisTree;			// Visibility-tree object
 static RenderSortPolyClass RenderSortPoly;			// Polygon-sorting object
 static RenderPlaceObjsClass RenderPlaceObjs;		// Object-placement object
-static RenderRasterizerClass RenderRasterize;		// Clipping and rasterization class
+static FSRenderer RenderRasterize;				// Clipping and rasterization class
 
 static Rasterizer_SW_Class Rasterizer_SW;			// Software rasterizer
 #ifdef HAVE_OPENGL
-static Rasterizer_OGL_Class Rasterizer_OGL;			// OpenGL rasterizer
+static FSRenderer& Rasterizer_OGL = RenderRasterize;			// OpenGL rasterizer
 #endif
 
+void OGL_Rasterizer_Init() {
+
+#ifdef HAVE_OPENGL
+	RenderRasterize.setupGL();
+#endif
+}
 
 /* ---------- private prototypes */
 
@@ -296,8 +303,7 @@ static void update_view_data(struct view_data *view);
 static void update_render_effect(struct view_data *view);
 static void shake_view_origin(struct view_data *view, world_distance delta);
 
-static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr);
-static void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width,
+void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width,
 	short positioning_mode, _fixed position, bool flip, world_distance world_left, world_distance world_right);
 
 
@@ -341,7 +347,9 @@ void initialize_view_data(
 	struct view_data *view)
 {
 	double two_pi= 8.0*atan(1.0);
-	double half_cone= view->field_of_view*(two_pi/360.0)/2;
+	/* half_cone needs to be extended for non oblique perspective projection (gluPerspective).
+	   this is required because the viewing angle is different for about the same field of view */
+	double half_cone= (view->field_of_view + 75.0)*(two_pi/360.0)/2;
 	double adjusted_half_cone= View_FOV_FixHorizontalNotVertical() ?
 		half_cone :
 		asin(view->screen_width*sin(half_cone)/view->standard_screen_width);
@@ -460,8 +468,8 @@ void render_view(
 			RenderRasterize.render_tree();
 			
 			// LP: won't put this into a separate class
-			/* render the playerÕs weapons, etc. */		
-			render_viewer_sprite_layer(view, RasPtr);
+			/* render the playerÕs weapons, etc. */
+			RasPtr->render_viewer_sprite_layer(view);
 			
 			// Finish rendering main view
 			RasPtr->End();
@@ -820,8 +828,8 @@ void instantiate_polygon_transfer_mode(
 
 /* ---------- viewer sprite layer (i.e., weapons) */
 
-static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
-{
+void RasterizerClass::render_viewer_sprite_layer(view_data *view) {
+
 	rectangle_definition textured_rectangle;
 	weapon_display_information display_data;
 	shape_information_data *shape_information;
@@ -831,7 +839,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 	if (!view->show_weapons_in_hand) return;
 	
 	// Need to set this...
-	RasPtr->SetForeground();
+	SetForeground();
 	
 	// No models here, and completely opaque
 	textured_rectangle.ModelPtr = NULL;
@@ -876,7 +884,7 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 			textured_rectangle.LightDepth = 0;
 			const GLfloat LightDirection[3] = {0, 1, 0};	// y is forward
 			objlist_copy(textured_rectangle.LightDirection,LightDirection,3);
-			RasPtr->SetForegroundView(display_data.flip_horizontal);
+			SetForegroundView(display_data.flip_horizontal);
 		}
 #endif
 		
@@ -920,11 +928,11 @@ static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr)
 		
 		/* and draw it */
 		// LP: added OpenGL support
-		RasPtr->texture_rectangle(textured_rectangle);
+		texture_rectangle(textured_rectangle);
 	}
 }
 
-static void position_sprite_axis(
+void position_sprite_axis(
 	short *x0,
 	short *x1,
 	short scale_width,

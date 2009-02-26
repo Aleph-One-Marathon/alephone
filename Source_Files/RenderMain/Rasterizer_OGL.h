@@ -33,9 +33,12 @@ class Rasterizer_OGL_Class: public RasterizerClass
 {
 public:
 
+	// init a a rasteriszer after opengl has been inited
+	virtual void setupGL() {}
+
 	// Sets the rasterizer's view data;
 	// be sure to call it before doing any rendering
-	void SetView(view_data& View) {OGL_SetView(View);}
+	virtual void SetView(view_data& View) {OGL_SetView(View);}
 	
 	// Sets the rasterizer so that it will start rendering foreground objects
 	// like weapons in hand
@@ -46,8 +49,8 @@ public:
 	virtual void SetForegroundView(bool HorizReflect) {OGL_SetForegroundView(HorizReflect);}
 	
 	// Rendering calls
-	void Begin() {OGL_StartMain();}
-	void End() {OGL_EndMain();}
+	virtual void Begin() {OGL_StartMain();}
+	virtual void End() {OGL_EndMain();}
 	
 	void texture_horizontal_polygon(polygon_definition& textured_polygon)
 	{

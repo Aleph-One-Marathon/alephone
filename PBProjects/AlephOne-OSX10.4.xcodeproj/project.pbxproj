@@ -22,6 +22,9 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		AB449C990F27173E008471E4 /* FSRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB449C970F27173E008471E4 /* FSRenderer.cpp */; };
+		ABC7D4400F48C00B0047ACBD /* FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = ABC7D43E0F48C00B0047ACBD /* FBO.h */; };
+		ABD2ABF70F235A020097752B /* OGL_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABD2ABF50F235A020097752B /* OGL_Shader.cpp */; };
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE005FD30EE2D6DE007FE7C6 /* screen.cpp */; };
 		AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
@@ -566,6 +569,9 @@
 		3DF290E9046F5BED00000104 /* OGL_Texture_Def.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_Texture_Def.h; sourceTree = "<group>"; };
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
+		AB449C970F27173E008471E4 /* FSRenderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FSRenderer.cpp; sourceTree = "<group>"; };
+		ABC7D43E0F48C00B0047ACBD /* FBO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBO.h; sourceTree = "<group>"; };
+		ABD2ABF50F235A020097752B /* OGL_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Shader.cpp; sourceTree = "<group>"; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
 		AE005FD30EE2D6DE007FE7C6 /* screen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = screen.cpp; sourceTree = "<group>"; };
 		AE0384DB0CE15170006780AC /* SDL_ttf.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_ttf.framework; path = /Library/Frameworks/SDL_ttf.framework; sourceTree = "<absolute>"; };
@@ -682,8 +688,8 @@
 		AE9A39F40CCADF78004717E3 /* ConnectPool.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ConnectPool.h; path = ../Source_Files/Network/ConnectPool.h; sourceTree = "<group>"; };
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
-		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
-		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
+		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_monsters.cpp; sourceTree = "<group>"; };
@@ -1633,6 +1639,7 @@
 		F5CC92E30240D56101A80001 /* RenderMain */ = {
 			isa = PBXGroup;
 			children = (
+				ABC7D43E0F48C00B0047ACBD /* FBO.h */,
 				AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */,
 				F5CC936B0240D5E001A80001 /* Headers */,
 				F5CC936C0240D75B01A80001 /* Macintosh */,
@@ -1642,11 +1649,13 @@
 				3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */,
 				F5CC92F00240D56101A80001 /* OGL_Render.cpp */,
 				F5CC92F20240D56101A80001 /* OGL_Setup.cpp */,
+				ABD2ABF50F235A020097752B /* OGL_Shader.cpp */,
 				3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */,
 				F5CC92F40240D56101A80001 /* OGL_Textures.cpp */,
 				F5CC92FC0240D56101A80001 /* render.cpp */,
 				F5CC92FE0240D56101A80001 /* RenderPlaceObjs.cpp */,
 				F5CC93000240D56101A80001 /* RenderRasterize.cpp */,
+				AB449C970F27173E008471E4 /* FSRenderer.cpp */,
 				F5CC93020240D56101A80001 /* RenderSortPoly.cpp */,
 				F5CC93040240D56101A80001 /* RenderVisTree.cpp */,
 				F5CC93070240D56101A80001 /* scottish_textures.cpp */,
@@ -2125,6 +2134,7 @@
 				AEFE7C2C0DB03FA700D11DE2 /* ascii.h in Headers */,
 				AEFE7C2D0DB03FA700D11DE2 /* expat.h in Headers */,
 				AEFE7C2E0DB03FA800D11DE2 /* expat_external.h in Headers */,
+				ABC7D4400F48C00B0047ACBD /* FBO.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2164,9 +2174,11 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-OSX10.4" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* SDL Application */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				AEC3C6FE09AD68AC003258E4 /* AlephOne */,
 				AE3B83970E04C87E00FD963D /* AlephOne.dmg */,
@@ -2443,6 +2455,8 @@
 				AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */,
 				AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */,
 				AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */,
+				ABD2ABF70F235A020097752B /* OGL_Shader.cpp in Sources */,
+				AB449C990F27173E008471E4 /* FSRenderer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2505,6 +2519,7 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
+					/opt/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
@@ -2565,8 +2580,10 @@
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
 				GCC_OPTIMIZATION_LEVEL = 0;
+				HEADER_SEARCH_PATHS = /opt/local/include/;
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
+				LIBRARY_SEARCH_PATHS = /opt/local/lib/;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				STRIP_INSTALLED_PRODUCT = NO;
 				ZERO_LINK = YES;
@@ -2609,6 +2626,7 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
+					/opt/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
@@ -2669,8 +2687,10 @@
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
 				GCC_VERSION = 4.0;
+				HEADER_SEARCH_PATHS = /opt/local/include/;
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
+				LIBRARY_SEARCH_PATHS = /opt/local/lib/;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = "Deployment (Native gcc 4.0)";
@@ -2741,6 +2761,7 @@
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
 					/usr/local/include,
+					/opt/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
@@ -2807,8 +2828,10 @@
 					ppc,
 					i386,
 				);
+				HEADER_SEARCH_PATHS = /opt/local/include/;
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
+				LIBRARY_SEARCH_PATHS = /opt/local/lib/;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = "Deployment (Universal)";

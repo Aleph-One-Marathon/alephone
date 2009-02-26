@@ -559,6 +559,7 @@ bool OGL_ClearScreen()
 	else return false;
 }
 
+void OGL_Rasterizer_Init();
 
 // Start an OpenGL run (creates a rendering context)
 #ifdef mac
@@ -595,11 +596,11 @@ bool OGL_StartRun()
 		PixelFormatSetupList.push_back(GLint(AGL_FULLSCREEN));
 		PixelFormatSetupList.push_back(GLint(AGL_NO_RECOVERY));
 	}
-	if (Z_Buffering)
-	{
-		PixelFormatSetupList.push_back(GLint(AGL_DEPTH_SIZE));
-		PixelFormatSetupList.push_back(16);
-	}
+
+	// the new rendering pipeline relies on depth buffering so make it compulsory
+	PixelFormatSetupList.push_back(GLint(AGL_DEPTH_SIZE));
+	PixelFormatSetupList.push_back(24);
+
 	PixelFormatSetupList.push_back(GLint(AGL_STENCIL_SIZE));
 	PixelFormatSetupList.push_back(GLint(1));
 	PixelFormatSetupList.push_back(GLint(AGL_NONE));
@@ -680,7 +681,8 @@ bool OGL_StartRun()
 		// if coincident textures are not rendered very well.
 		// [DEFAULT] -- anything marked out as this ought to be reverted to if changed
 		glDepthFunc(GL_LEQUAL);
-		glDepthRange(1,0);
+		// we use the opengl default depth range now
+//		glDepthRange(1,0);
 	}
 	
 	// Prevent wrong-side polygons from being rendered;
@@ -705,6 +707,8 @@ bool OGL_StartRun()
 	// Switch on use of vertex and texture-coordinate arrays
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+
+	OGL_Rasterizer_Init();
 
 	load_replacement_collections();	
 
@@ -870,6 +874,7 @@ void PreloadWallTexture(const TextureWithTransferMode& inTexture)
 	if (TMgr.Setup()) {
 		TMgr.RenderNormal();
 		if (TMgr.IsGlowMapped()) TMgr.RenderGlowing();
+		TMgr.RenderBump();
 	}
 }
 
@@ -1029,7 +1034,7 @@ bool OGL_StartMain()
 	// Also do flat static if requested;
 	// done once per frame to avoid visual inconsistencies
 	UseFlatStatic = TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatStatic);
-	
+
 	return true;
 }
 
@@ -1384,7 +1389,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	TMgr.TransferData = RenderPolygon.transfer_data;
 	TMgr.IsShadeless = (RenderPolygon.flags&_SHADELESS_BIT) != 0;
 	TMgr.TextureType = OGL_Txtr_Wall;
-	
+
 	// Use that texture
 	if (!TMgr.Setup()) return false;
 			
@@ -1531,7 +1536,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 			VecScalarMult(VertexRay,RayDistance,EVData.Vertex);
 			EVData.Vertex[3] = TexOrigin[3];
 		}
-				
+
 		// Store the texture coordinates
 		EVData.TexCoord[0] = U;
 		EVData.TexCoord[1] = V;
@@ -1701,7 +1706,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 						ExtendedVertexList[k] = SplitVertices[-Src-1];
 				}
 			}
-			
+
 			// Set up for vertex lighting
 			glEnableClientState(GL_COLOR_ARRAY);
 			glColorPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].Color);
@@ -1738,7 +1743,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	
 	// Proper projection
 	SetProjectionType(Projection_OpenGL_Eye);
-	
+
 	// Location of data:
 	glVertexPointer(4,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].Vertex);
 	glTexCoordPointer(2,GL_DOUBLE,sizeof(ExtendedVertexData),ExtendedVertexList[0].TexCoord);
@@ -1747,9 +1752,9 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	glEnable(GL_TEXTURE_2D);
 
 	TMgr.SetupTextureMatrix();
-	TMgr.RenderNormal();	
+	TMgr.RenderNormal();
 	SetBlend(TMgr.NormalBlend());
-	
+
 	if (PolygonVariableShade)
 	{
 		// Do triangulation by hand, creating a sort of ladder;
@@ -1867,10 +1872,10 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 				}
 			}
 		}
-		
+
 		// Now, go!
 		glDrawElements(GL_TRIANGLES,3*(NumVertices-2),GL_UNSIGNED_INT,VertIndices);
-		
+
 		// Switch off
 		glDisableClientState(GL_COLOR_ARRAY);
 	}
@@ -1897,7 +1902,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		SetBlend(TMgr.GlowBlend());
 		glDrawArrays(GL_POLYGON,0,NumVertices);
 	}
-	
+
 	// Revert to default blend
 	SetBlend(OGL_BlendType_Crossfade);
 	if (Z_Buffering) glEnable(GL_DEPTH_TEST);

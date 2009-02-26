@@ -138,3 +138,52 @@ SDL_Surface *s = NULL;
 	SDL_FreeSurface(rgba);
 	return true;
 }
+
+/*
+ * this function creates a normal map for a heightmap
+ * (note: this is not to be confused with the diffuse map which
+ *  is referenced as 'normal' map everywhere in aleph one code)
+ * the normal map is contained in the rgb component the heightmap in the alpha component
+ * the normal map is used for lighting calculations, the alpha value for parallax offset
+ * since dds maps are not processed they can be passed directly in these 4 components
+ * (though i recall reading somewhere that dds textures are not well suited for bump maps)
+ */
+void ImageDescriptor::ProcessOffsetMap() {
+	if(Format != RGBA8) { return; }
+	assert(Pixels && Size);
+	uint32 *pixels = new uint32[Size];
+	uint32* dest = pixels;
+
+	float fs, ft, fr, fd, scale = -0.5f * 16.0 / 255.0;
+
+	uint8 hx, hy, hm, hn;
+
+	for(int y=+1; y<Height+1; y++) {
+		for(int x=+1; x<Width+1; x++) {
+			hm = getPixel(x-1, y) & 0xFF;
+			hx = getPixel(x+1, y) & 0xFF;
+			hn = getPixel(x, y-1) & 0xFF;
+			hy = getPixel(x, y+1) & 0xFF;
+
+			fs = (hx-hm)*scale;
+			ft = (hy-hn)*scale;
+			fr = 1;
+
+			fd = fs*fs + ft*ft + 1;
+			if(fd) {
+				fd = 1.0 / sqrt(fd);
+				fs *= fd;
+				ft *= fd;
+				fr *= fd;
+			}
+
+			*dest = ((getPixel(x, y) & 0xFF) << 24)
+				+ (uint8(0x80 + fr*0x7F) << 16)
+				+ (uint8(0x80 + ft*0x7F) << 8)
+				+  uint8(0x80 + fs*0x7F);
+			++dest;
+		}
+	}
+	delete [] Pixels;
+	Pixels = (uint32*)pixels;
+}

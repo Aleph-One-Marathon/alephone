@@ -34,6 +34,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #ifndef _OGL_TEXTURES
 #define _OGL_TEXTURES
 
+#include "OGL_Shader.h"
+
 // Initialize the texture accounting
 void OGL_StartTextures();
 
@@ -51,6 +53,7 @@ struct TextureState
 	{
 		Normal,		// Used for all normally-shaded and shadeless textures
 		Glowing,	// Used for self-luminous textures
+		Bump,
 		NUMBER_OF_TEXTURES
 	};
 	GLuint IDs[NUMBER_OF_TEXTURES];		// Texture ID's
@@ -71,7 +74,8 @@ struct TextureState
 	bool Use(int Which);
 	bool UseNormal() {return Use(Normal);}
 	bool UseGlowing() {return Use(Glowing);}
-	
+	bool UseBump() {return Use(Bump);}
+
 	void FrameTick();
 	
 	// Reset the texture to unused and force a reload if necessary
@@ -147,7 +151,7 @@ class TextureManager
 	uint32 *NormalBuffer, *GlowBuffer;
 
 	// New texture buffers
-	ImageDescriptorManager NormalImage, GlowImage;
+	ImageDescriptorManager NormalImage, GlowImage, OffsetImage;
 	
 	// Pointer to the appropriate texture-state object
 	TextureState *TxtrStatePtr;
@@ -184,7 +188,6 @@ class TextureManager
 	void PlaceTexture(const ImageDescriptor *);
 
 public:
-
 	// Inputs: get off of texture object passed to scottish_textures.
 	shape_descriptor ShapeDesc;
 	uint16 LowLevelShape;
@@ -233,6 +236,7 @@ public:
 	void RenderNormal();
 	// Call this one after RenderNormal()
 	void RenderGlowing();
+	void RenderBump();
 
 	void SetupTextureMatrix();
 	void RestoreTextureMatrix();

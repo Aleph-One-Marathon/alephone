@@ -155,6 +155,7 @@ struct rectangle_definition
 	bool BelowLiquid;			// Where the rendering is relative to the liquid
 	int LightDepth;				// For finding the amount of "miner's light"
 	GLfloat LightDirection[3];		// To the "light point"
+	short size[4];
 
 	// Constructor required defaults
 	rectangle_definition() :

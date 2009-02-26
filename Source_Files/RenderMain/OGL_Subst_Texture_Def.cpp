@@ -167,7 +167,7 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 				return &TOIter->OptionsData;
 			}
 	}
-	
+
 	return &DefaultTextureOptions;
 }
 
@@ -294,6 +294,11 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	else if (StringsEqual(Tag,"normal_image"))
 	{
 		ReadString(Value, Data.NormalColors);
+		return true;
+	}
+	else if (StringsEqual(Tag,"offset_image"))
+	{
+		ReadString(Value, Data.OffsetMap);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_mask"))

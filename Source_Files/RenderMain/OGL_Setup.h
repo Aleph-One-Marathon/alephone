@@ -64,6 +64,7 @@ Aug 21, 2001 (Loren Petrich):
 
 
 #include "XML_ElementParser.h"
+#include "OGL_Shader.h"
 #include "OGL_Subst_Texture_Def.h"
 #include "OGL_Model_Def.h"
 

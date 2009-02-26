@@ -1,0 +1,13 @@
+<marathon>
+<opengl>
+<shader name="parallax" vert="shaders/parallax.vert" frag="shaders/parallax.frag" />
+<shader name="landscape" vert="shaders/landscape.vert" frag="shaders/landscape.frag" />
+<shader name="random" vert="shaders/random.vert" frag="shaders/random.frag" />
+<shader name="blurH" vert="shaders/blur.vert" frag="shaders/blurH.frag" />
+<shader name="blurV" vert="shaders/blur.vert" frag="shaders/blurV.frag" />
+<shader name="specular" vert="shaders/specular.vert" frag="shaders/specular.frag" />
+<shader name="flat" vert="shaders/flat.vert" frag="shaders/flat.frag" />
+<shader name="flat_infravision" vert="shaders/flat.vert" frag="shaders/flat_infravision.frag" />
+<shader name="infravision" vert="shaders/parallax.vert" frag="shaders/infravision.frag" />
+</opengl>
+</marathon>

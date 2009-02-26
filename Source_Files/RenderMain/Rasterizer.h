@@ -35,7 +35,7 @@
 class RasterizerClass
 {
 public:
-	
+
 	// Sets the rasterizer's view data;
 	// be sure to call it before doing any rendering
 	virtual void SetView(view_data& View) {}
@@ -57,6 +57,8 @@ public:
 	virtual void texture_vertical_polygon(polygon_definition& textured_polygon) {}
 
 	virtual void texture_rectangle(rectangle_definition& textured_rectangle) {}
+
+	virtual void render_viewer_sprite_layer(view_data *view);
 };
 
 

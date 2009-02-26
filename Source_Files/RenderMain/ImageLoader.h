@@ -48,13 +48,19 @@ class ImageDescriptor
 	int Size;
 
 	int MipMapCount;
-	
+
 public:
-	
+
 	bool IsPresent() const {return (Pixels != NULL); }
 	bool IsPremultiplied() const { return (IsPresent() ? PremultipliedAlpha : false); }
 
 	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
+
+	uint32 getPixel(unsigned u, unsigned v) {
+		// wrapping get pixel
+		return Pixels[Width*(v%Height) + u%Width];
+	}
+	void ProcessOffsetMap();
 
 	// Size of level 0 image
 	int GetWidth() const {return Width;}

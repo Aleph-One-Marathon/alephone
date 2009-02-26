@@ -341,7 +341,15 @@ void OGL_TextureOptionsBase::Load()
 	{
 		return;
 	}
-	
+
+	// load a heightmap
+	if(StringPresent(OffsetMap) && File.SetNameWithPath(&OffsetMap[0])) {
+		if(!OffsetImg.LoadFromFile(File, ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) {
+			return;
+		}
+		OffsetImg.ProcessOffsetMap();
+	}
+
 	// Load the normal mask if it has a filename specified for it
 	if (StringPresent(NormalMask) && File.SetNameWithPath(&NormalMask[0]))
 	{
@@ -354,13 +362,19 @@ void OGL_TextureOptionsBase::Load()
 		{
 			if (!NormalImg.Minify()) break;
 		}
-	}
 	
+		if(OffsetImg.IsPresent()) {
+			while (OffsetImg.GetWidth() > maxTextureSize || OffsetImg.GetHeight() > maxTextureSize) {
+				if(!OffsetImg.Minify()) { break; }
+			}
+		}
+	}
+
 	// Load the glow image with alpha channel
 	if (!GlowImg.IsPresent())
 	{
 		GlowImg.Clear();
-		
+
 		// Load the glow image if it has a filename specified for it
 		if (StringPresent(GlowColors) && File.SetNameWithPath(&GlowColors[0]))
 		{
@@ -378,7 +392,7 @@ void OGL_TextureOptionsBase::Load()
 			}
 		}
 	}
-	
+
 	if (GlowImg.IsPresent() && maxTextureSize)
 	{
 		while (GlowImg.GetWidth() > maxTextureSize || GlowImg.GetHeight() > maxTextureSize) 
@@ -390,13 +404,15 @@ void OGL_TextureOptionsBase::Load()
 	// The rest of the code is made simpler by these constraints:
 	// that the glow texture only be present if the normal texture is also present,
 	// and that the normal and glow textures have the same dimensions
-	if (NormalImg.IsPresent())
+	if(NormalImg.IsPresent())
 	{
-		int W0 = NormalImg.GetWidth();
-		int W1 = GlowImg.GetWidth();
-		int H0 = NormalImg.GetHeight();
-		int H1 = GlowImg.GetHeight();
-		if ((W1 != W0) || (H1 != H0)) GlowImg.Clear();
+		// i don't see why we should disallow different texture sizes for diffuse and glow maps
+		// glowmaps need not be as accurate
+//		int W0 = NormalImg.GetWidth();
+//		int W1 = GlowImg.GetWidth();
+//		int H0 = NormalImg.GetHeight();
+//		int H1 = GlowImg.GetHeight();
+//		if ((W1 != W0) || (H1 != H0)) GlowImg.Clear();
 	}
 	else
 	{
@@ -409,6 +425,7 @@ void OGL_TextureOptionsBase::Unload()
 {
 	NormalImg.Clear();
 	GlowImg.Clear();
+	OffsetImg.Clear();
 }
 
 int OGL_TextureOptionsBase::GetMaxSize()
@@ -576,6 +593,7 @@ XML_ElementParser *OpenGL_GetParser()
 {
 #ifdef HAVE_OPENGL
 	OpenGL_Parser.AddChild(TextureOptions_GetParser());
+	OpenGL_Parser.AddChild(Shader_GetParser());
 	OpenGL_Parser.AddChild(TO_Clear_GetParser());
 	
 	OpenGL_Parser.AddChild(ModelData_GetParser());

@@ -133,6 +133,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
+#include "FSRenderer.h"
 
 OGL_TexturesStats gGLTxStats = {0,0,0,500000,0,0, 0};
 
@@ -238,8 +239,8 @@ void TextureState::Reset()
 		gGLTxStats.inUse--;
 		glDeleteTextures(NUMBER_OF_TEXTURES,IDs);
 	}
-	IsUsed = IsGlowing = TexGened[Normal] = TexGened[Glowing] = false;
-	IDUsage[Normal] = IDUsage[Glowing] = unusedFrames = 0;
+	IsUsed = IsGlowing = TexGened[Normal] = TexGened[Glowing] = TexGened[Bump] = false;
+	IDUsage[Normal] = IDUsage[Glowing] = IDUsage[Bump] = unusedFrames = 0;
 }
 
 void TextureState::FrameTick() {
@@ -697,6 +698,7 @@ bool TextureManager::LoadSubstituteTexture()
 
 	NormalImage.set(&TxtrOptsPtr->NormalImg);
 	GlowImage.set(&TxtrOptsPtr->GlowImg);
+	OffsetImage.set(&TxtrOptsPtr->OffsetImg);
 
 	int Width = NormalImg.GetWidth();
 	int Height = NormalImg.GetHeight();
@@ -1383,6 +1385,23 @@ void TextureManager::RenderGlowing()
 		if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
 		if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
 		if (time>2) gGLTxStats.longGlowSetups++;
+}
+
+void TextureManager::RenderBump() {
+	
+	if(TxtrStatePtr->UseBump()) {
+		if(OffsetImage.get() && OffsetImage.get()->IsPresent()) {
+			PlaceTexture(OffsetImage.get());
+		} else {
+			FlatTexture();
+		}
+	}
+	
+	gGLTxStats.binds++;
+	int time = 0;
+	gGLTxStats.totalBind += time;
+	if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
+	if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
 }
 
 void TextureManager::SetupTextureMatrix()
