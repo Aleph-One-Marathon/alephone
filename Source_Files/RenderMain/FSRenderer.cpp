@@ -451,8 +451,8 @@ inline void setWallColor(GLfloat intensity, const RenderStep& renderStep) {
 		if(renderStep == kGlow) {
 			intensity = intensity > 0.5 ? intensity * 2.0 - 1.0 : 0;
 		}
-		glColor4f(intensity, intensity, intensity, 1);
-	}	
+		glColor4f(intensity, intensity, intensity, 1.0);
+	}
 }
 
 void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
@@ -462,9 +462,12 @@ void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 	float intensity = get_light_data(surface->lightsource_index)->intensity / 65535.0;
 	if(!tex) {
 		intensity = 0;
+		glDisable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
 	} else if(renderStep == kGlow) {
 		intensity = 1;
 	}
+
 	short vertex_count = polygon->vertex_count;
 
 	if (vertex_count) {
@@ -514,6 +517,8 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 		float intensity = 0.1+(get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / 65535.0;
 		if(!tex) {
 			intensity = 0;
+			glDisable(GL_BLEND);
+			glDisable(GL_ALPHA_TEST);
 		}
 		
 		if (vertex_count) {
@@ -662,7 +667,6 @@ void FSRenderer::Begin() {
 	glDisable(GL_BLEND);
 
 	glEnable(GL_TEXTURE_2D);
-	glLineWidth(2.0);
 
 	int FogType = (local_player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ? OGL_Fog_BelowLiquid : OGL_Fog_AboveLiquid;
 	OGL_FogData *CurrFog = OGL_GetFogData(FogType);

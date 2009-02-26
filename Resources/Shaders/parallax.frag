@@ -34,6 +34,6 @@ void main (void) {
 	float diffuse = dot(norm, viewv);
 	float d = clamp(1.0 - dot(viewDir, viewDir) * 0.00000005, -0.5, 1.0) * 0.2;
 	vec4 color = texture2D(texture0, texCoords.xy);
-	gl_FragColor = vec4(color.rgb * (vertexColor.rgb + d) * diffuse, 1.0);
-	gl_FragColor = mix(gl_Fog.color, gl_FragColor, fogFactor);
+	gl_FragColor = vec4(color.rgb * (vertexColor.rgb + d) * diffuse, 1.0 - gl_FragColor.a);
+	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), gl_FragColor.a ); 
 }
