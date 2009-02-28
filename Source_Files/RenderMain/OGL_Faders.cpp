@@ -104,6 +104,7 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 	Vertices[2][1] = Bottom;
 	Vertices[3][0] = Left;
 	Vertices[3][1] = Bottom;
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glVertexPointer(2,GL_FLOAT,0,Vertices[0]);
 	
 	// Do real blending
@@ -113,11 +114,11 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 	
 	// Modified color:
 	GLfloat BlendColor[4];	
-	
+
 	for (int f=0; f<NUMBER_OF_FADER_QUEUE_ENTRIES; f++)
 	{
 		OGL_Fader& Fader = FaderQueue[f];
-		
+
 		switch(Fader.Type)
 		{
 		case NONE:
@@ -210,6 +211,7 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			break;
 		}		
 	}
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	return true;
 }
