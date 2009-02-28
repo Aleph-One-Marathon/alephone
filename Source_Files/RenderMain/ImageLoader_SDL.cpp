@@ -32,6 +32,7 @@
 #include <SDL_image.h>
 #endif
 
+#include <cmath>
 
 /*
  *  Load specified image file
@@ -171,7 +172,7 @@ void ImageDescriptor::ProcessOffsetMap() {
 
 			fd = fs*fs + ft*ft + 1;
 			if(fd) {
-				fd = 1.0 / sqrt(fd);
+				fd = 1.0 / std::sqrt(fd);
 				fs *= fd;
 				ft *= fd;
 				fr *= fd;
