@@ -770,7 +770,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 		if (stat(full_path.GetPath(), &st) == 0) {
 			// Ignore files starting with '.' and the directories '.' and '..'
 			if (de->d_name[0] != '.' || (S_ISDIR(st.st_mode) && !(de->d_name[1] == '\0' || de->d_name[1] == '.')))
-				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false));
+				vec.push_back(dir_entry(de->d_name, st.st_size, S_ISDIR(st.st_mode), false, st.st_mtime));
 		}
 		de = readdir(d);
 	}
@@ -817,7 +817,7 @@ class w_directory_browsing_list : public w_list<dir_entry>
 {
 public:
 	w_directory_browsing_list(const FileSpecifier& inStartingDirectory, dialog* inParentDialog)
-	: w_list<dir_entry>(entries, 400, 15, 0), parent_dialog(inParentDialog), current_directory(inStartingDirectory)
+		: w_list<dir_entry>(entries, 400, 15, 0), parent_dialog(inParentDialog), current_directory(inStartingDirectory), sort_order(sort_by_name)
 	{
 		refresh_entries();
 	}
@@ -850,7 +850,15 @@ public:
 			draw_text(s, theName.c_str (), x, y, selected ? get_theme_color (ITEM_WIDGET, ACTIVE_STATE) : get_theme_color (ITEM_WIDGET, DEFAULT_STATE), font, style, true);
 		}
 		else
+		{
+			char date[256];
+			tm *time_info = localtime(&i->date);
+			strftime(date, 256, "%x %R", time_info);
+			int date_width = text_width(date, font, style);
+			draw_text(s, date, x + width - date_width, y, selected ? get_theme_color(ITEM_WIDGET, ACTIVE_STATE) : get_theme_color(ITEM_WIDGET, DEFAULT_STATE), font, style);
+			set_drawing_clip_rectangle(0, x, s->h, x + width - date_width - 4);
 			draw_text(s, FileSpecifier::HideExtension(i->name).c_str (), x, y, selected ? get_theme_color (ITEM_WIDGET, ACTIVE_STATE) : get_theme_color (ITEM_WIDGET, DEFAULT_STATE), font, style, true);
+		}
 
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 	}
@@ -897,6 +905,17 @@ public:
 			parent_dialog->quit(0);
 	}
 
+	enum SortOrder {
+		sort_by_name,
+		sort_by_date,
+	};
+
+	void sort_by(SortOrder order)
+	{
+		sort_order = order;
+		refresh_entries();
+	}
+
 
 	const FileSpecifier& get_file() { return current_directory; }
 	
@@ -907,12 +926,28 @@ private:
 	FileSpecifier 		current_directory;
 	action_proc		directory_changed_proc;
 	void*			directory_changed_proc_arg;
+	SortOrder sort_order;
 	
+	struct most_recent
+	{
+		bool operator()(const dir_entry& a, const dir_entry& b)
+		{
+			return a.date > b.date;
+		}
+	};
+
 	void refresh_entries()
 	{
 		if(current_directory.ReadDirectory(entries))
 		{
-			sort(entries.begin(), entries.end());
+			if (sort_order == sort_by_name)
+			{
+				sort(entries.begin(), entries.end());
+			}
+			else
+			{
+				sort(entries.begin(), entries.end(), most_recent());
+			}
 			num_items = entries.size();
 			new_items();
 		}
@@ -995,13 +1030,26 @@ respond_to_directory_changed(void* inArg)
 	theDialog->draw();
 }
 
+class change_sort_order
+{
+public:
+	change_sort_order(w_directory_browsing_list *list) : m_list(list) { }
+	void operator()(w_select *select_w) {
+		m_list->sort_by(static_cast<w_directory_browsing_list::SortOrder>(select_w->get_selection()));
+	}
+private:
+	w_directory_browsing_list* m_list;
+};
+
 bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 {
+	w_directory_browsing_list::SortOrder default_order = w_directory_browsing_list::sort_by_name;
 	// Set default prompt
 	if (prompt == NULL) {
 		switch (type) {
 			case _typecode_savegame:
 				prompt = "CONTINUE SAVED GAME";
+				default_order = w_directory_browsing_list::sort_by_date;
 				break;
 			case _typecode_film:
 				prompt = "REPLAY SAVED FILM";
@@ -1053,19 +1101,38 @@ bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
 
 	placer->add(new w_spacer(), true);
 
+	horizontal_placer *top_row_placer = new horizontal_placer;
+	const char *sort_by_labels[] = {
+		"name",
+		"date",
+		0
+	};
+
+	w_select* sort_by_w = new w_select(static_cast<size_t>(default_order), sort_by_labels);
+	top_row_placer->dual_add(sort_by_w->label("Sorted by: "), d);
+	top_row_placer->dual_add(sort_by_w, d);
+	top_row_placer->add_flags(placeable::kFill);
+	top_row_placer->add(new w_spacer, true);
+	top_row_placer->add_flags();
+
 	w_directory_browsing_list* list_w = ((type == _typecode_netscript)
 		? new w_directory_browsing_list(dir, &d, filename)
 		: new w_directory_browsing_list(dir, &d));
+	sort_by_w->set_selection_changed_callback(change_sort_order(list_w));
+	list_w->sort_by(default_order);
 	list_w->set_identifier(iDIRBROWSE_BROWSER);
 	list_w->set_directory_changed_callback(respond_to_directory_changed, &d);
+	w_button* up_button_w = new w_button("UP", bounce_up_a_directory_level, list_w);
+	top_row_placer->dual_add(up_button_w, d);
+	up_button_w->set_identifier(iDIRBROWSE_UP_BUTTON);
+	placer->add_flags(placeable::kFill);
+	placer->add(top_row_placer, true);
+	placer->add_flags();
+
 	placer->dual_add(list_w, d);
 	placer->add(new w_spacer, true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
-	w_button* up_button_w = new w_button("UP", bounce_up_a_directory_level, list_w);
-	button_placer->dual_add(up_button_w, d);
-
-	up_button_w->set_identifier(iDIRBROWSE_UP_BUTTON);
 
 	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
 

@@ -324,22 +324,9 @@ public:
 // Directory entry, returned by FileSpecifier::ReadDirectory()
 struct dir_entry {
 	dir_entry() {}
-	dir_entry(const string &n, long s, bool is_dir, bool is_vol = false)
-		: name(n), size(s), is_directory(is_dir), is_volume(is_vol) {}
-	dir_entry(const dir_entry &other)
-		: name(other.name), size(other.size), is_directory(other.is_directory), is_volume(other.is_volume) {}
+	dir_entry(const string &n, long s, bool is_dir, bool is_vol = false, TimeType d = 0)
+		: name(n), size(s), is_directory(is_dir), is_volume(is_vol), date(d) {}
 	~dir_entry() {}
-
-	const dir_entry &operator=(const dir_entry &other)
-	{
-		if (this != &other) {
-			name = other.name;
-			size = other.size;
-			is_directory = other.is_directory;
-			is_volume = other.is_volume;
-		}
-		return *this;
-	}
 
 	bool operator<(const dir_entry &other) const
 	{
@@ -353,6 +340,7 @@ struct dir_entry {
 	long size;			// File size (only valid if !is_directory)
 	bool is_directory;	// Entry is a directory (plain file otherwise)
 	bool is_volume;		// Entry is a volume (for platforms that have volumes, is_directory must also be set)
+	TimeType date;          // modification date
 };
 #endif
 
