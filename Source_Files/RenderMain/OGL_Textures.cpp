@@ -588,12 +588,37 @@ bool TextureManager::Setup()
 				NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetFakeLandscape()));
 			}
 		}
-		
+
+		uint32* diffuseMap = NULL;
+
 		// If not, then load the expected textures
 		if (!NormalImage.get() || !NormalImage.get()->IsPresent())
-			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(NormalColorTable)));	
-		if (IsGlowing && (!GlowImage.get() || !GlowImage.get()->IsPresent())) 
-			GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, GetOGLTexture(GlowColorTable)));
+		{
+			diffuseMap = GetOGLTexture(NormalColorTable);
+			NormalImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, diffuseMap));			
+		}
+		if (IsGlowing && (!GlowImage.get() || !GlowImage.get()->IsPresent()))
+		{
+			// clone silhouette to the glowmap
+			uint32* glowMap = GetOGLTexture(GlowColorTable);
+			if(diffuseMap && glowMap)
+			{
+				uint8* diffuseMapPtr = (uint8*)diffuseMap;
+				uint8* glowMapPtr = (uint8*)glowMap;
+				for(size_t i = 0; i < TxtrHeight*TxtrWidth; ++i)
+				{
+					// premultiply rgb values and put silhoutte in alpha
+					// this is necessary for glowmaps to be masked correctly
+					glowMapPtr[0] = glowMapPtr[0] * glowMapPtr[3] / 0xff;
+					glowMapPtr[1] = glowMapPtr[1] * glowMapPtr[3] / 0xff;
+					glowMapPtr[2] = glowMapPtr[2] * glowMapPtr[3] / 0xff;
+					glowMapPtr[3] = diffuseMapPtr[3];
+					glowMapPtr+=sizeof(uint32);
+					diffuseMapPtr+=sizeof(uint32);
+				}
+			}
+			GlowImage.edit(new ImageDescriptor(TxtrWidth, TxtrHeight, glowMap));
+		}
 		
 		// Display size: may be shrunk
 		int MaxWidth = MAX(TxtrWidth >> TxtrTypeInfo.Resolution, 1);

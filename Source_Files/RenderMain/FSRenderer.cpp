@@ -370,6 +370,7 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, const 
 
 bool FSRenderer::setupTexture(const shape_descriptor& Texture, short transferMode, short transfer_phase, const RenderStep& renderStep) {
 
+	bool color = true;
 	Shader *s = NULL;
 
 	glEnable(GL_BLEND);
@@ -395,10 +396,6 @@ bool FSRenderer::setupTexture(const shape_descriptor& Texture, short transferMod
 					s = Shader::get("infravision");
 				} else {
 					s = Shader::get("parallax");
-					if(s) {
-//						s->setFloat("wobble", 0.0);
-						glGetError();
-					}
 				}
 			} else {
 				s = Shader::get("specular");
@@ -425,11 +422,12 @@ bool FSRenderer::setupTexture(const shape_descriptor& Texture, short transferMod
 		} else {
 			if(TMgr.IsGlowMapped()) {
 				TMgr.RenderGlowing();
-			} else if(TMgr.TextureType == OGL_Txtr_Landscape) {
-				/* fallback to draw the same texture as glow */
-				TMgr.RenderNormal();				
 			} else {
-				return false;
+				if(TMgr.TextureType != OGL_Txtr_Landscape) {
+					/* fallback to draw the same texture as glow */
+					color = false;
+				}
+				TMgr.RenderNormal();
 			}
 		}
 	}
@@ -452,7 +450,7 @@ bool FSRenderer::setupTexture(const shape_descriptor& Texture, short transferMod
 		glGetError();
 		s->enable();
 	}
-	return true;
+	return color;
 }
 
 inline void setWallColor(GLfloat intensity, const RenderStep& renderStep) {
@@ -521,8 +519,6 @@ void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 	float intensity = get_light_data(surface->lightsource_index)->intensity / float(FIXED_ONE - 1);
 	if(!tex) {
 		intensity = 0;
-		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
 	} else if(renderStep == kGlow) {
 		intensity = 1;
 	}
@@ -580,8 +576,6 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 		float intensity = (get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / float(FIXED_ONE - 1);
 		if(!tex) {
 			intensity = 0;
-			glDisable(GL_BLEND);
-			glDisable(GL_ALPHA_TEST);
 		}
 		
 		if (vertex_count) {
