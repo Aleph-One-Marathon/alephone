@@ -10,7 +10,7 @@
 #ifndef __FBO_H
 #define __FBO_H
 
-#include "OGL_shader.h"
+#include "OGL_Shader.h"
 
 class FBO {
 	
