@@ -691,7 +691,7 @@ int w_select::min_width()
 
 void w_select::draw(SDL_Surface *s) const
 {
-	int y = rect.y + font->get_ascent();
+	int y = rect.y + font->get_ascent() + (rect.h - font->get_line_height()) / 2;
 
 	// Selection (ZZZ: different color for disabled)
 	const char *str = (num_labels > 0 ? labels[selection] : sNoValidOptionsString);
