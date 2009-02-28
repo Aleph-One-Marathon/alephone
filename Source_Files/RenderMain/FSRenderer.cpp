@@ -368,7 +368,7 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, const 
 	return TMgr;
 }
 
-bool FSRenderer::setupTexture(const shape_descriptor& Texture, short transferMode, const RenderStep& renderStep) {
+bool FSRenderer::setupTexture(const shape_descriptor& Texture, short transferMode, short transfer_phase, const RenderStep& renderStep) {
 
 	Shader *s = NULL;
 
@@ -394,7 +394,11 @@ bool FSRenderer::setupTexture(const shape_descriptor& Texture, short transferMod
 				if(local_player->infravision_duration) {
 					s = Shader::get("infravision");
 				} else {
-					s = Shader::get("parallax");					
+					s = Shader::get("parallax");
+					if(s) {
+//						s->setFloat("wobble", 0.0);
+						glGetError();
+					}
 				}
 			} else {
 				s = Shader::get("specular");
@@ -432,7 +436,22 @@ bool FSRenderer::setupTexture(const shape_descriptor& Texture, short transferMod
 
 	TMgr.SetupTextureMatrix();
 
-	if(s) { s->enable(); }
+	if(s) {
+		switch(transferMode) {
+			case _xfer_fast_wobble:
+				transfer_phase*= 15;
+			case _xfer_pulsate:
+			case _xfer_wobble:
+				transfer_phase&= WORLD_ONE/16-1;
+				transfer_phase= (transfer_phase>=WORLD_ONE/32) ? (WORLD_ONE/32+WORLD_ONE/64 - transfer_phase) : (transfer_phase - WORLD_ONE/64);
+				s->setFloat("wobble", transfer_phase / 255.0);
+				break;
+			default:
+				s->setFloat("wobble", 0.0);
+		}
+		glGetError();
+		s->enable();
+	}
 	return true;
 }
 
@@ -452,14 +471,54 @@ inline void setWallColor(GLfloat intensity, const RenderStep& renderStep) {
 	}
 }
 
+void instantiate_transfer_mode(struct view_data *view, 	short transfer_mode, world_distance &x0, world_distance &y0) {
+	world_distance vector_magnitude;
+	short alternate_transfer_phase;
+	short transfer_phase = view->tick_count;
+
+	switch (transfer_mode) {
+
+		case _xfer_fast_horizontal_slide:
+		case _xfer_horizontal_slide:
+		case _xfer_vertical_slide:
+		case _xfer_fast_vertical_slide:
+		case _xfer_wander:
+		case _xfer_fast_wander:
+			x0 = y0= 0;
+			switch (transfer_mode) {
+				case _xfer_fast_horizontal_slide: transfer_phase<<= 1;
+				case _xfer_horizontal_slide: x0= (transfer_phase<<2)&(WORLD_ONE-1); break;
+					
+				case _xfer_fast_vertical_slide: transfer_phase<<= 1;
+				case _xfer_vertical_slide: y0= (transfer_phase<<2)&(WORLD_ONE-1); break;
+					
+				case _xfer_fast_wander: transfer_phase<<= 1;
+				case _xfer_wander:
+					alternate_transfer_phase= transfer_phase%(10*FULL_CIRCLE);
+					transfer_phase= transfer_phase%(6*FULL_CIRCLE);
+					x0 = (cosine_table[NORMALIZE_ANGLE(alternate_transfer_phase)] +
+						 (cosine_table[NORMALIZE_ANGLE(2*alternate_transfer_phase)]>>1) +
+						 (cosine_table[NORMALIZE_ANGLE(5*alternate_transfer_phase)]>>1))>>(WORLD_FRACTIONAL_BITS-TRIG_SHIFT+2);
+					y0 = (sine_table[NORMALIZE_ANGLE(transfer_phase)] +
+						 (sine_table[NORMALIZE_ANGLE(2*transfer_phase)]>>1) +
+						 (sine_table[NORMALIZE_ANGLE(3*transfer_phase)]>>1))>>(WORLD_FRACTIONAL_BITS-TRIG_SHIFT+2);
+					break;
+			}
+			break;
+		// wobble is done in the shader
+		default:
+			break;
+	}
+}
+
 void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 	polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, const RenderStep& renderStep) {
 
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
 
 	if(texture == UNONE) { return; }
-	bool tex = setupTexture(texture, surface->transfer_mode, renderStep);
-	float intensity = get_light_data(surface->lightsource_index)->intensity / 65535.0;
+	bool tex = setupTexture(texture, surface->transfer_mode, view->tick_count, renderStep);
+	float intensity = get_light_data(surface->lightsource_index)->intensity / float(FIXED_ONE - 1);
 	if(!tex) {
 		intensity = 0;
 		glDisable(GL_BLEND);
@@ -473,6 +532,8 @@ void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 	if (vertex_count) {
 
 		setWallColor(intensity, renderStep);
+		world_distance x = 0.0, y = 0.0;
+		instantiate_transfer_mode(view, surface->transfer_mode, x, y);
 
 		if(ceil) {
 			glNormal3s(0,0,-1);
@@ -485,7 +546,7 @@ void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 		glBegin(GL_POLYGON);
 		for(short i=0; i<vertex_count; ++i) {
 			world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-			glTexCoord2f((vertex.x + surface->origin.x) / 1024.0, (vertex.y + surface->origin.y) / 1024.0);
+			glTexCoord2f((vertex.x + surface->origin.x - x) / 1024.0, (vertex.y + surface->origin.y - y) / 1024.0);
 			glVertex3i(vertex.x, vertex.y, surface->height);
 		}
 		glEnd();
@@ -501,13 +562,12 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture_definition->texture);
 	if(texture == UNONE) { return; }
 
-	bool tex = setupTexture(texture, surface->transfer_mode, renderStep);
+	bool tex = setupTexture(texture, surface->transfer_mode, view->tick_count, renderStep);
 	
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
 	if (h>surface->h0) {
 
-		struct polygon_definition textured_polygon;
 		world_point2d vertex[2];
 		uint16 flags;
 		flagged_world_point3d vertices[MAXIMUM_VERTICES_PER_WORLD_POLYGON];
@@ -517,7 +577,7 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 		vertex_count= 2;
 		long_to_overflow_short_2d(surface->p0, vertex[0], flags);
 		long_to_overflow_short_2d(surface->p1, vertex[1], flags);
-		float intensity = 0.1+(get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / 65535.0;
+		float intensity = (get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / float(FIXED_ONE - 1);
 		if(!tex) {
 			intensity = 0;
 			glDisable(GL_BLEND);
@@ -547,6 +607,15 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 			
 			glNormal3f(-dy, dx, 0);
 			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, dx, dy, 0, -1);
+
+			short alternate_transfer_phase;
+			short transfer_phase = view->tick_count;
+
+			world_distance x = 0.0, y = 0.0;
+			instantiate_transfer_mode(view, surface->transfer_mode, x, y);
+
+			x0 -= x;
+			tOffset -= y;
 
 			glBegin(GL_QUADS);
 			for(int i = 0; i < vertex_count; ++i) {
@@ -630,15 +699,12 @@ const GLdouble kViewBaseMatrix[16] = {
 	0,	0,	0,	1
 };
 
-static int rstatic = 0.0;
-
 void FSRenderer::SetView(view_data& view) {
 
 	float fov = view.field_of_view - 35.0;
 	Shader* s = Shader::get("random");
 	if(s) {
-		rstatic += 1;
-		s->setFloat("time", rstatic);
+		s->setFloat("time", view.tick_count);
 	}
 
 	glGetError();

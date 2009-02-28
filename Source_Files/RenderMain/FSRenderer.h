@@ -49,7 +49,7 @@ public:
 	virtual void Begin();
 	virtual void End();
 
-	bool setupTexture(const shape_descriptor& texture, short transferMode, const RenderStep& renderStep);
+	bool setupTexture(const shape_descriptor& texture, short transferMode, short transfer_phase, const RenderStep& renderStep);
 };
 
 void FlatTexture();

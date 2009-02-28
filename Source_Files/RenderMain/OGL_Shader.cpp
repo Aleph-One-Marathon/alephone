@@ -117,6 +117,7 @@ void Shader::init() {
 	glUniform1iARB(glGetUniformLocationARB(_programObj, "texture2"), 2);
 	glUniform1iARB(glGetUniformLocationARB(_programObj, "texture3"), 3);	
 	glUniform1fARB(glGetUniformLocationARB(_programObj, "time"), 0.0);
+	glUniform1fARB(glGetUniformLocationARB(_programObj, "wobble"), 0.0);
 
 
 	glUseProgramObjectARB(NULL);

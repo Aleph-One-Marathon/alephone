@@ -1,8 +1,9 @@
 uniform sampler2D texture0;
 uniform sampler2D texture1;
+uniform float wobble;
 
+varying vec2 viewXY;
 varying vec3 viewDir;
-varying vec4 vertexPosition;
 varying vec4 vertexColor;
 
 void main (void) {
@@ -12,9 +13,13 @@ void main (void) {
 	float scale = 0.010;
 	float bias = -0.005;
 	vec3 viewv = normalize(viewDir);
+	vec2 viewxy = normalize(viewXY);
 	vec3 norm;
 
 	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);
+
+	// wobble effect, no idea why x and y need swapping
+	texCoords += vec3(viewxy.yx * wobble, 0.0);
 
 	// iterative parallax mapping
 	for(int i = 0; i < 4; ++i) {

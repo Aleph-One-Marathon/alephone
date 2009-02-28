@@ -1,5 +1,5 @@
+varying vec2 viewXY;
 varying vec3 viewDir;
-varying vec4 vertexPosition;
 varying vec4 vertexColor;
 
 void main(void) {
@@ -16,7 +16,7 @@ void main(void) {
 	
 	/* SETUP VIEW DIRECTION in unprojected local coords */
 	viewDir = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
-	viewDir = -viewDir.xyz;
-	vertexPosition = gl_Position;
+	viewXY = -(gl_TextureMatrix[0] * vec4(viewDir.xyz, 1.0)).xy;
+	viewDir = -viewDir;
 	vertexColor = gl_Color;
 }

@@ -1,3 +1,4 @@
+varying vec2 viewXY;
 varying vec3 viewDir;
 varying vec4 vertexColor;
 
@@ -17,7 +18,8 @@ void main(void) {
 	
 	/* SETUP VIEW DIRECTION in unprojected local coords */
 	viewDir = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;
-	viewDir = -viewDir.xyz;
+	viewXY = -(gl_TextureMatrix[0] * vec4(viewDir.xyz, 1.0)).xy;
+	viewDir = -viewDir;
 	vertexColor = gl_Color;
 	FDxLOG2E = -gl_Fog.density * gl_Fog.density * 1.442695;
 }
