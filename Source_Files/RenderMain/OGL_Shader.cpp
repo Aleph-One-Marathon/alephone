@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "OGL_Shader.h"
+#include "FileHandler.h"
 
 std::map<std::string, Shader> Shader::Shaders;
 
@@ -37,8 +38,15 @@ XML_ElementParser *Shader_GetParser() {return &ShaderParser;}
 
 GLcharARB* parseFile(const std::string& name) {
 
-	FILE *file = fopen(name.c_str(), "r");
+	FileSpecifier fileSpec;
+	if (!fileSpec.SetNameWithPath(name.c_str()))
+	{
+		return NULL;
+	}
+
+	FILE *file = fopen(fileSpec.GetPath(), "r");
 	if(!file) {
+		fprintf(stderr, "%s not found\n", name.c_str());
 		return NULL;
 	}
 	
