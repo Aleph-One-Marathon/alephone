@@ -6,8 +6,10 @@
  *  http://www.gnu.org/licenses/gpl.html
  */
 
-#include <OpenGL/gl.h>
-#include <OpenGL/glu.h>
+#ifndef GL_GLEXT_PROTOTYPES
+#define GL_GLEXT_PROTOTYPES 1
+#endif
+#include <SDL_opengl.h>
 
 #include <iostream>
 
@@ -693,7 +695,7 @@ void FSRenderer::End() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();	
 	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();	
+	glLoadIdentity();
 }
 
 void FSRenderer::render_viewer_sprite_layer(view_data *view) {
