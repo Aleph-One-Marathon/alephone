@@ -609,9 +609,9 @@ bool TextureManager::Setup()
 				{
 					// premultiply rgb values and put silhoutte in alpha
 					// this is necessary for glowmaps to be masked correctly
-					glowMapPtr[0] = glowMapPtr[0] * glowMapPtr[3] / 0xff;
-					glowMapPtr[1] = glowMapPtr[1] * glowMapPtr[3] / 0xff;
-					glowMapPtr[2] = glowMapPtr[2] * glowMapPtr[3] / 0xff;
+					glowMapPtr[0] = glowMapPtr[0] * glowMapPtr[3] / 0x100;
+					glowMapPtr[1] = glowMapPtr[1] * glowMapPtr[3] / 0x100;
+					glowMapPtr[2] = glowMapPtr[2] * glowMapPtr[3] / 0x100;
 					glowMapPtr[3] = diffuseMapPtr[3];
 					glowMapPtr+=sizeof(uint32);
 					diffuseMapPtr+=sizeof(uint32);
