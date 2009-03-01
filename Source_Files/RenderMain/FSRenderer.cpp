@@ -667,16 +667,16 @@ void FSRenderer::render_node_object(render_object_data *object, bool other_side_
 	glBegin(GL_QUADS);
 	
 	glTexCoord2f(texCoords[0][1], texCoords[1][0]);
-	glVertex3i(0, rect.size[0] * rect.HorizScale, rect.size[1]);
+	glVertex3i(0, rect.size[0] * rect.HorizScale * rect.Scale, rect.size[1] * rect.Scale);
 	
 	glTexCoord2f(texCoords[0][1], texCoords[1][1]);
-	glVertex3i(0, rect.size[2] * rect.HorizScale, rect.size[1]);
+	glVertex3i(0, rect.size[2] * rect.HorizScale * rect.Scale, rect.size[1] * rect.Scale);
 	
 	glTexCoord2f(texCoords[0][0], texCoords[1][1]);
-	glVertex3i(0, rect.size[2] * rect.HorizScale, rect.size[3]);
+	glVertex3i(0, rect.size[2] * rect.HorizScale * rect.Scale, rect.size[3] * rect.Scale);
 	
 	glTexCoord2f(texCoords[0][0], texCoords[1][0]);
-	glVertex3i(0, rect.size[0] * rect.HorizScale, rect.size[3]);
+	glVertex3i(0, rect.size[0] * rect.HorizScale * rect.Scale, rect.size[3] * rect.Scale);
 	
 	glEnd();
 	glPopMatrix();
