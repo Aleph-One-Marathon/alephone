@@ -1454,7 +1454,9 @@ void TextureManager::SetupTextureMatrix()
 			// these come in right side up, and un-centered
 			// the renderer expects them upside down, and centered
 			glScalef(1.0, -U_Scale, 1.0);
-			glTranslatef(0.0, U_Offset, 0.0);
+//			glTranslatef(0.0, U_Offset, 0.0);
+//			this is easier for the shader to work with
+			glTranslatef(0.0, -0.25f, 0.0);
 		}
 		glMatrixMode(GL_MODELVIEW);
 		break;

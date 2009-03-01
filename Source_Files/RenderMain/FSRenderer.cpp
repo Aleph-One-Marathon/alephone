@@ -355,7 +355,7 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, const 
 			if(TMgr.IsGlowMapped()) {
 				TMgr.RenderGlowing();				
 			} else {
-				glColor4f((color[0] - 0.5) * 0.25, (color[1] - 0.25) * 0.25, (color[2] - 0.5) * 0.25, 1.0);
+				glColor4f((color[0] - 0.5) * 0.0125, (color[1] - 0.5) * 0.0125, (color[2] - 0.5) * 0.0125, 1.0);
 				TMgr.RenderNormal();
 				s = NULL;
 			}
@@ -744,7 +744,7 @@ void FSRenderer::Begin() {
 		glEnable(GL_FOG);
 
 		glFogfv(GL_FOG_COLOR,CurrFogColor);
-		glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
+		glFogf(GL_FOG_DENSITY, 0.75F/MAX(1,WORLD_ONE*CurrFog->Depth));
 	} else {
 		glFogf(GL_FOG_DENSITY, 0.0);
 		glDisable(GL_FOG);

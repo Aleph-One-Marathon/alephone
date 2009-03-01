@@ -2,6 +2,7 @@ varying vec3 viewDir;
 varying vec4 vertexColor;
 
 varying float FDxLOG2E; 
+varying float MLxLOG2E;
 
 void main(void) {
 
@@ -20,4 +21,5 @@ void main(void) {
 	viewDir = -viewDir.xyz;
 	vertexColor = gl_Color;
 	FDxLOG2E = -gl_Fog.density * gl_Fog.density * 1.442695;
+	MLxLOG2E = -0.0000002 * 1.442695;
 }
