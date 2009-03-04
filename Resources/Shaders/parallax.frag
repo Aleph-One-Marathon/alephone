@@ -3,7 +3,7 @@ uniform sampler2D texture1;
 uniform float wobble;
 uniform float flare;
 
-varying vec2 viewXY;
+varying vec3 viewXY;
 varying vec3 viewDir;
 varying vec4 vertexColor;
 
@@ -17,7 +17,7 @@ void main (void) {
 	float scale = 0.010;
 	float bias = -0.005;
 	vec3 viewv = normalize(viewDir);
-	vec2 viewxy = normalize(viewXY);
+	vec3 viewxy = normalize(viewXY);
 	vec3 norm;
 
 	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);
