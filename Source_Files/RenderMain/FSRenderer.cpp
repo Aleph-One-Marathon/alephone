@@ -696,11 +696,21 @@ const GLdouble kViewBaseMatrix[16] = {
 void FSRenderer::SetView(view_data& view) {
 
 	float fov = view.field_of_view - 35.0;
+	float flare = view.maximum_depth_intensity/float(FIXED_ONE_HALF);
+
 	Shader* s = Shader::get("random");
 	if(s) {
 		s->setFloat("time", view.tick_count);
 	}
-
+	s = Shader::get("parallax");
+	if(s) {
+		s->setFloat("flare", flare);
+	}
+	s = Shader::get("flat");
+	if(s) {
+		s->setFloat("flare", flare);
+	}
+	
 	glGetError();
 
 	glMatrixMode(GL_PROJECTION);

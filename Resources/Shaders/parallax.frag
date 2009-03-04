@@ -1,6 +1,7 @@
 uniform sampler2D texture0;
 uniform sampler2D texture1;
 uniform float wobble;
+uniform float flare;
 
 varying vec2 viewXY;
 varying vec3 viewDir;
@@ -34,8 +35,9 @@ void main (void) {
 	float fogFactor = exp2(FDxLOG2E * dot(viewDir, viewDir)); 
 	fogFactor = clamp(fogFactor, 0.0, 1.0); 
 
-	float mlFactor = exp2(MLxLOG2E * dot(viewDir, viewDir) + 1.0); 
-	mlFactor = clamp(mlFactor, 0.0, 0.75);
+	float flash = exp2((flare - 1.0) * 2.0);
+	float mlFactor = exp2(MLxLOG2E * dot(viewDir, viewDir) / flash + 1.0); 
+	mlFactor = clamp(mlFactor, 0.0, flare * 0.75);
 
 	vec4 normal = texture2D(texture1, texCoords.xy);
 	norm = (normal.rgb - 0.5) * 2.0;
