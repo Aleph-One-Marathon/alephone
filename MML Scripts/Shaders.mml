@@ -9,5 +9,6 @@
 <shader name="flat" vert="shaders/flat.vert" frag="shaders/flat.frag" />
 <shader name="flat_infravision" vert="shaders/flat.vert" frag="shaders/flat_infravision.frag" />
 <shader name="infravision" vert="shaders/parallax.vert" frag="shaders/infravision.frag" />
+<shader name="invisible" vert="shaders/flat.vert" frag="shaders/invisible.frag" />
 </opengl>
 </marathon>

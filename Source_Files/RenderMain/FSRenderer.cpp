@@ -320,6 +320,7 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, const 
 		case _tinted_transfer:
 			glColor4f(0.0,0.0,0.0,rect.transfer_data/32.0F);
 			TMgr.TransferMode = _textured_transfer;
+			s = Shader::get("invisible");
 			break;
 		case _solid_transfer:
 			glColor4f(0,1,0,1);
@@ -523,6 +524,14 @@ void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 		intensity = 1;
 	}
 
+	if(void_present) {
+		glDisable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+	} else {
+		glEnable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);		
+	}
+	
 	short vertex_count = polygon->vertex_count;
 
 	if (vertex_count) {
@@ -559,7 +568,14 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 	if(texture == UNONE) { return; }
 
 	bool tex = setupTexture(texture, surface->transfer_mode, view->tick_count, renderStep);
-	
+
+	if(void_present) {
+		glDisable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+	} else {
+		glEnable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);		
+	}
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
 	if (h>surface->h0) {
