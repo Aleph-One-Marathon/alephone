@@ -722,7 +722,9 @@ void FSRenderer::SetView(view_data& view) {
 	double yaw = view.yaw * 360.0 / 512.0;
 	double roll = view.roll * 360.0 / 512.0;
 	glRotated(pitch, 0.0, 1.0, 0.0);
-	glRotated(roll, 1.0, 0.0, 0.0);
+//	apperently 'roll' is not what i think it is
+//	rubicon sets it to some strange value
+//	glRotated(roll, 1.0, 0.0, 0.0); 
 	glRotated(yaw, 0.0, 0.0, -1.0);
 
 	glTranslated(-view.origin.x, -view.origin.y, -view.origin.z);
