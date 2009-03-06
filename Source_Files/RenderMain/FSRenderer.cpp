@@ -574,7 +574,9 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 		glDisable(GL_ALPHA_TEST);
 	} else {
 		glEnable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);		
+		glEnable(GL_ALPHA_TEST);
+		glEnable(GL_POLYGON_OFFSET_EXT);
+		glPolygonOffset(-10.0, -0.01);
 	}
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
@@ -631,8 +633,8 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 			for(int i = 0; i < vertex_count; ++i) {
 				float p2 = 0;
 				if(i == 1 || i == 2) { p2 = surface->length; }
-				glTexCoord2d((tOffset - vertices[i].z) / div, (x0+p2) / div);
-				glVertex3d(vertices[i].x, vertices[i].y, vertices[i].z);
+				glTexCoord2f((tOffset - vertices[i].z) / div, (x0+p2) / div);
+				glVertex3i(vertices[i].x, vertices[i].y, vertices[i].z);
 			}
 			glEnd();
 			Shader::disable();
@@ -641,6 +643,7 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 			glMatrixMode(GL_MODELVIEW);
 		}
 	}
+	glPolygonOffset(0,0);
 }
 
 void FSRenderer::render_node_object(render_object_data *object, bool other_side_of_media, const view_data& view, const RenderStep& renderStep) {
