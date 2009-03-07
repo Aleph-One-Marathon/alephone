@@ -2078,7 +2078,7 @@ void write_preferences(
 	WriteXML_CString(F,"  physics_file=\"",environment_preferences->physics_file,256,"\"\n");
 	WriteXML_CString(F,"  shapes_file=\"",environment_preferences->shapes_file,256,"\"\n");
 	WriteXML_CString(F,"  sounds_file=\"",environment_preferences->sounds_file,256,"\"\n");
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(HAVE_BUNDLE_NAME)
 	extern char *bundle_name; // SDLMain.m
 	// replace our leading bundle name with generic "AlephOneSDL.app" (we do reverse when loading)
 	if (!strncmp(environment_preferences->theme_dir, bundle_name, strlen(bundle_name))) {
@@ -3535,7 +3535,7 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	else if (StringsEqual(Tag,"theme_dir"))
 	{
 		strncpy(environment_preferences->theme_dir, Value, 255);
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(HAVE_BUNDLE_NAME)
 		extern char *bundle_name; // SDLMain.m
 		// replace leading "AlephOneSDL.app" with our actual bundle name (we do reverse when saving)
 		if (!strncmp(environment_preferences->theme_dir, "AlephOneSDL.app", 15)) {

@@ -292,7 +292,7 @@ static void initialize_application(void)
 	// Find data directories, construct search path
 	DirectorySpecifier default_data_dir;
 
-#if defined(unix) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(unix) || defined(__NetBSD__) || defined(__OpenBSD__) || (defined(__APPLE__) && defined(__MACH__) && !defined(HAVE_BUNDLE_NAME))
 
 	default_data_dir = PKGDATADIR;
 	const char *home = getenv("HOME");
@@ -396,13 +396,13 @@ static void initialize_application(void)
 	local_data_dir.CreateDirectory();
 	saved_games_dir.CreateDirectory();
 	recordings_dir.CreateDirectory();
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(HAVE_BUNDLE_NAME)
 	DirectorySpecifier local_mml_dir = bundle_data_dir + "MML";
 #else
 	DirectorySpecifier local_mml_dir = local_data_dir + "MML";
 #endif
 	local_mml_dir.CreateDirectory();
-#if defined(__APPLE__) && defined(__MACH__)
+#if defined(HAVE_BUNDLE_NAME)
 	DirectorySpecifier local_themes_dir = bundle_data_dir + "Themes";
 #else
 	DirectorySpecifier local_themes_dir = local_data_dir + "Themes";
