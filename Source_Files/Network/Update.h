@@ -25,11 +25,7 @@
 */
 
 #include <string>
-#ifdef __MWERKS__
 #include <SDL_thread.h>
-#else
-#include <SDL/SDL_thread.h>
-#endif
 #include "cseries.h"
 
 class Update

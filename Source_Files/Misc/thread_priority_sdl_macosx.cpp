@@ -9,7 +9,7 @@
 
 #include	"thread_priority_sdl.h"
 
-#include	<SDL/SDL_Thread.h>
+#include	<SDL_Thread.h>
 #include	<pthread.h>
 #include        <sched.h>
 
