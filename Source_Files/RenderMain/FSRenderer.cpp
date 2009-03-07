@@ -318,7 +318,7 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, const 
 			s = Shader::get("random");
 			break;
 		case _tinted_transfer:
-			glColor4f(0.0,0.0,0.0,rect.transfer_data/32.0F);
+			glColor4f(0.0,0.0,0.0, 1.0 - rect.transfer_data/32.0F);
 			TMgr.TransferMode = _textured_transfer;
 			s = Shader::get("invisible");
 			break;
