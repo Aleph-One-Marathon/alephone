@@ -683,7 +683,7 @@
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
 		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
-		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
 		AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_monsters.cpp; sourceTree = "<group>"; };
@@ -2486,6 +2486,7 @@
 				GCC_MODEL_TUNING = G3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
+					HAVE_BUNDLE_NAME,
 					HAVE_OPENGL,
 					HAVE_CONFIG_H,
 					HAVE_UNISTD_H,
@@ -2504,7 +2505,6 @@
 				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
@@ -2524,6 +2524,7 @@
 					/Library/Frameworks/libsndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/libmad.framework/Headers,
+					/usr/local/include,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -2591,6 +2592,7 @@
 				GCC_MODEL_TUNING = G3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
+					HAVE_BUNDLE_NAME,
 					HAVE_OPENGL,
 					HAVE_CONFIG_H,
 					HAVE_UNISTD_H,
@@ -2608,7 +2610,6 @@
 				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
@@ -2628,6 +2629,7 @@
 					/Library/Frameworks/libsndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/libmad.framework/Headers,
+					/usr/local/include,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -2721,6 +2723,7 @@
 				GCC_MODEL_TUNING = G3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
+					HAVE_BUNDLE_NAME,
 					HAVE_OPENGL,
 					HAVE_CONFIG_H,
 					HAVE_UNISTD_H,
@@ -2740,7 +2743,6 @@
 				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
 				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
 				HEADER_SEARCH_PATHS = (
-					/usr/local/include,
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
@@ -2760,6 +2762,7 @@
 					/Library/Frameworks/libsndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/libmad.framework/Headers,
+					/usr/local/include,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
