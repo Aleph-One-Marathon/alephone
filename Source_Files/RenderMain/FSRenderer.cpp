@@ -53,6 +53,8 @@ void FlatTexture() {
  */
 void FSRenderer::setupGL() {
 
+	renderData.loadLevel();
+
 	Shader* sV = Shader::get("blurV");
 	Shader* sH = Shader::get("blurH");
 
@@ -61,6 +63,10 @@ void FSRenderer::setupGL() {
 		blurSmall = new Blur(640, 320, sH, sV);
 	}
 	assert(glGetError() == GL_NO_ERROR);
+
+	glEnable(GL_POLYGON_OFFSET_EXT);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_LIGHTING);
 }
 
 /*
@@ -69,9 +75,9 @@ void FSRenderer::setupGL() {
  * with multiple rendering passes for glow effect
  */
 void FSRenderer::render_tree() {
-	
+
 	FSRenderer::render_tree(kDiffuse);
-	
+
 	if(blurLarge && blurSmall) {
 
 		glDisable(GL_FOG);
@@ -94,6 +100,15 @@ void FSRenderer::render_tree() {
 		glEnable(GL_FOG);
 		glEnable(GL_ALPHA_TEST);
 	}
+}
+
+/*
+ * this function should load all level data into a buffer
+ * to solve some performance issues
+ */
+void FSRenderData::loadLevel() {
+	destroy();
+	setupVBOs();
 }
 
 /*
@@ -543,18 +558,19 @@ void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 		if(ceil) {
 			glNormal3s(0,0,-1);
 			glMultiTexCoord4iARB(GL_TEXTURE1_ARB, 0,1,0, -1);
-			
 		} else {
 			glNormal3s(0,0,1);
 			glMultiTexCoord4iARB(GL_TEXTURE1_ARB, 0,1,0,1);
 		}
+
 		glBegin(GL_POLYGON);
 		for(short i=0; i<vertex_count; ++i) {
 			world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-			glTexCoord2f((vertex.x + surface->origin.x - x) / 1024.0, (vertex.y + surface->origin.y - y) / 1024.0);
+			glTexCoord2f((vertex.x + surface->origin.x - x) / float(WORLD_ONE), (vertex.y + surface->origin.y - y) / float(WORLD_ONE));
 			glVertex3i(vertex.x, vertex.y, surface->height);
 		}
 		glEnd();
+
 		Shader::disable();
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
@@ -575,7 +591,6 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 	} else {
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
-		glEnable(GL_POLYGON_OFFSET_EXT);
 		glPolygonOffset(-10.0, -0.01);
 	}
 	world_distance h= MIN(surface->h1, surface->hmax);
@@ -654,7 +669,7 @@ void FSRenderer::render_node_object(render_object_data *object, bool other_side_
 	glPushMatrix();
 	glTranslated(pos.x, pos.y, pos.z);
 
-	double yaw = view.yaw * 360.0 / 512.0;
+	double yaw = view.yaw * 360.0 / float(NUMBER_OF_ANGLES);
 	glRotated(yaw, 0.0, 0.0, 1.0);
 
 	TextureManager TMgr = SetupTexture(rect, OGL_Txtr_Inhabitant, renderStep);
@@ -714,7 +729,7 @@ const GLdouble kViewBaseMatrix[16] = {
 
 void FSRenderer::SetView(view_data& view) {
 
-	float fov = view.field_of_view - 35.0;
+	float fov = fmax(view.field_of_view - 35.0, 1.0);
 	float flare = view.maximum_depth_intensity/float(FIXED_ONE_HALF);
 
 	Shader* s = Shader::get("random");
@@ -734,12 +749,12 @@ void FSRenderer::SetView(view_data& view) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(fov, view.world_to_screen_y * view.screen_width / float(view.screen_height * view.world_to_screen_x), 1, 1024*1024);
+	gluPerspective(fov, view.world_to_screen_y * view.screen_width / float(view.screen_height * view.world_to_screen_x), 16, 1024*1024);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(kViewBaseMatrix);
-	double pitch = view.pitch * 360.0 / 512.0;
-	double yaw = view.yaw * 360.0 / 512.0;
-	double roll = view.roll * 360.0 / 512.0;
+	double pitch = view.pitch * 360.0 / float(NUMBER_OF_ANGLES);
+	double yaw = view.yaw * 360.0 / float(NUMBER_OF_ANGLES);
+	double roll = view.roll * 360.0 / float(NUMBER_OF_ANGLES);
 	glRotated(pitch, 0.0, 1.0, 0.0);
 //	apperently 'roll' is not what i think it is
 //	rubicon sets it to some strange value
@@ -754,11 +769,6 @@ void FSRenderer::Begin() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glEnable(GL_DEPTH_TEST);
-	glDepthMask( GL_TRUE );
-
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_BLEND);
 
 	glEnable(GL_TEXTURE_2D);
 

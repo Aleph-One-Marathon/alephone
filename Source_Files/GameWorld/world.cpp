@@ -252,7 +252,10 @@ void build_trig_tables(
 
 /* one day we’ll come back here and actually make this run fast */
 // LP change: made this long-distance friendly
-//
+// this is the equivalent to:
+// {
+//	   NORMALIZE_ANGLE(angle(HALF_CIRCLE * atan2f(y, x) * M_1_PI));
+// }
 angle arctangent(
 	int32 x, // world_distance x,
 	int32 y) // world_distance y)
