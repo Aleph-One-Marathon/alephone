@@ -23,6 +23,7 @@
 
 /* Begin PBXBuildFile section */
 		AB449C990F27173E008471E4 /* FSRenderer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AB449C970F27173E008471E4 /* FSRenderer.cpp */; };
+		AB728F290F6DC702001511DD /* vec3.h in Headers */ = {isa = PBXBuildFile; fileRef = AB728F280F6DC702001511DD /* vec3.h */; };
 		ABC7D4400F48C00B0047ACBD /* FBO.h in Headers */ = {isa = PBXBuildFile; fileRef = ABC7D43E0F48C00B0047ACBD /* FBO.h */; };
 		ABD2ABF70F235A020097752B /* OGL_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = ABD2ABF50F235A020097752B /* OGL_Shader.cpp */; };
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
@@ -570,6 +571,7 @@
 		3DF290EF046F5C5B00000104 /* OGL_Model_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Model_Def.cpp; sourceTree = "<group>"; };
 		3DF290F0046F5C5B00000104 /* OGL_Subst_Texture_Def.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Subst_Texture_Def.cpp; sourceTree = "<group>"; usesTabs = 1; };
 		AB449C970F27173E008471E4 /* FSRenderer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FSRenderer.cpp; sourceTree = "<group>"; };
+		AB728F280F6DC702001511DD /* vec3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec3.h; sourceTree = "<group>"; };
 		ABC7D43E0F48C00B0047ACBD /* FBO.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FBO.h; sourceTree = "<group>"; };
 		ABD2ABF50F235A020097752B /* OGL_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Shader.cpp; sourceTree = "<group>"; };
 		AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Blitter.cpp; sourceTree = "<group>"; };
@@ -1639,6 +1641,7 @@
 		F5CC92E30240D56101A80001 /* RenderMain */ = {
 			isa = PBXGroup;
 			children = (
+				AB728F280F6DC702001511DD /* vec3.h */,
 				ABC7D43E0F48C00B0047ACBD /* FBO.h */,
 				AE791CD60968E16600350190 /* ImageLoader_Shared.cpp */,
 				F5CC936B0240D5E001A80001 /* Headers */,
@@ -2135,6 +2138,7 @@
 				AEFE7C2D0DB03FA700D11DE2 /* expat.h in Headers */,
 				AEFE7C2E0DB03FA800D11DE2 /* expat_external.h in Headers */,
 				ABC7D4400F48C00B0047ACBD /* FBO.h in Headers */,
+				AB728F290F6DC702001511DD /* vec3.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

@@ -133,6 +133,76 @@ struct FlaggedVector
 	bool Flag;
 };
 
+void Model3D::CalculateTangents()
+{
+	Tangents.resize(Positions.size() * 4 / 3);
+	if(Normals.size() != Positions.size()) {
+		Normals.resize(Positions.size());
+		memset(NormBase(), 0, sizeof(GLfloat)*Normals.size());
+	}
+
+	for(GLushort i = 0; i < VertIndices.size(); i+= 3) {
+		GLushort a = VertIndices[i];
+		GLushort b = VertIndices[i+1];
+		GLushort c = VertIndices[i+2];
+
+		vertex3 v1(PosBase()+3*a);
+		vertex3 v2(PosBase()+3*b);
+		vertex3 v3(PosBase()+3*c);
+
+		vertex2 w1(TCBase()+2*a);
+		vertex2 w2(TCBase()+2*b);
+		vertex2 w3(TCBase()+2*c);
+
+		float x1 = v2[0] - v1[0];
+		float x2 = v3[0] - v1[0];
+		float y1 = v2[1] - v1[1];
+		float y2 = v3[1] - v1[1];
+		float z1 = v2[2] - v1[2];
+		float z2 = v3[2] - v1[2];
+
+		float s1 = w2[0] - w1[0];
+		float s2 = w3[0] - w1[0];
+		float t1 = w2[1] - w1[1];
+		float t2 = w3[1] - w1[1];
+
+		float r = 1.0f / (s1 * t2 - s2 * t1);
+		vec3 T((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+			   (t2 * z1 - t1 * z2) * r);
+		vec3 B((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+			   (s1 * z2 - s2 * z1) * r);
+
+		vec3 N = (v3-v1).cross(v2-v1);
+		if(N.dot(N) < 0.001) {
+			N = vec3(0.0,0.0,0.0);
+			VecCopy(N.p(), NormBase()+3*a);
+			VecCopy(N.p(), NormBase()+3*b);
+			VecCopy(N.p(), NormBase()+3*c);
+
+			vec4 t(0.0,0.0,0.0,0.0);
+			Tangents[a] = vec4(t);
+			Tangents[b] = vec4(t);
+			Tangents[c] = vec4(t);
+		} else {
+			N = N.norm();
+			assert(N.dot(N) < 1.001);
+
+			VecCopy(N.p(), NormBase()+3*a);
+			VecCopy(N.p(), NormBase()+3*b);
+			VecCopy(N.p(), NormBase()+3*c);
+
+			float sign = (N.cross(T)).dot(B) < 0.0 ? -1.0 : 1.0;
+			vec4 t = (T - N * N.dot(T)).norm();
+			t[3] = sign;
+
+			Tangents[a] = vec4(t);
+			Tangents[b] = vec4(t);
+			Tangents[c] = vec4(t);
+		}
+	}
+}
+
+
 // Normalize the normals
 void Model3D::AdjustNormals(int NormalType, float SmoothThreshold)
 {
