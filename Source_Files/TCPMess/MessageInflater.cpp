@@ -28,6 +28,7 @@
 #if !defined(DISABLE_NETWORKING)
 
 #include "MessageInflater.h"
+#include "Logging.h"
 
 Message*
 MessageInflater::inflate(const UninflatedMessage& inSource)
@@ -45,15 +46,21 @@ MessageInflater::inflate(const UninflatedMessage& inSource)
 				bool successfulInflate = theResult->inflateFrom(inSource);
 				if(!successfulInflate)
 				{
+					logWarning1("inflate failed of message type %i", inSource.inflatedType());
 					throw 1;
 				}
+			} else {
+				logWarning1("clone() failed message type %i", inSource.inflatedType());
 			}
 		}
 		catch(...)
 		{
+			logWarning1("exception caught in inflated() message type %i", inSource.inflatedType());
 			delete theResult;
 			theResult = NULL;
 		}
+	} else {
+		logAnomaly1("do not know how to inflate message type %i", inSource.inflatedType());
 	}
 
 	if(theResult == NULL)

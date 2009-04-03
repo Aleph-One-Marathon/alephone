@@ -708,7 +708,7 @@ void Client::handleChatMessage(NetworkChatMessage* netChatMessage,
 }
 
 void Client::unexpectedMessageHandler(Message *message, CommunicationsChannel *) {
-  logAnomaly1("unexpected message type %i received\n", message->type()); 
+	logAnomaly2("unexpected message type %i received (net state)", message->type(), netState); 
 }
     
 
