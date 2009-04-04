@@ -9,6 +9,7 @@
 #ifndef _VEC3__H
 #define _VEC3__H
 
+#include <cfloat>
 #include <cmath>
 
 const GLfloat kThreshhold = FLT_MIN * 10.0;
