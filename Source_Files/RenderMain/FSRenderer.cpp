@@ -848,7 +848,7 @@ const GLdouble kViewBaseMatrix[16] = {
 
 void FSRenderer::SetView(view_data& view) {
 
-	float fov = fmax(view.field_of_view - 35.0, 1.0);
+	float fov = std::max(view.field_of_view - 35.0, 1.0);
 	float flare = view.maximum_depth_intensity/float(FIXED_ONE_HALF);
 
 	Shader* s = Shader::get("random");
