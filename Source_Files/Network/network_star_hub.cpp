@@ -622,9 +622,15 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 				
 				int theSenderIndex = theEntry->second;
 				
-				// Unconnected players should not have entries in sAddressToPlayerIndex
-				assert(getNetworkPlayer(theSenderIndex).mConnected);
-				hub_received_game_data_packet_v1(ps, theSenderIndex);
+				if (getNetworkPlayer(theSenderIndex).mConnected)
+				{
+					hub_received_game_data_packet_v1(ps, theSenderIndex);
+				}
+				else
+				{
+					// Unconnected players should not have entries in sAddressToPlayerIndex
+					logWarningNMT1("received game data packet from disconnected player %i; ignoring", theSenderIndex);
+				}
 			}
 			break;
 
