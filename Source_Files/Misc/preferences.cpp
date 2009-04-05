@@ -687,19 +687,6 @@ static const char *sw_alpha_blending_labels[4] = {
 	"Off", "Fast", "Nice", NULL
 };
 
-static const char *size_labels[33] = {
-	"320x160", "480x240", "640x480", "640x480 (no HUD)",
-	"800x600", "800x600 (no HUD)", "1024x768", "1024x768 (no HUD)",
-	"1280x1024", "1280x1024 (no HUD)", "1600x1200", "1600x1200 (no HUD)", 
-	"1024x640", "1024x640 (no HUD)", "1280x800", "1280x800 (no HUD)", 
-	"1280x854", "1280x854 (no HUD)", "1440x900", "1440x900 (no HUD)",
-	"1680x1050", "1680x1050 (no HUD)", "1900x1200", "1900x1200 (no HUD)", 
-	"2560x1600 (HUD)", "2560x1600 (no HUD)", "1280x768 (HUD)", 
-	"1280x768 (no HUD)", "1280x960 (HUD)", "1280x960 (no HUD)", 
-	"1280x720 (HUD)", "1280x720 (no HUD)",
-	NULL
-};
-
 static const char *gamma_labels[9] = {
 	"Darkest", "Darker", "Dark", "Normal", "Light", "Really Light", "Even Lighter", "Lightest", NULL
 };
