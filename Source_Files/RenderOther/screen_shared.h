@@ -54,6 +54,8 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "Console.h"
 #include "screen_drawing.h"
 
+#include "network_games.h"
+
 /* ---------- globals */
 
 struct color_table *uncorrected_color_table; /* the pristine color environment of the game (can be 16bit) */
@@ -76,6 +78,7 @@ long frame_ticks[64];
 // LP addition:
 // whether to show one's position
 bool ShowPosition = false;
+bool ShowScores = false;
 
 // Whether rendering of the HUD has been requested
 static bool HUD_RenderRequest = false;
@@ -694,6 +697,80 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 
 	DisplayText(Xicon, Y, icon.c_str(), iconColor.r, iconColor.g, iconColor.b);
 	DisplayText(Xstatus, Y, status.c_str());
+}
+
+static void DisplayScores(SDL_Surface *s)
+{
+	if (!ShowScores) return;
+
+	// assume a proportional font
+	int CWidth = DisplayTextWidth("W");
+
+	// field widths
+	static const int kNameWidth = 20;
+	int WName = CWidth * kNameWidth;
+	static const int kScoreWidth = 5;
+	int WScore = CWidth * kScoreWidth;
+	static const int kPingWidth = 7;
+	int WPing = CWidth * kPingWidth;
+	static const int kIdWidth = 2;
+	int WId = CWidth * kIdWidth;
+
+	FontSpecifier& Font = GetOnScreenFont();
+	int H = Font.LineSpacing * (dynamic_world->player_count + 1);
+	int W = WName + WScore + WPing + WId;
+	int X = (s->w - W) / 2;
+	int Y = std::max((s->h - H) / 2, Font.LineSpacing * NumScreenMessages) + Font.LineSpacing;
+
+	int XName = X;
+	int XScore = XName + WName + CWidth;
+	int XPing = XScore + WScore + CWidth;
+	int XId = XPing + WPing + CWidth;
+
+	// draw headers
+	DisplayText(XName, Y, "Name", 0xbf, 0xbf, 0xbf);
+	DisplayText(XScore + WScore - DisplayTextWidth("Score"), Y, "Score", 0xbf, 0xbf, 0xbf);
+	DisplayText(XPing + WPing - DisplayTextWidth("Delay"), Y, "Delay", 0xbf, 0xbf, 0xbf);
+	DisplayText(XId + WId - DisplayTextWidth("ID"), Y, "ID", 0xbf, 0xbf, 0xbf);
+	Y += Font.LineSpacing;
+	player_ranking_data rankings[MAXIMUM_NUMBER_OF_PLAYERS];
+	calculate_player_rankings(rankings);
+	for (int i = 0; i < dynamic_world->player_count; ++i)
+	{
+		player_data *player = get_player_data(rankings[i].player_index);
+
+		SDL_Color color;
+		_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &color);
+
+		strcpy(temporary, player->name);
+		temporary[kNameWidth + 1] = '\0';
+		DisplayText(XName, Y, temporary, color.r, color.g, color.b);
+
+		calculate_ranking_text(temporary, rankings[i].ranking);
+		temporary[kScoreWidth + 1] = '\0';
+		DisplayText(XScore + WScore - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
+
+		int32 latency = NetGetLatency(rankings[i].player_index);
+		if (latency == kNetLatencyInvalid)
+		{
+			strcpy(temporary, " ");
+		}
+		else if (latency == kNetLatencyDisconnected)
+		{
+			strcpy(temporary, "DC");
+		}
+		else
+		{
+			sprintf(temporary, "%i ms", latency);
+		}
+		temporary[kPingWidth + 1] = '\0';
+		DisplayText(XPing + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);		
+
+		sprintf(temporary, "%i", rankings[i].player_index);
+		DisplayText(XId + WId - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
+
+		Y += Font.LineSpacing;
+	}
 }
 
 static void set_overhead_map_status( /* it has changed, this is the new status */

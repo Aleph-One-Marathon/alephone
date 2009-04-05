@@ -862,6 +862,14 @@ static void handle_game_key(const SDL_Event &event)
 				PlayInterfaceButtonSound(Sound_ButtonFailure());
 			}
 		} 
+		else if (key == input_preferences->shell_keycodes[_key_show_scores])
+		{
+			PlayInterfaceButtonSound(Sound_ButtonSuccess());
+			{
+				extern bool ShowScores;
+				ShowScores = !ShowScores;
+			}
+		}	
 		else if (key == SDLK_F1) // Decrease screen size
 		{
 			if (!graphics_preferences->screen_mode.hud)

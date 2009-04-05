@@ -170,6 +170,7 @@ enum {
 	_key_zoom_out,
 	_key_toggle_fps,
 	_key_activate_console,
+	_key_show_scores,
 	NUMBER_OF_SHELL_KEYS
 };
 

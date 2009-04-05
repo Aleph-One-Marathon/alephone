@@ -791,6 +791,7 @@ void render_screen(short ticks_elapsed)
 	  }
 	  DisplayPosition(world_pixels);
 	  DisplayNetMicStatus(world_pixels);
+	  DisplayScores(world_pixels);
 	}
 	DisplayMessages(world_pixels);
 	DisplayInputLine(world_pixels);

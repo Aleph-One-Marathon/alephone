@@ -1368,7 +1368,7 @@ static const char *action_name[NUM_KEYS] = {
 };
 
 static const char *shell_action_name[NUMBER_OF_SHELL_KEYS] = {
-	"Inventory Left", "Inventory Right", "Switch Player View", "Volume Up", "Volume Down", "Zoom Map In", "Zoom Map Out", "Toggle FPS", "Chat/Console"
+	"Inventory Left", "Inventory Right", "Switch Player View", "Volume Up", "Volume Down", "Zoom Map In", "Zoom Map Out", "Toggle FPS", "Chat/Console", "Show Scores"
 };
 
 static SDLKey default_keys[NUM_KEYS] = {
@@ -1398,7 +1398,7 @@ static SDLKey default_mouse_keys[NUM_KEYS] = {
 };
 
 static SDLKey default_shell_keys[NUMBER_OF_SHELL_KEYS] = {
-	SDLK_LEFTBRACKET, SDLK_RIGHTBRACKET, SDLK_BACKSPACE, SDLK_PERIOD, SDLK_COMMA, SDLK_EQUALS, SDLK_MINUS, SDLK_SLASH, SDLK_BACKSLASH
+	SDLK_LEFTBRACKET, SDLK_RIGHTBRACKET, SDLK_BACKSPACE, SDLK_PERIOD, SDLK_COMMA, SDLK_EQUALS, SDLK_MINUS, SDLK_SLASH, SDLK_BACKSLASH, SDLK_1
 };
 
 class w_prefs_key;
