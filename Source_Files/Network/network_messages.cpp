@@ -106,8 +106,10 @@ bool BigChunkOfZippedDataMessage::inflateFrom(const UninflatedMessage& inUninfla
 {
 	uLongf size;
 	AIStreamBE inputStream(inUninflated.buffer(), 4);
-	
-	inputStream >> (uint32&) size;
+
+	uint32 temp_size;
+	inputStream >> temp_size;
+	size = temp_size;
 
 	// extra copy because we can't access private mBuffer
 	std::vector<byte> temp(size);
@@ -150,7 +152,7 @@ UninflatedMessage* BigChunkOfZippedDataMessage::deflate() const
 
 	UninflatedMessage* theMessage = new UninflatedMessage(type(), temp_size + 4);
 	AOStreamBE outputStream(theMessage->buffer(), 4);
-	outputStream << (uint32) length();
+	outputStream << ((uint32) length());
 	if (temp_size)
 		memcpy(theMessage->buffer() + 4, &temp[0], temp_size);
 	return theMessage;
