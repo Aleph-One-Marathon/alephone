@@ -68,8 +68,7 @@ int NonblockingConnect::Thread()
 {
 	if (!m_ipSpecified)
 	{
-		std::auto_ptr<char> addressString(strdup(m_address.c_str()));
-		if (SDLNet_ResolveHost(&m_ip, addressString.get(), m_port) < 0)
+		if (SDLNet_ResolveHost(&m_ip, const_cast<char*>(m_address.c_str()), m_port) < 0)
 		{
 			m_status = ResolutionFailed;
 			return 1;
