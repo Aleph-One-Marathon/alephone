@@ -296,6 +296,10 @@ enum {
 int32 NetGetLatency();
 // only works when you're the hub, right now
 int32 NetGetLatency(int player_index);
+// returns ping standard deviation in ms, or invalid/disconnected
+int32 NetGetJitter(int player_index);
+// returns number of CRC errors, or invalid
+int32 NetGetErrors(int player_index);
 
 // if true, show the player indices and pings in the HUD instead of scores
 bool NetDisplayPings();

@@ -60,6 +60,9 @@
 #include <vector>
 #include <map>
 #include <algorithm> // std::min()
+#include <deque>
+#include <numeric>
+#include <cmath>
 
 #include "crc.h"
 #include "player.h" // for masking out action flags triggers :(
@@ -136,7 +139,10 @@ enum {
 	kDefaultMinimumSendPeriod = 5,
 	kLossyByteStreamDataBufferSize = 1280,
 	kTypicalLossyByteStreamChunkSize = 56,
-	kLossyByteStreamDescriptorCount = kLossyByteStreamDataBufferSize / kTypicalLossyByteStreamChunkSize	
+	kLossyByteStreamDescriptorCount = kLossyByteStreamDataBufferSize / kTypicalLossyByteStreamChunkSize,
+
+	kLatencyBufferSize = TICKS_PER_SECOND * 10, // store 10 seconds of ping counts
+	kDisplayLatencyWindow = TICKS_PER_SECOND * 1 // display last second's ping
 };
 
 
@@ -223,9 +229,10 @@ struct NetworkPlayer_hub {
 	int32           mLastRecoverySend;
 
 	// latency stuff
-	vector<int32> mDisplayLatencyBuffer; // last 30 latency calculations in ticks
-	uint32 mDisplayLatencyCount;
-	int32 mDisplayLatencyTicks; // sum of the latency ticks from the last second, using above two
+	int32 mLatencyTicks; // sum of the latency ticks from the last second
+	deque<int32> mLatencyBuffer;
+	int32 mLatencyStandardDeviation; // updated once a second
+	int32 mCRCErrorCount;
 };
 
 // Housekeeping queues:
@@ -473,9 +480,11 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
                 thePlayer.mTimingAdjustmentTick = 0;
                 thePlayer.mNetDeadTick = theFirstTick - 1;
 
-		thePlayer.mDisplayLatencyBuffer.resize(TICKS_PER_SECOND);
-		thePlayer.mDisplayLatencyCount = 0;
-		thePlayer.mDisplayLatencyTicks = 0;
+
+		thePlayer.mLatencyBuffer.clear();
+		thePlayer.mLatencyTicks = 0;
+		thePlayer.mLatencyStandardDeviation = 0;
+		thePlayer.mCRCErrorCount = 0;
 
                 sFlagsQueues[i].reset(theFirstTick);
 		sLateFlagsQueues[i].reset(theFirstTick);
@@ -607,7 +616,15 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 
 		if (thePacketCRC != calculate_data_crc_ccitt(inPacket->datagramData, inPacket->datagramSize))
 		{
-			logWarningNMT1("CRC failure; discarding packet type %i", thePacketMagic);
+			if (thePacketMagic == kSpokeToHubGameDataPacketV1Magic)
+			{
+				AddressToPlayerIndexType::iterator theEntry = sAddressToPlayerIndex.find(inPacket->sourceAddress);
+				if (theEntry != sAddressToPlayerIndex.end())
+				{
+					int theSenderIndex = theEntry->second;
+					getNetworkPlayer(theSenderIndex).mCRCErrorCount++;
+				}
+			}
 			return;
 		}
 		
@@ -829,11 +846,20 @@ player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowled
 		if (inPlayerIndex != sLocalPlayerIndex) 
 		{
 			assert(theTick < sFlagSendTimeQueue.getWriteTick());
-			// update the latency display
-			thePlayer.mDisplayLatencyTicks -= thePlayer.mDisplayLatencyBuffer[thePlayer.mDisplayLatencyCount % thePlayer.mDisplayLatencyBuffer.size()];
-			thePlayer.mDisplayLatencyBuffer[thePlayer.mDisplayLatencyCount++ % thePlayer.mDisplayLatencyBuffer.size()] = sNetworkTicker - sFlagSendTimeQueue.peek(theTick);
-			thePlayer.mDisplayLatencyTicks += (sNetworkTicker - sFlagSendTimeQueue.peek(theTick));
-			
+
+			// update the latency calculations
+			if (thePlayer.mLatencyBuffer.size() >= kDisplayLatencyWindow)
+			{
+				thePlayer.mLatencyTicks -= thePlayer.mLatencyBuffer[kDisplayLatencyWindow - 1];
+			}
+
+			if (thePlayer.mLatencyBuffer.size() == kLatencyBufferSize)
+			{
+				thePlayer.mLatencyBuffer.pop_back();
+			}
+			int32 latency = sNetworkTicker - sFlagSendTimeQueue.peek(theTick);
+			thePlayer.mLatencyBuffer.push_front(latency);
+			thePlayer.mLatencyTicks += latency;
 		}
 			
                 if(sPlayerDataDisposition[theTick] == 0)
@@ -1104,6 +1130,8 @@ make_player_netdead(int inPlayerIndex)
         player_acknowledged_up_to_tick(inPlayerIndex, theSavedIncompleteTick);
 }
 
+static int add_squares(int x, int y) { return x + y * y; }
+
 static bool
 hub_tick()
 {
@@ -1188,6 +1216,27 @@ hub_tick()
 		
 	}
         check_send_packet_to_spoke();
+
+	// calculate standard deviation
+	if (sNetworkTicker % 30 == 0)
+	{
+		for (int i = 0; i < sNetworkPlayers.size(); ++i)
+		{
+			if (i != sLocalPlayerIndex)
+			{
+				NetworkPlayer_hub& thePlayer = sNetworkPlayers[i];
+				if (thePlayer.mConnected && thePlayer.mLatencyBuffer.size())
+				{
+					double average = accumulate(thePlayer.mLatencyBuffer.begin(), thePlayer.mLatencyBuffer.end(), 0) / thePlayer.mLatencyBuffer.size();
+					double squares = accumulate(thePlayer.mLatencyBuffer.begin(), thePlayer.mLatencyBuffer.end(), 0, add_squares);
+
+					double deviation = std::sqrt(squares / thePlayer.mLatencyBuffer.size() - average * average);
+					thePlayer.mLatencyStandardDeviation = static_cast<int32>(std::floor(deviation * 1000 / TICKS_PER_SECOND));
+
+				}
+			}
+		}
+	}
 
         // We want to run again.
         return true;
@@ -1279,7 +1328,16 @@ send_packets()
 				if (sHubPreferences.mBandwidthReduction && sPlayerDataDisposition.getReadTick() >= sSmallestRealGameTick)
 				{
 					// never send fewer than 2 full updates per second, or more than 15
-					int effectiveLatency = std::max((int32) 2, std::min((int32) ((thePlayer.mDisplayLatencyCount > 0) ? (thePlayer.mDisplayLatencyTicks / std::min(thePlayer.mDisplayLatencyCount, (uint32) thePlayer.mDisplayLatencyBuffer.size())) : 2), (int32) (TICKS_PER_SECOND / 2)));
+					int32 latencyCount = std::min(thePlayer.mLatencyBuffer.size(), static_cast<size_t>(kDisplayLatencyWindow));
+					int32 effectiveLatency = ((latencyCount > 0) ? thePlayer.mLatencyTicks / latencyCount : 0);
+					if (effectiveLatency < 2)
+					{
+						effectiveLatency = 2;
+					}
+					else if (effectiveLatency > TICKS_PER_SECOND / 2)
+					{
+						effectiveLatency = TICKS_PER_SECOND / 2;
+					}
 					
 					if (sNetworkTicker - thePlayer.mLastRecoverySend >= effectiveLatency)
 					{
@@ -1403,15 +1461,44 @@ int32 hub_latency(int player_index)
 	{
 		NetworkPlayer_hub& thePlayer = sNetworkPlayers[player_index];
 		if (!thePlayer.mConnected) return kNetLatencyDisconnected;
-		if (thePlayer.mDisplayLatencyCount >= thePlayer.mDisplayLatencyBuffer.size())
+		if (thePlayer.mLatencyBuffer.size())
 		{
-			int32 latency_ticks = std::max(thePlayer.mDisplayLatencyTicks, (sNetworkTicker - thePlayer.mLastNetworkTickHeard) * (int32) thePlayer.mDisplayLatencyBuffer.size());
-			return (latency_ticks * 1000 / TICKS_PER_SECOND / thePlayer.mDisplayLatencyBuffer.size());
-		} 
+			int32 samples = std::min(thePlayer.mLatencyBuffer.size(), static_cast<size_t>(kDisplayLatencyWindow));
+			int32 latency_ticks = std::max(thePlayer.mLatencyTicks, ((sNetworkTicker - thePlayer.mLastNetworkTickHeard) * samples));
+			if (sNetworkTicker % 30 == 0) 
+			{
+				fprintf(stderr, "%i %i %i %i\n", thePlayer.mLatencyTicks, sNetworkTicker, thePlayer.mLastNetworkTickHeard, samples);
+				}
+
+			return (latency_ticks * 1000 / TICKS_PER_SECOND / samples);
+		}
+
 	}
 
 	return kNetLatencyInvalid;
 }
+
+int32 hub_jitter(int player_index)
+{
+	if (player_index != sLocalPlayerIndex)
+	{
+		NetworkPlayer_hub& thePlayer = sNetworkPlayers[player_index];
+		if (!thePlayer.mConnected) return kNetLatencyDisconnected;
+		return thePlayer.mLatencyStandardDeviation;
+	}
+	
+	return kNetLatencyInvalid;
+}
+
+int32 hub_errors(int player_index)
+{
+	if (player_index != sLocalPlayerIndex)
+	{
+		return getNetworkPlayer(player_index).mCRCErrorCount;
+	}
+
+	return kNetLatencyInvalid;
+}	
 
 static inline const char *BoolString(bool B) {return (B ? "true" : "false");}
 

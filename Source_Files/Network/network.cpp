@@ -2449,6 +2449,8 @@ bool NetAllowSavingLevel() {
 
 extern int32 spoke_latency();
 extern int32 hub_latency(int);
+extern int32 hub_jitter(int);
+extern int32 hub_errors(int);
 
 int32 NetGetLatency() {
 	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && connection_to_server) {
@@ -2464,6 +2466,30 @@ int32 NetGetLatency(int player_index)
 	{
 		return hub_latency(player_index);
 	} else {
+		return kNetLatencyInvalid;
+	}
+}
+
+int32 NetGetJitter(int player_index)
+{
+	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && !connection_to_server)
+	{
+		return hub_jitter(player_index);
+	}
+	else
+	{
+		return kNetLatencyInvalid;
+	}
+}
+
+int32 NetGetErrors(int player_index)
+{
+	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && !connection_to_server)
+	{
+		return hub_errors(player_index);
+	}
+	else
+	{
 		return kNetLatencyInvalid;
 	}
 }

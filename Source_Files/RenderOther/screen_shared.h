@@ -701,7 +701,7 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 
 static void DisplayScores(SDL_Surface *s)
 {
-	if (!ShowScores) return;
+	if (!game_is_networked || !ShowScores) return;
 
 	// assume a proportional font
 	int CWidth = DisplayTextWidth("W");
@@ -713,24 +713,30 @@ static void DisplayScores(SDL_Surface *s)
 	int WScore = CWidth * kScoreWidth;
 	static const int kPingWidth = 7;
 	int WPing = CWidth * kPingWidth;
+	int WJitter = CWidth * kPingWidth;
+	int WErrors = CWidth * kPingWidth;
 	static const int kIdWidth = 2;
 	int WId = CWidth * kIdWidth;
 
 	FontSpecifier& Font = GetOnScreenFont();
 	int H = Font.LineSpacing * (dynamic_world->player_count + 1);
-	int W = WName + WScore + WPing + WId;
+	int W = WName + WScore + WPing + WJitter + WErrors + WId;
 	int X = (s->w - W) / 2;
 	int Y = std::max((s->h - H) / 2, Font.LineSpacing * NumScreenMessages) + Font.LineSpacing;
 
 	int XName = X;
 	int XScore = XName + WName + CWidth;
 	int XPing = XScore + WScore + CWidth;
-	int XId = XPing + WPing + CWidth;
+	int XJitter = XPing + WPing + CWidth;
+	int XErrors = XJitter + WPing + CWidth;
+	int XId = XErrors + WPing + CWidth;
 
 	// draw headers
 	DisplayText(XName, Y, "Name", 0xbf, 0xbf, 0xbf);
 	DisplayText(XScore + WScore - DisplayTextWidth("Score"), Y, "Score", 0xbf, 0xbf, 0xbf);
 	DisplayText(XPing + WPing - DisplayTextWidth("Delay"), Y, "Delay", 0xbf, 0xbf, 0xbf);
+	DisplayText(XJitter + WPing - DisplayTextWidth("Jitter"), Y, "Jitter", 0xbf, 0xbf, 0xbf);
+	DisplayText(XErrors + WPing - DisplayTextWidth("Errors"), Y, "Errors", 0xbf, 0xbf, 0xbf);
 	DisplayText(XId + WId - DisplayTextWidth("ID"), Y, "ID", 0xbf, 0xbf, 0xbf);
 	Y += Font.LineSpacing;
 	player_ranking_data rankings[MAXIMUM_NUMBER_OF_PLAYERS];
@@ -764,7 +770,31 @@ static void DisplayScores(SDL_Surface *s)
 			sprintf(temporary, "%i ms", latency);
 		}
 		temporary[kPingWidth + 1] = '\0';
-		DisplayText(XPing + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);		
+		DisplayText(XPing + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
+		
+		int32 jitter = NetGetJitter(rankings[i].player_index);
+		if (latency == kNetLatencyInvalid || latency == kNetLatencyDisconnected)
+		{
+			strcpy(temporary, " ");
+		}
+		else
+		{
+			sprintf(temporary, "%i ms", jitter);
+		}
+		temporary[kPingWidth + 1] = '\0';
+		DisplayText(XJitter + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
+
+		int32 errors = NetGetErrors(rankings[i].player_index);
+		if (errors == kNetLatencyInvalid)
+		{
+			strcpy(temporary, " ");
+		}
+		else
+		{
+			sprintf(temporary, "%i", errors);
+		}
+		temporary[kPingWidth + 1] = '\0';
+		DisplayText(XErrors + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
 
 		sprintf(temporary, "%i", rankings[i].player_index);
 		DisplayText(XId + WId - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
