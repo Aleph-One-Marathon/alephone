@@ -26,7 +26,6 @@
  */
 
 #include "HUDRenderer.h"
-#include "network.h" // NetDisplayPings(), NetGetLatency()
 #include "lua_script.h" // texture palette
 
 using namespace std;
@@ -375,7 +374,7 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
 					
 		/* Reset the row.. */
 		current_row= 0;
-		if(!NetDisplayPings() && item_type!=_network_statistics)
+		if(item_type!=_network_statistics)
 		{
 			/* Get the types and names */
 			calculate_player_item_array(current_player_index, item_type,
@@ -383,10 +382,7 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
 		}
 				
 		/* Draw the header. */
-		if (NetDisplayPings())
-			strcpy(temporary, "PING");
-		else
-			get_header_name(temporary, item_type);
+		get_header_name(temporary, item_type);
 		draw_inventory_header(temporary, current_row++);
 	
 		/* Erase the panel.. */
@@ -395,7 +391,7 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
 		FillRect(&text_rectangle, _inventory_background_color);
 				
 #if !defined(DISABLE_NETWORKING)
-		if (NetDisplayPings() || item_type==_network_statistics)
+		if (item_type==_network_statistics)
 		{
 			char remaining_time[16];
 			int seconds = dynamic_world->game_information.game_time_remaining / TICKS_PER_SECOND;
@@ -429,71 +425,32 @@ void HUD_Class::update_inventory_panel(bool force_redraw)
 				}
 			}
 
-			if (NetDisplayPings())
+			struct player_ranking_data rankings[MAXIMUM_NUMBER_OF_PLAYERS];
+				
+			calculate_player_rankings(rankings);
+				
+			/* Calculate the network statistics. */
+			for(loop= 0; loop<dynamic_world->player_count; ++loop)
 			{
-				for (loop = 0; loop < dynamic_world->player_count; ++loop)
-				{
-					screen_rectangle dest_rect;
-					struct player_data *player = get_player_data(loop);
-					short width;
-
-					calculate_inventory_rectangle_from_offset(&dest_rect, current_row++);
-					if (NetGetLatency(loop) == kNetLatencyInvalid)
-					{
-						sprintf(temporary, " ");
-					} 
-					else if (NetGetLatency(loop) == kNetLatencyDisconnected)
-					{
-						sprintf(temporary, "DC");
-					}
-					else
-					{
-						sprintf(temporary, "%i", NetGetLatency(loop));
-					}
-
-					width = _text_width(temporary, _interface_font);
-					dest_rect.right -= width;
-					dest_rect.left += TEXT_INSET;
-
-					char name_with_index[MAX_NET_PLAYER_NAME_LENGTH + 2];
-					sprintf(name_with_index, "%i %s", loop, player->name);
-					DrawText(name_with_index, &dest_rect, _center_vertical, _interface_font, PLAYER_COLOR_BASE_INDEX + player->color);
-
-					dest_rect.right += width;
-					dest_rect.left = dest_rect.right-width;
-					DrawText(temporary, &dest_rect, _center_vertical, _interface_font, PLAYER_COLOR_BASE_INDEX + player->color);
-				}
-			} 
-			else 
-			{
-				
-				struct player_ranking_data rankings[MAXIMUM_NUMBER_OF_PLAYERS];
-				
-				calculate_player_rankings(rankings);
-				
-				/* Calculate the network statistics. */
-				for(loop= 0; loop<dynamic_world->player_count; ++loop)
-				{
-					screen_rectangle dest_rect;
-					struct player_data *player= get_player_data(rankings[loop].player_index);
-					short width;
+				screen_rectangle dest_rect;
+				struct player_data *player= get_player_data(rankings[loop].player_index);
+				short width;
 					
-					calculate_inventory_rectangle_from_offset(&dest_rect, current_row++);
-					calculate_ranking_text(temporary, rankings[loop].ranking);
+				calculate_inventory_rectangle_from_offset(&dest_rect, current_row++);
+				calculate_ranking_text(temporary, rankings[loop].ranking);
 					
-					/* Draw the player name.. */
-					width= _text_width(temporary, _interface_font);
-					dest_rect.right-= width;
-					dest_rect.left+= TEXT_INSET;
-					DrawText(player->name, &dest_rect, _center_vertical, 
-						 _interface_font, PLAYER_COLOR_BASE_INDEX+player->color);
+				/* Draw the player name.. */
+				width= _text_width(temporary, _interface_font);
+				dest_rect.right-= width;
+				dest_rect.left+= TEXT_INSET;
+				DrawText(player->name, &dest_rect, _center_vertical, 
+					 _interface_font, PLAYER_COLOR_BASE_INDEX+player->color);
 					
-					/* Now draw the ranking_text */
-					dest_rect.right+= width;
-					dest_rect.left= dest_rect.right-width;
-					DrawText(temporary, &dest_rect, _center_vertical, 
-						 _interface_font, PLAYER_COLOR_BASE_INDEX+player->color);
-				}
+				/* Now draw the ranking_text */
+				dest_rect.right+= width;
+				dest_rect.left= dest_rect.right-width;
+				DrawText(temporary, &dest_rect, _center_vertical, 
+					 _interface_font, PLAYER_COLOR_BASE_INDEX+player->color);
 			}
 		}
 		else

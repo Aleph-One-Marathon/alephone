@@ -756,43 +756,39 @@ static void DisplayScores(SDL_Surface *s)
 		temporary[kScoreWidth + 1] = '\0';
 		DisplayText(XScore + WScore - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
 
-		int32 latency = NetGetLatency(rankings[i].player_index);
-		if (latency == kNetLatencyInvalid)
+		const NetworkStats& stats = NetGetStats(rankings[i].player_index);
+
+		if (stats.latency == NetworkStats::invalid)
 		{
-			strcpy(temporary, " ");
+			strcpy(temporary, "--");
 		}
-		else if (latency == kNetLatencyDisconnected)
+		else if (stats.latency == NetworkStats::disconnected)
 		{
 			strcpy(temporary, "DC");
 		}
 		else
 		{
-			sprintf(temporary, "%i ms", latency);
+			sprintf(temporary, "%i ms", stats.latency);
 		}
 		temporary[kPingWidth + 1] = '\0';
 		DisplayText(XPing + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
 		
-		int32 jitter = NetGetJitter(rankings[i].player_index);
-		if (latency == kNetLatencyInvalid || latency == kNetLatencyDisconnected)
+		if (stats.jitter == NetworkStats::invalid)
 		{
-			strcpy(temporary, " ");
+			strcpy(temporary, "--");
+		}
+		else if (stats.jitter == NetworkStats::disconnected)
+		{
+			strcpy(temporary, "DC");
 		}
 		else
 		{
-			sprintf(temporary, "%i ms", jitter);
+			sprintf(temporary, "%i ms", stats.jitter);
 		}
 		temporary[kPingWidth + 1] = '\0';
 		DisplayText(XJitter + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
 
-		int32 errors = NetGetErrors(rankings[i].player_index);
-		if (errors == kNetLatencyInvalid)
-		{
-			strcpy(temporary, " ");
-		}
-		else
-		{
-			sprintf(temporary, "%i", errors);
-		}
+		sprintf(temporary, "%i", stats.errors);
 		temporary[kPingWidth + 1] = '\0';
 		DisplayText(XErrors + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
 
