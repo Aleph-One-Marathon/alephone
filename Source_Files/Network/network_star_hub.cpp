@@ -141,8 +141,9 @@ enum {
 	kTypicalLossyByteStreamChunkSize = 56,
 	kLossyByteStreamDescriptorCount = kLossyByteStreamDataBufferSize / kTypicalLossyByteStreamChunkSize,
 
-	kLatencyBufferSize = TICKS_PER_SECOND * 10, // store 10 seconds of ping counts
-	kDisplayLatencyWindow = TICKS_PER_SECOND * 1 // display last second's ping
+	kLatencyBufferSize = TICKS_PER_SECOND * 5, // store 5 seconds of ping counts
+	kDisplayLatencyWindow = TICKS_PER_SECOND * 1, // display last second's ping
+	kJitterUpdateInterval = TICKS_PER_SECOND * 1 / 2
 };
 
 
@@ -231,8 +232,8 @@ struct NetworkPlayer_hub {
 	// latency stuff
 	int32 mLatencyTicks; // sum of the latency ticks from the last second
 	deque<int32> mLatencyBuffer;
-	int32 mLatencyStandardDeviation; // updated once a second
-	int32 mCRCErrorCount;
+
+	NetworkStats mStats;
 };
 
 // Housekeeping queues:
@@ -483,8 +484,9 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
 
 		thePlayer.mLatencyBuffer.clear();
 		thePlayer.mLatencyTicks = 0;
-		thePlayer.mLatencyStandardDeviation = 0;
-		thePlayer.mCRCErrorCount = 0;
+		thePlayer.mStats.latency = NetworkStats::invalid;
+		thePlayer.mStats.jitter = NetworkStats::invalid;
+		thePlayer.mStats.errors = 0;
 
                 sFlagsQueues[i].reset(theFirstTick);
 		sLateFlagsQueues[i].reset(theFirstTick);
@@ -622,7 +624,7 @@ hub_received_network_packet(DDPPacketBufferPtr inPacket)
 				if (theEntry != sAddressToPlayerIndex.end())
 				{
 					int theSenderIndex = theEntry->second;
-					getNetworkPlayer(theSenderIndex).mCRCErrorCount++;
+					getNetworkPlayer(theSenderIndex).mStats.errors++;
 				}
 			}
 			return;
@@ -860,6 +862,7 @@ player_acknowledged_up_to_tick(size_t inPlayerIndex, int32 inSmallestUnacknowled
 			int32 latency = sNetworkTicker - sFlagSendTimeQueue.peek(theTick);
 			thePlayer.mLatencyBuffer.push_front(latency);
 			thePlayer.mLatencyTicks += latency;
+
 		}
 			
                 if(sPlayerDataDisposition[theTick] == 0)
@@ -1218,22 +1221,50 @@ hub_tick()
         check_send_packet_to_spoke();
 
 	// calculate standard deviation
-	if (sNetworkTicker % 30 == 0)
+	if (sNetworkTicker % kJitterUpdateInterval == 0)
 	{
 		for (int i = 0; i < sNetworkPlayers.size(); ++i)
 		{
 			if (i != sLocalPlayerIndex)
 			{
 				NetworkPlayer_hub& thePlayer = sNetworkPlayers[i];
-				if (thePlayer.mConnected && thePlayer.mLatencyBuffer.size())
+				if (thePlayer.mConnected)
 				{
-					double average = accumulate(thePlayer.mLatencyBuffer.begin(), thePlayer.mLatencyBuffer.end(), 0) / thePlayer.mLatencyBuffer.size();
-					double squares = accumulate(thePlayer.mLatencyBuffer.begin(), thePlayer.mLatencyBuffer.end(), 0, add_squares);
-
-					double deviation = std::sqrt(squares / thePlayer.mLatencyBuffer.size() - average * average);
-					thePlayer.mLatencyStandardDeviation = static_cast<int32>(std::floor(deviation * 1000 / TICKS_PER_SECOND));
-
+					if (thePlayer.mLatencyBuffer.size())
+					{
+						double average = accumulate(thePlayer.mLatencyBuffer.begin(), thePlayer.mLatencyBuffer.end(), 0) / thePlayer.mLatencyBuffer.size();
+						double squares = accumulate(thePlayer.mLatencyBuffer.begin(), thePlayer.mLatencyBuffer.end(), 0, add_squares);
+						
+						double deviation = std::sqrt(squares / thePlayer.mLatencyBuffer.size() - average * average);
+						thePlayer.mStats.jitter = static_cast<int16>(std::floor(deviation * 1000 / TICKS_PER_SECOND));
+					} 
 				}
+				else if (thePlayer.mStats.jitter != NetworkStats::disconnected)
+				{
+					thePlayer.mStats.jitter = NetworkStats::disconnected;
+				}
+			}
+		}
+	}
+
+	// calculate ping
+	for (int i = 0; i < sNetworkPlayers.size(); ++i)
+	{
+		NetworkPlayer_hub& thePlayer = sNetworkPlayers[i];
+		if (i != sLocalPlayerIndex)
+		{
+			if (thePlayer.mConnected)
+			{
+				if (thePlayer.mLatencyBuffer.size())
+				{
+					int32 samples = std::min(thePlayer.mLatencyBuffer.size(), static_cast<size_t>(kDisplayLatencyWindow));
+					int32 latency_ticks = std::max(thePlayer.mLatencyTicks, ((sNetworkTicker - thePlayer.mLastNetworkTickHeard) * samples));
+					thePlayer.mStats.latency = (latency_ticks * 1000 / TICKS_PER_SECOND / samples);
+				}
+			}
+			else if (thePlayer.mStats.latency != NetworkStats::disconnected)
+			{
+				thePlayer.mStats.latency = NetworkStats::disconnected;
 			}
 		}
 	}
@@ -1454,51 +1485,10 @@ send_packets()
 	
 } // send_packets()
 
-
-int32 hub_latency(int player_index)
+const NetworkStats& hub_stats(int player_index)
 {
-	if (player_index != sLocalPlayerIndex)
-	{
-		NetworkPlayer_hub& thePlayer = sNetworkPlayers[player_index];
-		if (!thePlayer.mConnected) return kNetLatencyDisconnected;
-		if (thePlayer.mLatencyBuffer.size())
-		{
-			int32 samples = std::min(thePlayer.mLatencyBuffer.size(), static_cast<size_t>(kDisplayLatencyWindow));
-			int32 latency_ticks = std::max(thePlayer.mLatencyTicks, ((sNetworkTicker - thePlayer.mLastNetworkTickHeard) * samples));
-			if (sNetworkTicker % 30 == 0) 
-			{
-				fprintf(stderr, "%i %i %i %i\n", thePlayer.mLatencyTicks, sNetworkTicker, thePlayer.mLastNetworkTickHeard, samples);
-				}
-
-			return (latency_ticks * 1000 / TICKS_PER_SECOND / samples);
-		}
-
-	}
-
-	return kNetLatencyInvalid;
+	return getNetworkPlayer(player_index).mStats;
 }
-
-int32 hub_jitter(int player_index)
-{
-	if (player_index != sLocalPlayerIndex)
-	{
-		NetworkPlayer_hub& thePlayer = sNetworkPlayers[player_index];
-		if (!thePlayer.mConnected) return kNetLatencyDisconnected;
-		return thePlayer.mLatencyStandardDeviation;
-	}
-	
-	return kNetLatencyInvalid;
-}
-
-int32 hub_errors(int player_index)
-{
-	if (player_index != sLocalPlayerIndex)
-	{
-		return getNetworkPlayer(player_index).mCRCErrorCount;
-	}
-
-	return kNetLatencyInvalid;
-}	
 
 static inline const char *BoolString(bool B) {return (B ? "true" : "false");}
 

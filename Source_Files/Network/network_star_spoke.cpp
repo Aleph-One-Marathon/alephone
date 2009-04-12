@@ -1068,7 +1068,7 @@ send_identification_packet()
 
 int32 spoke_latency()
 {
-	return (sDisplayLatencyCount >= TICKS_PER_SECOND) ? sDisplayLatencyTicks * 1000 / TICKS_PER_SECOND / sDisplayLatencyBuffer.size() : kNetLatencyInvalid;
+	return (sDisplayLatencyCount >= TICKS_PER_SECOND) ? sDisplayLatencyTicks * 1000 / TICKS_PER_SECOND / sDisplayLatencyBuffer.size() : NetworkStats::invalid;
 }
 
 TickBasedActionQueue* spoke_get_unconfirmed_flags_queue()

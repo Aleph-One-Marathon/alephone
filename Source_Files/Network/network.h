@@ -287,21 +287,21 @@ int32 NetGetUnconfirmedActionFlagsCount(); // how many flags can we use for pred
 uint32 NetGetUnconfirmedActionFlag(int32 offset); // offset < GetUnconfirmedActionFlagsCount
 void NetUpdateUnconfirmedActionFlags();
 
-enum {
-	kNetLatencyInvalid = -1,
-	kNetLatencyDisconnected = -2
+struct NetworkStats
+{
+	enum {
+		invalid = -1,
+		disconnected = -2,
+	};
+
+	int16 latency;
+	int16 jitter;
+	uint16 errors;
 };
 
 // returns latency in ms, or kNetLatencyInvalid or kNetLatencyDisconnected
 int32 NetGetLatency();
-// only works when you're the hub, right now
-int32 NetGetLatency(int player_index);
-// returns ping standard deviation in ms, or invalid/disconnected
-int32 NetGetJitter(int player_index);
-// returns number of CRC errors, or invalid
-int32 NetGetErrors(int player_index);
 
-// if true, show the player indices and pings in the HUD instead of scores
-bool NetDisplayPings();
+const NetworkStats& NetGetStats(int player_index);
 
 #endif

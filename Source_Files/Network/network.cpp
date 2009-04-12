@@ -210,13 +210,6 @@ static ChatCallbacks *chatCallbacks = NULL;
 static UpnpController *controller = NULL;
 extern MetaserverClient* gMetaserverClient;
 
-static bool sDisplayPings;
-struct toggle_ping_display {
-	void operator()(const std::string&) const { 
-		sDisplayPings = !sDisplayPings; 
-	};
-};
-
 // ignore list
 static std::set<int> sIgnoredPlayers;
 
@@ -1186,9 +1179,6 @@ bool NetEnter(void)
 	my_capabilities[Capabilities::kZippedData] = Capabilities::kZippedDataVersion;
 
 	// net commands!
-	sDisplayPings = false;
-	Console::instance()->register_command("ping", toggle_ping_display());
-
 	sIgnoredPlayers.clear();
 	CommandParser IgnoreParser;
 	IgnoreParser.register_command("player", ignore_player());
@@ -1293,7 +1283,6 @@ void NetExit(
 	}
 	#endif
 
-	Console::instance()->unregister_command("ping");
 	Console::instance()->unregister_command("ignore");
   
 	NetDDPClose();
@@ -2448,49 +2437,33 @@ bool NetAllowSavingLevel() {
 }
 
 extern int32 spoke_latency();
-extern int32 hub_latency(int);
-extern int32 hub_jitter(int);
-extern int32 hub_errors(int);
 
 int32 NetGetLatency() {
 	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && connection_to_server) {
 		return spoke_latency();
 	} else {
-		return kNetLatencyInvalid;
+		return NetworkStats::invalid;
 	}
 }
 
-int32 NetGetLatency(int player_index)
-{
-	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && !connection_to_server)
-	{
-		return hub_latency(player_index);
-	} else {
-		return kNetLatencyInvalid;
-	}
-}
+const static NetworkStats sInvalidStats = {
+	NetworkStats::invalid,
+	NetworkStats::invalid,
+	0
+};
 
-int32 NetGetJitter(int player_index)
+extern const NetworkStats& hub_stats(int player_index);
+
+const NetworkStats& NetGetStats(int player_index)
 {
+	NetworkStats stats;
 	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && !connection_to_server)
 	{
-		return hub_jitter(player_index);
+		return hub_stats(player_index);
 	}
 	else
 	{
-		return kNetLatencyInvalid;
-	}
-}
-
-int32 NetGetErrors(int player_index)
-{
-	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && !connection_to_server)
-	{
-		return hub_errors(player_index);
-	}
-	else
-	{
-		return kNetLatencyInvalid;
+		return sInvalidStats;
 	}
 }
 
@@ -2512,9 +2485,5 @@ void NetUpdateUnconfirmedActionFlags()
 	return sCurrentGameProtocol->UpdateUnconfirmedActionFlags();
 }
 
-bool NetDisplayPings()
-{
-	return sDisplayPings;
-}
 #endif // !defined(DISABLE_NETWORKING)
 
