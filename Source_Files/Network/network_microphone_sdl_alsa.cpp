@@ -182,7 +182,8 @@ set_network_microphone_state(bool inActive) {
 		}
 		if (snd_async_add_pcm_handler(&pcm_callback, capture_handle, CaptureCallback, NULL) < 0) {
 			fprintf(stderr, "adding pcm handler failed\n");
-		}
+			return;
+		} 
 		if (snd_pcm_start(capture_handle) < 0) {
 			fprintf(stderr, "starting pcm failed\n");
 		}
