@@ -28,6 +28,7 @@ const string Capabilities::kLua = "Lua";
 const string Capabilities::kSpeex = "Speex";
 const string Capabilities::kGatherable = "Gatherable";
 const string Capabilities::kZippedData = "ZippedData";
+const string Capabilities::kNetworkStats = "NetworkStats";
 
 
 

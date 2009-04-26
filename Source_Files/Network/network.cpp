@@ -210,6 +210,15 @@ static ChatCallbacks *chatCallbacks = NULL;
 static UpnpController *controller = NULL;
 extern MetaserverClient* gMetaserverClient;
 
+static std::vector<NetworkStats> sNetworkStats;
+const static NetworkStats sInvalidStats = {
+	NetworkStats::invalid,
+	NetworkStats::invalid,
+	0
+};
+uint32 last_network_stats_send = 0;
+const static int network_stats_send_period = MACHINE_TICKS_PER_SECOND;
+
 // ignore list
 static std::set<int> sIgnoredPlayers;
 
@@ -874,6 +883,24 @@ static void handleNetworkChatMessage(NetworkChatMessage *chatMessage, Communicat
 	}
 }
 
+static void handleNetworkStatsMessage(NetworkStatsMessage *statsMessage, CommunicationsChannel *)
+{
+	if (netState == netActive)
+	{
+		if (sNetworkStats.empty() || statsMessage->mStats.size() == sNetworkStats.size())
+		{
+			sNetworkStats = statsMessage->mStats;
+		}
+		else
+		{
+			logWarning("network stats message is wrong size; lost stats");
+			std::fill(sNetworkStats.begin(), sNetworkStats.end(), sInvalidStats);
+		}
+	} else {
+		logAnomaly1("unexpected network stats message received (netState is %i", netState);
+	}
+}
+
 static byte *handlerPhysicsBuffer = NULL;
 static size_t handlerPhysicsLength = 0;
 
@@ -1000,6 +1027,7 @@ static TypedMessageHandlerFunction<BigChunkOfDataMessage> physicsMessageHandler(
 static TypedMessageHandlerFunction<TopologyMessage> topologyMessageHandler(&handleTopologyMessage);
 static TypedMessageHandlerFunction<ServerWarningMessage> serverWarningMessageHandler(&handleServerWarningMessage);
 static TypedMessageHandlerFunction<ClientInfoMessage> clientInfoMessageHandler(&handleClientInfoMessage);
+static TypedMessageHandlerFunction<NetworkStatsMessage> networkStatsMessageHandler(&handleNetworkStatsMessage);
 static TypedMessageHandlerFunction<Message> unexpectedMessageHandler(&handleUnexpectedMessage);
 
 void NetSetGatherCallbacks(GatherCallbacks *gc) {
@@ -1143,6 +1171,7 @@ bool NetEnter(void)
 		inflater->learnPrototype(ChangeColorsMessage());
 		inflater->learnPrototype(ServerWarningMessage());
 		inflater->learnPrototype(ClientInfoMessage());
+		inflater->learnPrototype(NetworkStatsMessage());
 	}
   
 	if (!joinDispatcher) {
@@ -1162,6 +1191,7 @@ bool NetEnter(void)
 		joinDispatcher->setHandlerForType(&serverWarningMessageHandler, ServerWarningMessage::kType);
 		joinDispatcher->setHandlerForType(&clientInfoMessageHandler, ClientInfoMessage::kType);
 		joinDispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
+		joinDispatcher->setHandlerForType(&networkStatsMessageHandler, NetworkStatsMessage::kType);
 	}
 
 	my_capabilities.clear();
@@ -1177,6 +1207,7 @@ bool NetEnter(void)
 #endif
 	my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
 	my_capabilities[Capabilities::kZippedData] = Capabilities::kZippedDataVersion;
+	my_capabilities[Capabilities::kNetworkStats] = Capabilities::kNetworkStatsVersion;
 
 	// net commands!
 	sIgnoredPlayers.clear();
@@ -1191,7 +1222,7 @@ bool NetEnter(void)
 
 	Console::instance()->register_command("ignore", IgnoreParser);
 
-	next_join_attempt = machine_tick_count();
+	next_join_attempt = last_network_stats_send = machine_tick_count();
   
 	if (error) {
 		alert_user(infoError, strNETWORK_ERRORS, netErrCantContinue, error);
@@ -1262,6 +1293,7 @@ void NetExit(
 		client_chat_info.clear();
 	}
 
+	sNetworkStats.clear();
   
 	if (server) {
 		delete server;
@@ -2146,23 +2178,52 @@ NetGetNetTime(void)
 extern OSErr NetDDPSendUnsentFrames();
 #endif
 
+extern const NetworkStats& hub_stats(int player_index);
+
 void NetProcessMessagesInGame() {
 #ifdef __MACOS__
 	NetDDPSendUnsentFrames();
 #endif
-  if (connection_to_server) {
-    connection_to_server->pump();
-    connection_to_server->dispatchIncomingMessages();
-  } else {
-    client_map_t::iterator it;
-    for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
-      it->second->channel->pump();
-      it->second->channel->dispatchIncomingMessages();
-    }
-  }
+	if (connection_to_server) {
+		connection_to_server->pump();
+		connection_to_server->dispatchIncomingMessages();
+	} else {
+		// update stats
+		if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && last_network_stats_send + network_stats_send_period < machine_tick_count())
+		{
+			std::vector<NetworkStats> stats(topology->player_count);
+			for (int playerIndex = 0; playerIndex < topology->player_count; ++playerIndex)
+			{
+				stats[playerIndex] = hub_stats(playerIndex);
+			}
 
-  if (gMetaserverClient && gMetaserverClient->isConnected())
-	  gMetaserverClient->pump();
+			NetworkStatsMessage statsMessage(stats);
+			for (int playerIndex = 0; playerIndex < topology->player_count; ++playerIndex)
+			{
+				NetPlayer player = topology->players[playerIndex];
+				if (!player.net_dead && player.identifier != NONE && playerIndex != localPlayerIndex)
+				{
+					Client *client = connections_to_clients[player.stream_id];
+					if (client->capabilities[Capabilities::kNetworkStats] >= Capabilities::kNetworkStatsVersion)
+					{
+						client->channel->enqueueOutgoingMessage(statsMessage);
+					}
+				}
+			}
+			
+			last_network_stats_send = machine_tick_count();
+		}
+
+		// pump chat messages
+		client_map_t::iterator it;
+		for (it = connections_to_clients.begin(); it != connections_to_clients.end(); it++) {
+			it->second->channel->pump();
+			it->second->channel->dispatchIncomingMessages();
+		}
+	}
+
+	if (gMetaserverClient && gMetaserverClient->isConnected())
+		gMetaserverClient->pump();
 }
 
 // If a potential joiner has connected to us, handle em
@@ -2446,20 +2507,26 @@ int32 NetGetLatency() {
 	}
 }
 
-const static NetworkStats sInvalidStats = {
-	NetworkStats::invalid,
-	NetworkStats::invalid,
-	0
-};
-
-extern const NetworkStats& hub_stats(int player_index);
-
 const NetworkStats& NetGetStats(int player_index)
 {
 	NetworkStats stats;
-	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol) && !connection_to_server)
+	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol))
 	{
-		return hub_stats(player_index);
+		if (connection_to_server)
+		{
+			if (player_index < sNetworkStats.size())
+			{
+				return sNetworkStats[player_index];
+			}
+			else
+			{
+				return sInvalidStats;
+			}
+		}
+		else
+		{
+			return hub_stats(player_index);
+		}
 	}
 	else
 	{

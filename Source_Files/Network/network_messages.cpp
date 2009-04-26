@@ -262,6 +262,28 @@ bool NetworkChatMessage::reallyInflateFrom(AIStream& inputStream) {
   return true;
 }
 
+void NetworkStatsMessage::reallyDeflateTo(AOStream& outputStream) const {
+	for (std::vector<NetworkStats>::const_iterator it = mStats.begin(); it != mStats.end(); ++it)
+	{
+		outputStream << it->latency;
+		outputStream << it->jitter;
+		outputStream << it->errors;
+	}
+}
+
+bool NetworkStatsMessage::reallyInflateFrom(AIStream& inputStream) {
+	while (inputStream.maxg() > inputStream.tellg())
+	{
+		NetworkStats stats;
+		inputStream >> stats.latency;
+		inputStream >> stats.jitter;
+		inputStream >> stats.errors;
+
+		mStats.push_back(stats);
+	}
+	return true;
+}
+
 void ServerWarningMessage::reallyDeflateTo(AOStream& outputStream) const {
   outputStream << (uint16) mReason;
   write_string(outputStream, mString.c_str());

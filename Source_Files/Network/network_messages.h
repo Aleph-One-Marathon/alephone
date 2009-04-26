@@ -50,7 +50,8 @@ enum {
   kCLIENT_INFO_MESSAGE,
   kZIPPED_MAP_MESSAGE,
   kZIPPED_PHYSICS_MESSAGE,
-  kZIPPED_LUA_MESSAGE
+  kZIPPED_LUA_MESSAGE,
+  kNETWORK_STATS_MESSAGE
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -335,6 +336,26 @@ class NetworkChatMessage : public SmallMessageHelper
   int16 mSenderID;
   int16 mTarget;
   int16 mTargetID;
+};
+
+class NetworkStatsMessage : public SmallMessageHelper
+{
+public:
+	enum { kType = kNETWORK_STATS_MESSAGE };
+
+	NetworkStatsMessage() : SmallMessageHelper() { }
+	NetworkStatsMessage(const std::vector<NetworkStats>& stats) : SmallMessageHelper(), mStats(stats) { }
+
+	NetworkStatsMessage* clone() const {
+		return new NetworkStatsMessage(*this);
+	}
+	
+	MessageTypeID type() const { return kType; }
+
+	std::vector<NetworkStats> mStats;
+protected:
+	void reallyDeflateTo(AOStream& outputStream) const;
+	bool reallyInflateFrom(AIStream& inputStream);
 };
 
 class ServerWarningMessage : public SmallMessageHelper
