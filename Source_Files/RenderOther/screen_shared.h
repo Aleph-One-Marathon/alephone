@@ -699,6 +699,11 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 	DisplayText(Xstatus, Y, status.c_str());
 }
 
+static const SDL_Color Green = { 0x0, 0xff, 0x0};
+static const SDL_Color Yellow = { 0xff, 0xff, 0x0 };
+static const SDL_Color Red = { 0xff, 0x0, 0x0 };
+static const SDL_Color Gray = { 0x7f, 0x7f, 0x7f };
+
 static void DisplayScores(SDL_Surface *s)
 {
 	if (!game_is_networked || !ShowScores) return;
@@ -760,7 +765,7 @@ static void DisplayScores(SDL_Surface *s)
 
 		if (stats.latency == NetworkStats::invalid)
 		{
-			strcpy(temporary, "--");
+			strcpy(temporary, " ");
 		}
 		else if (stats.latency == NetworkStats::disconnected)
 		{
@@ -770,12 +775,22 @@ static void DisplayScores(SDL_Surface *s)
 		{
 			sprintf(temporary, "%i ms", stats.latency);
 		}
+		SDL_Color color2;
+		if (stats.latency == NetworkStats::invalid || stats.latency == NetworkStats::disconnected) 
+			color2 = Gray;
+		else if (stats.latency < 150)
+			color2 = Green;
+		else if (stats.latency < 350)
+			color2 = Yellow;
+		else 
+			color2 = Red;
+
 		temporary[kPingWidth + 1] = '\0';
-		DisplayText(XPing + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
+		DisplayText(XPing + WPing - DisplayTextWidth(temporary), Y, temporary, color2.r, color2.g, color2.b);
 		
 		if (stats.jitter == NetworkStats::invalid)
 		{
-			strcpy(temporary, "--");
+			strcpy(temporary, " ");
 		}
 		else if (stats.jitter == NetworkStats::disconnected)
 		{
@@ -785,12 +800,32 @@ static void DisplayScores(SDL_Surface *s)
 		{
 			sprintf(temporary, "%i ms", stats.jitter);
 		}
+		if (stats.jitter == NetworkStats::invalid || stats.jitter == NetworkStats::disconnected)
+		{
+			color2 = Gray;
+		}
+		else if (stats.jitter < 75)
+		{
+			color2 = Green;
+		}
+		else if (stats.jitter < 150)
+		{
+			color2 = Yellow;
+		}
+		else
+		{
+			color2 = Red;
+		}
 		temporary[kPingWidth + 1] = '\0';
-		DisplayText(XJitter + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
+		DisplayText(XJitter + WPing - DisplayTextWidth(temporary), Y, temporary, color2.r, color2.g, color2.b);
 
 		sprintf(temporary, "%i", stats.errors);
 		temporary[kPingWidth + 1] = '\0';
-		DisplayText(XErrors + WPing - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
+		if (stats.errors > 0) 
+			color2 = Yellow;
+		else
+			color2 = Green;
+		DisplayText(XErrors + WPing - DisplayTextWidth(temporary), Y, temporary, color2.r, color2.g, color2.b);
 
 		sprintf(temporary, "%i", rankings[i].player_index);
 		DisplayText(XId + WId - DisplayTextWidth(temporary), Y, temporary, color.r, color.g, color.b);
