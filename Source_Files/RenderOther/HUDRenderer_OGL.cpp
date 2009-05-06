@@ -403,7 +403,7 @@ void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short x, short y, int si
 	TextureManager TMgr;
 	TMgr.ShapeDesc = shape;
 	get_shape_bitmap_and_shading_table(shape, &TMgr.Texture, &TMgr.ShadingTables, _shading_normal);
-	TMgr.IsShadeless = false;
+	TMgr.IsShadeless = true;
 	TMgr.TransferMode = _shadeless_transfer;
 	TMgr.TextureType = OGL_Txtr_Wall;
 	if (!TMgr.Setup())
@@ -434,6 +434,7 @@ void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short x, short y, int si
 		glVertex2i(x, y + height);
 	glEnd();
 	TMgr.RestoreTextureMatrix();
+	if (TMgr.IsGlowMapped()) TMgr.RenderGlowing();
 }
 
 
