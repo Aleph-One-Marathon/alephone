@@ -79,6 +79,21 @@ private:
 	static int _set(lua_State *L);
 	static int _is(lua_State *L);
 	static int _tostring(lua_State *L);
+
+protected:
+	// registry keys
+	static void _push_get_methods_key(lua_State *L) {
+		lua_pushlightuserdata(L, (void *) (&name[1]));
+	}
+
+	static void _push_set_methods_key(lua_State *L) {
+		lua_pushlightuserdata(L, (void *) (&name[2]));
+	}
+
+	static void _push_instances_key(lua_State *L) {
+		lua_pushlightuserdata(L, (void *) (&name[3]));
+	}
+	
 };
 
 struct always_valid
@@ -116,7 +131,7 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	lua_pop(L, 1);
 	
 	// register get methods
-	lua_pushlightuserdata(L, (void *) (&name[1]));
+	_push_get_methods_key(L);
 	lua_newtable(L);
 
 	// always want index
@@ -129,7 +144,7 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	lua_settable(L, LUA_REGISTRYINDEX);
 
 	// register set methods
-	lua_pushlightuserdata(L, (void *) (&name[2]));
+	_push_set_methods_key(L);
 	lua_newtable(L);
 
 	if (set)
@@ -137,7 +152,7 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	lua_settable(L, LUA_REGISTRYINDEX);
 		
 	// register a table for instances
-	lua_pushlightuserdata(L, (void *) (&name[3]));
+	_push_instances_key(L);
 	lua_newtable(L);
 	lua_settable(L, LUA_REGISTRYINDEX);
 
@@ -159,7 +174,7 @@ L_Class<name, index_t> *L_Class<name, index_t>::Push(lua_State *L, index_t index
 	}
 
 	// look it up in the index table
-	lua_pushlightuserdata(L, (void *) (&name[3]));
+	_push_instances_key(L);
 	lua_gettable(L, LUA_REGISTRYINDEX);
 
 	lua_pushnumber(L, index);
@@ -240,7 +255,7 @@ template<char *name, typename index_t>
 void L_Class<name, index_t>::Invalidate(lua_State *L, index_t index)
 {
 	// remove it from the index table
-	lua_pushlightuserdata(L, (void *) (&name[3]));
+	_push_instances_key(L);
 	lua_gettable(L, LUA_REGISTRYINDEX);
 
 	lua_pushnumber(L, index);
@@ -276,7 +291,7 @@ int L_Class<name, index_t>::_get(lua_State *L)
 		if (lua_tostring(L, 2)[0] == '_')
 		{
 			// look it up in the custom table
-			lua_pushlightuserdata(L, (void *) (&name[3]));
+			_push_instances_key(L);
 			lua_gettable(L, LUA_REGISTRYINDEX);
 
 			lua_pushnumber(L, Index(L, 1));
@@ -299,7 +314,7 @@ int L_Class<name, index_t>::_get(lua_State *L)
 		else
 		{
 			// pop the get table
-			lua_pushlightuserdata(L, (void *) (&name[1]));
+			_push_get_methods_key(L);
 			lua_gettable(L, LUA_REGISTRYINDEX);
 
 			// get the function from that table
@@ -344,7 +359,7 @@ int L_Class<name, index_t>::_set(lua_State *L)
 	if (lua_isstring(L, 2) && lua_tostring(L, 2)[0] == '_')
 	{
 		// get the index table
-		lua_pushlightuserdata(L, (void *)(&name[3]));
+		_push_instances_key(L);
 		lua_gettable(L, LUA_REGISTRYINDEX);
 
 		lua_pushnumber(L, Index(L, 1));
@@ -361,7 +376,7 @@ int L_Class<name, index_t>::_set(lua_State *L)
 	else
 	{
 		// pop the set table
-		lua_pushlightuserdata(L, (void *)(&name[2]));
+		_push_set_methods_key(L);
 		lua_gettable(L, LUA_REGISTRYINDEX);
 		
 		// get the function from that table
@@ -414,6 +429,10 @@ protected:
 private:
 	static int _get_mnemonic(lua_State *L);
 	static int _set_mnemonic(lua_State *L);
+
+	static void _push_mnemonic_key(lua_State *L) {
+		lua_pushlightuserdata(L, (void *) (&name[4]));
+	}
 };
 
 // the justification for this specialization is long
@@ -441,14 +460,14 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const l
 {
 	L_Class<name, index_t>::Register(L, get, set, 0);
 
-	lua_pushlightuserdata(L, (void *) (&name[1]));
+	L_Class<name, index_t>::_push_get_methods_key(L);
 	lua_gettable(L, LUA_REGISTRYINDEX);
 	lua_pushstring(L, "mnemonic");
 	lua_pushcfunction(L, _get_mnemonic);
 	lua_settable(L, -3);
 	lua_pop(L, 1);
 
-	lua_pushlightuserdata(L, (void *) (&name[2]));
+	L_Class<name, index_t>::_push_set_methods_key(L);
 	lua_gettable(L, LUA_REGISTRYINDEX);
 	lua_pushstring(L, "mnemonic");
 	lua_pushcfunction(L, _set_mnemonic);
@@ -471,7 +490,7 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const l
 
 	if (mnemonics)
 	{
-		lua_pushlightuserdata(L, (void *) (&name[4]));
+		_push_mnemonic_key(L);
 		lua_newtable(L);
 		
 		const lang_def *mnemonic = mnemonics;
@@ -495,7 +514,7 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const l
 template<char *name, typename index_t>
 void L_Enum<name, index_t>::PushMnemonicTable(lua_State *L)
 {
-	lua_pushlightuserdata(L, (void *) (&name[4]));
+	_push_mnemonic_key(L);
 	lua_gettable(L, LUA_REGISTRYINDEX);
 }
 
@@ -651,6 +670,11 @@ private:
 	static int _call(lua_State *);
 	static int _iterator(lua_State *);
 	static int _length(lua_State *);
+
+protected:
+	static void _push_methods_key(lua_State *L) {
+		lua_pushlightuserdata(L, (void *) (&name[1]));
+	}
 };
 
 template<char *name, class T>
@@ -681,7 +705,7 @@ void L_Container<name, T>::Register(lua_State *L, const luaL_reg methods[], cons
 	lua_setglobal(L, name);
 	lua_pop(L, 1);
 
-	lua_pushlightuserdata(L, (void *) (&name[1]));
+	_push_methods_key(L);
 	lua_newtable(L);
 	if (methods)
 		luaL_openlib(L, 0, methods, 0);
@@ -706,7 +730,7 @@ int L_Container<name, T>::_get(lua_State *L)
 	else
 	{
 		// get the function from methods
-		lua_pushlightuserdata(L, (void *) (&name[1]));
+		_push_methods_key(L);
 		lua_gettable(L, LUA_REGISTRYINDEX);
 
 		lua_pushvalue(L, 2);
@@ -831,7 +855,7 @@ int L_EnumContainer<name, T>::_get(lua_State *L)
 	}
 
 	// get the function from methods
-	lua_pushlightuserdata(L, (void *) (&name[1]));
+	L_Container<name, T>::_push_methods_key(L);
 	lua_gettable(L, LUA_REGISTRYINDEX);
 	
 	lua_pushvalue(L, 2);
