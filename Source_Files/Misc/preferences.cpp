@@ -1368,7 +1368,7 @@ static const char *action_name[NUM_KEYS] = {
 };
 
 static const char *shell_action_name[NUMBER_OF_SHELL_KEYS] = {
-	"Inventory Left", "Inventory Right", "Switch Player View", "Volume Up", "Volume Down", "Zoom Map In", "Zoom Map Out", "Toggle FPS", "Chat/Console", "Show Scores"
+	"Inventory Left", "Inventory Right", "Switch Player View", "Volume Up", "Volume Down", "Zoom Map In", "Zoom Map Out", "Toggle FPS", "Chat/Console", "Network Stats"
 };
 
 static SDLKey default_keys[NUM_KEYS] = {
