@@ -111,23 +111,21 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	luaL_newmetatable(L, name);
 
 	// register metatable get
-	lua_pushstring(L, "__index");
 	lua_pushcfunction(L, _get);
-	lua_settable(L, -3);
+	lua_setfield(L, -2, "__index");
 
 	// register metatable set
-	lua_pushstring(L, "__newindex");
 	lua_pushcfunction(L, _set);
-	lua_settable(L, -3);
+	lua_setfield(L, -2, "__newindex");
 
 	// register metatable tostring
-	lua_pushstring(L, "__tostring");
 	lua_pushcfunction(L, _tostring);
-	lua_settable(L, -3);
+	lua_setfield(L, -2, "__tostring");
 
 	if (metatable)
 		luaL_openlib(L, 0, metatable, 0);
 	
+	// clear the stack
 	lua_pop(L, 1);
 	
 	// register get methods
@@ -135,9 +133,8 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	lua_newtable(L);
 
 	// always want index
-	lua_pushstring(L, "index");
 	lua_pushcfunction(L, _index);
-	lua_settable(L, -3);
+	lua_setfield(L, -2, "index");
 
 	if (get)
 		luaL_openlib(L, 0, get, 0);
@@ -460,34 +457,34 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const l
 {
 	L_Class<name, index_t>::Register(L, get, set, 0);
 
+	// add mnemonic accessors to get/set tables
 	L_Class<name, index_t>::_push_get_methods_key(L);
 	lua_gettable(L, LUA_REGISTRYINDEX);
-	lua_pushstring(L, "mnemonic");
 	lua_pushcfunction(L, _get_mnemonic);
-	lua_settable(L, -3);
+	lua_setfield(L, -2, "mnemonic");
 	lua_pop(L, 1);
 
 	L_Class<name, index_t>::_push_set_methods_key(L);
 	lua_gettable(L, LUA_REGISTRYINDEX);
-	lua_pushstring(L, "mnemonic");
 	lua_pushcfunction(L, _set_mnemonic);
-	lua_settable(L, -3);
+	lua_setfield(L, -2, "mnemonic");
 	lua_pop(L, 1);
 
+	// add __eq and __tostring to metatable
 	luaL_getmetatable(L, name);
-	lua_pushstring(L, "__eq");
-	lua_pushcfunction(L, _equals);
-	lua_settable(L, -3);
 
-	lua_pushstring(L, "__tostring");
+	lua_pushcfunction(L, _equals);
+	lua_setfield(L, -2, "__eq");
+
 	lua_pushcfunction(L, _get_mnemonic);
-	lua_settable(L, -3);
+	lua_setfield(L, -2, "__tostring");
 
 	if (metatable)
 		luaL_openlib(L, 0, metatable, 0);
 
 	lua_pop(L, 1);
 
+	// load mnemonics to mnemonic table
 	if (mnemonics)
 	{
 		_push_mnemonic_key(L);
@@ -684,26 +681,27 @@ template<char *name, class T>
 void L_Container<name, T>::Register(lua_State *L, const luaL_reg methods[], const luaL_reg metatable[])
 {
 	lua_newuserdata(L, 0);
-	lua_pushvalue(L, -1);
+
 	luaL_newmetatable(L, name);
 	
-	lua_pushstring(L, "__index");
 	lua_pushcfunction(L, _get);
-	lua_settable(L, -3);
-	lua_pushstring(L, "__newindex");
+	lua_setfield(L, -2, "__index");
+	
 	lua_pushcfunction(L, _set);
-	lua_settable(L, -3);
-	lua_pushstring(L, "__call");
+	lua_setfield(L, -2, "__newindex");
+	
 	lua_pushcfunction(L, _call);
-	lua_settable(L, -3);
-	lua_pushstring(L, "__len");
+	lua_setfield(L, -2, "__call");
+	
 	lua_pushcfunction(L, _length);
-	lua_settable(L, -3);
+	lua_setfield(L, -2, "__len");
+	
 	if (metatable)
 		luaL_openlib(L, 0, metatable, 0);
+	
 	lua_setmetatable(L, -2);
+
 	lua_setglobal(L, name);
-	lua_pop(L, 1);
 
 	_push_methods_key(L);
 	lua_newtable(L);
@@ -802,9 +800,10 @@ void L_EnumContainer<name, T>::Register(lua_State *L, const luaL_reg methods[], 
 	L_Container<name, T>::Register(L, methods, metatable);
 	
 	luaL_getmetatable(L, name);
-	lua_pushstring(L, "__index");
+
 	lua_pushcfunction(L, _get);
-	lua_settable(L, -3);
+	lua_setfield(L, -2, "__index");
+
 	lua_pop(L, 1);
 }
 
