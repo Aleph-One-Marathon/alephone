@@ -179,42 +179,30 @@ L_Class<name, index_t> *L_Class<name, index_t>::Push(lua_State *L, index_t index
 	lua_pushnumber(L, index);
 	lua_gettable(L, -2);
 
-	if (lua_istable(L, -1))
-	{
-		// remove the index table
-		lua_remove(L, -2);
-		
-		lua_pushnumber(L, 0);
-		lua_gettable(L, -2);
-		lua_remove(L, -2);
-
-		t = static_cast<L_Class<name, index_t> *>(lua_touserdata(L, -1));
-	}
-	else if (lua_isnil(L, -1))
+	if (lua_isnil(L, -1)) 
 	{
 		lua_pop(L, 1);
 
-		lua_newtable(L);
-		
-		
+		// create an instance
 		t = static_cast<L_Class<name, index_t> *>(lua_newuserdata(L, sizeof(L_Class<name, index_t>)));
 		luaL_getmetatable(L, name);
 		lua_setmetatable(L, -2);
 		t->m_index = index;
 
-		lua_pushvalue(L, -1);
-		lua_insert(L, -4);
-		lua_pushnumber(L, 0);
-		lua_insert(L, -2);
-		lua_settable(L, -3);
-
+		// insert it into the instance table
 		lua_pushnumber(L, index);
-		lua_insert(L, -2);
-		lua_settable(L, -3);
+		lua_pushvalue(L, -2);
+		lua_settable(L, -4);
 
-		lua_pop(L, 1);
+	}
+	else
+	{
+		t = static_cast<L_Class<name, index_t> *>(lua_touserdata(L, -1));
 	}
 
+	// remove the instance table
+	lua_remove(L, -2);
+		
 	return t;
 }
 
