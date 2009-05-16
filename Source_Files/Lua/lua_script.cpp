@@ -186,6 +186,12 @@ static const luaL_Reg lualibs[] = {
 	{NULL, NULL}
 };
 
+void* L_Persistent_Table_Key()
+{
+	static char *key = "persist";
+	return key;
+}
+
 class LuaState
 {
 public:
@@ -220,6 +226,11 @@ public:
 			lua_pushstring(state_, lib->name);
 			lua_call(state_, 1, 0);
 		}
+
+		// set up a persistence table in the registry
+		lua_pushlightuserdata(state_, (void *) L_Persistent_Table_Key());
+		lua_newtable(state_);
+		lua_settable(state_, LUA_REGISTRYINDEX);
 
 		RegisterFunctions();
 		LoadCompatibility();

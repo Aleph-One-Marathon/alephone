@@ -40,6 +40,8 @@ enum ScriptType {
 	_solo_lua_script
 };
 
+void *L_Persistent_Table_Key();
+
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType type);
 bool RunLuaScript();
 void CloseLuaScript();

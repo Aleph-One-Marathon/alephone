@@ -93,7 +93,9 @@ protected:
 	static void _push_instances_key(lua_State *L) {
 		lua_pushlightuserdata(L, (void *) (&name[3]));
 	}
-	
+
+	// special tables
+	static void _push_custom_fields_table(lua_State *L);
 };
 
 struct always_valid
@@ -287,26 +289,22 @@ int L_Class<name, index_t>::_get(lua_State *L)
 
 		if (lua_tostring(L, 2)[0] == '_')
 		{
-			// look it up in the custom table
-			_push_instances_key(L);
-			lua_gettable(L, LUA_REGISTRYINDEX);
-
+			_push_custom_fields_table(L);
 			lua_pushnumber(L, Index(L, 1));
 			lua_gettable(L, -2);
-
 			if (lua_istable(L, -1))
 			{
-				// remove the index table
-				lua_remove(L, -2);
-				lua_pushvalue(L, -2);
+				lua_pushvalue(L, 2);
 				lua_gettable(L, -2);
 				lua_remove(L, -2);
 			}
-			else
+			else 
 			{
-				lua_pop(L, 2);
+				lua_pop(L, 1);
 				lua_pushnil(L);
 			}
+
+			lua_remove(L, -2);
 		}
 		else
 		{
@@ -355,20 +353,33 @@ int L_Class<name, index_t>::_set(lua_State *L)
 
 	if (lua_isstring(L, 2) && lua_tostring(L, 2)[0] == '_')
 	{
-		// get the index table
-		_push_instances_key(L);
-		lua_gettable(L, LUA_REGISTRYINDEX);
-
+		_push_custom_fields_table(L);
 		lua_pushnumber(L, Index(L, 1));
 		lua_gettable(L, -2);
-
-		if (lua_istable(L, -1))
+		if (lua_istable(L, -1)) 
 		{
 			lua_pushvalue(L, 2);
 			lua_pushvalue(L, 3);
 			lua_settable(L, -3);
 			lua_pop(L, 1);
 		}
+		else
+		{
+			lua_pop(L, 1);
+
+			lua_newtable(L);
+			
+			lua_pushnumber(L, Index(L, 1));
+			lua_pushvalue(L, -2);
+			lua_settable(L, -4);
+			
+			lua_pushvalue(L, 2);
+			lua_pushvalue(L, 3);
+			lua_settable(L, -3);
+			lua_pop(L, 1);
+		}
+
+		lua_pop(L, 1);
 	}
 	else
 	{
@@ -399,7 +410,7 @@ int L_Class<name, index_t>::_set(lua_State *L)
 		
 		lua_pop(L, 1);
 	}
-		
+
 	return 0;
 }
 
@@ -411,6 +422,29 @@ int L_Class<name, index_t>::_tostring(lua_State *L)
 	lua_pushstring(L, s.str().c_str());
 	return 1;
 }
+
+
+template<char *name, typename index_t>
+void L_Class<name, index_t>::_push_custom_fields_table(lua_State *L)
+{
+	lua_pushlightuserdata(L, (void *) (L_Persistent_Table_Key()));
+	lua_gettable(L, LUA_REGISTRYINDEX);
+
+	lua_getfield(L, -1, name);
+	if (lua_isnil(L, -1))
+	{
+		// remove the nil
+		lua_pop(L, 1);
+
+		// push a new table
+		lua_newtable(L);
+		lua_pushvalue(L, -1);
+		lua_setfield(L, -3, name);
+	}
+	
+	lua_remove(L, -2);
+}
+
 
 // enum classes define equality with numbers
 template<char *name, typename index_t = int16>
