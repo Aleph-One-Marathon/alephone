@@ -132,6 +132,7 @@ bool option_nogl = false;             // Disable OpenGL
 bool option_nosound = false;          // Disable sound output
 bool option_nogamma = false;	      // Disable gamma table effects (menu fades)
 bool option_debug = false;
+bool option_nojoystick = false;
 static bool force_fullscreen = false; // Force fullscreen mode
 static bool force_windowed = false;   // Force windowed mode
 
@@ -181,6 +182,7 @@ static void usage(const char *prg_name)
 #endif
 	  "\t[-s | --nosound]       Do not access the sound card\n"
 	  "\t[-m | --nogamma]       Disable gamma table effects (menu fades)\n"
+          "\t[-j | --nojoystick]    Do not initialize joysticks\n"
 #if defined(unix) || defined(__BEOS__) || defined(__WIN32__) || defined(__NetBSD__) || defined(__OpenBSD__)
 	  "\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 	  "the data directory.\n"
@@ -242,6 +244,8 @@ int main(int argc, char **argv)
 			option_nogl = true;
 		} else if (strcmp(*argv, "-s") == 0 || strcmp(*argv, "--nosound") == 0) {
 			option_nosound = true;
+                } else if (strcmp(*argv, "-j") == 0 || strcmp(*argv, "--nojoystick") == 0) {
+                        option_nojoystick = true;
 		} else if (strcmp(*argv, "-m") == 0 || strcmp(*argv, "--nogamma") == 0) {
 			option_nogamma = true;
 		} else if (strcmp(*argv, "-d") == 0 || strcmp(*argv, "--debug") == 0) {
@@ -454,6 +458,7 @@ static void initialize_application(void)
 	// Initialize SDL
 	int retval = SDL_Init(SDL_INIT_VIDEO | 
 			      (option_nosound ? 0 : SDL_INIT_AUDIO) |
+                              (option_nojoystick ? 0 : SDL_INIT_JOYSTICK) |
 			      (option_debug ? SDL_INIT_NOPARACHUTE : 0));
 #ifdef __WIN32__
 	if (retval < 0 && strcmp(SDL_getenv("SDL_VIDEODRIVER"), "directx") == 0)
@@ -465,6 +470,7 @@ static void initialize_application(void)
 		SDL_putenv("SDL_VIDEODRIVER=windib");
 		retval = SDL_Init(SDL_INIT_VIDEO |
 				  (option_nosound ? 0 : SDL_INIT_AUDIO) |
+                                  (option_nojoystick ? 0 : SDL_INIT_JOYSTICK) |
 				  (option_debug ? SDL_INIT_NOPARACHUTE : 0));
 	}
 #endif

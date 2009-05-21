@@ -95,6 +95,7 @@ Feb 20, 2002 (Woody Zenfell):
 #include "ActionQueues.h"
 #include "computer_interface.h"
 #include "Console.h"
+#include "joystick.h"
 
 #ifdef env68k
 #pragma segment input
@@ -233,10 +234,13 @@ void set_keyboard_controller_status(
 
 #ifdef SDL
 	// We enable/disable mouse control here
-	if (active)
+	if (active) {
 		enter_mouse(input_preferences->input_device);
-	else
+                enter_joystick();
+        } else {
 		exit_mouse(input_preferences->input_device);
+                exit_joystick();
+        }
 #endif
 	
 	/******************************************************************************************/
@@ -1320,6 +1324,7 @@ uint32 parse_keymap(void)
       
       // ZZZ: let mouse code simulate keypresses
       mouse_buttons_become_keypresses(key_map);
+      joystick_buttons_become_keypresses(key_map);
       
       // Parse the keymap
       key_definition *key = current_key_definitions;
@@ -1357,20 +1362,28 @@ uint32 parse_keymap(void)
 	  special->persistence = FLOOR(special->persistence-1, 0);
       }
       
+
       // Handle the selected input controller
       if (input_preferences->input_device != _keyboard_or_game_pad) {
 	_fixed delta_yaw, delta_pitch, delta_velocity;
 	test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
 	flags = mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
+      } else {
+        int joyflags = process_joystick_axes(flags, heartbeat_count);
+        if (joyflags != flags) {
+            flags = joyflags;
+        } else {
+
+          // Modify flags with run/walk and swim/sink if we're using the keyboard
+          bool do_interchange =
+	    (local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?
+	    (input_preferences->modifiers & _inputmod_interchange_swim_sink) != 0:
+	    (input_preferences->modifiers & _inputmod_interchange_run_walk) != 0;
+        if (do_interchange)
+	    flags ^= _run_dont_walk;
+        }
       }
       
-      // Modify flags with run/walk and swim/sink
-      bool do_interchange =
-	(local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?
-	(input_preferences->modifiers & _inputmod_interchange_swim_sink) != 0:
-	(input_preferences->modifiers & _inputmod_interchange_run_walk) != 0;
-      if (do_interchange)
-	flags ^= _run_dont_walk;
       
       if (player_in_terminal_mode(local_player_index))
 	flags = build_terminal_action_flags((char *)key_map);

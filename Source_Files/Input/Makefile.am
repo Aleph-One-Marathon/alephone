@@ -2,9 +2,9 @@
 
 noinst_LIBRARIES = libinput.a
 
-libinput_a_SOURCES = ISp_Support.h mouse.h \
+libinput_a_SOURCES = ISp_Support.h mouse.h joystick.h \
   \
-  mouse_sdl.cpp
+  mouse_sdl.cpp joystick_sdl.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Misc \
