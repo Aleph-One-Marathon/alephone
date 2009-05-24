@@ -1,12 +1,13 @@
 ## Process this file with automake to produce Makefile.in 
 
 noinst_LIBRARIES = libcseries.a
-libcseries_a_SOURCES = byte_swapping.h csalerts.h csdialogs.h cscluts.h \
-  cseries.h csfiles.h csfonts.h csmacros.h csmisc.h cspixels.h csstrings.h \
-  cstypes.h mytm.h snprintf.h \
+libcseries_a_SOURCES = byte_swapping.h BStream.h csalerts.h		\
+  csdialogs.h cscluts.h cseries.h csfiles.h csfonts.h csmacros.h	\
+  csmisc.h cspixels.h csstrings.h cstypes.h mytm.h snprintf.h \
   \
-  byte_swapping.cpp csalerts_sdl.cpp cscluts_sdl.cpp csdialogs_sdl.cpp \
-  csmisc_sdl.cpp csstrings.cpp mytm_sdl.cpp snprintf.cpp
+  byte_swapping.cpp BStream.cpp csalerts_sdl.cpp cscluts_sdl.cpp	\
+  csdialogs_sdl.cpp csmisc_sdl.cpp csstrings.cpp mytm_sdl.cpp		\
+  snprintf.cpp
 
 EXTRA_libcseries_a_SOURCES = csfiles_beos.cpp
 

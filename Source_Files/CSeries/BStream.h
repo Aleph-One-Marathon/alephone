@@ -1,0 +1,124 @@
+/*
+
+	Copyright (C) 2009 by Gregory Smith
+ 
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	This license is contained in the file "COPYING",
+	which is included with this source code; it is available online at
+	http://www.gnu.org/licenses/gpl.html
+
+	BStream: serialization to/from a streambuf -- meant to replace AStream
+*/
+
+#ifndef BSTREAM_H
+#define BSTREAM_H
+
+#include "cseries.h"
+#include <streambuf>
+
+class basic_bstream
+{
+public:
+	basic_bstream(std::streambuf* sb) : sb_(sb) { }
+	virtual ~basic_bstream() {};
+
+	typedef std::ios_base::failure failure;
+
+	std::streambuf* rdbuf() const { return sb_; }
+	std::streambuf* rdbuf(std::streambuf* new_sb) { std::streambuf* old = sb_; sb_ = new_sb; return old; }
+
+private:
+	std::streambuf* sb_;
+};
+
+class BIStream : public basic_bstream
+{
+public:
+	BIStream(std::streambuf* sb) : basic_bstream(sb) { }
+
+	std::streampos tellg() const;
+	std::streampos maxg() const;
+
+	BIStream& operator>>(uint8& value) throw(failure);
+	BIStream& operator>>(int8& value) throw(failure);
+
+	virtual BIStream& operator>>(int16& value) throw(failure) = 0;
+	virtual BIStream& operator>>(uint16& value) throw(failure) = 0;
+	virtual BIStream& operator>>(int32& value) throw(failure) = 0;
+	virtual BIStream& operator>>(uint32& value) throw(failure) = 0;
+	virtual BIStream& operator>>(double& value) throw(failure) = 0;
+
+	BIStream& read(char *s, std::streamsize n) throw(failure);
+	BIStream& ignore(std::streamsize n) throw(failure);
+};
+
+class BIStreamBE : public BIStream
+{
+public:
+	BIStreamBE(std::streambuf* sb) : BIStream(sb) {}
+	
+	BIStream& operator>>(uint8& value) throw(failure) {
+		return BIStream::operator>>(value);
+	}
+
+	BIStream& operator>>(int8& value) throw(failure) {
+		return BIStream::operator>>(value);
+	}
+
+	BIStream& operator>>(int16& value) throw(failure);
+	BIStream& operator>>(uint16& value) throw(failure);
+	BIStream& operator>>(int32& value) throw(failure);
+	BIStream& operator>>(uint32& value) throw(failure);
+	BIStream& operator>>(double& value) throw(failure);
+};
+	
+class BOStream : public basic_bstream
+{
+public:
+	BOStream(std::streambuf* sb) : basic_bstream(sb) { }
+	
+	std::streampos tellp() const;
+	std::streampos maxp() const;
+	
+	BOStream& operator<<(uint8 value) throw(failure);
+	BOStream& operator<<(int8 value) throw(failure);
+
+	virtual BOStream& operator<<(int16 value) throw(failure) = 0;
+	virtual BOStream& operator<<(uint16 value) throw(failure) = 0;
+	virtual BOStream& operator<<(int32 value) throw(failure) = 0;
+	virtual BOStream& operator<<(uint32 value) throw(failure) = 0;
+	virtual BOStream& operator<<(double value) throw(failure) = 0;
+
+	BOStream& write(char *s, std::streamsize n) throw(failure);
+};
+
+class BOStreamBE : public BOStream
+{
+public:
+	BOStreamBE(std::streambuf* sb) : BOStream(sb) {}
+	
+	BOStream& operator<<(uint8 value) throw(failure) {
+		return BOStream::operator<<(value);
+	}
+
+	BOStream& operator<<(int8 value) throw(failure) {
+		return BOStream::operator<<(value);
+	}
+
+	BOStream& operator<<(int16 value) throw(failure);
+	BOStream& operator<<(uint16 value) throw(failure);
+	BOStream& operator<<(int32 value) throw(failure);
+	BOStream& operator<<(uint32 value) throw(failure);
+	BOStream& operator<<(double value) throw(failure);
+};
+
+#endif

@@ -1,0 +1,167 @@
+/*
+
+	Copyright (C) 2009 by Gregory Smith
+ 
+	This program is free software; you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation; either version 2 of the License, or
+	(at your option) any later version.
+
+	This program is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	This license is contained in the file "COPYING",
+	which is included with this source code; it is available online at
+	http://www.gnu.org/licenses/gpl.html
+
+	BStream: serialization to/from a streambuf -- meant to replace AStream
+*/
+
+#include "BStream.h"
+#include <SDL/SDL_endian.h>
+
+std::streampos BIStream::tellg() const
+{
+	return rdbuf()->pubseekoff(0, std::ios_base::cur, std::ios_base::in);
+}
+
+std::streampos BIStream::maxg() const
+{
+	std::streampos cur = tellg();
+	std::streampos max = rdbuf()->pubseekoff(0, std::ios_base::end, std::ios_base::in);
+	rdbuf()->pubseekpos(cur, std::ios_base::in);
+	return max;
+}
+
+BIStream& BIStream::read(char *s, std::streamsize n) throw(failure)
+{
+	if (rdbuf()->sgetn(s, n) != n)
+	{
+		throw failure("serialization bound check failed");
+	}
+
+	return *this;
+}
+
+BIStream& BIStream::ignore(std::streamsize n) throw(failure)
+{
+	if (rdbuf()->in_avail() < n) 
+	{
+		throw failure("serialization bounc check failed");
+	}
+
+	rdbuf()->pubseekoff(n, std::ios_base::cur, std::ios_base::in);
+	return *this;
+}
+
+BIStream& BIStream::operator>>(uint8& value) throw(failure)
+{
+	return read(reinterpret_cast<char*>(&value), 1);
+}
+
+BIStream& BIStream::operator>>(int8& value) throw(failure)
+{
+	return operator>>(static_cast<int8&>(value));
+}
+
+BIStream& BIStreamBE::operator>>(uint16& value) throw(failure)
+{
+	read(reinterpret_cast<char*>(&value), 2);
+	value = SDL_SwapBE16(value);
+	return *this;
+}
+
+BIStream& BIStreamBE::operator>>(int16& value) throw(failure)
+{
+	uint16 uvalue;
+	operator>>(uvalue);
+	value = static_cast<int16>(uvalue);
+	return *this;
+}
+
+BIStream& BIStreamBE::operator>>(uint32& value) throw(failure)
+{
+	read(reinterpret_cast<char*>(&value), 4);
+	value = SDL_SwapBE32(value);
+	return *this;
+}
+
+BIStream& BIStreamBE::operator>>(int32& value) throw(failure)
+{
+	uint32 uvalue;
+	operator>>(uvalue);
+	value = static_cast<int32>(uvalue);
+	return *this;
+}
+
+BIStream& BIStreamBE::operator>>(double& value) throw(failure)
+{
+	Uint64 ivalue;
+	read(reinterpret_cast<char*>(&ivalue), 8);
+	ivalue = SDL_SwapBE64(ivalue);
+	value = *reinterpret_cast<double*>(&ivalue);
+	return *this;
+}
+
+std::streampos BOStream::tellp() const 
+{
+	return rdbuf()->pubseekoff(0, std::ios_base::cur, std::ios_base::out);
+}
+
+std::streampos BOStream::maxp() const
+{
+	std::streampos cur = tellp();
+	std::streampos max = rdbuf()->pubseekoff(0, std::ios_base::end, std::ios_base::out);
+	rdbuf()->pubseekpos(cur, std::ios_base::out);
+	return max;
+}
+
+BOStream& BOStream::write(char *s, std::streamsize n) throw(failure)
+{
+	if (rdbuf()->sputn(s, n) != n)
+	{
+		throw failure("serialization bound check failed");
+	}
+
+	return *this;
+}
+
+BOStream& BOStream::operator<<(uint8 value) throw(failure)
+{
+	return write(reinterpret_cast<char*>(&value), 1);
+}
+
+BOStream& BOStream::operator<<(int8 value) throw(failure)
+{
+	return operator<<(static_cast<uint8>(value));
+}
+
+BOStream& BOStreamBE::operator<<(uint16 value) throw(failure)
+{
+	value = SDL_SwapBE16(value);
+	return write(reinterpret_cast<char*>(&value), 2);
+}
+
+BOStream& BOStreamBE::operator<<(int16 value) throw(failure)
+{
+	return operator<<(static_cast<uint16>(value));
+}
+
+BOStream& BOStreamBE::operator<<(uint32 value) throw(failure)
+{
+	value = SDL_SwapBE32(value);
+	return write(reinterpret_cast<char*>(&value), 4);
+}
+
+BOStream& BOStreamBE::operator<<(int32 value) throw(failure)
+{
+	return operator<<(static_cast<uint32>(value));
+}
+
+BOStream& BOStreamBE::operator<<(double value) throw(failure)
+{
+	Uint64 bytes = SDL_SwapBE64(*reinterpret_cast<Uint64*>(&value));
+	return write(reinterpret_cast<char*>(&bytes), 8);
+}
