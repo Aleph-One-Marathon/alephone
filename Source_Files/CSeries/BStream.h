@@ -98,7 +98,7 @@ public:
 	virtual BOStream& operator<<(uint32 value) throw(failure) = 0;
 	virtual BOStream& operator<<(double value) throw(failure) = 0;
 
-	BOStream& write(char *s, std::streamsize n) throw(failure);
+	BOStream& write(const char *s, std::streamsize n) throw(failure);
 };
 
 class BOStreamBE : public BOStream

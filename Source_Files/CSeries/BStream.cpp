@@ -118,7 +118,7 @@ std::streampos BOStream::maxp() const
 	return max;
 }
 
-BOStream& BOStream::write(char *s, std::streamsize n) throw(failure)
+BOStream& BOStream::write(const char *s, std::streamsize n) throw(failure)
 {
 	if (rdbuf()->sputn(s, n) != n)
 	{
