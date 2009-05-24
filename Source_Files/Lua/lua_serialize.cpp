@@ -25,14 +25,15 @@ LUA_SERIALIZE.CPP
 
 #include "BStream.h"
 
-const static int16 SAVED_REFERENCE_PSEUDOTYPE = -2;
+const static int SAVED_REFERENCE_PSEUDOTYPE = -2;
 
 static bool valid_key(int type)
 {
 	return (type == LUA_TNUMBER ||
 		type == LUA_TBOOLEAN ||
 		type == LUA_TSTRING ||
-		type == LUA_TTABLE);
+		type == LUA_TTABLE ||
+		type == LUA_TUSERDATA);
 }
 
 static void save(lua_State *L, BOStreamBE& s, uint32& counter)
@@ -43,21 +44,21 @@ static void save(lua_State *L, BOStreamBE& s, uint32& counter)
 	lua_rawget(L, 1);
 	if (!lua_isnil(L, -1))
 	{
-		s << SAVED_REFERENCE_PSEUDOTYPE
+		s << static_cast<int8>(SAVED_REFERENCE_PSEUDOTYPE)
 		  << static_cast<uint32>(lua_tonumber(L, -1));
 		lua_pop(L, 1);
 		return;
 	}
 	lua_pop(L, 1);
 
-	s << static_cast<int16>(lua_type(L, -1));
+	s << static_cast<int8>(lua_type(L, -1));
 	switch (lua_type(L, -1))
 	{
 		case LUA_TNIL:
 			break;
 		case LUA_TNUMBER:
 			{
-				s << static_cast<double>(lua_tonumber(L, -1));
+				s << static_cast<lua_Number>(lua_tonumber(L, -1));
 			}
 			break;
 		case LUA_TBOOLEAN:
@@ -73,7 +74,7 @@ static void save(lua_State *L, BOStreamBE& s, uint32& counter)
 			{
 				// add to the reference table
 				lua_pushvalue(L, -1);
-				lua_pushnumber(L, static_cast<double>(++counter));
+				lua_pushnumber(L, static_cast<lua_Number>(++counter));
 				lua_rawset(L, 1);
 
 				// write the reference
@@ -102,6 +103,31 @@ static void save(lua_State *L, BOStreamBE& s, uint32& counter)
 				lua_pop(L, 1);
 			}
 			break;
+		case LUA_TUSERDATA:
+			{
+				// add to the reference table
+				lua_pushvalue(L, -1);
+				lua_pushnumber(L, static_cast<lua_Number>(++counter));
+				lua_rawset(L, 1);
+
+				// write the reference
+				s << counter;
+
+				// assume that this is one of our userdata
+				lua_getmetatable(L, -1);
+				lua_gettable(L, LUA_REGISTRYINDEX);
+
+				s << static_cast<uint8>(lua_strlen(L, -1));
+				s.write(lua_tostring(L, -1), lua_strlen(L, -1));
+				lua_pop(L, 1);
+
+				lua_getfield(L, -1, "index");
+				
+				s << static_cast<uint32>(lua_tonumber(L, -1));
+				lua_pop(L, 1);
+			}
+			break;
+		
 		default:
 			// we silently ignore other types
 			break;
@@ -135,9 +161,9 @@ bool lua_save(lua_State *L, std::streambuf* sb)
 	return true;
 }
 
-static void restore(lua_State *L, BIStreamBE& s)
+static int restore(lua_State *L, BIStreamBE& s)
 {
-	int16 type;
+	int8 type;
 	s >> type;
 
 	switch (type) 
@@ -168,26 +194,67 @@ static void restore(lua_State *L, BIStreamBE& s)
 			break;
 		case LUA_TTABLE:
 			{
-				uint32 index;
-				s >> index;
+				uint32 reference;
+				s >> reference;
 
 				// add to the reference table
 				lua_newtable(L);
-				lua_pushnumber(L, static_cast<double>(index));
+				lua_pushnumber(L, static_cast<lua_Number>(reference));
 				lua_pushvalue(L, -2);
 				lua_rawset(L, 1);
 
-				restore(L, s);
-				while (!lua_isnil(L, -1))
+				int key_type = restore(L, s);
+				while (key_type != LUA_TNIL)
 				{
 					restore(L, s); // value
-					lua_rawset(L, -3);
-					restore(L, s); // next key
+					if (lua_isnil(L, -2)) 
+					{
+						// maybe an invalid userdata?
+						lua_pop(L, 2);
+					} 
+					else
+					{
+						lua_rawset(L, -3);
+					}
+					key_type = restore(L, s); // next key
 				}
 				lua_pop(L, 1);
-
 			}
 			break;
+		case LUA_TUSERDATA:
+			{
+				uint32 reference;
+				s >> reference;
+				
+				uint8 length;
+				s >> length;
+				std::vector<char> v(length);
+				s.read(&v[0], v.size());
+				lua_pushlstring(L, &v[0], v.size());
+
+				uint32 index;
+				s >> index;
+				
+				// get the metatable
+				lua_gettable(L, LUA_REGISTRYINDEX);
+				// get the accessor we added
+				lua_getfield(L, -1, "__new");
+				if (lua_isfunction(L, -1))
+				{
+					lua_pushnumber(L, static_cast<lua_Number>(index));
+					lua_call(L, 1, 1);
+				}
+
+				lua_remove(L, -2);
+				
+				// add to the reference table
+				lua_pushnumber(L, static_cast<lua_Number>(reference));
+				lua_pushvalue(L, -2);
+				lua_rawset(L, 1);
+				
+			}
+			break;
+				
 		case SAVED_REFERENCE_PSEUDOTYPE:
 			{
 				uint32 index;
@@ -200,6 +267,8 @@ static void restore(lua_State *L, BIStreamBE& s)
 			lua_pushnil(L);
 			break;
 	}
+
+	return type;
 }
 
 bool lua_restore(lua_State *L, std::streambuf* sb)
