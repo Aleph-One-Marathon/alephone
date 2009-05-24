@@ -24,7 +24,8 @@ LUA_SERIALIZE.H
 */
 
 #include "cseries.h"
-#include <SDL/SDL.h>
+
+#include <streambuf>
 
 #ifdef HAVE_LUA
 extern "C"
@@ -34,11 +35,11 @@ extern "C"
 #include "lualib.h"
 }
 
-// saves object on top of the stack to rw
-void lua_save(lua_State *L, SDL_RWops *rw);
+// saves object on top of the stack to s
+bool lua_save(lua_State *L, std::streambuf* sb);
 
-// restores object in rw to top of the stack
-void lua_restore(lua_State *L, SDL_RWops *rw);
+// restores object in s to top of the stack
+bool lua_restore(lua_State *L, std::streambuf* sb);
 
 #endif
 

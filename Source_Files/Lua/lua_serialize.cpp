@@ -23,9 +23,9 @@ LUA_SERIALIZE.CPP
 
 #include "lua_serialize.h"
 
-#include <SDL/SDL_endian.h>
+#include "BStream.h"
 
-const static int SAVED_REFERENCE_PSEUDOTYPE = -2;
+const static int16 SAVED_REFERENCE_PSEUDOTYPE = -2;
 
 static bool valid_key(int type)
 {
@@ -35,7 +35,7 @@ static bool valid_key(int type)
 		type == LUA_TTABLE);
 }
 
-static void save(lua_State *L, SDL_RWops *rw, uint32& counter)
+static void save(lua_State *L, BOStreamBE& s, uint32& counter)
 {
 	// if the object has already been written, write a reference to it
 
@@ -43,32 +43,30 @@ static void save(lua_State *L, SDL_RWops *rw, uint32& counter)
 	lua_rawget(L, 1);
 	if (!lua_isnil(L, -1))
 	{
-		uint32 ref = static_cast<uint32>(lua_tonumber(L, -1));
-		SDL_WriteBE16(rw, SAVED_REFERENCE_PSEUDOTYPE);
-		SDL_WriteBE32(rw, ref);
+		s << SAVED_REFERENCE_PSEUDOTYPE
+		  << static_cast<uint32>(lua_tonumber(L, -1));
 		lua_pop(L, 1);
 		return;
 	}
 	lua_pop(L, 1);
 
-	SDL_WriteBE16(rw, lua_type(L, -1));
+	s << static_cast<int16>(lua_type(L, -1));
 	switch (lua_type(L, -1))
 	{
 		case LUA_TNIL:
 			break;
 		case LUA_TNUMBER:
 			{
-				double d = lua_tonumber(L, -1);
-				SDL_WriteBE64(rw, *reinterpret_cast<Uint64*>(&d));
+				s << static_cast<double>(lua_tonumber(L, -1));
 			}
 			break;
 		case LUA_TBOOLEAN:
-			SDL_WriteBE16(rw, lua_toboolean(L, -1) ? 1 : 0);
+			s << static_cast<uint8>(lua_toboolean(L, -1) ? 1 : 0);
 			break;
 		case LUA_TSTRING: 
 			{
-				SDL_WriteBE32(rw, static_cast<uint32>(lua_strlen(L, -1)));
-				SDL_RWwrite(rw, lua_tostring(L, -1), lua_strlen(L, -1), 1);
+				s << static_cast<uint32>(lua_strlen(L, -1));
+				s.write(lua_tostring(L, -1), lua_strlen(L, -1));
 			}
 			break;
 		case LUA_TTABLE:
@@ -79,7 +77,7 @@ static void save(lua_State *L, SDL_RWops *rw, uint32& counter)
 				lua_rawset(L, 1);
 
 				// write the reference
-				SDL_WriteBE32(rw, counter);
+				s << counter;
 
 				// write all k/v pairs
 				lua_pushnil(L);
@@ -89,10 +87,10 @@ static void save(lua_State *L, SDL_RWops *rw, uint32& counter)
 						// another key
 						lua_pushvalue(L, -2);
 						
-						save(L, rw, counter);
+						save(L, s, counter);
 						lua_pop(L, 1);
 						
-						save(L, rw, counter);
+						save(L, s, counter);
 						lua_pop(L, 1);
 					} else {
 						lua_pop(L, 1);
@@ -100,7 +98,7 @@ static void save(lua_State *L, SDL_RWops *rw, uint32& counter)
 				}
 
 				lua_pushnil(L);
-				save(L, rw, counter);
+				save(L, s, counter);
 				lua_pop(L, 1);
 			}
 			break;
@@ -110,7 +108,7 @@ static void save(lua_State *L, SDL_RWops *rw, uint32& counter)
 	}
 }
 
-void lua_save(lua_State *L, SDL_RWops *rw)
+bool lua_save(lua_State *L, std::streambuf* sb)
 {
 	lua_assert(lua_gettop(L) == 1);
 
@@ -121,15 +119,26 @@ void lua_save(lua_State *L, SDL_RWops *rw)
 	lua_insert(L, 1);
 	
 	uint32 counter = 0;
-	save(L, rw, counter);
+	BOStreamBE s(sb);
+	try 
+	{
+		save(L, s, counter);
+	}
+	catch (const basic_bstream::failure& e)
+	{
+		lua_settop(L, 0);
+		return false;
+	}
 
 	// remove the reference table
 	lua_remove(L, 1);
+	return true;
 }
 
-static void restore(lua_State *L, SDL_RWops *rw)
+static void restore(lua_State *L, BIStreamBE& s)
 {
-	int type = static_cast<int16>(SDL_ReadBE16(rw));
+	int16 type;
+	s >> type;
 
 	switch (type) 
 	{
@@ -137,38 +146,43 @@ static void restore(lua_State *L, SDL_RWops *rw)
 			lua_pushnil(L);
 			break;
 		case LUA_TBOOLEAN:
-			lua_pushboolean(L, SDL_ReadBE16(rw) == 1);
+			uint8 b;
+			s >> b;			
+			lua_pushboolean(L, b == 1);
 			break;
 		case LUA_TNUMBER:
 			{
-				Uint64 i = SDL_ReadBE64(rw);
-				lua_pushnumber(L, *reinterpret_cast<double*>(&i));
+				double d;
+				s >> d;
+				lua_pushnumber(L, static_cast<lua_Number>(d));
 			}
 			break;
 		case LUA_TSTRING:
 			{
-				uint32 length = SDL_ReadBE32(rw);
-				std::vector<char> buffer(length);
-				SDL_RWread(rw, &buffer[0], length, 1);
-				lua_pushlstring(L, &buffer[0], length);
+				uint32 length;
+				s >> length;
+				std::vector<char> v(length);
+				s.read(&v[0], v.size());
+				lua_pushlstring(L, &v[0], v.size());
 			}
 			break;
 		case LUA_TTABLE:
 			{
-				uint32 index = SDL_ReadBE32(rw);
-				
+				uint32 index;
+				s >> index;
+
 				// add to the reference table
 				lua_newtable(L);
 				lua_pushnumber(L, static_cast<double>(index));
 				lua_pushvalue(L, -2);
 				lua_rawset(L, 1);
 
-				restore(L, rw);
+				restore(L, s);
 				while (!lua_isnil(L, -1))
 				{
-					restore(L, rw); // value
+					restore(L, s); // value
 					lua_rawset(L, -3);
-					restore(L, rw); // next key
+					restore(L, s); // next key
 				}
 				lua_pop(L, 1);
 
@@ -176,8 +190,9 @@ static void restore(lua_State *L, SDL_RWops *rw)
 			break;
 		case SAVED_REFERENCE_PSEUDOTYPE:
 			{
-				uint32 index = SDL_ReadBE32(rw);
-				lua_pushnumber(L, static_cast<double>(index));
+				uint32 index;
+				s >> index;
+				lua_pushnumber(L, static_cast<lua_Number>(index));
 				lua_rawget(L, 1);
 			}
 			break;
@@ -187,14 +202,22 @@ static void restore(lua_State *L, SDL_RWops *rw)
 	}
 }
 
-void lua_restore(lua_State *L, SDL_RWops *rw)
+bool lua_restore(lua_State *L, std::streambuf* sb)
 {
 	// create a reference table
 	lua_newtable(L);
 
-	restore(L, rw);
+	BIStreamBE s(sb);
+	try {
+		restore(L, s);
+	}
+	catch (const basic_bstream::failure& e)
+	{
+		lua_settop(L, 0);
+		return false;
+	}
 	
 	// remove the reference table
 	lua_remove(L, -2);
-	
+	return true;
 }
