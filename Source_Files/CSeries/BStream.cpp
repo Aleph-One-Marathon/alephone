@@ -63,7 +63,10 @@ BIStream& BIStream::operator>>(uint8& value) throw(failure)
 
 BIStream& BIStream::operator>>(int8& value) throw(failure)
 {
-	return operator>>(static_cast<int8&>(value));
+	uint8 uvalue;
+	operator>>(uvalue);
+	value = static_cast<int8>(uvalue);
+	return *this;
 }
 
 BIStream& BIStreamBE::operator>>(uint16& value) throw(failure)
