@@ -78,6 +78,7 @@ private:
 	static int _get(lua_State *L);
 	static int _set(lua_State *L);
 	static int _is(lua_State *L);
+	static int _new(lua_State *L);
 	static int _tostring(lua_State *L);
 
 protected:
@@ -112,6 +113,11 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	// create the metatable itself
 	luaL_newmetatable(L, name);
 
+	// Lua 5.1 doesn't do this reverse mapping any more--do it ourselves
+	lua_pushvalue(L, -1);
+	lua_pushstring(L, name);
+	lua_settable(L, LUA_REGISTRYINDEX);
+
 	// register metatable get
 	lua_pushcfunction(L, _get);
 	lua_setfield(L, -2, "__index");
@@ -123,6 +129,9 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	// register metatable tostring
 	lua_pushcfunction(L, _tostring);
 	lua_setfield(L, -2, "__tostring");
+
+	lua_pushcfunction(L, _new);
+	lua_setfield(L, -2, "__new");
 
 	if (metatable)
 		luaL_openlib(L, 0, metatable, 0);
@@ -331,6 +340,22 @@ int L_Class<name, index_t>::_get(lua_State *L)
 	}
 
 	return 1;
+}
+
+template<char *name, typename index_t>
+int L_Class<name, index_t>::_new(lua_State *L)
+{
+	if (lua_isnumber(L, 1))
+	{
+		index_t index = static_cast<index_t>(lua_tonumber(L, 1));
+		lua_pop(L, 1);
+		Push(L, index);
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 template<char *name, typename index_t>
@@ -717,7 +742,7 @@ void L_Container<name, T>::Register(lua_State *L, const luaL_reg methods[], cons
 	
 	lua_pushcfunction(L, _length);
 	lua_setfield(L, -2, "__len");
-	
+
 	if (metatable)
 		luaL_openlib(L, 0, metatable, 0);
 	
