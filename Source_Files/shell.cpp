@@ -453,7 +453,7 @@ static void initialize_application(void)
 	}
 #endif
 
-	SDL_putenv("SDL_VIDEO_ALLOW_SCREENSAVER=1");
+	SDL_putenv(const_cast<char*>("SDL_VIDEO_ALLOW_SCREENSAVER=1"));
 
 	// Initialize SDL
 	int retval = SDL_Init(SDL_INIT_VIDEO | 

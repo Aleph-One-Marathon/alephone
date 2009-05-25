@@ -699,7 +699,7 @@ SDL_Surface *picture_to_surface(LoadedResource &rsrc)
 					done = true;
 					break;
 				}
-				SDL_Surface *bm = IMG_LoadTyped_RW(img, true, "JPG");
+				SDL_Surface *bm = IMG_LoadTyped_RW(img, true, const_cast<char*>("JPG"));
 
 				// Copy image (band) into surface
 				if (bm) {

@@ -785,7 +785,7 @@ class XML_SpecialLevelScriptParser: public XML_GeneralLevelScriptParser
 public:
 	bool Start() {SetLevel(Level); return true;}
 	
-	XML_SpecialLevelScriptParser(char *_Name, short _Level): XML_GeneralLevelScriptParser(_Name), Level(_Level) {}
+	XML_SpecialLevelScriptParser(const char *_Name, short _Level): XML_GeneralLevelScriptParser(_Name), Level(_Level) {}
 };
 
 static XML_SpecialLevelScriptParser

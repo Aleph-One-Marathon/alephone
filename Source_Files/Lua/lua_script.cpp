@@ -191,8 +191,8 @@ static const luaL_Reg lualibs[] = {
 
 void* L_Persistent_Table_Key()
 {
-	static char *key = "persist";
-	return key;
+	static const char *key = "persist";
+	return const_cast<char*>(key);
 }
 
 std::map<int, std::string> CustomFields;
