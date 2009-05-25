@@ -147,6 +147,7 @@ const std::vector<OSType> get_all_file_types_for_typecode (Typecode which);
 #define PLATFORM_STRUCTURE_TAG FOUR_CHARS_TO_INT('P','L','A','T')
 #define WEAPON_STATE_TAG FOUR_CHARS_TO_INT('w','e','a','p')
 #define TERMINAL_STATE_TAG FOUR_CHARS_TO_INT('c','i','n','t')
+#define LUA_STATE_TAG FOUR_CHARS_TO_INT('s','l','u','a')
 
 /* Physix model tags */
 #define MONSTER_PHYSICS_TAG FOUR_CHARS_TO_INT('M','N','p','x')

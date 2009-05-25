@@ -54,7 +54,6 @@ using namespace std;
 #include <stdlib.h>
 #include <set>
 
-#include <boost/shared_ptr.hpp>
 
 #include "screen.h"
 #include "tags.h"
@@ -85,6 +84,7 @@ using namespace std;
 #include "Music.h"
 #include "ViewControl.h"
 #include "preferences.h"
+#include "BStream.h"
 
 #include "lua_script.h"
 #include "lua_map.h"
@@ -94,9 +94,15 @@ using namespace std;
 #include "lua_projectiles.h"
 #include "lua_serialize.h"
 
+#include <boost/shared_ptr.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+namespace io = boost::iostreams;
+
 #define DONT_REPEAT_DEFINITIONS
 #include "item_definitions.h"
 #include "monster_definitions.h"
+
 
 bool use_lua_compass[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 bool can_wield_weapons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
@@ -195,7 +201,8 @@ void* L_Persistent_Table_Key()
 	return const_cast<char*>(key);
 }
 
-std::map<int, std::string> CustomFields;
+std::map<int, std::string> PassedLuaState;
+std::map<int, std::string> SavedLuaState;
 
 class LuaState
 {
@@ -218,6 +225,7 @@ public:
 	void MarkCollections(std::set<short>& collections);
 	void ExecuteCommand(const std::string& line);
 	std::string SavePassed();
+	std::string SaveAll();
 
 	virtual void Initialize() {
 		const luaL_Reg *lib = lualibs;
@@ -276,6 +284,7 @@ public:
 	void InvalidateObject(short object_index);
 
 	int RestorePassed(const std::string& s);
+	int RestoreAll(const std::string& s);
 
 private:
 	bool running_;
@@ -805,6 +814,31 @@ void LuaState::MarkCollections(std::set<short>& collections)
 	}
 }
 
+int LuaState::RestoreAll(const std::string& s)
+{
+	if (s.empty())
+	{
+		lua_pushboolean(State(), false);
+		return 1;
+	}
+
+	std::stringbuf sb(s);
+	if (lua_restore(State(), &sb))
+	{
+		lua_pushlightuserdata(State(), L_Persistent_Table_Key());
+		lua_insert(State(), -2);
+		lua_settable(State(), LUA_REGISTRYINDEX); // muahaha
+		lua_pushboolean(State(), true);
+	} 
+	else
+	{
+		lua_pop(State(), 2);
+		lua_pushboolean(State(), false);
+	}
+
+	return 1;
+}
+
 int LuaState::RestorePassed(const std::string& s)
 {
 	if (s.empty())
@@ -836,6 +870,22 @@ int LuaState::RestorePassed(const std::string& s)
 	}
 
 	return 1;
+}
+
+std::string LuaState::SaveAll()
+{
+	lua_pushlightuserdata(State(), L_Persistent_Table_Key());
+	lua_gettable(State(), LUA_REGISTRYINDEX);
+
+	std::stringbuf sb;
+	if (lua_save(State(), &sb))
+	{
+		return sb.str();
+	}
+	else
+	{
+		return string();
+	}
 }
 
 std::string LuaState::SavePassed()
@@ -1219,13 +1269,24 @@ int L_Hide_Interface(lua_State *L)
 	return 0;
 }
 
+int L_Restore_Saved(lua_State *L)
+{
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		if (it->second.Matches(L))
+		{
+			return it->second.RestoreAll(SavedLuaState[it->first]);
+		}
+	}
+}
+
 int L_Restore_Passed(lua_State *L)
 {
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
 		if (it->second.Matches(L))
 		{
-			return it->second.RestorePassed(CustomFields[it->first]);
+			return it->second.RestorePassed(PassedLuaState[it->first]);
 		}
 	}
 }
@@ -1643,7 +1704,7 @@ void CloseLuaScript()
 	// save variables for going into next level
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		CustomFields[it->first] = it->second.SavePassed();
+		PassedLuaState[it->first] = it->second.SavePassed();
 	}
 	states.clear();
 
@@ -1660,7 +1721,7 @@ void CloseLuaScript()
 
 void ResetPassedLua()
 {
-	CustomFields.clear();
+	PassedLuaState.clear();
 }
 
 void ToggleLuaMute()
@@ -1774,4 +1835,50 @@ int GetLuaGameEndCondition() {
 	return game_end_condition;
 }
 
+size_t save_lua_states()
+{
+	size_t length = 0;
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		SavedLuaState[it->first] = it->second.SaveAll();
+		if (SavedLuaState[it->first].size())
+		{
+			length += 6; // id, length
+			length += SavedLuaState[it->first].size();
+		}
+	}
+
+	return length;
+}
+
+void pack_lua_states(uint8* data, size_t length)
+{
+	io::stream_buffer<io::array_sink> sb(reinterpret_cast<char*>(data), length);
+	BOStreamBE s(&sb);
+	for (std::map<int, std::string>::iterator it = SavedLuaState.begin(); it != SavedLuaState.end(); ++it)
+	{
+		if (it->second.size())
+		{
+			s << static_cast<int16>(it->first);
+			s << static_cast<uint32>(it->second.size());
+			s.write(&it->second[0], it->second.size());
+		}
+	}
+}
+
+void unpack_lua_states(uint8* data, size_t length)
+{
+	io::stream_buffer<io::array_source> sb(reinterpret_cast<char*>(data), length);
+	BIStreamBE s(&sb);
+	while (s.tellg() != s.maxg())
+	{
+		int16 index;
+		uint32 length;
+		s >> index 
+		  >> length;
+
+		SavedLuaState[index].resize(length);
+		s.read(&SavedLuaState[index][0], SavedLuaState[index].size());
+	}
+}
 #endif /* HAVE_LUA */

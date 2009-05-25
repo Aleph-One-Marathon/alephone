@@ -1463,6 +1463,8 @@ static void scan_and_add_platforms(
 }
 
 
+extern void unpack_lua_states(uint8*, size_t);
+
 /* Load a level from a wad-> mainly used by the net stuff. */
 bool process_map_wad(
 	struct wad_data *wad, 
@@ -1638,6 +1640,10 @@ bool process_map_wad(
 	/* Extract LUAS */
 	data= (uint8 *)extract_type_from_wad(wad, LUAS_TAG, &data_length);
 	SetLUAS(data, data_length);
+
+	/* Extract saved Lua state */
+	data =(uint8 *)extract_type_from_wad(wad, LUA_STATE_TAG, &data_length);
+	unpack_lua_states(data, data_length);
 
 	// LP addition: load the physics-model chunks (all fixed-size)
 	bool PhysicsModelLoaded = false;
@@ -1972,6 +1978,8 @@ struct save_game_data save_data[]=
 	{ PLATFORM_STRUCTURE_TAG, SIZEOF_platform_data, true }, // false },
 	{ WEAPON_STATE_TAG, SIZEOF_player_weapon_data, true }, // false },
 	{ TERMINAL_STATE_TAG, SIZEOF_player_terminal_data, true }, // false }
+
+	{ LUA_STATE_TAG, sizeof(byte), true },
 };
 
 static uint8 *export_tag_to_global_array_and_size(
@@ -2105,6 +2113,9 @@ static uint8 *export_tag_to_global_array_and_size(
 
 	return array;
 }
+
+extern size_t save_lua_states();
+extern void pack_lua_states(uint8*, size_t);
 		
 
 /* the sizes are the sizes to save in the file, be aware! */
@@ -2232,6 +2243,9 @@ static uint8 *tag_to_global_array_and_size(
 	        case LUAS_TAG:
 			GetLUAS(count);
 			break;
+		case LUA_STATE_TAG:
+			count= save_lua_states();
+			break;
 		default:
 			assert(false);
 			break;
@@ -2350,6 +2364,9 @@ static uint8 *tag_to_global_array_and_size(
 			break;
 	        case LUAS_TAG:
 			memcpy(array, GetLUAS(count), count);
+			break;
+		case LUA_STATE_TAG:
+			pack_lua_states(array, count);
 			break;
 		default:
 			assert(false);
