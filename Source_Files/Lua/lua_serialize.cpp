@@ -22,10 +22,12 @@ LUA_SERIALIZE.CPP
 */
 
 #include "lua_serialize.h"
+#include "Logging.h"
 
 #include "BStream.h"
 
 const static int SAVED_REFERENCE_PSEUDOTYPE = -2;
+const uint16 kVersion = 1;
 
 static bool valid_key(int type)
 {
@@ -148,10 +150,12 @@ bool lua_save(lua_State *L, std::streambuf* sb)
 	BOStreamBE s(sb);
 	try 
 	{
+		s << kVersion;
 		save(L, s, counter);
 	}
 	catch (const basic_bstream::failure& e)
 	{
+		logWarning1("failed to save Lua data; %s", e.what());
 		lua_settop(L, 0);
 		return false;
 	}
@@ -278,10 +282,19 @@ bool lua_restore(lua_State *L, std::streambuf* sb)
 
 	BIStreamBE s(sb);
 	try {
+		int16 version;
+		s >> version;
+		if (version > kVersion)
+		{
+			logWarning("failed to restore Lua data; saved data is newer version");
+			return false;
+		}
+
 		restore(L, s);
 	}
 	catch (const basic_bstream::failure& e)
 	{
+		logWarning1("failed to restore Lua data; %s", e.what());
 		lua_settop(L, 0);
 		return false;
 	}
