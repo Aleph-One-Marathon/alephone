@@ -78,6 +78,12 @@ SDL_Surface *world_pixels = NULL;
 SDL_Surface *HUD_Buffer = NULL;
 SDL_Surface *Term_Buffer = NULL;
 
+// Initial gamma table
+bool default_gamma_inited = false;
+UInt16 default_gamma_r[256];
+UInt16 default_gamma_g[256];
+UInt16 default_gamma_b[256];
+
 static bool PrevFullscreen = false;
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
 
@@ -930,10 +936,20 @@ static void build_sdl_color_table(const color_table *color_table, SDL_Color *col
 
 void build_direct_color_table(struct color_table *color_table, short bit_depth)
 {
+	if (!default_gamma_inited)
+	{
+		SDL_GetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b);
+		default_gamma_inited = true;
+	}
+		
 	color_table->color_count = 256;
 	rgb_color *color = color_table->colors;
 	for (int i=0; i<256; i++, color++)
-		color->red = color->green = color->blue = i * 0x0101;
+	{
+		color->red = default_gamma_r[i];
+		color->green = default_gamma_g[i];
+		color->blue = default_gamma_b[i];
+	}
 }
 
 void bound_screen()
