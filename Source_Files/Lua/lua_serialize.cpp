@@ -60,7 +60,7 @@ static void save(lua_State *L, BOStreamBE& s, uint32& counter)
 			break;
 		case LUA_TNUMBER:
 			{
-				s << static_cast<lua_Number>(lua_tonumber(L, -1));
+				s << static_cast<double>(lua_tonumber(L, -1));
 			}
 			break;
 		case LUA_TBOOLEAN:
