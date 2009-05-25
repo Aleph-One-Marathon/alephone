@@ -54,6 +54,8 @@ using namespace std;
 #include <stdlib.h>
 #include <set>
 
+#include <boost/shared_ptr.hpp>
+
 #include "screen.h"
 #include "tags.h"
 #include "player.h"
@@ -90,6 +92,7 @@ using namespace std;
 #include "lua_objects.h"
 #include "lua_player.h"
 #include "lua_projectiles.h"
+#include "lua_serialize.h"
 
 #define DONT_REPEAT_DEFINITIONS
 #include "item_definitions.h"
@@ -192,20 +195,17 @@ void* L_Persistent_Table_Key()
 	return key;
 }
 
+std::map<int, std::string> CustomFields;
+
 class LuaState
 {
 public:
 	LuaState() : running_(false), num_scripts_(0) {
-		state_ = lua_open();
+		state_.reset(lua_open(), lua_close);
 	}
 
 	virtual ~LuaState() {
-		lua_close(state_);
 	}
-
-private:
-	LuaState& operator=(const LuaState& other) { }
-	LuaState(const LuaState& other) { }
 
 public:
 
@@ -214,23 +214,24 @@ public:
 	bool Running() { return running_; }
 	bool Run();
 	void Stop() { running_ = false; }
-	bool Matches(lua_State *state) { return state == state_; }
+	bool Matches(lua_State *state) { return state == State(); }
 	void MarkCollections(std::set<short>& collections);
 	void ExecuteCommand(const std::string& line);
+	std::string SavePassed();
 
 	virtual void Initialize() {
 		const luaL_Reg *lib = lualibs;
 		for (; lib->func; lib++)
 		{
-			lua_pushcfunction(state_, lib->func);
-			lua_pushstring(state_, lib->name);
-			lua_call(state_, 1, 0);
+			lua_pushcfunction(State(), lib->func);
+			lua_pushstring(State(), lib->name);
+			lua_call(State(), 1, 0);
 		}
 
 		// set up a persistence table in the registry
-		lua_pushlightuserdata(state_, (void *) L_Persistent_Table_Key());
-		lua_newtable(state_);
-		lua_settable(state_, LUA_REGISTRYINDEX);
+		lua_pushlightuserdata(State(), (void *) L_Persistent_Table_Key());
+		lua_newtable(State());
+		lua_settable(State(), LUA_REGISTRYINDEX);
 
 		RegisterFunctions();
 		LoadCompatibility();
@@ -243,7 +244,8 @@ protected:
 	virtual void RegisterFunctions();
 	virtual void LoadCompatibility();
 
-	lua_State* state_;
+	boost::shared_ptr<lua_State> state_;
+	lua_State* State() { return state_.get(); }
 
 public:
 	// triggers
@@ -273,6 +275,8 @@ public:
 	void InvalidateProjectile(short projectile_index);
 	void InvalidateObject(short object_index);
 
+	int RestorePassed(const std::string& s);
+
 private:
 	bool running_;
 	int num_scripts_;
@@ -288,9 +292,9 @@ public:
 
 	void Initialize() {
 		LuaState::Initialize();
-		lua_pushcfunction(state_, luaopen_io);
-		lua_pushstring(state_, LUA_IOLIBNAME);
-		lua_call(state_, 1, 0);
+		lua_pushcfunction(State(), luaopen_io);
+		lua_pushstring(State(), LUA_IOLIBNAME);
+		lua_call(State(), 1, 0);
 	}
 };
 
@@ -299,37 +303,37 @@ bool LuaState::GetTrigger(const char* trigger)
 	if (!running_)
 		return false;
 
-	lua_pushstring(state_, "Triggers");
-	lua_gettable(state_, LUA_GLOBALSINDEX);
-	if (!lua_istable(state_, -1))
+	lua_pushstring(State(), "Triggers");
+	lua_gettable(State(), LUA_GLOBALSINDEX);
+	if (!lua_istable(State(), -1))
 	{
-		lua_pop(state_, 1);
+		lua_pop(State(), 1);
 		return false;
 	}
 
-	lua_pushstring(state_, trigger);
-	lua_gettable(state_, -2);
-	if (!lua_isfunction(state_, -1))
+	lua_pushstring(State(), trigger);
+	lua_gettable(State(), -2);
+	if (!lua_isfunction(State(), -1))
 	{
-		lua_pop(state_, 2);
+		lua_pop(State(), 2);
 		return false;
 	}
 
-	lua_remove(state_, -2);
+	lua_remove(State(), -2);
 	return true;
 }
 
 void LuaState::CallTrigger(int numArgs)
 {
-	if (lua_pcall(state_, numArgs, 0, 0) == LUA_ERRRUN)
-		L_Error(lua_tostring(state_, -1));
+	if (lua_pcall(State(), numArgs, 0, 0) == LUA_ERRRUN)
+		L_Error(lua_tostring(State(), -1));
 }
 
 void LuaState::Init(bool fRestoringSaved)
 {
 	if (GetTrigger("init"))
 	{
-		lua_pushboolean(state_, fRestoringSaved);
+		lua_pushboolean(State(), fRestoringSaved);
 		CallTrigger(1);
 	}
 }
@@ -356,9 +360,9 @@ void LuaState::StartRefuel(short type, short player_index, short panel_side_inde
 {
 	if (GetTrigger("start_refuel"))
 	{
-		Lua_ControlPanelClass::Push(state_, type);
-		Lua_Player::Push(state_, player_index);
-		Lua_Side::Push(state_, panel_side_index);
+		Lua_ControlPanelClass::Push(State(), type);
+		Lua_Player::Push(State(), player_index);
+		Lua_Side::Push(State(), panel_side_index);
 		CallTrigger(3);
 	}
 }
@@ -367,9 +371,9 @@ void LuaState::EndRefuel(short type, short player_index, short panel_side_index)
 {
 	if (GetTrigger("end_refuel"))
 	{
-		Lua_ControlPanelClass::Push(state_, type);
-		Lua_Player::Push(state_, player_index);
-		Lua_Side::Push(state_, panel_side_index);
+		Lua_ControlPanelClass::Push(State(), type);
+		Lua_Player::Push(State(), player_index);
+		Lua_Side::Push(State(), panel_side_index);
 		CallTrigger(3);
 	}
 }
@@ -378,8 +382,8 @@ void LuaState::TagSwitch(short tag, short player_index)
 {
 	if (GetTrigger("tag_switch"))
 	{
-		Lua_Tag::Push(state_, tag);
-		Lua_Player::Push(state_, player_index);
+		Lua_Tag::Push(State(), tag);
+		Lua_Player::Push(State(), player_index);
 		CallTrigger(2);
 	}
 }
@@ -388,8 +392,8 @@ void LuaState::LightSwitch(short light, short player_index)
 {
 	if (GetTrigger("light_switch"))
 	{
-		Lua_Light::Push(state_, light);
-		Lua_Player::Push(state_, player_index);
+		Lua_Light::Push(State(), light);
+		Lua_Player::Push(State(), player_index);
 		CallTrigger(2);
 	}
 }
@@ -398,8 +402,8 @@ void LuaState::PlatformSwitch(short platform, short player_index)
 {
 	if (GetTrigger("platform_switch"))
 	{
-		Lua_Polygon::Push(state_, platform);
-		Lua_Player::Push(state_, player_index);
+		Lua_Polygon::Push(State(), platform);
+		Lua_Player::Push(State(), player_index);
 		CallTrigger(2);
 	}
 }
@@ -408,8 +412,8 @@ void LuaState::TerminalEnter(short terminal_id, short player_index)
 {
 	if (GetTrigger("terminal_enter"))
 	{
-		Lua_Terminal::Push(state_, terminal_id);
-		Lua_Player::Push(state_, player_index);
+		Lua_Terminal::Push(State(), terminal_id);
+		Lua_Player::Push(State(), player_index);
 		CallTrigger(2);
 	}
 }
@@ -418,8 +422,8 @@ void LuaState::TerminalExit(short terminal_id, short player_index)
 {
 	if (GetTrigger("terminal_exit"))
 	{
-		Lua_Terminal::Push(state_, terminal_id);
-		Lua_Player::Push(state_, player_index);
+		Lua_Terminal::Push(State(), terminal_id);
+		Lua_Player::Push(State(), player_index);
 		CallTrigger(2);
 	}
 }
@@ -428,8 +432,8 @@ void LuaState::PatternBuffer(short side_index, short player_index)
 {
 	if (GetTrigger("pattern_buffer"))
 	{
-		Lua_Side::Push(state_, side_index);
-		Lua_Player::Push(state_, player_index);
+		Lua_Side::Push(State(), side_index);
+		Lua_Player::Push(State(), player_index);
 		CallTrigger(2);
 	}
 }
@@ -438,8 +442,8 @@ void LuaState::GotItem(short type, short player_index)
 {
 	if (GetTrigger("got_item"))
 	{
-		Lua_ItemType::Push(state_, type);
-		Lua_Player::Push(state_, player_index);
+		Lua_ItemType::Push(State(), type);
+		Lua_Player::Push(State(), player_index);
 		CallTrigger(2);
 	}
 }
@@ -448,7 +452,7 @@ void LuaState::LightActivated(short index)
 {
 	if (GetTrigger("light_activated"))
 	{
-		Lua_Light::Push(state_, index);
+		Lua_Light::Push(State(), index);
 		CallTrigger(1);
 	}
 }
@@ -457,7 +461,7 @@ void LuaState::PlatformActivated(short index)
 {
 	if (GetTrigger("platform_activated"))
 	{
-		Lua_Polygon::Push(state_, index);
+		Lua_Polygon::Push(State(), index);
 		CallTrigger(1);
 	}
 }
@@ -466,7 +470,7 @@ void LuaState::PlayerRevived (short player_index)
 {
 	if (GetTrigger("player_revived"))
 	{
-		Lua_Player::Push(state_, player_index);
+		Lua_Player::Push(State(), player_index);
 		CallTrigger(1);
 	}
 }
@@ -475,18 +479,18 @@ void LuaState::PlayerKilled (short player_index, short aggressor_player_index, s
 {
 	if (GetTrigger("player_killed"))
 	{
-		Lua_Player::Push(state_, player_index);
+		Lua_Player::Push(State(), player_index);
 
 		if (aggressor_player_index != -1)
-			Lua_Player::Push(state_, aggressor_player_index);
+			Lua_Player::Push(State(), aggressor_player_index);
 		else
-			lua_pushnil(state_);
+			lua_pushnil(State());
 
-		Lua_MonsterAction::Push(state_, action);
+		Lua_MonsterAction::Push(State(), action);
 		if (projectile_index != -1)
-			Lua_Projectile::Push(state_, projectile_index);
+			Lua_Projectile::Push(State(), projectile_index);
 		else
-			lua_pushnil(state_);
+			lua_pushnil(State());
 
 		CallTrigger(4);
 	}
@@ -496,16 +500,16 @@ void LuaState::MonsterKilled (short monster_index, short aggressor_player_index,
 {
 	if (GetTrigger("monster_killed"))
 	{
-		Lua_Monster::Push(state_, monster_index);
+		Lua_Monster::Push(State(), monster_index);
 		if (aggressor_player_index != -1)
-			Lua_Player::Push(state_, aggressor_player_index);
+			Lua_Player::Push(State(), aggressor_player_index);
 		else
-			lua_pushnil(state_);
+			lua_pushnil(State());
 
 		if (projectile_index != -1)
-			Lua_Projectile::Push(state_, projectile_index);
+			Lua_Projectile::Push(State(), projectile_index);
 		else
-			lua_pushnil(state_);
+			lua_pushnil(State());
 
 		CallTrigger(3);
 	}
@@ -515,25 +519,25 @@ void LuaState::PlayerDamaged (short player_index, short aggressor_player_index, 
 {
 	if (GetTrigger("player_damaged"))
 	{
-		Lua_Player::Push(state_, player_index);
+		Lua_Player::Push(State(), player_index);
 
 		if (aggressor_player_index != -1)
-			Lua_Player::Push(state_, aggressor_player_index);
+			Lua_Player::Push(State(), aggressor_player_index);
 		else
-			lua_pushnil(state_);
+			lua_pushnil(State());
 		
 		if (aggressor_monster_index != -1)
-			Lua_Monster::Push(state_, aggressor_monster_index);
+			Lua_Monster::Push(State(), aggressor_monster_index);
 		else
-			lua_pushnil(state_);
+			lua_pushnil(State());
 		
-		Lua_DamageType::Push(state_, damage_type);
-		lua_pushnumber(state_, damage_amount);
+		Lua_DamageType::Push(State(), damage_type);
+		lua_pushnumber(State(), damage_amount);
 		
 		if (projectile_index != -1)
-			Lua_Projectile::Push(state_, projectile_index);
+			Lua_Projectile::Push(State(), projectile_index);
 		else
-			lua_pushnil(state_);
+			lua_pushnil(State());
 
 		CallTrigger(6);
 	}
@@ -543,15 +547,15 @@ void LuaState::ProjectileDetonated(short type, short owner_index, short polygon,
 {
 	if (GetTrigger("projectile_detonated"))
 	{
-		Lua_ProjectileType::Push(state_, type);
+		Lua_ProjectileType::Push(State(), type);
 		if (owner_index != -1)
-			Lua_Monster::Push(state_, owner_index);
+			Lua_Monster::Push(State(), owner_index);
 		else
-			lua_pushnil(state_);
-		Lua_Polygon::Push(state_, polygon);
-		lua_pushnumber(state_, location.x / (double)WORLD_ONE);
-		lua_pushnumber(state_, location.y / (double)WORLD_ONE);
-		lua_pushnumber(state_, location.z / (double)WORLD_ONE);
+			lua_pushnil(State());
+		Lua_Polygon::Push(State(), polygon);
+		lua_pushnumber(State(), location.x / (double)WORLD_ONE);
+		lua_pushnumber(State(), location.y / (double)WORLD_ONE);
+		lua_pushnumber(State(), location.z / (double)WORLD_ONE);
 
 		CallTrigger(6);
 	}
@@ -561,7 +565,7 @@ void LuaState::ItemCreated (short item_index)
 {
 	if (GetTrigger("item_created"))
 	{
-		Lua_Item::Push(state_, item_index);
+		Lua_Item::Push(State(), item_index);
 		CallTrigger(1);
 	}
 }
@@ -570,14 +574,14 @@ void LuaState::InvalidateMonster(short monster_index)
 {
 	if (!running_) return;
 
-	Lua_Monster::Invalidate(state_, monster_index);
+	Lua_Monster::Invalidate(State(), monster_index);
 }
 
 void LuaState::InvalidateProjectile(short projectile_index)
 {
 	if (!running_) return;
 
-	Lua_Projectile::Invalidate(state_, projectile_index);
+	Lua_Projectile::Invalidate(State(), projectile_index);
 }
 
 void LuaState::InvalidateObject(short object_index)
@@ -587,15 +591,15 @@ void LuaState::InvalidateObject(short object_index)
 	object_data *object = GetMemberWithBounds(objects, object_index, MAXIMUM_OBJECTS_PER_MAP);
 	if (GET_OBJECT_OWNER(object) == _object_is_item)
 	{
-		Lua_Item::Invalidate(state_, object_index);
+		Lua_Item::Invalidate(State(), object_index);
 	}
 	else if (GET_OBJECT_OWNER(object) == _object_is_effect)
 	{
-		Lua_Effect::Invalidate(state_, object_index);
+		Lua_Effect::Invalidate(State(), object_index);
 	}
 	else if (Lua_Scenery::Valid(object_index))
 	{
-		Lua_Scenery::Invalidate(state_, object_index);
+		Lua_Scenery::Invalidate(State(), object_index);
 	}
 }
 
@@ -609,19 +613,19 @@ static int L_Player_Control(lua_State*);
 
 void LuaState::RegisterFunctions()
 {
-	lua_register(state_, "enable_player", L_Enable_Player);
-	lua_register(state_, "disable_player", L_Disable_Player);
-	lua_register(state_, "kill_script", L_Kill_Script);
-	lua_register(state_, "hide_interface", L_Hide_Interface);
-	lua_register(state_, "show_interface", L_Show_Interface);
-	lua_register(state_, "player_control", L_Player_Control);
+	lua_register(State(), "enable_player", L_Enable_Player);
+	lua_register(State(), "disable_player", L_Disable_Player);
+	lua_register(State(), "kill_script", L_Kill_Script);
+	lua_register(State(), "hide_interface", L_Hide_Interface);
+	lua_register(State(), "show_interface", L_Show_Interface);
+	lua_register(State(), "player_control", L_Player_Control);
 //	lua_register(state, "prompt", L_Prompt);
 
-	Lua_Map_register(state_);
-	Lua_Monsters_register(state_);
-	Lua_Objects_register(state_);
-	Lua_Player_register(state_);
-	Lua_Projectiles_register(state_);
+	Lua_Map_register(State());
+	Lua_Monsters_register(State());
+	Lua_Objects_register(State());
+	Lua_Player_register(State());
+	Lua_Projectiles_register(State());
 }
 
 static const char *compatibility_triggers = ""
@@ -651,8 +655,8 @@ static const char *compatibility_triggers = ""
 
 void LuaState::LoadCompatibility()
 {
-	luaL_loadbuffer(state_, compatibility_triggers, strlen(compatibility_triggers), "compatibility_triggers");
-	lua_pcall(state_, 0, 0, 0);
+	luaL_loadbuffer(State(), compatibility_triggers, strlen(compatibility_triggers), "compatibility_triggers");
+	lua_pcall(State(), 0, 0, 0);
 
 	struct lang_def
 	{
@@ -666,28 +670,28 @@ void LuaState::LoadCompatibility()
 	int constant_list_size = sizeof(constant_list)/sizeof(lang_def);
 	for (int i=0; i<constant_list_size; i++)
 	{
-		lua_pushnumber(state_, constant_list[i].value);
-		lua_setglobal(state_, constant_list[i].name);
+		lua_pushnumber(State(), constant_list[i].value);
+		lua_setglobal(State(), constant_list[i].name);
 	}
 /* SB: Don't think this is a constant? */
-	lua_pushnumber(state_, MAXIMUM_MONSTERS_PER_MAP);
-	lua_setglobal(state_, "MAXIMUM_MONSTERS_PER_MAP");
-	lua_pushnumber(state_, MAXIMUM_PROJECTILES_PER_MAP);
-	lua_setglobal(state_, "MAXIMUM_PROJECTILES_PER_MAP");
-	lua_pushnumber(state_, MAXIMUM_OBJECTS_PER_MAP);
-	lua_setglobal(state_, "MAXIMUM_OBJECTS_PER_MAP");
+	lua_pushnumber(State(), MAXIMUM_MONSTERS_PER_MAP);
+	lua_setglobal(State(), "MAXIMUM_MONSTERS_PER_MAP");
+	lua_pushnumber(State(), MAXIMUM_PROJECTILES_PER_MAP);
+	lua_setglobal(State(), "MAXIMUM_PROJECTILES_PER_MAP");
+	lua_pushnumber(State(), MAXIMUM_OBJECTS_PER_MAP);
+	lua_setglobal(State(), "MAXIMUM_OBJECTS_PER_MAP");
 }
 
 bool LuaState::Load(const char *buffer, size_t len)
 {
-	int status = luaL_loadbuffer(state_, buffer, len, "level_script");
+	int status = luaL_loadbuffer(State(), buffer, len, "level_script");
 	if (status == LUA_ERRRUN)
 		logWarning("Lua loading failed: error running script.");
 	if (status == LUA_ERRFILE)
 		logWarning("Lua loading failed: error loading file.");
 	if (status == LUA_ERRSYNTAX) {
 		logWarning("Lua loading failed: syntax error.");
-		logWarning(lua_tostring(state_, -1));
+		logWarning(lua_tostring(State(), -1));
 	}
 	if (status == LUA_ERRMEM)
 		logWarning("Lua loading failed: error allocating memory.");
@@ -706,11 +710,11 @@ bool LuaState::Run()
 	int result = 0;
 	// Reverse the functions we're calling
 	for (int i = 0; i < num_scripts_ - 1; ++i)
-		lua_insert(state_, -(num_scripts_ - i));
+		lua_insert(State(), -(num_scripts_ - i));
 
 	// Call 'em
 	for (int i = 0; i < num_scripts_; ++i)
-		result = result || lua_pcall(state_, 0, LUA_MULTRET, 0);
+		result = result || lua_pcall(State(), 0, LUA_MULTRET, 0);
 	
 	if (result == 0) running_ = true;
 	return (result == 0);
@@ -732,28 +736,28 @@ void LuaState::ExecuteCommand(const std::string& line)
 	}
 
 
-	if (luaL_loadbuffer(state_, buffer.c_str(), buffer.size(), "console") != 0)
+	if (luaL_loadbuffer(State(), buffer.c_str(), buffer.size(), "console") != 0)
 	{
-		L_Error(lua_tostring(state_, -1));
+		L_Error(lua_tostring(State(), -1));
 	}
 	else 
 	{
 		running_ = true;
-		if (lua_pcall(state_, 0, (print_result) ? 1 : 0, 0) != 0)
-			L_Error(lua_tostring(state_, -1));
+		if (lua_pcall(State(), 0, (print_result) ? 1 : 0, 0) != 0)
+			L_Error(lua_tostring(State(), -1));
 		else if (print_result)
 		{
-			lua_getglobal(state_, "tostring");
-			lua_insert(state_, 1);
-			lua_pcall(state_, 1, 1, 0);
-			if (lua_tostring(state_, -1))
+			lua_getglobal(State(), "tostring");
+			lua_insert(State(), 1);
+			lua_pcall(State(), 1, 1, 0);
+			if (lua_tostring(State(), -1))
 			{
-				screen_printf("%s", lua_tostring(state_, -1));
+				screen_printf("%s", lua_tostring(State(), -1));
 			}
 		}
 	}
 	
-	lua_settop(state_, 0);	
+	lua_settop(State(), 0);	
 }
 
 void LuaState::MarkCollections(std::set<short>& collections)
@@ -761,50 +765,107 @@ void LuaState::MarkCollections(std::set<short>& collections)
 	if (!running_)
 		return;
 		
-	lua_pushstring(state_, "CollectionsUsed");
-	lua_gettable(state_, LUA_GLOBALSINDEX);
+	lua_pushstring(State(), "CollectionsUsed");
+	lua_gettable(State(), LUA_GLOBALSINDEX);
 	
-	if (lua_istable(state_, -1))
+	if (lua_istable(State(), -1))
 	{
 		int i = 1;
-		lua_pushnumber(state_, i++);
-		lua_gettable(state_, -2);
-		while (lua_isnumber(state_, -1))
+		lua_pushnumber(State(), i++);
+		lua_gettable(State(), -2);
+		while (lua_isnumber(State(), -1))
 		{
-			short collection_index = static_cast<short>(lua_tonumber(state_, -1));
+			short collection_index = static_cast<short>(lua_tonumber(State(), -1));
 			if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
 			{
 				mark_collection_for_loading(collection_index);
 				collections.insert(collection_index);
 			}
-			lua_pop(state_, 1);
-			lua_pushnumber(state_, i++);
-			lua_gettable(state_, -2);
+			lua_pop(State(), 1);
+			lua_pushnumber(State(), i++);
+			lua_gettable(State(), -2);
 		}
 			
-		lua_pop(state_, 2);
+		lua_pop(State(), 2);
 	}
-	else if (lua_isnumber(state_, -1))
+	else if (lua_isnumber(State(), -1))
 	{
-		short collection_index = static_cast<short>(lua_tonumber(state_, -1));
+		short collection_index = static_cast<short>(lua_tonumber(State(), -1));
 		if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
 		{
 			mark_collection_for_loading(collection_index);
 			collections.insert(collection_index);
 		}
 
-		lua_pop(state_, 1);
+		lua_pop(State(), 1);
 	}
 	else
 	{
-		lua_pop(state_, 1);
+		lua_pop(State(), 1);
 	}
 }
 
-std::vector<LuaState*> states;
-std::auto_ptr<EmbeddedLuaState> embedded_state;
-std::auto_ptr<NetscriptState> netscript_state;
-std::auto_ptr<SoloScriptState> solo_script_state;
+int LuaState::RestorePassed(const std::string& s)
+{
+	if (s.empty())
+	{
+		lua_pushboolean(State(), false);
+		return 1;
+	}
+
+	std::stringbuf sb(s);
+	if (lua_restore(State(), &sb))
+	{
+		lua_pushlightuserdata(State(), L_Persistent_Table_Key());
+		lua_gettable(State(), LUA_REGISTRYINDEX);
+		
+		lua_getfield(State(), -2, "player");
+		lua_setfield(State(), -2, "player");
+
+		lua_getfield(State(), -2, "Game");
+		lua_setfield(State(), -2, "Game");
+
+		lua_pop(State(), 2);
+
+		lua_pushboolean(State(), true);
+	}
+	else
+	{
+		lua_settop(State(), 0);
+		lua_pushboolean(State(), false);
+	}
+
+	return 1;
+}
+
+std::string LuaState::SavePassed()
+{
+	// copy "player" and "Game" custom fields to a new table
+	lua_pushlightuserdata(State(), reinterpret_cast<void*>(L_Persistent_Table_Key()));
+	lua_gettable(State(), LUA_REGISTRYINDEX);
+	
+	lua_newtable(State());
+	lua_getfield(State(), -2, "player");
+	lua_setfield(State(), -2, "player");
+
+	lua_getfield(State(), -2, "Game");
+	lua_setfield(State(), -2, "Game");
+	
+	lua_remove(State(), -2);
+
+	std::stringbuf sb;
+	if (lua_save(State(), &sb))
+	{
+		return sb.str();
+	} 
+	else
+	{
+		return string();
+	}
+}
+
+typedef std::map<int, LuaState> state_map;
+state_map states;
 
 // globals
 vector<lua_camera> lua_cameras;
@@ -865,9 +926,9 @@ L_Do_Call(const char* inLuaFunctionName, int inNumArgs = 0, int inNumResults = 0
 
 static bool LuaRunning()
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		if ((*it)->Running())
+		if (it->second.Running())
 		{
 			return true;
 		}
@@ -891,193 +952,193 @@ void L_Call_Init(bool fRestoringSaved)
 		
 	}
 
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->Init(fRestoringSaved);
+		it->second.Init(fRestoringSaved);
 	}
 }
 
 void L_Call_Cleanup ()
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->Cleanup();
+		it->second.Cleanup();
 	}
 }
 
 void L_Call_Idle()
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->Idle();
+		it->second.Idle();
 	}
 }
 
 void L_Call_PostIdle()
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->PostIdle();
+		it->second.PostIdle();
 	}
 }
 
 void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->StartRefuel(type, player_index, panel_side_index);
+		it->second.StartRefuel(type, player_index, panel_side_index);
 	}
 }
 
 void L_Call_End_Refuel (short type, short player_index, short panel_side_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->EndRefuel(type, player_index, panel_side_index);
+		it->second.EndRefuel(type, player_index, panel_side_index);
 	}
 }
 
 void L_Call_Tag_Switch(short tag, short player_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->TagSwitch(tag, player_index);
+		it->second.TagSwitch(tag, player_index);
 	}
 }
 
 void L_Call_Light_Switch(short light, short player_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->LightSwitch(light, player_index);
+		it->second.LightSwitch(light, player_index);
 	}
 }
 
 void L_Call_Platform_Switch(short platform, short player_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->PlatformSwitch(platform, player_index);
+		it->second.PlatformSwitch(platform, player_index);
 	}
 }
 
 void L_Call_Terminal_Enter(short terminal_id, short player_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->TerminalEnter(terminal_id, player_index);
+		it->second.TerminalEnter(terminal_id, player_index);
 	}
 }
 
 void L_Call_Terminal_Exit(short terminal_id, short player_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->TerminalExit(terminal_id, player_index);
+		it->second.TerminalExit(terminal_id, player_index);
 	}
 }
 
 void L_Call_Pattern_Buffer(short side_index, short player_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->PatternBuffer(side_index, player_index);
+		it->second.PatternBuffer(side_index, player_index);
 	}
 }
 
 void L_Call_Got_Item(short type, short player_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->GotItem(type, player_index);
+		it->second.GotItem(type, player_index);
 	}
 }
 
 void L_Call_Light_Activated(short index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->LightActivated(index);
+		it->second.LightActivated(index);
 	}
 }
 
 void L_Call_Platform_Activated(short index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->PlatformActivated(index);
+		it->second.PlatformActivated(index);
 	}
 }
 
 void L_Call_Player_Revived (short player_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->PlayerRevived(player_index);
+		it->second.PlayerRevived(player_index);
 	}
 }
 
 void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action, short projectile_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->PlayerKilled(player_index, aggressor_player_index, action, projectile_index);
+		it->second.PlayerKilled(player_index, aggressor_player_index, action, projectile_index);
 	}
 }
 
 void L_Call_Monster_Killed (short monster_index, short aggressor_player_index, short projectile_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->MonsterKilled(monster_index, aggressor_player_index, projectile_index);
+		it->second.MonsterKilled(monster_index, aggressor_player_index, projectile_index);
 	}
 }
 
 void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->PlayerDamaged(player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
+		it->second.PlayerDamaged(player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
 	}
 }
 
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) 
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->ProjectileDetonated(type, owner_index, polygon, location);
+		it->second.ProjectileDetonated(type, owner_index, polygon, location);
 	}
 }
 
 void L_Call_Item_Created (short item_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->ItemCreated(item_index);
+		it->second.ItemCreated(item_index);
 	}
 }
 
 void L_Invalidate_Monster(short monster_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->InvalidateMonster(monster_index);
+		it->second.InvalidateMonster(monster_index);
 	}	
 }
 
 void L_Invalidate_Projectile(short projectile_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->InvalidateProjectile(projectile_index);
+		it->second.InvalidateProjectile(projectile_index);
 	}
 }
 
 void L_Invalidate_Object(short object_index)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		(*it)->InvalidateObject(object_index);
+		it->second.InvalidateObject(object_index);
 	}
 }
 
@@ -1125,11 +1186,11 @@ int L_Disable_Player(lua_State *L)
 
 int L_Kill_Script(lua_State *L)
 {
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		if ((*it)->Matches(L))
+		if (it->second.Matches(L))
 		{
-			(*it)->Stop();
+			it->second.Stop();
 		}
 	}
 	return 0;
@@ -1156,6 +1217,17 @@ int L_Hide_Interface(lua_State *L)
 	}
 
 	return 0;
+}
+
+int L_Restore_Passed(lua_State *L)
+{
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		if (it->second.Matches(L))
+		{
+			return it->second.RestorePassed(CustomFields[it->first]);
+		}
+	}
 }
 
 int L_Show_Interface(lua_State *L)
@@ -1472,54 +1544,15 @@ static int L_Prompt(lua_State *L)
 }
 */
 
-static void OrderStates()
-{
-	states.clear();
-	if (embedded_state.get())
-		states.push_back(embedded_state.get());
-	if (netscript_state.get())
-		states.push_back(netscript_state.get());
-	if (solo_script_state.get())
-		states.push_back(solo_script_state.get());
-}
-
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 {
-	LuaState *state = 0;
-	if (script_type == _embedded_lua_script)
-	{
-		if (!embedded_state.get())
-		{
-			embedded_state.reset(new EmbeddedLuaState());
-			embedded_state->Initialize();
-			OrderStates();
-		}
-		state = embedded_state.get();
-	}
-	else if (script_type == _lua_netscript)
-	{
-		if (!netscript_state.get())
-		{
-			netscript_state.reset(new NetscriptState());
-			netscript_state->Initialize();
-			OrderStates();
-		}
-		state = netscript_state.get();
-	}
-	else if (script_type == _solo_lua_script)
-	{
-		if (!solo_script_state.get())
-		{
-			solo_script_state.reset(new SoloScriptState());
-			solo_script_state->Initialize();
-			OrderStates();
-		}
-		state = solo_script_state.get();
-	}
-	else
-		assert(false);
+	assert(script_type >= _embedded_lua_script && script_type <= _solo_lua_script);
 
-	return state->Load(buffer, len);
+	if (!states.count(script_type))
+	{
+		states[script_type].Initialize();
+	}
+	return states[script_type].Load(buffer, len);
 }
 
 #ifdef HAVE_OPENGL
@@ -1567,9 +1600,9 @@ bool RunLuaScript()
 	PreservePreLuaSettings();
 
 	bool running = false;
-	for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		running |= (*it)->Run();
+		running |= it->second.Run();
 	}
 
 	return running;
@@ -1577,14 +1610,12 @@ bool RunLuaScript()
 
 void ExecuteLuaString(const std::string& line)
 {
-	if (!solo_script_state.get())
+	if (!states.count(_solo_lua_script))
 	{
-		solo_script_state.reset(new SoloScriptState);
-		solo_script_state->Initialize();
-		OrderStates();
+		states[_solo_lua_script].Initialize();
 	}
 
-	solo_script_state->ExecuteCommand(line);
+	states[_solo_lua_script].ExecuteCommand(line);
 }
 
 void LoadSoloLua()
@@ -1609,10 +1640,12 @@ void LoadSoloLua()
 
 void CloseLuaScript()
 {
+	// save variables for going into next level
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		CustomFields[it->first] = it->second.SavePassed();
+	}
 	states.clear();
-	embedded_state.reset(0);
-	netscript_state.reset(0);
-	solo_script_state.reset(0);
 
 	RestorePreLuaSettings();
 
@@ -1623,6 +1656,11 @@ void CloseLuaScript()
 
 	game_end_condition = _game_normal_end_condition;
 	
+}
+
+void ResetPassedLua()
+{
+	CustomFields.clear();
 }
 
 void ToggleLuaMute()
@@ -1650,9 +1688,9 @@ void MarkLuaCollections(bool loading)
 	{
 		collections.clear();
 
-		for (std::vector<LuaState*>::iterator it = states.begin(); it != states.end(); ++it)
+		for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 		{
-			(*it)->MarkCollections(collections);
+			it->second.MarkCollections(collections);
 		}
 	}
 	else

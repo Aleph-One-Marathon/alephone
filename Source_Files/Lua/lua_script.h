@@ -45,6 +45,7 @@ void *L_Persistent_Table_Key();
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType type);
 bool RunLuaScript();
 void CloseLuaScript();
+void ResetPassedLua();
 
 void ExecuteLuaString(const std::string&);
 void LoadSoloLua();

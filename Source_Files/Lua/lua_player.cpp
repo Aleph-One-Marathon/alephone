@@ -2261,6 +2261,8 @@ int Lua_Game_Save(lua_State *L)
 	return 0;
 }
 
+extern int L_Restore_Passed(lua_State *);
+
 const luaL_reg Lua_Game_Get[] = {
 	{"difficulty", Lua_Game_Get_Difficulty},
 	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
@@ -2268,6 +2270,7 @@ const luaL_reg Lua_Game_Get[] = {
 	{"time_remaining", Lua_Game_Get_Time_Remaining},
 	{"local_random", L_TableFunction<Lua_Game_Local_Random>},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
+	{"restore_passed", L_TableFunction<L_Restore_Passed>},
 	{"ticks", Lua_Game_Get_Ticks},
 	{"type", Lua_Game_Get_Type},
 	{"save", L_TableFunction<Lua_Game_Save>},

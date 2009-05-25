@@ -106,9 +106,16 @@
 <li><a href="#units">Units</a></li>
 <li><a href="#local_player">Local Player</a></li>
 <li><a href="#loading_collections">Loading Collections</a></li>
+<li><a href="#persistence">Persistence</a></li>
 </ol>
 </li>
 <li><a href="#triggers">Triggers</a></li>
+<li>
+<a href="#using_tables">Using Tables</a><ol>
+<li><a href="#custom">Custom Fields</a></li>
+<li><a href="#table_indices">Index</a></li>
+</ol>
+</li>
 <li>
 <a href="#tables">Tables</a><ol>
 <li><a href="#Annotations">Annotations</a></li>
@@ -191,6 +198,11 @@
 	<p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
 <pre>CollectionsUsed = { 10, 16 }</pre>
 	</p>
+      <h2>
+<a name="persistence"></a>Persistence</h2>
+	<p>Lua scripts are only active during a single level. If the user jumps to a new level, or restores from a saved game, the script is restarted in a clean state.</p>
+	<p>It is now possible to pass data across level jumps, by using the Game.restore_passed() function. This function will restore any custom fields (see the "Custom Fields" section of "Using Tables" below) in the Players or Game tables that were set immediately prior to the last level jump. Note that in order for data to survive multiple level jumps, Game.restore_passed() must be called after each level jump. Game.restore_passed() will not restore data from saved games.</p>
+	<p>Only numbers, strings, booleans, and tables (including Aleph One's built-in userdata tables) can be restored.</p>
       <h1>
 <a name="triggers"></a>Triggers</h1>
 <div class="triggers">
@@ -322,11 +334,18 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dl></dd>
 </dl>
 </div>
+<h1>
+<a name="using_tables"></a>Using Tables</h1>
+<p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p>
+<h2>
+<a name="custom"></a>Custom Fields</h2>
+<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.<pre>Players[0]._favorite_flavor = "chocolate"</pre></p>
+<h2>
+<a name="table_indices"></a>Index</h2>
+<p>Each table has a read-only .index variable, that corresponds to the engine's internal index.</p>
+<pre>=Players[0].index<br>0</pre>
 <h1><a name="tables">Tables</a></h1>
 <div class="tables">
-<p>These are tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game.</p>
-<p>There is one important difference: in a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p>
-<p>Each table also has a read-only .index variable that corresponds to the engine's index</p>
 <h3>
 <a name="Annotations"></a>Annotations</h3>
 <dl>
@@ -493,6 +512,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>.random(n)
     </dt>
 <dd><p class="description">returns a random number between 0 and n-1 using a good random number generator</p></dd>
+      <dt>.restore_passed()
+     <span class="version">SVN</span>
+</dt>
+<dd><p class="description">tries to restore any Player or Game custom fields from before the last level jump; returns true if custom fields were successfully restored</p></dd>
       <dt>.save()
     </dt>
 <dd>

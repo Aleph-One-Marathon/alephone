@@ -127,6 +127,7 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "motion_sensor.h"	// ZZZ for reset_motion_sensor()
 
 #include "Music.h"
+#include "lua_script.h"
 
 #ifdef env68k
 #pragma segment file_io
@@ -500,6 +501,8 @@ bool new_game(
 {
 	short player_index, i;
 	bool success= true;
+
+	ResetPassedLua();
 
 	/* Make sure our code is synchronized.. */
 	assert(MAXIMUM_PLAYER_START_NAME_LENGTH==MAXIMUM_PLAYER_NAME_LENGTH);
@@ -1128,6 +1131,8 @@ extern bool load_game_from_file(FileSpecifier& File);
 bool load_game_from_file(FileSpecifier& File)
 {
 	bool success= false;
+
+	ResetPassedLua();
 	
 	/* Setup for a revert.. */
 	revert_game_data.game_is_from_disk = true;

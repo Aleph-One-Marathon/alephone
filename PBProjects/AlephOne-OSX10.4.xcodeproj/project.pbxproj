@@ -95,6 +95,10 @@
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
 		AEAE12FF0FC9AB4900EDA5A6 /* joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */; };
 		AEAE13000FC9AB4900EDA5A6 /* joystick_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEAE12FE0FC9AB4900EDA5A6 /* joystick_sdl.cpp */; };
+		AEAE13210FC9C38400EDA5A6 /* lua_serialize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEAE131F0FC9C38400EDA5A6 /* lua_serialize.cpp */; };
+		AEAE13220FC9C38400EDA5A6 /* lua_serialize.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */; };
+		AEAE132E0FC9C3C800EDA5A6 /* BStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEAE132C0FC9C3C800EDA5A6 /* BStream.cpp */; };
+		AEAE132F0FC9C3C800EDA5A6 /* BStream.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE132D0FC9C3C800EDA5A6 /* BStream.h */; };
 		AEC02F910B6D8B310095E8C9 /* SW_Texture_Extras.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */; };
 		AEC3C70109AD68AC003258E4 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		AEC3C70209AD68AC003258E4 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
@@ -685,6 +689,10 @@
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
 		AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = joystick.h; sourceTree = "<group>"; };
 		AEAE12FE0FC9AB4900EDA5A6 /* joystick_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = joystick_sdl.cpp; sourceTree = "<group>"; };
+		AEAE131F0FC9C38400EDA5A6 /* lua_serialize.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_serialize.cpp; sourceTree = "<group>"; };
+		AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_serialize.h; sourceTree = "<group>"; };
+		AEAE132C0FC9C3C800EDA5A6 /* BStream.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = BStream.cpp; path = ../Source_Files/CSeries/BStream.cpp; sourceTree = "<group>"; };
+		AEAE132D0FC9C3C800EDA5A6 /* BStream.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = BStream.h; path = ../Source_Files/CSeries/BStream.h; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
 		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
 		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1256,6 +1264,8 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
+				AEAE131F0FC9C38400EDA5A6 /* lua_serialize.cpp */,
+				AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */,
 				AE51545E0D46E84A00506B58 /* lua_map.h */,
 				AEDCB5CC0D4ADB86004CB40E /* lua_monsters.h */,
 				AE38D10D0D555A3100FC2082 /* lua_objects.h */,
@@ -1305,6 +1315,7 @@
 			isa = PBXGroup;
 			children = (
 				F522144B0136C0C401000001 /* Headers */,
+				AEAE132C0FC9C3C800EDA5A6 /* BStream.cpp */,
 				F52211410136A66601000001 /* byte_swapping.cpp */,
 				F52211430136A66601000001 /* csalerts_sdl.cpp */,
 				F52211450136A66601000001 /* cscluts_sdl.cpp */,
@@ -1320,6 +1331,7 @@
 		F522144B0136C0C401000001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				AEAE132D0FC9C3C800EDA5A6 /* BStream.h */,
 				3DAC27AF03DC9D5600000104 /* snprintf.h */,
 				F522111D0136A4DD01000001 /* byte_swapping.h */,
 				F522111E0136A4DD01000001 /* csalerts.h */,
@@ -2132,6 +2144,8 @@
 				AEFE7C2D0DB03FA700D11DE2 /* expat.h in Headers */,
 				AEFE7C2E0DB03FA800D11DE2 /* expat_external.h in Headers */,
 				AEAE12FF0FC9AB4900EDA5A6 /* joystick.h in Headers */,
+				AEAE13220FC9C38400EDA5A6 /* lua_serialize.h in Headers */,
+				AEAE132F0FC9C3C800EDA5A6 /* BStream.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2451,6 +2465,8 @@
 				AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */,
 				AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */,
 				AEAE13000FC9AB4900EDA5A6 /* joystick_sdl.cpp in Sources */,
+				AEAE13210FC9C38400EDA5A6 /* lua_serialize.cpp in Sources */,
+				AEAE132E0FC9C3C800EDA5A6 /* BStream.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
