@@ -127,7 +127,6 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "motion_sensor.h"	// ZZZ for reset_motion_sensor()
 
 #include "Music.h"
-#include "lua_script.h"
 
 #ifdef env68k
 #pragma segment file_io
@@ -491,6 +490,8 @@ void set_saved_game_name_to_default()
 	revert_game_data.SavedGame += getcstr(temporary, strFILENAMES, filenameDEFAULT_SAVE_GAME);
 #endif
 }
+
+extern void ResetPassedLua();
 
 bool new_game(
 	short number_of_players, 
