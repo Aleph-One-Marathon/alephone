@@ -71,6 +71,7 @@ struct screen_mode_data
 	short width;
 	short height;
 	bool hud;
+	bool scaled_hud;
 	
 };
 

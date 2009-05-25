@@ -57,6 +57,7 @@
 #include "screen_drawing.h"
 #include "mouse.h"
 #include "network.h"
+#include "images.h"
 
 #include "sdl_fonts.h"
 
@@ -302,7 +303,7 @@ SDL_Rect Screen::view_rect()
 	}
 	else
 	{
-		int available_height = window_height() - 160;
+		int available_height = window_height() - hud_rect().h;
 		if (window_width() > available_height * 2)
 		{
 			r.w = available_height * 2;
@@ -341,7 +342,7 @@ SDL_Rect Screen::map_rect()
 	r.w = window_width();
 	r.h = window_height();
 	if (hud()) 
-		r.h -= 160;
+		r.h -= hud_rect().h;
 
 	r.x = (width() - window_width()) / 2;
 	r.y = (height() - window_height()) / 2;
@@ -357,7 +358,7 @@ SDL_Rect Screen::term_rect()
 	r.x = (width() - r.w) / 2;
 	if (hud())
 	{
-		r.y = (height() - 160 - r.h) / 2;
+		r.y = (height() - hud_rect().h - r.h) / 2;
 	}
 	else
 	{
@@ -370,10 +371,13 @@ SDL_Rect Screen::term_rect()
 SDL_Rect Screen::hud_rect()
 {
 	SDL_Rect r;
-	r.w = 640;
-	r.h = 160;
+    if (screen_mode.scaled_hud)
+        r.w = std::min(width(), height() * 4 / 3);
+    else
+        r.w = 640;
+    r.h = r.w / 4;
 	r.x = (width() - r.w) / 2;
-	r.y = window_height() - 160 + (height() - window_height()) / 2;
+	r.y = window_height() - r.h + (height() - window_height()) / 2;
 
 	return r;
 }
@@ -1220,8 +1224,19 @@ void DrawHUD(SDL_Rect &dest_rect)
 {
 	if (HUD_Buffer) {
 		SDL_Rect src_rect = {0, 320, 640, 160};
-		SDL_BlitSurface(HUD_Buffer, &src_rect, main_surface, &dest_rect);
+		SDL_Surface *hudsurface = HUD_Buffer;
+		if (dest_rect.w != src_rect.w || dest_rect.h != src_rect.h)
+		{
+			hudsurface = rescale_surface(HUD_Buffer, dest_rect.w, dest_rect.h * 3);
+			src_rect.w = dest_rect.w;
+			src_rect.h = dest_rect.h;
+			src_rect.y = dest_rect.h * 2;
+		}
+		SDL_BlitSurface(hudsurface, &src_rect, main_surface, &dest_rect);
 		SDL_UpdateRects(main_surface, 1, &dest_rect);
+		
+		if (hudsurface != HUD_Buffer)
+			SDL_FreeSurface(hudsurface);
 	}
 }
 

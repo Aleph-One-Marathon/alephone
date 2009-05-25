@@ -238,6 +238,14 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		glDisable(GL_BLEND);
 		glDisable(GL_FOG);
 
+		GLdouble x_scale = (dest.right - dest.left) / 640.0;
+		GLdouble y_scale = (dest.bottom - dest.top) / 160.0;
+		glScissor(dest.left, dest.bottom, 640.0 * x_scale, 160.0 * y_scale);
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glTranslated(dest.left, dest.top - (320.0 * y_scale), 0.0);
+		glScaled(x_scale, y_scale, 1.0);
+        
 		// Draw static HUD picture
 		for (int i=0; i<NUM_TEX; i++) {
 			if (!LuaTexturePaletteSize())
@@ -250,13 +258,13 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 
 			glBegin(GL_TRIANGLE_FAN);
 				glTexCoord2f(0.0, 0.0);
-				glVertex2i(txtr_x[i] + dest.left, txtr_y[i] + dest.top);
+				glVertex2i(txtr_x[i], txtr_y[i] + 320);
 				glTexCoord2f(1.0, 0.0);
-				glVertex2i(txtr_x[i] + txtr_width[i] + dest.left, txtr_y[i] + dest.top);
+				glVertex2i(txtr_x[i] + txtr_width[i], txtr_y[i] + 320);
 				glTexCoord2f(1.0, 1.0);
-				glVertex2i(txtr_x[i] + txtr_width[i] + dest.left, txtr_y[i] + txtr_height[i] + dest.top);
+				glVertex2i(txtr_x[i] + txtr_width[i], txtr_y[i] + txtr_height[i] + 320);
 				glTexCoord2f(0.0, 1.0);
-				glVertex2i(txtr_x[i] + dest.left, txtr_y[i] + txtr_height[i] + dest.top);
+				glVertex2i(txtr_x[i], txtr_y[i] + txtr_height[i] + 320);
 			glEnd();
 		}
 
@@ -266,10 +274,6 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		mark_shield_display_as_dirty();
 		mark_oxygen_display_as_dirty();
 		mark_player_inventory_as_dirty(current_player_index, NONE);
-		glScissor(dest.left, dest.bottom, 640, 160);
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glTranslated(dest.left, dest.top - 320, 0.0);
 		HUD_OGL.update_everything(time_elapsed);
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
