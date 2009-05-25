@@ -104,7 +104,7 @@ BIStream& BIStreamBE::operator>>(double& value) throw(failure)
 	Uint64 ivalue;
 	read(reinterpret_cast<char*>(&ivalue), 8);
 	ivalue = SDL_SwapBE64(ivalue);
-	value = *reinterpret_cast<double*>(&ivalue);
+	memcpy(reinterpret_cast<char*>(&value), reinterpret_cast<char*>(&ivalue), 8);
 	return *this;
 }
 
@@ -165,6 +165,8 @@ BOStream& BOStreamBE::operator<<(int32 value) throw(failure)
 
 BOStream& BOStreamBE::operator<<(double value) throw(failure)
 {
-	Uint64 bytes = SDL_SwapBE64(*reinterpret_cast<Uint64*>(&value));
-	return write(reinterpret_cast<char*>(&bytes), 8);
+	Uint64 ivalue;
+	memcpy(reinterpret_cast<char*>(&ivalue), reinterpret_cast<char*>(&value), 8);
+	ivalue = SDL_SwapBE64(ivalue);
+	return write(reinterpret_cast<char*>(&ivalue), 8);
 }
