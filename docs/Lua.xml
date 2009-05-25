@@ -424,7 +424,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<return><type>boolean</type></return>
       </function>
       <function name="restore_saved" version="SVN">
-	<description>tries to restore any custom fields from the last saved game; returns true if custom fields were successfully restored</description>
+	<description>tries to restore any custom fields from the saved game; returns true if custom fields were successfully restored</description>
 	<note>if successful, overwrites all existing custom fields</note>
 	<return><type>boolean</type></return>
       </function>

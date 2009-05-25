@@ -1708,6 +1708,8 @@ void CloseLuaScript()
 	}
 	states.clear();
 
+	SavedLuaState.clear();
+
 	RestorePreLuaSettings();
 
 	lua_cameras.resize(0);
@@ -1864,6 +1866,8 @@ void pack_lua_states(uint8* data, size_t length)
 			s.write(&it->second[0], it->second.size());
 		}
 	}
+
+	SavedLuaState.clear();
 }
 
 void unpack_lua_states(uint8* data, size_t length)
