@@ -1363,11 +1363,18 @@ uint32 parse_keymap(void)
       }
       
 
+      bool do_interchange =
+	      (local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?
+	      (input_preferences->modifiers & _inputmod_interchange_swim_sink) != 0:
+	      (input_preferences->modifiers & _inputmod_interchange_run_walk) != 0;
+      
       // Handle the selected input controller
       if (input_preferences->input_device != _keyboard_or_game_pad) {
 	_fixed delta_yaw, delta_pitch, delta_velocity;
 	test_mouse(input_preferences->input_device, &flags, &delta_yaw, &delta_pitch, &delta_velocity);
 	flags = mask_in_absolute_positioning_information(flags, delta_yaw, delta_pitch, delta_velocity);
+        if (do_interchange)
+	    flags ^= _run_dont_walk;
       } else {
         int joyflags = process_joystick_axes(flags, heartbeat_count);
         if (joyflags != flags) {
@@ -1375,10 +1382,6 @@ uint32 parse_keymap(void)
         } else {
 
           // Modify flags with run/walk and swim/sink if we're using the keyboard
-          bool do_interchange =
-	    (local_player->variables.flags & _HEAD_BELOW_MEDIA_BIT) ?
-	    (input_preferences->modifiers & _inputmod_interchange_swim_sink) != 0:
-	    (input_preferences->modifiers & _inputmod_interchange_run_walk) != 0;
         if (do_interchange)
 	    flags ^= _run_dont_walk;
         }
