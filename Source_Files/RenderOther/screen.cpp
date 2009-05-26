@@ -818,12 +818,10 @@ void render_screen(short ticks_elapsed)
 		if (world_view->terminal_mode_active) {
 			// Copy 2D rendering to screen
 
-			SDL_Rect term_dst = Screen::instance()->term_rect();
-			SDL_Rect term_ortho = { 0, 0, Screen::instance()->width(), Screen::instance()->height() };
 			SDL_SetAlpha(Term_Buffer, 0, 0xff);
-			OGL_Blitter blitter(*Term_Buffer, term_dst, term_ortho);
+			OGL_Blitter blitter(*Term_Buffer);
 			blitter.SetupMatrix();
-			blitter.Draw();
+			blitter.Draw(Screen::instance()->term_rect());
 			blitter.RestoreMatrix();
 		}
 

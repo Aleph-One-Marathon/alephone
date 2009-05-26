@@ -62,47 +62,39 @@ bool OGL_LoadScreen::Start()
 	if (blitter)
 		delete blitter;
 
-	int screenWidth, screenHeight;
-#if defined(SDL)
-	screenWidth = SDL_GetVideoSurface()->w;
-	screenHeight = SDL_GetVideoSurface()->h;
-#else
-	Rect ScreenRect;
-	GetPortBounds(GetWindowPort(screen_window), &ScreenRect);
-	screenWidth = ScreenRect.right;
-	screenHeight = ScreenRect.bottom;
-#endif
+	int screenWidth = SDL_GetVideoSurface()->w;
+	int screenHeight = SDL_GetVideoSurface()->h;
 	bound_screen();
 	
 	// the true width/height
 	int imageWidth = static_cast<int>(image.GetWidth() * image.GetVScale());
 	int imageHeight = static_cast<int>(image.GetHeight() * image.GetUScale());
 
-	int scaledScreenWidth, scaledScreenHeight;
-
+	SDL_Rect dst;
 	if (stretch)
 	{
-		scaledScreenWidth = imageWidth;
-		scaledScreenHeight = imageHeight;
+		dst.w = screenWidth;
+		dst.h = screenHeight;
 	}
 	else if (imageWidth / imageHeight > screenWidth / screenHeight) 
 	{
-		scaledScreenWidth = imageWidth;
-		scaledScreenHeight = screenHeight * imageWidth / screenWidth;
+		dst.w = screenWidth;
+		dst.h = imageHeight * screenWidth / imageWidth;
 	} 
 	else 
 	{
-		scaledScreenWidth = screenWidth * imageHeight / screenHeight;
-		scaledScreenHeight = imageHeight;
+		dst.w = imageWidth * screenHeight / imageHeight;
+		dst.h = screenHeight;
 	}
-
-	SDL_Rect dst = { 0, 0, imageWidth, imageHeight };
-	SDL_Rect ortho = { 0 - (scaledScreenWidth - imageWidth) / 2,
-			   0 - (scaledScreenHeight - imageHeight) / 2,
-			   scaledScreenWidth,
-			   scaledScreenHeight};
+	dst.x = (screenWidth - dst.w) / 2;
+	dst.y = (screenHeight - dst.h) / 2;
 	
-		
+	x_offset = dst.x;
+	y_offset = dst.y;
+	x_scale = dst.w / (double) imageWidth;
+	y_scale = dst.h / (double) imageHeight;
+	
+	SDL_Rect ortho = { 0, 0, screenWidth, screenHeight };
 	blitter = new OGL_Blitter(*s, dst, ortho);
 						  
 	OGL_ClearScreen();
@@ -129,7 +121,11 @@ void OGL_LoadScreen::Progress(const int progress)
 
 	if (useProgress) 
 	{
-
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glTranslated(x_offset, y_offset, 0.0);
+		glScaled(x_scale, y_scale, 1.0);
+		
 		// draw the progress bar background
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glColor3us(colors[0].red, colors[0].green, colors[0].blue);
@@ -163,6 +159,8 @@ void OGL_LoadScreen::Progress(const int progress)
 		glVertex3f(left + width, top + height, 0);
 		glVertex3f(left, top + height, 0);
 		glEnd();
+		
+		glPopMatrix();
 	}
 
 	blitter->RestoreMatrix();

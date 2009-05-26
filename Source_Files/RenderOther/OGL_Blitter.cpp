@@ -27,13 +27,27 @@
 
 const int OGL_Blitter::tile_size;
 
-OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Rect& ortho) : m_ortho(ortho)
+OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Rect& ortho) : m_ortho(ortho), m_dst(dst)
 {
-	x_scale = (dst.w / (GLdouble) s.w);
-	y_scale = (dst.h / (GLdouble) s.h);
-	x_offset = dst.x;
-	y_offset = dst.y;
+	m_src.x = m_src.y = 0;
+	m_src.w = s.w;
+	m_src.h = s.h;
+	BuildTextures(s);
+}
 
+OGL_Blitter::OGL_Blitter(const SDL_Surface& s)
+{
+	m_dst.x = m_dst.y = m_dst.w = m_dst.h = 0;
+	m_ortho.x = m_ortho.y = m_ortho.w = m_ortho.h = 0;
+	
+	m_src.x = m_src.y = 0;
+	m_src.w = s.w;
+	m_src.h = s.h;
+	BuildTextures(s);
+}
+
+void OGL_Blitter::BuildTextures(const SDL_Surface& s)
+{
 	// calculate how many rects we need
 	int v_rects = ((s.h + tile_size -1) / tile_size);
 	int h_rects = ((s.w + tile_size - 1) / tile_size);
@@ -100,38 +114,75 @@ void OGL_Blitter::SetupMatrix()
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_STENCIL_TEST);
 
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
+	if (m_ortho.w && m_ortho.h)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
 	
-	// transform ortho into screen co-ordinates
-	gluOrtho2D(m_ortho.x, m_ortho.x + m_ortho.w, m_ortho.y + m_ortho.h, m_ortho.y);
-
+		// transform ortho into screen co-ordinates
+		gluOrtho2D(m_ortho.x, m_ortho.x + m_ortho.w, m_ortho.y + m_ortho.h, m_ortho.y);
+	}
 }
 
 void OGL_Blitter::Draw()
 {
+	Draw(m_dst, m_src);
+}
+
+void OGL_Blitter::Draw(const SDL_Rect& dst)
+{
+	Draw(dst, m_src);
+}
+
+void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
+{
+	GLdouble x_scale = dst.w / (GLdouble) src.w;
+	GLdouble y_scale = dst.h / (GLdouble) src.h;
+	GLdouble x_offset = dst.x;
+	GLdouble y_offset = dst.y;
+	
 	for (int i = 0; i < m_rects.size(); i++)
 	{
+		if (src.x > m_rects[i].x + m_rects[i].w ||
+		    src.x + src.w < m_rects[i].x ||
+		    src.y > m_rects[i].y + m_rects[i].h ||
+		    src.y + src.h < m_rects[i].y)
+			continue;
+		
+		int tx = std::max(0, src.x - m_rects[i].x);
+		int ty = std::max(0, src.y - m_rects[i].y);
+		int tw = std::min((int) m_rects[i].w, src.x + src.w) - tx;
+		int th = std::min((int) m_rects[i].h, src.y + src.h) - ty;
+		
+		GLdouble VMin = tx / (GLdouble) tile_size;
+		GLdouble VMax = (tx + tw) / (GLdouble) tile_size;
+		GLdouble UMin = ty / (GLdouble) tile_size;
+		GLdouble UMax = (ty + th) / (GLdouble) tile_size;
+		
+		GLdouble tleft   = ((m_rects[i].x + tx) * x_scale) + (GLdouble) (dst.x - (src.x * x_scale));
+		GLdouble tright  = tleft + (tw * x_scale);
+		GLdouble ttop    = ((m_rects[i].y + ty) * y_scale) + (GLdouble) (dst.y - (src.y * y_scale));
+		GLdouble tbottom = ttop + (th * y_scale);
+		
 		glBindTexture(GL_TEXTURE_2D, m_refs[i]);
 		glColor3ub(255, 255, 255);
 		glBegin(GL_QUADS);
-
-		GLdouble VScale = (double) m_rects[i].w / (double) tile_size;
-		GLdouble UScale = (double) m_rects[i].h / (double) tile_size;
-
-		glTexCoord2f(0.0, 0.0); glVertex3f((m_rects[i].x + x_offset) * x_scale, (m_rects[i].y + y_offset) * y_scale, 0);
-		glTexCoord2f(VScale, 0.0); glVertex3f((m_rects[i].x + x_offset + m_rects[i].w) * x_scale, (m_rects[i].y + y_offset) * y_scale, 0);
-		glTexCoord2f(VScale, UScale); glVertex3f((m_rects[i].x + x_offset + m_rects[i].w) * x_scale, (m_rects[i].y + y_offset + m_rects[i].h) * y_scale, 0);
-		glTexCoord2f(0.0, UScale); glVertex3f((m_rects[i].x + x_offset) * x_scale, (m_rects[i].y + y_offset + m_rects[i].h) * y_scale, 0);
+		glTexCoord2f(VMin, UMin); glVertex3f(tleft,  ttop,    0);
+		glTexCoord2f(VMax, UMin); glVertex3f(tright, ttop,    0);
+		glTexCoord2f(VMax, UMax); glVertex3f(tright, tbottom, 0);
+		glTexCoord2f(VMin, UMax); glVertex3f(tleft,  tbottom, 0);
 		glEnd();
 	}
 }
 
 void OGL_Blitter::RestoreMatrix()
 {
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
+	if (m_ortho.w && m_ortho.h)
+	{
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+	}
 	glPopAttrib();
 }
 

@@ -39,12 +39,11 @@
 
 #include "OGL_Setup.h"
 #include "OGL_Textures.h"
+#include "OGL_Blitter.h"
 
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
 #   include <OpenGL/gl.h>
-# elif defined mac
-#   include <gl.h>
 # else
 #   include <GL/gl.h>
 # endif
@@ -63,28 +62,7 @@ extern bool MotionSensorActive;
 static HUD_OGL_Class HUD_OGL;
 
 
-// MacOS HUD Buffer; defined in screen.cpp
-#if defined(mac)
-extern GWorldPtr HUD_Buffer;
-#endif
-
-
-/*
- *  Draws the entire interface using OpenGL
- */
-
-// We are using 6 textures to render the 640x160 pixel HUD:
-//
-//     256      256    128
-//  +--------+--------+----+
-//  |   0    |   1    | 2  | 128
-//  |        |        |    |
-//  +--------+--------+----+
-//  |   3    |   4    | 5  | 32
-//  +--------+--------+----+
-const int NUM_TEX = 6;
-static GLuint txtr_id[NUM_TEX];
-
+static OGL_Blitter *HUD_Blitter;  // HUD backdrop storage
 static bool hud_pict_loaded = false;	// HUD backdrop picture loaded and ready
 static bool hud_pict_not_found = false;	// HUD backdrop picture not found, don't try again to load it
 
@@ -92,14 +70,10 @@ extern int LuaTexturePaletteSize();
 
 void OGL_DrawHUD(Rect &dest, short time_elapsed)
 {
-	static const int txtr_width[NUM_TEX] = {256, 256, 128, 256, 256, 128};
-	static const int txtr_height[NUM_TEX] = {128, 128, 128, 32, 32, 32};
-	static const int txtr_x[NUM_TEX] = {0, 256, 512, 0, 256, 512};
-	static const int txtr_y[NUM_TEX] = {0, 0, 0, 128, 128, 128};
-
 	if(hud_pict_loaded && time_elapsed == NONE)
 	{
-		glDeleteTextures(NUM_TEX, txtr_id);
+		delete HUD_Blitter;
+		HUD_Blitter = NULL;
 		hud_pict_loaded= false;
 	}
 	
@@ -112,115 +86,12 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 			hud_pict_not_found = true;
 
 		if (hud_pict_loaded) {
-			uint8 *txtr_data[NUM_TEX];
-			for (int i=0; i<NUM_TEX; i++)
-				txtr_data[i] = new uint8[txtr_width[i] * txtr_height[i] * 4];
-
-#if defined(mac)
-			// Using already-rendered HUD buffer (LP)
-			if (HUD_Buffer)
-			{
-				// Get the pixels to copy in
-				PixMapHandle Pxls = GetGWorldPixMap(HUD_Buffer);
-				LockPixels(Pxls);
-				
-				// Row-start address and row length
-				uint8 *SourceStart = (uint8 *)GetPixBaseAddr(Pxls);
-				long StrideBytes = (**Pxls).rowBytes & 0x3fff;
-				
-				// Special-case it for 
-				int SrcBytes = (**Pxls).pixelSize/8;
-				switch(SrcBytes)
-				{
-				case 2:
-				for (int i=0; i<NUM_TEX; i++)
-				{
-					uint8 *SrcLineStart = SourceStart + txtr_y[i]*StrideBytes + txtr_x[i]*SrcBytes;
-					uint32 *DestPP = (uint32 *)txtr_data[i];
-					for (int y=0; y<txtr_height[i]; y++)
-					{
-						uint8 *SrcPP = SrcLineStart;
-						for (int x=0; x<txtr_width[i]; x++)
-						{
-							// 1555 ARGB to 8888 RGBA -- with A = 1 always
-              				uint16 Intmd = *(SrcPP++);
-            			    Intmd <<= 8;
-            				Intmd |= uint16(*(SrcPP++));
-            				*(DestPP++) = Convert_16to32(Intmd);
-						}
-						SrcLineStart += StrideBytes;
-					}
-				}
-				break;
-				
-				case 4:
-				for (int i=0; i<NUM_TEX; i++)
-				{
-					uint8 *SrcLineStart = SourceStart + txtr_y[i]*StrideBytes + txtr_x[i]*SrcBytes;
-					uint8 *DestPP = txtr_data[i];
-					for (int y=0; y<txtr_height[i]; y++)
-					{
-						uint8 *SrcPP = SrcLineStart;
-						for (int x=0; x<txtr_width[i]; x++)
-						{
-							// 8888 ARGB to RGBA -- with A = 1 always
-							SrcPP++;
-							*(DestPP++) = *(SrcPP++);
-							*(DestPP++) = *(SrcPP++);
-							*(DestPP++) = *(SrcPP++);
-							*(DestPP++) = 0xff;
-						}
-						SrcLineStart += StrideBytes;
-					}
-				}
-				}
-				
-				// Done!
-				UnlockPixels(Pxls);
-			}
-			
-#elif defined(SDL)
 			// Render picture into SDL surface, convert to GL textures
 			SDL_Surface *hud_pict = picture_to_surface(PictRsrc);
 			if (hud_pict) {
-				SDL_Surface *hud_pict_rgb = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 160, 32, 0xff0000, 0x00ff00, 0x0000ff, 0);
-				if (hud_pict_rgb) {
-					SDL_Rect rect = {0, 0, 640, 160};
-					SDL_BlitSurface(hud_pict, &rect, hud_pict_rgb, &rect);
-					for (int i=0; i<NUM_TEX; i++) {
-						uint32 *p = (uint32 *)((uint8 *)hud_pict_rgb->pixels + txtr_y[i] * hud_pict_rgb->pitch) + txtr_x[i];
-						uint8 *q = txtr_data[i];
-						for (int y=0; y<txtr_height[i]; y++) {
-							for (int x=0; x<txtr_width[i]; x++) {
-								uint32 v = p[x];
-								*q++ = v >> 16;
-								*q++ = v >> 8;
-								*q++ = v;
-								*q++ = 0xff;
-							}
-							p = (uint32 *)((uint8 *)p + hud_pict_rgb->pitch);
-						}
-					}
-					SDL_FreeSurface(hud_pict_rgb);
-				}
+				HUD_Blitter = new OGL_Blitter(*hud_pict);
 				SDL_FreeSurface(hud_pict);
 			}
-#endif
-
-			glGenTextures(NUM_TEX, txtr_id);
-			for (int i=0; i<NUM_TEX; i++) {
-				glBindTexture(GL_TEXTURE_2D, txtr_id[i]);
-				glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-				glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, txtr_width[i], txtr_height[i],
-					0, GL_RGBA, GL_UNSIGNED_BYTE, txtr_data[i]);
-				delete[] txtr_data[i];
-			}
-
-			hud_pict_loaded = true;
 		}
 	}
 
@@ -238,6 +109,25 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		glDisable(GL_BLEND);
 		glDisable(GL_FOG);
 
+		// Draw static HUD picture
+		if (HUD_Blitter && !LuaTexturePaletteSize())
+		{
+			SDL_Rect hud_dest = { dest.left, dest.top, dest.right - dest.left, dest.bottom - dest.top };
+			HUD_Blitter->SetupMatrix();
+			HUD_Blitter->Draw(hud_dest);
+			HUD_Blitter->RestoreMatrix();
+		}
+		else
+		{
+			glColor3ub(0, 0, 0);
+			glBegin(GL_QUADS);
+			glVertex2i(dest.left,  dest.top);
+			glVertex2i(dest.right, dest.top);
+			glVertex2i(dest.right, dest.bottom);
+			glVertex2i(dest.left,  dest.bottom);
+			glEnd();
+		}
+		
 		GLdouble x_scale = (dest.right - dest.left) / 640.0;
 		GLdouble y_scale = (dest.bottom - dest.top) / 160.0;
 		glScissor(dest.left, dest.bottom, 640.0 * x_scale, 160.0 * y_scale);
@@ -245,28 +135,6 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		glPushMatrix();
 		glTranslated(dest.left, dest.top - (320.0 * y_scale), 0.0);
 		glScaled(x_scale, y_scale, 1.0);
-        
-		// Draw static HUD picture
-		for (int i=0; i<NUM_TEX; i++) {
-			if (!LuaTexturePaletteSize())
-			{
-				glBindTexture(GL_TEXTURE_2D, txtr_id[i]);
-				glColor3f(1.0, 1.0, 1.0);
-			}
-			else
-				glColor3f(0.0, 0.0, 0.0);
-
-			glBegin(GL_TRIANGLE_FAN);
-				glTexCoord2f(0.0, 0.0);
-				glVertex2i(txtr_x[i], txtr_y[i] + 320);
-				glTexCoord2f(1.0, 0.0);
-				glVertex2i(txtr_x[i] + txtr_width[i], txtr_y[i] + 320);
-				glTexCoord2f(1.0, 1.0);
-				glVertex2i(txtr_x[i] + txtr_width[i], txtr_y[i] + txtr_height[i] + 320);
-				glTexCoord2f(0.0, 1.0);
-				glVertex2i(txtr_x[i], txtr_y[i] + txtr_height[i] + 320);
-			glEnd();
-		}
 
 		// Add dynamic elements (redraw everything)
 		mark_weapon_display_as_dirty();
@@ -295,7 +163,8 @@ void OGL_ResetHUDFonts(bool IsStarting)
 	get_interface_font(_player_name_font).OGL_Reset(IsStarting);
 
 	if (IsStarting && hud_pict_loaded) {
-		glDeleteTextures(NUM_TEX, txtr_id);
+		delete HUD_Blitter;
+		HUD_Blitter = NULL;
 		hud_pict_loaded = false;
 	}
 }

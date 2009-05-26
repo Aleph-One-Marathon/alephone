@@ -56,15 +56,17 @@ class OGL_Blitter
 {
 public:
 	OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Rect& ortho);
+	OGL_Blitter(const SDL_Surface& s);
 	void SetupMatrix();
 	void Draw();
+	void Draw(const SDL_Rect& dst);
+	void Draw(const SDL_Rect& dst, const SDL_Rect& src);
 	void RestoreMatrix();
 	~OGL_Blitter();
 private:
-	SDL_Rect m_ortho;
+	void BuildTextures(const SDL_Surface& s);
 
-	GLdouble x_scale, y_scale;
-	int x_offset, y_offset;
+	SDL_Rect m_ortho, m_dst, m_src;
 
 	vector<SDL_Rect> m_rects;
 	vector<GLuint> m_refs;
