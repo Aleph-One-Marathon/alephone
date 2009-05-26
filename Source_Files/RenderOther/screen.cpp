@@ -482,6 +482,7 @@ void exit_screen(void)
 	change_screen_mode(640, 480, bit_depth, true);
 #ifdef HAVE_OPENGL
 	delete Term_Blitter;
+	Term_Blitter = NULL;
 	OGL_StopRun();
 #endif
 }
