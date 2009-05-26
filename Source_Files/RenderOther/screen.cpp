@@ -110,7 +110,7 @@ static void update_fps_display(SDL_Surface *s);
 static void DisplayPosition(SDL_Surface *s);
 static void DisplayMessages(SDL_Surface *s);
 static void DisplayNetMicStatus(SDL_Surface *s);
-static void DrawHUD(SDL_Rect &dest_rect);
+static void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect);
 
 // LP addition:
 void start_tunnel_vision_effect(
@@ -353,8 +353,23 @@ SDL_Rect Screen::map_rect()
 SDL_Rect Screen::term_rect()
 {
 	SDL_Rect r;
-	r.w = 640;
-	r.h = 320;
+	int termwidth = 640;
+	if (screen_mode.term_scale_level > 0)
+	{
+		int available_height = height();
+		if (hud())
+			available_height -= hud_rect().h;
+		
+		if (width() > available_height * 2)
+			termwidth = available_height * 2;
+		else
+			termwidth = width();
+	
+		if (screen_mode.term_scale_level == 1)
+			termwidth = std::min(1280, termwidth);
+	}
+	r.w = termwidth;
+	r.h = r.w / 2;
 	r.x = (width() - r.w) / 2;
 	if (hud())
 	{
@@ -686,7 +701,9 @@ void render_screen(short ticks_elapsed)
 	// Each kind of display needs its own size
 	if (world_view->terminal_mode_active) {
 		// Standard terminal size
-		ViewRect = Screen::instance()->term_rect();
+		ViewRect.x = ViewRect.y = 0;
+		ViewRect.w = 640;
+		ViewRect.h = 320;
 		HighResolution = true;
 	} else if (world_view->overhead_map_active) {
 		// Fill the available space
@@ -840,12 +857,24 @@ void render_screen(short ticks_elapsed)
 #endif
 	} else {
 
-		// Update world window
-		update_screen(BufferRect, ViewRect, HighResolution);
+		// Update terminal
+		if (world_view->terminal_mode_active) {
+			if (Term_RenderRequest) {
+				SDL_Rect dest_rect = Screen::instance()->term_rect();
+				DrawSurface(Term_Buffer, dest_rect, ViewRect);
+				Term_RenderRequest = false;
+			}
+		}
+		else
+		{
+			// Update world window
+			update_screen(BufferRect, ViewRect, HighResolution);
+		}
 
 		// Update HUD
 		if (HUD_RenderRequest) {
-			DrawHUD(HUD_DestRect);
+			SDL_Rect src_rect = { 0, 320, 640, 160 };
+			DrawSurface(HUD_Buffer, HUD_DestRect, src_rect);
 			HUD_RenderRequest = false;
 		}
 
@@ -1041,11 +1070,7 @@ void render_computer_interface(struct view_data *view)
 	data.bottom = view->screen_height;
 	data.vertical_offset = 0;
 
-	if (screen_mode.acceleration == _opengl_acceleration) {
-		_set_port_to_term();
-	} else {
-		_set_port_to_gworld();
-	}
+	_set_port_to_term();
 	_render_computer_interface(&data);
 	_restore_port();
 }
@@ -1222,26 +1247,29 @@ void validate_world_window(void)
 
 
 /*
- *  Draw the HUD (non-OpenGL)
+ *  Draw the HUD or terminal (non-OpenGL)
  */
 
-void DrawHUD(SDL_Rect &dest_rect)
+void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect)
 {
-	if (HUD_Buffer) {
-		SDL_Rect src_rect = {0, 320, 640, 160};
-		SDL_Surface *hudsurface = HUD_Buffer;
+	if (s) {
+		SDL_Rect new_src_rect = {src_rect.x, src_rect.y, src_rect.w, src_rect.h};
+		SDL_Surface *surface = s;
 		if (dest_rect.w != src_rect.w || dest_rect.h != src_rect.h)
 		{
-			hudsurface = rescale_surface(HUD_Buffer, dest_rect.w, dest_rect.h * 3);
-			src_rect.w = dest_rect.w;
-			src_rect.h = dest_rect.h;
-			src_rect.y = dest_rect.h * 2;
+			double x_scale = dest_rect.w / (double) src_rect.w;
+			double y_scale = dest_rect.h / (double) src_rect.h;
+			surface = rescale_surface(s, s->w * x_scale, s->h * y_scale);
+			new_src_rect.x *= x_scale;
+			new_src_rect.y *= y_scale;
+			new_src_rect.w *= x_scale;
+			new_src_rect.h *= y_scale;
 		}
-		SDL_BlitSurface(hudsurface, &src_rect, main_surface, &dest_rect);
+		SDL_BlitSurface(surface, &new_src_rect, main_surface, &dest_rect);
 		SDL_UpdateRects(main_surface, 1, &dest_rect);
 		
-		if (hudsurface != HUD_Buffer)
-			SDL_FreeSurface(hudsurface);
+		if (surface != s)
+			SDL_FreeSurface(surface);
 	}
 }
 

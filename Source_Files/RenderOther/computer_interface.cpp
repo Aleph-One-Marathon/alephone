@@ -765,6 +765,8 @@ void _render_computer_interface(
 		// Disable clipping
 		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 #endif
+		
+		RequestDrawingTerm();
 	}
 }
 

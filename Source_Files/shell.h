@@ -72,6 +72,7 @@ struct screen_mode_data
 	short height;
 	bool hud;
 	short hud_scale_level;
+	short term_scale_level;
 	
 };
 

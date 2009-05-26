@@ -82,6 +82,7 @@ bool ShowScores = false;
 
 // Whether rendering of the HUD has been requested
 static bool HUD_RenderRequest = false;
+static bool Term_RenderRequest = false;
 
 static bool screen_initialized= false;
 
@@ -882,6 +883,13 @@ bool SetTunnelVision(bool TunnelVisionOn)
 void RequestDrawingHUD()
 {
 	HUD_RenderRequest = true;
+}
+
+// This is for requesting the drawing of the Terminal;
+// this is done because its drawing is now done when the main display is drawn
+void RequestDrawingTerm()
+{
+	Term_RenderRequest = true;
 }
 
 // ZZZ: I feel bad doing this, but ... not sure what best way to handle it is.

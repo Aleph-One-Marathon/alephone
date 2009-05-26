@@ -194,6 +194,8 @@ bool SetTunnelVision(bool TunnelVisionOn);
 
 // Request for drawing the HUD
 void RequestDrawingHUD();
+// Request for drawing the terminal
+void RequestDrawingTerm();
 
 // Corresponding with-and-without-HUD sizes for some view-size index,
 // for the convenience of Pfhortran scripting;

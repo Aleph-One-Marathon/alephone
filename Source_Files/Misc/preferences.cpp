@@ -711,6 +711,10 @@ static const char* hud_scale_labels[] = {
 "Fixed Size", "Larger View", "Larger HUD", NULL
 };
 
+static const char* term_scale_labels[] = {
+"Fixed Size", "Up to 2x", "Unlimited", NULL
+};
+
 static int get_texture_quality_label(int16 quality, bool wall)
 {
 	if (quality == 0) return 0;
@@ -914,10 +918,16 @@ static void graphics_dialog(void *arg)
 	w_select_popup *hud_scale_w = new w_select_popup();
 	hud_scale_w->set_labels(build_stringvector_from_cstring_array(hud_scale_labels));
 	hud_scale_w->set_selection(graphics_preferences->screen_mode.hud_scale_level);
-	table->dual_add(hud_scale_w->label("Size"), d);
+	table->dual_add(hud_scale_w->label("HUD Size"), d);
 	table->dual_add(hud_scale_w, d);
 	hud_w->add_dependent_widget(hud_scale_w);
 	
+	w_select_popup *term_scale_w = new w_select_popup();
+	term_scale_w->set_labels(build_stringvector_from_cstring_array(term_scale_labels));
+	term_scale_w->set_selection(graphics_preferences->screen_mode.term_scale_level);
+	table->dual_add(term_scale_w->label("Terminal Size"), d);
+	table->dual_add(term_scale_w, d);
+
 #if defined(__WIN32__)
 	table->add_row(new w_spacer(), true);
 	w_toggle *directx_w = new w_toggle(graphics_preferences->use_directx_backend);
@@ -996,6 +1006,13 @@ static void graphics_dialog(void *arg)
 	    if (hud_scale != graphics_preferences->screen_mode.hud_scale_level)
 	    {
 		    graphics_preferences->screen_mode.hud_scale_level = hud_scale;
+		    changed = true;
+	    }
+	    
+	    short term_scale = static_cast<short>(term_scale_w->get_selection());
+	    if (term_scale != graphics_preferences->screen_mode.term_scale_level)
+	    {
+		    graphics_preferences->screen_mode.term_scale_level = term_scale;
 		    changed = true;
 	    }
 	    
@@ -1940,6 +1957,7 @@ void write_preferences(
 	fprintf(F,"  scmode_height=\"%hd\"\n", graphics_preferences->screen_mode.height);
 	fprintf(F,"  scmode_hud=\"%s\"\n", BoolString(graphics_preferences->screen_mode.hud));
 	fprintf(F,"  scmode_hud_scale=\"%hd\"\n", graphics_preferences->screen_mode.hud_scale_level);
+	fprintf(F,"  scmode_term_scale=\"%hd\"\n", graphics_preferences->screen_mode.term_scale_level);
 	fprintf(F,"  scmode_accel=\"%hd\"\n",graphics_preferences->screen_mode.acceleration);
 	fprintf(F,"  scmode_highres=\"%s\"\n",BoolString(graphics_preferences->screen_mode.high_resolution));
 	fprintf(F,"  scmode_fullscreen=\"%s\"\n",BoolString(graphics_preferences->screen_mode.fullscreen));
@@ -2138,6 +2156,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.height = 480;
 	preferences->screen_mode.hud = true;
 	preferences->screen_mode.hud_scale_level = 0;
+	preferences->screen_mode.term_scale_level = 0;
 #if defined(__APPLE__) && defined(__MACH__)
 	preferences->screen_mode.acceleration = _opengl_acceleration;
 #else
@@ -2882,6 +2901,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	else if (StringsEqual(Tag,"scmode_hud_scale"))
 	{
 		return ReadInt16Value(Value, graphics_preferences->screen_mode.hud_scale_level);
+	}
+	else if (StringsEqual(Tag,"scmode_term_scale"))
+	{
+		return ReadInt16Value(Value, graphics_preferences->screen_mode.term_scale_level);
 	}
 	else if (StringsEqual(Tag,"scmode_accel"))
 	{
