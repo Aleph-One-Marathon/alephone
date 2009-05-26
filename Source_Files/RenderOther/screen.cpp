@@ -78,6 +78,7 @@ static SDL_Surface *main_surface;	// Main (display) surface
 SDL_Surface *world_pixels = NULL;
 SDL_Surface *HUD_Buffer = NULL;
 SDL_Surface *Term_Buffer = NULL;
+OGL_Blitter *Term_Blitter = NULL;
 
 // Initial gamma table
 bool default_gamma_inited = false;
@@ -480,6 +481,7 @@ void exit_screen(void)
 	in_game = false;
 	change_screen_mode(640, 480, bit_depth, true);
 #ifdef HAVE_OPENGL
+	delete Term_Blitter;
 	OGL_StopRun();
 #endif
 }
@@ -842,11 +844,18 @@ void render_screen(short ticks_elapsed)
 		if (world_view->terminal_mode_active) {
 			// Copy 2D rendering to screen
 
-			SDL_SetAlpha(Term_Buffer, 0, 0xff);
-			OGL_Blitter blitter(*Term_Buffer);
-			blitter.SetupMatrix();
-			blitter.Draw(Screen::instance()->term_rect());
-			blitter.RestoreMatrix();
+			if (Term_RenderRequest) {
+				delete Term_Blitter;
+				SDL_SetAlpha(Term_Buffer, 0, 0xff);
+				Term_Blitter = new OGL_Blitter(*Term_Buffer);
+				Term_RenderRequest = false;
+			}
+			if (Term_Blitter)
+			{
+				Term_Blitter->SetupMatrix();
+				Term_Blitter->Draw(Screen::instance()->term_rect());
+				Term_Blitter->RestoreMatrix();
+			}
 		}
 
 		if (Screen::instance()->hud()) {
