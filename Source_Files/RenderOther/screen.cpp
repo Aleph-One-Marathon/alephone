@@ -81,9 +81,9 @@ SDL_Surface *Term_Buffer = NULL;
 
 // Initial gamma table
 bool default_gamma_inited = false;
-UInt16 default_gamma_r[256];
-UInt16 default_gamma_g[256];
-UInt16 default_gamma_b[256];
+uint16 default_gamma_r[256];
+uint16 default_gamma_g[256];
+uint16 default_gamma_b[256];
 
 static bool PrevFullscreen = false;
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
