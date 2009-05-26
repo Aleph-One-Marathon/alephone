@@ -907,7 +907,7 @@ static void graphics_dialog(void *arg)
 
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("Heads-Up Display"), d);
-	w_toggle *hud_w = new w_toggle(graphics_preferences->screen_mode.hud);
+	w_enabling_toggle *hud_w = new w_enabling_toggle(graphics_preferences->screen_mode.hud);
 	table->dual_add(hud_w->label("Show HUD"), d);
 	table->dual_add(hud_w, d);
 	
@@ -916,6 +916,7 @@ static void graphics_dialog(void *arg)
 	hud_scale_w->set_selection(graphics_preferences->screen_mode.hud_scale_level);
 	table->dual_add(hud_scale_w->label("Size"), d);
 	table->dual_add(hud_scale_w, d);
+	hud_w->add_dependent_widget(hud_scale_w);
 	
 #if defined(__WIN32__)
 	table->add_row(new w_spacer(), true);
