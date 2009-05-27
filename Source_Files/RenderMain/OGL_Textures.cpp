@@ -1005,46 +1005,56 @@ void TextureManager::PremultiplyColorTables()
 
 uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 {
-	// Allocate and set to black and transparent
+	// Allocate pixel buffer
 	int NumPixels = int(TxtrWidth)*int(TxtrHeight);
 	uint32 *Buffer = new uint32[NumPixels];
-	objlist_clear(Buffer,NumPixels);
 	
-	// The dimension, the offset in the original texture, and the offset in the OpenGL texture
-	short Width, OrigWidthOffset, OGLWidthOffset;
-	short Height, OrigHeightOffset, OGLHeightOffset;
-	
-	// Calculate original-texture and OpenGL-texture offsets
-	// and how many scanlines to do.
-	// The loop start points and counts are set so that
-	// only valid source and destination pixels
-	// will get worked with (no off-edge ones, that is).
+	// Calculate the rows to move to the OpenGL buffer.
+	short OGLHeightOffset, OGLHeightFinish, OrigHeightDiff;
 	if (HeightOffset >= 0)
 	{
-		Height = BaseTxtrHeight;
-		OrigHeightOffset = 0;
 		OGLHeightOffset = HeightOffset;
+		OGLHeightFinish = HeightOffset + BaseTxtrHeight;
+		OrigHeightDiff = -HeightOffset;
 	}
 	else
 	{
-		Height = TxtrHeight;
-		OrigHeightOffset = - HeightOffset;
 		OGLHeightOffset = 0;
+		OGLHeightFinish = TxtrHeight;
+		OrigHeightDiff = HeightOffset;
 	}
 
-	if (Texture->bytes_per_row == NONE)
+	// Calculate the pixels within each row to move.
+	// If we have a constant row size, we can calculate the
+	// offsets once for every row.
+	short OrigWidthOffset, OGLWidthOffset, OGLWidthFinish;
+	if (Texture->bytes_per_row != NONE)
 	{
-		short horig = OrigHeightOffset;
-		uint32 *OGLRowStart = Buffer + TxtrWidth*OGLHeightOffset;
-		for (short h=0; h<Height; h++)
+		if (WidthOffset >= 0)
 		{
-			byte *OrigStrip = Texture->row_addresses[horig];
-			uint32 *OGLStrip = OGLRowStart;
+			OrigWidthOffset = 0;
+			OGLWidthOffset = WidthOffset;
+			OGLWidthFinish = WidthOffset + BaseTxtrWidth;
+		}
+		else
+		{
+			OrigWidthOffset = -WidthOffset;
+			OGLWidthOffset = 0;
+			OGLWidthFinish = TxtrWidth;
+		}
+	}
 
-			// Cribbed from textures.c:
+	for (short h = OGLHeightOffset; h < OGLHeightFinish; h++)
+	{
+		byte *OrigStrip = Texture->row_addresses[h + OrigHeightDiff];
+		uint32 *OGLStrip = &Buffer[TxtrWidth * h];
+		
+		if (Texture->bytes_per_row == NONE)
+		{
+			// Determine the offsets for this row
 			// This is the Marathon 2 sprite-interpretation scheme;
 			// assumes big-endian data
-				
+			
 			// First destination location
 			uint16 First = uint16(*(OrigStrip++)) << 8;
 			First |= uint16(*(OrigStrip++));
@@ -1052,64 +1062,49 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 			uint16 Last = uint16(*(OrigStrip++)) << 8;
 			Last |= uint16(*(OrigStrip++));
 			
-			// Calculate original-texture and OpenGL-texture offsets
-			// and how many pixels to do
-			OrigWidthOffset = 0;
-			OGLWidthOffset = WidthOffset + First;
-			
-			if (OGLWidthOffset < 0)
+			if (WidthOffset + First >= 0)
 			{
-				OrigWidthOffset -= OGLWidthOffset;
+				OrigWidthOffset = 0;
+				OGLWidthOffset = WidthOffset + First;
+			}
+			else
+			{
+				OrigWidthOffset = -(WidthOffset + First);
 				OGLWidthOffset = 0;
 			}
-			
-			short OrigWidthFinish = Last - First;
-			short OGLWidthFinish = WidthOffset + Last;
-			
-			short OGLWidthExcess = OGLWidthFinish - TxtrWidth;
-			if (OGLWidthExcess > 0)
-			{
-				OrigWidthFinish -= OGLWidthExcess;
-				OGLWidthFinish = TxtrWidth;
-			}
-			
-			short Width = OrigWidthFinish - OrigWidthOffset;
-			OrigStrip += OrigWidthOffset;
-			OGLStrip += OGLWidthOffset;
-			
-			for (short w=0; w<Width; w++)
-				*(OGLStrip++) = ColorTable[*(OrigStrip++)];
-			horig++;
-			OGLRowStart += TxtrWidth;
+			OGLWidthFinish = std::min(static_cast<int>(TxtrWidth), WidthOffset + Last);
 		}
+		OrigStrip += OrigWidthOffset;
+		
+		// smear first pixel to left edge
+		for (short w = 0; w < OGLWidthOffset; w++)
+			*(OGLStrip++) = ColorTable[*OrigStrip] & 0x00FFFFFF;
+		
+		for (short w = OGLWidthOffset; w < OGLWidthFinish; w++)
+			*(OGLStrip++) = ColorTable[*(OrigStrip++)];
+
+		// smear last pixel to right edge
+		for (short w = OGLWidthFinish; w < TxtrWidth; w++)
+			*(OGLStrip++) = ColorTable[*(OrigStrip - 1)] & 0x00FFFFFF;
 	}
-	else
+	
+	// smear first pixel row to top edge
+	for (short h = 0; h < OGLHeightOffset; h++)
 	{
-		// Calculate original-texture and OpenGL-texture offsets
-		// and how many pixels to do
-		if (WidthOffset >= 0)
-		{
-			Width = BaseTxtrWidth;
-			OrigWidthOffset = 0;
-			OGLWidthOffset = WidthOffset;
-		}
-		else
-		{
-			Width = TxtrWidth;
-			OrigWidthOffset = - WidthOffset;
-			OGLWidthOffset = 0;
-		}
-		short horig = OrigHeightOffset;
-		uint32 *OGLRowStart = Buffer + TxtrWidth*OGLHeightOffset + OGLWidthOffset;
-		for (short h=0; h<Height; h++)
-		{
-			byte *OrigStrip = Texture->row_addresses[horig] + OrigWidthOffset;
-			uint32 *OGLStrip = OGLRowStart;
-			for (short w=0; w<Width; w++)
-				*(OGLStrip++) = ColorTable[*(OrigStrip++)];
-			horig++;
-			OGLRowStart += TxtrWidth;
-		}
+		uint32 *SrcStrip = &Buffer[TxtrWidth * OGLHeightOffset];
+		uint32 *OGLStrip = &Buffer[TxtrWidth * h];
+
+		for (short w = 0; w < TxtrWidth; w++)
+			*(OGLStrip++) = *(SrcStrip++) & 0x00FFFFFF;
+	}
+	// smear last pixel row to bottom edge
+	for (short h = OGLHeightFinish; h < TxtrHeight; h++)
+	{
+		uint32 *SrcStrip = &Buffer[TxtrWidth * (OGLHeightFinish - 1)];
+		uint32 *OGLStrip = &Buffer[TxtrWidth * h];
+		
+		for (short w = 0; w < TxtrWidth; w++)
+			*(OGLStrip++) = *(SrcStrip++) & 0x00FFFFFF;
 	}
 	
 	return Buffer;
