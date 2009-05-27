@@ -3077,82 +3077,93 @@ bool OGL_RenderCrosshairs()
 	}
 	glColor4fv(Crosshairs.GLColorsPreCalc);
 	
-	// The center:
-	short XCen = ViewWidth >> 1;
-	short YCen = ViewHeight >> 1;
-	/*
-	short XCen = ((SavedViewBounds.left + SavedViewBounds.right) >> 1);
-	short YCen = ((SavedViewBounds.top + SavedViewBounds.bottom) >> 1);
-	*/
-	
 	// Create a new modelview matrix for the occasion
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
+	glTranslated(ViewWidth / 2, ViewHeight / 2, 1);
 	
-	// Move to center of screen and in front of the other stuff
-	glTranslated(XCen,YCen,1);
-	
-	// The line width
-	glLineWidth(Crosshairs.Thickness);
-	
-	switch(Crosshairs.Shape)
-	{
-	case CHShape_RealCrosshairs:
-		// Draw the lines; make them foreground
-		// Made "float" to get around apparent bug in MacOS glVertex2s()
-		// (only the positive-side lines got shown)
-		
-		glBegin(GL_LINES);
-		glVertex2f(- Crosshairs.FromCenter + 1.0F, 0.0F);
-		glVertex2f(- Crosshairs.FromCenter - Crosshairs.Length + 1.0F, 0.0F);
-		glVertex2f(0.0F, - Crosshairs.FromCenter + 1.0F);
-		glVertex2f(0.0F, - Crosshairs.FromCenter - Crosshairs.Length + 1.0F);
-		glVertex2f(Crosshairs.FromCenter - 1.0F, 0.0F);
-		glVertex2f(Crosshairs.FromCenter + Crosshairs.Length - 1.0F, 0.0F);
-		glVertex2f(0.0F, Crosshairs.FromCenter - 1.0F);
-		glVertex2f(0.0F, Crosshairs.FromCenter + Crosshairs.Length - 1.0F);
-		glEnd();
-		break;
-	
-	case CHShape_Circle:
-		// This will really be an octagon, for OpenGL-rendering convenience
-		
-		// We need to do 12 line segments, so we do them in 2*2*3 fashion
-		for (int ix=0; ix<2; ix++)
-		{
-			for (int iy=0; iy<2; iy++)
-			{
-				// Do whatever flipping is necessary for each quadrant
-				glPushMatrix();
-				glScaled(2*ix-1,2*iy-1,1);
+	// To keep pixels aligned, we have to draw on pixel boundaries.
+	// The SW renderer always offsets down and to the right when faced
+	// with an odd size. We're going to rotate our coordinate system,
+	// but we still have to obey the global offset rules.
+	//
+	// We precalculate the offsets for crosshair thickness below,
+	// for each of the four quadrants.
+	int halfWidthMin = -Crosshairs.Thickness / 2;
+	int halfWidthMax = halfWidthMin - (Crosshairs.Thickness % 2);
+	int offsets[4][2] = {   // [quadrant][local x/y]
+		{ halfWidthMin, halfWidthMin },
+		{ halfWidthMax, halfWidthMin },
+		{ halfWidthMax, halfWidthMax },
+		{ halfWidthMin, halfWidthMax } };
 
-				// The line endpoints
-				float Len0 = float(Crosshairs.Length);
-				float Len1 = Len0/2;
-				float Len2 = MIN(Len1,float(Crosshairs.FromCenter));
+	for (int quad = 0; quad < 4; quad++)
+	{
+		int WidthMin = offsets[quad][0];
+		int WidthMax = WidthMin + Crosshairs.Thickness;
+		int HeightMin = offsets[quad][1];
+		int HeightMax = HeightMin + Crosshairs.Thickness;
+
+		switch(Crosshairs.Shape)
+		{
+		case CHShape_RealCrosshairs:
+			{
+				// Four simple rectangles
 				
-				// Draw!
-				glBegin(GL_LINE_STRIP);
-				glVertex2f(Len0,Len2);
-				glVertex2f(Len0,Len1);
-				glVertex2f(Len1,Len0);
-				glVertex2f(Len2,Len0);
+				int LenMin = Crosshairs.FromCenter;
+				int LenMax = LenMin + Crosshairs.Length;
+				
+				// at the initial rotation, this is the rectangle at 3:00
+				glBegin(GL_QUADS);
+				glVertex2i(LenMin, HeightMin);
+				glVertex2i(LenMax, HeightMin);
+				glVertex2i(LenMax, HeightMax);
+				glVertex2i(LenMin, HeightMax);
 				glEnd();
-				
-				// Done with that flipping
-				glPopMatrix();
 			}
+			break;
+		case CHShape_Circle:
+			{
+				// This will really be an octagon, for OpenGL-rendering convenience
+				//
+				// Each of the four sections is drawn with three quads --
+				// the middle diagonal section and two straight ends.
+				// Depending on the crosshair parameters, some segments
+				// have zero length: this happens when LenMid == LenMin.
+				
+				int LenMax = Crosshairs.Length;
+				int LenMid = LenMax / 2;
+				int LenMin = std::min(LenMid, static_cast<int>(Crosshairs.FromCenter));
+				
+				// at the initial rotation, this is the bottom right
+				glBegin(GL_QUAD_STRIP);
+				
+				// 3:00 horizontal edge
+				glVertex2i(LenMax + WidthMin, LenMin + HeightMin);
+				glVertex2i(LenMax + WidthMax, LenMin + HeightMin);
+				
+				// upper diagonal
+				glVertex2i(LenMax + WidthMin, LenMid + HeightMin);
+				glVertex2i(LenMax + WidthMax, LenMid + HeightMax);
+
+				// lower diagonal
+				glVertex2i(LenMid + WidthMin, LenMax + HeightMin);
+				glVertex2i(LenMid + WidthMax, LenMax + HeightMax);
+				
+				// 6:00 vertical edge
+				glVertex2i(LenMin + WidthMin, LenMax + HeightMin);
+				glVertex2i(LenMin + WidthMin, LenMax + HeightMax);
+				
+				glEnd();
+			}				
+			break;
 		}
-		
-		break;
+		glRotated(-90.0, 0, 0, 1); // turn clockwise		
 	}
 	
 	// Done with that modelview matrix
 	glPopMatrix();
-	
-	// Reset to default
-	glLineWidth(1);
-		
+			
 	return true;
 }
 
