@@ -107,6 +107,8 @@ May 22, 2003 (Woody Zenfell):
 #include <windows.h> // for GetUserName()
 #endif
 
+#include "joystick.h"
+
 using namespace alephone;
 
 static const char sPasswordMask[] = "reverof nohtaram";
@@ -1577,6 +1579,8 @@ static void keyboard_dialog(void *arg)
 	// Clear screen
 	clear_screen();
 
+	enter_joystick();
+
 	// Run dialog
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
@@ -1601,6 +1605,8 @@ static void keyboard_dialog(void *arg)
 		if (changed)
 			write_preferences();
 	}
+
+	exit_joystick();
 }
 
 

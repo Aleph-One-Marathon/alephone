@@ -61,6 +61,7 @@
 #include	"TextStrings.h"
 
 #include    "mouse.h"   // (ZZZ) NUM_SDL_MOUSE_BUTTONS, SDLK_BASE_MOUSE_BUTTON
+#include "joystick.h"
 
 #include <sstream>
 
@@ -1283,11 +1284,34 @@ static const char* sMouseButtonKeyName[NUM_SDL_MOUSE_BUTTONS] = {
         "mouse 8"
 };
 
+static const char* sJoystickButtonKeyName[NUM_SDL_JOYSTICK_BUTTONS] = {
+	"joystick 1",
+	"joystick 2",
+	"joystick 3",
+	"joystick 4",
+	"joystick 5",
+	"joystick 6",
+	"joystick 7",
+	"joystick 8",
+	"joystick 9",
+	"joystick 10",
+	"joystick 11",
+	"joystick 12",
+	"joystick 13",
+	"joystick 14",
+	"joystick 15",
+	"joystick 16",
+	"joystick 17",
+	"joystick 18"
+};
+
 // ZZZ: this injects our phony key names but passes along the rest.
 static const char*
 GetSDLKeyName(SDLKey inKey) {
     if(inKey >= SDLK_BASE_MOUSE_BUTTON && inKey < SDLK_BASE_MOUSE_BUTTON + NUM_SDL_MOUSE_BUTTONS)
         return sMouseButtonKeyName[inKey - SDLK_BASE_MOUSE_BUTTON];
+    else if (inKey >= SDLK_BASE_JOYSTICK_BUTTON && inKey < SDLK_BASE_JOYSTICK_BUTTON + NUM_SDL_JOYSTICK_BUTTONS)
+	    return sJoystickButtonKeyName[inKey - SDLK_BASE_JOYSTICK_BUTTON];
     else
         return SDL_GetKeyName(inKey);
 }
@@ -1328,7 +1352,10 @@ void w_key::event(SDL_Event &e)
         if(e.type == SDL_MOUSEBUTTONDOWN) {
             e.type = SDL_KEYDOWN;
             e.key.keysym.sym = (SDLKey)(SDLK_BASE_MOUSE_BUTTON + e.button.button - 1);
-        }
+        } else if (e.type == SDL_JOYBUTTONDOWN && e.button.button < NUM_SDL_JOYSTICK_BUTTONS) {
+		e.type = SDL_KEYDOWN;
+		e.key.keysym.sym = (SDLKey) (SDLK_BASE_JOYSTICK_BUTTON + e.button.button);
+	}
 
     	if (e.type == SDL_KEYDOWN) {
 			if (e.key.keysym.sym != SDLK_ESCAPE)
