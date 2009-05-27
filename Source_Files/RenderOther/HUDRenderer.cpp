@@ -628,18 +628,14 @@ void HUD_Class::draw_ammo_display_in_panel(short trigger_id)
 				bounds.bottom= current_ammo_data->screen_top+current_ammo_data->delta_y;
 				bounds.top= current_ammo_data->screen_top;
 				
-				/* Frame the rectangle */
-				FrameRect(&bounds, current_ammo_data->bullet);
+				/* Draw the full rectangle */
+				FillRect(&bounds, current_ammo_data->bullet);
 				
 				/* Inset the rectangle.. */
 				bounds.left+=1; bounds.right-=1; bounds.bottom-= 1; bounds.top+=1;
 				
-				/* Fill with the full stuff.. */
-				bounds.top= bounds.bottom-fill_height;
-				FillRect(&bounds, current_ammo_data->bullet);
-
-				/* Now erase the rest of the rectangle */
-				bounds.bottom= bounds.top;
+				/* ...and erase the empty part of the rectangle */
+				bounds.bottom-= fill_height;
 				bounds.top= current_ammo_data->screen_top+1;
 				
 				/* Fill it. */
