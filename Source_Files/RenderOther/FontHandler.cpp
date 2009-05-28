@@ -585,7 +585,6 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 	// Draw text
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
-	glLoadIdentity();
 	glTranslated(x, y, 0);
 	OGL_Render(text_to_draw);
 	glPopMatrix();

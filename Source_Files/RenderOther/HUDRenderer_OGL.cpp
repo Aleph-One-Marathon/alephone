@@ -131,7 +131,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		GLdouble x_scale = (dest.right - dest.left) / 640.0;
 		GLdouble y_scale = (dest.bottom - dest.top) / 160.0;
 		glScissor(dest.left, dest.bottom, 640.0 * x_scale, 160.0 * y_scale);
-		glMatrixMode(GL_PROJECTION);
+		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glTranslated(dest.left, dest.top - (320.0 * y_scale), 0.0);
 		glScaled(x_scale, y_scale, 1.0);
@@ -143,7 +143,7 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 		mark_oxygen_display_as_dirty();
 		mark_player_inventory_as_dirty(current_player_index, NONE);
 		HUD_OGL.update_everything(time_elapsed);
-		glMatrixMode(GL_PROJECTION);
+		glMatrixMode(GL_MODELVIEW);
 		glPopMatrix();
 
 		glPopAttrib();
