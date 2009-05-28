@@ -1021,7 +1021,7 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 	{
 		OGLHeightOffset = 0;
 		OGLHeightFinish = TxtrHeight;
-		OrigHeightDiff = HeightOffset;
+		OrigHeightDiff = -HeightOffset;
 	}
 
 	// Calculate the pixels within each row to move.
