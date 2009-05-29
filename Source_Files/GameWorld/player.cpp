@@ -761,9 +761,8 @@ void damage_player(
 
 	(void) (aggressor_type);
 	
-	if (player->invincibility_duration &&
-	    damage->type!=player_settings.Vulnerability &&
-	    damage->type!=_damage_suffocation)
+	// LP change: made this more general
+	if (player->invincibility_duration && damage->type!=player_settings.Vulnerability)
 	{
 		damage_type= _damage_absorbed;
 	}
