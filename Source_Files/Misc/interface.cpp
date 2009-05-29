@@ -1810,7 +1810,10 @@ static bool begin_game(
 					break;
 					
 				case _demo:
-					success= setup_replay_from_random_resource(get_current_map_checksum());
+					// setup_replay_from_random_resource always returns false,
+					// so don't bother to checksum the map
+					success= false;
+					// success= setup_replay_from_random_resource(get_current_map_checksum());
 					break;
 
 				case _replay_from_file:
