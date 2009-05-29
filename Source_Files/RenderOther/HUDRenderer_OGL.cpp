@@ -62,30 +62,23 @@ extern bool MotionSensorActive;
 static HUD_OGL_Class HUD_OGL;
 
 
-static OGL_Blitter *HUD_Blitter;  // HUD backdrop storage
-static bool hud_pict_loaded = false;	// HUD backdrop picture loaded and ready
+OGL_Blitter *HUD_Blitter = NULL;  // HUD backdrop storage
 static bool hud_pict_not_found = false;	// HUD backdrop picture not found, don't try again to load it
 
 extern int LuaTexturePaletteSize();
 
 void OGL_DrawHUD(Rect &dest, short time_elapsed)
 {
-	if(hud_pict_loaded && time_elapsed == NONE)
+	if(time_elapsed == NONE)
 	{
 		delete HUD_Blitter;
 		HUD_Blitter = NULL;
-		hud_pict_loaded= false;
 	}
 	
 	// Load static HUD picture if necessary
-	if (!hud_pict_loaded && !hud_pict_not_found) {
+	if (!HUD_Blitter && !hud_pict_not_found) {
 		LoadedResource PictRsrc;
-		if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, PictRsrc))
-			hud_pict_loaded = true;
-		else
-			hud_pict_not_found = true;
-
-		if (hud_pict_loaded) {
+		if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, PictRsrc)) {
 			// Render picture into SDL surface, convert to GL textures
 			SDL_Surface *hud_pict = picture_to_surface(PictRsrc);
 			if (hud_pict) {
@@ -93,61 +86,60 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 				SDL_FreeSurface(hud_pict);
 			}
 		}
+		else
+			hud_pict_not_found = true;
 	}
 
-	if (hud_pict_loaded) {
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
 
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
+	if (LuaTexturePaletteSize())
+		glDisable(GL_TEXTURE_2D);
+	else
+		glEnable(GL_TEXTURE_2D);
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_ALPHA_TEST);
+	glDisable(GL_BLEND);
+	glDisable(GL_FOG);
 
-		if (LuaTexturePaletteSize())
-			glDisable(GL_TEXTURE_2D);
-		else
-			glEnable(GL_TEXTURE_2D);
-		glDisable(GL_CULL_FACE);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_ALPHA_TEST);
-		glDisable(GL_BLEND);
-		glDisable(GL_FOG);
-
-		// Draw static HUD picture
-		if (HUD_Blitter && !LuaTexturePaletteSize())
-		{
-			SDL_Rect hud_dest = { dest.left, dest.top, dest.right - dest.left, dest.bottom - dest.top };
-			HUD_Blitter->SetupMatrix();
-			HUD_Blitter->Draw(hud_dest);
-			HUD_Blitter->RestoreMatrix();
-		}
-		else
-		{
-			glColor3ub(0, 0, 0);
-			glBegin(GL_QUADS);
-			glVertex2i(dest.left,  dest.top);
-			glVertex2i(dest.right, dest.top);
-			glVertex2i(dest.right, dest.bottom);
-			glVertex2i(dest.left,  dest.bottom);
-			glEnd();
-		}
-		
-		GLdouble x_scale = (dest.right - dest.left) / 640.0;
-		GLdouble y_scale = (dest.bottom - dest.top) / 160.0;
-		glScissor(dest.left, dest.bottom, 640.0 * x_scale, 160.0 * y_scale);
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glTranslated(dest.left, dest.top - (320.0 * y_scale), 0.0);
-		glScaled(x_scale, y_scale, 1.0);
-
-		// Add dynamic elements (redraw everything)
-		mark_weapon_display_as_dirty();
-		mark_ammo_display_as_dirty();
-		mark_shield_display_as_dirty();
-		mark_oxygen_display_as_dirty();
-		mark_player_inventory_as_dirty(current_player_index, NONE);
-		HUD_OGL.update_everything(time_elapsed);
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-
-		glPopAttrib();
+	// Draw static HUD picture
+	if (HUD_Blitter && !LuaTexturePaletteSize())
+	{
+		SDL_Rect hud_dest = { dest.left, dest.top, dest.right - dest.left, dest.bottom - dest.top };
+		HUD_Blitter->SetupMatrix();
+		HUD_Blitter->Draw(hud_dest);
+		HUD_Blitter->RestoreMatrix();
 	}
+	else
+	{
+		glColor3ub(0, 0, 0);
+		glBegin(GL_QUADS);
+		glVertex2i(dest.left,  dest.top);
+		glVertex2i(dest.right, dest.top);
+		glVertex2i(dest.right, dest.bottom);
+		glVertex2i(dest.left,  dest.bottom);
+		glEnd();
+	}
+	
+	GLdouble x_scale = (dest.right - dest.left) / 640.0;
+	GLdouble y_scale = (dest.bottom - dest.top) / 160.0;
+	glScissor(dest.left, dest.bottom, 640.0 * x_scale, 160.0 * y_scale);
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glTranslated(dest.left, dest.top - (320.0 * y_scale), 0.0);
+	glScaled(x_scale, y_scale, 1.0);
+
+	// Add dynamic elements (redraw everything)
+	mark_weapon_display_as_dirty();
+	mark_ammo_display_as_dirty();
+	mark_shield_display_as_dirty();
+	mark_oxygen_display_as_dirty();
+	mark_player_inventory_as_dirty(current_player_index, NONE);
+	HUD_OGL.update_everything(time_elapsed);
+	glMatrixMode(GL_MODELVIEW);
+	glPopMatrix();
+
+	glPopAttrib();
 }
 
 
@@ -162,11 +154,8 @@ void OGL_ResetHUDFonts(bool IsStarting)
 	get_interface_font(_weapon_name_font).OGL_Reset(IsStarting);
 	get_interface_font(_player_name_font).OGL_Reset(IsStarting);
 
-	if (IsStarting && hud_pict_loaded) {
-		delete HUD_Blitter;
-		HUD_Blitter = NULL;
-		hud_pict_loaded = false;
-	}
+	delete HUD_Blitter;
+	HUD_Blitter = NULL;
 }
 
 

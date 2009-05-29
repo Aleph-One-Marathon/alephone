@@ -78,7 +78,10 @@ static SDL_Surface *main_surface;	// Main (display) surface
 SDL_Surface *world_pixels = NULL;
 SDL_Surface *HUD_Buffer = NULL;
 SDL_Surface *Term_Buffer = NULL;
+
+#ifdef HAVE_OPENGL
 OGL_Blitter *Term_Blitter = NULL;
+#endif
 
 // Initial gamma table
 bool default_gamma_inited = false;
@@ -481,8 +484,6 @@ void exit_screen(void)
 	in_game = false;
 	change_screen_mode(640, 480, bit_depth, true);
 #ifdef HAVE_OPENGL
-	delete Term_Blitter;
-	Term_Blitter = NULL;
 	OGL_StopRun();
 #endif
 }
@@ -649,9 +650,6 @@ void toggle_fullscreen()
   } 
 }
 
-#ifdef HAVE_OPENGL
-GLuint OGL_Term_Texture;
-#endif
 /*
  *  Render game screen
  */
