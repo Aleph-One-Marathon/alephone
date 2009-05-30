@@ -202,6 +202,7 @@
 <a name="persistence"></a>Persistence</h2>
 	<p>Lua scripts are only active during a single level. If the user jumps to a new level, or restores from a saved game, the script is restarted in a clean state.</p>
 	<p>It is now possible to pass data across level jumps, by using the Game.restore_passed() function. This function will restore any custom fields (see the "Custom Fields" section of "Using Tables" below) in the Players or Game tables that were set immediately prior to the last level jump. Note that in order for data to survive multiple level jumps, Game.restore_passed() must be called after each level jump. Game.restore_passed() will not restore data from saved games.</p>
+	<p>It is also possible to restore data from saved games. The Game.restore_saved() function will restore all custom fields in use at the time the game was saved.</p>
 	<p>Only numbers, strings, booleans, and tables (including Aleph One's built-in userdata tables) can be restored.</p>
       <h1>
 <a name="triggers"></a>Triggers</h1>
@@ -515,7 +516,17 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>.restore_passed()
      <span class="version">SVN</span>
 </dt>
-<dd><p class="description">tries to restore any Player or Game custom fields from before the last level jump; returns true if custom fields were successfully restored</p></dd>
+<dd>
+<p class="description">tries to restore any Player or Game custom fields from before the last level jump; returns true if custom fields were successfully restored</p>
+<p class="note">if successful, overwrites all existing Player or Game custom fields </p>
+</dd>
+      <dt>.restore_saved()
+     <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">tries to restore any custom fields from the saved game; returns true if custom fields were successfully restored</p>
+<p class="note">if successful, overwrites all existing custom fields </p>
+</dd>
       <dt>.save()
     </dt>
 <dd>
@@ -781,6 +792,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="note">if no type is specified, fist damage is dealt </p>
 </dd>
       <dt>
+    .external_velocity <span class="version">SVN</span>
+</dt>
+<dd><p class="description">monster's current external velocity (always in the opposite direction of facing)</p></dd>
+      <dt>
     .facing<br>
       .yaw</dt>
 <dd><p class="description">direction the monster is facing</p></dd>
@@ -824,6 +839,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .valid<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether monster is still valid</p></dd>
+      <dt>
+    .vertical_velocity <span class="version">SVN</span>
+</dt>
+<dd><p class="description">monster's current vertical external velocity</p></dd>
       <dt>
     .visible</dt>
 <dd>

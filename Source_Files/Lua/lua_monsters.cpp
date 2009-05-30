@@ -563,6 +563,13 @@ static int Lua_Monster_Get_Active(lua_State *L)
 	return 1;
 }
 
+static int Lua_Monster_Get_External_Velocity(lua_State *L)
+{
+	monster_data* monster = get_monster_data(Lua_Monster::Index(L, 1));
+	lua_pushnumber(L, (double) monster->external_velocity / WORLD_ONE);
+	return 1;
+}
+
 static int Lua_Monster_Get_Facing(lua_State *L)
 {
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
@@ -608,6 +615,13 @@ static int Lua_Monster_Get_Type(lua_State *L)
 static int Lua_Monster_Get_Valid(lua_State *L)
 {
 	lua_pushboolean(L, Lua_Monster::Valid(Lua_Monster::Index(L, 1)));
+	return 1;
+}
+
+static int Lua_Monster_Get_Vertical_Velocity(lua_State *L)
+{
+	monster_data* monster = get_monster_data(Lua_Monster::Index(L, 1));
+	lua_pushnumber(L, (double) monster->vertical_velocity / WORLD_ONE);
 	return 1;
 }
 
@@ -673,6 +687,16 @@ static int Lua_Monster_Set_Active(lua_State *L)
 	return 0;
 }
 
+static int Lua_Monster_Set_External_Velocity(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "external_velocity: incorrect argument type");
+
+	monster_data* monster = get_monster_data(Lua_Monster::Index(L, 1));
+	monster->external_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
 static int Lua_Monster_Set_Facing(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -681,6 +705,16 @@ static int Lua_Monster_Set_Facing(lua_State *L)
 	monster_data *monster = get_monster_data(Lua_Monster::Index(L, 1));
 	object_data *object = get_object_data(monster->object_index);
 	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
+	return 0;
+}
+
+static int Lua_Monster_Set_Vertical_Velocity(lua_State *L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "vertical_velocity: incorrect argument type");
+
+	monster_data* monster = get_monster_data(Lua_Monster::Index(L, 1));
+	monster->vertical_velocity = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	return 0;
 }
 	
@@ -723,6 +757,7 @@ const luaL_reg Lua_Monster_Get[] = {
 	{"active", Lua_Monster_Get_Active},
 	{"attack", L_TableFunction<Lua_Monster_Attack>},
 	{"damage", L_TableFunction<Lua_Monster_Damage>},
+	{"external_velocity", Lua_Monster_Get_External_Velocity},
 	{"facing", Lua_Monster_Get_Facing},
 	{"life", Lua_Monster_Get_Vitality},
 	{"mode", Lua_Monster_Get_Mode},
@@ -733,6 +768,7 @@ const luaL_reg Lua_Monster_Get[] = {
 	{"position", L_TableFunction<Lua_Monster_Position>},
 	{"type", Lua_Monster_Get_Type},
 	{"valid", Lua_Monster_Get_Valid},
+	{"vertical_velocity", Lua_Monster_Get_Vertical_Velocity},
 	{"visible", Lua_Monster_Get_Visible},
 	{"vitality", Lua_Monster_Get_Vitality},
 	{"x", Lua_Monster_Get_X},
@@ -744,8 +780,10 @@ const luaL_reg Lua_Monster_Get[] = {
 
 const luaL_reg Lua_Monster_Set[] = {
 	{"active", Lua_Monster_Set_Active},
+	{"external_velocity", Lua_Monster_Set_External_Velocity},
 	{"facing", Lua_Monster_Set_Facing},
 	{"life", Lua_Monster_Set_Vitality},
+	{"vertical_velocity", Lua_Monster_Set_Vertical_Velocity},
 	{"visible", Lua_Monster_Set_Visible},
 	{"vitality", Lua_Monster_Set_Vitality},
 	{"yaw", Lua_Monster_Set_Facing},

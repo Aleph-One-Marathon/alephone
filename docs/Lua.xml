@@ -634,6 +634,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="type" required="false"><type>damage_type</type></argument>
 	<note>if no type is specified, fist damage is dealt</note>
       </function>
+      <variable name="external_velocity" version="SVN">
+	<description>monster's current external velocity (always in the opposite direction of facing)</description>
+	<type>speed</type>
+      </variable>
       <variable name="facing">
 	<alias>yaw</alias>
 	<description>direction the monster is facing</description>
@@ -682,6 +686,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <variable name="valid" access="read-only">
 	<description>whether monster is still valid</description>
 	<type>boolean</type>
+      </variable>
+      <variable name="vertical_velocity" version="SVN">
+	<description>monster's current vertical external velocity</description>
+	<type>speed</type>
       </variable>
       <variable name="visible">
 	<description>whether monster is visible (e.g. has teleported in)</description>
