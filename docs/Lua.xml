@@ -1864,7 +1864,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <mnemonics>
 	<mnemonic name="start cinematic fade in"/>
 	<mnemonic name="cinematic fade in"/>
-	<mnemonic name="long cinematic fade out"/>
+	<mnemonic name="long cinematic fade in"/>
 	<mnemonic name="cinematic fade out"/>
 	<mnemonic name="end cinematic fade out"/>
 	<mnemonic name="red"/>
