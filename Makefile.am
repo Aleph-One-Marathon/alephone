@@ -13,7 +13,7 @@ man_MANS = docs/alephone.6
 WINDISTDIR=$(PACKAGE)-$(VERSION)
 
 dist-hook: AlephOne.spec
-	cp $(srcdir)/AlephOne.spec $(distdir)
+	cp AlephOne.spec $(distdir)
 	cp "$(srcdir)/Aleph One Classic SDL.mcp" $(distdir)
 	cp "$(srcdir)/Resources/Aleph One Classic SDL.r" $(distdir)/Resources
 
