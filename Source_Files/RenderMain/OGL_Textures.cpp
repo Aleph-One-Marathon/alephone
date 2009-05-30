@@ -132,7 +132,6 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "collection_definition.h"
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
-#include "OGL_Blitter.h"
 #include "OGL_Textures.h"
 
 OGL_TexturesStats gGLTxStats = {0,0,0,500000,0,0, 0};
@@ -280,13 +279,6 @@ void TextureState::FrameTick() {
 // this is because different rendering modes deserve different treatment.
 static CollBitmapTextureState* TextureStateSets[OGL_NUMBER_OF_TEXTURE_TYPES][MAXIMUM_COLLECTIONS];
 
-// OpenGL blitters need to be destroyed along
-// with other textures. If they aren't, they
-// could use incorrect texture IDs in the next
-// rendering context.
-extern OGL_Blitter *Term_Blitter;
-extern OGL_Blitter *HUD_Blitter;
-
 // Initialize the texture accounting
 void OGL_StartTextures()
 {
@@ -394,11 +386,6 @@ void OGL_StopTextures()
 	for (int it=0; it<OGL_NUMBER_OF_TEXTURE_TYPES; it++)
 		for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
 			if (TextureStateSets[it][ic]) delete []TextureStateSets[it][ic];
-	
-	delete Term_Blitter;
-	Term_Blitter = NULL;
-	delete HUD_Blitter;
-	HUD_Blitter = NULL;
 }
 
 void OGL_FrameTickTextures()

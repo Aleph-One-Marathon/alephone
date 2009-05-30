@@ -68,6 +68,7 @@ OGL_LoadScreen() : x(0), y(0), w(0), h(0), use(false), useProgress(false), perce
 	short x, y, w, h;
 
 	OGL_Blitter *blitter;
+	SDL_Rect m_dst;
 	double x_offset, y_offset, x_scale, y_scale;
 
 	bool stretch;

@@ -80,7 +80,7 @@ SDL_Surface *HUD_Buffer = NULL;
 SDL_Surface *Term_Buffer = NULL;
 
 #ifdef HAVE_OPENGL
-OGL_Blitter *Term_Blitter = NULL;
+static OGL_Blitter Term_Blitter;
 #endif
 
 // Initial gamma table
@@ -844,17 +844,11 @@ void render_screen(short ticks_elapsed)
 			// Copy 2D rendering to screen
 
 			if (Term_RenderRequest) {
-				delete Term_Blitter;
 				SDL_SetAlpha(Term_Buffer, 0, 0xff);
-				Term_Blitter = new OGL_Blitter(*Term_Buffer);
+				Term_Blitter.Load(*Term_Buffer);
 				Term_RenderRequest = false;
 			}
-			if (Term_Blitter)
-			{
-				Term_Blitter->SetupMatrix();
-				Term_Blitter->Draw(Screen::instance()->term_rect());
-				Term_Blitter->RestoreMatrix();
-			}
+			Term_Blitter.Draw(Screen::instance()->term_rect());
 		}
 
 		if (Screen::instance()->hud()) {

@@ -175,6 +175,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "player.h"
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
+#include "OGL_Blitter.h"
 #include "AnimatedTextures.h"
 #include "Crosshairs.h"
 #include "VecOps.h"
@@ -750,6 +751,7 @@ bool OGL_StopRun()
 	if (!OGL_IsActive()) return false;
 	
 	OGL_StopTextures();
+	OGL_Blitter::StopTextures();
 	
 #ifdef mac
 	aglDestroyContext(RenderContext);

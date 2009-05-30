@@ -26,34 +26,29 @@
 #ifdef HAVE_OPENGL
 
 const int OGL_Blitter::tile_size;
+set<OGL_Blitter*> OGL_Blitter::m_blitter_registry;
 
-OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Rect& ortho) : m_ortho(ortho), m_dst(dst)
-{
-	m_src.x = m_src.y = 0;
-	m_src.w = s.w;
-	m_src.h = s.h;
-	BuildTextures(s);
-}
+OGL_Blitter::OGL_Blitter() { }
 
 OGL_Blitter::OGL_Blitter(const SDL_Surface& s)
 {
-	m_dst.x = m_dst.y = m_dst.w = m_dst.h = 0;
-	m_ortho.x = m_ortho.y = m_ortho.w = m_ortho.h = 0;
-	
-	m_src.x = m_src.y = 0;
-	m_src.w = s.w;
-	m_src.h = s.h;
-	BuildTextures(s);
+	Load(s);
 }
 
-void OGL_Blitter::BuildTextures(const SDL_Surface& s)
+void OGL_Blitter::Load(const SDL_Surface& s)
 {
+	Unload();
+	m_src.w = s.w;
+	m_src.h = s.h;
+
 	// calculate how many rects we need
 	int v_rects = ((s.h + tile_size -1) / tile_size);
 	int h_rects = ((s.w + tile_size - 1) / tile_size);
 	m_rects.resize(v_rects * h_rects);
 	m_refs.resize(v_rects * h_rects);
 
+	// ensure our textures get cleaned up
+	m_blitter_registry.insert(this);
 	glGenTextures(v_rects * h_rects, &m_refs.front());
 
 	SDL_Surface *t;
@@ -94,40 +89,65 @@ void OGL_Blitter::BuildTextures(const SDL_Surface& s)
 		      
 }
 
-OGL_Blitter::~OGL_Blitter()
+void OGL_Blitter::Unload()
 {
+	m_blitter_registry.erase(this);
 	glDeleteTextures(m_refs.size(), &m_refs.front());
 	m_refs.clear();
 	m_rects.clear();
+	m_src.x = m_src.y = m_src.w = m_src.h = 0;
 }
 
-void OGL_Blitter::SetupMatrix()
+bool OGL_Blitter::Loaded()
 {
-	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	return (m_refs.size() > 0);
+}
 
-	// disable everything but alpha blending
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_ALPHA_TEST);
-	glEnable(GL_BLEND);
-	glDisable(GL_FOG);
-	glDisable(GL_SCISSOR_TEST);
-	glDisable(GL_STENCIL_TEST);
+int OGL_Blitter::Width()
+{
+	return m_src.w;
+}
 
-	if (m_ortho.w && m_ortho.h)
-	{
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-	
-		// transform ortho into screen co-ordinates
-		gluOrtho2D(m_ortho.x, m_ortho.x + m_ortho.w, m_ortho.y + m_ortho.h, m_ortho.y);
-	}
+int OGL_Blitter::Height()
+{
+	return m_src.h;
+}
+
+void OGL_Blitter::StopTextures()
+{
+	for (set<OGL_Blitter*>::iterator it = m_blitter_registry.begin();
+	     it != m_blitter_registry.end();
+			 ++it)
+		(*it)->Unload();
+}
+
+OGL_Blitter::~OGL_Blitter()
+{
+	Unload();
+	m_blitter_registry.erase(this);
+}
+
+int OGL_Blitter::ScreenWidth()
+{
+	return SDL_GetVideoSurface()->w;
+}
+
+int OGL_Blitter::ScreenHeight()
+{
+	return SDL_GetVideoSurface()->h;
+}
+
+void OGL_Blitter::BoundScreen()
+{	
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(0, ScreenWidth(), ScreenHeight(), 0, -1, 1);
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void OGL_Blitter::Draw()
 {
-	Draw(m_dst, m_src);
+	Draw(m_src, m_src);
 }
 
 void OGL_Blitter::Draw(const SDL_Rect& dst)
@@ -137,6 +157,20 @@ void OGL_Blitter::Draw(const SDL_Rect& dst)
 
 void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
 {
+	if (!Loaded())
+		return;
+	
+	glPushAttrib(GL_ALL_ATTRIB_BITS);
+	
+	// disable everything but alpha blending
+	glDisable(GL_CULL_FACE);
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_ALPHA_TEST);
+	glEnable(GL_BLEND);
+	glDisable(GL_FOG);
+	glDisable(GL_SCISSOR_TEST);
+	glDisable(GL_STENCIL_TEST);
+
 	GLdouble x_scale = dst.w / (GLdouble) src.w;
 	GLdouble y_scale = dst.h / (GLdouble) src.h;
 	GLdouble x_offset = dst.x;
@@ -174,15 +208,7 @@ void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		glTexCoord2f(VMin, UMax); glVertex3f(tleft,  tbottom, 0);
 		glEnd();
 	}
-}
-
-void OGL_Blitter::RestoreMatrix()
-{
-	if (m_ortho.w && m_ortho.h)
-	{
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-	}
+	
 	glPopAttrib();
 }
 

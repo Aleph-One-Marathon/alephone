@@ -49,28 +49,44 @@
 #endif
 
 #include <vector>
+#include <set>
 using namespace std;
 
 #ifdef HAVE_OPENGL
+class OGL_Blitter;
+
 class OGL_Blitter
 {
 public:
-	OGL_Blitter(const SDL_Surface& s, const SDL_Rect& dst, const SDL_Rect& ortho);
+	OGL_Blitter();
 	OGL_Blitter(const SDL_Surface& s);
-	void SetupMatrix();
+	
+	void Load(const SDL_Surface& s);
+	void Unload();
+	bool Loaded();
+	
+	int Width();
+	int Height();
+	
 	void Draw();
 	void Draw(const SDL_Rect& dst);
 	void Draw(const SDL_Rect& dst, const SDL_Rect& src);
-	void RestoreMatrix();
+	
 	~OGL_Blitter();
+	
+	static void StopTextures();
+	static void BoundScreen();
+	static int ScreenWidth();
+	static int ScreenHeight();
 private:
-	void BuildTextures(const SDL_Surface& s);
 
-	SDL_Rect m_ortho, m_dst, m_src;
+	SDL_Rect m_src;
 
 	vector<SDL_Rect> m_rects;
 	vector<GLuint> m_refs;
 	static const int tile_size = 256;
+	
+	static set<OGL_Blitter*> m_blitter_registry;
 };
 
 #endif

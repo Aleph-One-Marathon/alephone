@@ -62,27 +62,21 @@ extern bool MotionSensorActive;
 static HUD_OGL_Class HUD_OGL;
 
 
-OGL_Blitter *HUD_Blitter = NULL;  // HUD backdrop storage
+static OGL_Blitter HUD_Blitter;  // HUD backdrop storage
 static bool hud_pict_not_found = false;	// HUD backdrop picture not found, don't try again to load it
 
 extern int LuaTexturePaletteSize();
 
 void OGL_DrawHUD(Rect &dest, short time_elapsed)
-{
-	if(time_elapsed == NONE)
-	{
-		delete HUD_Blitter;
-		HUD_Blitter = NULL;
-	}
-	
+{	
 	// Load static HUD picture if necessary
-	if (!HUD_Blitter && !hud_pict_not_found) {
+	if (!HUD_Blitter.Loaded() && !hud_pict_not_found) {
 		LoadedResource PictRsrc;
 		if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, PictRsrc)) {
 			// Render picture into SDL surface, convert to GL textures
 			SDL_Surface *hud_pict = picture_to_surface(PictRsrc);
 			if (hud_pict) {
-				HUD_Blitter = new OGL_Blitter(*hud_pict);
+				HUD_Blitter.Load(*hud_pict);
 				SDL_FreeSurface(hud_pict);
 			}
 		}
@@ -103,12 +97,10 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	glDisable(GL_FOG);
 
 	// Draw static HUD picture
-	if (HUD_Blitter && !LuaTexturePaletteSize())
+	if (HUD_Blitter.Loaded() && !LuaTexturePaletteSize())
 	{
 		SDL_Rect hud_dest = { dest.left, dest.top, dest.right - dest.left, dest.bottom - dest.top };
-		HUD_Blitter->SetupMatrix();
-		HUD_Blitter->Draw(hud_dest);
-		HUD_Blitter->RestoreMatrix();
+		HUD_Blitter.Draw(hud_dest);
 	}
 	else
 	{
@@ -153,9 +145,7 @@ void OGL_ResetHUDFonts(bool IsStarting)
 	get_interface_font(_interface_item_count_font).OGL_Reset(IsStarting);
 	get_interface_font(_weapon_name_font).OGL_Reset(IsStarting);
 	get_interface_font(_player_name_font).OGL_Reset(IsStarting);
-
-	delete HUD_Blitter;
-	HUD_Blitter = NULL;
+	HUD_Blitter.Unload();
 }
 
 

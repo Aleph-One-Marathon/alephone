@@ -70,32 +70,30 @@ bool OGL_LoadScreen::Start()
 	int imageWidth = static_cast<int>(image.GetWidth() * image.GetVScale());
 	int imageHeight = static_cast<int>(image.GetHeight() * image.GetUScale());
 
-	SDL_Rect dst;
 	if (stretch)
 	{
-		dst.w = screenWidth;
-		dst.h = screenHeight;
+		m_dst.w = screenWidth;
+		m_dst.h = screenHeight;
 	}
 	else if (imageWidth / imageHeight > screenWidth / screenHeight) 
 	{
-		dst.w = screenWidth;
-		dst.h = imageHeight * screenWidth / imageWidth;
+		m_dst.w = screenWidth;
+		m_dst.h = imageHeight * screenWidth / imageWidth;
 	} 
 	else 
 	{
-		dst.w = imageWidth * screenHeight / imageHeight;
-		dst.h = screenHeight;
+		m_dst.w = imageWidth * screenHeight / imageHeight;
+		m_dst.h = screenHeight;
 	}
-	dst.x = (screenWidth - dst.w) / 2;
-	dst.y = (screenHeight - dst.h) / 2;
+	m_dst.x = (screenWidth - m_dst.w) / 2;
+	m_dst.y = (screenHeight - m_dst.h) / 2;
 	
-	x_offset = dst.x;
-	y_offset = dst.y;
-	x_scale = dst.w / (double) imageWidth;
-	y_scale = dst.h / (double) imageHeight;
+	x_offset = m_dst.x;
+	y_offset = m_dst.y;
+	x_scale = m_dst.w / (double) imageWidth;
+	y_scale = m_dst.h / (double) imageHeight;
 	
-	SDL_Rect ortho = { 0, 0, screenWidth, screenHeight };
-	blitter = new OGL_Blitter(*s, dst, ortho);
+	blitter = new OGL_Blitter(*s);
 						  
 	OGL_ClearScreen();
 	
@@ -113,18 +111,18 @@ void OGL_LoadScreen::Stop()
 
 void OGL_LoadScreen::Progress(const int progress)
 {
-
 	OGL_ClearScreen();
-
-	blitter->SetupMatrix();
-	blitter->Draw();
+	OGL_Blitter::BoundScreen();
+	
+	blitter->Draw(m_dst);
 
 	if (useProgress) 
 	{
-		glMatrixMode(GL_PROJECTION);
+		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glTranslated(x_offset, y_offset, 0.0);
 		glScaled(x_scale, y_scale, 1.0);
+		
 		glDisable(GL_TEXTURE_2D);
 		
 		// draw the progress bar background
@@ -158,13 +156,12 @@ void OGL_LoadScreen::Progress(const int progress)
 		glEnd();
 		
 		glEnable(GL_TEXTURE_2D);
+		
 		glPopMatrix();
 	}
-
-	blitter->RestoreMatrix();
-
+	
 	OGL_SwapBuffers();
-
+	
 }
 
 void OGL_LoadScreen::Set(const vector<char> Path, bool Stretch)
