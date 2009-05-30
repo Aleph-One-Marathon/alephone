@@ -440,7 +440,8 @@ update_world()
         int theUpdateResult = kUpdateNormalCompletion;
 
 #ifndef DISABLE_NETWORKING
-	NetProcessMessagesInGame();
+	if (game_is_networked)
+		NetProcessMessagesInGame();
 #endif
         
         while(canUpdate)
