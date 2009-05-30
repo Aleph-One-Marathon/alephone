@@ -3390,7 +3390,7 @@ bool XML_AxisMappingPrefsParser::HandleAttribute(const char* Tag, const char* Va
 	}
 	else if (StringsEqual(Tag, "axis"))
 	{
-		if (ReadBoundedInt16Value(Value, Axis, 0, 7))
+		if (ReadBoundedInt16Value(Value, Axis, -1, 7))
 		{
 			AxisPresent = true;
 			return true;
