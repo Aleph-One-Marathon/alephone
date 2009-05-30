@@ -31,8 +31,6 @@ May 18, 2009 (Eric Peterson):
 // internal handles
 static SDL_Joystick *joystick = NULL;
 int joystick_active = true;
-// scaling factors applied to the various axes
-double axis_sensitivities[4] = {1.0, -5.0, 0.1, -1.0}; // strafe vel yaw pitch
 // if an axis reading is taken below this number in absolute value, then we
 // clip it to 0.  this lets people use inaccurate zero points.
 int axis_bounds[4] = {10000, 3000, 3000, 4500};
@@ -99,7 +97,7 @@ int process_joystick_axes(int flags, int tick) {
 	}
 
         // scale and store the joystick axis to the relevant movement controller
-        *store_location = axis_sensitivities[i] * SDL_JoystickGetAxis(joystick, axis);
+        *store_location = input_preferences->joystick_axis_sensitivities[i] * SDL_JoystickGetAxis(joystick, axis);
         // clip if the value is too low
         if ((*store_location < axis_bounds[i]) && (*store_location > -axis_bounds[i]))
             *store_location = 0;
