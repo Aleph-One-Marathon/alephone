@@ -174,6 +174,14 @@ enum {
 	NUMBER_OF_SHELL_KEYS
 };
 
+enum {
+	_joystick_strafe,
+	_joystick_velocity,
+	_joystick_yaw,
+	_joystick_pitch,
+	NUMBER_OF_JOYSTICK_MAPPINGS
+};
+
 #define MAX_BUTTONS 5
 struct input_preferences_data
 {
@@ -189,6 +197,9 @@ struct input_preferences_data
 	// mouse button actions
 	int16 mouse_button_actions[MAX_BUTTONS];
 	int16 shell_keycodes[NUMBER_OF_SHELL_KEYS];
+	
+	int16 joystick_id;
+	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];
 };
 
 // mouse button action types

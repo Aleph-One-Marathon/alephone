@@ -25,10 +25,10 @@ May 18, 2009 (Eric Peterson):
 
 #include <SDL.h>
 #include "player.h" // for mask_in_absolute_positioning_information
+#include "preferences.h"
 #include "joystick.h"
 
 // internal handles
-int joystick_id = 0;
 static SDL_Joystick *joystick = NULL;
 int joystick_active = true;
 // scaling factors applied to the various axes
@@ -45,7 +45,7 @@ void enter_joystick(void) {
     // attempt to open the first joystick if we haven't already.  it doesn't
     // really matter if we fail, since then we just won't be receiving any
     // joystick events :)
-    joystick = joystick ? joystick : SDL_JoystickOpen(joystick_id);
+    joystick = joystick ? joystick : SDL_JoystickOpen(input_preferences->joystick_id);
 
     //printf("Opened joystick at %p\n", joystick);
 
@@ -91,8 +91,15 @@ int process_joystick_axes(int flags, int tick) {
         if (!store_location)
             continue;
 
+	int axis = input_preferences->joystick_axis_mappings[i];
+	if (axis < 0)
+	{
+		*store_location = 0;
+		continue;
+	}
+
         // scale and store the joystick axis to the relevant movement controller
-        *store_location = axis_sensitivities[i] * SDL_JoystickGetAxis(joystick, i);
+        *store_location = axis_sensitivities[i] * SDL_JoystickGetAxis(joystick, axis);
         // clip if the value is too low
         if ((*store_location < axis_bounds[i]) && (*store_location > -axis_bounds[i]))
             *store_location = 0;

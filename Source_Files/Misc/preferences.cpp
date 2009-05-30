@@ -1230,7 +1230,30 @@ static void sound_dialog(void *arg)
  *  Controls dialog
  */
 
+w_select_popup* joystick_axis_w[NUMBER_OF_JOYSTICK_MAPPINGS];
+
+static void axis_mapped(void* pv)
+{
+	w_select_popup* w = reinterpret_cast<w_select_popup*>(pv);
+	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
+	{
+		if (w != joystick_axis_w[i] && w->get_selection() == joystick_axis_w[i]->get_selection()) 
+		{
+			joystick_axis_w[i]->set_selection(0);
+		}
+	}
+}
+
 static w_enabling_toggle *mouse_w;
+static w_enabling_toggle *joystick_w;
+
+static void input_selected(w_select* w)
+{
+	if (w == mouse_w && w->get_selection())
+		joystick_w->set_selection(0, true);
+	else if (w == joystick_w && w->get_selection())
+		mouse_w->set_selection(0, true);
+}
 
 static void controls_dialog(void *arg)
 {
@@ -1240,22 +1263,39 @@ static void controls_dialog(void *arg)
 	placer->dual_add(new w_title("CONTROLS"), d);
 	placer->add(new w_spacer(), true);
 
-	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	table->col_flags(0, placeable::kAlignRight);
+	tab_placer* tabs = new tab_placer();
 
-	mouse_w = new w_enabling_toggle(input_preferences->input_device != 0);
-	table->dual_add(mouse_w->label("Mouse Control"), d);
-	table->dual_add(mouse_w, d);
+	std::vector<std::string> labels;
+	labels.push_back("GENERAL");
+	labels.push_back("MOUSE");
+	labels.push_back("JOYSTICK");
+	w_tab *tab_w = new w_tab(labels, tabs);
+
+	placer->dual_add(tab_w, d);
+	placer->add(new w_spacer(), true);
+
+	vertical_placer *general = new vertical_placer();
+	table_placer* mouse = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	table_placer* joystick = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	mouse->col_flags(0, placeable::kAlignRight);
+	joystick->col_flags(0, placeable::kAlignRight);
+
+	mouse_w = new w_enabling_toggle(input_preferences->input_device == 1, true);
+	mouse_w->set_selection_changed_callback(input_selected);
+	mouse->dual_add(mouse_w->label("Use Mouse"), d);
+	mouse->dual_add(mouse_w, d);
+
+	mouse->add_row(new w_spacer(), true);
 
 	w_toggle *mouse_acceleration_w = new w_toggle(input_preferences->mouse_acceleration);
-	table->dual_add(mouse_acceleration_w->label("Accelerate Mouse"), d);
-	table->dual_add(mouse_acceleration_w, d);
+	mouse->dual_add(mouse_acceleration_w->label("Accelerate Mouse"), d);
+	mouse->dual_add(mouse_acceleration_w, d);
 
 	mouse_w->add_dependent_widget(mouse_acceleration_w);
 
 	w_toggle *invert_mouse_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse));
-	table->dual_add(invert_mouse_w->label("Invert Mouse"), d);
-	table->dual_add(invert_mouse_w, d);
+	mouse->dual_add(invert_mouse_w->label("Invert Mouse"), d);
+	mouse->dual_add(invert_mouse_w, d);
 	
 	mouse_w->add_dependent_widget(invert_mouse_w);
 
@@ -1273,8 +1313,8 @@ static void controls_dialog(void *arg)
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 	
 	w_slider* sens_vertical_w = new w_slider(1000, theVerticalSliderPosition);
-	table->dual_add(sens_vertical_w->label("Mouse Vertical Sensitivity"), d);
-	table->dual_add(sens_vertical_w, d);
+	mouse->dual_add(sens_vertical_w->label("Mouse Vertical Sensitivity"), d);
+	mouse->dual_add(sens_vertical_w, d);
 
 	mouse_w->add_dependent_widget(sens_vertical_w);
 	
@@ -1285,39 +1325,113 @@ static void controls_dialog(void *arg)
 		(int) ((theSensitivityLog - kMinSensitivityLog) * (1000.0f / kSensitivityLogRange));
 
 	w_slider* sens_horizontal_w = new w_slider(1000, theHorizontalSliderPosition);
-	table->dual_add(sens_horizontal_w->label("Mouse Horizontal Sensitivity"), d);
-	table->dual_add(sens_horizontal_w, d);
+	mouse->dual_add(sens_horizontal_w->label("Mouse Horizontal Sensitivity"), d);
+	mouse->dual_add(sens_horizontal_w, d);
 
 	mouse_w->add_dependent_widget(sens_horizontal_w);
 
-	table->add_row(new w_spacer(), true);
+	joystick_w = new w_enabling_toggle(input_preferences->input_device == 0 && SDL_NumJoysticks() > 0 && input_preferences->joystick_id >= 0, true);
+	joystick_w->set_selection_changed_callback(input_selected);
+	joystick->dual_add(joystick_w->label("Use Joystick / Gamepad"), d);
+	joystick->dual_add(joystick_w, d);
+
+	joystick->add_row(new w_spacer(), true);
+
+	std::vector<std::string> joystick_labels;
+	if (SDL_NumJoysticks()) 
+	{
+		for (int i = 0; i < SDL_NumJoysticks(); ++i)
+		{
+			joystick_labels.push_back(SDL_JoystickName(i));
+		}
+	}
+	else
+	{
+		joystick_labels.push_back("No Joysticks");
+	}
+	w_select_popup* which_joystick_w = new w_select_popup();
+	which_joystick_w->set_labels(joystick_labels);
+	which_joystick_w->set_selection(std::max(0, std::min(SDL_NumJoysticks(), static_cast<int>(input_preferences->joystick_id))));
+	joystick->dual_add(which_joystick_w->label("Joystick / Gamepad"), d);
+	joystick->dual_add(which_joystick_w, d);
+	joystick_w->add_dependent_widget(which_joystick_w);
+
+	joystick->add_row(new w_spacer(), true);
+	joystick->dual_add_row(new w_static_text("Axis Mappings"), d);
+
+	std::vector<std::string> axis_labels;
+	axis_labels.push_back("Unassigned");
+	for (int i = 1; i <= 8; ++i)
+	{
+		stringstream s;
+		s << "Axis " << i;
+		axis_labels.push_back(s.str());
+	}
+	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
+	{
+		joystick_axis_w[i] = new w_select_popup();
+		joystick_axis_w[i]->set_labels(axis_labels);
+		joystick_axis_w[i]->set_selection(input_preferences->joystick_axis_mappings[i] + 1);
+		joystick_axis_w[i]->set_popup_callback(axis_mapped, joystick_axis_w[i]);
+	}
+
+	joystick->dual_add(joystick_axis_w[_joystick_strafe]->label("Sidestep Left/Right"), d);
+	joystick->dual_add(joystick_axis_w[_joystick_strafe], d);
+
+	joystick->dual_add(joystick_axis_w[_joystick_velocity]->label("Move Forward/Backward"), d);
+	joystick->dual_add(joystick_axis_w[_joystick_velocity], d);
+
+	joystick->dual_add(joystick_axis_w[_joystick_yaw]->label("Turn Left/Right"), d);
+	joystick->dual_add(joystick_axis_w[_joystick_yaw], d);
+
+	joystick->dual_add(joystick_axis_w[_joystick_pitch]->label("Look Up/Down"), d);
+	joystick->dual_add(joystick_axis_w[_joystick_pitch], d);
+
+	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
+	{
+		joystick_w->add_dependent_widget(joystick_axis_w[i]);
+	}
+
+	joystick->add_row(new w_spacer(), true);
+
+	table_placer* general_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	general_table->col_flags(0, placeable::kAlignRight);
 
 	w_toggle *always_run_w = new w_toggle(input_preferences->modifiers & _inputmod_interchange_run_walk);
-	table->dual_add(always_run_w->label("Always Run"), d);
-	table->dual_add(always_run_w, d);
+	general_table->dual_add(always_run_w->label("Always Run"), d);
+	general_table->dual_add(always_run_w, d);
 
 	w_toggle *always_swim_w = new w_toggle(TEST_FLAG(input_preferences->modifiers, _inputmod_interchange_swim_sink));
-	table->dual_add(always_swim_w->label("Always Swim"), d);
-	table->dual_add(always_swim_w, d);
+	general_table->dual_add(always_swim_w->label("Always Swim"), d);
+	general_table->dual_add(always_swim_w, d);
+
+	general_table->add_row(new w_spacer(), true);
 
 	w_toggle *weapon_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_switch_to_new_weapon));
-	table->dual_add(weapon_w->label("Auto-Switch Weapons"), d);
-	table->dual_add(weapon_w, d);
+	general_table->dual_add(weapon_w->label("Auto-Switch Weapons"), d);
+	general_table->dual_add(weapon_w, d);
 
 	w_toggle* auto_recenter_w = new w_toggle(!(input_preferences->modifiers & _inputmod_dont_auto_recenter));
-	table->dual_add(auto_recenter_w->label("Auto-Recenter View"), d);
-	table->dual_add(auto_recenter_w, d);
+	general_table->dual_add(auto_recenter_w->label("Auto-Recenter View"), d);
+	general_table->dual_add(auto_recenter_w, d);
 
-	placer->add(table, true);
+	general->add(general_table, true);
+
+	general->add(new w_spacer(), true);
+	general->dual_add(new w_static_text("Warning: Auto-Switch Weapons and Auto-Recenter View"), d);
+	general->dual_add(new w_static_text("are always ON in network play.  Turning either one OFF"), d);
+	general->dual_add(new w_static_text("will also disable film recording for single-player games."), d);
+		
+	tabs->add(general, true);
+	tabs->add(mouse, true);
+	tabs->add(joystick, true);
+
+	placer->add(tabs, true);
 
 	placer->add(new w_spacer(), true);
 	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_button("CONFIGURE KEYBOARD", keyboard_dialog, &d), d);
-	
-	placer->add(new w_spacer(), true);
-	placer->dual_add(new w_static_text("Warning: Auto-Switch Weapons and Auto-Recenter View"), d);
-	placer->dual_add(new w_static_text("are always ON in network play.  Turning either one OFF"), d);
-	placer->dual_add(new w_static_text("will also disable film recording for single-player games."), d);
+	placer->dual_add(new w_button("CONFIGURE KEYS / BUTTONS", keyboard_dialog, &d), d);
+
 	placer->add(new w_spacer(), true);
 	
 	horizontal_placer *button_placer = new horizontal_placer;
@@ -1382,6 +1496,28 @@ static void controls_dialog(void *arg)
 		{
 			input_preferences->mouse_acceleration = mouse_acceleration_w->get_selection();
 			changed = true;
+		}
+
+		if (joystick_w->get_selection())
+		{
+			if (which_joystick_w->get_selection() != input_preferences->joystick_id)
+			{
+				input_preferences->joystick_id = which_joystick_w->get_selection();
+				changed = true;
+			}
+		}
+		else if (input_preferences->joystick_id != -1)
+		{
+			input_preferences->joystick_id = -1;
+			changed = true;
+		}
+
+		for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
+		{
+			if (joystick_axis_w[i]->get_selection() - 1 != input_preferences->joystick_axis_mappings[i]) {
+				input_preferences->joystick_axis_mappings[i] = joystick_axis_w[i]->get_selection() - 1;
+				changed = true;
+			}
 		}
 
 		if (changed)
@@ -1529,7 +1665,7 @@ static void keyboard_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("CONFIGURE KEYBOARD"), d);
+	placer->dual_add(new w_title("CONFIGURE KEYS / BUTTONS"), d);
 
 	placer->add(new w_spacer(), true);
 	
@@ -2032,12 +2168,15 @@ void write_preferences(
 	fprintf(F,"  sens_horizontal=\"%ld\"\n",input_preferences->sens_horizontal); // ZZZ, LP
 	fprintf(F,"  sens_vertical=\"%ld\"\n",input_preferences->sens_vertical); // ZZZ, LP
 	fprintf(F,"  mouse_acceleration=\"%s\"\n",BoolString(input_preferences->mouse_acceleration)); // SB
+	fprintf(F,"  joystick_id=\"%hd\"\n", input_preferences->joystick_id);
 
 	fprintf(F,">\n");
 	for (int i = 0; i < MAX_BUTTONS; i++)
 		fprintf(F,"  <mouse_button index=\"%hd\" action=\"%s\"/>\n", i,
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_left_trigger ? "left_trigger" : 
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_right_trigger ? "right_trigger" : "none");
+	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
+		fprintf(F,"  <joystick_axis_mapping index=\"%hd\" axis=\"%hd\"/>\n", i, input_preferences->joystick_axis_mappings[i]);
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
 		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
 			k,input_preferences->keycodes[k]);
@@ -2292,6 +2431,10 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->mouse_button_actions[1] = _mouse_button_fires_right_trigger;
 	for (int i = 2; i < MAX_BUTTONS; i++)
 		preferences->mouse_button_actions[i] = _mouse_button_does_nothing;
+
+	preferences->joystick_id = -1;
+	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
+		preferences->joystick_axis_mappings[i] = i;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)
@@ -3208,6 +3351,64 @@ bool XML_MouseButtonPrefsParser::AttributesDone()
 
 static XML_MouseButtonPrefsParser MouseButtonPrefsParser("mouse_button");
 
+class XML_AxisMappingPrefsParser : public XML_ElementParser
+{
+	bool IndexPresent, AxisPresent;
+	int16 Index, Axis;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+
+	XML_AxisMappingPrefsParser(const char *_Name) : XML_ElementParser(_Name) { }
+};
+
+bool XML_AxisMappingPrefsParser::Start()
+{
+	IndexPresent = AxisPresent = false;
+
+	return true;
+}
+
+bool XML_AxisMappingPrefsParser::HandleAttribute(const char* Tag, const char* Value)
+{
+	if (StringsEqual(Tag, "index"))
+	{
+		if (ReadBoundedInt16Value(Value, Index, 0, NUMBER_OF_JOYSTICK_MAPPINGS - 1))
+		{
+			IndexPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag, "axis"))
+	{
+		if (ReadBoundedInt16Value(Value, Axis, 0, 7))
+		{
+			AxisPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	
+	return true;
+}
+
+bool XML_AxisMappingPrefsParser::AttributesDone()
+{
+	if (!(IndexPresent && AxisPresent))
+	{
+		AttribsMissing();
+		return false;
+	}
+
+	input_preferences->joystick_axis_mappings[Index] = Axis;
+	return true;
+}
+
+static XML_AxisMappingPrefsParser AxisMappingPrefsParser("joystick_axis_mapping");
+
 
 class XML_KeyPrefsParser: public XML_ElementParser
 {
@@ -3318,6 +3519,10 @@ bool XML_InputPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if(StringsEqual(Tag, "mouse_acceleration")) {
 		return ReadBooleanValue(Value, input_preferences->mouse_acceleration);
+	}
+	else if (StringsEqual(Tag, "joystick_id"))
+	{
+		return ReadInt16Value(Value, input_preferences->joystick_id);
 	}
 	return true;
 }
@@ -3673,6 +3878,7 @@ void SetupPrefsParseTree()
 	MarathonPrefsParser.AddChild(&PlayerPrefsParser);
 
 	InputPrefsParser.AddChild(&MouseButtonPrefsParser);
+	InputPrefsParser.AddChild(&AxisMappingPrefsParser);
 	InputPrefsParser.AddChild(&MacKeyPrefsParser);
 	InputPrefsParser.AddChild(&SDLKeyPrefsParser);
 	MarathonPrefsParser.AddChild(&InputPrefsParser);
