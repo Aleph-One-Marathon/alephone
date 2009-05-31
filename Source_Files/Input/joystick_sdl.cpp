@@ -31,9 +31,7 @@ May 18, 2009 (Eric Peterson):
 // internal handles
 static SDL_Joystick *joystick = NULL;
 int joystick_active = true;
-// if an axis reading is taken below this number in absolute value, then we
-// clip it to 0.  this lets people use inaccurate zero points.
-int axis_bounds[4] = {10000, 3000, 3000, 4500};
+
 // controls the gradation of the pulse modulated strafing
 int strafe_bounds[3] = {14000, 20000, 28000};
 
@@ -99,7 +97,7 @@ int process_joystick_axes(int flags, int tick) {
         // scale and store the joystick axis to the relevant movement controller
         *store_location = input_preferences->joystick_axis_sensitivities[i] * SDL_JoystickGetAxis(joystick, axis);
         // clip if the value is too low
-        if ((*store_location < axis_bounds[i]) && (*store_location > -axis_bounds[i]))
+        if ((*store_location < input_preferences->joystick_axis_bounds[i]) && (*store_location > -input_preferences->joystick_axis_bounds[i]))
             *store_location = 0;
     }
     //printf("tick: %d\tstrafe: %d\tyaw: %d\tpitch: %d\tvel: %d\n", tick, strafe, yaw, pitch, vel);
@@ -109,7 +107,7 @@ int process_joystick_axes(int flags, int tick) {
     flags = mask_in_absolute_positioning_information(flags, yaw, pitch, vel);
     // but we don't for strafing!  so we do some PULSE MODULATION instead
     int abs_strafe = strafe > 0 ? strafe : -strafe;
-    if (abs_strafe < 10000) {
+    if (abs_strafe < input_preferences->joystick_axis_bounds[_joystick_strafe]) {
         // do nothin, you're not pushing hard enough
     } else if ((abs_strafe > 0) && (abs_strafe < strafe_bounds[0])) {
         // jitter slowly

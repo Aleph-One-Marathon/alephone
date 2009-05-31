@@ -2176,7 +2176,7 @@ void write_preferences(
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_left_trigger ? "left_trigger" : 
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_right_trigger ? "right_trigger" : "none");
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-		fprintf(F,"  <joystick_axis_mapping index=\"%hd\" axis=\"%hd\" sensitivity=\"%f\"/>\n", i, input_preferences->joystick_axis_mappings[i], input_preferences->joystick_axis_sensitivities[i]);
+		fprintf(F,"  <joystick_axis_mapping index=\"%hd\" axis=\"%hd\" sensitivity=\"%f\" bound=\"%hd\"/>\n", i, input_preferences->joystick_axis_mappings[i], input_preferences->joystick_axis_sensitivities[i], input_preferences->joystick_axis_bounds[i]);
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
 		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
 			k,input_preferences->keycodes[k]);
@@ -2440,6 +2440,11 @@ static void default_input_preferences(input_preferences_data *preferences)
 	preferences->joystick_axis_sensitivities[_joystick_velocity] = -5.0;
 	preferences->joystick_axis_sensitivities[_joystick_yaw] = 0.1;
 	preferences->joystick_axis_sensitivities[_joystick_pitch] = -1.0;
+
+	preferences->joystick_axis_bounds[_joystick_strafe] = 10000;
+	preferences->joystick_axis_bounds[_joystick_velocity] = 3000;
+	preferences->joystick_axis_bounds[_joystick_yaw] = 3000;
+	preferences->joystick_axis_bounds[_joystick_pitch] = 4500;
 }
 
 static void default_environment_preferences(environment_preferences_data *preferences)
@@ -3358,8 +3363,8 @@ static XML_MouseButtonPrefsParser MouseButtonPrefsParser("mouse_button");
 
 class XML_AxisMappingPrefsParser : public XML_ElementParser
 {
-	bool IndexPresent, AxisPresent, SensitivityPresent;
-	int16 Index, Axis;
+	bool IndexPresent, AxisPresent, SensitivityPresent, BoundPresent;
+	int16 Index, Axis, Bound;
 	float Sensitivity;
 
 public:
@@ -3372,7 +3377,7 @@ public:
 
 bool XML_AxisMappingPrefsParser::Start()
 {
-	IndexPresent = AxisPresent = SensitivityPresent = false;
+	IndexPresent = AxisPresent = SensitivityPresent = BoundPresent = false;
 
 	return true;
 }
@@ -3406,6 +3411,16 @@ bool XML_AxisMappingPrefsParser::HandleAttribute(const char* Tag, const char* Va
 		}
 		else return false;
 	}
+	else if (StringsEqual(Tag, "bound"))
+	{
+		if (ReadBoundedInt16Value(Value, Bound, 0, SHRT_MAX))
+		{
+			BoundPresent = true;
+			return true;
+		}
+		else return false;
+	}
+
 	return true;
 }
 
@@ -3421,6 +3436,10 @@ bool XML_AxisMappingPrefsParser::AttributesDone()
 	if (SensitivityPresent)
 	{
 		input_preferences->joystick_axis_sensitivities[Index] = Sensitivity;
+	}
+	if (BoundPresent)
+	{
+		input_preferences->joystick_axis_bounds[Index] = Bound;
 	}
 	return true;
 }

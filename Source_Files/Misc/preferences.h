@@ -201,6 +201,11 @@ struct input_preferences_data
 	int16 joystick_id;
 	int16 joystick_axis_mappings[NUMBER_OF_JOYSTICK_MAPPINGS];
 	float joystick_axis_sensitivities[NUMBER_OF_JOYSTICK_MAPPINGS];
+
+	// if an axis reading is taken below this number in absolute
+	// value, then we clip it to 0.  this lets people use
+	// inaccurate zero points.
+	int16 joystick_axis_bounds[NUMBER_OF_JOYSTICK_MAPPINGS];
 };
 
 // mouse button action types
