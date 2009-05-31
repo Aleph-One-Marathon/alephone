@@ -162,6 +162,7 @@ void OGL_Blitter::BoundScreen()
 {	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
+	glViewport(0, 0, ScreenWidth(), ScreenHeight());
 	glOrtho(0, ScreenWidth(), ScreenHeight(), 0, -1, 1);
 	glMatrixMode(GL_MODELVIEW);
 }
