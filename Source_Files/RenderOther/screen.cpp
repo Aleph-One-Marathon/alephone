@@ -364,11 +364,15 @@ SDL_Rect Screen::term_rect()
 		if (hud())
 			available_height -= hud_rect().h;
 		
-		termwidth = available_height * 2;
+		if (width() > available_height * 2)
+			termwidth = available_height * 2;
+		else
+			termwidth = width();
+	
 		if (screen_mode.term_scale_level == 1)
-			termwidth -= termwidth % 640;
+			termwidth = std::min(1280, termwidth);
 	}
-	r.w = std::min(width(), std::max(640, termwidth));
+	r.w = termwidth;
 	r.h = r.w / 2;
 	r.x = (width() - r.w) / 2;
 	if (hud())
@@ -387,11 +391,14 @@ SDL_Rect Screen::hud_rect()
 {
 	SDL_Rect r;
 	int hudwidth = 640;
-	if (screen_mode.hud_scale_level > 0)
+	switch (screen_mode.hud_scale_level)
 	{
-		hudwidth = 4 * height() / 3;
-		if (screen_mode.hud_scale_level == 1)
-			hudwidth -= hudwidth % 640;
+			case 1:
+				hudwidth = std::min(height(), 4 * height() - 2 * width());
+				break;
+			case 2:
+				hudwidth = 2 * (10 * height() - 3 * width()) / 9;
+				break;
 	}
 	r.w = std::min(width(), std::max(640, hudwidth));
 	r.h = r.w / 4;
