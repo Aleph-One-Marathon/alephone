@@ -358,7 +358,7 @@ SDL_Rect Screen::term_rect()
 {
 	SDL_Rect r;
 	
-	int available_height = height();
+	int available_height = window_height();
 	if (hud())
 		available_height -= hud_rect().h;
 	
@@ -366,23 +366,16 @@ SDL_Rect Screen::term_rect()
 	switch (screen_mode.term_scale_level)
 	{
 		case 1:
-			if (available_height >= 640 && width() >= 1280)
+			if (available_height >= 640 && window_width() >= 1280)
 				r.w *= 2;
 			break;
 		case 2:
-			r.w = std::min(width(), std::max(640, 2 * available_height));
+			r.w = std::min(window_width(), std::max(640, 2 * available_height));
 			break;
 	}
 	r.h = r.w / 2;
 	r.x = (width() - r.w) / 2;
-	if (hud())
-	{
-		r.y = (height() - hud_rect().h - r.h) / 2;
-	}
-	else
-	{
-		r.y = (height() - r.h) / 2;
-	}
+	r.y = (height() - window_height()) / 2 + (available_height - r.h) / 2;
 
 	return r;
 }
@@ -394,11 +387,11 @@ SDL_Rect Screen::hud_rect()
 	switch (screen_mode.hud_scale_level)
 	{
 		case 1:
-			if (height() >= 960 && width() >= 1280)
+			if (window_height() >= 960 && window_width() >= 1280)
 				r.w *= 2;
 			break;
 		case 2:
-			r.w = std::min(width(), std::max(640, 4 * height() / 3));
+			r.w = std::min(window_width(), std::max(640, 4 * window_height() / 3));
 			break;
 	}
 	r.h = r.w / 4;
