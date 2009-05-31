@@ -72,6 +72,26 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 
 			SDL_BlitSurface(const_cast<SDL_Surface *>(&s), &m_rects[i], t, NULL);
 
+			// to avoid edge artifacts, smear edge pixels out to texture boundary
+			for (int row = 0; row < m_rects[i].h; ++row)
+			{
+				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * tile_size);
+				for (int col = m_rects[i].w; col < tile_size; ++col)
+				{
+					curRow[col] = curRow[m_rects[i].w - 1] & 0xffffff00;
+				}
+			}
+			
+			uint32 *lastRow = static_cast<uint32 *>(t->pixels) + ((m_rects[i].h - 1) * tile_size);
+			for (int row = m_rects[i].h; row < tile_size; ++row)
+			{
+				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * tile_size);
+				for (int col = 0; col < tile_size; ++col)
+				{
+					curRow[col] = lastRow[col] & 0xffffff00;
+				}
+			}
+			
 			glBindTexture(GL_TEXTURE_2D, m_refs[i]);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
