@@ -53,6 +53,7 @@
 #define NO_SDL_GLEXT
 #include "SDL_opengl.h"
 #include "OGL_Setup.h"
+#include "OGL_Blitter.h"
 #endif
 
 #include "XML_Loader_SDL.h"
@@ -2029,50 +2030,13 @@ void dialog::update(SDL_Rect r) const
 	SDL_BlitSurface(dialog_surface, &r, video, &dst_rect);
 	SDL_UpdateRects(video, 1, &dst_rect);
 */
-        // this is needed because 'rect' is const here and SDL_* don't seem to use const.
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
-		SDL_Rect ScreenRect = {0, 0, video->w, video->h};
-		glPushAttrib(GL_ENABLE_BIT);
 		
- 		// Disable everything but alpha blending
- 		glDisable(GL_CULL_FACE);
- 		glDisable(GL_DEPTH_TEST);
- 		glDisable(GL_ALPHA_TEST);
- 		glEnable(GL_BLEND);
- 		glDisable(GL_FOG);
- 		glDisable(GL_SCISSOR_TEST);
- 		glDisable(GL_STENCIL_TEST);
-
-		glViewport(0, 0, ScreenRect.w, ScreenRect.h);
-		
- 		// Direct projection
- 		glMatrixMode(GL_PROJECTION);
- 		glPushMatrix();
- 		glLoadIdentity();
-
-		gluOrtho2D(0.0, ScreenRect.w, 0.0, ScreenRect.h);
- 		glMatrixMode(GL_MODELVIEW);
- 		glPushMatrix();
- 		glLoadIdentity();
-		
-		glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-		glRasterPos2f(rect.x, ScreenRect.h - rect.y);
-		glPixelZoom(1.0, -1.0);
-
-#ifdef ALEPHONE_LITTLE_ENDIAN
-		SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, rect.w, rect.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-		SDL_Surface *s = SDL_CreateRGBSurface(SDL_SWSURFACE, rect.w, rect.h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#endif
-		SDL_BlitSurface(dialog_surface, NULL, s, NULL);
-		glDrawPixels(s->w, s->h, GL_RGBA, GL_UNSIGNED_BYTE, s->pixels);
-		SDL_FreeSurface(s);
-
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-		glPopAttrib();
+		OGL_Blitter::BoundScreen();
+		OGL_Blitter blitter(*dialog_surface);
+		SDL_Rect dest = { r.x + rect.x, r.y + rect.y, r.w, r.h };
+		blitter.Draw(dest, r);
 
 		SDL_GL_SwapBuffers();
 	} else 
