@@ -92,7 +92,8 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 void OGL_Blitter::Unload()
 {
 	m_blitter_registry.erase(this);
-	glDeleteTextures(m_refs.size(), &m_refs.front());
+	if (m_refs.size())
+		glDeleteTextures(m_refs.size(), &m_refs.front());
 	m_refs.clear();
 	m_rects.clear();
 	m_src.x = m_src.y = m_src.w = m_src.h = 0;
