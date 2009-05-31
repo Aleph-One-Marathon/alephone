@@ -49,7 +49,7 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 
 	// ensure our textures get cleaned up
 	m_blitter_registry.insert(this);
-	glGenTextures(v_rects * h_rects, &m_refs.front());
+	glGenTextures(v_rects * h_rects, &m_refs[0]);
 
 	SDL_Surface *t;
 #ifdef ALEPHONE_LITTLE_ENDIAN
@@ -93,7 +93,7 @@ void OGL_Blitter::Unload()
 {
 	m_blitter_registry.erase(this);
 	if (m_refs.size())
-		glDeleteTextures(m_refs.size(), &m_refs.front());
+		glDeleteTextures(m_refs.size(), &m_refs[0]);
 	m_refs.clear();
 	m_rects.clear();
 	m_src.x = m_src.y = m_src.w = m_src.h = 0;
