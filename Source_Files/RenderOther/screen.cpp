@@ -1237,7 +1237,7 @@ void darken_world_window(void)
 
 void validate_world_window(void)
 {
-	// nothing to do
+	RequestDrawingTerm();
 }
 
 
