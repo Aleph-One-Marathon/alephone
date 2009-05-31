@@ -710,11 +710,11 @@ static const char* texture_resolution_labels[] = {
 };
 
 static const char* hud_scale_labels[] = {
-"Fixed Size", "Larger View", "Larger HUD", NULL
+"Normal", "Double", "Largest", NULL
 };
 
 static const char* term_scale_labels[] = {
-"Fixed Size", "Up to 2x", "Unlimited", NULL
+"Normal", "Double", "Largest", NULL
 };
 
 static int get_texture_quality_label(int16 quality, bool wall)
