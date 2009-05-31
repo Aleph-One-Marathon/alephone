@@ -2033,12 +2033,14 @@ void dialog::update(SDL_Rect r) const
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
 		
+		glDrawBuffer(GL_FRONT);
+		
 		OGL_Blitter::BoundScreen();
 		OGL_Blitter blitter(*dialog_surface);
 		SDL_Rect dest = { r.x + rect.x, r.y + rect.y, r.w, r.h };
 		blitter.Draw(dest, r);
 
-		SDL_GL_SwapBuffers();
+		glFlush();
 	} else 
 #endif
 	{
@@ -2506,20 +2508,6 @@ void dialog::start(bool play_sound)
 	frame_r = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
 	frame_b = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
 
-#if defined(HAVE_OPENGL)
-	if (OGL_IsActive()) {
-#if defined(OPENGL_DOESNT_COPY_ON_SWAP)
-		{
-			// the screen will flicker if we don't clear or copy,
-			// and copying takes way too long
- 			clear_screen();
- 			glClearColor(0,0,0,0);
- 			glClear(GL_COLOR_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-		}
-#endif
-	}
-#endif
-
 	// Draw dialog
 	draw();
 
@@ -2593,9 +2581,9 @@ int dialog::finish(bool play_sound)
 
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
-#ifdef OPENGL_DOESNT_COPY_ON_SWAP
+		glDrawBuffer(GL_BACK);
+		SDL_GL_SwapBuffers();
 		clear_screen();
-#endif
 		glClearColor(0,0,0,0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	} else

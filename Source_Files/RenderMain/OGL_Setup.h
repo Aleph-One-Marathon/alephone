@@ -69,10 +69,6 @@ Aug 21, 2001 (Loren Petrich):
 
 #include <string>
 
-#if (defined(__WIN32__) || (defined(__APPLE__) && defined(__MACH__)))
-#define OPENGL_DOESNT_COPY_ON_SWAP
-#endif
-
 // Initializer; returns whether or not OpenGL is present
 bool OGL_Initialize();
 
