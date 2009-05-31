@@ -186,8 +186,8 @@ void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		
 		int tx = std::max(0, src.x - m_rects[i].x);
 		int ty = std::max(0, src.y - m_rects[i].y);
-		int tw = std::min((int) m_rects[i].w, src.x + src.w) - tx;
-		int th = std::min((int) m_rects[i].h, src.y + src.h) - ty;
+		int tw = std::min((int) m_rects[i].w, src.x + src.w - m_rects[i].x) - tx;
+		int th = std::min((int) m_rects[i].h, src.y + src.h - m_rects[i].y) - ty;
 		
 		GLdouble VMin = tx / (GLdouble) tile_size;
 		GLdouble VMax = (tx + tw) / (GLdouble) tile_size;
