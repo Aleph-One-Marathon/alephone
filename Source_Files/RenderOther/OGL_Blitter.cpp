@@ -99,7 +99,7 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tile_size, tile_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tile_size, tile_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
 
 			i++;
 		}
@@ -192,6 +192,7 @@ void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
 	glDisable(GL_FOG);
 	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_STENCIL_TEST);
+	glEnable(GL_TEXTURE_2D);
 
 	GLdouble x_scale = dst.w / (GLdouble) src.w;
 	GLdouble y_scale = dst.h / (GLdouble) src.h;
