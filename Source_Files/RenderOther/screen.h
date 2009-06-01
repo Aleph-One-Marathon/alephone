@@ -96,6 +96,7 @@ namespace alephone
 		bool openGL();
 		bool fifty_percent();
 		bool seventyfive_percent();
+		SDL_Rect window_rect(); // 3D view + interface
 		SDL_Rect view_rect(); // main 3D view
 		SDL_Rect map_rect();
 		SDL_Rect term_rect();

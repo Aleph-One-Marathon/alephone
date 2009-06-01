@@ -295,6 +295,16 @@ bool Screen::seventyfive_percent()
 	return screen_mode.height == 240;;
 }
 
+SDL_Rect Screen::window_rect()
+{
+	SDL_Rect r;
+	r.w = window_width();
+	r.h = window_height();
+	r.x = (width() - r.w) / 2;
+	r.y = (height() - r.h) / 2;
+	return r;
+}
+
 SDL_Rect Screen::view_rect()
 {
 	SDL_Rect r;
@@ -1154,7 +1164,7 @@ static inline void draw_pattern_rect(T *p, int pitch, uint32 pixel, const SDL_Re
 void darken_world_window(void)
 {
 	// Get world window bounds
-	SDL_Rect r = Screen::instance()->view_rect();
+	SDL_Rect r = Screen::instance()->window_rect();
 
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
