@@ -73,6 +73,8 @@ bool OGL_Blitter::Load(const SDL_Surface& s)
 bool OGL_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
 {
 	Unload();
+	m_src.x = 0;
+	m_src.y = 0;
 	m_src.w = src.w;
 	m_src.h = src.h;
 	
