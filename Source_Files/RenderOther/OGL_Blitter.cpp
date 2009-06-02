@@ -57,6 +57,7 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 #else
 	t = SDL_CreateRGBSurface(SDL_SWSURFACE, tile_size, tile_size, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 #endif
+	uint32 rgb_mask = ~(t->format->Amask);
 
 	glEnable(GL_TEXTURE_2D);
 
@@ -78,7 +79,7 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * tile_size);
 				for (int col = m_rects[i].w; col < tile_size; ++col)
 				{
-					curRow[col] = curRow[m_rects[i].w - 1] & 0xffffff00;
+					curRow[col] = curRow[m_rects[i].w - 1] & rgb_mask;
 				}
 			}
 			
@@ -88,7 +89,7 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * tile_size);
 				for (int col = 0; col < tile_size; ++col)
 				{
-					curRow[col] = lastRow[col] & 0xffffff00;
+					curRow[col] = lastRow[col] & rgb_mask;
 				}
 			}
 			

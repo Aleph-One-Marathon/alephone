@@ -3050,122 +3050,53 @@ void SetupShaders()
 	StaticModeShaders[3].TextureCallbackData = SequenceNumbers + 3;
 }
 
+static OGL_Blitter Crosshair_Blitter;
+
+extern SDL_Surface *CrosshairSurface;
 
 // Rendering crosshairs
 bool OGL_RenderCrosshairs()
 {
 	if (!OGL_IsActive()) return false;
 	
-	// Crosshair features
-	CrosshairData& Crosshairs = GetCrosshairData();
-	
-	// Proper projection
-	SetProjectionType(Projection_Screen);
-
-	// No textures painted here, but will blend
-	glDisable(GL_TEXTURE_2D);
-	glDisable(GL_ALPHA_TEST);
-	glEnable(GL_BLEND);
-	
-	// What color; make 50% transparent (Alexander Strange's idea)
-	// Changed it to use the crosshairs data
-	if (!Crosshairs.PreCalced)
+	if (!Crosshair_Blitter.Loaded())
 	{
-	    Crosshairs.PreCalced = true;
-	    Crosshairs.GLColorsPreCalc[0] = Crosshairs.Color.red/65535.0F;
-	    Crosshairs.GLColorsPreCalc[1] = Crosshairs.Color.green/65535.0F;
-	    Crosshairs.GLColorsPreCalc[2] = Crosshairs.Color.blue/65535.0F;
-	    Crosshairs.GLColorsPreCalc[3] = Crosshairs.Opacity;
-	}
-	glColor4fv(Crosshairs.GLColorsPreCalc);
-	
-	// Create a new modelview matrix for the occasion
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslated(ViewWidth / 2, ViewHeight / 2, 1);
-	
-	// To keep pixels aligned, we have to draw on pixel boundaries.
-	// The SW renderer always offsets down and to the right when faced
-	// with an odd size. We're going to rotate our coordinate system,
-	// but we still have to obey the global offset rules.
-	//
-	// We precalculate the offsets for crosshair thickness below,
-	// for each of the four quadrants.
-	int halfWidthMin = -Crosshairs.Thickness / 2;
-	int halfWidthMax = halfWidthMin - (Crosshairs.Thickness % 2);
-	int offsets[4][2] = {   // [quadrant][local x/y]
-		{ halfWidthMin, halfWidthMin },
-		{ halfWidthMax, halfWidthMin },
-		{ halfWidthMax, halfWidthMax },
-		{ halfWidthMin, halfWidthMax } };
-
-	for (int quad = 0; quad < 4; quad++)
-	{
-		int WidthMin = offsets[quad][0];
-		int WidthMax = WidthMin + Crosshairs.Thickness;
-		int HeightMin = offsets[quad][1];
-		int HeightMax = HeightMin + Crosshairs.Thickness;
-
-		switch(Crosshairs.Shape)
-		{
-		case CHShape_RealCrosshairs:
-			{
-				// Four simple rectangles
-				
-				int LenMin = Crosshairs.FromCenter;
-				int LenMax = LenMin + Crosshairs.Length;
-				
-				// at the initial rotation, this is the rectangle at 3:00
-				glBegin(GL_QUADS);
-				glVertex2i(LenMin, HeightMin);
-				glVertex2i(LenMax, HeightMin);
-				glVertex2i(LenMax, HeightMax);
-				glVertex2i(LenMin, HeightMax);
-				glEnd();
-			}
-			break;
-		case CHShape_Circle:
-			{
-				// This will really be an octagon, for OpenGL-rendering convenience
-				//
-				// Each of the four sections is drawn with three quads --
-				// the middle diagonal section and two straight ends.
-				// Depending on the crosshair parameters, some segments
-				// have zero length: this happens when LenMid == LenMin.
-				
-				int LenMax = Crosshairs.Length;
-				int LenMid = LenMax / 2;
-				int LenMin = std::min(LenMid, static_cast<int>(Crosshairs.FromCenter));
-				
-				// at the initial rotation, this is the bottom right
-				glBegin(GL_QUAD_STRIP);
-				
-				// 3:00 horizontal edge
-				glVertex2i(LenMax + WidthMin, LenMin + HeightMin);
-				glVertex2i(LenMax + WidthMax, LenMin + HeightMin);
-				
-				// upper diagonal
-				glVertex2i(LenMax + WidthMin, LenMid + HeightMin);
-				glVertex2i(LenMax + WidthMax, LenMid + HeightMax);
-
-				// lower diagonal
-				glVertex2i(LenMid + WidthMin, LenMax + HeightMin);
-				glVertex2i(LenMid + WidthMax, LenMax + HeightMax);
-				
-				// 6:00 vertical edge
-				glVertex2i(LenMin + WidthMin, LenMax + HeightMin);
-				glVertex2i(LenMin + WidthMin, LenMax + HeightMax);
-				
-				glEnd();
-			}				
-			break;
-		}
-		glRotated(-90.0, 0, 0, 1); // turn clockwise		
+		// create RGBA surface, and render into it with SDL
+		SDL_Surface *t;
+		int alpha_offset;
+#ifdef ALEPHONE_LITTLE_ENDIAN
+		t = SDL_CreateRGBSurface(SDL_SWSURFACE, 128, 128, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+		alpha_offset = 3;
+#else
+		t = SDL_CreateRGBSurface(SDL_SWSURFACE, 128, 128, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+		alpha_offset = 0;
+#endif
+		Crosshairs_Render(t);
+		
+		// scale alpha using opacity preference
+//		float opacity = GetCrosshairData().Opacity;
+//		uint8 *p = static_cast<uint8 *>(t->pixels);
+//		for (int i = alpha_offset; i < 4*128*128; i = i + 4)
+//			p[i] = p[i] * opacity;
+		
+		// now surface is ready for blitter
+		Uint8 alpha = CrosshairSurface->format->alpha;
+		Uint32 flags = CrosshairSurface->flags;
+		
+		if (flags & SDL_SRCALPHA)
+		  SDL_SetAlpha(CrosshairSurface, flags & ~SDL_SRCALPHA, 0);
+		Crosshair_Blitter.Load(*CrosshairSurface);
+		if (flags & SDL_SRCALPHA)
+			SDL_SetAlpha(CrosshairSurface, flags, alpha);
+		SDL_FreeSurface(t);
 	}
 	
-	// Done with that modelview matrix
-	glPopMatrix();
-			
+	if (!Crosshair_Blitter.Loaded())
+		return false;
+
+	// draw in center of view
+	SDL_Rect dst = { (ViewWidth - 128) / 2, (ViewHeight - 128) / 2, 128, 128 };
+	Crosshair_Blitter.Draw(dst);
 	return true;
 }
 
