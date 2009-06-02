@@ -29,19 +29,19 @@
 const int OGL_Blitter::tile_size;
 set<OGL_Blitter*> OGL_Blitter::m_blitter_registry;
 
-OGL_Blitter::OGL_Blitter() { }
+OGL_Blitter::OGL_Blitter() : m_loaded(false) { }
 
-OGL_Blitter::OGL_Blitter(const SDL_Surface& s)
+OGL_Blitter::OGL_Blitter(const SDL_Surface& s) : m_loaded(false)
 {
 	Load(s);
 }
 
-OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& src)
+OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& src) : m_loaded(false)
 {
 	Load(s, src);
 }
 
-OGL_Blitter::OGL_Blitter(const ImageDescriptor& image)
+OGL_Blitter::OGL_Blitter(const ImageDescriptor& image) : m_loaded(false)
 {
 	Load(image);
 }
@@ -165,22 +165,26 @@ bool OGL_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
 		SDL_SetAlpha(const_cast<SDL_Surface *>(&s), src_flags, src_alpha);
 
 	SDL_FreeSurface(t);
+	m_loaded = true;
 	return true;
 }
 
 void OGL_Blitter::Unload()
 {
+	if (!m_loaded)
+		return;
 	m_blitter_registry.erase(this);
 	if (m_refs.size())
 		glDeleteTextures(m_refs.size(), &m_refs[0]);
 	m_refs.clear();
 	m_rects.clear();
 	m_src.x = m_src.y = m_src.w = m_src.h = 0;
+	m_loaded = false;
 }
 
 bool OGL_Blitter::Loaded()
 {
-	return (m_refs.size() > 0);
+	return m_loaded;
 }
 
 int OGL_Blitter::Width()
@@ -195,16 +199,14 @@ int OGL_Blitter::Height()
 
 void OGL_Blitter::StopTextures()
 {
-	for (set<OGL_Blitter*>::iterator it = m_blitter_registry.begin();
-	     it != m_blitter_registry.end();
-			 ++it)
+	set<OGL_Blitter*>::iterator it, end = m_blitter_registry.end();
+	for (it = m_blitter_registry.begin(); it != end; it++)
 		(*it)->Unload();
 }
 
 OGL_Blitter::~OGL_Blitter()
 {
 	Unload();
-	m_blitter_registry.erase(this);
 }
 
 int OGL_Blitter::ScreenWidth()

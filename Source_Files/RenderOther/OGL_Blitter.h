@@ -90,6 +90,7 @@ private:
 	vector<SDL_Rect> m_rects;
 	vector<GLuint> m_refs;
 	int m_tile_width, m_tile_height;
+	bool m_loaded;
 	
 	static const int tile_size = 256;
 	static set<OGL_Blitter*> m_blitter_registry;
