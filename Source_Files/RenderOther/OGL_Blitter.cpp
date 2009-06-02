@@ -60,6 +60,12 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 	uint32 rgb_mask = ~(t->format->Amask);
 
 	glEnable(GL_TEXTURE_2D);
+	
+	// when blitting surface, make sure we copy rather than blend the alpha
+	uint8 src_alpha = s.format->alpha;
+	uint32 src_flags = s.flags;
+	if (src_flags & SDL_SRCALPHA)
+		SDL_SetAlpha(const_cast<SDL_Surface *>(&s), src_flags & ~SDL_SRCALPHA, 0);
 
 	int i = 0;
 	for (int y = 0; y < v_rects; y++)
@@ -105,6 +111,10 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 			i++;
 		}
 	}
+	
+	// restore the source surface to its original blend mode
+	if (src_flags & SDL_SRCALPHA)
+		SDL_SetAlpha(const_cast<SDL_Surface *>(&s), src_flags, src_alpha);
 
 	SDL_FreeSurface(t);
 		      
