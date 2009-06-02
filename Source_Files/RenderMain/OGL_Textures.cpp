@@ -1034,6 +1034,13 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 		}
 	}
 
+	uint32 rgb_mask;
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	rgb_mask = 0x00ffffff;
+#else
+	rgb_mask = 0xffffff00;
+#endif
+	
 	for (short h = OGLHeightOffset; h < OGLHeightFinish; h++)
 	{
 		byte *OrigStrip = Texture->row_addresses[h + OrigHeightDiff];
@@ -1068,14 +1075,14 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 		
 		// smear first pixel to left edge
 		for (short w = 0; w < OGLWidthOffset; w++)
-			*(OGLStrip++) = ColorTable[*OrigStrip] & 0x00FFFFFF;
+			*(OGLStrip++) = ColorTable[*OrigStrip] & rgb_mask;
 		
 		for (short w = OGLWidthOffset; w < OGLWidthFinish; w++)
 			*(OGLStrip++) = ColorTable[*(OrigStrip++)];
 
 		// smear last pixel to right edge
 		for (short w = OGLWidthFinish; w < TxtrWidth; w++)
-			*(OGLStrip++) = ColorTable[*(OrigStrip - 1)] & 0x00FFFFFF;
+			*(OGLStrip++) = ColorTable[*(OrigStrip - 1)] & rgb_mask;
 	}
 	
 	// smear first pixel row to top edge
@@ -1085,7 +1092,7 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 		uint32 *OGLStrip = &Buffer[TxtrWidth * h];
 
 		for (short w = 0; w < TxtrWidth; w++)
-			*(OGLStrip++) = *(SrcStrip++) & 0x00FFFFFF;
+			*(OGLStrip++) = *(SrcStrip++) & rgb_mask;
 	}
 	// smear last pixel row to bottom edge
 	for (short h = OGLHeightFinish; h < TxtrHeight; h++)
@@ -1094,7 +1101,7 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 		uint32 *OGLStrip = &Buffer[TxtrWidth * h];
 		
 		for (short w = 0; w < TxtrWidth; w++)
-			*(OGLStrip++) = *(SrcStrip++) & 0x00FFFFFF;
+			*(OGLStrip++) = *(SrcStrip++) & rgb_mask;
 	}
 	
 	return Buffer;
