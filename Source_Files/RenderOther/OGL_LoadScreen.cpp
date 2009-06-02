@@ -53,14 +53,7 @@ bool OGL_LoadScreen::Start()
 	if (!File.SetNameWithPath(&path[0])) return use = false;
 	if (!image.LoadFromFile(File, ImageLoader_Colors, 0)) return use = false;
 
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(image.GetBuffer(), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(image.GetBuffer(), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#endif
-
-	if (blitter)
-		delete blitter;
+	if (!blitter.Load(image)) return use = false;
 
 	int screenWidth = SDL_GetVideoSurface()->w;
 	int screenHeight = SDL_GetVideoSurface()->h;
@@ -92,8 +85,6 @@ bool OGL_LoadScreen::Start()
 	y_offset = m_dst.y;
 	x_scale = m_dst.w / (double) imageWidth;
 	y_scale = m_dst.h / (double) imageHeight;
-	
-	blitter = new OGL_Blitter(*s);
 						  
 	OGL_ClearScreen();
 	
@@ -114,7 +105,7 @@ void OGL_LoadScreen::Progress(const int progress)
 	OGL_ClearScreen();
 	OGL_Blitter::BoundScreen();
 	
-	blitter->Draw(m_dst);
+	blitter.Draw(m_dst);
 
 	if (useProgress) 
 	{
@@ -195,11 +186,7 @@ void OGL_LoadScreen::Clear()
 	useProgress = false;
 	path.clear();
 	image.Clear();
-	if (blitter)
-	{
-		delete blitter;
-		blitter = NULL;
-	}
+	blitter.Unload();
 }
 
 #endif
