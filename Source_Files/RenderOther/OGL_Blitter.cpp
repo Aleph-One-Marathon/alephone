@@ -35,12 +35,41 @@ OGL_Blitter::OGL_Blitter(const SDL_Surface& s)
 	Load(s);
 }
 
-void OGL_Blitter::Load(const SDL_Surface& s)
+OGL_Blitter::OGL_Blitter(const ImageDescriptor& image)
+{
+	Load(image);
+}
+
+bool OGL_Blitter::Load(const ImageDescriptor& image)
+{
+	Unload();
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(const_cast<uint32 *>(image.GetBuffer()), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#else
+	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(const_cast<uint32 *>(image.GetBuffer()), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#endif
+	if (!s)
+		return false;
+	bool ret = Load(*s);
+	SDL_FreeSurface(s);
+	return ret;
+}
+
+bool OGL_Blitter::Load(const SDL_Surface& s)
 {
 	Unload();
 	m_src.w = s.w;
 	m_src.h = s.h;
 
+	SDL_Surface *t;
+#ifdef ALEPHONE_LITTLE_ENDIAN
+	t = SDL_CreateRGBSurface(SDL_SWSURFACE, tile_size, tile_size, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+#else
+	t = SDL_CreateRGBSurface(SDL_SWSURFACE, tile_size, tile_size, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+#endif
+	if (!t)
+		return false;
+	
 	// calculate how many rects we need
 	int v_rects = ((s.h + tile_size -1) / tile_size);
 	int h_rects = ((s.w + tile_size - 1) / tile_size);
@@ -51,12 +80,6 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 	m_blitter_registry.insert(this);
 	glGenTextures(v_rects * h_rects, &m_refs[0]);
 
-	SDL_Surface *t;
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	t = SDL_CreateRGBSurface(SDL_SWSURFACE, tile_size, tile_size, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-	t = SDL_CreateRGBSurface(SDL_SWSURFACE, tile_size, tile_size, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#endif
 	uint32 rgb_mask = ~(t->format->Amask);
 
 	glEnable(GL_TEXTURE_2D);
@@ -117,7 +140,7 @@ void OGL_Blitter::Load(const SDL_Surface& s)
 		SDL_SetAlpha(const_cast<SDL_Surface *>(&s), src_flags, src_alpha);
 
 	SDL_FreeSurface(t);
-		      
+	return true;
 }
 
 void OGL_Blitter::Unload()

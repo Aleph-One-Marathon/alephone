@@ -24,6 +24,7 @@
 */
 
 #include "cseries.h"
+#include "ImageLoader.h"
 
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
@@ -60,8 +61,10 @@ class OGL_Blitter
 public:
 	OGL_Blitter();
 	OGL_Blitter(const SDL_Surface& s);
+	OGL_Blitter(const ImageDescriptor& image);
 	
-	void Load(const SDL_Surface& s);
+	bool Load(const SDL_Surface& s);
+	bool Load(const ImageDescriptor& image);
 	void Unload();
 	bool Loaded();
 	
