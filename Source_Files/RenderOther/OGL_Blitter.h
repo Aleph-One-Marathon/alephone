@@ -61,9 +61,11 @@ class OGL_Blitter
 public:
 	OGL_Blitter();
 	OGL_Blitter(const SDL_Surface& s);
+	OGL_Blitter(const SDL_Surface& s, const SDL_Rect& src);
 	OGL_Blitter(const ImageDescriptor& image);
 	
 	bool Load(const SDL_Surface& s);
+	bool Load(const SDL_Surface& s, const SDL_Rect& src);
 	bool Load(const ImageDescriptor& image);
 	void Unload();
 	bool Loaded();
@@ -87,8 +89,9 @@ private:
 
 	vector<SDL_Rect> m_rects;
 	vector<GLuint> m_refs;
-	static const int tile_size = 256;
+	int m_tile_width, m_tile_height;
 	
+	static const int tile_size = 256;
 	static set<OGL_Blitter*> m_blitter_registry;
 };
 

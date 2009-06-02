@@ -22,6 +22,7 @@
 */
 
 #include "OGL_Blitter.h"
+#include "OGL_Setup.h"
 
 #ifdef HAVE_OPENGL
 
@@ -33,6 +34,11 @@ OGL_Blitter::OGL_Blitter() { }
 OGL_Blitter::OGL_Blitter(const SDL_Surface& s)
 {
 	Load(s);
+}
+
+OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& src)
+{
+	Load(s, src);
 }
 
 OGL_Blitter::OGL_Blitter(const ImageDescriptor& image)
@@ -55,24 +61,42 @@ bool OGL_Blitter::Load(const ImageDescriptor& image)
 	return ret;
 }
 
+// defined in OGL_Textures.cpp
+inline int NextPowerOfTwo(int n);
+
 bool OGL_Blitter::Load(const SDL_Surface& s)
 {
+	SDL_Rect sr = { 0, 0, s.w, s.h };
+	return Load(s, sr);
+}
+
+bool OGL_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
+{
 	Unload();
-	m_src.w = s.w;
-	m_src.h = s.h;
+	m_src.w = src.w;
+	m_src.h = src.h;
+	
+	m_tile_width  = std::min(NextPowerOfTwo(src.w), tile_size);
+	m_tile_height = std::min(NextPowerOfTwo(src.h), tile_size);
+	
+	if (Get_OGL_ConfigureData().Flags & OGL_Flag_TextureFix)
+	{
+		m_tile_width = std::max(m_tile_width, 128);
+		m_tile_height = std::max(m_tile_height, 128);
+	}
 
 	SDL_Surface *t;
 #ifdef ALEPHONE_LITTLE_ENDIAN
-	t = SDL_CreateRGBSurface(SDL_SWSURFACE, tile_size, tile_size, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
+	t = SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
 #else
-	t = SDL_CreateRGBSurface(SDL_SWSURFACE, tile_size, tile_size, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
+	t = SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 #endif
 	if (!t)
 		return false;
 	
 	// calculate how many rects we need
-	int v_rects = ((s.h + tile_size -1) / tile_size);
-	int h_rects = ((s.w + tile_size - 1) / tile_size);
+	int v_rects = ((src.h + m_tile_height - 1) / m_tile_height);
+	int h_rects = ((src.w + m_tile_width - 1) / m_tile_width);
 	m_rects.resize(v_rects * h_rects);
 	m_refs.resize(v_rects * h_rects);
 
@@ -95,28 +119,29 @@ bool OGL_Blitter::Load(const SDL_Surface& s)
 	{
 		for (int x = 0; x < h_rects; x++)
 		{
-			m_rects[i].x = x * tile_size;
-			m_rects[i].y = y * tile_size;
-			m_rects[i].w = std::min(tile_size, s.w - x * tile_size);
-			m_rects[i].h = std::min(tile_size, s.h - y * tile_size);
+			m_rects[i].x = x * m_tile_width;
+			m_rects[i].y = y * m_tile_height;
+			m_rects[i].w = std::min(m_tile_width, src.w - x * m_tile_width);
+			m_rects[i].h = std::min(m_tile_height, src.h - y * m_tile_height);
 
-			SDL_BlitSurface(const_cast<SDL_Surface *>(&s), &m_rects[i], t, NULL);
+			SDL_Rect sr = { src.x + m_rects[i].x, src.y + m_rects[i].y, m_rects[i].w, m_rects[i].h }; 
+			SDL_BlitSurface(const_cast<SDL_Surface *>(&s), &sr, t, NULL);
 
 			// to avoid edge artifacts, smear edge pixels out to texture boundary
 			for (int row = 0; row < m_rects[i].h; ++row)
 			{
-				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * tile_size);
-				for (int col = m_rects[i].w; col < tile_size; ++col)
+				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * m_tile_width);
+				for (int col = m_rects[i].w; col < m_tile_width; ++col)
 				{
 					curRow[col] = curRow[m_rects[i].w - 1] & rgb_mask;
 				}
 			}
 			
-			uint32 *lastRow = static_cast<uint32 *>(t->pixels) + ((m_rects[i].h - 1) * tile_size);
-			for (int row = m_rects[i].h; row < tile_size; ++row)
+			uint32 *lastRow = static_cast<uint32 *>(t->pixels) + ((m_rects[i].h - 1) * m_tile_width);
+			for (int row = m_rects[i].h; row < m_tile_height; ++row)
 			{
-				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * tile_size);
-				for (int col = 0; col < tile_size; ++col)
+				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * m_tile_width);
+				for (int col = 0; col < m_tile_width; ++col)
 				{
 					curRow[col] = lastRow[col] & rgb_mask;
 				}
@@ -129,7 +154,7 @@ bool OGL_Blitter::Load(const SDL_Surface& s)
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, tile_size, tile_size, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_tile_width, m_tile_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
 
 			i++;
 		}
@@ -246,10 +271,10 @@ void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		int tw = std::min((int) m_rects[i].w, src.x + src.w - m_rects[i].x) - tx;
 		int th = std::min((int) m_rects[i].h, src.y + src.h - m_rects[i].y) - ty;
 		
-		GLdouble VMin = tx / (GLdouble) tile_size;
-		GLdouble VMax = (tx + tw) / (GLdouble) tile_size;
-		GLdouble UMin = ty / (GLdouble) tile_size;
-		GLdouble UMax = (ty + th) / (GLdouble) tile_size;
+		GLdouble VMin = tx / (GLdouble) m_tile_width;
+		GLdouble VMax = (tx + tw) / (GLdouble) m_tile_width;
+		GLdouble UMin = ty / (GLdouble) m_tile_height;
+		GLdouble UMax = (ty + th) / (GLdouble) m_tile_height;
 		
 		GLdouble tleft   = ((m_rects[i].x + tx) * x_scale) + (GLdouble) (dst.x - (src.x * x_scale));
 		GLdouble tright  = tleft + (tw * x_scale);
