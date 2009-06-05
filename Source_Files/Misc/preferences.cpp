@@ -180,11 +180,6 @@ static bool validate_input_preferences(input_preferences_data *preferences);
 static void default_environment_preferences(environment_preferences_data *preferences);
 static bool validate_environment_preferences(environment_preferences_data *preferences);
 
-#if 0
-static inline float log2(int x) { return std::log((float) x) / std::log(2.0); };
-static inline float exp2(int x) { return std::exp((float) x + std::log(2.0)); };
-#endif
-
 // Prototypes
 static void player_dialog(void *arg);
 static void opengl_dialog(void *arg);
@@ -1128,7 +1123,7 @@ static void sound_dialog(void *arg)
 	table->dual_add(button_sounds_w->label("Interface Button Sounds"), d);
 	table->dual_add(button_sounds_w, d);
 
-	w_select *channels_w = new w_select(static_cast<int>(log2(sound_preferences->channel_count)), channel_labels);
+	w_select *channels_w = new w_select(static_cast<int>(std::floor(std::log(sound_preferences->channel_count) / std::log(2.0) + 0.5)), channel_labels);
 	table->dual_add(channels_w->label("Channels"), d);
 	table->dual_add(channels_w, d);
 
@@ -1192,7 +1187,7 @@ static void sound_dialog(void *arg)
 			changed = true;
 		}
 
-		int16 channel_count = static_cast<int16>(exp2(channels_w->get_selection()));
+		int16 channel_count = 1 << channels_w->get_selection();
 		if (channel_count != sound_preferences->channel_count) {
 			sound_preferences->channel_count = channel_count;
 			changed = true;
