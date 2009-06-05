@@ -81,5 +81,5 @@ Decoder *Decoder::Get(FileSpecifier &File)
 	}
 #endif
     
-    return NULL;
+    return 0;
 }
