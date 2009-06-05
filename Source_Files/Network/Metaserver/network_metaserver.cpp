@@ -571,7 +571,6 @@ static 	inline bool style_code(char c)
 	case 'c':
 	case 's':
 		return true;
-		break;
 	default:
 		return false;
 	}

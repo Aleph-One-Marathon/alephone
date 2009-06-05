@@ -80,4 +80,6 @@ Decoder *Decoder::Get(FileSpecifier &File)
 			return iffDecoder.release();
 	}
 #endif
+    
+    return NULL;
 }

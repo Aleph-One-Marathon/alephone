@@ -339,6 +339,8 @@ bool ImageDescriptor::SkipMipMapFromFile(OpenedFile& File, int flags, int level,
 		if (!File.GetPosition(position)) return false;
 		return File.SetPosition(position + (srcWidth / 4 * srcHeight / 4 * 16));
 	}
+    
+    return false;
 }
 
 bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual_width, int actual_height, int maxSize)

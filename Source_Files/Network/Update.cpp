@@ -47,7 +47,7 @@ Update::~Update()
 int Update::update_thread(void *p)
 {
 	Update *update = static_cast<Update *>(p);
-	update->Thread();
+	return update->Thread();
 }
 
 void Update::StartUpdateCheck()

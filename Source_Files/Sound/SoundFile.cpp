@@ -238,6 +238,8 @@ bool SoundDefinition::Load(OpenedFile &SoundFile, bool LoadPermutations)
 			return false;
 		}
 	}
+    
+    return true;
 }
 
 int32 SoundDefinition::LoadedSize()

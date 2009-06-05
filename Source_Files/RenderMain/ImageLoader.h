@@ -174,6 +174,7 @@ public:
 		}
 		_original = NULL;
 		_copy = copy;
+        return _copy;
 	}
 
 	~copy_on_edit() {

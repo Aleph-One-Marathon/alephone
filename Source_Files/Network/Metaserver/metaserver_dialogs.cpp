@@ -219,7 +219,7 @@ void GlobalMetaserverChatNotificationAdapter::gamesInRoomChanged(const std::vect
 	}
 }
 
-static int color_entry(ColoredChatEntry& e, const MetaserverPlayerInfo *player)
+static void color_entry(ColoredChatEntry& e, const MetaserverPlayerInfo *player)
 {
 	if (player)
 	{

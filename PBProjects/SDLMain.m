@@ -108,7 +108,7 @@ static NSString *getApplicationName(void)
         path = [ [ openPanel filenames ] objectAtIndex:0 ];
     }
     
-    printf ("open game: %s\n", [ path cString ]);
+    printf ("open game: %s\n", [ path UTF8String ]);
 }
 
 - (IBAction)saveGame:(id)sender
@@ -122,7 +122,7 @@ static NSString *getApplicationName(void)
         path = [ savePanel filename ];
     }
     
-    printf ("save game: %s\n", [ path cString ]);
+    printf ("save game: %s\n", [ path UTF8String ]);
 }
 
 - (IBAction)saveGameAs:(id)sender

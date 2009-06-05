@@ -614,7 +614,6 @@ static 	inline bool style_code(char c)
 	case 'c':
 	case 's':
 		return true;
-		break;
 	default:
 		return false;
 	}
@@ -776,7 +775,7 @@ int font_info::draw_text(SDL_Surface *s, const char *text, size_t length, int x,
 		_draw_text(s, text, length, x + 1, y + 1, SDL_MapRGB(s->format, 0x0, 0x0, 0x0), style, utf8);
 	}
 
-	_draw_text(s, text, length, x, y, pixel, style, utf8);
+	return _draw_text(s, text, length, x, y, pixel, style, utf8);
 }
 
 int font_info::trunc_text(const char *text, int max_width, uint16 style) const

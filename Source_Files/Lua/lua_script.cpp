@@ -1278,6 +1278,8 @@ int L_Restore_Saved(lua_State *L)
 			return it->second.RestoreAll(SavedLuaState[it->first]);
 		}
 	}
+	
+	return 0;
 }
 
 int L_Restore_Passed(lua_State *L)
@@ -1289,6 +1291,8 @@ int L_Restore_Passed(lua_State *L)
 			return it->second.RestorePassed(PassedLuaState[it->first]);
 		}
 	}
+	
+	return 0;
 }
 
 int L_Show_Interface(lua_State *L)

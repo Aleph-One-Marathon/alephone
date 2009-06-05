@@ -805,7 +805,7 @@ uint8* get_shapes_patch_data(size_t &length)
 	return length ? &shapes_patch[0] : 0;
 }
 
-bool load_shapes_patch(SDL_RWops *p)
+void load_shapes_patch(SDL_RWops *p)
 {
 	std::vector<int16> color_counts(MAXIMUM_COLLECTIONS);
 	int32 collection_index = NONE;
@@ -912,7 +912,6 @@ bool load_shapes_patch(SDL_RWops *p)
 				else
 				{
 					fprintf(stderr, "Unrecognized tag in patch file '%c%c%c%c'\n %x", tag >> 24, tag >> 16, tag >> 8, tag, tag);
-					return false;
 				}
 			}
 					
