@@ -1123,7 +1123,7 @@ static void sound_dialog(void *arg)
 	table->dual_add(button_sounds_w->label("Interface Button Sounds"), d);
 	table->dual_add(button_sounds_w, d);
 
-	w_select *channels_w = new w_select(static_cast<int>(std::floor(std::log(sound_preferences->channel_count) / std::log(2.0) + 0.5)), channel_labels);
+	w_select *channels_w = new w_select(static_cast<int>(std::floor(std::log(static_cast<float>(sound_preferences->channel_count)) / std::log(2.0) + 0.5)), channel_labels);
 	table->dual_add(channels_w->label("Channels"), d);
 	table->dual_add(channels_w, d);
 
