@@ -58,16 +58,6 @@ Sep 2, 2000 (Loren Petrich):
 #pragma segment texture
 #endif
 
-// LP change: creating an array describing the shape assignments
-// of the various monsters, so as to allow better customization
-
-enum {
-	MType_Friend,	// What you, friendly players, and the Bobs are
-	MType_Alien,	// What the other critters are
-	MType_Enemy,	// What hostile players are
-	NUMBER_OF_MDISPTYPES
-};
-
 static short MonsterDisplays[NUMBER_OF_MONSTER_TYPES] =
 {
 	// Marine

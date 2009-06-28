@@ -31,6 +31,14 @@ May 1, 2000 (Loren Petrich): Added XML parser object for the stuff here.
 
 #include "XML_ElementParser.h"
 
+enum {
+	MType_Friend,	// What you, friendly players, and the Bobs are
+	MType_Alien,	// What the other critters are
+	MType_Enemy,	// What hostile players are
+	NUMBER_OF_MDISPTYPES
+};
+
+
 /* ---------- prototypes/MOTION_SENSOR.C */
 
 void initialize_motion_sensor(shape_descriptor mount, shape_descriptor virgin_mounts,
