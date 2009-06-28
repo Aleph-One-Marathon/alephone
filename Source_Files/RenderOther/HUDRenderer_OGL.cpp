@@ -145,7 +145,6 @@ void OGL_ResetHUDFonts(bool IsStarting)
 	get_interface_font(_interface_item_count_font).OGL_Reset(IsStarting);
 	get_interface_font(_weapon_name_font).OGL_Reset(IsStarting);
 	get_interface_font(_player_name_font).OGL_Reset(IsStarting);
-	HUD_Blitter.Unload();
 }
 
 

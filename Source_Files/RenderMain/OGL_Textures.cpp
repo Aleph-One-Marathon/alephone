@@ -130,6 +130,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "render.h"
 #include "map.h"
 #include "collection_definition.h"
+#include "OGL_Blitter.h"
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
@@ -386,6 +387,9 @@ void OGL_StopTextures()
 	for (int it=0; it<OGL_NUMBER_OF_TEXTURE_TYPES; it++)
 		for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
 			if (TextureStateSets[it][ic]) delete []TextureStateSets[it][ic];
+
+	// clear blitters
+	OGL_Blitter::StopTextures();
 }
 
 void OGL_FrameTickTextures()
@@ -1489,6 +1493,9 @@ void OGL_ResetTextures()
 	ResetScreenFont();
 	OGL_ResetMapFonts(false);
 	OGL_ResetHUDFonts(false);
+	
+	// Reset blitters
+	OGL_Blitter::StopTextures();
 }
 
 

@@ -751,7 +751,6 @@ bool OGL_StopRun()
 	if (!OGL_IsActive()) return false;
 	
 	OGL_StopTextures();
-	OGL_Blitter::StopTextures();
 	
 #ifdef mac
 	aglDestroyContext(RenderContext);
