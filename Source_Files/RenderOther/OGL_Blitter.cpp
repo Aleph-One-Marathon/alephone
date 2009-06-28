@@ -201,8 +201,10 @@ int OGL_Blitter::Height()
 
 void OGL_Blitter::StopTextures()
 {
-	set<OGL_Blitter*>::iterator it, end = m_blitter_registry.end();
-	for (it = m_blitter_registry.begin(); it != end; it++)
+	set<OGL_Blitter*>::iterator it;
+	for (it = m_blitter_registry.begin();
+	     it != m_blitter_registry.end();
+	     it = m_blitter_registry.begin())
 		(*it)->Unload();
 }
 
