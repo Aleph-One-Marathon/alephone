@@ -22,6 +22,7 @@
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
+		270D534C0FCB417500482ED4 /* OGL_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 270D534B0FCB417500482ED4 /* OGL_Blitter.h */; };
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE005FD30EE2D6DE007FE7C6 /* screen.cpp */; };
 		AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
@@ -539,6 +540,8 @@
 		00F9DA5100AC730E7F000001 /* SDLMain.m */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.objc; path = SDLMain.m; sourceTree = SOURCE_ROOT; };
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		270D534B0FCB417500482ED4 /* OGL_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Blitter.h; sourceTree = "<group>"; };
+		2784979F0FF5C308008DECC8 /* lua_mnemonics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_mnemonics.h; sourceTree = "<group>"; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
 		3D5F21460403247500000104 /* libobjc.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.A.dylib; path = /usr/lib/libobjc.A.dylib; sourceTree = "<absolute>"; };
 		3D87957D07D11E120078D26B /* metaserver_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = metaserver_dialogs.cpp; sourceTree = "<group>"; };
@@ -1264,6 +1267,7 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
+				2784979F0FF5C308008DECC8 /* lua_mnemonics.h */,
 				AEAE131F0FC9C38400EDA5A6 /* lua_serialize.cpp */,
 				AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */,
 				AE51545E0D46E84A00506B58 /* lua_map.h */,
@@ -1758,6 +1762,7 @@
 		F5CC936F0240D85D01A80001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				270D534B0FCB417500482ED4 /* OGL_Blitter.h */,
 				AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */,
 				F5CC93700240D85D01A80001 /* ChaseCam.h */,
 				F5CC93710240D85D01A80001 /* computer_interface.h */,
@@ -2146,6 +2151,7 @@
 				AEAE12FF0FC9AB4900EDA5A6 /* joystick.h in Headers */,
 				AEAE13220FC9C38400EDA5A6 /* lua_serialize.h in Headers */,
 				AEAE132F0FC9C3C800EDA5A6 /* BStream.h in Headers */,
+				270D534C0FCB417500482ED4 /* OGL_Blitter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
