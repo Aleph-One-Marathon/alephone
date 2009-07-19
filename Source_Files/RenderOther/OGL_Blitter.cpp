@@ -29,57 +29,25 @@
 const int OGL_Blitter::tile_size;
 set<OGL_Blitter*> OGL_Blitter::m_blitter_registry;
 
-OGL_Blitter::OGL_Blitter() : m_loaded(false) { }
-
-OGL_Blitter::OGL_Blitter(const SDL_Surface& s) : m_loaded(false)
+OGL_Blitter::OGL_Blitter() : m_textures_loaded(false)
 {
-	Load(s);
-}
-
-OGL_Blitter::OGL_Blitter(const SDL_Surface& s, const SDL_Rect& src) : m_loaded(false)
-{
-	Load(s, src);
-}
-
-OGL_Blitter::OGL_Blitter(const ImageDescriptor& image) : m_loaded(false)
-{
-	Load(image);
-}
-
-bool OGL_Blitter::Load(const ImageDescriptor& image)
-{
-	Unload();
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(const_cast<uint32 *>(image.GetBuffer()), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-	SDL_Surface *s = SDL_CreateRGBSurfaceFrom(const_cast<uint32 *>(image.GetBuffer()), image.GetWidth(), image.GetHeight(), 32, image.GetWidth() * 4, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
-#endif
-	if (!s)
-		return false;
-	bool ret = Load(*s);
-	SDL_FreeSurface(s);
-	return ret;
+	m_src.x = m_src.y = m_src.w = m_src.h = 0;
+	m_scaled_src.x = m_scaled_src.y = m_scaled_src.w = m_scaled_src.h = 0;
+	crop_rect.x = crop_rect.y = crop_rect.w = crop_rect.h = 0;
 }
 
 // defined in OGL_Textures.cpp
 inline int NextPowerOfTwo(int n);
 
-bool OGL_Blitter::Load(const SDL_Surface& s)
+void OGL_Blitter::_LoadTextures()
 {
-	SDL_Rect sr = { 0, 0, s.w, s.h };
-	return Load(s, sr);
-}
-
-bool OGL_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
-{
-	Unload();
-	m_src.x = 0;
-	m_src.y = 0;
-	m_src.w = src.w;
-	m_src.h = src.h;
+	if (m_textures_loaded)
+		return;
+	if (!m_surface)
+		return;
 	
-	m_tile_width  = std::min(NextPowerOfTwo(src.w), tile_size);
-	m_tile_height = std::min(NextPowerOfTwo(src.h), tile_size);
+	m_tile_width  = std::min(NextPowerOfTwo(m_src.w), tile_size);
+	m_tile_height = std::min(NextPowerOfTwo(m_src.h), tile_size);
 	
 	if (Get_OGL_ConfigureData().Flags & OGL_Flag_TextureFix)
 	{
@@ -94,11 +62,13 @@ bool OGL_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
 	t = SDL_CreateRGBSurface(SDL_SWSURFACE, m_tile_width, m_tile_height, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x000000ff);
 #endif
 	if (!t)
-		return false;
+		return;
+	
+	SDL_SetAlpha(m_surface, 0, 0xff);
 	
 	// calculate how many rects we need
-	int v_rects = ((src.h + m_tile_height - 1) / m_tile_height);
-	int h_rects = ((src.w + m_tile_width - 1) / m_tile_width);
+	int v_rects = ((m_src.h + m_tile_height - 1) / m_tile_height);
+	int h_rects = ((m_src.w + m_tile_width - 1) / m_tile_width);
 	m_rects.resize(v_rects * h_rects);
 	m_refs.resize(v_rects * h_rects);
 
@@ -109,13 +79,6 @@ bool OGL_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
 	uint32 rgb_mask = ~(t->format->Amask);
 
 	glEnable(GL_TEXTURE_2D);
-	
-	// when blitting surface, make sure we copy rather than blend the alpha
-	uint8 src_alpha = s.format->alpha;
-	uint32 src_flags = s.flags;
-	if (src_flags & SDL_SRCALPHA)
-		SDL_SetAlpha(const_cast<SDL_Surface *>(&s), src_flags & ~SDL_SRCALPHA, 0);
-
 	int i = 0;
 	for (int y = 0; y < v_rects; y++)
 	{
@@ -123,11 +86,11 @@ bool OGL_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
 		{
 			m_rects[i].x = x * m_tile_width;
 			m_rects[i].y = y * m_tile_height;
-			m_rects[i].w = std::min(m_tile_width, src.w - x * m_tile_width);
-			m_rects[i].h = std::min(m_tile_height, src.h - y * m_tile_height);
+			m_rects[i].w = std::min(m_tile_width, m_src.w - x * m_tile_width);
+			m_rects[i].h = std::min(m_tile_height, m_src.h - y * m_tile_height);
 
-			SDL_Rect sr = { src.x + m_rects[i].x, src.y + m_rects[i].y, m_rects[i].w, m_rects[i].h }; 
-			SDL_BlitSurface(const_cast<SDL_Surface *>(&s), &sr, t, NULL);
+			SDL_Rect sr = { m_rects[i].x, m_rects[i].y, m_rects[i].w, m_rects[i].h }; 
+			SDL_BlitSurface(m_surface, &sr, t, NULL);
 
 			// to avoid edge artifacts, smear edge pixels out to texture boundary
 			for (int row = 0; row < m_rects[i].h; ++row)
@@ -162,41 +125,27 @@ bool OGL_Blitter::Load(const SDL_Surface& s, const SDL_Rect& src)
 		}
 	}
 	
-	// restore the source surface to its original blend mode
-	if (src_flags & SDL_SRCALPHA)
-		SDL_SetAlpha(const_cast<SDL_Surface *>(&s), src_flags, src_alpha);
-
 	SDL_FreeSurface(t);
-	m_loaded = true;
-	return true;
+	m_textures_loaded = true;
+	return;
 }
 
 void OGL_Blitter::Unload()
 {
-	if (!m_loaded)
+	Image_Blitter::Unload();
+	_UnloadTextures();
+}
+
+void OGL_Blitter::_UnloadTextures()
+{
+	if (!m_textures_loaded)
 		return;
 	m_blitter_registry.erase(this);
 	if (m_refs.size())
 		glDeleteTextures(m_refs.size(), &m_refs[0]);
 	m_refs.clear();
 	m_rects.clear();
-	m_src.x = m_src.y = m_src.w = m_src.h = 0;
-	m_loaded = false;
-}
-
-bool OGL_Blitter::Loaded()
-{
-	return m_loaded;
-}
-
-int OGL_Blitter::Width()
-{
-	return m_src.w;
-}
-
-int OGL_Blitter::Height()
-{
-	return m_src.h;
+	m_textures_loaded = false;
 }
 
 void OGL_Blitter::StopTextures()
@@ -205,7 +154,7 @@ void OGL_Blitter::StopTextures()
 	for (it = m_blitter_registry.begin();
 	     it != m_blitter_registry.end();
 	     it = m_blitter_registry.begin())
-		(*it)->Unload();
+		(*it)->_UnloadTextures();
 }
 
 OGL_Blitter::~OGL_Blitter()
@@ -232,37 +181,57 @@ void OGL_Blitter::BoundScreen()
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void OGL_Blitter::Draw()
-{
-	Draw(m_src, m_src);
-}
-
-void OGL_Blitter::Draw(const SDL_Rect& dst)
-{
-	Draw(dst, m_src);
-}
-
 void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
 {
+	SDL_Rect sr = src;
+	if (m_src.w != m_scaled_src.w)
+	{
+		sr.x = sr.x * m_src.w / m_scaled_src.w;
+		sr.w = sr.w * m_src.w / m_scaled_src.w;
+	}
+	if (m_src.h != m_scaled_src.h)
+	{
+		sr.y = sr.y * m_src.h / m_scaled_src.h;
+		sr.h = sr.h * m_src.h / m_scaled_src.h;
+	}
+	_Draw(dst, sr);
+}
+	
+void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
+{
 	if (!Loaded())
+		return;
+	_LoadTextures();
+	if (!m_textures_loaded)
 		return;
 	
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
 	
-	// disable everything but alpha blending
+	// disable everything but alpha blending and clipping
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_ALPHA_TEST);
 	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_FOG);
-	glDisable(GL_SCISSOR_TEST);
+//	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_STENCIL_TEST);
 	glEnable(GL_TEXTURE_2D);
 
 	GLdouble x_scale = dst.w / (GLdouble) src.w;
 	GLdouble y_scale = dst.h / (GLdouble) src.h;
-	GLdouble x_offset = dst.x;
-	GLdouble y_offset = dst.y;
+	
+	bool rotating = (rotation > 0.1 || rotation < -0.1);
+	if (rotating)
+	{
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glTranslatef((dst.x + dst.w/2.0), (dst.y + dst.h/2.0), 0.0);
+		glRotatef(rotation, 0.0, 0.0, 1.0);
+		glTranslatef(-(dst.x + dst.w/2.0), -(dst.y + dst.h/2.0), 0.0);
+	}
+		
+	glColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
 	
 	for (int i = 0; i < m_rects.size(); i++)
 	{
@@ -288,7 +257,6 @@ void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		GLdouble tbottom = ttop + (th * y_scale);
 		
 		glBindTexture(GL_TEXTURE_2D, m_refs[i]);
-		glColor3ub(255, 255, 255);
 		glBegin(GL_QUADS);
 		glTexCoord2f(VMin, UMin); glVertex3f(tleft,  ttop,    0);
 		glTexCoord2f(VMax, UMin); glVertex3f(tright, ttop,    0);
@@ -297,6 +265,8 @@ void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		glEnd();
 	}
 	
+	if (rotating)
+		glPopMatrix();
 	glPopAttrib();
 }
 

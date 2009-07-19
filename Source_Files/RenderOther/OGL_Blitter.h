@@ -25,6 +25,7 @@
 
 #include "cseries.h"
 #include "ImageLoader.h"
+#include "Image_Blitter.h"
 
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
@@ -56,41 +57,34 @@ using namespace std;
 #ifdef HAVE_OPENGL
 class OGL_Blitter;
 
-class OGL_Blitter
+class OGL_Blitter : public Image_Blitter
 {
 public:
 	OGL_Blitter();
-	OGL_Blitter(const SDL_Surface& s);
-	OGL_Blitter(const SDL_Surface& s, const SDL_Rect& src);
-	OGL_Blitter(const ImageDescriptor& image);
 	
-	bool Load(const SDL_Surface& s);
-	bool Load(const SDL_Surface& s, const SDL_Rect& src);
-	bool Load(const ImageDescriptor& image);
 	void Unload();
-	bool Loaded();
-	
-	int Width();
-	int Height();
-	
-	void Draw();
-	void Draw(const SDL_Rect& dst);
+
+	void Draw(SDL_Surface *dst_surface, SDL_Rect& dst, SDL_Rect& src) { Draw(dst, src); }
+	void Draw(const SDL_Rect& dst) { Draw(dst, crop_rect); }
 	void Draw(const SDL_Rect& dst, const SDL_Rect& src);
 	
 	~OGL_Blitter();
-	
+			
 	static void StopTextures();
 	static void BoundScreen();
 	static int ScreenWidth();
 	static int ScreenHeight();
+		
 private:
-
-	SDL_Rect m_src;
+	
+	void _Draw(const SDL_Rect& dst, const SDL_Rect& src);
+	void _LoadTextures();
+	void _UnloadTextures();
 
 	vector<SDL_Rect> m_rects;
 	vector<GLuint> m_refs;
 	int m_tile_width, m_tile_height;
-	bool m_loaded;
+	bool m_textures_loaded;
 	
 	static const int tile_size = 256;
 	static set<OGL_Blitter*> m_blitter_registry;
