@@ -192,6 +192,9 @@ short get_player_desired_weapon(short player_index);
 /* This is pinned to the maximum I think I can hold.. */
 short get_player_weapon_ammo_count(short player_index, short which_weapon, short which_trigger);
 
+short get_player_weapon_ammo_maximum(short player_index, short which_weapon, short which_trigger);
+int16 get_player_weapon_ammo_type(short player_index, short which_weapon, short which_trigger);
+
 #ifdef DEBUG
 void debug_print_weapon_status(void);
 #endif

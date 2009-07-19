@@ -1023,6 +1023,34 @@ short get_player_weapon_ammo_count(
 	return rounds_loaded;
 }
 
+short get_player_weapon_ammo_maximum(
+																	 short player_index, 
+																	 short which_weapon,
+																	 short which_trigger)
+{
+	struct trigger_definition *trigger_definition= get_trigger_definition(player_index,
+																						 which_weapon, which_trigger);
+	
+	assert(which_weapon>=0 && which_weapon<short(NUMBER_OF_WEAPONS));
+	assert(which_trigger>=0 && which_trigger<NUMBER_OF_TRIGGERS);
+	
+	return trigger_definition->rounds_per_magazine;
+}
+
+int16 get_player_weapon_ammo_type(
+																		 short player_index, 
+																		 short which_weapon,
+																		 short which_trigger)
+{
+	struct trigger_definition *trigger_definition= get_trigger_definition(player_index,
+																																				which_weapon, which_trigger);
+	
+	assert(which_weapon>=0 && which_weapon<short(NUMBER_OF_WEAPONS));
+	assert(which_trigger>=0 && which_trigger<NUMBER_OF_TRIGGERS);
+	
+	return trigger_definition->ammunition_type;
+}
+	
 #ifdef DEBUG
 void debug_print_weapon_status(
 	void)
