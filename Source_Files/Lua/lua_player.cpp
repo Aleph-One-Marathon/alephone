@@ -2134,6 +2134,9 @@ int16 Lua_Players_Length() {
 char Lua_DifficultyType_Name[] = "difficulty_type";
 typedef L_Enum<Lua_DifficultyType_Name> Lua_DifficultyType;
 
+char Lua_DifficultyTypes_Name[] = "DifficultyTypes";
+typedef L_EnumContainer<Lua_DifficultyTypes_Name, Lua_DifficultyType> Lua_DifficultyTypes;
+
 char Lua_GameType_Name[] = "game_type";
 typedef L_Enum<Lua_GameType_Name> Lua_GameType;
 
@@ -2444,6 +2447,9 @@ int Lua_Player_register (lua_State *L)
 
 	Lua_DifficultyType::Register(L, 0, 0, 0, Lua_DifficultyType_Mnemonics);
 	Lua_DifficultyType::Valid = Lua_DifficultyType::ValidRange(NUMBER_OF_GAME_DIFFICULTY_LEVELS);
+
+	Lua_DifficultyTypes::Register(L);
+	Lua_DifficultyTypes::Length = Lua_DifficultyTypes::ConstantLength(NUMBER_OF_GAME_DIFFICULTY_LEVELS);
 
 	Lua_Music::Register(L, Lua_Music_Get);
 
