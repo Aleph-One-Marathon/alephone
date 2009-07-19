@@ -2036,7 +2036,8 @@ void dialog::update(SDL_Rect r) const
 		glDrawBuffer(GL_FRONT);
 		
 		OGL_Blitter::BoundScreen();
-		OGL_Blitter blitter(*dialog_surface, r);
+		OGL_Blitter blitter;
+		blitter.Load(*dialog_surface, r);
 		SDL_Rect dest = { r.x + rect.x, r.y + rect.y, r.w, r.h };
 		blitter.Draw(dest);
 
