@@ -123,6 +123,43 @@ static int set_object_facing(lua_State *L)
 	return 0;
 }
 
+extern void add_object_to_polygon_object_list(short, short);
+
+template<class T>
+int lua_object_position(lua_State *L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+		return luaL_error(L, "position: incorrect argument type");
+
+	short polygon_index = 0;
+	if (lua_isnumber(L, 5))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 5));
+		if (!Lua_Polygon::Valid(polygon_index))
+			return luaL_error(L, "position: invalid polygon index");
+	}
+	else if (Lua_Polygon::Is(L, 5))
+	{
+		polygon_index = Lua_Polygon::Index(L, 5);
+	}
+	else
+		return luaL_error(L, "position: incorrect argument type");
+
+	short object_index = T::Index(L, 1);
+	object_data *object = get_object_data(object_index);
+	object->location.x = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	object->location.y = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
+	object->location.z = static_cast<int>(lua_tonumber(L, 4) * WORLD_ONE);
+
+	if (polygon_index != object->polygon)
+	{
+		remove_object_from_polygon_object_list(object_index);
+		add_object_to_polygon_object_list(object_index, polygon_index);
+	}
+
+	return 0;
+}
+
 char Lua_Effect_Name[] = "effect";
 
 const luaL_reg Lua_Effect_Get[] = {
@@ -130,6 +167,7 @@ const luaL_reg Lua_Effect_Get[] = {
 	{"facing", get_object_facing<Lua_Effect>},
 	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Effect> >},
 	{"polygon", get_object_polygon<Lua_Effect>},
+	{"position", L_TableFunction<lua_object_position<Lua_Effect> >},
 	{"type", get_object_type<Lua_Effect, Lua_EffectType>},
 	{"x", get_object_x<Lua_Effect>},
 	{"y", get_object_y<Lua_Effect>},
@@ -199,6 +237,7 @@ const luaL_reg Lua_Item_Get[] = {
 	{"facing", get_object_facing<Lua_Item>},
 	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Item> >},
 	{"polygon", get_object_polygon<Lua_Item>},
+	{"position", L_TableFunction<lua_object_position<Lua_Item> >},
 	{"type", get_object_type<Lua_Item, Lua_ItemType>},
 	{"x", get_object_x<Lua_Item>},
 	{"y", get_object_y<Lua_Item>},
@@ -329,6 +368,7 @@ const luaL_reg Lua_Scenery_Get[] = {
 	{"facing", get_object_facing<Lua_Scenery>},
 	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Scenery> >},
 	{"polygon", get_object_polygon<Lua_Scenery>},
+	{"position", L_TableFunction<lua_object_position<Lua_Scenery> >},
 	{"solid", Lua_Scenery_Get_Solid},
 	{"type", get_object_type<Lua_Scenery, Lua_SceneryType>},
 	{"x", get_object_x<Lua_Scenery>},

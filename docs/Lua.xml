@@ -359,6 +359,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon the effect is in</description>
 	<type>polygon</type>
       </variable>
+      <function name="position" version="SVN">
+	<description>sets position of effect</description>
+	<argument name="x">
+	  <type>WU</type></argument>
+	<argument name="y"><type>WU</type></argument>
+	<argument name="z"><type>WU</type></argument>
+	<argument name="polygon"><type>polygon</type></argument>
+      </function>
       <variable name="type" access="read-only">
 	<description>type of effect</description>
 	<type>effect_type</type>
@@ -461,6 +469,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon the item is in</description>
 	<type>polygon</type>
       </variable>
+      <function name="position" version="SVN">
+	<description>sets position of item</description>
+	<argument name="x">
+	  <type>WU</type></argument>
+	<argument name="y"><type>WU</type></argument>
+	<argument name="z"><type>WU</type></argument>
+	<argument name="polygon"><type>polygon</type></argument>
+      </function>
       <variable name="type" access="read-only">
 	<description>type of item</description>
 	<type>item_type</type>
@@ -1330,6 +1346,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon the scenery is in</description>
 	<type>polygon</type>
       </variable>
+      <function name="position" version="SVN">
+	<description>sets position of scenery</description>
+	<argument name="x">
+	  <type>WU</type></argument>
+	<argument name="y"><type>WU</type></argument>
+	<argument name="z"><type>WU</type></argument>
+	<argument name="polygon"><type>polygon</type></argument>
+      </function>
       <variable name="solid">
 	<description>whether this scenery is solid</description>
 	<type>boolean</type>
