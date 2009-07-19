@@ -1338,13 +1338,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>type of scenery</description>
 	<type>scenery_type</type>
       </variable>
-      <variable name="x">
+      <variable name="x" access="read-only">
 	<type>WU</type>
       </variable>
-      <variable name="y">
+      <variable name="y" access="read-only">
 	<type>WU</type>
       </variable>
-      <variable name="z">
+      <variable name="z" access="read-only">
 	<type>WU</type>
       </variable>
     </table>
