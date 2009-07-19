@@ -818,3 +818,29 @@ const lang_def Lua_WeaponType_Mnemonics[] = {
 	{"smg", 9},
 	{0, 0}
 };
+
+const lang_def Lua_InventorySection_Mnemonics[] = {
+{"weapons", 0},
+{"ammunition", 1},
+{"powerups", 2},
+{"items", 3},
+{"weapon powerups", 4},
+{"balls", 5},
+{"network statistics", 6},
+{0, 0}
+};
+
+const lang_def Lua_RendererType_Mnemonics[] = {
+{"opengl", 1},
+{"software", 0},
+{0, 0}
+};
+
+const lang_def Lua_SensorBlipType_Mnemonics[] = {
+{"friend", 0},
+{"alien", 1},
+{"hostile player", 2},
+{0, 0}
+};
+
+
