@@ -37,6 +37,7 @@ extern "C"
 #include "lua_script.h"
 #include "lua_mnemonics.h" // for lang_def and mnemonics
 #include <sstream>
+#include <map>
 
 // pushes a function that returns the parameterized function
 template<lua_CFunction f>
@@ -909,6 +910,86 @@ int L_EnumContainer<name, T>::_get(lua_State *L)
 	
 	return 1;
 }
+
+// object classes hold an object_t as well as numeric index_t
+template<char *name, typename object_t, typename index_t = int16>
+class L_ObjectClass : L_Class<name, index_t> {
+public:
+	static L_ObjectClass<name, object_t, index_t> *Push(lua_State *L, object_t object);
+	static object_t ObjectAtIndex(lua_State *L, index_t index);
+	static object_t Object(lua_State *L, int index);
+	static void Invalidate(lua_State *L, index_t index);
+
+	static void Register(lua_State *L, const luaL_reg get[] = 0, const luaL_reg set[] = 0, const luaL_reg metatable[] = 0) {
+		return L_Class<name, index_t>::Register(L, get, set, metatable);
+	}
+	static index_t Index(lua_State *L, int index) {
+		return L_Class<name, index_t>::Index(L, index);
+	}
+	static bool Is(lua_State *L, int index) {
+		return L_Class<name, index_t>::Is(L, index);
+	}
+	static boost::function<bool (index_t)> Valid;
+	
+	static map<index_t, object_t> _objects;
+};
+
+template<char *name, typename object_t, typename index_t>
+map<index_t, object_t> L_ObjectClass<name, object_t, index_t>::_objects;
+
+template<char *name, typename object_t, typename index_t>
+struct object_valid
+{
+	bool operator()(index_t x) {
+			return (L_ObjectClass<name, object_t, index_t>::_objects.find(x) !=
+						  L_ObjectClass<name, object_t, index_t>::_objects.end());
+	}
+};
+
+template<char *name, typename object_t, typename index_t>
+boost::function<bool (index_t)> L_ObjectClass<name, object_t, index_t>::Valid = object_valid<name, object_t, index_t>();
+
+
+template<char *name, typename object_t, typename index_t>
+L_ObjectClass<name, object_t, index_t> *L_ObjectClass<name, object_t, index_t>::Push(lua_State *L, object_t object)
+{
+	// find unused index in our map
+	index_t idx = 0;
+	while (_objects.find(++idx) != _objects.end()) { }
+	
+	_objects[idx] = object;
+	
+	// create an instance
+	L_ObjectClass<name, object_t, index_t> *t = static_cast<L_ObjectClass<name, object_t, index_t> *>(lua_newuserdata(L, sizeof(L_ObjectClass<name, object_t, index_t>)));
+	luaL_getmetatable(L, name);
+	lua_setmetatable(L, -2);
+	t->m_index = idx;
+	
+	return t;
+}
+
+template<char *name, typename object_t, typename index_t>
+object_t L_ObjectClass<name, object_t, index_t>::ObjectAtIndex(lua_State *L, index_t index)
+{
+	if (_objects.find(index) == _objects.end())
+		luaL_typerror(L, index, name);
+	
+	return _objects[index];
+}
+
+template<char *name, typename object_t, typename index_t>
+object_t L_ObjectClass<name, object_t, index_t>::Object(lua_State *L, int index)
+{
+	return ObjectAtIndex(L, L_Class<name, index_t>::Index(L, index));
+}
+
+template<char *name, typename object_t, typename index_t>
+void L_ObjectClass<name, object_t, index_t>::Invalidate(lua_State *L, index_t index)
+{
+	// remove index from our object map
+	_objects.erase(index);
+}
+
 
 #endif
 
