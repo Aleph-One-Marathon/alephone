@@ -5,7 +5,7 @@
 <xsl:template match="document">
   <html>
     <head>
-      <title>Aleph One Lua Scripters&apos; Guide</title>
+      <title><xsl:value-of select="@title"/></title>
       <style type="text/css">
       &lt;!-- 
       body {

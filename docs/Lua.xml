@@ -2,6 +2,8 @@
 <?xml-stylesheet type="text/xsl" href="Lua.xsl"?>
 <!DOCTYPE document [
 	  <!ELEMENT document (section*,triggers,tables,types,section*)>
+	  <!ATTLIST document title CDATA #REQUIRED>
+	  
 	  <!ELEMENT triggers (description?,(function*))>
 	  <!ATTLIST triggers id ID #REQUIRED>
 	  <!ELEMENT tables (description*,(table|accessor|enum|enum-accessor)*)>
@@ -76,7 +78,7 @@
 	  <!ELEMENT note (#PCDATA)>
 	  <!ATTLIST note version CDATA #IMPLIED>
 	  ]>
-<document>
+<document title="Aleph One Lua Scripters' Guide">
   <section name="General" id="general">
     <section name="What is This?" id="what_is_this">
       <description>

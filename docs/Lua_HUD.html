@@ -1,0 +1,828 @@
+<html><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>Aleph One HUD Scripters' Guide</title>
+<style type="text/css">
+      <!-- 
+      body {
+	  font-family: Verdana, Helvetica, sans-serif;
+	  font-size: 9pt;
+	  width: 800px;
+      }
+      a:link {
+	  color: #006600;
+      }
+
+      a:visited {
+	  color: #669966;
+      }
+      
+      a:hover {
+	  color: #009900;
+      }
+
+      h1 {
+	  background-color: #EEEEEE;
+	  border: thin solid #999999;
+	  padding: 4px;
+      }
+      h2 {
+	  color: #006600;
+      }
+      dt {
+	  color: #006600;
+	  margin-top: 4px;
+	  margin-bottom: 4px;
+      }
+      
+      h3 {
+	  color: #003300;
+	  margin-bottom: 4px;
+	  padding-bottom: 1px;
+	  border-bottom: thin solid;
+      }
+
+      h4 {
+	  margin: 0px;
+	  color: #003300;
+      }
+
+      div.tables p {
+	  margin: 4px;
+      }
+
+      p.note {
+	  color: #666666;
+	  font-style: italic;
+      }
+
+      ul {
+	  list-style-type: none;
+      }
+
+      ul.args li {
+	  margin: 10 px;
+      }
+
+      span.access {
+	  color: #666666;
+	  font-style: italic;
+      }
+
+      span.version {
+	  color: #000066;
+	  font-style: normal;
+	  font-size: 8pt;
+	  color: #FFFFFF;
+	  background-color: #006600;
+	  padding-left: 1px;
+	  padding-right: 1px;
+      }
+
+      div.end-mnemonics {
+	  clear: both;
+      }
+
+      div.mnemonics-column {
+	  float: left;
+	  #width: 250px;
+	  width: 33%;
+      }
+
+      ul.mnemonics li {
+	  color: #006600;
+      }
+
+-->
+      </style>
+</head><body>
+<h1>Table of Contents</h1>
+<ol>
+<li>
+<a href="#general">General</a><ol><li><a href="#what_is_this">What is This?</a></li></ol>
+</li>
+<li><a href="#triggers">Triggers</a></li>
+<li>
+<a href="#using_tables">Using Tables</a><ol><li><a href="#custom">Custom Fields</a></li></ol>
+</li>
+<li>
+<a href="#tables">Tables</a><ol>
+<li><a href="#Colors">Colors</a></li>
+<li><a href="#Fonts">Fonts</a></li>
+<li><a href="#Game">Game</a></li>
+<li><a href="#Images">Images</a></li>
+<li><a href="#Player">Player</a></li>
+<li><a href="#Screen">Screen</a></li>
+</ol>
+</li>
+<li>
+<a href="#types">Types and Mnemonics</a><ol>
+<li><a href="#DifficultyTypes">Difficulty</a></li>
+<li><a href="#GameTypes">Game Types</a></li>
+<li><a href="#InventorySections">Inventory Sections</a></li>
+<li><a href="#ItemTypes">Items</a></li>
+<li><a href="#PlayerColors">Player and Team Colors</a></li>
+<li><a href="#RendererTypes">Renderer Types</a></li>
+<li><a href="#ScoringModes">Scoring Modes</a></li>
+<li><a href="#SensorBlipTypes">Sensor Blip Types</a></li>
+<li><a href="#WeaponTypes">Weapons</a></li>
+</ol>
+</li>
+</ol>
+<h1>
+<a name="general"></a>General</h1>
+<h2>
+<a name="what_is_this"></a>What is This?</h2>
+        <p>This is a reference for writing Lua scripts to draw heads-up displays (HUDs) in Aleph One.</p>
+        <p>This is not a reference for Lua itself - see lua.org for that.</p>
+      <h1>
+<a name="triggers"></a>Triggers</h1>
+<div class="triggers">
+<p>These are functions scripts can define which Aleph One will call at specific times or events. For the HUD, the draw() trigger is the most important. For example, to write "Hello world" in the upper left corner of the screen:
+</p><pre>Triggers = {}
+function Triggers.draw()
+  myFont = Fonts.new();
+  myFont.size = 14;
+  myFont:activate();
+  myFont:drawText("Hello world", 50, 50, {1, 1, 1, 0.5});
+end
+</pre>
+<p></p>
+<dl>
+<dt>Triggers</dt>
+<dd><dl>
+<dt>.init()
+    </dt>
+<dd><p class="description">when a game session is started (after leaving the main menu)</p></dd>
+<dt>.cleanup()
+    </dt>
+<dd><p class="description">when a game session is completed (before returning to the main menu)</p></dd>
+<dt>.resize()
+    </dt>
+<dd><p class="description">when the window size changes in the middle of a game (with the F1/F2 keys)</p></dd>
+<dt>.draw()
+    </dt>
+<dd>
+<p class="description">at each game frame</p>
+<p class="note">all screen drawing must be called from this trigger </p>
+<p class="note">the screen is cleared before each frame </p>
+</dd>
+</dl></dd>
+</dl>
+</div>
+<h1>
+<a name="using_tables"></a>Using Tables</h1>
+<p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p>
+<h2>
+<a name="custom"></a>Custom Fields</h2>
+<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p><pre>Players[0]._favorite_flavor = "chocolate"</pre><p></p>
+<h1><a name="tables">Tables</a></h1>
+<div class="tables">
+<h3>
+<a name="Colors"></a>Colors</h3>
+<dl>
+<dt>Colors</dt>
+<dd><dl>
+      Colors are standard Lua tables; you don't need to call a new() method to create them. Colors have four fields, accessed by name or number. If a field is missing, it is assumed to be 1, which allows you to write opaque colors as {r, g, b}.
+      <dt>
+    .r<br>
+      .red<br>
+      .[1]</dt>
+<dd><p class="description">red component, from 0 to 1</p></dd>
+      <dt>
+    .g<br>
+      .green<br>
+      .[2]</dt>
+<dd><p class="description">green component, from 0 to 1</p></dd>
+      <dt>
+    .b<br>
+      .blue<br>
+      .[3]</dt>
+<dd><p class="description">blue component, from 0 to 1</p></dd>
+      <dt>
+    .a<br>
+      .alpha<br>
+      .[4]</dt>
+<dd><p class="description">alpha component (opacity), from 0 to 1</p></dd>
+    </dl></dd>
+</dl>
+<h3>
+<a name="Fonts"></a>Fonts</h3>
+<dl>
+<dt>Fonts.new(id, file, size, style)
+    </dt>
+<dd>
+<p class="description">all arguments are optional and passed by name; "id" and "file" are mutually exclusive; returns font or nil</p>
+<ul class="args">
+<li>id: a resource ID from the Fonts file (for the default Fonts file, valid values are 4 for Monaco and 22 for Courier) [default: nil]</li>
+<li>file: the path to a TTF file, for the standard variant of the font (the special path "mono" indicates the default Mono Sans font) [default: "mono"]</li>
+<li>size: the font size to use [default: 12]</li>
+<li>style: a number indicating the sum of any font styles to use (1 - bold; 2 - italic; 4 - underline) [default: 0]</li>
+</ul>
+</dd>
+<dt>Fonts[index]</dt>
+<dd><dl>
+      <dt>
+    .id<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description"></p>
+<p class="note">can be nil </p>
+</dd>
+      <dt>
+    .file<span class="access"> (read-only)</span>
+</dt>
+<dd>
+<p class="description"></p>
+<p class="note">can be nil </p>
+</dd>
+      <dt>
+    .size<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>
+    .style<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>:measure_text(string)
+    </dt>
+<dd><p class="description">returns the width and height of a string when drawn in this font</p></dd>
+      <dt>:draw_text(string, x, y, color)
+    </dt>
+<dd>
+<p class="description">draws a string to the screen</p>
+<p class="note">transparency only available in OpenGL renderer </p>
+</dd>
+    </dl></dd>
+</dl>
+<h3>
+<a name="Game"></a>Game</h3>
+<dl>
+<dt>Game</dt>
+<dd><dl>
+      <p class="note">all items in Game are read-only </p>
+      <dt>
+    .difficulty</dt>
+<dd><p class="description">the difficulty level</p></dd>
+      <dt>
+    .kill_limit</dt>
+<dd><p class="description">the game kill limit, or nil if there is none</p></dd>
+      <dt>
+    .time_remaining</dt>
+<dd><p class="description">the number of ticks until the game ends, or nil if there is no time limit</p></dd>
+      <dt>
+    .scoring_mode</dt>
+<dd><p class="description">the current scoring mode (if the gametype is "custom")</p></dd>
+      <dt>
+    .ticks</dt>
+<dd><p class="description">ticks since game started</p></dd>
+      <dt>
+    .type</dt>
+<dd><p class="description">whether the game is EMFH, KOTH, etc.</p></dd>
+      <dt>
+    .version</dt>
+<dd>
+<p class="description">the date version of the local player's engine</p>
+<p class="note">for example, "20071103" </p>
+</dd>
+      <dt>.players[index]</dt>
+<dd><dl>
+<dt>
+    .color</dt>
+<dd><p class="description">color of player (shirt color, if teams are enabled)</p></dd>
+<dt>
+    .kills</dt>
+<dd><p class="description">player kills, not including suicides</p></dd>
+<dt>
+    .local_</dt>
+<dd><p class="description">true if this player is the local player</p></dd>
+<dt>
+    .name</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .ranking</dt>
+<dd><p class="description">points or ticks, depending on game type</p></dd>
+<dt>
+    .team</dt>
+<dd><p class="description">player's team (pants color)</p></dd>
+</dl></dd>
+    </dl></dd>
+</dl>
+<h3>
+<a name="Images"></a>Images</h3>
+<dl>
+<dt>Images.new(path [, mask])
+    </dt>
+<dd>
+<p class="description">all arguments are passed by name; returns image or nil</p>
+<ul class="args">
+<li>path: the path to the image file to use</li>
+<li>mask: the path to an image file to use as an opacity mask</li>
+</ul>
+</dd>
+<dt>Images[index]</dt>
+<dd><dl>
+      <dt>
+    .width<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">width of the image in pixels</p></dd>
+      <dt>
+    .height<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">height of the image in pixels</p></dd>
+      <dt>
+    .unscaled_width<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">width of the image before any calls to :rescale()</p></dd>
+      <dt>
+    .unscaled_height<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">height of the image before any calls to :rescale()</p></dd>
+      <dt>.crop_rect</dt>
+<dd>
+<p class="description">specifies a portion of the image to be drawn</p>
+<dl>
+<dt>
+    .height</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .width</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .x</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .y</dt>
+<dd><p class="description"></p></dd>
+</dl>
+</dd>
+      <dt>
+    .tint_color</dt>
+<dd>
+<p class="description">scale the color and opacity by this value when drawing</p>
+<p class="note">default is (r=1, g=1, b=1, a=1) </p>
+<p class="note">only available in OpenGL renderer </p>
+</dd>
+      <dt>
+    .rotation</dt>
+<dd>
+<p class="description">degrees to rotate the image when drawn</p>
+<p class="note">axis of rotation is about the center of the drawn area </p>
+<p class="note">only available in OpenGL renderer </p>
+</dd>
+      <dt>:rescale(width, height)
+    </dt>
+<dd><p class="description">resize image to specified width and height</p></dd>
+      <dt>:draw(x, y)
+    </dt>
+<dd><p class="description">draw image (or cropped portion) to screen, with top left corner at specified position</p></dd>
+    </dl></dd>
+</dl>
+<h3>
+<a name="Player"></a>Player</h3>
+<dl>
+<dt>Player</dt>
+<dd><dl>
+      <p class="note">All items in Player are read-only </p>
+      <dt>
+    .color</dt>
+<dd><p class="description">color of player (shirt color, if teams are enabled)</p></dd>
+      <dt>
+    .dead</dt>
+<dd><p class="description">whether player is dead</p></dd>
+      <dt>
+    .direction<br>
+      .yaw</dt>
+<dd>
+<p class="description">direction player is facing, in degrees</p>
+<p class="note">0 is east, 90 is south </p>
+</dd>
+      <dt>
+    .energy<br>
+      .life</dt>
+<dd><p class="description">amount of suit energy player has (150 is normal red health)</p></dd>
+      <dt>.inventory_sections</dt>
+<dd><dl>
+<dt>
+    .current</dt>
+<dd>
+<p class="description">which section of the inventory to display</p>
+<p class="note">HUD themes can choose to display multiple sections simultaneously </p>
+</dd>
+</dl></dd>
+      <dt>
+    .inventory_sections[section_type]
+  </dt>
+<dd><dl>
+<dt>
+    .name</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .type</dt>
+<dd><p class="description"></p></dd>
+</dl></dd>
+
+      <dt>
+    .items[item_type]
+  </dt>
+<dd><dl>
+<dt>
+    .count</dt>
+<dd><p class="description">how many of item the player is carrying</p></dd>
+<dt>
+    .inventory_section</dt>
+<dd><p class="description">which section of the inventory should display this item</p></dd>
+<dt>
+    .plural</dt>
+<dd><p class="description">label to use for more than 1 of the item</p></dd>
+<dt>
+    .singular</dt>
+<dd><p class="description">label to use for 1 of the item</p></dd>
+<dt>
+    .type</dt>
+<dd><p class="description"></p></dd>
+</dl></dd>
+      <dt>.compass</dt>
+<dd><dl>
+<dt>
+    .ne<br>
+      .northeast</dt>
+<dd><p class="description">whether north east compass quadrant is active</p></dd>
+<dt>
+    .nw<br>
+      .northwest</dt>
+<dd><p class="description">whether north west compass quadrant is active</p></dd>
+<dt>
+    .se<br>
+      .southeast</dt>
+<dd><p class="description">whether south east compass quadrant is active</p></dd>
+<dt>
+    .sw<br>
+      .southwest</dt>
+<dd><p class="description">whether south west compass quadrant is active</p></dd>
+</dl></dd>
+      <dt>.motion_sensor</dt>
+<dd><dl>
+<dt>
+    .active</dt>
+<dd>
+<p class="description">whether player can view his motion sensor</p>
+<p class="note">currently, this also indicates compass visibility </p>
+</dd>
+<dt>.blips[index]</dt>
+<dd><dl>
+<dt>
+    .direction<br>
+      .yaw</dt>
+<dd>
+<p class="description">direction relative to player, in degrees</p>
+<p class="note">0 is to player's right, 90 is directly behind player </p>
+</dd>
+<dt>
+    .distance</dt>
+<dd><p class="description">distance from player, in WU (maximum is 8)</p></dd>
+<dt>
+    .intensity</dt>
+<dd><p class="description">from 0 (strongest) to 5 (weakest)</p></dd>
+<dt>
+    .type</dt>
+<dd>
+<p class="description"></p>
+<p class="note">see "Sensor Blip Types" for mnemonics </p>
+</dd>
+</dl></dd>
+</dl></dd>
+      <dt>
+    .name</dt>
+<dd><p class="description">player's name</p></dd>
+      <dt>
+    .oxygen</dt>
+<dd><p class="description">amount of oxygen player has (max is 10800)</p></dd>
+      <dt>
+    .team</dt>
+<dd><p class="description">player's team (pants color)</p></dd>
+      <dt>.weapons</dt>
+<dd><dl>
+<dt>
+    .current</dt>
+<dd>
+<p class="description">weapon the player is currently wielding</p>
+<p class="note">can be nil </p>
+</dd>
+</dl></dd>
+      <dt>
+    .weapons[weapon_type]
+  </dt>
+<dd><dl>
+<dt>.primary<br>.secondary</dt>
+<dd><dl>
+<dt>
+    .ammo_type</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .rounds</dt>
+<dd><p class="description">how many rounds are currently loaded into the weapon</p></dd>
+<dt>
+    .total_rounds</dt>
+<dd><p class="description">how many rounds can be loaded into the weapon</p></dd>
+</dl></dd>
+<dt>
+    .type</dt>
+<dd><p class="description"></p></dd>
+</dl></dd>
+
+    </dl></dd>
+</dl>
+<h3>
+<a name="Screen"></a>Screen</h3>
+<dl>
+<dt>Screen</dt>
+<dd><dl>
+      <dt>
+    .width<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">width of the available screen area</p></dd>
+      <dt>
+    .height<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">height of the available screen area</p></dd>
+      <dt>
+    .renderer<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">which renderer is in use</p></dd>
+      <dt>.clip_rect</dt>
+<dd>
+<p class="description">constrain drawing to the specified area of the screen</p>
+<dl>
+<dt>
+    .height</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .width</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .x</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .y</dt>
+<dd><p class="description"></p></dd>
+</dl>
+</dd>
+      <dt>.world_rect</dt>
+<dd>
+<p class="description">specifies the area of the screen for the 3D game view</p>
+<dl>
+<dt>
+    .height</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .width</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .x</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .y</dt>
+<dd><p class="description"></p></dd>
+</dl>
+</dd>
+      <dt>.map_rect</dt>
+<dd>
+<p class="description">specifies the area of the screen for the overhead map</p>
+<dl>
+<dt>
+    .height</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .width</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .x</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .y</dt>
+<dd><p class="description"></p></dd>
+</dl>
+</dd>
+      <dt>.term_rect</dt>
+<dd>
+<p class="description">specifies the area of the screen for displaying terminals</p>
+<dl>
+<dt>
+    .height</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .width</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .x</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .y</dt>
+<dd><p class="description"></p></dd>
+</dl>
+</dd>
+      <dt>.fill_rect(x, y, width, height, color)
+    </dt>
+<dd><p class="description">draws a solid rectangle to the screen</p></dd>
+      <dt>.frame_rect(x, y, width, height, color, thickness)
+    </dt>
+<dd>
+<p class="description">draws an outlined rectangle to the screen</p>
+<ul class="args"><li>thickness: outline size in pixels</li></ul>
+<p class="note">the outline is drawn entirely inside the given bounds </p>
+</dd>
+    </dl></dd>
+</dl>
+</div>
+<h1>
+<a name="types"></a>Types and Mnemonics</h1>
+<div class="tables">
+<h3>
+<a name="DifficultyTypes"></a>Difficulty</h3>
+<dl>
+<dt># DifficultyTypes</dt>
+<dt>DifficultyTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"kindergarten"</li>
+<li>"easy"</li>
+<li>"normal"</li>
+<li>"major damage"</li>
+<li>"total carnage"</li>
+</ul>
+<h3>
+<a name="GameTypes"></a>Game Types</h3>
+<dl>
+<dt># GameTypes</dt>
+<dt>GameTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"kill monsters"</li>
+<li>"cooperative play"</li>
+<li>"capture the flag"</li>
+</div>
+<div class="mnemonics-column">
+<li>"king of the hill"</li>
+<li>"kill the man with the ball"</li>
+<li>"defense"</li>
+</div>
+<div class="mnemonics-column">
+<li>"rugby"</li>
+<li>"tag"</li>
+<li>"netscript"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="InventorySections"></a>Inventory Sections</h3>
+<dl>
+<dt># InventorySections</dt>
+<dt>InventorySections()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"weapons"</li>
+<li>"ammunition"</li>
+<li>"powerups"</li>
+<li>"items"</li>
+<li>"weapon powerups"</li>
+<li>"balls"</li>
+<li>"network statistics"</li>
+</ul>
+<h3>
+<a name="ItemTypes"></a>Items</h3>
+<dl>
+<dt># ItemTypes</dt>
+<dt>ItemTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"knife"</li>
+<li>"pistol"</li>
+<li>"pistol ammo"</li>
+<li>"fusion pistol"</li>
+<li>"fusion pistol ammo"</li>
+<li>"assault rifle"</li>
+<li>"assault rifle ammo"</li>
+<li>"assault rifle grenades"</li>
+<li>"missile launcher"</li>
+<li>"missile launcher ammo"</li>
+<li>"invisibility"</li>
+<li>"invincibility"</li>
+</div>
+<div class="mnemonics-column">
+<li>"infravision"</li>
+<li>"alien weapon"</li>
+<li>"alien weapon ammo"</li>
+<li>"flamethrower"</li>
+<li>"flamethrower ammo"</li>
+<li>"extravision"</li>
+<li>"oxygen"</li>
+<li>"single health"</li>
+<li>"double health"</li>
+<li>"triple health"</li>
+<li>"shotgun"</li>
+<li>"shotgun ammo"</li>
+</div>
+<div class="mnemonics-column">
+<li>"key"</li>
+<li>"uplink chip"</li>
+<li>"light blue ball"</li>
+<li>"ball"</li>
+<li>"violet ball"</li>
+<li>"yellow ball"</li>
+<li>"brown ball"</li>
+<li>"orange ball"</li>
+<li>"blue ball"</li>
+<li>"green ball"</li>
+<li>"smg"</li>
+<li>"smg ammo"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="PlayerColors"></a>Player and Team Colors</h3>
+<dl>
+<dt># PlayerColors</dt>
+<dt>PlayerColors()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"slate"</li>
+<li>"red"</li>
+<li>"violet"</li>
+<li>"yellow"</li>
+<li>"white"</li>
+<li>"orange"</li>
+<li>"blue"</li>
+<li>"green"</li>
+</ul>
+<h3>
+<a name="RendererTypes"></a>Renderer Types</h3>
+<dl>
+<dt># RendererTypes</dt>
+<dt>RendererTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"software"</li>
+<li>"opengl"</li>
+</ul>
+<h3>
+<a name="ScoringModes"></a>Scoring Modes</h3>
+<dl>
+<dt># ScoringModes</dt>
+<dt>ScoringModes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"most points"</li>
+<li>"most time"</li>
+<li>"least points"</li>
+<li>"least time"</li>
+</ul>
+<h3>
+<a name="SensorBlipTypes"></a>Sensor Blip Types</h3>
+<dl>
+<dt># SensorBlipTypes</dt>
+<dt>SensorBlipTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"friend"</li>
+<li>"alien"</li>
+<li>"hostile player"</li>
+</ul>
+<h3>
+<a name="WeaponTypes"></a>Weapons</h3>
+<dl>
+<dt># WeaponTypes</dt>
+<dt>WeaponTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"fist"</li>
+<li>"pistol"</li>
+<li>"fusion pistol"</li>
+<li>"assault rifle"</li>
+</div>
+<div class="mnemonics-column">
+<li>"missile launcher"</li>
+<li>"flamethrower"</li>
+<li>"alien weapon"</li>
+<li>"shotgun"</li>
+</div>
+<div class="mnemonics-column">
+<li>"ball"</li>
+<li>"smg"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
+</div>
+
+</body></html>

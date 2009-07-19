@@ -1,0 +1,668 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-stylesheet type="text/xsl" href="Lua.xsl"?>
+<!DOCTYPE document [
+          <!ELEMENT document (section*,triggers,tables,types,section*)>
+          <!ATTLIST document title CDATA #REQUIRED>
+	  
+          <!ELEMENT triggers (description?,(function*))>
+          <!ATTLIST triggers id ID #REQUIRED>
+          <!ELEMENT tables (description*,(table|accessor|enum|enum-accessor)*)>
+          <!ATTLIST tables id ID #REQUIRED>
+          <!ELEMENT types (description*)>
+          <!ATTLIST types id ID #REQUIRED>
+
+          <!ELEMENT section (description?,(section*))>
+          <!ATTLIST section name CDATA #REQUIRED>
+          <!ATTLIST section id ID #REQUIRED>
+          
+          <!ELEMENT table ((description?),(function|function-variable|subtable|subtable-accessor|variable)*)>
+          <!ATTLIST table name ID #REQUIRED>
+          <!ATTLIST table singleton (true|false) 'false'>
+
+          <!ELEMENT subtable ((alias*),(description?),(length?),(index?),(call?),(function|subtable|variable|note)*)>
+          <!ATTLIST subtable name CDATA #REQUIRED>
+          <!ATTLIST subtable classname ID #REQUIRED>
+
+          <!ELEMENT subtable-accessor ((alias?),(description?),(function|subtable|variable)*)>
+          <!ATTLIST subtable-accessor name CDATA #REQUIRED>
+          <!ATTLIST subtable-accessor classname ID #REQUIRED>
+          <!ATTLIST subtable-accessor index CDATA #REQUIRED>
+
+          <!ELEMENT description ANY>
+          <!ELEMENT br EMPTY>
+          <!ELEMENT p ANY>
+          <!ELEMENT pre ANY>
+
+          <!ELEMENT function ((description?),(argument*),(return*),(note*))>
+          <!ATTLIST function name CDATA #REQUIRED>
+          <!ATTLIST function access (local-player|all) 'all'>
+          <!ATTLIST function return (single|variant) 'single'>
+
+          <!ELEMENT function-variable ((description?),(argument),(type))>
+          <!ATTLIST function-variable name CDATA #REQUIRED>
+          <!ATTLIST function-variable classname CDATA #IMPLIED>
+
+          <!ELEMENT argument (description?,type)>
+          <!ATTLIST argument name CDATA #REQUIRED>
+          <!ATTLIST argument required (true|false) 'true'>
+
+          <!ELEMENT return (type)>
+
+          <!ELEMENT variable ((alias*), (description?),(type),(note*))>
+          <!ATTLIST variable name CDATA #REQUIRED>
+          <!ATTLIST variable access (read-only|read-write|local-player|write-only) "read-write">
+          <!ATTLIST variable version CDATA #IMPLIED>
+
+          <!ELEMENT accessor ((description?),(length?),(index?),(call?),(function)*)>
+          <!ATTLIST accessor name ID #REQUIRED>
+          <!ATTLIST accessor contains IDREF #REQUIRED>
+
+          <!ELEMENT enum-accessor ((description?),(length?),(index?),(call?))>
+          <!ATTLIST enum-accessor name ID #REQUIRED>
+          <!ATTLIST enum-accessor contains IDREF #REQUIRED>
+          <!ATTLIST enum-accessor nice-name CDATA #IMPLIED>
+          
+          <!ELEMENT enum ((description?),(function|function-variable|subtable|variable)*,(mnemonics?))>
+          <!ATTLIST enum name ID #REQUIRED>
+
+          <!ELEMENT mnemonics (mnemonic*)>
+          <!ELEMENT mnemonic EMPTY>
+
+          <!ATTLIST mnemonic name CDATA #REQUIRED>
+
+          <!ELEMENT length (description?)>
+          <!ELEMENT index ((description?),(type?))>
+          <!ELEMENT call (description?)>
+          <!ELEMENT type (#PCDATA)>
+          <!ELEMENT alias (#PCDATA)>
+          <!ELEMENT note (#PCDATA)>
+          <!ATTLIST note version CDATA #IMPLIED>
+          ]>
+<document title="Aleph One HUD Scripters' Guide">
+  <section name="General" id="general">
+    <section name="What is This?" id="what_is_this">
+      <description>
+        <p>This is a reference for writing Lua scripts to draw heads-up displays (HUDs) in Aleph One.</p>
+        <p>This is not a reference for Lua itself - see lua.org for that.</p>
+      </description>
+    </section>
+  </section>
+  <triggers id="triggers">
+    <description>These are functions scripts can define which Aleph One will call at specific times or events. For the HUD, the draw() trigger is the most important. For example, to write "Hello world" in the upper left corner of the screen:
+<pre>Triggers = {}
+function Triggers.draw()
+  myFont = Fonts.new();
+  myFont.size = 14;
+  myFont:activate();
+  myFont:drawText("Hello world", 50, 50, {1, 1, 1, 0.5});
+end
+</pre>
+</description>
+    <function name="init">
+      <description>when a game session is started (after leaving the main menu)</description>
+    </function>
+    <function name="cleanup">
+      <description>when a game session is completed (before returning to the main menu)</description>
+    </function>
+    <function name="resize">
+      <description>when the window size changes in the middle of a game (with the F1/F2 keys)</description>
+    </function>
+    <function name="draw">
+      <description>at each game frame</description>
+      <note>all screen drawing must be called from this trigger</note>
+      <note>the screen is cleared before each frame</note>
+    </function>
+  </triggers>
+  <section id="using_tables" name="Using Tables">
+    <description><p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p></description>
+    <section id="custom" name="Custom Fields">
+      <description><p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.<pre>Players[0]._favorite_flavor = "chocolate"</pre></p></description>
+    </section>
+  </section>
+  <tables id="tables">
+
+    <table name="color">
+      <description>Colors are standard Lua tables; you don't need to call a new() method to create them. Colors have four fields, accessed by name or number. If a field is missing, it is assumed to be 1, which allows you to write opaque colors as {r, g, b}.</description>
+      <variable name="r">
+        <alias>red</alias>
+        <alias>[1]</alias>
+        <description>red component, from 0 to 1</description>
+        <type>number</type>
+      </variable>
+      <variable name="g">
+        <alias>green</alias>
+        <alias>[2]</alias>
+        <description>green component, from 0 to 1</description>
+        <type>number</type>
+      </variable>
+      <variable name="b">
+        <alias>blue</alias>
+        <alias>[3]</alias>
+        <description>blue component, from 0 to 1</description>
+        <type>number</type>
+      </variable>
+      <variable name="a">
+        <alias>alpha</alias>
+        <alias>[4]</alias>
+        <description>alpha component (opacity), from 0 to 1</description>
+        <type>number</type>
+      </variable>
+    </table>
+    <accessor name="Colors" contains="color"/>
+
+    <table name="screen" singleton="true">
+      <variable name="width" access="read-only">
+        <description>width of the available screen area</description>
+        <type>number</type>
+      </variable>
+      <variable name="height" access="read-only">
+        <description>height of the available screen area</description>
+        <type>number</type>
+      </variable>
+      <variable name="renderer" access="read-only">
+        <description>which renderer is in use</description>
+        <type>renderer_type</type>
+      </variable>
+      <subtable name="clip_rect" classname="lua_clip_rect">
+        <description>constrain drawing to the specified area of the screen</description>
+        <variable name="x"><type>number</type></variable>
+        <variable name="y"><type>number</type></variable>
+        <variable name="width"><type>number</type></variable>
+        <variable name="height"><type>number</type></variable>
+      </subtable>
+      <subtable name="world_rect" classname="lua_world_rect">
+        <description>specifies the area of the screen for the 3D game view</description>
+        <variable name="x"><type>number</type></variable>
+        <variable name="y"><type>number</type></variable>
+        <variable name="width"><type>number</type></variable>
+        <variable name="height"><type>number</type></variable>
+      </subtable>
+      <subtable name="map_rect" classname="lua_map_rect">
+        <description>specifies the area of the screen for the overhead map</description>
+        <variable name="x"><type>number</type></variable>
+        <variable name="y"><type>number</type></variable>
+        <variable name="width"><type>number</type></variable>
+        <variable name="height"><type>number</type></variable>
+      </subtable>
+      <subtable name="term_rect" classname="lua_term_rect">
+        <description>specifies the area of the screen for displaying terminals</description>
+        <variable name="x"><type>number</type></variable>
+        <variable name="y"><type>number</type></variable>
+        <variable name="width"><type>number</type></variable>
+        <variable name="height"><type>number</type></variable>
+      </subtable>
+      <function name="fill_rect">
+        <description>draws a solid rectangle to the screen</description>
+        <argument name="x"><type>number</type></argument>
+        <argument name="y"><type>number</type></argument>
+        <argument name="width"><type>number</type></argument>
+        <argument name="height"><type>number</type></argument>
+        <argument name="color"><type>color</type></argument>
+      </function>
+      <function name="frame_rect">
+        <description>draws an outlined rectangle to the screen</description>
+        <note>the outline is drawn entirely inside the given bounds</note>
+        <argument name="x"><type>number</type></argument>
+        <argument name="y"><type>number</type></argument>
+        <argument name="width"><type>number</type></argument>
+        <argument name="height"><type>number</type></argument>
+        <argument name="color"><type>color</type></argument>
+        <argument name="thickness"><description>outline size in pixels</description><type>number</type></argument>
+      </function>
+    </table>
+    <accessor name="Screen" contains="screen"/>
+
+    <table name="font">
+      <variable name="id" access="read-only">
+        <type>number</type>
+        <note>can be nil</note>
+      </variable>
+      <variable name="file" access="read-only">
+        <type>string</type>
+        <note>can be nil</note>
+      </variable>
+      <variable name="size" access="read-only">
+        <type>number</type>
+      </variable>
+      <variable name="style" access="read-only">
+        <type>number</type>
+      </variable>
+      <function name="measure_text">
+        <description>returns the width and height of a string when drawn in this font</description>
+        <argument name="string"><type>string</type></argument>
+      </function>
+      <function name="draw_text">
+        <description>draws a string to the screen</description>
+        <argument name="string"><type>string</type></argument>
+        <argument name="x"><type>number</type></argument>
+        <argument name="y"><type>number</type></argument>
+        <argument name="color"><type>color</type></argument>
+        <note>transparency only available in OpenGL renderer</note>
+      </function>
+    </table>
+    <accessor name="Fonts" contains="font">
+      <function name="new">
+        <description>all arguments are optional and passed by name; "id" and "file" are mutually exclusive; returns font or nil</description>
+        <argument name="id">
+          <description>a resource ID from the Fonts file (for the default Fonts file, valid values are 4 for Monaco and 22 for Courier) [default: nil]</description>
+          <type>number</type>
+        </argument>
+        <argument name="file">
+          <description>the path to a TTF file, for the standard variant of the font (the special path "mono" indicates the default Mono Sans font) [default: "mono"]</description>
+          <type>string</type>
+        </argument>
+        <argument name="size">
+          <description>the font size to use [default: 12]</description>
+          <type>number</type>
+        </argument>
+        <argument name="style">
+          <description>a number indicating the sum of any font styles to use (1 - bold; 2 - italic; 4 - underline) [default: 0]</description>
+          <type>number</type>
+        </argument>
+      </function>
+      <index/>
+    </accessor>
+    
+    <table name="image">
+      <variable name="width" access="read-only">
+        <description>width of the image in pixels</description>
+        <type>number</type>
+      </variable>
+      <variable name="height" access="read-only">
+        <description>height of the image in pixels</description>
+        <type>number</type>
+      </variable>
+      <variable name="unscaled_width" access="read-only">
+        <description>width of the image before any calls to :rescale()</description>
+        <type>number</type>
+      </variable>
+      <variable name="unscaled_height" access="read-only">
+        <description>height of the image before any calls to :rescale()</description>
+        <type>number</type>
+      </variable>
+      <subtable name="crop_rect" classname="lua_crop_rect">
+        <description>specifies a portion of the image to be drawn</description>
+        <variable name="x"><type>number</type></variable>
+        <variable name="y"><type>number</type></variable>
+        <variable name="width"><type>number</type></variable>
+        <variable name="height"><type>number</type></variable>
+      </subtable>
+      <variable name="tint_color">
+        <description>scale the color and opacity by this value when drawing</description>
+        <type>Color</type>
+        <note>default is (r=1, g=1, b=1, a=1)</note>
+        <note>only available in OpenGL renderer</note>
+      </variable>
+      <variable name="rotation">
+        <description>degrees to rotate the image when drawn</description>
+        <type>number</type>
+        <note>axis of rotation is about the center of the drawn area</note>
+        <note>only available in OpenGL renderer</note>
+      </variable>
+      <function name="rescale">
+        <description>resize image to specified width and height</description>
+        <argument name="width"><type>number</type></argument>
+        <argument name="height"><type>number</type></argument>
+      </function>
+      <function name="draw">
+        <description>draw image (or cropped portion) to screen, with top left corner at specified position</description>
+        <argument name="x"><type>number</type></argument>
+        <argument name="y"><type>number</type></argument>
+      </function>
+    </table>
+    <accessor name="Images" contains="image">
+      <function name="new">
+        <description>all arguments are passed by name; returns image or nil</description>
+        <argument name="path">
+          <description>the path to the image file to use</description>
+          <type>string</type>
+        </argument>
+        <argument name="mask" required="false">
+          <description>the path to an image file to use as an opacity mask</description>
+          <type>string</type>
+        </argument>
+      </function>
+      <index/>
+    </accessor>
+
+    <table name="game" singleton="true">
+      <note>all items in Game are read-only</note>
+      <variable name="difficulty">
+        <description>the difficulty level</description>
+        <type>difficulty_type</type>
+      </variable>
+      <variable name="kill_limit">
+        <description>the game kill limit, or nil if there is none</description>
+        <type>number</type>
+      </variable>
+      <variable name="time_remaining">
+        <description>the number of ticks until the game ends, or nil if there is no time limit</description>
+        <type>number</type>
+      </variable>
+      <variable name="scoring_mode">
+        <description>the current scoring mode (if the gametype is "custom")</description>
+        <type>scoring_mode_type</type>
+      </variable>
+      <variable name="ticks">
+        <description>ticks since game started</description>
+        <type>time</type>
+      </variable>
+      <variable name="type">
+        <description>whether the game is EMFH, KOTH, etc.</description>
+        <type>game_type</type>
+      </variable>
+      <variable name="version">
+        <description>the date version of the local player's engine</description>
+        <note>for example, "20071103"</note>
+      </variable>
+      <subtable name="players[index]" classname="lua_players">
+        <variable name="local_">
+          <description>true if this player is the local player</description>
+          <type>boolean</type>
+        </variable>
+        <variable name="name"><type>string</type></variable>
+        <variable name="color">
+          <description>color of player (shirt color, if teams are enabled)</description>
+          <type>number</type>
+        </variable>
+        <variable name="team">
+          <description>player's team (pants color)</description>
+          <type>number</type>
+        </variable>
+        <variable name="kills">
+          <description>player kills, not including suicides</description>
+          <type>number</type>
+        </variable>
+        <variable name="ranking">
+          <description>points or ticks, depending on game type</description>
+          <type>number</type>
+        </variable>
+      </subtable>
+    </table>
+    <accessor name="Game" contains="game"/>
+
+    <table name="player" singleton="true">
+      <note>All items in Player are read-only</note>
+      <variable name="color">
+        <description>color of player (shirt color, if teams are enabled)</description>
+        <type>number</type>
+      </variable>
+      <variable name="dead">
+        <description>whether player is dead</description>
+        <type>boolean</type>
+      </variable>
+      <variable name="direction">
+        <alias>yaw</alias>
+        <description>direction player is facing, in degrees</description>
+        <note>0 is east, 90 is south</note>
+        <type>number</type>
+      </variable>
+      <variable name="energy">
+        <alias>life</alias>
+        <description>amount of suit energy player has (150 is normal red health)</description>
+        <type>number</type>
+      </variable>
+      <subtable name="inventory_sections">
+        <variable name="current">
+          <description>which section of the inventory to display</description>
+          <type>player_section</type>
+          <note>HUD themes can choose to display multiple sections simultaneously</note>
+        </variable>
+      </subtable>
+      <subtable-accessor name="inventory_sections" classname="player_weapon" index="section_type">
+        <variable name="type"><type>section_type</type></variable>
+        <variable name="name"><type>string</type></variable>
+      </subtable-accessor>
+
+      <subtable-accessor name="items" classname="player_item" index="item_type">
+        <variable name="count">
+          <description>how many of item the player is carrying</description>
+          <type>number</type>
+        </variable>
+        <variable name="inventory_section">
+          <description>which section of the inventory should display this item</description>
+          <type>inventory_section</type>
+        </variable>
+        <variable name="singular">
+          <description>label to use for 1 of the item</description>
+          <type>string</type>
+        </variable>
+        <variable name="plural">
+          <description>label to use for more than 1 of the item</description>
+          <type>string</type>
+        </variable>
+        <variable name="type"><type>item_type</type></variable>
+      </subtable-accessor>
+      <subtable name="compass" classname="lua_compass">
+        <variable name="ne">
+          <alias>northeast</alias>
+          <description>whether north east compass quadrant is active</description>
+          <type>boolean</type>
+        </variable>
+        <variable name="nw">
+          <alias>northwest</alias>
+          <description>whether north west compass quadrant is active</description>
+          <type>boolean</type>
+        </variable>
+        <variable name="se">
+          <alias>southeast</alias>
+          <description>whether south east compass quadrant is active</description>
+          <type>boolean</type>
+        </variable>
+        <variable name="sw">
+          <alias>southwest</alias>
+          <description>whether south west compass quadrant is active</description>
+          <type>boolean</type>
+        </variable>
+      </subtable>
+      <subtable name="motion_sensor" classname="lua_motion_sensor">
+        <variable name="active">
+          <description>whether player can view his motion sensor</description>
+          <note>currently, this also indicates compass visibility</note>
+          <type>boolean</type>
+        </variable>
+        <subtable name="blips[index]" classname="lua_blips">
+          <variable name="intensity">
+            <description>from 0 (strongest) to 5 (weakest)</description>
+            <type>number</type>
+          </variable>
+          <variable name="type">
+            <note>see "Sensor Blip Types" for mnemonics</note>
+            <type>sensor_blip</type>
+          </variable>
+          <variable name="distance">
+            <description>distance from player, in WU (maximum is 8)</description>
+            <type>number</type>
+          </variable>
+          <variable name="direction">
+          <alias>yaw</alias>
+            <description>direction relative to player, in degrees</description>
+            <note>0 is to player's right, 90 is directly behind player</note>
+            <type>number</type>
+          </variable>
+        </subtable>
+      </subtable>
+      <variable name="name">
+        <description>player's name</description>
+        <type>string</type>
+      </variable>
+      <variable name="oxygen">
+        <description>amount of oxygen player has (max is 10800)</description>
+        <type>number</type>
+      </variable>
+      <variable name="team">
+        <description>player's team (pants color)</description>
+        <type>number</type>
+      </variable>
+      <subtable name="weapons">
+        <variable name="current">
+          <description>weapon the player is currently wielding</description>
+          <type>player_weapon</type>
+          <note>can be nil</note>
+        </variable>
+      </subtable>
+      <subtable-accessor name="weapons" classname="player_weapon" index="weapon_type">
+        <variable name="type"><type>weapon_type</type></variable>
+        <subtable name="primary" classname="player_weapon_trigger">
+          <alias>secondary</alias>
+          <variable name="rounds">
+            <description>how many rounds are currently loaded into the weapon</description>
+            <type>number</type>
+          </variable>
+          <variable name="total_rounds">
+            <description>how many rounds can be loaded into the weapon</description>
+            <type>number</type>
+          </variable>
+          <variable name="ammo_type">
+            <type>item_type</type>
+          </variable>
+        </subtable>
+      </subtable-accessor>
+
+    </table>
+    <accessor name="Player" contains="player"/>
+
+    
+    <enum name="item_type">
+      <mnemonics>
+        <mnemonic name="knife"/>
+        <mnemonic name="pistol"/>
+        <mnemonic name="pistol ammo"/>
+        <mnemonic name="fusion pistol"/>
+        <mnemonic name="fusion pistol ammo"/>
+        <mnemonic name="assault rifle"/>
+        <mnemonic name="assault rifle ammo"/>
+        <mnemonic name="assault rifle grenades"/>
+        <mnemonic name="missile launcher"/>
+        <mnemonic name="missile launcher ammo"/>
+        <mnemonic name="invisibility"/>
+        <mnemonic name="invincibility"/>
+        <mnemonic name="infravision"/>
+        <mnemonic name="alien weapon"/>
+        <mnemonic name="alien weapon ammo"/>
+        <mnemonic name="flamethrower"/>
+        <mnemonic name="flamethrower ammo"/>
+        <mnemonic name="extravision"/>
+        <mnemonic name="oxygen"/>
+        <mnemonic name="single health"/>
+        <mnemonic name="double health"/>
+        <mnemonic name="triple health"/>
+        <mnemonic name="shotgun"/>
+        <mnemonic name="shotgun ammo"/>
+        <mnemonic name="key"/>
+        <mnemonic name="uplink chip"/>
+        <mnemonic name="light blue ball"/>
+        <mnemonic name="ball"/>
+        <mnemonic name="violet ball"/>
+        <mnemonic name="yellow ball"/>
+        <mnemonic name="brown ball"/>
+        <mnemonic name="orange ball"/>
+        <mnemonic name="blue ball"/>
+        <mnemonic name="green ball"/>
+        <mnemonic name="smg"/>
+        <mnemonic name="smg ammo"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="ItemTypes" contains="item_type" nice-name="Items"/>
+
+    <enum name="section_type">
+      <mnemonics>
+        <mnemonic name="weapons"/>
+        <mnemonic name="ammunition"/>
+        <mnemonic name="powerups"/>
+        <mnemonic name="items"/>
+        <mnemonic name="weapon powerups"/>
+        <mnemonic name="balls"/>
+        <mnemonic name="network statistics"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="InventorySections" contains="section_type" nice-name="Inventory Sections"/>
+        
+    <enum name="sensor_blip">
+      <mnemonics>
+        <mnemonic name="friend"/>
+        <mnemonic name="alien"/>
+        <mnemonic name="hostile player"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="SensorBlipTypes" contains="sensor_blip" nice-name="Sensor Blip Types"/>
+    
+    <enum name="player_color">
+      <mnemonics>
+        <mnemonic name="slate"/>
+        <mnemonic name="red"/>
+        <mnemonic name="violet"/>
+        <mnemonic name="yellow"/>
+        <mnemonic name="white"/>
+        <mnemonic name="orange"/>
+        <mnemonic name="blue"/>
+        <mnemonic name="green"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="PlayerColors" contains="player_color" nice-name="Player and Team Colors"/>
+
+    <enum name="difficulty_type">
+      <mnemonics>
+        <mnemonic name="kindergarten"/>
+        <mnemonic name="easy"/>
+        <mnemonic name="normal"/>
+        <mnemonic name="major damage"/>
+        <mnemonic name="total carnage"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="DifficultyTypes" contains="difficulty_type" nice-name="Difficulty"/>
+
+    <enum name="renderer_type">
+      <mnemonics>
+        <mnemonic name="software"/>
+        <mnemonic name="opengl"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="RendererTypes" contains="renderer_type" nice-name="Renderer Types"/>
+
+    <enum name="game_type">
+      <mnemonics>
+        <mnemonic name="kill monsters"/>
+        <mnemonic name="cooperative play"/>
+        <mnemonic name="capture the flag"/>
+        <mnemonic name="king of the hill"/>
+        <mnemonic name="kill the man with the ball"/>
+        <mnemonic name="defense"/>
+        <mnemonic name="rugby"/>
+        <mnemonic name="tag"/>
+        <mnemonic name="netscript"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="GameTypes" contains="game_type" nice-name="Game Types"/>
+
+    <enum name="scoring_mode">
+      <mnemonics>
+        <mnemonic name="most points"/>
+        <mnemonic name="most time"/>
+        <mnemonic name="least points"/>
+        <mnemonic name="least time"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="ScoringModes" contains="scoring_mode" nice-name="Scoring Modes"/>
+
+    <enum name="weapon_type">
+      <mnemonics>
+        <mnemonic name="fist"/>
+        <mnemonic name="pistol"/>
+        <mnemonic name="fusion pistol"/>
+        <mnemonic name="assault rifle"/>
+        <mnemonic name="missile launcher"/>
+        <mnemonic name="flamethrower"/>
+        <mnemonic name="alien weapon"/>
+        <mnemonic name="shotgun"/>
+        <mnemonic name="ball"/>
+        <mnemonic name="smg"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="WeaponTypes" contains="weapon_type" nice-name="Weapons"/>
+    
+  </tables>
+  <types id="types">
+  </types>
+
+</document>
