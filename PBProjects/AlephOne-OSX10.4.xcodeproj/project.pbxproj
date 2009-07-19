@@ -23,6 +23,10 @@
 
 /* Begin PBXBuildFile section */
 		270D534C0FCB417500482ED4 /* OGL_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 270D534B0FCB417500482ED4 /* OGL_Blitter.h */; };
+		278497A00FF5C308008DECC8 /* lua_hud_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */; };
+		278497A20FF5C308008DECC8 /* lua_hud_script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2784979D0FF5C308008DECC8 /* lua_hud_script.cpp */; };
+		27911B24100073460063ACB6 /* HUDRenderer_Lua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */; };
+		27911B25100073460063ACB6 /* HUDRenderer_Lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 27911B23100073460063ACB6 /* HUDRenderer_Lua.h */; };
 		27CE0843100ECDBC00F59FD1 /* Image_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */; };
 		27CE0844100ECDBC00F59FD1 /* Image_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */; };
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
@@ -543,7 +547,13 @@
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		270D534B0FCB417500482ED4 /* OGL_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Blitter.h; sourceTree = "<group>"; };
+		2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_hud_objects.cpp; sourceTree = "<group>"; };
+		2784979C0FF5C308008DECC8 /* lua_hud_objects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_hud_objects.h; sourceTree = "<group>"; };
+		2784979D0FF5C308008DECC8 /* lua_hud_script.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_hud_script.cpp; sourceTree = "<group>"; };
+		2784979E0FF5C308008DECC8 /* lua_hud_script.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_hud_script.h; sourceTree = "<group>"; };
 		2784979F0FF5C308008DECC8 /* lua_mnemonics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_mnemonics.h; sourceTree = "<group>"; };
+		27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HUDRenderer_Lua.cpp; sourceTree = "<group>"; };
+		27911B23100073460063ACB6 /* HUDRenderer_Lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HUDRenderer_Lua.h; sourceTree = "<group>"; };
 		27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image_Blitter.cpp; sourceTree = "<group>"; };
 		27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image_Blitter.h; sourceTree = "<group>"; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
@@ -1271,6 +1281,10 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
+				2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */,
+				2784979C0FF5C308008DECC8 /* lua_hud_objects.h */,
+				2784979D0FF5C308008DECC8 /* lua_hud_script.cpp */,
+				2784979E0FF5C308008DECC8 /* lua_hud_script.h */,
 				2784979F0FF5C308008DECC8 /* lua_mnemonics.h */,
 				AEAE131F0FC9C38400EDA5A6 /* lua_serialize.cpp */,
 				AEAE13200FC9C38400EDA5A6 /* lua_serialize.h */,
@@ -1737,6 +1751,8 @@
 			children = (
 				27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */,
 				27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */,
+				27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */,
+				27911B23100073460063ACB6 /* HUDRenderer_Lua.h */,
 				F5CC936F0240D85D01A80001 /* Headers */,
 				F5CC93800240D85D01A80001 /* Macintosh */,
 				F5CC93860240D85D01A80001 /* SDL */,
@@ -2158,6 +2174,7 @@
 				AEAE13220FC9C38400EDA5A6 /* lua_serialize.h in Headers */,
 				AEAE132F0FC9C3C800EDA5A6 /* BStream.h in Headers */,
 				270D534C0FCB417500482ED4 /* OGL_Blitter.h in Headers */,
+				27911B25100073460063ACB6 /* HUDRenderer_Lua.h in Headers */,
 				27CE0844100ECDBC00F59FD1 /* Image_Blitter.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -2480,6 +2497,9 @@
 				AEAE13000FC9AB4900EDA5A6 /* joystick_sdl.cpp in Sources */,
 				AEAE13210FC9C38400EDA5A6 /* lua_serialize.cpp in Sources */,
 				AEAE132E0FC9C3C800EDA5A6 /* BStream.cpp in Sources */,
+				278497A00FF5C308008DECC8 /* lua_hud_objects.cpp in Sources */,
+				278497A20FF5C308008DECC8 /* lua_hud_script.cpp in Sources */,
+				27911B24100073460063ACB6 /* HUDRenderer_Lua.cpp in Sources */,
 				27CE0843100ECDBC00F59FD1 /* Image_Blitter.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

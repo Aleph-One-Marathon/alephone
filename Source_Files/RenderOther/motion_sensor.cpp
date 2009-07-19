@@ -49,6 +49,7 @@ Sep 2, 2000 (Loren Petrich):
 
 #include "HUDRenderer_SW.h"
 #include "HUDRenderer_OGL.h"
+#include "HUDRenderer_Lua.h"
 
 #include <math.h>
 #include <string.h>
@@ -345,6 +346,19 @@ void HUD_OGL_Class::render_motion_sensor(short ticks_elapsed)
 	draw_all_entity_blips();
 }
 
+void HUD_Lua_Class::render_motion_sensor(short ticks_elapsed)
+{
+	// If we need to update the motion sensor, draw all active entities
+	if ((ticks_since_last_update -= ticks_elapsed) < 0 || ticks_elapsed == NONE) {
+		erase_all_entity_blips();
+		draw_all_entity_blips();
+		
+		ticks_since_last_update = MOTION_SENSOR_UPDATE_FREQUENCY;
+		motion_sensor_changed = true;
+	}
+}
+
+
 /* the interface code will call this function and only draw the motion sensor if we return true */
 bool motion_sensor_has_changed(void)
 {
@@ -475,6 +489,34 @@ void HUD_Class::draw_all_entity_blips(void)
 				if (entity->visible_flags[intensity])
 				{
 					draw_entity_blip(&entity->previous_points[intensity], entity->shape + intensity);
+				}
+			}
+		}
+	}
+}
+
+void HUD_Lua_Class::draw_all_entity_blips(void)
+{
+	struct entity_data *entity;
+	short entity_index, intensity;
+	
+	clear_entity_blips();
+	for (intensity=NUMBER_OF_PREVIOUS_LOCATIONS-1;intensity>=0;--intensity)
+	{
+		for (entity_index=0,entity=entities;entity_index<MAXIMUM_MOTION_SENSOR_ENTITIES;++entity_index,++entity)
+		{
+			if (SLOT_IS_USED(entity))
+			{
+				if (entity->visible_flags[intensity])
+				{
+					short display_type = MType_Alien;
+					if (entity->shape == friendly_shapes)
+						display_type = MType_Friend;
+					else if (entity->shape == enemy_shapes)
+						display_type = MType_Enemy;
+					add_entity_blip(display_type, intensity,
+													entity->previous_points[intensity].x * MOTION_SENSOR_SCALE,
+													entity->previous_points[intensity].y * MOTION_SENSOR_SCALE);
 				}
 			}
 		}

@@ -224,7 +224,7 @@ protected:
 	void motion_sensor_scan(short ticks_elapsed);
 	void draw_network_compass(void);
 	void erase_all_entity_blips(void);
-	void draw_all_entity_blips(void);
+	virtual void draw_all_entity_blips(void);
 
 	virtual void update_motion_sensor(short time_elapsed) = 0;
 	virtual void render_motion_sensor(short time_elapsed) = 0;

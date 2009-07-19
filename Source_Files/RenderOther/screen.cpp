@@ -58,10 +58,13 @@
 #include "mouse.h"
 #include "network.h"
 #include "images.h"
+#include "motion_sensor.h"
 
 #include "sdl_fonts.h"
 
 #include "lua_script.h"
+#include "lua_hud_script.h"
+#include "HUDRenderer_Lua.h"
 
 #include <algorithm>
 
@@ -94,6 +97,9 @@ static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable 
 
 static int desktop_width;
 static int desktop_height;
+
+static int prev_width;
+static int prev_height;
 
 // From shell_sdl.cpp
 extern bool option_nogamma;
@@ -280,6 +286,11 @@ bool Screen::hud()
 	return screen_mode.hud;
 }
 
+bool Screen::lua_hud()
+{
+	return screen_mode.hud && environment_preferences->use_hud_lua;
+}
+
 bool Screen::openGL()
 {
 	return screen_mode.acceleration == _opengl_acceleration;
@@ -308,7 +319,14 @@ SDL_Rect Screen::window_rect()
 SDL_Rect Screen::view_rect()
 {
 	SDL_Rect r;
-	if (!hud())
+	if (lua_hud())
+	{
+		r.x = lua_view_rect.x;
+		r.y = lua_view_rect.y;
+		r.w = lua_view_rect.w;
+		r.h = lua_view_rect.h;
+	}
+	else if (!hud())
 	{
 		r.x = (width() - window_width()) / 2;
 		r.y = (height() - window_height()) / 2;
@@ -352,6 +370,9 @@ SDL_Rect Screen::view_rect()
 
 SDL_Rect Screen::map_rect()
 {
+	if (lua_hud())
+		return lua_map_rect;
+	
 	SDL_Rect r;
 	r.w = window_width();
 	r.h = window_height();
@@ -366,26 +387,39 @@ SDL_Rect Screen::map_rect()
 
 SDL_Rect Screen::term_rect()
 {
+	int wh = window_height();
+	int ww = window_width();
+	int wx = (width() - ww)/2;
+	int wy = (height() - wh)/2;
+	
+	if (lua_hud())
+	{
+		wh = lua_term_rect.h;
+		ww = lua_term_rect.w;
+		wx = lua_term_rect.x;
+		wy = lua_term_rect.y;
+	}
+	
 	SDL_Rect r;
 	
-	int available_height = window_height();
-	if (hud())
+	int available_height = wh;
+	if (hud() && !lua_hud())
 		available_height -= hud_rect().h;
 	
 	r.w = 640;
 	switch (screen_mode.term_scale_level)
 	{
 		case 1:
-			if (available_height >= 640 && window_width() >= 1280)
+			if (available_height >= 640 && ww >= 1280)
 				r.w *= 2;
 			break;
 		case 2:
-			r.w = std::min(window_width(), std::max(640, 2 * available_height));
+			r.w = std::min(ww, std::max(640, 2 * available_height));
 			break;
 	}
 	r.h = r.w / 2;
-	r.x = (width() - r.w) / 2;
-	r.y = (height() - window_height()) / 2 + (available_height - r.h) / 2;
+	r.x = wx + (ww - r.w) / 2;
+	r.y = wy + (available_height - r.h) / 2;
 
 	return r;
 }
@@ -474,6 +508,31 @@ void enter_screen(void)
 
 	// Reset modifier key status
 	SDL_SetModState(KMOD_NONE);
+	
+	Screen *scr = Screen::instance();
+	int w = scr->width();
+	int h = scr->height();
+	int ww = scr->window_width();
+	int wh = scr->window_height();
+	
+	scr->lua_clip_rect.x = 0;
+	scr->lua_clip_rect.y = 0;
+	scr->lua_clip_rect.w = w;
+	scr->lua_clip_rect.h = h;
+	
+	scr->lua_view_rect.x = scr->lua_map_rect.x = (w - ww) / 2;
+	scr->lua_view_rect.y = scr->lua_map_rect.y = (h - wh) / 2;
+	scr->lua_view_rect.w = scr->lua_map_rect.w = ww;
+	scr->lua_view_rect.h = scr->lua_map_rect.h = wh;
+	
+	scr->lua_term_rect.x = (w - 640) / 2;
+	scr->lua_term_rect.y = (h - 320) / 2;
+	scr->lua_term_rect.w = 640;
+	scr->lua_term_rect.h = 320;
+
+	LoadHUDLua();
+	RunLuaHUDScript();
+	L_Call_HUDInit();
 }
 
 
@@ -483,6 +542,9 @@ void enter_screen(void)
 
 void exit_screen(void)
 {
+	L_Call_HUDCleanup();
+	CloseLuaHUDScript();
+	
 	// Return to 640x480 without OpenGL
 	in_game = false;
 	change_screen_mode(640, 480, bit_depth, true);
@@ -602,6 +664,16 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #endif
 	}
 #endif
+	
+	if (in_game && screen_mode.hud)
+	{
+		if (prev_width != width || prev_height != height)
+		{
+			prev_width = width;
+			prev_height = height;
+			L_Call_HUDResize();
+	  }
+	}
 }
 
 void change_screen_mode(struct screen_mode_data *mode, bool redraw)
@@ -652,6 +724,7 @@ void toggle_fullscreen()
     update_game_window();
   } 
 }
+
 
 /*
  *  Render game screen
@@ -749,7 +822,7 @@ void render_screen(short ticks_elapsed)
 	if (ChangedSize) {
 		clear_screen(false);
 		update_full_screen = true;
-		if (Screen::instance()->hud())
+		if (Screen::instance()->hud() && !Screen::instance()->lua_hud())
 			draw_interface();
 
 		// Reallocate the drawing buffer
@@ -761,9 +834,14 @@ void render_screen(short ticks_elapsed)
 	{
 		clear_screen(false);
 		update_full_screen = true;
-		if (Screen::instance()->hud())
+		if (Screen::instance()->hud() && !Screen::instance()->lua_hud())
 			draw_interface();
 
+		clear_next_screen = false;
+	}
+	else if (Screen::instance()->lua_hud())
+	{
+		clear_screen(false);
 		clear_next_screen = false;
 	}
 
@@ -807,6 +885,7 @@ void render_screen(short ticks_elapsed)
 	Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
 	Rect vr = {ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
 	OGL_SetWindow(sr, vr, true);
+	
 #endif
 
 	// Render world view
@@ -838,11 +917,20 @@ void render_screen(short ticks_elapsed)
 	// Set OpenGL viewport to whole window (so HUD will be in the right position)
 	OGL_SetWindow(sr, sr, true);
 #endif
-
+	
 	// If the main view is not being rendered in software but OpenGL is active,
 	// then blit the software rendering to the screen
 	if (screen_mode.acceleration == _opengl_acceleration) {
 #ifdef HAVE_OPENGL
+		if (Screen::instance()->hud()) {
+			if (Screen::instance()->lua_hud())
+				Lua_DrawHUD(ticks_elapsed);
+			else {
+				Rect dr = {HUD_DestRect.y, HUD_DestRect.x, HUD_DestRect.y + HUD_DestRect.h, HUD_DestRect.x + HUD_DestRect.w};
+				OGL_DrawHUD(dr, ticks_elapsed);
+			}
+		}
+		
 		if (world_view->terminal_mode_active) {
 			// Copy 2D rendering to screen
 
@@ -854,39 +942,47 @@ void render_screen(short ticks_elapsed)
 			Term_Blitter.Draw(Screen::instance()->term_rect());
 		}
 
-		if (Screen::instance()->hud()) {
-			Rect dr = {HUD_DestRect.y, HUD_DestRect.x, HUD_DestRect.y + HUD_DestRect.h, HUD_DestRect.x + HUD_DestRect.w};
-			OGL_DrawHUD(dr, ticks_elapsed);
-		}
-		
 #endif
 	} else {
 
-		// Update terminal
-		if (world_view->terminal_mode_active) {
-			if (Term_RenderRequest) {
-				SDL_Rect dest_rect = Screen::instance()->term_rect();
-				DrawSurface(Term_Buffer, dest_rect, ViewRect);
-				Term_RenderRequest = false;
-			}
-		}
-		else
+		if (Screen::instance()->lua_hud())
 		{
-			// Update world window
-			update_screen(BufferRect, ViewRect, HighResolution);
+			// clear any drawing from previous frame
+			SDL_FillRect(main_surface, NULL, SDL_MapRGBA(main_surface->format, 0, 0, 0, 0));
 		}
-
+		
+		// Update world window
+		if (!world_view->terminal_mode_active)
+			update_screen(BufferRect, ViewRect, HighResolution);
+		
 		// Update HUD
-		if (HUD_RenderRequest) {
+		if (Screen::instance()->lua_hud())
+		{
+			Lua_DrawHUD(ticks_elapsed);
+		}
+		else if (HUD_RenderRequest) {
 			SDL_Rect src_rect = { 0, 320, 640, 160 };
 			DrawSurface(HUD_Buffer, HUD_DestRect, src_rect);
 			HUD_RenderRequest = false;
 		}
 
-		if (update_full_screen)
+		// Update terminal
+		if (world_view->terminal_mode_active) {
+			if (Term_RenderRequest || Screen::instance()->lua_hud()) {
+				SDL_Rect dest_rect = Screen::instance()->term_rect();
+				DrawSurface(Term_Buffer, dest_rect, ViewRect);
+				Term_RenderRequest = false;
+			}
+		}
+
+		if (update_full_screen || Screen::instance()->lua_hud())
 		{
 			SDL_UpdateRect(main_surface, 0, 0, 0, 0);
 			update_full_screen = false;
+		}
+		else
+		{
+			SDL_UpdateRects(main_surface, 1, &ViewRect);
 		}
 	}
 
@@ -946,7 +1042,7 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 		  SDL_UnlockSurface(main_surface);
 		}
 	}
-	SDL_UpdateRects(main_surface, 1, &destination);
+//	SDL_UpdateRects(main_surface, 1, &destination);
 }
 
 

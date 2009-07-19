@@ -93,6 +93,7 @@ namespace alephone
 		int window_height();
 		int window_width();
 		bool hud();
+		bool lua_hud();
 		bool openGL();
 		bool fifty_percent();
 		bool seventyfive_percent();
@@ -101,6 +102,11 @@ namespace alephone
 		SDL_Rect map_rect();
 		SDL_Rect term_rect();
 		SDL_Rect hud_rect();
+		
+		SDL_Rect lua_clip_rect;
+		SDL_Rect lua_view_rect;
+		SDL_Rect lua_map_rect;
+		SDL_Rect lua_term_rect;
 
 	private:
 		Screen() : m_initialized(false) { }
