@@ -57,6 +57,9 @@ Jan 12, 2001 (Loren Petrich):
 #include "shape_descriptors.h"
 #include "screen_drawing.h"
 
+#ifdef HAVE_OPENGL
+set<FontSpecifier*> FontSpecifier::m_font_registry;
+#endif
 
 // MacOS-specific: stuff that gets reused
 // static CTabHandle Grays = NULL;
@@ -81,6 +84,13 @@ FontSpecifier& FontSpecifier::operator=(FontSpecifier& F)
 	return *this;
 }
 
+FontSpecifier::~FontSpecifier()
+{
+#ifdef HAVE_OPENGL
+	m_font_registry.erase(this);
+#endif
+}
+
 // Initializer: call before using because of difficulties in setting up a proper constructor:
 
 void FontSpecifier::Init()
@@ -91,6 +101,7 @@ void FontSpecifier::Init()
 	Update();
 #ifdef HAVE_OPENGL
 	OGL_Texture = NULL;
+	m_font_registry.insert(this);
 #endif
 }
 
@@ -589,6 +600,16 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 	OGL_Render(text_to_draw);
 	glPopMatrix();
 }
+
+void FontSpecifier::OGL_ResetFonts(bool IsStarting)
+{
+	set<FontSpecifier*>::iterator it;
+	for (it = m_font_registry.begin();
+	     it != m_font_registry.end();
+	     it++    )
+		(*it)->OGL_Reset(IsStarting);
+}
+
 #endif // def HAVE_OPENGL
 
 	

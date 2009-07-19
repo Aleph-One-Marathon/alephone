@@ -368,21 +368,6 @@ void _render_overhead_map(
 }
 
 
-// Call this from outside
-void OGL_ResetMapFonts(bool IsStarting)
-{
-#ifdef HAVE_OPENGL
-	InitMapFonts();
-	for (int i=0; i<NUMBER_OF_ANNOTATION_DEFINITIONS; i++)
-	{
-		annotation_definition& NoteDef = OvhdMap_ConfigData.annotation_definitions[i];
-		for (int j=0; j<NUMBER_OF_ANNOTATION_SIZES; j++)
-			NoteDef.Fonts[j].OGL_Reset(IsStarting);
-	}
-	OvhdMap_ConfigData.map_name_data.Font.OGL_Reset(IsStarting);
-#endif
-}
-
 void ResetOverheadMap()
 {
 	// Default: nothing (mapping is cumulative)

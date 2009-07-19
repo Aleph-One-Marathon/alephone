@@ -1460,10 +1460,6 @@ TextureManager::~TextureManager()
 	if (GlowBuffer != 0) delete []GlowBuffer;
 }
 
-extern void ResetScreenFont();
-extern void OGL_ResetMapFonts(bool IsStarting);
-extern void OGL_ResetHUDFonts(bool IsStarting);
-
 void OGL_ResetTextures()
 {
 	// Fix for crashing bug when OpenGL is inactive
@@ -1490,9 +1486,7 @@ void OGL_ResetTextures()
 	OGL_ResetModelSkins(OGL_IsActive());
 	
 	// Reset the font textures
-	ResetScreenFont();
-	OGL_ResetMapFonts(false);
-	OGL_ResetHUDFonts(false);
+	FontSpecifier::OGL_ResetFonts(false);
 	
 	// Reset blitters
 	OGL_Blitter::StopTextures();

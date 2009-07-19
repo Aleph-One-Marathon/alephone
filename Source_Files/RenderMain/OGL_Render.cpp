@@ -428,14 +428,6 @@ static uint16 FlatStaticColor[4];
 static GM_Random StaticRandom;
 
 
-// Function for resetting map fonts when starting up an OpenGL rendering context;
-// defined in overhead_map.cpp
-extern void OGL_ResetMapFonts(bool IsStarting);
-
-// Function for resetting HUD fonts when starting up an OpenGL rendering context;
-// defined in game_window.cpp
-extern void OGL_ResetHUDFonts(bool IsStarting);
-
 // Function for setting up the rendering of a 3D model: scaling, clipping, etc.;
 // returns whether or not the model could be rendered
 static bool RenderModelSetup(rectangle_definition& RenderRectangle);
@@ -712,12 +704,8 @@ bool OGL_StartRun()
 	// Initialize the texture accounting
 	OGL_StartTextures();
 
-	// Initialize the on-screen font for OpenGL rendering
-	GetOnScreenFont().OGL_Reset(true);
-
-	// Reset the font info for overhead-map and HUD fonts done in OpenGL fashion
-	OGL_ResetMapFonts(true);
-	OGL_ResetHUDFonts(true);
+	// Reset the font info for OpenGL rendering
+	FontSpecifier::OGL_ResetFonts(true);
 	
 	// Since an OpenGL context has just been created, don't try to clear any OpenGL textures
 	OGL_ResetModelSkins(false);
@@ -736,14 +724,6 @@ bool OGL_StartRun()
 	JustInited = true;
 	return (_OGL_IsActive = true);
 }
-
-
-// Called from OGL_ResetTextures() in OGL_Textures.cpp
-void ResetScreenFont()
-{
-	GetOnScreenFont().OGL_Reset(false);
-}
-
 
 // Stop an OpenGL run (destroys a rendering context)
 bool OGL_StopRun()

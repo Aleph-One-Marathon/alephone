@@ -136,19 +136,6 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 
 
 /*
- *  Reset HUD textures
- */
-
-void OGL_ResetHUDFonts(bool IsStarting)
-{
-	get_interface_font(_interface_font).OGL_Reset(IsStarting);
-	get_interface_font(_interface_item_count_font).OGL_Reset(IsStarting);
-	get_interface_font(_weapon_name_font).OGL_Reset(IsStarting);
-	get_interface_font(_player_name_font).OGL_Reset(IsStarting);
-}
-
-
-/*
  *  Update motion sensor
  */
 

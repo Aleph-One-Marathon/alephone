@@ -53,8 +53,11 @@ Jan 14, 2001 (Loren Petrich):
 # endif
 #endif
 
+#include <set>
 
 struct screen_rectangle;
+
+class FontSpecifier;
 
 class FontSpecifier
 {
@@ -124,8 +127,13 @@ public:
 	// Renders text a la _draw_screen_text() (see screen_drawing.h), with
 	// alignment and wrapping. Modelview matrix is unaffected.
 	void OGL_DrawText(const char *Text, const screen_rectangle &r, short flags);
+	
+	// Calls OGL_Reset() on all fonts
+	static void OGL_ResetFonts(bool IsStarting);	
 #endif
 	
+	~FontSpecifier();
+
 	// Equality and assignment operators
 	bool operator==(FontSpecifier& F);
 	bool operator!=(FontSpecifier& F)
@@ -155,6 +163,7 @@ public:
 	int GetTxtrSize() {return int(TxtrWidth)*int(TxtrHeight);}
 	GLuint TxtrID;
 	uint32 DispList;
+	static set<FontSpecifier*> m_font_registry;
 #endif
 };
 
