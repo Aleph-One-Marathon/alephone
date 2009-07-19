@@ -22,7 +22,7 @@
 */
 
 #include "Image_Blitter.h"
-#include "Images.h"
+#include "images.h"
 
 Image_Blitter::Image_Blitter() : m_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0)
 {
