@@ -59,6 +59,12 @@ char Lua_RendererTypes_Name[] = "RendererTypes";
 char Lua_SensorBlipType_Name[] = "sensor_blip_type";
 char Lua_SensorBlipTypes_Name[] = "SensorBlipTypes";
 
+char Lua_SizePref_Name[] = "size_preference";
+typedef L_Enum<Lua_SizePref_Name> Lua_SizePreference;
+
+char Lua_SizePrefs_Name[] = "SizePreferences";
+typedef L_EnumContainer<Lua_SizePrefs_Name, Lua_SizePreference> Lua_SizePreferences;
+#define NUMBER_OF_SIZE_PREFERENCES 3
 
 extern char Lua_DifficultyType_Name[];
 typedef L_Enum<Lua_DifficultyType_Name> Lua_DifficultyType;
@@ -985,6 +991,20 @@ static int Lua_HUDPlayer_Get_Direction(lua_State *L)
 	return 1;
 }
 
+static int Lua_HUDPlayer_Get_Elevation(lua_State *L)
+{
+	double angle = FIXED_INTEGERAL_PART(current_player->variables.elevation) * AngleConvert;
+	lua_pushnumber(L, angle);
+	return 1;
+}
+
+static int Lua_HUDPlayer_Get_Microphone(lua_State *L)
+{    
+    lua_pushboolean(L, current_netgame_allows_microphone() &&
+                    (dynamic_world->speaking_player_index == local_player_index));
+	return 1;
+}
+
 static int Lua_HUDPlayer_Get_Items(lua_State *L)
 {
 	Lua_HUDPlayer_Items::Push(L, Lua_HUDPlayer::Index(L, 1));
@@ -1038,8 +1058,11 @@ const luaL_reg Lua_HUDPlayer_Get[] = {
 {"dead", Lua_HUDPlayer_Get_Dead},
 {"direction", Lua_HUDPlayer_Get_Direction},
 {"yaw", Lua_HUDPlayer_Get_Direction},
+{"elevation", Lua_HUDPlayer_Get_Elevation},
+{"pitch", Lua_HUDPlayer_Get_Elevation},
 {"energy", Lua_HUDPlayer_Get_Energy},
 {"life", Lua_HUDPlayer_Get_Energy},
+{"microphone_active", Lua_HUDPlayer_Get_Microphone},
 {"items", Lua_HUDPlayer_Get_Items},
 {"name", Lua_HUDPlayer_Get_Name},
 {"oxygen", Lua_HUDPlayer_Get_Oxygen},
@@ -1341,6 +1364,18 @@ static int Lua_Screen_Get_Renderer(lua_State *L)
 	return 1;
 }
 
+static int Lua_Screen_Get_Term_Size(lua_State *L)
+{
+	Lua_SizePreference::Push(L, get_screen_mode()->term_scale_level);
+	return 1;
+}
+
+static int Lua_Screen_Get_HUD_Size(lua_State *L)
+{
+	Lua_SizePreference::Push(L, get_screen_mode()->hud_scale_level);
+	return 1;
+}
+
 static int Lua_Screen_Get_Clip_Rect(lua_State *L)
 {
 	Lua_Screen_Clip_Rect::Push(L, Lua_Screen::Index(L, 1));
@@ -1418,6 +1453,8 @@ const luaL_reg Lua_Screen_Get[] = {
 {"term_rect", Lua_Screen_Get_Term_Rect},
 {"map_active", Lua_Screen_Get_Map_Active},
 {"term_active", Lua_Screen_Get_Term_Active},
+{"hud_size_preference", Lua_Screen_Get_HUD_Size},
+{"term_size_preference", Lua_Screen_Get_Term_Size},
 {"fill_rect", L_TableFunction<Lua_Screen_Fill_Rect>},
 {"frame_rect", L_TableFunction<Lua_Screen_Frame_Rect>},
 {0, 0}
@@ -1629,6 +1666,12 @@ int Lua_HUDObjects_register(lua_State *L)
 	Lua_ScoringModes::Register(L);
 	Lua_ScoringModes::Length = Lua_ScoringModes::ConstantLength(NUMBER_OF_GAME_SCORING_MODES);
 	
+	Lua_SizePreference::Register(L, 0, 0, 0, Lua_SizePref_Mnemonics);
+	Lua_SizePreference::Valid = Lua_SizePreference::ValidRange(NUMBER_OF_SIZE_PREFERENCES);
+	
+	Lua_SizePreferences::Register(L);
+	Lua_SizePreferences::Length = Lua_SizePreferences::ConstantLength(NUMBER_OF_SIZE_PREFERENCES);
+    
 	Lua_SensorBlipType::Register(L, 0, 0, 0, Lua_SensorBlipType_Mnemonics);
 	Lua_SensorBlipType::Valid = Lua_SensorBlipType::ValidRange(NUMBER_OF_MDISPTYPES);
 	

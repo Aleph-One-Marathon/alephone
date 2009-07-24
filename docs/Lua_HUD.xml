@@ -163,6 +163,14 @@ end
         <description>which renderer is in use</description>
         <type>renderer_type</type>
       </variable>
+      <variable name="hud_size_preference" access="read-only">
+        <description>current preference setting for HUD size (normal, double, largest)</description>
+        <type>size_preference</type>
+      </variable>
+      <variable name="term_size_preference" access="read-only">
+        <description>current preference setting for terminal size (normal, double, largest)</description>
+        <type>size_preference</type>
+      </variable>
       <subtable name="clip_rect" classname="lua_clip_rect">
         <description>constrain drawing to the specified area of the screen</description>
         <variable name="x"><type>number</type></variable>
@@ -397,10 +405,19 @@ end
         <note>0 is east, 90 is south</note>
         <type>number</type>
       </variable>
+      <variable name="elevation">
+        <alias>pitch</alias>
+        <description>angle player is looking up or down</description>
+        <type>number</type>
+      </variable>
       <variable name="energy">
         <alias>life</alias>
         <description>amount of suit energy player has (150 is normal red health)</description>
         <type>number</type>
+      </variable>
+      <variable name="microphone_active">
+        <description>true if netmic is on</description>
+        <type>boolean</type>
       </variable>
       <subtable name="inventory_sections">
         <variable name="current">
@@ -409,7 +426,7 @@ end
           <note>HUD themes can choose to display multiple sections simultaneously</note>
         </variable>
       </subtable>
-      <subtable-accessor name="inventory_sections" classname="player_weapon" index="section_type">
+      <subtable-accessor name="inventory_sections" classname="player_section" index="section_type">
         <variable name="type"><type>section_type</type></variable>
         <variable name="name"><type>string</type></variable>
       </subtable-accessor>
@@ -577,6 +594,16 @@ end
       </mnemonics>
     </enum>
     <enum-accessor name="InventorySections" contains="section_type" nice-name="Inventory Sections"/>
+
+    <enum name="size_preference">
+      <mnemonics>
+        <mnemonic name="normal"/>
+        <mnemonic name="double"/>
+        <mnemonic name="largest"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="SizePreferences" contains="size_preference" nice-name="Size Preferences"/>
+    
         
     <enum name="sensor_blip">
       <mnemonics>

@@ -571,6 +571,13 @@ const lang_def Lua_SideType_Mnemonics[] = {
 	{0, 0}
 };
 
+const lang_def Lua_SizePref_Mnemonics[] = {
+{"normal", 0},
+{"double", 1},
+{"largest", 2},
+{0, 0}
+};
+
 const lang_def Lua_Sound_Mnemonics[] = {
 	{"startup", 0},
 	{"teleport in", 1},

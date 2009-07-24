@@ -1,4 +1,5 @@
-<html><head>
+<html>
+<head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <title>Aleph One HUD Scripters' Guide</title>
 <style type="text/css">
@@ -94,7 +95,8 @@
 
 -->
       </style>
-</head><body>
+</head>
+<body>
 <h1>Table of Contents</h1>
 <ol>
 <li>
@@ -124,6 +126,7 @@
 <li><a href="#RendererTypes">Renderer Types</a></li>
 <li><a href="#ScoringModes">Scoring Modes</a></li>
 <li><a href="#SensorBlipTypes">Sensor Blip Types</a></li>
+<li><a href="#SizePreferences">Size Preferences</a></li>
 <li><a href="#WeaponTypes">Weapons</a></li>
 </ol>
 </li>
@@ -138,7 +141,7 @@
 <a name="triggers"></a>Triggers</h1>
 <div class="triggers">
 <p>These are functions scripts can define which Aleph One will call at specific times or events. For the HUD, the draw() trigger is the most important. For example, to write "Hello world" in the upper left corner of the screen:
-</p><pre>Triggers = {}
+<pre>Triggers = {}
 function Triggers.draw()
   myFont = Fonts.new();
   myFont.size = 14;
@@ -146,7 +149,7 @@ function Triggers.draw()
   myFont:drawText("Hello world", 50, 50, {1, 1, 1, 0.5});
 end
 </pre>
-<p></p>
+</p>
 <dl>
 <dt>Triggers</dt>
 <dd><dl>
@@ -174,7 +177,7 @@ end
 <p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p>
 <h2>
 <a name="custom"></a>Custom Fields</h2>
-<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p><pre>Players[0]._favorite_flavor = "chocolate"</pre><p></p>
+<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.<pre>Players[0]._favorite_flavor = "chocolate"</pre></p>
 <h1><a name="tables">Tables</a></h1>
 <div class="tables">
 <h3>
@@ -397,9 +400,16 @@ end
 <p class="note">0 is east, 90 is south </p>
 </dd>
       <dt>
+    .elevation<br>
+      .pitch</dt>
+<dd><p class="description">angle player is looking up or down</p></dd>
+      <dt>
     .energy<br>
       .life</dt>
 <dd><p class="description">amount of suit energy player has (150 is normal red health)</p></dd>
+      <dt>
+    .microphone_active</dt>
+<dd><p class="description">true if netmic is on</p></dd>
       <dt>.inventory_sections</dt>
 <dd><dl>
 <dt>
@@ -549,6 +559,14 @@ end
     .renderer<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">which renderer is in use</p></dd>
+      <dt>
+    .hud_size_preference<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">current preference setting for HUD size (normal, double, largest)</p></dd>
+      <dt>
+    .term_size_preference<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">current preference setting for terminal size (normal, double, largest)</p></dd>
       <dt>.clip_rect</dt>
 <dd>
 <p class="description">constrain drawing to the specified area of the screen</p>
@@ -798,6 +816,18 @@ end
 <li>"hostile player"</li>
 </ul>
 <h3>
+<a name="SizePreferences"></a>Size Preferences</h3>
+<dl>
+<dt># SizePreferences</dt>
+<dt>SizePreferences()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"normal"</li>
+<li>"double"</li>
+<li>"largest"</li>
+</ul>
+<h3>
 <a name="WeaponTypes"></a>Weapons</h3>
 <dl>
 <dt># WeaponTypes</dt>
@@ -824,5 +854,5 @@ end
 <div class="end-mnemonics"></div>
 </ul>
 </div>
-
-</body></html>
+</body>
+</html>
