@@ -112,6 +112,7 @@
 <li><a href="#Fonts">Fonts</a></li>
 <li><a href="#Game">Game</a></li>
 <li><a href="#Images">Images</a></li>
+<li><a href="#Lighting">Lighting</a></li>
 <li><a href="#Player">Player</a></li>
 <li><a href="#Screen">Screen</a></li>
 </ol>
@@ -119,6 +120,7 @@
 <li>
 <a href="#types">Types and Mnemonics</a><ol>
 <li><a href="#DifficultyTypes">Difficulty</a></li>
+<li><a href="#FadeEffectTypes">Fade Effect Types</a></li>
 <li><a href="#GameTypes">Game Types</a></li>
 <li><a href="#InventorySections">Inventory Sections</a></li>
 <li><a href="#ItemTypes">Items</a></li>
@@ -378,6 +380,33 @@ end
       <dt>:draw(x, y)
     </dt>
 <dd><p class="description">draw image (or cropped portion) to screen, with top left corner at specified position</p></dd>
+    </dl></dd>
+</dl>
+<h3>
+<a name="Lighting"></a>Lighting</h3>
+<dl>
+<dt>Lighting</dt>
+<dd><dl>
+      <p class="note">All items in Lighting are read-only </p>
+      <dt>
+    .ambient_light</dt>
+<dd><p class="description">light level in current location, from 0 to 1</p></dd>
+      <dt>
+    .weapon_flash</dt>
+<dd><p class="description">current brightness of weapons fire, from 0 to 1</p></dd>
+      <dt>.liquid_fader<br>.damage_fader<p class="note">faders only available in OpenGL, when "Color Effects" are enabled </p>
+</dt>
+<dd><dl>
+<dt>
+    .active</dt>
+<dd><p class="description">true if fade effect is being drawn</p></dd>
+<dt>
+    .color</dt>
+<dd><p class="description">color used for this fade effect</p></dd>
+<dt>
+    .type</dt>
+<dd><p class="description">which fade effect type is used</p></dd>
+</dl></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -668,6 +697,21 @@ end
 <li>"normal"</li>
 <li>"major damage"</li>
 <li>"total carnage"</li>
+</ul>
+<h3>
+<a name="FadeEffectTypes"></a>Fade Effect Types</h3>
+<dl>
+<dt># FadeEffectTypes</dt>
+<dt>FadeEffectTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"tint"</li>
+<li>"randomize"</li>
+<li>"negate"</li>
+<li>"dodge"</li>
+<li>"burn"</li>
+<li>"soft tint"</li>
 </ul>
 <h3>
 <a name="GameTypes"></a>Game Types</h3>

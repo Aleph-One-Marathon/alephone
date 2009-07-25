@@ -850,4 +850,13 @@ const lang_def Lua_SensorBlipType_Mnemonics[] = {
 {0, 0}
 };
 
+const lang_def Lua_FadeEffectType_Mnemonics[] = {
+{"tint", 0},
+{"randomize", 1},
+{"negate", 2},
+{"dodge", 3},
+{"burn", 4},
+{"soft tint", 5},
+{0, 0}
+};
 

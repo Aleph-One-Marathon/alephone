@@ -539,6 +539,35 @@ end
     </table>
     <accessor name="Player" contains="player"/>
 
+    <table name="lighting" singleton="true">
+      <note>All items in Lighting are read-only</note>
+      <variable name="ambient_light">
+        <description>light level in current location, from 0 to 1</description>
+        <type>number</type>
+      </variable>
+      <variable name="weapon_flash">
+        <description>current brightness of weapons fire, from 0 to 1</description>
+        <type>number</type>
+      </variable>
+      <subtable name="liquid_fader" classname="lighting_liquid_fader">
+        <alias>damage_fader</alias>
+        <note>faders only available in OpenGL, when "Color Effects" are enabled</note>
+        <variable name="active">
+          <description>true if fade effect is being drawn</description>
+          <type>boolean</type>
+        </variable>
+        <variable name="type">
+          <description>which fade effect type is used</description>
+          <type>fade_effect_type</type>
+        </variable>
+        <variable name="color">
+          <description>color used for this fade effect</description>
+          <type>color</type>
+        </variable>
+      </subtable>
+    </table>
+    <accessor name="Lighting" contains="lighting"/>
+
     
     <enum name="item_type">
       <mnemonics>
@@ -687,6 +716,18 @@ end
       </mnemonics>
     </enum>
     <enum-accessor name="WeaponTypes" contains="weapon_type" nice-name="Weapons"/>
+    
+    <enum name="fade_effect_type">
+      <mnemonics>
+        <mnemonic name="tint"/>
+        <mnemonic name="randomize"/>
+        <mnemonic name="negate"/>
+        <mnemonic name="dodge"/>
+        <mnemonic name="burn"/>
+        <mnemonic name="soft tint"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="FadeEffectTypes" contains="fade_effect_type" nice-name="Fade Effect Types"/>
     
   </tables>
   <types id="types">

@@ -38,6 +38,8 @@ LUA_HUD_OBJECTS.CPP
 #include "render.h"
 #include "Image_Blitter.h"
 #include "OGL_Blitter.h"
+#include "fades.h"
+#include "OGL_Faders.h"
 
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
@@ -65,6 +67,12 @@ typedef L_Enum<Lua_SizePref_Name> Lua_SizePreference;
 char Lua_SizePrefs_Name[] = "SizePreferences";
 typedef L_EnumContainer<Lua_SizePrefs_Name, Lua_SizePreference> Lua_SizePreferences;
 #define NUMBER_OF_SIZE_PREFERENCES 3
+
+char Lua_FadeEffectType_Name[] = "fade_effect_type";
+typedef L_Enum<Lua_FadeEffectType_Name> Lua_FadeEffectType;
+
+char Lua_FadeEffectTypes_Name[] = "FadeEffectTypes";
+typedef L_EnumContainer<Lua_FadeEffectTypes_Name, Lua_FadeEffectType> Lua_FadeEffectTypes;
 
 extern char Lua_DifficultyType_Name[];
 typedef L_Enum<Lua_DifficultyType_Name> Lua_DifficultyType;
@@ -1620,6 +1628,113 @@ const luaL_reg Lua_HUDGame_Get[] = {
 {0, 0}
 };
 
+char Lua_HUDLighting_Fader_Name[] = "lighting_fader";
+typedef L_Class<Lua_HUDLighting_Fader_Name> Lua_HUDLighting_Fader;
+
+static int Lua_HUDLighting_Fader_Get_Active(lua_State *L)
+{
+    bool active = false;
+#ifdef HAVE_OPENGL
+    if (OGL_FaderActive())
+    {
+        OGL_Fader *fader = GetOGL_FaderQueueEntry(Lua_HUDLighting_Fader::Index(L, 1));
+        if (fader && fader->Type != NONE && fader->Color[3] > 0.01)
+            active = true;
+    }
+#endif
+    lua_pushboolean(L, active);
+    return 1;
+}
+
+
+static int Lua_HUDLighting_Fader_Get_Type(lua_State *L)
+{
+#ifdef HAVE_OPENGL
+    if (OGL_FaderActive())
+    {
+        OGL_Fader *fader = GetOGL_FaderQueueEntry(Lua_HUDLighting_Fader::Index(L, 1));
+        if (fader && fader->Type != NONE && fader->Color[3] > 0.01)
+        {
+            Lua_FadeEffectType::Push(L, fader->Type);
+            return 1;
+        }
+    }
+#endif
+    lua_pushnil(L);
+    return 1;
+}
+
+static int Lua_HUDLighting_Fader_Get_Color(lua_State *L)
+{
+#ifdef HAVE_OPENGL
+    if (OGL_FaderActive())
+    {
+        OGL_Fader *fader = GetOGL_FaderQueueEntry(Lua_HUDLighting_Fader::Index(L, 1));
+        if (fader && fader->Type != NONE && fader->Color[3] > 0.01)
+        {
+            lua_newtable(L);
+            lua_pushstring(L, "r");
+            lua_pushnumber(L, fminf(1.f, fmaxf(0.f, fader->Color[0])));
+            lua_settable(L, -3);
+            lua_pushstring(L, "g");
+            lua_pushnumber(L, fminf(1.f, fmaxf(0.f, fader->Color[1])));
+            lua_settable(L, -3);
+            lua_pushstring(L, "b");
+            lua_pushnumber(L, fminf(1.f, fmaxf(0.f, fader->Color[2])));
+            lua_settable(L, -3);
+            lua_pushstring(L, "a");
+            lua_pushnumber(L, fminf(1.f, fmaxf(0.f, fader->Color[3])));
+            lua_settable(L, -3);
+            return 1;
+        }
+    }
+#endif
+    lua_pushnil(L);
+    return 1;
+}
+
+const luaL_reg Lua_HUDLighting_Fader_Get[] = {
+{"active", Lua_HUDLighting_Fader_Get_Active},
+{"type", Lua_HUDLighting_Fader_Get_Type},
+{"color", Lua_HUDLighting_Fader_Get_Color},
+{0, 0}
+};
+
+char Lua_HUDLighting_Name[] = "Lighting";
+typedef L_Class<Lua_HUDLighting_Name> Lua_HUDLighting;
+
+static int Lua_HUDLighting_Get_Ambient(lua_State *L)
+{
+    lua_pushnumber(L, get_light_intensity(get_polygon_data(world_view->origin_polygon_index)->floor_lightsource_index)/65535.f);
+	return 1;
+}
+
+static int Lua_HUDLighting_Get_Weapon(lua_State *L)
+{
+    lua_pushnumber(L, PIN(current_player->weapon_intensity - 32768, 0, 32767)/32767.f);
+    return 1;
+}
+
+static int Lua_HUDLighting_Get_Liquid_Fader(lua_State *L)
+{
+    Lua_HUDLighting_Fader::Push(L, FaderQueue_Liquid);
+    return 1;
+}
+
+static int Lua_HUDLighting_Get_Damage_Fader(lua_State *L)
+{
+    Lua_HUDLighting_Fader::Push(L, FaderQueue_Other);
+    return 1;
+}
+
+const luaL_reg Lua_HUDLighting_Get[] = {
+{"ambient_light", Lua_HUDLighting_Get_Ambient},
+{"weapon_flash", Lua_HUDLighting_Get_Weapon},
+{"liquid_fader", Lua_HUDLighting_Get_Liquid_Fader},
+{"damage_fader", Lua_HUDLighting_Get_Damage_Fader},
+{0, 0}
+};
+
 
 int Lua_HUDObjects_register(lua_State *L)
 {
@@ -1629,6 +1744,12 @@ int Lua_HUDObjects_register(lua_State *L)
 
 	Lua_DifficultyTypes::Register(L);
 	Lua_DifficultyTypes::Length = Lua_DifficultyTypes::ConstantLength(NUMBER_OF_GAME_DIFFICULTY_LEVELS);
+    
+    Lua_FadeEffectType::Register(L, 0, 0, 0, Lua_FadeEffectType_Mnemonics);
+    Lua_FadeEffectType::Valid = Lua_FadeEffectType::ValidRange(NUMBER_OF_FADER_FUNCTIONS);
+    
+    Lua_FadeEffectTypes::Register(L);
+    Lua_FadeEffectTypes::Length = Lua_FadeEffectTypes::ConstantLength(NUMBER_OF_FADER_FUNCTIONS);
 	
 	Lua_GameType::Register(L, 0, 0, 0, Lua_GameType_Mnemonics);
 	Lua_GameType::Valid = Lua_GameType::ValidRange(NUMBER_OF_GAME_TYPES);
@@ -1747,6 +1868,13 @@ int Lua_HUDObjects_register(lua_State *L)
 	Lua_Images::Register(L, Lua_Images_Get);
 	Lua_Images::Push(L, 0);
 	lua_setglobal(L, Lua_Images_Name);
+    
+    Lua_HUDLighting_Fader::Register(L, Lua_HUDLighting_Fader_Get);
+    Lua_HUDLighting_Fader::Valid = Lua_HUDLighting_Fader::ValidRange(NUMBER_OF_FADER_QUEUE_ENTRIES);
+    
+    Lua_HUDLighting::Register(L, Lua_HUDLighting_Get);
+    Lua_HUDLighting::Push(L, 0);
+    lua_setglobal(L, Lua_HUDLighting_Name);
 	
 	return 0;
 }
