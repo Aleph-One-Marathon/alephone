@@ -1,5 +1,5 @@
 /*
-LUA_OBJECTS.CPP
+LUA_MNEMONICS.H
 
 	Copyright (C) 2008 by Gregory Smith
  

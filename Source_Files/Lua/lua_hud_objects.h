@@ -2,9 +2,9 @@
 #define __LUA_HUD_OBJECTS_H
 
 /*
-LUA_OBJECTS.H
+LUA_HUD_OBJECTS.H
 
-	Copyright (C) 2008 by Gregory Smith
+	Copyright (C) 2009 by Jeremiah Morris
  
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@ LUA_OBJECTS.H
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-	Implements Lua map objects classes
+	Implements Lua HUD objects and globals
 */
 
 #include "cseries.h"

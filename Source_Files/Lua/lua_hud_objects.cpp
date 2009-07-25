@@ -1,7 +1,7 @@
 /*
-LUA_OBJECTS.CPP
+LUA_HUD_OBJECTS.CPP
 
-	Copyright (C) 2008 by Gregory Smith
+	Copyright (C) 2009 by Jeremiah Morris
  
 	This program is free software; you can redistribute it and/or modify
 	it under the terms of the GNU General Public License as published by
@@ -17,7 +17,7 @@ LUA_OBJECTS.CPP
 	which is included with this source code; it is available online at
 	http://www.gnu.org/licenses/gpl.html
 
-	Implements the Lua map objects classes
+    Implements Lua HUD objects and globals
 */
 
 #include "lua_hud_objects.h"

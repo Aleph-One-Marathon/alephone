@@ -1,26 +1,25 @@
 #ifndef _IMAGE_BLITTER_
 #define _IMAGE_BLITTER_
 /*
+IMAGE_BLITTER.H
 
-	Copyright (C) 2006 and beyond by Bungie Studios, Inc.
-	and the "Aleph One" developers.
- 
-	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License as published by
-	the Free Software Foundation; either version 2 of the License, or
-	(at your option) any later version.
+    Copyright (C) 2009 by Jeremiah Morris and the Aleph One developers
 
-	This program is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-	GNU General Public License for more details.
+    This program is free software; you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation; either version 2 of the License, or
+    (at your option) any later version.
 
-	This license is contained in the file "COPYING",
-	which is included with this source code; it is available online at
-	http://www.gnu.org/licenses/gpl.html
-	
-	Image blitter base class
-	written by Jeremiah Morris, 2009
+    This program is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    This license is contained in the file "COPYING",
+    which is included with this source code; it is available online at
+    http://www.gnu.org/licenses/gpl.html
+
+    Implements images for 2D UI
 */
 
 #include "cseries.h"
