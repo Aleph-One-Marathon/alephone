@@ -68,6 +68,8 @@ public:
 	
 	// set default cropping rectangle
 	SDL_Rect crop_rect;
+    
+    bool use_transparency;
 	
 protected:
 	

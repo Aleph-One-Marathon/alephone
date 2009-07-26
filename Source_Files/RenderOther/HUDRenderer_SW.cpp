@@ -29,6 +29,7 @@
 
 #include "images.h"
 #include "shell.h" // get_shape_surface!?
+#include "Shape_Blitter.h"
 
 #if defined(__WIN32__) || defined(__MINGW32__)
 #undef DrawText
@@ -115,33 +116,21 @@ SDL_Surface *rotate_surface(SDL_Surface *s, int width, int height)
 
 void HUD_SW_Class::DrawTexture(shape_descriptor shape, short x, short y, int size)
 {
-	SDL_Surface *s = get_shape_surface(shape);
-	if (!s) return;
-
-	
-	if (HUD_Buffer->format->BitsPerPixel == 8) {
-		// SDL doesn't seem to be able to handle direct blits between 8-bit surfaces with different cluts
-		SDL_Surface *s2 = SDL_DisplayFormat(s);
-		SDL_FreeSurface(s);
-		s = s2;
-	}
-
-	SDL_Surface *s2 = rescale_surface(s, size, size);
-	SDL_FreeSurface(s);
-	s = s2;
-
-	s2 = rotate_surface(s, size, size);
-	SDL_FreeSurface(s);
-	s = s2;
-
-	// Setup destination rectangle
-	SDL_Rect dst_rect = {x, y, s->w, s->h};
-
-	// Blit the surface
-	SDL_BlitSurface(s, NULL, HUD_Buffer, &dst_rect);
-
-	// Free the surface
-	SDL_FreeSurface(s);
+    Shape_Blitter b(
+                    GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(shape)),
+                    GET_DESCRIPTOR_SHAPE(shape),
+                    Shape_Texture_Wall,
+                    GET_COLLECTION_CLUT(GET_DESCRIPTOR_COLLECTION(shape)));
+    
+    b.Rescale(size, size);
+    b.use_transparency = false;
+    
+    SDL_Rect r;
+    r.x = x;
+    r.y = y;
+    r.w = size;
+    r.h = size;
+    b.SDL_Draw(HUD_Buffer, r);
 }
 
 /*

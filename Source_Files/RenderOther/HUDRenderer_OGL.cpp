@@ -40,6 +40,7 @@
 #include "OGL_Setup.h"
 #include "OGL_Textures.h"
 #include "OGL_Blitter.h"
+#include "Shape_Blitter.h"
 
 #ifdef HAVE_OPENGL
 # if defined (__APPLE__) && defined (__MACH__)
@@ -237,42 +238,20 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 
 void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short x, short y, int size)
 {
-	// Set up texture
-	TextureManager TMgr;
-	TMgr.ShapeDesc = shape;
-	get_shape_bitmap_and_shading_table(shape, &TMgr.Texture, &TMgr.ShadingTables, _shading_normal);
-	TMgr.IsShadeless = false;
-	TMgr.TransferMode = _shadeless_transfer;
-	TMgr.TextureType = OGL_Txtr_Wall;
-	if (!TMgr.Setup())
-		return;
-
-	// Get dimensions
-	int width = size, height = size;
-//	int width = TMgr.Texture->width, height = TMgr.Texture->height;
-	GLdouble U_Scale = TMgr.U_Scale;
-	GLdouble V_Scale = TMgr.V_Scale;
-	GLdouble U_Offset = TMgr.U_Offset;
-	GLdouble V_Offset = TMgr.V_Offset;
-
-	// Draw shape
-	glColor3f(1.0, 1.0, 1.0);
-	glEnable(GL_TEXTURE_2D);
-	glDisable(GL_BLEND);
-	TMgr.SetupTextureMatrix();
-	TMgr.RenderNormal();
-	glBegin(GL_TRIANGLE_FAN);
-		glTexCoord2d(U_Offset, V_Offset);
-		glVertex2i(x, y);
-		glTexCoord2d(U_Offset, V_Offset + V_Scale);
-		glVertex2i(x + width, y);
-		glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
-		glVertex2i(x + width, y + height);
-		glTexCoord2d(U_Offset + U_Scale, V_Offset);
-		glVertex2i(x, y + height);
-	glEnd();
-	TMgr.RestoreTextureMatrix();
-	if (TMgr.IsGlowMapped()) TMgr.RenderGlowing();
+    Shape_Blitter b(
+        GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(shape)),
+        GET_DESCRIPTOR_SHAPE(shape),
+        Shape_Texture_Wall,
+        GET_COLLECTION_CLUT(GET_DESCRIPTOR_COLLECTION(shape)));
+    
+    b.Rescale(size, size);
+    
+    SDL_Rect r;
+    r.x = x;
+    r.y = y;
+    r.w = size;
+    r.h = size;
+    b.OGL_Draw(r);
 }
 
 

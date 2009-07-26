@@ -51,7 +51,7 @@ SHAPE_BLITTER.CPP
 #endif
 
 
-Shape_Blitter::Shape_Blitter(short collection, short texture_index, short texture_type, short clut_index) : m_type(texture_type), m_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0)
+Shape_Blitter::Shape_Blitter(short collection, short texture_index, short texture_type, short clut_index) : m_type(texture_type), m_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0), use_transparency(true)
 {
 	m_src.x = m_src.y = m_src.w = m_src.h = 0;
 	m_scaled_src.x = m_scaled_src.y = m_scaled_src.w = m_scaled_src.h = 0;
@@ -142,38 +142,6 @@ void Shape_Blitter::OGL_Draw(SDL_Rect& dst)
 	GLdouble U_Offset = TMgr.U_Offset;
 	GLdouble V_Offset = TMgr.V_Offset;
     
-//    if (m_type == Shape_Texture_Landscape)
-//    {
-//        U_Scale = TMgr.V_Scale;
-//        V_Scale = TMgr.U_Scale;
-//        U_Offset = TMgr.V_Offset;
-//        V_Offset = TMgr.U_Offset;
-//    }
-        
-    
-//    if (m_type == Shape_Texture_Interface)
-//    {
-//        if (crop_rect.x > 0)
-//            U_Offset += crop_rect.x * U_Scale / static_cast<double>(m_scaled_src.w);
-//        if (crop_rect.y > 0)
-//            V_Offset += crop_rect.y * V_Scale / static_cast<double>(m_scaled_src.h);
-//        if (crop_rect.w < m_scaled_src.w)
-//            U_Scale *= crop_rect.w / static_cast<double>(m_scaled_src.w);
-//        if (crop_rect.h < m_scaled_src.h)
-//            V_Scale *= crop_rect.h / static_cast<double>(m_scaled_src.h);
-//    }
-//    else
-//    {
-//        if (crop_rect.x > 0)
-//            V_Offset += crop_rect.x * V_Scale / static_cast<double>(m_scaled_src.w);
-//        if (crop_rect.y > 0)
-//            U_Offset += crop_rect.y * U_Scale / static_cast<double>(m_scaled_src.h);
-//        if (crop_rect.w < m_scaled_src.w)
-//            V_Scale *= crop_rect.w / static_cast<double>(m_scaled_src.w);
-//        if (crop_rect.h < m_scaled_src.h)
-//            U_Scale *= crop_rect.h / static_cast<double>(m_scaled_src.h);
-//    }
-        
 	// Draw shape
 	glColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
 	glEnable(GL_TEXTURE_2D);
@@ -296,66 +264,67 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, SDL_Rect& dst)
         if (!tmp)
             return;
         
+        if (use_transparency)
+        {
+            m_surface = SDL_DisplayFormatAlpha(tmp);
+            SDL_FreeSurface(tmp);
+            if (pixelsOut)
+                free(pixelsOut);
+            pixelsOut = NULL;
+        }
+        else if (pixelsOut)
+        {
+            m_surface = SDL_DisplayFormat(tmp);
+            SDL_FreeSurface(tmp);
+            free(pixelsOut);
+            pixelsOut = NULL;
+        }
+        else
+            m_surface = tmp;
+    }
+    if (!m_surface)
+        return;
+    
+    if (!m_scaled_surface ||
+        m_scaled_surface->w != m_scaled_src.w ||
+        m_scaled_surface->h != m_scaled_src.h)
+    {
+        if (m_scaled_surface && (m_scaled_surface != m_surface))
+            SDL_FreeSurface(m_scaled_surface);
+        
+        if (m_scaled_src.w != m_src.w || m_scaled_src.h != m_src.h)
+            m_scaled_surface = rescale_surface(m_surface, m_scaled_src.w, m_scaled_src.h);
+        else
+            m_scaled_surface = m_surface;
+        
         if (m_type == Shape_Texture_Wall)
         {
             // rotate wall textures
-            SDL_Surface *tmp2 = rotate_surface(tmp, tmp->w, tmp->h);
-            SDL_FreeSurface(tmp);
-            if (pixelsOut)
-            {
-                free(pixelsOut);
-                pixelsOut = NULL;
-            }
-            tmp = tmp2;
-            if (!tmp)
-                return;
+            SDL_Surface *tmp = rotate_surface(m_scaled_surface, m_scaled_surface->w, m_scaled_surface->h);
+            if (m_scaled_surface != m_surface)
+                SDL_FreeSurface(m_scaled_surface);
+            m_scaled_surface = tmp;
         }
         else if (m_type == Shape_Texture_Landscape)
         {
             // flip landscapes vertically
-            SDL_Surface *tmp2 = flip_surface(tmp, tmp->w, tmp->h);
-            SDL_FreeSurface(tmp);
-            if (pixelsOut)
-            {
-                free(pixelsOut);
-                pixelsOut = NULL;
-            }
-            tmp = tmp2;
-            if (!tmp)
-                return;
+            SDL_Surface *tmp = flip_surface(m_scaled_surface, m_scaled_surface->w, m_scaled_surface->h);
+            if (m_scaled_surface != m_surface)
+                SDL_FreeSurface(m_scaled_surface);
+            m_scaled_surface = tmp;
         }
-            
-        
-        m_surface = SDL_DisplayFormatAlpha(tmp);
-        SDL_FreeSurface(tmp);
-        if (pixelsOut)
-            free(pixelsOut);
     }
     
-	SDL_Surface *src_surface = m_surface;
-	
-	// rescale surface if necessary
-	if (m_scaled_src.w != m_src.w || m_scaled_src.h != m_src.h)
-	{
-		if (!m_scaled_surface ||
-            m_scaled_surface->w != m_scaled_src.w ||
-            m_scaled_surface->h != m_scaled_src.h)
-		{
-			SDL_FreeSurface(m_scaled_surface);
-			m_scaled_surface = rescale_surface(m_surface, m_scaled_src.w, m_scaled_src.h);
-		}
-		src_surface = m_scaled_surface;
-	}
-	
-	if (!src_surface)
-		return;
+    if (!m_scaled_surface)
+        return;
     
     SDL_Rect r = crop_rect;
-	SDL_BlitSurface(src_surface, &r, dst_surface, &dst);
+	SDL_BlitSurface(m_scaled_surface, &r, dst_surface, &dst);
 }
 
 Shape_Blitter::~Shape_Blitter()
 {
     SDL_FreeSurface(m_surface);
+    if (m_scaled_surface != m_surface)
     SDL_FreeSurface(m_scaled_surface);
 }
