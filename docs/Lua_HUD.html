@@ -100,7 +100,10 @@
 <h1>Table of Contents</h1>
 <ol>
 <li>
-<a href="#general">General</a><ol><li><a href="#what_is_this">What is This?</a></li></ol>
+<a href="#general">General</a><ol>
+<li><a href="#what_is_this">What is This?</a></li>
+<li><a href="#loading_collections">Loading Collections</a></li>
+</ol>
 </li>
 <li><a href="#triggers">Triggers</a></li>
 <li>
@@ -141,6 +144,11 @@
 <a name="what_is_this"></a>What is This?</h2>
         <p>This is a reference for writing Lua scripts to draw heads-up displays (HUDs) in Aleph One.</p>
         <p>This is not a reference for Lua itself - see lua.org for that.</p>
+      <h2>
+<a name="loading_collections"></a>Loading Collections</h2>
+        <p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
+        <pre>CollectionsUsed = { 10, 16 }</pre>
+        </p>
       <h1>
 <a name="triggers"></a>Triggers</h1>
 <div class="triggers">

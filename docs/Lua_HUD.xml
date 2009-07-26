@@ -86,6 +86,13 @@
         <p>This is not a reference for Lua itself - see lua.org for that.</p>
       </description>
     </section>
+    <section name="Loading Collections" id="loading_collections">
+      <description>
+        <p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
+        <pre>CollectionsUsed = { 10, 16 }</pre>
+        </p>
+      </description>
+    </section>
   </section>
   <triggers id="triggers">
     <description>These are functions scripts can define which Aleph One will call at specific times or events. For the HUD, the draw() trigger is the most important. For example, to write "Hello world" in the upper left corner of the screen:
