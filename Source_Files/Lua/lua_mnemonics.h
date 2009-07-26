@@ -860,3 +860,11 @@ const lang_def Lua_FadeEffectType_Mnemonics[] = {
 {0, 0}
 };
 
+const lang_def Lua_TextureType_Mnemonics[] = {
+{"wall", 0},
+{"landscape", 1},
+{"sprite", 2},
+{"weapon in hand", 3},
+{"interface", 4},
+{0, 0}
+};

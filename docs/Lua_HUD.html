@@ -115,10 +115,12 @@
 <li><a href="#Lighting">Lighting</a></li>
 <li><a href="#Player">Player</a></li>
 <li><a href="#Screen">Screen</a></li>
+<li><a href="#Shapes">Shapes</a></li>
 </ol>
 </li>
 <li>
 <a href="#types">Types and Mnemonics</a><ol>
+<li><a href="#Collections">Collections</a></li>
 <li><a href="#DifficultyTypes">Difficulty</a></li>
 <li><a href="#FadeEffectTypes">Fade Effect Types</a></li>
 <li><a href="#GameTypes">Game Types</a></li>
@@ -680,10 +682,169 @@ end
 </dd>
     </dl></dd>
 </dl>
+<h3>
+<a name="Shapes"></a>Shapes</h3>
+<dl>
+<dt>Shapes.new(collection, texture_index [, color table])
+    </dt>
+<dd>
+<p class="description">all arguments are passed by name; returns shape or nil</p>
+<ul class="args">
+<li>collection: the shape collection</li>
+<li>texture_index: texture bitmap index</li>
+<li>color table: color table index</li>
+</ul>
+</dd>
+<dt>Shapes[index]</dt>
+<dd><dl>
+      <dt>
+    .width<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">width of the shape in pixels</p></dd>
+      <dt>
+    .height<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">height of the shape in pixels</p></dd>
+      <dt>
+    .unscaled_width<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">width of the shape before any calls to :rescale()</p></dd>
+      <dt>
+    .unscaled_height<span class="access"> (read-only)</span>
+</dt>
+<dd><p class="description">height of the shape before any calls to :rescale()</p></dd>
+      <dt>.crop_rect</dt>
+<dd>
+<p class="description">specifies a portion of the shape to be drawn</p>
+<dl>
+<dt>
+    .height</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .width</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .x</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .y</dt>
+<dd><p class="description"></p></dd>
+</dl>
+</dd>
+      <dt>
+    .tint_color</dt>
+<dd>
+<p class="description">scale the color and opacity by this value when drawing</p>
+<p class="note">default is (r=1, g=1, b=1, a=1) </p>
+<p class="note">only available in OpenGL renderer </p>
+</dd>
+      <dt>
+    .rotation</dt>
+<dd>
+<p class="description">degrees to rotate the shape when drawn</p>
+<p class="note">axis of rotation is about the center of the drawn area </p>
+<p class="note">only available in OpenGL renderer </p>
+</dd>
+      <dt>:rescale(width, height)
+    </dt>
+<dd><p class="description">resize shape to specified width and height</p></dd>
+      <dt>:draw(x, y)
+    </dt>
+<dd><p class="description">draw shape (or cropped portion) to screen, with top left corner at specified position</p></dd>
+    </dl></dd>
+</dl>
 </div>
 <h1>
 <a name="types"></a>Types and Mnemonics</h1>
 <div class="tables">
+<h3>
+<a name="Collections"></a>Collections</h3>
+<dl>
+<dt># Collections</dt>
+<dt>Collections()</dt>
+<dt>Collections[collection]</dt>
+<dd><dl>
+      <dt>
+    .bitmap_count</dt>
+<dd><p class="description">number of bitmaps in collection</p></dd>
+      
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+      
+    </dl></dd>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"interface"</li>
+<li>"weapons in hand"</li>
+<li>"juggernaut"</li>
+<li>"tick"</li>
+<li>"explosions"</li>
+<li>"hunter"</li>
+<li>"player"</li>
+<li>"items"</li>
+<li>"trooper"</li>
+<li>"fighter"</li>
+<li>"defender"</li>
+</div>
+<div class="mnemonics-column">
+<li>"yeti"</li>
+<li>"bob"</li>
+<li>"vacbob"</li>
+<li>"enforcer"</li>
+<li>"drone"</li>
+<li>"compiler"</li>
+<li>"water"</li>
+<li>"lava"</li>
+<li>"sewage"</li>
+<li>"jjaro"</li>
+<li>"pfhor"</li>
+</div>
+<div class="mnemonics-column">
+<li>"water scenery"</li>
+<li>"lava scenery"</li>
+<li>"sewage scenery"</li>
+<li>"jjaro scenery"</li>
+<li>"pfhor scenery"</li>
+<li>"day"</li>
+<li>"night"</li>
+<li>"moon"</li>
+<li>"space"</li>
+<li>"cyborg"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
 <h3>
 <a name="DifficultyTypes"></a>Difficulty</h3>
 <dl>

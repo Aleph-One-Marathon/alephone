@@ -26,6 +26,7 @@ HUD_RENDERER_LUA.CPP
 
 #include "FontHandler.h"
 #include "Image_Blitter.h"
+#include "Shape_Blitter.h"
 
 #include "lua_hud_script.h"
 #include "shell.h"
@@ -345,5 +346,28 @@ void HUD_Lua_Class::draw_image(Image_Blitter *image, float x, float y)
 	apply_clip();
 	image->Draw(SDL_GetVideoSurface(), r);
 }
+
+void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
+{
+	if (!m_drawing)
+		return;
+	
+	SDL_Rect r;
+	r.x = x;
+	r.y = y;
+	r.w = shape->crop_rect.w;
+	r.h = shape->crop_rect.h;
+    
+	apply_clip();
+    if (m_opengl)
+    {
+        shape->OGL_Draw(r);
+    }
+    else if (m_surface)
+    {
+        shape->SDL_Draw(SDL_GetVideoSurface(), r);
+    }
+}
+
 
 #endif // def HAVE_OPENGL

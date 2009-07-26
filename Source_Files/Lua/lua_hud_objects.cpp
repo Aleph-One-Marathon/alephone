@@ -40,6 +40,8 @@ LUA_HUD_OBJECTS.CPP
 #include "OGL_Blitter.h"
 #include "fades.h"
 #include "OGL_Faders.h"
+#include "Shape_Blitter.h"
+#include "collection_definition.h"
 
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
@@ -49,6 +51,20 @@ LUA_HUD_OBJECTS.CPP
 extern struct view_data *world_view;
 
 const float AngleConvert = 360/float(FULL_CIRCLE);
+
+extern collection_definition *get_collection_definition(short);
+
+static int Lua_Collection_Get_Bitmap_Count(lua_State *L)
+{
+	collection_definition *collection = get_collection_definition(Lua_Collection::Index(L, 1));
+	lua_pushnumber(L, collection->bitmap_count);
+	return 1;
+}
+
+const luaL_reg Lua_Collection_Get[] = {
+{"bitmap_count", Lua_Collection_Get_Bitmap_Count},
+{0, 0},
+};
 
 
 char Lua_InventorySection_Name[] = "inventory_section";
@@ -60,6 +76,9 @@ char Lua_RendererTypes_Name[] = "RendererTypes";
 
 char Lua_SensorBlipType_Name[] = "sensor_blip_type";
 char Lua_SensorBlipTypes_Name[] = "SensorBlipTypes";
+
+char Lua_TextureType_Name[] = "texture_type";
+char Lua_TextureTypes_Name[] = "TextureTypes";
 
 char Lua_SizePref_Name[] = "size_preference";
 typedef L_Enum<Lua_SizePref_Name> Lua_SizePreference;
@@ -421,6 +440,262 @@ int Lua_Images_New(lua_State *L)
 
 const luaL_reg Lua_Images_Get[] = {
 {"new", L_TableFunction<Lua_Images_New>},
+{0, 0}
+};
+
+
+char Lua_Shape_Name[] = "shape";
+typedef L_ObjectClass<Lua_Shape_Name, Shape_Blitter *> Lua_Shape;
+
+char Lua_Shape_Crop_Rect_Name[] = "shape_crop_rect";
+class Lua_Shape_Crop_Rect : public L_Class<Lua_Shape_Crop_Rect_Name>
+{
+public:
+	static Shape_Blitter *Object(lua_State *L, int index);
+};
+
+Shape_Blitter *Lua_Shape_Crop_Rect::Object(lua_State *L, int index)
+{
+	return Lua_Shape::ObjectAtIndex(L, Lua_Shape_Crop_Rect::Index(L, index));
+}
+
+static int Lua_Shape_Crop_Rect_Get_X(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.x);
+	return 1;
+}
+
+static int Lua_Shape_Crop_Rect_Get_Y(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.y);
+	return 1;
+}
+
+static int Lua_Shape_Crop_Rect_Get_Width(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.w);
+	return 1;
+}
+
+static int Lua_Shape_Crop_Rect_Get_Height(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.h);
+	return 1;
+}
+
+static int Lua_Shape_Crop_Rect_Set_X(lua_State *L)
+{
+	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.x = lua_tointeger(L, 2);
+    return 0;
+}
+
+static int Lua_Shape_Crop_Rect_Set_Y(lua_State *L)
+{
+	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.y = lua_tointeger(L, 2);
+    return 0;
+}
+
+static int Lua_Shape_Crop_Rect_Set_Width(lua_State *L)
+{
+	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.w = lua_tointeger(L, 2);
+    return 0;
+}
+
+static int Lua_Shape_Crop_Rect_Set_Height(lua_State *L)
+{
+	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.h = lua_tointeger(L, 2);
+    return 0;
+}
+
+const luaL_reg Lua_Shape_Crop_Rect_Get[] = {
+{"x", Lua_Shape_Crop_Rect_Get_X},
+{"y", Lua_Shape_Crop_Rect_Get_Y},
+{"width", Lua_Shape_Crop_Rect_Get_Width},
+{"height", Lua_Shape_Crop_Rect_Get_Height},
+{0, 0}
+};
+
+const luaL_reg Lua_Shape_Crop_Rect_Set[] = {
+{"x", Lua_Shape_Crop_Rect_Set_X},
+{"y", Lua_Shape_Crop_Rect_Set_Y},
+{"width", Lua_Shape_Crop_Rect_Set_Width},
+{"height", Lua_Shape_Crop_Rect_Set_Height},
+{0, 0}
+};
+
+
+static int Lua_Shape_Get_Width(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Shape::Object(L, 1)->Width());
+	return 1;
+}
+
+static int Lua_Shape_Get_Height(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Shape::Object(L, 1)->Height());
+	return 1;
+}
+
+static int Lua_Shape_Get_Unscaled_Width(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Shape::Object(L, 1)->UnscaledWidth());
+	return 1;
+}
+
+static int Lua_Shape_Get_Unscaled_Height(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Shape::Object(L, 1)->UnscaledHeight());
+	return 1;
+}
+
+static int Lua_Shape_Get_Tint(lua_State *L)
+{
+	lua_newtable(L);
+	lua_pushstring(L, "r");
+	lua_pushnumber(L, Lua_Shape::Object(L, 1)->tint_color_r);
+	lua_settable(L, -3);
+	lua_pushstring(L, "g");
+	lua_pushnumber(L, Lua_Shape::Object(L, 1)->tint_color_g);
+	lua_settable(L, -3);
+	lua_pushstring(L, "b");
+	lua_pushnumber(L, Lua_Shape::Object(L, 1)->tint_color_b);
+	lua_settable(L, -3);
+	lua_pushstring(L, "a");
+	lua_pushnumber(L, Lua_Shape::Object(L, 1)->tint_color_a);
+	lua_settable(L, -3);
+	return 1;
+}
+
+
+static int Lua_Shape_Get_Rotation(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Shape::Object(L, 1)->rotation);
+	return 1;
+}
+
+static int Lua_Shape_Get_Crop_Rect(lua_State *L)
+{
+	Lua_Shape_Crop_Rect::Push(L, Lua_Shape::Index(L, 1));
+	return 1;
+}
+
+int Lua_Shape_Rescale(lua_State *L)
+{
+	Lua_Shape::Object(L, 1)->Rescale(lua_tointeger(L, 2), lua_tointeger(L, 3));
+	return 0;
+}
+
+int Lua_Shape_Draw(lua_State *L)
+{
+	Lua_HUDInstance()->draw_shape(Lua_Shape::Object(L, 1), lua_tonumber(L, 2), lua_tonumber(L, 3));
+	return 0;
+}
+
+const luaL_reg Lua_Shape_Get[] = {
+{"width", Lua_Shape_Get_Width},
+{"height", Lua_Shape_Get_Height},
+{"unscaled_width", Lua_Shape_Get_Unscaled_Width},
+{"unscaled_height", Lua_Shape_Get_Unscaled_Height},
+{"tint_color", Lua_Shape_Get_Tint},
+{"rotation", Lua_Shape_Get_Rotation},
+{"crop_rect", Lua_Shape_Get_Crop_Rect},
+{"rescale", L_TableFunction<Lua_Shape_Rescale>},
+{"draw", L_TableFunction<Lua_Shape_Draw>},
+{0, 0}
+};
+
+static int Lua_Shape_Set_Tint(lua_State *L)
+{
+	Lua_Shape::Object(L, 1)->tint_color_r = Lua_HUDColor_Get_R(L, 2);
+	Lua_Shape::Object(L, 1)->tint_color_g = Lua_HUDColor_Get_G(L, 2);
+	Lua_Shape::Object(L, 1)->tint_color_b = Lua_HUDColor_Get_B(L, 2);
+	Lua_Shape::Object(L, 1)->tint_color_a = Lua_HUDColor_Get_A(L, 2);
+	return 0;
+}
+
+static int Lua_Shape_Set_Rotation(lua_State *L)
+{
+	Lua_Shape::Object(L, 1)->rotation = lua_tonumber(L, 2);
+	return 0;
+}
+
+const luaL_reg Lua_Shape_Set[] = {
+{"tint_color", Lua_Shape_Set_Tint},
+{"rotation", Lua_Shape_Set_Rotation},
+{0, 0}
+};
+
+static int Lua_Shape_GC(lua_State *L)
+{
+	delete Lua_Shape::Object(L, 1);
+	Lua_Shape::Invalidate(L, Lua_Shape::Index(L, 1));
+	return 0;
+}
+
+const luaL_reg Lua_Shape_Metatable[] = {
+{"__gc", Lua_Shape_GC},
+{0, 0}
+};
+
+char Lua_Shapes_Name[] = "Shapes";
+typedef L_Class<Lua_Shapes_Name> Lua_Shapes;
+
+int Lua_Shapes_New(lua_State *L)
+{
+	// read collection argument
+	short collection_index = NONE;
+	lua_pushstring(L, "collection");
+	lua_gettable(L, 1);
+	if (!lua_isnil(L, -1))
+        collection_index = Lua_Collection::ToIndex(L, -1);
+	lua_pop(L, 1);
+	
+	// read texture_index argument
+	short texture_index = NONE;
+	lua_pushstring(L, "texture_index");
+	lua_gettable(L, 1);
+	if (!lua_isnil(L, -1))
+    {
+        texture_index = static_cast<short>(lua_tonumber(L, 2));
+        if (texture_index < 0 || texture_index >= MAXIMUM_SHAPES_PER_COLLECTION)
+            return luaL_error(L, "texture_index: invalid texture index");
+    }
+	lua_pop(L, 1);
+	
+    // read type argument
+	short texture_type = 0;
+	lua_pushstring(L, "type");
+	lua_gettable(L, 1);
+	if (!lua_isnil(L, -1))
+        texture_type = Lua_TextureType::ToIndex(L, -1);
+	lua_pop(L, 1);
+
+    // read texture_index argument
+	short clut_index = 0;
+	lua_pushstring(L, "color_table");
+	lua_gettable(L, 1);
+	if (!lua_isnil(L, -1))
+    {
+        clut_index = static_cast<short>(lua_tonumber(L, 2));
+        if (clut_index < 0 || clut_index >= MAXIMUM_CLUTS_PER_COLLECTION)
+            return luaL_error(L, "color_table: invalid clut index");
+    }
+	lua_pop(L, 1);
+    
+	// blitter from shape info
+	Shape_Blitter *blitter = new Shape_Blitter(collection_index, texture_index, texture_type, clut_index);
+	if (!blitter->Width())
+	{
+		lua_pushnil(L);
+		delete blitter;
+		return 1;
+	}
+	Lua_Shape::Push(L, blitter);
+	return 1;
+}
+
+const luaL_reg Lua_Shapes_Get[] = {
+{"new", L_TableFunction<Lua_Shapes_New>},
 {0, 0}
 };
 
@@ -1735,9 +2010,15 @@ const luaL_reg Lua_HUDLighting_Get[] = {
 {0, 0}
 };
 
+extern bool collection_loaded(short);
 
 int Lua_HUDObjects_register(lua_State *L)
 {
+	Lua_Collection::Register(L, Lua_Collection_Get, 0, 0, Lua_Collection_Mnemonics);
+	Lua_Collection::Valid = collection_loaded;
+
+	Lua_Collections::Register(L);
+	Lua_Collections::Length = Lua_Collections::ConstantLength(MAXIMUM_COLLECTIONS);
 
 	Lua_DifficultyType::Register(L, 0, 0, 0, Lua_DifficultyType_Mnemonics);
 	Lua_DifficultyType::Valid = Lua_DifficultyType::ValidRange(NUMBER_OF_GAME_DIFFICULTY_LEVELS);
@@ -1798,6 +2079,12 @@ int Lua_HUDObjects_register(lua_State *L)
 	
 	Lua_SensorBlipTypes::Register(L);
 	Lua_SensorBlipTypes::Length = Lua_SensorBlipTypes::ConstantLength(NUMBER_OF_MDISPTYPES);
+	
+	Lua_TextureType::Register(L, 0, 0, 0, Lua_TextureType_Mnemonics);
+	Lua_TextureType::Valid = Lua_TextureType::ValidRange(NUMBER_OF_LUA_TEXTURE_TYPES);
+	
+	Lua_TextureTypes::Register(L);
+	Lua_TextureTypes::Length = Lua_TextureTypes::ConstantLength(NUMBER_OF_LUA_TEXTURE_TYPES);
 	
 	Lua_WeaponType::Register(L, 0, 0, 0, Lua_WeaponType_Mnemonics);
 	Lua_WeaponType::Valid = Lua_WeaponType::ValidRange(MAXIMUM_NUMBER_OF_WEAPONS);
@@ -1868,6 +2155,15 @@ int Lua_HUDObjects_register(lua_State *L)
 	Lua_Images::Register(L, Lua_Images_Get);
 	Lua_Images::Push(L, 0);
 	lua_setglobal(L, Lua_Images_Name);
+    
+	Lua_Shape_Crop_Rect::Register(L, Lua_Shape_Crop_Rect_Get, Lua_Shape_Crop_Rect_Set);
+	Lua_Shape_Crop_Rect::Valid = Lua_Shape::Valid;
+	
+	Lua_Shape::Register(L, Lua_Shape_Get, Lua_Shape_Set, Lua_Shape_Metatable);
+	
+	Lua_Shapes::Register(L, Lua_Shapes_Get);
+	Lua_Shapes::Push(L, 0);
+	lua_setglobal(L, Lua_Shapes_Name);
     
     Lua_HUDLighting_Fader::Register(L, Lua_HUDLighting_Fader_Get);
     Lua_HUDLighting_Fader::Valid = Lua_HUDLighting_Fader::ValidRange(NUMBER_OF_FADER_QUEUE_ENTRIES);

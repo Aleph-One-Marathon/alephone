@@ -34,6 +34,7 @@ typedef struct blip_info blip_info;
 
 class FontSpecifier;
 class Image_Blitter;
+class Shape_Blitter;
 
 class HUD_Lua_Class : public HUD_Class
 {
@@ -61,6 +62,7 @@ public:
 	               float x, float y,
 								 float r, float g, float b, float a);
 	void draw_image(Image_Blitter *image, float x, float y);
+	void draw_shape(Shape_Blitter *shape, float x, float y);
 	
 protected:
 	std::vector<blip_info> m_blips;

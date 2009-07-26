@@ -333,6 +333,72 @@ end
       <index/>
     </accessor>
 
+    <table name="shape">
+      <variable name="width" access="read-only">
+        <description>width of the shape in pixels</description>
+        <type>number</type>
+      </variable>
+      <variable name="height" access="read-only">
+        <description>height of the shape in pixels</description>
+        <type>number</type>
+      </variable>
+      <variable name="unscaled_width" access="read-only">
+        <description>width of the shape before any calls to :rescale()</description>
+        <type>number</type>
+      </variable>
+      <variable name="unscaled_height" access="read-only">
+        <description>height of the shape before any calls to :rescale()</description>
+        <type>number</type>
+      </variable>
+      <subtable name="crop_rect" classname="lua_shape_crop_rect">
+        <description>specifies a portion of the shape to be drawn</description>
+        <variable name="x"><type>number</type></variable>
+        <variable name="y"><type>number</type></variable>
+        <variable name="width"><type>number</type></variable>
+        <variable name="height"><type>number</type></variable>
+      </subtable>
+      <variable name="tint_color">
+        <description>scale the color and opacity by this value when drawing</description>
+        <type>Color</type>
+        <note>default is (r=1, g=1, b=1, a=1)</note>
+        <note>only available in OpenGL renderer</note>
+      </variable>
+      <variable name="rotation">
+        <description>degrees to rotate the shape when drawn</description>
+        <type>number</type>
+        <note>axis of rotation is about the center of the drawn area</note>
+        <note>only available in OpenGL renderer</note>
+      </variable>
+      <function name="rescale">
+        <description>resize shape to specified width and height</description>
+        <argument name="width"><type>number</type></argument>
+        <argument name="height"><type>number</type></argument>
+      </function>
+      <function name="draw">
+        <description>draw shape (or cropped portion) to screen, with top left corner at specified position</description>
+        <argument name="x"><type>number</type></argument>
+        <argument name="y"><type>number</type></argument>
+      </function>
+    </table>
+    <accessor name="Shapes" contains="shape">
+      <function name="new">
+        <description>all arguments are passed by name; returns shape or nil</description>
+        <argument name="collection">
+          <description>the shape collection</description>
+          <type>collection</type>
+        </argument>
+        <argument name="texture_index">
+          <description>texture bitmap index</description>
+          <type>number</type>
+        </argument>
+        <argument name="color table" required="false">
+          <description>color table index</description>
+          <type>number</type>
+        </argument>
+      </function>
+      <index/>
+    </accessor>
+
     <table name="game" singleton="true">
       <note>all items in Game are read-only</note>
       <variable name="difficulty">
@@ -728,6 +794,47 @@ end
       </mnemonics>
     </enum>
     <enum-accessor name="FadeEffectTypes" contains="fade_effect_type" nice-name="Fade Effect Types"/>
+
+    <enum name="collection">
+      <variable name="bitmap_count">
+        <description>number of bitmaps in collection</description>
+      </variable>
+      <mnemonics>
+        <mnemonic name="interface"/>
+        <mnemonic name="weapons in hand"/>
+        <mnemonic name="juggernaut"/>
+        <mnemonic name="tick"/>
+        <mnemonic name="explosions"/>
+        <mnemonic name="hunter"/>
+        <mnemonic name="player"/>
+        <mnemonic name="items"/>
+        <mnemonic name="trooper"/>
+        <mnemonic name="fighter"/>
+        <mnemonic name="defender"/>
+        <mnemonic name="yeti"/>
+        <mnemonic name="bob"/>
+        <mnemonic name="vacbob"/>
+        <mnemonic name="enforcer"/>
+        <mnemonic name="drone"/>
+        <mnemonic name="compiler"/>
+        <mnemonic name="water"/>
+        <mnemonic name="lava"/>
+        <mnemonic name="sewage"/>
+        <mnemonic name="jjaro"/>
+        <mnemonic name="pfhor"/>
+        <mnemonic name="water scenery"/>
+        <mnemonic name="lava scenery"/>
+        <mnemonic name="sewage scenery"/>
+        <mnemonic name="jjaro scenery"/>
+        <mnemonic name="pfhor scenery"/>
+        <mnemonic name="day"/>
+        <mnemonic name="night"/>
+        <mnemonic name="moon"/>
+        <mnemonic name="space"/>
+        <mnemonic name="cyborg"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="Collections" contains="collection" nice-name="Collections"/>
     
   </tables>
   <types id="types">

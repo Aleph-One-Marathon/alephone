@@ -65,6 +65,12 @@ typedef L_Enum<Lua_SensorBlipType_Name> Lua_SensorBlipType;
 extern char Lua_SensorBlipTypes_Name[]; // "SensorBlipTypes"
 typedef L_EnumContainer<Lua_SensorBlipTypes_Name, Lua_SensorBlipType> Lua_SensorBlipTypes;
 
+extern char Lua_TextureType_Name[]; // "texture_type";
+typedef L_Enum<Lua_TextureType_Name> Lua_TextureType;
+
+extern char Lua_TextureTypes_Name[]; // "TextureTypes";
+typedef L_EnumContainer<Lua_TextureTypes_Name, Lua_TextureType> Lua_TextureTypes;
+#define NUMBER_OF_LUA_TEXTURE_TYPES 5
 
 int Lua_HUDObjects_register(lua_State *L);
 
