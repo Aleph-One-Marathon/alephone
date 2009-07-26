@@ -181,6 +181,8 @@ const short max_handled_recording= aleph_recording_version;
 
 #include "motion_sensor.h" // for reset_motion_sensor()
 
+#include "lua_hud_script.h"
+
 using alephone::Screen;
 
 #ifdef env68k
@@ -837,6 +839,9 @@ bool load_and_start_game(FileSpecifier& File)
 	{
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
+
+	LoadHUDLua();
+	RunLuaHUDScript();
 
 	success= load_game_from_file(File);
 
@@ -1915,6 +1920,9 @@ static bool begin_game(
 			try_and_display_chapter_screen(CHAPTER_SCREEN_BASE + entry.level_number, false, false);
 		}
 
+		LoadHUDLua();
+		RunLuaHUDScript();
+		
 		/* Begin the game! */
 		success= new_game(number_of_players, is_networked, &game_information, starts, &entry);
 		if(success)
@@ -1945,6 +1953,8 @@ static void start_game(
 	reset_screen();
 	
 	enter_screen();
+	if (!changing_level)
+		L_Call_HUDInit();
 	
 	// LP: this is in case we are starting underneath a liquid
 	if (!OGL_IsActive() || !(TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fader)))
@@ -2020,6 +2030,7 @@ static void finish_game(
 
 	stop_fade();
 	set_fade_effect(NONE);
+	L_Call_HUDCleanup();
 	exit_screen();
 
 	/* Stop the replay */
@@ -2050,6 +2061,7 @@ static void finish_game(
 	show_cursor();
 
 	leaving_map();
+	CloseLuaHUDScript();
 	
 	// LP: stop playing the background music if it was present
 	Music::instance()->StopLevelMusic();

@@ -35,4 +35,7 @@ bool RunLuaHUDScript();
 void LoadHUDLua();
 void CloseLuaHUDScript();
 
+void MarkLuaHUDCollections(bool loading);
+
+
 #endif

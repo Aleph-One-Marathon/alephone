@@ -127,7 +127,7 @@ void* L_Persistent_Table_Key();
 class LuaHUDState
 {
 public:
-	LuaHUDState() : running_(false), num_scripts_(0) {
+	LuaHUDState() : running_(false), inited_(false), num_scripts_(0) {
 		state_.reset(lua_open(), lua_close);
 	}
 
@@ -141,6 +141,7 @@ public:
 	bool Running() { return running_; }
 	bool Run();
 	void Stop() { running_ = false; }
+	void MarkCollections(std::set<short>& collections);
 
 	virtual void Initialize() {
 		const luaL_Reg *lib = lualibs;
@@ -178,6 +179,7 @@ public:
 private:
 	bool running_;
 	int num_scripts_;
+    bool inited_;
 };
 
 LuaHUDState *hud_state = NULL;
@@ -217,24 +219,32 @@ void LuaHUDState::Init()
 {
 	if (GetTrigger("init"))
 		CallTrigger();
+    inited_ = true;
 }
 
 void LuaHUDState::Draw()
 {
+    if (!inited_)
+        return;
 	if (GetTrigger("draw"))
 		CallTrigger();
 }
 
 void LuaHUDState::Resize()
 {
+    if (!inited_)
+        return;
 	if (GetTrigger("resize"))
 		CallTrigger();
 }
 
 void LuaHUDState::Cleanup()
 {
+    if (!inited_)
+        return;
 	if (GetTrigger("cleanup"))
 		CallTrigger();
+    inited_ = false;
 }
 
 void LuaHUDState::RegisterFunctions()
@@ -278,6 +288,51 @@ bool LuaHUDState::Run()
 	
 	if (result == 0) running_ = true;
 	return (result == 0);
+}
+
+void LuaHUDState::MarkCollections(std::set<short>& collections)
+{
+	if (!running_)
+		return;
+    
+	lua_pushstring(State(), "CollectionsUsed");
+	lua_gettable(State(), LUA_GLOBALSINDEX);
+	
+	if (lua_istable(State(), -1))
+	{
+		int i = 1;
+		lua_pushnumber(State(), i++);
+		lua_gettable(State(), -2);
+		while (lua_isnumber(State(), -1))
+		{
+			short collection_index = static_cast<short>(lua_tonumber(State(), -1));
+			if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
+			{
+				mark_collection_for_loading(collection_index);
+				collections.insert(collection_index);
+			}
+			lua_pop(State(), 1);
+			lua_pushnumber(State(), i++);
+			lua_gettable(State(), -2);
+		}
+        
+		lua_pop(State(), 2);
+	}
+	else if (lua_isnumber(State(), -1))
+	{
+		short collection_index = static_cast<short>(lua_tonumber(State(), -1));
+		if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
+		{
+			mark_collection_for_loading(collection_index);
+			collections.insert(collection_index);
+		}
+        
+		lua_pop(State(), 1);
+	}
+	else
+	{
+		lua_pop(State(), 1);
+	}
 }
 
 
@@ -353,6 +408,25 @@ void CloseLuaHUDScript()
 	delete hud_state;
 	hud_state = NULL;
 }
+
+void MarkLuaHUDCollections(bool loading)
+{
+	static set<short> collections;
+	if (loading)
+	{
+		collections.clear();
+        if (hud_state)
+            hud_state->MarkCollections(collections);
+	}
+	else
+	{
+		for (set<short>::iterator it = collections.begin(); it != collections.end(); it++)
+		{
+			mark_collection_for_unloading(*it);
+		}
+	}
+}
+
 
 
 #endif /* HAVE_LUA */

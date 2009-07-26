@@ -103,6 +103,7 @@ Feb 8, 2003 (Woody Zenfell):
 
 // MH additions:
 #include "lua_script.h"
+#include "lua_hud_script.h"
 #include <string>
 
 // ZZZ additions:
@@ -567,6 +568,7 @@ void leaving_map(
 	mark_player_collections(false);
 	mark_map_collections(false);
 	MarkLuaCollections(false);
+    MarkLuaHUDCollections(false);
 	L_Call_Cleanup ();
 	//Close and unload the Lua state
 	CloseLuaScript();
@@ -613,6 +615,7 @@ bool entering_map(bool restoring_saved)
 	// ghs: load the Lua script here to see if it needs any additional collections
 	RunLuaScript();
 	MarkLuaCollections(true);
+    MarkLuaHUDCollections(true);
 
 #ifdef SDL
 	load_collections(true, get_screen_mode()->acceleration == _opengl_acceleration);

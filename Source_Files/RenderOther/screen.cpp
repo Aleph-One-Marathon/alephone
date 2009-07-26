@@ -530,9 +530,7 @@ void enter_screen(void)
 	scr->lua_term_rect.w = 640;
 	scr->lua_term_rect.h = 320;
 
-	LoadHUDLua();
-	RunLuaHUDScript();
-	L_Call_HUDInit();
+	L_Call_HUDResize();
 }
 
 
@@ -542,9 +540,6 @@ void enter_screen(void)
 
 void exit_screen(void)
 {
-	L_Call_HUDCleanup();
-	CloseLuaHUDScript();
-	
 	// Return to 640x480 without OpenGL
 	in_game = false;
 	change_screen_mode(640, 480, bit_depth, true);
