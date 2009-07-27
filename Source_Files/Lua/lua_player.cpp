@@ -30,6 +30,7 @@ LUA_PLAYER.CPP
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
+#include "lua_hud_objects.h"
 #include "lua_player.h"
 #include "lua_script.h"
 #include "lua_templates.h"
@@ -816,7 +817,12 @@ char Lua_FadeTypes_Name[] = "FadeTypes";
 typedef L_EnumContainer<Lua_FadeTypes_Name, Lua_FadeType> Lua_FadeTypes;
 
 const int MAX_TEXTURE_PALETTE_SIZE = 256;
-static std::vector<shape_descriptor> lua_texture_palette;
+struct lua_texture {
+    shape_descriptor shape;
+    short type;
+};
+typedef struct lua_texture lua_texture;
+static std::vector<lua_texture> lua_texture_palette;
 static int lua_texture_palette_selected = -1;
 
 void LuaTexturePaletteClear() {
@@ -830,9 +836,17 @@ int LuaTexturePaletteSize() {
 shape_descriptor LuaTexturePaletteTexture(size_t index)
 {
 	if (index < lua_texture_palette.size())
-		return lua_texture_palette[index];
+		return lua_texture_palette[index].shape;
 	else
 		return UNONE;
+}
+
+short LuaTexturePaletteTextureType(size_t index)
+{
+	if (index < lua_texture_palette.size())
+		return lua_texture_palette[index].type;
+	else
+		return 0;
 }
 
 int LuaTexturePaletteSelected()
@@ -849,7 +863,8 @@ int Lua_Texture_Palette_Slot_Clear(lua_State *L)
 	if (player_index != local_player_index)
 		return 0;
 
-	lua_texture_palette[Lua_Texture_Palette_Slot::Index(L, 1)] = UNONE;
+    lua_texture blank = { UNONE, 0 };
+	lua_texture_palette[Lua_Texture_Palette_Slot::Index(L, 1)] = blank;
 	return 0;
 }
 
@@ -860,10 +875,10 @@ static int Lua_Texture_Palette_Slot_Get_Collection(lua_State *L)
 		return 0;
 
 	int index = Lua_Texture_Palette_Slot::Index(L, 2);
-	if (lua_texture_palette[index] == UNONE)
+	if (lua_texture_palette[index].shape == UNONE)
 		return 0;
 
-	lua_pushnumber(L, GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(lua_texture_palette[index])));
+	lua_pushnumber(L, GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(lua_texture_palette[index].shape)));
 	return 1;
 }
 
@@ -874,10 +889,24 @@ static int Lua_Texture_Palette_Slot_Get_Texture(lua_State *L)
 		return 0;
 
 	int index = Lua_Texture_Palette_Slot::Index(L, 2);
-	if (lua_texture_palette[index] == UNONE)
+	if (lua_texture_palette[index].shape == UNONE)
 		return 0;
 
-	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(lua_texture_palette[index]));
+	lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(lua_texture_palette[index].shape));
+	return 1;
+}
+
+static int Lua_Texture_Palette_Slot_Get_Type(lua_State *L)
+{
+	int player_index = Lua_Texture_Palette_Slot::PlayerIndex(L, 1);
+	if (player_index != local_player_index)
+		return 0;
+    
+	int index = Lua_Texture_Palette_Slot::Index(L, 2);
+	if (lua_texture_palette[index].shape == UNONE)
+		return 0;
+    
+	lua_pushnumber(L, lua_texture_palette[index].type);
 	return 1;
 }
 
@@ -885,6 +914,7 @@ const luaL_reg Lua_Texture_Palette_Slot_Get[] = {
 	{"clear", L_TableFunction<Lua_Texture_Palette_Slot_Clear>},
 	{"collection", Lua_Texture_Palette_Slot_Get_Collection},
 	{"texture_index", Lua_Texture_Palette_Slot_Get_Texture},
+    {"type", Lua_Texture_Palette_Slot_Get_Type},
 	{0, 0}
 };
 
@@ -897,7 +927,7 @@ static int Lua_Texture_Palette_Slot_Set_Collection(lua_State *L)
 	int16 index = Lua_Texture_Palette_Slot::Index(L, 1);
 	short collection_index = Lua_Collection::ToIndex(L, 2);
 
-	lua_texture_palette[index] = BUILD_DESCRIPTOR(collection_index, GET_DESCRIPTOR_SHAPE(lua_texture_palette[index]));
+	lua_texture_palette[index].shape = BUILD_DESCRIPTOR(collection_index, GET_DESCRIPTOR_SHAPE(lua_texture_palette[index].shape));
 	return 0;
 }
 
@@ -915,13 +945,28 @@ static int Lua_Texture_Palette_Slot_Set_Texture(lua_State *L)
 	if (shape_index < 0 || shape_index >= MAXIMUM_SHAPES_PER_COLLECTION)
 		return luaL_error(L, "texture_index: invalid texture index");
 	
-	lua_texture_palette[index] = BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(lua_texture_palette[index]), shape_index);
+	lua_texture_palette[index].shape = BUILD_DESCRIPTOR(GET_DESCRIPTOR_COLLECTION(lua_texture_palette[index].shape), shape_index);
 	return 0;
 }
+
+static int Lua_Texture_Palette_Slot_Set_Type(lua_State *L)
+{
+	int player_index = Lua_Texture_Palette_Slot::PlayerIndex(L, 1);
+	if (player_index != local_player_index)
+		return 0;
+    
+	int16 index = Lua_Texture_Palette_Slot::Index(L, 1);
+	short texture_type = Lua_TextureType::ToIndex(L, 2);
+    
+	lua_texture_palette[index].type = texture_type;
+	return 0;
+}
+
 
 const luaL_reg Lua_Texture_Palette_Slot_Set[] = {
 	{"collection", Lua_Texture_Palette_Slot_Set_Collection},
 	{"texture_index", Lua_Texture_Palette_Slot_Set_Texture},
+    {"type", Lua_Texture_Palette_Slot_Set_Type},
 	{0, 0}
 };
 
@@ -1045,7 +1090,8 @@ static int Lua_Texture_Palette_Set_Size(lua_State *L)
 	if (size > MAX_TEXTURE_PALETTE_SIZE)
 		return luaL_error(L, "size: Its really big");
 
-	lua_texture_palette.resize(size, UNONE);
+    lua_texture blank = { UNONE, 0 };
+	lua_texture_palette.resize(size, blank);
 	if (lua_texture_palette_selected >= lua_texture_palette.size())
 		lua_texture_palette_selected = -1;
 
@@ -2450,6 +2496,12 @@ int Lua_Player_register (lua_State *L)
 
 	Lua_DifficultyTypes::Register(L);
 	Lua_DifficultyTypes::Length = Lua_DifficultyTypes::ConstantLength(NUMBER_OF_GAME_DIFFICULTY_LEVELS);
+
+	Lua_TextureType::Register(L, 0, 0, 0, Lua_TextureType_Mnemonics);
+	Lua_TextureType::Valid = Lua_TextureType::ValidRange(NUMBER_OF_LUA_TEXTURE_TYPES);
+    
+	Lua_TextureTypes::Register(L);
+	Lua_TextureTypes::Length = Lua_TextureTypes::ConstantLength(NUMBER_OF_LUA_TEXTURE_TYPES);
 
 	Lua_Music::Register(L, Lua_Music_Get);
 

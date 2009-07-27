@@ -236,21 +236,25 @@ void HUD_OGL_Class::DrawShapeAtXY(shape_descriptor shape, short x, short y, bool
 	TMgr.RestoreTextureMatrix();
 }
 
-void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short x, short y, int size)
+void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short texture_type, short x, short y, int size)
 {
     Shape_Blitter b(
         GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(shape)),
         GET_DESCRIPTOR_SHAPE(shape),
-        Shape_Texture_Wall,
+        texture_type,
         GET_COLLECTION_CLUT(GET_DESCRIPTOR_COLLECTION(shape)));
-    
-    b.Rescale(size, size);
+    int w = b.Width();
+    int h = b.Height();
+    if (w >= h)
+        b.Rescale(size, size * h / w);
+    else
+        b.Rescale(size * w / h, size);
     
     SDL_Rect r;
-    r.x = x;
-    r.y = y;
-    r.w = size;
-    r.h = size;
+    r.w = b.Width();
+    r.h = b.Height();
+    r.x = x + (size - r.w)/2;
+    r.y = y + (size - r.h)/2;
     b.OGL_Draw(r);
 }
 

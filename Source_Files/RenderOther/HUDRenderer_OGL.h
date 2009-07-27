@@ -51,7 +51,7 @@ protected:
 	void FillRect(screen_rectangle *r, short color_index);
 	void FrameRect(screen_rectangle *r, short color_index);
 
-	void DrawTexture(shape_descriptor texture, short x, short y, int size);
+	void DrawTexture(shape_descriptor texture, short texture_type, short x, short y, int size);
 
 	void SetClipPlane(int x, int y, int c_x, int c_y, int radius);
 	void DisableClipPlane(void);

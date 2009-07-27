@@ -1106,6 +1106,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	    <description>collection of this slot</description>
 	    <type>collection</type>
 	  </variable>
+    <variable name="type" access="local-player">
+      <description>texture type of this slot such as wall or sprite; see "Texture Types"</description>
+      <type>texture_type</type>
+    </variable>
 	  <function name="clear">
 	    <description>makes this slot empty</description>
 	  </function>
@@ -2516,6 +2520,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="vacbob kill the player"/>
       </mnemonics>
     </enum>
+    <enum name="texture_type">
+      <mnemonics>
+        <mnemonic name="wall"/>
+        <mnemonic name="landscape"/>
+        <mnemonic name="sprite"/>
+        <mnemonic name="weapon in hand"/>
+        <mnemonic name="interface"/>
+      </mnemonics>
+    </enum>
     <enum name="transfer_mode">
       <mnemonics>
 	<mnemonic name="normal"/>
@@ -2568,6 +2581,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     <enum-accessor name="ScoringModes" contains="scoring_mode" nice-name="Scoring Modes"/>
     <enum-accessor name="SideTypes" contains="side_type" nice-name="Side Types"/>
     <enum-accessor name="Sounds" contains="sound" nice-name="Sounds"/>
+    <enum-accessor name="TextureTypes" contains="texture_type" nice-name="Texture Types"/>
     <enum-accessor name="TransferModes" contains="transfer_mode" nice-name="Transfer Modes"/>
     <enum-accessor name="WeaponTypes" contains="weapon_type" nice-name="Weapons"/>
   </tables>

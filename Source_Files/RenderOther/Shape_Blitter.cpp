@@ -51,7 +51,7 @@ SHAPE_BLITTER.CPP
 #endif
 
 
-Shape_Blitter::Shape_Blitter(short collection, short texture_index, short texture_type, short clut_index) : m_type(texture_type), m_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0), use_transparency(true)
+Shape_Blitter::Shape_Blitter(short collection, short texture_index, short texture_type, short clut_index) : m_type(texture_type), m_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0)
 {
 	m_src.x = m_src.y = m_src.w = m_src.h = 0;
 	m_scaled_src.x = m_scaled_src.y = m_scaled_src.w = m_scaled_src.h = 0;
@@ -145,7 +145,7 @@ void Shape_Blitter::OGL_Draw(SDL_Rect& dst)
 	// Draw shape
 	glColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
 	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
+    glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();
@@ -232,7 +232,7 @@ SDL_Surface *flip_surface(SDL_Surface *s, int width, int height)
     
 	SDL_Surface *s2 = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, s->format->BitsPerPixel, s->format->Rmask, s->format->Gmask, s->format->Bmask, s->format->Amask);
     
-    int byteWidth = width * s->format->BytesPerPixel;
+    int byteWidth = s->pitch;
     pixel8 *dst_pixels = (pixel8 *)s2->pixels;
     pixel8 *src_pixels = (pixel8 *)s->pixels;
     
@@ -260,21 +260,13 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, SDL_Rect& dst)
     if (!m_surface)
     {
         byte *pixelsOut = NULL;
-        SDL_Surface *tmp = get_shape_surface(m_desc, NONE, &pixelsOut);
+        SDL_Surface *tmp = get_shape_surface(m_desc, NONE, &pixelsOut, (m_type == Shape_Texture_Interface) ? -1.0 : 1.0);
         if (!tmp)
             return;
         
-        if (use_transparency)
+        if (pixelsOut)
         {
             m_surface = SDL_DisplayFormatAlpha(tmp);
-            SDL_FreeSurface(tmp);
-            if (pixelsOut)
-                free(pixelsOut);
-            pixelsOut = NULL;
-        }
-        else if (pixelsOut)
-        {
-            m_surface = SDL_DisplayFormat(tmp);
             SDL_FreeSurface(tmp);
             free(pixelsOut);
             pixelsOut = NULL;

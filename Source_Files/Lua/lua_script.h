@@ -66,6 +66,7 @@ void MarkLuaCollections(bool active);
 void LuaTexturePaletteClear();
 int LuaTexturePaletteSize();
 shape_descriptor LuaTexturePaletteTexture(size_t);
+short LuaTexturePaletteTextureType(size_t);
 int LuaTexturePaletteSelected();
 
 bool LuaPlayerCanWieldWeapons(short player_index);

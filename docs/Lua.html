@@ -165,6 +165,7 @@
 <li><a href="#ScoringModes">Scoring Modes</a></li>
 <li><a href="#SideTypes">Side Types</a></li>
 <li><a href="#Sounds">Sounds</a></li>
+<li><a href="#TextureTypes">Texture Types</a></li>
 <li><a href="#TransferModes">Transfer Modes</a></li>
 <li><a href="#WeaponTypes">Weapons</a></li>
 </ol>
@@ -1260,6 +1261,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .texture_index<span class="access"> (local player)</span>
 </dt>
 <dd><p class="description">texture index of this slot</p></dd>
+<dt>
+    .type<span class="access"> (local player)</span>
+</dt>
+<dd><p class="description">texture type of this slot such as wall or sprite; see "Texture Types"</p></dd>
 </dl></dd>
 </dl>
 </dd>
@@ -2835,6 +2840,20 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"vacbob kill the player"</li>
 </div>
 <div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="TextureTypes"></a>Texture Types</h3>
+<dl>
+<dt># TextureTypes</dt>
+<dt>TextureTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"wall"</li>
+<li>"landscape"</li>
+<li>"sprite"</li>
+<li>"weapon in hand"</li>
+<li>"interface"</li>
 </ul>
 <h3>
 <a name="TransferModes"></a>Transfer Modes</h3>

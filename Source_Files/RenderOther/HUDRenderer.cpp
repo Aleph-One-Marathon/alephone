@@ -93,7 +93,7 @@ bool HUD_Class::update_everything(short time_elapsed)
 		for (int i = 0; i < LuaTexturePaletteSize(); ++i)
 		{
 			if (LuaTexturePaletteTexture(i) != UNONE)
-				DrawTexture(LuaTexturePaletteTexture(i), (i % cols) * size + x_offset, 320 + y_offset + (i / cols) * size, size - 1);
+				DrawTexture(LuaTexturePaletteTexture(i), LuaTexturePaletteTextureType(i), (i % cols) * size + x_offset, 320 + y_offset + (i / cols) * size, size - 1);
 		}
 		
 		if (LuaTexturePaletteSelected() >= 0)
