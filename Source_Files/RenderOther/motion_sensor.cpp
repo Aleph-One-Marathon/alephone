@@ -160,7 +160,7 @@ struct motion_sensor_definition motion_sensor_settings = {
 
 #define OBJECT_IS_VISIBLE_TO_MOTION_SENSOR(o) true
 
-#define FLICKER_FREQUENCY 0xf
+#define FLICKER_FREQUENCY 0xe
 
 /* ---------- structures */
 
