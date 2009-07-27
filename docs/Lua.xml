@@ -1106,7 +1106,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	    <description>collection of this slot</description>
 	    <type>collection</type>
 	  </variable>
-    <variable name="type" access="local-player">
+    <variable name="type" access="local-player" version="SVN">
       <description>texture type of this slot such as wall or sprite; see "Texture Types"</description>
       <type>texture_type</type>
     </variable>
