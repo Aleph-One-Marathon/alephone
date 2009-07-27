@@ -134,6 +134,7 @@
 <li><a href="#ScoringModes">Scoring Modes</a></li>
 <li><a href="#SensorBlipTypes">Sensor Blip Types</a></li>
 <li><a href="#SizePreferences">Size Preferences</a></li>
+<li><a href="#TextureTypes">Texture Types</a></li>
 <li><a href="#WeaponTypes">Weapons</a></li>
 </ol>
 </li>
@@ -693,13 +694,14 @@ end
 <h3>
 <a name="Shapes"></a>Shapes</h3>
 <dl>
-<dt>Shapes.new(collection, texture_index [, color table])
+<dt>Shapes.new(collection, texture_index [, type] [, color table])
     </dt>
 <dd>
 <p class="description">all arguments are passed by name; returns shape or nil</p>
 <ul class="args">
 <li>collection: the shape collection</li>
 <li>texture_index: texture bitmap index</li>
+<li>type: type such as wall or sprite; see "Texture Types"</li>
 <li>color table: color table index</li>
 </ul>
 </dd>
@@ -1039,6 +1041,20 @@ end
 <li>"normal"</li>
 <li>"double"</li>
 <li>"largest"</li>
+</ul>
+<h3>
+<a name="TextureTypes"></a>Texture Types</h3>
+<dl>
+<dt># TextureTypes</dt>
+<dt>TextureTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"wall"</li>
+<li>"landscape"</li>
+<li>"sprite"</li>
+<li>"weapon in hand"</li>
+<li>"interface"</li>
 </ul>
 <h3>
 <a name="WeaponTypes"></a>Weapons</h3>

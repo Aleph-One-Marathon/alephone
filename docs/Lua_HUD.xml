@@ -398,6 +398,10 @@ end
           <description>texture bitmap index</description>
           <type>number</type>
         </argument>
+        <argument name="type" required="false">
+          <description>type such as wall or sprite; see "Texture Types"</description>
+          <type>texture_type</type>
+        </argument>
         <argument name="color table" required="false">
           <description>color table index</description>
           <type>number</type>
@@ -843,6 +847,17 @@ end
     </enum>
     <enum-accessor name="Collections" contains="collection" nice-name="Collections"/>
     
+    <enum name="texture_type">
+      <mnemonics>
+        <mnemonic name="wall"/>
+        <mnemonic name="landscape"/>
+        <mnemonic name="sprite"/>
+        <mnemonic name="weapon in hand"/>
+        <mnemonic name="interface"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="TextureTypes" contains="texture_type" nice-name="Texture Types"/>
+
   </tables>
   <types id="types">
   </types>
