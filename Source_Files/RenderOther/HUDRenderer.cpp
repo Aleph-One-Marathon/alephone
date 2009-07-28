@@ -779,16 +779,17 @@ void HUD_Class::draw_player_name(void)
  * Draw the message area, and then put messages or player name in the buffer
  */
 
-#define MESSAGE_AREA_X_OFFSET 291
-#define MESSAGE_AREA_Y_OFFSET 321
+#define MESSAGE_AREA_X_OFFSET -9
+#define MESSAGE_AREA_Y_OFFSET -5
 
 void HUD_Class::draw_message_area(short time_elapsed)
 {
 	if(time_elapsed == NONE)
 	{
+        screen_rectangle *player_name_rect = get_interface_rectangle(_player_name_rect);
 		DrawShapeAtXY(
 			BUILD_DESCRIPTOR(_collection_interface, _network_panel), 
-			MESSAGE_AREA_X_OFFSET, MESSAGE_AREA_Y_OFFSET);
+			player_name_rect->left + MESSAGE_AREA_X_OFFSET, player_name_rect->top + MESSAGE_AREA_Y_OFFSET);
 		draw_player_name();
 	}
 }
