@@ -344,7 +344,7 @@
     </xsl:choose>
     <xsl:for-each select="alias">
       <br/>
-      .<xsl:value-of select="."/>
+      <xsl:if test="substring(., 1, 1) != '['">.</xsl:if><xsl:value-of select="."/>
       <xsl:choose>
 	<xsl:when test="../@access = 'read-only'">
 	  <span class="access"> (read-only)</span>
