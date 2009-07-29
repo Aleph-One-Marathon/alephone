@@ -878,9 +878,25 @@ void render_screen(short ticks_elapsed)
 	
 #endif
 
+    // clear Lua drawing from previous frame
+    // (GL must do this before render_view)
+    if (screen_mode.acceleration == _opengl_acceleration && Screen::instance()->lua_hud())
+    {
+        clear_screen(false);
+        clear_next_screen = false;
+    }
+    
 	// Render world view
 	render_view(world_view, world_pixels_structure);
 
+    // clear Lua drawing from previous frame
+    // (SDL is slower if we do this before render_view)
+    if (screen_mode.acceleration != _opengl_acceleration && Screen::instance()->lua_hud())
+    {
+        clear_screen(false);
+        clear_next_screen = false;
+    }
+    
 	// Render crosshairs
 	if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
 	  if (NetAllowCrosshair())
@@ -908,12 +924,6 @@ void render_screen(short ticks_elapsed)
 	OGL_SetWindow(sr, sr, true);
 #endif
 	
-    // clear Lua drawing from previous frame
-    if (Screen::instance()->lua_hud())
-    {
-        clear_screen(false);
-        clear_next_screen = false;
-    }
 
 	// If the main view is not being rendered in software but OpenGL is active,
 	// then blit the software rendering to the screen
