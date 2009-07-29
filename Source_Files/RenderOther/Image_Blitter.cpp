@@ -23,7 +23,7 @@ IMAGE_BLITTER.CPP
 #include "Image_Blitter.h"
 #include "images.h"
 
-Image_Blitter::Image_Blitter() : m_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0)
+Image_Blitter::Image_Blitter() : m_surface(NULL), m_disp_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0)
 {
 	m_src.x = m_src.y = m_src.w = m_src.h = 0;
 	m_scaled_src.x = m_scaled_src.y = m_scaled_src.w = m_scaled_src.h = 0;
@@ -94,6 +94,8 @@ void Image_Blitter::Unload()
 {
 	SDL_FreeSurface(m_surface);
 	m_surface = NULL;
+	SDL_FreeSurface(m_disp_surface);
+	m_disp_surface = NULL;
 	SDL_FreeSurface(m_scaled_surface);
 	m_scaled_surface = NULL;
 	m_src.w = 0;
@@ -150,7 +152,13 @@ void Image_Blitter::Draw(SDL_Surface *dst_surface, SDL_Rect& dst, SDL_Rect& src)
 	if (!dst_surface)
 		return;
 	
-	SDL_Surface *src_surface = m_surface;
+    if (!m_disp_surface)
+    {
+        m_disp_surface = SDL_DisplayFormatAlpha(m_surface);
+        if (!m_disp_surface)
+            return;
+    }
+	SDL_Surface *src_surface = m_disp_surface;
 	
 	// rescale surface if necessary
 	if (m_scaled_src.w != m_src.w || m_scaled_src.h != m_src.h)
@@ -160,7 +168,7 @@ void Image_Blitter::Draw(SDL_Surface *dst_surface, SDL_Rect& dst, SDL_Rect& src)
 				m_scaled_surface->h != m_scaled_src.h)
 		{
 			SDL_FreeSurface(m_scaled_surface);
-			m_scaled_surface = rescale_surface(m_surface, m_scaled_src.w, m_scaled_src.h);
+			m_scaled_surface = rescale_surface(m_disp_surface, m_scaled_src.w, m_scaled_src.h);
 		}
 		src_surface = m_scaled_surface;
 	}

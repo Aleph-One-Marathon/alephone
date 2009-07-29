@@ -68,6 +68,7 @@ public:
 protected:
 	
 	SDL_Surface *m_surface;
+    SDL_Surface *m_disp_surface;
 	SDL_Surface *m_scaled_surface;
 	SDL_Rect m_src, m_scaled_src;
 };

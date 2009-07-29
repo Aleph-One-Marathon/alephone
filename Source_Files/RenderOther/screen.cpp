@@ -834,11 +834,6 @@ void render_screen(short ticks_elapsed)
 
 		clear_next_screen = false;
 	}
-	else if (Screen::instance()->lua_hud())
-	{
-		clear_screen(false);
-		clear_next_screen = false;
-	}
 
 	switch (screen_mode.acceleration) {
 		case _opengl_acceleration:
@@ -913,6 +908,13 @@ void render_screen(short ticks_elapsed)
 	OGL_SetWindow(sr, sr, true);
 #endif
 	
+    // clear Lua drawing from previous frame
+    if (Screen::instance()->lua_hud())
+    {
+        clear_screen(false);
+        clear_next_screen = false;
+    }
+
 	// If the main view is not being rendered in software but OpenGL is active,
 	// then blit the software rendering to the screen
 	if (screen_mode.acceleration == _opengl_acceleration) {
@@ -939,13 +941,6 @@ void render_screen(short ticks_elapsed)
 
 #endif
 	} else {
-
-		if (Screen::instance()->lua_hud())
-		{
-			// clear any drawing from previous frame
-			SDL_FillRect(main_surface, NULL, SDL_MapRGBA(main_surface->format, 0, 0, 0, 0));
-		}
-		
 		// Update world window
 		if (!world_view->terminal_mode_active)
 			update_screen(BufferRect, ViewRect, HighResolution);
