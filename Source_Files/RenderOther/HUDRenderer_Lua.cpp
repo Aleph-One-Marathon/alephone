@@ -22,8 +22,6 @@ HUD_RENDERER_LUA.CPP
 
 #include "HUDRenderer_Lua.h"
 
-#ifdef HAVE_OPENGL
-
 #include "FontHandler.h"
 #include "Image_Blitter.h"
 #include "Shape_Blitter.h"
@@ -116,6 +114,7 @@ void HUD_Lua_Class::start_draw(void)
     m_wr = scr->window_rect();
 	m_opengl = (get_screen_mode()->acceleration == _opengl_acceleration);
 	
+#ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
 		glPushAttrib(GL_ALL_ATTRIB_BITS);
@@ -134,6 +133,7 @@ void HUD_Lua_Class::start_draw(void)
 		m_surface = NULL;
 	}
 	else
+#endif
 	{
 		if (m_surface &&
 				(m_surface->w != SDL_GetVideoSurface()->w ||
@@ -161,13 +161,16 @@ void HUD_Lua_Class::end_draw(void)
 {
 	m_drawing = false;
 	
+#ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
         glMatrixMode(GL_MODELVIEW);
         glPopMatrix();
 		glPopAttrib();
 	}
-	else if (m_surface)
+	else
+#endif
+	if (m_surface)
 	{
 //		SDL_BlitSurface(m_surface, NULL, SDL_GetVideoSurface(), NULL);
 		SDL_SetAlpha(SDL_GetVideoSurface(), 0, 0xff);
@@ -184,14 +187,17 @@ void HUD_Lua_Class::apply_clip(void)
     r.y = m_wr.y + scr->lua_clip_rect.y;
     r.w = MIN(scr->lua_clip_rect.w, m_wr.w - scr->lua_clip_rect.x);
     r.h = MIN(scr->lua_clip_rect.h, m_wr.h - scr->lua_clip_rect.y);
-	if (m_surface)
-	{
-		SDL_SetClipRect(SDL_GetVideoSurface(), &r);
-	}
-	else if (m_opengl)
+#ifdef HAVE_OPENGL
+	if (m_opengl)
 	{
         glEnable(GL_SCISSOR_TEST);
         glScissor(r.x, scr->height() - r.y - r.h, r.w, r.h);
+	}
+	else
+#endif
+	if (m_surface)
+	{
+		SDL_SetClipRect(SDL_GetVideoSurface(), &r);
 	}
 }
 
@@ -202,6 +208,7 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 		return;
 	
 	apply_clip();
+#ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
 		glColor4f(r, g, b, a);
@@ -216,7 +223,9 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 		glEnd();
 		glEnable(GL_TEXTURE_2D);
 	}
-	else if (m_surface)
+	else
+#endif
+	if (m_surface)
 	{
 		SDL_Rect rect;
 		rect.x = x + m_wr.x;
@@ -237,6 +246,7 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 		return;
 		
 	apply_clip();
+#ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
 		glColor4f(r, g, b, a);
@@ -266,7 +276,9 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 		glEnd();
 		glEnable(GL_TEXTURE_2D);
 	}
-	else if (m_surface)
+	else
+#endif
+	if (m_surface)
 	{
 		Uint32 color = SDL_MapRGBA(m_surface->format, r * 255, g * 255, b * 255, a * 255);
 		SDL_Rect rect;
@@ -305,6 +317,7 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 		return;
 	
 	apply_clip();
+#ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
 		glMatrixMode(GL_MODELVIEW);
@@ -315,7 +328,9 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 		glColor4f(1, 1, 1, 1);
 		glPopMatrix();
 	}
-	else if (m_surface)
+	else
+#endif
+	if (m_surface)
 	{
 		SDL_Rect rect;
 		rect.x = x + m_wr.x;
@@ -364,17 +379,17 @@ void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
 	r.h = shape->crop_rect.h;
     
 	apply_clip();
+#ifdef HAVE_OPENGL
     if (m_opengl)
     {
         shape->OGL_Draw(r);
     }
-    else if (m_surface)
+    else
+#endif
+    if (m_surface)
     {
         r.x += m_wr.x;
         r.y += m_wr.y;
         shape->SDL_Draw(SDL_GetVideoSurface(), r);
     }
 }
-
-
-#endif // def HAVE_OPENGL
