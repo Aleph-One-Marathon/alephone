@@ -1631,13 +1631,13 @@ typedef L_Class<Lua_Screen_Name> Lua_Screen;
 
 static int Lua_Screen_Get_Width(lua_State *L)
 {
-	lua_pushnumber(L, alephone::Screen::instance()->width());
+	lua_pushnumber(L, alephone::Screen::instance()->window_width());
 	return 1;
 }
 
 static int Lua_Screen_Get_Height(lua_State *L)
 {
-	lua_pushnumber(L, alephone::Screen::instance()->height());
+	lua_pushnumber(L, alephone::Screen::instance()->window_height());
 	return 1;
 }
 

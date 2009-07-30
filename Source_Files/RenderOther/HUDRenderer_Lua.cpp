@@ -112,6 +112,8 @@ blip_info HUD_Lua_Class::entity_blip(size_t index)
 
 void HUD_Lua_Class::start_draw(void)
 {
+	alephone::Screen *scr = alephone::Screen::instance();
+    m_wr = scr->window_rect();
 	m_opengl = (get_screen_mode()->acceleration == _opengl_acceleration);
 	
 	if (m_opengl)
@@ -124,6 +126,10 @@ void HUD_Lua_Class::start_draw(void)
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_FOG);
+        
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+        glTranslatef(m_wr.x, m_wr.y, 0.0);
 		
 		m_surface = NULL;
 	}
@@ -157,6 +163,8 @@ void HUD_Lua_Class::end_draw(void)
 	
 	if (m_opengl)
 	{
+        glMatrixMode(GL_MODELVIEW);
+        glPopMatrix();
 		glPopAttrib();
 	}
 	else if (m_surface)
@@ -171,27 +179,19 @@ void HUD_Lua_Class::apply_clip(void)
 {
 	alephone::Screen *scr = alephone::Screen::instance();
 	
+    SDL_Rect r;
+    r.x = m_wr.x + scr->lua_clip_rect.x;
+    r.y = m_wr.y + scr->lua_clip_rect.y;
+    r.w = MIN(scr->lua_clip_rect.w, m_wr.w - scr->lua_clip_rect.x);
+    r.h = MIN(scr->lua_clip_rect.h, m_wr.h - scr->lua_clip_rect.y);
 	if (m_surface)
 	{
-		SDL_SetClipRect(SDL_GetVideoSurface(), &scr->lua_clip_rect);
+		SDL_SetClipRect(SDL_GetVideoSurface(), &r);
 	}
 	else if (m_opengl)
 	{
-		if (scr->lua_clip_rect.x == 0 && scr->lua_clip_rect.y == 0 &&
-				scr->lua_clip_rect.w == scr->width() &&
-				scr->lua_clip_rect.h == scr->height())
-		{
-			glDisable(GL_SCISSOR_TEST);
-		}
-		else
-		{
-			int top = scr->lua_clip_rect.y;
-			int bot = top + scr->lua_clip_rect.h;
-			glEnable(GL_SCISSOR_TEST);
-			glScissor(scr->lua_clip_rect.x,
-								scr->height() - scr->lua_clip_rect.y - scr->lua_clip_rect.h,
-								scr->lua_clip_rect.w, scr->lua_clip_rect.h);
-		}
+        glEnable(GL_SCISSOR_TEST);
+        glScissor(r.x, scr->height() - r.y - r.h, r.w, r.h);
 	}
 }
 
@@ -219,8 +219,8 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 	else if (m_surface)
 	{
 		SDL_Rect rect;
-		rect.x = x;
-		rect.y = y;
+		rect.x = x + m_wr.x;
+		rect.y = y + m_wr.y;
 		rect.w = w;
 		rect.h = h;
 		SDL_FillRect(m_surface, &rect,
@@ -270,27 +270,27 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 	{
 		Uint32 color = SDL_MapRGBA(m_surface->format, r * 255, g * 255, b * 255, a * 255);
 		SDL_Rect rect;
-		rect.x = x;
+		rect.x = x + m_wr.x;
 		rect.w = w;
-		rect.y = y;
+		rect.y = y + m_wr.y;
 		rect.h = t;
 		SDL_FillRect(m_surface, &rect, color);
 		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
-		rect.x = x;
+		rect.x = x + m_wr.x;
 		rect.w = w;
-		rect.y = y + h - t;
+		rect.y = y + h - t + m_wr.y;
 		rect.h = t;
 		SDL_FillRect(m_surface, &rect, color);
 		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
-		rect.x = x;
+		rect.x = x + m_wr.x;
 		rect.w = t;
-		rect.y = y + t;
+		rect.y = y + t + m_wr.y;
 		rect.h = h - t - t;
 		SDL_FillRect(m_surface, &rect, color);
 		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
-		rect.x = x + w - t;
+		rect.x = x + w - t + m_wr.x;
 		rect.w = t;
-		rect.y = y + t;
+		rect.y = y + t + m_wr.y;
 		rect.h = h - t - t;
 		SDL_FillRect(m_surface, &rect, color);
 		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
@@ -318,13 +318,13 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 	else if (m_surface)
 	{
 		SDL_Rect rect;
-		rect.x = x;
-		rect.y = y;
+		rect.x = x + m_wr.x;
+		rect.y = y + m_wr.y;
 		rect.w = font->TextWidth(text);
 		rect.h = font->LineSpacing;
 		SDL_BlitSurface(SDL_GetVideoSurface(), &rect, m_surface, &rect);
 		font->Info->draw_text(m_surface, text, strlen(text),
-												  x, y + font->Height,
+												  x + m_wr.x, y + m_wr.y + font->Height,
 												  SDL_MapRGBA(m_surface->format,
 																		  r * 255, g * 255, b * 255, a * 255),
 												  font->Style);
@@ -344,6 +344,11 @@ void HUD_Lua_Class::draw_image(Image_Blitter *image, float x, float y)
 	r.h = image->crop_rect.h;
 
 	apply_clip();
+    if (m_surface)
+    {
+        r.x += m_wr.x;
+        r.y += m_wr.y;
+    }
 	image->Draw(SDL_GetVideoSurface(), r);
 }
 
@@ -365,6 +370,8 @@ void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
     }
     else if (m_surface)
     {
+        r.x += m_wr.x;
+        r.y += m_wr.y;
         shape->SDL_Draw(SDL_GetVideoSurface(), r);
     }
 }

@@ -69,6 +69,7 @@ protected:
 	bool m_drawing;
 	bool m_opengl;
 	SDL_Surface *m_surface;
+	SDL_Rect m_wr;
 	
 	void render_motion_sensor(short time_elapsed);
 	void draw_all_entity_blips(void);

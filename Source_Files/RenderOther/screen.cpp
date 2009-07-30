@@ -121,6 +121,7 @@ static void DisplayPosition(SDL_Surface *s);
 static void DisplayMessages(SDL_Surface *s);
 static void DisplayNetMicStatus(SDL_Surface *s);
 static void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect);
+static void clear_screen_margin();
 
 // LP addition:
 void start_tunnel_vision_effect(
@@ -321,10 +322,10 @@ SDL_Rect Screen::view_rect()
 	SDL_Rect r;
 	if (lua_hud())
 	{
-		r.x = lua_view_rect.x;
-		r.y = lua_view_rect.y;
-		r.w = lua_view_rect.w;
-		r.h = lua_view_rect.h;
+		r.x = lua_view_rect.x + (width() - window_width()) / 2;
+		r.y = lua_view_rect.y + (height() - window_height()) / 2;
+		r.w = MIN(lua_view_rect.w, window_width() - lua_view_rect.x);
+		r.h = MIN(lua_view_rect.h, window_height() - lua_view_rect.y);
 	}
 	else if (!hud())
 	{
@@ -370,10 +371,16 @@ SDL_Rect Screen::view_rect()
 
 SDL_Rect Screen::map_rect()
 {
-	if (lua_hud())
-		return lua_map_rect;
-	
 	SDL_Rect r;
+	if (lua_hud())
+    {
+		r.x = lua_map_rect.x + (width() - window_width()) / 2;
+		r.y = lua_map_rect.y + (height() - window_height()) / 2;
+		r.w = MIN(lua_map_rect.w, window_width() - lua_map_rect.x);
+		r.h = MIN(lua_map_rect.h, window_height() - lua_map_rect.y);
+        return r;
+    }
+	
 	r.w = window_width();
 	r.h = window_height();
 	if (hud()) 
@@ -394,10 +401,10 @@ SDL_Rect Screen::term_rect()
 	
 	if (lua_hud())
 	{
-		wh = lua_term_rect.h;
-		ww = lua_term_rect.w;
-		wx = lua_term_rect.x;
-		wy = lua_term_rect.y;
+		wx += lua_term_rect.x;
+		wy += lua_term_rect.y;
+		ww = MIN(lua_term_rect.w, ww - lua_term_rect.x);
+		wh = MIN(lua_term_rect.h, wh - lua_term_rect.y);
 	}
 	
 	SDL_Rect r;
@@ -581,7 +588,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #endif
 	} else 
 #endif 
-	if (nogl) {
+	if (nogl || Screen::instance()->lua_hud()) {
 		flags |= SDL_SWSURFACE;
 	} else {
 		flags |= SDL_HWSURFACE | SDL_HWPALETTE;
@@ -881,10 +888,7 @@ void render_screen(short ticks_elapsed)
     // clear Lua drawing from previous frame
     // (GL must do this before render_view)
     if (screen_mode.acceleration == _opengl_acceleration && Screen::instance()->lua_hud())
-    {
-        clear_screen(false);
-        clear_next_screen = false;
-    }
+        clear_screen_margin();
     
 	// Render world view
 	render_view(world_view, world_pixels_structure);
@@ -892,10 +896,7 @@ void render_screen(short ticks_elapsed)
     // clear Lua drawing from previous frame
     // (SDL is slower if we do this before render_view)
     if (screen_mode.acceleration != _opengl_acceleration && Screen::instance()->lua_hud())
-    {
-        clear_screen(false);
-        clear_next_screen = false;
-    }
+        clear_screen_margin();
     
 	// Render crosshairs
 	if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
@@ -1393,4 +1394,55 @@ void clear_screen(bool update)
 	}
 
 	clear_next_screen = true;
+}
+
+void clear_screen_margin()
+{
+#ifdef HAVE_OPENGL
+	if (SDL_GetVideoSurface()->flags & SDL_OPENGL) {
+		OGL_ClearScreen();
+        return;
+	}
+#endif
+    SDL_Rect r, wr, dr;
+    wr = Screen::instance()->window_rect();
+    if (world_view->terminal_mode_active)
+        dr = Screen::instance()->term_rect();
+    else if (world_view->overhead_map_active)
+        dr = Screen::instance()->map_rect();
+    else
+        dr = Screen::instance()->view_rect();
+
+    if (dr.x > 0)
+    {
+        r.x = wr.x;
+        r.y = wr.y;
+        r.w = dr.x;
+        r.h = wr.h;
+        SDL_FillRect(main_surface, &r, SDL_MapRGB(main_surface->format, 0, 0, 0));
+    }
+    if ((dr.x + dr.w) < wr.w)
+    {
+        r.x = wr.x + dr.x + dr.w;
+        r.y = wr.y;
+        r.w = wr.w - (dr.x + dr.w);
+        r.h = wr.h;
+        SDL_FillRect(main_surface, &r, SDL_MapRGB(main_surface->format, 0, 0, 0));
+    }
+    if (dr.y > 0)
+    {
+        r.x = wr.x + dr.x;
+        r.y = wr.y;
+        r.w = dr.x + dr.w;
+        r.h = dr.y;
+        SDL_FillRect(main_surface, &r, SDL_MapRGB(main_surface->format, 0, 0, 0));
+    }
+    if ((dr.y + dr.h) < wr.h)
+    {
+        r.x = wr.x + dr.x;
+        r.y = wr.y + dr.y + dr.h;
+        r.w = dr.x + dr.w;
+        r.h = wr.h - (dr.y + dr.h);
+        SDL_FillRect(main_surface, &r, SDL_MapRGB(main_surface->format, 0, 0, 0));
+    }
 }
