@@ -88,6 +88,7 @@ FontSpecifier::~FontSpecifier()
 {
 #ifdef HAVE_OPENGL
 	m_font_registry.erase(this);
+	OGL_Reset(false);
 #endif
 }
 
@@ -252,7 +253,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 {
 	// Don't delete these if there is no valid texture;
 	// that indicates that there are no valid texture and display-list ID's.
-	if (!IsStarting && !OGL_Texture)
+	if (!IsStarting && OGL_Texture)
 	{
 		glDeleteTextures(1,&TxtrID);
 		glDeleteLists(DispList,256);
@@ -264,6 +265,9 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 		delete[]OGL_Texture;
 		OGL_Texture = NULL;
 	}
+    
+    if (!IsStarting)
+        return;
 	
 	// Put some padding around each glyph so as to avoid clipping it
 	const int Pad = 1;
@@ -489,7 +493,11 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 void FontSpecifier::OGL_Render(const char *Text)
 {
 	// Bug out if no texture to render
-	if (!OGL_Texture) return;
+	if (!OGL_Texture)
+	{
+        OGL_Reset(true);
+        if (!OGL_Texture) return;
+	}
 	
 	glPushAttrib(GL_ENABLE_BIT);
 	
