@@ -55,6 +55,8 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "screen_drawing.h"
 
 #include "network_games.h"
+#include "Image_Blitter.h"
+#include "OGL_Blitter.h"
 
 /* ---------- globals */
 
@@ -123,6 +125,8 @@ static struct ScriptHUDElement {
 	bool isicon;
 	int color;
 	char text[Len];
+	Image_Blitter sdl_blitter;
+	OGL_Blitter ogl_blitter;
 } ScriptHUDElements[MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS];
 /* /SB */
 
@@ -228,6 +232,18 @@ namespace icon {
       *(p1++) = palette[px * 4 + 2];
     }
     ScriptHUDElements[idx].isicon = true;
+	SDL_Surface *srf;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+	srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[idx].icon, 16, 16, 32, 64, 0xFF<<8, 0xFF<<16, 0xFF<<24, 0xFF);
+#else
+	srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[idx].icon, 16, 16, 32, 64, 0xFF<<16, 0xFF<<8, 0xFF, 0xFF<<24);
+#endif
+	if (OGL_IsActive()) {
+		ScriptHUDElements[idx].ogl_blitter.Load(*srf);
+	} else {
+		ScriptHUDElements[idx].sdl_blitter.Load(*srf);
+	}
+	SDL_FreeSurface(srf);
   }
 	
 }
@@ -556,61 +572,19 @@ static void DisplayMessages(SDL_Surface *s)
 				sk = SCRIPT_HUD_ELEMENT_SPACING;
 				if(ScriptHUDElements[i].isicon) {
 					ysk = 2;
+
+					SDL_Rect rect;
+					rect.x = x2;
+					rect.y = Y - 11;
+					rect.w = rect.h = 16;					
 #ifdef HAVE_OPENGL
-					if(OGL_IsActive() && ((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)) {
-						GLuint tex;
-						glPushAttrib(GL_ALL_ATTRIB_BITS);
-						glEnable(GL_TEXTURE_2D);
-						glDisable(GL_CULL_FACE);
-						glEnable(GL_BLEND);
-						glDisable(GL_ALPHA_TEST);
-						glMatrixMode(GL_MODELVIEW);
-						glPushMatrix();
-						glLoadIdentity();
-						glGenTextures(1, &tex);
-						glTranslatef(x2-0.5f,Y+4.5f,0);
-						glRasterPos2d(0, 0);
-						glBindTexture(GL_TEXTURE_2D, tex);
-#ifdef ALEPHONE_LITTLE_ENDIAN
-						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8, ScriptHUDElements[i].icon);
-#else
-						glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ScriptHUDElements[i].icon);
-#endif
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-						glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-						glColor3f(1,1,1);
-						glBegin(GL_TRIANGLE_FAN);
-						glTexCoord2f(0.0f, 0.0f);
-						glVertex2f(0.5f, -15.5f);
-						glTexCoord2f(1.0f, 0.0f);
-						glVertex2f(16.5f, -15.5f);
-						glTexCoord2f(1.0f, 1.0f);
-						glVertex2f(16.5f, 0.5f);
-						glTexCoord2f(0.0f, 1.0f);
-						glVertex2f(0.5f, 0.5f);
-						glEnd();
-						/*glDrawPixels(16, 16, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, ScriptHUDElements[i].icon);*/
-						glDeleteTextures(1, &tex);
-						glPopMatrix();
-						glPopAttrib();				
+					if(OGL_IsActive()) {						
+						ScriptHUDElements[i].ogl_blitter.Draw(rect);
 					}
 					else 
 #endif 
 					{
-						SDL_Surface* srf;
-						SDL_Rect rect;
-						rect.x = x2;
-						rect.y = Y - 11;
-						rect.w = rect.h = 16;
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<8, 0xFF<<16, 0xFF<<24, 0xFF);
-#else
-						srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[i].icon, 16, 16, 32, 64, 0xFF<<16, 0xFF<<8, 0xFF, 0xFF<<24);
-#endif
-						SDL_BlitSurface(srf, NULL, s, &rect);
-						SDL_FreeSurface(srf);
+						ScriptHUDElements[i].sdl_blitter.Draw(s, rect);
 					}
 					x2 += 20;
 					sk -= 20;
