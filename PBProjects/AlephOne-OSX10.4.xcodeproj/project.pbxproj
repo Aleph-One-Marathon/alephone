@@ -670,7 +670,7 @@
 		AEAE132C0FC9C3C800EDA5A6 /* BStream.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = BStream.cpp; path = ../Source_Files/CSeries/BStream.cpp; sourceTree = "<group>"; };
 		AEAE132D0FC9C3C800EDA5A6 /* BStream.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = BStream.h; path = ../Source_Files/CSeries/BStream.h; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
-		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
+		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
 		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
@@ -2235,12 +2235,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir /tmp/Aleph\nrsync -a \"$TARGET_BUILD_DIR/AlephOne.app\" /tmp/Aleph/\ncp $SRCROOT/../COPYING /tmp/Aleph/COPYING.txt\ncp $SRCROOT/../docs/Lua.html /tmp/Aleph/\ncp $SRCROOT/../docs/MML.html /tmp/Aleph/\ncp $SRCROOT/../docs/Troubleshooting.txt /tmp/Aleph/\n/Developer/Tools/Rez -o \"/tmp/Aleph/Aleph One Website.webloc\" $SRCROOT/../Resources/AlephOneWebsite.webloc.r\ncp -r \"$SRCROOT/../Resources/Library Licenses\" /tmp/Aleph/\nrm -rf \"/tmp/Aleph/Library Licenses/CVS\"\nmkdir /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Sprites.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Software_Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Carnage_Messages.mml /tmp/Aleph/Extras\ncp $SRCROOT/../examples/lua/Cheats.lua /tmp/Aleph/Extras\nhdiutil create -fs HFS+ -layout SPUD -srcfolder /tmp/Aleph -volname \"Aleph One\" \"$TARGET_BUILD_DIR/AlephOne-$( grep '^#define A1_DATE_VERSION' $SRCROOT/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' ).dmg\"\nrm -rf /tmp/Aleph\n";
+			shellScript = "mkdir /tmp/Aleph\nrsync -a \"$TARGET_BUILD_DIR/AlephOne.app\" /tmp/Aleph/\ncp $SRCROOT/../COPYING /tmp/Aleph/COPYING.txt\ncp $SRCROOT/../docs/Lua.html /tmp/Aleph/\ncp $SRCROOT/../docs/Lua_HUD.html /tmp/Aleph/\ncp $SRCROOT/../docs/MML.html /tmp/Aleph/\ncp $SRCROOT/../docs/Troubleshooting.txt /tmp/Aleph/\n/Developer/Tools/Rez -o \"/tmp/Aleph/Aleph One Website.webloc\" $SRCROOT/../Resources/AlephOneWebsite.webloc.r\ncp -r \"$SRCROOT/../Resources/Library Licenses\" /tmp/Aleph/\nrm -rf \"/tmp/Aleph/Library Licenses/CVS\"\nmkdir /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Sprites.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Software_Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Carnage_Messages.mml /tmp/Aleph/Extras\ncp $SRCROOT/../examples/lua/Cheats.lua /tmp/Aleph/Extras\nhdiutil create -fs HFS+ -layout SPUD -srcfolder /tmp/Aleph -volname \"Aleph One\" \"$TARGET_BUILD_DIR/AlephOne-$( grep '^#define A1_DATE_VERSION' $SRCROOT/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' ).dmg\"\nrm -rf /tmp/Aleph\n";
 		};
 		AEC3C87609AD68AC003258E4 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 12;
 			files = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/../Source_FIles/Misc/alephversion.h",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
