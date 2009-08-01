@@ -98,11 +98,11 @@
   <triggers id="triggers">
     <description>These are functions scripts can define which Aleph One will call at specific times or events. For the HUD, the draw() trigger is the most important. For example, to write "Hello world" in the upper left corner of the screen:
 <pre>Triggers = {}
+function Triggers.init()
+  myFont = Fonts.new{size = 14}
+end
 function Triggers.draw()
-  myFont = Fonts.new();
-  myFont.size = 14;
-  myFont:activate();
-  myFont:drawText("Hello world", 50, 50, {1, 1, 1, 0.5});
+  myFont:draw_text("Hello world", 50, 50, {1, 1, 1, 1});
 end
 </pre>
 </description>
