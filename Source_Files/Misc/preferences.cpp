@@ -2353,7 +2353,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->software_alpha_blending = _sw_alpha_off;
 
 #ifdef __WIN32__
-	preferences->use_directx_backend = true;
+	preferences->use_directx_backend = false;
 #endif
 }
 
