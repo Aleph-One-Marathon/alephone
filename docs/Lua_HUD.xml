@@ -166,6 +166,18 @@ end
         <description>height of the available screen area</description>
         <type>number</type>
       </variable>
+      <subtable name="field_of_view" classname="lua_field_of_view">
+        <variable name="horizontal">
+          <type>number</type>
+        </variable>
+        <variable name="vertical">
+          <type>number</type>
+        </variable>
+        <variable name="fix_h_not_v">
+          <description>whether horizontal or vertical FOV is adjusted as aspect ratio changes</description>
+          <type>boolean</type>
+        </variable>
+      </subtable>
       <variable name="renderer" access="read-only">
         <description>which renderer is in use</description>
         <type>renderer_type</type>
@@ -610,8 +622,15 @@ end
           <variable name="ammo_type">
             <type>item_type</type>
           </variable>
+          <variable name="weapon_drawn">
+            <type>boolean</type>
+          </variable>
         </subtable>
       </subtable-accessor>
+      <variable name="zoom_active">
+        <description>whether player's sniper zoom is active</description>
+        <type>boolean</type>
+      </variable>
 
     </table>
     <accessor name="Player" contains="player"/>

@@ -1050,7 +1050,20 @@ int16 get_player_weapon_ammo_type(
 	
 	return trigger_definition->ammunition_type;
 }
+
+bool get_player_weapon_drawn(
+							 short player_index, 
+							 short which_weapon,
+							 short which_trigger)
+{
+	struct player_weapon_data *pd = get_player_weapon_data(player_index);
+	if (pd->current_weapon != which_weapon)
+		return false;
 	
+	return which_trigger == 0 ? PRIMARY_WEAPON_IS_VALID(&pd->weapons[which_weapon])
+							  : SECONDARY_WEAPON_IS_VALID(&pd->weapons[which_weapon]);
+}
+
 #ifdef DEBUG
 void debug_print_weapon_status(
 	void)

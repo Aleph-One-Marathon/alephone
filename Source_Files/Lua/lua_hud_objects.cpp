@@ -962,9 +962,9 @@ int16 Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(lua_State *L, int index)
 int Lua_HUDPlayer_Weapon_Trigger_Get_Rounds(lua_State *L)
 {
 	short rounds = get_player_weapon_ammo_count(
-																							current_player_index, 
-																							Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(L, 1),
-																							Lua_HUDPlayer_Weapon_Trigger::Index(L, 1));
+                                                current_player_index, 
+                                                Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(L, 1),
+                                                Lua_HUDPlayer_Weapon_Trigger::Index(L, 1));
 	lua_pushnumber(L, rounds);
 	return 1;
 }
@@ -972,9 +972,9 @@ int Lua_HUDPlayer_Weapon_Trigger_Get_Rounds(lua_State *L)
 int Lua_HUDPlayer_Weapon_Trigger_Get_Total_Rounds(lua_State *L)
 {
 	short rounds = get_player_weapon_ammo_maximum(
-																							current_player_index, 
-																							Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(L, 1),
-																							Lua_HUDPlayer_Weapon_Trigger::Index(L, 1));
+                                                    current_player_index, 
+                                                    Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(L, 1),
+                                                    Lua_HUDPlayer_Weapon_Trigger::Index(L, 1));
 	lua_pushnumber(L, rounds);
 	return 1;
 }
@@ -982,10 +982,20 @@ int Lua_HUDPlayer_Weapon_Trigger_Get_Total_Rounds(lua_State *L)
 int Lua_HUDPlayer_Weapon_Trigger_Get_Ammo_Type(lua_State *L)
 {
 	int16 t = get_player_weapon_ammo_type(
-																								current_player_index, 
-																								Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(L, 1),
-																								Lua_HUDPlayer_Weapon_Trigger::Index(L, 1));
+                                            current_player_index, 
+                                            Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(L, 1),
+                                            Lua_HUDPlayer_Weapon_Trigger::Index(L, 1));
 	Lua_ItemType::Push(L, t);
+	return 1;
+}
+
+int Lua_HUDPlayer_Weapon_Trigger_Get_Weapon_Drawn(lua_State *L)
+{
+	bool t = get_player_weapon_drawn(
+                                      current_player_index, 
+                                      Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(L, 1),
+                                      Lua_HUDPlayer_Weapon_Trigger::Index(L, 1));
+	lua_pushboolean(L, t);
 	return 1;
 }
 
@@ -993,6 +1003,7 @@ const luaL_reg Lua_HUDPlayer_Weapon_Trigger_Get[] = {
 {"rounds", Lua_HUDPlayer_Weapon_Trigger_Get_Rounds},
 {"total_rounds", Lua_HUDPlayer_Weapon_Trigger_Get_Total_Rounds},
 {"ammo_type", Lua_HUDPlayer_Weapon_Trigger_Get_Ammo_Type},
+{"weapon_drawn", Lua_HUDPlayer_Weapon_Trigger_Get_Weapon_Drawn},
 {0, 0}
 };
 
@@ -1336,6 +1347,12 @@ static int Lua_HUDPlayer_Get_Compass(lua_State *L)
 	return 1;
 }
 
+static int Lua_HUDPlayer_Get_Zoom(lua_State *L)
+{
+	lua_pushboolean(L, GetTunnelVision());
+    return 1;
+}
+
 const luaL_reg Lua_HUDPlayer_Get[] = {
 {"color", Lua_HUDPlayer_Get_Color},
 {"dead", Lua_HUDPlayer_Get_Dead},
@@ -1354,6 +1371,7 @@ const luaL_reg Lua_HUDPlayer_Get[] = {
 {"weapons", Lua_HUDPlayer_Get_Weapons},
 {"motion_sensor", Lua_HUDPlayer_Get_Motion},
 {"compass", Lua_HUDPlayer_Get_Compass},
+{"zoom_active", Lua_HUDPlayer_Get_Zoom},
 {0, 0}
 };
 
@@ -1626,6 +1644,38 @@ const luaL_reg Lua_Screen_Term_Rect_Set[] = {
 {0, 0}
 };
 
+char Lua_Screen_FOV_Name[] = "field_of_view";
+typedef L_Class<Lua_Screen_FOV_Name> Lua_Screen_FOV;
+
+static int Lua_Screen_FOV_Get_Horizontal(lua_State *L)
+{
+    lua_pushnumber(L, world_view->half_cone * 2.0f);
+    return 1;
+}
+
+static int Lua_Screen_FOV_Get_Vertical(lua_State *L)
+{
+    lua_pushnumber(L, world_view->half_vertical_cone * 2.0f);
+    return 1;
+}
+
+static int Lua_Screen_FOV_Get_Fix(lua_State *L)
+{
+    lua_pushboolean(L, View_FOV_FixHorizontalNotVertical());
+    return 1;
+}
+
+const luaL_reg Lua_Screen_FOV_Get[] = {
+{"horizontal", Lua_Screen_FOV_Get_Horizontal},
+{"vertical", Lua_Screen_FOV_Get_Vertical},
+{"fix_h_not_v", Lua_Screen_FOV_Get_Fix},
+{0, 0}
+};
+
+const luaL_reg Lua_Screen_FOV_Set[] = {
+{0, 0}
+};
+
 char Lua_Screen_Name[] = "Screen";
 typedef L_Class<Lua_Screen_Name> Lua_Screen;
 
@@ -1695,6 +1745,12 @@ static int Lua_Screen_Get_Term_Active(lua_State *L)
 	return 1;
 }
 
+static int Lua_Screen_Get_FOV(lua_State *L)
+{
+    Lua_Screen_FOV::Push(L, Lua_Screen::Index(L, 1));
+    return 1;
+}
+
 int Lua_Screen_Fill_Rect(lua_State *L)
 {
 	float x = static_cast<float>(lua_tonumber(L, 1));
@@ -1738,6 +1794,7 @@ const luaL_reg Lua_Screen_Get[] = {
 {"term_active", Lua_Screen_Get_Term_Active},
 {"hud_size_preference", Lua_Screen_Get_HUD_Size},
 {"term_size_preference", Lua_Screen_Get_Term_Size},
+{"field_of_view", Lua_Screen_Get_FOV},
 {"fill_rect", L_TableFunction<Lua_Screen_Fill_Rect>},
 {"frame_rect", L_TableFunction<Lua_Screen_Frame_Rect>},
 {0, 0}
@@ -2127,6 +2184,7 @@ int Lua_HUDObjects_register(lua_State *L)
 	Lua_Screen_World_Rect::Register(L, Lua_Screen_World_Rect_Get, Lua_Screen_World_Rect_Set);
 	Lua_Screen_Map_Rect::Register(L, Lua_Screen_Map_Rect_Get, Lua_Screen_Map_Rect_Set);
 	Lua_Screen_Term_Rect::Register(L, Lua_Screen_Term_Rect_Get, Lua_Screen_Term_Rect_Set);
+	Lua_Screen_FOV::Register(L, Lua_Screen_FOV_Get, Lua_Screen_FOV_Set);
 	
 	Lua_Screen::Register(L, Lua_Screen_Get);
 	Lua_Screen::Push(L, 0);

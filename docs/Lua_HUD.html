@@ -200,24 +200,16 @@ end
 <dd><dl>
       Colors are standard Lua tables; you don't need to call a new() method to create them. Colors have four fields, accessed by name or number. If a field is missing, it is assumed to be 1, which allows you to write opaque colors as {r, g, b}.
       <dt>
-    .r<br>
-      .red<br>
-      .[1]</dt>
+    .r<br>.red<br>[1]</dt>
 <dd><p class="description">red component, from 0 to 1</p></dd>
       <dt>
-    .g<br>
-      .green<br>
-      .[2]</dt>
+    .g<br>.green<br>[2]</dt>
 <dd><p class="description">green component, from 0 to 1</p></dd>
       <dt>
-    .b<br>
-      .blue<br>
-      .[3]</dt>
+    .b<br>.blue<br>[3]</dt>
 <dd><p class="description">blue component, from 0 to 1</p></dd>
       <dt>
-    .a<br>
-      .alpha<br>
-      .[4]</dt>
+    .a<br>.alpha<br>[4]</dt>
 <dd><p class="description">alpha component (opacity), from 0 to 1</p></dd>
     </dl></dd>
 </dl>
@@ -433,19 +425,16 @@ end
     .dead</dt>
 <dd><p class="description">whether player is dead</p></dd>
       <dt>
-    .direction<br>
-      .yaw</dt>
+    .direction<br>.yaw</dt>
 <dd>
 <p class="description">direction player is facing, in degrees</p>
 <p class="note">0 is east, 90 is south </p>
 </dd>
       <dt>
-    .elevation<br>
-      .pitch</dt>
+    .elevation<br>.pitch</dt>
 <dd><p class="description">angle player is looking up or down</p></dd>
       <dt>
-    .energy<br>
-      .life</dt>
+    .energy<br>.life</dt>
 <dd><p class="description">amount of suit energy player has (150 is normal red health)</p></dd>
       <dt>
     .microphone_active</dt>
@@ -494,20 +483,16 @@ end
       <dt>.compass</dt>
 <dd><dl>
 <dt>
-    .ne<br>
-      .northeast</dt>
+    .ne<br>.northeast</dt>
 <dd><p class="description">whether north east compass quadrant is active</p></dd>
 <dt>
-    .nw<br>
-      .northwest</dt>
+    .nw<br>.northwest</dt>
 <dd><p class="description">whether north west compass quadrant is active</p></dd>
 <dt>
-    .se<br>
-      .southeast</dt>
+    .se<br>.southeast</dt>
 <dd><p class="description">whether south east compass quadrant is active</p></dd>
 <dt>
-    .sw<br>
-      .southwest</dt>
+    .sw<br>.southwest</dt>
 <dd><p class="description">whether south west compass quadrant is active</p></dd>
 </dl></dd>
       <dt>.motion_sensor</dt>
@@ -521,8 +506,7 @@ end
 <dt>.blips[index]</dt>
 <dd><dl>
 <dt>
-    .direction<br>
-      .yaw</dt>
+    .direction<br>.yaw</dt>
 <dd>
 <p class="description">direction relative to player, in degrees</p>
 <p class="note">0 is to player's right, 90 is directly behind player </p>
@@ -574,11 +558,17 @@ end
 <dt>
     .total_rounds</dt>
 <dd><p class="description">how many rounds can be loaded into the weapon</p></dd>
+<dt>
+    .weapon_drawn</dt>
+<dd><p class="description"></p></dd>
 </dl></dd>
 <dt>
     .type</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
+      <dt>
+    .zoom_active</dt>
+<dd><p class="description">whether player's sniper zoom is active</p></dd>
 
     </dl></dd>
 </dl>
@@ -595,6 +585,18 @@ end
     .height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">height of the available screen area</p></dd>
+      <dt>.field_of_view</dt>
+<dd><dl>
+<dt>
+    .fix_h_not_v</dt>
+<dd><p class="description">whether horizontal or vertical FOV is adjusted as aspect ratio changes</p></dd>
+<dt>
+    .horizontal</dt>
+<dd><p class="description"></p></dd>
+<dt>
+    .vertical</dt>
+<dd><p class="description"></p></dd>
+</dl></dd>
       <dt>
     .renderer<span class="access"> (read-only)</span>
 </dt>
