@@ -37,6 +37,7 @@
           <!ATTLIST function name CDATA #REQUIRED>
           <!ATTLIST function access (local-player|all) 'all'>
           <!ATTLIST function return (single|variant) 'single'>
+	  <!ATTLIST function named_parameters (true|false) 'false'>
 
           <!ELEMENT function-variable ((description?),(argument),(type))>
           <!ATTLIST function-variable name CDATA #REQUIRED>
@@ -268,7 +269,7 @@ end
       </function>
     </table>
     <accessor name="Fonts" contains="font">
-      <function name="new">
+      <function name="new" named_parameters="true">
         <description>all arguments are optional and passed by name; "id" and "file" are mutually exclusive; returns font or nil</description>
         <argument name="id">
           <description>a resource ID from the Fonts file (for the default Fonts file, valid values are 4 for Monaco and 22 for Courier) [default: nil]</description>
@@ -338,7 +339,7 @@ end
       </function>
     </table>
     <accessor name="Images" contains="image">
-      <function name="new">
+      <function name="new" named_parameters="true">
         <description>all arguments are passed by name; returns image or nil</description>
         <argument name="path">
           <description>the path to the image file to use</description>
@@ -400,7 +401,7 @@ end
       </function>
     </table>
     <accessor name="Shapes" contains="shape">
-      <function name="new">
+      <function name="new" named_parameters="true">
         <description>all arguments are passed by name; returns shape or nil</description>
         <argument name="collection">
           <description>the shape collection</description>

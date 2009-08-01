@@ -304,13 +304,22 @@
       <xsl:when test="parent::triggers">.</xsl:when>
       <xsl:otherwise><xsl:value-of select="../@name"/>.</xsl:otherwise>
     </xsl:choose>
-    <xsl:value-of select="@name"/>(<xsl:for-each select="argument">
-    <xsl:choose><xsl:when test="@required = 'false'"> [</xsl:when></xsl:choose>
+    <xsl:value-of select="@name"/>
     <xsl:choose>
-      <xsl:when test="position() != 1">, </xsl:when>
+      <xsl:when test="@named_parameters = 'true'">{</xsl:when>
+      <xsl:otherwise>(</xsl:otherwise>
     </xsl:choose>
-    <xsl:value-of select="@name"/><xsl:choose><xsl:when test="@required = 'false'">]</xsl:when></xsl:choose>
-    </xsl:for-each>)
+    <xsl:for-each select="argument">
+      <xsl:choose><xsl:when test="@required = 'false'"> [</xsl:when></xsl:choose>
+      <xsl:choose>
+	<xsl:when test="position() != 1">, </xsl:when>
+      </xsl:choose>
+      <xsl:value-of select="@name"/><xsl:if test="../@named_parameters='true'">=</xsl:if><xsl:choose><xsl:when test="@required = 'false'">]</xsl:when></xsl:choose>
+    </xsl:for-each>
+    <xsl:choose>
+      <xsl:when test="@named_parameters = 'true'">}</xsl:when>
+      <xsl:otherwise>)</xsl:otherwise>
+    </xsl:choose>
     <xsl:choose>
       <xsl:when test="@version">
 	<xsl:text> </xsl:text>

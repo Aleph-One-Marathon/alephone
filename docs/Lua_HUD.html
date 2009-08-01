@@ -166,17 +166,13 @@ end
 <dl>
 <dt>Triggers</dt>
 <dd><dl>
-<dt>.init()
-    </dt>
+<dt>.init()</dt>
 <dd><p class="description">when a game session is started (after leaving the main menu)</p></dd>
-<dt>.cleanup()
-    </dt>
+<dt>.cleanup()</dt>
 <dd><p class="description">when a game session is completed (before returning to the main menu)</p></dd>
-<dt>.resize()
-    </dt>
+<dt>.resize()</dt>
 <dd><p class="description">when the window size changes in the middle of a game (with the F1/F2 keys)</p></dd>
-<dt>.draw()
-    </dt>
+<dt>.draw()</dt>
 <dd>
 <p class="description">at each game frame</p>
 <p class="note">all screen drawing must be called from this trigger </p>
@@ -216,8 +212,7 @@ end
 <h3>
 <a name="Fonts"></a>Fonts</h3>
 <dl>
-<dt>Fonts.new(id, file, size, style)
-    </dt>
+<dt>Fonts.new{id=, file=, size=, style=}</dt>
 <dd>
 <p class="description">all arguments are optional and passed by name; "id" and "file" are mutually exclusive; returns font or nil</p>
 <ul class="args">
@@ -251,11 +246,9 @@ end
     .style<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description"></p></dd>
-      <dt>:measure_text(string)
-    </dt>
+      <dt>:measure_text(string)</dt>
 <dd><p class="description">returns the width and height of a string when drawn in this font</p></dd>
-      <dt>:draw_text(string, x, y, color)
-    </dt>
+      <dt>:draw_text(string, x, y, color)</dt>
 <dd>
 <p class="description">draws a string to the screen</p>
 <p class="note">transparency only available in OpenGL renderer </p>
@@ -318,8 +311,7 @@ end
 <h3>
 <a name="Images"></a>Images</h3>
 <dl>
-<dt>Images.new(path [, mask])
-    </dt>
+<dt>Images.new{path= [, mask=]}</dt>
 <dd>
 <p class="description">all arguments are passed by name; returns image or nil</p>
 <ul class="args">
@@ -377,11 +369,9 @@ end
 <p class="note">axis of rotation is about the center of the drawn area </p>
 <p class="note">only available in OpenGL renderer </p>
 </dd>
-      <dt>:rescale(width, height)
-    </dt>
+      <dt>:rescale(width, height)</dt>
 <dd><p class="description">resize image to specified width and height</p></dd>
-      <dt>:draw(x, y)
-    </dt>
+      <dt>:draw(x, y)</dt>
 <dd><p class="description">draw image (or cropped portion) to screen, with top left corner at specified position</p></dd>
     </dl></dd>
 </dl>
@@ -681,11 +671,9 @@ end
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-      <dt>.fill_rect(x, y, width, height, color)
-    </dt>
+      <dt>.fill_rect(x, y, width, height, color)</dt>
 <dd><p class="description">draws a solid rectangle to the screen</p></dd>
-      <dt>.frame_rect(x, y, width, height, color, thickness)
-    </dt>
+      <dt>.frame_rect(x, y, width, height, color, thickness)</dt>
 <dd>
 <p class="description">draws an outlined rectangle to the screen</p>
 <ul class="args"><li>thickness: outline size in pixels</li></ul>
@@ -696,8 +684,7 @@ end
 <h3>
 <a name="Shapes"></a>Shapes</h3>
 <dl>
-<dt>Shapes.new(collection, texture_index [, type] [, color table])
-    </dt>
+<dt>Shapes.new{collection=, texture_index= [, type=] [, color table=]}</dt>
 <dd>
 <p class="description">all arguments are passed by name; returns shape or nil</p>
 <ul class="args">
@@ -757,11 +744,9 @@ end
 <p class="note">axis of rotation is about the center of the drawn area </p>
 <p class="note">only available in OpenGL renderer </p>
 </dd>
-      <dt>:rescale(width, height)
-    </dt>
+      <dt>:rescale(width, height)</dt>
 <dd><p class="description">resize shape to specified width and height</p></dd>
-      <dt>:draw(x, y)
-    </dt>
+      <dt>:draw(x, y)</dt>
 <dd><p class="description">draw shape (or cropped portion) to screen, with top left corner at specified position</p></dd>
     </dl></dd>
 </dl>
