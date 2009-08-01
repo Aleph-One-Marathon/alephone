@@ -31,6 +31,9 @@
 		27911B25100073460063ACB6 /* HUDRenderer_Lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 27911B23100073460063ACB6 /* HUDRenderer_Lua.h */; };
 		27CE0843100ECDBC00F59FD1 /* Image_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */; };
 		27CE0844100ECDBC00F59FD1 /* Image_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */; };
+		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
+		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
+		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
 		AE0053EE0ABE16300038507F /* OGL_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE0053ED0ABE16300038507F /* OGL_Blitter.cpp */; };
 		AE005FD40EE2D6DE007FE7C6 /* screen.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE005FD30EE2D6DE007FE7C6 /* screen.cpp */; };
 		AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
@@ -460,57 +463,6 @@
 		AEFE7C2E0DB03FA800D11DE2 /* expat_external.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C290DB03F8300D11DE2 /* expat_external.h */; };
 /* End PBXBuildFile section */
 
-/* Begin PBXBuildRule section */
-		AEC3C89009AD68AE003258E4 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.3_3;
-			fileType = sourcecode.c;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-		AEC3C89109AD68AE003258E4 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.3_x;
-			fileType = sourcecode.c;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-		AEC3C89209AD68AE003258E4 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.3_3;
-			fileType = sourcecode.c;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-		AEC3C89309AD68AE003258E4 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.3_x;
-			fileType = sourcecode.c;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-		AEC3C89409AD68AE003258E4 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.3_x;
-			fileType = sourcecode.c;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-		AEC3C89509AD68AE003258E4 /* PBXBuildRule */ = {
-			isa = PBXBuildRule;
-			compilerSpec = com.apple.compilers.gcc.3_3;
-			fileType = sourcecode.c;
-			isEditable = 1;
-			outputFiles = (
-			);
-		};
-/* End PBXBuildRule section */
-
 /* Begin PBXContainerItemProxy section */
 		AE3B83990E04C89000FD963D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -560,6 +512,9 @@
 		27911B23100073460063ACB6 /* HUDRenderer_Lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HUDRenderer_Lua.h; sourceTree = "<group>"; };
 		27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image_Blitter.cpp; sourceTree = "<group>"; };
 		27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image_Blitter.h; sourceTree = "<group>"; };
+		3D22CF880FD86EAE00B17822 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
+		3D22CF8C0FD86EBD00B17822 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
+		3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
 		3D5F21460403247500000104 /* libobjc.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.A.dylib; path = /usr/lib/libobjc.A.dylib; sourceTree = "<absolute>"; };
 		3D87957D07D11E120078D26B /* metaserver_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = metaserver_dialogs.cpp; sourceTree = "<group>"; };
@@ -715,7 +670,7 @@
 		AEAE132C0FC9C3C800EDA5A6 /* BStream.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = BStream.cpp; path = ../Source_Files/CSeries/BStream.cpp; sourceTree = "<group>"; };
 		AEAE132D0FC9C3C800EDA5A6 /* BStream.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = BStream.h; path = ../Source_Files/CSeries/BStream.h; sourceTree = "<group>"; };
 		AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = SW_Texture_Extras.cpp; sourceTree = "<group>"; };
-		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
+		AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-AlephOne_SDL.plist"; sourceTree = "<group>"; };
 		AEC3C89609AD68AE003258E4 /* AlephOne.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AlephOne.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AEC6C89B0879A5DE0055EC57 /* Console.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Console.cpp; path = ../Source_Files/Misc/Console.cpp; sourceTree = SOURCE_ROOT; };
 		AEC6C89E0879A6020055EC57 /* Console.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Console.h; path = ../Source_Files/Misc/Console.h; sourceTree = SOURCE_ROOT; };
@@ -1058,6 +1013,9 @@
 				AE601FC10B927DC2009F881C /* libsndfile.framework in Frameworks */,
 				AE23F5640BDAC0E700C11385 /* Speex.framework in Frameworks */,
 				AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */,
+				3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */,
+				3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */,
+				3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1108,6 +1066,8 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */,
+				3D22CF880FD86EAE00B17822 /* AudioUnit.framework */,
 				F53673F502014D2D01A80001 /* Carbon.framework */,
 				F5830B4001E776DE01BA387C /* OpenGL.framework */,
 				F59FB19D01E780DF01BBE912 /* Cocoa.framework */,
@@ -1116,6 +1076,7 @@
 				F53673F802014D2D01A80001 /* AGL.framework */,
 				F53673F902014D2D01A80001 /* CoreServices.framework */,
 				3D5F21460403247500000104 /* libobjc.A.dylib */,
+				3D22CF8C0FD86EBD00B17822 /* libz.dylib */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -2202,12 +2163,6 @@
 				AEC3C87709AD68AC003258E4 /* CopyFiles */,
 			);
 			buildRules = (
-				AEC3C89009AD68AE003258E4 /* PBXBuildRule */,
-				AEC3C89109AD68AE003258E4 /* PBXBuildRule */,
-				AEC3C89209AD68AE003258E4 /* PBXBuildRule */,
-				AEC3C89309AD68AE003258E4 /* PBXBuildRule */,
-				AEC3C89409AD68AE003258E4 /* PBXBuildRule */,
-				AEC3C89509AD68AE003258E4 /* PBXBuildRule */,
 			);
 			dependencies = (
 			);
@@ -2222,9 +2177,11 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-OSX10.4" */;
+			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* SDL Application */;
 			projectDirPath = "";
+			projectRoot = "";
 			targets = (
 				AEC3C6FE09AD68AC003258E4 /* AlephOne */,
 				AE3B83970E04C87E00FD963D /* AlephOne.dmg */,
@@ -2548,8 +2505,7 @@
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INPUT_FILETYPE = automatic;
-				GCC_MODEL_TUNING = G3;
+				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
 					HAVE_BUNDLE_NAME,
@@ -2566,10 +2522,11 @@
 					HAVE_SDL_TTF,
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				GCC_VERSION = 4.0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
@@ -2591,37 +2548,15 @@
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/libmad.framework/Headers,
 					/usr/local/include,
+					/sw/include,
+					/opt/local/include,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				OTHER_CFLAGS = "";
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-multiply_defined",
-					suppress,
-					"-framework",
-					SDL,
-					"-framework",
-					SDL_image,
-					"-framework",
-					SDL_net,
-					"-framework",
-					SMPEG,
-					"-framework",
-					AppKit,
-					"-framework",
-					SDL_ttf,
-				);
 				PRODUCT_NAME = AlephOne;
-				SECTORDER_FLAGS = "";
 				STRIP_INSTALLED_PRODUCT = NO;
 				STRIP_STYLE = all;
-				WARNING_CFLAGS = "";
+				WARNING_CFLAGS = "-Wno-long-double";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
@@ -2631,20 +2566,19 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
-				GCC_OPTIMIZATION_LEVEL = 0;
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				STRIP_INSTALLED_PRODUCT = NO;
-				ZERO_LINK = YES;
+				ZERO_LINK = NO;
 			};
 			name = Development;
 		};
-		AE2A41760B5EFEA000C567E6 /* Deployment (Native gcc 4.0) */ = {
+		AE2A41760B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
-				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
@@ -2654,8 +2588,6 @@
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INPUT_FILETYPE = automatic;
-				GCC_MODEL_TUNING = G3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
 					HAVE_BUNDLE_NAME,
@@ -2673,8 +2605,10 @@
 				);
 				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
@@ -2696,43 +2630,23 @@
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/libmad.framework/Headers,
 					/usr/local/include,
+					/sw/include,
+					/opt/local/include,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
-				OTHER_CFLAGS = "";
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-multiply_defined",
-					suppress,
-					"-framework",
-					SDL,
-					"-framework",
-					SDL_image,
-					"-framework",
-					SDL_net,
-					"-framework",
-					SMPEG,
-					"-framework",
-					AppKit,
-					"-framework",
-					SDL_ttf,
-				);
+				ONLY_ACTIVE_ARCH = YES;
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = AlephOne;
-				SECTORDER_FLAGS = "";
-				STRIP_INSTALLED_PRODUCT = YES;
+				SDKROOT = "";
 				STRIP_STYLE = debugging;
-				WARNING_CFLAGS = "";
+				WARNING_CFLAGS = "-Wno-long-double";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
-			name = "Deployment (Native gcc 4.0)";
+			name = "Deployment (Native)";
 		};
-		AE2A41770B5EFEA000C567E6 /* Deployment (Native gcc 4.0) */ = {
+		AE2A41770B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ARCHS = "$(NATIVE_ARCH)";
@@ -2741,7 +2655,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
-			name = "Deployment (Native gcc 4.0)";
+			name = "Deployment (Native)";
 		};
 		AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
@@ -2750,20 +2664,16 @@
 			};
 			name = "Deployment (Universal)";
 		};
-		AE3B839D0E04C8CA00FD963D /* Deployment (Native gcc 4.0) */ = {
+		AE3B839D0E04C8CA00FD963D /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = AlephOne.dmg;
 			};
-			name = "Deployment (Native gcc 4.0)";
+			name = "Deployment (Native)";
 		};
 		AE3B839E0E04C8CA00FD963D /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				COPY_PHASE_STRIP = NO;
-				GCC_DYNAMIC_NO_PIC = NO;
-				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_OPTIMIZATION_LEVEL = 0;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
 			name = Development;
@@ -2776,6 +2686,7 @@
 					ppc,
 				);
 				COPY_PHASE_STRIP = NO;
+				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(HOME)/Library/Frameworks",
@@ -2785,8 +2696,6 @@
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
-				GCC_INPUT_FILETYPE = automatic;
-				GCC_MODEL_TUNING = G3;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
 					HAVE_BUNDLE_NAME,
@@ -2806,8 +2715,10 @@
 				GCC_VERSION_i386 = 4.0;
 				GCC_VERSION_ppc = 3.3;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
-				GCC_WARN_EFFECTIVE_CPLUSPLUS_VIOLATIONS = NO;
-				GCC_WARN_FOUR_CHARACTER_CONSTANTS = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
 					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
 					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
@@ -2829,41 +2740,20 @@
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/libmad.framework/Headers,
 					/usr/local/include,
+					/sw/include,
+					/opt/local/include,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
-				JAVA_ARCHIVE_COMPRESSION = YES;
-				JAVA_COMPILER = /usr/bin/jikes;
-				JAVA_COMPILER_FLAGS = "-O";
-				JAVA_COMPILER_TARGET_VM_VERSION = 1.3;
 				MACOSX_DEPLOYMENT_TARGET_i386 = 10.4;
 				MACOSX_DEPLOYMENT_TARGET_ppc = 10.2;
-				OTHER_CFLAGS = "";
-				OTHER_CPLUSPLUSFLAGS = "$(OTHER_CFLAGS)";
-				OTHER_LDFLAGS = (
-					"-flat_namespace",
-					"-multiply_defined",
-					suppress,
-					"-framework",
-					SDL,
-					"-framework",
-					SDL_image,
-					"-framework",
-					SDL_net,
-					"-framework",
-					SMPEG,
-					"-framework",
-					AppKit,
-					"-framework",
-					SDL_ttf,
-				);
+				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = AlephOne;
 				SDKROOT_i386 = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				SDKROOT_ppc = "$(DEVELOPER_SDK_DIR)/MacOSX10.2.8.sdk";
-				SECTORDER_FLAGS = "";
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = debugging;
-				WARNING_CFLAGS = "";
+				WARNING_CFLAGS = "-Wno-long-double";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
@@ -2889,7 +2779,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AE78B59E09B00C34002CACF8 /* Deployment (Universal) */,
-				AE2A41770B5EFEA000C567E6 /* Deployment (Native gcc 4.0) */,
+				AE2A41770B5EFEA000C567E6 /* Deployment (Native) */,
 				AE2A41540B5EFC1F00C567E6 /* Development */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -2899,7 +2789,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */,
-				AE3B839D0E04C8CA00FD963D /* Deployment (Native gcc 4.0) */,
+				AE3B839D0E04C8CA00FD963D /* Deployment (Native) */,
 				AE3B839E0E04C8CA00FD963D /* Development */,
 			);
 			defaultConfigurationIsVisible = 0;
@@ -2909,7 +2799,7 @@
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AE78B59D09B00C34002CACF8 /* Deployment (Universal) */,
-				AE2A41760B5EFEA000C567E6 /* Deployment (Native gcc 4.0) */,
+				AE2A41760B5EFEA000C567E6 /* Deployment (Native) */,
 				AE2A41530B5EFC1F00C567E6 /* Development */,
 			);
 			defaultConfigurationIsVisible = 0;
