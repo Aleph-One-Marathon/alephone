@@ -1257,6 +1257,120 @@ const luaL_reg Lua_MotionSensor_Get[] = {
 {0, 0}
 };
 
+char Lua_HUDTexturePalette_Slot_Name[] = "hud_texture_palette_slot";
+typedef L_Class<Lua_HUDTexturePalette_Slot_Name> Lua_HUDTexturePalette_Slot;
+
+static int Lua_HUDTexturePalette_Slot_Get_Collection(lua_State *L)
+{
+    int index = Lua_HUDTexturePalette_Slot::Index(L, 1);
+    shape_descriptor shape = LuaTexturePaletteTexture(index);
+    if (shape == UNONE)
+        return 0;
+    
+    lua_pushnumber(L, GET_COLLECTION(GET_DESCRIPTOR_COLLECTION(shape)));
+    return 1;
+}
+
+static int Lua_HUDTexturePalette_Slot_Get_Texture(lua_State *L)
+{
+    int index = Lua_HUDTexturePalette_Slot::Index(L, 1);
+    shape_descriptor shape = LuaTexturePaletteTexture(index);
+    if (shape == UNONE)
+        return 0;
+    
+    lua_pushnumber(L, GET_DESCRIPTOR_SHAPE(shape));
+    return 1;
+}
+
+static int Lua_HUDTexturePalette_Slot_Get_Type(lua_State *L)
+{
+    int index = Lua_HUDTexturePalette_Slot::Index(L, 1);
+    shape_descriptor shape = LuaTexturePaletteTexture(index);
+    if (shape == UNONE)
+        return 0;
+    
+    Lua_TextureType::Push(L, LuaTexturePaletteTextureType(index));
+    return 1;
+}
+
+const luaL_reg Lua_HUDTexturePalette_Slot_Get[] = {
+{"collection", Lua_HUDTexturePalette_Slot_Get_Collection},
+{"texture_index", Lua_HUDTexturePalette_Slot_Get_Texture},
+{"type", Lua_HUDTexturePalette_Slot_Get_Type},
+{0, 0}
+};
+
+static bool Lua_HUDTexturePalette_Slot_Valid(int16 index)
+{
+	return index >= 0 && index < LuaTexturePaletteSize();
+}
+
+char Lua_HUDTexturePalette_Slots_Name[] = "hud_texture_palette_slots";
+typedef L_Class<Lua_HUDTexturePalette_Slots_Name> Lua_HUDTexturePalette_Slots;
+
+static int Lua_HUDTexturePalette_Slots_Get(lua_State *L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		int index = static_cast<int>(lua_tonumber(L, 2));
+		if (index >= 0 && index < LuaTexturePaletteSize())
+			Lua_HUDTexturePalette_Slot::Push(L, index);
+		else
+			lua_pushnil(L);
+	}
+	else
+		lua_pushnil(L);
+    
+	return 1;
+}
+
+static int Lua_HUDTexturePalette_Slots_Length(lua_State *L)
+{
+	lua_pushnumber(L, LuaTexturePaletteSize());
+	return 1;
+}
+
+const luaL_reg Lua_HUDTexturePalette_Slots_Metatable[] = {
+{"__index", Lua_HUDTexturePalette_Slots_Get},
+{"__len", Lua_HUDTexturePalette_Slots_Length},
+{0, 0}
+};
+
+char Lua_HUDTexturePalette_Name[] = "hud_texture_palette";
+typedef L_Class<Lua_HUDTexturePalette_Name> Lua_HUDTexturePalette;
+
+static int Lua_HUDTexturePalette_Get_Size(lua_State *L)
+{
+    lua_pushnumber(L, LuaTexturePaletteSize());
+    return 1;
+}
+
+static int Lua_HUDTexturePalette_Get_Selected(lua_State *L)
+{
+    if (LuaTexturePaletteSize() < 1)
+        return 0;
+    
+    int selected = LuaTexturePaletteSelected();
+    if (selected < 0)
+        return 0;
+    
+    lua_pushnumber(L, selected);
+    return 1;
+}
+
+static int Lua_HUDTexturePalette_Get_Slots(lua_State *L)
+{
+    Lua_HUDTexturePalette_Slots::Push(L, Lua_HUDTexturePalette::Index(L, 1));
+    return 1;
+}
+
+const luaL_reg Lua_HUDTexturePalette_Get[] = {
+{"size", Lua_HUDTexturePalette_Get_Size},
+{"highlight", Lua_HUDTexturePalette_Get_Selected},
+{"slots", Lua_HUDTexturePalette_Get_Slots},
+{0, 0}
+};
+
 
 char Lua_HUDPlayer_Name[] = "Player";
 typedef L_Class<Lua_HUDPlayer_Name> Lua_HUDPlayer;
@@ -1354,6 +1468,12 @@ static int Lua_HUDPlayer_Get_Zoom(lua_State *L)
     return 1;
 }
 
+static int Lua_HUDPlayer_Get_Texture_Palette(lua_State *L)
+{
+    Lua_HUDTexturePalette::Push(L, 1);
+    return 1;
+}
+
 const luaL_reg Lua_HUDPlayer_Get[] = {
 {"color", Lua_HUDPlayer_Get_Color},
 {"dead", Lua_HUDPlayer_Get_Dead},
@@ -1373,6 +1493,7 @@ const luaL_reg Lua_HUDPlayer_Get[] = {
 {"motion_sensor", Lua_HUDPlayer_Get_Motion},
 {"compass", Lua_HUDPlayer_Get_Compass},
 {"zoom_active", Lua_HUDPlayer_Get_Zoom},
+{"texture_palette", Lua_HUDPlayer_Get_Texture_Palette},
 {0, 0}
 };
 
@@ -2177,6 +2298,13 @@ int Lua_HUDObjects_register(lua_State *L)
 
 	Lua_HUDCompass::Register(L, Lua_HUDCompass_Get);
 
+    Lua_HUDTexturePalette_Slot::Register(L, Lua_HUDTexturePalette_Slot_Get);
+    Lua_HUDTexturePalette_Slot::Valid = Lua_HUDTexturePalette_Slot_Valid;
+    
+	Lua_HUDTexturePalette_Slots::Register(L, 0, 0, Lua_HUDTexturePalette_Slots_Metatable);
+    
+	Lua_HUDTexturePalette::Register(L, Lua_HUDTexturePalette_Get);
+    
 	Lua_HUDPlayer::Register(L, Lua_HUDPlayer_Get);
 	Lua_HUDPlayer::Push(L, 0);
 	lua_setglobal(L, Lua_HUDPlayer_Name);

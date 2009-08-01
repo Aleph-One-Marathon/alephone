@@ -601,6 +601,32 @@ end
         <description>player's team (pants color)</description>
         <type>number</type>
       </variable>
+      <subtable name="texture_palette" classname="lua_texture_palette">
+        <variable name="highlight">
+          <description>number of slot to highlight</description>
+          <note>can be nil</note>
+          <type>number</type>
+        </variable>
+        <variable name="size">
+          <description>how many slots the palette is using</description>
+          <note>the texture palette is normally visible whenever the size is greater than 0</note>
+          <type>number</type>
+        </variable>
+        <subtable name="slots[n]" classname="lua_slots">
+          <variable name="collection">
+            <description>collection of this slot</description>
+            <type>number</type>
+          </variable>
+          <variable name="texture_index">
+            <description>texture index of this slot</description>
+            <type>number</type>
+          </variable>
+          <variable name="type">
+            <description>texture type of this slot such as wall or sprite; see "Texture Types"</description>
+            <type>texture_type</type>
+          </variable>
+        </subtable>
+      </subtable>
       <subtable name="weapons">
         <variable name="current">
           <description>weapon the player is currently wielding</description>
