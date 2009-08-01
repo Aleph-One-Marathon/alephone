@@ -1125,6 +1125,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <type>player_weapon</type>
 	  <note>can be nil</note>
 	</variable>
+	<variable name="desired" access="read-only" version="SVN">
+	  <description>weapon the player wants to switch to</description>
+	  <type>player_weapon</type>
+	  <note>can be nil</note>
+	</variable>
 	<variable name="active" version="20080707">
 	  <description>when a player's weapons are not active, he does not see weapons in hand, and can not fire</description>
 	  <type>boolean</type>

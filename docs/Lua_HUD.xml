@@ -633,6 +633,11 @@ end
           <type>player_weapon</type>
           <note>can be nil</note>
         </variable>
+	<variable name="desired">
+	  <description>weapon the player wants to switch to</description>
+	  <type>player_weapon</type>
+	  <note>can be nil</note>
+	</variable>
       </subtable>
       <subtable-accessor name="weapons" classname="player_weapon" index="weapon_type">
         <variable name="type"><type>weapon_type</type></variable>
