@@ -5,8 +5,22 @@ SUBDIRS = Source_Files tools data
 # Requires automake 1.5
 AUTOMAKE_OPTIONS = 1.5 foreign
 
-EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows Makefile.BeOS \
-  docs/MML.html docs/Lua.html data/Fonts Resources/Windows/alephone.ico Resources/Windows/alephone.rc PBProjects/AlephOne-OSX10.4.xcodeproj/project.pbxproj PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns PBProjects/PFIcon.icns PBProjects/PhysIcon.icns PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns PBProjects/SoundsIcon.icns PBProjects/Info-AlephOne_SDL.plist PBProjects/precompiled_headers.h PBProjects/SDLMain.h PBProjects/SDLMain.m PBProjects/AlephOne.icns Expat/xmltok/nametab.h PBProjects/config.h PBProjects/confpaths.h data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt docs/alephone.6 examples/lua/Cheats.lua
+EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
+  Makefile.BeOS docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
+  data/Fonts Resources/Windows/alephone.ico				\
+  Resources/Windows/alephone.rc						\
+  PBProjects/AlephOne-OSX10.4.xcodeproj/project.pbxproj			\
+  PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns	\
+  PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns			\
+  PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns			\
+  PBProjects/PFIcon.icns PBProjects/PhysIcon.icns			\
+  PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns			\
+  PBProjects/SoundsIcon.icns PBProjects/Info-AlephOne_SDL.plist		\
+  PBProjects/precompiled_headers.h PBProjects/SDLMain.h			\
+  PBProjects/SDLMain.m PBProjects/AlephOne.icns Expat/xmltok/nametab.h	\
+  PBProjects/config.h PBProjects/confpaths.h				\
+  data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt		\
+  docs/alephone.6 examples/lua/Cheats.lua
 
 man_MANS = docs/alephone.6
 
@@ -44,6 +58,7 @@ $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
 	unix2dos -n $(srcdir)/README $(WINDISTDIR)/README.txt
 	mkdir $(WINDISTDIR)/docs
 	cp $(srcdir)/docs/Lua.html $(WINDISTDIR)/docs/Lua.html
+	cp $(srcdir)/docs/Lua_HUD.html $(WINDISTDIR)/docs/Lua_HUD.html
 	cp $(srcdir)/docs/MML.html $(WINDISTDIR)/docs/MML.html
 	unix2dos -n $(srcdir)/docs/Troubleshooting.txt $(WINDISTDIR)/docs/Troubleshooting.txt
 	mkdir $(WINDISTDIR)/Themes
