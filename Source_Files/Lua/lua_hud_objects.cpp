@@ -45,6 +45,7 @@ LUA_HUD_OBJECTS.CPP
 
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
+#include <algorithm>
 
 #ifdef HAVE_LUA
 
@@ -2006,16 +2007,16 @@ static int Lua_HUDLighting_Fader_Get_Color(lua_State *L)
         {
             lua_newtable(L);
             lua_pushstring(L, "r");
-            lua_pushnumber(L, fminf(1.f, fmaxf(0.f, fader->Color[0])));
+            lua_pushnumber(L, std::min(1.f, std::max(0.f, fader->Color[0])));
             lua_settable(L, -3);
             lua_pushstring(L, "g");
-            lua_pushnumber(L, fminf(1.f, fmaxf(0.f, fader->Color[1])));
+            lua_pushnumber(L, std::min(1.f, std::max(0.f, fader->Color[1])));
             lua_settable(L, -3);
             lua_pushstring(L, "b");
-            lua_pushnumber(L, fminf(1.f, fmaxf(0.f, fader->Color[2])));
+            lua_pushnumber(L, std::min(1.f, std::max(0.f, fader->Color[2])));
             lua_settable(L, -3);
             lua_pushstring(L, "a");
-            lua_pushnumber(L, fminf(1.f, fmaxf(0.f, fader->Color[3])));
+            lua_pushnumber(L, std::min(1.f, std::max(0.f, fader->Color[3])));
             lua_settable(L, -3);
             return 1;
         }
