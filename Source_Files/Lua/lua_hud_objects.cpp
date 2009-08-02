@@ -1012,7 +1012,7 @@ char Lua_HUDPlayer_Weapon_Name[] = "player_weapon";
 typedef L_Class<Lua_HUDPlayer_Weapon_Name> Lua_HUDPlayer_Weapon;
 
 template<int trigger>
-static int get_weapon_trigger(lua_State *L)
+static int get_hudweapon_trigger(lua_State *L)
 {
 	Lua_HUDPlayer_Weapon_Trigger::Push(L, Lua_HUDPlayer_Weapon::Index(L, 1), trigger);
 	return 1;
@@ -1025,8 +1025,8 @@ static int Lua_HUDPlayer_Weapon_Get_Type(lua_State *L)
 }
 
 const luaL_reg Lua_HUDPlayer_Weapon_Get[] = { 
-{"primary", get_weapon_trigger<_primary_weapon>},
-{"secondary", get_weapon_trigger<_secondary_weapon>},
+{"primary", get_hudweapon_trigger<_primary_weapon>},
+{"secondary", get_hudweapon_trigger<_secondary_weapon>},
 {"type", Lua_HUDPlayer_Weapon_Get_Type},
 {0, 0} 
 };
