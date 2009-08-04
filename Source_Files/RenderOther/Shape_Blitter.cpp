@@ -124,6 +124,9 @@ void Shape_Blitter::OGL_Draw(SDL_Rect& dst)
             break;
         case Shape_Texture_Landscape:
             TMgr.TextureType = OGL_Txtr_Landscape;
+            LandscapeOptions *LandOpts = View_GetLandscapeOptions(TMgr.ShapeDesc);	
+            TMgr.LandscapeVertRepeat = LandOpts->VertRepeat;
+            TMgr.Landscape_AspRatExp = LandOpts->OGL_AspRatExp;
             break;
         case Shape_Texture_Sprite:
             TMgr.TextureType = OGL_Txtr_Inhabitant;
@@ -182,18 +185,37 @@ void Shape_Blitter::OGL_Draw(SDL_Rect& dst)
         glVertex2i(dst.x, dst.y + dst.h);
         glEnd();
     }
+    else if (m_type == Shape_Texture_Landscape)
+    {
+        U_Scale = -TMgr.Texture->width / static_cast<double>(TMgr.Texture->height);
+        U_Offset = 0.5 - U_Scale/2.0;
+        
+        crop_rect.x = m_scaled_src.w/4;
+        crop_rect.w = m_scaled_src.w/2;
+        crop_rect.y = m_scaled_src.h/4;
+        crop_rect.h = m_scaled_src.h/2;
+        if (crop_rect.x > 0)
+            V_Offset += crop_rect.x * V_Scale / static_cast<double>(m_scaled_src.w);
+        if (crop_rect.y > 0)
+            U_Offset += crop_rect.y * U_Scale / static_cast<double>(m_scaled_src.h);
+        if (crop_rect.w < m_scaled_src.w)
+            V_Scale *= crop_rect.w / static_cast<double>(m_scaled_src.w);
+        if (crop_rect.h < m_scaled_src.h)
+            U_Scale *= crop_rect.h / static_cast<double>(m_scaled_src.h);
+        
+        glBegin(GL_TRIANGLE_FAN);
+        glTexCoord2d(V_Offset, U_Offset);
+        glVertex2i(dst.x, dst.y);
+        glTexCoord2d(V_Offset + V_Scale, U_Offset);
+        glVertex2i(dst.x + dst.w, dst.y);
+        glTexCoord2d(V_Offset + V_Scale, U_Offset + U_Scale);
+        glVertex2i(dst.x + dst.w, dst.y + dst.h);
+        glTexCoord2d(V_Offset, U_Offset + U_Scale);
+        glVertex2i(dst.x, dst.y + dst.h);
+        glEnd();
+    }
     else
     {
-        if (m_type == Shape_Texture_Landscape)
-        {
-            glMatrixMode(GL_TEXTURE);
-            glLoadIdentity();
-            glRotatef(90.0, 0.0, 0.0, 1.0);
-            glScalef(1.0, -1.0, 1.0);
-            glMatrixMode(GL_MODELVIEW);
-            U_Offset = 0;
-        }
-        
         if (crop_rect.x > 0)
             V_Offset += crop_rect.x * V_Scale / static_cast<double>(m_scaled_src.w);
         if (crop_rect.y > 0)
