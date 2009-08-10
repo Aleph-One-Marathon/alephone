@@ -69,6 +69,68 @@ Aug 21, 2001 (Loren Petrich):
 
 #include <string>
 
+/* These OpenGL extensions are very new, and not present in any glext.h I could
+   find except Mesa's. Adding them here is harmless as the tokens are
+   standardized, and not used unless the extensions are detected, and has the
+   benefit of simplifying the sRGB code and making it so that when Apple adds
+   support to its OpenGL renderer AlephOnes built on older versions of OSX will
+   still be able to make use of it (ditto other OSes) -SB */
+#ifndef GL_FRAMEBUFFER_SRGB_EXT
+#define GL_FRAMEBUFFER_SRGB_EXT           0x8DB9
+#endif
+#ifndef GL_SRGB
+#define GL_SRGB                           0x8C40
+#endif
+#ifndef GL_SRGB_ALPHA
+#define GL_SRGB_ALPHA                     0x8C42
+#endif
+#if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
+#ifndef GL_COMPRESSED_SRGB_S3TC_DXT1_EXT
+#define GL_COMPRESSED_SRGB_S3TC_DXT1_EXT  0x8C4C
+#endif
+#ifndef GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT
+#define GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT 0x8C4D
+#endif
+#ifndef GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT
+#define GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT 0x8C4E
+#endif
+#ifndef GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
+#define GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT 0x8C4F
+#endif
+
+/* These probably need to be somewhere else */
+/* Whether we're doing sRGB right now */
+extern bool Using_sRGB;
+
+/* Using the EXT_framebuffer_sRGB spec as reference */
+#define sRGB_frob(l_) ((l_) <= 0.04045f ? l_ * (1.f/12.92f) : powf((l_ + 0.055f) * (1.f/1.055f), 2.4f))
+
+/* Don't use these, use the macros instead */
+void _SglColor3f(GLfloat r, GLfloat g, GLfloat b);
+void _SglColor3fv(const GLfloat* v);
+void _SglColor3ub(GLubyte r, GLubyte g, GLubyte b);
+void _SglColor3us(GLushort r, GLushort g, GLushort b);
+void _SglColor3usv(const GLushort* v);
+void _SglColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+void _SglColor4fv(const GLfloat* v);
+void _SglColor4fva(const GLfloat* v);
+void _SglColor4usv(const GLushort* v);
+#define SglColor(x) (Using_sRGB?_SglColor##x:glColor##x)
+/* Macros to replace glColor* to sRGB-correct incoming color values when
+   needed; don't use when hardcoding white or black */
+#define SglColor3f SglColor(3f)
+#define SglColor3fv SglColor(3fv)
+#define SglColor3ub SglColor(3ub)
+#define SglColor3us SglColor(3us)
+#define SglColor3usv SglColor(3usv)
+#define SglColor4f SglColor(4f)
+#define SglColor4fv SglColor(4fv)
+#define SglColor4usv SglColor(4usv)
+/* Hack for faders */
+#define SglColor4fva (Using_sRGB?_SglColor4fva:glColor4fv)
+
+#endif
+
 // Initializer; returns whether or not OpenGL is present
 bool OGL_Initialize();
 
@@ -181,6 +243,7 @@ struct OGL_ConfigureData
 
 	bool GeForceFix;
 	bool WaitForVSync;
+  bool Use_sRGB;
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();

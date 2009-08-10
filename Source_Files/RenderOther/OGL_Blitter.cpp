@@ -119,7 +119,7 @@ void OGL_Blitter::_LoadTextures()
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_tile_width, m_tile_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
+			glTexImage2D(GL_TEXTURE_2D, 0, Using_sRGB ? GL_SRGB_ALPHA : GL_RGBA, m_tile_width, m_tile_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
 
 			i++;
 		}
@@ -230,8 +230,8 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		glRotatef(rotation, 0.0, 0.0, 1.0);
 		glTranslatef(-(dst.x + dst.w/2.0), -(dst.y + dst.h/2.0), 0.0);
 	}
-		
-	glColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
+	
+	SglColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
 	
 	for (int i = 0; i < m_rects.size(); i++)
 	{

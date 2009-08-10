@@ -148,7 +148,7 @@ void Shape_Blitter::OGL_Draw(SDL_Rect& dst)
 	GLdouble V_Offset = TMgr.V_Offset;
     
 	// Draw shape
-	glColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
+	SglColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
 	glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);

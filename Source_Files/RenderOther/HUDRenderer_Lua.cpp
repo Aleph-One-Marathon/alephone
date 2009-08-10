@@ -38,6 +38,8 @@ HUD_RENDERER_LUA.CPP
 # endif
 #endif
 
+#include "OGL_Setup.h" // for SglColor*
+
 #include <math.h>
 
 #if defined(__WIN32__) || defined(__MINGW32__)
@@ -211,7 +213,7 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
-		glColor4f(r, g, b, a);
+		SglColor4f(r, g, b, a);
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
 
@@ -249,7 +251,7 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
-		glColor4f(r, g, b, a);
+		SglColor4f(r, g, b, a);
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
 		
@@ -323,9 +325,9 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glTranslatef(x, y + font->Height, 0);
-		glColor4f(r, g, b, a);
+		SglColor4f(r, g, b, a);
 		font->OGL_Render(text);
-		glColor4f(1, 1, 1, 1);
+		SglColor4f(1, 1, 1, 1);
 		glPopMatrix();
 	}
 	else

@@ -124,6 +124,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 # endif
 #endif
 
+#include "preferences.h"
+
 #include "SDL.h"
 #include "SDL_endian.h"
 #include "interface.h"
@@ -1197,6 +1199,46 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 		internalFormat = GL_RGB5_A1;
 	}
 
+	if(Using_sRGB) {
+	  switch(internalFormat) {
+	  case GL_RGB:
+	  case GL_R3_G3_B2:
+	  case GL_RGB4:
+	  case GL_RGB5:
+	  case GL_RGB8:
+	  case GL_RGB10:
+	  case GL_RGB12:
+	  case GL_RGB16:
+	    internalFormat = GL_SRGB;
+	    break;
+	  case GL_RGBA:
+	  case GL_RGBA2:
+	  case GL_RGBA4:
+	  case GL_RGB5_A1:
+	  case GL_RGBA8:
+	  case GL_RGB10_A2:
+	  case GL_RGBA12:
+	  case GL_RGBA16:
+	    internalFormat = GL_SRGB_ALPHA;
+	    break;
+#if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
+	    /* These might not do anything... */
+	  case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+	    internalFormat = GL_COMPRESSED_SRGB_S3TC_DXT1_EXT;
+	    break;
+	  case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+	    internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT1_EXT;
+	    break;
+	  case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+	    internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT;
+	    break;
+	  case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+	    internalFormat = GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT;
+	    break;
+#endif
+	  }
+	}
+
 	if (Image->GetFormat() == ImageDescriptor::RGBA8) {
 		switch (TxtrTypeInfo.FarFilter)
 		{
@@ -1241,11 +1283,11 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 	{
 #if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
 		if (Image->GetFormat() == ImageDescriptor::DXTC1)
-			internalFormat = GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		  internalFormat = Using_sRGB ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC3)
-			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		  internalFormat = Using_sRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC5)
-			internalFormat = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		  internalFormat = Using_sRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 		
 		switch(TxtrTypeInfo.FarFilter)
 		{

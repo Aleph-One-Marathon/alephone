@@ -658,6 +658,16 @@ bool OGL_StartRun()
 #ifdef __WIN32__
 	setup_gl_extensions();
 #endif
+
+	Using_sRGB = false;
+	if(graphics_preferences->OGL_Configure.Use_sRGB) {
+	  if(!OGL_CheckExtension("GL_EXT_framebuffer_sRGB") || !OGL_CheckExtension("GL_EXT_texture_sRGB"))
+	    graphics_preferences->OGL_Configure.Use_sRGB = false;
+	  else {
+	    glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+	    Using_sRGB = true;
+	  }
+	}
 	
 	_OGL_IsActive = true;
 	OGL_StartProgress(count_replacement_collections() + 2);
@@ -1277,8 +1287,13 @@ void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color)
 		PIN(SelfLuminosity - (GLdouble(FIXED_ONE)/(8*GLdouble(WORLD_ONE)))*Depth,0,FIXED_ONE);
 	
 	GLdouble CombinedShading = (Shading>SelfIllumShading) ? (Shading + 0.5*SelfIllumShading) : (SelfIllumShading + 0.5*Shading);
-	
-	Color[0] = Color[1] = Color[2] = PIN(static_cast<GLfloat>(CombinedShading/FIXED_ONE),0,1);
+
+	if(Using_sRGB) {
+	  GLdouble temp = PIN(static_cast<GLfloat>(CombinedShading/FIXED_ONE),0,1);
+	  Color[0] = Color[1] = Color[2] = sRGB_frob(temp);
+	}
+	else
+	  Color[0] = Color[1] = Color[2] = PIN(static_cast<GLfloat>(CombinedShading/FIXED_ONE),0,1);
 }
 
 
@@ -1307,7 +1322,7 @@ static void MakeFalseColor(int c, float Opacity = 1)
 	{1.0, 0.0, 0.5}
 	};
 	
-	glColor4f(Colors[cr][0],Colors[cr][1],Colors[cr][2],Opacity);
+	SglColor4f(Colors[cr][0],Colors[cr][1],Colors[cr][2],Opacity);
 }
 #endif
 
@@ -1527,7 +1542,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	else if (RenderPolygon.ambient_shade < 0)
 	{
 		GLfloat Light = (- RenderPolygon.ambient_shade)/GLfloat(FIXED_ONE);
-		glColor3f(Light,Light,Light);
+		SglColor3f(Light,Light,Light);
 	}
 	else
 	{
@@ -1692,7 +1707,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 				FindShadingColor(-ExtendedVertexList[k].Vertex[2],RenderPolygon.ambient_shade,ExtendedVertexList[k].Color);
 		}
 		else
-			glColor3f(Light,Light,Light);
+			SglColor3f(Light,Light,Light);
 	}
 	
 	// Set up blending mode: either sharp edges or opaque
@@ -1903,7 +1918,7 @@ static bool RenderAsLandscape(polygon_definition& RenderPolygon)
 		glDisable(GL_TEXTURE_2D);
 		
 		// Set up the color
-		glColor3fv(CurrFogColor);
+		SglColor3fv(CurrFogColor);
 		
 		// Set up blending mode: opaque
 		glDisable(GL_ALPHA_TEST);
@@ -2249,6 +2264,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		// alpha test will be disabled, so don't hose z buffer
 		glDisable(GL_DEPTH_TEST);
 
+	// Already corrected
 	glColor4fv(Color);
 	
 	// Location of data:
@@ -2288,6 +2304,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 		{
 			// Do blending here to get the necessary semitransparency;
 			// push the cutoff down so 0.5*0.5 (half of half-transparency)
+		  // DON'T sRGB this.
 			glColor4f(1,1,1,Color[3]);
 			glEnable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
@@ -2625,6 +2642,7 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 		// the rendering source code (render.c, scottish_textures.c, low_level_textures.c)
 		Color[0] = Color[1] = Color[2] = 0;
 		Color[3] = 1 - RenderRectangle.transfer_data/32.0F;
+		if(Using_sRGB) Color[3] = sqrtf(Color[3]);
 		IsInvisible = true;
 		IsGlowmappable = false;
 	}
@@ -2677,7 +2695,7 @@ void SetupStaticMode(rectangle_definition& RenderRectangle)
 		// Do flat-color version of static effect
 		glDisable(GL_ALPHA_TEST);
 		glEnable(GL_BLEND);
-		glColor4usv(FlatStaticColor);
+		SglColor4usv(FlatStaticColor);
 	} else {
 #ifdef USE_STIPPLE_STATIC_EFFECT
 		// Do multitextured stippling to create the static effect
@@ -2748,7 +2766,7 @@ void TeardownStaticMode()
 void NormalShader(void *Data)
 {
 	// Normal setup: be sure to use the normal color
-	glColor4fv(ShaderData.Color);
+	SglColor4fv(ShaderData.Color);
 	
 	if (ShaderData.ModelPtr->Use(ShaderData.CLUT,OGL_SkinManager::Normal))
 	{
@@ -2760,7 +2778,10 @@ void NormalShader(void *Data)
 void GlowingShader(void *Data)
 {
 	// Glowmapped setup
-	glColor4f(1,1,1,ShaderData.Color[3]);
+  if(Using_sRGB) // heuristic to make it look "better"
+    glColor4f(1,1,1,ShaderData.Color[3]*ShaderData.Color[3]);
+  else
+    glColor4f(1,1,1,ShaderData.Color[3]);
 	glEnable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
 	
@@ -2793,7 +2814,8 @@ void StaticModeIndivSetup(int SeqNo)
 		// glEnable(GL_COLOR_LOGIC_OP);
 		// glLogicOp(GL_OR);
 	}
-	
+
+	// no need to correct
 	glColor3fv(StaticBaseColors[SeqNo]);			
 	glPolygonStipple((byte *)StaticPatterns[SeqNo]);
 #else
@@ -2822,8 +2844,9 @@ void StaticModeIndivSetup(int SeqNo)
 		glStencilMask(0);
 		glEnable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
+		if(Using_sRGB) glDisable(GL_FRAMEBUFFER_sRGB);
 		glColorMask(GL_TRUE,GL_TRUE,GL_TRUE,GL_TRUE);
-		glColor4f(1,1,1,StencilTxtrOpacity);	// Static is fully bright and partially transparent
+		glColor4f(1,1,1,Using_sRGB ? StencilTxtrOpacity*StencilTxtrOpacity : StencilTxtrOpacity);	// Static is fully bright and partially transparent
 		break;
 	}
 #endif
@@ -2863,7 +2886,7 @@ void StaticModeShader(void *Data)
 			Buffer[k] = Pxl;
 		}
 		
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, TxSize, TxSize,
+		glTexImage2D(GL_TEXTURE_2D, 0, Using_sRGB ? GL_SRGB_ALPHA : GL_RGBA8, TxSize, TxSize,
 			0, GL_RGBA, GL_UNSIGNED_BYTE, Buffer);
 		
 		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -2873,6 +2896,7 @@ void StaticModeShader(void *Data)
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	}
+	if(*Which == 3 && Using_sRGB) glEnable(GL_FRAMEBUFFER_sRGB);
 #endif
 }
 
@@ -3056,7 +3080,7 @@ bool OGL_RenderCrosshairs()
 	    Crosshairs.GLColorsPreCalc[2] = Crosshairs.Color.blue/65535.0F;
 	    Crosshairs.GLColorsPreCalc[3] = Crosshairs.Opacity;
 	}
-	glColor4fv(Crosshairs.GLColorsPreCalc);
+	SglColor4fv(Crosshairs.GLColorsPreCalc);
 	
 	// Create a new modelview matrix for the occasion
 	glMatrixMode(GL_MODELVIEW);
@@ -3208,7 +3232,7 @@ bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r,
 	glCallList(TextDisplayList);
 	
 	// Foreground
-	glColor3f(r/255.0f,g/255.0f,b/255.0f);
+	SglColor3f(r/255.0f,g/255.0f,b/255.0f);
 
 	glLoadIdentity();
 	glTranslatef(BaseX,BaseY,Depth);

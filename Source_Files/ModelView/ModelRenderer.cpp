@@ -136,6 +136,8 @@ void ModelRenderer::Render(Model3D& Model, ModelRenderShader *Shaders, int NumSh
 }
 
 
+/* TODO: sRGB-correct model colors. This needs to be done in the loader. The
+   lighting colors are already sRGB-corrected. -SB */
 void ModelRenderer::SetupRenderPass(Model3D& Model, ModelRenderShader& Shader)
 {
 	assert(Shader.TextureCallback);

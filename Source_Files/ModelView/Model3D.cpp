@@ -47,6 +47,8 @@
 # endif
 #endif
 
+/* Need Sgl* macros */
+#include "OGL_Setup.h"
 
 // Bone-stack and transformation-matrix locally-used arrays;
 // the matrices have dimensions (output coords)(input-coord multipliers + offset for output)
@@ -516,7 +518,7 @@ void Model3D::RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *Diagona
 	
 	if (EdgeColor)
 	{
-		glColor3fv(EdgeColor);
+		SglColor3fv(EdgeColor);
 		const int NumEdgeVerts = 24;
 		const unsigned short EdgeVerts[NumEdgeVerts] = {
 			0,1,
@@ -539,7 +541,7 @@ void Model3D::RenderBoundingBox(const GLfloat *EdgeColor, const GLfloat *Diagona
 	
 	if (DiagonalColor)
 	{
-		glColor3fv(DiagonalColor);
+		SglColor3fv(DiagonalColor);
 		const int NumDiagVerts = 24;
 		const unsigned short DiagVerts[NumDiagVerts] = {
 			0,3,

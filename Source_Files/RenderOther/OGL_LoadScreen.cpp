@@ -26,6 +26,8 @@
 
 #ifdef HAVE_OPENGL
 
+#include "OGL_Setup.h" // for SglColor*
+
 extern bool OGL_SwapBuffers();
 
 OGL_LoadScreen *OGL_LoadScreen::instance_;
@@ -117,7 +119,7 @@ void OGL_LoadScreen::Progress(const int progress)
 		glDisable(GL_TEXTURE_2D);
 		
 		// draw the progress bar background
-		glColor3us(colors[0].red, colors[0].green, colors[0].blue);
+		SglColor3us(colors[0].red, colors[0].green, colors[0].blue);
 		glBegin(GL_QUADS);
 		glVertex3f(x, y, 0);
 		glVertex3f(x + w, y, 0);
@@ -138,7 +140,7 @@ void OGL_LoadScreen::Progress(const int progress)
 		}
 			
 		// draw the progress bar foreground
-		glColor3us(colors[1].red, colors[1].green, colors[1].blue);
+		SglColor3us(colors[1].red, colors[1].green, colors[1].blue);
 		glBegin(GL_QUADS);
 		glVertex3f(left, top, 0);
 		glVertex3f(left + width, top, 0);
