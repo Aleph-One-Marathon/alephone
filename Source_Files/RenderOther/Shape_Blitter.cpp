@@ -123,10 +123,12 @@ void Shape_Blitter::OGL_Draw(SDL_Rect& dst)
             TMgr.TextureType = OGL_Txtr_Wall;
             break;
         case Shape_Texture_Landscape:
+	  {
             TMgr.TextureType = OGL_Txtr_Landscape;
             LandscapeOptions *LandOpts = View_GetLandscapeOptions(TMgr.ShapeDesc);	
             TMgr.LandscapeVertRepeat = LandOpts->VertRepeat;
             TMgr.Landscape_AspRatExp = LandOpts->OGL_AspRatExp;
+	  }
             break;
         case Shape_Texture_Sprite:
             TMgr.TextureType = OGL_Txtr_Inhabitant;
