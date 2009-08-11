@@ -189,6 +189,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Win32.h"
 #endif
 
+#include <cmath>
+
 // Whether or not OpenGL is active for rendering
 static bool _OGL_IsActive = false;
 
@@ -2642,7 +2644,7 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 		// the rendering source code (render.c, scottish_textures.c, low_level_textures.c)
 		Color[0] = Color[1] = Color[2] = 0;
 		Color[3] = 1 - RenderRectangle.transfer_data/32.0F;
-		if(Using_sRGB) Color[3] = sqrtf(Color[3]);
+		if(Using_sRGB) Color[3] = std::sqrt(Color[3]);
 		IsInvisible = true;
 		IsGlowmappable = false;
 	}

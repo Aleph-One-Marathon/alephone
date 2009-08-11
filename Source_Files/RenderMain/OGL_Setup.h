@@ -67,6 +67,7 @@ Aug 21, 2001 (Loren Petrich):
 #include "OGL_Subst_Texture_Def.h"
 #include "OGL_Model_Def.h"
 
+#include <cmath>
 #include <string>
 
 /* These OpenGL extensions are very new, and not present in any glext.h I could
@@ -97,13 +98,14 @@ Aug 21, 2001 (Loren Petrich):
 #ifndef GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
 #define GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT 0x8C4F
 #endif
+#endif
 
 /* These probably need to be somewhere else */
 /* Whether we're doing sRGB right now */
 extern bool Using_sRGB;
 
 /* Using the EXT_framebuffer_sRGB spec as reference */
-#define sRGB_frob(l_) ((l_) <= 0.04045f ? l_ * (1.f/12.92f) : powf((l_ + 0.055f) * (1.f/1.055f), 2.4f))
+#define sRGB_frob(l_) ((l_) <= 0.04045f ? l_ * (1.f/12.92f) : std::pow((l_ + 0.055) * (1.0/1.055), 2.4))
 
 /* Don't use these, use the macros instead */
 void _SglColor3f(GLfloat r, GLfloat g, GLfloat b);
@@ -128,8 +130,6 @@ void _SglColor4usv(const GLushort* v);
 #define SglColor4usv SglColor(4usv)
 /* Hack for faders */
 #define SglColor4fva (Using_sRGB?_SglColor4fva:glColor4fv)
-
-#endif
 
 // Initializer; returns whether or not OpenGL is present
 bool OGL_Initialize();
