@@ -2290,6 +2290,8 @@ void write_preferences(
 	WriteXML_CString(F,"  hud_lua_file=\"", environment_preferences->hud_lua_file, 256, "\"\n");
 	fprintf(F,"  use_hud_lua=\"%s\"\n", BoolString(environment_preferences->use_hud_lua));
 	fprintf(F,"  hide_alephone_extensions=\"%s\"\n", BoolString(environment_preferences->hide_extensions));
+	// Making this persistent is probably a very bad idea
+	//fprintf(F,"  insecure_lua=\"%s\"\n", BoolString(environment_preferences->insecure_lua));
 	fprintf(F,">\n");
 	fprintf(F,"</environment>\n\n");
 			
@@ -2514,6 +2516,7 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->hud_lua_file[0] = 0;
 	preferences->use_hud_lua = false;
 	preferences->hide_extensions = true;
+	preferences->insecure_lua = false;
 }
 
 
@@ -3925,6 +3928,10 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	else if (StringsEqual(Tag, "hide_alephone_extensions"))
 	{
 		return ReadBooleanValue(Value, environment_preferences->hide_extensions);
+	}
+	else if (StringsEqual(Tag, "insecure_lua"))
+	{
+		return ReadBooleanValue(Value, environment_preferences->insecure_lua);
 	}
 	return true;
 }

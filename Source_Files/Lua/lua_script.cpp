@@ -195,6 +195,12 @@ static const luaL_Reg lualibs[] = {
 	{NULL, NULL}
 };
 
+static const luaL_Reg insecurelibs[] = {
+	{LUA_IOLIBNAME, luaopen_io},
+	{LUA_OSLIBNAME, luaopen_os},
+	{NULL, NULL}
+};
+
 void* L_Persistent_Table_Key()
 {
 	static const char *key = "persist";
@@ -234,6 +240,15 @@ public:
 			lua_pushcfunction(State(), lib->func);
 			lua_pushstring(State(), lib->name);
 			lua_call(State(), 1, 0);
+		}
+		if(environment_preferences->insecure_lua) {
+		  const luaL_Reg *lib = insecurelibs;
+		  for (; lib->func; lib++)
+		    {
+		      lua_pushcfunction(State(), lib->func);
+		      lua_pushstring(State(), lib->name);
+		      lua_call(State(), 1, 0);
+		    }
 		}
 
 		// set up a persistence table in the registry

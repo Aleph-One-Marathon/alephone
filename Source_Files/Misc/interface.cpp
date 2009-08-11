@@ -351,7 +351,11 @@ void initialize_game_state(
 	game_state.main_menu_display_count= 0;
 
 	toggle_menus(false);
-	
+
+	if(environment_preferences->insecure_lua) {
+	  alert_user("insecure_lua has been enabled in your preferences. It will be disabled when Aleph One is quit. Malicious Lua scripts can use insecure_lua to take over your computer. Unless you specifically trust every single Lua script running, you should restart Aleph One immediately. You are safe as long as you quit IMMEDIATELY.");
+	}
+
 	display_introduction();
 }
 

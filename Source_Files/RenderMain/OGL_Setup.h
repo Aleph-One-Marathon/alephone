@@ -98,6 +98,7 @@ Aug 21, 2001 (Loren Petrich):
 #ifndef GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT
 #define GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT 0x8C4F
 #endif
+
 #endif
 
 /* These probably need to be somewhere else */
