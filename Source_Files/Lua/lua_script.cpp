@@ -179,6 +179,7 @@ extern struct physics_constants *get_physics_constants_for_model(short physics_m
 extern void draw_panels();
 
 extern bool MotionSensorActive;
+extern bool insecure_lua;
 
 extern void instantiate_physics_variables(struct physics_constants *constants, struct physics_variables *variables, short player_index, bool first_time, bool take_action);
 
@@ -241,7 +242,7 @@ public:
 			lua_pushstring(State(), lib->name);
 			lua_call(State(), 1, 0);
 		}
-		if(environment_preferences->insecure_lua) {
+		if(insecure_lua) {
 		  const luaL_Reg *lib = insecurelibs;
 		  for (; lib->func; lib++)
 		    {

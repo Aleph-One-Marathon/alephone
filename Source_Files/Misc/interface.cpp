@@ -291,6 +291,7 @@ static struct color_table *current_picture_clut= NULL;
 /* -------------- externs */
 extern short interface_bit_depth;
 extern short bit_depth;
+extern bool insecure_lua;
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
 extern bool load_game_from_file(FileSpecifier& File);
@@ -352,8 +353,8 @@ void initialize_game_state(
 
 	toggle_menus(false);
 
-	if(environment_preferences->insecure_lua) {
-	  alert_user("insecure_lua has been enabled in your preferences. It will be disabled when Aleph One is quit. Malicious Lua scripts can use insecure_lua to take over your computer. Unless you specifically trust every single Lua script running, you should restart Aleph One immediately. You are safe as long as you quit IMMEDIATELY.");
+	if(insecure_lua) {
+	  alert_user("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit Aleph One IMMEDIATELY.");
 	}
 
 	display_introduction();

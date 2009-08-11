@@ -133,6 +133,7 @@ bool option_nosound = false;          // Disable sound output
 bool option_nogamma = false;	      // Disable gamma table effects (menu fades)
 bool option_debug = false;
 bool option_nojoystick = false;
+bool insecure_lua = false;
 static bool force_fullscreen = false; // Force fullscreen mode
 static bool force_windowed = false;   // Force windowed mode
 
@@ -183,6 +184,8 @@ static void usage(const char *prg_name)
 	  "\t[-s | --nosound]       Do not access the sound card\n"
 	  "\t[-m | --nogamma]       Disable gamma table effects (menu fades)\n"
           "\t[-j | --nojoystick]    Do not initialize joysticks\n"
+	  // Documenting this might be a bad idea?
+	  // "\t[-i | --insecure_lua]  Allow Lua netscripts to take over your computer\n"
 #if defined(unix) || defined(__BEOS__) || defined(__WIN32__) || defined(__NetBSD__) || defined(__OpenBSD__)
 	  "\nYou can use the ALEPHONE_DATA environment variable to specify\n"
 	  "the data directory.\n"
@@ -248,6 +251,8 @@ int main(int argc, char **argv)
                         option_nojoystick = true;
 		} else if (strcmp(*argv, "-m") == 0 || strcmp(*argv, "--nogamma") == 0) {
 			option_nogamma = true;
+		} else if (strcmp(*argv, "-i") == 0 || strcmp(*argv, "--insecure_lua") == 0) {
+			insecure_lua = true;
 		} else if (strcmp(*argv, "-d") == 0 || strcmp(*argv, "--debug") == 0) {
 		  option_debug = true;
 		} else if (arg_directory == "") {
