@@ -390,8 +390,9 @@ void OGL_StopTextures()
 		for (int ic=0; ic<MAXIMUM_COLLECTIONS; ic++)
 			if (TextureStateSets[it][ic]) delete []TextureStateSets[it][ic];
 
-	// clear blitters
+	// clear blitters and fonts
 	OGL_Blitter::StopTextures();
+	FontSpecifier::OGL_ResetFonts(false);
 }
 
 void OGL_FrameTickTextures()

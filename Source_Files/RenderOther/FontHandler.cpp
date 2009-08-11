@@ -87,7 +87,6 @@ FontSpecifier& FontSpecifier::operator=(FontSpecifier& F)
 FontSpecifier::~FontSpecifier()
 {
 #ifdef HAVE_OPENGL
-	m_font_registry.erase(this);
 	OGL_Reset(false);
 #endif
 }
@@ -102,7 +101,6 @@ void FontSpecifier::Init()
 	Update();
 #ifdef HAVE_OPENGL
 	OGL_Texture = NULL;
-	m_font_registry.insert(this);
 #endif
 }
 
@@ -257,6 +255,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	{
 		glDeleteTextures(1,&TxtrID);
 		glDeleteLists(DispList,256);
+		m_font_registry.erase(this);
 	}
 
 	// Invalidates whatever texture had been present
@@ -424,6 +423,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  	// Load texture
  	glGenTextures(1,&TxtrID);
  	glBindTexture(GL_TEXTURE_2D,TxtrID);
+	m_font_registry.insert(this);
  	
  	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -611,10 +611,14 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 
 void FontSpecifier::OGL_ResetFonts(bool IsStarting)
 {
+    // We only care about cleanup, textures get created as needed
+    if (IsStarting)
+        return;
+    
 	set<FontSpecifier*>::iterator it;
 	for (it = m_font_registry.begin();
 	     it != m_font_registry.end();
-	     it++    )
+	     it = m_font_registry.begin())
 		(*it)->OGL_Reset(IsStarting);
 }
 
