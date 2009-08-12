@@ -379,8 +379,7 @@ bool LoadLuaHUDScript(const char *buffer, size_t len)
 
 bool RunLuaHUDScript()
 {
-	if (hud_state)
-		return hud_state->Run();
+	return (hud_state && hud_state->Run());
 }
 
 void LoadHUDLua()
