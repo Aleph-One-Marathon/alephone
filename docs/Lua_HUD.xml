@@ -341,8 +341,12 @@ end
     <accessor name="Images" contains="image">
       <function name="new" named_parameters="true">
         <description>all arguments are passed by name; returns image or nil</description>
-        <argument name="path">
-          <description>the path to the image file to use</description>
+        <argument name="resource" required="false">
+          <description>a resource ID from the Images file (if given, other arguments are ignored)</description>
+          <type>number</type>
+        </argument>
+        <argument name="path" required="false">
+          <description>the path to the image file to use (required if resource is not given)</description>
           <type>string</type>
         </argument>
         <argument name="mask" required="false">

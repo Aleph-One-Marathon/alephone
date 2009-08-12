@@ -44,6 +44,20 @@ bool Image_Blitter::Load(const ImageDescriptor& image)
 	return ret;
 }
 
+bool Image_Blitter::Load(int picture_resource)
+{
+    bool ret = false;
+    LoadedResource PictRsrc;
+    if (get_picture_resource_from_images(picture_resource, PictRsrc)) {
+        SDL_Surface *hud_pict = picture_to_surface(PictRsrc);
+        if (hud_pict) {
+            ret = Load(*hud_pict);
+            SDL_FreeSurface(hud_pict);
+        }
+    }
+    return ret;
+}    
+
 bool Image_Blitter::Load(const SDL_Surface& s)
 {
 	SDL_Rect sr = { 0, 0, s.w, s.h };

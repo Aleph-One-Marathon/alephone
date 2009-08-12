@@ -311,11 +311,12 @@ end
 <h3>
 <a name="Images"></a>Images</h3>
 <dl>
-<dt>Images.new{path= [, mask=]}</dt>
+<dt>Images.new{ [resource=] [, path=] [, mask=]}</dt>
 <dd>
 <p class="description">all arguments are passed by name; returns image or nil</p>
 <ul class="args">
-<li>path: the path to the image file to use</li>
+<li>resource: a resource ID from the Images file (if given, other arguments are ignored)</li>
+<li>path: the path to the image file to use (required if resource is not given)</li>
 <li>mask: the path to an image file to use as an opacity mask</li>
 </ul>
 </dd>

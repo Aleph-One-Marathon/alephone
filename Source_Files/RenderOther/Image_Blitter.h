@@ -39,6 +39,7 @@ public:
 	Image_Blitter();
 	
 	bool Load(const ImageDescriptor& image);
+    bool Load(int picture_resource);
 	bool Load(const SDL_Surface& s);
 	bool Load(const SDL_Surface& s, const SDL_Rect& src);
 	virtual void Unload();

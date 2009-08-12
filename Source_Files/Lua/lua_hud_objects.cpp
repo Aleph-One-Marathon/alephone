@@ -379,6 +379,25 @@ typedef L_Class<Lua_Images_Name> Lua_Images;
 
 int Lua_Images_New(lua_State *L)
 {
+    // read resource argument
+    lua_pushstring(L, "resource");
+    lua_gettable(L, 1);
+    if (!lua_isnil(L, -1))
+    {
+        int resource_id = lua_tonumber(L, -1);
+
+        // blitter from image
+        Image_Blitter *blitter = (get_screen_mode()->acceleration == _opengl_acceleration) ? new OGL_Blitter() : new Image_Blitter();
+        if (!blitter->Load(resource_id))
+        {
+            lua_pushnil(L);
+            delete blitter;
+            return 1;
+        }
+        Lua_Image::Push(L, blitter);
+        return 1;
+    }
+    
 	// read path argument
 	char path[256] = "";
 	lua_pushstring(L, "path");
