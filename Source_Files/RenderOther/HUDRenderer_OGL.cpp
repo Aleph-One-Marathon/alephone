@@ -72,17 +72,8 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 {	
 	// Load static HUD picture if necessary
 	if (!HUD_Blitter.Loaded() && !hud_pict_not_found) {
-		LoadedResource PictRsrc;
-		if (get_picture_resource_from_images(INTERFACE_PANEL_BASE, PictRsrc)) {
-			// Render picture into SDL surface, convert to GL textures
-			SDL_Surface *hud_pict = picture_to_surface(PictRsrc);
-			if (hud_pict) {
-				HUD_Blitter.Load(*hud_pict);
-				SDL_FreeSurface(hud_pict);
-			}
-		}
-		else
-			hud_pict_not_found = true;
+        if (!HUD_Blitter.Load(INTERFACE_PANEL_BASE))
+            hud_pict_not_found = true;
 	}
 
 	glPushAttrib(GL_ALL_ATTRIB_BITS);
