@@ -334,13 +334,13 @@ int SoundFile::NewCustomSoundDefinition() {
   def.last_played = machine_tick_count();
   int index = sound_count;
   def.sound_code = 19000 + index; // necessary...
-  ++sound_count;
   for(vector<vector<SoundDefinition> >::iterator it = sound_definitions.begin(); it != sound_definitions.end(); ++it) {
     // this makes me squirm, what if index is wrong?
     (*it).push_back(def);
     // make me feel better
-    assert(sound_count == (*it).size());
+    assert((sound_count+1) == (*it).size());
   }
+  ++sound_count;
   return index;
 }
 
@@ -374,15 +374,16 @@ static bool TryLoadingExternal(SoundHeader& hdr, const char* path) {
 }
 
 bool SoundFile::AddCustomSoundSlot(int index, const char* file) {
-  if(index < real_sound_count && index >= sound_count) return false;
+  if(index < real_sound_count || index >= sound_count) return false;
   SoundHeader sound;
   bool ret = TryLoadingExternal(sound, file);
   if(!ret) return false;
   for(vector<vector<SoundDefinition> >::iterator it = sound_definitions.begin(); it != sound_definitions.end(); ++it) {
     if((*it)[index].sounds.size() >= 5 /*MAXIMUM_PERMUTATIONS_PER_SOUND*/) continue;
-    int sound_index = (*it)[index].sounds.size();
-    (*it)[index].sounds.resize(sound_index+1);
-    (*it)[index].sounds[sound_index] = sound;
+    (*it)[index].sounds.push_back(sound);
+    //int sound_index = (*it)[index].sounds.size();
+    //(*it)[index].sounds.resize(sound_index+1);
+    //(*it)[index].sounds[sound_index] = sound;
     ++(*it)[index].permutations;
   }
   return true;
