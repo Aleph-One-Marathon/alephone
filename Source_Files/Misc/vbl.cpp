@@ -127,7 +127,7 @@ inline short memory_error() {return 0;}
 
 /* ---------- globals */
 
-static long heartbeat_count;
+static int32 heartbeat_count;
 static bool input_task_active;
 static timer_task_proc input_task;
 
@@ -158,7 +158,7 @@ static void save_recording_queue_chunk(short player_index);
 static void read_recording_queue_chunks(void);
 static bool pull_flags_from_recording(short count);
 // LP modifications for object-oriented file handling; returns a test for end-of-file
-static bool vblFSRead(OpenedFile& File, long *count, void *dest, bool& HitEOF);
+static bool vblFSRead(OpenedFile& File, int32 *count, void *dest, bool& HitEOF);
 static void record_action_flags(short player_identifier, const uint32 *action_flags, short count);
 static short get_recording_queue_size(short which_queue);
 
@@ -252,7 +252,7 @@ bool get_keyboard_controller_status(
 	return input_task_active;
 }
 
-long get_heartbeat_count(
+int32 get_heartbeat_count(
 	void)
 {
 	return heartbeat_count;
@@ -707,7 +707,7 @@ void stop_recording(
 		replay.game_is_being_recorded = false;
 		
 		short player_index;
-		long total_length;
+		int32 total_length;
 
 		assert(replay.valid);
 		for (player_index= 0; player_index<dynamic_world->player_count; player_index++)
@@ -780,7 +780,7 @@ void check_recording_replaying(
 		if(enough_data_to_save)
 		{
 			bool success;
-			unsigned long freespace = 0;
+			uint32 freespace = 0;
 			FileSpecifier FilmFile_Check;
 			
 			get_recording_filedesc(FilmFile_Check);
@@ -856,7 +856,7 @@ void stop_replay(
 static void read_recording_queue_chunks(
 	void)
 {
-	long i, sizeof_read;
+	int32 i, sizeof_read;
 	uint32 action_flags; 
 	int16 count, player_index, num_flags;
 	ActionQueue *queue;
@@ -932,11 +932,11 @@ static void read_recording_queue_chunks(
 /* This is gross, (Alain wrote it, not me!) but I don't have time to clean it up */
 static bool vblFSRead(
 	OpenedFile& File,
-	long *count, 
+	int32 *count, 
 	void *dest,
 	bool& HitEOF)
 {
-	long fsread_count;
+	int32 fsread_count;
 	bool status = true;
 	
 	assert(replay.fsread_buffer);
@@ -954,9 +954,9 @@ static bool vblFSRead(
 		}
 		replay.location_in_cache = replay.fsread_buffer;
 		fsread_count= DISK_CACHE_SIZE - replay.bytes_in_cache;
-		long PrevPos;
+		int32 PrevPos;
 		File.GetPosition(PrevPos);
-		long replay_left= replay.header.length - PrevPos;
+		int32 replay_left= replay.header.length - PrevPos;
 		if(replay_left < fsread_count)
 			fsread_count= replay_left;
 		if(fsread_count > 0)
@@ -965,10 +965,10 @@ static bool vblFSRead(
 			// LP: wrapped the routines with some for finding out the file positions;
 			// this finds out how much is read indirectly
 			status = File.Read(fsread_count,replay.fsread_buffer+replay.bytes_in_cache);
-			long CurrPos;
+			int32 CurrPos;
 			File.GetPosition(CurrPos);
-			long new_fsread_count = CurrPos - PrevPos;
-			long FileLen;
+			int32 new_fsread_count = CurrPos - PrevPos;
+			int32 FileLen;
 			File.GetLength(FileLen);
 			HitEOF = (new_fsread_count < fsread_count) && (CurrPos == FileLen);
 			fsread_count = new_fsread_count;

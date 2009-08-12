@@ -273,7 +273,7 @@ OSErr NetDDPSendFrame(
 	MPPPBPtr myMPPPBPtr= &frame->pb;
 	OSErr error;
 
-	static long count;
+	static int32 count;
 	
 	assert(frame->data_size <= ddpMaxData);
 	

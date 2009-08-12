@@ -89,7 +89,7 @@ static struct path_definition *paths = NULL;
 
 #ifdef VERIFY_PATH_SYNC
 static byte *path_validation_area = NULL;
-static long path_validation_area_index;
+static int32 path_validation_area_index;
 static short path_run_count;
 #endif
 
@@ -181,10 +181,10 @@ short new_path(
 			/* NON-RANDOM PATH: we have a valid destination point: flood out from the source_polygon_index
 				until we reach destination_polygon_index or we run out of stack space */
 			
-			polygon_index= flood_map(source_polygon_index, LONG_MAX, cost, _breadth_first, data);
+			polygon_index= flood_map(source_polygon_index, INT32_MAX, cost, _breadth_first, data);
 			while (polygon_index!=NONE&&polygon_index!=destination_polygon_index)
 			{
-				polygon_index= flood_map(NONE, LONG_MAX, cost, _breadth_first, data);
+				polygon_index= flood_map(NONE, INT32_MAX, cost, _breadth_first, data);
 			}
 
 			/* if we reached destination_polygon_index, extract the path by calling
@@ -198,10 +198,10 @@ short new_path(
 				of RANDOM_PATH_AREA, whichever comes first.  in fact, our destination_point, if
 				not NULL, is a 2d vector specifying a bias in the direction we want to travel
 				(usually this will be away from somewhere we don’t want to be) */
-			polygon_index= flood_map(source_polygon_index, LONG_MAX, cost, _breadth_first, data);
+			polygon_index= flood_map(source_polygon_index, INT32_MAX, cost, _breadth_first, data);
 			while (polygon_index!=NONE)
 			{
-				polygon_index= flood_map(NONE, LONG_MAX, cost, _breadth_first, data);
+				polygon_index= flood_map(NONE, INT32_MAX, cost, _breadth_first, data);
 			}
 			
 			choose_random_flood_node((world_vector2d *)destination_point); /* choose a random destination */

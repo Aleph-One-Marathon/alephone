@@ -188,8 +188,8 @@ static void scan_and_add_scenery(void);
 static void complete_restoring_level(struct wad_data *wad);
 static void load_redundant_map_data(short *redundant_data, size_t count);
 static void allocate_map_structure_for_map(struct wad_data *wad);
-static wad_data *build_export_wad(wad_header *header, long *length);
-static struct wad_data *build_save_game_wad(struct wad_header *header, long *length);
+static wad_data *build_export_wad(wad_header *header, int32 *length);
+static struct wad_data *build_save_game_wad(struct wad_header *header, int32 *length);
 
 static void allocate_map_for_counts(size_t polygon_count, size_t side_count,
 	size_t endpoint_count, size_t line_count);
@@ -221,7 +221,7 @@ static uint8 *unpack_directory_data(uint8 *Stream, directory_data *Objects, size
 //static uint8 *pack_directory_data(uint8 *Stream, directory_data *Objects, int Count);
 
 /* ------------------------ Net functions */
-long get_net_map_data_length(
+int32 get_net_map_data_length(
 	void *data) 
 {
 	return get_flat_data_length(data);
@@ -1242,7 +1242,7 @@ bool export_level(FileSpecifier& File)
 	struct wad_header header;
 	short err = 0;
 	bool success = false;
-	long offset, wad_length;
+	int32 offset, wad_length;
 	struct directory_entry entry;
 	struct wad_data *wad;
 
@@ -1323,7 +1323,7 @@ bool save_game_file(FileSpecifier& File)
 	struct wad_header header;
 	short err = 0;
 	bool success= false;
-	long offset, wad_length;
+	int32 offset, wad_length;
 	struct directory_entry entry;
 	struct wad_data *wad;
 
@@ -1716,7 +1716,7 @@ bool process_map_wad(
 		// Slurp it all in...
 		data= (uint8 *)extract_type_from_wad(wad, MAP_INDEXES_TAG, &data_length);
 		count= data_length/sizeof(short);
-		assert(count*long(sizeof(short))==data_length);
+		assert(count*int32(sizeof(short))==data_length);
 		MapIndexList.resize(count);
 		StreamToList(data,map_indexes,count);
 		
@@ -2376,7 +2376,7 @@ static uint8 *tag_to_global_array_and_size(
 	return array;
 }
 
-static wad_data *build_export_wad(wad_header *header, long *length)
+static wad_data *build_export_wad(wad_header *header, int32 *length)
 {
 	struct wad_data *wad= NULL;
 	uint8 *array_to_slam;
@@ -2455,7 +2455,7 @@ static wad_data *build_export_wad(wad_header *header, long *length)
 /* Build the wad, with all the crap */
 static struct wad_data *build_save_game_wad(
 	struct wad_header *header, 
-	long *length)
+	int32 *length)
 {
 	struct wad_data *wad= NULL;
 	uint8 *array_to_slam;

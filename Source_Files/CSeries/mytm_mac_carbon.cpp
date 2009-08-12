@@ -67,7 +67,7 @@ static pascal void timer_proc(
 static EventLoopTimerUPP timer_upp = NewEventLoopTimerUPP(timer_proc);
 
 myTMTaskPtr myTMSetup(
-	long time,
+	int32 time,
 	bool (*func)(void))
 {
 	myTMTaskPtr result;
@@ -89,7 +89,7 @@ myTMTaskPtr myTMSetup(
 }
 
 myTMTaskPtr myXTMSetup(
-	long time,
+	int32 time,
 	bool (*func)(void))
 {
 	return myTMSetup(time, func);

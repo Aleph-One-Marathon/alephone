@@ -144,9 +144,9 @@ bool MADDecoder::DecodeFrame()
 
 		bool guard = false;
 		{
-			long position;
+			int32 position;
 			file.GetPosition(position);
-			long length;
+			int32 length;
 			file.GetLength(length);
 
 			if (ReadSize > length - position)

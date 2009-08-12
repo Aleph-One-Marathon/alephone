@@ -156,7 +156,7 @@ void initialize_player_weapons(short player_index);
 
 // Old external-access stuff: superseded by the packing and unpacking routines below
 void *get_weapon_array(void);
-long calculate_weapon_array_length(void);
+int32 calculate_weapon_array_length(void);
 
 /* while this returns true, keep calling.. */
 bool get_weapon_display_information(short *count, 

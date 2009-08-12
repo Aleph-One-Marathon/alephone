@@ -180,7 +180,7 @@ int Lua_Camera_Path_Points_New(lua_State *L)
 		static_cast<world_distance>(lua_tonumber(L, 4) * WORLD_ONE)
 	};
 
-	long time = static_cast<long>(lua_tonumber(L, 6));
+	int32 time = static_cast<int32>(lua_tonumber(L, 6));
 	int point_index = lua_cameras[camera_index].path.path_points.size();
 	lua_cameras[camera_index].path.path_points.resize(point_index+1);
 	lua_cameras[camera_index].path.path_points[point_index].polygon = polygon;
@@ -205,7 +205,7 @@ int Lua_Camera_Path_Angles_New(lua_State *L)
 	int camera_index = Lua_Camera_Path_Angles::Index(L, 1);
 	short yaw = static_cast<short>(lua_tonumber(L,2));
 	short pitch = static_cast<short>(lua_tonumber(L,3));
-	long time = static_cast<long>(lua_tonumber(L,4));
+	int32 time = static_cast<int32>(lua_tonumber(L,4));
 	int angle_index = lua_cameras[camera_index].path.path_angles.size();
 
 	lua_cameras[camera_index].path.path_angles.resize(angle_index+1);

@@ -390,7 +390,7 @@ void LoadHUDLua()
 		OpenedFile script_file;
 		if (fs.Open(script_file))
 		{
-			long script_length;
+			int32 script_length;
 			script_file.GetLength(script_length);
 
 			std::vector<char> script_buffer(script_length);

@@ -117,7 +117,7 @@ void vpause(
 	SimpleAlert(kAlertNoteAlert,message);
 	logWarning1("vpause: %s", message);
 #else
-	long len=strlen(message);
+	int32 len=strlen(message);
 	if (len>255)
 		len=255;
 	alert_text[0]=len;
@@ -147,7 +147,7 @@ void vhalt(
 	logFatal1("vhalt: %s", message);
 	SimpleAlert(kAlertStopAlert,message);
 #else
-	long len=strlen(message);
+	int32 len=strlen(message);
 	if (len>255)
 		len=255;
 	alert_text[0]=len;
@@ -161,19 +161,19 @@ void vhalt(
 }
 
 void _alephone_assert(
-	char *file,
-	long line,
-	char *what)
+	const char *file,
+	int32 line,
+	const char *what)
 {
-	vhalt(csprintf(assert_text,"%s:%ld: %s",file,line,what));
+	vhalt(csprintf(assert_text,"%s:%d: %s",file,line,what));
 }
 
 void _alephone_warn(
-	char *file,
-	long line,
-	char *what)
+	const char *file,
+	int32 line,
+	const char *what)
 {
-	vpause(csprintf(assert_text,"%s:%ld: %s",file,line,what));
+	vpause(csprintf(assert_text,"%s:%d: %s",file,line,what));
 }
 
 

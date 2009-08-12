@@ -164,8 +164,8 @@ void RenderVisTreeClass::build_render_tree()
 
 				/* calculate an outbound vector to this endpoint */
 				// LP: changed to do long distance correctly.	
-				_vector.i= long(endpoint->vertex.x)-long(view->origin.x);
-				_vector.j= long(endpoint->vertex.y)-long(view->origin.y);
+				_vector.i= int32(endpoint->vertex.x)-int32(view->origin.x);
+				_vector.j= int32(endpoint->vertex.y)-int32(view->origin.y);
 				
 				// LP change: compose a true transformed point to replace endpoint->transformed,
 				// and use it in the upcoming code
@@ -174,7 +174,7 @@ void RenderVisTreeClass::build_render_tree()
 				
 				if (transformed_endpoint.i>0)
 				{
-					long x= view->half_screen_width + (transformed_endpoint.j*view->world_to_screen_x)/transformed_endpoint.i;
+					int32 x= view->half_screen_width + (transformed_endpoint.j*view->world_to_screen_x)/transformed_endpoint.i;
 					
 					endpoint_x_coordinates[endpoint_index]= static_cast<int16>(PIN(x, INT16_MIN, INT16_MAX));
 					SET_RENDER_FLAG(endpoint_index, _endpoint_has_been_transformed);
@@ -295,7 +295,7 @@ void RenderVisTreeClass::cast_render_ray(
 				node_data *CurrNode = &Nodes.front();
 				while(true)
 				{
-					long PolyDiff = long(polygon_index) - long(CurrNode->polygon_index);
+					int32 PolyDiff = int32(polygon_index) - int32(CurrNode->polygon_index);
 					if (PolyDiff > 0)
 					{
 						node_data *NextNode = CurrNode->PS_Greater;
@@ -425,7 +425,7 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		short endpoint_index= polygon->endpoint_indexes[vertex_index];
 		world_point2d *vertex= &get_endpoint_data(endpoint_index)->vertex;
 		// LP change to make it more long-distance-friendly
-		CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(long(vertex->x)-long(origin->x))*_vector->j - CROSSPROD_TYPE(long(vertex->y)-long(origin->y))*_vector->i;
+		CROSSPROD_TYPE cross_product= CROSSPROD_TYPE(int32(vertex->x)-int32(origin->x))*_vector->j - CROSSPROD_TYPE(int32(vertex->y)-int32(origin->y))*_vector->i;
 		
 //		dprintf("p#%d, e#%d:#%d, SGN(cp)=#%d, state=#%d", *polygon_index, vertex_index, polygon->endpoint_indexes[vertex_index], SGN(cross_product), state);
 		if (cross_product < 0)
@@ -618,7 +618,7 @@ uint16 RenderVisTreeClass::decide_where_vertex_leads(
 			
 			vertex= &get_endpoint_data(polygon->endpoint_indexes[index])->vertex;
 			// LP change: made more long-distance-friendly
-			cross_product= CROSSPROD_TYPE(long(vertex->x)-long(origin->x))*_vector->j - CROSSPROD_TYPE(long(vertex->y)-long(origin->y))*_vector->i;
+			cross_product= CROSSPROD_TYPE(int32(vertex->x)-int32(origin->x))*_vector->j - CROSSPROD_TYPE(int32(vertex->y)-int32(origin->y))*_vector->i;
 			
 			if ((bias==_clockwise_bias&&cross_product>=0) || (bias==_counterclockwise_bias&&cross_product<=0))
 			{
@@ -728,10 +728,10 @@ void RenderVisTreeClass::calculate_line_clipping_information(
 		// LP change:
 		long_point2d *p;
 		world_distance z;
-		long transformed_z;
-		long y, y0, y1;
-		long x0= view->half_screen_width + (p0.y*view->world_to_screen_x)/p0.x;
-		long x1= view->half_screen_width + (p1.y*view->world_to_screen_x)/p1.x;
+		int32 transformed_z;
+		int32 y, y0, y1;
+		int32 x0= view->half_screen_width + (p0.y*view->world_to_screen_x)/p0.x;
+		int32 x1= view->half_screen_width + (p1.y*view->world_to_screen_x)/p1.x;
 	
 		data->x0= (short)PIN(x0, 0, view->screen_width);
 		data->x1= (short)PIN(x1, 0, view->screen_width);
@@ -818,7 +818,7 @@ short RenderVisTreeClass::calculate_endpoint_clipping_information(
 
 	endpoint_data *endpoint= get_endpoint_data(endpoint_index);
 	endpoint_clip_data *data= &EndpointClips[LastIndex];
-	long x;
+	int32 x;
 
 	assert((clip_flags&(_clip_left|_clip_right))); /* must have a clip flag */
 	assert((clip_flags&(_clip_left|_clip_right))!=(_clip_left|_clip_right)); /* but can’t have both */

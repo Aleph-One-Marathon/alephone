@@ -2050,7 +2050,7 @@ void read_preferences ()
 	}
 
 	if (opened) {
-		long Len = 0;
+		int32 Len = 0;
 		OFile.GetLength(Len);
 		if (Len > 0) {
 			vector<char> FileContents(Len);

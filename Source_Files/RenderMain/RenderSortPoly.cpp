@@ -123,7 +123,7 @@ void RenderSortPolyClass::sort_render_tree()
 		node_data *CurrNode = &Nodes.front();
 		while(true)
 		{
-			long PolyDiff = long(PolygonToFind) - long(CurrNode->polygon_index);
+			int32 PolyDiff = int32(PolygonToFind) - int32(CurrNode->polygon_index);
 			if (PolyDiff > 0)
 			{
 				node_data *NextNode = CurrNode->PS_Greater;

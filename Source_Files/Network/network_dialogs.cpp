@@ -198,7 +198,7 @@ bool network_gather(bool inResumingGame)
 	if (network_game_setup(&myPlayerInfo, &myGameInfo, inResumingGame, advertiseOnMetaserver))
 	{
 		myPlayerInfo.desired_color= myPlayerInfo.color;
-		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, 10);
+		memcpy(myPlayerInfo.long_serial_number, serial_preferences->long_serial_number, LONG_SERIAL_NUMBER_LENGTH);
 		
 		auto_ptr<GameAvailableMetaserverAnnouncer> metaserverAnnouncer;
 		if(NetEnter())
@@ -1276,7 +1276,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 
 			if (theNetscriptFile.Open (script_file))
 			{
-				long script_length;
+				int32 script_length;
 				script_file.GetLength (script_length);
 
 				// DeferredScriptSend will delete this storage the *next time* we call it (!)
@@ -1497,7 +1497,7 @@ void SetupNetgameDialog::okHit ()
 
 void menu_index_to_level_entry(
 	short menu_index, 
-	long entry_flags,
+	int32 entry_flags,
 	struct entry_point *entry)
 {
 	short  i, map_index;
@@ -2029,7 +2029,7 @@ void draw_team_total_scores_graph(
 	for (team_index = 0; team_index < NUMBER_OF_TEAM_COLORS; ++team_index) {
 		bool team_is_valid = false;
 		short kills, deaths;
-		long ranking = get_team_net_ranking(team_index, &kills, &deaths, true);
+		int32 ranking = get_team_net_ranking(team_index, &kills, &deaths, true);
 
 		if (kills || deaths || ranking) {
 			team_is_valid = true;
@@ -2078,8 +2078,8 @@ void update_carnage_summary(
     float   minutes;
     float   kpm;
     float   dpm;
-    long    total_kills = 0;
-    long    total_deaths = 0;
+    int32    total_kills = 0;
+    int32    total_deaths = 0;
 	char    kill_string_format[65];
     char    death_string_format[65];
     char    suicide_string_format[65];

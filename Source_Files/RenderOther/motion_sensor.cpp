@@ -206,7 +206,7 @@ static shape_descriptor mount_shape, virgin_mount_shapes, compass_shapes;
 static shape_descriptor alien_shapes, friendly_shapes, enemy_shapes;
 
 static bool motion_sensor_changed;
-static long ticks_since_last_update, ticks_since_last_rescan;
+static int32 ticks_since_last_update, ticks_since_last_rescan;
 
 /* ---------- private code */
 

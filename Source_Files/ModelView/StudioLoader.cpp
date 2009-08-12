@@ -93,12 +93,12 @@ static bool SkipChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader);
 // to the file location "ChunkEnd".
 // The generic reader takes specific readers as the last argument
 static bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
-	bool (*ContainerCallback)(OpenedFile&,long));
-static bool ReadMaster(OpenedFile& OFile, long ParentChunkEnd);
-static bool ReadEditor(OpenedFile& OFile, long ParentChunkEnd);
-static bool ReadObject(OpenedFile& OFile, long ParentChunkEnd);
-static bool ReadTrimesh(OpenedFile& OFile, long ParentChunkEnd);
-static bool ReadFaceData(OpenedFile& OFile, long ParentChunkEnd);
+	bool (*ContainerCallback)(OpenedFile&,int32));
+static bool ReadMaster(OpenedFile& OFile, int32 ParentChunkEnd);
+static bool ReadEditor(OpenedFile& OFile, int32 ParentChunkEnd);
+static bool ReadObject(OpenedFile& OFile, int32 ParentChunkEnd);
+static bool ReadTrimesh(OpenedFile& OFile, int32 ParentChunkEnd);
+static bool ReadFaceData(OpenedFile& OFile, int32 ParentChunkEnd);
 
 // For processing the raw chunk data into appropriate forms:
 static void LoadVertices();
@@ -162,7 +162,7 @@ bool LoadChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
 	if (DBOut)
 		fprintf(DBOut,"Loading chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
-	long DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
+	int32 DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	SetChunkBufferSize(DataSize);
 	if (!OFile.Read(DataSize,ChunkBufferBase()))
 	{
@@ -177,9 +177,9 @@ bool SkipChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
 	if (DBOut)
 		fprintf(DBOut,"Skipping chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
-	long DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
+	int32 DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	
-	long Location = 0;
+	int32 Location = 0;
 	OFile.GetPosition(Location);
 	if (!OFile.SetPosition(Location + DataSize)) return false;
 	return true;
@@ -187,12 +187,12 @@ bool SkipChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 
 // Generic container-chunk reader
 bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
-	bool (*ContainerCallback)(OpenedFile&,long))
+	bool (*ContainerCallback)(OpenedFile&,int32))
 {
 	if (DBOut)
 		fprintf(DBOut,"Entering chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
 	
-	long ChunkEnd = 0;
+	int32 ChunkEnd = 0;
 	OFile.GetPosition(ChunkEnd);
 	ChunkEnd += ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	
@@ -205,9 +205,9 @@ bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
 
 
 // For reading the master chunk (ideally, whole file)
-static bool ReadMaster(OpenedFile& OFile, long ParentChunkEnd)
+static bool ReadMaster(OpenedFile& OFile, int32 ParentChunkEnd)
 {
-	long Location = 0;
+	int32 Location = 0;
 	OFile.GetPosition(Location);
 	
 	while(Location < ParentChunkEnd)
@@ -239,9 +239,9 @@ static bool ReadMaster(OpenedFile& OFile, long ParentChunkEnd)
 }
 
 // For reading the editor-data chunk
-static bool ReadEditor(OpenedFile& OFile, long ParentChunkEnd)
+static bool ReadEditor(OpenedFile& OFile, int32 ParentChunkEnd)
 {
-	long Location = 0;
+	int32 Location = 0;
 	OFile.GetPosition(Location);
 	
 	while(Location < ParentChunkEnd)
@@ -273,7 +273,7 @@ static bool ReadEditor(OpenedFile& OFile, long ParentChunkEnd)
 }
 
 // For reading the object-data chunk
-static bool ReadObject(OpenedFile& OFile, long ParentChunkEnd)
+static bool ReadObject(OpenedFile& OFile, int32 ParentChunkEnd)
 {
 	// Read the name
 	if (DBOut) fprintf(DBOut,"Object Name: ");
@@ -297,7 +297,7 @@ static bool ReadObject(OpenedFile& OFile, long ParentChunkEnd)
 		}
 	}
 	
-	long Location = 0;
+	int32 Location = 0;
 	OFile.GetPosition(Location);
 	
 	while(Location < ParentChunkEnd)
@@ -329,9 +329,9 @@ static bool ReadObject(OpenedFile& OFile, long ParentChunkEnd)
 }
 
 // For reading the triangle-mesh-data chunk
-static bool ReadTrimesh(OpenedFile& OFile, long ParentChunkEnd)
+static bool ReadTrimesh(OpenedFile& OFile, int32 ParentChunkEnd)
 {
-	long Location = 0;
+	int32 Location = 0;
 	OFile.GetPosition(Location);
 	
 	assert(ModelPtr);
@@ -376,7 +376,7 @@ static bool ReadTrimesh(OpenedFile& OFile, long ParentChunkEnd)
 
 
 // For reading the face-data chunk
-static bool ReadFaceData(OpenedFile& OFile, long ParentChunkEnd)
+static bool ReadFaceData(OpenedFile& OFile, int32 ParentChunkEnd)
 {
 	uint8 NFBuffer[2];
 	uint16 NumFaces;
@@ -388,7 +388,7 @@ static bool ReadFaceData(OpenedFile& OFile, long ParentChunkEnd)
 	uint8 *S = NFBuffer;
 	StreamToValue(S,NumFaces);
 	
-	long DataSize = 4*sizeof(uint16)*int(NumFaces);
+	int32 DataSize = 4*sizeof(uint16)*int(NumFaces);
 	SetChunkBufferSize(DataSize);
 	if (!OFile.Read(DataSize,ChunkBufferBase()))
 	{
@@ -406,7 +406,7 @@ static bool ReadFaceData(OpenedFile& OFile, long ParentChunkEnd)
 		StreamToValue(S,Flags);
 	}
 	
-	long Location = 0;
+	int32 Location = 0;
 	OFile.GetPosition(Location);
 	
 	while(Location < ParentChunkEnd)

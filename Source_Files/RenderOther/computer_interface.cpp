@@ -344,7 +344,7 @@ static void draw_line(char *base_text, short start_index, short end_index, Rect 
 	short line_number);
 static bool calculate_line(char *base_text, short width, short start_index, 
 	short text_end_index, short *end_index);
-static void handle_reading_terminal_keys(short player_index, long action_flags);
+static void handle_reading_terminal_keys(short player_index, int32 action_flags);
 static void calculate_bounds_for_object(Rect *frame, short flags, Rect *bounds, Rect *source);
 static void display_picture(short picture_id, Rect *frame, short flags);
 static void display_picture_with_text(struct player_terminal_data *terminal_data, 
@@ -1797,7 +1797,7 @@ static void get_date_string(
 	char *date_string)
 {
 	char temp_string[101];
-	long game_time_passed;
+	int32 game_time_passed;
 #ifdef mac
 	unsigned long seconds;
 #else
@@ -1952,7 +1952,7 @@ static bool find_checkpoint_location(
 
 static void handle_reading_terminal_keys(
 	short player_index,
-	long action_flags)
+	int32 action_flags)
 {
 	struct player_terminal_data *terminal= get_player_terminal_data(player_index);
 	terminal_text_t *terminal_text= get_indexed_terminal_data(terminal->terminal_id);
@@ -2195,7 +2195,7 @@ struct static_preprocessed_terminal_data *preprocess_text(
 	struct text_face_data text_faces[MAXIMUM_FACE_CHANGES_PER_TEXT_GROUPING];
 	short new_length;
 	struct static_preprocessed_terminal_data *data_structure;
-	long total_length;
+	int32 total_length;
 	short index;
 	char *text_destination;
 
@@ -2259,7 +2259,7 @@ static void pre_build_groups(
 	char *base_text,
 	short *base_length)
 {
-	long index, current_length;
+	int32 index, current_length;
 	bool in_group= false;
 	short current_face, face_count, color_index, grp_count, data_length;
 	bool last_was_return= true; /* in case the first line is a comment */
@@ -2478,7 +2478,7 @@ static void find_all_permutations_of_type(
 {
 	short terminal_index;
 	struct static_preprocessed_terminal_data *data;
-	long offset= 0l;
+	int32 offset= 0;
 	short count= 0;
 
 	for(terminal_index= 0; terminal_index<terminal_count; terminal_index++)

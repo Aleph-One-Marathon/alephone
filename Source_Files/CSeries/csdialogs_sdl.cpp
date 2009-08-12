@@ -50,7 +50,7 @@ void ShowDialogItem(DialogPtr dialog, short item_index) {
 
 
 // Item must be a w_number_entry.
-long
+int32
 extract_number_from_text_item(
 	DialogPtr dlg,
 	short item) {
@@ -70,7 +70,7 @@ void
 insert_number_into_text_item(
 	DialogPtr dlg,
 	short item,
-	long number) {
+	int32 number) {
     
     assert(dlg != NULL);
     
@@ -391,7 +391,7 @@ void QQ_set_control_activity (DialogPTR dlg, int item, bool active)
 	theWidget->set_enabled (active);
 }
 
-extern long QQ_extract_number_from_text_control (DialogPTR dlg, int item)
+extern int32 QQ_extract_number_from_text_control (DialogPTR dlg, int item)
 {
 	assert(dlg != NULL);
 
@@ -403,7 +403,7 @@ extern long QQ_extract_number_from_text_control (DialogPTR dlg, int item)
 	return theWidget->get_number();
 }
 
-extern void QQ_insert_number_into_text_control (DialogPTR dlg, int item, long number)
+extern void QQ_insert_number_into_text_control (DialogPTR dlg, int item, int32 number)
 {
 	assert(dlg != NULL);
 	

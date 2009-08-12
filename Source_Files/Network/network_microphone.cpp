@@ -87,7 +87,7 @@ struct sound_device_settings
 struct net_microphone_data 
 {
 	long refnum;
-	long device_internal_buffer_size;
+	int32 device_internal_buffer_size;
 	struct sound_device_settings initial_settings;
 	SICompletionUPP completion_proc;
 	Ptr buffer;
@@ -411,15 +411,15 @@ static OSErr closest_supported_sample_rate(
 		else
 		{
 			UnsignedFixed closestRate;
-			unsigned long closest_delta= 0;
+			uint32 closest_delta= 0;
 			short i;
 
 			/* find closest */
 			for (i= 0; i<data.sampleRateCount; ++i)
 			{
-				unsigned long delta= ((unsigned long)sampleRates[i]>(unsigned long)*sampleRate) ?
-					((unsigned long)sampleRates[i]-(unsigned long)*sampleRate) : 
-					((unsigned long)*sampleRate-(unsigned long)sampleRates[i]);
+				uint32 delta= ((uint32)sampleRates[i]>(uint32)*sampleRate) ?
+					((uint32)sampleRates[i]-(uint32)*sampleRate) : 
+					((uint32)*sampleRate-(uint32)sampleRates[i]);
 				
 				if (!i || delta<closest_delta) closestRate= sampleRates[i], closest_delta= delta;
 			}

@@ -92,7 +92,7 @@ static TQ3ObjectType TriangulatorClassType = NULL;
 static TQ3ViewObject TriangulatorView = NULL;
 
 // For displaying QD3D errors:
-static void QD3D_Error_Handler(TQ3Error FirstError, TQ3Error LastError, long UserData)
+static void QD3D_Error_Handler(TQ3Error FirstError, TQ3Error LastError, int32 UserData)
 {
 	if (DBOut) fprintf(DBOut,"QD3D Error: %d\n",LastError);
 }

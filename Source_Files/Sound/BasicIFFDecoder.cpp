@@ -177,7 +177,7 @@ bool BasicIFFDecoder::Open(FileSpecifier& File)
 int32 BasicIFFDecoder::Decode(uint8* buffer, int32 max_length)
 {
 	if (!file.IsOpen()) return 0;
-	long position;
+	int32 position;
 	file.GetPosition(position);
 	int32 length = std::min(max_length, (int32) (data_offset + this->length - position));
 	if (length && file.Read(length, buffer))
@@ -194,7 +194,7 @@ bool BasicIFFDecoder::Done()
 {
 	if (!file.IsOpen()) return true;
 
-	long position;
+	int32 position;
 	file.GetPosition(position);
 	return (position >= data_offset + length);
 }

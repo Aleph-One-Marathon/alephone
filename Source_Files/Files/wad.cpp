@@ -113,24 +113,24 @@ bool BetweenLevels = true;
 struct wad_internal_data *internal_data[MAXIMUM_OPEN_WADFILES]= {NULL, NULL, NULL};
 
 /* ---------------- private prototypes */
-static long calculate_directory_offset(struct wad_header *header, short index);
+static int32 calculate_directory_offset(struct wad_header *header, short index);
 static short get_directory_base_length(struct wad_header *header);
 static short get_entry_header_length(struct wad_header *header);
 static bool read_indexed_directory_data(OpenedFile& OFile, struct wad_header *header,
 	short index, struct directory_entry *entry);
-static long calculate_raw_wad_length(struct wad_header *file_header, uint8 *wad);
+static int32 calculate_raw_wad_length(struct wad_header *file_header, uint8 *wad);
 static bool read_indexed_wad_from_file_into_buffer(OpenedFile& OFile, 
-	struct wad_header *header, short index, void *buffer, long *length);
+	struct wad_header *header, short index, void *buffer, int32 *length);
 static short count_raw_tags(uint8 *raw_wad);
-static struct wad_data *convert_wad_from_raw(struct wad_header *header, uint8 *data,	long wad_start_offset,
-	long raw_length);
-static struct wad_data *convert_wad_from_raw_modifiable(struct wad_header *header, uint8 *raw_wad, long raw_length);
+static struct wad_data *convert_wad_from_raw(struct wad_header *header, uint8 *data,	int32 wad_start_offset,
+	int32 raw_length);
+static struct wad_data *convert_wad_from_raw_modifiable(struct wad_header *header, uint8 *raw_wad, int32 raw_length);
 //static void patch_wad_from_raw(struct wad_header *header, uint8 *raw_wad, struct wad_data *read_wad);
 static bool size_of_indexed_wad(OpenedFile& OFile, struct wad_header *header, short index, 
-	long *length);
+	int32 *length);
 
-static bool write_to_file(OpenedFile& OFile, long offset, void *data, long length);
-static bool read_from_file(OpenedFile& OFile, long offset, void *data, long length);
+static bool write_to_file(OpenedFile& OFile, int32 offset, void *data, int32 length);
+static bool read_from_file(OpenedFile& OFile, int32 offset, void *data, int32 length);
 
 // LP: routines for packing and unpacking the data from streams of bytes
 static uint8 *unpack_wad_header(uint8 *Stream, wad_header *Objects, size_t Count);
@@ -186,7 +186,7 @@ struct wad_data *read_indexed_wad_from_file(
 {
 	struct wad_data *read_wad= (struct wad_data *) NULL;
 	uint8 *raw_wad = NULL;
-     long length = 0;
+     int32 length = 0;
 	int error = 0;
 
 	// if(file_id>=0) /* NOT a union wadfile... */
@@ -195,7 +195,7 @@ struct wad_data *read_indexed_wad_from_file(
 		{
 			// The padding is so that one can use later-Marathon entry-header reading
 			// on Marathon 1 wadfiles, which have a shorter entry header
-			long padded_length = length + (SIZEOF_entry_header-SIZEOF_old_entry_header);
+			int32 padded_length = length + (SIZEOF_entry_header-SIZEOF_old_entry_header);
 
 			raw_wad= BetweenLevels ?
 				(uint8 *) level_transition_malloc(padded_length) :
@@ -261,7 +261,7 @@ void *extract_type_from_wad(
 
 bool wad_file_has_checksum(
 	FileSpecifier& File, 
-	unsigned long checksum)
+	uint32 checksum)
 {
 	bool has_checksum= false;
 
@@ -314,7 +314,7 @@ uint32 read_wad_file_parent_checksum(FileSpecifier& File)
 
 bool wad_file_has_parent_checksum(
 	FileSpecifier& File, 
-	unsigned long parent_checksum)
+	uint32 parent_checksum)
 {
 	// fileref file_id;
 	bool has_checksum= false;
@@ -397,7 +397,7 @@ void fill_default_wad_header(
 	}
 
 	/* Things left for caller to fill in: */
-	/* unsigned long checksum, long directory_offset, unsigned long parent_checksum */
+	/* uint32 checksum, int32 directory_offset, uint32 parent_checksum */
 }
 
 bool write_wad_header(
@@ -420,7 +420,7 @@ bool write_directorys(
 	struct wad_header *header,
 	void *entries)
 {
-	long size_to_write= get_size_of_directory_data(header);
+	int32 size_to_write= get_size_of_directory_data(header);
 	bool success= true;
 	
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
@@ -431,7 +431,7 @@ bool write_directorys(
 }
 
 /* Note wad_count better be correct! */
-long get_size_of_directory_data(
+int32 get_size_of_directory_data(
 	struct wad_header *header)
 {
 	short base_entry_size= get_directory_base_length(header);
@@ -465,12 +465,12 @@ void set_indexed_directory_offset_and_length(
 	struct wad_header *header,
 	void *entries,
 	short index,
-	long offset,
-	long length,
+	int32 offset,
+	int32 length,
 	short wad_index)
 {
 	uint8 *data_ptr= (uint8 *)entries;
-	long data_offset;
+	int32 data_offset;
 	
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
 	
@@ -520,7 +520,7 @@ void *read_directory_data(
 	OpenedFile& OFile,
 	struct wad_header *header)
 {
-	long size;
+	int32 size;
 	uint8 *data;
 	
 	assert(header->version>=WADFILE_HAS_DIRECTORY_ENTRY);
@@ -666,14 +666,14 @@ bool write_wad(
 	OpenedFile& OFile, 
 	struct wad_header *file_header,
 	struct wad_data *wad, 
-	long offset)
+        int32 offset)
 {
 	int error = 0;
 	bool success;
 	short entry_header_length= get_entry_header_length(file_header);
 	short index;
 	struct entry_header header;
-	long running_offset= 0l;
+	int32 running_offset= 0l;
 
 	assert(wad);
 	assert(!wad->read_only_data);
@@ -778,13 +778,13 @@ void free_wad(
 	free(wad);
 }
 
-long calculate_wad_length(
+int32 calculate_wad_length(
 	struct wad_header *file_header, 
 	struct wad_data *wad)
 {
 	short ii;
 	short header_length= get_entry_header_length(file_header);
-	long running_length= 0l;
+	int32 running_length= 0l;
 
 	for(ii= 0; ii<wad->tag_count; ++ii)
 	{
@@ -826,7 +826,7 @@ void *get_flat_data(
 
 		if (success)
 		{
-			long length;
+			int32 length;
 			int error = 0;
 		
 			/* Allocate the conglomerate data.. */
@@ -872,7 +872,7 @@ void *get_flat_data(
 	return data;
 }
 
-long get_flat_data_length(
+int32 get_flat_data_length(
 	void *data)
 {
 	int32 Length;
@@ -889,7 +889,7 @@ struct wad_data *inflate_flat_data(
 {
 	struct wad_data *wad= NULL;
 	uint8 *buffer= ((uint8 *) data)+SIZEOF_encapsulated_wad_data;
-	long raw_length;
+	int32 raw_length;
 
 	assert(data);
 	assert(header);
@@ -960,7 +960,7 @@ static bool size_of_indexed_wad(
 	OpenedFile& OFile, 
 	struct wad_header *header, 
 	short index, 
-	long *length)
+	int32 *length)
 {
 	struct directory_entry entry;
 	// FileError error;
@@ -976,13 +976,13 @@ static bool size_of_indexed_wad(
 	return true;
 }
 
-static long calculate_directory_offset(
+static int32 calculate_directory_offset(
 	struct wad_header *header, 
 	short index)
 {
-	long offset;
-	long unit_size;
-	long additional_offset;
+	int32 offset;
+	int32 unit_size;
+	int32 additional_offset;
 
 	switch(header->version)
 	{
@@ -1064,7 +1064,7 @@ static bool read_indexed_directory_data(
 	struct directory_entry *entry)
 {
 	short base_entry_size;
-	long offset;
+	int32 offset;
 
 	/* Get the sizes of the data structures */
 	base_entry_size= get_directory_base_length(header);
@@ -1146,7 +1146,7 @@ static bool read_indexed_wad_from_file_into_buffer(
 	struct wad_header *header, 
 	short index,
 	void *buffer,
-	long *length) /* Length of maximum buffer on entry, actual length on return */
+	int32 *length) /* Length of maximum buffer on entry, actual length on return */
 {
 	struct directory_entry entry;
 	bool success = false;
@@ -1178,8 +1178,8 @@ static bool read_indexed_wad_from_file_into_buffer(
 static struct wad_data *convert_wad_from_raw(
 	struct wad_header *header, 
 	uint8 *data,
-	long wad_start_offset,
-	long raw_length)
+	int32 wad_start_offset,
+	int32 raw_length)
 {
 	struct wad_data *wad;
 	uint8 *raw_wad;
@@ -1246,7 +1246,7 @@ static struct wad_data *convert_wad_from_raw(
 static struct wad_data *convert_wad_from_raw_modifiable(
 	struct wad_header *header, 
 	uint8 *raw_wad,
-	long raw_length)
+	int32 raw_length)
 {
 	struct wad_data *wad;
 
@@ -1328,12 +1328,12 @@ static short count_raw_tags(
 }
 
 // Will work OK for Marathon 1
-static long calculate_raw_wad_length(
+static int32 calculate_raw_wad_length(
 	struct wad_header *file_header,
 	uint8 *wad)
 {
 	int entry_header_size = get_entry_header_length(file_header);
-	long length = 0;
+	int32 length = 0;
 
 	entry_header header;
 	unpack_entry_header(wad, &header, 1);
@@ -1350,9 +1350,9 @@ static long calculate_raw_wad_length(
 
 static bool write_to_file(
 	OpenedFile& OFile, 
-	long offset, 
+	int32 offset, 
 	void *data, 
-	long length)
+	int32 length)
 {
 	if (!OFile.SetPosition(offset)) return false;
 	return OFile.Write(length, data);
@@ -1360,9 +1360,9 @@ static bool write_to_file(
 
 static bool read_from_file(
 	OpenedFile& OFile, 
-	long offset, 
+	int32 offset, 
 	void *data, 
-	long length)
+	int32 length)
 {
 	if (!OFile.SetPosition(offset)) return false;
 	return OFile.Read(length, data);

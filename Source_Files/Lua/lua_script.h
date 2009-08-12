@@ -96,13 +96,13 @@ struct timed_point
 {
     int polygon;
     world_point3d point;
-    long delta_time; //for REALLY long cutscenes
+    int32 delta_time; //for REALLY long cutscenes
 };
 
 struct timed_angle
 {
     short yaw, pitch;
-    long delta_time;
+    int32 delta_time;
 };
 
 struct lua_path
@@ -110,17 +110,17 @@ struct lua_path
     short index;
     std::vector<timed_point> path_points;
     short current_point_index;
-    long last_point_time;
+    int32 last_point_time;
     std::vector<timed_angle> path_angles;
     short current_angle_index;
-    long last_angle_time;
+    int32 last_angle_time;
 };
 
 struct lua_camera //an expanded version of script_camera; uses Lua's path scheme
 {
     short index;
     lua_path path;
-    long time_elapsed;
+    int32 time_elapsed;
     int player_active;
 };
 

@@ -161,7 +161,7 @@ class OverheadMapClass
 	// so it can be called properly
 	void transform_endpoints_for_overhead_map(overhead_map_data &Control);
 	void generate_false_automap(short polygon_index);
-	static long false_automap_cost_proc(short source_polygon_index, short line_index, short destination_polygon_index, void *caller_data);
+	static int32 false_automap_cost_proc(short source_polygon_index, short line_index, short destination_polygon_index, void *caller_data);
 	void replace_real_automap(void);
 	
 	// For the false automap

@@ -1144,7 +1144,7 @@ void *get_weapon_array(
 	return player_weapons_array;
 }
 
-long calculate_weapon_array_length(
+int32 calculate_weapon_array_length(
 	void)
 {
 	return dynamic_world->player_count*sizeof(struct player_weapon_data);

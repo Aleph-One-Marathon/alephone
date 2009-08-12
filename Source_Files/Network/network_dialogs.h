@@ -252,8 +252,8 @@ const OSType StatsDisplay_Player = 'plyr';
 struct net_rank
 {
 	short kills, deaths;
-	long ranking;
-	long game_ranking;
+	int32 ranking;
+	int32 game_ranking;
 	
 	short player_index;
 	short color; // only valid if player_index== NONE!
@@ -517,7 +517,7 @@ extern void update_carnage_summary(NetgameOutcomeData &outcome, struct net_rank 
 	short num_players, short suicide_index, bool do_totals, bool friendly_fire);
 
 // Routines
-extern void menu_index_to_level_entry(short index, long entry_flags, struct entry_point *entry);
+extern void menu_index_to_level_entry(short index, int32 entry_flags, struct entry_point *entry);
 extern int menu_index_to_level_index (int menu_index, int32 entry_flags);
 extern int level_index_to_menu_index(int level_index, int32 entry_flags);
 

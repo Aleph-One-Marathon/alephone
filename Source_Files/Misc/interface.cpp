@@ -238,8 +238,8 @@ struct game_state {
 	short state;
 	short flags;
 	short user;
-	long phase;
-	long last_ticks_on_idle;
+	int32 phase;
+	int32 last_ticks_on_idle;
 	short current_screen;
 	bool suppress_background_tasks;
 	bool current_netgame_allows_microphone;
@@ -249,7 +249,7 @@ struct game_state {
 struct screen_data {
 	short screen_base;
 	short screen_count;
-	long duration;
+	int32 duration;
 };
 
 /* -------------- constants */
@@ -923,7 +923,7 @@ bool load_and_start_game(FileSpecifier& File)
 
 					if (success)
 					{
-						long theSavedGameFlatDataLength = get_flat_data_length(theSavedGameFlatData);
+						int32 theSavedGameFlatDataLength = get_flat_data_length(theSavedGameFlatData);
 						OSErr theError = NetDistributeGameDataToAllPlayers(theSavedGameFlatData, theSavedGameFlatDataLength, false /* do_physics? */);
 						if (theError != noErr)
 						{
@@ -1595,7 +1595,7 @@ static void display_epilogue(
 	Music::instance()->RestartIntroMusic();
 	
 	{
-		long ticks= machine_tick_count();
+		int32 ticks= machine_tick_count();
 		
 		do
 		{

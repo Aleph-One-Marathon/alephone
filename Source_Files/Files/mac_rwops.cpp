@@ -29,7 +29,7 @@
 static int SDLCALL rw_seek(SDL_RWops *context, int offset, int whence)
 {
 	short macWhence;
-	long file_pos;
+	int32 file_pos;
 
 	if (!context) return -1;
 
@@ -55,7 +55,7 @@ static int SDLCALL rw_seek(SDL_RWops *context, int offset, int whence)
 
 static int SDLCALL rw_read(SDL_RWops *context, void *ptr, int size, int maxnum)
 {
-	long total_bytes = size * maxnum;
+	int32 total_bytes = size * maxnum;
 	
 	if (!context) return 0;
 

@@ -449,7 +449,7 @@ struct monster_pathfinding_data
 };
 
 extern void advance_monster_path(short monster_index);
-extern long monster_pathfinding_cost_function(short source_polygon_index, short line_index, short destination_polygon_index, void *data);
+extern int32 monster_pathfinding_cost_function(short source_polygon_index, short line_index, short destination_polygon_index, void *data);
 extern void set_monster_action(short monster_index, short action);
 extern void set_monster_mode(short monster_index, short new_mode, short target_index);
 

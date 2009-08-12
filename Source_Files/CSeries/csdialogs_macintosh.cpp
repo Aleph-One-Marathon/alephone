@@ -214,12 +214,12 @@ void set_dialog_cursor_tracking(
 	cursor_tracking=tracking;
 }
 
-long extract_number_from_text_item(
+int32 extract_number_from_text_item(
 	DialogPtr dlg,
 	short item)
 {
 	Str255 str;
-	long num;
+	int32 num;
 	Handle ih;
 
 	get_handle_for_dialog_item(dlg, item, &ih);
@@ -231,7 +231,7 @@ long extract_number_from_text_item(
 void insert_number_into_text_item(
 	DialogPtr dlg,
 	short item,
-	long number)
+	int32 number)
 {
 	Str255 str;
 	Handle ih;
@@ -1375,7 +1375,7 @@ extern void QQ_set_control_activity (DialogPTR dlg, int item, bool active)
 		DeactivateControl (get_control_from_window (dlg, item));
 }
 
-extern long QQ_extract_number_from_text_control (DialogPTR dlg, int item)
+extern int32 QQ_extract_number_from_text_control (DialogPTR dlg, int item)
 {
 	long result;
 
@@ -1384,7 +1384,7 @@ extern long QQ_extract_number_from_text_control (DialogPTR dlg, int item)
 	return result;
 }
 
-extern void QQ_insert_number_into_text_control (DialogPTR dlg, int item, long number)
+extern void QQ_insert_number_into_text_control (DialogPTR dlg, int item, int32 number)
 {
 	NumToString(number, ptemporary);
 	QQ_copy_string_to_text_control(dlg, item, pstring_to_string(ptemporary));

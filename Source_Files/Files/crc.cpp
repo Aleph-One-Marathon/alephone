@@ -50,7 +50,7 @@ static uint32 *crc_table= NULL;
 /* ---------- local prototypes ------- */
 static uint32 calculate_file_crc(unsigned char *buffer, 
 	short buffer_size, OpenedFile& OFile);
-static uint32 calculate_buffer_crc(long count, uint32 crc, void *buffer);
+static uint32 calculate_buffer_crc(int32 count, uint32 crc, void *buffer);
 static bool build_crc_table(void);
 static void free_crc_table(void);
 
@@ -94,7 +94,7 @@ uint32 calculate_crc_for_opened_file(OpenedFile& OFile)
 /* Calculate the crc for a file using the given buffer.. */
 uint32 calculate_data_crc(
 	unsigned char *buffer,
-	long length)
+	int32 length)
 {
 	uint32 crc = 0;
 
@@ -156,7 +156,7 @@ static void free_crc_table(
 
 /* Calculate for a block of data incrementally */
 static uint32 calculate_buffer_crc(
-	long count, 
+	int32 count, 
 	uint32 crc, 
 	void *buffer)
 {
@@ -181,8 +181,8 @@ static uint32 calculate_file_crc(
 	OpenedFile& OFile)
 {
 	uint32 crc;
-	long count;
-	long file_length, initial_position;
+	int32 count;
+	int32 file_length, initial_position;
 	
 	/* Save and restore the initial file position */
 	if (!OFile.GetPosition(initial_position))
@@ -281,9 +281,9 @@ static uint16 crc_ccitt_table [256] =
   0x2e93, 0x3eb2, 0x0ed1, 0x1ef0
 };
 
-uint16 calculate_data_crc_ccitt(unsigned char *data, long length)
+uint16 calculate_data_crc_ccitt(unsigned char *data, int32 length)
 {
-  long count;
+  int32 count;
   uint32 crc = 0xffff;
   uint32 temp;
 

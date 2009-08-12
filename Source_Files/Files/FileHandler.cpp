@@ -88,12 +88,12 @@ static bool RootDirectorySet = false;
 static DirectorySpecifier RootDirectory;
 
 // copied from resource_manager, and altered to use RefNum
-bool is_macbinary(short RefNum, long &data_length, long &rsrc_length)
+bool is_macbinary(short RefNum, int32 &data_length, int32 &rsrc_length)
 {
 	// This recognizes up to macbinary III (0x81)
 	if (SetFPos(RefNum, fsFromStart, 0) != noErr) return false;
 	uint8 header[128];
-	long _Count = 128;
+	int32 _Count = 128;
 	if (FSRead(RefNum, &_Count, header) != noErr) return false;
 	if (header[0] || header[1] > 63 || header[74] || header[123] > 0x81)
 		return false;
@@ -146,7 +146,7 @@ bool OpenedFile::Close()
 	return (Err == noErr);
 }
 
-bool OpenedFile::GetPosition(long& Position)
+bool OpenedFile::GetPosition(int32& Position)
 {
 	Err = GetFPos(RefNum, &Position);	
 	Position -= fork_offset;
@@ -154,14 +154,14 @@ bool OpenedFile::GetPosition(long& Position)
 	return (Err == noErr);
 }
 
-bool OpenedFile::SetPosition(long Position)
+bool OpenedFile::SetPosition(int32 Position)
 {
 	Err = SetFPos(RefNum, fsFromStart, Position + fork_offset);	
 	
 	return (Err == noErr);
 }
 
-bool OpenedFile::GetLength(long& Length)
+bool OpenedFile::GetLength(int32& Length)
 {
 	if (is_forked)
 		Length = fork_length;
@@ -171,24 +171,24 @@ bool OpenedFile::GetLength(long& Length)
 	return (Err == noErr);
 }
 
-bool OpenedFile::SetLength(long Length)
+bool OpenedFile::SetLength(int32 Length)
 {
 	Err = SetEOF(RefNum, Length);
 	
 	return (Err == noErr);
 }
 
-bool OpenedFile::Read(long Count, void *Buffer)
+bool OpenedFile::Read(int32 Count, void *Buffer)
 {
-	long _Count = Count;
+	int32 _Count = Count;
 	Err = FSRead(RefNum, &_Count, Buffer);
 	
 	return ((Err == noErr) && (_Count == Count));
 }
 
-bool OpenedFile::Write(long Count, void *Buffer)
+bool OpenedFile::Write(int32 Count, void *Buffer)
 {
-	long _Count = Count;
+	int32 _Count = Count;
 	Err = FSWrite(RefNum, &_Count, Buffer);
 	
 	return ((Err == noErr) && (_Count == Count));
@@ -733,7 +733,7 @@ bool FileSpecifier::Open(OpenedFile& OFile, bool Writable)
 	if (Writable) return true;
 	
 	// handle MacBinary files
-	long offset, data_length, rsrc_length;	
+	int32 offset, data_length, rsrc_length;	
 	if (is_macbinary(RefNum, data_length, rsrc_length)) {
 		OFile.is_forked = true;
 		OFile.fork_offset = 128;
@@ -755,7 +755,7 @@ bool FileSpecifier::Open(OpenedResourceFile& OFile, bool Writable)
 	{
 		// check if it's macbinary
 		Err = FSpOpenDF(&Spec, WhatPermission(Writable), &RefNum);
-		long offset, data_length, rsrc_length;
+		int32 offset, data_length, rsrc_length;
 		char path[256];
 		if (is_macbinary(RefNum, data_length, rsrc_length)) {
 			SDL_RWops *f = SDL_RWFromFile(GetPath(),"rb");
@@ -1216,7 +1216,7 @@ Typecode FileSpecifier::GetType()
 	OpenedFile f;
 	if (!Open(f))
 		return _typecode_unknown;
-	long file_length = 0;
+	int32 file_length = 0;
 	f.GetLength(file_length);
 	
 	f.SetPosition(0);
@@ -1246,7 +1246,7 @@ Typecode FileSpecifier::GetType()
 }
 	
 // How many bytes are free in the disk that the file lives in?
-bool FileSpecifier::GetFreeSpace(unsigned long& FreeSpace)
+bool FileSpecifier::GetFreeSpace(uint32& FreeSpace)
 {
 	// Code cribbed from vbl_macintosh.c
 	HParamBlockRec  parms;
@@ -1260,8 +1260,8 @@ bool FileSpecifier::GetFreeSpace(unsigned long& FreeSpace)
 	Err = PBHGetVInfo(&parms, false);
 	if (Err == noErr)
 		FreeSpace = 
-			((unsigned long) parms.volumeParam.ioVAlBlkSiz) *
-				((unsigned long) parms.volumeParam.ioVFrBlk);
+			((uint32) parms.volumeParam.ioVAlBlkSiz) *
+				((uint32) parms.volumeParam.ioVFrBlk);
 	
 	return (Err==noErr);
 }
@@ -1300,7 +1300,7 @@ bool FileSpecifier::CopyContents(FileSpecifier& File)
 				{
 					/* Everything is opened. Do the deed.. */
 					Ptr data;
-					long total_length;
+					int32 total_length;
 					
 					SetFPos(source_refnum, fsFromLEOF, 0l);
 					GetFPos(source_refnum, &total_length);
@@ -1309,11 +1309,11 @@ bool FileSpecifier::CopyContents(FileSpecifier& File)
 					data= new char[COPY_BUFFER_SIZE];
 					if(data)
 					{
-						long running_length= total_length;
+						int32 running_length= total_length;
 						
 						while(running_length && Err==noErr)
 						{
-							long count= MIN(COPY_BUFFER_SIZE, running_length);
+							int32 count= MIN(COPY_BUFFER_SIZE, running_length);
 						
 							Err= FSRead(source_refnum, &count, data);
 							if(Err==noErr)

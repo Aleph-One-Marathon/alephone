@@ -539,7 +539,7 @@ static void physics_update(
 
 	if (PLAYER_IS_DEAD(player)) /* dead players immediately loose all bodily control */
 	{
-		long dot_product;
+		int32 dot_product;
 		
 		cosine= cosine_table[FIXED_INTEGERAL_PART(variables->direction)], sine= sine_table[FIXED_INTEGERAL_PART(variables->direction)];
 		dot_product= ((((variables->velocity*cosine)>>TRIG_SHIFT) + variables->external_velocity.i)*cosine +
@@ -826,7 +826,7 @@ static void physics_update(
 	{
 		short dx= variables->external_velocity.i, dy= variables->external_velocity.j;
 		_fixed delta= (delta_z<=0) ? constants->external_deceleration : (constants->external_deceleration>>2);
-		long magnitude= isqrt(dx*dx + dy*dy);
+		int32 magnitude= isqrt(dx*dx + dy*dy);
 
 		if (magnitude && magnitude>ABS(delta))
 		{

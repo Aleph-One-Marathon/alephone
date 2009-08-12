@@ -256,10 +256,10 @@ bool NetUnSync(void);
 bool NetStart(void);
 void NetCancelGather(void);
 
-long NetGetNetTime(void);
+int32 NetGetNetTime(void);
 
 bool NetChangeMap(struct entry_point *entry);
-OSErr NetDistributeGameDataToAllPlayers(byte* wad_buffer, long wad_length, bool do_physics);
+OSErr NetDistributeGameDataToAllPlayers(byte* wad_buffer, int32 wad_length, bool do_physics);
 byte* NetReceiveGameData(bool do_physics);
 
 void DeferredScriptSend (byte* data, size_t length);

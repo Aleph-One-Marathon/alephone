@@ -164,12 +164,12 @@ void vhalt(const char *message)
 
 static char assert_text[256];
 
-void _alephone_assert(const char *file, long line, const char *what)
+void _alephone_assert(const char *file, int32 line, const char *what)
 {
-	vhalt(csprintf(assert_text, "%s:%ld: %s", file, line, what));
+	vhalt(csprintf(assert_text, "%s:%d: %s", file, line, what));
 }
 
-void _alephone_warn(const char *file, long line, const char *what)
+void _alephone_warn(const char *file, int32 line, const char *what)
 {
-	vpause(csprintf(assert_text, "%s:%ld: %s", file, line, what));
+	vpause(csprintf(assert_text, "%s:%d: %s", file, line, what));
 }

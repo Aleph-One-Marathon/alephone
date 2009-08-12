@@ -60,7 +60,7 @@ protected:
 
 private:
 	char *data;
-	long data_size;
+	int32 data_size;
 };
 
 #endif

@@ -415,7 +415,7 @@ void OverheadMapClass::transform_endpoints_for_overhead_map(
 void OverheadMapClass::generate_false_automap(
 	short polygon_index)
 {
-	long automap_line_buffer_size, automap_polygon_buffer_size;
+	int32 automap_line_buffer_size, automap_polygon_buffer_size;
 
 	automap_line_buffer_size= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0))*sizeof(byte);
 	automap_polygon_buffer_size= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0))*sizeof(byte);
@@ -431,10 +431,10 @@ void OverheadMapClass::generate_false_automap(
 		memset(automap_lines, 0, automap_line_buffer_size);
 		memset(automap_polygons, 0, automap_polygon_buffer_size);
 		
-		polygon_index= flood_map(polygon_index, LONG_MAX, false_automap_cost_proc, _breadth_first, (void *) NULL);
+		polygon_index= flood_map(polygon_index, INT32_MAX, false_automap_cost_proc, _breadth_first, (void *) NULL);
 		do
 		{
-			polygon_index= flood_map(NONE, LONG_MAX, false_automap_cost_proc, _breadth_first, (void *) NULL);
+			polygon_index= flood_map(NONE, INT32_MAX, false_automap_cost_proc, _breadth_first, (void *) NULL);
 		}
 		while (polygon_index!=NONE);
 	}
@@ -446,7 +446,7 @@ void OverheadMapClass::replace_real_automap(
 {
 	if (saved_automap_lines)
 	{
-		long automap_line_buffer_size= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0))*sizeof(byte);
+		int32 automap_line_buffer_size= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0))*sizeof(byte);
 		memcpy(automap_lines, saved_automap_lines, automap_line_buffer_size);
 		delete []saved_automap_lines;
 		saved_automap_lines= (byte *) NULL;
@@ -454,7 +454,7 @@ void OverheadMapClass::replace_real_automap(
 	
 	if (saved_automap_polygons)
 	{
-		long automap_polygon_buffer_size= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0))*sizeof(byte);
+		int32 automap_polygon_buffer_size= (dynamic_world->polygon_count/8+((dynamic_world->polygon_count%8)?1:0))*sizeof(byte);
 	
 		memcpy(automap_polygons, saved_automap_polygons, automap_polygon_buffer_size);
 		delete []saved_automap_polygons;
@@ -463,7 +463,7 @@ void OverheadMapClass::replace_real_automap(
 }
 
 
-long OverheadMapClass::false_automap_cost_proc(
+int32 OverheadMapClass::false_automap_cost_proc(
 	short source_polygon_index,
 	short line_index,
 	short destination_polygon_index,
@@ -471,7 +471,7 @@ long OverheadMapClass::false_automap_cost_proc(
 {
 	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
 	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
-	long cost= 1;
+	int32 cost= 1;
 	short i;
 
 	(void) (line_index);

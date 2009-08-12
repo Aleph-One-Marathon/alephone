@@ -90,7 +90,7 @@ struct speaker_definition
 	SndChannelPtr channel;
 	SndDoubleBufferHeaderPtr header;
 
-	long queue_size; /* the number of bytes in the queue */
+	int32 queue_size; /* the number of bytes in the queue */
 	Ptr queue;
 	
 	short block_size; /* the number of bytes in each of our double buffers */
@@ -425,9 +425,9 @@ void network_speaker_doubleback_procedure(
 void fill_network_speaker_buffer(
 	SndDoubleBufferPtr doubleBufferPtr)
 {
-	long available_bytes= MIN(speaker->queue_size, speaker->block_size);
-	long missing_bytes= speaker->block_size-available_bytes;
-	long extra_bytes= speaker->queue_size-available_bytes;
+	int32 available_bytes= MIN(speaker->queue_size, speaker->block_size);
+	int32 missing_bytes= speaker->block_size-available_bytes;
+	int32 extra_bytes= speaker->queue_size-available_bytes;
 
 	assert(speaker);
 	assert(speaker->queue_size>=0&&speaker->queue_size<=MAXIMUM_QUEUE_SIZE);

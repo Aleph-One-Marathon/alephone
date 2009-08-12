@@ -90,11 +90,11 @@ struct intersecting_flood_data
 	short original_polygon_index;
 	world_point2d center;
 	
-	long minimum_separation_squared;
+	int32 minimum_separation_squared;
 };
 
 /* ---------- globals */
-static long map_index_buffer_count= 0l; /* Added due to the dynamic nature of maps */
+static int32 map_index_buffer_count= 0l; /* Added due to the dynamic nature of maps */
 
 // LP: Temporary areas for nearby endpoint/line/polygon finding;
 // OK for this to be global since they replace only single instances.
@@ -108,11 +108,11 @@ static vector<short> PolygonIndices(MAXIMUM_INTERSECTING_INDEXES);
 static short calculate_clockwise_endpoints(short polygon_index, short *buffer);
 static void calculate_adjacent_polygons(short polygon_index, short *polygon_indexes);
 static void calculate_adjacent_sides(short polygon_index, short *side_indexes);
-static long calculate_polygon_area(short polygon_index);
+static int32 calculate_polygon_area(short polygon_index);
 
 static void add_map_index(short index, short *count);
 static void find_intersecting_endpoints_and_lines(short polygon_index, world_distance minimum_separation);
-static long intersecting_flood_proc(short source_polygon_index, short line_index,
+static int32 intersecting_flood_proc(short source_polygon_index, short line_index,
 	short destination_polygon_index, void *data);
 
 static void precalculate_polygon_sound_sources(void);
@@ -494,7 +494,7 @@ void guess_side_lightsource_indexes(
 
 /* Since the map_index buffer is no longer statically sized. */
 void set_map_index_buffer_size(
-	long length)
+	int32 length)
 {
 	map_index_buffer_count= length/sizeof(short);
 }
@@ -567,10 +567,10 @@ static void calculate_adjacent_polygons(
 }
 
 /* returns area of the given polygon */
-static long calculate_polygon_area(
+static int32 calculate_polygon_area(
 	short polygon_index)
 {
-	long area= 0;
+	int32 area= 0;
 	world_point2d *first_point, *point, *next_point;
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 
@@ -665,10 +665,10 @@ static void find_intersecting_endpoints_and_lines(
 	data.minimum_separation_squared= minimum_separation*minimum_separation;
 	find_center_of_polygon(polygon_index, &data.center);
 
-	polygon_index= flood_map(polygon_index, LONG_MAX, intersecting_flood_proc, _breadth_first, &data);
+	polygon_index= flood_map(polygon_index, INT32_MAX, intersecting_flood_proc, _breadth_first, &data);
 	while (polygon_index!=NONE)
 	{
-		polygon_index= flood_map(NONE, LONG_MAX, intersecting_flood_proc, _breadth_first, &data);
+		polygon_index= flood_map(NONE, INT32_MAX, intersecting_flood_proc, _breadth_first, &data);
 	}
 }
 
@@ -834,7 +834,7 @@ void try_and_add_line(
 */
 #endif
 
-static long intersecting_flood_proc(
+static int32 intersecting_flood_proc(
 	short source_polygon_index,
 	short line_index,
 	short destination_polygon_index,

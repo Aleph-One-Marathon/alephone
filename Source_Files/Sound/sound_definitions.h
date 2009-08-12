@@ -225,7 +225,7 @@ static struct random_sound_definition random_sound_definitions[NUMBER_OF_RANDOM_
 // LP: making this dynamically allocatable;
 // need to keep track of how many definitions are in use
 static struct sound_definition *sound_definitions = NULL;
-static long number_of_sound_definitions = 0;
+static int32 number_of_sound_definitions = 0;
 
 /*
 #else

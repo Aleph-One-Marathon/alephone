@@ -539,8 +539,8 @@ void SoundManager::AddOneAmbientSoundSource(ambient_sound_data *ambient_sounds, 
 							if (source)
 							{
 								// LP change: made this long-distance friendly
-								long dx= long(listener->point.x) - long(source->point.x);
-								long dy= long(listener->point.y) - long(source->point.y);
+								int32 dx= int32(listener->point.x) - int32(source->point.x);
+								int32 dy= int32(listener->point.y) - int32(source->point.y);
 								
 								volume= distance_to_volume(definition, distance, _sound_obstructed_proc(source));
 								volume= (absolute_volume*volume)>>MAXIMUM_SOUND_VOLUME_BITS;
@@ -883,8 +883,8 @@ void SoundManager::CalculateSoundVariables(short sound_index, world_location3d *
 		world_distance distance = distance3d(&source->point, &listener->point);
 		
 		// LP change: made this long-distance friendly
-		long dx = long(listener->point.x) - long(source->point.x);
-		long dy = long(listener->point.y) - long(source->point.y);
+		int32 dx = int32(listener->point.x) - int32(source->point.x);
+		int32 dy = int32(listener->point.y) - int32(source->point.y);
 
 		// for now, a sound's priority is its behavior index
 		variables.priority = definition->behavior_index;

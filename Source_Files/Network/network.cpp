@@ -1892,7 +1892,7 @@ bool NetChangeMap(
 	struct entry_point *entry)
 {
 	byte   *wad= NULL;
-	long   length;
+	int32   length;
 	bool success= true;
 
 	/* If the guy that was the server died, and we are trying to change levels, we lose */
@@ -1949,16 +1949,16 @@ void SetNetscriptStatus (bool status)
 // take a fair amount of reworking of the streaming system, which only groks talking with one
 // machine at a time.
 OSErr NetDistributeGameDataToAllPlayers(byte *wad_buffer, 
-					long wad_length,
+					int32 wad_length,
 					bool do_physics)
 {
 	short playerIndex, message_id;
 	OSErr error= noErr;
-	long total_length, length_written;
+	int32 total_length, length_written;
 	uint32 initial_ticks= machine_tick_count();
 	short physics_message_id;
 	byte *physics_buffer;
-	long physics_length;
+	int32 physics_length;
 	
 	message_id= (topology->player_count==2) ? (_distribute_map_single) : (_distribute_map_multiple);
 	physics_message_id= (topology->player_count==2) ? (_distribute_physics_single) : (_distribute_physics_multiple);
@@ -2168,7 +2168,7 @@ void NetSetInitialParameters(
 //	initial_update_latency= update_latency;
 }
 
-long
+int32
 NetGetNetTime(void)
 {
         return sCurrentGameProtocol->GetNetTime();

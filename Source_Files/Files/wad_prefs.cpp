@@ -239,8 +239,8 @@ void w_write_preferences_file(
 
 		if (write_wad_header(PrefsFile, &header))
 		{
-			long wad_length;
-			long offset= sizeof(struct wad_header);
+			int32 wad_length;
+			int32 offset= sizeof(struct wad_header);
 
 			/* Length? */
 			wad_length= calculate_wad_length(&header, prefInfo->wad);

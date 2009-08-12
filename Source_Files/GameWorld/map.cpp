@@ -226,8 +226,8 @@ bool game_is_networked = false;
 // This could be a handle
 struct map_memory_data {
 	byte *memory;
-	long size;
-	long index;
+	int32 size;
+	int32 index;
 };
 
 // static struct map_memory_data map_structure_memory;

@@ -66,7 +66,7 @@ struct recorded_flag {
 };
 
 void open_stream_file(void);
-void write_flags(struct recorded_flag *buffer, long count);
+void write_flags(struct recorded_flag *buffer, int32 count);
 static void debug_stream_of_flags(uint32 action_flag, short player_index);
 static void close_stream_file(void);
 #endif

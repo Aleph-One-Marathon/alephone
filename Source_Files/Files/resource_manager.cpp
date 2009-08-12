@@ -55,7 +55,7 @@ using std::map;
  *  Utility functions
  */
 
-bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length)
+bool is_applesingle(SDL_RWops *f, bool rsrc_fork, int32 &offset, int32 &length)
 {
 	// Check header
 	SDL_RWseek(f, 0, SEEK_SET);
@@ -82,7 +82,7 @@ bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length)
 	return false;
 }
 
-bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length)
+bool is_macbinary(SDL_RWops *f, int32 &data_length, int32 &rsrc_length)
 {
 	// This recognizes up to macbinary III (0x81)
 	SDL_RWseek(f, 0, SEEK_SET);
@@ -200,7 +200,7 @@ bool res_file_t::read_map(void)
         }
 
 	// Determine file type (AppleSingle and MacBinary II files are handled transparently)
-	long offset, data_length, rsrc_length;
+	int32 offset, data_length, rsrc_length;
 	if (is_applesingle(f, true, offset, rsrc_length)) {
                 logTrace("file is_applesingle");
 		fork_start = offset;

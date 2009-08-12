@@ -68,26 +68,26 @@ enum
 };
 
 // defined in shell.c
-extern unsigned long LocalEventFlags;
+extern uint32 LocalEventFlags;
 
 // These functions are designed to be used when the input runs in a different thread
 // from the main processing; such is the case with the Marathon engine and its
 // polling of the input devices.
 
 // Post an event
-inline void PostLocalEvent(unsigned long Event)
+inline void PostLocalEvent(uint32 Event)
 {
 	SET_FLAG(LocalEventFlags,Event,true);
 }
 
 // Clear an event
-inline void ClearLocalEvent(unsigned long Event)
+inline void ClearLocalEvent(uint32 Event)
 {
 	SET_FLAG(LocalEventFlags,Event,false);
 }
 
 // Check if an event is present, and if so, clear it
-inline bool GetLocalEvent(unsigned long Event)
+inline bool GetLocalEvent(uint32 Event)
 {
 	if (TEST_FLAG(LocalEventFlags,Event))
 	{

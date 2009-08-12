@@ -84,8 +84,8 @@
 extern vector<DirectorySpecifier> data_search_path;
 extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, recordings_dir;
 
-extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, long &offset, long &length);
-extern bool is_macbinary(SDL_RWops *f, long &data_length, long &rsrc_length);
+extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, int32 &offset, int32 &length);
+extern bool is_macbinary(SDL_RWops *f, int32 &data_length, int32 &rsrc_length);
 
 /*
  *  Opened file
@@ -111,7 +111,7 @@ bool OpenedFile::Close()
 	return true;
 }
 
-bool OpenedFile::GetPosition(long &Position)
+bool OpenedFile::GetPosition(int32 &Position)
 {
 	if (f == NULL)
 		return false;
@@ -121,7 +121,7 @@ bool OpenedFile::GetPosition(long &Position)
 	return true;
 }
 
-bool OpenedFile::SetPosition(long Position)
+bool OpenedFile::SetPosition(int32 Position)
 {
 	if (f == NULL)
 		return false;
@@ -132,7 +132,7 @@ bool OpenedFile::SetPosition(long Position)
 	return err == 0;
 }
 
-bool OpenedFile::GetLength(long &Length)
+bool OpenedFile::GetLength(int32 &Length)
 {
 	if (f == NULL)
 		return false;
@@ -140,7 +140,7 @@ bool OpenedFile::GetLength(long &Length)
 	if (is_forked)
 		Length = fork_length;
 	else {
-		long pos = SDL_RWtell(f);
+		int32 pos = SDL_RWtell(f);
 		SDL_RWseek(f, 0, SEEK_END);
 		Length = SDL_RWtell(f);
 		SDL_RWseek(f, pos, SEEK_SET);
@@ -149,7 +149,7 @@ bool OpenedFile::GetLength(long &Length)
 	return true;
 }
 
-bool OpenedFile::Read(long Count, void *Buffer)
+bool OpenedFile::Read(int32 Count, void *Buffer)
 {
 	if (f == NULL)
 		return false;
@@ -158,7 +158,7 @@ bool OpenedFile::Read(long Count, void *Buffer)
 	return (SDL_RWread(f, Buffer, 1, Count) == Count);
 }
 
-bool OpenedFile::Write(long Count, void *Buffer)
+bool OpenedFile::Write(int32 Count, void *Buffer)
 {
 	if (f == NULL)
 		return false;
@@ -338,7 +338,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 		return true;
 
 	// Transparently handle AppleSingle and MacBinary files on reading
-	long offset, data_length, rsrc_length;
+	int32 offset, data_length, rsrc_length;
 	if (is_applesingle(f, false, offset, data_length)) {
 		OFile.is_forked = true;
 		OFile.fork_offset = offset;
@@ -482,7 +482,7 @@ Typecode FileSpecifier::GetType()
 	if (!Open(f))
 		return _typecode_unknown;
 	SDL_RWops *p = f.GetRWops();
-	long file_length = 0;
+	int32 file_length = 0;
 	f.GetLength(file_length);
 
 	// Check for Sounds file
@@ -547,7 +547,7 @@ not_shapes: ;
 }
 
 // Get free space on disk
-bool FileSpecifier::GetFreeSpace(unsigned long &FreeSpace)
+bool FileSpecifier::GetFreeSpace(uint32 &FreeSpace)
 {
 	// This is impossible to do in a platform-independant way, so we
 	// just return 16MB which should be enough for everything
@@ -742,7 +742,7 @@ bool FileSpecifier::ReadDirectory(vector<dir_entry> &vec)
 		if (findData.cFileName[0] != '.' ||
 		    (findData.cFileName[1] && findData.cFileName[1] != '.')) {
 			// Return found files to dir_entry
-			long fileSize = (findData.nFileSizeHigh * MAXDWORD) + findData.nFileSizeLow;
+			int32 fileSize = (findData.nFileSizeHigh * MAXDWORD) + findData.nFileSizeLow;
 			vec.push_back(dir_entry(findData.cFileName, fileSize,
 			              (findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0, false));
 		}
@@ -792,11 +792,11 @@ bool FileSpecifier::CopyContents(FileSpecifier &source_name)
 			const int BUFFER_SIZE = 1024;
 			uint8 buffer[BUFFER_SIZE];
 
-			long length = 0;
+			int32 length = 0;
 			src.GetLength(length);
 
 			while (length && err == 0) {
-				long count = length > BUFFER_SIZE ? BUFFER_SIZE : length;
+				int32 count = length > BUFFER_SIZE ? BUFFER_SIZE : length;
 				if (src.Read(count, buffer)) {
 					if (!dst.Write(count, buffer))
 						err = dst.GetError();

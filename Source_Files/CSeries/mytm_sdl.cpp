@@ -248,13 +248,13 @@ static vector<myTMTaskPtr> sOutstandingTasks;
 // Set up a periodic callout with no anti-drift mechanisms.  (We don't support that,
 // but it's unlikely that anyone is counting on NOT having drift-correction?)
 myTMTaskPtr
-myTMSetup(long time, bool (*func)(void)) {
+myTMSetup(int32 time, bool (*func)(void)) {
     return myXTMSetup(time, func);
 }
 
 // Set up a periodic callout, with what tries to be a fairly drift-free period.
 myTMTaskPtr
-myXTMSetup(long time, bool (*func)(void)) {
+myXTMSetup(int32 time, bool (*func)(void)) {
     myTMTaskPtr	theTask = new myTMTask;
     
     theTask->mPeriod		= time;

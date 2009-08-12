@@ -83,7 +83,7 @@ static short *visited_polygons = NULL;
 
 /* ---------- private prototypes */
 
-static void add_node(short parent_node_index, short polygon_index, short depth, long cost, long user_flags);
+static void add_node(short parent_node_index, short polygon_index, short depth, int32 cost, int32 user_flags);
 
 /* ---------- code */
 
@@ -101,7 +101,7 @@ void allocate_flood_map_memory(
 /* returns next polygon index or NONE if there are no more polygons left cheaper than maximum_cost */
 short flood_map(
 	short first_polygon_index,
-	long maximum_cost,
+	int32 maximum_cost,
 	cost_proc_ptr cost_proc,
 	short flood_mode,
 	void *caller_data)
@@ -109,7 +109,7 @@ short flood_map(
 	short lowest_cost_node_index, node_index;
 	struct node_data *node;
 	short polygon_index;
-	long lowest_cost;
+	int32 lowest_cost;
 
 	/* initialize ourselves if first_polygon_index!=NONE */
 	if (first_polygon_index!=NONE)
@@ -191,10 +191,10 @@ short flood_map(
 			short destination_polygon_index= polygon->adjacent_polygon_indexes[i];
 			
 			if (destination_polygon_index!=NONE &&
-				(maximum_cost!=LONG_MAX || visited_polygons[destination_polygon_index]==UNVISITED))
+				(maximum_cost!=INT32_MAX || visited_polygons[destination_polygon_index]==UNVISITED))
 			{
-				long new_user_flags= node->user_flags;
-				long cost= cost_proc ? cost_proc(node->polygon_index, polygon->line_indexes[i], destination_polygon_index, (flood_mode==_flagged_breadth_first) ? &new_user_flags : caller_data) : polygon->area;
+				int32 new_user_flags= node->user_flags;
+				int32 cost= cost_proc ? cost_proc(node->polygon_index, polygon->line_indexes[i], destination_polygon_index, (flood_mode==_flagged_breadth_first) ? &new_user_flags : caller_data) : polygon->area;
 				
 				/* polygons with zero or negative costs are not added to the node list */
 				if (cost>0) add_node(lowest_cost_node_index, destination_polygon_index, node->depth+1, lowest_cost+cost, new_user_flags);
@@ -293,8 +293,8 @@ static void add_node(
 	short parent_node_index,
 	short polygon_index,
 	short depth,
-	long cost,
-	long user_flags)
+	int32 cost,
+	int32 user_flags)
 {
 	if (node_count<MAXIMUM_FLOOD_NODES)
 	{

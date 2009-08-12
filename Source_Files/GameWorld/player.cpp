@@ -814,7 +814,7 @@ void damage_player(
 			case _damage_oxygen_drain:
 			{
 				// LP change: pegging to maximum value
-				player->suit_oxygen= int16(MIN(long(player->suit_oxygen)-long(damage_amount),long(INT16_MAX)));
+				player->suit_oxygen= int16(MIN(int32(player->suit_oxygen)-int32(damage_amount),int32(INT16_MAX)));
 				L_Call_Player_Damaged(player_index, aggressor_player_index, aggressor_index, damage->type, damage_amount, projectile_index);
 				if (player->suit_oxygen < 0) player->suit_oxygen= 0;
 				if (player_index==current_player_index) mark_oxygen_display_as_dirty();
@@ -823,7 +823,7 @@ void damage_player(
 			default:
 			{
 				// LP change: pegging to maximum value
-				player->suit_energy= int16(MIN(long(player->suit_energy)-long(damage_amount),long(INT16_MAX)));
+				player->suit_energy= int16(MIN(int32(player->suit_energy)-int32(damage_amount),int32(INT16_MAX)));
 				L_Call_Player_Damaged(player_index, aggressor_player_index, aggressor_index, damage->type, damage_amount, projectile_index);			
 				/* damage the player, recording the kill if the aggressor was another player and we died */
 				if (player->suit_energy<0)
@@ -2798,7 +2798,7 @@ bool XML_PlayerParser::HandleAttribute(const char *Tag, const char *Value)
 		float Luminosity;
 		if (ReadBoundedNumericalValue(Value,"%f",Luminosity,float(0),float(SHRT_MAX)))
 		{
-			player_settings.PlayerSelfLuminosity = long(FIXED_ONE*Luminosity + 0.5);
+			player_settings.PlayerSelfLuminosity = int32(FIXED_ONE*Luminosity + 0.5);
 			return true;
 		}
 		else

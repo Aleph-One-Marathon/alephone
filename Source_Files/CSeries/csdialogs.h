@@ -86,21 +86,21 @@ extern void QQ_set_selector_control_labels_from_stringset (DialogPTR dlg, int it
 
 extern const std::string QQ_copy_string_from_text_control (DialogPTR dlg, int item);
 extern void QQ_copy_string_to_text_control (DialogPTR dlg, int item, const std::string &s);
-extern long QQ_extract_number_from_text_control (DialogPTR dlg, int item);
-extern void QQ_insert_number_into_text_control (DialogPTR dlg, int item, long number);
+extern int32 QQ_extract_number_from_text_control (DialogPTR dlg, int item);
+extern void QQ_insert_number_into_text_control (DialogPTR dlg, int item, int32 number);
 
 
 // (ZZZ:) Prototypes for both platforms.  I think I wrote some of these (on both platforms)
 // so we could use a common API for common operations.  Others I think already existed with
 // Mac OS implementations, so I just wrote SDL implementations.
-extern long extract_number_from_text_item(
+extern int32 extract_number_from_text_item(
 	DialogPtr dlg,
 	short item);
 
 extern void insert_number_into_text_item(
 	DialogPtr dlg,
 	short item,
-	long number);
+	int32 number);
 
 extern void copy_pstring_from_text_field(
         DialogPtr dialog,

@@ -114,8 +114,8 @@ const int SIZEOF_entry_header = 16;
 struct tag_data {
 	WadDataType tag;		/* What type of data is this? */
 	byte *data; 			/* Offset into the wad.. */
-	long length;			/* Length of the data */
-	long offset;			/* Offset for patches */
+	int32 length;			/* Length of the data */
+	int32 offset;			/* Offset for patches */
 };
 
 /* This is what a wad * actually is.. */
@@ -154,7 +154,7 @@ struct wad_data *read_indexed_wad_from_file(OpenedFile& OFile,
 /* Properly deal with the memory.. */
 void free_wad(struct wad_data *wad);
 
-long get_size_of_directory_data(struct wad_header *header);
+int32 get_size_of_directory_data(struct wad_header *header);
 
 /* -----  Read Wad functions */
 
@@ -163,7 +163,7 @@ void *extract_type_from_wad(struct wad_data *wad, WadDataType type,
 	size_t *length);
 
 /* Calculate the length of the wad */
-long calculate_wad_length(struct wad_header *file_header, struct wad_data *wad);
+int32 calculate_wad_length(struct wad_header *file_header, struct wad_data *wad);
 
 /* Note wad_count and directory offset in the header! better be correct! */
 void *get_indexed_directory_data(struct wad_header *header, short index,
@@ -187,7 +187,7 @@ bool find_file_with_modification_date(FileSpecifier& File,
 /* These functions are used for transferring data, and it completely encapsulates */
 /*  a given wad from a given file... */
 void *get_flat_data(FileSpecifier& File, bool use_union, short wad_index);
-long get_flat_data_length(void *data);
+int32 get_flat_data_length(void *data);
 
 /* This is how you dispose of it-> you inflate it, then use free_wad() */
 struct wad_data *inflate_flat_data(void *data, struct wad_header *header);
@@ -202,10 +202,10 @@ bool write_directorys(OpenedFile& OFile,  struct wad_header *header,
 	void *entries);
 void calculate_and_store_wadfile_checksum(OpenedFile& OFile);
 bool write_wad(OpenedFile& OFile, struct wad_header *file_header, 
-	struct wad_data *wad, long offset);
+	struct wad_data *wad, int32 offset);
 
 void set_indexed_directory_offset_and_length(struct wad_header *header, 
-	void *entries, short index, long offset, long length, short wad_index);
+	void *entries, short index, int32 offset, int32 length, short wad_index);
 
 /* ------ Write Wad Functions */
 struct wad_data *append_data_to_wad(

@@ -83,9 +83,9 @@ bool XML_DamageParser::HandleAttribute(const char *Tag, const char *Value)
 		if (ReadBoundedNumericalValue(Value,"%f",Scale,float(SHRT_MIN),float(SHRT_MAX+1)))
 		{
 			if (Scale >= 0)
-				DamagePtr->scale = long(FIXED_ONE*Scale + 0.5);
+				DamagePtr->scale = int32(FIXED_ONE*Scale + 0.5);
 			else
-				DamagePtr->scale = - long(- FIXED_ONE*Scale + 0.5);
+				DamagePtr->scale = - int32(- FIXED_ONE*Scale + 0.5);
 			return true;
 		}
 		else return false;

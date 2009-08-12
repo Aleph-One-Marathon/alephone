@@ -57,7 +57,7 @@ pixel8 *calculate_bitmap_origin(struct bitmap_definition *bitmap);
 /* initialize bytes_per_row, height and row_address[0] before calling */
 void precalculate_bitmap_row_addresses(struct bitmap_definition *texture);
 
-void map_bytes(byte *buffer, byte *table, long size);
+void map_bytes(byte *buffer, byte *table, int32 size);
 void remap_bitmap(struct bitmap_definition *bitmap,	pixel8 *table);
 
 #endif

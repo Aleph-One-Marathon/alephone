@@ -466,16 +466,16 @@ static short ddpSocket = 0;
 // ZZZ: again, buffer is always going to be NetDistributionPacket_NET*
 static void NetProcessLossyDistribution(void *buffer);
 // ZZZ: this is used to handle an incoming ring packet; it'll always be NetPacket_NET*
-static void NetProcessIncomingBuffer(void *buffer, long buffer_size, long sequence);
+static void NetProcessIncomingBuffer(void *buffer, int32 buffer_size, int32 sequence);
 
 static size_t NetPacketSize(NetPacketPtr packet);
-static void NetBuildRingPacket(DDPFramePtr frame, byte *data, size_t data_size, long sequence);
-static void NetBuildFirstRingPacket(DDPFramePtr frame, long sequence);
-static void NetRebuildRingPacket(DDPFramePtr frame, short tag, long sequence);
+static void NetBuildRingPacket(DDPFramePtr frame, byte *data, size_t data_size, int32 sequence);
+static void NetBuildFirstRingPacket(DDPFramePtr frame, int32 sequence);
+static void NetRebuildRingPacket(DDPFramePtr frame, short tag, int32 sequence);
 static void NetAddFlagsToPacket(NetPacketPtr packet);
 
 static void NetSendRingPacket(DDPFramePtr frame);
-static void NetSendAcknowledgement(DDPFramePtr frame, long sequence);
+static void NetSendAcknowledgement(DDPFramePtr frame, int32 sequence);
 
 static bool NetCheckResendRingPacket(void);
 static bool NetServerTask(void);
@@ -490,7 +490,7 @@ static void update_adaptive_latency(int measurement = 0, int tick = 0);
 static short NetAdjustUpringAddressUpwards(void);
 static short NetSizeofLocalQueue(void);
 
-static void process_packet_buffer_flags(void *buffer, long buffer_size, short packet_tag);
+static void process_packet_buffer_flags(void *buffer, int32 buffer_size, short packet_tag);
 static void process_flags(NetPacketPtr packet_data);
 
 /* Note that both of these functions may result in a change of gatherer.  the first one is */
@@ -506,33 +506,33 @@ void record_profile(int raf);
 
 #ifdef DEBUG_NET
 struct network_statistics {
-	long numSmears;
-	long numCountChanges;
+	int32 numSmears;
+	int32 numCountChanges;
 
-	long ontime_acks;
-	long sync_ontime_acks;
-	long time_ontime_acks;
-	long unsync_ontime_acks;
-	long dead_ontime_acks;
+	int32 ontime_acks;
+	int32 sync_ontime_acks;
+	int32 time_ontime_acks;
+	int32 unsync_ontime_acks;
+	int32 dead_ontime_acks;
 
-	long late_acks;
-	long packets_from_the_unknown;
-	long retry_count;
-	long sync_retry_count;
-	long time_retry_count;
-	long unsync_retry_count;
-	long dead_retry_count;
+	int32 late_acks;
+	int32 packets_from_the_unknown;
+	int32 retry_count;
+	int32 sync_retry_count;
+	int32 time_retry_count;
+	int32 unsync_retry_count;
+	int32 dead_retry_count;
 
-	long late_unsync_rings;
-	long late_sync_rings;
-	long late_rings;
-	long late_time_rings;
-	long late_dead_rings;
+	int32 late_unsync_rings;
+	int32 late_sync_rings;
+	int32 late_rings;
+	int32 late_time_rings;
+	int32 late_dead_rings;
 
-	long change_ring_packet_count;
+	int32 change_ring_packet_count;
 
-	long rebuilt_server_tag;
-	long packets_with_zero_flags;
+	int32 rebuilt_server_tag;
+	int32 packets_with_zero_flags;
 
 	short spurious_unsyncs;
 	short unsync_while_coming_down;
@@ -544,12 +544,12 @@ struct network_statistics {
 	short assuming_control_on_retry;
 	short server_bailing_early;
 
-	unsigned long action_flags_processed;
+	uint32 action_flags_processed;
 } net_stats;
 
 #ifdef STREAM_NET
 static void open_stream_file(void);
-static void debug_stream_of_flags(long action_flag, short player_index);
+static void debug_stream_of_flags(int32 action_flag, short player_index);
 static void close_stream_file(void);
 #endif
 #endif
@@ -1193,8 +1193,8 @@ static void NetProcessLossyDistribution(
 /* •••• Marathon Specific Code (some of it, anyway) •••• */
 static void NetProcessIncomingBuffer(
 				     void *buffer,
-				     long buffer_size,
-				     long sequence)
+				     int32 buffer_size,
+				     int32 sequence)
 {
         // ZZZ: convert from _NET format
         NetPacket*	packet_data		= (NetPacket*) (unpackedReceiveBuffer + sizeof(NetPacketHeader));
@@ -1217,7 +1217,7 @@ static void NetProcessIncomingBuffer(
         netcpy(&packet_data->action_flags[0], (uint32*) (((char*) buffer) + sizeof(NetPacket_NET)), NetPacketSize(packet_data));
 
 	short packet_tag= NONE;
-	long previous_lastValidRingSequence= status->lastValidRingSequence;
+	int32 previous_lastValidRingSequence= status->lastValidRingSequence;
 
 	status->server_player_index= packet_data->server_player_index;
 
@@ -1406,7 +1406,7 @@ static void NetAddFlagsToPacket(
 		memmove(action_flags + packet->required_action_flags, action_flags + packet->action_flag_count[localPlayerIndex], count * sizeof(uint32));
 		//BlockMove(action_flags + packet->action_flag_count[localPlayerIndex],
 		//	action_flags + packet->required_action_flags,
-		//	count * sizeof(long));
+		//	count * sizeof(int32));
 	}
 
 #ifdef DEBUG_NET
@@ -1531,7 +1531,7 @@ static size_t NetPacketSize(
 		if (packet->action_flag_count[i] != NET_DEAD_ACTION_FLAG_COUNT) // player has become net dead.
 		{
 			assert(packet->action_flag_count[i]>=0&&packet->action_flag_count[i]<=MAXIMUM_UPDATES_PER_PACKET);
-			size += packet->action_flag_count[i] * sizeof(long);
+			size += packet->action_flag_count[i] * sizeof(int32);
 		}
 	}
 
@@ -1564,7 +1564,7 @@ static size_t NetPacketSize(
 
 static void NetSendAcknowledgement(
 				   DDPFramePtr frame,
-				   long sequence)
+				   int32 sequence)
 {
         NetPacketHeader_NET*	header_NET	= (NetPacketHeader_NET*) frame->data;
         NetPacketHeader		header_storage;
@@ -1589,7 +1589,7 @@ static void NetSendAcknowledgement(
 /* Only the server can call this... */
 static void NetBuildFirstRingPacket(
 				    DDPFramePtr frame,
-				    long sequence)
+				    int32 sequence)
 {
 	short player_index;
 	NetPacketPtr  data;
@@ -1622,7 +1622,7 @@ static void NetBuildRingPacket(
 			       DDPFramePtr frame,
 			       byte *data,
 			       size_t data_size,
-			       long sequence)
+			       int32 sequence)
 {
         NetPacketHeader		header_storage;
         NetPacketHeader*	header		= &header_storage;
@@ -1667,7 +1667,7 @@ static void NetBuildRingPacket(
 static void NetRebuildRingPacket(
 				 DDPFramePtr frame,
 				 short tag,
-				 long sequence)
+				 int32 sequence)
 {
         NetPacketHeader		header_storage;
         NetPacketHeader*	header		= &header_storage;
@@ -2242,7 +2242,7 @@ void NetPrintInfo(
 
 static void process_packet_buffer_flags(
 					void *buffer,
-					long buffer_size,
+					int32 buffer_size,
 					short packet_tag)
 {
         // ZZZ: By now, the buffer passed to us is unpacked and contains action flags.
@@ -2424,13 +2424,13 @@ static void process_flags(
 #define MAXIMUM_STREAM_FLAGS (8192) // 48k
 
 struct recorded_flag {
-	long flag;
+	int32 flag;
 	short player_index;
 };
 
 static short stream_refnum= NONE;
 static struct recorded_flag *action_flag_buffer= NULL;
-static long action_flag_index= 0;
+static int32 action_flag_index= 0;
 
 static void open_stream_file(
 			     void)
@@ -2456,7 +2456,7 @@ static void open_stream_file(
 static void write_flags(
 			void)
 {
-	long index, size;
+	int32 index, size;
 	short player_index;
 	OSErr error;
 
@@ -2467,7 +2467,7 @@ static void write_flags(
 
 	for(player_index= 0; player_index<topology->player_count; ++player_index)
 	{
-		long player_action_flag_count= 0;
+		int32 player_action_flag_count= 0;
 
 		for(index= 0; index<action_flag_index-1; ++index)
 		{
@@ -2491,7 +2491,7 @@ static void write_flags(
 }
 
 static void debug_stream_of_flags(
-				  long action_flag,
+				  int32 action_flag,
 				  short player_index)
 {
 	if(stream_refnum != NONE)

@@ -145,7 +145,7 @@ bool SoundHeader::Load(OpenedFile &SoundFile)
 	Clear();
 	if (!SoundFile.IsOpen()) return false;
 
-	long file_position;
+	int32 file_position;
 	SoundFile.GetPosition(file_position);
 	SoundFile.SetPosition(file_position + 20);
 	uint8 header_type;

@@ -110,14 +110,14 @@ public:
 	bool IsOpen();
 	bool Close();
 	
-	bool GetPosition(long& Position);
-	bool SetPosition(long Position);
+	bool GetPosition(int32& Position);
+	bool SetPosition(int32 Position);
 	
-	bool GetLength(long& Length);
-	bool SetLength(long Length);
+	bool GetLength(int32& Length);
+	bool SetLength(int32 Length);
 	
-	bool Read(long Count, void *Buffer);
-	bool Write(long Count, void *Buffer);
+	bool Read(int32 Count, void *Buffer);
+	bool Write(int32 Count, void *Buffer);
 		
 	OpenedFile();
 	~OpenedFile() {Close();}	// Auto-close when destroying
@@ -143,7 +143,7 @@ private:
 	int err;		// Error code
 #endif
 	bool is_forked;
-	long fork_offset, fork_length;
+	int32 fork_offset, fork_length;
 };
 
 
@@ -324,7 +324,7 @@ public:
 // Directory entry, returned by FileSpecifier::ReadDirectory()
 struct dir_entry {
 	dir_entry() {}
-	dir_entry(const string &n, long s, bool is_dir, bool is_vol = false, TimeType d = 0)
+	dir_entry(const string &n, int32 s, bool is_dir, bool is_vol = false, TimeType d = 0)
 		: name(n), size(s), is_directory(is_dir), is_volume(is_vol), date(d) {}
 	~dir_entry() {}
 
@@ -337,7 +337,7 @@ struct dir_entry {
 	}
 
 	string name;		// Entry name
-	long size;			// File size (only valid if !is_directory)
+	int32 size;			// File size (only valid if !is_directory)
 	bool is_directory;	// Entry is a directory (plain file otherwise)
 	bool is_volume;		// Entry is a volume (for platforms that have volumes, is_directory must also be set)
 	TimeType date;          // modification date
@@ -424,7 +424,7 @@ public:
 	Typecode GetType();
 
 	// How many bytes are free in the disk that the file lives in?
-	bool GetFreeSpace(unsigned long& FreeSpace);
+	bool GetFreeSpace(uint32& FreeSpace);
 	
 	// Copy file contents
 	bool CopyContents(FileSpecifier& File);

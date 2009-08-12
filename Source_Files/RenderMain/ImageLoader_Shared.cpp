@@ -317,7 +317,7 @@ bool ImageDescriptor::SkipMipMapFromFile(OpenedFile& File, int flags, int level,
 		int depth = pitch / ddsd.dwWidth;
 		pitch = srcWidth * depth;
 
-		long position;
+		int32 position;
 		if (!File.GetPosition(position)) return false;
 		return File.SetPosition(position + (pitch * srcHeight));
 	} 
@@ -326,7 +326,7 @@ bool ImageDescriptor::SkipMipMapFromFile(OpenedFile& File, int flags, int level,
 		srcWidth = padfour(srcWidth);
 		srcHeight = padfour(srcHeight);
 
-		long position;
+		int32 position;
 		if (!File.GetPosition(position)) return false;
 		return File.SetPosition(position + (srcWidth / 4 * srcHeight / 4 * 8));
 	} 
@@ -335,7 +335,7 @@ bool ImageDescriptor::SkipMipMapFromFile(OpenedFile& File, int flags, int level,
 		srcWidth = padfour(srcWidth);
 		srcHeight = padfour(srcHeight);
 		
-		long position;
+		int32 position;
 		if (!File.GetPosition(position)) return false;
 		return File.SetPosition(position + (srcWidth / 4 * srcHeight / 4 * 16));
 	}

@@ -3372,7 +3372,7 @@ bool OGL_Copy2D(GWorldPtr BufferPtr, Rect& SourceBounds, Rect& DestBounds, bool 
 	
 	// Row-start address and row length
 	byte *SourceStart = (byte *)GetPixBaseAddr(Pxls);
-	long StrideBytes = (**Pxls).rowBytes & 0x3fff;
+	int32 StrideBytes = (**Pxls).rowBytes & 0x3fff;
 	
 	// How many pixels to draw per line
 	short SourceWidth = SourceBounds.right - SourceBounds.left;

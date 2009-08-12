@@ -307,7 +307,7 @@ void handle_keyword(int tag)
 #if 0
 	if (cheated)
 	{
-		long final_ticks;
+		int32 final_ticks;
 		
 		SetSoundVol(7);
 		play_local_sound(20110);

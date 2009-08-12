@@ -216,9 +216,9 @@ void mouse_idle(
 	Point where;
 	Point center;
 	static bool first_run = true;
-	static long last_tick_count;
-	long tick_count= TickCount();
-	long ticks_elapsed= tick_count-last_tick_count;
+	static int32 last_tick_count;
+	int32 tick_count= TickCount();
+	int32 ticks_elapsed= tick_count-last_tick_count;
 	
 	if(first_run)
 	{

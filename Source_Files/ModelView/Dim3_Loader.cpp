@@ -175,7 +175,7 @@ bool LoadModel_Dim3(FileSpecifier& Spec, Model3D& Model, int WhichPass)
 	Dim3_SetupParseTree();
 	XML_DataBlockLoader.CurrentElement = &Dim3_RootParser;
 	
-	long Len = 0;
+	int32 Len = 0;
 	OFile.GetLength(Len);
 	if (Len <= 0) return false;
 	

@@ -3,9 +3,9 @@
 #include <Timer.h>
 #include <Gestalt.h>
 
-unsigned long globalTime;
+uint32 globalTime;
 
-unsigned long Timer::Clicks() {
+uint32 Timer::Clicks() {
 	if (startTime != 0) {
 		return (totalTime+(globalTime-startTime));
 	} else {

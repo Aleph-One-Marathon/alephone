@@ -357,7 +357,7 @@ void restart_game(void);
 
 /* ---------- prototypes/GAME_WAD.C */
 /* Map transferring fuctions */
-long get_net_map_data_length(void *data);
+int32 get_net_map_data_length(void *data);
 bool process_net_map_data(void *data); /* Note that this frees it as well */
 void *get_map_for_net_transfer(struct entry_point *entry);
 
@@ -366,7 +366,7 @@ void *get_map_for_net_transfer(struct entry_point *entry);
 void set_keyboard_controller_status(bool active);
 bool get_keyboard_controller_status(void);
 void pause_keyboard_controller(bool active);
-long get_heartbeat_count(void);
+int32 get_heartbeat_count(void);
 void sync_heartbeat_count(void);
 void process_action_flags(short player_identifier, const uint32 *action_flags, short count);
 void rewind_recording(void);

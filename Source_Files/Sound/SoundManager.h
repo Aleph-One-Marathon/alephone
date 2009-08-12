@@ -131,7 +131,7 @@ public:
 		world_location3d *dynamic_source; // can be NULL for immobile sounds
 		world_location3d source; // must be valid
 
-		unsigned long start_tick;
+		uint32 start_tick;
 
 		int mixer_channel;
 		short callback_count;
@@ -175,11 +175,11 @@ private:
 	bool active;
 
 	short total_channel_count;
-	long total_buffer_size;
+	int32 total_buffer_size;
 
 	short sound_source; // 8-bit, 16-bit
 	
-	long loaded_sounds_size;
+	int32 loaded_sounds_size;
 
 	std::vector<Channel> channels;
 

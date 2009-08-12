@@ -103,7 +103,7 @@ void import_definition_structures(
 }
 
 void *get_network_physics_buffer(
-	long *physics_length)
+	int32 *physics_length)
 {
 	void *data= get_flat_data(PhysicsFileSpec, false, 0);
 	

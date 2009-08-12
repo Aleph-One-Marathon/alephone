@@ -52,11 +52,11 @@ extern void vhalt(
 
 extern void _alephone_assert(
 	const char *file,
-	long line,
+	int32 line,
 	const char *what) NORETURN;
 extern void _alephone_warn(
 	const char *file,
-	long line,
+	int32 line,
 	const char *what);
 
 #if TARGET_API_MAC_CARBON && !defined(SDL)

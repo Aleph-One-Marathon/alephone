@@ -75,7 +75,7 @@ static struct screen_mode_data screen_mode;
 #define FRAME_SAMPLE_SIZE 20
 bool displaying_fps= false;
 short frame_count, frame_index;
-long frame_ticks[64];
+int32 frame_ticks[64];
 
 // LP addition:
 // whether to show one's position

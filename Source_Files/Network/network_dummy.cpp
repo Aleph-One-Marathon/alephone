@@ -72,7 +72,7 @@ bool NetChangeMap(struct entry_point *entry)
 	return false;
 }
 
-long NetGetNetTime(void)
+int32 NetGetNetTime(void)
 {
 	return 0;
 }

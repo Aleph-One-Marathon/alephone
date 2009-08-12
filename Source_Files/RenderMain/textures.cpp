@@ -165,7 +165,7 @@ void precalculate_bitmap_row_addresses(
 void map_bytes(
 	register byte *buffer,
 	register byte *table,
-	register long size)
+	register int32 size)
 {
 	while ((size-=1)>=0)
 	{

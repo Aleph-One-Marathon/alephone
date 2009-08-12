@@ -254,7 +254,7 @@ static void kill_monster(short monster_index);
 static bool translate_monster(short monster_index, world_distance distance);
 static bool try_monster_attack(short monster_index);
 			
-long monster_pathfinding_cost_function(short source_polygon_index, short line_index,
+int32 monster_pathfinding_cost_function(short source_polygon_index, short line_index,
 	short destination_polygon_index, void *data);
 
 void set_monster_action(short monster_index, short action);
@@ -268,13 +268,13 @@ static short position_monster_projectile(short aggressor_index, short target_ind
 static void update_monster_vertical_physics_model(short monster_index);
 static void update_monster_physics_model(short monster_index);
 
-static long monster_activation_flood_proc(short source_polygon_index, short line_index,
+static int32 monster_activation_flood_proc(short source_polygon_index, short line_index,
 	short destination_polygon_index, void *data);
 
 static bool attempt_evasive_manouvers(short monster_index);
 
 static short nearest_goal_polygon_index(short polygon_index);
-static long nearest_goal_cost_function(short source_polygon_index, short line_index,
+static int32 nearest_goal_cost_function(short source_polygon_index, short line_index,
 	short destination_polygon_index, void *unused);
 
 static void cause_shrapnel_damage(short monster_index);
@@ -786,7 +786,7 @@ void activate_nearby_monsters(
 		
 		/* flood out from the target monsterÕs polygon, searching through the object lists of all
 			polygons we encounter */
-		polygon_index= flood_map(polygon_index, LONG_MAX, monster_activation_flood_proc, _flagged_breadth_first, &flood_flags);
+		polygon_index= flood_map(polygon_index, INT32_MAX, monster_activation_flood_proc, _flagged_breadth_first, &flood_flags);
 		while (polygon_index!=NONE)
 		{
 			short object_index;
@@ -861,7 +861,7 @@ void activate_nearby_monsters(
 				}
 			}
 			
-			polygon_index= flood_map(NONE, LONG_MAX, monster_activation_flood_proc, _flagged_breadth_first, &flood_flags);
+			polygon_index= flood_map(NONE, INT32_MAX, monster_activation_flood_proc, _flagged_breadth_first, &flood_flags);
 		}
 
 		// deferred find_closest_appropriate_target() calls
@@ -875,7 +875,7 @@ void activate_nearby_monsters(
 	}
 }
 
-static long monster_activation_flood_proc(
+static int32 monster_activation_flood_proc(
 	short source_polygon_index,
 	short line_index,
 	short destination_polygon_index,
@@ -884,7 +884,7 @@ static long monster_activation_flood_proc(
 	int32 *flags=(int32 *)data;
 	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
 	struct line_data *line= get_line_data(line_index);
-	long cost= 1;
+	int32 cost= 1;
 
 //	dprintf("P#%d==>P#%d by L#%d", source_polygon_index, destination_polygon_index, line_index);
 
@@ -2197,7 +2197,7 @@ short find_closest_appropriate_target(
 		
 		/* flood out from the aggressor monsterÕs polygon, searching through the object lists of all
 			polygons we encounter */
-		polygon_index= flood_map(polygon_index, LONG_MAX, monster_activation_flood_proc, _flagged_breadth_first, &flood_flags);
+		polygon_index= flood_map(polygon_index, INT32_MAX, monster_activation_flood_proc, _flagged_breadth_first, &flood_flags);
 		while (polygon_index!=NONE && closest_hostile_target_index==NONE)
 		{
 			short object_index;
@@ -2228,7 +2228,7 @@ short find_closest_appropriate_target(
 				}
 			}
 			
-			polygon_index= flood_map(NONE, LONG_MAX, monster_activation_flood_proc, _flagged_breadth_first, &flood_flags);
+			polygon_index= flood_map(NONE, INT32_MAX, monster_activation_flood_proc, _flagged_breadth_first, &flood_flags);
 		}
 	}
 	else
@@ -3045,7 +3045,7 @@ static void execute_monster_attack(
 	}
 }
 
-long monster_pathfinding_cost_function(
+int32 monster_pathfinding_cost_function(
 	short source_polygon_index,
 	short line_index,
 	short destination_polygon_index,
@@ -3059,7 +3059,7 @@ long monster_pathfinding_cost_function(
 	bool respect_polygon_heights= true;
 	struct object_data *object;
 	short object_index;
-	long cost;
+	int32 cost;
 		
 	/* base cost is the area of the polygon weÕre leaving */
 	cost= source_polygon->area;
@@ -3342,20 +3342,20 @@ static short position_monster_projectile(
 short nearest_goal_polygon_index(
 	short polygon_index)
 {
-	polygon_index= flood_map(polygon_index, LONG_MAX, nearest_goal_cost_function, _breadth_first, (void *) NULL);
+	polygon_index= flood_map(polygon_index, INT32_MAX, nearest_goal_cost_function, _breadth_first, (void *) NULL);
 	while (polygon_index!=NONE)
 	{
 		struct polygon_data *polygon= get_polygon_data(polygon_index);
 
 		if (polygon->type==_polygon_is_goal) break;
 
-		polygon_index= flood_map(NONE, LONG_MAX, nearest_goal_cost_function, _breadth_first, (void *) NULL);
+		polygon_index= flood_map(NONE, INT32_MAX, nearest_goal_cost_function, _breadth_first, (void *) NULL);
 	}
 	
 	return polygon_index;
 }
 
-static long nearest_goal_cost_function(
+static int32 nearest_goal_cost_function(
 	short source_polygon_index,
 	short line_index,
 	short destination_polygon_index,
@@ -3364,7 +3364,7 @@ static long nearest_goal_cost_function(
 	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
 //	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
 //	struct line_data *line= get_line_data(line_index);
-	long cost= 1;
+	int32 cost= 1;
 	
 	(void) (unused);
 	(void) (source_polygon_index);

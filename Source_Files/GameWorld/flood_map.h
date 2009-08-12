@@ -36,7 +36,7 @@ enum /* flood modes */
 
 /* ---------- typedefs */
 
-typedef long (*cost_proc_ptr)(short source_polygon_index, short line_index, short destination_polygon_index, void *caller_data);
+typedef int32 (*cost_proc_ptr)(short source_polygon_index, short line_index, short destination_polygon_index, void *caller_data);
 
 /* ---------- prototypes/PATHFINDING.C */
 
@@ -55,7 +55,7 @@ void allocate_flood_map_memory(void);
 
 /* default cost_proc, NULL, is the area of the destination polygon and is significantly faster
 	than supplying a user procedure */
-short flood_map(short first_polygon_index, long maximum_cost, cost_proc_ptr cost_proc, short flood_mode, void *caller_data);
+short flood_map(short first_polygon_index, int32 maximum_cost, cost_proc_ptr cost_proc, short flood_mode, void *caller_data);
 short reverse_flood_map(void);
 short flood_depth(void);
 

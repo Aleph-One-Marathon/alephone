@@ -698,8 +698,8 @@ static void update_guided_projectile(
 		default:
 		{
 			// LP change: made this long-distance-friendly
-			long dx= long(target_location.x) - long(projectile_object->location.x);
-			long dy= long(target_location.y) - long(projectile_object->location.y);
+			int32 dx= int32(target_location.x) - int32(projectile_object->location.x);
+			int32 dy= int32(target_location.y) - int32(projectile_object->location.y);
 			world_distance dz= target_location.z - projectile_object->location.z;
 			short delta_yaw= MAXIMUM_GUIDED_DELTA_YAW+_normal_level-dynamic_world->game_information.difficulty_level;
 			short delta_pitch= MAXIMUM_GUIDED_DELTA_PITCH+_normal_level-dynamic_world->game_information.difficulty_level;
@@ -948,13 +948,13 @@ uint16 translate_projectile(
 		{
 			// LP change:
 			struct object_data *object= get_object_data(IntersectedObjects[i]);
-			long separation= point_to_line_segment_distance_squared((world_point2d *)&object->location,
+			int32 separation= point_to_line_segment_distance_squared((world_point2d *)&object->location,
 				(world_point2d *)old_location, (world_point2d *)new_location);
 			world_distance radius, height;
 				
 			if (object->permutation!=owner_index) /* don’t hit ourselves */
 			{
-				long radius_squared;
+				int32 radius_squared;
 				
 				switch (GET_OBJECT_OWNER(object))
 				{

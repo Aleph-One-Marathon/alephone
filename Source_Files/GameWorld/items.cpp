@@ -111,7 +111,7 @@ static bool get_item(short player_index, short object_index);
 
 static bool test_item_retrieval(short polygon_index1, world_point3d *location1, world_point3d *location2);
 
-static long item_trigger_cost_function(short source_polygon_index, short line_index,
+static int32 item_trigger_cost_function(short source_polygon_index, short line_index,
 	short destination_polygon_index, void *unused);
 
 /* ---------- code */
@@ -193,7 +193,7 @@ short new_item(
 void trigger_nearby_items(
 	short polygon_index)
 {
-	polygon_index= flood_map(polygon_index, LONG_MAX, item_trigger_cost_function, _breadth_first, (void *) NULL);
+	polygon_index= flood_map(polygon_index, INT32_MAX, item_trigger_cost_function, _breadth_first, (void *) NULL);
 	while (polygon_index!=NONE)
 	{
 		struct object_data *object;
@@ -213,7 +213,7 @@ void trigger_nearby_items(
 			}
 		}
 		
-		polygon_index= flood_map(NONE, LONG_MAX, item_trigger_cost_function, _breadth_first, (void *) NULL);
+		polygon_index= flood_map(NONE, INT32_MAX, item_trigger_cost_function, _breadth_first, (void *) NULL);
 	}
 }
 
@@ -604,7 +604,7 @@ bool try_and_add_player_item(
 /* ---------- private code */
 
 
-static long item_trigger_cost_function(
+static int32 item_trigger_cost_function(
 	short source_polygon_index,
 	short line_index,
 	short destination_polygon_index,
@@ -613,7 +613,7 @@ static long item_trigger_cost_function(
 	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
 //	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
 //	struct line_data *line= get_line_data(line_index);
-	long cost= 1;
+	int32 cost= 1;
 	
 	(void) (unused);
 	(void) (source_polygon_index);

@@ -116,10 +116,10 @@ struct _vertical_polygon_line_data
 // IR addition: these macros mac the prototypes MUCH nicer and more compact.
 #define HORIZONTAL_TEXTURE_PARAMS struct bitmap_definition *texture, \
 	struct bitmap_definition *screen, struct _horizontal_polygon_line_data *data, \
-	short y0, short line_count, long extra
+	short y0, short line_count, int32 extra
 
 #define VERTICAL_TEXTURE_PARAMS struct bitmap_definition *screen, \
-	struct _vertical_polygon_data *data, long extra
+	struct _vertical_polygon_data *data, int32 extra
 
 // IR change: Using macro
 void _texture_horizontal_polygon_lines8(HORIZONTAL_TEXTURE_PARAMS);

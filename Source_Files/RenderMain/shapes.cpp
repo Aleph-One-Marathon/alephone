@@ -188,7 +188,7 @@ static void build_global_shading_table32(void);
 static bool get_next_color_run(struct rgb_color_value *colors, short color_count, short *start, short *count);
 static bool new_color_run(struct rgb_color_value *_new, struct rgb_color_value *last);
 
-static long get_shading_table_size(short collection_code);
+static int32 get_shading_table_size(short collection_code);
 
 static void build_collection_tinting_table(struct rgb_color_value *colors, short color_count, short collection_index);
 static void build_tinting_table8(struct rgb_color_value *colors, short color_count, pixel8 *tint_table, short tint_start, short tint_count);
@@ -210,7 +210,7 @@ static void shutdown_shape_handler(void);
 static void close_shapes_file(void);
 
 #ifdef mac
-static byte *read_object_from_file(OpenedFile& OFile, long offset, long length);
+static byte *read_object_from_file(OpenedFile& OFile, int32 offset, int32 length);
 #endif
 
 // static byte *make_stripped_collection(byte *collection);
@@ -224,7 +224,7 @@ static struct collection_header *get_collection_header(short collection_index);
 /*static*/ struct collection_definition *get_collection_definition(short collection_index);
 static void *get_collection_shading_tables(short collection_index, short clut_index);
 static void *get_collection_tint_tables(short collection_index, short tint_index);
-static void *collection_offset(struct collection_definition *definition, long offset);
+static void *collection_offset(struct collection_definition *definition, int32 offset);
 static struct rgb_color_value *get_collection_colors(short collection_index, short clut_number);
 static struct high_level_shape_definition *get_high_level_shape_definition(short collection_index, short high_level_shape_index);
 static struct bitmap_definition *get_bitmap_definition(short collection_index, short bitmap_index);
@@ -691,7 +691,7 @@ static bool load_collection(short collection_index, bool strip)
 
 	// Get offset and length of data in source file from header
 	collection_header *header = get_collection_header(collection_index);
-	long src_offset, src_length;
+	int32 src_offset, src_length;
 
 	if (bit_depth == 8 || header->offset16 == -1) {
 		vassert(header->offset != -1, csprintf(temporary, "collection #%d does not exist.", collection_index));
@@ -1331,7 +1331,7 @@ byte *unpack_collection(byte *collection, int32 length, bool strip)
 				int NumExtraPointerBytes = NumScanlines*(sizeof(pixel8 *) - sizeof(int32));
 				
 				// Do all the other stuff; don't bother to try to process it
-				long RemainingBytes = (SNext - S);
+				int32 RemainingBytes = (SNext - S);
 				byte *RemainingDataPlacement = (byte *)(Bitmap.row_addresses+1) + NumExtraPointerBytes;
 				StreamToBytes(S,RemainingDataPlacement,RemainingBytes);
 			
@@ -1386,8 +1386,8 @@ static void unlock_collection(
 #ifdef mac
 static byte *read_object_from_file(
 	OpenedFile& OFile,
-	long offset,
-	long length)
+	int32 offset,
+	int32 length)
 {
 	if (!OFile.IsOpen()) return NULL;
 	
@@ -2083,15 +2083,15 @@ short find_closest_color(
 	short color_count)
 {
 	short i;
-	long closest_delta= LONG_MAX;
+	int32 closest_delta= INT32_MAX;
 	short closest_index= 0;
 	
 	// = 1 to skip the transparent color
 	for (i= 1, colors+= 1; i<color_count; ++i, ++colors)
 	{
-		long delta= (long)ABS(colors->red-color->red) +
-			(long)ABS(colors->green-color->green) +
-			(long)ABS(colors->blue-color->blue);
+		int32 delta= (int32)ABS(colors->red-color->red) +
+			(int32)ABS(colors->green-color->green) +
+			(int32)ABS(colors->blue-color->blue);
 		
 		if (delta<closest_delta) closest_index= i, closest_delta= delta;
 	}
@@ -2345,7 +2345,7 @@ static bool new_color_run(
 	struct rgb_color_value *_new,
 	struct rgb_color_value *last)
 {
-	if ((long)last->red+(long)last->green+(long)last->blue<(long)_new->red+(long)_new->green+(long)_new->blue)
+	if ((int32)last->red+(int32)last->green+(int32)last->blue<(int32)_new->red+(int32)_new->green+(int32)_new->blue)
 	{
 		return true;
 	}
@@ -2355,10 +2355,10 @@ static bool new_color_run(
 	}
 }
 
-static long get_shading_table_size(
+static int32 get_shading_table_size(
 	short collection_code)
 {
-	long size;
+	int32 size;
 	
 	switch (bit_depth)
 	{
@@ -2550,7 +2550,7 @@ static void build_tinting_table16(
 
 	for (i= 0; i<color_count; ++i, ++colors)
 	{
-		long magnitude= ((long)colors->red + (long)colors->green + (long)colors->blue)/(short)3;
+		int32 magnitude= ((int32)colors->red + (int32)colors->green + (int32)colors->blue)/(short)3;
 		
 #ifdef SDL
 		// Find optimal pixel value for video display
@@ -2580,7 +2580,7 @@ static void build_tinting_table32(
 
 	for (i= 0; i<color_count; ++i, ++colors)
 	{
-		long magnitude= ((long)colors->red + (long)colors->green + (long)colors->blue)/(short)3;
+		int32 magnitude= ((int32)colors->red + (int32)colors->green + (int32)colors->blue)/(short)3;
 		
 #ifdef SDL
 		// Find optimal pixel value for video display

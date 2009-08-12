@@ -221,12 +221,12 @@ polygon_reference NewVisTree::get_real_origin(portal_view_data *portalView)
 		
 		translated_endpoint_data *leftPoint = polyPoints[i], *rightPoint=polyPoints[WRAP_HIGH(i, endpointCount-1)];
 		
-		long cross = ((leftPoint->vector.i * rightPoint->vector.j) - (leftPoint->vector.j * rightPoint->vector.i));
+		int32 cross = ((leftPoint->vector.i * rightPoint->vector.j) - (leftPoint->vector.j * rightPoint->vector.i));
 		
 		if (cross <= 0) {
 			
-			long di = rightPoint->vector.i - leftPoint->vector.i;
-			long dj = rightPoint->vector.j - leftPoint->vector.j;
+			int32 di = rightPoint->vector.i - leftPoint->vector.i;
+			int32 dj = rightPoint->vector.j - leftPoint->vector.j;
 			
 			// if we aren't within the endpoints of this line, this is the wrong line.
 			if (    leftPoint->vector.i*di + leftPoint->vector.j*dj > 0
@@ -445,7 +445,7 @@ process_node:
 			
 			// dot product to check if the side faces us.
 			
-			long cross = ((leftPoint->vector.i * rightPoint->vector.j) - (leftPoint->vector.j * rightPoint->vector.i));
+			int32 cross = ((leftPoint->vector.i * rightPoint->vector.j) - (leftPoint->vector.j * rightPoint->vector.i));
 			
 			if (cross < 0)
 				continue; // backface
@@ -581,7 +581,7 @@ int16 NewVisTree::calculate_clip_endpoint(endpoint_reference map_index, portal_v
 	{
 		data->x = -1;
 	} else {
-		long x = long(view->half_screen_width) + (data->vector.j * long(view->world_to_screen_x))/data->vector.i;
+		int32 x = int32(view->half_screen_width) + (data->vector.j * int32(view->world_to_screen_x))/data->vector.i;
 		data->x= PIN(x, 0, view->screen_width);
 	}
 	
@@ -613,7 +613,7 @@ int16 NewVisTree::calculate_clip_line(line_reference map_index, portal_view_data
 	
 	translated_endpoint_data *p0 = e+point0, *p1 = e+point1;
 	
-	long cross = ((p0->vector.i * p1->vector.j) - (p0->vector.j * p1->vector.i));
+	int32 cross = ((p0->vector.i * p1->vector.j) - (p0->vector.j * p1->vector.i));
 	
 	if (cross >= 0) {
 		data->left_endpoint = point0;

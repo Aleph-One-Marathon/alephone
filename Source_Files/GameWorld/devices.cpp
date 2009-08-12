@@ -1116,7 +1116,7 @@ bool XML_ControlPanelParser::HandleAttribute(const char *Tag, const char *Value)
 		float Pitch;
 		if (ReadBoundedNumericalValue(Value,"%f",Pitch,float(0),float(SHRT_MAX+1)))
 		{
-			Data.sound_frequency = long(FIXED_ONE*Pitch+0.5);
+			Data.sound_frequency = int32(FIXED_ONE*Pitch+0.5);
 			IsPresent[4] = true;
 			return true;
 		}
