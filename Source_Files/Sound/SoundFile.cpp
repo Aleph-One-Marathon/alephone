@@ -156,25 +156,23 @@ bool SoundHeader::Load(OpenedFile &SoundFile)
 	{
 		// standard sound header
 		vector<uint8> headerBuffer(22);
-		if (!SoundFile.Read(headerBuffer.size(), &headerBuffer.front()))
+		if (!SoundFile.Read(headerBuffer.size(), &headerBuffer[0]))
 			return false;
 
-		AIStreamBE header(&headerBuffer.front(), headerBuffer.size());
+		AIStreamBE header(&headerBuffer[0], headerBuffer.size());
 		if (!UnpackStandardSystem7Header(header)) return false;
-		stored_data.resize(length);
-		if (!SoundFile.Read(stored_data.size(), &stored_data.front())) return false;
+		if (!SoundFile.Read(length, Load(length))) return false;
 		return true;
 	}
 	else if (header_type == 0xff || header_type == 0xfe)
 	{
 		vector<uint8> headerBuffer(64);
-		if (!SoundFile.Read(headerBuffer.size(), &headerBuffer.front()))
+		if (!SoundFile.Read(headerBuffer.size(), &headerBuffer[0]))
 			return false;
 
-		AIStreamBE header(&headerBuffer.front(), headerBuffer.size());
+		AIStreamBE header(&headerBuffer[0], headerBuffer.size());
 		if (!UnpackExtendedSystem7Header(header)) return false;
-		stored_data.resize(length);
-		if (!SoundFile.Read(stored_data.size(), &stored_data.front())) return false;
+		if (!SoundFile.Read(length, Load(length))) return false;
 		return true;
 	}
 
@@ -186,10 +184,10 @@ bool SoundDefinition::Unpack(OpenedFile &SoundFile)
 	if (!SoundFile.IsOpen()) return false;
 
 	vector<uint8> headerBuffer(HeaderSize());
-	if (!SoundFile.Read(headerBuffer.size(), &headerBuffer.front())) 
+	if (!SoundFile.Read(headerBuffer.size(), &headerBuffer[0])) 
 		return false;
 	
-	AIStreamBE header(&headerBuffer.front(), headerBuffer.size());
+	AIStreamBE header(&headerBuffer[0], headerBuffer.size());
 	
 	header >> sound_code;
 
@@ -264,10 +262,10 @@ bool SoundFile::Open(FileSpecifier& SoundFileSpec)
 	std::vector<uint8> headerBuffer;
 	headerBuffer.resize(HeaderSize());
 
-	if (!sound_file->Read(headerBuffer.size(), &headerBuffer.front()))
+	if (!sound_file->Read(headerBuffer.size(), &headerBuffer[0]))
 		return false;
 
-	AIStreamBE header(&headerBuffer.front(), headerBuffer.size());
+	AIStreamBE header(&headerBuffer[0], headerBuffer.size());
 	header >> version;
 	header >> tag;
 	header >> source_count;

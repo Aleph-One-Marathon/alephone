@@ -27,6 +27,7 @@ SOUND_DEFINITIONS.H
 #include "FileHandler.h"
 #include <memory>
 #include <vector>
+#include <boost/shared_array.hpp>
 
 class SoundHeader
 {
@@ -39,8 +40,9 @@ public:
 	// decode raw samples into returned buffer
 	uint8* Load(int32 length) {
 		Clear();
-		stored_data.resize(length);
-		return &stored_data.front();
+		this->length = length;
+		stored_data.reset(new uint8[length]);
+		return stored_data.get();
 	}
 
 	bool sixteen_bit;
@@ -50,22 +52,22 @@ public:
 	bool little_endian;
 
 	const uint8* Data() const 
-		{ return stored_data.size() ? &stored_data.front() : data; }
+		{ return stored_data.get() ? stored_data.get() : data; }
 	int32 Length() const
-		{ return stored_data.size() ? stored_data.size() : length; };
+		{ return length; };
 	
 	int32 loop_start;
 	int32 loop_end;
 
 	uint32 /* unsigned fixed */ rate;
 
-	void Clear() { stored_data.clear(); data = 0; length = 0; }
+	void Clear() { stored_data.reset(); data = 0; length = 0; }
 
 private:
 	bool UnpackStandardSystem7Header(AIStreamBE &header);
 	bool UnpackExtendedSystem7Header(AIStreamBE &header);
 	
-	std::vector<uint8> stored_data;
+	boost::shared_array<uint8> stored_data;
 	const uint8* data;
 	int32 length;
 
