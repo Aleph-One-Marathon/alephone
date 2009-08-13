@@ -201,8 +201,19 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 		case _soft_tint_fader_type:
 			// Fade to the color multiplied by the fader color,
 			// as if the scene was illuminated by light with that fader color.
-			MultAlpha(Fader.Color,BlendColor);
-			SglColor4fva(BlendColor);
+			if(Using_sRGB) {
+				float alpha = std::sqrt(Fader.Color[3]);
+				float corrected[4] = {
+					sRGB_frob(Fader.Color[0])*alpha,
+					sRGB_frob(Fader.Color[1])*alpha,
+					sRGB_frob(Fader.Color[2])*alpha,
+					alpha
+				};
+				MultAlpha(corrected,BlendColor);
+			}
+			else
+				MultAlpha(Fader.Color,BlendColor);
+			glColor4fv(BlendColor);
 			glBlendFunc(GL_DST_COLOR,GL_ONE_MINUS_SRC_ALPHA);
 			glDrawArrays(GL_POLYGON,0,4);
 			// Revert to defaults
