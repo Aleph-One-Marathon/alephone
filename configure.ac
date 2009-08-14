@@ -191,22 +191,13 @@ case "$target" in
     SYS_GL_LIBS="-lopengl32 -lglu32"
     LIBS="$LIBS -lstdc++"
     ;;
-  *-*-beos*)
-    SYS_GL_LIBS="-lGL"
-    ;;
   *-*-darwin*)
     SYS_GL_LIBS="-F/System/Library/Frameworks -framework AGL -framework OpenGL"
     CPPFLAGS="$CPPFLAGS -D__DARWIN__ -F/System/Library/Frameworks  -I/System/Library/Frameworks/OpenGL.framework/Headers"
     ;;
   *-*-linux*)
     SYS_GL_LIBS="-lGL -lpthread"	
-    LIBS="$LIBS -L/usr/X11R6/lib"
-    CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include"
     ;;	
-  *-*-netbsd* | *-*-openbsd*)
-    SYS_GL_LIBS="-lGL"
-    CPPFLAGS="$CPPFLAGS -I/usr/X11R6/include"
-    ;;
   *)
     SYS_GL_LIBS="-lGL"
     ;;

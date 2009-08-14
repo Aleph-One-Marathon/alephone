@@ -107,8 +107,6 @@
 #include <windows.h>
 #endif
 
-#include "SDL_syswm.h"
-
 #include "alephversion.h"
 
 #include "Logging.h"
@@ -1145,22 +1143,6 @@ static void process_game_key(const SDL_Event &event)
 	}
 }
 
-static void process_system_event(const SDL_Event &event)
-{
-	// In order to get music in Windows, we need to process
-	// system events. DirectShow notifies about events through
-	// window messages. 
-#ifdef WIN32
-#ifndef WIN32_DISABLE_MUSIC
-	switch (event.syswm.msg->msg) {
-		case WM_DSHOW_GRAPH_NOTIFY:
-			process_music_event_win32(event);
-			break;
-	}
-#endif
-#endif
-}
-
 static void process_event(const SDL_Event &event)
 {
 	switch (event.type) {
@@ -1183,10 +1165,6 @@ static void process_event(const SDL_Event &event)
 		
 	case SDL_KEYDOWN:
 		process_game_key(event);
-		break;
-		
-	case SDL_SYSWMEVENT:
-		process_system_event(event);
 		break;
 		
 	case SDL_QUIT:
