@@ -2,8 +2,8 @@
 
 # these are currently broken
 # noinst_PROGRAMS = single2forks forks2single dumprsrcmap dumpwad
-dumprsrcmap_SOURCES = dumprsrcmap.cpp
-dumpwad_SOURCES = dumpwad.cpp
+#dumprsrcmap_SOURCES = dumprsrcmap.cpp
+#dumpwad_SOURCES = dumpwad.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
