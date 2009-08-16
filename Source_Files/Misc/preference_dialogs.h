@@ -56,6 +56,8 @@ protected:
 	SelectorWidget*		m_fsaaWidget;
 	
 	SelectorWidget*		m_anisotropicWidget;
+
+	ToggleWidget*           m_sRGBWidget;
 	
 	SelectorWidget* m_textureQualityWidget [OGL_NUMBER_OF_TEXTURE_TYPES];
 	SelectorWidget* m_modelQualityWidget;

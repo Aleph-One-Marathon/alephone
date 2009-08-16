@@ -139,6 +139,7 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_voidColourWidget;
 	delete m_fsaaWidget;
 	delete m_anisotropicWidget;
+	delete m_sRGBWidget;
 	delete m_geForceFixWidget;
 	delete m_vsyncWidget;
 	delete m_wallsFilterWidget;
@@ -182,6 +183,9 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	
 	AnisotropyPref anisotropyPref (graphics_preferences->OGL_Configure.AnisotropyLevel);
 	binders.insert<int> (m_anisotropicWidget, &anisotropyPref);
+
+	BoolPref sRGBPref (graphics_preferences->OGL_Configure.Use_sRGB);
+	binders.insert<bool> (m_sRGBWidget, &sRGBPref);
 	
 	BoolPref geForceFixPref (graphics_preferences->OGL_Configure.GeForceFix);
 	binders.insert<bool> (m_geForceFixWidget, &geForceFixPref);
@@ -314,6 +318,10 @@ public:
 		w_slider* aniso_w = new w_slider(6, 1);
 		general_table->dual_add(aniso_w->label("Anisotropic Filtering"),m_dialog);
 		general_table->dual_add(aniso_w, m_dialog);
+
+		w_toggle *srgb_w = new w_toggle(false);
+		general_table->dual_add(srgb_w->label("Gamma-corrected Blending"), m_dialog);
+		general_table->dual_add(srgb_w, m_dialog);
 
 
 		general_table->add_row(new w_spacer(), true);
@@ -467,6 +475,8 @@ public:
 		m_fsaaWidget = new PopupSelectorWidget (fsaa_w);
 
 		m_anisotropicWidget = new SliderSelectorWidget (aniso_w);
+
+		m_sRGBWidget = new ToggleWidget(srgb_w);
 
 		m_geForceFixWidget = new ToggleWidget (geforce_fix_w);
 		m_vsyncWidget = new ToggleWidget (vsync_w);
