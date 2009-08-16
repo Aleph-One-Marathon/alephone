@@ -106,31 +106,23 @@ Aug 21, 2001 (Loren Petrich):
 extern bool Using_sRGB;
 
 /* Using the EXT_framebuffer_sRGB spec as reference */
-#define sRGB_frob(l_) ((l_) <= 0.04045f ? l_ * (1.f/12.92f) : std::pow((l_ + 0.055) * (1.0/1.055), 2.4))
+inline float sRGB_frob(GLfloat f) {
+	if (Using_sRGB) {
+		return (f <= 0.04045f ? f * (1.f/12.92f) : std::pow((f + 0.055) * (1.0/1.055), 2.4));
+	} else {
+		return f;
+	}
+}
 
-/* Don't use these, use the macros instead */
-void _SglColor3f(GLfloat r, GLfloat g, GLfloat b);
-void _SglColor3fv(const GLfloat* v);
-void _SglColor3ub(GLubyte r, GLubyte g, GLubyte b);
-void _SglColor3us(GLushort r, GLushort g, GLushort b);
-void _SglColor3usv(const GLushort* v);
-void _SglColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
-void _SglColor4fv(const GLfloat* v);
-void _SglColor4fva(const GLfloat* v);
-void _SglColor4usv(const GLushort* v);
-#define SglColor(x) (Using_sRGB?_SglColor##x:glColor##x)
-/* Macros to replace glColor* to sRGB-correct incoming color values when
-   needed; don't use when hardcoding white or black */
-#define SglColor3f SglColor(3f)
-#define SglColor3fv SglColor(3fv)
-#define SglColor3ub SglColor(3ub)
-#define SglColor3us SglColor(3us)
-#define SglColor3usv SglColor(3usv)
-#define SglColor4f SglColor(4f)
-#define SglColor4fv SglColor(4fv)
-#define SglColor4usv SglColor(4usv)
-/* Hack for faders */
-#define SglColor4fva (Using_sRGB?_SglColor4fva:glColor4fv)
+void SglColor3f(GLfloat r, GLfloat g, GLfloat b);
+void SglColor3fv(const GLfloat* v);
+void SglColor3ub(GLubyte r, GLubyte g, GLubyte b);
+void SglColor3us(GLushort r, GLushort g, GLushort b);
+void SglColor3usv(const GLushort* v);
+void SglColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
+void SglColor4fv(const GLfloat* v);
+void SglColor4fva(const GLfloat* v);
+void SglColor4usv(const GLushort* v);
 
 // Initializer; returns whether or not OpenGL is present
 bool OGL_Initialize();

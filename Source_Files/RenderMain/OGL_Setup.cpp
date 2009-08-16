@@ -592,47 +592,47 @@ XML_ElementParser *OpenGL_GetParser()
 }
 
 /* These don't belong here */
-void _SglColor3f(GLfloat r, GLfloat g, GLfloat b) {
+void SglColor3f(GLfloat r, GLfloat g, GLfloat b) {
   GLfloat ov[3] = {sRGB_frob(r), sRGB_frob(g), sRGB_frob(b)};
   glColor3fv(ov);
 }
 
-void _SglColor3fv(const GLfloat* iv) {
+void SglColor3fv(const GLfloat* iv) {
   GLfloat ov[3] = {sRGB_frob(iv[0]), sRGB_frob(iv[1]), sRGB_frob(iv[2])};
   glColor3fv(ov);
 }
 
-void _SglColor3ub(GLubyte r, GLubyte g, GLubyte b) {
+void SglColor3ub(GLubyte r, GLubyte g, GLubyte b) {
   GLfloat ov[3] = {sRGB_frob(r*(1.f/255.f)), sRGB_frob(g*(1.f/255.f)), sRGB_frob(b*(1.f/255.f))};
   glColor3fv(ov);
 }
 
-void _SglColor3us(GLushort r, GLushort g, GLushort b) {
+void SglColor3us(GLushort r, GLushort g, GLushort b) {
   GLfloat ov[3] = {sRGB_frob(r*(1.f/65535.f)), sRGB_frob(g*(1.f/65535.f)), sRGB_frob(b*(1.f/65535.f))};
   glColor3fv(ov);
 }
 
-void _SglColor3usv(const GLushort* iv) {
+void SglColor3usv(const GLushort* iv) {
   GLfloat ov[3] = {sRGB_frob(iv[0]*(1.f/65535.f)), sRGB_frob(iv[1]*(1.f/65535.f)), sRGB_frob(iv[2]*(1.f/65535.f))};
   glColor3fv(ov);
 }
 
-void _SglColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+void SglColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
   GLfloat ov[4] = {sRGB_frob(r), sRGB_frob(g), sRGB_frob(b), a};
   glColor4fv(ov);
 }
 
-void _SglColor4fv(const GLfloat* iv) {
+void SglColor4fv(const GLfloat* iv) {
   GLfloat ov[4] = {sRGB_frob(iv[0]), sRGB_frob(iv[1]), sRGB_frob(iv[2]), iv[3]};
   glColor4fv(ov);
 }
 
-void _SglColor4fva(const GLfloat* iv) {
+void SglColor4fva(const GLfloat* iv) {
   GLfloat ov[4] = {sRGB_frob(iv[0]), sRGB_frob(iv[1]), sRGB_frob(iv[2]), iv[3]*iv[3]};
   glColor4fv(ov);
 }
 
-void _SglColor4usv(const GLushort* iv) {
+void SglColor4usv(const GLushort* iv) {
   GLfloat ov[4] = {sRGB_frob(iv[0]*(1.f/65535.f)), sRGB_frob(iv[1]*(1.f/65535.f)), sRGB_frob(iv[2]*(1.f/65535.f)), iv[3]};
   glColor4fv(ov);
 }
