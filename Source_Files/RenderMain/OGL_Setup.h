@@ -106,7 +106,7 @@ Aug 21, 2001 (Loren Petrich):
 extern bool Using_sRGB;
 
 /* Using the EXT_framebuffer_sRGB spec as reference */
-inline float sRGB_frob(GLfloat f) {
+static inline float sRGB_frob(GLfloat f) {
 	if (Using_sRGB) {
 		return (f <= 0.04045f ? f * (1.f/12.92f) : std::pow((f + 0.055) * (1.0/1.055), 2.4));
 	} else {
