@@ -37,6 +37,8 @@ Dec 17, 2000 (Loren Petrich:
 #include "cseries.h"
 #include "world.h"
 #include "SoundManager.h"
+#include "shell.h"
+#include "screen.h"
 #include "ViewControl.h"
 
 
@@ -135,7 +137,7 @@ bool View_AdjustFOV(float& FOV, float FOV_Target)
 
 // Indicates whether to fix the horizontal or the vertical field-of-view angle
 // (default: fix vertical FOV angle)
-bool View_FOV_FixHorizontalNotVertical() {return FOV_FixHorizontalNotVertical;}
+bool View_FOV_FixHorizontalNotVertical() {return get_screen_mode()->fix_h_not_v;}
 
 // Landscape stuff: this is for being able to return a pointer to the default one
 static LandscapeOptions DefaultLandscape;

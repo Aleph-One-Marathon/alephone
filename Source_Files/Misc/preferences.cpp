@@ -894,6 +894,10 @@ static void graphics_dialog(void *arg)
 		table->dual_add(fill_screen_w, d);
 	}
 
+	w_toggle *fixh_w = new w_toggle(!graphics_preferences->screen_mode.fix_h_not_v);
+	table->dual_add(fixh_w->label("Limit Vertical View"), d);
+	table->dual_add(fixh_w, d);
+    
 	w_select_popup *gamma_w = new w_select_popup();
 	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
 	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
@@ -991,6 +995,12 @@ static void graphics_dialog(void *arg)
 		    graphics_preferences->screen_mode.gamma_level = gamma;
 		    changed = true;
 	    }
+        
+        bool fix_h_not_v = fixh_w->get_selection() == 0;
+        if (fix_h_not_v != graphics_preferences->screen_mode.fix_h_not_v) {
+            graphics_preferences->screen_mode.fix_h_not_v = fix_h_not_v;
+            changed = true;
+        }
 
 	    bool hud = hud_w->get_selection() != 0;
 	    if (hud != graphics_preferences->screen_mode.hud)
@@ -2126,6 +2136,7 @@ void write_preferences(
 	fprintf(F,"  scmode_fill_the_screen=\"%s\"\n", BoolString(graphics_preferences->screen_mode.fill_the_screen));
 	fprintf(F,"  scmode_bitdepth=\"%hd\"\n",graphics_preferences->screen_mode.bit_depth);
 	fprintf(F,"  scmode_gamma=\"%hd\"\n",graphics_preferences->screen_mode.gamma_level);
+    fprintf(F,"  scmode_fix_h_not_v=\"%s\"\n", BoolString(graphics_preferences->screen_mode.fix_h_not_v));
 	fprintf(F,"  ogl_flags=\"%hu\"\n",graphics_preferences->OGL_Configure.Flags);
 	fprintf(F,"  software_alpha_blending=\"%i\"\n", graphics_preferences->software_alpha_blending);
         fprintf(F,"  anisotropy_level=\"%f\"\n", graphics_preferences->OGL_Configure.AnisotropyLevel);
@@ -2332,6 +2343,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 #endif
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
+    preferences->screen_mode.fix_h_not_v = true;
 	
 	const SDL_version *version = SDL_Linked_Version();
 	if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
@@ -2529,6 +2541,7 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 	preferences->screen_mode.high_resolution = !!preferences->screen_mode.high_resolution;
 	preferences->screen_mode.fullscreen = !!preferences->screen_mode.fullscreen;
 	preferences->screen_mode.draw_every_other_line = !!preferences->screen_mode.draw_every_other_line;
+    preferences->screen_mode.fix_h_not_v = !!preferences->screen_mode.fix_h_not_v;
 
 	if(preferences->screen_mode.gamma_level<0 || preferences->screen_mode.gamma_level>=NUMBER_OF_GAMMA_LEVELS)
 	{
@@ -3113,6 +3126,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 			return true;
 		}
 	}
+    else if (StringsEqual(Tag,"scmode_fix_h_not_v"))
+    {
+        return ReadBooleanValue(Value,graphics_preferences->screen_mode.fix_h_not_v);
+    }
 	else if (StringsEqual(Tag,"scmode_bitdepth"))
 	{
 		return ReadInt16Value(Value,graphics_preferences->screen_mode.bit_depth);
