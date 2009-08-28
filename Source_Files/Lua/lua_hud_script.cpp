@@ -71,6 +71,7 @@ using namespace std;
 #include "ViewControl.h"
 #include "preferences.h"
 #include "BStream.h"
+#include "game_errors.h"
 
 #include "lua_script.h"
 #include "lua_map.h"
@@ -386,6 +387,9 @@ void LoadHUDLua()
 {
 	if (environment_preferences->use_hud_lua)
 	{
+		// protect Lua errors from harming error checking
+		short SavedType, SavedError = get_game_error(&SavedType);
+
 		FileSpecifier fs (environment_preferences->hud_lua_file);
 		OpenedFile script_file;
 		if (fs.Open(script_file))
@@ -399,6 +403,7 @@ void LoadHUDLua()
 				LoadLuaHUDScript(&script_buffer[0], script_length);
 			}
 		}
+		set_game_error(SavedType, SavedError);
 	}
 }
 
