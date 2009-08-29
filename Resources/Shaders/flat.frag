@@ -16,9 +16,9 @@ void main (void) {
 
 	float flash = exp2((flare - 1.0) * 2.0);
 	float mlFactor = exp2(MLxLOG2E * dot(viewDir, viewDir) / flash + 1.0); 
-	mlFactor = clamp(mlFactor, 0.0, flare * 0.75);
+	mlFactor = clamp(mlFactor, 0.0, flare * 0.75) * 0.5;
 
 	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);
-	gl_FragColor = vec4(color.rgb * (vertexColor.rgb + mlFactor), color.a);
+	gl_FragColor = vec4(color.rgb * clamp((vertexColor.rgb + mlFactor), 0.0, 1.0), color.a);
 	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), gl_FragColor.a ); 
 }

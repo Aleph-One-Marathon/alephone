@@ -37,14 +37,14 @@ void main (void) {
 
 	float flash = exp2((flare - 1.0) * 2.0);
 	float mlFactor = exp2(MLxLOG2E * dot(viewDir, viewDir) / flash + 1.0); 
-	mlFactor = clamp(mlFactor, 0.0, flare * 0.75);
+	mlFactor = clamp(mlFactor, 0.0, flare * 0.75) * 0.5;
 
 	vec4 normal = texture2D(texture1, texCoords.xy);
 	norm = (normal.rgb - 0.5) * 2.0;
 
-	float diffuse = dot(norm, viewv);
+	float diffuse = 0.5 + dot(norm, viewv)*0.5;
 	vec4 color = texture2D(texture0, texCoords.xy);
 
-	gl_FragColor = vec4(color.rgb * (vertexColor.rgb + mlFactor) * diffuse, color.a);
+	gl_FragColor = vec4(color.rgb * clamp((vertexColor.rgb + mlFactor) * diffuse, 0.0, 1.0), color.a);
 	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), color.a );
 }
