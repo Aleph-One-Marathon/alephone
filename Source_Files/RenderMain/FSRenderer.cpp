@@ -953,6 +953,9 @@ void FSRenderer::render_viewer_sprite_layer(view_data *view) {
 		if(!rect.texture) { continue; }
 
 		rect.flags = 0;
+		rect.depth = 0;
+		rect.ambient_shade= get_light_intensity(get_polygon_data(view->origin_polygon_index)->floor_lightsource_index);
+		rect.ambient_shade= MAX(shape_information->minimum_light_intensity, rect.ambient_shade);
 
 		instantiate_rectangle_transfer_mode(view, &rect, display_data.transfer_mode, display_data.transfer_phase);
 
