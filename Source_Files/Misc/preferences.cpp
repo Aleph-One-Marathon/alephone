@@ -2208,7 +2208,7 @@ void write_preferences(
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_left_trigger ? "left_trigger" : 
 			input_preferences->mouse_button_actions[i] == _mouse_button_fires_right_trigger ? "right_trigger" : "none");
 	for (int i = 0; i < NUMBER_OF_JOYSTICK_MAPPINGS; ++i)
-		fprintf(F,"  <joystick_axis_mapping index=\"%hd\" axis=\"%hd\" sensitivity=\"%f\" bound=\"%hd\"/>\n", i, input_preferences->joystick_axis_mappings[i], input_preferences->joystick_axis_sensitivities[i], input_preferences->joystick_axis_bounds[i]);
+		fprintf(F,"  <joystick_axis_mapping index=\"%hd\" axis=\"%hd\" axis_sensitivity=\"%f\" bound=\"%hd\"/>\n", i, input_preferences->joystick_axis_mappings[i], input_preferences->joystick_axis_sensitivities[i], input_preferences->joystick_axis_bounds[i]);
 	for (int k=0; k<NUMBER_OF_KEYS; k++)
 		fprintf(F,"  <sdl_key index=\"%hd\" value=\"%hd\"/>\n",
 			k,input_preferences->keycodes[k]);
@@ -3448,7 +3448,7 @@ bool XML_AxisMappingPrefsParser::HandleAttribute(const char* Tag, const char* Va
 		}
 		else return false;
 	}
-	else if (StringsEqual(Tag, "sensitivity"))
+	else if (StringsEqual(Tag, "axis_sensitivity"))
 	{
 		if (ReadFloatValue(Value, Sensitivity))
 		{
