@@ -68,6 +68,7 @@ void XML_Configure::StartElement(const char *Name, const char **Attributes)
 	{
 		ComposeInterpretError("Error at line %d: element of type %s has no child of type %s",
 			XML_GetCurrentLineNumber(Parser),CurrentElement->GetName(),Name);
+		return;
 	}
 
 	// Start with the element
