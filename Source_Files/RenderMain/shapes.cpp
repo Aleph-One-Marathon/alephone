@@ -224,7 +224,6 @@ static struct collection_header *get_collection_header(short collection_index);
 /*static*/ struct collection_definition *get_collection_definition(short collection_index);
 static void *get_collection_shading_tables(short collection_index, short clut_index);
 static void *get_collection_tint_tables(short collection_index, short tint_index);
-static void *collection_offset(struct collection_definition *definition, int32 offset);
 static struct rgb_color_value *get_collection_colors(short collection_index, short clut_number);
 static struct high_level_shape_definition *get_high_level_shape_definition(short collection_index, short high_level_shape_index);
 static struct bitmap_definition *get_bitmap_definition(short collection_index, short bitmap_index);

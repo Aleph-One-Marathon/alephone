@@ -2532,18 +2532,6 @@ void display_net_game_stats(void)
 
 static MetaserverClient* sMetaserverClient = NULL;
 
-static void
-send_text(w_text_entry* te) {
-	assert(te != NULL);
-
-	// Make sure there's something worth sending
-	if(strlen(te->get_text()) <= 0)
-		return;
-
-	sMetaserverClient->sendChatMessage(te->get_text());
-	te->set_text("");
-}
-
 class SdlGatherDialog : public GatherDialog
 {
 public:

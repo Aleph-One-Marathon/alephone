@@ -283,8 +283,6 @@ protected:
 	int idx;
 };
 
-static bool foundLabelOutlineColor = false;
-
 static XML_DColorParser DefaultColorParser(DEFAULT_WIDGET, DEFAULT_STATE, 3);
 static XML_DColorParser FrameColorParser(DIALOG_FRAME, DEFAULT_STATE, 3);
 static XML_DColorParser ListColorParser(LIST_WIDGET, DEFAULT_STATE, 3);

@@ -182,7 +182,6 @@ static bool validate_environment_preferences(environment_preferences_data *prefe
 
 // Prototypes
 static void player_dialog(void *arg);
-static void opengl_dialog(void *arg);
 static void graphics_dialog(void *arg);
 static void sound_dialog(void *arg);
 static void controls_dialog(void *arg);
@@ -692,18 +691,6 @@ static const char* renderer_labels[] = {
 	"Software", "OpenGL", NULL
 };
 
-static const char* fsaa_labels[] = {
-	"Off", "2x", "4x", NULL
-};
-
-static const char* texture_quality_labels[] = {
-	"Unlimited", "Normal", "High", "Higher", "Highest", NULL
-};
-
-static const char* texture_resolution_labels[] = {
-	"Full", "Half", "Quarter", NULL
-};
-
 static const char* hud_scale_labels[] = {
 "Normal", "Double", "Largest", NULL
 };
@@ -712,35 +699,6 @@ static const char* term_scale_labels[] = {
 "Normal", "Double", "Largest", NULL
 };
 
-static int get_texture_quality_label(int16 quality, bool wall)
-{
-	if (quality == 0) return 0;
-
-	if (!wall) quality >>= 1;
-
-	if (quality <= 128) return 1;
-	else if (quality <= 256) return 2;
-	else if (quality <= 512) return 3;
-	else if (quality <= 1024) return 4;
-	else return 0;
-}
-
-static int16 get_texture_quality_from_label(int label, bool wall)
-{
-	if (label == 0) return 0;
-	
-	if (label <= 4)
-	{
-		int quality = 1 << (label + 6);
-		if (!wall) quality <<= 1;
-		return quality;
-	} 
-	else 
-	{
-		return 0;
-	}
-}
-	
 
 enum {
     iRENDERING_SYSTEM = 1000

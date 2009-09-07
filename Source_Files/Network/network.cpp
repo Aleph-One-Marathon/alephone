@@ -200,7 +200,6 @@ static IPaddress host_address;
 static bool host_address_specified = false;
 static MessageInflater *inflater = NULL;
 static MessageDispatcher *joinDispatcher = NULL;
-static MessageDispatcher *gatherDispatcher = NULL;
 static uint32 next_join_attempt;
 static Capabilities my_capabilities;
 

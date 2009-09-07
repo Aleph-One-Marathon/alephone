@@ -185,7 +185,6 @@ extern void instantiate_physics_variables(struct physics_constants *constants, s
 
 extern struct view_data *world_view;
 extern struct static_data *static_world;
-static short old_size;
 
 static const luaL_Reg lualibs[] = {
 	{"", luaopen_base},
