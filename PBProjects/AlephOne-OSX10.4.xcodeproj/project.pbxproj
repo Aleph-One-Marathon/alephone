@@ -2559,7 +2559,6 @@
 				PRODUCT_NAME = AlephOne;
 				STRIP_INSTALLED_PRODUCT = NO;
 				STRIP_STYLE = all;
-				WARNING_CFLAGS = "-Wno-long-double";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
@@ -2643,7 +2642,6 @@
 				PRODUCT_NAME = AlephOne;
 				SDKROOT = "";
 				STRIP_STYLE = debugging;
-				WARNING_CFLAGS = "-Wno-long-double";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
@@ -2756,7 +2754,6 @@
 				SDKROOT_ppc = "$(DEVELOPER_SDK_DIR)/MacOSX10.2.8.sdk";
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = debugging;
-				WARNING_CFLAGS = "-Wno-long-double";
 				WRAPPER_EXTENSION = app;
 				ZERO_LINK = NO;
 			};
