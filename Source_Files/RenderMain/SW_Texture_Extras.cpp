@@ -30,8 +30,6 @@ SW_Texture_Extras *SW_Texture_Extras::m_instance;
 extern short bit_depth;
 void SW_Texture::build_opac_table()
 {
-	int num_colors;
-
 	bitmap_definition *bitmap;
 	void *shading_tables;
 	get_shape_bitmap_and_shading_table(m_shape_descriptor, &bitmap, &shading_tables, 0);

@@ -1956,7 +1956,7 @@ void draw_totals_graph(
 void draw_team_totals_graph(
 	NetgameOutcomeData &outcome)
 {
-	short team_index, player_index, opponent_player_index, num_teams;
+	short team_index, player_index, num_teams;
 	bool found_team_of_current_color;
 	struct net_rank ranks[MAXIMUM_NUMBER_OF_PLAYERS];
 
@@ -2905,7 +2905,6 @@ public:
 		network_table->dual_add(use_netscript_w, m_dialog);
 		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
 
-		horizontal_placer *lua_file_placer = new horizontal_placer(get_theme_space(ITEM_WIDGET));
 		w_file_chooser* choose_script_w = new w_file_chooser ("Choose Script", _typecode_netscript);
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);

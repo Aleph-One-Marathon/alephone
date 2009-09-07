@@ -808,7 +808,6 @@ uint8* get_shapes_patch_data(size_t &length)
 void load_shapes_patch(SDL_RWops *p)
 {
 	std::vector<int16> color_counts(MAXIMUM_COLLECTIONS);
-	int32 collection_index = NONE;
 	int32 start = SDL_RWtell(p);
 	SDL_RWseek(p, 0, SEEK_END);
 	int32 end = SDL_RWtell(p);

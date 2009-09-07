@@ -2500,8 +2500,6 @@ FileSpecifier& get_map_file()
 
 void level_has_embedded_physics_lua(int Level, bool& HasPhysics, bool& HasLua)
 {
-	bool hasEmbeddedLua;
-	bool hasEmbeddedPhysics;
 	// load the wad file and look for chunks !!??
 	wad_header header;
 	wad_data* wad;

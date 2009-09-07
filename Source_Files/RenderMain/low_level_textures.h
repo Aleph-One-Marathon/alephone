@@ -463,7 +463,6 @@ void tint_vertical_polygon_lines(
 	(void) (view);
 
 	extern SDL_Surface *world_pixels;
-	SDL_PixelFormat *fmt = world_pixels->format;
 	
 	assert(tint_table_index>=0 && tint_table_index<number_of_shading_tables);
 

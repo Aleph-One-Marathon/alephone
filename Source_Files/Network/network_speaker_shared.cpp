@@ -75,11 +75,7 @@ received_network_audio_proc(void *buffer, short buffer_size, short player_index)
 			// decode the data
 			const int max_frames = 2048 / 160;
 			static int16 frames[max_frames][160];
-			char cbits[200];
 			int nbytes;
-			int i;
-			byte *newBuffer = NULL;
-			int totalBytes = 0;
 
 			int numFrames = 0;
 			while (theSoundData < static_cast<byte*>(buffer) + buffer_size && 

@@ -677,9 +677,6 @@ bool TextureManager::LoadSubstituteTexture()
 	ImageDescriptor& NormalImg = TxtrOptsPtr->NormalImg;
 	if (!NormalImg.IsPresent()) return false;
 	
-	// Be sure to take care of the glowing version, where supported
-	ImageDescriptor& GlowImg = TxtrOptsPtr->GlowImg;
-	
 	// Idiot-proofing
 	if (NormalBuffer)
 	{
@@ -697,9 +694,6 @@ bool TextureManager::LoadSubstituteTexture()
 
 	int Width = NormalImg.GetWidth();
 	int Height = NormalImg.GetHeight();
-	
-	int HeightOffset;
-	int OrigHeightOffset, OGLHeightOffset, CopyingHeight;
 	
 	switch(TextureType)
 	{

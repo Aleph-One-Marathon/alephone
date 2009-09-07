@@ -298,7 +298,6 @@ font_info *load_font(const TextSpec &spec) {
 #ifdef HAVE_SDL_TTF
 	if (spec.normal != "")
 	{
-		uint16 loaded_style = spec.style & (styleBold | styleItalic | styleUnderline);
 		std::string file;
 		file = locate_font(spec.normal);
 		TTF_Font *font = load_ttf_font(file, 0, spec.size);

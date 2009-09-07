@@ -579,7 +579,6 @@ static 	inline bool style_code(char c)
 static std::string remove_formatting(const std::string &s)
 {
 	string temp;
-	int pos = 0;
 	int i = 0;
 	while (i < s.size()) {
 		if (s[i] == '|' && style_code(s[i + 1]))

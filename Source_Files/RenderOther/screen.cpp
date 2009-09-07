@@ -764,7 +764,6 @@ void render_screen(short ticks_elapsed)
 	// Set rendering-window bounds for the current sort of display to render
 	screen_mode_data *mode = &screen_mode;
 	bool HighResolution;
-	SDL_Rect ScreenRect = {0, 0, Screen::instance()->width(), Screen::instance()->height()};
 
 	SDL_Rect HUD_DestRect = Screen::instance()->hud_rect();
 	SDL_Rect ViewRect;
@@ -1094,7 +1093,6 @@ void build_direct_color_table(struct color_table *color_table, short bit_depth)
 
 void bound_screen()
 {
-	screen_mode_data *mode = &screen_mode;
 	Screen *screen = Screen::instance();
 	SDL_Rect ScreenRect = {0, 0, screen->width(), screen->height()};
 

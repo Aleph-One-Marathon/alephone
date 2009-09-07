@@ -870,8 +870,6 @@ w_toggle::w_toggle(bool selection, const char **labels) : w_select(selection, la
 
 void w_toggle::draw(SDL_Surface *s) const
 {
-	int y = rect.y + font->get_ascent();
-
 	// Selection (ZZZ: different color for disabled)
 	const char *str = (num_labels > 0 ? labels[selection] : sNoValidOptionsString);
 
@@ -1323,8 +1321,6 @@ void w_key::draw(SDL_Surface *s) const
 	// Key
 	int16 x = rect.x + key_x;
 	if (binding) {
-		SDL_Rect r = {x, rect.y, text_width(WAITING_TEXT, font, style), rect.h};
-//		SDL_FillRect(s, &r, get_dialog_color(KEY_BINDING_COLOR));
 		draw_text(s, WAITING_TEXT, x, y, get_theme_color(ITEM_WIDGET, ACTIVE_STATE), font, style);
 	} else {
         int state = enabled ? (active ? ACTIVE_STATE : DEFAULT_STATE) : DISABLED_STATE;

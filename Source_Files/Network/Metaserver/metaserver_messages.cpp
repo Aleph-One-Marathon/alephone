@@ -418,7 +418,6 @@ PrivateMessage::reallyDeflateTo(AOStream& thePacket) const
 	uint32 echo = 1;
 	uint16 size = 0;
 	uint16 colorFlags = 0;
-	uint16 flags = 1; // directed bit
 	uint16 unused16 = 0;
 
 	thePacket
@@ -447,7 +446,6 @@ PrivateMessage::reallyInflateFrom(AIStream& inStream)
 	uint32 echo;
 	uint16 size;
 	uint16 colorFlags;
-	uint16 flags;
 	uint16 unused16;
 
 	inStream
@@ -482,7 +480,6 @@ ChatMessage::reallyDeflateTo(AOStream& thePacket) const
 {
 	uint16 size = 0;
 	uint16 colorFlags = 0;
-	uint16 flags = 0;
 	uint16 unused16 = 0;
 	uint32 destinationPlayerID = 0;
 
@@ -508,7 +505,6 @@ ChatMessage::reallyInflateFrom(AIStream& inStream)
 {
 	uint16 size;
 	uint16 colorFlags;
-	uint16 flags;
 	uint16 unused16;
 	uint32 destinationPlayerID;
 
@@ -684,8 +680,6 @@ operator >>(AIStream& stream, GameDescription& desc)
 		>> pluginFlag;
 	
 	if (pluginFlag & 0x1) {
-		char temp[33];
-		
 		desc.m_alephoneBuildString = read_padded_string(stream, 32);
 		desc.m_networkSetupProtocolID = read_padded_string(stream, 32);
 		desc.m_scenarioName = read_padded_string(stream, 32);

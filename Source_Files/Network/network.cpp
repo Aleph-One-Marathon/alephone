@@ -1573,8 +1573,6 @@ bool NetGameJoin(
 	const char* host_addr_string
 	)
 {
-  OSErr error = noErr;
-  
   /* Attempt a connection to host */
 
   if (server_nbc)
@@ -2301,7 +2299,6 @@ short NetUpdateJoinState(
 
 	    // ghs: it's possible the guy hasn't opened his firewall yet, so always retry
 	    if (machine_tick_count() >= next_join_attempt) {
-		    uint32 ticks_before_connection_attempt = machine_tick_count();
 		    if(host_address_specified)
 		    {
 			    if (!server_nbc)
@@ -2509,7 +2506,6 @@ int32 NetGetLatency() {
 
 const NetworkStats& NetGetStats(int player_index)
 {
-	NetworkStats stats;
 	if (sCurrentGameProtocol == static_cast<NetworkGameProtocol*>(&sStarGameProtocol))
 	{
 		if (connection_to_server)

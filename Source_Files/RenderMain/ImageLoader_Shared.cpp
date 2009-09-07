@@ -675,7 +675,7 @@ typedef struct Color565
 
 static bool DecompressDXTC1(uint32 *out, int width, int height, uint32 *in)
 {
-	int			x, y, z, i, j, k, Select;
+	int			x, y, i, j, k, Select;
 	unsigned char		*Temp;
 	Color565	*color_0, *color_1;
 	Color8888	colours[4], *col;
@@ -792,7 +792,7 @@ typedef struct DXTAlphaBlock3BitLinear
 
 static bool DecompressDXTC3(uint32 *out, int width, int height, uint32 *in)
 {
-	int			x, y, z, i, j, k, Select;
+	int			x, y, i, j, k, Select;
 	unsigned char		*Temp;
 	Color565	*color_0, *color_1;
 	Color8888	colours[4], *col;
@@ -882,7 +882,7 @@ static bool DecompressDXTC3(uint32 *out, int width, int height, uint32 *in)
 
 static bool DecompressDXTC5(uint32 *out, int width, int height, uint32 *in)
 {
-	int			x, y, z, i, j, k, Select;
+	int			x, y, i, j, k, Select;
 	unsigned char		*Temp;
 	Color565	*color_0, *color_1;
 	Color8888	colours[4], *col;
