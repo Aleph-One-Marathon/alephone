@@ -286,6 +286,7 @@ const luaL_reg Lua_Projectile_Get[] = {
 	{"owner", Lua_Projectile_Get_Owner},
 	{"pitch", Lua_Projectile_Get_Elevation},
 	{"polygon", Lua_Projectile_Get_Polygon},
+	{"target", Lua_Projectile_Get_Target},
 	{"type", Lua_Projectile_Get_Type},
 	{"x", Lua_Projectile_Get_X},
 	{"y", Lua_Projectile_Get_Y},
@@ -301,6 +302,7 @@ const luaL_reg Lua_Projectile_Set[] = {
 	{"facing", Lua_Projectile_Set_Facing},
 	{"owner", Lua_Projectile_Set_Owner},
 	{"pitch", Lua_Projectile_Set_Elevation},
+	{"target", Lua_Projectile_Set_Target},
 	{"yaw", Lua_Projectile_Set_Facing},
 	{0, 0}
 };

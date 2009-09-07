@@ -1320,6 +1320,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon the projectile is in</description>
 	<type>polygon</type>
       </variable>
+      <variable name="target">
+	<description>target of guided projectile, or nil</description>
+	<type>monster</type>
+      </variable>
       <variable name="type" access="read-only">
 	<description>type of projectile</description>
 	<type>projectile_type</type>
