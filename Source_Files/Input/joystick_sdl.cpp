@@ -95,7 +95,7 @@ int process_joystick_axes(int flags, int tick) {
 	}
 
         // scale and store the joystick axis to the relevant movement controller
-        *store_location = input_preferences->joystick_axis_sensitivities[i] * SDL_JoystickGetAxis(joystick, axis);
+        *store_location = static_cast<int>(input_preferences->joystick_axis_sensitivities[i] * SDL_JoystickGetAxis(joystick, axis));
         // clip if the value is too low
         if ((*store_location < input_preferences->joystick_axis_bounds[i]) && (*store_location > -input_preferences->joystick_axis_bounds[i]))
             *store_location = 0;

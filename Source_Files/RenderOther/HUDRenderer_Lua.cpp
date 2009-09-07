@@ -230,12 +230,12 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 	if (m_surface)
 	{
 		SDL_Rect rect;
-		rect.x = x + m_wr.x;
-		rect.y = y + m_wr.y;
-		rect.w = w;
-		rect.h = h;
+		rect.x = static_cast<Sint16>(x) + m_wr.x;
+		rect.y = static_cast<Sint16>(y) + m_wr.y;
+		rect.w = static_cast<Uint16>(w);
+		rect.h = static_cast<Uint16>(h);
 		SDL_FillRect(m_surface, &rect,
-								 SDL_MapRGBA(m_surface->format, r * 255, g * 255, b * 255, a * 255));
+								 SDL_MapRGBA(m_surface->format, static_cast<unsigned char>(r * 255), static_cast<unsigned char>(g * 255), static_cast<unsigned char>(b * 255), static_cast<unsigned char>(a * 255)));
 		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
 	}
 }	
@@ -282,30 +282,30 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 #endif
 	if (m_surface)
 	{
-		Uint32 color = SDL_MapRGBA(m_surface->format, r * 255, g * 255, b * 255, a * 255);
+		Uint32 color = SDL_MapRGBA(m_surface->format, static_cast<unsigned char>(r * 255), static_cast<unsigned char>(g * 255), static_cast<unsigned char>(b * 255), static_cast<unsigned char>(a * 255));
 		SDL_Rect rect;
-		rect.x = x + m_wr.x;
-		rect.w = w;
-		rect.y = y + m_wr.y;
-		rect.h = t;
+		rect.x = static_cast<Sint16>(x) + m_wr.x;
+		rect.w = static_cast<Uint16>(w);
+		rect.y = static_cast<Sint16>(y) + m_wr.y;
+		rect.h = static_cast<Uint16>(t);
 		SDL_FillRect(m_surface, &rect, color);
 		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
-		rect.x = x + m_wr.x;
-		rect.w = w;
-		rect.y = y + h - t + m_wr.y;
-		rect.h = t;
+		rect.x = static_cast<Sint16>(x) + m_wr.x;
+		rect.w = static_cast<Uint16>(w);
+		rect.y = static_cast<Sint16>(y + h - t) + m_wr.y;
+		rect.h = static_cast<Uint16>(t);
 		SDL_FillRect(m_surface, &rect, color);
 		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
-		rect.x = x + m_wr.x;
-		rect.w = t;
-		rect.y = y + t + m_wr.y;
-		rect.h = h - t - t;
+		rect.x = static_cast<Sint16>(x) + m_wr.x;
+		rect.w = static_cast<Uint16>(t);
+		rect.y = static_cast<Sint16>(y + t) + m_wr.y;
+		rect.h = static_cast<Uint16>(h - t - t);
 		SDL_FillRect(m_surface, &rect, color);
 		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
-		rect.x = x + w - t + m_wr.x;
-		rect.w = t;
-		rect.y = y + t + m_wr.y;
-		rect.h = h - t - t;
+		rect.x = static_cast<Sint16>(x + w - t) + m_wr.x;
+		rect.w = static_cast<Uint16>(t);
+		rect.y = static_cast<Sint16>(y + t) + m_wr.y;
+		rect.h = static_cast<Uint16>(h - t - t);
 		SDL_FillRect(m_surface, &rect, color);
 		SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
 	}
@@ -335,15 +335,15 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 	if (m_surface)
 	{
 		SDL_Rect rect;
-		rect.x = x + m_wr.x;
-		rect.y = y + m_wr.y;
+		rect.x = static_cast<Sint16>(x) + m_wr.x;
+		rect.y = static_cast<Sint16>(y) + m_wr.y;
 		rect.w = font->TextWidth(text);
 		rect.h = font->LineSpacing;
 		SDL_BlitSurface(SDL_GetVideoSurface(), &rect, m_surface, &rect);
 		font->Info->draw_text(m_surface, text, strlen(text),
-												  x + m_wr.x, y + m_wr.y + font->Height,
+												  static_cast<Sint16>(x) + m_wr.x, static_cast<Sint16>(y) + m_wr.y + font->Height,
 												  SDL_MapRGBA(m_surface->format,
-																		  r * 255, g * 255, b * 255, a * 255),
+																		  static_cast<unsigned char>(r * 255), static_cast<unsigned char>(g * 255), static_cast<unsigned char>(b * 255), static_cast<unsigned char>(a * 255)),
 												  font->Style);
 	  SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
 	}
@@ -355,8 +355,8 @@ void HUD_Lua_Class::draw_image(Image_Blitter *image, float x, float y)
 		return;
 	
 	SDL_Rect r;
-	r.x = x;
-	r.y = y;
+	r.x = static_cast<Sint16>(x);
+	r.y = static_cast<Sint16>(y);
 	r.w = image->crop_rect.w;
 	r.h = image->crop_rect.h;
 
@@ -375,8 +375,8 @@ void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
 		return;
 	
 	SDL_Rect r;
-	r.x = x;
-	r.y = y;
+	r.x = static_cast<Sint16>(x);
+	r.y = static_cast<Sint16>(y);
 	r.w = shape->crop_rect.w;
 	r.h = shape->crop_rect.h;
     

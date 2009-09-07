@@ -384,7 +384,7 @@ int Lua_Images_New(lua_State *L)
     lua_gettable(L, 1);
     if (!lua_isnil(L, -1))
     {
-        int resource_id = lua_tonumber(L, -1);
+        int resource_id = lua_tointeger(L, -1);
 
         // blitter from image
         Image_Blitter *blitter = (get_screen_mode()->acceleration == _opengl_acceleration) ? new OGL_Blitter() : new Image_Blitter();
@@ -1251,7 +1251,7 @@ typedef L_Class<Lua_MotionSensor_Blips_Name> Lua_MotionSensor_Blips;
 
 static int Lua_MotionSensor_Blips_Get(lua_State *L)
 {	
-	Lua_MotionSensor_Blip::Push(L, lua_tonumber(L, 2));
+	Lua_MotionSensor_Blip::Push(L, lua_tointeger(L, 2));
 	return 1;
 }
 
@@ -2019,7 +2019,7 @@ typedef L_Class<Lua_HUDGame_Players_Name> Lua_HUDGame_Players;
 
 static int Lua_HUDGame_Players_Get(lua_State *L)
 {	
-	Lua_HUDGame_Player::Push(L, lua_tonumber(L, 2));
+	Lua_HUDGame_Player::Push(L, lua_tointeger(L, 2));
 	return 1;
 }
 

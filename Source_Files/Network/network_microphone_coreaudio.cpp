@@ -201,7 +201,7 @@ OSErr open_network_microphone()
 	fAudioBuffer->mBuffers[0].mDataByteSize = fAudioSamples * fOutputFormat.mBytesPerFrame;
 	fAudioBuffer->mBuffers[0].mData = malloc(fAudioSamples * fOutputFormat.mBytesPerFrame);
 
-	if (!announce_microphone_capture_format(fOutputFormat.mSampleRate, fOutputFormat.mChannelsPerFrame == 2, fOutputFormat.mBytesPerFrame == 2))
+	if (!announce_microphone_capture_format(static_cast<uint32>(fOutputFormat.mSampleRate), fOutputFormat.mChannelsPerFrame == 2, fOutputFormat.mBytesPerFrame == 2))
 	{
 		fprintf(stderr, "network microphone support code rejected audio format (rate=%i)\n", fOutputFormat.mSampleRate);
 		return -1;

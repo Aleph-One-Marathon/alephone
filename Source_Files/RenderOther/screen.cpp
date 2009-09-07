@@ -1362,11 +1362,11 @@ void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect)
 		{
 			double x_scale = dest_rect.w / (double) src_rect.w;
 			double y_scale = dest_rect.h / (double) src_rect.h;
-			surface = rescale_surface(s, s->w * x_scale, s->h * y_scale);
-			new_src_rect.x *= x_scale;
-			new_src_rect.y *= y_scale;
-			new_src_rect.w *= x_scale;
-			new_src_rect.h *= y_scale;
+			surface = rescale_surface(s, static_cast<int>(s->w * x_scale), static_cast<int>(s->h * y_scale));
+			new_src_rect.x = static_cast<Sint16>(new_src_rect.x * x_scale);
+			new_src_rect.y = static_cast<Sint16>(new_src_rect.y * y_scale);
+			new_src_rect.w = static_cast<Uint16>(new_src_rect.w * x_scale);
+			new_src_rect.h = static_cast<Uint16>(new_src_rect.h * y_scale);
 		}
 		SDL_BlitSurface(surface, &new_src_rect, main_surface, &dest_rect);
 		SDL_UpdateRects(main_surface, 1, &dest_rect);
