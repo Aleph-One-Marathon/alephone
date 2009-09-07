@@ -2528,10 +2528,6 @@ void display_net_game_stats(void)
     d.run();
 }
 
-/////// Shared metaserver chat hookup stuff
-
-static MetaserverClient* sMetaserverClient = NULL;
-
 class SdlGatherDialog : public GatherDialog
 {
 public:
