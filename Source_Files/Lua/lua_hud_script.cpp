@@ -41,55 +41,17 @@ using namespace std;
 #include <set>
 
 
-#include "screen.h"
-#include "tags.h"
-#include "player.h"
-#include "render.h"
-#include "shell.h"
 #include "Logging.h"
-#include "lightsource.h"
-#include "game_window.h"
-#include "items.h"
-#include "platforms.h"
-#include "media.h"
-#include "weapons.h"
-#include "monsters.h"
-#include "flood_map.h"
-#include "vbl.h"
-#include "fades.h"
-#include "physics_models.h"
-#include "Crosshairs.h"
-#include "OGL_Setup.h"
-#include "SoundManager.h"
-#include "world.h"
-#include "computer_interface.h"
-#include "network.h"
-#include "network_games.h"
-#include "Random.h"
-#include "Console.h"
-#include "Music.h"
-#include "ViewControl.h"
 #include "preferences.h"
-#include "BStream.h"
 #include "game_errors.h"
 
-#include "lua_script.h"
-#include "lua_map.h"
-#include "lua_monsters.h"
-#include "lua_objects.h"
-#include "lua_player.h"
-#include "lua_projectiles.h"
-#include "lua_serialize.h"
+#include "lua_hud_script.h"
 #include "lua_hud_objects.h"
 
 #include <boost/shared_ptr.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
 namespace io = boost::iostreams;
-
-#define DONT_REPEAT_DEFINITIONS
-#include "item_definitions.h"
-#include "monster_definitions.h"
 
 
 #ifndef HAVE_LUA
