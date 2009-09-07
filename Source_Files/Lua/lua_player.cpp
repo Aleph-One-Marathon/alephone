@@ -1139,7 +1139,7 @@ int16 Lua_Player_Weapon_Trigger::WeaponIndex(lua_State *L, int index)
 	return t->m_weapon_index;
 }
 
-int Lua_Player_Weapon_Trigger_Get_Rounds(lua_State *L)
+static int Lua_Player_Weapon_Trigger_Get_Rounds(lua_State *L)
 {
 	short rounds = get_player_weapon_ammo_count(
 		Lua_Player_Weapon_Trigger::PlayerIndex(L, 1), 
@@ -2060,7 +2060,7 @@ static int Lua_Player_Set_Extravision_Duration(lua_State *L)
 	return 0;
 }
 
-int Lua_Player_Set_Motion_Sensor(lua_State *L)
+static int Lua_Player_Set_Motion_Sensor(lua_State *L)
 {
 	short player_index = Lua_Player::Index(L, 1);
 	if (player_index == local_player_index)
@@ -2093,7 +2093,7 @@ static int Lua_Player_Set_Oxygen(lua_State *L)
 	return 0;
 }
 
-int Lua_Player_Set_Points(lua_State *L)
+static int Lua_Player_Set_Points(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
 		return luaL_error(L, "points: incorrect argument type");

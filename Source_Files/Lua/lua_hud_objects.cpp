@@ -979,7 +979,7 @@ int16 Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(lua_State *L, int index)
 	return t->m_weapon_index;
 }
 
-int Lua_HUDPlayer_Weapon_Trigger_Get_Rounds(lua_State *L)
+static int Lua_HUDPlayer_Weapon_Trigger_Get_Rounds(lua_State *L)
 {
 	short rounds = get_player_weapon_ammo_count(
                                                 current_player_index, 
@@ -989,7 +989,7 @@ int Lua_HUDPlayer_Weapon_Trigger_Get_Rounds(lua_State *L)
 	return 1;
 }
 
-int Lua_HUDPlayer_Weapon_Trigger_Get_Total_Rounds(lua_State *L)
+static int Lua_HUDPlayer_Weapon_Trigger_Get_Total_Rounds(lua_State *L)
 {
 	short rounds = get_player_weapon_ammo_maximum(
                                                     current_player_index, 
@@ -999,7 +999,7 @@ int Lua_HUDPlayer_Weapon_Trigger_Get_Total_Rounds(lua_State *L)
 	return 1;
 }
 
-int Lua_HUDPlayer_Weapon_Trigger_Get_Ammo_Type(lua_State *L)
+static int Lua_HUDPlayer_Weapon_Trigger_Get_Ammo_Type(lua_State *L)
 {
 	int16 t = get_player_weapon_ammo_type(
                                             current_player_index, 
@@ -1009,7 +1009,7 @@ int Lua_HUDPlayer_Weapon_Trigger_Get_Ammo_Type(lua_State *L)
 	return 1;
 }
 
-int Lua_HUDPlayer_Weapon_Trigger_Get_Weapon_Drawn(lua_State *L)
+static int Lua_HUDPlayer_Weapon_Trigger_Get_Weapon_Drawn(lua_State *L)
 {
 	bool t = get_player_weapon_drawn(
                                       current_player_index, 
