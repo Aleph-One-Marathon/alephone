@@ -724,6 +724,7 @@ const lang_def Lua_Sound_Mnemonics[] = {
 	{"computer logout", 142},
 	{"computer page", 143},
 	{"heavy shpt door", 144},
+	{"heavy spht door", 144},
 	{"heavy spht door opening", 145},
 	{"heavy spht door closing", 146},
 	{"heavy spht door open", 147},

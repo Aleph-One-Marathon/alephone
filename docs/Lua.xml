@@ -2045,7 +2045,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<type>monster_class</type>
       </variable>
       <function-variable name="enemies" classname="monster_type_enemies">
-	<description>whether monster class is an emeny</description>
+	<description>whether monster class is an enemy</description>
 	<argument name="monster_class"><type>monster_class</type></argument>
 	<type>boolean</type>
       </function-variable>
@@ -2452,7 +2452,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="computer login"/>
 	<mnemonic name="computer logout"/>
 	<mnemonic name="computer page"/>
-	<mnemonic name="heavy shpt door"/>
+	<mnemonic name="heavy spht door"/>
 	<mnemonic name="heavy spht door opening"/>
 	<mnemonic name="heavy spht door closing"/>
 	<mnemonic name="heavy spht door open"/>
