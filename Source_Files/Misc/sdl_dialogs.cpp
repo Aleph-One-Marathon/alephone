@@ -2030,16 +2030,13 @@ void dialog::update(SDL_Rect r) const
 */
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
-		
-		glDrawBuffer(GL_FRONT);
-		
 		OGL_Blitter::BoundScreen();
 		OGL_Blitter blitter;
-		blitter.Load(*dialog_surface, r);
-		SDL_Rect dest = { r.x + rect.x, r.y + rect.y, r.w, r.h };
-		blitter.Draw(dest);
+		SDL_Rect src = { 0, 0, rect.w, rect.h };
+		blitter.Load(*dialog_surface, src);
+		blitter.Draw(rect);
 
-		glFlush();
+		SDL_GL_SwapBuffers();
 	} else 
 #endif
 	{
@@ -2507,6 +2504,16 @@ void dialog::start(bool play_sound)
 	frame_r = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, R_IMAGE, 0, rect.h - frame_tr->h - frame_br->h);
 	frame_b = get_theme_image(DIALOG_FRAME, DEFAULT_STATE, B_IMAGE, rect.w - frame_bl->w - frame_br->w, 0);
 
+#if (defined(HAVE_OPENGL) && defined(OPENGL_DOESNT_COPY_ON_SWAP))
+	if (OGL_IsActive()) {
+        // blank both buffers to avoid flickering
+        glClearColor(0, 0, 0, 0);
+        glClear(GL_COLOR_BUFFER_BIT);
+        SDL_GL_SwapBuffers();
+        glClear(GL_COLOR_BUFFER_BIT);
+	}
+#endif
+
 	// Draw dialog
 	draw();
 
@@ -2580,8 +2587,19 @@ int dialog::finish(bool play_sound)
 
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
-		glDrawBuffer(GL_BACK);
-		SDL_GL_SwapBuffers();
+        SglColor4f(0, 0, 0, 1);
+#ifdef OPENGL_DOESNT_COPY_ON_SWAP
+        for (int i = 0; i < 2; i++)  // execute for both buffers
+#endif
+        {
+            glBegin(GL_QUADS);
+            glVertex2i(rect.x, rect.y);
+            glVertex2i(rect.x + rect.w, rect.y);
+            glVertex2i(rect.x + rect.w, rect.y + rect.h);
+            glVertex2i(rect.x, rect.y + rect.h);
+            glEnd();
+            SDL_GL_SwapBuffers();
+        }
 	} else
 #endif 
 	{

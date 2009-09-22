@@ -70,6 +70,10 @@ Aug 21, 2001 (Loren Petrich):
 #include <cmath>
 #include <string>
 
+#if (defined(__WIN32__) || (defined(__APPLE__) && defined(__MACH__)))
+#define OPENGL_DOESNT_COPY_ON_SWAP
+#endif
+
 /* These OpenGL extensions are very new, and not present in any glext.h I could
    find except Mesa's. Adding them here is harmless as the tokens are
    standardized, and not used unless the extensions are detected, and has the
