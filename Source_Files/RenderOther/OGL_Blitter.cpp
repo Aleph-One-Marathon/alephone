@@ -74,7 +74,6 @@ void OGL_Blitter::_LoadTextures()
 
 	// ensure our textures get cleaned up
 	m_blitter_registry.insert(this);
-	glGenTextures(v_rects * h_rects, &m_refs[0]);
 
 	uint32 rgb_mask = ~(t->format->Amask);
 
@@ -112,6 +111,7 @@ void OGL_Blitter::_LoadTextures()
 				}
 			}
 			
+			glGenTextures(1, &m_refs[i]);
 			glBindTexture(GL_TEXTURE_2D, m_refs[i]);
 
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
