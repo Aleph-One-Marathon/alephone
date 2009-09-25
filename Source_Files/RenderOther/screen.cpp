@@ -1073,14 +1073,22 @@ static void build_sdl_color_table(const color_table *color_table, SDL_Color *col
 	}
 }
 
-void build_direct_color_table(struct color_table *color_table, short bit_depth)
+void initialize_gamma(void)
 {
-	if (!default_gamma_inited)
-	{
+	if (!default_gamma_inited) {
 		SDL_GetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b);
 		default_gamma_inited = true;
 	}
-		
+}
+
+void restore_gamma(void)
+{
+    if (!option_nogamma && bit_depth > 8 && default_gamma_inited)
+        SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b);
+}
+
+void build_direct_color_table(struct color_table *color_table, short bit_depth)
+{
 	color_table->color_count = 256;
 	rgb_color *color = color_table->colors;
 	for (int i=0; i<256; i++, color++)

@@ -511,6 +511,7 @@ static void initialize_application(void)
 	SoundManager::instance()->Initialize(*sound_preferences);
 	initialize_marathon_music_handler();
 	initialize_keyboard_controller();
+	initialize_gamma();
 	alephone::Screen::instance()->Initialize(&graphics_preferences->screen_mode);
 	initialize_marathon();
 	initialize_screen_drawing();
@@ -533,6 +534,8 @@ static void shutdown_application(void)
         
         already_shutting_down = true;
         
+	restore_gamma();
+    
 #ifdef HAVE_SDL_NET
 	SDLNet_Quit();
 #endif
