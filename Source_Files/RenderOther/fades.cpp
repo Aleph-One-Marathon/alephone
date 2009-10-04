@@ -231,7 +231,7 @@ static fade_effect_definition *get_fade_effect_definition(
 	const short index);
 
 static void recalculate_and_display_color_table(short type, _fixed transparency,
-	struct color_table *original_color_table, struct color_table *animated_color_table);
+	struct color_table *original_color_table, struct color_table *animated_color_table, bool fade_active);
 
 // LP additions for OpenGL fader support; both of them use the pointer to the current
 // OpenGL fader defined above.
@@ -293,7 +293,7 @@ bool update_fades(
 			if (definition->flags&_random_transparency_flag) transparency+= FADES_RANDOM()%(definition->final_transparency-transparency);
 		}
 		
-		recalculate_and_display_color_table(fade->type, transparency, fade->original_color_table, fade->animated_color_table);
+		recalculate_and_display_color_table(fade->type, transparency, fade->original_color_table, fade->animated_color_table, FADE_IS_ACTIVE(fade));
 	}
 	
 	return FADE_IS_ACTIVE(fade) ? true : false;
@@ -334,7 +334,7 @@ void set_fade_effect(
 			}
 			else
 			{
-				recalculate_and_display_color_table(NONE, 0, world_color_table, visible_color_table);
+				recalculate_and_display_color_table(NONE, 0, world_color_table, visible_color_table, false);
 			}
 		}
 	}
@@ -373,7 +373,7 @@ void explicit_start_fade(
 	{
 		SET_FADE_ACTIVE_STATUS(fade, false);
 	
-		recalculate_and_display_color_table(type, definition->initial_transparency, original_color_table, animated_color_table);
+		recalculate_and_display_color_table(type, definition->initial_transparency, original_color_table, animated_color_table, definition->period);
 		if (definition->period)
 		{
 			fade->type= type;
@@ -395,7 +395,7 @@ void stop_fade(
 		if (!definition) return;
 		
 		recalculate_and_display_color_table(fade->type, definition->final_transparency,
-			fade->original_color_table, fade->animated_color_table);
+			fade->original_color_table, fade->animated_color_table, false);
 		
 		SET_FADE_ACTIVE_STATUS(fade, false);
 	}
@@ -477,7 +477,8 @@ static void recalculate_and_display_color_table(
 	short type,
 	_fixed transparency,
 	struct color_table *original_color_table,
-	struct color_table *animated_color_table)
+	struct color_table *animated_color_table,
+	bool fade_active)
 {
 	bool full_screen= false;
 	
@@ -508,6 +509,10 @@ static void recalculate_and_display_color_table(
 
 		definition->proc(original_color_table, animated_color_table, &definition->color, transparency);	
 		full_screen= (definition->flags&_full_screen_flag) ? true : false;
+
+		// cancel OGL fader if we've reached the end point for this fade
+		if (!fade_active)
+			SetOGLFader(FaderQueue_Other);
 	}
 	
 	// Only do the video-card fader if the OpenGL fader is inactive
