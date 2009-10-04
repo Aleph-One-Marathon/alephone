@@ -512,8 +512,19 @@ static int Lua_Overlays_Get(lua_State *L)
 	return 1;
 }
 
+static int Lua_Overlays_Length(lua_State *L)
+{
+	int player_index = Lua_Overlays::Index(L, 1);
+	if (Lua_Overlays::Valid(player_index))
+		lua_pushnumber(L, MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS);
+	else
+		lua_pushnumber(L, 0);
+	return 1;
+}
+
 const luaL_reg Lua_Overlays_Metatable[] = {
 	{"__index", Lua_Overlays_Get},
+	{"__len", Lua_Overlays_Length},
 	{0, 0}
 };
 
@@ -659,6 +670,12 @@ static int Lua_Player_Items_Get(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Items_Length(lua_State *L)
+{
+    lua_pushnumber(L, NUMBER_OF_DEFINED_ITEMS);
+    return 1;
+}
+
 extern void destroy_players_ball(short player_index);
 extern void select_next_best_weapon(short player_index);
 
@@ -711,6 +728,7 @@ static int Lua_Player_Items_Set(lua_State *L)
 const luaL_reg Lua_Player_Items_Metatable[] = {
 	{"__index", Lua_Player_Items_Get},
 	{"__newindex", Lua_Player_Items_Set},
+	{"__len", Lua_Player_Items_Length},
 	{0, 0}
 };
 
@@ -1242,6 +1260,12 @@ static int Lua_Player_Weapons_Get(lua_State *L)
 	return 1;
 }
 
+static int Lua_Player_Weapons_Length(lua_State *L)
+{
+	lua_pushnumber(L, MAXIMUM_NUMBER_OF_WEAPONS);
+	return 1;
+}
+
 static int Lua_Player_Weapons_Set(lua_State *L)
 {
 	if (lua_isstring(L, 2) && strcmp(lua_tostring(L, 2), "active") == 0)
@@ -1258,6 +1282,7 @@ static int Lua_Player_Weapons_Set(lua_State *L)
 const luaL_reg Lua_Player_Weapons_Metatable[] = {
 	{"__index", Lua_Player_Weapons_Get},
 	{"__newindex", Lua_Player_Weapons_Set},
+	{"__len", Lua_Player_Weapons_Length},
 	{0, 0}
 };
 
@@ -1274,6 +1299,12 @@ static int Lua_Player_Kills_Get(lua_State *L)
 	lua_pushnumber(L, slain_player->damage_taken[player_index].kills);
 	return 1;
 }			
+
+static int Lua_Player_Kills_Length(lua_State *L)
+{
+    lua_pushnumber(L, dynamic_world->player_count);
+    return 1;
+}
 
 static int Lua_Player_Kills_Set(lua_State *L)
 {
@@ -1310,6 +1341,7 @@ static int Lua_Player_Kills_Set(lua_State *L)
 const luaL_reg Lua_Player_Kills_Metatable[] = {
 	{"__index", Lua_Player_Kills_Get},
 	{"__newindex", Lua_Player_Kills_Set},
+	{"__len", Lua_Player_Kills_Length},
 	{0, 0}
 };
 

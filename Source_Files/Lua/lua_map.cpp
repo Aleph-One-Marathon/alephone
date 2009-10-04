@@ -1067,9 +1067,16 @@ static int Lua_Polygon_Sides_Get(lua_State *L)
 	return 1;
 }
 
+static int Lua_Polygon_Sides_Length(lua_State *L)
+{
+	lua_pushnumber(L, get_polygon_data(Lua_Polygon_Sides::Index(L, 1))->vertex_count);
+	return 1;
+}
+
 const luaL_reg Lua_Polygon_Sides_Metatable[] = {
 	{"__index", Lua_Polygon_Sides_Get},
 	{"__call", Lua_Polygon_Sides_Call},
+	{"__len", Lua_Polygon_Sides_Length},
 	{0, 0}
 };
 
