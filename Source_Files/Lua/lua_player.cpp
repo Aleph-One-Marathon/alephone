@@ -1214,45 +1214,38 @@ extern bool can_wield_weapons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
 static int Lua_Player_Weapons_Get(lua_State *L)
 {
-	if (lua_isstring(L, 2))
+	int player_index = Lua_Player_Weapons::Index(L, 1);
+	bool string_arg = lua_isstring(L, 2) && !lua_isnumber(L, 2);
+	if (string_arg && (strcmp(lua_tostring(L, 2), "current") == 0))
 	{
-		if (strcmp(lua_tostring(L, 2), "current") == 0)
-		{
-			int player_index = Lua_Player_Weapons::Index(L, 1);
-			if (player_has_valid_weapon(player_index))
-			{
-				player_weapon_data *weapon_data = get_player_weapon_data(player_index);
-				player_data *player = get_player_data(player_index);
-				Lua_Player_Weapon::Push(L, player_index, weapon_data->current_weapon);
-			}
-			else
-			{
-				lua_pushnil(L);
-			}
-		}
-		else if (strcmp(lua_tostring(L, 2), "desired") == 0)
-		{
-			int player_index = Lua_Player_Weapons::Index(L, 1);
-			player_weapon_data *weapon_data = get_player_weapon_data(player_index);
-			if (weapon_data->desired_weapon != NONE) 
-			{
-				Lua_Player_Weapon::Push(L, player_index, weapon_data->desired_weapon);
-			}
-			else
-			{
-				lua_pushnil(L);
-			}
-		}
-		else if (strcmp(lua_tostring(L, 2), "active") == 0)
-		{
-			int player_index = Lua_Player_Weapons::Index(L, 1);
-			lua_pushboolean(L, can_wield_weapons[player_index]);
-			return 1;
-		}
+	    if (player_has_valid_weapon(player_index))
+	    {
+	        player_weapon_data *weapon_data = get_player_weapon_data(player_index);
+	        Lua_Player_Weapon::Push(L, player_index, weapon_data->current_weapon);
+	    }
+	    else
+	    {
+	        lua_pushnil(L);
+	    }
+	}
+	else if (string_arg && (strcmp(lua_tostring(L, 2), "desired") == 0))
+	{
+	    player_weapon_data *weapon_data = get_player_weapon_data(player_index);
+	    if (weapon_data->desired_weapon != NONE)
+	    {
+	        Lua_Player_Weapon::Push(L, player_index, weapon_data->desired_weapon);
+	    }
+	    else
+	    {
+	        lua_pushnil(L);
+	    }
+	}
+	else if (string_arg && (strcmp(lua_tostring(L, 2), "active") == 0))
+	{
+	    lua_pushboolean(L, can_wield_weapons[player_index]);
 	}
 	else
 	{
-		int player_index = Lua_Player_Weapons::Index(L, 1);
 		int index = Lua_WeaponType::ToIndex(L, 2);
 		Lua_Player_Weapon::Push(L, player_index, index);
 	}
