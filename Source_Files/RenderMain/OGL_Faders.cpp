@@ -29,6 +29,7 @@
 #include "Random.h"
 #include "render.h"
 #include "OGL_Render.h"
+#include "OGL_Setup.h"
 #include "OGL_Faders.h"
 
 #ifdef HAVE_OPENGL
@@ -145,15 +146,17 @@ bool OGL_DoFades(float Left, float Top, float Right, float Bottom)
 			{
 				// Do random flipping of the lower bits of color values;
 				// the stronger the opacity (alpha), the more bits to flip.
+				if (Using_sRGB) glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 				glDisable(GL_BLEND);
 				MultAlpha(Fader.Color,BlendColor);
-				SglColor3fv(BlendColor);
+				glColor3fv(BlendColor);
 				glEnable(GL_COLOR_LOGIC_OP);
 				glLogicOp(GL_XOR);
 				glDrawArrays(GL_POLYGON,0,4);
 				// Revert to defaults
 				glDisable(GL_COLOR_LOGIC_OP);
 				glEnable(GL_BLEND);
+				if (Using_sRGB) glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 			}
 			break;
 		
