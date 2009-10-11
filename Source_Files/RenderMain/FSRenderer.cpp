@@ -564,11 +564,11 @@ void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 		instantiate_transfer_mode(view, surface->transfer_mode, x, y);
 
 		if(ceil) {
-			glNormal3s(0,0,-1);
-			glMultiTexCoord4iARB(GL_TEXTURE1_ARB, 0,1,0, -1);
+			glNormal3f(0,0,-1);
+			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, 0,1,0, -1);
 		} else {
-			glNormal3s(0,0,1);
-			glMultiTexCoord4iARB(GL_TEXTURE1_ARB, 0,1,0,1);
+			glNormal3f(0,0,1);
+			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, 0,1,0,1);
 		}
 
 		++gPolyCount;
@@ -577,7 +577,7 @@ void FSRenderer::render_node_floor_or_ceiling(clipping_window_data*,
 		for(short i=0; i<vertex_count; ++i) {
 			world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
 			glTexCoord2f((vertex.x + surface->origin.x - x) / float(WORLD_ONE), (vertex.y + surface->origin.y - y) / float(WORLD_ONE));
-			glVertex3i(vertex.x, vertex.y, surface->height);
+			glVertex3f(vertex.x, vertex.y, surface->height);
 		}
 		glEnd();
 
@@ -661,7 +661,7 @@ void FSRenderer::render_node_side(clipping_window_data*, vertical_surface_data *
 				float p2 = 0;
 				if(i == 1 || i == 2) { p2 = surface->length; }
 				glTexCoord2f((tOffset - vertices[i].z) / div, (x0+p2) / div);
-				glVertex3i(vertices[i].x, vertices[i].y, vertices[i].z);
+				glVertex3f(vertices[i].x, vertices[i].y, vertices[i].z);
 			}
 			glEnd();
 			Shader::disable();
@@ -820,16 +820,16 @@ void FSRenderer::render_node_object(render_object_data *object, bool other_side_
 	glBegin(GL_QUADS);
 
 	glTexCoord2f(texCoords[0][1], texCoords[1][0]);
-	glVertex3i(0, rect.size[0] * rect.HorizScale * rect.Scale, rect.size[1] * rect.Scale);
+	glVertex3f(0, rect.size[0] * rect.HorizScale * rect.Scale, rect.size[1] * rect.Scale);
 
 	glTexCoord2f(texCoords[0][1], texCoords[1][1]);
-	glVertex3i(0, rect.size[2] * rect.HorizScale * rect.Scale, rect.size[1] * rect.Scale);
+	glVertex3f(0, rect.size[2] * rect.HorizScale * rect.Scale, rect.size[1] * rect.Scale);
 
 	glTexCoord2f(texCoords[0][0], texCoords[1][1]);
-	glVertex3i(0, rect.size[2] * rect.HorizScale * rect.Scale, rect.size[3] * rect.Scale);
+	glVertex3f(0, rect.size[2] * rect.HorizScale * rect.Scale, rect.size[3] * rect.Scale);
 
 	glTexCoord2f(texCoords[0][0], texCoords[1][0]);
-	glVertex3i(0, rect.size[0] * rect.HorizScale * rect.Scale, rect.size[3] * rect.Scale);
+	glVertex3f(0, rect.size[0] * rect.HorizScale * rect.Scale, rect.size[3] * rect.Scale);
 
 	glEnd();
 	glPopMatrix();
