@@ -119,7 +119,7 @@ void OGL_Blitter::_LoadTextures()
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 			
-			glTexImage2D(GL_TEXTURE_2D, 0, Using_sRGB ? GL_SRGB_ALPHA : GL_RGBA, m_tile_width, m_tile_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_tile_width, m_tile_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, t->pixels);
 
 			i++;
 		}
@@ -217,6 +217,8 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
 //	glDisable(GL_SCISSOR_TEST);
 	glDisable(GL_STENCIL_TEST);
 	glEnable(GL_TEXTURE_2D);
+	if (Using_sRGB)
+		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 
 	GLdouble x_scale = dst.w / (GLdouble) src.w;
 	GLdouble y_scale = dst.h / (GLdouble) src.h;
@@ -231,7 +233,7 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		glTranslatef(-(dst.x + dst.w/2.0), -(dst.y + dst.h/2.0), 0.0);
 	}
 	
-	SglColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
+	glColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
 	
 	for (int i = 0; i < m_rects.size(); i++)
 	{
@@ -265,6 +267,8 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		glEnd();
 	}
 	
+	if (Using_sRGB)
+		glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 	if (rotating)
 		glPopMatrix();
 	glPopAttrib();
