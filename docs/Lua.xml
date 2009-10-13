@@ -361,7 +361,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon the effect is in</description>
 	<type>polygon</type>
       </variable>
-      <function name="position" version="SVN">
+      <function name="position" version="20090909">
 	<description>sets position of effect</description>
 	<argument name="x">
 	  <type>WU</type></argument>
@@ -428,12 +428,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="n"><type>number</type></argument>
 	<return><type>number</type></return>
       </function>
-      <function name="restore_passed" version="SVN">
+      <function name="restore_passed" version="20090909">
 	<description>tries to restore any Player or Game custom fields from before the last level jump; returns true if custom fields were successfully restored</description>
 	<note>if successful, overwrites all existing Player or Game custom fields</note>
 	<return><type>boolean</type></return>
       </function>
-      <function name="restore_saved" version="SVN">
+      <function name="restore_saved" version="20090909">
 	<description>tries to restore any custom fields from the saved game; returns true if custom fields were successfully restored</description>
 	<note>if successful, overwrites all existing custom fields</note>
 	<return><type>boolean</type></return>
@@ -471,7 +471,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon the item is in</description>
 	<type>polygon</type>
       </variable>
-      <function name="position" version="SVN">
+      <function name="position" version="20090909">
 	<description>sets position of item</description>
 	<argument name="x">
 	  <type>WU</type></argument>
@@ -652,7 +652,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="type" required="false"><type>damage_type</type></argument>
 	<note>if no type is specified, fist damage is dealt</note>
       </function>
-      <variable name="external_velocity" version="SVN">
+      <variable name="external_velocity" version="20090909">
 	<description>monster's current external velocity (always in the opposite direction of facing)</description>
 	<type>speed</type>
       </variable>
@@ -705,7 +705,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether monster is still valid</description>
 	<type>boolean</type>
       </variable>
-      <variable name="vertical_velocity" version="SVN">
+      <variable name="vertical_velocity" version="20090909">
 	<description>monster's current vertical external velocity</description>
 	<type>speed</type>
       </variable>
@@ -1106,7 +1106,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	    <description>collection of this slot</description>
 	    <type>collection</type>
 	  </variable>
-    <variable name="type" access="local-player" version="SVN">
+    <variable name="type" access="local-player" version="20090909">
       <description>texture type of this slot such as wall or sprite; see "Texture Types"</description>
       <type>texture_type</type>
     </variable>
@@ -1125,7 +1125,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <type>player_weapon</type>
 	  <note>can be nil</note>
 	</variable>
-	<variable name="desired" access="read-only" version="SVN">
+	<variable name="desired" access="read-only" version="20090909">
 	  <description>weapon the player wants to switch to</description>
 	  <type>player_weapon</type>
 	  <note>can be nil</note>
@@ -1361,7 +1361,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon the scenery is in</description>
 	<type>polygon</type>
       </variable>
-      <function name="position" version="SVN">
+      <function name="position" version="20090909">
 	<description>sets position of scenery</description>
 	<argument name="x">
 	  <type>WU</type></argument>
