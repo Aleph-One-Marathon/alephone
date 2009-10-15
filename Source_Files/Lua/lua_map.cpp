@@ -1348,14 +1348,23 @@ static int Lua_Polygon_Set_Permutation(lua_State *L)
 
 static int Lua_Polygon_Set_Type(lua_State *L)
 {
-	if (!lua_isnumber(L, 2))
+	short type = NONE;
+	if (lua_isnumber(L, 2))
 	{
-		luaL_error(L, "type: incorrect argument type");
+		type = static_cast<short>(lua_tonumber(L, 2));
+		if (type < 0 || type > _polygon_is_superglue) {
+			luaL_error(L, "type: invalid polygon type index");
+		}
+	}
+	else if (Lua_PolygonType::Is(L, 2)) {
+		type = Lua_PolygonType::Index(L, 2);
+	} 
+	else
+	{
+		return luaL_error(L, "type: incorrect argument type");
 	}
 
-	int type = static_cast<int>(lua_tonumber(L, 2));
 	get_polygon_data(Lua_Polygon::Index(L, 1))->type = type;
-
 	return 0;
 }
 
