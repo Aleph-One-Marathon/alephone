@@ -1106,7 +1106,7 @@ int Lua_Polygon_Contains(lua_State *L)
 		z = polygon->floor_height;
 	}
 
-	lua_pushboolean(L, point_in_polygon(polygon_index, &p) && z > polygon->floor_height && z < polygon->ceiling_height);
+	lua_pushboolean(L, point_in_polygon(polygon_index, &p) && z >= polygon->floor_height && z <= polygon->ceiling_height);
 	return 1;
 }
 
