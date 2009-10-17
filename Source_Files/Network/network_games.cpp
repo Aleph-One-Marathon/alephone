@@ -90,16 +90,16 @@ extern world_point2d lua_compass_beacons[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 extern short lua_compass_states[MAXIMUM_NUMBER_OF_NETWORK_PLAYERS];
 
 /* ------------------ code */
-int32 get_player_net_ranking(
+long get_player_net_ranking(
 	short player_index,
 	short *kills,
 	short *deaths,
 	bool game_is_over)
 {
 	short index;
-	int32 total_monster_damage, monster_damage;
+	long total_monster_damage, monster_damage;
 	struct player_data *player= get_player_data(player_index);
-	int32 ranking = 0;
+	long ranking = 0;
 
 	*kills= 0;
 	*deaths = player->monster_damage_taken.kills;
@@ -177,7 +177,7 @@ int32 get_player_net_ranking(
 			}
 			else
 			{
-				int32 biggest = 0;
+				long biggest = 0;
 				for(player_index= 0; player_index<dynamic_world->player_count; ++player_index)
 				{
 					struct player_data *index_player= get_player_data(player_index);
@@ -205,11 +205,11 @@ int32 get_player_net_ranking(
 	return ranking;
 }
 
-int32 get_team_net_ranking(short team, short *kills, short *deaths, 
+long get_team_net_ranking(short team, short *kills, short *deaths, 
 			  bool game_is_over)
 {
-  int32 total_monster_damage, monster_damage;
-  int32 ranking;
+  long total_monster_damage, monster_damage;
+  long ranking;
   *kills = team_damage_given[team].kills;
   *deaths = team_damage_taken[team].kills + team_monster_damage_taken[team].kills;
   
@@ -257,7 +257,7 @@ int32 get_team_net_ranking(short team, short *kills, short *deaths,
       if (team != defending_team) {
 	ranking = team_netgame_parameters[team][_offender_time_in_base];
       } else {
-	int32 biggest = 0;
+	long biggest = 0;
 	for (int i = 0; i < NUMBER_OF_TEAM_COLORS; i++) {
 	  if ((i != defending_team) && (team_netgame_parameters[i][_offender_time_in_base] > biggest)) {
 	    biggest = team_netgame_parameters[i][_offender_time_in_base];
@@ -657,7 +657,7 @@ void calculate_player_rankings(
 	count= 0;
 	while(count!=dynamic_world->player_count)
 	{
-		int32 highest_ranking= INT32_MIN;
+		long highest_ranking= LONG_MIN;
 		short highest_index= NONE;
 
 		for(player_index= 0; player_index<dynamic_world->player_count; ++player_index)
@@ -671,16 +671,16 @@ void calculate_player_rankings(
 	
 		assert(highest_index != NONE);
 		rankings[count++]= temporary_copy[highest_index];
-		temporary_copy[highest_index].ranking= INT32_MIN;
+		temporary_copy[highest_index].ranking= LONG_MIN;
 	}
 }
 
 /* These aren't in resources for speed.... */
 void calculate_ranking_text(
 	char *buffer, 
-	int32 ranking)
+	long ranking)
 {
-	int32 seconds;
+	long seconds;
 	
 	switch(GET_GAME_TYPE())
 	{
@@ -744,9 +744,9 @@ enum {
 
 void calculate_ranking_text_for_post_game(
 	char *buffer,
-	int32 ranking)
+	long ranking)
 {
-	int32 seconds;
+	long seconds;
 	char format[40];
 
 	switch(GET_GAME_TYPE())
@@ -1088,10 +1088,10 @@ void get_network_joined_message(
 }
 
 /* This function is used only at network.. */
-int32 get_entry_point_flags_for_game_type(
+long get_entry_point_flags_for_game_type(
 	size_t game_type)
 {
-	int32 entry_flags = 0;
+	long entry_flags = 0;
 	
 	switch(game_type)
 	{

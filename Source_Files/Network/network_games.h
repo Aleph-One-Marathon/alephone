@@ -27,7 +27,7 @@
 
 struct player_ranking_data {
 	short player_index;
-	int32 ranking;
+	long ranking;
 };
 
 extern int32 team_netgame_parameters[NUMBER_OF_TEAM_COLORS][2];
@@ -38,19 +38,19 @@ void initialize_net_game(void);
 bool update_net_game(void);
 
 /* Returns the player net ranking, which may mean different things */
-int32 get_player_net_ranking(short player_index, short *kills, short *deaths,
+long get_player_net_ranking(short player_index, short *kills, short *deaths,
 	bool game_is_over);
-int32 get_team_net_ranking(short team, short *kills, short *deaths,
+long get_team_net_ranking(short team, short *kills, short *deaths,
 			  bool game_is_over);
 
 void calculate_player_rankings(struct player_ranking_data *rankings);
-void calculate_ranking_text(char *buffer, int32 ranking);
+void calculate_ranking_text(char *buffer, long ranking);
 bool current_net_game_has_scores(void);
-void calculate_ranking_text_for_post_game(char *buffer, int32 ranking);
+void calculate_ranking_text_for_post_game(char *buffer, long ranking);
 bool get_network_score_text_for_postgame(char *buffer, bool team_mode);
 bool current_game_has_balls(void);
 void get_network_joined_message(char *buffer, short game_type);
-int32 get_entry_point_flags_for_game_type(size_t game_type); /* is this REALLY supposed to be a size_t? -SB */
+long get_entry_point_flags_for_game_type(size_t game_type);
 
 bool player_killed_player(short dead_player_index, short aggressor_player_index);
 
