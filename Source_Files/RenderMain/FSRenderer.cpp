@@ -193,29 +193,40 @@ void FSRenderer::render_tree(const RenderStep& renderStep) {
 		{
 			if (view->under_media_boundary) continue;
 		}
-		
-		for (window= node->clipping_windows; window; window= window->next_window)
-		{
+
+        // Set up clipping planes for this node
+        clipping_window_data *left_win = node->clipping_windows;
+        clipping_window_data *right_win = left_win;
+        if (left_win)
+        {
+            while (right_win->next_window)
+                right_win = right_win->next_window;
+            
             GLdouble clip[] = { 0., 0., 0., 0. };
             
+            // recenter to player's orientation temporarily
             glMatrixMode(GL_MODELVIEW);
             glPushMatrix();
             glTranslatef(local_player->location.x, local_player->location.y, 0.);
             glRotatef(FIXED_INTEGERAL_PART(local_player->variables.direction) * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
-                        
+            
             glRotatef(-1., 0., 0., 1.); // give an extra degree to avoid artifacts at edges
-            clip[0] = window->left.i;
-            clip[1] = window->left.j;
+            clip[0] = left_win->left.i;
+            clip[1] = left_win->left.j;
             glEnable(GL_CLIP_PLANE0);
             glClipPlane(GL_CLIP_PLANE0, clip);
             
             glRotatef(2., 0., 0., 1.); // breathing room for right-hand clip
-            clip[0] = window->right.i;
-            clip[1] = window->right.j;
+            clip[0] = right_win->right.i;
+            clip[1] = right_win->right.j;
             glEnable(GL_CLIP_PLANE1);
             glClipPlane(GL_CLIP_PLANE1, clip);
+            
             glPopMatrix();
-
+        }
+        
+		for (window= node->clipping_windows; window; window= window->next_window)
+		{
 			if (ceiling_surface.height>floor_surface.height)
 			{
 				if (ceiling_surface.height>view->origin.z) {
@@ -305,8 +316,6 @@ void FSRenderer::render_tree(const RenderStep& renderStep) {
 				}
 			}
             
-            glDisable(GL_CLIP_PLANE0);
-            glDisable(GL_CLIP_PLANE1);
 		}
 		
 		if (SeeThruLiquids)
@@ -331,30 +340,7 @@ void FSRenderer::render_tree(const RenderStep& renderStep) {
 				LiquidSurface.transfer_mode_data= 0;
 				
 				for (window= node->clipping_windows; window; window= window->next_window) {
-                    GLdouble clip[] = { 0., 0., 0., 0. };
-                    
-                    glMatrixMode(GL_MODELVIEW);
-                    glPushMatrix();
-                    glTranslatef(local_player->location.x, local_player->location.y, 0.);
-                    glRotatef(FIXED_INTEGERAL_PART(local_player->variables.direction) * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
-                    
-                    glRotatef(-1., 0., 0., 1.); // give an extra degree to avoid artifacts at edges
-                    clip[0] = window->left.i;
-                    clip[1] = window->left.j;
-                    glEnable(GL_CLIP_PLANE0);
-                    glClipPlane(GL_CLIP_PLANE0, clip);
-                    
-                    glRotatef(2., 0., 0., 1.); // breathing room for right-hand clip
-                    clip[0] = window->right.i;
-                    clip[1] = window->right.j;
-                    glEnable(GL_CLIP_PLANE1);
-                    glClipPlane(GL_CLIP_PLANE1, clip);
-                    glPopMatrix();
-                    
 					render_node_floor_or_ceiling(window, polygon, &LiquidSurface, false, false, renderStep);
-                    
-                    glDisable(GL_CLIP_PLANE0);
-                    glDisable(GL_CLIP_PLANE1);
 				}
 			}
 		}
@@ -363,6 +349,10 @@ void FSRenderer::render_tree(const RenderStep& renderStep) {
 		{
 			render_node_object(object, false, *view, renderStep);
 		}
+
+        // turn off clipping planes
+        glDisable(GL_CLIP_PLANE0);
+        glDisable(GL_CLIP_PLANE1);
 	}
 }
 
