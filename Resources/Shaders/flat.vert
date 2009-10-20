@@ -7,6 +7,7 @@ varying float MLxLOG2E;
 void main(void) {
 
 	gl_Position  = gl_ModelViewProjectionMatrix * gl_Vertex;
+	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;
 	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;
 
 	/* SETUP TBN MATRIX in normal matrix coords, gl_MultiTexCoord1 = tangent vector */
