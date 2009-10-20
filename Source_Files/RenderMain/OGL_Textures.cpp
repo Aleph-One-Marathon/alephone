@@ -241,8 +241,8 @@ void TextureState::Reset()
 		gGLTxStats.inUse--;
 		glDeleteTextures(NUMBER_OF_TEXTURES,IDs);
 	}
-	IsUsed = IsGlowing = TexGened[Normal] = TexGened[Glowing] = false;
-	IDUsage[Normal] = IDUsage[Glowing] = unusedFrames = 0;
+	IsUsed = IsGlowing = TexGened[Normal] = TexGened[Glowing] = TexGened[Bump] = false;
+	IDUsage[Normal] = IDUsage[Glowing] = IDUsage[Bump] = unusedFrames = 0;
 }
 
 void TextureState::FrameTick() {
@@ -691,6 +691,7 @@ bool TextureManager::LoadSubstituteTexture()
 
 	NormalImage.set(&TxtrOptsPtr->NormalImg);
 	GlowImage.set(&TxtrOptsPtr->GlowImg);
+	OffsetImage.set(&TxtrOptsPtr->OffsetImg);
 
 	int Width = NormalImg.GetWidth();
 	int Height = NormalImg.GetHeight();
@@ -1416,6 +1417,35 @@ void TextureManager::RenderGlowing()
 		if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
 		if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
 		if (time>2) gGLTxStats.longGlowSetups++;
+}
+
+void TextureManager::RenderBump()
+{
+	
+	
+	if (TxtrStatePtr->UseBump())
+	{
+		if(OffsetImage.get() && OffsetImage.get()->IsPresent()) {
+			PlaceTexture(OffsetImage.get());
+		} else {
+            // set up a flat bump texture
+            GLubyte flatTextureData[4] = {0x80, 0x80, 0xFF, 0x80};
+            
+            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, flatTextureData);
+		}
+	}
+	
+	gGLTxStats.binds++;
+	int time = 0;
+	gGLTxStats.totalBind += time;
+	if (gGLTxStats.minBind > time) gGLTxStats.minBind = time;
+	if (gGLTxStats.maxBind < time) gGLTxStats.maxBind = time;
+	if (time>2) gGLTxStats.longBumpSetups++;
 }
 
 void TextureManager::SetupTextureMatrix()

@@ -55,6 +55,7 @@ public:
 	bool IsPremultiplied() const { return (IsPresent() ? PremultipliedAlpha : false); }
 
 	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
+	void ProcessOffsetMap();
 
 	// Size of level 0 image
 	int GetWidth() const {return Width;}
@@ -70,7 +71,7 @@ public:
 	double GetUScale() const { return UScale; }
 
 	// Pixel accessors
-//	uint32& GetPixel(int Horiz, int Vert) {return Pixels[Width*Vert + Horiz];}
+	uint32& GetPixel(int Horiz, int Vert) {return Pixels[Width*(Vert%Height) + (Horiz%Width)];}
 	uint32 *GetPixelBasePtr() {return Pixels;}
 	const uint32 *GetBuffer() const { return Pixels; }
 	uint32 *GetBuffer() { return Pixels; }

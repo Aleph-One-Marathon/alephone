@@ -345,6 +345,14 @@ void OGL_TextureOptionsBase::Load()
 		return;
 	}
 	
+	// load a heightmap
+	if(StringPresent(OffsetMap) && File.SetNameWithPath(&OffsetMap[0])) {
+		if(!OffsetImg.LoadFromFile(File, ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) {
+			return;
+		}
+		OffsetImg.ProcessOffsetMap();
+	}
+
 	// Load the normal mask if it has a filename specified for it
 	if (StringPresent(NormalMask) && File.SetNameWithPath(&NormalMask[0]))
 	{
@@ -356,6 +364,12 @@ void OGL_TextureOptionsBase::Load()
 		while (NormalImg.GetWidth() > maxTextureSize || NormalImg.GetHeight() > maxTextureSize)
 		{
 			if (!NormalImg.Minify()) break;
+		}
+		
+		if(OffsetImg.IsPresent()) {
+			while (OffsetImg.GetWidth() > maxTextureSize || OffsetImg.GetHeight() > maxTextureSize) {
+				if(!OffsetImg.Minify()) { break; }
+			}
 		}
 	}
 	
@@ -412,6 +426,7 @@ void OGL_TextureOptionsBase::Unload()
 {
 	NormalImg.Clear();
 	GlowImg.Clear();
+	OffsetImg.Clear();
 }
 
 int OGL_TextureOptionsBase::GetMaxSize()

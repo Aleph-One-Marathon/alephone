@@ -51,6 +51,7 @@ struct TextureState
 	{
 		Normal,		// Used for all normally-shaded and shadeless textures
 		Glowing,	// Used for self-luminous textures
+		Bump,	    // Bump map for textures
 		NUMBER_OF_TEXTURES
 	};
 	GLuint IDs[NUMBER_OF_TEXTURES];		// Texture ID's
@@ -71,6 +72,7 @@ struct TextureState
 	bool Use(int Which);
 	bool UseNormal() {return Use(Normal);}
 	bool UseGlowing() {return Use(Glowing);}
+	bool UseBump() {return Use(Bump);}
 	
 	void FrameTick();
 	
@@ -147,7 +149,7 @@ class TextureManager
 	uint32 *NormalBuffer, *GlowBuffer;
 
 	// New texture buffers
-	ImageDescriptorManager NormalImage, GlowImage;
+	ImageDescriptorManager NormalImage, GlowImage, OffsetImage;
 	
 	// Pointer to the appropriate texture-state object
 	TextureState *TxtrStatePtr;
@@ -233,6 +235,7 @@ public:
 	void RenderNormal();
 	// Call this one after RenderNormal()
 	void RenderGlowing();
+	void RenderBump();
 
 	void SetupTextureMatrix();
 	void RestoreTextureMatrix();
@@ -336,7 +339,7 @@ void FindSilhouetteVersion(ImageDescriptorManager &imageManager);
 struct OGL_TexturesStats {
 	int inUse;
 	int binds, totalBind, minBind, maxBind;
-	int longNormalSetups, longGlowSetups;
+	int longNormalSetups, longGlowSetups, longBumpSetups;
 	int totalAge;
 };
 
