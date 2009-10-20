@@ -21,74 +21,8 @@ typedef enum {
 	kGlow,
 } RenderStep;
 
-struct FSVertex {
-	GLint loc[2];
-	GLfloat tex[2];
-};
-
-struct FSPolygonIndex {
-	GLushort offset, count;
-};
-
-/*
- * this data structure should hold static level geometry
- */
-class FSRenderData {
-private:
-	std::vector<FSVertex> vertices;
-	std::vector<GLushort> indices;
-	std::vector<std::vector<FSPolygonIndex> > polys;
-	GLuint buffers[2];
-public:
-
-	FSRenderData() {
-		buffers[0] = buffers[1] = NULL;
-	}
-
-	void drawPoly(const GLuint& poly, const GLushort& side, const GLenum& mode) {
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, buffers[0]);
-		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, buffers[1]);
-		glDrawElements(mode, polys[poly][side].count, GL_UNSIGNED_SHORT, (GLvoid*)polys[poly][side].offset);
-	}
-
-	void debugDraw() {
-		for(GLuint i = 0; i < polys.size(); ++i) {
-			for(GLushort j = 0; i < polys[j].size(); ++j) {
-				drawPoly(i, j, GL_LINE_STRIP);
-			}
-		}
-	}
-
-	void setupVBOs() {
-		glGenBuffersARB(2, buffers);
-
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, buffers[0]);
-		glBufferDataARB(GL_ARRAY_BUFFER_ARB, vertices.size() * sizeof(FSVertex), &vertices[0], GL_STATIC_DRAW_ARB);
-
-		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, buffers[1]);
-		glBufferDataARB(GL_ELEMENT_ARRAY_BUFFER_ARB, indices.size() * sizeof(GLushort), &indices[0], GL_STATIC_DRAW_ARB);
-
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
-		glBindBufferARB(GL_ELEMENT_ARRAY_BUFFER_ARB, 0);
-
-		// we won't need these anymore
-		indices.clear();
-		vertices.clear();
-	}
-
-	void destroy() {
-		polys.clear();
-		if(buffers[0]) {
-			glDeleteBuffersARB(2, buffers);
-		}
-	}
-
-	void loadLevel();
-};
-
 class FSRenderer : public RenderRasterizerClass, public Rasterizer_OGL_Class {
 
-	FSRenderData renderData;
 	Blur* blurLarge;
 	Blur* blurSmall;
 

@@ -56,8 +56,6 @@ void FlatTexture() {
  */
 void FSRenderer::setupGL() {
 
-	renderData.loadLevel();
-
 	Shader* sV = Shader::get("blurV");
 	Shader* sH = Shader::get("blurH");
 
@@ -108,15 +106,6 @@ void FSRenderer::render_tree() {
 		glEnable(GL_FOG);
 		glEnable(GL_ALPHA_TEST);
 	}
-}
-
-/*
- * this function should load all level data into a buffer
- * to solve some performance issues
- */
-void FSRenderData::loadLevel() {
-	destroy();
-	setupVBOs();
 }
 
 /*
