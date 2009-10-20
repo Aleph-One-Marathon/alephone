@@ -65,6 +65,10 @@ AC_CHECK_FUNC(vsnprintf, [
   AC_DEFINE(HAVE_VSNPRINTF, 1, [vsnprintf() is available])
 ])
 
+AC_CHECK_FUNC(mkstemp, [
+  AC_DEFINE(LUA_USE_MKSTEMP, 1, [mkstemp() is available])
+])
+
 dnl Check for SDL.
 AM_PATH_SDL(1.2.0, , AC_MSG_ERROR([You need SDL 1.2 to run Aleph One.]))
 CPPFLAGS="$CPPFLAGS $SDL_CFLAGS -DSDL"
