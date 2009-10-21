@@ -5,7 +5,7 @@ noinst_LIBRARIES = libfiles.a
 libfiles_a_SOURCES = AStream.h crc.h extensions.h FileHandler.h find_files.h \
   game_wad.h Packing.h resource_manager.h tags.h wad.h wad_prefs.h \
   \
-  AStream.cpp crc.cpp FileHandler_SDL.cpp find_files_sdl.cpp game_wad.cpp \
+  AStream.cpp crc.cpp FileHandler.cpp find_files_sdl.cpp game_wad.cpp \
   import_definitions.cpp Packing.cpp preprocess_map_sdl.cpp \
   preprocess_map_shared.cpp resource_manager.cpp wad.cpp wad.cpp \
   wad_prefs.cpp wad_sdl.cpp

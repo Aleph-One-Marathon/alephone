@@ -46,22 +46,6 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 March 18, 2002 (Br'fin (Jeremy Parsons)):
 	Added FileSpecifier::SetParentToResources for Carbon
 */
-#ifdef SDL_RFORK_HACK
-#undef SDL
-#define mac
-#endif
-
-#ifdef mac
-#if defined(EXPLICIT_CARBON_HEADER)
-    #include <Carbon/Carbon.h>
-/*
-#else
-#include <Files.h>
-#include <Resources.h>
-#endif
-*/
-#endif
-#endif
 
 // For the filetypes
 #include "tags.h"
@@ -72,14 +56,12 @@ March 18, 2002 (Br'fin (Jeremy Parsons)):
 #include <SDL.h>
 using namespace std;
 
-#ifdef SDL
 #include <errno.h>
 #include <string>
 #define fnfErr ENOENT
 #ifndef NO_STD_NAMESPACE
 using std::string;
 using std::vector;
-#endif
 #endif
 
 #ifdef __WIN32__
@@ -91,10 +73,6 @@ using std::vector;
 #undef CreateDirectory
 #endif
 #endif
-
-
-// Symbolic constant for a closed file's reference number (refnum) (MacOS only)
-const short RefNum_Closed = -1;
 
 
 /*
@@ -122,18 +100,6 @@ public:
 	OpenedFile();
 	~OpenedFile() {Close();}	// Auto-close when destroying
 
-	// Platform-specific members
-#if defined(mac)
-
-	short GetRefNum() {return RefNum;}
-	OSErr GetError() {return Err;}
-
-private:
-	short RefNum;	// File reference number
-	OSErr Err;		// Error code
-
-#elif defined(SDL)
-
 	int GetError() {return err;}
 	SDL_RWops *GetRWops() {return f;}
 	SDL_RWops *TakeRWops();		// Hand over SDL_RWops
@@ -141,7 +107,6 @@ private:
 private:
 	SDL_RWops *f;	// File handle
 	int err;		// Error code
-#endif
 	bool is_forked;
 	int32 fork_offset, fork_length;
 };
@@ -183,25 +148,8 @@ private:
 	void Detach();
 
 public:
-	// Platform-specific members
-#if defined(mac)
-
-	Handle GetHandle(bool DoDetach = false)
-		{Handle ret = RsrcHandle; if (DoDetach) Detach(); return ret;}
-#endif
-#if defined(mac) && !defined(SDL_RFORK_HACK)
-	// Gets some suitable default color table
-	void GetSystemColorTable()
-		{Unload(); RsrcHandle = Handle(GetCTable(8));}
-#endif
-#if defined(mac)
-private:
-	Handle RsrcHandle;	
-#elif defined(SDL)
-
 	void *p;		// Pointer to resource data (malloc()ed)
 	size_t size;	// Size of data
-#endif
 };
 
 
@@ -249,78 +197,17 @@ public:
 	OpenedResourceFile();
 	~OpenedResourceFile() {Close();}	// Auto-close when destroying
 
-	// Platform-specific members
-#if defined(mac)
-
-	short GetRefNum() {return RefNum;}
-	OSErr GetError() {return Err;}
-
-private:
-	short RefNum;	// File reference number
-	OSErr Err;		// Error code
-	
-	short SavedRefNum;
-	bool isSavedRefRWOps;
-	static bool isCurrentRefRWOps;
-
-#elif defined(SDL)
-
 	int GetError() {return err;}
 
 private:
 	int err;		// Error code
-#endif
 	SDL_RWops *f, *saved_f;
 };
 
 
-#ifdef mac
-/*
-	Abstraction for directory specifications;
-	designed to encapsulate both directly-specified paths
-	and MacOS volume/directory ID's.
-*/
-class DirectorySpecifier
-{
-	// This class needs to see directory info 
-	friend class FileSpecifier;
-	
-	// MacOS directory specification
-	long parID;
-	short vRefNum;
-	
-	OSErr Err;
-public:
-
-	short Get_vRefNum() {return vRefNum;}
-	long Get_parID() {return parID;}
-	void Set_vRefNum(short _vRefNum) {vRefNum = _vRefNum;}
-	void Set_parID(long _parID) {parID = _parID;}
-	
-	// Starts with the current root directory
-	// Can go to subdirectory of subdirectory;
-	// uses Unix-style path syntax (/ instead of : as the separator)
-	bool SetToSubdirectory(const char *NameWithPath);
-	
-	// Set special directories:
-	bool SetToAppParent();
-	bool SetToPreferencesParent();
-	
-	DirectorySpecifier& operator=(DirectorySpecifier& D)
-		{vRefNum = D.vRefNum; parID = D.parID; return *this;}
-		
-	OSErr GetError() {return Err;}
-	
-	DirectorySpecifier(): parID(0), vRefNum(0), Err(noErr) {}
-	DirectorySpecifier(DirectorySpecifier& D) {*this = D;}
-};
-#else
 // Directories are treated like files
 #define DirectorySpecifier FileSpecifier
-#endif
 
-
-#ifdef SDL
 // Directory entry, returned by FileSpecifier::ReadDirectory()
 struct dir_entry {
 	dir_entry() {}
@@ -342,20 +229,6 @@ struct dir_entry {
 	bool is_volume;		// Entry is a volume (for platforms that have volumes, is_directory must also be set)
 	TimeType date;          // modification date
 };
-#endif
-
-
-// Root-directory stuff; unnecessary for SDL?
-#ifdef mac
-
-// Useful for scenarios -- submit the subdirectory string.
-// Originally the app's parent directory. To revert to that, submit an empty string.
-// Returns the level of success.
-bool Files_SetRootDirectory(const char *NameWithPath);
-
-void Files_GetRootDirectory(DirectorySpecifier& Dir);
-
-#endif
 
 
 /*
@@ -372,11 +245,6 @@ public:
 	// assumes enough space to hold it if getting (max. 256 bytes)
 	void GetName(char *Name) const;
 	
-	// MacOS:
-	//   Sets the file specifier to the current root directory +
-	//   the directories and name in "NameWithPath".
-	//   Formerly used the object's own parent directory.
-	// SDL:
 	//   Looks in all directories in the current data search
 	//   path for a file with the relative path "NameWithPath" and
 	//   sets the file specifier to the full path of the first file
@@ -412,9 +280,7 @@ public:
 	
 	// Check on whether a file exists, and its type
 	bool Exists();
-#ifdef SDL
 	bool IsDir();
-#endif
 	
 	// Gets the modification date
 	TimeType GetDate();
@@ -442,48 +308,7 @@ public:
 	// hide extensions known to Aleph One
 	static std::string HideExtension(const std::string& filename);
 	
-#ifdef SDL
 	const char *GetPath(void) const {return name.c_str();}
-#else
-	const char *GetPath(void);
-#endif
-
-	// Platform-specific members
-#ifdef mac
-
-	FileSpecifier();
-	FileSpecifier(const FileSpecifier& F) {*this = F;}
-	bool operator==(const FileSpecifier& F);
-	bool operator!=(const FileSpecifier& F) {return !(*this == F);}
-
-	// Filespec management
-	void SetSpec(FSSpec& _Spec);
-	FSSpec& GetSpec() {return Spec;}
-	
-	// MacOS-friendly file creation
-	bool Create(OSType TypeCode, OSType CreatorCode);
-	
-	// Replace the file name;
-	// The typecode is for automatically adding a suffix;
-	// NONE means add none
-	void SetName(const char *Name, int Type);
-	
-	// Set special directories:
-	bool SetToApp();
-#if defined(TARGET_API_MAC_CARBON)
-	bool SetParentToResources();	// OSX Resources directory: AlephOne.app/Contents/Resources
-#endif
-	bool SetParentToPreferences();
-
-	// The error:
-	OSErr GetError() {return Err;}
-	
-private:
-	FSSpec Spec;
-	OSErr Err;
-	char GetPathStorage[1024];
-
-#elif defined(SDL)
 
 	FileSpecifier();
 	FileSpecifier(const string &s) : name(s), err(0) {canonicalize_path();}
@@ -520,12 +345,7 @@ private:
 
 	string name;	// Path name
 	int err;
-
-#endif
 };
 
 #endif
-#ifdef SDL_RFORK_HACK
-#define SDL
-#undef mac
-#endif
+
