@@ -44,6 +44,7 @@ using namespace std;
 #endif
 
 #include <vector>
+#include "vec3.h"
 
 
 // For boned models; calculate vertices from these
@@ -125,6 +126,10 @@ struct Model3D
 	// Parallel to the vertex-position array
 	vector<GLfloat> Normals;
 	GLfloat *NormBase() {return &Normals[0];}
+	
+	// Tangents assumed to be 4-dimensional
+	vector<vec4> Tangents;
+	GLfloat *TangentBase() {return &Tangents[0][0];}
 	
 	// Vertex colors (useful for by-hand vertex lighting)
 	// Parallel to the vertex-position array
@@ -215,7 +220,8 @@ struct Model3D
 	
 	// So they all have length 1
 	void NormalizeNormals() {AdjustNormals(Original);}
-	
+	void CalculateTangents();
+
 	// Erase everything
 	void Clear();
 	

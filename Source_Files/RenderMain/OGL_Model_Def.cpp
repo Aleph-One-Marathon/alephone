@@ -507,6 +507,7 @@ void OGL_ModelData::Load()
 	}	
 	
 	Model.AdjustNormals(NormalType,NormalSplit);
+	Model.CalculateTangents();
 	
 	// Don't forget the skins
 	OGL_SkinManager::Load();
