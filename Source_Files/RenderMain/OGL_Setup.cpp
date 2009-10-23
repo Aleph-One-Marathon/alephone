@@ -102,7 +102,7 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #include "ColorParser.h"
 #include "OGL_LoadScreen.h"
 #include "progress.h"
-
+#include "OGL_Shader.h"
 
 #ifdef __WIN32__
 #include "OGL_Win32.h"
@@ -594,6 +594,7 @@ XML_ElementParser *OpenGL_GetParser()
 {
 #ifdef HAVE_OPENGL
 	OpenGL_Parser.AddChild(TextureOptions_GetParser());
+	OpenGL_Parser.AddChild(Shader_GetParser());
 	OpenGL_Parser.AddChild(TO_Clear_GetParser());
 	
 	OpenGL_Parser.AddChild(ModelData_GetParser());

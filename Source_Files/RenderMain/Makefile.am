@@ -16,13 +16,13 @@ librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h \
   OGL_Textures.h $(EXTRA_GL_H) Rasterizer.h Rasterizer_OGL.h Rasterizer_SW.h render.h \
   RenderPlaceObjs.h RenderRasterize.h RenderSortPoly.h RenderVisTree.h \
   scottish_textures.h shape_definitions.h shape_descriptors.h SW_Texture_Extras.h \
-  textures.h \
+  textures.h OGL_Shader.h \
   \
   AnimatedTextures.cpp Crosshairs_SDL.cpp ImageLoader_Shared.cpp ImageLoader_SDL.cpp OGL_Faders.cpp \
   OGL_Model_Def.cpp OGL_Render.cpp OGL_Setup.cpp OGL_Subst_Texture_Def.cpp \
   OGL_Textures.cpp $(EXTRA_GL) render.cpp RenderPlaceObjs.cpp RenderRasterize.cpp \
   RenderSortPoly.cpp RenderVisTree.cpp scottish_textures.cpp shapes.cpp SW_Texture_Extras.cpp \
-  textures.cpp
+  textures.cpp OGL_Shader.cpp
 
 EXTRA_librendermain_a_SOURCES = OGL_Win32.h OGL_Win32.cpp
 

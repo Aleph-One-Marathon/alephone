@@ -1433,8 +1433,9 @@ Currently, both texture-rendering modification and fog are supported;
 texture-rendering modification modifies the rendering of each bitmap.
 
 This element has these kinds of child elements, &lt;txtr_clear&gt;, &lt;texture&gt;,
-&lt;model_clear&gt;, &lt;model&gt;, and &lt;fog&gt;.
+&lt;model_clear&gt;, &lt;model&gt;, &lt;shader&gt;, and &lt;fog&gt;.
 <p>
+
 
 The first one, &lt;txtr_clear&gt;, clears the texture options,
 setting them back to their defaults. If it has an attribute of "coll",
@@ -1642,6 +1643,27 @@ for "glowing" rendering (independent of light levels).
 It must be used with a glow_image file.
 <li>normal_blend: which blend mode for semitransparent normal textures (default: 0 -- crossfade)
 <li>glow_blend: which blend mode for semitransparent glowing textures (default: 0 -- crossfade)
+</ul>
+<p>
+
+The next one, &lt;shader&gt;, specifies custom shader definitions used by the shader-capable renderer.
+It takes these attributes:
+<ul>
+<li>name: which shader to specify (mandatory). The following shaders are used:
+<ul>
+<li>parallax
+<li>landscape
+<li>random
+<li>blurH
+<li>blurV
+<li>specular
+<li>flat
+<li>flat_infravision
+<li>infravision
+<li>invisible
+</ul>
+<li>vert: the path to a file containing the vertex shader program.
+<li>frag: the path to a file containing the fragment shader program.
 </ul>
 <p>
 
