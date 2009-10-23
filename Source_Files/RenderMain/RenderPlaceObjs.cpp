@@ -338,12 +338,17 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					render_object->rectangle.NextModelFrame = data.NextFrame;
 					render_object->rectangle.MixFrac = data.Ticks > 0 ?
 						float(data.Phase)/float(data.Ticks) : 0;
-					render_object->rectangle.Position = object->location;
 					render_object->rectangle.Azimuth = object->facing;
-					render_object->rectangle.Scale = Scale;
 					render_object->rectangle.LightDepth = LightDepth;
 					objlist_copy(render_object->rectangle.LightDirection,LightDirection,3);
 				}
+				// need this for new rendering pipeline
+				render_object->rectangle.WorldLeft = shape_information->world_left;
+				render_object->rectangle.WorldBottom = shape_information->world_bottom;
+				render_object->rectangle.WorldRight = shape_information->world_right;
+				render_object->rectangle.WorldTop = shape_information->world_top;
+				render_object->rectangle.Position = object->location;
+				render_object->rectangle.Scale = Scale;
 #endif
 					
 				render_object->rectangle.flip_vertical= (shape_information->flags&_Y_MIRRORED_BIT) ? true : false;
