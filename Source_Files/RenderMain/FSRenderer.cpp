@@ -24,6 +24,7 @@
 #include "AnimatedTextures.h"
 #include "OGL_Faders.h"
 #include "OGL_Textures.h"
+#include "ChaseCam.h"
 
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
@@ -193,11 +194,17 @@ void FSRenderer::render_tree(const RenderStep& renderStep) {
             
             GLdouble clip[] = { 0., 0., 0., 0. };
             
+			world_point3d cam_pos = local_player->camera_location;
+			short cam_poly;
+			angle cam_yaw = FIXED_INTEGERAL_PART(local_player->variables.direction);
+			angle cam_pitch;
+			ChaseCam_GetPosition(cam_pos, cam_poly, cam_yaw, cam_pitch);
+			
             // recenter to player's orientation temporarily
             glMatrixMode(GL_MODELVIEW);
             glPushMatrix();
-            glTranslatef(local_player->location.x, local_player->location.y, 0.);
-            glRotatef(FIXED_INTEGERAL_PART(local_player->variables.direction) * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
+            glTranslatef(cam_pos.x, cam_pos.y, 0.);
+            glRotatef(cam_yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
             
             glRotatef(-1., 0., 0., 1.); // give an extra degree to avoid artifacts at edges
             clip[0] = left_win->left.i;
