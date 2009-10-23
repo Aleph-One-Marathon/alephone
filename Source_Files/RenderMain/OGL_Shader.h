@@ -22,14 +22,10 @@ private:
 
 public:
 
-	static Shader* get(const std::string& name) {
-		if(Shaders.count(name) > 0) {
-			return &Shaders[name];			
-		}
-		return NULL;
-	}
+	static Shader* get(const std::string& name);
 	
 	Shader() : _programObj(NULL), _loaded(false) {}
+	Shader(const std::string& name);
 	Shader(const std::string& vert, const std::string& frag);
 	~Shader();
 
