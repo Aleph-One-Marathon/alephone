@@ -129,7 +129,7 @@ void RenderPlaceObjsClass::build_render_object_list()
 			
 			float Opacity = (object_index == self_index) ? GetChaseCamData().Opacity : 1;
 			render_object_data *render_object= build_render_object(NULL, floor_intensity, ceiling_intensity,
-				base_nodes, &base_node_count, object_index, Opacity);
+				base_nodes, &base_node_count, object_index, Opacity, NULL);
 			
 			if (render_object)
 			{
@@ -150,7 +150,8 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 	_fixed ceiling_intensity,
 	sorted_node_data **base_nodes,
 	short *base_node_count,
-	short object_index, float Opacity)
+	short object_index, float Opacity,
+	long_point3d *rel_origin)
 {
 	render_object_data *render_object= NULL;
 	object_data *object= get_object_data(object_index);
@@ -348,6 +349,10 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				render_object->rectangle.WorldRight = shape_information->world_right;
 				render_object->rectangle.WorldTop = shape_information->world_top;
 				render_object->rectangle.Position = object->location;
+				if(rel_origin) {
+					render_object->rectangle.Position.x += rel_origin->x;
+					render_object->rectangle.Position.z += rel_origin->z; 
+				}
 				render_object->rectangle.Scale = Scale;
 #endif
 					
@@ -378,11 +383,13 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				{
 					render_object_data *parasitic_render_object;
 					long_point3d parasitic_origin= transformed_origin;
-					
+					long_point3d parasitic_rel_origin;
+					parasitic_rel_origin.z = shape_information->world_y0;
+					parasitic_rel_origin.x = shape_information->world_x0;
 					parasitic_origin.z+= shape_information->world_y0;
 					parasitic_origin.y+= shape_information->world_x0;
 					parasitic_render_object= build_render_object(&parasitic_origin, floor_intensity, ceiling_intensity,
-						NULL, NULL, object->parasitic_object, Opacity);
+						NULL, NULL, object->parasitic_object, Opacity, &parasitic_rel_origin);
 					
 					if (parasitic_render_object)
 					{
