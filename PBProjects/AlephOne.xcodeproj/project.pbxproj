@@ -337,7 +337,7 @@
 		AEC3C7FC09AD68AC003258E4 /* ActionQueues.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A00022023FDA1601A80001 /* ActionQueues.cpp */; };
 		AEC3C7FD09AD68AC003258E4 /* network_speaker_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5A0002F023FDB5C01A80001 /* network_speaker_sdl.cpp */; };
 		AEC3C7FE09AD68AC003258E4 /* crc.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920A0240D09B01A80001 /* crc.cpp */; };
-		AEC3C7FF09AD68AC003258E4 /* FileHandler_SDL.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler_SDL.cpp */; };
+		AEC3C7FF09AD68AC003258E4 /* FileHandler.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920C0240D09B01A80001 /* FileHandler.cpp */; };
 		AEC3C80009AD68AC003258E4 /* filetypes_macintosh.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */; };
 		AEC3C80209AD68AC003258E4 /* find_files_sdl.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */; };
 		AEC3C80309AD68AC003258E4 /* game_wad.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5CC92100240D09B01A80001 /* game_wad.cpp */; };
@@ -835,7 +835,7 @@
 		F5CC92080240D09B01A80001 /* wad.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = wad.h; sourceTree = "<group>"; };
 		F5CC92090240D09B01A80001 /* wad_prefs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = wad_prefs.h; sourceTree = "<group>"; };
 		F5CC920A0240D09B01A80001 /* crc.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = crc.cpp; sourceTree = "<group>"; };
-		F5CC920C0240D09B01A80001 /* FileHandler_SDL.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = FileHandler_SDL.cpp; sourceTree = "<group>"; };
+		F5CC920C0240D09B01A80001 /* FileHandler.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = FileHandler.cpp; sourceTree = "<group>"; };
 		F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = filetypes_macintosh.cpp; sourceTree = "<group>"; };
 		F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = find_files_sdl.cpp; sourceTree = "<group>"; };
 		F5CC92100240D09B01A80001 /* game_wad.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = game_wad.cpp; sourceTree = "<group>"; };
@@ -1517,6 +1517,7 @@
 				F5CC92D60240D4C001A80001 /* Headers */,
 				F5CC92D30240D33601A80001 /* Macintosh */,
 				F5CC92D40240D3CC01A80001 /* SDL */,
+				F5CC920C0240D09B01A80001 /* FileHandler.cpp */,
 				EF2EF5E304819EBF00A8000D /* AStream.cpp */,
 				F5CC920A0240D09B01A80001 /* crc.cpp */,
 				F5CC920D0240D09B01A80001 /* filetypes_macintosh.cpp */,
@@ -1570,7 +1571,6 @@
 		F5CC92D40240D3CC01A80001 /* SDL */ = {
 			isa = PBXGroup;
 			children = (
-				F5CC920C0240D09B01A80001 /* FileHandler_SDL.cpp */,
 				F5CC920F0240D09B01A80001 /* find_files_sdl.cpp */,
 				F5CC92130240D09B01A80001 /* preprocess_map_sdl.cpp */,
 				F5CC92140240D09B01A80001 /* resource_manager.cpp */,
@@ -2187,7 +2187,7 @@
 /* Begin PBXProject section */
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
-			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-OSX10.4" */;
+			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne" */;
 			compatibilityVersion = "Xcode 2.4";
 			hasScannedForEncodings = 1;
 			mainGroup = 29B97314FDCFA39411CA2CEA /* SDL Application */;
@@ -2306,7 +2306,7 @@
 				AEC3C7FC09AD68AC003258E4 /* ActionQueues.cpp in Sources */,
 				AEC3C7FD09AD68AC003258E4 /* network_speaker_sdl.cpp in Sources */,
 				AEC3C7FE09AD68AC003258E4 /* crc.cpp in Sources */,
-				AEC3C7FF09AD68AC003258E4 /* FileHandler_SDL.cpp in Sources */,
+				AEC3C7FF09AD68AC003258E4 /* FileHandler.cpp in Sources */,
 				AEC3C80009AD68AC003258E4 /* filetypes_macintosh.cpp in Sources */,
 				AEC3C80209AD68AC003258E4 /* find_files_sdl.cpp in Sources */,
 				AEC3C80309AD68AC003258E4 /* game_wad.cpp in Sources */,
@@ -2509,7 +2509,6 @@
 		AE2A41530B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2536,7 +2535,7 @@
 					HAVE_SMPEG,
 					HAVE_SDL_TTF,
 				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
+				GCC_VERSION = 4.0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
@@ -2572,7 +2571,6 @@
 				STRIP_INSTALLED_PRODUCT = NO;
 				STRIP_STYLE = all;
 				WRAPPER_EXTENSION = app;
-				ZERO_LINK = NO;
 			};
 			name = Development;
 		};
@@ -2591,7 +2589,6 @@
 		AE2A41760B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2617,7 +2614,6 @@
 					HAVE_SMPEG,
 					HAVE_SDL_TTF,
 				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
@@ -2649,13 +2645,11 @@
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
-				ONLY_ACTIVE_ARCH = YES;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = AlephOne;
-				SDKROOT = "";
+				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				STRIP_STYLE = debugging;
 				WRAPPER_EXTENSION = app;
-				ZERO_LINK = NO;
 			};
 			name = "Deployment (Native)";
 		};
@@ -2724,9 +2718,7 @@
 					HAVE_SMPEG,
 					HAVE_SDL_TTF,
 				);
-				GCC_USE_GCC3_PFE_SUPPORT = YES;
-				GCC_VERSION_i386 = 4.0;
-				GCC_VERSION_ppc = 3.3;
+				GCC_VERSION = 4.0;
 				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
@@ -2758,16 +2750,11 @@
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
-				MACOSX_DEPLOYMENT_TARGET_i386 = 10.4;
-				MACOSX_DEPLOYMENT_TARGET_ppc = 10.2;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = AlephOne;
-				SDKROOT_i386 = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
-				SDKROOT_ppc = "$(DEVELOPER_SDK_DIR)/MacOSX10.2.8.sdk";
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = debugging;
 				WRAPPER_EXTENSION = app;
-				ZERO_LINK = NO;
 			};
 			name = "Deployment (Universal)";
 		};
@@ -2787,7 +2774,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-OSX10.4" */ = {
+		AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				AE78B59E09B00C34002CACF8 /* Deployment (Universal) */,
