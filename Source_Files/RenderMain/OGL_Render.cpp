@@ -1239,6 +1239,10 @@ bool OGL_SetForeground()
 	// Foreground objects are to be in front of all the other ones
 	glClear(GL_DEPTH_BUFFER_BIT);
 	
+	// New renderer needs modelview reset
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	
 	return true;
 }
 
