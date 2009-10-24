@@ -304,7 +304,7 @@ static void update_render_effect(struct view_data *view);
 static void shake_view_origin(struct view_data *view, world_distance delta);
 
 static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr);
-void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width,
+static void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width,
 	short positioning_mode, _fixed position, bool flip, world_distance world_left, world_distance world_right);
 
 
@@ -933,7 +933,7 @@ void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr) {
 	}
 }
 
-void position_sprite_axis(
+static void position_sprite_axis(
 	short *x0,
 	short *x1,
 	short scale_width,

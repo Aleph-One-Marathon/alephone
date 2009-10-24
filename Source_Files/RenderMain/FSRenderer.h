@@ -43,8 +43,6 @@ public:
 	virtual void render_tree();
 	virtual void render_tree(const RenderStep&);
 
-	virtual void render_viewer_sprite_layer(view_data *view);
-
 	virtual void SetView(view_data& View);
 	virtual void Begin();
 	virtual void End();

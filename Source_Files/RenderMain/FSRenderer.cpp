@@ -32,7 +32,6 @@ unsigned gVertexCount;
 unsigned gPolyCount;
 
 inline bool FogActive();
-void position_sprite_axis(short*,short*, short, short, short, _fixed, bool, world_distance, world_distance);
 void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color);
 
 /*
@@ -948,96 +947,4 @@ void FSRenderer::End() {
 	glLoadIdentity();	
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-}
-
-void FSRenderer::render_viewer_sprite_layer(view_data *view) {
-
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	glMatrixMode(GL_MODELVIEW);
-	glDisable(GL_DEPTH_TEST);
-
-	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_ALPHA_TEST);
-	glEnable(GL_BLEND);
-
-	glColor3f(1, 1, 1);
-	short count = 0;
-	weapon_display_information display_data;
-	while(get_weapon_display_information(&count, &display_data)) {
-		shape_information_data *shape_information = extended_get_shape_information(display_data.collection, display_data.low_level_shape_index);
-		rectangle_definition rect;
-		if(!shape_information) { continue; }
-
-		rect.ShapeDesc = BUILD_DESCRIPTOR(display_data.collection,0);
-		rect.LowLevelShape = display_data.low_level_shape_index;
-
-		if (shape_information->flags&_X_MIRRORED_BIT) display_data.flip_horizontal= !display_data.flip_horizontal;
-		if (shape_information->flags&_Y_MIRRORED_BIT) display_data.flip_vertical= !display_data.flip_vertical;
-
-		position_sprite_axis(&rect.x0, &rect.x1, view->screen_height, view->screen_width, display_data.horizontal_positioning_mode,
-							 display_data.horizontal_position, display_data.flip_horizontal, shape_information->world_left, shape_information->world_right);
-		position_sprite_axis(&rect.y0, &rect.y1, view->screen_height, view->screen_height, display_data.vertical_positioning_mode,
-							 display_data.vertical_position, display_data.flip_vertical, -shape_information->world_top, -shape_information->world_bottom);
-
-		extended_get_shape_bitmap_and_shading_table(display_data.collection, display_data.low_level_shape_index, &rect.texture, &rect.shading_tables, _shading_normal);
-		if(!rect.texture) { continue; }
-
-		rect.flags = 0;
-		rect.depth = 0;
-		rect.ambient_shade= get_light_intensity(get_polygon_data(view->origin_polygon_index)->floor_lightsource_index);
-		rect.ambient_shade= MAX(shape_information->minimum_light_intensity, rect.ambient_shade);
-
-		instantiate_rectangle_transfer_mode(view, &rect, display_data.transfer_mode, display_data.transfer_phase);
-
-		TextureManager TMgr = SetupTexture(rect, OGL_Txtr_WeaponsInHand, kDiffuse);
-
-		if(local_player->infravision_duration) {
-			glColor4f(1,1,0,1);
-		}
-
-		float texCoords[2][2];
-
-		if(display_data.flip_vertical) {
-			texCoords[0][1] = TMgr.U_Offset;
-			texCoords[0][0] = TMgr.U_Scale+TMgr.U_Offset;
-		} else {
-			texCoords[0][0] = TMgr.U_Offset;
-			texCoords[0][1] = TMgr.U_Scale+TMgr.U_Offset;
-		}
-
-		if(display_data.flip_horizontal) {
-			texCoords[1][1] = TMgr.V_Offset;
-			texCoords[1][0] = TMgr.V_Scale+TMgr.V_Offset;		
-		} else {
-			texCoords[1][0] = TMgr.V_Offset;
-			texCoords[1][1] = TMgr.V_Scale+TMgr.V_Offset;
-		}
-
-		glLoadIdentity();
-		glOrtho(0, view->screen_width * rect.HorizScale, view->screen_height, 0, 0, 1);
-
-		glBegin(GL_QUADS);
-
-		glTexCoord2f(texCoords[0][1], texCoords[1][0]);
-		glVertex2i(rect.x0, rect.y1);
-
-		glTexCoord2f(texCoords[0][1], texCoords[1][1]);
-		glVertex2i(rect.x1, rect.y1);
-		
-		glTexCoord2f(texCoords[0][0], texCoords[1][1]);
-		glVertex2i(rect.x1, rect.y0);
-
-		glTexCoord2f(texCoords[0][0], texCoords[1][0]);
-		glVertex2i(rect.x0, rect.y0);
-		glEnd();
-
-		TMgr.RestoreTextureMatrix();
-		Shader::disable();
-	}
-
-	glDisable(GL_TEXTURE_2D);
-
-	OGL_DoFades(0,0,view->screen_width, view->screen_height);
 }
