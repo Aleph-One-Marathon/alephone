@@ -47,7 +47,7 @@ void FlatTexture() {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, flatTextureData);
-	assert(glGetError() == GL_NO_ERROR);	
+//	assert(glGetError() == GL_NO_ERROR);	
 }
 
 /*
@@ -59,11 +59,13 @@ void FSRenderer::setupGL() {
 	Shader* sV = Shader::get("blurV");
 	Shader* sH = Shader::get("blurH");
 
+	blurLarge = NULL;
+	blurSmall = NULL;
 	if(sH && sV) {
 		blurLarge = new Blur(320, 160, sH, sV);
 		blurSmall = new Blur(640, 320, sH, sV);
 	}
-	assert(glGetError() == GL_NO_ERROR);
+//	assert(glGetError() == GL_NO_ERROR);
 
 	glEnable(GL_POLYGON_OFFSET_EXT);
 	glDisable(GL_CULL_FACE);
