@@ -303,6 +303,7 @@ static void update_view_data(struct view_data *view);
 static void update_render_effect(struct view_data *view);
 static void shake_view_origin(struct view_data *view, world_distance delta);
 
+static void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr);
 void position_sprite_axis(short *x0, short *x1, short scale_width, short screen_width,
 	short positioning_mode, _fixed position, bool flip, world_distance world_left, world_distance world_right);
 
@@ -469,7 +470,7 @@ void render_view(
 			
 			// LP: won't put this into a separate class
 			/* render the playerÕs weapons, etc. */
-			RasPtr->render_viewer_sprite_layer(view);
+			render_viewer_sprite_layer(view, RasPtr);
 			
 			// Finish rendering main view
 			RasPtr->End();
@@ -828,7 +829,7 @@ void instantiate_polygon_transfer_mode(
 
 /* ---------- viewer sprite layer (i.e., weapons) */
 
-void RasterizerClass::render_viewer_sprite_layer(view_data *view) {
+void render_viewer_sprite_layer(view_data *view, RasterizerClass *RasPtr) {
 
 	rectangle_definition textured_rectangle;
 	weapon_display_information display_data;
@@ -839,7 +840,7 @@ void RasterizerClass::render_viewer_sprite_layer(view_data *view) {
 	if (!view->show_weapons_in_hand) return;
 	
 	// Need to set this...
-	SetForeground();
+	RasPtr->SetForeground();
 	
 	// No models here, and completely opaque
 	textured_rectangle.ModelPtr = NULL;
@@ -884,7 +885,7 @@ void RasterizerClass::render_viewer_sprite_layer(view_data *view) {
 			textured_rectangle.LightDepth = 0;
 			const GLfloat LightDirection[3] = {0, 1, 0};	// y is forward
 			objlist_copy(textured_rectangle.LightDirection,LightDirection,3);
-			SetForegroundView(display_data.flip_horizontal);
+			RasPtr->SetForegroundView(display_data.flip_horizontal);
 		}
 #endif
 		
@@ -928,7 +929,7 @@ void RasterizerClass::render_viewer_sprite_layer(view_data *view) {
 		
 		/* and draw it */
 		// LP: added OpenGL support
-		texture_rectangle(textured_rectangle);
+		RasPtr->texture_rectangle(textured_rectangle);
 	}
 }
 

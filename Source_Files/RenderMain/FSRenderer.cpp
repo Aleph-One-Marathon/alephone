@@ -879,7 +879,7 @@ const GLdouble kViewBaseMatrix[16] = {
 };
 
 void FSRenderer::SetView(view_data& view) {
-
+	OGL_SetView(view);
 	float fov = std::max(view.field_of_view - 35.0, 1.0);
 	float flare = view.maximum_depth_intensity/float(FIXED_ONE_HALF);
 

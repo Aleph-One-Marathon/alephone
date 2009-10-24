@@ -58,7 +58,6 @@ public:
 
 	virtual void texture_rectangle(rectangle_definition& textured_rectangle) {}
 
-	virtual void render_viewer_sprite_layer(view_data *view);
 };
 
 

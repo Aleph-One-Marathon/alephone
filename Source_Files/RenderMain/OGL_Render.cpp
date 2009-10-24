@@ -2261,8 +2261,12 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	if (IsInhabitant)
 		SetProjectionType(Projection_OpenGL_Eye);
 	else if (IsWeaponsInHand)
+	{
 		SetProjectionType(Projection_Screen);
-
+		glMatrixMode(GL_MODELVIEW);
+		glLoadIdentity();
+	}
+	
 	bool IsBlended = TMgr.IsBlended();
 	bool ExternallyLit = false;
 	GLfloat Color[4];
