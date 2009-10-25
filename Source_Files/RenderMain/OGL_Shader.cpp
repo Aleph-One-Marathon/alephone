@@ -32,7 +32,8 @@ std::map<std::string, Shader> Shader::Shaders;
 
 class XML_ShaderParser: public XML_ElementParser {
 
-	std::string _vert, _frag, _name;
+	FileSpecifier _vert, _frag;
+	std::string _name;
 public:
 
 	virtual bool HandleAttribute(const char *Tag, const char *Value);
@@ -45,9 +46,9 @@ bool XML_ShaderParser::HandleAttribute(const char *Tag, const char *Value) {
 	if(StringsEqual(Tag,"name")) {
 		_name = Value;
 	} else if(StringsEqual(Tag,"vert")) {
-		_vert = Value;	
+		_vert.SetNameWithPath(Value);
 	} else if(StringsEqual(Tag,"frag")) {
-		_frag = Value;
+		_vert.SetNameWithPath(Value);
 	}
 	
 	return true;
@@ -62,17 +63,15 @@ bool XML_ShaderParser::AttributesDone() {
 static XML_ShaderParser ShaderParser;
 XML_ElementParser *Shader_GetParser() {return &ShaderParser;}
 
-GLcharARB* parseFile(const std::string& name) {
+GLcharARB* parseFile(FileSpecifier& fileSpec) {
 
-	FileSpecifier fileSpec;
-	if (!fileSpec.SetNameWithPath(name.c_str()))
-	{
+	if (fileSpec == FileSpecifier() || !fileSpec.Exists()) {
 		return NULL;
 	}
 
 	FILE *file = fopen(fileSpec.GetPath(), "r");
 	if(!file) {
-		fprintf(stderr, "%s not found\n", name.c_str());
+		fprintf(stderr, "%s not found\n", fileSpec.GetPath());
 		return NULL;
 	}
 	
@@ -133,7 +132,7 @@ Shader::Shader(const std::string& name) : _programObj(NULL), _loaded(false), _ve
     }
 }    
 
-Shader::Shader(const std::string& vert, const std::string& frag) : _programObj(NULL), _loaded(false) {
+Shader::Shader(FileSpecifier& vert, FileSpecifier& frag) : _programObj(NULL), _loaded(false) {
 	_vert = parseFile(vert);
 	_frag = parseFile(frag);
 }

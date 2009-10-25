@@ -28,6 +28,7 @@
 #define GL_GLEXT_PROTOTYPES 1
 #endif
 #include "SDL_opengl.h" 
+#include "FileHandler.h"
 
 class Shader {
 
@@ -47,7 +48,7 @@ public:
 	
 	Shader() : _programObj(NULL), _loaded(false) {}
 	Shader(const std::string& name);
-	Shader(const std::string& vert, const std::string& frag);
+	Shader(FileSpecifier& vert, FileSpecifier& frag);
 	~Shader();
 
 	void load();

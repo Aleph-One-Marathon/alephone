@@ -332,9 +332,9 @@ void OGL_TextureOptionsBase::Load()
 	NormalImg.Clear();
 	
 	// Load the normal image if it has a filename specified for it
-	if (StringPresent(NormalColors) && File.SetNameWithPath(&NormalColors[0]))
+	if (NormalColors != FileSpecifier() && NormalColors.Exists())
 	{
-		if (!NormalImg.LoadFromFile(File,ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize))
+		if (!NormalImg.LoadFromFile(NormalColors,ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize))
 		{
 			// A texture must have a normal colored part
 			return;
@@ -344,19 +344,19 @@ void OGL_TextureOptionsBase::Load()
 	{
 		return;
 	}
-	
+
 	// load a heightmap
-	if(StringPresent(OffsetMap) && File.SetNameWithPath(&OffsetMap[0])) {
-		if(!OffsetImg.LoadFromFile(File, ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) {
+	if(OffsetMap != FileSpecifier() && OffsetMap.Exists()) {
+		if(!OffsetImg.LoadFromFile(OffsetMap, ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) {
 			return;
 		}
 		OffsetImg.ProcessOffsetMap();
 	}
 
 	// Load the normal mask if it has a filename specified for it
-	if (StringPresent(NormalMask) && File.SetNameWithPath(&NormalMask[0]))
+	if (NormalMask != FileSpecifier() && NormalMask.Exists())
 	{
-		NormalImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize);
+		NormalImg.LoadFromFile(NormalMask,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize);
 	}
 
 	if (maxTextureSize)
@@ -379,18 +379,18 @@ void OGL_TextureOptionsBase::Load()
 		GlowImg.Clear();
 		
 		// Load the glow image if it has a filename specified for it
-		if (StringPresent(GlowColors) && File.SetNameWithPath(&GlowColors[0]))
+		if (GlowColors != FileSpecifier() && GlowColors.Exists())
 		{
-			if (GlowImg.LoadFromFile(File,ImageLoader_Colors, flags | (GlowIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize))
+			if (GlowImg.LoadFromFile(GlowColors,ImageLoader_Colors, flags | (GlowIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize))
 			{
 		
 				// Load the glow mask if it has a
 				// filename specified for it; only
 				// loaded if an image has been loaded
 				// for it
-				if (StringPresent(GlowMask) && File.SetNameWithPath(&GlowMask[0]))
+				if (GlowMask != FileSpecifier() && GlowMask.Exists())
 				{
-					GlowImg.LoadFromFile(File,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize);
+					GlowImg.LoadFromFile(GlowMask,ImageLoader_Opacity, flags, actual_width, actual_height, maxTextureSize);
 				}
 			}
 		}

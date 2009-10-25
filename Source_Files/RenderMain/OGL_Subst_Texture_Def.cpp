@@ -244,13 +244,6 @@ bool XML_TextureOptionsParser::Start()
 	return true;
 }
 
-static void ReadString(const char *Value, vector<char> &s)
-{
-	size_t nchars = strlen(Value) + 1;
-	s.resize(nchars);
-	memcpy(&s[0], Value, nchars);
-}
-
 bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"coll"))
@@ -293,27 +286,27 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	}
 	else if (StringsEqual(Tag,"normal_image"))
 	{
-		ReadString(Value, Data.NormalColors);
+		Data.NormalColors.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"offset_image"))
 	{
-		ReadString(Value, Data.OffsetMap);
+		Data.OffsetMap.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_mask"))
 	{
-		ReadString(Value, Data.NormalMask);
+		Data.NormalMask.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_image"))
 	{
-		ReadString(Value, Data.GlowColors);
+		Data.GlowColors.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_mask"))
 	{
-		ReadString(Value, Data.GlowMask);
+		Data.GlowMask.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_blend"))

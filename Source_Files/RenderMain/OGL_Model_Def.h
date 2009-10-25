@@ -105,7 +105,7 @@ class OGL_ModelData: public OGL_SkinManager
 public:
 	// Name of the model file;
 	// there are two extra names here for handling ggadwa's Dim3 multiple files
-	vector<char> ModelFile, ModelFile1, ModelFile2;
+	FileSpecifier ModelFile, ModelFile1, ModelFile2;
 	
 	// Type of model-file data (guess the model-file type if empty)
 	vector<char> ModelType;

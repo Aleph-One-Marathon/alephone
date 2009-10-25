@@ -319,11 +319,10 @@ void OGL_ModelData::Load()
 	if (ModelPresent()) return;
 	
 	// Load the model
-	FileSpecifier File;
 	Model.Clear();
-	
-	if (!StringPresent(ModelFile)) return;
-	if (!File.SetNameWithPath(&ModelFile[0])) return;
+
+	if (ModelFile == FileSpecifier()) return;
+	if (!ModelFile.Exists()) return;
 
 	bool Success = false;
 	
@@ -331,33 +330,33 @@ void OGL_ModelData::Load()
 	if (StringsEqual(Type,"wave",4))
 	{
 		// Alias|Wavefront
-		Success = LoadModel_Wavefront(File, Model);
+		Success = LoadModel_Wavefront(ModelFile, Model);
 	}
 	else if (StringsEqual(Type,"3ds",3))
 	{
 		// 3D Studio Max
-		Success = LoadModel_Studio(File, Model);
+		Success = LoadModel_Studio(ModelFile, Model);
 	}
 	else if (StringsEqual(Type,"dim3",4))
 	{
 		// Brian Barnes's "Dim3" model format (first pass: model geometry)
-		Success = LoadModel_Dim3(File, Model, LoadModelDim3_First);
+		Success = LoadModel_Dim3(ModelFile, Model, LoadModelDim3_First);
 		
 		// Second and third passes: frames and sequences
 		try
 		{
-			if (!StringPresent(ModelFile1)) throw 0;
-			if (!File.SetNameWithPath(&ModelFile1[0])) throw 0;
-			if (!LoadModel_Dim3(File, Model, LoadModelDim3_Rest)) throw 0;
+			if (ModelFile1 == FileSpecifier()) throw 0;
+			if (!ModelFile1.Exists()) throw 0;
+			if (!LoadModel_Dim3(ModelFile1, Model, LoadModelDim3_Rest)) throw 0;
 		}
 		catch(...)
 		{}
 		//
 		try
 		{
-			if (!StringPresent(ModelFile2)) throw 0;
-			if (!File.SetNameWithPath(&ModelFile2[0])) throw 0;
-			if (!LoadModel_Dim3(File, Model, LoadModelDim3_Rest)) throw 0;
+			if (ModelFile2 == FileSpecifier()) throw 0;
+			if (!ModelFile2.Exists()) throw 0;
+			if (!LoadModel_Dim3(ModelFile2, Model, LoadModelDim3_Rest)) throw 0;
 		}
 		catch(...)
 		{}
@@ -366,7 +365,7 @@ void OGL_ModelData::Load()
 	else if (StringsEqual(Type,"qd3d") || StringsEqual(Type,"3dmf") || StringsEqual(Type,"quesa"))
 	{
 		// QuickDraw 3D / Quesa
-		Success = LoadModel_QD3D(File, Model);
+		Success = LoadModel_QD3D(ModelFile, Model);
 	}
 #endif
 	
@@ -606,30 +605,22 @@ bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"normal_image"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.NormalColors.resize(nchars);
-		memcpy(&Data.NormalColors[0],Value,nchars);
+		Data.NormalColors.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_mask"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.NormalMask.resize(nchars);
-		memcpy(&Data.NormalMask[0],Value,nchars);
+		Data.NormalMask.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_image"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.GlowColors.resize(nchars);
-		memcpy(&Data.GlowColors[0],Value,nchars);
+		Data.GlowColors.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"glow_mask"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.GlowMask.resize(nchars);
-		memcpy(&Data.GlowMask[0],Value,nchars);
+		Data.GlowMask.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"normal_blend"))
@@ -879,23 +870,17 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"file"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.ModelFile.resize(nchars);
-		memcpy(&Data.ModelFile[0],Value,nchars);
+		Data.ModelFile.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"file1"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.ModelFile1.resize(nchars);
-		memcpy(&Data.ModelFile1[0],Value,nchars);
+		Data.ModelFile1.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"file2"))
 	{
-		size_t nchars = strlen(Value)+1;
-		Data.ModelFile2.resize(nchars);
-		memcpy(&Data.ModelFile2[0],Value,nchars);
+		Data.ModelFile2.SetNameWithPath(Value);
 		return true;
 	}
 	else if (StringsEqual(Tag,"type"))

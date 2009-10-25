@@ -37,7 +37,7 @@ public:
 
 struct SoundOptions
 {
-	std::string File;
+	FileSpecifier File;
 	ExternalSoundHeader Sound;
 
 	static const int HashSize = 1 << 8;

@@ -178,9 +178,7 @@ bool SoundManager::LoadSound(short sound_index)
 		{
 			SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, k);
 			if (!SndOpts) continue;
-			FileSpecifier File;
-			if (!File.SetNameWithPath(SndOpts->File.c_str())) continue;
-			if (!SndOpts->Sound.LoadExternal(File)) continue;
+			if (!SndOpts->Sound.LoadExternal(SndOpts->File)) continue;
 		}
 
 		if (definition->sound_code != NONE &&
@@ -1420,7 +1418,7 @@ bool XML_SoundOptionsParser::Start()
 	IndexPresent = false;
 	Index = NONE;
 	Slot = 0;			// Default: first slot
-	Data.File.clear();
+	Data.File = FileSpecifier();
 	
 	return true;
 }
@@ -1442,7 +1440,7 @@ bool XML_SoundOptionsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"file"))
 	{
-		Data.File = Value;
+		Data.File.SetNameWithPath(Value);
 		return true;
 	}
 	UnrecognizedTag();
