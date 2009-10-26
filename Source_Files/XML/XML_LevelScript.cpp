@@ -47,6 +47,7 @@ using namespace std;
 #include "XML_DataBlock.h"
 #include "XML_LevelScript.h"
 #include "XML_ParseTreeRoot.h"
+#include "Plugins.h"
 #include "Random.h"
 #include "images.h"
 #include "lua_script.h"
@@ -259,6 +260,7 @@ void ResetLevelScript()
 		ResetAllMMLValues();
 		// then load the base stuff (from Scripts folder and whatnot)
 		LoadBaseMMLScripts();
+		LoadPlugins();
 	}
 }
 

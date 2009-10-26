@@ -55,6 +55,7 @@
 #include "OGL_Render.h"
 #include "XML_ParseTreeRoot.h"
 #include "FileHandler.h"
+#include "Plugins.h"
 
 #include "mytm.h"	// mytm_initialize(), for platform-specific shell_*.h
 
@@ -425,6 +426,7 @@ static void initialize_application(void)
 	// Parse MML files
 	SetupParseTree();
 	LoadBaseMMLScripts();
+	LoadPlugins();
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {

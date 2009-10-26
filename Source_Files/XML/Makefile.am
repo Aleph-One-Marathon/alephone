@@ -2,13 +2,13 @@
 
 noinst_LIBRARIES = libxml.a
 
-libxml_a_SOURCES = ColorParser.h DamageParser.h ShapesParser.h XML_Configure.h \
-  XML_DataBlock.h XML_ElementParser.h XML_LevelScript.h XML_Loader_SDL.h \
-  XML_ParseTreeRoot.h \
-  \
-  ColorParser.cpp DamageParser.cpp ShapesParser.cpp XML_Configure.cpp \
-  XML_DataBlock.cpp XML_ElementParser.cpp XML_LevelScript.cpp XML_Loader_SDL.cpp \
-  XML_MakeRoot.cpp
+libxml_a_SOURCES = ColorParser.h DamageParser.h Plugins.h		\
+  ShapesParser.h XML_Configure.h XML_DataBlock.h XML_ElementParser.h	\
+  XML_LevelScript.h XML_Loader_SDL.h XML_ParseTreeRoot.h		\
+									\
+  ColorParser.cpp DamageParser.cpp ShapesParser.cpp Plugins.cpp		\
+  XML_Configure.cpp XML_DataBlock.cpp XML_ElementParser.cpp		\
+  XML_LevelScript.cpp XML_Loader_SDL.cpp XML_MakeRoot.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
