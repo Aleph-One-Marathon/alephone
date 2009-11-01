@@ -27,9 +27,122 @@
 
 #include "FileHandler.h"
 #include "Logging.h"
+#include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
 
-bool PluginHandler::GetData()
+Plugins* Plugins::m_instance = 0;
+Plugins* Plugins::instance() {
+	if (!m_instance) {
+		m_instance = new Plugins;
+	}
+
+	return m_instance;
+}
+
+extern std::vector<DirectorySpecifier> data_search_path;
+
+class ModifySearchPath {
+public:
+	ModifySearchPath(DirectorySpecifier dir) {
+		data_search_path.insert(data_search_path.begin(), dir);
+	}
+	~ModifySearchPath() {
+		data_search_path.erase(data_search_path.begin());
+	}
+};
+
+void Plugins::load_mml() {
+	XML_Loader_SDL loader;
+	loader.CurrentElement = &RootParser;
+
+	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) {
+		ModifySearchPath msp(it->directory);
+		for (std::vector<std::string>::iterator mml = it->mmls.begin(); mml != it->mmls.end(); ++mml) {
+			FileSpecifier file;
+			file.SetNameWithPath(mml->c_str());
+			loader.ParseFile(file);
+		}
+	}
+}
+
+static Plugin Data;
+
+class XML_PluginMMLParser : public XML_ElementParser 
+{
+public:
+	bool HandleAttribute(const char* Tag, const char* Value);
+
+	XML_PluginMMLParser() : XML_ElementParser("mml") {}
+};
+
+bool XML_PluginMMLParser::HandleAttribute(const char* Tag, const char* Value)
+{
+	if (StringsEqual(Tag, "file")) {
+		Data.mmls.push_back(Value);
+		return true;
+	}
+
+	UnrecognizedTag();
+	return false;
+}
+
+XML_PluginMMLParser PluginMMLParser;
+
+static DirectorySpecifier current_plugin_directory;
+
+class XML_PluginParser : public XML_ElementParser
+{
+	friend class XML_PluginMMLParser;
+public:
+	bool Start();
+	bool HandleAttribute(const char* Tag, const char* Value);
+	bool AttributesDone();
+	bool End();
+	
+	XML_PluginParser() : XML_ElementParser("plugin") {}
+};
+
+bool XML_PluginParser::Start() {
+	Data = Plugin();
+	Data.directory = current_plugin_directory;
+	return true;
+}
+
+bool XML_PluginParser::HandleAttribute(const char* Tag, const char* Value)
+{
+	if (StringsEqual(Tag, "name")) {
+		Data.name = Value;
+		return true;
+	} else if (StringsEqual(Tag, "version")) {
+		Data.version = Value;
+		return true;
+	} else if (StringsEqual(Tag, "description")) {
+		Data.description = Value;
+		return true;
+	}
+
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_PluginParser::AttributesDone()
+{
+	if (Data.name == "") {
+		AttribsMissing();
+		return false;
+	}
+}
+
+bool XML_PluginParser::End() {
+	std::sort(Data.mmls.begin(), Data.mmls.end());
+	Plugins::instance()->add(Data);
+	return true;
+}
+
+XML_ElementParser PluginRootParser("");
+XML_PluginParser PluginParser;
+
+bool PluginLoader::GetData()
 {
 	if (m_data.size() == 0) {
 		return false;
@@ -42,47 +155,31 @@ bool PluginHandler::GetData()
 	return true;
 }
 
-void PluginHandler::ReportReadError()
+void PluginLoader::ReportReadError()
 {
 	logError1("Error reading %s plugin resources", m_name.c_str());
 }
 
-void PluginHandler::ReportParseError(const char* ErrorString, int LineNumber) 
+void PluginLoader::ReportParseError(const char* ErrorString, int LineNumber) 
 {
-	logError3("XML parsing error: %s at line %d in %s Plugin.mml", ErrorString, LineNumber, m_name.c_str());
+	logError3("XML parsing error: %s at line %d in %s Plugin.xml", ErrorString, LineNumber, m_name.c_str());
 }
 
 const int MaxErrorsToShow = 7;
 
-void PluginHandler::ReportInterpretError(const char* ErrorString)
+void PluginLoader::ReportInterpretError(const char* ErrorString)
 {
 	if (GetNumInterpretErrors() < MaxErrorsToShow) {
 		logError(ErrorString);
 	}
 }
 
-bool PluginHandler::RequestAbort()
+bool PluginLoader::RequestAbort()
 {
 	return (GetNumInterpretErrors() >= MaxErrorsToShow);
 }
 
-extern std::vector<DirectorySpecifier> data_search_path;
-
-class SearchPathOverride 
-{
-public:
-	SearchPathOverride(const DirectorySpecifier& dir) 
-	{
-		data_search_path.insert(data_search_path.begin(), dir);
-	}
-
-	~SearchPathOverride() 
-	{
-		data_search_path.erase(data_search_path.begin());
-	}
-};
-
-bool PluginHandler::ParsePlugin(FileSpecifier& file_name)
+bool PluginLoader::ParsePlugin(FileSpecifier& file_name)
 {
 	OpenedFile file;
 	if (file_name.Open(file)) 
@@ -94,17 +191,15 @@ bool PluginHandler::ParsePlugin(FileSpecifier& file_name)
 
 		if (file.Read(data_size, &m_data[0])) 
 		{
-			DirectorySpecifier dir;
-			file_name.ToDirectory(dir);
-			SearchPathOverride override(dir);
+			file_name.ToDirectory(current_plugin_directory);
 
 			char name[256];
-			dir.GetName(name);
+			current_plugin_directory.GetName(name);
 			m_name = name;
 			
 			if (!DoParse()) 
 			{
-				logError1("There were parsing errors in %s Plugin.mml\n", m_name.c_str());
+				logError1("There were parsing errors in %s Plugin.xml\n", m_name.c_str());
 			}
 		}
 
@@ -114,7 +209,7 @@ bool PluginHandler::ParsePlugin(FileSpecifier& file_name)
 	return false;
 }
 
-bool PluginHandler::ParseDirectory(FileSpecifier& dir) 
+bool PluginLoader::ParseDirectory(FileSpecifier& dir) 
 {
 	std::vector<dir_entry> de;
 	if (!dir.ReadDirectory(de))
@@ -123,21 +218,21 @@ bool PluginHandler::ParseDirectory(FileSpecifier& dir)
 	
 	for (std::vector<dir_entry>::const_iterator it = de.begin(); it != de.end(); ++it) {
 		if (it->is_directory) {
-			FileSpecifier file_name = dir + it->name + "Plugin.mml";
+			FileSpecifier file_name = dir + it->name + "Plugin.xml";
 			ParsePlugin(file_name);
 		}
 	}
 }
 
-void LoadPlugins()
-{
+void Plugins::enumerate() {
+	PluginParser.AddChild(&PluginMMLParser);
+	PluginRootParser.AddChild(&PluginParser);
+
 	logContext("parsing plugins");
-	PluginHandler loader;
-	loader.CurrentElement = &RootParser;
+	PluginLoader loader;
+	loader.CurrentElement = &PluginRootParser;
 	
-	// ParseDirectory messes with the search path!
-	std::vector<DirectorySpecifier> search_path = data_search_path;
-	for (std::vector<DirectorySpecifier>::const_iterator it = search_path.begin(); it != search_path.end(); ++it) {
+	for (std::vector<DirectorySpecifier>::const_iterator it = data_search_path.begin(); it != data_search_path.end(); ++it) {
 		DirectorySpecifier path = *it + "Plugins";
 		loader.ParseDirectory(path);
 	}

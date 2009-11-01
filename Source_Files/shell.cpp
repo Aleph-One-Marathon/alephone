@@ -426,7 +426,8 @@ static void initialize_application(void)
 	// Parse MML files
 	SetupParseTree();
 	LoadBaseMMLScripts();
-	LoadPlugins();
+	Plugins::instance()->enumerate();
+	Plugins::instance()->load_mml();
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {

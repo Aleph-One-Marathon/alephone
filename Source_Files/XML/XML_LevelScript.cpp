@@ -260,7 +260,7 @@ void ResetLevelScript()
 		ResetAllMMLValues();
 		// then load the base stuff (from Scripts folder and whatnot)
 		LoadBaseMMLScripts();
-		LoadPlugins();
+		Plugins::instance()->load_mml();
 	}
 }
 

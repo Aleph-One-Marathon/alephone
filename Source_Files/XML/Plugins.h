@@ -23,16 +23,38 @@
 #ifndef PLUGINS_H
 #define PLUGINS_H
 
+#include "FileHandler.h"
 #include "XML_Configure.h"
 #include <string>
 #include <vector>
 
-class FileSpecifier;
+struct Plugin {
+	DirectorySpecifier directory;
+	std::string name;
+	std::string description;
+	std::string version;
+	std::vector<std::string> mmls;
+};
 
-class PluginHandler : public XML_Configure {
+class Plugins {
+	friend class XML_PluginParser;
 public:
-	PluginHandler() { }
-	~PluginHandler() { }
+	static Plugins* instance();
+	
+	void enumerate();
+	void load_mml();
+private:
+	Plugins() { }
+	void add(Plugin plugin) { m_plugins.push_back(plugin); }
+
+	static Plugins* m_instance;
+	std::vector<Plugin> m_plugins;
+};
+
+class PluginLoader : public XML_Configure {
+public:
+	PluginLoader() { }
+	~PluginLoader() { }
 	
 	bool ParsePlugin(FileSpecifier& file);
 	bool ParseDirectory(FileSpecifier& dir);
@@ -48,7 +70,5 @@ private:
 	std::string m_name;
 	std::vector<char> m_data;
 };
-
-void LoadPlugins();
 
 #endif
