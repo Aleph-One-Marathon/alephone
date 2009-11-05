@@ -688,7 +688,7 @@ static const char *gamma_labels[9] = {
 };
 
 static const char* renderer_labels[] = {
-	"Software", "OpenGL", NULL
+	"Software", "OpenGL (Classic)", "OpenGL (3D)", NULL
 };
 
 static const char* hud_scale_labels[] = {
@@ -790,6 +790,7 @@ static void rendering_options_dialog_demux(void* arg)
 			break;
 
 		case _opengl_acceleration:
+		case _shader_acceleration:
 			OpenGLDialog::Create ()->OpenGLPrefsByRunning ();
 			break;
 
@@ -2309,10 +2310,10 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	else
 		preferences->screen_mode.fill_the_screen = true;
 
-	if (preferences->screen_mode.acceleration == _opengl_acceleration)
-		preferences->screen_mode.bit_depth = 32;
-	else
+	if (preferences->screen_mode.acceleration == _no_acceleration)
 		preferences->screen_mode.bit_depth = 16;
+	else
+		preferences->screen_mode.bit_depth = 32;
 	
 	preferences->screen_mode.draw_every_other_line= false;
 	
@@ -2508,7 +2509,7 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 	}
 
 	// OpenGL requires at least 16 bit color depth
-	if (preferences->screen_mode.acceleration == _opengl_acceleration && preferences->screen_mode.bit_depth == 8)
+	if (preferences->screen_mode.acceleration != _no_acceleration && preferences->screen_mode.bit_depth == 8)
 	{
 		preferences->screen_mode.bit_depth= 16;
 		changed= true;

@@ -120,6 +120,13 @@ Shader* Shader::get(const std::string& name) {
     return NULL;
 }
 
+void Shader::unloadAll() {
+	for (std::map<std::string, Shader>::iterator it = Shaders.begin();
+		 it != Shaders.end();
+		 ++it)
+		it->second.unload();
+}
+
 Shader::Shader(const std::string& name) : _programObj(NULL), _loaded(false), _vert(NULL), _frag(NULL) {
     initDefaultPrograms();
     if (defaultVertexPrograms.count(name) > 0) {
@@ -148,14 +155,12 @@ void Shader::init() {
 	assert(vertexShader);
 	glAttachObjectARB(_programObj, vertexShader);
 	glDeleteObjectARB(vertexShader);
-	delete [] _vert; _vert = NULL;
 
 	assert(_frag);
 	GLhandleARB fragmentShader = parseShader(_frag, GL_FRAGMENT_SHADER_ARB);
 	assert(fragmentShader);
 	glAttachObjectARB(_programObj, fragmentShader);
 	glDeleteObjectARB(fragmentShader);
-	delete [] _frag; _frag = NULL;
 	
 	glLinkProgramARB(_programObj);
 
@@ -170,10 +175,11 @@ void Shader::init() {
 	glUniform1fARB(glGetUniformLocationARB(_programObj, "time"), 0.0);
 	glUniform1fARB(glGetUniformLocationARB(_programObj, "wobble"), 0.0);
 	glUniform1fARB(glGetUniformLocationARB(_programObj, "flare"), 0.0);
+	glUniform1fARB(glGetUniformLocationARB(_programObj, "uoffset"), 0.0);
 
 	glUseProgramObjectARB(NULL);
 
-	assert(glGetError() == GL_NO_ERROR);
+//	assert(glGetError() == GL_NO_ERROR);
 }
 
 void Shader::setFloat(const char* name, float f) {
@@ -194,6 +200,14 @@ void Shader::enable() {
 
 void Shader::disable() {
 	glUseProgramObjectARB(NULL);
+}
+
+void Shader::unload() {
+	if(_programObj) {
+		glDeleteObjectARB(_programObj);
+		_programObj = NULL;
+		_loaded = false;
+	}
 }
 
 void initDefaultPrograms() {
@@ -271,6 +285,7 @@ void initDefaultPrograms() {
         "}\n";
     defaultFragmentPrograms["landscape"] = ""
         "uniform sampler2D texture0;\n"
+        "uniform float uoffset;\n"
         "varying vec3 viewDir;\n"
         "varying float texScale;\n"
         "varying float texOffset;\n"
@@ -278,7 +293,7 @@ void initDefaultPrograms() {
         "	float pi = 2.0 * asin(1.0);\n"
         "	vec3 viewv = normalize(viewDir);\n"
         "	float x = atan(viewv.x, viewv.y) / pi;\n"
-        "	float y = 0.5 - texOffset + viewv.z * pi * 0.1 * texScale;\n"
+        "	float y = 0.5 - (0.67 * uoffset) - texOffset + viewv.z * pi * 0.1 * texScale;\n"
         "	gl_FragColor = texture2D(texture0, vec2(-x + 0.5, y));\n"
         "}\n";
 
@@ -349,7 +364,19 @@ void initDefaultPrograms() {
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "	gl_FragColor = vec4(vec3(a, b, c), color.a);\n"
         "}\n";    
-    
+
+	defaultVertexPrograms["flat_random"] = defaultVertexPrograms["random"];
+	defaultFragmentPrograms["flat_random"] = ""
+		"uniform sampler2D texture0;\n"
+		"uniform float time;\n"
+		"void main(void) {\n"
+		"	float a = fract(sin(time * 7.0) * 7.0); \n"
+		"	float b = fract(sin(time * 3.0) * 3.0); \n"
+		"	float c = fract(sin(time * 31.0) * 31.0);\n"
+		"	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
+		"	gl_FragColor = vec4(vec3(a, b, c), color.a);\n"
+		"}\n";    
+	
     defaultVertexPrograms["parallax"] = ""
         "varying vec3 viewXY;\n"
         "varying vec3 viewDir;\n"

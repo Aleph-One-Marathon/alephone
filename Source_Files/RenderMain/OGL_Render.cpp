@@ -184,6 +184,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Faders.h"
 #include "ModelRenderer.h"
 #include "Logging.h"
+#include "screen.h"
+#include "OGL_Shader.h"
 
 #ifdef __WIN32__
 #include "OGL_Win32.h"
@@ -554,6 +556,7 @@ bool OGL_ClearScreen()
 	else return false;
 }
 
+void OGL_Rasterizer_Init();
 
 // Start an OpenGL run (creates a rendering context)
 #ifdef mac
@@ -577,8 +580,9 @@ bool OGL_StartRun()
 	}
 #endif
 
+	bool ShaderRender = (graphics_preferences->screen_mode.acceleration == _shader_acceleration);
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();
-	Z_Buffering = TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
+	Z_Buffering = ShaderRender || TEST_FLAG(ConfigureData.Flags,OGL_Flag_ZBuffer);
 
 #ifdef mac
 	// Plain and simple
@@ -685,7 +689,10 @@ bool OGL_StartRun()
 		// if coincident textures are not rendered very well.
 		// [DEFAULT] -- anything marked out as this ought to be reverted to if changed
 		glDepthFunc(GL_LEQUAL);
-		glDepthRange(1,0);
+		if (ShaderRender)
+			glDepthRange(0,1);
+		else
+			glDepthRange(1,0);
 	}
 	
 	// Prevent wrong-side polygons from being rendered;
@@ -711,6 +718,8 @@ bool OGL_StartRun()
 	glEnableClientState(GL_VERTEX_ARRAY);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
+	OGL_Rasterizer_Init();
+	
 	load_replacement_collections();	
 
 	// Initialize the texture accounting
@@ -743,6 +752,7 @@ bool OGL_StopRun()
 	if (!OGL_IsActive()) return false;
 	
 	OGL_StopTextures();
+	Shader::unloadAll();
 	
 #ifdef mac
 	aglDestroyContext(RenderContext);
@@ -863,6 +873,8 @@ void PreloadWallTexture(const TextureWithTransferMode& inTexture)
 	if (TMgr.Setup()) {
 		TMgr.RenderNormal();
 		if (TMgr.IsGlowMapped()) TMgr.RenderGlowing();
+		if (graphics_preferences->screen_mode.acceleration == _shader_acceleration)
+			TMgr.RenderBump();
 	}
 }
 
@@ -893,6 +905,7 @@ bool OGL_SetWindow(Rect &ScreenBounds, Rect &ViewBounds, bool UseBackBuffer)
 	if (JustInited) {JustInited = false; DoUpdate = true;}
 	else if (!RectsEqual(ScreenBounds,SavedScreenBounds)) DoUpdate = true;
 	else if (!RectsEqual(ViewBounds,SavedViewBounds)) DoUpdate = true;
+	else if (graphics_preferences->screen_mode.acceleration == _shader_acceleration) DoUpdate = true;
 	
 	if (!DoUpdate) return true;
 	
@@ -992,7 +1005,10 @@ bool OGL_StartMain()
 		glFogf(GL_FOG_DENSITY,1.0F/MAX(1,WORLD_ONE*CurrFog->Depth));
 	}
 	else
+	{
+		glFogf(GL_FOG_DENSITY,0.0F);
 		glDisable(GL_FOG);
+	}
 	
 	// Set the color of the void
 	OGL_ConfigureData& ConfigureData = Get_OGL_ConfigureData();

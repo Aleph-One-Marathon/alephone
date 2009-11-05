@@ -78,23 +78,32 @@ struct vertical_surface_data
 	short transfer_mode;
 };
 
+typedef enum {
+	kDiffuse,
+	kGlow
+} RenderStep;
 
 class RenderRasterizerClass
 {
+protected:
 	// Auxiliary data and routines:
+	virtual void render_tree(RenderStep renderStep);
+	virtual void render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep);
+	virtual void store_endpoint(endpoint_data *endpoint, long_vector2d& p);
 	
 	// LP change: indicate whether the void is present on one side;
 	// useful for suppressing semitransparency to the void
-	void render_node_floor_or_ceiling(
+	virtual void render_node_floor_or_ceiling(
 		clipping_window_data *window, polygon_data *polygon, horizontal_surface_data *surface,
-		bool void_present);
-	void render_node_side(
+		bool void_present, bool ceil, RenderStep renderStep);
+	virtual void render_node_side(
 		clipping_window_data *window, vertical_surface_data *surface,
-		bool void_present);
+		bool void_present, RenderStep renderStep);
 
 	// LP change: add "other side of media" flag, to indicate that the sprite will be rendered
 	// on the opposite side of the liquid surface from the viewpoint, instead of the same side.
-	void render_node_object(render_object_data *object, bool other_side_of_media);
+	virtual void render_node_object(
+		render_object_data *object, bool other_side_of_media, RenderStep renderStep);
 
 	// LP changes for better long-distance support
 	
@@ -126,7 +135,7 @@ public:
 	RenderSortPolyClass *RSPtr;
 	RasterizerClass *RasPtr;
 	
-	void render_tree();
+	virtual void render_tree();
 	
   	// Inits everything
  	RenderRasterizerClass();

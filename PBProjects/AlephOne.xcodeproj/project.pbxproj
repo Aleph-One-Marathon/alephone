@@ -25,6 +25,10 @@
 		270D534C0FCB417500482ED4 /* OGL_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 270D534B0FCB417500482ED4 /* OGL_Blitter.h */; };
 		2739B492101B862A00CC8098 /* Shape_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2739B490101B862A00CC8098 /* Shape_Blitter.cpp */; };
 		2739B493101B862A00CC8098 /* Shape_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2739B491101B862A00CC8098 /* Shape_Blitter.h */; };
+		277AB6C0109CE2570003402A /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
+		277AB6C1109CE2570003402A /* Rasterizer_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 277AB6BD109CE2570003402A /* Rasterizer_Shader.h */; };
+		277AB6C2109CE2570003402A /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
+		277AB6C3109CE2570003402A /* RenderRasterize_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 277AB6BF109CE2570003402A /* RenderRasterize_Shader.h */; };
 		277AB97F10A26AF40003402A /* Plugins.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB97E10A26AF40003402A /* Plugins.cpp */; };
 		277AB98110A26B020003402A /* Plugins.h in Headers */ = {isa = PBXBuildFile; fileRef = 277AB98010A26B020003402A /* Plugins.h */; };
 		278497A00FF5C308008DECC8 /* lua_hud_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */; };
@@ -508,6 +512,10 @@
 		270D534B0FCB417500482ED4 /* OGL_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Blitter.h; sourceTree = "<group>"; };
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
+		277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rasterizer_Shader.cpp; sourceTree = "<group>"; };
+		277AB6BD109CE2570003402A /* Rasterizer_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rasterizer_Shader.h; sourceTree = "<group>"; };
+		277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderRasterize_Shader.cpp; sourceTree = "<group>"; };
+		277AB6BF109CE2570003402A /* RenderRasterize_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RenderRasterize_Shader.h; sourceTree = "<group>"; };
 		277AB97E10A26AF40003402A /* Plugins.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Plugins.cpp; sourceTree = "<group>"; };
 		277AB98010A26B020003402A /* Plugins.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Plugins.h; sourceTree = "<group>"; };
 		2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_hud_objects.cpp; sourceTree = "<group>"; };
@@ -1648,6 +1656,10 @@
 		F5CC92E30240D56101A80001 /* RenderMain */ = {
 			isa = PBXGroup;
 			children = (
+				277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */,
+				277AB6BD109CE2570003402A /* Rasterizer_Shader.h */,
+				277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */,
+				277AB6BF109CE2570003402A /* RenderRasterize_Shader.h */,
 				27DC60C4109218800062003A /* vec3.h */,
 				27DC606E10917F690062003A /* OGL_Shader.cpp */,
 				27DC606F10917F690062003A /* OGL_Shader.h */,
@@ -2162,6 +2174,8 @@
 				27DC607110917F690062003A /* OGL_Shader.h in Headers */,
 				27DC60C5109218800062003A /* vec3.h in Headers */,
 				277AB98110A26B020003402A /* Plugins.h in Headers */,
+				277AB6C1109CE2570003402A /* Rasterizer_Shader.h in Headers */,
+				277AB6C3109CE2570003402A /* RenderRasterize_Shader.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2489,6 +2503,8 @@
 				2739B492101B862A00CC8098 /* Shape_Blitter.cpp in Sources */,
 				27DC607010917F690062003A /* OGL_Shader.cpp in Sources */,
 				277AB97F10A26AF40003402A /* Plugins.cpp in Sources */,
+				277AB6C0109CE2570003402A /* Rasterizer_Shader.cpp in Sources */,
+				277AB6C2109CE2570003402A /* RenderRasterize_Shader.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

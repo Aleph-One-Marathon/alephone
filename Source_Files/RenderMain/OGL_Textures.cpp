@@ -136,6 +136,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Setup.h"
 #include "OGL_Render.h"
 #include "OGL_Textures.h"
+#include "screen.h"
 
 OGL_TexturesStats gGLTxStats = {0,0,0,500000,0,0, 0};
 

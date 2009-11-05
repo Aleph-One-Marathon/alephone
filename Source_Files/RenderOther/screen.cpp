@@ -294,7 +294,7 @@ bool Screen::lua_hud()
 
 bool Screen::openGL()
 {
-	return screen_mode.acceleration == _opengl_acceleration;
+	return screen_mode.acceleration != _no_acceleration;
 }
 
 bool Screen::fifty_percent()
@@ -481,7 +481,7 @@ static void reallocate_world_pixels(int width, int height)
 void ReloadViewContext(void)
 {
 #ifdef HAVE_OPENGL
-	if (screen_mode.acceleration == _opengl_acceleration)
+	if (screen_mode.acceleration != _no_acceleration)
 		OGL_StartRun();
 #endif
 }
@@ -509,7 +509,7 @@ void enter_screen(void)
 #if defined(HAVE_OPENGL) && !defined(MUST_RELOAD_VIEW_CONTEXT)
 	// if MUST_RELOAD_VIEW_CONTEXT, we know this just happened in
 	// change_screen_mode
-	if (screen_mode.acceleration == _opengl_acceleration)
+	if (screen_mode.acceleration != _no_acceleration)
 		OGL_StartRun();
 #endif
 
@@ -567,7 +567,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	int vmode_width = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_width : width;
 	uint32 flags = (screen_mode.fullscreen ? SDL_FULLSCREEN : 0);
 #ifdef HAVE_OPENGL
-	if (!nogl && screen_mode.acceleration == _opengl_acceleration) {
+	if (!nogl && screen_mode.acceleration != _no_acceleration) {
 		flags |= SDL_OPENGL;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
@@ -597,7 +597,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
 #ifdef HAVE_OPENGL
 #if SDL_VERSION_ATLEAST(1,2,6)
-	if (main_surface == NULL && !nogl && screen_mode.acceleration == _opengl_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
+	if (main_surface == NULL && !nogl && screen_mode.acceleration != _no_acceleration && Get_OGL_ConfigureData().Multisamples > 0) {
 		// retry with multisampling off
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
@@ -626,7 +626,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #endif
 	}
 #ifdef MUST_RELOAD_VIEW_CONTEXT
-	if (!nogl && screen_mode.acceleration == _opengl_acceleration) 
+	if (!nogl && screen_mode.acceleration != _no_acceleration) 
 		ReloadViewContext();
 #endif
 	if (depth == 8) {
@@ -831,7 +831,7 @@ void render_screen(short ticks_elapsed)
 
 		dirty_terminal_view(current_player_index);
 	} 
-	else if (screen_mode.acceleration == _opengl_acceleration && clear_next_screen)
+	else if (screen_mode.acceleration != _no_acceleration && clear_next_screen)
 	{
 		clear_screen(false);
 		update_full_screen = true;
@@ -843,6 +843,7 @@ void render_screen(short ticks_elapsed)
 
 	switch (screen_mode.acceleration) {
 		case _opengl_acceleration:
+		case _shader_acceleration:
 			// If we're using the overhead map, fall through to no acceleration
 			if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
 				break;
@@ -886,7 +887,7 @@ void render_screen(short ticks_elapsed)
 
     // clear Lua drawing from previous frame
     // (GL must do this before render_view)
-    if (screen_mode.acceleration == _opengl_acceleration && Screen::instance()->lua_hud())
+    if (screen_mode.acceleration != _no_acceleration && Screen::instance()->lua_hud())
         clear_screen_margin();
     
 	// Render world view
@@ -894,7 +895,7 @@ void render_screen(short ticks_elapsed)
 
     // clear Lua drawing from previous frame
     // (SDL is slower if we do this before render_view)
-    if (screen_mode.acceleration != _opengl_acceleration && Screen::instance()->lua_hud())
+    if (screen_mode.acceleration == _no_acceleration && Screen::instance()->lua_hud())
         clear_screen_margin();
     
 	// Render crosshairs
@@ -927,7 +928,7 @@ void render_screen(short ticks_elapsed)
 
 	// If the main view is not being rendered in software but OpenGL is active,
 	// then blit the software rendering to the screen
-	if (screen_mode.acceleration == _opengl_acceleration) {
+	if (screen_mode.acceleration != _no_acceleration) {
 #ifdef HAVE_OPENGL
 		if (Screen::instance()->hud()) {
 			if (Screen::instance()->lua_hud())
@@ -988,7 +989,7 @@ void render_screen(short ticks_elapsed)
 
 #ifdef HAVE_OPENGL
 	// Swap OpenGL double-buffers
-	if (screen_mode.acceleration == _opengl_acceleration)
+	if (screen_mode.acceleration != _no_acceleration)
 		OGL_SwapBuffers();
 #endif
 }

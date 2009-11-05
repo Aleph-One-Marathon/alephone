@@ -387,7 +387,7 @@ int Lua_Images_New(lua_State *L)
         int resource_id = lua_tointeger(L, -1);
 
         // blitter from image
-        Image_Blitter *blitter = (get_screen_mode()->acceleration == _opengl_acceleration) ? new OGL_Blitter() : new Image_Blitter();
+        Image_Blitter *blitter = (get_screen_mode()->acceleration != _no_acceleration) ? new OGL_Blitter() : new Image_Blitter();
         if (!blitter->Load(resource_id))
         {
             lua_pushnil(L);
@@ -447,7 +447,7 @@ int Lua_Images_New(lua_State *L)
 		image.LoadFromFile(File, ImageLoader_Opacity, 0);
 	
 	// blitter from image
-	Image_Blitter *blitter = (get_screen_mode()->acceleration == _opengl_acceleration) ? new OGL_Blitter() : new Image_Blitter();
+	Image_Blitter *blitter = (get_screen_mode()->acceleration != _no_acceleration) ? new OGL_Blitter() : new Image_Blitter();
 	if (!blitter->Load(image))
 	{
 		lua_pushnil(L);

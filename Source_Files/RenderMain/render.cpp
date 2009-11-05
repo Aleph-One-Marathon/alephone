@@ -232,6 +232,10 @@ extern WindowPtr screen_window;
 #include "RenderRasterize.h"
 #include "Rasterizer_SW.h"
 #include "Rasterizer_OGL.h"
+#include "RenderRasterize_Shader.h"
+#include "Rasterizer_Shader.h"
+#include "preferences.h"
+#include "screen.h"
 
 #ifdef env68k
 #pragma segment render
@@ -282,13 +286,22 @@ vector<uint16> RenderFlagList;
 static RenderVisTreeClass RenderVisTree;			// Visibility-tree object
 static RenderSortPolyClass RenderSortPoly;			// Polygon-sorting object
 static RenderPlaceObjsClass RenderPlaceObjs;		// Object-placement object
-static RenderRasterizerClass RenderRasterize;		// Clipping and rasterization class
+static RenderRasterizerClass Render_Classic;		// Clipping and rasterization class
 
 static Rasterizer_SW_Class Rasterizer_SW;			// Software rasterizer
 #ifdef HAVE_OPENGL
 static Rasterizer_OGL_Class Rasterizer_OGL;			// OpenGL rasterizer
+static Rasterizer_Shader_Class Rasterizer_Shader;   // Shader rasterizer
+static RenderRasterize_Shader Render_Shader;       // Shader clipping and rasterization class
 #endif
 
+void OGL_Rasterizer_Init() {
+	
+#ifdef HAVE_OPENGL
+	if (graphics_preferences->screen_mode.acceleration == _shader_acceleration)
+		Render_Shader.setupGL();
+#endif
+}
 
 /* ---------- private prototypes */
 
@@ -327,7 +340,7 @@ void allocate_render_memory(
 	RenderSortPoly.RVPtr = &RenderVisTree;
 	RenderPlaceObjs.RVPtr = &RenderVisTree;
 	RenderPlaceObjs.RSPtr = &RenderSortPoly;
-	RenderRasterize.RSPtr = &RenderSortPoly;
+	Render_Classic.RSPtr = Render_Shader.RSPtr = &RenderSortPoly;
 }
 
 /* just in case anyone was wondering, standard_screen_width will usually be the same as
@@ -342,6 +355,11 @@ void initialize_view_data(
 {
 	double two_pi= 8.0*atan(1.0);
 	double half_cone= view->field_of_view*(two_pi/360.0)/2;
+ 	/* half_cone needs to be extended for non oblique perspective projection (gluPerspective).
+	 this is required because the viewing angle is different for about the same field of view */
+	if (graphics_preferences->screen_mode.acceleration == _shader_acceleration)
+		half_cone= (view->field_of_view * 1.3)*(two_pi/360.0)/2;
+
 	double adjusted_half_cone= View_FOV_FixHorizontalNotVertical() ?
 		half_cone :
 		asin(view->screen_width*sin(half_cone)/view->standard_screen_width);
@@ -435,7 +453,7 @@ void render_view(
 			RasterizerClass *RasPtr;
 #ifdef HAVE_OPENGL
 			if (OGL_IsActive())
-				RasPtr = &Rasterizer_OGL;
+				RasPtr = (graphics_preferences->screen_mode.acceleration == _shader_acceleration) ? &Rasterizer_Shader : &Rasterizer_OGL;
 			else
 			{
 #endif
@@ -453,11 +471,12 @@ void render_view(
 			RasPtr->Begin();
 			
 			// LP: now from the clipping/rasterizer class
+			RenderRasterizerClass *RenPtr = (graphics_preferences->screen_mode.acceleration == _shader_acceleration) ? &Render_Shader : &Render_Classic;
 			/* render the object list, back to front, doing clipping on each surface before passing
 				it to the texture-mapping code */
-			RenderRasterize.view = view;
-			RenderRasterize.RasPtr = RasPtr;
-			RenderRasterize.render_tree();
+			RenPtr->view = view;
+			RenPtr->RasPtr = RasPtr;
+			RenPtr->render_tree();
 			
 			// LP: won't put this into a separate class
 			/* render the playerÕs weapons, etc. */		
@@ -671,10 +690,7 @@ void instantiate_rectangle_transfer_mode(
 				rectangle->transfer_data= (transfer_phase>>1);
 				rectangle->x0+= delta0;
 				rectangle->x1-= delta1;
-				
-				// For the 3D-model code
-				if (rectangle->ModelPtr)
-					rectangle->HorizScale = 1 - float(transfer_phase)/float(FIXED_ONE);
+				rectangle->HorizScale = 1 - float(transfer_phase)/float(FIXED_ONE);
 			}
 			else
 				rectangle->transfer_mode= _textured_transfer;

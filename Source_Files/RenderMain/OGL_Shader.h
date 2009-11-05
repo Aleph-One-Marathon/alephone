@@ -45,6 +45,7 @@ private:
 public:
 
 	static Shader* get(const std::string& name);
+	static void unloadAll();
 	
 	Shader() : _programObj(NULL), _loaded(false) {}
 	Shader(const std::string& name);
@@ -54,6 +55,7 @@ public:
 	void load();
 	void init();
 	void enable();
+	void unload();
 	void setFloat(const char* name, float);
 
 	static void disable();

@@ -35,7 +35,7 @@ public:
 
 	// Sets the rasterizer's view data;
 	// be sure to call it before doing any rendering
-	void SetView(view_data& View) {OGL_SetView(View);}
+	virtual void SetView(view_data& View) {OGL_SetView(View);}
 	
 	// Sets the rasterizer so that it will start rendering foreground objects
 	// like weapons in hand

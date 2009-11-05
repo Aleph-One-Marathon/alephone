@@ -131,7 +131,8 @@ enum /* screen sizes */
 enum /* hardware acceleration codes */
 {
 	_no_acceleration,
-	_opengl_acceleration	// LP addition: OpenGL support
+	_opengl_acceleration,
+	_shader_acceleration
 };
 
 /* ---------- missing from QUICKDRAW.H */
