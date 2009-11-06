@@ -873,7 +873,8 @@ void PreloadWallTexture(const TextureWithTransferMode& inTexture)
 	if (TMgr.Setup()) {
 		TMgr.RenderNormal();
 		if (TMgr.IsGlowMapped()) TMgr.RenderGlowing();
-		if (graphics_preferences->screen_mode.acceleration == _shader_acceleration)
+		if (graphics_preferences->screen_mode.acceleration == _shader_acceleration &&
+			TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap))
 			TMgr.RenderBump();
 	}
 }

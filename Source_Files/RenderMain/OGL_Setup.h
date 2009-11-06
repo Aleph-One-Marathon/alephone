@@ -212,6 +212,8 @@ enum
 	OGL_Flag_Map		= 0x0200,	// Whether to do the overhead map with OpenGL
 	OGL_Flag_TextureFix	= 0x0400,	// Whether to apply a texture fix for old Apple OpenGL
 	OGL_Flag_HUD		= 0x0800,	// Whether to do the HUD with OpenGL
+	OGL_Flag_Blur		= 0x1000,   // Whether to blur landscapes and glowing textures
+	OGL_Flag_BumpMap	= 0x2000,   // Whether to use bump mapping
 };
 
 struct OGL_ConfigureData

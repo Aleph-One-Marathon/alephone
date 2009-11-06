@@ -791,7 +791,7 @@ static void rendering_options_dialog_demux(void* arg)
 
 		case _opengl_acceleration:
 		case _shader_acceleration:
-			OpenGLDialog::Create ()->OpenGLPrefsByRunning ();
+			OpenGLDialog::Create (theSelectedRenderer)->OpenGLPrefsByRunning ();
 			break;
 
 		default:

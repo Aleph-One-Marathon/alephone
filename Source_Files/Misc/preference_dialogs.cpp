@@ -23,6 +23,7 @@
 #include "preferences.h"
 #include "binders.h"
 #include "OGL_Setup.h"
+#include "screen.h"
 
 class TexQualityPref : public Bindable<int>
 {
@@ -135,6 +136,8 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_colourEffectsWidget;
 	delete m_transparentLiquidsWidget;
 	delete m_3DmodelsWidget;
+	delete m_blurWidget;
+	delete m_bumpWidget;
 	delete m_colourTheVoidWidget;
 	delete m_voidColourWidget;
 	delete m_fsaaWidget;
@@ -172,6 +175,10 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	binders.insert<bool> (m_transparentLiquidsWidget, &transparentLiquidsPref);
 	BitPref modelsPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_3D_Models);
 	binders.insert<bool> (m_3DmodelsWidget, &modelsPref);
+	BitPref blurPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur);
+	binders.insert<bool> (m_blurWidget, &blurPref);
+	BitPref bumpPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_BumpMap);
+	binders.insert<bool> (m_bumpWidget, &bumpPref);
 	
 	BitPref colourTheVoidPref (graphics_preferences->OGL_Configure.Flags, OGL_Flag_VoidColor);
 	binders.insert<bool> (m_colourTheVoidWidget, &colourTheVoidPref);
@@ -247,7 +254,7 @@ static const char *filter_labels[4] = {
 class SdlOpenGLDialog : public OpenGLDialog
 {
 public:
-	SdlOpenGLDialog ()
+	SdlOpenGLDialog (int theSelectedRenderer)
 	{
 
 		vertical_placer *placer = new vertical_placer;
@@ -277,8 +284,10 @@ public:
 		general_table->col_flags(0, placeable::kAlignRight);
 		
 		w_toggle *zbuffer_w = new w_toggle(false);
-		general_table->dual_add(zbuffer_w->label("Z Buffer"), m_dialog);
-		general_table->dual_add(zbuffer_w, m_dialog);
+		if (theSelectedRenderer == _opengl_acceleration) {
+			general_table->dual_add(zbuffer_w->label("Z Buffer"), m_dialog);
+			general_table->dual_add(zbuffer_w, m_dialog);
+		}
 
 		w_toggle *fog_w = new w_toggle(false);
 		general_table->dual_add(fog_w->label("Fog"), m_dialog);
@@ -299,7 +308,19 @@ public:
 		w_toggle *models_w = new w_toggle(false);
 		general_table->dual_add(models_w->label("3D Models"), m_dialog);
 		general_table->dual_add(models_w, m_dialog);
-
+		
+		w_toggle *blur_w = new w_toggle(false);
+		if (theSelectedRenderer == _shader_acceleration) {
+			general_table->dual_add(blur_w->label("Bloom Effects"), m_dialog);
+			general_table->dual_add(blur_w, m_dialog);
+		}
+		
+		w_toggle *bump_w = new w_toggle(false);
+		if (theSelectedRenderer == _shader_acceleration) {
+			general_table->dual_add(bump_w->label("Bump Mapping"), m_dialog);
+			general_table->dual_add(bump_w, m_dialog);
+		}
+		
 		general_table->add_row(new w_spacer(), true);
 
 		w_toggle *vsync_w = new w_toggle(false);
@@ -468,6 +489,8 @@ public:
 		m_colourEffectsWidget = new ToggleWidget (fader_w);
 		m_transparentLiquidsWidget = new ToggleWidget (liq_w);
 		m_3DmodelsWidget = new ToggleWidget (models_w);
+		m_blurWidget = new ToggleWidget (blur_w);
+		m_bumpWidget = new ToggleWidget (bump_w);
 
 		m_colourTheVoidWidget = 0;
 		m_voidColourWidget = 0;
@@ -535,7 +558,7 @@ void SdlOpenGLDialog::choose_advanced_tab(void *arg)
 }
 
 auto_ptr<OpenGLDialog>
-OpenGLDialog::Create()
+OpenGLDialog::Create(int theSelectedRenderer)
 {
-	return auto_ptr<OpenGLDialog>(new SdlOpenGLDialog);
+	return auto_ptr<OpenGLDialog>(new SdlOpenGLDialog(theSelectedRenderer));
 }

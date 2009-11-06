@@ -29,7 +29,7 @@ class OpenGLDialog
 {
 public:
 	// Abstract factory; concrete type determined at link-time
-	static std::auto_ptr<OpenGLDialog> Create();
+	static std::auto_ptr<OpenGLDialog> Create(int theSelectedRenderer);
 
 	void OpenGLPrefsByRunning ();
 
@@ -49,6 +49,8 @@ protected:
 	ToggleWidget*		m_colourEffectsWidget;
 	ToggleWidget*		m_transparentLiquidsWidget;
 	ToggleWidget*		m_3DmodelsWidget;
+	ToggleWidget*		m_blurWidget;
+	ToggleWidget*		m_bumpWidget;
 	
 	ToggleWidget*		m_colourTheVoidWidget;
 	ColourPickerWidget*	m_voidColourWidget;

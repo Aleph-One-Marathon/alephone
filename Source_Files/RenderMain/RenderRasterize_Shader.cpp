@@ -191,6 +191,9 @@ void RenderRasterize_Shader::render_tree() {
 
 	RenderRasterizerClass::render_tree(kDiffuse);
 
+	if (!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur))
+		return;
+	
 	if(blurLarge && blurSmall) {
 
 		glDisable(GL_FOG);
@@ -388,9 +391,11 @@ bool RenderRasterize_Shader::setupTexture(const shape_descriptor& Texture, short
 //		TMgr.RenderBump();
 
 		if(s) {
-			glActiveTextureARB(GL_TEXTURE1_ARB);
-			TMgr.RenderBump();
-			glActiveTextureARB(GL_TEXTURE0_ARB);
+			if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+				glActiveTextureARB(GL_TEXTURE1_ARB);
+				TMgr.RenderBump();
+				glActiveTextureARB(GL_TEXTURE0_ARB);
+			}
 			
 			if (TMgr.TextureType == OGL_Txtr_Landscape)
 				s->setFloat("uoffset", TMgr.U_Offset);

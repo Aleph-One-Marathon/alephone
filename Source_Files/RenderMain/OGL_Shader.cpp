@@ -23,6 +23,7 @@
 
 #include "OGL_Shader.h"
 #include "FileHandler.h"
+#include "OGL_Setup.h"
 
 static std::map<std::string, std::string> defaultVertexPrograms;
 static std::map<std::string, std::string> defaultFragmentPrograms;
@@ -107,6 +108,23 @@ GLhandleARB parseShader(GLcharARB* str, GLenum shaderType) {
 }
 
 Shader* Shader::get(const std::string& name) {
+	
+	bool use_bump = TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap);
+	
+	if (!use_bump)
+	{
+		std::string realname = name + "_nobump";
+	    if (Shaders.count(realname) > 0) {
+			return &Shaders[realname];			
+		}
+		initDefaultPrograms();
+		if ((defaultVertexPrograms.count(realname) > 0) &&
+			(defaultFragmentPrograms.count(realname) > 0)) {
+			Shaders[realname] = Shader(realname);
+			return &Shaders[realname];
+		}
+	}
+	
     if (Shaders.count(name) > 0) {
         return &Shaders[name];			
     }
@@ -347,6 +365,23 @@ void initDefaultPrograms() {
         "	vec4 color = texture2D(texture0, texCoords.xy);\n"
         "	gl_FragColor = vec4(color.rgb * vertexColor.rgb * diffuse, color.a);\n"
         "}\n";    
+	
+	defaultVertexPrograms["specular_nobump"] = defaultVertexPrograms["specular"];
+    defaultFragmentPrograms["specular_nobump"] = ""
+		"uniform sampler2D texture0;\n"
+		"uniform float wobble;\n"
+		"varying vec3 viewXY;\n"
+		"varying vec3 viewDir;\n"
+		"varying vec4 vertexColor;\n"
+		"void main (void) {\n"
+		"	// parallax\n"
+		"	vec3 viewxy = normalize(viewXY);\n"
+		"	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
+		"	// wobble effect, no idea why x and y need swapping\n"
+		"	texCoords += vec3(viewxy.yx * wobble, 0.0);\n"
+		"	vec4 color = texture2D(texture0, texCoords.xy);\n"
+		"	gl_FragColor = vec4(color.rgb * vertexColor.rgb, color.a);\n"
+		"}\n";    
     
     defaultVertexPrograms["random"] = ""
         "void main(void) {\n"
@@ -440,7 +475,32 @@ void initDefaultPrograms() {
         "	gl_FragColor = vec4(color.rgb * clamp((vertexColor.rgb + mlFactor) * diffuse, 0.0, 1.0), color.a);\n"
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), color.a );\n"
         "}\n";
-    
+
+	defaultVertexPrograms["parallax_nobump"] = defaultVertexPrograms["parallax"];
+	defaultFragmentPrograms["parallax_nobump"] = ""
+		"uniform sampler2D texture0;\n"
+		"uniform float wobble;\n"
+		"uniform float flare;\n"
+		"varying vec3 viewXY;\n"
+		"varying vec3 viewDir;\n"
+		"varying vec4 vertexColor;\n"
+		"varying float FDxLOG2E;\n"
+		"varying float MLxLOG2E;\n"
+		"void main (void) {\n"
+		"	// parallax\n"
+		"	vec3 viewxy = normalize(viewXY);\n"
+		"	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
+		"	texCoords += vec3(viewxy.yx * wobble, 0.0);\n"
+		"	float fogFactor = exp2(FDxLOG2E * dot(viewDir, viewDir)); \n"
+		"	fogFactor = clamp(fogFactor, 0.0, 1.0); \n"
+		"	float flash = exp2((flare - 1.0) * 2.0);\n"
+		"	float mlFactor = exp2(MLxLOG2E * dot(viewDir, viewDir) / flash + 1.0); \n"
+		"	mlFactor = clamp(mlFactor, 0.0, flare * 0.75) * 0.5;\n"
+		"	vec4 color = texture2D(texture0, texCoords.xy);\n"
+		"	gl_FragColor = vec4(color.rgb * clamp((vertexColor.rgb + mlFactor), 0.0, 1.0), color.a);\n"
+		"	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), color.a );\n"
+		"}\n";
+	
     defaultVertexPrograms["infravision"] = defaultVertexPrograms["parallax"];
     defaultFragmentPrograms["infravision"] = ""
         "uniform sampler2D texture0;\n"
@@ -468,6 +528,20 @@ void initDefaultPrograms() {
         "	float c = max(max(color.r, color.g), color.b);\n"
         "	gl_FragColor = vec4(0.0, 0.0, c * diffuse, 1.0);\n"
         "}\n";  
+    
+	defaultVertexPrograms["infravision_nobump"] = defaultVertexPrograms["infravision"];
+    defaultFragmentPrograms["infravision_nobump"] = ""
+		"uniform sampler2D texture0;\n"
+		"varying vec3 viewDir;\n"
+		"varying vec4 vertexColor;\n"
+		"void main (void) {\n"
+		"	// parallax\n"
+		"	vec3 viewv = normalize(viewDir);\n"
+		"	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
+		"	vec4 color = texture2D(texture0, texCoords.xy);\n"
+		"	float c = max(max(color.r, color.g), color.b);\n"
+		"	gl_FragColor = vec4(0.0, 0.0, c, 1.0);\n"
+		"}\n";  
     
     defaultVertexPrograms["flat"] = ""
         "varying vec3 viewDir;\n"
