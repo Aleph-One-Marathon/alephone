@@ -39,6 +39,15 @@ Plugins* Plugins::instance() {
 	return m_instance;
 }
 
+void Plugins::disable(const std::string& path) {
+	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) {
+		if (it->directory == path) {
+			it->enabled = false;
+			return;
+		}
+	}
+}
+
 extern std::vector<DirectorySpecifier> data_search_path;
 
 class ModifySearchPath {
@@ -56,11 +65,13 @@ void Plugins::load_mml() {
 	loader.CurrentElement = &RootParser;
 
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) {
-		ModifySearchPath msp(it->directory);
-		for (std::vector<std::string>::iterator mml = it->mmls.begin(); mml != it->mmls.end(); ++mml) {
-			FileSpecifier file;
-			file.SetNameWithPath(mml->c_str());
-			loader.ParseFile(file);
+		if (it->enabled) {
+			ModifySearchPath msp(it->directory);
+			for (std::vector<std::string>::iterator mml = it->mmls.begin(); mml != it->mmls.end(); ++mml) {
+				FileSpecifier file;
+				file.SetNameWithPath(mml->c_str());
+				loader.ParseFile(file);
+			}
 		}
 	}
 }
@@ -105,6 +116,7 @@ public:
 bool XML_PluginParser::Start() {
 	Data = Plugin();
 	Data.directory = current_plugin_directory;
+	Data.enabled = true;
 	return true;
 }
 
@@ -131,6 +143,8 @@ bool XML_PluginParser::AttributesDone()
 		AttribsMissing();
 		return false;
 	}
+	
+	return true;
 }
 
 bool XML_PluginParser::End() {
@@ -222,6 +236,8 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 			ParsePlugin(file_name);
 		}
 	}
+
+	return true;
 }
 
 void Plugins::enumerate() {

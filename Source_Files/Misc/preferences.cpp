@@ -73,6 +73,7 @@ May 22, 2003 (Woody Zenfell):
 #include "fades.h"
 #include "extensions.h"
 #include "Console.h"
+#include "Plugins.h"
 
 #include "XML_ElementParser.h"
 #include "XML_DataBlock.h"
@@ -2261,6 +2262,11 @@ void write_preferences(
 	fprintf(F,"  use_hud_lua=\"%s\"\n", BoolString(environment_preferences->use_hud_lua));
 	fprintf(F,"  hide_alephone_extensions=\"%s\"\n", BoolString(environment_preferences->hide_extensions));
 	fprintf(F,">\n");
+	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
+		if (!it->enabled) {
+			fprintf(F,"  <disable_plugin path=\"%s\"/>\n", it->directory.GetPath());
+		}
+	}
 	fprintf(F,"</environment>\n\n");
 			
 	fprintf(F,"</mara_prefs>\n\n");
@@ -3788,6 +3794,24 @@ static XML_NetworkPrefsParser NetworkPrefsParser;
 
 static XML_ElementParser MacFSSpecPrefsParser("mac_fsspec");
 
+class XML_DisablePluginsParser : public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char* Tag, const char* Value);
+
+	XML_DisablePluginsParser() : XML_ElementParser("disable_plugin") {}
+};
+
+bool XML_DisablePluginsParser::HandleAttribute(const char* Tag, const char* Value) {
+	if (StringsEqual(Tag, "path")) {
+		Plugins::instance()->disable(Value);
+		return true;
+	}
+
+	return true;
+}
+
+static XML_DisablePluginsParser DisablePluginsParser;
 
 class XML_EnvironmentPrefsParser: public XML_ElementParser
 {
@@ -3945,5 +3969,6 @@ void SetupPrefsParseTree()
 	MarathonPrefsParser.AddChild(&NetworkPrefsParser);
 	
 	EnvironmentPrefsParser.AddChild(&MacFSSpecPrefsParser);
+	EnvironmentPrefsParser.AddChild(&DisablePluginsParser);
 	MarathonPrefsParser.AddChild(&EnvironmentPrefsParser);
 }

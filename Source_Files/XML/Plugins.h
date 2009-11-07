@@ -34,15 +34,22 @@ struct Plugin {
 	std::string description;
 	std::string version;
 	std::vector<std::string> mmls;
+	bool enabled;
 };
 
 class Plugins {
 	friend class XML_PluginParser;
 public:
 	static Plugins* instance();
+	typedef std::vector<Plugin>::iterator iterator;
 	
 	void enumerate();
 	void load_mml();
+
+	void disable(const std::string& path);
+
+	iterator begin() { return m_plugins.begin(); }
+	iterator end() { return m_plugins.end(); }
 private:
 	Plugins() { }
 	void add(Plugin plugin) { m_plugins.push_back(plugin); }

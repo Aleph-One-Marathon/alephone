@@ -427,7 +427,6 @@ static void initialize_application(void)
 	SetupParseTree();
 	LoadBaseMMLScripts();
 	Plugins::instance()->enumerate();
-	Plugins::instance()->load_mml();
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {
@@ -445,6 +444,8 @@ static void initialize_application(void)
 	if (force_windowed)		// takes precedence over fullscreen because windowed is safer
 		graphics_preferences->screen_mode.fullscreen = false;
 	write_preferences();
+
+	Plugins::instance()->load_mml();
 
 #if defined(__WIN32__) 
 	if (!SDL_getenv("SDL_VIDEODRIVER")) {
