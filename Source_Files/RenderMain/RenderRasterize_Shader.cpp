@@ -396,9 +396,6 @@ bool RenderRasterize_Shader::setupTexture(const shape_descriptor& Texture, short
 				TMgr.RenderBump();
 				glActiveTextureARB(GL_TEXTURE0_ARB);
 			}
-			
-			if (TMgr.TextureType == OGL_Txtr_Landscape)
-				s->setFloat("uoffset", TMgr.U_Offset);
 		}
 
 		if(renderStep == kDiffuse) {
