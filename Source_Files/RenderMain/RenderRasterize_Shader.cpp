@@ -558,7 +558,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 	} else {
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
-		glPolygonOffset(1.0, 1.0);
+		glPolygonOffset(1.0, -1.0);
 	}
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
