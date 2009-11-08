@@ -499,48 +499,6 @@ void initDefaultPrograms() {
 		"	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), color.a );\n"
 		"}\n";
 	
-    defaultVertexPrograms["infravision"] = defaultVertexPrograms["parallax"];
-    defaultFragmentPrograms["infravision"] = ""
-        "uniform sampler2D texture0;\n"
-        "uniform sampler2D texture1;\n"
-        "varying vec3 viewDir;\n"
-        "varying vec4 vertexColor;\n"
-        "void main (void) {\n"
-        "	// parallax\n"
-        "	float scale = 0.010;\n"
-        "	float bias = -0.005;\n"
-        "	vec3 viewv = normalize(viewDir);\n"
-        "	vec3 norm;\n"
-        "	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
-        "	// iterative parallax mapping\n"
-        "	for(int i = 0; i < 4; ++i) {\n"
-        "		vec4 normal = texture2D(texture1, texCoords.xy);\n"
-        "		norm = (normal.rgb - 0.5) * 2.0;\n"
-        "		float h = normal.a * scale + bias;\n"
-        "		texCoords += h * viewv;\n"
-        "	}\n"
-        "	vec4 normal = texture2D(texture1, texCoords.xy);\n"
-        "	norm = (normal.rgb - 0.5) * 2.0;\n"
-        "	float diffuse = dot(norm, viewv);\n"
-        "	vec4 color = texture2D(texture0, texCoords.xy);\n"
-        "	float c = max(max(color.r, color.g), color.b);\n"
-        "	gl_FragColor = vec4(0.0, 0.0, c * diffuse, 1.0);\n"
-        "}\n";  
-    
-	defaultVertexPrograms["infravision_nobump"] = defaultVertexPrograms["infravision"];
-    defaultFragmentPrograms["infravision_nobump"] = ""
-		"uniform sampler2D texture0;\n"
-		"varying vec3 viewDir;\n"
-		"varying vec4 vertexColor;\n"
-		"void main (void) {\n"
-		"	// parallax\n"
-		"	vec3 viewv = normalize(viewDir);\n"
-		"	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
-		"	vec4 color = texture2D(texture0, texCoords.xy);\n"
-		"	float c = max(max(color.r, color.g), color.b);\n"
-		"	gl_FragColor = vec4(0.0, 0.0, c, 1.0);\n"
-		"}\n";  
-    
     defaultVertexPrograms["flat"] = ""
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
@@ -601,9 +559,7 @@ void initDefaultPrograms() {
         "varying vec4 vertexColor;\n"
         "void main (void) {\n"
         "	vec3 viewv = normalize(viewDir);\n"
-        "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
-        "	float c = max(color.r, max(color.g,color.b));\n"
-        "	gl_FragColor = vec4(c, 0.0,0.0, color.a ); \n"
+        "	gl_FragColor = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "}\n";    
 }
     

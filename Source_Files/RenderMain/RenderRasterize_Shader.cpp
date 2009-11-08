@@ -283,6 +283,7 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, Render
 	TMgr.Texture = rect.texture;
 	TMgr.TransferMode = rect.transfer_mode;
 	TMgr.TransferData = rect.transfer_data;
+	TMgr.IsShadeless = (rect.flags&_SHADELESS_BIT) != 0;
 	TMgr.TextureType = type;
 
 	switch(TMgr.TransferMode) {
@@ -365,11 +366,7 @@ bool RenderRasterize_Shader::setupTexture(const shape_descriptor& Texture, short
 		default:
 			TMgr.TextureType = OGL_Txtr_Wall;
 			if(renderStep == kDiffuse) {
-				if(local_player->infravision_duration) {
-					s = Shader::get("infravision");
-				} else {
-					s = Shader::get("parallax");
-				}
+				s = Shader::get("parallax");
 			} else {
 				s = Shader::get("specular");
 			}
