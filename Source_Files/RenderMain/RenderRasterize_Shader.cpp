@@ -495,10 +495,13 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		intensity = 1;
 	}
 
-	if (void_present)
+	if (void_present) {
 		glDisable(GL_BLEND);
-	else
+		glDisable(GL_ALPHA_TEST);
+	} else {
 		glEnable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);
+	}
 	
 	short vertex_count = polygon->vertex_count;
 
@@ -549,10 +552,12 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 
 	bool tex = setupTexture(texture, surface->transfer_mode, view->tick_count, renderStep);
 
-	if (void_present)
+	if (void_present) {
 		glDisable(GL_BLEND);
-	else {
+		glDisable(GL_ALPHA_TEST);
+	} else {
 		glEnable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);
 		glPolygonOffset(1.0, 1.0);
 	}
 	world_distance h= MIN(surface->h1, surface->hmax);
@@ -763,6 +768,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	}
 
 	glEnable(GL_BLEND);
+	glEnable(GL_ALPHA_TEST);
 	glBegin(GL_QUADS);
 
 	glTexCoord2f(texCoords[0][0], texCoords[1][0]);
@@ -779,7 +785,6 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 	glEnd();
 	glPopMatrix();
-	glDisable(GL_BLEND);
 
 	Shader::disable();
 	TMgr.RestoreTextureMatrix();
