@@ -150,7 +150,6 @@ public:
 		FBO::deactivate();
 		
 		glEnable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
 		glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
 		glColor4f(1., 1., 1., 1.);
 		_shader2->enable();
@@ -177,7 +176,7 @@ void RenderRasterize_Shader::setupGL() {
 	}
 //	assert(glGetError() == GL_NO_ERROR);
 
-//	glEnable(GL_POLYGON_OFFSET_EXT);
+	glEnable(GL_POLYGON_OFFSET_EXT);
 //	glDisable(GL_CULL_FACE);
 //	glDisable(GL_LIGHTING);
 }
@@ -209,12 +208,10 @@ void RenderRasterize_Shader::render_tree() {
 		blurSmall->end();
 
 		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_ALPHA_TEST);
 		blurSmall->draw();
 		blurLarge->draw();
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_FOG);
-		glEnable(GL_ALPHA_TEST);
 	}
 }
 
@@ -352,9 +349,6 @@ bool RenderRasterize_Shader::setupTexture(const shape_descriptor& Texture, short
 	bool color = true;
 	Shader *s = NULL;
 
-	glEnable(GL_BLEND);
-	glEnable(GL_ALPHA_TEST);
-
 	TextureManager TMgr;
 	get_shape_bitmap_and_shading_table(Texture, &TMgr.Texture, &TMgr.ShadingTables, _shading_normal);
 	
@@ -384,11 +378,11 @@ bool RenderRasterize_Shader::setupTexture(const shape_descriptor& Texture, short
 	if(TMgr.Setup()) {
 		/* preload textures just to make sure
 		 * animated textures seem not to get preloaded correctly (bug somewhere) */
-//		TMgr.RenderNormal();
-//		if(TMgr.IsGlowMapped()) {
-//			TMgr.RenderGlowing();
-//		}
-//		TMgr.RenderBump();
+		TMgr.RenderNormal();
+		if(TMgr.IsGlowMapped()) {
+			TMgr.RenderGlowing();
+		}
+		TMgr.RenderBump();
 
 		if(s) {
 			if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
@@ -504,13 +498,10 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		intensity = 1;
 	}
 
-	if(void_present) {
+	if (void_present)
 		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
-	} else {
+	else
 		glEnable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);		
-	}
 	
 	short vertex_count = polygon->vertex_count;
 
@@ -561,13 +552,11 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 
 	bool tex = setupTexture(texture, surface->transfer_mode, view->tick_count, renderStep);
 
-	if(void_present) {
+	if (void_present)
 		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
-	} else {
+	else {
 		glEnable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-		glPolygonOffset(-10.0, -0.01);
+		glPolygonOffset(1.0, 1.0);
 	}
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
@@ -777,7 +766,6 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	}
 
 	glEnable(GL_BLEND);
-	glEnable(GL_ALPHA_TEST);
 	glBegin(GL_QUADS);
 
 	glTexCoord2f(texCoords[0][0], texCoords[1][0]);
