@@ -308,8 +308,8 @@ void initDefaultPrograms() {
         "void main(void) {\n"
         "	float pi = 2.0 * asin(1.0);\n"
         "	vec3 viewv = normalize(viewDir);\n"
-        "	float x = atan(viewv.x, viewv.y) / pi;\n"
-        "	float y = 0.5 - sign(texOffset) + texOffset + asin(viewv.z) * 0.3 * texScale;\n"
+        "	float x = atan(viewv.x, viewv.y) / pi / abs(texScale);\n"
+        "	float y = 0.5/abs(texScale) - sign(texOffset) + texOffset + asin(viewv.z) * 0.3 * texScale;\n"
         "	gl_FragColor = texture2D(texture0, vec2(-x + 0.5, y));\n"
         "}\n";
 
