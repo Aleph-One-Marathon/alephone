@@ -1068,6 +1068,10 @@ bool OGL_EndMain()
 	glVertex2f(ViewWidth-0.5F,ViewHeight-0.5F);
 	glVertex2f(ViewWidth-0.5F,0.5F);
 	glEnd();
+	
+	// Reset modelview matrix
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
 		
 	return true;
 }
