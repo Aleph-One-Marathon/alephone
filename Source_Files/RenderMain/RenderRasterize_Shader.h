@@ -19,6 +19,8 @@ class RenderRasterize_Shader : public RenderRasterizerClass {
 
 	Blur* blurLarge;
 	Blur* blurSmall;
+	int objectCount;
+	world_distance objectY;
 
 protected:
 	virtual void render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep);	

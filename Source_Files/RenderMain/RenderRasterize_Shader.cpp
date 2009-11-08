@@ -253,6 +253,10 @@ void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiq
 	
 	glPopMatrix();
 	
+	// parasitic object detection
+	objectCount = 0;
+	objectY = 0;
+	
 	RenderRasterizerClass::render_node(node, SeeThruLiquids, renderStep);
 	
 	// turn off clipping planes
@@ -773,6 +777,16 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		texCoords[1][1] = TMgr.V_Scale+TMgr.V_Offset;
 	}
 
+	// look for parasitic objects based on y position,
+	// and offset them to draw in proper depth order
+	if(pos.y == objectY) {
+		objectCount++;
+		glPolygonOffset(0.0, objectCount * -10.0);
+	} else {
+		objectCount = 0;
+		objectY = pos.y;
+	}
+	
 	glEnable(GL_BLEND);
 	glEnable(GL_ALPHA_TEST);
 	glBegin(GL_QUADS);
@@ -791,6 +805,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 	glEnd();
 	glPopMatrix();
+	glPolygonOffset(0,0);
 
 	Shader::disable();
 	TMgr.RestoreTextureMatrix();
