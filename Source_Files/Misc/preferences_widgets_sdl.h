@@ -38,6 +38,7 @@
 #include    "screen.h"
 #include    "screen_drawing.h"
 #include    "interface.h"
+#include "Plugins.h"
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
@@ -195,6 +196,26 @@ public:
 
 private:
 	SDL_Surface *surface;
+};
+
+class w_plugins : public w_list_base {
+public:
+	w_plugins(std::vector<Plugin>& plugins, int width, int numRows) : w_list_base(width, numRows, 0), m_plugins(plugins)
+	{
+		saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE);
+		num_items = m_plugins.size();
+		new_items();
+	}
+
+	uint16 item_height() const { return 2 * font->get_line_height() + font->get_line_height() / 2 + 2; }
+
+protected:
+	void draw_items(SDL_Surface* s) const;
+	void item_selected();
+
+private:
+	std::vector<Plugin>& m_plugins;
+	void draw_item(Plugins::iterator i, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const;
 };
 
 #endif

@@ -161,3 +161,74 @@ void w_crosshair_display::draw(SDL_Surface *s) const
 	
 	SDL_BlitSurface(surface, 0, s, const_cast<SDL_Rect *>(&rect));
 }
+
+void w_plugins::draw_items(SDL_Surface* s) const 
+{
+	Plugins::iterator i = m_plugins.begin();
+	int16 x = rect.x + get_theme_space(LIST_WIDGET, L_SPACE);
+	int16 y = rect.y + get_theme_space(LIST_WIDGET, T_SPACE);
+	uint16 width = rect.w - get_theme_space(LIST_WIDGET, L_SPACE) - get_theme_space(LIST_WIDGET, R_SPACE);
+	
+	for (size_t n = 0; n < top_item; ++n)
+	{
+		++i;
+	}
+	
+	for (size_t n = top_item; n < top_item + MIN(shown_items, num_items); ++n, ++i, y = y + item_height())
+		draw_item(i, s, x, y, width, n == selection && active);
+}
+
+void w_plugins::item_selected() 
+{
+	Plugin& plugin = m_plugins[get_selection()];
+	plugin.enabled = !plugin.enabled;
+	dirty = true;
+	get_owning_dialog()->draw_dirty_widgets();
+}
+
+void w_plugins::draw_item(Plugins::iterator it, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const 
+{
+	y += font->get_ascent();
+	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
+	uint32 color;
+	if (selected)
+	{
+		color = get_theme_color(ITEM_WIDGET, ACTIVE_STATE);
+	} 
+	else if (it->enabled)
+	{
+		color = get_theme_color(ITEM_WIDGET, DEFAULT_STATE);
+	}
+	else
+	{
+		color = get_theme_color(ITEM_WIDGET, DISABLED_STATE);
+	}
+
+	std::string enabled;
+	if (it->enabled) 
+	{
+		enabled = " Enabled";
+	}
+	else 
+	{
+		enabled = " Disabled";
+	}
+
+	int right_text_width = text_width(enabled.c_str(), font, style);
+
+	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width - right_text_width);
+	std::string name_and_version = it->name + " " + it->version;
+	draw_text(s, name_and_version.c_str(), x, y, color, font, style);
+
+	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);
+	draw_text(s, enabled.c_str(), x + width - right_text_width, y, color, font, style);
+	
+	set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
+
+	y += font->get_ascent() + 1;
+	if (it->description.size()) {
+		draw_text(s, it->description.c_str(), x, y, color, font, style);
+	} else {
+		draw_text(s, "No description", x, y, color, font, style);
+	}
+}

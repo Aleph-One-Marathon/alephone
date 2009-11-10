@@ -1710,6 +1710,50 @@ static void keyboard_dialog(void *arg)
 	exit_joystick();
 }
 
+extern void ResetAllMMLValues();
+
+static void plugins_dialog(void *)
+{
+	dialog d;
+	vertical_placer *placer = new vertical_placer;
+	w_title *w_header = new w_title("PLUGINS");
+	placer->dual_add(w_header, d);
+	placer->add(new w_spacer, true);
+
+	std::vector<Plugin> plugins(Plugins::instance()->begin(), Plugins::instance()->end());
+	w_plugins* plugins_w = new w_plugins(plugins, 400, 7);
+	placer->dual_add(plugins_w, d);
+	
+	placer->add(new w_spacer, true);
+
+	horizontal_placer* button_placer = new horizontal_placer;
+	w_button* accept_w = new w_button("ACCEPT", dialog_ok, &d);
+	button_placer->dual_add(accept_w, d);
+	w_button* cancel_w = new w_button("CANCEL", dialog_cancel, &d);
+	button_placer->dual_add(cancel_w, d);
+
+	placer->add(button_placer, true);
+
+	d.set_widget_placer(placer);
+	
+	if (d.run() == 0) {
+		bool changed = false;
+		Plugins::iterator plugin = Plugins::instance()->begin();
+		for (Plugins::iterator it = plugins.begin(); it != plugins.end(); ++it, ++plugin) {
+			changed |= (plugin->enabled != it->enabled);
+			plugin->enabled = it->enabled;
+		}
+
+		if (changed) {
+			write_preferences();
+	
+			ResetAllMMLValues();
+			LoadBaseMMLScripts();
+			Plugins::instance()->load_mml();
+		}
+	}
+}
+
 
 /*
  *  Environment dialog
@@ -1744,6 +1788,9 @@ static void environment_dialog(void *arg)
 	w_env_select *sounds_w = new w_env_select(environment_preferences->sounds_file, "AVAILABLE SOUNDS", _typecode_sounds, &d);
 	table->dual_add(sounds_w->label("Sounds"), d);
 	table->dual_add(sounds_w, d);
+
+	table->add_row(new w_spacer, true);
+	table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
 
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Solo Script"), d);
