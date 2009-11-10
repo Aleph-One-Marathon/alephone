@@ -299,7 +299,8 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 			{
 				endpoint= &EndpointClips[node->clipping_endpoints[i]];
 				
-				for (j= 0;j<short(AccumulatedEndpointClips.size());++j)
+				short size = AccumulatedEndpointClips.size();
+				for (j= 0;j<size;++j)
 				{
 					if (AccumulatedEndpointClips[j]==endpoint) { j= NONE; break; } /* found duplicate */
 					if ((AccumulatedEndpointClips[j]->x==endpoint->x&&endpoint->flags==_clip_left) ||
@@ -314,7 +315,7 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 					/* expand the array, if necessary, and add the new endpoint */
 					int Length = AccumulatedEndpointClips.size();
 					AccumulatedEndpointClips.push_back(NULL);
-					assert(AccumulatedEndpointClips.size() <= 32767);		// Originally a short value
+//					assert(AccumulatedEndpointClips.size() <= 32767);		// Originally a short value
 					if (j!=Length) memmove(&AccumulatedEndpointClips[j+1], &AccumulatedEndpointClips[j],
 						(Length-j)*sizeof(endpoint_clip_data *));
 					AccumulatedEndpointClips[j]= endpoint;
@@ -327,11 +328,12 @@ clipping_window_data *RenderSortPolyClass::build_clipping_windows(
 			{
 				line= &LineClips[node->clipping_lines[i]];
 				
-				for (j= 0;j<short(AccumulatedLineClips.size());++j) if (AccumulatedLineClips[j]==line) break; /* found duplicate */
+				short size = AccumulatedEndpointClips.size();
+				for (j= 0;j<size;++j) if (AccumulatedLineClips[j]==line) break; /* found duplicate */
 				if (j==short(AccumulatedLineClips.size())) /* if the line was not a duplicate */
 				{
 					AccumulatedLineClips.push_back(line);
-					assert(AccumulatedLineClips.size() <= 32767);		// Originally a short value
+//					assert(AccumulatedLineClips.size() <= 32767);		// Originally a short value
 				}
 			}
 		}
