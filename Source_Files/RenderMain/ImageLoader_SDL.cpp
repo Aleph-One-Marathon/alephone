@@ -155,28 +155,38 @@ void ImageDescriptor::ProcessOffsetMap() {
 	uint32 *pixels = new uint32[Size];
 	uint32* dest = pixels;
 	
-	float fs, ft, fr, fd, scale = -0.5f * 16.0 / 255.0;
+	float fs, ft, fr, fd;
 	
-	uint8 hx, hy, hm, hn;
+	uint8 mat[3][3];
 	
 	for(int y=+1; y<Height+1; y++) {
 		for(int x=+1; x<Width+1; x++) {
-			hm = GetPixel(x-1, y) & 0xFF;
-			hx = GetPixel(x+1, y) & 0xFF;
-			hn = GetPixel(x, y-1) & 0xFF;
-			hy = GetPixel(x, y+1) & 0xFF;
+			mat[0][0] = GetPixel(x-1, y-1) & 0xFF;
+			mat[0][1] = GetPixel(x,   y-1) & 0xFF;
+			mat[0][2] = GetPixel(x+1, y-1) & 0xFF;
+			mat[1][0] = GetPixel(x-1, y  ) & 0xFF;
+			mat[1][2] = GetPixel(x+1, y  ) & 0xFF;
+			mat[2][0] = GetPixel(x-1, y+1) & 0xFF;
+			mat[2][1] = GetPixel(x,   y+1) & 0xFF;
+			mat[2][2] = GetPixel(x+1, y+1) & 0xFF;
 			
-			fs = (hx-hm)*scale;
-			ft = (hy-hn)*scale;
-			fr = 1;
+			// Sobel operator horizontal
+			fs = (1.0*mat[0][0] - 1.0*mat[0][2] +
+			      2.0*mat[1][0] - 2.0*mat[1][2] +
+			      1.0*mat[2][0] - 1.0*mat[2][2])/255.0;
 			
-			fd = fs*fs + ft*ft + 1;
-			if(fd) {
-				fd = 1.0 / std::sqrt(fd);
-				fs *= fd;
-				ft *= fd;
-				fr *= fd;
-			}
+			// Sobel operator vertical
+			ft = (1.0*mat[2][0] - 1.0*mat[0][0] +
+			      2.0*mat[2][1] - 2.0*mat[0][1] +
+			      1.0*mat[2][2] - 1.0*mat[0][2])/255.0;
+			
+			fr = 0.5 * std::sqrt(1.0 + fs*fs + ft*ft);
+			
+			// normalize vector (r, s, t)
+			fd = 1.0 / std::sqrt(fr*fr + fs*fs + ft*ft);
+			fs *= fd;
+			ft *= fd;
+			fr *= fd;
 			
 			*dest = ((GetPixel(x, y) & 0xFF) << 24)
 			+ (uint8(0x80 + fr*0x7F) << 16)
