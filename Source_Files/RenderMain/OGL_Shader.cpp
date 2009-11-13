@@ -382,20 +382,23 @@ void initDefaultPrograms() {
 		"}\n";    
     
     defaultVertexPrograms["random"] = ""
+        "varying vec4 vertexColor;\n"
         "void main(void) {\n"
         "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
         "	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
+        "	vertexColor = gl_Color;\n"
         "}\n";
     defaultFragmentPrograms["random"] = ""
         "uniform sampler2D texture0;\n"
         "uniform float time;\n"
+        "varying vec4 vertexColor;\n"
         "void main(void) {\n"
         "	float a = fract(sin(gl_TexCoord[0].x * 133.0 + gl_TexCoord[0].y * 471.0 + time * 7.0) * 43757.0); \n"
         "	float b = fract(sin(gl_TexCoord[0].x * 2331.0 + gl_TexCoord[0].y * 63.0 + time * 3.0) * 32451.0); \n"
         "	float c = fract(sin(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0 + time * 31.0) * 34563.0);\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
-        "	gl_FragColor = vec4(vec3(a, b, c), color.a);\n"
+        "	gl_FragColor = vertexColor * vec4(vec3(a, b, c), color.a);\n"
         "}\n";    
 
 	defaultVertexPrograms["flat_random"] = defaultVertexPrograms["random"];
@@ -559,7 +562,7 @@ void initDefaultPrograms() {
         "varying vec4 vertexColor;\n"
         "void main (void) {\n"
         "	vec3 viewv = normalize(viewDir);\n"
-        "	gl_FragColor = texture2D(texture0, gl_TexCoord[0].xy);\n"
+        "	gl_FragColor = vertexColor * texture2D(texture0, gl_TexCoord[0].xy);\n"
         "}\n";    
 }
     

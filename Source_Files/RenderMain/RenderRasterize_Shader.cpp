@@ -192,6 +192,15 @@ void RenderRasterize_Shader::render_tree() {
 
 	if (!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur))
 		return;
+
+	Shader* s = Shader::get("parallax");
+	if(s) {
+		s->setFloat("flare", 0);
+	}
+	s = Shader::get("flat");
+	if(s) {
+		s->setFloat("flare", 0);
+	}
 	
 	if(blurLarge && blurSmall) {
 
@@ -324,22 +333,11 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, Render
 	}
 
 	if(TMgr.Setup()) {
-		/* preload textures just to make sure
-		 * animated textures seem not to get preloaded correctly (bug somewhere) */
-		TMgr.RenderNormal();
-		if(TMgr.IsGlowMapped()) {
-			TMgr.RenderGlowing();
-		}
 		if(renderStep == kDiffuse) {
 			TMgr.RenderNormal();			
 		} else {
-			if(TMgr.IsGlowMapped()) {
-				TMgr.RenderGlowing();				
-			} else {
-				glColor4f((color[0] - 0.5) * 0.0125, (color[1] - 0.5) * 0.0125, (color[2] - 0.5) * 0.0125, 1.0);
-				TMgr.RenderNormal();
-				s = NULL;
-			}
+			glColor4f(0.0, 0.0, 0.0, 1.0);
+			TMgr.RenderNormal();
 		}
 	}
 
@@ -377,14 +375,6 @@ bool RenderRasterize_Shader::setupTexture(const shape_descriptor& Texture, short
 	}
 
 	if(TMgr.Setup()) {
-		/* preload textures just to make sure
-		 * animated textures seem not to get preloaded correctly (bug somewhere) */
-		TMgr.RenderNormal();
-		if(TMgr.IsGlowMapped()) {
-			TMgr.RenderGlowing();
-		}
-		TMgr.RenderBump();
-
 		if(s) {
 			if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 				glActiveTextureARB(GL_TEXTURE1_ARB);
