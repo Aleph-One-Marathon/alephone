@@ -190,10 +190,10 @@ static bool new_color_run(struct rgb_color_value *_new, struct rgb_color_value *
 
 static int32 get_shading_table_size(short collection_code);
 
-static void build_collection_tinting_table(struct rgb_color_value *colors, short color_count, short collection_index);
+static void build_collection_tinting_table(struct rgb_color_value *colors, short color_count, short collection_index, bool is_opengl);
 static void build_tinting_table8(struct rgb_color_value *colors, short color_count, pixel8 *tint_table, short tint_start, short tint_count);
 static void build_tinting_table16(struct rgb_color_value *colors, short color_count, pixel16 *tint_table, struct rgb_color *tint_color);
-static void build_tinting_table32(struct rgb_color_value *colors, short color_count, pixel32 *tint_table, struct rgb_color *tint_color);
+static void build_tinting_table32(struct rgb_color_value *colors, short color_count, pixel32 *tint_table, struct rgb_color *tint_color, bool is_opengl);
 
 static void precalculate_bit_depth_constants(void);
 
@@ -2004,7 +2004,7 @@ static void update_color_environment(
 				}
 			}
 			
-			build_collection_tinting_table(colors, color_count, collection_index);
+			build_collection_tinting_table(colors, color_count, collection_index, is_opengl);
 			
 			/* 8-bit interface, non-8-bit main window; remember interface CLUT separately */
 			if (collection_index==_collection_interface && interface_bit_depth==8 && bit_depth!=interface_bit_depth) _change_clut(change_interface_clut, colors, color_count);
@@ -2462,7 +2462,8 @@ static short CollectionTints[NUMBER_OF_COLLECTIONS] =
 static void build_collection_tinting_table(
 	struct rgb_color_value *colors,
 	short color_count,
-	short collection_index)
+	short collection_index,
+	bool is_opengl)
 {
 	struct collection_definition *collection= get_collection_definition(collection_index);
 	if (!collection) return;
@@ -2496,7 +2497,7 @@ static void build_collection_tinting_table(
 				build_tinting_table16(colors, color_count, (pixel16 *)tint_table, tint_colors16+tint_color);
 				break;
 			case 32:
-				build_tinting_table32(colors, color_count, (pixel32 *)tint_table, tint_colors16+tint_color);
+				build_tinting_table32(colors, color_count, (pixel32 *)tint_table, tint_colors16+tint_color, is_opengl);
 				break;
 		}
 	}
@@ -2568,7 +2569,8 @@ static void build_tinting_table32(
 	struct rgb_color_value *colors,
 	short color_count,
 	pixel32 *tint_table,
-	struct rgb_color *tint_color)
+	struct rgb_color *tint_color,
+	bool is_opengl)
 {
 	short i;
 
@@ -2582,15 +2584,16 @@ static void build_tinting_table32(
 		
 #ifdef SDL
 		// Find optimal pixel value for video display
-		*tint_table++= SDL_MapRGB(fmt,
-		  ((magnitude * tint_color->red) / 65535) >> 8,
-		  ((magnitude * tint_color->green) / 65535) >> 8,
-		  ((magnitude * tint_color->blue) / 65535) >> 8);
-#else
+		if (!is_opengl)
+			*tint_table++= SDL_MapRGB(fmt,
+			  ((magnitude * tint_color->red) / 65535) >> 8,
+			  ((magnitude * tint_color->green) / 65535) >> 8,
+			  ((magnitude * tint_color->blue) / 65535) >> 8);
+		else
+#endif
 		// Mac xRGB 8888 pixel format
 		*tint_table++= RGBCOLOR_TO_PIXEL32((magnitude*tint_color->red)/65535,
 			(magnitude*tint_color->green)/65535, (magnitude*tint_color->blue)/65535);
-#endif
 	}
 }
 
