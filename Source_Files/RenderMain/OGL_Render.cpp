@@ -166,10 +166,6 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "screen.h"
 #include "OGL_Shader.h"
 
-#ifdef __WIN32__
-#include "OGL_Win32.h"
-#endif
-
 #include <cmath>
 
 // Whether or not OpenGL is active for rendering
@@ -641,7 +637,7 @@ bool OGL_StartRun()
 #endif
 
 #ifdef __WIN32__
-	setup_gl_extensions();
+	glewInit();
 #endif
 
 	Using_sRGB = false;

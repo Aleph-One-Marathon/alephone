@@ -192,7 +192,7 @@ fi
 dnl Figure out which OpenGL library to use
 case "$target" in
   *-*-cygwin* | *-*-mingw32*)
-    SYS_GL_LIBS="-lopengl32 -lglu32"
+    SYS_GL_LIBS="-lGLEW -lopengl32 -lglu32"
     LIBS="$LIBS -lstdc++"
     ;;
   *-*-darwin*)

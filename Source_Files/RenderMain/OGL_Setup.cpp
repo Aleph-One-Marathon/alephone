@@ -91,10 +91,6 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #include "progress.h"
 #include "OGL_Shader.h"
 
-#ifdef __WIN32__
-#include "OGL_Win32.h"
-#endif
-
 // Whether or not OpenGL is present and usable
 static bool _OGL_IsPresent = false;
 
@@ -112,7 +108,7 @@ bool OGL_Initialize()
 #elif defined(SDL)
 	// nothing to do
 #if defined(__WIN32__)
-//	setup_gl_extensions();
+//	glewInit();
 #endif	
 
 	return _OGL_IsPresent = true;
@@ -129,6 +125,9 @@ bool OGL_IsPresent() {return _OGL_IsPresent;}
 
 bool OGL_CheckExtension(const std::string extension) {
 #ifdef HAVE_OPENGL
+#ifdef __WIN32__
+	return glewIsSupported(extension.c_str());
+#else
 	char *extensions = (char *) glGetString(GL_EXTENSIONS);
 	if (!extensions) return false;
 
@@ -142,6 +141,7 @@ bool OGL_CheckExtension(const std::string extension) {
 
 		extensions += length + 1;
 	}
+#endif
 #endif
 	return false;
 }

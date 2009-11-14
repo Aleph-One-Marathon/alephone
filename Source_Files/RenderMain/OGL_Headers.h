@@ -23,10 +23,19 @@
 	Uniform header for all Aleph One OpenGL users
 */
 
+#ifdef __WIN32__
+
+#define GLEW_STATIC 1
+#include <GL/glew.h>
+
+#else
+
 #ifndef GL_GLEXT_PROTOTYPES
 #define GL_GLEXT_PROTOTYPES 1
 #endif
 
 #include <SDL/SDL_opengl.h>
+
+#endif
 
 #endif

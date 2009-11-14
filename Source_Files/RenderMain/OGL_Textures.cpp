@@ -91,10 +91,6 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 
 #include "OGL_Headers.h"
 
-#ifdef __WIN32__
-#include "OGL_Win32.h"
-#endif
-
 #include "preferences.h"
 
 #include "SDL.h"
