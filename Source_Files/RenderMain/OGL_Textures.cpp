@@ -283,6 +283,28 @@ void TextureState::FrameTick() {
 // this is because different rendering modes deserve different treatment.
 static CollBitmapTextureState* TextureStateSets[OGL_NUMBER_OF_TEXTURE_TYPES][MAXIMUM_COLLECTIONS];
 
+static GLuint flatBumpTextureID = 0;
+void FlatBumpTexture() {
+	
+	if (flatBumpTextureID == 0)
+	{
+		glGenTextures(1, &flatBumpTextureID);
+		glBindTexture(GL_TEXTURE_2D, flatBumpTextureID);
+		
+		GLubyte flatTextureData[4] = {0x80, 0x80, 0xFF, 0x80};
+		
+		glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, flatTextureData);
+	}
+	else
+		glBindTexture(GL_TEXTURE_2D, flatBumpTextureID);
+}
+
+
 // Initialize the texture accounting
 void OGL_StartTextures()
 {
@@ -394,6 +416,9 @@ void OGL_StopTextures()
 	// clear blitters and fonts
 	OGL_Blitter::StopTextures();
 	FontSpecifier::OGL_ResetFonts(false);
+	
+	glDeleteTextures(1, &flatBumpTextureID);
+	flatBumpTextureID = 0;
 }
 
 void OGL_FrameTickTextures()
@@ -1422,23 +1447,11 @@ void TextureManager::RenderGlowing()
 
 void TextureManager::RenderBump()
 {
-	
-	
-	if (TxtrStatePtr->UseBump())
-	{
-		if(OffsetImage.get() && OffsetImage.get()->IsPresent()) {
+	if(OffsetImage.get() && OffsetImage.get()->IsPresent()) {
+		if (TxtrStatePtr->UseBump())
 			PlaceTexture(OffsetImage.get());
-		} else {
-            // set up a flat bump texture
-            GLubyte flatTextureData[4] = {0x80, 0x80, 0xFF, 0x80};
-            
-            glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, flatTextureData);
-		}
+	} else {
+		FlatBumpTexture();
 	}
 	
 	gGLTxStats.binds++;
@@ -1558,6 +1571,9 @@ void OGL_ResetTextures()
 	
 	// Reset blitters
 	OGL_Blitter::StopTextures();
+
+	glDeleteTextures(1, &flatBumpTextureID);
+	flatBumpTextureID = 0;
 }
 
 
