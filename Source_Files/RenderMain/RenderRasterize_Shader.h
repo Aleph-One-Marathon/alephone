@@ -46,6 +46,4 @@ public:
 	bool setupTexture(const shape_descriptor& texture, short transferMode, short transfer_phase, RenderStep renderStep);
 };
 
-void FlatTexture();
-
 #endif

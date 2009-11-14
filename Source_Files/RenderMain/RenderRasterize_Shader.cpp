@@ -30,22 +30,6 @@
 inline bool FogActive();
 void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color);
 
-/*
- * setup a flat bump texture
- */
-void FlatTexture() {
-
-	GLubyte flatTextureData[4] = {0x80, 0x80, 0xFF, 0x80};
-
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE, flatTextureData);
-//	assert(glGetError() == GL_NO_ERROR);	
-}
-
 class FBO {
 	
 	friend class Blur;
@@ -439,7 +423,6 @@ inline void setWallColor(GLfloat intensity, RenderStep renderStep) {
 }
 
 void instantiate_transfer_mode(struct view_data *view, 	short transfer_mode, world_distance &x0, world_distance &y0) {
-	world_distance vector_magnitude;
 	short alternate_transfer_phase;
 	short transfer_phase = view->tick_count;
 
@@ -598,9 +581,6 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			
 			glNormal3f(-dy, dx, 0);
 			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, dx, dy, 0, -1);
-
-			short alternate_transfer_phase;
-			short transfer_phase = view->tick_count;
 
 			world_distance x = 0.0, y = 0.0;
 			instantiate_transfer_mode(view, surface->transfer_mode, x, y);
