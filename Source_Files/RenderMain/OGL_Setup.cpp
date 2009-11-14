@@ -627,6 +627,6 @@ void SglColor4fva(const GLfloat* iv) {
 }
 
 void SglColor4usv(const GLushort* iv) {
-  GLfloat ov[4] = {sRGB_frob(iv[0]*(1.f/65535.f)), sRGB_frob(iv[1]*(1.f/65535.f)), sRGB_frob(iv[2]*(1.f/65535.f)), iv[3]};
+  GLfloat ov[4] = {sRGB_frob(iv[0]*(1.f/65535.f)), sRGB_frob(iv[1]*(1.f/65535.f)), sRGB_frob(iv[2]*(1.f/65535.f)), iv[3]*(1.f/65535.f)};
   glColor4fv(ov);
 }
