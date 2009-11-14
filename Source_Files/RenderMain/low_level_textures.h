@@ -501,7 +501,7 @@ inline T randomize_vertical_polygon_lines_write(uint16 seed)
 template <>
 inline pixel32 randomize_vertical_polygon_lines_write<pixel32>(uint16 seed)
 {
-	return (pixel32)seed^(((pixel32)seed)<<8);
+	return (pixel32)seed^(((pixel32)seed)<<16);
 }
 
 template <typename T>
