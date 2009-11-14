@@ -354,10 +354,12 @@ bool RenderRasterize_Shader::setupTexture(const shape_descriptor& Texture, short
 	Shader *s = NULL;
 
 	TextureManager TMgr;
-	get_shape_bitmap_and_shading_table(Texture, &TMgr.Texture, &TMgr.ShadingTables, _shading_normal);
+	get_shape_bitmap_and_shading_table(Texture, &TMgr.Texture, &TMgr.ShadingTables,
+		local_player->infravision_duration ? _shading_infravision : _shading_normal);
 	
 	TMgr.ShapeDesc = Texture;
 	TMgr.TransferMode = _textured_transfer;
+	TMgr.IsShadeless = local_player->infravision_duration ? 1 : 0;
 	TMgr.TransferData = 0;
 
 	switch(transferMode) {
