@@ -487,6 +487,11 @@ static void initialize_application(void)
 		exit(1);
 	}
 	SDL_WM_SetCaption("Aleph One", "Aleph One");
+
+#if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
+	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
+#endif
+
 #if defined(HAVE_SDL_IMAGE) && !(defined(__APPLE__) && defined(__MACH__)) && !defined(__MACOS__)
 	SDL_WM_SetIcon(IMG_ReadXPMFromArray(const_cast<char**>(alephone_xpm)), 0);
 #endif
@@ -506,8 +511,6 @@ static void initialize_application(void)
 		exit(1);
 	}
 #endif
-
-
 
 	// Initialize everything
 	mytm_initialize();
@@ -539,7 +542,9 @@ static void shutdown_application(void)
         already_shutting_down = true;
         
 	restore_gamma();
-    
+#if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
+	IMG_Quit();
+#endif
 #ifdef HAVE_SDL_NET
 	SDLNet_Quit();
 #endif
