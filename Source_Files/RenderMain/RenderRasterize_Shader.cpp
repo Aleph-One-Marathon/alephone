@@ -347,7 +347,9 @@ bool RenderRasterize_Shader::setupTexture(const shape_descriptor& Texture, short
 		case _xfer_landscape:
 		case _xfer_big_landscape:
 			TMgr.TextureType = OGL_Txtr_Landscape;
+			LandscapeOptions *opts = View_GetLandscapeOptions(Texture);
 			s = Shader::get("landscape");
+			s->setFloat("repeat", 1.0 + opts->HorizExp);
 			break;
 		default:
 			TMgr.TextureType = OGL_Txtr_Wall;
