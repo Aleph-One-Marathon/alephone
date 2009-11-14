@@ -204,6 +204,7 @@ void RenderRasterize_Shader::render_tree() {
 	
 	if(blurLarge && blurSmall) {
 
+		glFogf(GL_FOG_DENSITY,0.0F);
 		glDisable(GL_FOG);
 
 		blurLarge->begin();
