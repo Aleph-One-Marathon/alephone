@@ -37,16 +37,7 @@
 
 
 #ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#   include <OpenGL/gl.h>
-#   include <OpenGL/glu.h>
-# elif defined mac
-#   include <gl.h>
-#   include <glu.h>
-# else
-#   include <GL/gl.h>
-#   include <GL/glu.h>
-# endif
+#include "OGL_Headers.h"
 #include "OGL_Setup.h" // OGL_IsActive
 #endif
 

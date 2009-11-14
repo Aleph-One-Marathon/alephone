@@ -89,28 +89,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include <windows.h>
 #endif
 
-#ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#   include <OpenGL/gl.h>
-#   include <OpenGL/glu.h>
-#   include <OpenGL/glext.h>
-# elif defined mac
-#   include <gl.h>
-#   include <glu.h>
-#   include <glext.h>
-# else
-#ifndef __WIN32__
-#   ifndef GL_GLEXT_PROTOTYPES
-#   define GL_GLEXT_PROTOTYPES 1
-#endif
-#   endif
-#   include <GL/gl.h>
-#   include <GL/glu.h>
-#   ifdef HAVE_GL_GLEXT_H
-#     include <GL/glext.h>
-#   endif
-# endif
-#endif
+#include "OGL_Headers.h"
 
 #ifdef __WIN32__
 #include "OGL_Win32.h"

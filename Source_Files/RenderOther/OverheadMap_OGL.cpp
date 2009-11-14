@@ -70,27 +70,10 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #ifdef HAVE_OPENGL
 
 #ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#   include <OpenGL/gl.h>
-#   include <OpenGL/glu.h>
-# elif defined mac
-#   include <gl.h>
-#   include <glu.h>
-# else
-#   include <GL/gl.h>
-#   include <GL/glu.h>
-# endif
-#endif
-
-#ifdef mac
-# if defined(EXPLICIT_CARBON_HEADER)
-#  include <AGL/agl.h>
-# else
-#  include <agl.h>
-# endif
-#endif
-
+#include "OGL_Headers.h"
 #include "OGL_Setup.h" // for SglColor*
+#endif
+
 
 #define USE_VERTEX_ARRAYS
 

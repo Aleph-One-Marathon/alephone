@@ -31,14 +31,9 @@ HUD_RENDERER_LUA.CPP
 #include "screen.h"
 
 #ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#   include <OpenGL/gl.h>
-# else
-#   include <GL/gl.h>
-# endif
-#endif
-
+#include "OGL_Headers.h"
 #include "OGL_Setup.h" // for SglColor*
+#endif
 
 #include <math.h>
 

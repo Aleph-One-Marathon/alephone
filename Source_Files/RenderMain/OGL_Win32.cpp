@@ -22,8 +22,8 @@
 #define __OGL_Win32_cpp__
 
 #include "OGL_Win32.h"
+#include "OGL_Headers.h"
 #include <windows.h>
-#include <GL/gl.h>
 #include <SDL.h>
 
 void setup_gl_extensions() {

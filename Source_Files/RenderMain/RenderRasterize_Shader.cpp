@@ -6,10 +6,7 @@
  *  http://www.gnu.org/licenses/gpl.html
  */
 
-#ifndef GL_GLEXT_PROTOTYPES
-#define GL_GLEXT_PROTOTYPES 1
-#endif
-#include <SDL_opengl.h>
+#include "OGL_Headers.h"
 
 #include <iostream>
 

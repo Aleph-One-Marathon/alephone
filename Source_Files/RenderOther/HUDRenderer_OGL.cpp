@@ -43,11 +43,7 @@
 #include "Shape_Blitter.h"
 
 #ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#   include <OpenGL/gl.h>
-# else
-#   include <GL/gl.h>
-# endif
+#include "OGL_Headers.h"
 #endif
 
 #include <math.h>

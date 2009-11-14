@@ -24,8 +24,7 @@
 
 #ifdef __WIN32__
 
-#include <GL/gl.h>
-#include <GL/glext.h>
+#include "OGL_Headers.h"
 
 typedef void (*GL_ACTIVETEXTUREARB_FUNC)(unsigned int);
 typedef void (*GL_CLIENTACTIVETEXTUREARB_FUNC)(int);

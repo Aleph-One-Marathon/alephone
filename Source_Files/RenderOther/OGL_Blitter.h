@@ -28,22 +28,7 @@
 #include "Image_Blitter.h"
 
 #ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#   include <OpenGL/gl.h>
-#   include <OpenGL/glu.h>
-# elif defined mac
-#   include <gl.h>
-#   include <glu.h>
-# else
-#ifndef __WIN32__
-#   ifndef GL_GLEXT_PROTOTYPES
-#   define GL_GLEXT_PROTOTYPES 1
-#endif
-#endif
-#   include <GL/gl.h>
-#   include <GL/glu.h>
-#   include <GL/glext.h>
-# endif
+#include "OGL_Headers.h"
 #endif
 
 #ifndef SDL

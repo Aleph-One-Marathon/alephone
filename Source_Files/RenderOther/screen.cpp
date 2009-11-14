@@ -35,7 +35,7 @@
 #include <string.h>
 
 #ifdef HAVE_OPENGL
-#include "SDL_opengl.h"
+#include "OGL_Headers.h"
 #include "OGL_Blitter.h"
 #endif
 

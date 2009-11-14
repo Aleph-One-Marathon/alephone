@@ -30,17 +30,7 @@ using namespace std;
 #ifdef HAVE_OPENGL
 
 #ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#   include <OpenGL/gl.h>
-# elif defined mac
-#   include <gl.h>
-# else
-#  ifdef WIN32
-#   include <wtypes.h>	// for POINT, so we can include wingdi.h
-#   include <wingdi.h>	// for WINGDIAPI, appears in GL/gl.h
-#  endif
-#  include <GL/gl.h>
-# endif
+#include "OGL_Headers.h"
 #endif
 
 #include <vector>

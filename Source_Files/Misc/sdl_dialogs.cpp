@@ -50,8 +50,7 @@
 #include "preferences.h"
 
 #ifdef HAVE_OPENGL
-#define NO_SDL_GLEXT
-#include "SDL_opengl.h"
+#include "OGL_Headers.h"
 #include "OGL_Setup.h"
 #include "OGL_Blitter.h"
 #endif

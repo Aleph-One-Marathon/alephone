@@ -698,6 +698,7 @@
 		AEDCB5DB0D4AEC4D004CB40E /* lua_projectiles.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_projectiles.h; sourceTree = "<group>"; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
 		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
+		AEF8C4F210AEFEB500ED84AD /* OGL_Headers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Headers.h; sourceTree = "<group>"; };
 		AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Ogg.framework; path = /Library/Frameworks/Ogg.framework; sourceTree = "<absolute>"; };
 		AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = smpeg.framework; path = /Library/Frameworks/smpeg.framework; sourceTree = "<absolute>"; };
 		AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Vorbis.framework; path = /Library/Frameworks/Vorbis.framework; sourceTree = "<absolute>"; };
@@ -1691,6 +1692,7 @@
 		F5CC936B0240D5E001A80001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				AEF8C4F210AEFEB500ED84AD /* OGL_Headers.h */,
 				AE791CF60968E49100350190 /* DDS.h */,
 				F5CC92E50240D56101A80001 /* AnimatedTextures.h */,
 				F5CC92E60240D56101A80001 /* collection_definition.h */,

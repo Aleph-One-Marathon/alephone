@@ -33,20 +33,7 @@
 
 #ifdef HAVE_OPENGL
 
-#if defined(mac)
-# if defined(EXPLICIT_CARBON_HEADER)
-#  include <OpenGL/gl.h>
-#  include <AGL/agl.h>
-# else
-#  include <agl.h>
-# endif
-#elif defined(SDL)
-# if defined (__APPLE__) && defined (__MACH__)
-#  include <OpenGL/gl.h>
-# else
-#  include <GL/gl.h>
-# endif
-#endif
+#include "OGL_Headers.h"
 
 // 3D-Model and Skin Support
 

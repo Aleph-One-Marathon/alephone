@@ -146,28 +146,7 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include <windows.h>
 #endif
 
-#ifdef HAVE_OPENGL
-# if defined (__APPLE__) && defined (__MACH__)
-#   include <OpenGL/gl.h>
-#   include <OpenGL/glu.h>
-# elif defined mac
-#   include <gl.h>
-#   include <glu.h>
-# else
-#   include <GL/gl.h>
-#   include <GL/glu.h>
-# endif
-#endif
-
-
-#ifdef mac
-#if defined(EXPLICIT_CARBON_HEADER)
-    #include <AGL/agl.h>
-#else
-#include <agl.h>
-#endif
-#include "my32bqd.h"
-#endif
+#include "OGL_Headers.h"
 
 #include "interface.h"
 #include "render.h"
