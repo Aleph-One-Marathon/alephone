@@ -95,14 +95,6 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 #include "OGL_Win32.h"
 #endif
 
-#ifdef mac
-# if defined(EXPLICIT_CARBON_HEADER)
-#  include <AGL/agl.h>
-# else
-#  include <agl.h>
-# endif
-#endif
-
 #include "preferences.h"
 
 #include "SDL.h"
