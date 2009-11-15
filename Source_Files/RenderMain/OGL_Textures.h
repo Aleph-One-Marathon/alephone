@@ -57,6 +57,7 @@ struct TextureState
 	GLuint IDs[NUMBER_OF_TEXTURES];		// Texture ID's
 	bool IsUsed;						// Is the texture set being used?
 	bool IsGlowing;						// Does the texture have a glow map?
+	bool IsBumped;						// Does the texture have a bump map?
 	bool TexGened[NUMBER_OF_TEXTURES];	// Which ID's have had their textures generated?
 	int IDUsage[NUMBER_OF_TEXTURES];	// Which ID's are being used?  Reset every frame.
 	int unusedFrames;					// How many frames have passed since we were last used.

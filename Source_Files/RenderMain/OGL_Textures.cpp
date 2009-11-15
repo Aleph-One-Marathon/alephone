@@ -209,7 +209,7 @@ void TextureState::Reset()
 		gGLTxStats.inUse--;
 		glDeleteTextures(NUMBER_OF_TEXTURES,IDs);
 	}
-	IsUsed = IsGlowing = TexGened[Normal] = TexGened[Glowing] = TexGened[Bump] = false;
+	IsUsed = IsGlowing = IsBumped = TexGened[Normal] = TexGened[Glowing] = TexGened[Bump] = false;
 	IDUsage[Normal] = IDUsage[Glowing] = IDUsage[Bump] = unusedFrames = 0;
 }
 
@@ -569,6 +569,12 @@ bool TextureManager::Setup()
 		
 		CTState.IsGlowing = IsGlowing;
 		
+		if (substitute && OffsetImage.get() && OffsetImage.get()->IsPresent()) {
+			CTState.IsBumped = true;
+		} else {
+			CTState.IsBumped = false;
+		}
+		
 		// Load the fake landscape if selected
 		if (TextureType == OGL_Txtr_Landscape)
 		{
@@ -603,6 +609,9 @@ bool TextureManager::Setup()
 			if (GlowImage.get() && GlowImage.get()->IsPresent()) {
 				if (!GlowImage.edit()->Minify()) break;
 			}
+			if (OffsetImage.get() && OffsetImage.get()->IsPresent()) {
+				if (!OffsetImage.edit()->Minify()) break;
+			}			
 		}
 		
 		// Kludge for making top and bottom look flat
@@ -749,7 +758,10 @@ bool TextureManager::LoadSubstituteTexture()
 		FindInfravisionVersion(Collection, NormalImage);
 
 		// Infravision textures don't glow
-		GlowImage.set((ImageDescriptor *) NULL);		
+		GlowImage.set((ImageDescriptor *) NULL);
+		
+		// FIXME: bump maps don't load properly under infravision
+		OffsetImage.set((ImageDescriptor *) NULL);
 	}
 	else if (CTable == SILHOUETTE_BITMAP_SET)
 	{
@@ -1414,8 +1426,8 @@ void TextureManager::RenderGlowing()
 
 void TextureManager::RenderBump()
 {
-	if(OffsetImage.get() && OffsetImage.get()->IsPresent()) {
-		if (TxtrStatePtr->UseBump())
+	if (TxtrStatePtr->IsBumped) {
+		if (TxtrStatePtr->UseBump() && OffsetImage.get() && OffsetImage.get()->IsPresent())
 			PlaceTexture(OffsetImage.get());
 	} else {
 		FlatBumpTexture();
