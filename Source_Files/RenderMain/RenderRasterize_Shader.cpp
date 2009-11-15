@@ -290,8 +290,7 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, Render
 			break;
 		case _tinted_transfer:
 			glColor4f(0.0,0.0,0.0, 1.0 - rect.transfer_data/32.0F);
-			TMgr.TransferMode = _textured_transfer;
-			s = Shader::get("invisible");
+			s = Shader::get("flat_shadeless");
 			break;
 		case _solid_transfer:
 			glColor4f(0,1,0,1);
@@ -307,8 +306,8 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, Render
 	}
 
 	if(s == NULL) {
-		if(local_player->infravision_duration) {
-			s = Shader::get("flat_infravision");
+		if(rect.flags & _SHADELESS_BIT) {
+			s = Shader::get("flat_shadeless");
 		} else {
 			s = Shader::get("flat");
 		}

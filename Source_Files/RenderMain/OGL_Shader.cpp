@@ -546,20 +546,8 @@ void initDefaultPrograms() {
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), gl_FragColor.a ); \n"
         "}\n";
     
-    defaultVertexPrograms["invisible"] = defaultVertexPrograms["flat"];
-    defaultFragmentPrograms["invisible"] = ""
-        "uniform sampler2D texture0;\n"
-        "uniform float flare;\n"
-        "varying vec3 viewDir;\n"
-        "varying vec4 vertexColor;\n"
-        "void main (void) {\n"
-        "	vec3 viewv = normalize(viewDir);\n"
-        "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
-        "	gl_FragColor = vec4(0.0, 0.0, 0.0, vertexColor.a * color.a);\n"
-        "}\n";
-    
-    defaultVertexPrograms["flat_infravision"] = defaultVertexPrograms["flat"];
-    defaultFragmentPrograms["flat_infravision"] = ""
+    defaultVertexPrograms["flat_shadeless"] = defaultVertexPrograms["flat"];
+    defaultFragmentPrograms["flat_shadeless"] = ""
         "uniform sampler2D texture0;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
