@@ -290,7 +290,6 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, Render
 			break;
 		case _tinted_transfer:
 			glColor4f(0.0,0.0,0.0, 1.0 - rect.transfer_data/32.0F);
-			s = Shader::get("flat_shadeless");
 			break;
 		case _solid_transfer:
 			glColor4f(0,1,0,1);
@@ -305,13 +304,12 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, Render
 			glColor4f(0,0,1,1);
 	}
 
-	if(s == NULL) {
-		if(rect.flags & _SHADELESS_BIT) {
-			glColor4f(1,1,1,1);
-			s = Shader::get("flat_shadeless");
-		} else {
-			s = Shader::get("flat");
-		}
+	if(s == NULL) 
+		s = Shader::get("flat");
+	
+	if (s && TMgr.IsShadeless) {
+		glColor4f(1,1,1,1);
+		s->setFloat("flare", 0.0);
 	}
 
 	if(TMgr.Setup()) {
@@ -356,11 +354,18 @@ bool RenderRasterize_Shader::setupTexture(const shape_descriptor& Texture, short
 			break;
 		default:
 			TMgr.TextureType = OGL_Txtr_Wall;
-			if(renderStep == kDiffuse) {
+			if(!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+				s = Shader::get("flat");
+			} else if(renderStep == kDiffuse) {
 				s = Shader::get("parallax");
 			} else {
 				s = Shader::get("specular");
 			}
+	}
+	
+	if (s && TMgr.IsShadeless) {
+		glColor4f(1,1,1,1);
+		s->setFloat("flare", 0.0);
 	}
 
 	if(TMgr.Setup()) {
