@@ -689,7 +689,7 @@ static const char *gamma_labels[9] = {
 };
 
 static const char* renderer_labels[] = {
-	"Software", "OpenGL (Classic)", "OpenGL (3D)", NULL
+	"Software", "OpenGL (Classic)", "OpenGL (Shader)", NULL
 };
 
 static const char* hud_scale_labels[] = {
