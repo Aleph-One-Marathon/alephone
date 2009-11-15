@@ -540,7 +540,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 	} else {
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
-		glPolygonOffset(1.0, -1.0);
+		glPolygonOffset(-1.0, -1.0);
 	}
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
@@ -756,7 +756,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	// and offset them to draw in proper depth order
 	if(pos.y == objectY) {
 		objectCount++;
-		glPolygonOffset(0.0, objectCount * -10.0);
+		glPolygonOffset(-1.0, objectCount * -100.0);
 	} else {
 		objectCount = 0;
 		objectY = pos.y;
