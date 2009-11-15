@@ -307,6 +307,7 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, Render
 
 	if(s == NULL) {
 		if(rect.flags & _SHADELESS_BIT) {
+			glColor4f(1,1,1,1);
 			s = Shader::get("flat_shadeless");
 		} else {
 			s = Shader::get("flat");
