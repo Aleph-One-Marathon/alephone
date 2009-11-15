@@ -403,8 +403,8 @@ void initDefaultPrograms() {
         "	gl_FragColor = vertexColor * vec4(vec3(a, b, c), color.a);\n"
         "}\n";    
 
-	defaultVertexPrograms["flat_random"] = defaultVertexPrograms["random"];
-	defaultFragmentPrograms["flat_random"] = ""
+	defaultVertexPrograms["random_nostatic"] = defaultVertexPrograms["random"];
+	defaultFragmentPrograms["random_nostatic"] = ""
 		"uniform sampler2D texture0;\n"
 		"uniform float time;\n"
 		"void main(void) {\n"

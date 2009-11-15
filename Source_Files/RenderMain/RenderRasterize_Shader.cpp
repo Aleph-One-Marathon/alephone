@@ -284,7 +284,7 @@ TextureManager SetupTexture(const rectangle_definition& rect, short type, Render
 	switch(TMgr.TransferMode) {
 		case _static_transfer:
 			if (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic))
-				s = Shader::get("flat_random");
+				s = Shader::get("random_nostatic");
 			else
 				s = Shader::get("random");
 			break;

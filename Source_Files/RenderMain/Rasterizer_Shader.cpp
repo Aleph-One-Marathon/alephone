@@ -41,7 +41,7 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	if(s) {
 		s->setFloat("time", view.tick_count);
 	}
-	s = Shader::get("flat_random");
+	s = Shader::get("random_nostatic");
 	if(s) {
 		s->setFloat("time", view.tick_count);
 	}
