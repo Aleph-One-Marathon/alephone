@@ -400,8 +400,7 @@ void initDefaultPrograms() {
         "	float b = fract(sin(gl_TexCoord[0].x * 2331.0 + gl_TexCoord[0].y * 63.0 + time * 3.0) * 32451.0); \n"
         "	float c = fract(sin(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0 + time * 31.0) * 34563.0);\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
-        "	vec4 adj = vec4(clamp(vertexColor.r + 0.67, 0.0, 1.0), clamp(vertexColor.g + 0.67, 0.0, 1.0), clamp(vertexColor.b + 0.67, 0.0, 1.0), vertexColor.a * (a+b+c) * 0.33);\n"
-        "	gl_FragColor = adj * vec4(vec3(a, b, c), color.a);\n"
+        "	gl_FragColor = vertexColor * vec4(vec3(a, b, c), color.a);\n"
         "}\n";    
 
 	defaultVertexPrograms["random_nostatic"] = defaultVertexPrograms["random"];
