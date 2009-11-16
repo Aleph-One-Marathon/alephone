@@ -294,6 +294,7 @@ void initDefaultPrograms() {
         "varying vec3 viewDir;\n"
         "varying float texScale;\n"
         "varying float texOffset;\n"
+        "varying vec4 vertexColor;\n"
         "void main(void) {\n"
         "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
@@ -301,6 +302,7 @@ void initDefaultPrograms() {
         "	viewDir = (gl_Vertex - v).xyz;\n"
         "	texScale = gl_TextureMatrix[0][1][1];\n"
         "	texOffset = gl_TextureMatrix[0][3][1];\n"
+        "	vertexColor = gl_Color;\n"
         "}\n";
     defaultFragmentPrograms["landscape"] = ""
         "uniform sampler2D texture0;\n"
@@ -308,12 +310,13 @@ void initDefaultPrograms() {
         "varying vec3 viewDir;\n"
         "varying float texScale;\n"
         "varying float texOffset;\n"
+        "varying vec4 vertexColor;\n"
         "void main(void) {\n"
         "	float pi = 2.0 * asin(1.0);\n"
         "	vec3 viewv = normalize(viewDir);\n"
         "	float x = atan(viewv.x, viewv.y) / (2.0 * pi) * repeat;\n"
         "	float y = 0.5/abs(texScale) - sign(texOffset) + texOffset + asin(viewv.z) * 0.3 * sign(texScale);\n"
-        "	gl_FragColor = texture2D(texture0, vec2(-x + 0.25*repeat, y));\n"
+        "	gl_FragColor = vertexColor * texture2D(texture0, vec2(-x + 0.25*repeat, y));\n"
         "}\n";
     
     defaultVertexPrograms["random"] = ""

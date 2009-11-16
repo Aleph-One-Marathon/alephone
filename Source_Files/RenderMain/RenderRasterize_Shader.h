@@ -13,6 +13,7 @@
 #include "cseries.h"
 #include "map.h"
 #include "RenderRasterize.h"
+#include "OGL_Textures.h"
 
 class Blur;
 class RenderRasterize_Shader : public RenderRasterizerClass {
@@ -43,7 +44,8 @@ public:
 
 	virtual void render_tree(void);
 
-	bool setupTexture(const shape_descriptor& texture, short transferMode, short transfer_phase, RenderStep renderStep);
+	TextureManager setupWallTexture(const shape_descriptor& Texture, short transferMode, short transfer_phase, float intensity, RenderStep renderStep);
+	TextureManager setupSpriteTexture(const rectangle_definition& rect, short type, RenderStep renderStep);
 };
 
 #endif
