@@ -46,7 +46,7 @@ public:
 	
 	Shader() : _programObj(NULL), _loaded(false) {}
 	Shader(const std::string& name);
-	Shader(FileSpecifier& vert, FileSpecifier& frag);
+	Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag);
 	~Shader();
 
 	void load();

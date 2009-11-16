@@ -49,7 +49,7 @@ bool XML_ShaderParser::HandleAttribute(const char *Tag, const char *Value) {
 	} else if(StringsEqual(Tag,"vert")) {
 		_vert.SetNameWithPath(Value);
 	} else if(StringsEqual(Tag,"frag")) {
-		_vert.SetNameWithPath(Value);
+		_frag.SetNameWithPath(Value);
 	}
 	
 	return true;
@@ -57,7 +57,7 @@ bool XML_ShaderParser::HandleAttribute(const char *Tag, const char *Value) {
 
 bool XML_ShaderParser::AttributesDone() {
     initDefaultPrograms();
-	Shader::Shaders[_name] = Shader(_vert, _frag);
+	Shader::Shaders[_name] = Shader(_name, _vert, _frag);
 	return true;
 }
 
@@ -141,9 +141,20 @@ Shader::Shader(const std::string& name) : _programObj(NULL), _loaded(false), _ve
     }
 }    
 
-Shader::Shader(FileSpecifier& vert, FileSpecifier& frag) : _programObj(NULL), _loaded(false) {
+Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag) : _programObj(NULL), _loaded(false) {
+    initDefaultPrograms();
+	
 	_vert = parseFile(vert);
+	if (!_vert && defaultVertexPrograms.count(name) > 0) {
+        _vert = new GLcharARB[defaultVertexPrograms[name].size() + 1];
+        strcpy(_vert, defaultVertexPrograms[name].c_str());
+    }
+
 	_frag = parseFile(frag);
+	if (!_frag && defaultFragmentPrograms.count(name) > 0) {
+        _frag = new GLcharARB[defaultFragmentPrograms[name].size() + 1];
+        strcpy(_frag, defaultFragmentPrograms[name].c_str());
+    }
 }
 
 void Shader::init() {
