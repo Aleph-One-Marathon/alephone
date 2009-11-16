@@ -39,6 +39,7 @@ public:
 
 	virtual bool HandleAttribute(const char *Tag, const char *Value);
 	virtual bool AttributesDone();
+	virtual bool ResetValues();
 	XML_ShaderParser(): XML_ElementParser("shader") {}
 };
 
@@ -58,6 +59,11 @@ bool XML_ShaderParser::HandleAttribute(const char *Tag, const char *Value) {
 bool XML_ShaderParser::AttributesDone() {
     initDefaultPrograms();
 	Shader::Shaders[_name] = Shader(_name, _vert, _frag);
+	return true;
+}
+
+bool XML_ShaderParser::ResetValues() {
+	Shader::Shaders.clear();
 	return true;
 }
 
