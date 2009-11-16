@@ -323,6 +323,9 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 				glColor4f(0.0, 0.0, 0.0, 1.0);
 			TMgr.RenderNormal();
 		}
+	} else {
+		TMgr.ShapeDesc = UNONE;
+		return TMgr;
 	}
 
 	TMgr.SetupTextureMatrix();
@@ -336,10 +339,11 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	Shader *s = NULL;
 
 	TextureManager TMgr;
+	TMgr.ShapeDesc = Texture;
+	if (TMgr.ShapeDesc == UNONE) { return TMgr; }
 	get_shape_bitmap_and_shading_table(Texture, &TMgr.Texture, &TMgr.ShadingTables,
 		local_player->infravision_duration ? _shading_infravision : _shading_normal);
 	
-	TMgr.ShapeDesc = Texture;
 	TMgr.TransferMode = _textured_transfer;
 	TMgr.IsShadeless = local_player->infravision_duration ? 1 : 0;
 	TMgr.TransferData = 0;
@@ -393,6 +397,9 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			}
 			TMgr.RenderNormal();
 		}
+	} else {
+		TMgr.ShapeDesc = UNONE;
+		return TMgr;
 	}
 
 	TMgr.SetupTextureMatrix();
@@ -472,10 +479,9 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 	polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, RenderStep renderStep) {
 
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
-	if(texture == UNONE) { return; }
-	
 	float intensity = get_light_data(surface->lightsource_index)->intensity / float(FIXED_ONE - 1);
 	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, view->tick_count, intensity, renderStep);
+	if(TMgr.ShapeDesc == UNONE) { return; }
 	
 	if (void_present) {
 		glDisable(GL_BLEND);
@@ -550,9 +556,9 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vertical_surface_data *surface, bool void_present, RenderStep renderStep) {
 		
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture_definition->texture);
-	if(texture == UNONE) { return; }
 	float intensity = (get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / float(FIXED_ONE - 1);
 	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, view->tick_count, intensity, renderStep);
+	if(TMgr.ShapeDesc == UNONE) { return; }
 
 	if (void_present) {
 		glDisable(GL_BLEND);
@@ -758,6 +764,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	glRotated(yaw, 0.0, 0.0, 1.0);
 
 	TextureManager TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, renderStep);
+	if (TMgr.ShapeDesc == UNONE) { return; }
 
 	float texCoords[2][2];
 
