@@ -33,8 +33,21 @@ const GLdouble kViewBaseMatrix[16] = {
 
 void Rasterizer_Shader_Class::SetView(view_data& view) {
 	OGL_SetView(view);
-	float aspect = view.world_to_screen_y * view.screen_width / float(view.screen_height * view.world_to_screen_x);
-	float fov = view.field_of_view / (View_FOV_FixHorizontalNotVertical() ? aspect : 2.0);
+	float aspect = view.screen_width / float(view.screen_height);
+	float yfov = view.field_of_view / (View_FOV_FixHorizontalNotVertical() ? aspect : 2.0);
+	float xfov = yfov * aspect;
+	
+	// Adjust for view distortion during teleport effect
+	yfov *= view.real_world_to_screen_y / float(view.world_to_screen_y);
+	xfov *= view.real_world_to_screen_x / float(view.world_to_screen_x);
+	
+	// The view flips or shrinks when the FOV goes too far out
+	// of normal bounds, so this limit keeps the teleporting
+	// effect from getting distorted in annoying ways.
+	if (yfov > 119.9) {
+		yfov = 119.9;
+	}
+	
 	float flare = view.maximum_depth_intensity/float(FIXED_ONE_HALF);
 
 	Shader* s = Shader::get("random");
@@ -58,7 +71,7 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(fov, aspect, 16, 1024*1024);
+	gluPerspective(yfov, xfov / yfov, 16, 1024*1024);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(kViewBaseMatrix);
 	double pitch = view.pitch * 360.0 / float(NUMBER_OF_ANGLES);
