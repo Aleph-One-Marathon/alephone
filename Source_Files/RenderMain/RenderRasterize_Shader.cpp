@@ -169,12 +169,21 @@ void RenderRasterize_Shader::setupGL() {
  */
 void RenderRasterize_Shader::render_tree() {
 
+	Shader* s = Shader::get("random");
+	if(s) {
+		s->setFloat("time", view->tick_count);
+	}
+	s = Shader::get("random_nostatic");
+	if(s) {
+		s->setFloat("time", view->tick_count);
+	}
+	
 	RenderRasterizerClass::render_tree(kDiffuse);
 
 	if (!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur))
 		return;
 
-	Shader* s = Shader::get("parallax");
+	s = Shader::get("parallax");
 	if(s) {
 		s->setFloat("flare", 0);
 	}
@@ -281,9 +290,15 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	TMgr.IsShadeless = (rect.flags&_SHADELESS_BIT) != 0;
 	TMgr.TextureType = type;
 
+	glEnable(GL_TEXTURE_2D);
+	glColor4f(color[0], color[1], color[2], 1);
+	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
+	
 	switch(TMgr.TransferMode) {
 		case _static_transfer:
 			TMgr.IsShadeless = 1;
+			flare = 0;
+			glColor4f(1,1,1,1);
 			if (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic))
 				s = Shader::get("random_nostatic");
 			else
@@ -291,34 +306,35 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 			break;
 		case _tinted_transfer:
 			glColor4f(0.0,0.0,0.0, 1.0 - rect.transfer_data/32.0F);
-			s = Shader::get("flat");
-			s->setFloat("flare", 0.0);
+			flare = 0;
 			break;
 		case _solid_transfer:
 			glColor4f(0,1,0,1);
 			break;
 		case _big_landscaped_transfer:
+			glColor4f(1,1,1,1);
+			flare = 0;
 			s = Shader::get("landscape");
 			break;
 		case _textured_transfer:
-			glColor4f(color[0],color[1],color[2],1);
+			if (TMgr.IsShadeless) {
+				glColor4f(1,1,1,1);
+				flare = 0;
+			}
 			break;
 		default:
 			glColor4f(0,0,1,1);
 	}
-
-	if(s == NULL) 
-		s = Shader::get("flat");
 	
-	if (s && TMgr.IsShadeless) {
-		glColor4f(1,1,1,1);
-		s->setFloat("flare", 0.0);
+	if(s == NULL) {
+		s = Shader::get("flat");
 	}
 
 	if(TMgr.Setup()) {
 		if(renderStep == kDiffuse) {
 			TMgr.RenderNormal();			
 		} else {
+			flare = 0;
 			if (TMgr.TransferMode == _tinted_transfer)
 				glColor4f(0.0,0.0,0.0, 1.0 - rect.transfer_data/32.0F);
 			else
@@ -332,7 +348,10 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 
 	TMgr.SetupTextureMatrix();
 
-	if(s) { s->enable(); }
+	if(s) {
+		s->setFloat("flare", flare);
+		s->enable();
+	}
 	return TMgr;
 }
 
@@ -350,7 +369,9 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	TMgr.IsShadeless = local_player->infravision_duration ? 1 : 0;
 	TMgr.TransferData = 0;
 
+	glEnable(GL_TEXTURE_2D);
 	glColor4f(intensity, intensity, intensity, 1.0);
+	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
 
 	switch(transferMode) {
 		case _xfer_landscape:
@@ -360,12 +381,17 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			TMgr.Landscape_AspRatExp = 0;
 			LandscapeOptions *opts = View_GetLandscapeOptions(Texture);
 			glColor4f(1,1,1,1);
+			flare = 0;
 			s = Shader::get("landscape");
 			s->setFloat("repeat", 1.0 + opts->HorizExp);
 		}
 			break;
 		default:
 			TMgr.TextureType = OGL_Txtr_Wall;
+			if(TMgr.IsShadeless) {
+				glColor4f(1,1,1,1);
+				flare = 0;
+			}
 			if(!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 				s = Shader::get("flat");
 			} else if(renderStep == kDiffuse) {
@@ -375,11 +401,6 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			}
 	}
 	
-	if (s && TMgr.IsShadeless) {
-		glColor4f(1,1,1,1);
-		s->setFloat("flare", 0.0);
-	}
-
 	if(TMgr.Setup()) {
 		if(s) {
 			if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
@@ -392,6 +413,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 		if(renderStep == kDiffuse) {
 			TMgr.RenderNormal();			
 		} else {
+			flare = 0;
 			if (TMgr.TextureType == OGL_Txtr_Landscape) {
 				glColor4f(0.5, 0.5, 0.5, 1.0);
 			} else {
@@ -419,7 +441,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			default:
 				s->setFloat("wobble", 0.0);
 		}
-		glGetError();
+		s->setFloat("flare", flare);
 		s->enable();
 	}
 	return TMgr;

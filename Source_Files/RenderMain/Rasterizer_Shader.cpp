@@ -48,27 +48,6 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 		yfov = 119.9;
 	}
 	
-	float flare = view.maximum_depth_intensity/float(FIXED_ONE_HALF);
-
-	Shader* s = Shader::get("random");
-	if(s) {
-		s->setFloat("time", view.tick_count);
-	}
-	s = Shader::get("random_nostatic");
-	if(s) {
-		s->setFloat("time", view.tick_count);
-	}
-	s = Shader::get("parallax");
-	if(s) {
-		s->setFloat("flare", flare);
-	}
-	s = Shader::get("flat");
-	if(s) {
-		s->setFloat("flare", flare);
-	}
-	
-	glGetError();
-
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(yfov, xfov / yfov, 16, 1024*1024);
