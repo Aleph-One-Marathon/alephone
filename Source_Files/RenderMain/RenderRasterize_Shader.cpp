@@ -291,6 +291,8 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 			break;
 		case _tinted_transfer:
 			glColor4f(0.0,0.0,0.0, 1.0 - rect.transfer_data/32.0F);
+			s = Shader::get("flat");
+			s->setFloat("flare", 0.0);
 			break;
 		case _solid_transfer:
 			glColor4f(0,1,0,1);

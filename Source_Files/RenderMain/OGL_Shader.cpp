@@ -468,7 +468,7 @@ void initDefaultPrograms() {
 		"	mlFactor = clamp(mlFactor, 0.0, flare * 0.75) * 0.5;\n"
 		"	vec4 color = texture2D(texture0, texCoords.xy);\n"
 		"	gl_FragColor = vec4(color.rgb * clamp((vertexColor.rgb + mlFactor), 0.0, 1.0), color.a);\n"
-		"	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), color.a );\n"
+		"	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), vertexColor.a * color.a );\n"
 		"}\n";
 }
     
