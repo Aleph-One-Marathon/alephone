@@ -308,6 +308,8 @@ public:
 		w_toggle *models_w = new w_toggle(false);
 		general_table->dual_add(models_w->label("3D Models"), m_dialog);
 		general_table->dual_add(models_w, m_dialog);
+
+		general_table->add_row(new w_spacer, true);
 		
 		w_toggle *blur_w = new w_toggle(false);
 		if (theSelectedRenderer == _shader_acceleration) {
