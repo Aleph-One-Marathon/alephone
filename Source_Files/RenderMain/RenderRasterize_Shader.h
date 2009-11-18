@@ -18,8 +18,7 @@
 class Blur;
 class RenderRasterize_Shader : public RenderRasterizerClass {
 
-	Blur* blurLarge;
-	Blur* blurSmall;
+	Blur* blur;
 	int objectCount;
 	world_distance objectY;
 
@@ -38,13 +37,13 @@ protected:
 	
 public:
 
-	RenderRasterize_Shader() : blurSmall(NULL), blurLarge(NULL), RenderRasterizerClass() {}
+	RenderRasterize_Shader() : blur(NULL), RenderRasterizerClass() {}
 
 	virtual void setupGL();
 
 	virtual void render_tree(void);
 
-	TextureManager setupWallTexture(const shape_descriptor& Texture, short transferMode, short transfer_phase, float intensity, RenderStep renderStep);
+	TextureManager setupWallTexture(const shape_descriptor& Texture, short transferMode, float wobble, float intensity, RenderStep renderStep);
 	TextureManager setupSpriteTexture(const rectangle_definition& rect, short type, RenderStep renderStep);
 };
 
