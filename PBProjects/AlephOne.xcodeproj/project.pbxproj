@@ -534,7 +534,6 @@
 		3D22CF8C0FD86EBD00B17822 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
 		3D5F21430403230F00000104 /* preprocess_map_shared.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = preprocess_map_shared.cpp; sourceTree = "<group>"; };
-		3D5F21460403247500000104 /* libobjc.A.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libobjc.A.dylib; path = /usr/lib/libobjc.A.dylib; sourceTree = "<absolute>"; };
 		3D87957D07D11E120078D26B /* metaserver_dialogs.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = metaserver_dialogs.cpp; sourceTree = "<group>"; };
 		3D87957E07D11E120078D26B /* metaserver_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = metaserver_dialogs.h; sourceTree = "<group>"; };
 		3D87957F07D11E120078D26B /* metaserver_messages.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = metaserver_messages.cpp; sourceTree = "<group>"; };
@@ -799,11 +798,6 @@
 		F5281C0501F8C94101E83A66 /* SDL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL.framework; sourceTree = "<group>"; };
 		F5281C0701F8CA2101E83A66 /* SDL_image.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SDL_image.framework; path = /Library/Frameworks/SDL_image.framework; sourceTree = "<absolute>"; };
 		F5281C0801F8CA2101E83A66 /* SDL_net.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = SDL_net.framework; sourceTree = "<group>"; };
-		F53673F502014D2D01A80001 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
-		F53673F602014D2D01A80001 /* QuickTime.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuickTime.framework; path = /System/Library/Frameworks/QuickTime.framework; sourceTree = "<absolute>"; };
-		F53673F702014D2D01A80001 /* ApplicationServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ApplicationServices.framework; path = /System/Library/Frameworks/ApplicationServices.framework; sourceTree = "<absolute>"; };
-		F53673F802014D2D01A80001 /* AGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AGL.framework; path = /System/Library/Frameworks/AGL.framework; sourceTree = "<absolute>"; };
-		F53673F902014D2D01A80001 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = /System/Library/Frameworks/CoreServices.framework; sourceTree = "<absolute>"; };
 		F53AB44B01F3CB1D01EF2901 /* AlephOne.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = AlephOne.icns; sourceTree = "<group>"; };
 		F53DC61D022179A801A80001 /* network_dialogs.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_dialogs.h; path = ../Source_Files/Network/network_dialogs.h; sourceTree = SOURCE_ROOT; };
 		F53DC62002219A3D01A80001 /* network_lookup_sdl.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_lookup_sdl.h; path = ../Source_Files/Network/network_lookup_sdl.h; sourceTree = SOURCE_ROOT; };
@@ -1055,7 +1049,7 @@
 				F52214490136C0C401000001 /* Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				EF2EF5B004819A5C00A8000D /* Frameworks */,
-				29B97323FDCFA39411CA2CEA /* Frameworks */,
+				29B97323FDCFA39411CA2CEA /* System Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */,
 			);
@@ -1082,22 +1076,16 @@
 			name = Resources;
 			sourceTree = "<group>";
 		};
-		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
+		29B97323FDCFA39411CA2CEA /* System Frameworks */ = {
 			isa = PBXGroup;
 			children = (
 				3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */,
 				3D22CF880FD86EAE00B17822 /* AudioUnit.framework */,
-				F53673F502014D2D01A80001 /* Carbon.framework */,
 				F5830B4001E776DE01BA387C /* OpenGL.framework */,
 				F59FB19D01E780DF01BBE912 /* Cocoa.framework */,
-				F53673F602014D2D01A80001 /* QuickTime.framework */,
-				F53673F702014D2D01A80001 /* ApplicationServices.framework */,
-				F53673F802014D2D01A80001 /* AGL.framework */,
-				F53673F902014D2D01A80001 /* CoreServices.framework */,
-				3D5F21460403247500000104 /* libobjc.A.dylib */,
 				3D22CF8C0FD86EBD00B17822 /* libz.dylib */,
 			);
-			name = Frameworks;
+			name = "System Frameworks";
 			sourceTree = "<group>";
 		};
 		3D87957B07D11E120078D26B /* Metaserver */ = {
@@ -2543,7 +2531,6 @@
 					/Library/Frameworks,
 				);
 				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
@@ -2561,15 +2548,11 @@
 					HAVE_SMPEG,
 					HAVE_SDL_TTF,
 				);
-				GCC_VERSION = 4.0;
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
@@ -2589,13 +2572,13 @@
 					/Library/Frameworks/libmad.framework/Headers,
 					/usr/local/include,
 					/sw/include,
+					"/sw/include/boost-1_35",
 					/opt/local/include,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
 				PRODUCT_NAME = AlephOne;
 				STRIP_INSTALLED_PRODUCT = NO;
-				STRIP_STYLE = all;
 				WRAPPER_EXTENSION = app;
 			};
 			name = Development;
@@ -2603,18 +2586,20 @@
 		AE2A41540B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
+				ARCHS = "$(ONLY_ACTIVE_ARCH_PRE_XCODE_3_1)";
+				GCC_VERSION = 4.0;
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
+				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH)";
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 				STRIP_INSTALLED_PRODUCT = NO;
-				ZERO_LINK = NO;
 			};
 			name = Development;
 		};
 		AE2A41760B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2623,7 +2608,6 @@
 					/Library/Frameworks,
 				);
 				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
@@ -2640,14 +2624,11 @@
 					HAVE_SMPEG,
 					HAVE_SDL_TTF,
 				);
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
@@ -2667,14 +2648,14 @@
 					/Library/Frameworks/libmad.framework/Headers,
 					/usr/local/include,
 					/sw/include,
+					"/sw/include/boost-1_35",
 					/opt/local/include,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = AlephOne;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
-				STRIP_STYLE = debugging;
+				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
 			};
 			name = "Deployment (Native)";
@@ -2682,11 +2663,10 @@
 		AE2A41770B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(NATIVE_ARCH)";
-				GCC_VERSION = 4.0;
+				ARCHS = "$(ONLY_ACTIVE_ARCH_PRE_XCODE_3_1)";
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
-				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
+				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH)";
 			};
 			name = "Deployment (Native)";
 		};
@@ -2714,11 +2694,7 @@
 		AE78B59D09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					i386,
-					ppc,
-				);
-				COPY_PHASE_STRIP = NO;
+				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -2727,7 +2703,6 @@
 					/Library/Frameworks,
 				);
 				GCC_DYNAMIC_NO_PIC = YES;
-				GCC_ENABLE_FIX_AND_CONTINUE = NO;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					SDL,
@@ -2744,15 +2719,11 @@
 					HAVE_SMPEG,
 					HAVE_SDL_TTF,
 				);
-				GCC_VERSION = 4.0;
-				GCC_WARN_ABOUT_MISSING_PROTOTYPES = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
-					"$(HEADER_SEARCH_PATHS_QUOTED_1)",
-					"$(SYSTEM_DEVELOPER_DIR)/Headers/FlatCarbon",
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
@@ -2772,6 +2743,7 @@
 					/Library/Frameworks/libmad.framework/Headers,
 					/usr/local/include,
 					/sw/include,
+					"/sw/include/boost-1_35",
 					/opt/local/include,
 				);
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
@@ -2787,12 +2759,12 @@
 		AE78B59E09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					ppc,
-					i386,
-				);
+				ARCHS = "$(ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1)";
+				ARCHS_STANDARD_32_BIT_PRE_XCODE_3_1 = "ppc i386";
+				GCC_VERSION = 4.0;
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
+				ONLY_ACTIVE_ARCH = NO;
 				SDKROOT = /Developer/SDKs/MacOSX10.4u.sdk;
 			};
 			name = "Deployment (Universal)";
