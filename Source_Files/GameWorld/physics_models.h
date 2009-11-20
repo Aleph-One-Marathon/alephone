@@ -56,7 +56,6 @@ struct physics_constants
 
 /* ---------- globals */
 
-static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS];
 const struct physics_constants original_physics_models[NUMBER_OF_PHYSICS_MODELS]=
 {
 	/* game walking */

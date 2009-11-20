@@ -127,6 +127,8 @@ static short saved_point_count, saved_point_iterations= 0;
 static bool saved_divergence_warning;
 #endif
 
+static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS];
+
 /* every other field in the player structure should be valid when this call is made */
 void initialize_player_physics_variables(
 	short player_index)
