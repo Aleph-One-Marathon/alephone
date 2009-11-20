@@ -1063,7 +1063,7 @@ w_entry_point_selector::gotSelected() {
 
         placer->add(new w_spacer(), true);
 
-        sprintf(temporary, "%d %s levels available",
+        sprintf(temporary, "%lu %s levels available",
             mEntryPoints.size(),
             TS_GetCString(kNetworkGameTypesStringSetID, mGameType)
         );

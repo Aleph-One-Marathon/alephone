@@ -203,7 +203,7 @@ OSErr open_network_microphone()
 
 	if (!announce_microphone_capture_format(static_cast<uint32>(fOutputFormat.mSampleRate), fOutputFormat.mChannelsPerFrame == 2, fOutputFormat.mBytesPerFrame == 2))
 	{
-		fprintf(stderr, "network microphone support code rejected audio format (rate=%i)\n", fOutputFormat.mSampleRate);
+		fprintf(stderr, "network microphone support code rejected audio format (rate=%f)\n", fOutputFormat.mSampleRate);
 		return -1;
 	}
 

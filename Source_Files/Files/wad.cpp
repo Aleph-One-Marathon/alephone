@@ -927,7 +927,7 @@ void dump_wad(
 	for(index= 0; index<wad->tag_count; ++index)
 	{
 		assert(tag);
-		dprintf("Tag: %lx data: %p length: %ld offset: %ld", tag->tag, tag->data, tag->length,
+		dprintf("Tag: %x data: %p length: %d offset: %d", tag->tag, tag->data, tag->length,
 			tag->offset);
 		tag++;
 	}

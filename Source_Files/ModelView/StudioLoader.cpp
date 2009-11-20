@@ -161,7 +161,7 @@ bool ReadChunkHeader(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 bool LoadChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
 	if (DBOut)
-		fprintf(DBOut,"Loading chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
+		fprintf(DBOut,"Loading chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
 	int32 DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	SetChunkBufferSize(DataSize);
 	if (!OFile.Read(DataSize,ChunkBufferBase()))
@@ -176,7 +176,7 @@ bool LoadChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 bool SkipChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
 	if (DBOut)
-		fprintf(DBOut,"Skipping chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
+		fprintf(DBOut,"Skipping chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
 	int32 DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	
 	int32 Location = 0;
@@ -190,7 +190,7 @@ bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
 	bool (*ContainerCallback)(OpenedFile&,int32))
 {
 	if (DBOut)
-		fprintf(DBOut,"Entering chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
+		fprintf(DBOut,"Entering chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
 	
 	int32 ChunkEnd = 0;
 	OFile.GetPosition(ChunkEnd);
@@ -199,7 +199,7 @@ bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
 	if (!ContainerCallback(OFile,ChunkEnd)) return false;
 	
 	if (DBOut)
-		fprintf(DBOut,"Exiting chunk 0x%04hx size %lu\n",ChunkHeader.ID,ChunkHeader.Size);
+		fprintf(DBOut,"Exiting chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
 	return true;
 }
 
@@ -232,7 +232,7 @@ static bool ReadMaster(OpenedFile& OFile, int32 ParentChunkEnd)
 	if (Location > ParentChunkEnd)
 	{
 		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %ld > %ld\n",Location,ParentChunkEnd);
+			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
 		return false;
 	}
 	return true;
@@ -266,7 +266,7 @@ static bool ReadEditor(OpenedFile& OFile, int32 ParentChunkEnd)
 	if (Location > ParentChunkEnd)
 	{
 		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %ld > %ld\n",Location,ParentChunkEnd);
+			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
 		return false;
 	}
 	return true;
@@ -322,7 +322,7 @@ static bool ReadObject(OpenedFile& OFile, int32 ParentChunkEnd)
 	if (Location > ParentChunkEnd)
 	{
 		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %ld > %ld\n",Location,ParentChunkEnd);
+			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
 		return false;
 	}
 	return true;
@@ -368,7 +368,7 @@ static bool ReadTrimesh(OpenedFile& OFile, int32 ParentChunkEnd)
 	if (Location > ParentChunkEnd)
 	{
 		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %ld > %ld\n",Location,ParentChunkEnd);
+			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
 		return false;
 	}
 	return true;
@@ -432,7 +432,7 @@ static bool ReadFaceData(OpenedFile& OFile, int32 ParentChunkEnd)
 	if (Location > ParentChunkEnd)
 	{
 		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %ld > %ld\n",Location,ParentChunkEnd);
+			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
 		return false;
 	}
 	return true;

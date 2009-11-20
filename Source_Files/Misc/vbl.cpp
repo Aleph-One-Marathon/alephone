@@ -513,7 +513,7 @@ void save_recording_queue_chunk(
 	replay.header.length+= count;
 		
 	vwarn(num_flags_saved == RECORD_CHUNK_SIZE,
-		csprintf(temporary, "bad recording: %d flags, max=%d, count = %lu;dm #%p #%lu", num_flags_saved, max_flags, 
+		csprintf(temporary, "bad recording: %d flags, max=%d, count = %u;dm #%p #%u", num_flags_saved, max_flags,
 			count, buffer, count));
 }
 

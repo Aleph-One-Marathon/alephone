@@ -2181,7 +2181,7 @@ void write_preferences(
 	fprintf(F, "  name=\"%s\"\n", mac_roman_to_utf8(pstring_to_string(player_preferences->name)).c_str());
 	fprintf(F,"  color=\"%hd\"\n",player_preferences->color);
 	fprintf(F,"  team=\"%hd\"\n",player_preferences->team);
-	fprintf(F,"  last_time_ran=\"%lu\"\n",player_preferences->last_time_ran);
+	fprintf(F,"  last_time_ran=\"%u\"\n",player_preferences->last_time_ran);
 	fprintf(F,"  difficulty=\"%hd\"\n",player_preferences->difficulty_level);
 	fprintf(F,"  bkgd_music=\"%s\"\n",BoolString(player_preferences->background_music_on));
 	fprintf(F,">\n");
@@ -2204,8 +2204,8 @@ void write_preferences(
 	fprintf(F,"<input\n");
 	fprintf(F,"  device=\"%hd\"\n",input_preferences->input_device);
 	fprintf(F,"  modifiers=\"%hu\"\n",input_preferences->modifiers);
-	fprintf(F,"  sens_horizontal=\"%ld\"\n",input_preferences->sens_horizontal); // ZZZ, LP
-	fprintf(F,"  sens_vertical=\"%ld\"\n",input_preferences->sens_vertical); // ZZZ, LP
+	fprintf(F,"  sens_horizontal=\"%d\"\n",input_preferences->sens_horizontal); // ZZZ, LP
+	fprintf(F,"  sens_vertical=\"%d\"\n",input_preferences->sens_vertical); // ZZZ, LP
 	fprintf(F,"  mouse_acceleration=\"%s\"\n",BoolString(input_preferences->mouse_acceleration)); // SB
 	fprintf(F,"  joystick_id=\"%hd\"\n", input_preferences->joystick_id);
 
@@ -2243,7 +2243,7 @@ void write_preferences(
 	fprintf(F,"  game_type=\"%hd\"\n",network_preferences->game_type);
 	fprintf(F,"  difficulty=\"%hd\"\n",network_preferences->difficulty_level);
 	fprintf(F,"  game_options=\"%hu\"\n",network_preferences->game_options);
-	fprintf(F,"  time_limit=\"%ld\"\n",network_preferences->time_limit);
+	fprintf(F,"  time_limit=\"%d\"\n",network_preferences->time_limit);
 	fprintf(F,"  kill_limit=\"%hd\"\n",network_preferences->kill_limit);
 	fprintf(F,"  entry_point=\"%hd\"\n",network_preferences->entry_point);
         fprintf(F,"  autogather=\"%s\"\n",BoolString(network_preferences->autogather));
@@ -2296,10 +2296,10 @@ void write_preferences(
 	} else
 #endif
 	WriteXML_CString(F,"  theme_dir=\"",environment_preferences->theme_dir,256,"\"\n");
-	fprintf(F,"  map_checksum=\"%lu\"\n",environment_preferences->map_checksum);
-	fprintf(F,"  physics_checksum=\"%lu\"\n",environment_preferences->physics_checksum);
-	fprintf(F,"  shapes_mod_date=\"%lu\"\n",uint32(environment_preferences->shapes_mod_date));
-	fprintf(F,"  sounds_mod_date=\"%lu\"\n",uint32(environment_preferences->sounds_mod_date));
+	fprintf(F,"  map_checksum=\"%u\"\n",environment_preferences->map_checksum);
+	fprintf(F,"  physics_checksum=\"%u\"\n",environment_preferences->physics_checksum);
+	fprintf(F,"  shapes_mod_date=\"%u\"\n",uint32(environment_preferences->shapes_mod_date));
+	fprintf(F,"  sounds_mod_date=\"%u\"\n",uint32(environment_preferences->sounds_mod_date));
 	fprintf(F,"  group_by_directory=\"%s\"\n",BoolString(environment_preferences->group_by_directory));
 	fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
 	fprintf(F,"  smooth_text=\"%s\"\n", BoolString(environment_preferences->smooth_text));
