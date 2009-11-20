@@ -1099,6 +1099,7 @@ static void add_map_index(
 	short index,
 	short *count)
 {
+	assert(MapIndexList.size() < INT16_MAX);
 	MapIndexList.push_back(index);
 	dynamic_world->map_index_count++;
 	*count += 1;
