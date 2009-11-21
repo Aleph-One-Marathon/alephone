@@ -55,7 +55,6 @@ public:
 	bool IsPremultiplied() const { return (IsPresent() ? PremultipliedAlpha : false); }
 
 	bool LoadFromFile(FileSpecifier& File, int ImgMode, int flags, int actual_width = 0, int actual_height = 0, int maxSize = 0);
-	void ProcessOffsetMap();
 
 	// Size of level 0 image
 	int GetWidth() const {return Width;}

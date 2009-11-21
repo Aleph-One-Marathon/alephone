@@ -328,7 +328,6 @@ void OGL_TextureOptionsBase::Load()
 		if(!OffsetImg.LoadFromFile(OffsetMap, ImageLoader_Colors, flags | (NormalIsPremultiplied ? ImageLoader_ImageIsAlreadyPremultiplied : 0), actual_width, actual_height, maxTextureSize)) {
 			return;
 		}
-		OffsetImg.ProcessOffsetMap();
 	}
 
 	// Load the normal mask if it has a filename specified for it
