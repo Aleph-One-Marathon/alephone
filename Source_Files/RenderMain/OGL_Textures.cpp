@@ -1179,7 +1179,7 @@ uint32 *TextureManager::Shrink(uint32 *Buffer)
 
 // This places a texture into the OpenGL software and gives it the right
 // mapping attributes
-void TextureManager::PlaceTexture(const ImageDescriptor *Image)
+void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 {
 
 	bool mipmapsLoaded = false;
@@ -1200,7 +1200,7 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 		internalFormat = GL_RGB5_A1;
 	}
 
-	if(Using_sRGB) {
+	if(Using_sRGB && !normal_map) {
 	  switch(internalFormat) {
 	  case GL_RGB:
 	  case GL_R3_G3_B2:
@@ -1284,11 +1284,11 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image)
 	{
 #if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
 		if (Image->GetFormat() == ImageDescriptor::DXTC1)
-		  internalFormat = Using_sRGB ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		  internalFormat = (Using_sRGB && !normal_map) ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC3)
-		  internalFormat = Using_sRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		  internalFormat = (Using_sRGB && !normal_map) ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC5)
-		  internalFormat = Using_sRGB ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		  internalFormat = (Using_sRGB && !normal_map) ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 		
 		switch(TxtrTypeInfo.FarFilter)
 		{
@@ -1428,7 +1428,7 @@ void TextureManager::RenderBump()
 {
 	if (TxtrStatePtr->IsBumped) {
 		if (TxtrStatePtr->UseBump() && OffsetImage.get() && OffsetImage.get()->IsPresent())
-			PlaceTexture(OffsetImage.get());
+			PlaceTexture(OffsetImage.get(), true);
 	} else {
 		FlatBumpTexture();
 	}

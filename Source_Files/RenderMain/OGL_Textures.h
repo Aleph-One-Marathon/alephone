@@ -183,8 +183,8 @@ class TextureManager
 	// This is for shrinking a texture
 	uint32 *Shrink(uint32 *Buffer);
 	
-	// This si for placing a texture in OpenGL
-	void PlaceTexture(const ImageDescriptor *);
+	// This is for placing a texture in OpenGL
+	void PlaceTexture(const ImageDescriptor *, bool normal_map = false);
 
 public:
 
