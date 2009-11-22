@@ -409,7 +409,7 @@ void initDefaultPrograms() {
         "	vec4 normal = texture2D(texture1, texCoords.xy);\n"
         "	norm = (normal.rgb - 0.5) * 2.0;\n"
         "	norm.g = -norm.g;\n"
-        "	float diffuse = 0.5 + dot(norm, viewv);\n"
+        "	float diffuse = 0.5 + dot(norm, viewv)*0.5;\n"
         "	vec4 color = texture2D(texture0, texCoords.xy);\n"
         "	gl_FragColor = vec4(color.rgb * clamp((vertexColor.rgb + mlFactor) * diffuse, 0.0, 1.0), color.a);\n"
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), color.a );\n"
