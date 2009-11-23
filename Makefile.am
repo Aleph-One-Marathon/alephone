@@ -9,7 +9,7 @@ EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
   Makefile.BeOS docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
   data/Fonts Resources/Windows/alephone.ico				\
   Resources/Windows/alephone.rc						\
-  PBProjects/AlephOne-OSX10.4.xcodeproj/project.pbxproj			\
+  PBProjects/AlephOne.xcodeproj/project.pbxproj			\
   PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns	\
   PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns			\
   PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns			\
