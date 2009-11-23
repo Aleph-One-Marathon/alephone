@@ -674,19 +674,11 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 	glPolygonOffset(0,0);
 }
 
-bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT, RenderStep renderStep) {
+bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT, float flare, RenderStep renderStep) {
 
 	OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
 	OGL_SkinData *SkinPtr = ModelPtr->GetSkin(CLUT);
 	if(!SkinPtr) { return false; }
-
-	Shader *s = NULL;
-	if(renderStep == kGlow) {
-		Shader::get("specular");
-	} else {
-		Shader::get("parallax");
-	}
-	if(s) { s->enable(); }
 
 	if (ModelPtr->Sidedness < 0) {
 		glEnable(GL_CULL_FACE);
@@ -698,19 +690,34 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	GLfloat color[3];
 	FindShadingColor(RenderRectangle.depth, RenderRectangle.ambient_shade, color);
-	glColor3fv(color);
+	if (renderStep == kGlow) {
+		flare = 0;
+		for (int i = 0; i < 3; i++) {
+			color[i] = color[i] > 0.5 ? (color[i] - 0.5)*0.5 : 0;
+		}
+	}
 	glColor4f(color[0], color[1], color[2], 1.0);
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	glEnableClientState(GL_NORMAL_ARRAY);
+	
+	Shader *s = NULL;
+	if(!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+		s = Shader::get("flat");
+	} else if(renderStep == kDiffuse) {
+		s = Shader::get("model_parallax");
+	} else {
+		s = Shader::get("model_specular");
+	}
+	if(s) {
+		s->setFloat("flare", flare);
+		s->setFloat("wobble", 0);
+		s->enable();
+	}
 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
 	glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
+	glEnableClientState(GL_NORMAL_ARRAY);
 	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
-
+	
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
 
 	if(ModelPtr->Use(CLUT,OGL_SkinManager::Normal)) {
@@ -719,14 +726,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glDisableClientState(GL_NORMAL_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
-
-	// Revert to default blend
-	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
 	glDisable(GL_CULL_FACE);
 	Shader::disable();
@@ -741,9 +742,9 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		glVertex3f(ModelPtr->Model.Positions[i*3+0],
 				   ModelPtr->Model.Positions[i*3+1],
 				   ModelPtr->Model.Positions[i*3+2]);
-		glVertex3f(ModelPtr->Model.Positions[i*3+0] + 32*ModelPtr->Model.Normals[i*3+0],
-				   ModelPtr->Model.Positions[i*3+1] + 32*ModelPtr->Model.Normals[i*3+1],
-				   ModelPtr->Model.Positions[i*3+2] + 32*ModelPtr->Model.Normals[i*3+2]);
+		glVertex3f(ModelPtr->Model.Positions[i*3+0] + -32*ModelPtr->Model.Normals[i*3+0],
+				   ModelPtr->Model.Positions[i*3+1] + -32*ModelPtr->Model.Normals[i*3+1],
+				   ModelPtr->Model.Positions[i*3+2] + -32*ModelPtr->Model.Normals[i*3+2]);
 	}
 	glColor4f(0.4,0.7,1.0,1.0);
 	for(unsigned i = 0; i < ModelPtr->Model.Positions.size() / 3; ++i) {
@@ -772,11 +773,6 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	const world_point3d& pos = rect.Position;
 
 	if(rect.ModelPtr) {
-		// cheap hack to make models work //
-		if(renderStep == kGlow) {
-			rect.ceiling_light = 0.0f;
-			rect.ambient_shade = 0.0f;
-		}
 		glPushMatrix();
 		glTranslated(pos.x, pos.y, pos.z);
 		glRotated((360.0/FULL_CIRCLE)*rect.Azimuth,0,0,1);
@@ -787,7 +783,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		short collection = GET_COLLECTION(descriptor);
 		short clut = ModifyCLUT(rect.transfer_mode,GET_COLLECTION_CLUT(descriptor));
 
-		RenderModel(rect, collection, clut, renderStep);
+		RenderModel(rect, collection, clut, view->maximum_depth_intensity/float(FIXED_ONE_HALF), renderStep);
 		glPopMatrix();
 		return;
 	}
