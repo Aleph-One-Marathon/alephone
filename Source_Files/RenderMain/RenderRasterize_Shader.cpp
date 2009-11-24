@@ -545,7 +545,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		{
 			for(short i=vertex_count-1; i>=0; --i) {
 				world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-				glTexCoord2f((vertex.x + surface->origin.x - x) / float(WORLD_ONE), (vertex.y + surface->origin.y - y) / float(WORLD_ONE));
+				glTexCoord2f((vertex.x + surface->origin.x + x) / float(WORLD_ONE), (vertex.y + surface->origin.y + y) / float(WORLD_ONE));
 				glVertex3f(vertex.x, vertex.y, surface->height);
 			}
 		}
@@ -553,7 +553,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		{
 			for(short i=0; i<vertex_count; ++i) {
 				world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-				glTexCoord2f((vertex.x + surface->origin.x - x) / float(WORLD_ONE), (vertex.y + surface->origin.y - y) / float(WORLD_ONE));
+				glTexCoord2f((vertex.x + surface->origin.x + x) / float(WORLD_ONE), (vertex.y + surface->origin.y + y) / float(WORLD_ONE));
 				glVertex3f(vertex.x, vertex.y, surface->height);
 			}
 		}
@@ -565,7 +565,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 			{
 				for(short i=vertex_count-1; i>=0; --i) {
 					world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-					glTexCoord2f((vertex.x + surface->origin.x - x) / float(WORLD_ONE), (vertex.y + surface->origin.y - y) / float(WORLD_ONE));
+					glTexCoord2f((vertex.x + surface->origin.x + x) / float(WORLD_ONE), (vertex.y + surface->origin.y + y) / float(WORLD_ONE));
 					glVertex3f(vertex.x, vertex.y, surface->height);
 				}
 			}
@@ -573,7 +573,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 			{
 				for(short i=0; i<vertex_count; ++i) {
 					world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-					glTexCoord2f((vertex.x + surface->origin.x - x) / float(WORLD_ONE), (vertex.y + surface->origin.y - y) / float(WORLD_ONE));
+					glTexCoord2f((vertex.x + surface->origin.x + x) / float(WORLD_ONE), (vertex.y + surface->origin.y + y) / float(WORLD_ONE));
 					glVertex3f(vertex.x, vertex.y, surface->height);
 				}
 			}
