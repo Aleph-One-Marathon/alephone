@@ -763,15 +763,28 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 void RenderRasterize_Shader::render_node_object(render_object_data *object, bool other_side_of_media, RenderStep renderStep) {
 
-	// The render loop draws objects twice with different clipping settings,
-	// to account for media; we rely on OpenGL's sorting and only need to
-	// render in one of the loops.
-	if (other_side_of_media)
-		return;
-	
 	rectangle_definition& rect = object->rectangle;
 	const world_point3d& pos = rect.Position;
 
+	// To properly handle sprites in media, we render above and below
+	// the media boundary in separate passes, just like the original
+	// software renderer.
+	short media_index = get_polygon_data(object->node->polygon_index)->media_index;
+	media_data *media = (media_index != NONE) ? get_media_data(media_index) : NULL;
+	if (media) {
+		float h = media->height;
+		GLdouble plane[] = { 0.0, 0.0, 1.0, -h };
+		if (view->under_media_boundary ^ other_side_of_media) {
+			plane[2] = -1.0;
+			plane[3] = h;
+		}
+		glClipPlane(GL_CLIP_PLANE5, plane);
+		glEnable(GL_CLIP_PLANE5);
+	} else if (other_side_of_media) {
+		// When there's no media present, we can skip the second pass.
+		return;
+	}
+	
 	if(rect.ModelPtr) {
 		glPushMatrix();
 		glTranslated(pos.x, pos.y, pos.z);
@@ -785,6 +798,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 		RenderModel(rect, collection, clut, view->maximum_depth_intensity/float(FIXED_ONE_HALF), renderStep);
 		glPopMatrix();
+		glDisable(GL_CLIP_PLANE5);
 		return;
 	}
 
@@ -866,5 +880,6 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 	Shader::disable();
 	TMgr.RestoreTextureMatrix();
+	glDisable(GL_CLIP_PLANE5);
 }
 
