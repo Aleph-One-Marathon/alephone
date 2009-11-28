@@ -151,10 +151,11 @@ void RenderRasterize_Shader::setupGL() {
 	Shader* sH = Shader::get("blurH");
 
 	blur = NULL;
-	if(sH && sV) {
-		blur = new Blur(graphics_preferences->screen_mode.width / 2, graphics_preferences->screen_mode.width / 4, sH, sV);
+	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur)) {
+		if(sH && sV) {
+			blur = new Blur(graphics_preferences->screen_mode.width / 2, graphics_preferences->screen_mode.width / 4, sH, sV);
+		}
 	}
-//	assert(glGetError() == GL_NO_ERROR);
 
 	glEnable(GL_POLYGON_OFFSET_EXT);
 //	glDisable(GL_CULL_FACE);
