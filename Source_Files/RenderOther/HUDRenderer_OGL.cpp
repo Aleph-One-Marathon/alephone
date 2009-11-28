@@ -232,6 +232,7 @@ void HUD_OGL_Class::DrawTexture(shape_descriptor shape, short texture_type, shor
         GET_COLLECTION_CLUT(GET_DESCRIPTOR_COLLECTION(shape)));
     int w = b.Width();
     int h = b.Height();
+    if (!w || !h) return;
     if (w >= h)
         b.Rescale(size, size * h / w);
     else
