@@ -321,7 +321,7 @@ short *get_map_indexes(
 	const short count)
 {
 	assert(map_indexes);
-	short *map_index = GetMemberWithBounds(map_indexes,index,dynamic_world->map_index_count-count+1);
+	short *map_index = GetMemberWithBounds(map_indexes,static_cast<unsigned short>(index),static_cast<unsigned short>(dynamic_world->map_index_count)-count+1);
 	
 	// vassert(map_index, csprintf(temporary, "map_indexes(#%d,#%d) are out of range", index, count));
 	

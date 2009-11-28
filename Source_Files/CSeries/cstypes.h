@@ -71,6 +71,9 @@ typedef time_t TimeType;
 #ifndef INT16_MAX
 #define INT16_MAX 32767
 #endif
+#ifndef UINT16_MAX
+#define UINT16_MAX 65535
+#endif
 #ifndef INT16_MIN
 #define INT16_MIN (-INT16_MAX-1)
 #endif
