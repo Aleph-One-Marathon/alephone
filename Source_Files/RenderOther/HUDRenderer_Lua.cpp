@@ -204,6 +204,9 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 	if (!m_drawing)
 		return;
 	
+	if (!w || !h)
+		return;
+	
 	apply_clip();
 #ifdef HAVE_OPENGL
 	if (m_opengl)
@@ -321,6 +324,9 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 	if (!m_drawing)
 		return;
 	
+	if (!text || !strlen(text))
+		return;
+	
 	apply_clip();
 #ifdef HAVE_OPENGL
 	if (m_opengl)
@@ -366,6 +372,9 @@ void HUD_Lua_Class::draw_image(Image_Blitter *image, float x, float y)
 	r.y = static_cast<Sint16>(y);
 	r.w = image->crop_rect.w;
 	r.h = image->crop_rect.h;
+	
+	if (!r.w || !r.h)
+		return;
 
 	apply_clip();
     if (m_surface)
@@ -386,6 +395,9 @@ void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
 	r.y = static_cast<Sint16>(y);
 	r.w = shape->crop_rect.w;
 	r.h = shape->crop_rect.h;
+	
+	if (!r.w || !r.h)
+		return;
     
 	apply_clip();
 #ifdef HAVE_OPENGL
