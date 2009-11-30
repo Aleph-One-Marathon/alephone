@@ -32,6 +32,13 @@ struct blip_info {
 };
 typedef struct blip_info blip_info;
 
+enum {
+	_mask_disabled,
+	_mask_enabled,
+	_mask_drawing,
+	NUMBER_OF_LUA_MASKING_MODES
+};
+
 class FontSpecifier;
 class Image_Blitter;
 class Shape_Blitter;
@@ -53,6 +60,10 @@ public:
 	void end_draw(void);
 	void apply_clip(void);
 	
+	short masking_mode(void);
+	void set_masking_mode(short masking_mode);
+	void clear_mask(void);
+	
 	void fill_rect(float x, float y, float w, float h,
 								 float r, float g, float b, float a);
 	void frame_rect(float x, float y, float w, float h,
@@ -70,6 +81,12 @@ protected:
 	bool m_opengl;
 	SDL_Surface *m_surface;
 	SDL_Rect m_wr;
+	short m_masking_mode;
+	
+	void start_using_mask(void);
+	void end_using_mask(void);
+	void start_drawing_mask(void);
+	void end_drawing_mask(void);
 	
 	void render_motion_sensor(short time_elapsed);
 	void draw_all_entity_blips(void);

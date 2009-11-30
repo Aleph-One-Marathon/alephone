@@ -94,6 +94,12 @@ typedef L_Enum<Lua_FadeEffectType_Name> Lua_FadeEffectType;
 char Lua_FadeEffectTypes_Name[] = "FadeEffectTypes";
 typedef L_EnumContainer<Lua_FadeEffectTypes_Name, Lua_FadeEffectType> Lua_FadeEffectTypes;
 
+char Lua_MaskingMode_Name[] = "masking_mode";
+typedef L_Enum<Lua_MaskingMode_Name> Lua_MaskingMode;
+
+char Lua_MaskingModes_Name[] = "MaskingModes";
+typedef L_EnumContainer<Lua_MaskingModes_Name, Lua_MaskingMode> Lua_MaskingModes;
+
 extern char Lua_DifficultyType_Name[];
 typedef L_Enum<Lua_DifficultyType_Name> Lua_DifficultyType;
 
@@ -1905,6 +1911,24 @@ static int Lua_Screen_Get_FOV(lua_State *L)
     return 1;
 }
 
+static int Lua_Screen_Get_Masking_Mode(lua_State *L)
+{
+	Lua_MaskingMode::Push(L, Lua_HUDInstance()->masking_mode());
+	return 1;
+}
+
+static int Lua_Screen_Set_Masking_Mode(lua_State *L)
+{
+	Lua_HUDInstance()->set_masking_mode(Lua_MaskingMode::ToIndex(L, 2));
+	return 0;
+}
+
+int Lua_Screen_Clear_Mask(lua_State *L)
+{
+	Lua_HUDInstance()->clear_mask();
+	return 0;
+}
+
 int Lua_Screen_Fill_Rect(lua_State *L)
 {
 	float x = static_cast<float>(lua_tonumber(L, 1));
@@ -1949,8 +1973,15 @@ const luaL_reg Lua_Screen_Get[] = {
 {"hud_size_preference", Lua_Screen_Get_HUD_Size},
 {"term_size_preference", Lua_Screen_Get_Term_Size},
 {"field_of_view", Lua_Screen_Get_FOV},
+{"masking_mode", Lua_Screen_Get_Masking_Mode},
+{"clear_mask", L_TableFunction<Lua_Screen_Clear_Mask>},
 {"fill_rect", L_TableFunction<Lua_Screen_Fill_Rect>},
 {"frame_rect", L_TableFunction<Lua_Screen_Frame_Rect>},
+{0, 0}
+};
+
+const luaL_reg Lua_Screen_Set[] = {
+{"masking_mode", Lua_Screen_Set_Masking_Mode},
 {0, 0}
 };
 
@@ -2243,6 +2274,12 @@ int Lua_HUDObjects_register(lua_State *L)
     Lua_FadeEffectTypes::Register(L);
     Lua_FadeEffectTypes::Length = Lua_FadeEffectTypes::ConstantLength(NUMBER_OF_FADER_FUNCTIONS);
 	
+	Lua_MaskingMode::Register(L, 0, 0, 0, Lua_MaskingMode_Mnemonics);
+	Lua_MaskingMode::Valid = Lua_MaskingMode::ValidRange(NUMBER_OF_LUA_MASKING_MODES);
+	
+	Lua_MaskingModes::Register(L);
+	Lua_MaskingModes::Length = Lua_MaskingModes::ConstantLength(NUMBER_OF_LUA_MASKING_MODES);
+	
 	Lua_GameType::Register(L, 0, 0, 0, Lua_GameType_Mnemonics);
 	Lua_GameType::Valid = Lua_GameType::ValidRange(NUMBER_OF_GAME_TYPES);
 	
@@ -2347,7 +2384,7 @@ int Lua_HUDObjects_register(lua_State *L)
 	Lua_Screen_Term_Rect::Register(L, Lua_Screen_Term_Rect_Get, Lua_Screen_Term_Rect_Set);
 	Lua_Screen_FOV::Register(L, Lua_Screen_FOV_Get, Lua_Screen_FOV_Set);
 	
-	Lua_Screen::Register(L, Lua_Screen_Get);
+	Lua_Screen::Register(L, Lua_Screen_Get, Lua_Screen_Set);
 	Lua_Screen::Push(L, 0);
 	lua_setglobal(L, Lua_Screen_Name);
 	

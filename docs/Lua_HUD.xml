@@ -191,6 +191,11 @@ end
         <description>current preference setting for terminal size (normal, double, largest)</description>
         <type>size_preference</type>
       </variable>
+      <variable name="masking_mode">
+        <description>image-based masking; set to drawing mode to create visible areas and enabled to use the mask</description>
+        <note>masking only available in OpenGL renderer</note>
+        <type>masking_mode</type>
+      </variable>
       <subtable name="clip_rect" classname="lua_clip_rect">
         <description>constrain drawing to the specified area of the screen</description>
         <variable name="x"><type>number</type></variable>
@@ -219,6 +224,9 @@ end
         <variable name="width"><type>number</type></variable>
         <variable name="height"><type>number</type></variable>
       </subtable>
+      <function name="clear_mask">
+        <description>reset the image-based mask</description>
+      </function>
       <function name="fill_rect">
         <description>draws a solid rectangle to the screen</description>
         <argument name="x"><type>number</type></argument>
@@ -807,6 +815,15 @@ end
       </mnemonics>
     </enum>
     <enum-accessor name="RendererTypes" contains="renderer_type" nice-name="Renderer Types"/>
+
+    <enum name="masking_mode">
+      <mnemonics>
+        <mnemonic name="disabled"/>
+        <mnemonic name="enabled"/>
+        <mnemonic name="drawing"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="MaskingModes" contains="masking_mode" nice-name="Masking Modes"/>
 
     <enum name="game_type">
       <mnemonics>

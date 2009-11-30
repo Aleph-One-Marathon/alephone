@@ -129,6 +129,7 @@
 <li><a href="#GameTypes">Game Types</a></li>
 <li><a href="#InventorySections">Inventory Sections</a></li>
 <li><a href="#ItemTypes">Items</a></li>
+<li><a href="#MaskingModes">Masking Modes</a></li>
 <li><a href="#PlayerColors">Player and Team Colors</a></li>
 <li><a href="#RendererTypes">Renderer Types</a></li>
 <li><a href="#ScoringModes">Scoring Modes</a></li>
@@ -633,6 +634,12 @@ end
     .term_size_preference<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">current preference setting for terminal size (normal, double, largest)</p></dd>
+      <dt>
+    .masking_mode</dt>
+<dd>
+<p class="description">image-based masking; set to drawing mode to create visible areas and enabled to use the mask</p>
+<p class="note">masking only available in OpenGL renderer </p>
+</dd>
       <dt>.clip_rect</dt>
 <dd>
 <p class="description">constrain drawing to the specified area of the screen</p>
@@ -705,6 +712,8 @@ end
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
+      <dt>.clear_mask()</dt>
+<dd><p class="description">reset the image-based mask</p></dd>
       <dt>.fill_rect(x, y, width, height, color)</dt>
 <dd><p class="description">draws a solid rectangle to the screen</p></dd>
       <dt>.frame_rect(x, y, width, height, color, thickness)</dt>
@@ -997,6 +1006,18 @@ end
 <li>"smg ammo"</li>
 </div>
 <div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="MaskingModes"></a>Masking Modes</h3>
+<dl>
+<dt># MaskingModes</dt>
+<dt>MaskingModes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"disabled"</li>
+<li>"enabled"</li>
+<li>"drawing"</li>
 </ul>
 <h3>
 <a name="PlayerColors"></a>Player and Team Colors</h3>

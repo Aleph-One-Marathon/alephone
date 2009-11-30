@@ -861,6 +861,13 @@ const lang_def Lua_FadeEffectType_Mnemonics[] = {
 {0, 0}
 };
 
+const lang_def Lua_MaskingMode_Mnemonics[] = {
+{"disabled", 0},
+{"enabled", 1},
+{"drawing", 2},
+{0, 0}
+};
+
 const lang_def Lua_TextureType_Mnemonics[] = {
 {"wall", 0},
 {"landscape", 1},

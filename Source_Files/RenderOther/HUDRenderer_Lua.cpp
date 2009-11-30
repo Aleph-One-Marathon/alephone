@@ -110,6 +110,7 @@ void HUD_Lua_Class::start_draw(void)
 	alephone::Screen *scr = alephone::Screen::instance();
     m_wr = scr->window_rect();
 	m_opengl = (get_screen_mode()->acceleration != _no_acceleration);
+	m_masking_mode = _mask_disabled;
 	
 #ifdef HAVE_OPENGL
 	if (m_opengl)
@@ -119,6 +120,7 @@ void HUD_Lua_Class::start_draw(void)
 		glDisable(GL_CULL_FACE);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_ALPHA_TEST);
+		glDisable(GL_STENCIL_TEST);
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_FOG);
@@ -152,6 +154,7 @@ void HUD_Lua_Class::start_draw(void)
 	
 	
 	m_drawing = true;
+	clear_mask();
 }
 
 void HUD_Lua_Class::end_draw(void)
@@ -196,6 +199,95 @@ void HUD_Lua_Class::apply_clip(void)
 	{
 		SDL_SetClipRect(SDL_GetVideoSurface(), &r);
 	}
+}
+
+short HUD_Lua_Class::masking_mode(void)
+{
+	return m_masking_mode;
+}
+
+void HUD_Lua_Class::set_masking_mode(short masking_mode)
+{
+	if (m_masking_mode == masking_mode ||
+		masking_mode < 0 ||
+		masking_mode >= NUMBER_OF_LUA_MASKING_MODES)
+		return;
+	
+	if (m_masking_mode == _mask_drawing)
+		end_drawing_mask();
+	else if (m_masking_mode == _mask_enabled)
+		end_using_mask();
+	
+	m_masking_mode = masking_mode;
+	if (m_masking_mode == _mask_drawing)
+		start_drawing_mask();
+	else if (m_masking_mode == _mask_enabled)
+		start_using_mask();
+}
+	
+void HUD_Lua_Class::clear_mask(void)
+{
+	if (!m_drawing)
+		return;
+	
+#ifdef HAVE_OPENGL
+	if (m_opengl)
+	{
+		glClearStencil(0);
+		glClear(GL_STENCIL_BUFFER_BIT);
+	}
+#endif
+}
+
+void HUD_Lua_Class::start_using_mask(void)
+{
+#ifdef HAVE_OPENGL
+	if (m_opengl)
+	{
+		glEnable(GL_STENCIL_TEST);
+		glStencilFunc(GL_EQUAL, 1, 1);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+	}
+#endif
+}
+
+void HUD_Lua_Class::end_using_mask(void)
+{
+#ifdef HAVE_OPENGL
+	if (m_opengl)
+	{
+		glDisable(GL_STENCIL_TEST);
+	}
+#endif
+}
+
+void HUD_Lua_Class::start_drawing_mask(void)
+{
+#ifdef HAVE_OPENGL
+	if (m_opengl)
+	{
+		glEnable(GL_STENCIL_TEST);
+		glStencilFunc(GL_ALWAYS, 1, 1);
+		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
+		
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.5);
+		
+		glColorMask(false, false, false, false);
+	}
+#endif
+}
+
+void HUD_Lua_Class::end_drawing_mask(void)
+{
+#ifdef HAVE_OPENGL
+	if (m_opengl)
+	{
+		glDisable(GL_STENCIL_TEST);
+		glDisable(GL_ALPHA_TEST);
+		glColorMask(true, true, true, true);
+	}
+#endif
 }
 
 void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,

@@ -210,12 +210,12 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
 	// disable everything but alpha blending and clipping
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_ALPHA_TEST);
+//	glDisable(GL_ALPHA_TEST);
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	glDisable(GL_FOG);
 //	glDisable(GL_SCISSOR_TEST);
-	glDisable(GL_STENCIL_TEST);
+//	glDisable(GL_STENCIL_TEST);
 	glEnable(GL_TEXTURE_2D);
 	if (Using_sRGB)
 		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
