@@ -36,6 +36,7 @@ enum {
 	_mask_disabled,
 	_mask_enabled,
 	_mask_drawing,
+	_mask_erasing,
 	NUMBER_OF_LUA_MASKING_MODES
 };
 
@@ -85,7 +86,7 @@ protected:
 	
 	void start_using_mask(void);
 	void end_using_mask(void);
-	void start_drawing_mask(void);
+	void start_drawing_mask(bool erase);
 	void end_drawing_mask(void);
 	
 	void render_motion_sensor(short time_elapsed);

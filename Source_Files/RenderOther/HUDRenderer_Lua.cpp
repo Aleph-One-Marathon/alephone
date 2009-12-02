@@ -215,12 +215,16 @@ void HUD_Lua_Class::set_masking_mode(short masking_mode)
 	
 	if (m_masking_mode == _mask_drawing)
 		end_drawing_mask();
+	else if (m_masking_mode == _mask_erasing)
+		end_drawing_mask();
 	else if (m_masking_mode == _mask_enabled)
 		end_using_mask();
 	
 	m_masking_mode = masking_mode;
 	if (m_masking_mode == _mask_drawing)
-		start_drawing_mask();
+		start_drawing_mask(false);
+	else if (m_masking_mode == _mask_erasing)
+		start_drawing_mask(true);
 	else if (m_masking_mode == _mask_enabled)
 		start_using_mask();
 }
@@ -261,13 +265,13 @@ void HUD_Lua_Class::end_using_mask(void)
 #endif
 }
 
-void HUD_Lua_Class::start_drawing_mask(void)
+void HUD_Lua_Class::start_drawing_mask(bool erase)
 {
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
 		glEnable(GL_STENCIL_TEST);
-		glStencilFunc(GL_ALWAYS, 1, 1);
+		glStencilFunc(GL_ALWAYS, erase ? 0 : 1, 1);
 		glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
 		
 		glEnable(GL_ALPHA_TEST);

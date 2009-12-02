@@ -841,6 +841,7 @@ const lang_def Lua_InventorySection_Mnemonics[] = {
 const lang_def Lua_RendererType_Mnemonics[] = {
 {"opengl", 1},
 {"software", 0},
+{"shader", 2},
 {0, 0}
 };
 
@@ -865,6 +866,7 @@ const lang_def Lua_MaskingMode_Mnemonics[] = {
 {"disabled", 0},
 {"enabled", 1},
 {"drawing", 2},
+{"erasing", 3},
 {0, 0}
 };
 
