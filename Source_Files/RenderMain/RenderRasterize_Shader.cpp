@@ -157,7 +157,6 @@ void RenderRasterize_Shader::setupGL() {
 		}
 	}
 
-	glEnable(GL_POLYGON_OFFSET_EXT);
 //	glDisable(GL_CULL_FACE);
 //	glDisable(GL_LIGHTING);
 }
@@ -267,7 +266,7 @@ void RenderRasterize_Shader::store_endpoint(
 }
 
 
-TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_definition& rect, short type, RenderStep renderStep) {
+TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_definition& rect, short type, float offset, RenderStep renderStep) {
 
 	Shader *s = NULL;
 	GLfloat color[3];
@@ -346,12 +345,13 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	if(s) {
 		s->setFloat("flare", flare);
 		s->setFloat("wobble", 0);
+		s->setFloat("offset", offset);
 		s->enable();
 	}
 	return TMgr;
 }
 
-TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& Texture, short transferMode, float wobble, float intensity, RenderStep renderStep) {
+TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& Texture, short transferMode, float wobble, float intensity, float offset, RenderStep renderStep) {
 
 	Shader *s = NULL;
 
@@ -424,6 +424,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	if(s) {
 		s->setFloat("wobble", wobble);
 		s->setFloat("flare", flare);
+		s->setFloat("offset", offset);
 		s->enable();
 	}
 	return TMgr;
@@ -483,7 +484,7 @@ float calcWobble(short transferMode, short transfer_phase) {
 	return wobble;
 }
 
-bool setupGlow(TextureManager &TMgr, float wobble, float intensity, RenderStep renderStep) {
+bool setupGlow(TextureManager &TMgr, float wobble, float intensity, float offset, RenderStep renderStep) {
 	if (TMgr.IsGlowMapped() && TMgr.TransferMode == _textured_transfer) {
 		Shader *s = NULL;
 		if (TMgr.TextureType == OGL_Txtr_Wall && TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
@@ -493,6 +494,7 @@ bool setupGlow(TextureManager &TMgr, float wobble, float intensity, RenderStep r
 		}
 		s->setFloat("flare", 0);
 		s->setFloat("wobble", wobble);
+		s->setFloat("offset", offset - 1.0);
 
 		if (renderStep == kDiffuse) {
 			glColor4f(1,1,1,1);
@@ -512,19 +514,21 @@ bool setupGlow(TextureManager &TMgr, float wobble, float intensity, RenderStep r
 void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *window,
 	polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, RenderStep renderStep) {
 
-	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
-	float intensity = get_light_data(surface->lightsource_index)->intensity / float(FIXED_ONE - 1);
-	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
-	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble, intensity, renderStep);
-	if(TMgr.ShapeDesc == UNONE) { return; }
-	
+	float offset = 0;
 	if (void_present) {
 		glDisable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
 	} else {
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
+		offset = -1.0;
 	}
+	
+	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
+	float intensity = get_light_data(surface->lightsource_index)->intensity / float(FIXED_ONE - 1);
+	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
+	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble, intensity, offset, renderStep);
+	if(TMgr.ShapeDesc == UNONE) { return; }
 	
 	short vertex_count = polygon->vertex_count;
 
@@ -560,7 +564,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		}
 		glEnd();
 
-		if (setupGlow(TMgr, wobble, intensity, renderStep)) {
+		if (setupGlow(TMgr, wobble, intensity, offset, renderStep)) {
 			glBegin(GL_POLYGON);
 			if (ceil)
 			{
@@ -590,20 +594,22 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 
 void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vertical_surface_data *surface, bool void_present, RenderStep renderStep) {
 		
-	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture_definition->texture);
-	float intensity = (get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / float(FIXED_ONE - 1);
-	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
-	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble, intensity, renderStep);
-	if(TMgr.ShapeDesc == UNONE) { return; }
-
+	float offset = 0;
 	if (void_present) {
 		glDisable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
 	} else {
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
-		glPolygonOffset(-1.0, -1.0);
+		offset = -1.0;
 	}
+	
+	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture_definition->texture);
+	float intensity = (get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / float(FIXED_ONE - 1);
+	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
+	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble, intensity, offset, renderStep);
+	if(TMgr.ShapeDesc == UNONE) { return; }
+
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
 	if (h>surface->h0) {
@@ -655,7 +661,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			}
 			glEnd();
 			
-			if (setupGlow(TMgr, wobble, intensity, renderStep)) {
+			if (setupGlow(TMgr, wobble, intensity, offset, renderStep)) {
 				glBegin(GL_QUADS);
 				for(int i = 0; i < vertex_count; ++i) {
 					float p2 = 0;
@@ -672,7 +678,6 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			glMatrixMode(GL_MODELVIEW);
 		}
 	}
-	glPolygonOffset(0,0);
 }
 
 bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT, float flare, RenderStep renderStep) {
@@ -809,7 +814,18 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	double yaw = view->yaw * 360.0 / float(NUMBER_OF_ANGLES);
 	glRotated(yaw, 0.0, 0.0, 1.0);
 
-	TextureManager TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, renderStep);
+	// look for parasitic objects based on y position,
+	// and offset them to draw in proper depth order
+	float offset = 0;
+	if(pos.y == objectY) {
+		objectCount++;
+		offset = objectCount * -1.0;
+	} else {
+		objectCount = 0;
+		objectY = pos.y;
+	}
+
+	TextureManager TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, offset, renderStep);
 	if (TMgr.ShapeDesc == UNONE) { return; }
 
 	float texCoords[2][2];
@@ -828,16 +844,6 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	} else {
 		texCoords[1][0] = TMgr.V_Offset;
 		texCoords[1][1] = TMgr.V_Scale+TMgr.V_Offset;
-	}
-
-	// look for parasitic objects based on y position,
-	// and offset them to draw in proper depth order
-	if(pos.y == objectY) {
-		objectCount++;
-		glPolygonOffset(-1.0, objectCount * -100.0);
-	} else {
-		objectCount = 0;
-		objectY = pos.y;
 	}
 	
 	glEnable(GL_BLEND);
@@ -858,7 +864,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 	glEnd();
 	
-	if (setupGlow(TMgr, 0, 1, renderStep)) {
+	if (setupGlow(TMgr, 0, 1, offset, renderStep)) {
 		glBegin(GL_QUADS);
 		
 		glTexCoord2f(texCoords[0][0], texCoords[1][0]);
@@ -877,8 +883,6 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	}
 	
 	glPopMatrix();
-	glPolygonOffset(0,0);
-
 	Shader::disable();
 	TMgr.RestoreTextureMatrix();
 	glDisable(GL_CLIP_PLANE5);

@@ -320,9 +320,12 @@ void initDefaultPrograms() {
         "}\n";
     
     defaultVertexPrograms["random"] = ""
+        "uniform float offset;\n"
         "varying vec4 vertexColor;\n"
         "void main(void) {\n"
         "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+        "	/* handle depth offset */\n"
+        "	gl_Position.z = gl_Position.z + offset*1024.0/gl_Position.z;\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
         "	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
         "	vertexColor = gl_Color;\n"
@@ -352,6 +355,7 @@ void initDefaultPrograms() {
 		"}\n";    
 	
     defaultVertexPrograms["parallax"] = ""
+        "uniform float offset;\n"
         "varying vec3 viewXY;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
@@ -359,6 +363,8 @@ void initDefaultPrograms() {
         "varying float MLxLOG2E;\n"
         "void main(void) {\n"
         "	gl_Position  = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+        "	/* handle depth offset */\n"
+        "	gl_Position.z = gl_Position.z + offset*1024.0/gl_Position.z;\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
         "	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
         "	/* SETUP TBN MATRIX in normal matrix coords, gl_MultiTexCoord1 = tangent vector */\n"
