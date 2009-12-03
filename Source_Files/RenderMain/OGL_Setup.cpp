@@ -91,6 +91,10 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #include "progress.h"
 #include "OGL_Shader.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 // Whether or not OpenGL is present and usable
 static bool _OGL_IsPresent = false;
 
@@ -171,15 +175,20 @@ void OGL_ProgressCallback(int delta_progress)
 {
 	if (!show_ogl_progress) return;
 	ogl_progress += delta_progress;
-	int32 current_ticks = SDL_GetTicks();
-	if (current_ticks > last_update_tick + 33)
+#ifdef _OPENMP
+	// can only draw OpenGL in the main thread
+	if (omp_get_thread_num() == 0) 
+#endif
 	{
-		if (OGL_LoadScreen::instance()->Use())
-			
-			OGL_LoadScreen::instance()->Progress(100 * ogl_progress / total_ogl_progress);
-		else
-			draw_progress_bar(ogl_progress, total_ogl_progress);
-		last_update_tick = current_ticks;
+		int32 current_ticks = SDL_GetTicks();
+		if (current_ticks > last_update_tick + 33)
+		{
+			if (OGL_LoadScreen::instance()->Use())
+				OGL_LoadScreen::instance()->Progress(100 * ogl_progress / total_ogl_progress);
+			else
+				draw_progress_bar(ogl_progress, total_ogl_progress);
+			last_update_tick = current_ticks;
+		}
 	}
 }
 
@@ -269,16 +278,15 @@ inline bool StringPresent(vector<char>& String)
 	return (String.size() > 1);
 }
 
+GLint maxTextureSize = 0;
+bool hasS3TC = false;
+
 #ifdef HAVE_OPENGL
 void OGL_TextureOptionsBase::Load()
 {
 	FileSpecifier File;
 
 	GLint maxTextureSize = 0;
-	if (OGL_IsActive()) {
-		glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
-	}
-
 	if (GetMaxSize())
 	{
 		maxTextureSize = MIN(maxTextureSize, GetMaxSize());
@@ -291,7 +299,7 @@ void OGL_TextureOptionsBase::Load()
 			flags |= ImageLoader_LoadMipMaps;
 	}
 
-	if (OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc")) 
+	if (hasS3TC) 
 	{
 		flags |= ImageLoader_CanUseDXTC;
 	}
@@ -428,6 +436,9 @@ int OGL_CountModelsImages(short Collection)
 void OGL_LoadModelsImages(short Collection)
 {
 	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
+
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+	hasS3TC = OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc");
 	
 	// For wall/sprite images
 	OGL_LoadTextures(Collection);

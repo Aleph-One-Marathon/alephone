@@ -101,15 +101,18 @@ extern void OGL_ProgressCallback(int);
 void OGL_LoadTextures(short Collection)
 {
 	TOList_t& TOL = TOList[Collection];
-	for (TOList_t::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
+
+        #pragma omp parallel for schedule(dynamic)
+	for (int i = 0; i < TOL.size(); ++i) 
 	{
 		// Load the images
-		TOIter->OptionsData.Load();
+		TOL[i].OptionsData.Load();
 
 		// Find adjusted-frame image-data positioning;
 		// this is for doing sprites with textures with sizes different from the originals
-		TOIter->OptionsData.FindImagePosition();
+		TOL[i].OptionsData.FindImagePosition();
 
+		#pragma omp critical
 		OGL_ProgressCallback(1);
 	}
 }
