@@ -32,6 +32,8 @@ AC_ARG_ENABLE(alsa,
 [  --enable-alsa           enable ALSA net mic transmission [default=yes]], , enable_alsa=yes)
 AC_ARG_ENABLE(ttf,
 [  --enable-ttf            enable SDL_ttf font rendering [default=yes]], , enable_ttf=yes)
+AC_ARG_ENABLE(openmp,
+[  --enable-openmp         enable OpenMP support [default=yes]], , enable_openmp=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -71,9 +73,11 @@ AC_CHECK_FUNC(mkstemp, [
 
 
 dnl Check for OpenMP
+if [[ "x$enable_openmp" = "xyes" ]]; then
 AX_OPENMP()
 CPPFLAGS="$CPPFLAGS $OPENMP_CFLAGS"
 LIBS="$LIBS $OPENMP_CFLAGS"
+fi
 
 dnl Check for SDL.
 AM_PATH_SDL(1.2.0, , AC_MSG_ERROR([You need SDL 1.2 to run Aleph One.]))
