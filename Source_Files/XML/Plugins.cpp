@@ -25,10 +25,15 @@
 
 #include <algorithm>
 
+#include "alephversion.h"
 #include "FileHandler.h"
 #include "Logging.h"
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
+
+bool Plugin::compatible() {
+	return (required_version.size() == 0 || A1_DATE_VERSION >= required_version);
+}
 
 Plugins* Plugins::m_instance = 0;
 Plugins* Plugins::instance() {
@@ -65,7 +70,7 @@ void Plugins::load_mml() {
 	loader.CurrentElement = &RootParser;
 
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) {
-		if (it->enabled) {
+		if (it->enabled && it->compatible()) {
 			ModifySearchPath msp(it->directory);
 			for (std::vector<std::string>::iterator mml = it->mmls.begin(); mml != it->mmls.end(); ++mml) {
 				FileSpecifier file;
@@ -130,6 +135,9 @@ bool XML_PluginParser::HandleAttribute(const char* Tag, const char* Value)
 		return true;
 	} else if (StringsEqual(Tag, "description")) {
 		Data.description = Value;
+		return true;
+	} else if (StringsEqual(Tag, "minimum_version")) {
+		Data.required_version = Value;
 		return true;
 	}
 

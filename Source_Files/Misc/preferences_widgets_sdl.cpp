@@ -195,7 +195,7 @@ void w_plugins::draw_item(Plugins::iterator it, SDL_Surface* s, int16 x, int16 y
 	{
 		color = get_theme_color(ITEM_WIDGET, ACTIVE_STATE);
 	} 
-	else if (it->enabled)
+	else if (it->enabled && it->compatible())
 	{
 		color = get_theme_color(ITEM_WIDGET, DEFAULT_STATE);
 	}
@@ -205,7 +205,11 @@ void w_plugins::draw_item(Plugins::iterator it, SDL_Surface* s, int16 x, int16 y
 	}
 
 	std::string enabled;
-	if (it->enabled) 
+	if (!it->compatible()) 
+	{
+		enabled = " Incompatible";
+	} 
+	else if (it->enabled) 
 	{
 		enabled = " Enabled";
 	}

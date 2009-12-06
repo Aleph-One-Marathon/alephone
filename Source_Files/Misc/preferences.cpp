@@ -2310,7 +2310,7 @@ void write_preferences(
 	fprintf(F,"  hide_alephone_extensions=\"%s\"\n", BoolString(environment_preferences->hide_extensions));
 	fprintf(F,">\n");
 	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
-		if (!it->enabled) {
+		if (it->compatible() && !it->enabled) {
 			fprintf(F,"  <disable_plugin path=\"%s\"/>\n", it->directory.GetPath());
 		}
 	}

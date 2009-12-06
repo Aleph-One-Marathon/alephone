@@ -34,7 +34,10 @@ struct Plugin {
 	std::string description;
 	std::string version;
 	std::vector<std::string> mmls;
+	std::string required_version;
+
 	bool enabled;
+	bool compatible();
 };
 
 class Plugins {
