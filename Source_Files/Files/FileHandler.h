@@ -253,6 +253,7 @@ public:
 	// A ":" will be translated into a "/" in the MacOS.
 	// Returns whether or not the setting was successful
 	bool SetNameWithPath(const char *NameWithPath);
+	bool SetNameWithPath(const char* NameWithPath, const DirectorySpecifier& Directory);
 
 	// Move the directory specification
 	void ToDirectory(DirectorySpecifier& Dir);

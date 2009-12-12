@@ -613,23 +613,24 @@ void FileSpecifier::SetToFirstDataDir()
   name = data_search_path[0].name;
 }
 
+static string local_path_separators(const char *path)
+{
+	string local_path = path;
+	if (PATH_SEP == '/') return local_path;
+	
+	for (size_t k = 0; k  < local_path.size(); ++k) {
+		if (local_path[k] == '/') 
+			local_path[k] = PATH_SEP;
+	}
+
+	return local_path;
+}
+
 // Traverse search path, look for file given relative path name
 bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
 {
 	FileSpecifier full_path;
-	string rel_path = NameWithPath;
-
-#ifdef __WIN32__
-	// For cross-platform compatibility reasons, "NameWithPath" uses Unix path
-	// syntax, so we have to convert it to MS-DOS syntax here (replacing '/' by '\')
-	for (size_t k=0; k<rel_path.size(); k++)
-		if (rel_path[k] == '/')
-			rel_path[k] = '\\';
-#elif defined(__MWERKS__)
-	for (size_t k=0; k < rel_path.size(); k++)
-		if (rel_path[k] == '/')
-			rel_path[k] = ':';
-#endif
+	string rel_path = local_path_separators(NameWithPath);
 
 	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
 	while (i != end) {
@@ -641,6 +642,22 @@ bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
 		}
 		i++;
 	}
+	err = ENOENT;
+	return false;
+}
+
+bool FileSpecifier::SetNameWithPath(const char* NameWithPath, const DirectorySpecifier& Directory) 
+{
+	FileSpecifier full_path;
+	string rel_path = local_path_separators(NameWithPath);
+	
+	full_path = Directory + rel_path;
+	if (full_path.Exists()) {
+		name = full_path.name;
+		err = 0;
+		return true;
+	}
+
 	err = ENOENT;
 	return false;
 }
