@@ -375,7 +375,6 @@ void LoadHUDLua()
 
 	if (file.size())
 	{
-		fprintf(stderr, "Running Lua HUD from '%s' '%s'\n", directory.c_str(), file.c_str());
 		// protect Lua errors from harming error checking
 		short SavedType, SavedError = get_game_error(&SavedType);
 
@@ -388,7 +387,6 @@ void LoadHUDLua()
 		OpenedFile script_file;
 		if (fs.Open(script_file))
 		{
-			fprintf(stderr, "opened\n");
 			int32 script_length;
 			script_file.GetLength(script_length);
 
