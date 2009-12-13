@@ -627,6 +627,32 @@ void LuaState::InvalidateObject(short object_index)
 	}
 }
 
+static char L_SEARCH_PATH_KEY[] = "search_path";
+
+void L_Set_Search_Path(lua_State* L, const std::string& path)
+{
+	lua_pushlightuserdata(L, reinterpret_cast<void*>(L_SEARCH_PATH_KEY));
+	lua_pushstring(L, path.c_str());
+	lua_settable(L, LUA_REGISTRYINDEX);	
+}
+
+std::string L_Get_Search_Path(lua_State* L)
+{
+	lua_pushlightuserdata(L, reinterpret_cast<void*>(L_SEARCH_PATH_KEY));
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	if (lua_isstring(L, -1))
+	{
+		std::string path = lua_tostring(L, -1);
+		lua_pop(L, 1);
+		return path;
+	}
+	else
+	{
+		lua_pop(L, 1);
+		return std::string();
+	}
+
+}
 
 static int L_Enable_Player(lua_State*);
 static int L_Disable_Player(lua_State*);

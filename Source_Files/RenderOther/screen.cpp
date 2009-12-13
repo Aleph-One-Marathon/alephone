@@ -289,7 +289,7 @@ bool Screen::hud()
 
 bool Screen::lua_hud()
 {
-	return screen_mode.hud && environment_preferences->use_hud_lua;
+	return screen_mode.hud && LuaHUDRunning();
 }
 
 bool Screen::openGL()

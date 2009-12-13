@@ -24,6 +24,7 @@ LUA_HUD_SCRIPT.H
 */
 
 #include "cseries.h"
+#include <string>
 
 void L_Call_HUDInit();
 void L_Call_HUDCleanup();
@@ -32,8 +33,12 @@ void L_Call_HUDResize();
 
 bool LoadLuaHUDScript(const char *buffer, size_t len);
 bool RunLuaHUDScript();
+bool LuaHUDRunning();
 void LoadHUDLua();
 void CloseLuaHUDScript();
+
+void SetLuaHUDScriptPath(const std::string& path);
+std::string GetLuaHUDScriptPath();
 
 void MarkLuaHUDCollections(bool loading);
 

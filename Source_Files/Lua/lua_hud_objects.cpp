@@ -42,6 +42,7 @@ LUA_HUD_OBJECTS.CPP
 #include "OGL_Faders.h"
 #include "Shape_Blitter.h"
 #include "collection_definition.h"
+#include "FileHandler.h"
 
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
@@ -431,13 +432,26 @@ int Lua_Images_New(lua_State *L)
 		path[255] = 0;
 	}
 	lua_pop(L, 1);
+
+	std::string search_path = L_Get_Search_Path(L);
 	
 	// path into file spec
 	FileSpecifier File;
-	if (!File.SetNameWithPath(path))
+	if (search_path.size()) 
 	{
-		lua_pushnil(L);
-		return 1;
+		if (!File.SetNameWithPath(path, search_path))
+		{
+			lua_pushnil(L);
+			return 1;
+		}
+	} 
+	else 
+	{
+		if (!File.SetNameWithPath(path))
+		{
+			lua_pushnil(L);
+			return 1;
+		}
 	}
 	
 	// image with file spec
@@ -449,8 +463,23 @@ int Lua_Images_New(lua_State *L)
 	}
 	
 	// mask (we don't care if it fails)
-	if (strlen(mask) && File.SetNameWithPath(mask))
-		image.LoadFromFile(File, ImageLoader_Opacity, 0);
+	if (strlen(mask))
+	{
+		if (search_path.size())
+		{
+			if (File.SetNameWithPath(mask, search_path))
+			{
+				image.LoadFromFile(File, ImageLoader_Opacity, 0);
+			}
+		}
+		else
+		{
+			if (File.SetNameWithPath(mask))
+			{
+				image.LoadFromFile(File, ImageLoader_Opacity, 0);
+			}
+		}
+	}
 	
 	// blitter from image
 	Image_Blitter *blitter = (get_screen_mode()->acceleration != _no_acceleration) ? new OGL_Blitter() : new Image_Blitter();
@@ -855,6 +884,13 @@ int Lua_Fonts_New(lua_State *L)
 		f.Style = lua_tointeger(L, -1);
 	lua_pop(L, 1);
 	
+	std::string search_path = L_Get_Search_Path(L);
+	std::auto_ptr<ScopedSearchPath> ssp;
+	if (search_path.size())
+	{
+		ssp.reset(new ScopedSearchPath(DirectorySpecifier(search_path)));
+	}
+
 	FontSpecifier *ff = new FontSpecifier(f);
 	ff->Init();
 	if (alephone::Screen::instance()->openGL())

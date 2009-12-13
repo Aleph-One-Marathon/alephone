@@ -1360,5 +1360,14 @@ static bool confirm_save_choice(FileSpecifier & file)
 	return d.run() == 0;
 }
 
+ScopedSearchPath::ScopedSearchPath(const DirectorySpecifier& dir) 
+{
+	data_search_path.insert(data_search_path.begin(), dir);
+}
+
+ScopedSearchPath::~ScopedSearchPath() 
+{
+	data_search_path.erase(data_search_path.begin());
+}
 
 #endif

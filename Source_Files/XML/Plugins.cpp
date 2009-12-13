@@ -28,10 +28,11 @@
 #include "alephversion.h"
 #include "FileHandler.h"
 #include "Logging.h"
+#include "preferences.h"
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
 
-bool Plugin::compatible() {
+bool Plugin::compatible() const {
 	return (required_version.size() == 0 || A1_DATE_VERSION >= required_version);
 }
 
@@ -53,32 +54,51 @@ void Plugins::disable(const std::string& path) {
 	}
 }
 
-extern std::vector<DirectorySpecifier> data_search_path;
-
-class ModifySearchPath {
-public:
-	ModifySearchPath(DirectorySpecifier dir) {
-		data_search_path.insert(data_search_path.begin(), dir);
+static void load_mmls(const Plugin& plugin, XML_Loader_SDL& loader) 
+{
+	ScopedSearchPath ssp(plugin.directory);
+	for (std::vector<std::string>::const_iterator it = plugin.mmls.begin(); it != plugin.mmls.end(); ++it) 
+	{
+		FileSpecifier file;
+		file.SetNameWithPath(it->c_str());
+		loader.ParseFile(file);
 	}
-	~ModifySearchPath() {
-		data_search_path.erase(data_search_path.begin());
-	}
-};
+}
 
 void Plugins::load_mml() {
 	XML_Loader_SDL loader;
 	loader.CurrentElement = &RootParser;
 
-	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) {
-		if (it->enabled && it->compatible()) {
-			ModifySearchPath msp(it->directory);
-			for (std::vector<std::string>::iterator mml = it->mmls.begin(); mml != it->mmls.end(); ++mml) {
-				FileSpecifier file;
-				file.SetNameWithPath(mml->c_str());
-				loader.ParseFile(file);
-			}
+	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) 
+	{
+		if (it->enabled && !it->hud_lua.size() && it->compatible()) 
+		{
+			load_mmls(*it, loader);
 		}
 	}
+
+	if (!environment_preferences->use_hud_lua) 
+	{
+		const Plugin* hud_lua = find_hud_lua();
+		if (hud_lua) 
+		{
+			load_mmls(*hud_lua, loader);
+		}
+	}
+}
+
+const Plugin* Plugins::find_hud_lua() const
+{
+
+	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit) 
+	{
+		if (rit->enabled && rit->hud_lua.size() && rit->compatible())
+		{
+			return &(*rit);
+		}
+	}
+	
+	return 0;
 }
 
 static Plugin Data;
@@ -138,6 +158,9 @@ bool XML_PluginParser::HandleAttribute(const char* Tag, const char* Value)
 		return true;
 	} else if (StringsEqual(Tag, "minimum_version")) {
 		Data.required_version = Value;
+		return true;
+	} else if (StringsEqual(Tag, "hud_lua")) {
+		Data.hud_lua = Value;
 		return true;
 	}
 
@@ -247,6 +270,8 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 
 	return true;
 }
+
+extern std::vector<DirectorySpecifier> data_search_path;
 
 void Plugins::enumerate() {
 	PluginParser.AddChild(&PluginMMLParser);

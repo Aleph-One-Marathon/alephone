@@ -34,10 +34,11 @@ struct Plugin {
 	std::string description;
 	std::string version;
 	std::vector<std::string> mmls;
+	std::string hud_lua;
 	std::string required_version;
 
 	bool enabled;
-	bool compatible();
+	bool compatible() const;
 };
 
 class Plugins {
@@ -53,6 +54,8 @@ public:
 
 	iterator begin() { return m_plugins.begin(); }
 	iterator end() { return m_plugins.end(); }
+
+	const Plugin* find_hud_lua() const;
 private:
 	Plugins() { }
 	void add(Plugin plugin) { m_plugins.push_back(plugin); }

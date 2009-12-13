@@ -44,6 +44,7 @@ using namespace std;
 #include "Logging.h"
 #include "preferences.h"
 #include "game_errors.h"
+#include "Plugins.h"
 
 #include "lua_hud_script.h"
 #include "lua_hud_objects.h"
@@ -121,6 +122,10 @@ public:
 		lua_call(State(), 1, 0);
 		
 		RegisterFunctions();
+	}
+
+	void SetSearchPath(const std::string& path) {
+		L_Set_Search_Path(State(), path);
 	}
 
 protected:
@@ -299,7 +304,7 @@ void LuaHUDState::MarkCollections(std::set<short>& collections)
 }
 
 
-static bool LuaHUDRunning()
+bool LuaHUDRunning()
 {
 	return (hud_state && hud_state->Running());
 }
@@ -339,6 +344,10 @@ bool LoadLuaHUDScript(const char *buffer, size_t len)
 	return hud_state->Load(buffer, len);
 }
 
+void SetLuaHUDScriptSearchPath(const std::string& directory)
+{
+	hud_state->SetSearchPath(directory);
+}
 
 bool RunLuaHUDScript()
 {
@@ -347,15 +356,39 @@ bool RunLuaHUDScript()
 
 void LoadHUDLua()
 {
+	std::string file;
+	std::string directory;
+
 	if (environment_preferences->use_hud_lua)
 	{
+		file = environment_preferences->hud_lua_file;
+	}
+	else 
+	{
+		const Plugin* hud_lua_plugin = Plugins::instance()->find_hud_lua();
+		if (hud_lua_plugin) 
+		{
+			file = hud_lua_plugin->hud_lua;
+			directory = hud_lua_plugin->directory.GetPath();
+		}
+	}
+
+	if (file.size())
+	{
+		fprintf(stderr, "Running Lua HUD from '%s' '%s'\n", directory.c_str(), file.c_str());
 		// protect Lua errors from harming error checking
 		short SavedType, SavedError = get_game_error(&SavedType);
 
-		FileSpecifier fs (environment_preferences->hud_lua_file);
+		FileSpecifier fs (file.c_str());
+		if (directory.size())
+		{
+			fs.SetNameWithPath(file.c_str(), directory);
+		}
+
 		OpenedFile script_file;
 		if (fs.Open(script_file))
 		{
+			fprintf(stderr, "opened\n");
 			int32 script_length;
 			script_file.GetLength(script_length);
 
@@ -363,6 +396,10 @@ void LoadHUDLua()
 			if (script_file.Read(script_length, &script_buffer[0]))
 			{
 				LoadLuaHUDScript(&script_buffer[0], script_length);
+				if (directory.size()) 
+				{
+					SetLuaHUDScriptSearchPath(directory);
+				}
 			}
 		}
 		set_game_error(SavedType, SavedError);

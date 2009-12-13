@@ -39,6 +39,11 @@ extern "C"
 #include <sstream>
 #include <map>
 
+// helper functions for finding the script's data path
+// not in lua_script.h because they expose lua_State
+extern void L_Set_Search_Path(lua_State* L, const std::string& path);
+extern std::string L_Get_Search_Path(lua_State* L);
+
 // pushes a function that returns the parameterized function
 template<lua_CFunction f>
 int L_TableFunction(lua_State *L)

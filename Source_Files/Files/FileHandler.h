@@ -348,5 +348,14 @@ private:
 	int err;
 };
 
+// inserts dir before the search path, then restores the original path
+// when going out of scope
+class ScopedSearchPath
+{
+public:
+	ScopedSearchPath(const DirectorySpecifier& dir);
+	~ScopedSearchPath();
+};
+
 #endif
 
