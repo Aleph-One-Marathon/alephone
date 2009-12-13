@@ -76,20 +76,19 @@ GLcharARB* parseFile(FileSpecifier& fileSpec) {
 		return NULL;
 	}
 
-	FILE *file = fopen(fileSpec.GetPath(), "r");
-	if(!file) {
+	OpenedFile file;
+	if (!fileSpec.Open(file))
+	{
 		fprintf(stderr, "%s not found\n", fileSpec.GetPath());
 		return NULL;
 	}
+
+	int32 length;
+	file.GetLength(length);
 	
-	fseek(file, 0, SEEK_END);
-	size_t n = ftell(file);
-	fseek(file, 0, SEEK_SET);
-	
-	GLcharARB* str = new GLcharARB[n + 1];
-	fread(str, 1, n, file);
-	fclose(file);
-	str[n] = 0;
+	GLcharARB* str = new GLcharARB[length + 1];
+	file.Read(length, str);
+	str[length] = 0;
 
 	return str;
 }
