@@ -220,9 +220,9 @@ void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiq
 
 	GLdouble clip[] = { 0., 0., 0., 0. };
 	
-	world_point3d cam_pos = local_player->camera_location;
+	world_point3d cam_pos = current_player->camera_location;
 	short cam_poly;
-	angle cam_yaw = FIXED_INTEGERAL_PART(local_player->variables.direction + local_player->variables.head_direction);
+	angle cam_yaw = FIXED_INTEGERAL_PART(current_player->variables.direction + current_player->variables.head_direction);
 	angle cam_pitch;
 	ChaseCam_GetPosition(cam_pos, cam_poly, cam_yaw, cam_pitch);
 	
