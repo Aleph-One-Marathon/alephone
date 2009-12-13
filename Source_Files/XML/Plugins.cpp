@@ -33,6 +33,13 @@
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
 
+#ifdef HAVE_ZZIP
+#include <zzip/lib.h>
+#endif
+
+#include <boost/algorithm/string/predicate.hpp>
+
+namespace algo = boost::algorithm;
 
 class PluginLoader : public XML_Configure {
 public:
@@ -319,6 +326,29 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 			FileSpecifier file_name = dir + it->name + "Plugin.xml";
 			ParsePlugin(file_name);
 		}
+#ifdef HAVE_ZZIP
+		else if (algo::ends_with(it->name, ".zip") || algo::ends_with(it->name, ".plgA"))
+		{
+			// search it for a Plugin.xml file
+			FileSpecifier zipfile = dir + it->name;
+			ZZIP_DIR* zzipdir = zzip_dir_open(zipfile.GetPath(), 0);
+			if (zzipdir)
+			{
+				ZZIP_DIRENT dirent;
+				while (zzip_dir_read(zzipdir, &dirent))
+				{
+					if (algo::ends_with(dirent.d_name, "Plugin.xml"))
+					{
+						std::string archive = zipfile.GetPath();
+						FileSpecifier file_name = FileSpecifier(archive.substr(0, archive.find_last_of('.'))) + dirent.d_name;
+						ParsePlugin(file_name);
+						break;
+					}
+				}
+				zzip_dir_close(zzipdir);
+			}
+		}
+#endif
 	}
 
 	return true;

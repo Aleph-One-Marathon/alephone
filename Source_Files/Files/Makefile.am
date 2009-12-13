@@ -2,15 +2,22 @@
 
 noinst_LIBRARIES = libfiles.a
 
-libfiles_a_SOURCES = AStream.h crc.h extensions.h FileHandler.h find_files.h \
-  game_wad.h Packing.h resource_manager.h tags.h wad.h wad_prefs.h \
-  \
-  AStream.cpp crc.cpp FileHandler.cpp find_files_sdl.cpp game_wad.cpp \
-  import_definitions.cpp Packing.cpp preprocess_map_sdl.cpp \
-  preprocess_map_shared.cpp resource_manager.cpp wad.cpp wad.cpp \
-  wad_prefs.cpp wad_sdl.cpp
+if BUILD_ZZIP_RWOPS
+ZZIP_SRCS = SDL_rwops_zzip.c
+else
+ZZIP_SRCS = 
+endif
 
-EXTRA_libfiles_a_SOURCES = filetypes_macintosh.cpp
+libfiles_a_SOURCES = AStream.h crc.h extensions.h FileHandler.h		\
+  find_files.h game_wad.h Packing.h resource_manager.h			\
+  SDL_rwops_zzip.h tags.h wad.h wad_prefs.h				\
+									\
+  AStream.cpp crc.cpp FileHandler.cpp find_files_sdl.cpp game_wad.cpp	\
+  import_definitions.cpp Packing.cpp preprocess_map_sdl.cpp		\
+  preprocess_map_shared.cpp resource_manager.cpp $(ZZIP_SRCS) wad.cpp	\
+  wad.cpp wad_prefs.cpp wad_sdl.cpp
+
+EXTRA_libfiles_a_SOURCES = filetypes_macintosh.cpp SDL_rwops.zzip.c
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/GameWorld \
   -I$(top_srcdir)/Source_Files/Input -I$(top_srcdir)/Source_Files/Misc \

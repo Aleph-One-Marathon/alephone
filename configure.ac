@@ -34,6 +34,8 @@ AC_ARG_ENABLE(ttf,
 [  --enable-ttf            enable SDL_ttf font rendering [default=yes]], , enable_ttf=yes)
 AC_ARG_ENABLE(openmp,
 [  --enable-openmp         enable OpenMP support [default=yes]], , enable_openmp=yes)
+AC_ARG_ENABLE(zzip,
+[  --enable-zzip           enable zziplib support [default=yes]], , enable_zzip=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -121,6 +123,18 @@ AC_SEARCH_LIBS(socket, socket, ,
 dnl Check for zlib
 AC_CHECK_HEADER(zlib.h, , AC_ERROR([Aleph One requires zlib]))
 AC_CHECK_LIB(z, zlibVersion, LIBS="-lz $LIBS", AC_ERROR([Aleph One requires zlib]))
+
+dnl Check for zziplib
+have_zzip=false
+if [[ "x$enable_zzip" = "xyes" ]]; then
+PKG_CHECK_MODULES([ZZIP], [zziplib >= 0.10.75], [
+			  CPPFLAGS="$ZZIP_CFLAGS $CPPFLAGS"
+			  LIBS="$ZZIP_LIBS $LIBS"
+			  have_zzip=true
+			  AC_DEFINE(HAVE_ZZIP, 1, [ZZIP support enabled])
+])
+fi
+AM_CONDITIONAL(BUILD_ZZIP_RWOPS, test x$have_zzip = xtrue)
 
 dnl Check for boost/bind
 AC_LANG_PUSH(C++)

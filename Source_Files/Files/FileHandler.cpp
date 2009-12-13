@@ -50,6 +50,11 @@
 #include <unistd.h>
 #endif
 
+#ifdef HAVE_ZZIP
+#include <zzip/lib.h>
+#include "SDL_rwops_zzip.h"
+#endif
+
 #ifdef __MACOS__
 #include "mac_rwops.h"
 #endif
@@ -327,7 +332,16 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 		f = OFile.f = open_fork_from_existing_path(GetPath(), false);
 	else
 #endif
+	{
+#ifdef HAVE_ZZIP
+		if (!Writable)
+		{
+			f = OFile.f = SDL_RWFromZZIP(GetPath(), "rb");
+		} 
+		else
+#endif
 		f = OFile.f = SDL_RWFromFile(GetPath(), Writable ? "wb+" : "rb");
+	}
 
 	err = f ? 0 : errno;
 	if (f == NULL) {
@@ -373,11 +387,25 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 // Check for existence of file
 bool FileSpecifier::Exists()
 {
+#ifdef HAVE_ZZIP
+	// Check whether zzip can open the file (slow!)
+	ZZIP_FILE* file = zzip_open(GetPath(), R_OK);
+	if (file)
+	{
+		zzip_close(file);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+#else
 	// Check whether the file is readable
 	err = 0;
 	if (access(GetPath(), R_OK) < 0)
 		err = errno;
 	return err == 0;
+#endif
 }
 
 bool FileSpecifier::IsDir()
