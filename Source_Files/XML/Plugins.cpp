@@ -29,8 +29,30 @@
 #include "FileHandler.h"
 #include "Logging.h"
 #include "preferences.h"
+#include "XML_Configure.h"
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
+
+
+class PluginLoader : public XML_Configure {
+public:
+	PluginLoader() { }
+	~PluginLoader() { }
+	
+	bool ParsePlugin(FileSpecifier& file);
+	bool ParseDirectory(FileSpecifier& dir);
+
+protected:
+	virtual bool GetData();
+	virtual void ReportReadError();
+	virtual void ReportParseError(const char *ErrorString, int LineNumber);
+	virtual void ReportInterpretError(const char* ErrorString);
+	virtual bool RequestAbort();
+
+private:
+	std::string m_name;
+	std::vector<char> m_data;
+};
 
 bool Plugin::compatible() const {
 	return (required_version.size() == 0 || A1_DATE_VERSION >= required_version);

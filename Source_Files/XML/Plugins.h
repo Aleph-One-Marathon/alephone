@@ -24,7 +24,6 @@
 #define PLUGINS_H
 
 #include "FileHandler.h"
-#include "XML_Configure.h"
 #include <string>
 #include <vector>
 
@@ -67,24 +66,5 @@ private:
 	std::vector<Plugin> m_plugins;
 };
 
-class PluginLoader : public XML_Configure {
-public:
-	PluginLoader() { }
-	~PluginLoader() { }
-	
-	bool ParsePlugin(FileSpecifier& file);
-	bool ParseDirectory(FileSpecifier& dir);
-
-protected:
-	virtual bool GetData();
-	virtual void ReportReadError();
-	virtual void ReportParseError(const char *ErrorString, int LineNumber);
-	virtual void ReportInterpretError(const char* ErrorString);
-	virtual bool RequestAbort();
-
-private:
-	std::string m_name;
-	std::vector<char> m_data;
-};
 
 #endif
