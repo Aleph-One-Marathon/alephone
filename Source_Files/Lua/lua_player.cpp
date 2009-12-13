@@ -2406,10 +2406,20 @@ int Lua_Music_Play(lua_State *L)
 	{
 		if (!lua_isstring(L, n))
 			return luaL_error(L, "play: invalid file specifier");
-	
+
+		std::string search_path = L_Get_Search_Path(L);
+
 		FileSpecifier file;
-		if (file.SetNameWithPath(lua_tostring(L, n)))
-			Music::instance()->PushBackLevelMusic(file);
+		if (search_path.size())
+		{
+			if (!file.SetNameWithPath(lua_tostring(L, n), search_path))
+				Music::instance()->PushBackLevelMusic(file);
+		}
+		else
+		{
+			if (file.SetNameWithPath(lua_tostring(L, n)))
+				Music::instance()->PushBackLevelMusic(file);
+		}
 	}
 
 	if (restart_music)

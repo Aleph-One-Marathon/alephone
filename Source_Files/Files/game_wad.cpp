@@ -114,6 +114,7 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "shell.h"
 #include "preferences.h"
 #include "SoundManager.h"
+#include "Plugins.h"
 
 // LP change: added chase-cam init and render allocation
 #include "ChaseCam.h"
@@ -801,7 +802,11 @@ bool goto_level(
 			ResetLevelScript();
 		}
 		RunScriptChunks();
-		if (!game_is_networked) LoadSoloLua();
+		if (!game_is_networked) 
+		{
+			Plugins::instance()->load_solo_mml();
+			LoadSoloLua();
+		}
 		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);
 		
@@ -1157,7 +1162,11 @@ bool load_game_from_file(FileSpecifier& File)
 			short SavedType, SavedError = get_game_error(&SavedType);
 			RunLevelScript(dynamic_world->current_level_number);
 			RunScriptChunks();
-			if (!game_is_networked) LoadSoloLua();
+			if (!game_is_networked) 
+			{
+				Plugins::instance()->load_solo_mml();
+				LoadSoloLua();
+			}
 			set_game_error(SavedType,SavedError);
 		}
 		else

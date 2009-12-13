@@ -35,6 +35,7 @@ struct Plugin {
 	std::string version;
 	std::vector<std::string> mmls;
 	std::string hud_lua;
+	std::string solo_lua;
 	std::string required_version;
 
 	bool enabled;
@@ -49,6 +50,7 @@ public:
 	
 	void enumerate();
 	void load_mml();
+	void load_solo_mml();
 
 	void disable(const std::string& path);
 
@@ -56,6 +58,7 @@ public:
 	iterator end() { return m_plugins.end(); }
 
 	const Plugin* find_hud_lua() const;
+	const Plugin* find_solo_lua() const;
 private:
 	Plugins() { }
 	void add(Plugin plugin) { m_plugins.push_back(plugin); }

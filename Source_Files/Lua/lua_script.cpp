@@ -85,6 +85,7 @@ using namespace std;
 #include "ViewControl.h"
 #include "preferences.h"
 #include "BStream.h"
+#include "Plugins.h"
 
 #include "lua_script.h"
 #include "lua_map.h"
@@ -258,6 +259,10 @@ public:
 
 		RegisterFunctions();
 		LoadCompatibility();
+	}
+
+	virtual void SetSearchPath(const std::string& path) {
+		L_Set_Search_Path(State(), path);
 	}
 
 protected:
@@ -1726,9 +1731,31 @@ void ExecuteLuaString(const std::string& line)
 
 void LoadSoloLua()
 {
-	if (environment_preferences->use_solo_lua)
+	std::string file;
+	std::string directory;
+
+	if (environment_preferences->use_solo_lua) 
 	{
-		FileSpecifier fs (environment_preferences->solo_lua_file);
+		file = environment_preferences->solo_lua_file;
+	}
+	else
+	{
+		const Plugin* solo_lua_plugin = Plugins::instance()->find_solo_lua();
+		if (solo_lua_plugin)
+		{
+			file = solo_lua_plugin->solo_lua;
+			directory = solo_lua_plugin->directory.GetPath();
+		}
+	}
+
+	if (file.size())
+	{
+		FileSpecifier fs (file.c_str());
+		if (directory.size())
+		{
+			fs.SetNameWithPath(file.c_str(), directory);
+		}
+
 		OpenedFile script_file;
 		if (fs.Open(script_file))
 		{
@@ -1739,6 +1766,10 @@ void LoadSoloLua()
 			if (script_file.Read(script_length, &script_buffer[0]))
 			{
 				LoadLuaScript(&script_buffer[0], script_length, _solo_lua_script);
+				if (directory.size())
+				{
+					states[_solo_lua_script].SetSearchPath(directory);
+				}
 			}
 		}
 	}
