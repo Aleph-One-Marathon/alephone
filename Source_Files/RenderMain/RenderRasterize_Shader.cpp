@@ -521,7 +521,6 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 	} else {
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
-		offset = -1.0;
 	}
 	
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
