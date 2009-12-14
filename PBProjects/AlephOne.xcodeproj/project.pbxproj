@@ -25,6 +25,10 @@
 		270D534C0FCB417500482ED4 /* OGL_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 270D534B0FCB417500482ED4 /* OGL_Blitter.h */; };
 		2739B492101B862A00CC8098 /* Shape_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2739B490101B862A00CC8098 /* Shape_Blitter.cpp */; };
 		2739B493101B862A00CC8098 /* Shape_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2739B491101B862A00CC8098 /* Shape_Blitter.h */; };
+		2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
+		2759F31C10D5BC9C000204DD /* SDL_rwops_zzip.h in Headers */ = {isa = PBXBuildFile; fileRef = 2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */; };
+		2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
+		2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
 		277AB6C0109CE2570003402A /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
 		277AB6C1109CE2570003402A /* Rasterizer_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 277AB6BD109CE2570003402A /* Rasterizer_Shader.h */; };
 		277AB6C2109CE2570003402A /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
@@ -489,6 +493,7 @@
 			dstPath = AlephOne.app/Contents/Frameworks;
 			dstSubfolderSpec = 16;
 			files = (
+				2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */,
 				AE23F5930BDAC1DF00C11385 /* Speex.framework in CopyFiles */,
 				AE60200B0B92852A009F881C /* libmad.framework in CopyFiles */,
 				AE6020080B928517009F881C /* libsndfile.framework in CopyFiles */,
@@ -512,6 +517,9 @@
 		270D534B0FCB417500482ED4 /* OGL_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Blitter.h; sourceTree = "<group>"; };
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
+		2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rwops_zzip.c; sourceTree = "<group>"; };
+		2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rwops_zzip.h; sourceTree = "<group>"; };
+		2759F32F10D5BCC0000204DD /* zziplib.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = zziplib.framework; path = Library/Frameworks/zziplib.framework; sourceTree = SDKROOT; };
 		277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rasterizer_Shader.cpp; sourceTree = "<group>"; };
 		277AB6BD109CE2570003402A /* Rasterizer_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rasterizer_Shader.h; sourceTree = "<group>"; };
 		277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderRasterize_Shader.cpp; sourceTree = "<group>"; };
@@ -1029,6 +1037,7 @@
 				3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */,
 				3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */,
 				3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */,
+				2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1237,6 +1246,7 @@
 				F5281C0501F8C94101E83A66 /* SDL.framework */,
 				F5281C0801F8CA2101E83A66 /* SDL_net.framework */,
 				AE0384DB0CE15170006780AC /* SDL_ttf.framework */,
+				2759F32F10D5BCC0000204DD /* zziplib.framework */,
 			);
 			name = Frameworks;
 			path = /Library/Frameworks;
@@ -1515,6 +1525,8 @@
 		F5CC91FE0240D09B01A80001 /* Files */ = {
 			isa = PBXGroup;
 			children = (
+				2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */,
+				2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */,
 				F5CC92D60240D4C001A80001 /* Headers */,
 				F5CC92D30240D33601A80001 /* Macintosh */,
 				F5CC92D40240D3CC01A80001 /* SDL */,
@@ -2166,6 +2178,7 @@
 				277AB98110A26B020003402A /* Plugins.h in Headers */,
 				277AB6C1109CE2570003402A /* Rasterizer_Shader.h in Headers */,
 				277AB6C3109CE2570003402A /* RenderRasterize_Shader.h in Headers */,
+				2759F31C10D5BC9C000204DD /* SDL_rwops_zzip.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2495,6 +2508,7 @@
 				277AB97F10A26AF40003402A /* Plugins.cpp in Sources */,
 				277AB6C0109CE2570003402A /* Rasterizer_Shader.cpp in Sources */,
 				277AB6C2109CE2570003402A /* RenderRasterize_Shader.cpp in Sources */,
+				2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2547,6 +2561,7 @@
 					HAVE_SNDFILE,
 					HAVE_SMPEG,
 					HAVE_SDL_TTF,
+					HAVE_ZZIP,
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
@@ -2623,6 +2638,7 @@
 					HAVE_SNDFILE,
 					HAVE_SMPEG,
 					HAVE_SDL_TTF,
+					HAVE_ZZIP,
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
@@ -2718,6 +2734,7 @@
 					HAVE_SNDFILE,
 					HAVE_SMPEG,
 					HAVE_SDL_TTF,
+					HAVE_ZZIP,
 				);
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
