@@ -359,10 +359,10 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	TMgr.ShapeDesc = Texture;
 	if (TMgr.ShapeDesc == UNONE) { return TMgr; }
 	get_shape_bitmap_and_shading_table(Texture, &TMgr.Texture, &TMgr.ShadingTables,
-		local_player->infravision_duration ? _shading_infravision : _shading_normal);
+		current_player->infravision_duration ? _shading_infravision : _shading_normal);
 	
 	TMgr.TransferMode = _textured_transfer;
-	TMgr.IsShadeless = local_player->infravision_duration ? 1 : 0;
+	TMgr.IsShadeless = current_player->infravision_duration ? 1 : 0;
 	TMgr.TransferData = 0;
 
 	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
