@@ -55,6 +55,7 @@ public:
 private:
 	SNDFILE* sndfile;
 	SF_INFO sfinfo;
+	SDL_RWops* rwops;
 };
 
 #endif
