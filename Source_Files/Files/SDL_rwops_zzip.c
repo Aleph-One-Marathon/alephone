@@ -20,12 +20,12 @@ static int _zzip_seek(SDL_RWops *context, int offset, int whence)
     return zzip_seek(SDL_RWOPS_ZZIP_FILE(context), offset, whence);
 }
 
-static int _zzip_read(SDL_RWops *context, void *ptr, int size, int maxnum)
+static int _zzip_rwread(SDL_RWops *context, void *ptr, int size, int maxnum)
 {
     return zzip_read(SDL_RWOPS_ZZIP_FILE(context), ptr, size*maxnum) / size;
 }
 
-static int _zzip_write(SDL_RWops *context, const void *ptr, int size, int num)
+static int _zzip_rwwrite(SDL_RWops *context, const void *ptr, int size, int num)
 {
     return 0; /* ignored */
 }
@@ -54,8 +54,8 @@ SDL_RWops *SDL_RWFromZZIP(const char* file, const char* mode)
     if (! rwops) { errno=ENOMEM; zzip_close (zzip_file); return 0; }
 
     SDL_RWOPS_ZZIP_DATA(rwops) = zzip_file;
-    rwops->read = _zzip_read;
-    rwops->write = _zzip_write;
+    rwops->read = _zzip_rwread;
+    rwops->write = _zzip_rwwrite;
     rwops->seek = _zzip_seek;
     rwops->close = _zzip_close;
     return rwops;
