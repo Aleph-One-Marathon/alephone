@@ -459,7 +459,7 @@ void initDefaultPrograms() {
 		"	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
 		"	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
 		"	/* SETUP TBN MATRIX in normal matrix coords, gl_MultiTexCoord1 = tangent vector */\n"
-		"	vec3 n = normalize(gl_NormalMatrix * vec3(-gl_Normal.x, -gl_Normal);\n"
+		"	vec3 n = normalize(gl_NormalMatrix * -gl_Normal);\n"
 		"	vec3 t = normalize(gl_NormalMatrix * gl_MultiTexCoord1.xyz);\n"
 		"	vec3 b = normalize(cross(n, t) * gl_MultiTexCoord1.w);\n"
 		"	/* (column wise) */\n"
