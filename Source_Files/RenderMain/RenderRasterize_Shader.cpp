@@ -201,10 +201,12 @@ void RenderRasterize_Shader::render_tree() {
 		RenderRasterizerClass::render_tree(kGlow);
 		blur->end();
 
+		if (Using_sRGB) glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 		glDisable(GL_DEPTH_TEST);
 		blur->draw();
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_FOG);
+		if (Using_sRGB) glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 	}
 }
 
