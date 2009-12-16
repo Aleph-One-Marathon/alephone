@@ -691,6 +691,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	} else if (ModelPtr->Sidedness > 0) {
 		glEnable(GL_CULL_FACE);
 		glFrontFace(GL_CW);
+	} else {
+		glDisable(GL_CULL_FACE);
 	}
 
 	GLfloat color[3];
@@ -734,7 +736,9 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	glDisableClientState(GL_NORMAL_ARRAY);
 
-	glDisable(GL_CULL_FACE);
+	// Restore the default render sidedness
+	glEnable(GL_CULL_FACE);
+	glFrontFace(GL_CW);
 	Shader::disable();
 
 #ifdef DEBUG_MODELS
