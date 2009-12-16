@@ -21,6 +21,25 @@
  */
 #include <iostream>
 
+// gl_ClipVertex workaround
+// In Mac OS X 10.4, setting gl_ClipVertex causes a black screen.
+// Unfortunately, it's required for proper 5-D space on other
+// systems. This workaround comments out its use under 10.4.
+#if (defined(__APPLE__) && defined(__MACH__))
+#include <sys/utsname.h>
+
+// On Tiger, uname -r starts with "8."
+inline bool DisableClipVertex() {
+	struct utsname uinfo;
+	uname(&uinfo);
+	if (uinfo.release[0] == '8' && uinfo.release[1] == '.')
+		return true;
+	return false;
+}
+#else
+inline bool DisableClipVertex() { return false; }
+#endif
+
 #include "OGL_Shader.h"
 #include "FileHandler.h"
 #include "OGL_Setup.h"
@@ -477,5 +496,21 @@ void initDefaultPrograms() {
 	
 	defaultVertexPrograms["model_specular"] = defaultVertexPrograms["model_parallax"];
 	defaultFragmentPrograms["model_specular"] = defaultFragmentPrograms["specular"];
+	
+	if (DisableClipVertex()) {
+		std::string query = "gl_ClipVertex";
+		std::string replace = "// gl_ClipVertex";
+		std::map<std::string, std::string>::iterator it;
+		for (it = defaultVertexPrograms.begin(); it != defaultVertexPrograms.end(); it++) {
+			size_t found = 0;
+			do {
+				found = it->second.find(query, found);
+				if (found != std::string::npos) {
+					it->second.replace(found, query.length(), replace);
+					found += replace.length();
+				}
+			} while (found != std::string::npos);
+		}
+	}
 }
     
