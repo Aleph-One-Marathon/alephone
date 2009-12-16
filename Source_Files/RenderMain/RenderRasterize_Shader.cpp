@@ -375,6 +375,9 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(intensity, intensity, intensity, 1.0);
 
+	int fogtype;
+	OGL_FogData *fogdata;
+	bool flatColor = false;
 	switch(transferMode) {
 		case _xfer_landscape:
 		case _xfer_big_landscape:
@@ -386,6 +389,22 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			flare = 0;
 			s = Shader::get("landscape");
 			s->setFloat("repeat", 1.0 + opts->HorizExp);
+			
+			if (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog))
+			{
+				fogtype = (current_player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ?
+				OGL_Fog_BelowLiquid : OGL_Fog_AboveLiquid;
+				fogdata = OGL_GetFogData(fogtype);
+				if (fogdata && fogdata->IsPresent && fogdata->AffectsLandscapes) {
+					glColor4f(fogdata->Color.red/65535.0f,
+							  fogdata->Color.green/65535.0f,
+							  fogdata->Color.blue/65535.0f,
+							  1.0);
+					glDisable(GL_TEXTURE_2D);
+					flatColor = true;
+				}
+			}
+
 		}
 			break;
 		default:
@@ -407,27 +426,29 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			}
 	}
 	
-	if(TMgr.Setup()) {
-		if(s) {
-			if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-				glActiveTextureARB(GL_TEXTURE1_ARB);
-				TMgr.RenderBump();
-				glActiveTextureARB(GL_TEXTURE0_ARB);
+	if (!flatColor) {
+		if(TMgr.Setup()) {
+			if(s) {
+				if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+					glActiveTextureARB(GL_TEXTURE1_ARB);
+					TMgr.RenderBump();
+					glActiveTextureARB(GL_TEXTURE0_ARB);
+				}
 			}
+			TMgr.RenderNormal();
+		} else {
+			TMgr.ShapeDesc = UNONE;
+			return TMgr;
 		}
-		TMgr.RenderNormal();
-	} else {
-		TMgr.ShapeDesc = UNONE;
-		return TMgr;
-	}
 
-	TMgr.SetupTextureMatrix();
+		TMgr.SetupTextureMatrix();
 
-	if(s) {
-		s->setFloat("wobble", wobble);
-		s->setFloat("flare", flare);
-		s->setFloat("offset", offset);
-		s->enable();
+		if(s) {
+			s->setFloat("wobble", wobble);
+			s->setFloat("flare", flare);
+			s->setFloat("offset", offset);
+			s->enable();
+		}
 	}
 	return TMgr;
 }
