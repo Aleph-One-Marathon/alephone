@@ -718,6 +718,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		glDisable(GL_CULL_FACE);
 	}
 
+	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
+	glEnable(GL_ALPHA_TEST);
+
 	GLfloat color[3];
 	FindShadingColor(RenderRectangle.depth, RenderRectangle.ambient_shade, color);
 	if (renderStep == kGlow) {
@@ -729,7 +733,9 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glColor4f(color[0], color[1], color[2], 1.0);
 	
 	Shader *s = NULL;
-	if(!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+	// FIXME: parallax shading needs proper normals
+	if(1) {
+//	if(!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 		s = Shader::get("flat");
 	} else if(renderStep == kDiffuse) {
 		s = Shader::get("model_parallax");
@@ -739,16 +745,20 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	if(s) {
 		s->setFloat("flare", flare);
 		s->setFloat("wobble", 0);
+		s->setFloat("offset", 0);
 		s->enable();
 	}
 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
 	glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
-	glEnableClientState(GL_NORMAL_ARRAY);
-	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
+	
+	// FIXME: something is terribly wrong with normals
+//	glEnableClientState(GL_NORMAL_ARRAY);
+//	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
 	
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);
 	glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
+	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 
 	if(ModelPtr->Use(CLUT,OGL_SkinManager::Normal)) {
 		LoadModelSkin(SkinPtr->NormalImg, Collection, CLUT);
@@ -756,7 +766,6 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	glDisableClientState(GL_NORMAL_ARRAY);
 
 	// Restore the default render sidedness
