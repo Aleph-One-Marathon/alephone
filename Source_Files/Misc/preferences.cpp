@@ -1735,7 +1735,7 @@ static void plugins_dialog(void *)
 	placer->add(button_placer, true);
 
 	d.set_widget_placer(placer);
-	
+
 	if (d.run() == 0) {
 		bool changed = false;
 		Plugins::iterator plugin = Plugins::instance()->begin();
@@ -1746,7 +1746,7 @@ static void plugins_dialog(void *)
 
 		if (changed) {
 			write_preferences();
-	
+
 			ResetAllMMLValues();
 			LoadBaseMMLScripts();
 			Plugins::instance()->load_mml();
@@ -1852,6 +1852,13 @@ static void environment_dialog(void *arg)
 
 	// Run dialog
 	bool theme_changed = false;
+	FileSpecifier old_theme(environment_preferences->theme_dir);
+	const Plugin* theme_plugin = Plugins::instance()->find_theme();
+	if (theme_plugin)
+	{
+		old_theme = theme_plugin->directory + theme_plugin->theme;
+	}
+
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
@@ -1915,6 +1922,18 @@ static void environment_dialog(void *arg)
 			changed = theme_changed = true;
 		}
 
+		FileSpecifier new_theme(environment_preferences->theme_dir);
+		theme_plugin = Plugins::instance()->find_theme();
+		if (theme_plugin)
+		{
+			new_theme = theme_plugin->directory + theme_plugin->theme;
+		}
+
+		if (new_theme != old_theme)
+		{
+			theme_changed = true;
+		}
+
 #ifdef HAVE_SDL_TTF
 		bool smooth_text = smooth_text_w->get_selection() != 0;
 		if (smooth_text != environment_preferences->smooth_text)
@@ -1935,8 +1954,7 @@ static void environment_dialog(void *arg)
 			load_environment_from_preferences();
 
 		if (theme_changed) {
-			FileSpecifier theme = environment_preferences->theme_dir;
-			load_theme(theme);
+			load_theme(new_theme);
 		}
 
 		if (changed || theme_changed)

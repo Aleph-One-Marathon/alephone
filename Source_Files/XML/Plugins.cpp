@@ -100,7 +100,7 @@ void Plugins::load_mml() {
 
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) 
 	{
-		if (it->enabled && !it->hud_lua.size() && !it->solo_lua.size() && it->compatible()) 
+		if (it->enabled && !it->hud_lua.size() && !it->solo_lua.size() && !it->theme.size() && it->compatible()) 
 		{
 			load_mmls(*it, loader);
 		}
@@ -113,6 +113,12 @@ void Plugins::load_mml() {
 		{
 			load_mmls(*hud_lua, loader);
 		}
+	}
+	
+	const Plugin* theme = find_theme();
+	if (theme)
+	{
+		load_mmls(*theme, loader);
 	}
 }
 
@@ -150,6 +156,19 @@ const Plugin* Plugins::find_solo_lua() const
 	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
 		if (rit->enabled && rit->solo_lua.size() && rit->compatible())
+		{
+			return &(*rit);
+		}
+	}
+
+	return 0;
+}
+
+const Plugin* Plugins::find_theme() const
+{
+	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	{
+		if (rit->enabled && rit->theme.size() && rit->compatible())
 		{
 			return &(*rit);
 		}
@@ -221,6 +240,9 @@ bool XML_PluginParser::HandleAttribute(const char* Tag, const char* Value)
 		return true;
 	} else if (StringsEqual(Tag, "solo_lua")) {
 		Data.solo_lua = Value;
+		return true;
+	} else if (StringsEqual(Tag, "theme_dir")) {
+		Data.theme = Value;
 		return true;
 	}
 

@@ -35,6 +35,7 @@ struct Plugin {
 	std::vector<std::string> mmls;
 	std::string hud_lua;
 	std::string solo_lua;
+	std::string theme;
 	std::string required_version;
 
 	bool enabled;
@@ -58,6 +59,7 @@ public:
 
 	const Plugin* find_hud_lua() const;
 	const Plugin* find_solo_lua() const;
+	const Plugin* find_theme() const;
 private:
 	Plugins() { }
 	void add(Plugin plugin) { m_plugins.push_back(plugin); }

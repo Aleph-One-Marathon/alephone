@@ -519,6 +519,11 @@ static void initialize_application(void)
 	initialize_marathon();
 	initialize_screen_drawing();
 	FileSpecifier theme = environment_preferences->theme_dir;
+	const Plugin* theme_plugin = Plugins::instance()->find_theme();
+	if (theme_plugin)
+	{
+		theme = theme_plugin->directory + theme_plugin->theme;
+	}
 	initialize_dialogs(theme);
 	initialize_terminal_manager();
 	initialize_shape_handler();
