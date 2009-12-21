@@ -40,6 +40,10 @@ struct Plugin {
 
 	bool enabled;
 	bool compatible() const;
+
+	bool operator<(const Plugin& other) const {
+		return name < other.name;
+	}
 };
 
 class Plugins {

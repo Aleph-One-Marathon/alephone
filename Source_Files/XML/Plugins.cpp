@@ -27,6 +27,7 @@
 
 #include "alephversion.h"
 #include "FileHandler.h"
+#include "game_errors.h"
 #include "Logging.h"
 #include "preferences.h"
 #include "XML_Configure.h"
@@ -341,19 +342,22 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 	std::vector<dir_entry> de;
 	if (!dir.ReadDirectory(de))
 		return false;
-	std::sort(de.begin(), de.end());
 	
 	for (std::vector<dir_entry>::const_iterator it = de.begin(); it != de.end(); ++it) {
-		if (it->is_directory) {
-			FileSpecifier file_name = dir + it->name + "Plugin.xml";
-			ParsePlugin(file_name);
+		FileSpecifier file = dir + it->name;
+		if (it->name == "Plugin.xml")
+		{
+			ParsePlugin(file);
+		}
+		else if (it->is_directory && it->name[0] != '.') 
+		{
+			ParseDirectory(file);
 		}
 #ifdef HAVE_ZZIP
 		else if (algo::ends_with(it->name, ".zip") || algo::ends_with(it->name, ".plgA"))
 		{
 			// search it for a Plugin.xml file
-			FileSpecifier zipfile = dir + it->name;
-			ZZIP_DIR* zzipdir = zzip_dir_open(zipfile.GetPath(), 0);
+			ZZIP_DIR* zzipdir = zzip_dir_open(file.GetPath(), 0);
 			if (zzipdir)
 			{
 				ZZIP_DIRENT dirent;
@@ -361,10 +365,9 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 				{
 					if (algo::ends_with(dirent.d_name, "Plugin.xml"))
 					{
-						std::string archive = zipfile.GetPath();
+						std::string archive = file.GetPath();
 						FileSpecifier file_name = FileSpecifier(archive.substr(0, archive.find_last_of('.'))) + dirent.d_name;
 						ParsePlugin(file_name);
-						break;
 					}
 				}
 				zzip_dir_close(zzipdir);
@@ -390,4 +393,6 @@ void Plugins::enumerate() {
 		DirectorySpecifier path = *it + "Plugins";
 		loader.ParseDirectory(path);
 	}
+	std::sort(m_plugins.begin(), m_plugins.end());
+	clear_game_error();
 }
