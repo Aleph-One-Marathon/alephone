@@ -516,6 +516,7 @@ void OGL_ModelData::Load()
 void OGL_ModelData::Unload()
 {
 	Model.Clear();
+	OGL_ResetForceSpriteDepth();
 	
 	// Don't forget the skins
 	OGL_SkinManager::Unload();
@@ -528,6 +529,10 @@ int OGL_CountModels(short Collection)
 
 extern void OGL_ProgressCallback(int);
 
+static bool ForcingSpriteDepth = false;
+void OGL_ResetForceSpriteDepth() { ForcingSpriteDepth = false; }
+bool OGL_ForceSpriteDepth() { return ForcingSpriteDepth; }
+
 // for managing the model and image loading and unloading
 void OGL_LoadModels(short Collection)
 {
@@ -535,6 +540,10 @@ void OGL_LoadModels(short Collection)
 	for (vector<ModelDataEntry>::iterator MdlIter = ML.begin(); MdlIter < ML.end(); MdlIter++)
 	{
 		MdlIter->ModelData.Load();
+		if (MdlIter->ModelData.ForceSpriteDepth)
+		{
+			ForcingSpriteDepth = true;
+		}
 		OGL_ProgressCallback(1);
 	}
 }
@@ -561,7 +570,6 @@ void OGL_ResetModelSkins(bool Clear_OGL_Txtrs)
 		}
 	}
 }
-
 
 class XML_SkinDataParser: public XML_ElementParser
 {
@@ -867,6 +875,10 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"depth_type"))
 	{
 		return ReadInt16Value(Value,Data.DepthType);
+	}
+	else if (StringsEqual(Tag,"force_sprite_depth"))
+	{
+		return ReadBooleanValue(Value,Data.ForceSpriteDepth);
 	}
 	else if (StringsEqual(Tag,"file"))
 	{

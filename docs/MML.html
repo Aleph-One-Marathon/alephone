@@ -1605,6 +1605,8 @@ then a vertex's normal is split into one for each of its polygons.
 Ideally, objects with all-or-nothing opacity ought to be rendered
 before semitransparent ones;
 these different depth options offer a way to approximate that effect.
+<li>force_sprite_depth: require sprites to be depth-sorted inside the model (default: false)<br>
+This flag, active only in the shader renderer, will force sprites to strictly obey the Z-buffer. This allows sprites to be drawn correctly between different sections of a model (good for open models, like a house), but at the expense of clipping artifacts between sprites and walls/floors. In the default case, sprites are drawn entirely behind or entirely in front of the model. Use this flag sparingly, as the side effects are quite noticeable.
 </ul>
 <p>
 The scaling and rotations will be applied before the shifts;

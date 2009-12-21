@@ -849,15 +849,20 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	double yaw = view->yaw * 360.0 / float(NUMBER_OF_ANGLES);
 	glRotated(yaw, 0.0, 0.0, 1.0);
 
-	// look for parasitic objects based on y position,
-	// and offset them to draw in proper depth order
 	float offset = 0;
-	if(pos.y == objectY) {
-		objectCount++;
-		offset = objectCount * -1.0;
+	if (OGL_ForceSpriteDepth()) {
+		// look for parasitic objects based on y position,
+		// and offset them to draw in proper depth order
+		if(pos.y == objectY) {
+			objectCount++;
+			offset = objectCount * -1.0;
+		} else {
+			objectCount = 0;
+			objectY = pos.y;
+		}
 	} else {
-		objectCount = 0;
-		objectY = pos.y;
+		// draw in pre-sorted order, ignore z-buffer
+		glDisable(GL_DEPTH_TEST);
 	}
 
 	TextureManager TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, offset, renderStep);
@@ -917,6 +922,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		glEnd();
 	}
 	
+	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
 	Shader::disable();
 	TMgr.RestoreTextureMatrix();

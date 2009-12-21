@@ -110,6 +110,7 @@ public:
 	short LightType;				// What type of lighting?
 	short DepthType;				// What sort of depth reference to use?
 									// (+: farthest point, -: nearest point, 0: center point)
+	bool  ForceSpriteDepth;			// Force sprites to be depth-sorted between model polys? (shader only)
 	
 	// Should a rotation rate be included, in order to get that Quake look?
 	
@@ -123,7 +124,7 @@ public:
 	
 	OGL_ModelData():
 		Scale(1), XRot(0), YRot(0), ZRot(0), XShift(0), YShift(0), ZShift(0), Sidedness(1),
-			NormalType(1), NormalSplit(0.5), LightType(0), DepthType(0) {}
+			NormalType(1), NormalSplit(0.5), LightType(0), DepthType(0), ForceSpriteDepth(false) {}
 };
 
 
@@ -138,6 +139,10 @@ void OGL_ResetModelSkins(bool Clear_OGL_Txtrs);
 int OGL_CountModels(short Collection);
 void OGL_LoadModels(short Collection);
 void OGL_UnloadModels(short Collection);
+
+// for managing the sprite depth-buffer override (see ForceSpriteDepth above)
+void OGL_ResetForceSpriteDepth();  // to clear before calling OGL_LoadModels
+bool OGL_ForceSpriteDepth();
 
 // XML support:
 XML_ElementParser *ModelData_GetParser();

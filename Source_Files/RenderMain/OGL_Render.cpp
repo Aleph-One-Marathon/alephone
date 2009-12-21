@@ -700,6 +700,7 @@ bool OGL_StartRun()
 
 	OGL_Rasterizer_Init();
 	
+	OGL_ResetForceSpriteDepth();
 	load_replacement_collections();	
 
 	// Initialize the texture accounting
