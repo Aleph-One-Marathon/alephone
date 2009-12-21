@@ -247,7 +247,13 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 	}
 	else
 	{
-		font = TTF_OpenFont(path.c_str(), size);
+		FileSpecifier fileSpec(path);
+		OpenedFile file;
+		if (!fileSpec.Open(file))
+		{
+			return 0;
+		}
+		font = TTF_OpenFontRW(file.TakeRWops(), 1, size);
 	}
 
 	if (font)
