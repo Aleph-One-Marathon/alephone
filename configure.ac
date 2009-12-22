@@ -36,6 +36,8 @@ AC_ARG_ENABLE(openmp,
 [  --enable-openmp         enable OpenMP support [default=yes]], , enable_openmp=yes)
 AC_ARG_ENABLE(zzip,
 [  --enable-zzip           enable zziplib support [default=yes]], , enable_zzip=yes)
+AC_ARG_ENABLE(png,
+[  --enable-png            enable PNG screenshot support [default=yes]], , enable_png=yes)
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -135,6 +137,16 @@ PKG_CHECK_MODULES([ZZIP], [zziplib >= 0.10.75], [
 ])
 fi
 AM_CONDITIONAL(BUILD_ZZIP_RWOPS, test x$have_zzip = xtrue)
+
+have_png=false
+if [[ "x$enable_png" = "xyes" ]]; then
+AC_CHECK_LIB(png, png_get_io_ptr, [ 
+		  LIBS="-lpng $LIBS"
+		  have_png=true
+		  AC_DEFINE(HAVE_PNG, 1, [PNG support enabled])]
+)
+fi
+AM_CONDITIONAL(HAVE_PNG, test x$have_png = xtrue)
 
 dnl Check for boost/bind
 AC_LANG_PUSH(C++)
