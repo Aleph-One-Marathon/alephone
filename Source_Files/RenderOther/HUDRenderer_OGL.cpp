@@ -84,6 +84,10 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	glDisable(GL_BLEND);
 	glDisable(GL_FOG);
 
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+	
 	// Draw static HUD picture
 	if (HUD_Blitter.Loaded() && !LuaTexturePaletteSize())
 	{
@@ -105,7 +109,6 @@ void OGL_DrawHUD(Rect &dest, short time_elapsed)
 	GLdouble y_scale = (dest.bottom - dest.top) / 160.0;
 	glScissor(dest.left, dest.bottom, static_cast<long>(640.0 * x_scale), static_cast<long>(160.0 * y_scale));
 	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
 	glTranslated(dest.left, dest.top - (320.0 * y_scale), 0.0);
 	glScaled(x_scale, y_scale, 1.0);
 
