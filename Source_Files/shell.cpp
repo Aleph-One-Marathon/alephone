@@ -91,6 +91,10 @@
 #include <SDL_net.h>
 #endif
 
+#ifdef HAVE_PNG
+#include "IMG_savepng.h"
+#endif
+
 #ifdef HAVE_SDL_IMAGE
 #include <SDL_image.h>
 #if defined(__WIN32__)
@@ -1216,7 +1220,11 @@ void dump_screen(void)
 	int i = 0;
 	do {
 		char name[256];
+#ifdef HAVE_PNG
+		sprintf(name, "Screenshot_%04d.png", i);
+#else
 		sprintf(name, "Screenshot_%04d.bmp", i);
+#endif
 		file = local_data_dir + name;
 		i++;
 	} while (file.Exists());
@@ -1224,7 +1232,11 @@ void dump_screen(void)
 	// Without OpenGL, dumping the screen is easy
 	SDL_Surface *video = SDL_GetVideoSurface();
 	if (!(video->flags & SDL_OPENGL)) {
+#ifdef HAVE_PNG
+		IMG_SavePNG(file.GetPath(), SDL_GetVideoSurface(), IMG_COMPRESS_DEFAULT);
+#else
 		SDL_SaveBMP(SDL_GetVideoSurface(), file.GetPath());
+#endif
 		return;
 	}
 
@@ -1255,7 +1267,11 @@ void dump_screen(void)
 	free(pixels);
 
 	// Save surface
+#ifdef HAVE_PNG
+        IMG_SavePNG(file.GetPath(), t, IMG_COMPRESS_DEFAULT);
+#else
 	SDL_SaveBMP(t, file.GetPath());
+#endif
 	SDL_FreeSurface(t);
 #endif
 }
