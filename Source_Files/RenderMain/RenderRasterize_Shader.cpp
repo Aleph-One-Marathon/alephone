@@ -508,7 +508,7 @@ float calcWobble(short transferMode, short transfer_phase) {
 }
 
 bool setupGlow(TextureManager &TMgr, float wobble, float intensity, float offset, RenderStep renderStep) {
-	if (TMgr.IsGlowMapped() && TMgr.TransferMode == _textured_transfer) {
+	if (TMgr.TransferMode == _textured_transfer && TMgr.IsGlowMapped()) {
 		Shader *s = NULL;
 		if (TMgr.TextureType == OGL_Txtr_Wall && TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 			s = Shader::get(renderStep == kGlow ? "specular" : "parallax");
