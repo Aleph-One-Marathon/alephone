@@ -712,7 +712,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 					}
 					else
 					{
-						if (dynamic_world->player_count==1) set_game_state(_revert_game);
+						if (!(GET_GAME_OPTIONS() & _multiplayer_game)) set_game_state(_revert_game);
 						else revive_player(player_index);
 					}
 				}
