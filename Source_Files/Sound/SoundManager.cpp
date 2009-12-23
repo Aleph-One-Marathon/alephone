@@ -642,8 +642,13 @@ void SoundManager::SetStatus(bool active)
 					total_buffer_size *= 2;
 					samples *= 2;
 				}
-				if (parameters.flags & _extra_memory_flag)
-					total_buffer_size *= 2;
+
+				total_buffer_size *= 2;
+				if (parameters.channel_count > 4)
+				{
+					total_buffer_size = total_buffer_size * parameters.channel_count / 4;
+				}
+				
 				if (parameters.flags & _stereo_flag)
 					samples *= 2;
 				sound_source = (parameters.flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
