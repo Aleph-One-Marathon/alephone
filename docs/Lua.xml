@@ -97,7 +97,13 @@
     <section name="Units" id="units">
       <description>
 	<p>The unit for distance we use is World Units (WU) These are the same values you'd see in Forge or with F10 location display, and 1/1024 of what A1 uses internally and what you'd see in Pfhorte.</p>
-	<p>Units for speed are . . . well let's say they're messy. :)</p>
+	<p>Units for speed are . . . well let's say they're messy. :) Lua speeds are expressed in World Units per tick (a tick is 1/30 of a second). Forge claims to use WU per sec, but it actually uses 0.87890625 WU per sec (which equals 30 internal units per tick). The following example illustrates the various conversions:</p>
+	<ul>
+	<li><b style="display: inline-block; width: 10em; text-align: right">Actual:</b> 7.5 World Units per second</li>
+	<li><b style="display: inline-block; width: 10em; text-align: right">A1 internal:</b> 256 units per tick (7.5 * 1024 / 30)</li>
+	<li><b style="display: inline-block; width: 10em; text-align: right">Lua:</b> 0.25 WU per tick (7.5 / 30)</li>
+	<li><b style="display: inline-block; width: 10em; text-align: right">Forge:</b> 8.53 "WU per second" ((7.5 * 1024 / 30) / 30)</li>
+	</ul>
       </description>
     </section>
     <section name="Local Player" id="local_player">
