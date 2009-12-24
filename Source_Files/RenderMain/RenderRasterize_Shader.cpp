@@ -383,6 +383,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 		case _xfer_big_landscape:
 		{
 			TMgr.TextureType = OGL_Txtr_Landscape;
+			TMgr.TransferMode = _big_landscaped_transfer;
 			TMgr.Landscape_AspRatExp = 0;
 			LandscapeOptions *opts = View_GetLandscapeOptions(Texture);
 			glColor4f(1,1,1,1);
