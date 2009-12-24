@@ -141,6 +141,7 @@ void L_Call_Platform_Activated(short index) {}
 void L_Call_Player_Revived(short player_index) {}
 void L_Call_Player_Killed(short player_index, short aggressor_player_index, short action, short projectile_index) {}
 void L_Call_Monster_Killed(short monster_index, short aggressor_player_index, short projectile_index) {}
+void L_Call_Monster_Damaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) { }
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) {}
 void L_Call_Item_Created(short item_index) {}
@@ -295,6 +296,7 @@ public:
 	void PlayerRevived(short player_index);
 	void PlayerKilled(short player_index, short aggressor_player_index, short action, short projectile_index);
 	void MonsterKilled(short monster_index, short aggressor_player_index, short projectile_index);
+	void MonsterDamaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
 	void PlayerDamaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
 	void ProjectileDetonated(short type, short owner_index, short polygon, world_point3d location);
 	void ItemCreated(short item_index);
@@ -542,6 +544,29 @@ void LuaState::MonsterKilled (short monster_index, short aggressor_player_index,
 
 		CallTrigger(3);
 	}
+}
+
+void LuaState::MonsterDamaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
+{
+	if (GetTrigger("monster_damaged"))
+	{
+		Lua_Monster::Push(State(), monster_index);
+		if (aggressor_monster_index != -1) 
+			Lua_Monster::Push(State(), aggressor_monster_index);
+		else
+			lua_pushnil(State());
+		
+		Lua_DamageType::Push(State(), damage_type);
+		lua_pushnumber(State(), damage_amount);
+		
+		if (projectile_index != -1) 
+			Lua_Projectile::Push(State(), projectile_index);
+		else
+			lua_pushnil(State());
+
+		CallTrigger(5);
+	}
+		
 }
 
 void LuaState::PlayerDamaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
@@ -1187,6 +1212,14 @@ void L_Call_Monster_Killed (short monster_index, short aggressor_player_index, s
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
 		it->second.MonsterKilled(monster_index, aggressor_player_index, projectile_index);
+	}
+}
+
+void L_Call_Monster_Damaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
+{
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		it->second.MonsterDamaged(monster_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
 	}
 }
 

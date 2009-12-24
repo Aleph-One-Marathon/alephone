@@ -258,6 +258,28 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<type>projectile</type>
       </argument>
     </function>
+    <function name="monster_damaged" version="SVN">
+      <description>whenever a monster is damaged, but before it dies if applicable. The monster's vitality may be negative when this trigger is called. Ther monster's vitality will be tested again after this trigger returns, so a script may prevent a monster's death</description>
+      <argument name="monster">
+	<type>monster</type>
+      </argument>
+      <argument name="aggressor_monster">
+	<description>the monster that caused the damage (can be nil)</description>
+	<type>monster</type>
+      </argument>
+      <argument name="damage_type">
+	<description>e.g. "fists"</description>
+	<type>damage_type</type>
+      </argument>
+      <argument name="damage_amount">
+	<description>the amount recently subtracted from the monster's vitality</description>
+	<type>number</type>
+      </argument>
+      <argument name="projectile">
+	<description>the projectile that delivered the damage (can be nil)</description>
+	<type>projectile</type>
+      </argument>
+    </function>
     <function name="monster_killed">
       <description>whenever a monster dies</description>
       <argument name="monster"><type>monster</type></argument>

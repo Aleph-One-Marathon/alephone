@@ -1456,9 +1456,12 @@ void damage_monster(
 					team_monster_damage_given[aggressor_player->team].damage += MAX(monster->vitality, delta_vitality);
 				}
 			}
-			
+
 			// LP change: pegging to maximum value
-			if ((monster->vitality= MIN(int32(monster->vitality)-int32(delta_vitality),int32(INT16_MAX)))>0)
+			monster->vitality = MIN(int32(monster->vitality) - int32(delta_vitality), int32(INT16_MAX));
+			L_Call_Monster_Damaged(target_index, aggressor_index, damage->type,  delta_vitality, projectile_index);
+			
+			if (monster->vitality > 0)
 			{
 				set_monster_action(target_index, _monster_is_being_hit);
 				if ((definition->flags&_monster_is_berserker) && monster->vitality<(definition->vitality>>2))
