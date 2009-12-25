@@ -132,9 +132,12 @@ struct FlaggedVector
 void Model3D::CalculateTangents()
 {
 	Tangents.resize(Positions.size() * 4 / 3);
+	
+	bool generate_normals = false;
 	if(Normals.size() != Positions.size()) {
 		Normals.resize(Positions.size());
 		memset(NormBase(), 0, sizeof(GLfloat)*Normals.size());
+		generate_normals = true;
 	}
 	
 	for(GLushort i = 0; i < VertIndices.size(); i+= 3) {
@@ -169,11 +172,17 @@ void Model3D::CalculateTangents()
 			   (s1 * z2 - s2 * z1) * r);
 		
 		vec3 N = (v3-v1).cross(v2-v1);
+		if (!generate_normals) {
+			N = vec3(NormBase()+3*a) + vec3(NormBase()+3*b) + vec3(NormBase()+3*c);
+		}
+		
 		if(N.dot(N) < 0.001) {
 			N = vec3(0.0,0.0,0.0);
-			VecCopy(N.p(), NormBase()+3*a);
-			VecCopy(N.p(), NormBase()+3*b);
-			VecCopy(N.p(), NormBase()+3*c);
+			if (generate_normals) {
+				VecCopy(N.p(), NormBase()+3*a);
+				VecCopy(N.p(), NormBase()+3*b);
+				VecCopy(N.p(), NormBase()+3*c);
+			}
 			
 			vec4 t(0.0,0.0,0.0,0.0);
 			Tangents[a] = vec4(t);
@@ -183,9 +192,11 @@ void Model3D::CalculateTangents()
 			N = N.norm();
 			assert(N.dot(N) < 1.001);
 			
-			VecCopy(N.p(), NormBase()+3*a);
-			VecCopy(N.p(), NormBase()+3*b);
-			VecCopy(N.p(), NormBase()+3*c);
+			if (generate_normals) {
+				VecCopy(N.p(), NormBase()+3*a);
+				VecCopy(N.p(), NormBase()+3*b);
+				VecCopy(N.p(), NormBase()+3*c);
+			}
 			
 			float sign = (N.cross(T)).dot(B) < 0.0 ? -1.0 : 1.0;
 			vec4 t = (T - N * N.dot(T)).norm();
