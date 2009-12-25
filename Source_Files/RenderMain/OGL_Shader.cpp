@@ -433,10 +433,10 @@ void initDefaultPrograms() {
         "	vec4 normal = texture2D(texture1, texCoords.xy);\n"
         "	norm = (normal.rgb - 0.5) * 2.0;\n"
         "	norm.g = -norm.g;\n"
-        "	float diffuse = 0.5 + dot(norm, viewv)*0.5;\n"
+        "	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
         "	vec4 color = texture2D(texture0, texCoords.xy);\n"
         "	gl_FragColor = vec4(color.rgb * clamp((vertexColor.rgb + mlFactor) * diffuse, 0.0, 1.0), color.a);\n"
-        "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), color.a );\n"
+        "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), color.a);\n"
         "}\n";
 
 	defaultVertexPrograms["specular"] = defaultVertexPrograms["parallax"];
@@ -467,31 +467,7 @@ void initDefaultPrograms() {
 		"	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), vertexColor.a * color.a );\n"
 		"}\n";
 	
-    defaultVertexPrograms["model_parallax"] = ""
-		"varying vec3 viewXY;\n"
-		"varying vec3 viewDir;\n"
-		"varying vec4 vertexColor;\n"
-		"varying float FDxLOG2E;\n"
-		"varying float MLxLOG2E;\n"
-		"void main(void) {\n"
-		"	gl_Position  = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-		"	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
-		"	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
-		"	/* SETUP TBN MATRIX in normal matrix coords, gl_MultiTexCoord1 = tangent vector */\n"
-		"	vec3 n = normalize(gl_NormalMatrix * -gl_Normal);\n"
-		"	vec3 t = normalize(gl_NormalMatrix * gl_MultiTexCoord1.xyz);\n"
-		"	vec3 b = normalize(cross(n, t) * gl_MultiTexCoord1.w);\n"
-		"	/* (column wise) */\n"
-		"	mat3 tbnMatrix = mat3(t.x, b.x, n.x, t.y, b.y, n.y, t.z, b.z, n.z);\n"
-		"	\n"
-		"	/* SETUP VIEW DIRECTION in unprojected local coords */\n"
-		"	viewDir = tbnMatrix * (gl_ModelViewMatrix * gl_Vertex).xyz;\n"
-		"	viewXY = -(gl_TextureMatrix[0] * vec4(viewDir.xyz, 1.0)).xyz;\n"
-		"	viewDir = -viewDir;\n"
-		"	vertexColor = gl_Color;\n"
-		"	FDxLOG2E = -gl_Fog.density * gl_Fog.density * 1.442695;\n"
-		"	MLxLOG2E = -0.0000003 * 1.442695;\n"
-		"}\n";
+	defaultVertexPrograms["model_parallax"] = defaultVertexPrograms["parallax"];
 	defaultFragmentPrograms["model_parallax"] = defaultFragmentPrograms["parallax"];
 	
 	defaultVertexPrograms["model_specular"] = defaultVertexPrograms["model_parallax"];
