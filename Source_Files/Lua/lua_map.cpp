@@ -285,10 +285,37 @@ static bool Lua_Line_Valid(int16 index)
 char Lua_Lines_Name[] = "Lines";
 static int16 Lua_Lines_Length() { return LineList.size(); }
 
+char Lua_PlatformType_Name[] = "platform_type";
+char Lua_PlatformTypes_Name[] = "PlatformTypes";
+
 char Lua_Platform_Name[] = "platform";
 bool Lua_Platform_Valid(int16 index)
 {
 	return index >= 0 && index < dynamic_world->platform_count;
+}
+
+template<int flag_bit> int 
+Lua_Platform_Get_Static_Flag(lua_State* L)
+{
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	lua_pushboolean(L, platform->static_flags & (1 << flag_bit));
+	return 1;
+}
+
+template<int flag_bit> int
+Lua_Platform_Set_Static_Flag(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "platform: incorrect argument type");
+
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	bool flag = lua_toboolean(L, 2);
+	if (flag)
+		platform->static_flags |= (1 << flag_bit);
+	else
+		platform->static_flags &= ~(1 << flag_bit);
+
+	return 0;
 }
 
 static int Lua_Platform_Get_Active(lua_State *L)
@@ -326,20 +353,6 @@ static int Lua_Platform_Get_Floor_Height(lua_State *L)
 	return 1;
 }
 
-static int Lua_Platform_Get_Monster_Controllable(lua_State *L)
-{
-	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
-	lua_pushboolean(L, PLATFORM_IS_MONSTER_CONTROLLABLE(platform));
-	return 1;
-}
-
-static int Lua_Platform_Get_Player_Controllable(lua_State *L)
-{
-	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
-	lua_pushboolean(L, PLATFORM_IS_PLAYER_CONTROLLABLE(platform));
-	return 1;
-}
-
 static int Lua_Platform_Get_Polygon(lua_State *L)
 {
 	Lua_Polygon::Push(L, get_platform_data(Lua_Platform::Index(L, 1))->polygon_index);
@@ -352,6 +365,13 @@ static int Lua_Platform_Get_Speed(lua_State *L)
 	lua_pushnumber(L, (double) platform->speed / WORLD_ONE);
 	return 1;
 }
+
+static int Lua_Platform_Get_Type(lua_State* L)
+{
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	Lua_PlatformType::Push(L, platform->type);
+	return 1;
+}	
 
 extern bool set_platform_state(short, bool, short);
 
@@ -423,26 +443,6 @@ static int Lua_Platform_Set_Floor_Height(lua_State *L)
 	return 0;
 }	
 
-static int Lua_Platform_Set_Monster_Controllable(lua_State *L)
-{
-	if (!lua_isboolean(L, 2))
-		return luaL_error(L, "monster_controllable: incorrect argument type");
-	
-	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
-	SET_PLATFORM_IS_MONSTER_CONTROLLABLE(platform, lua_toboolean(L, 2));
-	return 0;
-}
-
-static int Lua_Platform_Set_Player_Controllable(lua_State *L)
-{
-	if (!lua_isboolean(L, 2))
-		return luaL_error(L, "monster_controllable: incorrect argument type");
-	
-	platform_data *platform = get_platform_data(Lua_Platform::Index(L, 1));
-	SET_PLATFORM_IS_PLAYER_CONTROLLABLE(platform, lua_toboolean(L, 2));
-	return 0;
-}
-
 static int Lua_Platform_Set_Speed(lua_State *L)
 {
 	if (!lua_isnumber(L, 2))
@@ -452,18 +452,29 @@ static int Lua_Platform_Set_Speed(lua_State *L)
 	platform->speed = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
 	return 0;
 }
+
+static int Lua_Platform_Set_Type(lua_State* L)
+{
+	platform_data* platform = get_platform_data(Lua_Platform::Index(L, 1));
+	platform->type = Lua_PlatformType::ToIndex(L, 2);
+	return 0;
+}
 	
 
 const luaL_reg Lua_Platform_Get[] = {
 	{"active", Lua_Platform_Get_Active},
 	{"ceiling_height", Lua_Platform_Get_Ceiling_Height},
 	{"contracting", Lua_Platform_Get_Contracting},
+	{"door", Lua_Platform_Get_Static_Flag<_platform_is_door>},
 	{"extending", Lua_Platform_Get_Extending},
 	{"floor_height", Lua_Platform_Get_Floor_Height},
-	{"monster_controllable", Lua_Platform_Get_Monster_Controllable},
-	{"player_controllable", Lua_Platform_Get_Player_Controllable},
+	{"locked", Lua_Platform_Get_Static_Flag<_platform_is_locked>},
+	{"monster_controllable", Lua_Platform_Get_Static_Flag<_platform_is_monster_controllable>},
+	{"player_controllable", Lua_Platform_Get_Static_Flag<_platform_is_player_controllable>},
 	{"polygon", Lua_Platform_Get_Polygon},
+	{"secret", Lua_Platform_Get_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Get_Speed},
+	{"type", Lua_Platform_Get_Type},
 	{0, 0}
 };
 
@@ -471,11 +482,15 @@ const luaL_reg Lua_Platform_Set[] = {
 	{"active", Lua_Platform_Set_Active},
 	{"ceiling_height", Lua_Platform_Set_Ceiling_Height},
 	{"contracting", Lua_Platform_Set_Contracting},
+	{"door", Lua_Platform_Set_Static_Flag<_platform_is_door>},
 	{"extending", Lua_Platform_Set_Extending},
 	{"floor_height", Lua_Platform_Set_Floor_Height},
-	{"monster_controllable", Lua_Platform_Set_Monster_Controllable},
-	{"player_controllable", Lua_Platform_Set_Player_Controllable},
+	{"locked", Lua_Platform_Set_Static_Flag<_platform_is_locked>},
+	{"monster_controllable", Lua_Platform_Set_Static_Flag<_platform_is_monster_controllable>},
+	{"player_controllable", Lua_Platform_Set_Static_Flag<_platform_is_player_controllable>},
+	{"secret", Lua_Platform_Set_Static_Flag<_platform_is_secret>},
 	{"speed", Lua_Platform_Set_Speed},
+	{"type", Lua_Platform_Set_Type},
 	{0, 0}
 };
 
@@ -2653,6 +2668,12 @@ int Lua_Map_register(lua_State *L)
 
 	Lua_Platforms::Register(L);
 	Lua_Platforms::Length = Lua_Platforms_Length;
+
+	Lua_PlatformType::Register(L, 0, 0, 0, Lua_PlatformType_Mnemonics);
+	Lua_PlatformType::Valid = Lua_PlatformType::ValidRange(NUMBER_OF_PLATFORM_TYPES);
+	
+	Lua_PlatformTypes::Register(L);
+	Lua_PlatformTypes::Length = Lua_PlatformTypes::ConstantLength(NUMBER_OF_PLATFORM_TYPES);
 
 	Lua_Polygon_Floor::Register(L, Lua_Polygon_Floor_Get, Lua_Polygon_Floor_Set);
 	Lua_Polygon_Floor::Valid = Lua_Polygon_Valid;

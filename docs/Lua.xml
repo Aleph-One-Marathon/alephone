@@ -790,6 +790,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>direction platform is moving or will move when active</description>
 	<type>boolean</type>
       </variable>
+      <variable name="door" version="SVN">
+	<description>platform is a door</description>
+	<type>boolean</type>
+      </variable>
       <variable name="extending">
 	<description>direction platform is moving or will move when active</description>
 	<type>boolean</type>
@@ -797,6 +801,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <variable name="floor_height">
 	<description>current floor height of platform</description>
 	<type>WU</type>
+      </variable>
+      <variable name="locked" version="SVN">
+	<description>platform is locked</description>
+	<type>boolean</type>
+	<note>this flag doesn't actually do anything</note>
       </variable>
       <variable name="monster_controllable">
 	<description>whether platform can be controlled by monsters</description>
@@ -810,9 +819,19 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon of this platform</description>
 	<type>polygon</type>
       </variable>
+      <variable name="secret" version="SVN">
+	<description>platform is secret</description>
+	<type>boolean</type>
+	<note>secret platforms aren't shown on the overhead map</note>
+      </variable>
       <variable name="speed">
 	<description>platform speed</description>
 	<type>speed</type>
+      </variable>
+      <variable name="type" version="SVN">
+	<description>type of this platform</description>
+	<type>platform_type</type>
+	<note>the only thing the engine uses type for is the platform's sound</note>
       </variable>
     </table>
     <table name="player">
@@ -2178,6 +2197,19 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="blue"/>
       </mnemonics>
     </enum>
+    <enum name="platform_type">
+      <mnemonics>
+	<mnemonic name="spht door"/>
+	<mnemonic name="spht split door"/>
+	<mnemonic name="locked spht door"/>
+	<mnemonic name="spht platform"/>
+	<mnemonic name="noisy spht platform"/>
+	<mnemonic name="heavy spht door"/>
+	<mnemonic name="pfhor door"/>
+	<mnemonic name="heavy spht platform"/>
+	<mnemonic name="pfhor platform"/>
+      </mnemonics>
+    </enum>
     <enum name="player_color">
       <mnemonics>
 	<mnemonic name="slate"/>
@@ -2611,6 +2643,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     <enum-accessor name="MonsterModes" contains="monster_mode" nice-name="Monster Modes"/>
     <enum-accessor name="MonsterTypes" contains="monster_type" nice-name="Monsters"/>
     <enum-accessor name="OverlayColors" contains="overlay_color" nice-name="Overlay Colors"/>
+    <enum-accessor name="PlatformTypes" contains="platform_type" nice-name="Platform Types"/>
     <enum-accessor name="PlayerColors" contains="player_color" nice-name="Player and Team Colors"/>
     <enum-accessor name="PolygonTypes" contains="polygon_type" nice-name="Polygons"/>
     <enum-accessor name="ProjectileTypes" contains="projectile_type" nice-name="Projectiles"/>

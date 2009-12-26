@@ -80,6 +80,12 @@ typedef L_Class<Lua_Platform_Name> Lua_Platform;
 extern char Lua_Platforms_Name[]; // "Platforms";
 typedef L_Container<Lua_Platforms_Name, Lua_Platform> Lua_Platforms;
 
+extern char Lua_PlatformType_Name[]; // "platform_type"
+typedef L_Enum<Lua_PlatformType_Name> Lua_PlatformType;
+
+extern char Lua_PlatformTypes_Name[]; // "PlatformTypes"
+typedef L_EnumContainer<Lua_PlatformTypes_Name, Lua_PlatformType> Lua_PlatformTypes;
+
 extern char Lua_Polygon_Name[]; // "polygon"
 typedef L_Class<Lua_Polygon_Name> Lua_Polygon;
 

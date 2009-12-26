@@ -158,6 +158,7 @@
 <li><a href="#MonsterModes">Monster Modes</a></li>
 <li><a href="#MonsterTypes">Monsters</a></li>
 <li><a href="#OverlayColors">Overlay Colors</a></li>
+<li><a href="#PlatformTypes">Platform Types</a></li>
 <li><a href="#PlayerColors">Player and Team Colors</a></li>
 <li><a href="#PolygonTypes">Polygons</a></li>
 <li><a href="#ProjectileTypes">Projectiles</a></li>
@@ -873,11 +874,22 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .contracting</dt>
 <dd><p class="description">direction platform is moving or will move when active</p></dd>
       <dt>
+    .door <span class="version">SVN</span>
+</dt>
+<dd><p class="description">platform is a door</p></dd>
+      <dt>
     .extending</dt>
 <dd><p class="description">direction platform is moving or will move when active</p></dd>
       <dt>
     .floor_height</dt>
 <dd><p class="description">current floor height of platform</p></dd>
+      <dt>
+    .locked <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">platform is locked</p>
+<p class="note">this flag doesn't actually do anything </p>
+</dd>
       <dt>
     .monster_controllable</dt>
 <dd><p class="description">whether platform can be controlled by monsters</p></dd>
@@ -889,8 +901,22 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">polygon of this platform</p></dd>
       <dt>
+    .secret <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">platform is secret</p>
+<p class="note">secret platforms aren't shown on the overhead map </p>
+</dd>
+      <dt>
     .speed</dt>
 <dd><p class="description">platform speed</p></dd>
+      <dt>
+    .type <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">type of this platform</p>
+<p class="note">the only thing the engine uses type for is the platform's sound </p>
+</dd>
     </dl></dd>
 </dl>
 <h3>
@@ -2311,6 +2337,31 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"yellow"</li>
 <li>"dark red"</li>
 <li>"blue"</li>
+</ul>
+<h3>
+<a name="PlatformTypes"></a>Platform Types</h3>
+<dl>
+<dt># PlatformTypes</dt>
+<dt>PlatformTypes()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"spht door"</li>
+<li>"spht split door"</li>
+<li>"locked spht door"</li>
+</div>
+<div class="mnemonics-column">
+<li>"spht platform"</li>
+<li>"noisy spht platform"</li>
+<li>"heavy spht door"</li>
+</div>
+<div class="mnemonics-column">
+<li>"pfhor door"</li>
+<li>"heavy spht platform"</li>
+<li>"pfhor platform"</li>
+</div>
+<div class="end-mnemonics"></div>
 </ul>
 <h3>
 <a name="PlayerColors"></a>Player and Team Colors</h3>

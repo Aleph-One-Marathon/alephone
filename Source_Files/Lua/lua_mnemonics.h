@@ -409,7 +409,20 @@ const lang_def Lua_OverlayColor_Mnemonics[] = {
 	{"dark red", 6},
 	{"blue", 7},
 	{0, 0}
-};		
+};
+
+const lang_def Lua_PlatformType_Mnemonics[] = {
+	{"spht door", 0},
+	{"spht split door", 1},
+	{"locked spht door", 2},
+	{"spht platform", 3},
+	{"noisy spht platform", 4},
+	{"heavy spht door", 5},
+	{"pfhor door", 6},
+	{"heavy spht platform", 7},
+	{"pfhor platform", 8},
+	{0, 0}
+};
 
 const lang_def Lua_PlayerColor_Mnemonics[] = {
 	{"slate", 0},
