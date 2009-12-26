@@ -23,6 +23,7 @@
 /**
  * 4/17/04 - IMG_SavePNG & IMG_SavePNG_RW - Philip D. Bober
  * 11/08/2004 - Compr fix, levels -1,1-7 now work - Tyler Montbriand
+ * 2009-12-26 - Add support for writing metadata - Gregory Smith
  */
 #include <stdlib.h>
 #include <SDL/SDL.h>
@@ -30,7 +31,7 @@
 #include <png.h>
 #include "IMG_savepng.h"
 
-int IMG_SavePNG(const char *file, SDL_Surface *surf,int compression){
+int IMG_SavePNG(const char *file, SDL_Surface *surf,int compression, struct IMG_PNG_text* text, int num_text){
 	SDL_RWops *fp;
 	int ret;
 	
@@ -40,7 +41,7 @@ int IMG_SavePNG(const char *file, SDL_Surface *surf,int compression){
 		return (-1);
 	}
 
-	ret=IMG_SavePNG_RW(fp,surf,compression);
+	ret=IMG_SavePNG_RW(fp,surf,compression,text,num_text);
 	SDL_RWclose(fp);
 	return ret;
 }
@@ -50,7 +51,7 @@ static void png_write_data(png_structp png_ptr,png_bytep data, png_size_t length
 	SDL_RWwrite(rp,data,1,length);
 }
 
-int IMG_SavePNG_RW(SDL_RWops *src, SDL_Surface *surf,int compression){
+int IMG_SavePNG_RW(SDL_RWops *src, SDL_Surface *surf,int compression, struct IMG_PNG_text* text, int num_text){
 	png_structp png_ptr;
 	png_infop info_ptr;
 	SDL_PixelFormat *fmt=NULL;
@@ -147,6 +148,20 @@ int IMG_SavePNG_RW(SDL_RWops *src, SDL_Surface *surf,int compression){
 				PNG_FILTER_TYPE_DEFAULT);
 		}
 	}
+
+	if (num_text) {
+		int i;
+		png_text* converted_text = (png_text*) malloc(num_text * sizeof(png_text));
+		for (i = 0; i < num_text; ++i) {
+			converted_text[i].compression = PNG_TEXT_COMPRESSION_NONE;
+			converted_text[i].key = text[i].key;
+			converted_text[i].text = text[i].value;
+		}
+
+		png_set_text(png_ptr, info_ptr, converted_text, num_text);
+		free(converted_text);
+	}
+
 	png_write_info(png_ptr, info_ptr);
 
 	if (fmt->BitsPerPixel==8) { /* Paletted */

@@ -63,6 +63,9 @@
 #include <string.h>
 #include <ctype.h>
 
+#include <sstream>
+#include <boost/lexical_cast.hpp>
+
 #include "XML_Loader_SDL.h"
 #include "resource_manager.h"
 #include "sdl_dialogs.h"
@@ -75,6 +78,7 @@
 #include "confpaths.h"
 #endif
 
+#include <ctime>
 #include <exception>
 #include <algorithm>
 #include <vector>
@@ -124,6 +128,7 @@ DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
 DirectorySpecifier preferences_dir;   // Directory for preferences
 DirectorySpecifier saved_games_dir;   // Directory for saved games
 DirectorySpecifier recordings_dir;    // Directory for recordings (except film buffer, which is stored in local_data_dir)
+DirectorySpecifier screenshots_dir;   // Directory for screenshots
 std::string arg_directory;
 
 // Command-line options
@@ -399,11 +404,13 @@ static void initialize_application(void)
 	preferences_dir = local_data_dir;
 	saved_games_dir = local_data_dir + "Saved Games";
 	recordings_dir = local_data_dir + "Recordings";
+	screenshots_dir = local_data_dir + "Screenshots";
 
 	// Create local directories
 	local_data_dir.CreateDirectory();
 	saved_games_dir.CreateDirectory();
 	recordings_dir.CreateDirectory();
+	screenshots_dir.CreateDirectory();
 #if defined(HAVE_BUNDLE_NAME)
 	DirectorySpecifier local_mml_dir = bundle_data_dir + "MML";
 #else
@@ -1213,6 +1220,24 @@ static void process_event(const SDL_Event &event)
 	
 }
 
+#ifdef HAVE_PNG
+extern view_data *world_view;
+#endif
+
+std::string to_alnum(const std::string& input)
+{
+	std::string output;
+	for (std::string::const_iterator it = input.begin(); it != input.end(); ++it)
+	{
+		if (isalnum(*it))
+		{
+			output += *it;
+		}
+	}
+
+	return output;
+}
+
 void dump_screen(void)
 {
 	// Find suitable file name
@@ -1220,20 +1245,84 @@ void dump_screen(void)
 	int i = 0;
 	do {
 		char name[256];
+		const char* suffix;
 #ifdef HAVE_PNG
-		sprintf(name, "Screenshot_%04d.png", i);
+		suffix = "png";
 #else
-		sprintf(name, "Screenshot_%04d.bmp", i);
+		suffix = "bmp";
 #endif
-		file = local_data_dir + name;
+		if (get_game_state() == _game_in_progress)
+		{
+			sprintf(name, "%s_%04d.%s", to_alnum(static_world->level_name).c_str(), i, suffix);
+		}
+		else
+		{
+			sprintf(name, "Screenshot_%04d.%s", i, suffix);
+		}
+
+		file = screenshots_dir + name;
 		i++;
 	} while (file.Exists());
+
+#ifdef HAVE_PNG
+	// build some nice metadata
+	std::vector<IMG_PNG_text> texts;
+	std::map<std::string, std::string> metadata;
+
+	metadata["Source"] = string("Aleph One ") + A1_DISPLAY_VERSION + " (" + A1_DISPLAY_PLATFORM + ")";
+
+	time_t rawtime;
+	time(&rawtime);
+	
+	char time_string[32];
+	strftime(time_string, 32,"%d %b %Y %H:%M:%S +0000", gmtime(&rawtime));
+	metadata["Creation Time"] = time_string;
+
+	if (get_game_state() == _game_in_progress)
+	{
+		const float FLOAT_WORLD_ONE = float(WORLD_ONE);
+		const float AngleConvert = 360/float(FULL_CIRCLE);
+
+		metadata["Level"] = static_world->level_name;
+
+		char map_file_name[256];
+		FileSpecifier fs = environment_preferences->map_file;
+		fs.GetName(map_file_name);
+		metadata["Map File"] = map_file_name;
+
+		if (Scenario::instance()->GetName().size())
+		{
+			metadata["Scenario"] = Scenario::instance()->GetName();
+		}
+
+		metadata["Polygon"] = boost::lexical_cast<std::string>(world_view->origin_polygon_index);
+		metadata["X"] = boost::lexical_cast<std::string>(world_view->origin.x / FLOAT_WORLD_ONE);
+		metadata["Y"] = boost::lexical_cast<std::string>(world_view->origin.y / FLOAT_WORLD_ONE);
+		metadata["Z"] = boost::lexical_cast<std::string>(world_view->origin.z / FLOAT_WORLD_ONE);
+		metadata["Yaw"] = boost::lexical_cast<std::string>(world_view->yaw * AngleConvert);
+
+
+		short pitch = world_view->pitch;
+		if (pitch > HALF_CIRCLE) pitch -= HALF_CIRCLE;
+		metadata["Pitch"] = boost::lexical_cast<std::string>(pitch * AngleConvert);
+	}
+
+	for (std::map<std::string, std::string>::const_iterator it = metadata.begin(); it != metadata.end(); ++it)
+	{
+		IMG_PNG_text text;
+		text.key = const_cast<char*>(it->first.c_str());
+		text.value = const_cast<char*>(it->second.c_str());
+		texts.push_back(text);
+	}
+
+	IMG_PNG_text* textp = texts.size() ? &texts[0] : 0;
+#endif
 
 	// Without OpenGL, dumping the screen is easy
 	SDL_Surface *video = SDL_GetVideoSurface();
 	if (!(video->flags & SDL_OPENGL)) {
 #ifdef HAVE_PNG
-		IMG_SavePNG(file.GetPath(), SDL_GetVideoSurface(), IMG_COMPRESS_DEFAULT);
+		IMG_SavePNG(file.GetPath(), SDL_GetVideoSurface(), IMG_COMPRESS_DEFAULT, textp, texts.size());
 #else
 		SDL_SaveBMP(SDL_GetVideoSurface(), file.GetPath());
 #endif
@@ -1268,7 +1357,7 @@ void dump_screen(void)
 
 	// Save surface
 #ifdef HAVE_PNG
-        IMG_SavePNG(file.GetPath(), t, IMG_COMPRESS_DEFAULT);
+        IMG_SavePNG(file.GetPath(), t, IMG_COMPRESS_DEFAULT, textp, texts.size());
 #else
 	SDL_SaveBMP(t, file.GetPath());
 #endif

@@ -18,6 +18,8 @@
   3. This notice may not be removed or altered from any source distribution.
 
   "Philip D. Bober" <wildfire1138@mchsi.com>
+
+  Keyword support added 12-26-2009 by Gregory Smith
  */
 #ifndef __IMG_SAVETOPNG_H__
 #define __IMG_SAVETOPNG_H__
@@ -32,20 +34,30 @@ extern "C" {
 #define IMG_COMPRESS_MAX 9
 #define IMG_COMPRESS_DEFAULT -1
 
+struct IMG_PNG_text
+{
+	char* key;
+	char* value;
+};
+
 /**
  * Takes a filename, a surface to save, and a compression level.  The
  * compression level can be 0(min) through 9(max), or -1(default).
  */
 DECLSPEC int SDLCALL    IMG_SavePNG(const char  *file,
                                     SDL_Surface *surf,
-                                    int          compression);
+                                    int          compression,
+				    struct IMG_PNG_text* text,
+				    int num_text);
 /**
  * Takes a SDL_RWops pointer, a surface to save, and a compression level.
  * compression can be 0(min) through 9(max), or -1(default).
  */
 DECLSPEC int SDLCALL IMG_SavePNG_RW(SDL_RWops   *src,
                                     SDL_Surface *surf,
-                                    int          compression);
+                                    int          compression,
+				    struct IMG_PNG_text* text,
+				    int num_text);
 #ifdef __cplusplus
 }
 #endif
