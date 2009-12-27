@@ -212,15 +212,8 @@ void RenderRasterize_Shader::render_tree() {
 
 void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep)
 {
-	clipping_window_data *left_win = node->clipping_windows;
-	if (!left_win)
+	if (!node->clipping_windows)
 		return;
-	
-	clipping_window_data *right_win = left_win;
-	while (right_win && right_win->next_window)
-		right_win = right_win->next_window;
-
-	GLdouble clip[] = { 0., 0., 0., 0. };
 	
 	world_point3d cam_pos = current_player->camera_location;
 	short cam_poly;
@@ -228,31 +221,36 @@ void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiq
 	angle cam_pitch;
 	ChaseCam_GetPosition(cam_pos, cam_poly, cam_yaw, cam_pitch);
 	
-	// recenter to player's orientation temporarily
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glTranslatef(cam_pos.x, cam_pos.y, 0.);
-	glRotatef(cam_yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
-	
-	glRotatef(-1., 0., 0., 1.); // give an extra degree to avoid artifacts at edges
-	clip[0] = left_win->left.i;
-	clip[1] = left_win->left.j;
-	glEnable(GL_CLIP_PLANE0);
-	glClipPlane(GL_CLIP_PLANE0, clip);
-	
- 	glRotatef(2., 0., 0., 1.); // breathing room for right-hand clip
-	clip[0] = right_win->right.i;
-	clip[1] = right_win->right.j;
-	glEnable(GL_CLIP_PLANE1);
-	glClipPlane(GL_CLIP_PLANE1, clip);
-	
-	glPopMatrix();
-	
-	// parasitic object detection
-	objectCount = 0;
-	objectY = 0;
-	
-	RenderRasterizerClass::render_node(node, SeeThruLiquids, renderStep);
+	for (clipping_window_data *win = node->clipping_windows; win; win = win->next_window)
+	{
+		GLdouble clip[] = { 0., 0., 0., 0. };
+		
+		// recenter to player's orientation temporarily
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glTranslatef(cam_pos.x, cam_pos.y, 0.);
+		glRotatef(cam_yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
+		
+		glRotatef(-.01, 0., 0., 1.); // leave some excess to avoid artifacts at edges
+		clip[0] = win->left.i;
+		clip[1] = win->left.j;
+		glEnable(GL_CLIP_PLANE0);
+		glClipPlane(GL_CLIP_PLANE0, clip);
+		
+		glRotatef(0.02, 0., 0., 1.); // breathing room for right-hand clip
+		clip[0] = win->right.i;
+		clip[1] = win->right.j;
+		glEnable(GL_CLIP_PLANE1);
+		glClipPlane(GL_CLIP_PLANE1, clip);
+		
+		glPopMatrix();
+		
+		// parasitic object detection
+		objectCount = 0;
+		objectY = 0;
+		
+		RenderRasterizerClass::render_node(node, SeeThruLiquids, renderStep);
+	}
 	
 	// turn off clipping planes
 	glDisable(GL_CLIP_PLANE0);
