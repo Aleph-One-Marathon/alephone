@@ -152,6 +152,9 @@
 <li><a href="#FadeTypes">Faders</a></li>
 <li><a href="#GameTypes">Game Types</a></li>
 <li><a href="#ItemTypes">Items</a></li>
+<li><a href="#LightFunctions">Light Functions</a></li>
+<li><a href="#LightPresets">Light Presets</a></li>
+<li><a href="#LightStates">Light States</a></li>
 <li><a href="#MediaTypes">Media</a></li>
 <li><a href="#MonsterActions">Monster Actions</a></li>
 <li><a href="#MonsterClasses">Monster Classes</a></li>
@@ -664,11 +667,54 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">number of lights in level</p></dd>
 <dt>Lights()</dt>
 <dd><p class="description">iterates through all lights in the level</p></dd>
+<dt>Lights.new( [light_preset])</dt>
+<dd><p class="description">returns a new light</p></dd>
 <dt>Lights[index]</dt>
 <dd><dl>
       <dt>
     .active</dt>
 <dd><p class="description">whether light is active</p></dd>
+      <dt>
+    .tag <span class="version">SVN</span>
+</dt>
+<dd><p class="description">tag of light</p></dd>
+      <dt>
+    .initial_phase <span class="version">SVN</span>
+</dt>
+<dd><p class="description">phase the light starts with</p></dd>
+      <dt>
+    .initially_active <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether the light was initially active</p></dd>
+      <dt>
+    .intensity<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">current intensity for this light (range: 0-1)</p></dd>
+      <dt>
+    .states[light_type]
+  </dt>
+<dd><dl>
+<dt>
+    .delta_intensity <span class="version">SVN</span>
+</dt>
+<dd><p class="description">random intensity change for this state</p></dd>
+<dt>
+    .delta_period <span class="version">SVN</span>
+</dt>
+<dd><p class="description">random period change for this state</p></dd>
+<dt>
+    .intensity <span class="version">SVN</span>
+</dt>
+<dd><p class="description">intensity for this state</p></dd>
+<dt>
+    .light_function <span class="version">SVN</span>
+</dt>
+<dd><p class="description">light function for this state</p></dd>
+<dt>
+    .period <span class="version">SVN</span>
+</dt>
+<dd><p class="description">period for this state</p></dd>
+</dl></dd>
     </dl></dd>
 </dl>
 <h3>
@@ -2079,6 +2125,46 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"smg ammo"</li>
 </div>
 <div class="end-mnemonics"></div>
+</ul>
+<h3>
+<a name="LightFunctions"></a>Light Functions</h3>
+<dl>
+<dt># LightFunctions</dt>
+<dt>LightFunctions()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"constant"</li>
+<li>"linear"</li>
+<li>"smooth"</li>
+<li>"flicker"</li>
+</ul>
+<h3>
+<a name="LightPresets"></a>Light Presets</h3>
+<dl>
+<dt># LightPresets</dt>
+<dt>LightPresets()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"normal"</li>
+<li>"strobe"</li>
+<li>"media"</li>
+</ul>
+<h3>
+<a name="LightStates"></a>Light States</h3>
+<dl>
+<dt># LightStates</dt>
+<dt>LightStates()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<li>"becoming active"</li>
+<li>"primary active"</li>
+<li>"secondary active"</li>
+<li>"becoming inactive"</li>
+<li>"primary inactive"</li>
+<li>"secondary inactive"</li>
 </ul>
 <h3>
 <a name="MediaTypes"></a>Media</h3>
