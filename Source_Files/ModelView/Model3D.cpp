@@ -170,6 +170,10 @@ void Model3D::CalculateTangents()
 			   (t2 * z1 - t1 * z2) * r);
 		vec3 B((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
 			   (s1 * z2 - s2 * z1) * r);
+		if ((s1 * t2 - s2 * t1) == 0.0) {
+			T = (v3 - v1).norm();
+			B = (v2 - v1).norm();
+		}
 		
 		vec3 N = (v3-v1).cross(v2-v1);
 		if (!generate_normals) {
