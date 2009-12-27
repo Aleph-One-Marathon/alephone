@@ -50,7 +50,7 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(yfov, xfov / yfov, 16, 1024*1024);
+	gluPerspective(yfov, xfov / yfov, 128, 128*1024);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadMatrixd(kViewBaseMatrix);
 	double pitch = view.pitch * 360.0 / float(NUMBER_OF_ANGLES);
