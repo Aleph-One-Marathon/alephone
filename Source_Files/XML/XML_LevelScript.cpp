@@ -99,8 +99,9 @@ struct LevelScriptCommand
 	short T, L, B, R;
 	rgb_color Colors[2];
 	bool Stretch;
+	bool Scale;
 	
-	LevelScriptCommand(): RsrcID(UnsetResource), Size(NONE), L(0), T(0), R(0), B(0), Stretch(true) {
+	LevelScriptCommand(): RsrcID(UnsetResource), Size(NONE), L(0), T(0), R(0), B(0), Stretch(true), Scale(true) {
 		memset(&Colors[0], 0, sizeof(rgb_color));
 		memset(&Colors[1], 0xff, sizeof(rgb_color));
 	}
@@ -447,12 +448,12 @@ void GeneralRunScript(int LevelIndex)
 			{
 				if (Cmd.L || Cmd.T || Cmd.R || Cmd.B)
 				{
-					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch, Cmd.L, Cmd.T, Cmd.R - Cmd.L, Cmd.B - Cmd.T);
+					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch, Cmd.Scale, Cmd.L, Cmd.T, Cmd.R - Cmd.L, Cmd.B - Cmd.T);
 					OGL_LoadScreen::instance()->Colors()[0] = Cmd.Colors[0];
 					OGL_LoadScreen::instance()->Colors()[1] = Cmd.Colors[1];
 				}
 				else 
-					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch);
+					OGL_LoadScreen::instance()->Set(Cmd.FileSpec, Cmd.Stretch, Cmd.Scale);
 			}
 		}
 #endif
@@ -616,6 +617,10 @@ bool XML_LSCommandParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag, "stretch"))
 	{
 		return ReadBooleanValueAsBool(Value, Cmd.Stretch);
+	}
+	else if (StringsEqual(Tag, "scale"))
+	{
+		return ReadBooleanValueAsBool(Value, Cmd.Scale);
 	}
 	else if (StringsEqual(Tag,"size"))
 	{

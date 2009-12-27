@@ -42,8 +42,8 @@ public:
 	void Stop();
 	void Progress(const int percent);
 
-	void Set(const vector<char> Path, bool Stretch);
-	void Set(const vector<char> Path, bool Stretch, short X, short Y, short W, short H);
+	void Set(const vector<char> Path, bool Stretch, bool Scale);
+	void Set(const vector<char> Path, bool Stretch, bool Scale, short X, short Y, short W, short H);
 	void Clear();
 
 	bool Use() { return use; }
@@ -62,6 +62,7 @@ OGL_LoadScreen() : x(0), y(0), w(0), h(0), use(false), useProgress(false), perce
 	SDL_Rect m_dst;
 	double x_offset, y_offset, x_scale, y_scale;
 
+	bool scale;
 	bool stretch;
 
 	bool use;

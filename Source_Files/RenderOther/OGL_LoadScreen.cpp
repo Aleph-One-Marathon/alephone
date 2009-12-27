@@ -65,20 +65,28 @@ bool OGL_LoadScreen::Start()
 	int imageWidth = static_cast<int>(image.GetWidth() * image.GetVScale());
 	int imageHeight = static_cast<int>(image.GetHeight() * image.GetUScale());
 
-	if (stretch)
+	if (scale)
 	{
-		m_dst.w = screenWidth;
-		m_dst.h = screenHeight;
+		if (stretch)
+		{
+			m_dst.w = screenWidth;
+			m_dst.h = screenHeight;
+		}
+		else if (imageWidth / imageHeight > screenWidth / screenHeight) 
+		{
+			m_dst.w = screenWidth;
+			m_dst.h = imageHeight * screenWidth / imageWidth;
+		} 
+		else 
+		{
+			m_dst.w = imageWidth * screenHeight / imageHeight;
+			m_dst.h = screenHeight;
+		}
 	}
-	else if (imageWidth / imageHeight > screenWidth / screenHeight) 
+	else
 	{
-		m_dst.w = screenWidth;
-		m_dst.h = imageHeight * screenWidth / imageWidth;
-	} 
-	else 
-	{
-		m_dst.w = imageWidth * screenHeight / imageHeight;
-		m_dst.h = screenHeight;
+		m_dst.w = imageWidth;
+		m_dst.h = imageHeight;
 	}
 	m_dst.x = (screenWidth - m_dst.w) / 2;
 	m_dst.y = (screenHeight - m_dst.h) / 2;
@@ -157,13 +165,13 @@ void OGL_LoadScreen::Progress(const int progress)
 	
 }
 
-void OGL_LoadScreen::Set(const vector<char> Path, bool Stretch)
+void OGL_LoadScreen::Set(const vector<char> Path, bool Stretch, bool Scale)
 {
-	OGL_LoadScreen::Set(Path, Stretch, 0, 0, 0, 0);
+	OGL_LoadScreen::Set(Path, Stretch, Scale, 0, 0, 0, 0);
 	useProgress = false;
 }
 
-void OGL_LoadScreen::Set(const vector<char> Path, bool Stretch, short X, short Y, short W, short H)
+void OGL_LoadScreen::Set(const vector<char> Path, bool Stretch, bool Scale, short X, short Y, short W, short H)
 {
 	path = Path;
 	x = X;
@@ -171,6 +179,7 @@ void OGL_LoadScreen::Set(const vector<char> Path, bool Stretch, short X, short Y
 	w = W;
 	h = H;
 	stretch = Stretch;
+	scale = Scale;
 
 	image.Clear();
 	use = true;
