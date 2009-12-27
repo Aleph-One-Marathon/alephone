@@ -2114,6 +2114,222 @@ const luaL_reg Lua_Sides_Methods[] = {
 	{0, 0}
 };
 
+char Lua_LightFunction_Name[] = "light_function";
+typedef L_Enum<Lua_LightFunction_Name> Lua_LightFunction;
+
+char Lua_LightFunctions_Name[] = "LightFunctions";
+typedef L_EnumContainer<Lua_LightFunctions_Name, Lua_LightFunction> Lua_LightFunctions;
+
+char Lua_LightPreset_Name[] = "light_preset";
+typedef L_Enum<Lua_LightPreset_Name> Lua_LightPreset;
+
+char Lua_LightPresets_Name[] = "LightPresets";
+typedef L_EnumContainer<Lua_LightPresets_Name, Lua_LightPreset> Lua_LightPresets;
+
+char Lua_LightState_Name[] = "light_state";
+typedef L_Enum<Lua_LightState_Name> Lua_LightState;
+
+char Lua_LightStates_Name[] = "LightStates";
+typedef L_EnumContainer<Lua_LightStates_Name, Lua_LightState> Lua_LightStates;
+
+char Lua_Light_State_Name[] = "light_state_subtable";
+
+class Lua_Light_State : public L_Class<Lua_Light_State_Name>
+{
+public:
+	int16 m_light_index;
+	static Lua_Light_State* Push(lua_State* L, int16 light_index, int16 index);
+	static int16 LightIndex(lua_State* L, int index);
+};
+
+Lua_Light_State* Lua_Light_State::Push(lua_State* L, int16 light_index, int16 index)
+{
+	Lua_Light_State* t = 0;
+
+	if (!Lua_Light_State::Valid(index) || !Lua_Light::Valid(light_index))
+	{
+		lua_pushnil(L);
+		return 0;
+	}
+
+	t = static_cast<Lua_Light_State*>(lua_newuserdata(L, sizeof(Lua_Light_State)));
+	luaL_getmetatable(L, Lua_Light_State_Name);
+	lua_setmetatable(L, -2);
+	t->m_index = index;
+	t->m_light_index = light_index;
+
+	return t;
+}
+
+int16 Lua_Light_State::LightIndex(lua_State* L, int index)
+{
+	Lua_Light_State* t = static_cast<Lua_Light_State*>(lua_touserdata(L, index));
+	if (!t) luaL_typerror(L, index, Lua_Light_State_Name);
+	return t->m_light_index;
+}
+
+static lighting_function_specification* get_light_function_spec(int light_index, int state)
+{
+	light_data* light = get_light_data(light_index);
+	switch (state)
+	{
+	case _light_becoming_active:
+		return &light->static_data.becoming_active;
+	case _light_primary_active:
+		return &light->static_data.primary_active;
+	case _light_secondary_active:
+		return &light->static_data.secondary_active;
+	case _light_becoming_inactive:
+		return &light->static_data.becoming_inactive;
+	case _light_primary_inactive:
+		return &light->static_data.primary_inactive;
+	case _light_secondary_inactive:
+		return &light->static_data.secondary_inactive;
+	default:
+		assert(false);
+	}
+	
+	return 0;
+}
+
+static int Lua_Light_State_Get_Delta_Intensity(lua_State* L)
+{
+	int light_index = Lua_Light_State::LightIndex(L, 1);
+	lighting_function_specification* spec = get_light_function_spec(light_index, Lua_Light_State::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(spec->delta_intensity) / FIXED_ONE);
+	return 1;
+}
+
+static int Lua_Light_State_Get_Delta_Period(lua_State* L)
+{
+	int light_index = Lua_Light_State::LightIndex(L, 1);
+	lighting_function_specification* spec = get_light_function_spec(light_index, Lua_Light_State::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(spec->delta_period));
+	return 1;
+}
+
+static int Lua_Light_State_Get_Function(lua_State* L)
+{
+	int light_index = Lua_Light_State::LightIndex(L, 1);
+	lighting_function_specification* spec = get_light_function_spec(light_index, Lua_Light_State::Index(L, 1));
+	Lua_LightFunction::Push(L, spec->function);
+	return 1;
+}
+
+static int Lua_Light_State_Get_Intensity(lua_State* L)
+{
+	int light_index = Lua_Light_State::LightIndex(L, 1);
+	lighting_function_specification* spec = get_light_function_spec(light_index, Lua_Light_State::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(spec->intensity) / FIXED_ONE);
+	return 1;
+}
+
+static int Lua_Light_State_Get_Period(lua_State* L)
+{
+	int light_index = Lua_Light_State::LightIndex(L, 1);
+	lighting_function_specification* spec = get_light_function_spec(light_index, Lua_Light_State::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(spec->period));
+	return 1;
+}
+
+
+const luaL_reg Lua_Light_State_Get[] = {
+	{"delta_intensity", Lua_Light_State_Get_Delta_Intensity},
+	{"delta_period", Lua_Light_State_Get_Delta_Period},
+	{"intensity", Lua_Light_State_Get_Intensity},
+	{"light_function", Lua_Light_State_Get_Function},
+	{"period", Lua_Light_State_Get_Period},
+	{0, 0}
+};
+
+static int Lua_Light_State_Set_Delta_Intensity(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "delta_intensity: incorrect argument type");
+
+	lighting_function_specification* spec = get_light_function_spec(Lua_Light_State::LightIndex(L, 1), Lua_Light_State::Index(L, 1));
+	spec->delta_intensity = static_cast<int16>(lua_tonumber(L, 2) * FIXED_ONE);
+	return 1;
+}
+
+static int Lua_Light_State_Set_Delta_Period(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "delta_period: incorrect argument type");
+	
+	int16 period = lua_tonumber(L, 2);
+	if (period < 0)
+		return luaL_error(L, "delta_period: must be nonnegative");
+
+	lighting_function_specification* spec = get_light_function_spec(Lua_Light_State::LightIndex(L, 1), Lua_Light_State::Index(L, 1));
+	spec->delta_period = period;
+	return 1;
+}
+
+static int Lua_Light_State_Set_Function(lua_State* L)
+{
+	int16 function = Lua_LightFunction::ToIndex(L, 2);
+	lighting_function_specification* spec = get_light_function_spec(Lua_Light_State::LightIndex(L, 1), Lua_Light_State::Index(L, 1));
+	spec->function = function;
+	return 1;
+}
+
+static int Lua_Light_State_Set_Intensity(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "intensity: incorrect argument type");
+
+	lighting_function_specification* spec = get_light_function_spec(Lua_Light_State::LightIndex(L, 1), Lua_Light_State::Index(L, 1));
+	spec->intensity = static_cast<int16>(lua_tonumber(L, 2) * FIXED_ONE);
+	return 1;
+}
+
+static int Lua_Light_State_Set_Period(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "period: incorrect argument type");
+	
+	int16 period = lua_tonumber(L, 2);
+	if (period < 0)
+		return luaL_error(L, "period: must be nonnegative");
+
+	lighting_function_specification* spec = get_light_function_spec(Lua_Light_State::LightIndex(L, 1), Lua_Light_State::Index(L, 1));
+	spec->period = period;
+	return 1;
+}
+
+const luaL_reg Lua_Light_State_Set[] = {
+	{"delta_intensity", Lua_Light_State_Set_Delta_Intensity},
+	{"delta_period", Lua_Light_State_Set_Delta_Period},
+	{"intensity", Lua_Light_State_Set_Intensity},
+	{"light_function", Lua_Light_State_Set_Function},
+	{"period", Lua_Light_State_Set_Period},
+	{0, 0}
+};
+
+char Lua_Light_States_Name[] = "light_states";
+typedef L_Class<Lua_Light_States_Name> Lua_Light_States;
+
+static int Lua_Light_States_Get(lua_State* L)
+{
+	int light_index = Lua_Light_States::Index(L, 1);
+	int state_index = Lua_LightState::ToIndex(L, 2);
+	Lua_Light_State::Push(L, light_index, state_index);
+	return 1;
+}
+
+static int Lua_Light_States_Length(lua_State* L)
+{
+	lua_pushnumber(L, static_cast<int16>(_light_secondary_inactive) + 1);
+	return 1;
+}
+
+const luaL_reg Lua_Light_States_Metatable[] = {
+	{"__index", Lua_Light_States_Get},
+	{"__len", Lua_Light_States_Length},
+	{0, 0}
+};
+
 char Lua_Light_Name[] = "light";
 
 static int Lua_Light_Get_Active(lua_State *L)
@@ -2121,6 +2337,49 @@ static int Lua_Light_Get_Active(lua_State *L)
 	lua_pushboolean(L, get_light_status(Lua_Light::Index(L, 1)));
 	return 1;
 }
+
+static int Lua_Light_Get_Intensity(lua_State* L)
+{
+	lua_pushnumber(L, static_cast<double>(get_light_intensity(Lua_Light::Index(L, 1))) / FIXED_ONE);
+	return 1;
+}
+
+static int Lua_Light_Get_Initial_Phase(lua_State* L)
+{
+	light_data* data = get_light_data(Lua_Light::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(data->static_data.phase));
+	return 1;
+}
+
+static int Lua_Light_Get_Initially_Active(lua_State* L)
+{
+	light_data* data = get_light_data(Lua_Light::Index(L, 1));
+	lua_pushboolean(L, data->static_data.flags & _light_is_initially_active);
+	return 1;
+}
+
+static int Lua_Light_Get_States(lua_State *L)
+{
+	Lua_Light_States::Push(L, Lua_Light::Index(L, 1));
+	return 1;
+}
+
+static int Lua_Light_Get_Tag(lua_State* L)
+{
+	light_data* data = get_light_data(Lua_Light::Index(L, 1));
+	Lua_Tag::Push(L, data->static_data.tag);
+	return 1;
+}
+
+const luaL_reg Lua_Light_Get[] = {
+	{"active", Lua_Light_Get_Active},
+	{"initial_phase", Lua_Light_Get_Initial_Phase},
+	{"initially_active", Lua_Light_Get_Initially_Active},
+	{"intensity", Lua_Light_Get_Intensity},
+	{"states", Lua_Light_Get_States},
+	{"tag", Lua_Light_Get_Tag},
+	{0, 0}
+};
 
 static int Lua_Light_Set_Active(lua_State *L)
 {
@@ -2135,13 +2394,60 @@ static int Lua_Light_Set_Active(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Light_Get[] = {
-	{"active", Lua_Light_Get_Active},
-	{0, 0}
-};
+static int Lua_Light_Set_Initially_Active(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		return luaL_error(L, "initially_active: incorrect argument type");
+	
+	light_data* data = get_light_data(Lua_Light::Index(L, 1));
+	bool active = lua_toboolean(L, 2);
+	if (active) 
+	{
+		data->static_data.flags |= _light_is_initially_active;
+	} 
+	else
+	{
+		data->static_data.flags &= ~_light_is_initially_active;
+	}
+
+	return 0;
+}
+
+static int Lua_Light_Set_Phase(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "phase: incorrect argument type");
+
+	light_data* data = get_light_data(Lua_Light::Index(L, 1));
+	data->static_data.phase = static_cast<int16>(lua_tonumber(L, 2));
+	return 0;
+}
+
+static int Lua_Light_Set_Tag(lua_State* L)
+{
+	int16 tag = NONE;
+	if (lua_isnumber(L, 2))
+	{
+		tag = static_cast<int16>(lua_tonumber(L, 2));
+		if (!Lua_Tag::Valid(tag))
+			return luaL_error(L, "tag: invalid tag index");
+	}
+	else if (Lua_Tag::Is(L, 2))
+	{
+		tag = Lua_Tag::Index(L, 2);
+	} 
+	else return luaL_error(L, "tag: incorrect argument type");
+
+	light_data* data = get_light_data(Lua_Light::Index(L, 1));
+	data->static_data.tag = tag;
+	return 0;
+}
 
 const luaL_reg Lua_Light_Set[] = {
 	{"active", Lua_Light_Set_Active},
+	{"initial_phase", Lua_Light_Set_Phase},
+	{"initially_active", Lua_Light_Set_Initially_Active},
+	{"tag", Lua_Light_Set_Tag},
 	{0, 0}
 };
 
@@ -2152,6 +2458,32 @@ bool Lua_Light_Valid(int16 index)
 
 char Lua_Lights_Name[] = "Lights";
 static int16 Lua_Lights_Length() { return LightList.size(); }
+
+int Lua_Lights_New(lua_State* L)
+{
+	if (LightList.size() == INT16_MAX)
+		return 0;
+
+	short type;
+	if (lua_isnil(L, 1))
+	{
+		type = _normal_light;
+	}
+	else
+	{
+		type = Lua_LightPreset::ToIndex(L, 1);
+	}
+	
+	LightList.resize(LightList.size() + 1);
+	short index = new_light(get_defaults_for_light_type(type));
+	Lua_Light::Push(L, index);
+	return 1;
+}
+
+const luaL_reg Lua_Lights_Methods[] = {
+	{"new", Lua_Lights_New},
+	{0, 0}
+};
 
 char Lua_Tag_Name[] = "tag";
 
@@ -2715,10 +3047,34 @@ int Lua_Map_register(lua_State *L)
 	Lua_SideTypes::Register(L);
 	Lua_SideTypes::Length = Lua_SideTypes::ConstantLength(static_cast<int16>(_split_side) + 1);
 
+	Lua_Light_State::Register(L, Lua_Light_State_Get, Lua_Light_State_Set);
+	Lua_Light_State::Valid = Lua_Light_State::ValidRange(static_cast<int16>(_light_secondary_inactive) + 1);
+
+	Lua_Light_States::Register(L, 0, 0, Lua_Light_States_Metatable);
+	Lua_Light_States::Valid = Lua_Light_Valid;
+
+	Lua_LightPreset::Register(L, 0, 0, 0, Lua_LightPreset_Mnemonics);
+	Lua_LightPreset::Valid = Lua_LightPreset::ValidRange(NUMBER_OF_LIGHT_TYPES);
+
+	Lua_LightPresets::Register(L);
+	Lua_LightPresets::Length = Lua_LightPresets::ConstantLength(NUMBER_OF_LIGHT_TYPES);
+
+	Lua_LightFunction::Register(L, 0, 0, 0, Lua_LightFunction_Mnenonics);
+	Lua_LightFunction::Valid = Lua_LightFunction::ValidRange(NUMBER_OF_LIGHTING_FUNCTIONS);
+	
+	Lua_LightFunctions::Register(L);
+	Lua_LightFunctions::Length = Lua_LightFunctions::ConstantLength(NUMBER_OF_LIGHTING_FUNCTIONS);
+
+	Lua_LightState::Register(L, 0, 0, 0, Lua_LightState_Mnemonics);
+	Lua_LightState::Valid = Lua_LightState::ValidRange(static_cast<int16>(_light_secondary_inactive) + 1);
+	
+	Lua_LightStates::Register(L);
+	Lua_LightStates::Length = Lua_LightStates::ConstantLength(static_cast<int16>(_light_secondary_inactive) + 1);
+
 	Lua_Light::Register(L, Lua_Light_Get, Lua_Light_Set);
 	Lua_Light::Valid = Lua_Light_Valid;
 
-	Lua_Lights::Register(L);
+	Lua_Lights::Register(L, Lua_Lights_Methods);
 	Lua_Lights::Length = Lua_Lights_Length;
 		
 	Lua_Tag::Register(L, Lua_Tag_Get, Lua_Tag_Set);

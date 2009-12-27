@@ -603,6 +603,44 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether light is active</description>
 	<type>boolean</type>
       </variable>
+      <variable name="tag" version="SVN">
+	<description>tag of light</description>
+	<type>tag</type>
+      </variable>
+      <variable name="initial_phase" version="SVN">
+	<description>phase the light starts with</description>
+	<type>time</type>
+      </variable>
+      <variable name="initially_active" version="SVN">
+	<description>whether the light was initially active</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="intensity" access="read-only" version="SVN">
+	<description>current intensity for this light (range: 0-1)</description>
+	<type>number</type>
+      </variable>
+      <subtable-accessor name="states" classname="light_state_subtable" index="light_type">
+	<variable name="delta_intensity" version="SVN">
+	  <description>random intensity change for this state</description>
+	  <type>number</type>
+	</variable>
+	<variable name="delta_period" version="SVN">
+	  <description>random period change for this state</description>
+	  <type>time</type>
+	</variable>
+	<variable name="light_function" version="SVN">
+	  <description>light function for this state</description>
+	  <type>light_function</type>
+	</variable>
+	<variable name="intensity" version="SVN">
+	  <description>intensity for this state</description>
+	  <type>number</type>
+	</variable>
+	<variable name="period" version="SVN">
+	  <description>period for this state</description>
+	  <type>number</type>
+	</variable>
+      </subtable-accessor>
     </table>
     <table name="line">
       <variable name="clockwise_polygon" access="read-only">
@@ -1623,6 +1661,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <call>
 	<description>iterates through all lights in the level</description>
       </call>
+      <function name="new">
+	<description>returns a new light</description>
+	<argument name="light_preset" required="false"><type>light_preset</type></argument>
+      </function>
     </accessor>
     <accessor name="Media" contains="media">
       <length>
@@ -2034,6 +2076,31 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="green ball"/>
 	<mnemonic name="smg"/>
 	<mnemonic name="smg ammo"/>
+      </mnemonics>
+    </enum>
+    <enum name="light_function">
+      <mnemonics>
+	<mnemonic name="constant"/>
+	<mnemonic name="linear"/>
+	<mnemonic name="smooth"/>
+	<mnemonic name="flicker"/>
+      </mnemonics>
+    </enum>
+    <enum name="light_preset">
+      <mnemonics>
+	<mnemonic name="normal"/>
+	<mnemonic name="strobe"/>
+	<mnemonic name="media"/>
+      </mnemonics>
+    </enum>
+    <enum name="light_state">
+      <mnemonics>
+	<mnemonic name="becoming active"/>
+	<mnemonic name="primary active"/>
+	<mnemonic name="secondary active"/>
+	<mnemonic name="becoming inactive"/>
+	<mnemonic name="primary inactive"/>
+	<mnemonic name="secondary inactive"/>
       </mnemonics>
     </enum>
     <enum name="media_type">
@@ -2638,6 +2705,9 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     <enum-accessor name="GameTypes" contains="game_type" nice-name="Game Types"/>
     <enum-accessor name="ItemTypes" contains="item_type" nice-name="Items"/>
     <enum-accessor name="MediaTypes" contains="media_type" nice-name="Media"/>
+    <enum-accessor name="LightFunctions" contains="light_function" nice-name="Light Functions"/>
+    <enum-accessor name="LightPresets" contains="light_preset" nice-name="Light Presets"/>
+    <enum-accessor name="LightStates" contains="light_state" nice-name="Light States"/>
     <enum-accessor name="MonsterActions" contains="monster_action" nice-name="Monster Actions"/>
     <enum-accessor name="MonsterClasses" contains="monster_class" nice-name="Monster Classes"/>
     <enum-accessor name="MonsterModes" contains="monster_mode" nice-name="Monster Modes"/>

@@ -294,6 +294,31 @@ const lang_def Lua_ItemType_Mnemonics[] = {
 	{0, 0}
 };
 
+const lang_def Lua_LightFunction_Mnenonics[] = {
+	{"constant", 0},
+	{"linear", 1},
+	{"smooth", 2},
+	{"flicker", 3},
+	{0, 0}
+};
+
+const lang_def Lua_LightPreset_Mnemonics[] = {
+	{"normal", 0},
+	{"strobe", 1},
+	{"media", 2},
+	{0, 0}
+};
+
+const lang_def Lua_LightState_Mnemonics[] = {
+	{"becoming active", 0},
+	{"primary active", 1},
+	{"secondary active", 2},
+	{"becoming inactive", 3},
+	{"primary inactive", 4},
+	{"secondary inactive", 5},
+	{0, 0}
+};
+
 const lang_def Lua_MediaType_Mnemonics[] = {
 	{"water", 0},
 	{"lava", 1},
