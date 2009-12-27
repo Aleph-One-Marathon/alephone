@@ -560,13 +560,20 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		world_distance x = 0.0, y = 0.0;
 		instantiate_transfer_mode(view, surface->transfer_mode, x, y);
 
+		vec3 N;
+		vec3 T;
+		float sign;
 		if(ceil) {
-			glNormal3f(0,0,-1);
-			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, 0,1,0, -1);
+			N = vec3(0,0,-1);
+			T = vec3(0,1,0);
+			sign = 1;
 		} else {
-			glNormal3f(0,0,1);
-			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, 0,1,0,1);
+			N = vec3(0,0,1);
+			T = vec3(0,1,0);
+			sign = -1;
 		}
+		glNormal3f(N[0], N[1], N[2]);
+		glMultiTexCoord4fARB(GL_TEXTURE1_ARB, T[0], T[1], T[2], sign);
 
 		glBegin(GL_POLYGON);
 		if (ceil)
@@ -612,6 +619,48 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
+
+#ifdef DEBUG_NORMALS
+		float xcen = 0;
+		float ycen = 0;
+		float zcen = surface->height;
+		for(int i = 0; i < vertex_count; ++i) {
+			world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
+			xcen += vertex.x;
+			ycen += vertex.y;
+		}
+		xcen /= (float)vertex_count;
+		ycen /= (float)vertex_count;
+		vec3 B = N.cross(T) * sign;
+		
+		glDisable(GL_TEXTURE_2D);
+		glBegin(GL_LINES);
+		
+		glColor4f(1.0,0.0,0.0,1.0);
+		glVertex3f(xcen, ycen, zcen);
+		glVertex3f(xcen + 32*N[0],
+				   ycen + 32*N[1],
+				   zcen + 32*N[2]);
+		
+		glColor4f(0.4,0.7,1.0,1.0);
+		glVertex3f(xcen + 32*N[0],
+				   ycen + 32*N[1],
+				   zcen + 32*N[2]);
+		glVertex3f(xcen + 32*N[0] + 32*T[0],
+				   ycen + 32*N[1] + 32*T[1],
+				   zcen + 32*N[2] + 32*T[2]);		
+
+		glColor4f(0.7,1.0,0.4,1.0);
+		glVertex3f(xcen + 32*N[0],
+				   ycen + 32*N[1],
+				   zcen + 32*N[2]);
+		glVertex3f(xcen + 32*N[0] + 32*B[0],
+				   ycen + 32*N[1] + 32*B[1],
+				   zcen + 32*N[2] + 32*B[2]);		
+		
+		glEnd();
+		glEnable(GL_TEXTURE_2D);
+#endif			
 	}
 }
 
@@ -666,8 +715,11 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 
 			double tOffset = surface->h1 + view->origin.z + y0;
 
-			glNormal3f(-dy, dx, 0);
-			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, dx, dy, 0, -1);
+			vec3 N(-dy, dx, 0);
+			vec3 T(dx, dy, 0);
+			float sign = 1;
+			glNormal3f(N[0], N[1], N[2]);
+			glMultiTexCoord4fARB(GL_TEXTURE1_ARB, T[0], T[1], T[2], sign);
 
 			world_distance x = 0.0, y = 0.0;
 			instantiate_transfer_mode(view, surface->transfer_mode, x, y);
@@ -695,13 +747,60 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 				glEnd();
 			}
 			
+			
+			
 			Shader::disable();
 			glMatrixMode(GL_TEXTURE);
 			glLoadIdentity();
 			glMatrixMode(GL_MODELVIEW);
+			
+#ifdef DEBUG_NORMALS
+			float xcen = 0;
+			float ycen = 0;
+			float zcen = 0;
+			for(int i = 0; i < vertex_count; ++i) {
+				xcen += vertices[i].x;
+				ycen += vertices[i].y;
+				zcen += vertices[i].z;
+			}
+			xcen /= (float)vertex_count;
+			ycen /= (float)vertex_count;
+			zcen /= (float)vertex_count;
+			vec3 B = N.cross(T) * sign;
+			
+			glDisable(GL_TEXTURE_2D);
+			glBegin(GL_LINES);
+			
+			glColor4f(1.0,0.0,0.0,1.0);
+			glVertex3f(xcen, ycen, zcen);
+			glVertex3f(xcen + 32*N[0],
+					   ycen + 32*N[1],
+					   zcen + 32*N[2]);
+			
+			glColor4f(0.4,0.7,1.0,1.0);
+			glVertex3f(xcen + 32*N[0],
+					   ycen + 32*N[1],
+					   zcen + 32*N[2]);
+			glVertex3f(xcen + 32*N[0] + 32*T[0],
+					   ycen + 32*N[1] + 32*T[1],
+					   zcen + 32*N[2] + 32*T[2]);		
+
+			glColor4f(0.7,1.0,0.4,1.0);
+			glVertex3f(xcen + 32*N[0],
+					   ycen + 32*N[1],
+					   zcen + 32*N[2]);
+			glVertex3f(xcen + 32*N[0] + 32*B[0],
+					   ycen + 32*N[1] + 32*B[1],
+					   zcen + 32*N[2] + 32*B[2]);		
+			
+			glEnd();
+			glEnable(GL_TEXTURE_2D);
+#endif			
 		}
 	}
 }
+
+extern void FlatBumpTexture(); // from OGL_Textures.cpp
 
 bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT, float flare, RenderStep renderStep) {
 
@@ -734,9 +833,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glColor4f(color[0], color[1], color[2], 1.0);
 	
 	Shader *s = NULL;
-	// FIXME: parallax shading needs proper normals
-	if(1) {
-//	if(!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+	if(!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 		s = Shader::get("flat");
 	} else if(renderStep == kDiffuse) {
 		s = Shader::get("model_parallax");
@@ -751,51 +848,90 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
+	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
 	
-	// FIXME: something is terribly wrong with normals
-//	glEnableClientState(GL_NORMAL_ARRAY);
-//	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
+	glEnableClientState(GL_NORMAL_ARRAY);
+	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
 	
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
-	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 
 	if(ModelPtr->Use(CLUT,OGL_SkinManager::Normal)) {
 		LoadModelSkin(SkinPtr->NormalImg, Collection, CLUT);
 	}
 
+	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+		glActiveTextureARB(GL_TEXTURE1_ARB);
+		if(ModelPtr->Use(CLUT,OGL_SkinManager::Bump)) {
+			LoadModelSkin(SkinPtr->OffsetImg, Collection, CLUT);
+		}
+		if (!SkinPtr->OffsetImg.IsPresent()) {
+			FlatBumpTexture();
+		}
+		glActiveTextureARB(GL_TEXTURE0_ARB);
+	}
+	
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 
 	glDisableClientState(GL_NORMAL_ARRAY);
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 
 	// Restore the default render sidedness
 	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CW);
 	Shader::disable();
 
-#ifdef DEBUG_MODELS
+#ifdef DEBUG_NORMALS
 	/* draw normals and tangents as lines */
 	glDisable(GL_TEXTURE_2D);
 	glBegin(GL_LINES);
-	glColor4f(1.0,0.0,0.0,1.0);
 
-	for(unsigned i = 0; i < ModelPtr->Model.Positions.size() / 3; ++i) {
-		glVertex3f(ModelPtr->Model.Positions[i*3+0],
-				   ModelPtr->Model.Positions[i*3+1],
-				   ModelPtr->Model.Positions[i*3+2]);
-		glVertex3f(ModelPtr->Model.Positions[i*3+0] + -32*ModelPtr->Model.Normals[i*3+0],
-				   ModelPtr->Model.Positions[i*3+1] + -32*ModelPtr->Model.Normals[i*3+1],
-				   ModelPtr->Model.Positions[i*3+2] + -32*ModelPtr->Model.Normals[i*3+2]);
-	}
-	glColor4f(0.4,0.7,1.0,1.0);
-	for(unsigned i = 0; i < ModelPtr->Model.Positions.size() / 3; ++i) {
-		glVertex3f(ModelPtr->Model.Positions[i*3+0],
-				   ModelPtr->Model.Positions[i*3+1],
-				   ModelPtr->Model.Positions[i*3+2]);
-		glVertex3f(ModelPtr->Model.Positions[i*3+0] + 32*ModelPtr->Model.Tangents[i][0]*ModelPtr->Model.Tangents[i][3],
-				   ModelPtr->Model.Positions[i*3+1] + 32*ModelPtr->Model.Tangents[i][1]*ModelPtr->Model.Tangents[i][3],
-				   ModelPtr->Model.Positions[i*3+2] + 32*ModelPtr->Model.Tangents[i][2]*ModelPtr->Model.Tangents[i][3]);
+	for(GLushort i = 0; i < ModelPtr->Model.VertIndices.size(); i+= 3) {
+		GLushort a = ModelPtr->Model.VertIndices[i];
+		GLushort b = ModelPtr->Model.VertIndices[i+1];
+		GLushort c = ModelPtr->Model.VertIndices[i+2];
+		
+		vertex3 v1(ModelPtr->Model.PosBase()+3*a);
+		vertex3 v2(ModelPtr->Model.PosBase()+3*b);
+		vertex3 v3(ModelPtr->Model.PosBase()+3*c);
+
+		float xcen = (v1[0] + v2[0] + v3[0]) / 3.;
+		float ycen = (v1[1] + v2[1] + v3[1]) / 3.;
+		float zcen = (v1[2] + v2[2] + v3[2]) / 3.;
+		
+		vec3 N(ModelPtr->Model.Normals[3*a],
+			   ModelPtr->Model.Normals[3*a+1],
+			   ModelPtr->Model.Normals[3*a+2]);
+		vec3 T(ModelPtr->Model.Tangents[a][0],
+			   ModelPtr->Model.Tangents[a][1],
+			   ModelPtr->Model.Tangents[a][2]);
+		float sign = ModelPtr->Model.Tangents[a][3];
+		vec3 B = N.cross(T) * sign;
+		
+		glColor4f(1.0,0.0,0.0,1.0);
+		glVertex3f(xcen, ycen, zcen);
+		glVertex3f(xcen + 32*N[0],
+				   ycen + 32*N[1],
+				   zcen + 32*N[2]);
+		
+		glColor4f(0.4,0.7,1.0,1.0);
+		glVertex3f(xcen + 32*N[0],
+				   ycen + 32*N[1],
+				   zcen + 32*N[2]);
+		glVertex3f(xcen + 32*N[0] + 32*T[0],
+				   ycen + 32*N[1] + 32*T[1],
+				   zcen + 32*N[2] + 32*T[2]);		
+
+		glColor4f(0.7,1.0,0.4,1.0);
+		glVertex3f(xcen + 32*N[0],
+				   ycen + 32*N[1],
+				   zcen + 32*N[2]);
+		glVertex3f(xcen + 32*N[0] + 32*B[0],
+				   ycen + 32*N[1] + 32*B[1],
+				   zcen + 32*N[2] + 32*B[2]);		
 	}
 	glEnd();
 	glEnable(GL_TEXTURE_2D);
