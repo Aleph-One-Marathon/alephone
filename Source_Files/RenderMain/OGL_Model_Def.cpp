@@ -616,6 +616,11 @@ bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
 		Data.NormalColors.SetNameWithPath(Value);
 		return true;
 	}
+	else if (StringsEqual(Tag,"offset_image"))
+	{
+		Data.OffsetMap.SetNameWithPath(Value);
+		return true;
+	}
 	else if (StringsEqual(Tag,"normal_mask"))
 	{
 		Data.NormalMask.SetNameWithPath(Value);

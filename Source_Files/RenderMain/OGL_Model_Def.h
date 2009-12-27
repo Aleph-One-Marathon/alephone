@@ -58,6 +58,7 @@ struct OGL_SkinManager
 	{
 		Normal,		// Used for all normally-shaded and shadeless textures
 		Glowing,	// Used for self-luminous textures
+		Bump,		// Bump map for textures
 		NUMBER_OF_TEXTURES
 	};
 	GLuint IDs[NUMBER_OF_OPENGL_BITMAP_SETS][NUMBER_OF_TEXTURES];		// Texture ID's
