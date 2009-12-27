@@ -688,7 +688,35 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="media">
-      <variable name="type">
+      <variable name="direction" version="SVN">
+	<description>direction of media</description>
+	<type>angle</type>
+      </variable>
+      <variable name="height" access="read-only" version="SVN">
+	<description>height of media</description>
+	<type>WU</type>
+      </variable>
+      <variable name="high" version="SVN">
+	<description>high tide of media</description>
+	<type>WU</type>
+      </variable>
+      <variable name="light" version="SVN">
+	<description>light that controls this media's tide</description>
+	<type>light</type>
+      </variable>
+      <variable name="low" version="SVN">
+	<description>low tide of media</description>
+	<type>WU</type>
+      </variable>
+      <variable name="speed" version="SVN">
+	<description>speed of media</description>
+	<type>speed</type>
+      </variable>
+      <variable name="type" access="read-only">
+	<description>type of media</description>
+	<type>media_type</type>
+      </variable>
+      <variable name="type" version="SVN">
 	<description>type of media</description>
 	<type>media_type</type>
       </variable>

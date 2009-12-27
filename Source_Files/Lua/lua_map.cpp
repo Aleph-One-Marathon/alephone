@@ -2576,6 +2576,50 @@ typedef L_EnumContainer<Lua_MediaTypes_Name, Lua_MediaType> Lua_MediaTypes;
 
 char Lua_Media_Name[] = "media";
 
+const float AngleConvert = 360/float(FULL_CIRCLE);
+
+static int Lua_Media_Get_Direction(lua_State* L)
+{
+	media_data* media = get_media_data(Lua_Media::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(media->current_direction) * AngleConvert);
+	return 1;
+}
+
+static int Lua_Media_Get_Height(lua_State* L)
+{
+	media_data* media = get_media_data(Lua_Media::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(media->height) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Media_Get_High(lua_State* L)
+{
+	media_data* media = get_media_data(Lua_Media::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(media->high) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Media_Get_Light(lua_State* L)
+{
+	media_data* media = get_media_data(Lua_Media::Index(L, 1));
+	Lua_Light::Push(L, media->light_index);
+	return 1;
+}
+
+static int Lua_Media_Get_Low(lua_State* L)
+{
+	media_data* media = get_media_data(Lua_Media::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(media->low) / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Media_Get_Speed(lua_State* L)
+{
+	media_data* media = get_media_data(Lua_Media::Index(L, 1));
+	lua_pushnumber(L, static_cast<double>(media->current_magnitude) / WORLD_ONE);
+	return 1;
+}
+
 static int Lua_Media_Get_Type(lua_State *L)
 {
 	media_data *media = get_media_data(Lua_Media::Index(L, 1));
@@ -2584,7 +2628,103 @@ static int Lua_Media_Get_Type(lua_State *L)
 }
 
 const luaL_reg Lua_Media_Get[] = {
+	{"direction", Lua_Media_Get_Direction},
+	{"height", Lua_Media_Get_Height},
+	{"high", Lua_Media_Get_High},
+	{"light", Lua_Media_Get_Light},
+	{"low", Lua_Media_Get_Low},
+	{"speed", Lua_Media_Get_Speed},
 	{"type", Lua_Media_Get_Type},
+	{0, 0}
+};
+
+extern void update_one_media(size_t, bool);
+
+static int Lua_Media_Set_Direction(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "direction: incorrect argument type");
+	
+	media_data* media = get_media_data(Lua_Media::Index(L, 1));
+	media->current_direction = static_cast<angle>(lua_tonumber(L, 2) / AngleConvert);
+	return 0;
+}
+
+static int Lua_Media_Set_High(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "high: incorrect argument type");
+
+	int media_index = Lua_Media::Index(L, 1);
+	media_data* media = get_media_data(media_index);
+	media->high = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	update_one_media(media_index, true);
+	return 0;
+}
+
+static int Lua_Media_Set_Light(lua_State* L)
+{
+	int light_index;
+	if (lua_isnumber(L, 2))
+	{
+		light_index = static_cast<int>(lua_tonumber(L, 2));
+		if (!Lua_Light::Valid(light_index))
+			return luaL_error(L, "light: invalid light index");
+	}
+	else if (Lua_Light::Is(L, 2))
+	{
+		light_index = Lua_Light::Index(L, 2);
+	}
+	else
+	{
+		return luaL_error(L, "light: incorrect argument type");
+	}
+
+	int media_index = Lua_Media::Index(L, 1);
+	media_data* media = get_media_data(media_index);
+	media->light_index = light_index;
+	update_one_media(media_index, true);
+	return 0;
+}
+
+static int Lua_Media_Set_Low(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "high: incorrect argument type");
+
+	int media_index = Lua_Media::Index(L, 1);
+	media_data* media = get_media_data(media_index);
+	media->low = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	update_one_media(media_index, true);
+	return 0;
+}
+
+static int Lua_Media_Set_Speed(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "speed: incorrect argument type");
+
+	media_data* media = get_media_data(Lua_Media::Index(L, 1));
+	media->current_magnitude = static_cast<world_distance>(lua_tonumber(L, 2) * WORLD_ONE);
+	return 0;
+}
+
+static int Lua_Media_Set_Type(lua_State* L)
+{
+	int media_index = Lua_Media::Index(L, 1);
+	media_data* media = get_media_data(media_index);
+	media->type = Lua_MediaType::ToIndex(L, 2);
+	update_one_media(media_index, true);
+	return 0;
+}
+
+const luaL_reg Lua_Media_Set[] = {
+	{"direction", Lua_Media_Set_Direction},
+	{"high", Lua_Media_Set_High},
+	{"light", Lua_Media_Set_Light},
+	{"low", Lua_Media_Set_Low},
+	{"speed", Lua_Media_Set_Speed},
+	{"type", Lua_Media_Set_Type},
 	{0, 0}
 };
 
@@ -3101,7 +3241,7 @@ int Lua_Map_register(lua_State *L)
 	Lua_MediaTypes::Register(L);
 	Lua_MediaTypes::Length = Lua_MediaTypes::ConstantLength(NUMBER_OF_MEDIA_TYPES);
 
-	Lua_Media::Register(L, Lua_Media_Get);
+	Lua_Media::Register(L, Lua_Media_Get, Lua_Media_Set);
 	Lua_Media::Valid = Lua_Media_Valid;
 
 	Lua_Medias::Register(L);

@@ -75,7 +75,7 @@ vector<media_data> MediaList;
 
 /* ---------- private prototypes */
 
-static void update_one_media(size_t media_index, bool force_update);
+void update_one_media(size_t media_index, bool force_update);
 
 /* ---------- globals */
 
@@ -254,7 +254,7 @@ bool IsMediaDangerous(short media_index)
 
 /* ---------- private code */
 
-static void update_one_media(
+void update_one_media(
 	size_t media_index,
 	bool force_update)
 {
