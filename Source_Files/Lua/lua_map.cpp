@@ -2248,7 +2248,7 @@ static int Lua_Light_State_Set_Delta_Intensity(lua_State* L)
 		return luaL_error(L, "delta_intensity: incorrect argument type");
 
 	lighting_function_specification* spec = get_light_function_spec(Lua_Light_State::LightIndex(L, 1), Lua_Light_State::Index(L, 1));
-	spec->delta_intensity = static_cast<int16>(lua_tonumber(L, 2) * FIXED_ONE);
+	spec->delta_intensity = static_cast<int32>(lua_tonumber(L, 2) * FIXED_ONE);
 	return 1;
 }
 
@@ -2280,7 +2280,7 @@ static int Lua_Light_State_Set_Intensity(lua_State* L)
 		return luaL_error(L, "intensity: incorrect argument type");
 
 	lighting_function_specification* spec = get_light_function_spec(Lua_Light_State::LightIndex(L, 1), Lua_Light_State::Index(L, 1));
-	spec->intensity = static_cast<int16>(lua_tonumber(L, 2) * FIXED_ONE);
+	spec->intensity = static_cast<int32>(lua_tonumber(L, 2) * FIXED_ONE);
 	return 1;
 }
 
