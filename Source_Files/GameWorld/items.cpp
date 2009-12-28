@@ -524,6 +524,28 @@ bool try_and_add_player_item(
 					}
 					// END Benad modified oct. 1st
 				}
+				else if (GET_GAME_TYPE() == _game_of_rugby)
+				{
+					// ghs: work around for SF 2894880
+
+					// if you're in an enemy base
+					// and pick up the ball, you
+					// score
+					struct polygon_data* polygon = get_polygon_data(player->supporting_polygon_index);
+					if (polygon->type == _polygon_is_base && polygon->permutation != player->team)
+					{
+						/* Goal! */
+
+						// defined in network_games.cpp
+						const int _points_scored = 0;
+						player->netgame_parameters[_points_scored]++;
+						team_netgame_parameters[player->team][_points_scored]++;
+						object_was_just_destroyed(_object_is_item, type);
+						grabbed_sound_index = Sound_GotItem();
+						success = true;
+						goto DONE;
+					}
+				}
 				
 				player->items[type]= 1;
 
