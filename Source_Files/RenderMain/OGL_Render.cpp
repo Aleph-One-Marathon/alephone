@@ -1032,6 +1032,10 @@ bool OGL_EndMain()
 	// Proper projection
 	SetProjectionType(Projection_Screen);
 	
+	// Reset modelview matrix
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	
 	// No texture mapping now
 	glDisable(GL_TEXTURE_2D);
 	
@@ -1049,10 +1053,6 @@ bool OGL_EndMain()
 	glVertex2f(ViewWidth-0.5F,ViewHeight-0.5F);
 	glVertex2f(ViewWidth-0.5F,0.5F);
 	glEnd();
-	
-	// Reset modelview matrix
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
 		
 	return true;
 }
