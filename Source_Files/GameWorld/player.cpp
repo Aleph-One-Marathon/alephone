@@ -1409,7 +1409,25 @@ static void update_player_media(
 	{
 		short sound_type= NONE;
 			
-		if (player_index==current_player_index) set_fade_effect((player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ? get_media_submerged_fade_effect(polygon->media_index) : NONE);
+		if (player_index==current_player_index)
+		{
+			bool under_media= (player->variables.flags&_HEAD_BELOW_MEDIA_BIT);
+			short media_index= polygon->media_index;
+						
+			world_point3d cam_pos;
+			short cam_poly;
+			angle cam_yaw;
+			angle cam_pitch;
+			if (ChaseCam_GetPosition(cam_pos, cam_poly, cam_yaw, cam_pitch))
+			{
+				struct polygon_data *cam_polygon= get_polygon_data(cam_poly);
+				media_index= cam_polygon->media_index;
+				media_data *media = get_media_data(media_index);
+				world_distance media_height= (media_index==NONE || !media) ? INT16_MIN : media->height;
+				under_media = (cam_pos.z < media_height);
+			}
+			set_fade_effect(under_media ? get_media_submerged_fade_effect(media_index) : NONE);
+		}
 	
 		if (player->variables.flags&_FEET_BELOW_MEDIA_BIT)
 		{
