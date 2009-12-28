@@ -1482,6 +1482,9 @@ bool SetupNetgameDialog::informationIsAcceptable ()
 	
 	if (information_is_acceptable)
 		information_is_acceptable = !(m_nameWidget->get_text ().empty ());
+	
+	if (information_is_acceptable)
+		information_is_acceptable = m_mapWidget->get_file ().Exists ();
 		
 	return (information_is_acceptable);
 }
