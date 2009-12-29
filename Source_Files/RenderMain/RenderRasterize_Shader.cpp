@@ -153,7 +153,7 @@ void RenderRasterize_Shader::setupGL() {
 	blur = NULL;
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur)) {
 		if(sH && sV) {
-			blur = new Blur(graphics_preferences->screen_mode.width / 2, graphics_preferences->screen_mode.width / 4, sH, sV);
+			blur = new Blur(320., 320. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, sH, sV);
 		}
 	}
 
