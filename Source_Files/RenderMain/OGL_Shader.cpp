@@ -212,6 +212,8 @@ void Shader::init() {
 	glUniform1fARB(glGetUniformLocationARB(_programObj, "time"), 0.0);
 	glUniform1fARB(glGetUniformLocationARB(_programObj, "wobble"), 0.0);
 	glUniform1fARB(glGetUniformLocationARB(_programObj, "flare"), 0.0);
+	glUniform1fARB(glGetUniformLocationARB(_programObj, "bloomScale"), 0.0);
+	glUniform1fARB(glGetUniformLocationARB(_programObj, "bloomShift"), 0.0);
 	glUniform1fARB(glGetUniformLocationARB(_programObj, "repeat"), 0.0);
 
 	glUseProgramObjectARB(NULL);
@@ -325,6 +327,8 @@ void initDefaultPrograms() {
     defaultFragmentPrograms["landscape"] = ""
         "uniform sampler2D texture0;\n"
         "uniform float repeat;\n"
+        "uniform float bloomScale;\n"
+        "uniform float bloomShift;\n"
         "varying vec3 viewDir;\n"
         "varying float texScale;\n"
         "varying float texOffset;\n"
@@ -334,7 +338,11 @@ void initDefaultPrograms() {
         "	vec3 viewv = normalize(viewDir);\n"
         "	float x = atan(viewv.x, viewv.y) / (2.0 * pi) * repeat;\n"
         "	float y = 0.5/abs(texScale) - sign(texOffset) + texOffset + asin(viewv.z) * 0.3 * sign(texScale);\n"
-        "	gl_FragColor = vertexColor * texture2D(texture0, vec2(-x + 0.25*repeat, y));\n"
+        "	vec3 intensity = vertexColor.rgb;\n"
+        "	if (bloomScale >= 0.0) {\n"
+        "		intensity = clamp((vertexColor.rgb * bloomScale) + bloomShift, 0.0, 1.0);\n"
+        "	}\n"
+        "	gl_FragColor = vec4(intensity, vertexColor.a) * texture2D(texture0, vec2(-x + 0.25*repeat, y));\n"
         "}\n";
     
     defaultVertexPrograms["random"] = ""
@@ -351,13 +359,19 @@ void initDefaultPrograms() {
     defaultFragmentPrograms["random"] = ""
         "uniform sampler2D texture0;\n"
         "uniform float time;\n"
+        "uniform float bloomScale;\n"
+        "uniform float bloomShift;\n"
         "varying vec4 vertexColor;\n"
         "void main(void) {\n"
         "	float a = fract(sin(gl_TexCoord[0].x * 133.0 + gl_TexCoord[0].y * 471.0 + time * 7.0) * 43757.0); \n"
         "	float b = fract(sin(gl_TexCoord[0].x * 2331.0 + gl_TexCoord[0].y * 63.0 + time * 3.0) * 32451.0); \n"
         "	float c = fract(sin(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0 + time * 31.0) * 34563.0);\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
-        "	gl_FragColor = vertexColor * vec4(vec3(a, b, c), color.a);\n"
+        "	vec3 intensity = vertexColor.rgb;\n"
+        "	if (bloomScale >= 0.0) {\n"
+        "		intensity = clamp((vertexColor.rgb * bloomScale) + bloomShift, 0.0, 1.0);\n"
+        "	}\n"
+        "	gl_FragColor = vec4(intensity, vertexColor.a) * vec4(vec3(a, b, c), color.a);\n"
         "}\n";    
 
 	defaultVertexPrograms["random_nostatic"] = defaultVertexPrograms["random"];
@@ -405,6 +419,8 @@ void initDefaultPrograms() {
         "uniform sampler2D texture1;\n"
         "uniform float wobble;\n"
         "uniform float flare;\n"
+        "uniform float bloomScale;\n"
+        "uniform float bloomShift;\n"
         "varying vec3 viewXY;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
@@ -435,7 +451,11 @@ void initDefaultPrograms() {
         "	norm = (normal.rgb - 0.5) * 2.0;\n"
         "	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
         "	vec4 color = texture2D(texture0, texCoords.xy);\n"
-        "	gl_FragColor = vec4(color.rgb * clamp((vertexColor.rgb + mlFactor) * diffuse, 0.0, 1.0), color.a);\n"
+        "	vec3 intensity = vertexColor.rgb;\n"
+        "	if (bloomScale >= 0.0) {\n"
+        "		intensity = clamp((vertexColor.rgb * bloomScale) + bloomShift, 0.0, 1.0);\n"
+        "	}\n"
+        "	gl_FragColor = vec4(color.rgb * clamp((intensity + mlFactor) * diffuse, 0.0, 1.0), color.a);\n"
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), color.a);\n"
         "}\n";
 
@@ -447,6 +467,8 @@ void initDefaultPrograms() {
 		"uniform sampler2D texture0;\n"
 		"uniform float wobble;\n"
 		"uniform float flare;\n"
+		"uniform float bloomScale;\n"
+		"uniform float bloomShift;\n"
 		"varying vec3 viewXY;\n"
 		"varying vec3 viewDir;\n"
 		"varying vec4 vertexColor;\n"
@@ -463,7 +485,11 @@ void initDefaultPrograms() {
 		"	float mlFactor = exp2(MLxLOG2E * dot(viewDir, viewDir) / flash + 1.0); \n"
 		"	mlFactor = clamp(mlFactor, 0.0, flare - 0.5) * 0.5;\n"
 		"	vec4 color = texture2D(texture0, texCoords.xy);\n"
-		"	gl_FragColor = vec4(color.rgb * clamp((vertexColor.rgb + mlFactor), 0.0, 1.0), color.a);\n"
+		"	vec3 intensity = vertexColor.rgb;\n"
+		"	if (bloomScale >= 0.0) {\n"
+		"		intensity = clamp((vertexColor.rgb * bloomScale) + bloomShift, 0.0, 1.0);\n"
+		"	}\n"
+		"	gl_FragColor = vec4(color.rgb * clamp((intensity + mlFactor), 0.0, 1.0), color.a);\n"
 		"	gl_FragColor = vec4(mix(gl_Fog.color.rgb, gl_FragColor.rgb, fogFactor), vertexColor.a * color.a );\n"
 		"}\n";
 	

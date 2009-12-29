@@ -284,11 +284,12 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	TMgr.TextureType = type;
 
 	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
+	float bloomScale = -1;
+	float bloomShift = 0;
 	if (renderStep == kGlow) {
 		flare = 0;
-		for (int i = 0; i < 3; i++) {
-			color[i] = color[i] > 0.5 ? (color[i] - 0.5)*0.5 : 0;
-		}
+		bloomScale = 0.5;
+		bloomShift = -0.25;
 	}
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(color[0], color[1], color[2], 1);
@@ -344,6 +345,8 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 
 	if(s) {
 		s->setFloat("flare", flare);
+		s->setFloat("bloomScale", bloomScale);
+		s->setFloat("bloomShift", bloomShift);
 		s->setFloat("wobble", 0);
 		s->setFloat("offset", offset);
 		s->enable();
@@ -366,9 +369,12 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	TMgr.TransferData = 0;
 
 	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
+	float bloomScale = -1;
+	float bloomShift = 0;
 	if (renderStep == kGlow) {
 		flare = 0;
-		intensity = intensity > 0.5 ? (intensity - 0.5) : 0;
+		bloomScale = 1;
+		bloomShift = -0.5;
 	}
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(intensity, intensity, intensity, 1.0);
@@ -386,6 +392,9 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			LandscapeOptions *opts = View_GetLandscapeOptions(Texture);
 			glColor4f(1,1,1,1);
 			flare = 0;
+			if (renderStep == kGlow) {
+				bloomShift = 0;
+			}
 			s = Shader::get("landscape");
 			s->setFloat("repeat", 1.0 + opts->HorizExp);
 			
@@ -445,6 +454,8 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 		if(s) {
 			s->setFloat("wobble", wobble);
 			s->setFloat("flare", flare);
+			s->setFloat("bloomScale", bloomScale);
+			s->setFloat("bloomShift", bloomShift);
 			s->setFloat("offset", offset);
 			s->enable();
 		}
@@ -518,12 +529,14 @@ bool setupGlow(TextureManager &TMgr, float wobble, float intensity, float offset
 		s->setFloat("wobble", wobble);
 		s->setFloat("offset", offset - 1.0);
 
+		glColor4f(1,1,1,1);
 		if (renderStep == kDiffuse) {
-			glColor4f(1,1,1,1);
+			s->setFloat("bloomScale", -1.0);
+			s->setFloat("bloomShift", 0.0);
 		} else {
-			float in = intensity > 0.5 ? (intensity - 0.5) * 2.0 : 1;
-			glColor4f(in,in,in,1);
-		}
+			s->setFloat("bloomScale", 1.0);
+			s->setFloat("bloomShift", 0.0);
+ 		}
 		TMgr.RenderGlowing();
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
