@@ -382,7 +382,7 @@ void initDefaultPrograms() {
         "void main(void) {\n"
         "	gl_Position  = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
         "	/* handle depth offset */\n"
-        "	gl_Position.z = gl_Position.z + offset*1024.0/gl_Position.z;\n"
+        "	gl_Position.z = gl_Position.z + offset*gl_Position.z/65536.0;\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
         "	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
         "	/* SETUP TBN MATRIX in normal matrix coords, gl_MultiTexCoord1 = tangent vector */\n"

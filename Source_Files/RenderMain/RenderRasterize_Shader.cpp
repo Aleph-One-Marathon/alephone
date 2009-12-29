@@ -671,7 +671,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 	} else {
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
-		offset = -1.0;
+		offset = -2.0;
 	}
 	
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture_definition->texture);

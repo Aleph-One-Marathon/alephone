@@ -572,7 +572,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, (screen_mode.acceleration == _shader_acceleration) ? 24 : 16);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 		if (Screen::instance()->lua_hud()) {
 			SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
