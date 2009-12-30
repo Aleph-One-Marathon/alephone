@@ -94,12 +94,11 @@ private:
 	FBO _vertical;
 	
 	Shader *_shader;
-	Shader *_shader2;
 	
 public:
 	
-	Blur(GLuint w, GLuint h, Shader* shaderV, Shader* shaderH)
-	: _horizontal(w, h), _vertical(w, h), _shader(shaderV), _shader2(shaderH) {}
+	Blur(GLuint w, GLuint h, Shader* shader)
+	: _horizontal(w, h), _vertical(w, h), _shader(shader) {}
 	
 	void resize(GLuint w, GLuint h) {
 		_horizontal = FBO(w, h);
@@ -116,7 +115,6 @@ public:
 	}
 	
 	void draw() {
-		assert(_shader);
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();	
 		glMatrixMode(GL_MODELVIEW);
@@ -124,19 +122,31 @@ public:
 		
 		glDisable(GL_BLEND);
 		glOrtho(0, _vertical._w, 0, _vertical._h, 0.0, 1.0);
-		glColor4f(1., 1., 1., 1.0);
-		_vertical.activate();
-		_shader->enable();
-		_horizontal.draw();
-		_shader->disable();
-		FBO::deactivate();
-		
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_SRC_ALPHA);
 		glColor4f(1., 1., 1., 1.);
-		_shader2->enable();
-		_vertical.draw();
-		_shader2->disable();
+		
+		for (int i = 0; i < 3; i++) {
+			glDisable(GL_BLEND);
+			_vertical.activate();
+			_shader->setFloat("offsetx", 1);
+			_shader->setFloat("offsety", 0);
+			_shader->setFloat("pass", i + 1);
+			_shader->enable();
+			_horizontal.draw();
+			Shader::disable();
+			FBO::deactivate();
+			
+			_horizontal.activate();
+			_shader->setFloat("offsetx", 0);
+			_shader->setFloat("offsety", 1);
+			_shader->setFloat("pass", i + 1);
+			_shader->enable();
+			_vertical.draw();
+			Shader::disable();
+			FBO::deactivate();
+			
+			glEnable(GL_BLEND);
+			_horizontal.draw();
+		}
 	}
 };
 
@@ -147,13 +157,12 @@ public:
  */
 void RenderRasterize_Shader::setupGL() {
 
-	Shader* sV = Shader::get("blurV");
-	Shader* sH = Shader::get("blurH");
+	Shader* s = Shader::get("blur");
 
 	blur = NULL;
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur)) {
-		if(sH && sV) {
-			blur = new Blur(320., 320. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, sH, sV);
+		if(s) {
+			blur = new Blur(320., 320. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, s);
 		}
 	}
 
@@ -203,6 +212,7 @@ void RenderRasterize_Shader::render_tree() {
 
 		if (Using_sRGB) glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 		glDisable(GL_DEPTH_TEST);
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		blur->draw();
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 		glEnable(GL_FOG);
