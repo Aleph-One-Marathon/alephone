@@ -808,24 +808,49 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	GLfloat color[3];
 	FindShadingColor(RenderRectangle.depth, RenderRectangle.ambient_shade, color);
-	if (renderStep == kGlow) {
-		flare = 0;
-		for (int i = 0; i < 3; i++) {
-			color[i] = color[i] > 0.5 ? (color[i] - 0.5)*0.5 : 0;
-		}
-	}
 	glColor4f(color[0], color[1], color[2], 1.0);
 	
+	float bloomScale = 0;
+	float bloomShift = 0;
+	
 	Shader *s = NULL;
-	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-		s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
-	} else {
-		s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
+	switch(RenderRectangle.transfer_mode) {
+		case _static_transfer:
+			flare = 0;
+			s = Shader::get(renderStep == kGlow ? "invincible_bloom" : "invincible");
+		case _tinted_transfer:
+			flare = 0;
+			s = Shader::get(renderStep == kGlow ? "invisible_bloom" : "invisible");
+			s->setFloat("visibility", 1.0 - RenderRectangle.transfer_data/32.0f);
+			break;
+		case _solid_transfer:
+			glColor4f(0,1,0,1);
+			break;
+		case _textured_transfer:
+			if((RenderRectangle.flags&_SHADELESS_BIT) != 0) {
+				if (renderStep == kDiffuse) {
+					glColor4f(1,1,1,1);
+				} else {
+					glColor4f(0,0,0,1);
+				}
+				flare = 0;
+			}
+			break;
+		default:
+			glColor4f(0,0,1,1);
+	}
+	
+	if(s == NULL) {
+		if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+			s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
+		} else {
+			s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
+		}
 	}
 	
 	if (renderStep == kGlow) {
-		s->setFloat("bloomScale", 0.0);
-		s->setFloat("bloomShift", 0.0);
+		s->setFloat("bloomScale", bloomScale);
+		s->setFloat("bloomShift", bloomShift);
 	}
 	s->setFloat("flare", flare);
 	s->setFloat("wobble", 0);
