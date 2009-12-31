@@ -243,13 +243,13 @@ void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiq
 		glTranslatef(cam_pos.x, cam_pos.y, 0.);
 		glRotatef(cam_yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
 		
-		glRotatef(-.01, 0., 0., 1.); // leave some excess to avoid artifacts at edges
+		glRotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
 		clip[0] = win->left.i;
 		clip[1] = win->left.j;
 		glEnable(GL_CLIP_PLANE0);
 		glClipPlane(GL_CLIP_PLANE0, clip);
 		
-		glRotatef(0.02, 0., 0., 1.); // breathing room for right-hand clip
+		glRotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
 		clip[0] = win->right.i;
 		clip[1] = win->right.j;
 		glEnable(GL_CLIP_PLANE1);
