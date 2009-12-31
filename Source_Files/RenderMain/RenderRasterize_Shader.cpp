@@ -177,33 +177,36 @@ void RenderRasterize_Shader::setupGL() {
  */
 void RenderRasterize_Shader::render_tree() {
 
-	Shader* s = Shader::get("random");
-	if(s) {
-		s->setFloat("time", view->tick_count);
+	Shader* s = Shader::get("invincible");
+	s->setFloat("time", view->tick_count);
+	s->setFloat("usestatic", TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
+	s = Shader::get("invincible_bloom");
+	s->setFloat("time", view->tick_count);
+	s->setFloat("usestatic", TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
+	
+	bool usefog = false;
+	int fogtype;
+	OGL_FogData *fogdata;
+	if (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog))
+	{
+		fogtype = (current_player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ?
+		OGL_Fog_BelowLiquid : OGL_Fog_AboveLiquid;
+		fogdata = OGL_GetFogData(fogtype);
+		if (fogdata && fogdata->IsPresent && fogdata->AffectsLandscapes) {
+			usefog = true;
+		}
 	}
-	s = Shader::get("random_nostatic");
-	if(s) {
-		s->setFloat("time", view->tick_count);
-	}
+	s = Shader::get("landscape");
+	s->setFloat("usefog", usefog ? 1.0 : 0.0);
+	s = Shader::get("landscape_bloom");
+	s->setFloat("usefog", usefog ? 1.0 : 0.0);
 	
 	RenderRasterizerClass::render_tree(kDiffuse);
 
 	if (!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur))
 		return;
 
-	s = Shader::get("parallax");
-	if(s) {
-		s->setFloat("flare", 0);
-	}
-	s = Shader::get("flat");
-	if(s) {
-		s->setFloat("flare", 0);
-	}
-	
 	if(blur) {
-
-		GLfloat fog[4] = { 0,0,0,0 };
-		glFogfv(GL_FOG_COLOR, fog);
 
 		blur->begin();
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
@@ -215,7 +218,6 @@ void RenderRasterize_Shader::render_tree() {
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		blur->draw();
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		glEnable(GL_FOG);
 		if (Using_sRGB) glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 	}
 }
@@ -294,13 +296,9 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	TMgr.TextureType = type;
 
 	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
-	float bloomScale = -1;
-	float bloomShift = 0;
-	if (renderStep == kGlow) {
-		flare = 0;
-		bloomScale = 0.5;
-		bloomShift = -0.25;
-	}
+	float bloomScale = 0.5;
+	float bloomShift = -0.25;
+
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(color[0], color[1], color[2], 1);
 	
@@ -308,23 +306,14 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 		case _static_transfer:
 			TMgr.IsShadeless = 1;
 			flare = 0;
-			glColor4f(1,1,1,1);
-			if (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic))
-				s = Shader::get("random_nostatic");
-			else
-				s = Shader::get("random");
-			break;
+			s = Shader::get(renderStep == kGlow ? "invincible_bloom" : "invincible");
 		case _tinted_transfer:
-			glColor4f(0.0,0.0,0.0, 1.0 - rect.transfer_data/32.0F);
 			flare = 0;
+			s = Shader::get(renderStep == kGlow ? "invisible_bloom" : "invisible");
+			s->setFloat("visibility", 1.0 - rect.transfer_data/32.0f);
 			break;
 		case _solid_transfer:
 			glColor4f(0,1,0,1);
-			break;
-		case _big_landscaped_transfer:
-			glColor4f(1,1,1,1);
-			flare = 0;
-			s = Shader::get("landscape");
 			break;
 		case _textured_transfer:
 			if(TMgr.IsShadeless) {
@@ -341,7 +330,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	}
 	
 	if(s == NULL) {
-		s = Shader::get("flat");
+		s = Shader::get(renderStep == kGlow ? "sprite_bloom" : "sprite");
 	}
 
 	if(TMgr.Setup()) {
@@ -353,17 +342,18 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 
 	TMgr.SetupTextureMatrix();
 
-	if(s) {
-		s->setFloat("flare", flare);
+	if (renderStep == kGlow) {
 		s->setFloat("bloomScale", bloomScale);
 		s->setFloat("bloomShift", bloomShift);
-		s->setFloat("wobble", 0);
-		s->setFloat("offset", offset);
-		s->enable();
 	}
+	s->setFloat("flare", flare);
+	s->setFloat("wobble", 0);
+	s->setFloat("depth", offset);
+	s->setFloat("glow", 0);
+	s->enable();
 	return TMgr;
 }
-
+	
 TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& Texture, short transferMode, float wobble, float intensity, float offset, RenderStep renderStep) {
 
 	Shader *s = NULL;
@@ -379,19 +369,12 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	TMgr.TransferData = 0;
 
 	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
-	float bloomScale = -1;
-	float bloomShift = 0;
-	if (renderStep == kGlow) {
-		flare = 0;
-		bloomScale = 1;
-		bloomShift = -0.5;
-	}
+	float bloomScale = 1.0;
+	float bloomShift = -0.5;
+
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(intensity, intensity, intensity, 1.0);
 
-	int fogtype;
-	OGL_FogData *fogdata;
-	bool flatColor = false;
 	switch(transferMode) {
 		case _xfer_landscape:
 		case _xfer_big_landscape:
@@ -400,29 +383,8 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			TMgr.TransferMode = _big_landscaped_transfer;
 			TMgr.Landscape_AspRatExp = 0;
 			LandscapeOptions *opts = View_GetLandscapeOptions(Texture);
-			glColor4f(1,1,1,1);
-			flare = 0;
-			if (renderStep == kGlow) {
-				bloomShift = 0;
-			}
-			s = Shader::get("landscape");
+			s = Shader::get(renderStep == kGlow ? "landscape_bloom" : "landscape");
 			s->setFloat("repeat", 1.0 + opts->HorizExp);
-			
-			if (TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_Fog))
-			{
-				fogtype = (current_player->variables.flags&_HEAD_BELOW_MEDIA_BIT) ?
-				OGL_Fog_BelowLiquid : OGL_Fog_AboveLiquid;
-				fogdata = OGL_GetFogData(fogtype);
-				if (fogdata && fogdata->IsPresent && fogdata->AffectsLandscapes) {
-					glColor4f(fogdata->Color.red/65535.0f,
-							  fogdata->Color.green/65535.0f,
-							  fogdata->Color.blue/65535.0f,
-							  1.0);
-					glDisable(GL_TEXTURE_2D);
-					flatColor = true;
-				}
-			}
-
 		}
 			break;
 		default:
@@ -435,41 +397,39 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 				}
 				flare = 0;
 			}
-			if(!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-				s = Shader::get("flat");
-			} else if(renderStep == kDiffuse) {
-				s = Shader::get("parallax");
-			} else {
-				s = Shader::get("specular");
-			}
 	}
 	
-	if (!flatColor) {
-		if(TMgr.Setup()) {
-			if(s) {
-				if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-					glActiveTextureARB(GL_TEXTURE1_ARB);
-					TMgr.RenderBump();
-					glActiveTextureARB(GL_TEXTURE0_ARB);
-				}
-			}
-			TMgr.RenderNormal();
+	if(s == NULL) {
+		if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+			s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
 		} else {
-			TMgr.ShapeDesc = UNONE;
-			return TMgr;
-		}
-
-		TMgr.SetupTextureMatrix();
-
-		if(s) {
-			s->setFloat("wobble", wobble);
-			s->setFloat("flare", flare);
-			s->setFloat("bloomScale", bloomScale);
-			s->setFloat("bloomShift", bloomShift);
-			s->setFloat("offset", offset);
-			s->enable();
+			s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
 		}
 	}
+	
+	if(TMgr.Setup()) {
+		if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+			glActiveTextureARB(GL_TEXTURE1_ARB);
+			TMgr.RenderBump();
+			glActiveTextureARB(GL_TEXTURE0_ARB);
+		}
+		TMgr.RenderNormal();
+	} else {
+		TMgr.ShapeDesc = UNONE;
+		return TMgr;
+	}
+
+	TMgr.SetupTextureMatrix();
+
+	if (renderStep == kGlow) {
+		s->setFloat("bloomScale", bloomScale);
+		s->setFloat("bloomShift", bloomShift);
+	}
+	s->setFloat("flare", flare);
+	s->setFloat("wobble", wobble);
+	s->setFloat("depth", offset);
+	s->setFloat("glow", 0);
+	s->enable();
 	return TMgr;
 }
 
@@ -527,30 +487,33 @@ float calcWobble(short transferMode, short transfer_phase) {
 	return wobble;
 }
 
-bool setupGlow(TextureManager &TMgr, float wobble, float intensity, float offset, RenderStep renderStep) {
+bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float intensity, float offset, RenderStep renderStep) {
 	if (TMgr.TransferMode == _textured_transfer && TMgr.IsGlowMapped()) {
 		Shader *s = NULL;
-		if (TMgr.TextureType == OGL_Txtr_Wall && TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-			s = Shader::get(renderStep == kGlow ? "specular" : "parallax");
+		if (TMgr.TextureType == OGL_Txtr_Wall) {
+			if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+				s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
+			} else {
+				s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
+			}
 		} else {
-			s = Shader::get("flat");
+			s = Shader::get(renderStep == kGlow ? "sprite_bloom" : "sprite");
 		}
-		s->setFloat("flare", 0);
-		s->setFloat("wobble", wobble);
-		s->setFloat("offset", offset - 1.0);
-
-		glColor4f(1,1,1,1);
-		if (renderStep == kDiffuse) {
-			s->setFloat("bloomScale", -1.0);
-			s->setFloat("bloomShift", 0.0);
-		} else {
-			s->setFloat("bloomScale", 1.0);
-			s->setFloat("bloomShift", 0.0);
- 		}
+		
 		TMgr.RenderGlowing();
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
+		
+		if (renderStep == kGlow) {
+			s->setFloat("bloomScale", 1.0);
+			s->setFloat("bloomShift", 0.0);
+		}
+		s->setFloat("flare", view->maximum_depth_intensity/float(FIXED_ONE_HALF));
+		s->setFloat("wobble", wobble);
+		s->setFloat("depth", offset - 1.0);
+		s->setFloat("glow", 1.0);
+		s->enable();
 		return true;
 	}
 	return false;
@@ -615,7 +578,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		}
 		glEnd();
 
-		if (setupGlow(TMgr, wobble, intensity, offset, renderStep)) {
+		if (setupGlow(view, TMgr, wobble, intensity, offset, renderStep)) {
 			glBegin(GL_POLYGON);
 			if (ceil)
 			{
@@ -757,7 +720,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			}
 			glEnd();
 			
-			if (setupGlow(TMgr, wobble, intensity, offset, renderStep)) {
+			if (setupGlow(view, TMgr, wobble, intensity, offset, renderStep)) {
 				glBegin(GL_QUADS);
 				for(int i = 0; i < vertex_count; ++i) {
 					float p2 = 0;
@@ -854,19 +817,21 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glColor4f(color[0], color[1], color[2], 1.0);
 	
 	Shader *s = NULL;
-	if(!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-		s = Shader::get("flat");
-	} else if(renderStep == kDiffuse) {
-		s = Shader::get("model_parallax");
+	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
+		s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
 	} else {
-		s = Shader::get("model_specular");
+		s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
 	}
-	if(s) {
-		s->setFloat("flare", flare);
-		s->setFloat("wobble", 0);
-		s->setFloat("offset", 0);
-		s->enable();
+	
+	if (renderStep == kGlow) {
+		s->setFloat("bloomScale", 0.0);
+		s->setFloat("bloomShift", 0.0);
 	}
+	s->setFloat("flare", flare);
+	s->setFloat("wobble", 0);
+	s->setFloat("depth", 0);
+	s->setFloat("glow", 0);
+	s->enable();
 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
@@ -1062,7 +1027,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 	glEnd();
 	
-	if (setupGlow(TMgr, 0, 1, offset, renderStep)) {
+	if (setupGlow(view, TMgr, 0, 1, offset, renderStep)) {
 		glBegin(GL_QUADS);
 		
 		glTexCoord2f(texCoords[0][0], texCoords[1][0]);
