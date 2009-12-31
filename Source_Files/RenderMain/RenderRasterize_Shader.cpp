@@ -810,8 +810,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	FindShadingColor(RenderRectangle.depth, RenderRectangle.ambient_shade, color);
 	glColor4f(color[0], color[1], color[2], 1.0);
 	
-	float bloomScale = 0;
-	float bloomShift = 0;
+	float bloomScale = 1.0;
+	float bloomShift = -0.5;
 	
 	Shader *s = NULL;
 	switch(RenderRectangle.transfer_mode) {
@@ -885,6 +885,16 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 	
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
+	
+	if (SkinPtr->GlowImg.IsPresent()) {
+		Shader::disable();
+		s->setFloat("glow", 1);
+		s->enable();
+		if(ModelPtr->Use(CLUT,OGL_SkinManager::Glowing)) {
+			LoadModelSkin(SkinPtr->GlowImg, Collection, CLUT);
+		}
+		glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());		
+	}
 
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
