@@ -1344,6 +1344,7 @@ struct ExtendedVertexData
 	GLdouble Vertex[4];
 	GLdouble TexCoord[2];
 	GLfloat Color[3];
+	GLfloat GlowColor[3];
 };
 
 
@@ -1543,14 +1544,19 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	
 	// Does the polygon have a variable shading over its extent?
 	bool PolygonVariableShade = false;
+	GLfloat GlowColor = 1;
 	
 	if (RenderPolygon.flags&_SHADELESS_BIT)
+	{
 		// The shadeless color is E-Z
 		glColor3f(1,1,1);
+		GlowColor = 1;
+	}
 	else if (RenderPolygon.ambient_shade < 0)
 	{
 		GLfloat Light = (- RenderPolygon.ambient_shade)/GLfloat(FIXED_ONE);
 		SglColor3f(Light,Light,Light);
+		GlowColor = std::max(GlowColor, Light);
 	}
 	else
 	{
@@ -1712,10 +1718,16 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 			
 			// Calculate the lighting
 			for (int k=0; k<NumVertices; k++)
+			{
 				FindShadingColor(-ExtendedVertexList[k].Vertex[2],RenderPolygon.ambient_shade,ExtendedVertexList[k].Color);
+				ExtendedVertexList[k].GlowColor[0] = ExtendedVertexList[k].GlowColor[1] = ExtendedVertexList[k].GlowColor[2] = std::max(GlowColor, ExtendedVertexList[k].Color[0]);
+			}
 		}
 		else
+		{
 			SglColor3f(Light,Light,Light);
+			GlowColor = std::max(GlowColor, Light);
+		}
 	}
 	
 	// Set up blending mode: either sharp edges or opaque
@@ -1754,11 +1766,11 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	TMgr.RenderNormal();	
 	SetBlend(TMgr.NormalBlend());
 	
+	GLint VertIndices[3*(MAXIMUM_VERTICES_OF_SPLIT_POLYGON - 2)];
 	if (PolygonVariableShade)
 	{
 		// Do triangulation by hand, creating a sort of ladder;
 		// this is to avoid creating a triangle fan
-		GLint VertIndices[3*(MAXIMUM_VERTICES_OF_SPLIT_POLYGON - 2)];
 		
 		// Find minimum and maximum depths:
 		GLint MinVertex = 0;
@@ -1892,14 +1904,25 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		// instead of the crisp mode.
 		// Added "IsBlended" test, so that alpha-channel selection would work properly
 		// on a glowmap texture that is atop a texture that is opaque to the void.
-		glColor3f(1,1,1);
 		glEnable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
 		if (Z_Buffering) glDisable(GL_DEPTH_TEST);
 		
 		TMgr.RenderGlowing();
 		SetBlend(TMgr.GlowBlend());
-		glDrawArrays(GL_POLYGON,0,NumVertices);
+		
+		if (PolygonVariableShade)
+		{
+			glEnableClientState(GL_COLOR_ARRAY);
+			glColorPointer(3,GL_FLOAT,sizeof(ExtendedVertexData),ExtendedVertexList[0].GlowColor);
+			glDrawElements(GL_TRIANGLES,3*(NumVertices-2),GL_UNSIGNED_INT,VertIndices);
+			glDisableClientState(GL_COLOR_ARRAY);
+		}
+		else
+		{
+			SglColor3f(GlowColor,GlowColor,GlowColor);
+			glDrawArrays(GL_POLYGON,0,NumVertices);
+		}
 	}
 	
 	// Revert to default blend
@@ -2313,7 +2336,8 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			// Do blending here to get the necessary semitransparency;
 			// push the cutoff down so 0.5*0.5 (half of half-transparency)
 		  // DON'T sRGB this.
-			glColor4f(1,1,1,Color[3]);
+			GLfloat GlowColor = 1;
+			glColor4f(std::max(GlowColor,Color[0]),std::max(GlowColor,Color[1]),std::max(GlowColor,Color[2]),Color[3]);
 			glEnable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
 			if (Z_Buffering) glDisable(GL_DEPTH_TEST);
@@ -2786,10 +2810,8 @@ void NormalShader(void *Data)
 void GlowingShader(void *Data)
 {
 	// Glowmapped setup
-  if(Using_sRGB) // heuristic to make it look "better"
-    glColor4f(1,1,1,ShaderData.Color[3]*ShaderData.Color[3]);
-  else
-    glColor4f(1,1,1,ShaderData.Color[3]);
+	GLfloat GlowColor = 1;
+	SglColor4f(std::max(ShaderData.Color[0],GlowColor),std::max(ShaderData.Color[1],GlowColor),std::max(ShaderData.Color[2],GlowColor),ShaderData.Color[3]*(Using_sRGB ? ShaderData.Color[3] : 1.0));
 	glEnable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
 	
