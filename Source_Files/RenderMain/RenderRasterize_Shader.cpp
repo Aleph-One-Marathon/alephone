@@ -317,6 +317,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 			TMgr.IsShadeless = 1;
 			flare = 0;
 			s = Shader::get(renderStep == kGlow ? "invincible_bloom" : "invincible");
+			break;
 		case _tinted_transfer:
 			flare = 0;
 			s = Shader::get(renderStep == kGlow ? "invisible_bloom" : "invisible");
