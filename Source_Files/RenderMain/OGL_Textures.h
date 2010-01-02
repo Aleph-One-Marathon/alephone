@@ -224,7 +224,11 @@ public:
 	bool VoidVisible() {return (TxtrOptsPtr->VoidVisible);}
 	short NormalBlend() {return (TxtrOptsPtr->NormalBlend) + (NormalImage.get() && NormalImage.get()->IsPremultiplied() && TxtrOptsPtr->NormalBlend < OGL_FIRST_PREMULT_ALPHA) ? OGL_FIRST_PREMULT_ALPHA : 0; }
 	short GlowBlend() {return (TxtrOptsPtr->GlowBlend) + (GlowImage.get() && GlowImage.get()->IsPremultiplied() && TxtrOptsPtr->GlowBlend < OGL_FIRST_PREMULT_ALPHA) ? OGL_FIRST_PREMULT_ALPHA : 0; }
-
+	float MinGlowIntensity() {return (TxtrOptsPtr->MinGlowIntensity);}
+	float BloomScale() {return (TxtrOptsPtr->BloomScale);}
+	float BloomShift() {return (TxtrOptsPtr->BloomShift);}
+	float GlowBloomScale() {return (TxtrOptsPtr->GlowBloomScale);}
+	float GlowBloomShift() {return (TxtrOptsPtr->GlowBloomShift);}
 	
 	// Scaling and offset of the current texture;
 	// important for sprites, which will be padded to make them OpenGL-friendly.

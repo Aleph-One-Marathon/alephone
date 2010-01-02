@@ -644,6 +644,26 @@ bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
 	{
 		return ReadBoundedInt16Value(Value,Data.GlowBlend,0,OGL_NUMBER_OF_BLEND_TYPES-1);
 	}
+	else if (StringsEqual(Tag,"normal_bloom_scale"))
+	{
+		return ReadFloatValue(Value,Data.BloomScale);
+	}
+	else if (StringsEqual(Tag,"normal_bloom_shift"))
+	{
+		return ReadFloatValue(Value,Data.BloomShift);
+	}
+	else if (StringsEqual(Tag,"glow_bloom_scale"))
+	{
+		return ReadFloatValue(Value,Data.GlowBloomScale);
+	}
+	else if (StringsEqual(Tag,"glow_bloom_shift"))
+	{
+		return ReadFloatValue(Value,Data.GlowBloomShift);
+	}
+	else if (StringsEqual(Tag,"minimum_glow_intensity"))
+	{
+		return ReadFloatValue(Value,Data.MinGlowIntensity);
+	}
 	UnrecognizedTag();
 	return false;
 }

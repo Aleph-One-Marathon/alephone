@@ -1544,7 +1544,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	
 	// Does the polygon have a variable shading over its extent?
 	bool PolygonVariableShade = false;
-	GLfloat GlowColor = 1;
+	GLfloat GlowColor = TMgr.MinGlowIntensity();
 	
 	if (RenderPolygon.flags&_SHADELESS_BIT)
 	{
@@ -2336,7 +2336,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 			// Do blending here to get the necessary semitransparency;
 			// push the cutoff down so 0.5*0.5 (half of half-transparency)
 		  // DON'T sRGB this.
-			GLfloat GlowColor = 1;
+			GLfloat GlowColor = TMgr.MinGlowIntensity();
 			glColor4f(std::max(GlowColor,Color[0]),std::max(GlowColor,Color[1]),std::max(GlowColor,Color[2]),Color[3]);
 			glEnable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
@@ -2810,7 +2810,7 @@ void NormalShader(void *Data)
 void GlowingShader(void *Data)
 {
 	// Glowmapped setup
-	GLfloat GlowColor = 1;
+	GLfloat GlowColor = ShaderData.SkinPtr->MinGlowIntensity;
 	SglColor4f(std::max(ShaderData.Color[0],GlowColor),std::max(ShaderData.Color[1],GlowColor),std::max(ShaderData.Color[2],GlowColor),ShaderData.Color[3]*(Using_sRGB ? ShaderData.Color[3] : 1.0));
 	glEnable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);

@@ -352,6 +352,26 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	{
 		return ReadBooleanValueAsBool(Value, Data.GlowIsPremultiplied);
 	}
+	else if (StringsEqual(Tag,"normal_bloom_scale"))
+	{
+		return ReadFloatValue(Value,Data.BloomScale);
+	}
+	else if (StringsEqual(Tag,"normal_bloom_shift"))
+	{
+		return ReadFloatValue(Value,Data.BloomShift);
+	}
+	else if (StringsEqual(Tag,"glow_bloom_scale"))
+	{
+		return ReadFloatValue(Value,Data.GlowBloomScale);
+	}
+	else if (StringsEqual(Tag,"glow_bloom_shift"))
+	{
+		return ReadFloatValue(Value,Data.GlowBloomShift);
+	}
+	else if (StringsEqual(Tag,"minimum_glow_intensity"))
+	{
+		return ReadFloatValue(Value,Data.MinGlowIntensity);
+	}
 	UnrecognizedTag();
 	return false;
 }

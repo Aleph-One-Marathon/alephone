@@ -296,8 +296,6 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	TMgr.TextureType = type;
 
 	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
-	float bloomScale = 0.5;
-	float bloomShift = -0.25;
 
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(color[0], color[1], color[2], 1);
@@ -343,8 +341,8 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	TMgr.SetupTextureMatrix();
 
 	if (renderStep == kGlow) {
-		s->setFloat("bloomScale", bloomScale);
-		s->setFloat("bloomShift", bloomShift);
+		s->setFloat("bloomScale", TMgr.BloomScale());
+		s->setFloat("bloomShift", TMgr.BloomShift());
 	}
 	s->setFloat("flare", flare);
 	s->setFloat("wobble", 0);
@@ -369,8 +367,6 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	TMgr.TransferData = 0;
 
 	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
-	float bloomScale = 1.0;
-	float bloomShift = -0.5;
 
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(intensity, intensity, intensity, 1.0);
@@ -422,8 +418,8 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	TMgr.SetupTextureMatrix();
 
 	if (renderStep == kGlow) {
-		s->setFloat("bloomScale", bloomScale);
-		s->setFloat("bloomShift", bloomShift);
+		s->setFloat("bloomScale", TMgr.BloomScale());
+		s->setFloat("bloomShift", TMgr.BloomShift());
 	}
 	s->setFloat("flare", flare);
 	s->setFloat("wobble", wobble);
@@ -506,13 +502,13 @@ bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float
 		glEnable(GL_ALPHA_TEST);
 		
 		if (renderStep == kGlow) {
-			s->setFloat("bloomScale", 1.0);
-			s->setFloat("bloomShift", 0.0);
+			s->setFloat("bloomScale", TMgr.GlowBloomScale());
+			s->setFloat("bloomShift", TMgr.GlowBloomShift());
 		}
 		s->setFloat("flare", view->maximum_depth_intensity/float(FIXED_ONE_HALF));
 		s->setFloat("wobble", wobble);
 		s->setFloat("depth", offset - 1.0);
-		s->setFloat("glow", 1.0);
+		s->setFloat("glow", TMgr.MinGlowIntensity());
 		s->enable();
 		return true;
 	}
@@ -810,10 +806,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	FindShadingColor(RenderRectangle.depth, RenderRectangle.ambient_shade, color);
 	glColor4f(color[0], color[1], color[2], 1.0);
 	
-	float bloomScale = 1.0;
-	float bloomShift = -0.5;
-	
 	Shader *s = NULL;
+	bool canGlow = false;
 	switch(RenderRectangle.transfer_mode) {
 		case _static_transfer:
 			flare = 0;
@@ -834,6 +828,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 					glColor4f(0,0,0,1);
 				}
 				flare = 0;
+			} else {
+				canGlow = true;
 			}
 			break;
 		default:
@@ -849,8 +845,8 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 	
 	if (renderStep == kGlow) {
-		s->setFloat("bloomScale", bloomScale);
-		s->setFloat("bloomShift", bloomShift);
+		s->setFloat("bloomScale", SkinPtr->BloomScale);
+		s->setFloat("bloomShift", SkinPtr->BloomShift);
 	}
 	s->setFloat("flare", flare);
 	s->setFloat("wobble", 0);
@@ -886,9 +882,13 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 	
-	if (SkinPtr->GlowImg.IsPresent()) {
+	if (canGlow && SkinPtr->GlowImg.IsPresent()) {
 		Shader::disable();
-		s->setFloat("glow", 1);
+		s->setFloat("glow", SkinPtr->MinGlowIntensity);
+		if (renderStep == kGlow) {
+			s->setFloat("bloomScale", SkinPtr->GlowBloomScale);
+			s->setFloat("bloomShift", SkinPtr->GlowBloomShift);
+		}
 		s->enable();
 		if(ModelPtr->Use(CLUT,OGL_SkinManager::Glowing)) {
 			LoadModelSkin(SkinPtr->GlowImg, Collection, CLUT);
