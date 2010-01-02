@@ -93,12 +93,13 @@ private:
 	FBO _horizontal;
 	FBO _vertical;
 	
-	Shader *_shader;
+	Shader *_shader_blur;
+	Shader *_shader_bloom;
 	
 public:
 	
-	Blur(GLuint w, GLuint h, Shader* shader)
-	: _horizontal(w, h), _vertical(w, h), _shader(shader) {}
+	Blur(GLuint w, GLuint h, Shader* s_blur, Shader* s_bloom)
+	: _horizontal(w, h), _vertical(w, h), _shader_blur(s_blur), _shader_bloom(s_bloom) {}
 	
 	void resize(GLuint w, GLuint h) {
 		_horizontal = FBO(w, h);
@@ -127,25 +128,28 @@ public:
 		for (int i = 0; i < 3; i++) {
 			glDisable(GL_BLEND);
 			_vertical.activate();
-			_shader->setFloat("offsetx", 1);
-			_shader->setFloat("offsety", 0);
-			_shader->setFloat("pass", i + 1);
-			_shader->enable();
+			_shader_blur->setFloat("offsetx", 1);
+			_shader_blur->setFloat("offsety", 0);
+			_shader_blur->setFloat("pass", i + 1);
+			_shader_blur->enable();
 			_horizontal.draw();
 			Shader::disable();
 			FBO::deactivate();
 			
 			_horizontal.activate();
-			_shader->setFloat("offsetx", 0);
-			_shader->setFloat("offsety", 1);
-			_shader->setFloat("pass", i + 1);
-			_shader->enable();
+			_shader_blur->setFloat("offsetx", 0);
+			_shader_blur->setFloat("offsety", 1);
+			_shader_blur->setFloat("pass", i + 1);
+			_shader_blur->enable();
 			_vertical.draw();
 			Shader::disable();
 			FBO::deactivate();
 			
 			glEnable(GL_BLEND);
+			_shader_bloom->setFloat("pass", i + 1);
+			_shader_bloom->enable();
 			_horizontal.draw();
+			Shader::disable();
 		}
 	}
 };
@@ -157,12 +161,13 @@ public:
  */
 void RenderRasterize_Shader::setupGL() {
 
-	Shader* s = Shader::get("blur");
+	Shader* s_blur = Shader::get("blur");
+	Shader* s_bloom = Shader::get("bloom");
 
 	blur = NULL;
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur)) {
-		if(s) {
-			blur = new Blur(320., 320. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, s);
+		if(s_blur && s_bloom) {
+			blur = new Blur(320., 320. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, s_blur, s_bloom);
 		}
 	}
 
@@ -208,17 +213,20 @@ void RenderRasterize_Shader::render_tree() {
 
 	if(blur) {
 
+		s = Shader::get("blur");
+		s->setFloat("srgb", Using_sRGB ? 1.0 : 0.0);
+		s = Shader::get("bloom");
+		s->setFloat("srgb", Using_sRGB ? 1.0 : 0.0);
+		
 		blur->begin();
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		RenderRasterizerClass::render_tree(kGlow);
 		blur->end();
 
-		if (Using_sRGB) glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 		glDisable(GL_DEPTH_TEST);
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		blur->draw();
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
-		if (Using_sRGB) glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 	}
 }
 

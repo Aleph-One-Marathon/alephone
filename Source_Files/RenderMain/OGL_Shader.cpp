@@ -279,6 +279,20 @@ void initDefaultPrograms() {
         "	gl_FragColor = vec4(t, 1.0) * vertexColor;\n"
         "}\n";    
     
+    defaultVertexPrograms["bloom"] = defaultVertexPrograms["blur"];
+    defaultFragmentPrograms["bloom"] = ""
+		"uniform sampler2DRect texture0;\n"
+		"uniform float srgb;\n"
+		"varying vec4 vertexColor;\n"
+		"void main (void) {\n"
+		"	vec4 color = texture2DRect(texture0, gl_TexCoord[0].xy);\n"
+		"	if (srgb > 0.5) {\n"
+		"		float adjust = 1.41;\n"
+		"		color = pow(color, vec4(adjust, adjust, adjust, 1.0));\n"
+		"	}\n"
+		"	gl_FragColor = color * vertexColor;\n"
+		"}\n";    
+    
     defaultVertexPrograms["landscape"] = ""
         "varying vec3 viewDir;\n"
         "varying float texScale;\n"
