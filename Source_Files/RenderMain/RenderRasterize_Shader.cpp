@@ -125,7 +125,11 @@ public:
 		glOrtho(0, _vertical._w, 0, _vertical._h, 0.0, 1.0);
 		glColor4f(1., 1., 1., 1.);
 		
-		for (int i = 0; i < 3; i++) {
+		int passes = _shader_bloom->passes();
+		if (passes < 0)
+			passes = 3;
+		
+		for (int i = 0; i < passes; i++) {
 			glDisable(GL_BLEND);
 			_vertical.activate();
 			_shader_blur->setFloat("offsetx", 1);

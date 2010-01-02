@@ -54,30 +54,36 @@ class XML_ShaderParser: public XML_ElementParser {
 
 	FileSpecifier _vert, _frag;
 	std::string _name;
+	int16 _passes;
 public:
 
 	virtual bool HandleAttribute(const char *Tag, const char *Value);
 	virtual bool AttributesDone();
 	virtual bool ResetValues();
-	XML_ShaderParser(): XML_ElementParser("shader") {}
+	XML_ShaderParser(): XML_ElementParser("shader"), _passes(-1) {}
 };
 
 bool XML_ShaderParser::HandleAttribute(const char *Tag, const char *Value) {
 
 	if(StringsEqual(Tag,"name")) {
 		_name = Value;
+		return true;
 	} else if(StringsEqual(Tag,"vert")) {
 		_vert.SetNameWithPath(Value);
+		return true;
 	} else if(StringsEqual(Tag,"frag")) {
 		_frag.SetNameWithPath(Value);
+		return true;
+	} else if(StringsEqual(Tag,"passes")) {
+		return ReadInt16Value(Value,_passes);
 	}
-	
+	UnrecognizedTag();
 	return true;
 };
 
 bool XML_ShaderParser::AttributesDone() {
     initDefaultPrograms();
-	Shader::Shaders[_name] = Shader(_name, _vert, _frag);
+	Shader::Shaders[_name] = Shader(_name, _vert, _frag, _passes);
 	return true;
 }
 
@@ -153,7 +159,7 @@ void Shader::unloadAll() {
 		it->second.unload();
 }
 
-Shader::Shader(const std::string& name) : _programObj(NULL), _loaded(false), _vert(NULL), _frag(NULL) {
+Shader::Shader(const std::string& name) : _programObj(NULL), _passes(-1), _loaded(false), _vert(NULL), _frag(NULL) {
     initDefaultPrograms();
     if (defaultVertexPrograms.count(name) > 0) {
         _vert = new GLcharARB[defaultVertexPrograms[name].size() + 1];
@@ -165,7 +171,7 @@ Shader::Shader(const std::string& name) : _programObj(NULL), _loaded(false), _ve
     }
 }    
 
-Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag) : _programObj(NULL), _loaded(false) {
+Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag, int16& passes) : _programObj(NULL), _passes(passes), _loaded(false) {
     initDefaultPrograms();
 	
 	_vert = parseFile(vert);
@@ -247,6 +253,10 @@ void Shader::unload() {
 		_programObj = NULL;
 		_loaded = false;
 	}
+}
+
+int16 Shader::passes() {
+	return _passes;
 }
 
 void initDefaultPrograms() {

@@ -35,6 +35,7 @@ private:
 	GLhandleARB _programObj;
 	GLcharARB *_vert;
 	GLcharARB *_frag;
+	int16 _passes;
 	bool _loaded;
 
 	static std::map<std::string, Shader> Shaders;
@@ -44,9 +45,9 @@ public:
 	static Shader* get(const std::string& name);
 	static void unloadAll();
 	
-	Shader() : _programObj(NULL), _loaded(false) {}
+	Shader() : _programObj(NULL), _passes(-1), _loaded(false) {}
 	Shader(const std::string& name);
-	Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag);
+	Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag, int16& passes);
 	~Shader();
 
 	void load();
@@ -54,6 +55,7 @@ public:
 	void enable();
 	void unload();
 	void setFloat(const char* name, float);
+	int16 passes();
 
 	static void disable();
 };
