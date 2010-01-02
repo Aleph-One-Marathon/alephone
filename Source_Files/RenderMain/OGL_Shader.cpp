@@ -442,12 +442,8 @@ void initDefaultPrograms() {
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "void main(void) {\n"
-        "	float a = fract(sin(usestatic*(gl_TexCoord[0].x * 133.0 + gl_TexCoord[0].y * 471.0) + time * 7.0) * 43757.0); \n"
-        "	float b = fract(sin(usestatic*(gl_TexCoord[0].x * 2331.0 + gl_TexCoord[0].y * 63.0) + time * 3.0) * 32451.0); \n"
-        "	float c = fract(sin(usestatic*(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0) + time * 31.0) * 34563.0);\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
-        "	vec3 intensity = vec3(1.0, 1.0, 1.0);\n"
-        "	intensity = vec3(a, b, c) * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "	vec3 intensity = vec3(0.0, 0.0, 0.0);\n"
         "	float fogFactor = exp2(FDxLOG2E * dot(viewDir, viewDir));\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
