@@ -10,7 +10,7 @@ endif
 
 librenderother_a_SOURCES = ChaseCam.h computer_interface.h \
   fades.h FontHandler.h game_window.h HUDRenderer.h \
-  HUDRenderer_OGL.h HUDRenderer_SW.h HUDRenderer_Lua.h images.h motion_sensor.h \
+  HUDRenderer_OGL.h HUDRenderer_SW.h HUDRenderer_Lua.h images.h IMG_savepng.h motion_sensor.h \
   Image_Blitter.h OGL_Blitter.h Shape_Blitter.h OGL_LoadScreen.h overhead_map.h OverheadMap_OGL.h OverheadMapRenderer.h OverheadMap_SDL.h \
   screen_definitions.h screen_drawing.h screen.h \
   screen_shared.h sdl_fonts.h TextLayoutHelper.h TextStrings.h ViewControl.h \
