@@ -17,7 +17,7 @@ libfiles_a_SOURCES = AStream.h crc.h extensions.h FileHandler.h		\
   preprocess_map_shared.cpp resource_manager.cpp $(ZZIP_SRCS) wad.cpp	\
   wad.cpp wad_prefs.cpp wad_sdl.cpp
 
-EXTRA_libfiles_a_SOURCES = filetypes_macintosh.cpp SDL_rwops.zzip.c
+EXTRA_libfiles_a_SOURCES = filetypes_macintosh.cpp SDL_rwops_zzip.c
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/GameWorld \
   -I$(top_srcdir)/Source_Files/Input -I$(top_srcdir)/Source_Files/Misc \
