@@ -140,8 +140,9 @@ AM_CONDITIONAL(BUILD_ZZIP_RWOPS, test x$have_zzip = xtrue)
 
 have_png=false
 if [[ "x$enable_png" = "xyes" ]]; then
-AC_CHECK_LIB(png, png_get_io_ptr, [ 
-		  LIBS="-lpng $LIBS"
+PKG_CHECK_MODULES([PNG], [libpng], [
+		  CPPFLAGS="$PNG_CFLAGS $CPPFLAGS"
+		  LIBS="$PNG_LIBS $LIBS"
 		  have_png=true
 		  AC_DEFINE(HAVE_PNG, 1, [PNG support enabled])]
 )
@@ -190,11 +191,10 @@ fi
 
 if [[ "x$enable_vorbis" = "xyes" ]]; then
 dnl Check for vorbisfile
-AC_CHECK_HEADERS([vorbis/vorbisfile.h], [
-				 AC_CHECK_LIB(vorbisfile, ov_open, [
-				 LIBS="-lvorbisfile $LIBS"
-				 AC_DEFINE(HAVE_VORBISFILE, 1, [vorbis support is enabled])
-])
+PKG_CHECK_MODULES([vorbisfile], [vorbisfile], [
+			  CPPFLAGS="$VORBISFILE_CFLAGS $CPPFLAGS"
+			  LIBS="$VORBISFILE_LIBS $LIBS"
+			  AC_DEFINE(HAVE_VORBISFILE, 1, [vorbis support enabled])
 ])
 fi
 
