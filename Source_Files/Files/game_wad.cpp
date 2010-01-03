@@ -365,6 +365,8 @@ bool load_level_from_map(
 // keep these around for level export
 static std::vector<static_platform_data> static_platforms;
 
+extern bool ok_to_reset_scenery_solidity;
+
 /* Hopefully this is in the correct order of initialization... */
 /* This sucks, beavis. */
 void complete_loading_level(
@@ -396,6 +398,7 @@ void complete_loading_level(
 	}
 
 	scan_and_add_scenery();
+	ok_to_reset_scenery_solidity = true;
 	
 	/* Gotta do this after recalculate redundant.. */
 	if(version==MARATHON_ONE_DATA_VERSION)
@@ -2496,6 +2499,7 @@ static struct wad_data *build_save_game_wad(
 static void complete_restoring_level(
 	struct wad_data *wad)
 {
+	ok_to_reset_scenery_solidity = false;
 	/* Loading games needs this done. */
 	reset_action_queues();
 }

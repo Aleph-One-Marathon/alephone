@@ -235,6 +235,29 @@ struct scenery_definition *get_scenery_definition(
 	return GetMemberWithBounds(scenery_definitions,scenery_type,NUMBER_OF_SCENERY_DEFINITIONS);
 }
 
+// UGH: level MML loads *after* game_wad has instantiated map scenery,
+// so, if we see scenery solidity change, go through and reset all the
+// scenery object solidity
+
+bool ok_to_reset_scenery_solidity = false;
+
+static void reset_scenery_solidity()
+{
+	if (!ok_to_reset_scenery_solidity) return;
+
+	for (int i = 0; i < MAXIMUM_OBJECTS_PER_MAP; ++i)
+	{
+		object_data* object = &objects[i];
+		if (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object) == _object_is_scenery)
+		{
+			scenery_definition *definition = get_scenery_definition(object->permutation);
+			if (!definition) break;
+
+			SET_OBJECT_SOLIDITY(object, definition->flags & _scenery_is_solid);
+		}
+	}
+}
+
 
 // For being more specific about the shapes -- either normal or destroyed
 class XML_SceneryShapesParser: public XML_ElementParser
@@ -375,8 +398,14 @@ bool XML_SceneryObjectParser::ResetValues()
 
 static XML_SceneryObjectParser SceneryObjectParser;
 
+class XML_SceneryParser : public XML_ElementParser
+{
+public:
+	XML_SceneryParser() : XML_ElementParser("scenery") {}
+	bool End() { reset_scenery_solidity(); return true; }
+};
 
-static XML_ElementParser SceneryParser("scenery");
+static XML_SceneryParser SceneryParser;
 
 
 // XML-parser support
