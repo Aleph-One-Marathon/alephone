@@ -191,7 +191,7 @@ fi
 
 if [[ "x$enable_vorbis" = "xyes" ]]; then
 dnl Check for vorbisfile
-PKG_CHECK_MODULES([vorbisfile], [vorbisfile], [
+PKG_CHECK_MODULES([VORBISFILE], [vorbisfile], [
 			  CPPFLAGS="$VORBISFILE_CFLAGS $CPPFLAGS"
 			  LIBS="$VORBISFILE_LIBS $LIBS"
 			  AC_DEFINE(HAVE_VORBISFILE, 1, [vorbis support enabled])
