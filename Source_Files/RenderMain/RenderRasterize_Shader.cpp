@@ -50,9 +50,10 @@ public:
 		
 		glGenTextures(1, &texID);
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
-		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);		
+		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, Using_sRGB ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);		
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
 		assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
+		if(Using_sRGB) glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);		
 	}
 	
