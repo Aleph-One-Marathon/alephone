@@ -176,7 +176,7 @@ static OpenedFile ShapesFile;
 /* ---------- private prototypes */
 
 static void update_color_environment(bool is_opengl);
-static short find_or_add_color(struct rgb_color_value *color, struct rgb_color_value *colors, short *color_count);
+static short find_or_add_color(struct rgb_color_value *color, struct rgb_color_value *colors, short *color_count, bool update_flags);
 static void _change_clut(void (*change_clut_proc)(struct color_table *color_table), struct rgb_color_value *colors, short color_count);
 
 static void build_shading_tables8(struct rgb_color_value *colors, short color_count, pixel8 *shading_tables);
@@ -1831,7 +1831,8 @@ static void precalculate_bit_depth_constants(
 static short find_or_add_color(
 	struct rgb_color_value *color,
 	register struct rgb_color_value *colors,
-	short *color_count)
+	short *color_count, 
+	bool update_flags = true)
 {
 	short i;
 	
@@ -1843,7 +1844,7 @@ static short find_or_add_color(
 	{
 		if (colors->red==color->red && colors->green==color->green && colors->blue==color->blue)
 		{
-			colors->flags= color->flags;
+			if (update_flags) colors->flags= color->flags;
 			return i;
 		}
 	}
@@ -1963,7 +1964,7 @@ static void update_color_environment(
 					for (color_index= 0; color_index<PIXEL8_MAXIMUM_COLORS; ++color_index) shading_remapping_table[color_index]= static_cast<pixel8>(color_index);
 					for (color_index= 0; color_index<collection->color_count-NUMBER_OF_PRIVATE_COLORS; ++color_index)
 					{
-						shading_remapping_table[find_or_add_color(&primary_colors[color_index], colors, &color_count)]= 
+						shading_remapping_table[find_or_add_color(&primary_colors[color_index], colors, &color_count, false)]= 
 							find_or_add_color(&alternate_colors[color_index], colors, &color_count);
 					}
 //					shading_remapping_table[iBLACK]= iBLACK; /* make iBLACK==>iBLACK remapping explicit */
