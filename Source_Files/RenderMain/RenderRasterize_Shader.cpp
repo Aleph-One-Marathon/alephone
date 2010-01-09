@@ -217,12 +217,6 @@ void RenderRasterize_Shader::render_tree() {
 		return;
 
 	if(blur) {
-
-		s = Shader::get("blur");
-		s->setFloat("srgb", Using_sRGB ? 1.0 : 0.0);
-		s = Shader::get("bloom");
-		s->setFloat("srgb", Using_sRGB ? 1.0 : 0.0);
-		
 		blur->begin();
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		RenderRasterizerClass::render_tree(kGlow);
