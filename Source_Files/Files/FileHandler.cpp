@@ -321,6 +321,21 @@ bool FileSpecifier::CreateDirectory()
 	return err == 0;
 }
 
+static std::string unix_path_separators(const std::string& input)
+{
+	if (PATH_SEP == '/') return input;
+
+	std::string output;
+	for (std::string::const_iterator it = input.begin(); it != input.end(); ++it) {
+		if (*it == PATH_SEP)
+			output.push_back('/');
+		else
+			output.push_back(*it);
+	}
+
+	return output;
+}
+
 // Open data file
 bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 {
@@ -336,7 +351,7 @@ bool FileSpecifier::Open(OpenedFile &OFile, bool Writable)
 #ifdef HAVE_ZZIP
 		if (!Writable)
 		{
-			f = OFile.f = SDL_RWFromZZIP(GetPath(), "rb");
+			f = OFile.f = SDL_RWFromZZIP(unix_path_separators(GetPath()).c_str(), "rb");
 		} 
 		else
 #endif
@@ -389,7 +404,7 @@ bool FileSpecifier::Exists()
 {
 #ifdef HAVE_ZZIP
 	// Check whether zzip can open the file (slow!)
-	ZZIP_FILE* file = zzip_open(GetPath(), R_OK);
+	ZZIP_FILE* file = zzip_open(unix_path_separators(GetPath()).c_str(), R_OK);
 	if (file)
 	{
 		zzip_close(file);
@@ -704,9 +719,9 @@ void FileSpecifier::GetName(char *part) const
 void FileSpecifier::AddPart(const string &part)
 {
 	if (name.length() && name[name.length() - 1] == PATH_SEP)
-		name += part;
+		name += local_path_separators(part.c_str());
 	else
-		name = name + PATH_SEP + part;
+		name = name + PATH_SEP + local_path_separators(part.c_str());
 
 	canonicalize_path();
 }
