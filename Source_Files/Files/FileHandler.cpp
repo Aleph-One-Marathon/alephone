@@ -402,25 +402,28 @@ bool FileSpecifier::Open(OpenedResourceFile &OFile, bool Writable)
 // Check for existence of file
 bool FileSpecifier::Exists()
 {
-#ifdef HAVE_ZZIP
-	// Check whether zzip can open the file (slow!)
-	ZZIP_FILE* file = zzip_open(unix_path_separators(GetPath()).c_str(), R_OK);
-	if (file)
-	{
-		zzip_close(file);
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-#else
 	// Check whether the file is readable
 	err = 0;
 	if (access(GetPath(), R_OK) < 0)
 		err = errno;
-	return err == 0;
+	
+#ifdef HAVE_ZZIP
+	if (err)
+	{
+		// Check whether zzip can open the file (slow!)
+		ZZIP_FILE* file = zzip_open(unix_path_separators(GetPath()).c_str(), R_OK);
+		if (file)
+		{
+			zzip_close(file);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 #endif
+	return (err == 0);
 }
 
 bool FileSpecifier::IsDir()
