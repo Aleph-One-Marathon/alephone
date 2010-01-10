@@ -491,6 +491,24 @@ float calcWobble(short transferMode, short transfer_phase) {
 	return wobble;
 }
 
+void setupBlendFunc(short blendType) {
+	switch(blendType)
+	{
+		case OGL_BlendType_Crossfade:
+			glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+			break;
+		case OGL_BlendType_Add:
+			glBlendFunc(GL_SRC_ALPHA,GL_ONE);
+			break;
+		case OGL_BlendType_Crossfade_Premult:
+			glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+			break;
+		case OGL_BlendType_Add_Premult:
+			glBlendFunc(GL_ONE, GL_ONE);
+			break;
+	}
+}
+
 bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float intensity, float offset, RenderStep renderStep) {
 	if (TMgr.TransferMode == _textured_transfer && TMgr.IsGlowMapped()) {
 		Shader *s = NULL;
@@ -505,9 +523,11 @@ bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float
 		}
 		
 		TMgr.RenderGlowing();
+		setupBlendFunc(TMgr.GlowBlend());
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.001);
 		
 		if (renderStep == kGlow) {
 			s->setFloat("bloomScale", TMgr.GlowBloomScale());
@@ -527,19 +547,28 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 	polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, RenderStep renderStep) {
 
 	float offset = 0;
-	if (void_present) {
-		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
-	} else {
-		glEnable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
-	}
 	
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
 	float intensity = get_light_data(surface->lightsource_index)->intensity / float(FIXED_ONE - 1);
 	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
 	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble, intensity, offset, renderStep);
 	if(TMgr.ShapeDesc == UNONE) { return; }
+	
+	if (TMgr.IsBlended()) {
+		glEnable(GL_BLEND);
+		setupBlendFunc(TMgr.NormalBlend());
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.001);
+	} else {
+		glDisable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.5);
+	}
+	
+	if (void_present) {
+		glDisable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+	}
 	
 	short vertex_count = polygon->vertex_count;
 
@@ -655,12 +684,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vertical_surface_data *surface, bool void_present, RenderStep renderStep) {
 		
 	float offset = 0;
-	if (void_present) {
-		glDisable(GL_BLEND);
-		glDisable(GL_ALPHA_TEST);
-	} else {
-		glEnable(GL_BLEND);
-		glEnable(GL_ALPHA_TEST);
+	if (!void_present) {
 		offset = -2.0;
 	}
 	
@@ -670,6 +694,22 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble, intensity, offset, renderStep);
 	if(TMgr.ShapeDesc == UNONE) { return; }
 
+	if (TMgr.IsBlended()) {
+		glEnable(GL_BLEND);
+		setupBlendFunc(TMgr.NormalBlend());
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.001);
+	} else {
+		glDisable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.5);
+	}
+	
+	if (void_present) {
+		glDisable(GL_BLEND);
+		glDisable(GL_ALPHA_TEST);
+	}
+	
 	world_distance h= MIN(surface->h1, surface->hmax);
 	
 	if (h>surface->h0) {
@@ -807,8 +847,16 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 
 	glEnable(GL_TEXTURE_2D);
-	glEnable(GL_BLEND);
-	glEnable(GL_ALPHA_TEST);
+	if (SkinPtr->OpacityType != OGL_OpacType_Crisp) {
+		glEnable(GL_BLEND);
+		setupBlendFunc(SkinPtr->NormalBlend);
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.001);
+	} else {
+		glDisable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.5);
+	}
 
 	GLfloat color[3];
 	FindShadingColor(RenderRectangle.depth, RenderRectangle.ambient_shade, color);
@@ -891,6 +939,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 	
 	if (canGlow && SkinPtr->GlowImg.IsPresent()) {
+		glEnable(GL_BLEND);
+		setupBlendFunc(SkinPtr->GlowBlend);
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.001);
+		
 		Shader::disable();
 		s->setFloat("glow", SkinPtr->MinGlowIntensity);
 		if (renderStep == kGlow) {
@@ -1052,8 +1105,16 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		texCoords[1][1] = TMgr.V_Scale+TMgr.V_Offset;
 	}
 	
-	glEnable(GL_BLEND);
-	glEnable(GL_ALPHA_TEST);
+	if(TMgr.IsBlended()) {
+		glEnable(GL_BLEND);
+		setupBlendFunc(TMgr.NormalBlend());
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.001);
+	} else {
+		glDisable(GL_BLEND);
+		glEnable(GL_ALPHA_TEST);
+		glAlphaFunc(GL_GREATER, 0.5);
+	}
 	glBegin(GL_QUADS);
 
 	glTexCoord2f(texCoords[0][0], texCoords[1][0]);

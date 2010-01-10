@@ -682,13 +682,8 @@ bool OGL_StartRun()
 	// if some new pixels cannot be assumed to be always 100% opaque.
 	
 	// [DEFAULT]
-	// Set standard alpha-test function
-	// Classic renderer: cut off at halfway point (for sharp edges)
-	// Shader renderer: always blend, but use low alpha-test for z-buffer management
-	if (ShaderRender)
-		glAlphaFunc(GL_GREATER,0.1);
-	else
-		glAlphaFunc(GL_GREATER,0.5);
+	// Set standard alpha-test function; cut off at halfway point (for sharp edges)
+	glAlphaFunc(GL_GREATER,0.5);
 	
 	// [DEFAULT]
 	// Set standard crossfade blending function (for smooth transitions)
