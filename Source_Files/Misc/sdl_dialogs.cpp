@@ -323,7 +323,7 @@ static XML_DColorParser SelectedIncompatibleMetaserverGamesColorParser(METASERVE
 
 class XML_DFontParser : public XML_ElementParser {
 public:
-	XML_DFontParser(int _type) : XML_ElementParser("font"), type(_type), id(kFontIDMonaco), size(12), style(styleNormal) {}
+	XML_DFontParser(int _type) : XML_ElementParser("font"), type(_type), id(kFontIDMonaco), size(12), style(styleNormal), adjust_height(0) {}
 	
 	bool Start()
 	{
@@ -359,6 +359,9 @@ public:
 		} else if (StringsEqual(tag, "bold_italic_file")) {
 			bold_oblique = value;
 			return true;
+		} else if (StringsEqual(tag, "adjust_height")) {
+			if (!ReadNumericalValue(value, "%d", adjust_height))
+				return false;
 		} else {
 			UnrecognizedTag();
 			return false;
@@ -379,7 +382,7 @@ public:
 		dialog_theme[type].font_spec.bold = bold;
 		dialog_theme[type].font_spec.oblique = oblique;
 		dialog_theme[type].font_spec.bold_oblique = bold_oblique;
-		dialog_theme[type].font_spec.adjust_height = 0;
+		dialog_theme[type].font_spec.adjust_height = adjust_height;
 		dialog_theme[type].font_set = true;
 		return true;
 	}
@@ -387,7 +390,7 @@ public:
 private:
 	bool have_id, have_size, have_path;
 
-	int id, size, style;
+	int id, size, style, adjust_height;
 	int type;
 
 	std::string normal, bold, oblique, bold_oblique;
