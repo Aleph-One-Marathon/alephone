@@ -44,7 +44,7 @@ fi
 
 rm -rf autom4te.cache
 
-aclocalinclude="-I m4 $ACLOCAL_FLAGS"; \
+aclocalinclude="$ACLOCAL_FLAGS"; \
 (echo $_echo_n " + Running aclocal: $_echo_c"; \
     aclocal $aclocalinclude; \
  echo "done.") && \

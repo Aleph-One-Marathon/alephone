@@ -4,7 +4,6 @@ SUBDIRS = Source_Files tools data
 
 # Requires automake 1.5
 AUTOMAKE_OPTIONS = 1.5 foreign
-ACLOCAL_AMFLAGS = -I m4
 
 EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
   Makefile.BeOS docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
