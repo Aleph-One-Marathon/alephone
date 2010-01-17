@@ -998,17 +998,13 @@ bool game_is_over(
 				
 			case _game_of_rugby:
 				/* Kill limit is the number of flag pulls */
-				for(player_index= 0; player_index<dynamic_world->player_count; ++player_index)
+				for (int i = 0; i < NUMBER_OF_TEAM_COLORS; ++i)
 				{
-					struct player_data *player= get_player_data(player_index);
-					
-					// make sure we subtract our suicides.
-					count+= player->netgame_parameters[_points_scored];
-				}
-				
-				if(count>=dynamic_world->game_information.kill_limit)
-				{
-					game_over= true;
+					if (team_netgame_parameters[i][_points_scored] >= dynamic_world->game_information.kill_limit)
+					{
+						game_over = true;
+						break;
+					}
 				}
 				break;
 			// START Benad

@@ -482,6 +482,19 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		return false;
 		}
 	}
+
+	if (topology->game_data.net_game_type == _game_of_rugby)
+	{
+		if (capabilities[Capabilities::kRugby] == 0)
+		{
+			if (warn_joiner)
+			{
+				ServerWarningMessage serverWarningMessage("The gatherer is using a newer version of Aleph One with different rugby scoring. You will not appear in the list of available players.", ServerWarningMessage::kJoinerUngatherable);
+				channel->enqueueOutgoingMessage(serverWarningMessage);
+			}
+			return false;
+		}
+	}
 	
 	return true;
 }
@@ -1207,6 +1220,7 @@ bool NetEnter(void)
 	my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
 	my_capabilities[Capabilities::kZippedData] = Capabilities::kZippedDataVersion;
 	my_capabilities[Capabilities::kNetworkStats] = Capabilities::kNetworkStatsVersion;
+	my_capabilities[Capabilities::kRugby] = Capabilities::kRugbyVersion;
 
 	// net commands!
 	sIgnoredPlayers.clear();
