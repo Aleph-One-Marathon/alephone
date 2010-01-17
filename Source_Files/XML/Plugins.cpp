@@ -354,7 +354,7 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 			ParseDirectory(file);
 		}
 #ifdef HAVE_ZZIP
-		else if (algo::ends_with(it->name, ".zip") || algo::ends_with(it->name, ".plgA"))
+		else if (algo::ends_with(it->name, ".zip") || algo::ends_with(it->name, ".ZIP"))
 		{
 			// search it for a Plugin.xml file
 			ZZIP_DIR* zzipdir = zzip_dir_open(file.GetPath(), 0);
