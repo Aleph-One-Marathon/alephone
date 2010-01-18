@@ -690,11 +690,14 @@ static int Lua_Player_Items_Set(lua_State *L)
 	int item_count = player->items[item_type];
 	item_definition *definition = get_item_definition_external(item_type);
 	int new_item_count = static_cast<int>(lua_tonumber(L, 3));
+
+	bool accounting = L_Get_Proper_Item_Accounting(L);
 	
 	if (new_item_count < 0) 
 		luaL_error(L, "items: invalid item count");
 
 	if (item_count == NONE) item_count = 0;
+	int real_difference = item_count - new_item_count;
 	if (new_item_count == 0) new_item_count = NONE;
 
 	if (new_item_count < item_count)
@@ -712,13 +715,23 @@ static int Lua_Player_Items_Set(lua_State *L)
 			{
 				select_next_best_weapon(player_index);
 			}
+
+			if (accounting)
+			{
+				for (int i = 0; i < real_difference; ++i)
+					object_was_just_destroyed(_object_is_item, item_type);
+			}
 		}
 	}
 	else if (new_item_count > item_count)
 	{
 		while (new_item_count-- > item_count)
 		{
-			try_and_add_player_item(player_index, item_type);
+			if (try_and_add_player_item(player_index, item_type))
+			{
+				if (accounting) 
+					object_was_just_added(_object_is_item, item_type);
+			}
 		}
 	}
 
@@ -2251,6 +2264,12 @@ static int Lua_Game_Get_Kill_Limit(lua_State *L)
 	return 1;
 }
 
+static int Lua_Game_Get_Proper_Item_Accounting(lua_State* L)
+{
+	lua_pushboolean(L, L_Get_Proper_Item_Accounting(L));
+	return 1;
+}
+
 static int Lua_Game_Get_Time_Remaining(lua_State* L)
 {
   if(dynamic_world->game_information.game_time_remaining > 999 * 30)
@@ -2285,6 +2304,14 @@ static int Lua_Game_Get_Version(lua_State *L)
 {
 	lua_pushstring(L, A1_DATE_VERSION);
 	return 1;
+}
+
+static int Lua_Game_Set_Proper_Item_Accounting(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		luaL_error(L, "proper_item_accounting: incorrect argument type");
+	L_Set_Proper_Item_Accounting(L, lua_toboolean(L, 2));
+	return 0;
 }
 
 static int Lua_Game_Set_Scoring_Mode(lua_State *L)
@@ -2360,6 +2387,7 @@ const luaL_reg Lua_Game_Get[] = {
 	{"kill_limit", Lua_Game_Get_Kill_Limit},
 	{"time_remaining", Lua_Game_Get_Time_Remaining},
 	{"local_random", L_TableFunction<Lua_Game_Local_Random>},
+	{"proper_item_accounting", Lua_Game_Get_Proper_Item_Accounting},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
 	{"restore_passed", L_TableFunction<L_Restore_Passed>},
 	{"restore_saved", L_TableFunction<L_Restore_Saved>},
@@ -2372,9 +2400,10 @@ const luaL_reg Lua_Game_Get[] = {
 };
 
 const luaL_reg Lua_Game_Set[] = {
-  {"scoring_mode", Lua_Game_Set_Scoring_Mode},
-  {"over", Lua_Game_Set_Over},
-  {0, 0}
+	{"proper_item_accounting", Lua_Game_Set_Proper_Item_Accounting},
+	{"scoring_mode", Lua_Game_Set_Scoring_Mode},
+	{"over", Lua_Game_Set_Over},
+	{0, 0}
 };
 
 char Lua_Music_Name[] = "Music";

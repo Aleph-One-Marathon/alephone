@@ -491,6 +491,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">the game kill limit, or 0 if there is none</p></dd>
       <dt>
+    .proper_item_accounting <span class="version">SVN</span>
+</dt>
+<dd><p class="description">When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</p></dd>
+      <dt>
     .time_remaining<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">the number of ticks until the game ends, or nil if there is no time limit</p></dd>

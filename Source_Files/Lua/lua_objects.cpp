@@ -232,8 +232,21 @@ char Lua_EffectTypes_Name[] = "EffectTypes";
 
 char Lua_Item_Name[] = "item";
 
+int Lua_Item_Delete(lua_State* L)
+{
+	object_data* object = get_object_data(Lua_Item::Index(L, 1));
+	int16 item_type = object->permutation;
+
+	remove_map_object(Lua_Item::Index(L, 1));
+	if (L_Get_Proper_Item_Accounting(L))
+	{
+		object_was_just_destroyed(_object_is_item, item_type);
+	}
+	return 0;
+}
+
 const luaL_reg Lua_Item_Get[] = {
-	{"delete", L_TableFunction<lua_delete_object<Lua_Item> >},
+	{"delete", L_TableFunction<Lua_Item_Delete>},
 	{"facing", get_object_facing<Lua_Item>},
 	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Item> >},
 	{"polygon", get_object_polygon<Lua_Item>},

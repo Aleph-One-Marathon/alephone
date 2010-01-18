@@ -684,6 +684,29 @@ std::string L_Get_Search_Path(lua_State* L)
 
 }
 
+static char L_PROPER_ITEM_ACCOUNTING_KEY[] = "proper_item_accounting";
+
+void L_Set_Proper_Item_Accounting(lua_State* L, bool value)
+{
+	lua_pushlightuserdata(L, reinterpret_cast<void*>(L_PROPER_ITEM_ACCOUNTING_KEY));
+	lua_pushboolean(L, value);
+	lua_settable(L, LUA_REGISTRYINDEX);
+}
+
+bool L_Get_Proper_Item_Accounting(lua_State* L)
+{
+	bool value = false;
+	lua_pushlightuserdata(L, reinterpret_cast<void*>(L_PROPER_ITEM_ACCOUNTING_KEY));
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	if (lua_isboolean(L, -1))
+	{
+		value = lua_toboolean(L, -1);
+	}
+	
+	lua_pop(L, 1);
+	return value;
+}
+
 static int L_Enable_Player(lua_State*);
 static int L_Disable_Player(lua_State*);
 static int L_Kill_Script(lua_State*);

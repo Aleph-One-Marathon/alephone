@@ -44,6 +44,9 @@ extern "C"
 extern void L_Set_Search_Path(lua_State* L, const std::string& path);
 extern std::string L_Get_Search_Path(lua_State* L);
 
+extern bool L_Get_Proper_Item_Accounting(lua_State* L);
+extern void L_Set_Proper_Item_Accounting(lua_State* L, bool value);
+
 // pushes a function that returns the parameterized function
 template<lua_CFunction f>
 int L_TableFunction(lua_State *L)
