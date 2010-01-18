@@ -847,7 +847,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 
 	glEnable(GL_TEXTURE_2D);
-	if (SkinPtr->OpacityType != OGL_OpacType_Crisp) {
+	if (SkinPtr->OpacityType != OGL_OpacType_Crisp || RenderRectangle.transfer_mode == _tinted_transfer) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(SkinPtr->NormalBlend);
 		glEnable(GL_ALPHA_TEST);
@@ -1105,7 +1105,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		texCoords[1][1] = TMgr.V_Scale+TMgr.V_Offset;
 	}
 	
-	if(TMgr.IsBlended()) {
+	if(TMgr.IsBlended() || TMgr.TransferMode == _tinted_transfer) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr.NormalBlend());
 		glEnable(GL_ALPHA_TEST);
