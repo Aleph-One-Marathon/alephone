@@ -264,7 +264,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<type>projectile</type>
       </argument>
     </function>
-    <function name="monster_damaged" version="SVN">
+    <function name="monster_damaged" version="20100118">
       <description>whenever a monster is damaged, but before it dies if applicable. The monster's vitality may be negative when this trigger is called. Ther monster's vitality will be tested again after this trigger returns, so a script may prevent a monster's death</description>
       <argument name="monster">
 	<type>monster</type>
@@ -433,7 +433,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>the game kill limit, or 0 if there is none</description>
 	<type>number</type>
       </variable>
-      <variable name="proper_item_accounting" version="SVN">
+      <variable name="proper_item_accounting" version="20100118">
 	<description>When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</description>
 	<type>boolean</type>
       </variable>
@@ -607,40 +607,40 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether light is active</description>
 	<type>boolean</type>
       </variable>
-      <variable name="tag" version="SVN">
+      <variable name="tag" version="20100118">
 	<description>tag of light</description>
 	<type>tag</type>
       </variable>
-      <variable name="initial_phase" version="SVN">
+      <variable name="initial_phase" version="20100118">
 	<description>phase the light starts with</description>
 	<type>time</type>
       </variable>
-      <variable name="initially_active" version="SVN">
+      <variable name="initially_active" version="20100118">
 	<description>whether the light was initially active</description>
 	<type>boolean</type>
       </variable>
-      <variable name="intensity" access="read-only" version="SVN">
+      <variable name="intensity" access="read-only" version="20100118">
 	<description>current intensity for this light (range: 0-1)</description>
 	<type>number</type>
       </variable>
       <subtable-accessor name="states" classname="light_state_subtable" index="light_type">
-	<variable name="delta_intensity" version="SVN">
+	<variable name="delta_intensity" version="20100118">
 	  <description>random intensity change for this state</description>
 	  <type>number</type>
 	</variable>
-	<variable name="delta_period" version="SVN">
+	<variable name="delta_period" version="20100118">
 	  <description>random period change for this state</description>
 	  <type>time</type>
 	</variable>
-	<variable name="light_function" version="SVN">
+	<variable name="light_function" version="20100118">
 	  <description>light function for this state</description>
 	  <type>light_function</type>
 	</variable>
-	<variable name="intensity" version="SVN">
+	<variable name="intensity" version="20100118">
 	  <description>intensity for this state</description>
 	  <type>number</type>
 	</variable>
-	<variable name="period" version="SVN">
+	<variable name="period" version="20100118">
 	  <description>period for this state</description>
 	  <type>number</type>
 	</variable>
@@ -692,27 +692,27 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="media">
-      <variable name="direction" version="SVN">
+      <variable name="direction" version="20100118">
 	<description>direction of media</description>
 	<type>angle</type>
       </variable>
-      <variable name="height" access="read-only" version="SVN">
+      <variable name="height" access="read-only" version="20100118">
 	<description>height of media</description>
 	<type>WU</type>
       </variable>
-      <variable name="high" version="SVN">
+      <variable name="high" version="20100118">
 	<description>high tide of media</description>
 	<type>WU</type>
       </variable>
-      <variable name="light" version="SVN">
+      <variable name="light" version="20100118">
 	<description>light that controls this media's tide</description>
 	<type>light</type>
       </variable>
-      <variable name="low" version="SVN">
+      <variable name="low" version="20100118">
 	<description>low tide of media</description>
 	<type>WU</type>
       </variable>
-      <variable name="speed" version="SVN">
+      <variable name="speed" version="20100118">
 	<description>speed of media</description>
 	<type>speed</type>
       </variable>
@@ -720,7 +720,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>type of media</description>
 	<type>media_type</type>
       </variable>
-      <variable name="type" version="SVN">
+      <variable name="type" version="20100118">
 	<description>type of media</description>
 	<type>media_type</type>
       </variable>
@@ -860,7 +860,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>direction platform is moving or will move when active</description>
 	<type>boolean</type>
       </variable>
-      <variable name="door" version="SVN">
+      <variable name="door" version="20100118">
 	<description>platform is a door</description>
 	<type>boolean</type>
       </variable>
@@ -872,7 +872,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>current floor height of platform</description>
 	<type>WU</type>
       </variable>
-      <variable name="locked" version="SVN">
+      <variable name="locked" version="20100118">
 	<description>platform is locked</description>
 	<type>boolean</type>
 	<note>this flag doesn't actually do anything</note>
@@ -889,7 +889,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon of this platform</description>
 	<type>polygon</type>
       </variable>
-      <variable name="secret" version="SVN">
+      <variable name="secret" version="20100118">
 	<description>platform is secret</description>
 	<type>boolean</type>
 	<note>secret platforms aren't shown on the overhead map</note>
@@ -898,7 +898,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>platform speed</description>
 	<type>speed</type>
       </variable>
-      <variable name="type" version="SVN">
+      <variable name="type" version="20100118">
 	<description>type of this platform</description>
 	<type>platform_type</type>
 	<note>the only thing the engine uses type for is the platform's sound</note>

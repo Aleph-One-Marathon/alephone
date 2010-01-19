@@ -309,7 +309,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <li>projectile: the projectile that delivered the damage (can be nil)</li>
 </ul>
 </dd>
-<dt>.monster_damaged(monster, aggressor_monster, damage_type, damage_amount, projectile) <span class="version">SVN</span>
+<dt>.monster_damaged(monster, aggressor_monster, damage_type, damage_amount, projectile) <span class="version">20100118</span>
 </dt>
 <dd>
 <p class="description">whenever a monster is damaged, but before it dies if applicable. The monster's vitality may be negative when this trigger is called. Ther monster's vitality will be tested again after this trigger returns, so a script may prevent a monster's death</p>
@@ -491,7 +491,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">the game kill limit, or 0 if there is none</p></dd>
       <dt>
-    .proper_item_accounting <span class="version">SVN</span>
+    .proper_item_accounting <span class="version">20100118</span>
 </dt>
 <dd><p class="description">When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</p></dd>
       <dt>
@@ -679,19 +679,19 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .active</dt>
 <dd><p class="description">whether light is active</p></dd>
       <dt>
-    .tag <span class="version">SVN</span>
+    .tag <span class="version">20100118</span>
 </dt>
 <dd><p class="description">tag of light</p></dd>
       <dt>
-    .initial_phase <span class="version">SVN</span>
+    .initial_phase <span class="version">20100118</span>
 </dt>
 <dd><p class="description">phase the light starts with</p></dd>
       <dt>
-    .initially_active <span class="version">SVN</span>
+    .initially_active <span class="version">20100118</span>
 </dt>
 <dd><p class="description">whether the light was initially active</p></dd>
       <dt>
-    .intensity<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .intensity<span class="access"> (read-only)</span> <span class="version">20100118</span>
 </dt>
 <dd><p class="description">current intensity for this light (range: 0-1)</p></dd>
       <dt>
@@ -699,23 +699,23 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   </dt>
 <dd><dl>
 <dt>
-    .delta_intensity <span class="version">SVN</span>
+    .delta_intensity <span class="version">20100118</span>
 </dt>
 <dd><p class="description">random intensity change for this state</p></dd>
 <dt>
-    .delta_period <span class="version">SVN</span>
+    .delta_period <span class="version">20100118</span>
 </dt>
 <dd><p class="description">random period change for this state</p></dd>
 <dt>
-    .intensity <span class="version">SVN</span>
+    .intensity <span class="version">20100118</span>
 </dt>
 <dd><p class="description">intensity for this state</p></dd>
 <dt>
-    .light_function <span class="version">SVN</span>
+    .light_function <span class="version">20100118</span>
 </dt>
 <dd><p class="description">light function for this state</p></dd>
 <dt>
-    .period <span class="version">SVN</span>
+    .period <span class="version">20100118</span>
 </dt>
 <dd><p class="description">period for this state</p></dd>
 </dl></dd>
@@ -788,27 +788,27 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Media[index]</dt>
 <dd><dl>
       <dt>
-    .direction <span class="version">SVN</span>
+    .direction <span class="version">20100118</span>
 </dt>
 <dd><p class="description">direction of media</p></dd>
       <dt>
-    .height<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .height<span class="access"> (read-only)</span> <span class="version">20100118</span>
 </dt>
 <dd><p class="description">height of media</p></dd>
       <dt>
-    .high <span class="version">SVN</span>
+    .high <span class="version">20100118</span>
 </dt>
 <dd><p class="description">high tide of media</p></dd>
       <dt>
-    .light <span class="version">SVN</span>
+    .light <span class="version">20100118</span>
 </dt>
 <dd><p class="description">light that controls this media's tide</p></dd>
       <dt>
-    .low <span class="version">SVN</span>
+    .low <span class="version">20100118</span>
 </dt>
 <dd><p class="description">low tide of media</p></dd>
       <dt>
-    .speed <span class="version">SVN</span>
+    .speed <span class="version">20100118</span>
 </dt>
 <dd><p class="description">speed of media</p></dd>
       <dt>
@@ -816,7 +816,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">type of media</p></dd>
       <dt>
-    .type <span class="version">SVN</span>
+    .type <span class="version">20100118</span>
 </dt>
 <dd><p class="description">type of media</p></dd>
     </dl></dd>
@@ -953,7 +953,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .contracting</dt>
 <dd><p class="description">direction platform is moving or will move when active</p></dd>
       <dt>
-    .door <span class="version">SVN</span>
+    .door <span class="version">20100118</span>
 </dt>
 <dd><p class="description">platform is a door</p></dd>
       <dt>
@@ -963,7 +963,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .floor_height</dt>
 <dd><p class="description">current floor height of platform</p></dd>
       <dt>
-    .locked <span class="version">SVN</span>
+    .locked <span class="version">20100118</span>
 </dt>
 <dd>
 <p class="description">platform is locked</p>
@@ -980,7 +980,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">polygon of this platform</p></dd>
       <dt>
-    .secret <span class="version">SVN</span>
+    .secret <span class="version">20100118</span>
 </dt>
 <dd>
 <p class="description">platform is secret</p>
@@ -990,7 +990,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .speed</dt>
 <dd><p class="description">platform speed</p></dd>
       <dt>
-    .type <span class="version">SVN</span>
+    .type <span class="version">20100118</span>
 </dt>
 <dd>
 <p class="description">type of this platform</p>
