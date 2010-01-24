@@ -278,7 +278,7 @@ inline bool StringPresent(vector<char>& String)
 	return (String.size() > 1);
 }
 
-GLint maxTextureSize = 0;
+GLint glMaxTextureSize = 0;
 bool hasS3TC = false;
 
 #ifdef HAVE_OPENGL
@@ -286,7 +286,7 @@ void OGL_TextureOptionsBase::Load()
 {
 	FileSpecifier File;
 
-	GLint maxTextureSize = 0;
+	GLint maxTextureSize = glMaxTextureSize;
 	if (GetMaxSize())
 	{
 		maxTextureSize = MIN(maxTextureSize, GetMaxSize());
@@ -437,7 +437,7 @@ void OGL_LoadModelsImages(short Collection)
 {
 	assert(Collection >= 0 && Collection < MAXIMUM_COLLECTIONS);
 
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize);
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &glMaxTextureSize);
 	hasS3TC = OGL_CheckExtension("GL_ARB_texture_compression") && OGL_CheckExtension("GL_EXT_texture_compression_s3tc");
 	
 	// For wall/sprite images
