@@ -412,12 +412,12 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	}
 	
 	if(TMgr.Setup()) {
+		TMgr.RenderNormal(); // must allocate first
 		if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 			glActiveTextureARB(GL_TEXTURE1_ARB);
 			TMgr.RenderBump();
 			glActiveTextureARB(GL_TEXTURE0_ARB);
 		}
-		TMgr.RenderNormal();
 	} else {
 		TMgr.ShapeDesc = UNONE;
 		return TMgr;
