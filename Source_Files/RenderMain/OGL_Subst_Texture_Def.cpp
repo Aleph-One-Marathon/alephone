@@ -102,7 +102,6 @@ void OGL_LoadTextures(short Collection)
 {
 	TOList_t& TOL = TOList[Collection];
 
-        #pragma omp parallel for schedule(dynamic)
 	for (int i = 0; i < TOL.size(); ++i) 
 	{
 		// Load the images
@@ -112,7 +111,6 @@ void OGL_LoadTextures(short Collection)
 		// this is for doing sprites with textures with sizes different from the originals
 		TOL[i].OptionsData.FindImagePosition();
 
-		#pragma omp critical
 		OGL_ProgressCallback(1);
 	}
 }
