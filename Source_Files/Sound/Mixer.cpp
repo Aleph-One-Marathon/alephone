@@ -289,6 +289,10 @@ Mixer::Channel::Channel() :
 
 void Mixer::Channel::LoadSoundHeader(const Header& header, _fixed pitch)
 {
+	if (!header.length) {
+		active = false;
+		return;
+	}
 	sixteen_bit = header.sixteen_bit;
 	stereo = header.stereo;
 	signed_8bit = header.signed_8bit;
