@@ -91,10 +91,6 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #include "progress.h"
 #include "OGL_Shader.h"
 
-#ifdef _OPENMP
-#include <omp.h>
-#endif
-
 // Whether or not OpenGL is present and usable
 static bool _OGL_IsPresent = false;
 
@@ -175,10 +171,6 @@ void OGL_ProgressCallback(int delta_progress)
 {
 	if (!show_ogl_progress) return;
 	ogl_progress += delta_progress;
-#ifdef _OPENMP
-	// can only draw OpenGL in the main thread
-	if (omp_get_thread_num() == 0) 
-#endif
 	{
 		int32 current_ticks = SDL_GetTicks();
 		if (current_ticks > last_update_tick + 33)
