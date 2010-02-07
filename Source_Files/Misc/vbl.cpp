@@ -829,9 +829,10 @@ void reset_recording_and_playback_queues(
 void stop_replay(
 	void)
 {
-	assert(replay.valid);
 	if (replay.game_is_being_replayed)
 	{
+		assert(replay.valid);
+
 		replay.game_is_being_replayed= false;
 		if (replay.resource_data)
 		{
