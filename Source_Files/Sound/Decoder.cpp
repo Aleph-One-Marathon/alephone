@@ -23,6 +23,7 @@
 
 #include "Decoder.h"
 #include "BasicIFFDecoder.h"
+#include "game_errors.h"
 #include "MADDecoder.h"
 #include "SndfileDecoder.h"
 #include "VorbisDecoder.h"
@@ -32,6 +33,7 @@ using std::auto_ptr;
 
 StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
 {
+	ScopedGameError gameErrorRestorer;
 #ifdef HAVE_SNDFILE
 	{ 
 		auto_ptr<SndfileDecoder> sndfileDecoder(new SndfileDecoder);
@@ -67,6 +69,7 @@ StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
 
 Decoder *Decoder::Get(FileSpecifier &File)
 {
+	ScopedGameError gameErrorRestorer;
 #ifdef HAVE_SNDFILE
 	{
 		auto_ptr<SndfileDecoder> sndfileDecoder(new SndfileDecoder);
