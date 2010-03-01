@@ -2190,7 +2190,7 @@ static uint8 *tag_to_global_array_and_size(
 			count= dynamic_world->object_count;
 			break;
 		case MAP_INDEXES_TAG:
-			count= dynamic_world->map_index_count;
+			count= static_cast<unsigned short>(dynamic_world->map_index_count);
 			break;
 		case AUTOMAP_LINES:
 			count= (dynamic_world->line_count/8+((dynamic_world->line_count%8)?1:0)); 
