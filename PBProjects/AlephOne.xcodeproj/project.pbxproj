@@ -122,6 +122,7 @@
 		AE7C21B70BFF67B700CE63EC /* lzio.c in Sources */ = {isa = PBXBuildFile; fileRef = AE7C219B0BFF67B700CE63EC /* lzio.c */; };
 		AE7C21D60BFF688000CE63EC /* Update.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE7C21D50BFF688000CE63EC /* Update.cpp */; };
 		AE9A39F70CCADFA7004717E3 /* ConnectPool.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */; };
+		AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AEA74E6E09B01BD900DC3B74 /* ImageLoader.h in Headers */ = {isa = PBXBuildFile; fileRef = F5CC92EA0240D56101A80001 /* ImageLoader.h */; };
 		AEA74E7109B01BE300DC3B74 /* DDS.h in Headers */ = {isa = PBXBuildFile; fileRef = AE791CF60968E49100350190 /* DDS.h */; };
 		AEAE12FF0FC9AB4900EDA5A6 /* joystick.h in Headers */ = {isa = PBXBuildFile; fileRef = AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */; };
@@ -701,6 +702,7 @@
 		AE7C21D50BFF688000CE63EC /* Update.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Update.cpp; path = ../Source_Files/Network/Update.cpp; sourceTree = "<group>"; };
 		AE9A39F40CCADF78004717E3 /* ConnectPool.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ConnectPool.h; path = ../Source_Files/Network/ConnectPool.h; sourceTree = "<group>"; };
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
+		AEA31D2B113C9DF700266621 /* csalerts.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = csalerts.mm; path = ../Source_Files/CSeries/csalerts.mm; sourceTree = SOURCE_ROOT; };
 		AEAE12FD0FC9AB4900EDA5A6 /* joystick.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = joystick.h; sourceTree = "<group>"; };
 		AEAE12FE0FC9AB4900EDA5A6 /* joystick_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = joystick_sdl.cpp; sourceTree = "<group>"; };
 		AEAE131F0FC9C38400EDA5A6 /* lua_serialize.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_serialize.cpp; sourceTree = "<group>"; };
@@ -769,7 +771,7 @@
 		F52211290136A4DD01000001 /* cstypes.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = cstypes.h; path = ../Source_Files/CSeries/cstypes.h; sourceTree = SOURCE_ROOT; };
 		F522112D0136A4DD01000001 /* mytm.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = mytm.h; path = ../Source_Files/CSeries/mytm.h; sourceTree = SOURCE_ROOT; };
 		F52211410136A66601000001 /* byte_swapping.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = byte_swapping.cpp; path = ../Source_Files/CSeries/byte_swapping.cpp; sourceTree = SOURCE_ROOT; };
-		F52211430136A66601000001 /* csalerts_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csalerts_sdl.cpp; path = ../Source_Files/CSeries/csalerts_sdl.cpp; sourceTree = SOURCE_ROOT; };
+		F52211430136A66601000001 /* csalerts_sdl.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = csalerts_sdl.cpp; path = ../Source_Files/CSeries/csalerts_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F52211450136A66601000001 /* cscluts_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = cscluts_sdl.cpp; path = ../Source_Files/CSeries/cscluts_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F522114B0136A66601000001 /* csmisc_sdl.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csmisc_sdl.cpp; path = ../Source_Files/CSeries/csmisc_sdl.cpp; sourceTree = SOURCE_ROOT; };
 		F522114C0136A66601000001 /* csstrings.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = csstrings.cpp; path = ../Source_Files/CSeries/csstrings.cpp; sourceTree = SOURCE_ROOT; };
@@ -1341,6 +1343,7 @@
 			children = (
 				F522144B0136C0C401000001 /* Headers */,
 				AEAE132C0FC9C3C800EDA5A6 /* BStream.cpp */,
+				AEA31D2B113C9DF700266621 /* csalerts.mm */,
 				F52211410136A66601000001 /* byte_swapping.cpp */,
 				F52211430136A66601000001 /* csalerts_sdl.cpp */,
 				F52211450136A66601000001 /* cscluts_sdl.cpp */,
@@ -2533,6 +2536,7 @@
 				277AB6C2109CE2570003402A /* RenderRasterize_Shader.cpp in Sources */,
 				2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */,
 				AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */,
+				AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

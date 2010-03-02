@@ -162,7 +162,7 @@ void execute_timer_tasks(uint32 time);
 
 // Prototypes
 static void initialize_application(void);
-static void shutdown_application(void);
+void shutdown_application(void);
 static void initialize_marathon_music_handler(void);
 static void process_event(const SDL_Event &event);
 
@@ -544,7 +544,7 @@ static void initialize_application(void)
 	initialize_game_state();
 }
 
-static void shutdown_application(void)
+void shutdown_application(void)
 {
         // ZZZ: seem to be having weird recursive shutdown problems esp. with fullscreen modes...
         static bool already_shutting_down = false;

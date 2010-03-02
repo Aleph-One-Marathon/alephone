@@ -36,9 +36,32 @@ April 22, 2003 (Woody Zenfell):
 #include "sdl_dialogs.h"
 #include "sdl_widgets.h"
 
+#if defined(__WIN32__)
+#include <windows.h>
+#endif
+
 /*
  *  Display alert message
  */
+
+#ifdef __MACOSX__
+extern void system_alert_user(const char*, short);
+#else
+void system_alert_user(const char* message, short severity)
+{
+#if defined(__WIN32__)
+	UINT type;
+	if (severity == infoError) {
+		type = MB_ICONWARNING|MB_OK;
+	} else {
+		type = MB_ICONERROR|MB_OK;
+	}
+	MessageBox(NULL, message, severity == infoError ? "Warning" : "Error", type);
+#else
+	fprintf(stderr, "%s: %s\n", severity == infoError ? "INFO" : "FATAL", message);
+#endif	
+}
+#endif
 
 const int MAX_ALERT_WIDTH = 320;
 
@@ -47,7 +70,7 @@ extern void update_game_window(void);
 void alert_user(const char *message, short severity) 
 {
   if (SDL_GetVideoSurface() == NULL) {
-    fprintf(stderr, "%s: %s\n", severity == infoError ? "INFO" : "FATAL", message);
+	  system_alert_user(message, severity);
   } else {
     dialog d;
     vertical_placer *placer = new vertical_placer;
@@ -147,13 +170,15 @@ void halt(void)
  */
 
 extern void stop_recording();
+extern void shutdown_application();
 
 void vhalt(const char *message)
 {
 	stop_recording();
         logFatal1("vhalt: %s", message);
 	GetCurrentLogger()->flush();
-	fprintf(stderr, "vhalt %s\n", message);
+	shutdown_application();
+	system_alert_user(message, fatalError);
 	abort();
 }
 
