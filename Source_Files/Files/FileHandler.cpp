@@ -916,10 +916,14 @@ public:
 		{
 			char date[256];
 			tm *time_info = localtime(&i->date);
-			strftime(date, 256, "%x %R", time_info);
-			int date_width = text_width(date, font, style);
-			draw_text(s, date, x + width - date_width, y, selected ? get_theme_color(ITEM_WIDGET, ACTIVE_STATE) : get_theme_color(ITEM_WIDGET, DEFAULT_STATE), font, style);
-			set_drawing_clip_rectangle(0, x, s->h, x + width - date_width - 4);
+
+			if (time_info) 
+			{
+				strftime(date, 256, "%x %R", time_info);
+				int date_width = text_width(date, font, style);
+				draw_text(s, date, x + width - date_width, y, selected ? get_theme_color(ITEM_WIDGET, ACTIVE_STATE) : get_theme_color(ITEM_WIDGET, DEFAULT_STATE), font, style);
+				set_drawing_clip_rectangle(0, x, s->h, x + width - date_width - 4);
+			}
 			draw_text(s, FileSpecifier::HideExtension(i->name).c_str (), x, y, selected ? get_theme_color (ITEM_WIDGET, ACTIVE_STATE) : get_theme_color (ITEM_WIDGET, DEFAULT_STATE), font, style, true);
 		}
 
