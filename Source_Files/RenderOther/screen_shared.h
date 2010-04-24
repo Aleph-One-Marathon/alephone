@@ -637,6 +637,10 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 			iconColor.g = iconColor.b = 0x0;
 
 		}
+		else
+		{
+			return;
+		}
 	}
 	else if (dynamic_world->speaking_player_index == local_player_index)
 	{
@@ -660,8 +664,17 @@ static void DisplayNetMicStatus(SDL_Surface *s)
 		_get_interface_color(PLAYER_COLOR_BASE_INDEX + player->color, &iconColor);
 		icon = ">!<";
 	}
+	else
+	{
+		return;
+	}
 
 	FontSpecifier& Font = GetOnScreenFont();
+
+	DisplayTextDest = s;
+	DisplayTextFont = Font.Info;
+	DisplayTextStyle = Font.Style;
+
 	short Y = s->h - Font.LineSpacing / 3;
 	if (Console::instance()->input_active())
 	{
@@ -699,6 +712,11 @@ static void DisplayScores(SDL_Surface *s)
 	int WId = CWidth * kIdWidth;
 
 	FontSpecifier& Font = GetOnScreenFont();
+
+	DisplayTextDest = s;
+	DisplayTextFont = Font.Info;
+	DisplayTextStyle = Font.Style;
+
 	int H = Font.LineSpacing * (dynamic_world->player_count + 1);
 	int W = WName + WScore + WPing + WJitter + WErrors + WId;
 	int X = (s->w - W) / 2;
