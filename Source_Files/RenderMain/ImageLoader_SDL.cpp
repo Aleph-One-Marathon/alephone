@@ -67,7 +67,7 @@ bool ImageDescriptor::LoadFromFile(FileSpecifier& File, int ImgMode, int flags, 
 #ifdef HAVE_SDL_IMAGE
 	SDL_Surface *s = IMG_Load_RW(of.GetRWops(), 0);
 #else
-	SDL_Surface *s = SDL_LoadBMP_RW(of.GetRWops());
+	SDL_Surface *s = SDL_LoadBMP_RW(of.GetRWops(), 0);
 #endif
 	if (s == NULL)
 		return false;
