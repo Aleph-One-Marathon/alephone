@@ -1,15 +1,9 @@
 #ifndef __ALEPHVERSION_H
 #define __ALEPHVERSION_H
 
-/* If you change the version number here, you should also change it in:
-
-   Resources/Aleph One Classic SDL.r
-
-*/
-
-#define A1_DISPLAY_VERSION "0.23.1"
-#define A1_DISPLAY_DATE_VERSION "2010-02-18"
-#define A1_DATE_VERSION "20100218"
+#define A1_DISPLAY_VERSION "0.23.2"
+#define A1_DISPLAY_DATE_VERSION "2010-04-24"
+#define A1_DATE_VERSION "20100424"
 
 #ifdef WIN32
 #define A1_DISPLAY_PLATFORM "Windows"
