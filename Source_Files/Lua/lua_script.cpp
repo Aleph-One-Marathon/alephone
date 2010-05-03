@@ -1834,6 +1834,7 @@ void LoadSoloLua()
 void CloseLuaScript()
 {
 	// save variables for going into next level
+	PassedLuaState.clear();
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
 		PassedLuaState[it->first] = it->second.SavePassed();
@@ -1972,6 +1973,8 @@ int GetLuaGameEndCondition() {
 size_t save_lua_states()
 {
 	size_t length = 0;
+
+	SavedLuaState.clear();
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
 		SavedLuaState[it->first] = it->second.SaveAll();
@@ -2006,6 +2009,8 @@ void unpack_lua_states(uint8* data, size_t length)
 {
 	io::stream_buffer<io::array_source> sb(reinterpret_cast<char*>(data), length);
 	BIStreamBE s(&sb);
+
+	SavedLuaState.clear();
 	while (s.tellg() != s.maxg())
 	{
 		int16 index;
