@@ -95,6 +95,7 @@ using namespace std;
 #include "lua_projectiles.h"
 #include "lua_serialize.h"
 
+#include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
@@ -230,7 +231,7 @@ public:
 	bool Run();
 	void Stop() { running_ = false; }
 	bool Matches(lua_State *state) { return state == State(); }
-	void MarkCollections(std::set<short>& collections);
+	void MarkCollections(std::set<short>* collections);
 	void ExecuteCommand(const std::string& line);
 	std::string SavePassed();
 	std::string SaveAll();
@@ -863,7 +864,8 @@ void LuaState::ExecuteCommand(const std::string& line)
 	lua_settop(State(), 0);	
 }
 
-void LuaState::MarkCollections(std::set<short>& collections)
+// pass by pointer because boost::bind can't do non-const past 2nd argument
+void LuaState::MarkCollections(std::set<short>* collections)
 {
 	if (!running_)
 		return;
@@ -882,7 +884,7 @@ void LuaState::MarkCollections(std::set<short>& collections)
 			if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
 			{
 				mark_collection_for_loading(collection_index);
-				collections.insert(collection_index);
+				collections->insert(collection_index);
 			}
 			lua_pop(State(), 1);
 			lua_pushnumber(State(), i++);
@@ -897,7 +899,7 @@ void LuaState::MarkCollections(std::set<short>& collections)
 		if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
 		{
 			mark_collection_for_loading(collection_index);
-			collections.insert(collection_index);
+			collections->insert(collection_index);
 		}
 
 		lua_pop(State(), 1);
@@ -1008,7 +1010,7 @@ std::string LuaState::SavePassed()
 	}
 }
 
-typedef std::map<int, LuaState> state_map;
+typedef std::map<int, boost::shared_ptr<LuaState> > state_map;
 state_map states;
 
 // globals
@@ -1072,13 +1074,23 @@ static bool LuaRunning()
 {
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		if (it->second.Running())
+		if (it->second->Running())
 		{
 			return true;
 		}
 	}	
 
 	return false;
+}
+
+// call f on each Lua state
+template<class UnaryFunction>
+void L_Dispatch(const UnaryFunction& f)
+{
+	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
+	{
+		f(*it->second);
+	}
 }
 
 void L_Call_Init(bool fRestoringSaved)
@@ -1096,202 +1108,127 @@ void L_Call_Init(bool fRestoringSaved)
 		
 	}
 
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.Init(fRestoringSaved);
-	}
+	L_Dispatch(boost::bind(&LuaState::Init, _1, fRestoringSaved));
 }
 
 void L_Call_Cleanup ()
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.Cleanup();
-	}
+	L_Dispatch(boost::bind(&LuaState::Cleanup, _1));
 }
 
 void L_Call_Idle()
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.Idle();
-	}
+	L_Dispatch(boost::bind(&LuaState::Idle, _1));
 }
 
 void L_Call_PostIdle()
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.PostIdle();
-	}
+	L_Dispatch(boost::bind(&LuaState::PostIdle, _1));
 }
 
 void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.StartRefuel(type, player_index, panel_side_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::StartRefuel, _1, type, player_index, panel_side_index));
 }
 
 void L_Call_End_Refuel (short type, short player_index, short panel_side_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.EndRefuel(type, player_index, panel_side_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::EndRefuel, _1, type, player_index, panel_side_index));
 }
 
 void L_Call_Tag_Switch(short tag, short player_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.TagSwitch(tag, player_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::TagSwitch, _1, tag, player_index));
 }
 
 void L_Call_Light_Switch(short light, short player_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.LightSwitch(light, player_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::LightSwitch, _1, light, player_index));
 }
 
 void L_Call_Platform_Switch(short platform, short player_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.PlatformSwitch(platform, player_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::PlatformSwitch, _1, platform, player_index));
 }
 
 void L_Call_Terminal_Enter(short terminal_id, short player_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.TerminalEnter(terminal_id, player_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::TerminalEnter, _1, terminal_id, player_index));
 }
 
 void L_Call_Terminal_Exit(short terminal_id, short player_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.TerminalExit(terminal_id, player_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::TerminalExit, _1, terminal_id, player_index));
 }
 
 void L_Call_Pattern_Buffer(short side_index, short player_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.PatternBuffer(side_index, player_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::PatternBuffer, _1, side_index, player_index));
 }
 
 void L_Call_Got_Item(short type, short player_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.GotItem(type, player_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::GotItem, _1, type, player_index));
 }
 
 void L_Call_Light_Activated(short index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.LightActivated(index);
-	}
+	L_Dispatch(boost::bind(&LuaState::LightActivated, _1, index));
 }
 
 void L_Call_Platform_Activated(short index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.PlatformActivated(index);
-	}
+	L_Dispatch(boost::bind(&LuaState::PlatformActivated, _1, index));
 }
 
 void L_Call_Player_Revived (short player_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.PlayerRevived(player_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::PlayerRevived, _1, player_index));
 }
 
 void L_Call_Player_Killed (short player_index, short aggressor_player_index, short action, short projectile_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.PlayerKilled(player_index, aggressor_player_index, action, projectile_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::PlayerKilled, _1, player_index, aggressor_player_index, action, projectile_index));
 }
 
 void L_Call_Monster_Killed (short monster_index, short aggressor_player_index, short projectile_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.MonsterKilled(monster_index, aggressor_player_index, projectile_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::MonsterKilled, _1, monster_index, aggressor_player_index, projectile_index));
 }
 
 void L_Call_Monster_Damaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.MonsterDamaged(monster_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::MonsterDamaged, _1, monster_index, aggressor_monster_index, damage_type, damage_amount, projectile_index));
 }
 
 void L_Call_Player_Damaged (short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.PlayerDamaged(player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::PlayerDamaged, _1, player_index, aggressor_player_index, aggressor_monster_index, damage_type, damage_amount, projectile_index));
 }
 
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) 
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.ProjectileDetonated(type, owner_index, polygon, location);
-	}
+	L_Dispatch(boost::bind(&LuaState::ProjectileDetonated, _1, type, owner_index, polygon, location));
 }
 
 void L_Call_Item_Created (short item_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.ItemCreated(item_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::ItemCreated, _1, item_index));
 }
 
 void L_Invalidate_Monster(short monster_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.InvalidateMonster(monster_index);
-	}	
+	L_Dispatch(boost::bind(&LuaState::InvalidateMonster, _1, monster_index));
 }
 
 void L_Invalidate_Projectile(short projectile_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.InvalidateProjectile(projectile_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::InvalidateProjectile, _1, projectile_index));
 }
 
 void L_Invalidate_Object(short object_index)
 {
-	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-	{
-		it->second.InvalidateObject(object_index);
-	}
+	L_Dispatch(boost::bind(&LuaState::InvalidateObject, _1, object_index));
 }
 
 int L_Enable_Player(lua_State *L)
@@ -1340,11 +1277,11 @@ int L_Kill_Script(lua_State *L)
 {
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		if (it->second.Matches(L))
-		{
-			it->second.Stop();
+		if (it->second->Matches(L)) {
+			it->second->Stop();
 		}
 	}
+
 	return 0;
 }
 
@@ -1375,9 +1312,9 @@ int L_Restore_Saved(lua_State *L)
 {
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		if (it->second.Matches(L))
+		if (it->second->Matches(L))
 		{
-			return it->second.RestoreAll(SavedLuaState[it->first]);
+			return it->second->RestoreAll(SavedLuaState[it->first]);
 		}
 	}
 	
@@ -1388,9 +1325,9 @@ int L_Restore_Passed(lua_State *L)
 {
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		if (it->second.Matches(L))
+		if (it->second->Matches(L))
 		{
-			return it->second.RestorePassed(PassedLuaState[it->first]);
+			return it->second->RestorePassed(PassedLuaState[it->first]);
 		}
 	}
 	
@@ -1711,15 +1648,28 @@ static int L_Prompt(lua_State *L)
 }
 */
 
+static LuaState* LuaStateFactory(ScriptType script_type)
+{
+	switch (script_type) {
+	case _embedded_lua_script:
+		return new EmbeddedLuaState;
+	case _lua_netscript:
+		return new NetscriptState;
+	case _solo_lua_script:
+		return new SoloScriptState;
+	}
+}
+
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 {
 	assert(script_type >= _embedded_lua_script && script_type <= _solo_lua_script);
 
-	if (!states.count(script_type))
+	if (!states[script_type].get())
 	{
-		states[script_type].Initialize();
+		states[script_type].reset(LuaStateFactory(script_type));
+		states[script_type]->Initialize();
 	}
-	return states[script_type].Load(buffer, len);
+	return states[script_type]->Load(buffer, len);
 }
 
 #ifdef HAVE_OPENGL
@@ -1769,7 +1719,7 @@ bool RunLuaScript()
 	bool running = false;
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		running |= it->second.Run();
+		running |= it->second->Run();
 	}
 
 	return running;
@@ -1777,12 +1727,13 @@ bool RunLuaScript()
 
 void ExecuteLuaString(const std::string& line)
 {
-	if (!states.count(_solo_lua_script))
+	if (!states[_solo_lua_script].get())
 	{
-		states[_solo_lua_script].Initialize();
+		states[_solo_lua_script].reset(LuaStateFactory(_solo_lua_script));
+		states[_solo_lua_script]->Initialize();
 	}
 
-	states[_solo_lua_script].ExecuteCommand(line);
+	states[_solo_lua_script]->ExecuteCommand(line);
 }
 
 void LoadSoloLua()
@@ -1824,7 +1775,7 @@ void LoadSoloLua()
 				LoadLuaScript(&script_buffer[0], script_length, _solo_lua_script);
 				if (directory.size())
 				{
-					states[_solo_lua_script].SetSearchPath(directory);
+					states[_solo_lua_script]->SetSearchPath(directory);
 				}
 			}
 		}
@@ -1837,7 +1788,7 @@ void CloseLuaScript()
 	PassedLuaState.clear();
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		PassedLuaState[it->first] = it->second.SavePassed();
+		PassedLuaState[it->first] = it->second->SavePassed();
 	}
 	states.clear();
 
@@ -1884,10 +1835,7 @@ void MarkLuaCollections(bool loading)
 	{
 		collections.clear();
 
-		for (state_map::iterator it = states.begin(); it != states.end(); ++it)
-		{
-			it->second.MarkCollections(collections);
-		}
+		L_Dispatch(boost::bind(&LuaState::MarkCollections, _1, &collections));
 	}
 	else
 	{
@@ -1977,7 +1925,7 @@ size_t save_lua_states()
 	SavedLuaState.clear();
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		SavedLuaState[it->first] = it->second.SaveAll();
+		SavedLuaState[it->first] = it->second->SaveAll();
 		if (SavedLuaState[it->first].size())
 		{
 			length += 6; // id, length
