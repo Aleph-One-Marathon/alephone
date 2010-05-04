@@ -525,6 +525,29 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<type>WU</type>
       </variable>
     </table>
+    <table name="goal">
+      <variable name="facing" access="read-only" version="SVN">
+	<description>direction goal is facing</description>
+	<type>degrees</type>
+      </variable>
+      <variable name="polygon" access="read-only" version="SVN">
+	<description>polygon the goal is in</description>
+	<type>polygon</type>
+      </variable>
+      <variable name="id" access="read-only" version="SVN">
+	<description>ID number of goal</description>
+	<type>number</type>
+      </variable>
+      <variable name="x" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="y" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="z" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+    </table>
     <table name="level" singleton="true">
       <function name="calculate_completion_state" version="20081213">
 	<description>returns whether level is finished, unfinished, or failed</description>
@@ -1656,6 +1679,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </call>
     </accessor>
     <accessor name="Game" contains="game"/>
+    <accessor name="Goals" contains="goal">
+      <length>
+	<description>number of saved map objects (of all types)</description>
+      </length>
+      <index/>
+      <call>
+	<description>iterates through all goals</description>
+      </call>
+    </accessor>
     <accessor name="Items" contains="item">
       <length>
 	<description>maximum number of map objects</description>

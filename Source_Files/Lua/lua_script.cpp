@@ -93,6 +93,7 @@ using namespace std;
 #include "lua_objects.h"
 #include "lua_player.h"
 #include "lua_projectiles.h"
+#include "lua_saved_objects.h"
 #include "lua_serialize.h"
 
 #include <boost/bind.hpp>
@@ -730,6 +731,7 @@ void LuaState::RegisterFunctions()
 	Lua_Objects_register(State());
 	Lua_Player_register(State());
 	Lua_Projectiles_register(State());
+	Lua_Saved_Objects_register(State());
 }
 
 static const char *compatibility_triggers = ""
