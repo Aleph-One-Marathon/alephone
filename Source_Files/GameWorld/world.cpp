@@ -250,6 +250,58 @@ void build_trig_tables(
 	}
 }
 
+#ifdef M2_FILM_PLAYBACK
+angle arctangent(
+	world_distance x,
+	world_distance y)
+{
+	long tangent;
+	register long last_difference, new_difference;
+	angle search_arc, theta;
+	
+	if (x)
+	{
+		tangent= (TRIG_MAGNITUDE*y)/x;
+		
+		if (tangent)
+		{
+			theta= (y>0) ? 1 : HALF_CIRCLE+1;
+			if (tangent<0) theta+= QUARTER_CIRCLE;
+			
+			last_difference= tangent-tangent_table[theta-1];
+			for (search_arc=QUARTER_CIRCLE-1;search_arc;search_arc--,theta++)
+			{
+				new_difference= tangent-tangent_table[theta];
+				
+				if ((last_difference<=0&&new_difference>=0) || (last_difference>=0&&new_difference<=0))
+				{
+					if (ABS(last_difference)<ABS(new_difference))
+					{
+						return theta-1;
+					}
+					else
+					{
+						return theta;
+					}
+				}
+				
+				last_difference= new_difference;
+			}
+			
+			return theta==NUMBER_OF_ANGLES ? 0 : theta;
+		}
+		else
+		{
+			return x<0 ? HALF_CIRCLE : 0;
+		}
+	}
+	else
+	{
+		/* so arctan(0,0)==¹/2 (bill me) */
+		return y<0 ? THREE_QUARTER_CIRCLE : QUARTER_CIRCLE;
+	}
+}
+#else
 /* one day weÕll come back here and actually make this run fast */
 // LP change: made this long-distance friendly
 //
@@ -350,6 +402,7 @@ angle arctangent(
 	// Idiot-proofed exit
 	return NORMALIZE_ANGLE(theta);
 }
+#endif
 
 void set_random_seed(
 	uint16 seed)

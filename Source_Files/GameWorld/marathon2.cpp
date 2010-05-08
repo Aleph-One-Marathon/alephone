@@ -403,7 +403,9 @@ update_world_elements_one_tick()
         handle_random_sound_image();
         animate_scenery();
         // LP additions:
+#ifndef M2_FILM_PLAYBACK
         animate_items();
+#endif
         AnimTxtr_Update();
         ChaseCam_Update();
 
