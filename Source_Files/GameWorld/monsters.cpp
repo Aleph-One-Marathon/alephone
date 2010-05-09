@@ -586,10 +586,14 @@ void move_monsters(
 								}
 								else
 								{
+#ifdef M2_FILM_PLAYBACK
+									if (animation_flags&_obj_keyframe_started)
+#else
 									// LP change: if keyframe is zero, then a monster should not produce shrapnel damage.
 									// This fixes a side effect of a fix of the keyframe-never-zero bug,
 									// which is that Hunters injure those nearby when they die a soft death.
 									if (animation_flags&_obj_keyframe_started && (GET_SEQUENCE_FRAME(object->sequence) != 0))
+#endif
 										cause_shrapnel_damage(monster_index);
 									if (animation_flags&_obj_last_frame_animated) kill_monster(monster_index);
 								}

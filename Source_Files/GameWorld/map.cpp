@@ -1218,6 +1218,20 @@ void animate_object(
 			if ((phase+= 1)>=animation->ticks_per_frame)
 			{
 				frame+= 1;
+#ifdef M2_FILM_PLAYBACK
+				animation_type|= _obj_animated;
+				if (frame==animation->key_frame)
+				{
+					animation_type|= _obj_keyframe_started;
+					if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
+				}
+				if (frame>=animation->frames_per_view)
+				{
+					frame= animation->loop_frame;
+					animation_type|= _obj_last_frame_animated;
+					if (animation->last_frame_sound!=NONE) play_object_sound(object_index, animation->last_frame_sound);
+				}
+#else
 				// LP change: interchanged these two so that
 				// 1: keyframe 0 would get recognized
 				// 2: to keep the timing correct in the nonzero case
@@ -1238,6 +1252,7 @@ void animate_object(
 					animation_type|= _obj_keyframe_started;
 					if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
 				}
+#endif
 			}
 	
 			object->sequence= BUILD_SEQUENCE(frame, phase);
