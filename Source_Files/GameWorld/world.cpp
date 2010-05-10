@@ -477,6 +477,14 @@ world_distance distance3d(
 	return distance>INT16_MAX ? INT16_MAX : distance;
 }
 
+#ifdef M2_FILM_PLAYBACK
+world_distance distance2d(
+        world_point2d *p0,
+        world_point2d *p1)
+{
+        return isqrt((p0->x-p1->x)*(p0->x-p1->x)+(p0->y-p1->y)*(p0->y-p1->y));
+}
+#else
 world_distance distance2d(
 	world_point2d *p0,
 	world_point2d *p1)
@@ -489,6 +497,7 @@ world_distance distance2d(
 	
 	return distance>INT16_MAX ? INT16_MAX : distance;
 }
+#endif
 
 /*
  * It requires more space to describe this implementation of the manual
