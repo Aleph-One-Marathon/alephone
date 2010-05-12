@@ -40,7 +40,12 @@ Aug 27, 2000 (Loren Petrich):
 #define FLOOR(value,floor) MAX(value,floor)
 #define CEILING(value,ceiling) MIN(value,ceiling)
 
+#ifdef M2_FILM_PLAYBACK
+#define PIN(value,floor,ceiling) \
+	((value)<(floor) ? (floor) : (value)>(ceiling) ? (ceiling) : (value))
+#else
 #define PIN(value,floor,ceiling) (CEILING(FLOOR((value),(floor)),(ceiling)))
+#endif
 #define ABS(x) ((x)<0 ? -(x) : (x))
 #define SGN(x) ((x)<0 ? -1 : (x)>0 ? 1 : 0)
 
