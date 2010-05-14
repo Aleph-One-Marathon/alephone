@@ -35,6 +35,7 @@
 		2759FB2A10D71160000204DD /* jpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		2759FB3210D71184000204DD /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
 		2759FB3510D7118B000204DD /* freetype.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
+		276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		277AB6C0109CE2570003402A /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
 		277AB6C1109CE2570003402A /* Rasterizer_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 277AB6BD109CE2570003402A /* Rasterizer_Shader.h */; };
 		277AB6C2109CE2570003402A /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
@@ -534,6 +535,8 @@
 		2759FB1E10D7114D000204DD /* jpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = jpeg.framework; sourceTree = "<group>"; };
 		2759FB2010D7114D000204DD /* png.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = png.framework; sourceTree = "<group>"; };
 		2759FB3110D71184000204DD /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = freetype.framework; sourceTree = "<group>"; };
+		276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_saved_objects.cpp; sourceTree = "<group>"; };
+		276589F7119DF1DD0096F75B /* lua_saved_objects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_saved_objects.h; sourceTree = "<group>"; };
 		277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rasterizer_Shader.cpp; sourceTree = "<group>"; };
 		277AB6BD109CE2570003402A /* Rasterizer_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rasterizer_Shader.h; sourceTree = "<group>"; };
 		277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderRasterize_Shader.cpp; sourceTree = "<group>"; };
@@ -1286,6 +1289,8 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
+				276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */,
+				276589F7119DF1DD0096F75B /* lua_saved_objects.h */,
 				2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */,
 				2784979C0FF5C308008DECC8 /* lua_hud_objects.h */,
 				2784979D0FF5C308008DECC8 /* lua_hud_script.cpp */,
@@ -2537,6 +2542,7 @@
 				2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */,
 				AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */,
 				AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */,
+				276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
