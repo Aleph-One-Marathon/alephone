@@ -39,6 +39,20 @@ Feb 19, 2000 (Loren Petrich):
 
 // Reasonable defaults;
 // the original ones are in []'s
+#ifdef M2_FILM_PLAYBACK
+static uint16 dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
+{
+	384,	// [384] Objects (every possible kind)
+	 220,	// [220] NPC's
+	 20,	// [20] Paths for NPC's to follow (determines how many may be active)
+	 32,	// [64] Projectiles
+	 64,	// [64] Currently-active effects (blood splatters, explosions, etc.)
+	72,	// [72] Number of objects to render
+	  16,	// [16] Local collision buffer (target visibility, NPC-NPC collisions, etc.)
+	 64	// [64] Global collision buffer (projectiles with other objects)
+};
+
+#else
 static uint16 dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 {
 	1024,	// [384] Objects (every possible kind)
@@ -50,6 +64,7 @@ static uint16 dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 	  64,	// [16] Local collision buffer (target visibility, NPC-NPC collisions, etc.)
 	 256	// [64] Global collision buffer (projectiles with other objects)
 };
+#endif
 
 uint16 *original_dynamic_limits = NULL;
 
