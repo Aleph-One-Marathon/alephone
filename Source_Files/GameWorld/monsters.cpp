@@ -1369,10 +1369,12 @@ void damage_monsters_in_radius(
 	for (size_t i=0;i<object_count;++i)
 	{
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
+#ifndef M2_FILM_PLAYBACK
                 if (GET_GAME_TYPE() == _game_of_tag && object->permutation == aggressor_index) {
                         // damage the aggressor last, so tag suicides are handled correctly
                         aggressor = object;
                 } else {
+#endif
                         world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&object->location);
                         world_distance monster_radius, monster_height;
                         
@@ -1390,8 +1392,11 @@ void damage_monsters_in_radius(
                                         }
                                 }
                         }
+#ifndef M2_FILM_PLAYBACK
                 }
+#endif
 	}
+#ifndef M2_FILM_PLAYBACK
         // damage the aggressor
         if (aggressor != NULL) {
                 world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&aggressor->location);
@@ -1409,6 +1414,7 @@ void damage_monsters_in_radius(
                                 }
                         }
                 }
+#endif
 }
 
 void damage_monster(
