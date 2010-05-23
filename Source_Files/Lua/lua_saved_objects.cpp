@@ -20,6 +20,7 @@ LUA_SAVED_OBJECTS.CPP
 	Implements the Lua saved map objects classes
 */
 
+#include "lua_player.h"
 #include "lua_saved_objects.h"
 #include "lua_templates.h"
 
@@ -36,6 +37,14 @@ static int get_saved_object_facing(lua_State* L)
 {
 	map_object* object = get_map_object(T::Index(L, 1));
 	lua_pushnumber(L, (double) object->facing * AngleConvert);
+	return 1;
+}
+
+template<class T, int16 flag>
+static int get_saved_object_flag(lua_State* L)
+{
+	map_object* object = get_map_object(T::Index(L, 1));
+	lua_pushboolean(L, object->flags & flag);
 	return 1;
 }
 
@@ -106,6 +115,28 @@ const luaL_reg Lua_Goal_Get[] = {
 
 char Lua_Goals_Name[] = "Goals";
 
+char Lua_PlayerStart_Name[] = "player_start";
+
+static int Lua_PlayerStart_Get_Team(lua_State* L)
+{
+	map_object* object = get_map_object(Lua_PlayerStart::Index(L, 1));
+	Lua_PlayerColor::Push(L, object->index);
+	return 1;
+}
+
+const luaL_reg Lua_PlayerStart_Get[] = {
+	{"facing", get_saved_object_facing<Lua_PlayerStart>},
+	{"from_ceiling", get_saved_object_flag<Lua_PlayerStart, _map_object_hanging_from_ceiling>},
+	{"polygon", get_saved_object_polygon<Lua_PlayerStart>},
+	{"team", Lua_PlayerStart_Get_Team},
+	{"x", get_saved_object_x<Lua_PlayerStart>},
+	{"y", get_saved_object_y<Lua_PlayerStart>},
+	{"z", get_saved_object_z<Lua_PlayerStart>},
+	{0, 0}
+};
+
+char Lua_PlayerStarts_Name[] = "PlayerStarts";
+
 int Lua_Saved_Objects_register(lua_State* L)
 {
 	Lua_Goal::Register(L, Lua_Goal_Get);
@@ -113,4 +144,10 @@ int Lua_Saved_Objects_register(lua_State* L)
 
 	Lua_Goals::Register(L);
 	Lua_Goals::Length = saved_objects_length;
+
+	Lua_PlayerStart::Register(L, Lua_PlayerStart_Get);
+	Lua_PlayerStart::Valid = saved_object_valid<_saved_player>;
+	
+	Lua_PlayerStarts::Register(L);
+	Lua_PlayerStarts::Length = saved_objects_length;
 }

@@ -42,6 +42,12 @@ typedef L_Class<Lua_Player_Name> Lua_Player;
 extern char Lua_Players_Name[]; // "Players"
 typedef L_Container<Lua_Players_Name, Lua_Player> Lua_Players;
 
+extern char Lua_PlayerColor_Name[]; // "player_color"
+typedef L_Enum<Lua_PlayerColor_Name> Lua_PlayerColor;
+
+extern char Lua_PlayerColors_Name[]; // "PlayerColors"
+typedef L_EnumContainer<Lua_PlayerColors_Name, Lua_PlayerColor> Lua_PlayerColors;
+
 int Lua_Player_register (lua_State *L);
 
 #endif

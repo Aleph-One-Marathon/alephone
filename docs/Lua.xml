@@ -1306,6 +1306,33 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<type>boolean</type>
       </variable>
     </table>
+    <table name="player_start">
+      <variable name="facing" access="read-only" version="SVN">
+	<description>player starting location facing</description>
+	<type>angle</type>
+      </variable>
+      <variable name="from_ceiling" access="read-only" version="SVN">
+	<description>whether player starting location z is from ceiling</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="polygon" access="read-only" version="SVN">
+	<description>polygon player starting location is in</description>
+	<type>polygon</type>
+      </variable>
+      <variable name="team" access="read-only" version="SVN">
+	<description>which team starts at this player starting location</description>
+	<type>player_color</type>
+      </variable>
+      <variable name="x" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="y" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="z" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+    </table>
     <table name="polygon">
       <subtable-accessor name="adjacent_polygons" classname="adjacent_polygons" index="n">
 	<description>returns adjacent polygon n (across from line n), if one exists, or nil</description>
@@ -1779,6 +1806,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>prints message to all players' screens</description>
 	<argument name="message"><type>string</type></argument>
       </function>
+    </accessor>
+    <accessor name="PlayerStarts" contains="player_start">
+      <length>
+	<description>number of map objects in the level</description>
+      </length>
+      <index/>
+      <call>
+	<description>iterates through all player starting locations in the game</description>
+      </call>
     </accessor>
     <accessor name="Polygons" contains="polygon">
       <length>

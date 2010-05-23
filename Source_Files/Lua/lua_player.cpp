@@ -1352,10 +1352,8 @@ const luaL_reg Lua_Player_Kills_Metatable[] = {
 };
 
 char Lua_PlayerColor_Name[] = "player_color";
-typedef L_Enum<Lua_PlayerColor_Name> Lua_PlayerColor;
 
 char Lua_PlayerColors_Name[] = "PlayerColors";
-typedef L_EnumContainer<Lua_PlayerColors_Name, Lua_PlayerColor> Lua_PlayerColors;
 
 char Lua_Player_Name[] = "player";
 

@@ -42,6 +42,12 @@ typedef L_Class<Lua_Goal_Name> Lua_Goal;
 extern char Lua_Goals_Name[]; // "Goals"
 typedef L_Container<Lua_Goals_Name, Lua_Goal> Lua_Goals;
 
+extern char Lua_PlayerStart_Name[]; // "player_start"
+typedef L_Class<Lua_PlayerStart_Name> Lua_PlayerStart;
+
+extern char Lua_PlayerStarts_Name[]; // "PlayerStarts";
+typedef L_Container<Lua_PlayerStarts_Name, Lua_PlayerStart> Lua_PlayerStarts;
+
 int Lua_Saved_Objects_register(lua_State* L);
 
 #endif
