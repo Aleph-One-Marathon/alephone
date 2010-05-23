@@ -349,6 +349,7 @@ void swipe_nearby_items(
 		
 		struct polygon_data *neighboring_polygon= get_polygon_data(*neighbor_indexes++);
 		
+#ifndef M2_FILM_PLAYBACK
 		/*
 			LP change: since precalculate_map_indexes() and its associated routine
 			intersecting_flood_proc() appear to have some bugs in them, I will
@@ -369,6 +370,7 @@ void swipe_nearby_items(
 		}
 		else
 			neighboring_polygon = source_polygon;
+#endif
 		
 		if (!POLYGON_IS_DETACHED(neighboring_polygon))
 		{
@@ -401,8 +403,10 @@ void swipe_nearby_items(
 				next_object= object->next_object;
 			}
 		}
+#ifndef M2_FILM_PLAYBACK
 		// LP addition: end of that kludgy search loop
 		}
+#endif
 	}
 }
 
