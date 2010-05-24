@@ -2262,6 +2262,12 @@ static int Lua_Game_Get_Kill_Limit(lua_State *L)
 	return 1;
 }
 
+static int Lua_Game_Get_Monsters_Replenish(lua_State* L)
+{
+	lua_pushboolean(L, dynamic_world->game_information.game_options & _monsters_replenish);
+	return 1;
+}
+
 static int Lua_Game_Get_Proper_Item_Accounting(lua_State* L)
 {
 	lua_pushboolean(L, L_Get_Proper_Item_Accounting(L));
@@ -2318,6 +2324,23 @@ static int Lua_Game_Set_Scoring_Mode(lua_State *L)
   game_scoring_mode = mode;
   // TODO: set network stats to dirty
   return 0;
+}
+
+static int Lua_Game_Set_Monsters_Replenish(lua_State* L)
+{
+	if (!lua_isboolean(L, 2))
+		luaL_error(L, "monsters_replenish: incorrect argument type");
+
+	bool replenish = lua_toboolean(L, 2);
+	if (replenish)
+	{
+		dynamic_world->game_information.game_options |= _monsters_replenish;
+	} 
+	else
+	{
+		dynamic_world->game_information.game_options &= ~_monsters_replenish;
+	}
+	return 0;
 }
 
 static int Lua_Game_Set_Over(lua_State *L)
@@ -2385,6 +2408,7 @@ const luaL_reg Lua_Game_Get[] = {
 	{"kill_limit", Lua_Game_Get_Kill_Limit},
 	{"time_remaining", Lua_Game_Get_Time_Remaining},
 	{"local_random", L_TableFunction<Lua_Game_Local_Random>},
+	{"monsters_replenish", Lua_Game_Get_Monsters_Replenish},
 	{"proper_item_accounting", Lua_Game_Get_Proper_Item_Accounting},
 	{"random", L_TableFunction<Lua_Game_Better_Random>},
 	{"restore_passed", L_TableFunction<L_Restore_Passed>},
@@ -2398,6 +2422,7 @@ const luaL_reg Lua_Game_Get[] = {
 };
 
 const luaL_reg Lua_Game_Set[] = {
+	{"monsters_replenish", Lua_Game_Set_Monsters_Replenish},
 	{"proper_item_accounting", Lua_Game_Set_Proper_Item_Accounting},
 	{"scoring_mode", Lua_Game_Set_Scoring_Mode},
 	{"over", Lua_Game_Set_Over},

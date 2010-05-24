@@ -614,10 +614,8 @@ bool entering_map(bool restoring_saved)
 	mark_player_collections(true);
 	mark_map_collections(true);
 
-	// ghs: load the Lua script here to see if it needs any additional collections
-	RunLuaScript();
 	MarkLuaCollections(true);
-    MarkLuaHUDCollections(true);
+	MarkLuaHUDCollections(true);
 
 #ifdef SDL
 	load_collections(true, get_screen_mode()->acceleration != _no_acceleration);

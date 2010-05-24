@@ -433,6 +433,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>the game kill limit, or 0 if there is none</description>
 	<type>number</type>
       </variable>
+      <variable name="monsters_replenish" version="SVN">
+	<description>whether monsters spawn or not; in a net game, this corresponds to the "Aliens" checkbox</description>
+	<type>boolean</type>
+	<note>this can suppress initial monster placement, if set to false directly when the script is loaded</note>
+      </variable>
       <variable name="proper_item_accounting" version="20100118">
 	<description>When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</description>
 	<type>boolean</type>
