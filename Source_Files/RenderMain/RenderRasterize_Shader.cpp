@@ -29,7 +29,7 @@ inline bool FogActive();
 void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color);
 
 class FBO {
-	
+
 	friend class Blur;
 private:
 	GLuint _fbo;
@@ -38,98 +38,98 @@ public:
 	GLuint _w;
 	GLuint _h;
 	GLuint texID;
-	
+
 	FBO(GLuint w, GLuint h) : _h(h), _w(w) {
 		glGenFramebuffersEXT(1, &_fbo);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);		
-		
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);
+
 		glGenRenderbuffersEXT(1, &_depthBuffer);
 		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, _depthBuffer);
 		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, _w, _h);
 		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, _depthBuffer);
-		
+
 		glGenTextures(1, &texID);
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
-		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, Using_sRGB ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);		
+		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, Using_sRGB ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
 		assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
 		if(Using_sRGB) glEnable(GL_FRAMEBUFFER_SRGB_EXT);
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);		
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	}
-	
+
 	void activate() {
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);		
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, _fbo);
 		glPushAttrib(GL_VIEWPORT_BIT);
 		glViewport(0, 0, _w, _h);
 	}
-	
+
 	static void deactivate() {
 		glPopAttrib();
-		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);		
+		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	}
-	
+
 	void draw() {
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
 		glEnable(GL_TEXTURE_RECTANGLE_ARB);
-		
+
 		glBegin(GL_QUADS);
 		glTexCoord2i(0., 0.); glVertex2i(0., 0.);
-		glTexCoord2i(0., _h); glVertex2i(0., _h);	
+		glTexCoord2i(0., _h); glVertex2i(0., _h);
 		glTexCoord2i(_w, _h); glVertex2i(_w, _h);
 		glTexCoord2i(_w, 0.); glVertex2i(_w, 0.);
 		glEnd();
-		
+
 		glDisable(GL_TEXTURE_RECTANGLE_ARB);
 	}
-	
+
 	~FBO() {
 		glDeleteFramebuffersEXT(1, &_fbo);
 		glDeleteRenderbuffersEXT(1, &_depthBuffer);
-	}	
+	}
 };
 
 class Blur {
-	
+
 private:
 	FBO _horizontal;
 	FBO _vertical;
-	
+
 	Shader *_shader_blur;
 	Shader *_shader_bloom;
-	
+
 public:
-	
+
 	Blur(GLuint w, GLuint h, Shader* s_blur, Shader* s_bloom)
 	: _horizontal(w, h), _vertical(w, h), _shader_blur(s_blur), _shader_bloom(s_bloom) {}
-	
+
 	void resize(GLuint w, GLuint h) {
 		_horizontal = FBO(w, h);
 		_vertical = FBO(w, h);
 	}
-	
+
 	void begin() {
 		/* draw in first buffer */
 		_horizontal.activate();
 	}
-	
+
 	void end() {
 		FBO::deactivate();
 	}
-	
+
 	void draw() {
 		glMatrixMode(GL_PROJECTION);
-		glLoadIdentity();	
+		glLoadIdentity();
 		glMatrixMode(GL_MODELVIEW);
-		glLoadIdentity();	
-		
+		glLoadIdentity();
+
 		glDisable(GL_BLEND);
 		glOrtho(0, _vertical._w, 0, _vertical._h, 0.0, 1.0);
 		glColor4f(1., 1., 1., 1.);
-		
+
 		int passes = _shader_bloom->passes();
 		if (passes < 0)
 			passes = 3;
-		
+
 		for (int i = 0; i < passes; i++) {
 			glDisable(GL_BLEND);
 			_vertical.activate();
@@ -140,7 +140,7 @@ public:
 			_horizontal.draw();
 			Shader::disable();
 			FBO::deactivate();
-			
+
 			_horizontal.activate();
 			_shader_blur->setFloat("offsetx", 0);
 			_shader_blur->setFloat("offsety", 1);
@@ -149,7 +149,7 @@ public:
 			_vertical.draw();
 			Shader::disable();
 			FBO::deactivate();
-			
+
 			glEnable(GL_BLEND);
 			_shader_bloom->setFloat("pass", i + 1);
 			_shader_bloom->enable();
@@ -193,7 +193,7 @@ void RenderRasterize_Shader::render_tree() {
 	s = Shader::get("invincible_bloom");
 	s->setFloat("time", view->tick_count);
 	s->setFloat("usestatic", TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
-	
+
 	bool usefog = false;
 	int fogtype;
 	OGL_FogData *fogdata;
@@ -210,13 +210,10 @@ void RenderRasterize_Shader::render_tree() {
 	s->setFloat("usefog", usefog ? 1.0 : 0.0);
 	s = Shader::get("landscape_bloom");
 	s->setFloat("usefog", usefog ? 1.0 : 0.0);
-	
+
 	RenderRasterizerClass::render_tree(kDiffuse);
 
-	if (!TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur))
-		return;
-
-	if(blur) {
+	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) && blur) {
 		blur->begin();
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		RenderRasterizerClass::render_tree(kGlow);
@@ -227,50 +224,52 @@ void RenderRasterize_Shader::render_tree() {
 		blur->draw();
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 	}
+
+	glAlphaFunc(GL_GREATER, 0.5);
 }
 
 void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep)
 {
 	if (!node->clipping_windows)
 		return;
-	
+
 	world_point3d cam_pos = current_player->camera_location;
 	short cam_poly;
 	angle cam_yaw = FIXED_INTEGERAL_PART(current_player->variables.direction + current_player->variables.head_direction);
 	angle cam_pitch;
 	ChaseCam_GetPosition(cam_pos, cam_poly, cam_yaw, cam_pitch);
-	
+
 	for (clipping_window_data *win = node->clipping_windows; win; win = win->next_window)
 	{
 		GLdouble clip[] = { 0., 0., 0., 0. };
-		
+
 		// recenter to player's orientation temporarily
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glTranslatef(cam_pos.x, cam_pos.y, 0.);
 		glRotatef(cam_yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
-		
+
 		glRotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
 		clip[0] = win->left.i;
 		clip[1] = win->left.j;
 		glEnable(GL_CLIP_PLANE0);
 		glClipPlane(GL_CLIP_PLANE0, clip);
-		
+
 		glRotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
 		clip[0] = win->right.i;
 		clip[1] = win->right.j;
 		glEnable(GL_CLIP_PLANE1);
 		glClipPlane(GL_CLIP_PLANE1, clip);
-		
+
 		glPopMatrix();
-		
+
 		// parasitic object detection
 		objectCount = 0;
 		objectY = 0;
-		
+
 		RenderRasterizerClass::render_node(node, SeeThruLiquids, renderStep);
 	}
-	
+
 	// turn off clipping planes
 	glDisable(GL_CLIP_PLANE0);
 	glDisable(GL_CLIP_PLANE1);
@@ -291,7 +290,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	GLfloat color[3];
 	FindShadingColor(rect.depth, rect.ambient_shade, color);
 
-	TextureManager TMgr;	
+	TextureManager TMgr;
 
 	TMgr.ShapeDesc = rect.ShapeDesc;
 	TMgr.LowLevelShape = rect.LowLevelShape;
@@ -306,7 +305,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(color[0], color[1], color[2], 1);
-	
+
 	switch(TMgr.TransferMode) {
 		case _static_transfer:
 			TMgr.IsShadeless = 1;
@@ -334,13 +333,13 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 		default:
 			glColor4f(0,0,1,1);
 	}
-	
+
 	if(s == NULL) {
 		s = Shader::get(renderStep == kGlow ? "sprite_bloom" : "sprite");
 	}
 
 	if(TMgr.Setup()) {
-		TMgr.RenderNormal();			
+		TMgr.RenderNormal();
 	} else {
 		TMgr.ShapeDesc = UNONE;
 		return TMgr;
@@ -359,7 +358,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	s->enable();
 	return TMgr;
 }
-	
+
 TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& Texture, short transferMode, float wobble, float intensity, float offset, RenderStep renderStep) {
 
 	Shader *s = NULL;
@@ -369,7 +368,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	if (TMgr.ShapeDesc == UNONE) { return TMgr; }
 	get_shape_bitmap_and_shading_table(Texture, &TMgr.Texture, &TMgr.ShadingTables,
 		current_player->infravision_duration ? _shading_infravision : _shading_normal);
-	
+
 	TMgr.TransferMode = _textured_transfer;
 	TMgr.IsShadeless = current_player->infravision_duration ? 1 : 0;
 	TMgr.TransferData = 0;
@@ -402,7 +401,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 				flare = 0;
 			}
 	}
-	
+
 	if(s == NULL) {
 		if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 			s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
@@ -410,7 +409,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
 		}
 	}
-	
+
 	if(TMgr.Setup()) {
 		TMgr.RenderNormal(); // must allocate first
 		if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
@@ -437,7 +436,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	return TMgr;
 }
 
-void instantiate_transfer_mode(struct view_data *view, 	short transfer_mode, world_distance &x0, world_distance &y0) {
+void instantiate_transfer_mode(struct view_data *view, short transfer_mode, world_distance &x0, world_distance &y0) {
 	short alternate_transfer_phase;
 	short transfer_phase = view->tick_count;
 
@@ -453,10 +452,10 @@ void instantiate_transfer_mode(struct view_data *view, 	short transfer_mode, wor
 			switch (transfer_mode) {
 				case _xfer_fast_horizontal_slide: transfer_phase<<= 1;
 				case _xfer_horizontal_slide: x0= (transfer_phase<<2)&(WORLD_ONE-1); break;
-					
+
 				case _xfer_fast_vertical_slide: transfer_phase<<= 1;
 				case _xfer_vertical_slide: y0= (transfer_phase<<2)&(WORLD_ONE-1); break;
-					
+
 				case _xfer_fast_wander: transfer_phase<<= 1;
 				case _xfer_wander:
 					alternate_transfer_phase= transfer_phase%(10*FULL_CIRCLE);
@@ -521,14 +520,14 @@ bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float
 		} else {
 			s = Shader::get(renderStep == kGlow ? "sprite_bloom" : "sprite");
 		}
-		
+
 		TMgr.RenderGlowing();
 		setupBlendFunc(TMgr.GlowBlend());
 		glEnable(GL_TEXTURE_2D);
 		glEnable(GL_BLEND);
 		glEnable(GL_ALPHA_TEST);
 		glAlphaFunc(GL_GREATER, 0.001);
-		
+
 		if (renderStep == kGlow) {
 			s->setFloat("bloomScale", TMgr.GlowBloomScale());
 			s->setFloat("bloomShift", TMgr.GlowBloomShift());
@@ -541,19 +540,19 @@ bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float
 		return true;
 	}
 	return false;
-}	
+}
 
 void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *window,
 	polygon_data *polygon, horizontal_surface_data *surface, bool void_present, bool ceil, RenderStep renderStep) {
 
 	float offset = 0;
-	
+
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
 	float intensity = get_light_data(surface->lightsource_index)->intensity / float(FIXED_ONE - 1);
 	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
 	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble, intensity, offset, renderStep);
 	if(TMgr.ShapeDesc == UNONE) { return; }
-	
+
 	if (TMgr.IsBlended()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr.NormalBlend());
@@ -564,12 +563,12 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		glEnable(GL_ALPHA_TEST);
 		glAlphaFunc(GL_GREATER, 0.5);
 	}
-	
+
 	if (void_present) {
 		glDisable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
 	}
-	
+
 	short vertex_count = polygon->vertex_count;
 
 	if (vertex_count) {
@@ -631,7 +630,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 			}
 			glEnd();
 		}
-		
+
 		Shader::disable();
 		glMatrixMode(GL_TEXTURE);
 		glLoadIdentity();
@@ -649,23 +648,23 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		xcen /= (float)vertex_count;
 		ycen /= (float)vertex_count;
 		vec3 B = N.cross(T) * sign;
-		
+
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_LINES);
-		
+
 		glColor4f(1.0,0.0,0.0,1.0);
 		glVertex3f(xcen, ycen, zcen);
 		glVertex3f(xcen + 32*N[0],
 				   ycen + 32*N[1],
 				   zcen + 32*N[2]);
-		
+
 		glColor4f(0.4,0.7,1.0,1.0);
 		glVertex3f(xcen + 32*N[0],
 				   ycen + 32*N[1],
 				   zcen + 32*N[2]);
 		glVertex3f(xcen + 32*N[0] + 32*T[0],
 				   ycen + 32*N[1] + 32*T[1],
-				   zcen + 32*N[2] + 32*T[2]);		
+				   zcen + 32*N[2] + 32*T[2]);
 
 		glColor4f(0.7,1.0,0.4,1.0);
 		glVertex3f(xcen + 32*N[0],
@@ -673,21 +672,21 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 				   zcen + 32*N[2]);
 		glVertex3f(xcen + 32*N[0] + 32*B[0],
 				   ycen + 32*N[1] + 32*B[1],
-				   zcen + 32*N[2] + 32*B[2]);		
-		
+				   zcen + 32*N[2] + 32*B[2]);
+
 		glEnd();
 		glEnable(GL_TEXTURE_2D);
-#endif			
+#endif
 	}
 }
 
 void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vertical_surface_data *surface, bool void_present, RenderStep renderStep) {
-		
+
 	float offset = 0;
 	if (!void_present) {
 		offset = -2.0;
 	}
-	
+
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture_definition->texture);
 	float intensity = (get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / float(FIXED_ONE - 1);
 	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
@@ -704,14 +703,14 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 		glEnable(GL_ALPHA_TEST);
 		glAlphaFunc(GL_GREATER, 0.5);
 	}
-	
+
 	if (void_present) {
 		glDisable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
 	}
-	
+
 	world_distance h= MIN(surface->h1, surface->hmax);
-	
+
 	if (h>surface->h0) {
 
 		world_point2d vertex[2];
@@ -723,7 +722,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 		vertex_count= 2;
 		long_to_overflow_short_2d(surface->p0, vertex[0], flags);
 		long_to_overflow_short_2d(surface->p1, vertex[1], flags);
-		
+
 		if (vertex_count) {
 
 			vertex_count= 4;
@@ -763,7 +762,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 				glVertex3f(vertices[i].x, vertices[i].y, vertices[i].z);
 			}
 			glEnd();
-			
+
 			if (setupGlow(view, TMgr, wobble, intensity, offset, renderStep)) {
 				glBegin(GL_QUADS);
 				for(int i = 0; i < vertex_count; ++i) {
@@ -774,14 +773,12 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 				}
 				glEnd();
 			}
-			
-			
-			
+
 			Shader::disable();
 			glMatrixMode(GL_TEXTURE);
 			glLoadIdentity();
 			glMatrixMode(GL_MODELVIEW);
-			
+
 #ifdef DEBUG_NORMALS
 			float xcen = 0;
 			float ycen = 0;
@@ -795,23 +792,23 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			ycen /= (float)vertex_count;
 			zcen /= (float)vertex_count;
 			vec3 B = N.cross(T) * sign;
-			
+
 			glDisable(GL_TEXTURE_2D);
 			glBegin(GL_LINES);
-			
+
 			glColor4f(1.0,0.0,0.0,1.0);
 			glVertex3f(xcen, ycen, zcen);
 			glVertex3f(xcen + 32*N[0],
 					   ycen + 32*N[1],
 					   zcen + 32*N[2]);
-			
+
 			glColor4f(0.4,0.7,1.0,1.0);
 			glVertex3f(xcen + 32*N[0],
 					   ycen + 32*N[1],
 					   zcen + 32*N[2]);
 			glVertex3f(xcen + 32*N[0] + 32*T[0],
 					   ycen + 32*N[1] + 32*T[1],
-					   zcen + 32*N[2] + 32*T[2]);		
+					   zcen + 32*N[2] + 32*T[2]);
 
 			glColor4f(0.7,1.0,0.4,1.0);
 			glVertex3f(xcen + 32*N[0],
@@ -819,11 +816,11 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 					   zcen + 32*N[2]);
 			glVertex3f(xcen + 32*N[0] + 32*B[0],
 					   ycen + 32*N[1] + 32*B[1],
-					   zcen + 32*N[2] + 32*B[2]);		
-			
+					   zcen + 32*N[2] + 32*B[2]);
+
 			glEnd();
 			glEnable(GL_TEXTURE_2D);
-#endif			
+#endif
 		}
 	}
 }
@@ -861,7 +858,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	GLfloat color[3];
 	FindShadingColor(RenderRectangle.depth, RenderRectangle.ambient_shade, color);
 	glColor4f(color[0], color[1], color[2], 1.0);
-	
+
 	Shader *s = NULL;
 	bool canGlow = false;
 	switch(RenderRectangle.transfer_mode) {
@@ -891,7 +888,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		default:
 			glColor4f(0,0,1,1);
 	}
-	
+
 	if(s == NULL) {
 		if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
 			s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
@@ -899,7 +896,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
 		}
 	}
-	
+
 	if (renderStep == kGlow) {
 		s->setFloat("bloomScale", SkinPtr->BloomScale);
 		s->setFloat("bloomShift", SkinPtr->BloomShift);
@@ -913,10 +910,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
 	glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
-	
+
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
-	
+
 	glClientActiveTextureARB(GL_TEXTURE1_ARB);
 	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	glTexCoordPointer(4,GL_FLOAT,sizeof(vec4),ModelPtr->Model.TangentBase());
@@ -935,15 +932,15 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		}
 		glActiveTextureARB(GL_TEXTURE0_ARB);
 	}
-	
+
 	glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
-	
+
 	if (canGlow && SkinPtr->GlowImg.IsPresent()) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(SkinPtr->GlowBlend);
 		glEnable(GL_ALPHA_TEST);
 		glAlphaFunc(GL_GREATER, 0.001);
-		
+
 		Shader::disable();
 		s->setFloat("glow", SkinPtr->MinGlowIntensity);
 		if (renderStep == kGlow) {
@@ -954,7 +951,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		if(ModelPtr->Use(CLUT,OGL_SkinManager::Glowing)) {
 			LoadModelSkin(SkinPtr->GlowImg, Collection, CLUT);
 		}
-		glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());		
+		glDrawElements(GL_TRIANGLES,(GLsizei)ModelPtr->Model.NumVI(),GL_UNSIGNED_SHORT,ModelPtr->Model.VIBase());
 	}
 
 	glDisableClientState(GL_NORMAL_ARRAY);
@@ -975,7 +972,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		GLushort a = ModelPtr->Model.VertIndices[i];
 		GLushort b = ModelPtr->Model.VertIndices[i+1];
 		GLushort c = ModelPtr->Model.VertIndices[i+2];
-		
+
 		vertex3 v1(ModelPtr->Model.PosBase()+3*a);
 		vertex3 v2(ModelPtr->Model.PosBase()+3*b);
 		vertex3 v3(ModelPtr->Model.PosBase()+3*c);
@@ -983,7 +980,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		float xcen = (v1[0] + v2[0] + v3[0]) / 3.;
 		float ycen = (v1[1] + v2[1] + v3[1]) / 3.;
 		float zcen = (v1[2] + v2[2] + v3[2]) / 3.;
-		
+
 		vec3 N(ModelPtr->Model.Normals[3*a],
 			   ModelPtr->Model.Normals[3*a+1],
 			   ModelPtr->Model.Normals[3*a+2]);
@@ -992,20 +989,20 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 			   ModelPtr->Model.Tangents[a][2]);
 		float sign = ModelPtr->Model.Tangents[a][3];
 		vec3 B = N.cross(T) * sign;
-		
+
 		glColor4f(1.0,0.0,0.0,1.0);
 		glVertex3f(xcen, ycen, zcen);
 		glVertex3f(xcen + 32*N[0],
 				   ycen + 32*N[1],
 				   zcen + 32*N[2]);
-		
+
 		glColor4f(0.4,0.7,1.0,1.0);
 		glVertex3f(xcen + 32*N[0],
 				   ycen + 32*N[1],
 				   zcen + 32*N[2]);
 		glVertex3f(xcen + 32*N[0] + 32*T[0],
 				   ycen + 32*N[1] + 32*T[1],
-				   zcen + 32*N[2] + 32*T[2]);		
+				   zcen + 32*N[2] + 32*T[2]);
 
 		glColor4f(0.7,1.0,0.4,1.0);
 		glVertex3f(xcen + 32*N[0],
@@ -1013,7 +1010,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 				   zcen + 32*N[2]);
 		glVertex3f(xcen + 32*N[0] + 32*B[0],
 				   ycen + 32*N[1] + 32*B[1],
-				   zcen + 32*N[2] + 32*B[2]);		
+				   zcen + 32*N[2] + 32*B[2]);
 	}
 	glEnd();
 	glEnable(GL_TEXTURE_2D);
@@ -1044,7 +1041,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		// When there's no media present, we can skip the second pass.
 		return;
 	}
-	
+
 	if(rect.ModelPtr) {
 		glPushMatrix();
 		glTranslated(pos.x, pos.y, pos.z);
@@ -1104,7 +1101,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		texCoords[1][0] = TMgr.V_Offset;
 		texCoords[1][1] = TMgr.V_Scale+TMgr.V_Offset;
 	}
-	
+
 	if(TMgr.IsBlended() || TMgr.TransferMode == _tinted_transfer) {
 		glEnable(GL_BLEND);
 		setupBlendFunc(TMgr.NormalBlend());
@@ -1122,37 +1119,36 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 	glTexCoord2f(texCoords[0][0], texCoords[1][1]);
 	glVertex3f(0, rect.WorldRight * rect.HorizScale * rect.Scale, rect.WorldTop * rect.Scale);
-		
- 	glTexCoord2f(texCoords[0][1], texCoords[1][1]);
+
+	glTexCoord2f(texCoords[0][1], texCoords[1][1]);
 	glVertex3f(0, rect.WorldRight * rect.HorizScale * rect.Scale, rect.WorldBottom * rect.Scale);
 
 	glTexCoord2f(texCoords[0][1], texCoords[1][0]);
 	glVertex3f(0, rect.WorldLeft * rect.HorizScale * rect.Scale, rect.WorldBottom * rect.Scale);
 
 	glEnd();
-	
+
 	if (setupGlow(view, TMgr, 0, 1, offset, renderStep)) {
 		glBegin(GL_QUADS);
-		
+
 		glTexCoord2f(texCoords[0][0], texCoords[1][0]);
 		glVertex3f(0, rect.WorldLeft * rect.HorizScale * rect.Scale, rect.WorldTop * rect.Scale);
-		
+
 		glTexCoord2f(texCoords[0][0], texCoords[1][1]);
 		glVertex3f(0, rect.WorldRight * rect.HorizScale * rect.Scale, rect.WorldTop * rect.Scale);
-		
+
 		glTexCoord2f(texCoords[0][1], texCoords[1][1]);
 		glVertex3f(0, rect.WorldRight * rect.HorizScale * rect.Scale, rect.WorldBottom * rect.Scale);
-		
+
 		glTexCoord2f(texCoords[0][1], texCoords[1][0]);
 		glVertex3f(0, rect.WorldLeft * rect.HorizScale * rect.Scale, rect.WorldBottom * rect.Scale);
-		
+
 		glEnd();
 	}
-	
+
 	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
 	Shader::disable();
 	TMgr.RestoreTextureMatrix();
 	glDisable(GL_CLIP_PLANE5);
 }
-
