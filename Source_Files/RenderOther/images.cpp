@@ -64,6 +64,10 @@ Jul 31, 2002 (Loren Petrich)
 #include "screen_drawing.h"
 #include "Logging.h"
 
+#include "render.h"
+#include "OGL_Render.h"
+#include "OGL_Blitter.h"
+
 
 // Constants
 enum {
@@ -853,6 +857,7 @@ static void draw_picture(LoadedResource &rsrc)
 	if (s == NULL)
 		return;
 	SDL_Surface *video = SDL_GetVideoSurface();
+	bool glmode = OGL_IsActive();
 
 	// Default source rectangle
 	SDL_Rect src_rect = {0, 0, MIN(s->w, 640), MIN(s->h, 480)};
@@ -873,20 +878,46 @@ static void draw_picture(LoadedResource &rsrc)
 		dst_rect.x += draw_clip_rect.left- (640 - s->w) / 2;
 		dst_rect.y += draw_clip_rect.top - (480 - s->h) / 2;
 	} else {
-		// Clear destination to black
-		SDL_FillRect(video, NULL, SDL_MapRGB(video->format, 0, 0, 0));
+#ifdef HAVE_OPENGL
+		if (glmode)
+			OGL_ClearScreen();
+		else
+#endif
+			// Clear destination to black
+			SDL_FillRect(video, NULL, SDL_MapRGB(video->format, 0, 0, 0));
 	}
+	
+	Image_Blitter blt_sw;
+	Image_Blitter *blt = &blt_sw;
+#ifdef HAVE_OPENGL
+	OGL_Blitter blt_hw;
+	if (glmode)
+		blt = &blt_hw;
+#endif
+
+	// SDL ignores scaling, so we will too
+	dst_rect.w = src_rect.w;
+	dst_rect.h = src_rect.h;
+	blt->Load(*s, src_rect);
 
 	// Blit picture to screen
-	SDL_BlitSurface(s, &src_rect, video, &dst_rect);
+	blt->Draw(video, dst_rect);
 	SDL_FreeSurface(s);
 
-	// Update display and free picture surface
-	SDL_UpdateRects(video, 1, &dst_rect);
 #ifdef HAVE_OPENGL
-		if (video->flags & SDL_OPENGL)
-		  SDL_GL_SwapBuffers();
+	if (glmode) {
+		SDL_GL_SwapBuffers();
+		if (!draw_clip_rect_active)
+		{
+			// Clear and draw into both buffers (needed for menu screen)
+			OGL_ClearScreen();
+			blt->Draw(video, dst_rect);
+			SDL_GL_SwapBuffers();
+		}
+	}
+	else
 #endif
+		SDL_UpdateRects(video, 1, &dst_rect);
 }
 
 
@@ -931,6 +962,17 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 	SDL_Surface *s = picture_to_surface(rsrc);
 	if (s == NULL)
 		return;
+	SDL_Surface *video = SDL_GetVideoSurface();
+	bool glmode = OGL_IsActive();
+
+	Image_Blitter blt_sw;
+	Image_Blitter *blt = &blt_sw;
+#ifdef HAVE_OPENGL
+	OGL_Blitter blt_hw;
+	if (glmode)
+		blt = &blt_hw;
+#endif
+	blt->Load(*s);
 
 	// Find out in which direction to scroll
 	int picture_width = s->w;
@@ -968,12 +1010,13 @@ void scroll_full_screen_pict_resource_from_scenario(int pict_resource_number, bo
 			// Blit part of picture
 			src_rect.x = scroll_horizontal ? delta : 0;
 			src_rect.y = scroll_vertical ? delta : 0;
-			SDL_BlitSurface(s, &src_rect, SDL_GetVideoSurface(), &dst_rect);
-			SDL_UpdateRects(SDL_GetVideoSurface(), 1, &dst_rect);
+			blt->Draw(video, dst_rect, src_rect);
 #ifdef HAVE_OPENGL
-			if (SDL_GetVideoSurface()->flags & SDL_OPENGL)
+			if (glmode)
 				SDL_GL_SwapBuffers();
+			else
 #endif
+				SDL_UpdateRects(video, 1, &dst_rect);
 
 			// Give system time
 			global_idle_proc();
