@@ -505,7 +505,7 @@ const int Buffer2D_Height = 16;
 // if OpenGL is not present, it will never be active.
 
 // Test for activity;
-bool OGL_IsActive() { return (SDL_GetVideoSurface()->flags & SDL_OPENGL); }
+bool OGL_IsActive() {if (OGL_IsPresent()) return _OGL_IsActive; else return false;}
 
 
 // It will be black; whether OpenGL is active will be returned
@@ -725,7 +725,7 @@ bool OGL_StartRun()
 // Stop an OpenGL run (destroys a rendering context)
 bool OGL_StopRun()
 {
-	if (!OGL_IsActive() || !_OGL_IsActive) return false;
+	if (!OGL_IsActive()) return false;
 	
 	OGL_StopTextures();
 	Shader::unloadAll();
