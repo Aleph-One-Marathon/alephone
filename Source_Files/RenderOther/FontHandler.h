@@ -125,7 +125,10 @@ public:
 	// Calls OGL_Reset() on all fonts
 	static void OGL_ResetFonts(bool IsStarting);	
 #endif
-	
+
+	// Draw text without worrying about OpenGL vs. SDL mode.
+	int DrawText(SDL_Surface *s, const char *text, int x, int y, uint32 pixel, bool utf8 = false);
+
 	~FontSpecifier();
 
 	// Equality and assignment operators

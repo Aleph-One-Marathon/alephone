@@ -42,6 +42,7 @@ Jan 12, 2001 (Loren Petrich):
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
+#include "OGL_Blitter.h"
 #endif
 
 #include <math.h>
@@ -499,6 +500,7 @@ void FontSpecifier::OGL_Render(const char *Text)
 	glDisable(GL_CULL_FACE);
 	glEnable(GL_BLEND);
 	glDisable(GL_ALPHA_TEST);
+	glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
 
 	glBindTexture(GL_TEXTURE_2D,TxtrID);
 	
@@ -618,6 +620,36 @@ void FontSpecifier::OGL_ResetFonts(bool IsStarting)
 
 #endif // def HAVE_OPENGL
 
+
+// Draw text without worrying about OpenGL vs. SDL mode.
+int FontSpecifier::DrawText(SDL_Surface *s, const char *text, int x, int y, uint32 pixel, bool utf8)
+{
+	if (!s)
+		return 0;
+	if (!(s->flags & SDL_OPENGL))
+		return draw_text(s, text, x, y, pixel, this->Info, this->Style, utf8);
+
+#ifdef HAVE_OPENGL
+		
+	uint8 r, g, b;
+	SDL_GetRGB(pixel, s->format, &r, &g, &b);
+	glColor4ub(r, g, b, 255);
+	
+	// draw into both buffers
+	for (int i = 0; i < 2; i++)
+	{
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glTranslatef(x, y, 0);
+		this->OGL_Render(text);
+		glPopMatrix();	
+		SDL_GL_SwapBuffers();
+	}	
+	return 1;
+#else
+	return 0;
+#endif
+}
 	
 // Given a pointer to somewhere in a name set, returns the pointer
 // to the start of the next name, or NULL if it did not find any

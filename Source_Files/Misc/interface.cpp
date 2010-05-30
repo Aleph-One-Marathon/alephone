@@ -1226,8 +1226,8 @@ void display_main_menu(
         // ZZZ: this still won't work for fullscreen (drawing to wrong surface as usual), but at
         // least in windowed mode it will draw.
         _set_port_to_screen_window();
-        draw_text(world_pixels, A1_VERSION_STRING, X, Y, SDL_MapRGB(world_pixels->format, 0x40, 0x40,
-                                                                 0x40), Font.Info, Font.Style);
+        Font.DrawText(world_pixels, A1_VERSION_STRING, X, Y, SDL_MapRGB(world_pixels->format, 0x40, 0x40,
+                                                                 0x40));
         _restore_port();
 #endif
 	game_state.main_menu_display_count++;
@@ -1541,7 +1541,7 @@ void paint_window_black(
 	void)
 {
 	_set_port_to_screen_window();
-	_erase_screen(_black_color);
+	clear_screen(true);
 	_restore_port();
 }
 
