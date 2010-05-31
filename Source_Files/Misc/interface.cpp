@@ -165,6 +165,7 @@ const short max_handled_recording= aleph_recording_version;
 // LP addition: getting OpenGL rendering stuff
 #include "render.h"
 #include "OGL_Render.h"
+#include "OGL_Blitter.h"
 #include "alephversion.h"
 
 // To tell it to stop playing,
@@ -2725,6 +2726,28 @@ void exit_networking(void)
  *  Show movie
  */
 
+#ifdef HAVE_OPENGL
+static OGL_Blitter show_movie_blitter;
+static SDL_mutex *show_movie_mutex = NULL;
+
+// SMPEG callback for use under OpenGL
+static void show_movie_frame(SDL_Surface* frame, int x, int y, unsigned int w, unsigned int h)
+{
+	if (show_movie_mutex && SDL_LockMutex(show_movie_mutex) != -1)
+	{
+		if (!show_movie_blitter.Loaded())
+		{
+			show_movie_blitter.Load(*frame);
+			// let main thread know there's a frame ready
+			SDL_Event ev;
+			ev.type = SDL_USEREVENT;
+			SDL_PushEvent(&ev);
+		}
+		SDL_UnlockMutex(show_movie_mutex);
+	}
+}
+#endif
+
 extern bool option_nosound;
 
 void show_movie(short index)
@@ -2764,14 +2787,27 @@ void show_movie(short index)
 			SMPEG_delete(movie);
 			return;
 		}
-		int width = (int) (info.width * PlaybackSize);
-		int height = (int) (info.height * PlaybackSize);
+		SDL_Rect dst_rect = { (s->w - 640)/2, (s->h - 480)/2, 640, 480 };
 		
-		SMPEG_setdisplay(movie, SDL_GetVideoSurface(), NULL, NULL);
-		if (width <= s->w && height <= s->h)
+#ifdef HAVE_OPENGL
+		SDL_Surface *gl_surface = NULL;
+		if (OGL_IsActive())
 		{
-			SMPEG_scaleXY(movie, width, height);
-			SMPEG_move(movie, (s->w - width) / 2, (s->h - height) / 2);
+#ifdef ALEPHONE_LITTLE_ENDIAN
+			gl_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000);
+#else
+			gl_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x00000000);
+#endif
+			SMPEG_setdisplay(movie, gl_surface, NULL, show_movie_frame);
+			SMPEG_scaleXY(movie, dst_rect.w, dst_rect.h);
+			show_movie_mutex = SDL_CreateMutex();
+		}
+		else
+#endif
+		{
+			SMPEG_setdisplay(movie, SDL_GetVideoSurface(), NULL, NULL);
+			SMPEG_scaleXY(movie, dst_rect.w, dst_rect.h);
+			SMPEG_move(movie, dst_rect.x, dst_rect.y);
 		}
 		
 		bool done = false;
@@ -2786,6 +2822,17 @@ void show_movie(short index)
 				case SDL_MOUSEBUTTONDOWN:
 					done = true;
 					break;
+#ifdef HAVE_OPENGL
+				case SDL_USEREVENT:
+					if (SDL_LockMutex(show_movie_mutex) != -1)
+					{
+						show_movie_blitter.Draw(dst_rect);
+						show_movie_blitter.Unload();
+						SDL_UnlockMutex(show_movie_mutex);
+						SDL_GL_SwapBuffers();
+					}
+					break;
+#endif
 				default:
 					break;
 				}
@@ -2794,6 +2841,11 @@ void show_movie(short index)
 			SDL_Delay(100);
 		}
 		SMPEG_delete(movie);
+#ifdef HAVE_OPENGL
+		SDL_FreeSurface(gl_surface);
+		SDL_DestroyMutex(show_movie_mutex);
+		show_movie_mutex = NULL;
+#endif
 	}
 #endif // HAVE_SMPEG
 }
