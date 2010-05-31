@@ -23,6 +23,8 @@
 
 #include "OGL_Blitter.h"
 #include "OGL_Setup.h"
+#include "shell.h"
+#include "screen.h"
 
 #ifdef HAVE_OPENGL
 
@@ -172,13 +174,39 @@ int OGL_Blitter::ScreenHeight()
 	return SDL_GetVideoSurface()->h;
 }
 
-void OGL_Blitter::BoundScreen()
+void OGL_Blitter::BoundScreen(bool in_game)
 {	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glViewport(0, 0, ScreenWidth(), ScreenHeight());
-	glOrtho(0, ScreenWidth(), ScreenHeight(), 0, -1, 1);
+	int w = ScreenWidth();
+	int h = ScreenHeight();
+	glViewport(0, 0, w, h);
+	glOrtho(0, w, h, 0, -1, 1);
+	// zoom to center 640x480, if not in level
+	if (!in_game && get_screen_mode()->fill_the_screen)
+	{
+		float scale = std::min(w/(float)640, h/(float)480);
+		glScalef(scale, scale, 1.0);
+		int margin = (480 - h)/2;
+		glTranslatef(margin * w/h, margin, 0.0);
+	}
 	glMatrixMode(GL_MODELVIEW);
+}
+
+void OGL_Blitter::WindowToScreen(int& x, int& y, bool in_game)
+{
+	if (!in_game && get_screen_mode()->fill_the_screen)
+	{
+		int w = ScreenWidth();
+		int h = ScreenHeight();
+		
+		float scale = std::min(w/(float)640, h/(float)480);
+		x /= scale;
+		y /= scale;
+		int margin = (480 - h)/2;
+		x -= margin * w/h;
+		y -= margin;
+	}
 }
 
 void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)

@@ -2360,6 +2360,10 @@ void dialog::event(SDL_Event &e)
 	  if (e.type == SDL_MOUSEMOTION)
 	  {
 		  int x = e.motion.x, y = e.motion.y;
+#ifdef HAVE_OPENGL
+		  if (OGL_IsActive())
+			  OGL_Blitter::WindowToScreen(x, y);
+#endif
 		  widget *target = 0;
 		  if (mouse_widget)
 			  target = mouse_widget;
@@ -2382,6 +2386,10 @@ void dialog::event(SDL_Event &e)
 	  else if (e.type == SDL_MOUSEBUTTONDOWN)
 	  {
 		  int x = e.button.x, y = e.button.y;
+#ifdef HAVE_OPENGL
+		  if (OGL_IsActive())
+			  OGL_Blitter::WindowToScreen(x, y);
+#endif
 		  int num = find_widget(x, y);
 		  if (num >= 0)
 		  {
@@ -2398,7 +2406,14 @@ void dialog::event(SDL_Event &e)
 		  {
 			  mouse_widget->event(e);
 			  if (e.button.button == SDL_BUTTON_LEFT || e.button.button == SDL_BUTTON_RIGHT)
-				  mouse_widget->mouse_up(e.button.x - rect.x - mouse_widget->rect.x, e.button.y - rect.y - mouse_widget->rect.y);
+			  {
+				  int x = e.button.x, y = e.button.y;
+#ifdef HAVE_OPENGL
+				  if (OGL_IsActive())
+					  OGL_Blitter::WindowToScreen(x, y);
+#endif
+				  mouse_widget->mouse_up(x - rect.x - mouse_widget->rect.x, y - rect.y - mouse_widget->rect.y);
+			  }
 			  
 			  mouse_widget = 0;
 		  }

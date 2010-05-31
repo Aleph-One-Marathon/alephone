@@ -56,7 +56,8 @@ public:
 	~OGL_Blitter();
 			
 	static void StopTextures();
-	static void BoundScreen();
+	static void BoundScreen(bool in_game = false);
+	static void WindowToScreen(int& x, int& y, bool in_game = false);
 	static int ScreenWidth();
 	static int ScreenHeight();
 		

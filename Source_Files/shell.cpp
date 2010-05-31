@@ -53,6 +53,7 @@
 
 #include "Crosshairs.h"
 #include "OGL_Render.h"
+#include "OGL_Blitter.h"
 #include "XML_ParseTreeRoot.h"
 #include "FileHandler.h"
 #include "Plugins.h"
@@ -767,7 +768,12 @@ static bool has_cheat_modifiers(void)
 
 static void process_screen_click(const SDL_Event &event)
 {
-	portable_process_screen_click(event.button.x, event.button.y, has_cheat_modifiers());
+	int x = event.button.x, y = event.button.y;
+#ifdef HAVE_OPENGL
+	if (OGL_IsActive())
+		OGL_Blitter::WindowToScreen(x, y);
+#endif
+	portable_process_screen_click(x, y, has_cheat_modifiers());
 }
 
 static void handle_game_key(const SDL_Event &event)

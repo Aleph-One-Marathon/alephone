@@ -113,7 +113,7 @@ void OGL_LoadScreen::Stop()
 void OGL_LoadScreen::Progress(const int progress)
 {
 	OGL_ClearScreen();
-	OGL_Blitter::BoundScreen();
+	OGL_Blitter::BoundScreen(true);
 	
 	blitter.Draw(m_dst);
 

@@ -880,7 +880,10 @@ static void draw_picture(LoadedResource &rsrc)
 	} else {
 #ifdef HAVE_OPENGL
 		if (glmode)
+		{
 			OGL_ClearScreen();
+			OGL_Blitter::BoundScreen();
+		}
 		else
 #endif
 			// Clear destination to black

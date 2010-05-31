@@ -2403,6 +2403,14 @@ static void handle_interface_menu_screen_click(
 				bool state;
 				
 				get_mouse_position(&x, &y);
+#ifdef HAVE_OPENGL
+				if (OGL_IsActive())
+				{
+					int mx = x, my = y;
+					OGL_Blitter::WindowToScreen(mx, my);
+					x = mx; y = my;
+				}
+#endif
 				state= point_in_rectangle(x - xoffset, y - yoffset, screen_rect);
 				if(state != last_state)
 				{
@@ -2801,6 +2809,7 @@ void show_movie(short index)
 			SMPEG_setdisplay(movie, gl_surface, NULL, show_movie_frame);
 			SMPEG_scaleXY(movie, dst_rect.w, dst_rect.h);
 			show_movie_mutex = SDL_CreateMutex();
+			OGL_ClearScreen();
 		}
 		else
 #endif
@@ -2826,6 +2835,7 @@ void show_movie(short index)
 				case SDL_USEREVENT:
 					if (SDL_LockMutex(show_movie_mutex) != -1)
 					{
+						OGL_Blitter::BoundScreen();
 						show_movie_blitter.Draw(dst_rect);
 						show_movie_blitter.Unload();
 						SDL_UnlockMutex(show_movie_mutex);
@@ -2845,6 +2855,7 @@ void show_movie(short index)
 		SDL_FreeSurface(gl_surface);
 		SDL_DestroyMutex(show_movie_mutex);
 		show_movie_mutex = NULL;
+		show_movie_blitter.Unload();
 #endif
 	}
 #endif // HAVE_SMPEG
