@@ -801,8 +801,6 @@ static void rendering_options_dialog_demux(void* arg)
 	}
 }
 
-extern void toggle_fill_the_screen(bool);
-
 std::vector<std::string> build_resolution_labels()
 {
 	std::vector<std::string> result;
@@ -925,11 +923,6 @@ static void graphics_dialog(void *arg)
 	    bool fullscreen = fullscreen_w->get_selection() == 0;
 	    if (fullscreen != graphics_preferences->screen_mode.fullscreen) {
 		    graphics_preferences->screen_mode.fullscreen = fullscreen;
-		    // This is the only setting that has an immediate effect
-		    toggle_fullscreen(fullscreen);
-		    if (!graphics_preferences->screen_mode.fill_the_screen)
-			    parent->layout();
-		    parent->draw();
 		    changed = true;
 	    }
 
@@ -989,8 +982,6 @@ static void graphics_dialog(void *arg)
 		    bool fill_the_screen = fill_screen_w->get_selection() != 0;
 		    if (fill_the_screen != graphics_preferences->screen_mode.fill_the_screen) {
 			    graphics_preferences->screen_mode.fill_the_screen = fill_the_screen;
-			    toggle_fill_the_screen(fill_the_screen);
-			    parent->layout();
 			    changed = true;
 		    }
 	    }
@@ -1007,6 +998,9 @@ static void graphics_dialog(void *arg)
 
 	    if (changed) {
 		    write_preferences();
+		    change_screen_mode(&graphics_preferences->screen_mode, true);
+		    clear_screen(true);
+		    parent->layout();
 		    parent->draw();		// DirectX seems to need this
 	    }
     }

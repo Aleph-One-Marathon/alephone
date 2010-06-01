@@ -101,6 +101,8 @@ static int desktop_height;
 static int prev_width;
 static int prev_height;
 
+static int failed_multisamples = 0;		// remember when GL multisample setting didn't succeed
+
 // From shell_sdl.cpp
 extern bool option_nogamma;
 
@@ -112,6 +114,7 @@ Screen Screen::m_instance;
 
 
 // Prototypes
+static bool need_mode_change(int width, int height, int depth, bool nogl);
 static void change_screen_mode(int width, int height, int depth, bool nogl);
 static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
@@ -255,9 +258,8 @@ void Screen::Initialize(screen_mode_data* mode)
 	}
 	world_pixels = NULL;
 
-	// Set screen to 640x480 without OpenGL for menu
 	screen_mode = *mode;
-	change_screen_mode(640, 480, bit_depth, true);
+	change_screen_mode(&screen_mode, true);
 	screen_initialized = true;
 
 }
@@ -547,9 +549,7 @@ void enter_screen(void)
 
 void exit_screen(void)
 {
-	// Return to 640x480 without OpenGL
 	in_game = false;
-	change_screen_mode(640, 480, bit_depth, true);
 #ifdef HAVE_OPENGL
 	OGL_StopRun();
 #endif
@@ -560,12 +560,75 @@ void exit_screen(void)
  *  Change screen mode
  */
 
+static bool need_mode_change(int width, int height, int depth, bool nogl)
+{
+	// have we set up any window at all yet?
+	SDL_Surface *s = SDL_GetVideoSurface();
+	if (!s)
+		return true;
+	
+	// are we changing the dimensions?
+	int want_w = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_width : width;
+	if (s->w != want_w)
+		return true;
+	int want_h = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_height : height;
+	if (s->h != want_h)
+		return true;
+	
+	// are we switching to/from fullscreen?
+	if (( screen_mode.fullscreen && !(s->flags & SDL_FULLSCREEN)) ||
+		(!screen_mode.fullscreen &&  (s->flags & SDL_FULLSCREEN)))
+		return true;
+	
+	// are we switching to/from OpenGL?
+	bool wantgl = false;
+#ifdef HAVE_OPENGL
+	wantgl = !nogl && (screen_mode.acceleration != _no_acceleration);
+	if (( wantgl && !(s->flags & SDL_OPENGL)) ||
+		(!wantgl &&  (s->flags & SDL_OPENGL)))
+		return true;
+	if (wantgl) {
+		// check GL-specific attributes
+		int atval = 0;
+		
+		int want_depth = (screen_mode.acceleration == _shader_acceleration) ? 24 : 16;
+		if (SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &atval) == 0 && atval < want_depth)
+			return true;
+		
+		int want_stencil = Screen::instance()->lua_hud() ? 1 : 0;
+		if (SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &atval) == 0 && atval < want_stencil)
+			return true;
+		
+#if SDL_VERSION_ATLEAST(1,2,6)
+		int want_samples = Get_OGL_ConfigureData().Multisamples;
+		if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &atval) == 0 && atval != want_samples &&
+				!(want_samples == failed_multisamples && atval == 0))
+			return true;
+#endif		
+
+#if SDL_VERSION_ATLEAST(1,2,10)
+		int want_vsync = Get_OGL_ConfigureData().WaitForVSync ? 1 : 0;
+		if (SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &atval) == 0 && atval != want_vsync)
+			return true;
+#endif
+	}
+#endif
+	// Lua HUD needs software surface in SW renderer, for alpha channel
+	if (!wantgl && Screen::instance()->lua_hud() && !(s->flags & SDL_SWSURFACE))
+		return true;
+	
+	return false;
+}
+
+
 static void change_screen_mode(int width, int height, int depth, bool nogl)
 {
 
 	int vmode_height = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_height : height;
 	int vmode_width = (screen_mode.fullscreen && !screen_mode.fill_the_screen) ? desktop_width : width;
 	uint32 flags = (screen_mode.fullscreen ? SDL_FULLSCREEN : 0);
+	
+	if (need_mode_change(width, height, depth, nogl)) {
 #ifdef HAVE_OPENGL
 	if (!nogl && screen_mode.acceleration != _no_acceleration) {
 		flags |= SDL_OPENGL;
@@ -605,6 +668,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 0);
 		SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 0);
 		main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
+		if (main_surface)
+			failed_multisamples = Get_OGL_ConfigureData().Multisamples;
 	}
 #endif
 #endif
@@ -627,6 +692,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #else
 	exit(1);
 #endif
+	}
 	}
 #ifdef MUST_RELOAD_VIEW_CONTEXT
 	if (!nogl && screen_mode.acceleration != _no_acceleration) 
@@ -688,7 +754,18 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 
 	// "Redraw" change now and clear the screen
 	if (redraw) {
-		change_screen_mode(std::max(mode->width, static_cast<short>(640)), std::max(mode->height, static_cast<short>(480)), mode->bit_depth, false);
+		short w = std::max(mode->width, static_cast<short>(640));
+		short h = std::max(mode->height, static_cast<short>(480));
+		// use 640x480 for fullscreen SDL menus
+		if (!in_game &&
+			mode->fullscreen &&
+			mode->fill_the_screen &&
+			mode->acceleration == _no_acceleration)
+		{
+			w = 640;
+			h = 480;
+		}
+		change_screen_mode(w, h, mode->bit_depth, false);
 		clear_screen();
 		recenter_mouse();
 	}
@@ -703,21 +780,8 @@ void toggle_fullscreen(bool fs)
 		if (in_game)
 			change_screen_mode(&screen_mode, true);
 		else {
-		  change_screen_mode(640, 480, bit_depth, true);
+		  change_screen_mode(&screen_mode, true);
 		  clear_screen();
-		}
-	}
-}
-
-void toggle_fill_the_screen(bool fill_the_screen)
-{
-	if (fill_the_screen != screen_mode.fill_the_screen) {
-		screen_mode.fill_the_screen = fill_the_screen;
-		if (in_game)
-			change_screen_mode(&screen_mode, true);
-		else {
-			change_screen_mode(640, 480, bit_depth, true);
-			clear_screen();
 		}
 	}
 }
