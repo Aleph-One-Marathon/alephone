@@ -97,6 +97,7 @@ using namespace std;
 #include "lua_serialize.h"
 
 #include <boost/bind.hpp>
+#include <boost/ptr_container/ptr_map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/iostreams/device/array.hpp>
 #include <boost/iostreams/stream_buffer.hpp>
@@ -1012,7 +1013,7 @@ std::string LuaState::SavePassed()
 	}
 }
 
-typedef std::map<int, boost::shared_ptr<LuaState> > state_map;
+typedef boost::ptr_map<int, LuaState> state_map;
 state_map states;
 
 // globals
@@ -1091,7 +1092,7 @@ void L_Dispatch(const UnaryFunction& f)
 {
 	for (state_map::iterator it = states.begin(); it != states.end(); ++it)
 	{
-		f(*it->second);
+		f(it->second);
 	}
 }
 
@@ -1665,13 +1666,13 @@ static LuaState* LuaStateFactory(ScriptType script_type)
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 {
 	assert(script_type >= _embedded_lua_script && script_type <= _solo_lua_script);
-
-	if (!states[script_type].get())
+	if (states.find(script_type) == states.end())
 	{
-		states[script_type].reset(LuaStateFactory(script_type));
-		states[script_type]->Initialize();
+		int type = script_type;
+		states.insert(type, LuaStateFactory(script_type));
+		states[script_type].Initialize();
 	}
-	return states[script_type]->Load(buffer, len);
+	return states[script_type].Load(buffer, len);
 }
 
 #ifdef HAVE_OPENGL
@@ -1729,13 +1730,14 @@ bool RunLuaScript()
 
 void ExecuteLuaString(const std::string& line)
 {
-	if (!states[_solo_lua_script].get())
+	if (states.find(_solo_lua_script) == states.end())
 	{
-		states[_solo_lua_script].reset(LuaStateFactory(_solo_lua_script));
-		states[_solo_lua_script]->Initialize();
+		int type = _solo_lua_script;
+		states.insert(type, LuaStateFactory(_solo_lua_script));
+		states[_solo_lua_script].Initialize();
 	}
 
-	states[_solo_lua_script]->ExecuteCommand(line);
+	states[_solo_lua_script].ExecuteCommand(line);
 }
 
 void LoadSoloLua()
@@ -1777,7 +1779,7 @@ void LoadSoloLua()
 				LoadLuaScript(&script_buffer[0], script_length, _solo_lua_script);
 				if (directory.size())
 				{
-					states[_solo_lua_script]->SetSearchPath(directory);
+					states[_solo_lua_script].SetSearchPath(directory);
 				}
 			}
 		}
