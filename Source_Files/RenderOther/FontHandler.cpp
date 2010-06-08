@@ -607,15 +607,24 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 
 void FontSpecifier::OGL_ResetFonts(bool IsStarting)
 {
-    // We only care about cleanup, textures get created as needed
-    if (IsStarting || !m_font_registry)
+    if (!m_font_registry)
         return;
     
 	set<FontSpecifier*>::iterator it;
-	for (it = m_font_registry->begin();
-	     it != m_font_registry->end();
-	     it = m_font_registry->begin())
-		(*it)->OGL_Reset(IsStarting);
+	if (IsStarting)
+	{
+		for (it = m_font_registry->begin();
+			 it != m_font_registry->end();
+			 ++it)
+			(*it)->OGL_Reset(IsStarting);
+	}
+	else
+	{
+		for (it = m_font_registry->begin();
+			 it != m_font_registry->end();
+			 it = m_font_registry->begin())
+			(*it)->OGL_Reset(IsStarting);
+	}
 }
 
 void FontSpecifier::OGL_Register(FontSpecifier *F)
