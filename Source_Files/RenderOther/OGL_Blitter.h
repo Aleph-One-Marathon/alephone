@@ -60,20 +60,26 @@ public:
 	static void WindowToScreen(int& x, int& y, bool in_game = false);
 	static int ScreenWidth();
 	static int ScreenHeight();
-		
+	
 private:
 	
 	void _Draw(const SDL_Rect& dst, const SDL_Rect& src);
 	void _LoadTextures();
 	void _UnloadTextures();
 
+	// Add or remove an instance from the registry of in-use OpenGL blitters.
+	// To recycle OpenGL assets properly on context switches, the set
+	// m_blitter_registry tracks all active blitters.
+	static void Register(OGL_Blitter *B);
+	static void Deregister(OGL_Blitter *B);
+	
 	vector<SDL_Rect> m_rects;
 	vector<GLuint> m_refs;
 	int m_tile_width, m_tile_height;
 	bool m_textures_loaded;
 	
 	static const int tile_size = 256;
-	static set<OGL_Blitter*> m_blitter_registry;
+	static set<OGL_Blitter*> *m_blitter_registry;
 };
 
 #endif

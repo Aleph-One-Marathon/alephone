@@ -53,7 +53,7 @@ Jan 12, 2001 (Loren Petrich):
 #include "screen_drawing.h"
 
 #ifdef HAVE_OPENGL
-set<FontSpecifier*> FontSpecifier::m_font_registry;
+set<FontSpecifier*> *FontSpecifier::m_font_registry = NULL;
 #endif
 
 // MacOS-specific: stuff that gets reused
@@ -250,7 +250,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
 	{
 		glDeleteTextures(1,&TxtrID);
 		glDeleteLists(DispList,256);
-		m_font_registry.erase(this);
+		OGL_Deregister(this);
 	}
 
 	// Invalidates whatever texture had been present
@@ -418,7 +418,7 @@ void FontSpecifier::OGL_Reset(bool IsStarting)
  	// Load texture
  	glGenTextures(1,&TxtrID);
  	glBindTexture(GL_TEXTURE_2D,TxtrID);
-	m_font_registry.insert(this);
+	OGL_Register(this);
  	
  	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -608,14 +608,28 @@ void FontSpecifier::OGL_DrawText(const char *text, const screen_rectangle &r, sh
 void FontSpecifier::OGL_ResetFonts(bool IsStarting)
 {
     // We only care about cleanup, textures get created as needed
-    if (IsStarting)
+    if (IsStarting || !m_font_registry)
         return;
     
 	set<FontSpecifier*>::iterator it;
-	for (it = m_font_registry.begin();
-	     it != m_font_registry.end();
-	     it = m_font_registry.begin())
+	for (it = m_font_registry->begin();
+	     it != m_font_registry->end();
+	     it = m_font_registry->begin())
 		(*it)->OGL_Reset(IsStarting);
+}
+
+void FontSpecifier::OGL_Register(FontSpecifier *F)
+{
+	if (!m_font_registry)
+		m_font_registry = new set<FontSpecifier*>;
+	m_font_registry->insert(F);
+}
+
+void FontSpecifier::OGL_Deregister(FontSpecifier *F)
+{
+	if (m_font_registry)
+		m_font_registry->erase(F);
+	// we could delete registry here, but why bother?
 }
 
 #endif // def HAVE_OPENGL

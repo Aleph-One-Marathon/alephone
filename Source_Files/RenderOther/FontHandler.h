@@ -122,8 +122,16 @@ public:
 	// alignment and wrapping. Modelview matrix is unaffected.
 	void OGL_DrawText(const char *Text, const screen_rectangle &r, short flags);
 	
-	// Calls OGL_Reset() on all fonts
+	// Calls OGL_Reset() on all fonts. This is used when the OpenGL context
+	// is changing, so that textures and display lists are cleaned up.
 	static void OGL_ResetFonts(bool IsStarting);	
+
+	// Add or remove an instance from the registry of in-use OpenGL fonts.
+	// To recycle OpenGL assets properly on context switches, the set
+	// m_font_registry tracks all active fonts.
+	static void OGL_Register(FontSpecifier *F);
+	static void OGL_Deregister(FontSpecifier *F);
+	
 #endif
 
 	// Draw text without worrying about OpenGL vs. SDL mode.
@@ -160,7 +168,7 @@ public:
 	int GetTxtrSize() {return int(TxtrWidth)*int(TxtrHeight);}
 	GLuint TxtrID;
 	uint32 DispList;
-	static set<FontSpecifier*> m_font_registry;
+	static set<FontSpecifier*> *m_font_registry;
 #endif
 };
 

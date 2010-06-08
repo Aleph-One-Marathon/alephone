@@ -29,7 +29,7 @@
 #ifdef HAVE_OPENGL
 
 const int OGL_Blitter::tile_size;
-set<OGL_Blitter*> OGL_Blitter::m_blitter_registry;
+set<OGL_Blitter*> *OGL_Blitter::m_blitter_registry = NULL;
 
 OGL_Blitter::OGL_Blitter() : m_textures_loaded(false)
 {
@@ -75,7 +75,7 @@ void OGL_Blitter::_LoadTextures()
 	m_refs.resize(v_rects * h_rects);
 
 	// ensure our textures get cleaned up
-	m_blitter_registry.insert(this);
+	Register(this);
 
 	uint32 rgb_mask = ~(t->format->Amask);
 
@@ -142,7 +142,7 @@ void OGL_Blitter::_UnloadTextures()
 {
 	if (!m_textures_loaded)
 		return;
-	m_blitter_registry.erase(this);
+	Deregister(this);
 	if (m_refs.size())
 		glDeleteTextures(m_refs.size(), &m_refs[0]);
 	m_refs.clear();
@@ -152,10 +152,13 @@ void OGL_Blitter::_UnloadTextures()
 
 void OGL_Blitter::StopTextures()
 {
+	if (!m_blitter_registry)
+		return;
+	
 	set<OGL_Blitter*>::iterator it;
-	for (it = m_blitter_registry.begin();
-	     it != m_blitter_registry.end();
-	     it = m_blitter_registry.begin())
+	for (it = m_blitter_registry->begin();
+	     it != m_blitter_registry->end();
+	     it = m_blitter_registry->begin())
 		(*it)->_UnloadTextures();
 }
 
@@ -300,6 +303,20 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
 	if (rotating)
 		glPopMatrix();
 	glPopAttrib();
+}
+
+void OGL_Blitter::Register(OGL_Blitter *B)
+{
+	if (!m_blitter_registry)
+		m_blitter_registry = new set<OGL_Blitter*>;
+	m_blitter_registry->insert(B);
+}
+
+void OGL_Blitter::Deregister(OGL_Blitter *B)
+{
+	if (m_blitter_registry)
+		m_blitter_registry->erase(B);
+	// we could delete registry here, but why bother?
 }
 
 #endif
