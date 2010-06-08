@@ -1481,6 +1481,48 @@ static int Lua_HUDPlayer_Get_Elevation(lua_State *L)
 	return 1;
 }
 
+char Lua_HUDPlayer_Velocity_Name[] = "velocity";
+typedef L_Class<Lua_HUDPlayer_Velocity_Name> Lua_HUDPlayer_Velocity;
+
+static int Lua_HUDPlayer_Velocity_Get_Forward(lua_State *L)
+{
+	double diff_x = (current_player->variables.position.x - current_player->variables.last_position.x) / (double)FIXED_ONE;
+	double diff_y = (current_player->variables.position.y - current_player->variables.last_position.y) / (double)FIXED_ONE;
+	double dir = (360.0 - (FIXED_INTEGERAL_PART(current_player->variables.direction) * AngleConvert)) * M_PI / 180.0;
+	
+	lua_pushnumber(L, (diff_x * cos(dir)) + (-diff_y * sin(dir)));
+	return 1;
+}
+
+static int Lua_HUDPlayer_Velocity_Get_Perpendicular(lua_State *L)
+{
+	double diff_x = (current_player->variables.position.x - current_player->variables.last_position.x) / (double)FIXED_ONE;
+	double diff_y = (current_player->variables.position.y - current_player->variables.last_position.y) / (double)FIXED_ONE;
+	double dir = (360.0 - (FIXED_INTEGERAL_PART(current_player->variables.direction) * AngleConvert)) * M_PI / 180.0;
+	
+	lua_pushnumber(L, (diff_x * sin(dir)) + (diff_y * cos(dir)));
+	return 1;
+}
+
+static int Lua_HUDPlayer_Velocity_Get_Vertical(lua_State *L)
+{
+	lua_pushnumber(L, (current_player->variables.position.z - current_player->variables.last_position.z) / (double)FIXED_ONE);
+	return 1;
+}
+
+const luaL_reg Lua_HUDPlayer_Velocity_Get[] = {
+	{"forward", Lua_HUDPlayer_Velocity_Get_Forward},
+	{"perpendicular", Lua_HUDPlayer_Velocity_Get_Perpendicular},
+	{"vertical", Lua_HUDPlayer_Velocity_Get_Vertical},
+	{0, 0}
+};
+
+static int Lua_HUDPlayer_Get_Velocity(lua_State *L)
+{
+	Lua_HUDPlayer_Velocity::Push(L, Lua_HUDPlayer::Index(L, 1));
+	return 1;
+}
+
 static int Lua_HUDPlayer_Get_Microphone(lua_State *L)
 {    
     lua_pushboolean(L, current_netgame_allows_microphone() &&
@@ -1555,6 +1597,7 @@ const luaL_reg Lua_HUDPlayer_Get[] = {
 {"yaw", Lua_HUDPlayer_Get_Direction},
 {"elevation", Lua_HUDPlayer_Get_Elevation},
 {"pitch", Lua_HUDPlayer_Get_Elevation},
+{"velocity", Lua_HUDPlayer_Get_Velocity},
 {"energy", Lua_HUDPlayer_Get_Energy},
 {"life", Lua_HUDPlayer_Get_Energy},
 {"microphone_active", Lua_HUDPlayer_Get_Microphone},
@@ -2416,6 +2459,8 @@ int Lua_HUDObjects_register(lua_State *L)
     
 	Lua_HUDTexturePalette::Register(L, Lua_HUDTexturePalette_Get);
     
+	Lua_HUDPlayer_Velocity::Register(L, Lua_HUDPlayer_Velocity_Get);
+
 	Lua_HUDPlayer::Register(L, Lua_HUDPlayer_Get);
 	Lua_HUDPlayer::Push(L, 0);
 	lua_setglobal(L, Lua_HUDPlayer_Name);

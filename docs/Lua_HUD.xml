@@ -512,6 +512,23 @@ end
         <description>angle player is looking up or down</description>
         <type>number</type>
       </variable>
+      <subtable name="velocity">
+        <variable name="forward" version="SVN">
+          <description>player's forward/backward velocity, from internal and external forces</description>
+          <note>in WU per tick; positive values mean forward movement</note>
+          <type>number</type>
+        </variable>
+        <variable name="perpendicular" version="SVN">
+          <description>player's left/right velocity</description>
+          <note>in WU per tick; positive values mean rightward movement</note>
+          <type>number</type>
+        </variable>
+        <variable name="vertical" version="SVN">
+          <description>player's up/down velocity</description>
+          <note>in WU per tick; positive values mean upward movement</note>
+          <type>number</type>
+        </variable>
+      </subtable>
       <variable name="energy">
         <alias>life</alias>
         <description>amount of suit energy player has (150 is normal red health)</description>
