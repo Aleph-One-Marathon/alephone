@@ -730,6 +730,11 @@ bool OGL_StopRun()
 	OGL_StopTextures();
 	Shader::unloadAll();
 	
+	if (Using_sRGB)
+	{
+		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+		Using_sRGB = false;
+	}
 #ifdef mac
 	aglDestroyContext(RenderContext);
 #endif
