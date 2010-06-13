@@ -1648,9 +1648,14 @@ in "glowing" rendering (independent of light levels).
 <li>glow_mask: the name of the file whose image content becomes the opacity mask
 for "glowing" rendering (independent of light levels).
 It must be used with a glow_image file.
+<li>minimum_glow_intensity: the threshold at which "glowing" images are independent of light levels. Above this threshold, normal lighting calculations are used. (default: 1 -- always light at full intensity)
 <li>normal_blend: which blend mode for semitransparent normal textures (default: 0 -- crossfade)
 <li>glow_blend: which blend mode for semitransparent glowing textures (default: 0 -- crossfade)
 <li>offset_image: the name of the file whose image content to use for bump mapping (normals in RGB channels, height map in alpha channel).
+<li>normal_bloom_scale: when rendering bloom effects in the shader renderer, scale the normal image's light level by this amount. (default: 0 -- no light during bloom effect)
+<li>normal_bloom_shift: when rendering bloom effects in the shader renderer, add this value to the normal image's light level after scaling. (default: 0)
+<li>glow_bloom_scale: when rendering bloom effects in the shader renderer, scale the glow image's light level by this amount. (default: 1 -- full intensity during bloom effect)
+<li>glow_bloom_shift: when rendering bloom effects in the shader renderer, add this value to the glow image's light level after scaling. (default: 0)
 </ul>
 <p>
 
