@@ -47,6 +47,7 @@ LUA_HUD_OBJECTS.CPP
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
 #include <algorithm>
+#include <cmath>
 
 #ifdef HAVE_LUA
 
