@@ -1211,6 +1211,12 @@ void display_main_menu(
         SDL_Surface *world_pixels = SDL_GetVideoSurface();
         short X0 = world_pixels->w;
         short Y0 = world_pixels->h;
+		if (get_screen_mode()->acceleration != _no_acceleration &&
+			get_screen_mode()->fill_the_screen) {
+			// draw in center 640x480
+			X0 -= (world_pixels->w - 640) / 2;
+			Y0 -= (world_pixels->h - 480) / 2;
+		}
 #endif
         // The line spacing is a generalization of "5" for larger fonts
         short Offset = Font.LineSpacing / 3;
