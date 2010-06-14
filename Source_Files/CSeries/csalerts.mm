@@ -40,3 +40,22 @@ void system_alert_user(const char* message, short severity)
 	[alert runModal];
 	[alert release];
 }
+
+bool system_alert_choose_scenario(char *chosen_dir)
+{
+	NSOpenPanel *panel = [NSOpenPanel openPanel];
+	[panel setCanChooseFiles:NO];
+	[panel setCanChooseDirectories:YES];
+	[panel setAllowsMultipleSelection:NO];
+	[panel setTitle:@"Choose Aleph One Scenario"];
+	[panel setMessage:@"Select an Aleph One scenario:"];
+	[panel setPrompt:@"Choose"];
+	
+	if (!chosen_dir)
+		return false;
+	
+	if ([panel runModal] != NSFileHandlingPanelOKButton)
+		return false;
+	
+	return [[[panel URL] path] getCString:chosen_dir maxLength:256 encoding:NSUTF8StringEncoding];
+}

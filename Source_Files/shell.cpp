@@ -429,19 +429,31 @@ static void initialize_application(void)
 
 	init_physics_wad_data();
 
-	initialize_fonts();
-
 	// Parse MML files
 	SetupParseTree();
 	LoadBaseMMLScripts();
-	Plugins::instance()->enumerate();
 
 	// Check for presence of strings
 	if (!TS_IsPresent(strERRORS) || !TS_IsPresent(strFILENAMES)) {
 		fprintf(stderr, "Can't find required text strings (missing MML?).\n");
 		exit(1);
 	}
+	
+	// Check for presence of files (one last chance to change data_search_path)
+	if (!have_default_files()) {
+		char chosen_dir[256];
+		if (alert_choose_scenario(chosen_dir)) {
+			data_search_path.push_back(DirectorySpecifier(chosen_dir));
+			
+			// Parse MML files again, now that we have a new dir to search
+			SetupParseTree();
+			LoadBaseMMLScripts();
+		}
+	}
 
+	initialize_fonts();
+	Plugins::instance()->enumerate();			
+	
 	// Load preferences
 	initialize_preferences();
 #ifndef HAVE_OPENGL

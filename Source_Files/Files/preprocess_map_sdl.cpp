@@ -64,6 +64,14 @@ static bool get_default_spec(FileSpecifier &file, int type)
 	return get_default_spec(file, name);
 }
 
+bool have_default_files(void)
+{
+	FileSpecifier file;
+	return (get_default_spec(file, filenameDEFAULT_MAP) &&
+			get_default_spec(file, filenameIMAGES) &&
+			get_default_spec(file, filenameSHAPES8));
+}		
+
 void get_default_map_spec(FileSpecifier &file)
 {
 	if (!get_default_spec(file, filenameDEFAULT_MAP))

@@ -42,6 +42,8 @@ extern void alert_user(
 	short item,
 	OSErr error);
 
+extern bool alert_choose_scenario(char *chosen_dir);
+
 extern void pause_debug(void);
 extern void vpause(
 	const char *message);

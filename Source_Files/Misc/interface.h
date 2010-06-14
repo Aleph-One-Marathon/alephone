@@ -423,6 +423,7 @@ void import_definition_structures(void);
 bool configure_key_setup(short *keycodes);
 
 /* --------- from PREPROCESS_MAP_MAC.C */
+bool have_default_files(void);
 void get_default_map_spec(FileSpecifier& File);
 void get_default_physics_spec(FileSpecifier& File);
 void get_default_sounds_spec(FileSpecifier& File);

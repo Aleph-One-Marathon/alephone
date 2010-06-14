@@ -38,6 +38,8 @@ April 22, 2003 (Woody Zenfell):
 
 #if defined(__WIN32__)
 #include <windows.h>
+#include <tchar.h>
+#include <shlobj.h>
 #endif
 
 /*
@@ -46,6 +48,7 @@ April 22, 2003 (Woody Zenfell):
 
 #ifdef __MACOSX__
 extern void system_alert_user(const char*, short);
+extern bool system_alert_choose_scenario(char *chosen_dir);
 #else
 void system_alert_user(const char* message, short severity)
 {
@@ -60,6 +63,31 @@ void system_alert_user(const char* message, short severity)
 #else
 	fprintf(stderr, "%s: %s\n", severity == infoError ? "INFO" : "FATAL", message);
 #endif	
+}
+bool system_alert_choose_scenario(char *chosen_dir)
+{
+#if defined(__WIN32__)
+	BROWSEINFO bi = { 0 };
+	TCHAR path[MAX_PATH];
+	bi.lpszTitle = _T("Select an Aleph One scenario:");
+	bi.pszDisplayName = path;
+	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE | 0x00000200; // no "New Folder" button
+	LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
+	if (pidl)
+	{
+#ifdef UNICODE
+		WideCharToMultiByte(CP_UTF8, 0, path, -1, chosen_dir, 256, NULL, NULL);
+#else
+		strncpy(chosen_dir, path, 255);
+#endif
+		LPMALLOC pMalloc = NULL;
+		SHGetMalloc(&pMalloc);
+		pMalloc->Free(pidl);
+		pMalloc->Release();
+		return true;
+	}
+#endif
+	return false;
 }
 #endif
 
@@ -128,6 +156,12 @@ void alert_user(short severity, short resid, short item, OSErr error)
   }
   alert_user(msg, severity);
 }
+
+bool alert_choose_scenario(char *chosen_dir)
+{
+	return system_alert_choose_scenario(chosen_dir);
+}
+
 
 extern "C" void debugger(const char *message);
 
