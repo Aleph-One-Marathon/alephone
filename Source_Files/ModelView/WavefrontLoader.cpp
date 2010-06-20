@@ -663,4 +663,50 @@ char *GetVertIndx(char *Buffer, bool& WasFound, short& Val, bool& HitEnd)
 	return Buffer;
 }
 
+// Load a Wavefront model and convert its vertex and texture coordinates from
+// OBJ's right-handed coordinate system to Aleph One's left-handed system.
+bool LoadModel_Wavefront_RightHand(FileSpecifier& Spec, Model3D& Model)
+{
+	bool Result = LoadModel_Wavefront(Spec, Model);
+	if (!Result) return Result;
+
+	if (DBOut) fprintf(DBOut, "Converting handedness.\n");
+
+	// Swap the Y and Z coordinates of vertexes.  This changes
+	// handedness and converts from OBJ's y-up orientation to
+	// Aleph One's z-up orientation.
+	for (unsigned YPos = 1; YPos < Model.Positions.size(); YPos += 3)
+	{
+		GLfloat Z = Model.Positions[YPos + 1];
+		Model.Positions[YPos + 1] = Model.Positions[YPos];
+		Model.Positions[YPos] = Z;
+	}
+
+	// Ditto for vertex normals, if present.
+	for (unsigned YPos = 1; YPos < Model.Normals.size(); YPos += 3)
+	{
+		GLfloat Z = Model.Normals[YPos + 1];
+		Model.Normals[YPos + 1] = Model.Normals[YPos];
+		Model.Normals[YPos] = Z;
+	}
+
+	// Vertices of a face are now listed in clockwise order.
+	// Reverse them.
+	for (unsigned IPos = 0; IPos < Model.VertIndices.size(); IPos += 3)
+	{
+		int Index = Model.VertIndices[IPos + 1];
+		Model.VertIndices[IPos + 1] = Model.VertIndices[IPos];
+		Model.VertIndices[IPos] = Index;
+	}
+
+	// Switch texture coordinates from right-handed (x,y) to
+	// left-handed (row,column).
+	for (unsigned YPos = 1; YPos < Model.TxtrCoords.size(); YPos += 2)
+	{
+		Model.TxtrCoords[YPos] = 1.0 - Model.TxtrCoords[YPos];
+	}
+
+	return true;
+}
+
 #endif // def HAVE_OPENGL

@@ -329,8 +329,13 @@ void OGL_ModelData::Load()
 	char *Type = &ModelType[0];
 	if (StringsEqual(Type,"wave",4))
 	{
-		// Alias|Wavefront
+		// Alias|Wavefront, backward compatible version
 		Success = LoadModel_Wavefront(ModelFile, Model);
+	}
+	else if (StringsEqual(Type,"obj",3))
+	{
+		// Alias|Wavefront, but with coordinate system conversion.
+		Success = LoadModel_Wavefront_RightHand(ModelFile, Model);
 	}
 	else if (StringsEqual(Type,"3ds",3))
 	{
