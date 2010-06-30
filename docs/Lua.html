@@ -129,6 +129,7 @@
 <li><a href="#Lights">Lights</a></li>
 <li><a href="#Lines">Lines</a></li>
 <li><a href="#Media">Media</a></li>
+<li><a href="#MonsterStarts">MonsterStarts</a></li>
 <li><a href="#Monsters">Monsters</a></li>
 <li><a href="#Music">Music</a></li>
 <li><a href="#Platforms">Platforms</a></li>
@@ -866,6 +867,57 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     </dl></dd>
 </dl>
 <h3>
+<a name="MonsterStarts"></a>MonsterStarts</h3>
+<dl>
+<dt># MonsterStarts</dt>
+<dd><p class="description">number of map objects in the level</p></dd>
+<dt>MonsterStarts()</dt>
+<dd><p class="description">iterates through all monster starting locations in the level</p></dd>
+<dt>MonsterStarts[index]</dt>
+<dd><dl>
+      <dt>
+    .blind<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether monster is activated by sight</p></dd>
+      <dt>
+    .deaf<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether monster is activated by sound</p></dd>
+      <dt>
+    .facing<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">direction monster is initially facing</p></dd>
+      <dt>
+    .from_ceiling<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether monster location z is from ceiling</p></dd>
+      <dt>
+    .invisible<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether monster will teleport in when activated</p></dd>
+      <dt>
+    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">monster starting location polygon</p></dd>
+      <dt>
+    .type<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">type of monster</p></dd>
+      <dt>
+    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>
+    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>
+    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description"></p></dd>
+    </dl></dd>
+</dl>
+<h3>
 <a name="Monsters"></a>Monsters</h3>
 <dl>
 <dt># Monsters</dt>
@@ -1048,7 +1100,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt># PlayerStarts</dt>
 <dd><p class="description">number of map objects in the level</p></dd>
 <dt>PlayerStarts()</dt>
-<dd><p class="description">iterates through all player starting locations in the game</p></dd>
+<dd><p class="description">iterates through all player starting locations in the level</p></dd>
 <dt>PlayerStarts[index]</dt>
 <dd><dl>
       <dt>

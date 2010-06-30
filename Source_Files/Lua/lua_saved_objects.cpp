@@ -20,6 +20,7 @@ LUA_SAVED_OBJECTS.CPP
 	Implements the Lua saved map objects classes
 */
 
+#include "lua_monsters.h"
 #include "lua_player.h"
 #include "lua_saved_objects.h"
 #include "lua_templates.h"
@@ -115,6 +116,31 @@ const luaL_reg Lua_Goal_Get[] = {
 
 char Lua_Goals_Name[] = "Goals";
 
+char Lua_MonsterStart_Name[] = "monster_start";
+
+static int Lua_MonsterStart_Get_Type(lua_State* L)
+{
+	map_object* object = get_map_object(Lua_MonsterStart::Index(L, 1));
+	Lua_MonsterType::Push(L, object->index);
+	return 1;
+}
+
+const luaL_reg Lua_MonsterStart_Get[] = {
+	{"blind", get_saved_object_flag<Lua_MonsterStart, _map_object_is_blind>},
+	{"deaf", get_saved_object_flag<Lua_MonsterStart, _map_object_is_deaf>},
+	{"facing", get_saved_object_facing<Lua_MonsterStart>},
+	{"from_ceiling", get_saved_object_flag<Lua_MonsterStart, _map_object_hanging_from_ceiling>},
+	{"invisible", get_saved_object_flag<Lua_MonsterStart, _map_object_is_invisible>},
+	{"polygon", get_saved_object_polygon<Lua_MonsterStart>},
+	{"type", Lua_MonsterStart_Get_Type},
+	{"x", get_saved_object_x<Lua_MonsterStart>},
+	{"y", get_saved_object_y<Lua_MonsterStart>},
+	{"z", get_saved_object_z<Lua_MonsterStart>},
+	{0, 0}
+};
+
+char Lua_MonsterStarts_Name[] = "MonsterStarts";
+
 char Lua_PlayerStart_Name[] = "player_start";
 
 static int Lua_PlayerStart_Get_Team(lua_State* L)
@@ -144,6 +170,12 @@ int Lua_Saved_Objects_register(lua_State* L)
 
 	Lua_Goals::Register(L);
 	Lua_Goals::Length = saved_objects_length;
+
+	Lua_MonsterStart::Register(L, Lua_MonsterStart_Get);
+	Lua_MonsterStart::Valid = saved_object_valid<_saved_monster>;
+
+	Lua_MonsterStarts::Register(L);
+	Lua_MonsterStarts::Length = saved_objects_length;
 
 	Lua_PlayerStart::Register(L, Lua_PlayerStart_Get);
 	Lua_PlayerStart::Valid = saved_object_valid<_saved_player>;

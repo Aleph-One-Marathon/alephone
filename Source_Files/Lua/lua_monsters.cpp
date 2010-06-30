@@ -241,7 +241,6 @@ const luaL_reg Lua_MonsterType_Weaknesses_Metatable[] = {
 };
 
 char Lua_MonsterType_Name[] = "monster_type";
-typedef L_Enum<Lua_MonsterType_Name> Lua_MonsterType;
 
 static bool Lua_MonsterType_Valid(int16 index)
 {

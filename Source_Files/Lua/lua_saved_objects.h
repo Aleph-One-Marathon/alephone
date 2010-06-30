@@ -42,6 +42,12 @@ typedef L_Class<Lua_Goal_Name> Lua_Goal;
 extern char Lua_Goals_Name[]; // "Goals"
 typedef L_Container<Lua_Goals_Name, Lua_Goal> Lua_Goals;
 
+extern char Lua_MonsterStart_Name[]; // "monster_start"
+typedef L_Class<Lua_MonsterStart_Name> Lua_MonsterStart;
+
+extern char Lua_MonsterStarts_Name[]; // "MonsterStarts"
+typedef L_Container<Lua_MonsterStarts_Name, Lua_MonsterStart> Lua_MonsterStarts;
+
 extern char Lua_PlayerStart_Name[]; // "player_start"
 typedef L_Class<Lua_PlayerStart_Name> Lua_PlayerStart;
 

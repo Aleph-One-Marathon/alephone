@@ -851,6 +851,45 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<type>WU</type>
       </variable>
     </table>
+    <table name="monster_start">
+      <variable name="blind" access="read-only" version="SVN">
+	<description>whether monster is activated by sight</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="deaf" access="read-only" version="SVN">
+	<description>whether monster is activated by sound</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="facing" access="read-only" version="SVN">
+	<description>direction monster is initially facing</description>
+	<type>angle</type>
+      </variable>
+      <variable name="from_ceiling" access="read-only" version="SVN">
+	<description>whether monster location z is from ceiling</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="invisible" access="read-only" version="SVN">
+	<description>whether monster will teleport in when activated</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="polygon" access="read-only" version="SVN">
+	<description>monster starting location polygon</description>
+	<type>polygon</type>
+      </variable>
+      <variable name="type" access="read-only" version="SVN">
+	<description>type of monster</description>
+	<type>monster_type</type>
+      </variable>
+      <variable name="x" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="y" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="z" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+    </table>
     <table name="music" singleton="true">
       <function name="clear">
 	<description>clears the level playlist</description>
@@ -1789,6 +1828,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<return><type>monster</type></return>
       </function>
     </accessor>
+    <accessor name="MonsterStarts" contains="monster_start">
+      <length>
+	<description>number of map objects in the level</description>
+      </length>
+      <index/>
+      <call>
+	<description>iterates through all monster starting locations in the level</description>
+      </call>
+    </accessor>
     <accessor name="Music" contains="music"/>
     <accessor name="Platforms" contains="platform">
       <length>
@@ -1818,7 +1866,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </length>
       <index/>
       <call>
-	<description>iterates through all player starting locations in the game</description>
+	<description>iterates through all player starting locations in the level</description>
       </call>
     </accessor>
     <accessor name="Polygons" contains="polygon">
