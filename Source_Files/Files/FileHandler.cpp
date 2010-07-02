@@ -83,6 +83,8 @@
 
 #include "preferences.h"
 
+#include <boost/bind.hpp>
+#include <boost/function.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
 // From shell_sdl.cpp
@@ -968,8 +970,10 @@ public:
 			refresh_entries();
 			announce_directory_changed();
 		}
-		else
-			parent_dialog->quit(0);
+		else if (file_selected)
+		{
+			file_selected(entries[selection].name);
+		}
 	}
 
 	enum SortOrder {
@@ -986,6 +990,7 @@ public:
 
 	const FileSpecifier& get_file() { return current_directory; }
 	
+	boost::function<void(const std::string&)> file_selected;
 	
 private:
 	vector<dir_entry>	entries;
@@ -1035,190 +1040,194 @@ private:
 	}
 };
 
-
-
-class w_file_list : public w_list<dir_entry> {
-public:
-	w_file_list(const vector<dir_entry> &items) : w_list<dir_entry>(items, 400, 15, 0) {}
-
-	void draw_item(vector<dir_entry>::const_iterator i, SDL_Surface *s, int16 x, int16 y, uint16 width, bool selected) const
-	{
-		y += font->get_ascent();
-		set_drawing_clip_rectangle(0, x, s->h, x + width);
-		draw_text(s, FileSpecifier::HideExtension(i->name).c_str (), x, y, selected ? get_theme_color (ITEM_WIDGET, ACTIVE_STATE) : get_theme_color (ITEM_WIDGET, DEFAULT_STATE), font, style, true);
-		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
-	}
+const char* sort_by_labels[] = {
+	"name",
+	"date",
+	0
 };
 
-class w_read_file_list : public w_file_list {
+// common functionality for read and write dialogs
+class FileDialog {
 public:
-	w_read_file_list(const vector<dir_entry> &items, dialog *d) : w_file_list(items), parent(d) {}
-
-	void item_selected(void)
-	{
-		parent->quit(0);
+	FileDialog() {
 	}
+
+	bool Run() {
+		Layout();
+
+		bool result = false;
+		if (m_dialog.run() == 0) 
+		{
+			result = true;
+		}
+
+		if (get_game_state() == _game_in_progress) update_game_window();
+		return result;
+	}
+
+protected:
+	void Init(const FileSpecifier& dir, w_directory_browsing_list::SortOrder default_order, std::string filename) {
+		m_sort_by_w = new w_select(static_cast<size_t>(default_order), sort_by_labels);
+		m_sort_by_w->set_selection_changed_callback(boost::bind(&FileDialog::on_change_sort_order, this));
+		m_up_button_w = new w_button("UP", boost::bind(&FileDialog::on_up, this));
+		if (filename.empty()) 
+		{
+			m_list_w = new w_directory_browsing_list(dir, &m_dialog);
+		}
+		else
+		{
+			m_list_w = new w_directory_browsing_list(dir, &m_dialog, filename);
+		}
+		m_list_w->sort_by(default_order);
+		m_list_w->set_directory_changed_callback(boost::bind(&FileDialog::on_directory_changed, this));
+
+		dir.GetName(temporary);
+		m_directory_name_w = new w_static_text(temporary);
+	}
+
+	dialog m_dialog;
+	w_select* m_sort_by_w;
+	w_button* m_up_button_w;
+	w_static_text* m_directory_name_w;
+	w_directory_browsing_list* m_list_w;
 
 private:
-	dialog *parent;
+	virtual void Layout() = 0;
+
+
+	void on_directory_changed() {
+		m_list_w->get_file().GetName(temporary);
+		m_directory_name_w->set_text(temporary);
+
+		m_up_button_w->set_enabled(m_list_w->can_move_up_a_level());
+
+		m_dialog.draw();
+	}
+
+	void on_change_sort_order() {
+		m_list_w->sort_by(static_cast<w_directory_browsing_list::SortOrder>(m_sort_by_w->get_selection()));
+	}
+
+	void on_up() {
+		m_list_w->move_up_a_level();
+	}
+
 };
 
-static void
-bounce_up_a_directory_level(void* inWidget)
-{
-	w_directory_browsing_list* theBrowser = static_cast<w_directory_browsing_list*>(inWidget);
-	theBrowser->move_up_a_level();
-}
-
-enum
-{
-	iDIRBROWSE_UP_BUTTON = 100,
-	iDIRBROWSE_DIR_NAME,
-	iDIRBROWSE_BROWSER
-};
-
-static void
-respond_to_directory_changed(void* inArg)
-{
-	// Get dialog and its directory browser
-	dialog* theDialog = static_cast<dialog*>(inArg);
-	w_directory_browsing_list* theBrowser = dynamic_cast<w_directory_browsing_list*>(theDialog->get_widget_by_id(iDIRBROWSE_BROWSER));
-	
-	// Update static text listing current directory
-	w_static_text* theDirectoryName = dynamic_cast<w_static_text*>(theDialog->get_widget_by_id(iDIRBROWSE_DIR_NAME));
-	theBrowser->get_file().GetName(temporary);
-	theDirectoryName->set_text(temporary);
-	
-	// Update enabled state of Up button
-	w_button* theUpButton = dynamic_cast<w_button*>(theDialog->get_widget_by_id(iDIRBROWSE_UP_BUTTON));
-	theUpButton->set_enabled(theBrowser->can_move_up_a_level());
-
-	// ghs: hack till static text can update its rect correctly
-	theDialog->draw();
-}
-
-class change_sort_order
+class ReadFileDialog : public FileDialog
 {
 public:
-	change_sort_order(w_directory_browsing_list *list) : m_list(list) { }
-	void operator()(w_select *select_w) {
-		m_list->sort_by(static_cast<w_directory_browsing_list::SortOrder>(select_w->get_selection()));
-	}
-private:
-	w_directory_browsing_list* m_list;
-};
+	ReadFileDialog(FileSpecifier dir, Typecode type, const char* prompt) : FileDialog(), m_prompt(prompt) {
+		w_directory_browsing_list::SortOrder default_order = w_directory_browsing_list::sort_by_name;
 
-bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
-{
-	w_directory_browsing_list::SortOrder default_order = w_directory_browsing_list::sort_by_name;
-	// Set default prompt
-	if (prompt == NULL) {
-		switch (type) {
+		if (!m_prompt) 
+		{
+			switch(type) 
+			{
 			case _typecode_savegame:
-				prompt = "CONTINUE SAVED GAME";
+				m_prompt = "CONTINUE SAVED GAME";
 				default_order = w_directory_browsing_list::sort_by_date;
 				break;
 			case _typecode_film:
-				prompt = "REPLAY SAVED FILM";
+				m_prompt = "REPLAY SAVED FILM";
 				break;
 			default:
-				prompt = "OPEN FILE";
+				m_prompt = "OPEN FILE";
 				break;
+			}
 		}
-	}
 
-	// Read directory
-	FileSpecifier dir;
-	string filename;
-	switch (type) {
+		std::string filename;
+		switch (type) 
+		{
 		case _typecode_savegame:
 			dir.SetToSavedGamesDir();
 			break;
 		case _typecode_film:
 			dir.SetToRecordingsDir();
 			break;
-	case _typecode_scenario:
-	  dir.SetToFirstDataDir();
-	  break;
+		case _typecode_scenario:
+			dir.SetToFirstDataDir();
+			break;
 		case _typecode_netscript:
 		{
 			// Go to most recently-used directory
 			DirectorySpecifier theDirectory;
-			SplitPath(theDirectory, filename);
+			dir.SplitPath(theDirectory, filename);
 			dir.FromDirectory(theDirectory);
-			if(!dir.Exists())
+			if (!dir.Exists())
 				dir.SetToLocalDataDir();
-			break;
 		}
+		break;
 		default:
 			dir.SetToLocalDataDir();
 			break;
+		}
+
+		Init(dir, default_order, filename);
+
+		m_list_w->file_selected = boost::bind(&ReadFileDialog::on_file_selected, this);
 	}
 
-	// Create dialog
-	dialog d;
-	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title(prompt), d);
-	placer->add(new w_spacer, true);
+	void Layout() {
+		vertical_placer* placer = new vertical_placer;
+		placer->dual_add(new w_title(m_prompt), m_dialog);
+		placer->add(new w_spacer, true);
 
-	dir.GetName(temporary);
-	w_static_text* directory_name_w = new w_static_text(temporary);
-	directory_name_w->set_identifier(iDIRBROWSE_DIR_NAME);
-	placer->dual_add(directory_name_w, d);
+		placer->dual_add(m_directory_name_w, m_dialog);
+		
+		placer->add(new w_spacer(), true);
 
-	placer->add(new w_spacer(), true);
+		horizontal_placer* top_row_placer = new horizontal_placer;
 
-	horizontal_placer *top_row_placer = new horizontal_placer;
-	const char *sort_by_labels[] = {
-		"name",
-		"date",
-		0
-	};
+		top_row_placer->dual_add(m_sort_by_w->label("Sorted by: "), m_dialog);
+		top_row_placer->dual_add(m_sort_by_w, m_dialog);
+		top_row_placer->add_flags(placeable::kFill);
+		top_row_placer->add(new w_spacer, true);
+		top_row_placer->add_flags();
+		top_row_placer->dual_add(m_up_button_w, m_dialog);
+		
+		placer->add_flags(placeable::kFill);
+		placer->add(top_row_placer, true);
+		placer->add_flags();
 
-	w_select* sort_by_w = new w_select(static_cast<size_t>(default_order), sort_by_labels);
-	top_row_placer->dual_add(sort_by_w->label("Sorted by: "), d);
-	top_row_placer->dual_add(sort_by_w, d);
-	top_row_placer->add_flags(placeable::kFill);
-	top_row_placer->add(new w_spacer, true);
-	top_row_placer->add_flags();
+		placer->dual_add(m_list_w, m_dialog);
+		placer->add(new w_spacer, true);
 
-	w_directory_browsing_list* list_w = ((type == _typecode_netscript)
-		? new w_directory_browsing_list(dir, &d, filename)
-		: new w_directory_browsing_list(dir, &d));
-	sort_by_w->set_selection_changed_callback(change_sort_order(list_w));
-	list_w->sort_by(default_order);
-	list_w->set_identifier(iDIRBROWSE_BROWSER);
-	list_w->set_directory_changed_callback(respond_to_directory_changed, &d);
-	w_button* up_button_w = new w_button("UP", bounce_up_a_directory_level, list_w);
-	top_row_placer->dual_add(up_button_w, d);
-	up_button_w->set_identifier(iDIRBROWSE_UP_BUTTON);
-	placer->add_flags(placeable::kFill);
-	placer->add(top_row_placer, true);
-	placer->add_flags();
-
-	placer->dual_add(list_w, d);
-	placer->add(new w_spacer, true);
-
-	horizontal_placer *button_placer = new horizontal_placer;
-
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
-
-	placer->add(button_placer, true);
-
-	d.activate_widget(list_w);
-
-	d.set_widget_placer(placer);
-
-	// Run dialog
-	bool result = false;
-	if (d.run() == 0) { // OK
-		*this = list_w->get_file();
-		result = true;
+		horizontal_placer* button_placer = new horizontal_placer;
+		button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &m_dialog), m_dialog);
+		
+		placer->add(button_placer, true);
+		
+		m_dialog.activate_widget(m_list_w);
+		m_dialog.set_widget_placer(placer);
 	}
 
-	// Redraw game window
-	if (get_game_state() == _game_in_progress) update_game_window();
-	return result;
+	FileSpecifier GetFile() {
+		return m_list_w->get_file();
+	}
+	
+private:
+	void on_file_selected() {
+		m_dialog.quit(0);
+	}
+
+	const char* m_prompt;
+	std::string m_filename;
+};
+
+bool FileSpecifier::ReadDialog(Typecode type, const char *prompt)
+{
+	ReadFileDialog d(*this, type, prompt);
+	if (d.Run()) 
+	{
+		*this = d.GetFile();
+		return true;
+	} 
+	else 
+	{
+		return false;
+	}
 }
 
 class w_file_name : public w_text_entry {
@@ -1238,40 +1247,14 @@ private:
 	dialog *parent;
 };
 
-class w_write_file_list : public w_file_list {
-public:
-	w_write_file_list(const vector<dir_entry> &items, const char *selection, dialog *d, w_file_name *w) : w_file_list(items), parent(d), name_widget(w)
-	{
-		if (selection) {
-			vector<dir_entry>::const_iterator i, end = items.end();
-			size_t num = 0;
-			for (i = items.begin(); i != end; i++, num++) {
-				if (i->name == selection) {
-					set_selection(num);
-					break;
-				}
-			}
-		}
-	}
-
-	void item_selected(void)
-	{
-		name_widget->set_text(items[selection].name.c_str());
-		parent->quit(0);
-	}
-
-private:
-	dialog *parent;
-	w_file_name *name_widget;
-};
-
-static bool confirm_save_choice(FileSpecifier & file);
-
-bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *default_name)
+class WriteFileDialog : public FileDialog
 {
-	// Set default prompt
-	if (prompt == NULL) {
-		switch (type) {
+public:
+	WriteFileDialog(FileSpecifier dir, Typecode type, const char* prompt, const char* default_name) : FileDialog(), m_prompt(prompt), m_default_name(default_name), m_extension(0) {
+		if (!m_prompt) 
+		{
+			switch (type)
+			{
 			case _typecode_savegame:
 				prompt = "SAVE GAME";
 				break;
@@ -1281,25 +1264,22 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 			default:
 				prompt = "SAVE FILE";
 				break;
+			}
 		}
-	}
 
-	const char *extension = 0;
-	switch (type) 
-	{
+		switch (type) 
+		{
 		case _typecode_savegame:
-			extension = ".sgaA";
+			m_extension = ".sgaA";
 			break;
 		case _typecode_film:
-			extension = ".filA";
+			m_extension = ".filA";
 			break;
 		default:
 			break;
-	};
+		}
 
-	// Read directory
-	FileSpecifier dir;
-	switch (type) {
+		switch (type) {
 		case _typecode_savegame:
 			dir.SetToSavedGamesDir();
 			break;
@@ -1309,66 +1289,124 @@ bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *d
 		default:
 			dir.SetToLocalDataDir();
 			break;
-	}
-	vector<dir_entry> entries;
-	if (!dir.ReadDirectory(entries))
-		return false;
-	sort(entries.begin(), entries.end());
-
-	// Create dialog
-	dialog d;
-	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title(prompt), d);
-	placer->add(new w_spacer(), true);
-
-	horizontal_placer *file_name_placer = new horizontal_placer;
-	w_file_name *name_w = new w_file_name(&d, default_name);
-	file_name_placer->dual_add(name_w->label("File Name:"), d);
-	file_name_placer->add_flags(placeable::kFill);
-	file_name_placer->dual_add(name_w, d);
-
-	w_write_file_list *list_w = new w_write_file_list(entries, default_name, &d, name_w);
-	placer->dual_add(list_w, d);
-	placer->add(new w_spacer(), true);
-
-	placer->add_flags(placeable::kFill);
-	placer->add(file_name_placer, true);
-	placer->add_flags();
-	placer->add(new w_spacer, true);
-
-	horizontal_placer *button_placer = new horizontal_placer;
-	button_placer->dual_add(new w_button("OK", dialog_ok, &d), d);
-	button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &d), d);
-
-	placer->add(button_placer, true);
-
-	d.set_widget_placer(placer);
-
-	d.activate_widget(name_w);
-	// Run dialog
-again:
-	bool result = false;
-	if (d.run () == 0) { // OK
-		if (strlen(name_w->get_text()) == 0) {
-			play_dialog_sound(DIALOG_ERROR_SOUND);
-			name_w->set_text(default_name);
-			goto again;
 		}
-		name = dir.name;
-		std::string filename = name_w->get_text();
-		if (extension && !boost::algorithm::ends_with(filename, extension))
+
+		Init(dir, w_directory_browsing_list::sort_by_name, m_default_name);
+
+		m_list_w->file_selected = boost::bind(&WriteFileDialog::on_file_selected, this, _1);
+	}
+
+	void Layout() {
+		vertical_placer* placer = new vertical_placer;
+		placer->dual_add(new w_title(m_prompt), m_dialog);
+		placer->add(new w_spacer, true);
+
+		placer->dual_add(m_directory_name_w, m_dialog);
+		
+		placer->add(new w_spacer(), true);
+
+		horizontal_placer* top_row_placer = new horizontal_placer;
+
+		top_row_placer->dual_add(m_sort_by_w->label("Sorted by: "), m_dialog);
+		top_row_placer->dual_add(m_sort_by_w, m_dialog);
+		top_row_placer->add_flags(placeable::kFill);
+		top_row_placer->add(new w_spacer, true);
+		top_row_placer->add_flags();
+		top_row_placer->dual_add(m_up_button_w, m_dialog);
+		
+		placer->add_flags(placeable::kFill);
+		placer->add(top_row_placer, true);
+		placer->add_flags();
+
+		placer->dual_add(m_list_w, m_dialog);
+		placer->add(new w_spacer, true);
+
+		placer->add_flags(placeable::kFill);
+		
+		horizontal_placer* file_name_placer = new horizontal_placer;
+		m_name_w = new w_file_name(&m_dialog, m_default_name);
+		file_name_placer->dual_add(m_name_w->label("File Name:"), m_dialog);
+		file_name_placer->add_flags(placeable::kFill);
+		file_name_placer->dual_add(m_name_w, m_dialog);
+
+		placer->add_flags(placeable::kFill);
+		placer->add(file_name_placer, true);
+		placer->add_flags();
+		placer->add(new w_spacer, true);
+
+		horizontal_placer* button_placer = new horizontal_placer;
+		button_placer->dual_add(new w_button("OK", dialog_ok, &m_dialog), m_dialog);
+		button_placer->dual_add(new w_button("CANCEL", dialog_cancel, &m_dialog), m_dialog);
+		
+		placer->add(button_placer, true);
+		
+		m_dialog.activate_widget(m_list_w);
+		m_dialog.set_widget_placer(placer);
+	}
+
+	FileSpecifier GetPath() {
+		FileSpecifier dir = m_list_w->get_file();
+		std::string base;
+		std::string part;
+		dir.SplitPath(base, part);
+
+		std::string filename = GetFilename();
+		if (part == filename)
 		{
-			filename += extension;
+			dir = base;
 		}
-		AddPart(filename);
-		result = confirm_save_choice(*this);
-		if (!result)
-			goto again;
+
+		if (m_extension && !boost::algorithm::ends_with(filename, m_extension))
+		{
+			filename += m_extension;
+		}
+		dir.AddPart(filename);
+		return dir;
 	}
 
-	// Redraw game window
-	update_game_window();
+	std::string GetFilename() {
+		return m_name_w->get_text();
+	}
+	
+private:
+	void on_file_selected(const std::string& filename) {
+		m_name_w->set_text(filename.c_str());
+		m_dialog.quit(0);
+	}
+
+	const char* m_prompt;
+	const char* m_default_name;
+	const char* m_extension;
+	w_file_name* m_name_w;
+};
+
+static bool confirm_save_choice(FileSpecifier & file);
+
+bool FileSpecifier::WriteDialog(Typecode type, const char *prompt, const char *default_name)
+{
+again:
+	WriteFileDialog d(*this, type, prompt, default_name);
+	bool result = false;
+	if (d.Run()) 
+	{
+		if (d.GetFilename().empty())
+		{
+			play_dialog_sound(DIALOG_ERROR_SOUND);
+			goto again;
+		}
+		
+		*this = d.GetPath();
+		
+		if (!confirm_save_choice(*this))
+		{
+			goto again;
+		}
+
+		result = true;
+	}
+		
 	return result;
+
 }
 
 bool FileSpecifier::WriteDialogAsync(Typecode type, char *prompt, char *default_name)
