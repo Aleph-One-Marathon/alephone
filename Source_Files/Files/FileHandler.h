@@ -223,6 +223,10 @@ struct dir_entry {
 			return is_directory > other.is_directory;
 	}
 
+	bool operator==(const dir_entry& other) const {
+		return is_directory == other.is_directory && name == other.name;
+	}
+
 	string name;		// Entry name
 	int32 size;			// File size (only valid if !is_directory)
 	bool is_directory;	// Entry is a directory (plain file otherwise)

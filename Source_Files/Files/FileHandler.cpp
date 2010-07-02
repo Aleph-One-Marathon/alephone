@@ -1020,15 +1020,15 @@ private:
 			{
 				sort(entries.begin(), entries.end(), most_recent());
 			}
-			num_items = entries.size();
-			new_items();
 		}
+		num_items = entries.size();
+		new_items();
 	}
 
 	void select_entry(const string& inName, bool inIsDirectory)
 	{
 		dir_entry theEntryToFind(inName, NONE /* length - ignored for our purpose */, inIsDirectory);
-		vector<dir_entry>::iterator theEntry = lower_bound(entries.begin(), entries.end(), theEntryToFind);
+		vector<dir_entry>::iterator theEntry = find(entries.begin(), entries.end(), theEntryToFind);
 		if(theEntry != entries.end())
 			set_selection(theEntry - entries.begin());
 	}
@@ -1126,7 +1126,6 @@ public:
 			{
 			case _typecode_savegame:
 				m_prompt = "CONTINUE SAVED GAME";
-				default_order = w_directory_browsing_list::sort_by_date;
 				break;
 			case _typecode_film:
 				m_prompt = "REPLAY SAVED FILM";
@@ -1142,6 +1141,7 @@ public:
 		{
 		case _typecode_savegame:
 			dir.SetToSavedGamesDir();
+			default_order = w_directory_browsing_list::sort_by_date;
 			break;
 		case _typecode_film:
 			dir.SetToRecordingsDir();
@@ -1266,7 +1266,7 @@ public:
 				break;
 			}
 		}
-
+		
 		switch (type) 
 		{
 		case _typecode_savegame:
@@ -1279,10 +1279,20 @@ public:
 			break;
 		}
 
+		w_directory_browsing_list::SortOrder default_order = w_directory_browsing_list::sort_by_name;
 		switch (type) {
 		case _typecode_savegame:
-			dir.SetToSavedGamesDir();
-			break;
+		{
+			string base;
+			string part;
+			dir.SplitPath(base, part);
+			if (part != string())
+			{
+				dir = base;
+			}
+			default_order = w_directory_browsing_list::sort_by_date;
+		}
+		break;
 		case _typecode_film:
 			dir.SetToRecordingsDir();
 			break;
@@ -1291,7 +1301,7 @@ public:
 			break;
 		}
 
-		Init(dir, w_directory_browsing_list::sort_by_name, m_default_name);
+		Init(dir, default_order, m_default_name);
 
 		m_list_w->file_selected = boost::bind(&WriteFileDialog::on_file_selected, this, _1);
 	}
