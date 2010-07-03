@@ -1223,12 +1223,15 @@ bool revert_game(
 	{
 		/* Reload their last saved game.. */
 		successful= load_game_from_file(revert_game_data.SavedGame);
-		if (successful) Music::instance()->PreloadLevelMusic();
-		
-		// LP: added for loading the textures if one had died on another level;
-		// this gets around WZ's moving of this line into make_restored_game_relevant()
-		if (successful)
+		if (successful) 
+		{
+			Music::instance()->PreloadLevelMusic();
+			RunLuaScript();
+			
+			// LP: added for loading the textures if one had died on another level;
+			// this gets around WZ's moving of this line into make_restored_game_relevant()
 			successful = entering_map(true /*restoring game*/);
+		}
 
 		/* And they don't get to continue. */
 		stop_recording();

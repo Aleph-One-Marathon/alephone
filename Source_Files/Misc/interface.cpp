@@ -825,6 +825,7 @@ bool join_networked_resume_game()
         if(success)
 	{
 		Music::instance()->PreloadLevelMusic();
+		RunLuaScript();
 		start_game(_network_player, false /*changing level?*/);
 	}
         
@@ -942,6 +943,7 @@ bool load_and_start_game(FileSpecifier& File)
 				if (success)
 				{
 					Music::instance()->PreloadLevelMusic();
+					RunLuaScript();
 					start_game(userWantsMultiplayer ? _network_player : _single_player, false);
 				}
 			}
