@@ -1279,6 +1279,11 @@ public:
 			break;
 		}
 
+		if (m_extension && boost::algorithm::ends_with(m_default_name, m_extension))
+		{
+			m_default_name.resize(m_default_name.size() - strlen(m_extension));
+		}
+
 		w_directory_browsing_list::SortOrder default_order = w_directory_browsing_list::sort_by_name;
 		switch (type) {
 		case _typecode_savegame:
@@ -1334,7 +1339,7 @@ public:
 		placer->add_flags(placeable::kFill);
 		
 		horizontal_placer* file_name_placer = new horizontal_placer;
-		m_name_w = new w_file_name(&m_dialog, m_default_name);
+		m_name_w = new w_file_name(&m_dialog, m_default_name.c_str());
 		file_name_placer->dual_add(m_name_w->label("File Name:"), m_dialog);
 		file_name_placer->add_flags(placeable::kFill);
 		file_name_placer->dual_add(m_name_w, m_dialog);
@@ -1350,7 +1355,7 @@ public:
 		
 		placer->add(button_placer, true);
 		
-		m_dialog.activate_widget(m_list_w);
+		m_dialog.activate_widget(m_name_w);
 		m_dialog.set_widget_placer(placer);
 	}
 
@@ -1385,7 +1390,7 @@ private:
 	}
 
 	const char* m_prompt;
-	const char* m_default_name;
+	std::string m_default_name;
 	const char* m_extension;
 	w_file_name* m_name_w;
 };
