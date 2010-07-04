@@ -818,6 +818,7 @@ bool join_networked_resume_game()
                         short theStartCount;
                         construct_multiplayer_starts(theStarts, &theStartCount);
                         
+			RunLuaScript();
                         success = make_restored_game_relevant(true /* multiplayer */, theStarts, theStartCount);
                 }
         }
@@ -825,7 +826,6 @@ bool join_networked_resume_game()
         if(success)
 	{
 		Music::instance()->PreloadLevelMusic();
-		RunLuaScript();
 		start_game(_network_player, false /*changing level?*/);
 	}
         
@@ -939,11 +939,11 @@ bool load_and_start_game(FileSpecifier& File)
                         
 			if (success)
 			{
+				RunLuaScript();
 				success = make_restored_game_relevant(userWantsMultiplayer, theStarts, theNumberOfStarts);
 				if (success)
 				{
 					Music::instance()->PreloadLevelMusic();
-					RunLuaScript();
 					start_game(userWantsMultiplayer ? _network_player : _single_player, false);
 				}
 			}
