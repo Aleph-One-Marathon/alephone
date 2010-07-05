@@ -339,8 +339,13 @@ void OGL_ModelData::Load()
 	}
 	else if (StringsEqual(Type,"3ds",3))
 	{
-		// 3D Studio Max
+		// 3D Studio Max, backward compatible version
 		Success = LoadModel_Studio(ModelFile, Model);
+	}
+	else if (StringsEqual(Type,"max",3))
+	{
+		// 3D Studio Max, but with coordinate system conversion.
+		Success = LoadModel_Studio_RightHand(ModelFile, Model);
 	}
 	else if (StringsEqual(Type,"dim3",4))
 	{

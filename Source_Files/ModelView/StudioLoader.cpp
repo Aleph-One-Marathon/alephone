@@ -489,4 +489,40 @@ void LoadFloats(int NVals, uint8 *Stream, GLfloat *Floats)
 	}
 }
 
+// Load a 3D Studio MAX model and convert its vertex and texture coordinates
+// from 3DS' right-handed coordinate system to Aleph One's left-handed system.
+bool LoadModel_Studio_RightHand(FileSpecifier& Spec, Model3D& Model)
+{
+	bool Result = LoadModel_Studio(Spec, Model);
+	if (!Result) return Result;
+
+	if (DBOut) fprintf(DBOut, "Converting handedness.\n");
+
+	// Wings 3d and Blender seem to produce 3DS models with a z-up
+	// orientation.  Assume that is the standard convention, so
+	// preserve the orientation and switch handedness by reflecting
+	// along the y axis.
+	for (unsigned YPos = 1; YPos < Model.Positions.size(); YPos += 3)
+	{
+		Model.Positions[YPos] = -Model.Positions[YPos];
+	}
+
+	// Put the vertices of faces back into clockwise order.
+	for (unsigned IPos = 0; IPos < Model.VertIndices.size(); IPos += 3)
+	{
+		int Index = Model.VertIndices[IPos + 1];
+		Model.VertIndices[IPos + 1] = Model.VertIndices[IPos];
+		Model.VertIndices[IPos] = Index;
+	}
+
+	// Switch texture coordinates from right-handed (x,y) to
+	// left-handed (row,column).
+	for (unsigned YPos = 1; YPos < Model.TxtrCoords.size(); YPos += 2)
+	{
+		Model.TxtrCoords[YPos] = 1.0 - Model.TxtrCoords[YPos];
+	}
+
+	return true;
+}
+
 #endif // def HAVE_OPENGL

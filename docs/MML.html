@@ -1558,10 +1558,15 @@ for Dim3 models, this is the "pose" file (frames).
 for Dim3 models, this is the "animate" file (sequences).
 <li>type: a string identifying the model-data format:
 <ul>
-<li>Alias|Wavefront Object: "obj" [Note: "wave" to "wavefront" also loads a Wavefront file, but converts the model coordinates incorrectly; new projects should stick to "obj".]
-<li>3D Studio Max Object: "3ds" to "3ds max" or "3dsmax"
+<li>Alias|Wavefront Object: "obj"
+<li>3D Studio Max Object: "max"
 <li>QuickDraw 3D / Quesa 3D Metafile: "qd3d" or "3dmf" or "quesa"
 <li>Brian Barnes Dim3 animated model: "dim3"
+</ul>
+The following types are also accepted, but have known bugs and are only present for backward compatibility:
+<ul>
+<li>Alias|Wavefront Object: "wave" to "wavefront"
+<li>3D Studio Max Object: "3ds" to "3ds max" or "3dsmax"
 </ul>
 If it is absent, the type will then be guessed from the file contents,
 an operation that may work on some file formats but not others.
