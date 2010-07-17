@@ -284,6 +284,8 @@ private:
 
 	widget_placer *placer;
 	bool layout_for_fullscreen; // is the current layout for fullscreen?
+
+	Uint32 last_redraw;
 };
 
 // Pointer to top-level dialog, NULL = no dialog active

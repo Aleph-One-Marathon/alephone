@@ -1951,7 +1951,7 @@ void tab_placer::visible(bool visible)
 
 dialog::dialog() : active_widget(NULL), mouse_widget(0), active_widget_num(UNONE), done(false),
             cursor_was_visible(false), parent_dialog(NULL),
-		   processing_function(NULL), placer(0)
+		   processing_function(NULL), placer(0), last_redraw(0)
 {
 }
 
@@ -2454,8 +2454,6 @@ void dialog::event(SDL_Event &e)
 			exit(0);
 	  }
   }
-	// Redraw dirty widgets
-        draw_dirty_widgets();
 }
 
 
@@ -2474,6 +2472,12 @@ int dialog::run(bool intro_exit_sounds)
 		process_events();
 		if (done)
 			break;
+
+		if (SDL_GetTicks() > last_redraw + TICKS_PER_SECOND / 30)
+		{
+			draw_dirty_widgets();
+			last_redraw = SDL_GetTicks();
+		}
         
 		// Run custom processing function
 		if (processing_function)
