@@ -66,8 +66,8 @@
 		AE179F1B09C3D79500512061 /* ssdp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0B09C3D79500512061 /* ssdp.c */; };
 		AE179F1C09C3D79500512061 /* upnp.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0C09C3D79500512061 /* upnp.c */; };
 		AE179F1D09C3D79500512061 /* utility.c in Sources */ = {isa = PBXBuildFile; fileRef = AE179F0D09C3D79500512061 /* utility.c */; };
-		AE23F5640BDAC0E700C11385 /* Speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* Speex.framework */; };
-		AE23F5930BDAC1DF00C11385 /* Speex.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* Speex.framework */; };
+		AE23F5640BDAC0E700C11385 /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
+		AE23F5930BDAC1DF00C11385 /* speex.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		AE23F59A0BDAC23E00C11385 /* ReplacementSounds.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */; };
 		AE2A50CE09C67253007681A4 /* Scenario.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2A50CC09C67253007681A4 /* Scenario.cpp */; };
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
@@ -506,7 +506,7 @@
 				2759FB2A10D71160000204DD /* jpeg.framework in CopyFiles */,
 				2759FB2610D71158000204DD /* png.framework in CopyFiles */,
 				2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */,
-				AE23F5930BDAC1DF00C11385 /* Speex.framework in CopyFiles */,
+				AE23F5930BDAC1DF00C11385 /* speex.framework in CopyFiles */,
 				AE60200B0B92852A009F881C /* mad.framework in CopyFiles */,
 				AE6020080B928517009F881C /* sndfile.framework in CopyFiles */,
 				AEFDE8130A38E99000CFEB97 /* Ogg.framework in CopyFiles */,
@@ -608,7 +608,7 @@
 		AE179F0B09C3D79500512061 /* ssdp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = ssdp.c; path = ../Source_Files/LibNAT/ssdp.c; sourceTree = "<group>"; };
 		AE179F0C09C3D79500512061 /* upnp.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = upnp.c; path = ../Source_Files/LibNAT/upnp.c; sourceTree = "<group>"; };
 		AE179F0D09C3D79500512061 /* utility.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = utility.c; path = ../Source_Files/LibNAT/utility.c; sourceTree = "<group>"; };
-		AE23F5630BDAC0E700C11385 /* Speex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Speex.framework; sourceTree = "<group>"; };
+		AE23F5630BDAC0E700C11385 /* speex.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = speex.framework; sourceTree = "<group>"; };
 		AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = ReplacementSounds.cpp; sourceTree = "<group>"; };
 		AE2A50CC09C67253007681A4 /* Scenario.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Scenario.cpp; path = ../Source_Files/Misc/Scenario.cpp; sourceTree = SOURCE_ROOT; };
 		AE2A50CF09C6727C007681A4 /* Scenario.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Scenario.h; path = ../Source_Files/Misc/Scenario.h; sourceTree = SOURCE_ROOT; };
@@ -1052,7 +1052,7 @@
 				AEFDE7C00A38DF7E00CFEB97 /* Vorbis.framework in Frameworks */,
 				AE601FC00B927DC2009F881C /* mad.framework in Frameworks */,
 				AE601FC10B927DC2009F881C /* sndfile.framework in Frameworks */,
-				AE23F5640BDAC0E700C11385 /* Speex.framework in Frameworks */,
+				AE23F5640BDAC0E700C11385 /* speex.framework in Frameworks */,
 				AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */,
 				3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */,
 				3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */,
@@ -1259,7 +1259,7 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				AE23F5630BDAC0E700C11385 /* Speex.framework */,
+				AE23F5630BDAC0E700C11385 /* speex.framework */,
 				AE601FBE0B927DC2009F881C /* mad.framework */,
 				AE601FBF0B927DC2009F881C /* sndfile.framework */,
 				AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */,
@@ -2607,7 +2607,7 @@
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
-					"$(HOME)/Library/Frameworks/Speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/speex.framework/Headers",
 					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
 					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
 					"$(HOME)/Library/Frameworks/mad.framework/Headers",
@@ -2618,7 +2618,7 @@
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
-					/Library/Frameworks/Speex.framework/Headers,
+					/Library/Frameworks/speex.framework/Headers,
 					/Library/Frameworks/sndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/mad.framework/Headers,
@@ -2694,7 +2694,7 @@
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
-					"$(HOME)/Library/Frameworks/Speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/speex.framework/Headers",
 					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
 					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
 					"$(HOME)/Library/Frameworks/mad.framework/Headers",
@@ -2705,7 +2705,7 @@
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
-					/Library/Frameworks/Speex.framework/Headers,
+					/Library/Frameworks/speex.framework/Headers,
 					/Library/Frameworks/sndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/mad.framework/Headers,
@@ -2802,7 +2802,7 @@
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
-					"$(HOME)/Library/Frameworks/Speex.framework/Headers",
+					"$(HOME)/Library/Frameworks/speex.framework/Headers",
 					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
 					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
 					"$(HOME)/Library/Frameworks/mad.framework/Headers",
@@ -2813,7 +2813,7 @@
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
-					/Library/Frameworks/Speex.framework/Headers,
+					/Library/Frameworks/speex.framework/Headers,
 					/Library/Frameworks/sndfile.framework/Headers,
 					/Library/Frameworks/Vorbis.framework/Headers,
 					/Library/Frameworks/mad.framework/Headers,
