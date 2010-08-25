@@ -189,6 +189,8 @@ Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag
 
 void Shader::init() {
 
+	_uniform_locations.clear();
+
 	_loaded = true;
 
 	_programObj = glCreateProgramObjectARB();
