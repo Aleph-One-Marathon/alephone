@@ -27,6 +27,8 @@
 #include "OGL_Headers.h"
 #include "FileHandler.h"
 
+#include <boost/unordered_map.hpp>
+
 class Shader {
 
 friend class XML_ShaderParser;
@@ -40,6 +42,22 @@ private:
 
 	static std::map<std::string, Shader> Shaders;
 
+	boost::unordered_map<std::string, GLint> _uniform_locations;
+
+	GLint getUniformLocation(const char* name) { 
+		boost::unordered_map<std::string, GLint>::iterator it = _uniform_locations.find(name);
+		if (it != _uniform_locations.end()) 
+		{
+			return it->second;
+		} 
+		else
+		{
+			GLint location = glGetUniformLocationARB(_programObj, name);
+			_uniform_locations[name] = location;
+			return location;
+		}
+	}
+	
 public:
 
 	static Shader* get(const std::string& name);
@@ -54,7 +72,7 @@ public:
 	void init();
 	void enable();
 	void unload();
-	void setFloat(const char* name, float);
+	void setFloat(const char* name, float); // shader must be enabled
 	int16 passes();
 
 	static void disable();

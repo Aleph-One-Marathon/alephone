@@ -133,26 +133,26 @@ public:
 		for (int i = 0; i < passes; i++) {
 			glDisable(GL_BLEND);
 			_vertical.activate();
+			_shader_blur->enable();
 			_shader_blur->setFloat("offsetx", 1);
 			_shader_blur->setFloat("offsety", 0);
 			_shader_blur->setFloat("pass", i + 1);
-			_shader_blur->enable();
 			_horizontal.draw();
 			Shader::disable();
 			FBO::deactivate();
 
 			_horizontal.activate();
+			_shader_blur->enable();
 			_shader_blur->setFloat("offsetx", 0);
 			_shader_blur->setFloat("offsety", 1);
 			_shader_blur->setFloat("pass", i + 1);
-			_shader_blur->enable();
 			_vertical.draw();
 			Shader::disable();
 			FBO::deactivate();
 
 			glEnable(GL_BLEND);
-			_shader_bloom->setFloat("pass", i + 1);
 			_shader_bloom->enable();
+			_shader_bloom->setFloat("pass", i + 1);
 			_horizontal.draw();
 			Shader::disable();
 		}
@@ -188,9 +188,11 @@ void RenderRasterize_Shader::setupGL() {
 void RenderRasterize_Shader::render_tree() {
 
 	Shader* s = Shader::get("invincible");
+	s->enable();
 	s->setFloat("time", view->tick_count);
 	s->setFloat("usestatic", TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
 	s = Shader::get("invincible_bloom");
+	s->enable();
 	s->setFloat("time", view->tick_count);
 	s->setFloat("usestatic", TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
 
@@ -207,9 +209,12 @@ void RenderRasterize_Shader::render_tree() {
 		}
 	}
 	s = Shader::get("landscape");
+	s->enable();
 	s->setFloat("usefog", usefog ? 1.0 : 0.0);
 	s = Shader::get("landscape_bloom");
+	s->enable();
 	s->setFloat("usefog", usefog ? 1.0 : 0.0);
+	Shader::disable();
 
 	RenderRasterizerClass::render_tree(kDiffuse);
 
@@ -311,10 +316,12 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 			TMgr.IsShadeless = 1;
 			flare = 0;
 			s = Shader::get(renderStep == kGlow ? "invincible_bloom" : "invincible");
+			s->enable();
 			break;
 		case _tinted_transfer:
 			flare = 0;
 			s = Shader::get(renderStep == kGlow ? "invisible_bloom" : "invisible");
+			s->enable();
 			s->setFloat("visibility", 1.0 - rect.transfer_data/32.0f);
 			break;
 		case _solid_transfer:
@@ -336,6 +343,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 
 	if(s == NULL) {
 		s = Shader::get(renderStep == kGlow ? "sprite_bloom" : "sprite");
+		s->enable();
 	}
 
 	if(TMgr.Setup()) {
@@ -355,7 +363,6 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	s->setFloat("wobble", 0);
 	s->setFloat("depth", offset);
 	s->setFloat("glow", 0);
-	s->enable();
 	return TMgr;
 }
 
@@ -387,6 +394,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			TMgr.Landscape_AspRatExp = 0;
 			LandscapeOptions *opts = View_GetLandscapeOptions(Texture);
 			s = Shader::get(renderStep == kGlow ? "landscape_bloom" : "landscape");
+			s->enable();
 			s->setFloat("repeat", 1.0 + opts->HorizExp);
 		}
 			break;
@@ -408,6 +416,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 		} else {
 			s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
 		}
+		s->enable();
 	}
 
 	if(TMgr.Setup()) {
@@ -432,7 +441,6 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	s->setFloat("wobble", wobble);
 	s->setFloat("depth", offset);
 	s->setFloat("glow", 0);
-	s->enable();
 	return TMgr;
 }
 
@@ -528,6 +536,7 @@ bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float
 		glEnable(GL_ALPHA_TEST);
 		glAlphaFunc(GL_GREATER, 0.001);
 
+		s->enable();
 		if (renderStep == kGlow) {
 			s->setFloat("bloomScale", TMgr.GlowBloomScale());
 			s->setFloat("bloomShift", TMgr.GlowBloomShift());
@@ -536,7 +545,6 @@ bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float
 		s->setFloat("wobble", wobble);
 		s->setFloat("depth", offset - 1.0);
 		s->setFloat("glow", TMgr.MinGlowIntensity());
-		s->enable();
 		return true;
 	}
 	return false;
@@ -865,9 +873,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		case _static_transfer:
 			flare = 0;
 			s = Shader::get(renderStep == kGlow ? "invincible_bloom" : "invincible");
+			s->enable();
 		case _tinted_transfer:
 			flare = 0;
 			s = Shader::get(renderStep == kGlow ? "invisible_bloom" : "invisible");
+			s->enable();
 			s->setFloat("visibility", 1.0 - RenderRectangle.transfer_data/32.0f);
 			break;
 		case _solid_transfer:
@@ -895,6 +905,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		} else {
 			s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
 		}
+		s->enable();
 	}
 
 	if (renderStep == kGlow) {
@@ -905,7 +916,6 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	s->setFloat("wobble", 0);
 	s->setFloat("depth", 0);
 	s->setFloat("glow", 0);
-	s->enable();
 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
@@ -941,13 +951,13 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		glEnable(GL_ALPHA_TEST);
 		glAlphaFunc(GL_GREATER, 0.001);
 
-		Shader::disable();
+		s->enable();
 		s->setFloat("glow", SkinPtr->MinGlowIntensity);
 		if (renderStep == kGlow) {
 			s->setFloat("bloomScale", SkinPtr->GlowBloomScale);
 			s->setFloat("bloomShift", SkinPtr->GlowBloomShift);
 		}
-		s->enable();
+
 		if(ModelPtr->Use(CLUT,OGL_SkinManager::Glowing)) {
 			LoadModelSkin(SkinPtr->GlowImg, Collection, CLUT);
 		}

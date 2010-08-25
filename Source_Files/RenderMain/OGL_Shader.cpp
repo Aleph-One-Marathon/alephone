@@ -211,16 +211,16 @@ void Shader::init() {
 
 	glUseProgramObjectARB(_programObj);
 
-	glUniform1iARB(glGetUniformLocationARB(_programObj, "texture0"), 0);
-	glUniform1iARB(glGetUniformLocationARB(_programObj, "texture1"), 1);
-	glUniform1iARB(glGetUniformLocationARB(_programObj, "texture2"), 2);
-	glUniform1iARB(glGetUniformLocationARB(_programObj, "texture3"), 3);	
-	glUniform1fARB(glGetUniformLocationARB(_programObj, "time"), 0.0);
-	glUniform1fARB(glGetUniformLocationARB(_programObj, "wobble"), 0.0);
-	glUniform1fARB(glGetUniformLocationARB(_programObj, "flare"), 0.0);
-	glUniform1fARB(glGetUniformLocationARB(_programObj, "bloomScale"), 0.0);
-	glUniform1fARB(glGetUniformLocationARB(_programObj, "bloomShift"), 0.0);
-	glUniform1fARB(glGetUniformLocationARB(_programObj, "repeat"), 0.0);
+	glUniform1iARB(getUniformLocation("texture0"), 0);
+	glUniform1iARB(getUniformLocation("texture1"), 1);
+	glUniform1iARB(getUniformLocation("texture2"), 2);
+	glUniform1iARB(getUniformLocation("texture3"), 3);	
+	glUniform1fARB(getUniformLocation("time"), 0.0);
+	glUniform1fARB(getUniformLocation("wobble"), 0.0);
+	glUniform1fARB(getUniformLocation("flare"), 0.0);
+	glUniform1fARB(getUniformLocation("bloomScale"), 0.0);
+	glUniform1fARB(getUniformLocation("bloomShift"), 0.0);
+	glUniform1fARB(getUniformLocation("repeat"), 0.0);
 
 	glUseProgramObjectARB(NULL);
 
@@ -229,9 +229,7 @@ void Shader::init() {
 
 void Shader::setFloat(const char* name, float f) {
 
-	glUseProgramObjectARB(_programObj);
 	glUniform1fARB(glGetUniformLocationARB(_programObj, name), f);
-	glUseProgramObjectARB(NULL);	
 }
 
 Shader::~Shader() {
