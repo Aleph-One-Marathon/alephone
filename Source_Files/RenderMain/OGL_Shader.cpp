@@ -229,7 +229,7 @@ void Shader::init() {
 
 void Shader::setFloat(const char* name, float f) {
 
-	glUniform1fARB(glGetUniformLocationARB(_programObj, name), f);
+	glUniform1fARB(getUniformLocation(name), f);
 }
 
 Shader::~Shader() {
