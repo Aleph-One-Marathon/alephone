@@ -72,12 +72,12 @@ public:
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
 		glEnable(GL_TEXTURE_RECTANGLE_ARB);
 
-		glBegin(GL_QUADS);
-		glTexCoord2i(0., 0.); glVertex2i(0., 0.);
-		glTexCoord2i(0., _h); glVertex2i(0., _h);
-		glTexCoord2i(_w, _h); glVertex2i(_w, _h);
-		glTexCoord2i(_w, 0.); glVertex2i(_w, 0.);
-		glEnd();
+		GLint coordinates[8] = { 0, 0, 0, _h, _w, _h, _w, 0 };
+		
+		glVertexPointer(2, GL_INT, 0, coordinates);
+		glTexCoordPointer(2, GL_INT, 0, coordinates);
+
+		glDrawArrays(GL_QUADS, 0, 4);
 
 		glDisable(GL_TEXTURE_RECTANGLE_ARB);
 	}
@@ -599,44 +599,40 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 		glNormal3f(N[0], N[1], N[2]);
 		glMultiTexCoord4fARB(GL_TEXTURE1_ARB, T[0], T[1], T[2], sign);
 
-		glBegin(GL_POLYGON);
+		GLfloat vertex_array[MAXIMUM_VERTICES_PER_POLYGON * 3];
+		GLfloat texcoord_array[MAXIMUM_VERTICES_PER_POLYGON * 2];
+
+		GLfloat* vp = vertex_array;
+		GLfloat* tp = texcoord_array;
 		if (ceil)
 		{
-			for(short i=vertex_count-1; i>=0; --i) {
-				world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-				glTexCoord2f((vertex.x + surface->origin.x + x) / float(WORLD_ONE), (vertex.y + surface->origin.y + y) / float(WORLD_ONE));
-				glVertex3f(vertex.x, vertex.y, surface->height);
+			for(short i = 0; i < vertex_count; ++i) {
+				world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[vertex_count - 1 - i])->vertex;
+				*vp++ = vertex.x;
+				*vp++ = vertex.y;
+				*vp++ = surface->height;
+				*tp++ = (vertex.x + surface->origin.x + x) / float(WORLD_ONE);
+				*tp++ = (vertex.y + surface->origin.y + y) / float(WORLD_ONE);
 			}
 		}
 		else
 		{
 			for(short i=0; i<vertex_count; ++i) {
 				world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-				glTexCoord2f((vertex.x + surface->origin.x + x) / float(WORLD_ONE), (vertex.y + surface->origin.y + y) / float(WORLD_ONE));
-				glVertex3f(vertex.x, vertex.y, surface->height);
+				*vp++ = vertex.x;
+				*vp++ = vertex.y;
+				*vp++ = surface->height;
+				*tp++ = (vertex.x + surface->origin.x + x) / float(WORLD_ONE);
+				*tp++ = (vertex.y + surface->origin.y + y) / float(WORLD_ONE);
 			}
 		}
-		glEnd();
+		glVertexPointer(3, GL_FLOAT, 0, vertex_array);
+		glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+
+		glDrawArrays(GL_POLYGON, 0, vertex_count);
 
 		if (setupGlow(view, TMgr, wobble, intensity, offset, renderStep)) {
-			glBegin(GL_POLYGON);
-			if (ceil)
-			{
-				for(short i=vertex_count-1; i>=0; --i) {
-					world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-					glTexCoord2f((vertex.x + surface->origin.x + x) / float(WORLD_ONE), (vertex.y + surface->origin.y + y) / float(WORLD_ONE));
-					glVertex3f(vertex.x, vertex.y, surface->height);
-				}
-			}
-			else
-			{
-				for(short i=0; i<vertex_count; ++i) {
-					world_point2d vertex = get_endpoint_data(polygon->endpoint_indexes[i])->vertex;
-					glTexCoord2f((vertex.x + surface->origin.x + x) / float(WORLD_ONE), (vertex.y + surface->origin.y + y) / float(WORLD_ONE));
-					glVertex3f(vertex.x, vertex.y, surface->height);
-				}
-			}
-			glEnd();
+			glDrawArrays(GL_POLYGON, 0, vertex_count);
 		}
 
 		Shader::disable();
@@ -762,24 +758,29 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			x0 -= x;
 			tOffset -= y;
 
-			glBegin(GL_QUADS);
+			GLfloat vertex_array[12];
+			GLfloat texcoord_array[8];
+
+			GLfloat* vp = vertex_array;
+			GLfloat* tp = texcoord_array;
+
 			for(int i = 0; i < vertex_count; ++i) {
 				float p2 = 0;
 				if(i == 1 || i == 2) { p2 = surface->length; }
-				glTexCoord2f((tOffset - vertices[i].z) / div, (x0+p2) / div);
-				glVertex3f(vertices[i].x, vertices[i].y, vertices[i].z);
+
+				*vp++ = vertices[i].x;
+				*vp++ = vertices[i].y;
+				*vp++ = vertices[i].z;
+				*tp++ = (tOffset - vertices[i].z) / div;
+				*tp++ = (x0+p2) / div;
 			}
-			glEnd();
+			glVertexPointer(3, GL_FLOAT, 0, vertex_array);
+			glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
+			
+			glDrawArrays(GL_QUADS, 0, vertex_count);
 
 			if (setupGlow(view, TMgr, wobble, intensity, offset, renderStep)) {
-				glBegin(GL_QUADS);
-				for(int i = 0; i < vertex_count; ++i) {
-					float p2 = 0;
-					if(i == 1 || i == 2) { p2 = surface->length; }
-					glTexCoord2f((tOffset - vertices[i].z) / div, (x0+p2) / div);
-					glVertex3f(vertices[i].x, vertices[i].y, vertices[i].z);
-				}
-				glEnd();
+				glDrawArrays(GL_QUADS, 0, vertex_count);
 			}
 
 			Shader::disable();
@@ -1122,38 +1123,40 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		glEnable(GL_ALPHA_TEST);
 		glAlphaFunc(GL_GREATER, 0.5);
 	}
-	glBegin(GL_QUADS);
 
-	glTexCoord2f(texCoords[0][0], texCoords[1][0]);
-	glVertex3f(0, rect.WorldLeft * rect.HorizScale * rect.Scale, rect.WorldTop * rect.Scale);
+	GLfloat vertex_array[12] = {
+		0,
+		rect.WorldLeft * rect.HorizScale * rect.Scale,
+		rect.WorldTop * rect.Scale,
+		0,
+		rect.WorldRight * rect.HorizScale * rect.Scale,
+		rect.WorldTop * rect.Scale,
+		0,
+		rect.WorldRight * rect.HorizScale * rect.Scale,
+		rect.WorldBottom * rect.Scale,
+		0,
+		rect.WorldLeft * rect.HorizScale * rect.Scale,
+		rect.WorldBottom * rect.Scale
+	};
 
-	glTexCoord2f(texCoords[0][0], texCoords[1][1]);
-	glVertex3f(0, rect.WorldRight * rect.HorizScale * rect.Scale, rect.WorldTop * rect.Scale);
+	GLfloat texcoord_array[8] = {
+		texCoords[0][0],
+		texCoords[1][0],
+		texCoords[0][0],
+		texCoords[1][1],
+		texCoords[0][1],
+		texCoords[1][1],
+		texCoords[0][1],
+		texCoords[1][0]
+	};
 
-	glTexCoord2f(texCoords[0][1], texCoords[1][1]);
-	glVertex3f(0, rect.WorldRight * rect.HorizScale * rect.Scale, rect.WorldBottom * rect.Scale);
+	glVertexPointer(3, GL_FLOAT, 0, vertex_array);
+	glTexCoordPointer(2, GL_FLOAT, 0, texcoord_array);
 
-	glTexCoord2f(texCoords[0][1], texCoords[1][0]);
-	glVertex3f(0, rect.WorldLeft * rect.HorizScale * rect.Scale, rect.WorldBottom * rect.Scale);
-
-	glEnd();
+	glDrawArrays(GL_QUADS, 0, 4);
 
 	if (setupGlow(view, TMgr, 0, 1, offset, renderStep)) {
-		glBegin(GL_QUADS);
-
-		glTexCoord2f(texCoords[0][0], texCoords[1][0]);
-		glVertex3f(0, rect.WorldLeft * rect.HorizScale * rect.Scale, rect.WorldTop * rect.Scale);
-
-		glTexCoord2f(texCoords[0][0], texCoords[1][1]);
-		glVertex3f(0, rect.WorldRight * rect.HorizScale * rect.Scale, rect.WorldTop * rect.Scale);
-
-		glTexCoord2f(texCoords[0][1], texCoords[1][1]);
-		glVertex3f(0, rect.WorldRight * rect.HorizScale * rect.Scale, rect.WorldBottom * rect.Scale);
-
-		glTexCoord2f(texCoords[0][1], texCoords[1][0]);
-		glVertex3f(0, rect.WorldLeft * rect.HorizScale * rect.Scale, rect.WorldBottom * rect.Scale);
-
-		glEnd();
+		glDrawArrays(GL_QUADS, 0, 4);
 	}
 
 	glEnable(GL_DEPTH_TEST);
