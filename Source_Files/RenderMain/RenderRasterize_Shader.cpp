@@ -166,6 +166,8 @@ public:
  */
 void RenderRasterize_Shader::setupGL() {
 
+	Shader::loadAll();
+
 	Shader* s_blur = Shader::get(Shader::S_Blur);
 	Shader* s_bloom = Shader::get(Shader::S_Bloom);
 
@@ -187,7 +189,6 @@ void RenderRasterize_Shader::setupGL() {
  */
 void RenderRasterize_Shader::render_tree() {
 
-	Shader::loadAll();
 	Shader* s = Shader::get(Shader::S_Invincible);
 	s->enable();
 	s->setFloat(Shader::U_Time, view->tick_count);
