@@ -124,10 +124,7 @@ bool XML_ShaderParser::HandleAttribute(const char *Tag, const char *Value) {
 
 bool XML_ShaderParser::AttributesDone() {
 	initDefaultPrograms();
-	if (!Shader::_shaders.size()) 
-	{
-		Shader::loadAll();
-	}
+	Shader::loadAll();
 	
 	for (int i = 0; i < Shader::NUMBER_OF_SHADER_TYPES; ++i) {
 		if (_name == Shader::_shader_names[i]) {
@@ -189,10 +186,13 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 
 void Shader::loadAll() {
 	initDefaultPrograms();
-	_shaders.reserve(NUMBER_OF_SHADER_TYPES);
-	for (int i = 0; i < NUMBER_OF_SHADER_TYPES; ++i) 
+	if (!_shaders.size()) 
 	{
-		_shaders.push_back(Shader(_shader_names[i]));
+		_shaders.reserve(NUMBER_OF_SHADER_TYPES);
+		for (int i = 0; i < NUMBER_OF_SHADER_TYPES; ++i) 
+		{
+			_shaders.push_back(Shader(_shader_names[i]));
+		}
 	}
 }
 

@@ -187,6 +187,7 @@ void RenderRasterize_Shader::setupGL() {
  */
 void RenderRasterize_Shader::render_tree() {
 
+	Shader::loadAll();
 	Shader* s = Shader::get(Shader::S_Invincible);
 	s->enable();
 	s->setFloat(Shader::U_Time, view->tick_count);
