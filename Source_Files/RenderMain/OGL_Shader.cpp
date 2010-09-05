@@ -197,7 +197,10 @@ void Shader::loadAll() {
 }
 
 void Shader::unloadAll() {
-	_shaders.clear();
+	for (int i = 0; i < NUMBER_OF_SHADER_TYPES; ++i) 
+	{
+		_shaders[i].unload();
+	}
 }
 
 Shader::Shader(const std::string& name) : _programObj(NULL), _passes(-1), _loaded(false) {
