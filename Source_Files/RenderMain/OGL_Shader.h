@@ -27,11 +27,31 @@
 #include "OGL_Headers.h"
 #include "FileHandler.h"
 
-#include <boost/unordered_map.hpp>
-
 class Shader {
 
 friend class XML_ShaderParser;
+public:
+	enum UniformName {
+		U_Texture0,
+		U_Texture1,
+		U_Texture2,
+		U_Texture3,
+		U_Time,
+		U_Wobble,
+		U_Flare,
+		U_BloomScale,
+		U_BloomShift,
+		U_Repeat,
+		U_OffsetX,
+		U_OffsetY,
+		U_Pass,
+		U_UseStatic,
+		U_UseFog,
+		U_Visibility,
+		U_Depth,
+		U_Glow,
+		NUMBER_OF_UNIFORM_LOCATIONS
+	};
 private:
 
 	GLhandleARB _programObj;
@@ -42,20 +62,14 @@ private:
 
 	static std::map<std::string, Shader> Shaders;
 
-	boost::unordered_map<std::string, GLint> _uniform_locations;
+	static const char* _uniform_names[NUMBER_OF_UNIFORM_LOCATIONS];
+	GLint _uniform_locations[NUMBER_OF_UNIFORM_LOCATIONS];
 
-	GLint getUniformLocation(const char* name) { 
-		boost::unordered_map<std::string, GLint>::iterator it = _uniform_locations.find(name);
-		if (it != _uniform_locations.end()) 
-		{
-			return it->second;
-		} 
-		else
-		{
-			GLint location = glGetUniformLocationARB(_programObj, name);
-			_uniform_locations[name] = location;
-			return location;
+	GLint getUniformLocation(UniformName name) { 
+		if (_uniform_locations[name] == -1) {
+			_uniform_locations[name] = glGetUniformLocationARB(_programObj, _uniform_names[name]);
 		}
+		return _uniform_locations[name];
 	}
 	
 public:
@@ -72,7 +86,7 @@ public:
 	void init();
 	void enable();
 	void unload();
-	void setFloat(const char* name, float); // shader must be enabled
+	void setFloat(UniformName name, float); // shader must be enabled
 	int16 passes();
 
 	static void disable();

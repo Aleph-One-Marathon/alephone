@@ -19,6 +19,7 @@
  
  Implements OpenGL vertex/fragment shader class
  */
+#include <algorithm>
 #include <iostream>
 
 // gl_ClipVertex workaround
@@ -49,6 +50,28 @@ static std::map<std::string, std::string> defaultFragmentPrograms;
 void initDefaultPrograms();
 
 std::map<std::string, Shader> Shader::Shaders;
+
+const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] = 
+{
+	"texture0",
+	"texture1",
+	"texture2",
+	"texture3",
+	"time",
+	"wobble",
+	"flare",
+	"bloomScale",
+	"bloomShift",
+	"repeat",
+	"offsetx",
+	"offsety",
+	"pass",
+	"usestatic",
+	"usefog",
+	"visibility",
+	"depth",
+	"glow"
+};
 
 class XML_ShaderParser: public XML_ElementParser {
 
@@ -189,7 +212,7 @@ Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag
 
 void Shader::init() {
 
-	_uniform_locations.clear();
+	std::fill_n(_uniform_locations, static_cast<int>(NUMBER_OF_UNIFORM_LOCATIONS), -1);
 
 	_loaded = true;
 
@@ -213,23 +236,23 @@ void Shader::init() {
 
 	glUseProgramObjectARB(_programObj);
 
-	glUniform1iARB(getUniformLocation("texture0"), 0);
-	glUniform1iARB(getUniformLocation("texture1"), 1);
-	glUniform1iARB(getUniformLocation("texture2"), 2);
-	glUniform1iARB(getUniformLocation("texture3"), 3);	
-	glUniform1fARB(getUniformLocation("time"), 0.0);
-	glUniform1fARB(getUniformLocation("wobble"), 0.0);
-	glUniform1fARB(getUniformLocation("flare"), 0.0);
-	glUniform1fARB(getUniformLocation("bloomScale"), 0.0);
-	glUniform1fARB(getUniformLocation("bloomShift"), 0.0);
-	glUniform1fARB(getUniformLocation("repeat"), 0.0);
+	glUniform1iARB(getUniformLocation(U_Texture0), 0);
+	glUniform1iARB(getUniformLocation(U_Texture1), 1);
+	glUniform1iARB(getUniformLocation(U_Texture2), 2);
+	glUniform1iARB(getUniformLocation(U_Texture3), 3);	
+	glUniform1fARB(getUniformLocation(U_Time), 0.0);
+	glUniform1fARB(getUniformLocation(U_Wobble), 0.0);
+	glUniform1fARB(getUniformLocation(U_Flare), 0.0);
+	glUniform1fARB(getUniformLocation(U_BloomScale), 0.0);
+	glUniform1fARB(getUniformLocation(U_BloomShift), 0.0);
+	glUniform1fARB(getUniformLocation(U_Repeat), 0.0);
 
 	glUseProgramObjectARB(NULL);
 
 //	assert(glGetError() == GL_NO_ERROR);
 }
 
-void Shader::setFloat(const char* name, float f) {
+void Shader::setFloat(UniformName name, float f) {
 
 	glUniform1fARB(getUniformLocation(name), f);
 }
