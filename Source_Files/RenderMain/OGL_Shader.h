@@ -52,15 +52,34 @@ public:
 		U_Glow,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
+
+	enum ShaderType {
+		S_Blur,
+		S_Bloom,
+		S_Landscape,
+		S_LandscapeBloom,
+		S_Sprite,
+		S_SpriteBloom,
+		S_Invincible,
+		S_InvincibleBloom,
+		S_Invisible,
+		S_InvisibleBloom,
+		S_Wall,
+		S_WallBloom,
+		S_Bump,
+		S_BumpBloom,
+		NUMBER_OF_SHADER_TYPES
+	};
 private:
 
 	GLhandleARB _programObj;
-	GLcharARB *_vert;
-	GLcharARB *_frag;
+	std::string _vert;
+	std::string _frag;
 	int16 _passes;
 	bool _loaded;
 
-	static std::map<std::string, Shader> Shaders;
+	static const char* _shader_names[NUMBER_OF_SHADER_TYPES];
+	static std::vector<Shader> _shaders;
 
 	static const char* _uniform_names[NUMBER_OF_UNIFORM_LOCATIONS];
 	GLint _uniform_locations[NUMBER_OF_UNIFORM_LOCATIONS];
@@ -74,7 +93,8 @@ private:
 	
 public:
 
-	static Shader* get(const std::string& name);
+	static Shader* get(ShaderType type) { return &_shaders[type]; }
+	static void loadAll();
 	static void unloadAll();
 	
 	Shader() : _programObj(NULL), _passes(-1), _loaded(false) {}

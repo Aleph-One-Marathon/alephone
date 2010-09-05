@@ -49,7 +49,7 @@ static std::map<std::string, std::string> defaultVertexPrograms;
 static std::map<std::string, std::string> defaultFragmentPrograms;
 void initDefaultPrograms();
 
-std::map<std::string, Shader> Shader::Shaders;
+std::vector<Shader> Shader::_shaders;
 
 const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] = 
 {
@@ -71,6 +71,24 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"visibility",
 	"depth",
 	"glow"
+};
+
+const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 
+{
+	"blur",
+	"bloom",
+	"landscape",
+	"landscape_bloom",
+	"sprite",
+	"sprite_bloom",
+	"invincible",
+	"invincible_bloom",
+	"invisible",
+	"invisible_bloom",
+	"wall",
+	"wall_bloom",
+	"bump",
+	"bump_bloom"
 };
 
 class XML_ShaderParser: public XML_ElementParser {
@@ -105,44 +123,53 @@ bool XML_ShaderParser::HandleAttribute(const char *Tag, const char *Value) {
 };
 
 bool XML_ShaderParser::AttributesDone() {
-    initDefaultPrograms();
-	Shader::Shaders[_name] = Shader(_name, _vert, _frag, _passes);
-	return true;
+	initDefaultPrograms();
+	if (!Shader::_shaders.size()) 
+	{
+		Shader::loadAll();
+	}
+	
+	for (int i = 0; i < Shader::NUMBER_OF_SHADER_TYPES; ++i) {
+		if (_name == Shader::_shader_names[i]) {
+			Shader::_shaders[i] = Shader(_name, _vert, _frag, _passes);
+			return true;
+		}
+	}
+	return false;
 }
 
 bool XML_ShaderParser::ResetValues() {
-	Shader::Shaders.clear();
+	Shader::_shaders.clear();
 	return true;
 }
 
 static XML_ShaderParser ShaderParser;
 XML_ElementParser *Shader_GetParser() {return &ShaderParser;}
 
-GLcharARB* parseFile(FileSpecifier& fileSpec) {
+void parseFile(FileSpecifier& fileSpec, std::string s) {
+
+	s.clear();
 
 	if (fileSpec == FileSpecifier() || !fileSpec.Exists()) {
-		return NULL;
+		return;
 	}
 
 	OpenedFile file;
 	if (!fileSpec.Open(file))
 	{
 		fprintf(stderr, "%s not found\n", fileSpec.GetPath());
-		return NULL;
+		return;
 	}
 
 	int32 length;
 	file.GetLength(length);
-	
-	GLcharARB* str = new GLcharARB[length + 1];
-	file.Read(length, str);
-	str[length] = 0;
 
-	return str;
+	s.resize(length);
+	file.Read(length, &s[0]);
 }
 
 
-GLhandleARB parseShader(GLcharARB* str, GLenum shaderType) {
+GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 
 	GLint status;
 	GLhandleARB shader = glCreateShaderObjectARB(shaderType);
@@ -160,54 +187,43 @@ GLhandleARB parseShader(GLcharARB* str, GLenum shaderType) {
 	}
 }
 
-Shader* Shader::get(const std::string& name) {
-	
-    if (Shaders.count(name) > 0) {
-        return &Shaders[name];			
-    }
-    initDefaultPrograms();
-    if ((defaultVertexPrograms.count(name) > 0) &&
-        (defaultFragmentPrograms.count(name) > 0)) {
-        Shaders[name] = Shader(name);
-        return &Shaders[name];
-    }
-    fprintf(stderr, "No shader for %s\n", name.c_str());
-    return NULL;
+void Shader::loadAll() {
+	initDefaultPrograms();
+	_shaders.reserve(NUMBER_OF_SHADER_TYPES);
+	for (int i = 0; i < NUMBER_OF_SHADER_TYPES; ++i) 
+	{
+		_shaders.push_back(Shader(_shader_names[i]));
+	}
 }
 
 void Shader::unloadAll() {
-	for (std::map<std::string, Shader>::iterator it = Shaders.begin();
-		 it != Shaders.end();
-		 ++it)
-		it->second.unload();
+	_shaders.clear();
 }
 
-Shader::Shader(const std::string& name) : _programObj(NULL), _passes(-1), _loaded(false), _vert(NULL), _frag(NULL) {
+Shader::Shader(const std::string& name) : _programObj(NULL), _passes(-1), _loaded(false) {
     initDefaultPrograms();
     if (defaultVertexPrograms.count(name) > 0) {
-        _vert = new GLcharARB[defaultVertexPrograms[name].size() + 1];
-        strcpy(_vert, defaultVertexPrograms[name].c_str());
+	    _vert = defaultVertexPrograms[name];
     }
     if (defaultFragmentPrograms.count(name) > 0) {
-        _frag = new GLcharARB[defaultFragmentPrograms[name].size() + 1];
-        strcpy(_frag, defaultFragmentPrograms[name].c_str());
+	    _frag = defaultFragmentPrograms[name];
     }
 }    
 
 Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag, int16& passes) : _programObj(NULL), _passes(passes), _loaded(false) {
-    initDefaultPrograms();
+	initDefaultPrograms();
 	
-	_vert = parseFile(vert);
-	if (!_vert && defaultVertexPrograms.count(name) > 0) {
-        _vert = new GLcharARB[defaultVertexPrograms[name].size() + 1];
-        strcpy(_vert, defaultVertexPrograms[name].c_str());
-    }
-
-	_frag = parseFile(frag);
-	if (!_frag && defaultFragmentPrograms.count(name) > 0) {
-        _frag = new GLcharARB[defaultFragmentPrograms[name].size() + 1];
-        strcpy(_frag, defaultFragmentPrograms[name].c_str());
-    }
+	parseFile(vert,  _vert);
+	if (_vert.empty() && defaultVertexPrograms.count(name) > 0) 
+	{
+		_vert = defaultVertexPrograms[name];
+	}
+	
+	parseFile(frag, _frag);
+	if (_frag.empty() && defaultFragmentPrograms.count(name) > 0) 
+	{
+		_frag = defaultFragmentPrograms[name];
+	}
 }
 
 void Shader::init() {
@@ -218,14 +234,14 @@ void Shader::init() {
 
 	_programObj = glCreateProgramObjectARB();
 
-	assert(_vert);
-	GLhandleARB vertexShader = parseShader(_vert, GL_VERTEX_SHADER_ARB);
+	assert(!_vert.empty());
+	GLhandleARB vertexShader = parseShader(_vert.c_str(), GL_VERTEX_SHADER_ARB);
 	assert(vertexShader);
 	glAttachObjectARB(_programObj, vertexShader);
 	glDeleteObjectARB(vertexShader);
 
-	assert(_frag);
-	GLhandleARB fragmentShader = parseShader(_frag, GL_FRAGMENT_SHADER_ARB);
+	assert(!_frag.empty());
+	GLhandleARB fragmentShader = parseShader(_frag.c_str(), GL_FRAGMENT_SHADER_ARB);
 	assert(fragmentShader);
 	glAttachObjectARB(_programObj, fragmentShader);
 	glDeleteObjectARB(fragmentShader);
@@ -258,7 +274,7 @@ void Shader::setFloat(UniformName name, float f) {
 }
 
 Shader::~Shader() {
-	if(_programObj) { glDeleteObjectARB(_programObj); }
+	unload();
 }
 
 void Shader::enable() {

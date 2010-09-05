@@ -166,8 +166,8 @@ public:
  */
 void RenderRasterize_Shader::setupGL() {
 
-	Shader* s_blur = Shader::get("blur");
-	Shader* s_bloom = Shader::get("bloom");
+	Shader* s_blur = Shader::get(Shader::S_Blur);
+	Shader* s_bloom = Shader::get(Shader::S_Bloom);
 
 	blur = NULL;
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur)) {
@@ -187,11 +187,11 @@ void RenderRasterize_Shader::setupGL() {
  */
 void RenderRasterize_Shader::render_tree() {
 
-	Shader* s = Shader::get("invincible");
+	Shader* s = Shader::get(Shader::S_Invincible);
 	s->enable();
 	s->setFloat(Shader::U_Time, view->tick_count);
 	s->setFloat(Shader::U_UseStatic, TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
-	s = Shader::get("invincible_bloom");
+	s = Shader::get(Shader::S_InvincibleBloom);
 	s->enable();
 	s->setFloat(Shader::U_Time, view->tick_count);
 	s->setFloat(Shader::U_UseStatic, TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
@@ -208,10 +208,10 @@ void RenderRasterize_Shader::render_tree() {
 			usefog = true;
 		}
 	}
-	s = Shader::get("landscape");
+	s = Shader::get(Shader::S_Landscape);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s = Shader::get("landscape_bloom");
+	s = Shader::get(Shader::S_LandscapeBloom);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
 	Shader::disable();
@@ -315,12 +315,12 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 		case _static_transfer:
 			TMgr.IsShadeless = 1;
 			flare = 0;
-			s = Shader::get(renderStep == kGlow ? "invincible_bloom" : "invincible");
+			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
 			s->enable();
 			break;
 		case _tinted_transfer:
 			flare = 0;
-			s = Shader::get(renderStep == kGlow ? "invisible_bloom" : "invisible");
+			s = Shader::get(renderStep == kGlow ? Shader::S_InvisibleBloom : Shader::S_Invisible);
 			s->enable();
 			s->setFloat(Shader::U_Visibility, 1.0 - rect.transfer_data/32.0f);
 			break;
@@ -342,7 +342,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	}
 
 	if(s == NULL) {
-		s = Shader::get(renderStep == kGlow ? "sprite_bloom" : "sprite");
+		s = Shader::get(renderStep == kGlow ? Shader::S_SpriteBloom : Shader::S_Sprite);
 		s->enable();
 	}
 
@@ -393,7 +393,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 			TMgr.TransferMode = _big_landscaped_transfer;
 			TMgr.Landscape_AspRatExp = 0;
 			LandscapeOptions *opts = View_GetLandscapeOptions(Texture);
-			s = Shader::get(renderStep == kGlow ? "landscape_bloom" : "landscape");
+			s = Shader::get(renderStep == kGlow ? Shader::S_LandscapeBloom : Shader::S_Landscape);
 			s->enable();
 			s->setFloat(Shader::U_Repeat, 1.0 + opts->HorizExp);
 		}
@@ -412,9 +412,9 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 
 	if(s == NULL) {
 		if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-			s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
+			s = Shader::get(renderStep == kGlow ? Shader::S_BumpBloom : Shader::S_Bump);
 		} else {
-			s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
+			s = Shader::get(renderStep == kGlow ? Shader::S_WallBloom : Shader::S_Wall);
 		}
 		s->enable();
 	}
@@ -521,12 +521,12 @@ bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float
 		Shader *s = NULL;
 		if (TMgr.TextureType == OGL_Txtr_Wall) {
 			if (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-				s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
+				s = Shader::get(renderStep == kGlow ? Shader::S_BumpBloom : Shader::S_Bump);
 			} else {
-				s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
+				s = Shader::get(renderStep == kGlow ? Shader::S_WallBloom : Shader::S_Wall);
 			}
 		} else {
-			s = Shader::get(renderStep == kGlow ? "sprite_bloom" : "sprite");
+			s = Shader::get(renderStep == kGlow ? Shader::S_SpriteBloom : Shader::S_Sprite);
 		}
 
 		TMgr.RenderGlowing();
@@ -873,11 +873,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	switch(RenderRectangle.transfer_mode) {
 		case _static_transfer:
 			flare = 0;
-			s = Shader::get(renderStep == kGlow ? "invincible_bloom" : "invincible");
+			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
 			s->enable();
 		case _tinted_transfer:
 			flare = 0;
-			s = Shader::get(renderStep == kGlow ? "invisible_bloom" : "invisible");
+			s = Shader::get(renderStep == kGlow ? Shader::S_InvisibleBloom : Shader::S_Invisible);
 			s->enable();
 			s->setFloat(Shader::U_Visibility, 1.0 - RenderRectangle.transfer_data/32.0f);
 			break;
@@ -902,9 +902,9 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	if(s == NULL) {
 		if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-			s = Shader::get(renderStep == kGlow ? "bump_bloom" : "bump");
+			s = Shader::get(renderStep == kGlow ? Shader::S_BumpBloom : Shader::S_Bump);
 		} else {
-			s = Shader::get(renderStep == kGlow ? "wall_bloom" : "wall");
+			s = Shader::get(renderStep == kGlow ? Shader::S_WallBloom : Shader::S_Wall);
 		}
 		s->enable();
 	}
