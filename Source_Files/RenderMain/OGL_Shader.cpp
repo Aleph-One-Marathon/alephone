@@ -143,7 +143,7 @@ bool XML_ShaderParser::ResetValues() {
 static XML_ShaderParser ShaderParser;
 XML_ElementParser *Shader_GetParser() {return &ShaderParser;}
 
-void parseFile(FileSpecifier& fileSpec, std::string s) {
+void parseFile(FileSpecifier& fileSpec, std::string& s) {
 
 	s.clear();
 
@@ -197,7 +197,7 @@ void Shader::loadAll() {
 }
 
 void Shader::unloadAll() {
-	for (int i = 0; i < NUMBER_OF_SHADER_TYPES; ++i) 
+	for (int i = 0; i < _shaders.size(); ++i) 
 	{
 		_shaders[i].unload();
 	}
