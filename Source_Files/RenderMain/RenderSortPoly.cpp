@@ -94,7 +94,7 @@ void RenderSortPolyClass::sort_render_tree()
 	assert(RVPtr);
 	node_data *leaf, *last_leaf;
 	// LP: reference to simplify the code
-	vector<node_data>& Nodes = RVPtr->Nodes;
+	RenderVisTreeClass::NodeList& Nodes = RVPtr->Nodes;
 
 	initialize_sorted_render_tree();
 	

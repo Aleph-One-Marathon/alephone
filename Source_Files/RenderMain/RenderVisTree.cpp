@@ -135,9 +135,9 @@ void RenderVisTreeClass::build_render_tree()
 	// Using start index of list of nodes: 0
 	long_vector2d view_edge;
 	short_to_long_2d(view->left_edge,view_edge);
-	cast_render_ray(&view_edge, NONE, 0, _counterclockwise_bias);
+	cast_render_ray(&view_edge, NONE, &Nodes.front(), _counterclockwise_bias);
 	short_to_long_2d(view->right_edge,view_edge);
-	cast_render_ray(&view_edge, NONE, 0, _clockwise_bias);
+	cast_render_ray(&view_edge, NONE, &Nodes.front(), _clockwise_bias);
 	
 	/* pull polygons off the queue, fire at all their new endpoints, building the tree as we go */
 	while (polygon_queue_size)
@@ -184,7 +184,7 @@ void RenderVisTreeClass::build_render_tree()
 					(we donÕt have to cast at points outside the cone) */
 				if ((view->right_edge.i*_vector.j - view->right_edge.j*_vector.i)<=0 && (view->left_edge.i*_vector.j - view->left_edge.j*_vector.i)>=0)
 				{
-					cast_render_ray(&_vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, 0, _no_bias);
+					cast_render_ray(&_vector, ENDPOINT_IS_TRANSPARENT(endpoint) ? NONE : endpoint_index, &Nodes.front(), _no_bias);
 				}
 				
 				SET_RENDER_FLAG(endpoint_index, _endpoint_has_been_visited);
@@ -200,12 +200,9 @@ void RenderVisTreeClass::build_render_tree()
 void RenderVisTreeClass::cast_render_ray(
 	long_vector2d *_vector, // world_vector2d *vector,
 	short endpoint_index,
-	int ParentIndex, /* 0==root */
+	node_data* parent,
 	short bias) /* _clockwise or _counterclockwise for walking endpoints */
 {
-	// LP: keep the parent-node pointer and index in sync with each other:
-	node_data *parent =  &Nodes.front() + ParentIndex;
-	
 	short polygon_index= parent->polygon_index;
 
 //	dprintf("shooting at e#%d of p#%d", endpoint_index, polygon_index);
@@ -220,10 +217,8 @@ void RenderVisTreeClass::cast_render_ray(
 		{
 			if (clip_flags&_split_render_ray)
 			{
-				cast_render_ray(_vector, endpoint_index, ParentIndex, _clockwise_bias);
-				cast_render_ray(_vector, endpoint_index, ParentIndex, _counterclockwise_bias);
-				// LP: could have reallocated, so keep in sync!
-				parent =  &Nodes.front() + ParentIndex;
+				cast_render_ray(_vector, endpoint_index, parent, _clockwise_bias);
+				cast_render_ray(_vector, endpoint_index, parent, _counterclockwise_bias);
 			}
 		}
 		else
@@ -245,45 +240,10 @@ void RenderVisTreeClass::cast_render_ray(
 				// "reference" is a pointer to a member with an offset.
 				// Cast the pointers to whatever size of integer the system uses.
 				size_t Length = Nodes.size();
-				POINTER_DATA OldNodePointer = POINTER_CAST(&Nodes.front());
 				
-				// Add a dummy object and check if the pointer got changed
 				node_data Dummy;
 				Dummy.flags = 0;				// Fake initialization to shut up CW
 				Nodes.push_back(Dummy);
-				POINTER_DATA NewNodePointer = POINTER_CAST(&Nodes.front());
-
-				if (NewNodePointer != OldNodePointer)				
-				{
-					for (size_t k=0; k<Length; k++)
-					{
-						node_data &Node = Nodes[k];
-						// If NULL, then these pointers were already copied.
-						if (Node.parent)
-							Node.parent = (node_data *)(NewNodePointer + (POINTER_CAST(Node.parent) - OldNodePointer));
-						if (Node.reference)
-							Node.reference = (node_data **)(NewNodePointer + (POINTER_CAST(Node.reference) - OldNodePointer));
-						if (Node.siblings)
-							Node.siblings = (node_data *)(NewNodePointer + (POINTER_CAST(Node.siblings) - OldNodePointer));
-						if (Node.children)
-							Node.children = (node_data *)(NewNodePointer + (POINTER_CAST(Node.children) - OldNodePointer));
-						if (Node.PS_Greater)
-							Node.PS_Greater = (node_data *)(NewNodePointer + (POINTER_CAST(Node.PS_Greater) - OldNodePointer));
-						if (Node.PS_Less)
-							Node.PS_Less = (node_data *)(NewNodePointer + (POINTER_CAST(Node.PS_Less) - OldNodePointer));
-						if (Node.PS_Shared)
-							Node.PS_Shared = (node_data *)(NewNodePointer + (POINTER_CAST(Node.PS_Shared) - OldNodePointer));
-					}
-					
-					// Edit parent-node pointer also
-					parent =  &Nodes.front() + ParentIndex;
-
-					// CB: Find the node reference again, the old one may point to stale memory
-					for (node_reference= &parent->children;
-							*node_reference && (*node_reference)->polygon_index!=polygon_index;
-							node_reference= &(*node_reference)->siblings)
-						;
-				}
 				node = &Nodes[Length];		// The length here is the "old" length
 				
 				*node_reference= node;
@@ -292,7 +252,7 @@ void RenderVisTreeClass::cast_render_ray(
 				// Place new node in tree if it has gotten rooted
 				if (Length > 0)
 				{
-				node_data *CurrNode = &Nodes.front();
+					node_data *CurrNode = &Nodes.front();
 				while(true)
 				{
 					int32 PolyDiff = int32(polygon_index) - int32(CurrNode->polygon_index);
@@ -370,8 +330,6 @@ void RenderVisTreeClass::cast_render_ray(
 			}
 			
 			parent= node;
-			// LP: keep in sync!
-			ParentIndex = static_cast<int>(parent - &Nodes.front());
 		}
 	}
 	while (polygon_index!=NONE);
@@ -640,7 +598,7 @@ void RenderVisTreeClass::initialize_render_tree()
 	node_data Dummy;
 	Dummy.flags = 0;				// Fake initialization to shut up CW
 	Nodes.push_back(Dummy);
-	INITIALIZE_NODE(&Nodes.front(), view->origin_polygon_index, 0, NULL, NULL);
+	INITIALIZE_NODE(&Nodes[0], view->origin_polygon_index, 0, NULL, NULL);
 }
 
 /* ---------- initializing and calculating clip data */

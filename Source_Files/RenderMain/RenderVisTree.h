@@ -37,6 +37,7 @@ Oct 13, 2000
 	LP: replaced GrowableLists and ResizableLists with STL vectors
 */
 
+#include <deque>
 #include <vector>
 #include "world.h"
 #include "render.h"
@@ -174,7 +175,7 @@ class RenderVisTreeClass
 	
 	// LP: referring to parent node by index instead of by pointer, to avoid stale-pointer bug
 	void cast_render_ray(long_vector2d *_vector, short endpoint_index,
-		int ParentIndex, short bias);
+		node_data* parent, short bias);
 	
 	uint16 decide_where_vertex_leads(short *polygon_index, short *line_index, short *side_index, short endpoint_index_in_polygon_list,
 		world_point2d *origin, long_vector2d *_vector, uint16 clip_flags, short bias);
@@ -212,7 +213,8 @@ public:
 	
 	// Growable list of node_data values
 	// Length changed in cast_render_ray() and initialize_render_tree()
-	vector<node_data> Nodes;
+	typedef std::deque<node_data> NodeList;
+	NodeList Nodes;
 	
 	// Pointer to view
 	view_data *view;
