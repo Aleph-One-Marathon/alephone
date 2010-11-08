@@ -32,6 +32,7 @@
 #include <map>
 #include <memory> // auto_ptr
 #include <set>
+#include <stdexcept>
 
 #include "Logging.h"
 
