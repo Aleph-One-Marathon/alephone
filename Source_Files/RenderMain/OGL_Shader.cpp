@@ -70,7 +70,8 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"usefog",
 	"visibility",
 	"depth",
-	"glow"
+	"glow",
+	"landscapeInverseMatrix"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 
@@ -276,6 +277,11 @@ void Shader::setFloat(UniformName name, float f) {
 	glUniform1fARB(getUniformLocation(name), f);
 }
 
+void Shader::setMatrix4(UniformName name, float *f) {
+
+	glUniformMatrix4fvARB(getUniformLocation(name), 1, false, f);
+}
+
 Shader::~Shader() {
 	unload();
 }
@@ -341,6 +347,7 @@ void initDefaultPrograms() {
 		"}\n";    
     
     defaultVertexPrograms["landscape"] = ""
+		"uniform mat4 landscapeInverseMatrix;\n"
         "varying vec3 viewDir;\n"
         "varying float texScale;\n"
         "varying float texOffset;\n"
@@ -348,8 +355,8 @@ void initDefaultPrograms() {
         "void main(void) {\n"
         "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
-        "	vec4 v = gl_ModelViewMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);\n"
-        "	viewDir = (gl_Vertex - v).xyz;\n"
+        "	vec4 v = landscapeInverseMatrix * vec4(0.0, 0.0, 0.0, 1.0);\n"
+        "	viewDir = (landscapeInverseMatrix * gl_ClipVertex - v).xyz;\n"
         "	texScale = gl_TextureMatrix[0][1][1];\n"
         "	texOffset = gl_TextureMatrix[0][3][1];\n"
         "	vertexColor = gl_Color;\n"
@@ -367,7 +374,7 @@ void initDefaultPrograms() {
         "	vec3 viewv = normalize(viewDir);\n"
         "	float x = atan(viewv.x, viewv.y) / (2.0 * pi) * repeat;\n"
         "	float y = 0.5/abs(texScale) - sign(texOffset) + texOffset + asin(viewv.z) * 0.3 * sign(texScale);\n"
-        "   vec4 color = texture2D(texture0, vec2(-x + 0.25*repeat, y));\n"
+        "   vec4 color = texture2D(texture0, vec2(-x + 0.25*repeat, y * 1.1));\n"
         "   vec3 intensity = color.rgb;\n"
         "   if (usefog > 0.0) {\n"
         "       intensity = gl_Fog.color.rgb;\n"
@@ -390,7 +397,7 @@ void initDefaultPrograms() {
         "	vec3 viewv = normalize(viewDir);\n"
         "	float x = atan(viewv.x, viewv.y) / (2.0 * pi) * repeat;\n"
         "	float y = 0.5/abs(texScale) - sign(texOffset) + texOffset + asin(viewv.z) * 0.3 * sign(texScale);\n"
-        "   vec4 color = texture2D(texture0, vec2(-x + 0.25*repeat, y));\n"
+        "   vec4 color = texture2D(texture0, vec2(-x + 0.25*repeat, y * 1.1));\n"
         "   vec3 intensity = vec3(1.0, 1.0, 1.0);\n"
         "	intensity = color.rgb * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
         "   if (usefog > 0.0) {\n"

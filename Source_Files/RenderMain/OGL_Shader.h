@@ -50,6 +50,7 @@ public:
 		U_Visibility,
 		U_Depth,
 		U_Glow,
+		U_LandscapeInverseMatrix,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 
@@ -107,6 +108,8 @@ public:
 	void enable();
 	void unload();
 	void setFloat(UniformName name, float); // shader must be enabled
+	void setMatrix4(UniformName name, float *f);
+
 	int16 passes();
 
 	static void disable();
