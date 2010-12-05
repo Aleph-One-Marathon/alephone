@@ -64,13 +64,13 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	pitch = (pitch > 180.0 ? pitch -360.0 : pitch);
 
 	// setup a rotation matrix for the landscape texture shader
-	// this aligns the landscapes to the top of the screen for standard
+	// this aligns the landscapes to the center of the screen for standard
 	// pitch ranges, so that they don't need to be stretched
 
 	glLoadIdentity();
 	glTranslated(view.origin.x, view.origin.y, view.origin.z);
 	glRotated(yaw, 0.0, 0.0, 1.0);
-	glRotated(-pitch+15, 0.0, 1.0, 0.0);
+	glRotated(-pitch+8.5, 0.0, 1.0, 0.0);
 	glMultMatrixd(kViewBaseMatrixInverse);
 
 	GLfloat landscapeInverseMatrix[16];
