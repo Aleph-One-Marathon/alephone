@@ -2675,6 +2675,7 @@ void do_preferences(void)
 {
 	struct screen_mode_data mode = graphics_preferences->screen_mode;
 
+	force_system_colors();
 	handle_preferences();
 
 	if (mode.bit_depth != graphics_preferences->screen_mode.bit_depth) {
