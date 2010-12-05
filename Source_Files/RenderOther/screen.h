@@ -207,6 +207,8 @@ bool SetTunnelVision(bool TunnelVisionOn);
 void RequestDrawingHUD();
 // Request for drawing the terminal
 void RequestDrawingTerm();
+// Request for drawing (or redrawing) a menu or intro screen
+void draw_intro_screen();
 
 // Corresponding with-and-without-HUD sizes for some view-size index,
 // for the convenience of Pfhortran scripting;

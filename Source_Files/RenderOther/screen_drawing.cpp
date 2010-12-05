@@ -233,7 +233,8 @@ bool draw_clip_rect_active = false;			// Flag: clipping rect active
 screen_rectangle draw_clip_rect;			// Current clipping rectangle
 
 // From screen_sdl.cpp
-extern SDL_Surface *world_pixels, *HUD_Buffer, *Term_Buffer;
+extern SDL_Surface *world_pixels, *HUD_Buffer, *Term_Buffer, *Intro_Buffer;
+extern bool intro_buffer_changed;
 
 // Prototypes
 extern TextSpec *_get_font_spec(short font_index);
@@ -277,6 +278,13 @@ void _set_port_to_term(void)
 	draw_surface = Term_Buffer;
 }
 
+void _set_port_to_intro(void)
+{
+	assert(old_draw_surface == NULL);
+	old_draw_surface = draw_surface;
+	draw_surface = Intro_Buffer;
+	intro_buffer_changed = true;
+}
 
 /*
  *  Set clipping rectangle

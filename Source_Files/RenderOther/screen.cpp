@@ -37,6 +37,7 @@
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #include "OGL_Blitter.h"
+#include "OGL_Faders.h"
 #endif
 
 #include "world.h"
@@ -81,9 +82,12 @@ static SDL_Surface *main_surface;	// Main (display) surface
 SDL_Surface *world_pixels = NULL;
 SDL_Surface *HUD_Buffer = NULL;
 SDL_Surface *Term_Buffer = NULL;
+SDL_Surface *Intro_Buffer = NULL; // intro screens, main menu, chapters, credits, etc.
+bool intro_buffer_changed = false;
 
 #ifdef HAVE_OPENGL
 static OGL_Blitter Term_Blitter;
+static OGL_Blitter Intro_Blitter;
 #endif
 
 // Initial gamma table
@@ -713,8 +717,13 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	}
 #ifdef ALEPHONE_LITTLE_ENDIAN
 	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
+	if (!Intro_Buffer)
+		Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
+
 #else
 	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0xff000000,0x00ff0000, 0x0000ff00, 0x000000ff);
+	if (!Intro_Buffer)
+		Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 #endif
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
@@ -1452,6 +1461,42 @@ void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect)
 	}
 }
 
+void draw_intro_screen(void)
+{
+	bool need_redraw = intro_buffer_changed || fade_finished();
+#ifdef HAVE_OPENGL
+	if (OGL_FaderActive())
+		need_redraw = !fade_blacked_screen();
+#endif
+	if (!need_redraw)
+		return;
+	
+	SDL_Rect src_rect = { 0, 0, Intro_Buffer->w, Intro_Buffer->h };
+	SDL_Rect dst_rect = {(main_surface->w - src_rect.w) / 2, (main_surface->h - src_rect.h) / 2, src_rect.w, src_rect.h};
+	
+#ifdef HAVE_OPENGL
+	if (OGL_IsActive()) {
+		if (intro_buffer_changed) {
+			SDL_SetAlpha(Intro_Buffer, 0, 0xff);
+			Intro_Blitter.Load(*Intro_Buffer);
+			intro_buffer_changed = false;
+		}
+		OGL_Blitter::BoundScreen();
+		OGL_ClearScreen();
+		Intro_Blitter.Draw(dst_rect);
+		
+		glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
+		glEnableClientState(GL_VERTEX_ARRAY);
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+		OGL_DoFades(dst_rect.x, dst_rect.y, dst_rect.x + dst_rect.w, dst_rect.y + dst_rect.h);		
+		OGL_SwapBuffers();
+	} else
+#endif
+	{
+		DrawSurface(Intro_Buffer, dst_rect, src_rect);
+		intro_buffer_changed = false;
+	}
+}
 
 /*
  *  Clear screen

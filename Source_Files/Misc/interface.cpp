@@ -1174,6 +1174,9 @@ bool idle_game_state(uint32 time)
 	}
 }
 
+extern SDL_Surface *draw_surface;	// from screen_drawing.cpp
+//void draw_intro_screen(void);		// from screen.cpp
+
 void display_main_menu(
 	void)
 {
@@ -1192,53 +1195,20 @@ void display_main_menu(
 		Music::instance()->RestartIntroMusic();
 	}
 
-        // Draw AlephOne Version to screen
-        FontSpecifier& Font = GetOnScreenFont();
+	// Draw AlephOne Version to screen
+	FontSpecifier& Font = GetOnScreenFont();
 
-#if defined(mac)
-        extern WindowPtr screen_window;
-        WindowPtr window= screen_window;
-        GrafPtr old_port, port;
-        port = GetWindowPort(window);
-        GetPort(&old_port);
-        SetPort(port);
+	// The line spacing is a generalization of "5" for larger fonts
+	short Offset = Font.LineSpacing / 3;
+	short RightJustOffset = Font.TextWidth(A1_VERSION_STRING);
+	short X = 640 - RightJustOffset;
+	short Y = 480 - Offset;
 
-        Font.Use();
-        Rect portRect;
-        GetPortBounds(port, &portRect);
-        short X0 = portRect.right;
-        short Y0 = portRect.bottom;
-#elif defined(SDL)
-        // JTP: This works, but I don't know correctness
-        SDL_Surface *world_pixels = SDL_GetVideoSurface();
-        short X0 = world_pixels->w;
-        short Y0 = world_pixels->h;
-		if (get_screen_mode()->acceleration != _no_acceleration &&
-			get_screen_mode()->fill_the_screen) {
-			// draw in center 640x480
-			X0 -= (world_pixels->w - 640) / 2;
-			Y0 -= (world_pixels->h - 480) / 2;
-		}
-#endif
-        // The line spacing is a generalization of "5" for larger fonts
-        short Offset = Font.LineSpacing / 3;
-        short RightJustOffset = Font.TextWidth(A1_VERSION_STRING);
-        short X = X0 - RightJustOffset;
-        short Y = Y0 - Offset;
-#if defined(mac)
-        MoveTo(X, Y);
-        RGBForeColor(&(RGBColor){0x4000, 0x4000, 0x4000});
-        DrawString("\p"A1_VERSION_STRING);
-        RGBForeColor(&rgb_black);
-        SetPort(old_port);
-#elif defined(SDL)
-        // ZZZ: this still won't work for fullscreen (drawing to wrong surface as usual), but at
-        // least in windowed mode it will draw.
-        _set_port_to_screen_window();
-        Font.DrawText(world_pixels, A1_VERSION_STRING, X, Y, SDL_MapRGB(world_pixels->format, 0x40, 0x40,
-                                                                 0x40));
-        _restore_port();
-#endif
+	_set_port_to_intro();
+	Font.DrawText(draw_surface, A1_VERSION_STRING, X, Y, SDL_MapRGB(draw_surface->format, 0x40, 0x40,
+															 0x40));
+	_restore_port();
+	draw_intro_screen();
 	game_state.main_menu_display_count++;
 }
 
@@ -1551,6 +1521,10 @@ void paint_window_black(
 {
 	_set_port_to_screen_window();
 	clear_screen(true);
+	_restore_port();
+	
+	_set_port_to_intro();
+	SDL_FillRect(draw_surface, NULL, SDL_MapRGB(draw_surface->format, 0, 0, 0));
 	_restore_port();
 }
 

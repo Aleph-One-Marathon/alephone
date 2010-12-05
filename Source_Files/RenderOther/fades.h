@@ -128,6 +128,9 @@ void gamma_correct_color_table(struct color_table *uncorrected_color_table, stru
 void explicit_start_fade(short type, struct color_table *original_color_table, struct color_table *animated_color_table);
 void full_fade(short type, struct color_table *original_color_table);
 
+// see if the screen was set to black by the last fade
+bool fade_blacked_screen(void);
+
 // LP: sets the number of calls of set_fade_effect() that get ignored;
 // this is a workaround for a MacOS-version bug where something gets painted on the screen
 // after certain dialog boxes are cleared, thus canceling out the fader effect.

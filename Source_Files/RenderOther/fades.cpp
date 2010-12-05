@@ -63,6 +63,7 @@ Jan 31, 2001 (Loren Petrich):
 #include "cseries.h"
 #include "fades.h"
 #include "screen.h"
+#include "interface.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -140,6 +141,7 @@ struct fade_data
 /* ---------- globals */
 
 static struct fade_data *fade = NULL;
+static short last_fade_type = NUMBER_OF_FADE_TYPES;
 
 static uint16 fades_random_seed= 0x1;
 
@@ -372,6 +374,7 @@ void explicit_start_fade(
 	if (do_fade)
 	{
 		SET_FADE_ACTIVE_STATUS(fade, false);
+		last_fade_type = type;
 	
 		recalculate_and_display_color_table(type, definition->initial_transparency, original_color_table, animated_color_table, definition->period);
 		if (definition->period)
@@ -453,6 +456,13 @@ void gamma_correct_color_table(
 	}
 }
 
+bool fade_blacked_screen(void)
+{
+	return (!FADE_IS_ACTIVE(fade) &&
+			(last_fade_type == _start_cinematic_fade_in ||
+			 last_fade_type == _cinematic_fade_out));
+}
+
 /* ---------- private code */
 
 /*
@@ -472,6 +482,8 @@ static struct fade_effect_definition *get_fade_effect_definition(
 	return fade_effect_definitions + index;
 }
 */
+
+//void draw_intro_screen(void); // from screen.cpp
 
 static void recalculate_and_display_color_table(
 	short type,
@@ -520,6 +532,9 @@ static void recalculate_and_display_color_table(
 	if (!OGL_FaderActive())
 #endif
 		animate_screen_clut(animated_color_table, full_screen);
+	
+	if (get_game_state() < _game_in_progress)  // main menu or chapter screen
+		draw_intro_screen();
 }
 
 /* ---------- fade functions */
