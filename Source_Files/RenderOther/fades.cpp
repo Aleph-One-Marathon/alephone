@@ -446,6 +446,10 @@ void gamma_correct_color_table(
 	
 	assert(gamma_level>=0 && gamma_level<NUMBER_OF_GAMMA_LEVELS);
 	gamma= actual_gamma_values[gamma_level];
+	if (gamma > 0.999F && gamma < 1.001F) {
+		memcpy(corrected_color_table, uncorrected_color_table, sizeof(struct color_table));
+		return;
+	}
 	
 	corrected_color_table->color_count= uncorrected_color_table->color_count;
 	for (i= 0; i<uncorrected_color_table->color_count; ++i, ++corrected, ++uncorrected)

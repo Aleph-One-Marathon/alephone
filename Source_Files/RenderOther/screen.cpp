@@ -80,9 +80,11 @@ static SDL_Surface *main_surface;	// Main (display) surface
 // The HUD has a separate buffer.
 // It is initialized to NULL so as to allow its initing to be lazy.
 SDL_Surface *world_pixels = NULL;
+SDL_Surface *world_pixels_corrected = NULL;
 SDL_Surface *HUD_Buffer = NULL;
 SDL_Surface *Term_Buffer = NULL;
 SDL_Surface *Intro_Buffer = NULL; // intro screens, main menu, chapters, credits, etc.
+SDL_Surface *Intro_Buffer_corrected = NULL;
 bool intro_buffer_changed = false;
 
 #ifdef HAVE_OPENGL
@@ -95,6 +97,12 @@ bool default_gamma_inited = false;
 uint16 default_gamma_r[256];
 uint16 default_gamma_g[256];
 uint16 default_gamma_b[256];
+bool software_gamma = false;
+bool software_gamma_tested = false;
+uint16 current_gamma_r[256];
+uint16 current_gamma_g[256];
+uint16 current_gamma_b[256];
+bool using_default_gamma = true;
 
 static bool PrevFullscreen = false;
 static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable size) display
@@ -122,6 +130,7 @@ static bool need_mode_change(int width, int height, int depth, bool nogl);
 static void change_screen_mode(int width, int height, int depth, bool nogl);
 static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
+static void apply_gamma(SDL_Surface *src, SDL_Surface *dst);
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
 static void update_fps_display(SDL_Surface *s);
 static void DisplayPosition(SDL_Surface *s);
@@ -259,8 +268,11 @@ void Screen::Initialize(screen_mode_data* mode)
 		unload_all_collections();
 		if (world_pixels)
 			SDL_FreeSurface(world_pixels);
+		if (world_pixels_corrected)
+			SDL_FreeSurface(world_pixels_corrected);
 	}
 	world_pixels = NULL;
+	world_pixels_corrected = NULL;
 
 	screen_mode = *mode;
 	change_screen_mode(&screen_mode, true);
@@ -468,6 +480,10 @@ static void reallocate_world_pixels(int width, int height)
 		SDL_FreeSurface(world_pixels);
 		world_pixels = NULL;
 	}
+	if (world_pixels_corrected) {
+		SDL_FreeSurface(world_pixels_corrected);
+		world_pixels_corrected = NULL;
+	}
 	SDL_PixelFormat *f = main_surface->format;
 	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
 	if (world_pixels == NULL)
@@ -476,7 +492,8 @@ static void reallocate_world_pixels(int width, int height)
 		SDL_Color colors[256];
 		build_sdl_color_table(world_color_table, colors);
 		SDL_SetColors(world_pixels, colors, 0, 256);
-	}
+	} else
+		world_pixels_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
 }
 
 
@@ -715,15 +732,22 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_FreeSurface(Term_Buffer);
 		Term_Buffer = NULL;
 	}
+	if (Intro_Buffer) {
+		SDL_FreeSurface(Intro_Buffer);
+		Intro_Buffer = NULL;
+	}
+	if (Intro_Buffer_corrected) {
+		SDL_FreeSurface(Intro_Buffer_corrected);
+		Intro_Buffer_corrected = NULL;
+	}
 #ifdef ALEPHONE_LITTLE_ENDIAN
 	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
-	if (!Intro_Buffer)
-		Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
-
+	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
+	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 #else
 	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0xff000000,0x00ff0000, 0x0000ff00, 0x000000ff);
-	if (!Intro_Buffer)
-		Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
+	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
+	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 #endif
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
@@ -1095,23 +1119,87 @@ static inline void quadruple_surface(const T *src, int src_pitch, T *dst, int ds
 	}
 }
 
+static void apply_gamma(SDL_Surface *src, SDL_Surface *dst)
+{
+	if (SDL_MUSTLOCK(dst)) {
+	    if (SDL_LockSurface(dst) < 0) return;
+	}
+	uint32 px, dst_px;
+	uint8 src_r, src_g, src_b;
+	uint8 dst_r, dst_g, dst_b;
+	
+	uint32 srm = src->format->Rmask, sgm = src->format->Gmask, sbm = src->format->Bmask;
+	uint32 drm = dst->format->Rmask, dgm = dst->format->Gmask, dbm = dst->format->Bmask;
+	uint32 srs = src->format->Rshift, sgs = src->format->Gshift, sbs = src->format->Bshift;
+	uint32 drs = dst->format->Rshift, dgs = dst->format->Gshift, dbs = dst->format->Bshift;
+	uint32 srl = src->format->Rloss, sgl = src->format->Gloss, sbl = src->format->Bloss;
+	uint32 drl = dst->format->Rloss, dgl = dst->format->Gloss, dbl = dst->format->Bloss;
+	
+	int sbpp = src->format->BytesPerPixel;
+	int dbpp = dst->format->BytesPerPixel;
+	uint8 *sptr = static_cast<uint8*>(src->pixels);
+	uint8 *dptr = static_cast<uint8*>(dst->pixels);
+	size_t numpixels = src->w * src->h;
+	for (size_t i = 0; i < numpixels; ++i) {
+		switch (sbpp) {
+			case 2:
+				px = reinterpret_cast<uint16*>(sptr)[i];
+				break;
+			case 4:
+				px = reinterpret_cast<uint32*>(sptr)[i];
+				break;
+			default:
+				return;
+		}
+	
+		src_r = ((px & srm) >> srs) << srl;
+		src_g = ((px & sgm) >> sgs) << sgl;
+		src_b = ((px & sbm) >> sbs) << sbl;
+		dst_r = current_gamma_r[src_r] >> 8;
+		dst_g = current_gamma_g[src_g] >> 8;
+		dst_b = current_gamma_b[src_b] >> 8;
+		dst_px = (((dst_r >> drl) << drs) & drm) |
+				 (((dst_g >> dgl) << dgs) & dgm) |
+				 (((dst_b >> dbl) << dbs) & dbm);
+			
+		switch (dbpp) {
+			case 2:
+				reinterpret_cast<uint16*>(dptr)[i] = dst_px;
+				break;
+			case 4:
+				reinterpret_cast<uint32*>(dptr)[i] = dst_px;
+				break;
+			default:
+				return;
+		}
+	}
+	if (SDL_MUSTLOCK(dst))
+		SDL_UnlockSurface(dst);
+}
+
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 {
+	SDL_Surface *s = world_pixels;
+	if (software_gamma && !using_default_gamma && bit_depth > 8) {
+		apply_gamma(world_pixels, world_pixels_corrected);
+		s = world_pixels_corrected;
+	}
+		
 	if (hi_rez) {
-		SDL_BlitSurface(world_pixels, NULL, main_surface, &destination);
+		SDL_BlitSurface(s, NULL, main_surface, &destination);
 	} else {
 	  if (SDL_MUSTLOCK(main_surface)) {
 	    if (SDL_LockSurface(main_surface) < 0) return;
 	  }
-		switch (world_pixels->format->BytesPerPixel) {
+		switch (s->format->BytesPerPixel) {
 			case 1:
-				quadruple_surface((pixel8 *)world_pixels->pixels, world_pixels->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
+				quadruple_surface((pixel8 *)s->pixels, s->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
 				break;
 			case 2:
-				quadruple_surface((pixel16 *)world_pixels->pixels, world_pixels->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination);
+				quadruple_surface((pixel16 *)s->pixels, s->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination);
 				break;
 			case 4:
-				quadruple_surface((pixel32 *)world_pixels->pixels, world_pixels->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
+				quadruple_surface((pixel32 *)s->pixels, s->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
 				break;
 		}
 		
@@ -1153,19 +1241,39 @@ static void build_sdl_color_table(const color_table *color_table, SDL_Color *col
 void initialize_gamma(void)
 {
 	if (!default_gamma_inited) {
-		SDL_GetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b);
 		default_gamma_inited = true;
+		if (SDL_GetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b))
+		{
+			software_gamma = true;
+			software_gamma_tested = true;
+			for (int i = 0; i < 256; ++i) {
+				default_gamma_r[i] = default_gamma_g[i] = default_gamma_b[i] = i << 8;
+			}
+		}
+		memcpy(current_gamma_r, default_gamma_r, sizeof(current_gamma_r));
+		memcpy(current_gamma_g, default_gamma_g, sizeof(current_gamma_g));
+		memcpy(current_gamma_b, default_gamma_b, sizeof(current_gamma_b));
 	}
 }
 
 void restore_gamma(void)
 {
-    if (!option_nogamma && bit_depth > 8 && default_gamma_inited)
+    if (!option_nogamma && bit_depth > 8 && default_gamma_inited && !software_gamma)
         SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b);
 }
 
 void build_direct_color_table(struct color_table *color_table, short bit_depth)
 {
+	if (!option_nogamma && !software_gamma_tested)
+	{
+		if (SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b)) {
+			software_gamma = true;
+			software_gamma_tested = true;
+			for (int i = 0; i < 256; ++i) {
+				default_gamma_r[i] = default_gamma_g[i] = default_gamma_b[i] = i << 8;
+			}
+		}
+	}
 	color_table->color_count = 256;
 	rgb_color *color = color_table->colors;
 	for (int i=0; i<256; i++, color++)
@@ -1216,14 +1324,15 @@ void animate_screen_clut(struct color_table *color_table, bool full_screen)
 		build_sdl_color_table(color_table, colors);
 		SDL_SetPalette(main_surface, SDL_PHYSPAL, colors, 0, 256);
 	} else {
-		uint16 red[256], green[256], blue[256];
 		for (int i=0; i<color_table->color_count; i++) {
-			red[i] = color_table->colors[i].red;
-			green[i] = color_table->colors[i].green;
-			blue[i] = color_table->colors[i].blue;
+			current_gamma_r[i] = color_table->colors[i].red;
+			current_gamma_g[i] = color_table->colors[i].green;
+			current_gamma_b[i] = color_table->colors[i].blue;
 		}
-		if (!option_nogamma)
-			SDL_SetGammaRamp(red, green, blue);
+		if (!option_nogamma && !software_gamma)
+			SDL_SetGammaRamp(current_gamma_r, current_gamma_g, current_gamma_b);
+		else if (software_gamma)
+			using_default_gamma = !memcmp(color_table, uncorrected_color_table, sizeof(struct color_table));
 	}
 }
 
@@ -1467,7 +1576,10 @@ void draw_intro_screen(void)
 #ifdef HAVE_OPENGL
 	if (OGL_FaderActive())
 		need_redraw = !fade_blacked_screen();
+	else
 #endif
+	if (software_gamma)
+		need_redraw = !fade_blacked_screen();
 	if (!need_redraw)
 		return;
 	
@@ -1493,7 +1605,13 @@ void draw_intro_screen(void)
 	} else
 #endif
 	{
-		DrawSurface(Intro_Buffer, dst_rect, src_rect);
+		SDL_Surface *s = Intro_Buffer;
+		if (software_gamma && !using_default_gamma && bit_depth > 8) {
+			apply_gamma(Intro_Buffer, Intro_Buffer_corrected);
+			SDL_SetAlpha(Intro_Buffer_corrected, 0, 0xff);
+			s = Intro_Buffer_corrected;
+		}
+		DrawSurface(s, dst_rect, src_rect);
 		intro_buffer_changed = false;
 	}
 }
