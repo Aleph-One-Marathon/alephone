@@ -905,7 +905,7 @@ static int Lua_Texture_Palette_Slot_Get_Collection(lua_State *L)
 	if (player_index != local_player_index)
 		return 0;
 
-	int index = Lua_Texture_Palette_Slot::Index(L, 2);
+	int index = Lua_Texture_Palette_Slot::Index(L, 1);
 	if (lua_texture_palette[index].shape == UNONE)
 		return 0;
 
@@ -919,7 +919,7 @@ static int Lua_Texture_Palette_Slot_Get_Texture(lua_State *L)
 	if (player_index != local_player_index)
 		return 0;
 
-	int index = Lua_Texture_Palette_Slot::Index(L, 2);
+	int index = Lua_Texture_Palette_Slot::Index(L, 1);
 	if (lua_texture_palette[index].shape == UNONE)
 		return 0;
 
@@ -933,7 +933,7 @@ static int Lua_Texture_Palette_Slot_Get_Type(lua_State *L)
 	if (player_index != local_player_index)
 		return 0;
     
-	int index = Lua_Texture_Palette_Slot::Index(L, 2);
+	int index = Lua_Texture_Palette_Slot::Index(L, 1);
 	if (lua_texture_palette[index].shape == UNONE)
 		return 0;
     
