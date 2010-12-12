@@ -1095,7 +1095,15 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 	// smear first pixel row to top edge
 	for (short h = 0; h < OGLHeightOffset; h++)
 	{
-		uint32 *SrcStrip = &Buffer[TxtrWidth * OGLHeightOffset];
+		uint32 *SrcStrip;
+		if (TextureType == OGL_Txtr_Landscape) 
+		{
+			SrcStrip = &Buffer[TxtrWidth * (2 * OGLHeightOffset - h) - 1];
+		} 
+		else
+		{
+			SrcStrip = &Buffer[TxtrWidth * OGLHeightOffset];
+		}
 		uint32 *OGLStrip = &Buffer[TxtrWidth * h];
 
 		for (short w = 0; w < TxtrWidth; w++)
@@ -1104,7 +1112,15 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 	// smear last pixel row to bottom edge
 	for (short h = OGLHeightFinish; h < TxtrHeight; h++)
 	{
-		uint32 *SrcStrip = &Buffer[TxtrWidth * (OGLHeightFinish - 1)];
+		uint32 *SrcStrip;
+		if (TextureType == OGL_Txtr_Landscape) 
+		{
+			SrcStrip = &Buffer[TxtrWidth * (2 * OGLHeightFinish - h - 1)];
+		} 
+		else 
+		{
+			SrcStrip = &Buffer[TxtrWidth * (OGLHeightFinish - 1)];
+		}
 		uint32 *OGLStrip = &Buffer[TxtrWidth * h];
 		
 		for (short w = 0; w < TxtrWidth; w++)
