@@ -649,6 +649,8 @@ bool OGL_StartRun()
 	    Using_sRGB = true;
 	  }
 	}
+
+	npotTextures = OGL_CheckExtension("GL_ARB_texture_non_power_of_two");
 	
 	_OGL_IsActive = true;
 	OGL_StartProgress(count_replacement_collections() + 2);

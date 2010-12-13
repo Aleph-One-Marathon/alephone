@@ -109,6 +109,8 @@ Aug 21, 2001 (Loren Petrich):
 /* Whether we're doing sRGB right now */
 extern bool Using_sRGB;
 
+extern bool npotTextures;
+
 /* Using the EXT_framebuffer_sRGB spec as reference */
 static inline float sRGB_frob(GLfloat f) {
 	if (Using_sRGB) {

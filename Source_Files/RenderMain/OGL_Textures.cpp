@@ -705,8 +705,11 @@ bool TextureManager::LoadSubstituteTexture()
 		// also, be sure to transpose the texture
 		TxtrHeight = Height;
 		TxtrWidth = Width;
-		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
-		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
+		if (!npotTextures) 
+		{
+			if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+			if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
+		}
 		TxtrOptsPtr->Substitution = true;
 		break;
 	
@@ -716,13 +719,14 @@ bool TextureManager::LoadSubstituteTexture()
 		TxtrWidth = Width;
 		TxtrHeight = (Landscape_AspRatExp >= 0) ?
 			(TxtrWidth >> Landscape_AspRatExp) :
-				(TxtrWidth << (-Landscape_AspRatExp));
-		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
-
+			(TxtrWidth << (-Landscape_AspRatExp));
+		if (!npotTextures && TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+		
 		// the renderer doesn't use these,
 		// so I'll use them to get the texture matrix set up right
 		U_Scale = (float) TxtrHeight / NormalImg.GetHeight();
 		U_Offset = -1.0 + ((TxtrHeight - NormalImg.GetHeight()) / 2.0 / TxtrHeight) + (1.0 - NormalImg.GetUScale()) / 2.0;
+		
 		TxtrOptsPtr->Substitution = true;
 		
 		GlowImage.set((ImageDescriptor *) NULL);
@@ -735,15 +739,18 @@ bool TextureManager::LoadSubstituteTexture()
 		TxtrHeight = Height;
 		TxtrWidth = Width;
 		
-                // ImageLoader now stores these as powers of two sized
-		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
-		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
-		
+		if (!npotTextures) 
+		{
+			// ImageLoader now stores these as powers of two sized
+			if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+			if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
+		}
+			
 		// We can calculate the scales and offsets here
 		V_Scale = NormalImg.GetVScale();
- 		V_Offset = 0;
+		V_Offset = 0;
 		U_Scale = NormalImg.GetUScale();
- 		U_Offset = 0;
+		U_Offset = 0;
 
 		TxtrOptsPtr->Substitution = true;
 		break;
@@ -798,8 +805,11 @@ bool TextureManager::SetupTextureGeometry()
 		// For tiling to be possible, the width and height must be powers of 2
 		TxtrWidth = BaseTxtrWidth;
 		TxtrHeight = BaseTxtrHeight;
-		if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
-		if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
+		if (!npotTextures) 
+		{
+			if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
+			if (TxtrHeight != NextPowerOfTwo(TxtrHeight)) return false;
+		}
 		break;
 		
 	case OGL_Txtr_Landscape:
@@ -812,46 +822,69 @@ bool TextureManager::SetupTextureGeometry()
 		{
 			// Width is horizontal direction here
 			TxtrWidth = BaseTxtrWidth;
-			if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
-			// Use the landscape height here
-			TxtrHeight = (Landscape_AspRatExp >= 0) ?
-				(TxtrWidth >> Landscape_AspRatExp) :
+			if (!npotTextures && TxtrWidth != NextPowerOfTwo(TxtrWidth)) 
+				return false;
+
+			if (npotTextures) 
+			{
+				// Use the landscape height here
+				TxtrHeight = (Landscape_AspRatExp >= 0) ?
+					(TxtrWidth >> Landscape_AspRatExp) :
 					(TxtrWidth << (-Landscape_AspRatExp));
-			
-			// Offsets
-			WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
-			HeightOffset = (TxtrHeight - BaseTxtrHeight) >> 1;
+				U_Scale = (double) TxtrHeight / BaseTxtrHeight;
+				U_Offset =  -(TxtrHeight - BaseTxtrHeight) / 2.0 / TxtrHeight;
+				TxtrHeight = BaseTxtrHeight;
+			} 
+			else
+			{
+				// Use the landscape height here
+				TxtrHeight = (Landscape_AspRatExp >= 0) ?
+					(TxtrWidth >> Landscape_AspRatExp) :
+					(TxtrWidth << (-Landscape_AspRatExp));
+				
+				// Offsets
+				WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
+				HeightOffset = (TxtrHeight - BaseTxtrHeight) >> 1;
+			}
 		}
 		
 		break;
 		
 	case OGL_Txtr_Inhabitant:
 	case OGL_Txtr_WeaponsInHand:
-		{			
-			// The 2 here is so that there will be an empty border around a sprite,
-			// so that the texture can be conveniently mipmapped.
-			TxtrWidth = NextPowerOfTwo(BaseTxtrWidth+2);
-			TxtrHeight = NextPowerOfTwo(BaseTxtrHeight+2);
-			
-			// This kludge no longer necessary
-			// Restored due to some people still having AppleGL 1.1.2
-			if (WhetherTextureFix())
+		{
+			if (npotTextures) 
 			{
-				TxtrWidth = MAX(TxtrWidth,128);
-				TxtrHeight = MAX(TxtrHeight,128);
-			}
-						
-			// Offsets
-			WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
-			HeightOffset = (TxtrHeight - BaseTxtrHeight) >> 1;
+				TxtrWidth = BaseTxtrWidth;
+				TxtrHeight = BaseTxtrHeight;
+			} 
+			else 
+			{
+				// The 2 here is so that there will be an empty border around a sprite,
+				// so that the texture can be conveniently mipmapped.
+				TxtrWidth = NextPowerOfTwo(BaseTxtrWidth+2);
+				TxtrHeight = NextPowerOfTwo(BaseTxtrHeight+2);
 			
-			// We can calculate the scales and offsets here
-			double TWidRecip = 1/double(TxtrWidth);
-			double THtRecip = 1/double(TxtrHeight);
-			U_Scale = TWidRecip*double(BaseTxtrWidth);
-			U_Offset = TWidRecip*WidthOffset;
-			V_Scale = THtRecip*double(BaseTxtrHeight);
-			V_Offset = THtRecip*HeightOffset;
+				// This kludge no longer necessary
+				// Restored due to some people still having AppleGL 1.1.2
+				if (WhetherTextureFix())
+				{
+					TxtrWidth = MAX(TxtrWidth,128);
+					TxtrHeight = MAX(TxtrHeight,128);
+				}
+						
+				// Offsets
+				WidthOffset = (TxtrWidth - BaseTxtrWidth) >> 1;
+				HeightOffset = (TxtrHeight - BaseTxtrHeight) >> 1;
+			
+				// We can calculate the scales and offsets here
+				double TWidRecip = 1/double(TxtrWidth);
+				double THtRecip = 1/double(TxtrHeight);
+				U_Scale = TWidRecip*double(BaseTxtrWidth);
+				U_Offset = TWidRecip*WidthOffset;
+				V_Scale = THtRecip*double(BaseTxtrHeight);
+				V_Offset = THtRecip*HeightOffset;
+			}
 		}
 		break;
 	}
@@ -1482,6 +1515,9 @@ void TextureManager::SetupTextureMatrix()
 			// these come in right side up, and un-centered
 			// the renderer expects them upside down, and centered
 			glScalef(1.0, -U_Scale, 1.0);
+			glTranslatef(0.0, U_Offset, 0.0);
+		} else {
+			glScalef(1.0, U_Scale, 1.0);
 			glTranslatef(0.0, U_Offset, 0.0);
 		}
 		glMatrixMode(GL_MODELVIEW);

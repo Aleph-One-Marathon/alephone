@@ -95,6 +95,7 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 static bool _OGL_IsPresent = false;
 
 bool Using_sRGB = false;
+bool npotTextures = false; // non-power-of-two
 
 // Initializer
 bool OGL_Initialize()
@@ -284,7 +285,7 @@ void OGL_TextureOptionsBase::Load()
 		maxTextureSize = MIN(maxTextureSize, GetMaxSize());
 	}
 	
-	int flags = ImageLoader_ResizeToPowersOfTwo;
+	int flags = npotTextures ? 0 : ImageLoader_ResizeToPowersOfTwo;
 		
 	if (Type >= 0 && Type < OGL_NUMBER_OF_TEXTURE_TYPES && Get_OGL_ConfigureData().TxtrConfigList[Type].FarFilter > 1 /* GL_LINEAR */)
 	{
