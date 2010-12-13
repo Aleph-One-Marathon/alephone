@@ -59,11 +59,11 @@ int ImageDescriptor::GetMipMapSize(int level) const
 		return (max(1, Width >> level) * max(1, Height >> level) * 4);
 		break;
 	case ImageDescriptor::DXTC1:
-		return (max(1, ((Width >> level) / 4)) * max(1, ((Height >> level) / 4)) * 8);
+		return (max(1, (((Width >> level) + 3) / 4)) * max(1, (((Height >> level) + 3) / 4)) * 8);
 		break;
 	case ImageDescriptor::DXTC3:
 	case ImageDescriptor::DXTC5:
-		return (max(1, ((Width >> level) / 4)) * max(1, ((Height >> level) / 4)) * 16);
+		return (max(1, (((Width >> level) + 3) / 4)) * max(1, (((Height >> level)  + 3) / 4)) * 16);
 		break;
 	default:
 		fprintf(stderr, "invalid format!\n");
@@ -199,7 +199,7 @@ ImageDescriptor::ImageDescriptor(int _Width, int _Height, uint32 *_Pixels) :
 
 static inline int padfour(int x)
 {
-	return (x % 4) ? x + (4 - x % 4) : x;
+	return (x + 3) / 4 * 4;
 }
 
 bool ImageDescriptor::LoadMipMapFromFile(OpenedFile& file, int flags, int level, DDSURFACEDESC2 &ddsd, int skip)
