@@ -70,7 +70,7 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	glLoadIdentity();
 	glTranslated(view.origin.x, view.origin.y, view.origin.z);
 	glRotated(yaw, 0.0, 0.0, 1.0);
-	glRotated(-pitch+8.5, 0.0, 1.0, 0.0);
+	glRotated(-pitch, 0.0, 1.0, 0.0);
 	glMultMatrixd(kViewBaseMatrixInverse);
 
 	GLfloat landscapeInverseMatrix[16];
