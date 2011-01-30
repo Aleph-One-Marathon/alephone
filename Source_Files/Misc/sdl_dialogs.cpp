@@ -2075,7 +2075,7 @@ static void draw_frame_image(SDL_Surface *s, int x, int y)
 
 void dialog::draw(void)
 {
-	if (!get_screen_mode()->fill_the_screen && get_screen_mode()->fullscreen != layout_for_fullscreen)
+	if (get_screen_mode()->fullscreen != layout_for_fullscreen)
 		layout();
 
 	// Clear dialog surface

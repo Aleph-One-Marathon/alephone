@@ -789,11 +789,11 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 	if (redraw) {
 		short w = std::max(mode->width, static_cast<short>(640));
 		short h = std::max(mode->height, static_cast<short>(480));
-		// use 640x480 for fullscreen SDL menus
-		if (!in_game &&
-			mode->fullscreen &&
-			mode->fill_the_screen &&
-			mode->acceleration == _no_acceleration)
+		// use 640x480 for fullscreen SDL menus in software,
+		// and windowed SDL menus in any renderer
+		if (!in_game && 
+		    (!mode->fullscreen ||
+		     (mode->fill_the_screen && mode->acceleration == _no_acceleration)))
 		{
 			w = 640;
 			h = 480;
