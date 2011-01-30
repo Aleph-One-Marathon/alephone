@@ -2192,6 +2192,32 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </mnemonics>
     </enum>
     <enum name="item_type">
+      <variable name="initial_count" version="SVN">
+	<description>how many items of this type are placed in the level during initial placement</description>
+	<type>number</type>
+      </variable>
+      <variable name="maximum_count" version="SVN">
+	<description>maximum number of this type of item in the level and in player inventories</description>
+	<type>number</type>
+      </variable>
+      <variable name="minimum_count" version="SVN">
+	<description>minimum number of this type of item in the level and in player inventories</description>
+	<type>number</type>
+      </variable>
+      <variable name="random_chance" version="SVN">
+	<description>chance from 0 to 1.0 this item will appear in a respawn period</description>
+	<type>chance</type>
+      </variable>
+      <variable name="random_location" version="SVN">
+	<description>whether items of this type spawn in random locations</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="total_available" version="SVN">
+	<description>total number of items of this type that can be spawned in this level</description>
+	<type>number</type>
+	<note>-1 means infinite items are available</note>
+	<note>setting this to anything but -1 will only be effective if changed immediately when the script runs, before item placement is done</note>
+      </variable>
       <mnemonics>
 	<mnemonic name="knife"/>
 	<mnemonic name="pistol"/>
@@ -2334,8 +2360,8 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="damage_type"><type>damage_type</type></argument>
 	<type>boolean</type>
       </function-variable>
-      <variable name="initial_count" access="read-only" version="SVN">
-	<description>how many monsters of this type were placed in the level</description>
+      <variable name="initial_count" version="SVN">
+	<description>how many monsters of this type are placed in the level during initial placement</description>
 	<type>number</type>
       </variable>
       <variable name="height" access="read-only">
@@ -2366,15 +2392,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>chance from 0 to 1.0 this monster will appear in a respawn period</description>
 	<type>chance</type>
       </variable>
-      <variable name="random_count" version="SVN">
-	<description>maximum number of monsters of this type that can be spawned</description>
-	<type>number</type>
-	<note>-1 means infinite monsters are available</note>
-	<note>setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done</note>
-      </variable>
       <variable name="random_location" version="SVN">
 	<description>whether monsters of this type spawn in random locations</description>
 	<type>boolean</type>
+      </variable>
+      <variable name="total_available" version="SVN">
+	<description>total number of monsters of this type that can be spawned in this level</description>
+	<type>number</type>
+	<note>-1 means infinite monsters are available</note>
+	<note>setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done</note>
       </variable>
       <function-variable name="weaknesses" classname="monster_type_weaknesses">
 	<description>whether monster type has a weakness to damage type</description>

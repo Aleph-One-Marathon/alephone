@@ -326,6 +326,128 @@ static int Lua_ItemType_Get_Ball(lua_State *L)
 	return 1;
 }
 
+static int Lua_ItemType_Get_Initial_Count(lua_State* L)
+{
+	lua_pushnumber(L, get_placement_info()[Lua_ItemType::Index(L, 1)].initial_count);
+	return 1;
+}
+
+static int Lua_ItemType_Get_Maximum_Count(lua_State* L)
+{
+	lua_pushnumber(L, get_placement_info()[Lua_ItemType::Index(L, 1)].maximum_count);
+	return 1;
+}
+
+static int Lua_ItemType_Get_Minimum_Count(lua_State* L)
+{
+	lua_pushnumber(L, get_placement_info()[Lua_ItemType::Index(L, 1)].minimum_count);
+	return 1;
+}
+
+static int Lua_ItemType_Get_Random_Count(lua_State* L)
+{
+	lua_pushnumber(L, get_placement_info()[Lua_ItemType::Index(L, 1)].random_count);
+	return 1;
+}
+
+static int Lua_ItemType_Get_Random_Chance(lua_State* L)
+{
+	lua_pushnumber(L, static_cast<double>(get_placement_info()[Lua_ItemType::Index(L, 1)].random_chance) / UINT16_MAX);
+	return 1;
+}
+
+static int Lua_ItemType_Get_Random_Location(lua_State* L)
+{
+	lua_pushboolean(L, get_placement_info()[Lua_ItemType::Index(L, 1)].flags & _reappears_in_random_location);
+	return 1;
+}
+
+static int Lua_ItemType_Set_Initial_Count(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		get_placement_info()[Lua_ItemType::Index(L, 1)].initial_count = lua_tonumber(L, 2);
+	}
+	else
+	{
+		return luaL_error(L, "initial_count: incorrect argument type");
+	}
+	return 0;
+}
+
+static int Lua_ItemType_Set_Maximum_Count(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		get_placement_info()[Lua_ItemType::Index(L, 1)].maximum_count = lua_tonumber(L, 2);
+	}
+	else
+	{
+		return luaL_error(L, "maximum_count: incorrect argument type");
+	}
+	return 0;
+}
+ 
+static int Lua_ItemType_Set_Minimum_Count(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		get_placement_info()[Lua_ItemType::Index(L, 1)].minimum_count = lua_tonumber(L, 2);
+	}
+	else
+	{
+		return luaL_error(L, "minimum_count: incorrect argument type");
+	}
+	return 0;
+}
+
+static int Lua_ItemType_Set_Random_Chance(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		get_placement_info()[Lua_ItemType::Index(L, 1)].random_chance = static_cast<uint16>(lua_tonumber(L, 2) * UINT16_MAX + 0.5);
+	}
+	else
+	{
+		return luaL_error(L, "random_chance: incorrect argument type");
+	}
+	return 0;
+}
+ 
+static int Lua_ItemType_Set_Random_Count(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		get_placement_info()[Lua_ItemType::Index(L, 1)].random_count = lua_tonumber(L, 2);
+	}
+	else
+	{
+		return luaL_error(L, "random_count: incorrect argument type");
+	}
+	return 0;
+}
+
+static int Lua_ItemType_Set_Random_Location(lua_State* L)
+{
+	if (lua_isboolean(L, 2))
+	{
+		if (lua_toboolean(L, 2))
+		{
+			get_placement_info()[Lua_ItemType::Index(L, 1)].flags |= _reappears_in_random_location;
+		}
+		else
+		{
+			get_placement_info()[Lua_ItemType::Index(L, 1)].flags &= ~_reappears_in_random_location;
+		}
+	}
+	else
+	{
+		return luaL_error(L, "random_location: incorrect argument type");
+	}
+	return 0;
+}
+
+
 static bool Lua_ItemType_Valid(int32 index) { 
 	return index >= 0 && index < NUMBER_OF_DEFINED_ITEMS;
 }
@@ -333,6 +455,22 @@ static bool Lua_ItemType_Valid(int32 index) {
 char Lua_ItemType_Name[] = "item_type";
 const luaL_reg Lua_ItemType_Get[] = {
 	{"ball", Lua_ItemType_Get_Ball},
+	{"initial_count", Lua_ItemType_Get_Initial_Count},
+	{"maximum_count", Lua_ItemType_Get_Maximum_Count},
+	{"minimum_count", Lua_ItemType_Get_Minimum_Count},
+	{"random_chance", Lua_ItemType_Get_Random_Chance},
+	{"random_location", Lua_ItemType_Get_Random_Location},
+	{"total_available", Lua_ItemType_Get_Random_Count},
+	{0, 0}
+};
+
+const luaL_reg Lua_ItemType_Set[] = {
+	{"initial_count", Lua_ItemType_Set_Initial_Count},
+	{"maximum_count", Lua_ItemType_Set_Maximum_Count},
+	{"minimum_count", Lua_ItemType_Set_Minimum_Count},
+	{"random_chance", Lua_ItemType_Set_Random_Chance},
+	{"random_location", Lua_ItemType_Set_Random_Location},
+	{"total_available", Lua_ItemType_Set_Random_Count},
 	{0, 0}
 };
 
@@ -551,7 +689,7 @@ int Lua_Objects_register(lua_State *L)
 	Lua_EffectTypes::Register(L);
 	Lua_EffectTypes::Length = Lua_EffectTypes::ConstantLength(NUMBER_OF_EFFECT_TYPES);
 
-	Lua_ItemType::Register(L, Lua_ItemType_Get, 0, 0, Lua_ItemType_Mnemonics);
+	Lua_ItemType::Register(L, Lua_ItemType_Get, Lua_ItemType_Set, 0, Lua_ItemType_Mnemonics);
 	Lua_ItemType::Valid = Lua_ItemType_Valid;
 
 	Lua_ItemTypes::Register(L);

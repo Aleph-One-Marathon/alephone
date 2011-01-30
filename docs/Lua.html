@@ -2247,6 +2247,75 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dl>
 <dt># ItemTypes</dt>
 <dt>ItemTypes()</dt>
+<dt>ItemTypes[item_type]</dt>
+<dd><dl>
+      <dt>
+    .initial_count <span class="version">SVN</span>
+</dt>
+<dd><p class="description">how many items of this type are placed in the level during initial placement</p></dd>
+      <dt>
+    .maximum_count <span class="version">SVN</span>
+</dt>
+<dd><p class="description">maximum number of this type of item in the level and in player inventories</p></dd>
+      <dt>
+    .minimum_count <span class="version">SVN</span>
+</dt>
+<dd><p class="description">minimum number of this type of item in the level and in player inventories</p></dd>
+      <dt>
+    .random_chance <span class="version">SVN</span>
+</dt>
+<dd><p class="description">chance from 0 to 1.0 this item will appear in a respawn period</p></dd>
+      <dt>
+    .random_location <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether items of this type spawn in random locations</p></dd>
+      <dt>
+    .total_available <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">total number of items of this type that can be spawned in this level</p>
+<p class="note">-1 means infinite items are available </p>
+<p class="note">setting this to anything but -1 will only be effective if changed immediately when the script runs, before item placement is done </p>
+</dd>
+      
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+      
+    </dl></dd>
 </dl>
 <h4>Mnemonics</h4>
 <ul class="mnemonics">
@@ -2449,9 +2518,9 @@ If you do this, you should customize them all at the beginning of the script. Ch
   </dt>
 <dd><p class="description">whether monster type is immune to damage type</p></dd>
       <dt>
-    .initial_count<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .initial_count <span class="version">SVN</span>
 </dt>
-<dd><p class="description">how many monsters of this type were placed in the level</p></dd>
+<dd><p class="description">how many monsters of this type are placed in the level during initial placement</p></dd>
       <dt>
     .height<span class="access"> (read-only)</span>
 </dt>
@@ -2480,17 +2549,17 @@ If you do this, you should customize them all at the beginning of the script. Ch
 </dt>
 <dd><p class="description">chance from 0 to 1.0 this monster will appear in a respawn period</p></dd>
       <dt>
-    .random_count <span class="version">SVN</span>
-</dt>
-<dd>
-<p class="description">maximum number of monsters of this type that can be spawned</p>
-<p class="note">-1 means infinite monsters are available </p>
-<p class="note">setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done </p>
-</dd>
-      <dt>
     .random_location <span class="version">SVN</span>
 </dt>
 <dd><p class="description">whether monsters of this type spawn in random locations</p></dd>
+      <dt>
+    .total_available <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">total number of monsters of this type that can be spawned in this level</p>
+<p class="note">-1 means infinite monsters are available </p>
+<p class="note">setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done </p>
+</dd>
       <dt>
     .weaknesses[damage type]
   </dt>

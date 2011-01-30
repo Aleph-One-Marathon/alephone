@@ -367,6 +367,19 @@ static int Lua_MonsterType_Set_Item(lua_State *L) {
 	return 0;
 }
 
+static int Lua_MonsterType_Set_Initial_Count(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		monster_placement_info[Lua_MonsterType::Index(L, 1)].initial_count = lua_tonumber(L, 2);
+	}
+	else
+	{
+		return luaL_error(L, "initial_count: incorrect argument type");
+	}
+	return 0;
+}
+
 static int Lua_MonsterType_Set_Maximum_Count(lua_State* L)
 {
 	if (lua_isnumber(L, 2))
@@ -401,7 +414,7 @@ static int Lua_MonsterType_Set_Random_Chance(lua_State* L)
 	}
 	else
 	{
-		return luaL_error(L, "random_count: incorrect argument type");
+		return luaL_error(L, "random_chance: incorrect argument type");
 	}
 	return 0;
 }
@@ -453,20 +466,21 @@ const luaL_reg Lua_MonsterType_Get[] = {
 	{"item", Lua_MonsterType_Get_Item},
 	{"radius", Lua_MonsterType_Get_Radius},
 	{"random_count", Lua_MonsterType_Get_Random_Count},
-	{"random_chance", Lua_MonsterType_Get_Random_Chance},
 	{"random_location", Lua_MonsterType_Get_Random_Location},
+	{"total_available", Lua_MonsterType_Get_Random_Chance},
 	{"weaknesses", Lua_MonsterType_Get_Weaknesses},
 	{0, 0}
 };
 
 const luaL_reg Lua_MonsterType_Set[] = {
 	{"class", Lua_MonsterType_Set_Class},
+	{"initial_count", Lua_MonsterType_Set_Initial_Count},
 	{"item", Lua_MonsterType_Set_Item},
 	{"maximum_count", Lua_MonsterType_Set_Maximum_Count},
 	{"minimum_count", Lua_MonsterType_Set_Minimum_Count},
 	{"random_chance", Lua_MonsterType_Set_Random_Chance},
-	{"random_count", Lua_MonsterType_Set_Random_Count},
 	{"random_location", Lua_MonsterType_Set_Random_Location},
+	{"total_available", Lua_MonsterType_Set_Random_Count},
 	{0, 0}
 };
 
