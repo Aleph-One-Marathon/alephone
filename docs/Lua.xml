@@ -2334,6 +2334,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="damage_type"><type>damage_type</type></argument>
 	<type>boolean</type>
       </function-variable>
+      <variable name="initial_count" access="read-only" version="SVN">
+	<description>how many monsters of this type were placed in the level</description>
+	<type>number</type>
+      </variable>
       <variable name="height" access="read-only">
 	<description>height of monster</description>
 	<type>WU</type>
@@ -2342,6 +2346,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>type of item the monster drops when it dies</description>
 	<type>item_type</type>
       </variable>
+      <variable name="maximum_count" version="SVN">
+	<description>maximum number of this type of monster in the level</description>
+	<type>number</type>
+      </variable>
+      <variable name="minimum_count" version="SVN">
+	<description>minimum number of this type of monster in the level</description>
+	<type>number</type>
+      </variable>
       <variable name="melee_impact_effect" access="read-only">
 	<description>type of effect generated when monster gets hit by a melee projectile</description>
 	<type>effect_type</type>
@@ -2349,6 +2361,20 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <variable name="radius" access="read-only">
 	<description>radius of monster</description>
 	<type>WU</type>
+      </variable>
+      <variable name="random_chance" version="SVN">
+	<description>chance from 0 to 1.0 this monster will appear in a respawn period</description>
+	<type>chance</type>
+      </variable>
+      <variable name="random_count" version="SVN">
+	<description>maximum number of monsters of this type that can be spawned</description>
+	<type>number</type>
+	<note>-1 means infinite monsters are available</note>
+	<note>setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done</note>
+      </variable>
+      <variable name="random_location" version="SVN">
+	<description>whether monsters of this type spawn in random locations</description>
+	<type>boolean</type>
       </variable>
       <function-variable name="weaknesses" classname="monster_type_weaknesses">
 	<description>whether monster type has a weakness to damage type</description>

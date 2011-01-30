@@ -78,6 +78,8 @@ int L_Container<Lua_MonsterClasses_Name, Lua_MonsterClass>::_iterator(lua_State 
 	return 1;
 }
 
+extern object_frequency_definition* monster_placement_info;
+
 char Lua_MonsterType_Enemies_Name[] = "monster_type_enemies";
 typedef L_Class<Lua_MonsterType_Enemies_Name> Lua_MonsterType_Enemies;
 
@@ -280,15 +282,52 @@ static int Lua_MonsterType_Get_Impact_Effect(lua_State *L) {
 	return 1;
 }
 
+static int Lua_MonsterType_Get_Initial_Count(lua_State* L)
+{
+	lua_pushnumber(L, monster_placement_info[Lua_MonsterType::Index(L, 1)].initial_count);
+	return 1;
+}
+
+static int Lua_MonsterType_Get_Maximum_Count(lua_State* L)
+{
+	lua_pushnumber(L, monster_placement_info[Lua_MonsterType::Index(L, 1)].maximum_count);
+	return 1;
+}
+
+
 static int Lua_MonsterType_Get_Melee_Impact_Effect(lua_State *L) {
 	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
 	Lua_EffectType::Push(L, definition->melee_impact_effect);
 	return 1;
 }
 
+static int Lua_MonsterType_Get_Minimum_Count(lua_State* L)
+{
+	lua_pushnumber(L, monster_placement_info[Lua_MonsterType::Index(L, 1)].minimum_count);
+	return 1;
+}
+
 static int Lua_MonsterType_Get_Radius(lua_State *L) {
 	monster_definition *definition = get_monster_definition_external(Lua_MonsterType::Index(L, 1));
 	lua_pushnumber(L, (double) definition->radius / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_MonsterType_Get_Random_Chance(lua_State* L)
+{
+	lua_pushnumber(L, (double) monster_placement_info[Lua_MonsterType::Index(L, 1)].random_chance / UINT16_MAX);
+	return 1;
+}
+
+static int Lua_MonsterType_Get_Random_Count(lua_State* L)
+{
+	lua_pushnumber(L, monster_placement_info[Lua_MonsterType::Index(L, 1)].random_count);
+	return 1;
+}
+
+static int Lua_MonsterType_Get_Random_Location(lua_State* L)
+{
+	lua_pushboolean(L, monster_placement_info[Lua_MonsterType::Index(L, 1)].flags & _reappears_in_random_location);
 	return 1;
 }
 
@@ -328,6 +367,78 @@ static int Lua_MonsterType_Set_Item(lua_State *L) {
 	return 0;
 }
 
+static int Lua_MonsterType_Set_Maximum_Count(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		monster_placement_info[Lua_MonsterType::Index(L, 1)].maximum_count = lua_tonumber(L, 2);
+	}
+	else
+	{
+		return luaL_error(L, "maximum_count: incorrect argument type");
+	}
+	return 0;
+}
+
+static int Lua_MonsterType_Set_Minimum_Count(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		monster_placement_info[Lua_MonsterType::Index(L, 1)].minimum_count = lua_tonumber(L, 2);
+	}
+	else
+	{
+		return luaL_error(L, "minimum_count: incorrect argument type");
+	}
+	return 0;
+}
+
+static int Lua_MonsterType_Set_Random_Chance(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		monster_placement_info[Lua_MonsterType::Index(L, 1)].random_chance = static_cast<uint16>(lua_tonumber(L, 2) * UINT16_MAX + 0.5);
+	}
+	else
+	{
+		return luaL_error(L, "random_count: incorrect argument type");
+	}
+	return 0;
+}
+
+static int Lua_MonsterType_Set_Random_Count(lua_State* L)
+{
+	if (lua_isnumber(L, 2))
+	{
+		monster_placement_info[Lua_MonsterType::Index(L, 1)].random_count = lua_tonumber(L, 2);
+	}
+	else
+	{
+		return luaL_error(L, "random_count: incorrect argument type");
+	}
+	return 0;
+}
+
+static int Lua_MonsterType_Set_Random_Location(lua_State* L)
+{
+	if (lua_isboolean(L, 2))
+	{
+		if (lua_toboolean(L, 2))
+		{
+			monster_placement_info[Lua_MonsterType::Index(L, 1)].flags |= _reappears_in_random_location;
+		}
+		else
+		{
+			monster_placement_info[Lua_MonsterType::Index(L, 1)].flags &= ~_reappears_in_random_location;
+		}
+	}
+	else
+	{
+		return luaL_error(L, "random_location: incorrect argument type");
+	}
+	return 0;
+}
+
 const luaL_reg Lua_MonsterType_Get[] = {
 	{"class", Lua_MonsterType_Get_Class},
 	{"enemies", Lua_MonsterType_Get_Enemies},
@@ -335,9 +446,15 @@ const luaL_reg Lua_MonsterType_Get[] = {
 	{"height", Lua_MonsterType_Get_Height},
 	{"immunities", Lua_MonsterType_Get_Immunities},
 	{"impact_effect", Lua_MonsterType_Get_Impact_Effect},
+	{"initial_count", Lua_MonsterType_Get_Initial_Count},
+	{"maximum_count", Lua_MonsterType_Get_Maximum_Count},
 	{"melee_impact_effect", Lua_MonsterType_Get_Melee_Impact_Effect},
+	{"minimum_count", Lua_MonsterType_Get_Minimum_Count},
 	{"item", Lua_MonsterType_Get_Item},
 	{"radius", Lua_MonsterType_Get_Radius},
+	{"random_count", Lua_MonsterType_Get_Random_Count},
+	{"random_chance", Lua_MonsterType_Get_Random_Chance},
+	{"random_location", Lua_MonsterType_Get_Random_Location},
 	{"weaknesses", Lua_MonsterType_Get_Weaknesses},
 	{0, 0}
 };
@@ -345,6 +462,11 @@ const luaL_reg Lua_MonsterType_Get[] = {
 const luaL_reg Lua_MonsterType_Set[] = {
 	{"class", Lua_MonsterType_Set_Class},
 	{"item", Lua_MonsterType_Set_Item},
+	{"maximum_count", Lua_MonsterType_Set_Maximum_Count},
+	{"minimum_count", Lua_MonsterType_Set_Minimum_Count},
+	{"random_chance", Lua_MonsterType_Set_Random_Chance},
+	{"random_count", Lua_MonsterType_Set_Random_Count},
+	{"random_location", Lua_MonsterType_Set_Random_Location},
 	{0, 0}
 };
 

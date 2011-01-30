@@ -2449,12 +2449,24 @@ If you do this, you should customize them all at the beginning of the script. Ch
   </dt>
 <dd><p class="description">whether monster type is immune to damage type</p></dd>
       <dt>
+    .initial_count<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">how many monsters of this type were placed in the level</p></dd>
+      <dt>
     .height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">height of monster</p></dd>
       <dt>
     .item</dt>
 <dd><p class="description">type of item the monster drops when it dies</p></dd>
+      <dt>
+    .maximum_count <span class="version">SVN</span>
+</dt>
+<dd><p class="description">maximum number of this type of monster in the level</p></dd>
+      <dt>
+    .minimum_count <span class="version">SVN</span>
+</dt>
+<dd><p class="description">minimum number of this type of monster in the level</p></dd>
       <dt>
     .melee_impact_effect<span class="access"> (read-only)</span>
 </dt>
@@ -2463,6 +2475,22 @@ If you do this, you should customize them all at the beginning of the script. Ch
     .radius<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">radius of monster</p></dd>
+      <dt>
+    .random_chance <span class="version">SVN</span>
+</dt>
+<dd><p class="description">chance from 0 to 1.0 this monster will appear in a respawn period</p></dd>
+      <dt>
+    .random_count <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">maximum number of monsters of this type that can be spawned</p>
+<p class="note">-1 means infinite monsters are available </p>
+<p class="note">setting this to anything but -1 will only be effective if changed immediately when the script runs, before monster placement is done </p>
+</dd>
+      <dt>
+    .random_location <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether monsters of this type spawn in random locations</p></dd>
       <dt>
     .weaknesses[damage type]
   </dt>
