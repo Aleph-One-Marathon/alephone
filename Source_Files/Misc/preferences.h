@@ -79,9 +79,6 @@ struct graphics_preferences_data
 	int16 software_alpha_blending;
 
 	bool hog_the_cpu;
-#ifdef __WIN32__
-	bool use_directx_backend;
-#endif
 };
 
 struct serial_number_data

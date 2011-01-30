@@ -467,19 +467,6 @@ static void initialize_application(void)
 
 	Plugins::instance()->load_mml();
 
-#if defined(__WIN32__) 
-	if (!SDL_getenv("SDL_VIDEODRIVER")) {
-		if (graphics_preferences->use_directx_backend)
-		{
-			SDL_putenv("SDL_VIDEODRIVER=directx");
-		}
-		else
-		{
-			SDL_putenv("SDL_VIDEODRIVER=windib");
-		} 
-	}
-#endif
-
 	SDL_putenv(const_cast<char*>("SDL_VIDEO_ALLOW_SCREENSAVER=1"));
 
 	// Initialize SDL
@@ -487,20 +474,6 @@ static void initialize_application(void)
 			      (option_nosound ? 0 : SDL_INIT_AUDIO) |
                               (option_nojoystick ? 0 : SDL_INIT_JOYSTICK) |
 			      (option_debug ? SDL_INIT_NOPARACHUTE : 0));
-#ifdef __WIN32__
-	if (retval < 0 && strcmp(SDL_getenv("SDL_VIDEODRIVER"), "directx") == 0)
-	{
-		// directx failed? try windib
-		fprintf(stderr, "Couldn't initialize SDL (%s); retrying with windib backend\n", SDL_GetError());
-		graphics_preferences->use_directx_backend = false;
-		write_preferences();
-		SDL_putenv("SDL_VIDEODRIVER=windib");
-		retval = SDL_Init(SDL_INIT_VIDEO |
-				  (option_nosound ? 0 : SDL_INIT_AUDIO) |
-                                  (option_nojoystick ? 0 : SDL_INIT_JOYSTICK) |
-				  (option_debug ? SDL_INIT_NOPARACHUTE : 0));
-	}
-#endif
 	if (retval < 0)
 	{
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());

@@ -887,13 +887,6 @@ static void graphics_dialog(void *arg)
 	table->dual_add(term_scale_w->label("Terminal Size"), d);
 	table->dual_add(term_scale_w, d);
 
-#if defined(__WIN32__)
-	table->add_row(new w_spacer(), true);
-	w_toggle *directx_w = new w_toggle(graphics_preferences->use_directx_backend);
-	table->dual_add(directx_w->label("DirectDraw / DirectInput"), d);
-	table->dual_add(directx_w, d);
-#endif
-
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
@@ -985,16 +978,6 @@ static void graphics_dialog(void *arg)
 			    changed = true;
 		    }
 	    }
-
-#ifdef __WIN32__
-	    bool use_directx = directx_w->get_selection();
-	    if (use_directx != graphics_preferences->use_directx_backend)
-	    {
-		    graphics_preferences->use_directx_backend = use_directx;
-		    changed = true;
-		    alert_user("DirectDraw/DirectInput changes will take effect the next time you launch Aleph One.");
-	    }
-#endif
 
 	    if (changed) {
 		    write_preferences();
@@ -2165,9 +2148,6 @@ void write_preferences(
 	fprintf(F,"  use_srgb=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.Use_sRGB));
 	fprintf(F,"  double_corpse_limit=\"%s\"\n", BoolString(graphics_preferences->double_corpse_limit));
 	fprintf(F,"  hog_the_cpu=\"%s\"\n", BoolString(graphics_preferences->hog_the_cpu));
-#ifdef __WIN32__
-	fprintf(F,"  use_directx_backend=\"%s\"\n", BoolString(graphics_preferences->use_directx_backend));
-#endif
 	fprintf(F,">\n");
 	fprintf(F,"  <void>\n");
 	WriteColor(F,"    ",graphics_preferences->OGL_Configure.VoidColor,"\n");
@@ -2360,14 +2340,14 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.hud = true;
 	preferences->screen_mode.hud_scale_level = 0;
 	preferences->screen_mode.term_scale_level = 0;
-#if defined(__APPLE__) && defined(__MACH__)
+#if (defined(__APPLE__) && defined(__MACH__)) || defined(__WIN32__)
 	preferences->screen_mode.acceleration = _opengl_acceleration;
 #else
 	preferences->screen_mode.acceleration = _no_acceleration;
 #endif
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
-    preferences->screen_mode.fix_h_not_v = true;
+	preferences->screen_mode.fix_h_not_v = true;
 	
 	const SDL_version *version = SDL_Linked_Version();
 	if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
@@ -2388,10 +2368,6 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->hog_the_cpu = false;
 
 	preferences->software_alpha_blending = _sw_alpha_off;
-
-#ifdef __WIN32__
-	preferences->use_directx_backend = false;
-#endif
 }
 
 static void default_serial_number_preferences(serial_number_data *preferences)
@@ -3205,11 +3181,7 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	}
 	else if (StringsEqual(Tag,"use_directx_backend"))
 	{
-#ifdef __WIN32__
-		return ReadBooleanValue(Value, graphics_preferences->use_directx_backend);
-#else
 		return true;
-#endif
 	}
 	return true;
 }
