@@ -69,6 +69,7 @@ Feb 11, 2001 (Loren Petrich):
 #include "SoundManager.h"
 #include "platforms.h"
 #include "fades.h"
+#include "FilmProfile.h"
 #include "items.h"
 #include "flood_map.h"
 #include "effects.h"
@@ -325,7 +326,7 @@ short count_inventory_lines(
 	return count;
 }
 
-void swipe_nearby_items(
+static void a1_swipe_nearby_items(
 	short player_index)
 {
 	struct object_data *object;
@@ -349,7 +350,6 @@ void swipe_nearby_items(
 		
 		struct polygon_data *neighboring_polygon= get_polygon_data(*neighbor_indexes++);
 		
-#ifndef M2_FILM_PLAYBACK
 		/*
 			LP change: since precalculate_map_indexes() and its associated routine
 			intersecting_flood_proc() appear to have some bugs in them, I will
@@ -370,7 +370,6 @@ void swipe_nearby_items(
 		}
 		else
 			neighboring_polygon = source_polygon;
-#endif
 		
 		if (!POLYGON_IS_DETACHED(neighboring_polygon))
 		{
@@ -403,12 +402,81 @@ void swipe_nearby_items(
 				next_object= object->next_object;
 			}
 		}
-#ifndef M2_FILM_PLAYBACK
 		// LP addition: end of that kludgy search loop
 		}
-#endif
 	}
 }
+
+static void m2_swipe_nearby_items(
+	short player_index)
+{
+	struct object_data *object;
+	struct object_data *player_object;
+	struct player_data *player= get_player_data(player_index);
+	short next_object;
+	struct polygon_data *polygon;
+	short *neighbor_indexes;
+	short i;
+
+	player_object= get_object_data(get_monster_data(player->monster_index)->object_index);
+
+	polygon= get_polygon_data(player_object->polygon);
+	neighbor_indexes= get_map_indexes(polygon->first_neighbor_index, polygon->neighbor_count);
+	
+	// Skip this step if neighbor indexes were not found
+	if (!neighbor_indexes) return;
+
+	for (i=0;i<polygon->neighbor_count;++i)
+	{	
+		
+		struct polygon_data *neighboring_polygon= get_polygon_data(*neighbor_indexes++);
+	
+		if (!POLYGON_IS_DETACHED(neighboring_polygon))
+		{
+			next_object= neighboring_polygon->first_object;
+
+			while(next_object != NONE)
+			{
+				object= get_object_data(next_object);
+				if (GET_OBJECT_OWNER(object)==_object_is_item && !OBJECT_IS_INVISIBLE(object)) 
+				{
+					if (guess_distance2d((world_point2d *) &player->location, (world_point2d *) &object->location)<=MAXIMUM_ARM_REACH)
+					{
+						world_distance radius, height;
+						
+						get_monster_dimensions(player->monster_index, &radius, &height);
+		
+						if (object->location.z >= player->location.z - MAXIMUM_ARM_REACH && object->location.z <= player->location.z + height &&
+							test_item_retrieval(player_object->polygon, &player_object->location, &object->location))
+						{
+							if(get_item(player_index, next_object))
+							{
+								/* Start the search again.. */
+								next_object= neighboring_polygon->first_object;
+								continue;
+							}
+						}
+					}
+				}
+				
+				next_object= object->next_object;
+			}
+		}
+	}
+}
+
+void swipe_nearby_items(short player_index)
+{
+	if (film_profile.swipe_nearby_items_fix)
+	{
+		a1_swipe_nearby_items(player_index);
+	}
+	else
+	{
+		m2_swipe_nearby_items(player_index);
+	}
+}
+
 
 void mark_item_collections(
 	bool loading)

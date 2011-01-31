@@ -37,36 +37,49 @@ Feb 19, 2000 (Loren Petrich):
 #include "projectiles.h"
 #include "flood_map.h"
 
-// Reasonable defaults;
-// the original ones are in []'s
-#ifdef M2_FILM_PLAYBACK
-static uint16 dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
+// original defaults
+static uint16 m2_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 {
-	384,	// [384] Objects (every possible kind)
-	 220,	// [220] NPC's
-	 20,	// [20] Paths for NPC's to follow (determines how many may be active)
-	 32,	// [64] Projectiles
-	 64,	// [64] Currently-active effects (blood splatters, explosions, etc.)
-	72,	// [72] Number of objects to render
-	  16,	// [16] Local collision buffer (target visibility, NPC-NPC collisions, etc.)
-	 64	// [64] Global collision buffer (projectiles with other objects)
+	384,	// Objects (every possible kind)
+	220,	// NPC's
+	20,	// Paths for NPC's to follow (determines how many may be active)
+	32,	// Projectiles
+	64,	// Currently-active effects (blood splatters, explosions, etc.)
+	72,	// Number of objects to render
+	16,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
+	64	// Global collision buffer (projectiles with other objects)
 };
 
-#else
-static uint16 dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
+// reasonable defaults
+static uint16 a1_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 {
-	1024,	// [384] Objects (every possible kind)
-	 512,	// [220] NPC's
-	 128,	// [20] Paths for NPC's to follow (determines how many may be active)
-	 128,	// [64] Projectiles
-	 128,	// [64] Currently-active effects (blood splatters, explosions, etc.)
-	1024,	// [72] Number of objects to render
-	  64,	// [16] Local collision buffer (target visibility, NPC-NPC collisions, etc.)
-	 256	// [64] Global collision buffer (projectiles with other objects)
+	1024,	// Objects (every possible kind)
+	512,	// NPC's
+	128,	// Paths for NPC's to follow (determines how many may be active)
+	128,	// Projectiles
+	128,	// Currently-active effects (blood splatters, explosions, etc.)
+	1024,	// Number of objects to render
+	64,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
+	256	// Global collision buffer (projectiles with other objects)
 };
-#endif
 
-uint16 *original_dynamic_limits = NULL;
+static std::vector<uint16> dynamic_limits(NUMBER_OF_DYNAMIC_LIMITS);
+
+static bool dynamic_limits_loaded = false;
+
+void reset_dynamic_limits()
+{
+	if (film_profile.increased_dynamic_limits)
+	{
+		dynamic_limits.assign(a1_dynamic_limits, a1_dynamic_limits + NUMBER_OF_DYNAMIC_LIMITS);
+	}
+	else
+	{
+		dynamic_limits.assign(m2_dynamic_limits, m2_dynamic_limits + NUMBER_OF_DYNAMIC_LIMITS);
+	}
+
+	dynamic_limits_loaded = true;
+}
 
 // Boolean-attribute parser: for switching stuff on and off
 class XML_DynLimValueParser: public XML_ElementParser
@@ -87,13 +100,11 @@ public:
 
 bool XML_DynLimValueParser::Start()
 {
-	// back up old values first
-	if (!original_dynamic_limits) {
-		original_dynamic_limits = (uint16 *) malloc(sizeof(uint16) * NUMBER_OF_DYNAMIC_LIMITS);
-		assert(original_dynamic_limits);
-		for (int i = 0; i < NUMBER_OF_DYNAMIC_LIMITS; i++)
-			original_dynamic_limits[i] = dynamic_limits[i];
+	if (!dynamic_limits_loaded)
+	{
+		reset_dynamic_limits();
 	}
+
 	IsPresent = false;
 	return true;
 }
@@ -125,14 +136,14 @@ bool XML_DynLimValueParser::AttributesDone()
 }
 
 static XML_DynLimValueParser
-	DynLimParser0("objects",dynamic_limits + _dynamic_limit_objects),
-	DynLimParser1("monsters",dynamic_limits + _dynamic_limit_monsters),
-	DynLimParser2("paths",dynamic_limits + _dynamic_limit_paths),
-	DynLimParser3("projectiles",dynamic_limits + _dynamic_limit_projectiles),
-	DynLimParser4("effects",dynamic_limits + _dynamic_limit_effects),
-	DynLimParser5("rendered",dynamic_limits + _dynamic_limit_rendered),
-	DynLimParser6("local_collision",dynamic_limits + _dynamic_limit_local_collision),
-	DynLimParser7("global_collision",dynamic_limits + _dynamic_limit_global_collision);
+	DynLimParser0("objects",&dynamic_limits[_dynamic_limit_objects]),
+	DynLimParser1("monsters",&dynamic_limits[_dynamic_limit_monsters]),
+	DynLimParser2("paths",&dynamic_limits[_dynamic_limit_paths]),
+	DynLimParser3("projectiles",&dynamic_limits[_dynamic_limit_projectiles]),
+	DynLimParser4("effects",&dynamic_limits[_dynamic_limit_effects]),
+	DynLimParser5("rendered",&dynamic_limits[_dynamic_limit_rendered]),
+	DynLimParser6("local_collision",&dynamic_limits[_dynamic_limit_local_collision]),
+	DynLimParser7("global_collision",&dynamic_limits[_dynamic_limit_global_collision]);
 
 class XML_DynLimParser: public XML_ElementParser
 {
@@ -164,14 +175,9 @@ bool XML_DynLimParser::End()
 
 bool XML_DynLimParser::ResetValues()
 {
-  if (original_dynamic_limits) {
-    for (int i = 0; i < NUMBER_OF_DYNAMIC_LIMITS; i++)
-      dynamic_limits[i] = original_dynamic_limits[i];
-		free(original_dynamic_limits);
-		original_dynamic_limits = NULL;
-		// End() will resize everything properly (that code can be moved into a separate helper function).
-		End();
-  }
+	reset_dynamic_limits();
+	End();
+
 	return true;
 }
 
@@ -196,5 +202,12 @@ XML_ElementParser *DynamicLimits_GetParser()
 
 // Accessor
 uint16 get_dynamic_limit(int which) {
-	return dynamic_limits[which];
+	if (dynamic_limits_loaded)
+	{
+		return dynamic_limits[which];
+	}
+	else
+	{
+		return a1_dynamic_limits[which];
+	}
 }

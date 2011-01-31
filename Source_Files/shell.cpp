@@ -57,6 +57,7 @@
 #include "XML_ParseTreeRoot.h"
 #include "FileHandler.h"
 #include "Plugins.h"
+#include "FilmProfile.h"
 
 #include "mytm.h"	// mytm_initialize(), for platform-specific shell_*.h
 
@@ -428,6 +429,8 @@ static void initialize_application(void)
 	initialize_resources();
 
 	init_physics_wad_data();
+
+	load_film_profile(FILM_PROFILE_DEFAULT, false);
 
 	// Parse MML files
 	SetupParseTree();

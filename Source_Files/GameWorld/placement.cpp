@@ -34,6 +34,7 @@ Oct 25, 200 (Mark Levin)
 #include "map.h"
 #include "monsters.h"
 #include "items.h"
+#include "FilmProfile.h"
 
 #include <string.h>
 
@@ -195,11 +196,8 @@ void place_initial_objects(
 
 	for (index= 1; index<NUMBER_OF_MONSTER_TYPES; index++)
 	{
-		if (monster_placement_info[index].initial_count
-#ifndef M2_FILM_PLAYBACK
-		    && GET_GAME_OPTIONS()&_monsters_replenish
-#endif
-)
+		if (monster_placement_info[index].initial_count &&
+		    (!film_profile.initial_monster_fix || GET_GAME_OPTIONS()&_monsters_replenish))
 		{
 			add_objects(_object_is_monster, index, monster_placement_info[index].initial_count, true);
 		}

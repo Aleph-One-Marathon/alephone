@@ -60,6 +60,7 @@ Jul 1, 2000 (Loren Petrich):
 #endif
 #include "cseries.h"
 #include "world.h"
+#include "FilmProfile.h"
 
 #include <stdlib.h>
 #include <math.h>
@@ -250,11 +251,14 @@ void build_trig_tables(
 	}
 }
 
-#ifdef M2_FILM_PLAYBACK
-angle arctangent(
-	world_distance x,
-	world_distance y)
+static angle m2_arctangent(
+	int32 xx,
+	int32 yy)
 {
+	// the original Marathon 2 function took world_distance parameters
+	world_distance x = xx;
+	world_distance y = yy;
+
 	long tangent;
 	register long last_difference, new_difference;
 	angle search_arc, theta;
@@ -301,11 +305,10 @@ angle arctangent(
 		return y<0 ? THREE_QUARTER_CIRCLE : QUARTER_CIRCLE;
 	}
 }
-#else
 /* one day weÕll come back here and actually make this run fast */
 // LP change: made this long-distance friendly
 //
-angle arctangent(
+static angle a1_arctangent(
 	int32 x, // world_distance x,
 	int32 y) // world_distance y)
 {
@@ -402,7 +405,18 @@ angle arctangent(
 	// Idiot-proofed exit
 	return NORMALIZE_ANGLE(theta);
 }
-#endif
+
+angle arctangent(int32 x, int32 y)
+{
+	if (film_profile.long_distance_physics)
+	{
+		return a1_arctangent(x, y);
+	}
+	else
+	{
+		return m2_arctangent(x, y);
+	}
+}
 
 void set_random_seed(
 	uint16 seed)
@@ -477,15 +491,14 @@ world_distance distance3d(
 	return distance>INT16_MAX ? INT16_MAX : distance;
 }
 
-#ifdef M2_FILM_PLAYBACK
-world_distance distance2d(
+static world_distance m2_distance2d(
         world_point2d *p0,
         world_point2d *p1)
 {
         return isqrt((p0->x-p1->x)*(p0->x-p1->x)+(p0->y-p1->y)*(p0->y-p1->y));
 }
-#else
-world_distance distance2d(
+
+static world_distance a1_distance2d(
 	world_point2d *p0,
 	world_point2d *p1)
 {
@@ -497,7 +510,20 @@ world_distance distance2d(
 	
 	return distance>INT16_MAX ? INT16_MAX : distance;
 }
-#endif
+
+world_distance distance2d(
+	world_point2d *p0,
+	world_point2d *p1)
+{
+	if (film_profile.long_distance_physics)
+	{
+		return a1_distance2d(p0, p1);
+	}
+	else
+	{
+		return m2_distance2d(p0, p1);
+	}
+}
 
 /*
  * It requires more space to describe this implementation of the manual

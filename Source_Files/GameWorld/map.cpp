@@ -102,6 +102,7 @@ find_line_crossed leaving polygon could be sped up considerable by reversing the
 
 #include "cseries.h"
 #include "map.h"
+#include "FilmProfile.h"
 #include "interface.h"
 #include "monsters.h"
 #include "preferences.h"
@@ -1218,41 +1219,44 @@ void animate_object(
 			if ((phase+= 1)>=animation->ticks_per_frame)
 			{
 				frame+= 1;
-#ifdef M2_FILM_PLAYBACK
-				animation_type|= _obj_animated;
-				if (frame==animation->key_frame)
+				if (!film_profile.keyframe_fix)
 				{
-					animation_type|= _obj_keyframe_started;
-					if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
+					animation_type|= _obj_animated;
+					if (frame==animation->key_frame)
+					{
+						animation_type|= _obj_keyframe_started;
+						if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
+					}
+					if (frame>=animation->frames_per_view)
+					{
+						frame= animation->loop_frame;
+						animation_type|= _obj_last_frame_animated;
+						if (animation->last_frame_sound!=NONE) play_object_sound(object_index, animation->last_frame_sound);
+					}
 				}
-				if (frame>=animation->frames_per_view)
+				else
 				{
-					frame= animation->loop_frame;
-					animation_type|= _obj_last_frame_animated;
-					if (animation->last_frame_sound!=NONE) play_object_sound(object_index, animation->last_frame_sound);
+					// LP change: interchanged these two so that
+					// 1: keyframe 0 would get recognized
+					// 2: to keep the timing correct in the nonzero case
+					// LP change: inverted the order yet again to get more like Moo,
+					// but this time, added detection of cases
+					// keyframe = 0 and keyframe = [frames per view]
+					// Inverted the order yet again (!) to supporess Hunter death bug
+					animation_type|= _obj_animated;
+					if (frame>=animation->frames_per_view)
+					{
+						frame= animation->loop_frame;
+						animation_type|= _obj_last_frame_animated;
+						if (animation->last_frame_sound!=NONE) play_object_sound(object_index, animation->last_frame_sound);
+					}
+					short offset_frame = frame + animation->frames_per_view; // LP addition
+					if (frame==animation->key_frame || offset_frame==animation->key_frame)
+					{
+						animation_type|= _obj_keyframe_started;
+						if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
+					}
 				}
-#else
-				// LP change: interchanged these two so that
-				// 1: keyframe 0 would get recognized
-				// 2: to keep the timing correct in the nonzero case
-				// LP change: inverted the order yet again to get more like Moo,
-				// but this time, added detection of cases
-				// keyframe = 0 and keyframe = [frames per view]
-				// Inverted the order yet again (!) to supporess Hunter death bug
-				animation_type|= _obj_animated;
-				if (frame>=animation->frames_per_view)
-				{
-					frame= animation->loop_frame;
-					animation_type|= _obj_last_frame_animated;
-					if (animation->last_frame_sound!=NONE) play_object_sound(object_index, animation->last_frame_sound);
-				}
-				short offset_frame = frame + animation->frames_per_view; // LP addition
-				if (frame==animation->key_frame || offset_frame==animation->key_frame)
-				{
-					animation_type|= _obj_keyframe_started;
-					if (animation->key_frame_sound!=NONE) play_object_sound(object_index, animation->key_frame_sound);
-				}
-#endif
 			}
 	
 			object->sequence= BUILD_SEQUENCE(frame, phase);

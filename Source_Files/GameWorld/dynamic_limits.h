@@ -54,4 +54,7 @@ XML_ElementParser *DynamicLimits_GetParser();
 // Accessor
 uint16 get_dynamic_limit(int which);
 
+// call this after changing the film profile but before loading MML
+void reset_dynamic_limits();
+
 #endif

@@ -141,6 +141,7 @@ May 22, 2003 (Woody Zenfell):
 #include "interface.h"
 #include "SoundManager.h"
 #include "fades.h"
+#include "FilmProfile.h"
 #include "media.h"
 #include "items.h"
 #include "weapons.h"
@@ -712,11 +713,10 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 					}
 					else
 					{
-#ifdef M2_FILM_PLAYBACK
-						if (dynamic_world->player_count == 1) set_game_state(_revert_game);
-#else
-						if (!(GET_GAME_OPTIONS() & _multiplayer_game)) set_game_state(_revert_game);
-#endif
+						if (film_profile.support_single_player_net_games ? !(GET_GAME_OPTIONS() & _multiplayer_game) : dynamic_world->player_count == 1)
+						{
+							set_game_state(_revert_game);
+						}
 						else revive_player(player_index);
 					}
 				}

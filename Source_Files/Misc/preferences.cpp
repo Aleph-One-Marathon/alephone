@@ -1736,6 +1736,12 @@ static void plugins_dialog(void *)
  *  Environment dialog
  */
 
+static const char* film_profile_labels[3] = {
+	"Aleph One",
+	"Marathon 2",
+	0
+};
+
 static void environment_dialog(void *arg)
 {
 	dialog *parent = (dialog *)arg;
@@ -1810,6 +1816,10 @@ static void environment_dialog(void *arg)
 	w_toggle *hide_extensions_w = new w_toggle(environment_preferences->hide_extensions);
 	table->dual_add(hide_extensions_w->label("Hide File Extensions"), d);
 	table->dual_add(hide_extensions_w, d);
+
+	w_select* film_profile_w = new w_select(environment_preferences->film_profile, film_profile_labels);
+	table->dual_add(film_profile_w->label("Film Playback"), d);
+	table->dual_add(film_profile_w, d);
 
 	placer->add(table, true);
 
@@ -1924,6 +1934,13 @@ static void environment_dialog(void *arg)
 		if (hide_extensions != environment_preferences->hide_extensions)
 		{
 			environment_preferences->hide_extensions = hide_extensions;
+			changed = true;
+		}
+
+		if (film_profile_w->get_selection() != environment_preferences->film_profile)
+		{
+			environment_preferences->film_profile = static_cast<FilmProfileType>(film_profile_w->get_selection());
+		
 			changed = true;
 		}
 
@@ -2300,6 +2317,7 @@ void write_preferences(
 	WriteXML_CString(F,"  hud_lua_file=\"", environment_preferences->hud_lua_file, 256, "\"\n");
 	fprintf(F,"  use_hud_lua=\"%s\"\n", BoolString(environment_preferences->use_hud_lua));
 	fprintf(F,"  hide_alephone_extensions=\"%s\"\n", BoolString(environment_preferences->hide_extensions));
+	fprintf(F,"  film_profile=\"%u\"\n", static_cast<uint32>(environment_preferences->film_profile));
 	fprintf(F,">\n");
 	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
 		if (it->compatible() && !it->enabled) {
@@ -2526,6 +2544,7 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->hud_lua_file[0] = 0;
 	preferences->use_hud_lua = false;
 	preferences->hide_extensions = true;
+	preferences->film_profile = FILM_PROFILE_DEFAULT;
 }
 
 
@@ -3956,6 +3975,16 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	else if (StringsEqual(Tag, "hide_alephone_extensions"))
 	{
 		return ReadBooleanValue(Value, environment_preferences->hide_extensions);
+	}
+	else if (StringsEqual(Tag, "film_profile"))
+	{
+		uint32 profile;
+		if (ReadUInt32Value(Value, profile))
+		{
+			environment_preferences->film_profile = static_cast<FilmProfileType>(profile);
+			return true;
+		} 
+		return false;
 	}
 	return true;
 }

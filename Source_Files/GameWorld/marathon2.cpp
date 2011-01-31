@@ -78,6 +78,7 @@ Feb 8, 2003 (Woody Zenfell):
 #include "map.h"
 #include "render.h"
 #include "interface.h"
+#include "FilmProfile.h"
 #include "flood_map.h"
 #include "effects.h"
 #include "monsters.h"
@@ -402,10 +403,13 @@ update_world_elements_one_tick()
         
         handle_random_sound_image();
         animate_scenery();
+
         // LP additions:
-#ifndef M2_FILM_PLAYBACK
-        animate_items();
-#endif
+	if (film_profile.animate_items)
+	{
+		animate_items();
+	}
+
         AnimTxtr_Update();
         ChaseCam_Update();
 

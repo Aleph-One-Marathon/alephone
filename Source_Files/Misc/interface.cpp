@@ -1796,7 +1796,16 @@ static bool begin_game(
 						success= find_replay_to_use(cheat, ReplayFile);
 						if(success)
 						{
+							if (environment_preferences->film_profile != FILM_PROFILE_DEFAULT)
+							{
+								load_film_profile(environment_preferences->film_profile);
+							}
 							success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
+							if (environment_preferences->film_profile != FILM_PROFILE_DEFAULT && !success)
+							{
+								load_film_profile(FILM_PROFILE_DEFAULT);
+							}
+
 							hide_cursor();
 						}
 					} 
@@ -1810,7 +1819,15 @@ static bool begin_game(
 					break;
 
 				case _replay_from_file:
+					if (environment_preferences->film_profile != FILM_PROFILE_DEFAULT)
+					{
+						load_film_profile(environment_preferences->film_profile);
+					}
 					success= setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum());
+					if (environment_preferences->film_profile != FILM_PROFILE_DEFAULT && !success)
+					{
+						load_film_profile(FILM_PROFILE_DEFAULT);
+					}
 					user= _replay;
 					break;
 					
@@ -2086,6 +2103,10 @@ static void finish_game(
 	}
 	
 	load_environment_from_preferences();
+	if (game_state.user == _replay || game_state.user == _demo)
+	{
+		load_film_profile(FILM_PROFILE_DEFAULT);
+	}
 	if(return_to_main_menu) display_main_menu();
 }
 

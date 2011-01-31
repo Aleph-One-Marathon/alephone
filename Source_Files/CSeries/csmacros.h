@@ -31,6 +31,7 @@ Aug 27, 2000 (Loren Petrich):
 #define _CSERIES_MACROS_
 
 #include <string.h>
+#include "FilmProfile.h" // TERRIBLE
 
 #undef MAX
 #define MAX(a,b) ((a)>=(b) ? (a) : (b))
@@ -40,12 +41,13 @@ Aug 27, 2000 (Loren Petrich):
 #define FLOOR(value,floor) MAX(value,floor)
 #define CEILING(value,ceiling) MIN(value,ceiling)
 
-#ifdef M2_FILM_PLAYBACK
-#define PIN(value,floor,ceiling) \
+#define M2_PIN(value,floor,ceiling) \
 	((value)<(floor) ? (floor) : (value)>(ceiling) ? (ceiling) : (value))
-#else
-#define PIN(value,floor,ceiling) (CEILING(FLOOR((value),(floor)),(ceiling)))
-#endif
+#define A1_PIN(value,floor,ceiling) (CEILING(FLOOR((value),(floor)),(ceiling)))
+
+#define PIN(value,floor,ceiling) \
+	((film_profile.inexplicable_pin_change) ? (A1_PIN(value,floor,ceiling)) : (M2_PIN(value,floor,ceiling)))
+
 #define ABS(x) ((x)<0 ? -(x) : (x))
 #define SGN(x) ((x)<0 ? -1 : (x)>0 ? 1 : 0)
 

@@ -98,6 +98,7 @@ Jan 12, 2003 (Loren Petrich)
 #include "map.h"
 #include "render.h"
 #include "interface.h"
+#include "FilmProfile.h"
 #include "flood_map.h"
 #include "effects.h"
 #include "monsters.h"
@@ -586,14 +587,10 @@ void move_monsters(
 								}
 								else
 								{
-#ifdef M2_FILM_PLAYBACK
-									if (animation_flags&_obj_keyframe_started)
-#else
 									// LP change: if keyframe is zero, then a monster should not produce shrapnel damage.
 									// This fixes a side effect of a fix of the keyframe-never-zero bug,
 									// which is that Hunters injure those nearby when they die a soft death.
-									if (animation_flags&_obj_keyframe_started && (GET_SEQUENCE_FRAME(object->sequence) != 0))
-#endif
+									if (animation_flags&_obj_keyframe_started && (!film_profile.keyframe_fix || GET_SEQUENCE_FRAME(object->sequence) != 0))
 										cause_shrapnel_damage(monster_index);
 									if (animation_flags&_obj_last_frame_animated) kill_monster(monster_index);
 								}
@@ -1369,12 +1366,12 @@ void damage_monsters_in_radius(
 	for (size_t i=0;i<object_count;++i)
 	{
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
-#ifndef M2_FILM_PLAYBACK
-                if (GET_GAME_TYPE() == _game_of_tag && object->permutation == aggressor_index) {
+                if (film_profile.damage_aggressor_last_in_tag && 
+		    GET_GAME_TYPE() == _game_of_tag && 
+		    object->permutation == aggressor_index) {
                         // damage the aggressor last, so tag suicides are handled correctly
                         aggressor = object;
                 } else {
-#endif
                         world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&object->location);
                         world_distance monster_radius, monster_height;
                         
@@ -1392,13 +1389,12 @@ void damage_monsters_in_radius(
                                         }
                                 }
                         }
-#ifndef M2_FILM_PLAYBACK
                 }
-#endif
 	}
-#ifndef M2_FILM_PLAYBACK
+
         // damage the aggressor
-        if (aggressor != NULL) {
+        if (film_profile.damage_aggressor_last_in_tag && aggressor != NULL) 
+	{
                 world_distance distance= distance2d((world_point2d*)epicenter, (world_point2d*)&aggressor->location);
                 world_distance monster_radius, monster_height;
                 
@@ -1410,11 +1406,10 @@ void damage_monsters_in_radius(
                                 if (!line_is_obstructed(epicenter_polygon_index, (world_point2d*)epicenter, aggressor->polygon, (world_point2d*)&aggressor->location))
                                 {
                                         damage_monster(aggressor->permutation, aggressor_index, aggressor_type, epicenter, damage, projectile_index);
-                                        }
-                                }
-                        }
-                }
-#endif
+				}
+			}
+		}
+	}
 }
 
 void damage_monster(

@@ -242,6 +242,8 @@ struct environment_preferences_data
 	char hud_lua_file[256];
 	bool use_hud_lua;
 	bool hide_extensions;
+
+	FilmProfileType film_profile;
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */
