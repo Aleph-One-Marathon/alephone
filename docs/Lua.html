@@ -124,6 +124,7 @@
 <li><a href="#Endpoints">Endpoints</a></li>
 <li><a href="#Game">Game</a></li>
 <li><a href="#Goals">Goals</a></li>
+<li><a href="#ItemStarts">ItemStarts</a></li>
 <li><a href="#Items">Items</a></li>
 <li><a href="#Level">Level</a></li>
 <li><a href="#Lights">Lights</a></li>
@@ -577,6 +578,49 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .id<span class="access"> (read-only)</span> <span class="version">SVN</span>
 </dt>
 <dd><p class="description">ID number of goal</p></dd>
+      <dt>
+    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>
+    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>
+    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description"></p></dd>
+    </dl></dd>
+</dl>
+<h3>
+<a name="ItemStarts"></a>ItemStarts</h3>
+<dl>
+<dt># ItemStarts</dt>
+<dd><p class="description">number of map objects in the level</p></dd>
+<dt>ItemStarts()</dt>
+<dd><p class="description">iterates through all item starting locations in the level</p></dd>
+<dt>ItemStarts[index]</dt>
+<dd><dl>
+      <dt>
+    .facing<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">direction item is initially facing</p></dd>
+      <dt>
+    .from_ceiling<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether item location z is from ceiling</p></dd>
+      <dt>
+    .invisible<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether item will teleport in</p></dd>
+      <dt>
+    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">item starting location polygon</p></dd>
+      <dt>
+    .type<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">type of item</p></dd>
       <dt>
     .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
 </dt>

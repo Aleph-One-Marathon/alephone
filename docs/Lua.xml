@@ -492,6 +492,29 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<note>for example, "20071103"</note>
       </variable>
     </table>
+    <table name="goal">
+      <variable name="facing" access="read-only" version="SVN">
+	<description>direction goal is facing</description>
+	<type>degrees</type>
+      </variable>
+      <variable name="polygon" access="read-only" version="SVN">
+	<description>polygon the goal is in</description>
+	<type>polygon</type>
+      </variable>
+      <variable name="id" access="read-only" version="SVN">
+	<description>ID number of goal</description>
+	<type>number</type>
+      </variable>
+      <variable name="x" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="y" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="z" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+    </table>
     <table name="item">
       <function name="delete">
 	<description>removes item from map</description>
@@ -530,18 +553,26 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<type>WU</type>
       </variable>
     </table>
-    <table name="goal">
+    <table name="item_start">
       <variable name="facing" access="read-only" version="SVN">
-	<description>direction goal is facing</description>
-	<type>degrees</type>
+	<description>direction item is initially facing</description>
+	<type>angle</type>
+      </variable>
+      <variable name="from_ceiling" access="read-only" version="SVN">
+	<description>whether item location z is from ceiling</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="invisible" access="read-only" version="SVN">
+	<description>whether item will teleport in</description>
+	<type>boolean</type>
       </variable>
       <variable name="polygon" access="read-only" version="SVN">
-	<description>polygon the goal is in</description>
+	<description>item starting location polygon</description>
 	<type>polygon</type>
       </variable>
-      <variable name="id" access="read-only" version="SVN">
-	<description>ID number of goal</description>
-	<type>number</type>
+      <variable name="type" access="read-only" version="SVN">
+	<description>type of item</description>
+	<type>item_type</type>
       </variable>
       <variable name="x" access="read-only" version="SVN">
 	<type>WU</type>
@@ -553,6 +584,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<type>WU</type>
       </variable>
     </table>
+
     <table name="level" singleton="true">
       <function name="calculate_completion_state" version="20081213">
 	<description>returns whether level is finished, unfinished, or failed</description>
@@ -1776,6 +1808,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="type"><type>item_type</type></argument>
 	<return><type>item</type></return>
       </function>
+    </accessor>
+    <accessor name="ItemStarts" contains="item_start">
+      <length>
+	<description>number of map objects in the level</description>
+      </length>
+      <index/>
+      <call>
+	<description>iterates through all item starting locations in the level</description>
+      </call>
     </accessor>
     <accessor name="Level" contains="level">
     </accessor>
