@@ -713,7 +713,7 @@ void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 					}
 					else
 					{
-						if (film_profile.support_single_player_net_games ? !(GET_GAME_OPTIONS() & _multiplayer_game) : dynamic_world->player_count == 1)
+						if (dynamic_world->player_count == 1 && !(GET_GAME_OPTIONS() & _multiplayer_game))
 						{
 							set_game_state(_revert_game);
 						}

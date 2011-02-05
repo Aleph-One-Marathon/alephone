@@ -42,9 +42,6 @@ struct FilmProfile
 	// LP changed arctangent and distance2d to handle long distances
 	bool long_distance_physics;
 
-	// ghs changed to fix "solo multiplayer" games
-	bool support_single_player_net_games;
-
 	// LP added to support animated items
 	bool animate_items;
 
