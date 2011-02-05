@@ -372,7 +372,12 @@ void initDefaultPrograms() {
         "const float pi = 3.141593;\n"
         "void main(void) {\n"
         "	vec3 viewv = normalize(viewDir);\n"
-        "	float x = atan(viewv.x, viewv.y) / (2.0 * pi) * repeat;\n"
+        " float ratio = viewv.x / viewv.y;\n"
+	    " float atanxy;\n"
+	    "if (abs(ratio) <= 1) atanxy = ratio / (1 + 0.28 * ratio * ratio);\n"
+	    " else atanxy = pi / 2 - ratio / (ratio * ratio + 0.28);\n"
+//        "	float x = atan(viewv.x / viewv.y) / (2.0 * pi) * repeat;\n"
+	    " float x = atanxy / (2.0 * pi) * repeat;\n"
 	"	float offset = abs(texScale) > 1.01 ? 0.5 : 0.5 / abs(texScale) - sign(texOffset) + texOffset;\n"
 	"	float y = offset + viewv.z / 2.6 * texScale;\n"
         "	vec4 color = texture2D(texture0, vec2(-x + 0.25*repeat, y));\n"
@@ -423,7 +428,7 @@ void initDefaultPrograms() {
         "	viewDir = (gl_Vertex - v).xyz;\n"
         "	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
         "	vertexColor = gl_Color;\n"
-        "	FDxLOG2E = -gl_Fog.density * gl_Fog.density * 1.442695;\n"
+        "	FDxLOG2E = -gl_Fog.density * 1.442695;\n"
         "	MLxLOG2E = -0.0000003 * 1.442695;\n"
         "}\n";    
     defaultFragmentPrograms["sprite"] = ""
@@ -440,7 +445,7 @@ void initDefaultPrograms() {
         "	mlFactor = clamp(mlFactor, 0.0, flare - 0.5) * 0.5;\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "	vec3 intensity = color.rgb * clamp(vertexColor.rgb + mlFactor, glow, 1.0);\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * dot(viewDir, viewDir)), 0.0, 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     defaultVertexPrograms["sprite_bloom"] = defaultVertexPrograms["sprite"];
@@ -457,7 +462,7 @@ void initDefaultPrograms() {
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "	vec3 intensity = clamp(vertexColor.rgb, glow, 1.0);\n"
         "	intensity = color.rgb * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * dot(viewDir, viewDir)), 0.0, 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     
@@ -475,7 +480,7 @@ void initDefaultPrograms() {
         "	float c = fract(sin(usestatic*(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0) + time * 31.0) * 34563.0);\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "	vec3 intensity = vec3(a, b, c);\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * dot(viewDir, viewDir)), 0.0, 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     defaultVertexPrograms["invincible_bloom"] = defaultVertexPrograms["invincible"];
@@ -491,7 +496,7 @@ void initDefaultPrograms() {
         "void main(void) {\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "	vec3 intensity = vec3(0.0, 0.0, 0.0);\n"
-        "	float fogFactor = exp2(FDxLOG2E * dot(viewDir, viewDir));\n"
+        "	float fogFactor = exp2(FDxLOG2E * length(viewDir));\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     
@@ -505,7 +510,7 @@ void initDefaultPrograms() {
         "void main(void) {\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "   vec3 intensity = vec3(0.0, 0.0, 0.0);\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * dot(viewDir, viewDir)), 0.0, 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a * visibility);\n"
         "}\n";
     defaultVertexPrograms["invisible_bloom"] = defaultVertexPrograms["invisible"];
@@ -518,7 +523,7 @@ void initDefaultPrograms() {
         "void main(void) {\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "   vec3 intensity = vec3(0.0, 0.0, 0.0);\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * dot(viewDir, viewDir)), 0.0, 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a * visibility);\n"
         "}\n";
 	
@@ -546,7 +551,7 @@ void initDefaultPrograms() {
         "	viewXY = -(gl_TextureMatrix[0] * vec4(viewDir.xyz, 1.0)).xyz;\n"
         "	viewDir = -viewDir;\n"
         "	vertexColor = gl_Color;\n"
-        "	FDxLOG2E = -gl_Fog.density * gl_Fog.density * 1.442695;\n"
+        "	FDxLOG2E = -gl_Fog.density * 1.442695;\n"
         "	MLxLOG2E = -0.0000003 * 1.442695;\n"
         "}\n";
     defaultFragmentPrograms["wall"] = ""
@@ -573,7 +578,7 @@ void initDefaultPrograms() {
         "   }\n"
         "	vec4 color = texture2D(texture0, texCoords.xy);\n"
         "	vec3 intensity = color.rgb * clamp((vertexColor.rgb + mlFactor) * diffuse, glow, 1.0);\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * dot(viewDir, viewDir)), 0.0, 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     defaultVertexPrograms["wall_bloom"] = defaultVertexPrograms["wall"];
@@ -606,7 +611,7 @@ void initDefaultPrograms() {
         "	vec3 corr = clamp((vertexColor.rgb + mlFactor) * (0.5*diffuse + 0.5), glow, 1.0);\n"
         "	intensity = intensity - 0.33*(corr - intensity);\n"
         "	intensity = color.rgb * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * dot(viewDir, viewDir)), 0.0, 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     
@@ -645,7 +650,7 @@ void initDefaultPrograms() {
         "   }\n"
         "	vec4 color = texture2D(texture0, texCoords.xy);\n"
         "	vec3 intensity = color.rgb * clamp((vertexColor.rgb + mlFactor) * diffuse, glow, 1.0);\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * dot(viewDir, viewDir)), 0.0, 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     defaultVertexPrograms["bump_bloom"] = defaultVertexPrograms["bump"];
@@ -688,7 +693,7 @@ void initDefaultPrograms() {
         "	vec3 corr = clamp((vertexColor.rgb + mlFactor) * (0.5*diffuse + 0.5), glow, 1.0);\n"
         "	intensity = intensity - 0.33*(corr - intensity);\n"
         "	intensity = color.rgb * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
-        "	float fogFactor = clamp(exp2(FDxLOG2E * dot(viewDir, viewDir)), 0.0, 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
 		
