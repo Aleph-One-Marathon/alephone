@@ -48,6 +48,8 @@
 		27911B25100073460063ACB6 /* HUDRenderer_Lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 27911B23100073460063ACB6 /* HUDRenderer_Lua.h */; };
 		27CE0843100ECDBC00F59FD1 /* Image_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */; };
 		27CE0844100ECDBC00F59FD1 /* Image_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */; };
+		27D1A4F312FDF3630085E79C /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
+		27D1A50212FDF3700085E79C /* FilmProfile.h in Headers */ = {isa = PBXBuildFile; fileRef = 27D1A4F212FDF3630085E79C /* FilmProfile.h */; };
 		27DC607010917F690062003A /* OGL_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27DC606E10917F690062003A /* OGL_Shader.cpp */; };
 		27DC607110917F690062003A /* OGL_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC606F10917F690062003A /* OGL_Shader.h */; };
 		27DC60C5109218800062003A /* vec3.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC60C4109218800062003A /* vec3.h */; };
@@ -552,6 +554,8 @@
 		27911B23100073460063ACB6 /* HUDRenderer_Lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HUDRenderer_Lua.h; sourceTree = "<group>"; };
 		27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image_Blitter.cpp; sourceTree = "<group>"; };
 		27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image_Blitter.h; sourceTree = "<group>"; };
+		27D1A4F112FDF3630085E79C /* FilmProfile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilmProfile.cpp; path = ../Source_Files/CSeries/FilmProfile.cpp; sourceTree = SOURCE_ROOT; };
+		27D1A4F212FDF3630085E79C /* FilmProfile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = FilmProfile.h; path = ../Source_Files/CSeries/FilmProfile.h; sourceTree = SOURCE_ROOT; };
 		27DC606E10917F690062003A /* OGL_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Shader.cpp; sourceTree = "<group>"; };
 		27DC606F10917F690062003A /* OGL_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Shader.h; sourceTree = "<group>"; };
 		27DC60C4109218800062003A /* vec3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec3.h; sourceTree = "<group>"; };
@@ -1346,6 +1350,8 @@
 		F522144A0136C0C401000001 /* CSeries */ = {
 			isa = PBXGroup;
 			children = (
+				27D1A4F112FDF3630085E79C /* FilmProfile.cpp */,
+				27D1A4F212FDF3630085E79C /* FilmProfile.h */,
 				F522144B0136C0C401000001 /* Headers */,
 				AEAE132C0FC9C3C800EDA5A6 /* BStream.cpp */,
 				AEA31D2B113C9DF700266621 /* csalerts.mm */,
@@ -2210,6 +2216,7 @@
 				277AB6C1109CE2570003402A /* Rasterizer_Shader.h in Headers */,
 				277AB6C3109CE2570003402A /* RenderRasterize_Shader.h in Headers */,
 				2759F31C10D5BC9C000204DD /* SDL_rwops_zzip.h in Headers */,
+				27D1A50212FDF3700085E79C /* FilmProfile.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2244,7 +2251,14 @@
 			isa = PBXProject;
 			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne" */;
 			compatibilityVersion = "Xcode 3.0";
+			developmentRegion = English;
 			hasScannedForEncodings = 1;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
 			mainGroup = 29B97314FDCFA39411CA2CEA /* SDL Application */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -2543,6 +2557,7 @@
 				AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */,
 				AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */,
 				276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */,
+				27D1A4F312FDF3630085E79C /* FilmProfile.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
