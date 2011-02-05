@@ -62,7 +62,6 @@ May 22, 2003 (Woody Zenfell):
 #include "ISp_Support.h" /* BT: Added April 16, 2000 for Input Sprocket Support */
 
 #include "preferences.h"
-#include "preferences_private.h" // ZZZ: added 23 Oct 2001 for sharing of dialog item ID's with SDL.
 #include "wad.h"
 #include "wad_prefs.h"
 #include "game_errors.h"
@@ -483,6 +482,10 @@ static void crosshair_dialog(void *arg)
  *  Player dialog
  */
 
+enum {
+	NAME_W
+};
+
 static void player_dialog(void *arg)
 {
 	// Create dialog
@@ -505,7 +508,7 @@ static void player_dialog(void *arg)
 	table->dual_add_row(new w_static_text("Appearance"), d);
 
 	w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, "");
-	name_w->set_identifier(iNAME);
+	name_w->set_identifier(NAME_W);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
 	name_w->enable_mac_roman_input();
@@ -580,7 +583,7 @@ static void player_dialog(void *arg)
 	d.set_widget_placer(placer);
 
 	// We don't do this earlier because it (indirectly) invokes the name_typing callback, which needs iOK
-	copy_pstring_to_text_field(&d, iNAME, player_preferences->name);
+	copy_pstring_to_text_field(&d, NAME_W, player_preferences->name);
 
 	// Clear screen
 	clear_screen();
@@ -594,7 +597,7 @@ static void player_dialog(void *arg)
 		pstrncpy(theOldNameP, player_preferences->name, PREFERENCES_NAME_LENGTH+1);
 		char *theOldName = a1_p2cstr(theOldNameP);
 		if (strcmp(name, theOldName)) {
-			copy_pstring_from_text_field(&d, iNAME, player_preferences->name);
+			copy_pstring_from_text_field(&d, NAME_W, player_preferences->name);
 			changed = true;
 		}
 
