@@ -117,6 +117,9 @@ namespace alephone
 	};
 }
 
+extern SDL_PixelFormat pixel_format_16;
+extern SDL_PixelFormat pixel_format_32;
+
 /* ---------- constants */
 
 // Original screen-size definitions

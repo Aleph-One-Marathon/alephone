@@ -139,6 +139,20 @@ static void DisplayNetMicStatus(SDL_Surface *s);
 static void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect);
 static void clear_screen_margin();
 
+SDL_PixelFormat pixel_format_16 = {
+	0, 16, 2, // palette, bits per pixel, bytes per pixel
+	3, 2, 3, 0, // rloss, gloss, bloss, aloss
+	11, 5, 0, 0, // rshift, gshift, bshift, ashift
+	0xf800, 0x07e0, 0x001f // rmask, gmask, bmask
+};
+
+SDL_PixelFormat pixel_format_32 = {
+	0, 24, 4,
+	0, 0, 0, 0,
+	16, 8, 0, 0,
+	0xff0000, 0x00ff00, 0x0000ff
+};
+
 // LP addition:
 void start_tunnel_vision_effect(
 	bool out)
@@ -485,7 +499,21 @@ static void reallocate_world_pixels(int width, int height)
 		world_pixels_corrected = NULL;
 	}
 	SDL_PixelFormat *f = main_surface->format;
-	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
+//	world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
+	switch (bit_depth)
+	{
+	case 8:
+		world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, 0, 0, 0, 0);
+		break;
+	case 16:
+		world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 16, pixel_format_16.Rmask, pixel_format_16.Gmask, pixel_format_16.Bmask, 0);
+		break;
+	default:
+		world_pixels = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
+		break;
+
+	}
+
 	if (world_pixels == NULL)
 		alert_user(fatalError, strERRORS, outOfMemory, -1);
 	else if (bit_depth == 8) {
@@ -493,7 +521,7 @@ static void reallocate_world_pixels(int width, int height)
 		build_sdl_color_table(world_color_table, colors);
 		SDL_SetColors(world_pixels, colors, 0, 256);
 	} else
-		world_pixels_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, f->BitsPerPixel, f->Rmask, f->Gmask, f->Bmask, f->Amask);
+		world_pixels_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, world_pixels->format->BitsPerPixel, world_pixels->format->Rmask, world_pixels->format->Gmask, world_pixels->format->Bmask, 0);
 }
 
 

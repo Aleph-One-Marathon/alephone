@@ -163,6 +163,8 @@ inline short memory_error() {return 0;}
 
 /* ---------- globals */
 
+extern SDL_Surface* world_pixels;
+
 #include "shape_definitions.h"
 
 static pixel16 *global_shading_table16= (pixel16 *) NULL;
@@ -288,27 +290,9 @@ SDL_Surface *get_shape_surface(int shape, int inCollection, byte** outPointerToP
                     
                     // Extract color table - ZZZ change to use shading table rather than CLUT.  Hope it works.
 
-		    // ghs: I believe the second case in this if statement
-		    // is the way it should always be done; but somehow SDL
-		    // screws up when OPENGLBLIT is enabled (big surprise) and
-		    // this old behavior seems luckily to work around it
-
-		    // well, ok, ideally the code that builds these tables
-		    // should either not use the current video format
-		    // (since in the future it may change) or should store
-		    // the pixel format it used somewhere so we're sure we've
-		    // got the right one
-		    if (SDL_GetVideoSurface()->flags & SDL_OPENGLBLIT) {
-		      for(int i = 0; i < 256; i++) {
-			colors[i].r = RED16(shading_tables[i]) << 3;
-			colors[i].g = GREEN16(shading_tables[i]) << 3;
-			colors[i].b = BLUE16(shading_tables[i]) << 3;
-		      }
-		    } else {
-		      SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
-		      for (int i = 0; i < 256; i++) {
-			SDL_GetRGB(shading_tables[i], fmt, &colors[i].r, &colors[i].g, &colors[i].b);
-		      }
+		    SDL_PixelFormat *fmt = &pixel_format_16;
+		    for (int i = 0; i < 256; i++) {
+			    SDL_GetRGB(shading_tables[i], fmt, &colors[i].r, &colors[i].g, &colors[i].b);
                     }
                 }
                 break;
@@ -2142,7 +2126,7 @@ static void build_shading_tables16(
 	objlist_set(shading_tables, 0, PIXEL8_MAXIMUM_COLORS);
 
 #ifdef SDL
-	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+	SDL_PixelFormat *fmt = &pixel_format_16;
 #endif
 	
 	start= 0, count= 0;
@@ -2187,7 +2171,7 @@ static void build_shading_tables32(
 	objlist_set(shading_tables, 0, PIXEL8_MAXIMUM_COLORS);
 	
 #ifdef SDL
-	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+	SDL_PixelFormat *fmt = &pixel_format_32;
 #endif
 
 	start= 0, count= 0;
@@ -2229,7 +2213,7 @@ static void build_global_shading_table16(
 		pixel16 *write;
 
 #ifdef SDL
-		SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+		SDL_PixelFormat *fmt = &pixel_format_16;
 #endif
 		
 		global_shading_table16= (pixel16 *) malloc(sizeof(pixel16)*number_of_shading_tables*NUMBER_OF_COLOR_COMPONENTS*(PIXEL16_MAXIMUM_COMPONENT+1));
@@ -2274,7 +2258,7 @@ static void build_global_shading_table32(
 		pixel32 *write;
 		
 #ifdef SDL
-		SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+		SDL_PixelFormat *fmt = &pixel_format_32;
 #endif
 
 		global_shading_table32= (pixel32 *) malloc(sizeof(pixel32)*number_of_shading_tables*NUMBER_OF_COLOR_COMPONENTS*(PIXEL32_MAXIMUM_COMPONENT+1));
@@ -2545,7 +2529,7 @@ static void build_tinting_table16(
 	short i;
 
 #ifdef SDL
-	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+	SDL_PixelFormat *fmt = &pixel_format_16;
 #endif
 
 	for (i= 0; i<color_count; ++i, ++colors)
@@ -2576,7 +2560,7 @@ static void build_tinting_table32(
 	short i;
 
 #ifdef SDL
-	SDL_PixelFormat *fmt = SDL_GetVideoSurface()->format;
+	SDL_PixelFormat *fmt = &pixel_format_32;
 #endif
 
 	for (i= 0; i<color_count; ++i, ++colors)
