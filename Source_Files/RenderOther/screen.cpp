@@ -504,7 +504,7 @@ static void reallocate_world_pixels(int width, int height)
 void ReloadViewContext(void)
 {
 #ifdef HAVE_OPENGL
-	if (screen_mode.acceleration != _no_acceleration)
+	if (in_game && screen_mode.acceleration != _no_acceleration)
 		OGL_StartRun();
 #endif
 }
@@ -574,6 +574,7 @@ void exit_screen(void)
 #ifdef HAVE_OPENGL
 	OGL_StopRun();
 #endif
+	change_screen_mode(&screen_mode, true);
 }
 
 
