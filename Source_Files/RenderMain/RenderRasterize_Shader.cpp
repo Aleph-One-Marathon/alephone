@@ -296,7 +296,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 
 	Shader *s = NULL;
 	GLfloat color[3];
-	GLdouble shade = PIN(static_cast<GLfloat>(rect.ambient_shade/FIXED_ONE),0,1);
+	GLdouble shade = PIN(static_cast<GLfloat>(rect.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
 	if (Using_sRGB)
 		color[0] = color[1] = color[2] = sRGB_frob(shade);
 	else
@@ -872,7 +872,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 
 	GLfloat color[3];
-	GLdouble shade = PIN(static_cast<GLfloat>(RenderRectangle.ambient_shade/FIXED_ONE),0,1);
+	GLdouble shade = PIN(static_cast<GLfloat>(RenderRectangle.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
 	if (Using_sRGB)
 		color[0] = color[1] = color[2] = sRGB_frob(shade);
 	else
