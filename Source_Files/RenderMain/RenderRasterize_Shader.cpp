@@ -189,6 +189,8 @@ void RenderRasterize_Shader::setupGL() {
  */
 void RenderRasterize_Shader::render_tree() {
 
+	weaponFlare = PIN(view->maximum_depth_intensity - NATURAL_LIGHT_INTENSITY, 0, FIXED_ONE)/float(FIXED_ONE);
+
 	Shader* s = Shader::get(Shader::S_Invincible);
 	s->enable();
 	s->setFloat(Shader::U_Time, view->tick_count);
@@ -308,7 +310,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	TMgr.IsShadeless = (rect.flags&_SHADELESS_BIT) != 0;
 	TMgr.TextureType = type;
 
-	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
+	float flare = weaponFlare;
 
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(color[0], color[1], color[2], 1);
@@ -316,12 +318,12 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	switch(TMgr.TransferMode) {
 		case _static_transfer:
 			TMgr.IsShadeless = 1;
-			flare = 0;
+			flare = -1;
 			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
 			s->enable();
 			break;
 		case _tinted_transfer:
-			flare = 0;
+			flare = -1;
 			s = Shader::get(renderStep == kGlow ? Shader::S_InvisibleBloom : Shader::S_Invisible);
 			s->enable();
 			s->setFloat(Shader::U_Visibility, 1.0 - rect.transfer_data/32.0f);
@@ -336,7 +338,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 				} else {
 					glColor4f(0,0,0,1);
 				}
-				flare = 0;
+				flare = -1;
 			}
 			break;
 		default:
@@ -382,7 +384,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	TMgr.IsShadeless = current_player->infravision_duration ? 1 : 0;
 	TMgr.TransferData = 0;
 
-	float flare = view->maximum_depth_intensity/float(FIXED_ONE_HALF);
+	float flare = weaponFlare;
 
 	glEnable(GL_TEXTURE_2D);
 	glColor4f(intensity, intensity, intensity, 1.0);
@@ -408,7 +410,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 				} else {
 					glColor4f(0,0,0,1);
 				}
-				flare = 0;
+				flare = -1;
 			}
 	}
 
@@ -518,7 +520,7 @@ void setupBlendFunc(short blendType) {
 	}
 }
 
-bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float intensity, float offset, RenderStep renderStep) {
+bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float intensity, float flare, float offset, RenderStep renderStep) {
 	if (TMgr.TransferMode == _textured_transfer && TMgr.IsGlowMapped()) {
 		Shader *s = NULL;
 		if (TMgr.TextureType == OGL_Txtr_Wall) {
@@ -543,7 +545,7 @@ bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float
 			s->setFloat(Shader::U_BloomScale, TMgr.GlowBloomScale());
 			s->setFloat(Shader::U_BloomShift, TMgr.GlowBloomShift());
 		}
-		s->setFloat(Shader::U_Flare, view->maximum_depth_intensity/float(FIXED_ONE_HALF));
+		s->setFloat(Shader::U_Flare, flare);
 		s->setFloat(Shader::U_Wobble, wobble);
 		s->setFloat(Shader::U_Depth, offset - 1.0);
 		s->setFloat(Shader::U_Glow, TMgr.MinGlowIntensity());
@@ -633,7 +635,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 
 		glDrawArrays(GL_POLYGON, 0, vertex_count);
 
-		if (setupGlow(view, TMgr, wobble, intensity, offset, renderStep)) {
+		if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, offset, renderStep)) {
 			glDrawArrays(GL_POLYGON, 0, vertex_count);
 		}
 
@@ -781,7 +783,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			
 			glDrawArrays(GL_QUADS, 0, vertex_count);
 
-			if (setupGlow(view, TMgr, wobble, intensity, offset, renderStep)) {
+			if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, offset, renderStep)) {
 				glDrawArrays(GL_QUADS, 0, vertex_count);
 			}
 
@@ -874,11 +876,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	bool canGlow = false;
 	switch(RenderRectangle.transfer_mode) {
 		case _static_transfer:
-			flare = 0;
+			flare = -1;
 			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
 			s->enable();
 		case _tinted_transfer:
-			flare = 0;
+			flare = -1;
 			s = Shader::get(renderStep == kGlow ? Shader::S_InvisibleBloom : Shader::S_Invisible);
 			s->enable();
 			s->setFloat(Shader::U_Visibility, 1.0 - RenderRectangle.transfer_data/32.0f);
@@ -893,7 +895,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 				} else {
 					glColor4f(0,0,0,1);
 				}
-				flare = 0;
+				flare = -1;
 			} else {
 				canGlow = true;
 			}
@@ -1157,7 +1159,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 	glDrawArrays(GL_QUADS, 0, 4);
 
-	if (setupGlow(view, TMgr, 0, 1, offset, renderStep)) {
+	if (setupGlow(view, TMgr, 0, 1, weaponFlare, offset, renderStep)) {
 		glDrawArrays(GL_QUADS, 0, 4);
 	}
 

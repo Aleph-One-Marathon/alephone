@@ -21,6 +21,7 @@ class RenderRasterize_Shader : public RenderRasterizerClass {
 	Blur* blur;
 	int objectCount;
 	world_distance objectY;
+	float weaponFlare;
 
 protected:
 	virtual void render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep);	

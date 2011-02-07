@@ -2314,7 +2314,7 @@ static int Lua_HUDLighting_Get_Ambient(lua_State *L)
 
 static int Lua_HUDLighting_Get_Weapon(lua_State *L)
 {
-    lua_pushnumber(L, PIN(current_player->weapon_intensity - 32768, 0, 32767)/32767.f);
+    lua_pushnumber(L, PIN(current_player->weapon_intensity - NATURAL_LIGHT_INTENSITY, 0, FIXED_ONE)/float(FIXED_ONE));
     return 1;
 }
 
