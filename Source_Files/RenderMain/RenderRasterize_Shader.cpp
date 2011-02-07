@@ -26,7 +26,6 @@
 #define MAXIMUM_VERTICES_PER_WORLD_POLYGON (MAXIMUM_VERTICES_PER_POLYGON+4)
 
 inline bool FogActive();
-void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color);
 
 class FBO {
 
@@ -297,7 +296,11 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 
 	Shader *s = NULL;
 	GLfloat color[3];
-	FindShadingColor(rect.depth, rect.ambient_shade, color);
+	GLdouble shade = PIN(static_cast<GLfloat>(rect.ambient_shade/FIXED_ONE),0,1);
+	if (Using_sRGB)
+		color[0] = color[1] = color[2] = sRGB_frob(shade);
+	else
+		color[0] = color[1] = color[2] = shade;
 
 	TextureManager TMgr;
 
@@ -869,7 +872,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	}
 
 	GLfloat color[3];
-	FindShadingColor(RenderRectangle.depth, RenderRectangle.ambient_shade, color);
+	GLdouble shade = PIN(static_cast<GLfloat>(RenderRectangle.ambient_shade/FIXED_ONE),0,1);
+	if (Using_sRGB)
+		color[0] = color[1] = color[2] = sRGB_frob(shade);
+	else
+		color[0] = color[1] = color[2] = shade;
 	glColor4f(color[0], color[1], color[2], 1.0);
 
 	Shader *s = NULL;
