@@ -290,7 +290,7 @@ int L_Class<name, index_t>::_get(lua_State *L)
 	{
 		luaL_checktype(L, 1, LUA_TUSERDATA);
 		luaL_checkudata(L, 1, name);
-		if (!Valid(Index(L, 1)) && strcmp(lua_tostring(L, 2), "valid") != 0)
+		if (!Valid(Index(L, 1)) && strcmp(lua_tostring(L, 2), "valid") != 0 && strcmp(lua_tostring(L, 2), "index") != 0)
 			luaL_error(L, "invalid object");
 
 		if (lua_tostring(L, 2)[0] == '_')
