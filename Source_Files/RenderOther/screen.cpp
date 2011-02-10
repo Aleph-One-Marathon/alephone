@@ -704,11 +704,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #endif
 	} else 
 #endif 
-	if (nogl || Screen::instance()->lua_hud()) {
+
 		flags |= SDL_SWSURFACE;
-	} else {
-		flags |= SDL_HWSURFACE | SDL_HWPALETTE;
-	}
 	
 	main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
 #ifdef HAVE_OPENGL
