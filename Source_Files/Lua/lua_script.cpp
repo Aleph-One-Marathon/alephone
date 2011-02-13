@@ -1146,17 +1146,17 @@ void L_Call_Cleanup ()
 	L_Dispatch(boost::bind(&LuaState::Cleanup, _1));
 }
 
+void UpdateLuaCameras();
+
 void L_Call_Idle()
 {
+	UpdateLuaCameras();
 	L_Dispatch(boost::bind(&LuaState::Idle, _1));
 }
-
-void UpdateLuaCameras();
 
 void L_Call_PostIdle()
 {
 	L_Dispatch(boost::bind(&LuaState::PostIdle, _1));
-	UpdateLuaCameras();
 }
 
 void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
