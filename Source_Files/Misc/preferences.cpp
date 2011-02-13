@@ -109,6 +109,9 @@ May 22, 2003 (Woody Zenfell):
 
 #include "joystick.h"
 
+// 8-bit support is still here if you undefine this, but you'll need to fix it
+#define TRUE_COLOR_ONLY 1
+
 using namespace alephone;
 
 static const char sPasswordMask[] = "reverof nohtaram";
@@ -675,9 +678,15 @@ static void player_dialog(void *arg)
  *  Handle graphics dialog
  */
 
+#ifdef TRUE_COLOR_ONLY
+static const char* depth_labels[3] = {
+	"16 Bit", "32 Bit", NULL
+};
+#else
 static const char *depth_labels[4] = {
 	"8 Bit", "16 Bit", "32 Bit", NULL
 };
+#endif
 
 static const char *resolution_labels[3] = {
 	"Low", "High", NULL
@@ -729,7 +738,11 @@ static void software_rendering_options_dialog(void* arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 
+#ifdef TRUE_COLOR_ONLY
+	w_select *depth_w = new w_select(graphics_preferences->screen_mode.bit_depth == 16 ? 0 : 1, depth_labels);
+#else
 	w_select *depth_w = new w_select(graphics_preferences->screen_mode.bit_depth == 8 ? 0 : graphics_preferences->screen_mode.bit_depth == 16 ? 1 : 2, depth_labels);
+#endif
 	table->dual_add(depth_w->label("Color Depth"), d);
 	table->dual_add(depth_w, d);
 
@@ -759,7 +772,11 @@ static void software_rendering_options_dialog(void* arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
+#ifdef TRUE_COLOR_ONLY
+		int depth = (depth_w->get_selection() == 0 ? 16 : 32);
+#else
 		int depth = (depth_w->get_selection() == 0 ? 8 : depth_w->get_selection() == 1 ? 16 : 32);
+#endif
 		if (depth != graphics_preferences->screen_mode.bit_depth) {
 			graphics_preferences->screen_mode.bit_depth = depth;
 			changed = true;
@@ -2577,6 +2594,14 @@ static bool validate_graphics_preferences(graphics_preferences_data *preferences
 		preferences->screen_mode.bit_depth= 16;
 		changed= true;
 	}
+
+#ifdef TRUE_COLOR_ONLY
+	if (preferences->screen_mode.bit_depth == 8)
+	{
+		preferences->screen_mode.bit_depth = 16;
+		changed = true;
+	}
+#endif
 
 	return changed;
 }
