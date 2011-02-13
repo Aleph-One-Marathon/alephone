@@ -148,7 +148,6 @@ const luaL_reg Lua_Action_Flags_Set[] = {
 };
 
 extern vector<lua_camera> lua_cameras;
-extern int number_of_cameras;
 
 char Lua_Camera_Path_Points_Name[] = "camera_path_points";
 typedef L_Class<Lua_Camera_Path_Points_Name> Lua_Camera_Path_Points;
@@ -293,7 +292,7 @@ const luaL_reg Lua_Camera_Get[] = {
 
 static int Lua_Camera_Valid(int16 index)
 {
-	return index >= 0 && index < number_of_cameras;
+	return index >= 0 && index < lua_cameras.size();
 }
 
 char Lua_Cameras_Name[] = "Cameras";
@@ -301,17 +300,24 @@ typedef L_Container<Lua_Cameras_Name, Lua_Camera> Lua_Cameras;
 
 static int Lua_Cameras_New(lua_State *L)
 {
-	number_of_cameras++;
-	lua_cameras.resize(number_of_cameras);
-	lua_cameras[number_of_cameras-1].index = number_of_cameras-1;
-	lua_cameras[number_of_cameras-1].path.index = number_of_cameras-1;
-	lua_cameras[number_of_cameras-1].path.current_point_index = 0;
-	lua_cameras[number_of_cameras-1].path.current_angle_index = 0;
-	lua_cameras[number_of_cameras-1].path.last_point_time = 0;
-	lua_cameras[number_of_cameras-1].path.last_angle_time = 0;
-	lua_cameras[number_of_cameras-1].time_elapsed = 0;
-	lua_cameras[number_of_cameras-1].player_active = -1;
-	Lua_Camera::Push(L, number_of_cameras - 1);
+	if (lua_cameras.size() == INT16_MAX)
+	{
+		return 0;
+	}
+
+	Lua_Camera::Push(L, lua_cameras.size());
+
+	lua_camera camera;
+	camera.index = lua_cameras.size();
+	camera.path.index = lua_cameras.size();
+	camera.path.current_point_index = 0;
+	camera.path.current_angle_index = 0;
+	camera.path.last_point_time = 0;
+	camera.path.last_angle_time = 0;
+	camera.time_elapsed = 0;
+	camera.player_active = -1;	
+	lua_cameras.push_back(camera);
+
 	return 1;
 }
 
@@ -321,7 +327,7 @@ const luaL_reg Lua_Cameras_Methods[] = {
 };
 
 static int16 Lua_Cameras_Length() {
-	return number_of_cameras;
+	return lua_cameras.size();
 }
 
 char Lua_Crosshairs_Name[] = "crosshairs";

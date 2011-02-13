@@ -1041,7 +1041,6 @@ state_map states;
 
 // globals
 vector<lua_camera> lua_cameras;
-int number_of_cameras = 0;
 
 uint32 *action_flags;
 
@@ -1147,9 +1146,12 @@ void L_Call_Idle()
 	L_Dispatch(boost::bind(&LuaState::Idle, _1));
 }
 
+void UpdateLuaCameras();
+
 void L_Call_PostIdle()
 {
 	L_Dispatch(boost::bind(&LuaState::PostIdle, _1));
+	UpdateLuaCameras();
 }
 
 void L_Call_Start_Refuel (short type, short player_index, short panel_side_index)
@@ -1824,7 +1826,6 @@ void CloseLuaScript()
 	RestorePreLuaSettings();
 
 	lua_cameras.resize(0);
-	number_of_cameras = 0;
 
 	LuaTexturePaletteClear();
 
@@ -1873,66 +1874,97 @@ void MarkLuaCollections(bool loading)
 	}
 }
 
+void UpdateLuaCameras()
+{
+	if (!LuaRunning())
+		return;
+
+	for (std::vector<lua_camera>::iterator it = lua_cameras.begin(); it != lua_cameras.end(); ++it)
+	{
+		if (it->player_active != local_player_index)
+		{
+			continue;
+		}
+
+		short point_index = it->path.current_point_index;
+		short angle_index = it->path.current_angle_index;
+
+		it->time_elapsed++;
+			
+		if (point_index >= 0 && it->time_elapsed - it->path.last_point_time >= it->path.path_points[point_index].delta_time)
+		{
+			it->path.current_point_index++;
+			it->path.last_point_time = it->time_elapsed;
+			if (it->path.current_point_index >= static_cast<short>(it->path.path_points.size()))
+			{
+				it->path.current_point_index = -1;
+			}
+		}
+		
+		if (angle_index >= 0 && it->time_elapsed - it->path.last_angle_time >= it->path.path_angles[angle_index].delta_time)
+		{
+			it->path.current_angle_index++;
+			it->path.last_angle_time = it->time_elapsed;
+			if (it->path.current_angle_index >= static_cast<short>(it->path.path_angles.size()))
+			{
+				it->path.current_angle_index = -1;
+			}
+		}
+	}
+}
+
 bool UseLuaCameras()
 {
 	if (!LuaRunning())
 		return false;
 
 	bool using_lua_cameras = false;
-	if (lua_cameras.size()>0)
+	for (std::vector<lua_camera>::iterator it = lua_cameras.begin(); it != lua_cameras.end(); ++it)
 	{
-		for (int i=0; i<number_of_cameras; i++)
+		if (it->player_active != local_player_index)
 		{
-			if (lua_cameras[i].player_active == local_player_index)
+			continue;
+		}
+
+		world_view->show_weapons_in_hand = false;
+		using_lua_cameras = true;
+		
+		short point_index = it->path.current_point_index;
+		short angle_index = it->path.current_angle_index;
+		
+		if (angle_index >= 0 && angle_index < static_cast<short>(it->path.path_angles.size()))
+		{
+			if (static_cast<size_t>(angle_index) == it->path.path_angles.size() - 1)
 			{
-				world_view->show_weapons_in_hand = false;
-				using_lua_cameras = true;
-				short point_index = lua_cameras[i].path.current_point_index;
-				short angle_index = lua_cameras[i].path.current_angle_index;
-				if (angle_index != -1 && static_cast<size_t>(angle_index) != lua_cameras[i].path.path_angles.size()-1)
-				{
-					world_view->yaw = normalize_angle(static_cast<short>(FindLinearValue(lua_cameras[i].path.path_angles[angle_index].yaw, lua_cameras[i].path.path_angles[angle_index+1].yaw, lua_cameras[i].path.path_angles[angle_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time)));
-					world_view->pitch = normalize_angle(static_cast<short>(FindLinearValue(lua_cameras[i].path.path_angles[angle_index].pitch, lua_cameras[i].path.path_angles[angle_index+1].pitch, lua_cameras[i].path.path_angles[angle_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time)));
-				}
-				else if (static_cast<size_t>(angle_index) == lua_cameras[i].path.path_angles.size()-1)
-				{
-					world_view->yaw = normalize_angle(lua_cameras[i].path.path_angles[angle_index].yaw);
-					world_view->pitch = normalize_angle(lua_cameras[i].path.path_angles[angle_index].pitch);
-				}
-				if (point_index != -1 && static_cast<size_t>(point_index) != lua_cameras[i].path.path_points.size()-1)
-				{
-					world_point3d oldPoint = lua_cameras[i].path.path_points[point_index].point;
-					world_view->origin = FindLinearValue(lua_cameras[i].path.path_points[point_index].point, lua_cameras[i].path.path_points[point_index+1].point, lua_cameras[i].path.path_points[point_index].delta_time, lua_cameras[i].time_elapsed - lua_cameras[i].path.last_point_time);
-					world_point3d newPoint = world_view->origin;
-					short polygon = lua_cameras[i].path.path_points[point_index].polygon;
-					ShootForTargetPoint(true, oldPoint, newPoint, polygon);
-					world_view->origin_polygon_index = polygon;
-				}
-				else if (static_cast<size_t>(point_index) == lua_cameras[i].path.path_points.size()-1)
-				{
-					world_view->origin = lua_cameras[i].path.path_points[point_index].point;
-					world_view->origin_polygon_index = lua_cameras[i].path.path_points[point_index].polygon;
-				}
-
-				lua_cameras[i].time_elapsed++;
-
-				if (lua_cameras[i].time_elapsed - lua_cameras[i].path.last_point_time >= lua_cameras[i].path.path_points[point_index].delta_time)
-				{
-					lua_cameras[i].path.current_point_index++;
-					lua_cameras[i].path.last_point_time = lua_cameras[i].time_elapsed;
-					if (static_cast<size_t>(lua_cameras[i].path.current_point_index) >= lua_cameras[i].path.path_points.size())
-						lua_cameras[i].path.current_point_index = -1;
-				}
-				if (lua_cameras[i].time_elapsed - lua_cameras[i].path.last_angle_time >= lua_cameras[i].path.path_angles[angle_index].delta_time)
-				{
-					lua_cameras[i].path.current_angle_index++;
-					lua_cameras[i].path.last_angle_time = lua_cameras[i].time_elapsed;
-					if (static_cast<size_t>(lua_cameras[i].path.current_angle_index) >= lua_cameras[i].path.path_angles.size())
-						lua_cameras[i].path.current_angle_index = -1;
-				}
+				world_view->yaw = normalize_angle(it->path.path_angles[angle_index].yaw);
+				world_view->pitch = normalize_angle(it->path.path_angles[angle_index].pitch);
+			}
+			else
+			{
+				world_view->yaw = normalize_angle(static_cast<short>(FindLinearValue(it->path.path_angles[angle_index].yaw, it->path.path_angles[angle_index+1].yaw, it->path.path_angles[angle_index].delta_time, it->time_elapsed - it->path.last_angle_time)));
+				world_view->pitch = normalize_angle(static_cast<short>(FindLinearValue(it->path.path_angles[angle_index].pitch, it->path.path_angles[angle_index+1].pitch, it->path.path_angles[angle_index].delta_time, it->time_elapsed - it->path.last_angle_time)));
 			}
 		}
+
+		if (point_index >= 0 && point_index < static_cast<short>(it->path.path_points.size()))
+		{
+			if (static_cast<size_t>(point_index) == it->path.path_points.size() - 1)
+			{
+				world_view->origin = it->path.path_points[point_index].point;
+				world_view->origin_polygon_index = it->path.path_points[point_index].polygon;
+			}
+			else
+			{
+				world_point3d oldPoint = it->path.path_points[point_index].point;
+				world_view->origin = FindLinearValue(it->path.path_points[point_index].point, it->path.path_points[point_index+1].point, it->path.path_points[point_index].delta_time, it->time_elapsed - it->path.last_point_time);
+				world_point3d newPoint = world_view->origin;
+				short polygon = it->path.path_points[point_index].polygon;
+				ShootForTargetPoint(true, oldPoint, newPoint, polygon);
+				world_view->origin_polygon_index = polygon;
+			}
+		}	
 	}
+
 	return using_lua_cameras;
 }
 
