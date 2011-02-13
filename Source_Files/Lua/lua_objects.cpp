@@ -162,26 +162,138 @@ int lua_object_position(lua_State *L)
 
 char Lua_Effect_Name[] = "effect";
 
+int Lua_Effect_Delete(lua_State* L)
+{
+	remove_effect(Lua_Effect::Index(L, 1));
+	return 0;
+}
+
+static int Lua_Effect_Get_Facing(lua_State* L)
+{
+	effect_data* effect = get_effect_data(Lua_Effect::Index(L, 1));
+	object_data* object = get_object_data(effect->object_index);
+	lua_pushnumber(L, (double) object->facing * AngleConvert);
+	return 1;
+}
+
+static int Lua_Effect_Get_Polygon(lua_State* L)
+{
+	effect_data* effect = get_effect_data(Lua_Effect::Index(L, 1));
+	object_data* object = get_object_data(effect->object_index);
+	Lua_Polygon::Push(L, object->polygon);
+	return 1;
+}
+
+static int Lua_Effect_Get_Type(lua_State* L)
+{
+	effect_data* effect = get_effect_data(Lua_Effect::Index(L, 1));
+	Lua_EffectType::Push(L, effect->type);
+	return 1;
+}
+
+static int Lua_Effect_Get_X(lua_State* L)
+{
+	effect_data* effect = get_effect_data(Lua_Effect::Index(L, 1));
+	object_data* object = get_object_data(effect->object_index);
+	lua_pushnumber(L, (double) object->location.x / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Effect_Get_Y(lua_State* L)
+{
+	effect_data* effect = get_effect_data(Lua_Effect::Index(L, 1));
+	object_data* object = get_object_data(effect->object_index);
+	lua_pushnumber(L, (double) object->location.y / WORLD_ONE);
+	return 1;
+}
+
+static int Lua_Effect_Get_Z(lua_State* L)
+{
+	effect_data* effect = get_effect_data(Lua_Effect::Index(L, 1));
+	object_data* object = get_object_data(effect->object_index);
+	lua_pushnumber(L, (double) object->location.z / WORLD_ONE);
+	return 1;
+}
+
+int Lua_Effect_Play_Sound(lua_State* L)
+{
+	effect_data* effect = get_effect_data(Lua_Effect::Index(L, 1));
+	short sound_code = Lua_Sound::ToIndex(L, 2);
+	play_object_sound(effect->object_index, sound_code);
+	return 0;
+}
+
+int Lua_Effect_Position(lua_State* L)
+{
+	if (!lua_isnumber(L, 2) || !lua_isnumber(L, 3) || !lua_isnumber(L, 4))
+		return luaL_error(L, "position: incorrect argument type");
+
+	short polygon_index = 0;
+	if (lua_isnumber(L, 5))
+	{
+		polygon_index = static_cast<int>(lua_tonumber(L, 5));
+		if (!Lua_Polygon::Valid(polygon_index))
+			return luaL_error(L, "position: invalid polygon index");
+	}
+	else if (Lua_Polygon::Is(L, 5))
+	{
+		polygon_index = Lua_Polygon::Index(L, 5);
+	}
+	else
+		return luaL_error(L, "position: incorrect argument type");
+
+	effect_data* effect = get_effect_data(Lua_Effect::Index(L, 1));
+	object_data *object = get_object_data(effect->object_index);
+	object->location.x = static_cast<int>(lua_tonumber(L, 2) * WORLD_ONE);
+	object->location.y = static_cast<int>(lua_tonumber(L, 3) * WORLD_ONE);
+	object->location.z = static_cast<int>(lua_tonumber(L, 4) * WORLD_ONE);
+
+	if (polygon_index != object->polygon)
+	{
+		remove_object_from_polygon_object_list(effect->object_index);
+		add_object_to_polygon_object_list(effect->object_index, polygon_index);
+	}
+
+	return 0;
+	
+}
+
 const luaL_reg Lua_Effect_Get[] = {
-	{"delete", L_TableFunction<lua_delete_object<Lua_Effect> >},
-	{"facing", get_object_facing<Lua_Effect>},
-	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Effect> >},
-	{"polygon", get_object_polygon<Lua_Effect>},
-	{"position", L_TableFunction<lua_object_position<Lua_Effect> >},
-	{"type", get_object_type<Lua_Effect, Lua_EffectType>},
-	{"x", get_object_x<Lua_Effect>},
-	{"y", get_object_y<Lua_Effect>},
-	{"z", get_object_z<Lua_Effect>},
+	{"delete", L_TableFunction<Lua_Effect_Delete>},
+	{"facing", Lua_Effect_Get_Facing},
+	{"play_sound", L_TableFunction<Lua_Effect_Play_Sound>},
+	{"polygon", Lua_Effect_Get_Polygon},
+	{"position", L_TableFunction<Lua_Effect_Position>},
+	{"type", Lua_Effect_Get_Type},
+	{"x", Lua_Effect_Get_X},
+	{"y", Lua_Effect_Get_Y},
+	{"z", Lua_Effect_Get_Z},
+	{0, 0}
+};
+
+static int Lua_Effect_Set_Facing(lua_State* L)
+{
+	if (!lua_isnumber(L, 2))
+		return luaL_error(L, "facing: incorrect argument type");
+
+	effect_data* effect = get_effect_data(Lua_Effect::Index(L, 1));
+	object_data* object = get_object_data(effect->object_index);
+	object->facing = static_cast<int>(lua_tonumber(L, 2) / AngleConvert);
+	return 0;
+}
+
+const luaL_reg Lua_Effect_Set[] = {
+	{"facing", Lua_Effect_Set_Facing},
 	{0, 0}
 };
 
 bool Lua_Effect_Valid(int32 index)
 {
-	if (index < 0 || index >= MAXIMUM_OBJECTS_PER_MAP)
+	if (index < 0 || index >= MAXIMUM_EFFECTS_PER_MAP)
 		return false;
 
-	object_data *object = GetMemberWithBounds(objects, index, MAXIMUM_OBJECTS_PER_MAP);
-	return (SLOT_IS_USED(object) && GET_OBJECT_OWNER(object) == _object_is_effect);
+	effect_data *effect = GetMemberWithBounds(effects, index, MAXIMUM_EFFECTS_PER_MAP);
+	return SLOT_IS_USED(effect);
 }
 
 char Lua_Effects_Name[] = "Effects";
@@ -665,11 +777,11 @@ static void compatibility(lua_State *L);
 
 int Lua_Objects_register(lua_State *L)
 {
-	Lua_Effect::Register(L, Lua_Effect_Get);
+	Lua_Effect::Register(L, Lua_Effect_Get, Lua_Effect_Set);
 	Lua_Effect::Valid = Lua_Effect_Valid;
 
 	Lua_Effects::Register(L, Lua_Effects_Methods);
-	Lua_Effects::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_objects);
+	Lua_Effects::Length = boost::bind(get_dynamic_limit, (int) _dynamic_limit_effects);
 
 	Lua_Item::Register(L, Lua_Item_Get, Lua_Item_Set);
 	Lua_Item::Valid = Lua_Item_Valid;

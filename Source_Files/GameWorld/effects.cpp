@@ -40,6 +40,7 @@ Aug 30, 2000 (Loren Petrich):
 #include "interface.h"
 #include "effects.h"
 #include "SoundManager.h"
+#include "lua_script.h"
 
 #include "Packing.h"
 
@@ -207,6 +208,7 @@ void remove_effect(
 	
 	effect= get_effect_data(effect_index);
 	remove_map_object(effect->object_index);
+	L_Invalidate_Effect(effect_index);
 	MARK_SLOT_AS_FREE(effect);
 }
 

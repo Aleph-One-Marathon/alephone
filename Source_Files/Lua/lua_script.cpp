@@ -172,6 +172,7 @@ void L_Call_Player_Damaged(short player_index, short aggressor_player_index, sho
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) {}
 void L_Call_Item_Created(short item_index) {}
 
+void L_Invalidate_Effect(short) { }
 void L_Invalidate_Monster(short) { }
 void L_Invalidate_Projectile(short) { }
 void L_Invalidate_Object(short) { }
@@ -327,6 +328,7 @@ public:
 	void ProjectileDetonated(short type, short owner_index, short polygon, world_point3d location);
 	void ItemCreated(short item_index);
 
+	void InvalidateEffect(short effect_index);
 	void InvalidateMonster(short monster_index);
 	void InvalidateProjectile(short projectile_index);
 	void InvalidateObject(short object_index);
@@ -650,6 +652,13 @@ void LuaState::ItemCreated (short item_index)
 	}
 }
 
+void LuaState::InvalidateEffect(short effect_index)
+{
+	if (!running_) return;
+
+	Lua_Effect::Invalidate(State(), effect_index);
+}
+
 void LuaState::InvalidateMonster(short monster_index)
 {
 	if (!running_) return;
@@ -672,10 +681,6 @@ void LuaState::InvalidateObject(short object_index)
 	if (GET_OBJECT_OWNER(object) == _object_is_item)
 	{
 		Lua_Item::Invalidate(State(), object_index);
-	}
-	else if (GET_OBJECT_OWNER(object) == _object_is_effect)
-	{
-		Lua_Effect::Invalidate(State(), object_index);
 	}
 	else if (Lua_Scenery::Valid(object_index))
 	{
@@ -1242,6 +1247,11 @@ void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, w
 void L_Call_Item_Created (short item_index)
 {
 	L_Dispatch(boost::bind(&LuaState::ItemCreated, _1, item_index));
+}
+
+void L_Invalidate_Effect(short effect_index)
+{
+	L_Dispatch(boost::bind(&LuaState::InvalidateEffect, _1, effect_index));
 }
 
 void L_Invalidate_Monster(short monster_index)

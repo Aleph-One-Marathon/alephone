@@ -374,22 +374,22 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </subtable>
     </table>
     <table name="effect">
-      <function name="delete">
+      <function name="delete" version="SVN">
 	<description>removes effect from map</description>
       </function>
-      <variable name="facing">
+      <variable name="facing" version="SVN">
 	<description>direction effect is facing</description>
 	<type>degrees</type>
       </variable>
-      <function name="play_sound">
+      <function name="play_sound" version="SVN">
 	<description>play sound coming from this effect</description>
 	<argument name="sound"><type>sound</type></argument>
       </function>
-      <variable name="polygon" access="read-only">
+      <variable name="polygon" access="read-only" version="SVN">
 	<description>polygon the effect is in</description>
 	<type>polygon</type>
       </variable>
-      <function name="position" version="20090909">
+      <function name="position" version="SVN">
 	<description>sets position of effect</description>
 	<argument name="x">
 	  <type>WU</type></argument>
@@ -397,17 +397,17 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="z"><type>WU</type></argument>
 	<argument name="polygon"><type>polygon</type></argument>
       </function>
-      <variable name="type" access="read-only">
+      <variable name="type" access="read-only" version="SVN">
 	<description>type of effect</description>
 	<type>effect_type</type>
       </variable>
-      <variable name="x" access="read-only">
+      <variable name="x" access="read-only" version="SVN">
 	<type>WU</type>
       </variable>
-      <variable name="y" access="read-only">
+      <variable name="y" access="read-only" version="SVN">
 	<type>WU</type>
       </variable>
-      <variable name="z" access="read-only">
+      <variable name="z" access="read-only" version="SVN">
 	<type>WU</type>
       </variable>
     </table>
@@ -1756,13 +1756,13 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     </accessor>
     <accessor name="Effects" contains="effect">
       <length>
-	<description>maximum number of map objects</description>
+	<description>maximum number of effects</description>
       </length>
       <index/>
       <call>
 	<description>iterates through all valid effects</description>
       </call>
-      <function name="new">
+      <function name="new" version="SVN">
 	<description>returns a new effect</description>
 	<argument name="x"><type>WU</type></argument>
 	<argument name="y"><type>WU</type></argument>
