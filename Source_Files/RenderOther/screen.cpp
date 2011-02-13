@@ -1120,7 +1120,6 @@ void render_screen(short ticks_elapsed)
 #endif
 }
 
-
 /*
  *  Blit world view to screen
  */
@@ -1203,6 +1202,14 @@ static void apply_gamma(SDL_Surface *src, SDL_Surface *dst)
 		SDL_UnlockSurface(dst);
 }
 
+static inline bool pixel_formats_equal(SDL_PixelFormat* a, SDL_PixelFormat* b)
+{
+	return (a->BytesPerPixel == b->BytesPerPixel &&
+		a->Rmask == b->Rmask &&
+		a->Gmask == b->Gmask &&
+		a->Bmask == b->Bmask);
+}
+
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 {
 	SDL_Surface *s = world_pixels;
@@ -1211,26 +1218,44 @@ static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 		s = world_pixels_corrected;
 	}
 		
-	if (hi_rez) {
+	if (hi_rez) 
+	{
 		SDL_BlitSurface(s, NULL, main_surface, &destination);
-	} else {
-	  if (SDL_MUSTLOCK(main_surface)) {
-	    if (SDL_LockSurface(main_surface) < 0) return;
-	  }
-		switch (s->format->BytesPerPixel) {
-			case 1:
-				quadruple_surface((pixel8 *)s->pixels, s->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
-				break;
-			case 2:
-				quadruple_surface((pixel16 *)s->pixels, s->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination);
-				break;
-			case 4:
-				quadruple_surface((pixel32 *)s->pixels, s->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
-				break;
+	} 
+	else 
+	{
+		SDL_Surface* intermediary = 0;
+		if (SDL_MUSTLOCK(main_surface)) 
+		{
+			if (SDL_LockSurface(main_surface) < 0) return;
+		}
+
+		if (s->format->BytesPerPixel != 1 && !pixel_formats_equal(s->format, main_surface->format))
+		{
+			intermediary = SDL_ConvertSurface(s, main_surface->format, s->flags);
+			s = intermediary;
+		}
+
+		switch (s->format->BytesPerPixel) 
+		{
+		case 1:
+			quadruple_surface((pixel8 *)s->pixels, s->pitch, (pixel8 *)main_surface->pixels, main_surface->pitch, destination);
+			break;
+		case 2:
+			quadruple_surface((pixel16 *)s->pixels, s->pitch, (pixel16 *)main_surface->pixels, main_surface->pitch, destination);
+			break;
+		case 4:
+			quadruple_surface((pixel32 *)s->pixels, s->pitch, (pixel32 *)main_surface->pixels, main_surface->pitch, destination);
+			break;
 		}
 		
 		if (SDL_MUSTLOCK(main_surface)) {
-		  SDL_UnlockSurface(main_surface);
+			SDL_UnlockSurface(main_surface);
+		}
+
+		if (intermediary) 
+		{
+			SDL_FreeSurface(intermediary);
 		}
 	}
 //	SDL_UpdateRects(main_surface, 1, &destination);
