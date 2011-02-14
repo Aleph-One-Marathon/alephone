@@ -343,8 +343,6 @@ protected:
 	SelectorWidget*			m_chatChoiceWidget;
 	ColorfulChatWidget*             m_chatWidget;
 
-	bool                            m_enableSinglePlayer;
-	
 	enum { kPregameChat = 0, kMetaserverChat };
 };
 
