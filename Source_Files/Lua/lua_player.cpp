@@ -305,8 +305,6 @@ static int Lua_Cameras_New(lua_State *L)
 		return 0;
 	}
 
-	Lua_Camera::Push(L, lua_cameras.size());
-
 	lua_camera camera;
 	camera.index = lua_cameras.size();
 	camera.path.index = lua_cameras.size();
@@ -317,6 +315,8 @@ static int Lua_Cameras_New(lua_State *L)
 	camera.time_elapsed = 0;
 	camera.player_active = -1;	
 	lua_cameras.push_back(camera);
+
+	Lua_Camera::Push(L, camera.index);
 
 	return 1;
 }
