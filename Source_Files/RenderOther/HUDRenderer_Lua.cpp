@@ -32,7 +32,6 @@ HUD_RENDERER_LUA.CPP
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
-#include "OGL_Setup.h" // for SglColor*
 #endif
 
 #include <math.h>
@@ -307,8 +306,6 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
-		if (Using_sRGB)
-			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 		glColor4f(r, g, b, a);
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
@@ -320,8 +317,6 @@ void HUD_Lua_Class::fill_rect(float x, float y, float w, float h,
 
 		glEnd();
 		glEnable(GL_TEXTURE_2D);
-		if (Using_sRGB)
-			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 	}
 	else
 #endif
@@ -349,8 +344,6 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 #ifdef HAVE_OPENGL
 	if (m_opengl)
 	{
-		if (Using_sRGB)
-			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 		glColor4f(r, g, b, a);
 		glDisable(GL_TEXTURE_2D);
 		glBegin(GL_QUADS);
@@ -377,8 +370,6 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 		
 		glEnd();
 		glEnable(GL_TEXTURE_2D);
-		if (Using_sRGB)
-			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 	}
 	else
 #endif
@@ -430,13 +421,9 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
 		glTranslatef(x, y + font->Height, 0);
-		if (Using_sRGB)
-			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 		glColor4f(r, g, b, a);
 		font->OGL_Render(text);
 		glColor4f(1, 1, 1, 1);
-		if (Using_sRGB)
-			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 		glPopMatrix();
 	}
 	else

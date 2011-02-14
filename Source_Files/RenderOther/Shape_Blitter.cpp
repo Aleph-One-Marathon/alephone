@@ -133,6 +133,11 @@ void Shape_Blitter::OGL_Draw(SDL_Rect& dst)
 	GLdouble V_Offset = TMgr.V_Offset;
     
 	// Draw shape
+	if (Wanting_sRGB && TMgr.TextureType != OGL_Txtr_WeaponsInHand)
+	{
+		glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+		Using_sRGB = true;
+	}
 	SglColor4f(tint_color_r, tint_color_g, tint_color_b, tint_color_a);
 	glEnable(GL_TEXTURE_2D);
     glEnable(GL_BLEND);
@@ -229,6 +234,11 @@ void Shape_Blitter::OGL_Draw(SDL_Rect& dst)
     
 	if (TMgr.IsGlowMapped()) TMgr.RenderGlowing();
 	TMgr.RestoreTextureMatrix();
+	if (Using_sRGB)
+	{
+		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+		Using_sRGB = false;
+	}
 #endif
 }
 

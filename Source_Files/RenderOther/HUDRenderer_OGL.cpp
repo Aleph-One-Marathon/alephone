@@ -263,7 +263,7 @@ void HUD_OGL_Class::DrawText(const char *text, screen_rectangle *dest, short fla
 {
 	// Get color
 	const rgb_color &c = get_interface_color(text_color);
-	SglColor3us(c.red, c.green, c.blue);
+	glColor3us(c.red, c.green, c.blue);
 
 	// Get font information
 	FontSpecifier &FontData = get_interface_font(font_id);
@@ -281,7 +281,7 @@ void HUD_OGL_Class::FillRect(screen_rectangle *r, short color_index)
 {
 	// Get color
 	const rgb_color &c = get_interface_color(color_index);
-	SglColor3us(c.red, c.green, c.blue);
+	glColor3us(c.red, c.green, c.blue);
 
 	// Draw rectangle
 	glDisable(GL_TEXTURE_2D);
@@ -297,7 +297,7 @@ void HUD_OGL_Class::FrameRect(screen_rectangle *r, short color_index)
 {
 	// Get color
 	const rgb_color &c = get_interface_color(color_index);
-	SglColor3us(c.red, c.green, c.blue);
+	glColor3us(c.red, c.green, c.blue);
 
 	// Draw rectangle
 	glDisable(GL_TEXTURE_2D);

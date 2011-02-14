@@ -1534,10 +1534,7 @@ void darken_world_window(void)
 
 		// Draw 50% black rectangle
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		if(Using_sRGB)
-		  glColor4f(0.0, 0.0, 0.0, 0.75);
-		else
-		  glColor4f(0.0, 0.0, 0.0, 0.5);
+		glColor4f(0.0, 0.0, 0.0, 0.5);
 		glBegin(GL_QUADS);
 			glVertex2i(r.x, r.y);
 			glVertex2i(r.x + r.w, r.y);

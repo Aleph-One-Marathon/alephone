@@ -248,8 +248,6 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
 //	glDisable(GL_SCISSOR_TEST);
 //	glDisable(GL_STENCIL_TEST);
 	glEnable(GL_TEXTURE_2D);
-	if (Using_sRGB)
-		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 
 	GLdouble x_scale = dst.w / (GLdouble) src.w;
 	GLdouble y_scale = dst.h / (GLdouble) src.h;
@@ -298,8 +296,6 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		glEnd();
 	}
 	
-	if (Using_sRGB)
-		glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 	if (rotating)
 		glPopMatrix();
 	glPopAttrib();

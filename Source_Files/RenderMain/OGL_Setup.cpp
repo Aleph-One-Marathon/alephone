@@ -95,6 +95,7 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 static bool _OGL_IsPresent = false;
 
 bool Using_sRGB = false;
+bool Wanting_sRGB = false;
 bool npotTextures = false; // non-power-of-two
 
 // Initializer
@@ -621,11 +622,6 @@ void SglColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
 
 void SglColor4fv(const GLfloat* iv) {
   GLfloat ov[4] = {sRGB_frob(iv[0]), sRGB_frob(iv[1]), sRGB_frob(iv[2]), iv[3]};
-  glColor4fv(ov);
-}
-
-void SglColor4fva(const GLfloat* iv) {
-  GLfloat ov[4] = {sRGB_frob(iv[0]), sRGB_frob(iv[1]), sRGB_frob(iv[2]), iv[3]*iv[3]};
   glColor4fv(ov);
 }
 

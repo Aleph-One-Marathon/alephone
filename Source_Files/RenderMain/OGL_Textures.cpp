@@ -1253,7 +1253,11 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 		internalFormat = GL_RGB5_A1;
 	}
 
-	if(Using_sRGB && !normal_map) {
+	bool load_as_sRGB = (Wanting_sRGB && !normal_map &&
+						 Collection != _collection_interface &&
+						 Collection != _collection_weapons_in_hand);
+	
+	if(load_as_sRGB) {
 	  switch(internalFormat) {
 	  case GL_RGB:
 	  case GL_R3_G3_B2:
@@ -1337,11 +1341,11 @@ void TextureManager::PlaceTexture(const ImageDescriptor *Image, bool normal_map)
 	{
 #if defined(GL_ARB_texture_compression) && defined(GL_COMPRESSED_RGB_S3TC_DXT1_EXT)
 		if (Image->GetFormat() == ImageDescriptor::DXTC1)
-		  internalFormat = (Using_sRGB && !normal_map) ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
+		  internalFormat = (load_as_sRGB) ? GL_COMPRESSED_SRGB_S3TC_DXT1_EXT : GL_COMPRESSED_RGB_S3TC_DXT1_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC3)
-		  internalFormat = (Using_sRGB && !normal_map) ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+		  internalFormat = (load_as_sRGB) ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT3_EXT : GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
 		else if (Image->GetFormat() == ImageDescriptor::DXTC5)
-		  internalFormat = (Using_sRGB && !normal_map) ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+		  internalFormat = (load_as_sRGB) ? GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_EXT : GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
 		
 		switch(TxtrTypeInfo.FarFilter)
 		{

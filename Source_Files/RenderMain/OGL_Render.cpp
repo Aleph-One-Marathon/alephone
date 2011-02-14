@@ -640,13 +640,12 @@ bool OGL_StartRun()
 	glewInit();
 #endif
 
-	Using_sRGB = false;
+	Wanting_sRGB = false;
 	if(graphics_preferences->OGL_Configure.Use_sRGB) {
 	  if(!OGL_CheckExtension("GL_EXT_framebuffer_sRGB") || !OGL_CheckExtension("GL_EXT_texture_sRGB"))
 	    graphics_preferences->OGL_Configure.Use_sRGB = false;
 	  else {
-	    glEnable(GL_FRAMEBUFFER_SRGB_EXT);
-	    Using_sRGB = true;
+	    Wanting_sRGB = true;
 	  }
 	}
 
@@ -732,11 +731,7 @@ bool OGL_StopRun()
 	OGL_StopTextures();
 	Shader::unloadAll();
 	
-	if (Using_sRGB)
-	{
-		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
-		Using_sRGB = false;
-	}
+	Wanting_sRGB = false;
 #ifdef mac
 	aglDestroyContext(RenderContext);
 #endif
@@ -1023,6 +1018,12 @@ bool OGL_StartMain()
 	// done once per frame to avoid visual inconsistencies
 	UseFlatStatic = TEST_FLAG(ConfigureData.Flags,OGL_Flag_FlatStatic);
 	
+	if (Wanting_sRGB)
+	{
+		glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+		Using_sRGB = true;
+	}
+	
 	return true;
 }
 
@@ -1030,6 +1031,12 @@ bool OGL_StartMain()
 bool OGL_EndMain()
 {
 	if (!OGL_IsActive()) return false;
+
+	if (Wanting_sRGB)
+	{
+		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+		Using_sRGB = false;
+	}
 	
 	// Proper projection
 	SetProjectionType(Projection_Screen);
@@ -1247,6 +1254,13 @@ bool OGL_SetForeground()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	
+	// Disable sRGB mode
+	if (Wanting_sRGB)
+	{
+		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
+		Using_sRGB = false;
+	}
+	
 	return true;
 }
 
@@ -1298,12 +1312,7 @@ void FindShadingColor(GLdouble Depth, _fixed Shading, GLfloat *Color)
 	
 	GLdouble CombinedShading = (Shading>SelfIllumShading) ? (Shading + 0.5*SelfIllumShading) : (SelfIllumShading + 0.5*Shading);
 
-	if(Using_sRGB) {
-	  GLdouble temp = PIN(static_cast<GLfloat>(CombinedShading/FIXED_ONE),0,1);
-	  Color[0] = Color[1] = Color[2] = sRGB_frob(temp);
-	}
-	else
-	  Color[0] = Color[1] = Color[2] = PIN(static_cast<GLfloat>(CombinedShading/FIXED_ONE),0,1);
+	Color[0] = Color[1] = Color[2] = sRGB_frob(PIN(static_cast<GLfloat>(CombinedShading/FIXED_ONE),0,1));
 }
 
 

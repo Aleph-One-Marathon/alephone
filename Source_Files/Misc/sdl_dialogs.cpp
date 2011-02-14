@@ -2608,7 +2608,7 @@ int dialog::finish(bool play_sound)
 
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
-        SglColor4f(0, 0, 0, 1);
+        glColor4f(0, 0, 0, 1);
 #ifdef OPENGL_DOESNT_COPY_ON_SWAP
         for (int i = 0; i < 2; i++)  // execute for both buffers
 #endif

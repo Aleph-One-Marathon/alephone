@@ -108,6 +108,8 @@ Aug 21, 2001 (Loren Petrich):
 /* These probably need to be somewhere else */
 /* Whether we're doing sRGB right now */
 extern bool Using_sRGB;
+/* Whether we'll be using sRGB at all */
+extern bool Wanting_sRGB;
 
 extern bool npotTextures;
 
@@ -127,7 +129,6 @@ void SglColor3us(GLushort r, GLushort g, GLushort b);
 void SglColor3usv(const GLushort* v);
 void SglColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
 void SglColor4fv(const GLfloat* v);
-void SglColor4fva(const GLfloat* v);
 void SglColor4usv(const GLushort* v);
 
 // Initializer; returns whether or not OpenGL is present
