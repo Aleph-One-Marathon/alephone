@@ -150,7 +150,7 @@ SDL_PixelFormat pixel_format_32 = {
 	0, 24, 4,
 	0, 0, 0, 0,
 	16, 8, 0, 0,
-	0xff0000, 0x00ff00, 0x0000ff
+	0xff0000, 0x00ff00, 0x0000ff, 0xff000000
 };
 
 // LP addition:
@@ -766,12 +766,13 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		SDL_FreeSurface(Intro_Buffer_corrected);
 		Intro_Buffer_corrected = NULL;
 	}
+
+	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, pixel_format_32.Amask);
+
 #ifdef ALEPHONE_LITTLE_ENDIAN
-	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 #else
-	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, 0xff000000,0x00ff0000, 0x0000ff00, 0x000000ff);
 	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
 #endif
