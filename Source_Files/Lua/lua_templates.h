@@ -591,7 +591,7 @@ bool L_Enum<name, index_t>::_lookup(lua_State *L, int index, index_t& to)
 
 		if (lua_istable(L, -1))
 		{
-			lua_pushvalue(L, index > 0 ? index : lua_gettop(L) + index);
+			lua_pushvalue(L, index > 0 ? index : index - 1);
 			lua_gettable(L, -2);
 			if (lua_isnumber(L, -1))
 			{
