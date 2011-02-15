@@ -852,8 +852,8 @@ void change_screen_mode(short screentype)
 	else if (screentype == _screentype_chapter)
 	{
 		// use 640x480 for fullscreen chapters in software,
-		// and windowed chapters in any renderer
-		if (!mode->fullscreen ||
+		// and never in windowed mode
+		if (mode->fullscreen &&
 			(mode->fill_the_screen && mode->acceleration == _no_acceleration))
 		{
 			w = 640;
