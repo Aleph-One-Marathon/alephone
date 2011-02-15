@@ -37,6 +37,9 @@ LUA_MAP.CPP
 
 #ifdef HAVE_LUA
 
+char Lua_AmbientSound_Name[] = "ambient_sound";
+char Lua_AmbientSounds_Name[] = "AmbientSounds";
+
 extern collection_definition *get_collection_definition(short);
 
 char Lua_Collection_Name[] = "collection";
@@ -3092,6 +3095,11 @@ extern bool collection_loaded(short);
 
 int Lua_Map_register(lua_State *L)
 {
+	Lua_AmbientSound::Register(L, 0, 0, 0, Lua_AmbientSound_Mnemonics);
+	Lua_AmbientSound::Valid = Lua_AmbientSound::ValidRange(NUMBER_OF_AMBIENT_SOUND_DEFINITIONS);
+	Lua_AmbientSounds::Register(L);
+	Lua_AmbientSounds::Length = Lua_AmbientSounds::ConstantLength(NUMBER_OF_AMBIENT_SOUND_DEFINITIONS);
+
 	Lua_Collection::Register(L, Lua_Collection_Get, 0, 0, Lua_Collection_Mnemonics);
 	Lua_Collection::Valid = collection_loaded;
 	Lua_Collections::Register(L);

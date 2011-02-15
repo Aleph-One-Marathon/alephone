@@ -26,6 +26,38 @@ struct lang_def
 	int32 value;
 };
 
+const lang_def Lua_AmbientSound_Mnemonics[] = {
+	{"water", 0},
+	{"sewage", 1},
+	{"lava", 2},
+	{"goo", 3},
+	{"underwater", 4},
+	{"wind", 5},
+	{"waterfall", 6},
+	{"siren", 7},
+	{"fan", 8},
+	{"spht door", 9},
+	{"spht platform", 10},
+	{"heavy spht door", 11},
+	{"heavy spht platform", 12},
+	{"light machinery", 13},
+	{"heavy machinery", 14},
+	{"transformer", 15},
+	{"sparking transformer", 16},
+	{"machine binder", 17},
+	{"machine bookpress", 18},
+	{"machine puncher", 19},
+	{"electric hum", 20},
+	{"alarm", 21},
+	{"night wind", 22},
+	{"pfhor door", 23},
+	{"pfhor platform", 24},
+	{"alien noise 1", 25},
+	{"alien noise 2", 26},
+	{"alien harmonics", 27},
+	{0, 0}
+};
+
 const lang_def Lua_Collection_Mnemonics[] = {
 	{"interface", 0},
 	{"weapons in hand", 1},

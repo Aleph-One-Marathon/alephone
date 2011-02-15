@@ -1717,6 +1717,43 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>type of side</description>
       </variable>
     </table>
+    <table name="sound_object">
+      <variable name="from_ceiling" access="read-only" version="SVN">
+	<description>whether sound object location z is from ceiling</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="light" access="read-only" version="SVN">
+	<description>if sound object uses a light for volume, the light it uses</description>
+	<type>light</type>
+	<note>can be nil if sound object doesn't use light for volume</note>
+      </variable>
+      <variable name="on_platform" access="read-only" version="SVN">
+	<description>whether sound object is a platform sound</description>
+	<type>boolean</type>
+      </variable>
+      <variable name="polygon" access="read-only" version="SVN">
+	<description>sound object polygon</description>
+	<type>polygon</type>
+      </variable>
+      <variable name="type" access="read-only" version="SVN">
+	<description>type of sound object</description>
+	<type>ambient_sound</type>
+      </variable>
+      <variable name="volume" access="read-only" version="SVN">
+	<description>volume of sound object from 0.0 to 1.0</description>
+	<type>number</type>
+	<note>can be nil if sound object uses light for volume</note>
+      </variable>
+      <variable name="x" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="y" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+      <variable name="z" access="read-only" version="SVN">
+	<type>WU</type>
+      </variable>
+    </table>
     <table name="tag">
       <variable name="active">
 	<description>tag is active</description>
@@ -1971,6 +2008,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<note>side must not already exist</note>
       </function>
     </accessor>
+    <accessor name="SoundObjects" contains="sound_object">
+      <length>
+	<description>number of map objects in the level</description>
+      </length>
+      <index/>
+      <call>
+	<description>iterates through all sound objects in the level</description>
+      </call>
+    </accessor>
     <accessor name="Tags" contains="tag">
       <index/>
     </accessor>
@@ -1983,6 +2029,38 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>iterates through all terminal texts on the level</description>
       </call>
     </accessor>
+    <enum name="ambient_sound">
+      <mnemonics>
+	<mnemonic name="water"/>
+	<mnemonic name="sewage"/>
+	<mnemonic name="lava"/>
+	<mnemonic name="goo"/>
+	<mnemonic name="underwater"/>
+	<mnemonic name="wind"/>
+	<mnemonic name="waterfall"/>
+	<mnemonic name="siren"/>
+	<mnemonic name="fan"/>
+	<mnemonic name="spht door"/>
+	<mnemonic name="spht platform"/>
+	<mnemonic name="heavy spht door"/>
+	<mnemonic name="heavy spht platform"/>
+	<mnemonic name="light machinery"/>
+	<mnemonic name="heavy machinery"/>
+	<mnemonic name="transformer"/>
+	<mnemonic name="sparking transformer"/>
+	<mnemonic name="machine binder"/>
+	<mnemonic name="machine bookpress"/>
+	<mnemonic name="machine puncher"/>
+	<mnemonic name="electric hum"/>
+	<mnemonic name="alarm"/>
+	<mnemonic name="night wind"/>
+	<mnemonic name="pfhor door"/>
+	<mnemonic name="pfhor platform"/>
+	<mnemonic name="alien noise 1"/>
+	<mnemonic name="alien noise 2"/>
+	<mnemonic name="alien harmonics"/>
+      </mnemonics>
+    </enum>
     <enum name="completion_state">
       <mnemonics>
 	<mnemonic name="unfinished"/>
@@ -2940,6 +3018,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="smg"/>
       </mnemonics>
     </enum>
+    <enum-accessor name="AmbientSounds" contains="ambient_sound" nice-name="Ambient Sounds"/>
     <enum-accessor name="CompletionStates" contains="completion_state" nice-name="Completion States"/>
     <enum-accessor name="Collections" contains="collection" nice-name="Collections"/>
     <enum-accessor name="ControlPanelClasses" contains="control_panel_class" nice-name="Control Panel Classes"/>

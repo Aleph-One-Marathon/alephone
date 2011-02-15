@@ -140,12 +140,14 @@
 <li><a href="#Projectiles">Projectiles</a></li>
 <li><a href="#Scenery">Scenery</a></li>
 <li><a href="#Sides">Sides</a></li>
+<li><a href="#SoundObjects">SoundObjects</a></li>
 <li><a href="#Tags">Tags</a></li>
 <li><a href="#Terminals">Terminals</a></li>
 </ol>
 </li>
 <li>
 <a href="#types">Types and Mnemonics</a><ol>
+<li><a href="#AmbientSounds">Ambient Sounds</a></li>
 <li><a href="#Collections">Collections</a></li>
 <li><a href="#CompletionStates">Completion States</a></li>
 <li><a href="#ControlPanelClasses">Control Panel Classes</a></li>
@@ -421,41 +423,45 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <a name="Effects"></a>Effects</h3>
 <dl>
 <dt># Effects</dt>
-<dd><p class="description">maximum number of map objects</p></dd>
+<dd><p class="description">maximum number of effects</p></dd>
 <dt>Effects()</dt>
 <dd><p class="description">iterates through all valid effects</p></dd>
-<dt>Effects.new(x, y, height, polygon, type)</dt>
+<dt>Effects.new(x, y, height, polygon, type) <span class="version">SVN</span>
+</dt>
 <dd><p class="description">returns a new effect</p></dd>
 <dt>Effects[index]</dt>
 <dd><dl>
-      <dt>:delete()</dt>
+      <dt>:delete() <span class="version">SVN</span>
+</dt>
 <dd><p class="description">removes effect from map</p></dd>
       <dt>
-    .facing</dt>
+    .facing <span class="version">SVN</span>
+</dt>
 <dd><p class="description">direction effect is facing</p></dd>
-      <dt>:play_sound(sound)</dt>
+      <dt>:play_sound(sound) <span class="version">SVN</span>
+</dt>
 <dd><p class="description">play sound coming from this effect</p></dd>
       <dt>
-    .polygon<span class="access"> (read-only)</span>
+    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
 </dt>
 <dd><p class="description">polygon the effect is in</p></dd>
-      <dt>:position(x, y, z, polygon) <span class="version">20090909</span>
+      <dt>:position(x, y, z, polygon) <span class="version">SVN</span>
 </dt>
 <dd><p class="description">sets position of effect</p></dd>
       <dt>
-    .type<span class="access"> (read-only)</span>
+    .type<span class="access"> (read-only)</span> <span class="version">SVN</span>
 </dt>
 <dd><p class="description">type of effect</p></dd>
       <dt>
-    .x<span class="access"> (read-only)</span>
+    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .y<span class="access"> (read-only)</span>
+    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .z<span class="access"> (read-only)</span>
+    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -1865,6 +1871,59 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     </dl></dd>
 </dl>
 <h3>
+<a name="SoundObjects"></a>SoundObjects</h3>
+<dl>
+<dt># SoundObjects</dt>
+<dd><p class="description">number of map objects in the level</p></dd>
+<dt>SoundObjects()</dt>
+<dd><p class="description">iterates through all sound objects in the level</p></dd>
+<dt>SoundObjects[index]</dt>
+<dd><dl>
+      <dt>
+    .from_ceiling<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether sound object location z is from ceiling</p></dd>
+      <dt>
+    .light<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">if sound object uses a light for volume, the light it uses</p>
+<p class="note">can be nil if sound object doesn't use light for volume </p>
+</dd>
+      <dt>
+    .on_platform<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">whether sound object is a platform sound</p></dd>
+      <dt>
+    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">sound object polygon</p></dd>
+      <dt>
+    .type<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description">type of sound object</p></dd>
+      <dt>
+    .volume<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">volume of sound object from 0.0 to 1.0</p>
+<p class="note">can be nil if sound object uses light for volume </p>
+</dd>
+      <dt>
+    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>
+    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description"></p></dd>
+      <dt>
+    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
+</dt>
+<dd><p class="description"></p></dd>
+    </dl></dd>
+</dl>
+<h3>
 <a name="Tags"></a>Tags</h3>
 <dl>
 <dt>Tags[index]</dt>
@@ -1919,6 +1978,50 @@ nil
 </pre>
 If you do this, you should customize them all at the beginning of the script. Changing mnemonics mid-game will confuse anyone who tries to read your script, and probably yourself as well!
 </p>
+<h3>
+<a name="AmbientSounds"></a>Ambient Sounds</h3>
+<dl>
+<dt># AmbientSounds</dt>
+<dt>AmbientSounds()</dt>
+</dl>
+<h4>Mnemonics</h4>
+<ul class="mnemonics">
+<div class="mnemonics-column">
+<li>"water"</li>
+<li>"sewage"</li>
+<li>"lava"</li>
+<li>"goo"</li>
+<li>"underwater"</li>
+<li>"wind"</li>
+<li>"waterfall"</li>
+<li>"siren"</li>
+<li>"fan"</li>
+<li>"spht door"</li>
+</div>
+<div class="mnemonics-column">
+<li>"spht platform"</li>
+<li>"heavy spht door"</li>
+<li>"heavy spht platform"</li>
+<li>"light machinery"</li>
+<li>"heavy machinery"</li>
+<li>"transformer"</li>
+<li>"sparking transformer"</li>
+<li>"machine binder"</li>
+<li>"machine bookpress"</li>
+<li>"machine puncher"</li>
+</div>
+<div class="mnemonics-column">
+<li>"electric hum"</li>
+<li>"alarm"</li>
+<li>"night wind"</li>
+<li>"pfhor door"</li>
+<li>"pfhor platform"</li>
+<li>"alien noise 1"</li>
+<li>"alien noise 2"</li>
+<li>"alien harmonics"</li>
+</div>
+<div class="end-mnemonics"></div>
+</ul>
 <h3>
 <a name="Collections"></a>Collections</h3>
 <dl>

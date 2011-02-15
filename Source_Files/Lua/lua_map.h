@@ -38,6 +38,12 @@ extern "C"
 
 #include "lua_templates.h"
 
+extern char Lua_AmbientSound_Name[]; // "ambient sound"
+typedef L_Enum<Lua_AmbientSound_Name> Lua_AmbientSound;
+
+extern char Lua_AmbientSounds_Name[]; // "AmbientSounds"
+typedef L_EnumContainer<Lua_AmbientSounds_Name, Lua_AmbientSound> Lua_AmbientSounds;
+
 extern char Lua_Collection_Name[]; // "collection"
 typedef L_Enum<Lua_Collection_Name> Lua_Collection;
 

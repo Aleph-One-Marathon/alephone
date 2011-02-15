@@ -28,6 +28,8 @@ LUA_SAVED_OBJECTS.CPP
 
 #include "lua_map.h"
 
+#include "SoundManagerEnums.h"
+
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
 map_object* get_map_object(short index) {
@@ -187,6 +189,60 @@ const luaL_reg Lua_PlayerStart_Get[] = {
 
 char Lua_PlayerStarts_Name[] = "PlayerStarts";
 
+char Lua_SoundObject_Name[] = "sound_object";
+
+static int Lua_SoundObject_Get_Light(lua_State* L)
+{
+	map_object* object = get_map_object(Lua_SoundObject::Index(L, 1));
+	if (object->facing < 0)
+	{
+		Lua_Light::Push(L, -object->facing);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+static int Lua_SoundObject_Get_Type(lua_State* L)
+{
+	map_object* object = get_map_object(Lua_SoundObject::Index(L, 1));
+	Lua_AmbientSound::Push(L, object->index);
+	return 1;
+}
+
+static int Lua_SoundObject_Get_Volume(lua_State* L)
+{
+	map_object* object = get_map_object(Lua_SoundObject::Index(L, 1));
+	if (object->facing >= 0) 
+	{
+		lua_pushnumber(L, (double) object->facing / MAXIMUM_SOUND_VOLUME);
+	}
+	else
+	{
+		lua_pushnil(L);
+	}
+
+	return 1;
+}
+
+const luaL_reg Lua_SoundObject_Get[] = {
+	{"from_ceiling", get_saved_object_flag<Lua_SoundObject, _map_object_hanging_from_ceiling>},
+	{"light", Lua_SoundObject_Get_Light},
+	{"on_platform", get_saved_object_flag<Lua_SoundObject, _map_object_is_platform_sound>},
+	{"polygon", get_saved_object_polygon<Lua_SoundObject>},
+	{"type", Lua_SoundObject_Get_Type},
+	{"volume", Lua_SoundObject_Get_Volume},
+	{"x", get_saved_object_x<Lua_SoundObject>},
+	{"y", get_saved_object_y<Lua_SoundObject>},
+	{"z", get_saved_object_z<Lua_SoundObject>},
+	{0, 0}
+};
+
+char Lua_SoundObjects_Name[] = "SoundObjects";
+
 int Lua_Saved_Objects_register(lua_State* L)
 {
 	Lua_Goal::Register(L, Lua_Goal_Get);
@@ -212,4 +268,10 @@ int Lua_Saved_Objects_register(lua_State* L)
 	
 	Lua_PlayerStarts::Register(L);
 	Lua_PlayerStarts::Length = saved_objects_length;
+
+	Lua_SoundObject::Register(L, Lua_SoundObject_Get);
+	Lua_SoundObject::Valid = saved_object_valid<_saved_sound_source>;
+
+	Lua_SoundObjects::Register(L);
+	Lua_SoundObjects::Length = saved_objects_length;
 }

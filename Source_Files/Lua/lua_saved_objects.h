@@ -60,6 +60,12 @@ typedef L_Class<Lua_PlayerStart_Name> Lua_PlayerStart;
 extern char Lua_PlayerStarts_Name[]; // "PlayerStarts";
 typedef L_Container<Lua_PlayerStarts_Name, Lua_PlayerStart> Lua_PlayerStarts;
 
+extern char Lua_SoundObject_Name[]; // "sound_object"
+typedef L_Class<Lua_SoundObject_Name> Lua_SoundObject;
+
+extern char Lua_SoundObjects_Name[]; // "SoundObjects"
+typedef L_Container<Lua_SoundObjects_Name, Lua_SoundObject> Lua_SoundObjects;
+
 int Lua_Saved_Objects_register(lua_State* L);
 
 #endif
