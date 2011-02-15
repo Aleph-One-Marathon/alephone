@@ -1187,6 +1187,7 @@ void display_main_menu(
 	game_state.user= _single_player;
 	game_state.flags= 0;
 	
+	change_screen_mode(_screentype_menu);
 	display_screen(MAIN_MENU_BASE);
 	
 	/* Start up the song! */
@@ -2088,6 +2089,7 @@ static void finish_game(
 		/* Don't update the screen, etc.. */
 		game_state.state= _displaying_network_game_dialogs;
 
+		change_screen_mode(_screentype_menu);
 		force_system_colors();
 		display_net_game_stats();
 		exit_networking();
@@ -2454,6 +2456,8 @@ static void try_and_display_chapter_screen(
 			paint_window_black();
 		}
 
+		change_screen_mode(_screentype_chapter);
+		
 		/* Fade the screen to black.. */
 		assert(!current_picture_clut);
 		current_picture_clut= calculate_picture_clut(CLUTSource_Scenario,pict_resource_number);

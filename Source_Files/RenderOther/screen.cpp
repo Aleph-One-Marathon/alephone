@@ -554,7 +554,7 @@ void enter_screen(void)
 	
 	// Set screen to selected size
 	in_game = true;
-	change_screen_mode(&screen_mode, true);
+	change_screen_mode(_screentype_level);
 	PrevFullscreen = screen_mode.fullscreen;
 
 #if defined(HAVE_OPENGL) && !defined(MUST_RELOAD_VIEW_CONTEXT)
@@ -602,7 +602,6 @@ void exit_screen(void)
 #ifdef HAVE_OPENGL
 	OGL_StopRun();
 #endif
-	change_screen_mode(&screen_mode, true);
 }
 
 
@@ -830,6 +829,42 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 		recenter_mouse();
 	}
 
+	frame_count = frame_index = 0;
+}
+
+void change_screen_mode(short screentype)
+{
+	struct screen_mode_data *mode = &screen_mode;
+	
+	short w = std::max(mode->width, static_cast<short>(640));
+	short h = std::max(mode->height, static_cast<short>(480));
+	if (screentype == _screentype_menu)
+	{
+		// use 640x480 for fullscreen menus in software,
+		// and windowed menus in any renderer
+		if (!mode->fullscreen ||
+			(mode->fill_the_screen && mode->acceleration == _no_acceleration))
+		{
+			w = 640;
+			h = 480;
+		}
+	}
+	else if (screentype == _screentype_chapter)
+	{
+		// use 640x480 for fullscreen chapters in software,
+		// and windowed chapters in any renderer
+		if (!mode->fullscreen ||
+			(mode->fill_the_screen && mode->acceleration == _no_acceleration))
+		{
+			w = 640;
+			h = 480;
+		}
+	}
+	
+	change_screen_mode(w, h, mode->bit_depth, false);
+	clear_screen();
+	recenter_mouse();
+	
 	frame_count = frame_index = 0;
 }
 

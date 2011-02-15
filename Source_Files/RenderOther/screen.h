@@ -138,6 +138,13 @@ enum /* hardware acceleration codes */
 	_shader_acceleration
 };
 
+enum /* screen selection based on game state */
+{
+	_screentype_level,
+	_screentype_menu,
+	_screentype_chapter
+};
+
 /* ---------- missing from QUICKDRAW.H */
 
 #define deviceIsGrayscale 0x0000
@@ -190,6 +197,7 @@ screen_mode_data *get_screen_mode(void);
 // LP: when initing, ask whether to show the monitor-frequency dialog
 //void initialize_screen(struct screen_mode_data *mode, bool ShowFreqDialog);
 void change_screen_mode(struct screen_mode_data *mode, bool redraw);
+void change_screen_mode(short screentype);
 
 void toggle_fullscreen(bool fs);
 void toggle_fullscreen();
