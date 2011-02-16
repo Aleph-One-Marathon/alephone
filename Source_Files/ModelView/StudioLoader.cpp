@@ -478,13 +478,17 @@ bool LoadModel_Studio_RightHand(FileSpecifier& Spec, Model3D& Model)
 
 	logTrace("Converting handedness.");
 
-	// Wings 3d and Blender seem to produce 3DS models with a z-up
-	// orientation.  Assume that is the standard convention, so
-	// preserve the orientation and switch handedness by reflecting
-	// along the y axis.
-	for (unsigned YPos = 1; YPos < Model.Positions.size(); YPos += 3)
+	// Wings 3d and Blender produce 3DS models with a z-up orientation,
+	// and for Blender models y increases towards the back. In Aleph One,
+	// z increases upward, and items that have been placed with 0 degrees
+	// of rotation face in the positive-x direction.
+	// Preserve the orientation and switch handedness by swapping and
+	// flipping x and y.
+	for (unsigned XPos = 0; XPos < Model.Positions.size(); XPos += 3)
 	{
-		Model.Positions[YPos] = -Model.Positions[YPos];
+		GLfloat X = Model.Positions[XPos];
+		Model.Positions[XPos] = -Model.Positions[XPos + 1];
+		Model.Positions[XPos + 1] = -X;
 	}
 
 	// Put the vertices of faces back into clockwise order.

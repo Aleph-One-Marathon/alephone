@@ -654,25 +654,30 @@ bool LoadModel_Wavefront_RightHand(FileSpecifier& Spec, Model3D& Model)
 
 	logTrace("Converting handedness.");
 
-	// Swap the Y and Z coordinates of vertexes.  This changes
-	// handedness and converts from OBJ's y-up orientation to
-	// Aleph One's z-up orientation.
-	for (unsigned YPos = 1; YPos < Model.Positions.size(); YPos += 3)
+	// OBJ files produced by Blender and Wings 3D are oriented with
+	// y increasing upwards, and the front of a Blender model faces in the
+	// positive-Z direction.  (Wings 3D does not distinguish a "front"
+	// view.)  In Aleph One's coordinate system Z increases upwards, and
+	// items that have been placed with 0 degrees of rotation face in the
+	// positive-x direction.
+	for (unsigned XPos = 0; XPos < Model.Positions.size(); XPos += 3)
 	{
-		GLfloat Z = Model.Positions[YPos + 1];
-		Model.Positions[YPos + 1] = Model.Positions[YPos];
-		Model.Positions[YPos] = Z;
+		GLfloat X = Model.Positions[XPos];
+		Model.Positions[XPos] = Model.Positions[XPos + 2];
+		Model.Positions[XPos + 2] = Model.Positions[XPos + 1];
+		Model.Positions[XPos + 1] = -X;
 	}
 
 	// Ditto for vertex normals, if present.
-	for (unsigned YPos = 1; YPos < Model.Normals.size(); YPos += 3)
+	for (unsigned XPos = 0; XPos < Model.Normals.size(); XPos += 3)
 	{
-		GLfloat Z = Model.Normals[YPos + 1];
-		Model.Normals[YPos + 1] = Model.Normals[YPos];
-		Model.Normals[YPos] = Z;
+		GLfloat X = Model.Normals[XPos];
+		Model.Normals[XPos] = Model.Normals[XPos + 2];
+		Model.Normals[XPos + 2] = Model.Normals[XPos + 1];
+		Model.Normals[XPos + 1] = -X;
 	}
 
-	// Vertices of a face are now listed in clockwise order.
+	// Vertices of each face are now listed in clockwise order.
 	// Reverse them.
 	for (unsigned IPos = 0; IPos < Model.VertIndices.size(); IPos += 3)
 	{
