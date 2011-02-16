@@ -672,7 +672,7 @@ end
       </subtable>
       <subtable-accessor name="weapons" classname="player_weapon" index="weapon_type">
         <variable name="type"><type>weapon_type</type></variable>
-        <variable name="name">
+        <variable name="name" version="SVN">
           <description>label shown in classic HUD</description>
           <type>string</type>
           <note>from stringset 137; may differ from label in Player.items</note>
