@@ -35,7 +35,4 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model);
 // OBJ's right-handed coordinate system to Aleph One's left-handed system.
 bool LoadModel_Wavefront_RightHand(FileSpecifier& Spec, Model3D& Model);
 
-// Where to emit status messages
-void SetDebugOutput_Wavefront(FILE *DebugOutput);
-
 #endif

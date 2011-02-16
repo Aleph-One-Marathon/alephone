@@ -40,6 +40,8 @@
 #include <windows.h>
 #endif
 
+#include "Logging.h"
+
 #include "StudioLoader.h"
 
 // Use pack/unpack, but with little-endian data
@@ -61,14 +63,7 @@ const uint16         VERTICES =		0x4110;
 const uint16         TXTR_COORDS =	0x4140;
 const uint16         FACE_DATA =	0x4120;
 
-
-// Debug-message destination
-static FILE *DBOut = NULL;
-
-void SetDebugOutput_Studio(FILE *DebugOutput)
-{
-	DBOut = DebugOutput;
-}
+static const char *Path = NULL;	  // Path to model file.
 
 struct ChunkHeaderData
 {
@@ -115,19 +110,13 @@ bool LoadModel_Studio(FileSpecifier& Spec, Model3D& Model)
 	ModelPtr = &Model;
 	Model.Clear();
 	
-	if (DBOut)
-	{
-		// Name buffer
-		const int BufferSize = 256;
-		char Buffer[BufferSize];
-		Spec.GetName(Buffer);
-		fprintf(DBOut,"Loading 3D Studio Max model file %s\n",Buffer);
-	}
+	Path = Spec.GetPath();
+	logNote1("Loading 3D Studio Max model file %s",Path);
 	
 	OpenedFile OFile;
 	if (!Spec.Open(OFile))
 	{	
-		if (DBOut) fprintf(DBOut,"ERROR opening the file\n");
+		logError1("ERROR opening %s",Path);
 		return false;
 	}
 	
@@ -135,13 +124,23 @@ bool LoadModel_Studio(FileSpecifier& Spec, Model3D& Model)
 	if (!ReadChunkHeader(OFile,ChunkHeader)) return false;
 	if (ChunkHeader.ID != MASTER)
 	{
-		if (DBOut) fprintf(DBOut,"ERROR: not a 3DS Max model file\n");
+		logError1("ERROR: not a 3DS Max model file: %s",Path);
 		return false;
 	}
 	
 	if (!ReadContainer(OFile,ChunkHeader,ReadMaster)) return false;
 	
-	return (!Model.Positions.empty() && !Model.VertIndices.empty());
+	if (Model.Positions.empty())
+	{
+		logError1("ERROR: no vertices found in %s",Path);
+		return false;
+	}
+	if (Model.VertIndices.empty())
+	{
+		logError1("ERROR: no faces found in %s",Path);
+		return false;
+	}
+	return true;
 }
 
 bool ReadChunkHeader(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
@@ -149,7 +148,7 @@ bool ReadChunkHeader(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 	uint8 Buffer[SIZEOF_ChunkHeaderData];
 	if (!OFile.Read(SIZEOF_ChunkHeaderData,Buffer))
 	{
-		if (DBOut) fprintf(DBOut,"ERROR reading chunk header\n");
+		logError1("ERROR reading chunk header in %s",Path);
 		return false;
 	}
 	uint8 *S = Buffer;
@@ -160,13 +159,12 @@ bool ReadChunkHeader(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 
 bool LoadChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
-	if (DBOut)
-		fprintf(DBOut,"Loading chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
+	logTrace2("Loading chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
 	int32 DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	SetChunkBufferSize(DataSize);
 	if (!OFile.Read(DataSize,ChunkBufferBase()))
 	{
-		if (DBOut) fprintf(DBOut,"ERROR reading chunk contents\n");
+		logError1("ERROR reading chunk contents in %s",Path);
 		return false;
 	}
 	
@@ -175,8 +173,7 @@ bool LoadChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 
 bool SkipChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 {
-	if (DBOut)
-		fprintf(DBOut,"Skipping chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
+	logTrace2("Skipping chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
 	int32 DataSize = ChunkHeader.Size - SIZEOF_ChunkHeaderData;
 	
 	int32 Location = 0;
@@ -189,8 +186,7 @@ bool SkipChunk(OpenedFile& OFile, ChunkHeaderData& ChunkHeader)
 bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
 	bool (*ContainerCallback)(OpenedFile&,int32))
 {
-	if (DBOut)
-		fprintf(DBOut,"Entering chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
+	logTrace2("Entering chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
 	
 	int32 ChunkEnd = 0;
 	OFile.GetPosition(ChunkEnd);
@@ -198,8 +194,7 @@ bool ReadContainer(OpenedFile& OFile, ChunkHeaderData& ChunkHeader,
 	
 	if (!ContainerCallback(OFile,ChunkEnd)) return false;
 	
-	if (DBOut)
-		fprintf(DBOut,"Exiting chunk 0x%04hx size %u\n",ChunkHeader.ID,ChunkHeader.Size);
+	logTrace2("Exiting chunk 0x%04hx size %u",ChunkHeader.ID,ChunkHeader.Size);
 	return true;
 }
 
@@ -231,8 +226,7 @@ static bool ReadMaster(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
+		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;
@@ -265,8 +259,7 @@ static bool ReadEditor(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
+		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;
@@ -276,26 +269,16 @@ static bool ReadEditor(OpenedFile& OFile, int32 ParentChunkEnd)
 static bool ReadObject(OpenedFile& OFile, int32 ParentChunkEnd)
 {
 	// Read the name
-	if (DBOut) fprintf(DBOut,"Object Name: ");
-	while(true)
+	char c;
+	do
 	{
-		char c;
 		if (!OFile.Read(1,&c))
 		{
-			if (DBOut) fprintf(DBOut,"ERROR in reading name");
+			logError1("ERROR when reading name in %s",Path);
 			return false;
 		}
-		
-		if (c == 0)
-		{
-			if (DBOut) fprintf(DBOut,"\n");
-			break;
-		}
-		else
-		{
-			if (DBOut) fprintf(DBOut,"%c",c);
-		}
 	}
+	while(c != 0);
 	
 	int32 Location = 0;
 	OFile.GetPosition(Location);
@@ -321,8 +304,7 @@ static bool ReadObject(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
+		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;
@@ -367,8 +349,7 @@ static bool ReadTrimesh(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
+		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;
@@ -382,7 +363,7 @@ static bool ReadFaceData(OpenedFile& OFile, int32 ParentChunkEnd)
 	uint16 NumFaces;
 	if (!OFile.Read(2,NFBuffer))
 	{
-		if (DBOut) fprintf(DBOut,"ERROR reading number of faces\n");
+		logError1("ERROR reading number of faces in %s",Path);
 		return false;
 	}
 	uint8 *S = NFBuffer;
@@ -392,7 +373,7 @@ static bool ReadFaceData(OpenedFile& OFile, int32 ParentChunkEnd)
 	SetChunkBufferSize(DataSize);
 	if (!OFile.Read(DataSize,ChunkBufferBase()))
 	{
-		if (DBOut) fprintf(DBOut,"ERROR reading face-chunk contents\n");
+		logError1("ERROR reading face-chunk contents in %s",Path);
 		return false;
 	}
 	
@@ -431,8 +412,7 @@ static bool ReadFaceData(OpenedFile& OFile, int32 ParentChunkEnd)
 	
 	if (Location > ParentChunkEnd)
 	{
-		if (DBOut)
-			fprintf(DBOut,"ERROR: Overran parent chunk: %d > %d\n",Location,ParentChunkEnd);
+		logError3("ERROR: Overran parent chunk: %d > %d in %s",Location,ParentChunkEnd,Path);
 		return false;
 	}
 	return true;
@@ -496,7 +476,7 @@ bool LoadModel_Studio_RightHand(FileSpecifier& Spec, Model3D& Model)
 	bool Result = LoadModel_Studio(Spec, Model);
 	if (!Result) return Result;
 
-	if (DBOut) fprintf(DBOut, "Converting handedness.\n");
+	logTrace("Converting handedness.");
 
 	// Wings 3d and Blender seem to produce 3DS models with a z-up
 	// orientation.  Assume that is the standard convention, so

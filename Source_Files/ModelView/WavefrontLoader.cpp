@@ -29,6 +29,8 @@
 
 #include "cseries.h"
 
+#include "Logging.h"
+
 #ifdef HAVE_OPENGL
 #ifdef __WIN32__
 #include <windows.h>
@@ -44,9 +46,7 @@ enum {
 	Present_Normal		= 0x0004
 };
 
-
-// Debug-message destination
-static FILE *DBOut = NULL;
+static const char *Path = NULL;	  // Path to model file.
 
 // Input line will be able to stretch as much as necessary
 static vector<char> InputLine(64);
@@ -105,22 +105,11 @@ struct IndexedVertListCompare
 	}
 };
 
-
-void SetDebugOutput_Wavefront(FILE *DebugOutput)
-{
-	DBOut = DebugOutput;
-}
-
-
 bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 {
 	// Clear out the final model object
 	Model.Clear();
 
-	// Read buffer
-	const int BufferSize = 256;
-	char Buffer[BufferSize];
-	
 	// Intermediate lists of positions, texture coordinates, and normals
 	vector<GLfloat> Positions;
 	vector<GLfloat> TxtrCoords;
@@ -132,16 +121,13 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	// Vertex indices (how many read, position, txtr-coord, normal)
 	vector<short> VertIndxSets;
 	
-	if (DBOut)
-	{
-		Spec.GetName(Buffer);
-		fprintf(DBOut,"Loading Alias|Wavefront model file %s\n",Buffer);
-	}
+	Path = Spec.GetPath();
+	logNote1("Loading Alias|Wavefront model file %s",Path);
 	
 	OpenedFile OFile;
 	if (!Spec.Open(OFile))
 	{	
-		if (DBOut) fprintf(DBOut,"ERROR opening the file\n");
+		logError1("ERROR opening %s",Path);
 		return false;
 	}
 
@@ -403,7 +389,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	
 	if (PolygonSizes.size() <= 0)
 	{
-		if (DBOut) fprintf(DBOut,"ERROR: the model has no polygons\n");
+		logError1("ERROR: the model in %s has no polygons",Path);
 		return false;
 	}
 		
@@ -413,7 +399,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		short PSize = PolygonSizes[k];
 		if (PSize < 3)
 		{
-			if (DBOut) fprintf(DBOut,"WARNING: polygon ignored; it had bad size %u: %d\n",k,PSize);
+			logWarning3("WARNING: polygon ignored; it had bad size %u: %d in %s",k,PSize,Path);
 		}
 	}
 	
@@ -427,7 +413,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		WhatsPresent &= Presence;
 		if (!(Presence & Present_Position))
 		{
-			if (DBOut) fprintf(DBOut,"ERROR: Vertex has no position index: %u\n",k);
+			logError2("ERROR: Vertex has no position index: %u in %s",k,Path);
 		}
 	}
 	
@@ -440,7 +426,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		short PosIndx = VertIndxSets[4*k+1];
 		if (PosIndx < 0 || PosIndx >= int(Positions.size()))
 		{
-			if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %u: %d (0,%lu)\n",k,PosIndx,Positions.size()-1);
+			logError4("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,PosIndx,(unsigned long)Positions.size()-1,Path);
 			AllInRange = false;
 		}
 		
@@ -449,7 +435,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			short TCIndx = VertIndxSets[4*k+2];
 			if (TCIndx < 0 || TCIndx >= int(TxtrCoords.size()))
 			{
-				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %u: %d (0,%lu)\n",k,TCIndx,TxtrCoords.size()-1);
+				logError4("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,TCIndx,(unsigned long)(TxtrCoords.size()-1),Path);
 				AllInRange = false;
 			}
 		}
@@ -461,7 +447,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			short NormIndx = VertIndxSets[4*k+3];
 			if (NormIndx < 0 || NormIndx >= int(Normals.size()))
 			{
-				if (DBOut) fprintf(DBOut,"ERROR: Out of range vertex position: %u: %d (0,%lu)\n",k,NormIndx,Normals.size()-1);
+				logError4("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,NormIndx,(unsigned long)(Normals.size()-1),Path);
 				AllInRange = false;
 			}
 		}
@@ -559,18 +545,14 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	
 	if (Model.VertIndices.size() <= 0)
 	{
-		if (DBOut) fprintf(DBOut,"ERROR: the model has no good polygons\n");
+		logError1("ERROR: the model in %s has no good polygons",Path);
 		return false;
 	}
 	
-	if (DBOut) fprintf(DBOut,"Successfully read the file:");
-	if (DBOut && (WhatsPresent & Present_Position))
-		fprintf(DBOut," Positions");
-	if (DBOut && (WhatsPresent & Present_TxtrCoord))
-		fprintf(DBOut," TxtrCoords");
-	if (DBOut && (WhatsPresent & Present_Normal))
-		fprintf(DBOut," Normals");
-	if (DBOut) fprintf(DBOut,"\n");
+	logTrace("Successfully read the file:");
+	if (WhatsPresent & Present_Position)  logTrace("    Positions");
+	if (WhatsPresent & Present_TxtrCoord) logTrace("    TxtrCoords");
+	if (WhatsPresent & Present_Normal)    logTrace("    Normals");
 	return true;
 }
 
@@ -670,7 +652,7 @@ bool LoadModel_Wavefront_RightHand(FileSpecifier& Spec, Model3D& Model)
 	bool Result = LoadModel_Wavefront(Spec, Model);
 	if (!Result) return Result;
 
-	if (DBOut) fprintf(DBOut, "Converting handedness.\n");
+	logTrace("Converting handedness.");
 
 	// Swap the Y and Z coordinates of vertexes.  This changes
 	// handedness and converts from OBJ's y-up orientation to
