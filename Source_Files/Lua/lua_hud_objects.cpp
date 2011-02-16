@@ -1086,10 +1086,40 @@ static int Lua_HUDPlayer_Weapon_Get_Type(lua_State *L)
 	return 1;
 }
 
+static int Lua_HUDPlayer_Weapon_Get_Name(lua_State *L)
+{
+	int weapon = Lua_HUDPlayer_Weapon::Index(L, 1);
+	char tmp[256];
+	tmp[0] = 0;
+	
+	if (weapon != _weapon_ball)
+	{
+#define strWEAPON_NAME_LIST 137
+		getcstr(tmp, strWEAPON_NAME_LIST, weapon);
+	}
+	else
+	{
+		short item_index;
+		
+		/* Which ball do they actually have? */
+		for (item_index = BALL_ITEM_BASE;
+			 item_index < BALL_ITEM_BASE + MAXIMUM_NUMBER_OF_PLAYERS;
+			 ++item_index)
+		{
+			if (current_player->items[item_index] > 0) break;
+		}
+		assert(item_index != BALL_ITEM_BASE + MAXIMUM_NUMBER_OF_PLAYERS);
+		get_item_name(tmp, item_index, false);
+	}
+	lua_pushstring(L, tmp);
+	return 1;
+}
+
 const luaL_reg Lua_HUDPlayer_Weapon_Get[] = { 
 {"primary", get_hudweapon_trigger<_primary_weapon>},
 {"secondary", get_hudweapon_trigger<_secondary_weapon>},
 {"type", Lua_HUDPlayer_Weapon_Get_Type},
+{"name", Lua_HUDPlayer_Weapon_Get_Name},
 {0, 0} 
 };
 

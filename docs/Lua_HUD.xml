@@ -562,10 +562,12 @@ end
         <variable name="singular">
           <description>label to use for 1 of the item</description>
           <type>string</type>
+          <note>from stringset 150</note>
         </variable>
         <variable name="plural">
           <description>label to use for more than 1 of the item</description>
           <type>string</type>
+          <note>from stringset 150</note>
         </variable>
         <variable name="type"><type>item_type</type></variable>
       </subtable-accessor>
@@ -670,6 +672,11 @@ end
       </subtable>
       <subtable-accessor name="weapons" classname="player_weapon" index="weapon_type">
         <variable name="type"><type>weapon_type</type></variable>
+        <variable name="name">
+          <description>label shown in classic HUD</description>
+          <type>string</type>
+          <note>from stringset 137; may differ from label in Player.items</note>
+        </variable>
         <subtable name="primary" classname="player_weapon_trigger">
           <alias>secondary</alias>
           <variable name="rounds">
