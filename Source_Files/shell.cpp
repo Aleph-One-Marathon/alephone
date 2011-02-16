@@ -176,7 +176,7 @@ static void usage(const char *prg_name)
 #ifdef __WIN32__
 	MessageBox(NULL, "Command line switches:\n\n"
 #else
-	printf("\nUsage: %s\n"
+	printf("\nUsage: %s [options] [directory]\n"
 #endif
 	  "\t[-h | --help]          Display this help message\n"
 	  "\t[-v | --version]       Display the game version\n"
@@ -192,10 +192,9 @@ static void usage(const char *prg_name)
           "\t[-j | --nojoystick]    Do not initialize joysticks\n"
 	  // Documenting this might be a bad idea?
 	  // "\t[-i | --insecure_lua]  Allow Lua netscripts to take over your computer\n"
-#if defined(unix) || defined(__BEOS__) || defined(__WIN32__) || defined(__NetBSD__) || defined(__OpenBSD__)
-	  "\nYou can use the ALEPHONE_DATA environment variable to specify\n"
+	  "\tdirectory              Directory containing scenario data files\n"
+	  "\nYou can also use the ALEPHONE_DATA environment variable to specify\n"
 	  "the data directory.\n"
-#endif
 #ifdef __WIN32__
 	  , "Usage", MB_OK | MB_ICONINFORMATION
 #else
