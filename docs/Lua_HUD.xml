@@ -183,6 +183,14 @@ end
         <description>which renderer is in use</description>
         <type>renderer_type</type>
       </variable>
+      <variable name="map_active" access="read-only">
+        <description>whether the overhead map is currently displayed</description>
+        <type>boolean</type>
+      </variable>
+      <variable name="term_active" access="read-only">
+        <description>whether a terminal is currently displayed</description>
+        <type>boolean</type>
+      </variable>
       <variable name="hud_size_preference" access="read-only">
         <description>current preference setting for HUD size (normal, double, largest)</description>
         <type>size_preference</type>
