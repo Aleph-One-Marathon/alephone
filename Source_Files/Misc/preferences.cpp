@@ -906,6 +906,10 @@ static void graphics_dialog(void *arg)
 	term_scale_w->set_selection(graphics_preferences->screen_mode.term_scale_level);
 	table->dual_add(term_scale_w->label("Terminal Size"), d);
 	table->dual_add(term_scale_w, d);
+	
+	w_toggle *map_w = new w_toggle(graphics_preferences->screen_mode.translucent_map);
+	table->dual_add(map_w->label("Overlay Map"), d);
+	table->dual_add(map_w, d);
 
 	placer->add(table, true);
 
@@ -988,6 +992,12 @@ static void graphics_dialog(void *arg)
 		    graphics_preferences->screen_mode.term_scale_level = term_scale;
 		    changed = true;
 	    }
+		
+		bool translucent_map = map_w->get_selection() != 0;
+		if (translucent_map != graphics_preferences->screen_mode.translucent_map) {
+			graphics_preferences->screen_mode.translucent_map = translucent_map;
+			changed = true;
+		}
 	    
 	    const SDL_version *version = SDL_Linked_Version();
 	    if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
@@ -2169,6 +2179,7 @@ void write_preferences(
 	fprintf(F,"  scmode_hud=\"%s\"\n", BoolString(graphics_preferences->screen_mode.hud));
 	fprintf(F,"  scmode_hud_scale=\"%hd\"\n", graphics_preferences->screen_mode.hud_scale_level);
 	fprintf(F,"  scmode_term_scale=\"%hd\"\n", graphics_preferences->screen_mode.term_scale_level);
+	fprintf(F,"  scmode_translucent_map=\"%s\"\n", BoolString(graphics_preferences->screen_mode.translucent_map));
 	fprintf(F,"  scmode_accel=\"%hd\"\n",graphics_preferences->screen_mode.acceleration);
 	fprintf(F,"  scmode_highres=\"%s\"\n",BoolString(graphics_preferences->screen_mode.high_resolution));
 	fprintf(F,"  scmode_fullscreen=\"%s\"\n",BoolString(graphics_preferences->screen_mode.fullscreen));
@@ -2378,6 +2389,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.hud = true;
 	preferences->screen_mode.hud_scale_level = 0;
 	preferences->screen_mode.term_scale_level = 0;
+	preferences->screen_mode.translucent_map = false;
 #if (defined(__APPLE__) && defined(__MACH__)) || defined(__WIN32__)
 	preferences->screen_mode.acceleration = _opengl_acceleration;
 #else
@@ -3149,6 +3161,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	else if (StringsEqual(Tag,"scmode_term_scale"))
 	{
 		return ReadInt16Value(Value, graphics_preferences->screen_mode.term_scale_level);
+	}
+	else if (StringsEqual(Tag,"scmode_translucent_map"))
+	{
+		return ReadBooleanValue(Value, graphics_preferences->screen_mode.translucent_map);
 	}
 	else if (StringsEqual(Tag,"scmode_accel"))
 	{

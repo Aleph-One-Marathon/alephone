@@ -431,12 +431,8 @@ void render_view(
 		RenderVisTree.view = view;
 		RenderVisTree.build_render_tree();
 		
-		if (view->overhead_map_active)
-		{
-			/* if the overhead map is active, render it */
-			render_overhead_map(view);
-		}
-		else /* do something complicated and difficult to explain */
+		/* do something complicated and difficult to explain */
+		if (!view->overhead_map_active || graphics_preferences->screen_mode.translucent_map)
 		{			
 			// LP: now from the polygon-sorter class
 			/* sort the render tree (so we have a depth-ordering of polygons) and accumulate
@@ -484,6 +480,12 @@ void render_view(
 			
 			// Finish rendering main view
 			RasPtr->End();
+		}
+
+		if (view->overhead_map_active)
+		{
+			/* if the overhead map is active, render it */
+			render_overhead_map(view);
 		}
 	}
 }

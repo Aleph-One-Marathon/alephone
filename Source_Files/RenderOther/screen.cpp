@@ -535,6 +535,10 @@ static void reallocate_map_pixels(int width, int height)
 	Map_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, world_pixels->format->BitsPerPixel, world_pixels->format->Rmask, world_pixels->format->Gmask, world_pixels->format->Bmask, 0);
 	if (Map_Buffer == NULL)
 		alert_user(fatalError, strERRORS, outOfMemory, -1);
+	if (screen_mode.translucent_map) {
+		SDL_SetAlpha(Map_Buffer, SDL_SRCALPHA, 128);
+		SDL_SetColorKey(Map_Buffer, SDL_SRCCOLORKEY, SDL_MapRGB(Map_Buffer->format, 0, 0, 0));
+	}
 }
 
 
@@ -982,6 +986,13 @@ void render_screen(short ticks_elapsed)
 		MapChangedSize = true;
 		PrevMapRect = MapRect;
 	}
+	
+	static bool PrevTransparent = false;
+	if (PrevTransparent != screen_mode.translucent_map)
+	{
+		MapChangedSize = true;
+		PrevTransparent = screen_mode.translucent_map;
+	}
 
 	SDL_Rect BufferRect = {0, 0, ViewRect.w, ViewRect.h};
 	// Now the buffer rectangle; be sure to shrink it as appropriate
@@ -1061,19 +1072,13 @@ void render_screen(short ticks_elapsed)
 	// Set OpenGL viewport to world view
 	Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
 	Rect vr = {ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
-	if (OGL_MapActive) {
-		vr.top = MapRect.y;
-		vr.left = MapRect.x;
-		vr.bottom = MapRect.y + MapRect.h;
-		vr.right = MapRect.x + MapRect.w;
-	}
 	OGL_SetWindow(sr, vr, true);
 	
 #endif
 
-    // clear Lua drawing from previous frame
+    // clear drawing from previous frame
     // (GL must do this before render_view)
-    if (screen_mode.acceleration != _no_acceleration && Screen::instance()->lua_hud())
+    if (screen_mode.acceleration != _no_acceleration)
         clear_screen_margin();
     
 	// Render world view
@@ -1081,7 +1086,8 @@ void render_screen(short ticks_elapsed)
 
     // clear Lua drawing from previous frame
     // (SDL is slower if we do this before render_view)
-    if (screen_mode.acceleration == _no_acceleration && Screen::instance()->lua_hud())
+    if (screen_mode.acceleration == _no_acceleration &&
+		(screen_mode.translucent_map || Screen::instance()->lua_hud()))
         clear_screen_margin();
     
 	// Render crosshairs
@@ -1143,11 +1149,12 @@ void render_screen(short ticks_elapsed)
 #endif
 	} else {
 		// Update world window
-		if (!world_view->terminal_mode_active && !world_view->overhead_map_active)
+		if (!world_view->terminal_mode_active &&
+			(!world_view->overhead_map_active || screen_mode.translucent_map))
 			update_screen(BufferRect, ViewRect, HighResolution);
 		
 		// Update map
-		if (world_view->overhead_map_active && screen_mode.acceleration == _no_acceleration) {
+		if (world_view->overhead_map_active) {
 			SDL_Rect src_rect = { 0, 0, MapRect.w, MapRect.h };
 			DrawSurface(Map_Buffer, MapRect, src_rect);
 		}
@@ -1177,7 +1184,8 @@ void render_screen(short ticks_elapsed)
 			SDL_UpdateRect(main_surface, 0, 0, 0, 0);
 			update_full_screen = false;
 		}
-		else if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
+		else if ((!world_view->overhead_map_active || screen_mode.translucent_map) &&
+				 !world_view->terminal_mode_active)
 		{
 			SDL_UpdateRects(main_surface, 1, &ViewRect);
 		}
@@ -1497,6 +1505,15 @@ void render_computer_interface(struct view_data *view)
 
 void render_overhead_map(struct view_data *view)
 {
+#ifdef HAVE_OPENGL
+	if (OGL_IsActive()) {
+		// Set OpenGL viewport to world view
+		Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
+		SDL_Rect MapRect = Screen::instance()->map_rect();
+		Rect mr = {MapRect.y, MapRect.x, MapRect.y + MapRect.h, MapRect.x + MapRect.w};
+		OGL_SetWindow(sr, mr, true);
+	}
+#endif
 	struct overhead_map_data overhead_data;
 	SDL_FillRect(Map_Buffer, NULL, SDL_MapRGB(Map_Buffer->format, 0, 0, 0));
 
@@ -1768,11 +1785,16 @@ void clear_screen_margin()
     wr = Screen::instance()->window_rect();
     if (world_view->terminal_mode_active)
         dr = Screen::instance()->term_rect();
-    else if (world_view->overhead_map_active)
+    else if (world_view->overhead_map_active && !screen_mode.translucent_map)
         dr = Screen::instance()->map_rect();
     else
         dr = Screen::instance()->view_rect();
 
+	dr.x -= wr.x;
+	dr.y -= wr.y;
+	if (Screen::instance()->hud() && !Screen::instance()->lua_hud())
+		wr.h -= Screen::instance()->hud_rect().h;
+	
     if (dr.x > 0)
     {
         r.x = wr.x;
