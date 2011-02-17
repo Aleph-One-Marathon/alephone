@@ -86,6 +86,7 @@ SDL_Surface *Term_Buffer = NULL;
 SDL_Surface *Intro_Buffer = NULL; // intro screens, main menu, chapters, credits, etc.
 SDL_Surface *Intro_Buffer_corrected = NULL;
 bool intro_buffer_changed = false;
+SDL_Surface *Map_Buffer = NULL;
 
 #ifdef HAVE_OPENGL
 static OGL_Blitter Term_Blitter;
@@ -130,6 +131,7 @@ static bool need_mode_change(int width, int height, int depth, bool nogl);
 static void change_screen_mode(int width, int height, int depth, bool nogl);
 static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
+static void reallocate_map_pixels(int width, int height);
 static void apply_gamma(SDL_Surface *src, SDL_Surface *dst);
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez);
 static void update_fps_display(SDL_Surface *s);
@@ -524,6 +526,17 @@ static void reallocate_world_pixels(int width, int height)
 		world_pixels_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, world_pixels->format->BitsPerPixel, world_pixels->format->Rmask, world_pixels->format->Gmask, world_pixels->format->Bmask, 0);
 }
 
+static void reallocate_map_pixels(int width, int height)
+{
+	if (Map_Buffer) {
+		SDL_FreeSurface(Map_Buffer);
+		Map_Buffer = NULL;
+	}
+	Map_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, world_pixels->format->BitsPerPixel, world_pixels->format->Rmask, world_pixels->format->Gmask, world_pixels->format->Bmask, 0);
+	if (Map_Buffer == NULL)
+		alert_user(fatalError, strERRORS, outOfMemory, -1);
+}
+
 
 /*
  *  Force reload of view context
@@ -906,21 +919,31 @@ void render_screen(short ticks_elapsed)
 	world_view->maximum_depth_intensity = current_player->weapon_intensity;
 	world_view->shading_mode = current_player->infravision_duration ? _shading_infravision : _shading_normal;
 
+	bool SwitchedModes = false;
+	
 	// Suppress the overhead map if desired
 	if (PLAYER_HAS_MAP_OPEN(current_player) && View_MapActive()) {
-		if (!world_view->overhead_map_active)
+		if (!world_view->overhead_map_active) {
 			set_overhead_map_status(true);
+			SwitchedModes = true;
+		}
 	} else {
-		if (world_view->overhead_map_active)
+		if (world_view->overhead_map_active) {
 			set_overhead_map_status(false);
+			SwitchedModes = true;
+		}
 	}
 
 	if(player_in_terminal_mode(current_player_index)) {
-		if (!world_view->terminal_mode_active)
+		if (!world_view->terminal_mode_active) {
 			set_terminal_status(true);
+			SwitchedModes = true;
+		}
 	} else {
-		if (world_view->terminal_mode_active)
+		if (world_view->terminal_mode_active) {
 			set_terminal_status(false);
+			SwitchedModes = true;
+		}
 	}
 
 	// Set rendering-window bounds for the current sort of display to render
@@ -928,37 +951,36 @@ void render_screen(short ticks_elapsed)
 	bool HighResolution;
 
 	SDL_Rect HUD_DestRect = Screen::instance()->hud_rect();
-	SDL_Rect ViewRect;
+	SDL_Rect ViewRect, MapRect, TermRect;
 
-	bool ChangedSize = false;
+	bool ViewChangedSize = false;
+	bool MapChangedSize = false;
 
 	// Switching fullscreen mode requires much the same reinitialization as switching the screen size
 	if (mode->fullscreen != PrevFullscreen) {
 		PrevFullscreen = mode->fullscreen;
-		ChangedSize = true;
+		ViewChangedSize = true;
+		MapChangedSize = true;
 	}
 
 	// Each kind of display needs its own size
-	if (world_view->terminal_mode_active) {
-		// Standard terminal size
-		ViewRect.x = ViewRect.y = 0;
-		ViewRect.w = 640;
-		ViewRect.h = 320;
-		HighResolution = true;
-	} else if (world_view->overhead_map_active) {
-		// Fill the available space
-		ViewRect = Screen::instance()->map_rect();
-		HighResolution = true;
-	} else {
-		ViewRect = Screen::instance()->view_rect();
-		HighResolution = mode->high_resolution;
-	}
+	ViewRect = Screen::instance()->view_rect();
+	MapRect = Screen::instance()->map_rect();
+	TermRect = Screen::instance()->term_rect();
+	HighResolution = mode->high_resolution;
 	
-	static SDL_Rect PrevViewRect = { 0, 0, 0, 0};
+	static SDL_Rect PrevViewRect = { 0, 0, 0, 0 };
 	if (memcmp(&PrevViewRect, &ViewRect, sizeof(SDL_Rect)))
 	{
-		ChangedSize = true;
+		ViewChangedSize = true;
 		PrevViewRect = ViewRect;
+	}
+
+	static SDL_Rect PrevMapRect = { 0, 0, 0, 0 };
+	if (memcmp(&PrevMapRect, &MapRect, sizeof(SDL_Rect)))
+	{
+		MapChangedSize = true;
+		PrevMapRect = MapRect;
 	}
 
 	SDL_Rect BufferRect = {0, 0, ViewRect.w, ViewRect.h};
@@ -974,22 +996,18 @@ void render_screen(short ticks_elapsed)
 	world_view->standard_screen_width = 2 * BufferRect.h;
 	initialize_view_data(world_view);
 
-	if (world_pixels) {
-		// Check on the drawing buffer's size
-		if (world_pixels->w != BufferRect.w || world_pixels->h != BufferRect.h)
-			ChangedSize = true;
-	} else
-		ChangedSize = true;
-
 	bool update_full_screen = false;
-	if (ChangedSize) {
+	if (ViewChangedSize || MapChangedSize || SwitchedModes) {
 		clear_screen(false);
 		update_full_screen = true;
 		if (Screen::instance()->hud() && !Screen::instance()->lua_hud())
 			draw_interface();
 
 		// Reallocate the drawing buffer
-		reallocate_world_pixels(BufferRect.w, BufferRect.h);
+		if (ViewChangedSize)
+			reallocate_world_pixels(BufferRect.w, BufferRect.h);
+		if (MapChangedSize)
+			reallocate_map_pixels(MapRect.w, MapRect.h);
 
 		dirty_terminal_view(current_player_index);
 	} 
@@ -1043,6 +1061,12 @@ void render_screen(short ticks_elapsed)
 	// Set OpenGL viewport to world view
 	Rect sr = {0, 0, Screen::instance()->height(), Screen::instance()->width()};
 	Rect vr = {ViewRect.y, ViewRect.x, ViewRect.y + ViewRect.h, ViewRect.x + ViewRect.w};
+	if (OGL_MapActive) {
+		vr.top = MapRect.y;
+		vr.left = MapRect.x;
+		vr.bottom = MapRect.y + MapRect.h;
+		vr.right = MapRect.x + MapRect.w;
+	}
 	OGL_SetWindow(sr, vr, true);
 	
 #endif
@@ -1069,18 +1093,22 @@ void render_screen(short ticks_elapsed)
 #endif
 				Crosshairs_Render(world_pixels);
 
+	SDL_Surface *disp_pixels = world_pixels;
+	if (world_view->overhead_map_active)
+		disp_pixels = Map_Buffer;
+	
 	// Display FPS and position
 	if (!world_view->terminal_mode_active) {
 	  extern bool chat_input_mode;
 	  if (!chat_input_mode){
-		update_fps_display(world_pixels);
+		update_fps_display(disp_pixels);
 	  }
-	  DisplayPosition(world_pixels);
-	  DisplayNetMicStatus(world_pixels);
-	  DisplayScores(world_pixels);
+	  DisplayPosition(disp_pixels);
+	  DisplayNetMicStatus(disp_pixels);
+	  DisplayScores(disp_pixels);
 	}
-	DisplayMessages(world_pixels);
-	DisplayInputLine(world_pixels);
+	DisplayMessages(disp_pixels);
+	DisplayInputLine(disp_pixels);
 	
 #ifdef HAVE_OPENGL
 	// Set OpenGL viewport to whole window (so HUD will be in the right position)
@@ -1109,14 +1137,20 @@ void render_screen(short ticks_elapsed)
 				Term_Blitter.Load(*Term_Buffer);
 				Term_RenderRequest = false;
 			}
-			Term_Blitter.Draw(Screen::instance()->term_rect());
+			Term_Blitter.Draw(TermRect);
 		}
 
 #endif
 	} else {
 		// Update world window
-		if (!world_view->terminal_mode_active)
+		if (!world_view->terminal_mode_active && !world_view->overhead_map_active)
 			update_screen(BufferRect, ViewRect, HighResolution);
+		
+		// Update map
+		if (world_view->overhead_map_active && screen_mode.acceleration == _no_acceleration) {
+			SDL_Rect src_rect = { 0, 0, MapRect.w, MapRect.h };
+			DrawSurface(Map_Buffer, MapRect, src_rect);
+		}
 		
 		// Update HUD
 		if (Screen::instance()->lua_hud())
@@ -1132,8 +1166,8 @@ void render_screen(short ticks_elapsed)
 		// Update terminal
 		if (world_view->terminal_mode_active) {
 			if (Term_RenderRequest || Screen::instance()->lua_hud()) {
-				SDL_Rect dest_rect = Screen::instance()->term_rect();
-				DrawSurface(Term_Buffer, dest_rect, ViewRect);
+				SDL_Rect src_rect = { 0, 0, 640, 320 };
+				DrawSurface(Term_Buffer, TermRect, src_rect);
 				Term_RenderRequest = false;
 			}
 		}
@@ -1143,7 +1177,7 @@ void render_screen(short ticks_elapsed)
 			SDL_UpdateRect(main_surface, 0, 0, 0, 0);
 			update_full_screen = false;
 		}
-		else
+		else if (!world_view->overhead_map_active && !world_view->terminal_mode_active)
 		{
 			SDL_UpdateRects(main_surface, 1, &ViewRect);
 		}
@@ -1447,8 +1481,8 @@ void render_computer_interface(struct view_data *view)
 	struct view_terminal_data data;
 
 	data.left = data.top = 0;
-	data.right = view->screen_width;
-	data.bottom = view->screen_height;
+	data.right = 640;
+	data.bottom = 320;
 	data.vertical_offset = 0;
 
 	_set_port_to_term();
@@ -1464,12 +1498,13 @@ void render_computer_interface(struct view_data *view)
 void render_overhead_map(struct view_data *view)
 {
 	struct overhead_map_data overhead_data;
-	SDL_FillRect(world_pixels, NULL, SDL_MapRGB(world_pixels->format, 0, 0, 0));
+	SDL_FillRect(Map_Buffer, NULL, SDL_MapRGB(Map_Buffer->format, 0, 0, 0));
 
-	overhead_data.half_width = view->half_screen_width;
-	overhead_data.half_height = view->half_screen_height;
-	overhead_data.width = view->screen_width;
-	overhead_data.height = view->screen_height;
+	SDL_Rect maprect = Screen::instance()->map_rect();
+	overhead_data.half_width = maprect.w >> 1;
+	overhead_data.half_height = maprect.h >> 1;
+	overhead_data.width = maprect.w;
+	overhead_data.height = maprect.h;
 	overhead_data.top = overhead_data.left = 0;
 
 	overhead_data.scale = view->overhead_map_scale;
@@ -1477,7 +1512,7 @@ void render_overhead_map(struct view_data *view)
 	overhead_data.origin.x = view->origin.x;
 	overhead_data.origin.y = view->origin.y;
 
-	_set_port_to_gworld();
+	_set_port_to_map();
 	_render_overhead_map(&overhead_data);
 	_restore_port();
 }
@@ -1647,7 +1682,8 @@ void DrawSurface(SDL_Surface *s, SDL_Rect &dest_rect, SDL_Rect &src_rect)
 			new_src_rect.h = static_cast<Uint16>(new_src_rect.h * y_scale);
 		}
 		SDL_BlitSurface(surface, &new_src_rect, main_surface, &dest_rect);
-		SDL_UpdateRects(main_surface, 1, &dest_rect);
+		if (!Screen::instance()->lua_hud())
+			SDL_UpdateRects(main_surface, 1, &dest_rect);
 		
 		if (surface != s)
 			SDL_FreeSurface(surface);
