@@ -785,13 +785,9 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 
 	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, pixel_format_32.Amask);
 
-#ifdef ALEPHONE_LITTLE_ENDIAN
-	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
-	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
-#else
-	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
-	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff,0x0000ff00, 0x00ff0000, 0xff000000);
-#endif
+	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
+	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
+
 #ifdef HAVE_OPENGL
 	if (main_surface->flags & SDL_OPENGL) {
 		static bool gl_info_printed = false;
