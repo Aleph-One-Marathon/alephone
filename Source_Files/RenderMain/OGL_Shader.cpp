@@ -354,7 +354,7 @@ void initDefaultPrograms() {
         "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
         "	vec4 v = landscapeInverseMatrix * vec4(0.0, 0.0, 0.0, 1.0);\n"
-        "	viewDir = (landscapeInverseMatrix * gl_ClipVertex - v).xyz;\n"
+        "	viewDir = (landscapeInverseMatrix * gl_ModelViewMatrix * gl_Vertex - v).xyz;\n"
         "	texScale = gl_TextureMatrix[0][1][1];\n"
         "	texOffset = gl_TextureMatrix[0][3][1];\n"
         "	vertexColor = gl_Color;\n"
