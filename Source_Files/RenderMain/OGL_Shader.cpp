@@ -172,7 +172,15 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 	GLint status;
 	GLhandleARB shader = glCreateShaderObjectARB(shaderType);
 
-	glShaderSourceARB(shader, 1, (const GLcharARB**) &str, NULL);
+	std::vector<const GLcharARB*> source;
+
+	if (DisableClipVertex())
+	{
+		source.push_back("#define DISABLE_CLIP_VERTEX\n");
+	}
+	source.push_back(str);
+
+	glShaderSourceARB(shader, source.size(), &source[0], NULL);
 
 	glCompileShaderARB(shader);
 	glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
@@ -352,7 +360,9 @@ void initDefaultPrograms() {
         "varying vec4 vertexColor;\n"
         "void main(void) {\n"
         "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+        "#ifndef DISABLE_CLIP_VERTEX\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
+        "#endif\n"
         "	vec4 v = landscapeInverseMatrix * vec4(0.0, 0.0, 0.0, 1.0);\n"
         "	viewDir = (landscapeInverseMatrix * gl_ModelViewMatrix * gl_Vertex - v).xyz;\n"
         "	texScale = gl_TextureMatrix[0][1][1];\n"
@@ -417,7 +427,9 @@ void initDefaultPrograms() {
         "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
         "	gl_Position.z = gl_Position.z + depth*gl_Position.z/65536.0;\n"
         "	classicDepth = gl_Position.z / 8192.0;\n"
+        "#ifndef DISABLE_CLIP_VERTEX\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
+        "#endif\n"
         "	vec4 v = gl_ModelViewMatrixInverse * vec4(0.0, 0.0, 0.0, 1.0);\n"
         "	viewDir = (gl_Vertex - v).xyz;\n"
         "	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
@@ -534,7 +546,9 @@ void initDefaultPrograms() {
         "	gl_Position  = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
         "	gl_Position.z = gl_Position.z + depth*gl_Position.z/65536.0;\n"
         "	classicDepth = gl_Position.z / 8192.0;\n"
+        "#ifndef DISABLE_CLIP_VERTEX\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
+        "#endif\n"
         "	gl_TexCoord[0] = gl_TextureMatrix[0] * gl_MultiTexCoord0;\n"
         "	/* SETUP TBN MATRIX in normal matrix coords, gl_MultiTexCoord1 = tangent vector */\n"
         "	vec3 n = normalize(gl_NormalMatrix * gl_Normal);\n"
@@ -689,22 +703,6 @@ void initDefaultPrograms() {
         "	intensity = color.rgb * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a);\n"
-        "}\n";
-		
-	if (DisableClipVertex()) {
-		std::string query = "gl_ClipVertex";
-		std::string replace = "// gl_ClipVertex";
-		std::map<std::string, std::string>::iterator it;
-		for (it = defaultVertexPrograms.begin(); it != defaultVertexPrograms.end(); it++) {
-			size_t found = 0;
-			do {
-				found = it->second.find(query, found);
-				if (found != std::string::npos) {
-					it->second.replace(found, query.length(), replace);
-					found += replace.length();
-				}
-			} while (found != std::string::npos);
-		}
-	}
+        "}\n";		
 }
     
