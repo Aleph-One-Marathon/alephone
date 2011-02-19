@@ -233,6 +233,7 @@ Shader::Shader(const std::string& name, FileSpecifier& vert, FileSpecifier& frag
 void Shader::init() {
 
 	std::fill_n(_uniform_locations, static_cast<int>(NUMBER_OF_UNIFORM_LOCATIONS), -1);
+	std::fill_n(_cached_floats, static_cast<int>(NUMBER_OF_UNIFORM_LOCATIONS), 0.0);
 
 	_loaded = true;
 
@@ -260,12 +261,6 @@ void Shader::init() {
 	glUniform1iARB(getUniformLocation(U_Texture1), 1);
 	glUniform1iARB(getUniformLocation(U_Texture2), 2);
 	glUniform1iARB(getUniformLocation(U_Texture3), 3);	
-	glUniform1fARB(getUniformLocation(U_Time), 0.0);
-	glUniform1fARB(getUniformLocation(U_Wobble), 0.0);
-	glUniform1fARB(getUniformLocation(U_Flare), 0.0);
-	glUniform1fARB(getUniformLocation(U_BloomScale), 0.0);
-	glUniform1fARB(getUniformLocation(U_BloomShift), 0.0);
-	glUniform1fARB(getUniformLocation(U_Repeat), 0.0);
 
 	glUseProgramObjectARB(NULL);
 
@@ -274,7 +269,10 @@ void Shader::init() {
 
 void Shader::setFloat(UniformName name, float f) {
 
-	glUniform1fARB(getUniformLocation(name), f);
+	if (_cached_floats[name] != f) {
+		_cached_floats[name] = f;
+		glUniform1fARB(getUniformLocation(name), f);
+	}
 }
 
 void Shader::setMatrix4(UniformName name, float *f) {

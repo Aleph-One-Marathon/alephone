@@ -84,6 +84,7 @@ private:
 
 	static const char* _uniform_names[NUMBER_OF_UNIFORM_LOCATIONS];
 	GLint _uniform_locations[NUMBER_OF_UNIFORM_LOCATIONS];
+	float _cached_floats[NUMBER_OF_UNIFORM_LOCATIONS];
 
 	GLint getUniformLocation(UniformName name) { 
 		if (_uniform_locations[name] == -1) {
