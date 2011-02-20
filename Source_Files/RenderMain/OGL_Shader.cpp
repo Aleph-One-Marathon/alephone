@@ -178,6 +178,10 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 	{
 		source.push_back("#define DISABLE_CLIP_VERTEX\n");
 	}
+	if (Wanting_sRGB)
+	{
+		source.push_back("#define GAMMA_CORRECTED_BLENDING\n");
+	}
 	source.push_back(str);
 
 	glShaderSourceARB(shader, source.size(), &source[0], NULL);
@@ -350,6 +354,9 @@ void initDefaultPrograms() {
 		"void main (void) {\n"
 		"	vec4 color = texture2DRect(texture0, gl_TexCoord[0].xy);\n"
 		"	gl_FragColor = color * vertexColor;\n"
+		"#ifdef GAMMA_CORRECTED_BLENDING\n"
+		"	gl_FragColor.a = gl_FragColor.a / 4.0; // compensate for overly strong bloom\n"
+		"#endif\n"
 		"}\n";    
     
     defaultVertexPrograms["landscape"] = ""
@@ -410,11 +417,14 @@ void initDefaultPrograms() {
 
         "	vec4 color = texture2D(texture0, vec2(-x + 0.25*repeat, y));\n"
         "	vec3 intensity = vec3(1.0, 1.0, 1.0);\n"
-        "	intensity = color.rgb * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "	intensity = clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "#ifdef GAMMA_CORRECTED_BLENDING\n"
+        "	intensity = intensity * intensity;  // approximation of pow(intensity, 2.2)\n"
+        "#endif\n"
         "	if (usefog > 0.0) {\n"
         "		intensity = vec3(0.0, 0.0, 0.0);\n"
         "	}\n"
-        "	gl_FragColor = vec4(intensity, 1.0);\n"
+        "	gl_FragColor = vec4(color.rgb * intensity, 1.0);\n"
     "}\n";
 	
     defaultVertexPrograms["sprite"] = ""
@@ -447,15 +457,18 @@ void initDefaultPrograms() {
         "void main (void) {\n"
         "	float mlFactor = clamp(0.5 + flare - classicDepth, 0.0, 1.0);\n"
         "	// more realistic: replace classicDepth with (length(viewDir)/8192.0)\n"
-        "	vec3 shade;\n"
+        "	vec3 intensity;\n"
         "	if (vertexColor.r > mlFactor) {\n"
-        "		shade = vertexColor.rgb + (mlFactor * 0.5); }\n"
+        "		intensity = vertexColor.rgb + (mlFactor * 0.5); }\n"
         "	else {\n"
-        "		shade = (vertexColor.rgb * 0.5) + mlFactor; }\n"
+        "		intensity = (vertexColor.rgb * 0.5) + mlFactor; }\n"
+        "	intensity = clamp(intensity, glow, 1.0);\n"
+        "#ifdef GAMMA_CORRECTED_BLENDING\n"
+        "	intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
+        "#endif\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
-        "	vec3 intensity = color.rgb * clamp(shade, glow, 1.0);\n"
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
+        "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     defaultVertexPrograms["sprite_bloom"] = defaultVertexPrograms["sprite"];
     defaultFragmentPrograms["sprite_bloom"] = ""
@@ -469,9 +482,12 @@ void initDefaultPrograms() {
         "void main (void) {\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "	vec3 intensity = clamp(vertexColor.rgb, glow, 1.0);\n"
-        "	intensity = color.rgb * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "	intensity = clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "#ifdef GAMMA_CORRECTED_BLENDING\n"
+        "	intensity = intensity * intensity;  // approximation of pow(intensity, 2.2)\n"
+        "#endif\n"
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a);\n"
+        "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     
     defaultVertexPrograms["invincible"] = defaultVertexPrograms["sprite"];
@@ -488,6 +504,9 @@ void initDefaultPrograms() {
         "	float c = fract(sin(usestatic*(gl_TexCoord[0].x * 41.0 + gl_TexCoord[0].y * 12911.0) + time * 31.0) * 34563.0);\n"
         "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
         "	vec3 intensity = vec3(a, b, c);\n"
+        "#ifdef GAMMA_CORRECTED_BLENDING\n"
+        "	intensity = intensity * intensity;  // approximation of pow(intensity, 2.2)\n"
+        "#endif\n"
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
@@ -579,15 +598,18 @@ void initDefaultPrograms() {
         "	texCoords += vec3(normalize(viewXY).yx * wobble, 0.0);\n"
         "	float mlFactor = clamp(0.5 + flare - classicDepth, 0.0, 1.0);\n"
         "	// more realistic: replace classicDepth with (length(viewDir)/8192.0)\n"
-        "	vec3 shade;\n"
+        "	vec3 intensity;\n"
         "	if (vertexColor.r > mlFactor) {\n"
-        "		shade = vertexColor.rgb + (mlFactor * 0.5); }\n"
+        "		intensity = vertexColor.rgb + (mlFactor * 0.5); }\n"
         "	else {\n"
-        "		shade = (vertexColor.rgb * 0.5) + mlFactor; }\n"
+        "		intensity = (vertexColor.rgb * 0.5) + mlFactor; }\n"
+        "	intensity = clamp(intensity, glow, 1.0);\n"
+        "#ifdef GAMMA_CORRECTED_BLENDING\n"
+        "	intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
+        "#endif\n"
         "	vec4 color = texture2D(texture0, texCoords.xy);\n"
-        "	vec3 intensity = color.rgb * clamp(shade, glow, 1.0);\n"
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
+        "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     defaultVertexPrograms["wall_bloom"] = defaultVertexPrograms["wall"];
     defaultFragmentPrograms["wall_bloom"] = ""
@@ -614,9 +636,12 @@ void initDefaultPrograms() {
         "	vec3 intensity = clamp(vertexColor.rgb, glow, 1.0);\n"
         "	vec3 corr = clamp(shade, glow, 1.0);\n"
         "	intensity = intensity - 0.33*(corr - intensity);\n"
-        "	intensity = color.rgb * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "	intensity = clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "#ifdef GAMMA_CORRECTED_BLENDING\n"
+        "	intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
+        "#endif\n"
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a);\n"
+        "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     
     defaultVertexPrograms["bump"] = defaultVertexPrograms["wall"];
@@ -634,11 +659,11 @@ void initDefaultPrograms() {
         "	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
         "	texCoords += vec3(normalize(viewXY).yx * wobble, 0.0);\n"
         "	float mlFactor = clamp(0.5 + flare - (length(viewDir)/8192.0), 0.0, 1.0);\n"
-        "	vec3 shade;\n"
+        "	vec3 intensity;\n"
         "	if (vertexColor.r > mlFactor) {\n"
-        "		shade = vertexColor.rgb + (mlFactor * 0.5); }\n"
+        "		intensity = vertexColor.rgb + (mlFactor * 0.5); }\n"
         "	else {\n"
-        "		shade = (vertexColor.rgb * 0.5) + mlFactor; }\n"
+        "		intensity = (vertexColor.rgb * 0.5) + mlFactor; }\n"
         "	vec3 viewv = normalize(viewDir);\n"
         "	// iterative parallax mapping\n"
         "	float scale = 0.010;\n"
@@ -655,9 +680,12 @@ void initDefaultPrograms() {
         "       diffuse = 1.0;\n"
         "   }\n"
         "	vec4 color = texture2D(texture0, texCoords.xy);\n"
-        "	vec3 intensity = color.rgb * clamp(shade * diffuse, glow, 1.0);\n"
+        "	intensity = clamp(intensity * diffuse, glow, 1.0);\n"
+        "#ifdef GAMMA_CORRECTED_BLENDING\n"
+        "	intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
+        "#endif\n"
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, intensity, fogFactor), vertexColor.a * color.a);\n"
+        "	gl_FragColor = vec4(mix(gl_Fog.color.rgb, color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
     defaultVertexPrograms["bump_bloom"] = defaultVertexPrograms["bump"];
     defaultFragmentPrograms["bump_bloom"] = ""
@@ -700,9 +728,12 @@ void initDefaultPrograms() {
         "	vec3 intensity = clamp(vertexColor.rgb, glow, 1.0);\n"
         "	vec3 corr = clamp(shade * (0.5*diffuse + 0.5), glow, 1.0);\n"
         "	intensity = intensity - 0.33*(corr - intensity);\n"
-        "	intensity = color.rgb * clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "	intensity = clamp(intensity * bloomScale + bloomShift, 0.0, 1.0);\n"
+        "#ifdef GAMMA_CORRECTED_BLENDING\n"
+        "	intensity = intensity * intensity; // approximation of pow(intensity, 2.2)\n"
+        "#endif\n"
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
-        "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), intensity, fogFactor), vertexColor.a * color.a);\n"
+        "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
         "}\n";		
 }
     

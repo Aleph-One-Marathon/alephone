@@ -52,7 +52,6 @@ public:
 		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, Wanting_sRGB ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
 		assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
-//		if(Using_sRGB) glEnable(GL_FRAMEBUFFER_SRGB_EXT);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	}
 
@@ -297,7 +296,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	Shader *s = NULL;
 	GLfloat color[3];
 	GLdouble shade = PIN(static_cast<GLfloat>(rect.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
-	color[0] = color[1] = color[2] = sRGB_frob(shade);
+	color[0] = color[1] = color[2] = shade;
 
 	TextureManager TMgr;
 
@@ -870,7 +869,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	GLfloat color[3];
 	GLdouble shade = PIN(static_cast<GLfloat>(RenderRectangle.ambient_shade)/static_cast<GLfloat>(FIXED_ONE),0,1);
-	color[0] = color[1] = color[2] = sRGB_frob(shade);
+	color[0] = color[1] = color[2] = shade;
 	glColor4f(color[0], color[1], color[2], 1.0);
 
 	Shader *s = NULL;
