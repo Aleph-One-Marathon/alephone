@@ -63,17 +63,39 @@ protected:
 	RGBColor& m_pref;
 };
 
-class FilterPref : public Bindable<int>
+class FarFilterPref : public Bindable<int>
 {
 public:
-	FilterPref (int16& pref) : m_pref(pref) { }
+	FarFilterPref (int16& pref) : m_pref(pref) { }
 
 	int bind_export() {
-		return (m_pref - 1) / 2;
+		if (m_pref == 5)
+		{
+			return 3;
+		} 
+		else if (m_pref == 3)
+		{
+			return 2;
+		}
+		else
+		{
+			return m_pref;
+		}
 	}
 
 	void bind_import(int value) {
-		m_pref = value * 2 + 1;
+		if (value == 2)
+		{
+			m_pref = 3;
+		}
+		else if (value == 3)
+		{
+			m_pref = 5;
+		}
+		else
+		{
+			m_pref = value;
+		}
 	}
 
 protected:
@@ -150,6 +172,7 @@ OpenGLDialog::~OpenGLDialog()
 
 	for (int i=0; i<OGL_NUMBER_OF_TEXTURE_TYPES; ++i) {
 		delete m_textureQualityWidget [i];
+		delete m_nearFiltersWidget[i];
 		delete m_textureResolutionWidget [i];
 		delete m_textureDepthWidget[i];
 	}
@@ -200,10 +223,19 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	BoolPref vsyncPref (graphics_preferences->OGL_Configure.WaitForVSync);
 	binders.insert<bool> (m_vsyncWidget, &vsyncPref);
 	
-	FilterPref wallsFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Wall].FarFilter);
-	binders.insert<int> (m_wallsFilterWidget, &wallsFilterPref);
-	FilterPref spritesFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Inhabitant].FarFilter);
-	binders.insert<int> (m_spritesFilterWidget, &spritesFilterPref);
+	FarFilterPref wallsFarFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Wall].FarFilter);
+	binders.insert<int> (m_wallsFilterWidget, &wallsFarFilterPref);
+	FarFilterPref spritesFarFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList [OGL_Txtr_Inhabitant].FarFilter);
+	binders.insert<int> (m_spritesFilterWidget, &spritesFarFilterPref);
+
+	Int16Pref wallsNearFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList[OGL_Txtr_Wall].NearFilter);
+	binders.insert<int> (m_nearFiltersWidget[0], &wallsNearFilterPref);
+	Int16Pref landscapeNearFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList[OGL_Txtr_Landscape].NearFilter);
+	binders.insert<int> (m_nearFiltersWidget[1], &landscapeNearFilterPref);
+	Int16Pref spriteNearFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList[OGL_Txtr_Inhabitant].NearFilter);
+	binders.insert<int> (m_nearFiltersWidget[2], &spriteNearFilterPref);
+	Int16Pref weaponNearFilterPref (graphics_preferences->OGL_Configure.TxtrConfigList[OGL_Txtr_WeaponsInHand].NearFilter);
+	binders.insert<int> (m_nearFiltersWidget[3], &weaponNearFilterPref);
 	
 	TexQualityPref wallQualityPref (graphics_preferences->OGL_Configure.TxtrConfigList [0].MaxSize, 128);
 	binders.insert<int> (m_textureQualityWidget [0], &wallQualityPref);
@@ -247,8 +279,12 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	}
 }
 
-static const char *filter_labels[4] = {
-	"Linear", "Bilinear", "Trilinear", NULL
+static const char *far_filter_labels[5] = {
+	"None", "Linear", "Bilinear", "Trilinear", NULL
+};
+
+static const char *near_filter_labels[3] = {
+	"None", "Linear", NULL
 };
 
 class SdlOpenGLDialog : public OpenGLDialog
@@ -400,13 +436,34 @@ public:
 		advanced_table->add_row(new w_spacer(), true);
 		advanced_table->dual_add_row(new w_static_text("Distant Texture Filtering"), m_dialog);
 
-		w_select *wall_filter_w = new w_select(0, filter_labels);
+		w_select *wall_filter_w = new w_select(0, far_filter_labels);
 		advanced_table->dual_add(wall_filter_w->label("Walls"), m_dialog);
 		advanced_table->dual_add(wall_filter_w, m_dialog);
 
-		w_select *sprite_filter_w = new w_select(0, filter_labels);
+		w_select *sprite_filter_w = new w_select(0, far_filter_labels);
 		advanced_table->dual_add(sprite_filter_w->label("Sprites"), m_dialog);
 		advanced_table->dual_add(sprite_filter_w, m_dialog);
+
+		advanced_table->add_row(new w_spacer(), true);
+		advanced_table->dual_add_row(new w_static_text("Near Texture Filtering"), m_dialog);
+
+		w_select* near_filter_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
+		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i)
+		{
+			near_filter_wa[i] = new w_select(0, near_filter_labels);
+		}
+		
+		w_label* near_filter_labels[OGL_NUMBER_OF_TEXTURE_TYPES];
+		near_filter_labels[OGL_Txtr_Wall] = new w_label("Walls");
+		near_filter_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
+		near_filter_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
+		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
+
+		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i)
+		{
+			advanced_table->dual_add(near_filter_labels[i], m_dialog);
+			advanced_table->dual_add(near_filter_wa[i], m_dialog);
+		}
 
 		advanced_placer->add(advanced_table, true);
 
@@ -511,6 +568,7 @@ public:
 
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i) {
 			m_textureQualityWidget [i] = new PopupSelectorWidget (texture_quality_wa[i]);
+			m_nearFiltersWidget[i] = new SelectSelectorWidget(near_filter_wa[i]);
 			m_textureResolutionWidget [i] = new PopupSelectorWidget (texture_resolution_wa[i]);
 			m_textureDepthWidget [i] = new PopupSelectorWidget(texture_depth_wa[i]);
 		}
