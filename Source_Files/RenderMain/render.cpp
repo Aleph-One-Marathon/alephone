@@ -432,7 +432,7 @@ void render_view(
 		RenderVisTree.build_render_tree();
 		
 		/* do something complicated and difficult to explain */
-		if (!view->overhead_map_active || graphics_preferences->screen_mode.translucent_map)
+		if (!view->overhead_map_active || map_is_translucent())
 		{			
 			// LP: now from the polygon-sorter class
 			/* sort the render tree (so we have a depth-ordering of polygons) and accumulate

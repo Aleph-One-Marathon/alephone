@@ -535,7 +535,7 @@ static void reallocate_map_pixels(int width, int height)
 	Map_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, world_pixels->format->BitsPerPixel, world_pixels->format->Rmask, world_pixels->format->Gmask, world_pixels->format->Bmask, 0);
 	if (Map_Buffer == NULL)
 		alert_user(fatalError, strERRORS, outOfMemory, -1);
-	if (screen_mode.translucent_map) {
+	if (map_is_translucent()) {
 		SDL_SetAlpha(Map_Buffer, SDL_SRCALPHA, 128);
 		SDL_SetColorKey(Map_Buffer, SDL_SRCCOLORKEY, SDL_MapRGB(Map_Buffer->format, 0, 0, 0));
 	}
@@ -554,6 +554,15 @@ void ReloadViewContext(void)
 #endif
 }
 
+/*
+ *  Determine if the transparent map is in use
+ *  (may be disallowed for network games)
+ */
+
+bool map_is_translucent(void)
+{
+	return (screen_mode.translucent_map);
+}
 
 /*
  *  Enter game screen
@@ -984,10 +993,11 @@ void render_screen(short ticks_elapsed)
 	}
 	
 	static bool PrevTransparent = false;
-	if (PrevTransparent != screen_mode.translucent_map)
+	bool MapIsTranslucent = map_is_translucent();
+	if (PrevTransparent != MapIsTranslucent)
 	{
 		MapChangedSize = true;
-		PrevTransparent = screen_mode.translucent_map;
+		PrevTransparent = MapIsTranslucent;
 	}
 
 	SDL_Rect BufferRect = {0, 0, ViewRect.w, ViewRect.h};
@@ -1083,7 +1093,7 @@ void render_screen(short ticks_elapsed)
     // clear Lua drawing from previous frame
     // (SDL is slower if we do this before render_view)
     if (screen_mode.acceleration == _no_acceleration &&
-		(screen_mode.translucent_map || Screen::instance()->lua_hud()))
+		(MapIsTranslucent || Screen::instance()->lua_hud()))
         clear_screen_margin();
     
 	// Render crosshairs
@@ -1146,7 +1156,7 @@ void render_screen(short ticks_elapsed)
 	} else {
 		// Update world window
 		if (!world_view->terminal_mode_active &&
-			(!world_view->overhead_map_active || screen_mode.translucent_map))
+			(!world_view->overhead_map_active || MapIsTranslucent))
 			update_screen(BufferRect, ViewRect, HighResolution);
 		
 		// Update map
@@ -1180,7 +1190,7 @@ void render_screen(short ticks_elapsed)
 			SDL_UpdateRect(main_surface, 0, 0, 0, 0);
 			update_full_screen = false;
 		}
-		else if ((!world_view->overhead_map_active || screen_mode.translucent_map) &&
+		else if ((!world_view->overhead_map_active || MapIsTranslucent) &&
 				 !world_view->terminal_mode_active)
 		{
 			SDL_UpdateRects(main_surface, 1, &ViewRect);
@@ -1781,7 +1791,7 @@ void clear_screen_margin()
     wr = Screen::instance()->window_rect();
     if (world_view->terminal_mode_active)
         dr = Screen::instance()->term_rect();
-    else if (world_view->overhead_map_active && !screen_mode.translucent_map)
+    else if (world_view->overhead_map_active && !map_is_translucent())
         dr = Screen::instance()->map_rect();
     else
         dr = Screen::instance()->view_rect();

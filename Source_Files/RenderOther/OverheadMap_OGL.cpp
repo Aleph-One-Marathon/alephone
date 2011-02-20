@@ -66,7 +66,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 #include "cseries.h"
 #include "OverheadMap_OGL.h"
 #include "map.h"
-#include "preferences.h"
+#include "screen.h"
 
 #ifdef HAVE_OPENGL
 
@@ -81,7 +81,7 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 // rgb_color straight to OpenGL
 static inline void SetColor(rgb_color& Color)
 {
-	if (graphics_preferences->screen_mode.translucent_map)
+	if (map_is_translucent())
 		glColor4us(Color.red, Color.green, Color.blue, 32767);
 	else
 		glColor3usv((unsigned short *)(&Color));
@@ -135,7 +135,7 @@ void OverheadMap_OGL_Class::begin_overall()
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_ALPHA_TEST);
-	if (graphics_preferences->screen_mode.translucent_map)
+	if (map_is_translucent())
 		glEnable(GL_BLEND);
 	else
 		glDisable(GL_BLEND);

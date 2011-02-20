@@ -178,6 +178,8 @@ void toggle_overhead_map_display_status(void);
 bool zoom_overhead_map_out(void);
 bool zoom_overhead_map_in(void);
 
+bool map_is_translucent(void);
+
 void enter_screen(void);
 void exit_screen(void);
 
