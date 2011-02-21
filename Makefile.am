@@ -33,8 +33,7 @@ dist-hook: AlephOne.spec
 
 $(PACKAGE)-$(VERSION)-MacWinSrc.7z: distdir
 	cp -r ${srcdir}/Libraries ${distdir}/
-#	find ${distdir}/Libraries -depth -name ".svn" -execdir rm -rf {} \;
-	7za a -bd -mx=9 -xr!.svn $(PACKAGE)-$(VERSION)-MacWinSrc.7z $(distdir)
+	tar cf - $(distdir) --exclude-vcs | xz > $(PACKAGE)-$(VERSION)-MacWinSrc.xz 
 	$(am__remove_distdir)
 
 libsrc: $(PACKAGE)-$(VERSION)-MacWinSrc.7z
