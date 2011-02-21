@@ -389,6 +389,13 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	glColor4f(intensity, intensity, intensity, 1.0);
 
 	switch(transferMode) {
+		case _xfer_static:
+			TMgr.TextureType = OGL_Txtr_Wall;
+			TMgr.IsShadeless = 1;
+			flare = -1;
+			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
+			s->enable();
+			break;
 		case _xfer_landscape:
 		case _xfer_big_landscape:
 		{
