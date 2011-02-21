@@ -504,7 +504,7 @@ inline pixel32 randomize_vertical_polygon_lines_write<pixel32>(uint16 seed)
 	return (pixel32)seed^(((pixel32)seed)<<8);
 }
 
-template <typename T>
+template <typename T, bool check_transparent>
 void randomize_vertical_polygon_lines(
 	struct bitmap_definition *screen,
 	struct view_data *view,
@@ -532,7 +532,7 @@ void randomize_vertical_polygon_lines(
 
 		while ((count-=1)>=0)
 		{
-			if (read[FIXED_INTEGERAL_PART(texture_y)])
+			if (!check_transparent || read[texture_y>>(data->downshift)])
 			{
 				if (seed >= drop_less_than) *write = randomize_vertical_polygon_lines_write<T>(seed);
 				if (seed&1) seed= (seed>>1)^0xb400; else seed= seed>>1;

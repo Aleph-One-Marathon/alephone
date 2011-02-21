@@ -624,6 +624,12 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 						else
 							texture_vertical_polygon_lines<pixel8, _sw_alpha_off, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table);
 						break;
+					case _static_transfer:
+						if (polygon->texture->flags&_TRANSPARENT_BIT)
+							randomize_vertical_polygon_lines<pixel8, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table, polygon->transfer_data);
+						else
+							randomize_vertical_polygon_lines<pixel8, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table, polygon->transfer_data);
+						break;
 						
 				default:
 					assert(false);
@@ -666,6 +672,13 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 					}
 				}
 				break;
+				case _static_transfer:
+					if (polygon->texture->flags & _TRANSPARENT_BIT) {
+						randomize_vertical_polygon_lines<pixel16, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table, polygon->transfer_data);
+					} else {
+						randomize_vertical_polygon_lines<pixel16, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table, polygon->transfer_data);
+					}
+					break;
 				default:
 					assert(false);
 					break;
@@ -705,7 +718,13 @@ void Rasterizer_SW_Class::texture_vertical_polygon(polygon_definition& textured_
 						}
 						break;
 					}
-					
+					case _static_transfer:
+						if (polygon->texture->flags & _TRANSPARENT_BIT)
+							randomize_vertical_polygon_lines<pixel32, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table, polygon->transfer_data);
+						else
+							randomize_vertical_polygon_lines<pixel32, false>(screen, view, (struct _vertical_polygon_data *)precalculation_table, left_table, right_table, polygon->transfer_data);
+						break;
+						
 				default:
 					assert(false);
 					break;
@@ -878,7 +897,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 								break;
 							
 							case _static_transfer:
-								randomize_vertical_polygon_lines<pixel8>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								randomize_vertical_polygon_lines<pixel8, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
 								break;
 							
@@ -901,7 +920,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 								break;
 								
 							case _static_transfer:
-								randomize_vertical_polygon_lines<pixel16>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								randomize_vertical_polygon_lines<pixel16, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
 								break;
 							
@@ -925,7 +944,7 @@ void Rasterizer_SW_Class::texture_rectangle(rectangle_definition& textured_recta
 								break;
 							
 							case _static_transfer:
-								randomize_vertical_polygon_lines<pixel32>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
+								randomize_vertical_polygon_lines<pixel32, true>(screen, view, (struct _vertical_polygon_data *)precalculation_table,
 									scratch_table0, scratch_table1, rectangle->transfer_data);
 								break;
 							
