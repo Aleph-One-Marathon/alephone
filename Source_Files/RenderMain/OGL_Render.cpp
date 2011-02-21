@@ -428,7 +428,7 @@ static bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& I
 	GLfloat *Color, bool& ExternallyLit);
 
 // Setup and teardown for the static-effect mode
-static void SetupStaticMode(rectangle_definition& RenderRectangle);
+static void SetupStaticMode(int16 transfer_data);
 static void TeardownStaticMode();
 
 // Renderer object and its "base" view direction
@@ -1399,6 +1399,8 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	TMgr.TransferMode = RenderPolygon.transfer_mode;
 	TMgr.TransferData = RenderPolygon.transfer_data;
 	TMgr.IsShadeless = (RenderPolygon.flags&_SHADELESS_BIT) != 0;
+	if (RenderPolygon.transfer_mode == _static_transfer)
+		TMgr.IsShadeless = 1;
 	TMgr.TextureType = OGL_Txtr_Wall;
 	
 	// Use that texture
@@ -1557,7 +1559,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 	bool PolygonVariableShade = false;
 	GLfloat GlowColor = TMgr.MinGlowIntensity();
 	
-	if (RenderPolygon.flags&_SHADELESS_BIT)
+	if (TMgr.IsShadeless)
 	{
 		// The shadeless color is E-Z
 		glColor3f(1,1,1);
@@ -1759,6 +1761,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 		}
 	} else {
 		// Completely opaque if can't see through void
+		IsBlended = false;
 		glDisable(GL_BLEND);
 		glDisable(GL_ALPHA_TEST);
 	}
@@ -1775,6 +1778,27 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 
 	TMgr.SetupTextureMatrix();
 	TMgr.RenderNormal();	
+	if (TMgr.TransferMode == _static_transfer)
+	{
+		SetupStaticMode(IsBlended ? TMgr.TransferData : 0);
+		if (!IsBlended)
+			glDisable(GL_BLEND);
+
+		if (UseFlatStatic)
+		{
+			glDrawArrays(GL_POLYGON,0,NumVertices);
+		} else {
+			// Do multitextured stippling to create the static effect
+			for (int k=0; k<StaticEffectPasses; k++)
+			{
+				StaticModeIndivSetup(k);
+				glDrawArrays(GL_POLYGON,0,NumVertices);
+			}
+		}
+		TeardownStaticMode();
+	}
+	else
+	{
 	SetBlend(TMgr.NormalBlend());
 	
 	GLint VertIndices[3*(MAXIMUM_VERTICES_OF_SPLIT_POLYGON - 2)];
@@ -1934,6 +1958,7 @@ static bool RenderAsRealWall(polygon_definition& RenderPolygon, bool IsVertical)
 			SglColor3f(GlowColor,GlowColor,GlowColor);
 			glDrawArrays(GL_POLYGON,0,NumVertices);
 		}
+	}
 	}
 	
 	// Revert to default blend
@@ -2152,6 +2177,7 @@ bool OGL_RenderWall(polygon_definition& RenderPolygon, bool IsVertical)
 	switch(RenderPolygon.transfer_mode)
 	{
 	case _textured_transfer:
+	case _static_transfer:
 		RenderAsRealWall(RenderPolygon, IsVertical);
 		break;
 				
@@ -2319,7 +2345,7 @@ bool OGL_RenderSprite(rectangle_definition& RenderRectangle)
 	TMgr.RenderNormal();	// Always do this, of course
 	if (RenderRectangle.transfer_mode == _static_transfer)
 	{
-		SetupStaticMode(RenderRectangle);
+		SetupStaticMode(RenderRectangle.transfer_data);
 		if (UseFlatStatic)
 		{
 			if (Z_Buffering) glDisable(GL_DEPTH_TEST);
@@ -2564,7 +2590,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	
 	if (RenderRectangle.transfer_mode == _static_transfer)
 	{
-		SetupStaticMode(RenderRectangle);
+		SetupStaticMode(RenderRectangle.transfer_data);
 		if (UseFlatStatic)
 		{
 			// Do explicit depth sort because these textures are semitransparent
@@ -2726,14 +2752,14 @@ bool DoLightingAndBlending(rectangle_definition& RenderRectangle, bool& IsBlende
 };
 
 
-void SetupStaticMode(rectangle_definition& RenderRectangle)
+void SetupStaticMode(int16 transfer_data)
 {
 	if (UseFlatStatic)
 	{
 		// Per-sprite coloring; be sure to add the transparency in appropriate fashion
 		for (int c=0; c<3; c++)
 			FlatStaticColor[c] = StaticRandom.KISS() + StaticRandom.LFIB4();
-		FlatStaticColor[3] = 65535 - RenderRectangle.transfer_data;
+		FlatStaticColor[3] = 65535 - transfer_data;
 		
 		// Do flat-color version of static effect
 		glDisable(GL_ALPHA_TEST);
@@ -2755,14 +2781,14 @@ void SetupStaticMode(rectangle_definition& RenderRectangle)
 			uint32 Val = 0;
 			// Avoid doing extra random-number evaluations
 			// for the case of complete opacity
-			if (RenderRectangle.transfer_data > 0)
+			if (transfer_data > 0)
 			{
 				for (int k=0; k<32; k++)
 				{
 					// Have to do this for every bit to get the proper probability distribution
 					Val <<= 1;
 					uint16 RandSamp = uint16(StaticRandom.KISS());
-					Val |= (RandSamp >= RenderRectangle.transfer_data) ? 1 : 0;
+					Val |= (RandSamp >= transfer_data) ? 1 : 0;
 				}
 			}
 			else
@@ -2780,7 +2806,7 @@ void SetupStaticMode(rectangle_definition& RenderRectangle)
 		// Use the stencil buffer to create the static effect
 		glEnable(GL_STENCIL_TEST);
 		
-		StencilTxtrOpacity = 1 - RenderRectangle.transfer_data/65535.0;
+		StencilTxtrOpacity = 1 - transfer_data/65535.0;
 #endif
 	}
 }
