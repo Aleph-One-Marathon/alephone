@@ -873,6 +873,7 @@ const lang_def Lua_TransferMode_Mnemonics[] = {
 	{"pulsate", 4},
 	{"wobble", 5},
 	{"fast wobble", 6},
+	{"static", 7},
 	{"landscape", 9},
 	{"horizontal slide", 15},
 	{"fast horizontal slide", 16},

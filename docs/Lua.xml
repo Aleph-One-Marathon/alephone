@@ -2995,6 +2995,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<mnemonic name="pulsate"/>
 	<mnemonic name="wobble"/>
 	<mnemonic name="fast wobble"/>
+	<mnemonic name="static"/>
 	<mnemonic name="landscape"/>
 	<mnemonic name="horizontal slide"/>
 	<mnemonic name="fast horizontal slide"/>
