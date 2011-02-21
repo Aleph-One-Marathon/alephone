@@ -1079,6 +1079,7 @@ static void _pretexture_vertical_polygon_lines(
 		{
 			adjusted_world_x >>= 1; adjusted_ty_denominator >>= 1;
 		}
+		if (!adjusted_ty_denominator) adjusted_ty_denominator= 1; /* -1 will still be -1 */
 		ty_delta= - INTEGER_TO_FIXED(adjusted_world_x)/adjusted_ty_denominator;
 		
 		vassert(ty_delta>=0, csprintf(temporary, "ty_delta=W2F(%d)/%d=%d", world_x, unadjusted_ty_denominator, ty_delta));
