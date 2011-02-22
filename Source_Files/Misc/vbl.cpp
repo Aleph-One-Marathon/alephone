@@ -84,6 +84,7 @@ Feb 20, 2002 (Woody Zenfell):
 #include "interface.h"
 #include "shell.h"
 #include "preferences.h"
+#include "Logging.h"
 #include "mouse.h"
 #include "player.h"
 #include "key_definitions.h"
@@ -857,6 +858,8 @@ void stop_replay(
 static void read_recording_queue_chunks(
 	void)
 {
+	logContext("reading recording queue chunks");
+
 	int32 i, sizeof_read;
 	uint32 action_flags; 
 	int16 count, player_index, num_flags;
@@ -915,10 +918,14 @@ static void read_recording_queue_chunks(
 					break;
 				}
 			}
-			assert(replay.have_read_last_chunk || num_flags);
+
+			if (!(replay.have_read_last_chunk || num_flags))
+			{
+				logAnomaly("chunk contains no flags");
+			}
+
 			count += num_flags;
-			vassert((num_flags != 0 && count <= RECORD_CHUNK_SIZE) || replay.have_read_last_chunk, 
-				csprintf(temporary, "num_flags = %d, count = %d", num_flags, count));
+
 			for (i = 0; i < num_flags; i++)
 			{
 				*(queue->buffer + queue->write_index) = action_flags;
