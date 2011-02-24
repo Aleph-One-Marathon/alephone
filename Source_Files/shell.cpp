@@ -1173,6 +1173,7 @@ static void process_event(const SDL_Event &event)
 			else if (!get_keyboard_controller_status())
 			{
 				hide_cursor();
+				validate_world_window();
 				set_keyboard_controller_status(true);
 			}
 		}
