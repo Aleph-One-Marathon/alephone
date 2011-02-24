@@ -957,7 +957,6 @@ void render_screen(short ticks_elapsed)
 
 	// Set rendering-window bounds for the current sort of display to render
 	screen_mode_data *mode = &screen_mode;
-	bool HighResolution;
 
 	SDL_Rect HUD_DestRect = Screen::instance()->hud_rect();
 	SDL_Rect ViewRect, MapRect, TermRect;
@@ -976,7 +975,6 @@ void render_screen(short ticks_elapsed)
 	ViewRect = Screen::instance()->view_rect();
 	MapRect = Screen::instance()->map_rect();
 	TermRect = Screen::instance()->term_rect();
-	HighResolution = mode->high_resolution;
 	
 	static SDL_Rect PrevViewRect = { 0, 0, 0, 0 };
 	if (memcmp(&PrevViewRect, &ViewRect, sizeof(SDL_Rect)))
@@ -998,6 +996,14 @@ void render_screen(short ticks_elapsed)
 	{
 		MapChangedSize = true;
 		PrevTransparent = MapIsTranslucent;
+	}
+	
+	static bool PrevHighRes = true;
+	bool HighResolution = mode->high_resolution;
+	if (PrevHighRes != HighResolution)
+	{
+		ViewChangedSize = true;
+		PrevHighRes = HighResolution;
 	}
 
 	SDL_Rect BufferRect = {0, 0, ViewRect.w, ViewRect.h};
