@@ -650,6 +650,10 @@ static bool need_mode_change(int width, int height, int depth, bool nogl)
 	if (s->h != want_h)
 		return true;
 	
+	// are we changing the depth?
+	if (s->format->BitsPerPixel != depth)
+		return true;
+	
 	// are we switching to/from fullscreen?
 	if (( screen_mode.fullscreen && !(s->flags & SDL_FULLSCREEN)) ||
 		(!screen_mode.fullscreen &&  (s->flags & SDL_FULLSCREEN)))
@@ -1004,6 +1008,13 @@ void render_screen(short ticks_elapsed)
 	{
 		ViewChangedSize = true;
 		PrevHighRes = HighResolution;
+	}
+	
+	static short PrevDepth = 0;
+	if (PrevDepth != mode->bit_depth)
+	{
+		ViewChangedSize = true;
+		PrevDepth = mode->bit_depth;
 	}
 
 	SDL_Rect BufferRect = {0, 0, ViewRect.w, ViewRect.h};
