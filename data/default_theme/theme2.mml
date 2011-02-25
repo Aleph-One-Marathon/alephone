@@ -15,7 +15,7 @@
   <color index="0" red="0.875" green="0.875" blue="0.75"/>
   <color index="1" red="0.145" green="0.145" blue="0.145"/>
   <color index="2" red="0.5" green="0.5" blue="0.5"/>
-  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" size="12"/>
+  <font file="DejaVuLGCSansCondensed-Bold.ttf" italic_file="DejaVuLGCSansCondensed-BoldOblique.ttf" bold_file="DejaVuLGCSansCondensed-BoldBold.ttf" size="12"/>
 </default>
 
 <!-- Dialog frame -->
