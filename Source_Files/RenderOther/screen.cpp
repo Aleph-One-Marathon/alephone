@@ -414,6 +414,8 @@ SDL_Rect Screen::map_rect()
 		r.h = MIN(lua_map_rect.h, window_height() - lua_map_rect.y);
         return r;
     }
+	if (map_is_translucent())
+		return view_rect();
 	
 	r.w = window_width();
 	r.h = window_height();
