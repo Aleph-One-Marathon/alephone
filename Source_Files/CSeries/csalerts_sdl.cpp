@@ -75,6 +75,7 @@ bool system_alert_choose_scenario(char *chosen_dir)
 	LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
 	if (pidl)
 	{
+		SHGetPathFromIDList(pidl, path);
 #ifdef UNICODE
 		WideCharToMultiByte(CP_UTF8, 0, path, -1, chosen_dir, 256, NULL, NULL);
 #else
