@@ -64,6 +64,22 @@ void system_alert_user(const char* message, short severity)
 	fprintf(stderr, "%s: %s\n", severity == infoError ? "INFO" : "FATAL", message);
 #endif	
 }
+
+#if defined(__WIN32__)
+// callback to set starting location for Win32 "choose scenario" dialog
+static int CALLBACK browse_callback_proc(HWND hwnd, UINT msg, LPARAM lparam, LPARAM lpdata)
+{
+	TCHAR cwd[MAX_PATH];
+	switch (msg)
+	{
+		case BFFM_INITIALIZED:
+			if (GetCurrentDirectory(MAX_PATH, cwd))
+				SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)cwd);
+	}
+	return 0;
+}
+#endif
+
 bool system_alert_choose_scenario(char *chosen_dir)
 {
 #if defined(__WIN32__)
@@ -71,6 +87,7 @@ bool system_alert_choose_scenario(char *chosen_dir)
 	TCHAR path[MAX_PATH];
 	bi.lpszTitle = _T("Select an Aleph One scenario:");
 	bi.pszDisplayName = path;
+	bi.lpfn = browse_callback_proc;
 	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE | 0x00000200; // no "New Folder" button
 	LPITEMIDLIST pidl = SHBrowseForFolder(&bi);
 	if (pidl)
