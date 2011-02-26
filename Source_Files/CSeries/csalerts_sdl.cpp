@@ -70,11 +70,20 @@ void system_alert_user(const char* message, short severity)
 static int CALLBACK browse_callback_proc(HWND hwnd, UINT msg, LPARAM lparam, LPARAM lpdata)
 {
 	TCHAR cwd[MAX_PATH];
+	WCHAR wcwd[MAX_PATH];
 	switch (msg)
 	{
 		case BFFM_INITIALIZED:
 			if (GetCurrentDirectory(MAX_PATH, cwd))
-				SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)cwd);
+			{
+#ifdef UNICODE
+				memcpy(wcwd, cwd, sizeof(TCHAR) * MAX_PATH);
+#else
+				MultiByteToWideChar(CP_ACP, 0, cwd, -1, wcwd, MAX_PATH);
+#endif
+				SendMessage(hwnd, BFFM_SETEXPANDED, TRUE, (LPARAM)wcwd);
+				SendMessage(hwnd, BFFM_SETSELECTION, TRUE, (LPARAM)wcwd);
+			}
 	}
 	return 0;
 }
