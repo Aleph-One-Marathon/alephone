@@ -2015,6 +2015,12 @@ static int Lua_Screen_Get_Map_Active(lua_State *L)
 	return 1;
 }
 
+static int Lua_Screen_Get_Map_Overlay(lua_State *L)
+{
+	lua_pushboolean(L, map_is_translucent());
+	return 1;
+}
+
 static int Lua_Screen_Get_Term_Active(lua_State *L)
 {
 	lua_pushboolean(L, world_view->terminal_mode_active);
@@ -2085,6 +2091,7 @@ const luaL_reg Lua_Screen_Get[] = {
 {"map_rect", Lua_Screen_Get_Map_Rect},
 {"term_rect", Lua_Screen_Get_Term_Rect},
 {"map_active", Lua_Screen_Get_Map_Active},
+{"map_overlay_active", Lua_Screen_Get_Map_Overlay},
 {"term_active", Lua_Screen_Get_Term_Active},
 {"hud_size_preference", Lua_Screen_Get_HUD_Size},
 {"term_size_preference", Lua_Screen_Get_Term_Size},
