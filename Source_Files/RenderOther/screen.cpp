@@ -1787,7 +1787,10 @@ void clear_screen(bool update)
 #ifdef HAVE_OPENGL
 	if (SDL_GetVideoSurface()->flags & SDL_OPENGL) {
 		OGL_ClearScreen();
-		if (update) SDL_GL_SwapBuffers();
+		if (update) {
+			SDL_GL_SwapBuffers();
+			OGL_ClearScreen();
+		}
 	} else 
 #endif
 	{
