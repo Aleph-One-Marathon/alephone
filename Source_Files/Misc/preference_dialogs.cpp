@@ -166,6 +166,7 @@ OpenGLDialog::~OpenGLDialog()
 	delete m_anisotropicWidget;
 	delete m_sRGBWidget;
 	delete m_geForceFixWidget;
+	delete m_disableNPOTWidget;
 	delete m_vsyncWidget;
 	delete m_wallsFilterWidget;
 	delete m_spritesFilterWidget;
@@ -219,6 +220,9 @@ void OpenGLDialog::OpenGLPrefsByRunning ()
 	
 	BoolPref geForceFixPref (graphics_preferences->OGL_Configure.GeForceFix);
 	binders.insert<bool> (m_geForceFixWidget, &geForceFixPref);
+	
+	BoolPref disableNPOTPref (graphics_preferences->OGL_Configure.Disable_NPOT);
+	binders.insert<bool> (m_disableNPOTWidget, &disableNPOTPref);
 	
 	BoolPref vsyncPref (graphics_preferences->OGL_Configure.WaitForVSync);
 	binders.insert<bool> (m_vsyncWidget, &vsyncPref);
@@ -433,6 +437,10 @@ public:
 		advanced_table->dual_add(geforce_fix_w->label("GeForce 1-4 Texture Fix"), m_dialog);
 		advanced_table->dual_add(geforce_fix_w, m_dialog);
 		
+		w_toggle *disable_npot_w = new w_toggle(false);
+		advanced_table->dual_add(disable_npot_w->label("Disable NPOT Textures"), m_dialog);
+		advanced_table->dual_add(disable_npot_w, m_dialog);
+		
 		advanced_table->add_row(new w_spacer(), true);
 		advanced_table->dual_add_row(new w_static_text("Distant Texture Filtering"), m_dialog);
 
@@ -561,6 +569,7 @@ public:
 		m_sRGBWidget = new ToggleWidget(srgb_w);
 
 		m_geForceFixWidget = new ToggleWidget (geforce_fix_w);
+		m_disableNPOTWidget = new ToggleWidget (disable_npot_w);
 		m_vsyncWidget = new ToggleWidget (vsync_w);
 		
 		m_wallsFilterWidget = new SelectSelectorWidget (wall_filter_w);
