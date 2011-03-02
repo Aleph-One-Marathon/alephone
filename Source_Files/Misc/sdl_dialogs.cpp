@@ -2529,10 +2529,7 @@ void dialog::start(bool play_sound)
 #if (defined(HAVE_OPENGL) && defined(OPENGL_DOESNT_COPY_ON_SWAP))
 	if (OGL_IsActive()) {
         // blank both buffers to avoid flickering
-        glClearColor(0, 0, 0, 0);
-        glClear(GL_COLOR_BUFFER_BIT);
-        SDL_GL_SwapBuffers();
-        glClear(GL_COLOR_BUFFER_BIT);
+        clear_screen();
 	}
 #endif
 
