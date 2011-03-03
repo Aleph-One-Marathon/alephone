@@ -387,7 +387,7 @@ void initDefaultPrograms() {
         "const float pi = 3.141593;\n"
         "void main(void) {\n"
         "	vec3 viewv = normalize(viewDir);\n"
-        "	float x = atan(viewv.x / viewv.y) / (2.0 * pi) * repeat;\n"
+        "	float x = atan(viewv.x, viewv.y) / (2.0 * pi) * repeat;\n"
 	"	float offset = abs(texScale) > 1.01 ? 0.5 : 0.5 / abs(texScale) - sign(texOffset) + texOffset;\n"
 	"	float y = offset + viewv.z / 2.6 * texScale;\n"
         "	vec4 color = texture2D(texture0, vec2(-x + 0.25*repeat, y));\n"
