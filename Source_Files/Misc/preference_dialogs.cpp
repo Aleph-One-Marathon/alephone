@@ -442,23 +442,18 @@ public:
 		advanced_table->dual_add(disable_npot_w, m_dialog);
 		
 		advanced_table->add_row(new w_spacer(), true);
-		advanced_table->dual_add_row(new w_static_text("Distant Texture Filtering"), m_dialog);
-
-		w_select *wall_filter_w = new w_select(0, far_filter_labels);
-		advanced_table->dual_add(wall_filter_w->label("Walls"), m_dialog);
-		advanced_table->dual_add(wall_filter_w, m_dialog);
-
-		w_select *sprite_filter_w = new w_select(0, far_filter_labels);
-		advanced_table->dual_add(sprite_filter_w->label("Sprites"), m_dialog);
-		advanced_table->dual_add(sprite_filter_w, m_dialog);
-
-		advanced_table->add_row(new w_spacer(), true);
-		advanced_table->dual_add_row(new w_static_text("Near Texture Filtering"), m_dialog);
+		advanced_table->dual_add_row(new w_static_text("Texture Filtering"), m_dialog);
+		advanced_placer->add(advanced_table, true);
 
 		w_select* near_filter_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
+		w_select* far_filter_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i)
 		{
 			near_filter_wa[i] = new w_select(0, near_filter_labels);
+			if (i == OGL_Txtr_Wall || i == OGL_Txtr_Inhabitant)
+				far_filter_wa[i] = new w_select(0, far_filter_labels);
+			else
+				far_filter_wa[i] = NULL;
 		}
 		
 		w_label* near_filter_labels[OGL_NUMBER_OF_TEXTURE_TYPES];
@@ -466,14 +461,36 @@ public:
 		near_filter_labels[OGL_Txtr_Inhabitant] = new w_label("Sprites");
 		near_filter_labels[OGL_Txtr_Landscape] = new w_label("Landscapes");
 		near_filter_labels[OGL_Txtr_WeaponsInHand] = new w_label("Weapons in Hand / HUD");
-
+	
+		table_placer *ftable = new table_placer(3, get_theme_space(ITEM_WIDGET));
+		
+		ftable->col_flags(0, placeable::kAlignRight);
+		ftable->col_flags(1, placeable::kAlignLeft);
+		ftable->col_flags(2, placeable::kAlignLeft);
+		
+		ftable->add(new w_spacer(), true);
+		ftable->dual_add(new w_label("Near"), m_dialog);
+		ftable->dual_add(new w_label("Distant"), m_dialog);
+		
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i)
 		{
-			advanced_table->dual_add(near_filter_labels[i], m_dialog);
-			advanced_table->dual_add(near_filter_wa[i], m_dialog);
-		}
+			ftable->dual_add(near_filter_labels[i], m_dialog);
+			ftable->dual_add(near_filter_wa[i], m_dialog);
+			near_filter_wa[i]->associate_label(near_filter_labels[i]);
 
-		advanced_placer->add(advanced_table, true);
+			if (far_filter_wa[i])
+			{
+				ftable->dual_add(far_filter_wa[i], m_dialog);
+				far_filter_wa[i]->associate_label(near_filter_labels[i]);
+			}
+			else
+				ftable->add(new w_spacer(), true);
+		}
+		
+		ftable->col_min_width(1, (ftable->col_width(0) - get_theme_space(ITEM_WIDGET)) / 2);
+		ftable->col_min_width(2, (ftable->col_width(0) - get_theme_space(ITEM_WIDGET)) / 2);
+		
+		advanced_placer->add(ftable, true);
 
 		advanced_placer->add(new w_spacer(), true);
 		w_select_popup *texture_resolution_wa[OGL_NUMBER_OF_TEXTURE_TYPES];
@@ -572,8 +589,8 @@ public:
 		m_disableNPOTWidget = new ToggleWidget (disable_npot_w);
 		m_vsyncWidget = new ToggleWidget (vsync_w);
 		
-		m_wallsFilterWidget = new SelectSelectorWidget (wall_filter_w);
-		m_spritesFilterWidget = new SelectSelectorWidget (sprite_filter_w);
+		m_wallsFilterWidget = new SelectSelectorWidget (far_filter_wa[OGL_Txtr_Wall]);
+		m_spritesFilterWidget = new SelectSelectorWidget (far_filter_wa[OGL_Txtr_Inhabitant]);
 
 		for (int i = 0; i < OGL_NUMBER_OF_TEXTURE_TYPES; ++i) {
 			m_textureQualityWidget [i] = new PopupSelectorWidget (texture_quality_wa[i]);
