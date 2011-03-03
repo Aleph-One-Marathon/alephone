@@ -650,7 +650,7 @@ bool OGL_StartRun()
 	}
 
 	npotTextures = (!graphics_preferences->OGL_Configure.Disable_NPOT && OGL_CheckExtension("GL_ARB_texture_non_power_of_two"));
-	fprintf(stderr, "NPOT = %d\n", npotTextures);
+
 	_OGL_IsActive = true;
 	OGL_StartProgress(count_replacement_collections() + 2);
 
