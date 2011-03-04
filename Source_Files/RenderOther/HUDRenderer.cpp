@@ -554,6 +554,9 @@ void HUD_Class::draw_bar(screen_rectangle *rectangle, short width,
 	offset_rect(&source, -rectangle->left, -rectangle->top);
 	DrawShape(background_texture, &destination, &source);
 
+	bar_section= *rectangle;
+	bar_section.right= bar_section.left+width-TOP_OF_BAR_WIDTH;
+	
 	/* Draw the top bit.. */
 	if(width>2*TOP_OF_BAR_WIDTH)
 	{
@@ -564,6 +567,7 @@ void HUD_Class::draw_bar(screen_rectangle *rectangle, short width,
 
 		/* Gotta take lines off the top, so that the bottom stuff is still visible.. */
 		destination.left= rectangle->left+width/2+width%2;
+		bar_section.right= destination.left;
 		destination.right= destination.left+width/2;
 
 		source= destination;			
@@ -572,9 +576,6 @@ void HUD_Class::draw_bar(screen_rectangle *rectangle, short width,
 	}
 
 	/* Copy the bar.. */
-	bar_section= *rectangle;
-	bar_section.right= bar_section.left+width-TOP_OF_BAR_WIDTH;
-	
 	if(bar_section.left<bar_section.right)
 	{
 		screen_rectangle bar_section_source= bar_section;
