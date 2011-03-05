@@ -2033,6 +2033,7 @@ void dialog::update(SDL_Rect r) const
 #ifdef HAVE_OPENGL
 	if (OGL_IsActive()) {
 		OGL_Blitter::BoundScreen();
+		clear_screen(false);
 		OGL_Blitter blitter;
 		SDL_Rect src = { 0, 0, rect.w, rect.h };
 		blitter.Load(*dialog_surface, src);
