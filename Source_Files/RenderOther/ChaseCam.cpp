@@ -63,6 +63,12 @@ bool ChaseCam_SetActive(bool NewState)
 {
   if (!NetAllowBehindview()) return false;
   if (!ChaseCam_CanExist()) return false;
+  if (!_ChaseCam_IsActive && NewState != 0)
+  {
+    _ChaseCam_IsActive = true;
+    ChaseCam_Reset();
+    ChaseCam_Update();
+  }
   return (_ChaseCam_IsActive = (NewState != 0));
 }
 
