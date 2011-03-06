@@ -99,8 +99,6 @@ running backwards shouldn’t mean doom in a fistfight
 
 #define AIRBORNE_HEIGHT WORLD_TO_FIXED(WORLD_ONE/16)
 
-// LP change: drop-dead height is effectively zero when the chase-cam is on;
-// this keeps it from dropping.
 #define DROP_DEAD_HEIGHT WORLD_TO_FIXED(WORLD_ONE_HALF)
 
 #define FLAGS_WHICH_PREVENT_RECENTERING (_turning|_looking|_sidestepping|_looking_vertically|_look_dont_turn|_sidestep_dont_turn)
