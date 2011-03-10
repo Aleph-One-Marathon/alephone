@@ -44,6 +44,12 @@ const float AngleConvert = 360/float(FULL_CIRCLE);
 
 char Lua_Projectile_Name[] = "projectile";
 
+int Lua_Projectile_Delete(lua_State* L)
+{
+	remove_projectile(Lua_Projectile::Index(L, 1));
+	return 0;
+}
+
 static int Lua_Projectile_Get_Damage_Scale(lua_State *L)
 {
 	projectile_data *projectile = get_projectile_data(Lua_Projectile::Index(L, 1));
@@ -278,6 +284,7 @@ int Lua_Projectile_Position(lua_State *L)
 
 const luaL_reg Lua_Projectile_Get[] = {
 	{"damage_scale", Lua_Projectile_Get_Damage_Scale},
+	{"delete", L_TableFunction<Lua_Projectile_Delete>},
 	{"dz", Lua_Projectile_Get_Gravity},
 	{"elevation", Lua_Projectile_Get_Elevation},
 	{"facing", Lua_Projectile_Get_Facing},

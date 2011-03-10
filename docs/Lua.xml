@@ -1526,6 +1526,9 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="projectile">
+      <function name="delete" version="SVN">
+	<description>removes projectile from the map</description>
+      </function>
       <variable name="damage_scale">
 	<description>amount to scale projectile's normal damage by upon detonating</description>
 	<type>scale</type>
