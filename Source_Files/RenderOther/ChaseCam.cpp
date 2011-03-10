@@ -258,6 +258,7 @@ bool ChaseCam_Update()
 	// Crude chase-cam: copy over everything;
 	// need to keep old position as a reference for travels
 	world_point3d Ref_Position = current_player->camera_location;
+	Ref_Position.z -= current_player->step_height;
 	short Ref_Polygon = current_player->camera_polygon_index;
 	CC_Yaw = current_player->facing;
 	CC_Pitch = current_player->elevation;
