@@ -1100,8 +1100,9 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 			objectY = pos.y;
 		}
 	} else {
-		// draw in pre-sorted order, ignore z-buffer
-		glDisable(GL_DEPTH_TEST);
+		// allow shader to adjust sprites' depth,
+		// without interfering with closer walls
+		glDepthMask(FALSE);
 	}
 
 	TextureManager TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, offset, renderStep);
@@ -1171,7 +1172,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		glDrawArrays(GL_QUADS, 0, 4);
 	}
 
-	glEnable(GL_DEPTH_TEST);
+	glDepthMask(GL_TRUE);
 	glPopMatrix();
 	Shader::disable();
 	TMgr.RestoreTextureMatrix();
