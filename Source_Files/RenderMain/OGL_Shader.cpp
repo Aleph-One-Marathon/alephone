@@ -70,6 +70,7 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"usefog",
 	"visibility",
 	"depth",
+	"strictDepthMode",
 	"glow",
 	"landscapeInverseMatrix"
 };
@@ -429,6 +430,7 @@ void initDefaultPrograms() {
 	
     defaultVertexPrograms["sprite"] = ""
         "uniform float depth;\n"
+        "uniform float strictDepthMode;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"

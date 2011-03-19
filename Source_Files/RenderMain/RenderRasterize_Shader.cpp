@@ -365,6 +365,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	s->setFloat(Shader::U_Flare, flare);
 	s->setFloat(Shader::U_Wobble, 0);
 	s->setFloat(Shader::U_Depth, offset);
+	s->setFloat(Shader::U_StrictDepthMode, OGL_ForceSpriteDepth() ? 1 : 0);
 	s->setFloat(Shader::U_Glow, 0);
 	return TMgr;
 }

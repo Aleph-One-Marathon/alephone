@@ -49,6 +49,7 @@ public:
 		U_UseFog,
 		U_Visibility,
 		U_Depth,
+		U_StrictDepthMode,
 		U_Glow,
 		U_LandscapeInverseMatrix,
 		NUMBER_OF_UNIFORM_LOCATIONS
