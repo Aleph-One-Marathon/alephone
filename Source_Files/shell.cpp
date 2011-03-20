@@ -445,7 +445,7 @@ static void initialize_application(void)
 	if (!have_default_files()) {
 		char chosen_dir[256];
 		if (alert_choose_scenario(chosen_dir)) {
-			data_search_path.push_back(DirectorySpecifier(chosen_dir));
+			data_search_path.insert(data_search_path.begin(), DirectorySpecifier(chosen_dir));
 			
 			// Parse MML files again, now that we have a new dir to search
 			SetupParseTree();
