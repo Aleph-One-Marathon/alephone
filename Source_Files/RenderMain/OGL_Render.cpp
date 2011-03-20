@@ -969,10 +969,12 @@ bool OGL_StartMain()
 	if (FogActive())
 	{
 		glEnable(GL_FOG);
+		Using_sRGB = Wanting_sRGB;
 		CurrFogColor[0] = sRGB_frob(CurrFog->Color.red/65535.0F);
 		CurrFogColor[1] = sRGB_frob(CurrFog->Color.green/65535.0F);
 		CurrFogColor[2] = sRGB_frob(CurrFog->Color.blue/65535.0F);
 		CurrFogColor[3] = 0;
+		Using_sRGB = false;
 		if (IsInfravisionActive())
 		{
 			if (LandscapesLoaded)
