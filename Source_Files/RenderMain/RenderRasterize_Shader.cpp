@@ -49,7 +49,7 @@ public:
 
 		glGenTextures(1, &texID);
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
-		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, Wanting_sRGB ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
 		assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -226,6 +226,7 @@ void RenderRasterize_Shader::render_tree() {
 		RenderRasterizerClass::render_tree(kGlow);
 		blur->end();
 
+		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 		glDisable(GL_DEPTH_TEST);
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		blur->draw();
