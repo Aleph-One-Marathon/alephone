@@ -1804,9 +1804,18 @@ static bool begin_game(
 						success= find_replay_to_use(cheat, ReplayFile);
 						if(success)
 						{
-							success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
+							if(!get_map_file().Exists())
+							{
+								set_game_error(systemError, ENOENT);
+								display_loading_map_error();
+								success= false;
+							}
+							else
+							{
+								success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
 
-							hide_cursor();
+								hide_cursor();
+							}
 						}
 					} 
 					break;
@@ -1910,11 +1919,22 @@ static bool begin_game(
 	{
 		if(record_game)
 		{
-			set_recording_header_data(number_of_players, entry.level_number, (user == _network_player) ? parent_checksum : get_current_map_checksum(), 
-				default_recording_version, starts, &game_information);
-			start_recording();
+			if(!get_map_file().Exists())
+			{
+				set_game_error(systemError, ENOENT);
+				display_loading_map_error();
+				success= false;
+			}
+			else
+			{
+				set_recording_header_data(number_of_players, entry.level_number, (user == _network_player) ? parent_checksum : get_current_map_checksum(), 
+					default_recording_version, starts, &game_information);
+				start_recording();
+			}
 		}
-		
+	}
+	if(success)
+	{
 		hide_cursor();
 		/* This has already been done to get to gather/join */
 		if(can_interface_fade_out()) 
