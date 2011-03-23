@@ -64,6 +64,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <vector>
 
 #include <sstream>
 #include <boost/lexical_cast.hpp>
@@ -132,6 +133,7 @@ DirectorySpecifier saved_games_dir;   // Directory for saved games
 DirectorySpecifier recordings_dir;    // Directory for recordings (except film buffer, which is stored in local_data_dir)
 DirectorySpecifier screenshots_dir;   // Directory for screenshots
 std::string arg_directory;
+std::vector<std::string> arg_files;
 
 // Command-line options
 bool option_nogl = false;             // Disable OpenGL
@@ -204,6 +206,46 @@ static void usage(const char *prg_name)
 	exit(0);
 }
 
+extern bool handle_open_replay(FileSpecifier& File);
+extern bool load_and_start_game(FileSpecifier& file);
+
+bool handle_open_document(const std::string& filename)
+{
+	bool done = false;
+	FileSpecifier file(filename);
+	switch (file.GetType())
+	{
+	case _typecode_scenario:
+		set_map_file(file);
+		break;
+	case _typecode_savegame:
+		if (load_and_start_game(file))
+		{
+			done = true;
+		}
+		break;
+	case _typecode_film:
+		if (handle_open_replay(file))
+		{
+			done = true;
+		}
+		break;
+	case _typecode_physics:
+		set_physics_file(file);
+		break;
+	case _typecode_shapes:
+		open_shapes_file(file);
+		break;
+	case _typecode_sounds:
+		SoundManager::instance()->OpenSoundFile(file);
+		break;
+	default:
+		break;
+	}
+	
+	return done;
+}
+
 int main(int argc, char **argv)
 {
 	// Print banner (don't bother if this doesn't appear when started from a GUI)
@@ -260,16 +302,18 @@ int main(int argc, char **argv)
 			insecure_lua = true;
 		} else if (strcmp(*argv, "-d") == 0 || strcmp(*argv, "--debug") == 0) {
 		  option_debug = true;
-		} else if (arg_directory == "") {
+		} else if (*argv[0] != '-') {
 			// if it's a directory, make it the default data dir
+			// otherwise push it and handle it later
 			FileSpecifier f(*argv);
 			if (f.IsDir())
 			{
 				arg_directory = *argv;
 			}
-			
 			else
-				printf("%s is not a directory\n", *argv);
+			{
+				arg_files.push_back(*argv);
+			}
 		} else {
 			printf("Unrecognized argument '%s'.\n", *argv);
 			usage(prg_name);
@@ -282,6 +326,14 @@ int main(int argc, char **argv)
 		
 		// Initialize everything
 		initialize_application();
+
+		for (std::vector<std::string>::iterator it = arg_files.begin(); it != arg_files.end(); ++it)
+		{
+			if (handle_open_document(*it))
+			{
+				break;
+			}
+		}
 
 		// Run the main loop
 		main_event_loop();
