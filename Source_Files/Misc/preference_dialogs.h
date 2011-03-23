@@ -65,7 +65,7 @@ protected:
 	SelectorWidget* m_modelQualityWidget;
 	
 	ToggleWidget*		m_geForceFixWidget;
-	ToggleWidget*		m_disableNPOTWidget;
+	ToggleWidget*		m_useNPOTWidget;
 	ToggleWidget* m_vsyncWidget;
 	SelectSelectorWidget*		m_wallsFilterWidget;
 	SelectSelectorWidget*		m_spritesFilterWidget;

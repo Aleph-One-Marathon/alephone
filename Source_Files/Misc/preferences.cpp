@@ -2194,7 +2194,7 @@ void write_preferences(
 	fprintf(F,"  geforce_fix=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.GeForceFix));
 	fprintf(F,"  wait_for_vsync=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.WaitForVSync));
 	fprintf(F,"  use_srgb=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.Use_sRGB));
-	fprintf(F,"  disable_npot=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.Disable_NPOT));
+	fprintf(F,"  use_npot=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.Use_NPOT));
 	fprintf(F,"  double_corpse_limit=\"%s\"\n", BoolString(graphics_preferences->double_corpse_limit));
 	fprintf(F,"  hog_the_cpu=\"%s\"\n", BoolString(graphics_preferences->hog_the_cpu));
 	fprintf(F,">\n");
@@ -3235,9 +3235,9 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	{
 		return ReadBooleanValue(Value, graphics_preferences->OGL_Configure.Use_sRGB);
 	}
-	else if (StringsEqual(Tag,"disable_npot"))
+	else if (StringsEqual(Tag,"use_npot"))
 	{
-		return ReadBooleanValue(Value, graphics_preferences->OGL_Configure.Disable_NPOT);
+		return ReadBooleanValue(Value, graphics_preferences->OGL_Configure.Use_NPOT);
 	}
 	else if (StringsEqual(Tag,"double_corpse_limit"))
 	  {

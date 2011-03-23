@@ -246,7 +246,7 @@ struct OGL_ConfigureData
 	bool GeForceFix;
 	bool WaitForVSync;
   bool Use_sRGB;
-	bool Disable_NPOT;
+	bool Use_NPOT;
 };
 
 OGL_ConfigureData& Get_OGL_ConfigureData();

@@ -264,7 +264,7 @@ void OGL_SetDefaults(OGL_ConfigureData& Data)
 	Data.GeForceFix = false;
 	Data.WaitForVSync = true;
 	Data.Use_sRGB = false;
-	Data.Disable_NPOT = false;
+	Data.Use_NPOT = false;
 }
 
 

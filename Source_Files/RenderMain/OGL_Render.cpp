@@ -649,7 +649,14 @@ bool OGL_StartRun()
 	  }
 	}
 
-	npotTextures = (!graphics_preferences->OGL_Configure.Disable_NPOT && OGL_CheckExtension("GL_ARB_texture_non_power_of_two"));
+	npotTextures = false;
+	if (graphics_preferences->OGL_Configure.Use_NPOT)
+	{
+	  if (!OGL_CheckExtension("GL_ARB_texture_non_power_of_two"))
+	    graphics_preferences->OGL_Configure.Use_NPOT = false;
+	  else
+	    npotTextures = true;
+	}
 
 	_OGL_IsActive = true;
 	OGL_StartProgress(count_replacement_collections() + 2);
