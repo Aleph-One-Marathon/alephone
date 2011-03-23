@@ -154,10 +154,17 @@ extern TP2PerfGlobals perf_globals;
 
 /* Change this when marathon changes & replays are no longer valid */
 enum recording_version {
-	aleph_recording_version= 0,
+	RECORDING_VERSION_UNKNOWN = 0,
+	RECORDING_VERSION_MARATHON = 1,
+	RECORDING_VERSION_MARATHON_2 = 2,
+	RECORDING_VERSION_MARATHON_INFINITY = 3,
+	RECORDING_VERSION_ALEPH_ONE_EARLY = 4,
+	RECORDING_VERSION_ALEPH_ONE_PRE_NET = 5,
+	RECORDING_VERSION_ALEPH_ONE_PRE_PIN = 6,
+	RECORDING_VERSION_ALEPH_ONE_1_0 = 7
 };
-const short default_recording_version= aleph_recording_version;
-const short max_handled_recording= aleph_recording_version;
+const short default_recording_version = RECORDING_VERSION_ALEPH_ONE_1_0;
+const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_0;
 
 #include "screen_definitions.h"
 #include "interface_menus.h"
@@ -1797,15 +1804,7 @@ static bool begin_game(
 						success= find_replay_to_use(cheat, ReplayFile);
 						if(success)
 						{
-							if (environment_preferences->film_profile != FILM_PROFILE_DEFAULT)
-							{
-								load_film_profile(environment_preferences->film_profile);
-							}
 							success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
-							if (environment_preferences->film_profile != FILM_PROFILE_DEFAULT && !success)
-							{
-								load_film_profile(FILM_PROFILE_DEFAULT);
-							}
 
 							hide_cursor();
 						}
@@ -1820,15 +1819,7 @@ static bool begin_game(
 					break;
 
 				case _replay_from_file:
-					if (environment_preferences->film_profile != FILM_PROFILE_DEFAULT)
-					{
-						load_film_profile(environment_preferences->film_profile);
-					}
 					success= setup_for_replay_from_file(DraggedReplayFile, get_current_map_checksum());
-					if (environment_preferences->film_profile != FILM_PROFILE_DEFAULT && !success)
-					{
-						load_film_profile(FILM_PROFILE_DEFAULT);
-					}
 					user= _replay;
 					break;
 					
@@ -1854,6 +1845,19 @@ static bool begin_game(
 				}
 				else
 				{
+					switch (recording_version)
+					{
+					case RECORDING_VERSION_MARATHON_2:
+						load_film_profile(FILM_PROFILE_MARATHON_2);
+						break;
+					case RECORDING_VERSION_ALEPH_ONE_1_0:
+						load_film_profile(FILM_PROFILE_DEFAULT);
+						break;
+					default:
+						load_film_profile(environment_preferences->film_profile);
+						break;
+					}
+
 					entry.level_name[0] = 0;
 					game_information.game_options |= _overhead_map_is_omniscient;
 					record_game= false;
