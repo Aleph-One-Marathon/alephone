@@ -1103,7 +1103,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 	} else {
 		// allow shader to adjust sprites' depth,
 		// without interfering with closer walls
-		glDepthMask(FALSE);
+		glDepthMask(GL_FALSE);
 	}
 
 	TextureManager TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, offset, renderStep);
