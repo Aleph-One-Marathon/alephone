@@ -643,17 +643,22 @@ bool OGL_StartRun()
 	Wanting_sRGB = false;
 	if(graphics_preferences->OGL_Configure.Use_sRGB) {
 	  if(!OGL_CheckExtension("GL_EXT_framebuffer_sRGB") || !OGL_CheckExtension("GL_EXT_texture_sRGB"))
+	  {
 	    graphics_preferences->OGL_Configure.Use_sRGB = false;
-	  else {
-	    Wanting_sRGB = true;
+	    logWarning("Gamma corrected blending is not available");
 	  }
+	  else
+	    Wanting_sRGB = true;
 	}
 
 	npotTextures = false;
 	if (graphics_preferences->OGL_Configure.Use_NPOT)
 	{
 	  if (!OGL_CheckExtension("GL_ARB_texture_non_power_of_two"))
+	  {
 	    graphics_preferences->OGL_Configure.Use_NPOT = false;
+	    logWarning("Non-power-of-two textures are not available");
+	  }
 	  else
 	    npotTextures = true;
 	}
@@ -661,7 +666,10 @@ bool OGL_StartRun()
 	if (ShaderRender && TEST_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur))
 	{
 	  if (!OGL_CheckExtension("GL_EXT_framebuffer_object"))
+	  {
 	    SET_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur, false);
+	    logWarning("Bloom effects are not available");
+	  }
 	}
 
 	_OGL_IsActive = true;
