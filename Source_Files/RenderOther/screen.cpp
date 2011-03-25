@@ -60,6 +60,7 @@
 #include "network.h"
 #include "images.h"
 #include "motion_sensor.h"
+#include "Logging.h"
 
 #include "sdl_fonts.h"
 
@@ -750,6 +751,23 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 			failed_multisamples = Get_OGL_ConfigureData().Multisamples;
 	}
 #endif
+	if (main_surface != NULL && screen_mode.acceleration == _shader_acceleration)
+	{
+		// see if we can actually run shaders
+#ifdef __WIN32__
+		glewInit();
+#endif
+		if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects"))
+		{
+			logWarning("OpenGL (Shader) renderer is not available");
+			fprintf(stderr, "WARNING: Failed to initialize OpenGL (Shader) renderer\n");
+			fprintf(stderr, "WARNING: Retrying with OpenGL (Classic) renderer\n");
+			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
+			SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+			main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
+		}
+	}
+				
 #endif
 
 	if (main_surface == NULL) {
@@ -758,6 +776,12 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		fprintf(stderr, "WARNING: Failed to initialize OpenGL with 24 bit colour\n");
 		fprintf(stderr, "WARNING: Retrying with 16 bit colour\n");
 		
+		if (screen_mode.acceleration == _shader_acceleration)
+		{
+			logWarning("OpenGL (Shader) renderer is not available in 16-bit mode");
+			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
+			SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+		}
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
  		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
