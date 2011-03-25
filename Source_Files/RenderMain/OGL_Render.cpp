@@ -658,6 +658,12 @@ bool OGL_StartRun()
 	    npotTextures = true;
 	}
 
+	if (ShaderRender && TEST_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur))
+	{
+	  if (!OGL_CheckExtension("GL_EXT_framebuffer_object"))
+	    SET_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur, false);
+	}
+
 	_OGL_IsActive = true;
 	OGL_StartProgress(count_replacement_collections() + 2);
 
