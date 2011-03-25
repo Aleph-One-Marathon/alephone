@@ -757,7 +757,7 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #ifdef __WIN32__
 		glewInit();
 #endif
-		if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects"))
+		if (!OGL_CheckExtension("GL_ARB_vertex_shader") || !OGL_CheckExtension("GL_ARB_fragment_shader") || !OGL_CheckExtension("GL_ARB_shader_objects") || !OGL_CheckExtension("GL_ARB_shading_language_100"))
 		{
 			logWarning("OpenGL (Shader) renderer is not available");
 			fprintf(stderr, "WARNING: Failed to initialize OpenGL (Shader) renderer\n");
