@@ -1158,6 +1158,9 @@ static void handle_player_in_vacuum(
 	{
 		short breathing_frequency;
 		
+		// lolbungie
+		breathing_frequency = TICKS_PER_MINUTE/2;
+		/*
 		switch (player->suit_oxygen/TICKS_PER_MINUTE)
 		{
 			case 0: breathing_frequency= TICKS_PER_MINUTE/6;
@@ -1166,35 +1169,29 @@ static void handle_player_in_vacuum(
 			case 3: breathing_frequency= TICKS_PER_MINUTE/3;
 			default: breathing_frequency= TICKS_PER_MINUTE/2;
 		}
-
-		if (!(player->suit_oxygen%breathing_frequency)) 
-			SoundManager::instance()->PlayLocalSound(Sound_Breathing());
-		if ((player->suit_oxygen+OXYGEN_WARNING_OFFSET)<OXYGEN_WARNING_LEVEL && !((player->suit_oxygen+OXYGEN_WARNING_OFFSET)%OXYGEN_WARNING_FREQUENCY)) 
-			SoundManager::instance()->PlayLocalSound(Sound_OxygenWarning());
+		 */
 		
-		// LP change: modified to use global variable for change rate
 		assert(player_settings.OxygenChange <= 0);
-		player->suit_oxygen+= player_settings.OxygenChange;
+		short oxygenChange = player_settings.OxygenChange;
 		switch (dynamic_world->game_information.difficulty_level)
 		{
 			case _total_carnage_level:
-				if (action_flags&_run_dont_walk) player->suit_oxygen+= player_settings.OxygenChange;
+				if (action_flags&_run_dont_walk) oxygenChange+= player_settings.OxygenChange;
 			case _major_damage_level:
-				if (action_flags&(_left_trigger_state|_right_trigger_state)) player->suit_oxygen+= player_settings.OxygenChange;
+				if (action_flags&(_left_trigger_state|_right_trigger_state)) oxygenChange+= player_settings.OxygenChange;
 				break;
 		}
-		/*
-		player->suit_oxygen-= 1;
-		switch (dynamic_world->game_information.difficulty_level)
-		{
-			case _total_carnage_level:
-				if (action_flags&_run_dont_walk) player->suit_oxygen-= 1;
-			case _major_damage_level:
-				if (action_flags&(_left_trigger_state|_right_trigger_state)) player->suit_oxygen-= 1;
-				break;
-		}
-		*/
 		
+		while (oxygenChange < 0)
+		{
+			player->suit_oxygen -= 1;
+			oxygenChange += 1;
+			if (!(player->suit_oxygen%breathing_frequency)) 
+				SoundManager::instance()->PlayLocalSound(Sound_Breathing());
+			if ((player->suit_oxygen+OXYGEN_WARNING_OFFSET)<OXYGEN_WARNING_LEVEL && !((player->suit_oxygen+OXYGEN_WARNING_OFFSET)%OXYGEN_WARNING_FREQUENCY)) 
+				SoundManager::instance()->PlayLocalSound(Sound_OxygenWarning());
+		}
+				
 		if (player->suit_oxygen<=0)
 		{
 			struct damage_definition damage;
