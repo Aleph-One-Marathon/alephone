@@ -28,7 +28,7 @@
 #include "cseries.h"
 #include "OGL_Subst_Texture_Def.h"
 
-#include <deque>
+#include <boost/unordered_map.hpp>
 
 #ifdef HAVE_OPENGL
 
@@ -42,133 +42,68 @@ void OGL_TextureOptions::FindImagePosition()
 // defaults for whatever might need them
 static OGL_TextureOptions DefaultTextureOptions;
 
-// Store texture-options stuff in a set of STL vectors
-struct TextureOptionsEntry
-{
-	// Which color table and bitmap to apply to:
-	short CLUT, Bitmap;
-	
-	// Make a member for more convenient access
-	OGL_TextureOptions OptionsData;
-	
-	TextureOptionsEntry(): CLUT(ALL_CLUTS), Bitmap(NONE) {}
-};
-
-// Separate texture-options sequence lists for each collection ID,
-// to speed up searching
-typedef deque<TextureOptionsEntry> TOList_t;
-static TOList_t TOList[NUMBER_OF_COLLECTIONS];
-
-// Texture-options hash table for extra-fast searching;
-// the top bit of the hashtable index is set if some specific CLUT had been matched to.
-// If it is clear, then an ALL_CLUTS texture-options entry had been used.
-// This is OK because the maximum reasonable number of texture-option entries per collection
-// is around 10*256 or 2560, much less than 32K.
-const uint16 Specific_CLUT_Flag = 0x8000;
-static vector<uint16> TOHash[NUMBER_OF_COLLECTIONS];
-
-// Hash-table size and function
-const int TOHashSize = 1 << 8;
-const int TOHashMask = TOHashSize - 1;
-inline uint8 TOHashFunc(short CLUT, short Bitmap)
-{
-	// This function will avoid collisions when accessing bitmaps with close indices
-	return (uint8)((CLUT << 4) ^ Bitmap);
-}
-
+typedef std::pair<short, short> TOKey;
+typedef boost::unordered_map<TOKey, OGL_TextureOptions> TOHash;
+static TOHash Collections[NUMBER_OF_COLLECTIONS];
 
 // Deletes a collection's texture-options sequences
 void TODelete(short Collection)
 {
-	int c = Collection;
-	TOList[c].clear();
-	TOHash[c].clear();
+	Collections[NUMBER_OF_COLLECTIONS].clear();
 }
 
 // Deletes all of them
 static void TODelete_All()
 {
-	for (int c=0; c<NUMBER_OF_COLLECTIONS; c++) TODelete(c);
+	for (int c = 0; c < NUMBER_OF_COLLECTIONS; c++) TODelete(c);
 }
 
 int OGL_CountTextures(short Collection)
 {
-	return TOList[Collection].size();
+	return Collections[Collection].size();
 }
 
 extern void OGL_ProgressCallback(int);
 
 void OGL_LoadTextures(short Collection)
 {
-	TOList_t& TOL = TOList[Collection];
 
-	for (int i = 0; i < TOL.size(); ++i) 
+	for (TOHash::iterator it = Collections[Collection].begin(); it != Collections[Collection].end(); ++it)
 	{
-		// Load the images
-		TOL[i].OptionsData.Load();
-
+		it->second.Load();
 		// Find adjusted-frame image-data positioning;
 		// this is for doing sprites with textures with sizes different from the originals
-		TOL[i].OptionsData.FindImagePosition();
+		it->second.FindImagePosition();
 
 		OGL_ProgressCallback(1);
+		
 	}
 }
 
 
 void OGL_UnloadTextures(short Collection)
 {
-	TOList_t& TOL = TOList[Collection];
-	for (TOList_t::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
+	for (TOHash::iterator it = Collections[Collection].begin(); it != Collections[Collection].end(); ++it)
 	{
-		TOIter->OptionsData.Unload();
+		it->second.Unload();
 	}
 }
 
 
 OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bitmap)
 {
-	// Initialize the hash table if necessary
-	if (TOHash[Collection].empty())
+	TOHash::iterator it = Collections[Collection].find(TOKey(CLUT, Bitmap));
+	if (it != Collections[Collection].end())
 	{
-		TOHash[Collection].resize(TOHashSize, UNONE);
-	}
-	
-	// Set up a *reference* to the appropriate hashtable entry;
-	// this makes setting this entry a bit more convenient
-	uint16& HashVal = TOHash[Collection][TOHashFunc(CLUT,Bitmap)];
-	
-	// Check to see if the texture-option entry is correct;
-	// if it is, then we're done.
-	// Be sure to blank out the specific-CLUT flag when indexing the texture-options list with the hash value.
-	if (HashVal != UNONE)
-	{
-		TOList_t::iterator TOIter = TOList[Collection].begin() + (HashVal & ~Specific_CLUT_Flag);
-		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
-		bool Hash_SCS = TEST_FLAG(HashVal,Specific_CLUT_Flag);
-		if ((Specific_CLUT_Set && Hash_SCS) || ((TOIter->CLUT == ALL_CLUTS) && !Hash_SCS))
-			if (TOIter->Bitmap == Bitmap)
-			{
-				return &TOIter->OptionsData;
-			}
+		return &it->second;
 	}
 
-	// Fallback for the case of a hashtable miss;
-	// do a linear search and then update the hash entry appropriately.
-	TOList_t& TOL = TOList[Collection];
-	uint16 Indx = 0;
-	for (TOList_t::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++, Indx++)
+	it = Collections[Collection].find(TOKey(ALL_CLUTS, Bitmap));
+	if (it != Collections[Collection].end())
 	{
-		bool Specific_CLUT_Set = (TOIter->CLUT == CLUT);
-		if (Specific_CLUT_Set || (TOIter->CLUT == ALL_CLUTS))
-			if (TOIter->Bitmap == Bitmap)
-			{
-				HashVal = Indx;
-				SET_FLAG(HashVal,Specific_CLUT_Flag,Specific_CLUT_Set);
-				return &TOIter->OptionsData;
-			}
+		return &it->second;
 	}
-	
+
 	return &DefaultTextureOptions;
 }
 
@@ -382,29 +317,8 @@ bool XML_TextureOptionsParser::AttributesDone()
 		AttribsMissing();
 		return false;
 	}
-	
-	// Check to see if a frame is already accounted for
-	TOList_t& TOL = TOList[Collection];
-	for (TOList_t::iterator TOIter = TOL.begin(); TOIter < TOL.end(); TOIter++)
-	{
-		if (TOIter->CLUT == CLUT && TOIter->Bitmap == Bitmap)
-		{
-			// Replace the data
-			TOIter->OptionsData = Data;
-			return true;
-		}
-	}
-	
-	// If not, then add a new frame entry
-	TextureOptionsEntry DataEntry;
-	DataEntry.CLUT = CLUT;
-	DataEntry.Bitmap = Bitmap;
-	DataEntry.OptionsData = Data;
-	if (CLUT == ALL_CLUTS)
-		TOL.push_back(DataEntry);
-	else
-		TOL.push_front(DataEntry);
-	
+
+	Collections[Collection][TOKey(CLUT, Bitmap)] = Data;
 	return true;
 }
 
