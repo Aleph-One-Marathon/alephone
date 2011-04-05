@@ -229,6 +229,7 @@ public:
 	float BloomShift() {return (TxtrOptsPtr->BloomShift);}
 	float GlowBloomScale() {return (TxtrOptsPtr->GlowBloomScale);}
 	float GlowBloomShift() {return (TxtrOptsPtr->GlowBloomShift);}
+	float LandscapeBloom() {return (TxtrOptsPtr->LandscapeBloom);}
 	
 	// Scaling and offset of the current texture;
 	// important for sprites, which will be padded to make them OpenGL-friendly.

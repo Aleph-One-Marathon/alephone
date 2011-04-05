@@ -308,6 +308,10 @@ bool XML_TextureOptionsParser::_HandleAttribute(const char *Tag, const char *Val
 	{
 		return ReadFloatValue(Value,Data.GlowBloomShift);
 	}
+	else if (StringsEqual(Tag,"landscape_bloom"))
+	{
+		return ReadFloatValue(Value,Data.LandscapeBloom);
+	}
 	else if (StringsEqual(Tag,"minimum_glow_intensity"))
 	{
 		return ReadFloatValue(Value,Data.MinGlowIntensity);
@@ -457,6 +461,11 @@ bool XML_TextureOptionsParser::AttributesDone()
 		it->second.GlowBloomShift = Data.GlowBloomShift;
 	}
 
+	if (Attributes.count("landscape_bloom"))
+	{
+		it->second.LandscapeBloom = Data.LandscapeBloom;
+	}
+	
 	if (Attributes.count("minimum_glow_intensity"))
 	{
 		it->second.MinGlowIntensity = Data.MinGlowIntensity;

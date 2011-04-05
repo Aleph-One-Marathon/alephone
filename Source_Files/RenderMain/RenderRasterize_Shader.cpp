@@ -446,8 +446,12 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	TMgr.SetupTextureMatrix();
 
 	if (renderStep == kGlow) {
-		s->setFloat(Shader::U_BloomScale, TMgr.BloomScale());
-		s->setFloat(Shader::U_BloomShift, TMgr.BloomShift());
+		if (TMgr.TextureType == OGL_Txtr_Landscape) {
+			s->setFloat(Shader::U_BloomScale, TMgr.LandscapeBloom());
+		} else {
+			s->setFloat(Shader::U_BloomScale, TMgr.BloomScale());
+			s->setFloat(Shader::U_BloomShift, TMgr.BloomShift());
+		}
 	}
 	s->setFloat(Shader::U_Flare, flare);
 	s->setFloat(Shader::U_Wobble, wobble);

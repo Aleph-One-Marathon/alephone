@@ -1489,6 +1489,7 @@ If it is zero or less, then it and the offsets are ignored.
 <li>normal_bloom_shift: when rendering bloom effects in the shader renderer, add this value to the normal image's light level after scaling. (default: 0)
 <li>glow_bloom_scale: when rendering bloom effects in the shader renderer, scale the glow image's light level by this amount. (default: 1 -- full intensity during bloom effect)
 <li>glow_bloom_shift: when rendering bloom effects in the shader renderer, add this value to the glow image's light level after scaling. (default: 0)
+<li>landscape_bloom: when rendering bloom effects in the shader renderer, AND when the texture is used as a landscape, scale the image's light level by this amount. Note that glow images are not currently supported for landscapes. (default: 0.5)
 </ul>
 <p>
 Note: all resulting values will be pegged to the range 0 to 1.

@@ -110,6 +110,7 @@ struct OGL_TextureOptionsBase
 	float BloomShift;
 	float GlowBloomScale;
 	float GlowBloomShift;
+	float LandscapeBloom;
 	
 	// Glow modulated using max of normal lighting intensity and this value
 	float MinGlowIntensity;
@@ -122,7 +123,7 @@ struct OGL_TextureOptionsBase
 	
 	OGL_TextureOptionsBase():
 	OpacityType(OGL_OpacType_Crisp), OpacityScale(1), OpacityShift(0),
-		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade), Substitution(false), NormalIsPremultiplied(false), GlowIsPremultiplied(false), actual_height(0), actual_width(0), Type(-1), BloomScale(0), BloomShift(0), GlowBloomScale(1), GlowBloomShift(0), MinGlowIntensity(1)
+		NormalBlend(OGL_BlendType_Crossfade), GlowBlend(OGL_BlendType_Crossfade), Substitution(false), NormalIsPremultiplied(false), GlowIsPremultiplied(false), actual_height(0), actual_width(0), Type(-1), BloomScale(0), BloomShift(0), GlowBloomScale(1), GlowBloomShift(0), LandscapeBloom(0.5), MinGlowIntensity(1)
 		{}
 };
 
