@@ -28,6 +28,8 @@
 #include "cseries.h"
 #include "OGL_Subst_Texture_Def.h"
 
+#include <set>
+#include <string>
 #include <boost/unordered_map.hpp>
 
 #ifdef HAVE_OPENGL
@@ -49,7 +51,7 @@ static TOHash Collections[NUMBER_OF_COLLECTIONS];
 // Deletes a collection's texture-options sequences
 void TODelete(short Collection)
 {
-	Collections[NUMBER_OF_COLLECTIONS].clear();
+	Collections[Collection].clear();
 }
 
 // Deletes all of them
@@ -159,8 +161,12 @@ class XML_TextureOptionsParser: public XML_ElementParser
 {
 	bool CollIsPresent, BitmapIsPresent;
 	short Collection, CLUT, Bitmap;
+
+	std::set<std::string> Attributes;
 	
 	OGL_TextureOptions Data;
+
+	bool _HandleAttribute(const char *Tag, const char *Value);
 
 public:
 	bool Start();
@@ -176,11 +182,12 @@ bool XML_TextureOptionsParser::Start()
 	Data = DefaultTextureOptions;
 	CollIsPresent = BitmapIsPresent = false;
 	CLUT = ALL_CLUTS;
+	Attributes.clear();
 		
 	return true;
 }
 
-bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Value)
+bool XML_TextureOptionsParser::_HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"coll"))
 	{
@@ -309,6 +316,16 @@ bool XML_TextureOptionsParser::HandleAttribute(const char *Tag, const char *Valu
 	return false;
 }
 
+bool XML_TextureOptionsParser::HandleAttribute(const char* Tag, const char* Value)
+{
+	if (_HandleAttribute(Tag, Value))
+	{
+		Attributes.insert(Tag);
+		return true;
+	}
+	return false;
+}
+
 bool XML_TextureOptionsParser::AttributesDone()
 {
 	// Verify...
@@ -317,8 +334,134 @@ bool XML_TextureOptionsParser::AttributesDone()
 		AttribsMissing();
 		return false;
 	}
+	
+	TOHash::iterator it = Collections[Collection].find(TOKey(CLUT, Bitmap));
+	if (it == Collections[Collection].end())
+	{
+		Collections[Collection][TOKey(CLUT, Bitmap)] = Data;
+		return true;
+	}
+		
+	if (Attributes.count("opac_type"))
+	{
+		it->second.OpacityType = Data.OpacityType;
+	}
 
-	Collections[Collection][TOKey(CLUT, Bitmap)] = Data;
+	if (Attributes.count("opac_scale"))
+	{
+		it->second.OpacityScale = Data.OpacityScale;
+	}
+
+	if (Attributes.count("opac_shift"))
+	{
+		it->second.OpacityShift = Data.OpacityShift;
+	}
+
+	if (Attributes.count("void_visible"))
+	{
+		it->second.VoidVisible = Data.VoidVisible;
+	}
+
+	if (Attributes.count("normal_image"))
+	{
+		it->second.NormalColors = Data.NormalColors;
+	}
+
+	if (Attributes.count("offset_image"))
+	{
+		it->second.OffsetMap = Data.OffsetMap;
+	}	
+
+	if (Attributes.count("normal_mask"))
+	{
+		it->second.NormalMask = Data.NormalMask;
+	}	
+
+	if (Attributes.count("glow_image"))
+	{
+		it->second.GlowColors = Data.GlowColors;
+	}
+
+	if (Attributes.count("glow_mask"))
+	{
+		it->second.GlowMask = Data.GlowMask;
+	}
+
+	if (Attributes.count("normal_blend"))
+	{
+		it->second.NormalBlend = Data.NormalBlend;
+	}
+
+	if (Attributes.count("glow_blend"))
+	{
+		it->second.GlowBlend = Data.GlowBlend;
+	}
+
+	if (Attributes.count("image_scale"))
+	{
+		it->second.ImageScale = Data.ImageScale;
+	}
+
+	if (Attributes.count("x_offset"))
+	{
+		it->second.Left = Data.Left;
+	}
+
+	if (Attributes.count("y_offset"))
+	{
+		it->second.Top = Data.Top;
+	}
+
+	if (Attributes.count("actual_height"))
+	{
+		it->second.actual_height = Data.actual_height;
+	}
+
+	if (Attributes.count("actual_width"))
+	{
+		it->second.actual_width = Data.actual_width;
+	}
+
+	if (Attributes.count("type"))
+	{
+		it->second.Type = Data.Type;
+	}
+
+	if (Attributes.count("normal_premultiply"))
+	{
+		it->second.NormalIsPremultiplied = Data.NormalIsPremultiplied;
+	}
+
+	if (Attributes.count("glow_premultiply"))
+	{
+		it->second.GlowIsPremultiplied = Data.GlowIsPremultiplied;
+	}
+
+	if (Attributes.count("normal_bloom_scale"))
+	{
+		it->second.BloomScale = Data.BloomScale;
+	}
+
+	if (Attributes.count("normal_bloom_shift"))
+	{
+		it->second.BloomShift = Data.BloomShift;
+	}
+
+	if (Attributes.count("glow_bloom_scale"))
+	{
+		it->second.GlowBloomScale = Data.GlowBloomScale;
+	}
+
+	if (Attributes.count("glow_bloom_shift"))
+	{
+		it->second.GlowBloomShift = Data.GlowBloomShift;
+	}
+
+	if (Attributes.count("minimum_glow_intensity"))
+	{
+		it->second.MinGlowIntensity = Data.MinGlowIntensity;
+	}
+	
 	return true;
 }
 
