@@ -203,6 +203,7 @@ public:
 	w_plugins(std::vector<Plugin>& plugins, int width, int numRows) : w_list_base(width, numRows, 0), m_plugins(plugins)
 	{
 		saved_min_height = item_height() * static_cast<uint16>(shown_items) + get_theme_space(LIST_WIDGET, T_SPACE) + get_theme_space(LIST_WIDGET, B_SPACE);
+		trough_rect.h = saved_min_height - get_theme_space(LIST_WIDGET, TROUGH_T_SPACE) - get_theme_space(LIST_WIDGET, TROUGH_B_SPACE);
 		num_items = m_plugins.size();
 		new_items();
 	}
