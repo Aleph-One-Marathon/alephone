@@ -49,7 +49,7 @@ public:
 
 		glGenTextures(1, &texID);
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
-		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, Wanting_sRGB ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
 		assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -126,7 +126,15 @@ public:
 
 		int passes = _shader_bloom->passes();
 		if (passes < 0)
-			passes = 3;
+			passes = 5;
+
+		if (passes > 0) {
+			glEnable(GL_BLEND);
+			_shader_bloom->enable();
+			_shader_bloom->setFloat(Shader::U_Pass, 0);
+			_horizontal.draw();
+			Shader::disable();
+		}
 
 		for (int i = 0; i < passes; i++) {
 			glDisable(GL_BLEND);
@@ -172,7 +180,7 @@ void RenderRasterize_Shader::setupGL() {
 	blur = NULL;
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur)) {
 		if(s_blur && s_bloom) {
-			blur = new Blur(320., 320. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, s_blur, s_bloom);
+			blur = new Blur(640., 640. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, s_blur, s_bloom);
 		}
 	}
 
@@ -226,7 +234,6 @@ void RenderRasterize_Shader::render_tree() {
 		RenderRasterizerClass::render_tree(kGlow);
 		blur->end();
 
-		glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 		glDisable(GL_DEPTH_TEST);
 		glBlendFunc(GL_SRC_ALPHA,GL_ONE);
 		blur->draw();
