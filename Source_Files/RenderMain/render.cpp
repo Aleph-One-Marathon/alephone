@@ -214,7 +214,9 @@ Jan 17, 2001 (Loren Petrich):
 // LP additions
 #include "dynamic_limits.h"
 #include "AnimatedTextures.h"
+#ifdef HAVE_OPENGL
 #include "OGL_Render.h"
+#endif
 
 #ifdef QUICKDRAW_DEBUG
 #include "shell.h"
@@ -231,9 +233,11 @@ extern WindowPtr screen_window;
 #include "RenderPlaceObjs.h"
 #include "RenderRasterize.h"
 #include "Rasterizer_SW.h"
+#ifdef HAVE_OPENGL
 #include "Rasterizer_OGL.h"
 #include "RenderRasterize_Shader.h"
 #include "Rasterizer_Shader.h"
+#endif
 #include "preferences.h"
 #include "screen.h"
 
@@ -340,7 +344,11 @@ void allocate_render_memory(
 	RenderSortPoly.RVPtr = &RenderVisTree;
 	RenderPlaceObjs.RVPtr = &RenderVisTree;
 	RenderPlaceObjs.RSPtr = &RenderSortPoly;
+#ifdef HAVE_OPENGL	
 	Render_Classic.RSPtr = Render_Shader.RSPtr = &RenderSortPoly;
+#else
+	Render_Classic.RSPtr = &RenderSortPoly;	
+#endif	
 }
 
 /* just in case anyone was wondering, standard_screen_width will usually be the same as
@@ -467,7 +475,11 @@ void render_view(
 			RasPtr->Begin();
 			
 			// LP: now from the clipping/rasterizer class
+#ifdef HAVE_OPENGL			
 			RenderRasterizerClass *RenPtr = (graphics_preferences->screen_mode.acceleration == _shader_acceleration) ? &Render_Shader : &Render_Classic;
+#else
+			RenderRasterizerClass *RenPtr = &Render_Classic;
+#endif
 			/* render the object list, back to front, doing clipping on each surface before passing
 				it to the texture-mapping code */
 			RenPtr->view = view;

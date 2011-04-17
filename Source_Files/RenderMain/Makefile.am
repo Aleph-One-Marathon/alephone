@@ -2,6 +2,12 @@
 
 noinst_LIBRARIES = librendermain.a
 
+if MAKE_OPENGL
+OPENGL_SOURCES = Rasterizer_Shader.cpp RenderRasterize_Shader.cpp
+else
+OPENGL_SOURCES = 
+endif
+
 librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h	\
   Crosshairs.h DDS.h ImageLoader.h low_level_textures.h OGL_Faders.h	\
   OGL_Headers.h OGL_Model_Def.h OGL_Render.h OGL_Setup.h		\
@@ -14,11 +20,13 @@ librendermain_a_SOURCES = AnimatedTextures.h collection_definition.h	\
 									\
   AnimatedTextures.cpp Crosshairs_SDL.cpp ImageLoader_Shared.cpp	\
   ImageLoader_SDL.cpp OGL_Faders.cpp OGL_Model_Def.cpp OGL_Render.cpp	\
-  OGL_Setup.cpp OGL_Subst_Texture_Def.cpp OGL_Textures.cpp		\
-  Rasterizer_Shader.cpp render.cpp RenderPlaceObjs.cpp			\
-  RenderRasterize.cpp RenderRasterize_Shader.cpp RenderSortPoly.cpp	\
-  RenderVisTree.cpp scottish_textures.cpp shapes.cpp			\
-  SW_Texture_Extras.cpp textures.cpp OGL_Shader.cpp
+  OGL_Setup.cpp OGL_Subst_Texture_Def.cpp OGL_Textures.cpp render.cpp	\
+  RenderPlaceObjs.cpp $(OPENGL_SOURCES) RenderRasterize.cpp		\
+  RenderSortPoly.cpp RenderVisTree.cpp scottish_textures.cpp		\
+  shapes.cpp SW_Texture_Extras.cpp textures.cpp OGL_Shader.cpp
+
+EXTRA_librendermain_a_SOURCES = Rasterizer_Shader.cpp	\
+RenderRasterize_Shader.cpp
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \

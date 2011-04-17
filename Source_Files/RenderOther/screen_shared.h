@@ -126,7 +126,9 @@ static struct ScriptHUDElement {
 	int color;
 	char text[Len];
 	Image_Blitter sdl_blitter;
+#ifdef HAVE_OPENGL	
 	OGL_Blitter ogl_blitter;
+#endif	
 } ScriptHUDElements[MAXIMUM_NUMBER_OF_SCRIPT_HUD_ELEMENTS];
 /* /SB */
 
@@ -238,9 +240,12 @@ namespace icon {
 #else
 	srf = SDL_CreateRGBSurfaceFrom(ScriptHUDElements[idx].icon, 16, 16, 32, 64, 0xFF<<16, 0xFF<<8, 0xFF, 0xFF<<24);
 #endif
+#ifdef HAVE_OPENGL	
 	if (OGL_IsActive()) {
 		ScriptHUDElements[idx].ogl_blitter.Load(*srf);
-	} else {
+	} else
+#endif	  
+	{	  
 		ScriptHUDElements[idx].sdl_blitter.Load(*srf);
 	}
 	SDL_FreeSurface(srf);

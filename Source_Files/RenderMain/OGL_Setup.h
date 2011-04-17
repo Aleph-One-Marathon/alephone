@@ -113,6 +113,8 @@ extern bool Wanting_sRGB;
 
 extern bool npotTextures;
 
+#ifdef HAVE_OPENGL
+
 /* Using the EXT_framebuffer_sRGB spec as reference */
 static inline float sRGB_frob(GLfloat f) {
 	if (Using_sRGB) {
@@ -130,6 +132,7 @@ void SglColor3usv(const GLushort* v);
 void SglColor4f(GLfloat r, GLfloat g, GLfloat b, GLfloat a);
 void SglColor4fv(const GLfloat* v);
 void SglColor4usv(const GLushort* v);
+#endif
 
 // Initializer; returns whether or not OpenGL is present
 bool OGL_Initialize();

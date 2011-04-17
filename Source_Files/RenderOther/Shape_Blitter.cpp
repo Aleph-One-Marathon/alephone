@@ -27,11 +27,11 @@ SHAPE_BLITTER.CPP
 #include "shell.h"
 #include "scottish_textures.h"
 
+#ifdef HAVE_OPENGL
 #include "OGL_Setup.h"
 #include "OGL_Textures.h"
 #include "OGL_Blitter.h"
 
-#ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #endif
 

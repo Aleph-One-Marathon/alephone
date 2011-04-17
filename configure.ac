@@ -253,10 +253,13 @@ if [[ "x$enable_opengl" = "xyes" ]]; then
     AC_CHECK_LIB(GLU, gluScaleImage, [SYS_GL_LIBS="$SYS_GL_LIBS -lGLU"], , $SYS_GL_LIBS)
     LIBS="$LIBS $SYS_GL_LIBS"
     AC_CHECK_HEADERS(GL/glext.h, [], [], [#include <GL/gl.h>])
+    make_opengl=true
   else
     AC_MSG_WARN([Could not find OpenGL, ignoring --enable-opengl.])
+    make_opengl=false
   fi
 fi
+AM_CONDITIONAL(MAKE_OPENGL, test x$make_opengl = xtrue)
 
 dnl Set target system name.
 AC_DEFINE_UNQUOTED(TARGET_PLATFORM, "$target_os $target_cpu", [Target platform name])

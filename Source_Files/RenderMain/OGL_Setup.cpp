@@ -81,6 +81,7 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #endif
 
 #include "OGL_Headers.h"
+#include "OGL_Shader.h"
 
 #endif
 
@@ -89,7 +90,6 @@ Feb 5, 2002 (Br'fin (Jeremy Parsons)):
 #include "ColorParser.h"
 #include "OGL_LoadScreen.h"
 #include "progress.h"
-#include "OGL_Shader.h"
 
 // Whether or not OpenGL is present and usable
 static bool _OGL_IsPresent = false;
@@ -273,10 +273,11 @@ inline bool StringPresent(vector<char>& String)
 	return (String.size() > 1);
 }
 
+#ifdef HAVE_OPENGL
+
 GLint glMaxTextureSize = 0;
 bool hasS3TC = false;
 
-#ifdef HAVE_OPENGL
 void OGL_TextureOptionsBase::Load()
 {
 	FileSpecifier File;
@@ -590,6 +591,7 @@ XML_ElementParser *OpenGL_GetParser()
 	return &OpenGL_Parser;
 }
 
+#ifdef HAVE_OPENGL
 /* These don't belong here */
 void SglColor3f(GLfloat r, GLfloat g, GLfloat b) {
   GLfloat ov[3] = {sRGB_frob(r), sRGB_frob(g), sRGB_frob(b)};
@@ -630,3 +632,4 @@ void SglColor4usv(const GLushort* iv) {
   GLfloat ov[4] = {sRGB_frob(iv[0]*(1.f/65535.f)), sRGB_frob(iv[1]*(1.f/65535.f)), sRGB_frob(iv[2]*(1.f/65535.f)), iv[3]*(1.f/65535.f)};
   glColor4fv(ov);
 }
+#endif
