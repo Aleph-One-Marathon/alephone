@@ -1207,13 +1207,14 @@ void display_main_menu(
 	FontSpecifier& Font = GetOnScreenFont();
 
 	// The line spacing is a generalization of "5" for larger fonts
-	short Offset = Font.LineSpacing / 3;
+	short Offset = Font.Descent + Font.LineSpacing + 1;
 	short RightJustOffset = Font.TextWidth(A1_VERSION_STRING);
-	short X = 640 - RightJustOffset;
+	short X = 640 - RightJustOffset - 1;
 	short Y = 480 - Offset;
 
 	_set_port_to_intro();
-	Font.DrawText(draw_surface, A1_VERSION_STRING, X, Y, SDL_MapRGB(draw_surface->format, 0x40, 0x40,
+	Font.DrawText(draw_surface, "Aleph One", 640 - Font.TextWidth("Aleph One") - 1, Y, SDL_MapRGB(draw_surface->format, 0x40, 0x40, 0x40));
+	Font.DrawText(draw_surface, A1_VERSION_STRING, X, Y + Font.LineSpacing, SDL_MapRGB(draw_surface->format, 0x40, 0x40,
 															 0x40));
 	_restore_port();
 	draw_intro_screen();
