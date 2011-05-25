@@ -136,8 +136,9 @@ bool OGL_CheckExtension(const std::string extension) {
 	while (*extensions)
 	{
 		unsigned int length = strcspn(extensions, " ");
-		
-		if (strncmp(extension.c_str(), extensions, length) == 0) {
+
+		if (length == extension.size() && 
+		    strncmp(extension.c_str(), extensions, length) == 0) {
 			return true;
 		}
 
