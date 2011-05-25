@@ -90,8 +90,14 @@ static void load_mmls(const Plugin& plugin, XML_Loader_SDL& loader)
 	for (std::vector<std::string>::const_iterator it = plugin.mmls.begin(); it != plugin.mmls.end(); ++it) 
 	{
 		FileSpecifier file;
-		file.SetNameWithPath(it->c_str());
-		loader.ParseFile(file);
+		if (file.SetNameWithPath(it->c_str()))
+		{
+			loader.ParseFile(file);
+		}
+		else
+		{
+			logWarning("%s Plugin: %s not found; ignoring", plugin.name.c_str(), it->c_str());
+		}
 	}
 }
 
