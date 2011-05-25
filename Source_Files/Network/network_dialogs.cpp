@@ -1482,6 +1482,13 @@ bool SetupNetgameDialog::informationIsAcceptable ()
 	
 	if (information_is_acceptable)
 		information_is_acceptable = m_mapWidget->get_file ().Exists ();
+
+	if (information_is_acceptable)
+	{
+		entry_point ep;
+		short index = 0;
+		information_is_acceptable = get_indexed_entry_point(&ep, &index, get_entry_point_flags_for_game_type(m_old_game_type));
+	}
 		
 	return (information_is_acceptable);
 }
