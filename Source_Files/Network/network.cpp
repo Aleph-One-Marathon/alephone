@@ -2507,6 +2507,12 @@ bool NetAllowSavingLevel() {
 
 }
 
+bool NetAllowOverlayMap() {
+	return (dynamic_world->player_count == 1 ||
+			(dynamic_world->game_information.cheat_flags & _allow_overlay_map));
+}
+
+
 extern int32 spoke_latency();
 
 int32 NetGetLatency() {

@@ -1034,6 +1034,7 @@ SetupNetgameDialog::~SetupNetgameDialog ()
 	
 	delete m_zoomWidget;
 	delete m_crosshairWidget;
+	delete m_overlayWidget;
 	delete m_laraCroftWidget;
 	delete m_carnageMessagesWidget;
 	
@@ -1168,6 +1169,8 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	binders.insert<bool> (m_zoomWidget, &zoomPref);
 	BitPref crosshairPref (active_network_preferences->cheat_flags, _allow_crosshair);
 	binders.insert<bool> (m_crosshairWidget, &crosshairPref);
+	BitPref overlayPref (active_network_preferences->cheat_flags, _allow_overlay_map);
+	binders.insert<bool> (m_overlayWidget, &overlayPref);
 	BitPref laraCroftPref (active_network_preferences->cheat_flags, _allow_behindview);
 	binders.insert<bool> (m_laraCroftWidget, &laraCroftPref);
 	BitPref carnageMessagesPref (active_network_preferences->cheat_flags, _disable_carnage_messages, true);
@@ -2942,6 +2945,10 @@ public:
 		network_table->dual_add(crosshairs_w, m_dialog);
 		network_table->dual_add(crosshairs_w->label("Allow Crosshairs"), m_dialog);
 	
+		w_toggle *overlay_w = new w_toggle(true);
+		network_table->dual_add(overlay_w, m_dialog);
+		network_table->dual_add(overlay_w->label("Allow Overlay Map"), m_dialog);
+		
 		w_toggle *lara_croft_w = new w_toggle(true);
 		network_table->dual_add(lara_croft_w, m_dialog);
 		network_table->dual_add(lara_croft_w->label("Allow Chase Cam"), m_dialog);
@@ -3024,6 +3031,7 @@ public:
 	
 		m_zoomWidget = new ToggleWidget (zoom_w);
 		m_crosshairWidget = new ToggleWidget (crosshairs_w);
+		m_overlayWidget = new ToggleWidget (overlay_w);
 		m_laraCroftWidget = new ToggleWidget (lara_croft_w);
 		m_carnageMessagesWidget = new ToggleWidget (carnage_messages_w);
 		m_savingLevelWidget = new ToggleWidget (saving_level_w);

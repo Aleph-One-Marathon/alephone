@@ -2453,7 +2453,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->use_speex_encoder = true;
 	preferences->use_netscript = false;
 	preferences->netscript_file[0] = '\0';
-	preferences->cheat_flags = _allow_tunnel_vision | _allow_crosshair | _allow_behindview;
+	preferences->cheat_flags = _allow_tunnel_vision | _allow_crosshair | _allow_behindview | _allow_overlay_map;
 	preferences->advertise_on_metaserver = false;
 	preferences->attempt_upnp = false;
 	preferences->check_for_updates = true;

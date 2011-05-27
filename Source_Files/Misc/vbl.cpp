@@ -651,7 +651,7 @@ bool setup_for_replay_from_file(
 		byte Header[SIZEOF_recording_header];
 		FilmFile.Read(SIZEOF_recording_header,Header);
 		unpack_recording_header(Header,&replay.header,1);
-		replay.header.game_information.cheat_flags = _allow_crosshair | _allow_tunnel_vision | _allow_behindview;
+		replay.header.game_information.cheat_flags = _allow_crosshair | _allow_tunnel_vision | _allow_behindview | _allow_overlay_map;
 	
 		/* Set to the mapfile this replay came from.. */
 		if(use_map_file(replay.header.map_checksum))

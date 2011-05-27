@@ -276,6 +276,7 @@ void NetRemoveDistributionFunction(short type);
 
 // disable "cheats"
 bool NetAllowCrosshair();
+bool NetAllowOverlayMap();
 bool NetAllowTunnelVision();
 bool NetAllowBehindview();
 bool NetAllowCarnageMessages();

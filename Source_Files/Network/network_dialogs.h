@@ -481,6 +481,7 @@ protected:
 	
 	ToggleWidget*		m_zoomWidget;
 	ToggleWidget*		m_crosshairWidget;
+	ToggleWidget*		m_overlayWidget;
 	ToggleWidget*		m_laraCroftWidget;
 	ToggleWidget*           m_carnageMessagesWidget;
 	ToggleWidget*           m_savingLevelWidget;

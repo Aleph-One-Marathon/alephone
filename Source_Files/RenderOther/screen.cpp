@@ -564,7 +564,7 @@ void ReloadViewContext(void)
 
 bool map_is_translucent(void)
 {
-	return (screen_mode.translucent_map && dynamic_world->player_count == 1);
+	return (screen_mode.translucent_map && NetAllowOverlayMap());
 }
 
 /*

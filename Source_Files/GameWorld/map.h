@@ -869,7 +869,8 @@ enum /* cheat flags */
     _allow_tunnel_vision = 0x0002,
     _allow_behindview = 0x0004,
     _disable_carnage_messages = 0x0008,
-    _disable_saving_level = 0x0010
+    _disable_saving_level = 0x0010,
+    _allow_overlay_map = 0x0020
   };
 
 enum // specifies how the user completed the level. saved in dynamic_data
