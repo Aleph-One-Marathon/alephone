@@ -1088,7 +1088,7 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		short collection = GET_COLLECTION(descriptor);
 		short clut = ModifyCLUT(rect.transfer_mode,GET_COLLECTION_CLUT(descriptor));
 
-		RenderModel(rect, collection, clut, view->maximum_depth_intensity/float(FIXED_ONE_HALF), renderStep);
+		RenderModel(rect, collection, clut, weaponFlare, renderStep);
 		glPopMatrix();
 		glDisable(GL_CLIP_PLANE5);
 		return;
