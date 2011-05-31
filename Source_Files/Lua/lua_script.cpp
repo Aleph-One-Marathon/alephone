@@ -849,7 +849,15 @@ bool LuaState::Run()
 
 	// Call 'em
 	for (int i = 0; i < num_scripts_; ++i)
-		result = result || lua_pcall(State(), 0, LUA_MULTRET, 0);
+	{
+		int ret = lua_pcall(State(), 0, LUA_MULTRET, 0);
+		if (ret != 0)
+		{
+			L_Error(lua_tostring(State(), -1));
+			result = ret;
+			break;
+		}
+	}
 	
 	if (result == 0) running_ = true;
 	return (result == 0);
