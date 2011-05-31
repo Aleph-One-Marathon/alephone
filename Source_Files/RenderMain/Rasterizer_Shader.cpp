@@ -41,23 +41,28 @@ const GLdouble kViewBaseMatrixInverse[16] = {
 void Rasterizer_Shader_Class::SetView(view_data& view) {
 	OGL_SetView(view);
 	float aspect = view.screen_width / float(view.screen_height);
-	float yfov = view.field_of_view / (View_FOV_FixHorizontalNotVertical() ? aspect : 2.0);
-	float xfov = yfov * aspect;
+	float deg2rad = 8.0 * atan(1.0) / 360.0;
+	float xtan, ytan;
+	if (View_FOV_FixHorizontalNotVertical()) {
+		xtan = tan(view.field_of_view * deg2rad / 2.0);
+		ytan = xtan / aspect;
+	} else {
+		ytan = tan(view.field_of_view * deg2rad / 2.0) / 2.0;
+		xtan = ytan * aspect;
+	}
 	
 	// Adjust for view distortion during teleport effect
-	yfov *= view.real_world_to_screen_y / float(view.world_to_screen_y);
-	xfov *= view.real_world_to_screen_x / float(view.world_to_screen_x);
-	
-	// The view flips or shrinks when the FOV goes too far out
-	// of normal bounds, so this limit keeps the teleporting
-	// effect from getting distorted in annoying ways.
-	if (yfov > 119.9) {
-		yfov = 119.9;
-	}
+	ytan *= view.real_world_to_screen_y / double(view.world_to_screen_y);
+	xtan *= view.real_world_to_screen_x / double(view.world_to_screen_x);
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(yfov, xfov / yfov, 64, 128*1024);
+	float near = 64.0;
+	float far = 128.0 * 1024.0;
+	float x = xtan * near;
+	float y = ytan * near;
+	glFrustum(-x, x, -y, y, near, far);
+
 	glMatrixMode(GL_MODELVIEW);
 	double yaw = view.yaw * 360.0 / float(NUMBER_OF_ANGLES);
 	double pitch = view.pitch * 360.0 / float(NUMBER_OF_ANGLES);
