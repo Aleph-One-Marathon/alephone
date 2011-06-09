@@ -129,30 +129,11 @@ struct FlaggedVector
 	bool Flag;
 };
 
-void Model3D::CalculateTangents()
-{
-	Tangents.resize(Positions.size() * 4 / 3);
-	
-	bool generate_normals = false;
-	if(Normals.size() != Positions.size()) {
-		Normals.resize(Positions.size());
-		memset(NormBase(), 0, sizeof(GLfloat)*Normals.size());
-		generate_normals = true;
-	}
-	
-	for(GLushort i = 0; i < VertIndices.size(); i+= 3) {
-		GLushort a = VertIndices[i];
-		GLushort b = VertIndices[i+1];
-		GLushort c = VertIndices[i+2];
-		
-		vertex3 v1(PosBase()+3*a);
-		vertex3 v2(PosBase()+3*b);
-		vertex3 v3(PosBase()+3*c);
-		
-		vertex2 w1(TCBase()+2*a);
-		vertex2 w2(TCBase()+2*b);
-		vertex2 w3(TCBase()+2*c);
-		
+vec4 CalculateTangent(const vec3& N, const vertex3& v1, const vertex3& v2, const vertex3& v3,
+	const vertex2& w1, const vertex2& w2, const vertex2& w3) {
+
+	if(N.dot(N) > 0.001) {
+
 		float x1 = v2[0] - v1[0];
 		float x2 = v3[0] - v1[0];
 		float y1 = v2[1] - v1[1];
@@ -174,42 +155,71 @@ void Model3D::CalculateTangents()
 			T = (v3 - v1).norm();
 			B = (v2 - v1).norm();
 		}
+
+		float sign = (N.cross(T)).dot(B) < 0.0 ? -1.0 : 1.0;
+//		printf("%f\n", (T - N * N.dot(T)).length());
+		vec4 t = (T - N * N.dot(T));
+		t[3] = sign;
+		return t;
+
+	} else {
+
+		return vec4(0.0,0.0,0.0,0.0);
+	}
+}
+
+void Model3D::CalculateTangents()
+{
+	if(Tangents.size() == Positions.size()) {
+
+		// already have tangents
+		return;
+	}
+
+	Tangents.resize(Positions.size() * 4 / 3);
+	
+	bool generate_normals = false;
+	if(Normals.size() != Positions.size()) {
+		Normals.resize(Positions.size());
+		memset(NormBase(), 0, sizeof(GLfloat)*Normals.size());
+		generate_normals = true;
+	}
+	
+	for(GLushort i = 0; i < VertIndices.size(); i+= 3) {
+
+		GLushort a = VertIndices[i];
+		GLushort b = VertIndices[i+1];
+		GLushort c = VertIndices[i+2];
 		
-		vec3 N = (v3-v1).cross(v2-v1);
+		vertex3 v1(PosBase()+3*a);
+		vertex3 v2(PosBase()+3*b);
+		vertex3 v3(PosBase()+3*c);
+		
+		vertex2 w1(TCBase()+2*a);
+		vertex2 w2(TCBase()+2*b);
+		vertex2 w3(TCBase()+2*c);
+
+		vec3 n1;
+		vec3 n2;
+		vec3 n3;
+
 		if (!generate_normals) {
-			N = vec3(NormBase()+3*a) + vec3(NormBase()+3*b) + vec3(NormBase()+3*c);
-		}
-		
-		if(N.dot(N) < 0.001) {
-			N = vec3(0.0,0.0,0.0);
-			if (generate_normals) {
-				VecCopy(N.p(), NormBase()+3*a);
-				VecCopy(N.p(), NormBase()+3*b);
-				VecCopy(N.p(), NormBase()+3*c);
-			}
-			
-			vec4 t(0.0,0.0,0.0,0.0);
-			Tangents[a] = vec4(t);
-			Tangents[b] = vec4(t);
-			Tangents[c] = vec4(t);
+
+			n1 = vec3(NormBase()+3*a);
+			n2 = vec3(NormBase()+3*b);
+			n3 = vec3(NormBase()+3*c);
+
 		} else {
-			N = N.norm();
-			assert(N.dot(N) < 1.001);
-			
-			if (generate_normals) {
-				VecCopy(N.p(), NormBase()+3*a);
-				VecCopy(N.p(), NormBase()+3*b);
-				VecCopy(N.p(), NormBase()+3*c);
-			}
-			
-			float sign = (N.cross(T)).dot(B) < 0.0 ? -1.0 : 1.0;
-			vec4 t = (T - N * N.dot(T)).norm();
-			t[3] = sign;
-			
-			Tangents[a] = vec4(t);
-			Tangents[b] = vec4(t);
-			Tangents[c] = vec4(t);
+
+			n1 = n2 = n3 = (v3-v1).cross(v2-v1);
+			VecCopy(n1.p(), NormBase()+3*a);
+			VecCopy(n2.p(), NormBase()+3*b);
+			VecCopy(n3.p(), NormBase()+3*c);
 		}
+
+		Tangents[a] = CalculateTangent(n1, v1, v2, v3, w1, w2, w3);
+		Tangents[b] = CalculateTangent(n2, v2, v3, v1, w2, w3, w1);
+		Tangents[c] = CalculateTangent(n3, v3, v1, v2, w3, w1, w2);
 	}
 }
 
