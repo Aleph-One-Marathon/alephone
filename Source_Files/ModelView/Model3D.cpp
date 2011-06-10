@@ -199,25 +199,20 @@ void Model3D::CalculateTangents()
 			B = (v2 - v1).norm();
 		}
 
-		vec3 N[3];
-
-		if (!generate_normals) {
-
-			for(GLubyte j = 0; j < 3; ++j) {
-				N[j] = vec3(NormBase()+3*idx[j]);
-			}
-
-		} else {
-
-			N[0] = N[1] = N[2] = (v3-v1).cross(v2-v1);
-			for(GLubyte j = 0; j < 3; ++j) {
-				VecCopy(N[0].p(), NormBase()+3*idx[j]);
-			}
+		vec3 N;
+		if(generate_normals) {
+			N = (v3-v1).cross(v2-v1);
 		}
 
 		for(GLubyte j = 0; j < 3; ++j) {
 
-			Tangents[idx[j]] = OrthogonalizeTangent(N[j], T, B);
+			if (!generate_normals) {
+				N = vec3(NormBase()+3*idx[j]);
+			} else {
+				VecCopy(N.p(), NormBase()+3*idx[j]);
+			}
+
+			Tangents[idx[j]] = OrthogonalizeTangent(N, T, B);
 		}
 	}
 }
