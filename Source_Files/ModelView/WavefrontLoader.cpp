@@ -514,10 +514,6 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 
 	/* http://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps */
 	/* SPLIT ALL EDGES, needed for proper tangent space */
-	/* note:
-		this procedure still does not get rid of all hard edges,
-		maybe we need to build the btn matrix in the fragment shader instead of vertex shader
-	*/
 
 	unsigned IndxBase = 0;
 	unsigned Indx = 0;
@@ -546,28 +542,24 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 
 			unsigned order[6];
 
+			// split quad along shorter side
 			if((V[2]-V[0]).d() < (V[3]-V[1]).d()) {
 
-				memcpy(order, (unsigned[]) {0, 1, 3, 1, 2, 3}, sizeof(order));
-				// but contrary to the blender wiki this cut is across the longer side ?!?
-				// but vice versa it looks worse
+				memcpy(order, (unsigned[]) {0, 1, 2, 0, 2, 3}, sizeof(order));
 
 			} else if((V[2]-V[0]).d() > (V[3]-V[1]).d()) {
 
-				memcpy(order, (unsigned[]) {0, 1, 2, 0, 2, 3}, sizeof(order));
-				// ditto
+				memcpy(order, (unsigned[]) {0, 1, 3, 1, 2, 3}, sizeof(order));
 
 			} else {
 	
 				if((WhatsPresent & Present_TxtrCoord) && (C[0].distance(C[2]) < C[1].distance(C[3]))) {
 
-					memcpy(order, (unsigned[]) {0, 1, 3, 1, 2, 3}, sizeof(order));
-					// ditto
+					memcpy(order, (unsigned[]) {0, 1, 2, 0, 2, 3}, sizeof(order));
 
 				} else {
 
-					memcpy(order, (unsigned[]) {0, 1, 2, 0, 2, 3}, sizeof(order));
-					// ditto
+					memcpy(order, (unsigned[]) {0, 1, 3, 1, 2, 3}, sizeof(order));
 				}
 			}
 

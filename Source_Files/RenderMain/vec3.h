@@ -110,6 +110,11 @@ struct vec4 {
 	const GLfloat* p() const { return _d; }
 	GLfloat operator[] (unsigned i) const { return _d[i]; }
 	GLfloat& operator[] (unsigned i) { return _d[i]; }
+
+	operator vec3() const {
+
+		return vec3(_d);	
+	}
 };
 
 struct vertex2 : public vec4 {

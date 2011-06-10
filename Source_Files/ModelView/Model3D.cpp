@@ -129,10 +129,53 @@ struct FlaggedVector
 	bool Flag;
 };
 
-vec4 CalculateTangent(const vec3& N, const vertex3& v1, const vertex3& v2, const vertex3& v3,
-	const vertex2& w1, const vertex2& w2, const vertex2& w3) {
+inline vec4 OrthogonalizeTangent(const vec3& N, const vec3& T, const vec3& B) {
 
-	if(N.dot(N) > 0.001) {
+	if(N.dot(N) > 0.00001) {
+
+		// Gram-Schmidt orthogonalize
+		vec4 t = (T - N * N.dot(T));
+
+		// Calculate handedness
+		float sign = (N.cross(T)).dot(B) < 0.0 ? -1.0 : 1.0;
+		t[3] = sign;
+		return t;
+
+	} else {
+
+		return vec4(0.0,0.0,0.0,0.0);
+	}
+}
+
+void Model3D::CalculateTangents()
+{
+	/* http://www.terathon.com/code/tangent.html */
+	if(Tangents.size() == Positions.size()) {
+
+		// already have tangents
+		return;
+	}
+
+	Tangents.resize(Positions.size() * 4 / 3);
+	
+	bool generate_normals = false;
+	if(Normals.size() != Positions.size()) {
+		Normals.resize(Positions.size());
+		memset(NormBase(), 0, sizeof(GLfloat)*Normals.size());
+		generate_normals = true;
+	}
+	
+	for(GLushort i = 0; i < VertIndices.size(); i+= 3) {
+
+		GLushort idx[] = { VertIndices[i], VertIndices[i+1], VertIndices[i+2] };
+		
+		vertex3 v1(PosBase()+3*idx[0]);
+		vertex3 v2(PosBase()+3*idx[1]);
+		vertex3 v3(PosBase()+3*idx[2]);
+		
+		vertex2 w1(TCBase()+2*idx[0]);
+		vertex2 w2(TCBase()+2*idx[1]);
+		vertex2 w3(TCBase()+2*idx[2]);
 
 		float x1 = v2[0] - v1[0];
 		float x2 = v3[0] - v1[0];
@@ -156,70 +199,26 @@ vec4 CalculateTangent(const vec3& N, const vertex3& v1, const vertex3& v2, const
 			B = (v2 - v1).norm();
 		}
 
-		float sign = (N.cross(T)).dot(B) < 0.0 ? -1.0 : 1.0;
-//		printf("%f\n", (T - N * N.dot(T)).length());
-		vec4 t = (T - N * N.dot(T));
-		t[3] = sign;
-		return t;
-
-	} else {
-
-		return vec4(0.0,0.0,0.0,0.0);
-	}
-}
-
-void Model3D::CalculateTangents()
-{
-	if(Tangents.size() == Positions.size()) {
-
-		// already have tangents
-		return;
-	}
-
-	Tangents.resize(Positions.size() * 4 / 3);
-	
-	bool generate_normals = false;
-	if(Normals.size() != Positions.size()) {
-		Normals.resize(Positions.size());
-		memset(NormBase(), 0, sizeof(GLfloat)*Normals.size());
-		generate_normals = true;
-	}
-	
-	for(GLushort i = 0; i < VertIndices.size(); i+= 3) {
-
-		GLushort a = VertIndices[i];
-		GLushort b = VertIndices[i+1];
-		GLushort c = VertIndices[i+2];
-		
-		vertex3 v1(PosBase()+3*a);
-		vertex3 v2(PosBase()+3*b);
-		vertex3 v3(PosBase()+3*c);
-		
-		vertex2 w1(TCBase()+2*a);
-		vertex2 w2(TCBase()+2*b);
-		vertex2 w3(TCBase()+2*c);
-
-		vec3 n1;
-		vec3 n2;
-		vec3 n3;
+		vec3 N[3];
 
 		if (!generate_normals) {
 
-			n1 = vec3(NormBase()+3*a);
-			n2 = vec3(NormBase()+3*b);
-			n3 = vec3(NormBase()+3*c);
+			for(GLubyte j = 0; j < 3; ++j) {
+				N[j] = vec3(NormBase()+3*idx[j]);
+			}
 
 		} else {
 
-			n1 = n2 = n3 = (v3-v1).cross(v2-v1);
-			VecCopy(n1.p(), NormBase()+3*a);
-			VecCopy(n2.p(), NormBase()+3*b);
-			VecCopy(n3.p(), NormBase()+3*c);
+			N[0] = N[1] = N[2] = (v3-v1).cross(v2-v1);
+			for(GLubyte j = 0; j < 3; ++j) {
+				VecCopy(N[0].p(), NormBase()+3*idx[j]);
+			}
 		}
 
-		Tangents[a] = CalculateTangent(n1, v1, v2, v3, w1, w2, w3);
-		Tangents[b] = CalculateTangent(n2, v2, v3, v1, w2, w3, w1);
-		Tangents[c] = CalculateTangent(n3, v3, v1, v2, w3, w1, w2);
+		for(GLubyte j = 0; j < 3; ++j) {
+
+			Tangents[idx[j]] = OrthogonalizeTangent(N[j], T, B);
+		}
 	}
 }
 
