@@ -134,8 +134,10 @@ struct IndexedVertListCompare
 	}
 };
 
-vec4 CalculateTangent(const vec3& N, const vertex3& v1, const vertex3& v2, const vertex3& v3,
+void CalculateTangent(vec3& T, vec3& B, const vertex3& v1, const vertex3& v2, const vertex3& v3,
 	const vertex2& w1, const vertex2& w2, const vertex2& w3);
+
+vec4 OrthogonalizeTangent(const vec3& N, const vec3& T, const vec3& B);
 
 void addVertex(Model3D& Model, const vertex3& v) {
 
@@ -536,8 +538,20 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			}
 		}
 
-		// triangulate
+		if(!(WhatsPresent & Present_Normal)) {
+			vec3 norm = (V[2]-V[1]).cross(V[1]-V[0]);
+			for(int j = 0; j < n; ++j) {
+				N[j] = norm;
+			}
+		}
 
+		// calculate face tangent vector
+		vec3 T,B;
+		if(WhatsPresent & Present_TxtrCoord) {
+			CalculateTangent(T, B, V[0], V[1], V[n-1], C[0], C[1], C[n-1]);
+		}
+
+		// triangulate
 		if(n == 4) {
 
 			unsigned order[6];
@@ -566,13 +580,13 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			for(unsigned j = 0; j < 6; ++j) {
 
 				addVertex(Model, V[order[j]]);
+				addNormal(Model, N[order[j]]);
 
 				if(WhatsPresent & Present_TxtrCoord) {
 					addTexCoord(Model, C[order[j]]);
+					Model.Tangents.push_back(OrthogonalizeTangent(N[order[j]], T, B));
 				}
-				if (WhatsPresent & Present_Normal) {
-					addNormal(Model, N[order[j]]);
-				}
+
 				Model.VertIndices.push_back(Indx++);		
 			}
 
@@ -585,16 +599,18 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 				addVertex(Model, V[j+1]);
 				addVertex(Model, V[j+2]);
 
+				addNormal(Model, N[0]);
+				addNormal(Model, N[j+1]);
+				addNormal(Model, N[j+2]);
+
 				if(WhatsPresent & Present_TxtrCoord) {
 					addTexCoord(Model, C[0]);
 					addTexCoord(Model, C[j+1]);
 					addTexCoord(Model, C[j+2]);
-				}
 
-				if (WhatsPresent & Present_Normal) {
-					addNormal(Model, N[0]);
-					addNormal(Model, N[j+1]);
-					addNormal(Model, N[j+2]);
+					Model.Tangents.push_back(OrthogonalizeTangent(N[0], T, B));
+					Model.Tangents.push_back(OrthogonalizeTangent(N[j+1], T, B));
+					Model.Tangents.push_back(OrthogonalizeTangent(N[j+2], T, B));
 				}
 
 				Model.VertIndices.push_back(Indx++);
