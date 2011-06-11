@@ -715,6 +715,7 @@ static bool make_restored_game_relevant(bool inNetgame, const player_start_data*
                 dynamic_world->game_information.game_options= network_game_info->game_options;
                 dynamic_world->game_information.initial_random_seed= network_game_info->initial_random_seed;
                 dynamic_world->game_information.difficulty_level= network_game_info->difficulty_level;
+                dynamic_world->game_information.cheat_flags= network_game_info->cheat_flags;
 
                 if (network_game_info->allow_mic)
                 {
