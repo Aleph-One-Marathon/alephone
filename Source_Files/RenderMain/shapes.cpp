@@ -1554,15 +1554,34 @@ if((GET_COLLECTION(collection_code) < 0) || (GET_COLLECTION(collection_code) >= 
 	short bitmap_index = low_level_shape->bitmap_index;
 	OGL_TextureOptions *TxtrOpts = OGL_GetTextureOptions(collection_index,clut_index,bitmap_index);
 	
-	if (TxtrOpts->ImageScale <= 0 || !TxtrOpts->NormalImg.IsPresent())
+	if (!TxtrOpts->NormalImg.IsPresent() ||
+	    (TxtrOpts->offset_x == 0 && TxtrOpts->offset_y == 0 &&
+	     TxtrOpts->shape_width <= 0 && TxtrOpts->shape_height <= 0))
 		return (struct shape_information_data *) low_level_shape;
 	
+	// find scale factor used in shape data
+	bitmap_definition *bitmap = get_bitmap_definition(collection_index, bitmap_index);
+	short scale_factor = (low_level_shape->world_right - low_level_shape->world_left) / bitmap->width;
+		
 	// Prepare the adjusted frame data; no need for mirroring here
 	AdjustedFrame = *low_level_shape;
-	AdjustedFrame.world_left = low_level_shape->world_left + TxtrOpts->Left;
-	AdjustedFrame.world_right = low_level_shape->world_left + TxtrOpts->Right;
-	AdjustedFrame.world_top = low_level_shape->world_top - TxtrOpts->Top;
-	AdjustedFrame.world_bottom = low_level_shape->world_top - TxtrOpts->Bottom;
+		
+	if (TxtrOpts->shape_width > 0)
+		AdjustedFrame.world_right = AdjustedFrame.world_left + (TxtrOpts->shape_width * scale_factor);
+	if (TxtrOpts->shape_height > 0)
+		AdjustedFrame.world_bottom = AdjustedFrame.world_top - (TxtrOpts->shape_height * scale_factor);
+	if (TxtrOpts->offset_x != 0)
+	{
+		short offx = TxtrOpts->offset_x * scale_factor;
+		AdjustedFrame.world_left -= offx;
+		AdjustedFrame.world_right -= offx;
+	}
+	if (TxtrOpts->offset_y != 0)
+	{
+		short offy = TxtrOpts->offset_y * scale_factor;
+		AdjustedFrame.world_top += offy;
+		AdjustedFrame.world_bottom += offy;
+	}
 	
 	return (struct shape_information_data *) &AdjustedFrame;
     }

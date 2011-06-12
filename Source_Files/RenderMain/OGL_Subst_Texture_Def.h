@@ -40,26 +40,19 @@ struct OGL_TextureOptions: public OGL_TextureOptionsBase
 	bool VoidVisible;		// Can see the void through texture if semitransparent
 	
 	// Parameters for mapping substitute sprites (inhabitants, weapons in hand)
-	// How many internal units (world unit = 1024) per pixel
-	float ImageScale;
 	
-	// Positioning of sprite's corners relative to top left corner of original bitmap,
-	// in internal units. Left and Top are specified as X_Offset and Y_Offset in MML;
-	// Right and Bottom are calculated from these.
-	short Left;
-	short Top;
-	short Right;
-	short Bottom;
+	// shape bounding box, in pixel units (need to apply scale factor)
+	short shape_width;
+	short shape_height;
 	
-	// Find Right and Bottom from Left and Top and the image size and scaling
-	void FindImagePosition();
-
-	// use this to set the original width and height before calculating ImagePosition
-	void Original();
-
+	// shape origin / keypoint offset, in pixel units (need to apply scale factor)
+	short offset_x;
+	short offset_y;
+	
 	OGL_TextureOptions():
-		VoidVisible(false), ImageScale(0),
-		Left(0), Top(0), Right(0), Bottom(0) {}
+		VoidVisible(false),
+		shape_width(0), shape_height(0),
+		offset_x(0), offset_y(0) {}
 };
 
 

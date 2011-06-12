@@ -1480,10 +1480,10 @@ It must be used with a glow_image file.
 <li>offset_image: the name of the file whose image content to use for bump mapping (normals in RGB channels, height map in alpha channel).
 <li>normal_blend: which blend mode for semitransparent normal textures (default: 0 -- crossfade)
 <li>glow_blend: which blend mode for semitransparent glowing textures (default: 0 -- crossfade)
-<li>image_scale: The amount to scale a substituted sprite, from pixel units to internal distance units.
-If it is zero or less, then it and the offsets are ignored.
-<li>x_offset: The amount to shift the top left corner rightward, in internal units.
-<li>y_offset: The amount to shift the top left corner downward, in internal units. 
+<li>shape_width: the width of a substituted sprite's bounding box, in pixel units (default: the width of the original Shapes-file bitmap)
+<li>shape_height: the height of a substituted sprite's bounding box, in pixel units (default: the height of the original Shapes-file bitmap)
+<li>offset_x: the amount to adjust the sprite's keypoint and origin x coordinates, in pixel units (default: 0 -- do not adjust). Positive numbers move the origin to the right, which makes the sprite appear closer to the left of the screen.
+<li>offset_y: the amount to adjust the sprite's keypoint and origin y coordinates, in pixel units (default: 0 -- do not adjust). Positive numbers move the origin down, which makes the sprite appear closer to the top of the screen.
 <li>type: the texture type to use for image quality adjustments. If not set, the image quality settings in graphics preferences will be ignored for this image, and the largest version in the file used.
 <li>normal_premultiply: the normal image uses premultiplied alpha (default: false, the image does not use premultiplied alpha)
 <li>glow_premultiply: the glow image uses premultiplied alpha (default: false, the image does not use premultiplied alpha)

@@ -34,12 +34,6 @@
 
 #ifdef HAVE_OPENGL
 
-void OGL_TextureOptions::FindImagePosition()
-{
-	Right = Left + short(ImageScale*NormalImg.GetWidth() + 0.5);
-	Bottom = Top + short(ImageScale*NormalImg.GetHeight() + 0.5);
-}
-
 // Texture-options stuff;
 // defaults for whatever might need them
 static OGL_TextureOptions DefaultTextureOptions;
@@ -73,10 +67,6 @@ void OGL_LoadTextures(short Collection)
 	for (TOHash::iterator it = Collections[Collection].begin(); it != Collections[Collection].end(); ++it)
 	{
 		it->second.Load();
-		// Find adjusted-frame image-data positioning;
-		// this is for doing sprites with textures with sizes different from the originals
-		it->second.FindImagePosition();
-
 		OGL_ProgressCallback(1);
 		
 	}
@@ -260,17 +250,21 @@ bool XML_TextureOptionsParser::_HandleAttribute(const char *Tag, const char *Val
 	{
 		return ReadBoundedInt16Value(Value,Data.GlowBlend,0,OGL_NUMBER_OF_BLEND_TYPES-1);
 	}
-	else if (StringsEqual(Tag,"image_scale"))
+	else if (StringsEqual(Tag,"shape_width"))
 	{
-		return ReadFloatValue(Value,Data.ImageScale);
+		return ReadInt16Value(Value,Data.shape_width);
 	}
-	else if (StringsEqual(Tag,"x_offset"))
+	else if (StringsEqual(Tag,"shape_height"))
 	{
-		return ReadInt16Value(Value,Data.Left);
+		return ReadInt16Value(Value,Data.shape_height);
 	}
-	else if (StringsEqual(Tag,"y_offset"))
+	else if (StringsEqual(Tag,"offset_x"))
 	{
-		return ReadInt16Value(Value,Data.Top);
+		return ReadInt16Value(Value,Data.offset_x);
+	}
+	else if (StringsEqual(Tag,"offset_y"))
+	{
+		return ReadInt16Value(Value,Data.offset_y);
 	}
 	else if (StringsEqual(Tag,"actual_height"))
 	{
@@ -401,19 +395,24 @@ bool XML_TextureOptionsParser::AttributesDone()
 		it->second.GlowBlend = Data.GlowBlend;
 	}
 
-	if (Attributes.count("image_scale"))
+	if (Attributes.count("shape_width"))
 	{
-		it->second.ImageScale = Data.ImageScale;
+		it->second.shape_width = Data.shape_width;
 	}
 
-	if (Attributes.count("x_offset"))
+	if (Attributes.count("shape_height"))
 	{
-		it->second.Left = Data.Left;
+		it->second.shape_height = Data.shape_height;
+	}
+	
+	if (Attributes.count("offset_x"))
+	{
+		it->second.offset_x = Data.offset_x;
 	}
 
-	if (Attributes.count("y_offset"))
+	if (Attributes.count("offset_y"))
 	{
-		it->second.Top = Data.Top;
+		it->second.offset_y = Data.offset_y;
 	}
 
 	if (Attributes.count("actual_height"))
