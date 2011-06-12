@@ -1469,6 +1469,8 @@ in "normal" rendering (sensitive to light levels).
 <li>normal_mask: the name of the file whose image content becomes the opacity mask
 for "normal" rendering (sensitive to light levels).
 It must be used with a normal_image file.
+<li>actual_width: if specified, only the leftmost number of pixels will be used from the _image and _mask files. Use this for small images embedded into a square DDS file, for example.
+<li>actual_height: if specified, only the topmost number of pixels will be used from the _image and _mask files.
 <li>glow_image: the name of the file whose image content to substitute
 in "glowing" rendering (independent of light levels).
 <li>glow_mask: the name of the file whose image content becomes the opacity mask
