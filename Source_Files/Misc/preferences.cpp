@@ -2193,7 +2193,7 @@ void write_preferences(
 	fprintf(F,"  multisamples=\"%i\"\n", graphics_preferences->OGL_Configure.Multisamples);
 	fprintf(F,"  geforce_fix=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.GeForceFix));
 	fprintf(F,"  wait_for_vsync=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.WaitForVSync));
-	fprintf(F,"  use_srgb=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.Use_sRGB));
+	fprintf(F,"  gamma_corrected_blending=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.Use_sRGB));
 	fprintf(F,"  use_npot=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.Use_NPOT));
 	fprintf(F,"  double_corpse_limit=\"%s\"\n", BoolString(graphics_preferences->double_corpse_limit));
 	fprintf(F,"  hog_the_cpu=\"%s\"\n", BoolString(graphics_preferences->hog_the_cpu));
@@ -3231,7 +3231,7 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	{
 		return ReadBooleanValue(Value, graphics_preferences->OGL_Configure.WaitForVSync);
 	}
-	else if (StringsEqual(Tag,"use_srgb"))
+	else if (StringsEqual(Tag,"gamma_corrected_blending"))
 	{
 		return ReadBooleanValue(Value, graphics_preferences->OGL_Configure.Use_sRGB);
 	}
