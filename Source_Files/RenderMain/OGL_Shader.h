@@ -70,6 +70,8 @@ public:
 		S_WallBloom,
 		S_Bump,
 		S_BumpBloom,
+		S_Specular,
+		S_SpecularBloom,
 		NUMBER_OF_SHADER_TYPES
 	};
 private:

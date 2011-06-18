@@ -95,7 +95,9 @@ const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] =
 	"wall",
 	"wall_bloom",
 	"bump",
-	"bump_bloom"
+	"bump_bloom",
+	"specular",
+	"specular_bloom"
 };
 
 class XML_ShaderParser: public XML_ElementParser {
@@ -715,7 +717,7 @@ void initDefaultPrograms() {
         "		texCoords.x += h * viewv.x;\n"
         "		texCoords.y -= h * viewv.y;\n"
         "	}\n"
-        "	vec3 norm = (texture2D(texture1, texCoords.xy).rgb - 0.5) * 2.0;\n"
+        "	vec3 norm = (texture2D(texture1, texCoords.xy).rgb - vec3(0.5, 0.5, 0.0)) * vec3(2.0, 2.0, 1.0);\n"
         "	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
         "   if (glow > 0.001) {\n"
         "       diffuse = 1.0;\n"
@@ -754,7 +756,7 @@ void initDefaultPrograms() {
         "		texCoords.x += h * viewv.x;\n"
         "		texCoords.y -= h * viewv.y;\n"
         "	}\n"
-        "	vec3 norm = (texture2D(texture1, texCoords.xy).rgb - 0.5) * 2.0;\n"
+        "	vec3 norm = (texture2D(texture1, texCoords.xy).rgb - vec3(0.5, 0.5, 0.0)) * vec3(2.0, 2.0, 1.0);\n"
         "	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
         "   if (glow > 0.001) {\n"
         "       diffuse = 1.0;\n"
@@ -767,6 +769,57 @@ void initDefaultPrograms() {
         "#endif\n"
         "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
         "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * intensity, fogFactor), vertexColor.a * color.a);\n"
+        "}\n";
+    defaultVertexPrograms["specular"] = defaultVertexPrograms["bump"];
+    defaultFragmentPrograms["specular"] = ""
+        "uniform sampler2D texture0;\n"
+        "uniform sampler2D texture1;\n"
+        "uniform float glow;\n"
+        "uniform float flare;\n"
+        "varying vec3 viewXY;\n"
+        "varying vec3 viewDir;\n"
+        "varying vec4 vertexColor;\n"
+        "varying float FDxLOG2E;\n"
+        "void main (void) {\n"
+        "	float mlFactor = clamp(0.5 + flare - (length(viewDir)/8192.0), 0.0, 1.0);\n"
+        "	vec3 intensity;\n"
+        "	if (vertexColor.r > mlFactor) {\n"
+        "		intensity = vertexColor.rgb + (mlFactor * 0.5); }\n"
+        "	else {\n"
+        "		intensity = (vertexColor.rgb * 0.5) + mlFactor; }\n"
+        "	vec3 viewv = normalize(viewDir);\n"
+        "	vec3 norm = (texture2D(texture1, gl_TexCoord[0].xy).rgb - vec3(0.5, 0.5, 0.0)) * vec3(2.0, 2.0, 1.0);\n"
+        "	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
+        "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
+		"	float diffuse_factor = texture2D(texture1, gl_TexCoord[0].xy).a - 0.5;\n"
+		"	diffuse = pow(diffuse, 14.0 * diffuse_factor + 1.0);\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * diffuse, fogFactor), vertexColor.a * color.a);\n"
+        "}\n";
+    defaultVertexPrograms["specular_bloom"] = defaultVertexPrograms["bump"];
+    defaultFragmentPrograms["specular_bloom"] = ""
+        "uniform sampler2D texture0;\n"
+        "uniform sampler2D texture1;\n"
+        "uniform float glow;\n"
+        "uniform float flare;\n"
+        "uniform float bloomScale;\n"
+        "uniform float bloomShift;\n"
+        "varying vec3 viewXY;\n"
+        "varying vec3 viewDir;\n"
+        "varying vec4 vertexColor;\n"
+        "varying float FDxLOG2E;\n"
+        "void main (void) {\n"
+        "	vec3 viewv = normalize(viewDir);\n"
+        "	vec3 norm = (texture2D(texture1, gl_TexCoord[0].xy).rgb - vec3(0.5, 0.5, 0.0)) * vec3(2.0, 2.0, 1.0);\n"
+        "	float diffuse = 0.5 + abs(dot(norm, viewv))*0.5;\n"
+        "   if (glow > 0.001) {\n"
+        "       diffuse = 1.0;\n"
+        "   }\n"
+        "	vec4 color = texture2D(texture0, gl_TexCoord[0].xy);\n"
+		"	float diffuse_factor = 2.0 * (texture2D(texture1, gl_TexCoord[0].xy).a - 0.5);\n"
+		"	diffuse = pow(diffuse, 256.0 * diffuse_factor) * diffuse_factor;\n"
+        "	float fogFactor = clamp(exp2(FDxLOG2E * length(viewDir)), 0.0, 1.0);\n"
+        "	gl_FragColor = vec4(mix(vec3(0.0, 0.0, 0.0), color.rgb * diffuse, fogFactor), vertexColor.a * color.a);\n"
         "}\n";
 }
     
