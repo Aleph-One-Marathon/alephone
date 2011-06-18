@@ -663,6 +663,7 @@ bool OGL_StartRun()
 	    npotTextures = true;
 	}
 
+	Bloom_sRGB = false;
 	if (ShaderRender && TEST_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur))
 	{
 	  if (!OGL_CheckExtension("GL_EXT_framebuffer_object"))
@@ -670,6 +671,12 @@ bool OGL_StartRun()
 	    SET_FLAG(graphics_preferences->OGL_Configure.Flags, OGL_Flag_Blur, false);
 	    logWarning("Bloom effects are not available");
 	  }
+	  else if(!OGL_CheckExtension("GL_EXT_framebuffer_sRGB") || !OGL_CheckExtension("GL_EXT_texture_sRGB"))
+	  {
+	    logWarning("sRGB framebuffer is not available for bloom effects");
+	  }
+	  else
+	    Bloom_sRGB = true;
 	}
 
 	_OGL_IsActive = true;

@@ -96,6 +96,7 @@ static bool _OGL_IsPresent = false;
 
 bool Using_sRGB = false;
 bool Wanting_sRGB = false;
+bool Bloom_sRGB = false;
 bool npotTextures = false; // non-power-of-two
 
 // Initializer

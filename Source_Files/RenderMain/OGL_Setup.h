@@ -110,6 +110,8 @@ Aug 21, 2001 (Loren Petrich):
 extern bool Using_sRGB;
 /* Whether we'll be using sRGB at all */
 extern bool Wanting_sRGB;
+/* Whether to use sRGB framebuffer for bloom */
+extern bool Bloom_sRGB;
 
 extern bool npotTextures;
 

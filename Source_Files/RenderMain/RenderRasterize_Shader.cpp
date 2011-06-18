@@ -49,7 +49,7 @@ public:
 
 		glGenTextures(1, &texID);
 		glBindTexture(GL_TEXTURE_RECTANGLE_ARB, texID);
-		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, Wanting_sRGB ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+		glTexImage2D(GL_TEXTURE_RECTANGLE_ARB, 0, Bloom_sRGB ? GL_SRGB : GL_RGB8, _w, _h, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
 		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_RECTANGLE_ARB, texID, 0);
 		assert(glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT) == GL_FRAMEBUFFER_COMPLETE_EXT);
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
@@ -124,6 +124,9 @@ public:
 		glOrtho(0, _vertical._w, 0, _vertical._h, 0.0, 1.0);
 		glColor4f(1., 1., 1., 1.);
 
+		if (Bloom_sRGB)
+			glEnable(GL_FRAMEBUFFER_SRGB_EXT);
+		
 		int passes = _shader_bloom->passes();
 		if (passes < 0)
 			passes = 5;
@@ -162,6 +165,9 @@ public:
 			_horizontal.draw();
 			Shader::disable();
 		}
+		
+		if (Bloom_sRGB && !Using_sRGB)
+			glDisable(GL_FRAMEBUFFER_SRGB_EXT);
 	}
 };
 
