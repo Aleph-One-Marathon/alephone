@@ -56,8 +56,12 @@ static vector<char> InputLine(64);
 // otherwise returns NULL
 char *CompareToKeyword(const char *Keyword);
 
-//char *GetVertIndxSet(char *Buffer, short& Presence,
-//	short& PosIndx, short& TCIndx, short& NormIndx);
+// Gets a pointer to a string of vertex-index sets and picks off one of them,
+// returning a pointer to the character just after it. Also returns the presence and values
+// picked off.
+// Returns NULL if there are none remaining to be found.
+char *GetVertIndxSet(char *Buffer, short& Presence,
+	short& PosIndx, short& TCIndx, short& NormIndx);
 
 // Gets a vertex index and returns whether or not an index value was found
 // what it was if found, and a pointer to the character just after the index value
@@ -65,99 +69,41 @@ char *CompareToKeyword(const char *Keyword);
 // Returns NULL if there are none remaining to be found.
 char *GetVertIndx(char *Buffer, bool& WasFound, short& Val, bool& HitEnd);
 
-struct VertexIndexSet {
-
-	short Presence;
-	short PosIndx;
-	short TCIndx;
-	short NormIndx;
-
-	VertexIndexSet() : Presence(0), PosIndx(0), TCIndx(0), NormIndx(0) {}
-
-	// Gets a pointer to a string of vertex-index sets and picks off one of them,
-	// returning a pointer to the character just after it. Also returns the presence and values
-	// picked off.
-	// Returns NULL if there are none remaining to be found.
-	char* get(char *Buffer) {
-
-		// Eat initial whitespace; return NULL if end-of-string was hit
-		// OK to modify Buffer, since it's called by value
-		while(*Buffer == ' ' || *Buffer == '\t') { ++Buffer; }
-
-		if(*Buffer == '\0') { return NULL; }
-		
-		// Hit non-whitespace; now grab the individual vertex values
-		bool WasFound = false, HitEnd = false;
-		Buffer = GetVertIndx(Buffer, WasFound, PosIndx, HitEnd);
-		if(WasFound) Presence |= Present_Position;
-		if(HitEnd) { return Buffer; }
-		
-		Buffer = GetVertIndx(Buffer, WasFound, TCIndx, HitEnd);
-		if(WasFound) { Presence |= Present_TxtrCoord; }
-		if(HitEnd) { return Buffer; }
-		
-		Buffer = GetVertIndx(Buffer, WasFound, NormIndx, HitEnd);
-		if(WasFound) {Presence |= Present_Normal; }
-		return Buffer;
-	}
-};
 
 // The purpose of the sorting is to find all the unique index sets;
 // this is some data for the STL sorter
 struct IndexedVertListCompare
 {
-	const std::vector<VertexIndexSet>& VertIndxSets;
-
-	IndexedVertListCompare(const std::vector<VertexIndexSet>& sets) : VertIndxSets(sets) {}
+	short *VertIndxSets;
 	
 	// The comparison operation
 	bool operator() (int i1, int i2) const
 	{
-		const VertexIndexSet& VISet1 = VertIndxSets[i1];
-		const VertexIndexSet& VISet2 = VertIndxSets[i2];
+		short *VISet1 = VertIndxSets + 4*i1;
+		short *VISet2 = VertIndxSets + 4*i2;
 		
 		// Sort by position first, then texture coordinate, then normal
-		if(VISet1.PosIndx != VISet2.PosIndx) {
-			return VISet1.PosIndx < VISet2.PosIndx;
-		}
-
-		if(VISet1.TCIndx != VISet2.TCIndx) {
-			return VISet1.TCIndx < VISet2.TCIndx;
-		}
-
-		if(VISet1.NormIndx != VISet2.NormIndx) {
-			return VISet1.NormIndx < VISet2.NormIndx;
-		}
+		
+		if (VISet1[1] > VISet2[1])
+			return false;
+		else if (VISet1[1] < VISet2[1])
+			return true;
+		
+		if (VISet1[2] > VISet2[2])
+			return false;
+		else if (VISet1[2] < VISet2[2])
+			return true;
+		
+		if (VISet1[3] > VISet2[3])
+			return false;
+		else if (VISet1[3] < VISet2[3])
+			return true;
 
 		// All equal!
+//		return true;
 		return false;
 	}
 };
-
-void CalculateTangent(vec3& T, vec3& B, const vertex3& v1, const vertex3& v2, const vertex3& v3,
-	const vertex2& w1, const vertex2& w2, const vertex2& w3);
-
-vec4 OrthogonalizeTangent(const vec3& N, const vec3& T, const vec3& B);
-
-void addVertex(Model3D& Model, const vertex3& v) {
-
-	Model.Positions.push_back(v[0]);
-	Model.Positions.push_back(v[1]);
-	Model.Positions.push_back(v[2]);
-}
-
-void addTexCoord(Model3D& Model, const vertex2& t) {
-
-	Model.TxtrCoords.push_back(t[0]);
-	Model.TxtrCoords.push_back(t[1]);
-}
-
-void addNormal(Model3D& Model, const vec3& n) {
-
-	Model.Normals.push_back(n[0]);
-	Model.Normals.push_back(n[1]);
-	Model.Normals.push_back(n[2]);
-}
 
 bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 {
@@ -173,7 +119,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	// Polygon sizes (how many vertices):
 	vector<short> PolygonSizes;
 	// Vertex indices (how many read, position, txtr-coord, normal)
-	vector<VertexIndexSet> VertIndxSets;
+	vector<short> VertIndxSets;
 	
 	Path = Spec.GetPath();
 	logNote1("Loading Alias|Wavefront model file %s",Path);
@@ -230,10 +176,10 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			}
 		}
 		// Line-end at end of file will produce an empty line, so do this test
-		if (InputLine.empty()) { continue; }
+		if (InputLine.empty()) continue;
 		
 		// If the line is a comment line, then ignore it
-		if (InputLine[0] == '#') { continue; }
+		if (InputLine[0] == '#') continue;
 		
 		// Make the line look like a C string
 		InputLine.push_back('\0');
@@ -244,33 +190,33 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		char *RestOfLine = NULL;
 		if ((RestOfLine = CompareToKeyword("v")) != NULL) // Vertex position
 		{
-			vertex3 Position(0.0f, 0.0f, 0.0f);
+			GLfloat Position[3];
+			objlist_clear(Position,3);
 			
-			sscanf(RestOfLine, " %f %f %f", &Position[0], &Position[1], &Position[2]);
+			sscanf(RestOfLine," %f %f %f",Position,Position+1,Position+2);
 			
-			for (int k=0; k<3; k++) {
+			for (int k=0; k<3; k++)
 				Positions.push_back(Position[k]);
-			}
 		}
 		else if ((RestOfLine = CompareToKeyword("vt")) != NULL) // Vertex texture coordinate
 		{
-			vertex2 TxtrCoord(0.0f, 0.0f);
+			GLfloat TxtrCoord[2];
+			objlist_clear(TxtrCoord,2);
 			
-			sscanf(RestOfLine, " %f %f", &TxtrCoord[0], &TxtrCoord[1]);
+			sscanf(RestOfLine," %f %f",TxtrCoord,TxtrCoord+1);
 			
-			for (int k=0; k<2; k++) {
+			for (int k=0; k<2; k++)
 				TxtrCoords.push_back(TxtrCoord[k]);
-			}
 		}
 		else if ((RestOfLine = CompareToKeyword("vn")) != NULL) // Vertex normal
 		{
-			vec3 Normal(0.0f, 0.0f, 0.0f);
+			GLfloat Normal[3];
+			objlist_clear(Normal,3);
 			
-			sscanf(RestOfLine," %f %f %f", &Normal[0], &Normal[1], &Normal[2]);
+			sscanf(RestOfLine," %f %f %f",Normal,Normal+1,Normal+2);
 			
-			for (int k=0; k<3; k++) {
+			for (int k=0; k<3; k++)
 				Normals.push_back(Normal[k]);
-			}
 		}
 		/*
 		else if ((RestOfLine = CompareToKeyword("vp")) // Vertex parameter value
@@ -308,9 +254,8 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 			// stuff their contents into a token and then process that token
 			int NumVertices = 0;
 			
-			VertexIndexSet vis;
-
-			while((RestOfLine = vis.get(RestOfLine)) != NULL)
+			short Presence = 0, PosIndx = 0, TCIndx = 0, NormIndx = 0;
+			while((RestOfLine = GetVertIndxSet(RestOfLine, Presence, PosIndx, TCIndx, NormIndx)) != NULL)
 			{			
 				NumVertices++;
 				
@@ -318,26 +263,26 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 				// Positive is 1-based indexing
 				// Negative is from end of current list
 				
-				if (vis.PosIndx < 0) {
-					vis.PosIndx += static_cast<short>(Positions.size())/3;
-				} else {
-					vis.PosIndx--;
-				}
-
-				if (vis.TCIndx < 0) {
-					vis.TCIndx += static_cast<short>(TxtrCoords.size())/2;
-				} else {
-					vis.TCIndx--;
-				}
-
-				if (vis.NormIndx < 0) {
-					vis.NormIndx += static_cast<short>(Normals.size())/3;
-				} else {
-					vis.NormIndx--;
-				}
-
+				if (PosIndx < 0)
+					PosIndx += static_cast<short>(Positions.size())/3;
+				else
+					PosIndx--;
+				
+				if (TCIndx < 0)
+					TCIndx += static_cast<short>(TxtrCoords.size())/2;
+				else
+					TCIndx--;
+				
+				if (NormIndx < 0)
+					NormIndx += static_cast<short>(Normals.size())/3;
+				else
+					NormIndx--;
+				
 				// Add!
-				VertIndxSets.push_back(vis);
+				VertIndxSets.push_back(Presence);
+				VertIndxSets.push_back(PosIndx);
+				VertIndxSets.push_back(TCIndx);
+				VertIndxSets.push_back(NormIndx);
 			}
 			// Polygon complete!
 			PolygonSizes.push_back(NumVertices);
@@ -462,9 +407,9 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	// (which is present of vertex positions, texture coordinates, and normals)
 	short WhatsPresent = Present_Position | Present_TxtrCoord | Present_Normal;
 	
-	for (unsigned k=0; k<VertIndxSets.size(); k++)
+	for (unsigned k=0; k<VertIndxSets.size()/4; k++)
 	{
-		const short& Presence = VertIndxSets[k].Presence;
+		short Presence = VertIndxSets[4*k];
 		WhatsPresent &= Presence;
 		if (!(Presence & Present_Position))
 		{
@@ -476,9 +421,9 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	
 	bool AllInRange = true;
 	
-	for (unsigned k=0; k<VertIndxSets.size(); k++)
+	for (unsigned k=0; k<VertIndxSets.size()/4; k++)
 	{
-		const short& PosIndx = VertIndxSets[k].PosIndx;
+		short PosIndx = VertIndxSets[4*k+1];
 		if (PosIndx < 0 || PosIndx >= int(Positions.size()))
 		{
 			logError4("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,PosIndx,(unsigned long)Positions.size()-1,Path);
@@ -487,151 +432,40 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		
 		if (WhatsPresent & Present_TxtrCoord)
 		{
-			const short& TCIndx = VertIndxSets[k].TCIndx;
+			short TCIndx = VertIndxSets[4*k+2];
 			if (TCIndx < 0 || TCIndx >= int(TxtrCoords.size()))
 			{
 				logError4("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,TCIndx,(unsigned long)(TxtrCoords.size()-1),Path);
 				AllInRange = false;
 			}
 		}
-		else {
-			VertIndxSets[k].TCIndx = -1; // What "0" gets turned into by the Wavefront-conversion-translation code
-		}
-
+		else
+			VertIndxSets[4*k+2] = -1; // What "0" gets turned into by the Wavefront-conversion-translation code
+		
 		if (WhatsPresent & Present_Normal)
 		{
-			const short& NormIndx = VertIndxSets[k].NormIndx;
+			short NormIndx = VertIndxSets[4*k+3];
 			if (NormIndx < 0 || NormIndx >= int(Normals.size()))
 			{
 				logError4("ERROR: Out of range vertex position: %u: %d (0,%lu) in %s",k,NormIndx,(unsigned long)(Normals.size()-1),Path);
 				AllInRange = false;
 			}
 		}
-		else {
-			VertIndxSets[k].NormIndx = -1; // What "0" gets turned into by the Wavefront-conversion-translation code
-		}
+		else
+			VertIndxSets[4*k+3] = -1; // What "0" gets turned into by the Wavefront-conversion-translation code
 	}
 	
 	if (!AllInRange) return false;
-
-	/* http://wiki.blender.org/index.php/Dev:Shading/Tangent_Space_Normal_Maps */
-	/* SPLIT ALL EDGES, needed for proper tangent space */
-
-	unsigned IndxBase = 0;
-	unsigned Indx = 0;
-	for(unsigned i = 0; i < PolygonSizes.size(); ++i) {
-
-		const short& n = PolygonSizes[i];
-		vertex3 V[n];
-		vertex2 C[n];
-		vec3 N[n];
-
-		for(int j = 0; j < n; ++j) {
-
-			const VertexIndexSet& a = VertIndxSets[IndxBase+j];
-			V[j] = vertex3(&Positions[3*a.PosIndx]);
-			if(WhatsPresent & Present_TxtrCoord) {
-				C[j] = vertex2(&TxtrCoords[2*a.TCIndx]);
-			}
-			if (WhatsPresent & Present_Normal) {
-				N[j] = vec3(&Normals[3*a.NormIndx]);
-			}
-		}
-
-		if(!(WhatsPresent & Present_Normal)) {
-			vec3 norm = (V[2]-V[1]).cross(V[1]-V[0]);
-			for(int j = 0; j < n; ++j) {
-				N[j] = norm;
-			}
-		}
-
-		// calculate face tangent vector
-		vec3 T,B;
-		if(WhatsPresent & Present_TxtrCoord) {
-			CalculateTangent(T, B, V[0], V[1], V[n-1], C[0], C[1], C[n-1]);
-		}
-
-		// triangulate
-		if(n == 4) {
-
-			unsigned order[6];
-
-			// split quad along shorter side
-			if((V[2]-V[0]).d() < (V[3]-V[1]).d()) {
-
-				memcpy(order, (unsigned[]) {0, 1, 2, 0, 2, 3}, sizeof(order));
-
-			} else if((V[2]-V[0]).d() > (V[3]-V[1]).d()) {
-
-				memcpy(order, (unsigned[]) {0, 1, 3, 1, 2, 3}, sizeof(order));
-
-			} else {
 	
-				if((WhatsPresent & Present_TxtrCoord) && (C[0].distance(C[2]) < C[1].distance(C[3]))) {
-
-					memcpy(order, (unsigned[]) {0, 1, 2, 0, 2, 3}, sizeof(order));
-
-				} else {
-
-					memcpy(order, (unsigned[]) {0, 1, 3, 1, 2, 3}, sizeof(order));
-				}
-			}
-
-			for(unsigned j = 0; j < 6; ++j) {
-
-				addVertex(Model, V[order[j]]);
-				addNormal(Model, N[order[j]]);
-
-				if(WhatsPresent & Present_TxtrCoord) {
-					addTexCoord(Model, C[order[j]]);
-					Model.Tangents.push_back(OrthogonalizeTangent(N[order[j]], T, B));
-				}
-
-				Model.VertIndices.push_back(Indx++);		
-			}
-
-		} else {
-
-			// TODO properly cut if more than 4 sides
-			for(unsigned  j = 0; j < n-2; ++j) {
-
-				addVertex(Model, V[0]);
-				addVertex(Model, V[j+1]);
-				addVertex(Model, V[j+2]);
-
-				addNormal(Model, N[0]);
-				addNormal(Model, N[j+1]);
-				addNormal(Model, N[j+2]);
-
-				if(WhatsPresent & Present_TxtrCoord) {
-					addTexCoord(Model, C[0]);
-					addTexCoord(Model, C[j+1]);
-					addTexCoord(Model, C[j+2]);
-
-					Model.Tangents.push_back(OrthogonalizeTangent(N[0], T, B));
-					Model.Tangents.push_back(OrthogonalizeTangent(N[j+1], T, B));
-					Model.Tangents.push_back(OrthogonalizeTangent(N[j+2], T, B));
-				}
-
-				Model.VertIndices.push_back(Indx++);
-				Model.VertIndices.push_back(Indx++);
-				Model.VertIndices.push_back(Indx++);
-			}
-		}
-
-		IndxBase += n;
-	}
-/*
 	// Find unique vertex sets:
 	
 	// First, do an index sort of them
-	vector<int> VertIndxRefs(VertIndxSets.size());
-	for (unsigned k=0; k<VertIndxRefs.size(); k++) {
+	vector<int> VertIndxRefs(VertIndxSets.size()/4);
+	for (unsigned k=0; k<VertIndxRefs.size(); k++)
 		VertIndxRefs[k] = k;
-	}
 	
-	IndexedVertListCompare Compare(VertIndxSets);
-//	Compare.VertIndxSets = &VertIndxSets[0];
+	IndexedVertListCompare Compare;
+	Compare.VertIndxSets = &VertIndxSets[0];
 	sort(VertIndxRefs.begin(),VertIndxRefs.end(),Compare);
 	
 	// Find the unique entries:
@@ -646,10 +480,13 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 	for (unsigned k=0; k<VertIndxRefs.size(); k++)
 	{
 		int n = VertIndxRefs[k];
-
-		const VertexIndexSet& vis = VertIndxSets[n];
 		
-		if (vis.PosIndx == PrevPosIndx && vis.TCIndx == PrevTCIndx && vis.NormIndx == PrevNormIndx)
+		short *VISet = &VertIndxSets[4*n];
+		short PosIndx = VISet[1];
+		short TCIndx = VISet[2];
+		short NormIndx = VISet[3];
+		
+		if (PosIndx == PrevPosIndx && TCIndx == PrevTCIndx && NormIndx == PrevNormIndx)
 		{
 			WhichUniqueSet[n] = NumUnique;
 			continue;
@@ -662,7 +499,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		
 		// Load the positions
 		{
-			GLfloat *PosPtr = &Positions[3*vis.PosIndx];
+			GLfloat *PosPtr = &Positions[3*PosIndx];
 			for (int m=0; m<3; m++)
 				Model.Positions.push_back(*(PosPtr++));
 		}
@@ -670,7 +507,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		// Load the texture coordinates
 		if (WhatsPresent & Present_TxtrCoord)
 		{
-			GLfloat *TCPtr = &TxtrCoords[2*vis.TCIndx];
+			GLfloat *TCPtr = &TxtrCoords[2*TCIndx];
 			for (int m=0; m<2; m++)
 				Model.TxtrCoords.push_back(*(TCPtr++));
 		}
@@ -678,15 +515,15 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		// Load the normals
 		if (WhatsPresent & Present_Normal)
 		{
-			GLfloat *NormPtr = &Normals[3*vis.NormIndx];
+			GLfloat *NormPtr = &Normals[3*NormIndx];
 			for (int m=0; m<3; m++)
 				Model.Normals.push_back(*(NormPtr++));
 		}
 		
 		// Save these new unique-set values for comparison to the next ones
-		PrevPosIndx = vis.PosIndx;
-		PrevTCIndx = vis.TCIndx;
-		PrevNormIndx = vis.NormIndx;
+		PrevPosIndx = PosIndx;
+		PrevTCIndx = TCIndx;
+		PrevNormIndx = NormIndx;
 	}
 	
 	// Decompose the polygons into triangles by turning them into fans
@@ -705,7 +542,7 @@ bool LoadModel_Wavefront(FileSpecifier& Spec, Model3D& Model)
 		
 		IndxBase += PolySize;
 	}
-*/
+	
 	if (Model.VertIndices.size() <= 0)
 	{
 		logError1("ERROR: the model in %s has no good polygons",Path);
@@ -747,6 +584,36 @@ char *CompareToKeyword(const char *Keyword)
 	
 	// Shouldn't happen
 	return NULL;
+}
+
+
+char *GetVertIndxSet(char *Buffer, short& Presence,
+	short& PosIndx, short& TCIndx, short& NormIndx)
+{
+	// Initialize...
+	Presence = 0; PosIndx = 0; TCIndx = 0; NormIndx = 0;
+	
+	// Eat initial whitespace; return NULL if end-of-string was hit
+	// OK to modify Buffer, since it's called by value
+	while(*Buffer == ' ' || *Buffer == '\t')
+	{
+		Buffer++;
+	}
+	if (*Buffer == '\0') return NULL;
+	
+	// Hit non-whitespace; now grab the individual vertex values
+	bool WasFound = false, HitEnd = false;
+	Buffer = GetVertIndx(Buffer,WasFound,PosIndx,HitEnd);
+	if (WasFound) Presence |= Present_Position;
+	if (HitEnd) return Buffer;
+	
+	Buffer = GetVertIndx(Buffer,WasFound,TCIndx,HitEnd);
+	if (WasFound) Presence |= Present_TxtrCoord;
+	if (HitEnd) return Buffer;
+	
+	Buffer = GetVertIndx(Buffer,WasFound,NormIndx,HitEnd);
+	if (WasFound) Presence |= Present_Normal;
+	return Buffer;
 }
 
 char *GetVertIndx(char *Buffer, bool& WasFound, short& Val, bool& HitEnd)

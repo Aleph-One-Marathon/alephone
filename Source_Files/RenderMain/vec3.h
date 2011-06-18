@@ -14,13 +14,12 @@
 
 const GLfloat kThreshhold = FLT_MIN * 10.0;
 
-struct vec3base {
+struct vec4 {
+	GLfloat _d[4];
 
-	GLfloat _d[3];
-
-	vec3base() {}
-	vec3base(const GLfloat& x, const GLfloat& y, const GLfloat& z) {
-		_d[0] = x; _d[1] = y; _d[2] = z;		
+	vec4() {}
+	vec4(const GLfloat& x, const GLfloat& y, const GLfloat& z, const GLfloat& w) {
+		_d[0] = x; _d[1] = y; _d[2] = z; _d[3] = w;		
 	}
 
 	GLfloat* p() { return _d; }
@@ -29,11 +28,11 @@ struct vec3base {
 	GLfloat& operator[] (unsigned i) { return _d[i]; }
 };
 
-struct vec3 : public vec3base {
+struct vec3 : public vec4 {
 	
 	vec3() {}
-	vec3(const GLfloat& x, const GLfloat& y, const GLfloat& z) : vec3base(x, y, z) {}
-	vec3(const GLfloat* f) : vec3base(f[0], f[1], f[2]) {}
+	vec3(const GLfloat& x, const GLfloat& y, const GLfloat& z) : vec4(x, y, z, 0.0) {}
+	vec3(const GLfloat* f) : vec4(f[0], f[1], f[2], 0.0) {}
 	
 	bool operator == (const vec3& v) const {
 		return (std::abs(_d[0] - v[0]) + std::abs(_d[1] - v[1]) + std::abs(_d[2] - v[2])) < kThreshhold;
@@ -60,15 +59,11 @@ struct vec3 : public vec3base {
 	vec3 operator + (const vec3& v) const {
 		return vec3(_d[0] + v[0], _d[1] + v[1], _d[2] + v[2]);
 	}
-
-	GLfloat d() const {
-		return dot(*this);
-	}
 	
 	GLfloat length() const {
-		return std::sqrt(d());
+		return std::sqrt(dot(*this));
 	}
-
+	
 	vec3 norm() const {
 		return (*this) * (1.0 / length());
 	}
@@ -78,66 +73,23 @@ struct vec3 : public vec3base {
 	}
 };
 
-struct vertex3 : public vec3base {
+struct vertex3 : public vec4 {
 
 	vertex3() {}
-	vertex3(const GLfloat& x, const GLfloat& y, const GLfloat& z) : vec3base(x, y, z) {}
-	vertex3(const GLfloat* f) : vec3base(f[0], f[1], f[2]) {}
+	vertex3(const GLfloat& x, const GLfloat& y, const GLfloat& z) : vec4(x, y, z, 1.0) {}
+	vertex3(const GLfloat* f) : vec4(f[0], f[1], f[2], 1.0) {}
 
 	vec3 operator - (const vertex3& v) const {
 		return vec3(_d[0] - v[0], _d[1] - v[1], _d[2] - v[2]);
 	}
 };
 
-struct vec4 {
-
-	GLfloat _d[4];
-
-	vec4() {}
-	vec4(const vec3& v) {
-		memcpy(_d, v._d, sizeof(vec3));
-		_d[3] = 0.0f;
-	}
-	vec4(const vertex3& v) {
-		memcpy(_d, v._d, sizeof(vertex3));
-		_d[3] = 1.0f;
-	}
-	vec4(const GLfloat& x, const GLfloat& y, const GLfloat& z, const GLfloat& w) {
-		_d[0] = x; _d[1] = y; _d[2] = z; _d[3] = w;		
-	}
-
-	GLfloat* p() { return _d; }
-	const GLfloat* p() const { return _d; }
-	GLfloat operator[] (unsigned i) const { return _d[i]; }
-	GLfloat& operator[] (unsigned i) { return _d[i]; }
-
-	operator vec3() const {
-
-		return vec3(_d);	
-	}
-};
-
 struct vertex2 : public vec4 {
-
-	GLfloat _d[2];
-
+	
 	vertex2() {}
-	vertex2(const GLfloat& x, const GLfloat& y) {
-
-		_d[0] = x; _d[1] = y;
-	}
-	vertex2(const GLfloat* f) {
-
-		_d[0] = f[0]; _d[1] = f[1];	
-	}
-
-	GLfloat* p() { return _d; }
-	const GLfloat* p() const { return _d; }
-	GLfloat operator[] (unsigned i) const { return _d[i]; }
-	GLfloat& operator[] (unsigned i) { return _d[i]; }
-	GLfloat distance(const vertex2& v) const {
-		return (v._d[0]-_d[0])*(v._d[0]-_d[0])+(v._d[1]-_d[1])*(v._d[1]-_d[1]);
-	}
+	vertex2(const vec4& v) : vec4(v) {}
+	vertex2(const GLfloat& x, const GLfloat& y) : vec4(x, y, 0.0, 1.0) {}
+	vertex2(const GLfloat* f) : vec4(f[0], f[1], 0.0, 1.0) {}
 };
 
 struct mat4 {

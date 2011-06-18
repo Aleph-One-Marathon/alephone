@@ -926,7 +926,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	if(s == NULL) {
 		if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_BumpMap)) {
-			s = Shader::get(renderStep == kGlow ? Shader::S_SpecularBloom : Shader::S_Specular);
+			s = Shader::get(renderStep == kGlow ? Shader::S_BumpBloom : Shader::S_Bump);
 		} else {
 			s = Shader::get(renderStep == kGlow ? Shader::S_WallBloom : Shader::S_Wall);
 		}

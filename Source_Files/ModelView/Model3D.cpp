@@ -129,60 +129,8 @@ struct FlaggedVector
 	bool Flag;
 };
 
-/* http://www.terathon.com/code/tangent.html */
-void CalculateTangent(vec3& T, vec3& B, const vertex3& v1, const vertex3& v2, const vertex3& v3,
-	const vertex2& w1, const vertex2& w2, const vertex2& w3) {
-
-	float x1 = v2[0] - v1[0];
-	float x2 = v3[0] - v1[0];
-	float y1 = v2[1] - v1[1];
-	float y2 = v3[1] - v1[1];
-	float z1 = v2[2] - v1[2];
-	float z2 = v3[2] - v1[2];
-	
-	float s1 = w2[0] - w1[0];
-	float s2 = w3[0] - w1[0];
-	float t1 = w2[1] - w1[1];
-	float t2 = w3[1] - w1[1];
-	
-	float r = 1.0f / (s1 * t2 - s2 * t1);
-	T = vec3((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
-		   (t2 * z1 - t1 * z2) * r);
-	B = vec3((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
-		   (s1 * z2 - s2 * z1) * r);
-
-	if ((s1 * t2 - s2 * t1) == 0.0) {
-		T = (v3 - v1).norm();
-		B = (v2 - v1).norm();
-	}
-}
-
-vec4 OrthogonalizeTangent(const vec3& N, const vec3& T, const vec3& B) {
-
-	if(N.dot(N) > 0.00001) {
-
-		// Gram-Schmidt orthogonalize
-		vec4 t = (T - N * N.dot(T));
-
-		// Calculate handedness
-		float sign = (N.cross(T)).dot(B) < 0.0 ? -1.0 : 1.0;
-		t[3] = sign;
-		return t;
-
-	} else {
-
-		return vec4(0.0,0.0,0.0,0.0);
-	}
-}
-
 void Model3D::CalculateTangents()
 {
-	if(Tangents.size() == Positions.size()) {
-
-		// already have tangents
-		return;
-	}
-
 	Tangents.resize(Positions.size() * 4 / 3);
 	
 	bool generate_normals = false;
@@ -193,34 +141,74 @@ void Model3D::CalculateTangents()
 	}
 	
 	for(GLushort i = 0; i < VertIndices.size(); i+= 3) {
-
-		GLushort idx[] = { VertIndices[i], VertIndices[i+1], VertIndices[i+2] };
+		GLushort a = VertIndices[i];
+		GLushort b = VertIndices[i+1];
+		GLushort c = VertIndices[i+2];
 		
-		vertex3 v1(PosBase()+3*idx[0]);
-		vertex3 v2(PosBase()+3*idx[1]);
-		vertex3 v3(PosBase()+3*idx[2]);
+		vertex3 v1(PosBase()+3*a);
+		vertex3 v2(PosBase()+3*b);
+		vertex3 v3(PosBase()+3*c);
 		
-		vertex2 w1(TCBase()+2*idx[0]);
-		vertex2 w2(TCBase()+2*idx[1]);
-		vertex2 w3(TCBase()+2*idx[2]);
-
-		vec3 T,B;
-		CalculateTangent(T, B, v1, v2, v3, w1, w2, w3);
-
-		vec3 N;
-		if(generate_normals) {
-			N = (v3-v1).cross(v2-v1);
+		vertex2 w1(TCBase()+2*a);
+		vertex2 w2(TCBase()+2*b);
+		vertex2 w3(TCBase()+2*c);
+		
+		float x1 = v2[0] - v1[0];
+		float x2 = v3[0] - v1[0];
+		float y1 = v2[1] - v1[1];
+		float y2 = v3[1] - v1[1];
+		float z1 = v2[2] - v1[2];
+		float z2 = v3[2] - v1[2];
+		
+		float s1 = w2[0] - w1[0];
+		float s2 = w3[0] - w1[0];
+		float t1 = w2[1] - w1[1];
+		float t2 = w3[1] - w1[1];
+		
+		float r = 1.0f / (s1 * t2 - s2 * t1);
+		vec3 T((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+			   (t2 * z1 - t1 * z2) * r);
+		vec3 B((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+			   (s1 * z2 - s2 * z1) * r);
+		if ((s1 * t2 - s2 * t1) == 0.0) {
+			T = (v3 - v1).norm();
+			B = (v2 - v1).norm();
 		}
-
-		for(GLubyte j = 0; j < 3; ++j) {
-
-			if (!generate_normals) {
-				N = vec3(NormBase()+3*idx[j]);
-			} else {
-				VecCopy(N.p(), NormBase()+3*idx[j]);
+		
+		vec3 N = (v3-v1).cross(v2-v1);
+		if (!generate_normals) {
+			N = vec3(NormBase()+3*a) + vec3(NormBase()+3*b) + vec3(NormBase()+3*c);
+		}
+		
+		if(N.dot(N) < 0.001) {
+			N = vec3(0.0,0.0,0.0);
+			if (generate_normals) {
+				VecCopy(N.p(), NormBase()+3*a);
+				VecCopy(N.p(), NormBase()+3*b);
+				VecCopy(N.p(), NormBase()+3*c);
 			}
-
-			Tangents[idx[j]] = OrthogonalizeTangent(N, T, B);
+			
+			vec4 t(0.0,0.0,0.0,0.0);
+			Tangents[a] = vec4(t);
+			Tangents[b] = vec4(t);
+			Tangents[c] = vec4(t);
+		} else {
+			N = N.norm();
+			assert(N.dot(N) < 1.001);
+			
+			if (generate_normals) {
+				VecCopy(N.p(), NormBase()+3*a);
+				VecCopy(N.p(), NormBase()+3*b);
+				VecCopy(N.p(), NormBase()+3*c);
+			}
+			
+			float sign = (N.cross(T)).dot(B) < 0.0 ? -1.0 : 1.0;
+			vec4 t = (T - N * N.dot(T)).norm();
+			t[3] = sign;
+			
+			Tangents[a] = vec4(t);
+			Tangents[b] = vec4(t);
+			Tangents[c] = vec4(t);
 		}
 	}
 }
