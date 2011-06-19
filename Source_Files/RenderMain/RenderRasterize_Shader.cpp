@@ -183,10 +183,10 @@ void RenderRasterize_Shader::setupGL() {
 	Shader* s_blur = Shader::get(Shader::S_Blur);
 	Shader* s_bloom = Shader::get(Shader::S_Bloom);
 
-	blur = NULL;
+	blur.reset();
 	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur)) {
 		if(s_blur && s_bloom) {
-			blur = new Blur(640., 640. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, s_blur, s_bloom);
+			blur.reset(new Blur(640., 640. * graphics_preferences->screen_mode.height / graphics_preferences->screen_mode.width, s_blur, s_bloom));
 		}
 	}
 
@@ -234,7 +234,7 @@ void RenderRasterize_Shader::render_tree() {
 
 	RenderRasterizerClass::render_tree(kDiffuse);
 
-	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) && blur) {
+	if(TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) && blur.get()) {
 		blur->begin();
 		glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 		RenderRasterizerClass::render_tree(kGlow);

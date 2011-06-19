@@ -15,10 +15,12 @@
 #include "RenderRasterize.h"
 #include "OGL_Textures.h"
 
+#include <memory>
+
 class Blur;
 class RenderRasterize_Shader : public RenderRasterizerClass {
 
-	Blur* blur;
+	std::auto_ptr<Blur> blur;
 	int objectCount;
 	world_distance objectY;
 	float weaponFlare;
