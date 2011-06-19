@@ -188,6 +188,10 @@ GLhandleARB parseShader(const GLcharARB* str, GLenum shaderType) {
 	{
 		source.push_back("#define GAMMA_CORRECTED_BLENDING\n");
 	}
+	if (Bloom_sRGB)
+	{
+		source.push_back("#define BLOOM_SRGB_FRAMEBUFFER\n");
+	}
 	source.push_back(str);
 
 	glShaderSourceARB(shader, source.size(), &source[0], NULL);
@@ -347,34 +351,57 @@ void initDefaultPrograms() {
         "const float o2 = 3.5;\n"
         "const float f3 = 0.15384615;\n"
         "const float o3 = 5.5;\n"
+        "#ifdef BLOOM_SRGB_FRAMEBUFFER\n"
+        "vec3 s2l(vec3 srgb) { return srgb; }\n"
+        "vec3 l2s(vec3 linear) { return linear; }\n"
+        "#else\n"
+        "vec3 s2l(vec3 srgb) { return srgb * srgb; }\n"
+        "vec3 l2s(vec3 linear) { return sqrt(linear); }\n"
+        "#endif\n"
         "void main (void) {\n"
         "	vec2 s = vec2(offsetx, offsety);\n"
         "	// Thanks to Renaud Bedard - http://theinstructionlimit.com/?p=43\n"
-        "	vec3 c = texture2DRect(texture0, gl_TexCoord[0].xy).rgb;\n"
+        "	vec3 c = s2l(texture2DRect(texture0, gl_TexCoord[0].xy).rgb);\n"
         "	vec3 t = f0 * c;\n"
-        "	t += f1 * texture2DRect(texture0, gl_TexCoord[0].xy - o1*s).rgb;\n"
-        "	t += f1 * texture2DRect(texture0, gl_TexCoord[0].xy + o1*s).rgb;\n"
-        "	t += f2 * texture2DRect(texture0, gl_TexCoord[0].xy - o2*s).rgb;\n"
-        "	t += f2 * texture2DRect(texture0, gl_TexCoord[0].xy + o2*s).rgb;\n"
-        "	t += f3 * texture2DRect(texture0, gl_TexCoord[0].xy - o3*s).rgb;\n"
-        "	t += f3 * texture2DRect(texture0, gl_TexCoord[0].xy + o3*s).rgb;\n"
+        "	t += f1 * s2l(texture2DRect(texture0, gl_TexCoord[0].xy - o1*s).rgb);\n"
+        "	t += f1 * s2l(texture2DRect(texture0, gl_TexCoord[0].xy + o1*s).rgb);\n"
+        "	t += f2 * s2l(texture2DRect(texture0, gl_TexCoord[0].xy - o2*s).rgb);\n"
+        "	t += f2 * s2l(texture2DRect(texture0, gl_TexCoord[0].xy + o2*s).rgb);\n"
+        "	t += f3 * s2l(texture2DRect(texture0, gl_TexCoord[0].xy - o3*s).rgb);\n"
+        "	t += f3 * s2l(texture2DRect(texture0, gl_TexCoord[0].xy + o3*s).rgb);\n"
         "	if (pass < 1.5) { t = clamp(t, c, vec3(1.0, 1.0, 1.0)); }\n"
-        "	gl_FragColor = vec4(t, 1.0) * vertexColor;\n"
-        "}\n";
+        "	gl_FragColor = vec4(l2s(t), 1.0) * vertexColor;\n"
+        "}\n";    
     
-    defaultVertexPrograms["bloom"] = defaultVertexPrograms["blur"];
+    defaultVertexPrograms["bloom"] = ""
+        "varying vec4 vertexColor;\n"
+        "void main(void) {\n"
+        "	gl_TexCoord[0] = gl_MultiTexCoord0;\n"
+        "#ifndef BLOOM_SRGB_FRAMEBUFFER\n"
+        "	gl_TexCoord[1] = gl_MultiTexCoord1;\n"
+        "#endif\n"
+        "	gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+        "	vertexColor = gl_Color;\n"
+        "}\n";
     defaultFragmentPrograms["bloom"] = ""
         "uniform sampler2DRect texture0;\n"
         "uniform float pass;\n"
         "varying vec4 vertexColor;\n"
-        "void main (void) {\n"
-        "	vec4 color = texture2DRect(texture0, gl_TexCoord[0].xy);\n"
-        "#ifdef GAMMA_CORRECTED_BLENDING\n"
-        "	color = color * (1.0 - 0.1 * pass * pass);\n"
-        "#else\n"
-        "	color = color * (1.0 - 0.05 * pass);\n"
+        "#ifndef BLOOM_SRGB_FRAMEBUFFER\n"
+        "uniform sampler2DRect texture1;\n"
+        "vec3 s2l(vec3 srgb) { return srgb * srgb; }\n"
+        "vec3 l2s(vec3 linear) { return sqrt(linear); }\n"
         "#endif\n"
-        "	gl_FragColor = color * vertexColor;\n"
+        "void main (void) {\n"
+        "	vec4 color0 = texture2DRect(texture0, gl_TexCoord[0].xy);\n"
+        "#ifndef BLOOM_SRGB_FRAMEBUFFER\n"
+        "	vec4 color1 = texture2DRect(texture1, gl_TexCoord[1].xy);\n"
+        "	vec3 color = l2s(s2l(color0.rgb) + s2l(color1.rgb));\n"
+        "#else\n"
+        "	vec3 color = color0.rgb;\n"
+        "#endif\n"
+        "	color = color * (1.0 - 0.1 * pass * pass);\n"
+        "	gl_FragColor = vec4(color, 1.0);\n"
         "}\n";
     
     defaultVertexPrograms["landscape"] = ""
