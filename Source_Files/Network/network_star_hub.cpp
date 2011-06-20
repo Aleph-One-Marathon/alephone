@@ -63,6 +63,8 @@
 #include <deque>
 #include <numeric>
 #include <cmath>
+#include <fstream>
+#include <iomanip>
 
 #include "crc.h"
 #include "player.h" // for masking out action flags triggers :(
@@ -408,12 +410,52 @@ check_send_packet_to_spoke()
 #define INT32_MAX 0x7fffffff
 #endif
 
+#define DEBUG_TIMING_ADJUSTMENTS
+
+#ifdef DEBUG_TIMING_ADJUSTMENTS
+#include "FileHandler.h"
+#include <ctime>
+#include <sstream>
+std::ofstream dout;
+bool debug_timing_adjustments = false;
+#endif
+
 void
 hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* const* inPlayerAddresses, size_t inLocalPlayerIndex)
 {
 //        assert(sNetworkState == eNetworkDown);
 
 //        sNetworkState = eNetworkJustStartingUp;
+
+#ifdef DEBUG_TIMING_ADJUSTMENTS
+	FileSpecifier fs;
+	fs.SetToLocalDataDir();
+	fs.AddPart("TimingDebug");
+	if (fs.Exists() && fs.IsDir())
+	{
+		time_t t;
+		struct tm* now;
+		
+		time(&t);
+		now = localtime(&t);
+		
+		char buffer[80];
+		strftime(buffer, 80, "%Y%m%d%H%M%S", now);
+
+		std::stringstream ss;
+		ss << buffer << "_" << inNumPlayers << "P.txt";
+
+		fs.AddPart(ss.str());
+		dout.open(fs.GetPath());
+		dout << "Players: " << inNumPlayers << std::endl;
+		dout << "Latency Tolerance: " << sHubPreferences.mMinimumSendPeriod << std::endl;
+		debug_timing_adjustments = true;
+	}
+	else
+	{
+		debug_timing_adjustments = false;
+	}
+#endif
 
         assert(inLocalPlayerIndex < inNumPlayers);
         sLocalPlayerIndex = inLocalPlayerIndex;
@@ -566,6 +608,13 @@ hub_cleanup(bool inGraceful, int32 inSmallestPostGameTick)
 		sAddressToPlayerIndex.clear();
 		NetDDPDisposeFrame(sOutgoingFrame);
 		sOutgoingFrame = NULL;
+
+#ifdef DEBUG_TIMING_ADJUSTMENTS
+		if (debug_timing_adjustments)
+		{
+			dout.close();
+		}
+#endif
 	}
 }
 
@@ -797,12 +846,13 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 
 	if(thePlayer.mOutstandingTimingAdjustment == 0 && thePlayer.mNthElementFinder.window_full())
 	{
+		int32 jitter = 0;
 		thePlayer.mOutstandingTimingAdjustment = thePlayer.mNthElementFinder.nth_smallest_element((thePlayer.mSmallestUnheardTick >= sSmallestRealGameTick) ? sHubPreferences.mInGameNthElement : sHubPreferences.mPregameNthElement);
 
 		// if anti-lag is on, add a bit of latency based on jitter to try to keep it from triggering
 		if (sHubPreferences.mMinimumSendPeriod)
 		{
-			int32 jitter = std::max(thePlayer.mNthElementFinder.nth_largest_element(1) - thePlayer.mNthElementFinder.nth_smallest_element(1) - (sHubPreferences.mMinimumSendPeriod - 1), (int32) 0);
+			jitter = std::max(thePlayer.mNthElementFinder.nth_largest_element(1) - thePlayer.mNthElementFinder.nth_smallest_element(1) - (sHubPreferences.mMinimumSendPeriod - 1), (int32) 0);
 			thePlayer.mOutstandingTimingAdjustment -= jitter;
 		}
 
@@ -810,9 +860,60 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 		{
 			thePlayer.mTimingAdjustmentTick = sSmallestIncompleteTick;
 			logTraceNMT3("tick %d: asking player %d to adjust timing by %d", sSmallestIncompleteTick, inSenderIndex, thePlayer.mOutstandingTimingAdjustment);
-		}
-	}
 
+#ifdef DEBUG_TIMING_ADJUSTMENTS
+			if (debug_timing_adjustments && thePlayer.mSmallestUnheardTick >= sSmallestRealGameTick)
+			{
+				dout << sNetworkTicker
+				     << ": "
+				     << "P" << inSenderIndex
+				     << " "
+				     << "H" << thePlayer.mLastNetworkTickHeard
+				     << " "
+				     << "T" << sSmallestIncompleteTick
+				     << " "
+				     << "A" << thePlayer.mSmallestUnacknowledgedTick
+				     << " "
+				     << "U" << thePlayer.mSmallestUnheardTick
+				     << " "
+				     << "J" << jitter 
+				     << " "
+				     << "O" << thePlayer.mOutstandingTimingAdjustment
+				     << " "
+				     << thePlayer.mStats.latency 
+				     << "/"
+				     << thePlayer.mStats.jitter
+				     << " " << reinterpret_cast<player_info*>(NetGetPlayerData(inSenderIndex))->name + 1
+				     << std::endl;
+				dout << "S";
+				for (int i = 0; i < 20; ++i)
+				{
+					dout << setw(3) 
+					     << thePlayer.mNthElementFinder.nth_smallest_element(i)
+					     << " ";
+				}
+				dout << "M";
+				for (int i = kDefaultInGameWindowSize / 2 - 10; i < kDefaultInGameWindowSize / 2 + 10; ++i)
+				{
+					dout << setw(3)
+					     << thePlayer.mNthElementFinder.nth_smallest_element(i)
+					     << " ";
+				}
+				dout << "L";
+				for (int i = 19; i >= 0; --i)
+				{
+					dout << setw(3)
+					     << thePlayer.mNthElementFinder.nth_largest_element(i)
+					     << " ";
+				}
+				dout << std::endl;
+			}
+
+		}
+		
+#endif
+	}
+	
         // Do any needed post-processing
         if(theEnqueueableFlagsCount > 0)
         {
