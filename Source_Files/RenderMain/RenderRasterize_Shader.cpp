@@ -286,22 +286,8 @@ public:
 		if (passes < 0)
 			passes = 5;
 
-		if (passes > 0) {
-			glEnable(GL_BLEND);
-			if (_blend.get()) {
-				_blend->activate_dst();
-			}
-			_shader_bloom->enable();
-			_shader_bloom->setFloat(Shader::U_Pass, 0);
-			if (_blend.get())
-				_blend->blend(&_horizontal);
-			else
-				_horizontal.draw();
-			Shader::disable();
-		} else {
-			if (_blend.get())
-				_blend->swap();	// swap src_a into dst
-		}
+		if (_blend.get())
+			_blend->swap();	// swap src_a into dst
 
 		for (int i = 0; i < passes; i++) {
 			glDisable(GL_BLEND);

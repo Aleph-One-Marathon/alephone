@@ -344,13 +344,13 @@ void initDefaultPrograms() {
         "uniform float offsety;\n"
         "uniform float pass;\n"
         "varying vec4 vertexColor;\n"
-        "const float f0 = 0.07692307;\n"
-        "const float f1 = 0.15384615;\n"
-        "const float o1 = 1.5;\n"
-        "const float f2 = 0.15384615;\n"
-        "const float o2 = 3.5;\n"
-        "const float f3 = 0.15384615;\n"
-        "const float o3 = 5.5;\n"
+        "const float f0 = 0.14012035;\n"
+        "const float f1 = 0.24122258;\n"
+        "const float o1 = 1.45387071;\n"
+        "const float f2 = 0.13265595;\n"
+        "const float o2 = 3.39370426;\n"
+        "const float f3 = 0.04518872;\n"
+        "const float o3 = 5.33659787;\n"
         "#ifdef BLOOM_SRGB_FRAMEBUFFER\n"
         "vec3 s2l(vec3 srgb) { return srgb; }\n"
         "vec3 l2s(vec3 linear) { return linear; }\n"
@@ -369,7 +369,6 @@ void initDefaultPrograms() {
         "	t += f2 * s2l(texture2DRect(texture0, gl_TexCoord[0].xy + o2*s).rgb);\n"
         "	t += f3 * s2l(texture2DRect(texture0, gl_TexCoord[0].xy - o3*s).rgb);\n"
         "	t += f3 * s2l(texture2DRect(texture0, gl_TexCoord[0].xy + o3*s).rgb);\n"
-        "	if (pass < 1.5) { t = clamp(t, c, vec3(1.0, 1.0, 1.0)); }\n"
         "	gl_FragColor = vec4(l2s(t), 1.0) * vertexColor;\n"
         "}\n";    
     
@@ -400,7 +399,6 @@ void initDefaultPrograms() {
         "#else\n"
         "	vec3 color = color0.rgb;\n"
         "#endif\n"
-        "	color = color * (1.0 - 0.1 * pass * pass);\n"
         "	gl_FragColor = vec4(color, 1.0);\n"
         "}\n";
     
