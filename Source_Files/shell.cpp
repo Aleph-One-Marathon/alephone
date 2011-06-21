@@ -372,7 +372,14 @@ static void initialize_application(void)
 	DirectorySpecifier bundle_data_dir = bundle_name;
 	bundle_data_dir += "Contents/Resources/DataFiles";
 
-	default_data_dir = bundle_data_dir;
+	data_search_path.push_back(bundle_data_dir);
+
+	{
+		char* buf = getcwd(0, 0);
+		default_data_dir = buf;
+		free(buf);
+	}
+	
 	const char *home = getenv("HOME");
 	if (home)
 	    local_data_dir = home;
@@ -418,10 +425,10 @@ static void initialize_application(void)
 #define LIST_SEP ':'
 #endif
 	
-#if !(defined(__APPLE__) && defined(__MACH__))
-	if (arg_directory != "") 
-		default_data_dir = arg_directory;
-#endif
+	if (arg_directory != "")
+	{
+		data_search_path.push_back(arg_directory);
+	}
 
 	const char *data_env = getenv("ALEPHONE_DATA");
 	if (data_env) {
@@ -438,20 +445,10 @@ static void initialize_application(void)
 		if (!path.empty())
 			data_search_path.push_back(path);
 	} else {
-#if defined(__APPLE__) && defined(__MACH__)
-		if (arg_directory != "") 
-			data_search_path.push_back(arg_directory);
-		else 
-		{
-			char* buf = getcwd (0, 0);
-			data_search_path.push_back(buf);
-			free (buf);
-		}
-#endif
-#ifndef __MACOS__
 		data_search_path.push_back(default_data_dir);
-#endif
+#ifndef __MACOS__
 		data_search_path.push_back(local_data_dir);
+#endif
 	}
 
 	// Subdirectories
