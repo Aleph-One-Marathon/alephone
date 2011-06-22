@@ -445,7 +445,10 @@ static void initialize_application(void)
 		if (!path.empty())
 			data_search_path.push_back(path);
 	} else {
-		data_search_path.push_back(default_data_dir);
+		if (arg_directory == "")
+		{
+			data_search_path.push_back(default_data_dir);
+		}
 #ifndef __MACOS__
 		data_search_path.push_back(local_data_dir);
 #endif
