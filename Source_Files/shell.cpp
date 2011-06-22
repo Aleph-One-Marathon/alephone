@@ -425,8 +425,13 @@ static void initialize_application(void)
 #define LIST_SEP ':'
 #endif
 	
+	// in case we need to redo search path later:
+	size_t dsp_insert_pos = data_search_path.size();
+	size_t dsp_delete_pos = (size_t)-1;
+	
 	if (arg_directory != "")
 	{
+		dsp_delete_pos = data_search_path.size();
 		data_search_path.push_back(arg_directory);
 	}
 
@@ -447,6 +452,7 @@ static void initialize_application(void)
 	} else {
 		if (arg_directory == "")
 		{
+			dsp_delete_pos = data_search_path.size();
 			data_search_path.push_back(default_data_dir);
 		}
 #ifndef __MACOS__
@@ -498,7 +504,11 @@ static void initialize_application(void)
 	if (!have_default_files()) {
 		char chosen_dir[256];
 		if (alert_choose_scenario(chosen_dir)) {
-			data_search_path.insert(data_search_path.begin(), DirectorySpecifier(chosen_dir));
+			// remove original argument (or fallback) from search path
+			if (dsp_delete_pos < data_search_path.size())
+				data_search_path.erase(data_search_path.begin() + dsp_delete_pos);
+			// add selected directory where command-line argument would go
+			data_search_path.insert(data_search_path.begin() + dsp_insert_pos, chosen_dir);
 			
 			// Parse MML files again, now that we have a new dir to search
 			SetupParseTree();
