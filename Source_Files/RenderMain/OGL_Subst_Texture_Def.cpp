@@ -27,6 +27,7 @@
 
 #include "cseries.h"
 #include "OGL_Subst_Texture_Def.h"
+#include "Logging.h"
 
 #include <set>
 #include <string>
@@ -249,6 +250,11 @@ bool XML_TextureOptionsParser::_HandleAttribute(const char *Tag, const char *Val
 	else if (StringsEqual(Tag,"glow_blend"))
 	{
 		return ReadBoundedInt16Value(Value,Data.GlowBlend,0,OGL_NUMBER_OF_BLEND_TYPES-1);
+	}
+	else if (StringsEqual(Tag, "image_scale"))
+	{
+		logWarning("Ignoring deprecated image_scale tag");
+		return true;
 	}
 	else if (StringsEqual(Tag,"shape_width"))
 	{
