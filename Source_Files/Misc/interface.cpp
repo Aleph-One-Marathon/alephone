@@ -2812,6 +2812,7 @@ void show_movie(short index)
 
 	if (!File) return;
 
+	change_screen_mode(_screentype_chapter);
 	SDL_Surface *s = SDL_GetVideoSurface();
 	
 #if defined(__APPLE__) && defined(__MACH__)
