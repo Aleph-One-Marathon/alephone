@@ -824,6 +824,7 @@ class XML_ModelDataParser: public XML_ElementParser
 
 public:
 	bool Start();
+	bool ReadSignValue(const char *String, int16& Value);
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
 	bool ResetValues();
@@ -846,6 +847,21 @@ bool XML_ModelDataParser::Start()
 	SequenceMapParser.SeqMapPtr = &SequenceMap;
 		
 	return true;
+}
+
+bool XML_ModelDataParser::ReadSignValue(const char *String, int16& Value)
+{
+	if (StringsEqual(String, "+"))
+	{
+		Value = 1;
+		return true;
+	}
+	else if (StringsEqual(String, "-"))
+	{
+		Value = -1;
+		return true;
+	}
+	return ReadInt16Value(String, Value);
 }
 
 bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
@@ -893,7 +909,7 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"side"))
 	{
-		return ReadInt16Value(Value,Data.Sidedness);
+		return ReadSignValue(Value,Data.Sidedness);
 	}
 	else if (StringsEqual(Tag,"norm_type"))
 	{
@@ -909,7 +925,7 @@ bool XML_ModelDataParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"depth_type"))
 	{
-		return ReadInt16Value(Value,Data.DepthType);
+		return ReadSignValue(Value,Data.DepthType);
 	}
 	else if (StringsEqual(Tag,"force_sprite_depth"))
 	{
