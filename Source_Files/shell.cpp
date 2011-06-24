@@ -340,10 +340,22 @@ int main(int argc, char **argv)
 		main_event_loop();
 
 	} catch (exception &e) {
-		fprintf(stderr, "Unhandled exception: %s\n", e.what());
+		try 
+		{
+			logFatal("Unhandled exception: %s", e.what());
+		}
+		catch (...) 
+		{
+		}
 		exit(1);
 	} catch (...) {
-		fprintf (stderr, "Unknown exception\n");
+		try
+		{
+			logFatal("Unknown exception");
+		}
+		catch (...)
+		{
+		}
 		exit(1);
 	}
 
