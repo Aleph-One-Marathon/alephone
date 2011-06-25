@@ -57,11 +57,11 @@ void Rasterizer_Shader_Class::SetView(view_data& view) {
 	
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	float near = 64.0;
-	float far = 128.0 * 1024.0;
-	float x = xtan * near;
-	float y = ytan * near;
-	glFrustum(-x, x, -y, y, near, far);
+	float nearVal = 64.0;
+	float farVal = 128.0 * 1024.0;
+	float x = xtan * nearVal;
+	float y = ytan * nearVal;
+	glFrustum(-x, x, -y, y, nearVal, farVal);
 
 	glMatrixMode(GL_MODELVIEW);
 	double yaw = view.yaw * 360.0 / float(NUMBER_OF_ANGLES);
