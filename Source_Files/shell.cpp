@@ -113,6 +113,7 @@
 
 #ifdef __WIN32__
 #include <windows.h>
+#include <shlobj.h>
 #endif
 
 #include "alephversion.h"
@@ -428,10 +429,17 @@ static void initialize_application(void)
 	if (!hasName || strpbrk(login, "\\/:*?\"<>|") != NULL)
 		strcpy(login, "Bob User");
 
+	DirectorySpecifier legacy_data_dir = file_name;
+	legacy_data_dir += "Prefs";
+	legacy_data_dir += login;
+	
+	SHGetFolderPath(NULL,
+			CSIDL_PERSONAL | CSIDL_FLAG_CREATE,
+			NULL,
+			0,
+			file_name);
 	local_data_dir = file_name;
-	local_data_dir += "Prefs";
-	local_data_dir.CreateDirectory();
-	local_data_dir += login;
+	local_data_dir += "AlephOne";
 
 #else
 	default_data_dir = "";
@@ -475,6 +483,9 @@ static void initialize_application(void)
 			dsp_delete_pos = data_search_path.size();
 			data_search_path.push_back(default_data_dir);
 		}
+#if defined(__WIN32__)
+		data_search_path.push_back(legacy_data_dir);
+#endif
 #ifndef __MACOS__
 		data_search_path.push_back(local_data_dir);
 #endif
@@ -483,6 +494,15 @@ static void initialize_application(void)
 	// Subdirectories
 #if defined(__MACH__) && defined(__APPLE__)
 	DirectorySpecifier legacy_preferences_dir = local_data_dir;
+#elif defined(__WIN32__)
+	DirectorySpecifier legacy_preferences_dir = legacy_data_dir;
+	SHGetFolderPath(NULL, 
+			CSIDL_LOCAL_APPDATA | CSIDL_FLAG_CREATE, 
+			NULL,
+			0,
+			file_name);
+	preferences_dir = file_name;
+	preferences_dir += "AlephOne";
 #else
 	preferences_dir = local_data_dir;
 #endif	
@@ -530,7 +550,7 @@ static void initialize_application(void)
 	initialize_fonts();
 	Plugins::instance()->enumerate();			
 	
-#if defined(__MACH__) && defined(__APPLE__)
+#if defined(__WIN32__) || (defined(__MACH__) && defined(__APPLE__))
 	preferences_dir.CreateDirectory();
 	transition_preferences(legacy_preferences_dir);
 #endif
