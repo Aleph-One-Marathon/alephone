@@ -394,10 +394,18 @@ static void initialize_application(void)
 	
 	const char *home = getenv("HOME");
 	if (home)
+	{
 	    local_data_dir = home;
+	    preferences_dir = home;
+	}
+
 	local_data_dir += "Library";
 	local_data_dir += "Application Support";
 	local_data_dir += "AlephOne";
+
+	preferences_dir += "Library";
+	preferences_dir += "Preferences";
+	preferences_dir += "org.bungie.source.AlephOne";
 
 #elif defined(__BEOS__)
 
@@ -473,28 +481,28 @@ static void initialize_application(void)
 	}
 
 	// Subdirectories
+#if defined(__MACH__) && defined(__APPLE__)
+	DirectorySpecifier legacy_preferences_dir = local_data_dir;
+#else
 	preferences_dir = local_data_dir;
+#endif	
 	saved_games_dir = local_data_dir + "Saved Games";
 	recordings_dir = local_data_dir + "Recordings";
 	screenshots_dir = local_data_dir + "Screenshots";
 
-	// Create local directories
-	local_data_dir.CreateDirectory();
-	saved_games_dir.CreateDirectory();
-	recordings_dir.CreateDirectory();
-	screenshots_dir.CreateDirectory();
+
 #if defined(HAVE_BUNDLE_NAME)
 	DirectorySpecifier local_mml_dir = bundle_data_dir + "MML";
 #else
 	DirectorySpecifier local_mml_dir = local_data_dir + "MML";
 #endif
-	local_mml_dir.CreateDirectory();
+
 #if defined(HAVE_BUNDLE_NAME)
 	DirectorySpecifier local_themes_dir = bundle_data_dir + "Themes";
 #else
 	DirectorySpecifier local_themes_dir = local_data_dir + "Themes";
 #endif
-	local_themes_dir.CreateDirectory();
+
 	// Setup resource manager
 	initialize_resources();
 
@@ -531,8 +539,21 @@ static void initialize_application(void)
 	initialize_fonts();
 	Plugins::instance()->enumerate();			
 	
+#if defined(__MACH__) && defined(__APPLE__)
+	preferences_dir.CreateDirectory();
+	transition_preferences(legacy_preferences_dir);
+#endif
+
 	// Load preferences
 	initialize_preferences();
+
+	local_data_dir.CreateDirectory();
+	saved_games_dir.CreateDirectory();
+	recordings_dir.CreateDirectory();
+	screenshots_dir.CreateDirectory();
+	local_mml_dir.CreateDirectory();
+	local_themes_dir.CreateDirectory();
+
 #ifndef HAVE_OPENGL
 	graphics_preferences->screen_mode.acceleration = _no_acceleration;
 #endif

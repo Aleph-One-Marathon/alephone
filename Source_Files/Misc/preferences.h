@@ -262,4 +262,6 @@ void read_preferences();
 void handle_preferences(void);
 void write_preferences(void);
 
+void transition_preferences(const DirectorySpecifier& legacy_prefs_dir);
+
 #endif

@@ -307,6 +307,9 @@ public:
 	// Delete file
 	bool Delete();
 
+	// Rename file
+	bool Rename(const FileSpecifier& Destination);
+
 	// Copy file specification
 	const FileSpecifier &operator=(const FileSpecifier &other);
 

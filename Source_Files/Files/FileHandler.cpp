@@ -632,6 +632,11 @@ bool FileSpecifier::Delete()
 	return err == 0;
 }
 
+bool FileSpecifier::Rename(const FileSpecifier& Destination)
+{
+	return rename(GetPath(), Destination.GetPath()) == 0;
+}
+
 // Set to local (per-user) data directory
 void FileSpecifier::SetToLocalDataDir()
 {

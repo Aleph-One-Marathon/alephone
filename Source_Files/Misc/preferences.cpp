@@ -2039,6 +2039,23 @@ struct get_latency_tolerance
 	}
 };
 
+void transition_preferences(const DirectorySpecifier& legacy_preferences_dir)
+{
+	FileSpecifier prefs;
+	prefs.SetToPreferencesDir();
+	prefs += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+	if (!prefs.Exists())
+	{
+		FileSpecifier oldPrefs;
+		oldPrefs = legacy_preferences_dir;
+		oldPrefs += getcstr(temporary, strFILENAMES, filenamePREFERENCES);
+		if (oldPrefs.Exists())
+		{
+			oldPrefs.Rename(prefs);
+		}
+	}
+}
+
 /*
  *  Initialize preferences (load from file or setup defaults)
  */
