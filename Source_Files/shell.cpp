@@ -491,17 +491,8 @@ static void initialize_application(void)
 	screenshots_dir = local_data_dir + "Screenshots";
 
 
-#if defined(HAVE_BUNDLE_NAME)
-	DirectorySpecifier local_mml_dir = bundle_data_dir + "MML";
-#else
 	DirectorySpecifier local_mml_dir = local_data_dir + "MML";
-#endif
-
-#if defined(HAVE_BUNDLE_NAME)
-	DirectorySpecifier local_themes_dir = bundle_data_dir + "Themes";
-#else
 	DirectorySpecifier local_themes_dir = local_data_dir + "Themes";
-#endif
 
 	// Setup resource manager
 	initialize_resources();
