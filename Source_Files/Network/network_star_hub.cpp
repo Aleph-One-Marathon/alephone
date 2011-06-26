@@ -883,7 +883,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 				     << thePlayer.mStats.latency 
 				     << "/"
 				     << thePlayer.mStats.jitter
-				     << " " << reinterpret_cast<player_info*>(NetGetPlayerData(inSenderIndex))->name + 1
+				     << " " << pstring_to_string(reinterpret_cast<player_info*>(NetGetPlayerData(inSenderIndex))->name)
 				     << std::endl;
 				dout << "S";
 				for (int i = 0; i < 20; ++i)
