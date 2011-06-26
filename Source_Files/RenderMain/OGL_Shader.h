@@ -52,6 +52,8 @@ public:
 		U_StrictDepthMode,
 		U_Glow,
 		U_LandscapeInverseMatrix,
+		U_ScaleX,
+		U_ScaleY,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 

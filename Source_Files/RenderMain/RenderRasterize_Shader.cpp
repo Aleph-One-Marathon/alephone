@@ -576,11 +576,17 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	return TMgr;
 }
 
+// Circle constants
+const double TWO_PI = 8*atan(1.0);
+const double Radian2Circle = 1/TWO_PI;			// A circle is 2*pi radians
+const double FullCircleReciprocal = 1/double(FULL_CIRCLE);
+
 TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& Texture, short transferMode, float wobble, float intensity, float offset, RenderStep renderStep) {
 
 	Shader *s = NULL;
 
 	TextureManager TMgr;
+	LandscapeOptions *opts;
 	TMgr.ShapeDesc = Texture;
 	if (TMgr.ShapeDesc == UNONE) { return TMgr; }
 	get_shape_bitmap_and_shading_table(Texture, &TMgr.Texture, &TMgr.ShadingTables,
@@ -608,11 +614,11 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 		{
 			TMgr.TextureType = OGL_Txtr_Landscape;
 			TMgr.TransferMode = _big_landscaped_transfer;
-			TMgr.Landscape_AspRatExp = 0;
-			LandscapeOptions *opts = View_GetLandscapeOptions(Texture);
+			opts = View_GetLandscapeOptions(Texture);
+			TMgr.LandscapeVertRepeat = opts->VertRepeat;
+			TMgr.Landscape_AspRatExp = opts->OGL_AspRatExp;
 			s = Shader::get(renderStep == kGlow ? Shader::S_LandscapeBloom : Shader::S_Landscape);
 			s->enable();
-			s->setFloat(Shader::U_Repeat, 1.0 + opts->HorizExp);
 		}
 			break;
 		default:
@@ -649,6 +655,19 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	}
 
 	TMgr.SetupTextureMatrix();
+	
+	if (TMgr.TextureType == OGL_Txtr_Landscape) {
+		double TexScale = ABS(TMgr.U_Scale);
+		double HorizScale = double(1 << opts->HorizExp);
+		s->setFloat(Shader::U_ScaleX, HorizScale * (npotTextures ? 1.0 : TexScale) * Radian2Circle);
+		s->setFloat(Shader::U_OffsetX, HorizScale * (0.25 + opts->Azimuth * FullCircleReciprocal));
+		
+		short AdjustedVertExp = opts->VertExp + opts->OGL_AspRatExp;
+		double VertScale = (AdjustedVertExp >= 0) ? double(1 << AdjustedVertExp)
+		                                          : 1/double(1 << (-AdjustedVertExp));
+		s->setFloat(Shader::U_ScaleY, VertScale * TexScale * Radian2Circle);
+		s->setFloat(Shader::U_OffsetY, (0.5 + TMgr.U_Offset) * TexScale);
+	}
 
 	if (renderStep == kGlow) {
 		if (TMgr.TextureType == OGL_Txtr_Landscape) {
