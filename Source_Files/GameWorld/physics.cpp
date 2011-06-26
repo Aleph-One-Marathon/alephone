@@ -284,9 +284,17 @@ uint32 mask_in_absolute_positioning_information(
 
 	if ((delta_yaw||variables->angular_velocity) && !(action_flags&_override_absolute_yaw))
 	{
+		// Bit-shifting is always done with positive_numbers,
+		// for consistent rounding regardless of direction
+		int sign_yaw = 1.0;
+		if (delta_yaw < 0)
+		{
+			sign_yaw = -1.0;
+			delta_yaw = -delta_yaw;
+		}
 //		if (delta_yaw<0 && delta_yaw>((-1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS))) delta_yaw= 0;
 		if (delta_yaw>0 && delta_yaw<((1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS))) delta_yaw= (1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS);
-		encoded_delta= (delta_yaw>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS))+MAXIMUM_ABSOLUTE_YAW/2;
+		encoded_delta= sign_yaw*(delta_yaw>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_YAW_BITS))+MAXIMUM_ABSOLUTE_YAW/2;
 		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_YAW-1);
 		action_flags= SET_ABSOLUTE_YAW(action_flags, encoded_delta)|_absolute_yaw_mode;
 	}
@@ -294,15 +302,27 @@ uint32 mask_in_absolute_positioning_information(
 	if ((delta_pitch||variables->vertical_angular_velocity) && !(action_flags&_override_absolute_pitch))
 	{
 //		if (delta_pitch<0 && delta_pitch>((-1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS))) delta_pitch= 0;
+		int sign_pitch = 1.0;
+		if (delta_pitch < 0)
+		{
+			sign_pitch = -1.0;
+			delta_pitch = -delta_pitch;
+		}
 		if (delta_pitch>0 && delta_pitch<((1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS))) delta_pitch= (1)<<(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS);
-		encoded_delta= (delta_pitch>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS))+MAXIMUM_ABSOLUTE_PITCH/2;
+		encoded_delta= sign_pitch*(delta_pitch>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_PITCH_BITS))+MAXIMUM_ABSOLUTE_PITCH/2;
 		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_PITCH-1);
 		action_flags= SET_ABSOLUTE_PITCH(action_flags, encoded_delta)|_absolute_pitch_mode;
 	}
 
 	if (delta_position && !(action_flags&_override_absolute_position))
 	{
-		encoded_delta= (delta_position>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_POSITION_BITS))+MAXIMUM_ABSOLUTE_POSITION/2;
+		int sign_position = 1.0;
+		if (delta_position < 0)
+		{
+			sign_position = -1.0;
+			delta_position = -delta_position;
+		}
+		encoded_delta= sign_position*(delta_position>>(FIXED_FRACTIONAL_BITS-ABSOLUTE_POSITION_BITS))+MAXIMUM_ABSOLUTE_POSITION/2;
 		encoded_delta= PIN(encoded_delta, 0, MAXIMUM_ABSOLUTE_POSITION-1);
 		action_flags= SET_ABSOLUTE_POSITION(action_flags, encoded_delta)|_absolute_position_mode;
 	}

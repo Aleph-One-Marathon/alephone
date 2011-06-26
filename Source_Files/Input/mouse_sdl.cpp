@@ -113,8 +113,12 @@ void mouse_idle(short type)
 		SDL_WarpMouse(center_x, center_y);
 
 		// Calculate axis deltas
-		_fixed vx = ((x - center_x) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
-		_fixed vy = -((y - center_y) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
+		// Bit-shifting is always done with positive numbers,
+		// for consistent rounding regardless of direction
+		int xdiff = x - center_x;		
+		_fixed vx = (ABS(xdiff) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
+		int ydiff = y - center_y;
+		_fixed vy = -(ABS(ydiff) << FIXED_FRACTIONAL_BITS) / ticks_elapsed;
 		
 		// Mouse inversion
 		if (TEST_FLAG(input_preferences->modifiers, _inputmod_invert_mouse))
@@ -138,6 +142,12 @@ void mouse_idle(short type)
 			vy= PIN(vy, -FIXED_ONE/2, FIXED_ONE/2), vy>>= 1;
 		}
 
+		// Bit-shifting is complete, restore direction
+		if (xdiff < 0)
+			vx = -vx;
+		if (ydiff < 0)
+			vy = -vy;
+		
 		// X axis = yaw
 		snapshot_delta_yaw = vx;
 
