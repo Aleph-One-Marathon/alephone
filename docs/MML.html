@@ -1377,7 +1377,7 @@ of the part of the texture that OpenGL will use (width is fixed; height can be v
 This part will always be centered in height, and will either include some untextured area
 or will not include the top and bottom parts. (default: 1 -- height is 1/2 width)
 <li>vert_repeat: whether texture repeats in the vertical direction
-(default: false -- clamped in the vertical direction; last pixels stretched out)
+(default: false -- mirrored or clamped in the vertical direction, depending on video card support)
 <li>azimuth: angle in degrees to rotate the texture leftward relative to the map.
 This could be useful for aligning landscape features with map ones. (default: 0)
 </ul>
