@@ -38,6 +38,7 @@
 #include <time.h>	// apparently is in C std library, used here to print time/date log section started.
 #include <stdio.h>
 #include "XML_ElementParser.h"
+#include "FileHandler.h"
 
 #ifndef NO_STD_NAMESPACE
 using std::vector;
@@ -215,28 +216,15 @@ void TopLevelLogger::flush()
 #endif
 #endif
 
+extern DirectorySpecifier log_dir;
+
 static void
 InitializeLogging() {
     assert(sOutputFile == NULL);
-#if defined(__unix__) || defined(__NetBSD__) || defined(__OpenBSD__) || (defined(__APPLE__) && defined(__MACH__))
-    const char *home = getenv("HOME");
-    if (home == NULL) {
-        struct passwd *pw = getpwuid (getuid ());
-        if (pw != NULL) home = pw->pw_dir;
-    }
-    if (home)
-    {
-        string filename = home;
-#if defined(__APPLE__) && defined(__MACH__)
-        filename += "/Library/Logs/Aleph One Log.txt";
-#else
-        filename += "/.alephone/Aleph One Log.txt";
-#endif
-        sOutputFile = fopen(filename.c_str(), "a");
-    }
-    else
-#endif
-    sOutputFile = fopen("Aleph One Log.txt", "a");
+    FileSpecifier fs = log_dir;
+    fs += "Aleph One Log.txt";
+
+    sOutputFile = fopen(fs.GetPath(), "a");
 
     sCurrentLogger = new TopLevelLogger;
     if(sOutputFile != NULL)

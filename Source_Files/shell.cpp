@@ -133,6 +133,7 @@ DirectorySpecifier preferences_dir;   // Directory for preferences
 DirectorySpecifier saved_games_dir;   // Directory for saved games
 DirectorySpecifier recordings_dir;    // Directory for recordings (except film buffer, which is stored in local_data_dir)
 DirectorySpecifier screenshots_dir;   // Directory for screenshots
+DirectorySpecifier log_dir;           // Directory for Aleph One Log.txt
 std::string arg_directory;
 std::vector<std::string> arg_files;
 
@@ -379,6 +380,7 @@ static void initialize_application(void)
 	if (home)
 		local_data_dir = home;
 	local_data_dir += ".alephone";
+	log_dir = local_data_dir;
 
 #elif defined(__APPLE__) && defined(__MACH__)
 	extern char *bundle_name; // SDLMain.m
@@ -398,6 +400,9 @@ static void initialize_application(void)
 	{
 	    local_data_dir = home;
 	    preferences_dir = home;
+	    log_dir = home;
+	    log_dir += "Library";
+	    log_dir += "Logs";
 	}
 
 	local_data_dir += "Library";
@@ -440,6 +445,8 @@ static void initialize_application(void)
 			file_name);
 	local_data_dir = file_name;
 	local_data_dir += "AlephOne";
+
+	log_dir = local_data_dir;
 
 #else
 	default_data_dir = "";
