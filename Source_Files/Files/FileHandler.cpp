@@ -661,11 +661,6 @@ void FileSpecifier::SetToRecordingsDir()
 	name = recordings_dir.name;
 }
 
-void FileSpecifier::SetToFirstDataDir()
-{
-  name = data_search_path[0].name;
-}
-
 static string local_path_separators(const char *path)
 {
 	string local_path = path;
@@ -1152,8 +1147,6 @@ public:
 			dir.SetToRecordingsDir();
 			break;
 		case _typecode_scenario:
-			dir.SetToFirstDataDir();
-			break;
 		case _typecode_netscript:
 		{
 			// Go to most recently-used directory
