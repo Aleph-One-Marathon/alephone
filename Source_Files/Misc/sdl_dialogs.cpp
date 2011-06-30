@@ -329,6 +329,7 @@ public:
 	{
 		have_id = have_size = false;
 		style = 0;
+		adjust_height = 0;
 		return true;
 	}
 
