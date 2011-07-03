@@ -352,6 +352,7 @@ void move_projectiles(
 				else
 				{
 					world_distance speed= definition->speed;
+					uint32 adjusted_definition_flags = 0;
 					uint16 flags;
 					
 					/* base alien projectile speed on difficulty level */
@@ -368,6 +369,8 @@ void move_projectiles(
 	
 					/* if this is a guided projectile with a valid target, update guidance system */				
 					if ((definition->flags&_guided) && projectile->target_index!=NONE && (dynamic_world->tick_count&1)) update_guided_projectile(projectile_index);
+
+					if (PROJECTILE_HAS_CROSSED_MEDIA_BOUNDARY(projectile)) adjusted_definition_flags= _penetrates_media;
 					
 					/* move the projectile and check for collisions; if we didnÕt detonate move the
 						projectile and check to see if we need to leave a contrail */
@@ -378,7 +381,15 @@ void move_projectiles(
 					translate_point3d(&new_location, speed, object->facing, projectile->elevation);
 					if (definition->flags&_vertical_wander) new_location.z+= (global_random()&1) ? WANDER_MAGNITUDE : -WANDER_MAGNITUDE;
 					if (definition->flags&_horizontal_wander) translate_point3d(&new_location, (global_random()&1) ? WANDER_MAGNITUDE : -WANDER_MAGNITUDE, NORMALIZE_ANGLE(object->facing+QUARTER_CIRCLE), 0);
+					if (film_profile.infinity_smg)
+					{
+						definition->flags ^= adjusted_definition_flags;
+					}
 					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index, 0, false);
+					if (film_profile.infinity_smg)
+					{
+						definition->flags ^= adjusted_definition_flags;
+					}
 					
 					// LP change: set up for penetrating media boundary
 					bool will_go_through = false;
@@ -466,37 +477,54 @@ void move_projectiles(
 										if (new_detonation_effect!=NONE) detonation_effect= new_detonation_effect;
 									}
 								}
-								// LP addition: check if projectile will hit media and continue (PMB flag)
-								// set will_go_through for later processing
 								if (flags&_projectile_hit_media)
 								{
 									get_media_detonation_effect(get_polygon_data(obstruction_index)->media_index, definition->media_detonation_effect, &detonation_effect);
-									// Be careful about parentheses here!
-									will_go_through = (definition->flags&_penetrates_media_boundary) != 0;
-									// Push the projectile upward or downward, if necessary
-									if (will_go_through) {
-										if (projectile->elevation == 0) {}
-										else if (projectile->elevation < HALF_CIRCLE) new_location.z++;
-										else if (projectile->elevation > HALF_CIRCLE) new_location.z--;
+									// LP addition: check if projectile will hit media and continue (PMB flag)
+									// set will_go_through for later processing
+									if (film_profile.a1_smg)
+									{
+										// Be careful about parentheses here!
+										will_go_through = (definition->flags&_penetrates_media_boundary) != 0;
+										// Push the projectile upward or downward, if necessary
+										if (will_go_through) {
+											if (projectile->elevation == 0) {}
+											else if (projectile->elevation < HALF_CIRCLE) new_location.z++;
+											else if (projectile->elevation > HALF_CIRCLE) new_location.z--;
+										}
 									}
 								}
-								// LP addition: don't detonate if going through media
-								// if PMB is set; otherwise, detonate if doing so.
-								// Some of the later routines may set both "hit landscape" and "hit media",
-								// so be careful.
-								if (flags&_projectile_hit_landscape && !(flags&_projectile_hit_media)) detonation_effect= NONE;
+								if (film_profile.a1_smg)
+								{
+									// LP addition: don't detonate if going through media
+									// if PMB is set; otherwise, detonate if doing so.
+									// Some of the later routines may set both "hit landscape" and "hit media",
+									// so be careful.
+									if (flags&_projectile_hit_landscape && !(flags&_projectile_hit_media)) detonation_effect= NONE;
+								}
+								else
+								{
+									if (flags&_projectile_hit_landscape) detonation_effect = NONE;
+								}
 								
 								if (detonation_effect!=NONE) new_effect(&new_location, new_polygon_index, detonation_effect, object->facing);
-                L_Call_Projectile_Detonated(projectile->type, projectile->owner_index, new_polygon_index, new_location);
-
-								if ((definition->flags&_persistent_and_virulent) && !destroy_persistent_projectile && monster_obstruction_index!=NONE)
+								L_Call_Projectile_Detonated(projectile->type, projectile->owner_index, new_polygon_index, new_location);
+								
+								if (!film_profile.infinity_smg || (!(definition->flags&_penetrates_media_boundary) || !(flags&_projectile_hit_media)))
 								{
-									projectile->owner_index= monster_obstruction_index; /* keep going, but donÕt hit this target again */
+									if ((definition->flags&_persistent_and_virulent) && !destroy_persistent_projectile && monster_obstruction_index!=NONE)
+									{
+										projectile->owner_index= monster_obstruction_index; /* keep going, but donÕt hit this target again */
+									}
+									// LP addition: don't remove a projectile that will hit media and continue (PMB flag)
+									else if (!will_go_through)
+									{
+										remove_projectile(projectile_index);
+									}
 								}
-								// LP addition: don't remove a projectile that will hit media and continue (PMB flag)
-								else if (!will_go_through)
+								else if (film_profile.infinity_smg)
 								{
-									remove_projectile(projectile_index);
+									SET_PROJECTILE_CROSSED_MEDIA_BOUNDARY_STATUS(projectile, true);
 								}
 							}
 						}
@@ -787,7 +815,11 @@ uint16 translate_projectile(
 		media_height= (old_polygon->media_index==NONE || definition->flags&_penetrates_media || !media) ? INT16_MIN : media->height;
 		
 		// This flag says it can
-		bool traveled_underneath = (definition->flags&_penetrates_media_boundary) && (old_location->z <= media_height);
+		bool traveled_underneath = false;
+		if (film_profile.a1_smg)
+		{
+			traveled_underneath = (definition->flags&_penetrates_media_boundary) && (old_location->z <= media_height);
+		}
 		
 		/* add this polygonÕs monsters to our non-redundant list of possible intersections */
 		possible_intersecting_monsters(&IntersectedObjects, GLOBAL_INTERSECTING_MONSTER_BUFFER_SIZE, old_polygon_index, true);

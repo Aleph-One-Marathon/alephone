@@ -1766,9 +1766,10 @@ static void plugins_dialog(void *)
  *  Environment dialog
  */
 
-static const char* film_profile_labels[3] = {
+static const char* film_profile_labels[] = {
 	"Aleph One",
 	"Marathon 2",
+	"Marathon Infinity",
 	0
 };
 

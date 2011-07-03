@@ -100,6 +100,9 @@ enum /* projectile types */
 #define PROJECTILE_HAS_CAUSED_DAMAGE(p) ((p)->flags&(uint16)0x2000)
 #define SET_PROJECTILE_DAMAGE_STATUS(p,v) ((void)((v)?((p)->flags|=(uint16)0x2000):((p)->flags&=(uint16)~0x2000)))
 
+#define PROJECTILE_HAS_CROSSED_MEDIA_BOUNDARY(p) ((p)->flags&(uint16)0x1000)
+#define SET_PROJECTILE_CROSSED_MEDIA_BOUNDARY_STATUS(p,v) ((v)?((p)->flags|=(uint16)0x1000):((p)->flags&=(uint16)~0x1000))
+
 /* uses SLOT_IS_USED(), SLOT_IS_FREE(), MARK_SLOT_AS_FREE(), MARK_SLOT_AS_USED() macros (0x8000 bit) */
 
 struct projectile_data /* 32 bytes */

@@ -1526,7 +1526,8 @@ bool process_map_wad(
 		assert(0 <= static_cast<int16>(count));
 		dynamic_world->endpoint_count= static_cast<int16>(count);
 
-		is_preprocessed_map= true;
+		if (version > MARATHON_ONE_DATA_VERSION)
+			is_preprocessed_map= true;
 	}
 
 	/* Extract lines */

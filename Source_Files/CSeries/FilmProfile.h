@@ -52,6 +52,15 @@ struct FilmProfile
 
 	// LP increased the dynamic limits
 	bool increased_dynamic_limits;
+
+	// Infinity has an improved line_is_obstructed
+	bool line_is_obstructed_fix;
+
+	// Aleph One implements pass_media_boundary one way
+	bool a1_smg;
+
+	// Marathon Infinity implements pass_media_boundary a different way
+	bool infinity_smg;
 };
 
 extern FilmProfile film_profile;
@@ -59,6 +68,7 @@ extern FilmProfile film_profile;
 enum FilmProfileType {
 	FILM_PROFILE_DEFAULT,
 	FILM_PROFILE_MARATHON_2,
+	FILM_PROFILE_MARATHON_INFINITY
 };
 
 void load_film_profile(FilmProfileType type, bool reload_mml = true);

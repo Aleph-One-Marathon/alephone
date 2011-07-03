@@ -2172,9 +2172,16 @@ bool line_is_obstructed(
 	
 	do
 	{
-		bool last_line;
-		
-		line_index= _find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)p1, (world_point2d *)p2, &last_line);
+		bool last_line = false;
+		if (film_profile.line_is_obstructed_fix)
+		{
+			line_index = find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)p1, (world_point2d *)p2);
+		}
+		else
+		{
+			line_index= _find_line_crossed_leaving_polygon(polygon_index, (world_point2d *)p1, (world_point2d *)p2, &last_line);
+		}
+
 		if (line_index!=NONE)
 		{
 			if (last_line && polygon_index==polygon_index2) break;
@@ -2201,7 +2208,27 @@ bool line_is_obstructed(
 				destination point is in; this probably means that the source is on a different
 				level than the caller, but it could also easily mean that we’re dealing with
 				weird boundary conditions of find_line_crossed_leaving_polygon() */
-			if (polygon_index!=polygon_index2) obstructed= true;
+			if (polygon_index!=polygon_index2) 
+			{
+				obstructed= true;
+				if (film_profile.line_is_obstructed_fix)
+				{
+					polygon_data* polygon = get_polygon_data(polygon_index);
+					polygon_data* polygon2 = get_polygon_data(polygon_index2);
+					for (int i = 0; i < polygon->vertex_count; ++i)
+					{
+						for (int j = 0; j < polygon2->vertex_count; ++j)
+						{
+							if (polygon->endpoint_indexes[i] == polygon2->endpoint_indexes[j])
+							{
+								// if our destination polygon shares any endpoints with our actual destination, we're ok
+								obstructed = false;
+								break;
+							}
+						}
+					}
+				}
+			}
 		}
 		
 		last_polygon_index= polygon_index;

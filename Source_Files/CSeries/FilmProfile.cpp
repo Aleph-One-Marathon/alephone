@@ -11,7 +11,11 @@ static FilmProfile alephone1_0 = {
 	true, // animate_items
 	true, // inexplicable_pin_change
 	true, // increased_dynamic_limits
+	false, // line_is_obstructed_fix
+	true, // a1_smg
+	false, // infinity_smg
 };
+
 static FilmProfile marathon2 = {
 	false, // keyframe_fix
 	false, // damage_aggressor_last_in_tag
@@ -21,6 +25,23 @@ static FilmProfile marathon2 = {
 	false, // animate_items
 	false, // inexplicable_pin_change
 	false, // increased_dynamic_limits
+	false, // line_is_obstructed
+	false, // a1_smg
+	false, // infinity_smg
+};
+
+static FilmProfile marathon_infinity = {
+	false, // keyframe_fix
+	false, // damage_aggressor_last_in_tag
+	false, // swipe_nearby_items_fix
+	true, // initial_monster_fix
+	false, // long_distance_physics
+	false, // animate_items
+	false, // inexplicable_pin_change
+	false, // increased_dynamic_limits
+	true, // line_is_obstructed_fix
+	false, // a1_smg
+	true, // infinity_smg
 };
 
 FilmProfile film_profile = alephone1_0;
@@ -38,7 +59,10 @@ void load_film_profile(FilmProfileType type, bool reload_mml)
 	case FILM_PROFILE_MARATHON_2:
 		film_profile = marathon2;
 		break;
-	}
+	case FILM_PROFILE_MARATHON_INFINITY:
+		film_profile = marathon_infinity;
+		break;
+	}	
 
 	if (reload_mml)
 	{
