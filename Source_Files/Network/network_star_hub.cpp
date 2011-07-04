@@ -133,7 +133,7 @@ enum {
         kDefaultInGameWindowSize = TICKS_PER_SECOND * 5,
 	kDefaultPregameNthElement = 2,
 //	kDefaultInGameNthElement = kDefaultInGameWindowSize / 2,
-	kDefaultInGameNthElement = kDefaultInGameWindowSize - 1,
+	kDefaultInGameNthElement = 5,
         kDefaultPregameTicksBeforeNetDeath = 20 * TICKS_PER_SECOND,
         kDefaultInGameTicksBeforeNetDeath = 5 * TICKS_PER_SECOND,
 	kDefaultSendPeriod = 1,
@@ -846,15 +846,7 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 
 	if(thePlayer.mOutstandingTimingAdjustment == 0 && thePlayer.mNthElementFinder.window_full())
 	{
-		int32 jitter = 0;
 		thePlayer.mOutstandingTimingAdjustment = thePlayer.mNthElementFinder.nth_smallest_element((thePlayer.mSmallestUnheardTick >= sSmallestRealGameTick) ? sHubPreferences.mInGameNthElement : sHubPreferences.mPregameNthElement);
-
-		// if anti-lag is on, add a bit of latency based on jitter to try to keep it from triggering
-		if (sHubPreferences.mMinimumSendPeriod)
-		{
-			jitter = std::max(thePlayer.mNthElementFinder.nth_largest_element(1) - thePlayer.mNthElementFinder.nth_smallest_element(1) - (sHubPreferences.mMinimumSendPeriod - 1), (int32) 0);
-			thePlayer.mOutstandingTimingAdjustment -= jitter;
-		}
 
 		if(thePlayer.mOutstandingTimingAdjustment != 0)
 		{
@@ -875,8 +867,6 @@ hub_received_game_data_packet_v1(AIStream& ps, int inSenderIndex)
 				     << "A" << thePlayer.mSmallestUnacknowledgedTick
 				     << " "
 				     << "U" << thePlayer.mSmallestUnheardTick
-				     << " "
-				     << "J" << jitter 
 				     << " "
 				     << "O" << thePlayer.mOutstandingTimingAdjustment
 				     << " "
