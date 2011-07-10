@@ -349,6 +349,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <h1>
 <a name="using_tables"></a>Using Tables</h1>
 <p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p>
+    <p>Unless otherwise specified, these tables are only valid in trigger calls. Attempting to use them in the main body of a script may cause an error, or may stop working unexpectedly in a future version.</p>
 <h2>
 <a name="custom"></a>Custom Fields</h2>
 <p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.<pre>Players[0]._favorite_flavor = "chocolate"</pre></p>
