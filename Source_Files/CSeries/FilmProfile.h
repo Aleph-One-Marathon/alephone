@@ -61,6 +61,10 @@ struct FilmProfile
 
 	// Marathon Infinity implements pass_media_boundary a different way
 	bool infinity_smg;
+
+	// Marathon 2 and Infinity give fusion damage a vertical
+	// component when delta_vitality is greater than 100
+	bool use_vertical_kick_threshold;
 };
 
 extern FilmProfile film_profile;

@@ -194,6 +194,10 @@ struct damage_kick_definition
 	short base_value;
 	float delta_vitality_multiplier;
 	bool is_also_vertical;
+
+	// if non-zero, will enable vertical_component if
+	// delta_vitality is greater than threshold
+	short vertical_threshold;
 };
 
 /* ---------- definitions */
@@ -201,30 +205,30 @@ struct damage_kick_definition
 // LP: implements commented-out damage-kick code
 struct damage_kick_definition damage_kick_definitions[NUMBER_OF_DAMAGE_TYPES] = 
 {
-	{0, 1, true}, // _damage_explosion,
-	{0, 3, true}, // _damage_electrical_staff,
-	{0, 1, false}, // _damage_projectile,
-	{0, 1, false}, // _damage_absorbed,
-	{0, 1, false}, // _damage_flame,
-	{0, 1, false}, // _damage_hound_claws,
-	{0, 1, false}, // _damage_alien_projectile,
-	{0, 1, false}, // _damage_hulk_slap,
-	{0, 3, true}, // _damage_compiler_bolt,
-	{0, 0, false}, // _damage_fusion_bolt,
-	{0, 1, false}, // _damage_hunter_bolt,
-	{0, 1, false}, // _damage_fist,
-	{250, 0, false}, // _damage_teleporter,
-	{0, 1, false}, // _damage_defender,
-	{0, 3, true}, // _damage_yeti_claws,
-	{0, 1, false}, // _damage_yeti_projectile,
-	{0, 1, false}, // _damage_crushing,
-	{0, 1, false}, // _damage_lava,
-	{0, 1, false}, // _damage_suffocation,
-	{0, 1, false}, // _damage_goo,
-	{0, 1, false}, // _damage_energy_drain,
-	{0, 1, false}, // _damage_oxygen_drain,
-	{0, 1, false}, // _damage_hummer_bolt,
-	{0, 0, true} // _damage_shotgun_projectile,
+	{0, 1, true, 0}, // _damage_explosion,
+	{0, 3, true, 0}, // _damage_electrical_staff,
+	{0, 1, false, 0}, // _damage_projectile,
+	{0, 1, false, 0}, // _damage_absorbed,
+	{0, 1, false, 0}, // _damage_flame,
+	{0, 1, false, 0}, // _damage_hound_claws,
+	{0, 1, false, 0}, // _damage_alien_projectile,
+	{0, 1, false, 0}, // _damage_hulk_slap,
+	{0, 3, true, 0}, // _damage_compiler_bolt,
+	{0, 0, false, 100}, // _damage_fusion_bolt,
+	{0, 1, false, 0}, // _damage_hunter_bolt,
+	{0, 1, false, 0}, // _damage_fist,
+	{250, 0, false, 0}, // _damage_teleporter,
+	{0, 1, false, 0}, // _damage_defender,
+	{0, 3, true, 0}, // _damage_yeti_claws,
+	{0, 1, false, 0}, // _damage_yeti_projectile,
+	{0, 1, false, 0}, // _damage_crushing,
+	{0, 1, false, 0}, // _damage_lava,
+	{0, 1, false, 0}, // _damage_suffocation,
+	{0, 1, false, 0}, // _damage_goo,
+	{0, 1, false, 0}, // _damage_energy_drain,
+	{0, 1, false, 0}, // _damage_oxygen_drain,
+	{0, 1, false, 0}, // _damage_hummer_bolt,
+	{0, 0, true, 0} // _damage_shotgun_projectile,
 };
 
 /* ---------- globals */
@@ -1523,15 +1527,22 @@ void damage_monster(
 			}
 		}
 		
+
 		if (damage->type >= 0 && damage->type < NUMBER_OF_DAMAGE_TYPES)
 		{
 			damage_kick_definition& kick_def = damage_kick_definitions[damage->type];
 			
 			external_velocity = (world_distance)(kick_def.base_value + kick_def.delta_vitality_multiplier*delta_vitality);
 			vertical_component = kick_def.is_also_vertical;
+			if (film_profile.use_vertical_kick_threshold
+			    && kick_def.vertical_threshold
+			    && delta_vitality > kick_def.vertical_threshold)
+			{
+				vertical_component = true;
+			}
 		}
-		
-		/*
+
+/*		
 		switch (damage->type)
 		{
 			case _damage_teleporter:
@@ -1562,7 +1573,7 @@ void damage_monster(
 				external_velocity= delta_vitality;
 				break;
 		}
-		*/
+*/
 	
 		if (MONSTER_IS_DYING(monster) && external_velocity<MINIMUM_DYING_EXTERNAL_VELOCITY) external_velocity= MINIMUM_DYING_EXTERNAL_VELOCITY;
 		external_velocity= (external_velocity*definition->external_velocity_scale)>>FIXED_FRACTIONAL_BITS;
