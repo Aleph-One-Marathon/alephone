@@ -1364,7 +1364,12 @@ hub_tick()
         return true;
 }
 
-
+#ifndef INT8_MAX
+#define INT8_MAX 127
+#endif
+#ifndef INT8_MIN
+#define INT8_MIN -128
+#endif
 
 static void
 send_packets()
