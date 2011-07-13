@@ -15,6 +15,7 @@ static FilmProfile alephone1_0 = {
 	true, // a1_smg
 	false, // infinity_smg
 	false, // use_vertical_kick_threshold
+	false, // infinity_tag_fix
 };
 
 static FilmProfile marathon2 = {
@@ -29,7 +30,8 @@ static FilmProfile marathon2 = {
 	false, // line_is_obstructed
 	false, // a1_smg
 	false, // infinity_smg
-	true // use_vertical_kick_threshold
+	true, // use_vertical_kick_threshold
+	false // infinity_tag_fix
 };
 
 static FilmProfile marathon_infinity = {
@@ -45,6 +47,7 @@ static FilmProfile marathon_infinity = {
 	false, // a1_smg
 	true, // infinity_smg
 	true, // use_vertical_kick_threshold
+	true, // infinity_tag_fix
 };
 
 FilmProfile film_profile = alephone1_0;

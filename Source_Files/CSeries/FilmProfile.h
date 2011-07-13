@@ -65,6 +65,9 @@ struct FilmProfile
 	// Marathon 2 and Infinity give fusion damage a vertical
 	// component when delta_vitality is greater than 100
 	bool use_vertical_kick_threshold;
+
+	// Marathon Infinity fixes tag suicides in a different way
+	bool infinity_tag_fix;
 };
 
 extern FilmProfile film_profile;

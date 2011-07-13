@@ -1361,12 +1361,25 @@ void damage_monsters_in_radius(
 {
 	size_t object_count;
 
+	bool aggressor_is_live_player = false;
+
 	(void) (primary_target_index);
 	
 	IntersectedObjects.clear();
 	possible_intersecting_monsters(&IntersectedObjects, LOCAL_INTERSECTING_MONSTER_BUFFER_SIZE, epicenter_polygon_index, false);
 	object_count= IntersectedObjects.size();
         struct object_data *aggressor = NULL;
+	if (film_profile.infinity_tag_fix && aggressor_index != NONE)
+	{
+		monster_data* monster = get_monster_data(aggressor_index);
+		if (MONSTER_IS_PLAYER(monster))
+		{
+			player_data* player = get_player_data(monster_index_to_player_index(aggressor_index));
+			
+			if (!PLAYER_IS_DEAD(player)) aggressor_is_live_player = true;
+		}
+	}
+
 	for (size_t i=0;i<object_count;++i)
 	{
 		struct object_data *object= get_object_data(IntersectedObjects[i]);
@@ -1411,6 +1424,23 @@ void damage_monsters_in_radius(
                                 {
                                         damage_monster(aggressor->permutation, aggressor_index, aggressor_type, epicenter, damage, projectile_index);
 				}
+			}
+		}
+	}
+
+	// or, just make him it
+	if (GET_GAME_TYPE() == _game_of_tag && aggressor_is_live_player)
+	{
+		monster_data* monster = get_monster_data(aggressor_index);
+		if (MONSTER_IS_PLAYER(monster))
+		{
+			short player_index = monster_index_to_player_index(aggressor_index);
+			player_data* player = get_player_data(player_index);
+			
+			// he blew himself up, so make sure he's it
+			if (PLAYER_IS_DEAD(player))
+			{
+				dynamic_world->game_player_index = player_index;
 			}
 		}
 	}
