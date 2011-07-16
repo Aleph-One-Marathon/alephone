@@ -446,6 +446,8 @@ bool player_killed_player(
 					if (dynamic_world->game_player_index!=dead_player_index)
 					{
 						// change of ÔitÕ
+						player_data* player = get_player_data(dead_player_index);
+						play_object_sound(player->object_index, _snd_you_are_it);
 						dynamic_world->game_player_index= dead_player_index;
 					}
 				}
