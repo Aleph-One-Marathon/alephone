@@ -68,6 +68,10 @@ struct FilmProfile
 
 	// Marathon Infinity fixes tag suicides in a different way
 	bool infinity_tag_fix;
+
+	// Marathon Infinity always adds adjacent polygons to the
+	// intersecting indexes (unmerged maps only)
+	bool adjacent_polygons_always_intersect;
 };
 
 extern FilmProfile film_profile;

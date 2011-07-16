@@ -664,6 +664,19 @@ static void find_intersecting_endpoints_and_lines(
 
 	data.minimum_separation_squared= minimum_separation*minimum_separation;
 	find_center_of_polygon(polygon_index, &data.center);
+	
+	if (film_profile.adjacent_polygons_always_intersect)
+	{
+		polygon_data* polygon = get_polygon_data(polygon_index);
+		for (int i = 0; i < polygon->vertex_count; ++i)
+		{
+			short adjacent_polygon_index = find_adjacent_polygon(polygon_index, polygon->line_indexes[i]);
+			if (adjacent_polygon_index != NONE)
+			{
+				PolygonIndices.push_back(adjacent_polygon_index);
+			}
+		}
+	}
 
 	polygon_index= flood_map(polygon_index, INT32_MAX, intersecting_flood_proc, _breadth_first, &data);
 	while (polygon_index!=NONE)
