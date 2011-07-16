@@ -176,6 +176,11 @@ short new_item(
 				SET_OBJECT_INVISIBILITY(object, true);
 				object->permutation= NONE;
 			}
+			else if ((get_item_kind(type) == _ball) && !static_world->ball_in_play)
+			{
+				static_world->ball_in_play = true;
+				SoundManager::instance()->PlayLocalSound(_snd_got_ball);
+			}
 			
 			/* let PLACEMENT.C keep track of how many there are */
 			object_was_just_added(_object_is_item, type);

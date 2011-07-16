@@ -1083,6 +1083,7 @@ void load_map_info(
 	uint8 *map_info)
 {
 	unpack_static_data(map_info,static_world,1);
+	static_world->ball_in_play = FALSE;
 }
 
 void load_media(

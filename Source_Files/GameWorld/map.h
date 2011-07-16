@@ -836,7 +836,9 @@ struct static_data
 	int16 mission_flags;
 	int16 environment_flags;
 	
-	int16 unused[4];
+	bool ball_in_play; // true if there's a ball in play
+	bool unused1;
+	int16 unused[3];
 
 	char level_name[LEVEL_NAME_LENGTH];
 	uint32 entry_point_flags;
