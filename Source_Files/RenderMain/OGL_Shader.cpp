@@ -79,7 +79,9 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"glow",
 	"landscapeInverseMatrix",
 	"scalex",
-	"scaley"
+	"scaley",
+	"yaw",
+	"pitch"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 
@@ -406,7 +408,6 @@ void initDefaultPrograms() {
     
     defaultVertexPrograms["landscape"] = ""
         "uniform mat4 landscapeInverseMatrix;\n"
-        "varying vec3 faceDir;\n"
         "varying vec3 relDir;\n"
         "varying vec4 vertexColor;\n"
         "void main(void) {\n"
@@ -414,8 +415,6 @@ void initDefaultPrograms() {
         "#ifndef DISABLE_CLIP_VERTEX\n"
         "	gl_ClipVertex = gl_ModelViewMatrix * gl_Vertex;\n"
         "#endif\n"
-        "	vec4 v = landscapeInverseMatrix * vec4(0.0, 0.0, 0.0, 1.0);\n"
-        "	faceDir = ((gl_ModelViewMatrixInverse * vec4(0.0, 0.0, -1.0, 1.0)) - v).xyz;\n"
         "	relDir = (gl_ModelViewMatrix * gl_Vertex).xyz;\n"
         "	vertexColor = gl_Color;\n"
         "}\n";
@@ -426,14 +425,15 @@ void initDefaultPrograms() {
         "uniform float scaley;\n"
         "uniform float offsetx;\n"
         "uniform float offsety;\n"
-        "varying vec3 faceDir;\n"
+        "uniform float yaw;\n"
+        "uniform float pitch;\n"
         "varying vec3 relDir;\n"
         "varying vec4 vertexColor;\n"
         "const float zoom = 1.2;\n"
         "const float pitch_adjust = 0.96;\n"
         "void main(void) {\n"
-        "	vec3 facev = normalize(faceDir);\n"
-        "	vec3 relv  = normalize(relDir);\n"
+        "	vec3 facev = vec3(cos(yaw), sin(yaw), sin(pitch));\n"
+        "	vec3 relv  = (relDir);\n"
         "	float x = relv.x / (relv.z * zoom) + atan(facev.x, facev.y);\n"
         "	float y = relv.y / (relv.z * zoom) - (facev.z * pitch_adjust);\n"
         "	vec4 color = texture2D(texture0, vec2(offsetx - x * scalex, offsety - y * scaley));\n"
@@ -451,14 +451,15 @@ void initDefaultPrograms() {
         "uniform float scaley;\n"
         "uniform float offsetx;\n"
         "uniform float offsety;\n"	
+        "uniform float yaw;\n"
+        "uniform float pitch;\n"
         "uniform float bloomScale;\n"
-        "varying vec3 faceDir;\n"
         "varying vec3 relDir;\n"
         "varying vec4 vertexColor;\n"
         "const float zoom = 1.205;\n"
         "const float pitch_adjust = 0.955;\n"
         "void main(void) {\n"
-        "	vec3 facev = normalize(faceDir);\n"
+        "	vec3 facev = vec3(cos(yaw), sin(yaw), sin(pitch));\n"
         "	vec3 relv  = normalize(relDir);\n"
         "	float x = relv.x / (relv.z * zoom) + atan(facev.x, facev.y);\n"
         "	float y = relv.y / (relv.z * zoom) - (facev.z * pitch_adjust);\n"
