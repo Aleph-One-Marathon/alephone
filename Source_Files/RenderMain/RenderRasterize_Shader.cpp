@@ -404,10 +404,10 @@ void RenderRasterize_Shader::render_tree() {
 	s->setFloat(Shader::U_Time, view->tick_count);
 	s->setFloat(Shader::U_UseStatic, TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
 
-	world_point3d cam_pos = current_player->camera_location;
+	cam_pos = current_player->camera_location;
 	short cam_poly;
-	angle cam_yaw = FIXED_INTEGERAL_PART(current_player->variables.direction + current_player->variables.head_direction);
-	angle cam_pitch = FIXED_INTEGERAL_PART(current_player->variables.elevation);
+	cam_yaw = FIXED_INTEGERAL_PART(current_player->variables.direction + current_player->variables.head_direction);
+	cam_pitch = FIXED_INTEGERAL_PART(current_player->variables.elevation);
 	ChaseCam_GetPosition(cam_pos, cam_poly, cam_yaw, cam_pitch);
 	
 	bool usefog = false;
@@ -458,12 +458,6 @@ void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiq
 {
 	if (!node->clipping_windows)
 		return;
-
-	world_point3d cam_pos = current_player->camera_location;
-	short cam_poly;
-	angle cam_yaw = FIXED_INTEGERAL_PART(current_player->variables.direction + current_player->variables.head_direction);
-	angle cam_pitch;
-	ChaseCam_GetPosition(cam_pos, cam_poly, cam_yaw, cam_pitch);
 
 	for (clipping_window_data *win = node->clipping_windows; win; win = win->next_window)
 	{
