@@ -800,10 +800,29 @@ static void software_rendering_options_dialog(void* arg)
 	}
 }
 
+#if defined(__APPLE__) && defined(__MACH__)
+#include <sys/utsname.h>
+#include <boost/algorithm/string/predicate.hpp>
+
+// On Lion, uname -r starts with "11."
+inline bool IsLion() 
+{
+	struct utsname uinfo;
+	uname(&uinfo);
+	return boost::algorithm::starts_with(uinfo.release, "11.");
+}
+#else
+inline bool IsLion() { return false; }
+#endif
+
 // ZZZ addition: bounce to correct renderer-config box based on selected rendering system.
 static void rendering_options_dialog_demux(void* arg)
 {
 	int theSelectedRenderer = get_selection_control_value((dialog*) arg, iRENDERING_SYSTEM) - 1;
+	if (IsLion())
+	{
+		theSelectedRenderer += 1;
+	}
 
 	switch(theSelectedRenderer) {
 		case _no_acceleration:
@@ -848,7 +867,16 @@ static void graphics_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 	
-	w_select* renderer_w = new w_select(graphics_preferences->screen_mode.acceleration, renderer_labels);
+	w_select* renderer_w;
+	if (IsLion())
+	{
+		renderer_w = new w_select(graphics_preferences->screen_mode.acceleration - 1, renderer_labels + 1);
+	}
+	else
+	{
+		renderer_w = new w_select(graphics_preferences->screen_mode.acceleration, renderer_labels);
+	}
+
 	renderer_w->set_identifier(iRENDERING_SYSTEM);
 #ifndef HAVE_OPENGL
 	renderer_w->set_selection(_no_acceleration);
@@ -944,6 +972,11 @@ static void graphics_dialog(void *arg)
 	    }
 
 	    short renderer = static_cast<short>(renderer_w->get_selection());
+	    if (IsLion())
+	    {
+		    renderer += 1;
+	    }
+
 	    assert(renderer >= 0);
 	    if(renderer != graphics_preferences->screen_mode.acceleration) {
 		    graphics_preferences->screen_mode.acceleration = renderer;
@@ -2598,7 +2631,6 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->film_profile = FILM_PROFILE_DEFAULT;
 }
 
-
 /*
  *  Validate preferences
  */
@@ -2606,6 +2638,12 @@ static void default_environment_preferences(environment_preferences_data *prefer
 static bool validate_graphics_preferences(graphics_preferences_data *preferences)
 {
 	bool changed= false;
+
+	if (IsLion() && preferences->screen_mode.acceleration == _no_acceleration)
+	{
+		changed = true;
+		preferences->screen_mode.acceleration = _opengl_acceleration;
+	}
 
 	// Fix bool options
 	preferences->screen_mode.high_resolution = !!preferences->screen_mode.high_resolution;
