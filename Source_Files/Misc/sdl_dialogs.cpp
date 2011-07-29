@@ -944,10 +944,14 @@ bool load_theme(FileSpecifier &theme)
 			for (std::map<int, dialog_image_spec_type>::iterator k = j->second.image_specs.begin(); k != j->second.image_specs.end(); ++k)
 			{
 				FileSpecifier file = theme + k->second.name;
-				SDL_Surface *s = SDL_LoadBMP(file.GetPath());
-				if (s) 
-					SDL_SetColorKey(s, SDL_SRCCOLORKEY, SDL_MapRGB(s->format, 0x00, 0xff, 0xff));
-				j->second.images[k->first] = s;
+				OpenedFile of;
+				if (file.Open(of))
+				{
+					SDL_Surface *s = SDL_LoadBMP_RW(of.GetRWops(), 0);
+					if (s) 
+						SDL_SetColorKey(s, SDL_SRCCOLORKEY, SDL_MapRGB(s->format, 0x00, 0xff, 0xff));
+					j->second.images[k->first] = s;
+				}
 			}
 		}
 	}
