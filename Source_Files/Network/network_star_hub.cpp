@@ -473,7 +473,7 @@ hub_initialize(int32 inStartingTick, size_t inNumPlayers, const NetAddrBlock* co
                 }
 
                 thePlayer.mLastNetworkTickHeard = 0;
-		thePlayer.mLastRecoverySend = theFirstTick;
+		thePlayer.mLastRecoverySend = 0;
                 thePlayer.mSmallestUnacknowledgedTick = theFirstTick;
 		thePlayer.mSmallestUnheardTick = theFirstTick;
 		thePlayer.mNthElementFinder.reset(sHubPreferences.mPregameWindowSize);
