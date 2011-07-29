@@ -782,6 +782,9 @@ bool join_networked_resume_game()
                 
                 if(success)
                 {
+                        LoadHUDLua();
+                        RunLuaHUDScript();
+
                         // try to locate the Map file for the saved-game, so that (1) we have a crack
                         // at continuing the game if the original gatherer disappears, and (2) we can
                         // save the game on our own machine and continue it properly (as part of a bigger scenario) later.
