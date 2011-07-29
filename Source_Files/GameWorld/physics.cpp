@@ -99,9 +99,7 @@ running backwards shouldnÕt mean doom in a fistfight
 
 #define AIRBORNE_HEIGHT WORLD_TO_FIXED(WORLD_ONE/16)
 
-// LP change: drop-dead height is effectively zero when the chase-cam is on;
-// this keeps it from dropping.
-#define DROP_DEAD_HEIGHT WORLD_TO_FIXED(ChaseCam_IsActive() ? 0 : WORLD_ONE_HALF)
+#define DROP_DEAD_HEIGHT WORLD_TO_FIXED(WORLD_ONE_HALF)
 
 #define FLAGS_WHICH_PREVENT_RECENTERING (_turning|_looking|_sidestepping|_looking_vertically|_look_dont_turn|_sidestep_dont_turn)
 
@@ -485,18 +483,14 @@ _fixed get_player_forward_velocity_scale(
 	}
 	
 	/* shadow position in player structure, build camera location */
-	// LP change: no camera bob when the ChaseCam is active
-	if (ChaseCam_IsActive())
-		step_height = 0;
-	else
-	{
-		step_height= (constants->step_amplitude*sine_table[variables->step_phase>>(FIXED_FRACTIONAL_BITS-ANGULAR_BITS+1)])>>TRIG_SHIFT;
-		step_height= (step_height*variables->step_amplitude)>>FIXED_FRACTIONAL_BITS;
-	}
+	step_height= (constants->step_amplitude*sine_table[variables->step_phase>>(FIXED_FRACTIONAL_BITS-ANGULAR_BITS+1)])>>TRIG_SHIFT;
+	step_height= (step_height*variables->step_amplitude)>>FIXED_FRACTIONAL_BITS;
+
 	player->camera_location= new_location;
 	if (PLAYER_IS_DEAD(player) && new_location.z<adjusted_floor_height) new_location.z= adjusted_floor_height;
 	player->location= new_location;
 	player->camera_location.z+= FIXED_TO_WORLD(step_height+variables->actual_height-constants->camera_height);
+	player->step_height = FIXED_TO_WORLD(step_height);
 	player->camera_polygon_index= legs->polygon;
 
 	/* shadow facing in player structure and object structure */
