@@ -441,7 +441,7 @@ static int Lua_Sceneries_New(lua_State *L)
 	location.flags = 0;
 
 	short scenery_index = ::new_scenery(&location, scenery_type);
-	if (scenery_index == 0)
+	if (scenery_index == NONE)
 		return 0;
 
 	randomize_scenery_shape(scenery_index);
