@@ -113,7 +113,7 @@
 </text_entry>
 
 <!-- Metaserver and pre-game chat -->
-<chat_entry name_width="100">
+<chat_entry name_width="110">
   <color index="0" red="1" green="1" blue="1"/>
 </chat_entry>
 
