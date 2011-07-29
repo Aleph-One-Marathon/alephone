@@ -1308,8 +1308,9 @@ send_packets()
                                 // Timing adjustment?
                                 if(thePlayer.mOutstandingTimingAdjustment != 0)
                                 {
+					int8 adjustment = PIN(thePlayer.mOutstandingTimingAdjustment, INT8_MIN, INT8_MAX);
                                         ps << (uint16)kTimingAdjustmentMessageType
-                                                << (int8)(thePlayer.mOutstandingTimingAdjustment);
+					   << adjustment;
                                 }
         
                                 // Netdead players?
