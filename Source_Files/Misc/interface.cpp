@@ -1764,6 +1764,7 @@ static bool begin_game(
 	bool record_game= false;
 	uint32 parent_checksum = 0;
 
+	clear_game_error();
 	objlist_clear(starts, MAXIMUM_NUMBER_OF_PLAYERS);
 	
 	switch(user)
