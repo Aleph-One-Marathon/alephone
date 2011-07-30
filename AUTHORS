@@ -1,10 +1,35 @@
-Aleph One is based on the Marathon 2 source code which was developed by
-Bungie Software <http://www.bungie.com/>.
+Aleph One is based on the Marathon 2 and Marathon Infinity source code
+which was developed by Bungie Software <http://www.bungie.com/>.
 
-The enhancements and extensions to Marathon 2 that constitute Aleph One have
-been made by Loren Petrich, Chris Pruett, Ian Pitcher, Rhys Hill, Ben Thompson,
-Mihai Parparita, Bo Lindbergh and others.
+The enhancements and extensions to Marathon 2 and Marathon Infinity
+that constitute Aleph One have been made by:
 
-The SDL port of Aleph One has been made by Christian Bauer <www.cebix.net>.
+Joey Adams
+Michael Adams (mdmkolbe)
+Christian Bauer
+Solra Bizna
+Glenn Ditchfield
+Will Dyson
+Peter Hessler
+Matthew Hielscher
+Rhys Hill
+Mark Levin
+Bo Lindbergh
+Derek Moeller
+Jeremiah Morris
+Sam Morris
+Mihai Parparita
+Jeremy Parsons (brefin)
+Eric Peterson
+Loren Petrich
+pickle136
+Ian Pitcher
+Chris Pruett
+Etienne Samson (tiennou)
+Gregory Smith (treellama)
+Alexander Strange (mrvacbob)
+Alexei Svitkine
+Ben Thompson
+James Willson
 
-Aleph One uses the Expat XML library developed by James Clark.
+
