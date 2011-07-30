@@ -1,0 +1,40 @@
+The Aleph One project owes thanks to the following individuals and groups, for
+their contributions to this project or to open source software.
+
+Media and support files have been contributed by the Aleph One authors and by:
+
+Bill Catambay
+Hugo Forss
+Robert Kreps
+Tim Larson
+Tom Moertel
+Jesse Simko
+
+The Aleph One project includes code from:
+
+DevIL, by Denton Woods
+Expat, by James Clark
+LibNAT, by Adam Warrington
+Lua, by PUC-Rio
+Lua Power Patches, patch by Chris Marrin
+
+Aleph One makes use of external libraries including:
+
+ALSA
+Boost
+FreeType
+GLEW
+JPEG
+libpng
+libsndfile
+MAD
+SDL
+SDL_image
+SDL_net
+SDL_ttf
+smpeg
+Speex
+Ogg
+Vorbis
+zlib
+zziplib
