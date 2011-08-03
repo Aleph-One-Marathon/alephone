@@ -59,7 +59,11 @@ void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, 
 	sound_channel_count = num_channels;
 	main_volume = volume;
 	desired.freq = rate;
+#if defined(__MACH__) && defined(__APPLE__)
+	desired.format = sixteen_bit ? AUDIO_S16SYS : AUDIO_U8;
+#else
 	desired.format = sixteen_bit ? AUDIO_S16SYS : AUDIO_S8;
+#endif
 	desired.channels = stereo ? 2 : 1;
 	desired.samples = samples;
 	desired.callback = MixerCallback;
@@ -117,7 +121,7 @@ void Mixer::Callback(uint8 *stream, int len)
 			Mix<int16, true, true>(reinterpret_cast<int16 *>(stream), len / 4);
 		else
 			Mix<int16, false, true>(reinterpret_cast<int16 *>(stream), len / 2);
-	} else if (obtained.format & 0x1000) {
+	} else if (obtained.format & 0x8000) {
 		if (stereo)
 			Mix<int16, true, true>(reinterpret_cast<int16 *>(stream), len / 2);
 		else
