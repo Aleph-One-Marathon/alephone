@@ -130,6 +130,7 @@ Screen Screen::m_instance;
 // Prototypes
 static bool need_mode_change(int width, int height, int depth, bool nogl);
 static void change_screen_mode(int width, int height, int depth, bool nogl);
+static bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode);
 static void build_sdl_color_table(const color_table *color_table, SDL_Color *colors);
 static void reallocate_world_pixels(int width, int height);
 static void reallocate_map_pixels(int width, int height);
@@ -858,6 +859,34 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	}
 }
 
+bool get_auto_resolution_size(short *w, short *h, struct screen_mode_data *mode)
+{
+	if (screen_mode.auto_resolution)
+	{
+		short width = Screen::instance()->ModeWidth(0);
+		short height = Screen::instance()->ModeHeight(0);
+		// in windowed mode, use a window one step down from fullscreen size
+		if (!screen_mode.fullscreen &&
+			((width > 640) || (height > 480)) &&
+			(Screen::instance()->GetModes().size() > 1))
+		{
+			width = Screen::instance()->ModeWidth(1);
+			height = Screen::instance()->ModeHeight(1);
+		}
+		if (w)
+			*w = width;
+		if (h)
+			*h = height;
+		if (mode)
+		{
+			mode->width = width;
+			mode->height = height;
+		}
+		return true;
+	}
+	return false;
+}
+	
 void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 {
 	// Get the screen mode here
@@ -876,6 +905,8 @@ void change_screen_mode(struct screen_mode_data *mode, bool redraw)
 			w = 640;
 			h = 480;
 		}
+		else
+			get_auto_resolution_size(&w, &h, mode);
 		change_screen_mode(w, h, mode->bit_depth, false);
 		clear_screen();
 		recenter_mouse();
@@ -900,6 +931,8 @@ void change_screen_mode(short screentype)
 			w = 640;
 			h = 480;
 		}
+		else
+			get_auto_resolution_size(&w, &h, mode);
 	}
 	else if (screentype == _screentype_chapter)
 	{
@@ -911,6 +944,8 @@ void change_screen_mode(short screentype)
 			w = 640;
 			h = 480;
 		}
+		else
+			get_auto_resolution_size(&w, &h, mode);
 	}
 	
 	change_screen_mode(w, h, mode->bit_depth, false);

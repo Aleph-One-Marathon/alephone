@@ -70,6 +70,7 @@ struct screen_mode_data
 
 	short width;
 	short height;
+	bool auto_resolution;
 	bool hud;
 	short hud_scale_level;
 	short term_scale_level;

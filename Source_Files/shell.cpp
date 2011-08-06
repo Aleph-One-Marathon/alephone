@@ -1020,12 +1020,13 @@ static void handle_game_key(const SDL_Event &event)
 			}
 			else
 			{
-				int mode = alephone::Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height);
+				int mode = alephone::Screen::instance()->FindMode(get_screen_mode()->width, get_screen_mode()->height);
 				if (mode < alephone::Screen::instance()->GetModes().size() - 1)
 				{
 					PlayInterfaceButtonSound(Sound_ButtonSuccess());
 					graphics_preferences->screen_mode.width = alephone::Screen::instance()->ModeWidth(mode + 1);
 					graphics_preferences->screen_mode.height = alephone::Screen::instance()->ModeHeight(mode + 1);
+					graphics_preferences->screen_mode.auto_resolution = false;
 					graphics_preferences->screen_mode.hud = false;
 					changed_screen_mode = changed_prefs = true;
 				} else
@@ -1042,12 +1043,15 @@ static void handle_game_key(const SDL_Event &event)
 			}
 			else
 			{
-				int mode = alephone::Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height);
-				if (mode > 0)
+				int mode = alephone::Screen::instance()->FindMode(get_screen_mode()->width, get_screen_mode()->height);
+				int automode = get_screen_mode()->fullscreen ? 0 : 1;
+				if (mode > automode)
 				{
 					PlayInterfaceButtonSound(Sound_ButtonSuccess());
 					graphics_preferences->screen_mode.width = alephone::Screen::instance()->ModeWidth(mode - 1);
 					graphics_preferences->screen_mode.height = alephone::Screen::instance()->ModeHeight(mode - 1);
+					if ((mode - 1) == automode)
+						graphics_preferences->screen_mode.auto_resolution = true;
 					graphics_preferences->screen_mode.hud = true;
 					changed_screen_mode = changed_prefs = true;
 				} else
