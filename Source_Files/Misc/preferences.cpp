@@ -824,10 +824,16 @@ static void rendering_options_dialog_demux(void* arg)
 std::vector<std::string> build_resolution_labels()
 {
 	std::vector<std::string> result;
+	bool first_mode = true;
 	for (std::vector<std::pair<int, int> >::const_iterator it = Screen::instance()->GetModes().begin(); it != Screen::instance()->GetModes().end(); ++it)
 	{
 		ostringstream os;
 		os << it->first << "x" << it->second;
+		if (first_mode)
+		{
+			result.push_back("Automatic");
+			first_mode = false;
+		}
 		result.push_back(os.str());
 	}
 
@@ -859,7 +865,10 @@ static void graphics_dialog(void *arg)
 
 	w_select_popup *size_w = new w_select_popup();
 	size_w->set_labels(build_resolution_labels());
-	size_w->set_selection(Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height));
+	if (graphics_preferences->screen_mode.auto_resolution)
+		size_w->set_selection(0);
+	else
+		size_w->set_selection(Screen::instance()->FindMode(graphics_preferences->screen_mode.width, graphics_preferences->screen_mode.height) + 1);
 	table->dual_add(size_w->label("Screen Size"), d);
 	table->dual_add(size_w, d);
 
@@ -952,12 +961,19 @@ static void graphics_dialog(void *arg)
 	    }
 	    
 	    short resolution = static_cast<short>(size_w->get_selection());
-	    if (Screen::instance()->ModeWidth(resolution) != graphics_preferences->screen_mode.width || Screen::instance()->ModeHeight(resolution) != graphics_preferences->screen_mode.height)
+		if (resolution == 0)
+		{
+			if (!graphics_preferences->screen_mode.auto_resolution) {
+				graphics_preferences->screen_mode.auto_resolution = true;
+				changed = true;
+			}
+		}
+	    else if (Screen::instance()->ModeWidth(resolution - 1) != graphics_preferences->screen_mode.width || Screen::instance()->ModeHeight(resolution - 1) != graphics_preferences->screen_mode.height || graphics_preferences->screen_mode.auto_resolution)
 	    {
-		    graphics_preferences->screen_mode.width = Screen::instance()->ModeWidth(resolution);
-		    graphics_preferences->screen_mode.height = Screen::instance()->ModeHeight(resolution);
+		    graphics_preferences->screen_mode.width = Screen::instance()->ModeWidth(resolution - 1);
+		    graphics_preferences->screen_mode.height = Screen::instance()->ModeHeight(resolution - 1);
+			graphics_preferences->screen_mode.auto_resolution = false;
 		    changed = true;
-		    // don't change mode now; it will be changed when the game starts
 	    }
 	    
 	    short gamma = static_cast<short>(gamma_w->get_selection());
@@ -2194,6 +2210,7 @@ void write_preferences(
 	fprintf(F,"<graphics\n");
 	fprintf(F,"  scmode_width=\"%hd\"\n", graphics_preferences->screen_mode.width);
 	fprintf(F,"  scmode_height=\"%hd\"\n", graphics_preferences->screen_mode.height);
+	fprintf(F,"  scmode_auto_resolution=\"%s\"\n", BoolString(graphics_preferences->screen_mode.auto_resolution));
 	fprintf(F,"  scmode_hud=\"%s\"\n", BoolString(graphics_preferences->screen_mode.hud));
 	fprintf(F,"  scmode_hud_scale=\"%hd\"\n", graphics_preferences->screen_mode.hud_scale_level);
 	fprintf(F,"  scmode_term_scale=\"%hd\"\n", graphics_preferences->screen_mode.term_scale_level);
@@ -2405,6 +2422,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 
 	preferences->screen_mode.width = 640;
 	preferences->screen_mode.height = 480;
+	preferences->screen_mode.auto_resolution = true;
 	preferences->screen_mode.hud = true;
 	preferences->screen_mode.hud_scale_level = 0;
 	preferences->screen_mode.term_scale_level = 0;
@@ -3168,6 +3186,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	else if (StringsEqual(Tag,"scmode_width"))
 	{
 		return ReadInt16Value(Value, graphics_preferences->screen_mode.width);
+	}
+	else if (StringsEqual(Tag,"scmode_auto_resolution"))
+	{
+		return ReadBooleanValue(Value, graphics_preferences->screen_mode.auto_resolution);
 	}
 	else if (StringsEqual(Tag,"scmode_hud"))
 	{
