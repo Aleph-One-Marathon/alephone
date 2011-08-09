@@ -505,6 +505,7 @@ static extension_mapping extensions[] =
         { "sndA", _typecode_sounds },
 
 	{ "scen", _typecode_scenario },
+	{ "shps", _typecode_shapes },
 
 	{0, _typecode_unknown}
 };

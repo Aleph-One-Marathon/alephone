@@ -113,6 +113,8 @@ Jan 17, 2001 (Loren Petrich):
 #include <SDL_rwops.h>
 #include <memory>
 
+#include <boost/shared_ptr.hpp>
+
 #ifdef env68k
 #pragma segment shell
 #endif
@@ -174,6 +176,8 @@ short number_of_shading_tables, shading_table_fractional_bits, shading_table_siz
 
 // LP addition: opened-shapes-file object
 static OpenedFile ShapesFile;
+static OpenedResourceFile M1ShapesFile;
+static bool m1_shapes;
 
 /* ---------- private prototypes */
 
@@ -617,6 +621,7 @@ static void load_bitmap(std::vector<uint8>& bitmap, SDL_RWops *p)
 		bitmap.resize(sizeof(bitmap_definition) + rows * sizeof(pixel8*) + rows * b.bytes_per_row);
 	}
 
+
 	uint8* c = &bitmap[0];
 	bitmap_definition *d = (bitmap_definition *) &bitmap[0];
 	d->width = b.width;
@@ -663,67 +668,99 @@ static void allocate_shading_tables(short collection_index, bool strip)
 	}
 }
 
-
 /*
  *  Load collection
  */
 
 static bool load_collection(short collection_index, bool strip)
 {
-	SDL_RWops *p = ShapesFile.GetRWops(); // Source stream
+	SDL_RWops* p;
+	boost::shared_ptr<SDL_RWops> m1_p; // automatic deallocation
+	LoadedResource r;
+	int32 src_offset;
 
-	// Get offset and length of data in source file from header
 	collection_header *header = get_collection_header(collection_index);
-	int32 src_offset, src_length;
+	
+	if (m1_shapes)
+	{
+		// Collections are stored in .256 resources
+		if (!M1ShapesFile.Get('.', '2', '5', '6', 128 + collection_index, r))
+		{
+			return false;
+		}
 
-	if (bit_depth == 8 || header->offset16 == -1) {
-		vassert(header->offset != -1, csprintf(temporary, "collection #%d does not exist.", collection_index));
-		src_offset = header->offset;
-		src_length = header->length;
-	} else {
-		src_offset = header->offset16;
-		src_length = header->length16;
+		m1_p.reset(SDL_RWFromConstMem(r.GetPointer(), r.GetLength()), SDL_FreeRW);
+		p = m1_p.get();
+		src_offset = 0;
+	}
+	else
+	{
+		// Get offset and length of data in source file from header
+		
+		if (bit_depth == 8 || header->offset16 == -1) {
+			if (header->offset == -1)
+			{
+				return false;
+			}
+			src_offset = header->offset;
+		} else {
+			src_offset = header->offset16;
+		}
+
+		p = ShapesFile.GetRWops();
+		ShapesFile.SetPosition(0);
+		src_offset += SDL_RWtell(p);
 	}
 
 	// Read collection definition
 	std::auto_ptr<collection_definition> cd(new collection_definition);
- 	ShapesFile.SetPosition(src_offset);
+	SDL_RWseek(p, src_offset, RW_SEEK_SET);
 	load_collection_definition(cd.get(), p);
+	if (m1_shapes && cd->type != _wall_collection)
+	{
+		// don't know how to read M1 RLE shapes yet, so clear
+		// out and return true
+		cd->high_level_shapes.clear();
+		cd->low_level_shapes.clear();
+		cd->bitmaps.clear();
+		return true;
+	}
 	header->status &= ~markPATCHED;
 
 	// Convert CLUTS
-	ShapesFile.SetPosition(src_offset + cd->color_table_offset);
+	SDL_RWseek(p, src_offset + cd->color_table_offset, RW_SEEK_SET);
 	load_clut(&cd->color_tables[0], cd->clut_count * cd->color_count, p);
 
 	// Convert high-level shape definitions
-	ShapesFile.SetPosition(src_offset + cd->high_level_shape_offset_table_offset);
+	SDL_RWseek(p, src_offset + cd->high_level_shape_offset_table_offset, RW_SEEK_SET);
+
 	std::vector<uint32> t(cd->high_level_shape_count);
 	SDL_RWread(p, &t[0], sizeof(uint32), cd->high_level_shape_count);
 	byte_swap_memory(&t[0], _4byte, cd->high_level_shape_count);
 	for (int i = 0; i < cd->high_level_shape_count; i++) {
-		ShapesFile.SetPosition(src_offset + t[i]);
+		SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
 		load_high_level_shape(cd->high_level_shapes[i], p);
 	}
 
 	// Convert low-level shape definitions
-	ShapesFile.SetPosition(src_offset + cd->low_level_shape_offset_table_offset);
+	SDL_RWseek(p, src_offset + cd->low_level_shape_offset_table_offset, RW_SEEK_SET);
 	t.resize(cd->low_level_shape_count);
 	SDL_RWread(p, &t[0], sizeof(uint32), cd->low_level_shape_count);
 	byte_swap_memory(&t[0], _4byte, cd->low_level_shape_count);
 
 	for (int i = 0; i < cd->low_level_shape_count; i++) {
-		ShapesFile.SetPosition(src_offset + t[i]);
+		SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
 		load_low_level_shape(&cd->low_level_shapes[i], p);
 	}
 
 	// Convert bitmap definitions
-	ShapesFile.SetPosition(src_offset + cd->bitmap_offset_table_offset);
+	SDL_RWseek(p, src_offset + cd->bitmap_offset_table_offset, RW_SEEK_SET);
 	t.resize(cd->bitmap_count);
 	SDL_RWread(p, &t[0], sizeof(uint32), cd->bitmap_count);
 	byte_swap_memory(&t[0], _4byte, cd->bitmap_count);
 
 	for (int i = 0; i < cd->bitmap_count; i++) {
-		ShapesFile.SetPosition(src_offset + t[i]);
+		SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
 		load_bitmap(cd->bitmaps[i], p);
 	}
 
@@ -927,8 +964,13 @@ void initialize_shape_handler()
 
 void open_shapes_file(FileSpecifier& File)
 {
-	if (File.Open(ShapesFile))
+	if (File.Open(M1ShapesFile) && M1ShapesFile.Check('.','2','5','6',128))
 	{
+		m1_shapes = true;
+	}
+	else if (File.Open(ShapesFile))
+	{
+		m1_shapes = false;
 		// Load the collection headers;
 		// need a buffer for the packed data
 		int Size = MAXIMUM_COLLECTIONS*SIZEOF_collection_header;
@@ -977,7 +1019,14 @@ void open_shapes_file(FileSpecifier& File)
 
 static void close_shapes_file(void)
 {
-	ShapesFile.Close();
+	if (m1_shapes)
+	{
+		M1ShapesFile.Close();
+	}
+	else
+	{
+		ShapesFile.Close();
+	}
 }
 
 static void shutdown_shape_handler(void)
