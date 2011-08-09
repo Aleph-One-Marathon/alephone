@@ -260,7 +260,7 @@ extern vector<platform_data> PlatformList;
 
 /* --------- prototypes/PLATFORMS.C */
 
-short new_platform(struct static_platform_data *data, short polygon_index);
+short new_platform(struct static_platform_data *data, short polygon_index, short version);
 struct static_platform_data *get_defaults_for_platform_type(short type);
 
 void update_platforms(void);

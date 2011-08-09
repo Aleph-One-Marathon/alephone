@@ -82,6 +82,8 @@ Jun 30, 2002 (tiennou):
 
 #include <string.h>
 
+#include "editor.h" // MARATHON_ONE_DATA_VERSION
+
 #ifdef env68k
 #pragma segment doors
 #endif
@@ -134,7 +136,8 @@ platform_definition *get_platform_definition(const short type)
 
 short new_platform(
 	struct static_platform_data *data,
-	short polygon_index)
+	short polygon_index,
+	short version)
 {
 	short platform_index= NONE;
 	struct platform_data *platform;
@@ -165,6 +168,17 @@ short new_platform(
 		platform->polygon_index= polygon_index;
 		platform->parent_platform_index= NONE;
 		calculate_platform_extrema(platform_index, data->minimum_height, data->maximum_height);
+		
+		if (version == MARATHON_ONE_DATA_VERSION)
+		{
+			switch (platform->type)
+			{
+			case 0: // marathon door
+			case 3: // pfhor door
+				SET_PLATFORM_IS_DOOR(platform, true);
+				break;
+			}
+		}
 
 #if 0
 		switch (platform->type)
