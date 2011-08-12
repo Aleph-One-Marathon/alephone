@@ -1,0 +1,36 @@
+README for Squarish Sans CT
+
+Squarish Sans is a typeface I never intended to make.
+
+I had created a quasi-clone of Modula Tall called Marapfhont for the 
+Marathon gaming community. (Modula Tall was used in the title display of 
+the game.) Bank Gothic was used for the text of its manual, and a bit of
+the UI. Because Bank Gothic was much more popular and several versions 
+already existed, I saw no need to create another.
+
+Then I learned that Aleph One, the open-sourced engine for playing 
+Marathon games, needed to distribute Bank Gothic in order to display
+the UI properly. No version of Bank Gothic existed under a free license,
+so none could legally be thus distributed.  Squarish Sans was created
+under the Open Font License to fill that void.
+
+Squarish Sans is not a direct clone of any Bank Gothic. I have made
+conscious choices to deviate from existing designs. Yet it is strongly
+inspired by them, of course, particularly Michael Doret's DeLuxe Gothic,
+in that Squarish Sans has a true lower case as well as small caps. It
+should fit the bill should you have need of a Bank Gothic face.
+
+Squarish Sans CT Medium is a complete font, with small caps supplied as
+an OpenType feature.
+
+Squarish Sans CT Medium SC is a limited small caps font, for use when your
+software does not support OpenType.
+
+Tim Larson
+February 2011
+
+Version history-----
+0.8 20110809 More characters, and some fixes.
+0.7 20110503 Two-story "a". Complete Greek/Hebrew. More kerning.
+0.6 20110211 More characters, initial pass at kerning.
+0.5 20110204 Basic ASCII range complete, ready for beta use.
