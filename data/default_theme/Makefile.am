@@ -10,6 +10,7 @@ theme_DATA = theme2.mml resources frame_tl.bmp frame_t.bmp		\
   button_r.bmp button_c_p.bmp button_l_p.bmp button_r_p.bmp		\
   tiny_button_c.bmp tiny_button_l.bmp tiny_button_r.bmp			\
   Squarish_Sans_CT_Medium.ttf DejaVuLGCSansCondensed-BoldOblique.ttf	\
-  DejaVuLGCSansCondensed-Bold.ttf DejaVuLGCSansCondensed-BoldBold.ttf
+  DejaVuLGCSansCondensed-Bold.ttf DejaVuLGCSansCondensed-BoldBold.ttf	\
+  LICENSE-DejaVu SquarishSansCT.README
 
 EXTRA_DIST = $(theme_DATA)
