@@ -405,7 +405,7 @@ void complete_loading_level(
 	{
 		short loop;
 		
-		for(loop= 0; loop<dynamic_world->polygon_count; ++loop)
+		for(loop= 0; loop<dynamic_world->side_count; ++loop)
 		{
 			guess_side_lightsource_indexes(loop);
 		}
