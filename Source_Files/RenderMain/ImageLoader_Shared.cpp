@@ -34,6 +34,7 @@
 #include "ImageLoader.h"
 #include "SDL.h"
 #include "SDL_endian.h"
+#include "Logging.h"
 
 
 #ifdef HAVE_OPENGL
@@ -451,9 +452,11 @@ bool ImageDescriptor::LoadDDSFromFile(FileSpecifier& File, int flags, int actual
 		
 		int OriginalMipMapCount = ddsd.dwMipMapCount;
 		
+		int ExpectedMipMapCount = 1 + floor(log2(max(OriginalWidth, OriginalHeight)));
 		// we don't handle incomplete mip map chains
-		if (OriginalMipMapCount != 1 + floor(log2(max(OriginalWidth, OriginalHeight)))) {
-			fprintf(stderr, "incomplete mipmap chain (%ix%i, %ix%i, %i mipmaps\n", Width, Height, ddsd.dwWidth, ddsd.dwHeight, OriginalMipMapCount);
+		// if we're only missing one, that's OK; XBLA textures do that
+		if (!(OriginalMipMapCount == ExpectedMipMapCount || OriginalMipMapCount == (ExpectedMipMapCount - 1))) {
+			logWarning("incomplete mipmap chain (%ix%i, %ix%i, %i mipmaps)", Width, Height, ddsd.dwWidth, ddsd.dwHeight, OriginalMipMapCount);
 			return false;
 		}
 
