@@ -1462,8 +1462,6 @@ and there are these special values:
 how much to multiply it by (default: 1 -- no change).
 <li>opac_shift: shift value for the opacity;
 how much to add after multiplying (default: 0 -- no change).
-<li>void_visible: can see into the void (what's not in any map polygon) through this texture;
-can cause smearing and weird show-through (default: false; cannot see into void).
 <li>normal_image: the name of the file whose image content to substitute
 in "normal" rendering (sensitive to light levels).
 <li>normal_mask: the name of the file whose image content becomes the opacity mask
@@ -1478,8 +1476,6 @@ for "glowing" rendering (independent of light levels).
 It must be used with a glow_image file.
 <li>minimum_glow_intensity: the threshold at which "glowing" images are independent of light levels. Above this threshold, normal lighting calculations are used. (default: 1 -- always light at full intensity)
 <li>offset_image: the name of the file whose image content to use for bump mapping (normals in RGB channels, height map in alpha channel).
-<li>normal_blend: which blend mode for semitransparent normal textures (default: 0 -- crossfade)
-<li>glow_blend: which blend mode for semitransparent glowing textures (default: 0 -- crossfade)
 <li>shape_width: the width of a substituted sprite's bounding box, in pixel units (default: the width of the original Shapes-file bitmap)
 <li>shape_height: the height of a substituted sprite's bounding box, in pixel units (default: the height of the original Shapes-file bitmap)
 <li>offset_x: the amount to adjust the sprite's keypoint and origin x coordinates, in pixel units (default: 0 -- do not adjust). Positive numbers move the origin to the right, which makes the sprite appear closer to the left of the screen.
@@ -1501,11 +1497,6 @@ Here are the various opacity types:
 <li>Fuzzy edges.
 <li>Fuzzy edges with opacity = average of color channels.
 <li>Fuzzy edges with opacity = maximum of color channels.
-</ol>
-Here are the various blend types, to be used for semitransparent rendering:
-<ol type=1 start=1000>
-<li>Crossfade blending; reasonable for semitransparent, non-glowing object
-<li>Additive blending; reasonable for glowing, low-opacity object
 </ol>
 <p>
 
@@ -1530,6 +1521,14 @@ Here are the texture types:
 <li>Inhabitants
 <li>Weapons in hand
 </ol>
+<p>
+The following texture attributes are deprecated, may not work properly, and should no longer be used:
+<ul>
+<li>void_visible: can see into the void (what's not in any map polygon) through this texture;
+can cause smearing and weird show-through (default: false; cannot see into void).
+<li>normal_blend: which blend mode for semitransparent normal textures (default: 0 -- crossfade)
+<li>glow_blend: which blend mode for semitransparent glowing textures (default: 0 -- crossfade)
+</ul>
 <p>
 
 The next one, &lt;model_clear&gt;, clears all the model definitions;
