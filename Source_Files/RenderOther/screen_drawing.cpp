@@ -101,6 +101,7 @@ static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES] =
 	{263, 500, 294, 585}, // adjusted to work with both m2 and inf
       	{0,0,0,0},
 	{0, 0, 0, 0},
+	{440, 600, 480, 640},
 };
 
 // static screen_rectangle *interface_rectangles;

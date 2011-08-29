@@ -113,6 +113,7 @@ Feb 13, 2003 (Woody Zenfell):
 #include <stdlib.h>
 #include <limits.h>
 #include <algorithm>
+#include <sstream>
 
 #ifdef PERFORMANCE
 #include <perf.h>
@@ -326,6 +327,7 @@ static void display_quit_screens(void);
 static void	display_screen(short base_pict_id);
 static void display_introduction_screen_for_demo(void);
 static void display_epilogue(void);
+static void display_about_dialog();
 
 static void force_system_colors(void);
 static bool point_in_rectangle(short x, short y, screen_rectangle *rect);
@@ -1438,6 +1440,11 @@ void do_menu_item_command(
 				case iQuit:
 					display_quit_screens();
 					break;
+				case iAbout:
+					display_about_dialog();
+					game_state.phase= TICKS_UNTIL_DEMO_STARTS;
+					game_state.last_ticks_on_idle= machine_tick_count();
+					break;
 		
 				default:
 					assert(false);
@@ -1507,6 +1514,7 @@ bool enabled_item(
 		case iReplaySavedFilm:
 		case iCredits:
 		case iQuit:
+	        case iAbout:
 			break;
 
 		case iCenterButton:
@@ -1612,6 +1620,56 @@ static void display_epilogue(
 	for (int i=0; i<NumEndScreens; i++)
 		try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+EndScreenIndex+i, true, true);
 	show_cursor();
+}
+
+static void display_about_dialog()
+{
+	force_system_colors();
+
+	dialog d;
+
+	vertical_placer* placer = new vertical_placer;
+	placer->dual_add(new w_title("ABOUT"), d);
+	placer->add(new w_spacer, true);
+
+	std::ostringstream s;
+	s << "Aleph One " << A1_DISPLAY_VERSION << " (" << A1_DISPLAY_DATE_VERSION << ")";
+	placer->dual_add(new w_static_text(s.str().c_str()), d);
+
+	placer->add(new w_spacer, true);
+
+	placer->dual_add(new w_static_text("http://marathon.sourceforge.net/"), d);
+
+	placer->add(new w_spacer, true);
+	
+	placer->dual_add(new w_static_text("Aleph One is free software with ABSOLUTELY NO WARRANTY."), d);
+	placer->dual_add(new w_static_text("You are welcome to redistribute it under certain conditions."), d);
+	placer->dual_add(new w_static_text("For details: http://www.gnu.org/licenses/gpl-3.0.html"), d);
+
+	placer->add(new w_spacer, true);
+	placer->dual_add(new w_static_text("This license does not apply to game content."), d);
+
+	placer->add(new w_spacer, true);
+
+	s.str("");
+	s << "Scenario Loaded: " << Scenario::instance()->GetName();
+	if (!Scenario::instance()->GetVersion().empty())
+	{
+		s << " " << Scenario::instance()->GetVersion();
+	}
+	placer->dual_add(new w_static_text(s.str().c_str()), d);
+	
+	placer->add(new w_spacer, true);
+
+	placer->dual_add(new w_button("OK", dialog_ok, &d), d);
+	
+	d.set_widget_placer(placer);
+
+	clear_screen();
+
+	d.run();
+
+	display_screen(MAIN_MENU_BASE);
 }
 
 static void display_credits(

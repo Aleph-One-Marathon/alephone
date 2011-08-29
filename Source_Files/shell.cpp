@@ -1268,6 +1268,9 @@ static void process_game_key(const SDL_Event &event)
 				toggle_fullscreen();
 			}
 			break;
+		case SDLK_a:
+			item = iAbout;
+			break;
 		default:
 			break;
 		}
