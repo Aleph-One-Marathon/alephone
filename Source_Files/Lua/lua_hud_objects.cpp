@@ -2079,7 +2079,7 @@ static int Lua_Screen_Get_FOV(lua_State *L)
     return 1;
 }
 
-static int Lua_Screen_Get_Crosshair(lua_State *L)
+static int Lua_Screen_Get_Crosshairs(lua_State *L)
 {
     Lua_Screen_Crosshairs::Push(L, Lua_Screen::Index(L, 1));
     return 1;
@@ -2148,7 +2148,7 @@ const luaL_reg Lua_Screen_Get[] = {
 {"hud_size_preference", Lua_Screen_Get_HUD_Size},
 {"term_size_preference", Lua_Screen_Get_Term_Size},
 {"field_of_view", Lua_Screen_Get_FOV},
-{"crosshair", Lua_Screen_Get_Crosshair},
+{"crosshairs", Lua_Screen_Get_Crosshairs},
 {"masking_mode", Lua_Screen_Get_Masking_Mode},
 {"clear_mask", L_TableFunction<Lua_Screen_Clear_Mask>},
 {"fill_rect", L_TableFunction<Lua_Screen_Fill_Rect>},
