@@ -179,9 +179,9 @@ end
           <type>boolean</type>
         </variable>
       </subtable>
-      <subtable name="crosshair" classname="lua_crosshair">
+      <subtable name="crosshairs" classname="lua_crosshairs">
         <variable name="active" access="read-only" version="SVN">
-          <description>whether the crosshair is enabled</description>
+          <description>whether crosshairs are visible</description>
           <type>boolean</type>
         </variable>
         <variable name="lua_hud" version="SVN">

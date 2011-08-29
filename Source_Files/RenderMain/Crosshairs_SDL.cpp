@@ -33,7 +33,7 @@
  *  Crosshairs status
  */
 
-extern bool use_lua_hud_crosshair;
+extern bool use_lua_hud_crosshairs;
 
 static bool _Crosshairs_IsActive = false;
 
@@ -56,7 +56,7 @@ bool Crosshairs_Render(SDL_Surface *s)
 {
 	if (!_Crosshairs_IsActive)
 		return false;
-	if (use_lua_hud_crosshair)
+	if (use_lua_hud_crosshairs)
 		return false;
 
 	// Get the crosshair data

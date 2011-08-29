@@ -55,7 +55,7 @@ using namespace std;
 namespace io = boost::iostreams;
 
 
-bool use_lua_hud_crosshair;
+bool use_lua_hud_crosshairs;
 
 #ifndef HAVE_LUA
 
@@ -351,7 +351,7 @@ void SetLuaHUDScriptSearchPath(const std::string& directory)
 
 bool RunLuaHUDScript()
 {
-	use_lua_hud_crosshair = false;
+	use_lua_hud_crosshairs = false;
 	return (hud_state && hud_state->Run());
 }
 
