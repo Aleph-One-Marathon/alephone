@@ -1099,7 +1099,9 @@ static void handle_game_key(const SDL_Event &event)
 		else if (key == SDLK_F8) // Toggle the crosshairs
 		{
 			PlayInterfaceButtonSound(Sound_ButtonSuccess());
-			Crosshairs_SetActive(!Crosshairs_IsActive());
+			player_preferences->crosshairs_active = !player_preferences->crosshairs_active;
+			Crosshairs_SetActive(player_preferences->crosshairs_active);
+			changed_prefs = true;
 		}
 		else if (key == SDLK_F9) // Screen dump
 		{
