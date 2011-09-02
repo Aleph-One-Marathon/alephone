@@ -275,6 +275,13 @@ public:
 	w_tiny_button(const char *text, action_proc proc = NULL, void *arg = NULL) : w_button_base(text, proc, arg, TINY_BUTTON) {}
 };
 
+class w_hyperlink : public w_button_base {
+public:
+	w_hyperlink(const char *text, const char *url = NULL);
+	
+	void draw(SDL_Surface *s) const;
+};
+
 /* 
  * Tabs
  */

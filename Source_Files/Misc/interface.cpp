@@ -1638,13 +1638,13 @@ static void display_about_dialog()
 
 	placer->add(new w_spacer, true);
 
-	placer->dual_add(new w_static_text("http://marathon.sourceforge.net/"), d);
+	placer->dual_add(new w_hyperlink("http://marathon.sourceforge.net/"), d);
 
 	placer->add(new w_spacer, true);
 	
 	placer->dual_add(new w_static_text("Aleph One is free software with ABSOLUTELY NO WARRANTY."), d);
 	placer->dual_add(new w_static_text("You are welcome to redistribute it under certain conditions."), d);
-	placer->dual_add(new w_static_text("For details: http://www.gnu.org/licenses/gpl-3.0.html"), d);
+	placer->dual_add(new w_hyperlink("http://www.gnu.org/licenses/gpl-3.0.html"), d);
 
 	placer->add(new w_spacer, true);
 	placer->dual_add(new w_static_text("This license does not apply to game content."), d);

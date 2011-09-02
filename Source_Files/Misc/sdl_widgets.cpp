@@ -369,6 +369,46 @@ void w_button_base::click(int /*x*/, int /*y*/)
 	mouse_up(0, 0);
 }
 
+/*
+ * Clickable link
+ */
+
+void w_hyperlink_prochandler(void *arg)
+{
+	launch_url_in_browser(static_cast<const char *>(arg));
+}
+
+w_hyperlink::w_hyperlink(const char *text, const char *url) : w_button_base(text, w_hyperlink_prochandler, const_cast<char *>(url ? url : text), HYPERLINK_WIDGET)
+{
+	rect.w = text_width(text, font, style);
+	rect.h = font->get_line_height();
+	saved_min_height = rect.h;
+	saved_min_width = rect.w;
+}
+
+void w_hyperlink::draw(SDL_Surface *s) const
+{
+	int state = DEFAULT_STATE;
+	if (pressed)
+		state = PRESSED_STATE;
+	else if (!enabled)
+		state = DISABLED_STATE;
+	else if (active)
+		state = ACTIVE_STATE;
+	
+	uint32 pixel = get_theme_color(HYPERLINK_WIDGET, state, 0);
+	
+	draw_text(s, text.c_str(), rect.x, rect.y + font->get_ascent(), pixel, font, style);
+	
+	// draw_text doesn't support underline, so draw one manually
+	if (style & styleUnderline)
+	{
+		SDL_Rect r = {rect.x, rect.y + rect.h - 1, rect.w, 1};
+		SDL_FillRect(s, &r, pixel);
+	}
+}
+
+
 /* 
  * Tabs
  */

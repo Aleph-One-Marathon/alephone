@@ -295,6 +295,10 @@ static XML_DColorParser DefaultTinyButtonColorParser(TINY_BUTTON, DEFAULT_STATE,
 static XML_DColorParser ActiveTinyButtonColorParser(TINY_BUTTON, ACTIVE_STATE, 3);
 static XML_DColorParser DisabledTinyButtonColorParser(TINY_BUTTON, DISABLED_STATE, 3);
 static XML_DColorParser PressedTinyButtonColorParser(TINY_BUTTON, PRESSED_STATE, 3);
+static XML_DColorParser DefaultHyperlinkColorParser(HYPERLINK_WIDGET, DEFAULT_STATE, 3);
+static XML_DColorParser ActiveHyperlinkColorParser(HYPERLINK_WIDGET, ACTIVE_STATE, 3);
+static XML_DColorParser DisabledHyperlinkColorParser(HYPERLINK_WIDGET, DISABLED_STATE, 3);
+static XML_DColorParser PressedHyperlinkColorParser(HYPERLINK_WIDGET, PRESSED_STATE, 3);
 static XML_DColorParser DefaultLabelColorParser(LABEL_WIDGET, DEFAULT_STATE);
 static XML_DColorParser ActiveLabelColorParser(LABEL_WIDGET, ACTIVE_STATE);
 static XML_DColorParser DisabledLabelColorParser(LABEL_WIDGET, DISABLED_STATE);
@@ -401,6 +405,7 @@ static XML_DFontParser DefaultFontParser(DEFAULT_WIDGET);
 static XML_DFontParser TitleFontParser(TITLE_WIDGET);
 static XML_DFontParser ButtonFontParser(BUTTON_WIDGET);
 static XML_DFontParser TinyButtonFontParser(TINY_BUTTON);
+static XML_DFontParser HyperlinkFontParser(HYPERLINK_WIDGET);
 static XML_DFontParser LabelFontParser(LABEL_WIDGET);
 static XML_DFontParser ItemFontParser(ITEM_WIDGET);
 static XML_DFontParser MessageFontParser(MESSAGE_WIDGET);
@@ -526,6 +531,11 @@ static XML_TinyButtonParser TinyButtonParser;
 static XML_ElementParser ActiveTinyButtonParser("active");
 static XML_ElementParser DisabledTinyButtonParser("disabled");
 static XML_ElementParser PressedTinyButtonParser("pressed");
+
+static XML_ThemeWidgetParser HyperlinkParser("hyperlink", HYPERLINK_WIDGET);
+static XML_ElementParser ActiveHyperlinkParser("active");
+static XML_ElementParser DisabledHyperlinkParser("disabled");
+static XML_ElementParser PressedHyperlinkParser("pressed");
 
 static XML_ThemeWidgetParser LabelParser("label", LABEL_WIDGET);
 static XML_ElementParser ActiveLabelParser("active");
@@ -806,6 +816,16 @@ XML_ElementParser *Theme_GetParser()
 	TinyButtonParser.AddChild(&DefaultTinyButtonImageParser);
 	TinyButtonParser.AddChild(&PressedTinyButtonParser);
 	ThemeParser.AddChild(&TinyButtonParser);
+	
+	HyperlinkParser.AddChild(&HyperlinkFontParser);
+	HyperlinkParser.AddChild(&DefaultHyperlinkColorParser);
+	ActiveHyperlinkParser.AddChild(&ActiveHyperlinkColorParser);
+	DisabledHyperlinkParser.AddChild(&DisabledHyperlinkColorParser);
+	PressedHyperlinkParser.AddChild(&PressedHyperlinkColorParser);
+	HyperlinkParser.AddChild(&ActiveHyperlinkParser);
+	HyperlinkParser.AddChild(&DisabledHyperlinkParser);
+	HyperlinkParser.AddChild(&PressedHyperlinkParser);
+	ThemeParser.AddChild(&HyperlinkParser);
 
 	LabelParser.AddChild(&LabelFontParser);
 	LabelParser.AddChild(&DefaultLabelColorParser);
@@ -1050,6 +1070,14 @@ static void set_theme_defaults(void)
 	dialog_theme[TINY_BUTTON].spaces[BUTTON_HEIGHT] = 18;
 	dialog_theme[TINY_BUTTON].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x0, 0x0);
 	dialog_theme[TINY_BUTTON].states[PRESSED_STATE].colors[BACKGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
+
+	dialog_theme[HYPERLINK_WIDGET].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
+	dialog_theme[HYPERLINK_WIDGET].font_spec.style = 4;
+	dialog_theme[HYPERLINK_WIDGET].font_set = true;
+	dialog_theme[HYPERLINK_WIDGET].states[DEFAULT_STATE].colors[FOREGROUND_COLOR] = make_color(0x7f, 0x7f, 0xff);
+	dialog_theme[HYPERLINK_WIDGET].states[ACTIVE_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xe7, 0x0);
+	dialog_theme[HYPERLINK_WIDGET].states[DISABLED_STATE].colors[FOREGROUND_COLOR] = make_color(0x0, 0x9b, 0x0);
+	dialog_theme[HYPERLINK_WIDGET].states[PRESSED_STATE].colors[FOREGROUND_COLOR] = make_color(0xff, 0xff, 0xff);
 
 	dialog_theme[CHECKBOX].font_spec = dialog_theme[DEFAULT_WIDGET].font_spec;
 	dialog_theme[CHECKBOX].font_spec.size = 22;
