@@ -277,7 +277,7 @@ public:
 
 class w_hyperlink : public w_button_base {
 public:
-	w_hyperlink(const char *text, const char *url = NULL);
+	w_hyperlink(const char *url, const char *text = NULL);
 	
 	void draw(SDL_Surface *s) const;
 };

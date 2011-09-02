@@ -378,9 +378,9 @@ void w_hyperlink_prochandler(void *arg)
 	launch_url_in_browser(static_cast<const char *>(arg));
 }
 
-w_hyperlink::w_hyperlink(const char *text, const char *url) : w_button_base(text, w_hyperlink_prochandler, const_cast<char *>(url ? url : text), HYPERLINK_WIDGET)
+w_hyperlink::w_hyperlink(const char *url, const char *txt) : w_button_base((txt ? txt : url), w_hyperlink_prochandler, const_cast<char *>(url), HYPERLINK_WIDGET)
 {
-	rect.w = text_width(text, font, style);
+	rect.w = text_width(text.c_str(), font, style);
 	rect.h = font->get_line_height();
 	saved_min_height = rect.h;
 	saved_min_width = rect.w;
