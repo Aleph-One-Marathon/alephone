@@ -280,6 +280,7 @@ public:
 	w_hyperlink(const char *url, const char *text = NULL);
 	
 	void draw(SDL_Surface *s) const;
+	void prochandler(void* arg);
 };
 
 /* 

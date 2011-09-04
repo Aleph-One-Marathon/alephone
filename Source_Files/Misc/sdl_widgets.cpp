@@ -373,12 +373,14 @@ void w_button_base::click(int /*x*/, int /*y*/)
  * Clickable link
  */
 
-void w_hyperlink_prochandler(void *arg)
+void w_hyperlink::prochandler(void *arg)
 {
+	toggle_fullscreen(false);
 	launch_url_in_browser(static_cast<const char *>(arg));
+	get_owning_dialog()->draw();
 }
 
-w_hyperlink::w_hyperlink(const char *url, const char *txt) : w_button_base((txt ? txt : url), w_hyperlink_prochandler, const_cast<char *>(url), HYPERLINK_WIDGET)
+w_hyperlink::w_hyperlink(const char *url, const char *txt) : w_button_base((txt ? txt : url), boost::bind(&w_hyperlink::prochandler, this, _1), const_cast<char *>(url), HYPERLINK_WIDGET)
 {
 	rect.w = text_width(text.c_str(), font, style);
 	rect.h = font->get_line_height();
