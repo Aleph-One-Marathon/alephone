@@ -74,7 +74,7 @@ void Update::StartUpdateCheck()
 int Update::Thread()
 {
 	IPaddress ip;
-	if (SDLNet_ResolveHost(&ip, "marathon.sourceforge.net", 80) < 0)
+	if (SDLNet_ResolveHost(&ip, A1_UPDATE_HOST, 80) < 0)
 	{
 		m_status = UpdateCheckFailed;
 		return 1;
@@ -88,7 +88,7 @@ int Update::Thread()
 	}
 
 	char request[1024];
-	sprintf(request, "GET /update_check/%s.php HTTP/1.1\r\nHost: marathon.sourceforge.net\r\nConnection: close\r\n\r\n", A1_UPDATE_PLATFORM);
+	sprintf(request, "GET /update_check/%s.php HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", A1_UPDATE_PLATFORM, A1_UPDATE_HOST);
 
 	if (SDLNet_TCP_Send(sock, request, strlen(request)) < strlen(request))
 	{

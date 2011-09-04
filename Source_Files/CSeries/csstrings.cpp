@@ -51,8 +51,11 @@ typedef unsigned char Str255[256];
 #include "csstrings.h"
 #include "TextStrings.h"
 #include "Logging.h"
+#include "alephversion.h"
+#include "Scenario.h"
 
 #include <map>
+#include <boost/algorithm/string/replace.hpp>
 
 using namespace std;
 
@@ -105,7 +108,24 @@ char *getcstr(
 	if (CollString)
 	{
 		// The C string is offset one from the Pascal string
-		memcpy(string,CollString+1,CollString[0]+1);
+		// but it should still have a null terminator
+		char *cCollString = reinterpret_cast<char *>(CollString+1);
+		
+		// expand app-name placeholder, depending on IDs
+		switch (resid)
+		{
+			case 128:	// strERRORS
+			case 129:	// strFILENAMES
+			case 131:	// strPROMPTS
+			case 132:	// strNETWORK_ERRORS
+			case 134:	// (obsolete)
+			case 136:	// strJOIN_DIALOG_MESSAGES
+			case 138:	// strPATHS
+				expand_app_variables(string, cCollString);
+				break;
+			default:
+				memcpy(string,cCollString,CollString[0]+1);
+		}
 	}
 	else
 	{
@@ -462,4 +482,48 @@ std::string utf8_to_mac_roman(const std::string& input)
 	}
 
 	return output;
+}
+
+
+/*
+ *  Substitute special variables like application name or version
+ */
+void expand_app_variables_inplace(std::string& str)
+{
+	boost::replace_all(str, "$appName$", A1_DISPLAY_NAME);
+	boost::replace_all(str, "$appVersion$", A1_DISPLAY_VERSION);
+	boost::replace_all(str, "$appLongVersion$", A1_VERSION_STRING);
+	boost::replace_all(str, "$appDate$", A1_DISPLAY_DATE_VERSION);
+	boost::replace_all(str, "$appPlatform$", A1_DISPLAY_PLATFORM);
+	boost::replace_all(str, "$appURL$", A1_HOMEPAGE_URL);
+	boost::replace_all(str, "$appLogFile$", A1_LOGFILE_NAME);
+	boost::replace_all(str, "$scenarioName$", Scenario::instance()->GetName());
+	boost::replace_all(str, "$scenarioVersion$", Scenario::instance()->GetVersion());
+}
+
+std::string expand_app_variables(const std::string& input)
+{
+	std::string output = input;
+	expand_app_variables_inplace(output);
+	return output;
+}
+
+void expand_app_variables(char *dest, const char *src)
+{
+	if (strstr(src, "$appName$") ||
+		strstr(src, "$appVersion$") ||
+		strstr(src, "$appLongVersion$") ||
+		strstr(src, "$appDate$") ||
+		strstr(src, "$appPlatform$") ||
+		strstr(src, "$appURL$") ||
+		strstr(src, "$appLogFile$") ||
+		strstr(src, "$scenarioName$") ||
+		strstr(src, "$scenarioVersion$"))
+	{
+		std::string str(src);
+		expand_app_variables_inplace(str);
+		strcpy(dest, str.c_str());
+	}
+	else
+		strcpy(dest, src);
 }

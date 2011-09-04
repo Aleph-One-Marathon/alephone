@@ -94,7 +94,7 @@ bool system_alert_choose_scenario(char *chosen_dir)
 #if defined(__WIN32__)
 	BROWSEINFO bi = { 0 };
 	TCHAR path[MAX_PATH];
-	bi.lpszTitle = _T("Select an Aleph One scenario:");
+	bi.lpszTitle = _T("Select a scenario to play:");
 	bi.pszDisplayName = path;
 	bi.lpfn = browse_callback_proc;
 	bi.ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE | 0x00000200; // no "New Folder" button

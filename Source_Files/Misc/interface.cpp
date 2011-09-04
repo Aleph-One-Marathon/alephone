@@ -364,7 +364,7 @@ void initialize_game_state(
 	toggle_menus(false);
 
 	if(insecure_lua) {
-	  alert_user("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit Aleph One IMMEDIATELY.");
+	  alert_user(expand_app_variables("Insecure Lua has been manually enabled. Malicious Lua scripts can use Insecure Lua to take over your computer. Unless you specifically trust every single Lua script that will be running, you should quit $appName$ IMMEDIATELY.").c_str());
 	}
 
 	display_introduction();
@@ -1221,7 +1221,7 @@ void display_main_menu(
 	short Y = 480 - Offset;
 
 	_set_port_to_intro();
-	Font.DrawText(draw_surface, "Aleph One", 640 - Font.TextWidth("Aleph One") - 1, Y, SDL_MapRGB(draw_surface->format, 0x40, 0x40, 0x40));
+	Font.DrawText(draw_surface, A1_DISPLAY_NAME, 640 - Font.TextWidth(A1_DISPLAY_NAME) - 1, Y, SDL_MapRGB(draw_surface->format, 0x40, 0x40, 0x40));
 	Font.DrawText(draw_surface, A1_VERSION_STRING, X, Y + Font.LineSpacing, SDL_MapRGB(draw_surface->format, 0x40, 0x40,
 															 0x40));
 	_restore_port();
@@ -1632,17 +1632,15 @@ static void display_about_dialog()
 	placer->dual_add(new w_title("ABOUT"), d);
 	placer->add(new w_spacer, true);
 
-	std::ostringstream s;
-	s << "Aleph One " << A1_DISPLAY_VERSION << " (" << A1_DISPLAY_DATE_VERSION << ")";
-	placer->dual_add(new w_static_text(s.str().c_str()), d);
+	placer->dual_add(new w_static_text(expand_app_variables("$appName$ $appVersion$ ($appDate$)").c_str()), d);
 
 	placer->add(new w_spacer, true);
 
-	placer->dual_add(new w_hyperlink("http://marathon.sourceforge.net/"), d);
+	placer->dual_add(new w_hyperlink(A1_HOMEPAGE_URL), d);
 
 	placer->add(new w_spacer, true);
 	
-	placer->dual_add(new w_static_text("Aleph One is free software with ABSOLUTELY NO WARRANTY."), d);
+	placer->dual_add(new w_static_text(expand_app_variables("$appName$ is free software with ABSOLUTELY NO WARRANTY.").c_str()), d);
 	placer->dual_add(new w_static_text("You are welcome to redistribute it under certain conditions."), d);
 	placer->dual_add(new w_hyperlink("http://www.gnu.org/licenses/gpl-3.0.html"), d);
 
@@ -1651,13 +1649,7 @@ static void display_about_dialog()
 
 	placer->add(new w_spacer, true);
 
-	s.str("");
-	s << "Scenario Loaded: " << Scenario::instance()->GetName();
-	if (!Scenario::instance()->GetVersion().empty())
-	{
-		s << " " << Scenario::instance()->GetVersion();
-	}
-	placer->dual_add(new w_static_text(s.str().c_str()), d);
+	placer->dual_add(new w_static_text(expand_app_variables("Scenario Loaded: $scenarioName$ $scenarioVersion$").c_str()), d);
 	
 	placer->add(new w_spacer, true);
 
@@ -1669,7 +1661,7 @@ static void display_about_dialog()
 
 	d.run();
 
-	display_screen(MAIN_MENU_BASE);
+	display_main_menu();
 }
 
 static void display_credits(

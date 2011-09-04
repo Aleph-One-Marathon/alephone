@@ -50,40 +50,40 @@ public:
 // -----------------------------------------------------------------------------------------
 // <!-- STR# Resource: "Errors" -->
 static const char* sStringSetNumber128[] = {
-    "Sorry, Aleph One requires a 68040 processor or higher.",
-    "Sorry, Aleph One requires Color QuickDraw.",
-    "Sorry, Aleph One requires System Software 7.0 or higher.",
-    "Sorry, Aleph One requires at least 3000k of free RAM.",
-    "Sorry, Aleph One requires a 13” monitor (640x480) or larger which can be set to at least 256 colors or grays.",
+    "Sorry, $appName$ requires a 68040 processor or higher.",
+    "Sorry, $appName$ requires Color QuickDraw.",
+    "Sorry, $appName$ requires System Software 7.0 or higher.",
+    "Sorry, $appName$ requires at least 3000k of free RAM.",
+    "Sorry, $appName$ requires a 13” monitor (640x480) or larger which can be set to at least 256 colors or grays.",
     "Please be sure the files 'Map', 'Shapes', 'Images' and 'Sounds' are correctly installed and try again.",
-    "Aleph One couldn't initialize the sound.",
-    "Aleph One has encountered a file system error.  Check to make sure you have enough disk space and that you are not trying to save to a locked volume.",
-    "This copy of Aleph One has been modified, perhaps by a virus.  Please re-install it from the original disks.",
-    "This beta copy of Aleph One has expired and is no longer functional. Call Bungie at (312) 563-6200 ext. 21 for more information.",
+    "$appName$ couldn't initialize the sound.",
+    "$appName$ has encountered a file system error.  Check to make sure you have enough disk space and that you are not trying to save to a locked volume.",
+    "This copy of $appName$ has been modified, perhaps by a virus.  Please re-install it from the original disks.",
+    "This beta copy of $appName$ has expired and is no longer functional. Call Bungie at (312) 563-6200 ext. 21 for more information.",
     "Sorry, that key is already used to adjust the sound volume.",
     "Sorry, that key is already used for zooming in the overhead map view.",
     "Sorry, that key is already used for scrolling the inventory.",
     "Sorry, that key is already used for a special game function.",
-    "Aleph One has used up all available RAM and cannot continue.  Trying giving it more memory, switching to a lower bit-depth or turning off sounds and try again.",
-    "Aleph One is about to load an external physics model.  This could result in erratic performance, inexplicable crashes, corrupted saved games, and inconsistent network games (just a warning).",
-    "Aleph One is using maps which were not created with Bungie tools.  This could result in poor performance, inexplicable crashes and corrupted saved games (proceed at your own risk).",
+    "$appName$ has used up all available RAM and cannot continue.  Trying giving it more memory, switching to a lower bit-depth or turning off sounds and try again.",
+    "$appName$ is about to load an external physics model.  This could result in erratic performance, inexplicable crashes, corrupted saved games, and inconsistent network games (just a warning).",
+    "$appName$ is using maps which were not created with Bungie tools.  This could result in poor performance, inexplicable crashes and corrupted saved games (proceed at your own risk).",
     "A game related error occurred while attempting to read from your map or saved game file.",
     "A system error occurred while attempting to read from your map or saved game file.",
     "An error occurred while saving your game (maybe your hard drive is full, or you tried to save to a locked volume?)",
     "That serial number is invalid.  Please try again.",
     "Sorry, you can't start a network game with more than one copy of the same serial number.  Call 1-800-295-0060 to order more network serial numbers by fax.",
-    "Sorry, this copy of Aleph One has been serialized with a network-only serial number.  You cannot play the single-player game with a network-only serial number.",
+    "Sorry, this copy of $appName$ has been serialized with a network-only serial number.  You cannot play the single-player game with a network-only serial number.",
     "The map you are trying to load has been corrupted.  Please reinstall from a backup copy.",
     "Checkpoint %d was not found!",
     "Picture %d was not found!",
-    "This preview copy of Aleph One does not support networking.  A full demo will be available on-line or from Bungie shortly which includes networking (and a whole lot of other cool features).",
+    "This preview copy of $appName$ does not support networking.  A full demo will be available on-line or from Bungie shortly which includes networking (and a whole lot of other cool features).",
     "The gathering computer has quit the game, leaving everyone stranded without the next level.  Perhaps you should tar and feather him.",
-    "Sorry, Aleph One was unable to gracefully exit from the network game.  As a result, your romp through the levels has been prematurely halted.",
+    "Sorry, $appName$ was unable to gracefully exit from the network game.  As a result, your romp through the levels has been prematurely halted.",
     "The scenario file that this saved game was from cannot be found.  When you switch levels you will revert to the default map.",
-    "Aleph One was unable to find the map that this film was recorded on, so the film cannot be replayed.",
-    "Sorry, Aleph One needs 6000k free to play in a networked game.  Give Aleph One more memory and try again.",
+    "$appName$ was unable to find the map that this film was recorded on, so the film cannot be replayed.",
+    "Sorry, $appName$ needs 6000k free to play in a networked game.  Give $appName$ more memory and try again.",
     "There appears to be a script conflict.  Perhaps mml and netscript are having differences over who gets to control lua.  Don't be surprised if you get unexpected script behavior or out of sync.",
-    "This replay was created with a newer version of Aleph One and cannot be played with this version. Upgrade Aleph One and try again.",
+    "This replay was created with a newer version of $appName$ and cannot be played with this version. Upgrade $appName$ and try again.",
     "Sorry, the scroll wheel can only be used for switching weapons.",
 };
 
@@ -93,11 +93,11 @@ static const char* sStringSetNumber129[] = {
     "Shapes.16",
     "Sounds",
     "Sounds.16",
-    "Aleph One Preferences",
+    "$appName$ Preferences",
     "Map",
     "Untitled Game",
     "Marathon",
-    "Aleph One Recording",
+    "$appName$ Recording",
     "Physics Model",
     "Music",
     "Images",
@@ -145,15 +145,15 @@ static const char* sStringSetNumber132[] = {
     "The map was not received in its entirety, so the game has been canceled.",
 
     "The gathering computer never sent the map, so the game has been cancelled.  Maybe one of the other machines in the game went down.",
-    "Aleph One was unable to start the game.  Maybe one of the other machines in the game went down.",
-    "An error ocurred while trying to join a game (an incompatible version of Aleph One may have tried to gather you).  Try again.",
-    "Sorry, a network error ocurred and Aleph One is unable to continue.",
+    "$appName$ was unable to start the game.  Maybe one of the other machines in the game went down.",
+    "An error ocurred while trying to join a game (an incompatible version of $appName$ may have tried to gather you).  Try again.",
+    "Sorry, a network error ocurred and $appName$ is unable to continue.",
 
     "An error occurred while trying to join a game (the gatherer is using an incompatible version).",
 
-    "The player you just added is using an older version of Aleph One that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game.",
-    "The player you just attempted to add is using a version of Aleph One that does not support some advanced features required by the game you're trying to gather.",
-    "Aleph One was unable to locate the Map file this level came from.  Some terminals may not display properly, and saving this game on this computer is not recommended.",
+    "The player you just added is using an older version of $appName$ that does not support some advanced features required by the game you're trying to gather.  You will not be allowed to start the game.",
+    "The player you just attempted to add is using a version of $appName$ that does not support some advanced features required by the game you're trying to gather.",
+    "$appName$ was unable to locate the Map file this level came from.  Some terminals may not display properly, and saving this game on this computer is not recommended.",
     "The connection to the gatherer was lost.",
 
     "Unable to look up the gatherer. Maybe you typed the address in wrong.",
@@ -170,7 +170,7 @@ static const char* sStringSetNumber132[] = {
 	
 	"Your game could not be advertised on the Internet.  Please distribute your public IP address by other means or try again later.",
 	
-	"Aleph One failed to configure the firewall/router. You may be unable to gather."
+	"$appName$ failed to configure the firewall/router. You may be unable to gather."
 	
 };
 
@@ -310,7 +310,7 @@ static const char* sStringSetNumber133[] = {
 static const char* sStringSetNumber134[] = {
     "Be sure your external speakers or headphones are connected properly, and that you have enabled stereo output from the Sound Control Panel.",
     "Be sure that your Cybermaxx helmet is properly hooked up to the serial port and turned on.",
-    "Please check to be sure you have the file “QuickTime[TM] Musical Instruments” in your “Extensions” folder, because Aleph One's background music will sound really, really stupid without it.",
+    "Please check to be sure you have the file “QuickTime[TM] Musical Instruments” in your “Extensions” folder, because $appName$'s background music will sound really, really stupid without it.",
 };
 
 // STR# Resource: "Computer Interface"
@@ -329,7 +329,7 @@ static const char* sStringSetNumber135[] = {
 
 // STR# Resource: "Join Dialog Messages"
 static const char* sStringSetNumber136[] = {
-    "Click 'Join' to wait for an invitation into a network game of Aleph One.",
+    "Click 'Join' to wait for an invitation into a network game of $appName$.",
     "Now waiting to be gathered into a network game by a server.  Click 'Cancel' to give up.",
     "You have been accepted into a game.  Now waiting for the server to add the remaining players… ",
 };

@@ -252,8 +252,9 @@ bool handle_open_document(const std::string& filename)
 int main(int argc, char **argv)
 {
 	// Print banner (don't bother if this doesn't appear when started from a GUI)
-	printf ("Aleph One " A1_VERSION_STRING "\n"
-	  "http://marathon.sourceforge.net/\n\n"
+	char app_name_version[256];
+	expand_app_variables(app_name_version, "$appName$ $appLongVersion$");
+	printf ("%s\n%s\n\n"
 	  "Original code by Bungie Software <http://www.bungie.com/>\n"
 	  "Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"
 	  "TCP/IP networking by Woody Zenfell\n"
@@ -277,6 +278,7 @@ int main(int argc, char **argv)
 #ifdef HAVE_LUA
 	  "\nBuilt with Lua scripting enabled.\n"
 #endif
+	  , app_name_version, A1_HOMEPAGE_URL
     );
 
 	// Parse arguments
@@ -287,7 +289,7 @@ int main(int argc, char **argv)
 		if (strcmp(*argv, "-h") == 0 || strcmp(*argv, "--help") == 0) {
 			usage(prg_name);
 		} else if (strcmp(*argv, "-v") == 0 || strcmp(*argv, "--version") == 0) {
-			printf("Aleph One " A1_VERSION_STRING "\n");
+			printf("%s\n", app_name_version);
 			exit(0);
 		} else if (strcmp(*argv, "-f") == 0 || strcmp(*argv, "--fullscreen") == 0) {
 			force_fullscreen = true;
@@ -595,7 +597,7 @@ static void initialize_application(void)
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
 	}
-	SDL_WM_SetCaption("Aleph One", "Aleph One");
+	SDL_WM_SetCaption(A1_DISPLAY_NAME, A1_DISPLAY_NAME);
 
 #if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
 	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
@@ -1386,7 +1388,7 @@ void dump_screen(void)
 	std::vector<IMG_PNG_text> texts;
 	std::map<std::string, std::string> metadata;
 
-	metadata["Source"] = string("Aleph One ") + A1_DISPLAY_VERSION + " (" + A1_DISPLAY_PLATFORM + ")";
+	metadata["Source"] = expand_app_variables("$appName$ $appVersion$ ($appPlatform$)");
 
 	time_t rawtime;
 	time(&rawtime);

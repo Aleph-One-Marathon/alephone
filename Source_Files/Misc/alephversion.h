@@ -23,6 +23,7 @@ ALEPHVERSION.H
 */
 
 
+#define A1_DISPLAY_NAME "Aleph One"
 #define A1_DISPLAY_VERSION "1.0b4"
 #define A1_DISPLAY_DATE_VERSION "2011-07-17"
 #define A1_DATE_VERSION "20110717"
@@ -57,5 +58,9 @@ ALEPHVERSION.H
 #define A1_VERSION_STRING A1_DISPLAY_PLATFORM " " A1_DISPLAY_DATE_VERSION " " A1_DISPLAY_VERSION
 #endif
 
+#define A1_HOMEPAGE_URL "http://marathon.sourceforge.net/"
+#define A1_UPDATE_HOST "marathon.sourceforge.net"
+#define A1_METASERVER_HOST "metaserver.lhowon.org"
+#define A1_LOGFILE_NAME A1_DISPLAY_NAME " Log.txt"
 
 #endif // ALEPHVERSION_H

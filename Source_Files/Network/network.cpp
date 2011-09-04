@@ -448,7 +448,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 			return false;
 		} else if (capabilities[Capabilities::kStar] < Capabilities::kStarVersion) {
 			if (warn_joiner) {
-				ServerWarningMessage serverWarningMessage("The gatherer is using a newer version of Aleph One. You will not appear in the list of available players.", ServerWarningMessage::kJoinerUngatherable);
+				ServerWarningMessage serverWarningMessage(expand_app_variables("The gatherer is using a newer version of $appName$. You will not appear in the list of available players."), ServerWarningMessage::kJoinerUngatherable);
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 			return false;
@@ -489,7 +489,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		{
 			if (warn_joiner)
 			{
-				ServerWarningMessage serverWarningMessage("The gatherer is using a newer version of Aleph One with different rugby scoring. You will not appear in the list of available players.", ServerWarningMessage::kJoinerUngatherable);
+				ServerWarningMessage serverWarningMessage(expand_app_variables("The gatherer is using a newer version of $appName$ with different rugby scoring. You will not appear in the list of available players."), ServerWarningMessage::kJoinerUngatherable);
 				channel->enqueueOutgoingMessage(serverWarningMessage);
 			}
 			return false;
@@ -765,9 +765,7 @@ static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 			connection_to_server->enqueueOutgoingMessage(capabilitiesMessageReply);
 			my_capabilities[Capabilities::kGatherable] = Capabilities::kGatherableVersion;
 			
-			char *s = strdup("The gatherer is using an old version of Aleph One. You will not appear in the list of available players.");
-			alert_user(s);
-			free(s);
+			alert_user(expand_app_variables("The gatherer is using an old version of $appName$. You will not appear in the list of available players.").c_str());
 		} else {
 			// everything else is version 1
 			CapabilitiesMessage capabilitiesMessageReply(my_capabilities);

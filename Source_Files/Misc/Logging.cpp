@@ -26,6 +26,7 @@
 
 #include "Logging.h"
 #include "cseries.h"
+#include "alephversion.h"
 
 #include <fstream>
 #include <string>
@@ -222,7 +223,7 @@ static void
 InitializeLogging() {
     assert(sOutputFile == NULL);
     FileSpecifier fs = log_dir;
-    fs += "Aleph One Log.txt";
+    fs += A1_LOGFILE_NAME;
 
     sOutputFile = fopen(fs.GetPath(), "a");
 

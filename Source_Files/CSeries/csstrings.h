@@ -106,4 +106,10 @@ extern void mac_roman_to_unicode(const char *input, uint16 *output);
 extern void mac_roman_to_unicode(const char *input, uint16 *output, int max_len);
 std::string mac_roman_to_utf8(const std::string& input);
 std::string utf8_to_mac_roman(const std::string& input);
+
+// Substitute special variables like application name or version
+std::string expand_app_variables(const std::string& input);
+void expand_app_variables_inplace(std::string& str);
+void expand_app_variables(char *dest, const char *src);
+
 #endif

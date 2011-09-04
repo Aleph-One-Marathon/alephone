@@ -47,8 +47,8 @@ bool system_alert_choose_scenario(char *chosen_dir)
 	[panel setCanChooseFiles:NO];
 	[panel setCanChooseDirectories:YES];
 	[panel setAllowsMultipleSelection:NO];
-	[panel setTitle:@"Choose Aleph One Scenario"];
-	[panel setMessage:@"Select an Aleph One scenario:"];
+	[panel setTitle:@"Choose Scenario"];
+	[panel setMessage:@"Select a scenario to play:"];
 	[panel setPrompt:@"Choose"];
 	
 	if (!chosen_dir)
