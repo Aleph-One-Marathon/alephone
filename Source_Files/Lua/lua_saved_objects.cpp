@@ -274,4 +274,6 @@ int Lua_Saved_Objects_register(lua_State* L)
 
 	Lua_SoundObjects::Register(L);
 	Lua_SoundObjects::Length = saved_objects_length;
+	
+	return 0;
 }

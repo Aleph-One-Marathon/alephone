@@ -872,7 +872,7 @@ int Lua_Fonts_New(lua_State *L)
 	lua_pushstring(L, "id");
 	lua_gettable(L, 1);
 	if (!lua_isnil(L, -1))
-		snprintf(f.File, FontSpecifier::NameSetLen, "#%d", lua_tointeger(L, -1));
+		snprintf(f.File, FontSpecifier::NameSetLen, "#%d", static_cast<int>(lua_tointeger(L, -1)));
 	lua_pop(L, 1);
 	
 	lua_pushstring(L, "file");

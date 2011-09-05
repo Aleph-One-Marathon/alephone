@@ -1704,6 +1704,7 @@ static LuaState* LuaStateFactory(ScriptType script_type)
 	case _solo_lua_script:
 		return new SoloScriptState;
 	}
+	return NULL;
 }
 
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
