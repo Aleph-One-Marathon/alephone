@@ -124,6 +124,10 @@ static const char* sNetworkGameProtocolNames[] =
 
 static const size_t NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES = sizeof(sNetworkGameProtocolNames) / sizeof(sNetworkGameProtocolNames[0]);
 
+#if defined(HAVE_BUNDLE_NAME)
+static const char sBundlePlaceholder[] = "AlephOneSDL.app";
+#endif
+
 
 // MML-like Preferences Stuff; it makes obsolete
 // w_open_preferences_file(), w_get_data_from_preferences(), and w_write_preferences_file()
@@ -2373,7 +2377,7 @@ void write_preferences(
 	extern char *bundle_name; // SDLMain.m
 	// replace our leading bundle name with generic "AlephOneSDL.app" (we do reverse when loading)
 	if (!strncmp(environment_preferences->theme_dir, bundle_name, strlen(bundle_name))) {
-		strlcpy(temporary, "AlephOneSDL.app", sizeof(temporary));
+		strlcpy(temporary, sBundlePlaceholder, sizeof(temporary));
 		strlcat(temporary, environment_preferences->theme_dir + strlen(bundle_name), sizeof(temporary));
 		WriteXML_CString(F,"  theme_dir=\"",temporary,256,"\"\n");
 	} else
@@ -3999,9 +4003,9 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 #if defined(HAVE_BUNDLE_NAME)
 		extern char *bundle_name; // SDLMain.m
 		// replace leading "AlephOneSDL.app" with our actual bundle name (we do reverse when saving)
-		if (!strncmp(environment_preferences->theme_dir, "AlephOneSDL.app", 15)) {
+		if (!strncmp(environment_preferences->theme_dir, sBundlePlaceholder, strlen(sBundlePlaceholder))) {
 			strlcpy(temporary, bundle_name, sizeof(temporary));
-			strlcat(temporary, environment_preferences->theme_dir + 15, sizeof(temporary));
+			strlcat(temporary, environment_preferences->theme_dir + strlen(sBundlePlaceholder), sizeof(temporary));
 			strlcpy(environment_preferences->theme_dir, temporary, 255);			
 		}
 #endif
