@@ -61,6 +61,8 @@ using namespace std;
 
 char temporary[256];
 
+// from shell.h
+const char *get_application_name(void);
 
 
 /*
@@ -490,13 +492,13 @@ std::string utf8_to_mac_roman(const std::string& input)
  */
 void expand_app_variables_inplace(std::string& str)
 {
-	boost::replace_all(str, "$appName$", A1_DISPLAY_NAME);
+	boost::replace_all(str, "$appName$", get_application_name());
 	boost::replace_all(str, "$appVersion$", A1_DISPLAY_VERSION);
 	boost::replace_all(str, "$appLongVersion$", A1_VERSION_STRING);
 	boost::replace_all(str, "$appDate$", A1_DISPLAY_DATE_VERSION);
 	boost::replace_all(str, "$appPlatform$", A1_DISPLAY_PLATFORM);
 	boost::replace_all(str, "$appURL$", A1_HOMEPAGE_URL);
-	boost::replace_all(str, "$appLogFile$", A1_LOGFILE_NAME);
+	boost::replace_all(str, "$appLogFile$", loggingFileName());
 	boost::replace_all(str, "$scenarioName$", Scenario::instance()->GetName());
 	boost::replace_all(str, "$scenarioVersion$", Scenario::instance()->GetVersion());
 }

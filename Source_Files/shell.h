@@ -103,6 +103,9 @@ XML_ElementParser *Cheats_GetParser();
 // Load the base MML scripts:
 void LoadBaseMMLScripts();
 
+// Application info:
+const char *get_application_name(void);
+
 /* ---------- prototypes/SHAPES.C */
 
 void initialize_shape_handler(void);

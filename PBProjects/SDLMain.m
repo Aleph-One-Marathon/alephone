@@ -38,6 +38,16 @@ extern OSErr	CPSSetFrontProcess( CPSProcessSerNum *psn);
 
 /* The name of our bundle (such as AlephOneSDL.app") which we determine at run-time */
 char *bundle_name = NULL;
+/* The short application name, to present to users (seen in menus, etc.) */
+char *application_name = NULL;
+/* The application bundle identifier, useful for unique directories */
+char *application_identifier = NULL;
+/* The bundle's Resources path, for finding bundled data */
+char *bundle_resource_path = NULL;
+/* OS default directories */
+char *app_log_directory = NULL;
+char *app_preferences_directory = NULL;
+char *app_support_directory = NULL;
 
 static int    gArgc;
 static char  **gArgv;
@@ -46,13 +56,7 @@ static BOOL   gCalledAppMainline = FALSE;
 
 static NSString *getApplicationName(void)
 {
-    NSDictionary *dict;
-    NSString *appName = 0;
-
-    /* Determine the application name */
-    dict = (NSDictionary *)CFBundleGetInfoDictionary(CFBundleGetMainBundle());
-    if (dict)
-        appName = [dict objectForKey: @"CFBundleName"];
+	NSString *appName = [[[NSBundle mainBundle] localizedInfoDictionary] objectForKey:(NSString *)kCFBundleNameKey];
     
     if (![appName length])
         appName = [[NSProcessInfo processInfo] processName];
@@ -137,27 +141,50 @@ static NSString *getApplicationName(void)
 }
 
 /* Find the name of our bundle, as we'll need this later for finding files. */
+/* We also find other application identifiers here. */
 - (void) findBundleName
 {
-	int i;
-	char buf[MAXPATHLEN];
+	NSBundle *bundle = [NSBundle mainBundle];
+	NSDictionary *bundleInfo = [bundle localizedInfoDictionary];
 
-	strlcpy(buf, gArgv[0], sizeof(buf));
-	for (i = strlen(buf) - 14; i >= 0; i--) {
-		/* Assumption: the bundle is named *.app and has a 'Contents' directory inside it. */
-		if (!strncmp(buf + i, ".app/Contents/", 14)) {
-			int old_i = i;
-			buf[i + 4] = '\0'; // truncate end
-			for (; i >= 0; i--) // and beginning
-				if (buf[i] == '/') {
-					bundle_name = (char *) malloc(old_i - i + 4);
-					strlcpy(bundle_name, buf + i + 1, old_i - i + 4);
-					break;
-				}
-			break;
-		}
+	NSString *bundleName = [[bundle bundlePath] lastPathComponent];
+	bundle_name = strdup([bundleName UTF8String]);
+	
+	NSString *appName = [bundleInfo objectForKey:(NSString *)kCFBundleNameKey];
+	application_name = strdup([appName UTF8String]);
+	
+	NSString *bundleID = [[bundle infoDictionary] objectForKey:(NSString *)kCFBundleIdentifierKey];
+	application_identifier = strdup([bundleID UTF8String]);
+	
+	NSString *bundleRes = [bundle resourcePath];
+	bundle_resource_path = strdup([bundleRes UTF8String]);
+
+	/* Find other system directories we need. */
+	NSFileManager *fileManager = [NSFileManager defaultManager];
+	
+	NSArray *arr = NSSearchPathForDirectoriesInDomains(NSLibraryDirectory, NSUserDomainMask, YES);
+	NSString *libraryPath = [arr objectAtIndex:0];
+	if (libraryPath != nil)
+	{
+		NSString *logPath = [libraryPath stringByAppendingPathComponent:@"Logs"];
+		[fileManager createDirectoryAtPath:logPath attributes:nil];
+		app_log_directory = strdup([logPath UTF8String]);
+		
+		NSString *prefsPath = [[libraryPath stringByAppendingPathComponent:@"Preferences"] stringByAppendingPathComponent:bundleID];
+		[fileManager createDirectoryAtPath:prefsPath attributes:nil];
+		app_preferences_directory = strdup([prefsPath UTF8String]);
 	}
-}
+	
+	arr = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+	NSString *supportPath = [arr objectAtIndex:0];
+	if (supportPath != nil)
+	{
+		NSString *appSupportPath = [supportPath stringByAppendingPathComponent:@"AlephOne"];
+		[fileManager createDirectoryAtPath:appSupportPath attributes:nil];
+		app_support_directory = strdup([appSupportPath UTF8String]);
+	}
+}		
+		
 
 /* Set the working directory to the .app's parent directory */
 - (void) setupWorkingDirectory:(BOOL)shouldChdir
@@ -384,6 +411,12 @@ static void CustomApplicationMain (int argc, char **argv)
 
     /* We're done, thank you for playing */
     free(bundle_name);
+    free(application_name);
+    free(application_identifier);
+    free(bundle_resource_path);
+    free(app_log_directory);
+    free(app_preferences_directory);
+    free(app_support_directory);
     exit(status);
 }
 @end

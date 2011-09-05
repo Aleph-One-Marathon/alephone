@@ -26,7 +26,7 @@
 
 #include "Logging.h"
 #include "cseries.h"
-#include "alephversion.h"
+#include "shell.h"
 
 #include <fstream>
 #include <string>
@@ -219,11 +219,22 @@ void TopLevelLogger::flush()
 
 extern DirectorySpecifier log_dir;
 
+char g_loggingFileName[256] = "";
+const char *loggingFileName()
+{
+	if (!strlen(g_loggingFileName))
+	{
+		strncpy(g_loggingFileName, get_application_name(), 256);
+		strncat(g_loggingFileName, " Log.txt", 256 - strlen(g_loggingFileName));
+	}
+	return g_loggingFileName;
+}
+
 static void
 InitializeLogging() {
     assert(sOutputFile == NULL);
     FileSpecifier fs = log_dir;
-    fs += A1_LOGFILE_NAME;
+    fs += loggingFileName();
 
     sOutputFile = fopen(fs.GetPath(), "a");
 

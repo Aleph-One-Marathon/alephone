@@ -1221,7 +1221,7 @@ void display_main_menu(
 	short Y = 480 - Offset;
 
 	_set_port_to_intro();
-	Font.DrawText(draw_surface, A1_DISPLAY_NAME, 640 - Font.TextWidth(A1_DISPLAY_NAME) - 1, Y, SDL_MapRGB(draw_surface->format, 0x40, 0x40, 0x40));
+	Font.DrawText(draw_surface, get_application_name(), 640 - Font.TextWidth(get_application_name()) - 1, Y, SDL_MapRGB(draw_surface->format, 0x40, 0x40, 0x40));
 	Font.DrawText(draw_surface, A1_VERSION_STRING, X, Y + Font.LineSpacing, SDL_MapRGB(draw_surface->format, 0x40, 0x40,
 															 0x40));
 	_restore_port();
