@@ -124,8 +124,8 @@ static const char* sStringSetNumber130[] = {
 
 // STR# Resource: "Prompts"
 static const char* sStringSetNumber131[] = {
-    "Save game as:",
-    "Save recording as:",
+    "SAVE GAME",
+    "SAVE RECORDING",
     "Select recording as:",
     "Default",
 };
