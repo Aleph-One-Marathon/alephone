@@ -381,6 +381,10 @@ static void crosshair_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 	table->col_flags(0, placeable::kAlignRight);
 
+	w_toggle *crosshairs_active_w = new w_toggle(player_preferences->crosshairs_active);
+	table->dual_add(crosshairs_active_w->label("Show crosshairs"), d);
+	table->dual_add(crosshairs_active_w, d);	
+	
 	// Shape
 	w_select *shape_w = new w_select(0, shape_labels);
 	SelectSelectorWidget shapeWidget(shape_w);
@@ -471,6 +475,7 @@ static void crosshair_dialog(void *arg)
 	{
 		crosshair_binders->migrate_all_first_to_second();
 		player_preferences->Crosshairs.PreCalced = false;
+		player_preferences->crosshairs_active = crosshairs_active_w->get_selection();
 		write_preferences();
 	}
 	else
@@ -2260,6 +2265,7 @@ void write_preferences(
 	fprintf(F,"  last_time_ran=\"%u\"\n",player_preferences->last_time_ran);
 	fprintf(F,"  difficulty=\"%hd\"\n",player_preferences->difficulty_level);
 	fprintf(F,"  bkgd_music=\"%s\"\n",BoolString(player_preferences->background_music_on));
+	fprintf(F,"  crosshairs_active=\"%s\"\n",BoolString(player_preferences->crosshairs_active));
 	fprintf(F,">\n");
 	ChaseCamData& ChaseCam = player_preferences->ChaseCam;
 	fprintf(F,"  <chase_cam behind=\"%hd\" upward=\"%hd\" rightward=\"%hd\" flags=\"%hd\"\n",
@@ -3432,6 +3438,10 @@ bool XML_PlayerPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"bkgd_music"))
 	{
 		return ReadBooleanValue(Value,player_preferences->background_music_on);
+	}
+	else if (StringsEqual(Tag,"crosshairs_active"))
+	{
+		return ReadBooleanValue(Value,player_preferences->crosshairs_active);
 	}
 	return true;
 }

@@ -140,6 +140,7 @@ struct player_preferences_data
 	uint32 last_time_ran;
 	int16 difficulty_level;
 	bool background_music_on;
+	bool crosshairs_active;
 	struct ChaseCamData ChaseCam;
 	struct CrosshairData Crosshairs;
 };

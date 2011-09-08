@@ -790,6 +790,7 @@ bool join_networked_resume_game()
                 
                 if(success)
                 {
+                        Crosshairs_SetActive(player_preferences->crosshairs_active);
                         LoadHUDLua();
                         RunLuaHUDScript();
 
@@ -858,6 +859,7 @@ bool load_and_start_game(FileSpecifier& File)
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
 
+	Crosshairs_SetActive(player_preferences->crosshairs_active);
 	LoadHUDLua();
 	RunLuaHUDScript();
 
@@ -1956,6 +1958,7 @@ static bool begin_game(
 			try_and_display_chapter_screen(CHAPTER_SCREEN_BASE + entry.level_number, false, false);
 		}
 
+		Crosshairs_SetActive(player_preferences->crosshairs_active);
 		LoadHUDLua();
 		RunLuaHUDScript();
 		
