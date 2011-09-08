@@ -15,7 +15,7 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h
   PlayerName.h preference_dialogs.h preferences.h \
   preferences_widgets_sdl.h progress.h Random.h Scenario.h sdl_dialogs.h sdl_network.h \
   sdl_widgets.h shared_widgets.h thread_priority_sdl.h vbl_definitions.h vbl.h VecOps.h \
-  WindowedNthElementFinder.h AlephSansMono-Bold.h \
+  WindowedNthElementFinder.h AlephSansMono-Bold.h powered_by_alephone.h \
   \
   ActionQueues.cpp CircularByteBuffer.cpp Console.cpp game_errors.cpp \
   interface.cpp \

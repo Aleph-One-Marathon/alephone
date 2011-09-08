@@ -1192,6 +1192,11 @@ bool idle_game_state(uint32 time)
 extern SDL_Surface *draw_surface;	// from screen_drawing.cpp
 //void draw_intro_screen(void);		// from screen.cpp
 
+static SDL_Surface *powered_by_alephone_surface = 0;
+#include "powered_by_alephone.h"
+
+extern void set_about_alephone_rect(int width, int height);
+
 void display_main_menu(
 	void)
 {
@@ -1211,20 +1216,25 @@ void display_main_menu(
 		Music::instance()->RestartIntroMusic();
 	}
 
-	// Draw AlephOne Version to screen
-	FontSpecifier& Font = GetOnScreenFont();
+	if (!powered_by_alephone_surface)
+	{
+		SDL_RWops *rw = SDL_RWFromConstMem(powered_by_alephone_bmp, sizeof(powered_by_alephone_bmp));
+		powered_by_alephone_surface = SDL_LoadBMP_RW(rw, 0);
+		SDL_FreeRW(rw);
 
-	// The line spacing is a generalization of "5" for larger fonts
-	short Offset = Font.Descent + Font.LineSpacing + 1;
-	short RightJustOffset = Font.TextWidth(A1_VERSION_STRING);
-	short X = 640 - RightJustOffset - 1;
-	short Y = 480 - Offset;
+		set_about_alephone_rect(powered_by_alephone_surface->w, powered_by_alephone_surface->h);
+	}
 
+	SDL_Rect rect;
+	rect.x = 640 - powered_by_alephone_surface->w;
+	rect.y = 480 - powered_by_alephone_surface->h;
+	rect.w = powered_by_alephone_surface->w;
+	rect.h = powered_by_alephone_surface->h;
+	
 	_set_port_to_intro();
-	Font.DrawText(draw_surface, get_application_name(), 640 - Font.TextWidth(get_application_name()) - 1, Y, SDL_MapRGB(draw_surface->format, 0x40, 0x40, 0x40));
-	Font.DrawText(draw_surface, A1_VERSION_STRING, X, Y + Font.LineSpacing, SDL_MapRGB(draw_surface->format, 0x40, 0x40,
-															 0x40));
+	SDL_BlitSurface(powered_by_alephone_surface, NULL, draw_surface, &rect);
 	_restore_port();
+
 	draw_intro_screen();
 	game_state.main_menu_display_count++;
 }
