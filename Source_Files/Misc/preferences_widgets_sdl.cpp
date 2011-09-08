@@ -31,6 +31,8 @@
 #include    "preferences_widgets_sdl.h"
 #include "Crosshairs.h"
 
+extern bool use_lua_hud_crosshairs;
+
 /*
  *  Environment dialog
  */
@@ -154,10 +156,13 @@ void w_crosshair_display::draw(SDL_Surface *s) const
 	SDL_Rect r = { 0, 0, surface->w, surface->h };
 	draw_rectangle(surface, &r, get_theme_color(DIALOG_FRAME, FRAME_COLOR));
 	
+	bool old_use_lua_hud_crosshairs = use_lua_hud_crosshairs;
+	use_lua_hud_crosshairs = false;
 	bool Old_Crosshairs_IsActive = Crosshairs_IsActive();
 	Crosshairs_SetActive(true);
 	Crosshairs_Render(surface);
 	Crosshairs_SetActive(Old_Crosshairs_IsActive);
+	use_lua_hud_crosshairs = old_use_lua_hud_crosshairs;
 	
 	SDL_BlitSurface(surface, 0, s, const_cast<SDL_Rect *>(&rect));
 }

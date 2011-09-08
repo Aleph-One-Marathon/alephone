@@ -179,6 +179,16 @@ end
           <type>boolean</type>
         </variable>
       </subtable>
+      <subtable name="crosshairs" classname="lua_crosshairs">
+        <variable name="active" access="read-only" version="SVN">
+          <description>whether crosshairs are visible</description>
+          <type>boolean</type>
+        </variable>
+        <variable name="lua_hud" version="SVN">
+          <description>whether the Lua HUD script draws the crosshairs</description>
+          <type>boolean</type>
+        </variable>
+      </subtable>
       <variable name="renderer" access="read-only">
         <description>which renderer is in use</description>
         <type>renderer_type</type>

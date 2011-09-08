@@ -43,6 +43,7 @@ LUA_HUD_OBJECTS.CPP
 #include "Shape_Blitter.h"
 #include "collection_definition.h"
 #include "FileHandler.h"
+#include "Crosshairs.h"
 
 #include <boost/bind.hpp>
 #include <boost/shared_ptr.hpp>
@@ -56,6 +57,8 @@ extern struct view_data *world_view;
 const float AngleConvert = 360/float(FULL_CIRCLE);
 
 extern collection_definition *get_collection_definition(short);
+
+extern bool use_lua_hud_crosshairs;
 
 static int Lua_Collection_Get_Bitmap_Count(lua_State *L)
 {
@@ -1962,6 +1965,39 @@ const luaL_reg Lua_Screen_FOV_Set[] = {
 {0, 0}
 };
 
+char Lua_Screen_Crosshairs_Name[] = "crosshairs";
+typedef L_Class<Lua_Screen_Crosshairs_Name> Lua_Screen_Crosshairs;
+
+static int Lua_Screen_Crosshairs_Get_Active(lua_State *L)
+{
+	lua_pushboolean(L, NetAllowCrosshair() && Crosshairs_IsActive());
+	return 1;
+}
+
+static int Lua_Screen_Crosshairs_Get_LuaHUD(lua_State *L)
+{
+	lua_pushboolean(L, use_lua_hud_crosshairs);
+	return 1;
+}
+
+static int Lua_Screen_Crosshairs_Set_LuaHUD(lua_State *L)
+{
+	use_lua_hud_crosshairs = lua_toboolean(L, 2);
+	use_lua_hud_crosshairs = true;
+	return 0;
+}
+
+const luaL_reg Lua_Screen_Crosshairs_Get[] = {
+{"active", Lua_Screen_Crosshairs_Get_Active},
+{"lua_hud", Lua_Screen_Crosshairs_Get_LuaHUD},
+{0, 0}
+};
+										   
+const luaL_reg Lua_Screen_Crosshairs_Set[] = {
+{"lua_hud", Lua_Screen_Crosshairs_Set_LuaHUD},
+{0, 0}
+};
+
 char Lua_Screen_Name[] = "Screen";
 typedef L_Class<Lua_Screen_Name> Lua_Screen;
 
@@ -2043,6 +2079,12 @@ static int Lua_Screen_Get_FOV(lua_State *L)
     return 1;
 }
 
+static int Lua_Screen_Get_Crosshairs(lua_State *L)
+{
+    Lua_Screen_Crosshairs::Push(L, Lua_Screen::Index(L, 1));
+    return 1;
+}
+
 static int Lua_Screen_Get_Masking_Mode(lua_State *L)
 {
 	Lua_MaskingMode::Push(L, Lua_HUDInstance()->masking_mode());
@@ -2106,6 +2148,7 @@ const luaL_reg Lua_Screen_Get[] = {
 {"hud_size_preference", Lua_Screen_Get_HUD_Size},
 {"term_size_preference", Lua_Screen_Get_Term_Size},
 {"field_of_view", Lua_Screen_Get_FOV},
+{"crosshairs", Lua_Screen_Get_Crosshairs},
 {"masking_mode", Lua_Screen_Get_Masking_Mode},
 {"clear_mask", L_TableFunction<Lua_Screen_Clear_Mask>},
 {"fill_rect", L_TableFunction<Lua_Screen_Fill_Rect>},
@@ -2518,6 +2561,7 @@ int Lua_HUDObjects_register(lua_State *L)
 	Lua_Screen_Map_Rect::Register(L, Lua_Screen_Map_Rect_Get, Lua_Screen_Map_Rect_Set);
 	Lua_Screen_Term_Rect::Register(L, Lua_Screen_Term_Rect_Get, Lua_Screen_Term_Rect_Set);
 	Lua_Screen_FOV::Register(L, Lua_Screen_FOV_Get, Lua_Screen_FOV_Set);
+	Lua_Screen_Crosshairs::Register(L, Lua_Screen_Crosshairs_Get, Lua_Screen_Crosshairs_Set);
 	
 	Lua_Screen::Register(L, Lua_Screen_Get, Lua_Screen_Set);
 	Lua_Screen::Push(L, 0);

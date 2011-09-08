@@ -168,6 +168,8 @@ May 3, 2003 (Br'fin (Jeremy Parsons))
 
 #include <cmath>
 
+extern bool use_lua_hud_crosshairs;
+
 // Whether or not OpenGL is active for rendering
 static bool _OGL_IsActive = false;
 
@@ -3155,6 +3157,7 @@ void SetupShaders()
 bool OGL_RenderCrosshairs()
 {
 	if (!OGL_IsActive()) return false;
+	if (use_lua_hud_crosshairs) return false;
 	
 	// Crosshair features
 	CrosshairData& Crosshairs = GetCrosshairData();
