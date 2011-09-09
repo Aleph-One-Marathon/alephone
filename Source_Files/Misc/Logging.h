@@ -69,6 +69,8 @@ void setLoggingThreshhold(const char* inDomain, short inThreshhold); // message 
 void setShowLoggingLocations(const char* inDomain, bool inShowLocations);	// show file and line?
 void setFlushLoggingOutput(const char* inDomain, bool inFlushOutput);	// flush output file after every log message?
 
+// Log file name, for display in error messages
+const char *loggingFileName();
 
 
 // Catch-all domain for use when nobody overrides us

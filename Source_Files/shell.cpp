@@ -126,6 +126,20 @@
 // Defined in shell_misc.cpp
 extern bool CheatsActive;
 
+// Application names
+#if defined(__MACH__) && defined(__APPLE__)
+// These are defined and initialized in SDLMain.m
+extern char *application_name;
+extern char *application_identifier;
+extern char *bundle_resource_path;
+extern char *app_log_directory;
+extern char *app_preferences_directory;
+extern char *app_support_directory;
+#else
+char application_name[] = A1_DISPLAY_NAME;
+char application_identifier[] = "org.bungie.source.AlephOne";
+#endif
+
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
 DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
@@ -385,9 +399,8 @@ static void initialize_application(void)
 	log_dir = local_data_dir;
 
 #elif defined(__APPLE__) && defined(__MACH__)
-	extern char *bundle_name; // SDLMain.m
-	DirectorySpecifier bundle_data_dir = bundle_name;
-	bundle_data_dir += "Contents/Resources/DataFiles";
+	DirectorySpecifier bundle_data_dir = bundle_resource_path;
+	bundle_data_dir += "DataFiles";
 
 	data_search_path.push_back(bundle_data_dir);
 
@@ -397,23 +410,9 @@ static void initialize_application(void)
 		free(buf);
 	}
 	
-	const char *home = getenv("HOME");
-	if (home)
-	{
-	    local_data_dir = home;
-	    preferences_dir = home;
-	    log_dir = home;
-	    log_dir += "Library";
-	    log_dir += "Logs";
-	}
-
-	local_data_dir += "Library";
-	local_data_dir += "Application Support";
-	local_data_dir += "AlephOne";
-
-	preferences_dir += "Library";
-	preferences_dir += "Preferences";
-	preferences_dir += "org.bungie.source.AlephOne";
+	log_dir = app_log_directory;
+	preferences_dir = app_preferences_directory;
+	local_data_dir = app_support_directory;
 
 #elif defined(__BEOS__)
 
@@ -597,7 +596,7 @@ static void initialize_application(void)
 		fprintf(stderr, "Couldn't initialize SDL (%s)\n", SDL_GetError());
 		exit(1);
 	}
-	SDL_WM_SetCaption(A1_DISPLAY_NAME, A1_DISPLAY_NAME);
+	SDL_WM_SetCaption(application_name, application_name);
 
 #if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)
 	IMG_Init(IMG_INIT_JPG | IMG_INIT_PNG);
@@ -1498,6 +1497,11 @@ void LoadBaseMMLScripts()
 			i++;
 		}
 	}
+}
+			   
+const char *get_application_name(void)
+{
+   return application_name;
 }
 
 // LP: the rest of the code has been moved to Jeremy's shell_misc.file.
