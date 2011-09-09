@@ -309,6 +309,7 @@ extern bool choose_saved_game_to_load(FileSpecifier& File);
 /* ---------------------- prototypes */
 static void display_credits(void);
 static void draw_button(short index, bool pressed);
+static void draw_powered_by_aleph_one();
 static void handle_replay(bool last_replay);
 static bool begin_game(short user, bool cheat);
 static void start_game(short user, bool changing_level);
@@ -1056,6 +1057,11 @@ void update_interface_display(
 	
 	/* Use this to avoid the fade.. */
 	draw_full_screen_pict_resource_from_images(data->screen_base+game_state.current_screen);
+
+	if (game_state.state == _display_main_menu)
+	{
+		draw_powered_by_aleph_one();
+	}
 }
 
 bool idle_game_state(uint32 time)
@@ -1197,25 +1203,8 @@ static SDL_Surface *powered_by_alephone_surface = 0;
 
 extern void set_about_alephone_rect(int width, int height);
 
-void display_main_menu(
-	void)
+static void draw_powered_by_aleph_one()
 {
-	game_state.state= _display_main_menu;
-	game_state.current_screen= 0;
-	game_state.phase= TICKS_UNTIL_DEMO_STARTS;
-	game_state.last_ticks_on_idle= machine_tick_count();
-	game_state.user= _single_player;
-	game_state.flags= 0;
-	
-	change_screen_mode(_screentype_menu);
-	display_screen(MAIN_MENU_BASE);
-	
-	/* Start up the song! */
-	if(!Music::instance()->Playing() && game_state.main_menu_display_count==0)
-	{
-		Music::instance()->RestartIntroMusic();
-	}
-
 	if (!powered_by_alephone_surface)
 	{
 		SDL_RWops *rw = SDL_RWFromConstMem(powered_by_alephone_bmp, sizeof(powered_by_alephone_bmp));
@@ -1235,7 +1224,31 @@ void display_main_menu(
 	SDL_BlitSurface(powered_by_alephone_surface, NULL, draw_surface, &rect);
 	_restore_port();
 
+	// have to reblit :(
 	draw_intro_screen();
+}
+
+void display_main_menu(
+	void)
+{
+	game_state.state= _display_main_menu;
+	game_state.current_screen= 0;
+	game_state.phase= TICKS_UNTIL_DEMO_STARTS;
+	game_state.last_ticks_on_idle= machine_tick_count();
+	game_state.user= _single_player;
+	game_state.flags= 0;
+	
+	change_screen_mode(_screentype_menu);
+	display_screen(MAIN_MENU_BASE);
+	
+	/* Start up the song! */
+	if(!Music::instance()->Playing() && game_state.main_menu_display_count==0)
+	{
+		Music::instance()->RestartIntroMusic();
+	}
+
+	draw_powered_by_aleph_one();
+
 	game_state.main_menu_display_count++;
 }
 
@@ -1782,6 +1795,8 @@ static void draw_button(
 	short index, 
 	bool pressed)
 {
+	if (index == _about_alephone_rect) return;
+
 	screen_rectangle *screen_rect= get_interface_rectangle(index);
 	short pict_resource_number= MAIN_MENU_BASE + pressed;
 
