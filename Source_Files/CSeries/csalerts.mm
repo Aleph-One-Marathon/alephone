@@ -59,3 +59,9 @@ bool system_alert_choose_scenario(char *chosen_dir)
 	
 	return [[[panel URL] path] getCString:chosen_dir maxLength:256 encoding:NSUTF8StringEncoding];
 }
+
+bool system_launch_url_in_browser(const char *url)
+{
+	NSURL *urlref = [NSURL URLWithString:[NSString stringWithUTF8String:url]];
+	[[NSWorkspace sharedWorkspace] openURL:urlref];
+}

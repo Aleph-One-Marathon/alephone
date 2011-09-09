@@ -369,6 +369,48 @@ void w_button_base::click(int /*x*/, int /*y*/)
 	mouse_up(0, 0);
 }
 
+/*
+ * Clickable link
+ */
+
+void w_hyperlink::prochandler(void *arg)
+{
+	toggle_fullscreen(false);
+	launch_url_in_browser(static_cast<const char *>(arg));
+	get_owning_dialog()->draw();
+}
+
+w_hyperlink::w_hyperlink(const char *url, const char *txt) : w_button_base((txt ? txt : url), boost::bind(&w_hyperlink::prochandler, this, _1), const_cast<char *>(url), HYPERLINK_WIDGET)
+{
+	rect.w = text_width(text.c_str(), font, style);
+	rect.h = font->get_line_height();
+	saved_min_height = rect.h;
+	saved_min_width = rect.w;
+}
+
+void w_hyperlink::draw(SDL_Surface *s) const
+{
+	int state = DEFAULT_STATE;
+	if (pressed)
+		state = PRESSED_STATE;
+	else if (!enabled)
+		state = DISABLED_STATE;
+	else if (active)
+		state = ACTIVE_STATE;
+	
+	uint32 pixel = get_theme_color(HYPERLINK_WIDGET, state, 0);
+	
+	draw_text(s, text.c_str(), rect.x, rect.y + font->get_ascent(), pixel, font, style);
+	
+	// draw_text doesn't support underline, so draw one manually
+	if (style & styleUnderline)
+	{
+		SDL_Rect r = {rect.x, rect.y + rect.h - 1, rect.w, 1};
+		SDL_FillRect(s, &r, pixel);
+	}
+}
+
+
 /* 
  * Tabs
  */

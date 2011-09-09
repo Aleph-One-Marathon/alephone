@@ -59,6 +59,7 @@ enum {
 	_quit_button_rect,
 	_center_button_rect,
 	_singleton_game_button_rect,
+	_about_alephone_rect,
 	NUMBER_OF_INTERFACE_RECTANGLES
 };
 

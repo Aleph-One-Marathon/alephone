@@ -44,6 +44,8 @@ extern void alert_user(
 
 extern bool alert_choose_scenario(char *chosen_dir);
 
+extern void launch_url_in_browser(const char *url);
+
 extern void pause_debug(void);
 extern void vpause(
 	const char *message);

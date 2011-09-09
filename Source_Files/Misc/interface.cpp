@@ -113,6 +113,7 @@ Feb 13, 2003 (Woody Zenfell):
 #include <stdlib.h>
 #include <limits.h>
 #include <algorithm>
+#include <sstream>
 
 #ifdef PERFORMANCE
 #include <perf.h>
@@ -308,6 +309,7 @@ extern bool choose_saved_game_to_load(FileSpecifier& File);
 /* ---------------------- prototypes */
 static void display_credits(void);
 static void draw_button(short index, bool pressed);
+static void draw_powered_by_aleph_one();
 static void handle_replay(bool last_replay);
 static bool begin_game(short user, bool cheat);
 static void start_game(short user, bool changing_level);
@@ -326,6 +328,7 @@ static void display_quit_screens(void);
 static void	display_screen(short base_pict_id);
 static void display_introduction_screen_for_demo(void);
 static void display_epilogue(void);
+static void display_about_dialog();
 
 static void force_system_colors(void);
 static bool point_in_rectangle(short x, short y, screen_rectangle *rect);
@@ -1054,6 +1057,11 @@ void update_interface_display(
 	
 	/* Use this to avoid the fade.. */
 	draw_full_screen_pict_resource_from_images(data->screen_base+game_state.current_screen);
+
+	if (game_state.state == _display_main_menu)
+	{
+		draw_powered_by_aleph_one();
+	}
 }
 
 bool idle_game_state(uint32 time)
@@ -1190,6 +1198,36 @@ bool idle_game_state(uint32 time)
 extern SDL_Surface *draw_surface;	// from screen_drawing.cpp
 //void draw_intro_screen(void);		// from screen.cpp
 
+static SDL_Surface *powered_by_alephone_surface = 0;
+#include "powered_by_alephone.h"
+
+extern void set_about_alephone_rect(int width, int height);
+
+static void draw_powered_by_aleph_one()
+{
+	if (!powered_by_alephone_surface)
+	{
+		SDL_RWops *rw = SDL_RWFromConstMem(powered_by_alephone_bmp, sizeof(powered_by_alephone_bmp));
+		powered_by_alephone_surface = SDL_LoadBMP_RW(rw, 0);
+		SDL_FreeRW(rw);
+
+		set_about_alephone_rect(powered_by_alephone_surface->w, powered_by_alephone_surface->h);
+	}
+
+	SDL_Rect rect;
+	rect.x = 640 - powered_by_alephone_surface->w;
+	rect.y = 480 - powered_by_alephone_surface->h;
+	rect.w = powered_by_alephone_surface->w;
+	rect.h = powered_by_alephone_surface->h;
+	
+	_set_port_to_intro();
+	SDL_BlitSurface(powered_by_alephone_surface, NULL, draw_surface, &rect);
+	_restore_port();
+
+	// have to reblit :(
+	draw_intro_screen();
+}
+
 void display_main_menu(
 	void)
 {
@@ -1209,21 +1247,8 @@ void display_main_menu(
 		Music::instance()->RestartIntroMusic();
 	}
 
-	// Draw AlephOne Version to screen
-	FontSpecifier& Font = GetOnScreenFont();
+	draw_powered_by_aleph_one();
 
-	// The line spacing is a generalization of "5" for larger fonts
-	short Offset = Font.Descent + Font.LineSpacing + 1;
-	short RightJustOffset = Font.TextWidth(A1_VERSION_STRING);
-	short X = 640 - RightJustOffset - 1;
-	short Y = 480 - Offset;
-
-	_set_port_to_intro();
-	Font.DrawText(draw_surface, "Aleph One", 640 - Font.TextWidth("Aleph One") - 1, Y, SDL_MapRGB(draw_surface->format, 0x40, 0x40, 0x40));
-	Font.DrawText(draw_surface, A1_VERSION_STRING, X, Y + Font.LineSpacing, SDL_MapRGB(draw_surface->format, 0x40, 0x40,
-															 0x40));
-	_restore_port();
-	draw_intro_screen();
 	game_state.main_menu_display_count++;
 }
 
@@ -1438,6 +1463,11 @@ void do_menu_item_command(
 				case iQuit:
 					display_quit_screens();
 					break;
+				case iAbout:
+					display_about_dialog();
+					game_state.phase= TICKS_UNTIL_DEMO_STARTS;
+					game_state.last_ticks_on_idle= machine_tick_count();
+					break;
 		
 				default:
 					assert(false);
@@ -1507,6 +1537,7 @@ bool enabled_item(
 		case iReplaySavedFilm:
 		case iCredits:
 		case iQuit:
+	        case iAbout:
 			break;
 
 		case iCenterButton:
@@ -1612,6 +1643,56 @@ static void display_epilogue(
 	for (int i=0; i<NumEndScreens; i++)
 		try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+EndScreenIndex+i, true, true);
 	show_cursor();
+}
+
+static void display_about_dialog()
+{
+	force_system_colors();
+
+	dialog d;
+
+	vertical_placer* placer = new vertical_placer;
+	placer->dual_add(new w_title("ABOUT"), d);
+	placer->add(new w_spacer, true);
+
+	std::ostringstream s;
+	s << "Aleph One " << A1_DISPLAY_VERSION << " (" << A1_DISPLAY_DATE_VERSION << ")";
+	placer->dual_add(new w_static_text(s.str().c_str()), d);
+
+	placer->add(new w_spacer, true);
+
+	placer->dual_add(new w_hyperlink("http://marathon.sourceforge.net/"), d);
+
+	placer->add(new w_spacer, true);
+	
+	placer->dual_add(new w_static_text("Aleph One is free software with ABSOLUTELY NO WARRANTY."), d);
+	placer->dual_add(new w_static_text("You are welcome to redistribute it under certain conditions."), d);
+	placer->dual_add(new w_hyperlink("http://www.gnu.org/licenses/gpl-3.0.html"), d);
+
+	placer->add(new w_spacer, true);
+	placer->dual_add(new w_static_text("This license does not apply to game content."), d);
+
+	placer->add(new w_spacer, true);
+
+	s.str("");
+	s << "Scenario Loaded: " << Scenario::instance()->GetName();
+	if (!Scenario::instance()->GetVersion().empty())
+	{
+		s << " " << Scenario::instance()->GetVersion();
+	}
+	placer->dual_add(new w_static_text(s.str().c_str()), d);
+	
+	placer->add(new w_spacer, true);
+
+	placer->dual_add(new w_button("OK", dialog_ok, &d), d);
+	
+	d.set_widget_placer(placer);
+
+	clear_screen();
+
+	d.run();
+
+	display_main_menu();
 }
 
 static void display_credits(
@@ -1722,6 +1803,8 @@ static void draw_button(
 	short index, 
 	bool pressed)
 {
+	if (index == _about_alephone_rect) return;
+
 	screen_rectangle *screen_rect= get_interface_rectangle(index);
 	short pict_resource_number= MAIN_MENU_BASE + pressed;
 

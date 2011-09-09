@@ -62,7 +62,8 @@ enum { /* Menu interface... */
 	iCredits,
 	iQuit,
 	iCenterButton,
-	iPlaySingletonLevel
+	iPlaySingletonLevel,
+	iAbout
 };
 
 /* This is the menu with nothing in the title, so that it doesn't show up */

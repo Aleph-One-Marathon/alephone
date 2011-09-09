@@ -101,7 +101,18 @@ static screen_rectangle interface_rectangles[NUMBER_OF_INTERFACE_RECTANGLES] =
 	{263, 500, 294, 585}, // adjusted to work with both m2 and inf
       	{0,0,0,0},
 	{0, 0, 0, 0},
+	{0, 0, 0, 0}
 };
+
+void set_about_alephone_rect(int width, int height)
+{
+	if (!width || !height) return;
+
+	interface_rectangles[_about_alephone_rect].top = 480 - height;
+	interface_rectangles[_about_alephone_rect].left = 640 - width;
+	interface_rectangles[_about_alephone_rect].bottom = 480;
+	interface_rectangles[_about_alephone_rect].right = 640;
+}
 
 // static screen_rectangle *interface_rectangles;
 // static CTabHandle screen_colors;
