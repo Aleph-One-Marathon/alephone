@@ -89,9 +89,9 @@ setupAndConnectClient(MetaserverClient& client)
 			placer->dual_add(new w_title("UPDATE AVAILABLE"), d);
 			placer->add(new w_spacer(), true);
 
-			placer->dual_add(new w_static_text("An update for Aleph One is available."), d);
+			placer->dual_add(new w_static_text(expand_app_variables("An update for $appName$ is available.").c_str()), d);
 			placer->dual_add(new w_static_text("Please download it from"), d);
-			placer->dual_add(new w_static_text("http://marathon.sourceforge.net/"), d);
+			placer->dual_add(new w_hyperlink(A1_HOMEPAGE_URL), d);
 			placer->dual_add(new w_static_text("before playing games online."), d);
 			
 			placer->add(new w_spacer(), true);
@@ -104,7 +104,7 @@ setupAndConnectClient(MetaserverClient& client)
 	}
 
 	client.setPlayerTeamName("");
-	client.connect("metaserver.lhowon.org", 6321, network_preferences->metaserver_login, network_preferences->metaserver_password);
+	client.connect(A1_METASERVER_HOST, 6321, network_preferences->metaserver_login, network_preferences->metaserver_password);
 }
 
 

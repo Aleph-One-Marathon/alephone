@@ -586,8 +586,8 @@ const int JoinDialog::JoinNetworkGameByRunning ()
 	m_chatChoiceWidget->set_callback(boost::bind(&JoinDialog::chatChoiceHit, this));
 	m_chatEntryWidget->set_callback(boost::bind(&JoinDialog::chatTextEntered, this, _1));
 	
-	getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
-	m_messagesWidget->set_text(pstring_to_string(ptemporary));
+	getcstr(temporary, strJOIN_DIALOG_MESSAGES, _join_dialog_welcome_string);
+	m_messagesWidget->set_text(temporary);
 	
 	CStringPref joinAddressPref (network_preferences->join_address, 255);
 	binders.insert<std::string> (m_joinAddressWidget, &joinAddressPref);
@@ -659,8 +659,8 @@ void JoinDialog::attemptJoin ()
 		m_joinWidget->deactivate ();
 		m_joinMetaserverWidget->deactivate ();
 		
-		getpstr(ptemporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
-		m_messagesWidget->set_text(pstring_to_string(ptemporary));
+		getcstr(temporary, strJOIN_DIALOG_MESSAGES, _join_dialog_waiting_string);
+		m_messagesWidget->set_text(temporary);
 
 		if (!m_joinByAddressWidget->get_value()) {
 			join_announcer.reset(new JoinerSeekingGathererAnnouncer(true));

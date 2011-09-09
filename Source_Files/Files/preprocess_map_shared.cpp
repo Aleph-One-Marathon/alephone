@@ -150,7 +150,9 @@ save_game_full_auto(bool inOverwriteRecent) {
         // If we're supposed to overwrite, change our minds if we seem to have no 'existing file'.
         if(!createNewFile) {
                 theRecentSavedGame.GetName(theSavedGameName);
-                if(strcmp(theSavedGameName, TS_GetCString(strFILENAMES, filenameDEFAULT_SAVE_GAME)) == 0)
+			char theDefaultGameName[256];
+			getcstr(theDefaultGameName, strFILENAMES, filenameDEFAULT_SAVE_GAME);
+                if(strcmp(theSavedGameName, theDefaultGameName) == 0)
                         createNewFile = true;
         }
         

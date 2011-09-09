@@ -932,7 +932,8 @@ static void graphics_dialog(void *arg)
 	placer->add(new w_spacer(), true);
 
 #ifndef HAVE_OPENGL
-	placer->dual_add(new w_static_text("This copy of Aleph One was built without OpenGL support."), d);
+	
+	placer->dual_add(new w_static_text(expand_app_variables("This copy of $appName$ was built without OpenGL support.")), d);
 #endif
 	placer->add(new w_spacer(), true);
 
@@ -2157,9 +2158,9 @@ void read_preferences ()
 				OFile.Close();
 				if (!XML_DataBlockLoader.ParseData(&FileContents[0], Len)) {
 					if (defaults)
-						alert_user("There were default preferences-file parsing errors (see Aleph One Log.txt for details)", infoError);
+						alert_user(expand_app_variables("There were default preferences-file parsing errors (see $appLogFile$ for details)").c_str(), infoError);
 					else
-						alert_user("There were preferences-file parsing errors (see Aleph One Log.txt for details)", infoError);
+						alert_user(expand_app_variables("There were preferences-file parsing errors (see $appLogFile$ for details)").c_str(), infoError);
 				}
 			}
 		}
