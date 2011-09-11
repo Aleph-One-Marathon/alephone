@@ -267,7 +267,7 @@ int main(int argc, char **argv)
 {
 	// Print banner (don't bother if this doesn't appear when started from a GUI)
 	char app_name_version[256];
-	expand_app_variables(app_name_version, "$appName$ $appLongVersion$");
+	expand_app_variables(app_name_version, "Aleph One $appLongVersion$");
 	printf ("%s\n%s\n\n"
 	  "Original code by Bungie Software <http://www.bungie.com/>\n"
 	  "Additional work by Loren Petrich, Chris Pruett, Rhys Hill et al.\n"

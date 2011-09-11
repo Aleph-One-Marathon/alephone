@@ -1655,7 +1655,11 @@ static void display_about_dialog()
 	placer->dual_add(new w_title("ABOUT"), d);
 	placer->add(new w_spacer, true);
 
-	placer->dual_add(new w_static_text(expand_app_variables("$appName$ $appVersion$ ($appDate$)").c_str()), d);
+	if (strcmp(get_application_name(), "Aleph One") != 0)
+	{
+		placer->dual_add(new w_static_text(expand_app_variables("$appName$ is powered by").c_str()), d);
+	}
+	placer->dual_add(new w_static_text(expand_app_variables("Aleph One $appVersion$ ($appDate$)").c_str()), d);
 
 	placer->add(new w_spacer, true);
 
@@ -1663,7 +1667,7 @@ static void display_about_dialog()
 
 	placer->add(new w_spacer, true);
 	
-	placer->dual_add(new w_static_text(expand_app_variables("$appName$ is free software with ABSOLUTELY NO WARRANTY.").c_str()), d);
+	placer->dual_add(new w_static_text(expand_app_variables("Aleph One is free software with ABSOLUTELY NO WARRANTY.").c_str()), d);
 	placer->dual_add(new w_static_text("You are welcome to redistribute it under certain conditions."), d);
 	placer->dual_add(new w_hyperlink("http://www.gnu.org/licenses/gpl-3.0.html"), d);
 
