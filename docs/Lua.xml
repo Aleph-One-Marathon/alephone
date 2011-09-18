@@ -591,6 +591,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>returns whether level is finished, unfinished, or failed</description>
 	<return><type>completion_state</type></return>
       </function>
+      <variable name="completed" access="read-only" version="SVN">
+	<description>check this in Triggers.cleanup() to determine whether the player(s) teleported out</description>
+	<type>boolean</type>
+      </variable>
       <variable name="extermination" access="read-only" version="20081213">
 	<description>whether level has extermination flag set</description>
 	<type>boolean</type>

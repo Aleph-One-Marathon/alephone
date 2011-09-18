@@ -20,6 +20,7 @@ LUA_MAP.CPP
 	Implements Lua map classes
 */
 
+#include "interface.h" // get_game_state
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
@@ -3036,6 +3037,12 @@ int Lua_Level_Calculate_Completion_State(lua_State *L)
 	return 1;
 }
 
+int Lua_Level_Get_Completed(lua_State* L)
+{
+	lua_pushboolean(L, get_game_state() == _change_level);
+	return 1;
+}
+
 template<int16 flag>
 static int Lua_Level_Get_Environment_Flag(lua_State *L)
 {
@@ -3070,6 +3077,7 @@ static int Lua_Level_Get_Underwater_Fog(lua_State *L)
 
 const luaL_reg Lua_Level_Get[] = {
 	{"calculate_completion_state", L_TableFunction<Lua_Level_Calculate_Completion_State>},
+	{"completed", Lua_Level_Get_Completed},
 	{"extermination", Lua_Level_Get_Mission_Flag<_mission_extermination>},
 	{"exploration", Lua_Level_Get_Mission_Flag<_mission_exploration>},
 	{"fog", Lua_Level_Get_Fog},
