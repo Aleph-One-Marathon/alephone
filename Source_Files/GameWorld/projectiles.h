@@ -170,7 +170,7 @@ void detonate_projectile(world_point3d *origin, short polygon_index, short type,
 // LP change: added a location of hitting something;
 // it may be different from the new location,
 // as may happen for a "penetrates media boundary" projectile.
-uint16 translate_projectile(short type, world_point3d *old_location, short old_polygon_index, world_point3d *new_location, short *new_polygon_index, short owner_index, short *obstruction_index, short *last_line_index, bool preflight);
+uint16 translate_projectile(short type, world_point3d *old_location, short old_polygon_index, world_point3d *new_location, short *new_polygon_index, short owner_index, short *obstruction_index, short *last_line_index, bool preflight, short projectile_indexx);
 
 void move_projectiles(void); /* assumes ¶t==1 tick */
 

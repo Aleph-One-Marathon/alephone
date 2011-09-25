@@ -1357,7 +1357,7 @@ bool untoggled_repair_switches_on_level(void);
 
 void assume_correct_switch_position(short switch_type, short permutation, bool new_state);
 
-void try_and_toggle_control_panel(short polygon_index, short line_index);
+void try_and_toggle_control_panel(short polygon_index, short line_index, short projectile_index);
 
 bool line_side_has_control_panel(short line_index, short polygon_index, short *side_index_with_panel);
 

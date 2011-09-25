@@ -174,13 +174,17 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <description>whenever a player uses a tag switch</description>
       <argument name="tag"><type>tag</type></argument>
       <argument name="player"><type>player</type></argument>
+      <argument name="side"><type>side</type></argument>
       <note>not called when a projectile (e.g., fists) toggles a tag switch</note>
+      <note>side is only valid in version SVN and newer</note>
     </function>
     <function name="light_switch">
       <description>whenever a player uses a light switch</description>
       <argument name="light"><type>light</type></argument>
       <argument name="player"><type>player</type></argument>
+      <argument name="side"><type>side</type></argument>
       <note>not called when a projectile (e.g., fists) toggles a light switch</note>
+      <note>side is only valid in version SVN and newer</note>
     </function>
     <function name="platform_switch">
       <description>whenever a player uses a platform switch</description>
@@ -189,7 +193,20 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>polygon of the platform being toggled</description>
       </argument>
       <argument name="player"><type>player</type></argument>
+      <argument name="side"><type>side</type></argument>
       <note>not called when a projectile (e.g., fists) toggles a platform switch</note>
+      <note>side is only valid in version SVN and newer</note>
+    </function>
+    <function name="projectile_switch" version="SVN">
+      <description>whenever a projectile toggles a switch</description>
+      <argument name="projectile">
+	<type>projectile</type>
+	<description>projectile that toggled the switch</description>
+      </argument>
+      <argument name="side">
+	<type>side</type>
+	<description>side containing switch being toggled</description>
+      </argument>
     </function>
     <function name="terminal_enter">
       <description>whenever a player starts using a terminal</description>

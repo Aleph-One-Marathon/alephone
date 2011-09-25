@@ -217,7 +217,7 @@ bool preflight_projectile(
 				(origin_polygon->media_index==NONE || definition->flags&(_penetrates_media) || (media ? origin->z>media->height : true)))
 			{
 				/* make sure it hits something */
-				uint16 flags= translate_projectile(type, origin, origin_polygon_index, destination, (short *) NULL, owner, obstruction_index, 0, true);
+				uint16 flags= translate_projectile(type, origin, origin_polygon_index, destination, (short *) NULL, owner, obstruction_index, 0, true, NONE);
 				
 				*obstruction_index= (flags&_projectile_hit_monster) ? get_object_data(*obstruction_index)->permutation : NONE;
 				legal_projectile= true;
@@ -385,7 +385,7 @@ void move_projectiles(
 					{
 						definition->flags ^= adjusted_definition_flags;
 					}
-					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index, 0, false);
+					flags= translate_projectile(projectile->type, &old_location, object->polygon, &new_location, &new_polygon_index, projectile->owner_index, &obstruction_index, 0, false, projectile_index);
 					if (film_profile.infinity_smg)
 					{
 						definition->flags ^= adjusted_definition_flags;
@@ -769,7 +769,7 @@ static void update_guided_projectile(
 				case _major_damage_level:
 				case _total_carnage_level:
 					flags= translate_projectile(projectile->type, &projectile_object->location, projectile_object->polygon,
-								    &target_location, (short *) NULL, projectile->owner_index, &obstruction_index, 0, true);
+								    &target_location, (short *) NULL, projectile->owner_index, &obstruction_index, 0, true, -1);
 					if (!(flags&_projectile_hit_monster)) break; /* if weÕre headed for a wall, donÕt steer */
 				default:
 					projectile_object->facing= NORMALIZE_ANGLE(projectile_object->facing+PIN(delta_yaw, -maximum_delta_yaw, maximum_delta_yaw));
@@ -789,7 +789,8 @@ uint16 translate_projectile(
 	short owner_index,
 	short *obstruction_index,
 	short *last_line_index,
-	bool preflight)
+	bool preflight,
+	short projectile_index)
 {
 	struct projectile_definition *definition= get_projectile_definition(type);
 	struct polygon_data *old_polygon;
@@ -878,7 +879,7 @@ uint16 translate_projectile(
 						{
 							/* hit wall created by ceiling or floor of new polygon; test to see
 								if we toggle a control panel */
-							if (!preflight && (definition->flags&_can_toggle_control_panels)) try_and_toggle_control_panel(old_polygon_index, line_index);
+							if (!preflight && (definition->flags&_can_toggle_control_panels)) try_and_toggle_control_panel(old_polygon_index, line_index, projectile_index);
 							contact= _hit_wall;
 						}
 					}
@@ -903,7 +904,7 @@ uint16 translate_projectile(
 			else
 			{
 				/* hit wall created by solid line; test to see if we toggle a control panel */
-				if (!preflight && (definition->flags&_can_toggle_control_panels)) try_and_toggle_control_panel(old_polygon_index, line_index);
+				if (!preflight && (definition->flags&_can_toggle_control_panels)) try_and_toggle_control_panel(old_polygon_index, line_index, projectile_index);
 				if (line_is_landscaped(old_polygon_index, line_index, intersection.z)) flags|= _projectile_hit_landscape;
 				contact= _hit_wall;
 			}
