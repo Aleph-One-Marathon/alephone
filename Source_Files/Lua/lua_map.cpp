@@ -1464,6 +1464,13 @@ static int Lua_Side_ControlPanel_Get_Permutation(lua_State *L)
 	return 1;
 }
 
+static int Lua_Side_ControlPanel_Get_UsesItem(lua_State* L)
+{
+	control_panel_definition* definition = get_control_panel_definition(get_side_data(Lua_Side_ControlPanel::Index(L, 1))->control_panel_type);
+	lua_pushboolean(L, definition->item != NONE);
+	return 1;
+}
+
 const luaL_reg Lua_Side_ControlPanel_Get[] = {
 	{"can_be_destroyed", Lua_Side_ControlPanel_Get_Flag<_side_switch_can_be_destroyed>},
 	{"light_dependent", Lua_Side_ControlPanel_Get_Flag<_side_is_lighted_switch>},
@@ -1472,7 +1479,7 @@ const luaL_reg Lua_Side_ControlPanel_Get[] = {
 	{"status", Lua_Side_ControlPanel_Get_Flag<_control_panel_status>},
 	{"type", Lua_Side_ControlPanel_Get_Type},
 	{"permutation", Lua_Side_ControlPanel_Get_Permutation},
-	{"uses_item", Lua_Side_ControlPanel_Get_Flag<_side_is_destructive_switch>},
+	{"uses_item", Lua_Side_ControlPanel_Get_UsesItem},
 	{0, 0}
 };
 
@@ -1496,6 +1503,11 @@ static int Lua_Side_ControlPanel_Set_Type(lua_State *L)
 	return 0;
 }
 
+// the old version set a useless flag; instead, do nothing
+static int Lua_Side_ControlPanel_Set_UsesItem(lua_State*)
+{
+}
+
 const luaL_reg Lua_Side_ControlPanel_Set[] = {
 	{"can_be_destroyed", Lua_Side_ControlPanel_Set_Flag<_side_switch_can_be_destroyed>},
 	{"light_dependent", Lua_Side_ControlPanel_Set_Flag<_side_is_lighted_switch>},
@@ -1504,7 +1516,7 @@ const luaL_reg Lua_Side_ControlPanel_Set[] = {
 	{"repair", Lua_Side_ControlPanel_Set_Flag<_side_is_repair_switch>},
 	{"status", Lua_Side_ControlPanel_Set_Flag<_control_panel_status>},
 	{"type", Lua_Side_ControlPanel_Set_Type},
-	{"uses_item", Lua_Side_ControlPanel_Set_Flag<_side_is_destructive_switch>},
+	{"uses_item", Lua_Side_ControlPanel_Set_UsesItem},
 	{0, 0}
 };
 
