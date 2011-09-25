@@ -1681,7 +1681,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <description>permutation of control panel</description>
 	  <type>number</type>
 	</variable>
-	<variable name="uses_item" version="20080707">
+	<variable name="uses_item" access="read-only" version="SVN">
 	  <description>i.e. chip insertion</description>
 	  <type>boolean</type>
 	</variable>
