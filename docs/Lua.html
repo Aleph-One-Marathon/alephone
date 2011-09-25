@@ -261,21 +261,33 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">whenever a player starts to use a refuel panel</p></dd>
 <dt>.end_refuel(class, player, side)</dt>
 <dd><p class="description">whenever a player stops using a refuel panel</p></dd>
-<dt>.tag_switch(tag, player)</dt>
+<dt>.tag_switch(tag, player, side)</dt>
 <dd>
 <p class="description">whenever a player uses a tag switch</p>
 <p class="note">not called when a projectile (e.g., fists) toggles a tag switch </p>
+<p class="note">side is only valid in version SVN and newer </p>
 </dd>
-<dt>.light_switch(light, player)</dt>
+<dt>.light_switch(light, player, side)</dt>
 <dd>
 <p class="description">whenever a player uses a light switch</p>
 <p class="note">not called when a projectile (e.g., fists) toggles a light switch </p>
+<p class="note">side is only valid in version SVN and newer </p>
 </dd>
-<dt>.platform_switch(polygon, player)</dt>
+<dt>.platform_switch(polygon, player, side)</dt>
 <dd>
 <p class="description">whenever a player uses a platform switch</p>
 <ul class="args"><li>polygon: polygon of the platform being toggled</li></ul>
 <p class="note">not called when a projectile (e.g., fists) toggles a platform switch </p>
+<p class="note">side is only valid in version SVN and newer </p>
+</dd>
+<dt>.projectile_switch(projectile, side) <span class="version">SVN</span>
+</dt>
+<dd>
+<p class="description">whenever a projectile toggles a switch</p>
+<ul class="args">
+<li>projectile: projectile that toggled the switch</li>
+<li>side: side containing switch being toggled</li>
+</ul>
 </dd>
 <dt>.terminal_enter(terminal, player)</dt>
 <dd><p class="description">whenever a player starts using a terminal</p></dd>

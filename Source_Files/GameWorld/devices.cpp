@@ -471,7 +471,8 @@ void assume_correct_switch_position(
 
 void try_and_toggle_control_panel(
 	short polygon_index,
-	short line_index)
+	short line_index, 
+	short projectile_index)
 {
 	short side_index= find_adjacent_side(polygon_index, line_index);
 	
@@ -500,25 +501,19 @@ void try_and_toggle_control_panel(
 							SET_CONTROL_PANEL_STATUS(side, state);
 							set_control_panel_texture(side);
 						}
-                                                //MH: Lua script hook
-                                                // L_Call_Tag_Switch(side->control_panel_permutation);
-						
+						L_Call_Projectile_Switch(side_index, projectile_index);				
 						break;
 					case _panel_is_light_switch:
 						state= !state;
 						make_sound= set_light_status(side->control_panel_permutation, state);
 						
-                                                //MH: Lua script hook
-                                               //  L_Call_Light_Switch(side->control_panel_permutation);
-						
+						L_Call_Projectile_Switch(side_index, projectile_index);				
 						break;
 					case _panel_is_platform_switch:
 						state= !state;
 						make_sound= try_and_change_platform_state(get_polygon_data(side->control_panel_permutation)->permutation, state);
 						
-                                                //MH: Lua script hook
-                                                // L_Call_Platform_Switch(side->control_panel_permutation);
-						
+						L_Call_Projectile_Switch(side_index, projectile_index);				
 						break;
 				}
 				
@@ -809,7 +804,7 @@ static void	change_panel_state(
 					set_control_panel_texture(side);
 				}
                                 //MH: Lua script hook
-                                L_Call_Tag_Switch(side->control_panel_permutation,player_index);
+                                L_Call_Tag_Switch(side->control_panel_permutation,player_index, panel_side_index);
 			
 			}
 			break;
@@ -818,7 +813,7 @@ static void	change_panel_state(
 			make_sound= set_light_status(side->control_panel_permutation, state);
 			
                         //MH: Lua script hook
-                        L_Call_Light_Switch(side->control_panel_permutation,player_index);
+                        L_Call_Light_Switch(side->control_panel_permutation,player_index, panel_side_index);
 
 			break;
 		case _panel_is_platform_switch:
@@ -826,7 +821,7 @@ static void	change_panel_state(
 			make_sound= try_and_change_platform_state(get_polygon_data(side->control_panel_permutation)->permutation, state);
 			
                         //MH: Lua script hook
-                        L_Call_Platform_Switch(side->control_panel_permutation,player_index);
+                        L_Call_Platform_Switch(side->control_panel_permutation,player_index, panel_side_index);
 			
 			break;
 		case _panel_is_pattern_buffer:

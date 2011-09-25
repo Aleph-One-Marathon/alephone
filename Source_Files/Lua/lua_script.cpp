@@ -155,9 +155,9 @@ void L_Call_PostIdle() {}
 void L_Call_Sent_Message(const char* username, const char* message) {}
 void L_Call_Start_Refuel(short type, short player_index, short panel_side_index) {}
 void L_Call_End_Refuel(short type, short player_index, short panel_side_index) {}
-void L_Call_Tag_Switch(short tag, short player_index) {}
-void L_Call_Light_Switch(short light, short player_index) {}
-void L_Call_Platform_Switch(short platform, short player_index) {}
+void L_Call_Tag_Switch(short tag, short player_index, short) {}
+void L_Call_Light_Switch(short light, short player_index, short) {}
+void L_Call_Platform_Switch(short platform, short player_index, short) {}
 void L_Call_Terminal_Enter(short terminal_id, short player_index) {}
 void L_Call_Terminal_Exit(short terminal_id, short player_index) {}
 void L_Call_Pattern_Buffer(short side_index, short player_index) {}
@@ -170,6 +170,7 @@ void L_Call_Monster_Killed(short monster_index, short aggressor_player_index, sh
 void L_Call_Monster_Damaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) { }
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) {}
+void L_Call_Projectile_Switch(short, short) {}
 void L_Call_Item_Created(short item_index) {}
 
 void L_Invalidate_Effect(short) { }
@@ -311,9 +312,10 @@ public:
 	void PostIdle();
 	void StartRefuel(short type, short player_index, short panel_side_index);
 	void EndRefuel(short type, short player_index, short panel_side_index);
-	void TagSwitch(short tag, short player_index);
-	void LightSwitch(short tag, short player_index);
-	void PlatformSwitch(short tag, short player_index);
+	void TagSwitch(short tag, short player_index, short side_index);
+	void LightSwitch(short tag, short player_index, short side_index);
+	void PlatformSwitch(short tag, short player_index, short side_index);
+	void ProjectileSwitch(short side_index, short projectile_index);
 	void TerminalEnter(short terminal_id, short player_index);
 	void TerminalExit(short terminal_id, short player_index);
 	void PatternBuffer(short side_index, short player_index);
@@ -437,32 +439,45 @@ void LuaState::EndRefuel(short type, short player_index, short panel_side_index)
 	}
 }
 
-void LuaState::TagSwitch(short tag, short player_index)
+void LuaState::TagSwitch(short tag, short player_index, short side_index)
 {
 	if (GetTrigger("tag_switch"))
 	{
 		Lua_Tag::Push(State(), tag);
 		Lua_Player::Push(State(), player_index);
-		CallTrigger(2);
+		Lua_Side::Push(State(), side_index);
+		CallTrigger(3);
 	}
 }
 
-void LuaState::LightSwitch(short light, short player_index)
+void LuaState::LightSwitch(short light, short player_index, short side_index)
 {
 	if (GetTrigger("light_switch"))
 	{
 		Lua_Light::Push(State(), light);
 		Lua_Player::Push(State(), player_index);
-		CallTrigger(2);
+		Lua_Side::Push(State(), side_index);
+		CallTrigger(3);
 	}
 }
 
-void LuaState::PlatformSwitch(short platform, short player_index)
+void LuaState::PlatformSwitch(short platform, short player_index, short side_index)
 {
 	if (GetTrigger("platform_switch"))
 	{
 		Lua_Polygon::Push(State(), platform);
 		Lua_Player::Push(State(), player_index);
+		Lua_Side::Push(State(), side_index);
+		CallTrigger(3);
+	}
+}
+
+void LuaState::ProjectileSwitch(short side_index, short projectile_index)
+{
+	if (GetTrigger("projectile_switch"))
+	{
+		Lua_Projectile::Push(State(), projectile_index);
+		Lua_Side::Push(State(), side_index);
 		CallTrigger(2);
 	}
 }
@@ -1177,19 +1192,24 @@ void L_Call_End_Refuel (short type, short player_index, short panel_side_index)
 	L_Dispatch(boost::bind(&LuaState::EndRefuel, _1, type, player_index, panel_side_index));
 }
 
-void L_Call_Tag_Switch(short tag, short player_index)
+void L_Call_Tag_Switch(short tag, short player_index, short side_index)
 {
-	L_Dispatch(boost::bind(&LuaState::TagSwitch, _1, tag, player_index));
+	L_Dispatch(boost::bind(&LuaState::TagSwitch, _1, tag, player_index, side_index));
 }
 
-void L_Call_Light_Switch(short light, short player_index)
+void L_Call_Light_Switch(short light, short player_index, short side_index)
 {
-	L_Dispatch(boost::bind(&LuaState::LightSwitch, _1, light, player_index));
+	L_Dispatch(boost::bind(&LuaState::LightSwitch, _1, light, player_index, side_index));
 }
 
-void L_Call_Platform_Switch(short platform, short player_index)
+void L_Call_Platform_Switch(short platform, short player_index, short side_index)
 {
-	L_Dispatch(boost::bind(&LuaState::PlatformSwitch, _1, platform, player_index));
+	L_Dispatch(boost::bind(&LuaState::PlatformSwitch, _1, platform, player_index, side_index));
+}
+
+void L_Call_Projectile_Switch(short side_index, short projectile_index)
+{
+	L_Dispatch(boost::bind(&LuaState::ProjectileSwitch, _1, side_index, projectile_index));
 }
 
 void L_Call_Terminal_Enter(short terminal_id, short player_index)
