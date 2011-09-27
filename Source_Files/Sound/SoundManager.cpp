@@ -1378,11 +1378,104 @@ bool XML_AmbientRandomAssignParser::ResetValues()
 	return true;
 }
 
+extern int16 dialog_sound_definitions[];
+extern int16* original_dialog_sound_definitions;
+extern int number_of_dialog_sounds();
+
 static XML_AmbientRandomAssignParser
 	AmbientSoundAssignParser("ambient",XML_AmbientRandomAssignParser::Ambient),
 	RandomSoundAssignParser("random",XML_AmbientRandomAssignParser::Random);
 
 
+
+class XML_DialogSoundParser: public XML_ElementParser
+{
+	bool IsPresent[2];
+	short Index, SoundIndex;
+	
+public:
+	bool Start();
+	bool HandleAttribute(const char *Tag, const char *Value);
+	bool AttributesDone();
+	bool ResetValues();
+
+	XML_DialogSoundParser(const char *_Name): XML_ElementParser(_Name) {}
+};
+
+bool XML_DialogSoundParser::Start()
+{
+	// back up old values first
+	if (!original_dialog_sound_definitions)
+	{
+		original_dialog_sound_definitions = (int16*) malloc(sizeof(int16) * number_of_dialog_sounds());
+		for (int i = 0; i < number_of_dialog_sounds(); ++i)
+		{
+			original_dialog_sound_definitions[i] = dialog_sound_definitions[i];
+		}
+	}
+
+	for (int k = 0; k < 2; ++k)
+		IsPresent[k] = false;
+	return true;
+}
+
+bool XML_DialogSoundParser::HandleAttribute(const char* Tag, const char* Value)
+{
+	if (StringsEqual(Tag, "index"))
+	{
+		if (ReadBoundedInt16Value(Value, Index, 0, number_of_dialog_sounds() - 1))
+		{
+			IsPresent[0] = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag, "sound"))
+	{
+		if (ReadBoundedInt16Value(Value, SoundIndex, NONE, SHRT_MAX))
+		{
+			IsPresent[1] = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_DialogSoundParser::AttributesDone()
+{
+	bool AllPresent = true;
+	for (int k = 0; k < 2; ++k)
+	{
+		if (!IsPresent[k]) AllPresent = false;
+	}
+
+	if (!AllPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+
+	dialog_sound_definitions[Index] = SoundIndex;
+	return true;
+}
+
+bool XML_DialogSoundParser::ResetValues()
+{
+	if (original_dialog_sound_definitions)
+	{
+		for (int i = 0; i < number_of_dialog_sounds(); ++i)
+		{
+			dialog_sound_definitions[i] = original_dialog_sound_definitions[i];
+		}
+		free(original_dialog_sound_definitions);
+		original_dialog_sound_definitions = 0;
+	}
+	return true;
+}
+
+static XML_DialogSoundParser DialogSoundParser("dialog");
 
 class XML_SO_ClearParser: public XML_ElementParser
 {
@@ -1561,6 +1654,7 @@ XML_ElementParser *Sounds_GetParser()
 {
 	SoundsParser.AddChild(&AmbientSoundAssignParser);
 	SoundsParser.AddChild(&RandomSoundAssignParser);
+	SoundsParser.AddChild(&DialogSoundParser);
 	SoundsParser.AddChild(&SoundOptionsParser);
 	SoundsParser.AddChild(&SO_ClearParser);
 	

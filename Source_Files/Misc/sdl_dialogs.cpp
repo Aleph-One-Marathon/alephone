@@ -1333,9 +1333,28 @@ uint16 get_theme_space(int widget_type, int which)
  *  Play dialog sound
  */
 
+int16 dialog_sound_definitions[] = {
+	_snd_pattern_buffer,
+	_snd_pattern_buffer,
+	_snd_defender_hit,
+	_snd_spht_door_obstructed,
+	_snd_major_fusion_charged,
+	_snd_computer_interface_page,
+	_snd_computer_interface_page,
+	_snd_hummer_attack,
+	_snd_compiler_death
+};
+
+int16* original_dialog_sound_definitions = NULL;
+
+int number_of_dialog_sounds() { return NUMBER_OF_DIALOG_SOUNDS; }
+
 void play_dialog_sound(int which)
 {
-	SoundManager::instance()->PlaySound(which, 0, NONE);
+	if (dialog_sound_definitions[which] != NONE)
+	{
+		SoundManager::instance()->PlaySound(dialog_sound_definitions[which], 0, NONE);
+	}
 }
 
 widget_placer::~widget_placer()

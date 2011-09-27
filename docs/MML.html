@@ -792,12 +792,13 @@ these are made variable for Marathon 1 compatibility:
 </table>
 <p>
 
-It has child elements that specify which ambient and random sound assignments to use,
-and also which external files to use, if desired.
-The ambient and random sound assigments
-are assignments from their indices to the list of (general) sound definitions,
-and are specified with child elements &lt;ambient&gt; and &lt;random&gt;.
-Each of them has these attributes, both mandatory:
+It has child elements that specify which ambient, random, and dialog
+sound assignments to use, and also which external files to use, if
+desired.  The ambient, random, and dialog sound assigments are
+assignments from their indices to the list of (general) sound
+definitions, and are specified with child elements &lt;ambient&gt;,
+&lt;random&gt;, and &lt;dialog&gt;.  Each of them has these
+attributes, both mandatory:
 <ul>
 <li>index: which one of the ambient or random sound types
 <li>sound: which index in the list of sounds (-1 for none)
@@ -840,6 +841,18 @@ The random sounds are:
 <li>Underground Explosion
 <li>Loon
 <li>Creak
+</ol>
+The dialog sounds are:
+<ol type=1 start=1000>
+<li>Intro
+<li>OK
+<li>Cancel
+<li>Error
+<li>Select
+<li>Click
+<li>Type
+<li>Delete
+<li>Erase
 </ol>
 <p>
 
