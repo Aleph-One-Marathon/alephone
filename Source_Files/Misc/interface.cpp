@@ -1645,38 +1645,107 @@ static void display_epilogue(
 	show_cursor();
 }
 
+class w_authors_list : public w_string_list
+{
+public:
+	w_authors_list(const vector<string>& items, dialog* d) :
+		w_string_list(items, d, 0) {}
+
+	void item_selected(void) { }
+};
+
 static void display_about_dialog()
 {
 	force_system_colors();
 
 	dialog d;
 
+	tab_placer* tabs = new tab_placer();
+
 	vertical_placer* placer = new vertical_placer;
-	placer->dual_add(new w_title("ABOUT"), d);
+	std::vector<std::string> labels;
+	labels.push_back("ABOUT");
+	labels.push_back("AUTHORS");
+	w_tab *tab_w = new w_tab(labels, tabs);
+	
+	placer->dual_add(new w_title("ALEPH ONE"), d);
 	placer->add(new w_spacer, true);
 
+	placer->dual_add(tab_w, d);
+	placer->add(new w_spacer, true);
+
+	vertical_placer* about_placer = new vertical_placer;
+	
 	if (strcmp(get_application_name(), "Aleph One") != 0)
 	{
-		placer->dual_add(new w_static_text(expand_app_variables("$appName$ is powered by").c_str()), d);
+		about_placer->dual_add(new w_static_text(expand_app_variables("$appName$ is powered by").c_str()), d);
 	}
-	placer->dual_add(new w_static_text(expand_app_variables("Aleph One $appVersion$ ($appDate$)").c_str()), d);
+	about_placer->dual_add(new w_static_text(expand_app_variables("Aleph One $appVersion$ ($appDate$)").c_str()), d);
 
-	placer->add(new w_spacer, true);
+	about_placer->add(new w_spacer, true);
 
-	placer->dual_add(new w_hyperlink(A1_HOMEPAGE_URL), d);
+	about_placer->dual_add(new w_hyperlink(A1_HOMEPAGE_URL), d);
 
-	placer->add(new w_spacer, true);
+	about_placer->add(new w_spacer(2 * get_theme_space(SPACER_WIDGET)), true);
 	
-	placer->dual_add(new w_static_text(expand_app_variables("Aleph One is free software with ABSOLUTELY NO WARRANTY.").c_str()), d);
-	placer->dual_add(new w_static_text("You are welcome to redistribute it under certain conditions."), d);
-	placer->dual_add(new w_hyperlink("http://www.gnu.org/licenses/gpl-3.0.html"), d);
+	about_placer->dual_add(new w_static_text(expand_app_variables("Aleph One is free software with ABSOLUTELY NO WARRANTY.").c_str()), d);
+	about_placer->dual_add(new w_static_text("You are welcome to redistribute it under certain conditions."), d);
+	about_placer->dual_add(new w_hyperlink("http://www.gnu.org/licenses/gpl-3.0.html"), d);
 
-	placer->add(new w_spacer, true);
-	placer->dual_add(new w_static_text("This license does not apply to game content."), d);
+	about_placer->add(new w_spacer, true);
 
-	placer->add(new w_spacer, true);
+	about_placer->dual_add(new w_static_text("This license does not apply to game content."), d);
 
-	placer->dual_add(new w_static_text(expand_app_variables("Scenario Loaded: $scenarioName$ $scenarioVersion$").c_str()), d);
+	about_placer->add(new w_spacer, true);
+
+	about_placer->dual_add(new w_static_text(expand_app_variables("Scenario loaded: $scenarioName$ $scenarioVersion$").c_str()), d);
+
+	vertical_placer *authors_placer = new vertical_placer();
+	
+	authors_placer->dual_add(new w_static_text("Aleph One is based on the source code for Marathon 2 and"), d);
+	authors_placer->dual_add(new w_static_text("Marathon Infinity, which was developed by Bungie software."), d);
+	authors_placer->add(new w_spacer, true);
+	
+	authors_placer->dual_add(new w_static_text("The enhancements and extensions to Marathon 2 and Marathon"), d);
+	authors_placer->dual_add(new w_static_text("Infinity that constitute Aleph One have been made by:"), d);
+
+	authors_placer->add(new w_spacer, true);
+
+	std::vector<std::string> authors;
+	authors.push_back("Bo Lindbergh");
+	authors.push_back("Chris Lovell");
+	authors.push_back("Jesse Luehrs");
+	authors.push_back("Derek Moeller");
+	authors.push_back("Jeremiah Morris");
+	authors.push_back("Sam Morris");
+	authors.push_back("Benoit Nadeau (Benad)");
+	authors.push_back("Mihai Parparita");
+	authors.push_back("Jeremy Parsons (brefin)");
+	authors.push_back("Eric Peterson");
+	authors.push_back("Loren Petrich");
+	authors.push_back("Ian Pitcher");
+	authors.push_back("Chris Pruett");
+	authors.push_back("Matthew Reda");
+	authors.push_back("Ian Rickard");
+	authors.push_back("Etienne Samson (tiennou)");
+	authors.push_back("Gregory Smith (treellama)");
+	authors.push_back("Scott Smith (pickle136)");
+	authors.push_back("Wolfgang Sourdeau");
+	authors.push_back("Peter Stirling");
+	authors.push_back("Alexander Strange (mrvacbob)");
+	authors.push_back("Alexei Svitkine");
+	authors.push_back("Ben Thompson");
+	authors.push_back("Clemens Unterkofler (hogdotmac)");
+	authors.push_back("James Willson");
+	authors.push_back("Woody Zenfell III");
+
+	w_authors_list *authors_w = new w_authors_list(authors, &d);
+	authors_placer->dual_add(authors_w, d);
+
+	tabs->add(about_placer, true);
+	tabs->add(authors_placer, true);
+
+	placer->add(tabs, true);
 	
 	placer->add(new w_spacer, true);
 
