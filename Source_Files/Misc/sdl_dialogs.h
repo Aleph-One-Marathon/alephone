@@ -292,15 +292,18 @@ private:
 extern dialog *top_dialog;
 
 // Sounds
-#define DIALOG_INTRO_SOUND _snd_pattern_buffer
-#define DIALOG_OK_SOUND _snd_pattern_buffer
-#define DIALOG_CANCEL_SOUND _snd_defender_hit
-#define DIALOG_ERROR_SOUND _snd_spht_door_obstructed
-#define DIALOG_SELECT_SOUND _snd_major_fusion_charged
-#define DIALOG_CLICK_SOUND _snd_computer_interface_page
-#define DIALOG_TYPE_SOUND _snd_computer_interface_page
-#define DIALOG_DELETE_SOUND _snd_hummer_attack
-#define DIALOG_ERASE_SOUND _snd_compiler_death
+enum {
+	DIALOG_INTRO_SOUND,
+	DIALOG_OK_SOUND,
+	DIALOG_CANCEL_SOUND,
+	DIALOG_ERROR_SOUND,
+	DIALOG_SELECT_SOUND,
+	DIALOG_CLICK_SOUND,
+	DIALOG_TYPE_SOUND,
+	DIALOG_DELETE_SOUND,
+	DIALOG_ERASE_SOUND,
+	NUMBER_OF_DIALOG_SOUNDS
+};
 
 /*
  *  Functions
