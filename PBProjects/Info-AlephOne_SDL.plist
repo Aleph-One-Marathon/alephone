@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
@@ -124,24 +124,6 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
-				<string>pfhr</string>
-			</array>
-			<key>CFBundleTypeIconFile</key>
-			<string>PFIcon.icns</string>
-			<key>CFBundleTypeName</key>
-			<string>Aleph One Pfhortran Script</string>
-			<key>CFBundleTypeOSTypes</key>
-			<array>
-				<string>****</string>
-			</array>
-			<key>CFBundleTypeRole</key>
-			<string>None</string>
-			<key>NSDocumentClass</key>
-			<string>org.bungie.source.pfhortran</string>
-		</dict>
-		<dict>
-			<key>CFBundleTypeExtensions</key>
-			<array>
 				<string>phys</string>
 				<string>*</string>
 				<string>phyA</string>
@@ -232,26 +214,26 @@
 	<string>Aleph One</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-	<key>CFBundleSignature</key>
-	<string>26.A</string>
-	<key>NSMainNibFile</key>
-	<string>MainMenu</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 	<key>CFBundleShortVersionString</key>
 	<string>A1_DISPLAY_VERSION</string>
+	<key>CFBundleSignature</key>
+	<string>26.A</string>
 	<key>CFBundleVersion</key>
 	<string>A1_DATE_VERSION</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.4.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
 	<dict>
-		<key>ppc</key>
-		<string>10.4.0</string>
 		<key>i386</key>
+		<string>10.4.0</string>
+		<key>ppc</key>
 		<string>10.4.0</string>
 		<key>x86_64</key>
 		<string>10.6.0</string>
 	</dict>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
 </dict>
 </plist>
