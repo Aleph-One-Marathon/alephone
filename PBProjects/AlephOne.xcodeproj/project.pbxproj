@@ -315,7 +315,6 @@
 		AEC3C7C909AD68AC003258E4 /* MapIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3E0200FA6B01D80110 /* MapIcon.icns */; };
 		AEC3C7CA09AD68AC003258E4 /* MMLIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD3F0200FA6B01D80110 /* MMLIcon.icns */; };
 		AEC3C7CB09AD68AC003258E4 /* MusakIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD400200FA6B01D80110 /* MusakIcon.icns */; };
-		AEC3C7CC09AD68AC003258E4 /* PFIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD410200FA6B01D80110 /* PFIcon.icns */; };
 		AEC3C7CD09AD68AC003258E4 /* PhysIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD420200FA6B01D80110 /* PhysIcon.icns */; };
 		AEC3C7CE09AD68AC003258E4 /* SaveIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = F5CFAD430200FA6B01D80110 /* SaveIcon.icns */; };
 		AEC3C7D009AD68AC003258E4 /* SDLMain.m in Sources */ = {isa = PBXBuildFile; fileRef = 00F9DA5100AC730E7F000001 /* SDLMain.m */; };
@@ -1033,7 +1032,6 @@
 		F5CFAD3E0200FA6B01D80110 /* MapIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MapIcon.icns; sourceTree = "<group>"; };
 		F5CFAD3F0200FA6B01D80110 /* MMLIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MMLIcon.icns; sourceTree = "<group>"; };
 		F5CFAD400200FA6B01D80110 /* MusakIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MusakIcon.icns; sourceTree = "<group>"; };
-		F5CFAD410200FA6B01D80110 /* PFIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = PFIcon.icns; sourceTree = "<group>"; };
 		F5CFAD420200FA6B01D80110 /* PhysIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = PhysIcon.icns; sourceTree = "<group>"; };
 		F5CFAD430200FA6B01D80110 /* SaveIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = SaveIcon.icns; sourceTree = "<group>"; };
 		F5D11AE40326A93E01000105 /* alephversion.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = alephversion.h; path = ../Source_Files/Misc/alephversion.h; sourceTree = SOURCE_ROOT; };
@@ -1105,7 +1103,6 @@
 				F5CFAD3E0200FA6B01D80110 /* MapIcon.icns */,
 				F5CFAD3F0200FA6B01D80110 /* MMLIcon.icns */,
 				F5CFAD400200FA6B01D80110 /* MusakIcon.icns */,
-				F5CFAD410200FA6B01D80110 /* PFIcon.icns */,
 				F5CFAD420200FA6B01D80110 /* PhysIcon.icns */,
 				F5CFAD430200FA6B01D80110 /* SaveIcon.icns */,
 			);
@@ -2283,7 +2280,6 @@
 				AEC3C7C909AD68AC003258E4 /* MapIcon.icns in Resources */,
 				AEC3C7CA09AD68AC003258E4 /* MMLIcon.icns in Resources */,
 				AEC3C7CB09AD68AC003258E4 /* MusakIcon.icns in Resources */,
-				AEC3C7CC09AD68AC003258E4 /* PFIcon.icns in Resources */,
 				AEC3C7CD09AD68AC003258E4 /* PhysIcon.icns in Resources */,
 				AEC3C7CE09AD68AC003258E4 /* SaveIcon.icns in Resources */,
 			);
