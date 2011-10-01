@@ -751,7 +751,7 @@ SoundManager::Channel *SoundManager::BestChannel(short sound_index, Channel::Var
 						
 						if (!(definition->flags & _sound_does_not_self_abort))
 						{
-							if ((parameters.flags & _zero_restart_delay) || channel->start_tick + MINIMUM_RESTART_TICKS < machine_tick_count())
+							if ((parameters.flags & _zero_restart_delay) || channel->variables.volume == 0 || channel->start_tick + MINIMUM_RESTART_TICKS < machine_tick_count())
 								best_channel = channel;
 							else
 								best_channel = 0;
