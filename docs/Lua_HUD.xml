@@ -492,6 +492,10 @@ end
           <description>true if this player is the local player</description>
           <type>boolean</type>
         </variable>
+        <variable name="active" version="SVN">
+          <description>true if this player's viewpoint is currently displayed</description>
+          <type>boolean</type>
+        </variable>
         <variable name="name"><type>string</type></variable>
         <variable name="color">
           <description>color of player (shirt color, if teams are enabled)</description>

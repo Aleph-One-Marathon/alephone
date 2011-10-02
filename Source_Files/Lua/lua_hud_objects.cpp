@@ -2189,6 +2189,12 @@ static int Lua_HUDGame_Player_Get_Local(lua_State *L)
 	return 1;
 }
 
+static int Lua_HUDGame_Player_Get_Active(lua_State *L)
+{
+	lua_pushboolean(L, Lua_HUDGame_Player::Index(L, 1) == current_player_index);
+	return 1;
+}
+
 static int Lua_HUDGame_Player_Get_Kills(lua_State *L)
 {
 	short player_index = Lua_HUDGame_Player::Index(L, 1);
@@ -2209,6 +2215,7 @@ const luaL_reg Lua_HUDGame_Player_Get[] = {
 {"team", Lua_HUDGame_Player_Get_Team},
 {"name", Lua_HUDGame_Player_Get_Name},
 {"local_", Lua_HUDGame_Player_Get_Local},
+{"active", Lua_HUDGame_Player_Get_Active},
 {"kills", Lua_HUDGame_Player_Get_Kills},
 {"ranking", Lua_HUDGame_Player_Get_Ranking},
 {0, 0} 
