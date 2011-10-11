@@ -27,6 +27,11 @@
 #include <string>
 #include <vector>
 
+struct ShapesPatch {
+	bool requires_opengl;
+	std::string path;
+};
+
 struct Plugin {
 	DirectorySpecifier directory;
 	std::string name;
@@ -37,6 +42,7 @@ struct Plugin {
 	std::string solo_lua;
 	std::string theme;
 	std::string required_version;
+	std::vector<ShapesPatch> shapes_patches;
 
 	bool enabled;
 	bool compatible() const;
@@ -55,6 +61,8 @@ public:
 	void enumerate();
 	void load_mml();
 	void load_solo_mml();
+
+	void load_shapes_patches(bool opengl);
 
 	void disable(const std::string& path);
 

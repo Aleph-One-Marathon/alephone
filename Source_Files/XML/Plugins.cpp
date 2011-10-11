@@ -144,6 +144,44 @@ void Plugins::load_solo_mml()
 	}
 }
 
+void load_shapes_patch(SDL_RWops* p, bool override_replacements);
+
+void Plugins::load_shapes_patches(bool is_opengl)
+{
+	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it)
+	{
+		if (it->enabled &&
+		    it->compatible() &&
+		    !it->hud_lua.size() &&
+		    !it->solo_lua.size() &&
+		    !it->theme.size())
+		{
+			ScopedSearchPath ssp(it->directory);
+
+			for (std::vector<ShapesPatch>::iterator shapes_patch = it->shapes_patches.begin(); shapes_patch != it->shapes_patches.end(); ++shapes_patch)
+			{
+				if (is_opengl || !shapes_patch->requires_opengl)
+				{
+					FileSpecifier file;
+					if (file.SetNameWithPath(shapes_patch->path.c_str()))
+					{
+						OpenedFile ofile;
+						if (file.Open(ofile))
+						{
+							load_shapes_patch(ofile.GetRWops(), false);
+						}
+						
+					}
+					else
+					{
+						logWarning("%s Plugin: %s not found; ignoring", it->name.c_str(), shapes_patch->path.c_str());
+					}
+				}
+			}
+		}
+	}
+}
+
 const Plugin* Plugins::find_hud_lua() const
 {
 
@@ -206,6 +244,60 @@ bool XML_PluginMMLParser::HandleAttribute(const char* Tag, const char* Value)
 }
 
 XML_PluginMMLParser PluginMMLParser;
+
+class XML_PluginShapesPatchParser : public XML_ElementParser
+{
+public:
+	bool HandleAttribute(const char* Tag, const char* Value);
+	bool AttributesDone();
+	bool End();
+
+	XML_PluginShapesPatchParser() : XML_ElementParser("shapes_patch"), RequiresOpenGL(false) {}
+
+private:
+	bool RequiresOpenGL;
+	std::string Path;
+};
+
+bool XML_PluginShapesPatchParser::HandleAttribute(const char* Tag, const char* Value)
+{
+	if (StringsEqual(Tag, "file"))
+	{
+		Path = Value;
+		return true;
+	}
+	else if (StringsEqual(Tag, "requires_opengl"))
+	{
+		return ReadBooleanValue(Value, RequiresOpenGL);
+		return true;
+	}
+	
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_PluginShapesPatchParser::AttributesDone()
+{
+	if (Path.empty())
+	{
+		AttribsMissing();
+		return false;
+	}
+
+	return true;
+}
+
+bool XML_PluginShapesPatchParser::End()
+{
+	ShapesPatch patch;
+	patch.requires_opengl = RequiresOpenGL;
+	patch.path = Path;
+	
+	Data.shapes_patches.push_back(patch);
+	return true;
+}
+
+XML_PluginShapesPatchParser PluginShapesPatchParser;
 
 static DirectorySpecifier current_plugin_directory;
 
@@ -389,6 +481,7 @@ extern std::vector<DirectorySpecifier> data_search_path;
 
 void Plugins::enumerate() {
 	PluginParser.AddChild(&PluginMMLParser);
+	PluginParser.AddChild(&PluginShapesPatchParser);
 	PluginRootParser.AddChild(&PluginParser);
 
 	logContext("parsing plugins");

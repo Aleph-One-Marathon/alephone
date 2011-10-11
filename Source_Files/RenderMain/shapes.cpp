@@ -113,6 +113,8 @@ Jan 17, 2001 (Loren Petrich):
 #include <SDL_rwops.h>
 #include <memory>
 
+#include "Plugins.h"
+
 #ifdef env68k
 #pragma segment shell
 #endif
@@ -788,7 +790,7 @@ uint8* get_shapes_patch_data(size_t &length)
 	return length ? &shapes_patch[0] : 0;
 }
 
-void load_shapes_patch(SDL_RWops *p)
+void load_shapes_patch(SDL_RWops *p, bool override_replacements)
 {
 	std::vector<int16> color_counts(MAXIMUM_COLLECTIONS);
 	int32 start = SDL_RWtell(p);
@@ -871,7 +873,10 @@ void load_shapes_patch(SDL_RWops *p)
 					if (cd && patch_bit_depth == 8 && bitmap_index < cd->bitmaps.size())
 					{
 						load_bitmap(cd->bitmaps[bitmap_index], p);
-						get_bitmap_definition(collection_index, bitmap_index)->flags |= _PATCHED_BIT;
+						if (override_replacements)
+						{
+							get_bitmap_definition(collection_index, bitmap_index)->flags |= _PATCHED_BIT;
+						}
 					}
 					else
 					{
@@ -1742,10 +1747,12 @@ void load_collections(
 		header->flags= 0;
 	}
 
+	Plugins::instance()->load_shapes_patches(is_opengl);
+
 	if (shapes_patch.size())
 	{
 		SDL_RWops *f = SDL_RWFromMem(&shapes_patch[0], shapes_patch.size());
-		load_shapes_patch(f);
+		load_shapes_patch(f, true);
 		SDL_RWclose(f);
 	}
 
