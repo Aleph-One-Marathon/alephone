@@ -40,6 +40,8 @@ April 22, 2003 (Woody Zenfell):
 #include <windows.h>
 #include <tchar.h>
 #include <shlobj.h>
+#else
+#include <sys/wait.h>
 #endif
 
 /*
