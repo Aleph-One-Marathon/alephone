@@ -23,3 +23,12 @@ FILETYPE 1
 }
 
 AppIcon ICON "alephone.ico"
+FilmIcon ICON "FilmIcon.ico"
+ImagesIcon ICON "ImagesIcon.ico"
+MMLIcon ICON "MMLIcon.ico"
+MapIcon ICON "MapIcon.ico"
+MusakIcon ICON "MusakIcon.ico"
+PhysIcon ICON "PhysIcon.ico"
+SaveIcon ICON "SaveIcon.ico"
+ShapesIcon ICON "ShapesIcon.ico"
+SoundsIcon ICON "SoundsIcon.ico"
