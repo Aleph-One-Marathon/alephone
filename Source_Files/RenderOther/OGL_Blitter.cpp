@@ -77,8 +77,6 @@ void OGL_Blitter::_LoadTextures()
 	// ensure our textures get cleaned up
 	Register(this);
 
-	uint32 rgb_mask = ~(t->format->Amask);
-
 	glEnable(GL_TEXTURE_2D);
 	int i = 0;
 	for (int y = 0; y < v_rects; y++)
@@ -99,7 +97,7 @@ void OGL_Blitter::_LoadTextures()
 				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * m_tile_width);
 				for (int col = m_rects[i].w; col < m_tile_width; ++col)
 				{
-					curRow[col] = curRow[m_rects[i].w - 1] & rgb_mask;
+					curRow[col] = curRow[m_rects[i].w - 1];
 				}
 			}
 			
@@ -109,7 +107,7 @@ void OGL_Blitter::_LoadTextures()
 				uint32 *curRow = static_cast<uint32 *>(t->pixels) + (row * m_tile_width);
 				for (int col = 0; col < m_tile_width; ++col)
 				{
-					curRow[col] = lastRow[col] & rgb_mask;
+					curRow[col] = lastRow[col];
 				}
 			}
 			
