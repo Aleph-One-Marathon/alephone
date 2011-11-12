@@ -1215,6 +1215,15 @@ bool get_picture_resource_from_images(int base_resource, LoadedResource &PictRsr
 	return ImagesFile.get_pict(RsrcID, PictRsrc);
 }
 
+bool get_sound_resource_from_images(int resource_number, LoadedResource &SoundRsrc)
+{
+	if (!ImagesFile.is_open())
+		return false;
+
+	return ImagesFile.get_snd(resource_number, SoundRsrc);
+}
+
+
 bool images_picture_exists(int base_resource)
 {
 	assert(ImagesFile.is_open());
