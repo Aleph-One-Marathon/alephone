@@ -404,11 +404,13 @@ static void initialize_application(void)
 
 	data_search_path.push_back(bundle_data_dir);
 
+#ifndef SCENARIO_IS_BUNDLED
 	{
 		char* buf = getcwd(0, 0);
 		default_data_dir = buf;
 		free(buf);
 	}
+#endif
 	
 	log_dir = app_log_directory;
 	preferences_dir = app_preferences_directory;
