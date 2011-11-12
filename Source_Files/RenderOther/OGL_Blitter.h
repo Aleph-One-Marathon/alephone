@@ -63,7 +63,7 @@ public:
 	
 private:
 	
-	void _Draw(const SDL_Rect& dst, const SDL_Rect& src);
+	void _Draw(const SDL_Rect& dst, const struct OGL_Rect& src);
 	void _LoadTextures();
 	void _UnloadTextures();
 

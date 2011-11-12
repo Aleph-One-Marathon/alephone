@@ -212,23 +212,40 @@ void OGL_Blitter::WindowToScreen(int& x, int& y, bool in_game)
 	}
 }
 
+struct OGL_Rect {
+    GLdouble x;
+    GLdouble y;
+    GLdouble w;
+    GLdouble h;
+};
+
 void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
 {
-	SDL_Rect sr = src;
+	OGL_Rect sr;
 	if (m_src.w != m_scaled_src.w)
 	{
-		sr.x = sr.x * m_src.w / m_scaled_src.w;
-		sr.w = sr.w * m_src.w / m_scaled_src.w;
+		sr.x = src.x * m_src.w / (float)m_scaled_src.w;
+		sr.w = src.w * m_src.w / (float)m_scaled_src.w;
+	}
+	else
+	{
+		sr.x = src.x;
+		sr.w = src.w;
 	}
 	if (m_src.h != m_scaled_src.h)
 	{
-		sr.y = sr.y * m_src.h / m_scaled_src.h;
-		sr.h = sr.h * m_src.h / m_scaled_src.h;
+		sr.y = src.y * m_src.h / (float)m_scaled_src.h;
+		sr.h = src.h * m_src.h / (float)m_scaled_src.h;
+	}
+	else
+	{
+		sr.y = src.y;
+		sr.h = src.h;
 	}
 	_Draw(dst, sr);
 }
 	
-void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
+void OGL_Blitter::_Draw(const SDL_Rect& dst, const struct OGL_Rect& src)
 {
 	if (!Loaded())
 		return;
@@ -272,10 +289,10 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const SDL_Rect& src)
 		    src.y + src.h < m_rects[i].y)
 			continue;
 		
-		int tx = std::max(0, src.x - m_rects[i].x);
-		int ty = std::max(0, src.y - m_rects[i].y);
-		int tw = std::min((int) m_rects[i].w, src.x + src.w - m_rects[i].x) - tx;
-		int th = std::min((int) m_rects[i].h, src.y + src.h - m_rects[i].y) - ty;
+		GLdouble tx = MAX(0, src.x - m_rects[i].x);
+		GLdouble ty = MAX(0, src.y - m_rects[i].y);
+		GLdouble tw = MIN(m_rects[i].w, src.x + src.w - m_rects[i].x) - tx;
+		GLdouble th = MIN(m_rects[i].h, src.y + src.h - m_rects[i].y) - ty;
 		
 		GLdouble VMin = tx / (GLdouble) m_tile_width;
 		GLdouble VMax = (tx + tw) / (GLdouble) m_tile_width;
