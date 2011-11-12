@@ -5871,7 +5871,7 @@
 					HAVE_PNG,
 					HAVE_CURL,
 				);
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -5906,6 +5906,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon 2";
+				SDKROOT = macosx10.6;
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = debugging;
 				WRAPPER_EXTENSION = app;
@@ -5946,7 +5947,7 @@
 					HAVE_PNG,
 					HAVE_CURL,
 				);
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -5981,6 +5982,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon 2";
+				SDKROOT = macosx10.6;
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -6020,7 +6022,7 @@
 					HAVE_PNG,
 					HAVE_CURL,
 				);
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -6054,6 +6056,7 @@
 				INFOPLIST_FILE = "AppStore/Marathon 2/Marathon 2.plist";
 				INFOPLIST_PREPROCESS = NO;
 				PRODUCT_NAME = "Marathon 2";
+				SDKROOT = macosx10.6;
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -6180,7 +6183,7 @@
 					HAVE_PNG,
 					HAVE_CURL,
 				);
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -6215,6 +6218,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon Infinity";
+				SDKROOT = macosx10.6;
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = debugging;
 				WRAPPER_EXTENSION = app;
@@ -6255,7 +6259,7 @@
 					HAVE_PNG,
 					HAVE_CURL,
 				);
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -6290,6 +6294,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon Infinity";
+				SDKROOT = macosx10.6;
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -6329,7 +6334,7 @@
 					HAVE_PNG,
 					HAVE_CURL,
 				);
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -6363,6 +6368,7 @@
 				INFOPLIST_FILE = "AppStore/Marathon Infinity/Marathon Infinity.plist";
 				INFOPLIST_PREPROCESS = NO;
 				PRODUCT_NAME = "Marathon Infinity";
+				SDKROOT = macosx10.6;
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -6402,7 +6408,7 @@
 					HAVE_PNG,
 					HAVE_CURL,
 				);
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -6437,6 +6443,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = Marathon;
+				SDKROOT = macosx10.6;
 				STRIP_INSTALLED_PRODUCT = YES;
 				STRIP_STYLE = debugging;
 				WRAPPER_EXTENSION = app;
@@ -6477,7 +6484,7 @@
 					HAVE_PNG,
 					HAVE_CURL,
 				);
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -6512,6 +6519,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = Marathon;
+				SDKROOT = macosx10.6;
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
 			};
@@ -6551,7 +6559,7 @@
 					HAVE_PNG,
 					HAVE_CURL,
 				);
-				GCC_VERSION = "";
+				GCC_VERSION = com.apple.compilers.llvmgcc42;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_CHECK_SWITCH_STATEMENTS = YES;
 				GCC_WARN_UNUSED_FUNCTION = YES;
@@ -6585,6 +6593,7 @@
 				INFOPLIST_FILE = AppStore/Marathon/Marathon.plist;
 				INFOPLIST_PREPROCESS = NO;
 				PRODUCT_NAME = Marathon;
+				SDKROOT = macosx10.6;
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
 			};
