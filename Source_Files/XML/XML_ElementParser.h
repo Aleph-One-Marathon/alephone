@@ -41,6 +41,7 @@ Dec 25, 2001 (Loren Petrich)
 #include <stdio.h>
 using namespace std;
 
+#include "cseries.h"
 #include "cstypes.h"
 
 extern bool XML_GetBooleanValue(const char *String, bool &Value);
