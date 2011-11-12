@@ -20,8 +20,8 @@
 
  */
 
-
 #include <Carbon/Carbon.h>
+#include <CoreAudio/CoreAudio.h>
 #include <AudioUnit/AudioUnit.h>
 
 #include "cstypes.h"
