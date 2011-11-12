@@ -32,8 +32,13 @@ ALEPHVERSION.H
 #define A1_DISPLAY_PLATFORM "Windows"
 #define A1_UPDATE_PLATFORM "windows"
 #elif defined (__APPLE__) && defined(__MACH__)
+#ifdef MAC_APP_STORE
+#define A1_DISPLAY_PLATFORM "Mac OS X (App Store)"
+#define A1_UPDATE_PLATFORM "macappstore"
+#else
 #define A1_DISPLAY_PLATFORM "Mac OS X"
 #define A1_UPDATE_PLATFORM "macosx"
+#endif
 #elif defined (__MACOS__)
 #define A1_DISPLAY_PLATFORM "Mac OS"
 #define A1_UPDATE_PLATFORM "macos"
