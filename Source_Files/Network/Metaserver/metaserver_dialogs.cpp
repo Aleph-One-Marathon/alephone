@@ -90,8 +90,12 @@ setupAndConnectClient(MetaserverClient& client)
 			placer->add(new w_spacer(), true);
 
 			placer->dual_add(new w_static_text(expand_app_variables("An update for $appName$ is available.").c_str()), d);
+#ifdef MAC_APP_STORE
+			placer->dual_add(new w_static_text("Please download it from the App Store"), d);
+#else
 			placer->dual_add(new w_static_text("Please download it from"), d);
 			placer->dual_add(new w_hyperlink(A1_HOMEPAGE_URL), d);
+#endif
 			placer->dual_add(new w_static_text("before playing games online."), d);
 			
 			placer->add(new w_spacer(), true);
