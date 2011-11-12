@@ -170,7 +170,11 @@ static NSString *getApplicationName(void)
 		[fileManager createDirectoryAtPath:logPath attributes:nil];
 		app_log_directory = strdup([logPath UTF8String]);
 		
+#ifdef PREFER_APP_NAME_TO_BUNDLE_ID
+		NSString *prefsPath = [[libraryPath stringByAppendingPathComponent:@"Preferences"] stringByAppendingPathComponent:appName];
+#else
 		NSString *prefsPath = [[libraryPath stringByAppendingPathComponent:@"Preferences"] stringByAppendingPathComponent:bundleID];
+#endif
 		[fileManager createDirectoryAtPath:prefsPath attributes:nil];
 		app_preferences_directory = strdup([prefsPath UTF8String]);
 	}
@@ -179,7 +183,11 @@ static NSString *getApplicationName(void)
 	NSString *supportPath = [arr objectAtIndex:0];
 	if (supportPath != nil)
 	{
+#ifdef PREFER_APP_NAME_TO_BUNDLE_ID
+		NSString *appSupportPath = [supportPath stringByAppendingPathComponent:appName];
+#else
 		NSString *appSupportPath = [supportPath stringByAppendingPathComponent:@"AlephOne"];
+#endif
 		[fileManager createDirectoryAtPath:appSupportPath attributes:nil];
 		app_support_directory = strdup([appSupportPath UTF8String]);
 	}
