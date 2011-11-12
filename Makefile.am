@@ -9,18 +9,25 @@ EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
   Makefile.BeOS docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
   data/Fonts Resources/Windows/alephone.ico				\
   Resources/Windows/alephone.rc						\
-  PBProjects/AlephOne.xcodeproj/project.pbxproj			\
+  PBProjects/AlephOne.xcodeproj/project.pbxproj				\
   PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns	\
   PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns			\
   PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns			\
-  PBProjects/PFIcon.icns PBProjects/PhysIcon.icns			\
+  PBProjects/PhysIcon.icns			\
   PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns			\
   PBProjects/SoundsIcon.icns PBProjects/Info-AlephOne_SDL.plist		\
   PBProjects/precompiled_headers.h PBProjects/SDLMain.h			\
-  PBProjects/SDLMain.m PBProjects/AlephOne.icns Expat/xmltok/nametab.h	\
-  PBProjects/config.h PBProjects/confpaths.h				\
+  PBProjects/SDLMain.m PBProjects/AlephOne.icns				\
+  Expat/xmltok/nametab.h PBProjects/config.h PBProjects/confpaths.h	\
   data/AlephSansMono-Bold.ttf data/AlephSansMonoLicense.txt		\
-  docs/alephone.6 examples/lua/Cheats.lua
+  docs/alephone.6 examples/lua/Cheats.lua THANKS			\
+  data/powered-by-alephone.svg						\
+  PBProjects/AlephOne-Xcode4.xcodeproj/project.pbxproj\
+  PBProjects/AlephOne-Xcode4.xcodeproj/project.xcworkspace/contents.xcworkspacedata\
+  PBProjects/Info-AlephOne-Xcode4.plist\
+	PBProjects/AppStore/Marathon/Marathon.plist \
+	PBProjects/AppStore/Marathon/Marathon.icns \
+	PBProjects/AppStore/Marathon/English.lproj/InfoPlist.strings
 
 man_MANS = docs/alephone.6
 
@@ -30,6 +37,15 @@ dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
 	cp "$(srcdir)/Aleph One Classic SDL.mcp" $(distdir)
 	cp "$(srcdir)/Resources/Aleph One Classic SDL.r" $(distdir)/Resources
+	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon 2/English.lproj"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Marathon 2.plist" "$(distdir)/PBProjects/AppStore/Marathon 2/"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/Marathon 2.icns" "$(distdir)/PBProjects/AppStore/Marathon 2/"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon 2/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon 2/English.lproj/"
+	mkdir -p "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Marathon Infinity.plist" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/Marathon Infinity.icns" "$(distdir)/PBProjects/AppStore/Marathon Infinity/"
+	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/"
+
 
 $(PACKAGE)-$(VERSION)-MacWinSrc.7z: distdir
 	cp -r ${srcdir}/Libraries ${distdir}/
@@ -53,6 +69,7 @@ $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
 	mkdir $(WINDISTDIR)
 	cp Source_Files/AlephOne.exe $(WINDISTDIR)/
 	unix2dos -n $(srcdir)/AUTHORS $(WINDISTDIR)/AUTHORS.txt
+	unix2dos -n $(srcdir)/THANKS $(WINDISTDIR)/THANKS.txt
 	unix2dos -n $(srcdir)/COPYING $(WINDISTDIR)/COPYING.txt
 	unix2dos -n $(srcdir)/INSTALL.Windows $(WINDISTDIR)/INSTALL.Windows.txt
 	unix2dos -n $(srcdir)/README $(WINDISTDIR)/README.txt
