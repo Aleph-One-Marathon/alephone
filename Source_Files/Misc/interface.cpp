@@ -1574,6 +1574,8 @@ void paint_window_black(
 	_restore_port();
 }
 
+static LoadedResource SoundRsrc;
+
 /* --------------------- static code */
 
 static void display_introduction(
@@ -1594,6 +1596,13 @@ static void display_introduction(
 		game_state.phase= screen_data->duration;
 		game_state.last_ticks_on_idle= machine_tick_count();
 		display_screen(screen_data->screen_base);
+
+		Mixer::instance()->StopSoundResource();
+		SoundRsrc.Unload();
+		if (get_sound_resource_from_images(screen_data->screen_base, SoundRsrc))
+		{
+			Mixer::instance()->PlaySoundResource(SoundRsrc);
+		}
 	}
 	else
 	{
@@ -2417,6 +2426,15 @@ static void next_game_screen(
 			game_state.phase= data->duration;
 			game_state.last_ticks_on_idle= machine_tick_count();
 			display_screen(data->screen_base);
+			if (game_state.state == _display_intro_screens)
+			{
+				Mixer::instance()->StopSoundResource();
+				SoundRsrc.Unload();
+				if (get_sound_resource_from_images(pict_resource_number, SoundRsrc))
+				{
+					Mixer::instance()->PlaySoundResource(SoundRsrc);
+				}
+			}
 		}
 		else
 		{
@@ -2822,6 +2840,7 @@ void interface_fade_out(
 		
 		if(fade_music) 
 		{
+			Mixer::instance()->StopSoundResource();
 			while(Music::instance()->Playing()) 
 				Music::instance()->Idle();
 

@@ -63,6 +63,7 @@ extern void scroll_full_screen_pict_resource_from_scenario(int pict_resource_num
 // Places a MacOS resource handle into an appropriate wrapper object;
 // a resource-fork emulator may put a pointer instead.
 extern bool get_picture_resource_from_images(int base_resource, LoadedResource& PictRsrc);
+extern bool get_sound_resource_from_images(int resource_number, LoadedResource& PictRsrc);
 extern bool get_picture_resource_from_scenario(int base_resource, LoadedResource& PictRsrc);
 
 extern bool get_sound_resource_from_scenario(int resource_number, LoadedResource& SoundRsrc);
