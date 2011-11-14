@@ -83,6 +83,7 @@ enum Typecode {
 	_typecode_music,
 	_typecode_theme,	// pseudo type code
 	_typecode_netscript,	// ZZZ pseudo typecode
+	_typecode_shapespatch,
 	NUMBER_OF_TYPECODES
 };
 
