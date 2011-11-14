@@ -487,27 +487,28 @@ struct extension_mapping
 static extension_mapping extensions[] = 
 {
 	// some common extensions, to speed up building map lists
-	{ "dds", _typecode_unknown },
-	{ "jpg", _typecode_unknown },
-	{ "png", _typecode_unknown },
-	{ "bmp", _typecode_unknown },
-	{ "txt", _typecode_unknown },
-	{ "ttf", _typecode_unknown },
+	{ "dds", false, _typecode_unknown },
+	{ "jpg", false, _typecode_unknown },
+	{ "png", false, _typecode_unknown },
+	{ "bmp", false, _typecode_unknown },
+	{ "txt", false, _typecode_unknown },
+	{ "ttf", false, _typecode_unknown },
 
-	{ "lua", _typecode_netscript }, // netscript, or unknown?
-	{ "mml", _typecode_unknown }, // no type code for this yet
+	{ "lua", false, _typecode_netscript }, // netscript, or unknown?
+	{ "mml", false, _typecode_unknown }, // no type code for this yet
 
-	{ "sceA", _typecode_scenario },
-        { "sgaA", _typecode_savegame },
-        { "filA", _typecode_film },
-        { "phyA", _typecode_physics },
-        { "shpA", _typecode_shapes },
-        { "sndA", _typecode_sounds },
+	{ "sceA", false, _typecode_scenario },
+	{ "sgaA", false, _typecode_savegame },
+	{ "filA", false, _typecode_film },
+	{ "phyA", false, _typecode_physics },
+	{ "ShPa", true,  _typecode_shapespatch }, // must come before shpA
+	{ "shpA", false, _typecode_shapes },
+	{ "sndA", false, _typecode_sounds },
 
-	{ "scen", _typecode_scenario },
-	{ "shps", _typecode_shapes },
+	{ "scen", false, _typecode_scenario },
+	{ "shps", false, _typecode_shapes },
 
-	{0, _typecode_unknown}
+	{0, false, _typecode_unknown}
 };
 
 // Determine file type
@@ -519,8 +520,9 @@ Typecode FileSpecifier::GetType()
 	if (extension) {
 		extension_mapping *mapping = extensions;
 		while (mapping->extension)
-		{
-			if (strcasecmp(extension + 1, mapping->extension) == 0)
+		{ 
+			if (( mapping->case_sensitive && (strcmp(extension + 1, mapping->extension) == 0)) ||
+			    (!mapping->case_sensitive && (strcasecmp(extension + 1, mapping->extension) == 0)))
 			{
 				return mapping->typecode;
 			}
