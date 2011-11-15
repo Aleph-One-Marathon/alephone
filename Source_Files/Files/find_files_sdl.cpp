@@ -38,7 +38,7 @@
  *  File finder base class
  */
 
-bool FileFinder::Find(DirectorySpecifier &dir, Typecode type, bool recursive)
+bool FileFinder::_Find(DirectorySpecifier &dir, Typecode type, bool recursive, int depth)
 {
 	// Get list of entries in directory
 	vector<dir_entry> entries;
@@ -55,9 +55,12 @@ bool FileFinder::Find(DirectorySpecifier &dir, Typecode type, bool recursive)
 
 		if (i->is_directory) {
 
+			if (depth == 0 && i->name == "Plugins")
+				continue;
+
 			// Recurse into directory
 			if (recursive)
-				if (Find(file, type, recursive))
+				if (_Find(file, type, recursive, depth + 1))
 					return true;
 
 		} else {
