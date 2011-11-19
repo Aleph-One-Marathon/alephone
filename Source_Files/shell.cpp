@@ -140,9 +140,18 @@ char application_name[] = A1_DISPLAY_NAME;
 char application_identifier[] = "org.bungie.source.AlephOne";
 #endif
 
+#if defined(HAVE_BUNDLE_NAME)
+// legacy bundle path
+static const char sBundlePlaceholder[] = "AlephOneSDL.app/Contents/Resources/DataFiles";
+#endif
+
 // Data directories
 vector <DirectorySpecifier> data_search_path; // List of directories in which data files are searched for
 DirectorySpecifier local_data_dir;    // Local (per-user) data file directory
+DirectorySpecifier default_data_dir;  // Default scenario directory
+#if defined(HAVE_BUNDLE_NAME)
+DirectorySpecifier bundle_data_dir;	  // Data inside Mac OS X app bundle
+#endif
 DirectorySpecifier preferences_dir;   // Directory for preferences
 DirectorySpecifier saved_games_dir;   // Directory for saved games
 DirectorySpecifier recordings_dir;    // Directory for recordings (except film buffer, which is stored in local_data_dir)
@@ -387,7 +396,6 @@ static void initialize_application(void)
 #endif
 
 	// Find data directories, construct search path
-	DirectorySpecifier default_data_dir;
 
 #if defined(unix) || defined(__NetBSD__) || defined(__OpenBSD__) || (defined(__APPLE__) && defined(__MACH__) && !defined(HAVE_BUNDLE_NAME))
 
@@ -399,7 +407,7 @@ static void initialize_application(void)
 	log_dir = local_data_dir;
 
 #elif defined(__APPLE__) && defined(__MACH__)
-	DirectorySpecifier bundle_data_dir = bundle_resource_path;
+	bundle_data_dir = bundle_resource_path;
 	bundle_data_dir += "DataFiles";
 
 	data_search_path.push_back(bundle_data_dir);
@@ -1504,6 +1512,66 @@ void LoadBaseMMLScripts()
 const char *get_application_name(void)
 {
    return application_name;
+}
+			   
+bool expand_symbolic_paths_helper(char *dest, const char *src, int maxlen, const char *symbol, DirectorySpecifier& dir)
+{
+   int symlen = strlen(symbol);
+   if (!strncmp(src, symbol, symlen))
+   {
+	   strncpy(dest, dir.GetPath(), maxlen);
+	   dest[maxlen] = '\0';
+	   strncat(dest, &src[symlen], maxlen-strlen(dest));
+	   return true;
+   }
+   return false;
+}
+
+char *expand_symbolic_paths(char *dest, const char *src, int maxlen)
+{
+	bool expanded =
+#if defined(HAVE_BUNDLE_NAME)
+		expand_symbolic_paths_helper(dest, src, maxlen, "$bundle$", bundle_data_dir) ||
+		expand_symbolic_paths_helper(dest, src, maxlen, sBundlePlaceholder, bundle_data_dir) ||
+#endif
+		expand_symbolic_paths_helper(dest, src, maxlen, "$local$", local_data_dir) ||
+		expand_symbolic_paths_helper(dest, src, maxlen, "$default$", default_data_dir);
+	if (!expanded)
+	{
+		strncpy(dest, src, maxlen);
+		dest[maxlen] = '\0';
+	}
+	return dest;
+}
+			   
+bool contract_symbolic_paths_helper(char *dest, const char *src, int maxlen, const char *symbol, DirectorySpecifier &dir)
+{
+   const char *dpath = dir.GetPath();
+   int dirlen = strlen(dpath);
+   if (!strncmp(src, dpath, dirlen))
+   {
+	   strncpy(dest, symbol, maxlen);
+	   dest[maxlen] = '\0';
+	   strncat(dest, &src[dirlen], maxlen-strlen(dest));
+	   return true;
+   }
+   return false;
+}
+
+char *contract_symbolic_paths(char *dest, const char *src, int maxlen)
+{
+	bool contracted =
+#if defined(HAVE_BUNDLE_NAME)
+		contract_symbolic_paths_helper(dest, src, maxlen, "$bundle$", bundle_data_dir) ||
+#endif
+		contract_symbolic_paths_helper(dest, src, maxlen, "$local$", local_data_dir) ||
+		contract_symbolic_paths_helper(dest, src, maxlen, "$default$", default_data_dir);
+	if (!contracted)
+	{
+		strncpy(dest, src, maxlen);
+		dest[maxlen] = '\0';
+	}
+	return dest;
 }
 
 // LP: the rest of the code has been moved to Jeremy's shell_misc.file.
