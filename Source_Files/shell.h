@@ -103,8 +103,10 @@ XML_ElementParser *Cheats_GetParser();
 // Load the base MML scripts:
 void LoadBaseMMLScripts();
 
-// Application info:
+// Application and directory info:
 const char *get_application_name(void);
+char *expand_symbolic_paths(char *dest, const char *src, int maxlen);
+char *contract_symbolic_paths(char *dest, const char *src, int maxlen);
 
 /* ---------- prototypes/SHAPES.C */
 

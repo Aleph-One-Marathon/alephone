@@ -124,11 +124,6 @@ static const char* sNetworkGameProtocolNames[] =
 
 static const size_t NUMBER_OF_NETWORK_GAME_PROTOCOL_NAMES = sizeof(sNetworkGameProtocolNames) / sizeof(sNetworkGameProtocolNames[0]);
 
-#if defined(HAVE_BUNDLE_NAME)
-static const char sBundlePlaceholder[] = "AlephOneSDL.app";
-#endif
-
-
 // MML-like Preferences Stuff; it makes obsolete
 // w_open_preferences_file(), w_get_data_from_preferences(), and w_write_preferences_file()
 // in wad_prefs.*
@@ -2045,6 +2040,7 @@ template<class CType> void WriteColorWithIndex(FILE *F,
 // converting XML's reserved characters into appropriate strings.
 void WriteXML_PasString(FILE *F, const char *Prefix, const unsigned char *String, const char *Suffix);
 void WriteXML_CString(FILE *F, const char *Prefix, const char *String, int MaxLen, const char *Suffix);
+void WriteXML_Pathname(FILE *F, const char *Prefix, const char *String, const char *Suffix);
 void WriteXML_Char(FILE *F, unsigned char c);
 
 extern void hub_set_minimum_send_period(int32);
@@ -2340,7 +2336,7 @@ void write_preferences(
 	fprintf(F,"  game_protocol=\"%s\"\n",sNetworkGameProtocolNames[network_preferences->game_protocol]);
 	fprintf(F,"  use_speex_netmic_encoder=\"%s\"\n", BoolString(network_preferences->use_speex_encoder));
 	fprintf(F,"  use_netscript=\"%s\"\n", BoolString(network_preferences->use_netscript));
-	WriteXML_CString(F,"  netscript_file=\"", network_preferences->netscript_file, sizeof(network_preferences->netscript_file), "\"\n");
+	WriteXML_Pathname(F,"  netscript_file=\"", network_preferences->netscript_file, "\"\n");
 	fprintf(F,"  cheat_flags=\"%hu\"\n",network_preferences->cheat_flags);
 	fprintf(F,"  advertise_on_metaserver=\"%s\"\n",BoolString(network_preferences->advertise_on_metaserver));
 	fprintf(F,"  attempt_upnp=\"%s\"\n", BoolString(network_preferences->attempt_upnp));
@@ -2369,20 +2365,11 @@ void write_preferences(
 #endif // !defined(DISABLE_NETWORKING)
 
 	fprintf(F,"<environment\n");
-	WriteXML_CString(F,"  map_file=\"",environment_preferences->map_file,256,"\"\n");
-	WriteXML_CString(F,"  physics_file=\"",environment_preferences->physics_file,256,"\"\n");
-	WriteXML_CString(F,"  shapes_file=\"",environment_preferences->shapes_file,256,"\"\n");
-	WriteXML_CString(F,"  sounds_file=\"",environment_preferences->sounds_file,256,"\"\n");
-#if defined(HAVE_BUNDLE_NAME)
-	extern char *bundle_name; // SDLMain.m
-	// replace our leading bundle name with generic "AlephOneSDL.app" (we do reverse when loading)
-	if (!strncmp(environment_preferences->theme_dir, bundle_name, strlen(bundle_name))) {
-		strlcpy(temporary, sBundlePlaceholder, sizeof(temporary));
-		strlcat(temporary, environment_preferences->theme_dir + strlen(bundle_name), sizeof(temporary));
-		WriteXML_CString(F,"  theme_dir=\"",temporary,256,"\"\n");
-	} else
-#endif
-	WriteXML_CString(F,"  theme_dir=\"",environment_preferences->theme_dir,256,"\"\n");
+	WriteXML_Pathname(F,"  map_file=\"",environment_preferences->map_file,"\"\n");
+	WriteXML_Pathname(F,"  physics_file=\"",environment_preferences->physics_file,"\"\n");
+	WriteXML_Pathname(F,"  shapes_file=\"",environment_preferences->shapes_file,"\"\n");
+	WriteXML_Pathname(F,"  sounds_file=\"",environment_preferences->sounds_file,"\"\n");
+	WriteXML_Pathname(F,"  theme_dir=\"",environment_preferences->theme_dir,"\"\n");
 	fprintf(F,"  map_checksum=\"%u\"\n",environment_preferences->map_checksum);
 	fprintf(F,"  physics_checksum=\"%u\"\n",environment_preferences->physics_checksum);
 	fprintf(F,"  shapes_mod_date=\"%u\"\n",uint32(environment_preferences->shapes_mod_date));
@@ -2390,16 +2377,16 @@ void write_preferences(
 	fprintf(F,"  group_by_directory=\"%s\"\n",BoolString(environment_preferences->group_by_directory));
 	fprintf(F,"  reduce_singletons=\"%s\"\n",BoolString(environment_preferences->reduce_singletons));
 	fprintf(F,"  smooth_text=\"%s\"\n", BoolString(environment_preferences->smooth_text));
-	WriteXML_CString(F,"  solo_lua_file=\"", environment_preferences->solo_lua_file, 256, "\"\n");
+	WriteXML_Pathname(F,"  solo_lua_file=\"", environment_preferences->solo_lua_file, "\"\n");
 	fprintf(F,"  use_solo_lua=\"%s\"\n", BoolString(environment_preferences->use_solo_lua));
-	WriteXML_CString(F,"  hud_lua_file=\"", environment_preferences->hud_lua_file, 256, "\"\n");
+	WriteXML_Pathname(F,"  hud_lua_file=\"", environment_preferences->hud_lua_file, "\"\n");
 	fprintf(F,"  use_hud_lua=\"%s\"\n", BoolString(environment_preferences->use_hud_lua));
 	fprintf(F,"  hide_alephone_extensions=\"%s\"\n", BoolString(environment_preferences->hide_extensions));
 	fprintf(F,"  film_profile=\"%u\"\n", static_cast<uint32>(environment_preferences->film_profile));
 	fprintf(F,">\n");
 	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
 		if (it->compatible() && !it->enabled) {
-			fprintf(F,"  <disable_plugin path=\"%s\"/>\n", it->directory.GetPath());
+			WriteXML_Pathname(F,"  <disable_plugin path=\"", it->directory.GetPath(), "\"/>\n");
 		}
 	}
 	fprintf(F,"</environment>\n\n");
@@ -2873,6 +2860,17 @@ void WriteXML_CString(FILE *F, const char *Prefix, const char *String, int MaxLe
 	size_t Len = strlen(String);
 	for (size_t k=0; k<Len; k++)
 		WriteXML_Char(F,String[k]);
+	fprintf(F,"%s",Suffix);
+}
+
+void WriteXML_Pathname(FILE *F, const char *Prefix, const char *String, const char *Suffix)
+{
+	char tempstr[256];
+	contract_symbolic_paths(tempstr, String, 255);
+	fprintf(F,"%s",Prefix);
+	size_t Len = strlen(tempstr);
+	for (size_t k=0; k<Len; k++)
+		WriteXML_Char(F,tempstr[k]);
 	fprintf(F,"%s",Suffix);
 }
 
@@ -3892,7 +3890,9 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"netscript_file"))
 	{
-		DeUTF8_C(Value,strlen(Value),network_preferences->netscript_file,sizeof(network_preferences->netscript_file));
+		char tempstr[256];
+		expand_symbolic_paths(tempstr, Value, 255);
+		DeUTF8_C(tempstr,strlen(tempstr),network_preferences->netscript_file,sizeof(network_preferences->netscript_file));
 	}
 	else if (StringsEqual(Tag,"cheat_flags"))
         {
@@ -3958,7 +3958,8 @@ public:
 
 bool XML_DisablePluginsParser::HandleAttribute(const char* Tag, const char* Value) {
 	if (StringsEqual(Tag, "path")) {
-		Plugins::instance()->disable(Value);
+		char tempstr[256];
+		Plugins::instance()->disable(expand_symbolic_paths(tempstr, Value, 255));
 		return true;
 	}
 
@@ -3979,36 +3980,27 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 {
 	if (StringsEqual(Tag,"map_file"))
 	{
-		strncpy(environment_preferences->map_file, Value, 255);
+		expand_symbolic_paths(environment_preferences->map_file, Value, 255);
 		return true;
 	}
 	else if (StringsEqual(Tag,"physics_file"))
 	{
-		strncpy(environment_preferences->physics_file, Value, 255);
+		expand_symbolic_paths(environment_preferences->physics_file, Value, 255);
 		return true;
 	}
 	else if (StringsEqual(Tag,"shapes_file"))
 	{
-		strncpy(environment_preferences->shapes_file, Value, 255);
+		expand_symbolic_paths(environment_preferences->shapes_file, Value, 255);
 		return true;
 	}
 	else if (StringsEqual(Tag,"sounds_file"))
 	{
-		strncpy(environment_preferences->sounds_file, Value, 255);
+		expand_symbolic_paths(environment_preferences->sounds_file, Value, 255);
 		return true;
 	}
 	else if (StringsEqual(Tag,"theme_dir"))
 	{
-		strncpy(environment_preferences->theme_dir, Value, 255);
-#if defined(HAVE_BUNDLE_NAME)
-		extern char *bundle_name; // SDLMain.m
-		// replace leading "AlephOneSDL.app" with our actual bundle name (we do reverse when saving)
-		if (!strncmp(environment_preferences->theme_dir, sBundlePlaceholder, strlen(sBundlePlaceholder))) {
-			strlcpy(temporary, bundle_name, sizeof(temporary));
-			strlcat(temporary, environment_preferences->theme_dir + strlen(sBundlePlaceholder), sizeof(temporary));
-			strlcpy(environment_preferences->theme_dir, temporary, 255);			
-		}
-#endif
+		expand_symbolic_paths(environment_preferences->theme_dir, Value, 255);
 		return true;
 	}
 	else if (StringsEqual(Tag,"map_checksum"))
@@ -4060,7 +4052,7 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	}
 	else if (StringsEqual(Tag,"solo_lua_file"))
 	{
-		strncpy(environment_preferences->solo_lua_file, Value, 255);
+		expand_symbolic_paths(environment_preferences->solo_lua_file, Value, 255);
 		return true;
 	}
 	else if (StringsEqual(Tag,"use_solo_lua"))
@@ -4069,7 +4061,7 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	}
 	else if (StringsEqual(Tag,"hud_lua_file"))
 	{
-		strncpy(environment_preferences->hud_lua_file, Value, 255);
+		expand_symbolic_paths(environment_preferences->hud_lua_file, Value, 255);
 		return true;
 	}
 	else if (StringsEqual(Tag,"use_hud_lua"))
