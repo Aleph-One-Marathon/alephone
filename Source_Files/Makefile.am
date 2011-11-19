@@ -53,9 +53,7 @@ WIN_VERSION_STRING= 0, $(BUILD_YEAR), $(BUILD_MONTH), $(BUILD_DAY)
 A1_DISPLAY_VERSION= `grep '^\#define A1_DISPLAY_VERSION' $(srcdir)/Misc/alephversion.h | sed -e 's/\(.*\"\)\(.*\)\(\"\)/\2/g' | tr -d '\n'`
 endif
 
-alephone-resources.o: FORCE
-	sed -e s/BUILDDATE/`date +%Y-%m-%d`/g -e "s/WIN_VERSION_STRING/$(WIN_VERSION_STRING)/g" -e "s/A1_DISPLAY_VERSION/$(A1_DISPLAY_VERSION)/g" $(top_srcdir)/Resources/Windows/alephone.rc | @WINDRES@ -I$(top_srcdir)/Resources/Windows -o alephone-resources.o
-
-FORCE:
+alephone-resources.o: $(top_srcdir)/Resources/Windows/alephone.rc Misc/alephversion.h
+	sed -e "s/WIN_VERSION_STRING/$(WIN_VERSION_STRING)/g" -e "s/A1_DISPLAY_VERSION/$(A1_DISPLAY_VERSION)/g" $(top_srcdir)/Resources/Windows/alephone.rc | @WINDRES@ -I$(top_srcdir)/Resources/Windows -o alephone-resources.o
 
 shell.o: confpaths.h
