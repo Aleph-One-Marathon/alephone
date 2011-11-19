@@ -9,16 +9,18 @@ FILETYPE 1
  {
   BLOCK "040904E4"
   {
-   VALUE "AppName", "Aleph One"
-   VALUE "AppVersion", "A1_DISPLAY_VERSION"
-   VALUE "BuildDate", "BUILDDATE"
-   VALUE "FileVersion", "A1_DISPLAY_VERSION"
-   VALUE "FileDescription", "Aleph One/SDL for Win32"
-   VALUE "LegalCopyright", "GNU General Public License"
-   VALUE "License", "GNU General Public License (For details, see the file COPYING)"
+   VALUE "FileDescription", "Aleph One for Windows"
+   VALUE "FileVersion", "WIN_VERSION_STRING"
+   VALUE "LegalCopyright", "GNU General Public License Version 3"
    VALUE "OriginalFilename", "AlephOne.exe"
+   VALUE "ProductName", "Aleph One"
+   VALUE "ProductVersion", "A1_DISPLAY_VERSION"
    VALUE "URL", "http://marathon.sourceforge.net"
   }
+ }
+ BLOCK "VarFileInfo"
+ {
+  VALUE "Translation", 0x0409, 1252
  }
 }
 
