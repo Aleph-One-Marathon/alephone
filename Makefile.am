@@ -9,11 +9,15 @@ EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
   Makefile.BeOS docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
   data/Fonts Resources/Windows/alephone.ico				\
   Resources/Windows/alephone.rc						\
+  Resources/Windows/marathon.rc Resources/Windows/marathon.ico          \
+  Resources/Windows/marathon2.rc Resources/Windows/marathon2.ico        \
+  Resources/Windows/marathon-infinity.rc                                \
+  Resources/Windows/marathon-infinity.ico                               \
   PBProjects/AlephOne.xcodeproj/project.pbxproj				\
   PBProjects/English.lproj/InfoPlist.strings PBProjects/FilmIcon.icns	\
   PBProjects/ImagesIcon.icns PBProjects/MapIcon.icns			\
   PBProjects/MMLIcon.icns PBProjects/MusakIcon.icns			\
-  PBProjects/PhysIcon.icns			\
+  PBProjects/PhysIcon.icns			                        \
   PBProjects/SaveIcon.icns PBProjects/ShapesIcon.icns			\
   PBProjects/SoundsIcon.icns PBProjects/Info-AlephOne_SDL.plist		\
   PBProjects/precompiled_headers.h PBProjects/SDLMain.h			\
@@ -95,7 +99,7 @@ $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
 
 winzip: $(PACKAGE)-$(VERSION).zip
 
-$(PACKAGE)-$(VERSION)-M1A1.zip: Source_Files/AlephOne.exe
+$(PACKAGE)-$(VERSION)-M1A1.zip: Source_Files/Marathon.exe
 	cp -r "$(srcdir)/data/Scenarios/M1A1" $(WINDISTDIR)-M1A1
 	rm -rf "$(WINDISTDIR)-M1A1/.svn"
 	rm -rf "$(WINDISTDIR)-M1A1/Physics Models/.svn"
@@ -105,7 +109,7 @@ $(PACKAGE)-$(VERSION)-M1A1.zip: Source_Files/AlephOne.exe
 	rm -rf $(WINDISTDIR)-M1A1/Plugins/*/*/*/.svn
 	rm -rf "$(WINDISTDIR)-M1A1/Scripts/.svn"
 	rm -rf "$(WINDISTDIR)-M1A1/Tracks/.svn"
-	cp Source_Files/AlephOne.exe $(WINDISTDIR)-M1A1/
+	cp Source_Files/Marathon.exe "$(WINDISTDIR)-M1A1/Marathon.exe"
 	unix2dos -n $(srcdir)/AUTHORS $(WINDISTDIR)-M1A1/AUTHORS.txt
 	unix2dos -n $(srcdir)/COPYING $(WINDISTDIR)-M1A1/COPYING.txt
 	unix2dos -n $(srcdir)/INSTALL.Windows $(WINDISTDIR)-M1A1/INSTALL.Windows.txt
@@ -128,7 +132,7 @@ $(PACKAGE)-$(VERSION)-M1A1.zip: Source_Files/AlephOne.exe
 
 win1zip: $(PACKAGE)-$(VERSION)-M1A1.zip
 
-$(PACKAGE)-$(VERSION)-Durandal.zip: Source_Files/AlephOne.exe
+$(PACKAGE)-$(VERSION)-Durandal.zip: Source_Files/Marathon2.exe
 	cp -r "$(srcdir)/data/Scenarios/Marathon 2" $(WINDISTDIR)-Durandal
 	cp -r $(srcdir)/data/XBLA_HUD $(WINDISTDIR)-Durandal/Plugins/XBLA_HUD
 	rm -rf "$(WINDISTDIR)-Durandal/.svn"
@@ -139,7 +143,7 @@ $(PACKAGE)-$(VERSION)-Durandal.zip: Source_Files/AlephOne.exe
 	rm -rf $(WINDISTDIR)-Durandal/Plugins/*/*/*/.svn
 	rm -rf $(WINDISTDIR)-Durandal/Plugins/*/*/*/*/.svn
 	rm -rf "$(WINDISTDIR)-Durandal/Scripts/.svn"
-	cp Source_Files/AlephOne.exe $(WINDISTDIR)-Durandal/
+	cp Source_Files/Marathon2.exe "$(WINDISTDIR)-Durandal/Marathon 2.exe"
 	unix2dos -n $(srcdir)/AUTHORS $(WINDISTDIR)-Durandal/AUTHORS.txt
 	unix2dos -n $(srcdir)/COPYING $(WINDISTDIR)-Durandal/COPYING.txt
 	unix2dos -n $(srcdir)/INSTALL.Windows $(WINDISTDIR)-Durandal/INSTALL.Windows.txt
@@ -164,7 +168,7 @@ $(PACKAGE)-$(VERSION)-Durandal.zip: Source_Files/AlephOne.exe
 
 win2zip: $(PACKAGE)-$(VERSION)-Durandal.zip
 
-$(PACKAGE)-$(VERSION)-Infinity.zip: Source_Files/AlephOne.exe
+$(PACKAGE)-$(VERSION)-Infinity.zip: Source_Files/MarathonInfinity.exe
 	cp -r "$(srcdir)/data/Scenarios/Marathon Infinity" $(WINDISTDIR)-Infinity
 	mkdir $(WINDISTDIR)-Infinity/Plugins
 	cp -r $(srcdir)/data/XBLA_HUD $(WINDISTDIR)-Infinity/Plugins/XBLA_HUD
@@ -173,7 +177,7 @@ $(PACKAGE)-$(VERSION)-Infinity.zip: Source_Files/AlephOne.exe
 	rm -rf $(WINDISTDIR)-Infinity/Plugins/*/.svn
 	rm -rf $(WINDISTDIR)-Infinity/Plugins/*/*/.svn
 	rm -rf "$(WINDISTDIR)-Infinity/Scripts/.svn"
-	cp Source_Files/AlephOne.exe $(WINDISTDIR)-Infinity/
+	cp Source_Files/MarathonInfinity.exe "$(WINDISTDIR)-Infinity/Marathon Infinity.exe"
 	unix2dos -n $(srcdir)/AUTHORS $(WINDISTDIR)-Infinity/AUTHORS.txt
 	unix2dos -n $(srcdir)/COPYING $(WINDISTDIR)-Infinity/COPYING.txt
 	unix2dos -n $(srcdir)/INSTALL.Windows $(WINDISTDIR)-Infinity/INSTALL.Windows.txt

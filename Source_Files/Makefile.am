@@ -4,7 +4,7 @@ SUBDIRS = CSeries Expat Files GameWorld Input LibNAT Lua Misc ModelView Network 
    RenderMain RenderOther Sound TCPMess XML
 
 if MAKE_WINDOWS
-bin_PROGRAMS = AlephOne
+bin_PROGRAMS = AlephOne Marathon Marathon2 MarathonInfinity
 else
 bin_PROGRAMS = alephone
 endif
@@ -39,6 +39,15 @@ INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Fil
 AlephOne_LDADD = $(alephone_LDADD) alephone-resources.o
 AlephOne_SOURCES = $(alephone_SOURCES)
 
+Marathon_LDADD = $(alephone_LDADD) marathon-resources.o
+Marathon_SOURCES = $(alephone_SOURCES)
+
+Marathon2_LDADD = $(alephone_LDADD) marathon2-resources.o
+Marathon2_SOURCES = $(alephone_SOURCES)
+
+MarathonInfinity_LDADD = $(alephone_LDADD) marathon-infinity-resources.o
+MarathonInfinity_SOURCES = $(alephone_SOURCES)
+
 # Data directories
 confpaths.h: Makefile
 	echo "#define PKGDATADIR \"$(pkgdatadir)\"" > $@
@@ -55,5 +64,14 @@ endif
 
 alephone-resources.o: $(top_srcdir)/Resources/Windows/alephone.rc Misc/alephversion.h
 	sed -e "s/WIN_VERSION_STRING/$(WIN_VERSION_STRING)/g" -e "s/A1_DISPLAY_VERSION/$(A1_DISPLAY_VERSION)/g" $(top_srcdir)/Resources/Windows/alephone.rc | @WINDRES@ -I$(top_srcdir)/Resources/Windows -o alephone-resources.o
+
+marathon-resources.o: $(top_srcdir)/Resources/Windows/marathon.rc Misc/alephversion.h $(top_srcdir)/Resources/Windows/marathon.ico
+	sed -e "s/WIN_VERSION_STRING/$(WIN_VERSION_STRING)/g" -e "s/A1_DISPLAY_VERSION/$(A1_DISPLAY_VERSION)/g" $(top_srcdir)/Resources/Windows/marathon.rc | @WINDRES@ -I$(top_srcdir)/Resources/Windows -o marathon-resources.o
+
+marathon2-resources.o: $(top_srcdir)/Resources/Windows/marathon2.rc Misc/alephversion.h $(top_srcdir)/Resources/Windows/marathon2.ico
+	sed -e "s/WIN_VERSION_STRING/$(WIN_VERSION_STRING)/g" -e "s/A1_DISPLAY_VERSION/$(A1_DISPLAY_VERSION)/g" $(top_srcdir)/Resources/Windows/marathon2.rc | @WINDRES@ -I$(top_srcdir)/Resources/Windows -o marathon2-resources.o
+
+marathon-infinity-resources.o: $(top_srcdir)/Resources/Windows/marathon-infinity.rc Misc/alephversion.h $(top_srcdir)/Resources/Windows/marathon-infinity.ico
+	sed -e "s/WIN_VERSION_STRING/$(WIN_VERSION_STRING)/g" -e "s/A1_DISPLAY_VERSION/$(A1_DISPLAY_VERSION)/g" $(top_srcdir)/Resources/Windows/marathon-infinity.rc | @WINDRES@ -I$(top_srcdir)/Resources/Windows -o marathon-infinity-resources.o
 
 shell.o: confpaths.h
