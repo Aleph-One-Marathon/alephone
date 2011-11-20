@@ -9,7 +9,7 @@ FILETYPE 1
  {
   BLOCK "040904E4"
   {
-   VALUE "FileDescription", "Marathon"
+   VALUE "FileDescription", "Marathon (A1)"
    VALUE "FileVersion", "WIN_VERSION_STRING"
    VALUE "LegalCopyright", "GNU General Public License Version 3"
    VALUE "OriginalFilename", "Marathon.exe"

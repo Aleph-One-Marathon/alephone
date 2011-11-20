@@ -99,38 +99,30 @@ $(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
 
 winzip: $(PACKAGE)-$(VERSION).zip
 
-$(PACKAGE)-$(VERSION)-M1A1.zip: Source_Files/Marathon.exe
-	cp -r "$(srcdir)/data/Scenarios/M1A1" $(WINDISTDIR)-M1A1
-	rm -rf "$(WINDISTDIR)-M1A1/.svn"
-	rm -rf "$(WINDISTDIR)-M1A1/Physics Models/.svn"
-	rm -rf "$(WINDISTDIR)-M1A1/Plugins/.svn"
-	rm -rf $(WINDISTDIR)-M1A1/Plugins/*/.svn
-	rm -rf $(WINDISTDIR)-M1A1/Plugins/*/*/.svn
-	rm -rf $(WINDISTDIR)-M1A1/Plugins/*/*/*/.svn
-	rm -rf "$(WINDISTDIR)-M1A1/Scripts/.svn"
-	rm -rf "$(WINDISTDIR)-M1A1/Tracks/.svn"
-	cp Source_Files/Marathon.exe "$(WINDISTDIR)-M1A1/Marathon.exe"
-	unix2dos -n $(srcdir)/AUTHORS $(WINDISTDIR)-M1A1/AUTHORS.txt
-	unix2dos -n $(srcdir)/COPYING $(WINDISTDIR)-M1A1/COPYING.txt
-	unix2dos -n $(srcdir)/INSTALL.Windows $(WINDISTDIR)-M1A1/INSTALL.Windows.txt
-	unix2dos -n $(srcdir)/README $(WINDISTDIR)-M1A1/README.txt
-	mkdir $(WINDISTDIR)-M1A1/docs
-	cp $(srcdir)/docs/Lua.html $(WINDISTDIR)-M1A1/docs/Lua.html
-	cp $(srcdir)/docs/Lua_HUD.html $(WINDISTDIR)-M1A1/docs/Lua_HUD.html
-	cp $(srcdir)/docs/MML.html $(WINDISTDIR)-M1A1/docs/MML.html
-	unix2dos -n $(srcdir)/docs/Troubleshooting.txt $(WINDISTDIR)-M1A1/docs/Troubleshooting.txt
-	mkdir $(WINDISTDIR)-M1A1/Themes
-	cp -r $(srcdir)/data/default_theme $(WINDISTDIR)-M1A1/Themes/Default
-	rm -rf "$(WINDISTDIR)-M1A1/Themes/Default/.svn"
-	mkdir $(WINDISTDIR)-M1A1/Extras
-	unix2dos -n $(srcdir)/examples/lua/Cheats.lua $(WINDISTDIR)-M1A1/Extras/Cheats.lua
-	cp $(srcdir)/data/Fonts $(WINDISTDIR)-M1A1/Fonts.fntA
-	cp -r "$(srcdir)/Resources/Library Licenses" $(WINDISTDIR)-M1A1/
-	rm -rf "$(WINDISTDIR)-M1A1/Library Licenses/.svn"
-	zip -r $(PACKAGE)-$(VERSION)-M1A1.zip $(WINDISTDIR)-M1A1
-	rm -rf "$(WINDISTDIR)-M1A1"
+WINDISTDIR_M1=Marathon (A1)
 
-win1zip: $(PACKAGE)-$(VERSION)-M1A1.zip
+Marathon-$(VERSION)-Win.zip: Source_Files/Marathon.exe
+	mkdir "$(WINDISTDIR_M1)"
+	tar -c --exclude='.svn' -C $(srcdir)/data/Scenarios/M1A1 . | tar -x -C "$(WINDISTDIR_M1)"
+	cp Source_Files/Marathon.exe "$(WINDISTDIR_M1)/Marathon.exe"
+	unix2dos -n $(srcdir)/COPYING "$(WINDISTDIR_M1)/COPYING.txt"
+	unix2dos -n $(srcdir)/README "$(WINDISTDIR_M1)/README.txt"
+	mkdir "$(WINDISTDIR_M1)/docs"
+	cp $(srcdir)/docs/Lua.html "$(WINDISTDIR_M1)/docs/Lua.html"
+	cp $(srcdir)/docs/Lua_HUD.html "$(WINDISTDIR_M1)/docs/Lua_HUD.html"
+	cp $(srcdir)/docs/MML.html "$(WINDISTDIR_M1)/docs/MML.html"
+	unix2dos -n $(srcdir)/docs/Troubleshooting.txt "$(WINDISTDIR_M1)/docs/Troubleshooting.txt"
+	mkdir -p "$(WINDISTDIR_M1)/Themes/Default"
+	tar -c --exclude='.svn' -C $(srcdir)/data/default_theme . | tar -x -C "$(WINDISTDIR_M1)/Themes/Default"
+	mkdir "$(WINDISTDIR_M1)/Extras"
+	unix2dos -n $(srcdir)/examples/lua/Cheats.lua "$(WINDISTDIR_M1)/Extras/Cheats.lua"
+	cp $(srcdir)/data/Fonts "$(WINDISTDIR_M1)/Fonts.fntA"
+	mkdir "$(WINDISTDIR_M1)/docs/Library Licenses"
+	tar -c --exclude='.svn' -C "$(srcdir)/Resources/Library Licenses" . | tar -x -C "$(WINDISTDIR_M1)/docs/Library Licenses"
+	zip -r Marathon-$(VERSION)-Win.zip "$(WINDISTDIR_M1)"
+	rm -rf "$(WINDISTDIR_M1)"
+
+win1zip: Marathon-$(VERSION)-Win.zip
 
 $(PACKAGE)-$(VERSION)-Durandal.zip: Source_Files/Marathon2.exe
 	cp -r "$(srcdir)/data/Scenarios/Marathon 2" $(WINDISTDIR)-Durandal
