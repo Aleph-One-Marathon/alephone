@@ -9,10 +9,10 @@ FILETYPE 1
  {
   BLOCK "040904E4"
   {
-   VALUE "FileDescription", "Aleph One"
+   VALUE "FileDescription", "Marathon"
    VALUE "FileVersion", "WIN_VERSION_STRING"
    VALUE "LegalCopyright", "GNU General Public License Version 3"
-   VALUE "OriginalFilename", "AlephOne.exe"
+   VALUE "OriginalFilename", "Marathon.exe"
    VALUE "ProductName", "Aleph One"
    VALUE "ProductVersion", "A1_DISPLAY_VERSION"
    VALUE "URL", "http://marathon.sourceforge.net"
@@ -24,4 +24,13 @@ FILETYPE 1
  }
 }
 
-AppIcon ICON "alephone.ico"
+AppIcon ICON "marathon.ico"
+FilmIcon ICON "FilmIcon.ico"
+ImagesIcon ICON "ImagesIcon.ico"
+MMLIcon ICON "MMLIcon.ico"
+MapIcon ICON "MapIcon.ico"
+MusakIcon ICON "MusakIcon.ico"
+PhysIcon ICON "PhysIcon.ico"
+SaveIcon ICON "SaveIcon.ico"
+ShapesIcon ICON "ShapesIcon.ico"
+SoundsIcon ICON "SoundsIcon.ico"
