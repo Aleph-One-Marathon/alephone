@@ -119,79 +119,66 @@ Marathon-$(VERSION)-Win.zip: Source_Files/Marathon.exe
 	cp $(srcdir)/data/Fonts "$(WINDISTDIR_M1)/Fonts.fntA"
 	mkdir "$(WINDISTDIR_M1)/docs/Library Licenses"
 	tar -c --exclude='.svn' -C "$(srcdir)/Resources/Library Licenses" . | tar -x -C "$(WINDISTDIR_M1)/docs/Library Licenses"
+	rm -f Marathon-$(VERSION)-Win.zip
 	zip -r Marathon-$(VERSION)-Win.zip "$(WINDISTDIR_M1)"
 	rm -rf "$(WINDISTDIR_M1)"
 
 win1zip: Marathon-$(VERSION)-Win.zip
 
-$(PACKAGE)-$(VERSION)-Durandal.zip: Source_Files/Marathon2.exe
-	cp -r "$(srcdir)/data/Scenarios/Marathon 2" $(WINDISTDIR)-Durandal
-	cp -r $(srcdir)/data/XBLA_HUD $(WINDISTDIR)-Durandal/Plugins/XBLA_HUD
-	rm -rf "$(WINDISTDIR)-Durandal/.svn"
-	rm -rf "$(WINDISTDIR)-Durandal/Physics Models/.svn"
-	rm -rf "$(WINDISTDIR)-Durandal/Plugins/.svn"
-	rm -rf $(WINDISTDIR)-Durandal/Plugins/*/.svn
-	rm -rf $(WINDISTDIR)-Durandal/Plugins/*/*/.svn
-	rm -rf $(WINDISTDIR)-Durandal/Plugins/*/*/*/.svn
-	rm -rf $(WINDISTDIR)-Durandal/Plugins/*/*/*/*/.svn
-	rm -rf "$(WINDISTDIR)-Durandal/Scripts/.svn"
-	cp Source_Files/Marathon2.exe "$(WINDISTDIR)-Durandal/Marathon 2.exe"
-	unix2dos -n $(srcdir)/AUTHORS $(WINDISTDIR)-Durandal/AUTHORS.txt
-	unix2dos -n $(srcdir)/COPYING $(WINDISTDIR)-Durandal/COPYING.txt
-	unix2dos -n $(srcdir)/INSTALL.Windows $(WINDISTDIR)-Durandal/INSTALL.Windows.txt
-	unix2dos -n $(srcdir)/README $(WINDISTDIR)-Durandal/README.txt
-	mkdir $(WINDISTDIR)-Durandal/docs
-	cp $(srcdir)/docs/Lua.html $(WINDISTDIR)-Durandal/docs/Lua.html
-	cp $(srcdir)/docs/Lua_HUD.html $(WINDISTDIR)-Durandal/docs/Lua_HUD.html
-	cp $(srcdir)/docs/MML.html $(WINDISTDIR)-Durandal/docs/MML.html
-	unix2dos -n $(srcdir)/docs/Troubleshooting.txt $(WINDISTDIR)-Durandal/docs/Troubleshooting.txt
-	mkdir $(WINDISTDIR)-Durandal/Themes
-	cp -r $(srcdir)/data/default_theme $(WINDISTDIR)-Durandal/Themes/Default
-	rm -rf "$(WINDISTDIR)-Durandal/Themes/Default/.svn"
-	mkdir $(WINDISTDIR)-Durandal/Extras
-	cp $(srcdir)/data/Software_Transparent_Liquids.mml $(WINDISTDIR)-Durandal/Extras
-	cp $(srcdir)/data/Transparent_Sprites.mml $(WINDISTDIR)-Durandal/Extras
-	cp $(srcdir)/data/Carnage_Messages.mml $(WINDISTDIR)-Durandal/Extras
-	unix2dos -n $(srcdir)/examples/lua/Cheats.lua $(WINDISTDIR)-Durandal/Extras/Cheats.lua
-	cp -r "$(srcdir)/Resources/Library Licenses" $(WINDISTDIR)-Durandal/
-	rm -rf "$(WINDISTDIR)-Durandal/Library Licenses/.svn"
-	zip -r $(PACKAGE)-$(VERSION)-Durandal.zip $(WINDISTDIR)-Durandal
-	rm -rf "$(WINDISTDIR)-Durandal"
+WINDISTDIR_M2=Marathon 2
 
-win2zip: $(PACKAGE)-$(VERSION)-Durandal.zip
+Marathon2-$(VERSION)-Win.zip: Source_Files/Marathon2.exe
+	mkdir "$(WINDISTDIR_M2)"
+	tar -c --exclude='.svn' -C "$(srcdir)/data/Scenarios/Marathon 2" . | tar -x -C "$(WINDISTDIR_M2)"
+	mkdir -p "$(WINDISTDIR_M2)/Plugins/XBLA_HUD"
+	tar -c --exclude='.svn' -C "$(srcdir)/data/XBLA_HUD" . | tar -x -C "$(WINDISTDIR_M2)/Plugins/XBLA_HUD"
+	cp Source_Files/Marathon2.exe "$(WINDISTDIR_M2)/Marathon 2.exe"
+	unix2dos -n $(srcdir)/COPYING "$(WINDISTDIR_M2)/COPYING.txt"
+	unix2dos -n $(srcdir)/README "$(WINDISTDIR_M2)/README.txt"
+	mkdir "$(WINDISTDIR_M2)/docs"
+	cp $(srcdir)/docs/Lua.html "$(WINDISTDIR_M2)/docs/Lua.html"
+	cp $(srcdir)/docs/Lua_HUD.html "$(WINDISTDIR_M2)/docs/Lua_HUD.html"
+	cp $(srcdir)/docs/MML.html "$(WINDISTDIR_M2)/docs/MML.html"
+	unix2dos -n $(srcdir)/docs/Troubleshooting.txt "$(WINDISTDIR_M2)/docs/Troubleshooting.txt"
+	mkdir "$(WINDISTDIR_M2)/Extras"
+	cp $(srcdir)/data/Software_Transparent_Liquids.mml "$(WINDISTDIR_M2)/Extras"
+	cp $(srcdir)/data/Carnage_Messages.mml "$(WINDISTDIR_M2)/Extras"
+	unix2dos -n $(srcdir)/examples/lua/Cheats.lua "$(WINDISTDIR_M2)/Extras/Cheats.lua"
+	mkdir -p "$(WINDISTDIR_M2)/docs/Library Licenses"
+	tar -c --exclude='.svn' -C "$(srcdir)/Resources/Library Licenses" . | tar -x -C "$(WINDISTDIR_M2)/docs/Library Licenses"
+	rm -f Marathon2-$(VERSION)-Win.zip
+	zip -r Marathon2-$(VERSION)-Win.zip "$(WINDISTDIR_M2)"
+	rm -rf "$(WINDISTDIR_M2)"
 
-$(PACKAGE)-$(VERSION)-Infinity.zip: Source_Files/MarathonInfinity.exe
-	cp -r "$(srcdir)/data/Scenarios/Marathon Infinity" $(WINDISTDIR)-Infinity
-	mkdir $(WINDISTDIR)-Infinity/Plugins
-	cp -r $(srcdir)/data/XBLA_HUD $(WINDISTDIR)-Infinity/Plugins/XBLA_HUD
-	rm -rf "$(WINDISTDIR)-Infinity/.svn"
-	rm -rf "$(WINDISTDIR)-Infinity/Physics Models/.svn"
-	rm -rf $(WINDISTDIR)-Infinity/Plugins/*/.svn
-	rm -rf $(WINDISTDIR)-Infinity/Plugins/*/*/.svn
-	rm -rf "$(WINDISTDIR)-Infinity/Scripts/.svn"
-	cp Source_Files/MarathonInfinity.exe "$(WINDISTDIR)-Infinity/Marathon Infinity.exe"
-	unix2dos -n $(srcdir)/AUTHORS $(WINDISTDIR)-Infinity/AUTHORS.txt
-	unix2dos -n $(srcdir)/COPYING $(WINDISTDIR)-Infinity/COPYING.txt
-	unix2dos -n $(srcdir)/INSTALL.Windows $(WINDISTDIR)-Infinity/INSTALL.Windows.txt
-	unix2dos -n $(srcdir)/README $(WINDISTDIR)-Infinity/README.txt
-	mkdir $(WINDISTDIR)-Infinity/docs
-	cp $(srcdir)/docs/Lua.html $(WINDISTDIR)-Infinity/docs/Lua.html
-	cp $(srcdir)/docs/Lua_HUD.html $(WINDISTDIR)-Infinity/docs/Lua_HUD.html
-	cp $(srcdir)/docs/MML.html $(WINDISTDIR)-Infinity/docs/MML.html
-	unix2dos -n $(srcdir)/docs/Troubleshooting.txt $(WINDISTDIR)-Infinity/docs/Troubleshooting.txt
-	mkdir $(WINDISTDIR)-Infinity/Themes
-	cp -r $(srcdir)/data/default_theme $(WINDISTDIR)-Infinity/Themes/Default
-	rm -rf "$(WINDISTDIR)-Infinity/Themes/Default/.svn"
-	mkdir $(WINDISTDIR)-Infinity/Extras
-	cp $(srcdir)/data/Software_Transparent_Liquids.mml $(WINDISTDIR)-Infinity/Extras
-	cp $(srcdir)/data/Transparent_Sprites.mml $(WINDISTDIR)-Infinity/Extras
-	cp $(srcdir)/data/Carnage_Messages.mml $(WINDISTDIR)-Infinity/Extras
-	unix2dos -n $(srcdir)/examples/lua/Cheats.lua $(WINDISTDIR)-Infinity/Extras/Cheats.lua
-	cp -r "$(srcdir)/Resources/Library Licenses" $(WINDISTDIR)-Infinity/
-	rm -rf "$(WINDISTDIR)-Infinity/Library Licenses/.svn"
-	zip -r $(PACKAGE)-$(VERSION)-Infinity.zip $(WINDISTDIR)-Infinity
-	rm -rf "$(WINDISTDIR)-Infinity"
+win2zip: Marathon2-$(VERSION)-Win.zip
 
-win3zip: $(PACKAGE)-$(VERSION)-Infinity.zip
+WINDISTDIR_MINF=Marathon Infinity
+
+MarathonInfinity-$(VERSION)-Win.zip: Source_Files/Marathon2.exe
+	mkdir "$(WINDISTDIR_MINF)"
+	tar -c --exclude='.svn' -C "$(srcdir)/data/Scenarios/Marathon Infinity" . | tar -x -C "$(WINDISTDIR_MINF)"
+	mkdir -p "$(WINDISTDIR_MINF)/Plugins/XBLA_HUD"
+	tar -c --exclude='.svn' -C "$(srcdir)/data/XBLA_HUD" . | tar -x -C "$(WINDISTDIR_MINF)/Plugins/XBLA_HUD"
+	cp Source_Files/MarathonInfinity.exe "$(WINDISTDIR_MINF)/Marathon Infinity.exe"
+	mkdir -p "$(WINDISTDIR_MINF)/Themes/Default"
+	tar -c --exclude='.svn' -C "$(srcdir)/data/default_theme" . | tar -x -C "$(WINDISTDIR_MINF)/Themes/Default"
+	unix2dos -n $(srcdir)/COPYING "$(WINDISTDIR_MINF)/COPYING.txt"
+	unix2dos -n $(srcdir)/README "$(WINDISTDIR_MINF)/README.txt"
+	mkdir "$(WINDISTDIR_MINF)/docs"
+	cp $(srcdir)/docs/Lua.html "$(WINDISTDIR_MINF)/docs/Lua.html"
+	cp $(srcdir)/docs/Lua_HUD.html "$(WINDISTDIR_MINF)/docs/Lua_HUD.html"
+	cp $(srcdir)/docs/MML.html "$(WINDISTDIR_MINF)/docs/MML.html"
+	unix2dos -n $(srcdir)/docs/Troubleshooting.txt "$(WINDISTDIR_MINF)/docs/Troubleshooting.txt"
+	mkdir "$(WINDISTDIR_MINF)/Extras"
+	cp $(srcdir)/data/Software_Transparent_Liquids.mml "$(WINDISTDIR_MINF)/Extras"
+	cp $(srcdir)/data/Carnage_Messages.mml "$(WINDISTDIR_MINF)/Extras"
+	unix2dos -n $(srcdir)/examples/lua/Cheats.lua "$(WINDISTDIR_MINF)/Extras/Cheats.lua"
+	mkdir -p "$(WINDISTDIR_MINF)/docs/Library Licenses"
+	tar -c --exclude='.svn' -C "$(srcdir)/Resources/Library Licenses" . | tar -x -C "$(WINDISTDIR_MINF)/docs/Library Licenses"
+	rm -f MarathonInfinity-$(VERSION)-Win.zip
+	zip -r MarathonInfinity-$(VERSION)-Win.zip "$(WINDISTDIR_MINF)"
+	rm -rf "$(WINDISTDIR_MINF)"
+
+win3zip: MarathonInfinity-$(VERSION)-Win.zip
 
 FORCE:
