@@ -225,7 +225,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Marathon.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.bungie.MACmarathon</string>
+	<string>org.source.bungie.marathon</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -243,7 +243,7 @@
 	<key>LSApplicationCategoryType</key>
 	<string>public.app-category.action-games</string>
 	<key>LSMinimumSystemVersion</key>
-	<string>10.6.0</string>
+	<string>10.4.0</string>
 	<key>NSMainNibFile</key>
 	<string>MainMenu</string>
 	<key>NSPrincipalClass</key>
