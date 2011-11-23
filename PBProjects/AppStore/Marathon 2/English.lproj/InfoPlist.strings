@@ -1,4 +1,4 @@
 ﻿/* Localized versions of Info.plist keys */
 
 CFBundleName = "Marathon 2";
-NSHumanReadableCopyright = "Bungie Aerospace and Aleph One developers";
+NSHumanReadableCopyright = "Bungie and Aleph One developers";
