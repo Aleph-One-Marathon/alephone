@@ -481,6 +481,7 @@ std::string FileSpecifier::HideExtension(const std::string& filename)
 struct extension_mapping
 {
 	const char *extension;
+	bool case_sensitive;
 	Typecode typecode;
 };
 
