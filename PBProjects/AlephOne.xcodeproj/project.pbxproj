@@ -19,6 +19,20 @@
 			name = AlephOne.dmg;
 			productName = AlephOne.dmg;
 		};
+		AE82ACF614829CFF0066FFB7 /* All-in-One DMGs */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = AE82ACFA14829CFF0066FFB7 /* Build configuration list for PBXAggregateTarget "All-in-One DMGs" */;
+			buildPhases = (
+				AE82ACF914829CFF0066FFB7 /* ShellScript */,
+			);
+			dependencies = (
+				AE82AD0014829D0F0066FFB7 /* PBXTargetDependency */,
+				AE82AD0214829D0F0066FFB7 /* PBXTargetDependency */,
+				AE82AD0414829D0F0066FFB7 /* PBXTargetDependency */,
+			);
+			name = "All-in-One DMGs";
+			productName = AlephOne.dmg;
+		};
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
@@ -1880,6 +1894,27 @@
 			remoteGlobalIDString = AEC3C6FE09AD68AC003258E4;
 			remoteInfo = AlephOne;
 		};
+		AE82ACFF14829D0F0066FFB7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 27184E5314392536007CD65B /* Marathon */;
+			remoteInfo = Marathon;
+		};
+		AE82AD0114829D0F0066FFB7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 27185086143931DC007CD65B /* Marathon 2 */;
+			remoteInfo = "Marathon 2";
+		};
+		AE82AD0314829D0F0066FFB7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 271852BA14395833007CD65B /* Marathon Infinity */;
+			remoteInfo = "Marathon Infinity";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -2173,6 +2208,7 @@
 		AE7C21D00BFF67FD00CE63EC /* language_definition.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = language_definition.h; sourceTree = "<group>"; };
 		AE7C21D40BFF686200CE63EC /* Update.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Update.h; path = ../Source_Files/Network/Update.h; sourceTree = "<group>"; };
 		AE7C21D50BFF688000CE63EC /* Update.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Update.cpp; path = ../Source_Files/Network/Update.cpp; sourceTree = "<group>"; };
+		AE82ACFE14829CFF0066FFB7 /* Info-AlephOne_SDL copy.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-AlephOne_SDL copy.plist"; sourceTree = "<group>"; };
 		AE9A39F40CCADF78004717E3 /* ConnectPool.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ConnectPool.h; path = ../Source_Files/Network/ConnectPool.h; sourceTree = "<group>"; };
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
 		AEA31D2B113C9DF700266621 /* csalerts.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = csalerts.mm; path = ../Source_Files/CSeries/csalerts.mm; sourceTree = SOURCE_ROOT; };
@@ -2667,6 +2703,7 @@
 				29B97323FDCFA39411CA2CEA /* System Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */,
+				AE82ACFE14829CFF0066FFB7 /* Info-AlephOne_SDL copy.plist */,
 			);
 			name = "SDL Application";
 			sourceTree = "<group>";
@@ -4524,6 +4561,7 @@
 				27184E5314392536007CD65B /* Marathon */,
 				27185086143931DC007CD65B /* Marathon 2 */,
 				271852BA14395833007CD65B /* Marathon Infinity */,
+				AE82ACF614829CFF0066FFB7 /* All-in-One DMGs */,
 			);
 		};
 /* End PBXProject section */
@@ -4723,7 +4761,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir /tmp/Aleph\nrsync -a \"$TARGET_BUILD_DIR/AlephOne.app\" /tmp/Aleph/\ncp $SRCROOT/../COPYING /tmp/Aleph/COPYING.txt\ncp $SRCROOT/../docs/Lua.html /tmp/Aleph/\ncp $SRCROOT/../docs/Lua_HUD.html /tmp/Aleph/\ncp $SRCROOT/../docs/MML.html /tmp/Aleph/\ncp $SRCROOT/../docs/Troubleshooting.txt /tmp/Aleph/\n/Developer/Tools/Rez -o \"/tmp/Aleph/Aleph One Website.webloc\" $SRCROOT/../Resources/AlephOneWebsite.webloc.r\ncp -r \"$SRCROOT/../Resources/Library Licenses\" /tmp/Aleph/\nrm -rf \"/tmp/Aleph/Library Licenses/CVS\"\nmkdir /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Sprites.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Software_Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Carnage_Messages.mml /tmp/Aleph/Extras\ncp $SRCROOT/../examples/lua/Cheats.lua /tmp/Aleph/Extras\nhdiutil create -fs HFS+ -format UDBZ -layout SPUD -srcfolder /tmp/Aleph -volname \"Aleph One\" \"$TARGET_BUILD_DIR/AlephOne-$( grep '^#define A1_DATE_VERSION' $SRCROOT/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' ).dmg\"\nrm -rf /tmp/Aleph\n";
+			shellScript = "mkdir /tmp/Aleph\nrsync -a \"$TARGET_BUILD_DIR/AlephOne.app\" /tmp/Aleph/\ncp $SRCROOT/../COPYING /tmp/Aleph/COPYING.txt\nmkdir /tmp/Aleph/Documentation\ncp $SRCROOT/../docs/Lua.html /tmp/Aleph/Documentation\ncp $SRCROOT/../docs/Lua_HUD.html /tmp/Aleph/Documentation\ncp $SRCROOT/../docs/MML.html /tmp/Aleph/Documentation\nmkdir \"/tmp/Aleph/Documentation/Library Licenses\"\ntar -c --exclude '.svn' -C \"$SRCROOT/../Resources/Library Licenses\" | tar -x -C \"/tmp/Aleph/Documentation/Library Licenses\"\nmkdir /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Transparent_Sprites.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Software_Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Carnage_Messages.mml /tmp/Aleph/Extras\ncp $SRCROOT/../examples/lua/Cheats.lua /tmp/Aleph/Extras\nhdiutil create -ov -fs HFS+ -format UDBZ -layout SPUD -srcfolder /tmp/Aleph -volname \"Aleph One\" \"$TARGET_BUILD_DIR/AlephOne-$( grep '^#define A1_DATE_VERSION' $SRCROOT/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )-Mac.dmg\"\nrm -rf /tmp/Aleph\n";
+		};
+		AE82ACF914829CFF0066FFB7 /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+				"$(TARGET_BUILD_DIR)/AlephOne.app",
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/AlephOne-$( grep '^#define A1_DATE_VERSION' $SRCROOT/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' ).dmg",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "make_dmg()\n{\nmkdir /tmp/Aleph\n# rsync -a \"$TARGET_BUILD_DIR/AlephOne.app\" /tmp/Aleph/\nrsync -a \"$1\" /tmp/Aleph/\nmkdir /tmp/Aleph/Documentation\ncp $SRCROOT/../COPYING /tmp/Aleph/COPYING.txt\ncp $SRCROOT/../docs/Lua.html /tmp/Aleph/Documentation/\ncp $SRCROOT/../docs/Lua_HUD.html /tmp/Documentation/Aleph/\ncp $SRCROOT/../docs/MML.html /tmp/Aleph/Documentation/\nmkdir \"/tmp/Aleph/Documentation/Library Licenses\"\ntar -c --exclude '.svn' -C \"$SRCROOT/../Resources/Library Licenses\" | tar -x -C \"/tmp/Aleph/Documentation/Library Licenses\"\nmkdir /tmp/Aleph/Extras\ncp $SRCROOT/../data/Software_Transparent_Liquids.mml /tmp/Aleph/Extras\ncp $SRCROOT/../data/Carnage_Messages.mml /tmp/Aleph/Extras\ncp $SRCROOT/../examples/lua/Cheats.lua /tmp/Aleph/Extras\nln -s /Applications /tmp/Aleph/\nhdiutil create -ov -fs HFS+ -format UDBZ -layout SPUD -srcfolder /tmp/Aleph -volname \"$2\" \"$TARGET_BUILD_DIR/$3-$( grep '^#define A1_DATE_VERSION' $SRCROOT/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )-Mac.dmg\"\nrm -rf /tmp/Aleph\n}\n\nmake_dmg \"$TARGET_BUILD_DIR/Marathon.app\" \"Marathon\" \"Marathon\"\nmake_dmg \"$TARGET_BUILD_DIR/Marathon 2.app\" \"Marathon 2\" \"Marathon2\"\nmake_dmg \"$TARGET_BUILD_DIR/Marathon Infinity.app\" \"Marathon Infinity\" \"MarathonInfinity\"\n";
 		};
 		AEC3C87609AD68AC003258E4 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -5663,6 +5716,21 @@
 			isa = PBXTargetDependency;
 			target = AEC3C6FE09AD68AC003258E4 /* AlephOne */;
 			targetProxy = AE3B83990E04C89000FD963D /* PBXContainerItemProxy */;
+		};
+		AE82AD0014829D0F0066FFB7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 27184E5314392536007CD65B /* Marathon */;
+			targetProxy = AE82ACFF14829D0F0066FFB7 /* PBXContainerItemProxy */;
+		};
+		AE82AD0214829D0F0066FFB7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 27185086143931DC007CD65B /* Marathon 2 */;
+			targetProxy = AE82AD0114829D0F0066FFB7 /* PBXContainerItemProxy */;
+		};
+		AE82AD0414829D0F0066FFB7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 271852BA14395833007CD65B /* Marathon Infinity */;
+			targetProxy = AE82AD0314829D0F0066FFB7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -6634,6 +6702,30 @@
 			};
 			name = "Deployment (Universal)";
 		};
+		AE82ACFB14829CFF0066FFB7 /* Deployment (Universal) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Info-AlephOne_SDL copy.plist";
+				PRODUCT_NAME = AlephOne.dmg;
+			};
+			name = "Deployment (Universal)";
+		};
+		AE82ACFC14829CFF0066FFB7 /* Deployment (Native) */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Info-AlephOne_SDL copy.plist";
+				PRODUCT_NAME = AlephOne.dmg;
+			};
+			name = "Deployment (Native)";
+		};
+		AE82ACFD14829CFF0066FFB7 /* Development */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "Info-AlephOne_SDL copy.plist";
+				PRODUCT_NAME = AlephOne.dmg;
+			};
+			name = Development;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -6683,6 +6775,16 @@
 				AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */,
 				AE3B839D0E04C8CA00FD963D /* Deployment (Native) */,
 				AE3B839E0E04C8CA00FD963D /* Development */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Deployment (Universal)";
+		};
+		AE82ACFA14829CFF0066FFB7 /* Build configuration list for PBXAggregateTarget "All-in-One DMGs" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AE82ACFB14829CFF0066FFB7 /* Deployment (Universal) */,
+				AE82ACFC14829CFF0066FFB7 /* Deployment (Native) */,
+				AE82ACFD14829CFF0066FFB7 /* Development */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = "Deployment (Universal)";
