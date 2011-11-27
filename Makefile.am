@@ -3,7 +3,7 @@
 SUBDIRS = Source_Files tools data
 
 # Requires automake 1.5
-AUTOMAKE_OPTIONS = 1.5 foreign
+AUTOMAKE_OPTIONS = 1.5 foreign dist-bzip2 no-dist-gzip
 
 EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
   Makefile.BeOS docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
@@ -35,8 +35,6 @@ EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
 
 man_MANS = docs/alephone.6
 
-WINDISTDIR=$(PACKAGE)-$(VERSION)
-
 dist-hook: AlephOne.spec
 	cp AlephOne.spec $(distdir)
 	cp "$(srcdir)/Aleph One Classic SDL.mcp" $(distdir)
@@ -51,13 +49,12 @@ dist-hook: AlephOne.spec
 	cp "$(srcdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/InfoPlist.strings" "$(distdir)/PBProjects/AppStore/Marathon Infinity/English.lproj/"
 
 
-$(PACKAGE)-$(VERSION)-MacWinLibSrc.tar.bz2: Libraries
-	tar cjf $(PACKAGE)-$(VERSION)-MacWinLibSrc.tar.bz2 -C $(srcdir) --exclude '.svn' Libraries 
+$(PACKAGE)-$(VERSION)-MacWinLibs-Src.tar.bz2: Libraries
+	tar cjf $(PACKAGE)-$(VERSION)-MacWinLibs-Src.tar.bz2 -C $(srcdir) --exclude '.svn' Libraries 
 
-libsrc: $(PACKAGE)-$(VERSION)-MacWinLibSrc.tar.bz2
+libsrc: $(PACKAGE)-$(VERSION)-MacWinLibs-Src.tar.bz2
 
-# Rule to build tar-gzipped distribution package
-$(PACKAGE)-$(VERSION).tar.gz: dist
+release: dist windist libsrc
 
 # Rule to build RPM distribution package
 rpm: $(PACKAGE)-$(VERSION).tar.gz
@@ -66,81 +63,124 @@ rpm: $(PACKAGE)-$(VERSION).tar.gz
 ChangeLog:
 	svn2cl --break-before-msg
 
+# Rules to build Windows zipfiles
+WINZIP=$(PACKAGE)-$(VERSION)-Win.zip
+M1_WINZIP=Marathon-$(VERSION)-Win.zip
+M2_WINZIP=Marathon2-$(VERSION)-Win.zip
+MINF_WINZIP=MarathonInfinity-$(VERSION)-Win.zip
+
+M1_WINUP=Marathon-$(VERSION)-Exe-Win.zip
+M2_WINUP=Marathon2-$(VERSION)-Exe-Win.zip
+MINF_WINUP=MarathonInfinity-$(VERSION)-Exe-Win.zip
+
+winzip: $(WINZIP)
+m1-winzip: $(M1_WINZIP)
+m2-winzip: $(M2_WINZIP)
+inf-winzip: $(MINF_WINZIP)
+
+m1-winup: $(M1_WINUP)
+m2-winup: $(M2_WINUP)
+inf-winup: $(MINF_WINUP)
+
+windist: winzip m1-winzip m2-winzip inf-winzip m1-winup m2-winup inf-winup
+
+# Windows directories
+
+
+define cp_no_svn
+mkdir -p "$(2)"
+tar -c --exclude='.svn' -C "$(1)" . | tar -x -C "$(2)"
+endef
+
 define windist_common
 unix2dos -n $(srcdir)/THANKS "$(1)/THANKS.txt"
 unix2dos -n $(srcdir)/COPYING "$(1)/COPYING.txt"
-unix2dos -n $(srcdir)/INSTALL.Windows "$(1)/INSTALL.Windows.txt"
 unix2dos -n $(srcdir)/README "$(1)/README.txt"
 mkdir "$(1)/docs"
 cp $(srcdir)/docs/Lua.html "$(1)/docs/Lua.html"
 cp $(srcdir)/docs/Lua_HUD.html "$(1)/docs/Lua_HUD.html"
 cp $(srcdir)/docs/MML.html "$(1)/docs/MML.html"
-unix2dos -n $(srcdir)/docs/Troubleshooting.txt "$(1)/docs/Troubleshooting.txt"
-mkdir "$(1)/Themes"
-cp -r $(srcdir)/data/default_theme "$(1)/Themes/Default"
-rm -rf "$(1)/Themes/Default/.svn"
+$(call cp_no_svn,$(srcdir)/data/default_theme,$(1)/Themes/Default)
 mkdir "$(1)/Extras"
 cp $(srcdir)/data/Software_Transparent_Liquids.mml "$(1)/Extras"
 cp $(srcdir)/data/Transparent_Liquids.mml "$(1)/Extras"
 cp $(srcdir)/data/Carnage_Messages.mml "$(1)/Extras"
 unix2dos -n $(srcdir)/examples/lua/Cheats.lua "$(1)/Extras/Cheats.lua"
-cp $(srcdir)/data/Fonts "$(1)/"
-cp -r "$(srcdir)/Resources/Library Licenses" "$(1)/"
-rm -rf "$(1)/Library Licenses/.svn"
+cp $(srcdir)/data/Fonts "$(1)/Fonts.fntA"
+$(call cp_no_svn,$(srcdir)/Resources/Library Licenses,$(1)/docs/Library Licenses)
 endef
 
 # Windows version
-$(PACKAGE)-$(VERSION).zip: Source_Files/AlephOne.exe
+
+WINDISTDIR=$(PACKAGE)-$(VERSION)
+$(WINZIP): Source_Files/AlephOne.exe
 	mkdir "$(WINDISTDIR)"
 	$(call windist_common,$(WINDISTDIR))
 	cp Source_Files/AlephOne.exe $(WINDISTDIR)/
+	unix2dos -n $(srcdir)/INSTALL.Windows "$(WINDISTDIR)/docs/INSTALL.Windows.txt"
 	cp $(srcdir)/data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
-	zip -r $(PACKAGE)-$(VERSION).zip $(WINDISTDIR)
+	rm -f $(WINZIP)
+	zip -r $(WINZIP) $(WINDISTDIR)
 	rm -rf "$(WINDISTDIR)"
 
-winzip: $(PACKAGE)-$(VERSION).zip
+WINUPDIR_M1=Marathon-$(VERSION)
+$(M1_WINUP): Source_Files/Marathon.exe
+	mkdir "$(WINUPDIR_M1)"
+	$(call windist_common,$(WINUPDIR_M1))
+	cp Source_Files/Marathon.exe "$(WINUPDIR_M1)/Marathon.exe"
+	rm -f $(M1_WINUP)
+	zip -r $(M1_WINUP) "$(WINUPDIR_M1)"
+	rm -rf "$(WINUPDIR_M1)"
 
 WINDISTDIR_M1=Marathon (A1)
-
-Marathon-$(VERSION)-Win.zip: Source_Files/Marathon.exe
+$(M1_WINZIP): Source_Files/Marathon.exe
 	mkdir "$(WINDISTDIR_M1)"
 	$(call windist_common,$(WINDISTDIR_M1))
-	tar -c --exclude='.svn' -C $(srcdir)/data/Scenarios/M1A1 . | tar -x -C "$(WINDISTDIR_M1)"
+	$(call cp_no_svn,$(srcdir)/data/Scenarios/M1A1,$(WINDISTDIR_M1))
 	cp Source_Files/Marathon.exe "$(WINDISTDIR_M1)/Marathon.exe"
-	rm -f Marathon-$(VERSION)-Win.zip
-	zip -r Marathon-$(VERSION)-Win.zip "$(WINDISTDIR_M1)"
+	rm -f $(M1_WINZIP)
+	zip -r $(M1_WINZIP) "$(WINDISTDIR_M1)"
 	rm -rf "$(WINDISTDIR_M1)"
 
-win1zip: Marathon-$(VERSION)-Win.zip
+WINUPDIR_M2=Marathon2-$(VERSION)
+$(M2_WINUP): Source_Files/Marathon2.exe
+	mkdir "$(WINUPDIR_M2)"
+	$(call windist_common,$(WINUPDIR_M2))
+	cp Source_Files/Marathon2.exe "$(WINUPDIR_M2)/Marathon 2.exe"
+	rm -f $(M2_WINUP)
+	zip -r $(M2_WINUP) "$(WINUPDIR_M2)"
+	rm -rf "$(WINUPDIR_M2)"
 
 WINDISTDIR_M2=Marathon 2
-
-Marathon2-$(VERSION)-Win.zip: Source_Files/Marathon2.exe
+$(M2_WINZIP): Source_Files/Marathon2.exe
 	mkdir "$(WINDISTDIR_M2)"
 	$(call windist_common,$(WINDISTDIR_M2))
-	tar -c --exclude='.svn' -C "$(srcdir)/data/Scenarios/Marathon 2" . | tar -x -C "$(WINDISTDIR_M2)"
-	mkdir -p "$(WINDISTDIR_M2)/Plugins/XBLA_HUD"
-	tar -c --exclude='.svn' -C "$(srcdir)/data/XBLA_HUD" . | tar -x -C "$(WINDISTDIR_M2)/Plugins/XBLA_HUD"
+	$(call cp_no_svn,$(srcdir)/data/Scenarios/Marathon 2,$(WINDISTDIR_M2))
+	$(call cp_no_svn,$(srcdir)/data/XBLA_HUD,$(WINDISTDIR_M2)/Plugins/XBLA_HUD)
 	cp Source_Files/Marathon2.exe "$(WINDISTDIR_M2)/Marathon 2.exe"
-	rm -f Marathon2-$(VERSION)-Win.zip
-	zip -r Marathon2-$(VERSION)-Win.zip "$(WINDISTDIR_M2)"
+	rm -f $(M2_WINZIP)
+	zip -r $(M2_WINZIP) "$(WINDISTDIR_M2)"
 	rm -rf "$(WINDISTDIR_M2)"
 
-win2zip: Marathon2-$(VERSION)-Win.zip
+
+WINUPDIR_MINF=MarathonInfinity-$(VERSION)
+$(MINF_WINUP): Source_Files/MarathonInfinity.exe
+	mkdir "$(WINUPDIR_MINF)"
+	$(call windist_common,$(WINUPDIR_MINF))
+	cp Source_Files/MarathonInfinity.exe "$(WINUPDIR_MINF)/Marathon Infinity.exe"
+	rm -f $(MINF_WINUP)
+	zip -r $(MINF_WINUP) "$(WINUPDIR_MINF)"
+	rm -rf "$(WINUPDIR_MINF)"
 
 WINDISTDIR_MINF=Marathon Infinity
-
-MarathonInfinity-$(VERSION)-Win.zip: Source_Files/Marathon2.exe
+$(MINF_WINZIP): Source_Files/Marathon2.exe
 	mkdir "$(WINDISTDIR_MINF)"
 	$(call windist_common,$(WINDISTDIR_MINF))
-	tar -c --exclude='.svn' -C "$(srcdir)/data/Scenarios/Marathon Infinity" . | tar -x -C "$(WINDISTDIR_MINF)"
-	mkdir -p "$(WINDISTDIR_MINF)/Plugins/XBLA_HUD"
-	tar -c --exclude='.svn' -C "$(srcdir)/data/XBLA_HUD" . | tar -x -C "$(WINDISTDIR_MINF)/Plugins/XBLA_HUD"
+	$(call cp_no_svn,$(srcdir)/data/Scenarios/Marathon Infinity,$(WINDISTDIR_MINF))
+	$(call cp_no_svn,$(srcdir)/data/XBLA_HUD,$(WINDISTDIR_MINF)/Plugins/XBLA_HUD)
 	cp Source_Files/MarathonInfinity.exe "$(WINDISTDIR_MINF)/Marathon Infinity.exe"
-	rm -f MarathonInfinity-$(VERSION)-Win.zip
-	zip -r MarathonInfinity-$(VERSION)-Win.zip "$(WINDISTDIR_MINF)"
+	rm -f $(MINF_WINZIP)
+	zip -r $(MINF_WINZIP) "$(WINDISTDIR_MINF)"
 	rm -rf "$(WINDISTDIR_MINF)"
-
-win3zip: MarathonInfinity-$(VERSION)-Win.zip
 
 FORCE:
