@@ -188,10 +188,20 @@ void OGL_Blitter::BoundScreen(bool in_game)
 	// zoom to center 640x480, if not in level
 	if (!in_game && get_screen_mode()->fill_the_screen)
 	{
-		float scale = std::min(w/(float)640, h/(float)480);
-		glScalef(scale, scale, 1.0);
-		int margin = (480 - h)/2;
-		glTranslatef(margin * w/h, margin, 0.0);
+        if (w/(float)h >= 640/480.0)
+        {
+            float scale = h/480.0;
+            glScalef(scale, scale, 1.0);
+            float margin = (480 - h)/2.0;
+            glTranslatef(margin * w/(float)h, margin, 0.0);
+        }
+        else
+        {
+            float scale = w/640.0;
+            glScalef(scale, scale, 1.0);
+            float margin = (640 - w)/2.0;
+            glTranslatef(margin, margin * h/(float)w, 0.0);
+        }
 	}
 	glMatrixMode(GL_MODELVIEW);
 }
@@ -203,12 +213,24 @@ void OGL_Blitter::WindowToScreen(int& x, int& y, bool in_game)
 		int w = ScreenWidth();
 		int h = ScreenHeight();
 		
-		float scale = std::min(w/(float)640, h/(float)480);
-		x /= scale;
-		y /= scale;
-		int margin = (480 - h)/2;
-		x -= margin * w/h;
-		y -= margin;
+        if (w/(float)h >= 640/480.0)
+        {
+            float scale = h/480.0;
+            x /= scale;
+            y /= scale;
+            float margin = (480 - h)/2.0;
+            x -= margin * w/(float)h;
+            y -= margin;
+        }
+        else
+        {
+            float scale = w/640.0;
+            x /= scale;
+            y /= scale;
+            float margin = (640 - w)/2.0;
+            x -= margin;
+            y -= margin * h/(float)w;
+        }
 	}
 }
 
