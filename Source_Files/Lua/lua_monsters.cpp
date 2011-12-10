@@ -465,9 +465,9 @@ const luaL_reg Lua_MonsterType_Get[] = {
 	{"minimum_count", Lua_MonsterType_Get_Minimum_Count},
 	{"item", Lua_MonsterType_Get_Item},
 	{"radius", Lua_MonsterType_Get_Radius},
-	{"random_count", Lua_MonsterType_Get_Random_Count},
+	{"random_chance", Lua_MonsterType_Get_Random_Chance},
 	{"random_location", Lua_MonsterType_Get_Random_Location},
-	{"total_available", Lua_MonsterType_Get_Random_Chance},
+	{"total_available", Lua_MonsterType_Get_Random_Count},
 	{"weaknesses", Lua_MonsterType_Get_Weaknesses},
 	{0, 0}
 };
