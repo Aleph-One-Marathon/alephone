@@ -643,7 +643,7 @@ bool entering_map(bool restoring_saved)
 #endif // !defined(DISABLE_NETWORKING)
 	randomize_scenery_shapes();
 
-	reset_action_queues(); //¦¦
+//	reset_action_queues(); //¦¦
 //	sync_heartbeat_count();
 //	set_keyboard_controller_status(true);
 
