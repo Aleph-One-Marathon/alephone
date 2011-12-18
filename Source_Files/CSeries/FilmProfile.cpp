@@ -17,6 +17,7 @@ static FilmProfile alephone1_0 = {
 	false, // use_vertical_kick_threshold
 	false, // infinity_tag_fix
 	false, // adjacent_polygons_always_intersect
+	true, // early_object_initialization
 };
 
 static FilmProfile marathon2 = {
@@ -34,6 +35,7 @@ static FilmProfile marathon2 = {
 	true, // use_vertical_kick_threshold
 	false, // infinity_tag_fix
 	false, // adjacent_polygons_always_intersect
+	false, // early_object_initialization
 };
 
 static FilmProfile marathon_infinity = {
@@ -51,6 +53,7 @@ static FilmProfile marathon_infinity = {
 	true, // use_vertical_kick_threshold
 	true, // infinity_tag_fix
 	true, // adjacent_polygons_always_intersect
+	false, // early_object_initialization
 };
 
 FilmProfile film_profile = alephone1_0;

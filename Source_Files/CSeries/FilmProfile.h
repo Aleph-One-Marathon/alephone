@@ -72,6 +72,9 @@ struct FilmProfile
 	// Marathon Infinity always adds adjacent polygons to the
 	// intersecting indexes (unmerged maps only)
 	bool adjacent_polygons_always_intersect;
+
+	// Aleph One moved object initialization to improve Lua access
+	bool early_object_initialization;
 };
 
 extern FilmProfile film_profile;

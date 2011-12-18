@@ -827,8 +827,11 @@ bool goto_level(
 		// before MarkLuaCollections
 		RunLuaScript();
 
-		place_initial_objects();
-		initialize_control_panels_for_level();
+		if (film_profile.early_object_initialization)
+		{
+			place_initial_objects();
+			initialize_control_panels_for_level();
+		}
 
 		if (!new_game) 
 		{
@@ -836,6 +839,12 @@ bool goto_level(
 			/* entering_map might fail if netsync fails, but we will have already displayed */
 			/* the error.. */
 			success= entering_map(false);
+		}
+
+		if (!film_profile.early_object_initialization && success)
+		{
+			place_initial_objects();
+			initialize_control_panels_for_level();
 		}
 		
 	}
