@@ -417,7 +417,7 @@ int Lua_Images_New(lua_State *L)
 	char path[256] = "";
 	lua_pushstring(L, "path");
 	lua_gettable(L, 1);
-	if (!lua_isnil(L, -1))
+	if (lua_isstring(L, -1))
 	{
 		strncpy(path, lua_tostring(L, -1), 256);
 		path[255] = 0;
@@ -434,7 +434,7 @@ int Lua_Images_New(lua_State *L)
 	char mask[256] = "";
 	lua_pushstring(L, "mask");
 	lua_gettable(L, 1);
-	if (!lua_isnil(L, -1))
+	if (lua_isstring(L, -1))
 	{
 		strncpy(mask, lua_tostring(L, -1), 256);
 		path[255] = 0;
@@ -772,6 +772,9 @@ typedef L_ObjectClass<Lua_Font_Name, FontSpecifier *> Lua_Font;
 
 int Lua_Font_Measure_Text(lua_State *L)
 {
+	if (!lua_isstring(L, 2))
+		luaL_error(L, "measure_text: incorrect argument type");
+
 	lua_pushnumber(L, Lua_Font::Object(L, 1)->TextWidth(lua_tostring(L, 2)));
 	lua_pushnumber(L, Lua_Font::Object(L, 1)->LineSpacing);
 	return 2;
@@ -779,6 +782,9 @@ int Lua_Font_Measure_Text(lua_State *L)
 
 int Lua_Font_Draw_Text(lua_State *L)
 {
+	if (!lua_isstring(L, 2))
+		luaL_error(L, "draw_text: incorrect argument type");
+
 	const char *str = lua_tostring(L, 2);
 	float x = static_cast<float>(lua_tonumber(L, 3));
 	float y = static_cast<float>(lua_tonumber(L, 4));
@@ -877,7 +883,7 @@ int Lua_Fonts_New(lua_State *L)
 	
 	lua_pushstring(L, "file");
 	lua_gettable(L, 1);
-	if (!lua_isnil(L, -1))
+	if (lua_isstring(L, -1))
 	{
 		strncpy(f.File, lua_tostring(L, -1), FontSpecifier::NameSetLen);
 		f.File[FontSpecifier::NameSetLen-1] = 0;
