@@ -180,11 +180,11 @@ end
         </variable>
       </subtable>
       <subtable name="crosshairs" classname="lua_crosshairs">
-        <variable name="active" access="read-only" version="SVN">
+        <variable name="active" access="read-only" version="20111201">
           <description>whether crosshairs are visible</description>
           <type>boolean</type>
         </variable>
-        <variable name="lua_hud" version="SVN">
+        <variable name="lua_hud" version="20111201">
           <description>whether the Lua HUD script draws the crosshairs</description>
           <type>boolean</type>
         </variable>
@@ -197,7 +197,7 @@ end
         <description>whether the overhead map is currently displayed</description>
         <type>boolean</type>
       </variable>
-      <variable name="map_overlay_active" access="read-only" version="SVN">
+      <variable name="map_overlay_active" access="read-only" version="20111201">
         <description>whether the "Overlay Map" preference is enabled</description>
         <type>boolean</type>
       </variable>
@@ -492,7 +492,7 @@ end
           <description>true if this player is the local player</description>
           <type>boolean</type>
         </variable>
-        <variable name="active" version="SVN">
+        <variable name="active" version="20111201">
           <description>true if this player's viewpoint is currently displayed</description>
           <type>boolean</type>
         </variable>
@@ -539,17 +539,17 @@ end
         <type>number</type>
       </variable>
       <subtable name="velocity">
-        <variable name="forward" version="SVN">
+        <variable name="forward" version="20111201">
           <description>player's forward/backward velocity, from internal and external forces</description>
           <note>in WU per tick; positive values mean forward movement</note>
           <type>number</type>
         </variable>
-        <variable name="perpendicular" version="SVN">
+        <variable name="perpendicular" version="20111201">
           <description>player's left/right velocity</description>
           <note>in WU per tick; positive values mean rightward movement</note>
           <type>number</type>
         </variable>
-        <variable name="vertical" version="SVN">
+        <variable name="vertical" version="20111201">
           <description>player's up/down velocity</description>
           <note>in WU per tick; positive values mean upward movement</note>
           <type>number</type>
@@ -698,7 +698,7 @@ end
       </subtable>
       <subtable-accessor name="weapons" classname="player_weapon" index="weapon_type">
         <variable name="type"><type>weapon_type</type></variable>
-        <variable name="name" version="SVN">
+        <variable name="name" version="20111201">
           <description>label shown in classic HUD</description>
           <type>string</type>
           <note>from stringset 137; may differ from label in Player.items</note>
