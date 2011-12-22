@@ -265,22 +265,22 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd>
 <p class="description">whenever a player uses a tag switch</p>
 <p class="note">not called when a projectile (e.g., fists) toggles a tag switch </p>
-<p class="note">side is only valid in version SVN and newer </p>
+<p class="note">side is only valid in version 20111201 and newer </p>
 </dd>
 <dt>.light_switch(light, player, side)</dt>
 <dd>
 <p class="description">whenever a player uses a light switch</p>
 <p class="note">not called when a projectile (e.g., fists) toggles a light switch </p>
-<p class="note">side is only valid in version SVN and newer </p>
+<p class="note">side is only valid in version 20111201 and newer </p>
 </dd>
 <dt>.platform_switch(polygon, player, side)</dt>
 <dd>
 <p class="description">whenever a player uses a platform switch</p>
 <ul class="args"><li>polygon: polygon of the platform being toggled</li></ul>
 <p class="note">not called when a projectile (e.g., fists) toggles a platform switch </p>
-<p class="note">side is only valid in version SVN and newer </p>
+<p class="note">side is only valid in version 20111201 and newer </p>
 </dd>
-<dt>.projectile_switch(projectile, side) <span class="version">SVN</span>
+<dt>.projectile_switch(projectile, side) <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">whenever a projectile toggles a switch</p>
@@ -439,42 +439,42 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><p class="description">maximum number of effects</p></dd>
 <dt>Effects()</dt>
 <dd><p class="description">iterates through all valid effects</p></dd>
-<dt>Effects.new(x, y, height, polygon, type) <span class="version">SVN</span>
+<dt>Effects.new(x, y, height, polygon, type) <span class="version">20111201</span>
 </dt>
 <dd><p class="description">returns a new effect</p></dd>
 <dt>Effects[index]</dt>
 <dd><dl>
-      <dt>:delete() <span class="version">SVN</span>
+      <dt>:delete() <span class="version">20111201</span>
 </dt>
 <dd><p class="description">removes effect from map</p></dd>
       <dt>
-    .facing <span class="version">SVN</span>
+    .facing <span class="version">20111201</span>
 </dt>
 <dd><p class="description">direction effect is facing</p></dd>
-      <dt>:play_sound(sound) <span class="version">SVN</span>
+      <dt>:play_sound(sound) <span class="version">20111201</span>
 </dt>
 <dd><p class="description">play sound coming from this effect</p></dd>
       <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">polygon the effect is in</p></dd>
-      <dt>:position(x, y, z, polygon) <span class="version">SVN</span>
+      <dt>:position(x, y, z, polygon) <span class="version">20111201</span>
 </dt>
 <dd><p class="description">sets position of effect</p></dd>
       <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .type<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">type of effect</p></dd>
       <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -514,7 +514,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">the game kill limit, or 0 if there is none</p></dd>
       <dt>
-    .monsters_replenish <span class="version">SVN</span>
+    .monsters_replenish <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">whether monsters spawn or not; in a net game, this corresponds to the "Aliens" checkbox</p>
@@ -586,27 +586,27 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Goals[index]</dt>
 <dd><dl>
       <dt>
-    .facing<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">direction goal is facing</p></dd>
       <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">polygon the goal is in</p></dd>
       <dt>
-    .id<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .id<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">ID number of goal</p></dd>
       <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -621,35 +621,35 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>ItemStarts[index]</dt>
 <dd><dl>
       <dt>
-    .facing<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">direction item is initially facing</p></dd>
       <dt>
-    .from_ceiling<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether item location z is from ceiling</p></dd>
       <dt>
-    .invisible<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .invisible<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether item will teleport in</p></dd>
       <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">item starting location polygon</p></dd>
       <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .type<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">type of item</p></dd>
       <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -706,7 +706,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">returns whether level is finished, unfinished, or failed</p></dd>
       <dt>
-    .completed<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .completed<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">check this in Triggers.cleanup() to determine whether the player(s) teleported out</p></dd>
       <dt>
@@ -943,43 +943,43 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>MonsterStarts[index]</dt>
 <dd><dl>
       <dt>
-    .blind<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .blind<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monster is activated by sight</p></dd>
       <dt>
-    .deaf<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .deaf<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monster is activated by sound</p></dd>
       <dt>
-    .facing<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">direction monster is initially facing</p></dd>
       <dt>
-    .from_ceiling<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monster location z is from ceiling</p></dd>
       <dt>
-    .invisible<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .invisible<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monster will teleport in when activated</p></dd>
       <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">monster starting location polygon</p></dd>
       <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .type<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">type of monster</p></dd>
       <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -1171,31 +1171,31 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>PlayerStarts[index]</dt>
 <dd><dl>
       <dt>
-    .facing<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .facing<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">player starting location facing</p></dd>
       <dt>
-    .from_ceiling<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether player starting location z is from ceiling</p></dd>
       <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">polygon player starting location is in</p></dd>
       <dt>
-    .team<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .team<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">which team starts at this player starting location</p></dd>
       <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -1697,7 +1697,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
 <dt>Projectiles[index]</dt>
 <dd><dl>
-      <dt>:delete() <span class="version">SVN</span>
+      <dt>:delete() <span class="version">20111201</span>
 </dt>
 <dd><p class="description">removes projectile from the map</p></dd>
       <dt>
@@ -1839,7 +1839,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dt>
 <dd><p class="description">type of control panel</p></dd>
 <dt>
-    .uses_item<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .uses_item<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">i.e. chip insertion</p></dd>
 </dl></dd>
@@ -1900,45 +1900,45 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>SoundObjects[index]</dt>
 <dd><dl>
       <dt>
-    .from_ceiling<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .from_ceiling<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether sound object location z is from ceiling</p></dd>
       <dt>
-    .light<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .light<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">if sound object uses a light for volume, the light it uses</p>
 <p class="note">can be nil if sound object doesn't use light for volume </p>
 </dd>
       <dt>
-    .on_platform<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .on_platform<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether sound object is a platform sound</p></dd>
       <dt>
-    .polygon<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .polygon<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">sound object polygon</p></dd>
       <dt>
-    .type<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .type<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">type of sound object</p></dd>
       <dt>
-    .volume<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .volume<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">volume of sound object from 0.0 to 1.0</p>
 <p class="note">can be nil if sound object uses light for volume </p>
 </dd>
       <dt>
-    .x<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .x<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .y<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .y<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
       <dt>
-    .z<span class="access"> (read-only)</span> <span class="version">SVN</span>
+    .z<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description"></p></dd>
     </dl></dd>
@@ -2417,27 +2417,27 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>ItemTypes[item_type]</dt>
 <dd><dl>
       <dt>
-    .initial_count <span class="version">SVN</span>
+    .initial_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">how many items of this type are placed in the level during initial placement</p></dd>
       <dt>
-    .maximum_count <span class="version">SVN</span>
+    .maximum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">maximum number of this type of item in the level and in player inventories</p></dd>
       <dt>
-    .minimum_count <span class="version">SVN</span>
+    .minimum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">minimum number of this type of item in the level and in player inventories</p></dd>
       <dt>
-    .random_chance <span class="version">SVN</span>
+    .random_chance <span class="version">20111201</span>
 </dt>
 <dd><p class="description">chance from 0 to 1.0 this item will appear in a respawn period</p></dd>
       <dt>
-    .random_location <span class="version">SVN</span>
+    .random_location <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether items of this type spawn in random locations</p></dd>
       <dt>
-    .total_available <span class="version">SVN</span>
+    .total_available <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">total number of items of this type that can be spawned in this level</p>
@@ -2685,7 +2685,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
   </dt>
 <dd><p class="description">whether monster type is immune to damage type</p></dd>
       <dt>
-    .initial_count <span class="version">SVN</span>
+    .initial_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">how many monsters of this type are placed in the level during initial placement</p></dd>
       <dt>
@@ -2696,11 +2696,11 @@ If you do this, you should customize them all at the beginning of the script. Ch
     .item</dt>
 <dd><p class="description">type of item the monster drops when it dies</p></dd>
       <dt>
-    .maximum_count <span class="version">SVN</span>
+    .maximum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">maximum number of this type of monster in the level</p></dd>
       <dt>
-    .minimum_count <span class="version">SVN</span>
+    .minimum_count <span class="version">20111201</span>
 </dt>
 <dd><p class="description">minimum number of this type of monster in the level</p></dd>
       <dt>
@@ -2712,15 +2712,15 @@ If you do this, you should customize them all at the beginning of the script. Ch
 </dt>
 <dd><p class="description">radius of monster</p></dd>
       <dt>
-    .random_chance <span class="version">SVN</span>
+    .random_chance <span class="version">20111201</span>
 </dt>
 <dd><p class="description">chance from 0 to 1.0 this monster will appear in a respawn period</p></dd>
       <dt>
-    .random_location <span class="version">SVN</span>
+    .random_location <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether monsters of this type spawn in random locations</p></dd>
       <dt>
-    .total_available <span class="version">SVN</span>
+    .total_available <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">total number of monsters of this type that can be spawned in this level</p>

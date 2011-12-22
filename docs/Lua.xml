@@ -176,7 +176,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <argument name="player"><type>player</type></argument>
       <argument name="side"><type>side</type></argument>
       <note>not called when a projectile (e.g., fists) toggles a tag switch</note>
-      <note>side is only valid in version SVN and newer</note>
+      <note>side is only valid in version 20111201 and newer</note>
     </function>
     <function name="light_switch">
       <description>whenever a player uses a light switch</description>
@@ -184,7 +184,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <argument name="player"><type>player</type></argument>
       <argument name="side"><type>side</type></argument>
       <note>not called when a projectile (e.g., fists) toggles a light switch</note>
-      <note>side is only valid in version SVN and newer</note>
+      <note>side is only valid in version 20111201 and newer</note>
     </function>
     <function name="platform_switch">
       <description>whenever a player uses a platform switch</description>
@@ -195,9 +195,9 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <argument name="player"><type>player</type></argument>
       <argument name="side"><type>side</type></argument>
       <note>not called when a projectile (e.g., fists) toggles a platform switch</note>
-      <note>side is only valid in version SVN and newer</note>
+      <note>side is only valid in version 20111201 and newer</note>
     </function>
-    <function name="projectile_switch" version="SVN">
+    <function name="projectile_switch" version="20111201">
       <description>whenever a projectile toggles a switch</description>
       <argument name="projectile">
 	<type>projectile</type>
@@ -392,22 +392,22 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </subtable>
     </table>
     <table name="effect">
-      <function name="delete" version="SVN">
+      <function name="delete" version="20111201">
 	<description>removes effect from map</description>
       </function>
-      <variable name="facing" version="SVN">
+      <variable name="facing" version="20111201">
 	<description>direction effect is facing</description>
 	<type>degrees</type>
       </variable>
-      <function name="play_sound" version="SVN">
+      <function name="play_sound" version="20111201">
 	<description>play sound coming from this effect</description>
 	<argument name="sound"><type>sound</type></argument>
       </function>
-      <variable name="polygon" access="read-only" version="SVN">
+      <variable name="polygon" access="read-only" version="20111201">
 	<description>polygon the effect is in</description>
 	<type>polygon</type>
       </variable>
-      <function name="position" version="SVN">
+      <function name="position" version="20111201">
 	<description>sets position of effect</description>
 	<argument name="x">
 	  <type>WU</type></argument>
@@ -415,17 +415,17 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="z"><type>WU</type></argument>
 	<argument name="polygon"><type>polygon</type></argument>
       </function>
-      <variable name="type" access="read-only" version="SVN">
+      <variable name="type" access="read-only" version="20111201">
 	<description>type of effect</description>
 	<type>effect_type</type>
       </variable>
-      <variable name="x" access="read-only" version="SVN">
+      <variable name="x" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="y" access="read-only" version="SVN">
+      <variable name="y" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="z" access="read-only" version="SVN">
+      <variable name="z" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
     </table>
@@ -451,7 +451,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>the game kill limit, or 0 if there is none</description>
 	<type>number</type>
       </variable>
-      <variable name="monsters_replenish" version="SVN">
+      <variable name="monsters_replenish" version="20111201">
 	<description>whether monsters spawn or not; in a net game, this corresponds to the "Aliens" checkbox</description>
 	<type>boolean</type>
 	<note>this can suppress initial monster placement, if set to false directly when the script is loaded</note>
@@ -511,25 +511,25 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="goal">
-      <variable name="facing" access="read-only" version="SVN">
+      <variable name="facing" access="read-only" version="20111201">
 	<description>direction goal is facing</description>
 	<type>degrees</type>
       </variable>
-      <variable name="polygon" access="read-only" version="SVN">
+      <variable name="polygon" access="read-only" version="20111201">
 	<description>polygon the goal is in</description>
 	<type>polygon</type>
       </variable>
-      <variable name="id" access="read-only" version="SVN">
+      <variable name="id" access="read-only" version="20111201">
 	<description>ID number of goal</description>
 	<type>number</type>
       </variable>
-      <variable name="x" access="read-only" version="SVN">
+      <variable name="x" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="y" access="read-only" version="SVN">
+      <variable name="y" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="z" access="read-only" version="SVN">
+      <variable name="z" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
     </table>
@@ -572,33 +572,33 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="item_start">
-      <variable name="facing" access="read-only" version="SVN">
+      <variable name="facing" access="read-only" version="20111201">
 	<description>direction item is initially facing</description>
 	<type>angle</type>
       </variable>
-      <variable name="from_ceiling" access="read-only" version="SVN">
+      <variable name="from_ceiling" access="read-only" version="20111201">
 	<description>whether item location z is from ceiling</description>
 	<type>boolean</type>
       </variable>
-      <variable name="invisible" access="read-only" version="SVN">
+      <variable name="invisible" access="read-only" version="20111201">
 	<description>whether item will teleport in</description>
 	<type>boolean</type>
       </variable>
-      <variable name="polygon" access="read-only" version="SVN">
+      <variable name="polygon" access="read-only" version="20111201">
 	<description>item starting location polygon</description>
 	<type>polygon</type>
       </variable>
-      <variable name="type" access="read-only" version="SVN">
+      <variable name="type" access="read-only" version="20111201">
 	<description>type of item</description>
 	<type>item_type</type>
       </variable>
-      <variable name="x" access="read-only" version="SVN">
+      <variable name="x" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="y" access="read-only" version="SVN">
+      <variable name="y" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="z" access="read-only" version="SVN">
+      <variable name="z" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
     </table>
@@ -608,7 +608,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>returns whether level is finished, unfinished, or failed</description>
 	<return><type>completion_state</type></return>
       </function>
-      <variable name="completed" access="read-only" version="SVN">
+      <variable name="completed" access="read-only" version="20111201">
 	<description>check this in Triggers.cleanup() to determine whether the player(s) teleported out</description>
 	<type>boolean</type>
       </variable>
@@ -906,41 +906,41 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="monster_start">
-      <variable name="blind" access="read-only" version="SVN">
+      <variable name="blind" access="read-only" version="20111201">
 	<description>whether monster is activated by sight</description>
 	<type>boolean</type>
       </variable>
-      <variable name="deaf" access="read-only" version="SVN">
+      <variable name="deaf" access="read-only" version="20111201">
 	<description>whether monster is activated by sound</description>
 	<type>boolean</type>
       </variable>
-      <variable name="facing" access="read-only" version="SVN">
+      <variable name="facing" access="read-only" version="20111201">
 	<description>direction monster is initially facing</description>
 	<type>angle</type>
       </variable>
-      <variable name="from_ceiling" access="read-only" version="SVN">
+      <variable name="from_ceiling" access="read-only" version="20111201">
 	<description>whether monster location z is from ceiling</description>
 	<type>boolean</type>
       </variable>
-      <variable name="invisible" access="read-only" version="SVN">
+      <variable name="invisible" access="read-only" version="20111201">
 	<description>whether monster will teleport in when activated</description>
 	<type>boolean</type>
       </variable>
-      <variable name="polygon" access="read-only" version="SVN">
+      <variable name="polygon" access="read-only" version="20111201">
 	<description>monster starting location polygon</description>
 	<type>polygon</type>
       </variable>
-      <variable name="type" access="read-only" version="SVN">
+      <variable name="type" access="read-only" version="20111201">
 	<description>type of monster</description>
 	<type>monster_type</type>
       </variable>
-      <variable name="x" access="read-only" version="SVN">
+      <variable name="x" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="y" access="read-only" version="SVN">
+      <variable name="y" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="z" access="read-only" version="SVN">
+      <variable name="z" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
     </table>
@@ -1405,29 +1405,29 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="player_start">
-      <variable name="facing" access="read-only" version="SVN">
+      <variable name="facing" access="read-only" version="20111201">
 	<description>player starting location facing</description>
 	<type>angle</type>
       </variable>
-      <variable name="from_ceiling" access="read-only" version="SVN">
+      <variable name="from_ceiling" access="read-only" version="20111201">
 	<description>whether player starting location z is from ceiling</description>
 	<type>boolean</type>
       </variable>
-      <variable name="polygon" access="read-only" version="SVN">
+      <variable name="polygon" access="read-only" version="20111201">
 	<description>polygon player starting location is in</description>
 	<type>polygon</type>
       </variable>
-      <variable name="team" access="read-only" version="SVN">
+      <variable name="team" access="read-only" version="20111201">
 	<description>which team starts at this player starting location</description>
 	<type>player_color</type>
       </variable>
-      <variable name="x" access="read-only" version="SVN">
+      <variable name="x" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="y" access="read-only" version="SVN">
+      <variable name="y" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="z" access="read-only" version="SVN">
+      <variable name="z" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
     </table>
@@ -1548,7 +1548,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="projectile">
-      <function name="delete" version="SVN">
+      <function name="delete" version="20111201">
 	<description>removes projectile from the map</description>
       </function>
       <variable name="damage_scale">
@@ -1681,7 +1681,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <description>permutation of control panel</description>
 	  <type>number</type>
 	</variable>
-	<variable name="uses_item" access="read-only" version="SVN">
+	<variable name="uses_item" access="read-only" version="20111201">
 	  <description>i.e. chip insertion</description>
 	  <type>boolean</type>
 	</variable>
@@ -1743,39 +1743,39 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="sound_object">
-      <variable name="from_ceiling" access="read-only" version="SVN">
+      <variable name="from_ceiling" access="read-only" version="20111201">
 	<description>whether sound object location z is from ceiling</description>
 	<type>boolean</type>
       </variable>
-      <variable name="light" access="read-only" version="SVN">
+      <variable name="light" access="read-only" version="20111201">
 	<description>if sound object uses a light for volume, the light it uses</description>
 	<type>light</type>
 	<note>can be nil if sound object doesn't use light for volume</note>
       </variable>
-      <variable name="on_platform" access="read-only" version="SVN">
+      <variable name="on_platform" access="read-only" version="20111201">
 	<description>whether sound object is a platform sound</description>
 	<type>boolean</type>
       </variable>
-      <variable name="polygon" access="read-only" version="SVN">
+      <variable name="polygon" access="read-only" version="20111201">
 	<description>sound object polygon</description>
 	<type>polygon</type>
       </variable>
-      <variable name="type" access="read-only" version="SVN">
+      <variable name="type" access="read-only" version="20111201">
 	<description>type of sound object</description>
 	<type>ambient_sound</type>
       </variable>
-      <variable name="volume" access="read-only" version="SVN">
+      <variable name="volume" access="read-only" version="20111201">
 	<description>volume of sound object from 0.0 to 1.0</description>
 	<type>number</type>
 	<note>can be nil if sound object uses light for volume</note>
       </variable>
-      <variable name="x" access="read-only" version="SVN">
+      <variable name="x" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="y" access="read-only" version="SVN">
+      <variable name="y" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
-      <variable name="z" access="read-only" version="SVN">
+      <variable name="z" access="read-only" version="20111201">
 	<type>WU</type>
       </variable>
     </table>
@@ -1824,7 +1824,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <call>
 	<description>iterates through all valid effects</description>
       </call>
-      <function name="new" version="SVN">
+      <function name="new" version="20111201">
 	<description>returns a new effect</description>
 	<argument name="x"><type>WU</type></argument>
 	<argument name="y"><type>WU</type></argument>
@@ -2336,27 +2336,27 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </mnemonics>
     </enum>
     <enum name="item_type">
-      <variable name="initial_count" version="SVN">
+      <variable name="initial_count" version="20111201">
 	<description>how many items of this type are placed in the level during initial placement</description>
 	<type>number</type>
       </variable>
-      <variable name="maximum_count" version="SVN">
+      <variable name="maximum_count" version="20111201">
 	<description>maximum number of this type of item in the level and in player inventories</description>
 	<type>number</type>
       </variable>
-      <variable name="minimum_count" version="SVN">
+      <variable name="minimum_count" version="20111201">
 	<description>minimum number of this type of item in the level and in player inventories</description>
 	<type>number</type>
       </variable>
-      <variable name="random_chance" version="SVN">
+      <variable name="random_chance" version="20111201">
 	<description>chance from 0 to 1.0 this item will appear in a respawn period</description>
 	<type>chance</type>
       </variable>
-      <variable name="random_location" version="SVN">
+      <variable name="random_location" version="20111201">
 	<description>whether items of this type spawn in random locations</description>
 	<type>boolean</type>
       </variable>
-      <variable name="total_available" version="SVN">
+      <variable name="total_available" version="20111201">
 	<description>total number of items of this type that can be spawned in this level</description>
 	<type>number</type>
 	<note>-1 means infinite items are available</note>
@@ -2504,7 +2504,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="damage_type"><type>damage_type</type></argument>
 	<type>boolean</type>
       </function-variable>
-      <variable name="initial_count" version="SVN">
+      <variable name="initial_count" version="20111201">
 	<description>how many monsters of this type are placed in the level during initial placement</description>
 	<type>number</type>
       </variable>
@@ -2516,11 +2516,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>type of item the monster drops when it dies</description>
 	<type>item_type</type>
       </variable>
-      <variable name="maximum_count" version="SVN">
+      <variable name="maximum_count" version="20111201">
 	<description>maximum number of this type of monster in the level</description>
 	<type>number</type>
       </variable>
-      <variable name="minimum_count" version="SVN">
+      <variable name="minimum_count" version="20111201">
 	<description>minimum number of this type of monster in the level</description>
 	<type>number</type>
       </variable>
@@ -2532,15 +2532,15 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>radius of monster</description>
 	<type>WU</type>
       </variable>
-      <variable name="random_chance" version="SVN">
+      <variable name="random_chance" version="20111201">
 	<description>chance from 0 to 1.0 this monster will appear in a respawn period</description>
 	<type>chance</type>
       </variable>
-      <variable name="random_location" version="SVN">
+      <variable name="random_location" version="20111201">
 	<description>whether monsters of this type spawn in random locations</description>
 	<type>boolean</type>
       </variable>
-      <variable name="total_available" version="SVN">
+      <variable name="total_available" version="20111201">
 	<description>total number of monsters of this type that can be spawned in this level</description>
 	<type>number</type>
 	<note>-1 means infinite monsters are available</note>
