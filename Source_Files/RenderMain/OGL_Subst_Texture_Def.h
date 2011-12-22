@@ -41,18 +41,8 @@ struct OGL_TextureOptions: public OGL_TextureOptionsBase
 	
 	// Parameters for mapping substitute sprites (inhabitants, weapons in hand)
 	
-	// shape bounding box, in pixel units (need to apply scale factor)
-	short shape_width;
-	short shape_height;
-	
-	// shape origin / keypoint offset, in pixel units (need to apply scale factor)
-	short offset_x;
-	short offset_y;
-	
 	OGL_TextureOptions():
-		VoidVisible(false),
-		shape_width(0), shape_height(0),
-		offset_x(0), offset_y(0) {}
+		VoidVisible(false) {}
 };
 
 

@@ -1677,50 +1677,6 @@ if((GET_COLLECTION(collection_code) < 0) || (GET_COLLECTION(collection_code) >= 
 	struct low_level_shape_definition *low_level_shape;
 
 	low_level_shape= get_low_level_shape_definition(collection_index, low_level_shape_index);
-
-#ifdef HAVE_OPENGL
-        if (!low_level_shape) return NULL;
-	// Try to get the texture options to use for a substituted image;
-	// a scale of <= 0 will be assumed to be "don't do the adjustment".
-	if (!OGL_IsActive()) return (struct shape_information_data *) low_level_shape;
-    else
-    {
-	short clut_index= GET_COLLECTION_CLUT(collection_code);
-	short bitmap_index = low_level_shape->bitmap_index;
-	OGL_TextureOptions *TxtrOpts = OGL_GetTextureOptions(collection_index,clut_index,bitmap_index);
-	
-	if (!TxtrOpts->NormalImg.IsPresent() ||
-	    (TxtrOpts->offset_x == 0 && TxtrOpts->offset_y == 0 &&
-	     TxtrOpts->shape_width <= 0 && TxtrOpts->shape_height <= 0))
-		return (struct shape_information_data *) low_level_shape;
-	
-	// find scale factor used in shape data
-	bitmap_definition *bitmap = get_bitmap_definition(collection_index, bitmap_index);
-	short scale_factor = (low_level_shape->world_right - low_level_shape->world_left) / bitmap->width;
-		
-	// Prepare the adjusted frame data; no need for mirroring here
-	AdjustedFrame = *low_level_shape;
-		
-	if (TxtrOpts->shape_width > 0)
-		AdjustedFrame.world_right = AdjustedFrame.world_left + (TxtrOpts->shape_width * scale_factor);
-	if (TxtrOpts->shape_height > 0)
-		AdjustedFrame.world_bottom = AdjustedFrame.world_top - (TxtrOpts->shape_height * scale_factor);
-	if (TxtrOpts->offset_x != 0)
-	{
-		short offx = TxtrOpts->offset_x * scale_factor;
-		AdjustedFrame.world_left -= offx;
-		AdjustedFrame.world_right -= offx;
-	}
-	if (TxtrOpts->offset_y != 0)
-	{
-		short offy = TxtrOpts->offset_y * scale_factor;
-		AdjustedFrame.world_top += offy;
-		AdjustedFrame.world_bottom += offy;
-	}
-	
-	return (struct shape_information_data *) &AdjustedFrame;
-    }
-#endif
 	return (struct shape_information_data *) low_level_shape;
 }
 
