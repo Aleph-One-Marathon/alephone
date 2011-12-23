@@ -1898,21 +1898,21 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 27184E5314392536007CD65B /* Marathon */;
+			remoteGlobalIDString = 27184E5314392536007CD65B;
 			remoteInfo = Marathon;
 		};
 		AE82AD0114829D0F0066FFB7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 27185086143931DC007CD65B /* Marathon 2 */;
+			remoteGlobalIDString = 27185086143931DC007CD65B;
 			remoteInfo = "Marathon 2";
 		};
 		AE82AD0314829D0F0066FFB7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 271852BA14395833007CD65B /* Marathon Infinity */;
+			remoteGlobalIDString = 271852BA14395833007CD65B;
 			remoteInfo = "Marathon Infinity";
 		};
 /* End PBXContainerItemProxy section */
