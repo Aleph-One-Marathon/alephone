@@ -2481,6 +2481,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </mnemonics>
     </enum>
     <enum name="monster_type">
+      <variable name="cannot_be_dropped" version="SVN">
+	<description>monster cannot be skipped during placement</description>
+	<type>boolean</type>
+      </variable>
       <variable name="class">
 	<description>class of monster type</description>
 	<type>monster_class</type>
@@ -2516,6 +2520,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>type of item the monster drops when it dies</description>
 	<type>item_type</type>
       </variable>
+      <variable name="major" version="SVN">
+	<description>monster is major</description>
+	<type>boolean</type>
+      </variable>
       <variable name="maximum_count" version="20111201">
 	<description>maximum number of this type of monster in the level</description>
 	<type>number</type>
@@ -2523,6 +2531,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <variable name="minimum_count" version="20111201">
 	<description>minimum number of this type of monster in the level</description>
 	<type>number</type>
+      </variable>
+      <variable name="minor" version="SVN">
+	<description>monster is minor</description>
+	<type>boolean</type>
       </variable>
       <variable name="melee_impact_effect" access="read-only">
 	<description>type of effect generated when monster gets hit by a melee projectile</description>
