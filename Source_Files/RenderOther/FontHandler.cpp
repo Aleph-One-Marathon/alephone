@@ -235,7 +235,7 @@ int FontSpecifier::TextWidth(const char *text)
 	if (!text)
 		return width;
 	while ((c = *text++) != 0)
-		width += Widths[c];
+		width += Widths[static_cast<unsigned char>(c)];
 	return width;
 }
 
