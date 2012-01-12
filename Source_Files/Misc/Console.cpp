@@ -255,7 +255,7 @@ static std::string replace_first(std::string &result, const std::string& from, c
 
 void Console::report_kill(int16 player_index, int16 aggressor_player_index, int16 projectile_index)
 {
-	if (!game_is_networked || !NetAllowCarnageMessages() || !m_carnage_messages_exist) return;
+	if (!game_is_networked || !NetAllowCarnageMessages() || !m_carnage_messages_exist || projectile_index == -1) return;
 
 	// do some lookups
 	projectile_data *projectile = get_projectile_data(projectile_index);
