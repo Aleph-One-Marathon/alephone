@@ -482,6 +482,7 @@ static int Lua_MonsterType_Set_Random_Location(lua_State* L)
 }
 
 const luaL_reg Lua_MonsterType_Get[] = {
+	{"attacks_immediately", Lua_MonsterType_Get_Flag<_monster_attacks_immediately>},
 	{"cannot_be_dropped", Lua_MonsterType_Get_Flag<_monster_cannot_be_dropped>},
 	{"class", Lua_MonsterType_Get_Class},
 	{"enemies", Lua_MonsterType_Get_Enemies},
@@ -501,10 +502,12 @@ const luaL_reg Lua_MonsterType_Get[] = {
 	{"random_location", Lua_MonsterType_Get_Random_Location},
 	{"total_available", Lua_MonsterType_Get_Random_Count},
 	{"weaknesses", Lua_MonsterType_Get_Weaknesses},
+	{"waits_with_clear_shot", Lua_MonsterType_Get_Flag<_monster_waits_with_clear_shot>},
 	{0, 0}
 };
 
 const luaL_reg Lua_MonsterType_Set[] = {
+	{"attacks_immediately", Lua_MonsterType_Set_Flag<_monster_attacks_immediately>},
 	{"cannot_be_dropped", Lua_MonsterType_Set_Flag<_monster_cannot_be_dropped>},
 	{"class", Lua_MonsterType_Set_Class},
 	{"initial_count", Lua_MonsterType_Set_Initial_Count},
@@ -516,6 +519,7 @@ const luaL_reg Lua_MonsterType_Set[] = {
 	{"random_chance", Lua_MonsterType_Set_Random_Chance},
 	{"random_location", Lua_MonsterType_Set_Random_Location},
 	{"total_available", Lua_MonsterType_Set_Random_Count},
+	{"waits_with_clear_shot", Lua_MonsterType_Set_Flag<_monster_waits_with_clear_shot>},
 	{0, 0}
 };
 
