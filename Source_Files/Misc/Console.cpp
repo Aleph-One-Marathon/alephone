@@ -258,7 +258,11 @@ void Console::report_kill(int16 player_index, int16 aggressor_player_index, int1
 	if (!game_is_networked || !NetAllowCarnageMessages() || !m_carnage_messages_exist || projectile_index == -1) return;
 
 	// do some lookups
-	projectile_data *projectile = get_projectile_data(projectile_index);
+	projectile_data *projectile = 0;
+	if (projectile_index != NONE) 
+	{
+		projectile = get_projectile_data(projectile_index);
+	}
 
 	const std::string player_key = "%player%";
 	const std::string aggressor_key = "%aggressor%";
