@@ -2481,6 +2481,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </mnemonics>
     </enum>
     <enum name="monster_type">
+      <variable name="attacks_immediately" version="SVN">
+	<description>monster will try an attack immediately</description>
+	<type>boolean</type>
+      </variable>
       <variable name="cannot_be_dropped" version="SVN">
 	<description>monster cannot be skipped during placement</description>
 	<type>boolean</type>
@@ -2563,6 +2567,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<argument name="damage type"><type>damage_type</type></argument>
 	<type>boolean</type>
       </function-variable>
+      <variable name="waits_with_clear_shot" version="SVN">
+	<description>monster will sit and fire if he has a clear shot</description>
+	<type>boolean</type>
+      </variable>
       <mnemonics>
 	<mnemonic name="player"/>
 	<mnemonic name="minor tick"/>
