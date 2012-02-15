@@ -496,7 +496,7 @@ public:
 	static index_t ToIndex(lua_State *L, int index) {
 		index_t to;
 		if(lua_isnil(L, index)) return -1;
-		else if(_lookup(L, index, to)) return to;
+		else if(L_Enum<name, index_t>::_lookup(L, index, to)) return to;
 		else {
 			std::string error;
 			if(lua_isnumber(L, index) || lua_isstring(L, index))
