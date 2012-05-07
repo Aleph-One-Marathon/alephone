@@ -390,6 +390,9 @@ void OGL_StopTextures()
 	
 	glDeleteTextures(1, &flatBumpTextureID);
 	flatBumpTextureID = 0;
+    
+    // clear leftover infravision
+    InfravisionActive = false;
 }
 
 void OGL_FrameTickTextures()
