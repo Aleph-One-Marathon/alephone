@@ -156,8 +156,11 @@ private:
 		while (len--) {
 			int32 left = 0, right = 0;	// 16-bit internally
 			
+			int channel_size = channels.size(); // gcc 4.0
+							    // optimization
+							    // fail
 			// Mix all channels
-			for (int i=0; i<channels.size(); i++) {
+			for (int i=0; i<channel_size; i++) {
 				Channel *c = &channels[i];
 				// Channel active?
 				if (c->active) {
