@@ -29,10 +29,6 @@ that color will be green.
 Many of the element attributes here are some sort of index value,
 and they are all counted from 0 unless specified otherwise;
 for example, collections are numbered from 0 to 31.
-But one problem that I currently face is that
-the lists in this document are shown as starting from 1 instead of 0.
-I'm not sure how to correct that without numbering the items by hand;
-this document contains the kludge of adding 1000.
 <p>
 
 
@@ -91,30 +87,30 @@ This element has no attributes and contains these child elements:
 This element is an imitation of MacOS 'STR#' resources. It has an attribute of "index",
 which has a numerical value corresponding to the original resource ID:
 
-<ul>
-<li>128: Errors
-<li>129: Filenames
-<li>130: Top-Level Interface Items
-<li>131: Prompts
-<li>132: Network Errors
-<li>133: Key Codes to Names
-<li>134: Preferences Advice
-<li>135: Computer Interface
-<li>136: Join Dialog Messages
-<li>137: Weapon Names
-<li>138: File Search Path
-<li>139: Preferences Groupings
-<li>140: Postgame Network Game Statistics
-<li>141: Net Game Setup
-<li>142: New Join Dialog Messages
-<li>143: Progress Strings for Networking
-<li>145: Difficulty Level Names</li>
-<li>150: Item Names
-<li>151: Item types
-<li>152: Player and Team Color Names</li>
-<li>153: Net Statistics Strings
-<li>200: OpenGL-Option Color-Picker Prompts
-</ul>
+<ol start="128">
+<li>Errors
+<li>Filenames
+<li>Top-Level Interface Items
+<li>Prompts
+<li>Network Errors
+<li>Key Codes to Names
+<li>Preferences Advice
+<li>Computer Interface
+<li>Join Dialog Messages
+<li>Weapon Names
+<li>File Search Path
+<li>Preferences Groupings
+<li>Postgame Network Game Statistics
+<li>Net Game Setup
+<li>New Join Dialog Messages
+<li>Progress Strings for Networking
+<li value="145">Difficulty Level Names</li>
+<li value="150">Item Names
+<li>Item types
+<li>Player and Team Color Names</li>
+<li>Net Statistics Strings
+<li value="200">OpenGL-Option Color-Picker Prompts
+</ol>
 
 This element contains child elements with form &lt;string&gt;,
 which have an attribute of "index",
@@ -210,11 +206,11 @@ and an optional child element, &lt;ammo&gt;, which contains the attributes
 <ul>
 <li>index: either 0 or 1, and the only mandatory attribute
 <li>type: this has these possible values
-<ul>
-<li>0: No display (alien weapon, for example)
-<li>1: Box display (partially-filled box; takes interface-color indexes instead of shapes)
-<li>2: Discrete-bullet display
-</ul>
+<ol start="0">
+<li>No display (alien weapon, for example)
+<li>Box display (partially-filled box; takes interface-color indexes instead of shapes)
+<li>Discrete-bullet display
+</ol>
 <li>left: position in screen
 <li>top
 <li>across: how many bullets (energy-weapon max number)
@@ -230,7 +226,7 @@ which is a <a href="#boolean">boolean</a> value.
 <p>
 
 Here is a list of all the interface rectangles:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Player Name
 <li>Oxygen
 <li>Shield
@@ -255,7 +251,7 @@ Here is a list of all the interface rectangles:
 
 Here is a list of all the interface colors:
 
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Ammo Box-Display Full
 <li>Ammo Box-Display Empty
 <li>Black
@@ -290,7 +286,7 @@ Here is a list of all the interface colors:
 </ol>
 
 Here is a list of all the interface fonts:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Interface
 <li>Weapon Name
 <li>Player Name
@@ -301,7 +297,7 @@ Here is a list of all the interface fonts:
 </ol>
 
 Here is a list of all the weapon displays:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Knife (placeholder; really one's fists)
 <li>Pistol
 <li>Fusion Pistol
@@ -322,7 +318,7 @@ Here is a list of all the weapon displays:
 This kind of element is for assigning motion-sensor features;
 the assignment is done by doing &lt;assign&gt;, which has attributes "monster"
 (which one of these in the list) and "type", which is
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Self, Friendly Player, and Bob
 <li>Alien
 <li>Hostile Player
@@ -340,7 +336,7 @@ has attribute "motion_sensor" with value "false".
 
 This kind of element is for setting up overhead-map features.
 It can have an attribute of "mode", which has possible values:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Normal: automapping is cumulative (the default)
 <li>Currently visible only
 <li>All
@@ -364,11 +360,11 @@ which takes a monster type, while which dead monster to assign one specified
 with an attribute of "coll", which takes a collection ID.
 Both elements assign to a type of display, specified with attribute "type";
 the possible types are:
-<ul>
-<li>-1(NONE): won't ever show up
-<li> 0: Bob (shown by default)
-<li> 1: Alien (not shown by default)
-</ul>
+<ol start="-1">
+<li>won't ever show up
+<li>Bob (shown by default)
+<li>Alien (not shown by default)
+</ol>
 <p>
 
 One can display additional stuff by specifying an appropriate element;
@@ -386,7 +382,7 @@ Lines can be specified with the element &lt;line&gt;, which has these attributes
 all mandatory:
 <ul>
 <li>type:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Wall (solid)
 <li>Elevation (not solid; floor on one side higher than on the other side)
 <li>Control panel (unused)
@@ -398,7 +394,7 @@ all mandatory:
 Colors can be specified with the element &lt;color&gt;, which is indexed;
 For more on specifying colors, go <a href="#color">here</a>.
 Here are what the colors are:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Plain polygon
 <li>Platform
 <li>Water
@@ -426,7 +422,7 @@ Here are what the colors are:
 Fonts can be specified with the element &lt;font&gt;, which is indexed;
 For more on specifying fonts, go <a href="#font">here</a>.
 Here are what the fonts are:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Annotation at scale 0 (lowest)
 <li>Annotation at scale 1
 <li>Annotation at scale 2
@@ -448,7 +444,7 @@ These are assigned by texture collection, and there are 4 colors to choose from.
 The assignment is done with element &lt;assign&gt;, which has the attributes
 "coll" (for collection) and "color" (for which one of the colors).
 Here are the default colors:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Aliens (red)
 <li>Friends and Items (green)
 <li>Walls and Scenery, also the S'pht (blue)
@@ -576,7 +572,7 @@ the list of sound definitions (-1 means none).
 
 The map files themselves reference control panels by definition;
 here are the default control-panel definitions:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Water: Oxygen Refuel
 <li>Water: Energy Refuel (1x)
 <li>Water: Energy Refuel (2x)
@@ -639,7 +635,7 @@ here are the default control-panel definitions:
 <p>
 
 The control panels can do various things; these are:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Oxygen Refuel
 <li>Energy Refuel (1x)
 <li>Energy Refuel (2x)
@@ -653,7 +649,7 @@ The control panels can do various things; these are:
 <p>
 
 The sound types are:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Activating
 <li>Deactivating
 <li>Unusable
@@ -680,7 +676,7 @@ which has these attributes:
 <li>item: index of item that acts like a key (-1 for none)
 </ul>
 The index is which one of these platform types:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>S'pht Door
 <li>S'pht Split Door
 <li>Locked S'pht Door
@@ -717,7 +713,7 @@ every (2^n) ticks.
 its default index values are those of their liquids.
 </ul>
 The index value is which one of these liquid types:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Water
 <li>Lava
 <li>Pfhor
@@ -725,7 +721,7 @@ The index value is which one of these liquid types:
 <li>Jjaro
 </ol>
 while the "submerged" value is which one of these liquid types
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Water
 <li>Lava
 <li>Sewage
@@ -741,7 +737,7 @@ the list of effect or sound definitions (-1 means none).
 <p>
 
 The effects:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Small Detonation
 <li>Medium Detonation
 <li>Large Detonation
@@ -750,7 +746,7 @@ The effects:
 <p>
 
 The sounds:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Feet Entering
 <li>Feet Leaving
 <li>Head Entering
@@ -804,7 +800,7 @@ attributes, both mandatory:
 <li>sound: which index in the list of sounds (-1 for none)
 </ul>
 The ambient sounds are:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Water
 <li>Sewage
 <li>Lava
@@ -835,7 +831,7 @@ The ambient sounds are:
 <li>Alien Harmonics
 </ol>
 The random sounds are:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Water Drip
 <li>Surface Explosion
 <li>Underground Explosion
@@ -843,7 +839,7 @@ The random sounds are:
 <li>Creak
 </ol>
 The dialog sounds are:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Intro
 <li>OK
 <li>Cancel
@@ -888,16 +884,16 @@ it has attributes
 <li>period: time for fader effect to complete, in engine ticks (1/30 second)
 <li>flags: various features; get this value by adding the numerical values
 corresponding to the desired features:
-<ul>
-<li><tt>1 (hex 0001)</tt> Full screen
-<li><tt>2 (hex 0002)</tt> Random transparency; makes flickering effect
-</ul>
+<ol>
+<li><tt>(hex 0001)</tt> Full screen
+<li><tt>(hex 0002)</tt> Random transparency; makes flickering effect
+</ol>
 <li>priority: higher is higher priority
 </ul>
 and a child element &lt;color&gt;, which is not indexed.
 For more on specifying colors, go <a href="#color">here</a>.
 The fader types are these:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Tint: fade to the fader's color value:<br>
 [new color] = [old color] + ([fader color] - [old color])*[opacity]
 <li>Randomize: do random shifts of the colors:<br>
@@ -934,7 +930,7 @@ it has attributes
 <li>opacity: how strong is the fader effect (floating point: 0 = none, 1 = complete)
 </ul>
 The index is which one of these liquid types:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Water
 <li>Lava
 <li>Sewage
@@ -987,15 +983,24 @@ which has attributes:
 Both of them are mandatory.
 The first weapon in the list is the one that will get used.
 The default list is:
-<ul>
-<li>0: Pistol
-<li>1: Knife
-<li>2: Knife
-<li>3: Pistol Ammo
-<li>4: Pistol Ammo
-<li>5: Pistol Ammo
-<li>6 to 15: Knife
-</ul>
+<ol start="0">
+<li>Pistol
+<li>Knife
+<li>Knife
+<li>Pistol Ammo
+<li>Pistol Ammo
+<li>Pistol Ammo
+<li>Knife
+<li>Knife
+<li>Knife
+<li>Knife
+<li>Knife
+<li>Knife
+<li>Knife
+<li>Knife
+<li>Knife
+<li>Knife
+</ol>
 <p>
 
 The responses to various kinds of damage can be set with an element of &lt;damage&gt;,
@@ -1009,11 +1014,11 @@ then fader (fade)+1 is used instead of fader (fade).
 <li>death_sound: Death sound to make.
 <li>death_action: Behavior of sprites when killed.
 Here are the appropriate behavior types:
-<ul>
-<li> 6: Hard death (blown to bits by explosion)
-<li> 7: Soft death (stays in shape)
-<li> 8: Flaming death
-</ul>
+<ol start="6">
+<li>Hard death (blown to bits by explosion)
+<li>Soft death (stays in shape)
+<li>Flaming death
+</ol>
 </ul>
 If there is none of something, then it gets a value of -1.
 Soft death for sprites can also be specified with a -1.
@@ -1059,9 +1064,9 @@ It has these attributes, all of which are mandatory:
 <p>
 
 The types and subtypes have these values:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Collection and Death Sequences
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Collection (default: 6)
 <li>Hard dying (default: 9)
 <li>Soft dying (default: 8)
@@ -1069,7 +1074,7 @@ The types and subtypes have these values:
 <li>Soft dead (default: 10)
 </ol>
 <li>Leg Sequences (player actions)
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Stationary (default: 7)
 <li>Walking (default: 0)
 <li>Running (default: 0)
@@ -1079,7 +1084,7 @@ The types and subtypes have these values:
 <li>Idle-Weapon Torso Sequences
 <li>Charging-Weapon Torso Sequences
 <li>Firing-Weapon Torso Sequences
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Fists (defaults: 1, 1, 2)
 <li>Pistol (defaults: 3, 3, 4)
 <li>Fusion Pistol (defaults: 20, 21, 22)
@@ -1168,7 +1173,7 @@ that are relative to the screen (0 = left, 1 = right; 0 = bottom, 1 = top).
 <p>
 
 The various types of shell casings are:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Assault rifle
 <li>Centered pistol
 <li>Left-side pistol
@@ -1186,7 +1191,7 @@ The weapon order can be specified with the child element
 <p>
 
 The default weapon order is
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Fist
 <li>Pistol
 <li>Fusion Pistol
@@ -1210,7 +1215,7 @@ which has these attributes:
 <ul>
 <li>index (mandatory)
 <li>type: what kind of item:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>weapon
 <li>ammunition
 <li>powerup
@@ -1224,15 +1229,15 @@ which has these attributes:
 <li>invalid: what environments the item cannot be used in;
 this value is determined by the sum of values for individual
 environment types:
-<ul>
-<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;0 (hex 0000)</tt> Normal
-<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;1 (hex 0001)</tt> Vacuum
-<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;2 (hex 0002)</tt> Magnetic
-<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;4 (hex 0004)</tt> Rebellion
-<li><tt>&nbsp;&nbsp;&nbsp;&nbsp;8 (hex 0008)</tt> Low Gravity
-<li><tt>&nbsp;8192 (hex 2000)</tt> Network
-<li><tt>16384 (hex 4000)</tt> Single Player
-</ul>
+<ol start="0">
+<li><tt>(hex 0000)</tt> Normal
+<li><tt>(hex 0001)</tt> Vacuum
+<li><tt>(hex 0002)</tt> Magnetic
+<li value="4"><tt>(hex 0004)</tt> Rebellion
+<li value="8"><tt>(hex 0008)</tt> Low Gravity
+<li value="8192"><tt>(hex 2000)</tt> Network
+<li value="16384"><tt>(hex 4000)</tt> Single Player
+</ol>
 </ul>
 <p>
 The item shape can be specified with a <a href="#shape">shape</a>
@@ -1266,11 +1271,11 @@ which has these attributes:
 <li>index: which one of the scenery-object types (mandatory)
 <li>flags: various features; get this value by adding the numerical values
 corresponding to the desired features:
-<ul>
-<li><tt>1 (hex 0001)</tt> Solid (can't pass through it)
-<li><tt>2 (hex 0002)</tt> Unused
-<li><tt>4 (hex 0004)</tt> Destroyable
-</ul>
+<ol>
+<li><tt>(hex 0001)</tt> Solid (can't pass through it)
+<li><tt>(hex 0002)</tt> Unused
+<li value="4"><tt>(hex 0004)</tt> Destroyable
+</ol>
 <li>radius: horizontal dimension in internal units, for doing collision detection.
 <li>height: vertical dimension like above; if negative,
 then object's extent downward from reference point (good for ceiling objects).
@@ -1294,7 +1299,7 @@ and a destroyable one would get flags="5".
 <p>
 
 The index is which one of these scenery-object types:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Lava: light dirt
 <li>Lava: dark dirt
 <li>Lava: bones
@@ -1415,7 +1420,7 @@ There are currently 7 such positions available.
 <p>
 
 The defaults for Marathon 2/oo are, in order (walls, scenery):
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>17, 22 -- Lh'owon Water
 <li>18, 23 -- Lh'owon Lava
 <li>19, 24 -- Lh'owon Sewage
@@ -1425,7 +1430,7 @@ The defaults for Marathon 2/oo are, in order (walls, scenery):
 <p>
 
 Those for Marathon 1 are, in order (walls, control panels, scenery):
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>17, 8, 23 -- Marathon Set 1
 <li>18, 8, 23 -- Marathon Set 2
 <li>19, 8, 23 -- Marathon Set 3
@@ -1464,11 +1469,11 @@ It takes these attributes:
 <li>coll: which collection (mandatory).
 <li>clut: which color table. Values 0 to 7 are the familiar color-table values,
 and there are these special values:
-<ul>
-<li>All color tables: -1 (default)
-<li>Infravision: 8
-<li>Silhouette: 9 [used for invisibility and static effect]
-</ul>
+<ol start="-1">
+<li>All color tables (default)
+<li value="8">Infravision
+<li value="9">Silhouette [used for invisibility and static effect]
+</ol>
 <li>bitmap: which one to apply the options to (mandatory).
 <li>opac_type: what type of opacity to use (default: 0 -- crisp edges).
 <li>opac_scale: scaling value for the opacity;
@@ -1501,7 +1506,7 @@ It must be used with a glow_image file.
 <p>
 Note: all resulting values will be pegged to the range 0 to 1.
 Here are the various opacity types:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Crisp edges. The opacity threshold is 0.5.
 <li>Fuzzy edges.
 <li>Fuzzy edges with opacity = average of color channels.
@@ -1524,7 +1529,7 @@ max has the same strength for saturated colors as for grays,
 while mean has less strength for saturated colors than for grays.
 <p>
 Here are the texture types:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Wall Textures
 <li>Landscape Textures
 <li>Inhabitants
@@ -1604,7 +1609,7 @@ A negative scale will cause the model to be reflected around all three axes
 <li>-: counterclockwise side
 </ul>
 <li>norm_type: which sort of normals to use for doing the lighting (default: originals)
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>None
 <li>Original-model normals (may be none)
 <li>Reverse-direction original-model normals (may be none)
@@ -1617,7 +1622,7 @@ if the normals' standard deviation is greater than this value,
 then a vertex's normal is split into one for each of its polygons.
 (default: 0.5)
 <li>light_type: what sort of lighting to use (default: fast)
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Fast lighting; only one calculation of the player light
 <li>Like above, but the player light won't fade off on the sides
 <li>Individual-vertex calculation of the player light (more accurate, but slower)
@@ -1710,7 +1715,7 @@ It takes these attributes:
 The final one, &lt;fog&gt;, has these attributes:
 <ul>
 <li>type: which type of fog:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Above liquid
 <li>Below liquid
 </ol>
@@ -1740,7 +1745,7 @@ This kind of element is for modifying the software rendering. This element has t
 </ul>
 <p>
 Here are the various opacity types:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Crisp edges. Opacity is unaltered (this will cause no visible change in the software renderer).
 <li>Fuzzy edges.
 <li>Fuzzy edges with opacity = average of color channels.
@@ -1816,7 +1821,7 @@ It has an attribute "set" which indicates which of the three sets to set keys fo
 <li> sdl: the SDL key code
 </ul>
 Here are the various actions:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Moving Forward
 <li>Moving Backward
 <li>Turning Left
@@ -2114,7 +2119,7 @@ and this child element: &lt;keyword&gt;, which is for specifying the cheat keywo
 It has a mandatory attribute, "index", and some contained text, as with the text-string elements.
 <p>
 The cheat-code keywords and their defaults are
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Energy (1x): NRG
 <li>Oxygen: OTWO
 <li>Map Everything: MAP
@@ -2161,15 +2166,15 @@ The &lt;logging_domain&gt; element has the following attributes:
 
 The following are the currently-defined standard log levels:
 
-<ul>
-<li>logFatalLevel = 0: program must exit
-<li>logErrorLevel = 10: can't do something significant
-<li>logWarningLevel = 20: can continue but results could be really screwy
-<li>logAnomalyLevel = 30: can continue, results could be off a little, but no big deal
-<li>logNoteLevel = 40: something worth mentioning
-<li>logTraceLevel = 50: details of actions and logic
-<li>logDumpLevel = 60: values of data etc.
-</ul>
+<ol start="0">
+<li>logFatalLevel: program must exit
+<li value="10">logErrorLevel: can't do something significant
+<li value="20">logWarningLevel: can continue but results could be really screwy
+<li value="30">logAnomalyLevel: can continue, results could be off a little, but no big deal
+<li value="40">logNoteLevel: something worth mentioning
+<li value="50">logTraceLevel: details of actions and logic
+<li value="60">logDumpLevel: values of data etc.
+</ol>
 
 Note that the &lt;threshhold&gt; attribute requires that the level be specified as an integer (but that it need not equal one of the standard levels), and further that log messages with level exactly equal to the threshhold level will NOT be seen.
 
@@ -2355,15 +2360,15 @@ and then the second, and so forth, until it finds such a font.
 <li>size: the font size in points (standard unit)
 <li>style: the font style, which follows MacOS conventions; it is the sum of whichever of these
 attributes are used:
-<ul>
-<li>1: Bold
-<li>2: Italic
-<li>4: Underline
-<li>8: Outline
-<li>16: Shadow
-<li>32: Condense
-<li>64: Extend
-</ul>
+<ol>
+<li>Bold
+<li>Italic
+<li value="4">Underline
+<li value="8">Outline
+<li value="16">Shadow
+<li value="32">Condense
+<li value="64">Extend
+</ol>
 Normal is none of these attributes, or 0.
 <li>file: this is for SDL support, and indicate which font file to use.
 </ul>
@@ -2399,7 +2404,7 @@ indicate that a flag is to be off or an action is not to be taken.
 <h3><a name="appendix2">Appendix 2: Lists of Entity Types</a></h3>
 
 The collections:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Interface
 <li>Weapons in Hand
 <li>Juggernaut
@@ -2436,7 +2441,7 @@ The collections:
 <p>
 
 The monsters:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Player
 <li>Tick - Energy
 <li>Tick - Oxygen
@@ -2488,7 +2493,7 @@ The monsters:
 <p>
 
 The items to be picked up:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Knife (apparently some placeholder item for "nothing")
 <li>Pistol
 <li>Pistol Ammo
@@ -2529,7 +2534,7 @@ The items to be picked up:
 <p>
 
 The weapons:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Fist
 <li>Pistol
 <li>Fusion Pistol
@@ -2544,7 +2549,7 @@ The weapons:
 <p>
 
 The projectiles:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Rocket
 <li>Grenade
 <li>Pistol Bullet
@@ -2588,7 +2593,7 @@ The projectiles:
 <p>
 
 The effects:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Rocket Explosion
 <li>Rocket Contrail
 <li>Grenade Explosion
@@ -2666,7 +2671,7 @@ The effects:
 <p>
 
 Player-damage types (out of order from "true" damage types):
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Explosion
 <li>Crushing
 <li>Bullet
@@ -2695,7 +2700,7 @@ Player-damage types (out of order from "true" damage types):
 <p>
 
 "True" damage types:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Explosion
 <li>Electrical Staff
 <li>Bullet
@@ -2724,7 +2729,7 @@ Player-damage types (out of order from "true" damage types):
 <p>
 
 The faders:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Start Cinematic Fade In
 <li>Cinematic Fade In
 <li>Long Cinematic Fade In
@@ -2762,7 +2767,7 @@ The faders:
 <p>
 
 The texture-mapping transfer modes:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Normal
 <li>Fade Out to Black
 <li>Invisibility
@@ -2789,7 +2794,7 @@ The texture-mapping transfer modes:
 <p>
 
 The sounds:
-<ol type=1 start=1000>
+<ol type=1 start="0">
 <li>Startup
 <li>Teleport In
 <li>Teleport Out
