@@ -75,6 +75,9 @@ struct FilmProfile
 
 	// Aleph One moved object initialization to improve Lua access
 	bool early_object_initialization;
+	
+	// multi-level films need to preserve action queues between levels
+	bool reset_action_queues;
 };
 
 extern FilmProfile film_profile;
