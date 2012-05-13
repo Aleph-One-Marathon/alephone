@@ -115,8 +115,7 @@
     <section name="Loading Collections" id="loading_collections">
       <description>
 	<p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
-<pre>CollectionsUsed = { 10, 16 }</pre>
-	</p>
+</p><pre>CollectionsUsed = { 10, 16 }</pre>
       </description>
     </section>
     <section name="Persistence" id="persistence">
@@ -130,7 +129,7 @@
   </section>
   <triggers id="triggers">
     <description>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:
-<pre>Triggers = {}
+<span class="pre">Triggers = {}
 function Triggers.idle()
   for p in Players() do 
     if p.life &lt; 150 and not p.dead then 
@@ -138,7 +137,7 @@ function Triggers.idle()
     end
   end
 end
-</pre>
+</span>
 Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
 </description>
     <function name="init">
@@ -336,7 +335,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     <description><p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p>
     <p>Unless otherwise specified, these tables are only valid inside the trigger calls listed above. Attempting to use them in the main body of a script may cause an error in this version or a future version of Aleph One.</p></description>
     <section id="custom" name="Custom Fields">
-      <description><p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.<pre>Players[0]._favorite_flavor = "chocolate"</pre></p></description>
+      <description><p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p><pre>Players[0]._favorite_flavor = "chocolate"</pre></description>
     </section>
     <section id="table_indices" name="Index">
       <description><p>Each table has a read-only .index variable, that corresponds to the engine's internal index.</p><pre>=Players[0].index<br/>0</pre></description>
@@ -3099,32 +3098,32 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
   <types id="types">
     <description>The string mnemonics listed below can be used for assignment and as arguments to functions. Additionally, Aleph One's Lua interpreter has been modified so that equality comparisons between userdata types and strings are possible.</description>
     <description>For example, this script would move all players on the blue team to the red team:
-<pre>for p in Players() do
+<span class="pre">for p in Players() do
   if p.team == "blue" then
     p.team = "red"
   end
-end</pre>
+end</span>
 And this one would damage all major compilers with 10 points of fusion damage:
-<pre>for m in Monsters() do
+<span class="pre">for m in Monsters() do
   if m.type == "major compiler" then
     m:damage(10, "fusion")
   end
-end</pre>
+end</span>
 Each type has a read-only .index field, which represents the game's internal index:
-<pre>&gt; =ItemTypes["pistol"].index
+<span class="pre">&gt; =ItemTypes["pistol"].index
 1
-</pre>
+</span>
 Each type also has a .mnemonic field, which is handy for finding the mnemonic of a given type:
-<pre>&gt; =MonsterTypes["major compiler"].class.mnemonic
+<span class="pre">&gt; =MonsterTypes["major compiler"].class.mnemonic
 compiler
-</pre>
+</span>
 You can even use the mnemonic field to customize the mnemonics for your scenario. Note that you can only have one string mnemonic per type index:
-<pre>&gt; WeaponTypes["fist"].mnemonic = "puncher"
+<span class="pre">&gt; WeaponTypes["fist"].mnemonic = "puncher"
 &gt; =WeaponTypes["puncher"].index
 0
 &gt; =WeaponTypes["fist"]
 nil
-</pre>
+</span>
 If you do this, you should customize them all at the beginning of the script. Changing mnemonics mid-game will confuse anyone who tries to read your script, and probably yourself as well!
 </description>
   </types>

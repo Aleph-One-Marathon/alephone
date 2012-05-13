@@ -1,3 +1,4 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -78,6 +79,12 @@
 	  padding-left: 1px;
 	  padding-right: 1px;
       }
+      
+      span.pre {
+	  display: block;
+	  margin: 4px 0;
+	  white-space: pre-wrap;
+      }
 
       div.end-mnemonics {
 	  clear: both;
@@ -149,20 +156,20 @@
       <h2>
 <a name="loading_collections"></a>Loading Collections</h2>
         <p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
-        <pre>CollectionsUsed = { 10, 16 }</pre>
         </p>
+        <pre>CollectionsUsed = { 10, 16 }</pre>
       <h1>
 <a name="triggers"></a>Triggers</h1>
 <div class="triggers">
 <p>These are functions scripts can define which Aleph One will call at specific times or events. For the HUD, the draw() trigger is the most important. For example, to write "Hello world" in the upper left corner of the screen:
-<pre>Triggers = {}
+<span class="pre">Triggers = {}
 function Triggers.init()
   myFont = Fonts.new{size = 14}
 end
 function Triggers.draw()
   myFont:draw_text("Hello world", 50, 50, {1, 1, 1, 1});
 end
-</pre>
+</span>
 </p>
 <dl>
 <dt>Triggers</dt>
@@ -187,28 +194,31 @@ end
 <p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p>
 <h2>
 <a name="custom"></a>Custom Fields</h2>
-<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.<pre>Players[0]._favorite_flavor = "chocolate"</pre></p>
+<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p>
+<pre>Players[0]._favorite_flavor = "chocolate"</pre>
 <h1><a name="tables">Tables</a></h1>
 <div class="tables">
 <h3>
 <a name="Colors"></a>Colors</h3>
 <dl>
 <dt>Colors</dt>
-<dd><dl>
-      Colors are standard Lua tables; you don't need to call a new() method to create them. Colors have four fields, accessed by name or number. If a field is missing, it is assumed to be 1, which allows you to write opaque colors as {r, g, b}.
-      <dt>
+<dd>
+<p class="description">Colors are standard Lua tables; you don't need to call a new() method to create them. Colors have four fields, accessed by name or number. If a field is missing, it is assumed to be 1, which allows you to write opaque colors as {r, g, b}.</p>
+<dl>
+<dt>
     .r<br>.red<br>[1]</dt>
 <dd><p class="description">red component, from 0 to 1</p></dd>
-      <dt>
+<dt>
     .g<br>.green<br>[2]</dt>
 <dd><p class="description">green component, from 0 to 1</p></dd>
-      <dt>
+<dt>
     .b<br>.blue<br>[3]</dt>
 <dd><p class="description">blue component, from 0 to 1</p></dd>
-      <dt>
+<dt>
     .a<br>.alpha<br>[4]</dt>
 <dd><p class="description">alpha component (opacity), from 0 to 1</p></dd>
-    </dl></dd>
+</dl>
+</dd>
 </dl>
 <h3>
 <a name="Fonts"></a>Fonts</h3>
@@ -260,33 +270,34 @@ end
 <a name="Game"></a>Game</h3>
 <dl>
 <dt>Game</dt>
-<dd><dl>
-      <p class="note">all items in Game are read-only </p>
-      <dt>
+<dd>
+<p class="note">all items in Game are read-only </p>
+<dl>
+<dt>
     .difficulty</dt>
 <dd><p class="description">the difficulty level</p></dd>
-      <dt>
+<dt>
     .kill_limit</dt>
 <dd><p class="description">the game kill limit, or nil if there is none</p></dd>
-      <dt>
+<dt>
     .time_remaining</dt>
 <dd><p class="description">the number of ticks until the game ends, or nil if there is no time limit</p></dd>
-      <dt>
+<dt>
     .scoring_mode</dt>
 <dd><p class="description">the current scoring mode (if the gametype is "custom")</p></dd>
-      <dt>
+<dt>
     .ticks</dt>
 <dd><p class="description">ticks since game started</p></dd>
-      <dt>
+<dt>
     .type</dt>
 <dd><p class="description">whether the game is EMFH, KOTH, etc.</p></dd>
-      <dt>
+<dt>
     .version</dt>
 <dd>
 <p class="description">the date version of the local player's engine</p>
 <p class="note">for example, "20071103" </p>
 </dd>
-      <dt>.players[index]</dt>
+<dt>.players[index]</dt>
 <dd><dl>
 <dt>
     .active <span class="version">20111201</span>
@@ -311,7 +322,8 @@ end
     .team</dt>
 <dd><p class="description">player's team (pants color)</p></dd>
 </dl></dd>
-    </dl></dd>
+</dl>
+</dd>
 </dl>
 <h3>
 <a name="Images"></a>Images</h3>
@@ -385,17 +397,19 @@ end
 <a name="Lighting"></a>Lighting</h3>
 <dl>
 <dt>Lighting</dt>
-<dd><dl>
-      <p class="note">All items in Lighting are read-only </p>
-      <dt>
+<dd>
+<p class="note">All items in Lighting are read-only </p>
+<dl>
+<dt>
     .ambient_light</dt>
 <dd><p class="description">light level in current location, from 0 to 1</p></dd>
-      <dt>
+<dt>
     .weapon_flash</dt>
 <dd><p class="description">current brightness of weapons fire, from 0 to 1</p></dd>
-      <dt>.liquid_fader<br>.damage_fader<p class="note">faders only available in OpenGL, when "Color Effects" are enabled </p>
-</dt>
-<dd><dl>
+<dt>.liquid_fader<br>.damage_fader</dt>
+<dd>
+<p class="note">faders only available in OpenGL, when "Color Effects" are enabled </p>
+<dl>
 <dt>
     .active</dt>
 <dd><p class="description">true if fade effect is being drawn</p></dd>
@@ -405,31 +419,34 @@ end
 <dt>
     .type</dt>
 <dd><p class="description">which fade effect type is used</p></dd>
-</dl></dd>
-    </dl></dd>
+</dl>
+</dd>
+</dl>
+</dd>
 </dl>
 <h3>
 <a name="Player"></a>Player</h3>
 <dl>
 <dt>Player</dt>
-<dd><dl>
-      <p class="note">All items in Player are read-only </p>
-      <dt>
+<dd>
+<p class="note">All items in Player are read-only </p>
+<dl>
+<dt>
     .color</dt>
 <dd><p class="description">color of player (shirt color, if teams are enabled)</p></dd>
-      <dt>
+<dt>
     .dead</dt>
 <dd><p class="description">whether player is dead</p></dd>
-      <dt>
+<dt>
     .direction<br>.yaw</dt>
 <dd>
 <p class="description">direction player is facing, in degrees</p>
 <p class="note">0 is east, 90 is south </p>
 </dd>
-      <dt>
+<dt>
     .elevation<br>.pitch</dt>
 <dd><p class="description">angle player is looking up or down</p></dd>
-      <dt>.velocity</dt>
+<dt>.velocity</dt>
 <dd><dl>
 <dt>
     .forward <span class="version">20111201</span>
@@ -453,13 +470,13 @@ end
 <p class="note">in WU per tick; positive values mean upward movement </p>
 </dd>
 </dl></dd>
-      <dt>
+<dt>
     .energy<br>.life</dt>
 <dd><p class="description">amount of suit energy player has (150 is normal red health)</p></dd>
-      <dt>
+<dt>
     .microphone_active</dt>
 <dd><p class="description">true if netmic is on</p></dd>
-      <dt>.inventory_sections</dt>
+<dt>.inventory_sections</dt>
 <dd><dl>
 <dt>
     .current</dt>
@@ -468,7 +485,7 @@ end
 <p class="note">HUD themes can choose to display multiple sections simultaneously </p>
 </dd>
 </dl></dd>
-      <dt>
+<dt>
     .inventory_sections[section_type]
   </dt>
 <dd><dl>
@@ -479,8 +496,7 @@ end
     .type</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
-
-      <dt>
+<dt>
     .items[item_type]
   </dt>
 <dd><dl>
@@ -506,7 +522,7 @@ end
     .type</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
-      <dt>.compass</dt>
+<dt>.compass</dt>
 <dd><dl>
 <dt>
     .ne<br>.northeast</dt>
@@ -521,7 +537,7 @@ end
     .sw<br>.southwest</dt>
 <dd><p class="description">whether south west compass quadrant is active</p></dd>
 </dl></dd>
-      <dt>.motion_sensor</dt>
+<dt>.motion_sensor</dt>
 <dd><dl>
 <dt>
     .active</dt>
@@ -551,16 +567,16 @@ end
 </dd>
 </dl></dd>
 </dl></dd>
-      <dt>
+<dt>
     .name</dt>
 <dd><p class="description">player's name</p></dd>
-      <dt>
+<dt>
     .oxygen</dt>
 <dd><p class="description">amount of oxygen player has (max is 10800)</p></dd>
-      <dt>
+<dt>
     .team</dt>
 <dd><p class="description">player's team (pants color)</p></dd>
-      <dt>.texture_palette</dt>
+<dt>.texture_palette</dt>
 <dd><dl>
 <dt>
     .highlight</dt>
@@ -587,7 +603,7 @@ end
 <dd><p class="description">texture type of this slot such as wall or sprite; see "Texture Types"</p></dd>
 </dl></dd>
 </dl></dd>
-      <dt>.weapons</dt>
+<dt>.weapons</dt>
 <dd><dl>
 <dt>
     .current</dt>
@@ -602,7 +618,7 @@ end
 <p class="note">can be nil </p>
 </dd>
 </dl></dd>
-      <dt>
+<dt>
     .weapons[weapon_type]
   </dt>
 <dd><dl>
@@ -632,26 +648,26 @@ end
     .type</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
-      <dt>
+<dt>
     .zoom_active</dt>
 <dd><p class="description">whether player's sniper zoom is active</p></dd>
-
-    </dl></dd>
+</dl>
+</dd>
 </dl>
 <h3>
 <a name="Screen"></a>Screen</h3>
 <dl>
 <dt>Screen</dt>
 <dd><dl>
-      <dt>
+<dt>
     .width<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">width of the available screen area</p></dd>
-      <dt>
+<dt>
     .height<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">height of the available screen area</p></dd>
-      <dt>.field_of_view</dt>
+<dt>.field_of_view</dt>
 <dd><dl>
 <dt>
     .fix_h_not_v</dt>
@@ -663,7 +679,7 @@ end
     .vertical</dt>
 <dd><p class="description"></p></dd>
 </dl></dd>
-      <dt>.crosshairs</dt>
+<dt>.crosshairs</dt>
 <dd><dl>
 <dt>
     .active<span class="access"> (read-only)</span> <span class="version">20111201</span>
@@ -674,37 +690,37 @@ end
 </dt>
 <dd><p class="description">whether the Lua HUD script draws the crosshairs</p></dd>
 </dl></dd>
-      <dt>
+<dt>
     .renderer<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">which renderer is in use</p></dd>
-      <dt>
+<dt>
     .map_active<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether the overhead map is currently displayed</p></dd>
-      <dt>
+<dt>
     .map_overlay_active<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">whether the "Overlay Map" preference is enabled</p></dd>
-      <dt>
+<dt>
     .term_active<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether a terminal is currently displayed</p></dd>
-      <dt>
+<dt>
     .hud_size_preference<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">current preference setting for HUD size (normal, double, largest)</p></dd>
-      <dt>
+<dt>
     .term_size_preference<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">current preference setting for terminal size (normal, double, largest)</p></dd>
-      <dt>
+<dt>
     .masking_mode</dt>
 <dd>
 <p class="description">image-based masking; set to drawing mode to create visible areas and enabled to use the mask</p>
 <p class="note">masking only available in OpenGL renderer </p>
 </dd>
-      <dt>.clip_rect</dt>
+<dt>.clip_rect</dt>
 <dd>
 <p class="description">constrain drawing to the specified area of the screen</p>
 <dl>
@@ -722,7 +738,7 @@ end
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-      <dt>.world_rect</dt>
+<dt>.world_rect</dt>
 <dd>
 <p class="description">specifies the area of the screen for the 3D game view</p>
 <dl>
@@ -740,7 +756,7 @@ end
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-      <dt>.map_rect</dt>
+<dt>.map_rect</dt>
 <dd>
 <p class="description">specifies the area of the screen for the overhead map</p>
 <dl>
@@ -758,7 +774,7 @@ end
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-      <dt>.term_rect</dt>
+<dt>.term_rect</dt>
 <dd>
 <p class="description">specifies the area of the screen for displaying terminals</p>
 <dl>
@@ -776,17 +792,17 @@ end
 <dd><p class="description"></p></dd>
 </dl>
 </dd>
-      <dt>.clear_mask()</dt>
+<dt>.clear_mask()</dt>
 <dd><p class="description">reset the image-based mask</p></dd>
-      <dt>.fill_rect(x, y, width, height, color)</dt>
+<dt>.fill_rect(x, y, width, height, color)</dt>
 <dd><p class="description">draws a solid rectangle to the screen</p></dd>
-      <dt>.frame_rect(x, y, width, height, color, thickness)</dt>
+<dt>.frame_rect(x, y, width, height, color, thickness)</dt>
 <dd>
 <p class="description">draws an outlined rectangle to the screen</p>
 <ul class="args"><li>thickness: outline size in pixels</li></ul>
 <p class="note">the outline is drawn entirely inside the given bounds </p>
 </dd>
-    </dl></dd>
+</dl></dd>
 </dl>
 <h3>
 <a name="Shapes"></a>Shapes</h3>
@@ -908,8 +924,7 @@ end
     </dl></dd>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"interface"</li>
 <li>"weapons in hand"</li>
 <li>"juggernaut"</li>
@@ -921,8 +936,8 @@ end
 <li>"trooper"</li>
 <li>"fighter"</li>
 <li>"defender"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"yeti"</li>
 <li>"bob"</li>
 <li>"vacbob"</li>
@@ -934,8 +949,8 @@ end
 <li>"sewage"</li>
 <li>"jjaro"</li>
 <li>"pfhor"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"water scenery"</li>
 <li>"lava scenery"</li>
 <li>"sewage scenery"</li>
@@ -946,9 +961,8 @@ end
 <li>"moon"</li>
 <li>"space"</li>
 <li>"cyborg"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="DifficultyTypes"></a>Difficulty</h3>
 <dl>
@@ -985,24 +999,22 @@ end
 <dt>GameTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"kill monsters"</li>
 <li>"cooperative play"</li>
 <li>"capture the flag"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"king of the hill"</li>
 <li>"kill the man with the ball"</li>
 <li>"defense"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"rugby"</li>
 <li>"tag"</li>
 <li>"netscript"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="InventorySections"></a>Inventory Sections</h3>
 <dl>
@@ -1026,8 +1038,7 @@ end
 <dt>ItemTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"knife"</li>
 <li>"pistol"</li>
 <li>"pistol ammo"</li>
@@ -1040,8 +1051,8 @@ end
 <li>"missile launcher ammo"</li>
 <li>"invisibility"</li>
 <li>"invincibility"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"infravision"</li>
 <li>"alien weapon"</li>
 <li>"alien weapon ammo"</li>
@@ -1054,8 +1065,8 @@ end
 <li>"triple health"</li>
 <li>"shotgun"</li>
 <li>"shotgun ammo"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"key"</li>
 <li>"uplink chip"</li>
 <li>"light blue ball"</li>
@@ -1068,9 +1079,8 @@ end
 <li>"green ball"</li>
 <li>"smg"</li>
 <li>"smg ammo"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="MaskingModes"></a>Masking Modes</h3>
 <dl>
@@ -1171,25 +1181,23 @@ end
 <dt>WeaponTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"fist"</li>
 <li>"pistol"</li>
 <li>"fusion pistol"</li>
 <li>"assault rifle"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"missile launcher"</li>
 <li>"flamethrower"</li>
 <li>"alien weapon"</li>
 <li>"shotgun"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"ball"</li>
 <li>"smg"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 </div>
 </body>
 </html>

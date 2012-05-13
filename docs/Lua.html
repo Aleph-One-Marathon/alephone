@@ -1,3 +1,4 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html>
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -77,6 +78,12 @@
 	  background-color: #006600;
 	  padding-left: 1px;
 	  padding-right: 1px;
+      }
+      
+      span.pre {
+          display: block;
+          margin: 4px 0;
+          white-space: pre-wrap;
       }
 
       div.end-mnemonics {
@@ -180,9 +187,7 @@
 <li><a href="#WeaponTypes">Weapons</a></li>
 </ol>
 </li>
-<li>
-<a href="#example_icon">Example Icon</a><ol></ol>
-</li>
+<li><a href="#example_icon">Example Icon</a></li>
 </ol>
 <h1>
 <a name="general"></a>General</h1>
@@ -217,8 +222,8 @@
       <h2>
 <a name="loading_collections"></a>Loading Collections</h2>
 	<p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
+</p>
 <pre>CollectionsUsed = { 10, 16 }</pre>
-	</p>
       <h2>
 <a name="persistence"></a>Persistence</h2>
 	<p>Lua scripts are only active during a single level. If the user jumps to a new level, or restores from a saved game, the script is restarted in a clean state.</p>
@@ -229,7 +234,7 @@
 <a name="triggers"></a>Triggers</h1>
 <div class="triggers">
 <p>These are functions scripts can define which Aleph One will call at specific times or events. For example, to regenerate health:
-<pre>Triggers = {}
+<span class="pre">Triggers = {}
 function Triggers.idle()
   for p in Players() do 
     if p.life &lt; 150 and not p.dead then 
@@ -237,7 +242,7 @@ function Triggers.idle()
     end
   end
 end
-</pre>
+</span>
 Calling Triggers = {} at the beginning of the script removes the compatibility triggers installed for old Lua scripts, speeding up execution of new scripts.
 </p>
 <dl>
@@ -364,7 +369,8 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     <p>Unless otherwise specified, these tables are only valid inside the trigger calls listed above. Attempting to use them in the main body of a script may cause an error in this version or a future version of Aleph One.</p>
 <h2>
 <a name="custom"></a>Custom Fields</h2>
-<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.<pre>Players[0]._favorite_flavor = "chocolate"</pre></p>
+<p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p>
+<pre>Players[0]._favorite_flavor = "chocolate"</pre>
 <h2>
 <a name="table_indices"></a>Index</h2>
 <p>Each table has a read-only .index variable, that corresponds to the engine's internal index.</p>
@@ -503,78 +509,78 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl>
 <dt>Game</dt>
 <dd><dl>
-      <dt>
+<dt>
     .difficulty<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">the difficulty level</p></dd>
-      <dt>.global_random(n)</dt>
+<dt>.global_random(n)</dt>
 <dd><p class="description">returns a random number between 0 and n-1 from Aleph One's original random number generator</p></dd>
-      <dt>
+<dt>
     .kill_limit<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">the game kill limit, or 0 if there is none</p></dd>
-      <dt>
+<dt>
     .monsters_replenish <span class="version">20111201</span>
 </dt>
 <dd>
 <p class="description">whether monsters spawn or not; in a net game, this corresponds to the "Aliens" checkbox</p>
 <p class="note">this can suppress initial monster placement, if set to false directly when the script is loaded </p>
 </dd>
-      <dt>
+<dt>
     .proper_item_accounting <span class="version">20100118</span>
 </dt>
 <dd><p class="description">When true, the current item counts on the map are updated properly when Lua deletes map items and changes player inventories. This defaults to false to preserve film playback with older scripts. New scripts that manipulate items should always set this to true.</p></dd>
-      <dt>
+<dt>
     .time_remaining<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">the number of ticks until the game ends, or nil if there is no time limit</p></dd>
-      <dt>
+<dt>
     .scoring_mode</dt>
 <dd><p class="description">the current scoring mode (if the gametype is "custom")</p></dd>
-      <dt>
+<dt>
     .over<span class="access"> (write-only)</span>
 </dt>
 <dd><p class="description">Use this variable to override the game's default scoring behavior. If set to false, the game will not end due to a score limit. If set to true, the game ends immediately. If left unset or if set to nil, the game will end if a score limit is reached. (Note that you cannot prevent the game from ending due to a time limit.)</p></dd>
-      <dt>.local_random(n)</dt>
+<dt>.local_random(n)</dt>
 <dd>
 <p class="description">returns a random number between 0 and n-1 from Aleph One's original random number generator</p>
 <p class="note">this is a good way to put net games out of sync </p>
 </dd>
-      <dt>.random(n)</dt>
+<dt>.random(n)</dt>
 <dd><p class="description">returns a random number between 0 and n-1 using a good random number generator</p></dd>
-      <dt>.restore_passed() <span class="version">20090909</span>
+<dt>.restore_passed() <span class="version">20090909</span>
 </dt>
 <dd>
 <p class="description">tries to restore any Player or Game custom fields from before the last level jump; returns true if custom fields were successfully restored</p>
 <p class="note">if successful, overwrites all existing Player or Game custom fields </p>
 </dd>
-      <dt>.restore_saved() <span class="version">20090909</span>
+<dt>.restore_saved() <span class="version">20090909</span>
 </dt>
 <dd>
 <p class="description">tries to restore any custom fields from the saved game; returns true if custom fields were successfully restored</p>
 <p class="note">if successful, overwrites all existing custom fields </p>
 </dd>
-      <dt>.save()</dt>
+<dt>.save()</dt>
 <dd>
 <p class="description">saves the game (as if the user had activated a pattern buffer)</p>
 <p class="note">solo only </p>
 </dd>
-      <dt>
+<dt>
     .ticks<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">ticks since game started</p></dd>
-      <dt>
+<dt>
     .type<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether the game is EMFH, KOTH, etc.</p></dd>
-      <dt>
+<dt>
     .version<span class="access"> (read-only)</span>
 </dt>
 <dd>
 <p class="description">the date version of the local player's engine</p>
 <p class="note">for example, "20071103" </p>
 </dd>
-    </dl></dd>
+</dl></dd>
 </dl>
 <h3>
 <a name="Goals"></a>Goals</h3>
@@ -702,22 +708,22 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl>
 <dt>Level</dt>
 <dd><dl>
-      <dt>.calculate_completion_state() <span class="version">20081213</span>
+<dt>.calculate_completion_state() <span class="version">20081213</span>
 </dt>
 <dd><p class="description">returns whether level is finished, unfinished, or failed</p></dd>
-      <dt>
+<dt>
     .completed<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">check this in Triggers.cleanup() to determine whether the player(s) teleported out</p></dd>
-      <dt>
+<dt>
     .extermination<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has extermination flag set</p></dd>
-      <dt>
+<dt>
     .exploration<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has exploration flag set</p></dd>
-      <dt>.fog<br>.underwater_fog</dt>
+<dt>.fog<br>.underwater_fog</dt>
 <dd><dl>
 <dt>
     .active<br>.present</dt>
@@ -725,9 +731,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>
     .affects_landscapes</dt>
 <dd><p class="description">whether fog affects landscapes</p></dd>
-<dt>.color<p class="note">values range from 0.0 to 1.0 </p>
-</dt>
-<dd><dl>
+<dt>.color</dt>
+<dd>
+<p class="note">values range from 0.0 to 1.0 </p>
+<dl>
 <dt>
     .b</dt>
 <dd><p class="description">blue</p></dd>
@@ -737,44 +744,45 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>
     .r</dt>
 <dd><p class="description">red</p></dd>
-</dl></dd>
+</dl>
+</dd>
 <dt>
     .depth</dt>
 <dd><p class="description">fog depth in WU</p></dd>
 </dl></dd>
-      <dt>
+<dt>
     .low_gravity<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is low gravity</p></dd>
-      <dt>
+<dt>
     .magnetic<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is magnetic</p></dd>
-      <dt>
+<dt>
     .name<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">level name</p></dd>
-      <dt>
+<dt>
     .rebellion<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is rebellion</p></dd>
-      <dt>
+<dt>
     .repair<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has repair flag set</p></dd>
-      <dt>
+<dt>
     .rescue<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has rescue flag set</p></dd>
-      <dt>
+<dt>
     .retrieval<span class="access"> (read-only)</span> <span class="version">20081213</span>
 </dt>
 <dd><p class="description">whether level has retrieval flag set</p></dd>
-      <dt>
+<dt>
     .vacuum<span class="access"> (read-only)</span>
 </dt>
 <dd><p class="description">whether level is vacuum</p></dd>
-    </dl></dd>
+</dl></dd>
 </dl>
 <h3>
 <a name="Lights"></a>Lights</h3>
@@ -861,10 +869,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .endpoints[n]
   </dt>
-<dd>
-<p class="description">returns line endpoint n</p>
-<dl></dl>
-</dd>
+<dd><p class="description">returns line endpoint n</p></dd>
       <dt>
     .has_transparent_side<span class="access"> (read-only)</span> <span class="version">20080707</span>
 </dt>
@@ -1085,17 +1090,17 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dl>
 <dt>Music</dt>
 <dd><dl>
-      <dt>.clear()</dt>
+<dt>.clear()</dt>
 <dd><p class="description">clears the level playlist</p></dd>
-      <dt>.fade(duration)</dt>
+<dt>.fade(duration)</dt>
 <dd><p class="description">fades out the currently playing track and clears the playlist</p></dd>
-      <dt>.play(track1 [, track2] [, ...])</dt>
+<dt>.play(track1 [, track2] [, ...])</dt>
 <dd><p class="description">appends all of the specified tracks to the end of the playlist</p></dd>
-      <dt>.stop()</dt>
+<dt>.stop()</dt>
 <dd><p class="description">stops level music and clears the playlist</p></dd>
-      <dt>.valid(track1 [, track2] [, ...])</dt>
+<dt>.valid(track1 [, track2] [, ...])</dt>
 <dd><p class="description">for every track passed, return true if it exists and is playable and false otherwise</p></dd>
-    </dl></dd>
+</dl></dd>
 </dl>
 <h3>
 <a name="Platforms"></a>Platforms</h3>
@@ -1213,11 +1218,12 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dd><dl>
       <dt>:accelerate(direction, velocity, vertical_velocity)</dt>
 <dd><p class="description">accelerates player</p></dd>
-      <dt>.action_flags<p class="note">only valid when read/written in idle() </p>
+      <dt>.action_flags</dt>
+<dd>
+<p class="note">only valid when read/written in idle() </p>
 <p class="note">disabled when the player is viewing a terminal </p>
 <p class="note">latched action flags are only true the first tick the key is held down </p>
-</dt>
-<dd><dl>
+<dl>
 <dt>
     .action_trigger</dt>
 <dd>
@@ -1254,7 +1260,8 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <p class="description">toggles the overhead map</p>
 <p class="note">latched </p>
 </dd>
-</dl></dd>
+</dl>
+</dd>
       <dt>:activate_terminal(terminal)</dt>
 <dd><p class="description">activates terminal</p></dd>
       <dt>
@@ -1582,10 +1589,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .adjacent_polygons[n]
   </dt>
-<dd>
-<p class="description">returns adjacent polygon n (across from line n), if one exists, or nil</p>
-<dl></dl>
-</dd>
+<dd><p class="description">returns adjacent polygon n (across from line n), if one exists, or nil</p></dd>
       <dt>:adjacent_polygons()</dt>
 <dd><p class="description">iterates through all polygons directly adjacent to this polygon</p></dd>
       <dt>
@@ -1621,10 +1625,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .endpoints[n]
   </dt>
-<dd>
-<p class="description">returns endpoint n</p>
-<dl></dl>
-</dd>
+<dd><p class="description">returns endpoint n</p></dd>
       <dt>:endpoints()</dt>
 <dd><p class="description">iterates through all of this polygon's endpoints</p></dd>
       <dt>:find_line_crossed_leaving(x1, y1, x2, y2) <span class="version">20080707</span>
@@ -1636,10 +1637,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .lines[n]
   </dt>
-<dd>
-<p class="description">returns polygon line n</p>
-<dl></dl>
-</dd>
+<dd><p class="description">returns polygon line n</p></dd>
       <dt>:lines()</dt>
 <dd><p class="description">iterates through all of this polygon's lines</p></dd>
       <dt>
@@ -1660,10 +1658,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <dt>
     .sides[n]
   </dt>
-<dd>
-<p class="description">returns polygon side n if it exists</p>
-<dl></dl>
-</dd>
+<dd><p class="description">returns polygon side n if it exists</p></dd>
       <dt>:sides()</dt>
 <dd><p class="description">iterates through all of this polygon's sides</p></dd>
       <dt>
@@ -1811,10 +1806,11 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 </dd>
 <dt>Sides[index]</dt>
 <dd><dl>
-      <dt>.control_panel<p class="note">nil if the side is not a control panel </p>
+      <dt>.control_panel</dt>
+<dd>
+<p class="note">nil if the side is not a control panel </p>
 <p class="note">set to true or false to create/destroy a control panel <span class="version">20080707</span></p>
-</dt>
-<dd><dl>
+<dl>
 <dt>
     .can_be_destroyed <span class="version">20080707</span>
 </dt>
@@ -1842,7 +1838,8 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
     .uses_item<span class="access"> (read-only)</span> <span class="version">20111201</span>
 </dt>
 <dd><p class="description">i.e. chip insertion</p></dd>
-</dl></dd>
+</dl>
+</dd>
       <dt>.primary<br>.secondary<br>.transparent</dt>
 <dd><dl>
 <dt>
@@ -1961,8 +1958,7 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <dt>Terminals()</dt>
 <dd><p class="description">iterates through all terminal texts on the level</p></dd>
 <dt>Terminals[index]</dt>
-<dd><dl>
-    </dl></dd>
+<dd></dd>
 </dl>
 </div>
 <h1>
@@ -1970,32 +1966,32 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <div class="tables">
 <p>The string mnemonics listed below can be used for assignment and as arguments to functions. Additionally, Aleph One's Lua interpreter has been modified so that equality comparisons between userdata types and strings are possible.</p>
 <p>For example, this script would move all players on the blue team to the red team:
-<pre>for p in Players() do
+<span class="pre">for p in Players() do
   if p.team == "blue" then
     p.team = "red"
   end
-end</pre>
+end</span>
 And this one would damage all major compilers with 10 points of fusion damage:
-<pre>for m in Monsters() do
+<span class="pre">for m in Monsters() do
   if m.type == "major compiler" then
     m:damage(10, "fusion")
   end
-end</pre>
+end</span>
 Each type has a read-only .index field, which represents the game's internal index:
-<pre>&gt; =ItemTypes["pistol"].index
+<span class="pre">&gt; =ItemTypes["pistol"].index
 1
-</pre>
+</span>
 Each type also has a .mnemonic field, which is handy for finding the mnemonic of a given type:
-<pre>&gt; =MonsterTypes["major compiler"].class.mnemonic
+<span class="pre">&gt; =MonsterTypes["major compiler"].class.mnemonic
 compiler
-</pre>
+</span>
 You can even use the mnemonic field to customize the mnemonics for your scenario. Note that you can only have one string mnemonic per type index:
-<pre>&gt; WeaponTypes["fist"].mnemonic = "puncher"
+<span class="pre">&gt; WeaponTypes["fist"].mnemonic = "puncher"
 &gt; =WeaponTypes["puncher"].index
 0
 &gt; =WeaponTypes["fist"]
 nil
-</pre>
+</span>
 If you do this, you should customize them all at the beginning of the script. Changing mnemonics mid-game will confuse anyone who tries to read your script, and probably yourself as well!
 </p>
 <h3>
@@ -2005,8 +2001,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>AmbientSounds()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"water"</li>
 <li>"sewage"</li>
 <li>"lava"</li>
@@ -2017,8 +2012,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"siren"</li>
 <li>"fan"</li>
 <li>"spht door"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"spht platform"</li>
 <li>"heavy spht door"</li>
 <li>"heavy spht platform"</li>
@@ -2029,8 +2024,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"machine binder"</li>
 <li>"machine bookpress"</li>
 <li>"machine puncher"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"electric hum"</li>
 <li>"alarm"</li>
 <li>"night wind"</li>
@@ -2039,9 +2034,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"alien noise 1"</li>
 <li>"alien noise 2"</li>
 <li>"alien harmonics"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="Collections"></a>Collections</h3>
 <dl>
@@ -2089,8 +2083,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
     </dl></dd>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"interface"</li>
 <li>"weapons in hand"</li>
 <li>"juggernaut"</li>
@@ -2102,8 +2095,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"trooper"</li>
 <li>"fighter"</li>
 <li>"defender"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"yeti"</li>
 <li>"bob"</li>
 <li>"vacbob"</li>
@@ -2115,8 +2108,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"sewage"</li>
 <li>"jjaro"</li>
 <li>"pfhor"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"water scenery"</li>
 <li>"lava scenery"</li>
 <li>"sewage scenery"</li>
@@ -2127,9 +2120,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"moon"</li>
 <li>"space"</li>
 <li>"cyborg"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="CompletionStates"></a>Completion States</h3>
 <dl>
@@ -2149,24 +2141,22 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>ControlPanelClasses()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"oxygen recharger"</li>
 <li>"single shield recharger"</li>
 <li>"double shield recharger"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"triple shield recharger"</li>
 <li>"light switch"</li>
 <li>"platform switch"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"tag switch"</li>
 <li>"pattern buffer"</li>
 <li>"terminal"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="ControlPanelTypes"></a>Control Panel Types</h3>
 <dl>
@@ -2199,8 +2189,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>DamageTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"explosion"</li>
 <li>"staff"</li>
 <li>"projectile"</li>
@@ -2209,8 +2198,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"claws"</li>
 <li>"alien weapon"</li>
 <li>"hulk slap"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"compiler"</li>
 <li>"fusion"</li>
 <li>"hunter"</li>
@@ -2219,8 +2208,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"defender"</li>
 <li>"yeti claws"</li>
 <li>"yeti projectile"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"crushing"</li>
 <li>"lava"</li>
 <li>"suffocation"</li>
@@ -2229,9 +2218,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"oxygen drain"</li>
 <li>"drone"</li>
 <li>"shotgun"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="DifficultyTypes"></a>Difficulty</h3>
 <dl>
@@ -2253,8 +2241,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>EffectTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"rocket explosion"</li>
 <li>"rocket contrail"</li>
 <li>"grenade explosion"</li>
@@ -2280,8 +2267,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"fist detonation"</li>
 <li>"minor defender detonation"</li>
 <li>"major defender detonation"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"defender spark"</li>
 <li>"trooper blood splash"</li>
 <li>"water lamp breaking"</li>
@@ -2307,8 +2294,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"medium goo splash"</li>
 <li>"large goo splash"</li>
 <li>"large goo emergence"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"minor hummer projectile detonation"</li>
 <li>"major hummer projectile detonation"</li>
 <li>"durandal hummer projectile detonation"</li>
@@ -2332,9 +2319,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"large jjaro emergence"</li>
 <li>"civilian fusion blood splash"</li>
 <li>"assimilated civilian fusion blood splash"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="FadeTypes"></a>Faders</h3>
 <dl>
@@ -2342,8 +2328,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>FadeTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"start cinematic fade in"</li>
 <li>"cinematic fade in"</li>
 <li>"long cinematic fade in"</li>
@@ -2355,8 +2340,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"bright"</li>
 <li>"long bright"</li>
 <li>"yellow"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"big yellow"</li>
 <li>"purple"</li>
 <li>"cyan"</li>
@@ -2368,8 +2353,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"long green"</li>
 <li>"static"</li>
 <li>"negative"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"big negative"</li>
 <li>"flicker negative"</li>
 <li>"dodge purple"</li>
@@ -2381,9 +2366,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"tint orange"</li>
 <li>"tint gross"</li>
 <li>"tint jjaro"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="GameTypes"></a>Game Types</h3>
 <dl>
@@ -2391,24 +2375,22 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>GameTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"kill monsters"</li>
 <li>"cooperative play"</li>
 <li>"capture the flag"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"king of the hill"</li>
 <li>"kill the man with the ball"</li>
 <li>"defense"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"rugby"</li>
 <li>"tag"</li>
 <li>"netscript"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="ItemTypes"></a>Items</h3>
 <dl>
@@ -2485,8 +2467,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
     </dl></dd>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"knife"</li>
 <li>"pistol"</li>
 <li>"pistol ammo"</li>
@@ -2499,8 +2480,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"missile launcher ammo"</li>
 <li>"invisibility"</li>
 <li>"invincibility"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"infravision"</li>
 <li>"alien weapon"</li>
 <li>"alien weapon ammo"</li>
@@ -2513,8 +2494,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"triple health"</li>
 <li>"shotgun"</li>
 <li>"shotgun ammo"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"key"</li>
 <li>"uplink chip"</li>
 <li>"light blue ball"</li>
@@ -2527,9 +2508,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"green ball"</li>
 <li>"smg"</li>
 <li>"smg ammo"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="LightFunctions"></a>Light Functions</h3>
 <dl>
@@ -2591,27 +2571,25 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>MonsterActions()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"stationary"</li>
 <li>"waiting to attack again"</li>
 <li>"moving"</li>
 <li>"attacking close"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"attacking far"</li>
 <li>"being hit"</li>
 <li>"dying hard"</li>
 <li>"dying soft"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"dying flaming"</li>
 <li>"teleporting"</li>
 <li>"teleporting in"</li>
 <li>"teleporting out"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="MonsterClasses"></a>Monster Classes</h3>
 <dl>
@@ -2619,31 +2597,29 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>MonsterClasses()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"player"</li>
 <li>"bob"</li>
 <li>"madd"</li>
 <li>"possessed drone"</li>
 <li>"defender"</li>
 <li>"fighter"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"trooper"</li>
 <li>"hunter"</li>
 <li>"enforcer"</li>
 <li>"juggernaut"</li>
 <li>"drone"</li>
 <li>"compiler"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"cyborg"</li>
 <li>"explodabob"</li>
 <li>"tick"</li>
 <li>"yeti"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="MonsterModes"></a>Monster Modes</h3>
 <dl>
@@ -2803,8 +2779,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
     </dl></dd>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"player"</li>
 <li>"minor tick"</li>
 <li>"major tick"</li>
@@ -2821,8 +2796,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"blue bob"</li>
 <li>"security bob"</li>
 <li>"explodabob"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"minor drone"</li>
 <li>"major drone"</li>
 <li>"big minor drone"</li>
@@ -2839,8 +2814,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"minor trooper"</li>
 <li>"major trooper"</li>
 <li>"mother of all cyborgs"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"mother of all hunters"</li>
 <li>"sewage yeti"</li>
 <li>"water yeti"</li>
@@ -2856,9 +2831,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"blue vacbob"</li>
 <li>"security vacbob"</li>
 <li>"explodavacbob"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="OverlayColors"></a>Overlay Colors</h3>
 <dl>
@@ -2883,24 +2857,22 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>PlatformTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"spht door"</li>
 <li>"spht split door"</li>
 <li>"locked spht door"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"spht platform"</li>
 <li>"noisy spht platform"</li>
 <li>"heavy spht door"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"pfhor door"</li>
 <li>"heavy spht platform"</li>
 <li>"pfhor platform"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="PlayerColors"></a>Player and Team Colors</h3>
 <dl>
@@ -2925,8 +2897,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>PolygonTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"normal"</li>
 <li>"item impassable"</li>
 <li>"monster impassable"</li>
@@ -2935,8 +2906,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"platform"</li>
 <li>"light on trigger"</li>
 <li>"platform on trigger"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"light off trigger"</li>
 <li>"platform off trigger"</li>
 <li>"teleporter"</li>
@@ -2945,8 +2916,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"visible monster trigger"</li>
 <li>"invisible monster trigger"</li>
 <li>"dual monster trigger"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"item trigger"</li>
 <li>"must be explored"</li>
 <li>"automatic exit"</li>
@@ -2955,9 +2926,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"glue"</li>
 <li>"glue trigger"</li>
 <li>"superglue"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="ProjectileTypes"></a>Projectiles</h3>
 <dl>
@@ -2965,8 +2935,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>ProjectileTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"missile"</li>
 <li>"grenade"</li>
 <li>"pistol bullet"</li>
@@ -2980,8 +2949,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"alien weapon"</li>
 <li>"fusion bolt minor"</li>
 <li>"fusion bolt major"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"hunter"</li>
 <li>"fist"</li>
 <li>"armageddon sphere"</li>
@@ -2995,8 +2964,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"minor energy drain"</li>
 <li>"major energy drain"</li>
 <li>"oxygen drain"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"minor hummer"</li>
 <li>"major hummer"</li>
 <li>"durandal hummer"</li>
@@ -3010,9 +2979,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"sewage yeti"</li>
 <li>"lava yeti"</li>
 <li>"smg bullet"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="SceneryTypes"></a>Scenery</h3>
 <dl>
@@ -3020,8 +2988,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>SceneryTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"light dirt"</li>
 <li>"dark dirt"</li>
 <li>"lava bones"</li>
@@ -3043,8 +3010,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"blood drops"</li>
 <li>"water thing"</li>
 <li>"gun"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"bob remains"</li>
 <li>"puddles"</li>
 <li>"big puddles"</li>
@@ -3066,8 +3033,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"alien short light"</li>
 <li>"alien long light"</li>
 <li>"alien ceiling rod light"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"bulbous yellow alien object"</li>
 <li>"square gray organic object"</li>
 <li>"pfhor skeleton"</li>
@@ -3087,9 +3054,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"lh'owon"</li>
 <li>"floor whip antenna"</li>
 <li>"ceiling whip antenna"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="ScoringModes"></a>Scoring Modes</h3>
 <dl>
@@ -3123,8 +3089,7 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>Sounds()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"startup"</li>
 <li>"teleport in"</li>
 <li>"teleport out"</li>
@@ -3197,8 +3162,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"cyborg projectile hit"</li>
 <li>"cyborg projectile flyby"</li>
 <li>"drone activate"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"drone start attack"</li>
 <li>"drone attack"</li>
 <li>"drone dying"</li>
@@ -3271,8 +3236,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"computer login"</li>
 <li>"computer logout"</li>
 <li>"computer page"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"heavy spht door"</li>
 <li>"heavy spht door opening"</li>
 <li>"heavy spht door closing"</li>
@@ -3344,9 +3309,8 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <li>"vacbob angry"</li>
 <li>"vacbob secure"</li>
 <li>"vacbob kill the player"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="TextureTypes"></a>Texture Types</h3>
 <dl>
@@ -3368,27 +3332,25 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>TransferModes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"normal"</li>
 <li>"pulsate"</li>
 <li>"wobble"</li>
 <li>"fast wobble"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"static"</li>
 <li>"landscape"</li>
 <li>"horizontal slide"</li>
 <li>"fast horizontal slide"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"vertical slide"</li>
 <li>"fast vertical slide"</li>
 <li>"wander"</li>
 <li>"fast wander"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 <h3>
 <a name="WeaponTypes"></a>Weapons</h3>
 <dl>
@@ -3396,25 +3358,23 @@ If you do this, you should customize them all at the beginning of the script. Ch
 <dt>WeaponTypes()</dt>
 </dl>
 <h4>Mnemonics</h4>
-<ul class="mnemonics">
-<div class="mnemonics-column">
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"fist"</li>
 <li>"pistol"</li>
 <li>"fusion pistol"</li>
 <li>"assault rifle"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"missile launcher"</li>
 <li>"flamethrower"</li>
 <li>"alien weapon"</li>
 <li>"shotgun"</li>
-</div>
-<div class="mnemonics-column">
+</ul></div>
+<div class="mnemonics-column"><ul class="mnemonics">
 <li>"ball"</li>
 <li>"smg"</li>
-</div>
+</ul></div>
 <div class="end-mnemonics"></div>
-</ul>
 </div>
 <h1>
 <a name="example_icon"></a>Example Icon</h1>

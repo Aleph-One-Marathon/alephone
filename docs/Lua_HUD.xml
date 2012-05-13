@@ -90,21 +90,21 @@
     <section name="Loading Collections" id="loading_collections">
       <description>
         <p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
-        <pre>CollectionsUsed = { 10, 16 }</pre>
         </p>
+        <pre>CollectionsUsed = { 10, 16 }</pre>
       </description>
     </section>
   </section>
   <triggers id="triggers">
     <description>These are functions scripts can define which Aleph One will call at specific times or events. For the HUD, the draw() trigger is the most important. For example, to write "Hello world" in the upper left corner of the screen:
-<pre>Triggers = {}
+<span class="pre">Triggers = {}
 function Triggers.init()
   myFont = Fonts.new{size = 14}
 end
 function Triggers.draw()
   myFont:draw_text("Hello world", 50, 50, {1, 1, 1, 1});
 end
-</pre>
+</span>
 </description>
     <function name="init">
       <description>when a game session is started (after leaving the main menu)</description>
@@ -124,7 +124,7 @@ end
   <section id="using_tables" name="Using Tables">
     <description><p>There are numerous tables (technically, userdata) defined in Aleph One which scripts can use to access objects in the game. A complete list is below.</p></description>
     <section id="custom" name="Custom Fields">
-      <description><p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.<pre>Players[0]._favorite_flavor = "chocolate"</pre></p></description>
+      <description><p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p><pre>Players[0]._favorite_flavor = "chocolate"</pre></description>
     </section>
   </section>
   <tables id="tables">
