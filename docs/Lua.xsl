@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <xsl:transform version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
-<xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes"/>
+<xsl:output method="html" encoding="utf-8" omit-xml-declaration="yes" doctype-public="-//W3C//DTD HTML 4.01//EN" doctype-system="http://www.w3.org/TR/html4/strict.dtd" />
 <xsl:template match="document">
   <html>
     <head>
@@ -82,6 +82,12 @@
 	  padding-left: 1px;
 	  padding-right: 1px;
       }
+      
+      span.pre {
+	  display: block;
+	  margin: 4px 0;
+	  white-space: pre-wrap;
+      }
 
       div.end-mnemonics {
 	  clear: both;
@@ -124,7 +130,7 @@
       </xsl:otherwise>
     </xsl:choose></a>
     <xsl:choose>
-      <xsl:when test="self::section and count(ancestor::*) = 1">
+      <xsl:when test="section and count(ancestor::*) = 1">
 	<ol>
 	  <xsl:for-each select="section"><xsl:call-template name="toc"/></xsl:for-each>
 	</ol>
@@ -221,24 +227,22 @@
 	  <xsl:choose>
 	    <xsl:when test="$total > 8">
 	      <xsl:variable name="third" select="ceiling($total div 3)"/>
-	      <ul class="mnemonics">
-		<div class="mnemonics-column">
+		<div class="mnemonics-column"><ul class="mnemonics">
 		  <xsl:for-each select="id(@contains)/mnemonics/mnemonic[position() &lt;= $third]">
 		    <xsl:call-template name="mnemonic"/>
 		  </xsl:for-each>
-		</div>
-		<div class="mnemonics-column">
+		</ul></div>
+		<div class="mnemonics-column"><ul class="mnemonics">
 		  <xsl:for-each select="id(@contains)/mnemonics/mnemonic[position() &gt; $third and position() &lt;= $third * 2]">
 		    <xsl:call-template name="mnemonic"/>
 		  </xsl:for-each>
-		</div>
-		<div class="mnemonics-column">
+		</ul></div>
+		<div class="mnemonics-column"><ul class="mnemonics">
 		  <xsl:for-each select="id(@contains)/mnemonics/mnemonic[position() &gt; $third * 2]">
 		    <xsl:call-template name="mnemonic"/>
 		  </xsl:for-each>
-		</div>
+		</ul></div>
 		<div class="end-mnemonics"/>
-	      </ul>
 	    </xsl:when>
 	    <xsl:otherwise>
 	      <ul class="mnemonics">
@@ -264,16 +268,26 @@
       <xsl:when test="index">
 	<dt><xsl:value-of select="@name"/>[index]</dt>
 	<dd>
-	  <dl>
-	    <xsl:apply-templates select="id(@contains)"/>
-	  </dl>
+	  <xsl:choose>
+	    <xsl:when test="id(@contains)/*">
+	      <dl>
+		<xsl:apply-templates select="id(@contains)"/>
+	      </dl>
+	    </xsl:when>
+	  </xsl:choose>
 	</dd>
       </xsl:when>
       <xsl:otherwise>
 	<dt><xsl:value-of select="@name"/></dt>
 	<dd>
+	  <xsl:choose>
+	    <xsl:when test="id(@contains)/description">
+	      <p class="description"><xsl:copy-of select="id(@contains)/description/node()"/></p>
+	    </xsl:when>
+	  </xsl:choose>
+	  <xsl:apply-templates select="id(@contains)/note"/>
 	  <dl>
-	    <xsl:apply-templates select="id(@contains)"/>
+	    <xsl:apply-templates select="id(@contains)/function|id(@contains)/function-variable|id(@contains)/subtable|id(@contains)/subtable-accessor|id(@contains)/variable"/>
 	  </dl>
 	</dd>
       </xsl:otherwise>
@@ -284,9 +298,9 @@
 <xsl:template match="subtable">
   <dt>.<xsl:value-of select="@name"/>
   <xsl:for-each select="alias"><br/>.<xsl:value-of select="."/></xsl:for-each>
-  <xsl:apply-templates select="note"/>
   </dt>
   <dd>
+    <xsl:apply-templates select="note"/>
     <xsl:choose>
       <xsl:when test="description">
 	<p class="description"><xsl:copy-of select="description/node()"/></p>
@@ -396,7 +410,11 @@
 	<p class="description"><xsl:copy-of select="description/node()"/></p>
       </xsl:when>
     </xsl:choose>
-    <dl><xsl:apply-templates select="function|subtable|subtable-accessor|variable"><xsl:sort select="@name"/></xsl:apply-templates></dl>
+    <xsl:choose>
+      <xsl:when test="function|subtable|subtable-accessor|variable">
+	<dl><xsl:apply-templates select="function|subtable|subtable-accessor|variable"><xsl:sort select="@name"/></xsl:apply-templates></dl>
+      </xsl:when>
+    </xsl:choose>
   </dd>
 </xsl:template>
 
