@@ -456,43 +456,39 @@ void RenderRasterize_Shader::render_tree() {
 
 void RenderRasterize_Shader::render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep)
 {
-	if (!node->clipping_windows)
-		return;
+	// parasitic object detection
+    objectCount = 0;
+    objectY = 0;
 
-	for (clipping_window_data *win = node->clipping_windows; win; win = win->next_window)
-	{
-		GLdouble clip[] = { 0., 0., 0., 0. };
-
-		// recenter to player's orientation temporarily
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glTranslatef(cam_pos.x, cam_pos.y, 0.);
-		glRotatef(cam_yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
-
-		glRotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
-		clip[0] = win->left.i;
-		clip[1] = win->left.j;
-		glEnable(GL_CLIP_PLANE0);
-		glClipPlane(GL_CLIP_PLANE0, clip);
-
-		glRotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
-		clip[0] = win->right.i;
-		clip[1] = win->right.j;
-		glEnable(GL_CLIP_PLANE1);
-		glClipPlane(GL_CLIP_PLANE1, clip);
-
-		glPopMatrix();
-
-		// parasitic object detection
-		objectCount = 0;
-		objectY = 0;
-
-		RenderRasterizerClass::render_node(node, SeeThruLiquids, renderStep);
-	}
+    RenderRasterizerClass::render_node(node, SeeThruLiquids, renderStep);
 
 	// turn off clipping planes
 	glDisable(GL_CLIP_PLANE0);
 	glDisable(GL_CLIP_PLANE1);
+}
+
+void RenderRasterize_Shader::clip_to_window(clipping_window_data *win)
+{
+    GLdouble clip[] = { 0., 0., 0., 0. };
+        
+    // recenter to player's orientation temporarily
+    glPushMatrix();
+    glTranslatef(cam_pos.x, cam_pos.y, 0.);
+    glRotatef(cam_yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
+    
+    glRotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
+    clip[0] = win->left.i;
+    clip[1] = win->left.j;
+    glEnable(GL_CLIP_PLANE0);
+    glClipPlane(GL_CLIP_PLANE0, clip);
+    
+    glRotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
+    clip[0] = win->right.i;
+    clip[1] = win->right.j;
+    glEnable(GL_CLIP_PLANE1);
+    glClipPlane(GL_CLIP_PLANE1, clip);
+    
+    glPopMatrix();
 }
 
 void RenderRasterize_Shader::store_endpoint(
@@ -826,6 +822,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 	short vertex_count = polygon->vertex_count;
 
 	if (vertex_count) {
+        clip_to_window(window);
 
 		world_distance x = 0.0, y = 0.0;
 		instantiate_transfer_mode(view, surface->transfer_mode, x, y);
@@ -974,6 +971,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 		long_to_overflow_short_2d(surface->p1, vertex[1], flags);
 
 		if (vertex_count) {
+            clip_to_window(window);
 
 			vertex_count= 4;
 			vertices[0].z= vertices[1].z= h + view->origin.z;
@@ -1278,6 +1276,10 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 void RenderRasterize_Shader::render_node_object(render_object_data *object, bool other_side_of_media, RenderStep renderStep) {
 
+    if (!object->clipping_windows)
+        return;
+
+	clipping_window_data *win;
 	rectangle_definition& rect = object->rectangle;
 	const world_point3d& pos = rect.Position;
 
@@ -1300,6 +1302,20 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		return;
 	}
 
+    for (win = object->clipping_windows; win; win = win->next_window)
+    {
+        clip_to_window(win);
+        _render_node_object_helper(object, renderStep);
+    }
+    
+    glDisable(GL_CLIP_PLANE5);
+}
+
+void RenderRasterize_Shader::_render_node_object_helper(render_object_data *object, RenderStep renderStep) {
+
+	rectangle_definition& rect = object->rectangle;
+	const world_point3d& pos = rect.Position;
+    
 	if(rect.ModelPtr) {
 		glPushMatrix();
 		glTranslated(pos.x, pos.y, pos.z);
@@ -1313,7 +1329,6 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 
 		RenderModel(rect, collection, clut, weaponFlare, renderStep);
 		glPopMatrix();
-		glDisable(GL_CLIP_PLANE5);
 		return;
 	}
 
@@ -1335,13 +1350,11 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 			objectY = pos.y;
 		}
 	} else {
-		// allow shader to adjust sprites' depth,
-		// without interfering with closer walls
-		glDepthMask(GL_FALSE);
+		glDisable(GL_DEPTH_TEST);
 	}
 
 	TextureManager TMgr = setupSpriteTexture(rect, OGL_Txtr_Inhabitant, offset, renderStep);
-	if (TMgr.ShapeDesc == UNONE) { return; }
+	if (TMgr.ShapeDesc == UNONE) { glPopMatrix(); return; }
 
 	float texCoords[2][2];
 
@@ -1407,9 +1420,8 @@ void RenderRasterize_Shader::render_node_object(render_object_data *object, bool
 		glDrawArrays(GL_QUADS, 0, 4);
 	}
 
-	glDepthMask(GL_TRUE);
+	glEnable(GL_DEPTH_TEST);
 	glPopMatrix();
 	Shader::disable();
 	TMgr.RestoreTextureMatrix();
-	glDisable(GL_CLIP_PLANE5);
 }

@@ -713,6 +713,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 		short y0, y1;
 		short left, right, left_count, right_count;
 		short x0[MAXIMUM_OBJECT_BASE_NODES], x1[MAXIMUM_OBJECT_BASE_NODES]; /* sorted, left to right */
+		long_vector2d lvec[MAXIMUM_OBJECT_BASE_NODES], rvec[MAXIMUM_OBJECT_BASE_NODES];
 		clipping_window_data *window;
 		/* Work with object depth. Fudge by half_screen_width, otherwise close
 		   objects vanish right in front of the camera. half_screen_width is
@@ -744,8 +745,12 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 				for (j= 0; j<left_count && window->x0>=x0[j]; ++j)
 					;
 				for (k= j; k<left_count; ++k)
+				{
 					x0[k+1]= x0[k];
+					lvec[k+1]= lvec[k];
+				}
 				x0[j]= window->x0;
+				lvec[j]= window->left;
 				left_count+= 1;
 			}
 			
@@ -755,8 +760,12 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 				for (j= 0; j<right_count && window->x1>=x1[j]; ++j)
 					;
 				for (k= j; k<right_count; ++k)
+				{
 					x1[k+1]= x1[k];
+					rvec[k+1]= rvec[k];
+				}
 				x1[j]= window->x1;
+				rvec[j]= window->right;
 				right_count+= 1;
 			}
 		}
@@ -807,6 +816,7 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 					
 					/* build it */
 					window->x0= x0[left], window->x1= x1[right];
+					window->left= lvec[left], window->right= rvec[right];
 					window->y0= y0, window->y1= y1;
 					
 					/* link it */

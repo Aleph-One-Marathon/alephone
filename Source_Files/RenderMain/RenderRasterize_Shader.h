@@ -41,6 +41,9 @@ protected:
 
 	virtual void render_node_object(render_object_data *object, bool other_side_of_media, RenderStep renderStep);
 	
+	virtual void clip_to_window(clipping_window_data *win);
+	virtual void _render_node_object_helper(render_object_data *object, RenderStep renderStep);
+	
 public:
 
 	RenderRasterize_Shader() : blur(NULL), RenderRasterizerClass() {}
