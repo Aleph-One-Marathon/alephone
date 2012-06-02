@@ -116,6 +116,7 @@ static int prev_width;
 static int prev_height;
 
 static int failed_multisamples = 0;		// remember when GL multisample setting didn't succeed
+static bool passed_shader = false;      // remember when we passed Shader tests
 
 // From shell_sdl.cpp
 extern bool option_nogamma;
@@ -674,14 +675,6 @@ static bool need_mode_change(int width, int height, int depth, bool nogl)
 		// check GL-specific attributes
 		int atval = 0;
 		
-		int want_depth = (screen_mode.acceleration == _shader_acceleration) ? 24 : 16;
-		if (SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &atval) == 0 && atval < want_depth)
-			return true;
-		
-		int want_stencil = Screen::instance()->lua_hud() ? 1 : 0;
-		if (SDL_GL_GetAttribute(SDL_GL_STENCIL_SIZE, &atval) == 0 && atval < want_stencil)
-			return true;
-		
 #if SDL_VERSION_ATLEAST(1,2,6)
 		int want_samples = Get_OGL_ConfigureData().Multisamples;
 		if (SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &atval) == 0 && atval != want_samples &&
@@ -694,11 +687,11 @@ static bool need_mode_change(int width, int height, int depth, bool nogl)
 		if (SDL_GL_GetAttribute(SDL_GL_SWAP_CONTROL, &atval) == 0 && atval != want_vsync)
 			return true;
 #endif
+        
+		if (screen_mode.acceleration == _shader_acceleration && !passed_shader)
+			return true;
 	}
 #endif
-	// Lua HUD needs software surface in SW renderer, for alpha channel
-	if (!wantgl && Screen::instance()->lua_hud() && !(s->flags & SDL_SWSURFACE))
-		return true;
 	
 	return false;
 }
@@ -714,15 +707,14 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 	if (need_mode_change(width, height, depth, nogl)) {
 #ifdef HAVE_OPENGL
 	if (!nogl && screen_mode.acceleration != _no_acceleration) {
+		passed_shader = false;
 		flags |= SDL_OPENGL;
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
-		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, (screen_mode.acceleration == _shader_acceleration) ? 24 : 16);
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 		SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-		if (Screen::instance()->lua_hud()) {
-			SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1);
-		}
+		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 #if SDL_VERSION_ATLEAST(1,2,6)
 		if (Get_OGL_ConfigureData().Multisamples > 0) {
 			SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
@@ -752,6 +744,15 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 			failed_multisamples = Get_OGL_ConfigureData().Multisamples;
 	}
 #endif
+	if (main_surface == NULL && !nogl && screen_mode.acceleration != _no_acceleration) {
+		fprintf(stderr, "WARNING: Failed to initialize OpenGL with 24 bit depth\n");
+		fprintf(stderr, "WARNING: Retrying with 16 bit depth\n");
+		SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
+		SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 0);
+		main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
+		if (main_surface)
+			logWarning("Stencil buffer is not available");
+	}
 	if (main_surface != NULL && screen_mode.acceleration == _shader_acceleration)
 	{
 		// see if we can actually run shaders
@@ -764,8 +765,11 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 			fprintf(stderr, "WARNING: Failed to initialize OpenGL (Shader) renderer\n");
 			fprintf(stderr, "WARNING: Retrying with OpenGL (Classic) renderer\n");
 			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
-			SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 			main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
+		}
+		else
+		{
+			passed_shader = true;
 		}
 	}
 				
@@ -776,13 +780,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #ifdef HAVE_OPENGL
 		fprintf(stderr, "WARNING: Failed to initialize OpenGL with 24 bit colour\n");
 		fprintf(stderr, "WARNING: Retrying with 16 bit colour\n");
+		logWarning("Trying OpenGL 16-bit mode");
 		
-		if (screen_mode.acceleration == _shader_acceleration)
-		{
-			logWarning("OpenGL (Shader) renderer is not available in 16-bit mode");
-			screen_mode.acceleration = graphics_preferences->screen_mode.acceleration = _opengl_acceleration;
-			SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
-		}
 		SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 5);
  		SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 5);
 		SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 5);
