@@ -411,11 +411,11 @@ bool XML_TextureOptionsParser::AttributesDone()
 				actual_clut = SILHOUETTE_BITMAP_CLUTSPECIFIC + CLUT;
 		}
 	
-	TOHash::iterator it = Collections[Collection].find(TOKey(CLUT, Bitmap));
+	TOHash::iterator it = Collections[Collection].find(TOKey(actual_clut, Bitmap));
 	if (it == Collections[Collection].end())
 	{
-		Collections[Collection][TOKey(CLUT, Bitmap)] = Data;
-		return true;
+		Collections[Collection][TOKey(actual_clut, Bitmap)] = Data;
+		continue;
 	}
 		
 	if (Attributes.count("opac_type"))
