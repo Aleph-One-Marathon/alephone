@@ -225,7 +225,34 @@ OGL_SkinData *OGL_SkinManager::GetSkin(short CLUT)
 	for (unsigned k=0; k<SkinData.size(); k++)
 	{
 		OGL_SkinData& Skin = SkinData[k];
-		if (Skin.CLUT == CLUT || Skin.CLUT == ALL_CLUTS)
+		if (Skin.CLUT == CLUT)
+			return &Skin;
+	}
+
+	if (IsInfravisionTable(CLUT) && CLUT != INFRAVISION_BITMAP_SET)
+	{
+        for (unsigned k=0; k<SkinData.size(); k++)
+        {
+            OGL_SkinData& Skin = SkinData[k];
+            if (Skin.CLUT == INFRAVISION_BITMAP_SET)
+                return &Skin;
+        }
+    }
+    
+	if (IsSilhouetteTable(CLUT) && CLUT != SILHOUETTE_BITMAP_SET)
+	{
+        for (unsigned k=0; k<SkinData.size(); k++)
+        {
+            OGL_SkinData& Skin = SkinData[k];
+            if (Skin.CLUT == SILHOUETTE_BITMAP_SET)
+                return &Skin;
+        }
+    }
+
+    for (unsigned k=0; k<SkinData.size(); k++)
+	{
+		OGL_SkinData& Skin = SkinData[k];
+		if (Skin.CLUT == ALL_CLUTS)
 			return &Skin;
 	}
 
@@ -583,7 +610,7 @@ void OGL_ResetModelSkins(bool Clear_OGL_Txtrs)
 
 class XML_SkinDataParser: public XML_ElementParser
 {
-	short CLUT;
+	short CLUT_Variant;
 	
 	OGL_SkinData Data;
 public:
@@ -599,6 +626,7 @@ public:
 bool XML_SkinDataParser::Start()
 {
 	Data = DefaultSkinData;
+    CLUT_Variant = CLUT_VARIANT_NORMAL;
 	
 	return true;
 }
@@ -608,6 +636,10 @@ bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
 	if (StringsEqual(Tag,"clut"))
 	{
 		return ReadBoundedInt16Value(Value,Data.CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET));
+	}
+	else if (StringsEqual(Tag,"clut_variant"))
+	{
+		return ReadBoundedInt16Value(Value,CLUT_Variant,short(ALL_CLUT_VARIANTS),short(NUMBER_OF_CLUT_VARIANTS)-1);
 	}
 	else if (StringsEqual(Tag,"opac_type"))
 	{
@@ -680,21 +712,65 @@ bool XML_SkinDataParser::HandleAttribute(const char *Tag, const char *Value)
 
 bool XML_SkinDataParser::AttributesDone()
 {
-	// Check to see if a frame is already accounted for
 	assert(SkinDataPtr);
 	vector<OGL_SkinData>& SkinData = *SkinDataPtr;
-	for (vector<OGL_SkinData>::iterator SDIter = SkinData.begin(); SDIter < SkinData.end(); SDIter++)
+    
+    short CLUT = Data.CLUT;
+    // translate deprecated clut options
+	if (CLUT == INFRAVISION_BITMAP_SET)
 	{
-		if (SDIter->CLUT == Data.CLUT)
-		{
-			// Replace the data
-			*SDIter = Data;
-			return true;
-		}
+		CLUT = ALL_CLUTS;
+		CLUT_Variant = CLUT_VARIANT_INFRAVISION;
+	}
+	else if (CLUT == SILHOUETTE_BITMAP_SET)
+	{
+		CLUT = ALL_CLUTS;
+		CLUT_Variant = CLUT_VARIANT_SILHOUETTE;
 	}
 	
-	// If not, then add a new frame entry
-	SkinData.push_back(Data);
+	// loop so we can apply "all variants" mode if needed
+	for (short var = CLUT_VARIANT_NORMAL; var < NUMBER_OF_CLUT_VARIANTS; var++)
+	{
+		if (CLUT_Variant != ALL_CLUT_VARIANTS && CLUT_Variant != var)
+			continue;
+		
+		// translate clut+variant to internal clut number
+		short actual_clut = CLUT;
+		if (var == CLUT_VARIANT_INFRAVISION)
+		{
+			if (CLUT == ALL_CLUTS)
+				actual_clut = INFRAVISION_BITMAP_SET;
+			else
+				actual_clut = INFRAVISION_BITMAP_CLUTSPECIFIC + CLUT;
+		}
+		else if (var == CLUT_VARIANT_SILHOUETTE)
+		{
+			if (CLUT == ALL_CLUTS)
+				actual_clut = SILHOUETTE_BITMAP_SET;
+			else
+				actual_clut = SILHOUETTE_BITMAP_CLUTSPECIFIC + CLUT;
+		}
+        
+        Data.CLUT = actual_clut;
+
+        // Check to see if a frame is already accounted for
+        bool found = false;
+        for (vector<OGL_SkinData>::iterator SDIter = SkinData.begin(); SDIter < SkinData.end(); SDIter++)
+        {
+            if (SDIter->CLUT == Data.CLUT)
+            {
+                // Replace the data
+                *SDIter = Data;
+                found = true;
+                break;
+            }
+        }
+        if (!found)
+        {
+            // If not, then add a new frame entry
+            SkinData.push_back(Data);
+        }
+    }
 	
 	return true;
 }

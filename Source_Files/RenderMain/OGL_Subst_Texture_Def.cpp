@@ -90,7 +90,25 @@ OGL_TextureOptions *OGL_GetTextureOptions(short Collection, short CLUT, short Bi
 	{
 		return &it->second;
 	}
+	
+	if (IsInfravisionTable(CLUT) && CLUT != INFRAVISION_BITMAP_SET)
+	{
+		it = Collections[Collection].find(TOKey(INFRAVISION_BITMAP_SET, Bitmap));
+		if (it != Collections[Collection].end())
+		{
+			return &it->second;
+		}
+	}
 
+	if (IsSilhouetteTable(CLUT) && CLUT != SILHOUETTE_BITMAP_SET)
+	{
+		it = Collections[Collection].find(TOKey(SILHOUETTE_BITMAP_SET, Bitmap));
+		if (it != Collections[Collection].end())
+		{
+			return &it->second;
+		}
+	}
+	
 	it = Collections[Collection].find(TOKey(ALL_CLUTS, Bitmap));
 	if (it != Collections[Collection].end())
 	{
@@ -151,7 +169,7 @@ static XML_TO_ClearParser TO_ClearParser;
 class XML_TextureOptionsParser: public XML_ElementParser
 {
 	bool CollIsPresent, BitmapIsPresent;
-	short Collection, CLUT, Bitmap;
+	short Collection, CLUT, Bitmap, CLUT_Variant;
 
 	std::set<std::string> Attributes;
 	
@@ -173,6 +191,7 @@ bool XML_TextureOptionsParser::Start()
 	Data = DefaultTextureOptions;
 	CollIsPresent = BitmapIsPresent = false;
 	CLUT = ALL_CLUTS;
+	CLUT_Variant = CLUT_VARIANT_NORMAL;
 	Attributes.clear();
 		
 	return true;
@@ -192,6 +211,10 @@ bool XML_TextureOptionsParser::_HandleAttribute(const char *Tag, const char *Val
 	else if (StringsEqual(Tag,"clut"))
 	{
 		return ReadBoundedInt16Value(Value,CLUT,short(ALL_CLUTS),short(SILHOUETTE_BITMAP_SET));
+	}
+	else if (StringsEqual(Tag,"clut_variant"))
+	{
+		return ReadBoundedInt16Value(Value,CLUT_Variant,short(ALL_CLUT_VARIANTS),short(NUMBER_OF_CLUT_VARIANTS)-1);
 	}
 	else if (StringsEqual(Tag,"bitmap"))
 	{
@@ -353,6 +376,41 @@ bool XML_TextureOptionsParser::AttributesDone()
 		return false;
 	}
 	
+	// translate deprecated clut options
+	if (CLUT == INFRAVISION_BITMAP_SET)
+	{
+		CLUT = ALL_CLUTS;
+		CLUT_Variant = CLUT_VARIANT_INFRAVISION;
+	}
+	else if (CLUT == SILHOUETTE_BITMAP_SET)
+	{
+		CLUT = ALL_CLUTS;
+		CLUT_Variant = CLUT_VARIANT_SILHOUETTE;
+	}
+	
+	// loop so we can apply "all variants" mode if needed
+	for (short var = CLUT_VARIANT_NORMAL; var < NUMBER_OF_CLUT_VARIANTS; var++)
+	{
+		if (CLUT_Variant != ALL_CLUT_VARIANTS && CLUT_Variant != var)
+			continue;
+		
+		// translate clut+variant to internal clut number
+		short actual_clut = CLUT;
+		if (var == CLUT_VARIANT_INFRAVISION)
+		{
+			if (CLUT == ALL_CLUTS)
+				actual_clut = INFRAVISION_BITMAP_SET;
+			else
+				actual_clut = INFRAVISION_BITMAP_CLUTSPECIFIC + CLUT;
+		}
+		else if (var == CLUT_VARIANT_SILHOUETTE)
+		{
+			if (CLUT == ALL_CLUTS)
+				actual_clut = SILHOUETTE_BITMAP_SET;
+			else
+				actual_clut = SILHOUETTE_BITMAP_CLUTSPECIFIC + CLUT;
+		}
+	
 	TOHash::iterator it = Collections[Collection].find(TOKey(CLUT, Bitmap));
 	if (it == Collections[Collection].end())
 	{
@@ -468,6 +526,7 @@ bool XML_TextureOptionsParser::AttributesDone()
 	if (Attributes.count("minimum_glow_intensity"))
 	{
 		it->second.MinGlowIntensity = Data.MinGlowIntensity;
+	}
 	}
 	
 	return true;

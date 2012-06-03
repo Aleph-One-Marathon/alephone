@@ -62,8 +62,13 @@ struct TextureState
 	int IDUsage[NUMBER_OF_TEXTURES];	// Which ID's are being used?  Reset every frame.
 	int unusedFrames;					// How many frames have passed since we were last used.
 	short TextureType;
+    
+    GLdouble U_Scale;
+    GLdouble V_Scale;
+    GLdouble U_Offset;
+    GLdouble V_Offset;
 	
-	TextureState() {IsUsed = false; Reset(); TextureType = NONE;}
+	TextureState() {IsUsed = false; Reset(); TextureType = NONE; U_Scale = V_Scale = 1; U_Offset = V_Offset = 0;}
 	~TextureState() {Reset();}
 	
 	// Allocate some textures and indicate whether an allocation had happened.
@@ -95,10 +100,9 @@ struct TextureState
 struct CollBitmapTextureState
 {
 	TextureState CTStates[NUMBER_OF_OPENGL_BITMAP_SETS];
-	GLdouble U_Scale, V_Scale, U_Offset, V_Offset;
 	
 	// Sensible default
-	CollBitmapTextureState() {U_Scale = V_Scale = 1; U_Offset = V_Offset = 0;}
+	CollBitmapTextureState() {}
 };
 
 
