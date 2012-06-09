@@ -82,7 +82,7 @@ OSErr open_network_microphone()
 	description.componentManufacturer = kAudioUnitManufacturer_Apple;
 	description.componentFlags = 0;
 	description.componentFlagsMask = 0;
-	if (component = FindNextComponent(NULL, &description))
+	if ((component = FindNextComponent(NULL, &description)))
 	{
 		err = OpenAComponent(component, &fAudioUnit);
 		if (err != noErr)
@@ -97,7 +97,7 @@ OSErr open_network_microphone()
 	
 	// enable input on the AUHAL
 	err = AudioUnitSetProperty(fAudioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, 1, &param, sizeof(UInt32));
-	if (err = noErr)
+	if (err == noErr)
 	{
 		// disable output on the AUHAL
 		param = 0;

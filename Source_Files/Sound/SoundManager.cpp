@@ -306,7 +306,7 @@ void SoundManager::DirectPlaySound(short sound_index, angle direction, short vol
 				variables.priority = 0;
 				variables.volume = volume;
 
-				if (direction = NONE || !listener)
+				if (direction == NONE || !listener)
 				{
 					variables.left_volume = variables.right_volume = volume;
 				}

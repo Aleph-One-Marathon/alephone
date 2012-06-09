@@ -33,7 +33,7 @@
    and return it in dest. Return OK on success. */
 int LNat_Str_To_Upper(const char * str, char * dest)
 {
-  while(*(dest++) = toupper(*(str++)))
+  while((*(dest++) = toupper(*(str++))))
   {}
   return OK;
 }

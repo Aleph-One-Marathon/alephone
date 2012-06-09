@@ -1506,6 +1506,7 @@ static int Lua_Side_ControlPanel_Set_Type(lua_State *L)
 // the old version set a useless flag; instead, do nothing
 static int Lua_Side_ControlPanel_Set_UsesItem(lua_State*)
 {
+    return 0;
 }
 
 const luaL_reg Lua_Side_ControlPanel_Set[] = {

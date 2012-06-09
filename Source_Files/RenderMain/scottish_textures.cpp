@@ -478,7 +478,7 @@ void Rasterizer_SW_Class::texture_horizontal_polygon(polygon_definition& texture
 						{
 							texture_horizontal_polygon_lines<pixel32, _sw_alpha_fast>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *)precalculation_table, vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count);
 						} 
-						else if (graphics_preferences->software_alpha_blending = _sw_alpha_nice)
+						else if (graphics_preferences->software_alpha_blending == _sw_alpha_nice)
 						{
 							texture_horizontal_polygon_lines<pixel32, _sw_alpha_nice>(polygon->texture, screen, view, (struct _horizontal_polygon_line_data *) precalculation_table, vertices[highest_vertex].y, left_table, right_table, aggregate_total_line_count, sw_texture->opac_table());
 						}
