@@ -195,7 +195,7 @@ bool XML_TextureOptionsParser::_HandleAttribute(const char *Tag, const char *Val
 	}
 	else if (StringsEqual(Tag,"bitmap"))
 	{
-		if (ReadBoundedInt16Value(Value,Bitmap,0,MAXIMUM_SHAPES_PER_COLLECTION-1))
+		if (ReadBoundedInt16Value(Value,Bitmap,0,INT16_MAX))
 		{
 			BitmapIsPresent = true;
 			return true;
