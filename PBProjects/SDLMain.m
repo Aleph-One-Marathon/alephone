@@ -88,58 +88,6 @@ static NSString *getApplicationName(void)
 /* The main class of the application, the application's delegate */
 @implementation SDLMain
 
-- (IBAction)prefsMenu:(id)sender
-{
-    printf ("prefs menu\n");
-}
-
-- (IBAction)newGame:(id)sender
-{
-    printf ("new game\n");
-    
-    NSRunAlertPanel (@"Get ready to blow up some... stuff!", 
-        @"Click OK to begin total carnage. Click Cancel to prevent total carnage.", 	        		@"OK", @"Cancel", nil);
-}
-
-- (IBAction)openGame:(id)sender
-{
-    NSString *path = nil;
-    NSOpenPanel *openPanel = [ NSOpenPanel openPanel ];
-    
-    if ( [ openPanel runModalForDirectory:nil
-             file:@"SavedGame" types:nil ] ) {
-             
-        path = [ [ openPanel filenames ] objectAtIndex:0 ];
-    }
-    
-    printf ("open game: %s\n", [ path UTF8String ]);
-}
-
-- (IBAction)saveGame:(id)sender
-{
-    NSString *path = nil;
-    NSSavePanel *savePanel = [ NSSavePanel savePanel ];
-    
-    if ( [ savePanel runModalForDirectory:nil
-           file:@"SaveGameFile" ] ) {
-            
-        path = [ savePanel filename ];
-    }
-    
-    printf ("save game: %s\n", [ path UTF8String ]);
-}
-
-- (IBAction)saveGameAs:(id)sender
-{
-    printf ("save game as\n");
-}
-
-- (IBAction)help:(id)sender
-{
-    NSRunAlertPanel (@"Oh help, where have ye gone?", 
-        @"Sorry, there is no help available.\n\nThis message brought to you by We Don't Document, Inc.\n\n", @"Rats", @"Good, I never read it anyway", nil);
-}
-
 /* Find the name of our bundle, as we'll need this later for finding files. */
 /* We also find other application identifiers here. */
 - (void) findBundleName
