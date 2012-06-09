@@ -62,6 +62,7 @@
   /* defines for win32 */
   #include <windows.h>
   #include <winsock.h>
+  typedef int socklen_t;
   
   /* this is the win32 version of the OsSocket struct */
   struct OsSocket {
