@@ -497,9 +497,9 @@ short ModifyCLUT(short TransferMode, short CLUT)
 	short CTable;
 	
 	// Tinted mode is only used for invisibility, and infravision will make objects visible
-	if (TransferMode == _static_transfer) CTable = SILHOUETTE_BITMAP_SET;
-	else if (TransferMode == _tinted_transfer) CTable = SILHOUETTE_BITMAP_SET;
-	else if (InfravisionActive) CTable = INFRAVISION_BITMAP_SET;
+	if (TransferMode == _static_transfer) CTable = SILHOUETTE_BITMAP_CLUTSPECIFIC + CLUT;
+	else if (TransferMode == _tinted_transfer) CTable = SILHOUETTE_BITMAP_CLUTSPECIFIC + CLUT;
+	else if (InfravisionActive) CTable = INFRAVISION_BITMAP_CLUTSPECIFIC + CLUT;
 	else CTable = CLUT;
 	
 	return CTable;
@@ -556,10 +556,10 @@ bool TextureManager::Setup()
 			if (!SetupTextureGeometry()) return false;
 
 		// Store sprite scale/offset
-		CBTS.U_Scale = U_Scale;
-		CBTS.V_Scale = V_Scale;
-		CBTS.U_Offset = U_Offset;
-		CBTS.V_Offset = V_Offset;
+		CTState.U_Scale = U_Scale;
+		CTState.V_Scale = V_Scale;
+		CTState.U_Offset = U_Offset;
+		CTState.V_Offset = V_Offset;
 
 		// This finding of color tables sets the glow state
 		if (!substitute) 
@@ -633,10 +633,10 @@ bool TextureManager::Setup()
 	else
 	{
 		// Get sprite scale/offset
-		U_Scale = CBTS.U_Scale;
-		V_Scale = CBTS.V_Scale;
-		U_Offset = CBTS.U_Offset;
-		V_Offset = CBTS.V_Offset;
+		U_Scale = CTState.U_Scale;
+		V_Scale = CTState.V_Scale;
+		U_Offset = CTState.U_Offset;
+		V_Offset = CTState.V_Offset;
 		
 		// Get glow state
 		IsGlowing = CTState.IsGlowing;
@@ -767,7 +767,7 @@ bool TextureManager::LoadSubstituteTexture()
 	SetPixelOpacities(*TxtrOptsPtr, NormalImage);
 	
 	// Modify if infravision is active
-	if (CTable == INFRAVISION_BITMAP_SET)
+	if (IsInfravisionTable(CTable))
 	{
 		FindInfravisionVersion(Collection, NormalImage);
 
@@ -777,7 +777,7 @@ bool TextureManager::LoadSubstituteTexture()
 		// FIXME: bump maps don't load properly under infravision
 		OffsetImage.set((ImageDescriptor *) NULL);
 	}
-	else if (CTable == SILHOUETTE_BITMAP_SET)
+	else if (IsSilhouetteTable(CTable))
 	{
 		FindSilhouetteVersion(NormalImage);
 		GlowImage.set((ImageDescriptor *) NULL);
@@ -907,7 +907,7 @@ void TextureManager::FindColorTables()
 	IsGlowing = false;
 	
 	// The silhouette case is easy
-	if (CTable == SILHOUETTE_BITMAP_SET)
+	if (IsSilhouetteTable(CTable))
 	{
 		NormalColorTable[0] = 0;
 		for (int k=1; k<MAXIMUM_SHADING_TABLE_INDEXES; k++)
@@ -1199,7 +1199,7 @@ uint32 *TextureManager::GetFakeLandscape()
 	SkyColor[3] = 1;
 	
 	// Modify if infravision is active
-	if (CTable == INFRAVISION_BITMAP_SET)
+	if (IsInfravisionTable(CTable))
 	{
 		FindInfravisionVersionRGBA(Collection,LandColor);
 		FindInfravisionVersionRGBA(Collection,SkyColor);
@@ -1639,9 +1639,9 @@ void LoadModelSkin(ImageDescriptor& SkinImage, short Collection, short CLUT)
 	
 	int TxtrWidth = Image.get()->GetWidth();
 	int TxtrHeight = Image.get()->GetHeight();
-	
-	bool IsInfravision = (CLUT == INFRAVISION_BITMAP_SET);
-	bool IsSilhouette = (CLUT == SILHOUETTE_BITMAP_SET);
+
+	bool IsInfravision = IsInfravisionTable(CLUT);
+	bool IsSilhouette = IsSilhouetteTable(CLUT);
 	
 	if (IsInfravision)
 		FindInfravisionVersion(Collection, Image);

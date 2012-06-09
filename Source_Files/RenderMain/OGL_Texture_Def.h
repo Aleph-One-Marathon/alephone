@@ -49,8 +49,35 @@ enum {
 	// The bitmap sets for the different color tables do not need to be listed
 	INFRAVISION_BITMAP_SET = MAXIMUM_CLUTS_PER_COLLECTION,
 	SILHOUETTE_BITMAP_SET,
-	NUMBER_OF_OPENGL_BITMAP_SETS
+	INFRAVISION_BITMAP_CLUTSPECIFIC,
+	SILHOUETTE_BITMAP_CLUTSPECIFIC = 2*MAXIMUM_CLUTS_PER_COLLECTION + 2,
+	NUMBER_OF_OPENGL_BITMAP_SETS = 3*MAXIMUM_CLUTS_PER_COLLECTION + 2
 };
+
+enum {
+    // The definitions for clut variants (used in texture and model MML)
+	ALL_CLUT_VARIANTS = -1,
+	CLUT_VARIANT_NORMAL = 0,
+	CLUT_VARIANT_INFRAVISION,
+	CLUT_VARIANT_SILHOUETTE,
+	NUMBER_OF_CLUT_VARIANTS
+};
+
+
+// Check for infravision or silhouette special CLUTs
+static inline bool IsInfravisionTable(short CLUT)
+{
+    return (CLUT == INFRAVISION_BITMAP_SET ||
+            (CLUT >= INFRAVISION_BITMAP_CLUTSPECIFIC &&
+             CLUT <  INFRAVISION_BITMAP_CLUTSPECIFIC + MAXIMUM_CLUTS_PER_COLLECTION));
+}
+static inline bool IsSilhouetteTable(short CLUT)
+{
+    return (CLUT == SILHOUETTE_BITMAP_SET ||
+            (CLUT >= SILHOUETTE_BITMAP_CLUTSPECIFIC &&
+             CLUT <  SILHOUETTE_BITMAP_CLUTSPECIFIC + MAXIMUM_CLUTS_PER_COLLECTION));
+}
+
 
 // If the color-table value has this value, it means all color tables:
 const int ALL_CLUTS = -1;

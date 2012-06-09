@@ -1471,12 +1471,16 @@ It takes these attributes:
 <ul>
 <li>coll: which collection (mandatory).
 <li>clut: which color table. Values 0 to 7 are the familiar color-table values,
-and there are these special values:
+and -1 (default) sets options for all color tables not individually set.
+<li>clut_variant: which drawing modes the options apply to:
 <ol start="-1">
-<li>All color tables (default)
-<li value="8">Infravision
-<li value="9">Silhouette [used for invisibility and static effect]
+<li>All modes
+<li>Normal (default)
+<li>Infravision
+<li>Silhouette [used for invisibility and static effect]
 </ol>
+The value -1 is equivalent to writing three &lt;texture&gt; elements for each of the three drawing modes.<br>
+Note: the options for &lt;clut="-1" clut_variant="0"&gt; are used as the fallback if more specific options are not found. This fallback is used even for infravision and silhouette textures.
 <li>bitmap: which one to apply the options to (mandatory).
 <li>opac_type: what type of opacity to use (default: 0 -- crisp edges).
 <li>opac_scale: scaling value for the opacity;
@@ -1552,6 +1556,8 @@ The following texture attributes are deprecated, may not work properly, and shou
 <li>x_offset
 <li>y_offset
 </ul>
+<p>
+The values 8 and 9 for the "clut" attribute are deprecated and should no longer be used. Instead, use a "clut" value of -1 and a "clut_variant" of 1 or 2.
 <p>
 
 The next one, &lt;model_clear&gt;, clears all the model definitions;
@@ -1663,6 +1669,13 @@ The model element's child element of &lt;skin&gt; has these attributes,
 which closely parallel those of &lt;texture&gt;:
 <ul>
 <li>clut: which color table (default: -1 -- all of them).
+<li>clut_variant: which drawing modes the options apply to:
+<ol start="-1">
+<li>All modes
+<li>Normal (default)
+<li>Infravision
+<li>Silhouette [used for invisibility and static effect]
+</ol>
 <li>opac_type: what type of opacity to use (default: 0 -- crisp edges).
 <li>opac_scale: scaling value for the opacity;
 how much to multiply it by (default: 1 -- no change).
