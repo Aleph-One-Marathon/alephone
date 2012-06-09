@@ -259,7 +259,7 @@ public:
 				{
 					char minutes[32];
 					snprintf(minutes, 32, "%i minutes", game->m_description.m_timeLimit / 60 / TICKS_PER_SECOND);
-					minutes[32] = '\0';
+					minutes[31] = '\0';
 					table->dual_add(new w_static_text(minutes), info_dialog);
 				}
 				else
