@@ -8,10 +8,5 @@
 #import <Cocoa/Cocoa.h>
 
 @interface SDLMain : NSObject
-- (IBAction)prefsMenu:(id)sender;
-- (IBAction)newGame:(id)sender;
-- (IBAction)openGame:(id)sender;
-- (IBAction)saveGame:(id)sender;
-- (IBAction)saveGameAs:(id)sender;
-- (IBAction)help:(id)sender;
+
 @end
