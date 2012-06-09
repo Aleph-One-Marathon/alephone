@@ -64,6 +64,17 @@ static NSString *getApplicationName(void)
     return appName;
 }
 
+/* Helper for directory creation */
+static void createDirectory(NSString *path)
+{
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_5
+    [fileManager createDirectoryAtPath:path withIntermediateDirectories:YES attributes:nil error:nil];
+#else
+    [fileManager createDirectoryAtPath:path attributes:nil];
+#endif
+}
+
 #if SDL_USE_NIB_FILE
 /* A helper category for NSString */
 @interface NSString (ReplaceSubString)
@@ -115,7 +126,7 @@ static NSString *getApplicationName(void)
 	if (libraryPath != nil)
 	{
 		NSString *logPath = [libraryPath stringByAppendingPathComponent:@"Logs"];
-		[fileManager createDirectoryAtPath:logPath attributes:nil];
+		createDirectory(logPath);
 		app_log_directory = strdup([logPath UTF8String]);
 		
 #ifdef PREFER_APP_NAME_TO_BUNDLE_ID
@@ -123,7 +134,7 @@ static NSString *getApplicationName(void)
 #else
 		NSString *prefsPath = [[libraryPath stringByAppendingPathComponent:@"Preferences"] stringByAppendingPathComponent:bundleID];
 #endif
-		[fileManager createDirectoryAtPath:prefsPath attributes:nil];
+		createDirectory(prefsPath);
 		app_preferences_directory = strdup([prefsPath UTF8String]);
 	}
 	
@@ -136,7 +147,7 @@ static NSString *getApplicationName(void)
 #else
 		NSString *appSupportPath = [supportPath stringByAppendingPathComponent:@"AlephOne"];
 #endif
-		[fileManager createDirectoryAtPath:appSupportPath attributes:nil];
+		createDirectory(appSupportPath);
 		app_support_directory = strdup([appSupportPath UTF8String]);
 	}
 }		

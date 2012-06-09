@@ -106,7 +106,11 @@ OSErr open_network_microphone()
 
 	// Select the default input device
 	param = sizeof(AudioDeviceID);
-	err = AudioHardwareGetProperty(kAudioHardwarePropertyDefaultInputDevice, &param, &fInputDeviceID);
+	AudioObjectPropertyAddress inDevAddress = { 
+		kAudioHardwarePropertyDefaultInputDevice,
+		kAudioObjectPropertyScopeGlobal,
+		kAudioObjectPropertyElementMaster };
+	err = AudioObjectGetPropertyData(kAudioObjectSystemObject, &inDevAddress, 0, NULL, &param, &fInputDeviceID);
 	if (err != noErr)
 	{
 		fprintf(stderr, "failed to get default input device\n");
@@ -123,10 +127,14 @@ OSErr open_network_microphone()
 
 	Float64 sampleRate;
 
+	AudioObjectPropertyAddress sampleRateAddress = {
+		kAudioDevicePropertyNominalSampleRate,
+		kAudioDevicePropertyScopeOutput,
+		kAudioObjectPropertyElementMaster };
 	for (int i = 0; i < sizeof(sampleRates) / sizeof(Float64); i++)
 	{
 		sampleRate = sampleRates[i];
-		err = AudioDeviceSetProperty(fInputDeviceID, 0, 0, 0, kAudioDevicePropertyNominalSampleRate, sizeof(Float64), &sampleRate);
+		err = AudioObjectSetPropertyData(fInputDeviceID, &sampleRateAddress, 0, NULL, sizeof(Float64), &sampleRate);
 		if (err == noErr)
 			break;
 	}
