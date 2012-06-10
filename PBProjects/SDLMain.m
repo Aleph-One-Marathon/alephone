@@ -48,6 +48,7 @@ char *bundle_resource_path = NULL;
 char *app_log_directory = NULL;
 char *app_preferences_directory = NULL;
 char *app_support_directory = NULL;
+char *app_screenshots_directory = NULL;
 
 static int    gArgc;
 static char  **gArgv;
@@ -139,6 +140,21 @@ static NSString *getApplicationName(void)
 		[fileManager createDirectoryAtPath:appSupportPath attributes:nil];
 		app_support_directory = strdup([appSupportPath UTF8String]);
 	}
+    
+#ifdef MAC_APP_STORE
+    arr = NSSearchPathForDirectoriesInDomains(NSPicturesDirectory, NSUserDomainMask, YES);
+    NSString *picturesPath = [arr objectAtIndex:0];
+    if (picturesPath != nil)
+    {
+#ifdef PREFER_APP_NAME_TO_BUNDLE_ID
+		NSString *screenshotsPath = [picturesPath stringByAppendingPathComponent:[appName stringByAppendingString:@" Screenshots"]];
+#else
+		NSString *screenshotsPath = [picturesPath stringByAppendingPathComponent:@"AlephOne Screenshots"];
+#endif
+        createDirectory(screenshotsPath);
+        app_screenshots_directory = strdup([screenshotsPath UTF8String]);
+    }
+#endif
 }		
 		
 
