@@ -135,6 +135,7 @@ extern char *bundle_resource_path;
 extern char *app_log_directory;
 extern char *app_preferences_directory;
 extern char *app_support_directory;
+extern char *app_screenshots_directory;
 #else
 char application_name[] = A1_DISPLAY_NAME;
 char application_identifier[] = "org.bungie.source.AlephOne";
@@ -527,6 +528,10 @@ static void initialize_application(void)
 	saved_games_dir = local_data_dir + "Saved Games";
 	recordings_dir = local_data_dir + "Recordings";
 	screenshots_dir = local_data_dir + "Screenshots";
+#if defined(__APPLE__) && defined(__MACH__)
+    if (app_screenshots_directory)
+        screenshots_dir = app_screenshots_directory;
+#endif
 
 
 	DirectorySpecifier local_mml_dir = local_data_dir + "MML";
