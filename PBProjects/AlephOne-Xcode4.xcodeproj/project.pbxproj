@@ -522,7 +522,6 @@
 		AE505CFF141D45E600915344 /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		AE505D00141D45E600915344 /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
 		AE505D01141D45E600915344 /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
-		AE505D02141D45E600915344 /* libcurl.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEDF1A181417021700183689 /* libcurl.4.dylib */; };
 		AE505D16141D46B100915344 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE505D14141D46B100915344 /* InfoPlist.strings */; };
 		AE505D21141D47BF00915344 /* Marathon 2.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE505D20141D47BF00915344 /* Marathon 2.icns */; };
 		AE5154600D46E84A00506B58 /* lua_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE51545D0D46E84A00506B58 /* lua_map.cpp */; };
@@ -1031,7 +1030,6 @@
 		AEB4A2A114296CAE00537AE7 /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		AEB4A2A214296CAE00537AE7 /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
 		AEB4A2A314296CAE00537AE7 /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
-		AEB4A2A414296CAE00537AE7 /* libcurl.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEDF1A181417021700183689 /* libcurl.4.dylib */; };
 		AEB4A2B314296DC000537AE7 /* Marathon Infinity.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEB4A2B214296DC000537AE7 /* Marathon Infinity.icns */; };
 		AEB4A2B614296DC700537AE7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AEB4A2B414296DC700537AE7 /* InfoPlist.strings */; };
 		AEC02F910B6D8B310095E8C9 /* SW_Texture_Extras.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */; };
@@ -1373,8 +1371,6 @@
 		AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */; };
 		AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */; };
-		AEDF1A191417021700183689 /* libcurl.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEDF1A181417021700183689 /* libcurl.4.dylib */; };
-		AEDF1A1A1417021700183689 /* libcurl.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEDF1A181417021700183689 /* libcurl.4.dylib */; };
 		AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AEFD85EA13EB84CF00C1E687 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		AEFD85EB13EB84CF00C1E687 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
@@ -2083,7 +2079,6 @@
 		AEDCB5CC0D4ADB86004CB40E /* lua_monsters.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_monsters.h; sourceTree = "<group>"; };
 		AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_projectiles.cpp; sourceTree = "<group>"; };
 		AEDCB5DB0D4AEC4D004CB40E /* lua_projectiles.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_projectiles.h; sourceTree = "<group>"; };
-		AEDF1A181417021700183689 /* libcurl.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.4.dylib; path = ../../../../../usr/lib/libcurl.4.dylib; sourceTree = "<group>"; };
 		AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IMG_savepng.h; sourceTree = "<group>"; };
 		AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IMG_savepng.c; sourceTree = "<group>"; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
@@ -2424,7 +2419,6 @@
 				AE505CFF141D45E600915344 /* jpeg.framework in Frameworks */,
 				AE505D00141D45E600915344 /* png.framework in Frameworks */,
 				AE505D01141D45E600915344 /* freetype.framework in Frameworks */,
-				AE505D02141D45E600915344 /* libcurl.4.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2451,7 +2445,6 @@
 				AEB4A2A114296CAE00537AE7 /* jpeg.framework in Frameworks */,
 				AEB4A2A214296CAE00537AE7 /* png.framework in Frameworks */,
 				AEB4A2A314296CAE00537AE7 /* freetype.framework in Frameworks */,
-				AEB4A2A414296CAE00537AE7 /* libcurl.4.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2478,7 +2471,6 @@
 				2759FB1F10D7114D000204DD /* jpeg.framework in Frameworks */,
 				2759FB2110D7114D000204DD /* png.framework in Frameworks */,
 				2759FB3210D71184000204DD /* freetype.framework in Frameworks */,
-				AEDF1A191417021700183689 /* libcurl.4.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2505,7 +2497,6 @@
 				AEFD87AB13EB84CF00C1E687 /* jpeg.framework in Frameworks */,
 				AEFD87AC13EB84CF00C1E687 /* png.framework in Frameworks */,
 				AEFD87AD13EB84CF00C1E687 /* freetype.framework in Frameworks */,
-				AEDF1A1A1417021700183689 /* libcurl.4.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2566,7 +2557,6 @@
 				F5830B4001E776DE01BA387C /* OpenGL.framework */,
 				F59FB19D01E780DF01BBE912 /* Cocoa.framework */,
 				3D22CF8C0FD86EBD00B17822 /* libz.dylib */,
-				AEDF1A181417021700183689 /* libcurl.4.dylib */,
 			);
 			name = "System Frameworks";
 			sourceTree = "<group>";
