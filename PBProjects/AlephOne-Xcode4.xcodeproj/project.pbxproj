@@ -1880,6 +1880,7 @@
 		2759FB1E10D7114D000204DD /* jpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = jpeg.framework; sourceTree = "<group>"; };
 		2759FB2010D7114D000204DD /* png.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = png.framework; sourceTree = "<group>"; };
 		2759FB3110D71184000204DD /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = freetype.framework; sourceTree = "<group>"; };
+		27606E151584546600FC3290 /* Marathon 2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Marathon 2.entitlements"; sourceTree = "<group>"; };
 		276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_saved_objects.cpp; sourceTree = "<group>"; };
 		276589F7119DF1DD0096F75B /* lua_saved_objects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_saved_objects.h; sourceTree = "<group>"; };
 		277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rasterizer_Shader.cpp; sourceTree = "<group>"; };
@@ -1895,6 +1896,8 @@
 		2784979F0FF5C308008DECC8 /* lua_mnemonics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_mnemonics.h; sourceTree = "<group>"; };
 		27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HUDRenderer_Lua.cpp; sourceTree = "<group>"; };
 		27911B23100073460063ACB6 /* HUDRenderer_Lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HUDRenderer_Lua.h; sourceTree = "<group>"; };
+		27A4F9881586417A007B321A /* Marathon.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = Marathon.entitlements; sourceTree = "<group>"; };
+		27A4F989158642B6007B321A /* Marathon Infinity.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = "Marathon Infinity.entitlements"; sourceTree = "<group>"; };
 		27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image_Blitter.cpp; sourceTree = "<group>"; };
 		27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image_Blitter.h; sourceTree = "<group>"; };
 		27D1A4F112FDF3630085E79C /* FilmProfile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilmProfile.cpp; path = ../Source_Files/CSeries/FilmProfile.cpp; sourceTree = SOURCE_ROOT; };
@@ -2517,6 +2520,9 @@
 		29B97314FDCFA39411CA2CEA /* SDL Application */ = {
 			isa = PBXGroup;
 			children = (
+				27A4F989158642B6007B321A /* Marathon Infinity.entitlements */,
+				27A4F9881586417A007B321A /* Marathon.entitlements */,
+				27606E151584546600FC3290 /* Marathon 2.entitlements */,
 				F52214490136C0C401000001 /* Sources */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
 				EF2EF5B004819A5C00A8000D /* Frameworks */,
@@ -5830,6 +5836,8 @@
 		AE505D08141D45E600915344 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Marathon 2.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -5906,6 +5914,8 @@
 		AE505D09141D45E600915344 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Marathon 2.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -5981,6 +5991,8 @@
 		AE505D0A141D45E600915344 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Marathon 2.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -6142,6 +6154,8 @@
 		AEB4A2AA14296CAE00537AE7 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Marathon Infinity.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -6218,6 +6232,8 @@
 		AEB4A2AB14296CAE00537AE7 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Marathon Infinity.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -6293,6 +6309,8 @@
 		AEB4A2AC14296CAE00537AE7 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "Marathon Infinity.entitlements";
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -6367,6 +6385,8 @@
 		AEFD87C013EB84CF00C1E687 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Marathon.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -6443,6 +6463,8 @@
 		AEFD87C113EB84CF00C1E687 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Marathon.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -6518,6 +6540,8 @@
 		AEFD87C213EB84CF00C1E687 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = Marathon.entitlements;
+				CODE_SIGN_IDENTITY = "Mac Developer";
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
