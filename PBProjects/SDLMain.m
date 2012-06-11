@@ -158,9 +158,9 @@ static void createDirectory(NSString *path)
     if (picturesPath != nil)
     {
 #ifdef PREFER_APP_NAME_TO_BUNDLE_ID
-		NSString *screenshotsPath = [picturesPath stringByAppendingPathComponent:[appName stringByAppendingString:@" Screenshots"]];
+		NSString *screenshotsPath = [picturesPath stringByAppendingPathComponent:appName];
 #else
-		NSString *screenshotsPath = [picturesPath stringByAppendingPathComponent:@"AlephOne Screenshots"];
+		NSString *screenshotsPath = [picturesPath stringByAppendingPathComponent:@"AlephOne"];
 #endif
         createDirectory(screenshotsPath);
         app_screenshots_directory = strdup([screenshotsPath UTF8String]);
