@@ -33,6 +33,11 @@ IMAGE_BLITTER.H
 #include <set>
 using namespace std;
 
+typedef struct Image_Rect {
+    float x, y;
+    float w, h;
+} Image_Rect;
+
 class Image_Blitter
 {
 public:
@@ -45,14 +50,17 @@ public:
 	virtual void Unload();
 	bool Loaded();
 	
-	void Rescale(int width, int height);
-	int Width();
-	int Height();
+	void Rescale(float width, float height);
+	float Width();
+	float Height();
 	int UnscaledWidth();
 	int UnscaledHeight();
 	
-	virtual void Draw(SDL_Surface *dst_surface, SDL_Rect& dst) { Draw(dst_surface, dst, crop_rect); }
-	virtual void Draw(SDL_Surface *dst_surface, SDL_Rect& dst, SDL_Rect& src);
+    void Draw(SDL_Surface *dst_surface, const SDL_Rect& dst);
+    void Draw(SDL_Surface *dst_surface, const SDL_Rect& dst, const SDL_Rect& src);
+    
+	virtual void Draw(SDL_Surface *dst_surface, const Image_Rect& dst) { Draw(dst_surface, dst, crop_rect); }
+	virtual void Draw(SDL_Surface *dst_surface, const Image_Rect& dst, const Image_Rect& src);
 		
 	virtual ~Image_Blitter();
 	
@@ -64,14 +72,14 @@ public:
 	float rotation;
 	
 	// set default cropping rectangle
-	SDL_Rect crop_rect;
+	Image_Rect crop_rect;
 	
 protected:
 	
 	SDL_Surface *m_surface;
     SDL_Surface *m_disp_surface;
 	SDL_Surface *m_scaled_surface;
-	SDL_Rect m_src, m_scaled_src;
+	Image_Rect m_src, m_scaled_src;
 };
 
 #endif

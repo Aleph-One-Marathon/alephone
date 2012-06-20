@@ -87,8 +87,8 @@ void OGL_Blitter::_LoadTextures()
 		{
 			m_rects[i].x = x * m_tile_width;
 			m_rects[i].y = y * m_tile_height;
-			m_rects[i].w = std::min(m_tile_width, m_src.w - x * m_tile_width);
-			m_rects[i].h = std::min(m_tile_height, m_src.h - y * m_tile_height);
+			m_rects[i].w = std::min(m_tile_width, static_cast<int>(m_src.w - x * m_tile_width));
+			m_rects[i].h = std::min(m_tile_height, static_cast<int>(m_src.h - y * m_tile_height));
 
 			SDL_Rect sr = { m_rects[i].x, m_rects[i].y, m_rects[i].w, m_rects[i].h }; 
 			SDL_BlitSurface(m_surface, &sr, t, NULL);
@@ -234,40 +234,13 @@ void OGL_Blitter::WindowToScreen(int& x, int& y, bool in_game)
 	}
 }
 
-struct OGL_Rect {
-    GLdouble x;
-    GLdouble y;
-    GLdouble w;
-    GLdouble h;
-};
-
-void OGL_Blitter::Draw(const SDL_Rect& dst, const SDL_Rect& src)
+void OGL_Blitter::Draw(const SDL_Rect& dst)
 {
-	OGL_Rect sr;
-	if (m_src.w != m_scaled_src.w)
-	{
-		sr.x = src.x * m_src.w / (float)m_scaled_src.w;
-		sr.w = src.w * m_src.w / (float)m_scaled_src.w;
-	}
-	else
-	{
-		sr.x = src.x;
-		sr.w = src.w;
-	}
-	if (m_src.h != m_scaled_src.h)
-	{
-		sr.y = src.y * m_src.h / (float)m_scaled_src.h;
-		sr.h = src.h * m_src.h / (float)m_scaled_src.h;
-	}
-	else
-	{
-		sr.y = src.y;
-		sr.h = src.h;
-	}
-	_Draw(dst, sr);
+    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
+    Draw(idst);
 }
-	
-void OGL_Blitter::_Draw(const SDL_Rect& dst, const struct OGL_Rect& src)
+
+void OGL_Blitter::Draw(const Image_Rect& dst, const Image_Rect& raw_src)
 {
 	if (!Loaded())
 		return;
@@ -287,6 +260,28 @@ void OGL_Blitter::_Draw(const SDL_Rect& dst, const struct OGL_Rect& src)
 //	glDisable(GL_SCISSOR_TEST);
 //	glDisable(GL_STENCIL_TEST);
 	glEnable(GL_TEXTURE_2D);
+
+	Image_Rect src;
+	if (m_src.w != m_scaled_src.w)
+	{
+		src.x = raw_src.x * m_src.w / m_scaled_src.w;
+		src.w = raw_src.w * m_src.w / m_scaled_src.w;
+	}
+	else
+	{
+		src.x = raw_src.x;
+		src.w = raw_src.w;
+	}
+	if (m_src.h != m_scaled_src.h)
+	{
+		src.y = raw_src.y * m_src.h / m_scaled_src.h;
+		src.h = raw_src.h * m_src.h / m_scaled_src.h;
+	}
+	else
+	{
+		src.y = raw_src.y;
+		src.h = raw_src.h;
+	}
 
 	GLdouble x_scale = dst.w / (GLdouble) src.w;
 	GLdouble y_scale = dst.h / (GLdouble) src.h;

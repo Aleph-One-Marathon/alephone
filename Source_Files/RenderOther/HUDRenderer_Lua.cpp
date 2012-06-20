@@ -450,11 +450,7 @@ void HUD_Lua_Class::draw_image(Image_Blitter *image, float x, float y)
 	if (!m_drawing)
 		return;
 	
-	SDL_Rect r;
-	r.x = static_cast<Sint16>(x);
-	r.y = static_cast<Sint16>(y);
-	r.w = image->crop_rect.w;
-	r.h = image->crop_rect.h;
+	Image_Rect r = { x, y, image->crop_rect.w, image->crop_rect.h };
 	
 	if (!r.w || !r.h)
 		return;
@@ -473,9 +469,9 @@ void HUD_Lua_Class::draw_shape(Shape_Blitter *shape, float x, float y)
 	if (!m_drawing)
 		return;
 	
-	SDL_Rect r;
-	r.x = static_cast<Sint16>(x);
-	r.y = static_cast<Sint16>(y);
+	Image_Rect r;
+	r.x = x;
+	r.y = y;
 	r.w = shape->crop_rect.w;
 	r.h = shape->crop_rect.h;
 	

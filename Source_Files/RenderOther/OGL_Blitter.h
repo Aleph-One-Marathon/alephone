@@ -49,9 +49,10 @@ public:
 	
 	void Unload();
 
-	void Draw(SDL_Surface *dst_surface, SDL_Rect& dst, SDL_Rect& src) { Draw(dst, src); }
-	void Draw(const SDL_Rect& dst) { Draw(dst, crop_rect); }
-	void Draw(const SDL_Rect& dst, const SDL_Rect& src);
+	void Draw(SDL_Surface *dst_surface, const Image_Rect& dst, const Image_Rect& src) { Draw(dst, src); }
+    void Draw(const SDL_Rect& dst);
+	void Draw(const Image_Rect& dst) { Draw(dst, crop_rect); }
+	void Draw(const Image_Rect& dst, const Image_Rect& src);
 	
 	~OGL_Blitter();
 			
@@ -63,7 +64,6 @@ public:
 	
 private:
 	
-	void _Draw(const SDL_Rect& dst, const struct OGL_Rect& src);
 	void _LoadTextures();
 	void _UnloadTextures();
 

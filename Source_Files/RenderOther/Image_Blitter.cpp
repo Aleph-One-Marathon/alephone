@@ -123,7 +123,7 @@ bool Image_Blitter::Loaded()
 	return (m_surface != NULL);
 }
 
-void Image_Blitter::Rescale(int width, int height)
+void Image_Blitter::Rescale(float width, float height)
 {	
 	if (width != m_scaled_src.w)
 	{
@@ -139,12 +139,12 @@ void Image_Blitter::Rescale(int width, int height)
 	}
 }
 	
-int Image_Blitter::Width()
+float Image_Blitter::Width()
 {
 	return m_scaled_src.w;
 }
 
-int Image_Blitter::Height()
+float Image_Blitter::Height()
 {
 	return m_scaled_src.h;
 }
@@ -159,7 +159,20 @@ int Image_Blitter::UnscaledHeight()
 	return m_src.h;
 }
 
-void Image_Blitter::Draw(SDL_Surface *dst_surface, SDL_Rect& dst, SDL_Rect& src)
+void Image_Blitter::Draw(SDL_Surface *dst_surface, const SDL_Rect& dst)
+{
+    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
+    Draw(dst_surface, idst);
+}
+
+void Image_Blitter::Draw(SDL_Surface *dst_surface, const SDL_Rect& dst, const SDL_Rect& src)
+{
+    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
+    Image_Rect isrc = { src.x, src.y, src.w, src.h };
+    Draw(dst_surface, idst, isrc);
+}
+
+void Image_Blitter::Draw(SDL_Surface *dst_surface, const Image_Rect& dst, const Image_Rect& src)
 {
 	if (!Loaded())
 		return;
@@ -190,7 +203,9 @@ void Image_Blitter::Draw(SDL_Surface *dst_surface, SDL_Rect& dst, SDL_Rect& src)
 	if (!src_surface)
 		return;
   
-	SDL_BlitSurface(src_surface, &src, dst_surface, &dst);
+    SDL_Rect ssrc = { src.x, src.y, src.w, src.h };
+    SDL_Rect sdst = { dst.x, dst.y, dst.w, dst.h };
+	SDL_BlitSurface(src_surface, &ssrc, dst_surface, &sdst);
 }
 
 Image_Blitter::~Image_Blitter()

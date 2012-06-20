@@ -56,7 +56,7 @@ Shape_Blitter::Shape_Blitter(short collection, short texture_index, short textur
     }
 }
 
-void Shape_Blitter::Rescale(int width, int height)
+void Shape_Blitter::Rescale(float width, float height)
 {	
 	if (width != m_scaled_src.w)
 	{
@@ -72,12 +72,12 @@ void Shape_Blitter::Rescale(int width, int height)
 	}
 }
 
-int Shape_Blitter::Width()
+float Shape_Blitter::Width()
 {
 	return m_scaled_src.w;
 }
 
-int Shape_Blitter::Height()
+float Shape_Blitter::Height()
 {
 	return m_scaled_src.h;
 }
@@ -92,7 +92,12 @@ int Shape_Blitter::UnscaledHeight()
 	return m_src.h;
 }
 
-void Shape_Blitter::OGL_Draw(SDL_Rect& dst)
+void Shape_Blitter::OGL_Draw(const SDL_Rect& dst)
+{
+    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
+    OGL_Draw(idst);
+}
+void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
 {
 #ifdef HAVE_OPENGL
 	// Set up texture
@@ -270,7 +275,13 @@ SDL_Surface *flip_surface(SDL_Surface *s, int width, int height)
 	return s2;
 }	
 
-void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, SDL_Rect& dst)
+void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const SDL_Rect& dst)
+{
+    Image_Rect idst = { dst.x, dst.y, dst.w, dst.h };
+    SDL_Draw(dst_surface, idst);
+}
+
+void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst)
 {
     if (!dst_surface)
 		return;
@@ -329,8 +340,9 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, SDL_Rect& dst)
     if (!m_scaled_surface)
         return;
     
-    SDL_Rect r = crop_rect;
-	SDL_BlitSurface(m_scaled_surface, &r, dst_surface, &dst);
+    SDL_Rect r = { crop_rect.x, crop_rect.y, crop_rect.w, crop_rect.h };
+    SDL_Rect sdst = { dst.x, dst.y, dst.w, dst.h };
+	SDL_BlitSurface(m_scaled_surface, &r, dst_surface, &sdst);
 }
 
 Shape_Blitter::~Shape_Blitter()
