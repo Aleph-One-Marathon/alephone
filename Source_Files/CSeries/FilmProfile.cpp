@@ -2,6 +2,24 @@
 
 #include "Plugins.h"
 
+static FilmProfile alephone1_1 = {
+	true, // keyframe_fix
+	true, // damage_aggressor_last_in_tag
+	true, // swipe_nearby_items_fix
+	true, // initial_monster_fix
+	true, // long_distance_physics
+	true, // animate_items
+	true, // inexplicable_pin_change
+	true, // increased_dynamic_limits
+	false, // line_is_obstructed_fix
+	true, // a1_smg
+	false, // infinity_smg
+	false, // use_vertical_kick_threshold
+	false, // infinity_tag_fix
+	false, // adjacent_polygons_always_intersect
+	true, // early_object_initialization
+};
+
 static FilmProfile alephone1_0 = {
 	true, // keyframe_fix
 	true, // damage_aggressor_last_in_tag
@@ -56,7 +74,7 @@ static FilmProfile marathon_infinity = {
 	false, // early_object_initialization
 };
 
-FilmProfile film_profile = alephone1_0;
+FilmProfile film_profile = alephone1_1;
 
 extern void LoadBaseMMLScripts();
 extern void ResetAllMMLValues();
@@ -66,13 +84,16 @@ void load_film_profile(FilmProfileType type, bool reload_mml)
 	switch (type)
 	{
 	case FILM_PROFILE_DEFAULT:
-		film_profile = alephone1_0;
+		film_profile = alephone1_1;
 		break;
 	case FILM_PROFILE_MARATHON_2:
 		film_profile = marathon2;
 		break;
 	case FILM_PROFILE_MARATHON_INFINITY:
 		film_profile = marathon_infinity;
+		break;
+	case FILM_PROFILE_ALEPH_ONE_1_0:
+		film_profile = alephone1_0;
 		break;
 	}	
 

@@ -1788,9 +1788,10 @@ static void plugins_dialog(void *)
  */
 
 static const char* film_profile_labels[] = {
-	"Aleph One",
+	"Aleph One 1.1",
 	"Marathon 2",
 	"Marathon Infinity",
+	"Aleph One 1.0",
 	0
 };
 
