@@ -442,14 +442,14 @@ end
           <type>collection</type>
         </argument>
         <argument name="texture_index">
-          <description>texture bitmap index</description>
+          <description>frame (not bitmap) index</description>
           <type>number</type>
         </argument>
         <argument name="type" required="false">
           <description>type such as wall or sprite; see "Texture Types"</description>
           <type>texture_type</type>
         </argument>
-        <argument name="color table" required="false">
+        <argument name="color_table" required="false">
           <description>color table index</description>
           <type>number</type>
         </argument>

@@ -47,7 +47,7 @@ enum {
 class Shape_Blitter
 {
 public:
-	Shape_Blitter(short collection, short texture_index, short texture_type, short clut_index = 0);
+	Shape_Blitter(short collection, short frame_index, short texture_type, short clut_index = 0);
 		
 	void Rescale(float width, float height);
 	float Width();
@@ -74,7 +74,8 @@ public:
 	
 protected:
 	
-	shape_descriptor m_desc;
+	short m_coll;
+    short m_frame;
     short m_type;
     Image_Rect m_src;
     Image_Rect m_scaled_src;

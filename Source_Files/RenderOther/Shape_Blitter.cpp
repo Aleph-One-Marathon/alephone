@@ -36,16 +36,14 @@ SHAPE_BLITTER.CPP
 #endif
 
 
-Shape_Blitter::Shape_Blitter(short collection, short texture_index, short texture_type, short clut_index) : m_type(texture_type), m_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0)
+Shape_Blitter::Shape_Blitter(short collection, short frame_index, short texture_type, short clut_index) : m_coll(BUILD_COLLECTION(collection, clut_index)), m_frame(frame_index), m_type(texture_type), m_surface(NULL), m_scaled_surface(NULL), tint_color_r(1.0), tint_color_g(1.0), tint_color_b(1.0), tint_color_a(1.0), rotation(0.0)
 {
 	m_src.x = m_src.y = m_src.w = m_src.h = 0;
 	m_scaled_src.x = m_scaled_src.y = m_scaled_src.w = m_scaled_src.h = 0;
 	crop_rect.x = crop_rect.y = crop_rect.w = crop_rect.h = 0;
     
-    m_desc = BUILD_DESCRIPTOR(BUILD_COLLECTION(collection, clut_index), texture_index);
-    
     byte *pixelsOut = NULL;
-    SDL_Surface *tmp = get_shape_surface(m_desc, NONE, &pixelsOut);
+    SDL_Surface *tmp = get_shape_surface(m_frame, m_coll, &pixelsOut);
     if (tmp)
     {
         m_src.w = m_scaled_src.w = crop_rect.w = tmp->w;
@@ -102,8 +100,9 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
 #ifdef HAVE_OPENGL
 	// Set up texture
 	TextureManager TMgr;
-	TMgr.ShapeDesc = m_desc;
-	get_shape_bitmap_and_shading_table(m_desc, &TMgr.Texture, &TMgr.ShadingTables, _shading_normal);
+	TMgr.ShapeDesc = BUILD_DESCRIPTOR(m_coll, 0);
+    TMgr.LowLevelShape = m_frame;
+    extended_get_shape_bitmap_and_shading_table(m_coll, m_frame,  &TMgr.Texture, &TMgr.ShadingTables, _shading_normal);
 	TMgr.IsShadeless = false;
 	TMgr.TransferMode = _shadeless_transfer;
     
@@ -187,10 +186,6 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
         U_Scale = -TMgr.Texture->width / static_cast<double>(TMgr.Texture->height);
         U_Offset = 0.5 - U_Scale/2.0;
         
-        crop_rect.x = m_scaled_src.w/4;
-        crop_rect.w = m_scaled_src.w/2;
-        crop_rect.y = m_scaled_src.h/4;
-        crop_rect.h = m_scaled_src.h/2;
         if (crop_rect.x > 0)
             V_Offset += crop_rect.x * V_Scale / static_cast<double>(m_scaled_src.w);
         if (crop_rect.y > 0)
@@ -213,6 +208,18 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
     }
     else
     {
+        shape_information_data *info = extended_get_shape_information(m_coll, m_frame);
+        if (info->flags & _X_MIRRORED_BIT)
+        {
+            V_Offset += V_Scale;
+            V_Scale = -V_Scale;
+        }
+        if (info->flags & _Y_MIRRORED_BIT)
+        {
+            U_Offset += U_Scale;
+            U_Scale = -U_Scale;
+        }
+
         if (crop_rect.x > 0)
             V_Offset += crop_rect.x * V_Scale / static_cast<double>(m_scaled_src.w);
         if (crop_rect.y > 0)
@@ -290,7 +297,7 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst)
     if (!m_surface)
     {
         byte *pixelsOut = NULL;
-        SDL_Surface *tmp = get_shape_surface(m_desc, NONE, &pixelsOut, (m_type == Shape_Texture_Interface) ? -1.0 : 1.0);
+        SDL_Surface *tmp = get_shape_surface(m_frame, m_coll, &pixelsOut, (m_type == Shape_Texture_Interface) ? -1.0 : 1.0);
         if (!tmp)
             return;
         
