@@ -127,7 +127,20 @@ private:
 		}
 
 		void Quiet() { active = false; };
+
+		enum Source {
+			SOURCE_SOUND_HEADERS,
+			SOURCE_MUSIC,
+			SOURCE_RESOURCE,
+			SOURCE_NETWORK_AUDIO,
+		} source;
+
+		int sound_manager_index;
+
+		void GetMoreData();
 	};
+
+	friend class Channel; // hack for sNetworkAudioBufferDesc in GetMoreData
 
 	std::vector<Channel> channels;
 
@@ -142,6 +155,8 @@ private:
 	int16 main_volume;
 	int sound_channel_count;
 
+	void Resample(Channel* c, int16* left, int16* right, int samples);
+
 	static void MixerCallback(void *user, uint8 *stream, int len);
 	void Callback(uint8 *stream, int len);
 
@@ -149,233 +164,7 @@ private:
 
 	inline bool IsNetworkAudioPlaying() { return channels[sound_channel_count + NETWORK_AUDIO_CHANNEL].active; }
 
-
-	// this has to live here :(
-	template <class T, bool stereo, bool is_signed> 
-	inline void Mix(T *p, int len) {
-		while (len--) {
-			int32 left = 0, right = 0;	// 16-bit internally
-			
-			int channel_size = channels.size(); // gcc 4.0
-							    // optimization
-							    // fail
-			// Mix all channels
-			for (int i=0; i<channel_size; i++) {
-				Channel *c = &channels[i];
-				// Channel active?
-				if (c->active) {
-					// Yes, read sound data
-					int32 dleft, dright;
-					if (c->stereo) {
-						if (c->sixteen_bit) {
-							if (c->little_endian)
-							{
-								dleft = (int16)SDL_SwapLE16(0[(int16 *)c->data]);
-								dright = (int16)SDL_SwapLE16(1[(int16 *)c->data]);
-							} 
-							else
-							{
-								dleft = (int16)SDL_SwapBE16(0[(int16 *)c->data]);
-								dright = (int16)SDL_SwapBE16(1[(int16 *)c->data]);
-							}
-						} else if (c->signed_8bit) {
-							dleft = (int32)(int8)(0[c->data]) * 256;
-							dright = (int32)(int8)(1[c->data]) * 256;
-						} else {
-							dleft = (int32)(int8)(0[c->data] ^ 0x80) * 256;
-							dright = (int32)(int8)(1[c->data] ^ 0x80) * 256;
-						}
-					} else {
-						if (c->sixteen_bit)
-							if (c->little_endian)
-								dleft = dright = (int16)SDL_SwapLE16(*(int16 *)c->data);
-							else
-								dleft = dright = (int16)SDL_SwapBE16(*(int16 *)c->data);
-						else if (c->signed_8bit)
-							dleft = dright = (int32)(int8)(*(c->data)) << 8;
-						else
-							dleft = dright = (int32)(int8)(*(c->data) ^ 0x80) << 8;
-					}
-					if ((c->counter & 0xffff) && c->length > c->bytes_per_frame)
-					{
-						const uint8 *rdata = c->data + c->bytes_per_frame;
-						int32 rleft, rright;
-
-						if (c->stereo) {
-							if (c->sixteen_bit) {
-								if (c->little_endian)
-								{
-									rleft = (int16)SDL_SwapLE16(0[(int16 *)rdata]);
-									rright = (int16)SDL_SwapLE16(1[(int16 *)rdata]);
-								}
-								else
-								{
-									rleft = (int16)SDL_SwapBE16(0[(int16 *)rdata]);
-									rright = (int16)SDL_SwapBE16(1[(int16 *)rdata]);
-								}
-							} else if (c->signed_8bit) {
-								rleft = (int32)(int8)(0[rdata]) * 256;
-								rright = (int32)(int8)(1[rdata]) * 256;
-							} else {
-								rleft = (int32)(int8)(0[rdata] ^ 0x80) * 256;
-								rright = (int32)(int8)(1[rdata] ^ 0x80) * 256;
-							}
-						} else {
-							if (c->sixteen_bit)
-							{
-								if (c->little_endian)
-									rleft = rright = (int16)SDL_SwapLE16(*(int16 *)rdata);
-								else
-									rleft = rright = (int16)SDL_SwapBE16(*(int16 *)rdata);
-							}
-							else if (c->signed_8bit)
-								rleft = rright = (int32)(int8)(*(rdata)) << 8;
-							else
-								rleft = rright = (int32)(int8)(*(rdata) ^ 0x80) << 8;
-						}
-
-						int32 ileft, iright;
-						ileft = dleft + (((rleft - dleft) * (c->counter & 0xffff)) >> 16);
-						iright = dright + (((rright - dright) * (c->counter & 0xffff)) >> 16);
-
-						if (IsNetworkAudioPlaying() && i != (sound_channel_count + NETWORK_AUDIO_CHANNEL))
-						{
-							ileft = (ileft * SoundManager::instance()->GetNetmicVolumeAdjustment()) >> 8;
-							iright = (iright * SoundManager::instance()->GetNetmicVolumeAdjustment()) >> 8;
-						}
-
-						// Mix into output
-						left += (ileft * c->left_volume) >> 8;
-						right += (iright * c->right_volume) >> 8;
-					}
-					else
-					{
-						if (IsNetworkAudioPlaying() && i != (sound_channel_count + NETWORK_AUDIO_CHANNEL))
-						{
-							dleft = (dleft * SoundManager::instance()->GetNetmicVolumeAdjustment()) >> 8;
-							dright = (dright * SoundManager::instance()->GetNetmicVolumeAdjustment()) >> 8;
-						}
-
-						// Mix into output
-						left += (dleft * c->left_volume) >> 8;
-						right += (dright * c->right_volume) >> 8;
-					}
-					
-					// Advance sound data pointer
-					c->counter += c->rate;
-					if (c->counter >= 0x10000) {
-						int count = c->counter >> 16;
-						c->counter &= 0xffff;
-						c->data += c->bytes_per_frame * count;
-						c->length -= c->bytes_per_frame * count;
-						
-						// Sound finished? Then enter loop or load next sound header
-						if (c->length <= 0) {
-							
-							// Yes, loop present?
-							if (c->loop_length) {
-								
-								// Yes, enter loop
-								c->data = c->loop;
-								c->length = c->loop_length;
-								
-							} else if (i == sound_channel_count + MUSIC_CHANNEL) {
-								// More music data?
-#ifdef __MACOS__
-								if (!Music::instance()->InterruptFillBuffer())
-#else
-									if (!Music::instance()->FillBuffer())
-#endif
-									{
-										// Music finished, turn it off
-										c->active = false;
-									}
-							} else if (i == sound_channel_count + RESOURCE_CHANNEL) {
-								
-								// Resource channel, turn it off
-								c->active = false;
-								
-							}
-							else if (i == sound_channel_count + NETWORK_AUDIO_CHANNEL) {
-#if !defined(DISABLE_NETWORKING)
-								// ZZZ: if we're supposed to dispose of the storage, so be it
-								if (is_sound_data_disposable(sNetworkAudioBufferDesc))
-									release_network_speaker_buffer(sNetworkAudioBufferDesc->mData);
-								
-								// Get the next buffer of data
-								sNetworkAudioBufferDesc = dequeue_network_speaker_data();
-								
-								// If we have a buffer to play, set it up; else deactivate the channel.
-								if (sNetworkAudioBufferDesc != NULL) {
-									c->data     = sNetworkAudioBufferDesc->mData;
-									c->length   = sNetworkAudioBufferDesc->mLength;
-								}
-								else
-								{
-									c->active   = false;
-								}
-#endif // !defined(DISABLE_NETWORKING)
-							} else {
-								
-								// No loop, another sound header queued?
-								SoundManager::instance()->IncrementChannelCallbackCount(i); // fix this
-								if (c->next_header) {
-									
-									// Yes, load sound header and continue
-									c->LoadSoundHeader(*(c->next_header), c->next_pitch);
-									delete c->next_header;
-									c->next_header = 0;									
-								} else {
-									
-									// No, turn off channel
-									c->active = false;
-								}
-							}
-						}
-					}
-				}
-			}
-				
-				// Mix left+right for mono
-				if (!stereo)
-					left = (left + right) / 2;
-				
-				// Finalize left channel
-				left = (left * main_volume) >> 8; // Apply main volume setting
-				if (game_is_networked && SoundManager::instance()->parameters.mute_while_transmitting && 
-				    dynamic_world->speaking_player_index == local_player_index)
-					left = 0;
-				if (left > 32767) // Clip output value
-					left = 32767;
-				else if (left < -32768)
-					left = -32768;
-				if (sizeof(T) == 1)
-					if (is_signed)
-						left >>= 8;
-					else
-						left = (left >> 8) ^ 0x80;
-				*p++ = left; // Write to output buffer
-				
-				// Finalize right channel
-				if (stereo) {
-					right = (right * main_volume) >> 8; // Apply main volume setting
-					if (game_is_networked && SoundManager::instance()->parameters.mute_while_transmitting &&
-					    dynamic_world->speaking_player_index == local_player_index)
-						right = 0;
-					if (right > 32767) // Clip output value
-						right = 32767;
-					else if (right < -32768)
-						right = -32768;
-					if (sizeof(T) == 1)
-						if (is_signed)
-							// Downscale for 8-bit output
-							right >>= 8;
-						else
-							right = (right >> 8) ^ 0x80;
-					*p++ = right; // Write to output buffer
-				}
-		}
-	}
+	void Mix(uint8* p, int len, bool stereo, bool is_sixteen_bit, bool is_signed);
 };
 #endif
 
