@@ -1512,7 +1512,6 @@ void damage_monster(
 			}
 			else
 			{
-				monster->unused[0]=-1;			//steal an unused for monster death
 				if (!MONSTER_IS_DYING(monster))
 				{
 					short action;
