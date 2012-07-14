@@ -112,6 +112,7 @@ Jan 12, 2003 (Loren Petrich)
 #include "media.h"
 #include "Packing.h"
 #include "lua_script.h"
+#include "Logging.h"
 
 
 #ifdef env68k
@@ -2983,12 +2984,21 @@ static bool try_monster_attack(
 					{
 						new_action= _monster_is_attacking_close;
 		
-						if (definition->flags&_monster_chooses_weapons_randomly)
+						if (definition->flags&_monster_chooses_weapons_randomly && global_random()&1)
 						{
-							if (global_random()&1 &&
-								(!film_profile.validate_random_ranged_attack ||
-								 (definition->ranged_attack.type!=NONE &&
-								  range<definition->ranged_attack.range)))
+							bool switch_to_ranged = true;
+							if (film_profile.validate_random_ranged_attack)
+							{
+								if (definition->ranged_attack.type == NONE)
+								{
+									logWarning("Monster chooses weapons randomly, but has no ranged attack");
+									definition->flags &= ~_monster_chooses_weapons_randomly;
+									switch_to_ranged = false;
+								}
+								else
+									switch_to_ranged = (range<definition->ranged_attack.range);
+							}
+							if (switch_to_ranged)
 								new_action= _monster_is_attacking_far;
 						}
 					}
