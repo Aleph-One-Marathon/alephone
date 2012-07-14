@@ -4,19 +4,19 @@
 
 static FilmProfile alephone1_1 = {
 	true, // keyframe_fix
-	true, // damage_aggressor_last_in_tag
+	false, // damage_aggressor_last_in_tag
 	true, // swipe_nearby_items_fix
 	true, // initial_monster_fix
 	true, // long_distance_physics
 	true, // animate_items
 	true, // inexplicable_pin_change
 	true, // increased_dynamic_limits
-	false, // line_is_obstructed_fix
-	true, // a1_smg
-	false, // infinity_smg
-	false, // use_vertical_kick_threshold
-	false, // infinity_tag_fix
-	false, // adjacent_polygons_always_intersect
+	true, // line_is_obstructed_fix
+	false, // a1_smg
+	true, // infinity_smg
+	true, // use_vertical_kick_threshold
+	true, // infinity_tag_fix
+	true, // adjacent_polygons_always_intersect
 	true, // early_object_initialization
 	true, // fix_sliding_on_platforms
 };
