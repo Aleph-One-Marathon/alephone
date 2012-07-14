@@ -75,6 +75,9 @@ struct FilmProfile
 
 	// Aleph One moved object initialization to improve Lua access
 	bool early_object_initialization;
+
+	// Aleph One 1.1 fixes
+	bool fix_sliding_on_platforms;
 };
 
 extern FilmProfile film_profile;

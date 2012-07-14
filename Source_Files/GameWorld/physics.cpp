@@ -238,6 +238,11 @@ void adjust_player_for_polygon_height_change(
 		if (FIXED_TO_WORLD(variables->position.z)<=old_floor_height) /* must be <= */
 		{
 			variables->floor_height= variables->position.z= WORLD_TO_FIXED(new_floor_height);
+			if (film_profile.fix_sliding_on_platforms && variables->external_velocity.k < 0) 
+			{
+				variables->external_velocity.k = 0;
+			}
+
 			if (PLAYER_IS_DEAD(player)) variables->external_velocity.k= 0;
 		}
 	}
