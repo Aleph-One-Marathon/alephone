@@ -2976,7 +2976,11 @@ static bool try_monster_attack(
 		
 						if (definition->flags&_monster_chooses_weapons_randomly)
 						{
-							if (global_random()&1) new_action= _monster_is_attacking_far;
+							if (global_random()&1 &&
+								(!film_profile.validate_random_ranged_attack ||
+								 (definition->ranged_attack.type!=NONE &&
+								  range<definition->ranged_attack.range)))
+								new_action= _monster_is_attacking_far;
 						}
 					}
 					break;

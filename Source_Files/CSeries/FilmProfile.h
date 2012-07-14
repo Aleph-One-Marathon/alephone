@@ -79,6 +79,7 @@ struct FilmProfile
 	// Aleph One 1.1 fixes
 	bool fix_sliding_on_platforms;
 	bool prevent_dead_projectile_owners;
+	bool validate_random_ranged_attack;
 };
 
 extern FilmProfile film_profile;
