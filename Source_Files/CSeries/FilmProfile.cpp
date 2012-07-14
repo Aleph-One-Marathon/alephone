@@ -21,6 +21,7 @@ static FilmProfile alephone1_1 = {
 	true, // fix_sliding_on_platforms
 	true, // prevent_dead_projectile_owners
 	true, // validate_random_ranged_attack
+	true, // allow_short_kamikaze
 };
 
 static FilmProfile alephone1_0 = {
@@ -42,6 +43,7 @@ static FilmProfile alephone1_0 = {
 	false, // fix_sliding_on_platforms
 	false, // prevent_dead_projectile_owners
 	false, // validate_random_ranged_attack
+	false, // allow_short_kamikaze
 };
 
 static FilmProfile marathon2 = {
@@ -63,6 +65,7 @@ static FilmProfile marathon2 = {
 	false, // fix_sliding_on_platforms
 	false, // prevent_dead_projectile_owners
 	false, // validate_random_ranged_attack
+	false, // allow_short_kamikaze
 };
 
 static FilmProfile marathon_infinity = {
@@ -84,6 +87,7 @@ static FilmProfile marathon_infinity = {
 	false, // fix_sliding_on_platforms
 	false, // prevent_dead_projectile_owners
 	false, // validate_random_ranged_attack
+	false, // allow_short_kamikaze
 };
 
 FilmProfile film_profile = alephone1_1;

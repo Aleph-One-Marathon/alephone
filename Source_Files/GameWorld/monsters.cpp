@@ -2810,10 +2810,19 @@ static bool translate_monster(
 				
 				/* if weÕre a kamakazi and weÕre within range, pop */
 				if ((definition->flags&_monster_is_kamakazi) &&
-					object->location.z+definition->height>key_height && object->location.z<key_height)
+					object->location.z<key_height)
 				{
-					set_monster_action(monster_index, _monster_is_dying_hard);
-					monster_died(monster_index);
+					bool in_range = object->location.z+definition->height>key_height;
+					
+					/* if we're short and can't float, take out their knees! */
+					if (!in_range && film_profile.allow_short_kamikaze && !(definition->flags&_monster_floats))
+						in_range = object->location.z>=obstacle_object->location.z;
+					
+					if (in_range)
+					{
+						set_monster_action(monster_index, _monster_is_dying_hard);
+						monster_died(monster_index);
+					}
 				}
 				
 				/* if we float and this is our target, go up */

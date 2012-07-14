@@ -80,6 +80,7 @@ struct FilmProfile
 	bool fix_sliding_on_platforms;
 	bool prevent_dead_projectile_owners;
 	bool validate_random_ranged_attack;
+	bool allow_short_kamikaze;
 };
 
 extern FilmProfile film_profile;
