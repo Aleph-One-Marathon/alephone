@@ -19,6 +19,7 @@ static FilmProfile alephone1_1 = {
 	true, // adjacent_polygons_always_intersect
 	true, // early_object_initialization
 	true, // fix_sliding_on_platforms
+	true, // prevent_dead_projectile_owners
 };
 
 static FilmProfile alephone1_0 = {
@@ -38,6 +39,7 @@ static FilmProfile alephone1_0 = {
 	false, // adjacent_polygons_always_intersect
 	true, // early_object_initialization
 	false, // fix_sliding_on_platforms
+	false, // prevent_dead_projectile_owners
 };
 
 static FilmProfile marathon2 = {
@@ -57,6 +59,7 @@ static FilmProfile marathon2 = {
 	false, // adjacent_polygons_always_intersect
 	false, // early_object_initialization
 	false, // fix_sliding_on_platforms
+	false, // prevent_dead_projectile_owners
 };
 
 static FilmProfile marathon_infinity = {
@@ -76,6 +79,7 @@ static FilmProfile marathon_infinity = {
 	true, // adjacent_polygons_always_intersect
 	false, // early_object_initialization
 	false, // fix_sliding_on_platforms
+	false, // prevent_dead_projectile_owners
 };
 
 FilmProfile film_profile = alephone1_1;

@@ -514,7 +514,14 @@ void move_projectiles(
 								{
 									if ((definition->flags&_persistent_and_virulent) && !destroy_persistent_projectile && monster_obstruction_index!=NONE)
 									{
-										projectile->owner_index= monster_obstruction_index; /* keep going, but don’t hit this target again */
+										bool reassign_projectile = true;
+										if (film_profile.prevent_dead_projectile_owners)
+										{
+											monster_data *monster = get_monster_data(monster_obstruction_index);
+											reassign_projectile = MONSTER_IS_PLAYER(monster) || !MONSTER_IS_DYING(monster);
+										}
+										if (reassign_projectile)
+											projectile->owner_index= monster_obstruction_index; /* keep going, but don’t hit this target again */
 									}
 									// LP addition: don't remove a projectile that will hit media and continue (PMB flag)
 									else if (!will_go_through)
