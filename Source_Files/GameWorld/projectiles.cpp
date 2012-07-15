@@ -1214,6 +1214,41 @@ uint8 *unpack_projectile_definition(uint8 *Stream, size_t Count)
 	return unpack_projectile_definition(Stream,projectile_definitions,Count);
 }
 
+uint8* unpack_m1_projectile_definition(uint8* Stream, size_t Count)
+{
+	uint8* S = Stream;
+	projectile_definition* ObjPtr = projectile_definitions;
+
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->collection);
+		StreamToValue(S,ObjPtr->shape);
+		StreamToValue(S,ObjPtr->detonation_effect);
+		ObjPtr->media_detonation_effect = NONE;
+		StreamToValue(S,ObjPtr->contrail_effect);
+		StreamToValue(S,ObjPtr->ticks_between_contrails);
+		StreamToValue(S,ObjPtr->maximum_contrails);
+		ObjPtr->media_projectile_promotion = 0;
+
+		StreamToValue(S,ObjPtr->radius);
+		StreamToValue(S,ObjPtr->area_of_effect);
+		S = unpack_damage_definition(S, &ObjPtr->damage, 1);
+
+		uint16 flags;
+		StreamToValue(S, flags);
+		ObjPtr->flags = flags;
+		
+		StreamToValue(S,ObjPtr->speed);
+		StreamToValue(S,ObjPtr->maximum_range);
+
+		ObjPtr->sound_pitch = FIXED_ONE;
+		StreamToValue(S,ObjPtr->flyby_sound);
+		ObjPtr->rebound_sound = NONE;		
+	}
+
+	return S;
+}
+
 
 uint8 *pack_projectile_definition(uint8 *Stream, projectile_definition *Objects, size_t Count)
 {

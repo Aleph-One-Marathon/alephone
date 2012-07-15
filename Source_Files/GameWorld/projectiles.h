@@ -198,6 +198,7 @@ uint8 *unpack_projectile_data(uint8 *Stream, projectile_data *Objects, size_t Co
 uint8 *pack_projectile_data(uint8 *Stream, projectile_data *Objects, size_t Count);
 uint8 *unpack_projectile_definition(uint8 *Stream, size_t Count);
 uint8 *pack_projectile_definition(uint8 *Stream, size_t Count);
+uint8* unpack_m1_projectile_definition(uint8* Stream, size_t Count);
 void init_projectile_definitions();
 
 #endif

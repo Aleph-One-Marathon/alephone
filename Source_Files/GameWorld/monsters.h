@@ -335,6 +335,7 @@ uint8 *unpack_monster_data(uint8 *Stream, monster_data *Objects, size_t Count);
 uint8 *pack_monster_data(uint8 *Stream, monster_data *Objects, size_t Count);
 uint8 *unpack_monster_definition(uint8 *Stream, size_t Count);
 uint8 *pack_monster_definition(uint8 *Stream, size_t Count);
+uint8* unpack_m1_monster_definition(uint8* Stream, size_t Count);
 void init_monster_definitions();
 
 XML_ElementParser *DamageKicks_GetParser();

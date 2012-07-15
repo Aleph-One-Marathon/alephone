@@ -977,6 +977,48 @@ uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, size_
 	return S;
 }
 
+uint8* unpack_m1_physics_constants(uint8* Stream, size_t Count)
+{
+	static const int SIZEOF_old_physics_entry = 100;
+	uint8* S = Stream + SIZEOF_old_physics_entry; // first is "editor" record
+	physics_constants* ObjPtr = physics_models;
+	
+	for (size_t k = 0; k < Count - 1; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->maximum_forward_velocity);
+		StreamToValue(S,ObjPtr->maximum_backward_velocity);
+		StreamToValue(S,ObjPtr->maximum_perpendicular_velocity);
+		StreamToValue(S,ObjPtr->acceleration);
+		StreamToValue(S,ObjPtr->deceleration);
+		StreamToValue(S,ObjPtr->airborne_deceleration);
+		StreamToValue(S,ObjPtr->gravitational_acceleration);
+		StreamToValue(S,ObjPtr->climbing_acceleration);
+		StreamToValue(S,ObjPtr->terminal_velocity);
+		StreamToValue(S,ObjPtr->external_deceleration);
+
+		StreamToValue(S,ObjPtr->angular_acceleration);
+		StreamToValue(S,ObjPtr->angular_deceleration);
+		StreamToValue(S,ObjPtr->maximum_angular_velocity);
+		StreamToValue(S,ObjPtr->angular_recentering_velocity);
+		StreamToValue(S,ObjPtr->fast_angular_velocity);
+		StreamToValue(S,ObjPtr->fast_angular_maximum);
+		StreamToValue(S,ObjPtr->maximum_elevation);
+		StreamToValue(S,ObjPtr->external_angular_deceleration);
+		
+		StreamToValue(S,ObjPtr->step_delta);
+		StreamToValue(S,ObjPtr->step_amplitude);
+		StreamToValue(S,ObjPtr->radius);
+		StreamToValue(S,ObjPtr->height);
+		StreamToValue(S,ObjPtr->dead_height);
+		StreamToValue(S,ObjPtr->camera_height);
+		ObjPtr->splash_height = 0;
+		
+		StreamToValue(S,ObjPtr->half_camera_separation);
+	}
+	
+	return S;
+}
+
 uint8 *pack_physics_constants(uint8 *Stream, size_t Count)
 {
 	return pack_physics_constants(Stream,physics_models,Count);

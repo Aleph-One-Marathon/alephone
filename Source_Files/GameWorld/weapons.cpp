@@ -4186,6 +4186,98 @@ uint8 *unpack_weapon_definition(uint8 *Stream, weapon_definition *Objects, size_
 	return S;
 }
 
+uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
+{
+	uint8* S = Stream;
+	weapon_definition* ObjPtr = weapon_definitions;
+
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S,ObjPtr->item_type);
+		ObjPtr->powerup_type = NONE;
+		StreamToValue(S,ObjPtr->weapon_class);
+		StreamToValue(S,ObjPtr->flags);
+
+		trigger_definition& Trigger0 = ObjPtr->weapons_by_trigger[0];
+		trigger_definition& Trigger1 = ObjPtr->weapons_by_trigger[1];
+		
+		StreamToValue(S, Trigger0.ammunition_type);
+		StreamToValue(S, Trigger0.rounds_per_magazine);
+		StreamToValue(S, Trigger1.ammunition_type);
+		StreamToValue(S, Trigger1.rounds_per_magazine);
+
+		StreamToValue(S,ObjPtr->firing_light_intensity);
+		StreamToValue(S,ObjPtr->firing_intensity_decay_ticks);
+
+		StreamToValue(S,ObjPtr->idle_height);
+		StreamToValue(S,ObjPtr->bob_amplitude);
+		StreamToValue(S,ObjPtr->kick_height);	
+		StreamToValue(S,ObjPtr->reload_height);
+		StreamToValue(S,ObjPtr->idle_width);
+		StreamToValue(S,ObjPtr->horizontal_amplitude);
+
+		StreamToValue(S,ObjPtr->collection);
+		StreamToValue(S,ObjPtr->idle_shape);
+		StreamToValue(S,ObjPtr->firing_shape);
+		StreamToValue(S,ObjPtr->reloading_shape);
+		StreamToValue(S, ObjPtr->unused);
+		StreamToValue(S,ObjPtr->charging_shape);
+		StreamToValue(S,ObjPtr->charged_shape);		
+
+		StreamToValue(S, Trigger0.ticks_per_round);
+		StreamToValue(S, Trigger1.ticks_per_round);
+		
+		StreamToValue(S,ObjPtr->await_reload_ticks);
+		StreamToValue(S,ObjPtr->ready_ticks);
+
+		StreamToValue(S, Trigger0.recovery_ticks);
+		StreamToValue(S, Trigger1.recovery_ticks);
+		StreamToValue(S, Trigger0.charging_ticks);
+		StreamToValue(S, Trigger1.charging_ticks);
+		
+		StreamToValue(S, Trigger0.recoil_magnitude);
+		StreamToValue(S, Trigger1.recoil_magnitude);
+
+		StreamToValue(S, Trigger0.firing_sound);
+		StreamToValue(S, Trigger1.firing_sound);
+		StreamToValue(S, Trigger0.click_sound);
+		StreamToValue(S, Trigger1.click_sound);
+
+		StreamToValue(S, Trigger0.reloading_sound);
+		Trigger1.reloading_sound = Trigger0.reloading_sound;
+
+		StreamToValue(S, Trigger0.charging_sound);
+		Trigger1.charging_sound = Trigger0.charging_sound;
+
+		StreamToValue(S, Trigger0.shell_casing_sound);
+		StreamToValue(S, Trigger1.shell_casing_sound);
+
+		S += 2; // skip sound_activation_range!?
+		S += 2;
+
+		StreamToValue(S, Trigger0.projectile_type);
+		StreamToValue(S, Trigger1.projectile_type);
+
+		StreamToValue(S, Trigger0.theta_error);
+		StreamToValue(S, Trigger1.theta_error);
+
+		StreamToValue(S, Trigger0.dx);
+		StreamToValue(S, Trigger0.dz);
+		StreamToValue(S, Trigger1.dx);
+		StreamToValue(S, Trigger1.dz);
+
+		StreamToValue(S, Trigger0.burst_count);
+		StreamToValue(S, Trigger1.burst_count);
+
+		S += 2; // instant reload tick
+
+		Trigger0.charged_sound = NONE;
+		Trigger1.charged_sound = NONE;
+		Trigger0.shell_casing_type = NONE;
+		Trigger1.shell_casing_type = NONE;
+	}
+}
+
 
 uint8 *pack_weapon_definition(uint8 *Stream, size_t Count)
 {

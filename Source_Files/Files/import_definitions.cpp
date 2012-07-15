@@ -50,6 +50,8 @@ Aug 31, 2000 (Loren Petrich):
 #include "weapons.h"
 #include "physics_models.h"
 
+#include "AStream.h"
+
 /* ---------- globals */
 
 #define IMPORT_STRUCTURE
@@ -61,6 +63,7 @@ static FileSpecifier PhysicsFileSpec;
 /* ---------- local prototype */
 static struct wad_data *get_physics_wad_data(bool *bungie_physics);
 static void import_physics_wad_data(struct wad_data *wad);
+static void import_m1_physics_data();
 
 /* ---------- code */
 void set_physics_file(FileSpecifier& File)
@@ -87,18 +90,48 @@ void init_physics_wad_data()
 void import_definition_structures(
 	void)
 {
-	struct wad_data *wad;
-	bool bungie_physics;
-
 	init_physics_wad_data();
 
-	wad= get_physics_wad_data(&bungie_physics);
-	if(wad)
+	bool m1_physics = false;
+
+	// check for M1 physics
+	OpenedFile PhysicsFile;
+	if (PhysicsFileSpec.Open(PhysicsFile)) 
 	{
-		/* Actually load it in.. */		
-		import_physics_wad_data(wad);
+		uint32 tag = SDL_ReadBE32(PhysicsFile.GetRWops());
+		switch (tag)
+		{
+		case M1_MONSTER_PHYSICS_TAG:
+		case M1_EFFECTS_PHYSICS_TAG:
+		case M1_PROJECTILE_PHYSICS_TAG:
+		case M1_PHYSICS_PHYSICS_TAG:
+		case M1_WEAPONS_PHYSICS_TAG:
+			m1_physics = true;
+			break;
+		default:
+			break;
+		}
+
+		PhysicsFile.Close();
+	}
+
+	if (m1_physics)
+	{
+		import_m1_physics_data();
+	}
+	else
+	{
+		struct wad_data *wad;
+		bool bungie_physics;
 		
-		free_wad(wad);
+		wad= get_physics_wad_data(&bungie_physics);
+		if(wad)
+		{
+			/* Actually load it in.. */		
+			import_physics_wad_data(wad);
+			
+			free_wad(wad);
+		}
 	}
 }
 
@@ -229,5 +262,57 @@ static void import_physics_wad_data(
 	{
 		PhysicsModelLoaded = true;
 		unpack_weapon_definition(data,count);
+	}
+}
+
+static void import_m1_physics_data()
+{
+	OpenedFile PhysicsFile;
+	if (!PhysicsFileSpec.Open(PhysicsFile)) 
+	{
+		return;
+	}
+
+	int32 position  = 0;
+	int32 length;
+	PhysicsFile.GetLength(length);
+
+	while (position < length)
+	{
+		std::vector<uint8> header(12);
+		PhysicsFile.Read(header.size(), &header[0]);
+		AIStreamBE header_stream(&header[0], header.size());
+
+		uint32 tag;
+		uint16 count;
+		uint16 size;
+
+		header_stream >> tag;
+		header_stream.ignore(4); // unused
+		header_stream >> count;
+		header_stream >> size;
+
+		std::vector<uint8> data(count * size);
+		PhysicsFile.Read(data.size(), &data[0]);
+		switch (tag) 
+		{
+		case M1_MONSTER_PHYSICS_TAG:
+			unpack_m1_monster_definition(&data[0], count);
+			break;
+		case M1_EFFECTS_PHYSICS_TAG:
+			unpack_m1_effect_definition(&data[0], count);
+			break;
+		case M1_PROJECTILE_PHYSICS_TAG:
+			unpack_m1_projectile_definition(&data[0], count);
+			break;
+		case M1_PHYSICS_PHYSICS_TAG:
+			unpack_m1_physics_constants(&data[0], count);
+			break;
+		case M1_WEAPONS_PHYSICS_TAG:
+			unpack_m1_weapon_definition(&data[0], count);
+			break;
+		}
+
+		PhysicsFile.GetPosition(position);
 	}
 }

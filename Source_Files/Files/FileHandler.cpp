@@ -508,6 +508,7 @@ static extension_mapping extensions[] =
 
 	{ "scen", false, _typecode_scenario },
 	{ "shps", false, _typecode_shapes },
+	{ "phys", false, _typecode_physics },
 
 	{0, false, _typecode_unknown}
 };

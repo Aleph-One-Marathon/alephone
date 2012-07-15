@@ -395,6 +395,24 @@ uint8 *unpack_effect_definition(uint8 *Stream, effect_definition *Objects, size_
 	return S;
 }
 
+uint8* unpack_m1_effect_definition(uint8* Stream, size_t Count)
+{
+	uint8* S = Stream;
+	effect_definition* ObjPtr = effect_definitions;
+	
+	for (size_t k = 0; k < Count; k++, ObjPtr++)
+	{
+		StreamToValue(S, ObjPtr->collection);
+		StreamToValue(S, ObjPtr->shape);
+		ObjPtr->sound_pitch = FIXED_ONE;
+		StreamToValue(S, ObjPtr->flags);
+		ObjPtr->delay = 0;
+		ObjPtr->delay_sound = NONE;
+	}
+
+	return S;
+}
+
 
 uint8 *pack_effect_definition(uint8 *Stream, size_t Count)
 {

@@ -177,6 +177,7 @@ uint8 *unpack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
 uint8 *pack_effect_data(uint8 *Stream, effect_data *Objects, size_t Count);
 uint8 *unpack_effect_definition(uint8 *Stream, size_t Count);
 uint8 *pack_effect_definition(uint8 *Stream, size_t Count);
+uint8* unpack_m1_effect_definition(uint8* Stream, size_t Count);
 void init_effect_definitions();
 
 #endif
