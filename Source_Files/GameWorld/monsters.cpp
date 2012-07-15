@@ -2984,7 +2984,7 @@ static bool try_monster_attack(
 					{
 						new_action= _monster_is_attacking_close;
 		
-						if (definition->flags&_monster_chooses_weapons_randomly && global_random()&1)
+						if (definition->flags&_monster_chooses_weapons_randomly)
 						{
 							bool switch_to_ranged = true;
 							if (film_profile.validate_random_ranged_attack)
@@ -2998,7 +2998,7 @@ static bool try_monster_attack(
 								else
 									switch_to_ranged = (range<definition->ranged_attack.range);
 							}
-							if (switch_to_ranged)
+							if (switch_to_ranged && global_random()&1)
 								new_action= _monster_is_attacking_far;
 						}
 					}
