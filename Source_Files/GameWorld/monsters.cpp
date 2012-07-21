@@ -464,6 +464,7 @@ void move_monsters(
 					/* update our objectÕs animation unless weÕre ÔsufferingÕ from an external velocity
 						or weÕre airborne (if weÕre a flying or floating monster, ignore both of these */
 					if ((!monster->external_velocity&&!monster->vertical_velocity) ||
+						(film_profile.ketchup_fix && (monster->action==_monster_is_attacking_close||monster->action==_monster_is_attacking_far)) ||
 						((monster->action!=_monster_is_being_hit||!monster->external_velocity) && (definition->flags&(_monster_floats|_monster_flys))))
 					{
 						animate_object(monster->object_index);
