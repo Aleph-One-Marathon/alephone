@@ -23,6 +23,7 @@ static FilmProfile alephone1_1 = {
 	true, // validate_random_ranged_attack
 	true, // allow_short_kamikaze
 	true, // ketchup_fix
+	false, // lua_increments_rng
 };
 
 static FilmProfile alephone1_0 = {
@@ -46,6 +47,7 @@ static FilmProfile alephone1_0 = {
 	false, // validate_random_ranged_attack
 	false, // allow_short_kamikaze
 	false, // ketchup_fix
+	true, // lua_increments_rng
 };
 
 static FilmProfile marathon2 = {
@@ -69,6 +71,7 @@ static FilmProfile marathon2 = {
 	false, // validate_random_ranged_attack
 	false, // allow_short_kamikaze
 	false, // ketchup_fix
+	false, // lua_increments_rng
 };
 
 static FilmProfile marathon_infinity = {
@@ -92,6 +95,7 @@ static FilmProfile marathon_infinity = {
 	false, // validate_random_ranged_attack
 	false, // allow_short_kamikaze
 	false, // ketchup_fix
+	false, // lua_increments_rng
 };
 
 FilmProfile film_profile = alephone1_1;

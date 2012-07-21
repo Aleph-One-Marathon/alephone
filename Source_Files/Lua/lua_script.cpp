@@ -1154,10 +1154,13 @@ void L_Call_Init(bool fRestoringSaved)
 		// generator from the lousy one is clearly not
 		// ideal, but it should be good enough for our
 		// purposes.
+		uint16 current_seed = get_random_seed();
 		lua_random_generator.z = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 		lua_random_generator.w = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 		lua_random_generator.jsr = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
 		lua_random_generator.jcong = (static_cast<uint32>(global_random ()) << 16) + static_cast<uint32>(global_random ());
+		if (!film_profile.lua_increments_rng)
+			set_random_seed(current_seed);
 		
 	}
 
