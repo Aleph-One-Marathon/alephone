@@ -350,8 +350,10 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 				render_object->rectangle.WorldTop = shape_information->world_top;
 				render_object->rectangle.Position = object->location;
 				if(rel_origin) {
-					render_object->rectangle.Position.x += rel_origin->x;
-					render_object->rectangle.Position.z += rel_origin->z; 
+					render_object->rectangle.WorldLeft += rel_origin->x;
+					render_object->rectangle.WorldRight += rel_origin->x;
+					render_object->rectangle.WorldTop += rel_origin->z; 
+					render_object->rectangle.WorldBottom += rel_origin->z; 
 				}
 				render_object->rectangle.Scale = Scale;
 #endif
