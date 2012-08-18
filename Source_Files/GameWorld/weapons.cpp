@@ -942,6 +942,9 @@ void update_player_weapons(
 void destroy_players_ball(
 	short player_index)
 {
+	if (film_profile.destroy_players_ball_fix && !player_has_valid_weapon(player_index))
+		return;
+	
 	struct player_data *player= get_player_data(player_index);
 	short ball_color= find_player_ball_color(player_index);
 	struct weapon_data *weapon= get_player_current_weapon(player_index);

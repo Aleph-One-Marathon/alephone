@@ -24,6 +24,7 @@ static FilmProfile alephone1_1 = {
 	true, // allow_short_kamikaze
 	true, // ketchup_fix
 	false, // lua_increments_rng
+	true, // destroy_players_ball_fix
 };
 
 static FilmProfile alephone1_0 = {
@@ -48,6 +49,7 @@ static FilmProfile alephone1_0 = {
 	false, // allow_short_kamikaze
 	false, // ketchup_fix
 	true, // lua_increments_rng
+	false, // destroy_players_ball_fix
 };
 
 static FilmProfile marathon2 = {
@@ -72,6 +74,7 @@ static FilmProfile marathon2 = {
 	false, // allow_short_kamikaze
 	false, // ketchup_fix
 	false, // lua_increments_rng
+	false, // destroy_players_ball_fix
 };
 
 static FilmProfile marathon_infinity = {
@@ -96,6 +99,7 @@ static FilmProfile marathon_infinity = {
 	false, // allow_short_kamikaze
 	false, // ketchup_fix
 	false, // lua_increments_rng
+	false, // destroy_players_ball_fix
 };
 
 FilmProfile film_profile = alephone1_1;

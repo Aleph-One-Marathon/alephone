@@ -83,6 +83,7 @@ struct FilmProfile
 	bool allow_short_kamikaze;
 	bool ketchup_fix;
 	bool lua_increments_rng;
+	bool destroy_players_ball_fix;
 };
 
 extern FilmProfile film_profile;
