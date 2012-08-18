@@ -397,7 +397,7 @@ static inline int32 lerp(int32 x0, int32 x1, _fixed rate)
 }
 
 template<class T, bool stereo, bool le_or_signed>
-void Resample_(Mixer::Channel* c, int16* left, int16* right, int samples)
+void Mixer::Resample_(Channel* c, int16* left, int16* right, int samples)
 {
 	while (samples--)
 	{
