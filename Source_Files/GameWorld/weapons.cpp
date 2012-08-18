@@ -4276,6 +4276,7 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		Trigger0.shell_casing_type = NONE;
 		Trigger1.shell_casing_type = NONE;
 	}
+	return S;
 }
 
 
