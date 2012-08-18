@@ -84,6 +84,7 @@ void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, 
 		for (int i = 0; i < num_channels + EXTRA_CHANNELS; ++i)
 		{
 			channels[i].sound_manager_index = i;
+			channels[i].source = Channel::SOURCE_SOUND_HEADERS;
 		}
 
 		channels[sound_channel_count + MUSIC_CHANNEL].source = Channel::SOURCE_MUSIC;
