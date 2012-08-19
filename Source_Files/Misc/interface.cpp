@@ -148,6 +148,9 @@ extern TP2PerfGlobals perf_globals;
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
 #endif
+#ifdef HAVE_FFMPEG
+#include "SDL_ffmpeg.h"
+#endif
 
 #include "sdl_dialogs.h"
 #include "sdl_widgets.h"
@@ -2966,6 +2969,7 @@ void exit_networking(void)
  *  Show movie
  */
 
+#ifdef HAVE_SMPEG
 #ifdef HAVE_OPENGL
 static OGL_Blitter show_movie_blitter;
 static SDL_mutex *show_movie_mutex = NULL;
@@ -2987,12 +2991,41 @@ static void show_movie_frame(SDL_Surface* frame, int x, int y, unsigned int w, u
 	}
 }
 #endif
+#endif
+#ifdef HAVE_FFMPEG
+static SDL_mutex *movie_audio_mutex = NULL;
+static const int AUDIO_BUF_SIZE = 10;
+static SDL_ffmpegAudioFrame *aframes[AUDIO_BUF_SIZE];
+static uint64_t movie_sync = 0;
+void movie_audio_callback(void *data, Uint8 *stream, int length)
+{
+	if (movie_audio_mutex && SDL_LockMutex(movie_audio_mutex) != -1)
+	{
+		if (aframes[0]->size == length)
+		{
+			movie_sync = aframes[0]->pts;
+			memcpy(stream, aframes[0]->buffer, aframes[0]->size);
+			aframes[0]->size = 0;
+			
+			SDL_ffmpegAudioFrame *f = aframes[0];
+			for (int i = 1; i < AUDIO_BUF_SIZE; i++)
+				aframes[i - 1] = aframes[i];
+			aframes[AUDIO_BUF_SIZE - 1] = f;
+		}
+		else
+		{
+			memset(stream, 0, length);
+		}
+		SDL_UnlockMutex(movie_audio_mutex);
+	}
+}
+#endif
 
 extern bool option_nosound;
 
 void show_movie(short index)
 {
-#ifdef HAVE_SMPEG
+#if defined(HAVE_FFMPEG) || defined(HAVE_SMPEG)
 	float PlaybackSize = 2;
 	
 	FileSpecifier IntroMovie;
@@ -3018,6 +3051,139 @@ void show_movie(short index)
 #endif
 	{
 		SoundManager::Pause pauseSoundManager;
+		SDL_Rect dst_rect = { (s->w - 640)/2, (s->h - 480)/2, 640, 480 };
+
+#ifdef HAVE_FFMPEG
+		SDL_ffmpegFile *sffile = SDL_ffmpegOpen(File->GetPath());
+		if (!sffile)
+			return;
+		
+		SDL_ffmpegSelectVideoStream(sffile, 0);
+		SDL_ffmpegStream *vstream = SDL_ffmpegGetVideoStream(sffile, 0);
+		
+		SDL_ffmpegSelectAudioStream(sffile, 0);
+		SDL_ffmpegStream *astream = SDL_ffmpegGetAudioStream(sffile, 0);
+		
+		SDL_ffmpegVideoFrame *vframe = vstream ? SDL_ffmpegCreateVideoFrame() : NULL;
+		
+		if (vframe)
+		{
+#ifdef ALEPHONE_LITTLE_ENDIAN
+			vframe->surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0x00000000);
+#else
+			vframe->surface = SDL_CreateRGBSurface(SDL_SWSURFACE, dst_rect.w, dst_rect.h, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0x00000000);
+#endif
+			if (!vframe->surface)
+			{
+				SDL_ffmpegFreeVideoFrame(vframe);
+				vframe = NULL;
+			}
+		}
+		
+		
+		if (astream)
+		{
+			movie_audio_mutex = SDL_CreateMutex();
+			SDL_AudioSpec specs = SDL_ffmpegGetAudioSpec(sffile, 512, movie_audio_callback);
+			if (SDL_OpenAudio(&specs, 0) >= 0)
+			{
+				int frameSize = specs.channels * specs.samples * 2;
+				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
+				{
+					aframes[i] = SDL_ffmpegCreateAudioFrame(sffile, frameSize);
+					SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
+				}
+			}
+		}
+				
+#ifdef HAVE_OPENGL
+		if (OGL_IsActive())
+			OGL_ClearScreen();
+#endif
+		
+		SDL_PauseAudio(false);
+		bool done = false;
+		while (!done)
+		{
+			SDL_Event event;
+			while (SDL_PollEvent(&event) )
+			{
+				switch (event.type) {
+				case SDL_KEYDOWN:
+				case SDL_MOUSEBUTTONDOWN:
+					done = true;
+					break;
+				default:
+					break;
+				}
+			}
+			
+			if (astream)
+			{
+				SDL_LockMutex(movie_audio_mutex);
+				for (int i = 0; i < AUDIO_BUF_SIZE; i++)
+				{
+					if (!aframes[i]->size)
+					{
+						SDL_ffmpegGetAudioFrame(sffile, aframes[i]);
+					}
+				}
+				if (!aframes[AUDIO_BUF_SIZE - 1]->size && aframes[AUDIO_BUF_SIZE - 1]->last)
+					done = true;
+				SDL_UnlockMutex(movie_audio_mutex);
+			}
+			
+			if (vframe)
+			{
+				if (!vframe->ready)
+				{
+					SDL_ffmpegGetVideoFrame(sffile, vframe);
+				}
+				else if (vframe->pts <= movie_sync)
+				{
+#ifdef HAVE_OPENGL
+					if (OGL_IsActive())
+					{
+						OGL_Blitter::BoundScreen();
+						show_movie_blitter.Load(*(vframe->surface));
+						show_movie_blitter.Draw(dst_rect);
+						show_movie_blitter.Unload();
+						SDL_GL_SwapBuffers();
+					}
+					else
+#endif
+					{
+						SDL_BlitSurface(vframe->surface, 0, SDL_GetVideoSurface(), &dst_rect);
+						SDL_UpdateRects(SDL_GetVideoSurface(), 1, &dst_rect);
+					}
+					vframe->ready = 0;
+					if (vframe->last)
+						done = true;
+				}
+				else 
+				{
+					SDL_Delay(MIN(30, vframe->pts - movie_sync));
+				}
+			}
+		}
+		
+		SDL_PauseAudio(true);
+		if (astream)
+		{
+			for (int i = 0; i < AUDIO_BUF_SIZE; i++)
+			{
+				SDL_ffmpegFreeAudioFrame(aframes[i]);
+			}
+			SDL_DestroyMutex(movie_audio_mutex);
+			movie_audio_mutex = NULL;
+		}
+				
+		if (vframe)
+			SDL_ffmpegFreeVideoFrame(vframe);
+		SDL_ffmpegFree(sffile);
+		SDL_CloseAudio();
+
+#elif defined(HAVE_SMPEG) // end HAVE_FFMPEG
 		
 		SMPEG_Info info;
 		SMPEG *movie;
@@ -3028,7 +3194,6 @@ void show_movie(short index)
 			SMPEG_delete(movie);
 			return;
 		}
-		SDL_Rect dst_rect = { (s->w - 640)/2, (s->h - 480)/2, 640, 480 };
 		
 #ifdef HAVE_OPENGL
 		SDL_Surface *gl_surface = NULL;
@@ -3090,8 +3255,9 @@ void show_movie(short index)
 		show_movie_mutex = NULL;
 		show_movie_blitter.Unload();
 #endif
-	}
 #endif // HAVE_SMPEG
+	}
+#endif // HAVE_FFMPEG || HAVE_SMPEG
 }
 
 

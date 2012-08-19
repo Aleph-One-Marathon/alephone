@@ -27,6 +27,7 @@
 #include "MADDecoder.h"
 #include "SndfileDecoder.h"
 #include "VorbisDecoder.h"
+#include "FFmpegDecoder.h"
 #include <memory>
 
 using std::auto_ptr;
@@ -34,6 +35,15 @@ using std::auto_ptr;
 StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
 {
 	ScopedGameError gameErrorRestorer;
+
+#ifdef HAVE_FFMPEG
+	{
+		auto_ptr<FFmpegDecoder> ffmpegDecoder(new FFmpegDecoder);
+		if (ffmpegDecoder->Open(File))
+			return ffmpegDecoder.release();
+	}
+#endif
+
 #ifdef HAVE_SNDFILE
 	{ 
 		auto_ptr<SndfileDecoder> sndfileDecoder(new SndfileDecoder);
@@ -70,6 +80,15 @@ StreamDecoder *StreamDecoder::Get(FileSpecifier& File)
 Decoder *Decoder::Get(FileSpecifier &File)
 {
 	ScopedGameError gameErrorRestorer;
+
+#ifdef HAVE_FFMPEG
+	{
+		auto_ptr<FFmpegDecoder> ffmpegDecoder(new FFmpegDecoder);
+		if (ffmpegDecoder->Open(File))
+			return ffmpegDecoder.release();
+	}
+#endif
+
 #ifdef HAVE_SNDFILE
 	{
 		auto_ptr<SndfileDecoder> sndfileDecoder(new SndfileDecoder);

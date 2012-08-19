@@ -1,6 +1,6 @@
 ## Process this file with automake to produce Makefile.in 
 
-SUBDIRS = CSeries Expat Files GameWorld Input LibNAT Lua Misc ModelView Network \
+SUBDIRS = CSeries Expat Files FFmpeg GameWorld Input LibNAT Lua Misc ModelView Network \
    RenderMain RenderOther Sound TCPMess XML
 
 if MAKE_WINDOWS
@@ -14,13 +14,13 @@ alephone_SOURCES = shell.h \
   shell.cpp shell_misc.cpp Misc/DefaultStringSets.cpp
 
 alephone_LDADD = \
-  CSeries/libcseries.a Expat/libexpat.a Files/libfiles.a \
+  CSeries/libcseries.a Expat/libexpat.a Files/libfiles.a FFmpeg/libffmpeg.a \
   GameWorld/libgameworld.a Input/libinput.a Lua/liba1lua.a Misc/libmisc.a \
   ModelView/libmodelview.a Network/libnetwork.a Network/Metaserver/libmetaserver.a \
   RenderMain/librendermain.a RenderOther/librenderother.a Sound/libsound.a \
   XML/libxml.a \
   \
-  CSeries/libcseries.a Expat/libexpat.a Files/libfiles.a \
+  CSeries/libcseries.a Expat/libexpat.a Files/libfiles.a FFmpeg/libffmpeg.a \
   GameWorld/libgameworld.a LibNAT/libnat.a Input/libinput.a Lua/liba1lua.a Misc/libmisc.a \
   ModelView/libmodelview.a Network/libnetwork.a Network/Metaserver/libmetaserver.a \
   RenderMain/librendermain.a RenderOther/librenderother.a Sound/libsound.a \
@@ -31,7 +31,7 @@ INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Fil
   -I$(top_srcdir)/Source_Files/Lua -I$(top_srcdir)/Source_Files/Misc \
   -I$(top_srcdir)/Source_Files/ModelView -I$(top_srcdir)/Source_Files/Network \
   -I$(top_srcdir)/Source_Files/Network/Metaserver \
-  -I$(top_srcdir)/Source_Files/Pfhortran -I$(top_srcdir)/Source_Files/RenderMain \
+  -I$(top_srcdir)/Source_Files/FFmpeg -I$(top_srcdir)/Source_Files/RenderMain \
   -I$(top_srcdir)/Source_Files/RenderOther -I$(top_srcdir)/Source_Files/Sound \
   -I$(top_srcdir)/Source_Files/XML -I$(top_srcdir)/Source_Files/Expat \
   -I$(top_srcdir)/Source_Files/TCPMess
