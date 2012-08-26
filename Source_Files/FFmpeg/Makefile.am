@@ -2,7 +2,7 @@
 
 noinst_LIBRARIES = libffmpeg.a
 
-libffmpeg_a_SOURCES = ffcompat.h SDL_ffmpeg.c SDL_ffmpeg.h
+libffmpeg_a_SOURCES = ffcompat.h SDL_ffmpeg.c SDL_ffmpeg.h Movie.cpp Movie.h
 
 INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \

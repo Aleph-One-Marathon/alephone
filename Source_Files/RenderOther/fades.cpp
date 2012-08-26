@@ -76,6 +76,7 @@ Jan 31, 2001 (Loren Petrich):
 #include "OGL_Faders.h"
 
 #include "Music.h"
+#include "Movie.h"
 
 #ifdef env68k
 #pragma segment shell
@@ -296,6 +297,7 @@ bool update_fades(
 		}
 		
 		recalculate_and_display_color_table(fade->type, transparency, fade->original_color_table, fade->animated_color_table, FADE_IS_ACTIVE(fade));
+		Movie::instance()->AddFrame(Movie::FRAME_FADE);
 	}
 	
 	return FADE_IS_ACTIVE(fade) ? true : false;
@@ -446,6 +448,8 @@ void gamma_correct_color_table(
 	
 	assert(gamma_level>=0 && gamma_level<NUMBER_OF_GAMMA_LEVELS);
 	gamma= actual_gamma_values[gamma_level];
+	if (Movie::instance()->IsRecording())
+		gamma = 1.0;
 	if (gamma > 0.999F && gamma < 1.001F) {
 		memcpy(corrected_color_table, uncorrected_color_table, sizeof(struct color_table));
 		return;

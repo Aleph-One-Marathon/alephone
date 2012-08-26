@@ -510,6 +510,8 @@ static extension_mapping extensions[] =
 	{ "shps", false, _typecode_shapes },
 	{ "phys", false, _typecode_physics },
 
+	{ "mpg", false, _typecode_movie },
+
 	{0, false, _typecode_unknown}
 };
 
@@ -1266,6 +1268,9 @@ public:
 			case _typecode_film:
 				prompt = "SAVE FILM";
 				break;
+			case _typecode_movie:
+				prompt = "EXPORT FILM";
+				break;
 			default:
 				prompt = "SAVE FILE";
 				break;
@@ -1304,6 +1309,7 @@ public:
 		}
 		break;
 		case _typecode_film:
+		case _typecode_movie:
 			dir.SetToRecordingsDir();
 			break;
 		default:

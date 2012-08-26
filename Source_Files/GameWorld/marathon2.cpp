@@ -116,6 +116,7 @@ Feb 8, 2003 (Woody Zenfell):
 #include "shell.h"
 
 #include "Console.h"
+#include "Movie.h"
 
 #include <limits.h>
 
@@ -494,7 +495,7 @@ update_world()
 
                 
                 L_Call_PostIdle();
-                if(theUpdateResult != kUpdateNormalCompletion)
+                if(theUpdateResult != kUpdateNormalCompletion || Movie::instance()->IsRecording())
                 {
                         canUpdate = false;
                 }

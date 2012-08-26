@@ -67,6 +67,7 @@
 #include "lua_script.h"
 #include "lua_hud_script.h"
 #include "HUDRenderer_Lua.h"
+#include "Movie.h"
 
 #include <algorithm>
 
@@ -1279,6 +1280,8 @@ void render_screen(short ticks_elapsed)
 	if (screen_mode.acceleration != _no_acceleration)
 		OGL_SwapBuffers();
 #endif
+	
+	Movie::instance()->AddFrame(Movie::FRAME_NORMAL);
 }
 
 /*
@@ -1374,7 +1377,7 @@ static inline bool pixel_formats_equal(SDL_PixelFormat* a, SDL_PixelFormat* b)
 static void update_screen(SDL_Rect &source, SDL_Rect &destination, bool hi_rez)
 {
 	SDL_Surface *s = world_pixels;
-	if (software_gamma && !using_default_gamma && bit_depth > 8) {
+	if ((software_gamma || Movie::instance()->IsRecording()) && !using_default_gamma && bit_depth > 8) {
 		apply_gamma(world_pixels, world_pixels_corrected);
 		s = world_pixels_corrected;
 	}
@@ -1488,11 +1491,12 @@ void build_direct_color_table(struct color_table *color_table, short bit_depth)
 	}
 	color_table->color_count = 256;
 	rgb_color *color = color_table->colors;
+	bool force_software = Movie::instance()->IsRecording();
 	for (int i=0; i<256; i++, color++)
 	{
-		color->red = default_gamma_r[i];
-		color->green = default_gamma_g[i];
-		color->blue = default_gamma_b[i];
+		color->red = force_software ? i << 8 : default_gamma_r[i];
+		color->green = force_software ? i << 8 : default_gamma_g[i];
+		color->blue = force_software ? i << 8 : default_gamma_b[i];
 	}
 }
 
@@ -1541,9 +1545,10 @@ void animate_screen_clut(struct color_table *color_table, bool full_screen)
 			current_gamma_g[i] = color_table->colors[i].green;
 			current_gamma_b[i] = color_table->colors[i].blue;
 		}
-		if (!option_nogamma && !software_gamma)
+		bool sw_gamma = software_gamma || Movie::instance()->IsRecording();
+		if (!option_nogamma && !sw_gamma)
 			SDL_SetGammaRamp(current_gamma_r, current_gamma_g, current_gamma_b);
-		else if (software_gamma)
+		else if (sw_gamma)
 			using_default_gamma = !memcmp(color_table, uncorrected_color_table, sizeof(struct color_table));
 	}
 }

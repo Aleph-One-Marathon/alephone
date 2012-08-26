@@ -97,6 +97,7 @@ Feb 20, 2002 (Woody Zenfell):
 #include "computer_interface.h"
 #include "Console.h"
 #include "joystick.h"
+#include "Movie.h"
 
 #ifdef env68k
 #pragma segment input
@@ -354,7 +355,7 @@ bool has_recording_file(void)
 bool input_controller(
 	void)
 {
-	if (input_task_active)
+	if (input_task_active || Movie::instance()->IsRecording())
 	{
 		if((heartbeat_count-dynamic_world->tick_count) < MAXIMUM_TIME_DIFFERENCE)
 		{
@@ -666,6 +667,7 @@ bool setup_for_replay_from_file(
 #ifdef DEBUG_REPLAY
 			open_stream_file();
 #endif
+			Movie::instance()->PromptForRecording();
 			successful= true;
 		} else {
 			/* Tell them that this map wasn't found.  They lose. */
@@ -1454,6 +1456,10 @@ void remove_timer_task(timer_task_proc proc)
 void execute_timer_tasks(uint32 time)
 {
 	if (tm_func) {
+		if (Movie::instance()->IsRecording()) {
+			tm_func();
+			return;
+		}
 		uint32 now = time;
 		tm_accum += now - tm_last;
 		tm_last = now;

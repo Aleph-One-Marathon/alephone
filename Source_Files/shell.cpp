@@ -121,6 +121,7 @@
 #include "Logging.h"
 #include "network.h"
 #include "Console.h"
+#include "Movie.h"
 
 // LP addition: whether or not the cheats are active
 // Defined in shell_misc.cpp
@@ -1331,7 +1332,7 @@ static void process_event(const SDL_Event &event)
 	case SDL_ACTIVEEVENT:
 		if (event.active.state & SDL_APPINPUTFOCUS) {
 			if (!event.active.gain && !(SDL_GetAppState() & SDL_APPINPUTFOCUS)) {
-				if (get_game_state() == _game_in_progress && get_keyboard_controller_status()) {
+				if (get_game_state() == _game_in_progress && get_keyboard_controller_status() && !Movie::instance()->IsRecording()) {
 					darken_world_window();
 					set_keyboard_controller_status(false);
 					show_cursor();

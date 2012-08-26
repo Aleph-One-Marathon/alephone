@@ -144,6 +144,7 @@ extern TP2PerfGlobals perf_globals;
 #include "interface_menus.h"
 #include "XML_LevelScript.h"
 #include "Music.h"
+#include "Movie.h"
 
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
@@ -2280,6 +2281,7 @@ static void finish_game(
 	full_fade(_cinematic_fade_out, interface_color_table);
 	paint_window_black();
 	full_fade(_end_cinematic_fade_out, interface_color_table);
+	Movie::instance()->StopRecording();
 
 	show_cursor();
 
@@ -2667,6 +2669,9 @@ static void try_and_display_chapter_screen(
 	bool interface_table_is_valid,
 	bool text_block)
 {
+	if (Movie::instance()->IsRecording())
+		return;
+	
 	/* If the picture exists... */
 	if (scenario_picture_exists(pict_resource_number))
 	{
@@ -3025,6 +3030,9 @@ extern bool option_nosound;
 
 void show_movie(short index)
 {
+	if (Movie::instance()->IsRecording())
+		return;
+	
 #if defined(HAVE_FFMPEG) || defined(HAVE_SMPEG)
 	float PlaybackSize = 2;
 	

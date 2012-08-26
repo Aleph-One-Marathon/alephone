@@ -1,0 +1,71 @@
+#ifndef __MOVIE_H
+#define __MOVIE_H
+
+/*
+
+  Copyright (C) 2012 and beyond by Jeremiah Morris
+  and the "Aleph One" developers.
+  
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 3 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+  
+  This license is contained in the file "COPYING",
+  which is included with this source code; it is available online at
+  http://www.gnu.org/licenses/gpl.html
+  
+  Movie export using SDL_ffmpeg
+  
+ */
+
+#include "cseries.h"
+#include <string.h>
+#include <vector>
+
+#ifdef HAVE_FFMPEG
+#include "SDL_ffmpeg.h"
+#endif
+
+class Movie
+{
+public:
+	static Movie *instance() { if (!m_instance) m_instance = new Movie(); return m_instance; }
+	
+	void PromptForRecording();
+	void StartRecording(std::string path);
+	bool IsRecording();
+	void StopRecording();
+	
+	enum FrameType {
+	  FRAME_NORMAL,
+	  FRAME_FADE,
+	  FRAME_CHAPTER
+	};
+	void AddFrame(FrameType ftype = FRAME_NORMAL);
+
+private:
+  static class Movie *m_instance;
+  
+  std::string moviefile;
+  SDL_Rect view_rect;
+  SDL_Surface *temp_surface;
+  
+  std::vector<uint8> videobuf;
+  std::vector<uint8> audiobuf;
+  
+#ifdef HAVE_FFMPEG
+  SDL_ffmpegFile *sffile;
+  SDL_ffmpegAudioFrame *aframe;
+#endif
+  
+  Movie();  
+  bool Setup();
+};
+	
+#endif

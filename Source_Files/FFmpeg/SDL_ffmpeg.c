@@ -1681,6 +1681,7 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
     stream->codec->codec_type = CODEC_TYPE_AUDIO;
     stream->codec->bit_rate = codec.audioBitrate;
     stream->codec->sample_rate = codec.sampleRate;
+    stream->codec->sample_fmt = SAMPLE_FMT_S16;
     stream->codec->channels = codec.channels;
 
     // find the audio encoder

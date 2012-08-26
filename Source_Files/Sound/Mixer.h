@@ -161,6 +161,8 @@ private:
 
 	static void MixerCallback(void *user, uint8 *stream, int len);
 	void Callback(uint8 *stream, int len);
+	
+	friend class Movie; // to let Movie recorder call our callback
 
 	NetworkSpeakerSoundBufferDescriptor* sNetworkAudioBufferDesc;
 
