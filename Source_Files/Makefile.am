@@ -1,7 +1,7 @@
 ## Process this file with automake to produce Makefile.in 
 
-SUBDIRS = CSeries Expat Files FFmpeg GameWorld Input LibNAT Lua Misc ModelView Network \
-   RenderMain RenderOther Sound TCPMess XML
+SUBDIRS = CSeries Expat Files FFmpeg GameWorld Input LibNAT Lua Misc	\
+   ModelView Network RenderMain RenderOther Sound TCPMess XML
 
 if MAKE_WINDOWS
 bin_PROGRAMS = AlephOne Marathon Marathon2 MarathonInfinity

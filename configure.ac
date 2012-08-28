@@ -18,6 +18,8 @@ AC_ARG_ENABLE(opengl,
 [  --enable-opengl         use OpenGL for rendering [default=yes]], , enable_opengl=yes)
 AC_ARG_ENABLE(mad, 
 [  --enable-mad            use libmad for mp3 playback [default=yes]], , enable_mad=yes)
+AC_ARG_ENABLE(ffmpeg,
+[  --enable-ffmpeg         use ffmpeg for audio/video playback and film export [default=yes]], , enable_ffmpeg=yes)
 AC_ARG_ENABLE(sndfile, 
 [  --enable-sndfile        use libsndfile for decoding audio files [default=yes]], , enable_sndfile=yes)
 AC_ARG_ENABLE(vorbis, 
@@ -188,6 +190,17 @@ PKG_CHECK_MODULES([VORBISFILE], [vorbisfile], [
 ])
 fi
 
+if [[ "x$enable_ffmpeg" = "xyes" ]]; then
+dnl Check for libavcodec
+PKG_CHECK_MODULES([FFMPEG], [libavcodec libavformat libswscale], [
+			    CPPFLAGS="$FFMPEG_CFLAGS $CPPFLAGS"
+			    LIBS="$FFMPEG_LIBS $LIBS"
+			    AC_DEFINE(HAVE_FFMPEG, 1, [ffmpeg support enabled])
+			    have_ffmpeg=true
+])
+fi
+AM_CONDITIONAL(HAVE_FFMPEG, test x$have_ffmpeg = xtrue)
+
 if [[ "x$enable_lua" = "xyes" ]]; then
 AC_DEFINE(HAVE_LUA, 1, [Lua support is enabled])
 fi
@@ -284,6 +297,7 @@ AlephOne.spec
 Source_Files/Makefile
 Source_Files/CSeries/Makefile
 Source_Files/Expat/Makefile
+Source_Files/FFmpeg/Makefile
 Source_Files/Files/Makefile
 Source_Files/GameWorld/Makefile
 Source_Files/Input/Makefile
