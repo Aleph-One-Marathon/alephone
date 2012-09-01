@@ -27,6 +27,7 @@
 #include "cseries.h"
 #include <string.h>
 #include <vector>
+#include <SDL_thread.h>
 
 #ifdef HAVE_FFMPEG
 #include "SDL_ffmpeg.h"
@@ -64,8 +65,15 @@ private:
   SDL_ffmpegAudioFrame *aframe;
 #endif
   
+  SDL_Thread *encodeThread;
+  SDL_sem *encodeReady;
+  SDL_sem *fillReady;
+  bool stillEncoding;
+  
   Movie();  
   bool Setup();
+  static int Movie_EncodeThread(void *arg);
+  void EncodeThread();
 };
 	
 #endif

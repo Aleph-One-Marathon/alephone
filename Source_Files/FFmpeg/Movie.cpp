@@ -63,7 +63,11 @@ Movie::Movie() :
   moviefile(""),
   temp_surface(NULL),
   sffile(NULL),
-  aframe(NULL)
+  aframe(NULL),
+  encodeThread(NULL),
+  encodeReady(NULL),
+  fillReady(NULL),
+  stillEncoding(0)
 {
 }
 
@@ -156,12 +160,67 @@ bool Movie::Setup()
 	  audiobuf.resize(audio_bytes_per_frame);
 	}
 	
+	if (success)
+	{
+		encodeReady = SDL_CreateSemaphore(0);
+		fillReady = SDL_CreateSemaphore(1);
+		stillEncoding = true;
+		success = encodeReady && fillReady;
+	}
+	
+	if (success)
+	{
+		encodeThread = SDL_CreateThread(Movie_EncodeThread, this);
+		success = encodeThread;
+	}
+	
 	if (!success)
 	{
 	  StopRecording();
 	  alert_user("Your movie could not be exported.");
 	}
 	return success;
+}
+
+int Movie::Movie_EncodeThread(void *arg)
+{
+	reinterpret_cast<Movie *>(arg)->EncodeThread();
+	return 0;
+}
+
+void Movie::EncodeThread()
+{
+	while (true)
+	{
+		SDL_SemWait(encodeReady);
+		if (!stillEncoding)
+		{
+			// signal to quit
+			SDL_SemPost(fillReady);
+			return;
+		}
+		
+		SDL_ffmpegAddVideoFrame(sffile, temp_surface);
+		
+		int audio_bytes_per_frame = audiobuf.size();
+		int spare_used = audio_bytes_per_frame;
+		int spare_off = 0;
+		while (spare_used)
+		{
+			int bytes = MIN(spare_used, aframe->capacity - aframe->size);
+			memcpy(&aframe->buffer[aframe->size], &audiobuf[spare_off], bytes);
+			spare_used -= bytes;
+			spare_off += bytes;
+			aframe->size += bytes;
+			if (aframe->size == aframe->capacity)
+			{
+				SDL_ffmpegAddAudioFrame(sffile, aframe);
+				aframe->size = 0;
+			}
+		}
+		
+		SDL_SemPost(fillReady);
+	}
 }
 
 void Movie::AddFrame(FrameType ftype)
@@ -179,11 +238,12 @@ void Movie::AddFrame(FrameType ftype)
 	if (ftype == FRAME_FADE && get_keyboard_controller_status())
 		return;
 	
+	SDL_SemWait(fillReady);
+  	
 	SDL_Surface *video = SDL_GetVideoSurface();
 	if (!(video->flags & SDL_OPENGL))
 	{
 		SDL_BlitSurface(video, &view_rect, temp_surface, NULL);
-		SDL_ffmpegAddVideoFrame(sffile, temp_surface);
 	}
 #ifdef HAVE_OPENGL
 	else
@@ -194,8 +254,6 @@ void Movie::AddFrame(FrameType ftype)
 		// Copy pixel buffer (which is upside-down) to surface
 		for (int y = 0; y < view_rect.h; y++)
 			memcpy((uint8 *)temp_surface->pixels + temp_surface->pitch * y, &videobuf.front() + view_rect.w * 4 * (view_rect.h - y - 1), view_rect.w * 4);
-
-		SDL_ffmpegAddVideoFrame(sffile, temp_surface);
 	}
 #endif
 	
@@ -206,25 +264,28 @@ void Movie::AddFrame(FrameType ftype)
 	mx->Mix(&audiobuf.front(), audio_bytes_per_frame / 4, true, true, true);
 	mx->main_volume = old_vol;
 	
-	int spare_used = audio_bytes_per_frame;
-	int spare_off = 0;
-	while (spare_used)
-	{
-		int bytes = MIN(spare_used, aframe->capacity - aframe->size);
-		memcpy(&aframe->buffer[aframe->size], &audiobuf[spare_off], bytes);
-		spare_used -= bytes;
-		spare_off += bytes;
-		aframe->size += bytes;
-		if (aframe->size == aframe->capacity)
-		{
-			SDL_ffmpegAddAudioFrame(sffile, aframe);
-			aframe->size = 0;
-		}
-	}
+	SDL_SemPost(encodeReady);
 }
 
 void Movie::StopRecording()
 {
+	if (encodeThread)
+	{
+		stillEncoding = false;
+		SDL_SemPost(encodeReady);
+		SDL_WaitThread(encodeThread, NULL);
+		encodeThread = NULL;
+	}
+	if (encodeReady)
+	{
+		SDL_DestroySemaphore(encodeReady);
+		encodeReady = NULL;
+	}
+	if (fillReady)
+	{
+		SDL_DestroySemaphore(fillReady);
+		fillReady = NULL;
+	}
 	if (sffile)
 	{
 		SDL_ffmpegFree(sffile);
