@@ -28,11 +28,7 @@ SOUNDFILE.CPP
 #include <assert.h>
 
 SoundHeader::SoundHeader() :
-	sixteen_bit(false),
-	stereo(false),
-	signed_8bit(false),
-	bytes_per_frame(false),
-	little_endian(false),
+	SoundInfo(),
 	loop_start(0),
 	loop_end(0),
 	rate(0),

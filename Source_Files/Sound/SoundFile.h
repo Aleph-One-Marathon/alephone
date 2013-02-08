@@ -28,8 +28,25 @@ SOUND_DEFINITIONS.H
 #include <memory>
 #include <vector>
 #include <boost/shared_array.hpp>
+#include <boost/utility.hpp>
 
-class SoundHeader
+class SoundInfo 
+{
+public:
+	SoundInfo() : sixteen_bit(false), 
+		      stereo(false), 
+		      signed_8bit(false), 
+		      little_endian(false), 
+		      bytes_per_frame(1) { }
+	
+	bool sixteen_bit;
+	bool stereo;
+	bool signed_8bit;
+	bool little_endian;
+	int bytes_per_frame;
+};
+
+class SoundHeader : public SoundInfo
 {
 public:
 	SoundHeader();
@@ -44,12 +61,6 @@ public:
 		stored_data.reset(new uint8[length]);
 		return stored_data.get();
 	}
-
-	bool sixteen_bit;
-	bool stereo;
-	bool signed_8bit;
-	int bytes_per_frame;
-	bool little_endian;
 
 	const uint8* Data() const 
 		{ return stored_data.get() ? stored_data.get() : data; }

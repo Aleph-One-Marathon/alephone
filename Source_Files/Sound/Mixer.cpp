@@ -27,25 +27,16 @@ Mixer* Mixer::m_instance = 0;
 extern bool option_nosound;
 
 Mixer::Header::Header() : 
-	sixteen_bit(false),
-	stereo(false),
-	signed_8bit(false),
-	bytes_per_frame(0),
 	data(0),
 	length(0),
 	loop(0),
 	loop_length(0),
-	rate(FIXED_ONE),
-	little_endian(false)
+	rate(FIXED_ONE)
 {
 }
 
 Mixer::Header::Header(const SoundHeader& header) :
-	sixteen_bit(header.sixteen_bit),
-	stereo(header.stereo),
-	signed_8bit(header.signed_8bit),
-	bytes_per_frame(header.bytes_per_frame),
-	little_endian(header.little_endian),
+	SoundInfo(header),
 	data(header.Data()),
 	length(header.Length()),
 	loop(header.Data() + header.loop_start),
@@ -135,11 +126,11 @@ void Mixer::Callback(uint8 *stream, int len)
 void Mixer::StartMusicChannel(bool sixteen_bit, bool stereo, bool signed_8bit, int bytes_per_frame, _fixed rate, bool little_endian)
 {
 	Channel *c = &channels[sound_channel_count + MUSIC_CHANNEL];
-	c->sixteen_bit = sixteen_bit;
-	c->stereo = stereo;
-	c->signed_8bit = signed_8bit;
-	c->little_endian = little_endian;
-	c->bytes_per_frame = bytes_per_frame;
+	c->info.sixteen_bit = sixteen_bit;
+	c->info.stereo = stereo;
+	c->info.signed_8bit = signed_8bit;
+	c->info.little_endian = little_endian;
+	c->info.bytes_per_frame = bytes_per_frame;
 	c->counter = 0;
 	c->rate = rate;
 	c->left_volume = c->right_volume = 0x100;
@@ -169,18 +160,18 @@ void Mixer::EnsureNetworkAudioPlaying()
 		if (sNetworkAudioBufferDesc)
 		{
 			SDL_LockAudio();
-			c->stereo = kNetworkAudioIsStereo;
-			c->sixteen_bit = kNetworkAudioIs16Bit;
-			c->signed_8bit = kNetworkAudioIsSigned8Bit;
-			c->bytes_per_frame = kNetworkAudioBytesPerFrame;
+			c->info.stereo = kNetworkAudioIsStereo;
+			c->info.sixteen_bit = kNetworkAudioIs16Bit;
+			c->info.signed_8bit = kNetworkAudioIsSigned8Bit;
+			c->info.bytes_per_frame = kNetworkAudioBytesPerFrame;
 			c->data = sNetworkAudioBufferDesc->mData;
 			c->length = sNetworkAudioBufferDesc->mLength;
 			c->loop_length = 0;
 			c->rate = (kNetworkAudioSampleRate << 16) / obtained.freq;
 #ifdef ALEPHONE_LITTLE_ENDIAN
-			c->little_endian = true;
+			c->info.little_endian = true;
 #else
-			c->little_endian = false;
+			c->info.little_endian = false;
 #endif
 			c->left_volume = 0x100;
 			c->right_volume = 0x100;
@@ -271,11 +262,6 @@ void Mixer::StopSoundResource()
 
 Mixer::Channel::Channel() :
 	active(false),
-	sixteen_bit(false),
-	stereo(false),
-	signed_8bit(false),
-	bytes_per_frame(0),
-	little_endian(false),
 	data(0),
 	length(0),
 	loop(0),
@@ -295,11 +281,7 @@ void Mixer::Channel::LoadSoundHeader(const Header& header, _fixed pitch)
 		active = false;
 		return;
 	}
-	sixteen_bit = header.sixteen_bit;
-	stereo = header.stereo;
-	signed_8bit = header.signed_8bit;
-	bytes_per_frame = header.bytes_per_frame;
-	little_endian = header.little_endian;
+	info = header;
 	data = header.data;
 	length = header.length;
 	loop = header.loop;
@@ -414,7 +396,7 @@ void Mixer::Resample_(Channel* c, int16* left, int16* right, int samples)
 				right0 = Convert<le_or_signed>(*data++);
 			}
 		
-			if ((c->counter & 0xffff) && c->length > c->bytes_per_frame)
+			if ((c->counter & 0xffff) && c->length > c->info.bytes_per_frame)
 			{
 				int32 left1 = Convert<le_or_signed>(*data++);
 				if (stereo) 
@@ -446,8 +428,8 @@ void Mixer::Resample_(Channel* c, int16* left, int16* right, int samples)
 			{
 				int count = c->counter >> 16;
 				c->counter &= 0xffff;
-				c->data += c->bytes_per_frame * count;
-				c->length -= c->bytes_per_frame * count;
+				c->data += c->info.bytes_per_frame * count;
+				c->length -= c->info.bytes_per_frame * count;
 			
 				if (c->length <= 0) 
 				{
@@ -464,11 +446,11 @@ void Mixer::Resample_(Channel* c, int16* left, int16* right, int samples)
 
 void Mixer::Resample(Channel* c, int16* left, int16* right, int samples)
 {
-	if (c->stereo) 
+	if (c->info.stereo) 
 	{
-		if (c->sixteen_bit) 
+		if (c->info.sixteen_bit) 
 		{
-			if (c->little_endian)
+			if (c->info.little_endian)
 			{
 				Resample_<int16, true, true>(c, left, right, samples);
 			}
@@ -479,7 +461,7 @@ void Mixer::Resample(Channel* c, int16* left, int16* right, int samples)
 		}
 		else
 		{
-			if (c->signed_8bit)
+			if (c->info.signed_8bit)
 			{
 				Resample_<int8, true, true>(c, left, right, samples);
 			} 
@@ -491,9 +473,9 @@ void Mixer::Resample(Channel* c, int16* left, int16* right, int samples)
 	} 
 	else
 	{
-		if (c->sixteen_bit) 
+		if (c->info.sixteen_bit) 
 		{
-			if (c->little_endian)
+			if (c->info.little_endian)
 			{
 				Resample_<int16, false, true>(c, left, right, samples);
 			}
@@ -504,7 +486,7 @@ void Mixer::Resample(Channel* c, int16* left, int16* right, int samples)
 		}
 		else
 		{
-			if (c->signed_8bit)
+			if (c->info.signed_8bit)
 			{
 				Resample_<int8, false, true>(c, left, right, samples);
 			} 

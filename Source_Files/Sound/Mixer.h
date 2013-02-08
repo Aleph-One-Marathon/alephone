@@ -42,13 +42,8 @@ public:
 
 	void SetVolume(short volume) { main_volume = volume; }
 
-	struct Header
+	struct Header : public SoundInfo
 	{
-		bool sixteen_bit;
-		bool stereo;
-		bool signed_8bit;
-		int bytes_per_frame;
-		
 		const uint8* data;
 		int32 length;
 
@@ -56,7 +51,6 @@ public:
 		int32 loop_length;
 
 		uint32 /* unsigned fixed */ rate;
-		bool little_endian;
 
 		Header();
 		Header(const SoundHeader& header);
@@ -96,13 +90,8 @@ private:
 	static Mixer *m_instance;
 	
 	struct Channel {
+		SoundInfo info;
 		bool active;			// Flag: currently playing sound
-		
-		bool sixteen_bit;		// Flag: 16-bit sound data (8-bit otherwise)
-		bool stereo;			// Flag: stereo sound data (mono otherwise)
-		bool signed_8bit;		// Flag: 8-bit sound data is signed (unsigned otherwise, 16-bit data is always signed)
-		int bytes_per_frame;	        // Bytes per sample frame (1, 2 or 4)
-		bool little_endian;             // 16-bit samples are little-endian
 		
 		const uint8 *data;              // Current pointer to sound data
 		int32 length;			// Length in bytes remaining to be played
