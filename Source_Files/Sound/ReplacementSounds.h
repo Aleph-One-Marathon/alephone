@@ -27,6 +27,8 @@
 #include <string>
 #include "SoundFile.h"
 
+#include <boost/unordered_map.hpp>
+
 class ExternalSoundHeader : public SoundHeader
 {
 public:
@@ -39,21 +41,6 @@ struct SoundOptions
 {
 	FileSpecifier File;
 	ExternalSoundHeader Sound;
-
-	static const int HashSize = 1 << 8;
-	static const int HashMask = HashSize - 1;
-	static inline uint8 HashFunc(short Index, short Slot) {
-		// This function will avoid collisions when accessing sounds with the same index
-		// and different slots (permutations)
-		return (uint8)(Index ^ (Slot << 4));
-	}
-};
-
-struct SoundOptionsEntry
-{
-	short Index;
-	short Slot;
-	SoundOptions OptionsData;
 };
 
 class SoundReplacements
@@ -65,17 +52,16 @@ public:
 	}
 
 	SoundOptions *GetSoundOptions(short Index, short Slot);
-	void Reset() { SOList.clear(); }
+	void Reset() { m_hash.clear(); }
 	void Add(const SoundOptions& Data, short Index, short Slot);
 
 private:
-	SoundReplacements();
+	SoundReplacements() { }
 	static SoundReplacements *m_instance;
-	
-	// list of sound-options records
-	// and a hash table for them
-	std::vector<SoundOptionsEntry> SOList;
-	std::vector<int16> SOHash;
+
+	typedef std::pair<short, short> key;
+
+	boost::unordered_map<key, SoundOptions> m_hash;
 };
 
 #endif
