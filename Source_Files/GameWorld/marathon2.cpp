@@ -595,8 +595,6 @@ void leaving_map(
 	// doesn't work out. 
 	Music::instance()->StopLevelMusic();
 	SoundManager::instance()->StopAllSounds();
-
-	SoundManager::instance()->UnloadCustomSounds();
 }
 
 /* call this function after the new level has been completely read into memory, after

@@ -128,14 +128,6 @@ public:
 	SoundDefinition* GetSoundDefinition(int source, int sound_index);
 	void Load(int source, int sound_index);
 
-	// Always returns a new sound index.
-	int NewCustomSoundDefinition();
-	// Returns false if the given index isn't a custom sound or the given
-	// file couldn't be loaded.
-	bool AddCustomSoundSlot(int index, const char* file);
-	// Does what it says on the tin.
-	void UnloadCustomSounds();
-
 public:
 	int32 version;
 	int32 tag;

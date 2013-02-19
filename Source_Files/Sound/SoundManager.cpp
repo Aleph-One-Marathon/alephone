@@ -149,22 +149,6 @@ void SoundManager::TestVolume(short volume, short sound_index)
 	}
 }
 
-int SoundManager::NewCustomSoundDefinition() {
-  int ret = sound_file.NewCustomSoundDefinition();
-  if(ret >= 0)
-    ++number_of_sound_definitions;
-  return ret;
-}
-
-bool SoundManager::AddCustomSoundSlot(int index, const char* file) {
-  return sound_file.AddCustomSoundSlot(index, file);
-}
-
-void SoundManager::UnloadCustomSounds() {
-  sound_file.UnloadCustomSounds();
-  number_of_sound_definitions = real_number_of_sound_definitions;
-}
-
 bool SoundManager::LoadSound(short sound_index)
 {
 	if (active)
