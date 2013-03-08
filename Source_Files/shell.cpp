@@ -1482,7 +1482,9 @@ void dump_screen(void)
 	}
 
 	// Read OpenGL frame buffer
+	glPixelStorei(GL_PACK_ALIGNMENT, 1);
 	glReadPixels(0, 0, video->w, video->h, GL_RGB, GL_UNSIGNED_BYTE, pixels);
+	glPixelStorei(GL_PACK_ALIGNMENT, 4);  // return to default
 
 	// Copy pixel buffer (which is upside-down) to surface
 	for (int y = 0; y < video->h; y++)
