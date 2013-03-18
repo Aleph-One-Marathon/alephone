@@ -26,14 +26,11 @@ SOUNDFILE.CPP
 #include "Decoder.h"
 
 #include <assert.h>
+#include <boost/make_shared.hpp>
 
 SoundHeader::SoundHeader() :
 	SoundInfo(),
-	loop_start(0),
-	loop_end(0),
-	rate(0),
-	data(0),
-	length(0)
+	data_offset(0)
 {
 }
 
@@ -116,24 +113,31 @@ bool SoundHeader::UnpackExtendedSystem7Header(AIStreamBE &header)
 	}
 }
 
-bool SoundHeader::Load(const uint8* data)
+boost::shared_ptr<SoundData> SoundHeader::Load(const uint8* data)
 {
 	Clear();
+
+	boost::shared_ptr<SoundData> p;
 	if (data[20] == 0x00)
 	{
 		AIStreamBE header(data, 22);
-		if (!UnpackStandardSystem7Header(header)) return false;
-		this->data = data + 22;
-		return true;
+		if (UnpackStandardSystem7Header(header))
+		{
+			data_offset = 22;
+			p = boost::make_shared<SoundData>(data + data_offset, data + data_offset + length);
+		}
 	}
 	else if (data[20] == 0xff || data[20] == 0xfe)
 	{
 		AIStreamBE header(data, 64);
-		if (!UnpackExtendedSystem7Header(header)) return false;
-		this->data = data + 64;
-		return true;
+		if (UnpackExtendedSystem7Header(header))
+		{
+			data_offset = 64;
+			p = boost::make_shared<SoundData>(data + data_offset, data + data_offset + length);
+		}
 	}
-	return false;
+
+	return p;
 }
 
 bool SoundHeader::Load(OpenedFile &SoundFile)
@@ -157,7 +161,7 @@ bool SoundHeader::Load(OpenedFile &SoundFile)
 
 		AIStreamBE header(&headerBuffer[0], headerBuffer.size());
 		if (!UnpackStandardSystem7Header(header)) return false;
-		if (!SoundFile.Read(length, Load(length))) return false;
+		data_offset = 22;
 		return true;
 	}
 	else if (header_type == 0xff || header_type == 0xfe)
@@ -168,11 +172,30 @@ bool SoundHeader::Load(OpenedFile &SoundFile)
 
 		AIStreamBE header(&headerBuffer[0], headerBuffer.size());
 		if (!UnpackExtendedSystem7Header(header)) return false;
-		if (!SoundFile.Read(length, Load(length))) return false;
+		data_offset = 64;
 		return true;
 	}
 
 	return false;
+}
+
+boost::shared_ptr<SoundData> SoundHeader::LoadData(OpenedFile& SoundFile)
+{
+	boost::shared_ptr<SoundData> p;
+
+	if (!SoundFile.IsOpen()) return p;
+
+	int32 file_position;
+	SoundFile.GetPosition(file_position);
+	SoundFile.SetPosition(file_position + data_offset);
+
+	p = boost::make_shared<SoundData>(length);
+	if (!SoundFile.Read(length, &((*p)[0])))
+	{
+		p.reset();
+	}
+
+	return p;
 }
 
 bool SoundDefinition::Unpack(OpenedFile &SoundFile)
@@ -236,15 +259,21 @@ bool SoundDefinition::Load(OpenedFile &SoundFile, bool LoadPermutations)
     return true;
 }
 
-int32 SoundDefinition::LoadedSize()
+
+boost::shared_ptr<SoundData> SoundDefinition::LoadData(OpenedFile& SoundFile, short permutation)
 {
-	int32 size = 0;
-	for (int i = 0; i < sounds.size(); i++)
+	boost::shared_ptr<SoundData> p;
+	if (!SoundFile.IsOpen()) 
 	{
-		size += sounds[i].Length();
+		return p;
 	}
 
-	return size;
+	if (!SoundFile.SetPosition(group_offset + sound_offsets[permutation]))
+	{
+		return p;
+	}
+
+	return sounds[permutation].LoadData(SoundFile);
 }
 
 bool SoundFile::Open(FileSpecifier& SoundFileSpec)
@@ -295,6 +324,15 @@ bool SoundFile::Open(FileSpecifier& SoundFileSpec)
 				Close();
 				return false;
 			}
+		}
+	}
+
+	// load all the headers
+	for (int source = 0; source < source_count; ++source) 
+	{
+		for (int i = 0; i < sound_count; ++i) 
+		{
+			sound_definitions[source][i].Load(*sound_file, true);
 		}
 	}
 

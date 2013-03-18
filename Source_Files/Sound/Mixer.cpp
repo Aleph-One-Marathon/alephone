@@ -26,25 +26,6 @@ Mixer* Mixer::m_instance = 0;
 
 extern bool option_nosound;
 
-Mixer::Header::Header() : 
-	data(0),
-	length(0),
-	loop(0),
-	loop_length(0),
-	rate(FIXED_ONE)
-{
-}
-
-Mixer::Header::Header(const SoundHeader& header) :
-	SoundInfo(header),
-	data(header.Data()),
-	length(header.Length()),
-	loop(header.Data() + header.loop_start),
-	loop_length(header.loop_end - header.loop_start),
-	rate(header.rate)
-{
-}
-
 void Mixer::Start(uint16 rate, bool sixteen_bit, bool stereo, int num_channels, int volume, uint16 samples)
 {
 	sound_channel_count = num_channels;
@@ -93,17 +74,17 @@ void Mixer::Stop()
 	sound_channel_count = 0;
 }
 
-void Mixer::BufferSound(int channel, const Header& header, _fixed pitch)
+void Mixer::BufferSound(int channel, const SoundInfo& header, boost::shared_ptr<SoundData> data, _fixed pitch)
 {
 	SDL_LockAudio();
 	if (channels[channel].active)
 	{
 		// queue the header
-		channels[channel].BufferSoundHeader(header, pitch);
+		channels[channel].BufferSoundHeader(header, data, pitch);
 	} else {
 		// load it directly
 		channels[channel].active = true;
-		channels[channel].LoadSoundHeader(header, pitch);
+		channels[channel].LoadSoundHeader(header, data, pitch);
 	}
 	SDL_UnlockAudio();
 }
@@ -240,10 +221,13 @@ void Mixer::PlaySoundResource(LoadedResource &rsrc)
 		if (cmd == 0x8051) {
 
 			SoundHeader header;
-			header.Load((uint8 *) rsrc.GetPointer() + param2);
-			c->active = true;
-			c->LoadSoundHeader(header, FIXED_ONE);
-			c->left_volume = c->right_volume = 0x100;
+			boost::shared_ptr<SoundData> data = header.Load((uint8 *) rsrc.GetPointer() + param2);
+			if (data.get())
+			{
+				c->active = true;
+				c->LoadSoundHeader(header, data, FIXED_ONE);
+				c->left_volume = c->right_volume = 0x100;
+			}
 		}
 	}
 
@@ -270,22 +254,30 @@ Mixer::Channel::Channel() :
 	counter(0),
 	left_volume(0x100),
 	right_volume(0x100),
-	next_header(0),
 	next_pitch(0)
 {
 }
 
-void Mixer::Channel::LoadSoundHeader(const Header& header, _fixed pitch)
+void Mixer::Channel::LoadSoundHeader(const SoundInfo& header, boost::shared_ptr<SoundData> data, _fixed pitch)
 {
 	if (!header.length) {
 		active = false;
 		return;
 	}
+
 	info = header;
-	data = header.data;
+	sound_data = data;
+	this->data = &((*sound_data)[0]);
 	length = header.length;
-	loop = header.loop;
-	loop_length = (header.loop_length >= 4) ? header.loop_length : 0;
+	loop = this->data + (header.loop_start);
+	if (header.loop_end - header.loop_start >= 4) 
+	{
+		loop_length = header.loop_end - header.loop_start;
+	} 
+	else
+	{
+		loop_length = 0;
+	}
 	rate = (pitch >> 8) * ((header.rate >> 8) / instance()->obtained.freq);
 	counter = 0;
 }
@@ -338,12 +330,12 @@ void Mixer::Channel::GetMoreData()
 	{
 		// No loop, another sound header queued?
 		SoundManager::instance()->IncrementChannelCallbackCount(sound_manager_index); // fix this
-		if (next_header) {
+		if (next_header.length) {
 			
 			// Yes, load sound header and continue
-			LoadSoundHeader(*(next_header), next_pitch);
-			delete next_header;
-			next_header = 0;	
+			LoadSoundHeader(next_header, next_data, next_pitch);
+			next_header.length = 0;
+			next_data.reset();
 		} else {
 			
 			// No, turn off channel

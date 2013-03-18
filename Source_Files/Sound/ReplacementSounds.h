@@ -29,12 +29,12 @@
 
 #include <boost/unordered_map.hpp>
 
-class ExternalSoundHeader : public SoundHeader
+class ExternalSoundHeader : public SoundInfo
 {
 public:
-	ExternalSoundHeader() : SoundHeader() { }
+	ExternalSoundHeader() : SoundInfo() { }
 	~ExternalSoundHeader() { }
-	bool LoadExternal(FileSpecifier& File);
+	boost::shared_ptr<SoundData> LoadExternal(FileSpecifier& File);
 };
 
 struct SoundOptions

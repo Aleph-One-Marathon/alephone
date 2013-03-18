@@ -30,7 +30,12 @@
 
 #include "SoundManagerEnums.h"
 
+#include <boost/function.hpp>
+#include <boost/shared_ptr.hpp>
+
 struct ambient_sound_data;
+
+class SoundMemoryManager;
 
 class SoundManager
 {
@@ -147,10 +152,7 @@ private:
 	Channel *BestChannel(short sound_index, Channel::Variables& variables);
 	void FreeChannel(Channel &);
 
-	void UnlockSound(short sound_index) { }
 	void UnlockLockedSounds();
-	short ReleaseLeastUsefulSound();
-	void DisposeSound(short sound_index);
 
 	void CalculateSoundVariables(short sound_index, world_location3d *source, Channel::Variables& variables);
 	void CalculateInitialSoundVariables(short sound_index, world_location3d *source, Channel::Variables& variables, _fixed pitch);
@@ -170,15 +172,13 @@ private:
 	bool active;
 
 	short total_channel_count;
-	int32 total_buffer_size;
 
 	short sound_source; // 8-bit, 16-bit
 	
-	int32 loaded_sounds_size;
-
 	std::vector<Channel> channels;
 
-	SoundFile sound_file;	
+	SoundFile sound_file;
+	SoundMemoryManager* sounds;
 
 	// buffer sizes
 	static const int MINIMUM_SOUND_BUFFER_SIZE = 300*KILO;

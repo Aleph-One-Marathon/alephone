@@ -28,7 +28,10 @@ SOUND_DEFINITIONS.H
 #include <memory>
 #include <vector>
 #include <boost/shared_array.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
+
+typedef std::vector<uint8> SoundData;
 
 class SoundInfo 
 {
@@ -37,13 +40,21 @@ public:
 		      stereo(false), 
 		      signed_8bit(false), 
 		      little_endian(false), 
-		      bytes_per_frame(1) { }
+		      bytes_per_frame(1),
+		      loop_start(0),
+		      loop_end(0),
+		      rate(0),
+		      length(0) { }
 	
 	bool sixteen_bit;
 	bool stereo;
 	bool signed_8bit;
 	bool little_endian;
 	int bytes_per_frame;
+	int32 loop_start;
+	int32 loop_end;
+	uint32 rate;
+	int32 length;
 };
 
 class SoundHeader : public SoundInfo
@@ -51,37 +62,23 @@ class SoundHeader : public SoundInfo
 public:
 	SoundHeader();
 	virtual ~SoundHeader() { };
-	bool Load(OpenedFile &SoundFile); // loads a system 7 sound from file
-	bool Load(const uint8* data); // loads (but doesn't store) a system 7 sound
 
-	// decode raw samples into returned buffer
-	uint8* Load(int32 length) {
-		Clear();
-		this->length = length;
-		stored_data.reset(new uint8[length]);
-		return stored_data.get();
-	}
+	bool Load(OpenedFile &SoundFile); // loads a system 7 header from file
+	boost::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile);
+	
+	// loads and copies a system 7 sound
+	boost::shared_ptr<SoundData> Load(const uint8* data);
 
-	const uint8* Data() const 
-		{ return stored_data.get() ? stored_data.get() : data; }
 	int32 Length() const
 		{ return length; };
 	
-	int32 loop_start;
-	int32 loop_end;
-
-	uint32 /* unsigned fixed */ rate;
-
-	void Clear() { stored_data.reset(); data = 0; length = 0; }
+	void Clear() { length = 0; }
 
 private:
 	bool UnpackStandardSystem7Header(AIStreamBE &header);
 	bool UnpackExtendedSystem7Header(AIStreamBE &header);
 	
-	boost::shared_array<uint8> stored_data;
-	const uint8* data;
-	int32 length;
-
+	uint32 data_offset;
 };
 
 class SoundDefinition
@@ -89,11 +86,10 @@ class SoundDefinition
 public:
 	bool Unpack(OpenedFile &SoundFile);
 	bool Load(OpenedFile &SoundFile, bool LoadPermutations);
+	boost::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile, short permutation);
 	void Unload() { sounds.clear(); }
 
 	static const int MAXIMUM_PERMUTATIONS_PER_SOUND = 5;
-
-	int32 LoadedSize(); // just the size of the data
 
 private:
 	static int HeaderSize() { return 64; }

@@ -22,20 +22,27 @@
 #include "ReplacementSounds.h"
 #include "Decoder.h"
 
+#include <boost/make_shared.hpp>
+#include <boost/shared_ptr.hpp>
+
 SoundReplacements *SoundReplacements::m_instance = 0;
 
-bool ExternalSoundHeader::LoadExternal(FileSpecifier& File)
+boost::shared_ptr<SoundData> ExternalSoundHeader::LoadExternal(FileSpecifier& File)
 {
+	boost::shared_ptr<SoundData> p;
 	auto_ptr<Decoder> decoder(Decoder::Get(File));
-	if (!decoder.get()) return false;
+	if (!decoder.get()) return p;
 
 	int32 length = decoder->Frames() * decoder->BytesPerFrame();
-	if (!length) return false;
+	if (!length) return p;
 
-	if (decoder->Decode(Load(length), length) != length) 
+	p = boost::make_shared<SoundData>(length);
+
+	if (decoder->Decode(&(*p)[0], length) != length) 
 	{
-		Clear();
-		return false;
+		p.reset();
+		length = 0;
+		return p;
 	}
 	
 	sixteen_bit = decoder->IsSixteenBit();
@@ -46,8 +53,7 @@ bool ExternalSoundHeader::LoadExternal(FileSpecifier& File)
 	loop_start = loop_end = 0;
 	rate = (uint32 /* unsigned fixed */) (FIXED_ONE * decoder->Rate());
 
-	return true;
-	
+	return p;
 }
 
 SoundOptions* SoundReplacements::GetSoundOptions(short Index, short Slot)
