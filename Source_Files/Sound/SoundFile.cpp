@@ -198,6 +198,20 @@ boost::shared_ptr<SoundData> SoundHeader::LoadData(OpenedFile& SoundFile)
 	return p;
 }
 
+SoundDefinition::SoundDefinition() :
+	sound_code(0), 
+	behavior_index(1), 
+	flags(0),
+	chance(0),
+	low_pitch(0),
+	high_pitch(0),
+	permutations(1),
+	permutations_played(0),
+	group_offset(0), single_length(0), total_length(0),
+	last_played(0)
+{
+}
+
 bool SoundDefinition::Unpack(OpenedFile &SoundFile)
 {
 	if (!SoundFile.IsOpen()) return false;
@@ -276,7 +290,7 @@ boost::shared_ptr<SoundData> SoundDefinition::LoadData(OpenedFile& SoundFile, sh
 	return sounds[permutation].LoadData(SoundFile);
 }
 
-bool SoundFile::Open(FileSpecifier& SoundFileSpec)
+bool M2SoundFile::Open(FileSpecifier& SoundFileSpec)
 {
 	Close();
 
@@ -295,7 +309,6 @@ bool SoundFile::Open(FileSpecifier& SoundFileSpec)
 	header >> tag;
 	header >> source_count;
 	header >> sound_count;
-	real_sound_count = sound_count;
 	header.ignore(v1Unused * 2);
 
 	if ((version != 0 && version != 1) ||
@@ -342,15 +355,111 @@ bool SoundFile::Open(FileSpecifier& SoundFileSpec)
 	return true;
 }
 
-void SoundFile::Close()
+void M2SoundFile::Close()
 {
 	sound_definitions.clear();
 }
 
-SoundDefinition* SoundFile::GetSoundDefinition(int source, int sound_index)
+SoundDefinition* M2SoundFile::GetSoundDefinition(int source, int sound_index)
 {
 	if (source < sound_definitions.size() && sound_index < sound_definitions[source].size())
 		return &sound_definitions[source][sound_index];
 	else
 		return 0;
+}
+
+boost::shared_ptr<SoundData> M2SoundFile::GetSoundData(SoundDefinition* definition, int permutation)
+{
+	return definition->LoadData(*opened_sound_file, permutation);
+}
+
+bool M1SoundFile::Open(FileSpecifier& SoundFile)
+{
+	return SoundFile.Open(resource_file);
+}
+
+void M1SoundFile::Close()
+{
+	resource_file.Close();
+}
+
+SoundDefinition* M1SoundFile::GetSoundDefinition(int, int sound_index)
+{
+	if (resource_file.Check('s', 'n', 'd', ' ', sound_index))
+	{
+		std::map<int16, SoundDefinition>::iterator it = definitions.find(sound_index);
+		if (it == definitions.end())
+		{
+			SoundDefinition definition;
+			definition.sound_code = sound_index;
+			it = definitions.insert(std::pair<int16, SoundDefinition>(sound_index, definition)).first;
+		}
+		return &(it->second);
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+SoundHeader M1SoundFile::GetSoundHeader(SoundDefinition* definition, int)
+{
+	SoundHeader header;
+	LoadedResource rsrc;
+	if (resource_file.Get('s', 'n', 'd', ' ', definition->sound_code, rsrc))
+	{
+		header.Load(FindData(rsrc));
+	}
+
+	return header;
+}
+
+boost::shared_ptr<SoundData> M1SoundFile::GetSoundData(SoundDefinition* definition, int)
+{
+	SoundHeader header;
+	LoadedResource rsrc;
+	if (resource_file.Get('s', 'n', 'd', ' ', definition->sound_code, rsrc))
+	{
+		return header.Load(FindData(rsrc));
+	}
+	else
+	{
+		return boost::shared_ptr<SoundData>();
+	}
+}
+
+const uint8* M1SoundFile::FindData(LoadedResource& rsrc)
+{
+	// Open stream to resource
+	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), (int)rsrc.GetLength());
+	if (p == NULL)
+		return 0;
+
+	// Get resource format
+	uint16 format = SDL_ReadBE16(p);
+	if (format != 1 && format != 2) {
+		fprintf(stderr, "Unknown sound resource format %d\n", format);
+		SDL_RWclose(p);
+		return 0;
+	}
+
+	// Skip sound data types or reference count
+	if (format == 1) {
+		uint16 num_data_formats = SDL_ReadBE16(p);
+		SDL_RWseek(p, num_data_formats * 6, SEEK_CUR);
+	} else if (format == 2)
+		SDL_RWseek(p, 2, SEEK_CUR);
+
+	// Scan sound commands for bufferCmd
+	uint16 num_cmds = SDL_ReadBE16(p);
+	for (int i=0; i<num_cmds; i++) {
+		uint16 cmd = SDL_ReadBE16(p);
+		uint16 param1 = SDL_ReadBE16(p);
+		uint32 param2 = SDL_ReadBE32(p);
+		//printf("cmd %04x %04x %08x\n", cmd, param1, param2);
+
+		if (cmd == 0x8051) {
+			return reinterpret_cast<const uint8*>(rsrc.GetPointer()) + param2;
+		}
+	}
 }

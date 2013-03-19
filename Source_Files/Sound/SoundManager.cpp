@@ -30,8 +30,6 @@ SOUND.C
 #define MARK_SLOT_AS_FREE(o) ((o)->flags&=(uint16)~0x8000)
 #define MARK_SLOT_AS_USED(o) ((o)->flags|=(uint16)0x8000)
 
-static int16 real_number_of_sound_definitions;
-
 class SoundMemoryManager {
 public:
 	SoundMemoryManager(std::size_t max_size) : m_size(0), m_max_size(max_size) { }
@@ -188,11 +186,19 @@ void SoundManager::Shutdown()
 bool SoundManager::OpenSoundFile(FileSpecifier& File)
 {
 	StopAllSounds();
-	if (!sound_file.Open(File)) return false;
-	real_number_of_sound_definitions = number_of_sound_definitions = sound_file.sound_count;	
+	sound_file.reset(new M2SoundFile);
+	if (!sound_file->Open(File))
+	{
+		// try M1 sounds
+		sound_file.reset(new M1SoundFile);
+		if (!sound_file->Open(File))
+		{
+			return false;
+		}
+	}
 
 	sound_source = (parameters.flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;
-	if (sound_file.source_count == 1)
+	if (sound_file->SourceCount() == 1)
 		sound_source = _8bit_22k_source;
 
 	return true;
@@ -201,7 +207,7 @@ bool SoundManager::OpenSoundFile(FileSpecifier& File)
 void SoundManager::CloseSoundFile()
 {
 	StopAllSounds();
-	sound_file.Close();
+	sound_file->Close();
 }
 
 bool SoundManager::AdjustVolumeUp(short sound_index)
@@ -272,7 +278,7 @@ bool SoundManager::LoadSound(short sound_index)
 		{
 			for (int i = 0; i < NumSlots; ++i)
 			{
-				boost::shared_ptr<SoundData> p = definition->LoadData(*(sound_file.opened_sound_file), i);	
+				boost::shared_ptr<SoundData> p = sound_file->GetSoundData(definition, i);
 
 				SoundOptions *SndOpts = SoundReplacements::instance()->GetSoundOptions(sound_index, i);
 				if (SndOpts)
@@ -337,7 +343,7 @@ void SoundManager::PlaySound(short sound_index,
 {
 	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
 		or our volume is zero, our we have no sound channels */
-	if (sound_index!=NONE && active && sound_index < number_of_sound_definitions && parameters.volume > 0 && total_channel_count > 0)
+	if (sound_index!=NONE && active && parameters.volume > 0 && total_channel_count > 0)
 	{
 		Channel::Variables variables;
 
@@ -384,7 +390,7 @@ void SoundManager::DirectPlaySound(short sound_index, angle direction, short vol
 	/* don’t do anything if we’re not initialized or active, or our sound_code is NONE,
 	   or our volume is zero, our we have no sound channels */
 
-	if (sound_index != NONE && active && sound_index < number_of_sound_definitions && parameters.volume > 0 && total_channel_count > 0)
+	if (sound_index != NONE && active && parameters.volume > 0 && total_channel_count > 0)
 	{
 		if (LoadSound(sound_index))
 		{
@@ -471,11 +477,6 @@ void SoundManager::StopSound(short identifier, short sound_index)
 	}
 
 	return;
-}
-
-int SoundManager::NumberOfSoundDefinitions()
-{
-	return number_of_sound_definitions;
 }
 
 void SoundManager::Idle()
@@ -779,10 +780,10 @@ void SoundManager::SetStatus(bool active)
 
 SoundDefinition* SoundManager::GetSoundDefinition(short sound_index)
 {
-	SoundDefinition* sound_definition = sound_file.GetSoundDefinition(sound_source, sound_index);
+	SoundDefinition* sound_definition = sound_file->GetSoundDefinition(sound_source, sound_index);
 	if (sound_source == _16bit_22k_source && sound_definition && sound_definition->permutations == 0)
 	{
-		sound_definition = sound_file.GetSoundDefinition(_8bit_22k_source, sound_index);
+		sound_definition = sound_file->GetSoundDefinition(_8bit_22k_source, sound_index);
 	}
 
 	return sound_definition;
@@ -807,7 +808,7 @@ void SoundManager::BufferSound(Channel &channel, short sound_index, _fixed pitch
 	}
 	else
 	{
-		header = definition->sounds[permutation];
+		header = sound_file->GetSoundHeader(definition, permutation);
 	}
 
 	boost::shared_ptr<SoundData> sound = sounds->Get(sound_index, permutation);

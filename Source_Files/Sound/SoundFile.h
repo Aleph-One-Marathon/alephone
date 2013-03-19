@@ -27,6 +27,7 @@ SOUND_DEFINITIONS.H
 #include "FileHandler.h"
 #include <memory>
 #include <vector>
+#include <map>
 #include <boost/shared_array.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/utility.hpp>
@@ -84,6 +85,7 @@ private:
 class SoundDefinition
 {
 public:
+	SoundDefinition();
 	bool Unpack(OpenedFile &SoundFile);
 	bool Load(OpenedFile &SoundFile, bool LoadPermutations);
 	boost::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile, short permutation);
@@ -119,18 +121,52 @@ public: // for now
 class SoundFile
 {
 public:
+	virtual bool Open(FileSpecifier& SoundFile) = 0;
+	virtual void Close() = 0;
+	virtual SoundDefinition* GetSoundDefinition(int source, int sound_index) = 0;
+	virtual SoundHeader GetSoundHeader(SoundDefinition* definition, int permutation) = 0;
+	virtual boost::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation) = 0;
+
+	virtual int SourceCount() { return 1; };
+};
+
+class M1SoundFile : public SoundFile
+{
+public:
+	bool Open(FileSpecifier& SoundFile);
+	void Close();
+	SoundDefinition* GetSoundDefinition(int source, int sound_index);
+	SoundHeader GetSoundHeader(SoundDefinition* definition, int permutation);
+	boost::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation);
+
+private:
+	const uint8* FindData(LoadedResource& rsrc);
+
+	OpenedResourceFile resource_file;
+
+	std::map<int16, SoundDefinition> definitions;
+	std::map<int16, SoundHeader> headers;
+};
+
+class M2SoundFile : public SoundFile
+{
+public:
 	bool Open(FileSpecifier &SoundFile);
 	void Close();
 	SoundDefinition* GetSoundDefinition(int source, int sound_index);
-	void Load(int source, int sound_index);
+	SoundHeader GetSoundHeader(SoundDefinition* definition, int permutation) { 
+		return definition->sounds[permutation];
+	}
+	boost::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation);
 
-public:
+	int SourceCount() { return source_count; }
+
+private:
 	int32 version;
 	int32 tag;
 	
 	int16 source_count;
 	int16 sound_count;
-	int16 real_sound_count;
 
 	static const int v1Unused = 124;
 

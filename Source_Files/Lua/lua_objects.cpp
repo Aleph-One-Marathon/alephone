@@ -745,7 +745,7 @@ char Lua_Sounds_Name[] = "Sounds";
 
 int Lua_Sounds_Length()
 {
-	return SoundManager::instance()->NumberOfSoundDefinitions();
+	return INT16_MAX;
 }
 
 const luaL_reg Lua_Sounds_Methods[] = {

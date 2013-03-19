@@ -32,6 +32,7 @@
 
 #include <boost/function.hpp>
 #include <boost/shared_ptr.hpp>
+#include <boost/scoped_ptr.hpp>
 
 struct ambient_sound_data;
 
@@ -71,8 +72,6 @@ public:
 
 	void StopSound(short identifier, short sound_index);
 	void StopAllSounds() { StopSound(NONE, NONE); }
-
-	int NumberOfSoundDefinitions();
 
 	inline int16 GetNetmicVolumeAdjustment() {
 		return (parameters.volume_while_speaking);
@@ -177,7 +176,7 @@ private:
 	
 	std::vector<Channel> channels;
 
-	SoundFile sound_file;
+	boost::scoped_ptr<SoundFile> sound_file;
 	SoundMemoryManager* sounds;
 
 	// buffer sizes
