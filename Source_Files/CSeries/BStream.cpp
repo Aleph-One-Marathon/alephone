@@ -47,12 +47,11 @@ BIStream& BIStream::read(char *s, std::streamsize n) throw(failure)
 
 BIStream& BIStream::ignore(std::streamsize n) throw(failure)
 {
-	if (rdbuf()->in_avail() < n) 
+	if (rdbuf()->pubseekoff(n, std::ios_base::cur, std::ios_base::in) < 0)
 	{
 		throw failure("serialization bounc check failed");
 	}
 
-	rdbuf()->pubseekoff(n, std::ios_base::cur, std::ios_base::in);
 	return *this;
 }
 
