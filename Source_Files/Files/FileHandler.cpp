@@ -87,6 +87,8 @@
 #include <boost/function.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
+namespace io = boost::iostreams;
+
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
 extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, recordings_dir;
@@ -181,6 +183,38 @@ SDL_RWops *OpenedFile::TakeRWops ()
 	f = NULL;
 	Close ();
 	return taken;
+}
+
+opened_file_device::opened_file_device(OpenedFile& f) : f(f) { }
+
+std::streamsize opened_file_device::read(char* s, std::streamsize n)
+{
+	return SDL_RWread(f.GetRWops(), s, 1, n);
+}
+
+std::streamsize opened_file_device::write(const char* s, std::streamsize n)
+{
+	return SDL_RWwrite(f.GetRWops(), s, 1, n);
+}
+
+std::streampos opened_file_device::seek(io::stream_offset off, std::ios_base::seekdir way)
+{
+	std::streampos pos;
+
+	switch (way)
+	{
+	case std::ios_base::beg:
+		pos = SDL_RWseek(f.GetRWops(), off + f.fork_offset, SEEK_SET);
+		break;
+	case std::ios_base::end:
+		pos = SDL_RWseek(f.GetRWops(), off, SEEK_END);
+		break;
+	case std::ios_base::cur:
+		pos = SDL_RWseek(f.GetRWops(), off, SEEK_CUR);
+		break;
+	}
+
+	return pos - static_cast<std::streampos>(f.fork_offset);
 }
 
 /*

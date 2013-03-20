@@ -74,6 +74,8 @@ using std::vector;
 #endif
 #endif
 
+#include <boost/iostreams/categories.hpp>
+#include <boost/iostreams/positioning.hpp>
 
 /*
 	Abstraction for opened files; it does reading, writing, and closing of such files,
@@ -83,6 +85,7 @@ class OpenedFile
 {
 	// This class will need to set the refnum and error value appropriately 
 	friend class FileSpecifier;
+	friend class opened_file_device;
 	
 public:
 	bool IsOpen();
@@ -111,6 +114,19 @@ private:
 	int32 fork_offset, fork_length;
 };
 
+class opened_file_device {
+public:
+	typedef char char_type;
+	typedef boost::iostreams::seekable_device_tag category;
+	std::streamsize read(char* s, std::streamsize n);
+	std::streamsize write(const char* s, std::streamsize n);
+	std::streampos seek(boost::iostreams::stream_offset off, std::ios_base::seekdir way);
+
+	opened_file_device(OpenedFile& f);
+
+private:
+	OpenedFile& f;
+};
 
 /*
 	Abstraction for loaded resources;
