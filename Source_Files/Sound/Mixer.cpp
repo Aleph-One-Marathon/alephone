@@ -186,54 +186,22 @@ void Mixer::StopNetworkAudio()
 void Mixer::PlaySoundResource(LoadedResource &rsrc)
 {
 	if (!channels.size()) return;
+
 	Channel *c = &channels[sound_channel_count + RESOURCE_CHANNEL];
-	// Open stream to resource
-	SDL_RWops *p = SDL_RWFromMem(rsrc.GetPointer(), (int)rsrc.GetLength());
-	if (p == NULL)
-		return;
 
-	// Get resource format
-	uint16 format = SDL_ReadBE16(p);
-	if (format != 1 && format != 2) {
-		fprintf(stderr, "Unknown sound resource format %d\n", format);
-		SDL_RWclose(p);
-		return;
-	}
-
-	// Skip sound data types or reference count
-	if (format == 1) {
-		uint16 num_data_formats = SDL_ReadBE16(p);
-		SDL_RWseek(p, num_data_formats * 6, SEEK_CUR);
-	} else if (format == 2)
-		SDL_RWseek(p, 2, SEEK_CUR);
-
-	// Lock sound subsystem
-	SDL_LockAudio();
-
-	// Scan sound commands for bufferCmd
-	uint16 num_cmds = SDL_ReadBE16(p);
-	for (int i=0; i<num_cmds; i++) {
-		uint16 cmd = SDL_ReadBE16(p);
-		uint16 param1 = SDL_ReadBE16(p);
-		uint32 param2 = SDL_ReadBE32(p);
-		//printf("cmd %04x %04x %08x\n", cmd, param1, param2);
-
-		if (cmd == 0x8051) {
-
-			SoundHeader header;
-			boost::shared_ptr<SoundData> data = header.Load((uint8 *) rsrc.GetPointer() + param2);
-			if (data.get())
-			{
-				c->active = true;
-				c->LoadSoundHeader(header, data, FIXED_ONE);
-				c->left_volume = c->right_volume = 0x100;
-			}
+	SoundHeader header;
+	if (header.Load(rsrc))
+	{
+		boost::shared_ptr<SoundData> data = header.LoadData(rsrc);
+		if (data.get())
+		{
+			SDL_LockAudio();
+			c->active = true;
+			c->LoadSoundHeader(header, data, FIXED_ONE);
+			c->left_volume = c->right_volume = 0x100;
+			SDL_UnlockAudio();
 		}
 	}
-
-	// Unlock sound subsystem
-	SDL_UnlockAudio();
-	SDL_RWclose(p);
 }
 
 void Mixer::StopSoundResource()

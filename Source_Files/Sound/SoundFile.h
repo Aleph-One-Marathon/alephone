@@ -24,6 +24,7 @@ SOUND_DEFINITIONS.H
 */
 
 #include "AStream.h"
+#include "BStream.h"
 #include "FileHandler.h"
 #include <memory>
 #include <vector>
@@ -64,11 +65,14 @@ public:
 	SoundHeader();
 	virtual ~SoundHeader() { };
 
+	bool Load(BIStreamBE& stream);
+	boost::shared_ptr<SoundData> LoadData(BIStreamBE& stream);
+
 	bool Load(OpenedFile &SoundFile); // loads a system 7 header from file
 	boost::shared_ptr<SoundData> LoadData(OpenedFile& SoundFile);
 	
-	// loads and copies a system 7 sound
-	boost::shared_ptr<SoundData> Load(const uint8* data);
+	bool Load(LoadedResource& rsrc); // finds system 7 header in rsrc
+	boost::shared_ptr<SoundData> LoadData(LoadedResource& rsrc);
 
 	int32 Length() const
 		{ return length; };
@@ -76,8 +80,13 @@ public:
 	void Clear() { length = 0; }
 
 private:
-	bool UnpackStandardSystem7Header(AIStreamBE &header);
-	bool UnpackExtendedSystem7Header(AIStreamBE &header);
+	static const uint8 stdSH = 0x00; // standard sound header
+	static const uint8 extSH = 0xFF; // extended sound header
+	static const uint8 cmpSH = 0xFE; // compressed sound header
+	static const uint16 bufferCmd = 0x8051;
+
+	bool UnpackStandardSystem7Header(BIStreamBE &header);
+	bool UnpackExtendedSystem7Header(BIStreamBE &header);
 	
 	uint32 data_offset;
 };
@@ -133,6 +142,8 @@ public:
 class M1SoundFile : public SoundFile
 {
 public:
+	M1SoundFile() : cached_sound_code(-1) { }
+
 	bool Open(FileSpecifier& SoundFile);
 	void Close();
 	SoundDefinition* GetSoundDefinition(int source, int sound_index);
@@ -140,9 +151,9 @@ public:
 	boost::shared_ptr<SoundData> GetSoundData(SoundDefinition* definition, int permutation);
 
 private:
-	const uint8* FindData(LoadedResource& rsrc);
-
 	OpenedResourceFile resource_file;
+	LoadedResource cached_rsrc;
+	int16 cached_sound_code;
 
 	std::map<int16, SoundDefinition> definitions;
 	std::map<int16, SoundHeader> headers;
