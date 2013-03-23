@@ -155,6 +155,8 @@ private:
 	LoadedResource cached_rsrc;
 	int16 cached_sound_code;
 
+	static const int MAXIMUM_PERMUTATIONS_PER_SOUND;
+
 	std::map<int16, SoundDefinition> definitions;
 	std::map<int16, SoundHeader> headers;
 };

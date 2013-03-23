@@ -445,6 +445,13 @@ SoundDefinition* M1SoundFile::GetSoundDefinition(int, int sound_index)
 		{
 			SoundDefinition definition;
 			definition.sound_code = sound_index;
+			// look for permutations
+			definition.permutations = 1;
+			while (resource_file.Check('s', 'n', 'd', ' ', sound_index + definition.permutations) && definition.permutations < MAXIMUM_PERMUTATIONS_PER_SOUND)
+			{
+				++definition.permutations;
+			}
+
 			it = definitions.insert(std::pair<int16, SoundDefinition>(sound_index, definition)).first;
 		}
 		return &(it->second);
@@ -455,35 +462,39 @@ SoundDefinition* M1SoundFile::GetSoundDefinition(int, int sound_index)
 	}
 }
 
-SoundHeader M1SoundFile::GetSoundHeader(SoundDefinition* definition, int)
+const int M1SoundFile::MAXIMUM_PERMUTATIONS_PER_SOUND = 5;
+
+SoundHeader M1SoundFile::GetSoundHeader(SoundDefinition* definition, int permutation)
 {
+	int sound_index = definition->sound_code + std::min(permutation, MAXIMUM_PERMUTATIONS_PER_SOUND);
+
 	SoundHeader header;
-	std::map<int16, SoundHeader>::iterator it = headers.find(definition->sound_code);
+	std::map<int16, SoundHeader>::iterator it = headers.find(sound_index);
 	if (it == headers.end())
 	{
-		if (cached_sound_code != definition->sound_code)
+		if (cached_sound_code != sound_index)
 		{
-			resource_file.Get('s', 'n', 'd', ' ', definition->sound_code, cached_rsrc);
-			cached_sound_code = definition->sound_code;
+			resource_file.Get('s', 'n', 'd', ' ', sound_index, cached_rsrc);
+			cached_sound_code = sound_index;
 		}
 
 		SoundHeader header;
 		header.Load(cached_rsrc);
-		it = headers.insert(std::pair<int16, SoundHeader>(definition->sound_code, header)).first;
-
-		SoundHeader new_header = headers[definition->sound_code];
+		it = headers.insert(std::pair<int16, SoundHeader>(sound_index, header)).first;
 	}
 	
 	return it->second;
 }
 
-boost::shared_ptr<SoundData> M1SoundFile::GetSoundData(SoundDefinition* definition, int)
+boost::shared_ptr<SoundData> M1SoundFile::GetSoundData(SoundDefinition* definition, int permutation)
 {
-	if (cached_sound_code != definition->sound_code)
+	int sound_index = definition->sound_code + std::min(permutation, MAXIMUM_PERMUTATIONS_PER_SOUND);
+
+	if (cached_sound_code != sound_index)
 	{
-		resource_file.Get('s', 'n', 'd', ' ', definition->sound_code, cached_rsrc);
-		cached_sound_code = definition->sound_code;
+		resource_file.Get('s', 'n', 'd', ' ', sound_index, cached_rsrc);
+		cached_sound_code = sound_index;
 	}
 
-	return GetSoundHeader(definition, 0).LoadData(cached_rsrc);
+	return GetSoundHeader(definition, permutation).LoadData(cached_rsrc);
 }
