@@ -76,6 +76,9 @@ const luaL_reg Lua_Collection_Get[] = {
 char Lua_InterfaceColor_Name[] = "interface_color";
 char Lua_InterfaceColors_Name[] = "InterfaceColors";
 
+char Lua_InterfaceFont_Name[] = "interface_font";
+char Lua_InterfaceFonts_Name[] = "InterfaceFonts";
+
 char Lua_InterfaceRect_Name[] = "interface_rect";
 char Lua_InterfaceRects_Name[] = "InterfaceRects";
 
@@ -881,6 +884,12 @@ int Lua_Fonts_New(lua_State *L)
 {
 	FontSpecifier f = {"Monaco", 12, styleNormal, 0, "mono"};
 	
+	lua_pushstring(L, "interface");
+	lua_gettable(L, 1);
+	if (!lua_isnil(L, -1))
+		f = get_interface_font(Lua_InterfaceFont::ToIndex(L, -1));
+	lua_pop(L, 1);
+
 	lua_pushstring(L, "id");
 	lua_gettable(L, 1);
 	if (!lua_isnil(L, -1))
@@ -2579,7 +2588,13 @@ int Lua_HUDObjects_register(lua_State *L)
 	
 	Lua_InterfaceRects::Register(L);
 	Lua_InterfaceRects::Length = Lua_InterfaceRects::ConstantLength(NUMBER_OF_INTERFACE_RECTANGLES);
+
+	Lua_InterfaceFont::Register(L, 0, 0, 0, Lua_InterfaceFont_Mnemonics);
+	Lua_InterfaceFont::Valid = Lua_InterfaceFont::ValidRange(NUMBER_OF_INTERFACE_FONTS);
 	
+	Lua_InterfaceFonts::Register(L);
+	Lua_InterfaceFonts::Length = Lua_InterfaceFonts::ConstantLength(NUMBER_OF_INTERFACE_FONTS);
+    	
 	Lua_InventorySection::Register(L, 0, 0, 0, Lua_InventorySection_Mnemonics);
 	Lua_InventorySection::Valid = Lua_InventorySection::ValidRange(NUMBER_OF_ITEM_TYPES + 1);
 	

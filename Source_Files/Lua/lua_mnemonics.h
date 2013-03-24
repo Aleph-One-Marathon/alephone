@@ -980,6 +980,17 @@ const lang_def Lua_InterfaceColor_Mnemonics[] = {
 {0, 0}
 };
 
+const lang_def Lua_InterfaceFont_Mnemonics[] = {
+{"interface", 0},
+{"weapon name", 1},
+{"player name", 2},
+{"interface item count", 3},
+{"terminal", 4},
+{"terminal title", 5},
+{"network statistics", 6},
+{0, 0}
+};
+
 const lang_def Lua_InterfaceRect_Mnemonics[] = {
 {"player name", 0},
 {"oxygen", 1},

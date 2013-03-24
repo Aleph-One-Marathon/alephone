@@ -330,6 +330,12 @@ end
           <type>number</type>
         </argument>
       </function>
+      <function name="new" named_parameters="true">
+        <argument name="interface">
+          <description>see InterfaceFonts for mnemonics</description>
+          <type>interface_font</type>
+        </argument>
+      </function>
       <index/>
     </accessor>
     
@@ -825,6 +831,19 @@ end
     </enum>
     <enum-accessor name="InterfaceColors" contains="interface_color" nice-name="Interface Colors" version="SVN"/>
     
+    <enum name="interface_font">
+      <mnemonics>
+        <mnemonic name="interface"/>
+        <mnemonic name="weapon name"/>
+        <mnemonic name="player name"/>
+        <mnemonic name="interface item count"/>
+        <mnemonic name="terminal"/>
+        <mnemonic name="terminal title"/>
+        <mnemonic name="network statistics"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="InterfaceFonts" contains="interface_font" nice-name="Interface Fonts" version="SVN"/>
+
     <enum name="interface_rect">
       <variable name="x" access="read-only"><type>number</type></variable>
       <variable name="y" access="read-only"><type>number</type></variable>

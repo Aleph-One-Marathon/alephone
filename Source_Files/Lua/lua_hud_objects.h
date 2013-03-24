@@ -53,6 +53,12 @@ typedef L_Enum<Lua_InterfaceColor_Name> Lua_InterfaceColor;
 extern char Lua_InterfaceColors_Name[]; // "InterfaceColors"
 typedef L_EnumContainer<Lua_InterfaceColors_Name, Lua_InterfaceColor> Lua_InterfaceColors;
 
+extern char Lua_InterfaceFont_Name[]; // "interface_font"
+typedef L_Enum<Lua_InterfaceFont_Name> Lua_InterfaceFont;
+
+extern char Lua_InterfaceFonts_Name[]; // "InterfaceFonts"
+typedef L_EnumContainer<Lua_InterfaceFonts_Name, Lua_InterfaceFont> Lua_InterfaceFonts;
+
 extern char Lua_InterfaceRect_Name[]; // "interface_rect"
 typedef L_Enum<Lua_InterfaceRect_Name> Lua_InterfaceRect;
 
