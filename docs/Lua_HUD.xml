@@ -608,6 +608,10 @@ end
           <type>string</type>
           <note>from stringset 150</note>
         </variable>
+        <variable name="valid" version="SVN">
+          <description>whether item is valid in the current environment (i.e. vacuum)</description>
+          <type>boolean</type>
+        </variable>
         <variable name="type"><type>item_type</type></variable>
       </subtable-accessor>
       <subtable name="compass" classname="lua_compass">

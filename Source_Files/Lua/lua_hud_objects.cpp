@@ -985,12 +985,20 @@ static int Lua_HUDPlayer_Item_Get_Type(lua_State *L)
 	return 1;
 }
 
+static int Lua_HUDPlayer_Item_Get_Valid(lua_State *L)
+{
+	int item_type = Lua_HUDPlayer_Item::Index(L, 1);
+    lua_pushboolean(L, item_valid_in_current_environment(item_type));
+    return 1;
+}
+
 const luaL_reg Lua_HUDPlayer_Item_Get[] = { 
 {"count", Lua_HUDPlayer_Item_Get_Count},
 {"inventory_section", Lua_HUDPlayer_Item_Get_Section},
 {"singular", Lua_HUDPlayer_Item_Get_Singular},
 {"plural", Lua_HUDPlayer_Item_Get_Plural},
 {"type", Lua_HUDPlayer_Item_Get_Type},
+{"valid", Lua_HUDPlayer_Item_Get_Valid},
 {0, 0} 
 };
 
