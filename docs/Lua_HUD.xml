@@ -89,7 +89,7 @@
     </section>
     <section name="Loading Collections" id="loading_collections">
       <description>
-        <p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to spawn defenders and compilers on a map that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
+        <p>A Lua script can ask for the engine to load collections it might otherwise not load; for instance, in order to be able to draw defender and compiler shapes during a level that might not have them otherwise, add the indices for those collections to the global table CollectionsUsed:
         </p>
         <pre>CollectionsUsed = { 10, 16 }</pre>
       </description>
