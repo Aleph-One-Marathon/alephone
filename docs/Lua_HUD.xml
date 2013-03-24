@@ -303,20 +303,29 @@ end
     </table>
     <accessor name="Fonts" contains="font">
       <function name="new" named_parameters="true">
-        <description>all arguments are optional and passed by name; "id" and "file" are mutually exclusive; returns font or nil</description>
-        <argument name="id">
-          <description>a resource ID from the Fonts file (for the default Fonts file, valid values are 4 for Monaco and 22 for Courier) [default: nil]</description>
-          <type>number</type>
-        </argument>
-        <argument name="file">
+        <argument name="file" required="false">
           <description>the path to a TTF file, for the standard variant of the font (the special path "mono" indicates the default Mono Sans font) [default: "mono"]</description>
           <type>string</type>
         </argument>
-        <argument name="size">
+        <argument name="size" required="false">
           <description>the font size to use [default: 12]</description>
           <type>number</type>
         </argument>
-        <argument name="style">
+        <argument name="style" required="false">
+          <description>a number indicating the sum of any font styles to use (1 - bold; 2 - italic; 4 - underline) [default: 0]</description>
+          <type>number</type>
+        </argument>
+      </function>
+      <function name="new" named_parameters="true">
+        <argument name="id">
+          <description>a resource ID from the Fonts file (for the default Fonts file, valid values are 4 for Monaco and 22 for Courier)</description>
+          <type>number</type>
+        </argument>
+        <argument name="size" required="false">
+          <description>the font size to use [default: 12]</description>
+          <type>number</type>
+        </argument>
+        <argument name="style" required="false">
           <description>a number indicating the sum of any font styles to use (1 - bold; 2 - italic; 4 - underline) [default: 0]</description>
           <type>number</type>
         </argument>
@@ -373,13 +382,14 @@ end
     </table>
     <accessor name="Images" contains="image">
       <function name="new" named_parameters="true">
-        <description>all arguments are passed by name; returns image or nil</description>
-        <argument name="resource" required="false">
-          <description>a resource ID from the Images file (if given, other arguments are ignored)</description>
+        <argument name="resource">
+          <description>a resource ID from the Images file</description>
           <type>number</type>
         </argument>
-        <argument name="path" required="false">
-          <description>the path to the image file to use (required if resource is not given)</description>
+      </function>
+      <function name="new" named_parameters="true">
+        <argument name="path">
+          <description>the path to the image file to use</description>
           <type>string</type>
         </argument>
         <argument name="mask" required="false">

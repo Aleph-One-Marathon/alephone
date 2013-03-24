@@ -223,12 +223,20 @@ end
 <h3>
 <a name="Fonts"></a>Fonts</h3>
 <dl>
-<dt>Fonts.new{id=, file=, size=, style=}</dt>
+<dt>Fonts.new{ [file=] [, size=] [, style=]}</dt>
 <dd>
-<p class="description">all arguments are optional and passed by name; "id" and "file" are mutually exclusive; returns font or nil</p>
+<p class="description"></p>
 <ul class="args">
-<li>id: a resource ID from the Fonts file (for the default Fonts file, valid values are 4 for Monaco and 22 for Courier) [default: nil]</li>
 <li>file: the path to a TTF file, for the standard variant of the font (the special path "mono" indicates the default Mono Sans font) [default: "mono"]</li>
+<li>size: the font size to use [default: 12]</li>
+<li>style: a number indicating the sum of any font styles to use (1 - bold; 2 - italic; 4 - underline) [default: 0]</li>
+</ul>
+</dd>
+<dt>Fonts.new{id= [, size=] [, style=]}</dt>
+<dd>
+<p class="description"></p>
+<ul class="args">
+<li>id: a resource ID from the Fonts file (for the default Fonts file, valid values are 4 for Monaco and 22 for Courier)</li>
 <li>size: the font size to use [default: 12]</li>
 <li>style: a number indicating the sum of any font styles to use (1 - bold; 2 - italic; 4 - underline) [default: 0]</li>
 </ul>
@@ -332,12 +340,16 @@ end
 <h3>
 <a name="Images"></a>Images</h3>
 <dl>
-<dt>Images.new{ [resource=] [, path=] [, mask=]}</dt>
+<dt>Images.new{resource=}</dt>
 <dd>
-<p class="description">all arguments are passed by name; returns image or nil</p>
+<p class="description"></p>
+<ul class="args"><li>resource: a resource ID from the Images file</li></ul>
+</dd>
+<dt>Images.new{path= [, mask=]}</dt>
+<dd>
+<p class="description"></p>
 <ul class="args">
-<li>resource: a resource ID from the Images file (if given, other arguments are ignored)</li>
-<li>path: the path to the image file to use (required if resource is not given)</li>
+<li>path: the path to the image file to use</li>
 <li>mask: the path to an image file to use as an opacity mask</li>
 </ul>
 </dd>
