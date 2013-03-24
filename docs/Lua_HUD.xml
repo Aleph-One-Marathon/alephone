@@ -330,7 +330,7 @@ end
           <type>number</type>
         </argument>
       </function>
-      <function name="new" named_parameters="true">
+      <function name="new" named_parameters="true" version="SVN">
         <argument name="interface">
           <description>see InterfaceFonts for mnemonics</description>
           <type>interface_font</type>
