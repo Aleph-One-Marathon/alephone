@@ -84,7 +84,8 @@ enum {
 	_computer_interface_color_aqua,
 	_computer_interface_color_yellow,
 	_computer_interface_color_brown,
-	_computer_interface_color_blue
+	_computer_interface_color_blue,
+    NUMBER_OF_INTERFACE_COLORS
 };
 
 enum { /* justification flags for _draw_screen_text */

@@ -73,6 +73,12 @@ const luaL_reg Lua_Collection_Get[] = {
 };
 
 
+char Lua_InterfaceColor_Name[] = "interface_color";
+char Lua_InterfaceColors_Name[] = "InterfaceColors";
+
+char Lua_InterfaceRect_Name[] = "interface_rect";
+char Lua_InterfaceRects_Name[] = "InterfaceRects";
+
 char Lua_InventorySection_Name[] = "inventory_section";
 char Lua_InventorySections_Name[] = "InventorySections";
 
@@ -2441,6 +2447,85 @@ const luaL_reg Lua_HUDLighting_Get[] = {
 {0, 0}
 };
 
+
+static int Lua_InterfaceColor_Get_R(lua_State *L)
+{
+    rgb_color clr = get_interface_color(Lua_InterfaceColor::Index(L, 1));
+    lua_pushnumber(L, clr.red / 65535.0);
+	return 1;
+}
+
+static int Lua_InterfaceColor_Get_G(lua_State *L)
+{
+    rgb_color clr = get_interface_color(Lua_InterfaceColor::Index(L, 1));
+    lua_pushnumber(L, clr.green / 65535.0);
+	return 1;
+}
+
+static int Lua_InterfaceColor_Get_B(lua_State *L)
+{
+    rgb_color clr = get_interface_color(Lua_InterfaceColor::Index(L, 1));
+    lua_pushnumber(L, clr.blue / 65535.0);
+	return 1;
+}
+
+static int Lua_InterfaceColor_Get_A(lua_State *L)
+{
+    lua_pushnumber(L, 1.0);
+	return 1;
+}
+
+const luaL_reg Lua_InterfaceColor_Get[] = {
+    {"r", Lua_InterfaceColor_Get_R},
+    {"g", Lua_InterfaceColor_Get_G},
+    {"b", Lua_InterfaceColor_Get_B},
+    {"a", Lua_InterfaceColor_Get_A},
+    {"red", Lua_InterfaceColor_Get_R},
+    {"green", Lua_InterfaceColor_Get_G},
+    {"blue", Lua_InterfaceColor_Get_B},
+    {"alpha", Lua_InterfaceColor_Get_A},
+    {0, 0}
+};
+
+
+static int Lua_InterfaceRect_Get_X(lua_State *L)
+{
+    screen_rectangle *r = get_interface_rectangle(Lua_InterfaceRect::Index(L, 1));
+    lua_pushnumber(L, r->left);
+	return 1;
+}
+
+static int Lua_InterfaceRect_Get_Y(lua_State *L)
+{
+    screen_rectangle *r = get_interface_rectangle(Lua_InterfaceRect::Index(L, 1));
+    lua_pushnumber(L, r->top);
+	return 1;
+}
+
+static int Lua_InterfaceRect_Get_Width(lua_State *L)
+{
+    screen_rectangle *r = get_interface_rectangle(Lua_InterfaceRect::Index(L, 1));
+    lua_pushnumber(L, r->right - r->left);
+	return 1;
+}
+
+static int Lua_InterfaceRect_Get_Height(lua_State *L)
+{
+    screen_rectangle *r = get_interface_rectangle(Lua_InterfaceRect::Index(L, 1));
+    lua_pushnumber(L, r->bottom - r->top);
+	return 1;
+}
+
+const luaL_reg Lua_InterfaceRect_Get[] = {
+{"x", Lua_InterfaceRect_Get_X},
+{"y", Lua_InterfaceRect_Get_Y},
+{"width", Lua_InterfaceRect_Get_Width},
+{"height", Lua_InterfaceRect_Get_Height},
+{0, 0}
+};
+
+
+
 extern bool collection_loaded(short);
 
 int Lua_HUDObjects_register(lua_State *L)
@@ -2474,6 +2559,18 @@ int Lua_HUDObjects_register(lua_State *L)
 	
 	Lua_GameTypes::Register(L);
 	Lua_GameTypes::Length = Lua_GameTypes::ConstantLength(NUMBER_OF_GAME_TYPES);
+	
+	Lua_InterfaceColor::Register(L, Lua_InterfaceColor_Get, 0, 0, Lua_InterfaceColor_Mnemonics);
+	Lua_InterfaceColor::Valid = Lua_InterfaceColor::ValidRange(NUMBER_OF_INTERFACE_COLORS);
+	
+	Lua_InterfaceColors::Register(L);
+	Lua_InterfaceColors::Length = Lua_InterfaceColors::ConstantLength(NUMBER_OF_INTERFACE_COLORS);
+	
+	Lua_InterfaceRect::Register(L, Lua_InterfaceRect_Get, 0, 0, Lua_InterfaceRect_Mnemonics);
+	Lua_InterfaceRect::Valid = Lua_InterfaceRect::ValidRange(NUMBER_OF_INTERFACE_RECTANGLES);
+	
+	Lua_InterfaceRects::Register(L);
+	Lua_InterfaceRects::Length = Lua_InterfaceRects::ConstantLength(NUMBER_OF_INTERFACE_RECTANGLES);
 	
 	Lua_InventorySection::Register(L, 0, 0, 0, Lua_InventorySection_Mnemonics);
 	Lua_InventorySection::Valid = Lua_InventorySection::ValidRange(NUMBER_OF_ITEM_TYPES + 1);

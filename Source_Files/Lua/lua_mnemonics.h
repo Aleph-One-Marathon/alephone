@@ -949,3 +949,55 @@ const lang_def Lua_TextureType_Mnemonics[] = {
 {"interface", 4},
 {0, 0}
 };
+
+const lang_def Lua_InterfaceColor_Mnemonics[] = {
+{"ammo box full", 0},
+{"ammo box empty", 1},
+{"black", 2},
+{"inventory text", 3},
+{"inventory header background", 4},
+{"inventory background", 5},
+{"slate player", 6},
+{"red player", 7},
+{"violet player", 8},
+{"yellow player", 9},
+{"white player", 10},
+{"orange player", 11},
+{"blue player", 12},
+{"green player", 13},
+{"white", 14},
+{"invalid weapon", 15},
+{"computer border text background", 16},
+{"computer border text", 17},
+{"computer text", 18},
+{"computer white text", 19},
+{"computer red text", 20},
+{"computer dark green text", 21},
+{"computer cyan text", 22},
+{"computer yellow text", 23},
+{"computer dark red text", 24},
+{"computer blue text", 25},
+{0, 0}
+};
+
+const lang_def Lua_InterfaceRect_Mnemonics[] = {
+{"player name", 0},
+{"oxygen", 1},
+{"shield", 2},
+{"motion sensor", 3},
+{"microphone", 4},
+{"inventory", 5},
+{"weapon display", 6},
+{"new-game button", 7},
+{"load-game button", 8},
+{"gather button", 9},
+{"join button", 10},
+{"preferences button", 11},
+{"replay button", 12},
+{"save-last button", 13},
+{"replace-saved button", 14},
+{"credits button", 15},
+{"quit button", 16},
+{"center button", 17},
+{0, 0}
+};

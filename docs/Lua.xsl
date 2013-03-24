@@ -204,7 +204,14 @@
 </xsl:template>
 
 <xsl:template match="enum-accessor">
-  <h3><a><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></a><xsl:value-of select="@nice-name"/></h3>
+  <h3><a><xsl:attribute name="name"><xsl:value-of select="@name"/></xsl:attribute></a><xsl:value-of select="@nice-name"/>
+    <xsl:choose>
+      <xsl:when test="@version">
+	<xsl:text> </xsl:text>
+	<span class="version"><xsl:value-of select="@version"/></span>
+      </xsl:when>
+    </xsl:choose> 
+  </h3>
   <dl>
     <dt># <xsl:value-of select="@name"/></dt>
     <dt><xsl:value-of select="@name"/>()</dt>

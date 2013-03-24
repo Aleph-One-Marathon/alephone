@@ -47,6 +47,18 @@ extern char Lua_HUDScreen_Name[]; // "Screen"
 typedef L_Class<Lua_HUDScreen_Name> Lua_HUDScreen;
 
 
+extern char Lua_InterfaceColor_Name[]; // "interface_color"
+typedef L_Enum<Lua_InterfaceColor_Name> Lua_InterfaceColor;
+
+extern char Lua_InterfaceColors_Name[]; // "InterfaceColors"
+typedef L_EnumContainer<Lua_InterfaceColors_Name, Lua_InterfaceColor> Lua_InterfaceColors;
+
+extern char Lua_InterfaceRect_Name[]; // "interface_rect"
+typedef L_Enum<Lua_InterfaceRect_Name> Lua_InterfaceRect;
+
+extern char Lua_InterfaceRects_Name[]; // "InterfaceRects"
+typedef L_EnumContainer<Lua_InterfaceRects_Name, Lua_InterfaceRect> Lua_InterfaceRects;
+
 extern char Lua_InventorySection_Name[]; // "inventory_section"
 typedef L_Enum<Lua_InventorySection_Name> Lua_InventorySection;
 

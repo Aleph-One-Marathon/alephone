@@ -772,6 +772,83 @@ end
     <accessor name="Lighting" contains="lighting"/>
 
     
+    <enum name="interface_color">
+      <variable name="r" access="read-only">
+        <alias>red</alias>
+        <type>number</type>
+      </variable>
+      <variable name="g" access="read-only">
+        <alias>green</alias>
+        <type>number</type>
+      </variable>
+      <variable name="b" access="read-only">
+        <alias>blue</alias>
+        <type>number</type>
+      </variable>
+      <variable name="a" access="read-only">
+        <alias>alpha</alias>
+        <type>number</type>
+        <note>alpha is always 1</note>
+      </variable>
+      <mnemonics>
+        <mnemonic name="ammo box full"/>
+        <mnemonic name="ammo box empty"/>
+        <mnemonic name="black"/>
+        <mnemonic name="inventory text"/>
+        <mnemonic name="inventory header background"/>
+        <mnemonic name="inventory background"/>
+        <mnemonic name="slate player"/>
+        <mnemonic name="red player"/>
+        <mnemonic name="violet player"/>
+        <mnemonic name="yellow player"/>
+        <mnemonic name="white player"/>
+        <mnemonic name="orange player"/>
+        <mnemonic name="blue player"/>
+        <mnemonic name="green player"/>
+        <mnemonic name="white"/>
+        <mnemonic name="invalid weapon"/>
+        <mnemonic name="computer border text background"/>
+        <mnemonic name="computer border text"/>
+        <mnemonic name="computer text"/>
+        <mnemonic name="computer white text"/>
+        <mnemonic name="computer red text"/>
+        <mnemonic name="computer dark green text"/>
+        <mnemonic name="computer cyan text"/>
+        <mnemonic name="computer yellow text"/>
+        <mnemonic name="computer dark red text"/>
+        <mnemonic name="computer blue text"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="InterfaceColors" contains="interface_color" nice-name="Interface Colors" version="SVN"/>
+    
+    <enum name="interface_rect">
+      <variable name="x" access="read-only"><type>number</type></variable>
+      <variable name="y" access="read-only"><type>number</type></variable>
+      <variable name="width" access="read-only"><type>number</type></variable>
+      <variable name="height" access="read-only"><type>number</type></variable>
+      <mnemonics>
+        <mnemonic name="player name"/>
+        <mnemonic name="oxygen"/>
+        <mnemonic name="shield"/>
+        <mnemonic name="motion sensor"/>
+        <mnemonic name="microphone"/>
+        <mnemonic name="inventory"/>
+        <mnemonic name="weapon display"/>
+        <mnemonic name="new-game button"/>
+        <mnemonic name="load-game button"/>
+        <mnemonic name="gather button"/>
+        <mnemonic name="join button"/>
+        <mnemonic name="preferences button"/>
+        <mnemonic name="replay button"/>
+        <mnemonic name="save-last button"/>
+        <mnemonic name="replace-saved button"/>
+        <mnemonic name="credits button"/>
+        <mnemonic name="quit button"/>
+        <mnemonic name="center button"/>
+      </mnemonics>
+    </enum>
+    <enum-accessor name="InterfaceRects" contains="interface_rect" nice-name="Interface Rectangles" version="SVN"/>
+    
     <enum name="item_type">
       <mnemonics>
         <mnemonic name="knife"/>
