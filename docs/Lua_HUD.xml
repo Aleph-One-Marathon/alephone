@@ -285,6 +285,9 @@ end
       <variable name="style" access="read-only">
         <type>number</type>
       </variable>
+      <variable name="line_height" access="read-only">
+        <type>number</type>
+      </variable>
       <function name="measure_text">
         <description>returns the width and height of a string when drawn in this font</description>
         <argument name="string"><type>string</type></argument>
