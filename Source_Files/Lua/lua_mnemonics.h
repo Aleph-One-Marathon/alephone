@@ -1010,5 +1010,7 @@ const lang_def Lua_InterfaceRect_Mnemonics[] = {
 {"credits button", 15},
 {"quit button", 16},
 {"center button", 17},
+{"unused 18", 18},
+{"unused 19", 19},
 {0, 0}
 };
