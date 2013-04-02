@@ -67,7 +67,7 @@ static int Lua_Collection_Get_Bitmap_Count(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Collection_Get[] = {
+const luaL_Reg Lua_Collection_Get[] = {
 {"bitmap_count", Lua_Collection_Get_Bitmap_Count},
 {0, 0},
 };
@@ -132,7 +132,7 @@ static int Lua_ItemType_Get_Ball(lua_State *L)
 	lua_pushboolean(L, (get_item_kind(Lua_ItemType::Index(L, 1)) == _ball));
 	return 1;
 }
-const luaL_reg Lua_ItemType_Get[] = {
+const luaL_Reg Lua_ItemType_Get[] = {
 {"ball", Lua_ItemType_Get_Ball},
 {0, 0}
 };
@@ -264,7 +264,7 @@ static int Lua_Image_Crop_Rect_Set_Height(lua_State *L)
   return 0;
 }
 
-const luaL_reg Lua_Image_Crop_Rect_Get[] = {
+const luaL_Reg Lua_Image_Crop_Rect_Get[] = {
 {"x", Lua_Image_Crop_Rect_Get_X},
 {"y", Lua_Image_Crop_Rect_Get_Y},
 {"width", Lua_Image_Crop_Rect_Get_Width},
@@ -272,7 +272,7 @@ const luaL_reg Lua_Image_Crop_Rect_Get[] = {
 {0, 0}
 };
 
-const luaL_reg Lua_Image_Crop_Rect_Set[] = {
+const luaL_Reg Lua_Image_Crop_Rect_Set[] = {
 {"x", Lua_Image_Crop_Rect_Set_X},
 {"y", Lua_Image_Crop_Rect_Set_Y},
 {"width", Lua_Image_Crop_Rect_Set_Width},
@@ -348,7 +348,7 @@ int Lua_Image_Draw(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Image_Get[] = {
+const luaL_Reg Lua_Image_Get[] = {
 {"width", Lua_Image_Get_Width},
 {"height", Lua_Image_Get_Height},
 {"unscaled_width", Lua_Image_Get_Unscaled_Width},
@@ -376,7 +376,7 @@ static int Lua_Image_Set_Rotation(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Image_Set[] = {
+const luaL_Reg Lua_Image_Set[] = {
 {"tint_color", Lua_Image_Set_Tint},
 {"rotation", Lua_Image_Set_Rotation},
 {0, 0}
@@ -389,7 +389,7 @@ static int Lua_Image_GC(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Image_Metatable[] = {
+const luaL_Reg Lua_Image_Metatable[] = {
 {"__gc", Lua_Image_GC},
 {0, 0}
 };
@@ -514,7 +514,7 @@ int Lua_Images_New(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Images_Get[] = {
+const luaL_Reg Lua_Images_Get[] = {
 {"new", L_TableFunction<Lua_Images_New>},
 {0, 0}
 };
@@ -583,7 +583,7 @@ static int Lua_Shape_Crop_Rect_Set_Height(lua_State *L)
     return 0;
 }
 
-const luaL_reg Lua_Shape_Crop_Rect_Get[] = {
+const luaL_Reg Lua_Shape_Crop_Rect_Get[] = {
 {"x", Lua_Shape_Crop_Rect_Get_X},
 {"y", Lua_Shape_Crop_Rect_Get_Y},
 {"width", Lua_Shape_Crop_Rect_Get_Width},
@@ -591,7 +591,7 @@ const luaL_reg Lua_Shape_Crop_Rect_Get[] = {
 {0, 0}
 };
 
-const luaL_reg Lua_Shape_Crop_Rect_Set[] = {
+const luaL_Reg Lua_Shape_Crop_Rect_Set[] = {
 {"x", Lua_Shape_Crop_Rect_Set_X},
 {"y", Lua_Shape_Crop_Rect_Set_Y},
 {"width", Lua_Shape_Crop_Rect_Set_Width},
@@ -667,7 +667,7 @@ int Lua_Shape_Draw(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Shape_Get[] = {
+const luaL_Reg Lua_Shape_Get[] = {
 {"width", Lua_Shape_Get_Width},
 {"height", Lua_Shape_Get_Height},
 {"unscaled_width", Lua_Shape_Get_Unscaled_Width},
@@ -695,7 +695,7 @@ static int Lua_Shape_Set_Rotation(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Shape_Set[] = {
+const luaL_Reg Lua_Shape_Set[] = {
 {"tint_color", Lua_Shape_Set_Tint},
 {"rotation", Lua_Shape_Set_Rotation},
 {0, 0}
@@ -708,7 +708,7 @@ static int Lua_Shape_GC(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Shape_Metatable[] = {
+const luaL_Reg Lua_Shape_Metatable[] = {
 {"__gc", Lua_Shape_GC},
 {0, 0}
 };
@@ -770,7 +770,7 @@ int Lua_Shapes_New(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Shapes_Get[] = {
+const luaL_Reg Lua_Shapes_Get[] = {
 {"new", L_TableFunction<Lua_Shapes_New>},
 {0, 0}
 };
@@ -853,7 +853,7 @@ static int Lua_Font_Get_Line_Height(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Font_Get[] = {
+const luaL_Reg Lua_Font_Get[] = {
 {"size", Lua_Font_Get_Size},
 {"style", Lua_Font_Get_Style},
 {"file", Lua_Font_Get_File},
@@ -871,7 +871,7 @@ static int Lua_Font_GC(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Font_Metatable[] = {
+const luaL_Reg Lua_Font_Metatable[] = {
 {"__gc", Lua_Font_GC},
 {0, 0}
 };
@@ -941,7 +941,7 @@ int Lua_Fonts_New(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Fonts_Get[] = {
+const luaL_Reg Lua_Fonts_Get[] = {
 {"new", L_TableFunction<Lua_Fonts_New>},
 {0, 0}
 };
@@ -1001,7 +1001,7 @@ static int Lua_HUDPlayer_Item_Get_Valid(lua_State *L)
     return 1;
 }
 
-const luaL_reg Lua_HUDPlayer_Item_Get[] = { 
+const luaL_Reg Lua_HUDPlayer_Item_Get[] = { 
 {"count", Lua_HUDPlayer_Item_Get_Count},
 {"inventory_section", Lua_HUDPlayer_Item_Get_Section},
 {"singular", Lua_HUDPlayer_Item_Get_Singular},
@@ -1028,7 +1028,7 @@ static int Lua_HUDPlayer_Items_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDPlayer_Items_Metatable[] = {
+const luaL_Reg Lua_HUDPlayer_Items_Metatable[] = {
 {"__index", Lua_HUDPlayer_Items_Get},
 {"__len", Lua_HUDPlayer_Items_Length},
 {0, 0}
@@ -1104,7 +1104,7 @@ static int Lua_HUDPlayer_Weapon_Trigger_Get_Weapon_Drawn(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDPlayer_Weapon_Trigger_Get[] = {
+const luaL_Reg Lua_HUDPlayer_Weapon_Trigger_Get[] = {
 {"rounds", Lua_HUDPlayer_Weapon_Trigger_Get_Rounds},
 {"total_rounds", Lua_HUDPlayer_Weapon_Trigger_Get_Total_Rounds},
 {"ammo_type", Lua_HUDPlayer_Weapon_Trigger_Get_Ammo_Type},
@@ -1157,7 +1157,7 @@ static int Lua_HUDPlayer_Weapon_Get_Name(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDPlayer_Weapon_Get[] = { 
+const luaL_Reg Lua_HUDPlayer_Weapon_Get[] = { 
 {"primary", get_hudweapon_trigger<_primary_weapon>},
 {"secondary", get_hudweapon_trigger<_secondary_weapon>},
 {"type", Lua_HUDPlayer_Weapon_Get_Type},
@@ -1215,7 +1215,7 @@ static int Lua_HUDPlayer_Weapons_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDPlayer_Weapons_Metatable[] = {
+const luaL_Reg Lua_HUDPlayer_Weapons_Metatable[] = {
 {"__index", Lua_HUDPlayer_Weapons_Get},
 {"__len", Lua_HUDPlayer_Weapons_Length},
 {0, 0}
@@ -1239,7 +1239,7 @@ static int Lua_HUDPlayer_Section_Get_Type(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDPlayer_Section_Get[] = { 
+const luaL_Reg Lua_HUDPlayer_Section_Get[] = { 
 {"name", Lua_HUDPlayer_Section_Get_Name},
 {"type", Lua_HUDPlayer_Section_Get_Type},
 {0, 0} 
@@ -1269,7 +1269,7 @@ static int Lua_HUDPlayer_Sections_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDPlayer_Sections_Metatable[] = {
+const luaL_Reg Lua_HUDPlayer_Sections_Metatable[] = {
 {"__index", Lua_HUDPlayer_Sections_Get},
 {"__len", Lua_HUDPlayer_Sections_Length},
 {0, 0}
@@ -1302,7 +1302,7 @@ static int Lua_HUDCompass_Get_SW(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDCompass_Get[] = {
+const luaL_Reg Lua_HUDCompass_Get[] = {
 {"ne", Lua_HUDCompass_Get_NE},
 {"northeast", Lua_HUDCompass_Get_NE},
 {"nw", Lua_HUDCompass_Get_NW},
@@ -1345,7 +1345,7 @@ static int Lua_MotionSensor_Blip_Get_Direction(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_MotionSensor_Blip_Get[] = { 
+const luaL_Reg Lua_MotionSensor_Blip_Get[] = { 
 {"type", Lua_MotionSensor_Blip_Get_Type},
 {"intensity", Lua_MotionSensor_Blip_Get_Intensity},
 {"distance", Lua_MotionSensor_Blip_Get_Distance},
@@ -1374,7 +1374,7 @@ static int Lua_MotionSensor_Blips_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_MotionSensor_Blips_Metatable[] = {
+const luaL_Reg Lua_MotionSensor_Blips_Metatable[] = {
 {"__index", Lua_MotionSensor_Blips_Get},
 {"__len", Lua_MotionSensor_Blips_Length},
 {0, 0}
@@ -1398,7 +1398,7 @@ static int Lua_MotionSensor_Get_Blips(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_MotionSensor_Get[] = {
+const luaL_Reg Lua_MotionSensor_Get[] = {
 {"active", Lua_MotionSensor_Get_Active},
 {"blips", Lua_MotionSensor_Get_Blips},
 {0, 0}
@@ -1440,7 +1440,7 @@ static int Lua_HUDTexturePalette_Slot_Get_Type(lua_State *L)
     return 1;
 }
 
-const luaL_reg Lua_HUDTexturePalette_Slot_Get[] = {
+const luaL_Reg Lua_HUDTexturePalette_Slot_Get[] = {
 {"collection", Lua_HUDTexturePalette_Slot_Get_Collection},
 {"texture_index", Lua_HUDTexturePalette_Slot_Get_Texture},
 {"type", Lua_HUDTexturePalette_Slot_Get_Type},
@@ -1477,7 +1477,7 @@ static int Lua_HUDTexturePalette_Slots_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDTexturePalette_Slots_Metatable[] = {
+const luaL_Reg Lua_HUDTexturePalette_Slots_Metatable[] = {
 {"__index", Lua_HUDTexturePalette_Slots_Get},
 {"__len", Lua_HUDTexturePalette_Slots_Length},
 {0, 0}
@@ -1511,7 +1511,7 @@ static int Lua_HUDTexturePalette_Get_Slots(lua_State *L)
     return 1;
 }
 
-const luaL_reg Lua_HUDTexturePalette_Get[] = {
+const luaL_Reg Lua_HUDTexturePalette_Get[] = {
 {"size", Lua_HUDTexturePalette_Get_Size},
 {"highlight", Lua_HUDTexturePalette_Get_Selected},
 {"slots", Lua_HUDTexturePalette_Get_Slots},
@@ -1583,7 +1583,7 @@ static int Lua_HUDPlayer_Velocity_Get_Vertical(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDPlayer_Velocity_Get[] = {
+const luaL_Reg Lua_HUDPlayer_Velocity_Get[] = {
 	{"forward", Lua_HUDPlayer_Velocity_Get_Forward},
 	{"perpendicular", Lua_HUDPlayer_Velocity_Get_Perpendicular},
 	{"vertical", Lua_HUDPlayer_Velocity_Get_Vertical},
@@ -1663,7 +1663,7 @@ static int Lua_HUDPlayer_Get_Texture_Palette(lua_State *L)
     return 1;
 }
 
-const luaL_reg Lua_HUDPlayer_Get[] = {
+const luaL_Reg Lua_HUDPlayer_Get[] = {
 {"color", Lua_HUDPlayer_Get_Color},
 {"dead", Lua_HUDPlayer_Get_Dead},
 {"direction", Lua_HUDPlayer_Get_Direction},
@@ -1739,7 +1739,7 @@ static int Lua_Screen_Clip_Rect_Set_Height(lua_State *L)
   return 0;
 }
 
-const luaL_reg Lua_Screen_Clip_Rect_Get[] = {
+const luaL_Reg Lua_Screen_Clip_Rect_Get[] = {
 {"x", Lua_Screen_Clip_Rect_Get_X},
 {"y", Lua_Screen_Clip_Rect_Get_Y},
 {"width", Lua_Screen_Clip_Rect_Get_Width},
@@ -1747,7 +1747,7 @@ const luaL_reg Lua_Screen_Clip_Rect_Get[] = {
 {0, 0}
 };
 
-const luaL_reg Lua_Screen_Clip_Rect_Set[] = {
+const luaL_Reg Lua_Screen_Clip_Rect_Set[] = {
 {"x", Lua_Screen_Clip_Rect_Set_X},
 {"y", Lua_Screen_Clip_Rect_Set_Y},
 {"width", Lua_Screen_Clip_Rect_Set_Width},
@@ -1806,7 +1806,7 @@ static int Lua_Screen_World_Rect_Set_Height(lua_State *L)
   return 0;
 }
 
-const luaL_reg Lua_Screen_World_Rect_Get[] = {
+const luaL_Reg Lua_Screen_World_Rect_Get[] = {
 {"x", Lua_Screen_World_Rect_Get_X},
 {"y", Lua_Screen_World_Rect_Get_Y},
 {"width", Lua_Screen_World_Rect_Get_Width},
@@ -1814,7 +1814,7 @@ const luaL_reg Lua_Screen_World_Rect_Get[] = {
 {0, 0}
 };
 
-const luaL_reg Lua_Screen_World_Rect_Set[] = {
+const luaL_Reg Lua_Screen_World_Rect_Set[] = {
 {"x", Lua_Screen_World_Rect_Set_X},
 {"y", Lua_Screen_World_Rect_Set_Y},
 {"width", Lua_Screen_World_Rect_Set_Width},
@@ -1873,7 +1873,7 @@ static int Lua_Screen_Map_Rect_Set_Height(lua_State *L)
   return 0;
 }
 
-const luaL_reg Lua_Screen_Map_Rect_Get[] = {
+const luaL_Reg Lua_Screen_Map_Rect_Get[] = {
 {"x", Lua_Screen_Map_Rect_Get_X},
 {"y", Lua_Screen_Map_Rect_Get_Y},
 {"width", Lua_Screen_Map_Rect_Get_Width},
@@ -1881,7 +1881,7 @@ const luaL_reg Lua_Screen_Map_Rect_Get[] = {
 {0, 0}
 };
 
-const luaL_reg Lua_Screen_Map_Rect_Set[] = {
+const luaL_Reg Lua_Screen_Map_Rect_Set[] = {
 {"x", Lua_Screen_Map_Rect_Set_X},
 {"y", Lua_Screen_Map_Rect_Set_Y},
 {"width", Lua_Screen_Map_Rect_Set_Width},
@@ -1940,7 +1940,7 @@ static int Lua_Screen_Term_Rect_Set_Height(lua_State *L)
   return 0;
 }
 
-const luaL_reg Lua_Screen_Term_Rect_Get[] = {
+const luaL_Reg Lua_Screen_Term_Rect_Get[] = {
 {"x", Lua_Screen_Term_Rect_Get_X},
 {"y", Lua_Screen_Term_Rect_Get_Y},
 {"width", Lua_Screen_Term_Rect_Get_Width},
@@ -1948,7 +1948,7 @@ const luaL_reg Lua_Screen_Term_Rect_Get[] = {
 {0, 0}
 };
 
-const luaL_reg Lua_Screen_Term_Rect_Set[] = {
+const luaL_Reg Lua_Screen_Term_Rect_Set[] = {
 {"x", Lua_Screen_Term_Rect_Set_X},
 {"y", Lua_Screen_Term_Rect_Set_Y},
 {"width", Lua_Screen_Term_Rect_Set_Width},
@@ -1983,14 +1983,14 @@ static int Lua_Screen_FOV_Get_Fix(lua_State *L)
     return 1;
 }
 
-const luaL_reg Lua_Screen_FOV_Get[] = {
+const luaL_Reg Lua_Screen_FOV_Get[] = {
 {"horizontal", Lua_Screen_FOV_Get_Horizontal},
 {"vertical", Lua_Screen_FOV_Get_Vertical},
 {"fix_h_not_v", Lua_Screen_FOV_Get_Fix},
 {0, 0}
 };
 
-const luaL_reg Lua_Screen_FOV_Set[] = {
+const luaL_Reg Lua_Screen_FOV_Set[] = {
 {0, 0}
 };
 
@@ -2016,13 +2016,13 @@ static int Lua_Screen_Crosshairs_Set_LuaHUD(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Screen_Crosshairs_Get[] = {
+const luaL_Reg Lua_Screen_Crosshairs_Get[] = {
 {"active", Lua_Screen_Crosshairs_Get_Active},
 {"lua_hud", Lua_Screen_Crosshairs_Get_LuaHUD},
 {0, 0}
 };
 										   
-const luaL_reg Lua_Screen_Crosshairs_Set[] = {
+const luaL_Reg Lua_Screen_Crosshairs_Set[] = {
 {"lua_hud", Lua_Screen_Crosshairs_Set_LuaHUD},
 {0, 0}
 };
@@ -2163,7 +2163,7 @@ int Lua_Screen_Frame_Rect(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Screen_Get[] = {
+const luaL_Reg Lua_Screen_Get[] = {
 {"width", Lua_Screen_Get_Width},
 {"height", Lua_Screen_Get_Height},
 {"renderer", Lua_Screen_Get_Renderer},
@@ -2185,7 +2185,7 @@ const luaL_reg Lua_Screen_Get[] = {
 {0, 0}
 };
 
-const luaL_reg Lua_Screen_Set[] = {
+const luaL_Reg Lua_Screen_Set[] = {
 {"masking_mode", Lua_Screen_Set_Masking_Mode},
 {0, 0}
 };
@@ -2239,7 +2239,7 @@ static int Lua_HUDGame_Player_Get_Ranking(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDGame_Player_Get[] = { 
+const luaL_Reg Lua_HUDGame_Player_Get[] = { 
 {"color", Lua_HUDGame_Player_Get_Color},
 {"team", Lua_HUDGame_Player_Get_Team},
 {"name", Lua_HUDGame_Player_Get_Name},
@@ -2270,7 +2270,7 @@ static int Lua_HUDGame_Players_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDGame_Players_Metatable[] = {
+const luaL_Reg Lua_HUDGame_Players_Metatable[] = {
 {"__index", Lua_HUDGame_Players_Get},
 {"__len", Lua_HUDGame_Players_Length},
 {0, 0}
@@ -2345,7 +2345,7 @@ static int Lua_HUDGame_Get_Version(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_HUDGame_Get[] = {
+const luaL_Reg Lua_HUDGame_Get[] = {
 {"difficulty", Lua_HUDGame_Get_Difficulty},
 {"kill_limit", Lua_HUDGame_Get_Kill_Limit},
 {"time_remaining", Lua_HUDGame_Get_Time_Remaining},
@@ -2422,7 +2422,7 @@ static int Lua_HUDLighting_Fader_Get_Color(lua_State *L)
     return 1;
 }
 
-const luaL_reg Lua_HUDLighting_Fader_Get[] = {
+const luaL_Reg Lua_HUDLighting_Fader_Get[] = {
 {"active", Lua_HUDLighting_Fader_Get_Active},
 {"type", Lua_HUDLighting_Fader_Get_Type},
 {"color", Lua_HUDLighting_Fader_Get_Color},
@@ -2456,7 +2456,7 @@ static int Lua_HUDLighting_Get_Damage_Fader(lua_State *L)
     return 1;
 }
 
-const luaL_reg Lua_HUDLighting_Get[] = {
+const luaL_Reg Lua_HUDLighting_Get[] = {
 {"ambient_light", Lua_HUDLighting_Get_Ambient},
 {"weapon_flash", Lua_HUDLighting_Get_Weapon},
 {"liquid_fader", Lua_HUDLighting_Get_Liquid_Fader},
@@ -2492,7 +2492,7 @@ static int Lua_InterfaceColor_Get_A(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_InterfaceColor_Get[] = {
+const luaL_Reg Lua_InterfaceColor_Get[] = {
     {"r", Lua_InterfaceColor_Get_R},
     {"g", Lua_InterfaceColor_Get_G},
     {"b", Lua_InterfaceColor_Get_B},
@@ -2533,7 +2533,7 @@ static int Lua_InterfaceRect_Get_Height(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_InterfaceRect_Get[] = {
+const luaL_Reg Lua_InterfaceRect_Get[] = {
 {"x", Lua_InterfaceRect_Get_X},
 {"y", Lua_InterfaceRect_Get_Y},
 {"width", Lua_InterfaceRect_Get_Width},

@@ -68,8 +68,8 @@ static void save(lua_State *L, BOStreamBE& s, uint32& counter)
 			break;
 		case LUA_TSTRING: 
 			{
-				s << static_cast<uint32>(lua_strlen(L, -1));
-				s.write(lua_tostring(L, -1), lua_strlen(L, -1));
+				s << static_cast<uint32>(lua_rawlen(L, -1));
+				s.write(lua_tostring(L, -1), lua_rawlen(L, -1));
 			}
 			break;
 		case LUA_TTABLE:
@@ -119,8 +119,8 @@ static void save(lua_State *L, BOStreamBE& s, uint32& counter)
 				lua_getmetatable(L, -1);
 				lua_gettable(L, LUA_REGISTRYINDEX);
 
-				s << static_cast<uint8>(lua_strlen(L, -1));
-				s.write(lua_tostring(L, -1), lua_strlen(L, -1));
+				s << static_cast<uint8>(lua_rawlen(L, -1));
+				s.write(lua_tostring(L, -1), lua_rawlen(L, -1));
 				lua_pop(L, 1);
 
 				lua_getfield(L, -1, "index");

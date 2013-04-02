@@ -282,7 +282,7 @@ int Lua_Projectile_Position(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Projectile_Get[] = {
+const luaL_Reg Lua_Projectile_Get[] = {
 	{"damage_scale", Lua_Projectile_Get_Damage_Scale},
 	{"delete", L_TableFunction<Lua_Projectile_Delete>},
 	{"dz", Lua_Projectile_Get_Gravity},
@@ -302,7 +302,7 @@ const luaL_reg Lua_Projectile_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Projectile_Set[] = {
+const luaL_Reg Lua_Projectile_Set[] = {
 	{"damage_scale", Lua_Projectile_Set_Damage_Scale},
 	{"dz", Lua_Projectile_Set_Gravity},
 	{"elevation", Lua_Projectile_Set_Elevation},
@@ -355,7 +355,7 @@ static int Lua_Projectiles_New_Projectile(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Projectiles_Methods[] = {
+const luaL_Reg Lua_Projectiles_Methods[] = {
 	{"new", Lua_Projectiles_New_Projectile},
 	{0, 0}
 };
@@ -381,7 +381,7 @@ static int Lua_ProjectileTypeDamage_Get_Type(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_ProjectileTypeDamage_Get[] = {
+const luaL_Reg Lua_ProjectileTypeDamage_Get[] = {
 	{"type", Lua_ProjectileTypeDamage_Get_Type},
 	{0, 0}
 };
@@ -394,7 +394,7 @@ static int Lua_ProjectileType_Get_Damage(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_ProjectileType_Get[] = {
+const luaL_Reg Lua_ProjectileType_Get[] = {
 	{"damage", Lua_ProjectileType_Get_Damage},
 	{0, 0}
 };

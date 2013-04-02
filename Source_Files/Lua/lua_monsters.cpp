@@ -114,7 +114,7 @@ static int Lua_MonsterType_Enemies_Set(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_MonsterType_Enemies_Metatable[] = {
+const luaL_Reg Lua_MonsterType_Enemies_Metatable[] = {
 	{"__index", Lua_MonsterType_Enemies_Get},
 	{"__newindex", Lua_MonsterType_Enemies_Set},
 	{0, 0}
@@ -154,7 +154,7 @@ static int Lua_MonsterType_Friends_Set(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_MonsterType_Friends_Metatable[] = {
+const luaL_Reg Lua_MonsterType_Friends_Metatable[] = {
 	{"__index", Lua_MonsterType_Friends_Get},
 	{"__newindex", Lua_MonsterType_Friends_Set},
 	{0, 0}
@@ -195,7 +195,7 @@ static int Lua_MonsterType_Immunities_Set(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_MonsterType_Immunities_Metatable[] = {
+const luaL_Reg Lua_MonsterType_Immunities_Metatable[] = {
 	{"__index", Lua_MonsterType_Immunities_Get},
 	{"__newindex", Lua_MonsterType_Immunities_Set},
 	{0, 0}
@@ -236,7 +236,7 @@ int Lua_MonsterType_Weaknesses_Set(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_MonsterType_Weaknesses_Metatable[] = {
+const luaL_Reg Lua_MonsterType_Weaknesses_Metatable[] = {
 	{"__index", Lua_MonsterType_Weaknesses_Get},
 	{"__newindex", Lua_MonsterType_Weaknesses_Set},
 	{0, 0}
@@ -481,7 +481,7 @@ static int Lua_MonsterType_Set_Random_Location(lua_State* L)
 	return 0;
 }
 
-const luaL_reg Lua_MonsterType_Get[] = {
+const luaL_Reg Lua_MonsterType_Get[] = {
 	{"attacks_immediately", Lua_MonsterType_Get_Flag<_monster_attacks_immediately>},
 	{"cannot_be_dropped", Lua_MonsterType_Get_Flag<_monster_cannot_be_dropped>},
 	{"class", Lua_MonsterType_Get_Class},
@@ -506,7 +506,7 @@ const luaL_reg Lua_MonsterType_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_MonsterType_Set[] = {
+const luaL_Reg Lua_MonsterType_Set[] = {
 	{"attacks_immediately", Lua_MonsterType_Set_Flag<_monster_attacks_immediately>},
 	{"cannot_be_dropped", Lua_MonsterType_Set_Flag<_monster_cannot_be_dropped>},
 	{"class", Lua_MonsterType_Set_Class},
@@ -925,7 +925,7 @@ static int Lua_Monster_Set_Vitality(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Monster_Get[] = {
+const luaL_Reg Lua_Monster_Get[] = {
 	{"accelerate", L_TableFunction<Lua_Monster_Accelerate>},
 	{"action", Lua_Monster_Get_Action},
 	{"active", Lua_Monster_Get_Active},
@@ -952,7 +952,7 @@ const luaL_reg Lua_Monster_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Monster_Set[] = {
+const luaL_Reg Lua_Monster_Set[] = {
 	{"active", Lua_Monster_Set_Active},
 	{"external_velocity", Lua_Monster_Set_External_Velocity},
 	{"facing", Lua_Monster_Set_Facing},
@@ -1006,7 +1006,7 @@ int Lua_Monsters_New(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Monsters_Methods[] = {
+const luaL_Reg Lua_Monsters_Methods[] = {
 	{"new", Lua_Monsters_New},
 	{0, 0}
 };

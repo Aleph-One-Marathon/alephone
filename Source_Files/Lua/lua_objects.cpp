@@ -258,7 +258,7 @@ int Lua_Effect_Position(lua_State* L)
 	
 }
 
-const luaL_reg Lua_Effect_Get[] = {
+const luaL_Reg Lua_Effect_Get[] = {
 	{"delete", L_TableFunction<Lua_Effect_Delete>},
 	{"facing", Lua_Effect_Get_Facing},
 	{"play_sound", L_TableFunction<Lua_Effect_Play_Sound>},
@@ -282,7 +282,7 @@ static int Lua_Effect_Set_Facing(lua_State* L)
 	return 0;
 }
 
-const luaL_reg Lua_Effect_Set[] = {
+const luaL_Reg Lua_Effect_Set[] = {
 	{"facing", Lua_Effect_Set_Facing},
 	{0, 0}
 };
@@ -333,7 +333,7 @@ static int Lua_Effects_New(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Effects_Methods[] = {
+const luaL_Reg Lua_Effects_Methods[] = {
 	{"new", Lua_Effects_New},
 	{0, 0}
 };
@@ -357,7 +357,7 @@ int Lua_Item_Delete(lua_State* L)
 	return 0;
 }
 
-const luaL_reg Lua_Item_Get[] = {
+const luaL_Reg Lua_Item_Get[] = {
 	{"delete", L_TableFunction<Lua_Item_Delete>},
 	{"facing", get_object_facing<Lua_Item>},
 	{"play_sound", L_TableFunction<lua_play_object_sound<Lua_Item> >},
@@ -370,7 +370,7 @@ const luaL_reg Lua_Item_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Item_Set[] = {
+const luaL_Reg Lua_Item_Set[] = {
 	{"facing", set_object_facing<Lua_Item>},
 	{0, 0}
 };
@@ -417,7 +417,7 @@ int Lua_Items_New(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Items_Methods[] = {
+const luaL_Reg Lua_Items_Methods[] = {
 	{"new", Lua_Items_New},
 	{0, 0}
 };
@@ -565,7 +565,7 @@ static bool Lua_ItemType_Valid(int32 index) {
 }
 
 char Lua_ItemType_Name[] = "item_type";
-const luaL_reg Lua_ItemType_Get[] = {
+const luaL_Reg Lua_ItemType_Get[] = {
 	{"ball", Lua_ItemType_Get_Ball},
 	{"initial_count", Lua_ItemType_Get_Initial_Count},
 	{"maximum_count", Lua_ItemType_Get_Maximum_Count},
@@ -576,7 +576,7 @@ const luaL_reg Lua_ItemType_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_ItemType_Set[] = {
+const luaL_Reg Lua_ItemType_Set[] = {
 	{"initial_count", Lua_ItemType_Set_Initial_Count},
 	{"maximum_count", Lua_ItemType_Set_Maximum_Count},
 	{"minimum_count", Lua_ItemType_Set_Minimum_Count},
@@ -624,7 +624,7 @@ static int Lua_Scenery_Get_Solid(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Scenery_Get[] = {
+const luaL_Reg Lua_Scenery_Get[] = {
 	{"damage", L_TableFunction<Lua_Scenery_Damage>},
 	{"damaged", Lua_Scenery_Get_Damaged},
 	{"delete", L_TableFunction<lua_delete_object<Lua_Scenery> >},
@@ -650,7 +650,7 @@ static int Lua_Scenery_Set_Solid(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Scenery_Set[] = {
+const luaL_Reg Lua_Scenery_Set[] = {
 	{"facing", set_object_facing<Lua_Scenery>},
 	{"solid", Lua_Scenery_Set_Solid},
 	{0, 0}
@@ -734,7 +734,7 @@ static bool Lua_Scenery_Valid(int32 index)
 	return false;
 }
 
-const luaL_reg Lua_Sceneries_Methods[] = {
+const luaL_Reg Lua_Sceneries_Methods[] = {
 	{"new", Lua_Sceneries_New},
 	{0, 0}
 };
@@ -748,7 +748,7 @@ int Lua_Sounds_Length()
 	return INT16_MAX;
 }
 
-const luaL_reg Lua_Sounds_Methods[] = {
+const luaL_Reg Lua_Sounds_Methods[] = {
 	{0, 0}
 };
 

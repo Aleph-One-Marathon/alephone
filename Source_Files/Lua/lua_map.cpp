@@ -52,7 +52,7 @@ static int Lua_Collection_Get_Bitmap_Count(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Collection_Get[] = {
+const luaL_Reg Lua_Collection_Get[] = {
 	{"bitmap_count", Lua_Collection_Get_Bitmap_Count},
 	{0, 0},
 };
@@ -120,7 +120,7 @@ static int Lua_ControlPanelType_Get_Collection(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_ControlPanelType_Get[] = {
+const luaL_Reg Lua_ControlPanelType_Get[] = {
 	{"active_texture_index", Lua_ControlPanelType_Get_Active_Texture_Index},
 	{"class", Lua_ControlPanelType_Get_Class},
 	{"collection", Lua_ControlPanelType_Get_Collection},
@@ -155,7 +155,7 @@ static bool Lua_Endpoint_Valid(int16 index)
 	return index >= 0 && index < EndpointList.size();
 }
 
-const luaL_reg Lua_Endpoint_Get[] = {
+const luaL_Reg Lua_Endpoint_Get[] = {
 	{"x", Lua_Endpoint_Get_X},
 	{"y", Lua_Endpoint_Get_Y},
 	{0, 0}
@@ -194,7 +194,7 @@ static int Lua_Line_Endpoints_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Line_Endpoints_Metatable[] = {
+const luaL_Reg Lua_Line_Endpoints_Metatable[] = {
 	{"__index", Lua_Line_Endpoints_Get},
 	{"__len", Lua_Line_Endpoints_Length},
 	{0, 0}
@@ -263,7 +263,7 @@ static int Lua_Line_Get_Solid(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Line_Get[] = {
+const luaL_Reg Lua_Line_Get[] = {
 	{"cw_polygon", Lua_Line_Get_Clockwise_Polygon},
 	{"ccw_polygon", Lua_Line_Get_Counterclockwise_Polygon},
 	{"cw_side", Lua_Line_Get_Clockwise_Side},
@@ -465,7 +465,7 @@ static int Lua_Platform_Set_Type(lua_State* L)
 }
 	
 
-const luaL_reg Lua_Platform_Get[] = {
+const luaL_Reg Lua_Platform_Get[] = {
 	{"active", Lua_Platform_Get_Active},
 	{"ceiling_height", Lua_Platform_Get_Ceiling_Height},
 	{"contracting", Lua_Platform_Get_Contracting},
@@ -482,7 +482,7 @@ const luaL_reg Lua_Platform_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Platform_Set[] = {
+const luaL_Reg Lua_Platform_Set[] = {
 	{"active", Lua_Platform_Set_Active},
 	{"ceiling_height", Lua_Platform_Set_Ceiling_Height},
 	{"contracting", Lua_Platform_Set_Contracting},
@@ -633,7 +633,7 @@ static int Lua_Polygon_Floor_Set_Transfer_Mode(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Polygon_Floor_Get[] = {
+const luaL_Reg Lua_Polygon_Floor_Get[] = {
 	{"collection", Lua_Polygon_Floor_Get_Collection},
 	{"height", Lua_Polygon_Floor_Get_Height},
 	{"light", Lua_Polygon_Floor_Get_Light},
@@ -645,7 +645,7 @@ const luaL_reg Lua_Polygon_Floor_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Polygon_Floor_Set[] = {
+const luaL_Reg Lua_Polygon_Floor_Set[] = {
 	{"collection", Lua_Polygon_Floor_Set_Collection},
 	{"height", Lua_Polygon_Floor_Set_Height},
 	{"light", Lua_Polygon_Floor_Set_Light},
@@ -787,7 +787,7 @@ static int Lua_Polygon_Ceiling_Set_Transfer_Mode(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Polygon_Ceiling_Get[] = {
+const luaL_Reg Lua_Polygon_Ceiling_Get[] = {
 	{"collection", Lua_Polygon_Ceiling_Get_Collection},
 	{"height", Lua_Polygon_Ceiling_Get_Height},
 	{"light", Lua_Polygon_Ceiling_Get_Light},
@@ -799,7 +799,7 @@ const luaL_reg Lua_Polygon_Ceiling_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Polygon_Ceiling_Set[] = {
+const luaL_Reg Lua_Polygon_Ceiling_Set[] = {
 	{"collection", Lua_Polygon_Ceiling_Set_Collection},
 	{"height", Lua_Polygon_Ceiling_Set_Height},
 	{"light", Lua_Polygon_Ceiling_Set_Light},
@@ -885,7 +885,7 @@ static int Lua_Adjacent_Polygons_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Adjacent_Polygons_Metatable[] = {
+const luaL_Reg Lua_Adjacent_Polygons_Metatable[] = {
 	{"__index", Lua_Adjacent_Polygons_Get},
 	{"__call", Lua_Adjacent_Polygons_Call},
 	{"__len", Lua_Adjacent_Polygons_Length},
@@ -954,7 +954,7 @@ static int Lua_Polygon_Endpoints_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Polygon_Endpoints_Metatable[] = {
+const luaL_Reg Lua_Polygon_Endpoints_Metatable[] = {
 	{"__index", Lua_Polygon_Endpoints_Get},
 	{"__call", Lua_Polygon_Endpoints_Call},
 	{"__len", Lua_Polygon_Endpoints_Length},
@@ -1023,7 +1023,7 @@ static int Lua_Polygon_Lines_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Polygon_Lines_Metatable[] = {
+const luaL_Reg Lua_Polygon_Lines_Metatable[] = {
 	{"__index", Lua_Polygon_Lines_Get},
 	{"__call", Lua_Polygon_Lines_Call},
 	{"__len", Lua_Polygon_Lines_Length},
@@ -1092,7 +1092,7 @@ static int Lua_Polygon_Sides_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Polygon_Sides_Metatable[] = {
+const luaL_Reg Lua_Polygon_Sides_Metatable[] = {
 	{"__index", Lua_Polygon_Sides_Get},
 	{"__call", Lua_Polygon_Sides_Call},
 	{"__len", Lua_Polygon_Sides_Length},
@@ -1392,7 +1392,7 @@ static bool Lua_Polygon_Valid(int16 index)
 	return index >= 0 && index < dynamic_world->polygon_count;
 }
 
-const luaL_reg Lua_Polygon_Get[] = {
+const luaL_Reg Lua_Polygon_Get[] = {
 	{"adjacent_polygons", Lua_Polygon_Get_Adjacent},
 	{"area", Lua_Polygon_Get_Area},
 	{"ceiling", Lua_Polygon_Get_Ceiling},
@@ -1414,7 +1414,7 @@ const luaL_reg Lua_Polygon_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Polygon_Set[] = {
+const luaL_Reg Lua_Polygon_Set[] = {
 	{"media", Lua_Polygon_Set_Media},
 	{"permutation", Lua_Polygon_Set_Permutation},
 	{"type", Lua_Polygon_Set_Type},
@@ -1471,7 +1471,7 @@ static int Lua_Side_ControlPanel_Get_UsesItem(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_Side_ControlPanel_Get[] = {
+const luaL_Reg Lua_Side_ControlPanel_Get[] = {
 	{"can_be_destroyed", Lua_Side_ControlPanel_Get_Flag<_side_switch_can_be_destroyed>},
 	{"light_dependent", Lua_Side_ControlPanel_Get_Flag<_side_is_lighted_switch>},
 	{"only_toggled_by_weapons", Lua_Side_ControlPanel_Get_Flag<_side_switch_can_only_be_hit_by_projectiles>},
@@ -1509,7 +1509,7 @@ static int Lua_Side_ControlPanel_Set_UsesItem(lua_State*)
     return 0;
 }
 
-const luaL_reg Lua_Side_ControlPanel_Set[] = {
+const luaL_Reg Lua_Side_ControlPanel_Set[] = {
 	{"can_be_destroyed", Lua_Side_ControlPanel_Set_Flag<_side_switch_can_be_destroyed>},
 	{"light_dependent", Lua_Side_ControlPanel_Set_Flag<_side_is_lighted_switch>},
 	{"only_toggled_by_weapons", Lua_Side_ControlPanel_Set_Flag<_side_switch_can_only_be_hit_by_projectiles>},
@@ -1662,7 +1662,7 @@ static int Lua_Primary_Side_Set_Transfer_Mode(lua_State *L)
 	side->primary_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
 	return 0;
 }
-const luaL_reg Lua_Primary_Side_Get[] = {
+const luaL_Reg Lua_Primary_Side_Get[] = {
 	{"collection", Lua_Primary_Side_Get_Collection},
 	{"light", Lua_Primary_Side_Get_Light},
 	{"texture_index", Lua_Primary_Side_Get_Texture_Index},
@@ -1672,7 +1672,7 @@ const luaL_reg Lua_Primary_Side_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Primary_Side_Set[] = {
+const luaL_Reg Lua_Primary_Side_Set[] = {
 	{"collection", Lua_Primary_Side_Set_Collection},
 	{"light", Lua_Primary_Side_Set_Light},
 	{"texture_index", Lua_Primary_Side_Set_Texture_Index},
@@ -1790,7 +1790,7 @@ static int Lua_Secondary_Side_Set_Transfer_Mode(lua_State *L)
 	side->secondary_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
 	return 0;
 }
-const luaL_reg Lua_Secondary_Side_Get[] = {
+const luaL_Reg Lua_Secondary_Side_Get[] = {
 	{"collection", Lua_Secondary_Side_Get_Collection},
 	{"light", Lua_Secondary_Side_Get_Light},
 	{"texture_index", Lua_Secondary_Side_Get_Texture_Index},
@@ -1800,7 +1800,7 @@ const luaL_reg Lua_Secondary_Side_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Secondary_Side_Set[] = {
+const luaL_Reg Lua_Secondary_Side_Set[] = {
 	{"collection", Lua_Secondary_Side_Set_Collection},
 	{"light", Lua_Secondary_Side_Set_Light},
 	{"texture_index", Lua_Secondary_Side_Set_Texture_Index},
@@ -1940,7 +1940,7 @@ static int Lua_Transparent_Side_Set_Transfer_Mode(lua_State *L)
 	side->transparent_transfer_mode = Lua_TransferMode::ToIndex(L, 2);
 	return 0;
 }
-const luaL_reg Lua_Transparent_Side_Get[] = {
+const luaL_Reg Lua_Transparent_Side_Get[] = {
 	{"collection", Lua_Transparent_Side_Get_Collection},
 	{"empty", Lua_Transparent_Side_Get_Empty},
 	{"light", Lua_Transparent_Side_Get_Light},
@@ -1951,7 +1951,7 @@ const luaL_reg Lua_Transparent_Side_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Transparent_Side_Set[] = {
+const luaL_Reg Lua_Transparent_Side_Set[] = {
 	{"collection", Lua_Transparent_Side_Set_Collection},
 	{"empty", Lua_Transparent_Side_Set_Empty},
 	{"light", Lua_Transparent_Side_Set_Light},
@@ -2040,7 +2040,7 @@ static int Lua_Side_Get_Type(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Side_Get[] = {
+const luaL_Reg Lua_Side_Get[] = {
 	{"control_panel", Lua_Side_Get_Control_Panel},
 	{"line", Lua_Side_Get_Line},
 	{"play_sound", L_TableFunction<Lua_Side_Play_Sound>},
@@ -2073,7 +2073,7 @@ static int Lua_Side_Set_Control_Panel(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Side_Set[] = {
+const luaL_Reg Lua_Side_Set[] = {
 	{"control_panel", Lua_Side_Set_Control_Panel},
 	{0, 0}
 };
@@ -2126,7 +2126,7 @@ static int Lua_Sides_New(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Sides_Methods[] = {
+const luaL_Reg Lua_Sides_Methods[] = {
 	{"new", Lua_Sides_New},
 	{0, 0}
 };
@@ -2250,7 +2250,7 @@ static int Lua_Light_State_Get_Period(lua_State* L)
 }
 
 
-const luaL_reg Lua_Light_State_Get[] = {
+const luaL_Reg Lua_Light_State_Get[] = {
 	{"delta_intensity", Lua_Light_State_Get_Delta_Intensity},
 	{"delta_period", Lua_Light_State_Get_Delta_Period},
 	{"intensity", Lua_Light_State_Get_Intensity},
@@ -2315,7 +2315,7 @@ static int Lua_Light_State_Set_Period(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_Light_State_Set[] = {
+const luaL_Reg Lua_Light_State_Set[] = {
 	{"delta_intensity", Lua_Light_State_Set_Delta_Intensity},
 	{"delta_period", Lua_Light_State_Set_Delta_Period},
 	{"intensity", Lua_Light_State_Set_Intensity},
@@ -2341,7 +2341,7 @@ static int Lua_Light_States_Length(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_Light_States_Metatable[] = {
+const luaL_Reg Lua_Light_States_Metatable[] = {
 	{"__index", Lua_Light_States_Get},
 	{"__len", Lua_Light_States_Length},
 	{0, 0}
@@ -2388,7 +2388,7 @@ static int Lua_Light_Get_Tag(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_Light_Get[] = {
+const luaL_Reg Lua_Light_Get[] = {
 	{"active", Lua_Light_Get_Active},
 	{"initial_phase", Lua_Light_Get_Initial_Phase},
 	{"initially_active", Lua_Light_Get_Initially_Active},
@@ -2460,7 +2460,7 @@ static int Lua_Light_Set_Tag(lua_State* L)
 	return 0;
 }
 
-const luaL_reg Lua_Light_Set[] = {
+const luaL_Reg Lua_Light_Set[] = {
 	{"active", Lua_Light_Set_Active},
 	{"initial_phase", Lua_Light_Set_Phase},
 	{"initially_active", Lua_Light_Set_Initially_Active},
@@ -2497,7 +2497,7 @@ int Lua_Lights_New(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_Lights_Methods[] = {
+const luaL_Reg Lua_Lights_Methods[] = {
 	{"new", Lua_Lights_New},
 	{0, 0}
 };
@@ -2556,12 +2556,12 @@ static int Lua_Tag_Set_Active(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Tag_Get[] = {
+const luaL_Reg Lua_Tag_Get[] = {
 	{"active", Lua_Tag_Get_Active},
 	{0, 0}
 };
 
-const luaL_reg Lua_Tag_Set[] = {
+const luaL_Reg Lua_Tag_Set[] = {
 	{"active", Lua_Tag_Set_Active},
 	{0, 0}
 };
@@ -2644,7 +2644,7 @@ static int Lua_Media_Get_Type(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Media_Get[] = {
+const luaL_Reg Lua_Media_Get[] = {
 	{"direction", Lua_Media_Get_Direction},
 	{"height", Lua_Media_Get_Height},
 	{"high", Lua_Media_Get_High},
@@ -2735,7 +2735,7 @@ static int Lua_Media_Set_Type(lua_State* L)
 	return 0;
 }
 
-const luaL_reg Lua_Media_Set[] = {
+const luaL_Reg Lua_Media_Set[] = {
 	{"direction", Lua_Media_Set_Direction},
 	{"high", Lua_Media_Set_High},
 	{"light", Lua_Media_Set_Light},
@@ -2780,7 +2780,7 @@ static int Lua_Annotation_Get_Y(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Annotation_Get[] = {
+const luaL_Reg Lua_Annotation_Get[] = {
 	{"polygon", Lua_Annotation_Get_Polygon},
 	{"text", Lua_Annotation_Get_Text},
 	{"x", Lua_Annotation_Get_X},
@@ -2833,7 +2833,7 @@ static int Lua_Annotation_Set_Y(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Annotation_Set[] = {
+const luaL_Reg Lua_Annotation_Set[] = {
 	{"polygon", Lua_Annotation_Set_Polygon},
 	{"text", Lua_Annotation_Set_Text},
 	{"x", Lua_Annotation_Set_X},
@@ -2890,7 +2890,7 @@ static int Lua_Annotations_New(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Annotations_Methods[] = {
+const luaL_Reg Lua_Annotations_Methods[] = {
 	{"new", Lua_Annotations_New},
 	{0, 0}
 };
@@ -2950,14 +2950,14 @@ static int Lua_Fog_Color_Set_B(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Fog_Color_Get[] = {
+const luaL_Reg Lua_Fog_Color_Get[] = {
 	{"r", Lua_Fog_Color_Get_R},
 	{"g", Lua_Fog_Color_Get_G},
 	{"b", Lua_Fog_Color_Get_B},
 	{0, 0}
 };
 
-const luaL_reg Lua_Fog_Color_Set[] = {
+const luaL_Reg Lua_Fog_Color_Set[] = {
 	{"r", Lua_Fog_Color_Set_R},
 	{"g", Lua_Fog_Color_Set_G},
 	{"b", Lua_Fog_Color_Set_B},
@@ -2991,7 +2991,7 @@ static int Lua_Fog_Get_Depth(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Fog_Get[] = {
+const luaL_Reg Lua_Fog_Get[] = {
 	{"active", Lua_Fog_Get_Active},
 	{"affects_landscapes", Lua_Fog_Get_Affects_Landscapes},
 	{"color", Lua_Fog_Get_Color},
@@ -3027,7 +3027,7 @@ static int Lua_Fog_Set_Depth(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Fog_Set[] = {
+const luaL_Reg Lua_Fog_Set[] = {
 	{"active", Lua_Fog_Set_Active},
 	{"affects_landscapes", Lua_Fog_Set_Affects_Landscapes},
 	{"depth", Lua_Fog_Set_Depth},
@@ -3088,7 +3088,7 @@ static int Lua_Level_Get_Underwater_Fog(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Level_Get[] = {
+const luaL_Reg Lua_Level_Get[] = {
 	{"calculate_completion_state", L_TableFunction<Lua_Level_Calculate_Completion_State>},
 	{"completed", Lua_Level_Get_Completed},
 	{"extermination", Lua_Level_Get_Mission_Flag<_mission_extermination>},

@@ -244,7 +244,7 @@ class LuaState
 {
 public:
 	LuaState() : running_(false), num_scripts_(0) {
-		state_.reset(lua_open(), lua_close);
+		state_.reset(luaL_newstate(), lua_close);
 	}
 
 	virtual ~LuaState() {
@@ -364,8 +364,7 @@ bool LuaState::GetTrigger(const char* trigger)
 	if (!running_)
 		return false;
 
-	lua_pushstring(State(), "Triggers");
-	lua_gettable(State(), LUA_GLOBALSINDEX);
+	lua_getglobal(State(), "Triggers");
 	if (!lua_istable(State(), -1))
 	{
 		lua_pop(State(), 1);
@@ -924,9 +923,7 @@ void LuaState::MarkCollections(std::set<short>* collections)
 	if (!running_)
 		return;
 		
-	lua_pushstring(State(), "CollectionsUsed");
-	lua_gettable(State(), LUA_GLOBALSINDEX);
-	
+	lua_getglobal(State(), "CollectionsUsed");
 	if (lua_istable(State(), -1))
 	{
 		int i = 1;

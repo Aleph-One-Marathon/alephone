@@ -125,7 +125,7 @@ static int Lua_Action_Flags_Set_Microphone(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Action_Flags_Get[] = {
+const luaL_Reg Lua_Action_Flags_Get[] = {
 	{"action_trigger", Lua_Action_Flags_Get_t<_action_trigger_state>},
 	{"cycle_weapons_backward", Lua_Action_Flags_Get_t<_cycle_weapons_backward>},
 	{"cycle_weapons_forward", Lua_Action_Flags_Get_t<_cycle_weapons_forward>},
@@ -136,7 +136,7 @@ const luaL_reg Lua_Action_Flags_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Action_Flags_Set[] = {
+const luaL_Reg Lua_Action_Flags_Set[] = {
 	{"action_trigger", Lua_Action_Flags_Set_t<_action_trigger_state>},
 	{"cycle_weapons_backward", Lua_Action_Flags_Set_t<_cycle_weapons_backward>},
 	{"cycle_weapons_forward", Lua_Action_Flags_Set_t<_cycle_weapons_forward>},
@@ -188,7 +188,7 @@ int Lua_Camera_Path_Points_New(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Camera_Path_Points_Get[] = {
+const luaL_Reg Lua_Camera_Path_Points_Get[] = {
 	{"new", L_TableFunction<Lua_Camera_Path_Points_New>},
 	{0, 0}
 };
@@ -214,7 +214,7 @@ int Lua_Camera_Path_Angles_New(lua_State *L)
 	return 0;
 };
 
-const luaL_reg Lua_Camera_Path_Angles_Get[] = {
+const luaL_Reg Lua_Camera_Path_Angles_Get[] = {
 	{"new", L_TableFunction<Lua_Camera_Path_Angles_New>},
 	{0, 0}
 };
@@ -281,7 +281,7 @@ static int Lua_Get_Path_Points(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Camera_Get[] = {
+const luaL_Reg Lua_Camera_Get[] = {
 	{"activate", L_TableFunction<Lua_Camera_Activate>},
 	{"clear", L_TableFunction<Lua_Camera_Clear>},
 	{"deactivate", L_TableFunction<Lua_Camera_Deactivate>},
@@ -321,7 +321,7 @@ static int Lua_Cameras_New(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Cameras_Methods[] = {
+const luaL_Reg Lua_Cameras_Methods[] = {
 	{"new", Lua_Cameras_New},
 	{0, 0}
 };
@@ -347,7 +347,7 @@ static int Lua_Crosshairs_Get_Active(lua_State *L)
 	}
 }
 
-const luaL_reg Lua_Crosshairs_Get[] = {
+const luaL_Reg Lua_Crosshairs_Get[] = {
 	{"active", Lua_Crosshairs_Get_Active},
 	{0, 0}
 };
@@ -366,7 +366,7 @@ static int Lua_Crosshairs_Set_Active(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Crosshairs_Set[] = {
+const luaL_Reg Lua_Crosshairs_Set[] = {
 	{"active", Lua_Crosshairs_Set_Active},
 	{0, 0}
 };
@@ -437,7 +437,7 @@ int Lua_Overlay_Fill_Icon(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Overlay_Get[] = {
+const luaL_Reg Lua_Overlay_Get[] = {
 	{"clear", L_TableFunction<Lua_Overlay_Clear>},
 	{"fill_icon", L_TableFunction<Lua_Overlay_Fill_Icon>},
 	{0, 0}
@@ -449,7 +449,7 @@ static int Lua_Overlay_Set_Icon(lua_State *L)
 	{
 		if (lua_isstring(L, 2))
 		{
-			SetScriptHUDIcon(Lua_Overlay::Index(L, 1), lua_tostring(L, 2), lua_strlen(L, 2));
+			SetScriptHUDIcon(Lua_Overlay::Index(L, 1), lua_tostring(L, 2), lua_rawlen(L, 2));
 		}
 		else
 		{
@@ -485,7 +485,7 @@ static int Lua_Overlay_Set_Text_Color(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Overlay_Set[] = {
+const luaL_Reg Lua_Overlay_Set[] = {
 	{"color", Lua_Overlay_Set_Text_Color},
 	{"icon", Lua_Overlay_Set_Icon},
 	{"text", Lua_Overlay_Set_Text},
@@ -528,7 +528,7 @@ static int Lua_Overlays_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Overlays_Metatable[] = {
+const luaL_Reg Lua_Overlays_Metatable[] = {
 	{"__index", Lua_Overlays_Get},
 	{"__len", Lua_Overlays_Length},
 	{0, 0}
@@ -578,7 +578,7 @@ static int Lua_Player_Compass_Get_Y(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Player_Compass_Get[] = {
+const luaL_Reg Lua_Player_Compass_Get[] = {
 	{"all_off", L_TableFunction<Lua_Player_Compass_All<_network_compass_all_off> >},
 	{"all_on", L_TableFunction<Lua_Player_Compass_All<_network_compass_all_on> >},
 	{"beacon", Lua_Player_Compass_Get_State<_network_compass_use_beacon>},
@@ -645,7 +645,7 @@ static int Lua_Player_Compass_Set_Y(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Player_Compass_Set[] = {
+const luaL_Reg Lua_Player_Compass_Set[] = {
 	{"beacon", Lua_Player_Compass_Set_State<_network_compass_use_beacon>},
 	{"lua", Lua_Player_Compass_Set_Lua},
 	{"ne", Lua_Player_Compass_Set_State<_network_compass_ne>},
@@ -744,7 +744,7 @@ static int Lua_Player_Items_Set(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Player_Items_Metatable[] = {
+const luaL_Reg Lua_Player_Items_Metatable[] = {
 	{"__index", Lua_Player_Items_Get},
 	{"__newindex", Lua_Player_Items_Set},
 	{"__len", Lua_Player_Items_Length},
@@ -770,7 +770,7 @@ static int Lua_InternalVelocity_Get_Perpendicular(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_InternalVelocity_Get[] = {
+const luaL_Reg Lua_InternalVelocity_Get[] = {
 	{"forward", Lua_InternalVelocity_Get_Forward},
 	{"perpendicular", Lua_InternalVelocity_Get_Perpendicular},
 	{0, 0}
@@ -797,7 +797,7 @@ static int Lua_ExternalVelocity_Get_K(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_ExternalVelocity_Get[] = {
+const luaL_Reg Lua_ExternalVelocity_Get[] = {
 	{"i", Lua_ExternalVelocity_Get_I},
 	{"j", Lua_ExternalVelocity_Get_J},
 	{"k", Lua_ExternalVelocity_Get_K},
@@ -837,7 +837,7 @@ static int Lua_ExternalVelocity_Set_K(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_ExternalVelocity_Set[] = {
+const luaL_Reg Lua_ExternalVelocity_Set[] = {
 	{"i", Lua_ExternalVelocity_Set_I},
 	{"j", Lua_ExternalVelocity_Set_J},
 	{"k", Lua_ExternalVelocity_Set_K},
@@ -947,7 +947,7 @@ static int Lua_Texture_Palette_Slot_Get_Type(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Texture_Palette_Slot_Get[] = {
+const luaL_Reg Lua_Texture_Palette_Slot_Get[] = {
 	{"clear", L_TableFunction<Lua_Texture_Palette_Slot_Clear>},
 	{"collection", Lua_Texture_Palette_Slot_Get_Collection},
 	{"texture_index", Lua_Texture_Palette_Slot_Get_Texture},
@@ -1000,7 +1000,7 @@ static int Lua_Texture_Palette_Slot_Set_Type(lua_State *L)
 }
 
 
-const luaL_reg Lua_Texture_Palette_Slot_Set[] = {
+const luaL_Reg Lua_Texture_Palette_Slot_Set[] = {
 	{"collection", Lua_Texture_Palette_Slot_Set_Collection},
 	{"texture_index", Lua_Texture_Palette_Slot_Set_Texture},
     {"type", Lua_Texture_Palette_Slot_Set_Type},
@@ -1043,7 +1043,7 @@ static int Lua_Texture_Palette_Slots_Length(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Texture_Palette_Slots_Metatable[] = {
+const luaL_Reg Lua_Texture_Palette_Slots_Metatable[] = {
 	{"__index", Lua_Texture_Palette_Slots_Get},
 	{"__len", Lua_Texture_Palette_Slots_Length},
 	{0, 0}
@@ -1081,7 +1081,7 @@ static int Lua_Texture_Palette_Get_Slots(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Texture_Palette_Get[] = {
+const luaL_Reg Lua_Texture_Palette_Get[] = {
 	{"highlight", Lua_Texture_Palette_Get_Selected},
 	{"size", Lua_Texture_Palette_Get_Size},
 	{"slots", Lua_Texture_Palette_Get_Slots},
@@ -1136,7 +1136,7 @@ static int Lua_Texture_Palette_Set_Size(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Texture_Palette_Set[] = {
+const luaL_Reg Lua_Texture_Palette_Set[] = {
 	{"highlight", Lua_Texture_Palette_Set_Selected},
 	{"size", Lua_Texture_Palette_Set_Size},
 	{0, 0}
@@ -1186,7 +1186,7 @@ static int Lua_Player_Weapon_Trigger_Get_Rounds(lua_State *L)
 	return 1;
 }
 
-const luaL_reg Lua_Player_Weapon_Trigger_Get[] = {
+const luaL_Reg Lua_Player_Weapon_Trigger_Get[] = {
 	{"rounds", Lua_Player_Weapon_Trigger_Get_Rounds},
 	{0, 0}
 };
@@ -1215,7 +1215,7 @@ int Lua_Player_Weapon_Select(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Player_Weapon_Get[] = { 
+const luaL_Reg Lua_Player_Weapon_Get[] = { 
 	{"primary", get_weapon_trigger<_primary_weapon>},
 	{"secondary", get_weapon_trigger<_secondary_weapon>},
 	{"select", L_TableFunction<Lua_Player_Weapon_Select>},
@@ -1291,7 +1291,7 @@ static int Lua_Player_Weapons_Set(lua_State *L)
 		return luaL_error(L, "no such index");
 }
 
-const luaL_reg Lua_Player_Weapons_Metatable[] = {
+const luaL_Reg Lua_Player_Weapons_Metatable[] = {
 	{"__index", Lua_Player_Weapons_Get},
 	{"__newindex", Lua_Player_Weapons_Set},
 	{"__len", Lua_Player_Weapons_Length},
@@ -1350,7 +1350,7 @@ static int Lua_Player_Kills_Set(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Player_Kills_Metatable[] = {
+const luaL_Reg Lua_Player_Kills_Metatable[] = {
 	{"__index", Lua_Player_Kills_Get},
 	{"__newindex", Lua_Player_Kills_Set},
 	{"__len", Lua_Player_Kills_Length},
@@ -1932,7 +1932,7 @@ static int Lua_Player_Get_Zoom(lua_State *L)
 	}
 }
 
-const luaL_reg Lua_Player_Get[] = {
+const luaL_Reg Lua_Player_Get[] = {
 	{"accelerate", L_TableFunction<Lua_Player_Accelerate>},
 	{"action_flags", Lua_Player_Get_Action_Flags},
 	{"activate_terminal", L_TableFunction<Lua_Player_Activate_Terminal>},
@@ -2177,7 +2177,7 @@ static int Lua_Player_Set_Zoom(lua_State *L)
 	return 0;
 }
 
-const luaL_reg Lua_Player_Set[] = {
+const luaL_Reg Lua_Player_Set[] = {
 	{"color", Lua_Player_Set_Color},
 	{"deaths", Lua_Player_Set_Deaths},
 	{"direction", Lua_Player_Set_Direction},
@@ -2226,7 +2226,7 @@ int Lua_Players_Print(lua_State *L)
 }
 
 
-const luaL_reg Lua_Players_Methods[] = {
+const luaL_Reg Lua_Players_Methods[] = {
 	{"print", Lua_Players_Print},
 	{0, 0}
 };
@@ -2408,7 +2408,7 @@ int Lua_Game_Save(lua_State *L)
 extern int L_Restore_Passed(lua_State *);
 extern int L_Restore_Saved(lua_State *);
 
-const luaL_reg Lua_Game_Get[] = {
+const luaL_Reg Lua_Game_Get[] = {
 	{"difficulty", Lua_Game_Get_Difficulty},
 	{"global_random", L_TableFunction<Lua_Game_Global_Random>},
 	{"kill_limit", Lua_Game_Get_Kill_Limit},
@@ -2427,7 +2427,7 @@ const luaL_reg Lua_Game_Get[] = {
 	{0, 0}
 };
 
-const luaL_reg Lua_Game_Set[] = {
+const luaL_Reg Lua_Game_Set[] = {
 	{"monsters_replenish", Lua_Game_Set_Monsters_Replenish},
 	{"proper_item_accounting", Lua_Game_Set_Proper_Item_Accounting},
 	{"scoring_mode", Lua_Game_Set_Scoring_Mode},
@@ -2510,7 +2510,7 @@ int Lua_Music_Valid(lua_State* L) {
 	return top;
 }
 
-const luaL_reg Lua_Music_Get[] = {
+const luaL_Reg Lua_Music_Get[] = {
 	{"clear", L_TableFunction<Lua_Music_Clear>},
 	{"fade", L_TableFunction<Lua_Music_Fade>},
 	{"play", L_TableFunction<Lua_Music_Play>},

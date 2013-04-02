@@ -107,7 +107,7 @@ static int Lua_Goal_Get_ID(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_Goal_Get[] = {
+const luaL_Reg Lua_Goal_Get[] = {
 	{"facing", get_saved_object_facing<Lua_Goal>},
 	{"id", Lua_Goal_Get_ID},
 	{"polygon", get_saved_object_polygon<Lua_Goal>},
@@ -128,7 +128,7 @@ static int Lua_ItemStart_Get_Type(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_ItemStart_Get[] = {
+const luaL_Reg Lua_ItemStart_Get[] = {
 	{"facing", get_saved_object_facing<Lua_ItemStart>},
 	{"from_ceiling", get_saved_object_flag<Lua_ItemStart, _map_object_hanging_from_ceiling>},
 	{"invisible", get_saved_object_flag<Lua_ItemStart, _map_object_is_invisible>},
@@ -151,7 +151,7 @@ static int Lua_MonsterStart_Get_Type(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_MonsterStart_Get[] = {
+const luaL_Reg Lua_MonsterStart_Get[] = {
 	{"blind", get_saved_object_flag<Lua_MonsterStart, _map_object_is_blind>},
 	{"deaf", get_saved_object_flag<Lua_MonsterStart, _map_object_is_deaf>},
 	{"facing", get_saved_object_facing<Lua_MonsterStart>},
@@ -176,7 +176,7 @@ static int Lua_PlayerStart_Get_Team(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_PlayerStart_Get[] = {
+const luaL_Reg Lua_PlayerStart_Get[] = {
 	{"facing", get_saved_object_facing<Lua_PlayerStart>},
 	{"from_ceiling", get_saved_object_flag<Lua_PlayerStart, _map_object_hanging_from_ceiling>},
 	{"polygon", get_saved_object_polygon<Lua_PlayerStart>},
@@ -228,7 +228,7 @@ static int Lua_SoundObject_Get_Volume(lua_State* L)
 	return 1;
 }
 
-const luaL_reg Lua_SoundObject_Get[] = {
+const luaL_Reg Lua_SoundObject_Get[] = {
 	{"from_ceiling", get_saved_object_flag<Lua_SoundObject, _map_object_hanging_from_ceiling>},
 	{"light", Lua_SoundObject_Get_Light},
 	{"on_platform", get_saved_object_flag<Lua_SoundObject, _map_object_is_platform_sound>},

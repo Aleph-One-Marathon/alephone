@@ -39,6 +39,13 @@ extern "C"
 #include <sstream>
 #include <map>
 
+static inline int luaL_typerror(lua_State* L, int narg, const char* tname)
+{
+	const char *msg = lua_pushfstring(L, "%s expected, got %s",
+					  tname, luaL_typename(L, narg));
+	return luaL_argerror(L, narg, msg);
+}
+
 // helper functions for finding the script's data path
 // not in lua_script.h because they expose lua_State
 extern void L_Set_Search_Path(lua_State* L, const std::string& path);
@@ -62,7 +69,7 @@ public:
 	index_t m_index;
 	typedef index_t index_type;
 
-	static void Register(lua_State *L, const luaL_reg get[] = 0, const luaL_reg set[] = 0, const luaL_reg metatable[] = 0);
+	static void Register(lua_State *L, const luaL_Reg get[] = 0, const luaL_Reg set[] = 0, const luaL_Reg metatable[] = 0);
 	static L_Class *Push(lua_State *L, index_t index);
 	static index_t Index(lua_State *L, int index);
 	static bool Is(lua_State *L, int index);
@@ -117,7 +124,7 @@ template<char *name, typename index_t>
 boost::function<bool (index_t)> L_Class<name, index_t>::Valid = always_valid();
 
 template<char *name, typename index_t>
-void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const luaL_reg set[], const luaL_reg metatable[])
+void L_Class<name, index_t>::Register(lua_State *L, const luaL_Reg get[], const luaL_Reg set[], const luaL_Reg metatable[])
 {
 	// create the metatable itself
 	luaL_newmetatable(L, name);
@@ -143,7 +150,7 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	lua_setfield(L, -2, "__new");
 
 	if (metatable)
-		luaL_openlib(L, 0, metatable, 0);
+		luaL_setfuncs(L, metatable, 0);
 	
 	// clear the stack
 	lua_pop(L, 1);
@@ -157,7 +164,7 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	lua_setfield(L, -2, "index");
 
 	if (get)
-		luaL_openlib(L, 0, get, 0);
+		luaL_setfuncs(L, get, 0);
 	lua_settable(L, LUA_REGISTRYINDEX);
 
 	// register set methods
@@ -165,7 +172,7 @@ void L_Class<name, index_t>::Register(lua_State *L, const luaL_reg get[], const 
 	lua_newtable(L);
 
 	if (set)
-		luaL_openlib(L, 0, set, 0);
+		luaL_setfuncs(L, set, 0);
 	lua_settable(L, LUA_REGISTRYINDEX);
 		
 	// register a table for instances
@@ -473,7 +480,7 @@ template<char *name, typename index_t = int16>
 class L_Enum : public L_Class<name, index_t>
 {
 public:
-	static void Register(lua_State *L, const luaL_reg get[] = 0, const luaL_reg set[] = 0, const luaL_reg metatable[] = 0, const lang_def mnemonics[] = 0);
+	static void Register(lua_State *L, const luaL_Reg get[] = 0, const luaL_Reg set[] = 0, const luaL_Reg metatable[] = 0, const lang_def mnemonics[] = 0);
 	static index_t ToIndex(lua_State *L, int index);
 	static void PushMnemonicTable(lua_State *L);
 protected:
@@ -509,7 +516,7 @@ public:
 };
 
 template<char *name, typename index_t>
-void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const luaL_reg set[], const luaL_reg metatable[], const lang_def mnemonics[])
+void L_Enum<name, index_t>::Register(lua_State *L, const luaL_Reg get[], const luaL_Reg set[], const luaL_Reg metatable[], const lang_def mnemonics[])
 {
 	L_Class<name, index_t>::Register(L, get, set, 0);
 
@@ -536,7 +543,7 @@ void L_Enum<name, index_t>::Register(lua_State *L, const luaL_reg get[], const l
 	lua_setfield(L, -2, "__tostring");
 
 	if (metatable)
-		luaL_openlib(L, 0, metatable, 0);
+		luaL_setfuncs(L, metatable, 0);
 
 	lua_pop(L, 1);
 
@@ -709,7 +716,7 @@ int L_Enum<name, index_t>::_set_mnemonic(lua_State *L)
 template<char *name, class T>
 class L_Container {
 public:
-	static void Register(lua_State *L, const luaL_reg methods[] = 0, const luaL_reg metatable[] = 0);
+	static void Register(lua_State *L, const luaL_Reg methods[] = 0, const luaL_Reg metatable[] = 0);
 	static boost::function<typename T::index_type (void)> Length;
 	struct ConstantLength
 	{
@@ -734,7 +741,7 @@ template<char *name, class T>
 boost::function<typename T::index_type (void)> L_Container<name, T>::Length = ConstantLength(1);
 
 template<char *name, class T>
-void L_Container<name, T>::Register(lua_State *L, const luaL_reg methods[], const luaL_reg metatable[])
+void L_Container<name, T>::Register(lua_State *L, const luaL_Reg methods[], const luaL_Reg metatable[])
 {
 	lua_newuserdata(L, 0);
 
@@ -753,7 +760,7 @@ void L_Container<name, T>::Register(lua_State *L, const luaL_reg methods[], cons
 	lua_setfield(L, -2, "__len");
 
 	if (metatable)
-		luaL_openlib(L, 0, metatable, 0);
+		luaL_setfuncs(L, metatable, 0);
 	
 	lua_setmetatable(L, -2);
 
@@ -762,7 +769,7 @@ void L_Container<name, T>::Register(lua_State *L, const luaL_reg methods[], cons
 	_push_methods_key(L);
 	lua_newtable(L);
 	if (methods)
-		luaL_openlib(L, 0, methods, 0);
+		luaL_setfuncs(L, methods, 0);
 	lua_settable(L, LUA_REGISTRYINDEX);
 }
 
@@ -845,13 +852,13 @@ template<char *name, class T>
 class L_EnumContainer : public L_Container<name, T>
 {
 public:
-	static void Register(lua_State *L, const luaL_reg methods[] = 0, const luaL_reg metatable[] = 0);
+	static void Register(lua_State *L, const luaL_Reg methods[] = 0, const luaL_Reg metatable[] = 0);
 private:
 	static int _get(lua_State *);
 };
 
 template <char *name, class T>
-void L_EnumContainer<name, T>::Register(lua_State *L, const luaL_reg methods[], const luaL_reg metatable[])
+void L_EnumContainer<name, T>::Register(lua_State *L, const luaL_Reg methods[], const luaL_Reg metatable[])
 {
 	L_Container<name, T>::Register(L, methods, metatable);
 	
@@ -928,7 +935,7 @@ public:
 	static object_t Object(lua_State *L, int index);
 	static void Invalidate(lua_State *L, index_t index);
 
-	static void Register(lua_State *L, const luaL_reg get[] = 0, const luaL_reg set[] = 0, const luaL_reg metatable[] = 0) {
+	static void Register(lua_State *L, const luaL_Reg get[] = 0, const luaL_Reg set[] = 0, const luaL_Reg metatable[] = 0) {
 		return L_Class<name, index_t>::Register(L, get, set, metatable);
 	}
 	static index_t Index(lua_State *L, int index) {
