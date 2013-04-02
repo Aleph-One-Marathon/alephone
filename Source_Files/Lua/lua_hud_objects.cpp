@@ -657,7 +657,7 @@ static int Lua_Shape_Get_Crop_Rect(lua_State *L)
 
 int Lua_Shape_Rescale(lua_State *L)
 {
-	Lua_Shape::Object(L, 1)->Rescale(lua_tointeger(L, 2), lua_tointeger(L, 3));
+	Lua_Shape::Object(L, 1)->Rescale(lua_tonumber(L, 2), lua_tonumber(L, 3));
 	return 0;
 }
 

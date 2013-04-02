@@ -172,13 +172,13 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
 
         glBegin(GL_TRIANGLE_FAN);
         glTexCoord2d(U_Offset, V_Offset);
-        glVertex2i(dst.x, dst.y);
+        glVertex2f(dst.x, dst.y);
         glTexCoord2d(U_Offset + U_Scale, V_Offset);
-        glVertex2i(dst.x + dst.w, dst.y);
+        glVertex2f(dst.x + dst.w, dst.y);
         glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
-        glVertex2i(dst.x + dst.w, dst.y + dst.h);
+        glVertex2f(dst.x + dst.w, dst.y + dst.h);
         glTexCoord2d(U_Offset, V_Offset + V_Scale);
-        glVertex2i(dst.x, dst.y + dst.h);
+        glVertex2f(dst.x, dst.y + dst.h);
         glEnd();
     }
     else if (m_type == Shape_Texture_Landscape)
@@ -197,13 +197,13 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
         
         glBegin(GL_TRIANGLE_FAN);
         glTexCoord2d(V_Offset, U_Offset);
-        glVertex2i(dst.x, dst.y);
+        glVertex2f(dst.x, dst.y);
         glTexCoord2d(V_Offset + V_Scale, U_Offset);
-        glVertex2i(dst.x + dst.w, dst.y);
+        glVertex2f(dst.x + dst.w, dst.y);
         glTexCoord2d(V_Offset + V_Scale, U_Offset + U_Scale);
-        glVertex2i(dst.x + dst.w, dst.y + dst.h);
+        glVertex2f(dst.x + dst.w, dst.y + dst.h);
         glTexCoord2d(V_Offset, U_Offset + U_Scale);
-        glVertex2i(dst.x, dst.y + dst.h);
+        glVertex2f(dst.x, dst.y + dst.h);
         glEnd();
     }
     else
@@ -231,13 +231,13 @@ void Shape_Blitter::OGL_Draw(const Image_Rect& dst)
 
         glBegin(GL_TRIANGLE_FAN);
         glTexCoord2d(U_Offset, V_Offset);
-        glVertex2i(dst.x, dst.y);
+        glVertex2f(dst.x, dst.y);
         glTexCoord2d(U_Offset, V_Offset + V_Scale);
-        glVertex2i(dst.x + dst.w, dst.y);
+        glVertex2f(dst.x + dst.w, dst.y);
         glTexCoord2d(U_Offset + U_Scale, V_Offset + V_Scale);
-        glVertex2i(dst.x + dst.w, dst.y + dst.h);
+        glVertex2f(dst.x + dst.w, dst.y + dst.h);
         glTexCoord2d(U_Offset + U_Scale, V_Offset);
-        glVertex2i(dst.x, dst.y + dst.h);
+        glVertex2f(dst.x, dst.y + dst.h);
         glEnd();
 	}
     
