@@ -47,7 +47,7 @@ extern bool game_is_networked;
 
 Console *Console::m_instance = NULL;
 
-Console::Console() : m_active(false), m_carnage_messages_exist(false), m_use_lua_console(false)
+Console::Console() : m_active(false), m_carnage_messages_exist(false), m_use_lua_console(true)
 {
 	m_carnage_messages.resize(NUMBER_OF_PROJECTILE_TYPES);
 	register_save_commands();
