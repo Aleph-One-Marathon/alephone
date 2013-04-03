@@ -216,7 +216,7 @@ void LuaHUDState::RegisterFunctions()
 
 bool LuaHUDState::Load(const char *buffer, size_t len)
 {
-	int status = luaL_loadbuffer(State(), buffer, len, "hud_script");
+	int status = luaL_loadbufferx(State(), buffer, len, "hud_script", "t");
 	if (status == LUA_ERRRUN)
 		logWarning("Lua loading failed: error running script.");
 	if (status == LUA_ERRFILE)
