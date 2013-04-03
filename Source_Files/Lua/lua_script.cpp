@@ -354,9 +354,8 @@ public:
 
 	void Initialize() {
 		LuaState::Initialize();
-		lua_pushcfunction(State(), luaopen_io);
-		lua_pushstring(State(), LUA_IOLIBNAME);
-		lua_call(State(), 1, 0);
+		luaL_requiref(State(), LUA_IOLIBNAME, luaopen_io, 1);
+		lua_pop(State(), 1);
 	}
 };
 
