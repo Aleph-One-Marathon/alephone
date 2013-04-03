@@ -220,6 +220,7 @@ static const luaL_Reg lualibs[] = {
 	{"", luaopen_base},
 	{LUA_TABLIBNAME, luaopen_table},
 	{LUA_STRLIBNAME, luaopen_string},
+	{LUA_BITLIBNAME, luaopen_bit32},
 	{LUA_MATHLIBNAME, luaopen_math},
 	{LUA_DBLIBNAME, luaopen_debug},
 	{NULL, NULL}
@@ -267,18 +268,18 @@ public:
 		const luaL_Reg *lib = lualibs;
 		for (; lib->func; lib++)
 		{
-			lua_pushcfunction(State(), lib->func);
-			lua_pushstring(State(), lib->name);
-			lua_call(State(), 1, 0);
+			luaL_requiref(State(), lib->name, lib->func, 1);
+			lua_pop(State(), 1);
 		}
-		if(insecure_lua) {
-		  const luaL_Reg *lib = insecurelibs;
-		  for (; lib->func; lib++)
-		    {
-		      lua_pushcfunction(State(), lib->func);
-		      lua_pushstring(State(), lib->name);
-		      lua_call(State(), 1, 0);
-		    }
+
+		if (insecure_lua) 
+		{
+			const luaL_Reg *lib = insecurelibs;
+			for (; lib->func; lib++)
+			{
+				luaL_requiref(State(), lib->name, lib->func, 1);
+				lua_pop(State(), 1);
+			}
 		}
 
 		// set up a persistence table in the registry
