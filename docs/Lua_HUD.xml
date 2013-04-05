@@ -726,6 +726,24 @@ end
           <type>string</type>
           <note>from stringset 137; may differ from label in Player.items</note>
         </variable>
+        <subtable name="name_rect" classname="player_weapon_name_rect" version="SVN">
+          <description>position of label in classic HUD</description>
+          <variable name="x"><type>number</type></variable>
+          <variable name="y"><type>number</type></variable>
+          <variable name="width"><type>number</type></variable>
+          <variable name="height"><type>number</type></variable>
+        </subtable>
+        <subtable name="shape" classname="player_weapon_shape" version="SVN">
+          <alias>multiple_shape</alias>
+          <alias>multiple_unused_shape</alias>
+          <note>can be nil</note>
+          <variable name="texture_index">
+            <description>frame in Interface collection</description>
+            <type>number</type>
+          </variable>
+          <variable name="x"><type>number</type></variable>
+          <variable name="y"><type>number</type></variable>
+        </subtable>
         <subtable name="primary" classname="player_weapon_trigger">
           <alias>secondary</alias>
           <variable name="rounds">

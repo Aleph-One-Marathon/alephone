@@ -1122,6 +1122,194 @@ static int get_hudweapon_trigger(lua_State *L)
 	return 1;
 }
 
+char Lua_HUDPlayer_Weapon_SingleShape_Name[] = "player_weapon_singleshape";
+typedef L_Class<Lua_HUDPlayer_Weapon_SingleShape_Name> Lua_HUDPlayer_Weapon_SingleShape;
+
+static int Lua_HUDPlayer_Weapon_SingleShape_Get_Frame(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_SingleShape::Index(L, 1)];
+    lua_pushinteger(L, wid->weapon_panel_shape);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_SingleShape_Get_X(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_SingleShape::Index(L, 1)];
+    lua_pushinteger(L, wid->standard_weapon_panel_left);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_SingleShape_Get_Y(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_SingleShape::Index(L, 1)];
+    lua_pushinteger(L, wid->standard_weapon_panel_top);
+    return 1;
+}
+
+const luaL_Reg Lua_HUDPlayer_Weapon_SingleShape_Get[] = {
+    {"texture_index", Lua_HUDPlayer_Weapon_SingleShape_Get_Frame},
+    {"x", Lua_HUDPlayer_Weapon_SingleShape_Get_X},
+    {"y", Lua_HUDPlayer_Weapon_SingleShape_Get_Y},
+    {0, 0}
+};
+
+char Lua_HUDPlayer_Weapon_MultShape_Name[] = "player_weapon_multshape";
+typedef L_Class<Lua_HUDPlayer_Weapon_MultShape_Name> Lua_HUDPlayer_Weapon_MultShape;
+
+static int Lua_HUDPlayer_Weapon_MultShape_Get_Frame(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_MultShape::Index(L, 1)];
+    lua_pushinteger(L, wid->multiple_shape);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_MultShape_Get_X(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_MultShape::Index(L, 1)];
+    lua_pushinteger(L, wid->standard_weapon_panel_left + wid->multiple_delta_x);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_MultShape_Get_Y(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_MultShape::Index(L, 1)];
+    lua_pushinteger(L, wid->standard_weapon_panel_top + wid->multiple_delta_y);
+    return 1;
+}
+
+const luaL_Reg Lua_HUDPlayer_Weapon_MultShape_Get[] = {
+    {"texture_index", Lua_HUDPlayer_Weapon_MultShape_Get_Frame},
+    {"x", Lua_HUDPlayer_Weapon_MultShape_Get_X},
+    {"y", Lua_HUDPlayer_Weapon_MultShape_Get_Y},
+    {0, 0}
+};
+
+char Lua_HUDPlayer_Weapon_UnusableShape_Name[] = "player_weapon_unusableshape";
+typedef L_Class<Lua_HUDPlayer_Weapon_UnusableShape_Name> Lua_HUDPlayer_Weapon_UnusableShape;
+
+static int Lua_HUDPlayer_Weapon_UnusableShape_Get_Frame(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_UnusableShape::Index(L, 1)];
+    lua_pushinteger(L, wid->multiple_unusable_shape);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_UnusableShape_Get_X(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_UnusableShape::Index(L, 1)];
+    lua_pushinteger(L, wid->standard_weapon_panel_left + wid->multiple_delta_x);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_UnusableShape_Get_Y(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_UnusableShape::Index(L, 1)];
+    lua_pushinteger(L, wid->standard_weapon_panel_top + wid->multiple_delta_y);
+    return 1;
+}
+
+const luaL_Reg Lua_HUDPlayer_Weapon_UnusableShape_Get[] = {
+    {"texture_index", Lua_HUDPlayer_Weapon_UnusableShape_Get_Frame},
+    {"x", Lua_HUDPlayer_Weapon_UnusableShape_Get_X},
+    {"y", Lua_HUDPlayer_Weapon_UnusableShape_Get_Y},
+    {0, 0}
+};
+
+static int Lua_HUDPlayer_Weapon_Get_SingleShape(lua_State *L)
+{
+    short idx = Lua_HUDPlayer_Weapon::Index(L, 1);
+    struct weapon_interface_data *wid = &weapon_interface_definitions[idx];
+    if (wid->weapon_panel_shape == UNONE)
+        lua_pushnil(L);
+    else
+        Lua_HUDPlayer_Weapon_SingleShape::Push(L, idx);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Get_MultShape(lua_State *L)
+{
+    short idx = Lua_HUDPlayer_Weapon::Index(L, 1);
+    struct weapon_interface_data *wid = &weapon_interface_definitions[idx];
+    if (!wid->multi_weapon || wid->multiple_shape == UNONE)
+        lua_pushnil(L);
+    else
+        Lua_HUDPlayer_Weapon_MultShape::Push(L, idx);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Get_UnusableShape(lua_State *L)
+{
+    short idx = Lua_HUDPlayer_Weapon::Index(L, 1);
+    struct weapon_interface_data *wid = &weapon_interface_definitions[idx];
+    if (!wid->multi_weapon || wid->multiple_unusable_shape == UNONE)
+        lua_pushnil(L);
+    else
+        Lua_HUDPlayer_Weapon_UnusableShape::Push(L, idx);
+    return 1;
+}
+
+char Lua_HUDPlayer_Weapon_Name_Rect_Name[] = "player_weapon_name_rect";
+typedef L_Class<Lua_HUDPlayer_Weapon_Name_Rect_Name> Lua_HUDPlayer_Weapon_Name_Rect;
+
+static int Lua_HUDPlayer_Weapon_Name_Rect_Get_X(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_Name_Rect::Index(L, 1)];
+    short startx = wid->weapon_name_start_x;
+    if (startx == NONE)
+    {
+        screen_rectangle *r = get_interface_rectangle(_weapon_display_rect);
+        startx = r->left;
+    }
+    lua_pushnumber(L, startx);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Name_Rect_Get_Width(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_Name_Rect::Index(L, 1)];
+    short startx = wid->weapon_name_start_x;
+    short endx = wid->weapon_name_end_x;
+    if (startx == NONE || endx == NONE)
+    {
+        screen_rectangle *r = get_interface_rectangle(_weapon_display_rect);
+        if (startx == NONE)
+            startx = r->left;
+        if (endx == NONE)
+            endx = r->right;
+    }
+    lua_pushnumber(L, endx - startx);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Name_Rect_Get_Y(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_Name_Rect::Index(L, 1)];
+    lua_pushnumber(L, wid->weapon_name_start_y);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Name_Rect_Get_Height(lua_State *L)
+{
+    struct weapon_interface_data *wid = &weapon_interface_definitions[Lua_HUDPlayer_Weapon_Name_Rect::Index(L, 1)];
+    lua_pushnumber(L, wid->weapon_name_end_y - wid->weapon_name_start_y);
+    return 1;
+}
+
+const luaL_Reg Lua_HUDPlayer_Weapon_Name_Rect_Get[] = {
+    {"x", Lua_HUDPlayer_Weapon_Name_Rect_Get_X},
+    {"y", Lua_HUDPlayer_Weapon_Name_Rect_Get_Y},
+    {"width", Lua_HUDPlayer_Weapon_Name_Rect_Get_Width},
+    {"height", Lua_HUDPlayer_Weapon_Name_Rect_Get_Height},
+    {0, 0}
+};
+
+
+static int Lua_HUDPlayer_Weapon_Get_Name_Rect(lua_State *L)
+{
+    Lua_HUDPlayer_Weapon_Name_Rect::Push(L, Lua_HUDPlayer_Weapon::Index(L, 1));
+    return 1;
+}
+
 static int Lua_HUDPlayer_Weapon_Get_Type(lua_State *L)
 {
 	Lua_WeaponType::Push(L, Lua_HUDPlayer_Weapon::Index(L, 1));
@@ -1162,7 +1350,11 @@ const luaL_Reg Lua_HUDPlayer_Weapon_Get[] = {
 {"secondary", get_hudweapon_trigger<_secondary_weapon>},
 {"type", Lua_HUDPlayer_Weapon_Get_Type},
 {"name", Lua_HUDPlayer_Weapon_Get_Name},
-{0, 0} 
+{"name_rect", Lua_HUDPlayer_Weapon_Get_Name_Rect},
+{"shape", Lua_HUDPlayer_Weapon_Get_SingleShape},
+{"multiple_shape", Lua_HUDPlayer_Weapon_Get_MultShape},
+{"multiple_unusable_shape", Lua_HUDPlayer_Weapon_Get_UnusableShape},
+{0, 0}
 };
 
 extern player_weapon_data *get_player_weapon_data(const short player_index);
@@ -2661,6 +2853,18 @@ int Lua_HUDObjects_register(lua_State *L)
 	
 	Lua_HUDPlayer_Weapon_Trigger::Register(L, Lua_HUDPlayer_Weapon_Trigger_Get);
 	Lua_HUDPlayer_Weapon_Trigger::Valid = Lua_HUDPlayer_Weapon_Trigger::ValidRange((int) _secondary_weapon + 1);
+    
+    Lua_HUDPlayer_Weapon_Name_Rect::Register(L, Lua_HUDPlayer_Weapon_Name_Rect_Get);
+    Lua_HUDPlayer_Weapon_Name_Rect::Valid = Lua_HUDPlayer_Weapon::Valid;
+	
+    Lua_HUDPlayer_Weapon_SingleShape::Register(L, Lua_HUDPlayer_Weapon_SingleShape_Get);
+    Lua_HUDPlayer_Weapon_SingleShape::Valid = Lua_HUDPlayer_Weapon::Valid;
+	
+    Lua_HUDPlayer_Weapon_MultShape::Register(L, Lua_HUDPlayer_Weapon_MultShape_Get);
+    Lua_HUDPlayer_Weapon_MultShape::Valid = Lua_HUDPlayer_Weapon::Valid;
+	
+    Lua_HUDPlayer_Weapon_UnusableShape::Register(L, Lua_HUDPlayer_Weapon_UnusableShape_Get);
+    Lua_HUDPlayer_Weapon_UnusableShape::Valid = Lua_HUDPlayer_Weapon::Valid;
 	
 	Lua_HUDPlayer_Item::Register(L, Lua_HUDPlayer_Item_Get);
 	Lua_HUDPlayer_Item::Valid = Lua_HUDPlayer_Item::ValidRange(NUMBER_OF_DEFINED_ITEMS);

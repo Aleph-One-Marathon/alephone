@@ -304,6 +304,12 @@
 
 <xsl:template match="subtable">
   <dt>.<xsl:value-of select="@name"/>
+    <xsl:choose>
+      <xsl:when test="@version">
+	<xsl:text> </xsl:text>
+	<span class="version"><xsl:value-of select="@version"/></span>
+      </xsl:when>
+    </xsl:choose> 
   <xsl:for-each select="alias"><br/>.<xsl:value-of select="."/></xsl:for-each>
   </dt>
   <dd>
