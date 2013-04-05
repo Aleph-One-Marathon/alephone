@@ -561,25 +561,25 @@ static int Lua_Shape_Crop_Rect_Get_Height(lua_State *L)
 
 static int Lua_Shape_Crop_Rect_Set_X(lua_State *L)
 {
-	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.x = lua_tointeger(L, 2);
+	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.x = lua_tonumber(L, 2);
     return 0;
 }
 
 static int Lua_Shape_Crop_Rect_Set_Y(lua_State *L)
 {
-	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.y = lua_tointeger(L, 2);
+	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.y = lua_tonumber(L, 2);
     return 0;
 }
 
 static int Lua_Shape_Crop_Rect_Set_Width(lua_State *L)
 {
-	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.w = lua_tointeger(L, 2);
+	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.w = lua_tonumber(L, 2);
     return 0;
 }
 
 static int Lua_Shape_Crop_Rect_Set_Height(lua_State *L)
 {
-	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.h = lua_tointeger(L, 2);
+	Lua_Shape_Crop_Rect::Object(L, 1)->crop_rect.h = lua_tonumber(L, 2);
     return 0;
 }
 
