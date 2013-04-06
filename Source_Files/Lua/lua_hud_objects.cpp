@@ -1034,6 +1034,220 @@ const luaL_Reg Lua_HUDPlayer_Items_Metatable[] = {
 {0, 0}
 };
 
+char Lua_HUDPlayer_Weapon_Trigger_Bullet_Name[] = "player_weapon_trigger_bullet";
+class Lua_HUDPlayer_Weapon_Trigger_Bullet : public L_Class<Lua_HUDPlayer_Weapon_Trigger_Bullet_Name>
+{
+public:
+	int16 m_weapon_index;
+	
+	static Lua_HUDPlayer_Weapon_Trigger_Bullet *Push(lua_State *L, int16 weapon_index, int16 index);
+	static int16 WeaponIndex(lua_State *L, int index);
+    static struct weapon_interface_ammo_data *AmmoData(lua_State *L, int index);
+};
+
+Lua_HUDPlayer_Weapon_Trigger_Bullet *Lua_HUDPlayer_Weapon_Trigger_Bullet::Push(lua_State *L, int16 weapon_index, int16 index)
+{
+	Lua_HUDPlayer_Weapon_Trigger_Bullet *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Bullet *>(L_Class<Lua_HUDPlayer_Weapon_Trigger_Bullet_Name>::Push(L, index));
+	if (t)
+	{
+		t->m_weapon_index = weapon_index;
+	}
+	
+	return t;
+}
+
+int16 Lua_HUDPlayer_Weapon_Trigger_Bullet::WeaponIndex(lua_State *L, int index)
+{
+	Lua_HUDPlayer_Weapon_Trigger_Bullet *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Bullet*>(lua_touserdata(L, index));
+	if (!t) luaL_typerror(L, index, Lua_HUDPlayer_Weapon_Trigger_Bullet_Name);
+	return t->m_weapon_index;
+}
+
+struct weapon_interface_ammo_data *Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(lua_State *L, int index)
+{
+    return &weapon_interface_definitions[Lua_HUDPlayer_Weapon_Trigger_Bullet::WeaponIndex(L, index)]
+                .ammo_data[Lua_HUDPlayer_Weapon_Trigger_Bullet::Index(L, index)];
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_X(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(L, 1);
+    lua_pushinteger(L, wia->screen_left);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Y(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(L, 1);
+    lua_pushinteger(L, wia->screen_top);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Width(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(L, 1);
+    lua_pushinteger(L, wia->delta_x);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Height(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(L, 1);
+    lua_pushinteger(L, wia->delta_y);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Across(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(L, 1);
+    lua_pushinteger(L, wia->ammo_across);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Down(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(L, 1);
+    lua_pushinteger(L, wia->ammo_down);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_RTL(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(L, 1);
+    lua_pushboolean(L, wia->right_to_left);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Frame(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(L, 1);
+    if (wia->bullet == UNONE)
+        lua_pushnil(L);
+    else
+        lua_pushinteger(L, wia->bullet);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Empty_Frame(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Bullet::AmmoData(L, 1);
+    if (wia->empty_bullet == UNONE)
+        lua_pushnil(L);
+    else
+        lua_pushinteger(L, wia->empty_bullet);
+    return 1;
+}
+
+const luaL_Reg Lua_HUDPlayer_Weapon_Trigger_Bullet_Get[] = {
+    {"x", Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_X},
+    {"y", Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Y},
+    {"width", Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Width},
+    {"height", Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Height},
+    {"across", Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Across},
+    {"down", Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Down},
+    {"right_to_left", Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_RTL},
+    {"texture_index", Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Frame},
+    {"empty_texture_index", Lua_HUDPlayer_Weapon_Trigger_Bullet_Get_Empty_Frame},
+    {0, 0}
+};
+
+
+char Lua_HUDPlayer_Weapon_Trigger_Energy_Name[] = "player_weapon_trigger_energy";
+class Lua_HUDPlayer_Weapon_Trigger_Energy : public L_Class<Lua_HUDPlayer_Weapon_Trigger_Energy_Name>
+{
+public:
+	int16 m_weapon_index;
+	
+	static Lua_HUDPlayer_Weapon_Trigger_Energy *Push(lua_State *L, int16 weapon_index, int16 index);
+	static int16 WeaponIndex(lua_State *L, int index);
+    static struct weapon_interface_ammo_data *AmmoData(lua_State *L, int index);
+};
+
+Lua_HUDPlayer_Weapon_Trigger_Energy *Lua_HUDPlayer_Weapon_Trigger_Energy::Push(lua_State *L, int16 weapon_index, int16 index)
+{
+	Lua_HUDPlayer_Weapon_Trigger_Energy *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Energy *>(L_Class<Lua_HUDPlayer_Weapon_Trigger_Energy_Name>::Push(L, index));
+	if (t)
+	{
+		t->m_weapon_index = weapon_index;
+	}
+	
+	return t;
+}
+
+int16 Lua_HUDPlayer_Weapon_Trigger_Energy::WeaponIndex(lua_State *L, int index)
+{
+	Lua_HUDPlayer_Weapon_Trigger_Energy *t = static_cast<Lua_HUDPlayer_Weapon_Trigger_Energy*>(lua_touserdata(L, index));
+	if (!t) luaL_typerror(L, index, Lua_HUDPlayer_Weapon_Trigger_Energy_Name);
+	return t->m_weapon_index;
+}
+
+struct weapon_interface_ammo_data *Lua_HUDPlayer_Weapon_Trigger_Energy::AmmoData(lua_State *L, int index)
+{
+    return &weapon_interface_definitions[Lua_HUDPlayer_Weapon_Trigger_Energy::WeaponIndex(L, index)]
+    .ammo_data[Lua_HUDPlayer_Weapon_Trigger_Energy::Index(L, index)];
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Energy_Get_X(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Energy::AmmoData(L, 1);
+    lua_pushinteger(L, wia->screen_left);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Y(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Energy::AmmoData(L, 1);
+    lua_pushinteger(L, wia->screen_top);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Width(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Energy::AmmoData(L, 1);
+    lua_pushinteger(L, wia->delta_x);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Height(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Energy::AmmoData(L, 1);
+    lua_pushinteger(L, wia->delta_y);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Max(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Energy::AmmoData(L, 1);
+    lua_pushinteger(L, wia->ammo_across);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Full_Color(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Energy::AmmoData(L, 1);
+    Lua_InterfaceColor::Push(L, wia->bullet);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Empty_Color(lua_State *L)
+{
+    struct weapon_interface_ammo_data *wia = Lua_HUDPlayer_Weapon_Trigger_Energy::AmmoData(L, 1);
+    Lua_InterfaceColor::Push(L, wia->empty_bullet);
+    return 1;
+}
+
+const luaL_Reg Lua_HUDPlayer_Weapon_Trigger_Energy_Get[] = {
+    {"x", Lua_HUDPlayer_Weapon_Trigger_Energy_Get_X},
+    {"y", Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Y},
+    {"width", Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Width},
+    {"height", Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Height},
+    {"maximum", Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Max},
+    {"color", Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Full_Color},
+    {"empty_color", Lua_HUDPlayer_Weapon_Trigger_Energy_Get_Empty_Color},
+    {0, 0}
+};
+
+
 char Lua_HUDPlayer_Weapon_Trigger_Name[] = "player_weapon_trigger";
 
 
@@ -1104,11 +1318,37 @@ static int Lua_HUDPlayer_Weapon_Trigger_Get_Weapon_Drawn(lua_State *L)
 	return 1;
 }
 
+static int Lua_HUDPlayer_Weapon_Trigger_Get_Bullet(lua_State *L)
+{
+    int wep_idx = Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(L, 1);
+    int trig_idx = Lua_HUDPlayer_Weapon_Trigger::Index(L, 1);
+    struct weapon_interface_ammo_data *wia = &weapon_interface_definitions[wep_idx].ammo_data[trig_idx];
+    if (wia->type == _uses_bullets)
+        Lua_HUDPlayer_Weapon_Trigger_Bullet::Push(L, wep_idx, trig_idx);
+    else
+        lua_pushnil(L);
+    return 1;
+}
+
+static int Lua_HUDPlayer_Weapon_Trigger_Get_Energy(lua_State *L)
+{
+    int wep_idx = Lua_HUDPlayer_Weapon_Trigger::WeaponIndex(L, 1);
+    int trig_idx = Lua_HUDPlayer_Weapon_Trigger::Index(L, 1);
+    struct weapon_interface_ammo_data *wia = &weapon_interface_definitions[wep_idx].ammo_data[trig_idx];
+    if (wia->type == _uses_energy)
+        Lua_HUDPlayer_Weapon_Trigger_Energy::Push(L, wep_idx, trig_idx);
+    else
+        lua_pushnil(L);
+    return 1;
+}
+
 const luaL_Reg Lua_HUDPlayer_Weapon_Trigger_Get[] = {
 {"rounds", Lua_HUDPlayer_Weapon_Trigger_Get_Rounds},
 {"total_rounds", Lua_HUDPlayer_Weapon_Trigger_Get_Total_Rounds},
 {"ammo_type", Lua_HUDPlayer_Weapon_Trigger_Get_Ammo_Type},
 {"weapon_drawn", Lua_HUDPlayer_Weapon_Trigger_Get_Weapon_Drawn},
+{"bullet_display", Lua_HUDPlayer_Weapon_Trigger_Get_Bullet},
+{"energy_display", Lua_HUDPlayer_Weapon_Trigger_Get_Energy},
 {0, 0}
 };
 
@@ -2851,6 +3091,12 @@ int Lua_HUDObjects_register(lua_State *L)
 	
 	Lua_HUDPlayer_Sections::Register(L, 0, 0, Lua_HUDPlayer_Sections_Metatable);
 	
+	Lua_HUDPlayer_Weapon_Trigger_Bullet::Register(L, Lua_HUDPlayer_Weapon_Trigger_Bullet_Get);
+	Lua_HUDPlayer_Weapon_Trigger_Bullet::Valid = Lua_HUDPlayer_Weapon_Trigger_Bullet::ValidRange((int) _secondary_weapon + 1);
+    
+	Lua_HUDPlayer_Weapon_Trigger_Energy::Register(L, Lua_HUDPlayer_Weapon_Trigger_Energy_Get);
+	Lua_HUDPlayer_Weapon_Trigger_Energy::Valid = Lua_HUDPlayer_Weapon_Trigger_Energy::ValidRange((int) _secondary_weapon + 1);
+    
 	Lua_HUDPlayer_Weapon_Trigger::Register(L, Lua_HUDPlayer_Weapon_Trigger_Get);
 	Lua_HUDPlayer_Weapon_Trigger::Valid = Lua_HUDPlayer_Weapon_Trigger::ValidRange((int) _secondary_weapon + 1);
     
