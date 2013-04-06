@@ -288,6 +288,11 @@ end
       <variable name="line_height" access="read-only">
         <type>number</type>
       </variable>
+      <variable name="scale" version="SVN">
+        <description>scale factor, for resizing specific bitmap font sizes</description>
+        <note>it's usually better to create a new font at the correct size instead</note>
+        <type>number</type>
+      </variable>
       <function name="measure_text">
         <description>returns the width and height of a string when drawn in this font</description>
         <argument name="string"><type>string</type></argument>
