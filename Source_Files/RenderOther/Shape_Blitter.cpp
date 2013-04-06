@@ -308,6 +308,13 @@ void Shape_Blitter::SDL_Draw(SDL_Surface *dst_surface, const Image_Rect& dst)
             free(pixelsOut);
             pixelsOut = NULL;
         }
+        else if (m_coll == 0 && m_frame >= 12 && m_frame <= 29)
+        {
+            // fix transparency on motion sensor blips
+            SDL_SetColorKey(tmp, SDL_SRCCOLORKEY, 0);
+            m_surface = SDL_DisplayFormatAlpha(tmp);
+            SDL_FreeSurface(tmp);
+        }
         else
             m_surface = tmp;
     }
