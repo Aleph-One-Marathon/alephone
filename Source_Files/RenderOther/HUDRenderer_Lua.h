@@ -72,7 +72,8 @@ public:
 									float t);
 	void draw_text(FontSpecifier *font, const char *text,
 	               float x, float y,
-								 float r, float g, float b, float a);
+								 float r, float g, float b, float a,
+                   float scale);
 	void draw_image(Image_Blitter *image, float x, float y);
 	void draw_shape(Shape_Blitter *shape, float x, float y);
 	

@@ -777,15 +777,48 @@ const luaL_Reg Lua_Shapes_Get[] = {
 
 
 char Lua_Font_Name[] = "font"; // "font"
-typedef L_ObjectClass<Lua_Font_Name, FontSpecifier *> Lua_Font;
+class Lua_Font : public L_ObjectClass<Lua_Font_Name, FontSpecifier *>
+{
+public:
+	float m_font_scale;
+    	
+	static Lua_Font *Push(lua_State *L, FontSpecifier *fs);
+	static float Scale(lua_State *L, int index);
+    static void SetScale(lua_State *L, int index, float new_scale);
+};
+
+Lua_Font *Lua_Font::Push(lua_State *L, FontSpecifier *fs)
+{
+	Lua_Font *t = static_cast<Lua_Font *>(L_ObjectClass<Lua_Font_Name, FontSpecifier *>::Push(L, fs));
+	if (t)
+	{
+		t->m_font_scale = 1.0;
+	}
+	
+	return t;
+}
+
+float Lua_Font::Scale(lua_State *L, int index)
+{
+	Lua_Font *t = static_cast<Lua_Font *>(lua_touserdata(L, index));
+	if (!t) luaL_typerror(L, index, Lua_Font_Name);
+	return t->m_font_scale;
+}
+
+void Lua_Font::SetScale(lua_State *L, int index, float new_scale)
+{
+	Lua_Font *t = static_cast<Lua_Font *>(lua_touserdata(L, index));
+	if (!t) luaL_typerror(L, index, Lua_Font_Name);
+	t->m_font_scale = new_scale;
+}
 
 int Lua_Font_Measure_Text(lua_State *L)
 {
 	if (!lua_isstring(L, 2))
 		luaL_error(L, "measure_text: incorrect argument type");
 
-	lua_pushnumber(L, Lua_Font::Object(L, 1)->TextWidth(lua_tostring(L, 2)));
-	lua_pushnumber(L, Lua_Font::Object(L, 1)->LineSpacing);
+	lua_pushnumber(L, Lua_Font::Object(L, 1)->TextWidth(lua_tostring(L, 2)) * Lua_Font::Scale(L, 1));
+	lua_pushnumber(L, Lua_Font::Object(L, 1)->LineSpacing * Lua_Font::Scale(L, 1));
 	return 2;
 }
 
@@ -804,13 +837,14 @@ int Lua_Font_Draw_Text(lua_State *L)
 	
 	Lua_HUDInstance()->draw_text(Lua_Font::Object(L, 1),
 															 str,
-															 x, y, r, g, b, a);
+															 x, y, r, g, b, a,
+															 Lua_Font::Scale(L, 1));
 	return 0;
 }
 
 static int Lua_Font_Get_Size(lua_State *L)
 {
-	lua_pushnumber(L, Lua_Font::Object(L, 1)->Size);
+	lua_pushnumber(L, Lua_Font::Object(L, 1)->Size * Lua_Font::Scale(L, 1));
 	return 1;
 }
 
@@ -849,7 +883,13 @@ static int Lua_Font_Get_ID(lua_State *L)
 
 static int Lua_Font_Get_Line_Height(lua_State *L)
 {
-	lua_pushnumber(L, Lua_Font::Object(L, 1)->LineSpacing);
+	lua_pushnumber(L, Lua_Font::Object(L, 1)->LineSpacing * Lua_Font::Scale(L, 1));
+	return 1;
+}
+
+static int Lua_Font_Get_Scale(lua_State *L)
+{
+	lua_pushnumber(L, Lua_Font::Scale(L, 1));
 	return 1;
 }
 
@@ -859,8 +899,20 @@ const luaL_Reg Lua_Font_Get[] = {
 {"file", Lua_Font_Get_File},
 {"id", Lua_Font_Get_ID},
 {"line_height", Lua_Font_Get_Line_Height},
+{"scale", Lua_Font_Get_Scale},
 {"measure_text", L_TableFunction<Lua_Font_Measure_Text>},
 {"draw_text", L_TableFunction<Lua_Font_Draw_Text>},
+{0, 0}
+};
+
+static int Lua_Font_Set_Scale(lua_State *L)
+{
+    Lua_Font::SetScale(L, 1, lua_tonumber(L, 2));
+	return 0;
+}
+
+const luaL_Reg Lua_Font_Set[] = {
+{"scale", Lua_Font_Set_Scale},
 {0, 0}
 };
 
@@ -883,6 +935,7 @@ typedef L_Class<Lua_Fonts_Name> Lua_Fonts;
 int Lua_Fonts_New(lua_State *L)
 {
 	FontSpecifier f = {"Monaco", 12, styleNormal, 0, "mono"};
+    float font_scale = 1.0;
 	
 	lua_pushstring(L, "interface");
 	lua_gettable(L, 1);
@@ -3159,7 +3212,7 @@ int Lua_HUDObjects_register(lua_State *L)
 	Lua_HUDGame::Push(L, 0);
 	lua_setglobal(L, Lua_HUDGame_Name);
 
-	Lua_Font::Register(L, Lua_Font_Get, 0, Lua_Font_Metatable);
+	Lua_Font::Register(L, Lua_Font_Get, Lua_Font_Set, Lua_Font_Metatable);
 	
 	Lua_Fonts::Register(L, Lua_Fonts_Get);
 	Lua_Fonts::Push(L, 0);

@@ -29,6 +29,7 @@ HUD_RENDERER_LUA.CPP
 #include "lua_hud_script.h"
 #include "shell.h"
 #include "screen.h"
+#include "images.h"
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
@@ -406,7 +407,8 @@ void HUD_Lua_Class::frame_rect(float x, float y, float w, float h,
 
 void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 															float x, float y,
-															float r, float g, float b, float a)
+															float r, float g, float b, float a,
+															float scale)
 {
 	if (!m_drawing)
 		return;
@@ -420,7 +422,8 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 	{
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
-		glTranslatef(x, y + font->Height, 0);
+		glTranslatef(x, y + (font->Height * scale), 0);
+        glScalef(scale, scale, 1.0);
 		glColor4f(r, g, b, a);
 		font->OGL_Render(text);
 		glColor4f(1, 1, 1, 1);
@@ -435,13 +438,47 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 		rect.y = static_cast<Sint16>(y) + m_wr.y;
 		rect.w = font->TextWidth(text);
 		rect.h = font->LineSpacing;
-		SDL_BlitSurface(SDL_GetVideoSurface(), &rect, m_surface, &rect);
-		font->Info->draw_text(m_surface, text, strlen(text),
-												  static_cast<Sint16>(x) + m_wr.x, static_cast<Sint16>(y) + m_wr.y + font->Height,
-												  SDL_MapRGBA(m_surface->format,
-																		  static_cast<unsigned char>(r * 255), static_cast<unsigned char>(g * 255), static_cast<unsigned char>(b * 255), static_cast<unsigned char>(a * 255)),
-												  font->Style);
-	  SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
+        
+        if (scale < 0.99 || scale > 1.01)
+        {
+            SDL_Surface *s2 = SDL_CreateRGBSurface(SDL_SWSURFACE, rect.w, rect.h, m_surface->format->BitsPerPixel, m_surface->format->Rmask, m_surface->format->Gmask, m_surface->format->Bmask, m_surface->format->Amask);
+            SDL_SetAlpha(s2, SDL_SRCALPHA, 0);
+            
+            font->Info->draw_text(s2, text, strlen(text),
+                                  0, font->Height,
+                                  SDL_MapRGBA(m_surface->format,
+                                              static_cast<unsigned char>(r * 255),
+                                              static_cast<unsigned char>(g * 255),
+                                              static_cast<unsigned char>(b * 255),
+                                              static_cast<unsigned char>(a * 255)),
+                                  font->Style);
+            
+            SDL_Rect srcrect;
+            srcrect.x = 0;
+            srcrect.y = 0;
+            srcrect.w = ceilf(rect.w * scale);
+            srcrect.h = ceilf(rect.h * scale);
+            SDL_Surface *s3 = rescale_surface(s2, srcrect.w, srcrect.h);
+            SDL_FreeSurface(s2);
+            
+            rect.w = srcrect.w;
+            rect.h = srcrect.h;
+            SDL_BlitSurface(s3, &srcrect, SDL_GetVideoSurface(), &rect);
+            SDL_FreeSurface(s3);
+        }
+        else
+        {
+            SDL_BlitSurface(SDL_GetVideoSurface(), &rect, m_surface, &rect);
+            font->Info->draw_text(m_surface, text, strlen(text),
+                                  rect.x, rect.y + font->Height,
+                                  SDL_MapRGBA(m_surface->format,
+                                              static_cast<unsigned char>(r * 255),
+                                              static_cast<unsigned char>(g * 255),
+                                              static_cast<unsigned char>(b * 255),
+                                              static_cast<unsigned char>(a * 255)),
+                                  font->Style);
+            SDL_BlitSurface(m_surface, &rect, SDL_GetVideoSurface(), &rect);
+        }
 	}
 }
 
