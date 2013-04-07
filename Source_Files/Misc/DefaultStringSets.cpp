@@ -103,6 +103,7 @@ static const char* sStringSetNumber129[] = {
     "Images",
     "Movie",
     "Default",
+    "Marathon.appl",
 };
 
 // STR# Resource: "Top-Level Interface Items"

@@ -133,4 +133,6 @@ void find_all_checkpoints_references_by_terminals(byte *compiled_text,
 bool terminal_has_finished_text_type(short terminal_id, short finished_type);
 #endif
 
+void clear_compiled_terminal_cache();
+
 #endif

@@ -669,8 +669,10 @@ void shutdown_application(void)
         static bool already_shutting_down = false;
         if(already_shutting_down)
                 return;
-        
+
         already_shutting_down = true;
+        
+	close_external_resources();
         
 	restore_gamma();
 #if defined(HAVE_SDL_IMAGE) && (SDL_IMAGE_PATCHLEVEL >= 8)

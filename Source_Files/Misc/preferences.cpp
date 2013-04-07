@@ -1825,6 +1825,10 @@ static void environment_dialog(void *arg)
 	table->dual_add(sounds_w->label("Sounds"), d);
 	table->dual_add(sounds_w, d);
 
+	w_env_select* resources_w = new w_env_select(environment_preferences->resources_file, "AVAILABLE FILES", _typecode_unknown, &d);
+	table->dual_add(resources_w->label("External Resources"), d);
+	table->dual_add(resources_w, d);
+
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
 
@@ -1927,6 +1931,13 @@ static void environment_dialog(void *arg)
 		if (strcmp(path, environment_preferences->sounds_file)) {
 			strcpy(environment_preferences->sounds_file, path);
 			environment_preferences->sounds_mod_date = sounds_w->get_file_specifier().GetDate();
+			changed = true;
+		}
+		
+		path = resources_w->get_path();
+		if (strcmp(path, environment_preferences->resources_file) != 0) 
+		{
+			strcpy(environment_preferences->resources_file, path);
 			changed = true;
 		}
 		
@@ -2370,6 +2381,7 @@ void write_preferences(
 	WriteXML_Pathname(F,"  physics_file=\"",environment_preferences->physics_file,"\"\n");
 	WriteXML_Pathname(F,"  shapes_file=\"",environment_preferences->shapes_file,"\"\n");
 	WriteXML_Pathname(F,"  sounds_file=\"",environment_preferences->sounds_file,"\"\n");
+	WriteXML_Pathname(F,"  resources_file=\"",environment_preferences->resources_file,"\"\n");
 	WriteXML_Pathname(F,"  theme_dir=\"",environment_preferences->theme_dir,"\"\n");
 	fprintf(F,"  map_checksum=\"%u\"\n",environment_preferences->map_checksum);
 	fprintf(F,"  physics_checksum=\"%u\"\n",environment_preferences->physics_checksum);
@@ -2576,11 +2588,13 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	FileSpecifier DefaultShapesFile;
 	FileSpecifier DefaultSoundsFile;
 	FileSpecifier DefaultPhysicsFile;
+	FileSpecifier DefaultExternalResourcesFile;
     
 	get_default_map_spec(DefaultMapFile);
 	get_default_physics_spec(DefaultPhysicsFile);
 	get_default_shapes_spec(DefaultShapesFile);
 	get_default_sounds_spec(DefaultSoundsFile);
+	get_default_external_resources_spec(DefaultExternalResourcesFile);
 	                
 	preferences->map_checksum= read_wad_file_checksum(DefaultMapFile);
 	strncpy(preferences->map_file, DefaultMapFile.GetPath(), 256);
@@ -2597,6 +2611,9 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->sounds_mod_date = DefaultSoundsFile.GetDate();
 	strncpy(preferences->sounds_file, DefaultSoundsFile.GetPath(), 256);
 	preferences->sounds_file[255] = 0;
+
+	strncpy(preferences->resources_file, DefaultExternalResourcesFile.GetPath(), 256);
+	preferences->resources_file[255] = 0;
 
 	FileSpecifier DefaultThemeFile;
 	get_default_theme_spec(DefaultThemeFile);
@@ -2790,6 +2807,12 @@ void load_environment_from_preferences(
 		} else {
 			/* What should I do? */
 		}
+	}
+
+	File = prefs->resources_file;
+	if (File.Exists())
+	{
+		set_external_resources_file(File);
 	}
 }
 
@@ -3998,6 +4021,10 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	{
 		expand_symbolic_paths(environment_preferences->sounds_file, Value, 255);
 		return true;
+	}
+	else if (StringsEqual(Tag, "resources_file"))
+	{
+		expand_symbolic_paths(environment_preferences->resources_file, Value, 255);
 	}
 	else if (StringsEqual(Tag,"theme_dir"))
 	{

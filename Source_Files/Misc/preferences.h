@@ -245,6 +245,9 @@ struct environment_preferences_data
 	bool hide_extensions;
 
 	FilmProfileType film_profile;
+
+	// Marathon 1 resources from the application itself
+	char resources_file[256];
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

@@ -55,6 +55,7 @@ May 16, 2002 (Woody Zenfell):
 #include "XML_ElementParser.h"
 
 class FileSpecifier;
+class OpenedResourceFile;
 
 /* ---------- constants */
 
@@ -74,7 +75,8 @@ enum /* filenames in strFILENAMES */
 	filenameMUSIC,
 	filenameIMAGES,
 	filenameMOVIE,
-	filenameDEFAULT_THEME
+	filenameDEFAULT_THEME,
+	filenameEXTERNAL_RESOURCES,
 };
 
 #define strPATHS 138
@@ -424,6 +426,7 @@ bool configure_key_setup(short *keycodes);
 
 /* --------- from PREPROCESS_MAP_MAC.C */
 bool have_default_files(void);
+void get_default_external_resources_spec(FileSpecifier& File);
 void get_default_map_spec(FileSpecifier& File);
 void get_default_physics_spec(FileSpecifier& File);
 void get_default_sounds_spec(FileSpecifier& File);
@@ -432,6 +435,11 @@ bool get_default_theme_spec(FileSpecifier& File);
 // ZZZ addition: since Mac versions now search for any candidate files instead of picking
 // by name, new interface to search for all simultaneously instead of duplicating effort.
 void get_default_file_specs(FileSpecifier* outMapSpec, FileSpecifier* outShapesSpec, FileSpecifier* outSoundsSpec, FileSpecifier* outPhysicsSpec);
+
+// external resources: terminals for Marathon 1
+void set_external_resources_file(FileSpecifier&);
+void close_external_resources();
+extern OpenedResourceFile ExternalResources;
 
 // LP change: resets field of view to whatever the player had had when reviving
 void ResetFieldOfView();
