@@ -810,8 +810,9 @@ bool TextureManager::SetupTextureGeometry()
 	{
 	case OGL_Txtr_Wall:
 		// For tiling to be possible, the width and height must be powers of 2
-		TxtrWidth = BaseTxtrWidth;
-		TxtrHeight = BaseTxtrHeight;
+		// Match M1 engine, and truncate larger textures to 128px square
+		TxtrWidth = std::min(static_cast<int>(BaseTxtrWidth), 128);
+		TxtrHeight = std::min(static_cast<int>(BaseTxtrHeight), 128);
 		if (!npotTextures) 
 		{
 			if (TxtrWidth != NextPowerOfTwo(TxtrWidth)) return false;
@@ -1051,7 +1052,7 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 	if (HeightOffset >= 0)
 	{
 		OGLHeightOffset = HeightOffset;
-		OGLHeightFinish = HeightOffset + BaseTxtrHeight;
+		OGLHeightFinish = std::min(static_cast<int>(TxtrHeight), HeightOffset + BaseTxtrHeight);
 		OrigHeightDiff = -HeightOffset;
 	}
 	else
