@@ -179,7 +179,7 @@ short number_of_shading_tables, shading_table_fractional_bits, shading_table_siz
 // LP addition: opened-shapes-file object
 static OpenedFile ShapesFile;
 static OpenedResourceFile M1ShapesFile;
-static bool m1_shapes;
+bool m1_shapes;
 
 /* ---------- private prototypes */
 
@@ -799,15 +799,6 @@ static bool load_collection(short collection_index, bool strip)
 	std::auto_ptr<collection_definition> cd(new collection_definition);
 	SDL_RWseek(p, src_offset, RW_SEEK_SET);
 	load_collection_definition(cd.get(), p);
-	if (m1_shapes && cd->type == _interface_collection)
-	{
-		// don't know how to read M1 RLE shapes yet, so clear
-		// out and return true
-		cd->high_level_shapes.clear();
-		cd->low_level_shapes.clear();
-		cd->bitmaps.clear();
-		return true;
-	}
 	header->status &= ~markPATCHED;
 
 	// Convert CLUTS

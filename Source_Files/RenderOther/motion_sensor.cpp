@@ -257,6 +257,8 @@ void initialize_motion_sensor(
 		shapes are loaded (because it will do bitmap copying) */
 }
 
+extern bool m1_shapes;
+
 void reset_motion_sensor(
 	short player_index)
 {
@@ -266,14 +268,17 @@ void reset_motion_sensor(
 	motion_sensor_player_index= player_index;
 	ticks_since_last_update= ticks_since_last_rescan= 0;
 
-	get_shape_bitmap_and_shading_table(mount_shape, &mount, (void **) NULL, NONE);
-	if (!mount) return;
-	get_shape_bitmap_and_shading_table(virgin_mount_shapes, &virgin_mount, (void **) NULL, NONE);
-	if (!virgin_mount) return;
-	
-	assert(mount->width==virgin_mount->width);
-	assert(mount->height==virgin_mount->height);
-	bitmap_window_copy(virgin_mount, mount, 0, 0, mount->width, mount->height);
+	if (!m1_shapes)
+	{
+		get_shape_bitmap_and_shading_table(mount_shape, &mount, (void **) NULL, NONE);
+		if (!mount) return;
+		get_shape_bitmap_and_shading_table(virgin_mount_shapes, &virgin_mount, (void **) NULL, NONE);
+		if (!virgin_mount) return;
+		
+		assert(mount->width==virgin_mount->width);
+		assert(mount->height==virgin_mount->height);
+		bitmap_window_copy(virgin_mount, mount, 0, 0, mount->width, mount->height);
+	}
 
 	for (i= 0; i<MAXIMUM_MOTION_SENSOR_ENTITIES; ++i) MARK_SLOT_AS_FREE(entities+i);
 	
