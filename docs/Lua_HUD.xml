@@ -952,6 +952,19 @@ end
         <mnemonic name="credits button"/>
         <mnemonic name="quit button"/>
         <mnemonic name="center button"/>
+        <mnemonic name="unused 18"/>
+        <mnemonic name="unused 19"/>
+        <mnemonic name="terminal screen"/>
+        <mnemonic name="terminal header"/>
+        <mnemonic name="terminal footer"/>
+        <mnemonic name="terminal full text"/>
+        <mnemonic name="terminal left"/>
+        <mnemonic name="terminal right"/>
+        <mnemonic name="terminal logon graphic"/>
+        <mnemonic name="terminal logon title"/>
+        <mnemonic name="terminal logon location"/>
+        <mnemonic name="respawn indicator"/>
+        <mnemonic name="blinker"/>
       </mnemonics>
     </enum>
     <enum-accessor name="InterfaceRects" contains="interface_rect" nice-name="Interface Rectangles" version="SVN"/>

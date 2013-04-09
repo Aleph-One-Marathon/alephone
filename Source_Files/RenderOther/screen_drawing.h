@@ -47,19 +47,35 @@ enum {
 	_weapon_display_rect,
 	
 	/* interface rectangles */
-	_new_game_button_rect,
+	START_OF_MENU_INTERFACE_RECTS,
+	_new_game_button_rect = 7,
 	_load_game_button_rect,
 	_gather_button_rect,
 	_join_button_rect,
 	_prefs_button_rect,
 	_replay_last_button_rect,
 	_save_last_button_rect,
-	_replace_saved_button_rect,
+	_replay_saved_button_rect,
 	_credits_button_rect,
 	_quit_button_rect,
 	_center_button_rect,
 	_singleton_game_button_rect,
 	_about_alephone_rect,
+	END_OF_MENU_INTERFACE_RECTS,
+	
+	/* Marathon compatibility rectangles */
+	_terminal_screen_rect = 20,
+	_terminal_header_rect,
+	_terminal_footer_rect,
+	_terminal_full_text_rect,
+	_terminal_left_rect,
+	_terminal_right_rect,
+	_terminal_logon_graphic_rect,
+	_terminal_logon_title_rect,
+	_terminal_logon_location_rect,
+	_respawn_indicator_rect,
+	_blinker_rect,
+	
 	NUMBER_OF_INTERFACE_RECTANGLES
 };
 

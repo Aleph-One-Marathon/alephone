@@ -1012,5 +1012,16 @@ const lang_def Lua_InterfaceRect_Mnemonics[] = {
 {"center button", 17},
 {"unused 18", 18},
 {"unused 19", 19},
+{"terminal screen", 20},
+{"terminal header", 21},
+{"terminal footer", 22},
+{"terminal full text", 23},
+{"terminal left", 24},
+{"terminal right", 25},
+{"terminal logon graphic", 26},
+{"terminal logon title", 27},
+{"terminal logon location", 28},
+{"respawn indicator", 29},
+{"blinker", 30},
 {0, 0}
 };

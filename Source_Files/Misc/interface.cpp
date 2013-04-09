@@ -1037,7 +1037,7 @@ void resume_game(
 void draw_menu_button_for_command(
 	short index)
 {
-	short rectangle_index= index-1+_new_game_button_rect;
+	short rectangle_index= index-1+START_OF_MENU_INTERFACE_RECTS;
 
 	assert(get_game_state()==_display_main_menu);
 	
@@ -2610,7 +2610,7 @@ static void handle_interface_menu_screen_click(
 #endif
 
 	/* find it.. */
-	for(index= _new_game_button_rect; index<NUMBER_OF_INTERFACE_RECTANGLES; ++index)
+	for(index= START_OF_MENU_INTERFACE_RECTS; index<END_OF_MENU_INTERFACE_RECTS; ++index)
 	{
 		screen_rect= get_interface_rectangle(index);
 		if (point_in_rectangle(x - xoffset, y - yoffset, screen_rect))
@@ -2618,9 +2618,9 @@ static void handle_interface_menu_screen_click(
 	}
 	
 	/* we found one.. */
-	if(index!=NUMBER_OF_INTERFACE_RECTANGLES)
+	if(index!=END_OF_MENU_INTERFACE_RECTS)
 	{
-		if(enabled_item(index-_new_game_button_rect+1))
+		if(enabled_item(index-START_OF_MENU_INTERFACE_RECTS+1))
 		{
 			bool last_state= true;
 
@@ -2657,7 +2657,7 @@ static void handle_interface_menu_screen_click(
 			
 			if(last_state)
 			{
-				do_menu_item_command(mInterface, index-_new_game_button_rect+1, cheatkeys_down);
+				do_menu_item_command(mInterface, index-START_OF_MENU_INTERFACE_RECTS+1, cheatkeys_down);
 			}	
 		}
 	}
