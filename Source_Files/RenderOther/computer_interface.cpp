@@ -212,7 +212,8 @@ enum // flags to indicate text styles for paragraphs
 
 enum { /* terminal grouping flags */
 	_draw_object_on_right= 0x01,  // for drawing checkpoints, picts, movies.
-	_center_object= 0x02
+	_center_object= 0x02,
+	_group_is_marathon_1 = 0x100
 };
 
 struct terminal_groupings {
@@ -353,6 +354,7 @@ static bool calculate_line(char *base_text, short width, short start_index,
 static void handle_reading_terminal_keys(short player_index, int32 action_flags);
 static void calculate_bounds_for_object(Rect *frame, short flags, Rect *bounds, Rect *source);
 static void display_picture(short picture_id, Rect *frame, short flags);
+static void display_shape(short shape, Rect* frame);
 static void display_picture_with_text(struct player_terminal_data *terminal_data, 
 	Rect *bounds, terminal_text_t *terminal_text, short current_lien);
 static short count_total_lines(char *base_text, short width, short start_index, short end_index);
@@ -834,6 +836,8 @@ void abort_terminal_mode(
 	}
 }
 
+static uint16_t MARATHON_LOGON_SHAPE = 44;
+
 /* --------- local code */
 static void draw_logon_text(
 	Rect *bounds, 
@@ -849,8 +853,14 @@ static void draw_logon_text(
 	// LP change: just in case...
 	if (!current_group) return;
 	
-	/* Draw the login emblem.. */
-	display_picture(logon_shape_id, &picture_bounds,  _center_object);
+	if (current_group->flags & _group_is_marathon_1)
+	{
+		display_shape(MARATHON_LOGON_SHAPE, &picture_bounds);
+	}
+	else
+	{
+		display_picture(logon_shape_id, &picture_bounds,  _center_object);
+	}
 
 	/* Use the picture bounds to create the logon text crap . */	
 	picture_bounds.top= picture_bounds.bottom;
@@ -1209,6 +1219,32 @@ static void display_picture_with_text(
 	/* Display the text */
 	calculate_bounds_for_text_box(bounds, current_group->flags, &text_bounds);
 	draw_computer_text(&text_bounds, terminal_text, terminal_data->current_group, current_line);
+}
+
+static void display_shape(short shape, Rect* frame)
+{
+	SDL_Surface* s = get_shape_surface(shape);
+	if (s)
+	{
+		Rect bounds;
+		Rect screen_bounds;
+
+		bounds.left = bounds.top = 0;
+		bounds.right = s->w;
+		bounds.bottom = s->h;
+		
+		OffsetRect(&bounds, -bounds.left, -bounds.top);
+		calculate_bounds_for_object(frame, _center_object, &screen_bounds, &bounds);
+		
+		OffsetRect(&bounds, screen_bounds.left + (RECTANGLE_WIDTH(&screen_bounds)-RECTANGLE_WIDTH(&bounds))/2, screen_bounds.top + (RECTANGLE_HEIGHT(&screen_bounds)-RECTANGLE_HEIGHT(&bounds))/2);
+
+		SDL_Rect r = { bounds.left, bounds.top, bounds.right - bounds.left, bounds.bottom - bounds.top };
+		SDL_SetAlpha(s, 0, 255);
+		SDL_BlitSurface(s, NULL, draw_surface, &r);
+
+		SDL_FreeSurface(s);
+		*frame = bounds;
+	}
 }
 
 #ifdef SDL
@@ -2357,7 +2393,7 @@ static void pre_build_groups(
 						memmove(&base_text[destination_index], 
 							&base_text[start_index], data_length-start_index);
 						data_length -= (start_index-destination_index);
-						groups[grp_count].flags= 0;
+						groups[grp_count].flags= _group_is_marathon_1;
 						groups[grp_count].type= possible_group;
 						groups[grp_count].permutation= permutation;
 						groups[grp_count].start_index= destination_index;
