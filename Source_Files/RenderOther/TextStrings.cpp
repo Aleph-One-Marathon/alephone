@@ -241,8 +241,8 @@ class XML_StringParser: public XML_ElementParser
 	// make this check unnecessary
 	bool IndexPresent;
 	
-	// Was the string loaded? If not, then load a blank string at the end
-	bool StringLoaded;
+	// Build up the string; Expat may not return all characters at once
+	Str255 CurBuffer;
 
 public:
 	// Callbacks
@@ -262,7 +262,7 @@ public:
 bool XML_StringParser::Start() {
 
 	IndexPresent = false;
-	StringLoaded = false;
+	CurBuffer[0] = 0;
 	return true;
 }
 
@@ -287,11 +287,11 @@ bool XML_StringParser::HandleString(const char *String, int Length)
 	Str255 StringBuffer;
 	DeUTF8_Pas(String,Length,StringBuffer,255);
 	
-	// Load!
-	assert(StringSetParser.CurrStringSet);
-	StringSetParser.CurrStringSet->Add(Index,StringBuffer);
-	
-	StringLoaded = true;
+	int curlen = CurBuffer[0];
+	int newlen = StringBuffer[0];
+	assert(curlen + newlen <= 255);
+	memcpy(&CurBuffer[curlen + 1], &StringBuffer[1], newlen);
+	CurBuffer[0] = curlen + newlen;
 	return true;
 }
 
@@ -307,15 +307,8 @@ bool XML_StringParser::AttributesDone()
 	
 bool XML_StringParser::End()
 {
-	if (!StringLoaded)
-	{
-		// Load an empty string
-		unsigned char StringBuffer[1];
-		StringBuffer[0] = 0;
-		assert(StringSetParser.CurrStringSet);
-		StringSetParser.CurrStringSet->Add(Index,StringBuffer);
-	}
-	
+	assert(StringSetParser.CurrStringSet);
+	StringSetParser.CurrStringSet->Add(Index,CurBuffer);
 	return true;
 }
 
