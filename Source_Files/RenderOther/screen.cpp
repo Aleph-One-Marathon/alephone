@@ -1578,16 +1578,8 @@ void assert_world_color_table(struct color_table *interface_color_table, struct 
 
 void render_computer_interface(struct view_data *view)
 {
-	
-	struct view_terminal_data data;
-
-	data.left = data.top = 0;
-	data.right = 640;
-	data.bottom = 320;
-	data.vertical_offset = 0;
-
 	_set_port_to_term();
-	_render_computer_interface(&data);
+	_render_computer_interface();
 	_restore_port();
 }
 

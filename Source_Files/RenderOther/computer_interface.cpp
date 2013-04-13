@@ -657,8 +657,7 @@ bool player_in_terminal_mode(
 	return in_terminal_mode;
 }
 
-void _render_computer_interface(
-	struct view_terminal_data *data)
+void _render_computer_interface(void)
 {
 	struct player_terminal_data *terminal_data= get_player_terminal_data(current_player_index);
 	
