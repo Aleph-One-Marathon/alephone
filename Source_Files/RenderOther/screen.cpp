@@ -453,18 +453,21 @@ SDL_Rect Screen::term_rect()
 	if (hud() && !lua_hud())
 		available_height -= hud_rect().h;
 	
-	r.w = 640;
+	screen_rectangle *term_rect = get_interface_rectangle(_terminal_screen_rect);
+	r.w = RECTANGLE_WIDTH(term_rect);
+	r.h = RECTANGLE_HEIGHT(term_rect);
+	float aspect = r.w / static_cast<float>(r.h);
 	switch (screen_mode.term_scale_level)
 	{
 		case 1:
-			if (available_height >= 640 && ww >= 1280)
+			if (available_height >= (r.h * 2) && ww >= (r.w * 2))
 				r.w *= 2;
 			break;
 		case 2:
-			r.w = std::min(ww, std::max(640, 2 * available_height));
+			r.w = std::min(ww, std::max(static_cast<int>(r.w), static_cast<int>(aspect * available_height)));
 			break;
 	}
-	r.h = r.w / 2;
+	r.h = r.w / aspect;
 	r.x = wx + (ww - r.w) / 2;
 	r.y = wy + (available_height - r.h) / 2;
 
@@ -615,10 +618,11 @@ void enter_screen(void)
 	scr->lua_view_rect.w = scr->lua_map_rect.w = ww;
 	scr->lua_view_rect.h = scr->lua_map_rect.h = wh;
 	
-	scr->lua_term_rect.x = (w - 640) / 2;
-	scr->lua_term_rect.y = (h - 320) / 2;
-	scr->lua_term_rect.w = 640;
-	scr->lua_term_rect.h = 320;
+    screen_rectangle *term_rect = get_interface_rectangle(_terminal_screen_rect);
+	scr->lua_term_rect.x = (w - RECTANGLE_WIDTH(term_rect)) / 2;
+	scr->lua_term_rect.y = (h - RECTANGLE_HEIGHT(term_rect)) / 2;
+	scr->lua_term_rect.w = RECTANGLE_WIDTH(term_rect);
+	scr->lua_term_rect.h = RECTANGLE_HEIGHT(term_rect);
 
 	L_Call_HUDResize();
 }
@@ -823,7 +827,8 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 		Intro_Buffer_corrected = NULL;
 	}
 
-	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 320, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, pixel_format_32.Amask);
+    screen_rectangle *term_rect = get_interface_rectangle(_terminal_screen_rect);
+	Term_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, RECTANGLE_WIDTH(term_rect), RECTANGLE_HEIGHT(term_rect), 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, pixel_format_32.Amask);
 
 	Intro_Buffer = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
 	Intro_Buffer_corrected = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, pixel_format_32.Rmask, pixel_format_32.Gmask, pixel_format_32.Bmask, 0);
@@ -1257,7 +1262,7 @@ void render_screen(short ticks_elapsed)
 		// Update terminal
 		if (world_view->terminal_mode_active) {
 			if (Term_RenderRequest || Screen::instance()->lua_hud()) {
-				SDL_Rect src_rect = { 0, 0, 640, 320 };
+				SDL_Rect src_rect = { 0, 0, Term_Buffer->w, Term_Buffer->h };
 				DrawSurface(Term_Buffer, TermRect, src_rect);
 				Term_RenderRequest = false;
 			}
