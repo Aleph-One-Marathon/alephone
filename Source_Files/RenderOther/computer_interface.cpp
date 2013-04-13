@@ -316,7 +316,7 @@ extern uint16 GetInterfaceStyle(short font_index);
 static player_terminal_data *get_player_terminal_data(
 	short player_index);
 
-static void draw_logon_text(Rect *bounds, terminal_text_t *terminal_text,
+static void draw_logon_text(terminal_text_t *terminal_text,
 	short current_group_index, short logon_shape_id);
 static void draw_computer_text(Rect *bounds, 
 	terminal_text_t *terminal_text, short current_group_index, short current_line);
@@ -334,14 +334,12 @@ static char *get_text_base(terminal_text_t *data);
 // LP change: added a flag to indicate whether stuff after the other
 // terminal stuff is to be drawn; if not, then draw the stuff before the
 // other terminal stuff.
-static void draw_terminal_borders(struct view_terminal_data *data, 
-	struct player_terminal_data *terminal_data, Rect *terminal_frame,
+static void draw_terminal_borders(struct player_terminal_data *terminal_data,
 	bool after_other_terminal_stuff);
 static void next_terminal_state(short player_index);
 static void next_terminal_group(short player_index, terminal_text_t *terminal_text);
 static void get_date_string(char *date_string);
-static void present_checkpoint_text(Rect *frame,
-	terminal_text_t *terminal_text, short current_group_index,
+static void present_checkpoint_text(terminal_text_t *terminal_text, short current_group_index,
 	short current_line);
 static bool find_checkpoint_location(short checkpoint_index, world_point2d *location, 
 	short *polygon_index);
@@ -352,18 +350,19 @@ static void draw_line(char *base_text, short start_index, short end_index, Rect 
 static bool calculate_line(char *base_text, short width, short start_index, 
 	short text_end_index, short *end_index);
 static void handle_reading_terminal_keys(short player_index, int32 action_flags);
-static void calculate_bounds_for_object(Rect *frame, short flags, Rect *bounds, Rect *source);
+static void calculate_bounds_for_object(short flags, Rect *bounds, Rect *source);
 static void display_picture(short picture_id, Rect *frame, short flags);
 static void display_shape(short shape, Rect* frame);
 static void display_picture_with_text(struct player_terminal_data *terminal_data, 
 	Rect *bounds, terminal_text_t *terminal_text, short current_lien);
 static short count_total_lines(char *base_text, short width, short start_index, short end_index);
-static void calculate_bounds_for_text_box(Rect *frame, short flags, Rect *bounds);
+static void calculate_bounds_for_text_box(short flags, Rect *bounds);
 static void goto_terminal_group(short player_index, terminal_text_t *terminal_text, 
 	short new_group_index);
 static bool previous_terminal_group(short player_index, terminal_text_t *terminal_text);
 static void fill_terminal_with_static(Rect *bounds);
 static short calculate_lines_per_page(void);
+static Rect get_term_rectangle(short index);
 
 //#ifdef PREPROCESSING_CODE
 struct terminal_text_t *preprocess_text(char *text, short length);
@@ -678,12 +677,6 @@ void _render_computer_interface(
 		// LP addition: quit if none
 		if (terminal_text == NULL) return;
 		
-		// LP addition:
-		// Create overall frame for use in the checkpoint display;
-		// this frame will be the default clipping frame for the terminal-display window,
-		// in case something goes wrong.
-		set_drawing_clip_rectangle(data->top, data->left, data->bottom, data->right);
-		
 		switch(terminal_data->state)
 		{
 			case _reading_terminal:
@@ -694,12 +687,12 @@ void _render_computer_interface(
 				
 				/* Draw the borders! */
 				// LP change: draw these after, so as to avoid overdraw bug
-				draw_terminal_borders(data, terminal_data, &bounds, false);
+				draw_terminal_borders(terminal_data, false);
 				switch(current_group->type)
 				{
 					case _logon_group:
 					case _logoff_group:
-						draw_logon_text(&bounds, terminal_text, terminal_data->current_group, 
+						draw_logon_text(terminal_text, terminal_data->current_group,
 							current_group->permutation);
 						break;
 						
@@ -715,14 +708,14 @@ void _render_computer_interface(
 					case _success_information_group:
 					case _failure_information_group:
 						/* Draw as normal... */
-						InsetRect(&bounds, 72-BORDER_INSET, 0); /* 1 inch in from each side */
+                        bounds= get_term_rectangle(_terminal_full_text_rect);
 						draw_computer_text(&bounds, terminal_text, terminal_data->current_group, 
 							terminal_data->current_line);
 						break;
 						
 					case _checkpoint_group: // permutation is the goal to show
 						/* note that checkpoints can only be equal to one screenful.. */
-						present_checkpoint_text(&bounds, terminal_text, terminal_data->current_group,
+						present_checkpoint_text(terminal_text, terminal_data->current_group,
 							terminal_data->current_line);
 						break;
 						
@@ -761,7 +754,7 @@ void _render_computer_interface(
 						break;
 				}
 				// Moved down here, so they'd overdraw the other stuff
-				draw_terminal_borders(data, terminal_data, &bounds, true);
+				draw_terminal_borders(terminal_data, true);
 				break;
 				
 			default:
@@ -774,9 +767,6 @@ void _render_computer_interface(
 		Rect portRect;
 		GetPortBounds(GetWindowPort(screen_window), &portRect);
 		ClipRect(&portRect);
-#else
-		// Disable clipping
-		set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 #endif
 		
 		RequestDrawingTerm();
@@ -840,12 +830,11 @@ static uint16_t MARATHON_LOGON_SHAPE = 44;
 
 /* --------- local code */
 static void draw_logon_text(
-	Rect *bounds, 
 	terminal_text_t *terminal_text,
 	short current_group_index,
 	short logon_shape_id)
 {
-	Rect picture_bounds= *bounds;
+	Rect picture_bounds= get_term_rectangle(_terminal_logon_graphic_rect);
 	char *base_text= get_text_base(terminal_text);
 	short width;
 	struct terminal_groupings *current_group= get_indexed_grouping(terminal_text, 
@@ -856,17 +845,25 @@ static void draw_logon_text(
 	if (current_group->flags & _group_is_marathon_1)
 	{
 		display_shape(MARATHON_LOGON_SHAPE, &picture_bounds);
+        
+        // draw static title below logo
+        picture_bounds= get_term_rectangle(_terminal_logon_title_rect);
+        getcstr(temporary, strCOMPUTER_LABELS, _marathon_name);
+		_draw_screen_text(temporary, (screen_rectangle *) &picture_bounds, _center_vertical | _center_horizontal, _computer_interface_title_font, _computer_interface_text_color);
+
+        picture_bounds= get_term_rectangle(_terminal_logon_location_rect);       
 	}
 	else
 	{
+        Rect bounds= picture_bounds;
 		display_picture(logon_shape_id, &picture_bounds,  _center_object);
-	}
 
-	/* Use the picture bounds to create the logon text crap . */	
-	picture_bounds.top= picture_bounds.bottom;
-	picture_bounds.bottom= bounds->bottom;
-	picture_bounds.left= bounds->left;
-	picture_bounds.right= bounds->right;
+        /* Use the picture bounds to create the logon text crap . */	
+        picture_bounds.top= picture_bounds.bottom;
+        picture_bounds.bottom= bounds.bottom;
+        picture_bounds.left= bounds.left;
+        picture_bounds.right= bounds.right;
+    }
 
 	/* This is always just a line, so we can do this here.. */
 #ifdef mac
@@ -1182,7 +1179,6 @@ static void teleport_to_polygon(
 }
 
 static void calculate_bounds_for_text_box(
-	Rect *frame,
 	short flags,
 	Rect *bounds)
 {
@@ -1192,11 +1188,11 @@ static void calculate_bounds_for_text_box(
 	} 
 	else if(flags & _draw_object_on_right)
 	{
-		calculate_bounds_for_object(frame, 0, bounds, NULL);
+		calculate_bounds_for_object(0, bounds, NULL);
 	} 
 	else 
 	{
-		calculate_bounds_for_object(frame, _draw_object_on_right, bounds, NULL);
+		calculate_bounds_for_object(_draw_object_on_right, bounds, NULL);
 	}
 }
 
@@ -1213,11 +1209,11 @@ static void display_picture_with_text(
 	Rect picture_bounds;
 
 	assert(current_group->type==_pict_group);
-	picture_bounds= *bounds;
+    calculate_bounds_for_object(current_group->flags, &picture_bounds, NULL);
 	display_picture(current_group->permutation, &picture_bounds, current_group->flags);
 
 	/* Display the text */
-	calculate_bounds_for_text_box(bounds, current_group->flags, &text_bounds);
+	calculate_bounds_for_text_box(current_group->flags, &text_bounds);
 	draw_computer_text(&text_bounds, terminal_text, terminal_data->current_group, current_line);
 }
 
@@ -1234,7 +1230,7 @@ static void display_shape(short shape, Rect* frame)
 		bounds.bottom = s->h;
 		
 		OffsetRect(&bounds, -bounds.left, -bounds.top);
-		calculate_bounds_for_object(frame, _center_object, &screen_bounds, &bounds);
+		calculate_bounds_for_object(_center_object, &screen_bounds, &bounds);
 		
 		OffsetRect(&bounds, screen_bounds.left + (RECTANGLE_WIDTH(&screen_bounds)-RECTANGLE_WIDTH(&bounds))/2, screen_bounds.top + (RECTANGLE_HEIGHT(&screen_bounds)-RECTANGLE_HEIGHT(&bounds))/2);
 
@@ -1292,7 +1288,7 @@ static void display_picture(
 		}
 #endif
 		OffsetRect(&bounds, -bounds.left, -bounds.top);
-		calculate_bounds_for_object(frame, flags, &screen_bounds, &bounds);
+		calculate_bounds_for_object(flags, &screen_bounds, &bounds);
 
 		if(RECTANGLE_WIDTH(&bounds)<=RECTANGLE_WIDTH(&screen_bounds) && 
 			RECTANGLE_HEIGHT(&bounds)<=RECTANGLE_HEIGHT(&screen_bounds))
@@ -1348,7 +1344,7 @@ static void display_picture(
 		Rect bounds;
 		char format_string[128];
 
-		calculate_bounds_for_object(frame, flags, &bounds, NULL);
+		calculate_bounds_for_object(flags, &bounds, NULL);
 	
 #if defined(mac)
 		EraseRect(&bounds);
@@ -1517,9 +1513,7 @@ static void encode_text(
 // terminal stuff is to be drawn; if not, then draw the stuff before the
 // other terminal stuff.
 static void draw_terminal_borders(
-	struct view_terminal_data *data,
 	struct player_terminal_data *terminal_data,
-	Rect *terminal_frame,
 	bool after_other_terminal_stuff)
 {
 	Rect frame, border;
@@ -1555,11 +1549,8 @@ static void draw_terminal_borders(
 	}
 
 	/* First things first: draw the border.. */
-	/* Get the destination frame.. */	
-	frame.top= data->top;
-	frame.bottom= data->bottom;
-	frame.left= data->left;
-	frame.right= data->right;
+	/* Get the destination frame.. */
+    frame= get_term_rectangle(_terminal_screen_rect);
 		
 	if (!after_other_terminal_stuff)
 	{
@@ -1567,13 +1558,8 @@ static void draw_terminal_borders(
 		_fill_screen_rectangle((screen_rectangle *) &frame, _black_color);
 	} else {
 
-		/* Now letterbox it if necessary */
-		frame.top+= data->vertical_offset;
-		frame.bottom-= data->vertical_offset;
-	
 		/* Draw the top rectangle */
-		border= frame;
-		border.bottom= border.top+BORDER_HEIGHT;
+		border= get_term_rectangle(_terminal_header_rect);
 		_fill_screen_rectangle((screen_rectangle *) &border, _computer_border_background_text_color);
 
 		/* Draw the top login header text... */
@@ -1585,8 +1571,7 @@ static void draw_terminal_borders(
 			_computer_interface_font, _computer_border_text_color);
 	
 		/* Draw the the bottom rectangle & text */
-		border= frame;
-		border.top= border.bottom-BORDER_HEIGHT;
+		border= get_term_rectangle(_terminal_footer_rect);
 		_fill_screen_rectangle((screen_rectangle *) &border, _computer_border_background_text_color);
 		border.left += LABEL_INSET; border.right -= LABEL_INSET;
 		getcstr(temporary, strCOMPUTER_LABELS, bottom_left_message);
@@ -1598,10 +1583,6 @@ static void draw_terminal_borders(
 	
 		// LP change: done with stuff for after the other rendering
 	}
-	
-	/* The screen rectangle minus the border.. */
-	*terminal_frame= frame;
-	InsetRect(terminal_frame, BORDER_INSET, BORDER_HEIGHT+BORDER_INSET);
 }
 
 static void next_terminal_state(
@@ -1826,12 +1807,10 @@ static void goto_terminal_group(
 				terminal_data->maximum_line= current_group->maximum_line_count;
 			} else {
 				/* Calculate this for ourselves. */
-				Rect text_bounds, bounds;
+				Rect text_bounds;
 	
 				/* The only thing we care about is the width. */
-				SetRect(&bounds, 0, 0, 640, 480);
-				InsetRect(&bounds, BORDER_INSET, BORDER_HEIGHT+BORDER_INSET);
-				calculate_bounds_for_text_box(&bounds, current_group->flags, &text_bounds);
+				calculate_bounds_for_text_box(current_group->flags, &text_bounds);
 				terminal_data->maximum_line= count_total_lines(get_text_base(terminal_text),
 					RECTANGLE_WIDTH(&text_bounds), current_group->start_index, 
 					current_group->start_index+current_group->length);
@@ -1850,11 +1829,9 @@ static void goto_terminal_group(
 				terminal_data->maximum_line= current_group->maximum_line_count;
 			} else {
 				/* Calculate this for ourselves. */
-				short width= 640; // еее sync (Must guarantee 100 high res!)
-	
-				width-= 2*(72-BORDER_INSET); /* 1 inch in from each side */				
-				terminal_data->maximum_line= count_total_lines(get_text_base(terminal_text), 
-					width, current_group->start_index, 
+                Rect bounds= get_term_rectangle(_terminal_full_text_rect);
+				terminal_data->maximum_line= count_total_lines(get_text_base(terminal_text),
+					RECTANGLE_WIDTH(&bounds), current_group->start_index,
 					current_group->start_index+current_group->length);
 			}
 			break;
@@ -1925,7 +1902,6 @@ static void get_date_string(
 }
 
 static void present_checkpoint_text(
-	Rect *frame,
 	terminal_text_t *terminal_text,
 	short current_group_index,
 	short current_line)
@@ -1939,8 +1915,7 @@ static void present_checkpoint_text(
 	if (!current_group) return;
 
 	// draw the overhead map.
-	bounds= *frame;
-	calculate_bounds_for_object(frame, current_group->flags, &bounds, NULL);
+	calculate_bounds_for_object(current_group->flags, &bounds, NULL);
 	overhead_data.scale =  1;
 	
 	if(find_checkpoint_location(current_group->permutation, &overhead_data.origin, 
@@ -1956,6 +1931,8 @@ static void present_checkpoint_text(
 #ifdef mac
 		// LP change: set the clip window to that for the overhead data
 		ClipRect(&bounds);
+#else
+        set_drawing_clip_rectangle(bounds.top, bounds.left, bounds.bottom, bounds.right);
 #endif
 		_render_overhead_map(&overhead_data);
 #ifdef mac
@@ -1963,6 +1940,8 @@ static void present_checkpoint_text(
 		Rect portRect;
 		GetPortBounds(GetWindowPort(screen_window), &portRect);
 		ClipRect(&portRect);
+#else
+        set_drawing_clip_rectangle(SHRT_MIN, SHRT_MIN, SHRT_MAX, SHRT_MAX);
 #endif
 	} else {
 		char format_string[128];
@@ -1997,7 +1976,7 @@ static void present_checkpoint_text(
 	}
 
 	// draw the text
-	calculate_bounds_for_text_box(frame, current_group->flags, &bounds);
+	calculate_bounds_for_text_box(current_group->flags, &bounds);
 	draw_computer_text(&bounds, terminal_text, current_group_index, current_line);
 }
 
@@ -2224,31 +2203,29 @@ static void handle_reading_terminal_keys(
 }
 	
 static void calculate_bounds_for_object(
-	Rect *frame,
 	short flags,
 	Rect *bounds,
 	Rect *source)
 {
-	*bounds= *frame;
-	
 	if(source && flags & _center_object)
 	{
-		if(RECTANGLE_WIDTH(source)>RECTANGLE_WIDTH(frame) 
-			|| RECTANGLE_HEIGHT(source)>RECTANGLE_HEIGHT(frame))
+        *bounds = get_term_rectangle(_terminal_logon_graphic_rect);
+		if(RECTANGLE_WIDTH(source)>RECTANGLE_WIDTH(bounds)
+			|| RECTANGLE_HEIGHT(source)>RECTANGLE_HEIGHT(bounds))
 		{
 			/* Just return the normal frame.  Aspect ratio will take care of us.. */
 		} else {
-			InsetRect(bounds, (RECTANGLE_WIDTH(frame)-RECTANGLE_WIDTH(source))/2,
-				(RECTANGLE_HEIGHT(frame)-RECTANGLE_HEIGHT(source))/2);
+			InsetRect(bounds, (RECTANGLE_WIDTH(bounds)-RECTANGLE_WIDTH(source))/2,
+				(RECTANGLE_HEIGHT(bounds)-RECTANGLE_HEIGHT(source))/2);
 		}
 	} 
 	else if(flags & _draw_object_on_right)
 	{
-		bounds->left= bounds->right - RECTANGLE_WIDTH(bounds)/2 + BORDER_INSET/2;
+        *bounds = get_term_rectangle(_terminal_right_rect);
 	} 
 	else 
 	{
-		bounds->right= bounds->left + RECTANGLE_WIDTH(bounds)/2 - BORDER_INSET/2;
+		*bounds = get_term_rectangle(_terminal_left_rect);
 	}
 }
 
@@ -2675,34 +2652,22 @@ static void calculate_maximum_lines_for_groups(
 	
 			case _checkpoint_group:
 			case _pict_group:
-				{
-					Rect text_bounds, bounds;
-		
-					/* The only thing we care about is the width. */
-					SetRect(&bounds, 0, 0, 640, 480);
-					InsetRect(&bounds, BORDER_INSET, BORDER_HEIGHT+BORDER_INSET);
-					calculate_bounds_for_text_box(&bounds, groups[index].flags, &text_bounds);
-					groups[index].maximum_line_count= count_total_lines(text_base,
-						RECTANGLE_WIDTH(&text_bounds), groups[index].start_index, 
-						groups[index].start_index+groups[index].length);
-				}
-				break;
-				
 			case _information_group:
 		        case _briefing_group:
 			case _unfinished_information_group:
 			case _success_information_group:
 			case _failure_information_group:
 				{
-					short width= 640; // еее sync (Must guarantee 100 high res!)
-	
-					width-= 2*(72-BORDER_INSET); /* 1 inch in from each side */				
-					groups[index].maximum_line_count= count_total_lines(text_base, 
-						width, groups[index].start_index, 
+					Rect text_bounds;
+		
+					/* The only thing we care about is the width. */
+					calculate_bounds_for_text_box(groups[index].flags, &text_bounds);
+					groups[index].maximum_line_count= count_total_lines(text_base,
+						RECTANGLE_WIDTH(&text_bounds), groups[index].start_index, 
 						groups[index].start_index+groups[index].length);
 				}
 				break;
-				
+								
 			default:
 				break;
 		}
@@ -2742,11 +2707,31 @@ static short calculate_lines_per_page(
 	Rect bounds;
 	short lines_per_page;
 
-	calculate_destination_frame(_100_percent, true, &bounds);
-	lines_per_page= (RECTANGLE_HEIGHT(&bounds)-2*BORDER_HEIGHT)/_get_font_line_height(_computer_interface_font);
-	lines_per_page-= FUDGE_FACTOR;
+    if (0)  // pre-1.1 rendering
+    {
+        calculate_destination_frame(_100_percent, true, &bounds);
+        lines_per_page= (RECTANGLE_HEIGHT(&bounds)-2*BORDER_HEIGHT)/_get_font_line_height(_computer_interface_font);
+        lines_per_page-= FUDGE_FACTOR;
+    }
+    else
+    {
+        bounds= get_term_rectangle(_terminal_full_text_rect);
+        lines_per_page= RECTANGLE_HEIGHT(&bounds)/_get_font_line_height(_computer_interface_font);
+    }
 
 	return lines_per_page;
+}
+
+static Rect get_term_rectangle(short index)
+{
+    Rect bounds;
+    screen_rectangle *term_rect = get_interface_rectangle(_terminal_screen_rect);
+    screen_rectangle *target_rect = get_interface_rectangle(index);
+    bounds.left = target_rect->left - term_rect->left;
+    bounds.top = target_rect->top - term_rect->top;
+    bounds.right = target_rect->right - term_rect->left;
+    bounds.bottom = target_rect->bottom - term_rect->top;
+    return bounds;
 }
 
 
