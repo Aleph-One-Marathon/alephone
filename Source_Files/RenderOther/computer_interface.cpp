@@ -122,6 +122,17 @@ Jan 25, 2002 (Br'fin (Jeremy Parsons)):
 // MH: Lua scripting
 #include "lua_script.h"
 
+#include "Logging.h"
+
+#include <boost/algorithm/string/predicate.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+
+#include <sstream>
+
+namespace algo = boost::algorithm;
+namespace io = boost::iostreams;
+
 #define LABEL_INSET 3
 #define LOG_DURATION_BEFORE_TIMEOUT (2*TICKS_PER_SECOND)
 #define BORDER_HEIGHT 18
@@ -192,12 +203,6 @@ enum {
 	_camera_group, //  permutation is the object index
 	_static_group, // permutation is the duration of static.
 	_tag_group, // permutation is the tag to activate
-
-	// Marathon compatibility
-	_briefing_group, // permutation is level to go to
-	_unfinished_information_group,
-	_success_information_group,
-	_failure_information_group,
 
 	NUMBER_OF_GROUP_TYPES
 };
@@ -364,18 +369,9 @@ static void fill_terminal_with_static(Rect *bounds);
 static short calculate_lines_per_page(void);
 static Rect get_term_rectangle(short index);
 
-//#ifdef PREPROCESSING_CODE
-struct terminal_text_t *preprocess_text(char *text, short length);
-static void pre_build_groups(struct terminal_groupings *groups,
-	short *group_count, struct text_face_data *text_faces, short *text_face_count, 
-	char *base_text, short *base_length);
-static short matches_group(char *base_text, short length, short index, short possible_group, 
-	short *permutation);
-//#else
 static terminal_text_t *get_indexed_terminal_data(short id);
 static void encode_text(terminal_text_t *terminal_text);
 static void decode_text(terminal_text_t *terminal_text);
-//#endif
 
 #include "sdl_fonts.h"
 
@@ -702,10 +698,6 @@ void _render_computer_interface(void)
 						break;
 						
 					case _information_group:
-					case _briefing_group:
-					case _unfinished_information_group:
-					case _success_information_group:
-					case _failure_information_group:
 						/* Draw as normal... */
                         bounds= get_term_rectangle(_terminal_full_text_rect);
 						draw_computer_text(&bounds, terminal_text, terminal_data->current_group, 
@@ -1426,7 +1418,6 @@ static void fill_terminal_with_static(
 	}
 }
 
-#ifndef PREPROCESSING_CODE
 // LP addition: will return NULL if no terminal data was found for this terminal number
 
 static boost::scoped_ptr<terminal_text_t> resource_terminal;
@@ -1437,6 +1428,8 @@ void clear_compiled_terminal_cache()
 	resource_terminal.reset();
 	resource_terminal_id = NONE;
 }
+
+static terminal_text_t* compile_marathon_terminal(char*, short);
 
 static terminal_text_t *get_indexed_terminal_data(
 	short id)
@@ -1453,7 +1446,7 @@ static terminal_text_t *get_indexed_terminal_data(
 			LoadedResource rsrc;
 			if (ExternalResources.Get('t', 'e', 'r', 'm', id, rsrc))
 			{
-				resource_terminal.reset(preprocess_text(reinterpret_cast<char *>(rsrc.GetPointer()), rsrc.GetLength()));
+				resource_terminal.reset(compile_marathon_terminal(reinterpret_cast<char*>(rsrc.GetPointer()), rsrc.GetLength()));
 				
 				resource_terminal_id = id;
 				return resource_terminal.get();
@@ -1469,15 +1462,9 @@ static terminal_text_t *get_indexed_terminal_data(
 	decode_text(t);
 	return t;
 }
-#endif
 
-#ifdef PREPROCESSING_CODE
-void decode_text(
-	terminal_text_t *terminal_text)
-#else
 static void decode_text(
 	terminal_text_t *terminal_text)
-#endif
 {
 	if(terminal_text->flags & _text_is_encoded_flag)
 	{
@@ -1486,13 +1473,8 @@ static void decode_text(
 	}
 }
 
-#ifdef PREPROCESSING_CODE
-void encode_text(
-	terminal_text_t *terminal_text)
-#else
 static void encode_text(
 	terminal_text_t *terminal_text)
-#endif
 {
 	int length = terminal_text->text_length;
 	uint8 *p = terminal_text->text;
@@ -1771,17 +1753,13 @@ static void goto_terminal_group(
 	switch(current_group->type)
 	{
 		case _logon_group:
-#ifndef PREPROCESSING_CODE
 			play_object_sound(player->object_index, Sound_TerminalLogon());
-#endif
 			terminal_data->phase= LOG_DURATION_BEFORE_TIMEOUT;
 			terminal_data->maximum_line= current_group->maximum_line_count;
 			break;
 			
 		case _logoff_group:
-#ifndef PREPROCESSING_CODE
 			play_object_sound(player->object_index, Sound_TerminalLogoff());
-#endif
 			terminal_data->phase= LOG_DURATION_BEFORE_TIMEOUT;
 			terminal_data->maximum_line= current_group->maximum_line_count;
 			break;
@@ -1817,10 +1795,6 @@ static void goto_terminal_group(
 			break;
 			
 		case _information_group:
-		case _briefing_group:
-		case _unfinished_information_group:
-		case _success_information_group:
-		case _failure_information_group:
 			terminal_data->phase= NONE;
 			if(dynamic_world->player_count>1)
 			{
@@ -1985,7 +1959,6 @@ static bool find_checkpoint_location(
 	short *polygon_index)
 {
 	bool success= false;
-#ifndef PREPROCESSING_CODE
 	short ii;
 	struct map_object *saved_object;
 	short match_count;
@@ -2010,10 +1983,7 @@ static bool find_checkpoint_location(
 		*polygon_index= world_point_to_polygon_index(location);
 		success = (*polygon_index != NONE);
 	}
-#else
-	(void)(checkpoint_index, location, polygon_index);
-#endif
-	
+
 	return success;		
 }
 
@@ -2054,10 +2024,6 @@ static void handle_reading_terminal_keys(
 		case _pict_group:
 		case _camera_group:
 		case _static_group:
-		case _briefing_group:
-		case _unfinished_information_group:
-		case _success_information_group:
-		case _failure_information_group:
 			if(action_flags & _terminal_up_arrow) 
 			{
 				line_delta= -1;
@@ -2070,36 +2036,23 @@ static void handle_reading_terminal_keys(
 			
 			if(action_flags & _terminal_page_down)
 			{
-#ifndef PREPROCESSING_CODE
 				play_object_sound(player->object_index, Sound_TerminalPage());
-#endif
 				line_delta= terminal_text->lines_per_page;
 			} 
 			
 			if(action_flags & _terminal_page_up)
 			{
-#ifndef PREPROCESSING_CODE
 				play_object_sound(player->object_index, Sound_TerminalPage());
-#endif
 				line_delta= -terminal_text->lines_per_page;
 			}
 
 			/* this one should change state, if necessary */
 			if(action_flags & _terminal_next_state)
 			{
-				if (current_group->type == _briefing_group && !(action_flags & _any_abort_key_mask))
-				{
-					teleport_to_level(current_group->permutation);
-					initialize_player_terminal_info(player_index);
-					aborted = true;
-				} else {
-#ifndef PREPROCESSING_CODE
 				play_object_sound(player->object_index, Sound_TerminalPage());
-#endif
 				/* Force a state change. */
 				line_delta= terminal_text->lines_per_page;
 				change_state= true;
-				}
 			}
 			
 			if(action_flags & _any_abort_key_mask)
@@ -2120,21 +2073,13 @@ static void handle_reading_terminal_keys(
 			break;
 		
 		case _interlevel_teleport_group: // permutation is level to go to
-#ifndef PREPROCESSING_CODE
 			teleport_to_level(current_group->permutation);
-#else	
-			// dprintf("Terminal Editor: Teleporting to level: %d", current_group->permutation);
-#endif
 			initialize_player_terminal_info(player_index);
 			aborted= true;
 			break;
 
 		case _intralevel_teleport_group: // permutation is polygon to go to.
-#ifndef PREPROCESSING_CODE
 			teleport_to_polygon(player_index, current_group->permutation);
-#else	
-			// dprintf("Terminal Editor: Teleporting to polygon: %d", current_group->permutation);
-#endif
 			initialize_player_terminal_info(player_index);
 			aborted= true;
 			break;
@@ -2143,9 +2088,7 @@ static void handle_reading_terminal_keys(
 			/* Play the sound immediately, and then go to the next level.. */
 			{
 				struct player_data *player= get_player_data(player_index);
-#ifndef PREPROCESSING_CODE
 				play_object_sound(player->object_index, current_group->permutation);
-#endif
 				next_terminal_group(player_index, terminal_text);
 				aborted= true;
 			}
@@ -2228,395 +2171,398 @@ static void calculate_bounds_for_object(
 	}
 }
 
-//#ifdef PREPROCESSING_CODE
-/*------------ */
-/* -----> Preprocessing code... */
-struct group_header_data {
-	const char *name;
-	bool has_permutation;
-};
-
-static struct group_header_data group_data[]= {
-	{"LOGON", false }, // permutation is the logo id to draw...
-	{"", false },
- 	{"", false },
-	{"", false },
-	{"INFORMATION", false},
-	{"END", false },
-	{"INTERLEVEL TELEPORT", true },
-	{"INTRALEVEL TELEPORT", true },
-	{"CHECKPOINT", true },
-	{"SOUND", true },
-	{"MOVIE", true },
-	{"TRACK", true },
-	{"PICT", true},
-	{"LOGOFF", true }, // permutation is the logo id to draw...
-	{"CAMERA", true}, // permutation is the object index
-	{"STATIC", true}, // permutation is the duration of static.
-	{"TAG", true}, // permutation is the tag to activate
-	{"BRIEFING", true},
-	{"UNFINISHED", false},
-	{"SUCCESS", false},
-	{"FAILURE", false}
-};
-
 #define MAXIMUM_GROUPS_PER_TERMINAL 15
 
 static void calculate_maximum_lines_for_groups(struct terminal_groupings *groups, 
 	short group_count, char *text_base);
 
-/* Note that this is NOT a marathon function, but an editor function... */
-terminal_text_t *preprocess_text(
-	char *text, 
-	short length)
+class MarathonTerminalCompiler
 {
-	short group_count, text_face_count;
-	struct terminal_groupings groups[MAXIMUM_GROUPS_PER_TERMINAL];
-	struct text_face_data text_faces[MAXIMUM_FACE_CHANGES_PER_TEXT_GROUPING];
-	short new_length;
-	terminal_text_t *data_structure;
-	int32 total_length;
-	short index;
-	char *text_destination;
+public:
+	MarathonTerminalCompiler(char* text, short length) : terminal(new terminal_text_t), in_buffer(text, length), in(&in_buffer) { 
+		terminal->text = new uint8[length];
+		out = terminal->text;
 
-	data_structure = new terminal_text_t;
-	data_structure->text = new uint8[length];
-	std::copy(text, text + length, data_structure->text);
+		briefing_group.type = 0;
+		success_group.type = 0;
+		failure_group.type = 0;
+		unfinished_group.type = 0;
+	}
+	terminal_text_t* Compile();
 
-	new_length= length;
-	pre_build_groups(groups, &group_count, text_faces, &text_face_count,
-			 reinterpret_cast<char *>(data_structure->text), &new_length);
-	data_structure->text_length = new_length;
+private:
+	void FinishGroup();
+	void CompileLine(const std::string& line);
 
-	/* Allocate our conglomerated structure */
-	total_length= sizeof(static_preprocessed_terminal_data) +
-		group_count * sizeof(terminal_groupings) +
-		text_face_count * sizeof(text_face_data) +
-		new_length;
+	void BuildUnfinishedGroup();
+	void BuildSuccessGroup();
+	void BuildFailureGroup();
 
-
-	/* set these up.. */
-	data_structure->flags= 0; /* Don't encode (yet) */
-
-	/* Calculate the default lines per page for this font */
-	data_structure->lines_per_page= calculate_lines_per_page();
-
-	/* Calculate the maximum lines for each group */
-	calculate_maximum_lines_for_groups(groups, group_count, text);
-
-	data_structure->groupings.assign(groups, groups + group_count);
-	data_structure->font_changes.assign(text_faces, text_faces + text_face_count);
+	std::auto_ptr<terminal_text_t> terminal;
 	
-	/* We be done! */
-	return data_structure;
-}
+	io::stream_buffer<io::array_source> in_buffer;
+	std::istream in;
 
-/* Life would be better if these were encoded like this for me.. */
-static void pre_build_groups(
-	struct terminal_groupings *groups, 
-	short *group_count,
-	struct text_face_data *text_faces,
-	short *text_face_count,
-	char *base_text,
-	short *base_length)
+	uint8* out;
+
+	int16 current_group_type;
+	terminal_groupings group;
+
+	terminal_groupings logon_group;
+	terminal_groupings briefing_group;
+	terminal_groupings unfinished_group;
+	terminal_groupings failure_group;
+	terminal_groupings success_group;
+	std::vector<terminal_groupings> other_groups;
+};
+
+terminal_text_t* MarathonTerminalCompiler::Compile()
 {
-	int32 index, current_length;
-	bool in_group= false;
-	short current_face, face_count, color_index, grp_count, data_length;
-	bool last_was_return= true; /* in case the first line is a comment */
-
-	/* Initial color, and face (plain) */
-	color_index= current_face= 0;
-
-	grp_count= face_count= 0;
-	data_length= (*base_length);
-	current_length= index= 0;
-	/* Find the text groupings! */
-	while(index<data_length)
+	std::string line;
+	while (std::getline(in, line, static_cast<char>(MAC_LINE_END)))
 	{
-		if(base_text[index]=='#')
+		if (line[0] == '#')
 		{
-			short possible_group;
-			char first_char;
+			FinishGroup();
 
-			/* This is some form of descriptive keyword.. */
-			first_char= toupper(base_text[index+1]);
-			for(possible_group= 0; possible_group<NUMBER_OF_GROUP_TYPES; ++possible_group)
+			group.flags = 0;
+			group.permutation = 0;
+			
+			if (algo::istarts_with(line, "#logon"))
 			{
-				if(first_char==group_data[possible_group].name[0])
-				{
-					short start_index, permutation;
-					
-					start_index= matches_group(base_text, data_length, index+1, possible_group, 
-						&permutation);
-					if(start_index != NONE)
-					{
-						short destination_index;
-						
-						if(in_group) 
-						{
-							/* Minus one, because we have the # included.. */
-							assert(grp_count+1<MAXIMUM_GROUPS_PER_TERMINAL);
-							groups[grp_count++].length= current_length;
-							base_text[index]= 0; // null out the end of each group.
-							destination_index= index+1;
-						} else {	
-							destination_index= index;
-						}
-						
-						assert(data_length-start_index>=0);
-						/* move it down-> check this! */
-						memmove(&base_text[destination_index], 
-							&base_text[start_index], data_length-start_index);
-						data_length -= (start_index-destination_index);
-						groups[grp_count].flags= _group_is_marathon_1;
-						groups[grp_count].type= possible_group;
-						groups[grp_count].permutation= permutation;
-						groups[grp_count].start_index= destination_index;
-						current_length= 0;
-						in_group= true;
-						break; /* out of for loop */
-					}
-				}
+				group.flags = _group_is_marathon_1;
+				group.type = _logon_group;
+			}
+			else if (algo::istarts_with(line, "#information"))
+			{
+				group.type = _information_group;
+			}
+			else if (algo::istarts_with(line, "#checkpoint"))
+			{
+				group.type = _checkpoint_group;
+				std::istringstream permutation(line.substr(1 + strlen("#checkpoint")));
+				permutation >> group.permutation;
+			}
+			else if (algo::istarts_with(line, "#briefing"))
+			{
+				group.type = _interlevel_teleport_group;
+				std::istringstream permutation(line.substr(1 + strlen("#briefing")));
+				permutation >> group.permutation;
+			}
+			else if (algo::istarts_with(line, "#unfinished"))
+			{
+				group.type = _unfinished_group;
+			}
+			else if (algo::istarts_with(line, "#success"))
+			{
+				group.type = _success_group;
+			}
+			else if (algo::istarts_with(line, "#failure"))
+			{
+				group.type = _failure_group;
+			}
+			else 
+			{
+				logWarning("Unrecognized group");
+				terminal.reset(0);
+				return 0;
 			}
 
-			/* If we didn't match it, continue on..... */
-			if(possible_group==NUMBER_OF_GROUP_TYPES)
-			{
-				index++;
-				current_length++;
-			}
-//			vassert(possible_group==NUMBER_OF_GROUP_TYPES || base_text[index]!='#', 
-//				csprintf(temporary, "Base: %x index: %d", base_text, index));
-		} 
-		else if(base_text[index]=='$')
+			group.start_index = out - terminal->text;
+		}
+		else if (line[0] != ';')
 		{
-			bool changed_font= true;
-			short move_down_by;
-			
-			move_down_by= 2;
-			switch(base_text[index+1])
-			{
-				case 'B': /* Bold on! */
-					current_face |= _bold_text;
-					break;
-					
-				case 'b': /* bold off */
-					current_face &= ~_bold_text;
-					break;
-
-				case 'I': /* Italic on */
-					current_face |= _italic_text;
-					break;
-					
-				case 'i': /* Italic off */
-					current_face &= ~_italic_text;
-					break;
-					
-				case 'U': /* Underline on */
-					current_face |= _underline_text;
-					break;
-					
-				case 'u': /* Underline off */
-					current_face &= ~_underline_text;
-					break;
-
-				case 'C':
-					switch(base_text[index+2])
-					{
-						case '0':
-						case '1':
-						case '2':
-						case '3':
-						case '4':
-						case '5':
-						case '6':
-						case '7':
-							color_index= base_text[index+2]-'0';
-							move_down_by= 3;
-							break;
-							
-						default:
-							break;
-					}
-					break;
-					
-				default:
-					/* Pass it on through, unchanged */
-					changed_font= false;
-					move_down_by= 0;
-					break;
-			}
-			
-			/* If we changed the font, move the text down.. */
-			if(changed_font)
-			{
-				assert(face_count+1<MAXIMUM_FACE_CHANGES_PER_TEXT_GROUPING);
-				text_faces[face_count].index= index;
-				text_faces[face_count].color= color_index;
-				text_faces[face_count++].face= current_face;
-				
-				/* And move the data down by 2 characters.. */
-				memmove(&base_text[index], 
-					&base_text[index+move_down_by], data_length-index-move_down_by);
-				data_length -= move_down_by;
-	
-				/* Note that index doesn't change.. */
-			} else {
-				index++;
-				current_length++;
-			}
-		} 
-		else if (base_text[index]==';' && last_was_return)
-		{
-			short destination_index, start_index;
-
-			/* this is a comment */
-			destination_index= start_index= index;
-			while(start_index<data_length && base_text[start_index] != MAC_LINE_END) start_index++;
-
-			/* Eat the return on the comment line. */
-			if(start_index<data_length && base_text[start_index]==MAC_LINE_END) start_index++;
-			
-			/* Nix the comment */			
-			memmove(&base_text[destination_index], &base_text[start_index], data_length-start_index);
-			data_length -= (start_index-destination_index);
-		} else {
-			if(base_text[index]==MAC_LINE_END)
-			{
-				
-				last_was_return= true;
-			} else {
-				last_was_return= false;
-			}
-			index++;
-			current_length++;
+			CompileLine(line);
 		}
 	}
 
-	if (in_group)
-	{
-		groups[grp_count++].length= current_length - 1;
-	}
+	FinishGroup();
 
-	/* Save the proper positions.. */
-	(*text_face_count)= face_count;
-	(*group_count)= grp_count;
-	(*base_length)= data_length;
+	BuildUnfinishedGroup();
+	BuildSuccessGroup();
+	BuildFailureGroup();
+
+	terminal->lines_per_page = calculate_lines_per_page();
+	calculate_maximum_lines_for_groups(&terminal->groupings[0], terminal->groupings.size(), reinterpret_cast<char*>(terminal->text));
+
+	terminal->text_length = out - terminal->text;
+
+	return terminal.release();
 }
 
-/* Return NONE if it doesn't matches.. */
-static short matches_group(
-	char *base_text, 
-	short length,
-	short index, 
-	short possible_group, 
-	short *permutation)
+static terminal_text_t* compile_marathon_terminal(char* text, short length)
 {
-	short start_index= NONE;
+	MarathonTerminalCompiler compiler(text, length);
+	return compiler.Compile();
+}
 
-	if(strncasecmp(&base_text[index], group_data[possible_group].name, 
-		strlen(group_data[possible_group].name))==0)
+void MarathonTerminalCompiler::FinishGroup()
+{
+	group.length = (out - terminal->text) - group.start_index;
+
+	switch (group.type)
 	{
-		/* This is a match.  find the end... */
-		start_index= index+strlen(group_data[possible_group].name);
-		
-		if(group_data[possible_group].has_permutation)
+	case _logon_group:
+		logon_group = group;
+		break;
+	case _information_group:
+	case _checkpoint_group:
+		other_groups.push_back(group);
+		break;
+	case _interlevel_teleport_group:
+		briefing_group = group;
+		break;
+	case _success_group:
+		success_group = group;
+		break;
+	case _failure_group:
+		failure_group = group;
+		break;
+	case _unfinished_group:
+		unfinished_group = group;
+		break;
+	}
+}
+
+void MarathonTerminalCompiler::CompileLine(const std::string& line)
+{
+	// Marathon formatting resets at the beginning of the line
+	text_face_data font_change;
+	font_change.index = out - terminal->text;
+	font_change.face = 0;
+	font_change.color = 0;
+
+	terminal->font_changes.push_back(font_change);
+	
+	for (std::string::const_iterator it = line.begin(); it != line.end(); ++it)
+	{
+		if (*it == '$' && (it + 1 != line.end()))
 		{
-			/* Find the permutation... */
-			*permutation= atoi(&base_text[start_index]);
+			font_change.index = out - terminal->text;
+			char c = *(it + 1);
+			switch (c)
+			{
+			case 'B':
+				font_change.face |= _bold_text;
+				terminal->font_changes.push_back(font_change);
+				++it;
+				break;
+			case 'b':
+				font_change.face &= ~_bold_text;
+				terminal->font_changes.push_back(font_change);
+				++it;
+				break;
+			case 'I':
+				font_change.face |= _italic_text;
+				terminal->font_changes.push_back(font_change);
+				++it;
+				break;
+			case 'i':
+				font_change.face &= ~_italic_text;
+				terminal->font_changes.push_back(font_change);
+				++it;
+				break;
+			case 'U':
+				font_change.face |= _underline_text;
+				terminal->font_changes.push_back(font_change);
+				++it;
+				break;
+			case 'u':
+				font_change.face &= ~_underline_text;
+				terminal->font_changes.push_back(font_change);
+				++it;
+				break;
+			case 'C':
+				if (it + 2 != line.end())
+				{
+					char cc = *(it + 2);
+					if (cc >= '0' && cc <= '7')
+					{
+						font_change.color = cc - '0';
+						terminal->font_changes.push_back(font_change);
+						it += 2;
+					}
+					else
+					{
+						*out++ = *it;
+					}
+				}
+				else
+				{
+					*out++ = *it;
+				}
+				break;
+			default:
+				*out++ = *it;
+			}
 		}
 		else
 		{
-			*permutation = 0;
+			*out++ = *it;
 		}
-		
-		/* Eat the rest of it.. */
-		while(start_index<length && base_text[start_index] != MAC_LINE_END) start_index++;
-		if(base_text[start_index]==MAC_LINE_END) start_index++;
-
 	}
-	
-	return start_index;
+
+	*out++ = MAC_LINE_END;
 }
 
-#ifdef PREPROCESSING_CODE
-static void find_all_permutations_of_type(
-	byte *terminals,
-	short terminal_count,
-	short group_type,
-	short *permutations,
-	short *permutation_count)
+void MarathonTerminalCompiler::BuildUnfinishedGroup()
 {
-	short terminal_index;
-	struct static_preprocessed_terminal_data *data;
-	int32 offset= 0;
-	short count= 0;
+	terminal_groupings group;
+	group.flags = 0;
+	group.type = _unfinished_group;
+	group.permutation = 0;
+	group.start_index = 0;
+	group.length = 0;
+	terminal->groupings.push_back(group);
 
-	for(terminal_index= 0; terminal_index<terminal_count; terminal_index++)
+	terminal->groupings.push_back(logon_group);
+
+	// if there's an unfinished group, push it as unfinished
+	// otherwise, if there's a briefing, use that as unfinished
+	// otherwise, this must not be an end-of-level term, use all the other groups
+	if (unfinished_group.type)
 	{
-		short group_index;
-	
-		data= (struct static_preprocessed_terminal_data *) (terminals+offset);
-		for(group_index= 0; group_index<data->grouping_count; ++group_index)
+		group = unfinished_group;
+		group.type = _information_group;
+		terminal->groupings.push_back(group);
+
+		group = logon_group;
+		group.type = _logoff_group;
+		terminal->groupings.push_back(group);
+	}
+	else if (briefing_group.type)
+	{
+		group = briefing_group;
+		group.type = _information_group;
+		group.permutation = 0;
+		terminal->groupings.push_back(group);
+
+		group = logon_group;
+		group.type = _logoff_group;
+		terminal->groupings.push_back(group);
+
+		group.type = _interlevel_teleport_group;
+		group.permutation = briefing_group.permutation;
+		group.start_index = 0;
+		group.length = 0;
+		terminal->groupings.push_back(group);
+	}
+	else 
+	{
+		terminal->groupings.insert(terminal->groupings.end(), other_groups.begin(), other_groups.end());
+
+		group = logon_group;
+		group.type = _logoff_group;
+		terminal->groupings.push_back(group);
+	}
+
+	group.type = _end_group;
+	group.flags = 0;
+	group.permutation = 0;
+	group.start_index = 0;
+	group.length = 0;
+	terminal->groupings.push_back(group);
+}
+
+void MarathonTerminalCompiler::BuildSuccessGroup()
+{
+	if (success_group.type ||
+	    (unfinished_group.type && briefing_group.type))
+	{
+		terminal_groupings group;
+		group.flags = 0;
+		group.type = _success_group;
+		group.permutation = 0;
+		group.start_index = 0;
+		group.length = 0;
+		terminal->groupings.push_back(group);
+
+		terminal->groupings.push_back(logon_group);
+
+		if (success_group.type == _success_group)
 		{
-			struct terminal_groupings *group= get_indexed_grouping(data, group_index);
-			// LP addition: just in case...
-			if (!group) continue;
-			if(group->type==group_type)
-			{
-				permutations[count++]= group->permutation;
-			}
+			group = success_group;
+			group.type = _information_group;
+			terminal->groupings.push_back(group);
 		}
-		
-		offset+= data->total_length;
+
+		if (briefing_group.type)
+		{
+			group = briefing_group;
+			group.type = _information_group;
+			group.permutation = 0;
+			terminal->groupings.push_back(group);
+		}
+
+		group = logon_group;
+		group.type = _logoff_group;
+		terminal->groupings.push_back(group);
+
+		if (briefing_group.type)
+		{
+			group.type = _interlevel_teleport_group;
+			group.permutation = briefing_group.permutation;
+			group.start_index = 0;
+			group.length = 0;
+			terminal->groupings.push_back(group);
+		}
+
+		group.type = _end_group;
+		group.flags = 0;
+		group.permutation = 0;
+		group.start_index = 0;
+		group.length = 0;
+		terminal->groupings.push_back(group);
 	}
-
-	*permutation_count= count;
 }
 
-void find_all_picts_references_by_terminals(
-	byte *compiled_text, 
-	short terminal_count,
-	short *picts, 
-	short *picture_count)
+void MarathonTerminalCompiler::BuildFailureGroup()
 {
-	find_all_permutations_of_type((byte *) compiled_text, terminal_count, _pict_group, picts, 
-		picture_count);
-}
-
-void find_all_checkpoints_references_by_terminals(
-	byte *compiled_text, 
-	short terminal_count,
-	short *checkpoints, 
-	short *checkpoint_count)
-{
-	find_all_permutations_of_type((byte *) compiled_text, terminal_count, _checkpoint_group, 
-		checkpoints, checkpoint_count);
-}
-
-bool terminal_has_finished_text_type(
-	short terminal_id,
-	short finished_type)
-{
-	bool has_type= false;
-	terminal_text_t *terminal_text= get_indexed_terminal_data(terminal_id);
-	// LP addition: quit if none
-	if (!terminal_text) return false;
-	short index;
-	
-	index= find_group_type(terminal_text, finished_type);
-	if(index==terminal_text->groupings.size()) 
+	if (failure_group.type)
 	{
-		has_type= false;
-	} else {
-		has_type= true;
+		terminal_groupings group;
+		group.flags = 0;
+		group.type = _failure_group;
+		group.permutation = 0;
+		group.start_index = 0;
+		group.length = 0;
+		terminal->groupings.push_back(group);
+
+		terminal->groupings.push_back(logon_group);
+
+		group = failure_group;
+		group.type = _information_group;
+		terminal->groupings.push_back(group);
+
+		if (briefing_group.type)
+		{
+			group = briefing_group;
+			group.type = _information_group;
+			group.permutation = 0;
+			terminal->groupings.push_back(group);
+		}
+
+		group = logon_group;
+		group.type = _logoff_group;
+		terminal->groupings.push_back(group);
+
+		if (briefing_group.type)
+		{
+			group.type = _interlevel_teleport_group;
+			group.permutation = briefing_group.permutation;
+			group.start_index = 0;
+			group.length = 0;
+			terminal->groupings.push_back(group);
+		}
+
+		group.type = _end_group;
+		group.flags = 0;
+		group.permutation = 0;
+		group.start_index = 0;
+		group.length = 0;
+		terminal->groupings.push_back(group);
 	}
-
-	return has_type;
 }
-#endif
-
 
 static void calculate_maximum_lines_for_groups(
 	struct terminal_groupings *groups,
@@ -2652,10 +2598,6 @@ static void calculate_maximum_lines_for_groups(
 			case _checkpoint_group:
 			case _pict_group:
 			case _information_group:
-		        case _briefing_group:
-			case _unfinished_information_group:
-			case _success_information_group:
-			case _failure_information_group:
 				{
 					Rect text_bounds;
 		
@@ -2672,7 +2614,6 @@ static void calculate_maximum_lines_for_groups(
 		}
 	}
 }
-//#endif // End of preprocessing code
 
 static struct terminal_groupings *get_indexed_grouping(
 	terminal_text_t *data,

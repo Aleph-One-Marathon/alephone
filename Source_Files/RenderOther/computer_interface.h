@@ -120,19 +120,6 @@ uint8 *pack_player_terminal_data(uint8 *Stream, size_t Count);
 
 extern size_t calculate_packed_terminal_data_length(void);
 
-
-#ifdef PREPROCESSING_CODE
-struct static_preprocessed_terminal_data *preprocess_text(char *text, short length);
-struct static_preprocessed_terminal_data *get_indexed_terminal_data(short id);
-void encode_text(struct static_preprocessed_terminal_data *terminal_text);
-void decode_text(struct static_preprocessed_terminal_data *terminal_text);
-void find_all_picts_references_by_terminals(byte *compiled_text, short terminal_count,
-	short *picts, short *picture_count);
-void find_all_checkpoints_references_by_terminals(byte *compiled_text, 
-	short terminal_count, short *checkpoints, short *checkpoint_count);
-bool terminal_has_finished_text_type(short terminal_id, short finished_type);
-#endif
-
 void clear_compiled_terminal_cache();
 
 #endif
