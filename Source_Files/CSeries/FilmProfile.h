@@ -84,6 +84,7 @@ struct FilmProfile
 	bool ketchup_fix;
 	bool lua_increments_rng;
 	bool destroy_players_ball_fix;
+	bool calculate_terminal_lines_correctly;
 };
 
 extern FilmProfile film_profile;

@@ -2706,9 +2706,9 @@ static short calculate_lines_per_page(
 	Rect bounds;
 	short lines_per_page;
 
-    if (0)  // pre-1.1 rendering
+    if (!film_profile.calculate_terminal_lines_correctly)
     {
-        calculate_destination_frame(_100_percent, true, &bounds);
+        bounds= get_term_rectangle(_terminal_screen_rect);
         lines_per_page= (RECTANGLE_HEIGHT(&bounds)-2*BORDER_HEIGHT)/_get_font_line_height(_computer_interface_font);
         lines_per_page-= FUDGE_FACTOR;
     }
