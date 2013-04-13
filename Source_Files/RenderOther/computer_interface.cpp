@@ -2597,7 +2597,6 @@ static void calculate_maximum_lines_for_groups(
 	
 			case _checkpoint_group:
 			case _pict_group:
-			case _information_group:
 				{
 					Rect text_bounds;
 		
@@ -2609,6 +2608,16 @@ static void calculate_maximum_lines_for_groups(
 				}
 				break;
 								
+			case _information_group:
+				{
+					Rect text_bounds= get_term_rectangle(_terminal_full_text_rect);
+		
+					groups[index].maximum_line_count= count_total_lines(text_base,
+						RECTANGLE_WIDTH(&text_bounds), groups[index].start_index, 
+						groups[index].start_index+groups[index].length);
+				}
+				break;
+                
 			default:
 				break;
 		}
