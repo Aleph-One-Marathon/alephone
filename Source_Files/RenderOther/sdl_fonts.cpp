@@ -76,7 +76,7 @@ extern void fix_missing_overhead_map_fonts();
 extern void fix_missing_interface_fonts();
 #endif
 
-void initialize_fonts(void)
+void initialize_fonts(bool last_chance)
 {
         logContext("initializing fonts");
 	// Open font resource files
@@ -96,7 +96,7 @@ void initialize_fonts(void)
 		}
 		i++;
 	}
-	if (!found) {
+	if (!found && last_chance) {
 #ifdef HAVE_SDL_TTF
 		// use our own built-in font
 		fix_missing_overhead_map_fonts();

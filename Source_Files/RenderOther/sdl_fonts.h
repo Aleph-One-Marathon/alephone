@@ -150,7 +150,7 @@ private:
  */
 
 // Initialize font management
-extern void initialize_fonts(void);
+extern void initialize_fonts(bool last_chance);
 
 // Load font, return pointer to font info
 extern font_info *load_font(const TextSpec &spec);

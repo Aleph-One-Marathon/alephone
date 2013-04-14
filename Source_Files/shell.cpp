@@ -542,6 +542,7 @@ static void initialize_application(void)
 	initialize_resources();
 
 	init_physics_wad_data();
+	initialize_fonts(false);
 
 	load_film_profile(FILM_PROFILE_DEFAULT, false);
 
@@ -566,12 +567,13 @@ static void initialize_application(void)
 			data_search_path.insert(data_search_path.begin() + dsp_insert_pos, chosen_dir);
 			
 			// Parse MML files again, now that we have a new dir to search
+			initialize_fonts(false);
 			SetupParseTree();
 			LoadBaseMMLScripts();
 		}
 	}
 
-	initialize_fonts();
+	initialize_fonts(true);
 	Plugins::instance()->enumerate();			
 	
 #if defined(__WIN32__) || (defined(__MACH__) && defined(__APPLE__))
