@@ -302,7 +302,7 @@ void draw_interface(void)
 	but skip the interface frame) */
 void update_interface(short time_elapsed)
 {
-	if (alephone::Screen::instance()->openGL()) {
+	if (alephone::Screen::instance()->openGL() || alephone::Screen::instance()->lua_hud()) {
 		if (time_elapsed == NONE)
 			reset_motion_sensor(current_player_index);
 		else
