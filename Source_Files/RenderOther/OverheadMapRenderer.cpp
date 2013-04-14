@@ -64,6 +64,7 @@ extern short GetNumberOfPaths();
 void OverheadMapClass::Render(overhead_map_data& Control)
 {
 	world_distance x0= Control.origin.x, y0= Control.origin.y;
+	int xoff= Control.left + Control.half_width, yoff= Control.top + Control.half_height;
 	short scale= Control.scale;
 	world_point2d location;
 	short i;
@@ -209,8 +210,8 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 			if (POLYGON_IS_IN_AUTOMAP(annotation->polygon_index) &&
 				TEST_STATE_FLAG(annotation->polygon_index, _polygon_on_automap))
 			{
-				location.x= Control.half_width + WORLD_TO_SCREEN(annotation->location.x, x0, scale);
-				location.y= Control.half_height + WORLD_TO_SCREEN(annotation->location.y, y0, scale);
+				location.x= xoff + WORLD_TO_SCREEN(annotation->location.x, x0, scale);
+				location.y= yoff + WORLD_TO_SCREEN(annotation->location.y, y0, scale);
 				
 				draw_annotation(&location, annotation->type, annotation->text, scale);
 			}
@@ -235,8 +236,8 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 			{
 				for (step= 0; step<count; ++step)
 				{
-					location.x= Control.half_width + WORLD_TO_SCREEN(points[step].x, x0, scale);
-					location.y= Control.half_height + WORLD_TO_SCREEN(points[step].y, y0, scale);
+					location.x= xoff + WORLD_TO_SCREEN(points[step].x, x0, scale);
+					location.y= yoff + WORLD_TO_SCREEN(points[step].y, y0, scale);
 					// LP change: made this more general
 					draw_path(step,location);
 				}
@@ -270,8 +271,8 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 	
 								if ((GET_GAME_OPTIONS()&_overhead_map_is_omniscient) || local_player->team==player->team)
 								{
-									location.x= Control.half_width + WORLD_TO_SCREEN(object->location.x, x0, scale);
-									location.y= Control.half_height + WORLD_TO_SCREEN(object->location.y, y0, scale);
+									location.x= xoff + WORLD_TO_SCREEN(object->location.x, x0, scale);
+									location.y= yoff + WORLD_TO_SCREEN(object->location.y, y0, scale);
 									
 									draw_player(&location, object->facing, player->team, scale);
 								}
@@ -336,8 +337,8 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 						if (thing_type==_projectile_thing || ((dynamic_world->tick_count+i)&8))
 						// if (thing_type!=_civilian_thing || ((dynamic_world->tick_count+i)&8))
 						{
-							location.x= Control.half_width + WORLD_TO_SCREEN(object->location.x, x0, scale);
-							location.y= Control.half_height + WORLD_TO_SCREEN(object->location.y, y0, scale);
+							location.x= xoff + WORLD_TO_SCREEN(object->location.x, x0, scale);
+							location.y= yoff + WORLD_TO_SCREEN(object->location.y, y0, scale);
 							
 							draw_thing(&location, object->facing, thing_type, scale);
 						}
@@ -355,8 +356,8 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 			if (saved_object->type==_saved_goal &&
 				saved_object->location.x==Control.origin.x && saved_object->location.y==Control.origin.y)
 			{
-				location.x= Control.half_width + WORLD_TO_SCREEN(saved_object->location.x, x0, scale);
-				location.y= Control.half_height + WORLD_TO_SCREEN(saved_object->location.y, y0, scale);
+				location.x= xoff + WORLD_TO_SCREEN(saved_object->location.x, x0, scale);
+				location.y= yoff + WORLD_TO_SCREEN(saved_object->location.y, y0, scale);
 				draw_thing(&location, 0, _checkpoint_thing, scale);
 			}
 		}
@@ -374,7 +375,7 @@ void OverheadMapClass::transform_endpoints_for_overhead_map(
 	struct overhead_map_data& Control)
 {
 	world_distance x0= Control.origin.x, y0= Control.origin.y;
-	short screen_width= Control.width, screen_height= Control.height;
+	int xoff= Control.left + Control.half_width, yoff = Control.top + Control.half_height;
 	short scale= Control.scale;
 	short i;
 
@@ -383,10 +384,13 @@ void OverheadMapClass::transform_endpoints_for_overhead_map(
 	{
 		struct endpoint_data *endpoint= get_endpoint_data(i);
 		
-		endpoint->transformed.x= Control.half_width + WORLD_TO_SCREEN(endpoint->vertex.x, x0, scale);
-		endpoint->transformed.y= Control.half_height + WORLD_TO_SCREEN(endpoint->vertex.y, y0, scale);
+		endpoint->transformed.x= xoff + WORLD_TO_SCREEN(endpoint->vertex.x, x0, scale);
+		endpoint->transformed.y= yoff + WORLD_TO_SCREEN(endpoint->vertex.y, y0, scale);
 
-		if (endpoint->transformed.x>=0&&endpoint->transformed.y>=0&&endpoint->transformed.y<=screen_height&&endpoint->transformed.x<=screen_width)
+		if (endpoint->transformed.x >= Control.left &&
+            endpoint->transformed.y >= Control.top &&
+            endpoint->transformed.y <= Control.top + Control.height &&
+            endpoint->transformed.x <= Control.left + Control.width)
 		{
 			SET_STATE_FLAG(i, _endpoint_on_automap, true);
 		}

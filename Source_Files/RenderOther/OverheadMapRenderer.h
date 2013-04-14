@@ -301,8 +301,8 @@ private:
 	{
 		map_name_definition& map_name_data = ConfigPtr->map_name_data;
 		world_point2d location;
-		location.x = Control.half_width;
-		location.y = map_name_data.offset_down;
+		location.x = Control.left + Control.half_width;
+		location.y = Control.top + map_name_data.offset_down;
 		draw_text(location, map_name_data.color, name,
 			map_name_data.Font, _justify_center);
 	}
