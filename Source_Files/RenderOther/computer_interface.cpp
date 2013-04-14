@@ -2300,6 +2300,8 @@ void MarathonTerminalCompiler::FinishGroup()
 {
 	group.length = (out - terminal->text) - group.start_index;
 
+	*out++ = '\0';
+
 	switch (group.type)
 	{
 	case _logon_group:
