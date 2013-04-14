@@ -67,6 +67,7 @@ Jul 31, 2002 (Loren Petrich)
 #include "render.h"
 #include "OGL_Render.h"
 #include "OGL_Blitter.h"
+#include "screen_definitions.h"
 
 
 // Constants
@@ -853,10 +854,8 @@ SDL_Surface *tile_surface(SDL_Surface *s, int width, int height)
 extern SDL_Surface *draw_surface;	// from screen_drawing.cpp
 //void draw_intro_screen(void);		// from screen.cpp
 
-static void draw_picture(LoadedResource &rsrc)
+static void draw_picture_surface(SDL_Surface *s)
 {
-	// Convert picture resource to surface, free resource
-	SDL_Surface *s = picture_to_surface(rsrc);
 	if (s == NULL)
 		return;
 	_set_port_to_intro();
@@ -888,6 +887,11 @@ static void draw_picture(LoadedResource &rsrc)
 	SDL_BlitSurface(s, &src_rect, video, &dst_rect);
 	_restore_port();
 	draw_intro_screen();
+}
+
+static void draw_picture(LoadedResource &rsrc)
+{
+    draw_picture_surface(picture_to_surface(rsrc));
 }
 
 
@@ -1233,8 +1237,138 @@ bool images_picture_exists(int base_resource)
 	return ImagesFile.has_pict(RsrcID);
 }
 
+
+// In the first Marathon, the main menu is drawn from multiple
+// shapes in collection 10, instead of a single image. We handle
+// this special case by creating the composite images in code,
+// and returning these surfaces when the picture is requested.
+
+extern bool m1_shapes;
+static SDL_Surface *m1_menu_unpressed = NULL;
+static SDL_Surface *m1_menu_pressed = NULL;
+
+static void create_m1_menu_surfaces(void)
+{
+    if (m1_menu_unpressed || m1_menu_pressed)
+        return;
+    
+    SDL_Surface *s;
+#ifdef ALEPHONE_LITTLE_ENDIAN
+    s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0x000000ff, 0x0000ff00, 0x00ff0000, 0);
+#else
+    s = SDL_CreateRGBSurface(SDL_SWSURFACE, 640, 480, 32, 0xff000000, 0x00ff0000, 0x0000ff00, 0);
+#endif
+    if (!s)
+        return;
+
+    SDL_FillRect(s, NULL, SDL_MapRGB(s->format, 0, 0, 0));
+    
+    SDL_Rect src, dst;
+    src.x = src.y = 0;
+    
+    int top = 0;
+    int bottom = s->h;
+    
+    SDL_Surface *logo = get_shape_surface(0, 10);
+    if (!logo)
+    {
+        // did it fail because we haven't loaded the menu shapes?
+        mark_collection_for_loading(10);
+        load_collections(false, false);
+        logo = get_shape_surface(0, 10);
+    }
+    if (logo)
+    {
+        src.w = dst.w = logo->w;
+        src.h = dst.h = logo->h;
+        dst.x = (s->w - logo->w)/2;
+        dst.y = 0;
+        SDL_BlitSurface(logo, &src, s, &dst);
+        top += logo->h;
+        SDL_FreeSurface(logo);
+    }
+    
+    SDL_Surface *credits = get_shape_surface(19, 10);
+    if (credits)
+    {
+        src.w = dst.w = credits->w;
+        src.h = dst.h = credits->h;
+        dst.x = (s->w - credits->w)/2;
+        dst.y = s->h - credits->h;
+        SDL_BlitSurface(credits, &src, s, &dst);
+        bottom -= credits->h;
+        SDL_FreeSurface(credits);
+    }
+    
+    SDL_Surface *widget = get_shape_surface(1, 10);
+    if (widget)
+    {
+        src.w = dst.w = widget->w;
+        src.h = dst.h = widget->h;
+        dst.x = (s->w - widget->w)/2;
+        dst.y = top + (bottom - top - widget->h)/2;
+        SDL_BlitSurface(widget, &src, s, &dst);
+        SDL_FreeSurface(widget);
+    }
+    
+    m1_menu_unpressed = s;
+    
+    // now, add pressed buttons to copy of this surface
+    s = SDL_ConvertSurface(s, s->format, SDL_SWSURFACE);
+    
+    std::vector<std::pair<int, int> > button_shapes;
+    button_shapes.push_back(std::pair<int, int>(_new_game_button_rect, 11));
+    button_shapes.push_back(std::pair<int, int>(_load_game_button_rect, 12));
+    button_shapes.push_back(std::pair<int, int>(_gather_button_rect, 3));
+    button_shapes.push_back(std::pair<int, int>(_join_button_rect, 4));
+    button_shapes.push_back(std::pair<int, int>(_prefs_button_rect, 5));
+    button_shapes.push_back(std::pair<int, int>(_replay_last_button_rect, 6));
+    button_shapes.push_back(std::pair<int, int>(_save_last_button_rect, 7));
+    button_shapes.push_back(std::pair<int, int>(_replay_saved_button_rect, 8));
+    button_shapes.push_back(std::pair<int, int>(_credits_button_rect, 9));
+    button_shapes.push_back(std::pair<int, int>(_quit_button_rect, 10));
+    button_shapes.push_back(std::pair<int, int>(_center_button_rect, 2));
+    for (std::vector<std::pair<int, int> >::const_iterator it = button_shapes.begin(); it != button_shapes.end(); ++it)
+    {
+        screen_rectangle *r = get_interface_rectangle(it->first);
+        SDL_Surface *btn = get_shape_surface(it->second, 10);
+        if (btn)
+        {
+            src.w = dst.w = btn->w;
+            src.h = dst.h = btn->h;
+            dst.x = r->left;
+            dst.y = r->top;
+            SDL_BlitSurface(btn, &src, s, &dst);
+            SDL_FreeSurface(btn);
+        }
+    }
+    
+    m1_menu_pressed = s;
+}
+
+static bool m1_draw_full_screen_pict_resource_from_images(int pict_resource_number)
+{
+    if (!m1_shapes)
+        return false;
+    if (pict_resource_number == MAIN_MENU_BASE)
+    {
+        create_m1_menu_surfaces();
+        draw_picture_surface(m1_menu_unpressed);
+        return true;
+    }
+    else if (pict_resource_number == MAIN_MENU_BASE+1)
+    {
+        create_m1_menu_surfaces();
+        draw_picture_surface(m1_menu_pressed);
+        return true;
+    }
+    return false;
+}
+
 void draw_full_screen_pict_resource_from_images(int pict_resource_number)
 {
+	if (m1_draw_full_screen_pict_resource_from_images(pict_resource_number))
+		return;
 	LoadedResource PictRsrc;
 	get_picture_resource_from_images(pict_resource_number, PictRsrc);
 	draw_picture(PictRsrc);
