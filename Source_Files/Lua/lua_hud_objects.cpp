@@ -2019,6 +2019,18 @@ static int Lua_HUDPlayer_Get_Dead(lua_State *L)
 	return 1;
 }
 
+static int Lua_HUDPlayer_Get_Respawn_Duration(lua_State *L)
+{
+    int delayticks = -1;
+    if (PLAYER_IS_DEAD(current_player) &&
+        PLAYER_IS_TOTALLY_DEAD(current_player) &&
+        (current_player->variables.action==_player_stationary||dynamic_world->player_count==1))
+        lua_pushinteger(L, current_player->reincarnation_delay);
+    else
+        lua_pushnil(L);  // I'm not dead yet!
+    return 1;
+}
+
 static int Lua_HUDPlayer_Get_Energy(lua_State *L)
 {
 	lua_pushnumber(L, current_player->suit_energy);
@@ -2169,6 +2181,7 @@ const luaL_Reg Lua_HUDPlayer_Get[] = {
 {"compass", Lua_HUDPlayer_Get_Compass},
 {"zoom_active", Lua_HUDPlayer_Get_Zoom},
 {"texture_palette", Lua_HUDPlayer_Get_Texture_Palette},
+{"respawn_duration", Lua_HUDPlayer_Get_Respawn_Duration},
 {0, 0}
 };
 
