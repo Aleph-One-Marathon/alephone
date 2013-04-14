@@ -1072,7 +1072,7 @@ uint32 *TextureManager::GetOGLTexture(uint32 *ColorTable)
 		{
 			OrigWidthOffset = 0;
 			OGLWidthOffset = WidthOffset;
-			OGLWidthFinish = WidthOffset + BaseTxtrWidth;
+			OGLWidthFinish = std::min(static_cast<int>(TxtrWidth), WidthOffset + BaseTxtrWidth);
 		}
 		else
 		{
