@@ -416,6 +416,14 @@ void OverheadMapClass::transform_endpoints_for_overhead_map(
 
 /* --------- the false automap */
 
+static void add_poly_to_false_automap(short polygon_index)
+{
+	struct polygon_data *polygon= get_polygon_data(polygon_index);
+	for (int i = 0; i < polygon->vertex_count; ++i)
+            ADD_LINE_TO_AUTOMAP(polygon->line_indexes[i]);
+	ADD_POLYGON_TO_AUTOMAP(polygon_index);
+}
+
 void OverheadMapClass::generate_false_automap(
 	short polygon_index)
 {
@@ -435,6 +443,7 @@ void OverheadMapClass::generate_false_automap(
 		memset(automap_lines, 0, automap_line_buffer_size);
 		memset(automap_polygons, 0, automap_polygon_buffer_size);
 		
+		add_poly_to_false_automap(polygon_index);
 		polygon_index= flood_map(polygon_index, INT32_MAX, false_automap_cost_proc, _breadth_first, (void *) NULL);
 		do
 		{
@@ -476,7 +485,6 @@ int32 OverheadMapClass::false_automap_cost_proc(
 	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
 	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
 	int32 cost= 1;
-	short i;
 
 	(void) (line_index);
 	(void) (caller_data);
@@ -499,9 +507,9 @@ int32 OverheadMapClass::false_automap_cost_proc(
 		}
 	}
 
-	/* add the source polygon and all its lines to the automap */	
-	for (i= 0; i<source_polygon->vertex_count; ++i) ADD_LINE_TO_AUTOMAP(source_polygon->line_indexes[i]);
-	ADD_POLYGON_TO_AUTOMAP(source_polygon_index);
+	/* add the destination polygon and all its lines to the automap */
+	if (cost > 0)
+		add_poly_to_false_automap(destination_polygon_index);
 	
 	return cost;
 }
