@@ -1185,6 +1185,8 @@ static void calculate_bounds_for_text_box(
 	{
 		calculate_bounds_for_object(_draw_object_on_right, bounds, NULL);
 	}
+	if (flags & _group_is_marathon_1)
+		bounds->top += _get_font_line_height(_computer_interface_font);
 }
 
 static void display_picture_with_text(
