@@ -343,7 +343,7 @@ static void draw_terminal_borders(struct player_terminal_data *terminal_data,
 	bool after_other_terminal_stuff);
 static void next_terminal_state(short player_index);
 static void next_terminal_group(short player_index, terminal_text_t *terminal_text);
-static void get_date_string(char *date_string);
+static void get_date_string(char *date_string, short flags);
 static void present_checkpoint_text(terminal_text_t *terminal_text, short current_group_index,
 	short current_line);
 static bool find_checkpoint_location(short checkpoint_index, world_point2d *location, 
@@ -1547,7 +1547,7 @@ static void draw_terminal_borders(
 		border.left += LABEL_INSET; border.right -= LABEL_INSET;
 		getcstr(temporary, strCOMPUTER_LABELS, top_message);
 		_draw_screen_text(temporary, (screen_rectangle *) &border, _center_vertical, _computer_interface_font, _computer_border_text_color);
-		get_date_string(temporary);
+		get_date_string(temporary, current_group->flags);
 		_draw_screen_text(temporary, (screen_rectangle *) &border, _right_justified | _center_vertical, 
 			_computer_interface_font, _computer_border_text_color);
 	
@@ -1833,7 +1833,8 @@ static void goto_terminal_group(
 
 /* I'll use this function, almost untouched.. */
 static void get_date_string(
-	char *date_string)
+	char *date_string,
+	short flags)
 {
 	char temp_string[101];
 	int32 game_time_passed;
@@ -1862,8 +1863,16 @@ static void get_date_string(
 	game_time.tm_mon= converted_date.month-1;
 	game_time.tm_wday= converted_date.dayOfWeek;
 #else
-	seconds = 800070137;
-	seconds += game_time_passed / TICKS_PER_SECOND;
+	if (flags & _group_is_marathon_1)
+	{
+		seconds = 809304137;
+		seconds += 7*60*(game_time_passed / TICKS_PER_SECOND);
+	}
+	else
+	{
+		seconds = 800070137;
+		seconds += game_time_passed / TICKS_PER_SECOND;
+	}
 	game_time = *localtime(&seconds);
 #endif
 	game_time.tm_year= 437;
@@ -2225,12 +2234,11 @@ terminal_text_t* MarathonTerminalCompiler::Compile()
 		{
 			FinishGroup();
 
-			group.flags = 0;
+			group.flags = _group_is_marathon_1;
 			group.permutation = 0;
 			
 			if (algo::istarts_with(line, "#logon"))
 			{
-				group.flags = _group_is_marathon_1;
 				group.type = _logon_group;
 			}
 			else if (algo::istarts_with(line, "#information"))
