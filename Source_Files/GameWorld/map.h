@@ -811,7 +811,8 @@ enum /* mission flags */
 	_mission_exploration= 0x0002,
 	_mission_retrieval= 0x0004,
 	_mission_repair= 0x0008,
-	_mission_rescue= 0x0010
+	_mission_rescue= 0x0010,
+	_mission_exploration_m1= 0x0020
 };
 
 enum /* environment flags */

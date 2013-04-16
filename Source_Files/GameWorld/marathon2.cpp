@@ -761,6 +761,24 @@ short calculate_level_completion_state(
 		}
 	}
 	
+	/* if there are any polygons which must be seen and have not been mapped, weÕre not done */
+	if ((static_world->mission_flags&_mission_exploration_m1) &&
+	    dynamic_world->player_count == 1)
+	{
+		short polygon_index;
+		struct polygon_data *polygon;
+		
+		for (polygon_index= 0, polygon= map_polygons; polygon_index<dynamic_world->polygon_count; ++polygon_index, ++polygon)
+		{
+			if (polygon->type==_polygon_must_be_explored &&
+			    !POLYGON_IS_IN_AUTOMAP(polygon_index))
+			{
+				completion_state= _level_unfinished;
+				break;
+			}
+		}
+	}
+	
 	/* if there are any items left on this map, weÕre not done */
 	if (static_world->mission_flags&_mission_retrieval)
 	{
