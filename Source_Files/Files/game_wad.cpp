@@ -1650,6 +1650,7 @@ bool process_map_wad(
             static_world->mission_flags &= ~_mission_exploration;
             static_world->mission_flags |= _mission_exploration_m1;
         }
+        static_world->environment_flags |= _environment_glue_m1;
     }
 
 	/* Extract the game difficulty info.. */

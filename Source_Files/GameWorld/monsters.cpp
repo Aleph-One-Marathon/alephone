@@ -790,6 +790,7 @@ void activate_nearby_monsters(
 		short need_target_indexes[MAXIMUM_NEED_TARGET_INDEXES];
 		short need_target_count= 0;
 		int32 flood_flags= flags;
+		bool obey_glue= (static_world->environment_flags & _environment_glue_m1);
 		
 		/* flood out from the target monsterÕs polygon, searching through the object lists of all
 			polygons we encounter */
@@ -798,6 +799,7 @@ void activate_nearby_monsters(
 		{
 			short object_index;
 			struct object_data *object;
+			struct polygon_data *polygon= get_polygon_data(polygon_index);
 	
 			/* loop through all objects in this polygon looking for _hostile inactive or unlocked monsters */
 			for (object_index= get_polygon_data(polygon_index)->first_object; object_index!=NONE; object_index= object->next_object)
@@ -824,6 +826,7 @@ void activate_nearby_monsters(
 					if (!MONSTER_IS_PLAYER(aggressor) && caller_index!=aggressor_index && target_index!=aggressor_index &&
 						(!(flood_flags&_passed_zone_border) || (!(aggressor->flags&_monster_has_never_been_activated))) &&
 						((flood_flags&_activate_deaf_monsters) || !MONSTER_IS_DEAF(aggressor)) && // || !MONSTER_IS_PLAYER(caller) || !TYPE_IS_FRIEND(get_monster_definition(aggressor->type), caller->type) || !caller_hostile) &&
+						((flood_flags&_activate_glue_monsters) || !(polygon->type==_polygon_is_glue) || !obey_glue) &&
 						aggressor->mode!=_monster_locked)
 					{
 						bool monster_was_active= true;
@@ -892,6 +895,7 @@ static int32 monster_activation_flood_proc(
 	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
 	struct line_data *line= get_line_data(line_index);
 	int32 cost= 1;
+	bool obey_glue= (static_world->environment_flags&_environment_glue_m1);
 
 //	dprintf("P#%d==>P#%d by L#%d", source_polygon_index, destination_polygon_index, line_index);
 
@@ -908,6 +912,18 @@ static int32 monster_activation_flood_proc(
 			// canÕt pass this zone border
 			cost= -1;
 		}
+	}
+	else if ((destination_polygon->type==_polygon_is_superglue) &&
+	         ((*flags)&_cannot_pass_superglue) &&
+	         obey_glue)
+	{
+		cost= -1;
+	}
+	else if ((destination_polygon->type==_polygon_is_glue) &&
+	         !((*flags)&_activate_glue_monsters) &&
+	         obey_glue)
+	{
+		cost= -1;
 	}
 	
 	if (!((*flags)&_pass_solid_lines) && LINE_IS_SOLID(line)) cost= -1;
