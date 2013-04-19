@@ -2659,7 +2659,10 @@ static void kill_monster(
 	}
 	
 	/* stuff in an appropriate dead shape (or remove our object if we donÕt have a dead shape) */
-	if (shape==UNONE)
+	if (shape==UNONE ||
+	    ((static_world->environment_flags&_environment_ouch_hides_corpses) &&
+	     (get_polygon_data(object->polygon)->type==_polygon_is_major_ouch ||
+	      get_polygon_data(object->polygon)->type==_polygon_is_minor_ouch)))
 	{
 		remove_map_object(monster->object_index);
 	}
