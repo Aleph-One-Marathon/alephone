@@ -823,7 +823,7 @@ enum /* environment flags */
 	_environment_rebellion= 0x0004, // makes clients fight pfhor
 	_environment_low_gravity= 0x0008, // low gravity
 	_environment_glue_m1= 0x0010, // handle glue polygons like Marathon 1
-	_environment_ouch_hides_corpses= 0x0020, // the floor is lava
+	_environment_ouch_m1= 0x0020, // the floor is lava
 
 	_environment_network= 0x2000,	// these two pseudo-environments are used to prevent items 
 	_environment_single_player= 0x4000 // from arriving in the items.c code.

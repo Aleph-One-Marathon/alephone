@@ -2660,7 +2660,7 @@ static void kill_monster(
 	
 	/* stuff in an appropriate dead shape (or remove our object if we donÕt have a dead shape) */
 	if (shape==UNONE ||
-	    ((static_world->environment_flags&_environment_ouch_hides_corpses) &&
+	    ((static_world->environment_flags&_environment_ouch_m1) &&
 	     (get_polygon_data(object->polygon)->type==_polygon_is_major_ouch ||
 	      get_polygon_data(object->polygon)->type==_polygon_is_minor_ouch)))
 	{
@@ -3218,6 +3218,13 @@ int32 monster_pathfinding_cost_function(
 			case _polygon_is_monster_impassable:
 			case _polygon_is_teleporter:
 				cost= -1;
+				break;
+            
+			case _polygon_is_minor_ouch:
+			case _polygon_is_major_ouch:
+				if ((static_world->environment_flags&_environment_ouch_m1) &&
+				    !(definition->flags&(_monster_flys|_monster_floats)))
+					cost= -1;
 				break;
 		}
 	}
