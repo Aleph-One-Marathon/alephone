@@ -808,14 +808,13 @@ void animate_items(void) {
 				
 				// Randomize if non-animated; do only once
 				if (object->facing >= 0) {
-					if (animation->number_of_views == _unanimated)
+					if (randomize_object_sequence(object_index,shape))
 					{
-						randomize_object_sequence(object_index,shape);
 						object->facing = NONE;
 					}
 				}
 				// Now the animation
-				if (animation->number_of_views != _unanimated)
+				if (object->facing >= 0)
 					animate_object(object_index);
 			}
 		}
