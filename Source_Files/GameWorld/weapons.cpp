@@ -4278,6 +4278,28 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		Trigger1.charged_sound = NONE;
 		Trigger0.shell_casing_type = NONE;
 		Trigger1.shell_casing_type = NONE;
+
+		if (ObjPtr->weapon_class == _twofisted_pistol_class) 
+		{
+			// Marathon's settings for trigger 1 are mostly empty
+			ObjPtr->flags |= _weapon_fires_out_of_phase;
+			int16 dx = Trigger1.dx;
+			int16 dz = Trigger1.dz;
+			Trigger1 = Trigger0;
+			Trigger1.dx = dx;
+			Trigger1.dz = dz;
+		}
+		else if (ObjPtr->weapon_class == _dual_function_class)
+		{
+			// triggers share ammo and overloads must have
+			// been hard-coded for dual function weapons
+			// in Marathon; also, Marathon 2 expects
+			// rounds per magazine and ammunition type to match
+			ObjPtr->flags |= _weapon_triggers_share_ammo | _weapon_overloads;
+			Trigger1.rounds_per_magazine = Trigger0.rounds_per_magazine;
+			Trigger1.ammunition_type = Trigger0.ammunition_type;
+			
+		}
 	}
 	return S;
 }
