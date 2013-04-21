@@ -3051,8 +3051,7 @@ static void calculate_ticks_from_shapes(
 				primary.recovery_ticks= 0;
 			} else if (definition->flags & _weapon_is_marathon_1) {
 				// Marathon 1 weapons use the whole sequence for firing
-				primary.ticks_per_round = total_ticks;
-				primary.recovery_ticks -= 1;
+				primary.ticks_per_round = total_ticks - 1;
 			} else {
 				primary.ticks_per_round= 
 					(high_level_data->key_frame+1)*high_level_data->ticks_per_frame;
@@ -3072,8 +3071,7 @@ static void calculate_ticks_from_shapes(
 			{
 				if (definition->flags & _weapon_is_marathon_1)
 				{
-					secondary.ticks_per_round = total_ticks;
-					secondary.recovery_ticks -= 1;
+					secondary.ticks_per_round = total_ticks - 1;
 				} else {
 					secondary.ticks_per_round= 
 						(high_level_data->key_frame+1)*high_level_data->ticks_per_frame;
