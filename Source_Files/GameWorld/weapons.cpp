@@ -264,7 +264,7 @@ static void put_rounds_into_weapon(short player_index, short which_weapon, short
 static void blow_up_player(short player_index);
 static void select_next_weapon(short player_index, bool forward);
 static void calculate_weapon_position_for_idle(short player_index, short count, short weapon_type,
-	_fixed *height, _fixed *width);
+					       _fixed *height, _fixed *width, bool use_elevation);
 static void add_random_flutter(_fixed flutter_base, _fixed *height, _fixed *width);
 static void calculate_weapon_origin_and_vector(short player_index, short which_trigger,
 	world_point3d *origin, world_point3d *_vector, short *origin_polygon, angle delta_theta);
@@ -1198,7 +1198,7 @@ bool get_weapon_display_information(
 
 				/* Calculate the base location.. */
 				calculate_weapon_position_for_idle(player_index, which_trigger, 
-					weapon->weapon_type, &height, &width);
+								   weapon->weapon_type, &height, &width, !(definition->flags & _weapon_is_marathon_1));
 
 				/* Figure out where to draw it. */
 				switch(weapon->triggers[which_trigger].state)
@@ -1407,7 +1407,8 @@ bool get_weapon_display_information(
 				
 				// LP: bug out if there is no weapon sequence to render
 				if (!high_level_data) return false;
-				if (!(frame>=0 && frame<high_level_data->frames_per_view)) return false;
+				if (!(frame>=0 && frame<high_level_data->frames_per_view))
+					return false;
 				
 				data->collection= BUILD_COLLECTION(definition->collection, 0);
 				data->shape_index = shape_index;
@@ -2749,7 +2750,8 @@ static void calculate_weapon_position_for_idle(
 	short count,
 	short weapon_type,
 	_fixed *height,
-	_fixed *width)
+	_fixed *width,
+	bool use_elevation)
 {
 	struct weapon_definition *definition= get_weapon_definition(weapon_type);
 	struct player_data *player= get_player_data(player_index);
@@ -2769,7 +2771,7 @@ static void calculate_weapon_position_for_idle(
 	/* Weapons are the first thing drawn */
 	bob_height= (player->variables.step_amplitude*definition->bob_amplitude)>>FIXED_FRACTIONAL_BITS;
 	bob_height= (bob_height*table[vertical_angle])>>TRIG_SHIFT;
-	bob_height+= sine_table[player->elevation]<<3;
+	if (use_elevation) bob_height+= sine_table[player->elevation]<<3;
 	*height+= bob_height;
 
 	bob_width= (player->variables.step_amplitude*definition->horizontal_amplitude)>>FIXED_FRACTIONAL_BITS;
