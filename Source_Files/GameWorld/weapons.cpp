@@ -2792,6 +2792,10 @@ static void modify_position_for_two_weapons(
 	{
 		case _melee_class:
 			{
+				if (definition->flags & _weapon_is_marathon_1) {
+					break;
+				}
+
 				struct weapon_data *weapon= get_player_current_weapon(player_index);
 				struct trigger_definition *trigger_definition;
 				short total_delay, delay, breakpoint_delay, sign;
@@ -2904,8 +2908,13 @@ static short get_active_trigger_count_and_states(
 	}
 
 	(*first_trigger)= _primary_weapon;
+
+	int16 weapon_class = definition->weapon_class;
+	if (weapon_class == _melee_class && (definition->flags & _weapon_is_marathon_1)) {
+		weapon_class = _normal_class;
+	}
 	
-	switch(definition->weapon_class)
+	switch(weapon_class)
 	{
 		case _normal_class:
 			active_count= 1;
