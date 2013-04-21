@@ -129,6 +129,8 @@ typedef struct clut_record {
 // Global variables
 static image_file_t ImagesFile;
 static image_file_t ScenarioFile;
+static image_file_t ExternalResourcesFile;
+static image_file_t ShapesImagesFile;
 
 // Prototypes
 static void shutdown_images_handler(void);
@@ -152,6 +154,7 @@ extern short interface_bit_depth;
 extern bool draw_clip_rect_active;
 extern screen_rectangle draw_clip_rect;
 
+extern bool m1_shapes;
 
 /*
  *  Uncompress picture data, returns size of compressed image data that was read
@@ -1013,10 +1016,10 @@ void initialize_images_manager(void)
 	file.SetNameWithPath(getcstr(temporary, strFILENAMES, filenameIMAGES)); // _typecode_images
 	
 	if (!file.Exists())
-		alert_user(fatalError, strERRORS, badExtraFileLocations, fnfErr);
+        logContext("Images file not found");
 	
 	if (!ImagesFile.open_file(file))
-		alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
+        logContext("Images file could not be opened");
 
 	atexit(shutdown_images_handler);
 }
@@ -1028,6 +1031,8 @@ void initialize_images_manager(void)
 
 static void shutdown_images_handler(void)
 {
+	ExternalResourcesFile.close_file();
+	ShapesImagesFile.close_file();
 	ScenarioFile.close_file();
 	ImagesFile.close_file();
 }
@@ -1040,6 +1045,20 @@ static void shutdown_images_handler(void)
 void set_scenario_images_file(FileSpecifier &file)
 {
 	ScenarioFile.open_file(file);
+}
+
+void set_shapes_images_file(FileSpecifier &file)
+{
+	ShapesImagesFile.open_file(file);
+}
+
+void set_external_resources_images_file(FileSpecifier &file)
+{
+    // fail here, instead of above, if Images is missing
+	if ((!file.Exists() || !ExternalResourcesFile.open_file(file)) &&
+        !ImagesFile.is_open())
+        alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
+        
 }
 
 
@@ -1212,11 +1231,16 @@ bool image_file_t::get_text(int id, LoadedResource &rsrc)
 
 bool get_picture_resource_from_images(int base_resource, LoadedResource &PictRsrc)
 {
-	assert(ImagesFile.is_open());
-
-	int RsrcID = ImagesFile.determine_pict_resource_id(
-		base_resource, _images_file_delta16, _images_file_delta32);
-	return ImagesFile.get_pict(RsrcID, PictRsrc);
+    bool found = false;
+    
+    if (!found && ImagesFile.is_open())
+        found = ImagesFile.get_pict(ImagesFile.determine_pict_resource_id(base_resource, _images_file_delta16, _images_file_delta32), PictRsrc);
+    if (!found && ExternalResourcesFile.is_open())
+        found = ExternalResourcesFile.get_pict(base_resource, PictRsrc);
+    if (!found && ShapesImagesFile.is_open())
+        found = ShapesImagesFile.get_pict(base_resource, PictRsrc);
+    
+    return found;
 }
 
 bool get_sound_resource_from_images(int resource_number, LoadedResource &SoundRsrc)
@@ -1227,14 +1251,13 @@ bool get_sound_resource_from_images(int resource_number, LoadedResource &SoundRs
 	return ImagesFile.get_snd(resource_number, SoundRsrc);
 }
 
-
 bool images_picture_exists(int base_resource)
 {
-	assert(ImagesFile.is_open());
-
-	int RsrcID = ImagesFile.determine_pict_resource_id(
-		base_resource, _images_file_delta16, _images_file_delta32);
-	return ImagesFile.has_pict(RsrcID);
+    if (m1_shapes && (base_resource == MAIN_MENU_BASE || base_resource == MAIN_MENU_BASE+1))
+        return true;
+    
+    LoadedResource PictRsrc;
+    return get_picture_resource_from_images(base_resource, PictRsrc);
 }
 
 
@@ -1369,9 +1392,10 @@ void draw_full_screen_pict_resource_from_images(int pict_resource_number)
 {
 	if (m1_draw_full_screen_pict_resource_from_images(pict_resource_number))
 		return;
-	LoadedResource PictRsrc;
-	get_picture_resource_from_images(pict_resource_number, PictRsrc);
-	draw_picture(PictRsrc);
+    
+    LoadedResource PictRsrc;
+    if (get_picture_resource_from_images(pict_resource_number, PictRsrc))
+        draw_picture(PictRsrc);
 }
 
 
@@ -1381,37 +1405,27 @@ void draw_full_screen_pict_resource_from_images(int pict_resource_number)
 
 bool get_picture_resource_from_scenario(int base_resource, LoadedResource &PictRsrc)
 {
-	if (!ScenarioFile.is_open())
-		return false;
-
-	int RsrcID = ScenarioFile.determine_pict_resource_id(
-		base_resource, _scenario_file_delta16, _scenario_file_delta32);
-
-	bool success = ScenarioFile.get_pict(RsrcID, PictRsrc);
-#ifdef mac
-	if (success) {
-		Handle PictHdl = PictRsrc.GetHandle();
-		if (PictHdl) HNoPurge(PictHdl);
-	}
-#endif
-	return success;
+    bool found = false;
+    
+    if (!found && ScenarioFile.is_open())
+        found = ScenarioFile.get_pict(ScenarioFile.determine_pict_resource_id(base_resource, _scenario_file_delta16, _scenario_file_delta32), PictRsrc);
+    if (!found && ShapesImagesFile.is_open())
+        found = ShapesImagesFile.get_pict(base_resource, PictRsrc);
+    
+    return found;
 }
 
 bool scenario_picture_exists(int base_resource)
 {
-	if (!ScenarioFile.is_open())
-		return false;
-
-	int RsrcID = ScenarioFile.determine_pict_resource_id(
-		base_resource, _scenario_file_delta16, _scenario_file_delta32);
-	return ScenarioFile.has_pict(RsrcID);
+    LoadedResource PictRsrc;
+    return get_picture_resource_from_scenario(base_resource, PictRsrc);
 }
 
 void draw_full_screen_pict_resource_from_scenario(int pict_resource_number)
 {
 	LoadedResource PictRsrc;
-	get_picture_resource_from_scenario(pict_resource_number, PictRsrc);
-	draw_picture(PictRsrc);
+	if (get_picture_resource_from_scenario(pict_resource_number, PictRsrc))
+        draw_picture(PictRsrc);
 }
 
 
@@ -1461,6 +1475,11 @@ struct color_table *calculate_picture_clut(int CLUTSource, int pict_resource_num
 {
 	struct color_table *picture_table = NULL;
 
+#if 1
+    // with TRUE_COLOR_ONLY turned on, specific cluts don't matter
+    picture_table = build_8bit_system_color_table();
+    build_direct_color_table(picture_table, interface_bit_depth);
+#else
 	// Select the source
 	image_file_t *OFilePtr = NULL;
 	switch (CLUTSource) {
@@ -1496,6 +1515,7 @@ struct color_table *calculate_picture_clut(int CLUTSource, int pict_resource_num
 			build_direct_color_table(picture_table, interface_bit_depth);
 	}
 
+#endif
 	return picture_table;
 }
 

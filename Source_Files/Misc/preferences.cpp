@@ -2814,6 +2814,7 @@ void load_environment_from_preferences(
 	{
 		set_external_resources_file(File);
 	}
+	set_external_resources_images_file(File);
 }
 
 

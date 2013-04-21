@@ -278,6 +278,19 @@ struct screen_data display_screens[]= {
 	{ FINAL_SCREEN_BASE, NUMBER_OF_FINAL_SCREENS, FINAL_SCREEN_DURATION }
 };
 
+struct screen_data m1_display_screens[]= {
+	{ 1111, 4, INTRO_SCREEN_DURATION },
+	{ MAIN_MENU_BASE, 1, 0 },
+	{ 10000, NUMBER_OF_CHAPTER_HEADINGS, CHAPTER_HEADING_DURATION },
+	{ PROLOGUE_SCREEN_BASE, NUMBER_OF_PROLOGUE_SCREENS, PROLOGUE_DURATION },
+	{ EPILOGUE_SCREEN_BASE, NUMBER_OF_EPILOGUE_SCREENS, EPILOGUE_DURATION },
+	{ 1000, 1, CREDIT_SCREEN_DURATION},
+	{ INTRO_SCREEN_BETWEEN_DEMO_BASE, NUMBER_OF_INTRO_SCREENS_BETWEEN_DEMOS, DEMO_INTRO_SCREEN_DURATION },
+	{ FINAL_SCREEN_BASE, NUMBER_OF_FINAL_SCREENS, FINAL_SCREEN_DURATION }
+};
+
+
+
 #if 0
 struct chapter_screen_sound_data {
 	short level;
@@ -306,6 +319,7 @@ static struct color_table *current_picture_clut= NULL;
 extern short interface_bit_depth;
 extern short bit_depth;
 extern bool insecure_lua;
+extern bool m1_shapes;
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
 extern bool load_game_from_file(FileSpecifier& File);
@@ -354,6 +368,8 @@ screen_data *get_screen_data(
 	short index)
 {
 	assert(index>=0 && index<NUMBER_OF_SCREENS);
+	if (m1_shapes)
+		return m1_display_screens+index;
 	return display_screens+index;
 }
 
@@ -1654,8 +1670,16 @@ static void display_epilogue(
 	
 	hide_cursor();
 	// Setting of the end-screen parameters has been moved to XML_LevelScript.cpp
-	for (int i=0; i<NumEndScreens; i++)
-		try_and_display_chapter_screen(CHAPTER_SCREEN_BASE+EndScreenIndex+i, true, true);
+	int end_offset = EndScreenIndex;
+	int end_count = NumEndScreens;
+	if (m1_shapes) // should check map, but this is easier
+	{
+		// ignore M2 defaults set in LoadLevelScripts()
+		end_offset = 100;
+		end_count = 2;
+	}
+	for (int i=0; i<end_count; i++)
+		try_and_display_chapter_screen(end_offset+i, true, true);
 	show_cursor();
 }
 
@@ -1872,7 +1896,7 @@ static void transfer_to_new_level(
 		// if this is the EPILOGUE_LEVEL_NUMBER, then it is time to get
 		// out of here already (as we've just played the epilogue movie,
 		// we can move on to the _display_epilogue game state)
-		if (level_number == EPILOGUE_LEVEL_NUMBER) {
+		if (level_number == (m1_shapes ? 100 : EPILOGUE_LEVEL_NUMBER)) {
 			finish_game(false);
 			show_cursor(); // for some reason, cursor stays hidden otherwise
 			set_game_state(_begin_display_of_epilogue);
@@ -1880,7 +1904,7 @@ static void transfer_to_new_level(
 			return;
 		}
 
-		if (!game_is_networked) try_and_display_chapter_screen(CHAPTER_SCREEN_BASE + level_number, true, false);
+		if (!game_is_networked) try_and_display_chapter_screen(level_number, true, false);
 		success= goto_level(&entry, false);
 		set_keyboard_controller_status(true);
 	}
@@ -2140,7 +2164,7 @@ static bool begin_game(
 		{
 			FindLevelMovie(entry.level_number);
 			show_movie(entry.level_number);
-			try_and_display_chapter_screen(CHAPTER_SCREEN_BASE + entry.level_number, false, false);
+			try_and_display_chapter_screen(entry.level_number, false, false);
 		}
 
 		Crosshairs_SetActive(player_preferences->crosshairs_active);
@@ -2665,13 +2689,14 @@ static void handle_interface_menu_screen_click(
 
 /* Note that this is modal. This sucks... */
 static void try_and_display_chapter_screen(
-	short pict_resource_number,
+	short level,
 	bool interface_table_is_valid,
 	bool text_block)
 {
 	if (Movie::instance()->IsRecording())
 		return;
 	
+	short pict_resource_number = get_screen_data(_display_chapter_heading)->screen_base + level;
 	/* If the picture exists... */
 	if (scenario_picture_exists(pict_resource_number))
 	{

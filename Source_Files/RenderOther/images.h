@@ -54,6 +54,8 @@ extern struct color_table *calculate_picture_clut(int CLUTSource, int pict_resou
 extern struct color_table *build_8bit_system_color_table(void);
 
 extern void set_scenario_images_file(FileSpecifier& File);
+extern void set_shapes_images_file(FileSpecifier& File);
+extern void set_external_resources_images_file(FileSpecifier& File);
 
 extern void draw_full_screen_pict_resource_from_images(int pict_resource_number);
 extern void draw_full_screen_pict_resource_from_scenario(int pict_resource_number);

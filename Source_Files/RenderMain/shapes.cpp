@@ -97,6 +97,7 @@ Jan 17, 2001 (Loren Petrich):
 #include "game_errors.h"
 #include "FileHandler.h"
 #include "progress.h"
+#include "images.h"
 
 #include "map.h"
 
@@ -1092,6 +1093,7 @@ void open_shapes_file(FileSpecifier& File)
 		set_game_error(SavedType,SavedError);
 #endif
 	}
+	set_shapes_images_file(File);
 }
 
 static void close_shapes_file(void)
