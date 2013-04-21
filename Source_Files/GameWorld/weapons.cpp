@@ -4267,6 +4267,8 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		
 		StreamToValue(S,ObjPtr->await_reload_ticks);
 		StreamToValue(S,ObjPtr->ready_ticks);
+		ObjPtr->loading_ticks = 0;
+		ObjPtr->finish_loading_ticks = 0;
 
 		StreamToValue(S, Trigger0.recovery_ticks);
 		StreamToValue(S, Trigger1.recovery_ticks);
