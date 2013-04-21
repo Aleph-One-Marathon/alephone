@@ -876,6 +876,10 @@ void update_player_weapons(
 							} else {
 								trigger->state= _weapon_recovering;
 								trigger->phase= trigger_definition->recovery_ticks;
+								if (definition->flags & _weapon_is_marathon_1)
+								{
+									trigger->sequence = 0;
+								}
 							}
 						}
 						break;
@@ -1329,7 +1333,14 @@ bool get_weapon_display_information(
 							struct trigger_definition *trigger_definition= get_player_trigger_definition(player_index, which_trigger);
 							assert(trigger_definition->recovery_ticks);
 							height-= (definition->kick_height*phase)/trigger_definition->recovery_ticks;
-							shape_index= definition->firing_shape;
+							if (definition->flags & _weapon_is_marathon_1) 
+							{
+								shape_index = definition->idle_shape;
+							}
+							else
+							{
+								shape_index= definition->firing_shape;
+							}
 						}
 						break;
 			
@@ -3011,6 +3022,9 @@ static void calculate_ticks_from_shapes(
 		{
 			struct shape_animation_data *high_level_data;
 			short total_ticks;
+
+			trigger_definition& primary = definition->weapons_by_trigger[_primary_weapon];
+			trigger_definition& secondary = definition->weapons_by_trigger[_secondary_weapon];
 		
 			high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection,
 				definition->firing_shape));
@@ -3022,31 +3036,39 @@ static void calculate_ticks_from_shapes(
 			if(definition->flags & _weapon_is_automatic)
 			{
 				/* All automatic weapons have no recovery time.. */
-				definition->weapons_by_trigger[_primary_weapon].ticks_per_round= total_ticks;
-				definition->weapons_by_trigger[_primary_weapon].recovery_ticks= 0;
+				primary.ticks_per_round= total_ticks;
+				primary.recovery_ticks= 0;
+			} else if (definition->flags & _weapon_is_marathon_1) {
+				// Marathon 1 weapons use the whole sequence for firing
+				primary.ticks_per_round = total_ticks;
+				primary.recovery_ticks -= 1;
 			} else {
-				definition->weapons_by_trigger[_primary_weapon].ticks_per_round= 
+				primary.ticks_per_round= 
 					(high_level_data->key_frame+1)*high_level_data->ticks_per_frame;
-				definition->weapons_by_trigger[_primary_weapon].recovery_ticks= total_ticks-
+				primary.recovery_ticks= total_ticks-
 					definition->weapons_by_trigger[_primary_weapon].ticks_per_round;
 			}
 
 			/* Fixup the secondary trigger.. */
-			if(definition->weapons_by_trigger[_secondary_weapon].ticks_per_round== NONE && (definition->flags & _weapon_triggers_share_ammo))
+			if(secondary.ticks_per_round== NONE && (definition->flags & _weapon_triggers_share_ammo))
 			{
-				definition->weapons_by_trigger[_secondary_weapon].ticks_per_round= 
-					definition->weapons_by_trigger[_primary_weapon].ticks_per_round;
-				definition->weapons_by_trigger[_secondary_weapon].recovery_ticks= 
-					definition->weapons_by_trigger[_primary_weapon].recovery_ticks;
+				secondary.ticks_per_round= primary.ticks_per_round;
+				secondary.recovery_ticks= primary.recovery_ticks;
 			}
 
 			/* Rocky modification */
 			if(definition->weapon_class==_melee_class || definition->weapon_class==_twofisted_pistol_class)
 			{
-				definition->weapons_by_trigger[_secondary_weapon].ticks_per_round= 
-					(high_level_data->key_frame+1)*high_level_data->ticks_per_frame;
-				definition->weapons_by_trigger[_secondary_weapon].recovery_ticks= total_ticks-
-					definition->weapons_by_trigger[_secondary_weapon].ticks_per_round;
+				if (definition->flags & _weapon_is_marathon_1)
+				{
+					secondary.ticks_per_round = total_ticks;
+					secondary.recovery_ticks -= 1;
+				} else {
+					secondary.ticks_per_round= 
+						(high_level_data->key_frame+1)*high_level_data->ticks_per_frame;
+					secondary.recovery_ticks= total_ticks-
+						definition->weapons_by_trigger[_secondary_weapon].ticks_per_round;
+				}
 			}
 		}
 
@@ -3219,6 +3241,8 @@ static void update_sequence(
 			if(which_trigger==_primary_weapon && (definition->flags & _weapon_is_automatic)
 				|| (which_trigger==_secondary_weapon && (definition->flags & _weapon_is_automatic) && (definition->flags & _weapon_secondary_has_angular_flipping)))
 			{
+			} else if (trigger->state == _weapon_recovering && (definition->flags & _weapon_is_marathon_1)) {
+				high_level_data = get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, definition->idle_shape));
 			} else {
 				high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
 					definition->firing_shape));
@@ -4300,6 +4324,8 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 			Trigger1.ammunition_type = Trigger0.ammunition_type;
 			
 		}
+
+		ObjPtr->flags |= _weapon_is_marathon_1;
 	}
 	return S;
 }
