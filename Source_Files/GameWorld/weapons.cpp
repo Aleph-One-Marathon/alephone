@@ -3671,7 +3671,7 @@ static void test_raise_double_weapon(
 	struct weapon_definition *definition= get_current_weapon_definition(player_index);
 	struct player_data *player= get_player_data(player_index);
 	
-	if(definition->weapon_class==_twofisted_pistol_class || definition->weapon_class==_melee_class)
+	if(definition->weapon_class==_twofisted_pistol_class || (definition->weapon_class==_melee_class && !(definition->flags & _weapon_is_marathon_1)))
 	{
 		struct player_weapon_data *player_weapons= get_player_weapon_data(player_index);
 
