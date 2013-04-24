@@ -4354,7 +4354,7 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 			// been hard-coded for dual function weapons
 			// in Marathon; also, Marathon 2 expects
 			// rounds per magazine and ammunition type to match
-			ObjPtr->flags |= _weapon_triggers_share_ammo | _weapon_overloads;
+			ObjPtr->flags |= _weapon_triggers_share_ammo;
 			Trigger1.rounds_per_magazine = Trigger0.rounds_per_magazine;
 			Trigger1.ammunition_type = Trigger0.ammunition_type;
 			
