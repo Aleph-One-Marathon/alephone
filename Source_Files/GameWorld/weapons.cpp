@@ -1275,6 +1275,10 @@ bool get_weapon_display_information(
 								if(automatic_still_firing(current_player_index, which_trigger))
 								{
 									shape_index= definition->firing_shape;
+									if (definition->flags & _weapon_flutters_while_firing) 
+									{
+										add_random_flutter(FIXED_ONE, &height, &width);
+									}
 								} else {
 									shape_index= definition->idle_shape;
 									// Now handled in UpdateIdleWeapons()
@@ -1332,6 +1336,10 @@ bool get_weapon_display_information(
 							trigger_definition= get_player_trigger_definition(player_index, which_trigger);
 							height -= (definition->kick_height*(trigger_definition->ticks_per_round-phase))/trigger_definition->ticks_per_round;
 							shape_index= definition->firing_shape;
+							if (definition->flags & _weapon_flutters_while_firing)
+							{
+								add_random_flutter(FIXED_ONE, &height, &width);
+							}
 						}
 						break;
 			
@@ -4350,16 +4358,24 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		}
 		else if (ObjPtr->weapon_class == _dual_function_class)
 		{
-			// triggers share ammo and overloads must have
-			// been hard-coded for dual function weapons
-			// in Marathon; also, Marathon 2 expects
-			// rounds per magazine and ammunition type to match
+			// triggers share ammo must have been
+			// hard-coded for dual function weapons in
+			// Marathon; also, Marathon 2 expects rounds
+			// per magazine and ammunition type to match
 			ObjPtr->flags |= _weapon_triggers_share_ammo;
 			Trigger1.rounds_per_magazine = Trigger0.rounds_per_magazine;
 			Trigger1.ammunition_type = Trigger0.ammunition_type;
 			
 		}
 
+		// automatic weapons in Marathon flutter while firing
+		if (ObjPtr->flags &= _weapon_is_automatic) 
+		{
+			ObjPtr->flags |= _weapon_flutters_while_firing;
+		}
+
+		// this makes the TOZT render correctly, but we don't
+		// want it to flutter so apply after the above statement
 		if (Trigger0.recovery_ticks == 0)
 		{
 			ObjPtr->flags |= _weapon_is_automatic;

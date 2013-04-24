@@ -65,7 +65,10 @@ enum /* weapon flags */
 	_weapon_fires_under_media= 0x100,
 	_weapon_triggers_share_ammo= 0x200,
 	_weapon_secondary_has_angular_flipping= 0x400,
+	
+	// definitions for Marathon compatibility
 	_weapon_is_marathon_1 = 0x1000,
+	_weapon_flutters_while_firing = 0x2000,
 };
 
 enum {
