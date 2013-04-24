@@ -1197,8 +1197,16 @@ bool get_weapon_display_information(
 				phase= weapon->triggers[which_trigger].phase;
 
 				/* Calculate the base location.. */
-				calculate_weapon_position_for_idle(player_index, which_trigger, 
-								   weapon->weapon_type, &height, &width, !(definition->flags & _weapon_is_marathon_1));
+				if (definition->flags & _weapon_is_marathon_1) {
+					// only add in bob height if we're firing
+					if (weapon->triggers[which_trigger].state == _weapon_idle && !automatic_still_firing(player_index, which_trigger)) {
+						calculate_weapon_position_for_idle(player_index, which_trigger, weapon->weapon_type, &height, &width, false);
+					}
+				}
+				else
+				{
+					calculate_weapon_position_for_idle(player_index, which_trigger, weapon->weapon_type, &height, &width, true);
+				}
 
 				/* Figure out where to draw it. */
 				switch(weapon->triggers[which_trigger].state)
