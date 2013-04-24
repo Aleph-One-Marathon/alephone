@@ -3043,15 +3043,24 @@ static void calculate_ticks_from_shapes(
 			if(!high_level_data) continue;
 
 			total_ticks= high_level_data->ticks_per_frame*high_level_data->frames_per_view;
-				
-			if(definition->flags & _weapon_is_automatic)
+
+			if (definition->flags & _weapon_is_marathon_1)
+			{
+				if (definition->flags & _weapon_is_automatic)
+				{
+					primary.ticks_per_round = total_ticks - 1;
+					primary.recovery_ticks = 0;
+				}
+				else
+				{
+					primary.ticks_per_round = total_ticks - 1;
+				}
+			}
+			else if(definition->flags & _weapon_is_automatic)
 			{
 				/* All automatic weapons have no recovery time.. */
 				primary.ticks_per_round= total_ticks;
 				primary.recovery_ticks= 0;
-			} else if (definition->flags & _weapon_is_marathon_1) {
-				// Marathon 1 weapons use the whole sequence for firing
-				primary.ticks_per_round = total_ticks - 1;
 			} else {
 				primary.ticks_per_round= 
 					(high_level_data->key_frame+1)*high_level_data->ticks_per_frame;
@@ -3156,7 +3165,14 @@ static void update_automatic_sequence(
 		
 				frame= GET_SEQUENCE_FRAME(trigger->sequence);
 				
-				if(++frame>=high_level_data->frames_per_view)
+				// does Marathon 1 have a bug or something?
+				if (definition->flags & _weapon_is_marathon_1 && high_level_data->frames_per_view == 2)
+				{
+					if (++frame >= 1) {
+						frame = 0;
+					}
+				}
+				else if(++frame>=high_level_data->frames_per_view)
 				{
 					frame= 0;
 				}				
@@ -4334,6 +4350,11 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 			Trigger1.rounds_per_magazine = Trigger0.rounds_per_magazine;
 			Trigger1.ammunition_type = Trigger0.ammunition_type;
 			
+		}
+
+		if (Trigger0.recovery_ticks == 0)
+		{
+			ObjPtr->flags |= _weapon_is_automatic;
 		}
 
 		ObjPtr->flags |= _weapon_is_marathon_1;
