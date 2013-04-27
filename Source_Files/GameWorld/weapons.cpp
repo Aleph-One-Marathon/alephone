@@ -153,6 +153,7 @@ enum {
 enum {
 	_weapon_type= 0,
 	_shell_casing_type,
+	_weapon_ammo_type,
 	NUMBER_OF_DATA_TYPES
 };
 
@@ -180,6 +181,10 @@ enum { /* For the flags */ /* [11.unused 1.horizontal 1.vertical 3.unused] */
 #define FIRING_BEFORE_SHELL_CASING_SOUND_IS_PLAYED (TICKS_PER_SECOND/2)
 #define COST_PER_CHARGED_WEAPON_SHOT 4					
 #define ANGULAR_VARIANCE (32)
+
+#define M1_MISSILE_AMMO_SEQUENCE 20
+#define M1_MISSILE_AMMO_XOFFSET (FIXED_ONE/12)
+#define M1_MISSILE_AMMO_YOFFSET (-FIXED_ONE/15)
 
 enum // shell casing flags
 {
@@ -1189,7 +1194,7 @@ bool get_weapon_display_information(
 			/* Assume the best.. */
 			valid= true;
 	
-			if(type==_weapon_type)
+			if(type==_weapon_type || type==_weapon_ammo_type)
 			{
 				short phase;
 
@@ -1408,14 +1413,24 @@ bool get_weapon_display_information(
 						break;
 				}
 
-				/* Determine our frame. */		
-				frame= GET_SEQUENCE_FRAME(weapon->triggers[which_trigger].sequence);
+				/* Determine our frame. */
+				if (type==_weapon_ammo_type)
+				{
+					// hardcoded for Marathon 1 rocket launcher
+					shape_index = M1_MISSILE_AMMO_SEQUENCE;
+					frame = weapon->triggers[which_trigger].rounds_loaded - 1;
+				}
+				else
+					frame= GET_SEQUENCE_FRAME(weapon->triggers[which_trigger].sequence);
 
-				/* Go to the next frame for automatics.. */
-				update_automatic_sequence(current_player_index, which_trigger);
+				if (type==_weapon_type)
+				{
+					/* Go to the next frame for automatics.. */
+					update_automatic_sequence(current_player_index, which_trigger);
 				
-				// Also for idle weapons
-				UpdateIdleAnimation(current_player_index, which_trigger);
+					// Also for idle weapons
+					UpdateIdleAnimation(current_player_index, which_trigger);
+				}
 				
 				/* setup the positioning information */
 				high_level_data= get_shape_animation_data(BUILD_DESCRIPTOR(definition->collection, 
@@ -1445,6 +1460,13 @@ bool get_weapon_display_information(
 					data->flip_horizontal= true;
 				} else {
 					data->flip_horizontal= false;
+				}
+				
+				if (type==_weapon_ammo_type)
+				{
+					// hardcoded for Marathon 1 rocket launcher
+					data->vertical_position += M1_MISSILE_AMMO_YOFFSET;
+					data->horizontal_position += M1_MISSILE_AMMO_XOFFSET;
 				}
 			
 				/* Fill in the transfer mode and phase */
@@ -3396,6 +3418,19 @@ static bool get_weapon_data_type_for_count(
 	bool valid= true;
 		
 	*flags= 0;
+	
+	if ((definition->flags & _weapon_is_marathon_1) &&
+		(definition == get_weapon_definition(_weapon_missile_launcher)) &&
+		weapon->triggers[_primary_weapon].rounds_loaded)
+	{
+		if (count == 0)
+		{
+			*type= _weapon_ammo_type;
+			*index= _primary_weapon;
+			return true;
+		}
+		count -= 1;
+	}
 	
 	switch(definition->weapon_class)
 	{
