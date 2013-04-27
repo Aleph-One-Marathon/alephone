@@ -1974,7 +1974,8 @@ static void try_and_strip_player_items(
 	struct player_data *player= get_player_data(player_index);
 	short item_type;
 	
-	if (static_world->environment_flags&_environment_rebellion)
+	if (static_world->environment_flags&_environment_rebellion &&
+		!(static_world->environment_flags&_environment_rebellion_m1))
 	{
 		for (item_type= 0; item_type<NUMBER_OF_ITEMS; ++item_type)
 		{
