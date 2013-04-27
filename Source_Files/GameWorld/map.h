@@ -549,6 +549,7 @@ enum /* side flags */
 	_side_is_lighted_switch= 0x0010, // switch must be lighted to use
 	_side_switch_can_be_destroyed= 0x0020, // projectile hits toggle and destroy this switch
 	_side_switch_can_only_be_hit_by_projectiles= 0x0040,
+	_side_item_is_optional= 0x0080, // in Marathon, switches still work without items
 
 	_editor_dirty_bit= 0x4000 // used by the editor...
 };

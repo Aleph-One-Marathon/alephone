@@ -972,6 +972,7 @@ void load_sides(
 		{
 			map_sides[loop].transparent_texture.texture= UNONE;
 			map_sides[loop].ambient_delta= 0;
+			map_sides[loop].flags |= _side_item_is_optional;
 		}
 		++sides;
 	}

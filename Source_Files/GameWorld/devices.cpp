@@ -791,7 +791,7 @@ static void	change_panel_state(
 			}
 			break;
 		case _panel_is_tag_switch:
-			if (definition->item==NONE || (!state && try_and_subtract_player_item(player_index, definition->item)))
+			if (definition->item==NONE || (!state && try_and_subtract_player_item(player_index, definition->item)) || (!state && (side->flags & _side_item_is_optional)))
 			{
 				state= !state;
 				
