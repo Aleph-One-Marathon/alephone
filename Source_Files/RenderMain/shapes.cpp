@@ -1032,7 +1032,7 @@ void initialize_shape_handler()
 	FileSpecifier File;
 	get_default_shapes_spec(File);
 	open_shapes_file(File);
-	if (!ShapesFile.IsOpen())
+	if (!ShapesFile.IsOpen() && !M1ShapesFile.IsOpen())
 		alert_user(fatalError, strERRORS, badExtraFileLocations, ShapesFile.GetError());
 	else
 		atexit(shutdown_shape_handler);
