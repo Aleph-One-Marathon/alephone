@@ -60,11 +60,13 @@ public:
 
 	void PreloadLevelMusic();
 	void StopLevelMusic();
-	void ClearLevelMusic() { playlist.clear(); }
+	void ClearLevelMusic() { playlist.clear(); marathon_1_song_index = NONE; }
 	void PushBackLevelMusic(FileSpecifier& file) { playlist.push_back(file); }
 	bool IsLevelMusicActive() { return (!playlist.empty()); }
 	void LevelMusicRandom(bool fRandom) { random_order = fRandom; }
 	void SeedLevelMusic();
+	void SetClassicLevelMusic(short song_index);
+	bool HasClassicLevelMusic() { return marathon_1_song_index >= 0; }
 
 	void CheckVolume();
 
@@ -117,6 +119,7 @@ private:
 #endif
 
 	// level music
+	short marathon_1_song_index;
 	std::vector<FileSpecifier> playlist;
 	size_t song_number;
 	bool random_order;

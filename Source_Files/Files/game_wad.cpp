@@ -1651,6 +1651,8 @@ bool process_map_wad(
             static_world->mission_flags |= _mission_exploration_m1;
         }
         static_world->environment_flags |= _environment_glue_m1|_environment_ouch_m1;
+        
+        Music::instance()->SetClassicLevelMusic(static_world->song_index);
     }
 
 	/* Extract the game difficulty info.. */

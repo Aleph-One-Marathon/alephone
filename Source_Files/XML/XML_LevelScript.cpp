@@ -247,7 +247,8 @@ void ResetLevelScript()
 	
 	// If no scripts were loaded or none of them had music specified,
 	// then don't play any music
-	Music::instance()->ClearLevelMusic();
+	if (!Music::instance()->HasClassicLevelMusic())
+		Music::instance()->ClearLevelMusic();
 
 #ifdef HAVE_OPENGL	
 	OGL_LoadScreen::instance()->Clear();
