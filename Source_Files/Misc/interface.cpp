@@ -1475,6 +1475,7 @@ void do_menu_item_command(
 					break;
 					
 				case iCenterButton:
+					SoundManager::instance()->PlaySound(Sound_Center_Button(), 0, NONE);
 					break;
 					
 				case iSaveLastFilm:
@@ -1559,10 +1560,7 @@ bool enabled_item(
 		case iCredits:
 		case iQuit:
 	        case iAbout:
-			break;
-
 		case iCenterButton:
-			enabled= false;
 			break;
 			
 		case iReplayLastFilm:

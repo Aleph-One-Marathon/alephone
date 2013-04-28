@@ -1272,6 +1272,7 @@ static short _Sound_ButtonSuccess = _snd_computer_interface_page;
 static short _Sound_ButtonFailure = _snd_absorbed;
 static short _Sound_ButtonInoperative = _snd_cant_toggle_switch;
 static short _Sound_OGL_Reset = _snd_juggernaut_exploding;
+static short _Sound_Center_Button = _snd_owl;
 
 
 short Sound_TerminalLogon() {return _Sound_TerminalLogon;}
@@ -1296,6 +1297,7 @@ short Sound_ButtonSuccess() {return _Sound_ButtonSuccess;}
 short Sound_ButtonFailure() {return _Sound_ButtonFailure;}
 short Sound_ButtonInoperative() {return _Sound_ButtonInoperative;}
 short Sound_OGL_Reset() {return _Sound_OGL_Reset;}
+short Sound_Center_Button() {return _Sound_Center_Button;}
 
 // XML elements for parsing sound specifications;
 // this is currently what ambient and random sounds are to be used
@@ -1694,6 +1696,10 @@ bool XML_SoundsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"ogl_reset"))
 	{
 		return ReadInt16Value(Value,_Sound_OGL_Reset);
+	}
+	else if (StringsEqual(Tag,"center_button"))
+	{
+		return ReadInt16Value(Value,_Sound_Center_Button);
 	}
 	UnrecognizedTag();
 	return false;
