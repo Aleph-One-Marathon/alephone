@@ -391,7 +391,8 @@ enum // frequencies
 {
 	_lower_frequency= FIXED_ONE-FIXED_ONE/8,
 	_normal_frequency= FIXED_ONE,
-	_higher_frequency= FIXED_ONE+FIXED_ONE/8
+	_higher_frequency= FIXED_ONE+FIXED_ONE/8,
+	_m1_high_frequency= FIXED_ONE+FIXED_ONE/4
 };
 
 #endif

@@ -67,7 +67,7 @@ public:
 	void EnsureNetworkAudioPlaying();
 	void StopNetworkAudio();
 
-	void PlaySoundResource(LoadedResource &rsrc);
+	void PlaySoundResource(LoadedResource &rsrc, _fixed pitch = _normal_frequency);
 	void StopSoundResource();
 
 private:

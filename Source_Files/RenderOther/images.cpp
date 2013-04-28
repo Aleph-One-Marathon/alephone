@@ -131,6 +131,7 @@ static image_file_t ImagesFile;
 static image_file_t ScenarioFile;
 static image_file_t ExternalResourcesFile;
 static image_file_t ShapesImagesFile;
+static image_file_t SoundsImagesFile;
 
 // Prototypes
 static void shutdown_images_handler(void);
@@ -1031,6 +1032,7 @@ void initialize_images_manager(void)
 
 static void shutdown_images_handler(void)
 {
+	SoundsImagesFile.close_file();
 	ExternalResourcesFile.close_file();
 	ShapesImagesFile.close_file();
 	ScenarioFile.close_file();
@@ -1059,6 +1061,11 @@ void set_external_resources_images_file(FileSpecifier &file)
         !ImagesFile.is_open())
         alert_user(fatalError, strERRORS, badExtraFileLocations, -1);
         
+}
+
+void set_sounds_images_file(FileSpecifier &file)
+{
+	SoundsImagesFile.open_file(file);
 }
 
 
@@ -1245,10 +1252,18 @@ bool get_picture_resource_from_images(int base_resource, LoadedResource &PictRsr
 
 bool get_sound_resource_from_images(int resource_number, LoadedResource &SoundRsrc)
 {
-	if (!ImagesFile.is_open())
-		return false;
-
-	return ImagesFile.get_snd(resource_number, SoundRsrc);
+    bool found = false;
+    
+    if (!found && ImagesFile.is_open())
+        found = ImagesFile.get_snd(resource_number, SoundRsrc);
+    if (!found && SoundsImagesFile.is_open())
+    {
+        // Marathon 1 case: only one sound used for intro
+        if (resource_number == 1111 || resource_number == 1114)
+            found = SoundsImagesFile.get_snd(1240, SoundRsrc);
+    }
+    
+    return found;
 }
 
 bool images_picture_exists(int base_resource)
@@ -1435,17 +1450,15 @@ void draw_full_screen_pict_resource_from_scenario(int pict_resource_number)
 
 bool get_sound_resource_from_scenario(int resource_number, LoadedResource &SoundRsrc)
 {
-	if (!ScenarioFile.is_open())
-		return false;
-
-	bool success = ScenarioFile.get_snd(resource_number, SoundRsrc);
-#ifdef mac
-	if (success) {
-		Handle SndHdl = SoundRsrc.GetHandle();
-		if (SndHdl) HNoPurge(SndHdl);
-	}
-#endif
-	return success;
+    bool found = false;
+    
+    if (!found && ScenarioFile.is_open())
+        found = ScenarioFile.get_snd(resource_number, SoundRsrc);
+    if (!found && SoundsImagesFile.is_open())
+        // Marathon 1 case: only one sound used for chapter screens
+        found = SoundsImagesFile.get_snd(1240, SoundRsrc);
+    
+    return found;
 }
 
 

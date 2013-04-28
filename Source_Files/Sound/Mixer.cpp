@@ -183,7 +183,7 @@ void Mixer::StopNetworkAudio()
 #endif
 }
 
-void Mixer::PlaySoundResource(LoadedResource &rsrc)
+void Mixer::PlaySoundResource(LoadedResource &rsrc, _fixed pitch)
 {
 	if (!channels.size()) return;
 
@@ -197,7 +197,7 @@ void Mixer::PlaySoundResource(LoadedResource &rsrc)
 		{
 			SDL_LockAudio();
 			c->active = true;
-			c->LoadSoundHeader(header, data, FIXED_ONE);
+			c->LoadSoundHeader(header, data, pitch);
 			c->left_volume = c->right_volume = 0x100;
 			SDL_UnlockAudio();
 		}

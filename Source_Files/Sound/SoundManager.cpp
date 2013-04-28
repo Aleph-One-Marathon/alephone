@@ -24,6 +24,7 @@ SOUND.C
 #include "ReplacementSounds.h"
 #include "sound_definitions.h"
 #include "Mixer.h"
+#include "images.h"
 
 #define SLOT_IS_USED(o) ((o)->flags&(uint16)0x8000)
 #define SLOT_IS_FREE(o) (!SLOT_IS_USED(o))
@@ -195,6 +196,7 @@ bool SoundManager::OpenSoundFile(FileSpecifier& File)
 		{
 			return false;
 		}
+		set_sounds_images_file(File);
 	}
 
 	sound_source = (parameters.flags & _16bit_sound_flag) ? _16bit_22k_source : _8bit_22k_source;

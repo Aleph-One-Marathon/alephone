@@ -2483,7 +2483,8 @@ static void next_game_screen(
 				SoundRsrc.Unload();
 				if (get_sound_resource_from_images(pict_resource_number, SoundRsrc))
 				{
-					Mixer::instance()->PlaySoundResource(SoundRsrc);
+					_fixed pitch = (m1_shapes && game_state.state==_display_intro_screens) ? _m1_high_frequency : _normal_frequency;
+					Mixer::instance()->PlaySoundResource(SoundRsrc, pitch);
 				}
 			}
 		}
@@ -2720,10 +2721,6 @@ static void try_and_display_chapter_screen(
 		if (current_picture_clut)
 		{
 			LoadedResource SoundRsrc;
-#if defined(mac)
-			SndChannelPtr channel= NULL;
-			SndListHandle sound= NULL;
-#endif
 
 			/* slam the entire clut to black, now. */
 			if (interface_bit_depth==8) 
@@ -2737,19 +2734,8 @@ static void try_and_display_chapter_screen(
 
 			if (get_sound_resource_from_scenario(pict_resource_number,SoundRsrc))
 			{
-#if defined(mac)
-				sound = SndListHandle(SoundRsrc.GetHandle());
-				
-				OSErr sound_error= SndNewChannel(&channel, 0, 0, (SndCallBackUPP) NULL);
-					
-				if (sound_error==noErr)
-				{
-					HLockHi((Handle)sound);
-					SndPlay(channel, sound, true);
-				}
-#elif defined(SDL)
-				Mixer::instance()->PlaySoundResource(SoundRsrc);
-#endif
+				_fixed pitch = (m1_shapes && level == 101) ? _m1_high_frequency : _normal_frequency;
+				Mixer::instance()->PlaySoundResource(SoundRsrc, pitch);
 			}
 			
 			/* Fade in.... */
@@ -2763,12 +2749,7 @@ static void try_and_display_chapter_screen(
 			/* Fade out! (Pray) */
 			interface_fade_out(pict_resource_number, false);
 			
-#if defined(mac)
-			if (channel)
-				SndDisposeChannel(channel, true);
-#elif defined(SDL)
 			Mixer::instance()->StopSoundResource();
-#endif
 		}
 		game_state.state= existing_state;
 	}
