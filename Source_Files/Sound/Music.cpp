@@ -285,11 +285,9 @@ void Music::SeedLevelMusic()
 
 void Music::SetClassicLevelMusic(short song_index)
 {
+    ClearLevelMusic();
     if (song_index < 0)
-    {
-        ClearLevelMusic();
         return;
-    }
     
     FileSpecifier file;
     sprintf(temporary, "Music/%02d.ogg", song_index);
@@ -300,10 +298,7 @@ void Music::SetClassicLevelMusic(short song_index)
         file.SetNameWithPath(temporary);
     }
     if (!file.Exists())
-    {
-        ClearLevelMusic();
         return;
-    }
     
     PushBackLevelMusic(file);
     marathon_1_song_index = song_index;
