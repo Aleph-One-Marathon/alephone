@@ -53,6 +53,7 @@ enum /* polygon colors */
 	_polygon_hill_color,
 	_polygon_minor_ouch_color,	// LP, AlexJS: these two added for M1 compatibility
 	_polygon_major_ouch_color,
+	_polygon_teleporter_color,
 	NUMBER_OF_POLYGON_COLORS,
 	// For backwards compatibility: all those before the "ouch" colors
 	NUMBER_OF_OLD_POLYGON_COLORS = _polygon_hill_color + 1

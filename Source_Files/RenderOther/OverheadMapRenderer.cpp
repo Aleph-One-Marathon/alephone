@@ -112,6 +112,11 @@ void OverheadMapClass::Render(overhead_map_data& Control)
 					case _polygon_is_major_ouch:
 						color = _polygon_major_ouch_color;
 						break;
+                        
+					case _polygon_is_teleporter:
+						color = _polygon_teleporter_color;
+						break;
+                        
 				case _polygon_is_hill:
 					color = _polygon_hill_color;
 					break;

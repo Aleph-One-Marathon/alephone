@@ -143,7 +143,8 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 		{137*256, 0, 137*256},		// PfhorSlime
 		{0, 12000, 0},			// Hill
 		{76*256, 27*256, 0},		// Minor Damage
-		{137*256, 0, 137*256}		// Major Damage
+		{137*256, 0, 137*256},		// Major Damage
+		{0, 12000, 0}			// Teleporter
 	},
 	// Line definitions (color, 4 widths)
 	{
