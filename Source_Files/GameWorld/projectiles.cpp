@@ -1243,7 +1243,12 @@ uint8* unpack_m1_projectile_definition(uint8* Stream, size_t Count)
 
 		ObjPtr->sound_pitch = FIXED_ONE;
 		StreamToValue(S,ObjPtr->flyby_sound);
-		ObjPtr->rebound_sound = NONE;		
+		ObjPtr->rebound_sound = NONE;
+
+		if (ObjPtr->damage.type == _damage_projectile)
+		{
+			ObjPtr->flags |= _bleeding_projectile;
+		}
 	}
 
 	return S;
