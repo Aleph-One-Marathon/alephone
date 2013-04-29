@@ -3239,7 +3239,7 @@ static void UpdateIdleAnimation(
 	short animation_type= _obj_not_animated;
 	
 	/* if this animation has frames, animate it */		
-	if (animation->frames_per_view>=1 && animation->number_of_views!=_unanimated)
+	if (animation->frames_per_view>=1 && animation->number_of_views!=_unanimated && !(definition->flags & _weapon_is_marathon_1))
 	{
 		short frame, phase;
 		
@@ -3279,6 +3279,8 @@ static void UpdateIdleAnimation(
 		}
 		
 		trigger->sequence= BUILD_SEQUENCE(frame, phase);
+	} else {
+		trigger->sequence = BUILD_SEQUENCE(0, 0);
 	}
 }
 
