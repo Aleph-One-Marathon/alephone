@@ -4415,6 +4415,12 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		{
 			ObjPtr->flags |= _weapon_is_automatic;
 		}
+		
+		// SPNKR doesn't have a firing shape, just use idle
+		if (ObjPtr->firing_shape == NONE)
+		{
+			ObjPtr->firing_shape = ObjPtr->idle_shape;
+		}
 
 		ObjPtr->flags |= _weapon_is_marathon_1;
 	}
