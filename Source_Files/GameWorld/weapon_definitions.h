@@ -67,6 +67,7 @@ enum /* weapon flags */
 	_weapon_secondary_has_angular_flipping= 0x400,
 	
 	// definitions for Marathon compatibility
+	_weapon_disappears_after_use_m1 = 0x04,
 	_weapon_is_marathon_1 = 0x1000,
 	_weapon_flutters_while_firing = 0x2000,
 };

@@ -4383,6 +4383,11 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		Trigger0.shell_casing_type = NONE;
 		Trigger1.shell_casing_type = NONE;
 
+		if (ObjPtr->flags & _weapon_disappears_after_use_m1) {
+			ObjPtr->flags |= _weapon_disappears_after_use;
+			ObjPtr->flags &= ~_weapon_disappears_after_use_m1;
+		}
+
 		if (ObjPtr->weapon_class == _twofisted_pistol_class) 
 		{
 			// Marathon's settings for trigger 1 are mostly empty
@@ -4406,7 +4411,7 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		}
 
 		// automatic weapons in Marathon flutter while firing
-		if (ObjPtr->flags &= _weapon_is_automatic) 
+		if (ObjPtr->flags & _weapon_is_automatic) 
 		{
 			ObjPtr->flags |= _weapon_flutters_while_firing;
 		}
@@ -4422,6 +4427,11 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		if (ObjPtr->firing_shape == NONE)
 		{
 			ObjPtr->firing_shape = ObjPtr->idle_shape;
+		}
+
+		if (k == _weapon_alien_shotgun) {
+			// is there a better way?
+			ObjPtr->flags |= _weapon_has_random_ammo_on_pickup;
 		}
 
 		ObjPtr->flags |= _weapon_is_marathon_1;
