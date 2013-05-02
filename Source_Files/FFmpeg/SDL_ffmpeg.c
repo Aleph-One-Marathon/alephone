@@ -42,6 +42,7 @@ extern "C"
 {
 #endif
 #include "libavformat/avformat.h"
+#include "libavutil/mathematics.h"
 #include "libswscale/swscale.h"
 #ifdef __cplusplus
 }
@@ -375,7 +376,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
     file->type = SDL_ffmpegInputStream;
 
     /* open the file */
-    if ( av_open_input_file(( AVFormatContext** )( &file->_ffmpeg ), filename, 0, 0, 0 ) != 0 )
+    if ( av_open_input_file(&file->_ffmpeg, filename, NULL, 0, NULL) != 0 )
     {
         char c[512];
         snprintf( c, 512, "could not open \"%s\"", filename );
