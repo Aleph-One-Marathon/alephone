@@ -98,6 +98,7 @@ enum /* static platform flags */
 	_platform_is_locked,
 	_platform_is_secret,
 	_platform_is_door,
+	_platform_floods_m1,
 	NUMBER_OF_STATIC_PLATFORM_FLAGS /* <=32 */
 };
 
@@ -130,6 +131,7 @@ enum /* static platform flags */
 #define PLATFORM_IS_LOCKED(p) TEST_FLAG32((p)->static_flags, _platform_is_locked)
 #define PLATFORM_IS_SECRET(p) TEST_FLAG32((p)->static_flags, _platform_is_secret)
 #define PLATFORM_IS_DOOR(p) TEST_FLAG32((p)->static_flags, _platform_is_door)
+#define PLATFORM_FLOODS_M1(p) TEST_FLAG32((p)->static_flags, _platform_floods_m1)
 
 #define SET_PLATFORM_IS_INITIALLY_ACTIVE(p, v) SET_FLAG32((p)->static_flags, _platform_is_initially_active, (v))
 #define SET_PLATFORM_IS_INITIALLY_EXTENDED(p, v) SET_FLAG32((p)->static_flags, _platform_is_initially_extended, (v))
@@ -158,6 +160,7 @@ enum /* static platform flags */
 #define SET_PLATFORM_IS_LOCKED(p, v) SET_FLAG32((p)->static_flags, _platform_is_locked, (v))
 #define SET_PLATFORM_IS_SECRET(p, v) SET_FLAG32((p)->static_flags, _platform_is_secret, (v))
 #define SET_PLATFORM_IS_DOOR(p, v) SET_FLAG32((p)->static_flags, _platform_is_door, (v))
+#define SET_PLATFORM_FLOODS_M1(p, v) SET_FLAG32((p)->static_flags, _platform_floods_m1, (v))
 
 enum /* dynamic platform flags */
 {

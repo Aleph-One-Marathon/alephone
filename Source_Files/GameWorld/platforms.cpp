@@ -178,6 +178,12 @@ short new_platform(
 				SET_PLATFORM_IS_DOOR(platform, true);
 				break;
 			}
+			
+			if (PLATFORM_IS_LOCKED(platform))
+			{
+				SET_PLATFORM_IS_LOCKED(platform, false);
+				SET_PLATFORM_FLOODS_M1(platform, true);
+			}
 		}
 
 #if 0
