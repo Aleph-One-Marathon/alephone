@@ -135,6 +135,14 @@ enum /* old light types */
 	_light_is_annoying,
 	_light_is_energy_efficient
 };
+enum /* old light modes */
+{
+    _light_mode_turning_on,
+    _light_mode_on,
+    _light_mode_turning_off,
+    _light_mode_off,
+    _light_mode_toggle
+};
 
 /* Borrowed from the old lightsource.h, to allow Marathon II to open/use Marathon I maps */
 struct old_light_data {

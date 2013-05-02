@@ -695,7 +695,16 @@ void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data*
 		}
 		
 		// Edit the light intensities, etc.
-		SET_FLAG(NewLtPtr->flags,FLAG(_light_is_initially_active),OldLtPtr->mode);
+		switch (OldLtPtr->mode)
+		{
+		case _light_mode_on:
+			SET_FLAG(NewLtPtr->flags,FLAG(_light_is_initially_active),1);
+			break;
+		case _light_mode_off:
+		default:
+			SET_FLAG(NewLtPtr->flags,FLAG(_light_is_initially_active),0);
+			break;
+		}
 		NewLtPtr->phase = OldLtPtr->phase;
 		FixLightState(NewLtPtr->primary_active,*OldLtPtr);
 		FixLightState(NewLtPtr->secondary_active,*OldLtPtr);
