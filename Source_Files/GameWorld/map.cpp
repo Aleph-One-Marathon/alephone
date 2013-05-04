@@ -1398,6 +1398,29 @@ short find_adjacent_polygon(
 	return new_polygon_index;
 }
 
+/* Find the polygon whose attributes we'll mimic on a flooded platform */
+short find_flooding_polygon(
+	short polygon_index)
+{
+	int i;
+	struct polygon_data *polygon = get_polygon_data(polygon_index);
+	
+	for (i= 0; i<polygon->vertex_count; ++i)
+	{
+		if (polygon->adjacent_polygon_indexes[i]!=NONE)
+		{
+			struct polygon_data *adjacent_polygon= get_polygon_data(polygon->adjacent_polygon_indexes[i]);
+			
+			if (adjacent_polygon->type == _polygon_is_major_ouch ||
+				adjacent_polygon->type == _polygon_is_minor_ouch)
+			{
+				return polygon->adjacent_polygon_indexes[i];
+			}
+		}
+	}
+	return NONE;
+}
+
 short find_adjacent_side(
 	short polygon_index,
 	short line_index)

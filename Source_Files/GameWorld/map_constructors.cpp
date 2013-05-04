@@ -467,21 +467,38 @@ void guess_side_lightsource_indexes(
 	struct side_data *side= get_side_data(side_index);
 	struct line_data *line= get_line_data(side->line_index);
 	struct polygon_data *polygon= get_polygon_data(side->polygon_index);
+    
+	short ceiling_index = polygon->ceiling_lightsource_index;
+	short floor_index = polygon->floor_lightsource_index;
+	// change floor lighting if poly is a flooded platform
+	if (polygon->type == _polygon_is_platform)
+	{
+		struct platform_data *platform= get_platform_data(polygon->permutation);
+		if (platform && PLATFORM_IS_FLOODED(platform))
+		{
+			short adj_index = find_flooding_polygon(side->polygon_index);
+			if (adj_index != NONE)
+			{
+				struct polygon_data *adj_polygon= get_polygon_data(adj_index);
+				floor_index = adj_polygon->floor_lightsource_index;
+			}
+		}
+	}
 	
 	switch (side->type)
 	{
 		case _full_side:
-			side->primary_lightsource_index= polygon->ceiling_lightsource_index;
+			side->primary_lightsource_index= ceiling_index;
 			break;
 		case _split_side:
 			side->secondary_lightsource_index= (line->lowest_adjacent_ceiling-line->highest_adjacent_floor>CONTINUOUS_SPLIT_SIDE_HEIGHT) ?
-				polygon->floor_lightsource_index : polygon->ceiling_lightsource_index;
+				floor_index : ceiling_index;
 			/* fall through to high side */
 		case _high_side:
-			side->primary_lightsource_index= polygon->ceiling_lightsource_index;
+			side->primary_lightsource_index= ceiling_index;
 			break;
 		case _low_side:
-			side->primary_lightsource_index= polygon->floor_lightsource_index;
+			side->primary_lightsource_index= floor_index;
 			break;
 		
 		default:
@@ -489,7 +506,7 @@ void guess_side_lightsource_indexes(
 			break;
 	}
 	
-	side->transparent_lightsource_index= polygon->ceiling_lightsource_index;
+	side->transparent_lightsource_index= ceiling_index;
 }
 
 /* Since the map_index buffer is no longer statically sized. */

@@ -44,6 +44,7 @@ Sep 2, 2000 (Loren Petrich):
 #include "OGL_Setup.h"
 #include "preferences.h"
 #include "screen.h"
+#include "platforms.h"
 
 #include <string.h>
 
@@ -110,6 +111,26 @@ void RenderRasterizerClass::render_node(
 	floor_surface.lightsource_index= polygon->floor_lightsource_index;
 	floor_surface.transfer_mode= polygon->floor_transfer_mode;
 	floor_surface.transfer_mode_data= 0;
+	
+	// Disguise flooded platforms
+	if (polygon->type == _polygon_is_platform)
+	{
+		platform_data *platform = get_platform_data(polygon->permutation);
+		if (platform && PLATFORM_IS_FLOODED(platform))
+		{
+			short adj_index = find_flooding_polygon(node->polygon_index);
+			if (adj_index != NONE)
+			{
+				struct polygon_data *adjacent_polygon= get_polygon_data(adj_index);
+				floor_surface.origin= adjacent_polygon->floor_origin;
+				floor_surface.height= adjacent_polygon->floor_height;
+				floor_surface.texture= adjacent_polygon->floor_texture;
+				floor_surface.lightsource_index= adjacent_polygon->floor_lightsource_index;
+				floor_surface.transfer_mode= adjacent_polygon->floor_transfer_mode;
+				floor_surface.transfer_mode_data= 0;
+			}
+		}
+	}
 	
 	// The "continue" conditions are OK to move out here, because a non-drawn polygon's
 	// inhabitants will be clipped away.

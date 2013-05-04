@@ -1176,6 +1176,7 @@ short world_point_to_polygon_index(world_point2d *location);
 short clockwise_endpoint_in_line(short polygon_index, short line_index, short index);
 
 short find_adjacent_polygon(short polygon_index, short line_index);
+short find_flooding_polygon(short polygon_index);
 short find_adjacent_side(short polygon_index, short line_index);
 short find_shared_line(short polygon_index1, short polygon_index2);
 bool line_is_landscaped(short polygon_index, short line_index, world_distance z);

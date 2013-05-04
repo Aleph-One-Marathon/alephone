@@ -849,16 +849,33 @@ void cause_polygon_damage(
 	struct polygon_data *polygon= get_polygon_data(polygon_index);
 	struct monster_data *monster= get_monster_data(monster_index);
 	struct object_data *object= get_object_data(monster->object_index);
+    
+    short polygon_type = polygon->type;
+    // apply damage from flooded platforms
+    if (polygon->type == _polygon_is_platform)
+	{
+		struct platform_data *platform= get_platform_data(polygon->permutation);
+		if (platform && PLATFORM_IS_FLOODED(platform))
+		{
+			short adj_index = find_flooding_polygon(polygon_index);
+			if (adj_index != NONE)
+			{
+				struct polygon_data *adj_polygon = get_polygon_data(adj_index);
+				polygon_type = adj_polygon->type;
+			}
+		}
+	}
+
 
 // #if 0
-	if ((polygon->type==_polygon_is_minor_ouch && !(dynamic_world->tick_count&MINOR_OUCH_FREQUENCY) && object->location.z==polygon->floor_height) ||
-		(polygon->type==_polygon_is_major_ouch && !(dynamic_world->tick_count&MAJOR_OUCH_FREQUENCY)))
+	if ((polygon_type==_polygon_is_minor_ouch && !(dynamic_world->tick_count&MINOR_OUCH_FREQUENCY) && object->location.z==polygon->floor_height) ||
+		(polygon_type==_polygon_is_major_ouch && !(dynamic_world->tick_count&MAJOR_OUCH_FREQUENCY)))
 	{
 		struct damage_definition damage;
 		
 		damage.flags= _alien_damage;
-		damage.type= polygon->type==_polygon_is_minor_ouch ? _damage_polygon : _damage_major_polygon;
-		damage.base= polygon->type==_polygon_is_minor_ouch ? MINOR_OUCH_DAMAGE : MAJOR_OUCH_DAMAGE;
+		damage.type= polygon_type==_polygon_is_minor_ouch ? _damage_polygon : _damage_major_polygon;
+		damage.base= polygon_type==_polygon_is_minor_ouch ? MINOR_OUCH_DAMAGE : MAJOR_OUCH_DAMAGE;
 		damage.random= 0;
 		damage.scale= FIXED_ONE;
 		

@@ -204,6 +204,9 @@ enum /* dynamic platform flags */
 #define SET_PLATFORM_FLOOR_BELOW_MEDIA(p, v) SET_FLAG16((p)->dynamic_flags, _platform_floor_below_media, v)
 #define SET_PLATFORM_CEILING_BELOW_MEDIA(p, v) SET_FLAG16((p)->dynamic_flags, _platform_ceiling_below_media, v)
 
+// using "fully contracted" is close enough to act like Marathon... I hope
+#define PLATFORM_IS_FLOODED(p) (PLATFORM_FLOODS_M1(p) && PLATFORM_IS_FULLY_CONTRACTED(p))
+
 struct endpoint_owner_data
 {
 	int16 first_polygon_index, polygon_index_count;

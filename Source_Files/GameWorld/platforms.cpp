@@ -267,6 +267,7 @@ void update_platforms(
 		{
 			struct polygon_data *polygon= get_polygon_data(platform->polygon_index);
 			short sound_code= NONE;
+			bool was_flooded = PLATFORM_IS_FLOODED(platform);
 			
 			// Should there be some warning message about platform-polygon inconsistences?
 			// assert(polygon->permutation==platform_index);
@@ -393,6 +394,18 @@ void update_platforms(
 			}
 
 			if (sound_code!=NONE) play_platform_sound(platform_index, sound_code);
+			
+			if (was_flooded != PLATFORM_IS_FLOODED(platform))
+			{
+				// flood status changed - update side lights
+				// FIXME: this assumes Marathon 1 map lighting
+				for (int i = 0; i < polygon->vertex_count; i++)
+				{
+					short side_index = polygon->side_indexes[i];
+					if (side_index == NONE) continue;
+					guess_side_lightsource_indexes(side_index);
+				}
+			}
 		}
 	}
 }

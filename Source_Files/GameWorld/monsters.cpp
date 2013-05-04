@@ -2659,10 +2659,25 @@ static void kill_monster(
 	}
 	
 	/* stuff in an appropriate dead shape (or remove our object if we donÕt have a dead shape) */
-	if (shape==UNONE ||
-	    ((static_world->environment_flags&_environment_ouch_m1) &&
-	     (get_polygon_data(object->polygon)->type==_polygon_is_major_ouch ||
-	      get_polygon_data(object->polygon)->type==_polygon_is_minor_ouch)))
+    bool remove_object = (shape == UNONE);
+    if (!remove_object && (static_world->environment_flags & _environment_ouch_m1))
+    {
+        struct polygon_data *polygon = get_polygon_data(object->polygon);
+        switch (polygon->type)
+        {
+            case _polygon_is_major_ouch:
+            case _polygon_is_minor_ouch:
+                remove_object = true;
+                break;
+            case _polygon_is_platform:
+                if (PLATFORM_IS_FLOODED(get_platform_data(polygon->permutation)) &&
+                    find_flooding_polygon(object->polygon) != NONE)
+                    remove_object = true;
+                break;
+        }
+    }
+    
+	if (remove_object)
 	{
 		remove_map_object(monster->object_index);
 	}
@@ -3179,6 +3194,13 @@ int32 monster_pathfinding_cost_function(
 				case _platform_will_never_be_accessable: cost= -1; break;
 				default: cost+= MONSTER_PATHFINDING_PLATFORM_COST; respect_polygon_heights= false; break;
 			}
+            
+            // don't move into flooded platforms
+            if ((static_world->environment_flags&_environment_ouch_m1) &&
+                !(definition->flags&(_monster_flys|_monster_floats)) &&
+                PLATFORM_IS_FLOODED(get_platform_data(destination_polygon->permutation)) &&
+                (find_flooding_polygon(destination_polygon_index) != NONE))
+                cost= -1;
 		}
 		if (source_polygon->type==_polygon_is_platform)
 		{
