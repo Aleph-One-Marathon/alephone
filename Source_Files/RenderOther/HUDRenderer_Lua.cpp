@@ -127,6 +127,7 @@ void HUD_Lua_Class::start_draw(void)
         
         glMatrixMode(GL_MODELVIEW);
         glPushMatrix();
+        glLoadIdentity();
         glTranslatef(m_wr.x, m_wr.y, 0.0);
 		
 		m_surface = NULL;
