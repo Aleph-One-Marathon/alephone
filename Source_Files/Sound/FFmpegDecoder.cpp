@@ -103,7 +103,8 @@ int32 FFmpegDecoder::Decode(uint8* buffer, int32 max_length)
 
 void FFmpegDecoder::Rewind()
 {
-	SDL_ffmpegSeek(sffile, 0);
+	if (frame->last || SDL_ffmpegGetPosition(sffile) > 0)
+		SDL_ffmpegSeek(sffile, 0);
 	frame->size = 0;
 	frame->last = 0;
 }	
