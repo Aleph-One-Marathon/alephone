@@ -661,6 +661,11 @@ bool get_indexed_entry_point(
 				static_data map_info;
 				unpack_static_data(p, &map_info, 1);
 
+				// single-player Marathon 1 levels aren't always marked
+				if (header.data_version == MARATHON_ONE_DATA_VERSION &&
+				    map_info.entry_point_flags == 0)
+					map_info.entry_point_flags = _single_player_entry_point;
+
 				if(map_info.entry_point_flags & type)
 				{
 					/* This one is valid! */
@@ -738,6 +743,11 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 			assert(length == SIZEOF_static_data);
 			static_data map_info;
 			unpack_static_data(p, &map_info, 1);
+
+			// single-player Marathon 1 levels aren't always marked
+			if (header.data_version == MARATHON_ONE_DATA_VERSION &&
+			    map_info.entry_point_flags == 0)
+				map_info.entry_point_flags = _single_player_entry_point;
 
 			if (map_info.entry_point_flags & type) {
 
