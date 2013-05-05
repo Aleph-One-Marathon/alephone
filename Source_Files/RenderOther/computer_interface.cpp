@@ -2405,6 +2405,27 @@ void MarathonTerminalCompiler::CompileLine(const std::string& line)
 				}
 				break;
 			default:
+				++it;
+			}
+		}
+		else if (*it == '%' && (it + 1 != line.end()))
+		{
+			static char replacement[] = "The colony has been wiped out. Phhht! Just like that.";
+            
+			char c = *(it + 1);
+			switch (c)
+			{
+			case 'r':
+				// FIXME: enable this when it can't overflow the buffer
+				//strcpy(reinterpret_cast<char *>(out), replacement);
+				//out += strlen(replacement);
+				++it;
+				break;
+			case '%':
+				*out++ = *it;
+				++it;
+				break;
+			default:
 				*out++ = *it;
 			}
 		}
