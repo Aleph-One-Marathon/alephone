@@ -199,6 +199,9 @@ struct damage_kick_definition
 	// if non-zero, will enable vertical_component if
 	// delta_vitality is greater than threshold
 	short vertical_threshold;
+
+	// whether monsters die a hard death, or in flames
+	short death_action;
 };
 
 /* ---------- definitions */
@@ -206,30 +209,30 @@ struct damage_kick_definition
 // LP: implements commented-out damage-kick code
 struct damage_kick_definition damage_kick_definitions[NUMBER_OF_DAMAGE_TYPES] = 
 {
-	{0, 1, true, 0}, // _damage_explosion,
-	{0, 3, true, 0}, // _damage_electrical_staff,
-	{0, 1, false, 0}, // _damage_projectile,
-	{0, 1, false, 0}, // _damage_absorbed,
-	{0, 1, false, 0}, // _damage_flame,
-	{0, 1, false, 0}, // _damage_hound_claws,
-	{0, 1, false, 0}, // _damage_alien_projectile,
-	{0, 1, false, 0}, // _damage_hulk_slap,
-	{0, 3, true, 0}, // _damage_compiler_bolt,
-	{0, 0, false, 100}, // _damage_fusion_bolt,
-	{0, 1, false, 0}, // _damage_hunter_bolt,
-	{0, 1, false, 0}, // _damage_fist,
-	{250, 0, false, 0}, // _damage_teleporter,
-	{0, 1, false, 0}, // _damage_defender,
-	{0, 3, true, 0}, // _damage_yeti_claws,
-	{0, 1, false, 0}, // _damage_yeti_projectile,
-	{0, 1, false, 0}, // _damage_crushing,
-	{0, 1, false, 0}, // _damage_lava,
-	{0, 1, false, 0}, // _damage_suffocation,
-	{0, 1, false, 0}, // _damage_goo,
-	{0, 1, false, 0}, // _damage_energy_drain,
-	{0, 1, false, 0}, // _damage_oxygen_drain,
-	{0, 1, false, 0}, // _damage_hummer_bolt,
-	{0, 0, true, 0} // _damage_shotgun_projectile,
+	{0, 1, true, 0, _monster_is_dying_hard}, // _damage_explosion,
+	{0, 3, true, 0, _monster_is_dying_soft}, // _damage_electrical_staff,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_projectile,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_absorbed,
+	{0, 1, false, 0, _monster_is_dying_flaming}, // _damage_flame,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_hound_claws,
+	{0, 1, false, 0, _monster_is_dying_flaming}, // _damage_alien_projectile,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_hulk_slap,
+	{0, 3, true, 0, _monster_is_dying_soft}, // _damage_compiler_bolt,
+	{0, 0, false, 100, _monster_is_dying_soft}, // _damage_fusion_bolt,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_hunter_bolt,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_fist,
+	{250, 0, false, 0, _monster_is_dying_soft}, // _damage_teleporter,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_defender,
+	{0, 3, true, 0, _monster_is_dying_soft}, // _damage_yeti_claws,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_yeti_projectile,
+	{0, 1, false, 0, _monster_is_dying_hard}, // _damage_crushing,
+	{0, 1, false, 0, _monster_is_dying_flaming}, // _damage_lava,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_suffocation,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_goo,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_energy_drain,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_oxygen_drain,
+	{0, 1, false, 0, _monster_is_dying_soft}, // _damage_hummer_bolt,
+	{0, 0, true, 0, _monster_is_dying_soft} // _damage_shotgun_projectile,
 };
 
 /* ---------- globals */
@@ -1534,13 +1537,13 @@ void damage_monster(
 				{
 					short action;
 					
-					if ((damage->type==_damage_flame||damage->type==_damage_lava||damage->type==_damage_alien_projectile) && (definition->flags&_monster_can_die_in_flames))
+					if ((damage_kick_definitions[damage->type].death_action == _monster_is_dying_flaming) && (definition->flags&_monster_can_die_in_flames))
  					{
 						action= _monster_is_dying_flaming;
 					}
 					else
 					{
-						if ((damage->type==_damage_explosion || damage->type==_damage_crushing || (FLAG(damage->type)&definition->weaknesses) ||
+						if ((damage_kick_definitions[damage->type].death_action == _monster_is_dying_hard || (FLAG(damage->type)&definition->weaknesses) ||
 							definition->soft_dying_shape==UNONE) && definition->hard_dying_shape!=UNONE && !(definition->flags&_monster_has_delayed_hard_death))
 						{
 							action= _monster_is_dying_hard;
@@ -3883,7 +3886,7 @@ class XML_DamageKickParser: public XML_ElementParser
 	
 	// What is present?
 	bool IndexPresent;
-	enum {NumberOfValues = 3};
+	enum {NumberOfValues = 4};
 	bool IsPresent[NumberOfValues];
 	
 public:
@@ -3950,6 +3953,15 @@ bool XML_DamageKickParser::HandleAttribute(const char *Tag, const char *Value)
 		}
 		else return false;
 	}
+	else if (StringsEqual(Tag,"death_action"))
+	{
+		if (ReadInt16Value(Value,Data.death_action))
+		{
+			IsPresent[3] = true;
+			return true;
+		}
+		else return false;
+	}
 	UnrecognizedTag();
 	return false;
 }
@@ -3967,6 +3979,7 @@ bool XML_DamageKickParser::AttributesDone()
 	if (IsPresent[0]) OrigData.base_value = Data.base_value;
 	if (IsPresent[1]) OrigData.delta_vitality_multiplier = Data.delta_vitality_multiplier;
 	if (IsPresent[2]) OrigData.is_also_vertical = Data.is_also_vertical;
+	if (IsPresent[3]) OrigData.death_action = Data.death_action;
 	
 	return true;
 }
