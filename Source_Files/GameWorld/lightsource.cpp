@@ -692,6 +692,19 @@ static_light_data annoying_light_definition =
 	{ _constant_lighting_function, TICKS_PER_SECOND, 0, 0, 0 }
 };
 
+static_light_data pulsate_light_definition = 
+{
+	_normal_light,
+	FLAG(_light_is_initially_active)|FLAG(_light_has_slaved_intensities), 0,
+	{ _smooth_lighting_function, 2*TICKS_PER_SECOND, 0, FIXED_ONE, 0 },
+	{ _smooth_lighting_function, 2*TICKS_PER_SECOND-1, 0, 0, 0 },
+	{ _smooth_lighting_function, 2*TICKS_PER_SECOND-1, 0, FIXED_ONE, 0 },
+	
+	{ _smooth_lighting_function, 2*TICKS_PER_SECOND, 0, 0, 0 },
+	{ _smooth_lighting_function, 2*TICKS_PER_SECOND-1, 0, FIXED_ONE, 0 },
+	{ _smooth_lighting_function, 2*TICKS_PER_SECOND, 0, 0, 0 }
+};
+
 void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data* OldLights, int Count)
 {
 	// LP: code taken from game_wad.c and somewhat modified
@@ -723,7 +736,6 @@ void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data*
 			
 		case _light_is_strobe:
 		case _light_flickers:
-		case _light_pulsates:
 			obj_copy(*NewLtPtr,*get_defaults_for_light_type(_strobe_light));
 
 			NewLtPtr->phase = OldLtPtr->phase;
@@ -742,6 +754,16 @@ void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data*
 			NewLtPtr->becoming_active.intensity = OldLtPtr->maximum_intensity;
 			NewLtPtr->primary_inactive.intensity = OldLtPtr->minimum_intensity;
 			NewLtPtr->secondary_inactive.intensity = OldLtPtr->minimum_intensity;
+			NewLtPtr->becoming_inactive.intensity = OldLtPtr->minimum_intensity;
+			break;
+
+		case _light_pulsates:
+			obj_copy(*NewLtPtr, pulsate_light_definition);
+			NewLtPtr->primary_active.intensity = OldLtPtr->maximum_intensity;
+			NewLtPtr->secondary_active.intensity = OldLtPtr->minimum_intensity;
+			NewLtPtr->becoming_active.intensity = OldLtPtr->maximum_intensity;
+			NewLtPtr->primary_inactive.intensity = OldLtPtr->minimum_intensity;
+			NewLtPtr->secondary_inactive.intensity = OldLtPtr->maximum_intensity;
 			NewLtPtr->becoming_inactive.intensity = OldLtPtr->minimum_intensity;
 			break;
 
