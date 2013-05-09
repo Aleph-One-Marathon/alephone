@@ -403,6 +403,7 @@ static _fixed constant_lighting_proc(_fixed initial_intensity, _fixed final_inte
 static _fixed linear_lighting_proc(_fixed initial_intensity, _fixed final_intensity, short phase, short period);
 static _fixed smooth_lighting_proc(_fixed initial_intensity, _fixed final_intensity, short phase, short period);
 static _fixed flicker_lighting_proc(_fixed initial_intensity, _fixed final_intensity, short phase, short period);
+static _fixed random_lighting_proc(_fixed initial_intensity, _fixed final_intensity, short phase, short period);
 
 typedef _fixed (*lighting_function)(_fixed initial_intensity, _fixed final_intensity,
 	short phase, short period);
@@ -412,7 +413,8 @@ static lighting_function lighting_functions[NUMBER_OF_LIGHTING_FUNCTIONS]=
 	constant_lighting_proc,
 	linear_lighting_proc,
 	smooth_lighting_proc,
-	flicker_lighting_proc
+	flicker_lighting_proc,
+	random_lighting_proc,
 };
 
 static _fixed lighting_function_dispatch(
@@ -470,6 +472,22 @@ static _fixed flicker_lighting_proc(
 	return smooth_intensity + (delta ? global_random()%delta : 0);
 }
 
+static _fixed random_lighting_proc(
+	_fixed initial_intensity,
+	_fixed final_intensity,
+	short phase,
+	short period)
+{
+	_fixed delta;
+	if (final_intensity > initial_intensity) 
+	{
+		delta = final_intensity - initial_intensity;
+		return initial_intensity + (delta ? global_random()%delta : 0);
+	} else {
+		delta = initial_intensity - final_intensity;
+		return final_intensity + (delta ? global_random()%delta : 0);	
+	}
+}
 
 uint8 *unpack_old_light_data(uint8 *Stream, old_light_data* Objects, size_t Count)
 {
@@ -661,6 +679,19 @@ static void FixLightState(lighting_function_specification& LightState, old_light
         LightState.period++;
 }
 
+static_light_data annoying_light_definition = 
+{
+	_normal_light,
+	FLAG(_light_is_initially_active)|FLAG(_light_has_slaved_intensities), 0,
+	{ _random_lighting_function, 2, 1, FIXED_ONE, 0 },
+	{ _constant_lighting_function, 2, 0, FIXED_ONE, 0 },
+	{ _random_lighting_function, 1, 0, FIXED_ONE, 0 },
+	
+	{ _constant_lighting_function, TICKS_PER_SECOND, 0, 0, 0 },
+	{ _constant_lighting_function, TICKS_PER_SECOND, 0, 0, 0 },
+	{ _constant_lighting_function, TICKS_PER_SECOND, 0, 0, 0 }
+};
+
 void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data* OldLights, int Count)
 {
 	// LP: code taken from game_wad.c and somewhat modified
@@ -677,19 +708,43 @@ void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data*
 		switch(OldLtPtr->type)
 		{
 		case _light_is_normal:
-		case _light_is_annoying:
 		case _light_is_energy_efficient:
 		case _light_is_rheostat:
 		case _light_is_flourescent:
 			obj_copy(*NewLtPtr,*get_defaults_for_light_type(_normal_light));
+			NewLtPtr->phase = OldLtPtr->phase;
+			FixLightState(NewLtPtr->primary_active,*OldLtPtr);
+			FixLightState(NewLtPtr->secondary_active,*OldLtPtr);
+			FixLightState(NewLtPtr->becoming_active,*OldLtPtr);
+			FixLightState(NewLtPtr->primary_inactive,*OldLtPtr);
+			FixLightState(NewLtPtr->secondary_inactive,*OldLtPtr);
+			FixLightState(NewLtPtr->becoming_inactive,*OldLtPtr);
 			break;
 			
 		case _light_is_strobe:
 		case _light_flickers:
 		case _light_pulsates:
 			obj_copy(*NewLtPtr,*get_defaults_for_light_type(_strobe_light));
+
+			NewLtPtr->phase = OldLtPtr->phase;
+			FixLightState(NewLtPtr->primary_active,*OldLtPtr);
+			FixLightState(NewLtPtr->secondary_active,*OldLtPtr);
+			FixLightState(NewLtPtr->becoming_active,*OldLtPtr);
+			FixLightState(NewLtPtr->primary_inactive,*OldLtPtr);
+			FixLightState(NewLtPtr->secondary_inactive,*OldLtPtr);
+			FixLightState(NewLtPtr->becoming_inactive,*OldLtPtr);
 			break;
-		
+
+		case _light_is_annoying:
+			obj_copy(*NewLtPtr, annoying_light_definition);
+			NewLtPtr->primary_active.intensity = OldLtPtr->minimum_intensity;
+			NewLtPtr->secondary_active.intensity = OldLtPtr->maximum_intensity;
+			NewLtPtr->becoming_active.intensity = OldLtPtr->maximum_intensity;
+			NewLtPtr->primary_inactive.intensity = OldLtPtr->minimum_intensity;
+			NewLtPtr->secondary_inactive.intensity = OldLtPtr->minimum_intensity;
+			NewLtPtr->becoming_inactive.intensity = OldLtPtr->minimum_intensity;
+			break;
+
 		default:
 			break;
 		}
@@ -705,13 +760,6 @@ void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data*
 			SET_FLAG(NewLtPtr->flags,FLAG(_light_is_initially_active),0);
 			break;
 		}
-		NewLtPtr->phase = OldLtPtr->phase;
-		FixLightState(NewLtPtr->primary_active,*OldLtPtr);
-		FixLightState(NewLtPtr->secondary_active,*OldLtPtr);
-		FixLightState(NewLtPtr->becoming_active,*OldLtPtr);
-		FixLightState(NewLtPtr->primary_inactive,*OldLtPtr);
-		FixLightState(NewLtPtr->secondary_inactive,*OldLtPtr);
-		FixLightState(NewLtPtr->becoming_inactive,*OldLtPtr);
 	}
 }
 
