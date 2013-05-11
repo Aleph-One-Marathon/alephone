@@ -60,7 +60,8 @@ enum /* lighting functions */
 	_linear_lighting_function, // linear transition between initial and final intensity over period
 	_smooth_lighting_function, // sine transition between initial and final intensity over period
 	_flicker_lighting_function, // intensity in [smooth_intensity(t),final_intensity]
-	_random_lighting_function, // random intensity between initial and final
+	_random_lighting_function, // random intensity between initial and final,
+	_fluorescent_lighting_function, // random on/off
 	NUMBER_OF_LIGHTING_FUNCTIONS
 };
 
@@ -134,7 +135,8 @@ enum /* old light types */
 	_light_flickers,
 	_light_pulsates,
 	_light_is_annoying,
-	_light_is_energy_efficient
+	_light_is_energy_efficient,
+	NUMBER_OF_OLD_LIGHTS
 };
 enum /* old light modes */
 {
