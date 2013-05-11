@@ -705,6 +705,18 @@ static_light_data pulsate_light_definition =
 	{ _smooth_lighting_function, 2*TICKS_PER_SECOND, 0, 0, 0 }
 };
 
+static_light_data strobe_light_definition =
+{
+	_normal_light,
+	FLAG(_light_is_initially_active)|FLAG(_light_has_slaved_intensities), 0,
+	{ _constant_lighting_function, TICKS_PER_SECOND, 0, FIXED_ONE, 0 },
+	{ _constant_lighting_function, TICKS_PER_SECOND, 0, 0, 0 },
+	{ _constant_lighting_function, 1, 0, FIXED_ONE, 0 },
+	{ _constant_lighting_function, TICKS_PER_SECOND, 0, 0, 0 },
+	{ _constant_lighting_function, TICKS_PER_SECOND, 0, FIXED_ONE, 0 },
+	{ _constant_lighting_function, 1, 0, 0, 0 }
+};
+
 void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data* OldLights, int Count)
 {
 	// LP: code taken from game_wad.c and somewhat modified
@@ -734,7 +746,6 @@ void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data*
 			FixLightState(NewLtPtr->becoming_inactive,*OldLtPtr);
 			break;
 			
-		case _light_is_strobe:
 		case _light_flickers:
 			obj_copy(*NewLtPtr,*get_defaults_for_light_type(_strobe_light));
 
@@ -746,6 +757,21 @@ void convert_old_light_data_to_new(static_light_data* NewLights, old_light_data*
 			FixLightState(NewLtPtr->secondary_inactive,*OldLtPtr);
 			FixLightState(NewLtPtr->becoming_inactive,*OldLtPtr);
 			break;
+
+		case _light_is_strobe:
+			obj_copy(*NewLtPtr, strobe_light_definition);
+			NewLtPtr->primary_active.intensity = OldLtPtr->maximum_intensity;
+			NewLtPtr->primary_active.period = OldLtPtr->period / 4 + 1;
+			NewLtPtr->secondary_active.intensity = OldLtPtr->minimum_intensity;
+			NewLtPtr->secondary_active.period = OldLtPtr->period / 4 + 1;
+			NewLtPtr->becoming_active.intensity = OldLtPtr->maximum_intensity;
+			NewLtPtr->primary_inactive.intensity = OldLtPtr->minimum_intensity;
+			NewLtPtr->primary_inactive.period = OldLtPtr->period / 4 + 1;
+			NewLtPtr->secondary_inactive.intensity = OldLtPtr->maximum_intensity;
+			NewLtPtr->secondary_inactive.period = OldLtPtr->period / 4 + 1;
+			NewLtPtr->becoming_inactive.intensity = OldLtPtr->minimum_intensity;
+			break;
+			
 
 		case _light_is_annoying:
 			obj_copy(*NewLtPtr, annoying_light_definition);
