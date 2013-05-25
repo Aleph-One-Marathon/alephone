@@ -192,7 +192,7 @@ fi
 
 if [[ "x$enable_ffmpeg" = "xyes" ]]; then
 dnl Check for libavcodec
-PKG_CHECK_MODULES([FFMPEG], [libavcodec libavformat libavutil libswscale], [
+PKG_CHECK_MODULES([FFMPEG], [libavcodec >= 53.35.0 libavformat >= 53.21.0 libavutil >= 51.22.0 libswscale >= 2.1.0], [
 			    CPPFLAGS="$FFMPEG_CFLAGS $CPPFLAGS"
 			    LIBS="$FFMPEG_LIBS $LIBS"
 			    AC_DEFINE(HAVE_FFMPEG, 1, [ffmpeg support enabled])

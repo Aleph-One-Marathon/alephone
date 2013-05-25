@@ -47,7 +47,6 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
-#include "ffcompat.h"
 
 #include "SDL_ffmpeg.h"
 
@@ -314,7 +313,7 @@ void SDL_ffmpegFree( SDL_ffmpegFile *file )
         }
         else if ( file->type == SDL_ffmpegOutputStream )
         {
-            url_fclose( file->_ffmpeg->pb );
+            avio_close( file->_ffmpeg->pb );
 
             av_free( file->_ffmpeg );
         }
@@ -376,7 +375,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
     file->type = SDL_ffmpegInputStream;
 
     /* open the file */
-    if ( av_open_input_file(&file->_ffmpeg, filename, NULL, 0, NULL) != 0 )
+    if ( avformat_open_input(&file->_ffmpeg, filename, NULL, NULL) != 0 )
     {
         char c[512];
         snprintf( c, 512, "could not open \"%s\"", filename );
@@ -386,7 +385,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
     }
 
     /* retrieve format information */
-    if ( av_find_stream_info( file->_ffmpeg ) < 0 )
+    if ( avformat_find_stream_info( file->_ffmpeg, NULL ) < 0 )
     {
         char c[512];
         snprintf( c, 512, "could not retrieve file info for \"%s\"", filename );
@@ -401,7 +400,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
         /* disable all streams by default */
         file->_ffmpeg->streams[i]->discard = AVDISCARD_ALL;
 
-        if ( file->_ffmpeg->streams[i]->codec->codec_type == CODEC_TYPE_VIDEO )
+        if ( file->_ffmpeg->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO )
         {
             /* if this is a packet of the correct type we create a new stream */
             SDL_ffmpegStream* stream = ( SDL_ffmpegStream* )malloc( sizeof( SDL_ffmpegStream ) );
@@ -425,7 +424,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                     free( stream );
                     SDL_ffmpegSetError( "could not find video codec" );
                 }
-                else if ( avcodec_open( file->_ffmpeg->streams[i]->codec, codec ) < 0 )
+                else if ( avcodec_open2( file->_ffmpeg->streams[i]->codec, codec, NULL ) < 0 )
                 {
                     free( stream );
                     SDL_ffmpegSetError( "could not open video codec" );
@@ -472,7 +471,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
                     free( stream );
                     SDL_ffmpegSetError( "could not find audio codec" );
                 }
-                else if ( avcodec_open( file->_ffmpeg->streams[i]->codec, codec ) < 0 )
+                else if ( avcodec_open2( file->_ffmpeg->streams[i]->codec, codec, NULL ) < 0 )
                 {
                     free( stream );
                     SDL_ffmpegSetError( "could not open audio codec" );
@@ -503,7 +502,7 @@ SDL_ffmpegFile* SDL_ffmpegOpen( const char* filename )
     return file;
 }
 
-
+#ifdef SDL_FF_WRITE
 /** \brief  Use this to create the multimedia file of your choice.
 
             This function is used to create a multimedia file.
@@ -542,7 +541,7 @@ SDL_ffmpegFile* SDL_ffmpegCreate( const char* filename )
     file->_ffmpeg->max_delay = ( int )( 0.7 * AV_TIME_BASE );
 
     /* open the output file, if needed */
-    if ( url_fopen( &file->_ffmpeg->pb, filename, URL_WRONLY ) < 0 )
+    if ( url_fopen( &file->_ffmpeg->pb, filename, AVIO_FLAG_WRITE ) < 0 )
     {
         char c[512];
         snprintf( c, 512, "could not open \"%s\"", filename );
@@ -555,8 +554,10 @@ SDL_ffmpegFile* SDL_ffmpegCreate( const char* filename )
 
     return file;
 }
+#endif
 
 
+#ifdef SDL_FF_WRITE
 /** \brief  Use this to add a SDL_ffmpegVideoFrame to file
 
             By adding frames to file, a video stream is build. If an audio stream
@@ -635,7 +636,7 @@ int SDL_ffmpegAddVideoFrame( SDL_ffmpegFile *file, SDL_Surface *frame )
         /* set correct stream index for this packet */
         pkt.stream_index = file->videoStream->_ffmpeg->index;
         /* set keyframe flag if needed */
-        if ( file->videoStream->_ffmpeg->codec->coded_frame->key_frame ) pkt.flags |= PKT_FLAG_KEY;
+        if ( file->videoStream->_ffmpeg->codec->coded_frame->key_frame ) pkt.flags |= AV_PKT_FLAG_KEY;
         /* write encoded data into packet */
         pkt.data = file->videoStream->encodeFrameBuffer;
         /* set the correct size of this packet */
@@ -660,8 +661,10 @@ int SDL_ffmpegAddVideoFrame( SDL_ffmpegFile *file, SDL_Surface *frame )
 
     return 0;
 }
+#endif
 
 
+#ifdef SDL_FF_WRITE
 /** \brief  Use this to add a SDL_ffmpegAudioFrame to file
 
             By adding frames to file, an audio stream is build. If a video stream
@@ -690,7 +693,7 @@ int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame )
     pkt.stream_index = file->audioStream->_ffmpeg->index;
 
     /* set keyframe flag if needed */
-    pkt.flags |= PKT_FLAG_KEY;
+    pkt.flags |= AV_PKT_FLAG_KEY;
 
     /* set the correct size of this packet */
     pkt.size = avcodec_encode_audio( file->audioStream->_ffmpeg->codec, ( uint8_t* )file->audioStream->sampleBuffer, file->audioStream->sampleBufferSize, ( int16_t* )frame->buffer );
@@ -715,6 +718,7 @@ int SDL_ffmpegAddAudioFrame( SDL_ffmpegFile *file, SDL_ffmpegAudioFrame *frame )
 
     return 0;
 }
+#endif
 
 /** \brief  Use this to create a SDL_ffmpegAudioFrame
 
@@ -1145,7 +1149,6 @@ int SDL_ffmpegFlush( SDL_ffmpegFile *file )
 \endcond
 */
 
-
 /** \brief  Use this to get a pointer to a SDL_ffmpegAudioFrame.
 
             If you receive a frame, it is valid until you receive a new frame, or
@@ -1519,6 +1522,7 @@ int SDL_ffmpegValidVideo( SDL_ffmpegFile* file )
 }
 
 
+#ifdef SDL_FF_WRITE
 /** \brief  This is used to add a video stream to file
 
 \param      file SDL_ffmpegFile to which the stream will be added
@@ -1538,7 +1542,7 @@ SDL_ffmpegStream* SDL_ffmpegAddVideoStream( SDL_ffmpegFile *file, SDL_ffmpegCode
 
     stream->codec = avcodec_alloc_context();
 
-    avcodec_get_context_defaults2( stream->codec, CODEC_TYPE_VIDEO );
+    avcodec_get_context_defaults2( stream->codec, AVMEDIA_TYPE_VIDEO );
 
     if ( codec.videoCodecID < 0 )
     {
@@ -1549,7 +1553,7 @@ SDL_ffmpegStream* SDL_ffmpegAddVideoStream( SDL_ffmpegFile *file, SDL_ffmpegCode
         stream->codec->codec_id = ( enum CodecID ) codec.videoCodecID;
     }
 
-    stream->codec->codec_type = CODEC_TYPE_VIDEO;
+    stream->codec->codec_type = AVMEDIA_TYPE_VIDEO;
 
     stream->codec->bit_rate = codec.videoBitrate;
 
@@ -1651,8 +1655,10 @@ SDL_ffmpegStream* SDL_ffmpegAddVideoStream( SDL_ffmpegFile *file, SDL_ffmpegCode
 
     return str;
 }
+#endif
 
 
+#ifdef SDL_FF_WRITE
 /** \brief  This is used to add a video stream to file
 
 \param      file SDL_ffmpegFile to which the stream will be added
@@ -1679,10 +1685,10 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
         stream->codec->codec_id = ( enum CodecID ) codec.audioCodecID;
     }
 
-    stream->codec->codec_type = CODEC_TYPE_AUDIO;
+    stream->codec->codec_type = AVMEDIA_TYPE_AUDIO;
     stream->codec->bit_rate = codec.audioBitrate;
     stream->codec->sample_rate = codec.sampleRate;
-    stream->codec->sample_fmt = SAMPLE_FMT_S16;
+    stream->codec->sample_fmt = AV_SAMPLE_FMT_S16;
     stream->codec->channels = codec.channels;
 
     // find the audio encoder
@@ -1774,6 +1780,7 @@ SDL_ffmpegStream* SDL_ffmpegAddAudioStream( SDL_ffmpegFile *file, SDL_ffmpegCode
 
     return str;
 }
+#endif
 
 
 /** \brief  Use this function to query if an error occured
