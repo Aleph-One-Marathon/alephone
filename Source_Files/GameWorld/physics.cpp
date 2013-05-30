@@ -127,6 +127,8 @@ static bool saved_divergence_warning;
 
 static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS];
 
+bool physics_constants_are_m1 = false;
+
 /* every other field in the player structure should be valid when this call is made */
 void initialize_player_physics_variables(
 	short player_index)
@@ -262,8 +264,14 @@ void accelerate_player(
 	variables->external_velocity.k+= WORLD_TO_FIXED(vertical_velocity);
 	variables->external_velocity.k= PIN(variables->external_velocity.k, -constants->terminal_velocity, constants->terminal_velocity);
 	
-	variables->external_velocity.i+= (cosine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
-	variables->external_velocity.j+= (sine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
+	if (physics_constants_are_m1)
+	{
+		variables->external_velocity.i= (cosine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
+		variables->external_velocity.j= (sine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
+	} else {
+		variables->external_velocity.i+= (cosine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
+		variables->external_velocity.j+= (sine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
+	}	
 }
 
 void get_absolute_pitch_range(
@@ -972,6 +980,8 @@ uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, size_
 		
 		StreamToValue(S,ObjPtr->half_camera_separation);
 	}
+
+	physics_constants_are_m1 = false;
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_physics_constants));
 	return S;
@@ -1015,6 +1025,8 @@ uint8* unpack_m1_physics_constants(uint8* Stream, size_t Count)
 		
 		StreamToValue(S,ObjPtr->half_camera_separation);
 	}
+
+	physics_constants_are_m1 = true;
 	
 	return S;
 }
@@ -1069,6 +1081,7 @@ uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t 
 void init_physics_constants()
 {
 	memcpy(physics_models, original_physics_models, sizeof(physics_models));
+	physics_constants_are_m1 = false;
 }
 
 // LP addition: get number of physics models (restricted sense)
