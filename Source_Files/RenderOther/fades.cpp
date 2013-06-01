@@ -64,6 +64,7 @@ Jan 31, 2001 (Loren Petrich):
 #include "fades.h"
 #include "screen.h"
 #include "interface.h"
+#include "map.h" // for TICKS_PER_SECOND
 
 #include <string.h>
 #include <stdlib.h>
@@ -848,8 +849,10 @@ bool XML_FaderParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	else if (StringsEqual(Tag,"period"))
 	{
-		if (ReadInt16Value(Value,Data.period))
+		int16_t period;
+		if (ReadInt16Value(Value, period))
 		{
+			Data.period = static_cast<int32_t>(period) * 1000 / MACHINE_TICKS_PER_SECOND;
 			IsPresent[3] = true;
 			return true;
 		}
