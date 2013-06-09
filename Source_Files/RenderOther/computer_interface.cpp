@@ -2448,7 +2448,6 @@ void MarathonTerminalCompiler::BuildUnfinishedGroup()
 	terminal->groupings.push_back(logon_group);
 
 	// if there's an unfinished group, push it as unfinished
-	// otherwise, if there's a briefing, use that as unfinished
 	// otherwise, this must not be an end-of-level term, use all the other groups
 	if (unfinished_group.type)
 	{
@@ -2460,24 +2459,7 @@ void MarathonTerminalCompiler::BuildUnfinishedGroup()
 		group.type = _logoff_group;
 		terminal->groupings.push_back(group);
 	}
-	else if (briefing_group.type)
-	{
-		group = briefing_group;
-		group.type = _information_group;
-		group.permutation = 0;
-		terminal->groupings.push_back(group);
-
-		group = logon_group;
-		group.type = _logoff_group;
-		terminal->groupings.push_back(group);
-
-		group.type = _interlevel_teleport_group;
-		group.permutation = briefing_group.permutation;
-		group.start_index = 0;
-		group.length = 0;
-		terminal->groupings.push_back(group);
-	}
-	else 
+	else
 	{
 		terminal->groupings.insert(terminal->groupings.end(), other_groups.begin(), other_groups.end());
 
@@ -2496,8 +2478,7 @@ void MarathonTerminalCompiler::BuildUnfinishedGroup()
 
 void MarathonTerminalCompiler::BuildSuccessGroup()
 {
-	if (success_group.type ||
-	    (unfinished_group.type && briefing_group.type))
+	if (success_group.type || briefing_group.type)
 	{
 		terminal_groupings group;
 		group.flags = 0;
