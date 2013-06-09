@@ -793,7 +793,6 @@ void activate_nearby_monsters(
 		short need_target_indexes[MAXIMUM_NEED_TARGET_INDEXES];
 		short need_target_count= 0;
 		int32 flood_flags= flags;
-		bool obey_glue= (static_world->environment_flags & _environment_glue_m1);
 		
 		/* flood out from the target monsterÕs polygon, searching through the object lists of all
 			polygons we encounter */
@@ -802,7 +801,6 @@ void activate_nearby_monsters(
 		{
 			short object_index;
 			struct object_data *object;
-			struct polygon_data *polygon= get_polygon_data(polygon_index);
 	
 			/* loop through all objects in this polygon looking for _hostile inactive or unlocked monsters */
 			for (object_index= get_polygon_data(polygon_index)->first_object; object_index!=NONE; object_index= object->next_object)
