@@ -98,6 +98,31 @@ enum /* monster classes */
 	_class_neutral_alien= _class_native
 };
 
+// old Marathon monster classes
+enum 
+{
+	_class_player_m1 = 0x01,
+	_class_human_civilian_m1 = 0x02,
+	_class_madd_m1 = 0x04,
+	_class_fighter_m1 = 0x08,
+	_class_trooper_m1 = 0x10,
+	_class_hunter_m1 = 0x20,
+	_class_enforcer_m1 = 0x40,
+	_class_juggernaut_m1 = 0x80,
+	// unused 0x100
+	_class_compiler_m1 = 0x200,
+	_class_hulk = 0x400,
+	// unused 0x800
+	_class_looker = 0x1000,
+	// unused 0x2000,
+	_class_wasp = 0x4000,
+	_class_assimilated_civilian_m1 = 0x8000,
+
+	_class_client_m1 = _class_compiler_m1|_class_hulk|_class_assimilated_civilian_m1,
+	_class_pfhor_m1 = _class_fighter_m1|_class_trooper_m1|_class_hunter_m1|_class_enforcer_m1|_class_juggernaut_m1
+	
+};
+
 enum /* intelligence: maximum polygon switches before losing lock */
 {
 	_intelligence_low= 2,

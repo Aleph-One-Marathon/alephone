@@ -293,6 +293,26 @@ monster_definition *get_monster_definition_external(const short type);
 
 /* ---------- code */
 
+static bool mTYPE_IS_ENEMY(monster_definition *definition, short type)
+{
+    if (static_world->environment_flags & _environment_rebellion_m1)
+    {
+        if (definition->_class & _class_client_m1)
+        {
+            return (get_monster_definition(type)->_class & _class_pfhor_m1);
+        }
+        else if (definition->_class & _class_pfhor_m1)
+        {
+            if (get_monster_definition(type)->_class & _class_client_m1)
+            {
+                return true;
+            }
+        }
+    }
+    return TYPE_IS_ENEMY(definition, type);
+}
+
+
 monster_data *get_monster_data(
 	short monster_index)
 {
@@ -2192,7 +2212,7 @@ static bool switch_target_check(
 					then go kick his ass. */
 				attacker_attitude= get_monster_attitude(monster_index, attacker_index);
 				if (target_index!=NONE) target_attitude= get_monster_attitude(monster_index, target_index);
-				if (TYPE_IS_ENEMY(definition, attacker->type) ||
+				if (mTYPE_IS_ENEMY(definition, attacker->type) ||
 					(TYPE_IS_NEUTRAL(definition, attacker->type)&&delta_vitality) ||
 					MONSTER_IS_BERSERK(monster))
 				{
@@ -2227,7 +2247,7 @@ static short get_monster_attitude(
 	short attitude;
 
 	/* berserk monsters are hostile toward everything */
-	if (TYPE_IS_ENEMY(definition, target_type) || MONSTER_IS_BERSERK(monster) ||
+	if (mTYPE_IS_ENEMY(definition, target_type) || MONSTER_IS_BERSERK(monster) ||
 		(MONSTER_HAS_VALID_TARGET(monster) && monster->target_index==target_index) ||
 		((definition->_class&_class_human_civilian) && MONSTER_IS_PLAYER(target) && dynamic_world->civilians_killed_by_players>=CIVILIANS_KILLED_BY_PLAYER_THRESHHOLD))
 	{
@@ -2807,7 +2827,7 @@ static bool translate_monster(
 				can attack his current target (if he is locked or losing_lock); if not, drop lock
 				and ask for a new path. */
 			
-			if (!TYPE_IS_ENEMY(definition, obstacle_monster->type) && !(MONSTER_HAS_VALID_TARGET(monster)&&monster->target_index==obstacle_object->permutation) &&
+			if (!mTYPE_IS_ENEMY(definition, obstacle_monster->type) && !(MONSTER_HAS_VALID_TARGET(monster)&&monster->target_index==obstacle_object->permutation) &&
 				!MONSTER_IS_BERSERK(monster))
 			{
 				if (!MONSTER_IS_PLAYER(obstacle_monster))
