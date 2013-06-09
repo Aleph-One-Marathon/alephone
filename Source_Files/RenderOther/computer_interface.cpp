@@ -2191,9 +2191,6 @@ class MarathonTerminalCompiler
 {
 public:
 	MarathonTerminalCompiler(char* text, short length) : terminal(new terminal_text_t), in_buffer(text, length), in(&in_buffer) { 
-		terminal->text = new uint8[length];
-		out = terminal->text;
-
 		briefing_group.type = 0;
 		success_group.type = 0;
 		failure_group.type = 0;
@@ -2214,7 +2211,7 @@ private:
 	io::stream_buffer<io::array_source> in_buffer;
 	std::istream in;
 
-	uint8* out;
+	std::vector<uint8_t> out;
 
 	int16 current_group_type;
 	terminal_groupings group;
@@ -2278,7 +2275,7 @@ terminal_text_t* MarathonTerminalCompiler::Compile()
 				return 0;
 			}
 
-			group.start_index = out - terminal->text;
+			group.start_index = out.size();
 		}
 		else if (line[0] != ';')
 		{
@@ -2292,10 +2289,12 @@ terminal_text_t* MarathonTerminalCompiler::Compile()
 	BuildSuccessGroup();
 	BuildFailureGroup();
 
+	terminal->text = new uint8_t[out.size()];
+	std::copy(out.begin(), out.end(), terminal->text);
+	terminal->text_length = out.size();
+
 	terminal->lines_per_page = calculate_lines_per_page();
 	calculate_maximum_lines_for_groups(&terminal->groupings[0], terminal->groupings.size(), reinterpret_cast<char*>(terminal->text));
-
-	terminal->text_length = out - terminal->text;
 
 	return terminal.release();
 }
@@ -2308,9 +2307,9 @@ static terminal_text_t* compile_marathon_terminal(char* text, short length)
 
 void MarathonTerminalCompiler::FinishGroup()
 {
-	group.length = (out - terminal->text) - group.start_index;
+	group.length = out.size() - group.start_index;
 
-	*out++ = '\0';
+	out.push_back('\0');
 
 	switch (group.type)
 	{
@@ -2340,7 +2339,7 @@ void MarathonTerminalCompiler::CompileLine(const std::string& line)
 {
 	// Marathon formatting resets at the beginning of the line
 	text_face_data font_change;
-	font_change.index = out - terminal->text;
+	font_change.index = out.size();
 	font_change.face = 0;
 	font_change.color = 0;
 
@@ -2350,7 +2349,7 @@ void MarathonTerminalCompiler::CompileLine(const std::string& line)
 	{
 		if (*it == '$' && (it + 1 != line.end()))
 		{
-			font_change.index = out - terminal->text;
+			font_change.index = out.size();
 			char c = *(it + 1);
 			switch (c)
 			{
@@ -2396,12 +2395,12 @@ void MarathonTerminalCompiler::CompileLine(const std::string& line)
 					}
 					else
 					{
-						*out++ = *it;
+						out.push_back(*it);
 					}
 				}
 				else
 				{
-					*out++ = *it;
+					out.push_back(*it);
 				}
 				break;
 			default:
@@ -2416,26 +2415,24 @@ void MarathonTerminalCompiler::CompileLine(const std::string& line)
 			switch (c)
 			{
 			case 'r':
-				// FIXME: enable this when it can't overflow the buffer
-				//strcpy(reinterpret_cast<char *>(out), replacement);
-				//out += strlen(replacement);
+				out.insert(out.end(), replacement, replacement + strlen(replacement));
 				++it;
 				break;
 			case '%':
-				*out++ = *it;
+				out.push_back(*it);
 				++it;
 				break;
 			default:
-				*out++ = *it;
+				out.push_back(*it);
 			}
 		}
 		else
 		{
-			*out++ = *it;
+			out.push_back(*it);
 		}
 	}
 
-	*out++ = MAC_LINE_END;
+	out.push_back(MAC_LINE_END);
 }
 
 void MarathonTerminalCompiler::BuildUnfinishedGroup()
