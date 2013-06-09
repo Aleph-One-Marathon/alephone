@@ -829,7 +829,6 @@ void activate_nearby_monsters(
 					if (!MONSTER_IS_PLAYER(aggressor) && caller_index!=aggressor_index && target_index!=aggressor_index &&
 						(!(flood_flags&_passed_zone_border) || (!(aggressor->flags&_monster_has_never_been_activated))) &&
 						((flood_flags&_activate_deaf_monsters) || !MONSTER_IS_DEAF(aggressor)) && // || !MONSTER_IS_PLAYER(caller) || !TYPE_IS_FRIEND(get_monster_definition(aggressor->type), caller->type) || !caller_hostile) &&
-						((flood_flags&_activate_glue_monsters) || !(polygon->type==_polygon_is_glue) || !obey_glue) &&
 						aggressor->mode!=_monster_locked)
 					{
 						bool monster_was_active= true;
