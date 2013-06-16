@@ -75,11 +75,33 @@ extern vector<DirectorySpecifier> data_search_path;
 #ifdef HAVE_SDL_TTF
 extern void fix_missing_overhead_map_fonts();
 extern void fix_missing_interface_fonts();
+
+typedef struct builtin_font
+{
+	std::string name;
+	unsigned char *data;
+	unsigned int size;
+} builtin_font_t;
+
+#define NUMBER_OF_BUILTIN_FONTS 2
+static builtin_font_t builtin_fontspecs[NUMBER_OF_BUILTIN_FONTS] = {
+	{ "mono", aleph_sans_mono_bold, sizeof(aleph_sans_mono_bold) },
+	{ "Monaco", pro_font_ao, sizeof(pro_font_ao) }
+};
+
+typedef std::map<std::string, builtin_font_t> builtin_fonts_t;
+builtin_fonts_t builtin_fonts;
+
 #endif
 
 void initialize_fonts(bool last_chance)
 {
         logContext("initializing fonts");
+    
+	// Initialize builtin TTF fonts
+	for (int j = 0; j < NUMBER_OF_BUILTIN_FONTS; ++j)
+		builtin_fonts[builtin_fontspecs[j].name] = builtin_fontspecs[j];
+    
 	// Open font resource files
 	bool found = false;
 	vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
@@ -243,13 +265,10 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 	}
 
 	TTF_Font *font = 0;
-	if (path == "mono")
+	builtin_fonts_t::iterator j = builtin_fonts.find(path);
+	if (j != builtin_fonts.end())
 	{
-		font = TTF_OpenFontRW(SDL_RWFromConstMem(aleph_sans_mono_bold, sizeof(aleph_sans_mono_bold)), 0, size);
-	}
-	else if (path == "Monaco")
-	{
-		font = TTF_OpenFontRW(SDL_RWFromConstMem(pro_font_ao, sizeof(pro_font_ao)), 0, size);
+		font = TTF_OpenFontRW(SDL_RWFromConstMem(j->second.data, j->second.size), 0, size);
 	}
 	else
 	{
@@ -292,7 +311,8 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 
 static const char *locate_font(const std::string& path)
 {
-	if (path == "mono" || path == "Monaco" || path == "")
+	builtin_fonts_t::iterator j = builtin_fonts.find(path);
+	if (j != builtin_fonts.end() || path == "")
 	{
 		return path.c_str();
 	}
