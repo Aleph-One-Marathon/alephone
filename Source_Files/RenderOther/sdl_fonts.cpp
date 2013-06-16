@@ -50,6 +50,7 @@ using std::map;
 #include <boost/tuple/tuple_comparison.hpp>
 #include "preferences.h" // smooth_font
 #include "AlephSansMono-Bold.h"
+#include "ProFontAO.h"
 #endif
 
 // Global variables
@@ -246,6 +247,10 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 	{
 		font = TTF_OpenFontRW(SDL_RWFromConstMem(aleph_sans_mono_bold, sizeof(aleph_sans_mono_bold)), 0, size);
 	}
+	else if (path == "Monaco")
+	{
+		font = TTF_OpenFontRW(SDL_RWFromConstMem(pro_font_ao, sizeof(pro_font_ao)), 0, size);
+	}
 	else
 	{
 		short SavedType, SavedError = get_game_error(&SavedType);
@@ -287,7 +292,7 @@ static TTF_Font *load_ttf_font(const std::string& path, uint16 style, int16 size
 
 static const char *locate_font(const std::string& path)
 {
-	if (path == "mono" || path == "")
+	if (path == "mono" || path == "Monaco" || path == "")
 	{
 		return path.c_str();
 	}

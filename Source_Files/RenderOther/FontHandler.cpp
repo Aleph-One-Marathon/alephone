@@ -194,6 +194,10 @@ void FontSpecifier::Update()
 	}
 		
 	TextSpec Spec;
+	Spec.size = Size;
+	Spec.style = Style;
+	Spec.adjust_height = AdjustLineHeight;
+    
 	// Simply implements format "#<value>"; may want to generalize this
 	if (File[0] == '#') 
 	{
@@ -201,6 +205,12 @@ void FontSpecifier::Update()
 		sscanf(File+1, "%hd", &ID);
 		
 		Spec.font = ID;
+		if (ID == 4)
+		{
+			Spec.font = -1;
+			Spec.normal = "Monaco";
+			Spec.size = Size * 1.34f;
+		}
 	}
 	else
 	{
@@ -208,9 +218,6 @@ void FontSpecifier::Update()
 		Spec.normal = File;
 	}
 
-	Spec.size = Size;
-	Spec.style = Style;
-	Spec.adjust_height = AdjustLineHeight;
 	Info = load_font(Spec);
 	
 	if (Info) {
