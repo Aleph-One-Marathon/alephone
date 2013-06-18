@@ -39,9 +39,7 @@ Jan 14, 2001 (Loren Petrich):
 #include "cseries.h"
 #include "XML_ElementParser.h"
 
-#if defined(SDL)
 #include "sdl_fonts.h"
-#endif
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
@@ -80,12 +78,7 @@ public:
 	short Ascent, Descent, Leading;
 	short Widths[256];
 	
-	// MacOS- and SDL-specific stuff
-#if defined(mac)
-	short ID;
-#elif defined(SDL)
 	font_info *Info;
-#endif
 	
 	// Initialize: call this before calling anything else;
 	// this is from not having a proper constructor for this object.
@@ -94,12 +87,6 @@ public:
 	// Do the updating: must be called before using the font; however, it is called by Init(),
 	// and it will be called by the XML parser if it updates the parameters
 	void Update();
-	
-	// Use this font (MacOS-specific); has this form because MacOS Quickdraw has a global font value
-	// for each GrafPort (draw context)
-#ifdef mac
-	void Use();
-#endif
 	
 	// Get text width for text that must be centered (map title)
 	int TextWidth(const char *Text);
