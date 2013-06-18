@@ -289,21 +289,6 @@ static OvhdMap_CfgDataStruct OvhdMap_ConfigData =
 };
 static bool MapFontsInited = false;
 
-#ifdef HAVE_SDL_TTF
-void fix_missing_overhead_map_fonts()
-{
-	strcpy(OvhdMap_ConfigData.map_name_data.Font.File, "mono");
-	for (int k = 0; k < NUMBER_OF_ANNOTATION_DEFINITIONS; k++)
-	{
-		for (int s = 0; s <= OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE; s++)
-		{
-			strcpy(OvhdMap_ConfigData.annotation_definitions[k].Fonts[s].File, "mono");
-		}
-	}
-	
-}
-#endif
-
 // Is OpenGL rendering of the map currently active?
 // Set this from outside, because we want to make an OpenGL rendering for the main view,
 // yet a software rendering for an in-terminal checkpoint view

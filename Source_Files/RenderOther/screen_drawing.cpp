@@ -142,21 +142,6 @@ static FontSpecifier InterfaceFonts[NUMBER_OF_INTERFACE_FONTS] =
 	{"Monaco",   9, styleNormal,0, "#4"}
 };
 
-#ifdef HAVE_SDL_TTF
-void fix_missing_interface_fonts()
-{
-	for (int i = 0; i < NUMBER_OF_INTERFACE_FONTS; i++)
-	{
-		strcpy(InterfaceFonts[i].File, "mono");
-	}
-
-	InterfaceFonts[0].AdjustLineHeight = -1;
-	InterfaceFonts[3].AdjustLineHeight = -1;
-	InterfaceFonts[4].Size = 11;
-	InterfaceFonts[4].AdjustLineHeight = -2;
-}
-#endif
-
 // LP change: hardcoding the interface and player colors,
 // so as to banish the 'clut' resources
 const int NumInterfaceColors = 26;

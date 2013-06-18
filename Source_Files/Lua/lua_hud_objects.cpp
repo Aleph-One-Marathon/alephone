@@ -856,28 +856,17 @@ static int Lua_Font_Get_Style(lua_State *L)
 
 static int Lua_Font_Get_File(lua_State *L)
 {
-	char *f = Lua_Font::Object(L, 1)->File;
+	const std::string& f = Lua_Font::Object(L, 1)->File;
 	if (f[0] == '#')
 		lua_pushnil(L);
 	else
-		lua_pushstring(L, f);
+		lua_pushstring(L, f.c_str());
 	return 1;
 }
 
 static int Lua_Font_Get_ID(lua_State *L)
 {
-	char *f = Lua_Font::Object(L, 1)->File;
-	if (f[0] == '#')
-	{
-		short fontid = -1;
-		sscanf(&f[1], "%hd", &fontid);
-		if (fontid != -1)
-			lua_pushnumber(L, fontid);
-		else
-			lua_pushnil(L);
-	}
-	else
-		lua_pushnil(L);
+	lua_pushnil(L);
 	return 1;
 }
 
@@ -943,18 +932,11 @@ int Lua_Fonts_New(lua_State *L)
 		f = get_interface_font(Lua_InterfaceFont::ToIndex(L, -1));
 	lua_pop(L, 1);
 
-	lua_pushstring(L, "id");
-	lua_gettable(L, 1);
-	if (!lua_isnil(L, -1))
-		snprintf(f.File, FontSpecifier::NameSetLen, "#%d", static_cast<int>(lua_tointeger(L, -1)));
-	lua_pop(L, 1);
-	
 	lua_pushstring(L, "file");
 	lua_gettable(L, 1);
 	if (lua_isstring(L, -1))
 	{
-		strncpy(f.File, lua_tostring(L, -1), FontSpecifier::NameSetLen);
-		f.File[FontSpecifier::NameSetLen-1] = 0;
+		f.File = lua_tostring(L, -1);
 	}
 	lua_pop(L, 1);
 	

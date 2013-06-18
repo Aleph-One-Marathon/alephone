@@ -63,19 +63,17 @@ set<FontSpecifier*> *FontSpecifier::m_font_registry = NULL;
 
 bool FontSpecifier::operator==(FontSpecifier& F)
 {
-	if (strncmp(NameSet,F.NameSet,NameSetLen) != 0) return false;
 	if (Size != F.Size) return false;
 	if (Style != F.Style) return false;
-	if (strncmp(File,F.File,NameSetLen) != 0) return false;
+	if (File != F.File) return false;
 	return true;
 }
 
 FontSpecifier& FontSpecifier::operator=(FontSpecifier& F)
 {
-	memcpy(NameSet,F.NameSet,NameSetLen);
 	Size = F.Size;
 	Style = F.Style;
-	memcpy(File,F.File,NameSetLen);
+	File = F.File;
 	return *this;
 }
 
@@ -114,7 +112,7 @@ void FontSpecifier::Update()
 	if (File[0] == '#') 
 	{
 		short ID;
-		sscanf(File+1, "%hd", &ID);
+		sscanf(File.c_str() +1, "%hd", &ID);
 		
 		Spec.font = ID;
 		if (ID == 4)
@@ -122,6 +120,14 @@ void FontSpecifier::Update()
 			Spec.font = -1;
 			Spec.normal = "Monaco";
 			Spec.size = Size * 1.34f;
+		}
+		else if (ID == 22) 
+		{
+			Spec.font = -1;
+			Spec.normal = "Courier Prime";
+			Spec.bold = "Courier Prime Bold";
+			Spec.oblique = "Courier Prime Italic";
+			Spec.bold_oblique = "Courier Prime Bold Italic";
 		}
 	}
 	else
@@ -532,47 +538,6 @@ int FontSpecifier::DrawText(SDL_Surface *s, const char *text, int x, int y, uint
 #endif
 }
 	
-// Given a pointer to somewhere in a name set, returns the pointer
-// to the start of the next name, or NULL if it did not find any
-char *FontSpecifier::FindNextName(char *NamePtr)
-{
-	char *NextNamePtr = NamePtr;
-	char c;
-	
-	// Continue as long as one's in the string
-	while((c = *NextNamePtr) != 0)
-	{
-		// dprintf("Nxt %c",c);
-		// Check for whitespace and commas and semicolons
-		if (c == ' ' || c == '\t' || c == '\r' || c == '\n' || c == ',' || c == ';')
-		{
-			NextNamePtr++;
-			continue;
-		}
-		return NextNamePtr;
-	}
-	return NULL;
-}
-
-// Given a pointer to the beginning of a name, finds the pointer to the character
-// just after the end of that name
-char *FontSpecifier::FindNameEnd(char *NamePtr)
-{
-	char *NameEndPtr = NamePtr;
-	char c;
-	
-	// Continue as long as one's in the string
-	while((c = *NameEndPtr) != 0)
-	{
-		// dprintf("End %c",c);
-		// Delimiter: comma or semicolon
-		if (c == ',' || c == ';') break;
-		NameEndPtr++;
-	}
-	return NameEndPtr;
-}
-
-
 // Font-parser object:
 class XML_FontParser: public XML_ElementParser
 {
@@ -614,9 +579,6 @@ bool XML_FontParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	if (StringsEqual(Tag,"name"))
 	{
-		IsPresent[0] = true;
-		strncpy(TempFont.NameSet,Value,FontSpecifier::NameSetLen);
-		TempFont.NameSet[FontSpecifier::NameSetLen-1] = 0;	// For making the set always a C string
 		return true;
 	}
 	else if (StringsEqual(Tag,"size"))
@@ -640,8 +602,7 @@ bool XML_FontParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"file"))
 	{
 		IsPresent[4] = true;
-		strncpy(TempFont.File,Value,FontSpecifier::NameSetLen);
-		TempFont.File[FontSpecifier::NameSetLen-1] = 0;	// For making the set always a C string
+		TempFont.File = Value;
 		return true;
 	}
 	UnrecognizedTag();
@@ -666,11 +627,6 @@ bool XML_FontParser::AttributesDone()
 	// Put into place and update if necessary
 	assert(FontList);
 	bool DoUpdate = false;
-	if (IsPresent[0])
-	{
-		strncpy(FontList[Index].NameSet,TempFont.NameSet,FontSpecifier::NameSetLen);
-		DoUpdate = true;
-	}
 	if (IsPresent[1])
 	{
 		FontList[Index].Size = TempFont.Size;
@@ -683,7 +639,7 @@ bool XML_FontParser::AttributesDone()
 	}
 	if (IsPresent[4])
 	{
-		strncpy(FontList[Index].File,TempFont.File,FontSpecifier::NameSetLen);
+		FontList[Index].File = TempFont.File;
 		DoUpdate = true;
 	}
 	if (DoUpdate) FontList[Index].Update();

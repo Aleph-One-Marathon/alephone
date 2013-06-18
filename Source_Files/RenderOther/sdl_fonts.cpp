@@ -51,6 +51,11 @@ using std::map;
 #include "preferences.h" // smooth_font
 #include "AlephSansMono-Bold.h"
 #include "ProFontAO.h"
+
+#include "CourierPrime.h"
+#include "CourierPrimeBold.h"
+#include "CourierPrimeItalic.h"
+#include "CourierPrimeBoldItalic.h"
 #endif
 
 // Global variables
@@ -73,9 +78,6 @@ extern vector<DirectorySpecifier> data_search_path;
  */
 
 #ifdef HAVE_SDL_TTF
-extern void fix_missing_overhead_map_fonts();
-extern void fix_missing_interface_fonts();
-
 typedef struct builtin_font
 {
 	std::string name;
@@ -83,11 +85,16 @@ typedef struct builtin_font
 	unsigned int size;
 } builtin_font_t;
 
-#define NUMBER_OF_BUILTIN_FONTS 2
-static builtin_font_t builtin_fontspecs[NUMBER_OF_BUILTIN_FONTS] = {
+static builtin_font_t builtin_fontspecs[] = {
 	{ "mono", aleph_sans_mono_bold, sizeof(aleph_sans_mono_bold) },
-	{ "Monaco", pro_font_ao, sizeof(pro_font_ao) }
+	{ "Monaco", pro_font_ao, sizeof(pro_font_ao) },
+	{ "Courier Prime", courier_prime, sizeof(courier_prime) },
+	{ "Courier Prime Bold", courier_prime_bold, sizeof(courier_prime_bold) },
+	{ "Courier Prime Italic", courier_prime_italic, sizeof(courier_prime_italic) },
+	{" Courier Prime Bold Italic", courier_prime_bold_italic, sizeof(courier_prime_bold_italic) }
 };
+
+#define NUMBER_OF_BUILTIN_FONTS sizeof(builtin_fontspecs) / sizeof(builtin_font)
 
 typedef std::map<std::string, builtin_font_t> builtin_fonts_t;
 builtin_fonts_t builtin_fonts;
@@ -118,24 +125,6 @@ void initialize_fonts(bool last_chance)
 				found = true;
 		}
 		i++;
-	}
-	if (!found && last_chance) {
-#ifdef HAVE_SDL_TTF
-		// use our own built-in font
-		fix_missing_overhead_map_fonts();
-		fix_missing_interface_fonts();
-#else
-		logFatal("Can't open font resource file");
-/*
-                vector<DirectorySpecifier>::const_iterator i = data_search_path.begin(), end = data_search_path.end();
-                while (i != end) {
-                        FileSpecifier fonts = *i + "Fonts";
-                        fdprintf(fonts.GetPath());
-                        i++;
-                }
-*/                
-		exit(1);
-#endif
 	}
 }
 
