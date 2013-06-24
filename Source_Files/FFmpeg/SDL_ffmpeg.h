@@ -30,15 +30,15 @@
 extern "C" {
 #endif
 
-#ifdef WIN32
-    #ifdef BUILD_DLL
-        #define EXPORT __declspec(dllexport)
-    #else
-        #define EXPORT __declspec(dllimport)
-    #endif
-#else
+// #ifdef WIN32
+//     #ifdef BUILD_DLL
+//         #define EXPORT __declspec(dllexport)
+//     #else
+//         #define EXPORT __declspec(dllimport)
+//     #endif
+// #else
     #define EXPORT
-#endif
+// #endif
 
 enum SDL_ffmpegStreamType
 {
