@@ -449,7 +449,7 @@ short new_monster(
 	}
 
 	/* keep track of how many civilians we drop on this level */
-	if ((static_world->environment_flags & _environment_rebellion) && 
+	if ((static_world->environment_flags & _environment_rescue_m1) && 
 	    monster_index!=NONE && 
 	    (definition->_class&_class_human_civilian_m1)) 
 	{
