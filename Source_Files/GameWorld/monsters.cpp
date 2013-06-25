@@ -449,7 +449,12 @@ short new_monster(
 	}
 
 	/* keep track of how many civilians we drop on this level */
-//	if (monster_index!=NONE && (definition->_class&_class_human_civilian)) dynamic_world->current_civilian_count+= 1;
+	if ((static_world->environment_flags & _environment_rebellion) && 
+	    monster_index!=NONE && 
+	    (definition->_class&_class_human_civilian_m1)) 
+	{
+		dynamic_world->current_civilian_count+= 1;
+	}
 
 	return monster_index;
 }
@@ -1584,7 +1589,7 @@ void damage_monster(
 						if (definition->_class&_class_human_civilian) dynamic_world->civilians_killed_by_players+= 1;
 					}
 
-					if (static_world->environment_flags & _environment_rescue_m1 && (definition->_class & _class_human_civilian))
+					if ((static_world->environment_flags & _environment_rescue_m1) && (definition->_class & _class_human_civilian_m1))
 					{
 						dynamic_world->current_civilian_causalties += 1;
 					}
