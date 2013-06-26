@@ -90,10 +90,10 @@ struct FilmProfile
 extern FilmProfile film_profile;
 
 enum FilmProfileType {
-	FILM_PROFILE_DEFAULT,
+	FILM_PROFILE_ALEPH_ONE_1_0,
 	FILM_PROFILE_MARATHON_2,
 	FILM_PROFILE_MARATHON_INFINITY,
-	FILM_PROFILE_ALEPH_ONE_1_0
+	FILM_PROFILE_DEFAULT,
 };
 
 void load_film_profile(FilmProfileType type, bool reload_mml = true);
