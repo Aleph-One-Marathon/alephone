@@ -439,6 +439,16 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		return false;
 	}
 
+	if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion)
+	{
+		if (warn_joiner)
+		{
+			ServerWarningMessage serverWarningMessage(expand_app_variables("The gatherer is using a new version of $appName$. You will not appear in the list of available players."), ServerWarningMessage::kJoinerUngatherable);
+			channel->enqueueOutgoingMessage(serverWarningMessage);
+		}
+		return false;
+	}
+
 	if (network_preferences->game_protocol == _network_game_protocol_star) {
 		if (capabilities[Capabilities::kStar] == 0) {
 			if (warn_joiner) {
@@ -462,7 +472,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 			return false;
 		}
 	}
-	
+
 	if (do_netscript)
 	{
 		if (capabilities[Capabilities::kLua] == 0) {
@@ -757,7 +767,7 @@ static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 {
 	if (handlerState == netJoining) {
 		Capabilities capabilities = *capabilitiesMessage->capabilities();
-		if (network_preferences->game_protocol == _network_game_protocol_star && capabilities[Capabilities::kStar] < Capabilities::kStarVersion)
+		if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion || (network_preferences->game_protocol == _network_game_protocol_star && capabilities[Capabilities::kStar] < Capabilities::kStarVersion))
 		{
 			// I'm not gatherable
 			my_capabilities[Capabilities::kGatherable] = 0;
