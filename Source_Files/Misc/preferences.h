@@ -228,8 +228,6 @@ struct environment_preferences_data
 	TimeType sounds_mod_date;
 	uint32 patches[MAXIMUM_PATCHES_PER_ENVIRONMENT];
 
-	char theme_dir[256];
-
 	// ZZZ: these aren't really environment preferences, but
 	// preferences that affect the environment preferences dialog
 	bool group_by_directory;	// if not, display popup as one giant flat list

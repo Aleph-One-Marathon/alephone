@@ -106,14 +106,6 @@ bool get_default_music_spec(FileSpecifier &file)
 	return get_default_spec(file, filenameMUSIC);
 }
 
-bool get_default_theme_spec(FileSpecifier &file)
-{
-	FileSpecifier theme = "Themes";
-	theme += getcstr(temporary, strFILENAMES, filenameDEFAULT_THEME);
-	return get_default_spec(file, theme.GetPath());
-}
-
-
 /*
  *  Choose saved game for loading
  */

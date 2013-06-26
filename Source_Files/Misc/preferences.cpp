@@ -1856,17 +1856,6 @@ static void environment_dialog(void *arg)
 	use_hud_lua_w->add_dependent_widget(hud_lua_w);
 	
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_static_text("Theme"), d);
-
-	w_env_select *theme_w = new w_env_select(environment_preferences->theme_dir, "AVAILABLE THEMES", _typecode_theme, &d);
-	table->dual_add(theme_w->label("Theme"), d);
-	table->dual_add(theme_w, d);
-
-	w_toggle *smooth_text_w = new w_toggle(environment_preferences->smooth_text);
-	table->dual_add(smooth_text_w->label("Smooth Text"), d);
-	table->dual_add(smooth_text_w, d);
-
-	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Options"), d);
 
 	w_toggle *hide_extensions_w = new w_toggle(environment_preferences->hide_extensions);
@@ -1895,7 +1884,7 @@ static void environment_dialog(void *arg)
 
 	// Run dialog
 	bool theme_changed = false;
-	FileSpecifier old_theme(environment_preferences->theme_dir);
+	FileSpecifier old_theme;
 	const Plugin* theme_plugin = Plugins::instance()->find_theme();
 	if (theme_plugin)
 	{
@@ -1966,13 +1955,7 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 		
-		path = theme_w->get_path();
-		if (strcmp(path, environment_preferences->theme_dir)) {
-			strcpy(environment_preferences->theme_dir, path);
-			changed = theme_changed = true;
-		}
-
-		FileSpecifier new_theme(environment_preferences->theme_dir);
+		FileSpecifier new_theme;
 		theme_plugin = Plugins::instance()->find_theme();
 		if (theme_plugin)
 		{
@@ -1983,15 +1966,6 @@ static void environment_dialog(void *arg)
 		{
 			theme_changed = true;
 		}
-
-#ifdef HAVE_SDL_TTF
-		bool smooth_text = smooth_text_w->get_selection() != 0;
-		if (smooth_text != environment_preferences->smooth_text)
-		{
-			environment_preferences->smooth_text = smooth_text;
-			theme_changed = true;
-		}
-#endif
 
 		bool hide_extensions = hide_extensions_w->get_selection() != 0;
 		if (hide_extensions != environment_preferences->hide_extensions)
@@ -2381,7 +2355,6 @@ void write_preferences(
 	WriteXML_Pathname(F,"  shapes_file=\"",environment_preferences->shapes_file,"\"\n");
 	WriteXML_Pathname(F,"  sounds_file=\"",environment_preferences->sounds_file,"\"\n");
 	WriteXML_Pathname(F,"  resources_file=\"",environment_preferences->resources_file,"\"\n");
-	WriteXML_Pathname(F,"  theme_dir=\"",environment_preferences->theme_dir,"\"\n");
 	fprintf(F,"  map_checksum=\"%u\"\n",environment_preferences->map_checksum);
 	fprintf(F,"  physics_checksum=\"%u\"\n",environment_preferences->physics_checksum);
 	fprintf(F,"  shapes_mod_date=\"%u\"\n",uint32(environment_preferences->shapes_mod_date));
@@ -2613,11 +2586,6 @@ static void default_environment_preferences(environment_preferences_data *prefer
 
 	strncpy(preferences->resources_file, DefaultExternalResourcesFile.GetPath(), 256);
 	preferences->resources_file[255] = 0;
-
-	FileSpecifier DefaultThemeFile;
-	get_default_theme_spec(DefaultThemeFile);
-	strncpy(preferences->theme_dir, DefaultThemeFile.GetPath(), 256);
-	preferences->theme_dir[255] = 0;
 
 	preferences->group_by_directory = true;
 	preferences->reduce_singletons = false;
@@ -4028,7 +3996,6 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	}
 	else if (StringsEqual(Tag,"theme_dir"))
 	{
-		expand_symbolic_paths(environment_preferences->theme_dir, Value, 255);
 		return true;
 	}
 	else if (StringsEqual(Tag,"map_checksum"))
