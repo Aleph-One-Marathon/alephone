@@ -1481,6 +1481,19 @@ bool collection_loaded(short collection_index)
 	return collection_loaded(header);
 }
 
+bool can_load_collection(short collection_index)
+{
+	if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
+	{
+		collection_header* header = get_collection_header(collection_index);
+		if (header) {
+			return (header->offset != -1 || header->offset16 != -1);
+		}
+	}
+
+	return false;
+}
+
 static void lock_collection(
 	struct collection_header *header)
 {

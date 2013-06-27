@@ -917,6 +917,8 @@ void LuaState::ExecuteCommand(const std::string& line)
 	lua_settop(State(), 0);	
 }
 
+extern bool can_load_collection(short);
+
 // pass by pointer because boost::bind can't do non-const past 2nd argument
 void LuaState::MarkCollections(std::set<short>* collections)
 {
@@ -932,7 +934,7 @@ void LuaState::MarkCollections(std::set<short>* collections)
 		while (lua_isnumber(State(), -1))
 		{
 			short collection_index = static_cast<short>(lua_tonumber(State(), -1));
-			if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
+			if (can_load_collection(collection_index))
 			{
 				mark_collection_for_loading(collection_index);
 				collections->insert(collection_index);
@@ -947,7 +949,7 @@ void LuaState::MarkCollections(std::set<short>* collections)
 	else if (lua_isnumber(State(), -1))
 	{
 		short collection_index = static_cast<short>(lua_tonumber(State(), -1));
-		if (collection_index >= 0 && collection_index < NUMBER_OF_COLLECTIONS)
+		if (can_load_collection(collection_index))
 		{
 			mark_collection_for_loading(collection_index);
 			collections->insert(collection_index);
