@@ -612,7 +612,6 @@ void Movie::StopRecording()
         for (int i = 0; i < av->fmt_ctx->nb_streams; i++)
         {
             avcodec_close(av->fmt_ctx->streams[i]->codec);
-            av_freep(av->fmt_ctx->streams[i]->info);
         }
         avio_close(av->fmt_ctx->pb);
         avformat_free_context(av->fmt_ctx);
