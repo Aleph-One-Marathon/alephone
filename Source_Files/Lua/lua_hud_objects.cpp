@@ -2492,7 +2492,6 @@ static int Lua_Screen_Crosshairs_Get_LuaHUD(lua_State *L)
 static int Lua_Screen_Crosshairs_Set_LuaHUD(lua_State *L)
 {
 	use_lua_hud_crosshairs = lua_toboolean(L, 2);
-	use_lua_hud_crosshairs = true;
 	return 0;
 }
 
