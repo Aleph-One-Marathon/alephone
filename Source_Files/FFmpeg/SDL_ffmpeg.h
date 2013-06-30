@@ -163,6 +163,8 @@ typedef struct SDL_ffmpegStream
     int sampleBufferSize;
     /** position of data in samplebuffer */
     int sampleBufferOffset;
+    /** stride of planar data in samplebuffer */
+    int sampleBufferStride;
     /** timestamp which fits the data in samplebuffer */
     int64_t sampleBufferTime;
 

@@ -57,6 +57,12 @@ extern "C"
 #endif
 #endif
 
+// Use audio conversion from Movie.cpp
+extern int convert_audio(int in_samples, int in_channels, int in_stride,
+                  enum AVSampleFormat in_fmt, const uint8_t *in_buf,
+                  int out_samples, int out_channels, int out_stride,
+                  enum AVSampleFormat out_fmt, uint8_t *out_buf);
+
 
 /**
 \cond
@@ -1949,6 +1955,12 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
     int size = pack->size;
     int audioSize = AVCODEC_MAX_AUDIO_FRAME_SIZE * sizeof( int16_t );
 
+    int channels = file->audioStream->_ffmpeg->codec->channels;
+    enum AVSampleFormat in_fmt = file->audioStream->_ffmpeg->codec->sample_fmt;
+    int in_bps = av_get_bytes_per_sample(in_fmt);
+    enum AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
+    int out_bps = av_get_bytes_per_sample(out_fmt);
+
     /* check if there is still data in the buffer */
     if ( file->audioStream->sampleBufferSize )
     {
@@ -1959,27 +1971,39 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         int fs = frame->capacity - frame->size;
 
         /* check the amount of data which needs to be copied */
-        if ( fs < file->audioStream->sampleBufferSize )
+        int in_samples = file->audioStream->sampleBufferSize / (channels * in_bps);
+        int out_samples = fs / (channels * out_bps);
+        
+        if (out_samples < in_samples)
         {
             /* copy data from sampleBuffer into frame buffer until frame buffer is full */
-            memcpy( frame->buffer + frame->size, file->audioStream->sampleBuffer + file->audioStream->sampleBufferOffset, fs );
-
+            int written = convert_audio(out_samples, channels, file->audioStream->sampleBufferStride,
+                                        in_fmt, (uint8_t *)(file->audioStream->sampleBuffer + file->audioStream->sampleBufferOffset),
+                                        out_samples, channels, -1,
+                                        out_fmt, frame->buffer + frame->size);
+            
             /* mark the amount of bytes still in the buffer */
-            file->audioStream->sampleBufferSize -= fs;
+            file->audioStream->sampleBufferSize -= out_samples * channels * in_bps;
 
             /* move offset accordingly */
-            file->audioStream->sampleBufferOffset += fs;
+            if (av_sample_fmt_is_planar(in_fmt))
+                file->audioStream->sampleBufferOffset += out_samples * in_bps;
+            else
+                file->audioStream->sampleBufferOffset += out_samples * in_bps * channels;
 
             /* update framesize */
-            frame->size = frame->capacity;
+            frame->size += written;
         }
         else
         {
             /* copy data from sampleBuffer into frame buffer until sampleBuffer is empty */
-            memcpy( frame->buffer + frame->size, file->audioStream->sampleBuffer + file->audioStream->sampleBufferOffset, file->audioStream->sampleBufferSize );
+            int written = convert_audio(in_samples, channels, file->audioStream->sampleBufferStride,
+                                        in_fmt, (uint8_t *)(file->audioStream->sampleBuffer + file->audioStream->sampleBufferOffset),
+                                        in_samples, channels, -1,
+                                        out_fmt, frame->buffer + frame->size);
 
             /* update framesize */
-            frame->size += file->audioStream->sampleBufferSize;
+            frame->size += written;
 
             /* at this point, samplebuffer should have been handled */
             file->audioStream->sampleBufferSize = 0;
@@ -2022,6 +2046,9 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         /* set new pts */
         if ( !frame->size ) frame->pts = file->audioStream->sampleBufferTime;
 
+        /* save stride of data we just grabbed */
+        file->audioStream->sampleBufferStride = audioSize / channels;
+        
         /* room in frame */
         int fs = frame->capacity - frame->size;
 
@@ -2029,24 +2056,36 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
         if ( fs )
         {
             /* check the amount of data which needs to be copied */
-            if ( fs < audioSize )
+            int in_samples = audioSize / (channels * in_bps);
+            int out_samples = fs / (channels * out_bps);
+            
+            if (out_samples < in_samples)
             {
                 /* copy data from sampleBuffer into frame buffer until frame buffer is full */
-                memcpy( frame->buffer + frame->size, file->audioStream->sampleBuffer, fs );
+                int written = convert_audio(out_samples, channels, file->audioStream->sampleBufferStride,
+                                            in_fmt, (uint8_t *)(file->audioStream->sampleBuffer),
+                                            out_samples, channels, -1,
+                                            out_fmt, frame->buffer + frame->size);
 
                 /* mark the amount of bytes still in the buffer */
-                file->audioStream->sampleBufferSize = audioSize - fs;
+                file->audioStream->sampleBufferSize = ((in_samples - out_samples) * channels * in_bps);
 
                 /* set the offset so the remaining data can be found */
-                file->audioStream->sampleBufferOffset = fs;
+                if (av_sample_fmt_is_planar(in_fmt))
+                    file->audioStream->sampleBufferOffset = out_samples * in_bps;
+                else
+                    file->audioStream->sampleBufferOffset = out_samples * in_bps * channels;
 
                 /* update framesize */
-                frame->size = frame->capacity;
+                frame->size += written;
             }
             else
             {
                 /* copy data from sampleBuffer into frame buffer until sampleBuffer is empty */
-                memcpy( frame->buffer + frame->size, file->audioStream->sampleBuffer, audioSize );
+                int written = convert_audio(in_samples, channels, file->audioStream->sampleBufferStride,
+                                            in_fmt, (uint8_t *)(file->audioStream->sampleBuffer),
+                                            in_samples, channels, -1,
+                                            out_fmt, frame->buffer + frame->size);
 
                 /* mark the amount of bytes still in the buffer */
                 file->audioStream->sampleBufferSize = 0;
@@ -2055,7 +2094,7 @@ int SDL_ffmpegDecodeAudioFrame( SDL_ffmpegFile *file, AVPacket *pack, SDL_ffmpeg
                 file->audioStream->sampleBufferOffset = 0;
 
                 /* update framesize */
-                frame->size += audioSize;
+                frame->size += written;
             }
         }
         else

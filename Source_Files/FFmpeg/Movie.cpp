@@ -95,59 +95,133 @@ struct libav_vars {
 };
 typedef struct libav_vars libav_vars_t;
 
-bool convert_audio(int in_samples, int in_channels,
-                   enum AVSampleFormat in_fmt,
-                   const uint8_t *in_buf,
-                   int out_samples, int out_channels,
-                   enum AVSampleFormat out_fmt,
-                   uint8_t *out_buf)
+int convert_audio(int in_samples, int in_channels, int in_stride,
+                  enum AVSampleFormat in_fmt,
+                  const uint8_t *in_buf,
+                  int out_samples, int out_channels, int out_stride,
+                  enum AVSampleFormat out_fmt,
+                  uint8_t *out_buf)
 {
-    if (in_channels != out_channels || in_fmt != AV_SAMPLE_FMT_S16)
-        return false;
+    if (in_channels != out_channels)
+        return 0;   // unsupported conversion
     if (out_samples < in_samples)
         in_samples = out_samples;
     
-    const int16 *ib = reinterpret_cast<const int16 *>(in_buf);
-    int in_bytes = 2 * in_samples * in_channels;
+    int in_bps;
+    switch (in_fmt)
+    {
+        case AV_SAMPLE_FMT_S16:
+        case AV_SAMPLE_FMT_S16P:
+            in_bps = 2;
+            break;
+        case AV_SAMPLE_FMT_FLT:
+        case AV_SAMPLE_FMT_FLTP:
+            in_bps = 4;
+            break;
+        default:
+            return 0;   // unsupported format
+    }
+    int in_bytes = in_bps * in_samples * in_channels;
     
-    float *ob = reinterpret_cast<float *>(out_buf);
-    float *cb[MAX_AUDIO_CHANNELS];
-    cb[0] = ob;
-    
+    int out_bps;
     switch (out_fmt)
     {
         case AV_SAMPLE_FMT_S16:
-            memcpy(out_buf, in_buf, in_bytes);
-            if (out_samples > in_samples)
-                memset(out_buf + in_bytes, 0, (out_samples - in_samples) * (out_channels * 2));
+            out_bps = 2;
             break;
-        
         case AV_SAMPLE_FMT_FLT:
-            for (int s = 0; s < in_samples; s++)
-                for (int c = 0; c < in_channels; c++)
-                    ob[s*in_channels + c] = ib[s*in_channels + c] / 32768.0f;
-            if (out_samples > in_samples)
-                memset(out_buf + (in_samples * out_channels * 4), 0, (out_samples - in_samples) * (out_channels * 4));
-            break;
-            
         case AV_SAMPLE_FMT_FLTP:
-            cb[0] = ob;
-            for (int c = 1; c < in_channels; c++)
-                cb[c] = &cb[0][out_samples];
+            out_bps = 4;
+            break;
+        default:
+            return 0;   // unsupported format
+    }
+    int out_bytes = out_bps * out_samples * out_channels;
+    
+    in_stride = in_stride / in_bps;
+    out_stride = out_stride / out_bps;
+    
+    if (in_fmt == out_fmt)
+    {
+        if (av_sample_fmt_is_planar(in_fmt))
+            for (int c = 0; c < in_channels; c++)
+                memcpy(out_buf + (c * out_stride),
+                       in_buf + (c * in_stride),
+                       in_samples * in_bps);
+        else
+            memcpy(out_buf, in_buf, in_bytes);
+    }
+    else if (in_fmt == AV_SAMPLE_FMT_S16)
+    {
+        const int16 *ib = reinterpret_cast<const int16 *>(in_buf);
+        if (out_fmt == AV_SAMPLE_FMT_FLT)
+        {
+            float *ob = reinterpret_cast<float *>(out_buf);
+            for (int i = 0; i < in_samples * in_channels; i++)
+                ob[i] = ib[i] / 32768.0f;
+        }
+        else if (out_fmt == AV_SAMPLE_FMT_FLTP)
+        {
+            float *ob = reinterpret_cast<float *>(out_buf);
             for (int s = 0; s < in_samples; s++)
                 for (int c = 0; c < in_channels; c++)
-                    cb[c][s] = ib[s*in_channels + c] / 32768.0f;
-            if (out_samples > in_samples)
+                    ob[(c * out_stride) + s] = ib[(s * in_channels) + c] / 32768.0f;
+        }
+        else
+            return 0;   // unsupported conversion
+    }
+    else if (in_fmt == AV_SAMPLE_FMT_FLT)
+    {
+        const float *ib = reinterpret_cast<const float *>(in_buf);
+        if (out_fmt == AV_SAMPLE_FMT_S16)
+        {
+            int16 *ob = reinterpret_cast<int16 *>(out_buf);
+            for (int i = 0; i < in_samples * in_channels; i++)
+                ob[i] = ib[i] * 32768.0f;
+        }
+        else
+            return 0;   // unsupported conversion
+    }
+    else if (in_fmt == AV_SAMPLE_FMT_FLTP)
+    {
+        const float *ib = reinterpret_cast<const float *>(in_buf);
+        if (out_fmt == AV_SAMPLE_FMT_S16)
+        {
+            int16 *ob = reinterpret_cast<int16 *>(out_buf);
+            for (int s = 0; s < in_samples; s++)
                 for (int c = 0; c < in_channels; c++)
-                    memset(&cb[c][out_samples], 0, (out_samples - in_samples) * 4);
-            break;
-        
-        default:
-            // unsupported format
-            return false;
+                    ob[(s * in_channels) + c] = ib[(c * in_stride) + s] * 32768.0f;
+        }
+        else
+            return 0;   // unsupported conversion
+    }
+    else if (in_fmt == AV_SAMPLE_FMT_S16P)
+    {
+        const int16 *ib = reinterpret_cast<const int16 *>(in_buf);
+        if (out_fmt == AV_SAMPLE_FMT_S16)
+        {
+            int16 *ob = reinterpret_cast<int16 *>(out_buf);
+            for (int s = 0; s < in_samples; s++)
+                for (int c = 0; c < in_channels; c++)
+                    ob[(s * in_channels) + c] = ib[(c * in_stride) + s];
+        }
+        else
+            return 0;   // unsupported conversion
     }
     
-    return true;
+    // pad output if desired
+    if (out_samples > in_samples)
+    {
+        if (av_sample_fmt_is_planar(out_fmt))
+        {
+            for (int c = 0; c < out_channels; c++)
+                memset(out_buf + (c * out_stride), 0, (out_samples - in_samples) * out_bps);
+        }
+        else
+            memset(out_buf + in_bytes, 0, out_bytes - in_bytes);
+    }
+
+    return out_bytes;
 }
 
 Movie::Movie() :
@@ -478,18 +552,19 @@ void Movie::EncodeAudio(bool last)
     av_fifo_generic_write(av->audio_fifo, &audiobuf[0], audiobuf.size(), NULL);
     
     // bps: bytes per sample
-    int read_bps = acodec->channels * 2;
-    int write_bps = acodec->channels * av_get_bytes_per_sample(acodec->sample_fmt);
+    int channels = acodec->channels;
+    int read_bps = 2;
+    int write_bps = av_get_bytes_per_sample(acodec->sample_fmt);
     
-    int max_read = acodec->frame_size * read_bps;
-    int min_read = last ? read_bps : max_read;
+    int max_read = acodec->frame_size * read_bps * channels;
+    int min_read = last ? read_bps * channels : max_read;
     while (av_fifo_size(av->audio_fifo) >= min_read)
     {
         int read_bytes = MIN(av_fifo_size(av->audio_fifo), max_read);
         av_fifo_generic_read(av->audio_fifo, av->audio_data, read_bytes, NULL);
         
         // convert
-        int read_samples = read_bytes / read_bps;
+        int read_samples = read_bytes / (read_bps * channels);
         int write_samples = read_samples;
         if (read_samples < acodec->frame_size)
         {
@@ -500,9 +575,9 @@ void Movie::EncodeAudio(bool last)
                 write_samples = acodec->frame_size;
         }
 
-        convert_audio(read_samples, acodec->channels,
+        convert_audio(read_samples, acodec->channels, -1,
                       AV_SAMPLE_FMT_S16, av->audio_data,
-                      write_samples, acodec->channels,
+                      write_samples, acodec->channels, write_samples * write_bps,
                       acodec->sample_fmt, av->audio_data_conv);
                       
         avcodec_get_frame_defaults(av->audio_frame);
@@ -510,7 +585,7 @@ void Movie::EncodeAudio(bool last)
         int asize = avcodec_fill_audio_frame(av->audio_frame, acodec->channels,
                                              acodec->sample_fmt,
                                              av->audio_data_conv,
-                                             write_samples * write_bps, 1);
+                                             write_samples * write_bps * channels, 1);
         if (asize >= 0)
         {
             AVPacket pkt;
