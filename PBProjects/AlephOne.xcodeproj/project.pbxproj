@@ -469,11 +469,6 @@
 		2718500C14392536007CD65B /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		2718500D14392536007CD65B /* SDL_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		2718500E14392536007CD65B /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
-		2718500F14392536007CD65B /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		2718501014392536007CD65B /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		2718501114392536007CD65B /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		2718501214392536007CD65B /* mad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		2718501314392536007CD65B /* sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
 		2718501414392536007CD65B /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		2718501514392536007CD65B /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		2718501614392536007CD65B /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
@@ -488,11 +483,6 @@
 		2718502314392536007CD65B /* png.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
 		2718502414392536007CD65B /* zziplib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
 		2718502514392536007CD65B /* speex.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
-		2718502614392536007CD65B /* mad.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		2718502714392536007CD65B /* sndfile.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
-		2718502814392536007CD65B /* Ogg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		2718502914392536007CD65B /* Vorbis.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		2718502A14392536007CD65B /* smpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
 		2718502B14392536007CD65B /* SDL_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
 		2718502C14392536007CD65B /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		2718502D14392536007CD65B /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
@@ -929,11 +919,6 @@
 		27185241143931DC007CD65B /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		27185242143931DC007CD65B /* SDL_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		27185243143931DC007CD65B /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
-		27185244143931DC007CD65B /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		27185245143931DC007CD65B /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		27185246143931DC007CD65B /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		27185247143931DC007CD65B /* mad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		27185248143931DC007CD65B /* sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
 		27185249143931DC007CD65B /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		2718524A143931DC007CD65B /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		2718524B143931DC007CD65B /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
@@ -948,11 +933,6 @@
 		27185258143931DC007CD65B /* png.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
 		27185259143931DC007CD65B /* zziplib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
 		2718525A143931DC007CD65B /* speex.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
-		2718525B143931DC007CD65B /* mad.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		2718525C143931DC007CD65B /* sndfile.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
-		2718525D143931DC007CD65B /* Ogg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		2718525E143931DC007CD65B /* Vorbis.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		2718525F143931DC007CD65B /* smpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
 		27185260143931DC007CD65B /* SDL_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
 		27185261143931DC007CD65B /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		27185262143931DC007CD65B /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
@@ -1392,11 +1372,6 @@
 		2718547414395833007CD65B /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		2718547514395833007CD65B /* SDL_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		2718547614395833007CD65B /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
-		2718547714395833007CD65B /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		2718547814395833007CD65B /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		2718547914395833007CD65B /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		2718547A14395833007CD65B /* mad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		2718547B14395833007CD65B /* sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
 		2718547C14395833007CD65B /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		2718547D14395833007CD65B /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		2718547E14395833007CD65B /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
@@ -1411,17 +1386,17 @@
 		2718548B14395833007CD65B /* png.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
 		2718548C14395833007CD65B /* zziplib.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759F32F10D5BCC0000204DD /* zziplib.framework */; };
 		2718548D14395833007CD65B /* speex.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
-		2718548E14395833007CD65B /* mad.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		2718548F14395833007CD65B /* sndfile.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
-		2718549014395833007CD65B /* Ogg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		2718549114395833007CD65B /* Vorbis.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		2718549214395833007CD65B /* smpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
 		2718549314395833007CD65B /* SDL_image.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
 		2718549414395833007CD65B /* SDL.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		2718549514395833007CD65B /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		2718549614395833007CD65B /* SDL_ttf.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		271854A51439585B007CD65B /* Marathon Infinity.icns in Resources */ = {isa = PBXBuildFile; fileRef = 271854A21439585B007CD65B /* Marathon Infinity.icns */; };
 		271854F114396D72007CD65B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 271854A01439585B007CD65B /* InfoPlist.strings */; };
+		271EE3F717812CED00CBAD98 /* avcodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
+		271EE3F917812CED00CBAD98 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
+		271EE3FB17812CED00CBAD98 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
+		271EE3FD17812CED00CBAD98 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
+		271EE3FF17812CED00CBAD98 /* x264.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
 		2739B492101B862A00CC8098 /* Shape_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2739B490101B862A00CC8098 /* Shape_Blitter.cpp */; };
 		2739B493101B862A00CC8098 /* Shape_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2739B491101B862A00CC8098 /* Shape_Blitter.h */; };
 		2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
@@ -1445,6 +1420,77 @@
 		278497A20FF5C308008DECC8 /* lua_hud_script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2784979D0FF5C308008DECC8 /* lua_hud_script.cpp */; };
 		27911B24100073460063ACB6 /* HUDRenderer_Lua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */; };
 		27911B25100073460063ACB6 /* HUDRenderer_Lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 27911B23100073460063ACB6 /* HUDRenderer_Lua.h */; };
+		27A7A39F17812D1900461252 /* avcodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
+		27A7A3A017812D1A00461252 /* avcodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
+		27A7A3A117812D1B00461252 /* avcodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
+		27A7A3A817812D2100461252 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
+		27A7A3A917812D2200461252 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
+		27A7A3AA17812D2200461252 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
+		27A7A3DC17812D2700461252 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
+		27A7A3DD17812D2800461252 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
+		27A7A3DE17812D2800461252 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
+		27A7A3E417812D2F00461252 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
+		27A7A3E517812D2F00461252 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
+		27A7A3E617812D3000461252 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
+		27A7A3EF17812D6900461252 /* x264.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
+		27A7A3F017812D6A00461252 /* x264.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
+		27A7A3F117812D6A00461252 /* x264.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
+		27A7A4611781318C00461252 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
+		27A7A4621781318C00461252 /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
+		27A7A4631781318C00461252 /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
+		27A7A4641781318C00461252 /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
+		27A7A4651781318C00461252 /* x264.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
+		27A7A4661781319800461252 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
+		27A7A4671781319800461252 /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
+		27A7A4681781319800461252 /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
+		27A7A4691781319800461252 /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
+		27A7A46A1781319800461252 /* x264.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
+		27A7A46B178131A500461252 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
+		27A7A46C178131A500461252 /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
+		27A7A46D178131A500461252 /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
+		27A7A46E178131A500461252 /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
+		27A7A46F178131A500461252 /* x264.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
+		27A7A4701781322B00461252 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
+		27A7A4711781322B00461252 /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
+		27A7A4721781322B00461252 /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
+		27A7A4731781322B00461252 /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
+		27A7A4741781322B00461252 /* x264.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
+		27A7A47C1781335C00461252 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4791781335C00461252 /* Movie.h */; };
+		27A7A47D1781335C00461252 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A47A1781335C00461252 /* SDL_ffmpeg.h */; };
+		27A7A47F1781335C00461252 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4791781335C00461252 /* Movie.h */; };
+		27A7A4801781335C00461252 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A47A1781335C00461252 /* SDL_ffmpeg.h */; };
+		27A7A4821781335C00461252 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4791781335C00461252 /* Movie.h */; };
+		27A7A4831781335C00461252 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A47A1781335C00461252 /* SDL_ffmpeg.h */; };
+		27A7A4851781335C00461252 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4791781335C00461252 /* Movie.h */; };
+		27A7A4861781335C00461252 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A47A1781335C00461252 /* SDL_ffmpeg.h */; };
+		27A7A4891781338300461252 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4871781338300461252 /* Movie.cpp */; };
+		27A7A48A1781338300461252 /* SDL_ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4881781338300461252 /* SDL_ffmpeg.c */; settings = {COMPILER_FLAGS = "-D__STDC_CONSTANT_MACROS"; }; };
+		27A7A48B1781338300461252 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4871781338300461252 /* Movie.cpp */; };
+		27A7A48C1781338300461252 /* SDL_ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4881781338300461252 /* SDL_ffmpeg.c */; settings = {COMPILER_FLAGS = "-D__STDC_CONSTANT_MACROS"; }; };
+		27A7A48D1781338300461252 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4871781338300461252 /* Movie.cpp */; };
+		27A7A48E1781338300461252 /* SDL_ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4881781338300461252 /* SDL_ffmpeg.c */; settings = {COMPILER_FLAGS = "-D__STDC_CONSTANT_MACROS"; }; };
+		27A7A48F1781338300461252 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4871781338300461252 /* Movie.cpp */; };
+		27A7A4901781338300461252 /* SDL_ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4881781338300461252 /* SDL_ffmpeg.c */; settings = {COMPILER_FLAGS = "-D__STDC_CONSTANT_MACROS"; }; };
+		27A7A498178136AF00461252 /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A495178136AF00461252 /* lbitlib.c */; };
+		27A7A499178136AF00461252 /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A496178136AF00461252 /* lctype.c */; };
+		27A7A49A178136AF00461252 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A497178136AF00461252 /* lctype.h */; };
+		27A7A49B178136AF00461252 /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A495178136AF00461252 /* lbitlib.c */; };
+		27A7A49C178136AF00461252 /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A496178136AF00461252 /* lctype.c */; };
+		27A7A49D178136AF00461252 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A497178136AF00461252 /* lctype.h */; };
+		27A7A49E178136AF00461252 /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A495178136AF00461252 /* lbitlib.c */; };
+		27A7A49F178136AF00461252 /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A496178136AF00461252 /* lctype.c */; };
+		27A7A4A0178136AF00461252 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A497178136AF00461252 /* lctype.h */; };
+		27A7A4A1178136AF00461252 /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A495178136AF00461252 /* lbitlib.c */; };
+		27A7A4A2178136AF00461252 /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A496178136AF00461252 /* lctype.c */; };
+		27A7A4A3178136AF00461252 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A497178136AF00461252 /* lctype.h */; };
+		27A7A4A81781374100461252 /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4A61781374100461252 /* FFmpegDecoder.cpp */; };
+		27A7A4A91781374100461252 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4A71781374100461252 /* FFmpegDecoder.h */; };
+		27A7A4AA1781374100461252 /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4A61781374100461252 /* FFmpegDecoder.cpp */; };
+		27A7A4AB1781374100461252 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4A71781374100461252 /* FFmpegDecoder.h */; };
+		27A7A4AC1781374100461252 /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4A61781374100461252 /* FFmpegDecoder.cpp */; };
+		27A7A4AD1781374100461252 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4A71781374100461252 /* FFmpegDecoder.h */; };
+		27A7A4AE1781374100461252 /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27A7A4A61781374100461252 /* FFmpegDecoder.cpp */; };
+		27A7A4AF1781374100461252 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4A71781374100461252 /* FFmpegDecoder.h */; };
 		27CE0843100ECDBC00F59FD1 /* Image_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */; };
 		27CE0844100ECDBC00F59FD1 /* Image_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */; };
 		27D1A4F312FDF3630085E79C /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
@@ -1481,10 +1527,6 @@
 		AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
 		AE601F0D0B927C25009F881C /* SndfileDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F080B927C25009F881C /* SndfileDecoder.cpp */; };
 		AE601F0E0B927C25009F881C /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F090B927C25009F881C /* VorbisDecoder.cpp */; };
-		AE601FC00B927DC2009F881C /* mad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		AE601FC10B927DC2009F881C /* sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
-		AE6020080B928517009F881C /* sndfile.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
-		AE60200B0B92852A009F881C /* mad.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
 		AE626E6C0B878534009CFF2D /* Mixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E630B878534009CFF2D /* Mixer.cpp */; };
 		AE626E6D0B878534009CFF2D /* Mixer.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E640B878534009CFF2D /* Mixer.h */; };
 		AE626E6E0B878534009CFF2D /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
@@ -1874,12 +1916,6 @@
 		AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */; };
 		AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */; };
 		AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
-		AEFDE7BD0A38DF7E00CFEB97 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		AEFDE7BF0A38DF7E00CFEB97 /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		AEFDE7C00A38DF7E00CFEB97 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		AEFDE8010A38E98900CFEB97 /* smpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		AEFDE80E0A38E98C00CFEB97 /* Vorbis.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		AEFDE8130A38E99000CFEB97 /* Ogg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
 		AEFE7C2B0DB03FA600D11DE2 /* internal.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C2A0DB03F8300D11DE2 /* internal.h */; };
 		AEFE7C2C0DB03FA700D11DE2 /* ascii.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C270DB03F8300D11DE2 /* ascii.h */; };
 		AEFE7C2D0DB03FA700D11DE2 /* expat.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C280DB03F8300D11DE2 /* expat.h */; };
@@ -1898,21 +1934,21 @@
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 27184E5314392536007CD65B /* Marathon */;
+			remoteGlobalIDString = 27184E5314392536007CD65B;
 			remoteInfo = Marathon;
 		};
 		AE82AD0114829D0F0066FFB7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 27185086143931DC007CD65B /* Marathon 2 */;
+			remoteGlobalIDString = 27185086143931DC007CD65B;
 			remoteInfo = "Marathon 2";
 		};
 		AE82AD0314829D0F0066FFB7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 29B97313FDCFA39411CA2CEA /* Project object */;
 			proxyType = 1;
-			remoteGlobalIDString = 271852BA14395833007CD65B /* Marathon Infinity */;
+			remoteGlobalIDString = 271852BA14395833007CD65B;
 			remoteInfo = "Marathon Infinity";
 		};
 /* End PBXContainerItemProxy section */
@@ -1924,16 +1960,16 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				27A7A46B178131A500461252 /* avcodec.framework in CopyFiles */,
+				27A7A46C178131A500461252 /* avformat.framework in CopyFiles */,
+				27A7A46D178131A500461252 /* avutil.framework in CopyFiles */,
+				27A7A46E178131A500461252 /* swscale.framework in CopyFiles */,
+				27A7A46F178131A500461252 /* x264.framework in CopyFiles */,
 				2718502114392536007CD65B /* freetype.framework in CopyFiles */,
 				2718502214392536007CD65B /* jpeg.framework in CopyFiles */,
 				2718502314392536007CD65B /* png.framework in CopyFiles */,
 				2718502414392536007CD65B /* zziplib.framework in CopyFiles */,
 				2718502514392536007CD65B /* speex.framework in CopyFiles */,
-				2718502614392536007CD65B /* mad.framework in CopyFiles */,
-				2718502714392536007CD65B /* sndfile.framework in CopyFiles */,
-				2718502814392536007CD65B /* Ogg.framework in CopyFiles */,
-				2718502914392536007CD65B /* Vorbis.framework in CopyFiles */,
-				2718502A14392536007CD65B /* smpeg.framework in CopyFiles */,
 				2718502B14392536007CD65B /* SDL_image.framework in CopyFiles */,
 				2718502C14392536007CD65B /* SDL.framework in CopyFiles */,
 				2718502D14392536007CD65B /* SDL_net.framework in CopyFiles */,
@@ -1947,16 +1983,16 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				27A7A4661781319800461252 /* avcodec.framework in CopyFiles */,
+				27A7A4671781319800461252 /* avformat.framework in CopyFiles */,
+				27A7A4681781319800461252 /* avutil.framework in CopyFiles */,
+				27A7A4691781319800461252 /* swscale.framework in CopyFiles */,
+				27A7A46A1781319800461252 /* x264.framework in CopyFiles */,
 				27185256143931DC007CD65B /* freetype.framework in CopyFiles */,
 				27185257143931DC007CD65B /* jpeg.framework in CopyFiles */,
 				27185258143931DC007CD65B /* png.framework in CopyFiles */,
 				27185259143931DC007CD65B /* zziplib.framework in CopyFiles */,
 				2718525A143931DC007CD65B /* speex.framework in CopyFiles */,
-				2718525B143931DC007CD65B /* mad.framework in CopyFiles */,
-				2718525C143931DC007CD65B /* sndfile.framework in CopyFiles */,
-				2718525D143931DC007CD65B /* Ogg.framework in CopyFiles */,
-				2718525E143931DC007CD65B /* Vorbis.framework in CopyFiles */,
-				2718525F143931DC007CD65B /* smpeg.framework in CopyFiles */,
 				27185260143931DC007CD65B /* SDL_image.framework in CopyFiles */,
 				27185261143931DC007CD65B /* SDL.framework in CopyFiles */,
 				27185262143931DC007CD65B /* SDL_net.framework in CopyFiles */,
@@ -1970,16 +2006,16 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				27A7A4611781318C00461252 /* avcodec.framework in CopyFiles */,
+				27A7A4621781318C00461252 /* avformat.framework in CopyFiles */,
+				27A7A4631781318C00461252 /* avutil.framework in CopyFiles */,
+				27A7A4641781318C00461252 /* swscale.framework in CopyFiles */,
+				27A7A4651781318C00461252 /* x264.framework in CopyFiles */,
 				2718548914395833007CD65B /* freetype.framework in CopyFiles */,
 				2718548A14395833007CD65B /* jpeg.framework in CopyFiles */,
 				2718548B14395833007CD65B /* png.framework in CopyFiles */,
 				2718548C14395833007CD65B /* zziplib.framework in CopyFiles */,
 				2718548D14395833007CD65B /* speex.framework in CopyFiles */,
-				2718548E14395833007CD65B /* mad.framework in CopyFiles */,
-				2718548F14395833007CD65B /* sndfile.framework in CopyFiles */,
-				2718549014395833007CD65B /* Ogg.framework in CopyFiles */,
-				2718549114395833007CD65B /* Vorbis.framework in CopyFiles */,
-				2718549214395833007CD65B /* smpeg.framework in CopyFiles */,
 				2718549314395833007CD65B /* SDL_image.framework in CopyFiles */,
 				2718549414395833007CD65B /* SDL.framework in CopyFiles */,
 				2718549514395833007CD65B /* SDL_net.framework in CopyFiles */,
@@ -1993,16 +2029,16 @@
 			dstPath = AlephOne.app/Contents/Frameworks;
 			dstSubfolderSpec = 16;
 			files = (
+				27A7A4701781322B00461252 /* avcodec.framework in CopyFiles */,
+				27A7A4711781322B00461252 /* avformat.framework in CopyFiles */,
+				27A7A4721781322B00461252 /* avutil.framework in CopyFiles */,
+				27A7A4731781322B00461252 /* swscale.framework in CopyFiles */,
+				27A7A4741781322B00461252 /* x264.framework in CopyFiles */,
 				2759FB3510D7118B000204DD /* freetype.framework in CopyFiles */,
 				2759FB2A10D71160000204DD /* jpeg.framework in CopyFiles */,
 				2759FB2610D71158000204DD /* png.framework in CopyFiles */,
 				2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */,
 				AE23F5930BDAC1DF00C11385 /* speex.framework in CopyFiles */,
-				AE60200B0B92852A009F881C /* mad.framework in CopyFiles */,
-				AE6020080B928517009F881C /* sndfile.framework in CopyFiles */,
-				AEFDE8130A38E99000CFEB97 /* Ogg.framework in CopyFiles */,
-				AEFDE80E0A38E98C00CFEB97 /* Vorbis.framework in CopyFiles */,
-				AEFDE8010A38E98900CFEB97 /* smpeg.framework in CopyFiles */,
 				AEC3C87809AD68AC003258E4 /* SDL_image.framework in CopyFiles */,
 				AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */,
 				AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */,
@@ -2029,6 +2065,11 @@
 		271854A11439585B007CD65B /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		271854A21439585B007CD65B /* Marathon Infinity.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Marathon Infinity.icns"; sourceTree = "<group>"; };
 		271854A31439585B007CD65B /* Marathon Infinity.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Marathon Infinity.plist"; sourceTree = "<group>"; };
+		271EE3F617812CED00CBAD98 /* avcodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avcodec.framework; sourceTree = "<group>"; };
+		271EE3F817812CED00CBAD98 /* avformat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avformat.framework; sourceTree = "<group>"; };
+		271EE3FA17812CED00CBAD98 /* avutil.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avutil.framework; sourceTree = "<group>"; };
+		271EE3FC17812CED00CBAD98 /* swscale.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = swscale.framework; sourceTree = "<group>"; };
+		271EE3FE17812CED00CBAD98 /* x264.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = x264.framework; sourceTree = "<group>"; };
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
 		2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rwops_zzip.c; sourceTree = "<group>"; };
@@ -2052,6 +2093,15 @@
 		2784979F0FF5C308008DECC8 /* lua_mnemonics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_mnemonics.h; sourceTree = "<group>"; };
 		27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HUDRenderer_Lua.cpp; sourceTree = "<group>"; };
 		27911B23100073460063ACB6 /* HUDRenderer_Lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HUDRenderer_Lua.h; sourceTree = "<group>"; };
+		27A7A4791781335C00461252 /* Movie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Movie.h; sourceTree = "<group>"; };
+		27A7A47A1781335C00461252 /* SDL_ffmpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_ffmpeg.h; sourceTree = "<group>"; };
+		27A7A4871781338300461252 /* Movie.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Movie.cpp; sourceTree = "<group>"; };
+		27A7A4881781338300461252 /* SDL_ffmpeg.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 4; path = SDL_ffmpeg.c; sourceTree = "<group>"; };
+		27A7A495178136AF00461252 /* lbitlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lbitlib.c; sourceTree = "<group>"; };
+		27A7A496178136AF00461252 /* lctype.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lctype.c; sourceTree = "<group>"; };
+		27A7A497178136AF00461252 /* lctype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lctype.h; sourceTree = "<group>"; };
+		27A7A4A61781374100461252 /* FFmpegDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FFmpegDecoder.cpp; sourceTree = "<group>"; };
+		27A7A4A71781374100461252 /* FFmpegDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFmpegDecoder.h; sourceTree = "<group>"; };
 		27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image_Blitter.cpp; sourceTree = "<group>"; };
 		27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image_Blitter.h; sourceTree = "<group>"; };
 		27D1A4F112FDF3630085E79C /* FilmProfile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilmProfile.cpp; path = ../Source_Files/CSeries/FilmProfile.cpp; sourceTree = SOURCE_ROOT; };
@@ -2139,8 +2189,6 @@
 		AE601F110B927C51009F881C /* MADDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MADDecoder.h; sourceTree = "<group>"; };
 		AE601F120B927C51009F881C /* SndfileDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SndfileDecoder.h; sourceTree = "<group>"; };
 		AE601F130B927C51009F881C /* VorbisDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = VorbisDecoder.h; sourceTree = "<group>"; };
-		AE601FBE0B927DC2009F881C /* mad.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = mad.framework; sourceTree = "<group>"; };
-		AE601FBF0B927DC2009F881C /* sndfile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = sndfile.framework; sourceTree = "<group>"; };
 		AE626E630B878534009CFF2D /* Mixer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Mixer.cpp; sourceTree = "<group>"; };
 		AE626E640B878534009CFF2D /* Mixer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Mixer.h; sourceTree = "<group>"; };
 		AE626E650B878534009CFF2D /* Music.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Music.cpp; sourceTree = "<group>"; };
@@ -2232,9 +2280,6 @@
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
 		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
 		AEF8C4F210AEFEB500ED84AD /* OGL_Headers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Headers.h; sourceTree = "<group>"; };
-		AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Ogg.framework; sourceTree = "<group>"; };
-		AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = smpeg.framework; sourceTree = "<group>"; };
-		AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Vorbis.framework; sourceTree = "<group>"; };
 		AEFE7C270DB03F8300D11DE2 /* ascii.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ascii.h; path = ../Source_Files/Expat/ascii.h; sourceTree = "<group>"; };
 		AEFE7C280DB03F8300D11DE2 /* expat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = expat.h; path = ../Source_Files/Expat/expat.h; sourceTree = "<group>"; };
 		AEFE7C290DB03F8300D11DE2 /* expat_external.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = expat_external.h; path = ../Source_Files/Expat/expat_external.h; sourceTree = "<group>"; };
@@ -2539,7 +2584,6 @@
 		F5CFAD430200FA6B01D80110 /* SaveIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = SaveIcon.icns; sourceTree = "<group>"; };
 		F5D11AE40326A93E01000105 /* alephversion.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = alephversion.h; path = ../Source_Files/Misc/alephversion.h; sourceTree = SOURCE_ROOT; };
 		F5D37B6D022D1C2C01A80001 /* network_private.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_private.h; path = ../Source_Files/Network/network_private.h; sourceTree = SOURCE_ROOT; };
-		F5F50D720215DB2601144D54 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = file; name = Fonts; path = ../data/Fonts; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2552,11 +2596,6 @@
 				2718500C14392536007CD65B /* SDL.framework in Frameworks */,
 				2718500D14392536007CD65B /* SDL_net.framework in Frameworks */,
 				2718500E14392536007CD65B /* SDL_image.framework in Frameworks */,
-				2718500F14392536007CD65B /* Ogg.framework in Frameworks */,
-				2718501014392536007CD65B /* smpeg.framework in Frameworks */,
-				2718501114392536007CD65B /* Vorbis.framework in Frameworks */,
-				2718501214392536007CD65B /* mad.framework in Frameworks */,
-				2718501314392536007CD65B /* sndfile.framework in Frameworks */,
 				2718501414392536007CD65B /* speex.framework in Frameworks */,
 				2718501514392536007CD65B /* SDL_ttf.framework in Frameworks */,
 				2718501614392536007CD65B /* AudioUnit.framework in Frameworks */,
@@ -2566,6 +2605,11 @@
 				2718501A14392536007CD65B /* jpeg.framework in Frameworks */,
 				2718501B14392536007CD65B /* png.framework in Frameworks */,
 				2718501C14392536007CD65B /* freetype.framework in Frameworks */,
+				27A7A39F17812D1900461252 /* avcodec.framework in Frameworks */,
+				27A7A3A817812D2100461252 /* avformat.framework in Frameworks */,
+				27A7A3DC17812D2700461252 /* avutil.framework in Frameworks */,
+				27A7A3E417812D2F00461252 /* swscale.framework in Frameworks */,
+				27A7A3EF17812D6900461252 /* x264.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2578,11 +2622,6 @@
 				27185241143931DC007CD65B /* SDL.framework in Frameworks */,
 				27185242143931DC007CD65B /* SDL_net.framework in Frameworks */,
 				27185243143931DC007CD65B /* SDL_image.framework in Frameworks */,
-				27185244143931DC007CD65B /* Ogg.framework in Frameworks */,
-				27185245143931DC007CD65B /* smpeg.framework in Frameworks */,
-				27185246143931DC007CD65B /* Vorbis.framework in Frameworks */,
-				27185247143931DC007CD65B /* mad.framework in Frameworks */,
-				27185248143931DC007CD65B /* sndfile.framework in Frameworks */,
 				27185249143931DC007CD65B /* speex.framework in Frameworks */,
 				2718524A143931DC007CD65B /* SDL_ttf.framework in Frameworks */,
 				2718524B143931DC007CD65B /* AudioUnit.framework in Frameworks */,
@@ -2592,6 +2631,11 @@
 				2718524F143931DC007CD65B /* jpeg.framework in Frameworks */,
 				27185250143931DC007CD65B /* png.framework in Frameworks */,
 				27185251143931DC007CD65B /* freetype.framework in Frameworks */,
+				27A7A3A017812D1A00461252 /* avcodec.framework in Frameworks */,
+				27A7A3A917812D2200461252 /* avformat.framework in Frameworks */,
+				27A7A3DD17812D2800461252 /* avutil.framework in Frameworks */,
+				27A7A3E617812D3000461252 /* swscale.framework in Frameworks */,
+				27A7A3F017812D6A00461252 /* x264.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2604,11 +2648,6 @@
 				2718547414395833007CD65B /* SDL.framework in Frameworks */,
 				2718547514395833007CD65B /* SDL_net.framework in Frameworks */,
 				2718547614395833007CD65B /* SDL_image.framework in Frameworks */,
-				2718547714395833007CD65B /* Ogg.framework in Frameworks */,
-				2718547814395833007CD65B /* smpeg.framework in Frameworks */,
-				2718547914395833007CD65B /* Vorbis.framework in Frameworks */,
-				2718547A14395833007CD65B /* mad.framework in Frameworks */,
-				2718547B14395833007CD65B /* sndfile.framework in Frameworks */,
 				2718547C14395833007CD65B /* speex.framework in Frameworks */,
 				2718547D14395833007CD65B /* SDL_ttf.framework in Frameworks */,
 				2718547E14395833007CD65B /* AudioUnit.framework in Frameworks */,
@@ -2618,6 +2657,11 @@
 				2718548214395833007CD65B /* jpeg.framework in Frameworks */,
 				2718548314395833007CD65B /* png.framework in Frameworks */,
 				2718548414395833007CD65B /* freetype.framework in Frameworks */,
+				27A7A3A117812D1B00461252 /* avcodec.framework in Frameworks */,
+				27A7A3AA17812D2200461252 /* avformat.framework in Frameworks */,
+				27A7A3DE17812D2800461252 /* avutil.framework in Frameworks */,
+				27A7A3E517812D2F00461252 /* swscale.framework in Frameworks */,
+				27A7A3F117812D6A00461252 /* x264.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2630,11 +2674,6 @@
 				AEC3C87209AD68AC003258E4 /* SDL.framework in Frameworks */,
 				AEC3C87309AD68AC003258E4 /* SDL_net.framework in Frameworks */,
 				AEC3C87409AD68AC003258E4 /* SDL_image.framework in Frameworks */,
-				AEFDE7BD0A38DF7E00CFEB97 /* Ogg.framework in Frameworks */,
-				AEFDE7BF0A38DF7E00CFEB97 /* smpeg.framework in Frameworks */,
-				AEFDE7C00A38DF7E00CFEB97 /* Vorbis.framework in Frameworks */,
-				AE601FC00B927DC2009F881C /* mad.framework in Frameworks */,
-				AE601FC10B927DC2009F881C /* sndfile.framework in Frameworks */,
 				AE23F5640BDAC0E700C11385 /* speex.framework in Frameworks */,
 				AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */,
 				3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */,
@@ -2644,6 +2683,11 @@
 				2759FB1F10D7114D000204DD /* jpeg.framework in Frameworks */,
 				2759FB2110D7114D000204DD /* png.framework in Frameworks */,
 				2759FB3210D71184000204DD /* freetype.framework in Frameworks */,
+				271EE3F717812CED00CBAD98 /* avcodec.framework in Frameworks */,
+				271EE3F917812CED00CBAD98 /* avformat.framework in Frameworks */,
+				271EE3FB17812CED00CBAD98 /* avutil.framework in Frameworks */,
+				271EE3FD17812CED00CBAD98 /* swscale.framework in Frameworks */,
+				271EE3FF17812CED00CBAD98 /* x264.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2692,6 +2736,18 @@
 			);
 			name = "Marathon Infinity";
 			path = "AppStore/Marathon Infinity";
+			sourceTree = "<group>";
+		};
+		27A7A4761781332C00461252 /* FFmpeg */ = {
+			isa = PBXGroup;
+			children = (
+				27A7A4791781335C00461252 /* Movie.h */,
+				27A7A47A1781335C00461252 /* SDL_ffmpeg.h */,
+				27A7A4871781338300461252 /* Movie.cpp */,
+				27A7A4881781338300461252 /* SDL_ffmpeg.c */,
+			);
+			name = FFmpeg;
+			path = ../Source_Files/FFmpeg;
 			sourceTree = "<group>";
 		};
 		29B97314FDCFA39411CA2CEA /* SDL Application */ = {
@@ -2882,11 +2938,6 @@
 			isa = PBXGroup;
 			children = (
 				AE23F5630BDAC0E700C11385 /* speex.framework */,
-				AE601FBE0B927DC2009F881C /* mad.framework */,
-				AE601FBF0B927DC2009F881C /* sndfile.framework */,
-				AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */,
-				AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */,
-				AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */,
 				F5281C0701F8CA2101E83A66 /* SDL_image.framework */,
 				F5281C0501F8C94101E83A66 /* SDL.framework */,
 				F5281C0801F8CA2101E83A66 /* SDL_net.framework */,
@@ -2895,6 +2946,11 @@
 				2759FB1E10D7114D000204DD /* jpeg.framework */,
 				2759FB2010D7114D000204DD /* png.framework */,
 				2759FB3110D71184000204DD /* freetype.framework */,
+				271EE3F617812CED00CBAD98 /* avcodec.framework */,
+				271EE3F817812CED00CBAD98 /* avformat.framework */,
+				271EE3FA17812CED00CBAD98 /* avutil.framework */,
+				271EE3FC17812CED00CBAD98 /* swscale.framework */,
+				271EE3FE17812CED00CBAD98 /* x264.framework */,
 			);
 			name = Frameworks;
 			path = /Library/Frameworks;
@@ -2911,6 +2967,9 @@
 		F51B0587047AC6DA01C5C930 /* Lua */ = {
 			isa = PBXGroup;
 			children = (
+				27A7A495178136AF00461252 /* lbitlib.c */,
+				27A7A496178136AF00461252 /* lctype.c */,
+				27A7A497178136AF00461252 /* lctype.h */,
 				276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */,
 				276589F7119DF1DD0096F75B /* lua_saved_objects.h */,
 				2784979B0FF5C308008DECC8 /* lua_hud_objects.cpp */,
@@ -2944,6 +3003,7 @@
 		F52214490136C0C401000001 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				27A7A4761781332C00461252 /* FFmpeg */,
 				AE179EED09C3D72800512061 /* LibNAT */,
 				3DC1523F0711123100836977 /* TCPMess */,
 				F5CF58580245987901A80001 /* Main */,
@@ -3480,6 +3540,8 @@
 		F5CC94110240DA4301A80001 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
+				27A7A4A61781374100461252 /* FFmpegDecoder.cpp */,
+				27A7A4A71781374100461252 /* FFmpegDecoder.h */,
 				AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */,
 				AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */,
 				AE601F100B927C51009F881C /* Decoder.h */,
@@ -3627,7 +3689,6 @@
 		F5F50D6C0215DACD01144D54 /* DataFiles */ = {
 			isa = PBXGroup;
 			children = (
-				F5F50D720215DB2601144D54 /* Fonts */,
 			);
 			name = DataFiles;
 			sourceTree = "<group>";
@@ -3835,6 +3896,10 @@
 				27184F1614392536007CD65B /* RenderRasterize_Shader.h in Headers */,
 				27184F1714392536007CD65B /* SDL_rwops_zzip.h in Headers */,
 				27184F1814392536007CD65B /* FilmProfile.h in Headers */,
+				27A7A4821781335C00461252 /* Movie.h in Headers */,
+				27A7A4831781335C00461252 /* SDL_ffmpeg.h in Headers */,
+				27A7A4A0178136AF00461252 /* lctype.h in Headers */,
+				27A7A4AD1781374100461252 /* FFmpegDecoder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4038,6 +4103,10 @@
 				27185149143931DC007CD65B /* RenderRasterize_Shader.h in Headers */,
 				2718514A143931DC007CD65B /* SDL_rwops_zzip.h in Headers */,
 				2718514B143931DC007CD65B /* FilmProfile.h in Headers */,
+				27A7A47F1781335C00461252 /* Movie.h in Headers */,
+				27A7A4801781335C00461252 /* SDL_ffmpeg.h in Headers */,
+				27A7A49D178136AF00461252 /* lctype.h in Headers */,
+				27A7A4AB1781374100461252 /* FFmpegDecoder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4241,6 +4310,10 @@
 				2718537D14395833007CD65B /* RenderRasterize_Shader.h in Headers */,
 				2718537E14395833007CD65B /* SDL_rwops_zzip.h in Headers */,
 				2718537F14395833007CD65B /* FilmProfile.h in Headers */,
+				27A7A47C1781335C00461252 /* Movie.h in Headers */,
+				27A7A47D1781335C00461252 /* SDL_ffmpeg.h in Headers */,
+				27A7A49A178136AF00461252 /* lctype.h in Headers */,
+				27A7A4A91781374100461252 /* FFmpegDecoder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4444,6 +4517,10 @@
 				277AB6C3109CE2570003402A /* RenderRasterize_Shader.h in Headers */,
 				2759F31C10D5BC9C000204DD /* SDL_rwops_zzip.h in Headers */,
 				27D1A50212FDF3700085E79C /* FilmProfile.h in Headers */,
+				27A7A4851781335C00461252 /* Movie.h in Headers */,
+				27A7A4861781335C00461252 /* SDL_ffmpeg.h in Headers */,
+				27A7A4A3178136AF00461252 /* lctype.h in Headers */,
+				27A7A4AF1781374100461252 /* FFmpegDecoder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4683,7 +4760,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/Marathon.app/Contents/Resources/DataFiles/\"\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon.app/Contents/Info.plist\"\n\n";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon.app/Contents/Resources/DataFiles\"\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon.app/Contents/Info.plist\"\n\n";
 		};
 		2718503C14392568007CD65B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4708,7 +4785,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon 2.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/Marathon 2.app/Contents/Resources/DataFiles/\"\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon 2.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon 2.app/Contents/Info.plist\"\n\n";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon 2.app/Contents/Resources/DataFiles\"\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon 2.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon 2.app/Contents/Info.plist\"\n\n";
 		};
 		27185264143931DC007CD65B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4733,7 +4810,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/Themes/Default\"/{CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Info.plist\"\n\n";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/Themes/Default\"/{CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Info.plist\"\n\n";
 		};
 		2718549714395833007CD65B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4788,7 +4865,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\n\n";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -5019,6 +5096,11 @@
 				2718500414392536007CD65B /* csalerts.mm in Sources */,
 				2718500514392536007CD65B /* lua_saved_objects.cpp in Sources */,
 				2718500614392536007CD65B /* FilmProfile.cpp in Sources */,
+				27A7A48D1781338300461252 /* Movie.cpp in Sources */,
+				27A7A48E1781338300461252 /* SDL_ffmpeg.c in Sources */,
+				27A7A49E178136AF00461252 /* lbitlib.c in Sources */,
+				27A7A49F178136AF00461252 /* lctype.c in Sources */,
+				27A7A4AC1781374100461252 /* FFmpegDecoder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5248,6 +5330,11 @@
 				27185239143931DC007CD65B /* csalerts.mm in Sources */,
 				2718523A143931DC007CD65B /* lua_saved_objects.cpp in Sources */,
 				2718523B143931DC007CD65B /* FilmProfile.cpp in Sources */,
+				27A7A48B1781338300461252 /* Movie.cpp in Sources */,
+				27A7A48C1781338300461252 /* SDL_ffmpeg.c in Sources */,
+				27A7A49B178136AF00461252 /* lbitlib.c in Sources */,
+				27A7A49C178136AF00461252 /* lctype.c in Sources */,
+				27A7A4AA1781374100461252 /* FFmpegDecoder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5477,6 +5564,11 @@
 				2718546C14395833007CD65B /* csalerts.mm in Sources */,
 				2718546D14395833007CD65B /* lua_saved_objects.cpp in Sources */,
 				2718546E14395833007CD65B /* FilmProfile.cpp in Sources */,
+				27A7A4891781338300461252 /* Movie.cpp in Sources */,
+				27A7A48A1781338300461252 /* SDL_ffmpeg.c in Sources */,
+				27A7A498178136AF00461252 /* lbitlib.c in Sources */,
+				27A7A499178136AF00461252 /* lctype.c in Sources */,
+				27A7A4A81781374100461252 /* FFmpegDecoder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5706,6 +5798,11 @@
 				AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */,
 				276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */,
 				27D1A4F312FDF3630085E79C /* FilmProfile.cpp in Sources */,
+				27A7A48F1781338300461252 /* Movie.cpp in Sources */,
+				27A7A4901781338300461252 /* SDL_ffmpeg.c in Sources */,
+				27A7A4A1178136AF00461252 /* lbitlib.c in Sources */,
+				27A7A4A2178136AF00461252 /* lctype.c in Sources */,
+				27A7A4AE1781374100461252 /* FFmpegDecoder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5794,10 +5891,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -5813,9 +5907,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -5824,9 +5919,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -5867,10 +5963,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -5886,9 +5979,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -5897,9 +5991,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -5939,10 +6034,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -5958,9 +6050,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -5969,9 +6062,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6010,10 +6104,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -6029,9 +6120,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6040,9 +6132,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6083,10 +6176,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -6102,9 +6192,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6113,9 +6204,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6155,10 +6247,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -6174,9 +6263,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6185,9 +6275,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6226,10 +6317,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -6245,9 +6333,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6256,9 +6345,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6299,10 +6389,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -6318,9 +6405,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6329,9 +6417,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6371,10 +6460,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -6390,9 +6476,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6401,9 +6488,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6440,10 +6528,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -6458,9 +6543,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6469,9 +6555,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6490,7 +6577,10 @@
 		AE2A41540B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ONLY_ACTIVE_ARCH_PRE_XCODE_3_1)";
+				ARCHS = (
+					"$(ARCHS_STANDARD_32_64_BIT)",
+					ppc,
+				);
 				ENABLE_OPENMP_SUPPORT = YES;
 				GCC_VERSION = 4.0;
 				"GCC_VERSION[arch=x86_64]" = 4.2;
@@ -6498,7 +6588,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.6;
-				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH_ACTUAL)";
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				"SDKROOT[arch=x86_64]" = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -6527,10 +6617,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -6545,9 +6632,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6556,9 +6644,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6578,7 +6667,10 @@
 		AE2A41770B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ONLY_ACTIVE_ARCH_PRE_XCODE_3_1)";
+				ARCHS = (
+					"$(ARCHS_STANDARD_32_64_BIT)",
+					ppc,
+				);
 				ENABLE_OPENMP_SUPPORT = YES;
 				GCC_VERSION = 4.0;
 				"GCC_VERSION[arch=x86_64]" = 4.2;
@@ -6586,7 +6678,7 @@
 				INFOPLIST_PREPROCESS = NO;
 				MACOSX_DEPLOYMENT_TARGET = 10.4;
 				"MACOSX_DEPLOYMENT_TARGET[arch=x86_64]" = 10.6;
-				ONLY_ACTIVE_ARCH_PRE_XCODE_3_1 = "$(NATIVE_ARCH_ACTUAL)";
+				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = "$(DEVELOPER_SDK_DIR)/MacOSX10.4u.sdk";
 				"SDKROOT[arch=x86_64]" = "$(DEVELOPER_SDK_DIR)/MacOSX10.6.sdk";
 			};
@@ -6635,10 +6727,7 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
@@ -6653,9 +6742,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6664,9 +6754,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6687,8 +6778,10 @@
 		AE78B59E09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = "$(ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1)";
-				ARCHS_STANDARD_32_64_BIT_PRE_XCODE_3_1 = "x86_64 i386 ppc";
+				ARCHS = (
+					"$(ARCHS_STANDARD_32_64_BIT)",
+					ppc,
+				);
 				ENABLE_OPENMP_SUPPORT = YES;
 				GCC_VERSION = 4.0;
 				"GCC_VERSION[arch=x86_64]" = 4.2;
