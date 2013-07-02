@@ -273,11 +273,7 @@ bool Movie::Setup()
 		view_rect.y = scr->height() - (view_rect.y + view_rect.h);
 
 	temp_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, view_rect.w, view_rect.h, 32,
-#if ALEPHONE_LITTLEENDIAN
 										0x00ff0000, 0x0000ff00, 0x000000ff,
-#else
-										0x000000ff, 0x0000ff00, 0x00ff0000,
-#endif
 										0);
 	success = (temp_surface != NULL);
 
@@ -430,27 +426,12 @@ bool Movie::Setup()
     // initialize conversion context
     if (success)
     {
-        PixelFormat pix = PIX_FMT_NONE;
-        switch (temp_surface->format->BitsPerPixel)
-        {
-            case 24:
-                pix = PIX_FMT_RGB24;
-                break;
-            case 32:
-                pix = PIX_FMT_BGR32;
-                break;
-            default:
-                break;
-        }
-        if (pix != PIX_FMT_NONE)
-        {
-            av->sws_ctx = sws_getContext(temp_surface->w, temp_surface->h, pix,
-                                         video_stream->codec->width,
-                                         video_stream->codec->height,
-                                         video_stream->codec->pix_fmt,
-                                         SWS_BILINEAR,
-                                         NULL, NULL, NULL);
-        }
+        av->sws_ctx = sws_getContext(temp_surface->w, temp_surface->h, PIX_FMT_RGB32,
+                                     video_stream->codec->width,
+                                     video_stream->codec->height,
+                                     video_stream->codec->pix_fmt,
+                                     SWS_BILINEAR,
+                                     NULL, NULL, NULL);
         success = av->sws_ctx;
     }
     
@@ -652,7 +633,7 @@ void Movie::AddFrame(FrameType ftype)
 	else
 	{
 		// Read OpenGL frame buffer
-		glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_RGBA, GL_UNSIGNED_BYTE, &videobuf.front());
+		glReadPixels(view_rect.x, view_rect.y, view_rect.w, view_rect.h, GL_BGRA, GL_UNSIGNED_INT_8_8_8_8_REV, &videobuf.front());
 		
 		// Copy pixel buffer (which is upside-down) to surface
 		for (int y = 0; y < view_rect.h; y++)
