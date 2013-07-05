@@ -57,11 +57,20 @@ extern "C"
 #endif
 #endif
 
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+
 // Use audio conversion from Movie.cpp
 extern int convert_audio(int in_samples, int in_channels, int in_stride,
                   enum AVSampleFormat in_fmt, const uint8_t *in_buf,
                   int out_samples, int out_channels, int out_stride,
                   enum AVSampleFormat out_fmt, uint8_t *out_buf);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 /**

@@ -95,6 +95,10 @@ struct libav_vars {
 };
 typedef struct libav_vars libav_vars_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int convert_audio(int in_samples, int in_channels, int in_stride,
                   enum AVSampleFormat in_fmt,
                   const uint8_t *in_buf,
@@ -223,6 +227,10 @@ int convert_audio(int in_samples, int in_channels, int in_stride,
 
     return out_bytes;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 Movie::Movie() :
   moviefile(""),
