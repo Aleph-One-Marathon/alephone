@@ -444,7 +444,7 @@ SoundDefinition* M1SoundFile::GetSoundDefinition(int, int sound_index)
 		if (it == definitions.end())
 		{
 			SoundDefinition definition;
-			definition.flags |= 0x0010; // _sound_cannot_be_obstructed
+			definition.behavior_index = 2; // sound_is_loud
 			definition.sound_code = sound_index;
 			// look for permutations
 			definition.permutations = 1;
