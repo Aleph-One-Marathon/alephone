@@ -958,11 +958,11 @@ static void handle_game_key(const SDL_Event &event)
 		}
 		else if (key == input_preferences->shell_keycodes[_key_volume_up])
 		{
-			changed_prefs = SoundManager::instance()->AdjustVolumeUp(_snd_adjust_volume);
+			changed_prefs = SoundManager::instance()->AdjustVolumeUp(Sound_AdjustVolume());
 		}
 		else if (key == input_preferences->shell_keycodes[_key_volume_down])
 		{
-			changed_prefs = SoundManager::instance()->AdjustVolumeDown(_snd_adjust_volume);
+			changed_prefs = SoundManager::instance()->AdjustVolumeDown(Sound_AdjustVolume());
 		}
 		else if (key == input_preferences->shell_keycodes[_key_switch_view])
 		{
