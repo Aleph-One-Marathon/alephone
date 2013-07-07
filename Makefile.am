@@ -7,7 +7,7 @@ AUTOMAKE_OPTIONS = 1.5 foreign dist-bzip2 no-dist-gzip
 
 EXTRA_DIST = COPYING.SDL INSTALL.BeOS INSTALL.Unix INSTALL.Windows	\
   Makefile.BeOS docs/MML.html docs/Lua.html docs/Lua_HUD.html		\
-  data/Fonts Resources/Windows/alephone.ico				\
+  Resources/Windows/alephone.ico				\
   Resources/Windows/alephone.rc						\
   Resources/Windows/marathon.rc Resources/Windows/marathon.ico          \
   Resources/Windows/marathon2.rc Resources/Windows/marathon2.ico        \
@@ -107,7 +107,6 @@ cp $(srcdir)/data/Software_Transparent_Liquids.mml "$(1)/Extras"
 cp $(srcdir)/data/Transparent_Liquids.mml "$(1)/Extras"
 cp $(srcdir)/data/Carnage_Messages.mml "$(1)/Extras"
 unix2dos -n $(srcdir)/examples/lua/Cheats.lua "$(1)/Extras/Cheats.lua"
-cp $(srcdir)/data/Fonts "$(1)/Fonts.fntA"
 $(call cp_no_svn,$(srcdir)/Resources/Library Licenses,$(1)/docs/Library Licenses)
 endef
 
