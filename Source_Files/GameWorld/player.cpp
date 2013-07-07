@@ -560,6 +560,19 @@ get_ticks_since_local_player_in_terminal() {
     return sLocalPlayerTicksSinceTerminal;
 }
 
+bool m1_solo_player_in_terminal()
+{
+	return (static_world->environment_flags & _environment_terminals_stop_time)
+		&& (dynamic_world->player_count == 1) 
+		&& player_in_terminal_mode(local_player_index);
+}
+
+void update_m1_solo_player_in_terminal(ActionQueues* inActionQueuesToUse)
+{
+	update_player_keys_for_terminal(local_player_index, inActionQueuesToUse->dequeueActionFlags(local_player_index));
+	update_player_for_terminal_mode(local_player_index);
+}
+
 /* assumes ¶t==1 tick */
 void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive)
 {

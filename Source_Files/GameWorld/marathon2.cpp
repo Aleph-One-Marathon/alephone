@@ -389,34 +389,41 @@ enum {
 static int
 update_world_elements_one_tick()
 {
-        L_Call_Idle();
-
-        update_lights();
-        update_medias();
-        update_platforms();
-        
-        update_control_panels(); // don't put after update_players
-        update_players(GameQueue, false);
-        move_projectiles();
-        move_monsters();
-        update_effects();
-        recreate_objects();
-        
-        handle_random_sound_image();
-        animate_scenery();
-
-        // LP additions:
-	if (film_profile.animate_items)
+	if (m1_solo_player_in_terminal()) 
 	{
-		animate_items();
-	}
-
-        AnimTxtr_Update();
-        ChaseCam_Update();
-
+		update_m1_solo_player_in_terminal(GameQueue);
+	} 
+	else
+	{
+		L_Call_Idle();
+		
+		update_lights();
+		update_medias();
+		update_platforms();
+		
+		update_control_panels(); // don't put after update_players
+		update_players(GameQueue, false);
+		move_projectiles();
+		move_monsters();
+		update_effects();
+		recreate_objects();
+		
+		handle_random_sound_image();
+		animate_scenery();
+		
+		// LP additions:
+		if (film_profile.animate_items)
+		{
+			animate_items();
+		}
+		
+		AnimTxtr_Update();
+		ChaseCam_Update();
+		
 #if !defined(DISABLE_NETWORKING)
-        update_net_game();
+		update_net_game();
 #endif // !defined(DISABLE_NETWORKING)
+	}
 
         if(check_level_change()) 
         {

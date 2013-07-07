@@ -290,6 +290,10 @@ void reset_motion_sensor(
 /* ticks_elapsed==NONE means force rescan now.. */
 void HUD_Class::motion_sensor_scan(short ticks_elapsed)
 {
+	if (m1_solo_player_in_terminal()) {
+		return;
+	}
+
 	struct object_data *owner_object= get_object_data(get_player_data(motion_sensor_player_index)->object_index);
 
 	/* if we need to scan for new objects, flood around the owner monster looking for other,

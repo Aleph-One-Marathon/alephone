@@ -497,6 +497,10 @@ void team_damage_from_player_data(void);
 // which changes less state, in an effort to make partial state saving/restoration successful.
 void update_players(ActionQueues* inActionQueuesToUse, bool inPredictive); /* assumes ¶t==1 tick */
 
+// handle pausing Marathon 1 terminals
+bool m1_solo_player_in_terminal();
+void update_m1_solo_player_in_terminal(ActionQueues* inActionQueuesToUse);
+
 void walk_player_list(void);
 
 void damage_player(short monster_index, short aggressor_index, short aggressor_type,
