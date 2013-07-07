@@ -132,11 +132,11 @@ $(M1_WINUP): Source_Files/Marathon.exe
 	zip -r $(M1_WINUP) "$(WINUPDIR_M1)"
 	rm -rf "$(WINUPDIR_M1)"
 
-WINDISTDIR_M1=Marathon (A1)
+WINDISTDIR_M1=Marathon
 $(M1_WINZIP): Source_Files/Marathon.exe
 	mkdir "$(WINDISTDIR_M1)"
 	$(call windist_common,$(WINDISTDIR_M1))
-	$(call cp_no_svn,$(srcdir)/data/Scenarios/M1A1,$(WINDISTDIR_M1))
+	$(call cp_no_svn,$(srcdir)/data/Scenarios/Marathon,$(WINDISTDIR_M1))
 	cp Source_Files/Marathon.exe "$(WINDISTDIR_M1)/Marathon.exe"
 	rm -f $(M1_WINZIP)
 	zip -r $(M1_WINZIP) "$(WINDISTDIR_M1)"
