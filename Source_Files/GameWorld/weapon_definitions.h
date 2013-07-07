@@ -191,6 +191,7 @@ struct trigger_definition {
 	int16 dx, dz;
 	int16 shell_casing_type;
 	int16 burst_count;
+    int16 sound_activation_range; /* for Marathon compatibility */
 };
 
 struct weapon_definition {

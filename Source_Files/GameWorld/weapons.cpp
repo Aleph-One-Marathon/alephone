@@ -1794,7 +1794,12 @@ static void fire_weapon(
 	/* I hear you.. */
 	if(definition->weapon_class != _melee_class)
 	{
-		if(which_trigger==_primary_weapon && (definition->flags & _weapon_is_automatic) && trigger->ticks_firing<2)
+		if (static_world->environment_flags & _environment_glue_m1)
+		{
+			int32 range = trigger_definition->sound_activation_range * WORLD_ONE;
+			activate_monsters_from_m1_trigger(player->monster_index, range*range);
+		}
+		else if(which_trigger==_primary_weapon && (definition->flags & _weapon_is_automatic) && trigger->ticks_firing<2)
 		{
 			activate_nearby_monsters(player->monster_index, player->monster_index, 
 				_pass_one_zone_border|_activate_invisible_monsters);
@@ -4218,6 +4223,7 @@ inline void StreamToTrigDefData(uint8* &S, trigger_definition& Object)
 	StreamToValue(S,Object.dz);
 	StreamToValue(S,Object.shell_casing_type);
 	StreamToValue(S,Object.burst_count);
+	Object.sound_activation_range = 0;
 }
 
 inline void TrigDefDataToStream(uint8* &S, trigger_definition& Object)
@@ -4359,8 +4365,8 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		StreamToValue(S, Trigger0.shell_casing_sound);
 		StreamToValue(S, Trigger1.shell_casing_sound);
 
-		S += 2; // skip sound_activation_range!?
-		S += 2;
+		StreamToValue(S, Trigger0.sound_activation_range);
+		StreamToValue(S, Trigger1.sound_activation_range);
 
 		StreamToValue(S, Trigger0.projectile_type);
 		StreamToValue(S, Trigger1.projectile_type);

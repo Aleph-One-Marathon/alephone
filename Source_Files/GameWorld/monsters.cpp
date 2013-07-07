@@ -265,6 +265,8 @@ static bool try_monster_attack(short monster_index);
 			
 int32 monster_pathfinding_cost_function(short source_polygon_index, short line_index,
 	short destination_polygon_index, void *data);
+int32 monster_m1_trigger_flood_proc(short source_polygon_index, short line_index,
+                                    short destination_polygon_index, void *data);
 
 void set_monster_action(short monster_index, short action);
 void set_monster_mode(short monster_index, short new_mode, short target_index);
@@ -955,6 +957,138 @@ static int32 monster_activation_flood_proc(
 	
 	return cost;
 }
+
+void activate_monsters_from_m1_trigger(
+                                       short caller_index, /* monster of player firing */
+                                       int32 max_cost) /* flood distance */
+{
+	struct monster_data *caller= get_monster_data(caller_index);
+    
+	if (dynamic_world->tick_count-caller->ticks_since_last_activation>MINIMUM_ACTIVATION_SEPARATION)
+	{
+		short polygon_index= get_object_data(caller->object_index)->polygon;
+		short need_target_indexes[MAXIMUM_NEED_TARGET_INDEXES];
+		short need_target_count= 0;
+		
+		/* flood out from the target monsterÕs polygon, searching through the object lists of all
+         polygons we encounter */
+		polygon_index= flood_map(polygon_index, max_cost, monster_m1_trigger_flood_proc, _breadth_first, NULL);
+		while (polygon_index!=NONE)
+		{
+			short object_index;
+			struct object_data *object;
+            
+			/* loop through all objects in this polygon looking for _hostile inactive or unlocked monsters */
+			for (object_index= get_polygon_data(polygon_index)->first_object; object_index!=NONE; object_index= object->next_object)
+			{
+				object= get_object_data(object_index);
+				if (GET_OBJECT_OWNER(object)==_object_is_monster)
+				{
+					short aggressor_index= object->permutation;
+					struct monster_data *aggressor= get_monster_data(aggressor_index);
+                    //					bool target_hostile= get_monster_attitude(aggressor_index, target_index)==_hostile;
+                    //					bool caller_hostile= get_monster_attitude(aggressor_index, caller_index)==_hostile;
+                    
+                    // deaf monsters are only deaf to players which have always been hostile, so:
+                    //   bobs are deaf to friendly players but not hostile ones
+                    //   monsters are deaf to all players
+                    // deaf monsters ignore friendly monsters activating on other friendly monsters but
+                    //   non-deaf ones DO NOT
+                    
+                    //					!MONSTER_IS_PLAYER(caller) || TYPE_IS_FRIEND(get_monster_definition(aggressor->type), caller->type) || caller_hostile
+					
+					/* donÕt activate players or ourselves, and only activate monsters on glue polygons
+                     if they have previously been activated or weÕve been explicitly told to */
+					if (!MONSTER_IS_PLAYER(aggressor) && caller_index!=aggressor_index &&
+						!MONSTER_IS_DEAF(aggressor) && // || !MONSTER_IS_PLAYER(caller) || !TYPE_IS_FRIEND(get_monster_definition(aggressor->type), caller->type) || !caller_hostile) &&
+						aggressor->mode!=_monster_locked)
+					{
+						bool monster_was_active= true;
+						
+						/* activate the monster if heÕs inactive */
+						if (!MONSTER_IS_ACTIVE(aggressor))
+						{
+							activate_monster(aggressor_index);
+							monster_was_active= false;
+						}
+						
+						if (true)
+						{
+							if (monster_was_active || aggressor->activation_bias!=_activate_on_nearest_hostile)
+							{
+								/* if we have valid target and this monster thinks that target is hostile, lock on */
+								if (get_monster_attitude(aggressor_index, caller_index)==_hostile)
+								{
+									switch_target_check(aggressor_index, caller_index, 0);
+								}
+							}
+							else
+							{
+								// must defer find_closest_appropriate_target; pathfinding is not reentrant
+								if (need_target_count<MAXIMUM_NEED_TARGET_INDEXES)
+								{
+									need_target_indexes[need_target_count++]= aggressor_index;
+								}
+							}
+						}
+					}
+				}
+			}
+			
+			polygon_index= flood_map(NONE, max_cost, monster_m1_trigger_flood_proc, _breadth_first, NULL);
+		}
+        
+		// deferred find_closest_appropriate_target() calls
+		while (--need_target_count>=0)
+		{
+			change_monster_target(need_target_indexes[need_target_count],
+                                  find_closest_appropriate_target(need_target_indexes[need_target_count], true));
+		}
+        
+		caller->ticks_since_last_activation= dynamic_world->tick_count;
+	}
+}
+
+int32 monster_m1_trigger_flood_proc(
+                                    short source_polygon_index,
+                                    short line_index,
+                                    short destination_polygon_index,
+                                    void *vdata)
+{
+	struct polygon_data *destination_polygon= get_polygon_data(destination_polygon_index);
+	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
+	struct line_data *line= get_line_data(line_index);
+	bool respect_polygon_heights= true;
+	int32 cost;
+    
+	/* base cost is the area of the polygon weÕre leaving */
+	cost= source_polygon->area;
+    
+	/* no solid lines (baby) */
+	if (LINE_IS_SOLID(line) && !LINE_IS_VARIABLE_ELEVATION(line)) cost= -1;
+    
+	/* if the ledge between polygons is too high, disallow the move */
+	if (respect_polygon_heights)
+	{
+		world_distance delta_height= destination_polygon->floor_height-source_polygon->floor_height;
+		
+		if (cost>0) cost+= delta_height*delta_height; /* prefer not to change heights */
+	}
+    
+	if (cost>0)
+	{
+		/* if weÕre trying to move into an impassable polygon, disallow the move */
+		switch (destination_polygon->type)
+		{
+			case _polygon_is_monster_impassable:
+				cost= -1;
+				break;
+		}
+	}
+    
+	return cost;
+}
+
 
 #define LIVE_ALIEN_THRESHHOLD 8
 
