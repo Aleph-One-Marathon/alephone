@@ -187,6 +187,7 @@ extern string get_preferences_directory(void);
 
 // From preprocess_map_sdl.cpp
 extern bool get_default_music_spec(FileSpecifier &file);
+extern bool get_default_theme_spec(FileSpecifier& file);
 
 // From vbl_sdl.cpp
 void execute_timer_tasks(uint32 time);
@@ -656,6 +657,11 @@ static void initialize_application(void)
 	{
 		theme = theme_plugin->directory + theme_plugin->theme;
 	}
+	else
+	{
+		get_default_theme_spec(theme);
+	}
+	fprintf(stderr, "Loading theme from %s\n", theme.GetPath());
 	initialize_dialogs(theme);
 	initialize_terminal_manager();
 	initialize_shape_handler();
