@@ -299,8 +299,7 @@ bool possible_intersecting_monsters(vector<short> *IntersectedObjectsPtr, unsign
 
 void get_monster_dimensions(short monster_index, world_distance *radius, world_distance *height);
 
-void activate_nearby_monsters(short target_index, short caller_index, short flags);
-void activate_monsters_from_m1_trigger(short caller_index, int32 max_cost);
+void activate_nearby_monsters(short target_index, short caller_index, short flags, int32 max_range = -1);
 
 void damage_monsters_in_radius(short primary_target_index, short aggressor_index, short aggressor_type,
 	world_point3d *epicenter, short epicenter_polygon_index, world_distance radius, struct damage_definition *damage, short projectile_index);

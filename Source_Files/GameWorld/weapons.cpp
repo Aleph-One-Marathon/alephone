@@ -1794,18 +1794,17 @@ static void fire_weapon(
 	/* I hear you.. */
 	if(definition->weapon_class != _melee_class)
 	{
-		if (static_world->environment_flags & _environment_glue_m1)
-		{
-			int32 range = trigger_definition->sound_activation_range * WORLD_ONE;
-			activate_monsters_from_m1_trigger(player->monster_index, range*range);
-		}
-		else if(which_trigger==_primary_weapon && (definition->flags & _weapon_is_automatic) && trigger->ticks_firing<2)
+		int32 range = -1;
+		if (static_world->environment_flags & _environment_activation_ranges)
+			range = trigger_definition->sound_activation_range * WORLD_ONE;
+		
+		if(which_trigger==_primary_weapon && (definition->flags & _weapon_is_automatic) && trigger->ticks_firing<2)
 		{
 			activate_nearby_monsters(player->monster_index, player->monster_index, 
-				_pass_one_zone_border|_activate_invisible_monsters);
+				_pass_one_zone_border|_activate_invisible_monsters, range);
 		} else {
 			activate_nearby_monsters(player->monster_index, player->monster_index, 
-				_pass_one_zone_border|_activate_invisible_monsters);
+				_pass_one_zone_border|_activate_invisible_monsters, range);
 		}
 	}
 
