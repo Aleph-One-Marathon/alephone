@@ -21,7 +21,8 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h
   interface.cpp \
   Logging.cpp PlayerImage_sdl.cpp PlayerName.cpp preferences.cpp \
   preference_dialogs.cpp preferences_widgets_sdl.cpp Scenario.cpp sdl_dialogs.cpp $(THREAD_PRIORITY) \
-  sdl_widgets.cpp shared_widgets.cpp vbl.cpp
+  sdl_widgets.cpp shared_widgets.cpp vbl.cpp \
+  ProFontAO.h CourierPrime.h CourierPrimeBold.h CourierPrimeItalic.h CourierPrimeBoldItalic.h
 
 EXTRA_libmisc_a_SOURCES = alephone.xpm alephone32.xpm thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp thread_priority_sdl_macosx.cpp
 
