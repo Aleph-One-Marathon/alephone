@@ -1059,6 +1059,7 @@ int32 monster_m1_trigger_flood_proc(
 	struct polygon_data *source_polygon= get_polygon_data(source_polygon_index);
 	struct line_data *line= get_line_data(line_index);
 	bool respect_polygon_heights= true;
+	bool obey_glue= (static_world->environment_flags&_environment_glue_m1);
 	int32 cost;
     
 	/* base cost is the area of the polygon weÕre leaving */
@@ -1081,7 +1082,13 @@ int32 monster_m1_trigger_flood_proc(
 		switch (destination_polygon->type)
 		{
 			case _polygon_is_monster_impassable:
-				cost= -1;
+			case _polygon_is_glue:
+				if (obey_glue)
+					cost= -1;
+				break;
+			case _polygon_is_platform:
+				if (destination_polygon->ceiling_height == destination_polygon->floor_height)
+					cost= -1;
 				break;
 		}
 	}
