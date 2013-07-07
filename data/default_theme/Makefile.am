@@ -1,16 +1,47 @@
 ## Process this file with automake to produce Makefile.in 
 
-themedir = $(pkgdatadir)/Themes/Default
-theme_DATA = theme2.mml resources frame_tl.bmp frame_t.bmp		\
-  frame_tr.bmp frame_l.bmp frame_r.bmp frame_bl.bmp frame_b.bmp		\
-  frame_br.bmp list_tl.bmp list_t.bmp list_tr.bmp list_l.bmp		\
-  list_r.bmp list_bl.bmp list_b.bmp list_br.bmp thumb_t.bmp		\
-  thumb_tc.bmp thumb_c.bmp thumb_bc.bmp thumb_b.bmp slider_l.bmp	\
-  slider_c.bmp slider_r.bmp slider.bmp button_c.bmp button_l.bmp	\
-  button_r.bmp button_c_p.bmp button_l_p.bmp button_r_p.bmp		\
-  tiny_button_c.bmp tiny_button_l.bmp tiny_button_r.bmp			\
-  Squarish_Sans_CT_Medium.ttf DejaVuLGCSansCondensed-BoldOblique.ttf	\
-  DejaVuLGCSansCondensed-Bold.ttf DejaVuLGCSansCondensed-BoldBold.ttf	\
-  LICENSE-DejaVu SquarishSansCT.README
+themedir = $(pkgdatadir)/Plugins/Default_Theme
+theme_DATA = Plugin.xml \
+resources/button_c.bmp \
+resources/button_c_p.bmp \
+resources/button_l.bmp \
+resources/button_l_p.bmp \
+resources/button_r.bmp \
+resources/button_r_p.bmp \
+resources/DejaVuLGCSansCondensed-BoldBold.ttf \
+resources/DejaVuLGCSansCondensed-BoldOblique.ttf \
+resources/DejaVuLGCSansCondensed-Bold.ttf \
+resources/frame_b.bmp \
+resources/frame_bl.bmp \
+resources/frame_br.bmp \
+resources/frame_l.bmp \
+resources/frame_r.bmp \
+resources/frame_t.bmp \
+resources/frame_tl.bmp \
+resources/frame_tr.bmp \
+resources/LICENSE-DejaVu \
+resources/list_b.bmp \
+resources/list_bl.bmp \
+resources/list_br.bmp \
+resources/list_l.bmp \
+resources/list_r.bmp \
+resources/list_t.bmp \
+resources/list_tl.bmp \
+resources/list_tr.bmp \
+resources/slider.bmp \
+resources/slider_c.bmp \
+resources/slider_l.bmp \
+resources/slider_r.bmp \
+resources/Squarish_Sans_CT_Medium.ttf \
+resources/SquarishSansCT.README \
+resources/theme2.mml \
+resources/thumb_b.bmp \
+resources/thumb_bc.bmp \
+resources/thumb_c.bmp \
+resources/thumb_t.bmp \
+resources/thumb_tc.bmp \
+resources/tiny_button_c.bmp \
+resources/tiny_button_l.bmp \
+resources/tiny_button_r.bmp
 
 EXTRA_DIST = $(theme_DATA)
