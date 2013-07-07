@@ -661,7 +661,6 @@ static void initialize_application(void)
 	{
 		get_default_theme_spec(theme);
 	}
-	fprintf(stderr, "Loading theme from %s\n", theme.GetPath());
 	initialize_dialogs(theme);
 	initialize_terminal_manager();
 	initialize_shape_handler();
