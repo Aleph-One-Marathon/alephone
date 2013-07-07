@@ -968,6 +968,7 @@ static int32 monster_activation_flood_proc(
 	}
 	else if ((destination_polygon->type==_polygon_is_platform) &&
 	         (destination_polygon->floor_height==destination_polygon->ceiling_height) &&
+	         !((*flags)&_pass_solid_lines) &&
 	         limit_activation)
 	{
 		cost= -1;
