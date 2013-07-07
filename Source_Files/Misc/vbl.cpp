@@ -632,7 +632,8 @@ void get_recording_header_data(
 
 bool setup_for_replay_from_file(
 	FileSpecifier& File,
-	uint32 map_checksum)
+	uint32 map_checksum,
+	bool prompt_to_export)
 {
 	bool successful= false;
 
@@ -667,7 +668,8 @@ bool setup_for_replay_from_file(
 #ifdef DEBUG_REPLAY
 			open_stream_file();
 #endif
-			Movie::instance()->PromptForRecording();
+			if (prompt_to_export)
+				Movie::instance()->PromptForRecording();
 			successful= true;
 		} else {
 			/* Tell them that this map wasn't found.  They lose. */

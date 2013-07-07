@@ -2010,6 +2010,10 @@ static bool begin_game(
 						FileSpecifier ReplayFile;
 						show_cursor(); // JTP: Hidden one way or another :p
 						
+						bool prompt_to_export = false;
+						SDLMod m = SDL_GetModState();
+						if ((m & KMOD_ALT) || (m & KMOD_META)) prompt_to_export = true;
+						
 						success= find_replay_to_use(cheat, ReplayFile);
 						if(success)
 						{
@@ -2021,7 +2025,7 @@ static bool begin_game(
 							}
 							else
 							{
-								success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum());
+								success= setup_for_replay_from_file(ReplayFile, get_current_map_checksum(), prompt_to_export);
 
 								hide_cursor();
 							}
