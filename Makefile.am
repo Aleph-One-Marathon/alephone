@@ -101,7 +101,6 @@ mkdir "$(1)/docs"
 cp $(srcdir)/docs/Lua.html "$(1)/docs/Lua.html"
 cp $(srcdir)/docs/Lua_HUD.html "$(1)/docs/Lua_HUD.html"
 cp $(srcdir)/docs/MML.html "$(1)/docs/MML.html"
-$(call cp_no_svn,$(srcdir)/data/default_theme,$(1)/Themes/Default)
 mkdir "$(1)/Extras"
 cp $(srcdir)/data/Software_Transparent_Liquids.mml "$(1)/Extras"
 cp $(srcdir)/data/Transparent_Liquids.mml "$(1)/Extras"
@@ -119,6 +118,7 @@ $(WINZIP): Source_Files/AlephOne.exe
 	cp Source_Files/AlephOne.exe $(WINDISTDIR)/
 	unix2dos -n $(srcdir)/INSTALL.Windows "$(WINDISTDIR)/docs/INSTALL.Windows.txt"
 	cp $(srcdir)/data/Transparent_Sprites.mml $(WINDISTDIR)/Extras
+	$(call cp_no_svn,$(srcdir)/data/default_theme,$(WINDISTDIR)/Plugins/Default_Theme)
 	rm -f $(WINZIP)
 	zip -r $(WINZIP) $(WINDISTDIR)
 	rm -rf "$(WINDISTDIR)"
