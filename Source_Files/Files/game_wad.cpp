@@ -1666,7 +1666,7 @@ bool process_map_wad(
             static_world->environment_flags &= ~_environment_rebellion;
             static_world->environment_flags |= _environment_rebellion_m1;
         }
-        static_world->environment_flags |= _environment_glue_m1|_environment_ouch_m1|_environment_rescue_m1|_environment_song_index_m1|_environment_terminals_stop_time|_environment_activation_ranges;
+        static_world->environment_flags |= _environment_glue_m1|_environment_ouch_m1|_environment_rescue_m1|_environment_song_index_m1|_environment_terminals_stop_time|_environment_activation_ranges|_environment_die_hard_to_weakness;
         
     }
 

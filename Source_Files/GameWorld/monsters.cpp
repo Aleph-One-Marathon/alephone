@@ -1600,7 +1600,7 @@ void damage_monster(
 					}
 					else
 					{
-						if ((damage_kick_definitions[damage->type].death_action == _monster_is_dying_hard || (FLAG(damage->type)&definition->weaknesses) ||
+						if ((damage_kick_definitions[damage->type].death_action == _monster_is_dying_hard || ((FLAG(damage->type)&definition->weaknesses) && !(static_world->environment_flags&_environment_die_hard_to_weakness)) ||
 							definition->soft_dying_shape==UNONE) && definition->hard_dying_shape!=UNONE && !(definition->flags&_monster_has_delayed_hard_death))
 						{
 							action= _monster_is_dying_hard;
