@@ -1699,6 +1699,10 @@ static void recreate_player(
 	// Done here so that players' missiles will always be guided
 	// if they are intended to be guided
 	adjust_player_physics(get_monster_data(player->monster_index));
+	
+	// Marathon 1 won't activate monsters immediately at level start
+	if (static_world->environment_flags & _environment_activation_ranges)
+		monster->ticks_since_last_activation = dynamic_world->tick_count;
 }
 
 static void kill_player(
