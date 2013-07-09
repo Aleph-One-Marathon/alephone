@@ -699,13 +699,6 @@ void changed_polygon(
 					_pass_solid_lines|_activate_deaf_monsters|_activate_invisible_monsters|_use_activation_biases|_activation_cannot_be_avoided);
 			}
 			break;
-		case _polygon_is_glue_trigger:
-			if (player && (static_world->environment_flags & _environment_glue_m1))
-			{
-				activate_nearby_monsters(player->monster_index, player->monster_index,
-					_pass_solid_lines|_activate_deaf_monsters|_activate_invisible_monsters|_use_activation_biases|_activation_cannot_be_avoided|_cannot_pass_superglue|_activate_glue_monsters);
-			}
-			break;
 		
 		case _polygon_is_item_trigger:
 			if (player)

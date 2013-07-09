@@ -1233,6 +1233,12 @@ void monster_moved(
 		/* cause lights to light, platforms to trigger, etc.; the player does this differently */
 		changed_polygon(old_polygon_index, object->polygon, NONE);
 	}
+	else if ((static_world->environment_flags & _environment_glue_m1) &&
+	         (get_polygon_data(object->polygon)->type == _polygon_is_glue_trigger))
+	{
+		activate_nearby_monsters(target_index, target_index,
+			_pass_solid_lines|_activate_deaf_monsters|_activate_invisible_monsters|_use_activation_biases|_activation_cannot_be_avoided|_cannot_pass_superglue|_activate_glue_monsters);
+	}
 
 	for (monster_index=0,monster=monsters;monster_index<MAXIMUM_MONSTERS_PER_MAP;++monster_index,++monster)
 	{
