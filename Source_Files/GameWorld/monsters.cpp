@@ -2923,6 +2923,14 @@ static bool translate_monster(
 					{
 						set_monster_action(monster_index, _monster_is_dying_hard);
 						monster_died(monster_index);
+						if (film_profile.key_frame_zero_kamakazi_fix)
+						{
+							shape_animation_data* animation = get_shape_animation_data(object->shape);
+							if (animation && animation->key_frame == 0)
+							{
+								cause_shrapnel_damage(monster_index);
+							}
+						}
 					}
 				}
 				

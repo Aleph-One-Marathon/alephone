@@ -85,6 +85,7 @@ struct FilmProfile
 	bool lua_increments_rng;
 	bool destroy_players_ball_fix;
 	bool calculate_terminal_lines_correctly;
+	bool key_frame_zero_kamakazi_fix; // for M1 lookers and simulacra
 };
 
 extern FilmProfile film_profile;
