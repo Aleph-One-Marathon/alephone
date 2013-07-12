@@ -112,6 +112,7 @@ static bool in_game = false;	// Flag: menu (fixed 640x480) or in-game (variable 
 
 static int desktop_width;
 static int desktop_height;
+static bool awful_retina_hack = false;
 
 static int prev_width;
 static int prev_height;
@@ -216,11 +217,12 @@ void Screen::Initialize(screen_mode_data* mode)
 		{
 			for (int i = 0; modes[i]; ++i)
 			{
-				if (modes[i]->w >= 640 && modes[i]->h >= 480
-#if (defined(__APPLE__) && defined(__MACH__))
-				    && modes[i]->w <= desktop_width && modes[i]->h <= desktop_height
+#if defined(__APPLE__) && defined(__MACH__)
+				if (modes[i]->w > desktop_width || modes[i]->h > desktop_height) {
+					awful_retina_hack = true;
+				} else
 #endif
-					)
+				if (modes[i]->w >= 640 && modes[i]->h >= 480)
 				{
 					m_modes.push_back(std::pair<int, int>(modes[i]->w, modes[i]->h));
 					if (modes[i]->w == 640 && modes[i]->h == 480)
@@ -740,7 +742,12 @@ static void change_screen_mode(int width, int height, int depth, bool nogl)
 #endif 
 
 		flags |= SDL_SWSURFACE;
-	
+
+	if (awful_retina_hack) 
+	{
+		SDL_SetVideoMode(desktop_width, desktop_height, depth, flags);
+		awful_retina_hack = false;
+	}
 	main_surface = SDL_SetVideoMode(vmode_width, vmode_height, depth, flags);
 #ifdef HAVE_OPENGL
 #if SDL_VERSION_ATLEAST(1,2,6)
