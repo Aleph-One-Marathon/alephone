@@ -216,7 +216,11 @@ void Screen::Initialize(screen_mode_data* mode)
 		{
 			for (int i = 0; modes[i]; ++i)
 			{
-				if (modes[i]->w >= 640 && modes[i]->h >= 480)
+				if (modes[i]->w >= 640 && modes[i]->h >= 480
+#if (defined(__APPLE__) && defined(__MACH__))
+				    && modes[i]->w <= desktop_width && modes[i]->h <= desktop_height
+#endif
+					)
 				{
 					m_modes.push_back(std::pair<int, int>(modes[i]->w, modes[i]->h));
 					if (modes[i]->w == 640 && modes[i]->h == 480)
