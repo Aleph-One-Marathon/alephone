@@ -4356,7 +4356,7 @@ uint8* unpack_m1_weapon_definition(uint8* Stream, size_t Count)
 		StreamToValue(S, Trigger1.click_sound);
 
 		StreamToValue(S, Trigger0.reloading_sound);
-		Trigger1.reloading_sound = Trigger0.reloading_sound;
+		Trigger1.reloading_sound = NONE;
 
 		StreamToValue(S, Trigger0.charging_sound);
 		Trigger1.charging_sound = Trigger0.charging_sound;
