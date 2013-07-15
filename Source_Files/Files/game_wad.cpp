@@ -408,6 +408,12 @@ void complete_loading_level(
 		for(loop= 0; loop<dynamic_world->side_count; ++loop)
 		{
 			guess_side_lightsource_indexes(loop);
+			if (static_world->environment_flags&_environment_vacuum)
+			{
+				side_data *side= get_side_data(loop);
+				if (side->flags&_side_is_control_panel)
+					side->flags |= _side_is_lighted_switch;
+			}
 		}
 	}
 }
