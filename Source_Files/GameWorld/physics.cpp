@@ -839,7 +839,20 @@ static void physics_update(
 	{
 		variables->external_velocity.k/= -COEFFICIENT_OF_ABSORBTION;
 	}
-	if (ABS(variables->external_velocity.k)<SMALL_ENOUGH_VELOCITY &&
+
+	_fixed small_enough_velocity;
+	if (physics_constants_are_m1) {
+		_fixed gravity= constants->gravitational_acceleration;		
+		if (static_world->environment_flags&_environment_low_gravity) gravity>>= 1;
+		if (variables->flags&_FEET_BELOW_MEDIA_BIT) gravity>>= 1;
+
+		small_enough_velocity = gravity;
+	} 
+	else 
+	{
+		small_enough_velocity = SMALL_ENOUGH_VELOCITY;
+	}
+	if (ABS(variables->external_velocity.k)<small_enough_velocity &&
 		ABS(variables->floor_height-new_position.z)<CLOSE_ENOUGH_TO_FLOOR)
 	{
 		variables->external_velocity.k= 0, new_position.z= variables->floor_height;
