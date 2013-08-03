@@ -319,7 +319,7 @@ static struct color_table *current_picture_clut= NULL;
 extern short interface_bit_depth;
 extern short bit_depth;
 extern bool insecure_lua;
-extern bool m1_shapes;
+extern bool shapes_file_is_m1();
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
 extern bool load_game_from_file(FileSpecifier& File);
@@ -368,7 +368,7 @@ screen_data *get_screen_data(
 	short index)
 {
 	assert(index>=0 && index<NUMBER_OF_SCREENS);
-	if (m1_shapes)
+	if (shapes_file_is_m1())
 		return m1_display_screens+index;
 	return display_screens+index;
 }
@@ -1670,7 +1670,7 @@ static void display_epilogue(
 	// Setting of the end-screen parameters has been moved to XML_LevelScript.cpp
 	int end_offset = EndScreenIndex;
 	int end_count = NumEndScreens;
-	if (m1_shapes) // should check map, but this is easier
+	if (shapes_file_is_m1()) // should check map, but this is easier
 	{
 		// ignore M2 defaults set in LoadLevelScripts()
 		end_offset = 100;
@@ -1894,7 +1894,7 @@ static void transfer_to_new_level(
 		// if this is the EPILOGUE_LEVEL_NUMBER, then it is time to get
 		// out of here already (as we've just played the epilogue movie,
 		// we can move on to the _display_epilogue game state)
-		if (level_number == (m1_shapes ? 100 : EPILOGUE_LEVEL_NUMBER)) {
+		if (level_number == (shapes_file_is_m1() ? 100 : EPILOGUE_LEVEL_NUMBER)) {
 			finish_game(false);
 			show_cursor(); // for some reason, cursor stays hidden otherwise
 			set_game_state(_begin_display_of_epilogue);
@@ -2487,7 +2487,7 @@ static void next_game_screen(
 				SoundRsrc.Unload();
 				if (get_sound_resource_from_images(pict_resource_number, SoundRsrc))
 				{
-					_fixed pitch = (m1_shapes && game_state.state==_display_intro_screens) ? _m1_high_frequency : _normal_frequency;
+					_fixed pitch = (shapes_file_is_m1() && game_state.state==_display_intro_screens) ? _m1_high_frequency : _normal_frequency;
 					Mixer::instance()->PlaySoundResource(SoundRsrc, pitch);
 				}
 			}
@@ -2738,7 +2738,7 @@ static void try_and_display_chapter_screen(
 
 			if (get_sound_resource_from_scenario(pict_resource_number,SoundRsrc))
 			{
-				_fixed pitch = (m1_shapes && level == 101) ? _m1_high_frequency : _normal_frequency;
+				_fixed pitch = (shapes_file_is_m1() && level == 101) ? _m1_high_frequency : _normal_frequency;
 				Mixer::instance()->PlaySoundResource(SoundRsrc, pitch);
 			}
 			

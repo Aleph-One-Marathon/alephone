@@ -155,7 +155,7 @@ extern short interface_bit_depth;
 extern bool draw_clip_rect_active;
 extern screen_rectangle draw_clip_rect;
 
-extern bool m1_shapes;
+extern bool shapes_file_is_m1();
 
 /*
  *  Uncompress picture data, returns size of compressed image data that was read
@@ -1268,7 +1268,7 @@ bool get_sound_resource_from_images(int resource_number, LoadedResource &SoundRs
 
 bool images_picture_exists(int base_resource)
 {
-    if (m1_shapes && (base_resource == MAIN_MENU_BASE || base_resource == MAIN_MENU_BASE+1))
+	if (shapes_file_is_m1() && (base_resource == MAIN_MENU_BASE || base_resource == MAIN_MENU_BASE+1))
         return true;
     
     LoadedResource PictRsrc;
@@ -1281,7 +1281,6 @@ bool images_picture_exists(int base_resource)
 // this special case by creating the composite images in code,
 // and returning these surfaces when the picture is requested.
 
-extern bool m1_shapes;
 static SDL_Surface *m1_menu_unpressed = NULL;
 static SDL_Surface *m1_menu_pressed = NULL;
 
@@ -1386,7 +1385,7 @@ static void create_m1_menu_surfaces(void)
 
 static bool m1_draw_full_screen_pict_resource_from_images(int pict_resource_number)
 {
-    if (!m1_shapes)
+    if (!shapes_file_is_m1())
         return false;
     if (pict_resource_number == MAIN_MENU_BASE)
     {

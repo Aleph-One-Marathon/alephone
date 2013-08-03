@@ -257,7 +257,7 @@ void initialize_motion_sensor(
 		shapes are loaded (because it will do bitmap copying) */
 }
 
-extern bool m1_shapes;
+extern bool shapes_file_is_m1();
 
 void reset_motion_sensor(
 	short player_index)
@@ -268,7 +268,7 @@ void reset_motion_sensor(
 	motion_sensor_player_index= player_index;
 	ticks_since_last_update= ticks_since_last_rescan= 0;
 
-	if (!m1_shapes)
+	if (!shapes_file_is_m1())
 	{
 		get_shape_bitmap_and_shading_table(mount_shape, &mount, (void **) NULL, NONE);
 		if (!mount) return;

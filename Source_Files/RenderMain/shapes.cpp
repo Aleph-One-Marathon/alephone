@@ -180,7 +180,13 @@ short number_of_shading_tables, shading_table_fractional_bits, shading_table_siz
 // LP addition: opened-shapes-file object
 static OpenedFile ShapesFile;
 static OpenedResourceFile M1ShapesFile;
-bool m1_shapes;
+
+static enum {
+	M1_SHAPES_VERSION = 1,
+	M2_SHAPES_VERSION
+} shapes_file_version;
+
+bool shapes_file_is_m1() { return shapes_file_version == M1_SHAPES_VERSION; }
 
 /* ---------- private prototypes */
 
@@ -646,7 +652,7 @@ static void convert_m1_rle(std::vector<uint8>& bitmap, int scanlines, int scanli
 	}
 }
 
-static void load_bitmap(std::vector<uint8>& bitmap, SDL_RWops *p)
+static void load_bitmap(std::vector<uint8>& bitmap, SDL_RWops *p, int version)
 {
 	bitmap_definition b;
 
@@ -668,7 +674,7 @@ static void load_bitmap(std::vector<uint8>& bitmap, SDL_RWops *p)
 
 	if (b.bytes_per_row == NONE) 
 	{
-		if (m1_shapes)
+		if (version == M1_SHAPES_VERSION)
 		{
 			// make enough room for the definition, then append as we convert RLE
 			bitmap.resize(sizeof(bitmap_definition) + rows * sizeof(pixel8*));
@@ -716,7 +722,7 @@ static void load_bitmap(std::vector<uint8>& bitmap, SDL_RWops *p)
 	{
 		// RLE format
 
-		if (m1_shapes)
+		if (version == M1_SHAPES_VERSION)
 		{
 			convert_m1_rle(bitmap, rows, row_len, p);
 		}
@@ -765,7 +771,7 @@ static bool load_collection(short collection_index, bool strip)
 
 	collection_header *header = get_collection_header(collection_index);
 	
-	if (m1_shapes)
+	if (shapes_file_version == M1_SHAPES_VERSION)
 	{
 		// Collections are stored in .256 resources
 		if (!M1ShapesFile.Get('.', '2', '5', '6', 128 + collection_index, r))
@@ -836,7 +842,7 @@ static bool load_collection(short collection_index, bool strip)
 
 	for (int i = 0; i < cd->bitmap_count; i++) {
 		SDL_RWseek(p, src_offset + t[i], RW_SEEK_SET);
-		load_bitmap(cd->bitmaps[i], p);
+		load_bitmap(cd->bitmaps[i], p, shapes_file_version);
 	}
 
 	header->collection = cd.release();
@@ -982,7 +988,7 @@ void load_shapes_patch(SDL_RWops *p, bool override_replacements)
 					int32 size = SDL_ReadBE32(p);
 					if (cd && patch_bit_depth == 8 && bitmap_index < cd->bitmaps.size())
 					{
-						load_bitmap(cd->bitmaps[bitmap_index], p);
+						load_bitmap(cd->bitmaps[bitmap_index], p, M2_SHAPES_VERSION);
 						if (override_replacements)
 						{
 							get_bitmap_definition(collection_index, bitmap_index)->flags |= _PATCHED_BIT;
@@ -1044,11 +1050,11 @@ void open_shapes_file(FileSpecifier& File)
 {
 	if (File.Open(M1ShapesFile) && M1ShapesFile.Check('.','2','5','6',128))
 	{
-		m1_shapes = true;
+		shapes_file_version = M1_SHAPES_VERSION;
 	}
 	else if (File.Open(ShapesFile))
 	{
-		m1_shapes = false;
+		shapes_file_version = M2_SHAPES_VERSION;
 		// Load the collection headers;
 		// need a buffer for the packed data
 		int Size = MAXIMUM_COLLECTIONS*SIZEOF_collection_header;
@@ -1098,7 +1104,7 @@ void open_shapes_file(FileSpecifier& File)
 
 static void close_shapes_file(void)
 {
-	if (m1_shapes)
+	if (shapes_file_version == M1_SHAPES_VERSION)
 	{
 		M1ShapesFile.Close();
 	}
@@ -1828,7 +1834,7 @@ void load_collections(
 				/* load and decompress collection */
 				if (!load_collection(collection_index, (header->status&markSTRIP) ? true : false))
 				{
-					if (!m1_shapes)
+					if (shapes_file_version != M1_SHAPES_VERSION)
 					{
 						alert_user(fatalError, strERRORS, outOfMemory, -1);
 					}
