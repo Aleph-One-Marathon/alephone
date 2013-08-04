@@ -26,7 +26,7 @@ static FilmProfile alephone1_1 = {
 	false, // lua_increments_rng
 	true, // destroy_players_ball_fix
 	true, // calculate_terminal_lines_correctly
-	true, // key_frame_zero_kamakazi_fix
+	true, // key_frame_zero_shrapnel_fix
 };
 
 static FilmProfile alephone1_0 = {
@@ -53,7 +53,7 @@ static FilmProfile alephone1_0 = {
 	true, // lua_increments_rng
 	false, // destroy_players_ball_fix
 	false, // calculate_terminal_lines_correctly
-	false, // key_frame_zero_kamakazi_fix
+	false, // key_frame_zero_shrapnel_fix
 };
 
 static FilmProfile marathon2 = {
@@ -80,7 +80,7 @@ static FilmProfile marathon2 = {
 	false, // lua_increments_rng
 	false, // destroy_players_ball_fix
 	false, // calculate_terminal_lines_correctly
-	false, // key_frame_zero_kamakazi_fix
+	false, // key_frame_zero_shrapnel_fix
 };
 
 static FilmProfile marathon_infinity = {
@@ -107,7 +107,7 @@ static FilmProfile marathon_infinity = {
 	false, // lua_increments_rng
 	false, // destroy_players_ball_fix
 	false, // calculate_terminal_lines_correctly
-	false, // key_frame_zero_kamakazi_fix
+	false, // key_frame_zero_shrapnel_fix
 };
 
 FilmProfile film_profile = alephone1_1;

@@ -2651,9 +2651,21 @@ void set_monster_action(
 		set_object_shape_and_transfer_mode(monster->object_index, shape, NONE);
 
 		/* if this monster does shrapnel damage, do it */
-		if (action==_monster_is_dying_hard && (definition->flags&_monster_has_delayed_hard_death))
+		if (action == _monster_is_dying_hard)
 		{
-			cause_shrapnel_damage(monster_index);
+			if (definition->flags & _monster_has_delayed_hard_death)
+			{
+				cause_shrapnel_damage(monster_index);
+			}
+			else if (film_profile.key_frame_zero_shrapnel_fix)
+			{
+				object_data* object = get_object_data(monster->object_index);
+				shape_animation_data* animation = get_shape_animation_data(object->shape);
+				if (animation && animation->key_frame == 0)
+				{
+					cause_shrapnel_damage(monster_index);
+				}
+			}
 		}
 		
 		if ((definition->flags&_monster_has_nuclear_hard_death) && action==_monster_is_dying_hard)
@@ -2923,14 +2935,6 @@ static bool translate_monster(
 					{
 						set_monster_action(monster_index, _monster_is_dying_hard);
 						monster_died(monster_index);
-						if (film_profile.key_frame_zero_kamakazi_fix)
-						{
-							shape_animation_data* animation = get_shape_animation_data(object->shape);
-							if (animation && animation->key_frame == 0)
-							{
-								cause_shrapnel_damage(monster_index);
-							}
-						}
 					}
 				}
 				
