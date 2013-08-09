@@ -4139,7 +4139,6 @@ bool XML_MonsterParser::AttributesDone()
 
 	if (ValuePresent)
 	{
-		fprintf(stderr, "Setting monster_must_be_exterminated[%i] to %s\n", Index, MustBeExterminated ? "true" : "false");
 		monster_must_be_exterminated[Index] = MustBeExterminated;
 	}
 
