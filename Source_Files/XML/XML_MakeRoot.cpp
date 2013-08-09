@@ -98,6 +98,7 @@ void SetupParseTree()
 	MarathonParser.AddChild(TextureLoading_GetParser());
 	MarathonParser.AddChild(Keyboard_GetParser());
 	MarathonParser.AddChild(DamageKicks_GetParser());
+	MarathonParser.AddChild(Monsters_GetParser());
 	MarathonParser.AddChild(Logging_GetParser());
 	MarathonParser.AddChild(Scenario_GetParser());
 #ifdef SDL

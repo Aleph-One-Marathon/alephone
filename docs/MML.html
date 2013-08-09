@@ -66,6 +66,7 @@ This element has no attributes and contains these child elements:
 <li><a href="#weapons">Weapons Element: &lt;weapons&gt;</a>
 <li><a href="#items">Items Element: &lt;items&gt;</a>
 <li><a href="#damage_kicks">Damage-Kicks Element: &lt;damage_kicks&gt;</a>
+<li><a href="#monsters">Monsters Element: &lt;monsters&gt;</a>
 <li><a href="#scenery">Scenery Element: &lt;scenery&gt;</a>
 <li><a href="#landscapes">Landscapes Element: &lt;landscapes&gt;</a>
 <li><a href="#textureloading">Texture-Loading Element: &lt;texture_loading&gt;</a>
@@ -1282,6 +1283,17 @@ in addition to a horizontal one (<a href="#boolean">boolean</a>)
 <li>Flaming death
 </ol>
 </ul>
+</ul>
+
+<hr>
+
+<h3><a name="monsters">Monsters Element: &lt;monsters&gt;</a></h3>
+This element specifies additional characteristics of monsters. Each
+monster type is specified with a &lt;monster&gt; child element, which
+has these attributes:
+<ul>
+<li>index: which monster type (mandatory)
+<li>must_be_exterminated: if true, this monster must be killed in order for an extermination level to be completed (<a href="#boolean">boolean</a>)
 </ul>
 
 <hr>

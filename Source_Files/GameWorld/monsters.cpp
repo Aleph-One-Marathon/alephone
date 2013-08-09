@@ -987,6 +987,8 @@ static int32 monster_activation_flood_proc(
 
 #define LIVE_ALIEN_THRESHHOLD 8
 
+static std::vector<bool> monster_must_be_exterminated(NUMBER_OF_MONSTER_TYPES, false);
+
 bool live_aliens_on_map(
 	void)
 {
@@ -1002,16 +1004,11 @@ bool live_aliens_on_map(
 		{
 			struct monster_definition *definition= get_monster_definition(monster->type);
 
-#if 0			
-			switch (monster->type)
+			if (monster_must_be_exterminated[monster->type])
 			{
-				case _monster_juggernaut_minor:
-				case _monster_juggernaut_major:
-				case _monster_alien_leader:
-					found_alien_which_must_be_killed= true;
-					break;
+				found_alien_which_must_be_killed = true;
+				break;
 			}
-#endif
 			
 			if ((definition->flags&_monster_is_alien) ||
 				((static_world->environment_flags&_environment_rebellion) && !MONSTER_IS_PLAYER(monster)))
@@ -4081,4 +4078,86 @@ XML_ElementParser *DamageKicks_GetParser()
 	DamageKicksParser.AddChild(&DamageKickParser);
 	
 	return &DamageKicksParser;
+}
+
+class XML_MonsterParser : public XML_ElementParser
+{
+	short Index;
+	bool MustBeExterminated;
+
+	bool IndexPresent;
+	bool ValuePresent;
+
+public:
+	bool Start();
+	bool HandleAttribute(const char* Tag, const char* Value);
+	bool AttributesDone();
+	bool ResetValues();
+
+	XML_MonsterParser() : XML_ElementParser("monster") { }
+};
+
+bool XML_MonsterParser::Start()
+{
+	IndexPresent = false;
+	ValuePresent = false;
+
+	return true;
+}
+
+bool XML_MonsterParser::HandleAttribute(const char* Tag, const char* Value)
+{
+	if (StringsEqual(Tag, "Index"))
+	{
+		if (ReadBoundedInt16Value(Value, Index, 0, NUMBER_OF_MONSTER_TYPES-1))
+		{
+			IndexPresent = true;
+			return true;
+		}
+		else return false;
+	}
+	else if (StringsEqual(Tag, "must_be_exterminated"))
+	{
+		if (ReadBooleanValue(Value, MustBeExterminated))
+		{
+			ValuePresent = true;
+			return true;
+		}
+		else return false;
+	}
+	UnrecognizedTag();
+	return false;
+}
+
+bool XML_MonsterParser::AttributesDone()
+{
+	if (!IndexPresent)
+	{
+		AttribsMissing();
+		return false;
+	}
+
+	if (ValuePresent)
+	{
+		fprintf(stderr, "Setting monster_must_be_exterminated[%i] to %s\n", Index, MustBeExterminated ? "true" : "false");
+		monster_must_be_exterminated[Index] = MustBeExterminated;
+	}
+
+	return true;
+}
+
+bool XML_MonsterParser::ResetValues()
+{
+	monster_must_be_exterminated.clear();
+	monster_must_be_exterminated.resize(NUMBER_OF_MONSTER_TYPES, false);
+}
+
+static XML_MonsterParser MonsterParser;
+
+static XML_ElementParser MonstersParser("monsters");
+
+XML_ElementParser* Monsters_GetParser()
+{
+	MonstersParser.AddChild(&MonsterParser);
+	return &MonstersParser;
 }
