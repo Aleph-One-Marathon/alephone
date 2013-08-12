@@ -571,6 +571,7 @@ void update_m1_solo_player_in_terminal(ActionQueues* inActionQueuesToUse)
 {
 	update_player_keys_for_terminal(local_player_index, inActionQueuesToUse->dequeueActionFlags(local_player_index));
 	update_player_for_terminal_mode(local_player_index);
+	sLocalPlayerTicksSinceTerminal = 0;
 }
 
 /* assumes ¶t==1 tick */
