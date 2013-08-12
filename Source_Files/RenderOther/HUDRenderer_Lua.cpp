@@ -440,6 +440,9 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
 		rect.w = font->TextWidth(text);
 		rect.h = font->LineSpacing;
         
+        // FIXME: draw_text doesn't support full RGBA transfer for proper scaling,
+        // so draw blended but unscaled text instead
+#if 0
         if (scale < 0.99 || scale > 1.01)
         {
             SDL_Surface *s2 = SDL_CreateRGBSurface(SDL_SWSURFACE, rect.w, rect.h, m_surface->format->BitsPerPixel, m_surface->format->Rmask, m_surface->format->Gmask, m_surface->format->Bmask, m_surface->format->Amask);
@@ -468,6 +471,7 @@ void HUD_Lua_Class::draw_text(FontSpecifier *font, const char *text,
             SDL_FreeSurface(s3);
         }
         else
+#endif
         {
             SDL_BlitSurface(SDL_GetVideoSurface(), &rect, m_surface, &rect);
             font->Info->draw_text(m_surface, text, strlen(text),
