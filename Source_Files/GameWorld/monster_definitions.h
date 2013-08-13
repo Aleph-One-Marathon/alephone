@@ -167,10 +167,13 @@ enum /* flags */
 	_monster_is_not_afraid_of_lava= 0x1000000,
 	_monster_is_not_afraid_of_goo= 0x2000000,
 	_monster_can_teleport_under_media= 0x4000000,
-	_monster_chooses_weapons_randomly= 0x8000000
+	_monster_chooses_weapons_randomly= 0x8000000,
 	/* monsters unable to open doors have door retry masks of NONE */
 	/* monsters unable to switch levels have min,max ledge deltas of 0 */
 	/* monsters unstopped by bullets have hit frames of NONE */
+
+	// pseudo flag set when reading Marathon 1 physics
+	_monster_weaknesses_cause_soft_death = 0x10000000
 };
 
 enum /* monster speeds (world_distance per tick); also used for projectiles */

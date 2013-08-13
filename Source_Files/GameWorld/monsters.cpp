@@ -1597,7 +1597,7 @@ void damage_monster(
 					}
 					else
 					{
-						if ((damage_kick_definitions[damage->type].death_action == _monster_is_dying_hard || ((FLAG(damage->type)&definition->weaknesses) && !(static_world->environment_flags&_environment_die_hard_to_weakness)) ||
+						if ((damage_kick_definitions[damage->type].death_action == _monster_is_dying_hard || ((FLAG(damage->type)&definition->weaknesses) && !(definition->flags & _monster_weaknesses_cause_soft_death)) ||
 							definition->soft_dying_shape==UNONE) && definition->hard_dying_shape!=UNONE && !(definition->flags&_monster_has_delayed_hard_death))
 						{
 							action= _monster_is_dying_hard;
@@ -3862,6 +3862,8 @@ uint8* unpack_m1_monster_definition(uint8 *Stream, size_t Count)
 		StreamToValue(S, ObjPtr->attack_frequency);
 		StreamToAttackDef(S, ObjPtr->melee_attack);
 		StreamToAttackDef(S, ObjPtr->ranged_attack);
+
+		ObjPtr->flags |= _monster_weaknesses_cause_soft_death;
 	}
 
 	return S;
