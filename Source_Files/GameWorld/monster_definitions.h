@@ -172,8 +172,9 @@ enum /* flags */
 	/* monsters unable to switch levels have min,max ledge deltas of 0 */
 	/* monsters unstopped by bullets have hit frames of NONE */
 
-	// pseudo flag set when reading Marathon 1 physics
-	_monster_weaknesses_cause_soft_death = 0x10000000
+	// pseudo flags set when reading Marathon 1 physics
+	_monster_weaknesses_cause_soft_death = 0x10000000,
+	_monster_screams_when_crushed = 0x20000000,
 };
 
 enum /* monster speeds (world_distance per tick); also used for projectiles */

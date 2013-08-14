@@ -1609,7 +1609,7 @@ void damage_monster(
 						if (definition->flags&_monster_has_delayed_hard_death) monster->vertical_velocity= -1;
 					}
 					
-					if (action==_monster_is_dying_flaming) play_object_sound(monster->object_index, definition->flaming_sound);
+					if (action==_monster_is_dying_flaming || (damage->type == _damage_crushing && (definition->flags & _monster_screams_when_crushed))) play_object_sound(monster->object_index, definition->flaming_sound);
 					set_monster_action(target_index, action);
 					monster_died(target_index); /* orphan projectile, recalculate aggressor paths */
 					
@@ -3864,6 +3864,7 @@ uint8* unpack_m1_monster_definition(uint8 *Stream, size_t Count)
 		StreamToAttackDef(S, ObjPtr->ranged_attack);
 
 		ObjPtr->flags |= _monster_weaknesses_cause_soft_death;
+		ObjPtr->flags |= _monster_screams_when_crushed;
 	}
 
 	return S;
