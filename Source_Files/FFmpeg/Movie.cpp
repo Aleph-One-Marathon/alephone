@@ -71,8 +71,6 @@ extern "C"
 }
 #endif
 
-#include "SDL_ffmpeg.h"
-
 #define MAX_AUDIO_CHANNELS 2
 
 struct libav_vars {
