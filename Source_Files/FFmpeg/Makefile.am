@@ -8,7 +8,7 @@ else
 SDL_FFMPEG = 
 endif
 
-libffmpeg_a_SOURCES = ffcompat.h $(SDL_FFMPEG) Movie.cpp Movie.h
+libffmpeg_a_SOURCES = $(SDL_FFMPEG) Movie.cpp Movie.h
 
 EXTRA_libffmpeg_a_SOURCES = SDL_ffmpeg.c SDL_ffmpeg.h
 
