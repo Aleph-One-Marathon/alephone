@@ -1104,6 +1104,10 @@ void activate_monster(
 	{
 		teleport_object_in(monster->object_index);
 	}
+	else if (definition->flags & _monster_makes_sound_when_activated)
+	{
+		play_object_sound(monster->object_index, definition->activation_sound);
+	}
 	
 	changed_polygon(object->polygon, object->polygon, NONE);
 }
@@ -2496,7 +2500,7 @@ void change_monster_target(
 			{
 				play_object_sound(monster->object_index, definition->friendly_activation_sound);
 			}
-			else
+			else if (!(definition->flags & _monster_makes_sound_when_activated))
 			{
 				if (monster->mode==_monster_unlocked) play_object_sound(monster->object_index, definition->activation_sound);
 			}
@@ -3865,6 +3869,7 @@ uint8* unpack_m1_monster_definition(uint8 *Stream, size_t Count)
 
 		ObjPtr->flags |= _monster_weaknesses_cause_soft_death;
 		ObjPtr->flags |= _monster_screams_when_crushed;
+		ObjPtr->flags |= _monster_makes_sound_when_activated;
 	}
 
 	return S;

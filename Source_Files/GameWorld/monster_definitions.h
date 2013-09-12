@@ -175,6 +175,7 @@ enum /* flags */
 	// pseudo flags set when reading Marathon 1 physics
 	_monster_weaknesses_cause_soft_death = 0x10000000,
 	_monster_screams_when_crushed = 0x20000000,
+	_monster_makes_sound_when_activated = 0x40000000, // instead of when locking on a target
 };
 
 enum /* monster speeds (world_distance per tick); also used for projectiles */
