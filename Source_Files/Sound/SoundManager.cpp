@@ -46,7 +46,7 @@ public:
 		return m_entries.count(index);
 	}
 
-	void Clear() { m_entries.clear(); }
+	void Clear() { m_entries.clear(); m_size = 0; }
 
 private:
 	struct Entry {
