@@ -24,6 +24,8 @@
 
 
 #include "cseries.h"
+#include "csalerts.h"
+#include "Logging.h"
 
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
@@ -271,6 +273,7 @@ bool Movie::Setup()
         return false;
 
     bool success = true;
+    std::string err_msg;
     
 	alephone::Screen *scr = alephone::Screen::instance();
 	view_rect = scr->window_rect();
@@ -282,6 +285,7 @@ bool Movie::Setup()
 										0x00ff0000, 0x0000ff00, 0x000000ff,
 										0);
 	success = (temp_surface != NULL);
+	if (!success) err_msg = "Could not create SDL surface";
 
     Mixer *mx = Mixer::instance();
     
@@ -294,17 +298,20 @@ bool Movie::Setup()
     {
         fmt = av_guess_format(NULL, moviefile.c_str(), NULL);
         success = fmt;
+        if (!success) err_msg = "Could not guess output format";
     }
     if (success)
     {
         av->fmt_ctx = avformat_alloc_context();
         success = av->fmt_ctx;
+        if (!success) err_msg = "Could not allocate movie format context";
     }
     if (success)
     {
         av->fmt_ctx->oformat = fmt;
         strcpy(av->fmt_ctx->filename, moviefile.c_str());
         success = (0 <= avio_open(&av->fmt_ctx->pb, av->fmt_ctx->filename, AVIO_FLAG_WRITE));
+        if (!success) err_msg = "Could not open movie file for writing";
     }
     
     // Open output video stream
@@ -314,11 +321,13 @@ bool Movie::Setup()
     {
         video_codec = avcodec_find_encoder(CODEC_ID_H264);
         success = video_codec;
+        if (!success) err_msg = "Could not find H.264 encoder";
     }
     if (success)
     {
         video_stream = avformat_new_stream(av->fmt_ctx, video_codec);
         success = video_stream;
+        if (!success) err_msg = "Could not open output video stream";
     }
     if (success)
     {
@@ -343,23 +352,28 @@ bool Movie::Setup()
         av_opt_set(video_stream->codec->priv_data, "crf", "23", 0);
         
         success = (0 <= avcodec_open2(video_stream->codec, video_codec, NULL));
+        success = false;
+        if (!success) err_msg = "Could not open video codec";
     }
     if (success)
     {
         av->video_bufsize = view_rect.w * view_rect.h * 4 + 10000;
         av->video_buf = static_cast<uint8_t *>(av_malloc(av->video_bufsize));
         success = av->video_buf;
+        if (!success) err_msg = "Could not allocate video buffer";
     }
     if (success)
     {
         av->video_frame = avcodec_alloc_frame();
         success = av->video_frame;
+        if (!success) err_msg = "Could not allocate video frame";
     }
     if (success)
     {
         int numbytes = avpicture_get_size(video_stream->codec->pix_fmt, view_rect.w, view_rect.h);
         av->video_data = static_cast<uint8_t *>(av_malloc(numbytes));
         success = av->video_data;
+        if (!success) err_msg = "Could not allocate video data buffer";
     }
     if (success)
     {
@@ -373,11 +387,13 @@ bool Movie::Setup()
     {
         audio_codec = avcodec_find_encoder(CODEC_ID_AAC);
         success = audio_codec;
+        if (!success) err_msg = "Could not find AAC encoder";
     }
     if (success)
     {
         audio_stream = avformat_new_stream(av->fmt_ctx, audio_codec);
         success = audio_stream;
+        if (!success) err_msg = "Could not open output audio stream";
     }
     if (success)
     {
@@ -408,25 +424,31 @@ bool Movie::Setup()
             audio_stream->codec->sample_fmt = AV_SAMPLE_FMT_FLTP;
             success = (0 <= avcodec_open2(audio_stream->codec, audio_codec, NULL));
         }
+        if (!success) err_msg = "Could not open audio codec";
     }
     if (success)
     {
         av->audio_frame = avcodec_alloc_frame();
         success = av->audio_frame;
+        if (!success) err_msg = "Could not allocate audio frame";
     }
     if (success)
     {
         av->audio_fifo = av_fifo_alloc(262144);
+        success = av->audio_fifo;
+        if (!success) err_msg = "Could not allocate audio fifo";
     }
     if (success)
     {
         av->audio_data = reinterpret_cast<uint8_t *>(av_malloc(524288));
         success = av->audio_data;
+        if (!success) err_msg = "Could not allocate audio data buffer";
     }
     if (success)
     {
         av->audio_data_conv = reinterpret_cast<uint8_t *>(av_malloc(524288));
         success = av->audio_data_conv;
+        if (!success) err_msg = "Could not allocate audio conversion buffer";
     }
     
     // initialize conversion context
@@ -439,6 +461,7 @@ bool Movie::Setup()
                                      SWS_BILINEAR,
                                      NULL, NULL, NULL);
         success = av->sws_ctx;
+        if (!success) err_msg = "Could not create video conversion context";
     }
     
     // Start movie file
@@ -459,17 +482,23 @@ bool Movie::Setup()
 		fillReady = SDL_CreateSemaphore(1);
 		stillEncoding = true;
 		success = encodeReady && fillReady;
+		if (!success) err_msg = "Could not create movie thread semaphores";
 	}
 	if (success)
 	{
 		encodeThread = SDL_CreateThread(Movie_EncodeThread, this);
 		success = encodeThread;
+		if (!success) err_msg = "Could not create movie encoding thread";
 	}
 	
 	if (!success)
 	{
-	  StopRecording();
-	  alert_user("Your movie could not be exported.");
+		StopRecording();
+		std::string full_msg = "Your movie could not be exported. (";
+		full_msg += err_msg;
+		full_msg += ".)";
+        logError(full_msg.c_str());
+		alert_user(full_msg.c_str());
 	}
     av->inited = success;
 	return success;
