@@ -352,7 +352,6 @@ bool Movie::Setup()
         av_opt_set(video_stream->codec->priv_data, "crf", "23", 0);
         
         success = (0 <= avcodec_open2(video_stream->codec, video_codec, NULL));
-        success = false;
         if (!success) err_msg = "Could not open video codec";
     }
     if (success)
