@@ -33,7 +33,7 @@ boost::shared_ptr<SoundData> ExternalSoundHeader::LoadExternal(FileSpecifier& Fi
 	auto_ptr<Decoder> decoder(Decoder::Get(File));
 	if (!decoder.get()) return p;
 
-	int32 length = decoder->Frames() * decoder->BytesPerFrame();
+	length = decoder->Frames() * decoder->BytesPerFrame();
 	if (!length) return p;
 
 	p = boost::make_shared<SoundData>(length);
