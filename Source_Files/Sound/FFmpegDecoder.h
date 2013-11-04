@@ -20,14 +20,13 @@
  which is included with this source code; it is available online at
  http://www.gnu.org/licenses/gpl.html
 
- Decodes sound files with SDL_ffmpeg
+ Decodes sound files with lbav/ffmpeg
 
 */
 
 #include "Decoder.h"
 
 #ifdef HAVE_FFMPEG
-#include "SDL_ffmpeg.h"
 
 class FFmpegDecoder : public Decoder
 {
@@ -48,14 +47,14 @@ public:
 	bool IsLittleEndian() { return false; }
 #endif
 
-	int32 Frames() { return stream ? stream->frameCount : 0; }
+	int32 Frames();
 
 	FFmpegDecoder();
 	~FFmpegDecoder();
 private:
-	SDL_ffmpegFile *sffile;
-	SDL_ffmpegStream *stream;
-	SDL_ffmpegAudioFrame *frame;
+	struct ffmpeg_vars *av;
+
+	bool GetAudio();
 	
 	float rate;
 	int channels;

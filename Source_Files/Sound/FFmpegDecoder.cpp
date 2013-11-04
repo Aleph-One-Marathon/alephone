@@ -17,111 +17,215 @@
  which is included with this source code; it is available online at
  http://www.gnu.org/licenses/gpl.html
  
- Decodes sound files with SDL_ffmpeg
+ Decodes sound files with libav/ffmpeg
  
  */
 
 #include "FFmpegDecoder.h"
 
 #ifdef HAVE_FFMPEG
+#ifdef __cplusplus
+extern "C"
+{
+#endif
+#include "libavformat/avformat.h"
+#include "libavcodec/avcodec.h"
+#include "libavutil/mathematics.h"
+#include "libavutil/opt.h"
+#include "libavutil/fifo.h"
+#include "libswscale/swscale.h"
+
+    
+// Use audio conversion from Movie.cpp
+extern int convert_audio(int in_samples, int in_channels, int in_stride,
+                         enum AVSampleFormat in_fmt, const uint8_t *in_buf,
+                         int out_samples, int out_channels, int out_stride,
+                         enum AVSampleFormat out_fmt, uint8_t *out_buf);
+    
+
+#ifdef __cplusplus
+}
+#endif
+
+struct ffmpeg_vars {
+    AVFormatContext *ctx;
+    AVStream *stream;
+    uint8_t *temp_data;
+    AVFifoBuffer *fifo;
+    int stream_idx;
+};
+typedef struct ffmpeg_vars ffmpeg_vars_t;
 
 FFmpegDecoder::FFmpegDecoder() :
-	sffile(NULL), stream(NULL), frame(NULL)
+	av(NULL)
 {
+    av = new ffmpeg_vars_t;
+    memset(av, 0, sizeof(ffmpeg_vars_t));
+    
+    av_register_all();
+    avcodec_register_all();
+    av->temp_data = reinterpret_cast<uint8_t *>(av_malloc(262144));
+    av->fifo = av_fifo_alloc(524288);
 }
 
 FFmpegDecoder::~FFmpegDecoder()
 {
 	Close();
+    if (av && av->temp_data)
+        av_free(av->temp_data);
+    if (av && av->fifo)
+        av_fifo_free(av->fifo);
 }
 
 bool FFmpegDecoder::Open(FileSpecifier& File)
 {
 	Close();
-	
-	sffile = SDL_ffmpegOpen(File.GetPath());
-	if (!sffile)
-		return false;
-	
-	SDL_ffmpegSelectAudioStream(sffile, 0);
-	stream = SDL_ffmpegGetAudioStream(sffile, 0);
-	if (!stream)
-	{
-		Close();
-		return false;
-	}
-	
-	SDL_AudioSpec spec = SDL_ffmpegGetAudioSpec(sffile, 0, NULL);
-	rate = spec.freq;
-	channels = spec.channels;
-
-	frame = SDL_ffmpegCreateAudioFrame(sffile, 2 * spec.channels * spec.freq);
-	if (!frame)
-	{
-		Close();
-		return false;
-	}
+    
+    // make sure one-time setup succeeded
+    if (!av || !av->temp_data || !av->fifo)
+        return false;
+    
+    // open the file
+    if (avformat_open_input(&av->ctx, File.GetPath(), NULL, NULL) != 0)
+        return false;
+    
+    // retrieve format info
+    if (avformat_find_stream_info(av->ctx, NULL) < 0)
+    {
+        Close();
+        return false;
+    }
+    
+    // find the audio
+    AVCodec *codec;
+    av->stream_idx = av_find_best_stream(av->ctx, AVMEDIA_TYPE_AUDIO, -1, -1, &codec, 0);
+    if (av->stream_idx < 0)
+    {
+        Close();
+        return false;
+    }
+    av->stream = av->ctx->streams[av->stream_idx];
+    if (avcodec_open2(av->stream->codec, codec, NULL) < 0)
+    {
+        Close();
+        return false;
+    }
+    channels = av->stream->codec->channels;
+    rate = av->stream->codec->sample_rate;
 	
 	return true;
 }
 
 int32 FFmpegDecoder::Decode(uint8* buffer, int32 max_length)
 {
-	if (!frame)
-		return 0;
-
 	int32 total_bytes_read = 0;
-	int32 bytes_read = 0;
+    uint8* cur = buffer;
 	while (total_bytes_read < max_length)
 	{
-		if (frame->size)
-		{
-			// already grabbed data, use it up
-			bytes_read = MIN(frame->size, max_length - total_bytes_read);
-			memcpy(&buffer[total_bytes_read], &frame->buffer[frame->capacity - frame->size], bytes_read);
-			total_bytes_read += bytes_read;
-			frame->size -= bytes_read;
-		}
-		else if (frame->last)
-		{
-			// consumed last of the data
-			break;
-		}
-		else
-		{
-			// time to grab more
-			SDL_ffmpegGetAudioFrame(sffile, frame);
-			if (!frame->size && !frame->last)
-				frame->last = 1;  // error grabbing?				
-		}
-	}
+        int32 fifo_size = av_fifo_size(av->fifo);
+        if (!fifo_size)
+        {
+            if (!GetAudio())
+                break;
+            fifo_size = av_fifo_size(av->fifo);
+        }
+        int bytes_read = std::min(fifo_size, max_length - total_bytes_read);
+        av_fifo_generic_read(av->fifo, cur, bytes_read, NULL);
+        total_bytes_read += bytes_read;
+        cur += bytes_read;
+    }
+    
 	memset(&buffer[total_bytes_read], 0, max_length - total_bytes_read);
-//	return max_length;
-	
 	return total_bytes_read;
 }
 
 void FFmpegDecoder::Rewind()
 {
-	if (frame->last || SDL_ffmpegGetPosition(sffile) > 0)
-		SDL_ffmpegSeek(sffile, 0);
-	frame->size = 0;
-	frame->last = 0;
-}	
+    av_seek_frame(av->ctx, -1, 0, AVSEEK_FLAG_BACKWARD);
+    av_fifo_reset(av->fifo);
+}
 
 void FFmpegDecoder::Close()
 {
-	if (frame)
-	{
-		SDL_ffmpegFreeAudioFrame(frame);
-		frame = NULL;
-	}
-	stream = NULL;
-	if (sffile)
-	{
-		SDL_ffmpegFree(sffile);
-		sffile = NULL;
-	}
+    if (av && av->stream)
+    {
+        avcodec_close(av->stream->codec);
+        av->stream = NULL;
+    }
+    if (av && av->ctx)
+    {
+        avio_close(av->ctx->pb);
+        avformat_free_context(av->ctx);
+        av->ctx = NULL;
+    }
+    if (av && av->fifo)
+        av_fifo_reset(av->fifo);
+}
+
+int32 FFmpegDecoder::Frames()
+{
+    return av->stream->nb_frames;
+}
+
+bool FFmpegDecoder::GetAudio()
+{
+    AVPacket pkt;
+    av_init_packet(&pkt);
+    
+    while (true)
+    {
+        int decode = av_read_frame(av->ctx, &pkt);
+        if (decode < 0)
+            return false;
+        if (pkt.stream_index == av->stream_idx)
+            break;
+        av_free_packet(&pkt);
+    }
+    
+    AVPacket pkt_temp;
+    av_init_packet(&pkt_temp);
+    pkt_temp.data = pkt.data;
+    pkt_temp.size = pkt.size;
+    
+    AVCodecContext *dec_ctx = av->stream->codec;
+    
+    while (pkt_temp.size > 0)
+    {
+        AVFrame frame;
+        avcodec_get_frame_defaults(&frame);
+        int got_frame = 0;
+        int bytes_read = avcodec_decode_audio4(dec_ctx, &frame, &got_frame, &pkt_temp);
+        if (bytes_read < 0)
+        {
+            av_free_packet(&pkt);
+            return false;
+        }
+        if (got_frame && bytes_read > 0)
+        {
+            int channels = dec_ctx->channels;
+            enum AVSampleFormat in_fmt = dec_ctx->sample_fmt;
+            enum AVSampleFormat out_fmt = AV_SAMPLE_FMT_S16;
+            
+            int stride = -1;
+            if (channels > 1 && av_sample_fmt_is_planar(in_fmt))
+                stride = frame.extended_data[1] - frame.extended_data[0];
+
+            int written = convert_audio(frame.nb_samples, channels,
+                                        stride,
+                                        in_fmt, frame.extended_data[0],
+                                        frame.nb_samples, channels,
+                                        -1,
+                                        out_fmt, av->temp_data);
+            
+            av_fifo_generic_write(av->fifo, av->temp_data, written, NULL);
+
+            pkt_temp.data += bytes_read;
+            pkt_temp.size -= bytes_read;
+        }
+    }
+    
+    av_free_packet(&pkt);
+    return true;
 }
 
 #endif
