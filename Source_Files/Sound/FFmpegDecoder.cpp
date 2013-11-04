@@ -53,6 +53,7 @@ struct ffmpeg_vars {
     uint8_t *temp_data;
     AVFifoBuffer *fifo;
     int stream_idx;
+    bool started;
 };
 typedef struct ffmpeg_vars ffmpeg_vars_t;
 
@@ -141,8 +142,12 @@ int32 FFmpegDecoder::Decode(uint8* buffer, int32 max_length)
 
 void FFmpegDecoder::Rewind()
 {
-    av_seek_frame(av->ctx, -1, 0, AVSEEK_FLAG_BACKWARD);
-    av_fifo_reset(av->fifo);
+    if (av->started)
+    {
+        av_seek_frame(av->ctx, -1, 0, AVSEEK_FLAG_BACKWARD);
+        av_fifo_reset(av->fifo);
+        av->started = false;
+    }
 }
 
 void FFmpegDecoder::Close()
@@ -160,6 +165,8 @@ void FFmpegDecoder::Close()
     }
     if (av && av->fifo)
         av_fifo_reset(av->fifo);
+    if (av)
+        av->started = false;
 }
 
 int32 FFmpegDecoder::Frames()
@@ -182,6 +189,7 @@ bool FFmpegDecoder::GetAudio()
         av_free_packet(&pkt);
     }
     
+    av->started = true;
     AVPacket pkt_temp;
     av_init_packet(&pkt_temp);
     pkt_temp.data = pkt.data;
