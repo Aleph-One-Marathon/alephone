@@ -79,6 +79,9 @@ struct graphics_preferences_data
 	int16 software_alpha_blending;
 
 	bool hog_the_cpu;
+
+	// H.264 video export quality
+	int16 movie_export_crf;
 };
 
 struct serial_number_data

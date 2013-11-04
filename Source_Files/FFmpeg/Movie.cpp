@@ -27,6 +27,8 @@
 #include "csalerts.h"
 #include "Logging.h"
 
+#include <boost/lexical_cast.hpp>
+
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #endif
@@ -35,6 +37,7 @@
 #include "interface.h"
 #include "screen.h"
 #include "Mixer.h"
+#include "preferences.h"
 
 Movie* Movie::m_instance = NULL;
 
@@ -349,7 +352,9 @@ bool Movie::Setup()
         video_stream->codec->b_frame_strategy = 2;
         video_stream->codec->gop_size = TICKS_PER_SECOND/2;
         av_opt_set(video_stream->codec->priv_data, "preset", "slow", 0);
-        av_opt_set(video_stream->codec->priv_data, "crf", "23", 0);
+        
+        std::string crf = boost::lexical_cast<std::string>(graphics_preferences->movie_export_crf);
+        av_opt_set(video_stream->codec->priv_data, "crf", crf.c_str(), 0);
         
         success = (0 <= avcodec_open2(video_stream->codec, video_codec, NULL));
         if (!success) err_msg = "Could not open video codec";
