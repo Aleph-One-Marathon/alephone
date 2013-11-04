@@ -117,6 +117,9 @@ int convert_audio(int in_samples, int in_channels, int in_stride,
     int in_bps;
     switch (in_fmt)
     {
+        case AV_SAMPLE_FMT_U8:
+            in_bps = 1;
+            break;
         case AV_SAMPLE_FMT_S16:
         case AV_SAMPLE_FMT_S16P:
             in_bps = 2;
@@ -157,6 +160,18 @@ int convert_audio(int in_samples, int in_channels, int in_stride,
                        in_samples * in_bps);
         else
             memcpy(out_buf, in_buf, in_bytes);
+    }
+    else if (in_fmt == AV_SAMPLE_FMT_U8)
+    {
+        const uint8 *ib = reinterpret_cast<const uint8 *>(in_buf);
+        if (out_fmt == AV_SAMPLE_FMT_S16)
+        {
+            int16 *ob = reinterpret_cast<int16 *>(out_buf);
+            for (int i = 0; i < in_samples * in_channels; i++)
+                ob[i] = (ib[i] << 8) + ib[i] - 32768;
+        }
+        else
+            return 0;   // unsupported conversion
     }
     else if (in_fmt == AV_SAMPLE_FMT_S16)
     {
