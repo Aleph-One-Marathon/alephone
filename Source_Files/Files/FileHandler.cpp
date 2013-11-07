@@ -721,6 +721,11 @@ static string local_path_separators(const char *path)
 // Traverse search path, look for file given relative path name
 bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
 {
+	if (*NameWithPath == '\0') {
+		err = ENOENT;
+		return false;
+	}
+
 	FileSpecifier full_path;
 	string rel_path = local_path_separators(NameWithPath);
 
@@ -740,6 +745,11 @@ bool FileSpecifier::SetNameWithPath(const char *NameWithPath)
 
 bool FileSpecifier::SetNameWithPath(const char* NameWithPath, const DirectorySpecifier& Directory) 
 {
+	if (*NameWithPath == '\0') {
+		err = ENOENT;
+		return false;
+	}
+    
 	FileSpecifier full_path;
 	string rel_path = local_path_separators(NameWithPath);
 	
