@@ -1396,7 +1396,6 @@
 		271EE3F917812CED00CBAD98 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
 		271EE3FB17812CED00CBAD98 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
 		271EE3FD17812CED00CBAD98 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
-		271EE3FF17812CED00CBAD98 /* x264.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
 		2739B492101B862A00CC8098 /* Shape_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2739B490101B862A00CC8098 /* Shape_Blitter.cpp */; };
 		2739B493101B862A00CC8098 /* Shape_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2739B491101B862A00CC8098 /* Shape_Blitter.h */; };
 		2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
@@ -1432,29 +1431,22 @@
 		27A7A3E417812D2F00461252 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
 		27A7A3E517812D2F00461252 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
 		27A7A3E617812D3000461252 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
-		27A7A3EF17812D6900461252 /* x264.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
-		27A7A3F017812D6A00461252 /* x264.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
-		27A7A3F117812D6A00461252 /* x264.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
 		27A7A4611781318C00461252 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
 		27A7A4621781318C00461252 /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
 		27A7A4631781318C00461252 /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
 		27A7A4641781318C00461252 /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
-		27A7A4651781318C00461252 /* x264.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
 		27A7A4661781319800461252 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
 		27A7A4671781319800461252 /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
 		27A7A4681781319800461252 /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
 		27A7A4691781319800461252 /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
-		27A7A46A1781319800461252 /* x264.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
 		27A7A46B178131A500461252 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
 		27A7A46C178131A500461252 /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
 		27A7A46D178131A500461252 /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
 		27A7A46E178131A500461252 /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
-		27A7A46F178131A500461252 /* x264.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
 		27A7A4701781322B00461252 /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F617812CED00CBAD98 /* avcodec.framework */; };
 		27A7A4711781322B00461252 /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3F817812CED00CBAD98 /* avformat.framework */; };
 		27A7A4721781322B00461252 /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FA17812CED00CBAD98 /* avutil.framework */; };
 		27A7A4731781322B00461252 /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FC17812CED00CBAD98 /* swscale.framework */; };
-		27A7A4741781322B00461252 /* x264.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 271EE3FE17812CED00CBAD98 /* x264.framework */; };
 		27A7A47C1781335C00461252 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4791781335C00461252 /* Movie.h */; };
 		27A7A47D1781335C00461252 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A47A1781335C00461252 /* SDL_ffmpeg.h */; };
 		27A7A47F1781335C00461252 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27A7A4791781335C00461252 /* Movie.h */; };
@@ -1964,7 +1956,6 @@
 				27A7A46C178131A500461252 /* avformat.framework in CopyFiles */,
 				27A7A46D178131A500461252 /* avutil.framework in CopyFiles */,
 				27A7A46E178131A500461252 /* swscale.framework in CopyFiles */,
-				27A7A46F178131A500461252 /* x264.framework in CopyFiles */,
 				2718502114392536007CD65B /* freetype.framework in CopyFiles */,
 				2718502214392536007CD65B /* jpeg.framework in CopyFiles */,
 				2718502314392536007CD65B /* png.framework in CopyFiles */,
@@ -1987,7 +1978,6 @@
 				27A7A4671781319800461252 /* avformat.framework in CopyFiles */,
 				27A7A4681781319800461252 /* avutil.framework in CopyFiles */,
 				27A7A4691781319800461252 /* swscale.framework in CopyFiles */,
-				27A7A46A1781319800461252 /* x264.framework in CopyFiles */,
 				27185256143931DC007CD65B /* freetype.framework in CopyFiles */,
 				27185257143931DC007CD65B /* jpeg.framework in CopyFiles */,
 				27185258143931DC007CD65B /* png.framework in CopyFiles */,
@@ -2010,7 +2000,6 @@
 				27A7A4621781318C00461252 /* avformat.framework in CopyFiles */,
 				27A7A4631781318C00461252 /* avutil.framework in CopyFiles */,
 				27A7A4641781318C00461252 /* swscale.framework in CopyFiles */,
-				27A7A4651781318C00461252 /* x264.framework in CopyFiles */,
 				2718548914395833007CD65B /* freetype.framework in CopyFiles */,
 				2718548A14395833007CD65B /* jpeg.framework in CopyFiles */,
 				2718548B14395833007CD65B /* png.framework in CopyFiles */,
@@ -2033,7 +2022,6 @@
 				27A7A4711781322B00461252 /* avformat.framework in CopyFiles */,
 				27A7A4721781322B00461252 /* avutil.framework in CopyFiles */,
 				27A7A4731781322B00461252 /* swscale.framework in CopyFiles */,
-				27A7A4741781322B00461252 /* x264.framework in CopyFiles */,
 				2759FB3510D7118B000204DD /* freetype.framework in CopyFiles */,
 				2759FB2A10D71160000204DD /* jpeg.framework in CopyFiles */,
 				2759FB2610D71158000204DD /* png.framework in CopyFiles */,
@@ -2069,7 +2057,6 @@
 		271EE3F817812CED00CBAD98 /* avformat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avformat.framework; sourceTree = "<group>"; };
 		271EE3FA17812CED00CBAD98 /* avutil.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avutil.framework; sourceTree = "<group>"; };
 		271EE3FC17812CED00CBAD98 /* swscale.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = swscale.framework; sourceTree = "<group>"; };
-		271EE3FE17812CED00CBAD98 /* x264.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = x264.framework; sourceTree = "<group>"; };
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
 		2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rwops_zzip.c; sourceTree = "<group>"; };
@@ -2609,7 +2596,6 @@
 				27A7A3A817812D2100461252 /* avformat.framework in Frameworks */,
 				27A7A3DC17812D2700461252 /* avutil.framework in Frameworks */,
 				27A7A3E417812D2F00461252 /* swscale.framework in Frameworks */,
-				27A7A3EF17812D6900461252 /* x264.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2635,7 +2621,6 @@
 				27A7A3A917812D2200461252 /* avformat.framework in Frameworks */,
 				27A7A3DD17812D2800461252 /* avutil.framework in Frameworks */,
 				27A7A3E617812D3000461252 /* swscale.framework in Frameworks */,
-				27A7A3F017812D6A00461252 /* x264.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2661,7 +2646,6 @@
 				27A7A3AA17812D2200461252 /* avformat.framework in Frameworks */,
 				27A7A3DE17812D2800461252 /* avutil.framework in Frameworks */,
 				27A7A3E517812D2F00461252 /* swscale.framework in Frameworks */,
-				27A7A3F117812D6A00461252 /* x264.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2687,7 +2671,6 @@
 				271EE3F917812CED00CBAD98 /* avformat.framework in Frameworks */,
 				271EE3FB17812CED00CBAD98 /* avutil.framework in Frameworks */,
 				271EE3FD17812CED00CBAD98 /* swscale.framework in Frameworks */,
-				271EE3FF17812CED00CBAD98 /* x264.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2950,7 +2933,6 @@
 				271EE3F817812CED00CBAD98 /* avformat.framework */,
 				271EE3FA17812CED00CBAD98 /* avutil.framework */,
 				271EE3FC17812CED00CBAD98 /* swscale.framework */,
-				271EE3FE17812CED00CBAD98 /* x264.framework */,
 			);
 			name = Frameworks;
 			path = /Library/Frameworks;
