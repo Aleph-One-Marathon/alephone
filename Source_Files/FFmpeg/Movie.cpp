@@ -266,7 +266,7 @@ Movie::Movie() :
 void Movie::PromptForRecording()
 {
 	FileSpecifier dst_file;
-	if (!dst_file.WriteDialog(_typecode_movie, "EXPORT FILM", "Untitled Movie.mp4"))
+	if (!dst_file.WriteDialog(_typecode_movie, "EXPORT FILM", "Untitled Movie.webm"))
 		return;
 	StartRecording(dst_file.GetPath());
 }
@@ -314,9 +314,9 @@ bool Movie::Setup()
     AVOutputFormat *fmt;
     if (success)
     {
-        fmt = av_guess_format(NULL, moviefile.c_str(), NULL);
+        fmt = av_guess_format("webm", NULL, NULL);
         success = fmt;
-        if (!success) err_msg = "Could not guess output format";
+        if (!success) err_msg = "Could not find output format";
     }
     if (success)
     {
@@ -337,9 +337,9 @@ bool Movie::Setup()
     AVStream *video_stream;
     if (success)
     {
-        video_codec = avcodec_find_encoder(CODEC_ID_H264);
+        video_codec = avcodec_find_encoder(CODEC_ID_VP8);
         success = video_codec;
-        if (!success) err_msg = "Could not find H.264 encoder";
+        if (!success) err_msg = "Could not find VP8 encoder";
     }
     if (success)
     {
@@ -363,13 +363,11 @@ bool Movie::Setup()
         av->video_stream_idx = video_stream->index;
         
         // tuning options
-        video_stream->codec->max_b_frames = 2;
-        video_stream->codec->b_frame_strategy = 2;
-        video_stream->codec->gop_size = TICKS_PER_SECOND/2;
-        av_opt_set(video_stream->codec->priv_data, "preset", "slow", 0);
-        
-        std::string crf = boost::lexical_cast<std::string>(graphics_preferences->movie_export_crf);
-        av_opt_set(video_stream->codec->priv_data, "crf", crf.c_str(), 0);
+        // std::string crf = boost::lexical_cast<std::string>(graphics_preferences->movie_export_crf);
+        video_stream->codec->bit_rate = 10*1024*1024;
+        video_stream->codec->qmin = 0;
+        video_stream->codec->qmax = 50;
+        av_opt_set(video_stream->codec->priv_data, "crf", "10", 0);
         
         success = (0 <= avcodec_open2(video_stream->codec, video_codec, NULL));
         if (!success) err_msg = "Could not open video codec";
@@ -404,9 +402,9 @@ bool Movie::Setup()
     AVStream *audio_stream;
     if (success)
     {
-        audio_codec = avcodec_find_encoder(CODEC_ID_AAC);
+        audio_codec = avcodec_find_encoder(CODEC_ID_VORBIS);
         success = audio_codec;
-        if (!success) err_msg = "Could not find AAC encoder";
+        if (!success) err_msg = "Could not find Vorbis encoder";
     }
     if (success)
     {
@@ -428,7 +426,9 @@ bool Movie::Setup()
         av->audio_stream_idx = audio_stream->index;
         
         // tuning options
-        // audio_stream->codec->bit_rate = 131072;
+        int qscale = 6;
+        audio_stream->codec->global_quality = audio_stream->quality = FF_QP2LAMBDA * qscale;
+        audio_stream->codec->flags |= CODEC_FLAG_QSCALE;
         
         // find correct sample format
         audio_stream->codec->sample_fmt = AV_SAMPLE_FMT_S16;
@@ -631,6 +631,12 @@ void Movie::EncodeAudio(bool last)
             if (0 == avcodec_encode_audio2(acodec, &pkt, av->audio_frame, &got_pkt)
                 && got_pkt)
             {
+                if (acodec->coded_frame->pts != AV_NOPTS_VALUE)
+                {
+                    pkt.pts = av_rescale_q(acodec->coded_frame->pts,
+                                           acodec->time_base,
+                                           astream->time_base);
+                }
                 pkt.stream_index = astream->index;
                 pkt.flags |= AV_PKT_FLAG_KEY;
                 av_interleaved_write_frame(av->fmt_ctx, &pkt);
