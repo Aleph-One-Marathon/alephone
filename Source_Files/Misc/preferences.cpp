@@ -2223,7 +2223,8 @@ void write_preferences(
 	fprintf(F,"  use_npot=\"%s\"\n", BoolString(graphics_preferences->OGL_Configure.Use_NPOT));
 	fprintf(F,"  double_corpse_limit=\"%s\"\n", BoolString(graphics_preferences->double_corpse_limit));
 	fprintf(F,"  hog_the_cpu=\"%s\"\n", BoolString(graphics_preferences->hog_the_cpu));
-	fprintf(F,"  movie_export_crf=\"%hd\"\n",graphics_preferences->movie_export_crf);
+	fprintf(F,"  movie_export_video_quality=\"%hd\"\n",graphics_preferences->movie_export_video_quality);
+	fprintf(F,"  movie_export_audio_quality=\"%hd\"\n",graphics_preferences->movie_export_audio_quality);
 	fprintf(F,">\n");
 	fprintf(F,"  <void>\n");
 	WriteColor(F,"    ",graphics_preferences->OGL_Configure.VoidColor,"\n");
@@ -2440,7 +2441,8 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 
 	preferences->software_alpha_blending = _sw_alpha_off;
 
-	preferences->movie_export_crf = 23;
+	preferences->movie_export_video_quality = 50;
+	preferences->movie_export_audio_quality = 50;
 }
 
 static void default_serial_number_preferences(serial_number_data *preferences)
@@ -3291,9 +3293,13 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	{
 		return ReadBooleanValue(Value, graphics_preferences->hog_the_cpu);
 	}
-	else if (StringsEqual(Tag,"movie_export_crf"))
+	else if (StringsEqual(Tag,"movie_export_video_quality"))
 	{
-		return ReadInt16Value(Value, graphics_preferences->movie_export_crf);
+		return ReadBoundedInt16Value(Value, graphics_preferences->movie_export_video_quality, 0, 100);
+	}
+	else if (StringsEqual(Tag,"movie_export_audio_quality"))
+	{
+		return ReadBoundedInt16Value(Value, graphics_preferences->movie_export_audio_quality, 0, 100);
 	}
 	else if (StringsEqual(Tag,"use_directx_backend"))
 	{

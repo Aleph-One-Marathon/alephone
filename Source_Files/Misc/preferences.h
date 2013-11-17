@@ -80,8 +80,8 @@ struct graphics_preferences_data
 
 	bool hog_the_cpu;
 
-	// H.264 video export quality
-	int16 movie_export_crf;
+	int16 movie_export_video_quality;
+    int16 movie_export_audio_quality;
 };
 
 struct serial_number_data

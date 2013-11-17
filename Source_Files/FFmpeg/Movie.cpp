@@ -250,6 +250,34 @@ int convert_audio(int in_samples, int in_channels, int in_stride,
 }
 #endif
 
+int ScaleQuality(int quality, int zeroLevel, int fiftyLevel, int hundredLevel)
+{
+    switch (quality)
+    {
+        case 50:
+            return fiftyLevel;
+        case 100:
+            return hundredLevel;
+        case 0:
+            return zeroLevel;
+    }
+    
+    float min, diff, frac;
+    if (quality < 50)
+    {
+        min = zeroLevel;
+        diff = fiftyLevel - zeroLevel;
+        frac = quality / 50.0f;
+    }
+    else
+    {
+        min = fiftyLevel;
+        diff = hundredLevel - fiftyLevel;
+        frac = (quality - 50) / 50.0f;
+    }
+    return min + (diff * frac);
+}
+
 Movie::Movie() :
   moviefile(""),
   temp_surface(NULL),
@@ -363,11 +391,12 @@ bool Movie::Setup()
         av->video_stream_idx = video_stream->index;
         
         // tuning options
-        // std::string crf = boost::lexical_cast<std::string>(graphics_preferences->movie_export_crf);
-        video_stream->codec->bit_rate = 10*1024*1024;
-        video_stream->codec->qmin = 0;
-        video_stream->codec->qmax = 50;
-        av_opt_set(video_stream->codec->priv_data, "crf", "10", 0);
+        int vq = graphics_preferences->movie_export_video_quality;
+        video_stream->codec->bit_rate = ScaleQuality(vq, 100*1024, 1024*1024, 10*1024*1024);
+        video_stream->codec->qmin = ScaleQuality(vq, 10, 4, 0);
+        video_stream->codec->qmax = ScaleQuality(vq, 63, 63, 50);
+        std::string crf = boost::lexical_cast<std::string>(ScaleQuality(vq, 63, 10, 4));
+        av_opt_set(video_stream->codec->priv_data, "crf", crf.c_str(), 0);
         
         success = (0 <= avcodec_open2(video_stream->codec, video_codec, NULL));
         if (!success) err_msg = "Could not open video codec";
@@ -426,8 +455,8 @@ bool Movie::Setup()
         av->audio_stream_idx = audio_stream->index;
         
         // tuning options
-        int qscale = 6;
-        audio_stream->codec->global_quality = audio_stream->quality = FF_QP2LAMBDA * qscale;
+        int aq = graphics_preferences->movie_export_audio_quality;
+        audio_stream->codec->global_quality = audio_stream->quality = FF_QP2LAMBDA * (aq / 10);
         audio_stream->codec->flags |= CODEC_FLAG_QSCALE;
         
         // find correct sample format
