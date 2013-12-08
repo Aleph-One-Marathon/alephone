@@ -482,9 +482,15 @@ static int IsFinderLaunch(const int argc, char **argv)
     return 0;  /* not a Finder launch. */
 }
 
+extern bool force_software_gamma;
+
 /* Main entry point to executable - should *not* be SDL_main! */
 int main (int argc, char **argv)
 {
+    /* Disable gamma under 10.9 */
+    if (IsTenPointNineOrLater())
+        force_software_gamma = true;
+    
     /* Copy the arguments into a global variable */
     if (IsFinderLaunch(argc, argv)) {
         gArgv = (char **) SDL_malloc(sizeof (char *) * 2);

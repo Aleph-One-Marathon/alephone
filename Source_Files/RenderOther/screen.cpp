@@ -102,6 +102,7 @@ uint16 default_gamma_g[256];
 uint16 default_gamma_b[256];
 bool software_gamma = false;
 bool software_gamma_tested = false;
+bool force_software_gamma = false;
 uint16 current_gamma_r[256];
 uint16 current_gamma_g[256];
 uint16 current_gamma_b[256];
@@ -1473,7 +1474,7 @@ void initialize_gamma(void)
 {
 	if (!default_gamma_inited) {
 		default_gamma_inited = true;
-		if (SDL_GetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b))
+		if (force_software_gamma || SDL_GetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b))
 		{
 			software_gamma = true;
 			software_gamma_tested = true;
@@ -1489,7 +1490,7 @@ void initialize_gamma(void)
 
 void restore_gamma(void)
 {
-    if (!option_nogamma && bit_depth > 8 && default_gamma_inited && !software_gamma)
+    if (!option_nogamma && bit_depth > 8 && default_gamma_inited && !software_gamma && !force_software_gamma)
         SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b);
 }
 
@@ -1497,7 +1498,7 @@ void build_direct_color_table(struct color_table *color_table, short bit_depth)
 {
 	if (!option_nogamma && !software_gamma_tested)
 	{
-		if (SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b)) {
+		if (force_software_gamma || SDL_SetGammaRamp(default_gamma_r, default_gamma_g, default_gamma_b)) {
 			software_gamma = true;
 			software_gamma_tested = true;
 			for (int i = 0; i < 256; ++i) {
@@ -1561,7 +1562,7 @@ void animate_screen_clut(struct color_table *color_table, bool full_screen)
 			current_gamma_g[i] = color_table->colors[i].green;
 			current_gamma_b[i] = color_table->colors[i].blue;
 		}
-		bool sw_gamma = software_gamma || Movie::instance()->IsRecording();
+		bool sw_gamma = software_gamma || force_software_gamma || Movie::instance()->IsRecording();
 		if (!option_nogamma && !sw_gamma)
 			SDL_SetGammaRamp(current_gamma_r, current_gamma_g, current_gamma_b);
 		else if (sw_gamma)
