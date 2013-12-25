@@ -827,10 +827,10 @@ enum /* environment flags */
 	_environment_glue_m1= 0x0010, // handle glue polygons like Marathon 1
 	_environment_ouch_m1= 0x0020, // the floor is lava
 	_environment_rebellion_m1= 0x0040,  // use Marathon 1 rebellion (don't strip items/health)
-	_environment_song_index_m1 = 0x0100, // play music
-	_environment_terminals_stop_time = 0x0200, // solo only
-	_environment_activation_ranges = 0x0400, // Marathon 1 monster activation limits
-	_environment_m1_weapon_pickups = 0x0800,    // you can pick up multiple weapons on TC
+	_environment_song_index_m1 = 0x0080, // play music
+	_environment_terminals_stop_time = 0x0100, // solo only
+	_environment_activation_ranges = 0x0200, // Marathon 1 monster activation limits
+	_environment_m1_weapon_pickups = 0x0400,    // you can pick up multiple weapons on TC
 
 	_environment_network= 0x2000,	// these two pseudo-environments are used to prevent items 
 	_environment_single_player= 0x4000 // from arriving in the items.c code.
