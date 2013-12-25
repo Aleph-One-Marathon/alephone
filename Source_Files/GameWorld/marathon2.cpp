@@ -802,7 +802,7 @@ short calculate_level_completion_state(
 	if (completion_state==_level_finished)
 	{
 		/* if this is a rescue mission and more than half of the civilians died, the mission failed */
-		if (static_world->mission_flags&_mission_rescue &&
+		if (static_world->mission_flags&(_mission_rescue|_mission_rescue_m1) &&
 			dynamic_world->current_civilian_causalties>dynamic_world->current_civilian_count/2)
 		{
 			completion_state= _level_failed;

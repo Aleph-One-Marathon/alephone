@@ -813,7 +813,8 @@ enum /* mission flags */
 	_mission_retrieval= 0x0004,
 	_mission_repair= 0x0008,
 	_mission_rescue= 0x0010,
-	_mission_exploration_m1= 0x0020
+	_mission_exploration_m1= 0x0020,
+	_mission_rescue_m1= 0x0040
 };
 
 enum /* environment flags */
@@ -826,7 +827,6 @@ enum /* environment flags */
 	_environment_glue_m1= 0x0010, // handle glue polygons like Marathon 1
 	_environment_ouch_m1= 0x0020, // the floor is lava
 	_environment_rebellion_m1= 0x0040,  // use Marathon 1 rebellion (don't strip items/health)
-	_environment_rescue_m1=0x0080, // track civilian "causalties"
 	_environment_song_index_m1 = 0x0100, // play music
 	_environment_terminals_stop_time = 0x0200, // solo only
 	_environment_activation_ranges = 0x0400, // Marathon 1 monster activation limits
