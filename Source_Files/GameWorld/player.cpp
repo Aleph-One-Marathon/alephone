@@ -1848,7 +1848,7 @@ static void remove_dead_player_items(
 				}
 			}
 			
-			if (!dropped) object_was_just_destroyed(_object_is_item, item_type);
+			if (film_profile.count_dead_dropped_items_correctly || !dropped) object_was_just_destroyed(_object_is_item, item_type);
 		}
 
 		player->items[item_type]= NONE;

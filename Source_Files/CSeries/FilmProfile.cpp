@@ -27,6 +27,7 @@ static FilmProfile alephone1_1 = {
 	true, // destroy_players_ball_fix
 	true, // calculate_terminal_lines_correctly
 	true, // key_frame_zero_shrapnel_fix
+	true, // count_dead_dropped_items_correctly
 };
 
 static FilmProfile alephone1_0 = {
@@ -54,6 +55,7 @@ static FilmProfile alephone1_0 = {
 	false, // destroy_players_ball_fix
 	false, // calculate_terminal_lines_correctly
 	false, // key_frame_zero_shrapnel_fix
+	false, // count_dead_dropped_items_correctly
 };
 
 static FilmProfile marathon2 = {
@@ -81,6 +83,7 @@ static FilmProfile marathon2 = {
 	false, // destroy_players_ball_fix
 	false, // calculate_terminal_lines_correctly
 	false, // key_frame_zero_shrapnel_fix
+	false, // count_dead_dropped_items_correctly
 };
 
 static FilmProfile marathon_infinity = {
@@ -108,6 +111,7 @@ static FilmProfile marathon_infinity = {
 	false, // destroy_players_ball_fix
 	false, // calculate_terminal_lines_correctly
 	false, // key_frame_zero_shrapnel_fix
+	false, // count_dead_dropped_items_correctly
 };
 
 FilmProfile film_profile = alephone1_1;

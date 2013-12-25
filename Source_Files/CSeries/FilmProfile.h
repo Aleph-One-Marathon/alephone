@@ -86,6 +86,7 @@ struct FilmProfile
 	bool destroy_players_ball_fix;
 	bool calculate_terminal_lines_correctly;
 	bool key_frame_zero_shrapnel_fix; // for M1 lookers and simulacra
+	bool count_dead_dropped_items_correctly;
 };
 
 extern FilmProfile film_profile;
