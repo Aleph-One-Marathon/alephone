@@ -84,8 +84,13 @@ running backwards shouldn’t mean doom in a fistfight
 // LP addition:
 #include "ChaseCam.h"
 #include "Packing.h"
+#include "BStream.h"
 
 #include <string.h>
+
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/stream_buffer.hpp>
+namespace io = boost::iostreams;
 
 #ifdef env68k
 #pragma segment player
@@ -1099,3 +1104,26 @@ void init_physics_constants()
 
 // LP addition: get number of physics models (restricted sense)
 size_t get_number_of_physics_models() {return NUMBER_OF_PHYSICS_MODELS;}
+
+void unpack_m1_physics_state(uint8* data, size_t length)
+{
+	io::stream_buffer<io::array_source> sb(reinterpret_cast<char*>(data), length);
+	BIStreamBE s(&sb);
+
+	int16 was_m1;
+	s >> was_m1;
+	physics_constants_are_m1 = (was_m1 > 0);
+}
+
+size_t save_m1_physics_state()
+{
+	return (physics_constants_are_m1 ? 2 : 0); // int16
+}
+
+void pack_m1_physics_state(uint8* data, size_t length)
+{
+	io::stream_buffer<io::array_sink> sb(reinterpret_cast<char*>(data), length);
+	BOStreamBE s(&sb);
+
+	s << static_cast<int16>(physics_constants_are_m1 ? 1 : 0);
+}
