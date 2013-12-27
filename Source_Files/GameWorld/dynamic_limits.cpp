@@ -45,7 +45,8 @@ static uint16 m2_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 	20,	// Paths for NPC's to follow (determines how many may be active)
 	32,	// Projectiles
 	64,	// Currently-active effects (blood splatters, explosions, etc.)
-	72,	// Number of objects to render
+	1024,	// Number of objects to render (was really 72, but
+		// doesn't affect film playback)
 	16,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
 	64	// Global collision buffer (projectiles with other objects)
 };
