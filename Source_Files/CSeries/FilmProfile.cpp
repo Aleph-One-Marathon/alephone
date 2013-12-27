@@ -10,7 +10,7 @@ static FilmProfile alephone1_1 = {
 	true, // long_distance_physics
 	true, // animate_items
 	true, // inexplicable_pin_change
-	true, // increased_dynamic_limits
+	false, // increased_dynamic_limits
 	true, // line_is_obstructed_fix
 	false, // a1_smg
 	true, // infinity_smg
