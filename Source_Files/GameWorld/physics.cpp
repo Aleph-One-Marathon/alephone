@@ -79,18 +79,16 @@ running backwards shouldn’t mean doom in a fistfight
 #include "interface.h"
 #include "monsters.h"
 
+#define DONT_REPEAT_DEFINITIONS
+#include "monster_definitions.h"
+
 #include "media.h"
 
 // LP addition:
 #include "ChaseCam.h"
 #include "Packing.h"
-#include "BStream.h"
 
 #include <string.h>
-
-#include <boost/iostreams/device/array.hpp>
-#include <boost/iostreams/stream_buffer.hpp>
-namespace io = boost::iostreams;
 
 #ifdef env68k
 #pragma segment player
@@ -131,8 +129,6 @@ static bool saved_divergence_warning;
 #endif
 
 static struct physics_constants physics_models[NUMBER_OF_PHYSICS_MODELS];
-
-bool physics_constants_are_m1 = false;
 
 /* every other field in the player structure should be valid when this call is made */
 void initialize_player_physics_variables(
@@ -269,7 +265,7 @@ void accelerate_player(
 	variables->external_velocity.k+= WORLD_TO_FIXED(vertical_velocity);
 	variables->external_velocity.k= PIN(variables->external_velocity.k, -constants->terminal_velocity, constants->terminal_velocity);
 	
-	if (physics_constants_are_m1)
+	if (get_monster_definition_external(_monster_marine)->flags & _monster_can_grenade_climb)
 	{
 		variables->external_velocity.i= (cosine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
 		variables->external_velocity.j= (sine_table[direction]*velocity)>>(TRIG_SHIFT+WORLD_FRACTIONAL_BITS-FIXED_FRACTIONAL_BITS);
@@ -846,7 +842,7 @@ static void physics_update(
 	}
 
 	_fixed small_enough_velocity;
-	if (physics_constants_are_m1) {
+	if (get_monster_definition_external(_monster_marine)->flags & _monster_can_grenade_climb) {
 		_fixed gravity= constants->gravitational_acceleration;		
 		if (static_world->environment_flags&_environment_low_gravity) gravity>>= 1;
 		if (variables->flags&_FEET_BELOW_MEDIA_BIT) gravity>>= 1;
@@ -998,8 +994,6 @@ uint8 *unpack_physics_constants(uint8 *Stream, physics_constants *Objects, size_
 		
 		StreamToValue(S,ObjPtr->half_camera_separation);
 	}
-
-	physics_constants_are_m1 = false;
 	
 	assert((S - Stream) == static_cast<ptrdiff_t>(Count*SIZEOF_physics_constants));
 	return S;
@@ -1043,8 +1037,6 @@ uint8* unpack_m1_physics_constants(uint8* Stream, size_t Count)
 		
 		StreamToValue(S,ObjPtr->half_camera_separation);
 	}
-
-	physics_constants_are_m1 = true;
 	
 	return S;
 }
@@ -1099,31 +1091,7 @@ uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t 
 void init_physics_constants()
 {
 	memcpy(physics_models, original_physics_models, sizeof(physics_models));
-	physics_constants_are_m1 = false;
 }
 
 // LP addition: get number of physics models (restricted sense)
 size_t get_number_of_physics_models() {return NUMBER_OF_PHYSICS_MODELS;}
-
-void unpack_m1_physics_state(uint8* data, size_t length)
-{
-	io::stream_buffer<io::array_source> sb(reinterpret_cast<char*>(data), length);
-	BIStreamBE s(&sb);
-
-	int16 was_m1;
-	s >> was_m1;
-	physics_constants_are_m1 = (was_m1 > 0);
-}
-
-size_t save_m1_physics_state()
-{
-	return (physics_constants_are_m1 ? 2 : 0); // int16
-}
-
-void pack_m1_physics_state(uint8* data, size_t length)
-{
-	io::stream_buffer<io::array_sink> sb(reinterpret_cast<char*>(data), length);
-	BOStreamBE s(&sb);
-
-	s << static_cast<int16>(physics_constants_are_m1 ? 1 : 0);
-}

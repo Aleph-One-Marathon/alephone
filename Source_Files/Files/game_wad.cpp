@@ -128,7 +128,6 @@ Feb 15, 2002 (Br'fin (Jeremy Parsons)):
 #include "motion_sensor.h"	// ZZZ for reset_motion_sensor()
 
 #include "Music.h"
-#include "physics_models.h"
 
 #ifdef env68k
 #pragma segment file_io
@@ -1886,10 +1885,6 @@ bool process_map_wad(
 		assert(count*SIZEOF_player_terminal_data==data_length);
 		unpack_player_terminal_data(data,count);
 		
-		data =(uint8 *)extract_type_from_wad(wad, M1_PHYSICS_STATE_TAG, &data_length);
-		if (data_length > 0)
-			unpack_m1_physics_state(data, data_length);
-
 		complete_restoring_level(wad);
 	} else {
 		uint8 *map_index_data;
@@ -2090,7 +2085,6 @@ struct save_game_data save_data[]=
 	{ TERMINAL_STATE_TAG, SIZEOF_player_terminal_data, true }, // false }
 
 	{ LUA_STATE_TAG, sizeof(byte), true },
-	{ M1_PHYSICS_STATE_TAG, sizeof(byte), true },
 };
 
 static uint8 *export_tag_to_global_array_and_size(
@@ -2357,9 +2351,6 @@ static uint8 *tag_to_global_array_and_size(
 		case LUA_STATE_TAG:
 			count= save_lua_states();
 			break;
-		case M1_PHYSICS_STATE_TAG:
-			count= save_m1_physics_state();
-			break;
 		default:
 			assert(false);
 			break;
@@ -2481,9 +2472,6 @@ static uint8 *tag_to_global_array_and_size(
 			break;
 		case LUA_STATE_TAG:
 			pack_lua_states(array, count);
-			break;
-		case M1_PHYSICS_STATE_TAG:
-			pack_m1_physics_state(array, count);
 			break;
 		default:
 			assert(false);

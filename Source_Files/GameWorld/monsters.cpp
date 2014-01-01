@@ -3870,6 +3870,7 @@ uint8* unpack_m1_monster_definition(uint8 *Stream, size_t Count)
 		ObjPtr->flags |= _monster_weaknesses_cause_soft_death;
 		ObjPtr->flags |= _monster_screams_when_crushed;
 		ObjPtr->flags |= _monster_makes_sound_when_activated;
+		ObjPtr->flags |= _monster_can_grenade_climb;
 	}
 
 	return S;

@@ -101,9 +101,4 @@ uint8 *pack_physics_constants(uint8 *Stream, physics_constants *Objects, size_t 
 uint8* unpack_m1_physics_constants(uint8* Stream, size_t Count);
 void init_physics_constants();
 
-// Save/restore whether we started with M1 physics
-void unpack_m1_physics_state(uint8* data, size_t length);
-size_t save_m1_physics_state();
-void pack_m1_physics_state(uint8* data, size_t length);
-
 #endif
