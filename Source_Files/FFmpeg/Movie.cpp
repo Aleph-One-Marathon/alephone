@@ -29,6 +29,15 @@
 
 #include <boost/lexical_cast.hpp>
 
+// for CPU count
+#ifdef HAVE_SYSCONF
+#include <unistd.h>
+#endif
+#ifdef HAVE_SYSCTLBYNAME
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#endif
+
 #ifdef HAVE_OPENGL
 #include "OGL_Headers.h"
 #endif
@@ -75,6 +84,31 @@ extern "C"
 #ifdef __cplusplus
 }
 #endif
+
+// shamelessly stolen from SDL 2.0
+static int get_cpu_count(void)
+{
+    static int cpu_count = 0;
+    if (cpu_count == 0) {
+#if defined(HAVE_SYSCONF) && defined(_SC_NPROCESSORS_ONLN)
+        cpu_count = (int)sysconf(_SC_NPROCESSORS_ONLN);
+#endif
+#ifdef HAVE_SYSCTLBYNAME
+        size_t size = sizeof(cpu_count);
+        sysctlbyname("hw.ncpu", &cpu_count, &size, NULL, 0);
+#endif
+#ifdef __WIN32__
+        SYSTEM_INFO info;
+        GetSystemInfo(&info);
+        cpu_count = info.dwNumberOfProcessors;
+#endif
+        /* There has to be at least 1, right? :) */
+        if (cpu_count <= 0)
+            cpu_count = 1;
+    }
+    return cpu_count;
+}
+
 
 #define MAX_AUDIO_CHANNELS 2
 
@@ -384,6 +418,7 @@ bool Movie::Setup()
         video_stream->codec->time_base = (AVRational){1, TICKS_PER_SECOND};
         video_stream->codec->pix_fmt = PIX_FMT_YUV420P;
         video_stream->codec->flags |= CODEC_FLAG_CLOSED_GOP;
+        video_stream->codec->thread_count = get_cpu_count();
         
         if (av->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
             video_stream->codec->flags |= CODEC_FLAG_GLOBAL_HEADER;
