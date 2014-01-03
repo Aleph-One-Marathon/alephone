@@ -50,9 +50,12 @@ struct FilmProfile
 	// floor/ceiling are reversed
 	bool inexplicable_pin_change;
 
-	// LP increased the dynamic limits
-	bool increased_dynamic_limits;
+	// LP increased the dynamic limits, which persisted through 1.0
+	bool increased_dynamic_limits_1_0;
 
+	// 1.1 reverted number of paths to preserve original AI behavior
+	bool increased_dynamic_limits_1_1;
+    
 	// Infinity has an improved line_is_obstructed
 	bool line_is_obstructed_fix;
 

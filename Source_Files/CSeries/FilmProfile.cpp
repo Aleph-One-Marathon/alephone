@@ -10,7 +10,8 @@ static FilmProfile alephone1_1 = {
 	true, // long_distance_physics
 	true, // animate_items
 	true, // inexplicable_pin_change
-	true, // increased_dynamic_limits
+	false, // increased_dynamic_limits_1_0
+	true, // increased_dynamic_limits_1_1
 	true, // line_is_obstructed_fix
 	false, // a1_smg
 	true, // infinity_smg
@@ -38,7 +39,8 @@ static FilmProfile alephone1_0 = {
 	true, // long_distance_physics
 	true, // animate_items
 	true, // inexplicable_pin_change
-	true, // increased_dynamic_limits
+	true, // increased_dynamic_limits_1_0
+	false, // increased_dynamic_limits_1_1
 	false, // line_is_obstructed_fix
 	true, // a1_smg
 	false, // infinity_smg
@@ -66,7 +68,8 @@ static FilmProfile marathon2 = {
 	false, // long_distance_physics
 	false, // animate_items
 	false, // inexplicable_pin_change
-	false, // increased_dynamic_limits
+	false, // increased_dynamic_limits_1_0
+	false, // increased_dynamic_limits_1_1
 	false, // line_is_obstructed
 	false, // a1_smg
 	false, // infinity_smg
@@ -94,7 +97,8 @@ static FilmProfile marathon_infinity = {
 	false, // long_distance_physics
 	false, // animate_items
 	false, // inexplicable_pin_change
-	false, // increased_dynamic_limits
+	false, // increased_dynamic_limits_1_0
+	false, // increased_dynamic_limits_1_1
 	true, // line_is_obstructed_fix
 	false, // a1_smg
 	true, // infinity_smg

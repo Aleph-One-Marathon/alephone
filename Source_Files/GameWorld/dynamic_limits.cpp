@@ -51,12 +51,25 @@ static uint16 m2_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 	64	// Global collision buffer (projectiles with other objects)
 };
 
-// reasonable defaults
-static uint16 a1_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
+// expanded defaults up to 1.0
+static uint16 a1_1_0_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
 {
 	1024,	// Objects (every possible kind)
 	512,	// NPC's
 	128,	// Paths for NPC's to follow (determines how many may be active)
+	128,	// Projectiles
+	128,	// Currently-active effects (blood splatters, explosions, etc.)
+	1024,	// Number of objects to render
+	64,	// Local collision buffer (target visibility, NPC-NPC collisions, etc.)
+	256	// Global collision buffer (projectiles with other objects)
+};
+
+// 1.1 reverts paths for classic scenario compatibility
+static uint16 a1_1_1_dynamic_limits[NUMBER_OF_DYNAMIC_LIMITS] =
+{
+	1024,	// Objects (every possible kind)
+	512,	// NPC's
+	20,	// Paths for NPC's to follow (determines how many may be active)
 	128,	// Projectiles
 	128,	// Currently-active effects (blood splatters, explosions, etc.)
 	1024,	// Number of objects to render
@@ -70,9 +83,13 @@ static bool dynamic_limits_loaded = false;
 
 void reset_dynamic_limits()
 {
-	if (film_profile.increased_dynamic_limits)
+	if (film_profile.increased_dynamic_limits_1_1)
 	{
-		dynamic_limits.assign(a1_dynamic_limits, a1_dynamic_limits + NUMBER_OF_DYNAMIC_LIMITS);
+		dynamic_limits.assign(a1_1_1_dynamic_limits, a1_1_1_dynamic_limits + NUMBER_OF_DYNAMIC_LIMITS);
+	}
+	else if (film_profile.increased_dynamic_limits_1_0)
+	{
+		dynamic_limits.assign(a1_1_0_dynamic_limits, a1_1_0_dynamic_limits + NUMBER_OF_DYNAMIC_LIMITS);
 	}
 	else
 	{
@@ -209,6 +226,6 @@ uint16 get_dynamic_limit(int which) {
 	}
 	else
 	{
-		return a1_dynamic_limits[which];
+		return a1_1_1_dynamic_limits[which];
 	}
 }
