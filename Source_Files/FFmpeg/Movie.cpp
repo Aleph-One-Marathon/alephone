@@ -491,7 +491,7 @@ bool Movie::Setup()
         
         // tuning options
         int aq = graphics_preferences->movie_export_audio_quality;
-        audio_stream->codec->global_quality = audio_stream->quality = FF_QP2LAMBDA * (aq / 10);
+        audio_stream->codec->global_quality = FF_QP2LAMBDA * (aq / 10);
         audio_stream->codec->flags |= CODEC_FLAG_QSCALE;
         
         // find correct sample format
