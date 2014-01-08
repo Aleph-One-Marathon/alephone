@@ -5914,6 +5914,7 @@
 					/sw/include,
 					"/sw/include/boost-1_35",
 				);
+				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = AppStore/Marathon/Marathon.plist;
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
@@ -6132,6 +6133,7 @@
 					/sw/include,
 					"/sw/include/boost-1_35",
 				);
+				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = "AppStore/Marathon 2/Marathon 2.plist";
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
@@ -6350,6 +6352,7 @@
 					/sw/include,
 					"/sw/include/boost-1_35",
 				);
+				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = "AppStore/Marathon Infinity/Marathon Infinity.plist";
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
@@ -6767,6 +6770,7 @@
 					"/sw/include/boost-1_35",
 					/opt/local/include,
 				);
+				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
 				INFOPLIST_FILE = "Info-AlephOne_SDL.plist";
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
