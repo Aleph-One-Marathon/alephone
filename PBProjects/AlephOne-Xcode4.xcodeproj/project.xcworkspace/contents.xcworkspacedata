@@ -2,9 +2,6 @@
 <Workspace
    version = "1.0">
    <FileRef
-      location = "group:../Info-AlephOne-Xcode4.plist">
-   </FileRef>
-   <FileRef
       location = "self:AlephOne-Xcode4.xcodeproj">
    </FileRef>
 </Workspace>

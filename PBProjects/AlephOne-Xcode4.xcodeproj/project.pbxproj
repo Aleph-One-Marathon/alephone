@@ -23,6 +23,26 @@
 
 /* Begin PBXBuildFile section */
 		270D534C0FCB417500482ED4 /* OGL_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 270D534B0FCB417500482ED4 /* OGL_Blitter.h */; };
+		270F9FD0177687B7009AAE10 /* avcodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; };
+		270F9FD1177687B7009AAE10 /* avcodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; };
+		270F9FD2177687B7009AAE10 /* avcodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; };
+		270F9FD3177687B7009AAE10 /* avcodec.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; };
+		270F9FD4177687B7009AAE10 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCD177687B7009AAE10 /* avformat.framework */; };
+		270F9FD5177687B7009AAE10 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCD177687B7009AAE10 /* avformat.framework */; };
+		270F9FD6177687B7009AAE10 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCD177687B7009AAE10 /* avformat.framework */; };
+		270F9FD7177687B7009AAE10 /* avformat.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCD177687B7009AAE10 /* avformat.framework */; };
+		270F9FD8177687B7009AAE10 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCE177687B7009AAE10 /* avutil.framework */; };
+		270F9FD9177687B7009AAE10 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCE177687B7009AAE10 /* avutil.framework */; };
+		270F9FDA177687B7009AAE10 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCE177687B7009AAE10 /* avutil.framework */; };
+		270F9FDB177687B7009AAE10 /* avutil.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCE177687B7009AAE10 /* avutil.framework */; };
+		270F9FDC177687B7009AAE10 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; };
+		270F9FDD177687B7009AAE10 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; };
+		270F9FDE177687B7009AAE10 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; };
+		270F9FDF177687B7009AAE10 /* swscale.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; };
+		271ADFC618A88B9C0073CB2E /* avcodec.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCC177687B7009AAE10 /* avcodec.framework */; };
+		271ADFC718A88B9C0073CB2E /* avformat.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCD177687B7009AAE10 /* avformat.framework */; };
+		271ADFC818A88B9C0073CB2E /* avutil.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCE177687B7009AAE10 /* avutil.framework */; };
+		271ADFC918A88B9C0073CB2E /* swscale.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 270F9FCF177687B7009AAE10 /* swscale.framework */; };
 		2739B492101B862A00CC8098 /* Shape_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2739B490101B862A00CC8098 /* Shape_Blitter.cpp */; };
 		2739B493101B862A00CC8098 /* Shape_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 2739B491101B862A00CC8098 /* Shape_Blitter.h */; };
 		2759F31B10D5BC9C000204DD /* SDL_rwops_zzip.c in Sources */ = {isa = PBXBuildFile; fileRef = 2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */; };
@@ -46,6 +66,21 @@
 		278497A20FF5C308008DECC8 /* lua_hud_script.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 2784979D0FF5C308008DECC8 /* lua_hud_script.cpp */; };
 		27911B24100073460063ACB6 /* HUDRenderer_Lua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */; };
 		27911B25100073460063ACB6 /* HUDRenderer_Lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 27911B23100073460063ACB6 /* HUDRenderer_Lua.h */; };
+		27928612170F92D20005CD56 /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928610170F92D20005CD56 /* lbitlib.c */; };
+		27928613170F92D20005CD56 /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928610170F92D20005CD56 /* lbitlib.c */; };
+		27928614170F92D20005CD56 /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928610170F92D20005CD56 /* lbitlib.c */; };
+		27928615170F92D20005CD56 /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928610170F92D20005CD56 /* lbitlib.c */; };
+		27928616170F92D20005CD56 /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928611170F92D20005CD56 /* lctype.c */; };
+		27928617170F92D20005CD56 /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928611170F92D20005CD56 /* lctype.c */; };
+		27928618170F92D20005CD56 /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928611170F92D20005CD56 /* lctype.c */; };
+		27928619170F92D20005CD56 /* lctype.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928611170F92D20005CD56 /* lctype.c */; };
+		2792861B170F92DD0005CD56 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 2792861A170F92DD0005CD56 /* lctype.h */; };
+		2792861C170F92DD0005CD56 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 2792861A170F92DD0005CD56 /* lctype.h */; };
+		2792861D170F92DD0005CD56 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 2792861A170F92DD0005CD56 /* lctype.h */; };
+		2792861E170F92DD0005CD56 /* lctype.h in Headers */ = {isa = PBXBuildFile; fileRef = 2792861A170F92DD0005CD56 /* lctype.h */; };
+		279A462518286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
+		279A462618286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
+		279A462718286FAA00F7BFDA /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
 		27CE0843100ECDBC00F59FD1 /* Image_Blitter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */; };
 		27CE0844100ECDBC00F59FD1 /* Image_Blitter.h in Headers */ = {isa = PBXBuildFile; fileRef = 27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */; };
 		27D1A4F312FDF3630085E79C /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
@@ -53,6 +88,24 @@
 		27DC607010917F690062003A /* OGL_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27DC606E10917F690062003A /* OGL_Shader.cpp */; };
 		27DC607110917F690062003A /* OGL_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC606F10917F690062003A /* OGL_Shader.h */; };
 		27DC60C5109218800062003A /* vec3.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC60C4109218800062003A /* vec3.h */; };
+		27E878F3173202F80010F485 /* FFmpegDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E878F1173202F80010F485 /* FFmpegDecoder.cpp */; };
+		27E878F4173202F80010F485 /* FFmpegDecoder.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E878F2173202F80010F485 /* FFmpegDecoder.h */; };
+		27ECF2991698DD7700BE9C35 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2911698DD7700BE9C35 /* Movie.cpp */; };
+		27ECF29A1698DD7700BE9C35 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2911698DD7700BE9C35 /* Movie.cpp */; };
+		27ECF29B1698DD7700BE9C35 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2911698DD7700BE9C35 /* Movie.cpp */; };
+		27ECF29C1698DD7700BE9C35 /* Movie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2911698DD7700BE9C35 /* Movie.cpp */; };
+		27ECF29D1698DD7700BE9C35 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2921698DD7700BE9C35 /* Movie.h */; };
+		27ECF29E1698DD7700BE9C35 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2921698DD7700BE9C35 /* Movie.h */; };
+		27ECF29F1698DD7700BE9C35 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2921698DD7700BE9C35 /* Movie.h */; };
+		27ECF2A01698DD7700BE9C35 /* Movie.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2921698DD7700BE9C35 /* Movie.h */; };
+		27ECF2A11698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2931698DD7700BE9C35 /* SDL_ffmpeg.c */; };
+		27ECF2A21698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2931698DD7700BE9C35 /* SDL_ffmpeg.c */; };
+		27ECF2A31698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2931698DD7700BE9C35 /* SDL_ffmpeg.c */; };
+		27ECF2A41698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */ = {isa = PBXBuildFile; fileRef = 27ECF2931698DD7700BE9C35 /* SDL_ffmpeg.c */; };
+		27ECF2A51698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
+		27ECF2A61698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
+		27ECF2A71698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
+		27ECF2A81698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
@@ -76,9 +129,6 @@
 		AE2FDECC09E934E000A18ABC /* preference_dialogs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */; };
 		AE38D10E0D555A3100FC2082 /* lua_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE38D10C0D555A3100FC2082 /* lua_objects.cpp */; };
 		AE42B4CC0BDBC285003521B7 /* network_microphone_coreaudio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE42B3DC0BDB030B003521B7 /* network_microphone_coreaudio.cpp */; };
-		AE48F3561421900900051D61 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE48F3541421900900051D61 /* Statistics.cpp */; };
-		AE48F3571421900900051D61 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE48F3541421900900051D61 /* Statistics.cpp */; };
-		AE48F3581421900900051D61 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE48F3541421900900051D61 /* Statistics.cpp */; };
 		AE48F3591421900900051D61 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
 		AE48F35A1421900900051D61 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
 		AE48F35B1421900900051D61 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = AE48F3551421900900051D61 /* Statistics.h */; };
@@ -510,17 +560,11 @@
 		AE505CEA141D45E600915344 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AE505CEB141D45E600915344 /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		AE505CEC141D45E600915344 /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
-		AE505CED141D45E600915344 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDF1A111416FE2200183689 /* HTTP.cpp */; };
 		AE505CEF141D45E600915344 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5830B4001E776DE01BA387C /* OpenGL.framework */; };
 		AE505CF0141D45E600915344 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F59FB19D01E780DF01BBE912 /* Cocoa.framework */; };
 		AE505CF1141D45E600915344 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		AE505CF2141D45E600915344 /* SDL_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		AE505CF3141D45E600915344 /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
-		AE505CF4141D45E600915344 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		AE505CF5141D45E600915344 /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		AE505CF6141D45E600915344 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		AE505CF7141D45E600915344 /* mad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		AE505CF8141D45E600915344 /* sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
 		AE505CF9141D45E600915344 /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		AE505CFA141D45E600915344 /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		AE505CFB141D45E600915344 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
@@ -530,7 +574,6 @@
 		AE505CFF141D45E600915344 /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		AE505D00141D45E600915344 /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
 		AE505D01141D45E600915344 /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
-		AE505D02141D45E600915344 /* libcurl.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEDF1A181417021700183689 /* libcurl.4.dylib */; };
 		AE505D16141D46B100915344 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AE505D14141D46B100915344 /* InfoPlist.strings */; };
 		AE505D21141D47BF00915344 /* Marathon 2.icns in Resources */ = {isa = PBXBuildFile; fileRef = AE505D20141D47BF00915344 /* Marathon 2.icns */; };
 		AE5154600D46E84A00506B58 /* lua_map.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE51545D0D46E84A00506B58 /* lua_map.cpp */; };
@@ -539,10 +582,6 @@
 		AE601F0C0B927C25009F881C /* MADDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F070B927C25009F881C /* MADDecoder.cpp */; };
 		AE601F0D0B927C25009F881C /* SndfileDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F080B927C25009F881C /* SndfileDecoder.cpp */; };
 		AE601F0E0B927C25009F881C /* VorbisDecoder.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE601F090B927C25009F881C /* VorbisDecoder.cpp */; };
-		AE601FC00B927DC2009F881C /* mad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		AE601FC10B927DC2009F881C /* sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
-		AE6020080B928517009F881C /* sndfile.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
-		AE60200B0B92852A009F881C /* mad.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
 		AE626E6C0B878534009CFF2D /* Mixer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E630B878534009CFF2D /* Mixer.cpp */; };
 		AE626E6D0B878534009CFF2D /* Mixer.h in Headers */ = {isa = PBXBuildFile; fileRef = AE626E640B878534009CFF2D /* Mixer.h */; };
 		AE626E6E0B878534009CFF2D /* Music.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE626E650B878534009CFF2D /* Music.cpp */; };
@@ -1022,18 +1061,11 @@
 		AEB4A28B14296CAE00537AE7 /* csalerts.mm in Sources */ = {isa = PBXBuildFile; fileRef = AEA31D2B113C9DF700266621 /* csalerts.mm */; };
 		AEB4A28C14296CAE00537AE7 /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		AEB4A28D14296CAE00537AE7 /* FilmProfile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27D1A4F112FDF3630085E79C /* FilmProfile.cpp */; };
-		AEB4A28E14296CAE00537AE7 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDF1A111416FE2200183689 /* HTTP.cpp */; };
-		AEB4A28F14296CAE00537AE7 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE48F3541421900900051D61 /* Statistics.cpp */; };
 		AEB4A29114296CAE00537AE7 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5830B4001E776DE01BA387C /* OpenGL.framework */; };
 		AEB4A29214296CAE00537AE7 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F59FB19D01E780DF01BBE912 /* Cocoa.framework */; };
 		AEB4A29314296CAE00537AE7 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		AEB4A29414296CAE00537AE7 /* SDL_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		AEB4A29514296CAE00537AE7 /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
-		AEB4A29614296CAE00537AE7 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		AEB4A29714296CAE00537AE7 /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		AEB4A29814296CAE00537AE7 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		AEB4A29914296CAE00537AE7 /* mad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		AEB4A29A14296CAE00537AE7 /* sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
 		AEB4A29B14296CAE00537AE7 /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		AEB4A29C14296CAE00537AE7 /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		AEB4A29D14296CAE00537AE7 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
@@ -1043,7 +1075,6 @@
 		AEB4A2A114296CAE00537AE7 /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		AEB4A2A214296CAE00537AE7 /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
 		AEB4A2A314296CAE00537AE7 /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
-		AEB4A2A414296CAE00537AE7 /* libcurl.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEDF1A181417021700183689 /* libcurl.4.dylib */; };
 		AEB4A2B314296DC000537AE7 /* Marathon Infinity.icns in Resources */ = {isa = PBXBuildFile; fileRef = AEB4A2B214296DC000537AE7 /* Marathon Infinity.icns */; };
 		AEB4A2B614296DC700537AE7 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = AEB4A2B414296DC700537AE7 /* InfoPlist.strings */; };
 		AEC02F910B6D8B310095E8C9 /* SW_Texture_Extras.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEC02F900B6D8B310095E8C9 /* SW_Texture_Extras.cpp */; };
@@ -1385,12 +1416,8 @@
 		AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		AEDCB5CD0D4ADB86004CB40E /* lua_monsters.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5CB0D4ADB86004CB40E /* lua_monsters.cpp */; };
 		AEDCB5DC0D4AEC4D004CB40E /* lua_projectiles.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */; };
-		AEDF1A131416FE2200183689 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDF1A111416FE2200183689 /* HTTP.cpp */; };
-		AEDF1A141416FE2200183689 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AEDF1A111416FE2200183689 /* HTTP.cpp */; };
 		AEDF1A151416FE2200183689 /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = AEDF1A121416FE2200183689 /* HTTP.h */; };
 		AEDF1A161416FE2200183689 /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = AEDF1A121416FE2200183689 /* HTTP.h */; };
-		AEDF1A191417021700183689 /* libcurl.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEDF1A181417021700183689 /* libcurl.4.dylib */; };
-		AEDF1A1A1417021700183689 /* libcurl.4.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = AEDF1A181417021700183689 /* libcurl.4.dylib */; };
 		AEF1AC1610E05835007EE0D5 /* IMG_savepng.c in Sources */ = {isa = PBXBuildFile; fileRef = AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */; };
 		AEFD85EA13EB84CF00C1E687 /* PlayerName.h in Headers */ = {isa = PBXBuildFile; fileRef = F522120C0136A6FD01000001 /* PlayerName.h */; };
 		AEFD85EB13EB84CF00C1E687 /* Random.h in Headers */ = {isa = PBXBuildFile; fileRef = F52212190136A6FD01000001 /* Random.h */; };
@@ -1824,11 +1851,6 @@
 		AEFD879D13EB84CF00C1E687 /* SDL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0501F8C94101E83A66 /* SDL.framework */; };
 		AEFD879E13EB84CF00C1E687 /* SDL_net.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0801F8CA2101E83A66 /* SDL_net.framework */; };
 		AEFD879F13EB84CF00C1E687 /* SDL_image.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F5281C0701F8CA2101E83A66 /* SDL_image.framework */; };
-		AEFD87A013EB84CF00C1E687 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		AEFD87A113EB84CF00C1E687 /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		AEFD87A213EB84CF00C1E687 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		AEFD87A313EB84CF00C1E687 /* mad.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBE0B927DC2009F881C /* mad.framework */; };
-		AEFD87A413EB84CF00C1E687 /* sndfile.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE601FBF0B927DC2009F881C /* sndfile.framework */; };
 		AEFD87A513EB84CF00C1E687 /* speex.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE23F5630BDAC0E700C11385 /* speex.framework */; };
 		AEFD87A613EB84CF00C1E687 /* SDL_ttf.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AE0384DB0CE15170006780AC /* SDL_ttf.framework */; };
 		AEFD87A713EB84CF00C1E687 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
@@ -1838,12 +1860,6 @@
 		AEFD87AB13EB84CF00C1E687 /* jpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB1E10D7114D000204DD /* jpeg.framework */; };
 		AEFD87AC13EB84CF00C1E687 /* png.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB2010D7114D000204DD /* png.framework */; };
 		AEFD87AD13EB84CF00C1E687 /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
-		AEFDE7BD0A38DF7E00CFEB97 /* Ogg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
-		AEFDE7BF0A38DF7E00CFEB97 /* smpeg.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		AEFDE7C00A38DF7E00CFEB97 /* Vorbis.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		AEFDE8010A38E98900CFEB97 /* smpeg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */; };
-		AEFDE80E0A38E98C00CFEB97 /* Vorbis.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */; };
-		AEFDE8130A38E99000CFEB97 /* Ogg.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */; };
 		AEFE7C2B0DB03FA600D11DE2 /* internal.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C2A0DB03F8300D11DE2 /* internal.h */; };
 		AEFE7C2C0DB03FA700D11DE2 /* ascii.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C270DB03F8300D11DE2 /* ascii.h */; };
 		AEFE7C2D0DB03FA700D11DE2 /* expat.h in Headers */ = {isa = PBXBuildFile; fileRef = AEFE7C280DB03F8300D11DE2 /* expat.h */; };
@@ -1867,16 +1883,15 @@
 			dstPath = AlephOne.app/Contents/Frameworks;
 			dstSubfolderSpec = 16;
 			files = (
+				271ADFC618A88B9C0073CB2E /* avcodec.framework in CopyFiles */,
+				271ADFC718A88B9C0073CB2E /* avformat.framework in CopyFiles */,
+				271ADFC818A88B9C0073CB2E /* avutil.framework in CopyFiles */,
+				271ADFC918A88B9C0073CB2E /* swscale.framework in CopyFiles */,
 				2759FB3510D7118B000204DD /* freetype.framework in CopyFiles */,
 				2759FB2A10D71160000204DD /* jpeg.framework in CopyFiles */,
 				2759FB2610D71158000204DD /* png.framework in CopyFiles */,
 				2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */,
 				AE23F5930BDAC1DF00C11385 /* speex.framework in CopyFiles */,
-				AE60200B0B92852A009F881C /* mad.framework in CopyFiles */,
-				AE6020080B928517009F881C /* sndfile.framework in CopyFiles */,
-				AEFDE8130A38E99000CFEB97 /* Ogg.framework in CopyFiles */,
-				AEFDE80E0A38E98C00CFEB97 /* Vorbis.framework in CopyFiles */,
-				AEFDE8010A38E98900CFEB97 /* smpeg.framework in CopyFiles */,
 				AEC3C87809AD68AC003258E4 /* SDL_image.framework in CopyFiles */,
 				AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */,
 				AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */,
@@ -1892,6 +1907,10 @@
 		088809F3084C1A5500DC9E4D /* SdlMetaserverClientUi.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = SdlMetaserverClientUi.cpp; path = ../Source_Files/Network/Metaserver/SdlMetaserverClientUi.cpp; sourceTree = SOURCE_ROOT; };
 		089C165DFE840E0CC02AAC07 /* English */ = {isa = PBXFileReference; fileEncoding = 10; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		270D534B0FCB417500482ED4 /* OGL_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Blitter.h; sourceTree = "<group>"; };
+		270F9FCC177687B7009AAE10 /* avcodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avcodec.framework; sourceTree = "<group>"; };
+		270F9FCD177687B7009AAE10 /* avformat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avformat.framework; sourceTree = "<group>"; };
+		270F9FCE177687B7009AAE10 /* avutil.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avutil.framework; sourceTree = "<group>"; };
+		270F9FCF177687B7009AAE10 /* swscale.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = swscale.framework; sourceTree = "<group>"; };
 		2739B490101B862A00CC8098 /* Shape_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Shape_Blitter.cpp; sourceTree = "<group>"; };
 		2739B491101B862A00CC8098 /* Shape_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Shape_Blitter.h; sourceTree = "<group>"; };
 		2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rwops_zzip.c; sourceTree = "<group>"; };
@@ -1915,6 +1934,9 @@
 		2784979F0FF5C308008DECC8 /* lua_mnemonics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_mnemonics.h; sourceTree = "<group>"; };
 		27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HUDRenderer_Lua.cpp; sourceTree = "<group>"; };
 		27911B23100073460063ACB6 /* HUDRenderer_Lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HUDRenderer_Lua.h; sourceTree = "<group>"; };
+		27928610170F92D20005CD56 /* lbitlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lbitlib.c; sourceTree = "<group>"; };
+		27928611170F92D20005CD56 /* lctype.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lctype.c; sourceTree = "<group>"; };
+		2792861A170F92DD0005CD56 /* lctype.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lctype.h; sourceTree = "<group>"; };
 		27CE0841100ECDBC00F59FD1 /* Image_Blitter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Image_Blitter.cpp; sourceTree = "<group>"; };
 		27CE0842100ECDBC00F59FD1 /* Image_Blitter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Image_Blitter.h; sourceTree = "<group>"; };
 		27D1A4F112FDF3630085E79C /* FilmProfile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = FilmProfile.cpp; path = ../Source_Files/CSeries/FilmProfile.cpp; sourceTree = SOURCE_ROOT; };
@@ -1922,6 +1944,12 @@
 		27DC606E10917F690062003A /* OGL_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Shader.cpp; sourceTree = "<group>"; };
 		27DC606F10917F690062003A /* OGL_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Shader.h; sourceTree = "<group>"; };
 		27DC60C4109218800062003A /* vec3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec3.h; sourceTree = "<group>"; };
+		27E878F1173202F80010F485 /* FFmpegDecoder.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = FFmpegDecoder.cpp; sourceTree = "<group>"; };
+		27E878F2173202F80010F485 /* FFmpegDecoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FFmpegDecoder.h; sourceTree = "<group>"; };
+		27ECF2911698DD7700BE9C35 /* Movie.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Movie.cpp; path = ../Source_Files/FFmpeg/Movie.cpp; sourceTree = "<group>"; };
+		27ECF2921698DD7700BE9C35 /* Movie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Movie.h; path = ../Source_Files/FFmpeg/Movie.h; sourceTree = "<group>"; };
+		27ECF2931698DD7700BE9C35 /* SDL_ffmpeg.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = SDL_ffmpeg.c; path = ../Source_Files/FFmpeg/SDL_ffmpeg.c; sourceTree = "<group>"; };
+		27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_ffmpeg.h; path = ../Source_Files/FFmpeg/SDL_ffmpeg.h; sourceTree = "<group>"; };
 		3D22CF880FD86EAE00B17822 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		3D22CF8C0FD86EBD00B17822 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
@@ -1987,7 +2015,6 @@
 		AE42B3DC0BDB030B003521B7 /* network_microphone_coreaudio.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = network_microphone_coreaudio.cpp; path = ../Source_Files/Network/network_microphone_coreaudio.cpp; sourceTree = "<group>"; };
 		AE437C8B08779BC900038E30 /* shared_widgets.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = shared_widgets.h; path = ../Source_Files/Misc/shared_widgets.h; sourceTree = SOURCE_ROOT; };
 		AE437C8E08779BE500038E30 /* shared_widgets.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = shared_widgets.cpp; path = ../Source_Files/Misc/shared_widgets.cpp; sourceTree = SOURCE_ROOT; };
-		AE48F3541421900900051D61 /* Statistics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Statistics.cpp; path = ../Source_Files/Misc/Statistics.cpp; sourceTree = "<group>"; };
 		AE48F3551421900900051D61 /* Statistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Statistics.h; path = ../Source_Files/Misc/Statistics.h; sourceTree = "<group>"; };
 		AE505D0B141D45E600915344 /* Marathon 2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon 2.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE505D12141D46A900915344 /* Marathon 2.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "Marathon 2.plist"; path = "AppStore/Marathon 2/Marathon 2.plist"; sourceTree = "<group>"; };
@@ -2008,8 +2035,6 @@
 		AE601F110B927C51009F881C /* MADDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = MADDecoder.h; sourceTree = "<group>"; };
 		AE601F120B927C51009F881C /* SndfileDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = SndfileDecoder.h; sourceTree = "<group>"; };
 		AE601F130B927C51009F881C /* VorbisDecoder.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = VorbisDecoder.h; sourceTree = "<group>"; };
-		AE601FBE0B927DC2009F881C /* mad.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = mad.framework; sourceTree = "<group>"; };
-		AE601FBF0B927DC2009F881C /* sndfile.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = sndfile.framework; sourceTree = "<group>"; };
 		AE626E630B878534009CFF2D /* Mixer.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Mixer.cpp; sourceTree = "<group>"; };
 		AE626E640B878534009CFF2D /* Mixer.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = Mixer.h; sourceTree = "<group>"; };
 		AE626E650B878534009CFF2D /* Music.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = Music.cpp; sourceTree = "<group>"; };
@@ -2101,18 +2126,13 @@
 		AEDCB5CC0D4ADB86004CB40E /* lua_monsters.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_monsters.h; sourceTree = "<group>"; };
 		AEDCB5DA0D4AEC4D004CB40E /* lua_projectiles.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = lua_projectiles.cpp; sourceTree = "<group>"; };
 		AEDCB5DB0D4AEC4D004CB40E /* lua_projectiles.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = lua_projectiles.h; sourceTree = "<group>"; };
-		AEDF1A111416FE2200183689 /* HTTP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTP.cpp; path = ../Source_Files/Network/HTTP.cpp; sourceTree = "<group>"; };
 		AEDF1A121416FE2200183689 /* HTTP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTP.h; path = ../Source_Files/Network/HTTP.h; sourceTree = "<group>"; };
-		AEDF1A181417021700183689 /* libcurl.4.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.4.dylib; path = ../../../../../usr/lib/libcurl.4.dylib; sourceTree = "<group>"; };
 		AEF1AC1410E05826007EE0D5 /* IMG_savepng.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = IMG_savepng.h; sourceTree = "<group>"; };
 		AEF1AC1510E05835007EE0D5 /* IMG_savepng.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = IMG_savepng.c; sourceTree = "<group>"; };
 		AEF5025509A8258C004B0179 /* OGL_LoadScreen.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = OGL_LoadScreen.h; sourceTree = "<group>"; };
 		AEF5025E09A825E2004B0179 /* OGL_LoadScreen.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_LoadScreen.cpp; sourceTree = "<group>"; };
 		AEF8C4F210AEFEB500ED84AD /* OGL_Headers.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Headers.h; sourceTree = "<group>"; };
 		AEFD87C313EB84CF00C1E687 /* Marathon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Marathon.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Ogg.framework; sourceTree = "<group>"; };
-		AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = smpeg.framework; sourceTree = "<group>"; };
-		AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Vorbis.framework; sourceTree = "<group>"; };
 		AEFE7C270DB03F8300D11DE2 /* ascii.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ascii.h; path = ../Source_Files/Expat/ascii.h; sourceTree = "<group>"; };
 		AEFE7C280DB03F8300D11DE2 /* expat.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = expat.h; path = ../Source_Files/Expat/expat.h; sourceTree = "<group>"; };
 		AEFE7C290DB03F8300D11DE2 /* expat_external.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = expat_external.h; path = ../Source_Files/Expat/expat_external.h; sourceTree = "<group>"; };
@@ -2417,7 +2437,7 @@
 		F5CFAD430200FA6B01D80110 /* SaveIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = SaveIcon.icns; sourceTree = "<group>"; };
 		F5D11AE40326A93E01000105 /* alephversion.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = alephversion.h; path = ../Source_Files/Misc/alephversion.h; sourceTree = SOURCE_ROOT; };
 		F5D37B6D022D1C2C01A80001 /* network_private.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = network_private.h; path = ../Source_Files/Network/network_private.h; sourceTree = SOURCE_ROOT; };
-		F5F50D720215DB2601144D54 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = file; name = Fonts; path = ../data/Fonts; sourceTree = SOURCE_ROOT; };
+		F5F50D720215DB2601144D54 /* Fonts */ = {isa = PBXFileReference; lastKnownFileType = text; name = Fonts; path = ../data/Fonts; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2430,11 +2450,6 @@
 				AE505CF1141D45E600915344 /* SDL.framework in Frameworks */,
 				AE505CF2141D45E600915344 /* SDL_net.framework in Frameworks */,
 				AE505CF3141D45E600915344 /* SDL_image.framework in Frameworks */,
-				AE505CF4141D45E600915344 /* Ogg.framework in Frameworks */,
-				AE505CF5141D45E600915344 /* smpeg.framework in Frameworks */,
-				AE505CF6141D45E600915344 /* Vorbis.framework in Frameworks */,
-				AE505CF7141D45E600915344 /* mad.framework in Frameworks */,
-				AE505CF8141D45E600915344 /* sndfile.framework in Frameworks */,
 				AE505CF9141D45E600915344 /* speex.framework in Frameworks */,
 				AE505CFA141D45E600915344 /* SDL_ttf.framework in Frameworks */,
 				AE505CFB141D45E600915344 /* AudioUnit.framework in Frameworks */,
@@ -2444,7 +2459,10 @@
 				AE505CFF141D45E600915344 /* jpeg.framework in Frameworks */,
 				AE505D00141D45E600915344 /* png.framework in Frameworks */,
 				AE505D01141D45E600915344 /* freetype.framework in Frameworks */,
-				AE505D02141D45E600915344 /* libcurl.4.dylib in Frameworks */,
+				270F9FD2177687B7009AAE10 /* avcodec.framework in Frameworks */,
+				270F9FD6177687B7009AAE10 /* avformat.framework in Frameworks */,
+				270F9FDA177687B7009AAE10 /* avutil.framework in Frameworks */,
+				270F9FDE177687B7009AAE10 /* swscale.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2457,11 +2475,6 @@
 				AEB4A29314296CAE00537AE7 /* SDL.framework in Frameworks */,
 				AEB4A29414296CAE00537AE7 /* SDL_net.framework in Frameworks */,
 				AEB4A29514296CAE00537AE7 /* SDL_image.framework in Frameworks */,
-				AEB4A29614296CAE00537AE7 /* Ogg.framework in Frameworks */,
-				AEB4A29714296CAE00537AE7 /* smpeg.framework in Frameworks */,
-				AEB4A29814296CAE00537AE7 /* Vorbis.framework in Frameworks */,
-				AEB4A29914296CAE00537AE7 /* mad.framework in Frameworks */,
-				AEB4A29A14296CAE00537AE7 /* sndfile.framework in Frameworks */,
 				AEB4A29B14296CAE00537AE7 /* speex.framework in Frameworks */,
 				AEB4A29C14296CAE00537AE7 /* SDL_ttf.framework in Frameworks */,
 				AEB4A29D14296CAE00537AE7 /* AudioUnit.framework in Frameworks */,
@@ -2471,7 +2484,10 @@
 				AEB4A2A114296CAE00537AE7 /* jpeg.framework in Frameworks */,
 				AEB4A2A214296CAE00537AE7 /* png.framework in Frameworks */,
 				AEB4A2A314296CAE00537AE7 /* freetype.framework in Frameworks */,
-				AEB4A2A414296CAE00537AE7 /* libcurl.4.dylib in Frameworks */,
+				270F9FD3177687B7009AAE10 /* avcodec.framework in Frameworks */,
+				270F9FD7177687B7009AAE10 /* avformat.framework in Frameworks */,
+				270F9FDB177687B7009AAE10 /* avutil.framework in Frameworks */,
+				270F9FDF177687B7009AAE10 /* swscale.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2484,11 +2500,6 @@
 				AEC3C87209AD68AC003258E4 /* SDL.framework in Frameworks */,
 				AEC3C87309AD68AC003258E4 /* SDL_net.framework in Frameworks */,
 				AEC3C87409AD68AC003258E4 /* SDL_image.framework in Frameworks */,
-				AEFDE7BD0A38DF7E00CFEB97 /* Ogg.framework in Frameworks */,
-				AEFDE7BF0A38DF7E00CFEB97 /* smpeg.framework in Frameworks */,
-				AEFDE7C00A38DF7E00CFEB97 /* Vorbis.framework in Frameworks */,
-				AE601FC00B927DC2009F881C /* mad.framework in Frameworks */,
-				AE601FC10B927DC2009F881C /* sndfile.framework in Frameworks */,
 				AE23F5640BDAC0E700C11385 /* speex.framework in Frameworks */,
 				AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */,
 				3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */,
@@ -2498,7 +2509,10 @@
 				2759FB1F10D7114D000204DD /* jpeg.framework in Frameworks */,
 				2759FB2110D7114D000204DD /* png.framework in Frameworks */,
 				2759FB3210D71184000204DD /* freetype.framework in Frameworks */,
-				AEDF1A191417021700183689 /* libcurl.4.dylib in Frameworks */,
+				270F9FD0177687B7009AAE10 /* avcodec.framework in Frameworks */,
+				270F9FD4177687B7009AAE10 /* avformat.framework in Frameworks */,
+				270F9FD8177687B7009AAE10 /* avutil.framework in Frameworks */,
+				270F9FDC177687B7009AAE10 /* swscale.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2511,11 +2525,6 @@
 				AEFD879D13EB84CF00C1E687 /* SDL.framework in Frameworks */,
 				AEFD879E13EB84CF00C1E687 /* SDL_net.framework in Frameworks */,
 				AEFD879F13EB84CF00C1E687 /* SDL_image.framework in Frameworks */,
-				AEFD87A013EB84CF00C1E687 /* Ogg.framework in Frameworks */,
-				AEFD87A113EB84CF00C1E687 /* smpeg.framework in Frameworks */,
-				AEFD87A213EB84CF00C1E687 /* Vorbis.framework in Frameworks */,
-				AEFD87A313EB84CF00C1E687 /* mad.framework in Frameworks */,
-				AEFD87A413EB84CF00C1E687 /* sndfile.framework in Frameworks */,
 				AEFD87A513EB84CF00C1E687 /* speex.framework in Frameworks */,
 				AEFD87A613EB84CF00C1E687 /* SDL_ttf.framework in Frameworks */,
 				AEFD87A713EB84CF00C1E687 /* AudioUnit.framework in Frameworks */,
@@ -2525,7 +2534,10 @@
 				AEFD87AB13EB84CF00C1E687 /* jpeg.framework in Frameworks */,
 				AEFD87AC13EB84CF00C1E687 /* png.framework in Frameworks */,
 				AEFD87AD13EB84CF00C1E687 /* freetype.framework in Frameworks */,
-				AEDF1A1A1417021700183689 /* libcurl.4.dylib in Frameworks */,
+				270F9FD1177687B7009AAE10 /* avcodec.framework in Frameworks */,
+				270F9FD5177687B7009AAE10 /* avformat.framework in Frameworks */,
+				270F9FD9177687B7009AAE10 /* avutil.framework in Frameworks */,
+				270F9FDD177687B7009AAE10 /* swscale.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2541,6 +2553,25 @@
 				AEB4A2AD14296CAE00537AE7 /* Marathon Infinity.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		27ECF2AA1698DD7E00BE9C35 /* FFmpeg */ = {
+			isa = PBXGroup;
+			children = (
+				27ECF2AB1698DD9700BE9C35 /* Headers */,
+				27ECF2911698DD7700BE9C35 /* Movie.cpp */,
+				27ECF2931698DD7700BE9C35 /* SDL_ffmpeg.c */,
+			);
+			name = FFmpeg;
+			sourceTree = "<group>";
+		};
+		27ECF2AB1698DD9700BE9C35 /* Headers */ = {
+			isa = PBXGroup;
+			children = (
+				27ECF2921698DD7700BE9C35 /* Movie.h */,
+				27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */,
+			);
+			name = Headers;
 			sourceTree = "<group>";
 		};
 		29B97314FDCFA39411CA2CEA /* SDL Application */ = {
@@ -2586,7 +2617,6 @@
 				F5830B4001E776DE01BA387C /* OpenGL.framework */,
 				F59FB19D01E780DF01BBE912 /* Cocoa.framework */,
 				3D22CF8C0FD86EBD00B17822 /* libz.dylib */,
-				AEDF1A181417021700183689 /* libcurl.4.dylib */,
 			);
 			name = "System Frameworks";
 			sourceTree = "<group>";
@@ -2685,6 +2715,8 @@
 		AE7C217F0BFF671E00CE63EC /* Library Sources */ = {
 			isa = PBXGroup;
 			children = (
+				27928610170F92D20005CD56 /* lbitlib.c */,
+				27928611170F92D20005CD56 /* lctype.c */,
 				AE7C21800BFF67B700CE63EC /* lapi.c */,
 				AE7C21810BFF67B700CE63EC /* lauxlib.c */,
 				AE7C21820BFF67B700CE63EC /* lbaselib.c */,
@@ -2720,6 +2752,7 @@
 		AE7C21B80BFF67BE00CE63EC /* Library Headers */ = {
 			isa = PBXGroup;
 			children = (
+				2792861A170F92DD0005CD56 /* lctype.h */,
 				AE7C21B90BFF67E600CE63EC /* lapi.h */,
 				AE7C21BA0BFF67E600CE63EC /* lauxlib.h */,
 				AE7C21BB0BFF67E600CE63EC /* lcode.h */,
@@ -2760,12 +2793,11 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				270F9FCC177687B7009AAE10 /* avcodec.framework */,
+				270F9FCD177687B7009AAE10 /* avformat.framework */,
+				270F9FCE177687B7009AAE10 /* avutil.framework */,
+				270F9FCF177687B7009AAE10 /* swscale.framework */,
 				AE23F5630BDAC0E700C11385 /* speex.framework */,
-				AE601FBE0B927DC2009F881C /* mad.framework */,
-				AE601FBF0B927DC2009F881C /* sndfile.framework */,
-				AEFDE7B80A38DF7E00CFEB97 /* Ogg.framework */,
-				AEFDE7BA0A38DF7E00CFEB97 /* smpeg.framework */,
-				AEFDE7BB0A38DF7E00CFEB97 /* Vorbis.framework */,
 				F5281C0701F8CA2101E83A66 /* SDL_image.framework */,
 				F5281C0501F8C94101E83A66 /* SDL.framework */,
 				F5281C0801F8CA2101E83A66 /* SDL_net.framework */,
@@ -2823,6 +2855,7 @@
 		F52214490136C0C401000001 /* Sources */ = {
 			isa = PBXGroup;
 			children = (
+				27ECF2AA1698DD7E00BE9C35 /* FFmpeg */,
 				AE179EED09C3D72800512061 /* LibNAT */,
 				3DC1523F0711123100836977 /* TCPMess */,
 				F5CF58580245987901A80001 /* Main */,
@@ -2931,7 +2964,6 @@
 				3DAC27A603DC9D1C00000104 /* Logging.cpp */,
 				AE2FDECA09E934E000A18ABC /* preference_dialogs.cpp */,
 				F522120B0136A6FD01000001 /* PlayerName.cpp */,
-				AE48F3541421900900051D61 /* Statistics.cpp */,
 				F52211970136A6FD01000001 /* game_errors.cpp */,
 				F52211C40136A6FD01000001 /* interface.cpp */,
 				F522120F0136A6FD01000001 /* preferences.cpp */,
@@ -2981,7 +3013,6 @@
 				3D87957B07D11E120078D26B /* Metaserver */,
 				F52214520136C0C401000001 /* Headers */,
 				AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */,
-				AEDF1A111416FE2200183689 /* HTTP.cpp */,
 				EF2EF5CB04819BD700A8000D /* NetworkGameProtocol.cpp */,
 				EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */,
 				F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */,
@@ -3363,6 +3394,8 @@
 		F5CC94110240DA4301A80001 /* Sound */ = {
 			isa = PBXGroup;
 			children = (
+				27E878F1173202F80010F485 /* FFmpegDecoder.cpp */,
+				27E878F2173202F80010F485 /* FFmpegDecoder.h */,
 				AE23F5990BDAC23E00C11385 /* ReplacementSounds.cpp */,
 				AE601F0F0B927C51009F881C /* BasicIFFDecoder.h */,
 				AE601F100B927C51009F881C /* Decoder.h */,
@@ -3720,6 +3753,9 @@
 				AE505BFF141D45E600915344 /* FilmProfile.h in Headers */,
 				AE505C00141D45E600915344 /* HTTP.h in Headers */,
 				AE48F35B1421900900051D61 /* Statistics.h in Headers */,
+				27ECF29F1698DD7700BE9C35 /* Movie.h in Headers */,
+				27ECF2A71698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */,
+				2792861D170F92DD0005CD56 /* lctype.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3925,6 +3961,9 @@
 				AEB4A19F14296CAE00537AE7 /* FilmProfile.h in Headers */,
 				AEB4A1A014296CAE00537AE7 /* HTTP.h in Headers */,
 				AEB4A1A114296CAE00537AE7 /* Statistics.h in Headers */,
+				27ECF2A01698DD7700BE9C35 /* Movie.h in Headers */,
+				27ECF2A81698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */,
+				2792861E170F92DD0005CD56 /* lctype.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4130,6 +4169,10 @@
 				27D1A50212FDF3700085E79C /* FilmProfile.h in Headers */,
 				AEDF1A151416FE2200183689 /* HTTP.h in Headers */,
 				AE48F3591421900900051D61 /* Statistics.h in Headers */,
+				27ECF29D1698DD7700BE9C35 /* Movie.h in Headers */,
+				27ECF2A51698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */,
+				2792861B170F92DD0005CD56 /* lctype.h in Headers */,
+				27E878F4173202F80010F485 /* FFmpegDecoder.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4335,6 +4378,9 @@
 				AEFD86AD13EB84CF00C1E687 /* FilmProfile.h in Headers */,
 				AEDF1A161416FE2200183689 /* HTTP.h in Headers */,
 				AE48F35A1421900900051D61 /* Statistics.h in Headers */,
+				27ECF29E1698DD7700BE9C35 /* Movie.h in Headers */,
+				27ECF2A61698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */,
+				2792861C170F92DD0005CD56 /* lctype.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4434,7 +4480,7 @@
 		29B97313FDCFA39411CA2CEA /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0420;
+				LastUpgradeCheck = 0460;
 			};
 			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-Xcode4" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -4591,7 +4637,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/\"\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n\n";
+			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n\n";
 		};
 		AE505D05141D45E600915344 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4604,7 +4650,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"mad.framework\"\ncopy_removing_ppc \"sndfile.framework\"\ncopy_removing_ppc \"Ogg.framework\"\ncopy_removing_ppc \"Vorbis.framework\"\ncopy_removing_ppc \"smpeg.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
 		};
 		AE505D06141D45E600915344 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4617,7 +4663,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nrsync -aC \"$SRCROOT/../data/XBLA_HUD\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Plugins\"\nrsync -aC \"$SRCROOT/../data/Bungie.net Stats\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Plugins\"";
+			shellScript = "rsync -aC \"$SRCROOT/../data/Scenarios/Marathon 2/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nrsync -aC \"$SRCROOT/../data/XBLA_HUD\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Plugins\"";
 		};
 		AEB4A2A614296CAE00537AE7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4629,7 +4675,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/\"\nmkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/\"Resources/DataFiles/Themes/Default/{.svn,CVS,Makefile.am}\n\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n\n";
+			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nmkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/\"Resources/DataFiles/Themes/Default/{.svn,CVS,Makefile.am}\n\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n\n";
 		};
 		AEB4A2A714296CAE00537AE7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4642,7 +4688,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"mad.framework\"\ncopy_removing_ppc \"sndfile.framework\"\ncopy_removing_ppc \"Ogg.framework\"\ncopy_removing_ppc \"Vorbis.framework\"\ncopy_removing_ppc \"smpeg.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"mad.framework\"\ncopy_removing_ppc \"sndfile.framework\"\ncopy_removing_ppc \"Ogg.framework\"\ncopy_removing_ppc \"Vorbis.framework\"\ncopy_removing_ppc \"smpeg.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
 		};
 		AEB4A2A814296CAE00537AE7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4667,7 +4713,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default/{.svn,CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/AlephOne.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/AlephOne.app/Contents/Info.plist\"\n\n";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default/{.svn,CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/AlephOne.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/AlephOne.app/Contents/Info.plist\"\n\n";
 		};
 		AEFD87AF13EB84CF00C1E687 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4679,7 +4725,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\ncp \"$SRCROOT\"/../data/Fonts \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/\"\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n\n";
+			shellScript = "mkdir -p \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$BUILT_PRODUCTS_DIR/$INFOPLIST_PATH\"\n\n";
 		};
 		AEFD87D613EB8DB200C1E687 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4692,7 +4738,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"mad.framework\"\ncopy_removing_ppc \"sndfile.framework\"\ncopy_removing_ppc \"Ogg.framework\"\ncopy_removing_ppc \"Vorbis.framework\"\ncopy_removing_ppc \"smpeg.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
 		};
 		AEFD87D713EB944800C1E687 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4705,7 +4751,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "rsync -aC \"$SRCROOT\"/../data/Scenarios/M1A1/ \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"\nrsync -aC \"$SRCROOT/../data/Bungie.net Stats\" \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles/Plugins\"";
+			shellScript = "rsync -aC \"$SRCROOT\"/../data/Scenarios/Marathon/ \"$BUILT_PRODUCTS_DIR/$CONTENTS_FOLDER_PATH/Resources/DataFiles\"";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -4775,6 +4821,7 @@
 				AE505C49141D45E600915344 /* media.cpp in Sources */,
 				AE505C4A141D45E600915344 /* monsters.cpp in Sources */,
 				AE505C4B141D45E600915344 /* pathfinding.cpp in Sources */,
+				279A462618286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AE505C4C141D45E600915344 /* physics.cpp in Sources */,
 				AE505C4D141D45E600915344 /* placement.cpp in Sources */,
 				AE505C4E141D45E600915344 /* platforms.cpp in Sources */,
@@ -4936,8 +4983,10 @@
 				AE505CEA141D45E600915344 /* csalerts.mm in Sources */,
 				AE505CEB141D45E600915344 /* lua_saved_objects.cpp in Sources */,
 				AE505CEC141D45E600915344 /* FilmProfile.cpp in Sources */,
-				AE505CED141D45E600915344 /* HTTP.cpp in Sources */,
-				AE48F3581421900900051D61 /* Statistics.cpp in Sources */,
+				27ECF29B1698DD7700BE9C35 /* Movie.cpp in Sources */,
+				27ECF2A31698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */,
+				27928614170F92D20005CD56 /* lbitlib.c in Sources */,
+				27928618170F92D20005CD56 /* lctype.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5006,6 +5055,7 @@
 				AEB4A1EA14296CAE00537AE7 /* media.cpp in Sources */,
 				AEB4A1EB14296CAE00537AE7 /* monsters.cpp in Sources */,
 				AEB4A1EC14296CAE00537AE7 /* pathfinding.cpp in Sources */,
+				279A462718286FAA00F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AEB4A1ED14296CAE00537AE7 /* physics.cpp in Sources */,
 				AEB4A1EE14296CAE00537AE7 /* placement.cpp in Sources */,
 				AEB4A1EF14296CAE00537AE7 /* platforms.cpp in Sources */,
@@ -5167,8 +5217,10 @@
 				AEB4A28B14296CAE00537AE7 /* csalerts.mm in Sources */,
 				AEB4A28C14296CAE00537AE7 /* lua_saved_objects.cpp in Sources */,
 				AEB4A28D14296CAE00537AE7 /* FilmProfile.cpp in Sources */,
-				AEB4A28E14296CAE00537AE7 /* HTTP.cpp in Sources */,
-				AEB4A28F14296CAE00537AE7 /* Statistics.cpp in Sources */,
+				27ECF29C1698DD7700BE9C35 /* Movie.cpp in Sources */,
+				27ECF2A41698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */,
+				27928615170F92D20005CD56 /* lbitlib.c in Sources */,
+				27928619170F92D20005CD56 /* lctype.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5398,8 +5450,11 @@
 				AEA31D2C113C9DF700266621 /* csalerts.mm in Sources */,
 				276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */,
 				27D1A4F312FDF3630085E79C /* FilmProfile.cpp in Sources */,
-				AEDF1A131416FE2200183689 /* HTTP.cpp in Sources */,
-				AE48F3561421900900051D61 /* Statistics.cpp in Sources */,
+				27ECF2991698DD7700BE9C35 /* Movie.cpp in Sources */,
+				27ECF2A11698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */,
+				27928612170F92D20005CD56 /* lbitlib.c in Sources */,
+				27928616170F92D20005CD56 /* lctype.c in Sources */,
+				27E878F3173202F80010F485 /* FFmpegDecoder.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5468,6 +5523,7 @@
 				AEFD86F613EB84CF00C1E687 /* media.cpp in Sources */,
 				AEFD86F713EB84CF00C1E687 /* monsters.cpp in Sources */,
 				AEFD86F813EB84CF00C1E687 /* pathfinding.cpp in Sources */,
+				279A462518286FA900F7BFDA /* FFmpegDecoder.cpp in Sources */,
 				AEFD86F913EB84CF00C1E687 /* physics.cpp in Sources */,
 				AEFD86FA13EB84CF00C1E687 /* placement.cpp in Sources */,
 				AEFD86FB13EB84CF00C1E687 /* platforms.cpp in Sources */,
@@ -5629,8 +5685,10 @@
 				AEFD879713EB84CF00C1E687 /* csalerts.mm in Sources */,
 				AEFD879813EB84CF00C1E687 /* lua_saved_objects.cpp in Sources */,
 				AEFD879913EB84CF00C1E687 /* FilmProfile.cpp in Sources */,
-				AEDF1A141416FE2200183689 /* HTTP.cpp in Sources */,
-				AE48F3571421900900051D61 /* Statistics.cpp in Sources */,
+				27ECF29A1698DD7700BE9C35 /* Movie.cpp in Sources */,
+				27ECF2A21698DD7700BE9C35 /* SDL_ffmpeg.c in Sources */,
+				27928613170F92D20005CD56 /* lbitlib.c in Sources */,
+				27928617170F92D20005CD56 /* lctype.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5683,6 +5741,7 @@
 		AE2A41530B5EFC1F00C567E6 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -5702,14 +5761,12 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
 					HAVE_CURL,
+					HAVE_FFMPEG,
+					HAVE_SYSCTLBYNAME,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -5722,9 +5779,6 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -5733,11 +5787,12 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/usr/local/include,
 					/sw/include,
 					"/sw/include/boost-1_35",
@@ -5769,6 +5824,7 @@
 		AE2A41760B5EFEA000C567E6 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -5788,14 +5844,12 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
 					HAVE_CURL,
+					HAVE_FFMPEG,
+					HAVE_SYSCTLBYNAME,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -5808,9 +5862,6 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -5819,11 +5870,12 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/usr/local/include,
 					/sw/include,
 					"/sw/include/boost-1_35",
@@ -5855,6 +5907,7 @@
 		AE3B839C0E04C8CA00FD963D /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
@@ -5863,6 +5916,7 @@
 		AE3B839D0E04C8CA00FD963D /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
@@ -5871,6 +5925,7 @@
 		AE3B839E0E04C8CA00FD963D /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				GCC_VERSION = com.apple.compilers.llvm.clang.1_0;
 				PRODUCT_NAME = AlephOne.dmg;
 			};
@@ -5879,6 +5934,7 @@
 		AE505D08141D45E600915344 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -5890,7 +5946,6 @@
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
 					SDL,
@@ -5901,14 +5956,11 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
-					HAVE_SDL_TTF,
-					HAVE_ZZIP,
+					HAVE_FFMPEG,
+					HAVE_SYSCTLBYNAME,
 					HAVE_PNG,
-					HAVE_CURL,
+					HAVE_ZZIP,
+					HAVE_SDL_TTF,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -5932,9 +5984,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -5954,6 +6007,7 @@
 		AE505D09141D45E600915344 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -5965,7 +6019,6 @@
 				GCC_DYNAMIC_NO_PIC = YES;
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
 					SDL,
@@ -5976,14 +6029,11 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
-					HAVE_SDL_TTF,
-					HAVE_ZZIP,
+					HAVE_FFMPEG,
+					HAVE_SYSCTLBYNAME,
 					HAVE_PNG,
-					HAVE_CURL,
+					HAVE_ZZIP,
+					HAVE_SDL_TTF,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6007,9 +6057,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6028,6 +6079,7 @@
 		AE505D0A141D45E600915344 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -6039,7 +6091,6 @@
 				GCC_GENERATE_DEBUGGING_SYMBOLS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				GCC_PREPROCESSOR_DEFINITIONS = (
-					MAC_APP_STORE,
 					PREFER_APP_NAME_TO_BUNDLE_ID,
 					SCENARIO_IS_BUNDLED,
 					SDL,
@@ -6050,14 +6101,11 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
-					HAVE_SDL_TTF,
-					HAVE_ZZIP,
+					HAVE_FFMPEG,
+					HAVE_SYSCTLBYNAME,
 					HAVE_PNG,
-					HAVE_CURL,
+					HAVE_ZZIP,
+					HAVE_SDL_TTF,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6081,9 +6129,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6101,6 +6150,7 @@
 		AE78B59D09B00C34002CACF8 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -6120,14 +6170,12 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
 					HAVE_CURL,
+					HAVE_FFMPEG,
+					HAVE_SYSCTLBYNAME,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6140,9 +6188,6 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6151,11 +6196,12 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
 					/usr/local/include,
 					/sw/include,
 					"/sw/include/boost-1_35",
@@ -6188,6 +6234,7 @@
 		AEB4A2AA14296CAE00537AE7 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -6218,6 +6265,7 @@
 					HAVE_ZZIP,
 					HAVE_PNG,
 					HAVE_CURL,
+					HAVE_SYSCTLBYNAME,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6263,6 +6311,7 @@
 		AEB4A2AB14296CAE00537AE7 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -6293,6 +6342,7 @@
 					HAVE_ZZIP,
 					HAVE_PNG,
 					HAVE_CURL,
+					HAVE_SYSCTLBYNAME,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6337,6 +6387,7 @@
 		AEB4A2AC14296CAE00537AE7 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -6367,6 +6418,7 @@
 					HAVE_ZZIP,
 					HAVE_PNG,
 					HAVE_CURL,
+					HAVE_SYSCTLBYNAME,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6410,6 +6462,7 @@
 		AEFD87C013EB84CF00C1E687 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -6432,14 +6485,12 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
 					HAVE_CURL,
+					HAVE_SYSCTLBYNAME,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6452,9 +6503,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6463,9 +6515,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6485,6 +6538,7 @@
 		AEFD87C113EB84CF00C1E687 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
 				DEPLOYMENT_POSTPROCESSING = YES;
@@ -6507,14 +6561,12 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
 					HAVE_CURL,
+					HAVE_SYSCTLBYNAME,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6527,9 +6579,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6538,9 +6591,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
@@ -6559,6 +6613,7 @@
 		AEFD87C213EB84CF00C1E687 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -6581,14 +6636,12 @@
 					HAVE_PWD_H,
 					HAVE_LUA,
 					SPEEX,
-					HAVE_VORBISFILE,
-					HAVE_MAD,
-					HAVE_SNDFILE,
-					HAVE_SMPEG,
+					HAVE_FFMPEG,
 					HAVE_SDL_TTF,
 					HAVE_ZZIP,
 					HAVE_PNG,
 					HAVE_CURL,
+					HAVE_SYSCTLBYNAME,
 				);
 				GCC_VERSION = "";
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
@@ -6601,9 +6654,10 @@
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/sndfile.framework/Headers",
-					"$(HOME)/Library/Frameworks/Vorbis.framework/Headers",
-					"$(HOME)/Library/Frameworks/mad.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
 					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
 					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
@@ -6612,9 +6666,10 @@
 					/Library/Frameworks/SDL_net.framework/Headers,
 					/Library/Frameworks/SDL_ttf.framework/Headers,
 					/Library/Frameworks/speex.framework/Headers,
-					/Library/Frameworks/sndfile.framework/Headers,
-					/Library/Frameworks/Vorbis.framework/Headers,
-					/Library/Frameworks/mad.framework/Headers,
+					/Library/Frameworks/avcodec.framework/Headers,
+					/Library/Frameworks/swscale.framework/Headers,
+					/Library/Frameworks/avformat.framework/Headers,
+					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/png.framework/Headers,
 					/Library/Frameworks/zziplib.framework/Headers,
 					/usr/local/include,
