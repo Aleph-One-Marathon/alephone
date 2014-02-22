@@ -2726,7 +2726,7 @@ const luaL_Reg Lua_HUDGame_Player_Get[] = {
 {"active", Lua_HUDGame_Player_Get_Active},
 {"kills", Lua_HUDGame_Player_Get_Kills},
 {"ranking", Lua_HUDGame_Player_Get_Ranking},
-{0, 0}
+{0, 0} 
 };
 
 static bool Lua_HUDGame_Player_Valid(int16 index)
@@ -2824,18 +2824,6 @@ static int Lua_HUDGame_Get_Version(lua_State *L)
 	return 1;
 }
 
-static int Lua_HUDGame_Get_Level_Index(lua_State *L)
-{
-    lua_pushinteger(L, dynamic_world->current_level_number);
-    return 1;
-}
-
-static int Lua_HUDGame_Get_Level_Name(lua_State *L)
-{
-    lua_pushstring(L, static_world->level_name);
-    return 1;
-}
-
 const luaL_Reg Lua_HUDGame_Get[] = {
 {"difficulty", Lua_HUDGame_Get_Difficulty},
 {"kill_limit", Lua_HUDGame_Get_Kill_Limit},
@@ -2845,8 +2833,6 @@ const luaL_Reg Lua_HUDGame_Get[] = {
 {"type", Lua_HUDGame_Get_Type},
 {"version", Lua_HUDGame_Get_Version},
 {"players", Lua_HUDGame_Get_Players},
-{"level_index", Lua_HUDGame_Get_Level_Index},
-{"level_name", Lua_HUDGame_Get_Level_Name},
 {0, 0}
 };
 

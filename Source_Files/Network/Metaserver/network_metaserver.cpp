@@ -431,18 +431,16 @@ MetaserverClient::sendChatMessage(const std::string& message)
 	if (message == ".available" || message == ".avail") {
 		if(m_notificationAdapter) {
 			string players = "Available Players: ";
-			bool found_players = false;
-			for (size_t i = 0; i < playersInRoom().size(); i++) {
-				if (!playersInRoom()[i].away()) {
-					if (found_players)
-						players += ", ";
-					found_players = true;
-					players += "\"" + playersInRoom()[i].name() + "\"";
+			if (playersInRoom().size()) {
+				players += "\"" + playersInRoom()[0].name() + "\"";
+				for (size_t i = 1; i < playersInRoom().size(); i++) {
+					if (!playersInRoom()[i].away())
+						players += ", \"" + playersInRoom()[i].name() + "\"";
 				}
-			}
-			if (!found_players)
+			} else {
 				players += "none";
-			m_notificationAdapter->receivedLocalMessage(players);
+			}
+			m_notificationAdapter->receivedLocalMessage(players); 
 		}
 	} else if (message == ".who") {
 		if(m_notificationAdapter) {
