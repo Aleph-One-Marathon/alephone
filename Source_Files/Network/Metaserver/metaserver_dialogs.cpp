@@ -108,7 +108,7 @@ setupAndConnectClient(MetaserverClient& client)
 	}
 
 	client.setPlayerTeamName("");
-	client.connect(A1_METASERVER_HOST, 6321, network_preferences->metaserver_login, network_preferences->metaserver_password);
+	client.connect(A1_METASERVER_HOST, 16321, network_preferences->metaserver_login, network_preferences->metaserver_password);
 }
 
 

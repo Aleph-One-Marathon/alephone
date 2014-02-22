@@ -480,6 +480,7 @@ static void initialize_application(void)
 	
 	if (arg_directory != "")
 	{
+		default_data_dir = arg_directory;
 		dsp_delete_pos = data_search_path.size();
 		data_search_path.push_back(arg_directory);
 	}
@@ -566,6 +567,8 @@ static void initialize_application(void)
 				data_search_path.erase(data_search_path.begin() + dsp_delete_pos);
 			// add selected directory where command-line argument would go
 			data_search_path.insert(data_search_path.begin() + dsp_insert_pos, chosen_dir);
+			
+			default_data_dir = chosen_dir;
 			
 			// Parse MML files again, now that we have a new dir to search
 			initialize_fonts(false);
