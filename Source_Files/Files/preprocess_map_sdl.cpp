@@ -68,7 +68,7 @@ bool have_default_files(void)
 {
 	FileSpecifier file;
 	return (get_default_spec(file, filenameDEFAULT_MAP) &&
-/*			get_default_spec(file, filenameIMAGES) &&*/
+			(get_default_spec(file, filenameIMAGES) || get_default_spec(file, filenameEXTERNAL_RESOURCES)) &&
 			get_default_spec(file, filenameSHAPES8));
 }
 
