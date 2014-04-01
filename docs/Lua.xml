@@ -1672,6 +1672,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	  <description>switch is a repair switch</description>
 	  <type>boolean</type>
 	</variable>
+	<variable name="status" version="20080707">
+	  <description>switch is active</description>
+	  <type>boolean</type>
+	</variable>
 	<variable name="type" version="20080707">
 	  <description>type of control panel</description>
 	  <type>control_panel_type</type>
