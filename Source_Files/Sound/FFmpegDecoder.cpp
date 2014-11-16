@@ -199,10 +199,13 @@ bool FFmpegDecoder::GetAudio()
     
     while (pkt_temp.size > 0)
     {
-        AVFrame frame;
-        avcodec_get_frame_defaults(&frame);
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
+        AVFrame *dframe = avcodec_alloc_frame();
+#else
+        AVFrame *dframe = av_frame_alloc();
+#endif
         int got_frame = 0;
-        int bytes_read = avcodec_decode_audio4(dec_ctx, &frame, &got_frame, &pkt_temp);
+        int bytes_read = avcodec_decode_audio4(dec_ctx, dframe, &got_frame, &pkt_temp);
         if (bytes_read < 0)
         {
             av_free_packet(&pkt);
@@ -216,12 +219,12 @@ bool FFmpegDecoder::GetAudio()
             
             int stride = -1;
             if (channels > 1 && av_sample_fmt_is_planar(in_fmt))
-                stride = frame.extended_data[1] - frame.extended_data[0];
+                stride = dframe->extended_data[1] - dframe->extended_data[0];
 
-            int written = convert_audio(frame.nb_samples, channels,
+            int written = convert_audio(dframe->nb_samples, channels,
                                         stride,
-                                        in_fmt, frame.extended_data[0],
-                                        frame.nb_samples, channels,
+                                        in_fmt, dframe->extended_data[0],
+                                        dframe->nb_samples, channels,
                                         -1,
                                         out_fmt, av->temp_data);
             
@@ -230,6 +233,12 @@ bool FFmpegDecoder::GetAudio()
             pkt_temp.data += bytes_read;
             pkt_temp.size -= bytes_read;
         }
+        
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
+        av_freep(&dframe);
+#else
+        av_frame_free(&dframe);
+#endif
     }
     
     av_free_packet(&pkt);

@@ -85,6 +85,15 @@ extern "C"
 }
 #endif
 
+// FFmpeg compatibility
+#ifndef AV_CODEC_ID_VP8
+#define AV_CODEC_ID_VP8 CODEC_ID_VP8
+#endif
+#ifndef AV_CODEC_ID_VORBIS
+#define AV_CODEC_ID_VORBIS CODEC_ID_VORBIS
+#endif
+
+
 // shamelessly stolen from SDL 2.0
 static int get_cpu_count(void)
 {
@@ -399,7 +408,7 @@ bool Movie::Setup()
     AVStream *video_stream;
     if (success)
     {
-        video_codec = avcodec_find_encoder(CODEC_ID_VP8);
+        video_codec = avcodec_find_encoder(AV_CODEC_ID_VP8);
         success = video_codec;
         if (!success) err_msg = "Could not find VP8 encoder";
     }
@@ -445,7 +454,11 @@ bool Movie::Setup()
     }
     if (success)
     {
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
         av->video_frame = avcodec_alloc_frame();
+#else
+        av->video_frame = av_frame_alloc();
+#endif
         success = av->video_frame;
         if (!success) err_msg = "Could not allocate video frame";
     }
@@ -466,7 +479,7 @@ bool Movie::Setup()
     AVStream *audio_stream;
     if (success)
     {
-        audio_codec = avcodec_find_encoder(CODEC_ID_VORBIS);
+        audio_codec = avcodec_find_encoder(AV_CODEC_ID_VORBIS);
         success = audio_codec;
         if (!success) err_msg = "Could not find Vorbis encoder";
     }
@@ -511,7 +524,11 @@ bool Movie::Setup()
     }
     if (success)
     {
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,0)
         av->audio_frame = avcodec_alloc_frame();
+#else
+        av->audio_frame = av_frame_alloc();
+#endif
         success = av->audio_frame;
         if (!success) err_msg = "Could not allocate audio frame";
     }
@@ -550,6 +567,7 @@ bool Movie::Setup()
     // Start movie file
     if (success)
     {
+        video_stream->time_base = (AVRational){1, TICKS_PER_SECOND};
         avformat_write_header(av->fmt_ctx, NULL);
     }
     
@@ -615,13 +633,15 @@ void Movie::EncodeVideo(bool last)
     while (!done)
     {
         // add video
-        int vsize = avcodec_encode_video(vcodec,
-                                         av->video_buf, av->video_bufsize,
-                                         frame);
+        AVPacket pkt;
+        av_init_packet(&pkt);
+        pkt.data = av->video_buf;
+        pkt.size = av->video_bufsize;
+        
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54,0,0)
+        int vsize = avcodec_encode_video(vcodec, av->video_buf, av->video_bufsize, frame);
         if (vsize > 0)
         {
-            AVPacket pkt;
-            av_init_packet(&pkt);
             if (vcodec->coded_frame->pts != AV_NOPTS_VALUE)
             {
                 pkt.pts = av_rescale_q(vcodec->coded_frame->pts,
@@ -630,12 +650,19 @@ void Movie::EncodeVideo(bool last)
             }
             if (vcodec->coded_frame->key_frame)
                 pkt.flags |= AV_PKT_FLAG_KEY;
-            pkt.stream_index = vstream->index;
-            pkt.data = av->video_buf;
             pkt.size = vsize;
-            av_interleaved_write_frame(av->fmt_ctx, &pkt);
-            av_free_packet(&pkt);
         }
+
+#else
+        int got_packet = 0;
+        int vsize = avcodec_encode_video2(vcodec, &pkt, frame, &got_packet);
+#endif
+        if (vsize > 0)
+        {
+            pkt.stream_index = vstream->index;
+            av_interleaved_write_frame(av->fmt_ctx, &pkt);
+        }
+        av_free_packet(&pkt);
         
         if (!last || vsize <= 0)
             done = true;
@@ -679,7 +706,11 @@ void Movie::EncodeAudio(bool last)
                       write_samples, acodec->channels, write_samples * write_bps,
                       acodec->sample_fmt, av->audio_data_conv);
                       
+#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(55,28,1)
         avcodec_get_frame_defaults(av->audio_frame);
+#else
+        av_frame_unref(av->audio_frame);
+#endif
         av->audio_frame->nb_samples = write_samples;
         int asize = avcodec_fill_audio_frame(av->audio_frame, acodec->channels,
                                              acodec->sample_fmt,
@@ -695,7 +726,7 @@ void Movie::EncodeAudio(bool last)
             if (0 == avcodec_encode_audio2(acodec, &pkt, av->audio_frame, &got_pkt)
                 && got_pkt)
             {
-                if (acodec->coded_frame->pts != AV_NOPTS_VALUE)
+                if (acodec->coded_frame && acodec->coded_frame->pts != AV_NOPTS_VALUE)
                 {
                     pkt.pts = av_rescale_q(acodec->coded_frame->pts,
                                            acodec->time_base,
