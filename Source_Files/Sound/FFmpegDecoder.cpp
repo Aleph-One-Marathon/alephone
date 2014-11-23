@@ -21,6 +21,9 @@
  
  */
 
+// make FFmpeg happy
+#define __STDC_CONSTANT_MACROS
+
 #include "FFmpegDecoder.h"
 
 #ifdef HAVE_FFMPEG
