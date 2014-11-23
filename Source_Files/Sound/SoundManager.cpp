@@ -20,6 +20,8 @@ SOUND.C
 
 */
 
+#include <iostream>
+
 #include "SoundManager.h"
 #include "ReplacementSounds.h"
 #include "sound_definitions.h"
