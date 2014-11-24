@@ -274,6 +274,18 @@ void L_Class<name, index_t>::Invalidate(lua_State *L, index_t index)
 	lua_pushnil(L);
 	lua_settable(L, -3);
 	lua_pop(L, 1);
+
+	// clear custom fields
+	lua_pushlightuserdata(L, (void *) (L_Persistent_Table_Key()));
+	lua_gettable(L, LUA_REGISTRYINDEX);
+	lua_getfield(L, -1, name);
+	if (!lua_isnil(L, -1))
+	{
+		lua_pushnumber(L, index);
+		lua_pushnil(L);
+		lua_settable(L, -3);
+	}
+	lua_pop(L, 2);
 }
 
 template<char *name, typename index_t>
