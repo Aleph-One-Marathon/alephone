@@ -541,6 +541,23 @@ end
     </table>
     <accessor name="Game" contains="game"/>
 
+    <table name="level" singleton="true">
+      <note>all items in Level are read-only</note>
+      <variable name="name" version="SVN">
+        <description>level name</description>
+        <type>string</type>
+      </variable>
+      <variable name="index" version="SVN">
+        <description>level index in the map file (starting from 0)</description>
+        <type>number</type>
+      </variable>
+      <variable name="map_checksum" version="SVN">
+        <description>checksum of map file</description>
+        <type>number</type>
+      </variable>      
+    </table>
+    <accessor name="Level" contains="level"/>
+
     <table name="player" singleton="true">
       <note>All items in Player are read-only</note>
       <variable name="color">

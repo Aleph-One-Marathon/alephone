@@ -2836,6 +2836,41 @@ const luaL_Reg Lua_HUDGame_Get[] = {
 {0, 0}
 };
 
+
+char Lua_HUDLevel_Name[] = "Level";
+typedef L_Class<Lua_HUDLevel_Name> Lua_HUDLevel;
+
+static int Lua_HUDLevel_Get_Name(lua_State *L)
+{
+    lua_pushstring(L, static_world->level_name);
+    return 1;
+}
+
+static int Lua_HUDLevel_Get_Index(lua_State *L)
+{
+    lua_pushinteger(L, dynamic_world->current_level_number);
+    return 1;
+}
+
+static int Lua_HUDLevel_Get_Map_Checksum(lua_State *L)
+{
+#if !defined(DISABLE_NETWORKING)
+    if (game_is_networked)
+        lua_pushinteger(L, ((game_info *) NetGetGameData())->parent_checksum);
+    else
+#endif
+        lua_pushinteger(L, get_current_map_checksum());
+    return 1;
+}
+
+const luaL_Reg Lua_HUDLevel_Get[] = {
+    {"name", Lua_HUDLevel_Get_Name},
+    {"index", Lua_HUDLevel_Get_Index},
+    {"map_checksum", Lua_HUDLevel_Get_Map_Checksum},
+    {0, 0}
+};
+
+
 char Lua_HUDLighting_Fader_Name[] = "lighting_fader";
 typedef L_Class<Lua_HUDLighting_Fader_Name> Lua_HUDLighting_Fader;
 
@@ -3206,6 +3241,10 @@ int Lua_HUDObjects_register(lua_State *L)
 	Lua_HUDGame::Push(L, 0);
 	lua_setglobal(L, Lua_HUDGame_Name);
 
+	Lua_HUDLevel::Register(L, Lua_HUDLevel_Get);
+	Lua_HUDLevel::Push(L, 0);
+	lua_setglobal(L, Lua_HUDLevel_Name);
+    
 	Lua_Font::Register(L, Lua_Font_Get, Lua_Font_Set, Lua_Font_Metatable);
 	
 	Lua_Fonts::Register(L, Lua_Fonts_Get);
