@@ -52,6 +52,7 @@ void L_Call_Monster_Killed(short monster_index, short aggressor_player_index, sh
 void L_Call_Monster_Damaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location);
+void L_Call_Projectile_Created(short projectile_index);
 void L_Call_Item_Created(short item_index);
 
 void L_Invalidate_Effect(short effect_index);

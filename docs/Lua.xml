@@ -321,6 +321,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <argument name="item"><type>item</type></argument>
       <note>does not trigger on initial item placement because the initial item placement is done before Lua becomes initialised.</note>
     </function>
+    <function name="projectile_created" version="SVN">
+      <description>whenever a projectile is created</description>
+      <argument name="projectile"><type>projectile</type></argument>
+    </function>
     <function name="projectile_detonated">
       <description>whenever a projectile detonates, after it has done any area of effect damage</description>
       <argument name="type"><type>projectile_type</type></argument>

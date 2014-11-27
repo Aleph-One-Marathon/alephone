@@ -305,6 +305,7 @@ short new_projectile(
 
 				SET_OBJECT_OWNER(object, _object_is_projectile);
 				object->sound_pitch= definition->sound_pitch;
+				L_Call_Projectile_Created(projectile_index);
 			}
 			else
 			{

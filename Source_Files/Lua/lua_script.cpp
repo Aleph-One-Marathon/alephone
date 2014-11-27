@@ -171,6 +171,7 @@ void L_Call_Monster_Damaged(short monster_index, short aggressor_monster_index, 
 void L_Call_Player_Damaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index) {}
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) {}
 void L_Call_Projectile_Switch(short, short) {}
+void L_Call_Projectile_Created(short projectile_index) {}
 void L_Call_Item_Created(short item_index) {}
 
 void L_Invalidate_Effect(short) { }
@@ -329,6 +330,7 @@ public:
 	void MonsterDamaged(short monster_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
 	void PlayerDamaged(short player_index, short aggressor_player_index, short aggressor_monster_index, int16 damage_type, short damage_amount, short projectile_index);
 	void ProjectileDetonated(short type, short owner_index, short polygon, world_point3d location);
+	void ProjectileCreated(short projectile_index);
 	void ItemCreated(short item_index);
 
 	void InvalidateEffect(short effect_index);
@@ -654,6 +656,15 @@ void LuaState::ProjectileDetonated(short type, short owner_index, short polygon,
 		lua_pushnumber(State(), location.z / (double)WORLD_ONE);
 
 		CallTrigger(6);
+	}
+}
+
+void LuaState::ProjectileCreated (short projectile_index)
+{
+	if (GetTrigger("projectile_created"))
+	{
+		Lua_Projectile::Push(State(), projectile_index);
+		CallTrigger(1);
 	}
 }
 
@@ -1272,6 +1283,11 @@ void L_Call_Player_Damaged (short player_index, short aggressor_player_index, sh
 void L_Call_Projectile_Detonated(short type, short owner_index, short polygon, world_point3d location) 
 {
 	L_Dispatch(boost::bind(&LuaState::ProjectileDetonated, _1, type, owner_index, polygon, location));
+}
+
+void L_Call_Projectile_Created (short projectile_index)
+{
+	L_Dispatch(boost::bind(&LuaState::ProjectileCreated, _1, projectile_index));
 }
 
 void L_Call_Item_Created (short item_index)
