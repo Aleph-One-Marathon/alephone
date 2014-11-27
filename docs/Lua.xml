@@ -666,6 +666,14 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>level name</description>
 	<type>string</type>
       </variable>
+      <variable name="index" access="read-only" version="SVN">
+	<description>level index in the map file (starting from 0)</description>
+	<type>number</type>
+      </variable>
+      <variable name="map_checksum" access="read-only" version="SVN">
+	<description>checksum of map file</description>
+	<type>number</type>
+      </variable>
       <variable name="rebellion" access="read-only">
 	<description>whether level is rebellion</description>
 	<type>boolean</type>

@@ -21,6 +21,7 @@ LUA_MAP.CPP
 */
 
 #include "interface.h" // get_game_state
+#include "network.h"   // game_info
 #include "lua_map.h"
 #include "lua_monsters.h"
 #include "lua_objects.h"
@@ -3082,6 +3083,23 @@ static int Lua_Level_Get_Name(lua_State *L)
 	return 1;
 }
 
+static int Lua_Level_Get_Index(lua_State *L)
+{
+	lua_pushinteger(L, dynamic_world->current_level_number);
+	return 1;
+}
+
+static int Lua_Level_Get_Map_Checksum(lua_State *L)
+{
+#if !defined(DISABLE_NETWORKING)
+	if (game_is_networked)
+		lua_pushinteger(L, ((game_info *) NetGetGameData())->parent_checksum);
+	else
+#endif
+		lua_pushinteger(L, get_current_map_checksum());
+	return 1;
+}
+
 static int Lua_Level_Get_Underwater_Fog(lua_State *L)
 {
 	Lua_Fog::Push(L, OGL_Fog_BelowLiquid);
@@ -3097,6 +3115,8 @@ const luaL_Reg Lua_Level_Get[] = {
 	{"low_gravity", Lua_Level_Get_Environment_Flag<_environment_low_gravity>},
 	{"magnetic", Lua_Level_Get_Environment_Flag<_environment_magnetic>},
 	{"name", Lua_Level_Get_Name},
+	{"index", Lua_Level_Get_Index},
+	{"map_checksum", Lua_Level_Get_Map_Checksum},
 	{"rebellion", Lua_Level_Get_Environment_Flag<_environment_rebellion>},
 	{"retrieval", Lua_Level_Get_Mission_Flag<_mission_retrieval>},
 	{"repair", Lua_Level_Get_Mission_Flag<_mission_repair>},
