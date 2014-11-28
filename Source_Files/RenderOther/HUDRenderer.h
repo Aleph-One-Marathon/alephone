@@ -221,15 +221,12 @@ protected:
 	void draw_player_name(void);
 	virtual void draw_message_area(short time_elapsed);
 
-	void motion_sensor_scan(short ticks_elapsed);
 	void draw_network_compass(void);
-	void erase_all_entity_blips(void);
 	virtual void draw_all_entity_blips(void);
 
 	virtual void update_motion_sensor(short time_elapsed) = 0;
 	virtual void render_motion_sensor(short time_elapsed) = 0;
 	virtual void draw_or_erase_unclipped_shape(short x, short y, shape_descriptor shape, bool draw) = 0;
-	virtual void erase_entity_blip(point2d *location, shape_descriptor shape) = 0;
 	virtual void draw_entity_blip(point2d *location, shape_descriptor shape) = 0;
 
 	virtual void DrawShape(shape_descriptor shape, screen_rectangle *dest, screen_rectangle *src) = 0;

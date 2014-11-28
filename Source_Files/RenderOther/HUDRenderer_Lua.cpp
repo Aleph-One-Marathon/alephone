@@ -67,11 +67,7 @@ void Lua_DrawHUD(short time_elapsed)
 
 void HUD_Lua_Class::update_motion_sensor(short time_elapsed)
 {
-	if (!(GET_GAME_OPTIONS() & _motion_sensor_does_not_work) && MotionSensorActive) {
-		if (time_elapsed == NONE)
-			reset_motion_sensor(current_player_index);
-		motion_sensor_scan(time_elapsed);
-	}
+	render_motion_sensor(time_elapsed);
 }
 
 void HUD_Lua_Class::clear_entity_blips(void)

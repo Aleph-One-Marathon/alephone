@@ -118,6 +118,8 @@ Feb 8, 2003 (Woody Zenfell):
 #include "Console.h"
 #include "Movie.h"
 
+#include "motion_sensor.h"
+
 #include <limits.h>
 
 #ifdef env68k
@@ -419,6 +421,7 @@ update_world_elements_one_tick()
 		
 		AnimTxtr_Update();
 		ChaseCam_Update();
+		motion_sensor_scan();
 		
 #if !defined(DISABLE_NETWORKING)
 		update_net_game();

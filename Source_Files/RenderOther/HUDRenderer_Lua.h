@@ -93,7 +93,6 @@ protected:
 	void render_motion_sensor(short time_elapsed);
 	void draw_all_entity_blips(void);
 	void draw_or_erase_unclipped_shape(short x, short y, shape_descriptor shape, bool draw) {}
-	void erase_entity_blip(point2d *location, shape_descriptor shape) {}
 	void draw_entity_blip(point2d *location, shape_descriptor shape) {}
 
 	virtual void draw_message_area(short) {}

@@ -302,12 +302,10 @@ void draw_interface(void)
 	but skip the interface frame) */
 void update_interface(short time_elapsed)
 {
-	if (alephone::Screen::instance()->openGL() || alephone::Screen::instance()->lua_hud()) {
-		if (time_elapsed == NONE)
-			reset_motion_sensor(current_player_index);
-		else
-			return;
-	}
+	if (time_elapsed == NONE)
+        reset_motion_sensor(current_player_index);
+	if (alephone::Screen::instance()->openGL() || alephone::Screen::instance()->lua_hud())
+        return;
 
 	if (!game_window_is_full_screen())
 	{
