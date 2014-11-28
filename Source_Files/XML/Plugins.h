@@ -27,6 +27,10 @@
 #include <string>
 #include <vector>
 
+struct ScenarioInfo {
+	std::string scenario_id;
+	std::string version;
+};
 struct ShapesPatch {
 	bool requires_opengl;
 	std::string path;
@@ -43,6 +47,7 @@ struct Plugin {
 	std::string theme;
 	std::string required_version;
 	std::vector<ShapesPatch> shapes_patches;
+	std::vector<ScenarioInfo> required_scenarios;
 
 	bool enabled;
 	bool compatible() const;

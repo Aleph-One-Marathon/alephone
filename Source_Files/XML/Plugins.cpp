@@ -33,6 +33,7 @@
 #include "XML_Configure.h"
 #include "XML_Loader_SDL.h"
 #include "XML_ParseTreeRoot.h"
+#include "Scenario.h"
 
 #ifdef HAVE_ZZIP
 #include <zzip/lib.h>
@@ -63,7 +64,20 @@ private:
 };
 
 bool Plugin::compatible() const {
-	return (required_version.size() == 0 || A1_DATE_VERSION >= required_version);
+	if (required_version.size() > 0 && A1_DATE_VERSION < required_version)
+		return false;
+
+	if (required_scenarios.size() == 0)
+		return true;
+	std::string scenID = Scenario::instance()->GetID();
+	std::string scenVers = Scenario::instance()->GetVersion();
+	for (std::vector<ScenarioInfo>::const_iterator it = required_scenarios.begin(); it != required_scenarios.end(); ++it)
+	{
+		if (it->scenario_id == scenID &&
+		    (it->version.empty() || it->version == scenVers))
+			return true;
+	}
+	return false;
 }
 
 Plugins* Plugins::m_instance = 0;
@@ -299,6 +313,60 @@ bool XML_PluginShapesPatchParser::End()
 
 XML_PluginShapesPatchParser PluginShapesPatchParser;
 
+class XML_PluginScenarioInfoParser : public XML_ElementParser
+{
+public:
+    bool HandleAttribute(const char* Tag, const char* Value);
+    bool AttributesDone();
+    bool End();
+    
+    XML_PluginScenarioInfoParser() : XML_ElementParser("scenario") {}
+    
+private:
+    std::string ID;
+    std::string Version;
+};
+
+bool XML_PluginScenarioInfoParser::HandleAttribute(const char* Tag, const char* Value)
+{
+    if (StringsEqual(Tag, "id"))
+    {
+        ID = std::string(Value, 0, 23);
+        return true;
+    }
+    else if (StringsEqual(Tag, "version"))
+    {
+        Version = std::string(Value, 0, 7);
+        return true;
+    }
+    
+    UnrecognizedTag();
+    return false;
+}
+
+bool XML_PluginScenarioInfoParser::AttributesDone()
+{
+    if (ID.empty())
+    {
+        AttribsMissing();
+        return false;
+    }
+    
+    return true;
+}
+
+bool XML_PluginScenarioInfoParser::End()
+{
+    ScenarioInfo info;
+    info.scenario_id = ID;
+    info.version = Version;
+    
+    Data.required_scenarios .push_back(info);
+    return true;
+}
+
+XML_PluginScenarioInfoParser PluginScenarioInfoParser;
+
 static DirectorySpecifier current_plugin_directory;
 
 class XML_PluginParser : public XML_ElementParser
@@ -482,6 +550,7 @@ extern std::vector<DirectorySpecifier> data_search_path;
 void Plugins::enumerate() {
 	PluginParser.AddChild(&PluginMMLParser);
 	PluginParser.AddChild(&PluginShapesPatchParser);
+	PluginParser.AddChild(&PluginScenarioInfoParser);
 	PluginRootParser.AddChild(&PluginParser);
 
 	logContext("parsing plugins");
