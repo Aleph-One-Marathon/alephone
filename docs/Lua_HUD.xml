@@ -126,6 +126,9 @@ end
     <section id="custom" name="Custom Fields">
       <description><p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p><pre>Players[0]._favorite_flavor = "chocolate"</pre></description>
     </section>
+    <section id="table_is" name="is_ Functions">
+      <description><p>Aleph One installs a set of boolean functions that can be used to recognize each of the userdata table types. For example, <code>is_font(Fonts[1])</code> returns true. Each of these functions begins with the "is_" prefix.</p></description>
+    </section>
   </section>
   <tables id="tables">
 

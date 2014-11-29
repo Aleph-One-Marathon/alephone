@@ -121,6 +121,7 @@
 <a href="#using_tables">Using Tables</a><ol>
 <li><a href="#custom">Custom Fields</a></li>
 <li><a href="#table_indices">Index</a></li>
+<li><a href="#table_is">is_ Functions</a></li>
 </ol>
 </li>
 <li>
@@ -378,6 +379,9 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 <a name="table_indices"></a>Index</h2>
 <p>Each table has a read-only .index variable, that corresponds to the engine's internal index.</p>
 <pre>=Players[0].index<br>0</pre>
+<h2>
+<a name="table_is"></a>is_ Functions</h2>
+<p>Aleph One installs a set of boolean functions that can be used to recognize each of the userdata table types. For example, <code>is_monster(Monsters[1])</code> returns true. Each of these functions begins with the "is_" prefix.</p>
 <h1><a name="tables">Tables</a></h1>
 <div class="tables">
 <h3>

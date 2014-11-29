@@ -114,7 +114,10 @@
 </li>
 <li><a href="#triggers">Triggers</a></li>
 <li>
-<a href="#using_tables">Using Tables</a><ol><li><a href="#custom">Custom Fields</a></li></ol>
+<a href="#using_tables">Using Tables</a><ol>
+<li><a href="#custom">Custom Fields</a></li>
+<li><a href="#table_is">is_ Functions</a></li>
+</ol>
 </li>
 <li>
 <a href="#tables">Tables</a><ol>
@@ -200,6 +203,9 @@ end
 <a name="custom"></a>Custom Fields</h2>
 <p>In a real Lua table, you can set any field you want. In order to help troubleshooting, Aleph One's userdata tables will only accept the fields listed in the documentation below. However, by prepending an underscore, custom fields can be indexed. These custom fields will be associated with the object until it is destroyed.</p>
 <pre>Players[0]._favorite_flavor = "chocolate"</pre>
+<h2>
+<a name="table_is"></a>is_ Functions</h2>
+<p>Aleph One installs a set of boolean functions that can be used to recognize each of the userdata table types. For example, <code>is_font(Fonts[1])</code> returns true. Each of these functions begins with the "is_" prefix.</p>
 <h1><a name="tables">Tables</a></h1>
 <div class="tables">
 <h3>
