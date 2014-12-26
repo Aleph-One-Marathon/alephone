@@ -716,6 +716,13 @@ static const char* term_scale_labels[] = {
 "Normal", "Double", "Largest", NULL
 };
 
+static const char* max_saves_labels[] = {
+	"20", "100", "500", "Unlimited", NULL
+};
+static const uint32 max_saves_values[] = {
+	20, 100, 500, 0
+};
+
 
 enum {
     iRENDERING_SYSTEM = 1000
@@ -1866,6 +1873,14 @@ static void environment_dialog(void *arg)
 	table->dual_add(film_profile_w->label("Film Playback"), d);
 	table->dual_add(film_profile_w, d);
 
+	w_select *max_saves_w = new w_select(0, max_saves_labels);
+	for (int i = 0; max_saves_labels[i] != NULL; ++i) {
+		if (max_saves_values[i] == environment_preferences->maximum_quick_saves)
+			max_saves_w->set_selection(i);
+	}
+	table->dual_add(max_saves_w->label("Unnamed Saves to Keep"), d);
+	table->dual_add(max_saves_w, d);
+
 	placer->add(table, true);
 
 	placer->add(new w_spacer, true);
@@ -1981,6 +1996,13 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 
+		bool saves_changed = false;
+		int saves = max_saves_values[max_saves_w->get_selection()];
+		if (saves != environment_preferences->maximum_quick_saves) {
+			environment_preferences->maximum_quick_saves = saves;
+			saves_changed = true;
+		}
+
 		if (changed)
 			load_environment_from_preferences();
 
@@ -1988,7 +2010,7 @@ static void environment_dialog(void *arg)
 			load_theme(new_theme);
 		}
 
-		if (changed || theme_changed)
+		if (changed || theme_changed || saves_changed)
 			write_preferences();
 	}
 
@@ -2370,6 +2392,7 @@ void write_preferences(
 	fprintf(F,"  use_hud_lua=\"%s\"\n", BoolString(environment_preferences->use_hud_lua));
 	fprintf(F,"  hide_alephone_extensions=\"%s\"\n", BoolString(environment_preferences->hide_extensions));
 	fprintf(F,"  film_profile=\"%u\"\n", static_cast<uint32>(environment_preferences->film_profile));
+	fprintf(F,"  maximum_quick_saves=\"%u\"\n",environment_preferences->maximum_quick_saves);
 	fprintf(F,">\n");
 	for (Plugins::iterator it = Plugins::instance()->begin(); it != Plugins::instance()->end(); ++it) {
 		if (it->compatible() && !it->enabled) {
@@ -2602,6 +2625,7 @@ static void default_environment_preferences(environment_preferences_data *prefer
 	preferences->use_hud_lua = false;
 	preferences->hide_extensions = true;
 	preferences->film_profile = FILM_PROFILE_DEFAULT;
+	preferences->maximum_quick_saves = 0;
 }
 
 
@@ -4089,6 +4113,10 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 			return true;
 		} 
 		return false;
+	}
+	else if (StringsEqual(Tag,"maximum_quick_saves"))
+	{
+		return ReadUInt32Value(Value,environment_preferences->maximum_quick_saves);
 	}
 	return true;
 }

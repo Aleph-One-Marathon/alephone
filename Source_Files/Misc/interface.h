@@ -284,7 +284,7 @@ void remove_network_microphone(void);
 // Should return NONE if user cancels, 0 for single player, or 1 for multiplayer.
 // Game has been loaded from file before this is called so elements like
 // dynamic_world->player_count are available.  Cursor has been hidden when called.
-size_t should_restore_game_networked();
+size_t should_restore_game_networked(FileSpecifier& file);
 
 void show_movie(short index);
 

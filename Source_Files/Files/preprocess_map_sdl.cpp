@@ -36,6 +36,7 @@
 #include "interface.h"
 #include "game_wad.h"
 #include "game_errors.h"
+#include "QuickSave.h"
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
@@ -119,7 +120,7 @@ bool get_default_theme_spec(FileSpecifier &file)
 
 bool choose_saved_game_to_load(FileSpecifier &saved_game)
 {
-	return saved_game.ReadDialog(_typecode_savegame);
+	return load_quick_save_dialog(saved_game);
 }
 
 
@@ -130,23 +131,11 @@ bool choose_saved_game_to_load(FileSpecifier &saved_game)
 bool save_game(void)
 {
 	pause_game();
-	show_cursor();
-
-	// Translate the name
-	FileSpecifier file;
-	get_current_saved_game_name(file);
-	char game_name[256];
-	file.GetName(game_name);
-
-	// Display the dialog
-	char prompt[256];
-	bool success = file.WriteDialogAsync(_typecode_savegame, getcstr(prompt, strPROMPTS, _save_game_prompt), game_name);
-
-	// Save game
-	if (success)
-		success = save_game_file(file);
-
-	hide_cursor();
+    bool success = create_quick_save();
+    if (success)
+        screen_printf("Game saved");
+    else
+        screen_printf("Save failed");
 	resume_game();
 
 	return success;

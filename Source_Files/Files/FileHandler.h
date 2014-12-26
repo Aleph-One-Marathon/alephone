@@ -345,6 +345,7 @@ public:
 	void SetToLocalDataDir();		// Per-user directory (for temporary files)
 	void SetToPreferencesDir();		// Directory for preferences (per-user)
 	void SetToSavedGamesDir();		// Directory for saved games (per-user)
+	void SetToQuickSavesDir();		// Directory for auto-named saved games (per-user)
 	void SetToRecordingsDir();		// Directory for recordings (per-user)
 
 	void AddPart(const string &part);

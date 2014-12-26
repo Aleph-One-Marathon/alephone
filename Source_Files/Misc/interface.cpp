@@ -145,6 +145,7 @@ extern TP2PerfGlobals perf_globals;
 #include "XML_LevelScript.h"
 #include "Music.h"
 #include "Movie.h"
+#include "QuickSave.h"
 
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
@@ -905,7 +906,7 @@ bool load_and_start_game(FileSpecifier& File)
 #ifdef __MACOS__
 		theResult = 0;
 #else
-		theResult = should_restore_game_networked();
+		theResult = should_restore_game_networked(File);
 #endif
 	}
 
@@ -3277,8 +3278,13 @@ void show_movie(short index)
 }
 
 
-size_t should_restore_game_networked()
+size_t should_restore_game_networked(FileSpecifier& file)
 {
+	// We return -1 (NONE) for "cancel", 0 for "not networked", and 1 for "networked".
+	size_t theResult = saved_game_was_networked(file);
+	if (theResult != UNONE)
+		return theResult;
+	
         dialog d;
 
 	vertical_placer *placer = new vertical_placer;
@@ -3302,8 +3308,6 @@ size_t should_restore_game_networked()
 
 	placer->add(button_placer, true);
 
-        // We return -1 (NONE) for "cancel", 0 for "not networked", and 1 for "networked".
-        size_t theResult;
 
 	d.set_widget_placer(placer);
 

@@ -249,6 +249,9 @@ struct environment_preferences_data
 
 	// Marathon 1 resources from the application itself
 	char resources_file[256];
+
+	// how many auto-named save files to keep around (0 is unlimited)
+	uint32 maximum_quick_saves;
 };
 
 /* New preferences.. (this sorta defeats the purpose of this system, but not really) */

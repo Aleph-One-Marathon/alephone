@@ -156,6 +156,7 @@ DirectorySpecifier bundle_data_dir;	  // Data inside Mac OS X app bundle
 #endif
 DirectorySpecifier preferences_dir;   // Directory for preferences
 DirectorySpecifier saved_games_dir;   // Directory for saved games
+DirectorySpecifier quick_saves_dir;   // Directory for auto-named saved games
 DirectorySpecifier recordings_dir;    // Directory for recordings (except film buffer, which is stored in local_data_dir)
 DirectorySpecifier screenshots_dir;   // Directory for screenshots
 DirectorySpecifier log_dir;           // Directory for Aleph One Log.txt
@@ -391,6 +392,11 @@ int main(int argc, char **argv)
 
 	return 0;
 }
+               
+static int char_is_not_filesafe(int c)
+{
+    return (c != ' ' && !std::isalnum(c));
+}
 
 static void initialize_application(void)
 {
@@ -529,6 +535,7 @@ static void initialize_application(void)
 	preferences_dir = local_data_dir;
 #endif	
 	saved_games_dir = local_data_dir + "Saved Games";
+	quick_saves_dir = local_data_dir + "Quick Saves";
 	recordings_dir = local_data_dir + "Recordings";
 	screenshots_dir = local_data_dir + "Screenshots";
 #if defined(__APPLE__) && defined(__MACH__)
@@ -590,6 +597,16 @@ static void initialize_application(void)
 
 	local_data_dir.CreateDirectory();
 	saved_games_dir.CreateDirectory();
+	quick_saves_dir.CreateDirectory();
+	{
+		std::string scen = Scenario::instance()->GetID();
+		if (scen.length())
+			scen.erase(std::remove_if(scen.begin(), scen.end(), char_is_not_filesafe), scen.end());
+		if (!scen.length())
+			scen = "Unknown";
+		quick_saves_dir += scen;
+		quick_saves_dir.CreateDirectory();
+	}
 	recordings_dir.CreateDirectory();
 	screenshots_dir.CreateDirectory();
 	local_mml_dir.CreateDirectory();
