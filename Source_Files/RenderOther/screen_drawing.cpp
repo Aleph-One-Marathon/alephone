@@ -300,13 +300,6 @@ void _set_port_to_map(void)
 	draw_surface = Map_Buffer;
 }
 
-void _set_port_to_custom(SDL_Surface *surface)
-{
-	assert(old_draw_surface == NULL);
-	old_draw_surface = draw_surface;
-	draw_surface = surface;
-}
-
 /*
  *  Set clipping rectangle
  */
