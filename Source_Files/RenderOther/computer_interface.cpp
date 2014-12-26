@@ -734,6 +734,7 @@ void _render_computer_interface(void)
 						break;
 			
 					case _static_group:
+						bounds = get_term_rectangle(_terminal_screen_rect);
 						fill_terminal_with_static(&bounds);
 						SET_TERMINAL_IS_DIRTY(terminal_data, true);
 						break;

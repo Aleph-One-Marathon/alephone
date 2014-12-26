@@ -142,6 +142,7 @@ void _restore_port(void);
 void _set_port_to_term(void);
 void _set_port_to_intro(void);
 void _set_port_to_map(void);
+void _set_port_to_custom(SDL_Surface *surface);
 #endif
 
 /* If source==NULL, source= the shapes bounding rectangle */
