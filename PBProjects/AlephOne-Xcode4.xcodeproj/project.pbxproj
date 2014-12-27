@@ -56,6 +56,7 @@
 		2759FB3210D71184000204DD /* freetype.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
 		2759FB3510D7118B000204DD /* freetype.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2759FB3110D71184000204DD /* freetype.framework */; };
 		276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
+		276D4E771A2E734E00C16CF5 /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276D4E761A2E734E00C16CF5 /* QuickSave.cpp */; };
 		277AB6C0109CE2570003402A /* Rasterizer_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */; };
 		277AB6C1109CE2570003402A /* Rasterizer_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 277AB6BD109CE2570003402A /* Rasterizer_Shader.h */; };
 		277AB6C2109CE2570003402A /* RenderRasterize_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */; };
@@ -1921,6 +1922,8 @@
 		2759FB3110D71184000204DD /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = freetype.framework; sourceTree = "<group>"; };
 		276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_saved_objects.cpp; sourceTree = "<group>"; };
 		276589F7119DF1DD0096F75B /* lua_saved_objects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_saved_objects.h; sourceTree = "<group>"; };
+		276D4E751A2E710F00C16CF5 /* QuickSave.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = QuickSave.h; sourceTree = "<group>"; };
+		276D4E761A2E734E00C16CF5 /* QuickSave.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QuickSave.cpp; sourceTree = "<group>"; };
 		277AB6BC109CE2570003402A /* Rasterizer_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Rasterizer_Shader.cpp; sourceTree = "<group>"; };
 		277AB6BD109CE2570003402A /* Rasterizer_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Rasterizer_Shader.h; sourceTree = "<group>"; };
 		277AB6BE109CE2570003402A /* RenderRasterize_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = RenderRasterize_Shader.cpp; sourceTree = "<group>"; };
@@ -3454,6 +3457,7 @@
 				F5CC94370240DE0E01A80001 /* SDL */,
 				F5CC943A0240DE0E01A80001 /* ColorParser.cpp */,
 				F5CC943B0240DE0E01A80001 /* DamageParser.cpp */,
+				276D4E761A2E734E00C16CF5 /* QuickSave.cpp */,
 				277AB97E10A26AF40003402A /* Plugins.cpp */,
 				F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */,
 				F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */,
@@ -3470,6 +3474,7 @@
 			isa = PBXGroup;
 			children = (
 				277AB98010A26B020003402A /* Plugins.h */,
+				276D4E751A2E710F00C16CF5 /* QuickSave.h */,
 				F5CC942C0240DE0E01A80001 /* ColorParser.h */,
 				F5CC942D0240DE0E01A80001 /* DamageParser.h */,
 				F5CC942E0240DE0E01A80001 /* ShapesParser.h */,
@@ -5258,6 +5263,7 @@
 				AEC3C7F109AD68AC003258E4 /* PlayerImage_sdl.cpp in Sources */,
 				AEC3C7F209AD68AC003258E4 /* thread_priority_sdl_macosx.cpp in Sources */,
 				AEC3C7F309AD68AC003258E4 /* network_data_formats.cpp in Sources */,
+				276D4E771A2E734E00C16CF5 /* QuickSave.cpp in Sources */,
 				AEC3C7F409AD68AC003258E4 /* network_dialog_widgets_sdl.cpp in Sources */,
 				AEC3C7F509AD68AC003258E4 /* SDL_netx.cpp in Sources */,
 				AEC3C7F609AD68AC003258E4 /* SSLP_limited.cpp in Sources */,
