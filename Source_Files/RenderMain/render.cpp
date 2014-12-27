@@ -210,6 +210,7 @@ Jan 17, 2001 (Loren Petrich):
 #include "lightsource.h"
 #include "media.h"
 #include "weapons.h"
+#include "player.h"
 
 // LP additions
 #include "dynamic_limits.h"
@@ -299,6 +300,15 @@ static Rasterizer_Shader_Class Rasterizer_Shader;   // Shader rasterizer
 static RenderRasterize_Shader Render_Shader;       // Shader clipping and rasterization class
 #endif
 
+// In Marathon 1-style exploration missions, we check
+// each player's view for exploration polygons after
+// this many ticks have elapsed
+static const int TICKS_PER_EXPLORE = 4;
+
+// M1 exploration mission helpers
+static struct view_data explore_view;
+static RenderVisTreeClass explore_tree;
+
 void OGL_Rasterizer_Init() {
 	
 #ifdef HAVE_OPENGL
@@ -359,16 +369,17 @@ void allocate_render_memory(
 	geometry without effecting the image being projected onto it.  if you don't understand
 	this, pass standard_width==width */
 void initialize_view_data(
-	struct view_data *view)
+	struct view_data *view,
+	bool ignore_preferences)
 {
 	double two_pi= 8.0*atan(1.0);
 	double half_cone= view->field_of_view*(two_pi/360.0)/2;
  	/* half_cone needs to be extended for non oblique perspective projection (gluPerspective).
 	 this is required because the viewing angle is different for about the same field of view */
-	if (graphics_preferences->screen_mode.acceleration == _shader_acceleration)
+	if (!ignore_preferences && graphics_preferences->screen_mode.acceleration == _shader_acceleration)
 		half_cone= (view->field_of_view * 1.3)*(two_pi/360.0)/2;
 
-	double adjusted_half_cone= View_FOV_FixHorizontalNotVertical() ?
+	double adjusted_half_cone= (ignore_preferences || View_FOV_FixHorizontalNotVertical()) ?
 		half_cone :
 		atan(view->screen_width*tan(half_cone)/view->standard_screen_width);
 	double world_to_screen;
@@ -509,6 +520,76 @@ void start_render_effect(
 	view->effect= effect;
 	view->effect_phase= NONE;
 }
+
+void check_m1_exploration(void)
+{
+	// Are we even on an exploration mission?
+	if (!(static_world->mission_flags & _mission_exploration_m1))
+		return;
+
+	// Are there still polygons to explore?
+	bool need_exploring = false;
+	short polygon_index;
+	struct polygon_data *polygon;
+	for (polygon_index = 0, polygon = map_polygons;
+	     polygon_index < dynamic_world->polygon_count;
+	     ++polygon_index, ++polygon)
+    {
+		if (polygon->type == _polygon_must_be_explored)
+		{
+			need_exploring = true;
+			break;
+		}
+	}
+	if (!need_exploring)
+		return;
+
+	// All right, we need to do something.
+	// First, make sure our data is set up.
+	if (!explore_tree.view)
+	{
+		explore_view.overhead_map_active = false;
+		explore_view.terminal_mode_active = false;
+		explore_view.tunnel_vision_active = false;
+		explore_view.effect = NONE;
+		explore_view.horizontal_scale = 1;
+		explore_view.vertical_scale = 1;
+        
+		// For cross-player stability, we don't leave any view settings
+		// up to the preferences or MML.
+		explore_view.field_of_view = explore_view.target_field_of_view = 80;
+		explore_view.screen_width = explore_view.standard_screen_width = 640;
+		explore_view.screen_height = 320;
+
+		// We only need to initialize once, since nothing
+		// that we use changes.
+		initialize_view_data(&explore_view);
+
+		explore_tree.view = &explore_view;
+		explore_tree.add_to_automap = false;
+		explore_tree.mark_as_explored = true;
+		explore_tree.Resize(MAXIMUM_ENDPOINTS_PER_MAP, MAXIMUM_LINES_PER_MAP);
+	}
+
+	// Check the relevant players' views for exploration polygons.
+	// We check every TICKS_PER_EXLORE ticks, staggered by index.
+	for (int i = (dynamic_world->tick_count % TICKS_PER_EXPLORE);
+	     i < dynamic_world->player_count;
+	     i += TICKS_PER_EXPLORE)
+	{
+		struct player_data *explore_player = &players[i];
+		explore_view.yaw = explore_player->facing;
+		explore_view.pitch = explore_player->elevation;
+		explore_view.origin = explore_player->camera_location;
+		explore_view.origin_polygon_index = explore_player->camera_polygon_index;
+
+		update_view_data(&explore_view);
+		objlist_clear(render_flags, RENDER_FLAGS_BUFFER_SIZE);
+        // build_render_tree() actually marks the polygons
+		explore_tree.build_render_tree();
+	}
+}
+
 
 /* ---------- private code */
 

@@ -422,6 +422,7 @@ update_world_elements_one_tick()
 		AnimTxtr_Update();
 		ChaseCam_Update();
 		motion_sensor_scan();
+		check_m1_exploration();
 		
 #if !defined(DISABLE_NETWORKING)
 		update_net_game();
@@ -756,7 +757,8 @@ short calculate_level_completion_state(
 	}
 	
 	/* if there are any polygons which must be explored and have not been entered, weÕre not done */
-	if (static_world->mission_flags&_mission_exploration)
+	if ((static_world->mission_flags&_mission_exploration) ||
+	    (static_world->mission_flags&_mission_exploration_m1))
 	{
 		short polygon_index;
 		struct polygon_data *polygon;
@@ -764,24 +766,6 @@ short calculate_level_completion_state(
 		for (polygon_index= 0, polygon= map_polygons; polygon_index<dynamic_world->polygon_count; ++polygon_index, ++polygon)
 		{
 			if (polygon->type==_polygon_must_be_explored)
-			{
-				completion_state= _level_unfinished;
-				break;
-			}
-		}
-	}
-	
-	/* if there are any polygons which must be seen and have not been mapped, weÕre not done */
-	if ((static_world->mission_flags&_mission_exploration_m1) &&
-	    dynamic_world->player_count == 1)
-	{
-		short polygon_index;
-		struct polygon_data *polygon;
-		
-		for (polygon_index= 0, polygon= map_polygons; polygon_index<dynamic_world->polygon_count; ++polygon_index, ++polygon)
-		{
-			if (polygon->type==_polygon_must_be_explored &&
-			    !POLYGON_IS_IN_AUTOMAP(polygon_index))
 			{
 				completion_state= _level_unfinished;
 				break;

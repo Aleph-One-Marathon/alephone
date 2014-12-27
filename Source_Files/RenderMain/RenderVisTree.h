@@ -219,6 +219,14 @@ public:
 	// Pointer to view
 	view_data *view;
 	
+	// If true, the render tree will disable exploration
+	// polygons (for the M1-style exploration goal).
+	bool mark_as_explored;
+	
+	// If true (default), the render tree will fill out
+	// the automap.
+	bool add_to_automap;
+	
 	// Resizes all the objects defined inside;
 	// the resizing is lazy
 	void Resize(size_t NumEndpoints, size_t NumLines);

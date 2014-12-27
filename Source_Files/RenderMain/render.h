@@ -185,10 +185,12 @@ extern vector<uint16> RenderFlagList;
 
 void allocate_render_memory(void);
 
-void initialize_view_data(struct view_data *view);
+void initialize_view_data(struct view_data *view, bool ignore_preferences = false);
 void render_view(struct view_data *view, struct bitmap_definition *destination);
 
 void start_render_effect(struct view_data *view, short effect);
+
+void check_m1_exploration(void);
 
 
 /* ----------- prototypes/SCREEN.C */

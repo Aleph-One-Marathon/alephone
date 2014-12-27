@@ -615,12 +615,6 @@ bool get_indexed_entry_point(
 		return false;
 	}
     
-    // We only support Marathon 1 exploration missions in single player,
-    // so disable cooperative play for Marathon maps.
-    if (header.data_version == MARATHON_ONE_DATA_VERSION &&
-        type == _multiplayer_cooperative_entry_point)
-        return false;
-
 	bool success = false;
 	if (header.application_specific_directory_data_size == SIZEOF_directory_data)
 	{
@@ -671,6 +665,15 @@ bool get_indexed_entry_point(
 				if (header.data_version == MARATHON_ONE_DATA_VERSION &&
 				    map_info.entry_point_flags == 0)
 					map_info.entry_point_flags = _single_player_entry_point;
+
+				// Marathon 1 handled (then-unused) coop flag differently
+				if (header.data_version == MARATHON_ONE_DATA_VERSION)
+				{
+					if (map_info.entry_point_flags & _single_player_entry_point)
+						map_info.entry_point_flags |= _multiplayer_cooperative_entry_point;
+					if (map_info.entry_point_flags & _multiplayer_carnage_entry_point)
+						map_info.entry_point_flags &= ~_multiplayer_cooperative_entry_point;
+				}
 
 				if(map_info.entry_point_flags & type)
 				{
@@ -754,6 +757,15 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 			if (header.data_version == MARATHON_ONE_DATA_VERSION &&
 			    map_info.entry_point_flags == 0)
 				map_info.entry_point_flags = _single_player_entry_point;
+
+			// Marathon 1 handled (then-unused) coop flag differently
+			if (header.data_version == MARATHON_ONE_DATA_VERSION)
+			{
+				if (map_info.entry_point_flags & _single_player_entry_point)
+					map_info.entry_point_flags |= _multiplayer_cooperative_entry_point;
+				if (map_info.entry_point_flags & _multiplayer_carnage_entry_point)
+					map_info.entry_point_flags &= ~_multiplayer_cooperative_entry_point;
+			}
 
 			if (map_info.entry_point_flags & type) {
 

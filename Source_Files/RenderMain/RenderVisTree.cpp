@@ -83,7 +83,7 @@ inline void INITIALIZE_NODE(node_data *node, short node_polygon_index, uint16 no
 
 // Inits everything
 RenderVisTreeClass::RenderVisTreeClass():
-	view(NULL)	// Idiot-proofing
+	view(NULL), mark_as_explored(false), add_to_automap(true)
 {
 	PolygonQueue.reserve(POLYGON_QUEUE_SIZE);
 	EndpointClips.reserve(MAXIMUM_ENDPOINT_CLIPS);
@@ -357,7 +357,9 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 	uint16 clip_flags= 0;
 	short state;
 
-	ADD_POLYGON_TO_AUTOMAP(*polygon_index);
+	if (add_to_automap) ADD_POLYGON_TO_AUTOMAP(*polygon_index);
+	if (mark_as_explored && polygon->type == _polygon_must_be_explored)
+        polygon->type = _polygon_is_normal;
 	PUSH_POLYGON_INDEX(*polygon_index);
 
 	state= _looking_for_first_nonzero_vertex;
@@ -475,7 +477,7 @@ uint16 RenderVisTreeClass::next_polygon_along_line(
 		line_data *line= get_line_data(crossed_line_index);
 
 		/* add the line we crossed to the automap */
-		ADD_LINE_TO_AUTOMAP(crossed_line_index);
+		if (add_to_automap) ADD_LINE_TO_AUTOMAP(crossed_line_index);
 
 		/* if the line has a side facing this polygon, mark the side as visible */
 		if (crossed_side_index!=NONE) SET_RENDER_FLAG(crossed_side_index, _side_is_visible);
