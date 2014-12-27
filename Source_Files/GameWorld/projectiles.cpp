@@ -378,6 +378,10 @@ void move_projectiles(
 					if ((definition->flags&_affected_by_half_gravity) && (dynamic_world->tick_count&1)) projectile->gravity-= GRAVITATIONAL_ACCELERATION;
 					if (definition->flags&_affected_by_gravity) projectile->gravity-= GRAVITATIONAL_ACCELERATION;
 					if (definition->flags&_doubly_affected_by_gravity) projectile->gravity-= 2*GRAVITATIONAL_ACCELERATION;
+					if (film_profile.m1_low_gravity_projectiles && static_world->environment_flags&_environment_low_gravity && static_world->environment_flags&_environment_m1_weapons)
+					{
+						projectile->gravity /= 2;
+					}
 					new_location.z+= projectile->gravity;
 					translate_point3d(&new_location, speed, object->facing, projectile->elevation);
 					if (definition->flags&_vertical_wander) new_location.z+= (global_random()&1) ? WANDER_MAGNITUDE : -WANDER_MAGNITUDE;

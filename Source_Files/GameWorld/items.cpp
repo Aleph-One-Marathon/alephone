@@ -652,7 +652,7 @@ bool try_and_add_player_item(
 				success= true;
 			} 
 			else if(player->items[type]+1<=definition->maximum_count_per_player ||
-				(dynamic_world->game_information.difficulty_level==_total_carnage_level && ((static_world->environment_flags & _environment_m1_weapon_pickups) || definition->item_kind==_ammunition)))
+				(dynamic_world->game_information.difficulty_level==_total_carnage_level && ((static_world->environment_flags & _environment_m1_weapons) || definition->item_kind==_ammunition)))
 			{
 				/* Increment your count.. */
 				player->items[type]++;

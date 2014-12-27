@@ -90,6 +90,9 @@ struct FilmProfile
 	bool calculate_terminal_lines_correctly;
 	bool key_frame_zero_shrapnel_fix; // for M1 lookers and simulacra
 	bool count_dead_dropped_items_correctly;
+
+	// Aleph One 1.2 fixes
+	bool m1_low_gravity_projectiles;
 };
 
 extern FilmProfile film_profile;
@@ -98,6 +101,7 @@ enum FilmProfileType {
 	FILM_PROFILE_ALEPH_ONE_1_0,
 	FILM_PROFILE_MARATHON_2,
 	FILM_PROFILE_MARATHON_INFINITY,
+	FILM_PROFILE_ALEPH_ONE_1_1,
 	FILM_PROFILE_DEFAULT,
 };
 
