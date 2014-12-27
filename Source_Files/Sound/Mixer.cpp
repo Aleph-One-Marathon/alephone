@@ -340,7 +340,7 @@ static inline int32 lerp(int32 x0, int32 x1, _fixed rate)
 }
 
 template<class T, bool stereo, bool le_or_signed>
-void Mixer::Resample_(Channel* c, int16* left, int16* right, int samples)
+void Mixer::Resample_(Channel* c, int16* left, int16* right, int& samples)
 {
 	while (samples--)
 	{
@@ -394,6 +394,7 @@ void Mixer::Resample_(Channel* c, int16* left, int16* right, int samples)
 				if (c->length <= 0) 
 				{
 					c->GetMoreData();
+					return;  // sample format may have changed
 				}
 			}
 		} 
@@ -406,7 +407,16 @@ void Mixer::Resample_(Channel* c, int16* left, int16* right, int samples)
 
 void Mixer::Resample(Channel* c, int16* left, int16* right, int samples)
 {
-	if (c->info.stereo) 
+	int left_to_process = samples;
+	while (left_to_process > 0)
+	{
+		ResampleInner(c, left + samples - left_to_process, right + samples - left_to_process, left_to_process);
+	}
+}
+
+void Mixer::ResampleInner(Channel* c, int16* left, int16* right, int& samples)
+{
+	if (c->info.stereo)
 	{
 		if (c->info.sixteen_bit) 
 		{

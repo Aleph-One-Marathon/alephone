@@ -133,8 +133,9 @@ private:
 	int sound_channel_count;
 
 	void Resample(Channel* c, int16* left, int16* right, int samples);
+	void ResampleInner(Channel* c, int16* left, int16* right, int& samples);
 	template<class T, bool stereo, bool le_or_signed>
-	static void Resample_(Channel* c, int16* left, int16* right, int samples);
+	static void Resample_(Channel* c, int16* left, int16* right, int& samples);
 
 	static void MixerCallback(void *user, uint8 *stream, int len);
 	void Callback(uint8 *stream, int len);
