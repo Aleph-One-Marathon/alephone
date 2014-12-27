@@ -14,7 +14,7 @@ libgameworld_a_SOURCES = dynamic_limits.h editor.h effect_definitions.h \
   monsters.cpp pathfinding.cpp physics.cpp placement.cpp platforms.cpp \
   player.cpp projectiles.cpp scenery.cpp weapons.cpp world.cpp
 
-INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
+AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/Input -I$(top_srcdir)/Source_Files/Lua \
   -I$(top_srcdir)/Source_Files/Misc -I$(top_srcdir)/Source_Files/ModelView \
   -I$(top_srcdir)/Source_Files/Network -I$(top_srcdir)/Source_Files/FFmpeg \

@@ -21,7 +21,7 @@ librenderother_a_SOURCES = ChaseCam.h computer_interface.h \
   OverheadMapRenderer.cpp OverheadMap_SDL.cpp screen_drawing.cpp screen.cpp \
   sdl_fonts.cpp TextLayoutHelper.cpp TextStrings.cpp ViewControl.cpp
 
-INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
+AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
   -I$(top_srcdir)/Source_Files/Lua -I$(top_srcdir)/Source_Files/Misc \
   -I$(top_srcdir)/Source_Files/ModelView -I$(top_srcdir)/Source_Files/Network \

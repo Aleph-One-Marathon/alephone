@@ -11,5 +11,5 @@ libnat_a_SOURCES = error.h http.h libnat.h os.h os_common.h ssdp.h utility.h err
 
 EXTRA_libnat_a_SOURCES = os_win.c os_unix.c
 
-INCLUDES = -I$(top_srcdir)/Source_Files/Expat
+AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/Expat
 

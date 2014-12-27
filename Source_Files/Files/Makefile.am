@@ -19,7 +19,7 @@ libfiles_a_SOURCES = AStream.h crc.h extensions.h FileHandler.h		\
 
 EXTRA_libfiles_a_SOURCES = filetypes_macintosh.cpp SDL_rwops_zzip.c
 
-INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/GameWorld \
+AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/GameWorld \
   -I$(top_srcdir)/Source_Files/Input -I$(top_srcdir)/Source_Files/Misc \
   -I$(top_srcdir)/Source_Files/ModelView -I$(top_srcdir)/Source_Files/Network -I$(top_srcdir)/Source_Files/Network/Metaserver -I$(top_srcdir)/Source_Files/TCPMess \
   -I$(top_srcdir)/Source_Files/Pfhortran -I$(top_srcdir)/Source_Files/RenderMain \

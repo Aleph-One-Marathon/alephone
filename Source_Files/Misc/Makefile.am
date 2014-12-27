@@ -26,7 +26,7 @@ libmisc_a_SOURCES = ActionQueues.h alephversion.h binders.h CircularByteBuffer.h
 
 EXTRA_libmisc_a_SOURCES = alephone.xpm alephone32.xpm thread_priority_sdl_posix.cpp thread_priority_sdl_dummy.cpp thread_priority_sdl_win32.cpp thread_priority_sdl_macosx.cpp
 
-INCLUDES = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
+AM_CPPFLAGS = -I$(top_srcdir)/Source_Files/CSeries -I$(top_srcdir)/Source_Files/Files \
   -I$(top_srcdir)/Source_Files/GameWorld -I$(top_srcdir)/Source_Files/Input \
   -I$(top_srcdir)/Source_Files/Lua -I$(top_srcdir)/Source_Files/ModelView -I$(top_srcdir)/Source_Files/Network \
   -I$(top_srcdir)/Source_Files/Network/Metaserver \
