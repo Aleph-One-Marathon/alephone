@@ -64,6 +64,7 @@ static FileSpecifier PhysicsFileSpec;
 static struct wad_data *get_physics_wad_data(bool *bungie_physics);
 static void import_physics_wad_data(struct wad_data *wad);
 static void import_m1_physics_data();
+static void import_m1_physics_data_from_network(uint8 *data, uint32 length);
 
 /* ---------- code */
 void set_physics_file(FileSpecifier& File)
@@ -87,35 +88,39 @@ void init_physics_wad_data()
 	init_weapon_definitions();
 }
 
+bool physics_file_is_m1(void)
+{
+    bool m1_physics = false;
+    
+    // check for M1 physics
+    OpenedFile PhysicsFile;
+    if (PhysicsFileSpec.Open(PhysicsFile))
+    {
+        uint32 tag = SDL_ReadBE32(PhysicsFile.GetRWops());
+        switch (tag)
+        {
+            case M1_MONSTER_PHYSICS_TAG:
+            case M1_EFFECTS_PHYSICS_TAG:
+            case M1_PROJECTILE_PHYSICS_TAG:
+            case M1_PHYSICS_PHYSICS_TAG:
+            case M1_WEAPONS_PHYSICS_TAG:
+                m1_physics = true;
+                break;
+            default:
+                break;
+        }
+        
+        PhysicsFile.Close();
+    }
+    return m1_physics;
+}
+
 void import_definition_structures(
 	void)
 {
 	init_physics_wad_data();
 
-	bool m1_physics = false;
-
-	// check for M1 physics
-	OpenedFile PhysicsFile;
-	if (PhysicsFileSpec.Open(PhysicsFile)) 
-	{
-		uint32 tag = SDL_ReadBE32(PhysicsFile.GetRWops());
-		switch (tag)
-		{
-		case M1_MONSTER_PHYSICS_TAG:
-		case M1_EFFECTS_PHYSICS_TAG:
-		case M1_PROJECTILE_PHYSICS_TAG:
-		case M1_PHYSICS_PHYSICS_TAG:
-		case M1_WEAPONS_PHYSICS_TAG:
-			m1_physics = true;
-			break;
-		default:
-			break;
-		}
-
-		PhysicsFile.Close();
-	}
-
-	if (m1_physics)
+	if (physics_file_is_m1())
 	{
 		import_m1_physics_data();
 	}
@@ -135,9 +140,38 @@ void import_definition_structures(
 	}
 }
 
+#define M1_PHYSICS_MAGIC_COOKIE (0xDEAFDEAF)
+
 void *get_network_physics_buffer(
 	int32 *physics_length)
 {
+	if (physics_file_is_m1())
+	{
+		bool success = false;
+		uint8 *data = NULL;
+		OpenedFile PhysicsFile;
+		if (PhysicsFileSpec.Open(PhysicsFile) &&
+		    PhysicsFile.GetLength(*physics_length))
+		{
+			data = (uint8 *)malloc(*physics_length + 4);
+            SDL_RWops *ops = SDL_RWFromMem(data, *physics_length + 4);
+            success = SDL_WriteBE32(ops, uint32(M1_PHYSICS_MAGIC_COOKIE));
+            if (success)
+                success = SDL_WriteBE32(ops, uint32(*physics_length));
+            SDL_RWclose(ops);
+            if (success)
+                success = PhysicsFile.Read(*physics_length, &data[8]);
+			if (!success)
+				free(data);
+		}
+		if (!success)
+		{
+			*physics_length = 0;
+			return NULL;
+		}
+		return data;
+	}
+	
 	void *data= get_flat_data(PhysicsFileSpec, false, 0);
 	
 	if(data)
@@ -157,6 +191,22 @@ void process_network_physics_model(
 
 	if(data)
 	{
+		// check for M1 physics
+		SDL_RWops *ops = SDL_RWFromConstMem(data, 8);
+		uint32 cookie = SDL_ReadBE32(ops);
+		if(cookie == M1_PHYSICS_MAGIC_COOKIE)
+		{
+			uint32 length= SDL_ReadBE32(ops);
+			SDL_RWclose(ops);
+			uint8 *s= (uint8 *)data;
+			import_m1_physics_data_from_network(&s[8], length);
+			return;
+		}
+		else
+		{
+			SDL_RWclose(ops);
+		}
+
 		struct wad_header header;
 		struct wad_data *wad;
 	
@@ -316,3 +366,43 @@ static void import_m1_physics_data()
 		PhysicsFile.GetPosition(position);
 	}
 }
+
+static void import_m1_physics_data_from_network(uint8 *data, uint32 length)
+{
+	int32 position = 0;
+	while (position < length)
+	{
+		AIStreamBE header_stream(&data[position], 12);
+		position += 12;
+
+		uint32 tag;
+		uint16 count;
+		uint16 size;
+
+		header_stream >> tag;
+		header_stream.ignore(4); // unused
+		header_stream >> count;
+		header_stream >> size;
+
+		switch (tag)
+		{
+			case M1_MONSTER_PHYSICS_TAG:
+				unpack_m1_monster_definition(&data[position], count);
+				break;
+			case M1_EFFECTS_PHYSICS_TAG:
+				unpack_m1_effect_definition(&data[position], count);
+				break;
+			case M1_PROJECTILE_PHYSICS_TAG:
+				unpack_m1_projectile_definition(&data[position], count);
+				break;
+			case M1_PHYSICS_PHYSICS_TAG:
+				unpack_m1_physics_constants(&data[position], count);
+				break;
+			case M1_WEAPONS_PHYSICS_TAG:
+				unpack_m1_weapon_definition(&data[position], count);
+				break;
+		}
+		position += count * size;
+	}
+}
+
