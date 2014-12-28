@@ -138,6 +138,9 @@ struct libav_vars {
     AVFormatContext *fmt_ctx;
     int video_stream_idx;
     int audio_stream_idx;
+    
+    size_t video_counter;
+    size_t audio_counter;
 };
 typedef struct libav_vars libav_vars_t;
 
@@ -495,6 +498,7 @@ bool Movie::Setup()
         audio_stream->codec->codec_id = audio_codec->id;
         audio_stream->codec->codec_type = AVMEDIA_TYPE_AUDIO;
         audio_stream->codec->sample_rate = mx->obtained.freq;
+        audio_stream->codec->time_base = (AVRational){1, mx->obtained.freq};
         audio_stream->codec->channels = 2;
         
         if (av->fmt_ctx->oformat->flags & AVFMT_GLOBALHEADER)
@@ -507,19 +511,8 @@ bool Movie::Setup()
         audio_stream->codec->global_quality = FF_QP2LAMBDA * (aq / 10);
         audio_stream->codec->flags |= CODEC_FLAG_QSCALE;
         
-        // find correct sample format
-        audio_stream->codec->sample_fmt = AV_SAMPLE_FMT_S16;
+        audio_stream->codec->sample_fmt = AV_SAMPLE_FMT_FLTP;
         success = (0 <= avcodec_open2(audio_stream->codec, audio_codec, NULL));
-        if (!success)
-        {
-            audio_stream->codec->sample_fmt = AV_SAMPLE_FMT_FLT;
-            success = (0 <= avcodec_open2(audio_stream->codec, audio_codec, NULL));
-        }
-        if (!success)
-        {
-            audio_stream->codec->sample_fmt = AV_SAMPLE_FMT_FLTP;
-            success = (0 <= avcodec_open2(audio_stream->codec, audio_codec, NULL));
-        }
         if (!success) err_msg = "Could not open audio codec";
     }
     if (success)
@@ -568,6 +561,7 @@ bool Movie::Setup()
     if (success)
     {
         video_stream->time_base = (AVRational){1, TICKS_PER_SECOND};
+        audio_stream->time_base = (AVRational){1, mx->obtained.freq};
         avformat_write_header(av->fmt_ctx, NULL);
     }
     
@@ -625,7 +619,7 @@ void Movie::EncodeVideo(bool last)
     
         sws_scale(av->sws_ctx, pdata, pitch, 0, temp_surface->h,
                   av->video_frame->data, av->video_frame->linesize);
-        av->video_frame->pts = vcodec->frame_number;
+        av->video_frame->pts = av->video_counter++;
         frame = av->video_frame;
     }
     
@@ -638,33 +632,22 @@ void Movie::EncodeVideo(bool last)
         pkt.data = av->video_buf;
         pkt.size = av->video_bufsize;
         
-#if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(54,0,0)
-        int vsize = avcodec_encode_video(vcodec, av->video_buf, av->video_bufsize, frame);
-        if (vsize > 0)
-        {
-            if (vcodec->coded_frame->pts != AV_NOPTS_VALUE)
-            {
-                pkt.pts = av_rescale_q(vcodec->coded_frame->pts,
-                                       vcodec->time_base,
-                                       vstream->time_base);
-            }
-            if (vcodec->coded_frame->key_frame)
-                pkt.flags |= AV_PKT_FLAG_KEY;
-            pkt.size = vsize;
-        }
-
-#else
         int got_packet = 0;
         int vsize = avcodec_encode_video2(vcodec, &pkt, frame, &got_packet);
-#endif
-        if (vsize > 0)
+        if (vsize == 0 && got_packet)
         {
+            if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
+                pkt.pts = pkt.dts;
+            if (pkt.pts != AV_NOPTS_VALUE)
+                pkt.pts = av_rescale_q(pkt.pts, vcodec->time_base, vstream->time_base);
+            if (pkt.dts != AV_NOPTS_VALUE)
+                pkt.dts = av_rescale_q(pkt.dts, vcodec->time_base, vstream->time_base);
+            pkt.duration = av_rescale_q(pkt.duration, vcodec->time_base, vstream->time_base);
             pkt.stream_index = vstream->index;
             av_interleaved_write_frame(av->fmt_ctx, &pkt);
+            av_free_packet(&pkt);
         }
-        av_free_packet(&pkt);
-        
-        if (!last || vsize <= 0)
+        if (!last || vsize < 0 || !got_packet)
             done = true;
     }
 }
@@ -712,6 +695,10 @@ void Movie::EncodeAudio(bool last)
         av_frame_unref(av->audio_frame);
 #endif
         av->audio_frame->nb_samples = write_samples;
+        av->audio_frame->pts = av_rescale_q(av->audio_counter,
+                                            (AVRational){1, acodec->sample_rate},
+                                            acodec->time_base);
+        av->audio_counter += write_samples;
         int asize = avcodec_fill_audio_frame(av->audio_frame, acodec->channels,
                                              acodec->sample_fmt,
                                              av->audio_data_conv,
@@ -726,24 +713,57 @@ void Movie::EncodeAudio(bool last)
             if (0 == avcodec_encode_audio2(acodec, &pkt, av->audio_frame, &got_pkt)
                 && got_pkt)
             {
-                if (acodec->coded_frame && acodec->coded_frame->pts != AV_NOPTS_VALUE)
-                {
-                    pkt.pts = av_rescale_q(acodec->coded_frame->pts,
-                                           acodec->time_base,
-                                           astream->time_base);
-                }
+                if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
+                    pkt.pts = pkt.dts;
+                if (pkt.pts != AV_NOPTS_VALUE)
+                    pkt.pts = av_rescale_q(pkt.pts, acodec->time_base, astream->time_base);
+                if (pkt.dts != AV_NOPTS_VALUE)
+                    pkt.dts = av_rescale_q(pkt.dts, acodec->time_base, astream->time_base);
+                pkt.duration = av_rescale_q(pkt.duration, acodec->time_base, astream->time_base);
                 pkt.stream_index = astream->index;
-                pkt.flags |= AV_PKT_FLAG_KEY;
                 av_interleaved_write_frame(av->fmt_ctx, &pkt);
                 av_free_packet(&pkt);
             }
         }
+    }
+    if (last)
+    {
+        bool done = false;
+        while (!done)
+        {
+            AVPacket pkt;
+            memset(&pkt, 0, sizeof(AVPacket));
+            av_init_packet(&pkt);
+            
+            int got_pkt = 0;
+            if (0 == avcodec_encode_audio2(acodec, &pkt, NULL, &got_pkt)
+                && got_pkt)
+            {
+                if (pkt.pts != AV_NOPTS_VALUE && pkt.pts < pkt.dts)
+                    pkt.pts = pkt.dts;
+                if (pkt.pts != AV_NOPTS_VALUE)
+                    pkt.pts = av_rescale_q(pkt.pts, acodec->time_base, astream->time_base);
+                if (pkt.dts != AV_NOPTS_VALUE)
+                    pkt.dts = av_rescale_q(pkt.dts, acodec->time_base, astream->time_base);
+                pkt.duration = av_rescale_q(pkt.duration, acodec->time_base, astream->time_base);
+                pkt.stream_index = astream->index;
+                av_interleaved_write_frame(av->fmt_ctx, &pkt);
+                av_free_packet(&pkt);
+            }
+            else
+            {
+                done = true;
+            }
+        }
+        
     }
     
 }
 
 void Movie::EncodeThread()
 {
+	av->video_counter = 0;
+	av->audio_counter = 0;
 	while (true)
 	{
 		SDL_SemWait(encodeReady);

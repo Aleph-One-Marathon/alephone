@@ -191,7 +191,7 @@ AX_CHECK_FEATURE_LIB([sdl_image], [SDL_IMAGE],
                      [SDL_image.h], [SDL_image], [IMG_Load])
 
 AX_CHECK_FEATURE_PKG([ffmpeg], [FFMPEG],
-                     [FFMPEG], [libavcodec >= 53.61.100 libavformat >= 53.32.100 libavutil >= 51.35.100 libswscale >= 2.1.1])
+                     [FFMPEG], [libavcodec >= 54.35.0 libavformat >= 54.20.0 libavutil >= 52.3.0 libswscale >= 2.1.1])
 
 AX_CHECK_FEATURE_LIB([mad], [MAD],
                      [mad.h], [mad], [mad_stream_init])
