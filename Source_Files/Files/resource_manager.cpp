@@ -253,7 +253,7 @@ bool res_file_t::read_map(void)
 
 		// Verify integrity of item
 		if (ref_list_offset >= file_size) {
-			logAnomaly("file's resource type list corrupt");
+			logTrace("file's resource type list corrupt");
 			return false;
 		}
 
@@ -273,7 +273,7 @@ bool res_file_t::read_map(void)
 
 			// Verify integrify of item
 			if (rsrc_data_offset >= file_size) {
-				logAnomaly("file's resource reference list corrupt");
+				logTrace("file's resource reference list corrupt");
 				return false;
 			}
 
