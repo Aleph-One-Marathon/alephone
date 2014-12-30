@@ -1851,18 +1851,6 @@ static void environment_dialog(void *arg)
 	use_solo_lua_w->add_dependent_widget(solo_lua_w);
 
 	table->add_row(new w_spacer, true);
-	table->dual_add_row(new w_static_text("HUD Script"), d);
-	w_enabling_toggle* use_hud_lua_w = new w_enabling_toggle(environment_preferences->use_hud_lua);
-	table->dual_add(use_hud_lua_w->label("Use HUD Script"), d);
-	table->dual_add(use_hud_lua_w, d);
-	
-	w_file_chooser *hud_lua_w = new w_file_chooser("Choose Script", _typecode_netscript);
-	hud_lua_w->set_file(environment_preferences->hud_lua_file);
-	table->dual_add(hud_lua_w->label("Script File"), d);
-	table->dual_add(hud_lua_w, d);
-	use_hud_lua_w->add_dependent_widget(hud_lua_w);
-	
-	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Options"), d);
 
 	w_toggle *hide_extensions_w = new w_toggle(environment_preferences->hide_extensions);
@@ -1957,19 +1945,6 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 
-		bool use_hud_lua = use_hud_lua_w->get_selection() != 0;
-		if (use_hud_lua != environment_preferences->use_hud_lua)
-		{
-			environment_preferences->use_hud_lua = use_hud_lua;
-			changed = true;
-		}
-		
-		path = hud_lua_w->get_file().GetPath();
-		if (strcmp(path, environment_preferences->hud_lua_file)) {
-			strcpy(environment_preferences->hud_lua_file, path);
-			changed = true;
-		}
-		
 		FileSpecifier new_theme;
 		theme_plugin = Plugins::instance()->find_theme();
 		if (theme_plugin)
@@ -2388,8 +2363,6 @@ void write_preferences(
 	fprintf(F,"  smooth_text=\"%s\"\n", BoolString(environment_preferences->smooth_text));
 	WriteXML_Pathname(F,"  solo_lua_file=\"", environment_preferences->solo_lua_file, "\"\n");
 	fprintf(F,"  use_solo_lua=\"%s\"\n", BoolString(environment_preferences->use_solo_lua));
-	WriteXML_Pathname(F,"  hud_lua_file=\"", environment_preferences->hud_lua_file, "\"\n");
-	fprintf(F,"  use_hud_lua=\"%s\"\n", BoolString(environment_preferences->use_hud_lua));
 	fprintf(F,"  hide_alephone_extensions=\"%s\"\n", BoolString(environment_preferences->hide_extensions));
 	fprintf(F,"  film_profile=\"%u\"\n", static_cast<uint32>(environment_preferences->film_profile));
 	fprintf(F,"  maximum_quick_saves=\"%u\"\n",environment_preferences->maximum_quick_saves);
@@ -2621,8 +2594,6 @@ static void default_environment_preferences(environment_preferences_data *prefer
 
 	preferences->solo_lua_file[0] = 0;
 	preferences->use_solo_lua = false;
-	preferences->hud_lua_file[0] = 0;
-	preferences->use_hud_lua = false;
 	preferences->hide_extensions = true;
 	preferences->film_profile = FILM_PROFILE_DEFAULT;
 	preferences->maximum_quick_saves = 0;
@@ -4093,12 +4064,11 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	}
 	else if (StringsEqual(Tag,"hud_lua_file"))
 	{
-		expand_symbolic_paths(environment_preferences->hud_lua_file, Value, 255);
 		return true;
 	}
 	else if (StringsEqual(Tag,"use_hud_lua"))
 	{
-		return ReadBooleanValue(Value, environment_preferences->use_hud_lua);
+		return true;
 	}
 	else if (StringsEqual(Tag, "hide_alephone_extensions"))
 	{

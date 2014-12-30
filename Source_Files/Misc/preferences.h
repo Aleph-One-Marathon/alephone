@@ -241,8 +241,6 @@ struct environment_preferences_data
 
 	char solo_lua_file[256];
 	bool use_solo_lua;
-	char hud_lua_file[256];
-	bool use_hud_lua;
 	bool hide_extensions;
 
 	FilmProfileType film_profile;

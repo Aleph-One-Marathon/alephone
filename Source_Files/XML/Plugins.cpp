@@ -127,13 +127,10 @@ void Plugins::load_mml() {
 		}
 	}
 
-	if (!environment_preferences->use_hud_lua) 
+	const Plugin* hud_lua = find_hud_lua();
+	if (hud_lua) 
 	{
-		const Plugin* hud_lua = find_hud_lua();
-		if (hud_lua) 
-		{
-			load_mmls(*hud_lua, loader);
-		}
+		load_mmls(*hud_lua, loader);
 	}
 	
 	const Plugin* theme = find_theme();
