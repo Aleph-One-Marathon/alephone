@@ -79,6 +79,9 @@ bool Plugin::compatible() const {
 	}
 	return false;
 }
+bool Plugin::valid() const {
+	return enabled && !overridden && compatible();
+}
 
 Plugins* Plugins::m_instance = 0;
 Plugins* Plugins::instance() {
@@ -93,6 +96,7 @@ void Plugins::disable(const std::string& path) {
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) {
 		if (it->directory == path) {
 			it->enabled = false;
+			m_validated = false;
 			return;
 		}
 	}
@@ -116,12 +120,13 @@ static void load_mmls(const Plugin& plugin, XML_Loader_SDL& loader)
 }
 
 void Plugins::load_mml() {
+	validate();
 	XML_Loader_SDL loader;
 	loader.CurrentElement = &RootParser;
 
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it) 
 	{
-		if (it->enabled && !it->hud_lua.size() && !it->solo_lua.size() && !it->theme.size() && it->compatible()) 
+		if (it->valid())
 		{
 			load_mmls(*it, loader);
 		}
@@ -142,6 +147,7 @@ void Plugins::load_mml() {
 
 void Plugins::load_solo_mml() 
 {
+	validate();
 	if (!environment_preferences->use_solo_lua)
 	{
 		XML_Loader_SDL loader;
@@ -159,13 +165,10 @@ void load_shapes_patch(SDL_RWops* p, bool override_replacements);
 
 void Plugins::load_shapes_patches(bool is_opengl)
 {
+	validate();
 	for (std::vector<Plugin>::iterator it = m_plugins.begin(); it != m_plugins.end(); ++it)
 	{
-		if (it->enabled &&
-		    it->compatible() &&
-		    !it->hud_lua.size() &&
-		    !it->solo_lua.size() &&
-		    !it->theme.size())
+		if (it->valid())
 		{
 			ScopedSearchPath ssp(it->directory);
 
@@ -193,12 +196,12 @@ void Plugins::load_shapes_patches(bool is_opengl)
 	}
 }
 
-const Plugin* Plugins::find_hud_lua() const
+const Plugin* Plugins::find_hud_lua()
 {
-
-	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit) 
+	validate();
+	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
-		if (rit->enabled && rit->hud_lua.size() && rit->compatible())
+		if (rit->hud_lua.size() && rit->valid())
 		{
 			return &(*rit);
 		}
@@ -207,11 +210,12 @@ const Plugin* Plugins::find_hud_lua() const
 	return 0;
 }
 
-const Plugin* Plugins::find_solo_lua() const
+const Plugin* Plugins::find_solo_lua()
 {
+	validate();
 	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
-		if (rit->enabled && rit->solo_lua.size() && rit->compatible())
+		if (rit->solo_lua.size() && rit->valid())
 		{
 			return &(*rit);
 		}
@@ -220,11 +224,12 @@ const Plugin* Plugins::find_solo_lua() const
 	return 0;
 }
 
-const Plugin* Plugins::find_theme() const
+const Plugin* Plugins::find_theme()
 {
+	validate();
 	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
-		if (rit->enabled && rit->theme.size() && rit->compatible())
+		if (rit->theme.size() && rit->valid())
 		{
 			return &(*rit);
 		}
@@ -560,4 +565,39 @@ void Plugins::enumerate() {
 	}
 	std::sort(m_plugins.begin(), m_plugins.end());
 	clear_game_error();
+	m_validated = false;
+}
+
+// enforce all-or-nothing loading of plugins which contain
+// an "only one-at-a-time" item, like a Lua script or theme
+void Plugins::validate()
+{
+	if (m_validated)
+		return;
+	m_validated = true;
+	
+	bool found_solo_lua = false;
+	bool found_hud_lua = false;
+	bool found_theme = false;
+	for (std::vector<Plugin>::reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	{
+		rit->overridden = false;
+		if (!rit->valid())
+			continue;
+
+		if ((found_solo_lua && rit->solo_lua.size()) ||
+			(found_hud_lua && rit->hud_lua.size()) ||
+			(found_theme && rit->theme.size()))
+		{
+			rit->overridden = true;
+			continue;
+		}
+
+		if (rit->solo_lua.size())
+			found_solo_lua = true;
+		if (rit->hud_lua.size())
+			found_hud_lua = true;
+		if (rit->theme.size())
+			found_theme = true;
+	}
 }

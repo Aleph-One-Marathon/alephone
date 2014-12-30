@@ -50,7 +50,9 @@ struct Plugin {
 	std::vector<ScenarioInfo> required_scenarios;
 
 	bool enabled;
+	bool overridden;
 	bool compatible() const;
+	bool valid() const;
 
 	bool operator<(const Plugin& other) const {
 		return name < other.name;
@@ -64,6 +66,7 @@ public:
 	typedef std::vector<Plugin>::iterator iterator;
 	
 	void enumerate();
+	void invalidate() { m_validated = false; }
 	void load_mml();
 	void load_solo_mml();
 
@@ -74,15 +77,17 @@ public:
 	iterator begin() { return m_plugins.begin(); }
 	iterator end() { return m_plugins.end(); }
 
-	const Plugin* find_hud_lua() const;
-	const Plugin* find_solo_lua() const;
-	const Plugin* find_theme() const;
+	const Plugin* find_hud_lua();
+	const Plugin* find_solo_lua();
+	const Plugin* find_theme();
 private:
 	Plugins() { }
 	void add(Plugin plugin) { m_plugins.push_back(plugin); }
+	void validate();
 
 	static Plugins* m_instance;
 	std::vector<Plugin> m_plugins;
+	bool m_validated;
 };
 
 

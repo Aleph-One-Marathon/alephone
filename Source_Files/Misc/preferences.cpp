@@ -1780,6 +1780,7 @@ static void plugins_dialog(void *)
 		}
 
 		if (changed) {
+			Plugins::instance()->invalidate();
 			write_preferences();
 
 			ResetAllMMLValues();
