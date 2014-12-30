@@ -606,6 +606,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	switch(transferMode) {
 		case _xfer_static:
 			TMgr.TextureType = OGL_Txtr_Wall;
+			TMgr.TransferMode = _static_transfer;
 			TMgr.IsShadeless = 1;
 			flare = -1;
 			s = Shader::get(renderStep == kGlow ? Shader::S_InvincibleBloom : Shader::S_Invincible);
