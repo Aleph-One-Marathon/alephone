@@ -24,6 +24,7 @@ class RenderRasterize_Shader : public RenderRasterizerClass {
 	int objectCount;
 	world_distance objectY;
 	float weaponFlare;
+	float selfLuminosity;
 	world_point3d cam_pos;
 	angle cam_yaw;
 	angle cam_pitch;

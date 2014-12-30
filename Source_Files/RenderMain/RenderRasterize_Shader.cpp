@@ -394,6 +394,7 @@ const float AngleConvert = TWO_PI/float(FULL_CIRCLE);
 void RenderRasterize_Shader::render_tree() {
 
 	weaponFlare = PIN(view->maximum_depth_intensity - NATURAL_LIGHT_INTENSITY, 0, FIXED_ONE)/float(FIXED_ONE);
+	selfLuminosity = PIN(NATURAL_LIGHT_INTENSITY, 0, FIXED_ONE)/float(FIXED_ONE);
 
 	Shader* s = Shader::get(Shader::S_Invincible);
 	s->enable();
@@ -572,6 +573,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 		s->setFloat(Shader::U_BloomShift, TMgr.BloomShift());
 	}
 	s->setFloat(Shader::U_Flare, flare);
+	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
 	s->setFloat(Shader::U_Wobble, 0);
 	s->setFloat(Shader::U_Depth, offset);
 	s->setFloat(Shader::U_StrictDepthMode, OGL_ForceSpriteDepth() ? 1 : 0);
@@ -681,6 +683,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 		}
 	}
 	s->setFloat(Shader::U_Flare, flare);
+	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
 	s->setFloat(Shader::U_Wobble, wobble);
 	s->setFloat(Shader::U_Depth, offset);
 	s->setFloat(Shader::U_Glow, 0);
@@ -759,7 +762,7 @@ void setupBlendFunc(short blendType) {
 	}
 }
 
-bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float intensity, float flare, float offset, RenderStep renderStep) {
+bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float intensity, float flare, float selfLuminosity, float offset, RenderStep renderStep) {
 	if (TMgr.TransferMode == _textured_transfer && TMgr.IsGlowMapped()) {
 		Shader *s = NULL;
 		if (TMgr.TextureType == OGL_Txtr_Wall) {
@@ -785,6 +788,7 @@ bool setupGlow(struct view_data *view, TextureManager &TMgr, float wobble, float
 			s->setFloat(Shader::U_BloomShift, TMgr.GlowBloomShift());
 		}
 		s->setFloat(Shader::U_Flare, flare);
+		s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
 		s->setFloat(Shader::U_Wobble, wobble);
 		s->setFloat(Shader::U_Depth, offset - 1.0);
 		s->setFloat(Shader::U_Glow, TMgr.MinGlowIntensity());
@@ -875,7 +879,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 
 		glDrawArrays(GL_POLYGON, 0, vertex_count);
 
-		if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, offset, renderStep)) {
+		if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
 			glDrawArrays(GL_POLYGON, 0, vertex_count);
 		}
 
@@ -1024,7 +1028,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 			
 			glDrawArrays(GL_QUADS, 0, vertex_count);
 
-			if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, offset, renderStep)) {
+			if (setupGlow(view, TMgr, wobble, intensity, weaponFlare, selfLuminosity, offset, renderStep)) {
 				glDrawArrays(GL_QUADS, 0, vertex_count);
 			}
 
@@ -1081,7 +1085,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 
 extern void FlatBumpTexture(); // from OGL_Textures.cpp
 
-bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT, float flare, RenderStep renderStep) {
+bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short CLUT, float flare, float selfLuminosity, RenderStep renderStep) {
 
 	OGL_ModelData *ModelPtr = RenderRectangle.ModelPtr;
 	OGL_SkinData *SkinPtr = ModelPtr->GetSkin(CLUT);
@@ -1160,6 +1164,7 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 		s->setFloat(Shader::U_BloomShift, SkinPtr->BloomShift);
 	}
 	s->setFloat(Shader::U_Flare, flare);
+	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
 	s->setFloat(Shader::U_Wobble, 0);
 	s->setFloat(Shader::U_Depth, 0);
 	s->setFloat(Shader::U_Glow, 0);
@@ -1328,7 +1333,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 		short collection = GET_COLLECTION(descriptor);
 		short clut = ModifyCLUT(rect.transfer_mode,GET_COLLECTION_CLUT(descriptor));
 
-		RenderModel(rect, collection, clut, weaponFlare, renderStep);
+		RenderModel(rect, collection, clut, weaponFlare, selfLuminosity, renderStep);
 		glPopMatrix();
 		return;
 	}
@@ -1417,7 +1422,7 @@ void RenderRasterize_Shader::_render_node_object_helper(render_object_data *obje
 
 	glDrawArrays(GL_QUADS, 0, 4);
 
-	if (setupGlow(view, TMgr, 0, 1, weaponFlare, offset, renderStep)) {
+	if (setupGlow(view, TMgr, 0, 1, weaponFlare, selfLuminosity, offset, renderStep)) {
 		glDrawArrays(GL_QUADS, 0, 4);
 	}
 

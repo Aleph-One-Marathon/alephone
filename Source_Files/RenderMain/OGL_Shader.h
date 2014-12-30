@@ -56,6 +56,7 @@ public:
 		U_ScaleY,
 		U_Yaw,
 		U_Pitch,
+		U_SelfLuminosity,
 		NUMBER_OF_UNIFORM_LOCATIONS
 	};
 

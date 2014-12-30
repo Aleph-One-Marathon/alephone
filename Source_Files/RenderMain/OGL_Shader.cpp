@@ -81,7 +81,8 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"scalex",
 	"scaley",
 	"yaw",
-	"pitch"
+	"pitch",
+	"selfLuminosity"
 };
 
 const char* Shader::_shader_names[NUMBER_OF_SHADER_TYPES] = 
@@ -500,12 +501,13 @@ void initDefaultPrograms() {
         "uniform sampler2D texture0;\n"
         "uniform float glow;\n"
         "uniform float flare;\n"
+        "uniform float selfLuminosity;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
         "varying float FDxLOG2E;\n"
         "varying float classicDepth;\n"
         "void main (void) {\n"
-        "	float mlFactor = clamp(0.5 + flare - classicDepth, 0.0, 1.0);\n"
+        "	float mlFactor = clamp(selfLuminosity + flare - classicDepth, 0.0, 1.0);\n"
         "	// more realistic: replace classicDepth with (length(viewDir)/8192.0)\n"
         "	vec3 intensity;\n"
         "	if (vertexColor.r > mlFactor) {\n"
@@ -643,6 +645,7 @@ void initDefaultPrograms() {
         "uniform float wobble;\n"
         "uniform float glow;\n"
         "uniform float flare;\n"
+        "uniform float selfLuminosity;\n"
         "varying vec3 viewXY;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
@@ -651,7 +654,7 @@ void initDefaultPrograms() {
         "void main (void) {\n"
         "	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
         "	texCoords += vec3(normalize(viewXY).yx * wobble, 0.0);\n"
-        "	float mlFactor = clamp(0.5 + flare - classicDepth, 0.0, 1.0);\n"
+        "	float mlFactor = clamp(selfLuminosity + flare - classicDepth, 0.0, 1.0);\n"
         "	// more realistic: replace classicDepth with (length(viewDir)/8192.0)\n"
         "	vec3 intensity;\n"
         "	if (vertexColor.r > mlFactor) {\n"
@@ -699,6 +702,7 @@ void initDefaultPrograms() {
         "uniform float wobble;\n"
         "uniform float glow;\n"
         "uniform float flare;\n"
+        "uniform float selfLuminosity;\n"
         "varying vec3 viewXY;\n"
         "varying vec3 viewDir;\n"
         "varying vec4 vertexColor;\n"
@@ -706,7 +710,7 @@ void initDefaultPrograms() {
         "void main (void) {\n"
         "	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
         "	texCoords += vec3(normalize(viewXY).yx * wobble, 0.0);\n"
-        "	float mlFactor = clamp(0.5 + flare - (length(viewDir)/8192.0), 0.0, 1.0);\n"
+        "	float mlFactor = clamp(selfLuminosity + flare - (length(viewDir)/8192.0), 0.0, 1.0);\n"
         "	vec3 intensity;\n"
         "	if (vertexColor.r > mlFactor) {\n"
         "		intensity = vertexColor.rgb + (mlFactor * 0.5); }\n"
