@@ -414,6 +414,10 @@ void Client::drop()
 	} 
 }
 
+// This serves as a generic M1 check. It doesn't guarantee
+// map or physics are M1, but for now it suffices.
+extern bool shapes_file_is_m1();
+
 bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 {
 	// ghs: perhaps someday there will be an elegant, extensible way to do this
@@ -439,7 +443,7 @@ bool Client::capabilities_indicate_player_is_gatherable(bool warn_joiner)
 		return false;
 	}
 
-	if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion)
+	if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < Capabilities::kGameworldM1Version))
 	{
 		if (warn_joiner)
 		{
@@ -767,7 +771,7 @@ static void handleCapabilitiesMessage(CapabilitiesMessage* capabilitiesMessage,
 {
 	if (handlerState == netJoining) {
 		Capabilities capabilities = *capabilitiesMessage->capabilities();
-		if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion || (network_preferences->game_protocol == _network_game_protocol_star && capabilities[Capabilities::kStar] < Capabilities::kStarVersion))
+		if (capabilities[Capabilities::kGameworld] < Capabilities::kGameworldVersion || (shapes_file_is_m1() && capabilities[Capabilities::kGameworldM1] < Capabilities::kGameworldM1Version) || (network_preferences->game_protocol == _network_game_protocol_star && capabilities[Capabilities::kStar] < Capabilities::kStarVersion))
 		{
 			// I'm not gatherable
 			my_capabilities[Capabilities::kGatherable] = 0;
@@ -1216,6 +1220,7 @@ bool NetEnter(void)
 
 	my_capabilities.clear();
 	my_capabilities[Capabilities::kGameworld] = Capabilities::kGameworldVersion;
+	my_capabilities[Capabilities::kGameworldM1] = Capabilities::kGameworldM1Version;
 	my_capabilities[Capabilities::kSpeex] = Capabilities::kSpeexVersion;
 	if (network_preferences->game_protocol == _network_game_protocol_star) {
 		my_capabilities[Capabilities::kStar] = Capabilities::kStarVersion;
