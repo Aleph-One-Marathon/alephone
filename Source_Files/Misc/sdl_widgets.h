@@ -190,7 +190,6 @@ public:
 
 protected:
 	char *text;
-private:
 	int theme_type;
 };
 
@@ -210,6 +209,16 @@ private:
 class w_title : public w_static_text {
 public:
 	w_title(const char *text) : w_static_text(text, TITLE_WIDGET) {}
+};
+
+class w_styled_text : public w_static_text {
+public:
+	w_styled_text(const char *text, int theme_type = MESSAGE_WIDGET);
+
+	void set_text(const char* t);
+	void draw(SDL_Surface *s) const;
+private:
+	std::string text_string;
 };
 
 /*

@@ -201,6 +201,26 @@ w_static_text::~w_static_text() {
     free(text);
 }
 
+w_styled_text::w_styled_text(const char *t, int _theme_type) : w_static_text(t, _theme_type), text_string(t) {
+	rect.w = font->styled_text_width(text_string, text_string.size(), style);
+	saved_min_width = rect.w;
+}
+
+void w_styled_text::set_text(const char* t)
+{
+	w_static_text::set_text(t);
+	text_string = t;
+	// maybe reset rect.width here, but parent w_static_text doesn't, so we won't either
+}
+
+void w_styled_text::draw(SDL_Surface *s) const
+{
+	uint32 pixel;
+	pixel = get_theme_color(theme_type, DEFAULT_STATE, 0);
+
+	font->draw_styled_text(s, text_string, text_string.size(), rect.x, rect.y + font->get_ascent(), pixel, style);
+}
+
 /*
  *  Picture (PICT resource)
  */

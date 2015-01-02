@@ -180,7 +180,7 @@ public:
 			const MetaserverPlayerInfo *player = gMetaserverClient->find_player(game->m_hostPlayerID);
 			if (player)
 			{
-				table->dual_add(new w_static_text(player->name().c_str()), info_dialog);
+				table->dual_add(new w_styled_text(player->name().c_str()), info_dialog);
 			}
 			else
 			{
@@ -200,7 +200,7 @@ public:
 			table->add_row(new w_spacer(), true);
 			table->dual_add_row(new w_static_text("Game"), info_dialog);
 			table->dual_add(new w_label("Name"), info_dialog);
-			table->dual_add(new w_static_text(game->name().c_str()), info_dialog);
+			table->dual_add(new w_styled_text(game->name().c_str()), info_dialog);
 			table->dual_add(new w_label("Level"), info_dialog);
 			table->dual_add(new w_static_text(game->m_description.m_mapName.c_str()), info_dialog);
 			table->dual_add(new w_label("Pack"), info_dialog);
