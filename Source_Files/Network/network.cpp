@@ -1333,8 +1333,8 @@ void NetExit(
 	if (controller)
 	{
 		open_progress_dialog(_closing_router_ports);
-		LNat_Upnp_Remove_Port_Mapping(controller, 4226, "TCP");
-		LNat_Upnp_Remove_Port_Mapping(controller, 4226, "UDP");
+		LNat_Upnp_Remove_Port_Mapping(controller, GAME_PORT, "TCP");
+		LNat_Upnp_Remove_Port_Mapping(controller, GAME_PORT, "UDP");
 		LNat_Upnp_Controller_Free(&controller);
 		controller = NULL;
 		close_progress_dialog();
@@ -1486,11 +1486,11 @@ bool NetGather(
 			if ((ret = LNat_Upnp_Get_Public_Ip(controller, public_ip, 32)) != 0)
 				logWarning("LibNAT: Failed to acquire public IP");
 		if (ret == 0)
-			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, 4226, "TCP")) != 0)
-				logWarning("LibNAT: Failed to map port 4226 (TCP)");
+			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, GAME_PORT, "TCP")) != 0)
+				logWarning("LibNAT: Failed to map port %d (TCP)", GAME_PORT);
 		if (ret == 0)
-			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, 4226, "UDP")) != 0)
-				logWarning("LibNAT: Failed to map port 4226 (UDP)");
+			if ((ret = LNat_Upnp_Set_Port_Mapping(controller, NULL, GAME_PORT, "UDP")) != 0)
+				logWarning("LibNAT: Failed to map port %d (UDP)", GAME_PORT);
 		close_progress_dialog();
 		
 		if (ret != 0)
