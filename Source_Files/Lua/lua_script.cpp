@@ -179,7 +179,7 @@ void L_Invalidate_Monster(short) { }
 void L_Invalidate_Projectile(short) { }
 void L_Invalidate_Object(short) { }
 
-bool LoadLuaScript(const char *buffer, size_t len) { /* Should never get here! */ return false; }
+bool LoadLuaScript(const char *buffer, size_t len, const char *desc) { /* Should never get here! */ return false; }
 bool RunLuaScript() {
 	for (int i = 0; i < MAXIMUM_NUMBER_OF_NETWORK_PLAYERS; i++)
 		use_lua_compass [i] = false;
@@ -254,7 +254,7 @@ public:
 
 public:
 
-	bool Load(const char *buffer, size_t len);
+	bool Load(const char *buffer, size_t len, const char *desc);
 	bool Loaded() { return num_scripts_ > 0; }
 	bool Running() { return running_; }
 	bool Run();
@@ -842,9 +842,9 @@ void LuaState::LoadCompatibility()
 	lua_setglobal(State(), "MAXIMUM_OBJECTS_PER_MAP");
 }
 
-bool LuaState::Load(const char *buffer, size_t len)
+bool LuaState::Load(const char *buffer, size_t len, const char *desc)
 {
-	int status = luaL_loadbufferx(State(), buffer, len, "level_script", "t");
+	int status = luaL_loadbufferx(State(), buffer, len, desc, "t");
 	if (status == LUA_ERRRUN)
 		logWarning("Lua loading failed: error running script.");
 	if (status == LUA_ERRFILE)
@@ -1754,7 +1754,19 @@ bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 		states.insert(type, LuaStateFactory(script_type));
 		states[script_type].Initialize();
 	}
-	return states[script_type].Load(buffer, len);
+	const char *desc = "level_script";
+	switch (script_type) {
+		case _embedded_lua_script:
+			desc = "Map Lua";
+			break;
+		case _lua_netscript:
+			desc = "Netscript";
+			break;
+		case _solo_lua_script:
+			desc = "Solo Lua";
+			break;
+	}
+	return states[script_type].Load(buffer, len, desc);
 }
 
 #ifdef HAVE_OPENGL
