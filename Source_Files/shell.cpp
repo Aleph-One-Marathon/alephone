@@ -599,7 +599,7 @@ static void initialize_application(void)
 	saved_games_dir.CreateDirectory();
 	quick_saves_dir.CreateDirectory();
 	{
-		std::string scen = Scenario::instance()->GetID();
+		std::string scen = Scenario::instance()->GetName();
 		if (scen.length())
 			scen.erase(std::remove_if(scen.begin(), scen.end(), char_is_not_filesafe), scen.end());
 		if (!scen.length())
