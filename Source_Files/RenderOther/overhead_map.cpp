@@ -662,6 +662,9 @@ const int TOTAL_NUMBER_OF_COLORS =
 const int TOTAL_NUMBER_OF_FONTS = 
 	NUMBER_OF_ANNOTATION_DEFINITIONS*(OVERHEAD_MAP_MAXIMUM_SCALE-OVERHEAD_MAP_MINIMUM_SCALE + 1) + 1;
 
+static OvhdMap_CfgDataStruct original_OvhdMap_ConfigData = OvhdMap_ConfigData;
+static short original_OverheadMapMode = OverheadMapMode;
+
 class XML_OvhdMapParser: public XML_ElementParser
 {
 	// Extras are:
@@ -675,6 +678,7 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool End();
+	bool ResetValues();
 	
 	XML_OvhdMapParser(): XML_ElementParser("overhead_map") {}
 };
@@ -800,6 +804,14 @@ bool XML_OvhdMapParser::End()
 	
 	assert(FontPtr == Fonts + TOTAL_NUMBER_OF_FONTS);
 
+	return true;
+}
+
+bool XML_OvhdMapParser::ResetValues()
+{
+	OverheadMapMode = original_OverheadMapMode;
+	OvhdMap_ConfigData = original_OvhdMap_ConfigData;
+	
 	return true;
 }
 

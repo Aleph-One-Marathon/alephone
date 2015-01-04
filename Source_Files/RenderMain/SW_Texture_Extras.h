@@ -69,6 +69,7 @@ public:
 	SW_Texture *AddTexture(shape_descriptor ShapeDesc);
 	void Load(short Collection);
 	void Unload(short Collection);
+	void Reset();
 
 private:
 	SW_Texture_Extras() { }

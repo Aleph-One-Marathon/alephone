@@ -262,6 +262,8 @@ static XML_FOVParser FOVParser;
 
 // Main view parser
 struct view_settings_definition *original_view_settings = NULL;
+static FontSpecifier original_OnScreenFont = OnScreenFont;
+
 class XML_ViewParser: public XML_ElementParser
 {
 public:
@@ -317,6 +319,12 @@ bool XML_ViewParser::ResetValues()
 		free(original_view_settings);
 		original_view_settings = NULL;
 	}
+	// reset on-screen font and update if needed
+	OnScreenFont = original_OnScreenFont;
+	if (ScreenFontInited) {
+		OnScreenFont.Update();
+	}
+	
 	return true;
 }
 

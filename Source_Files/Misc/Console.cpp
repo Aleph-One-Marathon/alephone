@@ -237,6 +237,11 @@ void Console::unregister_macro(string input)
 	m_macros.erase(input);
 }
 
+void Console::clear_macros()
+{
+	m_macros.clear();
+}
+
 void Console::set_carnage_message(int16 projectile_type, const std::string& on_kill, const std::string& on_suicide)
 {
 	m_carnage_messages_exist = true;
@@ -299,6 +304,12 @@ void Console::report_kill(int16 player_index, int16 aggressor_player_index, int1
 
 		screen_printf("%s", display_string.c_str());
 	}
+}
+
+void Console::clear_carnage_messages()
+{
+	m_carnage_messages.clear();
+	m_carnage_messages_exist = false;
 }
 
 static std::string last_level;
@@ -464,6 +475,7 @@ class XML_ConsoleParser : public XML_ElementParser
 {
 public:
 	bool HandleAttribute(const char *Tag, const char *Value);
+	bool ResetValues();
 
 	XML_ConsoleParser() : XML_ElementParser("console") {} 
 };
@@ -488,6 +500,15 @@ bool XML_ConsoleParser::HandleAttribute(const char *Tag, const char *Value)
 	return false;
 }
 
+bool XML_ConsoleParser::ResetValues()
+{
+	Console *console = Console::instance();
+	console->use_lua_console(true);
+	console->clear_macros();
+	console->clear_carnage_messages();
+	
+	return true;
+}
 
 static XML_ConsoleParser ConsoleParser;
 

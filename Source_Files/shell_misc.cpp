@@ -105,11 +105,15 @@ void AddItemsToPlayer(short ItemType, short MaxNumber);
 void AddOneItemToPlayer(short ItemType, short MaxNumber);
 
 // LP addition: XML support for controlling whether cheats are active
+keyword_data *original_keywords = NULL;
+
 class XML_CheatsParser: public XML_ElementParser
 {
 	
 public:
+	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
+	bool ResetValues();
 	
 	XML_CheatsParser(): XML_ElementParser("cheats") {}
 };
@@ -379,6 +383,7 @@ void *level_transition_malloc(
 
 static char keyword_buffer[MAXIMUM_KEYWORD_LENGTH+1];
 
+// Note: This does not implement ResetValues() because the reset is handled by XML_CheatParser.
 class XML_CheatKeywordParser: public XML_ElementParser
 {
 	bool IsPresent;
@@ -433,6 +438,19 @@ bool XML_CheatKeywordParser::HandleString(const char *String, int Length)
 
 static XML_CheatKeywordParser CheatKeywordParser;
 
+bool XML_CheatsParser::Start()
+{
+	// back up old values first
+	if (!original_keywords)
+	{
+		original_keywords = (keyword_data *) malloc(sizeof(keywords));
+		assert(original_keywords);
+		for (int i = 0; i < NUMBER_OF_KEYWORDS; i++)
+			original_keywords[i] = keywords[i];
+	}
+	return true;
+}
+
 bool XML_CheatsParser::HandleAttribute(const char *Tag, const char *Value)
 {
 	if (StringsEqual(Tag,"on"))
@@ -449,6 +467,18 @@ bool XML_CheatsParser::HandleAttribute(const char *Tag, const char *Value)
 	}
 	UnrecognizedTag();
 	return false;
+}
+
+bool XML_CheatsParser::ResetValues()
+{
+	CheatsActive = false;
+	if (original_keywords)
+	{
+		for (int i = 0; i < NUMBER_OF_KEYWORDS; i++)
+			keywords[i] = original_keywords[i];
+	}
+	
+	return true;
 }
 
 static XML_CheatsParser CheatsParser;

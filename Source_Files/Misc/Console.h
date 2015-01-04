@@ -65,10 +65,12 @@ public:
 
 	void register_macro(std::string macro, std::string replacement);
 	void unregister_macro(std::string macro);
+	void clear_macros();
 
 	// carnage reporting
 	void set_carnage_message(int16 projectile_type, const std::string& on_kill, const std::string& on_suicide = "");
 	void report_kill(int16 player_index, int16 aggressor_player_index, int16 projectile_index);
+	void clear_carnage_messages();
 
 	bool use_lua_console() { return m_use_lua_console || environment_preferences->use_solo_lua; };
 	void use_lua_console(bool f_use) { m_use_lua_console = f_use; }

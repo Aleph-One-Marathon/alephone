@@ -134,6 +134,14 @@ void SW_Texture_Extras::Unload(short collection_index)
 	}
 }
 
+void SW_Texture_Extras::Reset()
+{
+	// remove all textures
+	for (short i = 0; i < NUMBER_OF_COLLECTIONS; i++) {
+		texture_list[i].clear();
+	}
+}
+
 class XML_SW_Texture_Parser : public XML_ElementParser
 {
 
@@ -147,6 +155,7 @@ public:
 	bool Start();
 	bool HandleAttribute(const char *Tag, const char *Value);
 	bool AttributesDone();
+	bool ResetValues();
 	XML_SW_Texture_Parser() : XML_ElementParser("texture") { };
 };
 
@@ -192,6 +201,13 @@ bool XML_SW_Texture_Parser::AttributesDone()
 	sw_texture->opac_type(OpacityType);
 	sw_texture->opac_scale(OpacityScale);
 	sw_texture->opac_shift(OpacityShift);
+	return true;
+}
+
+bool XML_SW_Texture_Parser::ResetValues()
+{
+	SW_Texture_Extras::instance()->Reset();
+	
 	return true;
 }
 
