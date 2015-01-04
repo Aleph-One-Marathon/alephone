@@ -37,6 +37,7 @@ public:
 		U_Texture2,
 		U_Texture3,
 		U_Time,
+		U_Pulsate,
 		U_Wobble,
 		U_Flare,
 		U_BloomScale,

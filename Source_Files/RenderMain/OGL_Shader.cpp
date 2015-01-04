@@ -63,6 +63,7 @@ const char* Shader::_uniform_names[NUMBER_OF_UNIFORM_LOCATIONS] =
 	"texture2",
 	"texture3",
 	"time",
+	"pulsate",
 	"wobble",
 	"flare",
 	"bloomScale",
@@ -642,6 +643,7 @@ void initDefaultPrograms() {
         "}\n";
     defaultFragmentPrograms["wall"] = ""
         "uniform sampler2D texture0;\n"
+        "uniform float pulsate;\n"
         "uniform float wobble;\n"
         "uniform float glow;\n"
         "uniform float flare;\n"
@@ -653,7 +655,8 @@ void initDefaultPrograms() {
         "varying float classicDepth;\n"
         "void main (void) {\n"
         "	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
-        "	texCoords += vec3(normalize(viewXY).yx * wobble, 0.0);\n"
+        "	texCoords += vec3(normalize(viewXY).y * -pulsate, normalize(viewXY).x * pulsate, 0.0);\n"
+        "	texCoords += vec3(normalize(viewXY).y * -wobble * texCoords.y, wobble * texCoords.y, 0.0);\n"
         "	float mlFactor = clamp(selfLuminosity + flare - classicDepth, 0.0, 1.0);\n"
         "	// more realistic: replace classicDepth with (length(viewDir)/8192.0)\n"
         "	vec3 intensity;\n"
@@ -672,6 +675,7 @@ void initDefaultPrograms() {
     defaultVertexPrograms["wall_bloom"] = defaultVertexPrograms["wall"];
     defaultFragmentPrograms["wall_bloom"] = ""
         "uniform sampler2D texture0;\n"
+        "uniform float pulsate;\n"
         "uniform float wobble;\n"
         "uniform float glow;\n"
         "uniform float flare;\n"
@@ -683,7 +687,8 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "void main (void) {\n"
         "	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
-        "	texCoords += vec3(normalize(viewXY).yx * wobble, 0.0);\n"
+        "	texCoords += vec3(normalize(viewXY).y * -pulsate, normalize(viewXY).x * pulsate, 0.0);\n"
+        "	texCoords += vec3(normalize(viewXY).y * -wobble * texCoords.y, wobble * texCoords.y, 0.0);\n"
         "	vec4 color = texture2D(texture0, texCoords.xy);\n"
         "	vec3 intensity = clamp(vertexColor.rgb, glow, 1.0);\n"
         "	float diffuse = abs(dot(vec3(0.0, 0.0, 1.0), normalize(viewDir)));\n"
@@ -699,6 +704,7 @@ void initDefaultPrograms() {
     defaultFragmentPrograms["bump"] = ""
         "uniform sampler2D texture0;\n"
         "uniform sampler2D texture1;\n"
+        "uniform float pulsate;\n"
         "uniform float wobble;\n"
         "uniform float glow;\n"
         "uniform float flare;\n"
@@ -709,7 +715,8 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "void main (void) {\n"
         "	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
-        "	texCoords += vec3(normalize(viewXY).yx * wobble, 0.0);\n"
+        "	texCoords += vec3(normalize(viewXY).y * -pulsate, normalize(viewXY).x * pulsate, 0.0);\n"
+        "	texCoords += vec3(normalize(viewXY).y * -wobble * texCoords.y, wobble * texCoords.y, 0.0);\n"
         "	float mlFactor = clamp(selfLuminosity + flare - (length(viewDir)/8192.0), 0.0, 1.0);\n"
         "	vec3 intensity;\n"
         "	if (vertexColor.r > mlFactor) {\n"
@@ -743,6 +750,7 @@ void initDefaultPrograms() {
     defaultFragmentPrograms["bump_bloom"] = ""
         "uniform sampler2D texture0;\n"
         "uniform sampler2D texture1;\n"
+        "uniform float pulsate;\n"
         "uniform float wobble;\n"
         "uniform float glow;\n"
         "uniform float flare;\n"
@@ -754,7 +762,8 @@ void initDefaultPrograms() {
         "varying float FDxLOG2E;\n"
         "void main (void) {\n"
         "	vec3 texCoords = vec3(gl_TexCoord[0].xy, 0.0);\n"
-        "	texCoords += vec3(normalize(viewXY).yx * wobble, 0.0);\n"
+        "	texCoords += vec3(normalize(viewXY).y * -pulsate, normalize(viewXY).x * pulsate, 0.0);\n"
+        "	texCoords += vec3(normalize(viewXY).y * -wobble * texCoords.y, wobble * texCoords.y, 0.0);\n"
         "	vec3 viewv = normalize(viewDir);\n"
         "	// iterative parallax mapping\n"
         "	float scale = 0.010;\n"

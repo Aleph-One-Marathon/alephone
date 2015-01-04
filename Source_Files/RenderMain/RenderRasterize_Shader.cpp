@@ -574,6 +574,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 	}
 	s->setFloat(Shader::U_Flare, flare);
 	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
+	s->setFloat(Shader::U_Pulsate, 0);
 	s->setFloat(Shader::U_Wobble, 0);
 	s->setFloat(Shader::U_Depth, offset);
 	s->setFloat(Shader::U_StrictDepthMode, OGL_ForceSpriteDepth() ? 1 : 0);
@@ -585,7 +586,7 @@ TextureManager RenderRasterize_Shader::setupSpriteTexture(const rectangle_defini
 const double Radian2Circle = 1/TWO_PI;			// A circle is 2*pi radians
 const double FullCircleReciprocal = 1/double(FULL_CIRCLE);
 
-TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& Texture, short transferMode, float wobble, float intensity, float offset, RenderStep renderStep) {
+TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& Texture, short transferMode, float pulsate, float wobble, float intensity, float offset, RenderStep renderStep) {
 
 	Shader *s = NULL;
 
@@ -684,6 +685,7 @@ TextureManager RenderRasterize_Shader::setupWallTexture(const shape_descriptor& 
 	}
 	s->setFloat(Shader::U_Flare, flare);
 	s->setFloat(Shader::U_SelfLuminosity, selfLuminosity);
+	s->setFloat(Shader::U_Pulsate, pulsate);
 	s->setFloat(Shader::U_Wobble, wobble);
 	s->setFloat(Shader::U_Depth, offset);
 	s->setFloat(Shader::U_Glow, 0);
@@ -738,7 +740,7 @@ float calcWobble(short transferMode, short transfer_phase) {
 		case _xfer_wobble:
 			transfer_phase&= WORLD_ONE/16-1;
 			transfer_phase= (transfer_phase>=WORLD_ONE/32) ? (WORLD_ONE/32+WORLD_ONE/64 - transfer_phase) : (transfer_phase - WORLD_ONE/64);
-			wobble = transfer_phase / 255.0;
+			wobble = transfer_phase / 1024.0;
 			break;
 	}
 	return wobble;
@@ -805,7 +807,9 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
 	float intensity = get_light_data(surface->lightsource_index)->intensity / float(FIXED_ONE - 1);
 	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
-	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble, intensity, offset, renderStep);
+	// note: wobble and pulsate behave the same way on floors and ceilings
+	// note 2: stronger wobble looks more like classic with default shaders
+	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble * 4.0, 0, intensity, offset, renderStep);
 	if(TMgr.ShapeDesc == UNONE) { return; }
 
 	if (TMgr.IsBlended()) {
@@ -942,7 +946,12 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture_definition->texture);
 	float intensity = (get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / float(FIXED_ONE - 1);
 	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
-	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, wobble, intensity, offset, renderStep);
+	float pulsate = 0;
+	if (surface->transfer_mode == _xfer_pulsate) {
+		pulsate = wobble;
+		wobble = 0;
+	}
+	TextureManager TMgr = setupWallTexture(texture, surface->transfer_mode, pulsate, wobble, intensity, offset, renderStep);
 	if(TMgr.ShapeDesc == UNONE) { return; }
 
 	if (TMgr.IsBlended()) {
