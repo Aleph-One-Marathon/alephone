@@ -30,6 +30,7 @@ static FilmProfile alephone1_2 = {
 	true, // key_frame_zero_shrapnel_fix
 	true, // count_dead_dropped_items_correctly
 	true, // m1_low_gravity_projectiles
+	true, // m1_buggy_repair_goal
 };
 
 static FilmProfile alephone1_1 = {
@@ -60,6 +61,7 @@ static FilmProfile alephone1_1 = {
 	true, // key_frame_zero_shrapnel_fix
 	true, // count_dead_dropped_items_correctly
 	false, // m1_low_gravity_projectiles
+	false, // m1_buggy_repair_goal
 };
 
 static FilmProfile alephone1_0 = {
@@ -90,6 +92,7 @@ static FilmProfile alephone1_0 = {
 	false, // key_frame_zero_shrapnel_fix
 	false, // count_dead_dropped_items_correctly
 	false, // m1_low_gravity_projectiles
+	false, // m1_buggy_repair_goal
 };
 
 static FilmProfile marathon2 = {
@@ -120,6 +123,7 @@ static FilmProfile marathon2 = {
 	false, // key_frame_zero_shrapnel_fix
 	false, // count_dead_dropped_items_correctly
 	false, // m1_low_gravity_projectiles
+	false, // m1_buggy_repair_goal
 };
 
 static FilmProfile marathon_infinity = {
@@ -150,6 +154,7 @@ static FilmProfile marathon_infinity = {
 	false, // key_frame_zero_shrapnel_fix
 	false, // count_dead_dropped_items_correctly
 	false, // m1_low_gravity_projectiles
+	false, // m1_buggy_repair_goal
 };
 
 FilmProfile film_profile = alephone1_2;

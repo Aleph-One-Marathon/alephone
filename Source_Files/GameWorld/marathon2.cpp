@@ -780,9 +780,12 @@ short calculate_level_completion_state(
 	}
 	
 	/* if there are any untoggled repair switches on this level then we’re not there */
-	if (static_world->mission_flags&_mission_repair)
+	if ((static_world->mission_flags&_mission_repair) ||
+	    (static_world->mission_flags&_mission_repair_m1))
 	{
-		if (untoggled_repair_switches_on_level()) completion_state= _level_unfinished;
+		/* M1 only required last repair switch to be toggled */
+		bool only_last_switch = (film_profile.m1_buggy_repair_goal && (static_world->mission_flags&_mission_repair_m1));
+		if (untoggled_repair_switches_on_level(only_last_switch)) completion_state= _level_unfinished;
 	}
 
 	/* if we’ve finished the level, check failure conditions */

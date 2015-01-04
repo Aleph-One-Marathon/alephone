@@ -1684,6 +1684,11 @@ bool process_map_wad(
             static_world->mission_flags &= ~_mission_rescue;
             static_world->mission_flags |= _mission_rescue_m1;
         }
+        if (static_world->mission_flags & _mission_repair)
+        {
+            static_world->mission_flags &= ~_mission_repair;
+            static_world->mission_flags |= _mission_repair_m1;
+        }
         if (static_world->environment_flags & _environment_rebellion)
         {
             static_world->environment_flags &= ~_environment_rebellion;

@@ -93,6 +93,7 @@ struct FilmProfile
 
 	// Aleph One 1.2 fixes
 	bool m1_low_gravity_projectiles;
+	bool m1_buggy_repair_goal;
 };
 
 extern FilmProfile film_profile;

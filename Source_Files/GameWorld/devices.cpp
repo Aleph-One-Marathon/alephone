@@ -413,13 +413,13 @@ void update_action_key(
 }
 
 bool untoggled_repair_switches_on_level(
-	void)
+	bool only_last_switch)
 {
 	short side_index;
 	struct side_data *side;
 	bool untoggled_switch= false;
 	
-	for (side_index= 0, side= map_sides; side_index<dynamic_world->side_count && !untoggled_switch; ++side_index, ++side)
+	for (side_index= 0, side= map_sides; side_index<dynamic_world->side_count && (!untoggled_switch || only_last_switch); ++side_index, ++side)
 	{
 		if (SIDE_IS_CONTROL_PANEL(side) && SIDE_IS_REPAIR_SWITCH(side))
 		{

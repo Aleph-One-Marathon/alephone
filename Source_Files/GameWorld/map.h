@@ -814,7 +814,8 @@ enum /* mission flags */
 	_mission_repair= 0x0008,
 	_mission_rescue= 0x0010,
 	_mission_exploration_m1= 0x0020,
-	_mission_rescue_m1= 0x0040
+	_mission_rescue_m1= 0x0040,
+	_mission_repair_m1= 0x0080
 };
 
 enum /* environment flags */
@@ -1364,7 +1365,7 @@ short new_device(world_point2d *location, short initial_polygon_index,
 	short type, short extra_data, bool active);
 void update_action_key(short player_index, bool triggered);
 
-bool untoggled_repair_switches_on_level(void);
+bool untoggled_repair_switches_on_level(bool only_last_switch = false);
 
 void assume_correct_switch_position(short switch_type, short permutation, bool new_state);
 
