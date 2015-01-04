@@ -1837,12 +1837,17 @@ This is the default player name in netgames, which takes the form:
 
 <hr>
 <h3><a name="scenario">Scenario Element: &lt;scenario&gt;</a></h3>
-This element is for identifying the scenario. It has an attribute "name" which is the scenario name displayed in the Find Internet Game client, an attribute "version" which is the scenario version displayed in the Find Internet Game client, and an attribute "id" which is used to determine which games to gray out. The defaults for name, version, and id are blank.
-<p>There are also child elements &lt;can_join&gt; which specify other scenario ids this one can join.
+This element is for identifying the scenario. It has three attributes, which are blank strings by default:
+
+<ul>
+<li>"name" - The scenario name displayed in the interface (Find Internet Game, About Aleph One). The name is also used to organize Quick Saves by scenario; if the scenario name changes, the user's previous quick saves will not be accessible. Limited to 32 characters.
+<li>"id" - This string indicates network compatibility (see below). Limited to 24 characters.
+<li>"version" - The scenario version displayed in the interface. Limited to 8 characters.
+</ul>
+
+Plugins can use any of the scenario attributes to determine whether they are compatibile. Most scenario-specific plugins will use scenario name.
 <p>
-Scenario names are limited to 32 characters in length. Scenario version strings are limited to 8 characters in length. Scenario IDs are limited to 24 characters in length.
-<p>
-Games show up as joinable when any of these is true:
+The scenario id is used to gray out games in the Find Internet Game interface. Games show up as joinable when any of these are true:
 <ul>
 <li>The joiner's scenario id is blank</li>
 <li>The gatherer's scenario id is blank</li>
