@@ -28,6 +28,7 @@
 #include <vector>
 
 struct ScenarioInfo {
+	std::string name;
 	std::string scenario_id;
 	std::string version;
 };

@@ -69,11 +69,13 @@ bool Plugin::compatible() const {
 
 	if (required_scenarios.size() == 0)
 		return true;
+	std::string scenName = Scenario::instance()->GetName();
 	std::string scenID = Scenario::instance()->GetID();
 	std::string scenVers = Scenario::instance()->GetVersion();
 	for (std::vector<ScenarioInfo>::const_iterator it = required_scenarios.begin(); it != required_scenarios.end(); ++it)
 	{
-		if (it->scenario_id == scenID &&
+		if ((it->name.empty() || it->name == scenName) &&
+		    (it->scenario_id.empty() || it->scenario_id == scenID) &&
 		    (it->version.empty() || it->version == scenVers))
 			return true;
 	}
@@ -325,12 +327,18 @@ public:
     XML_PluginScenarioInfoParser() : XML_ElementParser("scenario") {}
     
 private:
+    std::string Name;
     std::string ID;
     std::string Version;
 };
 
 bool XML_PluginScenarioInfoParser::HandleAttribute(const char* Tag, const char* Value)
 {
+    if (StringsEqual(Tag, "name"))
+    {
+        Name = std::string(Value, 0, 31);
+        return true;
+    }
     if (StringsEqual(Tag, "id"))
     {
         ID = std::string(Value, 0, 23);
@@ -348,7 +356,7 @@ bool XML_PluginScenarioInfoParser::HandleAttribute(const char* Tag, const char* 
 
 bool XML_PluginScenarioInfoParser::AttributesDone()
 {
-    if (ID.empty())
+    if (Name.empty() && ID.empty())
     {
         AttribsMissing();
         return false;
@@ -360,6 +368,7 @@ bool XML_PluginScenarioInfoParser::AttributesDone()
 bool XML_PluginScenarioInfoParser::End()
 {
     ScenarioInfo info;
+    info.name = Name;
     info.scenario_id = ID;
     info.version = Version;
     
