@@ -49,6 +49,7 @@ Console *Console::m_instance = NULL;
 
 Console::Console() : m_active(false), m_carnage_messages_exist(false), m_use_lua_console(true)
 {
+	m_command_iter = m_prev_commands.end();
 	m_carnage_messages.resize(NUMBER_OF_PROJECTILE_TYPES);
 	register_save_commands();
 }
@@ -120,6 +121,13 @@ void CommandParser::parse_and_execute(const std::string& command_string)
 
 
 void Console::enter() {
+	// store entered command if not duplicate of previous command
+	if (m_prev_commands.size() == 0 ||
+	    m_buffer != *(m_prev_commands.end()-1)) {
+		m_prev_commands.push_back(m_buffer);
+	}
+	m_command_iter = m_prev_commands.end();
+	
 	// macros are processed first
 	if (m_buffer[0] == '.')
 	{
@@ -195,6 +203,28 @@ void Console::key(const char c) {
 	m_displayBuffer.erase(m_displayBuffer.size() - 1);
 	m_displayBuffer += c;
 	m_displayBuffer += "_";
+}
+
+// up and down arrows display previously entered commands at current prompt
+void Console::up_arrow() {
+	if (m_command_iter == m_prev_commands.begin()) return;
+	m_command_iter--;
+	set_command(*m_command_iter);
+}
+
+void Console::down_arrow() {
+	if (m_command_iter == m_prev_commands.end()) return;
+	m_command_iter++;
+	if (m_command_iter == m_prev_commands.end()) {
+		set_command("");
+	} else {
+		set_command(*m_command_iter);
+	}
+}
+
+void Console::set_command(std::string command) {
+	m_buffer = command;
+	m_displayBuffer = m_prompt + " " + m_buffer + "_";
 }
 
 void Console::activate_input(boost::function<void (const std::string&)> callback,

@@ -946,6 +946,12 @@ static void handle_game_key(const SDL_Event &event)
 		case SDLK_DELETE:
 			Console::instance()->backspace();
 			break;
+		case SDLK_UP:
+			Console::instance()->up_arrow();
+			break;
+		case SDLK_DOWN:
+			Console::instance()->down_arrow();
+			break;
 		default:
 			if (event.key.keysym.unicode == 8) // Crtl-H
 			{

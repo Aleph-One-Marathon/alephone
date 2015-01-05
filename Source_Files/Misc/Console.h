@@ -55,6 +55,8 @@ public:
 	void backspace();
 	void clear();
 	void key(const char);
+	void up_arrow();
+	void down_arrow();
 	const std::string &displayBuffer() { return m_displayBuffer; }
 
 	void activate_input(boost::function<void (const std::string&)> callback,
@@ -87,6 +89,10 @@ private:
 	std::string m_displayBuffer;
 	std::string m_prompt;
 	bool m_active;
+	
+	std::vector<std::string> m_prev_commands;
+	std::vector<std::string>::iterator m_command_iter;
+	void set_command(std::string command);
 
 	std::map<std::string, std::string> m_macros;
 
