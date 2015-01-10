@@ -122,6 +122,7 @@
 #include "network.h"
 #include "Console.h"
 #include "Movie.h"
+#include "HTTP.h"
 
 // LP addition: whether or not the cheats are active
 // Defined in shell_misc.cpp
@@ -660,6 +661,7 @@ static void initialize_application(void)
 		exit(1);
 	}
 #endif
+	HTTPClient::Init();
 
 	// Initialize everything
 	mytm_initialize();

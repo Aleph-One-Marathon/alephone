@@ -17,6 +17,7 @@ libnetwork_a_SOURCES = ConnectPool.h network.h network_audio_shared.h network_ca
   network_sound.h network_speaker_sdl.h network_speex.h network_star.h \
   NetworkGameProtocol.h RingGameProtocol.h SDL_netx.h \
   SSLP_API.h SSLP_Protocol.h StarGameProtocol.h Update.h \
+  HTTP.h \
   \
   ConnectPool.cpp network.cpp network_capabilities.cpp network_data_formats.cpp \
   network_dialogs.cpp \
@@ -25,7 +26,8 @@ libnetwork_a_SOURCES = ConnectPool.h network.h network_audio_shared.h network_ca
   network_microphone_shared.cpp network_speex.cpp network_speaker_sdl.cpp \
   network_speaker_shared.cpp network_star_hub.cpp network_star_spoke.cpp \
   network_udp.cpp RingGameProtocol.cpp \
-  SDL_netx.cpp SSLP_limited.cpp StarGameProtocol.cpp Update.cpp
+  SDL_netx.cpp SSLP_limited.cpp StarGameProtocol.cpp Update.cpp \
+  HTTP.cpp
 
 EXTRA_libnetwork_a_SOURCES = network_dummy.cpp network_microphone_sdl_win32.cpp network_microphone_coreaudio.cpp NetworkGameProtocol.cpp network_microphone_sdl_dummy.cpp
 

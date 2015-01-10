@@ -22,9 +22,10 @@
 */
 
 #include "Update.h"
-#include "SDL_net.h"
+#include "HTTP.h"
+#include <sstream>
 #include <boost/tokenizer.hpp>
-#include <string.h>
+#include <boost/algorithm/string/predicate.hpp>
 #include "alephversion.h"
 
 Update *Update::m_instance = 0;
@@ -73,57 +74,30 @@ void Update::StartUpdateCheck()
 
 int Update::Thread()
 {
-	IPaddress ip;
-	if (SDLNet_ResolveHost(&ip, A1_UPDATE_HOST, 80) < 0)
+	std::ostringstream url;
+	url << "http://" << A1_UPDATE_HOST << "/update_check/" << A1_UPDATE_PLATFORM << ".php";
+	
+	HTTPClient fetcher;
+	if (!fetcher.Get(url.str()))
 	{
 		m_status = UpdateCheckFailed;
 		return 1;
 	}
-	
-	TCPsocket sock = SDLNet_TCP_Open(&ip);
-	if (!sock)
+
+	boost::char_separator<char> sep("\r\n");
+	boost::tokenizer<boost::char_separator<char> > tokens(fetcher.Response(), sep);
+	for (boost::tokenizer<boost::char_separator<char> >::iterator it = tokens.begin();
+	     it != tokens.end();
+	     ++it)
 	{
-		m_status = UpdateCheckFailed;
-		return 2;
-	}
-
-	char request[1024];
-	sprintf(request, "GET /update_check/%s.php HTTP/1.1\r\nHost: %s\r\nConnection: close\r\n\r\n", A1_UPDATE_PLATFORM, A1_UPDATE_HOST);
-
-	if (SDLNet_TCP_Send(sock, request, strlen(request)) < strlen(request))
-	{
-		m_status = UpdateCheckFailed;
-		return 3;
-	}
-
-	// ghs: SHOULD but doesn't:
-	// handle Location: header
-	// handle chunked transfers?
-
-	const int MAX_REPLY = 8192;
-	char reply[MAX_REPLY];
-
-	int len = SDLNet_TCP_Recv(sock, reply, MAX_REPLY);
-	if (len < 0)
-	{
-		m_status = UpdateCheckFailed;
-		return 4;
-	}
-
-	reply[len] = 0;
-
-	char *line = strtok(reply, "\r\n");
-	while (line)
-	{
-		if (strncmp(line, "A1_DATE_VERSION: ", strlen("A1_DATE_VERSION: ")) == 0)
+		if (boost::algorithm::starts_with(*it, "A1_DATE_VERSION: "))
 		{
-			m_new_date_version.assign(line + strlen("A1_DATE_VERSION: "));
+			m_new_date_version = it->substr(strlen("A1_DATE_VERSION: "));
 		}
-		else if (strncmp(line, "A1_DISPLAY_VERSION: ", strlen("A1_DISPLAY_VERSION: ")) == 0)
+		else if (boost::algorithm::starts_with(*it, "A1_DISPLAY_VERSION: "))
 		{
-			m_new_display_version.assign(line + strlen("A1_DISPLAY_VERSION: "));
+			m_new_display_version = it->substr(strlen("A1_DISPLAY_VERSION: "));
 		}
-		line = strtok(0, "\r\n");
 	}
 
 	if (m_new_date_version.size())

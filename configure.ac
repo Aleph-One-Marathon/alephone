@@ -39,6 +39,7 @@ AX_ARG_WITH([vorbis], [libvorbis Ogg/Vorbis music playback])
 AX_ARG_WITH([smpeg], [SMPEG movie playback])
 AX_ARG_WITH([speex], [Speex net mic playback])
 AX_ARG_WITH([alsa], [ALSA net mic transmission])
+AX_ARG_WITH([curl], [cURL for HTTP communication])
 AX_ARG_WITH([zzip], [zziplib support])
 AX_ARG_WITH([png], [libpng PNG screenshot support])
 
@@ -213,6 +214,9 @@ AS_IF([test "x$have_speex" = "xyes"],
 AX_CHECK_FEATURE_LIB([alsa], [ALSA],
                      [alsa/asoundlib.h], [asound], [snd_pcm_open])
 
+AX_CHECK_FEATURE_PKG([curl], [CURL],
+                     [CURL], [libcurl >= 7.31.0])
+
 AX_CHECK_FEATURE_PKG([zzip], [ZZIP],
                      [ZZIP], [zziplib >= 0.10.75])
 AM_CONDITIONAL([BUILD_ZZIP_RWOPS], [test "x$have_zzip" = "xtrue"])
@@ -274,6 +278,7 @@ AX_PRINT_SUMMARY([vorbis])
 AX_PRINT_SUMMARY([smpeg])
 AX_PRINT_SUMMARY([speex])
 AX_PRINT_SUMMARY([alsa])
+AX_PRINT_SUMMARY([curl])
 AX_PRINT_SUMMARY([zzip])
 AX_PRINT_SUMMARY([png])
 AS_ECHO([""])
