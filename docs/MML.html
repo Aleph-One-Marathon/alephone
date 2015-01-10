@@ -875,11 +875,11 @@ which has these attributes:
 <ul>
 <li>index: which index in the list of sounds
 <li>slot: which of the slots (0 to 4) gets its sound replaced with the external sound.
-<li>file: the name of he soundfile to use; can include a path
+<li>file: the name of the soundfile to use; can include a path
 </ul>
 <p>
 
-One clears the external-sound definitions currently present wtih the child element
+One clears the external-sound definitions currently present with the child element
 &lt;sound_clear&gt;.
 
 <hr>
@@ -2215,7 +2215,7 @@ will be played after completing the last level of the scenario.
 <li>&lt;load_screen&gt; displays the file in the attribute "file" in place of the OpenGL loading progress dialog. An optional attribute "scale" defaults to true, and says whether to resize the image to fill the screen. An optional attribute "stretch" defaults to true, and says whether to ignore aspect ratio when scaling the image to fill the screen. Optional attributes "progress_left", "progress_top", "progress_right", and "progress_bottom" specify where to display an optional progress bar, in image co-ordinates. The progress bar will fill left to right if it is wider than it is high, and bottom to top if it is taller than it is wide. Lastly, two optional color child elements can be specified, indices 0 and 1, for background and foreground colors of the progress bar, respectively.
 </ul>
 <p>
-Directoris and files are specified in Unix fashion, &lt;dirname&gt;/&lt;dirname&gt;/&lt;filename&gt;,
+Directories and files are specified in Unix fashion, &lt;dirname&gt;/&lt;dirname&gt;/&lt;filename&gt;,
 with a ':' being translated into a '/' in the MacOS.
 The root directory for such specifications is the map file's parent directory,
 so something like "Music/bang_my_head.mp3" means looking for file "bang_my_head.mp3"
