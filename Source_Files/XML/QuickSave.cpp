@@ -310,7 +310,7 @@ static void dialog_rename(void *arg)
     vertical_placer *placer = new vertical_placer;
     
     horizontal_placer* name_placer = new horizontal_placer;
-    w_text_entry *rename_w = new w_save_name(&rd, sel.name.c_str());
+    w_text_entry *rename_w = new w_save_name(&rd, utf8_to_mac_roman(sel.name).c_str());
     rename_w->enable_mac_roman_input();
     name_placer->dual_add(rename_w->label("Name: "), rd);
     name_placer->dual_add(rename_w, rd);
