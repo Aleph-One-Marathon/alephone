@@ -786,6 +786,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
 	<description>whether line is solid</description>
 	<type>boolean</type>
       </variable>
+      <variable name="visible_on_automap" version="SVN">
+	<description>whether line is revealed on local player's automap</description>
+	<type>boolean</type>
+      </variable>
     </table>
     <table name="media">
       <variable name="direction" version="20100118">
@@ -1547,6 +1551,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       <variable name="type">
 	<description>polygon type</description>
 	<type>polygon_type</type>
+      </variable>
+      <variable name="visible_on_automap" version="SVN">
+	<description>whether polygon is revealed on local player's automap</description>
+	<type>boolean</type>
       </variable>
       <variable name="x" access="read-only">
 	<description>center of polygon</description>

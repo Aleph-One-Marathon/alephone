@@ -1069,9 +1069,11 @@ extern vector<map_object> SavedObjectList;
 extern bool game_is_networked; /* true if this is a network game */
 
 #define ADD_LINE_TO_AUTOMAP(i) (automap_lines[(i)>>3] |= (byte) 1<<((i)&0x07))
+#define CLEAR_LINE_FROM_AUTOMAP(i) (automap_lines[(i)>>3] &= ~((byte) 1<<((i&0x07))))
 #define LINE_IS_IN_AUTOMAP(i) ((automap_lines[(i)>>3]&((byte)1<<((i)&0x07)))?(true):(false))
 
 #define ADD_POLYGON_TO_AUTOMAP(i) (automap_polygons[(i)>>3] |= (byte) 1<<((i)&0x07))
+#define CLEAR_POLYGON_FROM_AUTOMAP(i) (automap_polygons[(i)>>3] &= ~((byte) 1<<((i&0x07))))
 #define POLYGON_IS_IN_AUTOMAP(i) ((automap_polygons[(i)>>3]&((byte)1<<((i)&0x07)))?(true):(false))
 
 // Whether or not Marathon 2/oo landscapes had been loaded (switch off for Marathon 1 compatibility)
