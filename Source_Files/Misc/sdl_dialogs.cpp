@@ -2175,9 +2175,9 @@ dialog::draw_dirty_widgets() const
 void dialog::deactivate_currently_active_widget(bool draw)
 {
 	if (active_widget) {
-		active_widget->active = false;
+		active_widget->set_active(false);
 		if (active_widget->associated_label)
-			active_widget->associated_label->active = false;
+			active_widget->associated_label->set_active(false);
 
 		if (draw)
 		{
@@ -2245,9 +2245,9 @@ void dialog::activate_widget(size_t num, bool draw)
 	}
 			
 
-	active_widget->active = true;
+	active_widget->set_active(true);
 	if (active_widget->associated_label)
-		active_widget->associated_label->active = true;
+		active_widget->associated_label->set_active(true);
 	
 	if (draw) {
 		if (active_widget->associated_label)

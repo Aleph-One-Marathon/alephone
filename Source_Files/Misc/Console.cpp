@@ -187,22 +187,22 @@ void Console::abort() {
 
 void Console::backspace() {
 	if (!m_buffer.empty()) {
-		m_buffer.erase(m_buffer.size() - 1);
-		m_displayBuffer.erase(m_displayBuffer.size() - 2);
-		m_displayBuffer += "_";
+		m_cursor_position--;
+		m_buffer.erase(m_cursor_position, 1);
+		m_displayBuffer.erase(cursor_position(), 1);
 	}
 }
 
 void Console::clear() {
 	m_buffer.clear();
-	m_displayBuffer = m_prompt + " _";
+	m_displayBuffer = m_prompt + " ";
+	m_cursor_position = 0;
 }
 
 void Console::key(const char c) {
-	m_buffer += c;
-	m_displayBuffer.erase(m_displayBuffer.size() - 1);
-	m_displayBuffer += c;
-	m_displayBuffer += "_";
+	m_buffer.insert(m_cursor_position, 1, c);
+	m_displayBuffer.insert(cursor_position(), 1, c);
+	m_cursor_position++;
 }
 
 // up and down arrows display previously entered commands at current prompt
@@ -224,7 +224,20 @@ void Console::down_arrow() {
 
 void Console::set_command(std::string command) {
 	m_buffer = command;
-	m_displayBuffer = m_prompt + " " + m_buffer + "_";
+	m_displayBuffer = m_prompt + " " + m_buffer;
+	m_cursor_position = command.length();
+}
+
+void Console::left_arrow() {
+	if (m_cursor_position > 0) {
+		m_cursor_position--;
+	}
+}
+
+void Console::right_arrow() {
+	if (m_cursor_position < m_buffer.length()) {
+		m_cursor_position++;
+	}
 }
 
 void Console::activate_input(boost::function<void (const std::string&)> callback,
@@ -234,8 +247,9 @@ void Console::activate_input(boost::function<void (const std::string&)> callback
 	m_callback = callback;
 	m_buffer.clear();
 	m_displayBuffer = m_prompt = prompt;
-	m_displayBuffer += " _";
+	m_displayBuffer += " ";
 	m_active = true;
+	m_cursor_position = 0;
 
 #if defined(SDL)
 	SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
@@ -253,6 +267,10 @@ void Console::deactivate_input() {
 	SDL_EnableKeyRepeat(0, 0);
 	SDL_EnableUNICODE(0);
 #endif
+}
+
+int Console::cursor_position() {
+	return m_prompt.length() + 1 + m_cursor_position;
 }
 
 void Console::register_macro(string input, string output)

@@ -954,6 +954,12 @@ static void handle_game_key(const SDL_Event &event)
 		case SDLK_DOWN:
 			Console::instance()->down_arrow();
 			break;
+		case SDLK_LEFT:
+			Console::instance()->left_arrow();
+			break;
+		case SDLK_RIGHT:
+			Console::instance()->right_arrow();
+			break;
 		default:
 			if (event.key.keysym.unicode == 8) // Crtl-H
 			{

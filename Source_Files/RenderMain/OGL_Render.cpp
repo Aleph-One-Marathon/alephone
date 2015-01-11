@@ -3346,6 +3346,43 @@ bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r,
 }
 
 
+// Render the console cursor, with a shadow like RenderText
+bool OGL_RenderTextCursor(const SDL_Rect& rect, unsigned char r, unsigned char g, unsigned char b)
+{
+	if (!OGL_IsActive()) return false;
+	
+	// Place the cursor in the foreground of the display
+	SetProjectionType(Projection_Screen);
+	
+	// Using a modelview matrix, of course
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	
+	// Background
+	glColor3f(0, 0, 0);
+	glBegin(GL_QUADS);
+	glVertex2i(rect.x, rect.y);
+	glVertex2i(rect.x + rect.w, rect.y);
+	glVertex2i(rect.x + rect.w, rect.y + rect.h);
+	glVertex2i(rect.x, rect.y + rect.h);
+	glEnd();
+	
+	// Foreground
+	SglColor3f(r/255.0f, g/255.0f, b/255.0f);
+	glBegin(GL_QUADS);
+	glVertex2i(rect.x, rect.y);
+	glVertex2i(rect.x + rect.w, rect.y);
+	glVertex2i(rect.x + rect.w, rect.y + rect.h);
+	glVertex2i(rect.x, rect.y + rect.h);
+	glEnd();
+
+	// Clean up
+	glPopMatrix();
+	
+	return true;
+}
+
+
 // Sets the infravision tinting color for a shapes collection, and whether to use such tinting;
 // the color values are from 0 to 1.
 bool OGL_SetInfravisionTint(short Collection, bool IsTinted, float Red, float Green, float Blue)

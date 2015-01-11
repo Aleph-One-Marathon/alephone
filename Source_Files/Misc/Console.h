@@ -57,6 +57,8 @@ public:
 	void key(const char);
 	void up_arrow();
 	void down_arrow();
+	void left_arrow();
+	void right_arrow();
 	const std::string &displayBuffer() { return m_displayBuffer; }
 
 	void activate_input(boost::function<void (const std::string&)> callback,
@@ -64,6 +66,7 @@ public:
 	void deactivate_input(); // like abort, but no callback
 
 	bool input_active() { return m_active; }
+	int cursor_position();
 
 	void register_macro(std::string macro, std::string replacement);
 	void unregister_macro(std::string macro);
@@ -93,6 +96,8 @@ private:
 	std::vector<std::string> m_prev_commands;
 	std::vector<std::string>::iterator m_command_iter;
 	void set_command(std::string command);
+	
+	int m_cursor_position;
 
 	std::map<std::string, std::string> m_macros;
 

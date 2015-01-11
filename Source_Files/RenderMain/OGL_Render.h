@@ -98,6 +98,9 @@ bool OGL_RenderCrosshairs();
 // Rendering text; this takes it as a C string
 bool OGL_RenderText(short BaseX, short BaseY, const char *Text, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff);
 
+// Render cursor for Lua/chat console
+bool OGL_RenderTextCursor(const SDL_Rect& rect, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff);
+
 // Returns whether or not 2D stuff is to be piped through OpenGL
 bool OGL_Get2D();
 

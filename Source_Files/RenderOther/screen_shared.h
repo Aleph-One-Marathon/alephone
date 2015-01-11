@@ -432,6 +432,29 @@ static short DisplayTextStyle = 0;
 
 }
 
+/*static*/ void DisplayTextCursor(SDL_Surface *s, short BaseX, short BaseY, const char *Text, short Offset, unsigned char r = 0xff, unsigned char g = 0xff, unsigned char b = 0xff)
+{
+	SDL_Rect cursor_rect;
+	cursor_rect.x = BaseX + text_width(Text, Offset, DisplayTextFont, DisplayTextStyle);
+	cursor_rect.w = 1;
+	cursor_rect.y = BaseY - DisplayTextFont->get_ascent();
+	cursor_rect.h = DisplayTextFont->get_height();
+	
+	SDL_Rect shadow_rect = cursor_rect;
+	shadow_rect.x += 1;
+	shadow_rect.y += 1;
+	
+#ifdef HAVE_OPENGL
+	// OpenGL version:
+	// activate only in the main view, and also if OpenGL is being used for the overhead map
+	if((OGL_MapActive || !world_view->overhead_map_active) && !world_view->terminal_mode_active)
+		if (OGL_RenderTextCursor(cursor_rect, r, g, b)) return;
+#endif
+	
+	SDL_FillRect(s, &shadow_rect, SDL_MapRGB(world_pixels->format, 0x00, 0x00, 0x00));
+	SDL_FillRect(s, &cursor_rect, SDL_MapRGB(world_pixels->format, r, g, b));
+}
+
 uint16 DisplayTextWidth(const char *Text)
 {
 	return text_width(Text, DisplayTextFont, DisplayTextStyle);
@@ -549,7 +572,9 @@ static void DisplayInputLine(SDL_Surface *s)
   short Offset = Font.LineSpacing / 3;
   short X = X0 + Offset;
   short Y = Y0 - Offset;
-  DisplayText(X, Y, Console::instance()->displayBuffer().c_str());
+  const char *buf = Console::instance()->displayBuffer().c_str();
+  DisplayText(X, Y, buf);
+  DisplayTextCursor(s, X, Y, buf, Console::instance()->cursor_position());
   }
 }
 
