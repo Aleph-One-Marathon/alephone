@@ -11,7 +11,7 @@ endif
 
 alephone_SOURCES = shell.h \
   \
-  shell.cpp shell_misc.cpp
+  shell.cpp shell_misc.cpp Misc/DefaultStringSets.cpp
 
 alephone_LDADD = \
   CSeries/libcseries.a Expat/libexpat.a Files/libfiles.a FFmpeg/libffmpeg.a \
