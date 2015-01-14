@@ -193,6 +193,13 @@ void Console::backspace() {
 	}
 }
 
+void Console::del() {
+	if (m_cursor_position < m_buffer.length()) {
+		m_buffer.erase(m_cursor_position, 1);
+		m_displayBuffer.erase(cursor_position(), 1);
+	}
+}
+
 void Console::clear() {
 	m_buffer.clear();
 	m_displayBuffer = m_prompt + " ";

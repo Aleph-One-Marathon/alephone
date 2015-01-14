@@ -52,6 +52,7 @@ public:
 	// called by key handlers
 	void enter();
 	void abort(); // callback is called with empty string
+	void del();
 	void backspace();
 	void clear();
 	void key(const char);

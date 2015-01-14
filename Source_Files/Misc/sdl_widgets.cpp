@@ -1211,6 +1211,14 @@ backspace:		if (num_chars && cursor_position) {
 					play_dialog_sound(DIALOG_DELETE_SOUND);
 				}
 				break;
+		case SDLK_DELETE:
+del:			if (cursor_position < num_chars) {
+				memmove(&buf[cursor_position], &buf[cursor_position + 1], num_chars - cursor_position - 1);
+				buf[--num_chars] = 0;
+				modified_text();
+				play_dialog_sound(DIALOG_DELETE_SOUND);
+			}
+			break;
 		case SDLK_UP:
 		case SDLK_DOWN:
 			break;
@@ -1239,7 +1247,9 @@ backspace:		if (num_chars && cursor_position) {
 					cursor_position = 0;
 					modified_text();
 					play_dialog_sound(DIALOG_ERASE_SOUND);
-				} else if (uc == 4 || uc == 8)	// Ctrl-D/H: backspace
+				} else if (uc == 4)	// Ctrl-D: delete
+					goto del;
+				else if (uc == 8) // Ctrl-H: backspace
 					goto backspace;
 				break;
 			}
