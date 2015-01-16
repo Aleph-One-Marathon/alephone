@@ -2642,6 +2642,7 @@
 				3D22CF880FD86EAE00B17822 /* AudioUnit.framework */,
 				F5830B4001E776DE01BA387C /* OpenGL.framework */,
 				F59FB19D01E780DF01BBE912 /* Cocoa.framework */,
+				275A7BD21A60DE77002EE952 /* libcurl.dylib */,
 				3D22CF8C0FD86EBD00B17822 /* libz.dylib */,
 			);
 			name = "System Frameworks";
@@ -2819,7 +2820,6 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				275A7BD21A60DE77002EE952 /* libcurl.dylib */,
 				270F9FCC177687B7009AAE10 /* avcodec.framework */,
 				270F9FCD177687B7009AAE10 /* avformat.framework */,
 				270F9FCE177687B7009AAE10 /* avutil.framework */,
