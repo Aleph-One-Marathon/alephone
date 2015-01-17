@@ -14,7 +14,7 @@ AC_CANONICAL_HOST
 AC_CANONICAL_TARGET
 
 dnl Init automake.
-AM_INIT_AUTOMAKE
+AM_INIT_AUTOMAKE([subdir-objects])
 AM_CONFIG_HEADER([config.h])
 
 dnl Configure options.
