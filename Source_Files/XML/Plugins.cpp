@@ -242,6 +242,12 @@ const Plugin* Plugins::find_theme()
 
 static Plugin Data;
 
+static bool plugin_file_exists(const char* Path)
+{
+	FileSpecifier f = Data.directory + Path;
+	return f.Exists();
+}
+
 class XML_PluginMMLParser : public XML_ElementParser 
 {
 public:
@@ -253,7 +259,9 @@ public:
 bool XML_PluginMMLParser::HandleAttribute(const char* Tag, const char* Value)
 {
 	if (StringsEqual(Tag, "file")) {
-		Data.mmls.push_back(Value);
+		if (plugin_file_exists(Value)) {
+			Data.mmls.push_back(Value);
+		}
 		return true;
 	}
 
@@ -307,11 +315,13 @@ bool XML_PluginShapesPatchParser::AttributesDone()
 
 bool XML_PluginShapesPatchParser::End()
 {
-	ShapesPatch patch;
-	patch.requires_opengl = RequiresOpenGL;
-	patch.path = Path;
+	if (plugin_file_exists(Path.c_str())) {
+		ShapesPatch patch;
+		patch.requires_opengl = RequiresOpenGL;
+		patch.path = Path;
 	
-	Data.shapes_patches.push_back(patch);
+		Data.shapes_patches.push_back(patch);
+	}
 	return true;
 }
 
@@ -414,13 +424,21 @@ bool XML_PluginParser::HandleAttribute(const char* Tag, const char* Value)
 		Data.required_version = Value;
 		return true;
 	} else if (StringsEqual(Tag, "hud_lua")) {
-		Data.hud_lua = Value;
+		if (plugin_file_exists(Value)) {
+			Data.hud_lua = Value;
+		}
 		return true;
 	} else if (StringsEqual(Tag, "solo_lua")) {
-		Data.solo_lua = Value;
+		if (plugin_file_exists(Value)) {
+			Data.solo_lua = Value;
+		}
 		return true;
 	} else if (StringsEqual(Tag, "theme_dir")) {
-		Data.theme = Value;
+		std::string theme_mml = Value;
+		theme_mml += "/theme2.mml";
+		if (plugin_file_exists(theme_mml.c_str())) {
+			Data.theme = Value;
+		}
 		return true;
 	}
 
