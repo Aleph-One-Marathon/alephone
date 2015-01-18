@@ -1501,7 +1501,7 @@ static bool confirm_save_choice(FileSpecifier & file)
 	char name[256];
 	file.GetName(name);
 	char message[512];
-	sprintf(message, "'%s' already exists.", name);
+	sprintf(message, "'%s' already exists.", FileSpecifier::HideExtension(std::string(name)).c_str());
 
 	// Create dialog
 	dialog d;
