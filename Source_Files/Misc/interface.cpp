@@ -168,10 +168,11 @@ enum recording_version {
 	RECORDING_VERSION_ALEPH_ONE_PRE_NET = 5,
 	RECORDING_VERSION_ALEPH_ONE_PRE_PIN = 6,
 	RECORDING_VERSION_ALEPH_ONE_1_0 = 7,
-	RECORDING_VERSION_ALEPH_ONE_1_1 = 8
+	RECORDING_VERSION_ALEPH_ONE_1_1 = 8,
+	RECORDING_VERSION_ALEPH_ONE_1_2 = 9
 };
-const short default_recording_version = RECORDING_VERSION_ALEPH_ONE_1_1;
-const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_1;
+const short default_recording_version = RECORDING_VERSION_ALEPH_ONE_1_2;
+const short max_handled_recording= RECORDING_VERSION_ALEPH_ONE_1_2;
 
 #include "screen_definitions.h"
 #include "interface_menus.h"
@@ -2082,6 +2083,9 @@ static bool begin_game(
 						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_0);
 						break;
 					case RECORDING_VERSION_ALEPH_ONE_1_1:
+						load_film_profile(FILM_PROFILE_ALEPH_ONE_1_1);
+						break;
+					case RECORDING_VERSION_ALEPH_ONE_1_2:
 						load_film_profile(FILM_PROFILE_DEFAULT);
 						break;
 					default:
