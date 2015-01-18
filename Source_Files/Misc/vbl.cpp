@@ -674,6 +674,9 @@ bool setup_for_replay_from_file(
 		} else {
 			/* Tell them that this map wasn't found.  They lose. */
 			alert_user(infoError, strERRORS, cantFindReplayMap, 0);
+			replay.valid= false;
+			replay.game_is_being_replayed= false;
+			FilmFile.Close();
 		}
 	}
 	
