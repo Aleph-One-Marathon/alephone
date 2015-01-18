@@ -1907,7 +1907,7 @@ static void transfer_to_new_level(
 		}
 
 		if (!game_is_networked) try_and_display_chapter_screen(level_number, true, false);
-		success= goto_level(&entry, false);
+		success= goto_level(&entry, false, dynamic_world->player_count);
 		set_keyboard_controller_status(true);
 	}
 	

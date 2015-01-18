@@ -1406,7 +1406,7 @@ bool new_game(short number_of_players, bool network,
 	struct game_data *game_information,
 	struct player_start_data *player_start_information, 
 	struct entry_point *entry_point);
-bool goto_level(struct entry_point *entry, bool new_game);
+bool goto_level(struct entry_point *entry, bool new_game, short number_of_players);
 
 // LP addition: get the parser for the texture-loading control (name "texture_loading")
 XML_ElementParser *TextureLoading_GetParser();

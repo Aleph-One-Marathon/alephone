@@ -540,7 +540,7 @@ bool new_game(
 
 	/* Load the level */	
 	assert(file_is_set);
-	success= goto_level(entry_point, true);
+	success= goto_level(entry_point, true, number_of_players);
 	/* If we were able to load the map... */
 	if(success)
 	{
@@ -794,7 +794,8 @@ extern void RunLuaScript();
 /* Returns a short that is an OSErr... */
 bool goto_level(
 	struct entry_point *entry, 
-	bool new_game)
+	bool new_game,
+	short number_of_players)
 {
 	bool success= true;
 
@@ -840,7 +841,7 @@ bool goto_level(
 			ResetLevelScript();
 		}
 		RunScriptChunks();
-		if (!game_is_networked) 
+		if (!game_is_networked && number_of_players == 1)
 		{
 			Plugins::instance()->load_solo_mml();
 			LoadSoloLua();
