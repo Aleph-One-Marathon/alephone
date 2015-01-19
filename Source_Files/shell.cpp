@@ -205,10 +205,11 @@ short vidmasterStringSetID = -1; // can be set with MML
 
 static void usage(const char *prg_name)
 {
+	char msg[] =
 #ifdef __WIN32__
-	MessageBox(NULL, "Command line switches:\n\n"
+	  "Command line switches:\n\n"
 #else
-	printf("\nUsage: %s [options] [directory] [file]\n"
+	  "\nUsage: %s [options] [directory] [file]\n"
 #endif
 	  "\t[-h | --help]          Display this help message\n"
 	  "\t[-v | --version]       Display the game version\n"
@@ -227,13 +228,13 @@ static void usage(const char *prg_name)
 	  "\tdirectory              Directory containing scenario data files\n"
           "\tfile                   Saved game to load or film to play\n"
 	  "\nYou can also use the ALEPHONE_DATA environment variable to specify\n"
-	  "the data directory.\n"
+	  "the data directory.\n";
+
 #ifdef __WIN32__
-	  , "Usage", MB_OK | MB_ICONINFORMATION
+	MessageBox(NULL, msg, "Usage", MB_OK | MB_ICONINFORMATION);
 #else
-	  , prg_name
+	printf(msg, prg_name);
 #endif
-	);
 	exit(0);
 }
 
