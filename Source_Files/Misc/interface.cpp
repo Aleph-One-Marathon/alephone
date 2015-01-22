@@ -146,6 +146,7 @@ extern TP2PerfGlobals perf_globals;
 #include "Music.h"
 #include "Movie.h"
 #include "QuickSave.h"
+#include "PLugins.h"
 
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
@@ -324,7 +325,7 @@ extern bool insecure_lua;
 extern bool shapes_file_is_m1();
 
 /* ----------- prototypes/PREPROCESS_MAP_MAC.C */
-extern bool load_game_from_file(FileSpecifier& File);
+extern bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_found);
 extern bool choose_saved_game_to_load(FileSpecifier& File);
 
 /* ---------------------- prototypes */
@@ -885,11 +886,9 @@ bool load_and_start_game(FileSpecifier& File)
 		interface_fade_out(MAIN_MENU_BASE, true);
 	}
 
-	Crosshairs_SetActive(player_preferences->crosshairs_active);
-	LoadHUDLua();
-	RunLuaHUDScript();
-
-	success= load_game_from_file(File);
+	// run scripts after we decide single vs. multiplayer
+	bool found_map;
+	success= load_game_from_file(File, false, &found_map);
 
 	if (!success)
 	{
@@ -933,6 +932,28 @@ bool load_and_start_game(FileSpecifier& File)
                 
 		if (success)
 		{
+			Crosshairs_SetActive(player_preferences->crosshairs_active);
+			LoadHUDLua();
+			RunLuaHUDScript();
+			
+			// load the scripts we put off before
+			short SavedType, SavedError = get_game_error(&SavedType);
+			if (found_map)
+			{
+				RunLevelScript(dynamic_world->current_level_number);
+			}
+			else
+			{
+				ResetLevelScript();
+			}
+			RunScriptChunks();
+			if (!userWantsMultiplayer)
+			{
+				Plugins::instance()->load_solo_mml();
+				LoadSoloLua();
+			}
+			set_game_error(SavedType,SavedError);
+			
 			player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
 			short theNumberOfStarts;
         

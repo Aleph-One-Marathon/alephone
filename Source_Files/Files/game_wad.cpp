@@ -1217,9 +1217,7 @@ void recalculate_redundant_map(
 	for(loop=0;loop<dynamic_world->endpoint_count;++loop) recalculate_redundant_endpoint_data(loop);
 }
 
-extern bool load_game_from_file(FileSpecifier& File);
-
-bool load_game_from_file(FileSpecifier& File)
+bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_found)
 {
 	bool success= false;
 
@@ -1241,6 +1239,10 @@ bool load_game_from_file(FileSpecifier& File)
 		/* Find the original scenario this saved game was a part of.. */
 		parent_checksum= read_wad_file_parent_checksum(File);
 		bool found_map = use_map_file(parent_checksum);
+		if (was_map_found)
+		{
+			*was_map_found = found_map;
+		}
 		if (!found_map)
 		{
 			/* Tell the user theyÕre screwed when they try to leave this level. */
@@ -1253,24 +1255,27 @@ bool load_game_from_file(FileSpecifier& File)
 			set_to_default_map();
 		}
 		
-		// LP: getting the level scripting off of the map file
-		// Being careful to carry over errors so that Pfhortran errors can be ignored
-		short SavedType, SavedError = get_game_error(&SavedType);
-		if (found_map)
+		if (run_scripts)
 		{
-			RunLevelScript(dynamic_world->current_level_number);
+			// LP: getting the level scripting off of the map file
+			// Being careful to carry over errors so that Pfhortran errors can be ignored
+			short SavedType, SavedError = get_game_error(&SavedType);
+			if (found_map)
+			{
+				RunLevelScript(dynamic_world->current_level_number);
+			}
+			else
+			{
+				ResetLevelScript();
+			}
+			RunScriptChunks();
+			if (!game_is_networked)
+			{
+				Plugins::instance()->load_solo_mml();
+				LoadSoloLua();
+			}
+			set_game_error(SavedType,SavedError);
 		}
-		else
-		{
-			ResetLevelScript();
-		}
-		RunScriptChunks();
-		if (!game_is_networked)
-		{
-			Plugins::instance()->load_solo_mml();
-			LoadSoloLua();
-		}
-		set_game_error(SavedType,SavedError);
 	}
 
 	return success;
@@ -1301,7 +1306,7 @@ bool revert_game(
 	if (revert_game_data.game_is_from_disk)
 	{
 		/* Reload their last saved game.. */
-		successful= load_game_from_file(revert_game_data.SavedGame);
+		successful= load_game_from_file(revert_game_data.SavedGame, true, NULL);
 		if (successful) 
 		{
 			Music::instance()->PreloadLevelMusic();
