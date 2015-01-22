@@ -146,7 +146,7 @@ extern TP2PerfGlobals perf_globals;
 #include "Music.h"
 #include "Movie.h"
 #include "QuickSave.h"
-#include "PLugins.h"
+#include "Plugins.h"
 
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
