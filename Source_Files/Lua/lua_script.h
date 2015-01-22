@@ -75,6 +75,7 @@ void ResetPassedLua();
 
 void ExecuteLuaString(const std::string&);
 void LoadSoloLua();
+void LoadReplayNetLua();
 
 void ToggleLuaMute();
 void ResetLuaMute();

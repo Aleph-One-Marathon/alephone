@@ -786,6 +786,7 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 }
 
 extern void LoadSoloLua();
+extern void LoadReplayNetLua();
 extern void RunLuaScript();
 
 /* This is called when the game level is changed somehow */
@@ -845,6 +846,10 @@ bool goto_level(
 		{
 			Plugins::instance()->load_solo_mml();
 			LoadSoloLua();
+		}
+		else if (!game_is_networked)
+		{
+			LoadReplayNetLua();
 		}
 		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);

@@ -1880,6 +1880,43 @@ void LoadSoloLua()
 	}
 }
 
+void LoadReplayNetLua()
+{
+	std::string file;
+	std::string directory;
+	
+	if (environment_preferences->use_replay_net_lua)
+	{
+		file = network_preferences->netscript_file;
+	}
+	
+	if (file.size())
+	{
+		FileSpecifier fs (file.c_str());
+		if (directory.size())
+		{
+			fs.SetNameWithPath(file.c_str(), directory);
+		}
+		
+		OpenedFile script_file;
+		if (fs.Open(script_file))
+		{
+			int32 script_length;
+			script_file.GetLength(script_length);
+			
+			std::vector<char> script_buffer(script_length);
+			if (script_file.Read(script_length, &script_buffer[0]))
+			{
+				LoadLuaScript(&script_buffer[0], script_length, _lua_netscript);
+				if (directory.size())
+				{
+					states[_lua_netscript].SetSearchPath(directory);
+				}
+			}
+		}
+	}
+}
+
 void CloseLuaScript()
 {
 	// save variables for going into next level

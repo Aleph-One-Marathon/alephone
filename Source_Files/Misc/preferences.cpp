@@ -1852,15 +1852,28 @@ static void environment_dialog(void *arg)
 	use_solo_lua_w->add_dependent_widget(solo_lua_w);
 
 	table->add_row(new w_spacer, true);
+	table->dual_add_row(new w_static_text("Film Playback"), d);
+	
+	w_select* film_profile_w = new w_select(environment_preferences->film_profile, film_profile_labels);
+	table->dual_add(film_profile_w->label("Default Playback Profile"), d);
+	table->dual_add(film_profile_w, d);
+	
+	w_enabling_toggle* use_replay_net_lua_w = new w_enabling_toggle(environment_preferences->use_replay_net_lua);
+	table->dual_add(use_replay_net_lua_w->label("Use Netscript in Films"), d);
+	table->dual_add(use_replay_net_lua_w, d);
+	
+	w_file_chooser *replay_net_lua_w = new w_file_chooser("Choose Script", _typecode_netscript);
+	replay_net_lua_w->set_file(network_preferences->netscript_file);
+	table->dual_add(replay_net_lua_w->label("Netscript File"), d);
+	table->dual_add(replay_net_lua_w, d);
+	use_replay_net_lua_w->add_dependent_widget(replay_net_lua_w);
+	
+	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Options"), d);
 
 	w_toggle *hide_extensions_w = new w_toggle(environment_preferences->hide_extensions);
 	table->dual_add(hide_extensions_w->label("Hide File Extensions"), d);
 	table->dual_add(hide_extensions_w, d);
-
-	w_select* film_profile_w = new w_select(environment_preferences->film_profile, film_profile_labels);
-	table->dual_add(film_profile_w->label("Film Playback"), d);
-	table->dual_add(film_profile_w, d);
 
 	w_select *max_saves_w = new w_select(0, max_saves_labels);
 	for (int i = 0; max_saves_labels[i] != NULL; ++i) {
@@ -1946,6 +1959,19 @@ static void environment_dialog(void *arg)
 			changed = true;
 		}
 
+		bool use_replay_net_lua = use_replay_net_lua_w->get_selection() != 0;
+		if (use_replay_net_lua != environment_preferences->use_replay_net_lua)
+		{
+			environment_preferences->use_replay_net_lua = use_replay_net_lua;
+			changed = true;
+		}
+		
+		path = replay_net_lua_w->get_file().GetPath();
+		if (strcmp(path, network_preferences->netscript_file)) {
+			strcpy(network_preferences->netscript_file, path);
+			changed = true;
+		}
+		
 		FileSpecifier new_theme;
 		theme_plugin = Plugins::instance()->find_theme();
 		if (theme_plugin)
@@ -2364,6 +2390,7 @@ void write_preferences(
 	fprintf(F,"  smooth_text=\"%s\"\n", BoolString(environment_preferences->smooth_text));
 	WriteXML_Pathname(F,"  solo_lua_file=\"", environment_preferences->solo_lua_file, "\"\n");
 	fprintf(F,"  use_solo_lua=\"%s\"\n", BoolString(environment_preferences->use_solo_lua));
+	fprintf(F,"  use_replay_net_lua=\"%s\"\n", BoolString(environment_preferences->use_replay_net_lua));
 	fprintf(F,"  hide_alephone_extensions=\"%s\"\n", BoolString(environment_preferences->hide_extensions));
 	fprintf(F,"  film_profile=\"%u\"\n", static_cast<uint32>(environment_preferences->film_profile));
 	fprintf(F,"  maximum_quick_saves=\"%u\"\n",environment_preferences->maximum_quick_saves);
@@ -2595,6 +2622,7 @@ static void default_environment_preferences(environment_preferences_data *prefer
 
 	preferences->solo_lua_file[0] = 0;
 	preferences->use_solo_lua = false;
+	preferences->use_replay_net_lua = false;
 	preferences->hide_extensions = true;
 	preferences->film_profile = FILM_PROFILE_DEFAULT;
 	preferences->maximum_quick_saves = 0;
@@ -4062,6 +4090,10 @@ bool XML_EnvironmentPrefsParser::HandleAttribute(const char *Tag, const char *Va
 	else if (StringsEqual(Tag,"use_solo_lua"))
 	{
 		return ReadBooleanValue(Value, environment_preferences->use_solo_lua);
+	}
+	else if (StringsEqual(Tag,"use_replay_net_lua"))
+	{
+		return ReadBooleanValue(Value, environment_preferences->use_replay_net_lua);
 	}
 	else if (StringsEqual(Tag,"hud_lua_file"))
 	{
