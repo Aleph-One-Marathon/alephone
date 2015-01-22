@@ -1240,21 +1240,8 @@ bool load_game_from_file(FileSpecifier& File)
 	
 		/* Find the original scenario this saved game was a part of.. */
 		parent_checksum= read_wad_file_parent_checksum(File);
-		if(use_map_file(parent_checksum))
-		{
-			// LP: getting the level scripting off of the map file
-			// Being careful to carry over errors so that Pfhortran errors can be ignored
-			short SavedType, SavedError = get_game_error(&SavedType);
-			RunLevelScript(dynamic_world->current_level_number);
-			RunScriptChunks();
-			if (!game_is_networked) 
-			{
-				Plugins::instance()->load_solo_mml();
-				LoadSoloLua();
-			}
-			set_game_error(SavedType,SavedError);
-		}
-		else
+		bool found_map = use_map_file(parent_checksum);
+		if (!found_map)
 		{
 			/* Tell the user theyÕre screwed when they try to leave this level. */
 			alert_user(infoError, strERRORS, cantFindMap, 0);
@@ -1264,11 +1251,27 @@ bool load_game_from_file(FileSpecifier& File)
 		
 			/* Set to the default map. */
 			set_to_default_map();
-
-			ResetLevelScript();
-			RunScriptChunks();
 		}
-	} 
+		
+		// LP: getting the level scripting off of the map file
+		// Being careful to carry over errors so that Pfhortran errors can be ignored
+		short SavedType, SavedError = get_game_error(&SavedType);
+		if (found_map)
+		{
+			RunLevelScript(dynamic_world->current_level_number);
+		}
+		else
+		{
+			ResetLevelScript();
+		}
+		RunScriptChunks();
+		if (!game_is_networked)
+		{
+			Plugins::instance()->load_solo_mml();
+			LoadSoloLua();
+		}
+		set_game_error(SavedType,SavedError);
+	}
 
 	return success;
 }
