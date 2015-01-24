@@ -210,7 +210,7 @@ class SaltMessage : public SmallMessageHelper
 public:
 	enum { kType = kSERVER_SALT, kKeyLength = 16 };
 
-	enum { kPlaintextEncryption, kBraindeadSimpleEncryption };
+	enum { kPlaintextEncryption, kBraindeadSimpleEncryption, kHTTPSEncryption = 4 };
 
 	uint16 encryptionType() const { return m_encryptionType; }
 	const uint8* salt() const { return &(m_salt[0]); }

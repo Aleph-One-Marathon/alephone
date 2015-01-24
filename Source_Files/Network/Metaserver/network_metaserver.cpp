@@ -36,6 +36,8 @@
 #include "MessageInflater.h"
 #include "CommunicationsChannel.h"
 #include "preferences.h"
+#include "alephversion.h"
+#include "HTTP.h"
 
 #include <string>
 #include <iostream>
@@ -287,6 +289,23 @@ MetaserverClient::connect(const std::string& serverName, uint16 port, const std:
 				
 					value = ~( theKey[i]*theKey[i-1]);
 					theKey[i] = (unsigned char) value;
+				}
+			}
+			else if (theSaltMessage->encryptionType() == SaltMessage::kHTTPSEncryption)
+			{
+				HTTPClient conn;
+				HTTPClient::parameter_map params;
+				params["username"] = userName;
+				params["password"] = userPassword;
+				params["salt"] = std::string(reinterpret_cast<const char *>(theSaltMessage->salt()));
+				
+				if (conn.Post(A1_METASERVER_LOGIN_URL, params))
+				{
+					strncpy(theKey, conn.Response().c_str(), sizeof(theKey));
+				}
+				else
+				{
+					throw ServerConnectException("HTTPS Connection Failed");
 				}
 			}
 			else

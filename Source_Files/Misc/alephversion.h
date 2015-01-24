@@ -66,5 +66,6 @@ ALEPHVERSION.H
 #define A1_HOMEPAGE_URL "http://marathon.sourceforge.net/"
 #define A1_UPDATE_HOST "marathon.sourceforge.net"
 #define A1_METASERVER_HOST "metaserver.lhowon.org"
+#define A1_METASERVER_LOGIN_URL "https://metaserver.lhowon.org/metaclient/login"
 
 #endif // ALEPHVERSION_H
