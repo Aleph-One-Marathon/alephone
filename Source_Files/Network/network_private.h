@@ -49,7 +49,7 @@ Feb 27, 2002 (Br'fin (Jeremy Parsons)):
 
 #include <memory>
 
-#define	GAME_PORT 4226
+#define	GAME_PORT (network_preferences->game_port)
 
 // (ZZZ:) Moved here from sdl_network.h and macintosh_network.h
 
