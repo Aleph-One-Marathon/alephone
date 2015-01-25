@@ -256,7 +256,10 @@ LoginAndPlayerInfoMessage::reallyDeflateTo(AOStream& thePacket) const
 	uint16 metaserver_version = 0;
 	uint32 flags = kResetPlayerData;
 	uint32 user_id = 0;
-	uint16 max_authentication = kCRYPT_HTTPS;
+	uint16 max_authentication = kCRYPT_SIMPLE;
+#ifdef HAVE_CURL
+	max_authentication = kCRYPT_HTTPS;
+#endif
 
 	thePacket << platform_type
 		  << metaserver_version
