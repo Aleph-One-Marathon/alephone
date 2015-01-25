@@ -1635,7 +1635,6 @@ void NetRetargetJoinAttempts(const IPaddress* inAddress)
 	if(host_address_specified)
 	{
 		host_address = *inAddress;
-		host_address.port = SDL_SwapBE16(GAME_PORT);
 	}
 }
 

@@ -130,6 +130,7 @@ GathererAvailableAnnouncer::GathererAvailableAnnouncer()
 	strncpy(mServiceInstance.sslps_type, get_sslp_service_type().c_str(), SSLP_MAX_TYPE_LENGTH);
 	strncpy(mServiceInstance.sslps_name, "Boomer", SSLP_MAX_NAME_LENGTH);
 	memset(&(mServiceInstance.sslps_address), '\0', sizeof(mServiceInstance.sslps_address));
+	mServiceInstance.sslps_address.port = SDL_SwapBE16(GAME_PORT);
 	SSLP_Allow_Service_Discovery(&mServiceInstance);
 }
 
