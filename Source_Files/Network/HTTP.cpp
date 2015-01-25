@@ -104,8 +104,7 @@ bool HTTPClient::Post(const std::string& url, const parameter_map& parameters)
 	curl_easy_setopt(handle.get(), CURLOPT_POSTFIELDS, parameter_string.c_str());
 	
 	bool success = (curl_easy_perform(handle.get()) == CURLE_OK);
-	return false;
-	//return success;
+	return success;
 }
 #else // we do not HAVE_CURL
 void HTTPClient::Init()
