@@ -765,10 +765,17 @@ void JoinDialog::getJoinAddressFromMetaserver ()
 		if(result.host != 0)
 		{
 			uint8* hostBytes = reinterpret_cast<uint8*>(&(result.host));
-			char buffer[16];
-			snprintf(buffer, sizeof(buffer), "%u.%u.%u.%u", hostBytes[0], hostBytes[1], hostBytes[2], hostBytes[3]);
+			std::ostringstream s;
+			s << (uint16)hostBytes[0] << '.'
+			  << (uint16)hostBytes[1] << '.'
+			  << (uint16)hostBytes[2] << '.'
+			  << (uint16)hostBytes[3];
+			if (result.port != DEFAULT_GAME_PORT)
+			{
+				s << ':' << result.port;
+			}
 			m_joinByAddressWidget->set_value (true);
-			m_joinAddressWidget->set_text (string (buffer));
+			m_joinAddressWidget->set_text (s.str());
 			m_joinWidget->push ();
 		}
 	}

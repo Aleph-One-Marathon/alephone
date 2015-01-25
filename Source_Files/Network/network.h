@@ -46,6 +46,8 @@ Tuesday, June 21, 1994 3:26:46 PM
 
 #define MAX_LEVEL_NAME_LENGTH 64
 
+#define DEFAULT_GAME_PORT 4226
+
 // change this if you make a major change to the way the setup messages work
 #define kNetworkSetupProtocolID "Aleph One WonderNAT V1"
 

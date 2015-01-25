@@ -1610,8 +1610,17 @@ bool NetGameJoin(
   host_address_specified = (host_addr_string != NULL);
   if (host_address_specified)
     {
+	    uint16 port = DEFAULT_GAME_PORT;
+	    std::string host_str = host_addr_string;
+	    std::string::size_type pos = host_str.rfind(':');
+	    if (pos != std::string::npos)
+	    {
+			port = atoi(host_str.substr(pos + 1).c_str());
+			host_str = host_str.substr(0, pos);
+	    }
+
 	    nbc_is_resolving = true;
-	    server_nbc = ConnectPool::instance()->connect(host_addr_string, GAME_PORT);
+	    server_nbc = ConnectPool::instance()->connect(host_str.c_str(), port);
     }
   
     netState = netConnecting;

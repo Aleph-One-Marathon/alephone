@@ -2491,8 +2491,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->autogather= false;
 	preferences->join_by_address= false;
 	obj_clear(preferences->join_address);
-	preferences->game_port= 4226;	// Magic number I guess, but this is the only place it's used
-                                // (everyone else uses preferences->game_port)
+	preferences->game_port= DEFAULT_GAME_PORT;
 	preferences->game_protocol= _network_game_protocol_default;
 #if !defined(DISABLE_NETWORKING)
 	DefaultStarPreferences();
