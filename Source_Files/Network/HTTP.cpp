@@ -21,6 +21,9 @@
 
 #include "HTTP.h"
 
+#include "cseries.h"
+#include "Logging.h"
+
 #ifdef HAVE_CURL
 #include "curl/curl.h"
 #include "curl/easy.h"
@@ -46,6 +49,7 @@ bool HTTPClient::Get(const std::string& url)
 	boost::shared_ptr<CURL> handle(curl_easy_init(), curl_easy_cleanup);
 	if (!handle)
 	{
+		logError("CURL init failed");
 		return false;
 	}
 
@@ -55,8 +59,16 @@ bool HTTPClient::Get(const std::string& url)
 	curl_easy_setopt(handle.get(), CURLOPT_SSL_VERIFYPEER, 0);
 	curl_easy_setopt(handle.get(), CURLOPT_FOLLOWLOCATION, 1);
 
-	bool success = (curl_easy_perform(handle.get()) == CURLE_OK);
-	return success;
+	CURLcode ret = curl_easy_perform(handle.get());
+	if (ret == CURLE_OK) 
+	{
+		return true;
+	}
+	else 
+	{
+		logError("HTTP(s) GET from %s failed: %s", url.c_str(), curl_easy_strerror(ret));
+		return false;
+	}
 }
 
 #if LIBCURL_VERSION_NUM >= 0x071504
@@ -80,6 +92,7 @@ bool HTTPClient::Post(const std::string& url, const parameter_map& parameters)
 	boost::shared_ptr<CURL> handle(curl_easy_init(), curl_easy_cleanup);
 	if (!handle)
 	{
+		logError("CURL init failed");
 		return false;
 	}
 
@@ -102,9 +115,17 @@ bool HTTPClient::Post(const std::string& url, const parameter_map& parameters)
 	curl_easy_setopt(handle.get(), CURLOPT_POST, 1L);
 	curl_easy_setopt(handle.get(), CURLOPT_SSL_VERIFYPEER, 0);
 	curl_easy_setopt(handle.get(), CURLOPT_POSTFIELDS, parameter_string.c_str());
-	
-	bool success = (curl_easy_perform(handle.get()) == CURLE_OK);
-	return success;
+
+	CURLcode ret = curl_easy_perform(handle.get());
+	if (ret == CURLE_OK)
+	{
+		return true;
+	} 
+	else
+	{
+		logError("HTTP(s) POST to %s failed: %s", url.c_str(), curl_easy_strerror(ret));
+		return false;
+	}
 }
 #else // we do not HAVE_CURL
 void HTTPClient::Init()
