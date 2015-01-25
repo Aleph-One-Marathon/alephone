@@ -721,7 +721,9 @@ void JoinDialog::gathererSearch ()
 				game_info *info= (game_info *)NetGetGameData();
 				get_network_joined_message(joinMessage, info->net_game_type);
 				m_messagesWidget->set_text(std::string(joinMessage));
-				m_teamWidget->activate ();
+				if (!(info->game_options & _force_unique_teams)) {
+					m_teamWidget->activate ();
+				}
 				m_colourWidget->activate ();
 				m_colourWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
 				m_teamWidget->set_callback(boost::bind(&JoinDialog::changeColours, this));
