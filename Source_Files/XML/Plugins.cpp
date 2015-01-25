@@ -437,6 +437,11 @@ bool XML_PluginParser::AttributesDone()
 
 bool XML_PluginParser::End() {
 	std::sort(Data.mmls.begin(), Data.mmls.end());
+	if (Data.theme.size()) {
+		Data.hud_lua = "";
+		Data.solo_lua = "";
+		Data.shapes_patches.clear();
+	}
 	Plugins::instance()->add(Data);
 	return true;
 }
