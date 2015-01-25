@@ -844,7 +844,6 @@ bool goto_level(
 		RunScriptChunks();
 		if (!game_is_networked && number_of_players == 1)
 		{
-			Plugins::instance()->load_solo_mml();
 			LoadSoloLua();
 		}
 		else if (!game_is_networked)
@@ -1271,7 +1270,6 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_fo
 			RunScriptChunks();
 			if (!game_is_networked)
 			{
-				Plugins::instance()->load_solo_mml();
 				LoadSoloLua();
 			}
 			set_game_error(SavedType,SavedError);

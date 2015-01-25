@@ -817,6 +817,7 @@ bool join_networked_resume_game()
                 
                 if(success)
                 {
+                        Plugins::instance()->set_mode(Plugins::kMode_Net);
                         Crosshairs_SetActive(player_preferences->crosshairs_active);
                         LoadHUDLua();
                         RunLuaHUDScript();
@@ -932,6 +933,7 @@ bool load_and_start_game(FileSpecifier& File)
                 
 		if (success)
 		{
+			Plugins::instance()->set_mode(userWantsMultiplayer ? Plugins::kMode_Net : Plugins::kMode_Solo);
 			Crosshairs_SetActive(player_preferences->crosshairs_active);
 			LoadHUDLua();
 			RunLuaHUDScript();
@@ -949,7 +951,6 @@ bool load_and_start_game(FileSpecifier& File)
 			RunScriptChunks();
 			if (!userWantsMultiplayer)
 			{
-				Plugins::instance()->load_solo_mml();
 				LoadSoloLua();
 			}
 			set_game_error(SavedType,SavedError);
@@ -1284,6 +1285,7 @@ void display_main_menu(
 	game_state.user= _single_player;
 	game_state.flags= 0;
 	
+	Plugins::instance()->set_mode(Plugins::kMode_Menu);
 	change_screen_mode(_screentype_menu);
 	display_screen(MAIN_MENU_BASE);
 	
@@ -2197,6 +2199,7 @@ static bool begin_game(
 			try_and_display_chapter_screen(entry.level_number, false, false);
 		}
 
+		Plugins::instance()->set_mode(number_of_players > 1 ? Plugins::kMode_Net : Plugins::kMode_Solo);
 		Crosshairs_SetActive(player_preferences->crosshairs_active);
 		LoadHUDLua();
 		RunLuaHUDScript();
@@ -2380,6 +2383,7 @@ static void finish_game(
 	load_environment_from_preferences();
 	if (game_state.user == _replay || game_state.user == _demo)
 	{
+		Plugins::instance()->set_mode(Plugins::kMode_Menu);
 		load_film_profile(FILM_PROFILE_DEFAULT);
 	}
 	if(return_to_main_menu) display_main_menu();

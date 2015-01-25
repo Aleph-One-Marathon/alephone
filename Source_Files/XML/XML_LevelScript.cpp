@@ -240,8 +240,6 @@ void LoadLevelScripts(FileSpecifier& MapFile)
 
 void ResetLevelScript()
 {
-	static bool FirstTime = true;
-
 	// For whatever previous music had been playing...
 	Music::instance()->FadeOut(MACHINE_TICKS_PER_SECOND/2);
 	
@@ -254,16 +252,11 @@ void ResetLevelScript()
 	OGL_LoadScreen::instance()->Clear();
 #endif
 
-	if (FirstTime)
-		FirstTime = false; // first time, we already have base MML loaded
-	else
-	{
-		// reset values to engine defaults first
-		ResetAllMMLValues();
-		// then load the base stuff (from Scripts folder and whatnot)
-		LoadBaseMMLScripts();
-		Plugins::instance()->load_mml();
-	}
+	// reset values to engine defaults first
+	ResetAllMMLValues();
+	// then load the base stuff (from Scripts folder and whatnot)
+	LoadBaseMMLScripts();
+	Plugins::instance()->load_mml();
 }
 
 

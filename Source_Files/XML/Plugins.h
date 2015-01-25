@@ -52,6 +52,7 @@ struct Plugin {
 
 	bool enabled;
 	bool overridden;
+	bool overridden_solo;
 	bool compatible() const;
 	bool valid() const;
 
@@ -66,10 +67,13 @@ public:
 	static Plugins* instance();
 	typedef std::vector<Plugin>::iterator iterator;
 	
+	enum GameMode { kMode_Menu, kMode_Solo, kMode_Net };
+	
 	void enumerate();
 	void invalidate() { m_validated = false; }
+	void set_mode(GameMode mode) { m_mode = mode; }
+	GameMode mode() { return m_mode; }
 	void load_mml();
-	void load_solo_mml();
 
 	void load_shapes_patches(bool opengl);
 
@@ -89,6 +93,7 @@ private:
 	static Plugins* m_instance;
 	std::vector<Plugin> m_plugins;
 	bool m_validated;
+	GameMode m_mode;
 };
 
 

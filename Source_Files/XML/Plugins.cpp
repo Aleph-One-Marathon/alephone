@@ -82,7 +82,14 @@ bool Plugin::compatible() const {
 	return false;
 }
 bool Plugin::valid() const {
-	return enabled && !overridden && compatible();
+	if (!enabled)
+		return false;
+	
+	if (!environment_preferences->use_solo_lua &&
+		Plugins::instance()->mode() == Plugins::kMode_Solo)
+		return !overridden_solo;
+	
+	return !overridden;
 }
 
 Plugins* Plugins::m_instance = 0;
@@ -131,34 +138,6 @@ void Plugins::load_mml() {
 		if (it->valid())
 		{
 			load_mmls(*it, loader);
-		}
-	}
-
-	const Plugin* hud_lua = find_hud_lua();
-	if (hud_lua) 
-	{
-		load_mmls(*hud_lua, loader);
-	}
-	
-	const Plugin* theme = find_theme();
-	if (theme)
-	{
-		load_mmls(*theme, loader);
-	}
-}
-
-void Plugins::load_solo_mml() 
-{
-	validate();
-	if (!environment_preferences->use_solo_lua)
-	{
-		XML_Loader_SDL loader;
-		loader.CurrentElement = &RootParser;
-
-		const Plugin* solo_lua = find_solo_lua();
-		if (solo_lua)
-		{
-			load_mmls(*solo_lua, loader);
 		}
 	}
 }
@@ -603,25 +582,45 @@ void Plugins::validate()
 		return;
 	m_validated = true;
 	
+	// determine active plugins including solo Lua
 	bool found_solo_lua = false;
 	bool found_hud_lua = false;
 	bool found_theme = false;
 	for (std::vector<Plugin>::reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
-		rit->overridden = false;
-		if (!rit->valid())
+		rit->overridden_solo = false;
+		if (!rit->enabled || !rit->compatible() ||
+			(found_solo_lua && rit->solo_lua.size()) ||
+			(found_hud_lua && rit->hud_lua.size()) ||
+			(found_theme && rit->theme.size()))
+		{
+			rit->overridden_solo = true;
 			continue;
+		}
 
-		if ((found_solo_lua && rit->solo_lua.size()) ||
+		if (rit->solo_lua.size())
+			found_solo_lua = true;
+		if (rit->hud_lua.size())
+			found_hud_lua = true;
+		if (rit->theme.size())
+			found_theme = true;
+	}
+	
+	// determine active plugins excluding solo Lua
+	found_hud_lua = false;
+	found_theme = false;
+	for (std::vector<Plugin>::reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	{
+		rit->overridden = false;
+		if (!rit->enabled || !rit->compatible() ||
+			(rit->solo_lua.size()) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
 			(found_theme && rit->theme.size()))
 		{
 			rit->overridden = true;
 			continue;
 		}
-
-		if (rit->solo_lua.size())
-			found_solo_lua = true;
+		
 		if (rit->hud_lua.size())
 			found_hud_lua = true;
 		if (rit->theme.size())
