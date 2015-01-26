@@ -28,6 +28,8 @@ class RenderRasterize_Shader : public RenderRasterizerClass {
 	world_point3d cam_pos;
 	angle cam_yaw;
 	angle cam_pitch;
+	
+	long_vector2d leftmost_clip, rightmost_clip;
 
 protected:
 	virtual void render_node(sorted_node_data *node, bool SeeThruLiquids, RenderStep renderStep);	

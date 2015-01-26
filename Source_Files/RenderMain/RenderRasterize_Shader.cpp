@@ -411,6 +411,20 @@ void RenderRasterize_Shader::render_tree() {
 	cam_pitch = FIXED_INTEGERAL_PART(current_player->variables.elevation);
 	ChaseCam_GetPosition(cam_pos, cam_poly, cam_yaw, cam_pitch);
 	
+	short leftmost = INT16_MAX;
+	short rightmost = INT16_MIN;
+	vector<clipping_window_data>& windows = RSPtr->RVPtr->ClippingWindows;
+	for (vector<clipping_window_data>::const_iterator it = windows.begin(); it != windows.end(); ++it) {
+		if (it->x0 < leftmost) {
+			leftmost = it->x0;
+			leftmost_clip = it->left;
+		}
+		if (it->x1 > rightmost) {
+			rightmost = it->x1;
+			rightmost_clip = it->right;
+		}
+	}
+	
 	bool usefog = false;
 	int fogtype;
 	OGL_FogData *fogdata;
@@ -478,16 +492,24 @@ void RenderRasterize_Shader::clip_to_window(clipping_window_data *win)
     glRotatef(cam_yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
     
     glRotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
-    clip[0] = win->left.i;
-    clip[1] = win->left.j;
-    glEnable(GL_CLIP_PLANE0);
-    glClipPlane(GL_CLIP_PLANE0, clip);
-    
+	if (win->left.i != leftmost_clip.i || win->left.j != leftmost_clip.j) {
+		clip[0] = win->left.i;
+		clip[1] = win->left.j;
+		glEnable(GL_CLIP_PLANE0);
+		glClipPlane(GL_CLIP_PLANE0, clip);
+	} else {
+		glDisable(GL_CLIP_PLANE0);
+	}
+	
     glRotatef(0.2, 0., 0., 1.); // breathing room for right-hand clip
-    clip[0] = win->right.i;
-    clip[1] = win->right.j;
-    glEnable(GL_CLIP_PLANE1);
-    glClipPlane(GL_CLIP_PLANE1, clip);
+	if (win->right.i != rightmost_clip.i || win->right.j != rightmost_clip.j) {
+		clip[0] = win->right.i;
+		clip[1] = win->right.j;
+		glEnable(GL_CLIP_PLANE1);
+		glClipPlane(GL_CLIP_PLANE1, clip);
+	} else {
+		glDisable(GL_CLIP_PLANE1);
+	}
     
     glPopMatrix();
 }
