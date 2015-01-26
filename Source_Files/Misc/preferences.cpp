@@ -2009,7 +2009,7 @@ static void environment_dialog(void *arg)
 			load_environment_from_preferences();
 
 		if (theme_changed) {
-			load_theme(new_theme);
+			load_dialog_theme();
 		}
 
 		if (changed || theme_changed || saves_changed)

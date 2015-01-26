@@ -674,17 +674,7 @@ static void initialize_application(void)
 	alephone::Screen::instance()->Initialize(&graphics_preferences->screen_mode);
 	initialize_marathon();
 	initialize_screen_drawing();
-	FileSpecifier theme;
-	const Plugin* theme_plugin = Plugins::instance()->find_theme();
-	if (theme_plugin)
-	{
-		theme = theme_plugin->directory + theme_plugin->theme;
-	}
-	else
-	{
-		get_default_theme_spec(theme);
-	}
-	initialize_dialogs(theme);
+	initialize_dialogs();
 	initialize_terminal_manager();
 	initialize_shape_handler();
 	initialize_fades();

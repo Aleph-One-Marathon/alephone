@@ -44,6 +44,7 @@
 #include "world.h"
 #include "SoundManager.h"
 #include "game_errors.h"
+#include "Plugins.h"
 
 // for fixing broken theme paths
 #include "interface.h"
@@ -94,12 +95,14 @@ struct theme_widget
 	theme_widget() : font(0), font_set(false) { }
 };
 
+static FileSpecifier theme_path;
 static std::map<int, theme_widget> dialog_theme;
 
 bool dialog::sKeyRepeatActive = false;
 
 // Prototypes
 static void shutdown_dialogs(void);
+static bool load_theme(FileSpecifier &theme);
 static void unload_theme(void);
 static void set_theme_defaults(void);
 
@@ -107,7 +110,7 @@ static void set_theme_defaults(void);
  *  Initialize dialog manager
  */
 
-void initialize_dialogs(FileSpecifier &theme)
+void initialize_dialogs()
 {
 	// Allocate surface for dialogs (this surface is needed because when
 	// OpenGL is active, we can't write directly to the screen)
@@ -122,7 +125,7 @@ void initialize_dialogs(FileSpecifier &theme)
 	SDL_SetColorKey(default_image, SDL_SRCCOLORKEY, transp);
 
 	// Load theme from preferences, if it exists
-	load_theme(theme);
+	load_dialog_theme(true);
 
 	atexit(shutdown_dialogs);
 }
@@ -917,6 +920,25 @@ XML_ElementParser *Theme_GetParser()
 
 extern vector<DirectorySpecifier> data_search_path;
 
+bool load_dialog_theme(bool force_reload)
+{
+	FileSpecifier new_theme;
+	const Plugin* theme_plugin = Plugins::instance()->find_theme();
+	if (theme_plugin)
+	{
+		new_theme = theme_plugin->directory + theme_plugin->theme;
+	}
+	else
+	{
+		get_default_theme_spec(new_theme);
+	}
+	if (force_reload || new_theme != theme_path)
+	{
+		return load_theme(new_theme);
+	}
+	return false;
+}
+
 bool load_theme(FileSpecifier &theme)
 {
 	// Unload previous theme
@@ -930,6 +952,7 @@ bool load_theme(FileSpecifier &theme)
 	XML_Loader_SDL loader;
 	loader.CurrentElement = &RootParser;
 	bool success = loader.ParseFile(theme_mml);
+	theme_path = theme;
 
 	// Open resource file
 	FileSpecifier theme_rsrc = theme + "resources";
@@ -1145,6 +1168,7 @@ static void unload_theme(void)
 	}
 
 	dialog_theme.clear();
+	theme_path = FileSpecifier();
 
 	// Close resource file
 	theme_resources.Close();
