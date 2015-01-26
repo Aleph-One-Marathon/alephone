@@ -444,6 +444,10 @@ Calling Triggers = {} at the beginning of the script removes the compatibility t
       </variable>
     </table>
     <table name="game" singleton="true">
+      <variable name="dead_players_drop_items" version="SVN">
+        <description>whether dead players drop items</description>
+        <type>boolean</type>
+      </variable>
       <variable name="difficulty" access="read-only">
 	<description>the difficulty level</description>
 	<type>difficulty_type</type>
