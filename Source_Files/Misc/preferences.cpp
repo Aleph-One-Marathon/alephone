@@ -2352,6 +2352,7 @@ void write_preferences(
 	fprintf(F,"  advertise_on_metaserver=\"%s\"\n",BoolString(network_preferences->advertise_on_metaserver));
 	fprintf(F,"  attempt_upnp=\"%s\"\n", BoolString(network_preferences->attempt_upnp));
 	fprintf(F,"  check_for_updates=\"%s\"\n", BoolString(network_preferences->check_for_updates));
+	fprintf(F,"  verify_https=\"%s\"\n",BoolString(network_preferences->verify_https));
 	fprintf(F,"  metaserver_login=\"%.16s\"\n", network_preferences->metaserver_login);
 	
 	fprintf(F,"  metaserver_password=\"");
@@ -2504,6 +2505,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->advertise_on_metaserver = false;
 	preferences->attempt_upnp = false;
 	preferences->check_for_updates = true;
+	preferences->verify_https = true;
 	strcpy(preferences->metaserver_login, "guest");
 	memset(preferences->metaserver_password, 0, 16);
 	preferences->mute_metaserver_guests = false;
@@ -3937,6 +3939,10 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 	else if (StringsEqual(Tag,"check_for_updates"))
 	{
 		return ReadBooleanValue(Value, network_preferences->check_for_updates);
+	}
+	else if (StringsEqual(Tag,"verify_https"))
+	{
+		return ReadBooleanValue(Value, network_preferences->verify_https);
 	}
 	else if (StringsEqual(Tag,"use_custom_metaserver_colors"))
 	{
