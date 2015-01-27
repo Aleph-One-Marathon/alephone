@@ -28,6 +28,13 @@
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 
+#ifdef HAVE_SDL_IMAGE_H
+#include <SDL_image.h>
+#endif
+#ifdef HAVE_PNG
+#include "IMG_savepng.h"
+#endif
+
 #include "FileHandler.h"
 #include "world.h"
 #include "map.h"
@@ -44,8 +51,13 @@
 #include "Logging.h"
 #include "XML_ElementParser.h"
 #include "XML_Configure.h"
+#include "images.h"
 
 namespace algo = boost::algorithm;
+
+const int RENDER_WIDTH = 1280;
+const int RENDER_HEIGHT = 720;
+const int RENDER_SCALE = OVERHEAD_MAP_MAXIMUM_SCALE;
 
 const int PREVIEW_WIDTH = 128;
 const int PREVIEW_HEIGHT = 72;
@@ -113,8 +125,24 @@ SDL_Surface* QuickSaveImageCache::get(std::string image_name) {
     DirectorySpecifier path;
     path.SetToQuickSavesDir();
     FileSpecifier f = path + image_name;
-    SDL_Surface* img = SDL_LoadBMP(f.GetPath());
-    if (img) {
+	OpenedFile of;
+	if (!f.Open(of))
+		return NULL;
+	
+#ifdef HAVE_SDL_IMAGE
+	SDL_Surface *img = IMG_Load_RW(of.GetRWops(), 0);
+#else
+	SDL_Surface *img = SDL_LoadBMP_RW(of.GetRWops(), 0);
+#endif
+	if (img) {
+		if (img->w != PREVIEW_WIDTH || img->h != PREVIEW_HEIGHT) {
+			SDL_Surface *img2 = rescale_surface(img, PREVIEW_WIDTH, PREVIEW_HEIGHT);
+			if (img2) {
+				SDL_FreeSurface(img);
+				img = img2;
+			}
+		}
+		
         m_used.push_front(cache_pair_t(image_name, img));
         m_images[image_name] = m_used.begin();
         
@@ -466,7 +494,7 @@ extern bool OGL_MapActive;
 
 static bool save_map_preview(FileSpecifier& file)
 {
-    SDL_Rect r = {0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT};
+    SDL_Rect r = {0, 0, RENDER_WIDTH, RENDER_HEIGHT};
     SDL_Surface *surface = SDL_CreateRGBSurface(SDL_SWSURFACE, r.w, r.h, 32, 0xff0000, 0x00ff00, 0x0000ff, 0);
     if (!surface)
         return false;
@@ -479,7 +507,7 @@ static bool save_map_preview(FileSpecifier& file)
     overhead_data.width = r.w;
     overhead_data.height = r.h;
     overhead_data.top = overhead_data.left = 0;
-    overhead_data.scale = OVERHEAD_MAP_MINIMUM_SCALE;
+    overhead_data.scale = RENDER_SCALE;
     overhead_data.mode = _rendering_saved_game_preview;
     overhead_data.origin.x = local_player->location.x;
     overhead_data.origin.y = local_player->location.y;
@@ -490,8 +518,12 @@ static bool save_map_preview(FileSpecifier& file)
     _render_overhead_map(&overhead_data);
     OGL_MapActive = old_OGL_MapActive;
     _restore_port();
-    
-    int ret = SDL_SaveBMP(surface, file.GetPath());
+
+#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE_H)
+	int ret = IMG_SavePNG(file.GetPath(), surface, IMG_COMPRESS_DEFAULT, NULL, 0);
+#else
+	int ret = SDL_SaveBMP(surface, file.GetPath());
+#endif
     SDL_FreeSurface(surface);
     return (ret == 0);
 }
@@ -558,8 +590,12 @@ bool create_quick_save(void)
     save.metadata_file.FromDirectory(metadata_dir);
     save.metadata_file.AddPart(base + ".xml");
     save.save_file_name = base + ".sgaA";
+#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE_H)
+	save.preview_name = base + ".png";
+#else
     save.preview_name = base + ".bmp";
-    
+#endif
+	
     FileSpecifier save_game, save_image;
     save_game.FromDirectory(metadata_dir);
     save_game.AddPart(save.save_file_name);
