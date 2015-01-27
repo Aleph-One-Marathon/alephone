@@ -542,7 +542,7 @@ bool PluginLoader::ParseDirectory(FileSpecifier& dir)
 				ZZIP_DIRENT dirent;
 				while (zzip_dir_read(zzipdir, &dirent))
 				{
-					if (algo::ends_with(dirent.d_name, "Plugin.xml"))
+					if (strcmp(dirent.d_name, "Plugin.xml") == 0 || algo::ends_with(dirent.d_name, "/Plugin.xml"))
 					{
 						std::string archive = file.GetPath();
 						FileSpecifier file_name = FileSpecifier(archive.substr(0, archive.find_last_of('.'))) + dirent.d_name;
