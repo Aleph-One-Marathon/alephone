@@ -827,7 +827,7 @@ void RenderRasterize_Shader::render_node_floor_or_ceiling(clipping_window_data *
 	float offset = 0;
 
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture);
-	float intensity = get_light_data(surface->lightsource_index)->intensity / float(FIXED_ONE - 1);
+	float intensity = get_light_intensity(surface->lightsource_index) / float(FIXED_ONE - 1);
 	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
 	// note: wobble and pulsate behave the same way on floors and ceilings
 	// note 2: stronger wobble looks more like classic with default shaders
@@ -966,7 +966,7 @@ void RenderRasterize_Shader::render_node_side(clipping_window_data *window, vert
 	}
 
 	const shape_descriptor& texture = AnimTxtr_Translate(surface->texture_definition->texture);
-	float intensity = (get_light_data(surface->lightsource_index)->intensity + surface->ambient_delta) / float(FIXED_ONE - 1);
+	float intensity = (get_light_intensity(surface->lightsource_index) + surface->ambient_delta) / float(FIXED_ONE - 1);
 	float wobble = calcWobble(surface->transfer_mode, view->tick_count);
 	float pulsate = 0;
 	if (surface->transfer_mode == _xfer_pulsate) {
