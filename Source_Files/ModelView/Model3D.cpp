@@ -149,9 +149,14 @@ void Model3D::CalculateTangents()
 		vertex3 v2(PosBase()+3*b);
 		vertex3 v3(PosBase()+3*c);
 		
-		vertex2 w1(TCBase()+2*a);
-		vertex2 w2(TCBase()+2*b);
-		vertex2 w3(TCBase()+2*c);
+		vertex2 w1(0, 0);
+		vertex2 w2(0, 0);
+		vertex2 w3(0, 0);
+		if (TxtrCoords.size()) {
+			w1 = vertex2(TCBase()+2*a);
+			w2 = vertex2(TCBase()+2*b);
+			w3 = vertex2(TCBase()+2*c);
+		}
 		
 		float x1 = v2[0] - v1[0];
 		float x2 = v3[0] - v1[0];

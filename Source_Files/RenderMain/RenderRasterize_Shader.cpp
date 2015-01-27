@@ -1202,7 +1202,11 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 
 	glVertexPointer(3,GL_FLOAT,0,ModelPtr->Model.PosBase());
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
-	glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
+	if (ModelPtr->Model.TxtrCoords.empty()) {
+		glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	} else {
+		glTexCoordPointer(2,GL_FLOAT,0,ModelPtr->Model.TCBase());
+	}
 
 	glEnableClientState(GL_NORMAL_ARRAY);
 	glNormalPointer(GL_FLOAT,0,ModelPtr->Model.NormBase());
@@ -1250,6 +1254,9 @@ bool RenderModel(rectangle_definition& RenderRectangle, short Collection, short 
 	glDisableClientState(GL_NORMAL_ARRAY);
 	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 	glClientActiveTextureARB(GL_TEXTURE0_ARB);
+	if (ModelPtr->Model.TxtrCoords.empty()) {
+		glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	}
 
 	// Restore the default render sidedness
 	glEnable(GL_CULL_FACE);
