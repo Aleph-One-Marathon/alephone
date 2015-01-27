@@ -47,8 +47,8 @@
 
 namespace algo = boost::algorithm;
 
-const int PREVIEW_WIDTH = 100;
-const int PREVIEW_HEIGHT = 60;
+const int PREVIEW_WIDTH = 128;
+const int PREVIEW_HEIGHT = 72;
 
 bool write_save_metadata(QuickSave& save);
 
@@ -576,7 +576,7 @@ bool create_quick_save(void)
         success = write_save_metadata(save);
         if (!success) {
             save_game.Delete();
-            save_game.Delete();
+            save_image.Delete();
         }
     }
     
