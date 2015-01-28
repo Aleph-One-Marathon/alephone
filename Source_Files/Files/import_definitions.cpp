@@ -94,6 +94,7 @@ bool physics_file_is_m1(void)
     
     // check for M1 physics
     OpenedFile PhysicsFile;
+    short SavedType, SavedError = get_game_error(&SavedType);
     if (PhysicsFileSpec.Open(PhysicsFile))
     {
         uint32 tag = SDL_ReadBE32(PhysicsFile.GetRWops());
@@ -112,6 +113,7 @@ bool physics_file_is_m1(void)
         
         PhysicsFile.Close();
     }
+    set_game_error(SavedType, SavedError);
     return m1_physics;
 }
 
@@ -172,7 +174,9 @@ void *get_network_physics_buffer(
 		return data;
 	}
 	
+	short SavedType, SavedError = get_game_error(&SavedType);
 	void *data= get_flat_data(PhysicsFileSpec, false, 0);
+	set_game_error(SavedType, SavedError);
 	
 	if(data)
 	{
