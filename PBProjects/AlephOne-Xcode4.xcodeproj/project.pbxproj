@@ -119,6 +119,7 @@
 		27ECF2A61698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
 		27ECF2A71698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
 		27ECF2A81698DD7700BE9C35 /* SDL_ffmpeg.h in Headers */ = {isa = PBXBuildFile; fileRef = 27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */; };
+		27EFC4B41A7C8E6900A95592 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 278BCAEE1A51C53C006F9756 /* speexdsp.framework */; };
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
@@ -1905,6 +1906,7 @@
 				2759FB2610D71158000204DD /* png.framework in CopyFiles */,
 				2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */,
 				AE23F5930BDAC1DF00C11385 /* speex.framework in CopyFiles */,
+				27EFC4B41A7C8E6900A95592 /* speexdsp.framework in CopyFiles */,
 				AEC3C87809AD68AC003258E4 /* SDL_image.framework in CopyFiles */,
 				AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */,
 				AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */,
@@ -4681,7 +4683,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
 		};
 		AE505D06141D45E600915344 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4719,7 +4721,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"mad.framework\"\ncopy_removing_ppc \"sndfile.framework\"\ncopy_removing_ppc \"Ogg.framework\"\ncopy_removing_ppc \"Vorbis.framework\"\ncopy_removing_ppc \"smpeg.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
 		};
 		AEB4A2A814296CAE00537AE7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4769,7 +4771,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
 		};
 		AEFD87D713EB944800C1E687 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
