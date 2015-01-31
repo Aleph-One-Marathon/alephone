@@ -263,5 +263,10 @@
 	<array/>
 	<key>UTImportedTypeDeclarations</key>
 	<array/>
+	<key>LSEnvironment</key>
+	<dict>
+		<key>ALEPHONE_FINDER_LAUNCH</key>
+		<string>1</string>
+	</dict>
 </dict>
 </plist>

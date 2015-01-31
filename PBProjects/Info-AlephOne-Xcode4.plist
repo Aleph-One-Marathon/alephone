@@ -242,6 +242,11 @@
 	<string>A1_DISPLAY_VERSION</string>
 	<key>CFBundleVersion</key>
 	<string>A1_DATE_VERSION</string>
+	<key>LSEnvironment</key>
+	<dict>
+		<key>ALEPHONE_FINDER_LAUNCH</key>
+		<string>1</string>
+	</dict>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.6.0</string>
 </dict>

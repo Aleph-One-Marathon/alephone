@@ -451,13 +451,6 @@ static void CustomApplicationMain (int argc, char **argv)
 #endif
 
 
-static int IsRootCwd()
-{
-    char buf[MAXPATHLEN];
-    char *cwd = getcwd(buf, sizeof (buf));
-    return (cwd && (strcmp(cwd, "/") == 0));
-}
-
 static int IsTenPointNineOrLater()
 {
     /* Gestalt() is deprecated in 10.8, but I don't care. Stop using SDL 1.2. */
@@ -465,21 +458,6 @@ static int IsTenPointNineOrLater()
     Gestalt(gestaltSystemVersionMajor, &major);
     Gestalt(gestaltSystemVersionMinor, &minor);
     return ( ((major << 16) | minor) >= ((10 << 16) | 9) );
-}
-
-static int IsFinderLaunch(const int argc, char **argv)
-{
-    const int bIsNewerOS = IsTenPointNineOrLater();
-    /* -psn_XXX is passed if we are launched from Finder in 10.8 and earlier */
-    if ( (!bIsNewerOS) && (argc >= 2) && (strncmp(argv[1], "-psn", 4) == 0) ) {
-        return 1;
-    } else if ((bIsNewerOS) && (argc == 1) && IsRootCwd()) {
-        /* we might still be launched from the Finder; on 10.9+, you might not
-         get the -psn command line anymore. Check version, if there's no
-         command line, and if our current working directory is "/". */
-        return 1;
-    }
-    return 0;  /* not a Finder launch. */
 }
 
 extern bool force_software_gamma;
@@ -492,7 +470,7 @@ int main (int argc, char **argv)
         force_software_gamma = true;
     
     /* Copy the arguments into a global variable */
-    if (IsFinderLaunch(argc, argv)) {
+    if (getenv("ALEPHONE_FINDER_LAUNCH")) {
         gArgv = (char **) SDL_malloc(sizeof (char *) * 2);
         gArgv[0] = argv[0];
         gArgv[1] = NULL;
