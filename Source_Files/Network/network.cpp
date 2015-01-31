@@ -175,6 +175,7 @@ static short ddpSocket; /* our ddp socket number */
 
 static short localPlayerIndex;
 static short localPlayerIdentifier;
+static std::string gameSessionIdentifier;
 static NetTopologyPtr topology;
 static short sServerPlayerIndex;
 static bool sOldSelfSendStatus;
@@ -307,6 +308,7 @@ static bool resuming_saved_game = false;
 
 /* ---------- private prototypes */
 void NetPrintInfo(void);
+void NetInitializeSessionIdentifier(void);
 
 // ZZZ: cmon, we're not fooling anyone... game_data is a game_info*; player_data is a player_info*
 // Originally I guess the plan was to have a strong separation between Marathon game code and the networking code,
@@ -610,7 +612,11 @@ void Client::handleAcceptJoinMessage(AcceptJoinMessage* acceptJoinMessage,
       topology->player_count += 1;
       check_player(topology->player_count - 1, topology->player_count);
       NetUpdateTopology();
-      
+ 
+      GameSessionMessage gameSessionMessage(reinterpret_cast<const uint8*>(gameSessionIdentifier.c_str()), gameSessionIdentifier.size());
+      CommunicationsChannel *channel = connections_to_clients[player.stream_id]->channel;
+      channel->enqueueOutgoingMessage(gameSessionMessage);
+
       NetDistributeTopology(tagNEW_PLAYER);
       state = _awaiting_map;
       if (gatherCallbacks) gatherCallbacks->JoinSucceeded(&player);
@@ -1031,6 +1037,14 @@ static void handleTopologyMessage(TopologyMessage* topologyMessage, Communicatio
   }
 }
 
+static void handleGameSessionMessage(GameSessionMessage* gameSessionMessage, CommunicationsChannel*) {
+	if (handlerState == netWaiting) {
+		gameSessionIdentifier.assign(gameSessionMessage->buffer(), gameSessionMessage->buffer() + gameSessionMessage->length());
+	} else {
+		logAnomaly1("unexpected game session message received (netState is %i)", netState);
+	}
+}
+
 static void handleUnexpectedMessage(Message *inMessage, CommunicationsChannel *) {
   if (handlerState == netAwaitingHello) {
     // an unexpected message before hello usually means we couldn't parse
@@ -1052,6 +1066,7 @@ static TypedMessageHandlerFunction<TopologyMessage> topologyMessageHandler(&hand
 static TypedMessageHandlerFunction<ServerWarningMessage> serverWarningMessageHandler(&handleServerWarningMessage);
 static TypedMessageHandlerFunction<ClientInfoMessage> clientInfoMessageHandler(&handleClientInfoMessage);
 static TypedMessageHandlerFunction<NetworkStatsMessage> networkStatsMessageHandler(&handleNetworkStatsMessage);
+static TypedMessageHandlerFunction<GameSessionMessage> gameSessionMessageHandler(&handleGameSessionMessage);
 static TypedMessageHandlerFunction<Message> unexpectedMessageHandler(&handleUnexpectedMessage);
 
 void NetSetGatherCallbacks(GatherCallbacks *gc) {
@@ -1196,6 +1211,7 @@ bool NetEnter(void)
 		inflater->learnPrototype(ServerWarningMessage());
 		inflater->learnPrototype(ClientInfoMessage());
 		inflater->learnPrototype(NetworkStatsMessage());
+		inflater->learnPrototype(GameSessionMessage());
 	}
   
 	if (!joinDispatcher) {
@@ -1216,6 +1232,7 @@ bool NetEnter(void)
 		joinDispatcher->setHandlerForType(&clientInfoMessageHandler, ClientInfoMessage::kType);
 		joinDispatcher->setHandlerForType(&topologyMessageHandler, TopologyMessage::kType);
 		joinDispatcher->setHandlerForType(&networkStatsMessageHandler, NetworkStatsMessage::kType);
+		joinDispatcher->setHandlerForType(&gameSessionMessageHandler, GameSessionMessage::kType);
 	}
 
 	my_capabilities.clear();
@@ -1419,6 +1436,27 @@ short NetState(
 	return netState;
 }
 
+// Game session identifiers allow the metaserver to
+// identify which players join a particular game.
+
+std::string NetSessionIdentifier(void)
+{
+	return gameSessionIdentifier;
+}
+
+void NetInitializeSessionIdentifier(void)
+{
+	// A robust GUID would be even better here, but
+	// all we really need is an ID unlikely to be
+	// chosen by two gatherers at about the same time.
+	gameSessionIdentifier.clear();
+	for (int i = 0; i < 16; i++)
+	{
+		gameSessionIdentifier += static_cast<char>(rand() % 256);
+	}
+	
+}
+
 
 /*
 ---------
@@ -1472,6 +1510,7 @@ bool NetGather(
         resuming_saved_game = resuming_game;
         
 	NetInitializeTopology(game_data, game_data_size, player_data, player_data_size);
+	NetInitializeSessionIdentifier();
 	
 	#ifndef __MWERKS__
 	if (network_preferences->attempt_upnp)
@@ -1884,6 +1923,7 @@ static void NetInitializeTopology(
 	topology->player_count= 1;
 	topology->nextIdentifier= 1;
 	memcpy(&topology->game_data, game_data, game_data_size);
+	gameSessionIdentifier.clear();
 }
 
 static void NetLocalAddrBlock(

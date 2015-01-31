@@ -266,7 +266,7 @@ public:
 	const std::string& playerName() const { return m_playerName; }
 
 	void setAway(bool away, const std::string& away_message);
-	void setMode(uint16 mode);
+	void setMode(uint16 mode, const std::string& session_id);
 
 	void setPlayerTeamName(const std::string& team);
 

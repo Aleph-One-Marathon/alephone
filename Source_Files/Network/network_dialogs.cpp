@@ -266,7 +266,7 @@ bool network_gather(bool inResumingGame)
 				if (advertiseOnMetaserver) 
 				{
 					metaserverAnnouncer->Start(myGameInfo.time_limit);
-					gMetaserverClient->setMode(1);
+					gMetaserverClient->setMode(1, NetSessionIdentifier());
 					gMetaserverClient->pump();
 				}
 				successful= true;
@@ -522,7 +522,7 @@ int network_join(void)
 			NetSetInitialParameters(myGameInfo->initial_updates_per_packet, myGameInfo->initial_update_latency);
 			if (gMetaserverClient && gMetaserverClient->isConnected())
 			{
-				gMetaserverClient->setMode(1);
+				gMetaserverClient->setMode(1, NetSessionIdentifier());
 				gMetaserverClient->pump();
 			}
 		}
@@ -1200,7 +1200,7 @@ bool SetupNetgameDialog::SetupNetworkGameByRunning (
 	binders.insert<int> (m_latencyToleranceWidget, &latencyTolerancePref);
 
 	binders.migrate_all_second_to_first ();
-
+	
 	m_cancelWidget->set_callback (boost::bind (&SetupNetgameDialog::Stop, this, false));
 	m_okWidget->set_callback (boost::bind (&SetupNetgameDialog::okHit, this));
 	m_limitTypeWidget->set_callback (boost::bind (&SetupNetgameDialog::limitTypeHit, this));

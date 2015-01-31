@@ -51,7 +51,8 @@ enum {
   kZIPPED_MAP_MESSAGE,
   kZIPPED_PHYSICS_MESSAGE,
   kZIPPED_LUA_MESSAGE,
-  kNETWORK_STATS_MESSAGE
+  kNETWORK_STATS_MESSAGE,
+  kGAME_SESSION_MESSAGE
 };
 
 template <MessageTypeID tMessageType, typename tValueType>
@@ -475,6 +476,7 @@ struct Client {
 	std::auto_ptr<MessageHandler> mChangeColorsMessageHandler;
 };
 
+typedef TemplatizedDataMessage<kGAME_SESSION_MESSAGE, BigChunkOfDataMessage> GameSessionMessage;
 
 
 #endif // NETWORK_MESSAGES_H

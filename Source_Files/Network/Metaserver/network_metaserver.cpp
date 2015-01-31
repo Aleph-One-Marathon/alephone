@@ -672,9 +672,9 @@ void MetaserverClient::setAway(bool away, const std::string& away_message)
 	m_channel->enqueueOutgoingMessage(NameAndTeamMessage(m_playerName, m_teamName, away, away_message));
 }
 
-void MetaserverClient::setMode(uint16 mode)
+void MetaserverClient::setMode(uint16 mode, const std::string& session_id)
 {
-	m_channel->enqueueOutgoingMessage(SetPlayerModeMessage(mode));
+	m_channel->enqueueOutgoingMessage(SetPlayerModeMessage(mode, session_id));
 }
 
 void

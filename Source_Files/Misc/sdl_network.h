@@ -29,6 +29,7 @@
 #define __SDL__NETWORK_H
 
 #include <SDL_net.h>
+#include <string>
 
 #include "cseries.h"
 
@@ -86,6 +87,7 @@ typedef void (*PacketHandlerProcPtr)(DDPPacketBufferPtr packet);
 /* ---------- prototypes/NETWORK.C */
 
 short NetState(void);
+std::string NetSessionIdentifier(void);
 
 void NetSetServerIdentifier(short identifier);
 

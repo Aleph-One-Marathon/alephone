@@ -190,12 +190,13 @@ public:
 	COVARIANT_RETURN(Message*, SetPlayerModeMessage*) clone() const
 		{ return new SetPlayerModeMessage(*this); }
 
-	SetPlayerModeMessage(uint16 mode) : m_mode(mode) { }
+	SetPlayerModeMessage(uint16 mode, const std::string& session_id) : m_mode(mode), m_session_id(session_id) { }
 
 protected:
 	void reallyDeflateTo(AOStream& thePacket) const
 		{
 			thePacket << m_mode;
+			thePacket.write(const_cast<char*>(m_session_id.c_str()), m_session_id.size());
 		}
 
 	bool reallyInflateFrom(AIStream& inStream)
@@ -203,6 +204,7 @@ protected:
 
 private:
 	uint16 m_mode;
+	std::string m_session_id;
 };
 
 class SaltMessage : public SmallMessageHelper
