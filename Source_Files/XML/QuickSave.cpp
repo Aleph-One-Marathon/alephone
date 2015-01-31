@@ -52,6 +52,7 @@
 #include "XML_ElementParser.h"
 #include "XML_Configure.h"
 #include "images.h"
+#include "sdl_resize.h"
 
 namespace algo = boost::algorithm;
 
@@ -136,11 +137,7 @@ SDL_Surface* QuickSaveImageCache::get(std::string image_name) {
 #endif
 	if (img) {
 		if (img->w != PREVIEW_WIDTH || img->h != PREVIEW_HEIGHT) {
-			SDL_Surface *img2 = rescale_surface(img, PREVIEW_WIDTH, PREVIEW_HEIGHT);
-			if (img2) {
-				SDL_FreeSurface(img);
-				img = img2;
-			}
+			img = SDL_Resize(img, PREVIEW_WIDTH, PREVIEW_HEIGHT, true, 1);
 		}
 		
         m_used.push_front(cache_pair_t(image_name, img));

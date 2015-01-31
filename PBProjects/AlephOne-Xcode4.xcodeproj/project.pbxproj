@@ -127,6 +127,14 @@
 		27EFC4B91A7C935500A95592 /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
 		27EFC4BA1A7C935500A95592 /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
 		27EFC4BB1A7C935600A95592 /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 276D4E751A2E710F00C16CF5 /* QuickSave.h */; };
+		27EFC4BE1A7D8CBF00A95592 /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */; };
+		27EFC4BF1A7D8CBF00A95592 /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */; };
+		27EFC4C01A7D8CBF00A95592 /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */; };
+		27EFC4C11A7D8CBF00A95592 /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */; };
+		27EFC4C21A7D8CBF00A95592 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */; };
+		27EFC4C31A7D8CBF00A95592 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */; };
+		27EFC4C41A7D8CBF00A95592 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */; };
+		27EFC4C51A7D8CBF00A95592 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */; };
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
@@ -1973,6 +1981,8 @@
 		27ECF2921698DD7700BE9C35 /* Movie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Movie.h; path = ../Source_Files/FFmpeg/Movie.h; sourceTree = "<group>"; };
 		27ECF2931698DD7700BE9C35 /* SDL_ffmpeg.c */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp; fileEncoding = 4; name = SDL_ffmpeg.c; path = ../Source_Files/FFmpeg/SDL_ffmpeg.c; sourceTree = "<group>"; };
 		27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_ffmpeg.h; path = ../Source_Files/FFmpeg/SDL_ffmpeg.h; sourceTree = "<group>"; };
+		27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sdl_resize.cpp; sourceTree = "<group>"; };
+		27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sdl_resize.h; sourceTree = "<group>"; };
 		3D22CF880FD86EAE00B17822 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		3D22CF8C0FD86EBD00B17822 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
@@ -3415,6 +3425,8 @@
 		F5CC93860240D85D01A80001 /* SDL */ = {
 			isa = PBXGroup;
 			children = (
+				27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */,
+				27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */,
 				F5CC938B0240D85D01A80001 /* OverheadMap_SDL.h */,
 				F5CC93A00240D85D01A80001 /* sdl_fonts.h */,
 				F5CC938A0240D85D01A80001 /* OverheadMap_SDL.cpp */,
@@ -3693,6 +3705,7 @@
 				AE505BA1141D45E600915344 /* shape_descriptors.h in Headers */,
 				AE505BA2141D45E600915344 /* textures.h in Headers */,
 				AE505BA3141D45E600915344 /* ChaseCam.h in Headers */,
+				27EFC4C41A7D8CBF00A95592 /* sdl_resize.h in Headers */,
 				AE505BA4141D45E600915344 /* computer_interface.h in Headers */,
 				AE505BA5141D45E600915344 /* fades.h in Headers */,
 				AE505BA6141D45E600915344 /* FontHandler.h in Headers */,
@@ -3901,6 +3914,7 @@
 				AEB4A14114296CAE00537AE7 /* shape_descriptors.h in Headers */,
 				AEB4A14214296CAE00537AE7 /* textures.h in Headers */,
 				AEB4A14314296CAE00537AE7 /* ChaseCam.h in Headers */,
+				27EFC4C51A7D8CBF00A95592 /* sdl_resize.h in Headers */,
 				AEB4A14414296CAE00537AE7 /* computer_interface.h in Headers */,
 				AEB4A14514296CAE00537AE7 /* fades.h in Headers */,
 				AEB4A14614296CAE00537AE7 /* FontHandler.h in Headers */,
@@ -4121,6 +4135,7 @@
 				AEC3C78209AD68AC003258E4 /* motion_sensor.h in Headers */,
 				AEC3C78309AD68AC003258E4 /* overhead_map.h in Headers */,
 				AEC3C78409AD68AC003258E4 /* OverheadMap_OGL.h in Headers */,
+				27EFC4C21A7D8CBF00A95592 /* sdl_resize.h in Headers */,
 				AEC3C78509AD68AC003258E4 /* OverheadMap_SDL.h in Headers */,
 				AEC3C78609AD68AC003258E4 /* OverheadMapRenderer.h in Headers */,
 				AEC3C78709AD68AC003258E4 /* screen.h in Headers */,
@@ -4318,6 +4333,7 @@
 				AEFD864F13EB84CF00C1E687 /* shape_descriptors.h in Headers */,
 				AEFD865013EB84CF00C1E687 /* textures.h in Headers */,
 				AEFD865113EB84CF00C1E687 /* ChaseCam.h in Headers */,
+				27EFC4C31A7D8CBF00A95592 /* sdl_resize.h in Headers */,
 				AEFD865213EB84CF00C1E687 /* computer_interface.h in Headers */,
 				AEFD865313EB84CF00C1E687 /* fades.h in Headers */,
 				AEFD865413EB84CF00C1E687 /* FontHandler.h in Headers */,
@@ -4909,6 +4925,7 @@
 				27EFC4B61A7C933C00A95592 /* QuickSave.cpp in Sources */,
 				AE505C7E141D45E600915344 /* XML_Loader_SDL.cpp in Sources */,
 				AE505C7F141D45E600915344 /* XML_MakeRoot.cpp in Sources */,
+				27EFC4C01A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
 				AE505C80141D45E600915344 /* Packing.cpp in Sources */,
 				AE505C81141D45E600915344 /* DefaultStringSets.cpp in Sources */,
 				AE505C82141D45E600915344 /* Logging.cpp in Sources */,
@@ -5145,6 +5162,7 @@
 				27EFC4B71A7C933D00A95592 /* QuickSave.cpp in Sources */,
 				AEB4A21F14296CAE00537AE7 /* XML_Loader_SDL.cpp in Sources */,
 				AEB4A22014296CAE00537AE7 /* XML_MakeRoot.cpp in Sources */,
+				27EFC4C11A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
 				AEB4A22114296CAE00537AE7 /* Packing.cpp in Sources */,
 				AEB4A22214296CAE00537AE7 /* DefaultStringSets.cpp in Sources */,
 				AEB4A22314296CAE00537AE7 /* Logging.cpp in Sources */,
@@ -5381,6 +5399,7 @@
 				AEC3C84A09AD68AC003258E4 /* XML_LevelScript.cpp in Sources */,
 				AEC3C84B09AD68AC003258E4 /* XML_Loader_SDL.cpp in Sources */,
 				AEC3C84C09AD68AC003258E4 /* XML_MakeRoot.cpp in Sources */,
+				27EFC4BE1A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
 				AEC3C84D09AD68AC003258E4 /* Packing.cpp in Sources */,
 				AEC3C84E09AD68AC003258E4 /* DefaultStringSets.cpp in Sources */,
 				AEC3C84F09AD68AC003258E4 /* Logging.cpp in Sources */,
@@ -5617,6 +5636,7 @@
 				27EFC4B51A7C933C00A95592 /* QuickSave.cpp in Sources */,
 				AEFD872B13EB84CF00C1E687 /* XML_Loader_SDL.cpp in Sources */,
 				AEFD872C13EB84CF00C1E687 /* XML_MakeRoot.cpp in Sources */,
+				27EFC4BF1A7D8CBF00A95592 /* sdl_resize.cpp in Sources */,
 				AEFD872D13EB84CF00C1E687 /* Packing.cpp in Sources */,
 				AEFD872E13EB84CF00C1E687 /* DefaultStringSets.cpp in Sources */,
 				AEFD872F13EB84CF00C1E687 /* Logging.cpp in Sources */,
