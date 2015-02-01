@@ -78,6 +78,7 @@ using namespace std;
 #include <set>
 
 
+#include "alephversion.h"
 #include "screen.h"
 #include "tags.h"
 #include "player.h"
@@ -244,6 +245,7 @@ std::map<int, std::string> SavedLuaState;
 
 class LuaState
 {
+	friend bool CollectLuaStats(std::map<std::string, std::string>&, std::map<std::string, std::string>&);
 public:
 	LuaState() : running_(false), num_scripts_(0) {
 		state_.reset(luaL_newstate(), lua_close);
@@ -348,6 +350,7 @@ private:
 
 typedef LuaState EmbeddedLuaState;
 typedef LuaState NetscriptState;
+typedef LuaState StatsLuaState;
 
 class SoloScriptState : public LuaState
 {
@@ -1741,13 +1744,15 @@ static LuaState* LuaStateFactory(ScriptType script_type)
 		return new NetscriptState;
 	case _solo_lua_script:
 		return new SoloScriptState;
+	case _stats_lua_script:
+		return new StatsLuaState;
 	}
 	return NULL;
 }
 
 bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 {
-	assert(script_type >= _embedded_lua_script && script_type <= _solo_lua_script);
+	assert(script_type >= _embedded_lua_script && script_type <= _stats_lua_script);
 	if (states.find(script_type) == states.end())
 	{
 		int type = script_type;
@@ -1764,6 +1769,9 @@ bool LoadLuaScript(const char *buffer, size_t len, ScriptType script_type)
 			break;
 		case _solo_lua_script:
 			desc = "Solo Lua";
+			break;
+		case _stats_lua_script:
+			desc = "Stats Lua";
 			break;
 	}
 	return states[script_type].Load(buffer, len, desc);
@@ -1878,6 +1886,113 @@ void LoadSoloLua()
 			}
 		}
 	}
+}
+
+void LoadStatsLua()
+{
+	std::string file;
+	std::string directory;
+
+	const Plugin* stats_lua_plugin = Plugins::instance()->find_stats_lua();
+	if (stats_lua_plugin)
+	{
+		file = stats_lua_plugin->stats_lua;
+		directory = stats_lua_plugin->directory.GetPath();
+	}
+
+	if (file.size())
+	{
+		FileSpecifier fs(file.c_str());
+		if (directory.size())
+		{
+			fs.SetNameWithPath(file.c_str(), directory);
+		}
+
+		OpenedFile script_file;
+		if (fs.Open(script_file))
+		{
+			int32 script_length;
+			script_file.GetLength(script_length);
+			
+			std::vector<char> script_buffer(script_length);
+			if (script_file.Read(script_length, &script_buffer[0]))
+			{
+				LoadLuaScript(&script_buffer[0], script_length, _stats_lua_script);
+				if (directory.size())
+				{
+					states[_stats_lua_script].SetSearchPath(directory);
+				}
+			}
+			
+		}
+	}
+}
+
+bool CollectLuaStats(std::map<std::string, std::string>& options, std::map<std::string, std::string>& parameters)
+{
+	if (states.find(_stats_lua_script) == states.end())
+	{
+		return false;
+	}
+
+	LuaState& state = states[_stats_lua_script];
+	lua_State* L = state.State();
+	
+	if (!state.Running()) 
+		return false;
+	
+	options.clear();
+	parameters.clear();
+	
+	lua_getglobal(L, "Statistics");
+	if (!lua_istable(L, -1))
+	{
+		lua_pop(L, 1);
+		return false;
+	}
+	
+	// grab all the keys/values
+	lua_pushnil(L);
+	while (lua_next(L, -2) != 0)
+	{
+		if (lua_type(L, -1) == LUA_TSTRING)
+		{
+			options[lua_tostring(L, -2)] = lua_tostring(L, -1);
+		}
+		lua_pop(L, 1);
+	}
+	
+	// grab the parameters
+	lua_pushstring(L, "parameters");
+	lua_gettable(L, -2);
+	if (lua_istable(L, -1))
+	{
+		lua_pushnil(L);
+		while (lua_next(L, -2) != 0)
+		{
+			if (lua_type(L, -2) == LUA_TSTRING)
+			{
+				if (lua_tostring(L, -1))
+				{
+					parameters[lua_tostring(L, -2)] = lua_tostring(L, -1);
+				}
+				// lua_tostring only works with numbers and strings
+				else if (lua_isboolean(L, -1))
+				{
+					parameters[lua_tostring(L, -2)] = (lua_toboolean(L, -1) ? "true" : "false");
+				}
+			}
+			lua_pop(L, 1);
+		}
+	}
+	
+	// pop the Parameters table, or the nil
+	lua_pop(L, 1);
+	
+	// pop the Statistics table
+	lua_pop(L, 1);
+	
+	return true;
 }
 
 void LoadReplayNetLua()

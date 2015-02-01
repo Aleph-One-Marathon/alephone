@@ -117,6 +117,7 @@ Feb 8, 2003 (Woody Zenfell):
 
 #include "Console.h"
 #include "Movie.h"
+#include "Statistics.h"
 
 #include "motion_sensor.h"
 
@@ -588,6 +589,16 @@ void leaving_map(
 	MarkLuaCollections(false);
     MarkLuaHUDCollections(false);
 	L_Call_Cleanup ();
+
+	// don't send stats on film replay
+	// don't call player_controlling_game() since game_state.state has changed
+	short user = get_game_controller();
+	if (user == _single_player || user == _network_player)
+	{
+		// upload the stats!
+		StatsManager::instance()->Process();
+	}
+
 	//Close and unload the Lua state
 	CloseLuaScript();
 #if !defined(DISABLE_NETWORKING)

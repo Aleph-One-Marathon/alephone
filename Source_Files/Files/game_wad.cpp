@@ -787,6 +787,7 @@ bool get_entry_points(vector<entry_point> &vec, int32 type)
 
 extern void LoadSoloLua();
 extern void LoadReplayNetLua();
+extern void LoadStatsLua();
 extern void RunLuaScript();
 
 /* This is called when the game level is changed somehow */
@@ -850,6 +851,8 @@ bool goto_level(
 		{
 			LoadReplayNetLua();
 		}
+		LoadStatsLua();
+
 		Music::instance()->PreloadLevelMusic();
 		set_game_error(SavedType,SavedError);
 		
@@ -1272,6 +1275,7 @@ bool load_game_from_file(FileSpecifier& File, bool run_scripts, bool *was_map_fo
 			{
 				LoadSoloLua();
 			}
+			LoadStatsLua();
 			set_game_error(SavedType,SavedError);
 		}
 	}

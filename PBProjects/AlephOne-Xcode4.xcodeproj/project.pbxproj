@@ -138,6 +138,10 @@
 		27EFC4C91A7D9B9B00A95592 /* Marathon.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 27EFC4C81A7D9A2F00A95592 /* Marathon.entitlements */; };
 		27EFC4CA1A7D9B9E00A95592 /* Marathon 2.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 27EFC4C71A7D9A1C00A95592 /* Marathon 2.entitlements */; };
 		27EFC4CB1A7D9BA100A95592 /* Marathon Infinity.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 27EFC4C61A7D99E300A95592 /* Marathon Infinity.entitlements */; };
+		27FC2E0A1A7DF51E0057BF42 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FC2E091A7DF51E0057BF42 /* Statistics.cpp */; };
+		27FC2E0B1A7DF51E0057BF42 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FC2E091A7DF51E0057BF42 /* Statistics.cpp */; };
+		27FC2E0C1A7DF51E0057BF42 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FC2E091A7DF51E0057BF42 /* Statistics.cpp */; };
+		27FC2E0D1A7DF51E0057BF42 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27FC2E091A7DF51E0057BF42 /* Statistics.cpp */; };
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
@@ -1989,6 +1993,7 @@
 		27EFC4C61A7D99E300A95592 /* Marathon Infinity.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = "Marathon Infinity.entitlements"; path = "AppStore/Marathon Infinity/Marathon Infinity.entitlements"; sourceTree = "<group>"; };
 		27EFC4C71A7D9A1C00A95592 /* Marathon 2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = "Marathon 2.entitlements"; path = "AppStore/Marathon 2/Marathon 2.entitlements"; sourceTree = "<group>"; };
 		27EFC4C81A7D9A2F00A95592 /* Marathon.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = Marathon.entitlements; path = AppStore/Marathon/Marathon.entitlements; sourceTree = "<group>"; };
+		27FC2E091A7DF51E0057BF42 /* Statistics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Statistics.cpp; path = ../Source_Files/Misc/Statistics.cpp; sourceTree = "<group>"; };
 		3D22CF880FD86EAE00B17822 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		3D22CF8C0FD86EBD00B17822 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
@@ -3020,6 +3025,7 @@
 				F522120F0136A6FD01000001 /* preferences.cpp */,
 				AE2A50CC09C67253007681A4 /* Scenario.cpp */,
 				AE437C8E08779BE500038E30 /* shared_widgets.cpp */,
+				27FC2E091A7DF51E0057BF42 /* Statistics.cpp */,
 				F52212590136A6FD01000001 /* vbl.cpp */,
 				F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */,
 			);
@@ -5040,6 +5046,7 @@
 				AE505CCC141D45E600915344 /* lstring.c in Sources */,
 				AE505CCD141D45E600915344 /* lstrlib.c in Sources */,
 				AE505CCE141D45E600915344 /* ltable.c in Sources */,
+				27FC2E0C1A7DF51E0057BF42 /* Statistics.cpp in Sources */,
 				AE505CCF141D45E600915344 /* ltablib.c in Sources */,
 				AE505CD0141D45E600915344 /* ltm.c in Sources */,
 				AE505CD1141D45E600915344 /* lundump.c in Sources */,
@@ -5277,6 +5284,7 @@
 				AEB4A26D14296CAE00537AE7 /* lstring.c in Sources */,
 				AEB4A26E14296CAE00537AE7 /* lstrlib.c in Sources */,
 				AEB4A26F14296CAE00537AE7 /* ltable.c in Sources */,
+				27FC2E0D1A7DF51E0057BF42 /* Statistics.cpp in Sources */,
 				AEB4A27014296CAE00537AE7 /* ltablib.c in Sources */,
 				AEB4A27114296CAE00537AE7 /* ltm.c in Sources */,
 				AEB4A27214296CAE00537AE7 /* lundump.c in Sources */,
@@ -5514,6 +5522,7 @@
 				AE7C21B00BFF67B700CE63EC /* lstring.c in Sources */,
 				AE7C21B10BFF67B700CE63EC /* lstrlib.c in Sources */,
 				AE7C21B20BFF67B700CE63EC /* ltable.c in Sources */,
+				27FC2E0A1A7DF51E0057BF42 /* Statistics.cpp in Sources */,
 				AE7C21B30BFF67B700CE63EC /* ltablib.c in Sources */,
 				AE7C21B40BFF67B700CE63EC /* ltm.c in Sources */,
 				AE7C21B50BFF67B700CE63EC /* lundump.c in Sources */,
@@ -5751,6 +5760,7 @@
 				AEFD877913EB84CF00C1E687 /* lstring.c in Sources */,
 				AEFD877A13EB84CF00C1E687 /* lstrlib.c in Sources */,
 				AEFD877B13EB84CF00C1E687 /* ltable.c in Sources */,
+				27FC2E0B1A7DF51E0057BF42 /* Statistics.cpp in Sources */,
 				AEFD877C13EB84CF00C1E687 /* ltablib.c in Sources */,
 				AEFD877D13EB84CF00C1E687 /* ltm.c in Sources */,
 				AEFD877E13EB84CF00C1E687 /* lundump.c in Sources */,

@@ -70,5 +70,6 @@ ALEPHVERSION.H
 #define A1_METASERVER_SIGNUP_URL "https://metaserver.lhowon.org/metaclient/signup"
 #define A1_METASERVER_SETTINGS_URL "https://metaserver.lhowon.org/settings"
 #define A1_LEADERBOARD_URL "https://stats.lhowon.org/"
+#define A1_STATSERVER_ADD_URL "https://stats.lhowon.org/statclient/add"
 
 #endif // ALEPHVERSION_H

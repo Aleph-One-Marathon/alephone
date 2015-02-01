@@ -205,6 +205,20 @@ const Plugin* Plugins::find_solo_lua()
 	return 0;
 }
 
+const Plugin* Plugins::find_stats_lua()
+{
+	validate();
+	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	{
+		if (rit->stats_lua.size() && rit->valid())
+		{
+			return &(*rit);
+		}
+	}
+	
+	return 0;
+}
+
 const Plugin* Plugins::find_theme()
 {
 	validate();
@@ -412,6 +426,11 @@ bool XML_PluginParser::HandleAttribute(const char* Tag, const char* Value)
 			Data.solo_lua = Value;
 		}
 		return true;
+	} else if (StringsEqual(Tag, "stats_lua")) {
+		if (plugin_file_exists(Value)) {
+			Data.stats_lua = Value;
+		}
+		return true;
 	} else if (StringsEqual(Tag, "theme_dir")) {
 		std::string theme_mml = Value;
 		theme_mml += "/theme2.mml";
@@ -590,6 +609,7 @@ void Plugins::validate()
 	// determine active plugins including solo Lua
 	bool found_solo_lua = false;
 	bool found_hud_lua = false;
+	bool found_stats_lua = false;
 	bool found_theme = false;
 	for (std::vector<Plugin>::reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
@@ -597,6 +617,7 @@ void Plugins::validate()
 		if (!rit->enabled || !rit->compatible() ||
 			(found_solo_lua && rit->solo_lua.size()) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
+			(found_stats_lua && rit->stats_lua.size()) ||
 			(found_theme && rit->theme.size()))
 		{
 			rit->overridden_solo = true;
@@ -607,12 +628,15 @@ void Plugins::validate()
 			found_solo_lua = true;
 		if (rit->hud_lua.size())
 			found_hud_lua = true;
+		if (rit->stats_lua.size())
+			found_stats_lua = true;
 		if (rit->theme.size())
 			found_theme = true;
 	}
 	
 	// determine active plugins excluding solo Lua
 	found_hud_lua = false;
+	found_stats_lua = false;
 	found_theme = false;
 	for (std::vector<Plugin>::reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
@@ -620,6 +644,7 @@ void Plugins::validate()
 		if (!rit->enabled || !rit->compatible() ||
 			(rit->solo_lua.size()) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
+			(found_stats_lua && rit->stats_lua.size()) ||
 			(found_theme && rit->theme.size()))
 		{
 			rit->overridden = true;
@@ -628,6 +653,8 @@ void Plugins::validate()
 		
 		if (rit->hud_lua.size())
 			found_hud_lua = true;
+		if (rit->stats_lua.size())
+			found_stats_lua = true;
 		if (rit->theme.size())
 			found_theme = true;
 	}

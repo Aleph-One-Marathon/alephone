@@ -249,6 +249,9 @@ void w_plugins::draw_item(Plugins::iterator it, SDL_Surface* s, int16 x, int16 y
 	if (it->mmls.size()) {
 		types += ", MML";
 	}
+	if (it->stats_lua.size()) {
+		types += ", Stats";
+	}
 	types.erase(0, 2);
 	right_text_width = text_width(types.c_str(), font, style | styleItalic);
 	set_drawing_clip_rectangle(0, x, static_cast<short>(s->h), x + width);

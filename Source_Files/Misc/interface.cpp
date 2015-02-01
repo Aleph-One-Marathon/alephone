@@ -147,6 +147,7 @@ extern TP2PerfGlobals perf_globals;
 #include "Movie.h"
 #include "QuickSave.h"
 #include "Plugins.h"
+#include "Statistics.h"
 
 #ifdef HAVE_SMPEG
 #include <smpeg/smpeg.h>
@@ -833,6 +834,7 @@ bool join_networked_resume_game()
                                 short SavedType, SavedError = get_game_error(&SavedType);
                                 RunLevelScript(dynamic_world->current_level_number);
 				RunScriptChunks();
+				LoadStatsLua();
                                 set_game_error(SavedType,SavedError);
                         }
                         else
@@ -849,6 +851,7 @@ bool join_networked_resume_game()
 				
 				ResetLevelScript();
 				RunScriptChunks();
+				LoadStatsLua();
                         }
                         
                         // set the revert-game info to defaults (for full-auto saving on the local machine)
@@ -953,6 +956,7 @@ bool load_and_start_game(FileSpecifier& File)
 			{
 				LoadSoloLua();
 			}
+			LoadStatsLua();
 			set_game_error(SavedType,SavedError);
 			
 			player_start_data theStarts[MAXIMUM_NUMBER_OF_PLAYERS];
@@ -1874,6 +1878,7 @@ static void display_quit_screens(
 		
 		display_screen(screen_data->screen_base);
 	} else {
+		StatsManager::instance()->Finish();
 		/* No screens. */
 		game_state.state= _quit_game;
 		game_state.phase= 0;
@@ -2492,6 +2497,8 @@ static void next_game_screen(
 				break;
 				
 			case _display_quit_screens:
+				StatsManager::instance()->Finish();
+
 				/* Fade out.. */
 				interface_fade_out(data->screen_base+game_state.current_screen, true);
 				game_state.state= _quit_game;
