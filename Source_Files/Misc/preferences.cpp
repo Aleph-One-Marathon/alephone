@@ -819,7 +819,7 @@ static void online_dialog(void *arg)
 	table->dual_add_row(new w_static_text("all players in the game lobby."), d);
 
 	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_hyperlink("https://stats.lhowon.org/", "Visit the leaderboards"), d);
+	table->dual_add_row(new w_hyperlink(A1_LEADERBOARD_URL, "Visit the leaderboards"), d);
 	
 	table->add_row(new w_spacer(), true);
 	table->dual_add_row(new w_static_text("To send game stats to the leaderboards,"), d);
