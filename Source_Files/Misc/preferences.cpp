@@ -480,6 +480,7 @@ static void crosshair_dialog(void *arg)
 	{
 		crosshair_binders->migrate_all_first_to_second();
 		player_preferences->Crosshairs.PreCalced = false;
+		write_preferences();
 	}
 	else
 	{
