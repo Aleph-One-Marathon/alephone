@@ -315,7 +315,7 @@ private:
 const int LOAD_DIALOG_OTHER = 4;
 static void dialog_exit_other(void *arg)
 {
-    dialog *d = (dialog *)arg;
+    dialog *d = static_cast<dialog *>(arg);
     d->quit(LOAD_DIALOG_OTHER);
 }
 
@@ -327,8 +327,8 @@ const int iDIALOG_ACCEPT_W = 46;
 
 static void dialog_rename(void *arg)
 {
-    dialog *d = (dialog *)arg;
-    w_saves *saves_w = (w_saves *)d->get_widget_by_id(iDIALOG_SAVES_W);
+    dialog *d = static_cast<dialog *>(arg);
+    w_saves *saves_w = static_cast<w_saves *>(d->get_widget_by_id(iDIALOG_SAVES_W));
     QuickSave sel = saves_w->selected_save();
 
     dialog rd;
@@ -360,27 +360,27 @@ static void dialog_rename(void *arg)
 }
 static void dialog_delete(void *arg)
 {
-    dialog *d = (dialog *)arg;
-    w_saves *saves_w = (w_saves *)d->get_widget_by_id(iDIALOG_SAVES_W);
+    dialog *d = static_cast<dialog *>(arg);
+    w_saves *saves_w = static_cast<w_saves *>(d->get_widget_by_id(iDIALOG_SAVES_W));
     QuickSave sel = saves_w->selected_save();
     if (delete_quick_save(sel)) {
         saves_w->remove_selected();
         if (!saves_w->has_selection()) {
-            w_tiny_button* rename_w = (w_tiny_button *)d->get_widget_by_id(iDIALOG_RENAME_W);
+			w_tiny_button* rename_w = static_cast<w_tiny_button *>(d->get_widget_by_id(iDIALOG_RENAME_W));
             rename_w->set_enabled(false);
-            w_tiny_button* delete_w = (w_tiny_button *)d->get_widget_by_id(iDIALOG_DELETE_W);
+            w_tiny_button* delete_w = static_cast<w_tiny_button *>(d->get_widget_by_id(iDIALOG_DELETE_W));
             delete_w->set_enabled(false);
-            w_tiny_button* export_w = (w_tiny_button *)d->get_widget_by_id(iDIALOG_EXPORT_W);
+            w_tiny_button* export_w = static_cast<w_tiny_button *>(d->get_widget_by_id(iDIALOG_EXPORT_W));
             export_w->set_enabled(false);
-            w_button* accept_w = (w_button *)d->get_widget_by_id(iDIALOG_ACCEPT_W);
+            w_button* accept_w = static_cast<w_button *>(d->get_widget_by_id(iDIALOG_ACCEPT_W));
             accept_w->set_enabled(false);
         }
     }
 }
 static void dialog_export(void *arg)
 {
-    dialog *d = (dialog *)arg;
-    w_saves *saves_w = (w_saves *)d->get_widget_by_id(iDIALOG_SAVES_W);
+    dialog *d = static_cast<dialog *>(arg);
+    w_saves *saves_w = static_cast<w_saves *>(d->get_widget_by_id(iDIALOG_SAVES_W));
     QuickSave sel = saves_w->selected_save();
     std::string name = sel.name;
     if (!name.length())
