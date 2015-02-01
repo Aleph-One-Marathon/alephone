@@ -2705,7 +2705,7 @@ public:
 
 		prejoin_placer->add(new w_spacer(), true);
 
-		w_button* join_by_metaserver_w = new w_button("FIND INTERNET GAME");
+		w_button* join_by_metaserver_w = new w_button("FIND GAME ON LHOWON.ORG");
 		prejoin_placer->dual_add(join_by_metaserver_w, m_dialog);
 		
 		w_players_in_game2* players_w = new w_players_in_game2(false);
@@ -2856,7 +2856,7 @@ public:
 
 		w_toggle *advertise_on_metaserver_w = new w_toggle (sAdvertiseGameOnMetaserver);
 		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
-		network_table->dual_add(advertise_on_metaserver_w->label("Advertise Game on Internet"), m_dialog);
+		network_table->dual_add(advertise_on_metaserver_w->label("Announce Game on lhowon.org"), m_dialog);
 
 		w_toggle *use_upnp_w = new w_toggle (true);
 		network_table->dual_add(use_upnp_w, m_dialog);
