@@ -379,6 +379,9 @@ static void crosshair_dialog(void *arg)
 	placer->dual_add(w_header, d);
 	placer->add(new w_spacer, true);
 
+	placer->dual_add(new w_static_text("HUD plugins may override these settings."), d);
+	placer->add(new w_spacer, true);
+
 	w_crosshair_display *crosshair_w = new w_crosshair_display();
 	placer->dual_add(crosshair_w, d);
 
@@ -387,10 +390,6 @@ static void crosshair_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET));
 	table->col_flags(0, placeable::kAlignRight);
 
-	w_toggle *crosshairs_active_w = new w_toggle(player_preferences->crosshairs_active);
-	table->dual_add(crosshairs_active_w->label("Show crosshairs"), d);
-	table->dual_add(crosshairs_active_w, d);	
-	
 	// Shape
 	w_select *shape_w = new w_select(0, shape_labels);
 	SelectSelectorWidget shapeWidget(shape_w);
@@ -481,8 +480,6 @@ static void crosshair_dialog(void *arg)
 	{
 		crosshair_binders->migrate_all_first_to_second();
 		player_preferences->Crosshairs.PreCalced = false;
-		player_preferences->crosshairs_active = crosshairs_active_w->get_selection();
-		write_preferences();
 	}
 	else
 	{
@@ -537,11 +534,17 @@ static void player_dialog(void *arg)
 	table->dual_add(tcolor_w->label("Team"), d);
 	table->dual_add(tcolor_w, d);
 
+	table->add_row(new w_spacer(), true);
+
+	w_toggle *crosshairs_active_w = new w_toggle(player_preferences->crosshairs_active);
+	table->dual_add(crosshairs_active_w->label("Show crosshairs"), d);
+	table->dual_add(crosshairs_active_w, d);
+
 	placer->add(table, true);
 
 	placer->add(new w_spacer(), true);
 
-	w_button *crosshair_button = new w_button("CROSSHAIR", crosshair_dialog, &d);
+	w_button *crosshair_button = new w_button("CROSSHAIR SETTINGS", crosshair_dialog, &d);
 	placer->dual_add(crosshair_button, d);
 
 	placer->add(new w_spacer(), true);
@@ -594,6 +597,12 @@ static void player_dialog(void *arg)
 		assert(team >= 0);
 		if (team != player_preferences->team) {
 			player_preferences->team = team;
+			changed = true;
+		}
+		
+		bool crosshair = crosshairs_active_w->get_selection();
+		if (crosshair != player_preferences->crosshairs_active) {
+			player_preferences->crosshairs_active = crosshair;
 			changed = true;
 		}
 
