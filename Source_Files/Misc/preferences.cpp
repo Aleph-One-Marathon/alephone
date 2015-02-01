@@ -1816,6 +1816,7 @@ static void environment_dialog(void *arg)
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 	table->col_flags(0, placeable::kAlignRight);
 	
+#ifndef MAC_APP_STORE
 	w_env_select *map_w = new w_env_select(environment_preferences->map_file, "AVAILABLE MAPS", _typecode_scenario, &d);
 	table->dual_add(map_w->label("Map"), d);
 	table->dual_add(map_w, d);
@@ -1835,10 +1836,12 @@ static void environment_dialog(void *arg)
 	w_env_select* resources_w = new w_env_select(environment_preferences->resources_file, "AVAILABLE FILES", _typecode_unknown, &d);
 	table->dual_add(resources_w->label("External Resources"), d);
 	table->dual_add(resources_w, d);
+#endif
 
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
 
+#ifndef MAC_APP_STORE
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Solo Script"), d);
 	w_enabling_toggle* use_solo_lua_w = new w_enabling_toggle(environment_preferences->use_solo_lua);
@@ -1850,6 +1853,7 @@ static void environment_dialog(void *arg)
 	table->dual_add(solo_lua_w->label("Script File"), d);
 	table->dual_add(solo_lua_w, d);
 	use_solo_lua_w->add_dependent_widget(solo_lua_w);
+#endif
 
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Film Playback"), d);
@@ -1858,6 +1862,7 @@ static void environment_dialog(void *arg)
 	table->dual_add(film_profile_w->label("Default Playback Profile"), d);
 	table->dual_add(film_profile_w, d);
 	
+#ifndef MAC_APP_STORE
 	w_enabling_toggle* use_replay_net_lua_w = new w_enabling_toggle(environment_preferences->use_replay_net_lua);
 	table->dual_add(use_replay_net_lua_w->label("Use Netscript in Films"), d);
 	table->dual_add(use_replay_net_lua_w, d);
@@ -1867,13 +1872,16 @@ static void environment_dialog(void *arg)
 	table->dual_add(replay_net_lua_w->label("Netscript File"), d);
 	table->dual_add(replay_net_lua_w, d);
 	use_replay_net_lua_w->add_dependent_widget(replay_net_lua_w);
+#endif
 	
 	table->add_row(new w_spacer, true);
 	table->dual_add_row(new w_static_text("Options"), d);
 
+#ifndef MAC_APP_STORE
 	w_toggle *hide_extensions_w = new w_toggle(environment_preferences->hide_extensions);
 	table->dual_add(hide_extensions_w->label("Hide File Extensions"), d);
 	table->dual_add(hide_extensions_w, d);
+#endif
 
 	w_select *max_saves_w = new w_select(0, max_saves_labels);
 	for (int i = 0; max_saves_labels[i] != NULL; ++i) {
@@ -1911,6 +1919,7 @@ static void environment_dialog(void *arg)
 	if (d.run() == 0) {	// Accepted
 		bool changed = false;
 
+#ifndef MAC_APP_STORE
 		const char *path = map_w->get_path();
 		if (strcmp(path, environment_preferences->map_file)) {
 			strcpy(environment_preferences->map_file, path);
@@ -1971,6 +1980,7 @@ static void environment_dialog(void *arg)
 			strcpy(network_preferences->netscript_file, path);
 			changed = true;
 		}
+#endif
 		
 		FileSpecifier new_theme;
 		theme_plugin = Plugins::instance()->find_theme();
@@ -1984,12 +1994,14 @@ static void environment_dialog(void *arg)
 			theme_changed = true;
 		}
 
+#ifndef MAC_APP_STORE
 		bool hide_extensions = hide_extensions_w->get_selection() != 0;
 		if (hide_extensions != environment_preferences->hide_extensions)
 		{
 			environment_preferences->hide_extensions = hide_extensions;
 			changed = true;
 		}
+#endif
 
 		if (film_profile_w->get_selection() != environment_preferences->film_profile)
 		{

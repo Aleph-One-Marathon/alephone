@@ -1232,9 +1232,11 @@ public:
 		placer->dual_add(new w_title(m_prompt), m_dialog);
 		placer->add(new w_spacer, true);
 
+#ifndef MAC_APP_STORE
 		placer->dual_add(m_directory_name_w, m_dialog);
 		
 		placer->add(new w_spacer(), true);
+#endif
 
 		horizontal_placer* top_row_placer = new horizontal_placer;
 
@@ -1243,7 +1245,9 @@ public:
 		top_row_placer->add_flags(placeable::kFill);
 		top_row_placer->add(new w_spacer, true);
 		top_row_placer->add_flags();
+#ifndef MAC_APP_STORE
 		top_row_placer->dual_add(m_up_button_w, m_dialog);
+#endif
 		
 		placer->add_flags(placeable::kFill);
 		placer->add(top_row_placer, true);
@@ -1378,9 +1382,11 @@ public:
 		placer->dual_add(new w_title(m_prompt), m_dialog);
 		placer->add(new w_spacer, true);
 
+#ifndef MAC_APP_STORE
 		placer->dual_add(m_directory_name_w, m_dialog);
 		
 		placer->add(new w_spacer(), true);
+#endif
 
 		horizontal_placer* top_row_placer = new horizontal_placer;
 
@@ -1389,7 +1395,9 @@ public:
 		top_row_placer->add_flags(placeable::kFill);
 		top_row_placer->add(new w_spacer, true);
 		top_row_placer->add_flags();
+#ifndef MAC_APP_STORE
 		top_row_placer->dual_add(m_up_button_w, m_dialog);
+#endif
 		
 		placer->add_flags(placeable::kFill);
 		placer->add(top_row_placer, true);
@@ -1402,7 +1410,11 @@ public:
 		
 		horizontal_placer* file_name_placer = new horizontal_placer;
 		m_name_w = new w_file_name(&m_dialog, m_default_name.c_str());
+#ifdef MAC_APP_STORE
+		file_name_placer->dual_add(m_name_w->label("Name:"), m_dialog);
+#else
 		file_name_placer->dual_add(m_name_w->label("File Name:"), m_dialog);
+#endif
 		file_name_placer->add_flags(placeable::kFill);
 		file_name_placer->dual_add(m_name_w, m_dialog);
 

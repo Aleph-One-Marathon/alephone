@@ -135,6 +135,9 @@
 		27EFC4C31A7D8CBF00A95592 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */; };
 		27EFC4C41A7D8CBF00A95592 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */; };
 		27EFC4C51A7D8CBF00A95592 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */; };
+		27EFC4C91A7D9B9B00A95592 /* Marathon.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 27EFC4C81A7D9A2F00A95592 /* Marathon.entitlements */; };
+		27EFC4CA1A7D9B9E00A95592 /* Marathon 2.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 27EFC4C71A7D9A1C00A95592 /* Marathon 2.entitlements */; };
+		27EFC4CB1A7D9BA100A95592 /* Marathon Infinity.entitlements in Resources */ = {isa = PBXBuildFile; fileRef = 27EFC4C61A7D99E300A95592 /* Marathon Infinity.entitlements */; };
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
@@ -1983,6 +1986,9 @@
 		27ECF2941698DD7700BE9C35 /* SDL_ffmpeg.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_ffmpeg.h; path = ../Source_Files/FFmpeg/SDL_ffmpeg.h; sourceTree = "<group>"; };
 		27EFC4BC1A7D8CBF00A95592 /* sdl_resize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sdl_resize.cpp; sourceTree = "<group>"; };
 		27EFC4BD1A7D8CBF00A95592 /* sdl_resize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sdl_resize.h; sourceTree = "<group>"; };
+		27EFC4C61A7D99E300A95592 /* Marathon Infinity.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = "Marathon Infinity.entitlements"; path = "AppStore/Marathon Infinity/Marathon Infinity.entitlements"; sourceTree = "<group>"; };
+		27EFC4C71A7D9A1C00A95592 /* Marathon 2.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = "Marathon 2.entitlements"; path = "AppStore/Marathon 2/Marathon 2.entitlements"; sourceTree = "<group>"; };
+		27EFC4C81A7D9A2F00A95592 /* Marathon.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.xml; name = Marathon.entitlements; path = AppStore/Marathon/Marathon.entitlements; sourceTree = "<group>"; };
 		3D22CF880FD86EAE00B17822 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		3D22CF8C0FD86EBD00B17822 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
@@ -2709,6 +2715,7 @@
 				AE7A143A141D16D000834C2D /* InfoPlist.strings */,
 				AE7A1438141D15D600834C2D /* Info.plist */,
 				AE0E4EC1141D148F00AAA02F /* Marathon.icns */,
+				27EFC4C81A7D9A2F00A95592 /* Marathon.entitlements */,
 			);
 			name = Marathon;
 			sourceTree = "<group>";
@@ -2749,6 +2756,7 @@
 				AE505D20141D47BF00915344 /* Marathon 2.icns */,
 				AE505D14141D46B100915344 /* InfoPlist.strings */,
 				AE505D12141D46A900915344 /* Info.plist */,
+				27EFC4C71A7D9A1C00A95592 /* Marathon 2.entitlements */,
 			);
 			name = "Marathon 2";
 			sourceTree = "<group>";
@@ -2827,6 +2835,7 @@
 				AEB4A2B714296DCF00537AE7 /* Info.plist */,
 				AEB4A2B414296DC700537AE7 /* InfoPlist.strings */,
 				AEB4A2B214296DC000537AE7 /* Marathon Infinity.icns */,
+				27EFC4C61A7D99E300A95592 /* Marathon Infinity.entitlements */,
 			);
 			name = "Marathon Infinity";
 			sourceTree = "<group>";
@@ -4531,6 +4540,29 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0460;
+				TargetAttributes = {
+					AE505B3A141D45E600915344 = {
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
+						};
+					};
+					AEB4A0DA14296CAE00537AE7 = {
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
+						};
+					};
+					AEFD85E813EB84CF00C1E687 = {
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 1;
+							};
+						};
+					};
+				};
 			};
 			buildConfigurationList = AE097FDD08800A9F00C690F9 /* Build configuration list for PBXProject "AlephOne-Xcode4" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -4565,6 +4597,7 @@
 				AE505C04141D45E600915344 /* SoundsIcon.icns in Resources */,
 				AE505C05141D45E600915344 /* FilmIcon.icns in Resources */,
 				AE505C06141D45E600915344 /* MapIcon.icns in Resources */,
+				27EFC4CA1A7D9B9E00A95592 /* Marathon 2.entitlements in Resources */,
 				AE505C07141D45E600915344 /* MMLIcon.icns in Resources */,
 				AE505C08141D45E600915344 /* MusakIcon.icns in Resources */,
 				AE505C0A141D45E600915344 /* PhysIcon.icns in Resources */,
@@ -4578,6 +4611,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27EFC4CB1A7D9BA100A95592 /* Marathon Infinity.entitlements in Resources */,
 				AEB4A1A314296CAE00537AE7 /* ImagesIcon.icns in Resources */,
 				AEB4A1A414296CAE00537AE7 /* ShapesIcon.icns in Resources */,
 				AEB4A1A514296CAE00537AE7 /* SoundsIcon.icns in Resources */,
@@ -4623,6 +4657,7 @@
 				AEFD86B713EB84CF00C1E687 /* MusakIcon.icns in Resources */,
 				AEFD86B913EB84CF00C1E687 /* PhysIcon.icns in Resources */,
 				AEFD86BA13EB84CF00C1E687 /* SaveIcon.icns in Resources */,
+				27EFC4C91A7D9B9B00A95592 /* Marathon.entitlements in Resources */,
 				AE0E4EC2141D148F00AAA02F /* Marathon.icns in Resources */,
 				AE7A143C141D16D000834C2D /* InfoPlist.strings in Resources */,
 			);
@@ -5998,6 +6033,8 @@
 		AE505D08141D45E600915344 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
+				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -6061,6 +6098,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon 2";
 				STRIP_INSTALLED_PRODUCT = YES;
@@ -6072,6 +6110,8 @@
 		AE505D09141D45E600915344 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
+				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
@@ -6135,6 +6175,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon 2";
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -6145,6 +6186,8 @@
 		AE505D0A141D45E600915344 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon 2/Marathon 2.entitlements";
+				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
@@ -6208,6 +6251,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_NAME = "Marathon 2";
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
@@ -6302,6 +6346,8 @@
 		AEB4A2AA14296CAE00537AE7 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
+				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -6365,6 +6411,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon Infinity";
 				STRIP_INSTALLED_PRODUCT = YES;
@@ -6376,6 +6423,8 @@
 		AEB4A2AB14296CAE00537AE7 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
+				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
@@ -6439,6 +6488,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon Infinity";
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -6449,6 +6499,8 @@
 		AEB4A2AC14296CAE00537AE7 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = "AppStore/Marathon Infinity/Marathon Infinity.entitlements";
+				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
@@ -6512,6 +6564,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_NAME = "Marathon Infinity";
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;
@@ -6521,6 +6574,8 @@
 		AEFD87C013EB84CF00C1E687 /* Deployment (Universal) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
+				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = YES;
 				DEAD_CODE_STRIPPING = YES;
@@ -6584,6 +6639,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = Marathon;
 				STRIP_INSTALLED_PRODUCT = YES;
@@ -6595,6 +6651,8 @@
 		AEFD87C113EB84CF00C1E687 /* Deployment (Native) */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
+				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEAD_CODE_STRIPPING = YES;
@@ -6658,6 +6716,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = Marathon;
 				STRIP_INSTALLED_PRODUCT = NO;
@@ -6668,6 +6727,8 @@
 		AEFD87C213EB84CF00C1E687 /* Development */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = AppStore/Marathon/Marathon.entitlements;
+				CODE_SIGN_IDENTITY = "Code Signing Certificate";
 				COMBINE_HIDPI_IMAGES = YES;
 				COPY_PHASE_STRIP = NO;
 				DEPLOYMENT_POSTPROCESSING = NO;
@@ -6731,6 +6792,7 @@
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
+				OTHER_CODE_SIGN_FLAGS = "--deep";
 				PRODUCT_NAME = Marathon;
 				STRIP_INSTALLED_PRODUCT = NO;
 				WRAPPER_EXTENSION = app;

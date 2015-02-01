@@ -2882,8 +2882,10 @@ public:
 		// Could eventually store this path in network_preferences somewhere, so to have separate map file
 		// prefs for single- and multi-player.
 		w_file_chooser* map_w = new w_file_chooser ("Choose Map", _typecode_scenario);
+#ifndef MAC_APP_STORE
 		player_table->dual_add(map_w->label("Map"), m_dialog);
 		player_table->dual_add(map_w, m_dialog);
+#endif
 
 		w_select_popup* entry_point_w = new w_select_popup ();
 		player_table->dual_add(entry_point_w->label("Level"), m_dialog);
@@ -2899,15 +2901,21 @@ public:
 
 		left_placer->add(player_table, true);
 
+#ifndef MAC_APP_STORE
 		network_table->add_row(new w_spacer(), true);
 		network_table->dual_add_row(new w_static_text("Net Script"), m_dialog);
+#endif
 		w_enabling_toggle* use_netscript_w = new w_enabling_toggle (network_preferences->use_netscript);
+#ifndef MAC_APP_STORE
 		network_table->dual_add(use_netscript_w, m_dialog);
 		network_table->dual_add(use_netscript_w->label("Use Netscript"), m_dialog);
+#endif
 
 		w_file_chooser* choose_script_w = new w_file_chooser ("Choose Script", _typecode_netscript);
+#ifndef MAC_APP_STORE
 		network_table->add(new w_spacer(), true);
 		network_table->dual_add(choose_script_w, m_dialog);
+#endif
 		use_netscript_w->add_dependent_widget(choose_script_w);
 
 		left_placer->add(new w_spacer(), true);
@@ -2968,8 +2976,10 @@ public:
 		network_table->dual_add(carnage_messages_w->label("Allow Carnage Messages"), m_dialog);
 
 		w_toggle *saving_level_w = new w_toggle(true);
+#ifndef MAC_APP_STORE
 		network_table->dual_add(saving_level_w, m_dialog);
 		network_table->dual_add(saving_level_w->label("Allow .save level"), m_dialog);
+#endif
 
 		right_placer->add(new w_spacer(), true);
 		right_placer->dual_add(new w_static_text("Duration"), m_dialog);

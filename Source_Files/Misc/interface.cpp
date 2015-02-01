@@ -2038,8 +2038,10 @@ static bool begin_game(
 						show_cursor(); // JTP: Hidden one way or another :p
 						
 						bool prompt_to_export = false;
+#ifndef MAC_APP_STORE
 						SDLMod m = SDL_GetModState();
 						if ((m & KMOD_ALT) || (m & KMOD_META)) prompt_to_export = true;
+#endif
 						
 						success= find_replay_to_use(cheat, ReplayFile);
 						if(success)
