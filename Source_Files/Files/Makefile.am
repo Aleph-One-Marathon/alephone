@@ -14,7 +14,7 @@ libfiles_a_SOURCES = AStream.h crc.h extensions.h FileHandler.h		\
 									\
   AStream.cpp crc.cpp FileHandler.cpp find_files_sdl.cpp game_wad.cpp	\
   import_definitions.cpp Packing.cpp preprocess_map_sdl.cpp		\
-  preprocess_map_shared.cpp resource_manager.cpp $(ZZIP_SRCS) wad.cpp	\
+  preprocess_map_shared.cpp resource_manager.cpp $(ZZIP_SRCS)	\
   wad.cpp wad_prefs.cpp wad_sdl.cpp
 
 EXTRA_libfiles_a_SOURCES = filetypes_macintosh.cpp SDL_rwops_zzip.c
