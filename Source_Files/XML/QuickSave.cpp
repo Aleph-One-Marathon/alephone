@@ -126,8 +126,18 @@ SDL_Surface* QuickSaveImageCache::get(std::string image_name) {
     DirectorySpecifier path;
     path.SetToQuickSavesDir();
     FileSpecifier f = path + image_name;
+
+	// look for pre-scaled image first
+	std::ostringstream suffix;
+	suffix << "_" << PREVIEW_WIDTH << "x" << PREVIEW_HEIGHT << ".";
+	std::string smallpath = f.GetPath();
+	algo::replace_last(smallpath, ".", suffix.str());
+	FileSpecifier file(smallpath);
+	if (!file.Exists())
+		file = f;
+	
 	OpenedFile of;
-	if (!f.Open(of))
+	if (!file.Open(of))
 		return NULL;
 	
 #ifdef HAVE_SDL_IMAGE
@@ -138,6 +148,11 @@ SDL_Surface* QuickSaveImageCache::get(std::string image_name) {
 	if (img) {
 		if (img->w != PREVIEW_WIDTH || img->h != PREVIEW_HEIGHT) {
 			img = SDL_Resize(img, PREVIEW_WIDTH, PREVIEW_HEIGHT, true, 1);
+#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE_H)
+			IMG_SavePNG(smallpath.c_str(), img, IMG_COMPRESS_DEFAULT, NULL, 0);
+#else
+			SDL_SaveBMP(img, smallpath.c_str());
+#endif
 		}
 		
         m_used.push_front(cache_pair_t(image_name, img));
@@ -634,6 +649,14 @@ bool delete_quick_save(QuickSave& save)
         FileSpecifier save_image;
         save_image.FromDirectory(metadata_dir);
         save_image.AddPart(save.preview_name);
+        save_image.Delete();
+        
+        // delete pre-scaled version
+        std::ostringstream suffix;
+        suffix << "_" << PREVIEW_WIDTH << "x" << PREVIEW_HEIGHT << ".";
+        std::string smallpath = save_image.GetPath();
+        algo::replace_last(smallpath, ".", suffix.str());
+        save_image = smallpath;
         save_image.Delete();
     }
     if (save.save_file_name.length())
