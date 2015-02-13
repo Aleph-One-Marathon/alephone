@@ -405,12 +405,6 @@ void RenderRasterize_Shader::render_tree() {
 	s->setFloat(Shader::U_Time, view->tick_count);
 	s->setFloat(Shader::U_UseStatic, TEST_FLAG(Get_OGL_ConfigureData().Flags,OGL_Flag_FlatStatic) ? 0.0 : 1.0);
 
-	cam_pos = current_player->camera_location;
-	short cam_poly;
-	cam_yaw = FIXED_INTEGERAL_PART(current_player->variables.direction + current_player->variables.head_direction);
-	cam_pitch = FIXED_INTEGERAL_PART(current_player->variables.elevation);
-	ChaseCam_GetPosition(cam_pos, cam_poly, cam_yaw, cam_pitch);
-	
 	short leftmost = INT16_MAX;
 	short rightmost = INT16_MIN;
 	vector<clipping_window_data>& windows = RSPtr->RVPtr->ClippingWindows;
@@ -440,13 +434,13 @@ void RenderRasterize_Shader::render_tree() {
 	s = Shader::get(Shader::S_Landscape);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, cam_yaw * AngleConvert);
-	s->setFloat(Shader::U_Pitch, cam_pitch * AngleConvert);
+	s->setFloat(Shader::U_Yaw, view->yaw * AngleConvert);
+	s->setFloat(Shader::U_Pitch, view->pitch * AngleConvert);
 	s = Shader::get(Shader::S_LandscapeBloom);
 	s->enable();
 	s->setFloat(Shader::U_UseFog, usefog ? 1.0 : 0.0);
-	s->setFloat(Shader::U_Yaw, cam_yaw * AngleConvert);
-	s->setFloat(Shader::U_Pitch, cam_pitch * AngleConvert);
+	s->setFloat(Shader::U_Yaw, view->yaw * AngleConvert);
+	s->setFloat(Shader::U_Pitch, view->pitch * AngleConvert);
 	Shader::disable();
 
 	bool bloom = (TEST_FLAG(Get_OGL_ConfigureData().Flags, OGL_Flag_Blur) && blur.get());
@@ -488,8 +482,8 @@ void RenderRasterize_Shader::clip_to_window(clipping_window_data *win)
         
     // recenter to player's orientation temporarily
     glPushMatrix();
-    glTranslatef(cam_pos.x, cam_pos.y, 0.);
-    glRotatef(cam_yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
+    glTranslatef(view->origin.x, view->origin.y, 0.);
+    glRotatef(view->yaw * (360/float(FULL_CIRCLE)) + 90., 0., 0., 1.);
     
     glRotatef(-0.1, 0., 0., 1.); // leave some excess to avoid artifacts at edges
 	if (win->left.i != leftmost_clip.i || win->left.j != leftmost_clip.j) {
