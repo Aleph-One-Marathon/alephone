@@ -85,14 +85,6 @@ extern "C"
 }
 #endif
 
-// FFmpeg compatibility
-#ifndef AV_CODEC_ID_VP8
-#define AV_CODEC_ID_VP8 CODEC_ID_VP8
-#endif
-#ifndef AV_CODEC_ID_VORBIS
-#define AV_CODEC_ID_VORBIS CODEC_ID_VORBIS
-#endif
-
 
 // shamelessly stolen from SDL 2.0
 static int get_cpu_count(void)

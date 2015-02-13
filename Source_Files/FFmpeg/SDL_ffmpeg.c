@@ -49,33 +49,6 @@ extern "C"
 #endif
 
 // FFmpeg compatibility
-#ifndef AV_CODEC_ID_MPEG1VIDEO
-#define AV_CODEC_ID_MPEG1VIDEO CODEC_ID_MPEG1VIDEO
-#endif
-#ifndef AV_CODEC_ID_MPEG2VIDEO
-#define AV_CODEC_ID_MPEG2VIDEO CODEC_ID_MPEG2VIDEO
-#endif
-#ifndef AV_CODEC_ID_MP2
-#define AV_CODEC_ID_MP2 CODEC_ID_MP2
-#endif
-#ifndef AV_CODEC_ID_DVVIDEO
-#define AV_CODEC_ID_DVVIDEO CODEC_ID_DVVIDEO
-#endif
-#ifndef AV_CODEC_ID_DVAUDIO
-#define AV_CODEC_ID_DVAUDIO CODEC_ID_DVAUDIO
-#endif
-#ifndef AV_CODEC_ID_PCM_S16LE
-#define AV_CODEC_ID_PCM_S16LE CODEC_ID_PCM_S16LE
-#endif
-#ifndef AV_CODEC_ID_PCM_S16BE
-#define AV_CODEC_ID_PCM_S16BE CODEC_ID_PCM_S16BE
-#endif
-#ifndef AV_CODEC_ID_PCM_U16LE
-#define AV_CODEC_ID_PCM_U16LE CODEC_ID_PCM_U16LE
-#endif
-#ifndef AV_CODEC_ID_PCM_U16BE
-#define AV_CODEC_ID_PCM_U16BE CODEC_ID_PCM_U16BE
-#endif
 #ifndef AVCODEC_MAX_AUDIO_FRAME_SIZE
 #define AVCODEC_MAX_AUDIO_FRAME_SIZE 192000
 #endif
@@ -1344,8 +1317,10 @@ float SDL_ffmpegGetFrameRate( SDL_ffmpegStream *stream, int *nominator, int *den
         AVRational frate;
 #if LIBAVFORMAT_VERSION_INT < AV_VERSION_INT(55,12,100)
         frate = stream->_ffmpeg->r_frame_rate;
-#else
+#elif defined(av_stream_get_r_frame_rate)
         frate = av_stream_get_r_frame_rate(stream->_ffmpeg);
+#else
+        frate = stream->_ffmpeg->avg_frame_rate;
 #endif
         if ( nominator ) *nominator = frate.num;
 
