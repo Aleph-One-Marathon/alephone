@@ -1143,7 +1143,11 @@ static void graphics_dialog(void *arg)
 	table->dual_add(fixh_w->label("Limit Vertical View"), d);
 	table->dual_add(fixh_w, d);
     
-	w_select_popup *gamma_w = new w_select_popup();
+	w_toggle *bob_w = new w_toggle(graphics_preferences->screen_mode.camera_bob);
+	table->dual_add(bob_w->label("Camera Bobbing"), d);
+	table->dual_add(bob_w, d);
+	
+  	w_select_popup *gamma_w = new w_select_popup();
 	gamma_w->set_labels(build_stringvector_from_cstring_array(gamma_labels));
 	gamma_w->set_selection(graphics_preferences->screen_mode.gamma_level);
 	table->dual_add(gamma_w->label("Brightness"), d);
@@ -1274,6 +1278,12 @@ static void graphics_dialog(void *arg)
 			changed = true;
 		}
 	    
+		bool camera_bob = bob_w->get_selection() != 0;
+		if (camera_bob != graphics_preferences->screen_mode.camera_bob) {
+			graphics_preferences->screen_mode.camera_bob = camera_bob;
+			changed = true;
+		}
+		
 	    const SDL_version *version = SDL_Linked_Version();
 	    if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
 	    {
@@ -2489,6 +2499,7 @@ void write_preferences(
 	fprintf(F,"  scmode_hud_scale=\"%hd\"\n", graphics_preferences->screen_mode.hud_scale_level);
 	fprintf(F,"  scmode_term_scale=\"%hd\"\n", graphics_preferences->screen_mode.term_scale_level);
 	fprintf(F,"  scmode_translucent_map=\"%s\"\n", BoolString(graphics_preferences->screen_mode.translucent_map));
+	fprintf(F,"  scmode_camera_bob=\"%s\"\n", BoolString(graphics_preferences->screen_mode.camera_bob));
 	fprintf(F,"  scmode_accel=\"%hd\"\n",graphics_preferences->screen_mode.acceleration);
 	fprintf(F,"  scmode_highres=\"%s\"\n",BoolString(graphics_preferences->screen_mode.high_resolution));
 	fprintf(F,"  scmode_fullscreen=\"%s\"\n",BoolString(graphics_preferences->screen_mode.fullscreen));
@@ -2704,6 +2715,7 @@ static void default_graphics_preferences(graphics_preferences_data *preferences)
 	preferences->screen_mode.high_resolution = true;
 	preferences->screen_mode.fullscreen = true;
 	preferences->screen_mode.fix_h_not_v = true;
+	preferences->screen_mode.camera_bob = true;
 	
 	const SDL_version *version = SDL_Linked_Version();
 	if (SDL_VERSIONNUM(version->major, version->minor, version->patch) >= SDL_VERSIONNUM(1, 2, 10))
@@ -3496,6 +3508,10 @@ bool XML_GraphicsPrefsParser::HandleAttribute(const char *Tag, const char *Value
 	else if (StringsEqual(Tag,"scmode_translucent_map"))
 	{
 		return ReadBooleanValue(Value, graphics_preferences->screen_mode.translucent_map);
+	}
+	else if (StringsEqual(Tag,"scmode_camera_bob"))
+	{
+		return ReadBooleanValue(Value, graphics_preferences->screen_mode.camera_bob);
 	}
 	else if (StringsEqual(Tag,"scmode_accel"))
 	{

@@ -1157,6 +1157,8 @@ void render_screen(short ticks_elapsed)
 	}
 
 	world_view->origin = current_player->camera_location;
+	if (!graphics_preferences->screen_mode.camera_bob)
+		world_view->origin.z -= current_player->step_height;
 	world_view->origin_polygon_index = current_player->camera_polygon_index;
 
 	// Script-based camera control

@@ -76,6 +76,7 @@ struct screen_mode_data
 	short term_scale_level;
 	bool fix_h_not_v;
 	bool translucent_map;
+	bool camera_bob;
 	
 };
 
