@@ -131,6 +131,8 @@ void system_launch_url_in_browser(const char *url)
 	pid_t pid = fork();
 	if (pid == 0)
 	{
+		// try xdg-open first, fallback to sensible-browser
+		execlp("xdg-open", "xdg-open", url, NULL);
 		execlp("sensible-browser", "sensible-browser", url, NULL);
 		exit(0);  // in case exec fails
 	}
