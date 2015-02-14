@@ -455,7 +455,7 @@ enum
 	_target_is_unrecognized
 };
 
-short find_action_key_target(short player_index, world_distance range, short *target_type);
+short find_action_key_target(short player_index, world_distance range, short *target_type, bool perform_panel_actions);
 
 /* ---------- globals */
 

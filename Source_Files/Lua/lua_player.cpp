@@ -1396,9 +1396,8 @@ int Lua_Player_Activate_Terminal(lua_State *L)
 
 int Lua_Player_Find_Action_Key_Target(lua_State *L)
 {
-	// no arguments
 	short target_type;
-	short object_index = find_action_key_target(Lua_Player::Index(L, 1), MAXIMUM_ACTIVATION_RANGE, &target_type);
+	short object_index = find_action_key_target(Lua_Player::Index(L, 1), MAXIMUM_ACTIVATION_RANGE, &target_type, film_profile.find_action_key_target_has_side_effects);
 
 	if (object_index != NONE)
 	{

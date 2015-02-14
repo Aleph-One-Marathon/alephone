@@ -229,7 +229,7 @@ void set_control_panel_texture(struct side_data *side);
 
 static bool line_is_within_range(short monster_index, short line_index, world_distance range);
 
-static bool switch_can_be_toggled(short line_index, bool player_hit);
+static bool switch_can_be_toggled(short line_index, bool player_hit, bool *should_destroy_switch);
 
 static void play_control_panel_sound(short side_index, short sound_index);
 
@@ -388,7 +388,7 @@ void update_action_key(
 	
 	if(triggered) 
 	{
-		object_index= find_action_key_target(player_index, MAXIMUM_ACTIVATION_RANGE, &target_type);
+		object_index= find_action_key_target(player_index, MAXIMUM_ACTIVATION_RANGE, &target_type, true);
 		
 		if(object_index != NONE)
 		{
@@ -482,8 +482,10 @@ void try_and_toggle_control_panel(
 
 		if (SIDE_IS_CONTROL_PANEL(side))
 		{
-			if (switch_can_be_toggled(side_index, false))
+			bool should_destroy_switch;
+			if (switch_can_be_toggled(side_index, false, &should_destroy_switch))
 			{
+				if (should_destroy_switch) SET_SIDE_CONTROL_PANEL(side, false);
 				bool make_sound = false, state= GET_CONTROL_PANEL_STATUS(side);
 				struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
 				// LP change: idiot-proofing
@@ -592,7 +594,8 @@ control_panel_definition *get_control_panel_definition(
 short find_action_key_target(
 	short player_index,
 	world_distance range,
-	short *target_type)
+	short *target_type,
+	bool perform_panel_actions)
 {
 	struct player_data *player= get_player_data(player_index);
 	short current_polygon= player->camera_polygon_index;
@@ -653,13 +656,22 @@ short find_action_key_target(
 			{
 				if (line_side_has_control_panel(line_index, original_polygon, &itemhit))
 				{
-					if (switch_can_be_toggled(itemhit, true))
+					bool should_destroy_panel;
+					if (switch_can_be_toggled(itemhit, true, &should_destroy_panel))
 					{
+						if (should_destroy_panel && perform_panel_actions)
+						{
+							SET_SIDE_CONTROL_PANEL(get_side_data(itemhit), false);
+						}
 						*target_type= _target_is_control_panel;
 						done= true;
 					}
 					else
 					{
+						if (perform_panel_actions)
+						{
+							play_control_panel_sound(itemhit, _unusuable_sound);
+						}
 						itemhit= NONE;
 					}
 				}
@@ -888,13 +900,15 @@ void set_control_panel_texture(
 
 static bool switch_can_be_toggled(
 	short side_index,
-	bool player_hit)
+	bool player_hit,
+	bool *should_destroy_switch)
 {
 	bool valid_toggle= true;
 	struct side_data *side= get_side_data(side_index);
 	struct control_panel_definition *definition= get_control_panel_definition(side->control_panel_type);
 	// LP change: idiot-proofing
 	if (!definition) return false;
+	if (should_destroy_switch) *should_destroy_switch = false;
 	
 	if (side->flags&_side_is_lighted_switch)
 	{
@@ -904,13 +918,10 @@ static bool switch_can_be_toggled(
 	if (definition->item!=NONE && !player_hit) valid_toggle= false;
 	if (player_hit && (side->flags&_side_switch_can_only_be_hit_by_projectiles)) valid_toggle= false;
 	
-	if (valid_toggle && (side->flags&_side_switch_can_be_destroyed))
+	if (valid_toggle && (side->flags&_side_switch_can_be_destroyed) && should_destroy_switch)
 	{
-		// destroy switch
-		SET_SIDE_CONTROL_PANEL(side, false);
+		*should_destroy_switch= true;
 	}
-	
-	if (!valid_toggle && player_hit) play_control_panel_sound(side_index, _unusuable_sound);
 	
 	return valid_toggle;
 }
