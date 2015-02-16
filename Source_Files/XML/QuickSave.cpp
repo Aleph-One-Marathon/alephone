@@ -378,7 +378,29 @@ static void dialog_delete(void *arg)
     dialog *d = static_cast<dialog *>(arg);
     w_saves *saves_w = static_cast<w_saves *>(d->get_widget_by_id(iDIALOG_SAVES_W));
     QuickSave sel = saves_w->selected_save();
-    if (delete_quick_save(sel)) {
+	
+	dialog rd;
+	vertical_placer *placer = new vertical_placer;
+	placer->add(new w_spacer, true);
+	placer->dual_add(new w_static_text("Delete this save?"), rd);
+	placer->add(new w_spacer, true);
+
+	std::vector<QuickSave> saves;
+	saves.push_back(sel);
+	w_saves* selsave_w = new w_saves(saves, 400, 1);
+	placer->dual_add(selsave_w, rd);
+	placer->add(new w_spacer, true);
+	
+	horizontal_placer* button_placer = new horizontal_placer;
+	w_button* accept_w = new w_button("DELETE", dialog_ok, &rd);
+	button_placer->dual_add(accept_w, rd);
+	w_button* cancel_w = new w_button("CANCEL", dialog_cancel, &rd);
+	button_placer->dual_add(cancel_w, rd);
+	placer->add(button_placer, true);
+	rd.set_widget_placer(placer);
+	rd.activate_widget(accept_w);
+
+    if (rd.run() == 0 && delete_quick_save(sel)) {
         saves_w->remove_selected();
         if (!saves_w->has_selection()) {
 			w_tiny_button* rename_w = static_cast<w_tiny_button *>(d->get_widget_by_id(iDIALOG_RENAME_W));
