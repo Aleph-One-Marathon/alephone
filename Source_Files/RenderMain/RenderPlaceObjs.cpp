@@ -254,11 +254,21 @@ render_object_data *RenderPlaceObjsClass::build_render_object(
 					shape_information->world_left, shape_information->world_right, base_nodes);
 			}
 			
-			// Doing this with full-integer arithmetic to avoid mis-clipping;
-			x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/DistanceRef;
-			x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/DistanceRef;
-			y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/DistanceRef + view->dtanpitch;
-			y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/DistanceRef + view->dtanpitch;
+			if (ProjDistance == 0)
+			{
+				x0 = view->half_screen_width;
+				x1 = x0 + 1;
+				y0 = view->half_screen_height;
+				y1 = y0 + 1;
+			}
+			else
+			{
+				// Doing this with full-integer arithmetic to avoid mis-clipping;
+				x0= view->half_screen_width + (int(transformed_origin.y+shape_information->world_left)*view->world_to_screen_x)/ProjDistance;
+				x1= view->half_screen_width + (int(transformed_origin.y+shape_information->world_right)*view->world_to_screen_x)/ProjDistance;
+				y0=	view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_top))/ProjDistance + view->dtanpitch;
+				y1= view->half_screen_height - (view->world_to_screen_y*int(transformed_origin.z+shape_information->world_bottom))/ProjDistance + view->dtanpitch;
+			}
 			if (x0<x1 && y0<y1)
 			{
 				// LP Change:
@@ -717,10 +727,18 @@ void RenderPlaceObjsClass::build_aggregate_render_object_clipping_window(
 		short x0[MAXIMUM_OBJECT_BASE_NODES], x1[MAXIMUM_OBJECT_BASE_NODES]; /* sorted, left to right */
 		long_vector2d lvec[MAXIMUM_OBJECT_BASE_NODES], rvec[MAXIMUM_OBJECT_BASE_NODES];
 		clipping_window_data *window;
-		/* Work with object depth. Fudge by half_screen_width, otherwise close
-		   objects vanish right in front of the camera. half_screen_width is
-			 both generous and scales with larger screens which pronounce the problem */
-		int32 depth= render_object->rectangle.depth + view->half_screen_width;
+		/* Make sure object depth fits in at least one clipping window */
+		int32 win_depth = SHRT_MAX;
+		for (i= 0; i<base_node_count; ++i)
+		{
+			window= base_nodes[i]->clipping_windows;
+			if (window)
+			{
+				win_depth = MIN(win_depth, ABS(window->left.i)+1);
+				win_depth = MIN(win_depth, ABS(window->right.i)+1);
+			}
+		}
+		int32 depth= MAX(render_object->rectangle.depth, win_depth);
 		
 		/* find the upper and lower bounds of the windows; we could do a better job than this by
 			doing the same thing we do when the windows are originally built (i.e., calculating a
