@@ -756,80 +756,112 @@ static void online_dialog(void *arg)
 	placer->dual_add(new w_title("LHOWON.ORG SETUP"), d);
 	placer->add(new w_spacer());
 	
-	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	table->col_flags(0, placeable::kAlignRight);
-	table->col_flags(1, placeable::kAlignLeft);
+	tab_placer* tabs = new tab_placer();
 	
-	table->dual_add_row(new w_static_text("lhowon.org Account"), d);
+	std::vector<std::string> labels;
+	labels.push_back("ACCOUNT");
+	labels.push_back("GAME LOBBY");
+	labels.push_back("STATS");
+	w_tab *tab_w = new w_tab(labels, tabs);
+	
+	placer->dual_add(tab_w, d);
+	placer->add(new w_spacer(), true);
+	
+	vertical_placer *account = new vertical_placer();
+	table_placer *account_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	account_table->col_flags(0, placeable::kAlignRight);
+	account_table->col_flags(1, placeable::kAlignLeft);
 	
 	w_text_entry *login_w = new w_text_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_login);
 	login_w->set_identifier(iONLINE_USERNAME_W);
-	table->dual_add(login_w->label("Username"), d);
-	table->dual_add(login_w, d);
+	account_table->dual_add(login_w->label("Username"), d);
+	account_table->dual_add(login_w, d);
 	
 	w_password_entry *password_w = new w_password_entry(network_preferences_data::kMetaserverLoginLength, network_preferences->metaserver_password);
 	password_w->set_identifier(iONLINE_PASSWORD_W);
-	table->dual_add(password_w->label("Password"), d);
-	table->dual_add(password_w, d);
+	account_table->dual_add(password_w->label("Password"), d);
+	account_table->dual_add(password_w, d);
 	
 	w_hyperlink *account_link_w = new w_hyperlink("", "Visit my online account page");
 	account_link_w->set_callback(proc_account_link, &d);
-	table->dual_add_row(account_link_w, d);
+	account_table->dual_add_row(account_link_w, d);
 	
-	table->add_row(new w_spacer(), true);
+	account_table->add_row(new w_spacer(), true);
 	
 	w_button *signup_button = new w_button("SIGN UP", signup_dialog, &d);
-	table->dual_add_row(signup_button, d);
+	account_table->dual_add_row(signup_button, d);
 	
-	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("Network Game Lobby"), d);
+	account_table->add_row(new w_spacer(), true);
+	
+	account->add(account_table, true);
+	
+	vertical_placer *lobby = new vertical_placer();
+	table_placer *lobby_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	lobby_table->col_flags(0, placeable::kAlignRight);
+	lobby_table->col_flags(1, placeable::kAlignLeft);
 	
 	w_text_entry *name_w = new w_text_entry(PREFERENCES_NAME_LENGTH, "");
 	name_w->set_identifier(NAME_W);
 	name_w->set_enter_pressed_callback(dialog_try_ok);
 	name_w->set_value_changed_callback(dialog_disable_ok_if_empty);
 	name_w->enable_mac_roman_input();
-	table->dual_add(name_w->label("Name"), d);
-	table->dual_add(name_w, d);
+	lobby_table->dual_add(name_w->label("Name"), d);
+	lobby_table->dual_add(name_w, d);
 	
 	w_enabling_toggle *custom_colors_w = new w_enabling_toggle(network_preferences->use_custom_metaserver_colors);
-	table->dual_add(custom_colors_w->label("Custom Chat Colors"), d);
-	table->dual_add(custom_colors_w, d);
+	lobby_table->dual_add(custom_colors_w->label("Custom Chat Colors"), d);
+	lobby_table->dual_add(custom_colors_w, d);
 	
 	w_color_picker *primary_w = new w_color_picker(network_preferences->metaserver_colors[0]);
-	table->dual_add(primary_w->label("Primary"), d);
-	table->dual_add(primary_w, d);
+	lobby_table->dual_add(primary_w->label("Primary"), d);
+	lobby_table->dual_add(primary_w, d);
 	
 	w_color_picker *secondary_w = new w_color_picker(network_preferences->metaserver_colors[1]);
-	table->dual_add(secondary_w->label("Secondary"), d);
-	table->dual_add(secondary_w, d);
+	lobby_table->dual_add(secondary_w->label("Secondary"), d);
+	lobby_table->dual_add(secondary_w, d);
 	
 	custom_colors_w->add_dependent_widget(primary_w);
 	custom_colors_w->add_dependent_widget(secondary_w);
 
 	w_toggle *mute_guests_w = new w_toggle(network_preferences->mute_metaserver_guests);
-	table->dual_add(mute_guests_w->label("Mute All Guest Chat"), d);
-	table->dual_add(mute_guests_w, d);
+	lobby_table->dual_add(mute_guests_w->label("Mute All Guest Chat"), d);
+	lobby_table->dual_add(mute_guests_w, d);
 
 	w_toggle *advertise_on_metaserver_w = new w_toggle(network_preferences->advertise_on_metaserver);
-	table->dual_add(advertise_on_metaserver_w->label("Announce Gathered Games"), d);
-	table->dual_add(advertise_on_metaserver_w, d);
+	lobby_table->dual_add(advertise_on_metaserver_w->label("Announce Gathered Games"), d);
+	lobby_table->dual_add(advertise_on_metaserver_w, d);
 	
-	table->dual_add_row(new w_static_text("Announced games are public and open to"), d);
-	table->dual_add_row(new w_static_text("all players in the game lobby."), d);
+	lobby_table->dual_add_row(new w_static_text("Announced games are public and open to"), d);
+	lobby_table->dual_add_row(new w_static_text("all players in the game lobby."), d);
+	
+	lobby_table->add_row(new w_spacer(), true);
+	
+	lobby->add(lobby_table, true);
+	
+	vertical_placer *stats = new vertical_placer();
+	table_placer *stats_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
+	stats_table->col_flags(0, placeable::kAlignRight);
+	stats_table->col_flags(1, placeable::kAlignLeft);
 
-	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_hyperlink(A1_LEADERBOARD_URL, "Visit the leaderboards"), d);
+	stats_table->dual_add_row(new w_hyperlink(A1_LEADERBOARD_URL, "Visit the leaderboards"), d);
 	
-	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_static_text("To send game stats to the leaderboards,"), d);
-	table->dual_add_row(new w_static_text("you need a lhowon.org account, and a"), d);
-	table->dual_add_row(new w_static_text("Stats plugin installed and enabled."), d);
+	stats_table->add_row(new w_spacer(), true);
+	stats_table->dual_add_row(new w_static_text("To send game stats to the leaderboards,"), d);
+	stats_table->dual_add_row(new w_static_text("you need a lhowon.org account, and a"), d);
+	stats_table->dual_add_row(new w_static_text("Stats plugin installed and enabled."), d);
 	
-	table->add_row(new w_spacer(), true);
-	table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
-
-	placer->add(table, true);
+	stats_table->add_row(new w_spacer(), true);
+	stats_table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
+	
+	stats_table->add_row(new w_spacer(), true);
+	
+	stats->add(stats_table, true);
+	
+	tabs->add(account, true);
+	tabs->add(lobby, true);
+	tabs->add(stats, true);
+	
+	placer->add(tabs, true);
 	placer->add(new w_spacer(), true);
 
 	horizontal_placer *button_placer = new horizontal_placer;
