@@ -628,8 +628,11 @@ static void proc_account_link(void *arg)
 	
 	HTTPClient conn;
 	HTTPClient::parameter_map params;
-	params["username"] = network_preferences->metaserver_login;
-	params["password"] = network_preferences->metaserver_password;
+	w_text_entry *username_w = static_cast<w_text_entry *>(d->get_widget_by_id(iONLINE_USERNAME_W));
+	w_text_entry *password_w = static_cast<w_text_entry *>(d->get_widget_by_id(iONLINE_PASSWORD_W));
+	
+	params["username"] = username_w->get_text();
+	params["password"] = password_w->get_text();
 	params["salt"] = "";
 	
 	std::string url = A1_METASERVER_SETTINGS_URL;
