@@ -832,6 +832,12 @@ static void online_dialog(void *arg)
 
 	lobby_table->add_row(new w_spacer(), true);
 	
+	w_toggle *join_meta_w = new w_toggle(network_preferences->join_metaserver_by_default);
+	lobby_table->dual_add(join_meta_w->label("Join Pregame Lobby by Default"), d);
+	lobby_table->dual_add(join_meta_w, d);
+	
+	lobby_table->add_row(new w_spacer(), true);
+	
 	lobby->add(lobby_table, true);
 	
 	vertical_placer *stats = new vertical_placer();
@@ -941,6 +947,13 @@ static void online_dialog(void *arg)
 		if (mute_metaserver_guests != network_preferences->mute_metaserver_guests)
 		{
 			network_preferences->mute_metaserver_guests = mute_metaserver_guests;
+			changed = true;
+		}
+		
+		bool join_meta = join_meta_w->get_selection() == 1;
+		if (join_meta != network_preferences->join_metaserver_by_default)
+		{
+			network_preferences->join_metaserver_by_default = join_meta;
 			changed = true;
 		}
 		
@@ -2665,6 +2678,7 @@ void write_preferences(
 	fprintf(F, "\"\n");
 	fprintf(F,"  use_custom_metaserver_colors=\"%s\"\n", BoolString(network_preferences->use_custom_metaserver_colors));
 	fprintf(F,"  mute_metaserver_guests=\"%s\"\n", BoolString(network_preferences->mute_metaserver_guests));
+	fprintf(F,"  join_metaserver_by_default=\"%s\"\n", BoolString(network_preferences->join_metaserver_by_default));
 	fprintf(F,"  allow_stats=\"%s\"\n", BoolString(network_preferences->allow_stats));
 	
 	fprintf(F,">\n");
@@ -2817,6 +2831,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->use_custom_metaserver_colors = false;
 	preferences->metaserver_colors[0] = get_interface_color(PLAYER_COLOR_BASE_INDEX);
 	preferences->metaserver_colors[1] = get_interface_color(PLAYER_COLOR_BASE_INDEX);
+	preferences->join_metaserver_by_default = false;
 	preferences->allow_stats = false;
 }
 
@@ -4283,6 +4298,10 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 			network_preferences->metaserver_password[i] = (char) c ^ sPasswordMask[i];
 		}
 		return true;
+	}
+	else if (StringsEqual(Tag,"join_metaserver_by_default"))
+	{
+		return ReadBooleanValue(Value, network_preferences->join_metaserver_by_default);
 	}
 	else if (StringsEqual(Tag,"allow_stats"))
 	{

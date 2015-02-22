@@ -134,6 +134,7 @@ struct network_preferences_data
 	bool use_custom_metaserver_colors;
 	rgb_color metaserver_colors[2];
 	bool mute_metaserver_guests;
+	bool join_metaserver_by_default;
 	bool allow_stats;
 };
 
