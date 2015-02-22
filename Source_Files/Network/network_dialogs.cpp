@@ -2682,6 +2682,12 @@ public:
 		table_placer *prejoin_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
 		prejoin_table->col_flags(0, placeable::kAlignRight);
 		
+		prejoin_table->add_row(new w_spacer(), true);
+		
+		w_button* join_by_metaserver_w = new w_button("FIND INTERNET GAME");
+		prejoin_table->dual_add_row(join_by_metaserver_w, m_dialog);
+		prejoin_table->add_row(new w_spacer(), true);
+		
 		w_toggle* hint_w = new w_toggle(false);
 		prejoin_table->dual_add(hint_w->label("Join by address"), m_dialog);
 		prejoin_table->dual_add(hint_w, m_dialog);
@@ -2690,6 +2696,11 @@ public:
 		prejoin_table->dual_add(hint_address_w->label("Join address"), m_dialog);
 		prejoin_table->dual_add(hint_address_w, m_dialog);
 
+		prejoin_table->add_row(new w_spacer(), true);
+
+		w_button* join_w = new w_button("JOIN LOCAL GAME");
+		prejoin_table->dual_add_row(join_w, m_dialog);
+		
 		prejoin_placer->add(prejoin_table, true);
 		prejoin_placer->add(new w_spacer(), true);
 
@@ -2703,11 +2714,6 @@ public:
 		//       2) widgets in dialog don't update layout position once dialog starts to run
 		//       If we get solutions to these issues, then we can show the join messages.
 
-		prejoin_placer->add(new w_spacer(), true);
-
-		w_button* join_by_metaserver_w = new w_button("FIND GAME ON LHOWON.ORG");
-		prejoin_placer->dual_add(join_by_metaserver_w, m_dialog);
-		
 		w_players_in_game2* players_w = new w_players_in_game2(false);
 		postjoin_placer->dual_add(players_w, m_dialog);
 
@@ -2741,9 +2747,6 @@ public:
 
 		horizontal_placer *button_placer = new horizontal_placer;
 		
-		w_button* join_w = new w_button("JOIN");
-		button_placer->dual_add(join_w, m_dialog);
-
 		w_button* cancel_w = new w_button("CANCEL");
 		button_placer->dual_add(cancel_w, m_dialog);
 
@@ -2856,7 +2859,7 @@ public:
 
 		w_toggle *advertise_on_metaserver_w = new w_toggle (sAdvertiseGameOnMetaserver);
 		network_table->dual_add(advertise_on_metaserver_w, m_dialog);
-		network_table->dual_add(advertise_on_metaserver_w->label("Announce Game on lhowon.org"), m_dialog);
+		network_table->dual_add(advertise_on_metaserver_w->label("Advertise Game on Internet"), m_dialog);
 
 		w_toggle *use_upnp_w = new w_toggle (true);
 		network_table->dual_add(use_upnp_w, m_dialog);

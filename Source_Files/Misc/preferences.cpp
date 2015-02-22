@@ -264,7 +264,7 @@ void handle_preferences(void)
 	d.add(w_header);
 	w_button *w_player = new w_button("PLAYER", player_dialog, &d);
 	d.add(w_player);
-	w_button *w_online = new w_button("LHOWON.ORG", online_dialog, &d);
+	w_button *w_online = new w_button("INTERNET", online_dialog, &d);
 	d.add(w_online);
 	w_button *w_graphics = new w_button("GRAPHICS", graphics_dialog, &d);
 	d.add(w_graphics);
@@ -702,7 +702,7 @@ static void signup_dialog(void *arg)
 {
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("LHOWON.ORG SIGN UP"), d);
+	placer->dual_add(new w_title("ACCOUNT SIGN UP"), d);
 	placer->add(new w_spacer());
 	
 	table_placer *table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
@@ -756,14 +756,14 @@ static void online_dialog(void *arg)
 	// Create dialog
 	dialog d;
 	vertical_placer *placer = new vertical_placer;
-	placer->dual_add(new w_title("LHOWON.ORG SETUP"), d);
+	placer->dual_add(new w_title("INTERNET GAME SETUP"), d);
 	placer->add(new w_spacer());
 	
 	tab_placer* tabs = new tab_placer();
 	
 	std::vector<std::string> labels;
 	labels.push_back("ACCOUNT");
-	labels.push_back("GAME LOBBY");
+	labels.push_back("PREGAME LOBBY");
 	labels.push_back("STATS");
 	w_tab *tab_w = new w_tab(labels, tabs);
 	
@@ -785,7 +785,7 @@ static void online_dialog(void *arg)
 	account_table->dual_add(password_w->label("Password"), d);
 	account_table->dual_add(password_w, d);
 	
-	w_hyperlink *account_link_w = new w_hyperlink("", "Visit my online account page");
+	w_hyperlink *account_link_w = new w_hyperlink("", "Visit my lhowon.org account page");
 	account_link_w->set_callback(proc_account_link, &d);
 	account_table->dual_add_row(account_link_w, d);
 	
@@ -830,41 +830,31 @@ static void online_dialog(void *arg)
 	lobby_table->dual_add(mute_guests_w->label("Mute All Guest Chat"), d);
 	lobby_table->dual_add(mute_guests_w, d);
 
-	w_toggle *advertise_on_metaserver_w = new w_toggle(network_preferences->advertise_on_metaserver);
-	lobby_table->dual_add(advertise_on_metaserver_w->label("Announce Gathered Games"), d);
-	lobby_table->dual_add(advertise_on_metaserver_w, d);
-	
-	lobby_table->dual_add_row(new w_static_text("Announced games are public and open to"), d);
-	lobby_table->dual_add_row(new w_static_text("all players in the game lobby."), d);
-	
 	lobby_table->add_row(new w_spacer(), true);
 	
 	lobby->add(lobby_table, true);
 	
 	vertical_placer *stats = new vertical_placer();
-	table_placer *stats_table = new table_placer(2, get_theme_space(ITEM_WIDGET), true);
-	stats_table->col_flags(0, placeable::kAlignRight);
-	stats_table->col_flags(1, placeable::kAlignLeft);
-
-	stats_table->dual_add_row(new w_hyperlink(A1_LEADERBOARD_URL, "Visit the leaderboards"), d);
-	stats_table->add_row(new w_spacer(), true);
+	stats->dual_add(new w_hyperlink(A1_LEADERBOARD_URL, "Visit the leaderboards"), d);
+	stats->add(new w_spacer(), true);
+	
+	horizontal_placer *stats_box = new horizontal_placer();
 	
 	w_toggle *allow_stats_w = new w_toggle(network_preferences->allow_stats);
-	stats_table->dual_add(allow_stats_w->label("Send Stats to Lhowon.org"), d);
-	stats_table->dual_add(allow_stats_w, d);
+	stats_box->dual_add(allow_stats_w, d);
+	stats_box->dual_add(allow_stats_w->label("Send Stats to Lhowon.org"), d);
 	
-	stats_table->add_row(new w_spacer(), true);
+	stats->add(stats_box, true);
+	stats->add(new w_spacer(), true);
 	
-	stats_table->dual_add_row(new w_static_text("To send game stats to the leaderboards,"), d);
-	stats_table->dual_add_row(new w_static_text("you need a lhowon.org account, and a"), d);
-	stats_table->dual_add_row(new w_static_text("Stats plugin installed and enabled."), d);
+	stats->dual_add(new w_static_text("To compete on the leaderboards,"), d);
+	stats->dual_add(new w_static_text("you need an online account, and a"), d);
+	stats->dual_add(new w_static_text("Stats plugin installed and enabled."), d);
 	
-	stats_table->add_row(new w_spacer(), true);
-	stats_table->dual_add_row(new w_button("PLUGINS", plugins_dialog, &d), d);
+	stats->add(new w_spacer(), true);
+	stats->dual_add(new w_button("PLUGINS", plugins_dialog, &d), d);
 	
-	stats_table->add_row(new w_spacer(), true);
-	
-	stats->add(stats_table, true);
+	stats->add(new w_spacer(), true);
 	
 	tabs->add(account, true);
 	tabs->add(lobby, true);
@@ -951,13 +941,6 @@ static void online_dialog(void *arg)
 		if (mute_metaserver_guests != network_preferences->mute_metaserver_guests)
 		{
 			network_preferences->mute_metaserver_guests = mute_metaserver_guests;
-			changed = true;
-		}
-		
-		bool announce_games = advertise_on_metaserver_w->get_selection() == 1;
-		if (announce_games != network_preferences->advertise_on_metaserver)
-		{
-			network_preferences->advertise_on_metaserver = announce_games;
 			changed = true;
 		}
 		
