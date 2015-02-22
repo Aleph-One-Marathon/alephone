@@ -847,8 +847,14 @@ static void online_dialog(void *arg)
 	stats_table->col_flags(1, placeable::kAlignLeft);
 
 	stats_table->dual_add_row(new w_hyperlink(A1_LEADERBOARD_URL, "Visit the leaderboards"), d);
+	stats_table->add_row(new w_spacer(), true);
+	
+	w_toggle *allow_stats_w = new w_toggle(network_preferences->allow_stats);
+	stats_table->dual_add(allow_stats_w->label("Send Stats to Lhowon.org"), d);
+	stats_table->dual_add(allow_stats_w, d);
 	
 	stats_table->add_row(new w_spacer(), true);
+	
 	stats_table->dual_add_row(new w_static_text("To send game stats to the leaderboards,"), d);
 	stats_table->dual_add_row(new w_static_text("you need a lhowon.org account, and a"), d);
 	stats_table->dual_add_row(new w_static_text("Stats plugin installed and enabled."), d);
@@ -954,6 +960,15 @@ static void online_dialog(void *arg)
 			network_preferences->advertise_on_metaserver = announce_games;
 			changed = true;
 		}
+		
+		bool allow_stats = allow_stats_w->get_selection() == 1;
+		if (allow_stats != network_preferences->allow_stats)
+		{
+			network_preferences->allow_stats = allow_stats;
+			Plugins::instance()->invalidate();
+			changed = true;
+		}
+		
 		
 		if (changed)
 			write_preferences();
@@ -2667,6 +2682,7 @@ void write_preferences(
 	fprintf(F, "\"\n");
 	fprintf(F,"  use_custom_metaserver_colors=\"%s\"\n", BoolString(network_preferences->use_custom_metaserver_colors));
 	fprintf(F,"  mute_metaserver_guests=\"%s\"\n", BoolString(network_preferences->mute_metaserver_guests));
+	fprintf(F,"  allow_stats=\"%s\"\n", BoolString(network_preferences->allow_stats));
 	
 	fprintf(F,">\n");
 #ifndef SDL
@@ -2818,6 +2834,7 @@ static void default_network_preferences(network_preferences_data *preferences)
 	preferences->use_custom_metaserver_colors = false;
 	preferences->metaserver_colors[0] = get_interface_color(PLAYER_COLOR_BASE_INDEX);
 	preferences->metaserver_colors[1] = get_interface_color(PLAYER_COLOR_BASE_INDEX);
+	preferences->allow_stats = false;
 }
 
 static void default_player_preferences(player_preferences_data *preferences)
@@ -4283,6 +4300,10 @@ bool XML_NetworkPrefsParser::HandleAttribute(const char *Tag, const char *Value)
 			network_preferences->metaserver_password[i] = (char) c ^ sPasswordMask[i];
 		}
 		return true;
+	}
+	else if (StringsEqual(Tag,"allow_stats"))
+	{
+		return ReadBooleanValue(Value, network_preferences->allow_stats);
 	}
 	return true;
 }

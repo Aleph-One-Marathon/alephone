@@ -55,6 +55,7 @@ struct Plugin {
 	bool overridden;
 	bool overridden_solo;
 	bool compatible() const;
+	bool allowed() const;
 	bool valid() const;
 
 	bool operator<(const Plugin& other) const {

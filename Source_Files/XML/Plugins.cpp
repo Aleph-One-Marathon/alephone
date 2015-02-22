@@ -81,6 +81,12 @@ bool Plugin::compatible() const {
 	}
 	return false;
 }
+bool Plugin::allowed() const {
+	if (stats_lua.empty() || network_preferences->allow_stats)
+		return true;
+	
+	return false;
+}
 bool Plugin::valid() const {
 	if (!enabled)
 		return false;
@@ -614,7 +620,7 @@ void Plugins::validate()
 	for (std::vector<Plugin>::reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
 		rit->overridden_solo = false;
-		if (!rit->enabled || !rit->compatible() ||
+		if (!rit->enabled || !rit->compatible() || !rit->allowed() ||
 			(found_solo_lua && rit->solo_lua.size()) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
 			(found_stats_lua && rit->stats_lua.size()) ||
@@ -641,7 +647,7 @@ void Plugins::validate()
 	for (std::vector<Plugin>::reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
 	{
 		rit->overridden = false;
-		if (!rit->enabled || !rit->compatible() ||
+		if (!rit->enabled || !rit->compatible() || !rit->allowed() ||
 			(rit->solo_lua.size()) ||
 			(found_hud_lua && rit->hud_lua.size()) ||
 			(found_stats_lua && rit->stats_lua.size()) ||
