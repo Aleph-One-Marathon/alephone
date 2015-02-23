@@ -770,6 +770,22 @@ bool FileSpecifier::SetNameWithPath(const char* NameWithPath, const DirectorySpe
 	return false;
 }
 
+void FileSpecifier::SetTempName(const FileSpecifier& other)
+{
+	name = other.name + "XXXXXX";
+
+	// null terminate it for use with mktemp
+	name.resize(name.size() + 1);
+	name[name.size() - 1] = '\0';
+
+	// yeah, yeah. but this is at least better than the tmpile.dat that
+	// used to be generated for atomic saves, and was unsafe for all the
+	// same reasons. baby steps.
+	mktemp(&name[0]);
+
+	name.resize(name.size() - 1);
+}
+
 // Get last element of path
 void FileSpecifier::GetName(char *part) const
 {

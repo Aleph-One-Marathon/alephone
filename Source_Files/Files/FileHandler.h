@@ -275,6 +275,8 @@ public:
 	bool SetNameWithPath(const char *NameWithPath);
 	bool SetNameWithPath(const char* NameWithPath, const DirectorySpecifier& Directory);
 
+	void SetTempName(const FileSpecifier& other);
+
 	// Move the directory specification
 	void ToDirectory(DirectorySpecifier& Dir);
 	void FromDirectory(DirectorySpecifier& Dir);

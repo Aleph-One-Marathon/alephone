@@ -1354,10 +1354,7 @@ bool export_level(FileSpecifier& File)
 	struct wad_data *wad;
 
 	FileSpecifier TempFile;
-	DirectorySpecifier TempFileDir;
-	File.ToDirectory(TempFileDir);
-	TempFile.FromDirectory(TempFileDir);
-	TempFile.AddPart("savetemp.dat");
+	TempFile.SetTempName(File);
 
 	/* Fill in the default wad header (we are using File instead of TempFile to get the name right in the header) */
 	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, MARATHON_TWO_DATA_VERSION, 1, 0, &header);
@@ -1400,12 +1397,10 @@ bool export_level(FileSpecifier& File)
 
 		if (!err)
 		{
-			if (!File.Exists())
-				create_wadfile(File,_typecode_savegame);
-			
-			TempFile.Exchange(File);
-			err = TempFile.GetError();
-			TempFile.Delete(); // it's not an error if this fails
+			if (!TempFile.Rename(File))
+			{
+				err = 1;
+			}
 		}
 	}
 	
@@ -1440,18 +1435,11 @@ bool save_game_file(FileSpecifier& File)
 	/* Setup to revert the game properly */
 	revert_game_data.game_is_from_disk= true;
 	revert_game_data.SavedGame = File;
-	
+
 	// LP: add a file here; use temporary file for a safe save.
 	// Write into the temporary file first
 	FileSpecifier TempFile;
-	DirectorySpecifier TempFileDir;
-	File.ToDirectory(TempFileDir);
-	TempFile.FromDirectory(TempFileDir);
-#if defined(mac) || defined(SDL_RFORK_HACK)
-	TempFile.SetName("savetemp.dat",NONE);
-#else
-	TempFile.AddPart("savetemp.dat");
-#endif
+	TempFile.SetTempName(File);
 	
 	/* Fill in the default wad header (we are using File instead of TempFile to get the name right in the header) */
 	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
@@ -1502,16 +1490,12 @@ bool save_game_file(FileSpecifier& File)
 			close_wad_file(SaveFile);
 		}
 		
-		// LP addition: exchange with temporary file;
-		// create target file if necessary
 		if (!err)
 		{
-			if (!File.Exists())
-				create_wadfile(File,_typecode_savegame);
-			
-			TempFile.Exchange(File);
-			err = TempFile.GetError();
-			TempFile.Delete(); // it's not an error if this fails
+			if (!TempFile.Rename(File))
+			{
+				err = 1;
+			}
 		}
 	}
 	
