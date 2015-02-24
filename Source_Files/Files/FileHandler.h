@@ -318,10 +318,6 @@ public:
 	// Copy file contents
 	bool CopyContents(FileSpecifier& File);
 	
-	// Exchange contents with another filespec;
-	// good for doing safe saves
-	bool Exchange(FileSpecifier& File);
-	
 	// Delete file
 	bool Delete();
 

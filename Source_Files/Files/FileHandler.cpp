@@ -648,25 +648,6 @@ bool FileSpecifier::GetFreeSpace(uint32 &FreeSpace)
 	return true;
 }
 
-// Exchange two files
-bool FileSpecifier::Exchange(FileSpecifier &other)
-{
-	// Create temporary name (this is cheap, we should make sure that the
-	// name is not already in use...)
-	FileSpecifier tmp;
-	ToDirectory(tmp);
-	tmp.AddPart("exchange_tmp_file");
-
-	err = 0;
-	if (rename(GetPath(), tmp.GetPath()) < 0)
-		err = errno;
-	else
-		rename(other.GetPath(), GetPath());
-	if (rename(tmp.GetPath(), other.GetPath()) < 0)
-		err = errno;
-	return err == 0;
-}
-
 // Delete file
 bool FileSpecifier::Delete()
 {
