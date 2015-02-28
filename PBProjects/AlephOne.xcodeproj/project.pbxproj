@@ -1490,6 +1490,50 @@
 		27DC607010917F690062003A /* OGL_Shader.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27DC606E10917F690062003A /* OGL_Shader.cpp */; };
 		27DC607110917F690062003A /* OGL_Shader.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC606F10917F690062003A /* OGL_Shader.h */; };
 		27DC60C5109218800062003A /* vec3.h in Headers */ = {isa = PBXBuildFile; fileRef = 27DC60C4109218800062003A /* vec3.h */; };
+		27E1F95E1AA104D000647069 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F95C1AA104D000647069 /* Statistics.cpp */; };
+		27E1F95F1AA104D000647069 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F95D1AA104D000647069 /* Statistics.h */; };
+		27E1F9601AA104D000647069 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F95C1AA104D000647069 /* Statistics.cpp */; };
+		27E1F9611AA104D000647069 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F95D1AA104D000647069 /* Statistics.h */; };
+		27E1F9621AA104D000647069 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F95C1AA104D000647069 /* Statistics.cpp */; };
+		27E1F9631AA104D000647069 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F95D1AA104D000647069 /* Statistics.h */; };
+		27E1F9641AA104D000647069 /* Statistics.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F95C1AA104D000647069 /* Statistics.cpp */; };
+		27E1F9651AA104D000647069 /* Statistics.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F95D1AA104D000647069 /* Statistics.h */; };
+		27E1F96E1AA1052900647069 /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F96C1AA1052900647069 /* QuickSave.cpp */; };
+		27E1F96F1AA1052900647069 /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F96D1AA1052900647069 /* QuickSave.h */; };
+		27E1F9701AA1052900647069 /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F96C1AA1052900647069 /* QuickSave.cpp */; };
+		27E1F9711AA1052900647069 /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F96D1AA1052900647069 /* QuickSave.h */; };
+		27E1F9721AA1052900647069 /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F96C1AA1052900647069 /* QuickSave.cpp */; };
+		27E1F9731AA1052900647069 /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F96D1AA1052900647069 /* QuickSave.h */; };
+		27E1F9741AA1052900647069 /* QuickSave.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F96C1AA1052900647069 /* QuickSave.cpp */; };
+		27E1F9751AA1052900647069 /* QuickSave.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F96D1AA1052900647069 /* QuickSave.h */; };
+		27E1F9801AA1059A00647069 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F97E1AA1059A00647069 /* HTTP.cpp */; };
+		27E1F9811AA1059A00647069 /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F97F1AA1059A00647069 /* HTTP.h */; };
+		27E1F9821AA1059A00647069 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F97E1AA1059A00647069 /* HTTP.cpp */; };
+		27E1F9831AA1059A00647069 /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F97F1AA1059A00647069 /* HTTP.h */; };
+		27E1F9841AA1059A00647069 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F97E1AA1059A00647069 /* HTTP.cpp */; };
+		27E1F9851AA1059A00647069 /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F97F1AA1059A00647069 /* HTTP.h */; };
+		27E1F9861AA1059A00647069 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F97E1AA1059A00647069 /* HTTP.cpp */; };
+		27E1F9871AA1059A00647069 /* HTTP.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F97F1AA1059A00647069 /* HTTP.h */; };
+		27E1F98F1AA1066C00647069 /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1F98E1AA1066C00647069 /* libcurl.dylib */; };
+		27E1F9A01AA1078800647069 /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F99E1AA1078800647069 /* sdl_resize.cpp */; };
+		27E1F9A11AA1078800647069 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F99F1AA1078800647069 /* sdl_resize.h */; };
+		27E1F9A21AA1078800647069 /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F99E1AA1078800647069 /* sdl_resize.cpp */; };
+		27E1F9A31AA1078800647069 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F99F1AA1078800647069 /* sdl_resize.h */; };
+		27E1F9A41AA1078800647069 /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F99E1AA1078800647069 /* sdl_resize.cpp */; };
+		27E1F9A51AA1078800647069 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F99F1AA1078800647069 /* sdl_resize.h */; };
+		27E1F9A61AA1078800647069 /* sdl_resize.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1F99E1AA1078800647069 /* sdl_resize.cpp */; };
+		27E1F9A71AA1078800647069 /* sdl_resize.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1F99F1AA1078800647069 /* sdl_resize.h */; };
+		27E1F9C61AA1107900647069 /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1F98E1AA1066C00647069 /* libcurl.dylib */; };
+		27E1F9C71AA1108400647069 /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1F98E1AA1066C00647069 /* libcurl.dylib */; };
+		27E1F9C81AA1108E00647069 /* libcurl.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1F98E1AA1066C00647069 /* libcurl.dylib */; };
+		27E1F9F01AA1114800647069 /* speexdsp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
+		27E1F9F11AA1114800647069 /* speexdsp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
+		27E1F9F21AA1114800647069 /* speexdsp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
+		27E1F9F31AA1114800647069 /* speexdsp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
+		27E1FA531AA14E2000647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
+		27E1FA541AA14E7400647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
+		27E1FA551AA14E7D00647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
+		27E1FA581AA14F0800647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
@@ -1961,6 +2005,7 @@
 				2718502314392536007CD65B /* png.framework in CopyFiles */,
 				2718502414392536007CD65B /* zziplib.framework in CopyFiles */,
 				2718502514392536007CD65B /* speex.framework in CopyFiles */,
+				27E1FA551AA14E7D00647069 /* speexdsp.framework in CopyFiles */,
 				2718502B14392536007CD65B /* SDL_image.framework in CopyFiles */,
 				2718502C14392536007CD65B /* SDL.framework in CopyFiles */,
 				2718502D14392536007CD65B /* SDL_net.framework in CopyFiles */,
@@ -1983,6 +2028,7 @@
 				27185258143931DC007CD65B /* png.framework in CopyFiles */,
 				27185259143931DC007CD65B /* zziplib.framework in CopyFiles */,
 				2718525A143931DC007CD65B /* speex.framework in CopyFiles */,
+				27E1FA541AA14E7400647069 /* speexdsp.framework in CopyFiles */,
 				27185260143931DC007CD65B /* SDL_image.framework in CopyFiles */,
 				27185261143931DC007CD65B /* SDL.framework in CopyFiles */,
 				27185262143931DC007CD65B /* SDL_net.framework in CopyFiles */,
@@ -2005,6 +2051,7 @@
 				2718548B14395833007CD65B /* png.framework in CopyFiles */,
 				2718548C14395833007CD65B /* zziplib.framework in CopyFiles */,
 				2718548D14395833007CD65B /* speex.framework in CopyFiles */,
+				27E1FA531AA14E2000647069 /* speexdsp.framework in CopyFiles */,
 				2718549314395833007CD65B /* SDL_image.framework in CopyFiles */,
 				2718549414395833007CD65B /* SDL.framework in CopyFiles */,
 				2718549514395833007CD65B /* SDL_net.framework in CopyFiles */,
@@ -2027,6 +2074,7 @@
 				2759FB2610D71158000204DD /* png.framework in CopyFiles */,
 				2759F33310D5BCD1000204DD /* zziplib.framework in CopyFiles */,
 				AE23F5930BDAC1DF00C11385 /* speex.framework in CopyFiles */,
+				27E1FA581AA14F0800647069 /* speexdsp.framework in CopyFiles */,
 				AEC3C87809AD68AC003258E4 /* SDL_image.framework in CopyFiles */,
 				AEC3C87909AD68AC003258E4 /* SDL.framework in CopyFiles */,
 				AEC3C87A09AD68AC003258E4 /* SDL_net.framework in CopyFiles */,
@@ -2045,14 +2093,11 @@
 		2718503314392536007CD65B /* Marathon.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Marathon.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27185269143931DC007CD65B /* Marathon 2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon 2.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		271852A0143952F0007CD65B /* Marathon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = Marathon.icns; sourceTree = "<group>"; };
-		271852A1143952F0007CD65B /* Marathon.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Marathon.plist; sourceTree = "<group>"; };
 		271852A91439538A007CD65B /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		271852AB1439538A007CD65B /* Marathon 2.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Marathon 2.icns"; sourceTree = "<group>"; };
-		271852AC1439538A007CD65B /* Marathon 2.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Marathon 2.plist"; sourceTree = "<group>"; };
 		2718549C14395833007CD65B /* Marathon Infinity.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Marathon Infinity.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		271854A11439585B007CD65B /* English */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.strings; name = English; path = English.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		271854A21439585B007CD65B /* Marathon Infinity.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = "Marathon Infinity.icns"; sourceTree = "<group>"; };
-		271854A31439585B007CD65B /* Marathon Infinity.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "Marathon Infinity.plist"; sourceTree = "<group>"; };
 		271EE3F617812CED00CBAD98 /* avcodec.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avcodec.framework; sourceTree = "<group>"; };
 		271EE3F817812CED00CBAD98 /* avformat.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avformat.framework; sourceTree = "<group>"; };
 		271EE3FA17812CED00CBAD98 /* avutil.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = avutil.framework; sourceTree = "<group>"; };
@@ -2096,6 +2141,19 @@
 		27DC606E10917F690062003A /* OGL_Shader.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = OGL_Shader.cpp; sourceTree = "<group>"; };
 		27DC606F10917F690062003A /* OGL_Shader.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OGL_Shader.h; sourceTree = "<group>"; };
 		27DC60C4109218800062003A /* vec3.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = vec3.h; sourceTree = "<group>"; };
+		27E1F9251AA0FDA800647069 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		27E1F95C1AA104D000647069 /* Statistics.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Statistics.cpp; path = ../Source_Files/Misc/Statistics.cpp; sourceTree = SOURCE_ROOT; };
+		27E1F95D1AA104D000647069 /* Statistics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Statistics.h; path = ../Source_Files/Misc/Statistics.h; sourceTree = SOURCE_ROOT; };
+		27E1F96C1AA1052900647069 /* QuickSave.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = QuickSave.cpp; sourceTree = "<group>"; };
+		27E1F96D1AA1052900647069 /* QuickSave.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = QuickSave.h; sourceTree = "<group>"; };
+		27E1F97E1AA1059A00647069 /* HTTP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTP.cpp; path = ../Source_Files/Network/HTTP.cpp; sourceTree = SOURCE_ROOT; };
+		27E1F97F1AA1059A00647069 /* HTTP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = HTTP.h; path = ../Source_Files/Network/HTTP.h; sourceTree = SOURCE_ROOT; };
+		27E1F98E1AA1066C00647069 /* libcurl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.dylib; path = usr/lib/libcurl.dylib; sourceTree = SDKROOT; };
+		27E1F99E1AA1078800647069 /* sdl_resize.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = sdl_resize.cpp; sourceTree = "<group>"; };
+		27E1F99F1AA1078800647069 /* sdl_resize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = sdl_resize.h; sourceTree = "<group>"; };
+		27E1F9EF1AA1114800647069 /* speexdsp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = speexdsp.framework; path = /Library/Frameworks/speexdsp.framework; sourceTree = "<absolute>"; };
+		27E1F9F71AA111C400647069 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		27E1F9FB1AA111D300647069 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		3D22CF880FD86EAE00B17822 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		3D22CF8C0FD86EBD00B17822 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
@@ -2243,7 +2301,6 @@
 		AE7C21D00BFF67FD00CE63EC /* language_definition.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; path = language_definition.h; sourceTree = "<group>"; };
 		AE7C21D40BFF686200CE63EC /* Update.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = Update.h; path = ../Source_Files/Network/Update.h; sourceTree = "<group>"; };
 		AE7C21D50BFF688000CE63EC /* Update.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = Update.cpp; path = ../Source_Files/Network/Update.cpp; sourceTree = "<group>"; };
-		AE82ACFE14829CFF0066FFB7 /* Info-AlephOne_SDL copy.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-AlephOne_SDL copy.plist"; sourceTree = "<group>"; };
 		AE9A39F40CCADF78004717E3 /* ConnectPool.h */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.h; name = ConnectPool.h; path = ../Source_Files/Network/ConnectPool.h; sourceTree = "<group>"; };
 		AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.cpp.cpp; name = ConnectPool.cpp; path = ../Source_Files/Network/ConnectPool.cpp; sourceTree = "<group>"; };
 		AEA31D2B113C9DF700266621 /* csalerts.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = csalerts.mm; path = ../Source_Files/CSeries/csalerts.mm; sourceTree = SOURCE_ROOT; };
@@ -2596,6 +2653,8 @@
 				27A7A3A817812D2100461252 /* avformat.framework in Frameworks */,
 				27A7A3DC17812D2700461252 /* avutil.framework in Frameworks */,
 				27A7A3E417812D2F00461252 /* swscale.framework in Frameworks */,
+				27E1F98F1AA1066C00647069 /* libcurl.dylib in Frameworks */,
+				27E1F9F01AA1114800647069 /* speexdsp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2621,6 +2680,8 @@
 				27A7A3A917812D2200461252 /* avformat.framework in Frameworks */,
 				27A7A3DD17812D2800461252 /* avutil.framework in Frameworks */,
 				27A7A3E617812D3000461252 /* swscale.framework in Frameworks */,
+				27E1F9C71AA1108400647069 /* libcurl.dylib in Frameworks */,
+				27E1F9F21AA1114800647069 /* speexdsp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2646,6 +2707,8 @@
 				27A7A3AA17812D2200461252 /* avformat.framework in Frameworks */,
 				27A7A3DE17812D2800461252 /* avutil.framework in Frameworks */,
 				27A7A3E517812D2F00461252 /* swscale.framework in Frameworks */,
+				27E1F9C81AA1108E00647069 /* libcurl.dylib in Frameworks */,
+				27E1F9F31AA1114800647069 /* speexdsp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2671,6 +2734,8 @@
 				271EE3F917812CED00CBAD98 /* avformat.framework in Frameworks */,
 				271EE3FB17812CED00CBAD98 /* avutil.framework in Frameworks */,
 				271EE3FD17812CED00CBAD98 /* swscale.framework in Frameworks */,
+				27E1F9C61AA1107900647069 /* libcurl.dylib in Frameworks */,
+				27E1F9F11AA1114800647069 /* speexdsp.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2691,9 +2756,9 @@
 		2718529C143952F0007CD65B /* Marathon */ = {
 			isa = PBXGroup;
 			children = (
+				27E1F9251AA0FDA800647069 /* Info.plist */,
 				AE4FC32E147C8DA800EBA894 /* InfoPlist.strings */,
 				271852A0143952F0007CD65B /* Marathon.icns */,
-				271852A1143952F0007CD65B /* Marathon.plist */,
 			);
 			name = Marathon;
 			path = AppStore/Marathon;
@@ -2702,9 +2767,9 @@
 		271852A71439538A007CD65B /* Marathon 2 */ = {
 			isa = PBXGroup;
 			children = (
+				27E1F9F71AA111C400647069 /* Info.plist */,
 				271852A81439538A007CD65B /* InfoPlist.strings */,
 				271852AB1439538A007CD65B /* Marathon 2.icns */,
-				271852AC1439538A007CD65B /* Marathon 2.plist */,
 			);
 			name = "Marathon 2";
 			path = "AppStore/Marathon 2";
@@ -2713,9 +2778,9 @@
 		2718549F1439585B007CD65B /* Marathon Infinity */ = {
 			isa = PBXGroup;
 			children = (
+				27E1F9FB1AA111D300647069 /* Info.plist */,
 				271854A01439585B007CD65B /* InfoPlist.strings */,
 				271854A21439585B007CD65B /* Marathon Infinity.icns */,
-				271854A31439585B007CD65B /* Marathon Infinity.plist */,
 			);
 			name = "Marathon Infinity";
 			path = "AppStore/Marathon Infinity";
@@ -2742,7 +2807,6 @@
 				29B97323FDCFA39411CA2CEA /* System Frameworks */,
 				19C28FACFE9D520D11CA2CBB /* Products */,
 				AEC3C88F09AD68AD003258E4 /* Info-AlephOne_SDL.plist */,
-				AE82ACFE14829CFF0066FFB7 /* Info-AlephOne_SDL copy.plist */,
 			);
 			name = "SDL Application";
 			sourceTree = "<group>";
@@ -2777,6 +2841,7 @@
 				F5830B4001E776DE01BA387C /* OpenGL.framework */,
 				F59FB19D01E780DF01BBE912 /* Cocoa.framework */,
 				3D22CF8C0FD86EBD00B17822 /* libz.dylib */,
+				27E1F98E1AA1066C00647069 /* libcurl.dylib */,
 			);
 			name = "System Frameworks";
 			sourceTree = "<group>";
@@ -2920,6 +2985,7 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				27E1F9EF1AA1114800647069 /* speexdsp.framework */,
 				AE23F5630BDAC0E700C11385 /* speex.framework */,
 				F5281C0701F8CA2101E83A66 /* SDL_image.framework */,
 				F5281C0501F8C94101E83A66 /* SDL.framework */,
@@ -3099,6 +3165,7 @@
 				F522120F0136A6FD01000001 /* preferences.cpp */,
 				AE2A50CC09C67253007681A4 /* Scenario.cpp */,
 				AE437C8E08779BE500038E30 /* shared_widgets.cpp */,
+				27E1F95C1AA104D000647069 /* Statistics.cpp */,
 				F52212590136A6FD01000001 /* vbl.cpp */,
 				F5574EF601F4EC8501FEABBD /* thread_priority_sdl_macosx.cpp */,
 			);
@@ -3108,6 +3175,7 @@
 		F522144F0136C0C401000001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				27E1F95D1AA104D000647069 /* Statistics.h */,
 				AE2FDED109E9352B00A18ABC /* preference_dialogs.h */,
 				AE2A50CF09C6727C007681A4 /* Scenario.h */,
 				AE437C8B08779BC900038E30 /* shared_widgets.h */,
@@ -3142,6 +3210,7 @@
 				3D87957B07D11E120078D26B /* Metaserver */,
 				F52214520136C0C401000001 /* Headers */,
 				AE9A39F60CCADFA7004717E3 /* ConnectPool.cpp */,
+				27E1F97E1AA1059A00647069 /* HTTP.cpp */,
 				EF2EF5CB04819BD700A8000D /* NetworkGameProtocol.cpp */,
 				EF2EF5CD04819BD700A8000D /* RingGameProtocol.cpp */,
 				F5574EFC01F4ED4801FEABBD /* SDL_netx.cpp */,
@@ -3173,6 +3242,7 @@
 			isa = PBXGroup;
 			children = (
 				AE9A39F40CCADF78004717E3 /* ConnectPool.h */,
+				27E1F97F1AA1059A00647069 /* HTTP.h */,
 				AE7C21D40BFF686200CE63EC /* Update.h */,
 				EF2EF5CC04819BD700A8000D /* NetworkGameProtocol.h */,
 				EF2EF5CE04819BD700A8000D /* RingGameProtocol.h */,
@@ -3515,6 +3585,8 @@
 				F5CC93A00240D85D01A80001 /* sdl_fonts.h */,
 				F5CC938A0240D85D01A80001 /* OverheadMap_SDL.cpp */,
 				F5CC939F0240D85D01A80001 /* sdl_fonts.cpp */,
+				27E1F99F1AA1078800647069 /* sdl_resize.h */,
+				27E1F99E1AA1078800647069 /* sdl_resize.cpp */,
 			);
 			name = SDL;
 			sourceTree = "<group>";
@@ -3582,6 +3654,7 @@
 				F5CC94370240DE0E01A80001 /* SDL */,
 				F5CC943A0240DE0E01A80001 /* ColorParser.cpp */,
 				F5CC943B0240DE0E01A80001 /* DamageParser.cpp */,
+				27E1F96C1AA1052900647069 /* QuickSave.cpp */,
 				277AB97E10A26AF40003402A /* Plugins.cpp */,
 				F5CC943C0240DE0E01A80001 /* ShapesParser.cpp */,
 				F5CC943D0240DE0E01A80001 /* XML_Configure.cpp */,
@@ -3600,6 +3673,7 @@
 				277AB98010A26B020003402A /* Plugins.h */,
 				F5CC942C0240DE0E01A80001 /* ColorParser.h */,
 				F5CC942D0240DE0E01A80001 /* DamageParser.h */,
+				27E1F96D1AA1052900647069 /* QuickSave.h */,
 				F5CC942E0240DE0E01A80001 /* ShapesParser.h */,
 				F5CC942F0240DE0E01A80001 /* XML_Configure.h */,
 				F5CC94300240DE0E01A80001 /* XML_DataBlock.h */,
@@ -3882,6 +3956,10 @@
 				27A7A4831781335C00461252 /* SDL_ffmpeg.h in Headers */,
 				27A7A4A0178136AF00461252 /* lctype.h in Headers */,
 				27A7A4AD1781374100461252 /* FFmpegDecoder.h in Headers */,
+				27E1F95F1AA104D000647069 /* Statistics.h in Headers */,
+				27E1F96F1AA1052900647069 /* QuickSave.h in Headers */,
+				27E1F9811AA1059A00647069 /* HTTP.h in Headers */,
+				27E1F9A11AA1078800647069 /* sdl_resize.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4089,6 +4167,10 @@
 				27A7A4801781335C00461252 /* SDL_ffmpeg.h in Headers */,
 				27A7A49D178136AF00461252 /* lctype.h in Headers */,
 				27A7A4AB1781374100461252 /* FFmpegDecoder.h in Headers */,
+				27E1F9631AA104D000647069 /* Statistics.h in Headers */,
+				27E1F9731AA1052900647069 /* QuickSave.h in Headers */,
+				27E1F9851AA1059A00647069 /* HTTP.h in Headers */,
+				27E1F9A51AA1078800647069 /* sdl_resize.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4296,6 +4378,10 @@
 				27A7A47D1781335C00461252 /* SDL_ffmpeg.h in Headers */,
 				27A7A49A178136AF00461252 /* lctype.h in Headers */,
 				27A7A4A91781374100461252 /* FFmpegDecoder.h in Headers */,
+				27E1F9651AA104D000647069 /* Statistics.h in Headers */,
+				27E1F9751AA1052900647069 /* QuickSave.h in Headers */,
+				27E1F9871AA1059A00647069 /* HTTP.h in Headers */,
+				27E1F9A71AA1078800647069 /* sdl_resize.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4503,6 +4589,10 @@
 				27A7A4861781335C00461252 /* SDL_ffmpeg.h in Headers */,
 				27A7A4A3178136AF00461252 /* lctype.h in Headers */,
 				27A7A4AF1781374100461252 /* FFmpegDecoder.h in Headers */,
+				27E1F9611AA104D000647069 /* Statistics.h in Headers */,
+				27E1F9711AA1052900647069 /* QuickSave.h in Headers */,
+				27E1F9831AA1059A00647069 /* HTTP.h in Headers */,
+				27E1F9A31AA1078800647069 /* sdl_resize.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4792,7 +4882,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles/Themes/Default\"/{CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Info.plist\"\n\n";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Resources/DataFiles\"\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/Marathon Infinity.app/Contents/Info.plist\"\n\n";
 		};
 		2718549714395833007CD65B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4847,7 +4937,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/\" \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\n\n";
+			shellScript = "mkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles\"\nmkdir -p \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\"\ncp -R \"$SRCROOT/../data/default_theme/resources/\" \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default\" 2>/dev/null\nrm -rf \"$SYMROOT\"/$BUILD_STYLE/AlephOne.app/Contents/Resources/DataFiles/Themes/Default/{CVS,Makefile.am}\n\n# Update Info.plist based on alephversion.h\nDISPLAY_VERSION=$( grep '^#define A1_DISPLAY_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nDATE_VERSION=$( grep '^#define A1_DATE_VERSION' \"$SRCROOT\"/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\\"\\)\\(.*\\)\\(\\\"\\)/\\2/g' )\nsed -i '' -e s/A1_DISPLAY_VERSION/$DISPLAY_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\nsed -i '' -e s/A1_DATE_VERSION/$DATE_VERSION/g \"$SYMROOT/$BUILD_STYLE/AlephOne.app/Contents/Info.plist\"\n\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -5083,6 +5173,10 @@
 				27A7A49E178136AF00461252 /* lbitlib.c in Sources */,
 				27A7A49F178136AF00461252 /* lctype.c in Sources */,
 				27A7A4AC1781374100461252 /* FFmpegDecoder.cpp in Sources */,
+				27E1F95E1AA104D000647069 /* Statistics.cpp in Sources */,
+				27E1F96E1AA1052900647069 /* QuickSave.cpp in Sources */,
+				27E1F9801AA1059A00647069 /* HTTP.cpp in Sources */,
+				27E1F9A01AA1078800647069 /* sdl_resize.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5317,6 +5411,10 @@
 				27A7A49B178136AF00461252 /* lbitlib.c in Sources */,
 				27A7A49C178136AF00461252 /* lctype.c in Sources */,
 				27A7A4AA1781374100461252 /* FFmpegDecoder.cpp in Sources */,
+				27E1F9621AA104D000647069 /* Statistics.cpp in Sources */,
+				27E1F9721AA1052900647069 /* QuickSave.cpp in Sources */,
+				27E1F9841AA1059A00647069 /* HTTP.cpp in Sources */,
+				27E1F9A41AA1078800647069 /* sdl_resize.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5551,6 +5649,10 @@
 				27A7A498178136AF00461252 /* lbitlib.c in Sources */,
 				27A7A499178136AF00461252 /* lctype.c in Sources */,
 				27A7A4A81781374100461252 /* FFmpegDecoder.cpp in Sources */,
+				27E1F9641AA104D000647069 /* Statistics.cpp in Sources */,
+				27E1F9741AA1052900647069 /* QuickSave.cpp in Sources */,
+				27E1F9861AA1059A00647069 /* HTTP.cpp in Sources */,
+				27E1F9A61AA1078800647069 /* sdl_resize.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5785,6 +5887,10 @@
 				27A7A4A1178136AF00461252 /* lbitlib.c in Sources */,
 				27A7A4A2178136AF00461252 /* lctype.c in Sources */,
 				27A7A4AE1781374100461252 /* FFmpegDecoder.cpp in Sources */,
+				27E1F9601AA104D000647069 /* Statistics.cpp in Sources */,
+				27E1F9701AA1052900647069 /* QuickSave.cpp in Sources */,
+				27E1F9821AA1059A00647069 /* HTTP.cpp in Sources */,
+				27E1F9A21AA1078800647069 /* sdl_resize.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5915,7 +6021,7 @@
 					"/sw/include/boost-1_35",
 				);
 				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
-				INFOPLIST_FILE = AppStore/Marathon/Marathon.plist;
+				INFOPLIST_FILE = AppStore/Marathon/Info.plist;
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = Marathon;
@@ -6134,7 +6240,7 @@
 					"/sw/include/boost-1_35",
 				);
 				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
-				INFOPLIST_FILE = "AppStore/Marathon 2/Marathon 2.plist";
+				INFOPLIST_FILE = "AppStore/Marathon 2/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon 2";
@@ -6353,7 +6459,7 @@
 					"/sw/include/boost-1_35",
 				);
 				INFOPLIST_EXPAND_BUILD_SETTINGS = NO;
-				INFOPLIST_FILE = "AppStore/Marathon Infinity/Marathon Infinity.plist";
+				INFOPLIST_FILE = "AppStore/Marathon Infinity/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
 				PRESERVE_DEAD_CODE_INITS_AND_TERMS = YES;
 				PRODUCT_NAME = "Marathon Infinity";
