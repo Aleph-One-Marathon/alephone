@@ -29,15 +29,13 @@
 #include <time.h>
 
 struct QuickSave {
-    FileSpecifier metadata_file;
+    FileSpecifier save_file;
     std::string name;
     std::string level_name;
     time_t save_time;
     std::string formatted_time;
     int32 ticks;
     std::string formatted_ticks;
-    std::string save_file_name;
-    std::string preview_name;
     int16 players;
 
     bool operator<(const QuickSave& other) const {
@@ -46,7 +44,7 @@ struct QuickSave {
 };
 
 class QuickSaves {
-    friend class XML_QuickSaveParser;
+    friend class QuickSaveLoader;
 public:
     static QuickSaves* instance();
     typedef std::vector<QuickSave>::iterator iterator;

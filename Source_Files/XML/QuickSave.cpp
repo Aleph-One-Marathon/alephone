@@ -27,6 +27,7 @@
 #include <sstream>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/property_tree/ini_parser.hpp>
 
 #ifdef HAVE_SDL_IMAGE_H
 #include <SDL_image.h>
@@ -38,6 +39,7 @@
 #include "FileHandler.h"
 #include "world.h"
 #include "map.h"
+#include "wad.h"
 #include "overhead_map.h"
 #include "screen_drawing.h"
 #include "interface.h"
@@ -49,10 +51,10 @@
 #include "sdl_dialogs.h"
 #include "sdl_widgets.h"
 #include "Logging.h"
-#include "XML_ElementParser.h"
-#include "XML_Configure.h"
 #include "images.h"
 #include "sdl_resize.h"
+#include "SDL_rwops_ostream.h"
+#include "WadImageCache.h"
 
 namespace algo = boost::algorithm;
 
@@ -63,27 +65,16 @@ const int RENDER_SCALE = OVERHEAD_MAP_MAXIMUM_SCALE;
 const int PREVIEW_WIDTH = 128;
 const int PREVIEW_HEIGHT = 72;
 
-bool write_save_metadata(QuickSave& save);
+void create_updated_save(QuickSave& save);
 
 
-class QuickSaveLoader : public XML_Configure {
+class QuickSaveLoader {
 public:
     QuickSaveLoader() { }
     ~QuickSaveLoader() { }
     
     bool ParseDirectory(FileSpecifier& dir);
     bool ParseQuickSave(FileSpecifier& file);
-    
-protected:
-    virtual bool GetData();
-    virtual void ReportReadError();
-    virtual void ReportParseError(const char *ErrorString, int LineNumber);
-    virtual void ReportInterpretError(const char* ErrorString);
-    virtual bool RequestAbort();
-    
-private:
-    std::string m_name;
-    std::vector<char> m_data;
 };
 
 class QuickSaveImageCache {
@@ -123,38 +114,18 @@ SDL_Surface* QuickSaveImageCache::get(std::string image_name) {
     }
     
     // didn't find: load image
-    DirectorySpecifier path;
-    path.SetToQuickSavesDir();
-    FileSpecifier f = path + image_name;
-
-	// look for pre-scaled image first
-	std::ostringstream suffix;
-	suffix << "_" << PREVIEW_WIDTH << "x" << PREVIEW_HEIGHT << ".";
-	std::string smallpath = f.GetPath();
-	algo::replace_last(smallpath, ".", suffix.str());
-	FileSpecifier file(smallpath);
-	if (!file.Exists())
-		file = f;
+    FileSpecifier f;
+    f.SetToQuickSavesDir();
+	f.AddPart(image_name + ".sgaA");
 	
-	OpenedFile of;
-	if (!file.Open(of))
-		return NULL;
+	WadImageDescriptor desc;
+	desc.file = f;
+	desc.checksum = 0;
+	desc.index = SAVE_GAME_METADATA_INDEX;
+	desc.tag = SAVE_IMG_TAG;
 	
-#ifdef HAVE_SDL_IMAGE
-	SDL_Surface *img = IMG_Load_RW(of.GetRWops(), 0);
-#else
-	SDL_Surface *img = SDL_LoadBMP_RW(of.GetRWops(), 0);
-#endif
+	SDL_Surface *img = WadImageCache::instance()->get_image(desc, PREVIEW_WIDTH, PREVIEW_HEIGHT);
 	if (img) {
-		if (img->w != PREVIEW_WIDTH || img->h != PREVIEW_HEIGHT) {
-			img = SDL_Resize(img, PREVIEW_WIDTH, PREVIEW_HEIGHT, true, 1);
-#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE_H)
-			IMG_SavePNG(smallpath.c_str(), img, IMG_COMPRESS_DEFAULT, NULL, 0);
-#else
-			SDL_SaveBMP(img, smallpath.c_str());
-#endif
-		}
-		
         m_used.push_front(cache_pair_t(image_name, img));
         m_images[image_name] = m_used.begin();
         
@@ -269,7 +240,9 @@ void w_saves::item_selected()
 
 void w_saves::draw_item(QuickSaves::iterator it, SDL_Surface* s, int16 x, int16 y, uint16 width, bool selected) const
 {
-    SDL_Surface *image = QuickSaveImageCache::instance()->get(it->preview_name);
+    std::ostringstream oss;
+    oss << it->save_time;
+    SDL_Surface *image = QuickSaveImageCache::instance()->get(oss.str());
     SDL_Rect r = {x + 3, y + 3, PREVIEW_WIDTH, PREVIEW_HEIGHT};
     SDL_BlitSurface(image, NULL, s, &r);
     x += PREVIEW_WIDTH + 12;
@@ -369,7 +342,7 @@ static void dialog_rename(void *arg)
     rd.activate_widget(rename_w);
     if (rd.run() == 0) {
         sel.name = mac_roman_to_utf8(rename_w->get_text());
-        write_save_metadata(sel);
+		create_updated_save(sel);
         saves_w->update_selected(sel);
     }
 }
@@ -423,16 +396,12 @@ static void dialog_export(void *arg)
     if (!name.length())
         name = sel.level_name;
     
-    FileSpecifier srcFile;
-    srcFile.SetToQuickSavesDir();
-    srcFile += sel.save_file_name;
-    
     FileSpecifier dstFile;
     dstFile.SetToSavedGamesDir();
     dstFile += "unused.sgaA";
     char prompt[256];
     if (dstFile.WriteDialog(_typecode_savegame, getcstr(prompt, strPROMPTS, _save_replay_prompt), utf8_to_mac_roman(name).c_str())) {
-        dstFile.CopyContents(srcFile);
+        dstFile.CopyContents(sel.save_file);
         int error = dstFile.GetError();
         if (error)
             alert_user(infoError, strERRORS, fileError, error);
@@ -510,8 +479,7 @@ bool load_quick_save_dialog(FileSpecifier& saved_game)
     switch (d.run()) {
         case 0:
             sel = saves_w->selected_save();
-            saved_game.SetToQuickSavesDir();
-            saved_game += sel.save_file_name;
+            saved_game = sel.save_file;
             last_saved_game = saved_game;
             last_saved_networked = (sel.players > 1) ? 1 : 0;
             ret = true;
@@ -532,15 +500,15 @@ bool load_quick_save_dialog(FileSpecifier& saved_game)
 extern SDL_Surface *draw_surface;
 extern bool OGL_MapActive;
 
-static bool save_map_preview(FileSpecifier& file)
+static bool build_map_preview(std::ostringstream& ostream)
 {
     SDL_Rect r = {0, 0, RENDER_WIDTH, RENDER_HEIGHT};
     SDL_Surface *surface = SDL_CreateRGBSurface(SDL_SWSURFACE, r.w, r.h, 32, 0xff0000, 0x00ff00, 0x0000ff, 0);
     if (!surface)
         return false;
-    
+	
     SDL_FillRect(surface, &r, SDL_MapRGB(surface->format, 0, 0, 0));
-    
+	
     struct overhead_map_data overhead_data;
     overhead_data.half_width = r.w >> 1;
     overhead_data.half_height = r.h >> 1;
@@ -551,49 +519,137 @@ static bool save_map_preview(FileSpecifier& file)
     overhead_data.mode = _rendering_saved_game_preview;
     overhead_data.origin.x = local_player->location.x;
     overhead_data.origin.y = local_player->location.y;
-    
+	
     bool old_OGL_MapActive = OGL_MapActive;
     _set_port_to_custom(surface);
     OGL_MapActive = false;
     _render_overhead_map(&overhead_data);
     OGL_MapActive = old_OGL_MapActive;
     _restore_port();
-
+	
+    SDL_RWops *rwops = SDL_RWFromOStream(ostream);
 #if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE_H)
-	int ret = IMG_SavePNG(file.GetPath(), surface, IMG_COMPRESS_DEFAULT, NULL, 0);
+    int ret = IMG_SavePNG_RW(rwops, surface, IMG_COMPRESS_DEFAULT, NULL, 0);
 #else
-	int ret = SDL_SaveBMP(surface, file.GetPath());
+    int ret = SDL_SaveBMP_RW(surface, rwops, false);
 #endif
     SDL_FreeSurface(surface);
+    SDL_RWclose(rwops);
+	
     return (ret == 0);
 }
 
-bool write_save_metadata(QuickSave& save)
+std::string build_save_metadata(QuickSave& save)
 {
-    std::string lev_name = mac_roman_to_utf8(static_world->level_name);
-    boost::replace_all(lev_name, "&",  "&amp;");
-    boost::replace_all(lev_name, "\"", "&quot;");
-    boost::replace_all(lev_name, "\'", "&apos;");
-    boost::replace_all(lev_name, "<",  "&lt;");
-    boost::replace_all(lev_name, ">",  "&gt;");
-    
-    std::ofstream xout;
-    xout.open(save.metadata_file.GetPath());
-    xout << "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" << std::endl
-    << "<save_info"
-    << " name=\"" << save.name << "\""
-    << " level_name=\"" << save.level_name << "\""
-    << " ticks=\"" << save.ticks << "\""
-    << " ticks_formatted=\"" << save.formatted_ticks << "\""
-    << " time=\"" << save.save_time << "\""
-    << " time_formatted=\"" << save.formatted_time << "\""
-    << " save_game=\"" << save.save_file_name << "\""
-    << " preview=\"" << save.preview_name << "\""
-    << " players=\"" << save.players << "\""
-    << "/>" << std::endl;
-    xout.close();
-    
-    return true;
+	std::string lev_name = mac_roman_to_utf8(static_world->level_name);
+	
+	boost::property_tree::ptree pt;
+	pt.put("name", save.name);
+	pt.put("level_name", save.level_name);
+	pt.put("ticks", save.ticks);
+	pt.put("ticks_formatted", save.formatted_ticks);
+	pt.put("time", save.save_time);
+	pt.put("time_formatted", save.formatted_time);
+	pt.put("players", save.players);
+	
+	std::ostringstream xout;
+	boost::property_tree::ini_parser::write_ini(xout, pt);
+	
+	return xout.str();
+}
+
+void create_updated_save(QuickSave& save)
+{
+	// read data from existing save file
+	struct wad_header header;
+	struct wad_data *game_wad, *orig_meta_wad, *new_meta_wad;
+	int32 game_wad_length;
+	std::string imagedata;
+	
+	OpenedFile currentFile;
+	if (save.save_file.Open(currentFile))
+	{
+		if (read_wad_header(currentFile, &header))
+		{
+			game_wad = read_indexed_wad_from_file(currentFile, &header, 0, false);
+			if (game_wad) game_wad_length = calculate_wad_length(&header, game_wad);
+
+			orig_meta_wad = read_indexed_wad_from_file(currentFile, &header, SAVE_GAME_METADATA_INDEX, true);
+			
+			if (orig_meta_wad)
+			{
+				size_t data_length;
+				char *raw_imagedata = (char *)extract_type_from_wad(orig_meta_wad, SAVE_IMG_TAG, &data_length);
+				imagedata = std::string(raw_imagedata, data_length);
+			}
+		}
+		close_wad_file(currentFile);
+	}
+	
+	// create updated save file
+	short err = 0;
+	int32 offset, meta_wad_length;
+	struct directory_entry entries[2];
+	
+	FileSpecifier TempFile;
+	TempFile.SetTempName(save.save_file);
+	
+	if (create_wadfile(TempFile, _typecode_savegame))
+	{
+		OpenedFile SaveFile;
+		if(open_wad_file_for_writing(TempFile, SaveFile))
+		{
+			if (write_wad_header(SaveFile, &header))
+			{
+				offset = SIZEOF_wad_header;
+				
+				set_indexed_directory_offset_and_length(&header, entries, 0, offset, game_wad_length, 0);
+				
+				if (write_wad(SaveFile, &header, game_wad, offset))
+				{
+					offset += game_wad_length;
+					header.directory_offset= offset;
+					
+					new_meta_wad = build_meta_game_wad(build_save_metadata(save), imagedata, &header, &meta_wad_length);
+					if (new_meta_wad)
+					{
+						set_indexed_directory_offset_and_length(&header, entries, 1, offset, meta_wad_length, SAVE_GAME_METADATA_INDEX);
+						
+						if (write_wad(SaveFile, &header, new_meta_wad, offset))
+						{
+							offset += meta_wad_length;
+							header.directory_offset= offset;
+							
+							if (write_wad_header(SaveFile, &header) && write_directorys(SaveFile, &header, entries))
+							{
+							}
+						}
+						free_wad(new_meta_wad);
+					}
+				}
+				free_wad(game_wad);
+				free_wad(orig_meta_wad);
+			}
+
+			err = SaveFile.GetError();
+			close_wad_file(SaveFile);
+		}
+		
+		if (!err)
+		{
+			if (!TempFile.Rename(save.save_file))
+			{
+				err = 1;
+			}
+		}
+	}
+	
+	if (err || error_pending())
+	{
+		if (!err) err = get_game_error(NULL);
+		alert_user(infoError, strERRORS, fileError, err);
+		clear_game_error();
+	}
 }
 
 bool create_quick_save(void)
@@ -621,40 +677,19 @@ bool create_quick_save(void)
                 (save.ticks/TICKS_PER_SECOND) % 60);
     save.formatted_ticks = fmt_ticks;
     
-    DirectorySpecifier metadata_dir;
-    metadata_dir.SetToQuickSavesDir();
+    DirectorySpecifier quicksave_dir;
+    quicksave_dir.SetToQuickSavesDir();
     std::ostringstream oss;
     oss << save.save_time;
     std::string base = oss.str();
 
-    save.metadata_file.FromDirectory(metadata_dir);
-    save.metadata_file.AddPart(base + ".xml");
-    save.save_file_name = base + ".sgaA";
-#if defined(HAVE_PNG) && defined(HAVE_SDL_IMAGE_H)
-	save.preview_name = base + ".png";
-#else
-    save.preview_name = base + ".bmp";
-#endif
+    save.save_file.FromDirectory(quicksave_dir);
+    save.save_file.AddPart(base + ".sgaA");
 	
-    FileSpecifier save_game, save_image;
-    save_game.FromDirectory(metadata_dir);
-    save_game.AddPart(save.save_file_name);
-    save_image.FromDirectory(metadata_dir);
-    save_image.AddPart(save.preview_name);
-    
-    bool success = save_game_file(save_game);
-    if (success) {
-        success = save_map_preview(save_image);
-        if (!success)
-            save_game.Delete();
-    }
-    if (success) {
-        success = write_save_metadata(save);
-        if (!success) {
-            save_game.Delete();
-            save_image.Delete();
-        }
-    }
+    std::string metadata = build_save_metadata(save);
+    std::ostringstream image_stream;
+    bool success = build_map_preview(image_stream);
+    success = save_game_file(save.save_file, metadata, image_stream.str());
     
     if (success)
         QuickSaves::instance()->delete_surplus_saves(environment_preferences->maximum_quick_saves);
@@ -663,166 +698,57 @@ bool create_quick_save(void)
 
 bool delete_quick_save(QuickSave& save)
 {
-    DirectorySpecifier metadata_dir;
-    save.metadata_file.ToDirectory(metadata_dir);
-    
-    if (save.preview_name.length())
-    {
-        FileSpecifier save_image;
-        save_image.FromDirectory(metadata_dir);
-        save_image.AddPart(save.preview_name);
-        save_image.Delete();
-        
-        // delete pre-scaled version
-        std::ostringstream suffix;
-        suffix << "_" << PREVIEW_WIDTH << "x" << PREVIEW_HEIGHT << ".";
-        std::string smallpath = save_image.GetPath();
-        algo::replace_last(smallpath, ".", suffix.str());
-        save_image = smallpath;
-        save_image.Delete();
-    }
-    if (save.save_file_name.length())
-    {
-        FileSpecifier save_game;
-        save_game.FromDirectory(metadata_dir);
-        save_game.AddPart(save.save_file_name);
-        save_game.Delete();
-    }
-    return save.metadata_file.Delete();
-}
-
-static QuickSave Data;
-static FileSpecifier DataFile;
-
-class XML_QuickSaveParser : public XML_ElementParser
-{
-public:
-    bool Start();
-    bool HandleAttribute(const char* Tag, const char* Value);
-    bool AttributesDone();
-    bool End();
-    
-    XML_QuickSaveParser() : XML_ElementParser("save_info") {}
-};
-
-bool XML_QuickSaveParser::Start() {
-    Data = QuickSave();
-    Data.metadata_file = DataFile;
-    return true;
-}
-
-bool XML_QuickSaveParser::HandleAttribute(const char* Tag, const char* Value)
-{
-    if (StringsEqual(Tag, "name")) {
-        Data.name = Value;
-        return true;
-    } else if (StringsEqual(Tag, "level_name")) {
-        Data.level_name = Value;
-        return true;
-    } else if (StringsEqual(Tag, "ticks")) {
-        ReadInt32Value(Value, Data.ticks);
-        return true;
-    } else if (StringsEqual(Tag, "ticks_formatted")) {
-        Data.formatted_ticks = Value;
-        return true;
-    } else if (StringsEqual(Tag, "time")) {
-        std::istringstream stream(Value);
-        stream >> Data.save_time;
-        return true;
-    } else if (StringsEqual(Tag, "time_formatted")) {
-        Data.formatted_time = Value;
-        return true;
-    } else if (StringsEqual(Tag, "save_game")) {
-        Data.save_file_name = Value;
-        return true;
-    } else if (StringsEqual(Tag, "preview")) {
-        Data.preview_name = Value;
-        return true;
-    } else if (StringsEqual(Tag, "players")) {
-        ReadBoundedInt16Value(Value, Data.players, 1, 8);
-        return true;
-    }
-
-    UnrecognizedTag();
-    return false;
-}
-
-bool XML_QuickSaveParser::AttributesDone()
-{
-    if (Data.save_file_name == "") {
-        AttribsMissing();
-        return false;
-    }
-    
-    return true;
-}
-
-bool XML_QuickSaveParser::End() {
-    QuickSaves::instance()->add(Data);
-    return true;
-}
-
-XML_ElementParser QuickSaveRootParser("");
-XML_QuickSaveParser QuickSaveParser;
-
-bool QuickSaveLoader::GetData()
-{
-    if (m_data.size() == 0) {
-        return false;
-    }
-    
-    Buffer = &m_data[0];
-    BufLen = m_data.size();
-    LastOne = true;
-    
-    return true;
-}
-
-void QuickSaveLoader::ReportReadError()
-{
-    logError1("Error reading %s quick save", m_name.c_str());
-}
-
-void QuickSaveLoader::ReportParseError(const char* ErrorString, int LineNumber)
-{
-    logError3("XML parsing error: %s at line %d in %s", ErrorString, LineNumber, m_name.c_str());
-}
-
-const int MaxErrorsToShow = 7;
-
-void QuickSaveLoader::ReportInterpretError(const char* ErrorString)
-{
-    if (GetNumInterpretErrors() < MaxErrorsToShow) {
-        logError(ErrorString);
-    }
-}
-
-bool QuickSaveLoader::RequestAbort()
-{
-    return (GetNumInterpretErrors() >= MaxErrorsToShow);
+	// delete cached images
+	WadImageDescriptor desc;
+	desc.file = save.save_file;
+	desc.checksum = 0;
+	desc.index = SAVE_GAME_METADATA_INDEX;
+	desc.tag = SAVE_IMG_TAG;
+	WadImageCache::instance()->remove_image(desc);
+	
+	return save.save_file.Delete();
 }
 
 bool QuickSaveLoader::ParseQuickSave(FileSpecifier& file_name)
 {
-    OpenedFile file;
+	struct wad_header header;
+	struct wad_data *wad;
+
+	OpenedFile file;
     if (file_name.Open(file))
     {
-        
-        int32 data_size;
-        file.GetLength(data_size);
-        m_data.resize(data_size);
-        
-        if (file.Read(data_size, &m_data[0]))
-        {
-            DataFile = file_name;
-            m_name = file_name.GetPath();
-            if (!DoParse())
-            {
-                logError1("There were parsing errors in %s\n", m_name.c_str());
-            }
-        }
-        
-        m_data.clear();
+        if (read_wad_header(file, &header))
+		{
+			wad = read_indexed_wad_from_file(file, &header, SAVE_GAME_METADATA_INDEX, true);
+			if (wad)
+			{
+				size_t data_length;
+				char *raw_metadata = (char *)extract_type_from_wad(wad, SAVE_META_TAG, &data_length);
+				std::string metadata = std::string(raw_metadata, data_length);
+				
+				boost::property_tree::ptree pt;
+				std::istringstream strm(metadata);
+				try {
+					boost::property_tree::ini_parser::read_ini(strm, pt);
+				} catch (...) {
+					return false;
+				}
+				
+				QuickSave Data = QuickSave();
+				Data.save_file = file_name;
+				Data.name = pt.get("name", Data.name);
+				Data.level_name = pt.get("level_name", Data.level_name);
+				Data.ticks = pt.get("ticks", Data.ticks);
+				Data.formatted_ticks = pt.get("ticks_formatted", Data.formatted_ticks);
+				Data.save_time = pt.get("time", Data.save_time);
+				Data.formatted_time = pt.get("time_formatted", Data.formatted_time);
+				Data.players = pt.get("players", Data.players);
+				QuickSaves::instance()->add(Data);
+				
+				free_wad(wad);
+			}
+		}
+		
         return true;
     }
     return false;
@@ -836,7 +762,7 @@ bool QuickSaveLoader::ParseDirectory(FileSpecifier& dir)
     
     for (std::vector<dir_entry>::const_iterator it = de.begin(); it != de.end(); ++it) {
         FileSpecifier file = dir + it->name;
-        if (algo::ends_with(it->name, ".xml"))
+        if (algo::ends_with(it->name, ".sgaA"))
         {
             ParseQuickSave(file);
         }
@@ -857,12 +783,9 @@ QuickSaves* QuickSaves::instance() {
 
 void QuickSaves::enumerate() {
     clear();
-    
-    QuickSaveRootParser.AddChild(&QuickSaveParser);
-    
+	
     logContext("parsing quick saves");
     QuickSaveLoader loader;
-    loader.CurrentElement = &QuickSaveRootParser;
     
     DirectorySpecifier path;
     path.SetToQuickSavesDir();

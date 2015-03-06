@@ -35,7 +35,9 @@ Aug 12, 2000 (Loren Petrich):
 
 class FileSpecifier;
 
-bool save_game_file(FileSpecifier& File);
+bool save_game_file(FileSpecifier& File, const std::string& metadata, const std::string& imagedata);
+struct wad_data *build_meta_game_wad(const std::string& metadata, const std::string& imagedata, struct wad_header *header, int32 *length);
+
 bool export_level(FileSpecifier& File);
 
 /* -------------- New functions */
@@ -62,5 +64,7 @@ void level_has_embedded_physics_lua(int Level, bool& HasPhysics, bool& HasLua);
 void get_savegame_filedesc(FileSpecifier& File);
 
 void add_finishing_touches_to_save_file(FileSpecifier& File);
+
+const int SAVE_GAME_METADATA_INDEX = 1000;
 
 #endif

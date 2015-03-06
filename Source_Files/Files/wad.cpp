@@ -538,7 +538,7 @@ void *read_directory_data(
 struct wad_data *append_data_to_wad(
 	struct wad_data *wad, 
 	WadDataType type, 
-	void *data, 
+	const void *data,
 	size_t size,
 	size_t offset) /* Allows for inplace creation of wadfiles */
 {

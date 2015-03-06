@@ -211,7 +211,7 @@ void set_indexed_directory_offset_and_length(struct wad_header *header,
 struct wad_data *append_data_to_wad(
 	struct wad_data *wad, 
 	WadDataType type, 
-	void *data, 
+	const void *data,
 	size_t size, 
 	size_t offset);
 

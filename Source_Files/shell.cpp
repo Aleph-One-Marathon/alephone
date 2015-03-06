@@ -123,6 +123,7 @@
 #include "Console.h"
 #include "Movie.h"
 #include "HTTP.h"
+#include "WadImageCache.h"
 
 // LP addition: whether or not the cheats are active
 // Defined in shell_misc.cpp
@@ -158,6 +159,7 @@ DirectorySpecifier bundle_data_dir;	  // Data inside Mac OS X app bundle
 DirectorySpecifier preferences_dir;   // Directory for preferences
 DirectorySpecifier saved_games_dir;   // Directory for saved games
 DirectorySpecifier quick_saves_dir;   // Directory for auto-named saved games
+DirectorySpecifier image_cache_dir;   // Directory for image cache
 DirectorySpecifier recordings_dir;    // Directory for recordings (except film buffer, which is stored in local_data_dir)
 DirectorySpecifier screenshots_dir;   // Directory for screenshots
 DirectorySpecifier log_dir;           // Directory for Aleph One Log.txt
@@ -538,6 +540,7 @@ static void initialize_application(void)
 #endif	
 	saved_games_dir = local_data_dir + "Saved Games";
 	quick_saves_dir = local_data_dir + "Quick Saves";
+	image_cache_dir = local_data_dir + "Image Cache";
 	recordings_dir = local_data_dir + "Recordings";
 	screenshots_dir = local_data_dir + "Screenshots";
 #if defined(__APPLE__) && defined(__MACH__)
@@ -609,10 +612,13 @@ static void initialize_application(void)
 		quick_saves_dir += scen;
 		quick_saves_dir.CreateDirectory();
 	}
+	image_cache_dir.CreateDirectory();
 	recordings_dir.CreateDirectory();
 	screenshots_dir.CreateDirectory();
 	local_mml_dir.CreateDirectory();
 	local_themes_dir.CreateDirectory();
+	
+	WadImageCache::instance()->initialize_cache();
 
 #ifndef HAVE_OPENGL
 	graphics_preferences->screen_mode.acceleration = _no_acceleration;

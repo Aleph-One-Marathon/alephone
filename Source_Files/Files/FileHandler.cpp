@@ -91,7 +91,7 @@ namespace io = boost::iostreams;
 
 // From shell_sdl.cpp
 extern vector<DirectorySpecifier> data_search_path;
-extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, quick_saves_dir, recordings_dir;
+extern DirectorySpecifier local_data_dir, preferences_dir, saved_games_dir, quick_saves_dir, image_cache_dir, recordings_dir;
 
 extern bool is_applesingle(SDL_RWops *f, bool rsrc_fork, int32 &offset, int32 &length);
 extern bool is_macbinary(SDL_RWops *f, int32 &data_length, int32 &rsrc_length);
@@ -684,6 +684,12 @@ void FileSpecifier::SetToSavedGamesDir()
 void FileSpecifier::SetToQuickSavesDir()
 {
 	name = quick_saves_dir.name;
+}
+
+// Set to image cache directory
+void FileSpecifier::SetToImageCacheDir()
+{
+	name = image_cache_dir.name;
 }
 
 // Set to recordings directory

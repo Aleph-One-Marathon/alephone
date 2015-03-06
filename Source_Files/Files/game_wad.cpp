@@ -1420,14 +1420,14 @@ void get_current_saved_game_name(FileSpecifier& File)
 }
 
 /* The current mapfile should be set to the save game file... */
-bool save_game_file(FileSpecifier& File)
+bool save_game_file(FileSpecifier& File, const std::string& metadata, const std::string& imagedata)
 {
 	struct wad_header header;
 	short err = 0;
 	bool success= false;
 	int32 offset, wad_length;
-	struct directory_entry entry;
-	struct wad_data *wad;
+	struct directory_entry entries[2];
+	struct wad_data *wad, *meta_wad;
 
 	/* Save off the random seed. */
 	dynamic_world->random_seed= get_random_seed();
@@ -1442,7 +1442,7 @@ bool save_game_file(FileSpecifier& File)
 	TempFile.SetTempName(File);
 	
 	/* Fill in the default wad header (we are using File instead of TempFile to get the name right in the header) */
-	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 1, 0, &header);
+	fill_default_wad_header(File, CURRENT_WADFILE_VERSION, EDITOR_MAP_VERSION, 2, 0, &header);
 		
 	/* Assume that we confirmed on save as... */
 	if (create_wadfile(TempFile,_typecode_savegame))
@@ -1460,7 +1460,7 @@ bool save_game_file(FileSpecifier& File)
 				{
 					/* Set the entry data.. */
 					set_indexed_directory_offset_and_length(&header, 
-						&entry, 0, offset, wad_length, 0);
+						entries, 0, offset, wad_length, 0);
 					
 					/* Save it.. */
 					if (write_wad(SaveFile, &header, wad, offset))
@@ -1469,17 +1469,28 @@ bool save_game_file(FileSpecifier& File)
 						offset+= wad_length;
 						header.directory_offset= offset;
 						header.parent_checksum= read_wad_file_checksum(MapFileSpec);
-						if (write_wad_header(SaveFile, &header) && write_directorys(SaveFile, &header, &entry))
+						
+						/* Create metadata wad */
+						meta_wad = build_meta_game_wad(metadata, imagedata, &header, &wad_length);
+						if (meta_wad)
 						{
-							/* This function saves the overhead map as a thumbnail, as well */
-							/*  as adding the string resource that tells you what it is when */
-							/*  it is clicked on & Marathon2 isn't installed.  Obviously, both */
-							/*  of these are superfluous for a dos environment. */
-							add_finishing_touches_to_save_file(TempFile);
-
-							/* We win. */
-							success= true;
-						} 
+							set_indexed_directory_offset_and_length(&header,
+								entries, 1, offset, wad_length, SAVE_GAME_METADATA_INDEX);
+							
+							if (write_wad(SaveFile, &header, meta_wad, offset))
+							{
+								offset+= wad_length;
+								header.directory_offset= offset;
+						
+								if (write_wad_header(SaveFile, &header) && write_directorys(SaveFile, &header, entries))
+								{
+									/* We win. */
+									success= true;
+								}
+							}
+							
+							free_wad(meta_wad);
+						}
 					}
 
 					free_wad(wad);
@@ -2598,6 +2609,35 @@ static struct wad_data *build_save_game_wad(
 				wad= append_data_to_wad(wad, save_data[loop].tag, array_to_slam, size, 0);
 				delete []array_to_slam;
 			}
+		}
+		if(wad) *length= calculate_wad_length(header, wad);
+	}
+	
+	return wad;
+}
+
+/* Build save game wad holding metadata and preview image */
+struct wad_data *build_meta_game_wad(
+	const std::string& metadata,
+	const std::string& imagedata,
+	struct wad_header *header,
+	int32 *length)
+{
+	struct wad_data *wad= NULL;
+	
+	wad= create_empty_wad();
+	if(wad)
+	{
+		size_t size = metadata.length();
+		if (size)
+		{
+			wad= append_data_to_wad(wad, SAVE_META_TAG, metadata.c_str(), size, 0);
+		}
+
+		size_t imgsize = imagedata.length();
+		if (imgsize)
+		{
+			wad= append_data_to_wad(wad, SAVE_IMG_TAG, imagedata.c_str(), imgsize, 0);
 		}
 		if(wad) *length= calculate_wad_length(header, wad);
 	}

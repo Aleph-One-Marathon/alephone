@@ -133,6 +133,22 @@
 		278BCAF01A51C53C006F9756 /* speexdsp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 278BCAEE1A51C53C006F9756 /* speexdsp.framework */; };
 		278BCAF11A51C53C006F9756 /* speexdsp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 278BCAEE1A51C53C006F9756 /* speexdsp.framework */; };
 		278BCAF21A51C53C006F9756 /* speexdsp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 278BCAEE1A51C53C006F9756 /* speexdsp.framework */; };
+		278E0C731AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C711AA3CD4500FA93B7 /* WadImageCache.cpp */; };
+		278E0C741AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C711AA3CD4500FA93B7 /* WadImageCache.cpp */; };
+		278E0C751AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C711AA3CD4500FA93B7 /* WadImageCache.cpp */; };
+		278E0C761AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C711AA3CD4500FA93B7 /* WadImageCache.cpp */; };
+		278E0C771AA3CD4500FA93B7 /* WadImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C721AA3CD4500FA93B7 /* WadImageCache.h */; };
+		278E0C781AA3CD4500FA93B7 /* WadImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C721AA3CD4500FA93B7 /* WadImageCache.h */; };
+		278E0C791AA3CD4500FA93B7 /* WadImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C721AA3CD4500FA93B7 /* WadImageCache.h */; };
+		278E0C7A1AA3CD4500FA93B7 /* WadImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C721AA3CD4500FA93B7 /* WadImageCache.h */; };
+		278E0C7D1AA4012600FA93B7 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C7B1AA4012600FA93B7 /* SDL_rwops_ostream.cpp */; };
+		278E0C7E1AA4012600FA93B7 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C7B1AA4012600FA93B7 /* SDL_rwops_ostream.cpp */; };
+		278E0C7F1AA4012600FA93B7 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C7B1AA4012600FA93B7 /* SDL_rwops_ostream.cpp */; };
+		278E0C801AA4012600FA93B7 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 278E0C7B1AA4012600FA93B7 /* SDL_rwops_ostream.cpp */; };
+		278E0C811AA4012600FA93B7 /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C7C1AA4012600FA93B7 /* SDL_rwops_ostream.h */; };
+		278E0C821AA4012600FA93B7 /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C7C1AA4012600FA93B7 /* SDL_rwops_ostream.h */; };
+		278E0C831AA4012600FA93B7 /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C7C1AA4012600FA93B7 /* SDL_rwops_ostream.h */; };
+		278E0C841AA4012600FA93B7 /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 278E0C7C1AA4012600FA93B7 /* SDL_rwops_ostream.h */; };
 		27911B24100073460063ACB6 /* HUDRenderer_Lua.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */; };
 		27911B25100073460063ACB6 /* HUDRenderer_Lua.h in Headers */ = {isa = PBXBuildFile; fileRef = 27911B23100073460063ACB6 /* HUDRenderer_Lua.h */; };
 		27928612170F92D20005CD56 /* lbitlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 27928610170F92D20005CD56 /* lbitlib.c */; };
@@ -2036,6 +2052,10 @@
 		2784979E0FF5C308008DECC8 /* lua_hud_script.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_hud_script.h; sourceTree = "<group>"; };
 		2784979F0FF5C308008DECC8 /* lua_mnemonics.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_mnemonics.h; sourceTree = "<group>"; };
 		278BCAEE1A51C53C006F9756 /* speexdsp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = speexdsp.framework; sourceTree = "<group>"; };
+		278E0C711AA3CD4500FA93B7 /* WadImageCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WadImageCache.cpp; sourceTree = "<group>"; };
+		278E0C721AA3CD4500FA93B7 /* WadImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WadImageCache.h; sourceTree = "<group>"; };
+		278E0C7B1AA4012600FA93B7 /* SDL_rwops_ostream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SDL_rwops_ostream.cpp; sourceTree = "<group>"; };
+		278E0C7C1AA4012600FA93B7 /* SDL_rwops_ostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rwops_ostream.h; sourceTree = "<group>"; };
 		27911B22100073460063ACB6 /* HUDRenderer_Lua.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = HUDRenderer_Lua.cpp; sourceTree = "<group>"; };
 		27911B23100073460063ACB6 /* HUDRenderer_Lua.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = HUDRenderer_Lua.h; sourceTree = "<group>"; };
 		27928610170F92D20005CD56 /* lbitlib.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = lbitlib.c; sourceTree = "<group>"; };
@@ -3225,6 +3245,7 @@
 		F5CC91FE0240D09B01A80001 /* Files */ = {
 			isa = PBXGroup;
 			children = (
+				278E0C7B1AA4012600FA93B7 /* SDL_rwops_ostream.cpp */,
 				2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */,
 				2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */,
 				F5CC92D60240D4C001A80001 /* Headers */,
@@ -3240,6 +3261,7 @@
 				3D5F21430403230F00000104 /* preprocess_map_shared.cpp */,
 				F5CC92150240D09B01A80001 /* wad.cpp */,
 				F5CC92170240D09B01A80001 /* wad_prefs.cpp */,
+				278E0C711AA3CD4500FA93B7 /* WadImageCache.cpp */,
 			);
 			name = Files;
 			path = ../Source_Files/Files;
@@ -3327,6 +3349,7 @@
 		F5CC92D60240D4C001A80001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				278E0C7C1AA4012600FA93B7 /* SDL_rwops_ostream.h */,
 				EF2EF5E404819EBF00A8000D /* AStream.h */,
 				F5CC92000240D09B01A80001 /* crc.h */,
 				F5CC92010240D09B01A80001 /* extensions.h */,
@@ -3338,6 +3361,7 @@
 				F5CC92070240D09B01A80001 /* tags.h */,
 				F5CC92080240D09B01A80001 /* wad.h */,
 				F5CC92090240D09B01A80001 /* wad_prefs.h */,
+				278E0C721AA3CD4500FA93B7 /* WadImageCache.h */,
 			);
 			name = Headers;
 			sourceTree = "<group>";
@@ -3763,6 +3787,7 @@
 				AE505B7A141D45E600915344 /* flood_map.h in Headers */,
 				AE505B7B141D45E600915344 /* item_definitions.h in Headers */,
 				AE505B7C141D45E600915344 /* items.h in Headers */,
+				278E0C831AA4012600FA93B7 /* SDL_rwops_ostream.h in Headers */,
 				AE505B7D141D45E600915344 /* lightsource.h in Headers */,
 				AE505B7E141D45E600915344 /* map.h in Headers */,
 				276BED121A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
@@ -3802,6 +3827,7 @@
 				AE505B9E141D45E600915344 /* RenderVisTree.h in Headers */,
 				AE505B9F141D45E600915344 /* scottish_textures.h in Headers */,
 				AE505BA0141D45E600915344 /* shape_definitions.h in Headers */,
+				278E0C791AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AE505BA1141D45E600915344 /* shape_descriptors.h in Headers */,
 				AE505BA2141D45E600915344 /* textures.h in Headers */,
 				AE505BA3141D45E600915344 /* ChaseCam.h in Headers */,
@@ -3986,6 +4012,7 @@
 				AEB4A11A14296CAE00537AE7 /* flood_map.h in Headers */,
 				AEB4A11B14296CAE00537AE7 /* item_definitions.h in Headers */,
 				AEB4A11C14296CAE00537AE7 /* items.h in Headers */,
+				278E0C841AA4012600FA93B7 /* SDL_rwops_ostream.h in Headers */,
 				AEB4A11D14296CAE00537AE7 /* lightsource.h in Headers */,
 				AEB4A11E14296CAE00537AE7 /* map.h in Headers */,
 				276BED131A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
@@ -4025,6 +4052,7 @@
 				AEB4A13E14296CAE00537AE7 /* RenderVisTree.h in Headers */,
 				AEB4A13F14296CAE00537AE7 /* scottish_textures.h in Headers */,
 				AEB4A14014296CAE00537AE7 /* shape_definitions.h in Headers */,
+				278E0C7A1AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AEB4A14114296CAE00537AE7 /* shape_descriptors.h in Headers */,
 				AEB4A14214296CAE00537AE7 /* textures.h in Headers */,
 				AEB4A14314296CAE00537AE7 /* ChaseCam.h in Headers */,
@@ -4191,6 +4219,7 @@
 				AEC3C73A09AD68AC003258E4 /* CircularQueue.h in Headers */,
 				AEC3C73B09AD68AC003258E4 /* preferences_widgets_sdl.h in Headers */,
 				AEC3C73C09AD68AC003258E4 /* network_distribution_types.h in Headers */,
+				278E0C811AA4012600FA93B7 /* SDL_rwops_ostream.h in Headers */,
 				AEC3C73D09AD68AC003258E4 /* network_speaker_sdl.h in Headers */,
 				AEC3C73E09AD68AC003258E4 /* crc.h in Headers */,
 				AEC3C73F09AD68AC003258E4 /* extensions.h in Headers */,
@@ -4338,6 +4367,7 @@
 				AEFE7C2D0DB03FA700D11DE2 /* expat.h in Headers */,
 				AEFE7C2E0DB03FA800D11DE2 /* expat_external.h in Headers */,
 				AEAE12FF0FC9AB4900EDA5A6 /* joystick.h in Headers */,
+				278E0C771AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AEAE13220FC9C38400EDA5A6 /* lua_serialize.h in Headers */,
 				AEAE132F0FC9C3C800EDA5A6 /* BStream.h in Headers */,
 				270D534C0FCB417500482ED4 /* OGL_Blitter.h in Headers */,
@@ -4433,6 +4463,7 @@
 				AEFD862813EB84CF00C1E687 /* flood_map.h in Headers */,
 				AEFD862913EB84CF00C1E687 /* item_definitions.h in Headers */,
 				AEFD862A13EB84CF00C1E687 /* items.h in Headers */,
+				278E0C821AA4012600FA93B7 /* SDL_rwops_ostream.h in Headers */,
 				AEFD862B13EB84CF00C1E687 /* lightsource.h in Headers */,
 				AEFD862C13EB84CF00C1E687 /* map.h in Headers */,
 				276BED111A846FD900AE52F4 /* CourierPrimeBoldItalic.h in Headers */,
@@ -4472,6 +4503,7 @@
 				AEFD864C13EB84CF00C1E687 /* RenderVisTree.h in Headers */,
 				AEFD864D13EB84CF00C1E687 /* scottish_textures.h in Headers */,
 				AEFD864E13EB84CF00C1E687 /* shape_definitions.h in Headers */,
+				278E0C781AA3CD4500FA93B7 /* WadImageCache.h in Headers */,
 				AEFD864F13EB84CF00C1E687 /* shape_descriptors.h in Headers */,
 				AEFD865013EB84CF00C1E687 /* textures.h in Headers */,
 				AEFD865113EB84CF00C1E687 /* ChaseCam.h in Headers */,
@@ -5011,6 +5043,7 @@
 				AE505C26141D45E600915344 /* StudioLoader.cpp in Sources */,
 				AE505C27141D45E600915344 /* WavefrontLoader.cpp in Sources */,
 				AE505C28141D45E600915344 /* csdialogs_sdl.cpp in Sources */,
+				278E0C7F1AA4012600FA93B7 /* SDL_rwops_ostream.cpp in Sources */,
 				AE505C29141D45E600915344 /* mytm_sdl.cpp in Sources */,
 				AE505C2A141D45E600915344 /* PlayerImage_sdl.cpp in Sources */,
 				AE505C2B141D45E600915344 /* thread_priority_sdl_macosx.cpp in Sources */,
@@ -5059,6 +5092,7 @@
 				AE505C55141D45E600915344 /* AnimatedTextures.cpp in Sources */,
 				AE505C56141D45E600915344 /* Crosshairs_SDL.cpp in Sources */,
 				AE505C57141D45E600915344 /* ImageLoader_SDL.cpp in Sources */,
+				278E0C751AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */,
 				AE505C58141D45E600915344 /* OGL_Faders.cpp in Sources */,
 				AE505C59141D45E600915344 /* OGL_Render.cpp in Sources */,
 				AE505C5A141D45E600915344 /* OGL_Setup.cpp in Sources */,
@@ -5248,6 +5282,7 @@
 				AEB4A1C714296CAE00537AE7 /* StudioLoader.cpp in Sources */,
 				AEB4A1C814296CAE00537AE7 /* WavefrontLoader.cpp in Sources */,
 				AEB4A1C914296CAE00537AE7 /* csdialogs_sdl.cpp in Sources */,
+				278E0C801AA4012600FA93B7 /* SDL_rwops_ostream.cpp in Sources */,
 				AEB4A1CA14296CAE00537AE7 /* mytm_sdl.cpp in Sources */,
 				AEB4A1CB14296CAE00537AE7 /* PlayerImage_sdl.cpp in Sources */,
 				AEB4A1CC14296CAE00537AE7 /* thread_priority_sdl_macosx.cpp in Sources */,
@@ -5296,6 +5331,7 @@
 				AEB4A1F614296CAE00537AE7 /* AnimatedTextures.cpp in Sources */,
 				AEB4A1F714296CAE00537AE7 /* Crosshairs_SDL.cpp in Sources */,
 				AEB4A1F814296CAE00537AE7 /* ImageLoader_SDL.cpp in Sources */,
+				278E0C761AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */,
 				AEB4A1F914296CAE00537AE7 /* OGL_Faders.cpp in Sources */,
 				AEB4A1FA14296CAE00537AE7 /* OGL_Render.cpp in Sources */,
 				AEB4A1FB14296CAE00537AE7 /* OGL_Setup.cpp in Sources */,
@@ -5485,6 +5521,7 @@
 				AEC3C7ED09AD68AC003258E4 /* StudioLoader.cpp in Sources */,
 				AEC3C7EE09AD68AC003258E4 /* WavefrontLoader.cpp in Sources */,
 				AEC3C7EF09AD68AC003258E4 /* csdialogs_sdl.cpp in Sources */,
+				278E0C7D1AA4012600FA93B7 /* SDL_rwops_ostream.cpp in Sources */,
 				AEC3C7F009AD68AC003258E4 /* mytm_sdl.cpp in Sources */,
 				AEC3C7F109AD68AC003258E4 /* PlayerImage_sdl.cpp in Sources */,
 				AEC3C7F209AD68AC003258E4 /* thread_priority_sdl_macosx.cpp in Sources */,
@@ -5533,6 +5570,7 @@
 				AEC3C81F09AD68AC003258E4 /* AnimatedTextures.cpp in Sources */,
 				AEC3C82009AD68AC003258E4 /* Crosshairs_SDL.cpp in Sources */,
 				AEC3C82109AD68AC003258E4 /* ImageLoader_SDL.cpp in Sources */,
+				278E0C731AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */,
 				AEC3C82209AD68AC003258E4 /* OGL_Faders.cpp in Sources */,
 				AEC3C82309AD68AC003258E4 /* OGL_Render.cpp in Sources */,
 				AEC3C82409AD68AC003258E4 /* OGL_Setup.cpp in Sources */,
@@ -5722,6 +5760,7 @@
 				AEFD86D313EB84CF00C1E687 /* StudioLoader.cpp in Sources */,
 				AEFD86D413EB84CF00C1E687 /* WavefrontLoader.cpp in Sources */,
 				AEFD86D513EB84CF00C1E687 /* csdialogs_sdl.cpp in Sources */,
+				278E0C7E1AA4012600FA93B7 /* SDL_rwops_ostream.cpp in Sources */,
 				AEFD86D613EB84CF00C1E687 /* mytm_sdl.cpp in Sources */,
 				AEFD86D713EB84CF00C1E687 /* PlayerImage_sdl.cpp in Sources */,
 				AEFD86D813EB84CF00C1E687 /* thread_priority_sdl_macosx.cpp in Sources */,
@@ -5770,6 +5809,7 @@
 				AEFD870213EB84CF00C1E687 /* AnimatedTextures.cpp in Sources */,
 				AEFD870313EB84CF00C1E687 /* Crosshairs_SDL.cpp in Sources */,
 				AEFD870413EB84CF00C1E687 /* ImageLoader_SDL.cpp in Sources */,
+				278E0C741AA3CD4500FA93B7 /* WadImageCache.cpp in Sources */,
 				AEFD870513EB84CF00C1E687 /* OGL_Faders.cpp in Sources */,
 				AEFD870613EB84CF00C1E687 /* OGL_Render.cpp in Sources */,
 				AEFD870713EB84CF00C1E687 /* OGL_Setup.cpp in Sources */,
