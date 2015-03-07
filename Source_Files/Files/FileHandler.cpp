@@ -86,6 +86,7 @@
 #include <boost/bind.hpp>
 #include <boost/function.hpp>
 #include <boost/algorithm/string/predicate.hpp>
+#include <boost/filesystem.hpp>
 
 namespace io = boost::iostreams;
 
@@ -759,18 +760,7 @@ bool FileSpecifier::SetNameWithPath(const char* NameWithPath, const DirectorySpe
 
 void FileSpecifier::SetTempName(const FileSpecifier& other)
 {
-	name = other.name + "XXXXXX";
-
-	// null terminate it for use with mktemp
-	name.resize(name.size() + 1);
-	name[name.size() - 1] = '\0';
-
-	// yeah, yeah. but this is at least better than the tmpile.dat that
-	// used to be generated for atomic saves, and was unsafe for all the
-	// same reasons. baby steps.
-	mktemp(&name[0]);
-
-	name.resize(name.size() - 1);
+	name = boost::filesystem::unique_path(other.name + "%%%%%%").string();
 }
 
 // Get last element of path

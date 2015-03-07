@@ -63,6 +63,16 @@
 		275A7BD91A60E9C1002EE952 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 275A7BD71A60E9B9002EE952 /* HTTP.cpp */; };
 		275A7BDA1A60E9C2002EE952 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 275A7BD71A60E9B9002EE952 /* HTTP.cpp */; };
 		275A7BDB1A60E9C2002EE952 /* HTTP.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 275A7BD71A60E9B9002EE952 /* HTTP.cpp */; };
+		2762A3331AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; };
+		2762A3341AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; };
+		2762A3351AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; };
+		2762A3361AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; };
+		2762A3371AAA51D900B807D4 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
+		2762A3381AAA51D900B807D4 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
+		2762A3391AAA51D900B807D4 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
+		2762A33A1AAA51D900B807D4 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
+		2762A33B1AAA523600B807D4 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3311AAA51D900B807D4 /* boost_filesystem.framework */; };
+		2762A33C1AAA523600B807D4 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 2762A3321AAA51D900B807D4 /* boost_system.framework */; };
 		276589F8119DF1DD0096F75B /* lua_saved_objects.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */; };
 		276BECF01A846BC500AE52F4 /* ReplacementSounds.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECEF1A846BC500AE52F4 /* ReplacementSounds.h */; };
 		276BECF11A846BC500AE52F4 /* ReplacementSounds.h in Headers */ = {isa = PBXBuildFile; fileRef = 276BECEF1A846BC500AE52F4 /* ReplacementSounds.h */; };
@@ -1983,6 +1993,8 @@
 			dstPath = AlephOne.app/Contents/Frameworks;
 			dstSubfolderSpec = 16;
 			files = (
+				2762A33B1AAA523600B807D4 /* boost_filesystem.framework in CopyFiles */,
+				2762A33C1AAA523600B807D4 /* boost_system.framework in CopyFiles */,
 				271ADFC618A88B9C0073CB2E /* avcodec.framework in CopyFiles */,
 				271ADFC718A88B9C0073CB2E /* avformat.framework in CopyFiles */,
 				271ADFC818A88B9C0073CB2E /* avutil.framework in CopyFiles */,
@@ -2022,6 +2034,8 @@
 		2759FB3110D71184000204DD /* freetype.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = freetype.framework; sourceTree = "<group>"; };
 		275A7BD21A60DE77002EE952 /* libcurl.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libcurl.dylib; path = usr/lib/libcurl.dylib; sourceTree = SDKROOT; };
 		275A7BD71A60E9B9002EE952 /* HTTP.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = HTTP.cpp; path = ../Source_Files/Network/HTTP.cpp; sourceTree = "<group>"; };
+		2762A3311AAA51D900B807D4 /* boost_filesystem.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = boost_filesystem.framework; sourceTree = "<group>"; };
+		2762A3321AAA51D900B807D4 /* boost_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = boost_system.framework; sourceTree = "<group>"; };
 		276589F6119DF1DD0096F75B /* lua_saved_objects.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = lua_saved_objects.cpp; sourceTree = "<group>"; };
 		276589F7119DF1DD0096F75B /* lua_saved_objects.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = lua_saved_objects.h; sourceTree = "<group>"; };
 		276BECEF1A846BC500AE52F4 /* ReplacementSounds.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReplacementSounds.h; sourceTree = "<group>"; };
@@ -2582,6 +2596,7 @@
 				AE505CF9141D45E600915344 /* speex.framework in Frameworks */,
 				AE505CFA141D45E600915344 /* SDL_ttf.framework in Frameworks */,
 				AE505CFB141D45E600915344 /* AudioUnit.framework in Frameworks */,
+				2762A3391AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AE505CFC141D45E600915344 /* libz.dylib in Frameworks */,
 				AE505CFD141D45E600915344 /* CoreAudio.framework in Frameworks */,
 				AE505CFE141D45E600915344 /* zziplib.framework in Frameworks */,
@@ -2590,6 +2605,7 @@
 				AE505D01141D45E600915344 /* freetype.framework in Frameworks */,
 				270F9FD2177687B7009AAE10 /* avcodec.framework in Frameworks */,
 				278BCAF11A51C53C006F9756 /* speexdsp.framework in Frameworks */,
+				2762A3351AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				270F9FD6177687B7009AAE10 /* avformat.framework in Frameworks */,
 				270F9FDA177687B7009AAE10 /* avutil.framework in Frameworks */,
 				270F9FDE177687B7009AAE10 /* swscale.framework in Frameworks */,
@@ -2609,6 +2625,7 @@
 				AEB4A29B14296CAE00537AE7 /* speex.framework in Frameworks */,
 				AEB4A29C14296CAE00537AE7 /* SDL_ttf.framework in Frameworks */,
 				AEB4A29D14296CAE00537AE7 /* AudioUnit.framework in Frameworks */,
+				2762A33A1AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AEB4A29E14296CAE00537AE7 /* libz.dylib in Frameworks */,
 				AEB4A29F14296CAE00537AE7 /* CoreAudio.framework in Frameworks */,
 				AEB4A2A014296CAE00537AE7 /* zziplib.framework in Frameworks */,
@@ -2617,6 +2634,7 @@
 				AEB4A2A314296CAE00537AE7 /* freetype.framework in Frameworks */,
 				270F9FD3177687B7009AAE10 /* avcodec.framework in Frameworks */,
 				278BCAF21A51C53C006F9756 /* speexdsp.framework in Frameworks */,
+				2762A3361AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				270F9FD7177687B7009AAE10 /* avformat.framework in Frameworks */,
 				270F9FDB177687B7009AAE10 /* avutil.framework in Frameworks */,
 				270F9FDF177687B7009AAE10 /* swscale.framework in Frameworks */,
@@ -2636,6 +2654,7 @@
 				AE23F5640BDAC0E700C11385 /* speex.framework in Frameworks */,
 				AE0384DC0CE15170006780AC /* SDL_ttf.framework in Frameworks */,
 				3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */,
+				2762A3371AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */,
 				3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */,
 				2759F33010D5BCC0000204DD /* zziplib.framework in Frameworks */,
@@ -2644,6 +2663,7 @@
 				2759FB3210D71184000204DD /* freetype.framework in Frameworks */,
 				270F9FD0177687B7009AAE10 /* avcodec.framework in Frameworks */,
 				278BCAEF1A51C53C006F9756 /* speexdsp.framework in Frameworks */,
+				2762A3331AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				270F9FD4177687B7009AAE10 /* avformat.framework in Frameworks */,
 				270F9FD8177687B7009AAE10 /* avutil.framework in Frameworks */,
 				270F9FDC177687B7009AAE10 /* swscale.framework in Frameworks */,
@@ -2663,6 +2683,7 @@
 				AEFD87A513EB84CF00C1E687 /* speex.framework in Frameworks */,
 				AEFD87A613EB84CF00C1E687 /* SDL_ttf.framework in Frameworks */,
 				AEFD87A713EB84CF00C1E687 /* AudioUnit.framework in Frameworks */,
+				2762A3381AAA51D900B807D4 /* boost_system.framework in Frameworks */,
 				AEFD87A813EB84CF00C1E687 /* libz.dylib in Frameworks */,
 				AEFD87A913EB84CF00C1E687 /* CoreAudio.framework in Frameworks */,
 				AEFD87AA13EB84CF00C1E687 /* zziplib.framework in Frameworks */,
@@ -2671,6 +2692,7 @@
 				AEFD87AD13EB84CF00C1E687 /* freetype.framework in Frameworks */,
 				270F9FD1177687B7009AAE10 /* avcodec.framework in Frameworks */,
 				278BCAF01A51C53C006F9756 /* speexdsp.framework in Frameworks */,
+				2762A3341AAA51D900B807D4 /* boost_filesystem.framework in Frameworks */,
 				270F9FD5177687B7009AAE10 /* avformat.framework in Frameworks */,
 				270F9FD9177687B7009AAE10 /* avutil.framework in Frameworks */,
 				270F9FDD177687B7009AAE10 /* swscale.framework in Frameworks */,
@@ -2933,6 +2955,8 @@
 		EF2EF5B004819A5C00A8000D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				2762A3311AAA51D900B807D4 /* boost_filesystem.framework */,
+				2762A3321AAA51D900B807D4 /* boost_system.framework */,
 				270F9FCC177687B7009AAE10 /* avcodec.framework */,
 				270F9FCD177687B7009AAE10 /* avformat.framework */,
 				270F9FCE177687B7009AAE10 /* avutil.framework */,
@@ -4907,7 +4931,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
 		};
 		AE505D06141D45E600915344 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4945,7 +4969,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
 		};
 		AEB4A2A814296CAE00537AE7 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -4995,7 +5019,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\n";
+			shellScript = "function copy_removing_ppc() {\n    ditto --rsrc --arch i386 --arch x86_64 \"/Library/Frameworks/$1\" \"$BUILT_PRODUCTS_DIR/$FRAMEWORKS_FOLDER_PATH/$1\"\n}\n\ncopy_removing_ppc \"avcodec.framework\"\ncopy_removing_ppc \"avformat.framework\"\ncopy_removing_ppc \"avutil.framework\"\ncopy_removing_ppc \"swscale.framework\"\ncopy_removing_ppc \"freetype.framework\"\ncopy_removing_ppc \"jpeg.framework\"\ncopy_removing_ppc \"png.framework\"\ncopy_removing_ppc \"zziplib.framework\"\ncopy_removing_ppc \"speex.framework\"\ncopy_removing_ppc \"speexdsp.framework\"\ncopy_removing_ppc \"SDL_image.framework\"\ncopy_removing_ppc \"SDL.framework\"\ncopy_removing_ppc \"SDL_net.framework\"\ncopy_removing_ppc \"SDL_ttf.framework\"\ncopy_removing_ppc \"boost_filesystem.framework\"\ncopy_removing_ppc \"boost_system.framework\"\n";
 		};
 		AEFD87D713EB944800C1E687 /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;

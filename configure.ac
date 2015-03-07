@@ -7,6 +7,7 @@ AC_INIT([Aleph One],
         [AlephOne],
         [http://marathon.sourceforge.net/])
 AC_CONFIG_SRCDIR([Source_Files/shell.cpp])
+AC_CONFIG_MACRO_DIR([m4])
 AC_PREREQ([2.65])
 
 dnl Detect the canonical host and target build environment.
@@ -57,6 +58,8 @@ dnl Some platform specific stuff.
 AS_CASE([$target],
         [*-*-mingw32*],
         [ make_windows=true
+          ax_boost_user_system_lib="boost_system-mt"
+          ax_boost_user_filesystem_lib="boost_filesystem-mt"
           AC_CHECK_TOOL([WINDRES], [windres], [:])
           AC_DEFINE([WIN32_DISABLE_MUSIC], [1], [Win32 music disabled])
           LIBS="$LIBS -ldsound -lwsock32" ],
@@ -70,7 +73,18 @@ AC_DEFINE_UNQUOTED([TARGET_PLATFORM], ["$target_os $target_cpu"], [Target platfo
 dnl Check for headers.
 AC_CHECK_HEADERS([unistd.h pwd.h])
 
-dnl Check for boost functions.
+dnl Check for boost functions and libraries.
+AX_BOOST_BASE([1.53.0],
+              ,
+              [AC_MSG_ERROR([You need Boost 1.53.0 or higher to build Aleph One.])])
+AX_BOOST_SYSTEM
+AS_IF([ test "x$BOOST_SYSTEM_LIB" != "x" ],
+      [ LIBS="$BOOST_SYSTEM_LIB $LIBS" ],
+      [AC_MSG_ERROR([You need the Boost::System library to run Aleph One.])])
+AX_BOOST_FILESYSTEM
+AS_IF([ test "x$BOOST_FILESYSTEM_LIB" != "x" ],
+      [ LIBS="$BOOST_FILESYSTEM_LIB $LIBS" ],
+      [AC_MSG_ERROR([You need the Boost::Filesystem library to run Aleph One.])])
 AC_LANG_PUSH(C++)
 AC_CHECK_HEADER([boost/bind.hpp],
                 ,

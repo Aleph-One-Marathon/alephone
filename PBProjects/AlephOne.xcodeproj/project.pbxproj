@@ -1534,6 +1534,22 @@
 		27E1FA541AA14E7400647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
 		27E1FA551AA14E7D00647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
 		27E1FA581AA14F0800647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
+		27E1FAA21AAA8FD700647069 /* boost_filesystem.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */; };
+		27E1FAA31AAA8FD800647069 /* boost_filesystem.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */; };
+		27E1FAA41AAA8FD900647069 /* boost_filesystem.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */; };
+		27E1FAA51AAA8FDA00647069 /* boost_filesystem.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */; };
+		27E1FAB21AAA8FE100647069 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1FA7A1AAA8BAB00647069 /* boost_system.framework */; };
+		27E1FAB31AAA8FE200647069 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1FA7A1AAA8BAB00647069 /* boost_system.framework */; };
+		27E1FAB41AAA8FE300647069 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1FA7A1AAA8BAB00647069 /* boost_system.framework */; };
+		27E1FAB51AAA8FE300647069 /* boost_system.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E1FA7A1AAA8BAB00647069 /* boost_system.framework */; };
+		27E1FAD81AAA91E300647069 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1FA7A1AAA8BAB00647069 /* boost_system.framework */; };
+		27E1FAD91AAA91E700647069 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */; };
+		27E1FADA1AAA91FA00647069 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */; };
+		27E1FADB1AAA91FA00647069 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1FA7A1AAA8BAB00647069 /* boost_system.framework */; };
+		27E1FADD1AAA922300647069 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */; };
+		27E1FADE1AAA922300647069 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1FA7A1AAA8BAB00647069 /* boost_system.framework */; };
+		27E1FADF1AAA922E00647069 /* boost_filesystem.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */; };
+		27E1FAE01AAA922E00647069 /* boost_system.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1FA7A1AAA8BAB00647069 /* boost_system.framework */; };
 		27E1FAE41AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAE21AAA928F00647069 /* SDL_rwops_ostream.cpp */; };
 		27E1FAE51AAA928F00647069 /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1FAE31AAA928F00647069 /* SDL_rwops_ostream.h */; };
 		27E1FAE61AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAE21AAA928F00647069 /* SDL_rwops_ostream.cpp */; };
@@ -2012,6 +2028,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				27E1FADA1AAA91FA00647069 /* boost_filesystem.framework in CopyFiles */,
+				27E1FADB1AAA91FA00647069 /* boost_system.framework in CopyFiles */,
 				27A7A46B178131A500461252 /* avcodec.framework in CopyFiles */,
 				27A7A46C178131A500461252 /* avformat.framework in CopyFiles */,
 				27A7A46D178131A500461252 /* avutil.framework in CopyFiles */,
@@ -2035,6 +2053,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				27E1FADD1AAA922300647069 /* boost_filesystem.framework in CopyFiles */,
+				27E1FADE1AAA922300647069 /* boost_system.framework in CopyFiles */,
 				27A7A4661781319800461252 /* avcodec.framework in CopyFiles */,
 				27A7A4671781319800461252 /* avformat.framework in CopyFiles */,
 				27A7A4681781319800461252 /* avutil.framework in CopyFiles */,
@@ -2058,6 +2078,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				27E1FADF1AAA922E00647069 /* boost_filesystem.framework in CopyFiles */,
+				27E1FAE01AAA922E00647069 /* boost_system.framework in CopyFiles */,
 				27A7A4611781318C00461252 /* avcodec.framework in CopyFiles */,
 				27A7A4621781318C00461252 /* avformat.framework in CopyFiles */,
 				27A7A4631781318C00461252 /* avutil.framework in CopyFiles */,
@@ -2081,6 +2103,8 @@
 			dstPath = AlephOne.app/Contents/Frameworks;
 			dstSubfolderSpec = 16;
 			files = (
+				27E1FAD91AAA91E700647069 /* boost_filesystem.framework in CopyFiles */,
+				27E1FAD81AAA91E300647069 /* boost_system.framework in CopyFiles */,
 				27A7A4701781322B00461252 /* avcodec.framework in CopyFiles */,
 				27A7A4711781322B00461252 /* avformat.framework in CopyFiles */,
 				27A7A4721781322B00461252 /* avutil.framework in CopyFiles */,
@@ -2170,6 +2194,8 @@
 		27E1F9EF1AA1114800647069 /* speexdsp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = speexdsp.framework; path = /Library/Frameworks/speexdsp.framework; sourceTree = "<absolute>"; };
 		27E1F9F71AA111C400647069 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		27E1F9FB1AA111D300647069 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = boost_filesystem.framework; path = Library/Frameworks/boost_filesystem.framework; sourceTree = SDKROOT; };
+		27E1FA7A1AAA8BAB00647069 /* boost_system.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = boost_system.framework; path = Library/Frameworks/boost_system.framework; sourceTree = SDKROOT; };
 		27E1FAE21AAA928F00647069 /* SDL_rwops_ostream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SDL_rwops_ostream.cpp; sourceTree = "<group>"; };
 		27E1FAE31AAA928F00647069 /* SDL_rwops_ostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rwops_ostream.h; sourceTree = "<group>"; };
 		27E1FAEC1AAA92A600647069 /* WadImageCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WadImageCache.cpp; sourceTree = "<group>"; };
@@ -2675,6 +2701,8 @@
 				27A7A3E417812D2F00461252 /* swscale.framework in Frameworks */,
 				27E1F98F1AA1066C00647069 /* libcurl.dylib in Frameworks */,
 				27E1F9F01AA1114800647069 /* speexdsp.framework in Frameworks */,
+				27E1FAA31AAA8FD800647069 /* boost_filesystem.framework in Frameworks */,
+				27E1FAB31AAA8FE200647069 /* boost_system.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2702,6 +2730,8 @@
 				27A7A3E617812D3000461252 /* swscale.framework in Frameworks */,
 				27E1F9C71AA1108400647069 /* libcurl.dylib in Frameworks */,
 				27E1F9F21AA1114800647069 /* speexdsp.framework in Frameworks */,
+				27E1FAA41AAA8FD900647069 /* boost_filesystem.framework in Frameworks */,
+				27E1FAB41AAA8FE300647069 /* boost_system.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2729,6 +2759,8 @@
 				27A7A3E517812D2F00461252 /* swscale.framework in Frameworks */,
 				27E1F9C81AA1108E00647069 /* libcurl.dylib in Frameworks */,
 				27E1F9F31AA1114800647069 /* speexdsp.framework in Frameworks */,
+				27E1FAA51AAA8FDA00647069 /* boost_filesystem.framework in Frameworks */,
+				27E1FAB51AAA8FE300647069 /* boost_system.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2756,6 +2788,8 @@
 				271EE3FD17812CED00CBAD98 /* swscale.framework in Frameworks */,
 				27E1F9C61AA1107900647069 /* libcurl.dylib in Frameworks */,
 				27E1F9F11AA1114800647069 /* speexdsp.framework in Frameworks */,
+				27E1FAA21AAA8FD700647069 /* boost_filesystem.framework in Frameworks */,
+				27E1FAB21AAA8FE100647069 /* boost_system.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3019,6 +3053,8 @@
 				271EE3F817812CED00CBAD98 /* avformat.framework */,
 				271EE3FA17812CED00CBAD98 /* avutil.framework */,
 				271EE3FC17812CED00CBAD98 /* swscale.framework */,
+				27E1FA791AAA8BAB00647069 /* boost_filesystem.framework */,
+				27E1FA7A1AAA8BAB00647069 /* boost_system.framework */,
 			);
 			name = Frameworks;
 			path = /Library/Frameworks;
