@@ -1534,6 +1534,22 @@
 		27E1FA541AA14E7400647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
 		27E1FA551AA14E7D00647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
 		27E1FA581AA14F0800647069 /* speexdsp.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 27E1F9EF1AA1114800647069 /* speexdsp.framework */; };
+		27E1FAE41AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAE21AAA928F00647069 /* SDL_rwops_ostream.cpp */; };
+		27E1FAE51AAA928F00647069 /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1FAE31AAA928F00647069 /* SDL_rwops_ostream.h */; };
+		27E1FAE61AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAE21AAA928F00647069 /* SDL_rwops_ostream.cpp */; };
+		27E1FAE71AAA928F00647069 /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1FAE31AAA928F00647069 /* SDL_rwops_ostream.h */; };
+		27E1FAE81AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAE21AAA928F00647069 /* SDL_rwops_ostream.cpp */; };
+		27E1FAE91AAA928F00647069 /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1FAE31AAA928F00647069 /* SDL_rwops_ostream.h */; };
+		27E1FAEA1AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAE21AAA928F00647069 /* SDL_rwops_ostream.cpp */; };
+		27E1FAEB1AAA928F00647069 /* SDL_rwops_ostream.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1FAE31AAA928F00647069 /* SDL_rwops_ostream.h */; };
+		27E1FAEE1AAA92A600647069 /* WadImageCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAEC1AAA92A600647069 /* WadImageCache.cpp */; };
+		27E1FAEF1AAA92A600647069 /* WadImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1FAED1AAA92A600647069 /* WadImageCache.h */; };
+		27E1FAF01AAA92A600647069 /* WadImageCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAEC1AAA92A600647069 /* WadImageCache.cpp */; };
+		27E1FAF11AAA92A600647069 /* WadImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1FAED1AAA92A600647069 /* WadImageCache.h */; };
+		27E1FAF21AAA92A600647069 /* WadImageCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAEC1AAA92A600647069 /* WadImageCache.cpp */; };
+		27E1FAF31AAA92A600647069 /* WadImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1FAED1AAA92A600647069 /* WadImageCache.h */; };
+		27E1FAF41AAA92A600647069 /* WadImageCache.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 27E1FAEC1AAA92A600647069 /* WadImageCache.cpp */; };
+		27E1FAF51AAA92A600647069 /* WadImageCache.h in Headers */ = {isa = PBXBuildFile; fileRef = 27E1FAED1AAA92A600647069 /* WadImageCache.h */; };
 		3D22CF890FD86EAE00B17822 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF880FD86EAE00B17822 /* AudioUnit.framework */; };
 		3D22CF8D0FD86EBD00B17822 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CF8C0FD86EBD00B17822 /* libz.dylib */; };
 		3D22CFAC0FD8707C00B17822 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */; };
@@ -2154,6 +2170,10 @@
 		27E1F9EF1AA1114800647069 /* speexdsp.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = speexdsp.framework; path = /Library/Frameworks/speexdsp.framework; sourceTree = "<absolute>"; };
 		27E1F9F71AA111C400647069 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		27E1F9FB1AA111D300647069 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		27E1FAE21AAA928F00647069 /* SDL_rwops_ostream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SDL_rwops_ostream.cpp; sourceTree = "<group>"; };
+		27E1FAE31AAA928F00647069 /* SDL_rwops_ostream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_rwops_ostream.h; sourceTree = "<group>"; };
+		27E1FAEC1AAA92A600647069 /* WadImageCache.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WadImageCache.cpp; sourceTree = "<group>"; };
+		27E1FAED1AAA92A600647069 /* WadImageCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WadImageCache.h; sourceTree = "<group>"; };
 		3D22CF880FD86EAE00B17822 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		3D22CF8C0FD86EBD00B17822 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = /usr/lib/libz.dylib; sourceTree = "<absolute>"; };
 		3D22CFAB0FD8707C00B17822 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
@@ -3290,6 +3310,7 @@
 		F5CC91FE0240D09B01A80001 /* Files */ = {
 			isa = PBXGroup;
 			children = (
+				27E1FAE21AAA928F00647069 /* SDL_rwops_ostream.cpp */,
 				2759F31910D5BC9C000204DD /* SDL_rwops_zzip.c */,
 				2759F31A10D5BC9C000204DD /* SDL_rwops_zzip.h */,
 				F5CC92D60240D4C001A80001 /* Headers */,
@@ -3305,6 +3326,7 @@
 				3D5F21430403230F00000104 /* preprocess_map_shared.cpp */,
 				F5CC92150240D09B01A80001 /* wad.cpp */,
 				F5CC92170240D09B01A80001 /* wad_prefs.cpp */,
+				27E1FAEC1AAA92A600647069 /* WadImageCache.cpp */,
 			);
 			name = Files;
 			path = ../Source_Files/Files;
@@ -3392,6 +3414,8 @@
 		F5CC92D60240D4C001A80001 /* Headers */ = {
 			isa = PBXGroup;
 			children = (
+				27E1FAED1AAA92A600647069 /* WadImageCache.h */,
+				27E1FAE31AAA928F00647069 /* SDL_rwops_ostream.h */,
 				EF2EF5E404819EBF00A8000D /* AStream.h */,
 				F5CC92000240D09B01A80001 /* crc.h */,
 				F5CC92010240D09B01A80001 /* extensions.h */,
@@ -3960,6 +3984,8 @@
 				27E1F96F1AA1052900647069 /* QuickSave.h in Headers */,
 				27E1F9811AA1059A00647069 /* HTTP.h in Headers */,
 				27E1F9A11AA1078800647069 /* sdl_resize.h in Headers */,
+				27E1FAE91AAA928F00647069 /* SDL_rwops_ostream.h in Headers */,
+				27E1FAF31AAA92A600647069 /* WadImageCache.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4171,6 +4197,8 @@
 				27E1F9731AA1052900647069 /* QuickSave.h in Headers */,
 				27E1F9851AA1059A00647069 /* HTTP.h in Headers */,
 				27E1F9A51AA1078800647069 /* sdl_resize.h in Headers */,
+				27E1FAEB1AAA928F00647069 /* SDL_rwops_ostream.h in Headers */,
+				27E1FAF51AAA92A600647069 /* WadImageCache.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4382,6 +4410,8 @@
 				27E1F9751AA1052900647069 /* QuickSave.h in Headers */,
 				27E1F9871AA1059A00647069 /* HTTP.h in Headers */,
 				27E1F9A71AA1078800647069 /* sdl_resize.h in Headers */,
+				27E1FAE51AAA928F00647069 /* SDL_rwops_ostream.h in Headers */,
+				27E1FAEF1AAA92A600647069 /* WadImageCache.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4593,6 +4623,8 @@
 				27E1F9711AA1052900647069 /* QuickSave.h in Headers */,
 				27E1F9831AA1059A00647069 /* HTTP.h in Headers */,
 				27E1F9A31AA1078800647069 /* sdl_resize.h in Headers */,
+				27E1FAE71AAA928F00647069 /* SDL_rwops_ostream.h in Headers */,
+				27E1FAF11AAA92A600647069 /* WadImageCache.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5177,6 +5209,8 @@
 				27E1F96E1AA1052900647069 /* QuickSave.cpp in Sources */,
 				27E1F9801AA1059A00647069 /* HTTP.cpp in Sources */,
 				27E1F9A01AA1078800647069 /* sdl_resize.cpp in Sources */,
+				27E1FAE81AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */,
+				27E1FAF21AAA92A600647069 /* WadImageCache.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5415,6 +5449,8 @@
 				27E1F9721AA1052900647069 /* QuickSave.cpp in Sources */,
 				27E1F9841AA1059A00647069 /* HTTP.cpp in Sources */,
 				27E1F9A41AA1078800647069 /* sdl_resize.cpp in Sources */,
+				27E1FAEA1AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */,
+				27E1FAF41AAA92A600647069 /* WadImageCache.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5653,6 +5689,8 @@
 				27E1F9741AA1052900647069 /* QuickSave.cpp in Sources */,
 				27E1F9861AA1059A00647069 /* HTTP.cpp in Sources */,
 				27E1F9A61AA1078800647069 /* sdl_resize.cpp in Sources */,
+				27E1FAE41AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */,
+				27E1FAEE1AAA92A600647069 /* WadImageCache.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -5891,6 +5929,8 @@
 				27E1F9701AA1052900647069 /* QuickSave.cpp in Sources */,
 				27E1F9821AA1059A00647069 /* HTTP.cpp in Sources */,
 				27E1F9A21AA1078800647069 /* sdl_resize.cpp in Sources */,
+				27E1FAE61AAA928F00647069 /* SDL_rwops_ostream.cpp in Sources */,
+				27E1FAF01AAA92A600647069 /* WadImageCache.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
