@@ -6052,14 +6052,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6071,10 +6076,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6136,14 +6138,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6155,10 +6162,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6252,14 +6256,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6271,10 +6280,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6329,14 +6335,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6348,10 +6359,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6405,14 +6413,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6424,10 +6437,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon 2/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6475,14 +6485,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6494,10 +6509,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "Info-AlephOne-Xcode4.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6565,14 +6577,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6584,10 +6601,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6642,14 +6656,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6661,10 +6680,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6718,14 +6734,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6737,10 +6758,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon Infinity/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6793,14 +6811,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6812,10 +6835,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6870,14 +6890,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6889,10 +6914,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
@@ -6946,14 +6968,19 @@
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
 				HEADER_SEARCH_PATHS = (
+					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
 					"$(HOME)/Library/Frameworks/SDL.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_net.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_image.framework/Headers",
 					"$(HOME)/Library/Frameworks/SDL_ttf.framework/Headers",
 					"$(HOME)/Library/Frameworks/speex.framework/Headers",
-					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
 					"$(HOME)/Library/Frameworks/png.framework/Headers",
-					/System/Library/Frameworks/OpenGL.framework/Headers/Frameworks/OpenGL.framework/Headers,
+					"$(HOME)/Library/Frameworks/zziplib.framework/Headers",
+					"$(HOME)/Library/Frameworks/avcodec.framework/Headers",
+					"$(HOME)/Library/Frameworks/avformat.framework/Headers",
+					"$(HOME)/Library/Frameworks/avutil.framework/Headers",
+					"$(HOME)/Library/Frameworks/swscale.framework/Headers",
+					"$(HOME)/Library/Frameworks/boost.framework/Headers",
 					/Library/Frameworks/SDL_image.framework/Headers,
 					/Library/Frameworks/SDL.framework/Headers,
 					/Library/Frameworks/SDL_net.framework/Headers,
@@ -6965,10 +6992,7 @@
 					/Library/Frameworks/avformat.framework/Headers,
 					/Library/Frameworks/avutil.framework/Headers,
 					/Library/Frameworks/swscale.framework/Headers,
-					/usr/local/include,
-					/sw/include,
-					"/sw/include/boost-1_35",
-					/opt/local/include,
+					/Library/Frameworks/boost.framework/Headers,
 				);
 				INFOPLIST_FILE = "$(SRCROOT)/AppStore/Marathon/Info.plist";
 				INFOPLIST_PREPROCESS = NO;
