@@ -1049,6 +1049,11 @@ void set_scenario_images_file(FileSpecifier &file)
 	ScenarioFile.open_file(file);
 }
 
+void unset_scenario_images_file()
+{
+	ScenarioFile.close_file();
+}
+
 void set_shapes_images_file(FileSpecifier &file)
 {
 	ShapesImagesFile.open_file(file);

@@ -1397,9 +1397,22 @@ bool export_level(FileSpecifier& File)
 
 		if (!err)
 		{
+			// We can't delete open files on Windows, so close
+			// the current level before we overwrite it.
+			bool restore_images = false;
+			if (File == get_map_file())
+			{
+				unset_scenario_images_file();
+				restore_images = true;
+			}
 			if (!TempFile.Rename(File))
 			{
 				err = 1;
+			}
+			if (restore_images)
+			{
+				set_scenario_images_file(File);
+				clear_game_error();
 			}
 		}
 	}
