@@ -660,6 +660,13 @@ bool FileSpecifier::Delete()
 
 bool FileSpecifier::Rename(const FileSpecifier& Destination)
 {
+#ifdef WIN32
+	// Work around Windows' non-POSIX behavior on rename().
+	// If we fail, go ahead and try to rename anyway.
+	FileSpecifier d2 = Destination;
+	if (d2.Exists() && !d2.IsDir())
+		d2.Delete();
+#endif
 	return rename(GetPath(), Destination.GetPath()) == 0;
 }
 
