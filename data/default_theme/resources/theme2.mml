@@ -162,7 +162,7 @@
   </thumb>
 </slider>
 
-<tab top="5" left="16" right="16" height="32" inner_left="4" inner_right="4">
+<tab top="5" left="16" right="16" height="32" inner_left="8" inner_right="8">
   <font file="Squarish_Sans_CT_Medium.ttf" size="14" style="0"/>
   <color red="0.5" green="0.5" blue="0.5"/>
   <image index="0" file="button_l.bmp" scale="false"/>
