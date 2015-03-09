@@ -41,6 +41,7 @@
 #include "tags.h" /* for scenario file type.. */
 #include "network_sound.h"
 #include "mouse.h"
+#include "joystick.h"
 #include "screen_drawing.h"
 #include "computer_interface.h"
 #include "game_wad.h" /* yuck... */
@@ -1363,9 +1364,29 @@ static void process_event(const SDL_Event &event)
 				validate_world_window();
 				set_keyboard_controller_status(true);
 			}
+			else
+			{
+				SDL_Event e2;
+				memset(&e2, 0, sizeof(SDL_Event));
+				e2.type = SDL_KEYDOWN;
+				e2.key.keysym.sym = (SDLKey)(SDLK_BASE_MOUSE_BUTTON + event.button.button - 1);
+				process_game_key(e2);
+			}
 		}
 		else
 			process_screen_click(event);
+		break;
+	
+	case SDL_JOYBUTTONDOWN:
+		if (get_game_state() == _game_in_progress)
+		{
+			SDL_Event e2;
+			memset(&e2, 0, sizeof(SDL_Event));
+			e2.type = SDL_KEYDOWN;
+			e2.key.keysym.sym = (SDLKey)(SDLK_BASE_JOYSTICK_BUTTON + event.button.button);
+			process_game_key(e2);
+			
+		}
 		break;
 		
 	case SDL_KEYDOWN:
