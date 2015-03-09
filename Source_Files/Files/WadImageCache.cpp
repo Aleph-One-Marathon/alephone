@@ -163,6 +163,7 @@ std::string WadImageCache::add_to_cache(cache_key_t key, SDL_Surface *surface)
 	{
 		m_used.push_front(cache_pair_t(key, cache_value_t(name, filesize)));
 		m_cacheinfo[key] = m_used.begin();
+		m_cache_dirty = true;
 		
 		m_cachesize += filesize;
 		apply_cache_limit();
@@ -182,23 +183,21 @@ bool WadImageCache::apply_cache_limit()
 		delete_storage_for_name(last_item.second.first);
 		m_cachesize -= last_item.second.second;
 		m_cacheinfo.erase(last_item.first);
+		m_cache_dirty = true;
 	}
 	return deleted;
 }
 
-std::string WadImageCache::retrieve_name(WadImageDescriptor& desc, int width, int height, bool mark_accessed, bool *cache_changed)
+std::string WadImageCache::retrieve_name(WadImageDescriptor& desc, int width, int height, bool mark_accessed)
 {
 	cache_key_t key = cache_key_t(desc, width, height);
-	if (cache_changed)
-		*cache_changed = false;
 	
 	std::map<cache_key_t, cache_iter_t>::iterator it = m_cacheinfo.find(key);
 	if (it != m_cacheinfo.end()) {
 		if (mark_accessed && it->second != m_used.begin())
 		{
 			m_used.splice(m_used.begin(), m_used, it->second);
-			if (cache_changed)
-				*cache_changed = true;
+			m_cache_dirty = true;
 		}
 		return it->second->second.first;
 	}
@@ -215,11 +214,10 @@ bool WadImageCache::is_cached(WadImageDescriptor& desc, int width, int height) c
 void WadImageCache::cache_image(WadImageDescriptor& desc, int width, int height, SDL_Surface *image)
 {
 	bool changed = false;
-	std::string name = retrieve_name(desc, width, height, true, &changed);
+	std::string name = retrieve_name(desc, width, height, true);
 	if (!name.empty())
 	{
-		if (changed)
-			autosave_cache();
+		autosave_cache();
 		return;
 	}
 	
@@ -246,7 +244,6 @@ void WadImageCache::cache_image(WadImageDescriptor& desc, int width, int height,
 
 void WadImageCache::remove_image(WadImageDescriptor& desc, int width, int height)
 {
-	bool deleted = false;
 	if (width <= 0 || height <= 0)
 	{
 		// Partial key specified; walk the map to find all matches
@@ -254,10 +251,10 @@ void WadImageCache::remove_image(WadImageDescriptor& desc, int width, int height
 		{
 			if (boost::tuples::get<0>(it->first) == desc)
 			{
-				deleted = true;
 				delete_storage_for_name(it->second->second.first);
 				m_used.erase(it->second);
 				m_cacheinfo.erase(it++);
+				m_cache_dirty = true;
 			}
 			else
 			{
@@ -271,25 +268,21 @@ void WadImageCache::remove_image(WadImageDescriptor& desc, int width, int height
 		
 		std::map<cache_key_t, cache_iter_t>::iterator it = m_cacheinfo.find(key);
 		if (it != m_cacheinfo.end()) {
-			deleted = true;
 			delete_storage_for_name(it->second->second.first);
 			m_used.erase(it->second);
 			m_cacheinfo.erase(it);
+			m_cache_dirty = true;
 		}
 	}
-	if (deleted)
-		autosave_cache();
+	autosave_cache();
 }
 
 SDL_Surface *WadImageCache::retrieve_image(WadImageDescriptor& desc, int width, int height)
 {
-	bool changed = false;
-	std::string name = retrieve_name(desc, width, height, true, &changed);
+	std::string name = retrieve_name(desc, width, height, true);
 	if (name.empty())
 		return NULL;
 	
-	if (changed)
-		autosave_cache();
 	return image_from_name(name);
 }
 
@@ -359,6 +352,9 @@ void WadImageCache::initialize_cache()
 
 void WadImageCache::save_cache()
 {
+	if (!m_cache_dirty)
+		return;
+	
 	boost::property_tree::ptree pt;
 	
 	for (cache_iter_t it = m_used.begin(); it != m_used.end(); ++it)
@@ -380,6 +376,7 @@ void WadImageCache::save_cache()
 	info.AddPart("Cache.ini");
 	try {
 		boost::property_tree::ini_parser::write_ini(info.GetPath(), pt);
+		m_cache_dirty = false;
 	} catch (...) {
 		return;
 	}

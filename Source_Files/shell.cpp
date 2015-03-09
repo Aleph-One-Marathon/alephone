@@ -698,6 +698,7 @@ void shutdown_application(void)
 
         already_shutting_down = true;
         
+	WadImageCache::instance()->save_cache();
 	close_external_resources();
         
 	restore_gamma();

@@ -113,7 +113,7 @@ private:
 	std::string image_to_new_name(SDL_Surface *image, int32 *filesize = NULL) const;
 	std::string add_to_cache(cache_key_t key, SDL_Surface *surface);
 	bool apply_cache_limit();
-	std::string retrieve_name(WadImageDescriptor& desc, int width, int height, bool mark_accessed = true, bool *cache_changed = NULL);
+	std::string retrieve_name(WadImageDescriptor& desc, int width, int height, bool mark_accessed = true);
 	void autosave_cache() { if (m_autosave) save_cache(); }
 	
 	static WadImageCache* m_instance;
@@ -122,6 +122,7 @@ private:
 	size_t m_cachesize;
 	size_t m_sizelimit;
 	bool m_autosave;
+	bool m_cache_dirty;
 };
 
 
