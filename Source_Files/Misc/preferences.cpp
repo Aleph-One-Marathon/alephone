@@ -2535,7 +2535,7 @@ void write_preferences(
 	fprintf(F,"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
 	fprintf(F,"<!-- Preferences file for the Marathon Open Source \"Aleph One\" engine -->\n\n");
 	
-	fprintf(F,"<mara_prefs>\n\n");
+	fprintf(F,"<mara_prefs version=\"%s\">\n\n", A1_DATE_VERSION);
 	
 	fprintf(F,"<graphics\n");
 	fprintf(F,"  scmode_width=\"%hd\"\n", graphics_preferences->screen_mode.width);
