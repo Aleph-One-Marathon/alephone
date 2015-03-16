@@ -66,6 +66,8 @@ close($file);
 
 ## Create plugin directory and xml/mml files
 
+my $version = `grep '^#define A1_DATE_VERSION' $FindBin::Bin/../Source_Files/Misc/alephversion.h | sed -e 's/\\(.*\\"\\)\\(.*\\)\\(\\"\\)/\\2/g' | tr -d '\\n'`;
+
 my $plugin = "Default Shaders";
 unless (-d $plugin)
 {
@@ -74,7 +76,7 @@ unless (-d $plugin)
 
 open($file, '>', "$plugin/Plugin.xml") or die "Could not write Plugin.xml: $!";
 print $file <<END;
-<plugin name="$plugin" description="Default Aleph One shaders">
+<plugin name="$plugin" version="$version" description="Default Aleph One shaders">
   <mml file="Plugin.mml"/>
 </plugin>
 END
