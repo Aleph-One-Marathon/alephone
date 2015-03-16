@@ -10,6 +10,7 @@
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>shpA</string>
+				<string>shps</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>ShapesIcon.icns</string>
@@ -29,6 +30,7 @@
 			<key>CFBundleTypeExtensions</key>
 			<array>
 				<string>sndA</string>
+				<string>snds</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>SoundsIcon.icns</string>
@@ -85,9 +87,10 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>sceA</string>
+				<string>scen</string>
 				<string>sce</string>
 				<string>*</string>
-				<string>sceA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>MapIcon.icns</string>
@@ -124,9 +127,27 @@
 		<dict>
 			<key>CFBundleTypeExtensions</key>
 			<array>
+				<string>pfhr</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>PFIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One Pfhortran Script</string>
+			<key>CFBundleTypeOSTypes</key>
+			<array>
+				<string>****</string>
+			</array>
+			<key>CFBundleTypeRole</key>
+			<string>None</string>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.pfhortran</string>
+		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>phyA</string>
 				<string>phys</string>
 				<string>*</string>
-				<string>phyA</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>PhysIcon.icns</string>
@@ -138,7 +159,7 @@
 				<string>phy2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
-			<string>None</string>
+			<string>Viewer</string>
 			<key>NSDocumentClass</key>
 			<string>org.bungie.source.physics</string>
 		</dict>
@@ -157,7 +178,7 @@
 				<string>sga2</string>
 			</array>
 			<key>CFBundleTypeRole</key>
-			<string>None</string>
+			<string>Viewer</string>
 			<key>NSDocumentClass</key>
 			<string>org.bungie.source.save</string>
 		</dict>
@@ -201,6 +222,20 @@
 			<key>NSDocumentClass</key>
 			<string>org.bungie.source.bundle</string>
 		</dict>
+		<dict>
+			<key>CFBundleTypeExtensions</key>
+			<array>
+				<string>appl</string>
+			</array>
+			<key>CFBundleTypeIconFile</key>
+			<string>ImagesIcon.icns</string>
+			<key>CFBundleTypeName</key>
+			<string>Aleph One External Resources</string>
+			<key>CFBundleTypeRole</key>
+			<string>Viewer</string>
+			<key>NSDocumentClass</key>
+			<string>org.bungie.source.resources</string>
+		</dict>
 	</array>
 	<key>CFBundleExecutable</key>
 	<string>AlephOne</string>
@@ -214,12 +249,21 @@
 	<string>Aleph One</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
-	<key>CFBundleShortVersionString</key>
-	<string>A1_DISPLAY_VERSION</string>
 	<key>CFBundleSignature</key>
 	<string>26.A</string>
+	<key>NSMainNibFile</key>
+	<string>MainMenu</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+	<key>CFBundleShortVersionString</key>
+	<string>A1_DISPLAY_VERSION</string>
 	<key>CFBundleVersion</key>
 	<string>A1_DATE_VERSION</string>
+	<key>LSEnvironment</key>
+	<dict>
+		<key>ALEPHONE_FINDER_LAUNCH</key>
+		<string>1</string>
+	</dict>
 	<key>LSMinimumSystemVersion</key>
 	<string>10.4.0</string>
 	<key>LSMinimumSystemVersionByArchitecture</key>
@@ -231,9 +275,5 @@
 		<key>x86_64</key>
 		<string>10.6.0</string>
 	</dict>
-	<key>NSMainNibFile</key>
-	<string>MainMenu</string>
-	<key>NSPrincipalClass</key>
-	<string>NSApplication</string>
 </dict>
 </plist>

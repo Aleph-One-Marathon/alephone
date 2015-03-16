@@ -186,7 +186,8 @@ void Plugins::load_shapes_patches(bool is_opengl)
 const Plugin* Plugins::find_hud_lua()
 {
 	validate();
-	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	std::vector<Plugin>::const_reverse_iterator rend = m_plugins.rend();
+	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != rend; ++rit)
 	{
 		if (rit->hud_lua.size() && rit->valid())
 		{
@@ -200,7 +201,8 @@ const Plugin* Plugins::find_hud_lua()
 const Plugin* Plugins::find_solo_lua()
 {
 	validate();
-	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	std::vector<Plugin>::const_reverse_iterator rend = m_plugins.rend();
+	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != rend; ++rit)
 	{
 		if (rit->solo_lua.size() && rit->valid())
 		{
@@ -214,7 +216,8 @@ const Plugin* Plugins::find_solo_lua()
 const Plugin* Plugins::find_stats_lua()
 {
 	validate();
-	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	std::vector<Plugin>::const_reverse_iterator rend = m_plugins.rend();
+	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != rend; ++rit)
 	{
 		if (rit->stats_lua.size() && rit->valid())
 		{
@@ -228,7 +231,8 @@ const Plugin* Plugins::find_stats_lua()
 const Plugin* Plugins::find_theme()
 {
 	validate();
-	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != m_plugins.rend(); ++rit)
+	std::vector<Plugin>::const_reverse_iterator rend = m_plugins.rend();
+	for (std::vector<Plugin>::const_reverse_iterator rit = m_plugins.rbegin(); rit != rend; ++rit)
 	{
 		if (rit->theme.size() && rit->valid())
 		{
